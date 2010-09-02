@@ -36,10 +36,10 @@ library(PECAn)
 ##log will gather diagnostic information throughout the workflow
 log <-list()
 
+##input variables
+pft <- 'c4crop'
 
-trstr <- vecpaste(traits)
 
-prstr <- gsub('Vcmax', 'Vm0', trstr)
 
 ## 1.3 Set inputs for jags.model()
 j.chains <- 4
@@ -99,19 +99,12 @@ for (p in seq(along = traits)) {
 dbtrvec  <- traits[.v]
 dbprvec  <- gsub('Vcmax', 'Vm0', traits[!.v])
 
-## prior traits will be used in meta-analysis for traits w/ data
-## or to query priors for traits w/o data
-qd <- paste("SELECT Priors.PriorID, PriorPFT, VarID, PriorDistn, PriorParamA, PriorParamB, PriorN from Priors, Priors_has_PFT where Priors.PriorID = Priors_has_PFT.PriorID and Priors_has_PFT.pftID in ('", pft, "') and VarID in (", prstr, ");", sep = "")
-q    <- dbSendQuery(con, qd)
-priors <- NA
-priors <- fetch ( q, n = -1 )
-rownames(priors) <- priors$VarID
 
 .v <- dbprvec %in% priors$VarID
 for (p in seq(along = dbprvec)) {
   if (.v[p]) log[['priors']][p] <- paste ( traits[p], "prior found in database Priors table")
   if  (!.v[p]) log[['priors']][p] <-  paste ("!!db ERROR!! more than one ", traits[p], "prior found in database")
-}
+
 
 pdf (paste(pft, "post.pdf", sep = ""))
 for (i in dbtrvec) { 
