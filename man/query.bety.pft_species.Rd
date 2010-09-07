@@ -1,16 +1,26 @@
 \name{query.bety.pft_species}
 \alias{query.bety.pft_species}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{
+\title{Retrieve species list based on pft
 %%  ~~function to do ... ~~
 }
-\description{
+\description{This function queries the BETYdb species and pfts_species
+  tables and returns the species.id, genus, and species for all species in the given  \code{pft}.
+  This requires that the associations between plant species and plant
+  functional type be entered into the database (see .
+  
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
 query.bety.pft_species()
 }
 %- maybe also 'usage' for other objects documented here.
+\arguments{
+  \item{pft} {\code{pft} is a string, but pft must be entered into the
+  database. Currently, valid values for \code{pft} include:
+  'ebifarm.nfixer, 'ebifarm.c4grass', 'ebifarm.c3grass',
+  'ebifarm.forb', 'ebifarm.c4crop', 'poplar'
+  }
 \details{
 %%  ~~ If necessary, more details than the description above ~~
 }
