@@ -9,23 +9,22 @@ source('vecpaste.R')
 source('query.bety.con.R')
 
 ##input variables
-<<<<<<< TREE
-pft <- 'ebifarm.nfixer'
+pft <- 'ebifarm.c4crop'
 
 
 ## 1. get species list based on pft
 spp <- query.bety.pft_species(pft)
-spstr <- vecpaste(spp$plant_id)
+spstr <- spp$spstr
 
 ## 2. get priors available for pft
-priors <- query.bety.priors(pft='c4crop')
+priors <- query.bety.priors(pft)
 
-prvec <- priors$VarID     # vector of traits with prior distributions for pft 
+prvec <- rownames(priors) # vector of traits with prior distributions for pft 
 prstr <- vecpaste(prvec)  # string of " " " " used to query priors
 
 trvec <- gsub('Vm0', 'Vcmax', prvec)  
 trstr <- gsub('Vm0', 'Vcmax', prstr) #used to query trait data
-=======
+
 pft <- 'c4crop'
 
 ##edtraits is the comprehensive list of traits that could be in the database 
