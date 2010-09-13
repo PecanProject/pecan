@@ -5,5 +5,8 @@ query.bety.pft_species <- function(pft){
   q    <- dbSendQuery(con, query)
   species <- NA
   species <- fetch ( q, n = -1 )
-  return(species)
+  print(species)
+  spstr <- vecpaste(species$id)
+  spp <- list(spstr=spstr, pft=pft)
+  return(spp)
 }

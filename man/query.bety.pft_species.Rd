@@ -1,7 +1,7 @@
 \name{query.bety.pft_species}
 \alias{query.bety.pft_species}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{Retrieve species list based on pft
+\title{Retrieve list of species associated with the \code{pft}
 %%  ~~function to do ... ~~
 }
 \description{This function queries the BETYdb species and pfts_species
@@ -24,12 +24,9 @@ query.bety.pft_species()
 \details{
 %%  ~~ If necessary, more details than the description above ~~
 }
-\value{
+\value{Returns a string of ids for each species associated with the \code{pft}.
+  The string is used to query traits in the query.bety.traits() function. 
 %%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
 }
 \references{
 %% ~put references to the literature/web site here ~
@@ -44,9 +41,12 @@ query.bety.pft_species()
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
+  \code{link{query.bety.traits}}
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
+spp <- query.bety.pft_species('ebifarm.nfixer')
+trait.data <- query.bety.traits(
 ##---- Should be DIRECTLY executable !! ----
 ##-- ==>  Define data, use random,
 ##--	or do  help(data=index)  for the standard data sets.
