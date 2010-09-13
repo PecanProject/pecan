@@ -2,11 +2,30 @@ setwd('/home/dlebauer/pecan/dev/R/')
 library('RMySQL')
 
 ##the next 'source' lines will be replaced by library('PECAn')
-source('query.bety.traits.R')
-source('query.bety.priors.R')
-
+source('query.bety.pft_species.R')
+source('query.bety.priors.R') #given pft, query available priors
+source('query.bety.traits.R') 
+source('vecpaste.R')
+source('query.bety.con.R')
 
 ##input variables
+<<<<<<< TREE
+pft <- 'ebifarm.nfixer'
+
+
+## 1. get species list based on pft
+spp <- query.bety.pft_species(pft)
+spstr <- vecpaste(spp$plant_id)
+
+## 2. get priors available for pft
+priors <- query.bety.priors(pft='c4crop')
+
+prvec <- priors$VarID     # vector of traits with prior distributions for pft 
+prstr <- vecpaste(prvec)  # string of " " " " used to query priors
+
+trvec <- gsub('Vm0', 'Vcmax', prvec)  
+trstr <- gsub('Vm0', 'Vcmax', prstr) #used to query trait data
+=======
 pft <- 'c4crop'
 
 ##edtraits is the comprehensive list of traits that could be in the database 
@@ -23,6 +42,7 @@ data   <- query.bety.traits(pft, trstr)
 
 ##command to disconnect MySQL connections
 lapply(dbListConnections(MySQL()), dbDisconnect)
+>>>>>>> MERGE-SOURCE
 
 
 
