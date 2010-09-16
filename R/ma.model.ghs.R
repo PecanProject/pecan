@@ -2,7 +2,7 @@
 ma.model.ghs <- function(){
   for (k in 1:LENGTHK){
     Y[k] ~ dnorm( Z[k] , tau.y[k])              # observed site x trt means and uncertainties
-    Z[k] <- b.trt[trt[k]] + b.site[site[k]] + b.ghs[ghs[k]]
+    Z[k] <- beta.o + b.trt[trt[k]] + b.site[site[k]] + b.ghs[ghs[k]]
                                                 # linear model with random effects of
                                                 # treatment, site, and greenhouse
     tau.y[k] <- prec.y*n[k]                     # precision from obs.prec
@@ -15,7 +15,7 @@ ma.model.ghs <- function(){
     b.trt[j] ~ dnorm(0, tau.trt)                # treatment effects, random
   }
   for (g in 1:LENGTHG){
-    b.site[g] ~ dnorm(beta.o, tau.site)         # site effects, random
+    b.site[g] ~ dnorm(0, tau.site)         # site effects, random
   }
   b.ghs[0]  ~ dnorm(0, tau.ghs)                 # greenhouse effect, random
   b.ghs[1]  ~ dnorm(0, tau.ghs)                    
