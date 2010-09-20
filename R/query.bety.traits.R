@@ -21,40 +21,44 @@ query.bety.traits <- function(spstr, trvec){
     ##* }
 
     ## labeling control treatments based on treatments.control flag
-    result$name[which(result$control == 1 | is.na(result$name))] <- 'control'
+    result$name[which(result$control == 1 | is.na(result$name))] <- 0
     data <- result[,-which(colnames(result)=='control')]
 
     ## assign a unique sequential integer to site and trt
-    data$site_id[which(is.na(data$site_id))] <- 0
-    
+    ## first convert any NA's to 0, (all site_id's in database are >0)
+    if(sum(is.na(data$site_id)>0)) data$site_id[is.na(data$site_id)] <- 0
+    data <- transform(data,
+                      site = as.integer(factor(site_id, unique(site_id))),
+                      trt = as.integer(factor(name, unique(name)))
+                      )
 
-    if(length(unique(data$site_id)==1)){
-      data$site <- 1
-    } else {
-      data$site <- 0
-      for (i.site in unique(data$site_id)){
-        data$site[data$site_id == i.site] <- max(data$site, na.rm=TRUE) +1
-      }
+    for (i.site in unique(data$site)){
+      data$trt[data$site == i.site] <- as.numeric(factor(data$trt[data$site == i.site]))-1
     }
- 
-    data$trt <- 1
-    for (ii in site.seq) {
-      data$trt[which(is.na(data$TrtID))] <- 0
-      ##temp set unidentified treatments to 0, change at end
-      l.a <- length(unique(data$TrtID[data$site == ii]))
-      if (l.a >= 2) {
-        trt.i <- unique(data$TrtID[data$site == ii])
-        trt.seq <- seq(trt.i)
-        for (jj in trt.seq) {
-          if (jj == 1) {
-            data$trt[data$TrtID == trt.i[jj]] <- 1
-          } else {
-            data$trt[data$TrtID == trt.i[jj]]  <- max(data$trt) + 1
-          }
-        }
-      }
-    }
-    data$trt[data$trt == 0] <- max(data$trt) + 1
+
+    ## Transformation of stats to SE
+
+    ## transform SD to SE
+    sdi <- which(data$statname == "SD")
+    data$stat[sdi] <- data$stat[sdi] / sqrt(data$n[sdi])
+    data$statname[sdi] <- "SE"
+
+    ## transform MSE to SE
+    msei <- which (data$statname == "MSE")
+    data$stat[msei] <- sqrt (data$stat[msei])
+    data$statname[msei] <- "SE"
+
+    ## need to deal with LSD
+    lsdi <- which(data$statname == "LSD")
+    if (sum(lsdi) > 0 ) data[lsdi,c(4,5)] <- NA
+    
+    ## make sure there is at least one measure of variance
+    is.var <- sum(as.numeric(is.na(data$stat)))
+    if(is.var == 0) log[['variance']] <- paste("no measure of variance for",name)
+    ## check to make sure that all stats have been transformed to SE 
+    statnames <- unique(data$statname[!is.na(data$statname)])
+    if ( length(statnames) == 0) statnames <- "SE" 
+
 
 
     
