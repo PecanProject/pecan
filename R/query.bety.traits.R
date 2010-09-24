@@ -2,9 +2,18 @@
 query.bety.traits <- function(spstr, trvec){
   con <- query.bety.con()
   trait.data <- list()
-  for (i.tr in trvec) {
-    ##* if(i.tr != 'Vcmax'){
-    query <- paste("select traits.site_id, treatments.name, traits.mean, traits.statname, traits.stat, traits.n, treatments.control from traits left join treatments on (traits.treatment_id = treatments.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '",i.tr,"');", sep = "")
+
+  query <- paste("select distinct variables.name from traits join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,") and variable_id in (select id from variables where name in (", vecpaste(trvec),"));", sep = "")
+  ## Need to write query for:
+  ## first check pft_species for grass or tree 
+  ##      if grass, root and shoot to calculate q
+  ##      if tree, fine root and leaf to calculate q
+  query.result <- dbSendQuery(con, query)
+  traits.in.bety <- fetch(query.result, n = -1)
+
+  for (i.tr in traits.in.bety$name) {
+
+    query <- paste("select traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '",i.tr,"');", sep = "")
     query.result <- dbSendQuery(con, query)
     result <- fetch(query.result, n = -1)
     ##* } elseif(i.tr == 'Vcmax') {
@@ -20,49 +29,70 @@ query.bety.traits <- function(spstr, trvec){
     ##*result <- data[,1:6] #drop covariates
     ##* }
 
+
+    ## rename name column from treatment table to trt_id
+    names(result)[names(result)=='name'] <- 'trt_id'
     ## labeling control treatments based on treatments.control flag
-    result$name[which(result$control == 1 | is.na(result$name))] <- 0
-    data <- result[,-which(colnames(result)=='control')]
+    result$trt_id[which(result$control == 1)] <- 'control'
+    ## remove control flag
+    result <- result[,-which(names(result) == 'control')]
 
-    ## assign a unique sequential integer to site and trt
-    ## first convert any NA's to 0, (all site_id's in database are >0)
-    if(sum(is.na(data$site_id)>0)) data$site_id[is.na(data$site_id)] <- 0
-    data <- transform(data,
-                      site = as.integer(factor(site_id, unique(site_id))),
-                      trt = as.integer(factor(name, unique(name)))
+    result$site_id[is.na(result$site_id)] <- 0 #assign all unknown sites to 0
+    result$control[is.na(result$control)] <- 0 #by default, assume obs. are from difft treatments
+    ## assign a unique sequential integer to site and trt; for trt, all controls == 0
+    data <- transform(result,
+                      stat = as.numeric(stat),
+                      n    = as.numeric(n),
+                      site_id = as.integer(factor(site_id, unique(site_id))),
+                      trt_id = as.integer(factor(trt_id, unique(c('control', as.character(trt_id)))))
                       )
-
-    for (i.site in unique(data$site)){
-      data$trt[data$site == i.site] <- as.numeric(factor(data$trt[data$site == i.site]))-1
-    }
 
     ## Transformation of stats to SE
 
     ## transform SD to SE
-    sdi <- which(data$statname == "SD")
-    data$stat[sdi] <- data$stat[sdi] / sqrt(data$n[sdi])
-    data$statname[sdi] <- "SE"
-
+    if ("SD" %in% data$statname) {
+      sdi <- which(data$statname == "SD")
+      data$stat[sdi] <- data$stat[sdi] / sqrt(data$n[sdi])
+      data$statname[sdi] <- "SE"
+    }
     ## transform MSE to SE
-    msei <- which (data$statname == "MSE")
-    data$stat[msei] <- sqrt (data$stat[msei])
-    data$statname[msei] <- "SE"
-
-    ## need to deal with LSD
-    lsdi <- which(data$statname == "LSD")
-    if (sum(lsdi) > 0 ) data[lsdi,c(4,5)] <- NA
-    
-    ## make sure there is at least one measure of variance
-    is.var <- sum(as.numeric(is.na(data$stat)))
-    if(is.var == 0) log[['variance']] <- paste("no measure of variance for",name)
-    ## check to make sure that all stats have been transformed to SE 
-    statnames <- unique(data$statname[!is.na(data$statname)])
-    if ( length(statnames) == 0) statnames <- "SE" 
-
-
-
-    
-    if (dim(result)[1] > 0) trait.data[[i.tr]] <- result
+    if ("MSE" %in% data$statname) {
+      msei <- which(data$statname == "MSE")
+      data$stat[msei] <- sqrt (data$stat[msei]/data$n[msei])
+      data$statname[msei] <- "SE"
+    }
+    ## 95%CI measured from mean to upper or lower CI
+    ## SE = CI/t
+    if ("95%CI" %in% data$statname) {
+      cii <- which(data$statname == '95%CI')
+      data$stat[cii] <- data$stat[cii]/qt(0.975,data$n[cii])
+      data$statname[cii] <- "SE"
+    }
+    ## Fisher's Least Significant Difference (LSD)
+    ## conservatively assume no within block replication
+    if ("LSD" %in% data$statname) {
+      lsdi <- which(data$statname == "LSD")
+      data$stat[lsdi] <- data$stat[lsdi] / (qt(0.975,data$n[lsdi]) * sqrt( (2 * data$n[lsdi])))
+      data$statname[lsdi] <- "SE"
+    }
+    ## Tukey's Honestly Significant Difference (HSD),
+    ## conservatively assuming 3 groups being tested so df =2
+    if ("HSD" %in% data$statname) {
+      hsdi <- which(data$statname == "HSD" & data$n > 1)
+      data$stat[hsdi] <- data$stat[hsdi] / (qtukey(0.975, data$n[lsdi], df = 2))
+      data$statname[hsdi] <- "SE"
+    }              
+    ## MSD Minimum Squared Difference
+    ## MSD = t_{\alpha/2, 2n-2}*SD*sqrt(2/n)
+    ## SE  = MSD*n/(t*sqrt(2))
+    if ("MSD" %in% data$statname) {
+      msdi <- which(data$statname == "MSD")
+      data$stat[msdi] <- data$stat[msdi] * data$n[msdi] / ( qt(0.975,2*data$n[lsdi]-2)*sqrt(2))
+      data$statname[msdi] <- "SE"
+    }    
+    trait.data[[i.tr]] <- data
   }
   return(trait.data)
 }
+
+
