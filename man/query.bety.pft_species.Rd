@@ -1,7 +1,7 @@
 \name{query.bety.pft_species}
 \alias{query.bety.pft_species}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{Retrieve list of species associated with the \code{pft}
+\title{Retrieve list of species associated with the pft
 %%  ~~function to do ... ~~
 }
 \description{This function queries the BETYdb species and pfts_species
