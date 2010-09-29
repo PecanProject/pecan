@@ -1,18 +1,14 @@
 \name{ma.model}
 \alias{ma.model}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{The generic meta-analysis model used with PECAn
-%%  ~~function to do ... ~~ 
+\title{
+%%  ~~function to do ... ~~
 }
 \description{
-   The function ma.model is not functional and has no arguments. It is
-   only a template model for the write.ma.model function. Its use is analagous to the use of model with the
-write.model function in the R2WinBUGS package
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
 ma.model()
-# not used directly. Intended for use with the write.ma.model function.
 }
 %- maybe also 'usage' for other objects documented here.
 \details{
