@@ -34,11 +34,18 @@ query.bety.traits <- function(spstr, trvec){
     names(result)[names(result)=='name'] <- 'trt_id'
     ## labeling control treatments based on treatments.control flag
     result$trt_id[which(result$control == 1)] <- 'control'
+    ## assign all unknown sites to 0
+    result$site_id[is.na(result$site_id)] <- 0
+    ## by default, assume obs. are from difft treatments
+    result$trt_id[is.na(result$control)] <- -seq(1:sum(is.na(result$control)))
     ## remove control flag
     result <- result[,-which(names(result) == 'control')]
+    ## assume not in greenhouse when is.na(greenhouse)
+    result$greenhouse[is.na(result$greenhouse)] <- 0
 
-    result$site_id[is.na(result$site_id)] <- 0 #assign all unknown sites to 0
-    result$control[is.na(result$control)] <- 0 #by default, assume obs. are from difft treatments
+    
+
+
     ## assign a unique sequential integer to site and trt; for trt, all controls == 0
     data <- transform(result,
                       stat = as.numeric(stat),
@@ -94,5 +101,3 @@ query.bety.traits <- function(spstr, trvec){
   }
   return(trait.data)
 }
-
-
