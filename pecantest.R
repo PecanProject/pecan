@@ -1,17 +1,7 @@
 setwd('/home/dlebauer/pecan/dev/R/')
-library('RMySQL')
-
-##the next 'source' lines will be replaced by library('PECAn')
-source('query.bety.pft_species.R')
-source('query.bety.priors.R') #given pft, query available priors
-source('vecpaste.R')
-source('query.bety.con.R')
-source('query.bety.traits.R')
-
-
+library(PECAn, lib.loc = '~/lib/R')
 ##input variables
 pft <- 'ebifarm.c4crop'
-
 
 ## 1. get species list based on pft
 spp <- query.bety.pft_species(pft)
@@ -34,8 +24,30 @@ trvec <- gsub('Vm0', 'Vcmax', prvec)
 trait.data <- query.bety.traits(spstr,trvec) 
 ## returns list 'trait.data' with one dataframe per variable 
 
+## run the meta-analysis
+to.be.named.output <- lapply(trait.data, pecan.ma)
 
 
+## print out some statistical summaries and figures from meta-analysis
+lapply(ma.summary, to.be.named.output)
+
+## sample values for ensemble
+pecan.ensemble.values(trait.data, n.samples=500)
+
+## generate config files
+lapply(to.be.named.output, write.config.files)
+
+
+
+
+
+
+
+
+
+################################
+## This is where I am testing the validity of the stat. conversions in query.bety.traits() 
+###############################
 ## testing SE = f(P)
 
 #write.csv(data,'query.bety.traits.test.csv') 

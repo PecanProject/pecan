@@ -1,0 +1,6 @@
+PECAn
+
+See the PECAn wiki, especially the development page, for details
+http://128.174.125.122/wiki/index.php/PECAn_Documentation:Development
+
+the pecantest.R file includes the use of the code so far. as of 09/29/2010 it does not use the compiled code, just calls the function scripts individually. 
