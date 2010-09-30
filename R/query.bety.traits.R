@@ -96,18 +96,14 @@ query.bety.traits <- function(spstr, trvec){
       msdi <- which(data$statname == "MSD")
       data$stat[msdi] <- data$stat[msdi] * data$n[msdi] / ( qt(0.975,2*data$n[lsdi]-2)*sqrt(2))
       data$statname[msdi] <- "SE"
-    }    
-    trait.data[[i.tr]] <- data
+    }
+    if (!FALSE %in% c('SE','none') %in% data$statname) {
+      print(paste(i.tr, ': all statistics in data set transformed to SE or removed'))
+    } else {
+      print(paste(i.tr, ': ERROR!!! data contains untransformed statistics'))
+    }
+     trait.data[[i.tr]] <- data[,-which(names(data)=='statname')]
   }
   ## check if statname other than 'SE', 'none' in trait.data
-        for(tr.name in names(trait.data)){
-          if (!FALSE %in% c('SE','none') %in% trait.data[[tr.name]]$statname) {
-            print(paste(tr.name, ': all statistics in data set transformed to SE or removed'))
-          } else {
-            print(paste(tr.name, ': ERROR!!! data contains untransformed statistics'))
-          }
-        }
-  
-
   return(trait.data)
 }
