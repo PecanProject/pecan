@@ -99,5 +99,15 @@ query.bety.traits <- function(spstr, trvec){
     }    
     trait.data[[i.tr]] <- data
   }
+  ## check if statname other than 'SE', 'none' in trait.data
+        for(tr.name in names(trait.data)){
+          if (!FALSE %in% c('SE','none') %in% trait.data[[tr.name]]$statname) {
+            print(paste(tr.name, ': all statistics in data set transformed to SE or removed'))
+          } else {
+            print(paste(tr.name, ': ERROR!!! data contains untransformed statistics'))
+          }
+        }
+  
+
   return(trait.data)
 }
