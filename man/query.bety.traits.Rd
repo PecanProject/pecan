@@ -1,54 +1,27 @@
 \name{query.bety.traits}
 \alias{query.bety.traits}
-%- Also NEED an '\alias' for EACH other topic documented here.
-\title{
-%%  ~~function to do ... ~~
+\title{Extract trait data from BETYdb for traits with priors   
 }
-\description{
+\description{Determines which traits have 
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
 query.bety.traits()
 }
-%- maybe also 'usage' for other objects documented here.
+\arguments{
+  \item{spstr}{string of species id's in database, can be retrieved for a pft of interestwith
+    
+    \code{spp <- query.bety.pft_species(pft)$spstr} generated}
+  \item{trvec}{vector of traits to query, can be retrieved based on the existance of priors for a given pft with
+
+  \code{rownames(query.bety.priors(pft))}}
 \details{
-  %%  ~~ If necessary, more details than the description above ~~
-  After querying the data, the function then converts multiple statistics
-to standard error, $SE$, an estimate of the population standard
-deviation ($\hat{\sigma}$). When necessary, for example when information
-is unavailable, these equations provide conservative (inflated) values of $\hat{\sigma}$.
-In the context of the model that I am using, an overestimate of variance is okay.
-
-Below is the list of transformations to $SE$, where
-$SE=\sqrt{MSE/n}$. These calculations assume the following:
-\begin{itemize}
-\item $\alpha=0.05$ thus $1-^{\alpha}/_2=0.975$
-\item variables are normally distributed unless otherwise stated
-\end{itemize}
-
-\begin{enumerate}
-
-\item given $P$, $n$, and treatment means $\bar X_1$ and $\bar X_2$ 
-$$SE=\frac{\bar X_1-\bar X_2}{t_{(1-\frac{P}{2},n)}}$$ 
-
-\item given LSD, $\alpha$, $n$, $b$ where $b$ is
-number of blocks, and $n=b$ by default for RCBD  \cite{rosenberg2004map,saville2003bsi}
-$$SE = \frac{LSD}{t_{(0.975,n)}\sqrt{2bn}}$$
-
-\item given MSD (minimum significant difference) \cite{wang2000asp}, $n$, $\alpha$, df = $2n-2$
-$$SE = \frac{MSD}{t_{(0.975, 2n-2)}\sqrt{2}}$$
-
-\item given a 95 \% Confidence Interval [1] (measured from mean to upper or lower confidence limit), $\alpha$, and $n$
-
-$$SE = \frac{CI}{t_{(0.975,n)}}$$
-
-\item given Tukey's HSD, $n$, where $q$ is the 'studentized range statistic',
-
-$$SE = \frac{HSD}{q_{(0.975,n)}}$$
-
-\end{enumerate}
+This function applies \code{query.bety.trait.data()} to values in
+\code{trvec} for which data exist for given species in BETYdb
 }
 \value{
+  A list of data sets for each trait, which are ready for use by the
+  meta-analysis in \code{pecan.ma}. 
 %%  ~Describe the value returned
 %%  If it is a LIST, use
 %%  \item{comp1 }{Description of 'comp1'}
@@ -58,7 +31,7 @@ $$SE = \frac{HSD}{q_{(0.975,n)}}$$
 \references{
 %% ~put references to the literature/web site here ~
 }
-\author{
+\author{David~S. LeBauer
 %%  ~~who you are~~
 }
 \note{
@@ -67,13 +40,14 @@ $$SE = \frac{HSD}{q_{(0.975,n)}}$$
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
-\seealso{
+\seealso{\code{\link{query.bety.traits.data}}
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-
-
+spstr <- query.bety.pft_species('ebifarm.c4crop')$spstr
+trvec <- c('leafN', 'SLA')
+trait.data <- query.bety.traits(spstr, trvec)
 }
  
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{IO}
+\keyword{database}
