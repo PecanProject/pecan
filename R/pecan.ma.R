@@ -27,9 +27,8 @@ pecan.ma <- function(trait.data, trvec, prvec, pft, n.iter){
   ## DB Connection to BETYdb
   con <- query.bety.con()
 
-  for (i.tr in seq(trvec)) {
-    tr.name <- trvec[i.tr]
-    pr.name <- prvec[i.tr]
+  trait.ma <- function(trait.name) {
+    pr.name <- if(trait.name != 'Vcmax', trait.name, 'Vm0')
     
     
 }

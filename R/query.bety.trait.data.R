@@ -1,5 +1,6 @@
 ##* indicates lines that need to be uncommented after Vcmax query is corrected
 query.bety.trait.data <- function(trait, spstr){
+  con <- query.bety.con()
   query <- paste("select traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
   query.result <- dbSendQuery(con, query)
   result <- fetch(query.result, n = -1)
@@ -84,10 +85,14 @@ query.bety.trait.data <- function(trait, spstr){
     data$stat[msdi] <- data$stat[msdi] * data$n[msdi] / ( qt(0.975,2*data$n[lsdi]-2)*sqrt(2))
     data$statname[msdi] <- "SE"
   }
-  if (!FALSE %in% c('SE','none') %in% data$statname) {
-    print(paste(trait, ': all statistics in data set transformed to SE or removed'))
-  } else {
+  if (FALSE %in% c('SE','none') %in% data$statname) {
     print(paste(trait, ': ERROR!!! data contains untransformed statistics'))
   }
-  data <- data[,-which(names(data)=='statname')]
+
+  names(data)[names(data)=='stat'] <- 'se'
+  data$stdev <- sqrt(data$n) * data$se
+  data$obs.prec <- 1 / sqrt(data$stdev)
+  ma.data <- data[, c('mean', 'n', 'site_id', 'trt_id', 'greenhouse', 'obs.prec')]
+  names(ma.data) <- c('Y', 'n', 'site', 'trt', 'ghs', 'obs.prec')
+  return(ma.data)
 }
