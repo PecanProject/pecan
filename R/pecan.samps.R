@@ -3,6 +3,7 @@ pecan.samps <- function(trait.mcmc, priors) {
   trait.mat <- lapply(trait.mcmc, as.matrix)
   nodata.traits <- rownames(priors)[!rownames(priors) %in% names(trait.mat)]
   priors$n <- nrow(trait.mat[[1]])
+  colnames(priors)[which(colnames(priors) %in% c('parama','paramb'))] <- c('a', 'b')
 
   prior.samps <- sapply(1:nrow(priors), function(x) do.call(pr.samp,as.list(priors[x,])))
   colnames(prior.samps) <- rownames(priors)
@@ -12,7 +13,7 @@ pecan.samps <- function(trait.mcmc, priors) {
   ## Convert variables with different units in DB and ED
   ## Convert leaf width in mm to leaf width in m
   trait.mat[['leaf_width']]   <- 1/1000 * trait.mat[['leaf_width']]
-  priors['leaf_width', "PriorParamA"] <-  priors['leaf_width', "PriorParamA"] - log(1000)
+  priors['leaf_width', "a"] <-  priors['leaf_width', "a"] - log(1000)
 
   ## Transform leafN -> c2n_leaf
   trait.mat[['c2n_leaf']] <- 48/trait.mat[['leafN']][,1]
