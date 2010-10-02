@@ -25,10 +25,8 @@ trait.data <- query.bety.traits(spstr,trvec)
 ## returns list 'trait.data' with one dataframe per variable 
 
 ## run the meta-analysis
-trait.mcmc <- pecan.ma(trait.data, n.iter = 1000)
+trait.mcmc <- pecan.ma(trait.data, j.iter = 1000)
 
-## print out some statistical summaries and figures from meta-analysis
-lapply(ma.summary, to.be.named.output)
 
 ## sample values for ensemble
 samps <- pecan.samps(trait.mcmc, priors)
@@ -38,6 +36,8 @@ trait.mat <- samps[['trait.mat']]
 ## generate config files
 lapply(to.be.named.output, write.config.files)
 
+## print out some statistical summaries and figures from meta-analysis
+lapply(ma.summary, to.be.named.output, trait.mcmc)
 
 
 

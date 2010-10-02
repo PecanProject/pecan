@@ -23,7 +23,7 @@ query.bety.trait.data <- function(trait, spstr){
 
   ##if no control trt, set median value to control
   if(!1 %in% result$control){
-    result$control[which.min((mean(data$mean)-data$mean)^2)] <- 1
+    result$control[which.min((mean(result$mean)-result$mean)^2)] <- 1
   }
   ## labeling control treatments based on treatments.control flag
   result$trt_id[which(result$control == 1)] <- 'control'
@@ -50,7 +50,7 @@ query.bety.trait.data <- function(trait, spstr){
                     Y = mean
                     )
   data$n[is.na(data$n)] <- 1
-  data$ghs <- data$greenhouse + 1 #jags won't recognize 0 as an index
+  data$ghs <- data$greenhouse #jags won't recognize 0 as an index
   
   ## Transformation of stats to SE
 
