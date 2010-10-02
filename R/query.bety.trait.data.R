@@ -20,12 +20,20 @@ query.bety.trait.data <- function(trait, spstr){
 
   ## rename name column from treatment table to trt_id
   names(result)[names(result)=='name'] <- 'trt_id'
+
+  ##if no control trt, set median value to control
+  if(!1 %in% result$control){
+    result$control[which.min((mean(data$mean)-data$mean)^2)] <- 1
+  }
   ## labeling control treatments based on treatments.control flag
   result$trt_id[which(result$control == 1)] <- 'control'
+  
   ## assign all unknown sites to 0
   result$site_id[is.na(result$site_id)] <- 0
   ## by default, assume obs. are from difft treatments
-  result$trt_id[is.na(result$control)] <- -seq(1:sum(is.na(result$control)))
+  .u <- c(letters,LETTERS,-seq(52:sum(is.na(result$control))))
+  result$trt_id[is.na(result$control)] <- .u[1:sum(is.na(result$control))]
+
   ## remove control flag
   result <- result[,-which(names(result) == 'control')]
   ## assume not in greenhouse when is.na(greenhouse)
@@ -33,15 +41,17 @@ query.bety.trait.data <- function(trait, spstr){
 
   
 
-
   ## assign a unique sequential integer to site and trt; for trt, all controls == 0
   data <- transform(result,
                     stat = as.numeric(stat),
                     n    = as.numeric(n),
-                    site_id = as.integer(factor(site_id, unique(site_id))),
-                    trt_id = as.integer(factor(trt_id, unique(c('control', as.character(trt_id)))))
+                    site = as.integer(factor(site_id, unique(site_id))),
+                    trt = as.integer(factor(trt_id, unique(c('control', as.character(trt_id))))),
+                    Y = mean
                     )
-
+  data$n[is.na(data$n)] <- 1
+  data$ghs <- data$greenhouse + 1 #jags won't recognize 0 as an index
+  
   ## Transformation of stats to SE
 
   ## transform SD to SE
@@ -88,11 +98,11 @@ query.bety.trait.data <- function(trait, spstr){
   if (FALSE %in% c('SE','none') %in% data$statname) {
     print(paste(trait, ': ERROR!!! data contains untransformed statistics'))
   }
-
+  
   names(data)[names(data)=='stat'] <- 'se'
   data$stdev <- sqrt(data$n) * data$se
   data$obs.prec <- 1 / sqrt(data$stdev)
-  ma.data <- data[, c('mean', 'n', 'site_id', 'trt_id', 'greenhouse', 'obs.prec')]
+  ma.data <- data[, c('mean', 'n', 'site', 'trt', 'greenhouse', 'obs.prec')]
   names(ma.data) <- c('Y', 'n', 'site', 'trt', 'ghs', 'obs.prec')
   return(ma.data)
 }

@@ -1,5 +1,5 @@
 ## Bayesian Meta-analysis of plant traits
-ma.model.ghs <- function(){
+modelg <- function(){
   for (k in 1:LENGTHK){
     Y[k] ~ dnorm( Z[k] , tau.y[k])              # observed site x trt means and uncertainties
     Z[k] <- beta.o + b.trt[trt[k]] + b.site[site[k]] + b.ghs[ghs[k]]
@@ -17,8 +17,8 @@ ma.model.ghs <- function(){
   for (g in 1:LENGTHG){
     b.site[g] ~ dnorm(0, tau.site)         # site effects, random
   }
-  b.ghs[0]  ~ dnorm(0, tau.ghs)                 # greenhouse effect, random
-  b.ghs[1]  ~ dnorm(0, tau.ghs)                    
+  b.ghs[1]  ~ dnorm(0, tau.ghs)                 # greenhouse effect, random
+  b.ghs[2]  ~ dnorm(0, tau.ghs)                    
   beta.o    ~ PRIORDIST (PRIORPARAMA, PRIORPARAMB) # informed prior on global mean
   tau.site  ~ dgamma(0.1, 0.1)                  # global precision
   tau.trt   ~ dgamma(0.1, 0.1)                  # treatment effect precision

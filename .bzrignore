@@ -1,3 +1,4 @@
 query.bety.parameters.R
 R/query.bety.traits.test.csv
 man/query.bety.traits.tex
+*.bug

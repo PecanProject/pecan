@@ -1,5 +1,5 @@
 ## Bayesian Meta-analysis of plant traits
-ma.model <- function(){
+model1 <- function(){
   for (k in 1:LENGTHK){
     Y[k] ~ dnorm( Z[k] , tau.y[k])              # observed site x trt means and uncertainties
     Z[k] <- beta.o + b.trt[trt[k]] + b.site[site[k]]     # linear model with random treatment and site effects

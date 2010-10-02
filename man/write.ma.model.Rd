@@ -58,7 +58,7 @@ write.ma.model(ma.model, con = "model.bug", pr.dist, pr.param.a, pr.param.b, tot
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+  \code{\link{write.model}}, ~~~
 }
 \examples{
 ##---- Should be DIRECTLY executable !! ----
