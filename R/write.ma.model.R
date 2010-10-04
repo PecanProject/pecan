@@ -8,6 +8,10 @@ write.ma.model <- function (ma.model, con = "model.bug", pr.dist,
   if (is.R()) {
     model.text <- attr(ma.model, "source")
     if(!is.null(ma.model) & is.null(model.text)){
+      sink(".temp.jags")
+      print(ma.model)
+      sink()
+      
       model.text <- scan(file=".temp.jags",what="character",sep="@")
       ## chose an uncommon separator in order to capture whole lines
     }
