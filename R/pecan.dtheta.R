@@ -19,7 +19,7 @@ pecan.dtheta <- function(samps){
   }
 
   for (i.tr in traits) {
-    dtheta.q[i.tr, ] <- dtheta.q(samps[ ,i.tr])
+    dtheta[i.tr, ] <- dtheta.q(samps[ ,i.tr])
   }
-  return(dtheta.q)
+  return(dtheta)
 }
