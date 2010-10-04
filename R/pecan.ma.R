@@ -1,4 +1,4 @@
-pecan.ma <- function(trait.data,  j.iter){
+pecan.ma <- function(trait.data, priors, j.iter){
   ## Meta-analysis for each trait
   mcmc.object <- list() #  initialize output list of mcmc objects for each trait
   mcmc.mat    <- list()
