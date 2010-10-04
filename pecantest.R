@@ -1,4 +1,4 @@
-setwd('/home/dlebauer/pecan/dev/R/')
+setwd('/home/dlebauer/pecantest/')
 library(PECAn, lib.loc = '~/lib/R')
 ##input variables
 pft <- 'ebifarm.c4crop'
