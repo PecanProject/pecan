@@ -1,5 +1,8 @@
 write.configs <- function(M, pft, prior.samps, post.samps) {
-  source('pecan.config.constants.R')
+
+  const <- pecan.config.constants(pft)
+  PFT <- const$PFT
+  CONFIG <- const$CONFIG
   seqM <- seq(1,M)
   filenames <- list()
   ## add leading zeroes to the file names to avoid confusion
