@@ -29,9 +29,14 @@ trait.mcmc <- pecan.ma(trait.data, j.iter = 1000)
 
 
 ## sample values for ensemble
-samps <- pecan.samps(trait.mcmc, priors)
-priors <- samps[['priors']]
-trait.mat <- samps[['trait.mat']]
+trait.samps <- pecan.samps(trait.mcmc, priors)
+prior.dists <- trait.samps[['priors']]
+post.samps <- trait.samps[['post.samps']]     
+prior.samps <- trait.samps[['prior.samps']] #matrix of samples from all priors
+
+
+post.dtheta.q <- pecan.dtheta(samps = post.samps)
+prior.dtheta.q <- pecan.dtheta(samps = prior.samps)
 
 ## generate config files
 lapply(to.be.named.output, write.config.files)

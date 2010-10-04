@@ -1,4 +1,8 @@
 query.bety.parameters.R
-R/query.bety.traits.test.csv
-man/query.bety.traits.tex
+*.csv
+*.tex
 *.bug
+*.xml
+old_pecan_files
+PECAn_0.0.1.tar.gz
+*.jags

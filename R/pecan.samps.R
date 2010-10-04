@@ -9,7 +9,7 @@ pecan.samps <- function(trait.mcmc, priors) {
   colnames(prior.samps) <- rownames(priors)
 
   post.samps <- prior.samps
-  for (tri in traits) post.samps[,dt] <- trait.mat[[tri]][,1]
+  for (tri in traits) post.samps[,tri] <- trait.mat[[tri]][,1]
 
   ## Convert variables with different units in DB and ED
   ## Convert leaf width in mm to leaf width in m
