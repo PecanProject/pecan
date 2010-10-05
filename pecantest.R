@@ -1,4 +1,4 @@
-setwd('/home/dlebauer/pecantest/')
+setwd('/home/dlebauer/pecantest/test/')
 library(PECAn, lib.loc = '~/lib/R')
 ##input variables
 pft <- 'ebifarm.c4crop'
@@ -16,9 +16,6 @@ prstr <- vecpaste(prvec)  # string of " " " " used to query priors
 
 trvec <- gsub('Vm0', 'Vcmax', prvec)  
 
-#objects:
-# "pft" "priors" "prstr" "prvec" "query.bety.con" "query.bety.pft_species"
-# "query.bety.priors" "spp" "spstr" "trstr" "trvec" "vecpaste"              
 
 ## now it is time to query the data
 trait.data <- query.bety.traits(spstr,trvec) 
@@ -42,7 +39,7 @@ prior.dtheta.q <- pecan.dtheta(samps = prior.samps)
 write.configs(M=100, pft, prior.samps, post.samps)
 
 ## print out some statistical summaries and figures from meta-analysis
-lapply(ma.summary, to.be.named.output, trait.mcmc)
+pecan.ma.summary(trait.mcmc, pft)
 
 
 
