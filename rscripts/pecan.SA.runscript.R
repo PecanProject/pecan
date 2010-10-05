@@ -1,0 +1,6 @@
+library('PECAn', lib.loc = '~/lib/R')
+load('pecan.samps.Rdata')
+yr0 <- system(as.numeric("echo $YR0", intern =TRUE))
+yrf   <- system(as.numeric("echo $YRF", intern =TRUE))
+date <- system("echo $DATE", intern=TRUE)
+pecan.SA(post.dtheta.q, prior.dtheta.q, yr0, yrf, date)
