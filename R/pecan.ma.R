@@ -24,10 +24,6 @@ pecan.ma <- function(trait.data, priors, j.iter){
               '\nand the parameters ',vecpaste(j.vars), ' will be sampled\n', sep = '')
               )
   
-  ## DB Connection to BETYdb
-  con <- query.bety.con()
-
-
   for(trait.name in names(trait.data)) {
     prior.name <- ifelse(trait.name != 'Vcmax', trait.name, 'Vm0')
     prior <- priors[prior.name, c('distn', 'parama', 'paramb', 'n')]

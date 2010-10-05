@@ -2,7 +2,7 @@
 model1 <- function(){
   for (k in 1:LENGTHK){
     Y[k] ~ dnorm( Z[k] , tau.y[k])              # observed site x trt means and uncertainties
-    Z[k] <- beta.o + b.trt[trt[k]] + b.site[site[k]]     # linear model with random treatment and site effects
+    Z[k] <-  b.trt[trt[k]] + b.site[site[k]]     # linear model with random treatment and site effects
     tau.y[k] <- prec.y*n[k]                     # precision from obs.prec
     u1[k] <- n[k]/2                             
     u2[k] <- n[k]/(2*prec.y)
@@ -13,7 +13,7 @@ model1 <- function(){
     b.trt[j] ~ dnorm(0, tau.trt)                # treatment effects, random
   }
   for (g in 1:LENGTHG){
-    b.site[g] ~ dnorm(0, tau.site)         # site effects, random
+    b.site[g] ~ dnorm(beta.o, tau.site)         # site effects, random
   }
   beta.o    ~ PRIORDIST (PRIORPARAMA, PRIORPARAMB) # informed prior on global mean
   tau.site  ~ dgamma(0.1, 0.1)                  # global precision
