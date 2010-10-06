@@ -14,6 +14,17 @@ This function requires a file in $HOME/.my.cnf that allows user to
 automatically log in to BETYdb. This file is used to specify the
 database name, <username>, and <password>.
 The contents of the file should be:
+
+
+\code{
+  [ebi_analysis]
+  user = <username>
+  password = <password>
+  host = ebi-forecast.igb.uiuc.edu
+  database = ebi_analysis
+}
+
+or, if database is on localhost:
 \code{
   [ebi_analysis]
   user = <username>
@@ -21,6 +32,8 @@ The contents of the file should be:
   host = localhost
   database = ebi_analysis
 }
+
+
 \value{
 Returns an object of class 'MySQLConnection' with a connection to
 BETYdb that can be used to send queries and direct commands, depending
