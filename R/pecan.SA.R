@@ -74,7 +74,7 @@ pecan.SA <- function(prior.samps, post.samps, yr0, yrf, date) {
   for (.r in c('post', 'prior')) {
     satables[[.r]] <- list()
     for (.i in c('agb', 'ssc')) {
-      satables[[.r]][[.i]] <- pecan.SAcalcs(.r,  .i)
+      satables[[.r]][[.i]] <- pecan.SAcalcs(.r,  .i, dat)
     }
   }
 

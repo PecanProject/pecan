@@ -1,4 +1,4 @@
-pecan.SAcalcs <- function(.irun, .ivar) {
+pecan.SAcalcs <- function(.irun, .ivar, dat) {
                                         # .irun <- c('post', 'prior')
                                         # .ivar <- c('agb', 'ssc')
 
