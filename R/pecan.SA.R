@@ -1,4 +1,4 @@
-pecan.SA <- function(prior.samps, post.samps, yr0, yrf, date) {
+pecan.SA <- function(M, yr0, yrf, date) {
   ## PECAn Sensitivity Analysis
 
   ## solving var(f) = sum((df/dtheta)^2*var(theta)) + O3
@@ -20,9 +20,9 @@ pecan.SA <- function(prior.samps, post.samps, yr0, yrf, date) {
   run.id <- c('post', 'prior')
   var.id <- c('agb', 'ssc')
 
-  .f <- dir(outdir, full.names=TRUE) ## grab all files 
-  n.ensemble <- nrow(post.samps)
-  .f.yr <- .f[grep("-Y-", .f)]            # select annual output
+  ## .f.yr is a list of files with annual output
+  .f <- dir(outdir, full.names=TRUE)      ## grab all files 
+  .f.yr <- .f[grep("-Y-", .f)]            ## select annual output
   t.range <- c(yr0, yrf)
   dt <- yrf - yr0 + 1
   saruns <- saruntype <- character()
@@ -37,11 +37,16 @@ pecan.SA <- function(prior.samps, post.samps, yr0, yrf, date) {
     }
   }
 
-  runnames <- c(paste("postsamp", seq(1, n.ensemble),'-', sep=""),
-                paste ("priorsamp", seq(1, n.ensemble), '-', sep=""),
+
+  ## first create a vector from 1:M with leading zeros
+  .ens.id <- paste('x', as.character(seq(1,M)+1000), sep = '')
+  ens.id <- gsub('x1','0',.ens.id)
+
+  runnames <- c(paste("postsamp", ens.id,'-', sep=""),
+                paste ("priorsamp", ens.id, '-', sep=""),
                 saruns, 'postmeans', 'priormeans')
-  runtype <- c(rep("postsamp", n.ensemble),
-               rep("priorsamp", n.ensemble),
+  runtype <- c(rep("postsamp", M),
+               rep("priorsamp", M),
                saruntype, 'postmeans', 'priormeans')
   .list <- list('output' = matrix(nrow = length(runnames), ncol = dt),
                 prior.mean.f = numeric(),
@@ -57,6 +62,8 @@ pecan.SA <- function(prior.samps, post.samps, yr0, yrf, date) {
     colnames(dat[[i]][['output']]) <- seq(yr0, yrf)
   }
 
+
+  
   for (.iyr in seq(yr0, yrf)) {
     .f.iyr <- .f.yr[grep(.iyr,.f.yr)]
     for (.i.run in seq(runnames)) {
@@ -74,7 +81,7 @@ pecan.SA <- function(prior.samps, post.samps, yr0, yrf, date) {
   for (.r in c('post', 'prior')) {
     satables[[.r]] <- list()
     for (.i in c('agb', 'ssc')) {
-      satables[[.r]][[.i]] <- pecan.SAcalcs(.r,  .i, dat)
+      satables[[.r]][[.i]] <- pecan.SAcalcs(.r,  .i, dat, traits = prvec, trait.samps)
     }
   }
 
