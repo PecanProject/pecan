@@ -1,9 +1,6 @@
-cd $HOME/EDBRAMS/ED/RUN
+cd $ED_RUN
 rm c.*
 
-DATE=`date +%Y%m%d`
-
-OUTDIR=/home/scratch/pecan/$USER/out$DATE
 if [ ! -d $OUTDIR ] #if [output directory] exists 
 then
     mkdir $OUTDIR    #if not, make new directory
