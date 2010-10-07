@@ -1,4 +1,4 @@
-pecan.SAcalcs <- function(.irun, .ivar, dat) {
+pecan.SAcalcs <- function(.irun, .ivar, dat, traits, trait.samps) {
                                         # .irun <- c('post', 'prior')
                                         # .ivar <- c('agb', 'ssc')
 
@@ -13,37 +13,48 @@ pecan.SAcalcs <- function(.irun, .ivar, dat) {
     f <- dat[[.ivar]][['output']][which(dat[["runtype"]] == "priorsamp"),]
   } else { print ('.irun id not valid')
          }      
+ 
+  ## Calculate overall mean and variance
+  ## average each run across years before calculations 
   mean.f <- mean(rowMeans(f, na.rm=TRUE),  na.rm = TRUE)
   var.f  <- var(rowMeans(f, na.rm=TRUE),  na.rm = TRUE)
-  
+
   mean.rowname <- paste(.irun, 'means', sep = "") #identify row in f with mean data
+
+  ## convert the dtheta.q to dataframe
   .dq <- as.data.frame(eval( parse ( text = paste(.irun, '.dtheta.q', sep = ""))))
-                                        #convert *.dtheta.q to dataframe
+  
   
   colnames(.dq) <- c('lcl.theta', 'ucl.theta', 'mean.theta', 'var.theta', 'cv.theta') 
-  .dq$id <- as.character(trait.defs$id)
-  
+  .dq$id <- rownames(.dq)
+  traits<-trait.dictionary()
 
-  ##convert degrees C to K fof Vm_low temp
+  ##  Transform degrees C to K fof Vm_low temp
   .vmlt <- .dq['Vm_low_temp', c('lcl.theta', 'ucl.theta', 'mean.theta') ]
   .dq['Vm_low_temp', c('lcl.theta', 'ucl.theta', 'mean.theta')] <- c(.vmlt+273.15)
-  satable <-  merge(.dq, trait, by = 'id')
+
+  ## Start making table for Sensitivity Analysis
+  satable <-  merge(.dq, traits, by = 'id')
   rownames(satable) <- satable$id
+  
   ## Values of f
   ## #################
   ## df from SA for change in f at mean
   ## var(f) from ensemble runs
   
   ## all mean "f's" are from the same run
-  satable$mean.f <- mean(dat[[.ivar]][['output']][mean.rowname,])
+  satable$mean.f <- mean(dat[[.ivar]][['output']][mean.rowname,],na.rm=T)
   for (.j in seq(satable$id)) {
     for (.k in c('lcl', 'ucl')) {
       .j1 <- as.character(satable$fileid[.j])
       .j2 <- as.character(satable$id[.j])
       sa.rowname <- paste(.irun, .k, '.', .j1, '-', sep="")
-      satable[.j2, paste(.k, '.f', sep = '')]<- mean(dat[[.ivar]][['output']][sa.rowname, ])
+      if (sa.rowname %in% rownames(dat[[.ivar]][['output']])){
+        satable[.j2, paste(.k, '.f', sep = '')]<- mean(dat[[.ivar]][['output']][sa.rowname, ],na.rm=T)
+      }
     }
   }
+ 
 
   
   ##~~~~~~~~~~~~~~~~~~~~~~~
@@ -54,13 +65,13 @@ pecan.SAcalcs <- function(.irun, .ivar, dat) {
   ## Begin SA Calculations
   ## required inputs: sa.df, var.f, dtheta, dfdth()
   ##~~~~~~~~~~~~~~~~~~~~~~~
-
+ 
   pdf(paste(.irun, .ivar, 'dfdth.SA.pdf', sep = ""))
   ymin <- min(satable[,c('mean.f', 'lcl.f', 'ucl.f')])*0.95
   ymax <- max(satable[,c('mean.f', 'lcl.f', 'ucl.f')])*1.05
   if(is.na(ymin)) ymin <- min(0, mean.f - sqrt(var.f))
   if(is.na(ymax)) ymax <- mean.f + sqrt(var.f)
-  for (.jid in seq(satable$id)) {
+  for (.jid in which(!is.na(satable$lcl.f))) {
     fig.title <- as.character(satable$figid[.jid])
     id <- satable$id[.jid]
     dtheta.j <- as.numeric(satable[.jid, c('lcl.theta', 'mean.theta', 'ucl.theta')])
@@ -73,9 +84,10 @@ pecan.SAcalcs <- function(.irun, .ivar, dat) {
   dev.off()
 
   sum.var <- sum(satable$var.theta)
-                                        # var.f = (df)^2 * var.theta + 
-  for (.jid in seq(satable$id)) {
-    x <- samps[[.irun]][[satable$id[.jid]]]
+
+  ## var.f = (df)^2 * var.theta + 
+  for (.jid in which(!is.na(satable$id))) {
+    x <- trait.samps[[.irun]][[satable$id[.jid]]]
     a <- mean(x)
     df <- satable$df[.jid]
     d2f<- satable$d2f[.jid]
