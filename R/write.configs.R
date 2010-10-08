@@ -21,6 +21,7 @@ write.configs <- function(M, pft, prior.samps, post.samps) {
     for (k in tr) {
       samp <- quantile( post.samps[,k], samps[m,k])
       PFTi <- append.xmlNode(PFTi, xmlNode(k, samp))
+      ens.samps[['post']] <- 
     }
     CONFIGi <- append.xmlNode(CONFIG, PFTi)
     file <- paste("config.postsamp",zm,".xml",sep="")
@@ -94,4 +95,3 @@ write.configs <- function(M, pft, prior.samps, post.samps) {
   }
   save(filenames, file = 'filenames.Rdata')
 }
-
