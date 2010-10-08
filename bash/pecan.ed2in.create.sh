@@ -1,4 +1,6 @@
-cd $ED_RUN
+DATE=`date +%Y%m%d`
+OUTDIR=/home/scratch/pecan/$USER/out$DATE
+ED_RUN=$HOME/EDBRAMS/ED/runcd $ED_RUN
 rm c.*
 
 if [ ! -d $OUTDIR ] #if [output directory] exists 
