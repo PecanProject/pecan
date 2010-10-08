@@ -1,8 +1,6 @@
 ## Set default fixed parameters below: 
 pecan.config.constants <- function(pft) {
   if(pft == 'ebifarm.c4crop'){
-    
-    
     PFT <- xmlNode ("pft")
     PFT <- append.xmlNode(PFT, xmlNode("num", 15))
     PFT <- append.xmlNode(PFT, xmlNode("max_dbh", 0.78))
@@ -11,17 +9,18 @@ pecan.config.constants <- function(pft) {
     PFT <- append.xmlNode(PFT, xmlNode("qsw", 0.0))
     PFT <- append.xmlNode(PFT, xmlNode("mort1", 1.0))
     PFT <- append.xmlNode(PFT, xmlNode("plant_min_temp", -100))
-                                        #  PFT <- append.xmlNode(PFT, xmlNode("quantum_efficiency", 0.08))
     PFT <- append.xmlNode(PFT, xmlNode("storage_turnover_rate", 0))
 
-                                        #  RAD <- xmlNode("radiation")
-                                        #  RAD <- append.xmlNode(RAD, xmlNode("lai_min", 0.0001))
+    ## Changed lai_min because of ED computational errors w.r.t leaf temperature 
+    RAD <- xmlNode("radiation")
+    RAD <- append.xmlNode(RAD, xmlNode("lai_min", 0.01))
 
+    ## Output in November because this is harvest time
     MISC <- xmlNode("ed_misc")
     MISC <- append.xmlNode(MISC, xmlNode("outputMonth", 11))
 
     CONFIG <- xmlNode("config")
-                                        #  CONFIG <- append.xmlNode(CONFIG, RAD)
+    CONFIG <- append.xmlNode(CONFIG, RAD)
     CONFIG <- append.xmlNode(CONFIG, MISC) 
     
   }

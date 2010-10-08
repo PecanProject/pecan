@@ -12,9 +12,9 @@ pecan.dtheta <- function(samps){
 
   dtheta.q <- function(x) {
     if (i.tr != 'Vm_low_temp') {
-      c(quantile(x,c(0.35,0.5,0.65)), var(x), sqrt(var(x))/mean(x))
+      c(quantile(x,c(0.35,0.65,0.5)), var(x), sqrt(var(x))/mean(x))
     } else {
-      c(quantile(x,c(0.35,0.5,0.65)), var(x), sqrt(var(x))/mean(x+273.15))
+      c(quantile(x,c(0.35,0.65,0.5)), var(x), sqrt(var(x))/mean(x+273.15))
     }
   }
 
