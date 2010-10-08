@@ -1,6 +1,6 @@
 [client]
-user = <username>
-password = <password>
+user = ebi_analys_user
+password = b742xsAu
 host = localhost
 
 [ebi_analysis]
