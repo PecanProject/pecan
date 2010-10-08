@@ -20,9 +20,9 @@ do
     cp ED2IN ED2IN$f
     sed -i 's/USER/'$USER'/g' ED2IN$f
     sed -i 's/CONFIGFILE/'$f'/g' ED2IN$f
-    sed -i 's/OUTFILE/'out'$f'/g' ED2IN$f 
+    sed -i 's/OUTFILE/out'$f'/g' ED2IN$f 
     sed -i 's/outconfig./out./g' ED2IN$f
-    sed -i 's/HISTFILE/'hist'$f'/g' ED2IN$f
+    sed -i 's/HISTFILE/hist'$f'/g' ED2IN$f
     sed -i 's/histconfig./hist./g' ED2IN$f
 done
 
