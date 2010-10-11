@@ -1,5 +1,5 @@
 DATE=`date +%Y%m%d`
-cat $DATE > DATE
+echo $DATE > DATE
 OUTDIR=/home/scratch/pecan/$USER/out$DATE
 ED_RUN=$HOME/EDBRAMS/ED/runcd $ED_RUN
 rm c.*

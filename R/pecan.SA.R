@@ -1,31 +1,28 @@
-pecan.SA <- function(M, yr0, yrf, date) {
+pecan.SA <- function(M, yr0, yrf, date, var.id) {
   ## PECAn Sensitivity Analysis
 
   ## solving var(f) = sum((df/dtheta)^2*var(theta)) + O3
   ## theta are the n trait inputs defined in 'trait' dataframe
   ## f are the model outputs at different quantiles of theta
 
-  ## contents:
-  ##   log:   error log
-  ##   trait: trait defs (id, fileid, figid)
-  ##   tr.n:  number of traits
-  ##   pft:   plant fn. type (string), e.g. 'c4crop', 'temphw'
-  ##   post.dtheta.q, prior.dtheta.q: prior and posterior statistics (lcl, median,ucl, mean, var, cv)
-  ##   samps: prior and posterior samples (n=5000) for each trait
-  ##   priors:prior parameters for each trait 
-
-####Import data from ED2 output
-  outdir <- paste("/home/scratch/dlebauer/output/grassSA/out",date,sep="")
+####Import filenames from ED2 output
+  user <- system("echo $USER", intern = TRUE)
+  outdir <- paste("/home/scratch/pecan/",user,"/out",date,sep="")
   trait.defs <- trait.dictionary()
-  run.id <- c('post', 'prior')
-  var.id <- c('agb', 'ssc')
 
   ## .f.yr is a list of files with annual output
-  .f <- dir(outdir, full.names=TRUE)      ## grab all files 
+  .f <- dir(outdir, full.names=TRUE)      ## grab all files in outdir
   .f.yr <- .f[grep("-Y-", .f)]            ## select annual output
   t.range <- c(yr0, yrf)
-  dt <- yrf - yr0 + 1
+
+
+  ### Creating list 'dat' for data storage
+  
+  ## create vectors sarun, saruntype
+  ## sarun - run ids
+  ## saruntype - e.g.: post, prior
   saruns <- saruntype <- character()
+  run.id <- c('post', 'prior')
   .i <- 1
   for(.p in run.id) {
     for(.cl in c('lcl', 'ucl')) {
@@ -37,8 +34,7 @@ pecan.SA <- function(M, yr0, yrf, date) {
     }
   }
 
-
-  ## first create a vector from 1:M with leading zeros
+  ## create a vector from 1:M with leading zeros
   .ens.id <- paste('x', as.character(seq(1,M)+1000), sep = '')
   ens.id <- gsub('x1','0',.ens.id)
 
@@ -48,14 +44,14 @@ pecan.SA <- function(M, yr0, yrf, date) {
   runtype <- c(rep("postsamp", M),
                rep("priorsamp", M),
                saruntype, 'postmeans', 'priormeans')
-  .list <- list('output' = matrix(nrow = length(runnames), ncol = dt),
+  outlist <- list('output' = matrix(nrow = length(runnames), ncol = yrf - yr0 + 1),
                 prior.mean.f = numeric(),
                 prior.var.f = numeric(),
                 post.mean.f = numeric(),
                 post.var.f = numeric())
   dat <- list(runtype = runtype, # specifies prior, posterior, or SA quantile run
-              'agb' = .list,
-              'ssc' = .list) 
+              'agb' = outlist,
+              'ssc' = outlist) 
 
   for(i in names(dat)[-1]) {
     rownames(dat[[i]][['output']]) <- runnames
@@ -63,7 +59,7 @@ pecan.SA <- function(M, yr0, yrf, date) {
   }
 
 
-  
+  ## extract data from hdf5 output files to dat
   for (.iyr in seq(yr0, yrf)) {
     .f.iyr <- .f.yr[grep(.iyr,.f.yr)]
     for (.i.run in seq(runnames)) {
@@ -77,11 +73,12 @@ pecan.SA <- function(M, yr0, yrf, date) {
     }
   }
 
+  ## create tables with data for sensitivity analysis
   satables <- list()
   for (.r in c('post', 'prior')) {
     satables[[.r]] <- list()
     for (.i in c('agb', 'ssc')) {
-      satables[[.r]][[.i]] <- pecan.SAcalcs(.r,  .i, dat, traits = prvec, trait.samps)
+      satables[[.r]][[.i]] <- pecan.SAcalcs(.r,  .i, dat, trait.defs, trait.samps)
     }
   }
 
