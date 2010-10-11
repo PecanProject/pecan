@@ -1,4 +1,4 @@
-pecan.SAcalcs <- function(.irun, .ivar, dat, traits, trait.samps) {
+pecan.SAcalcs <- function(.irun, .ivar, dat, trait.defs, trait.samps) {
                                         # .irun <- c('post', 'prior')
                                         # .ivar <- c('agb', 'ssc')
 
@@ -27,14 +27,13 @@ pecan.SAcalcs <- function(.irun, .ivar, dat, traits, trait.samps) {
   
   colnames(.dq) <- c('lcl.theta', 'ucl.theta', 'mean.theta', 'var.theta', 'cv.theta') 
   .dq$id <- rownames(.dq)
-  traits<-trait.dictionary()
 
   ##  Transform degrees C to K fof Vm_low temp
   .vmlt <- .dq['Vm_low_temp', c('lcl.theta', 'ucl.theta', 'mean.theta') ]
   .dq['Vm_low_temp', c('lcl.theta', 'ucl.theta', 'mean.theta')] <- c(.vmlt+273.15)
 
   ## Start making table for Sensitivity Analysis
-  satable <-  merge(.dq, traits, by = 'id')
+  satable <-  merge(.dq, trait.defs, by = 'id')
   rownames(satable) <- satable$id
   
   ## Values of f
@@ -86,15 +85,15 @@ pecan.SAcalcs <- function(.irun, .ivar, dat, traits, trait.samps) {
   sum.var <- sum(satable$var.theta)
 
   ## var.f = (df)^2 * var.theta + 
-  for (.jid in which(!is.na(satable$id))) {
-    x <- trait.samps[[.irun]][[satable$id[.jid]]]
+  for (.jid in seq(satable$id)) {
+    x <- trait.samps[[paste(.irun,'.samps',sep='')]][,.jid]
     a <- mean(x)
     df <- satable$df[.jid]
     d2f<- satable$d2f[.jid]
     o1 <- var(df*x)#var to first order taylor series expansion 
     o2 <- var(df*x + 0.5 * d2f * (x-a)^2)#var to second order\
     print(satable$id[.jid])
-    print(cbind(length(x), o1,o2, o1/o2))
+    print(cbind(c('n',length(x)), c('O1 term',signif(o1,2)),c('O2 term',signif(o2,2)), c('ratio O1:O2',signif(o1/o2,2))))
 
     satable$o1[.jid] <- o1
     satable$o2[.jid] <- o2
