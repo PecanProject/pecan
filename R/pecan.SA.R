@@ -1,4 +1,4 @@
-pecan.SA <- function(M, yr0, yrf, date, var.id) {
+pecan.SA <- function(M, yr0, yrf, date, outdir) {
   ## PECAn Sensitivity Analysis
 
   ## solving var(f) = sum((df/dtheta)^2*var(theta)) + O3
@@ -6,8 +6,6 @@ pecan.SA <- function(M, yr0, yrf, date, var.id) {
   ## f are the model outputs at different quantiles of theta
 
 ####Import filenames from ED2 output
-  user <- system("echo $USER", intern = TRUE)
-  outdir <- paste("/home/scratch/pecan/",user,"/out",date,sep="")
   trait.defs <- trait.dictionary()
 
   ## .f.yr is a list of files with annual output
