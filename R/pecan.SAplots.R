@@ -72,8 +72,8 @@ plot.sa <- function (satables, runtype, outvar) {
   dev.off()
 }
 
-for (i in 1:2) {
-  for (j in 1:2) {
-    plot.sa(i,j)
-  }
-}
+#for (i in 1:2) {
+#  for (j in 1:2) {
+#    plot.sa(i,j,outvar)
+#  }
+#}
