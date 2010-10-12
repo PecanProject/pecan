@@ -81,6 +81,4 @@ pecan.SA <- function(M, yr0, yrf, date, var.id) {
       satables[[.r]][[.i]] <- pecan.SAcalcs(.r,  .i, dat, trait.defs, trait.samps)
     }
   }
-
-  save(satables, file = "pecan.SA.Rdata")
 }
