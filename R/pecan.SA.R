@@ -79,4 +79,5 @@ pecan.SA <- function(M, yr0, yrf, date, outdir) {
       satables[[.r]][[.i]] <- pecan.SAcalcs(.r,  .i, dat, trait.defs, trait.samps)
     }
   }
+  return(satables)
 }
