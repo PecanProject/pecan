@@ -5,7 +5,7 @@ pecan.SA <- function(M, yr0, yrf, date, outdir) {
   ## theta are the n trait inputs defined in 'trait' dataframe
   ## f are the model outputs at different quantiles of theta
 
-####Import filenames from ED2 output 
+  ##Import filenames from ED2 output 
   trait.defs <- trait.dictionary()
 
   ## .f.yr is a list of files with annual output
@@ -79,5 +79,7 @@ pecan.SA <- function(M, yr0, yrf, date, outdir) {
       satables[[.r]][[.i]] <- pecan.SAcalcs(.r,  .i, dat, trait.defs, trait.samps)
     }
   }
-  return(satables)
+
+  return(list(satables=satables,
+              transformed.samps = dat))
 }
