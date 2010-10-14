@@ -72,7 +72,7 @@ for (runtype in c('prior','post')) {
     ## arrange(plot1,plot2,plot3,plot3,ncol=4)
     ## grid.arrange(plot0, plot1, plot2, plot3, ncol=4)
     pdf(paste(runtype,outvar,'SAplot.pdf',sep=""))
-    plot.sa(satables,runtype,outvar)
+#    plot.sa(satables,runtype,outvar)
     dev.off()
     #saplots[[runtype]][[outvar]] <- plot.sa(satables,runtype,outvar)
   }
