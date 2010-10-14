@@ -1,17 +1,19 @@
-pecan.SAcalcs <- function(.irun, .ivar, dat, trait.defs, trait.samps) {
-                                        # .irun <- c('post', 'prior')
-                                        # .ivar <- c('agb', 'ssc')
+pecan.SAcalcs <- function(runname, outvar, dat, trait.defs, trait.samps) {
+                                        # runname <- c('post', 'prior')
+                                        # outvar <- c('agb', 'ssc')
 
   ## Values of Theta
   ## #######################
   ## Load dtheta values used in sensitivity analysis
   ## dtheta.q has cbind(lcl, ucl, mean, var, cv)
                                         #!!need to fix error?
-  if(.irun == 'post') {
-    f <- dat[[.ivar]][['output']][which(dat[["runtype"]] == "postsamp"),]
-  } else if (.irun == 'prior') {
-    f <- dat[[.ivar]][['output']][which(dat[["runtype"]] == "priorsamp"),]
-  } else { print ('.irun id not valid')
+
+  ## f is the output variable
+  if(runname == 'post') {
+    f <- dat[[outvar]][['output']][which(dat[["runtype"]] == "postsamp"),]
+  } else if (runname == 'prior') {
+    f <- dat[[outvar]][['output']][which(dat[["runtype"]] == "priorsamp"),]
+  } else { print ('runname id not valid')
          }      
  
   ## Calculate overall mean and variance
@@ -19,10 +21,10 @@ pecan.SAcalcs <- function(.irun, .ivar, dat, trait.defs, trait.samps) {
   mean.f <- mean(rowMeans(f, na.rm=TRUE),  na.rm = TRUE)
   var.f  <- var(rowMeans(f, na.rm=TRUE),  na.rm = TRUE)
 
-  mean.rowname <- paste(.irun, 'means', sep = "") #identify row in f with mean data
+  mean.rowname <- paste(runname, 'means', sep = "") #identify row in f with mean data
 
   ## convert the dtheta.q to dataframe
-  .dq <- as.data.frame(eval( parse ( text = paste(.irun, '.dtheta.q', sep = ""))))
+  .dq <- as.data.frame(eval( parse ( text = paste(runname, '.dtheta.q', sep = ""))))
   
   
   colnames(.dq) <- c('lcl.theta', 'ucl.theta', 'mean.theta', 'var.theta', 'cv.theta') 
@@ -42,14 +44,14 @@ pecan.SAcalcs <- function(.irun, .ivar, dat, trait.defs, trait.samps) {
   ## var(f) from ensemble runs
   
   ## all mean "f's" are from the same run
-  satable$mean.f <- mean(dat[[.ivar]][['output']][mean.rowname,],na.rm=T)
+  satable$mean.f <- mean(dat[[outvar]][['output']][mean.rowname,],na.rm=T)
   for (.j in seq(satable$id)) {
     for (.k in c('lcl', 'ucl')) {
       .j1 <- as.character(satable$fileid[.j])
       .j2 <- as.character(satable$id[.j])
-      sa.rowname <- paste(.irun, .k, '.', .j1, '-', sep="")
-      if (sa.rowname %in% rownames(dat[[.ivar]][['output']])){
-        satable[.j2, paste(.k, '.f', sep = '')]<- mean(dat[[.ivar]][['output']][sa.rowname, ],na.rm=T)
+      sa.rowname <- paste(runname, .k, '.', .j1, '-', sep="")
+      if (sa.rowname %in% rownames(dat[[outvar]][['output']])){
+        satable[.j2, paste(.k, '.f', sep = '')]<- mean(dat[[outvar]][['output']][sa.rowname, ],na.rm=T)
       }
     }
   }
@@ -65,7 +67,7 @@ pecan.SAcalcs <- function(.irun, .ivar, dat, trait.defs, trait.samps) {
   ## required inputs: sa.df, var.f, dtheta, dfdth()
   ##~~~~~~~~~~~~~~~~~~~~~~~
  
-  pdf(paste(.irun, .ivar, 'dfdth.SA.pdf', sep = ""))
+  pdf(paste(runname, outvar, 'dfdth.SA.pdf', sep = ""))
   ymin <- min(satable[,c('mean.f', 'lcl.f', 'ucl.f')])*0.95
   ymax <- max(satable[,c('mean.f', 'lcl.f', 'ucl.f')])*1.05
   if(is.na(ymin)) ymin <- min(0, mean.f - sqrt(var.f))
@@ -78,7 +80,8 @@ pecan.SAcalcs <- function(.irun, .ivar, dat, trait.defs, trait.samps) {
     dfdth.terms <- dfdth(f = df.ij, th = dtheta.j, yrange = c(ymin, ymax), name = fig.title)
     satable$df[.jid]  <- dfdth.terms$dfdth1
     satable$d2f[.jid] <- dfdth.terms$dfdth2
-    satable$elast[.jid] <- satable$d2f[.jid]*dtheta.j[2]/df.ij[2]
+    ## elasticity
+    satable$elast[.jid] <- satable$d2f[.jid]*dtheta.j[2]/df.ij[2] 
   }
   dev.off()
 
@@ -86,7 +89,7 @@ pecan.SAcalcs <- function(.irun, .ivar, dat, trait.defs, trait.samps) {
 
   ## var.f = (df)^2 * var.theta + 
   for (.jid in seq(satable$id)) {
-    x <- trait.samps[[paste(.irun,'.samps',sep='')]][,.jid]
+    x <- trait.samps[[paste(runname,'.samps',sep='')]][,.jid]
     a <- mean(x)
     df <- satable$df[.jid]
     d2f<- satable$d2f[.jid]
@@ -101,7 +104,10 @@ pecan.SAcalcs <- function(.irun, .ivar, dat, trait.defs, trait.samps) {
   sum.rhs <- sum(satable$o2)
   
   for (.jid in seq(satable$id)) {
+    ## Var explained by param i 
+    ## percent var: var(f) as denominator
     satable$per.var[.jid] <- satable$o2[.jid]/var.f
+    ## rel.var: var(f) - higher order closure terms as denominator
     satable$rel.var[.jid] <- satable$o2[.jid]/sum.rhs
   }
   var.explained <- sum(satable$per.var)
