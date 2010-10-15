@@ -10,16 +10,9 @@ pecan.dtheta <- function(samps){
   colnames(dtheta) <- c('lcl', 'ucl', 'mean', 'var', 'cv')
   rownames(dtheta) = traits
 
-  dtheta.q <- function(x) {
-    if (i.tr != 'Vm_low_temp') {
-      c(quantile(x,c(0.35,0.65)), mean(x), var(x), sqrt(var(x))/mean(x))
-    } else {
-      c(quantile(x,c(0.35,0.65)), mean(x), var(x), sqrt(var(x))/mean(x+273.15))
-    }
-  }
-
   for (i.tr in traits) {
     dtheta[i.tr, ] <- dtheta.q(samps[ ,i.tr])
   }
+
   return(dtheta)
 }

@@ -5,7 +5,9 @@ yrf   <- as.numeric(system("echo $YRF", intern =TRUE))
 date <- read.table("DATE")
 user <- system("echo $USER", intern=TRUE)
 outdir <- paste('/home/scratch/',user,'/pecan/out',date,sep='')
-saout <- pecan.SA(M, yr0, yrf, date, outdir)
+
+dtheta.q <- list(prior = prior.dtheta.q, post = post.dtheta.q)
+saout <- pecan.SA(M, yr0, yrf, date, outdir,dtheta.q)
 satables <- saout[['satables']]
 transformed.samps <- saout[['transformed.samps']] 
 save(satables, file = paste(outdir,'/satables.Rdata', sep = ''))
