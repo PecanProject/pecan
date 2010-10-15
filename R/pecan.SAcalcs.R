@@ -1,4 +1,4 @@
-pecan.SAcalcs <- function(runname, outvar, dat, trait.defs, trait.samps) {
+pecan.SAcalcs <- function(runname, outvar, dat, dtheta.q, trait.defs, trait.samps) {
                                         # runname <- c('post', 'prior')
                                         # outvar <- c('agb', 'ssc')
 
@@ -23,19 +23,18 @@ pecan.SAcalcs <- function(runname, outvar, dat, trait.defs, trait.samps) {
 
   mean.rowname <- paste(runname, 'means', sep = "") #identify row in f with mean data
 
-  ## convert the dtheta.q to dataframe
-  .dq <- as.data.frame(eval( parse ( text = paste(runname, '.dtheta.q', sep = ""))))
-  
-  
-  colnames(.dq) <- c('lcl.theta', 'ucl.theta', 'mean.theta', 'var.theta', 'cv.theta') 
-  .dq$id <- rownames(.dq)
+
+  dq <- as.data.frame(signif(dtheta.q[[runname]], 4))
+    
+  colnames(dq) <- c('lcl.theta', 'ucl.theta', 'mean.theta', 'var.theta', 'cv.theta') 
+  dq$id <- rownames(dq)
 
   ##  Transform degrees C to K fof Vm_low temp
-  .vmlt <- .dq['Vm_low_temp', c('lcl.theta', 'ucl.theta', 'mean.theta') ]
-  .dq['Vm_low_temp', c('lcl.theta', 'ucl.theta', 'mean.theta')] <- c(.vmlt+273.15)
+  .vmlt <- dq['Vm_low_temp', c('lcl.theta', 'ucl.theta', 'mean.theta') ]
+  dq['Vm_low_temp', c('lcl.theta', 'ucl.theta', 'mean.theta')] <- c(.vmlt+273.15)
 
   ## Start making table for Sensitivity Analysis
-  satable <-  merge(.dq, trait.defs, by = 'id')
+  satable <-  merge(dq, trait.defs, by = 'id')
   rownames(satable) <- satable$id
   
   ## Values of f

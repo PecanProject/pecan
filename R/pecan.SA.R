@@ -1,4 +1,4 @@
-pecan.SA <- function(M, yr0, yrf, date, outdir) {
+pecan.SA <- function(M, yr0, yrf, date, outdir, dtheta.q) {
   ## PECAn Sensitivity Analysis
 
   ## solving var(f) = sum((df/dtheta)^2*var(theta)) + O3
@@ -73,10 +73,12 @@ pecan.SA <- function(M, yr0, yrf, date, outdir) {
 
   ## create tables with data for sensitivity analysis
   satables <- list()
-  for (.r in c('post', 'prior')) {
-    satables[[.r]] <- list()
-    for (.i in c('agb', 'ssc')) {
-      satables[[.r]][[.i]] <- pecan.SAcalcs(.r,  .i, dat, trait.defs, trait.samps)
+  for (runname in c('post', 'prior')) {
+    satables[[runname]] <- list()
+    for ( outvar in c('agb', 'ssc')) {
+      satables[[runname]][[outvar]] <- pecan.SAcalcs(runname, outvar,
+                                                     dat, dtheta.q,
+                                                     trait.defs, trait.samps)
     }
   }
 
