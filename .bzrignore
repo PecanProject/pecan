@@ -1092,3 +1092,9 @@ c.priorucl.Vm0
 c.priorucl.Vmlowtemp
 .my.cnf
 pecan.SAplots.R
+deleted_traits.Rdata
+filenames.Rdata
+leafN.test.Rdata
+pecan.MA.Rdata
+pecan.samps.Rdata
+pecan.start.Rdata
