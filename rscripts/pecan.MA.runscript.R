@@ -1,5 +1,12 @@
 library(PECAn, lib.loc = '~/lib/R')
-load('pecan.start.Rdata')
+pft   <- system("echo $PFT", intern = TRUE)
+ITER  <- as.numeric(system("echo $ITER", intern = TRUE)) 
+M     <- as.numeric(system("echo $ENSN", intern = TRUE))
+print(cat("PECAn run with ",pft,
+          "\nmeta-analysis has",ITER,"iterations",
+          "\nensemble has",M,"config files"))
+
+
 ## 1. get species list based on pft
 spp <- query.bety.pft_species(pft)
 spstr <- spp$spstr 
@@ -22,4 +29,4 @@ trait.data <- query.bety.traits(spstr,trvec)
 trait.mcmc <- pecan.ma(trait.data, priors, j.iter = ITER)
 
 pecan.ma.summary(trait.mcmc, pft)
-save.image('pecan.MA.Rdata')
+save.image('./rout/pecan.MA.Rdata')
