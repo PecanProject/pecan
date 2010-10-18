@@ -1,7 +1,12 @@
+library(RMySQL, lib.loc = '~/lib/R')
 library(PECAn, lib.loc = '~/lib/R')
 pft   <- system("echo $PFT", intern = TRUE)
 ITER  <- as.numeric(system("echo $ITER", intern = TRUE)) 
 M     <- as.numeric(system("echo $ENSN", intern = TRUE))
+outdir   <- system("echo $PECANOUT", intern = TRUE)
+outfile1 <- paste(outdir, 'pecan.parms.Rdata', sep = '')
+save.image(outfile1)
+
 print(cat("PECAn run with ",pft,
           "\nmeta-analysis has",ITER,"iterations",
           "\nensemble has",M,"config files"))
@@ -29,4 +34,5 @@ trait.data <- query.bety.traits(spstr,trvec)
 trait.mcmc <- pecan.ma(trait.data, priors, j.iter = ITER)
 
 pecan.ma.summary(trait.mcmc, pft)
-save.image('./rout/pecan.MA.Rdata')
+outfile2 <- paste(outdir, 'pecan.MA.Rdata', sep = '')
+save.image(outfile2)
