@@ -3,4 +3,16 @@ PECAn
 See the PECAn wiki, especially the development page, for details
 http://128.174.125.122/wiki/index.php/PECAn_Documentation:Development
 
-the pecantest.R file includes the use of the code so far. as of 09/29/2010 it does not use the compiled code, just calls the function scripts individually. 
+#######R Version on ebi-forecast
+PECAn requires newer than R2.7; on forecast this means that you need to specify use of R-2.12 in your .bashrc file.
+
+If you have not already done so, you can run 
+echo "alias R='/usr/local/R-12.0/bin/R" >> ~/.bashrc
+then log out and log back in again
+
+##### PECAn R library
+
+to install the PECAn R library in your ~/lib/R, run:
+R CMD build ../dev
+R CMD INSTALL PECAn_0.0.1.tar.gz --library='~/lib/R'
+
