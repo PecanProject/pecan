@@ -1,7 +1,8 @@
 DATE=`date +%Y%m%d`
-echo $DATE > DATE
-OUTDIR=/home/scratch/pecan/$USER/out$DATE
-ED_RUN=$HOME/EDBRAMS/ED/runcd $ED_RUN
+echo $DATE > /home/$USER/pecan/DATE
+OUTDIR=/home/scratch/$USER/out$DATE
+ED_RUN=$HOME/EDBRAMS/ED/run
+cd $ED_RUN
 rm c.*
 
 if [ ! -d $OUTDIR ] #if [output directory] exists 

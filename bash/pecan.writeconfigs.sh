@@ -1,6 +1,8 @@
 #!/bin/bash
-R --vanilla < ./rscripts/pecan.writeconfigs.R
-
+PECANHOME=$PWD
+PECANOUT=$1
+R --vanilla < $PECANHOME/rscripts/pecan.writeconfigs.R
+cd $PECANOUT
 for i in config*xml; do mv "${i}" "${i/config/c}"; done
 for i in *_*xml; do mv "${i}" "${i/_/}"; done
 for i in *_*xml; do mv "${i}" "${i/_/}"; done
