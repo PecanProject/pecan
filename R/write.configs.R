@@ -1,4 +1,4 @@
-write.configs <- function(M, pft, prior.samps, post.samps) {
+write.configs <- function(M, pft, prior.samps, post.samps, outdir) {
 
   const <- pecan.config.constants(pft)
   PFT <- const$PFT
@@ -24,7 +24,7 @@ write.configs <- function(M, pft, prior.samps, post.samps) {
 
     }
     CONFIGi <- append.xmlNode(CONFIG, PFTi)
-    file <- paste("config.postsamp",zm,".xml",sep="")
+    file <- paste(outdir, "/config.postsamp",zm,".xml",sep="")
     saveXML(CONFIGi, file = file, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
     filenames[['post.ensemble']][m]<-file
     rm(PFTi)
@@ -37,7 +37,7 @@ write.configs <- function(M, pft, prior.samps, post.samps) {
       PFTi <- append.xmlNode(PFTi, xmlNode(k, samp))
     }
     CONFIGi <- append.xmlNode(CONFIG, PFTi)
-    file <- paste("config.priorsamp",zm,".xml",sep="")
+    file <- paste(outdir, "/config.priorsamp",zm,".xml",sep="")
     saveXML(CONFIGi, file = file, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
     filenames[['prior.ensemble']][m]<-file
     
@@ -46,7 +46,7 @@ write.configs <- function(M, pft, prior.samps, post.samps) {
       PFTm <- append.xmlNode(PFTm, xmlNode(.itr, post.dtheta.q[.itr, 'mean']))
     }
     CONFIGm <- append.xmlNode(CONFIG, PFTm)
-    file <- "config.postmeans.xml"
+    file <- paste(outdir, "/config.postmeans.xml", sep = '')
     saveXML(CONFIGm, file = file, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
   }
   
@@ -61,8 +61,8 @@ write.configs <- function(M, pft, prior.samps, post.samps) {
     }
     CONFIGl <- append.xmlNode(CONFIG, PFTl)
     CONFIGu <- append.xmlNode(CONFIG, PFTu)
-    filel <- paste("config.postlcl.", tr[j],".xml", sep="")
-    fileu <- paste("config.postucl.", tr[j],".xml", sep="")
+    filel <- paste(outdir, "/config.postlcl.", tr[j],".xml", sep="")
+    fileu <- paste(outdir, "/config.postucl.", tr[j],".xml", sep="")
     saveXML(CONFIGl, file = filel, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
     saveXML(CONFIGu, file = fileu, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
   }
@@ -72,7 +72,7 @@ write.configs <- function(M, pft, prior.samps, post.samps) {
     PFTm <- append.xmlNode(PFTm, xmlNode(.itr, prior.dtheta.q[.itr, 'mean']))
   }
   CONFIGm <- append.xmlNode(CONFIG, PFTm)
-  file <- "config.priormeans.xml"
+  file <- paste(outdir, "/config.priormeans.xml", sep = '')
   saveXML(CONFIGm, file = file, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
   
   ##following will test +/- 15% CI
@@ -88,8 +88,8 @@ write.configs <- function(M, pft, prior.samps, post.samps) {
     }
     CONFIGl <- append.xmlNode(CONFIG, PFTl)
     CONFIGu <- append.xmlNode(CONFIG, PFTu)
-    filel <- paste("config.priorlcl.", traits[j],".xml", sep="")
-    fileu <- paste("config.priorucl.", traits[j],".xml", sep="")
+    filel <- paste(outdir, "/config.priorlcl.", traits[j],".xml", sep="")
+    fileu <- paste(outdir, "/config.priorucl.", traits[j],".xml", sep="")
     saveXML(CONFIGl, file = filel, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
     saveXML(CONFIGu, file = fileu, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
   }
