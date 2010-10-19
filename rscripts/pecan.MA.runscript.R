@@ -1,4 +1,3 @@
-library(RMySQL, lib.loc = '~/lib/R')
 library(PECAn, lib.loc = '~/lib/R')
 pft   <- system("echo $PFT", intern = TRUE)
 ITER  <- as.numeric(system("echo $ITER", intern = TRUE)) 
