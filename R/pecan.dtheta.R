@@ -8,7 +8,7 @@ pecan.dtheta <- function(samps){
 
   dtheta <-  matrix(NA, ncol = 5, nrow = n.traits)
   colnames(dtheta) <- c('lcl', 'ucl', 'mean', 'var', 'cv')
-  rownames(dtheta) = traits
+  rownames(dtheta) <- traits
 
   for (i.tr in traits) {
     dtheta[i.tr, ] <- dtheta.q(samps[ ,i.tr])
