@@ -8,11 +8,19 @@ then
     mkdir $OUTDIR    #if not, make new directory
 fi
 
-for i in $EDIN/*c.p* 
+for i in $EDIN/ED2IN.*
 do 
-rm $i 
+    if [ -a $i ] 
+    then rm $i
+    fi
 done
 
+for i in $EDIN/c.p* 
+do 
+    if [ -a $i ] 
+    then rm $i
+    fi
+done
 
 cd $EDIN
 
