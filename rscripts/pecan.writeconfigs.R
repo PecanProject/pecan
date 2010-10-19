@@ -1,5 +1,4 @@
 library(PECAn, lib.loc = '~/lib/R')
-
 outdir   <- system("echo $PECANOUT", intern = TRUE)
 
 load(paste(outdir, 'pecan.MA.Rdata', sep = ''))
