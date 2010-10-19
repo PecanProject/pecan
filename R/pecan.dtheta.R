@@ -10,8 +10,8 @@ pecan.dtheta <- function(samps){
   colnames(dtheta) <- c('lcl', 'ucl', 'mean', 'var', 'cv')
   rownames(dtheta) <- traits
 
-  for (i.tr in traits) {
-    dtheta[i.tr, ] <- dtheta.q(samps[ ,i.tr])
+  for (tr.i in traits) {
+    dtheta[tr.i, ] <- dtheta.q(samps[ ,tr.i])
   }
 
   return(dtheta)
