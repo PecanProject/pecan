@@ -4,6 +4,19 @@ OUTDIR=/home/scratch/pecan/$USER/out$DATE
 ED_RUN=$HOME/EDBRAMS/ED/run
 
 ## remove old ED2IN, configs, and logs
+for i in $ED_RUN/c.* 
+do 
+    if [ -a $i ]
+    then rm $i
+    fi
+done
+
+for i in $ED_RUN/ED2IN.*
+do 
+    if [ -a $i ] 
+    then rm $i
+    fi
+done
 
 rsync $EDIN/ED2IN* $ED_RUN/
 rsync $EDIN/c.p* $ED_RUN/
