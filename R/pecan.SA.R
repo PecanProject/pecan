@@ -9,7 +9,7 @@ pecan.SA <- function(M, yr0, yrf, date, outdir, dtheta.q) {
   trait.defs <- trait.dictionary()
 
   ## .f.yr is a list of files with annual output
-  .f <- dir(outdir, full.names=TRUE)      ## grab all files in outdir
+  .f <- dir(outdir, full.names = TRUE)      ## grab all files in outdir
   .f.yr <- .f[grep("-Y-", .f)]            ## select annual output
   t.range <- c(yr0, yrf)
 
