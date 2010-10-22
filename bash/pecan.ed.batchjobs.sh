@@ -1,5 +1,5 @@
 EDIN=/home/scratch/$USER/pecan/edin
-DATE=`date +%Y%m%d`
+DATE=`cat $EDIN/DATE`
 OUTDIR=/home/scratch/pecan/$USER/out$DATE
 ED_RUN=$HOME/EDBRAMS/ED/run
 
@@ -11,7 +11,7 @@ do
     fi
 done
 
-for i in $ED_RUN/ED2IN.*
+for i in $ED_RUN/ED2INc.*
 do 
     if [ -a $i ] 
     then rm $i
@@ -24,7 +24,7 @@ rsync $EDIN/c.p* $ED_RUN/
 cd $ED_RUN
 for f in ED2IN*; do
   LOG="$f-`date +%Y.%m.%d-%H.%M`.log" #name with date tag for log files, one per ED2IN file 
-  CMD="qsub -cwd -pe mpich 1 -j y -m eas -M dlebauer@gmail.edu -o $LOG ./run 1 $f" #defines command to be run
+  CMD="qsub -cwd -pe mpich 1 -j y -m eas -M dlebauer@gmail.com -o $LOG ./run 1 $f" #defines command to be run
   echo $CMD > $LOG #enters command into first line of log file
   echo $f > $LOG
   $CMD             #runs command

@@ -2,7 +2,7 @@ library('PECAn', lib.loc = '~/lib/R')
 load('pecan.samps.Rdata')
 yr0 <- as.numeric(system("echo $YR0", intern =TRUE))
 yrf   <- as.numeric(system("echo $YRF", intern =TRUE))
-date <- read.table("DATE")
+date <-  as.numeric(system("echo $DATE", intern =TRUE))
 user <- system("echo $USER", intern=TRUE)
 outdir <- paste('/home/scratch/',user,'/pecan/out',date,sep='')
 
