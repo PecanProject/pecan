@@ -12,7 +12,7 @@ prior.dtheta.q <- pecan.dtheta(prior.samps)
 
 ## generate config files
 
-write.configs(M, pft, prior.samps, post.samps, outdir)
-outfile = paste(outdir, 'pecan.samps.Rdata', sep = '')
+write.configs(M, pft, prior.samps, post.samps)
+outfile = paste(outdir, '/pecan.samps.Rdata', sep = '')
 save.image(outfile)
 ## print out some statistical summaries and figures from meta-analysis
