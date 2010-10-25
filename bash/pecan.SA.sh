@@ -1,9 +1,10 @@
 #!/bin/bash
-#to be run from cluster
+#to be run from forecast
+PECANHOME=$3
+rsync -routi ebi-cluster:/home/scratch/$USER/pecan/pecan.samps.Rdata $PECANOUT/
+rsync -routi ebi-cluster:/home/scratch/$USER/pecan/edin/DATE $PECANOUT/
 
-cd /home/scratch/$USER/pecan/
-DATE=`cat edin/DATE`
+DATE=`cat $PECANHOME/out/DATE`
+cd $PECANHOME
+env YR0=$1 YRF=$2 DATE=$DATE $PECANHOME R --vanilla < $PECANHOME/rscripts/pecan.SA.runscript.R
 
-env YR0=$1 YRF=$2 DATE=$DATE R --vanilla < ./rscripts/pecan.SA.runscript.R
-#rsync ebi-cluster:/home/scratch/pecan/$USER/out$DATE/satables.Rdata ./
- 
