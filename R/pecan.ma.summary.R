@@ -1,6 +1,6 @@
 pecan.ma.summary <- function(mcmc.object, pft){
   ## G-R diagnostics to ensure convergence
-  pdf(paste('./rout/',pft, 'priors.pdf', sep = ''))
+  pdf(paste('out/',pft, 'priors.pdf', sep = ''))
   for (trait in names(mcmc.object)){
     gd<-gelman.diag(mcmc.object[[trait]])
     mpsrf<-round(gd$mpsrf,digits=4)
