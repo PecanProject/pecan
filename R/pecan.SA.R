@@ -1,4 +1,4 @@
-pecan.SA <- function(M, yr0, yrf, date, outdir, dtheta.q) {
+pecan.SA <- function(M, yr0, yrf, outdir, dtheta.q) {
   ## PECAn Sensitivity Analysis
 
   ## solving var(f) = sum((df/dtheta)^2*var(theta)) + O3
