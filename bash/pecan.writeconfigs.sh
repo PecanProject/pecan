@@ -1,8 +1,11 @@
 #!/bin/bash
 PECANHOME=$PWD
 PECANOUT=$1
+echo "start writing configs"
 R --vanilla < $PECANHOME/rscripts/pecan.writeconfigs.R
 cd $PECANOUT
+echo "finished writing configs"
+echo "renaming config files"
 for i in config*xml; do mv "${i}" "${i/config/c}"; done
 for i in *_*xml; do mv "${i}" "${i/_/}"; done
 for i in *_*xml; do mv "${i}" "${i/_/}"; done
@@ -16,5 +19,5 @@ for i in *quantumefficiency*xml; do mv "${i}" "${i/quantumefficiency/quantef}"; 
 for i in *water*xml; do mv "${i}" "${i/water/h2o}"; done
 for i in *stomatalslope*xml; do mv "${i}" "${i/stomatalslope/stmslope}"; done
 for i in c*xml; do mv "${i}" "${i/.xml/}"; done
-
+echo "zipping config files to saconfigs.tgz"
 tar zcf saconfigs.tgz c*  
