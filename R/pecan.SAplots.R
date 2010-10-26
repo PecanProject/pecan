@@ -1,4 +1,4 @@
-plot.sa <- function (satables, runtype, outvar) {
+plot.sa <- function (satables, outvar) {
   ## Set up dataframes for figs
   pr <- satables[['prior']][[outvar]]
   po <- satables[['post']][[outvar]]
@@ -34,7 +34,7 @@ plot.sa <- function (satables, runtype, outvar) {
                panel.border = theme_blank())
          
   trait.plot <- base.plot +
-    opts( title =paste(runtype, outvar)) +
+    opts( title = outvar) +
          geom_text(aes(y = 1, x = trait, label=trait), hjust = 1) +
          scale_y_continuous( breaks = c(0,0),
                             limits = c(0,1))
@@ -63,17 +63,4 @@ plot.sa <- function (satables, runtype, outvar) {
                              limits = c(0, ev.ymax)) 
   
   return(list( trait.plot, cv.plot, el.plot, ev.plot))
-}
-
-saplots <- list('prior' = list(), 'post'=list())
-for (runtype in c('prior','post')) {
-  for (outvar in c('agb','ssc')) {
-    ## pdf(paste(runtype, outvar, 'SAplot.pdf', sep=""), width = 11, height = 7)
-    ## arrange(plot1,plot2,plot3,plot3,ncol=4)
-    ## grid.arrange(plot0, plot1, plot2, plot3, ncol=4)
-    pdf(paste(runtype,outvar,'SAplot.pdf',sep=""))
-#    plot.sa(satables,runtype,outvar)
-    dev.off()
-    #saplots[[runtype]][[outvar]] <- plot.sa(satables,runtype,outvar)
-  }
 }
