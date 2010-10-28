@@ -14,7 +14,7 @@ prior.dtheta.q <- pecan.dtheta(prior.samps)
 
 write.configs(M, pft, prior.samps, post.samps)
 setwd(outdir)
-save(M, file=paste(outdir, '/M.Rdata')
+save(M, file=paste(outdir,'/M.Rdata')
 rm(outdir)
 save.image('pecan.samps.Rdata')
 
