@@ -34,5 +34,5 @@ trait.data <- query.bety.traits(spstr,trvec)
 trait.mcmc <- pecan.ma(trait.data, priors, j.iter = ITER)
 
 pecan.ma.summary(trait.mcmc, pft)
-outfile2 <- paste(outdir, 'pecan.MA.Rdata', sep = '')
+outfile2 <- paste(outdir, '/pecan.MA.Rdata', sep = '')
 save.image(outfile2)

@@ -1,7 +1,7 @@
 Package: PECAn
 Type: Package
 Title:  PECAn functions used for ecological forecasts and reanalysis
-Version: 0.0.2
+Version: 0.1.1
 Date: 2010-10-05
 Author: David LeBauer, Xiaohui Feng, Dan Wang, Mike Dietze
 Maintainer: David LeBauer <dlebauer@illinois.edu>
