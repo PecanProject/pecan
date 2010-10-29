@@ -5,21 +5,34 @@ query.bety.trait.data <- function(trait, spstr){
     query <- paste("select traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
     query.result <- dbSendQuery(con, query)
     result <- fetch(query.result, n = -1)
-  } elseif(trait == 'Vcmax') {
-    query <- paste("select traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
-    #query <- paste("select trt.site_id, treat.name, trt.mean, trt.statname, trt.stat, trt.n, tdhc1.level as 'temp', tdhc2.level as 'canopy_layer' from traits as trt left join covariates as tdhc1 on (tdhc1.trait_id = trt.id) left join covariates as tdhc2 on (tdhc2.trait_id = trt.id) left join treatments as treat on (trt.treatment_id = treat.id) left join variables as tdhc1_var on (tdhc1.variable_id = tdhc1_var.id) left join variables as tdhc2_var on ( tdhc2.variable_id = tdhc2_var.id ) left join species as spec on (trt.specie_id = spec.id) left join plants on (spec.plant_id = plants.id) left join variables as var on (var.id = trt.variable_id) where tdhc1_var.name = 'leafT' and ( ( tdhc2_var.name = 'canopy_layer' and tdhc2.level >= .8 )  or tdhc2.level is null)  and (month(trt.date) between 4 and 7 or trt.date is null) and species_id in(", spstr, ");")
-  ##*q    <- dbSendQuery(con, qd)
-  ##*data <- NA
-  ##*data <- fetch ( q, n = -1 )
-  ##*data$mean <- data$mean * exp (3000 * ( 1 / 288.15 - 1 / (273.15 + data$temp)))
-  ##*.l <- c("SE", "SD")
-  ##*data$stat[data$statname %in% .l] <- data$stat * exp (3000 * ( 1 / 288.15 - 1 / (273.15 + data$temp)))
-  ##*.s <- "MSE"
-  ##*data$stat[!data$statname %in% .s] <- data$stat * exp (3000 * ( 1 / 288.15 - 1 / (273.15 + data$temp)))^2
-  ##*result <- data[,1:6] #drop covariates
-  ##* }
+  } else if(trait == 'Vcmax') {
+    query <- paste("select trt.site_id, treat.name, trt.mean, trt.statname, trt.stat, trt.n,
+tdhc1.level as 'temp', tdhc2.level as 'canopy_layer'
+from traits as trt 
+left join covariates as tdhc1 on (tdhc1.trait_id = trt.id) 
+left join covariates as tdhc2 on (tdhc2.trait_id = trt.id) 
+left join treatments as treat on (trt.treatment_id = treat.id) 
+left join variables as tdhc1_var on (tdhc1.variable_id = tdhc1_var.id) 
+left join variables as tdhc2_var on ( tdhc2.variable_id = tdhc2_var.id ) 
+left join species as spec on (trt.specie_id = spec.id) 
+left join plants on (spec.plant_id = plants.id) 
+left join variables as var on (var.id = trt.variable_id) 
+where trt.variable_id in (select id from variables where name = '",trait,"')
+and specie_id in ('",spstr,"')
+and tdhc1_var.name = 'leafT' 
+and ( ( tdhc2_var.name = 'canopy_layer' and tdhc2.level >= .8 )  or tdhc2.level is null)  
+and (month(trt.date) between 4 and 7 or trt.date is null);", sep = '')
+    q    <- dbSendQuery(con, qd)
+    data <- NA
+    data <- fetch ( q, n = -1 )
+    data$mean <- data$mean * exp (3000 * ( 1 / 288.15 - 1 / (273.15 + data$temp)))
+    .l <- c("SE", "SD")
+    data$stat[data$statname %in% .l] <- data$stat * exp (3000 * ( 1 / 288.15 - 1 / (273.15 + data$temp)))
+    .s <- "MSE"
+    data$stat[!data$statname %in% .s] <- data$stat * exp (3000 * ( 1 / 288.15 - 1 / (273.15 + data$temp)))^2
+    result <- data[,1:6] #drop covariates
   }
-
+                 
   ## rename name column from treatment table to trt_id
   names(result)[names(result)=='name'] <- 'trt_id'
 
