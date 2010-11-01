@@ -12,7 +12,8 @@ pecan.ma <- function(trait.data, priors, j.iter){
   ##       global mean: beta.o
   ##         global SD: thetaSD
   ##   within study SD: ySD 
-  j.vars   <- c( 'beta.o','thetaSD', 'ySD')
+  j.vars     <- c( 'beta.o','thetaSD', 'ySD', 'trtSD', 'b.trt', 'b.site')
+  j.vars.ghs <- c( 'beta.o','thetaSD', 'ySD', 'trtSD', 'ghsSD', 'b.ghs', 'b.site', 'b.trt')
 
   ## log the mcmc chain parameters 
   cat(paste( 'Each meta-analysis will be run with: \n',
@@ -34,9 +35,11 @@ pecan.ma <- function(trait.data, priors, j.iter){
     if (!1 %in% data$ghs) {
       jag.model <- model1
       data <- data[,-which(names(data) == 'ghs')]
+      j.vars <- j.vars
     } else {
       jag.model <-modelg
       if(0 %in% data$ghs) data$ghs <- data$ghs + 1
+      j.vars <- j.vars.ghs
     }
     jag.model.file <-  paste( trait.name, ".model.bug",sep="")  # file to store model
     write.ma.model ( jag.model, jag.model.file,
