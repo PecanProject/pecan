@@ -6,7 +6,7 @@ pecan.ma <- function(trait.data, priors, j.iter){
   ## Set inputs for jags.model()
   j.chains <- 4
   j.adapt  <- 500
-  j.thin   <- 25    # thinning interval for mcmc monitors
+  j.thin   <- 100    # thinning interval for mcmc monitors
        
   ## set variables to follow in mcmc, defined in model (below
   ##       global mean: beta.o
