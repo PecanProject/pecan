@@ -1,6 +1,6 @@
 pecan.ma.summary <- function(mcmc.object, pft){
   ## G-R diagnostics to ensure convergence
-  pdf(paste('out/',pft, 'priors.pdf', sep = ''))
+  pdf(paste('out/ma.summaryplots.',pft, '.pdf', sep = ''))
   for (trait in names(mcmc.object)){
     gd<-gelman.diag(mcmc.object[[trait]])
     mpsrf<-round(gd$mpsrf,digits=4)
@@ -11,13 +11,14 @@ pecan.ma.summary <- function(mcmc.object, pft){
       note <- cat ("JAGS model did not converge for", pft, trait,
                      "\nGD MPSRF = ",mpsrf,"\n", sep=" ")
     }
-
-    par(mfrow = c(3,3))
-    plot(trait.mcmc[[trait]][,'beta.o'],density = FALSE, xlim =c(1,10000))
-    autocorr.plot(mcmc.object[[trait]][,1][1])
-    plot(mcmc.object[[trait]][,1], trace = FALSE, density = TRUE,
-         main = paste('posterior pdf of mu for', pft, trait))
-    mtext(text = note, line = 3)
-  } 
+    maparms <- names(trait.mcmc[['SLA']][1,][1][[1]])
+    for (i in maparms) {
+      plot(mcmc.object[[trait]][,i], trace = FALSE, density = TRUE,
+           main = paste('summary plots of',i ,'for', pft, trait))
+      plot(trait.mcmc[[trait]][,i],density = FALSE, xlim =c(1, 50000))
+      autocorr.plot(mcmc.object[[trait]][,i][1])
+      mtext(text = note, line = 3)
+    }
+  }
   dev.off()
 }
