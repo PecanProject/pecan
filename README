@@ -1,18 +1,20 @@
-PECAn
-
 See the PECAn wiki, especially the development page, for details
 http://128.174.125.122/wiki/index.php/PECAn_Documentation:Development
 
-#######R Version on ebi-forecast
-PECAn requires newer than R2.7; on forecast this means that you need to specify use of R-2.12 in your .bashrc file.
+#### directories
+all instructions assume that you are in the PECANHOME directory on ebi-forecast
+PECAn home directory
+    PECANHOME=/home/$USER/pecan
+PECAn out directory: this is where PECAn output goes
+    PECANOUT=$PECANHOME/out
 
-If you have not already done so, you can run 
-echo "alias R='/usr/local/R-12.0/bin/R" >> ~/.bashrc
-then log out and log back in again
-
-##### PECAn R library
+##### Installing the PECAn R library
 
 to install the PECAn R library in your ~/lib/R, run:
-R CMD build ../dev
-R CMD INSTALL PECAn_0.0.1.tar.gz --library='~/lib/R'
+./pecanbuild.sh
 
+##### Running Kepler (from $PECANHOME)
+1. meta-analysis and ed run
+$ kepler kepler/pecan.kar
+2. post-analysis 
+$ kepler kepler/pecan_SA.kar
