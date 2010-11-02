@@ -7,7 +7,7 @@ pecan.ma <- function(trait.data, priors, j.iter){
   j.chains <- 4
   j.adapt  <- 500
   j.thin   <- 100    # thinning interval for mcmc monitors
-       
+  
   ## set variables to follow in mcmc, defined in model (below
   ##       global mean: beta.o
   ##         global SD: thetaSD
@@ -17,12 +17,12 @@ pecan.ma <- function(trait.data, priors, j.iter){
 
   ## log the mcmc chain parameters 
   cat(paste( 'Each meta-analysis will be run with: \n',
-              j.iter, ' total iterations,\n',
-              j.chains, ' chains, \n',
-              'a burnin of ', j.adapt, ' samples,\n',
-              'a thinning interval of ', j.thin,
-              ', \nso the total number of samples will be ', j.chains*(j.iter-j.adapt)/j.thin, sep = '')
-              )
+            j.iter, ' total iterations,\n',
+            j.chains, ' chains, \n',
+            'a burnin of ', j.adapt, ' samples,\n',
+            'a thinning interval of ', j.thin,
+            ', \nso the total number of samples will be ', j.chains*(j.iter-j.adapt)/j.thin, sep = '')
+      )
   
   for(trait.name in names(trait.data)) {
     prior.name <- ifelse(trait.name != 'Vcmax', trait.name, 'Vm0')
@@ -32,13 +32,20 @@ pecan.ma <- function(trait.data, priors, j.iter){
 
     data <- trait.data[[trait.name]]
     data <- data[order(data$site,data$trt),]#not sure why, but required for JAGS model
-    writeLines(paste('prior:', prior['distn'], '(',prior['parama'], ', ', prior['paramb'], ')', sep = ''))
+    print(paste('prior:', prior[1], '(',prior[2], ', ', prior[3], ')', sep = ''))
     writeLines(paste('data max:', max(data$Y), '\ndata min:', min(data$Y), '\nmean:', signif(mean(data$Y),3), '\nn:', length(data$Y)))
     writeLines('stem plot of data points')
     writeLines(paste(stem(data$Y)))
-    writeLines('stem plot of SD:')
-    writeLines(paste(stem(1/(data$n*data$obs.prec^2))))
-    writeLines(paste(data))
+    print(trait.name)
+    print(data$obs.prec)
+    if(FALSE %in% is.na(data$obs.prec)){
+      writeLines('stem plot of SD:')
+      writeLines(paste(stem(1/(data$n*data$obs.prec^2))))
+    } else {
+      writeLines(paste('no estimates of SD for', trait.name))
+    }
+    
+    print(data)
 
     if (!1 %in% data$ghs) {
       jag.model <- model1
@@ -62,7 +69,7 @@ pecan.ma <- function(trait.data, priors, j.iter){
         j.vars <- c(j.vars, paste('b.trt[',i,']',sep=''))
       }
     }
-  
+    
     jag.model.file <-  paste( trait.name, ".model.bug",sep="")  # file to store model
     write.ma.model ( jag.model, jag.model.file,
                     prior$distn, prior$a, prior$b,
@@ -78,7 +85,7 @@ pecan.ma <- function(trait.data, priors, j.iter){
                                                variable.names = j.vars,
                                                n.iter = j.iter,
                                                thin = j.thin)
- 
+    
   }
   return(mcmc.object)
 }

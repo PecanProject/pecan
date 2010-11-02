@@ -1,6 +1,7 @@
 library(PECAn, lib.loc = '~/lib/R')
 load('out/pecan.MA.Rdata')
-
+load('outdir.Rdata')
+print(outdir)
 ## sample values for ensemble
 trait.samps <- pecan.samps(trait.mcmc, priors)
 prior.dists <- trait.samps[['priors']]
@@ -12,9 +13,9 @@ prior.dtheta.q <- pecan.dtheta(prior.samps)
 
 ## generate config files
 
-write.configs(M, pft, prior.samps, post.samps)
+write.configs(M, pft, prior.samps, post.samps, outdir)
 setwd(outdir)
-save(M, file=paste(outdir,'/M.Rdata')
+save(M, file=paste(outdir,'/M.Rdata'))
 rm(outdir)
 save.image('pecan.samps.Rdata')
 

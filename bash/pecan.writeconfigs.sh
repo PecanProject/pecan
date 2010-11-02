@@ -1,6 +1,8 @@
 #!/bin/bash
 PECANHOME=$PWD
-PECANOUT=$1
+echo $PECANHOME
+PECANOUT=$PECANHOME/out
+echo $PECANOUT
 echo "start writing configs"
 R --vanilla < $PECANHOME/rscripts/pecan.writeconfigs.R
 cd $PECANOUT
