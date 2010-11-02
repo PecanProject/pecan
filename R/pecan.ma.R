@@ -21,8 +21,7 @@ pecan.ma <- function(trait.data, priors, j.iter){
               j.chains, ' chains, \n',
               'a burnin of ', j.adapt, ' samples,\n',
               'a thinning interval of ', j.thin,
-              ', \nso the total number of samples will be ', j.chains*(j.iter-j.adapt)/j.thin,
-              '\nand the parameters ',vecpaste(j.vars), ' will be sampled\n', sep = '')
+              ', \nso the total number of samples will be ', j.chains*(j.iter-j.adapt)/j.thin, sep = '')
               )
   
   for(trait.name in names(trait.data)) {
@@ -55,9 +54,6 @@ pecan.ma <- function(trait.data, priors, j.iter){
       }
     }
   
-
-
-    j.vars <- c(j.vars, 
     jag.model.file <-  paste( trait.name, ".model.bug",sep="")  # file to store model
     write.ma.model ( jag.model, jag.model.file,
                     prior$distn, prior$a, prior$b,
