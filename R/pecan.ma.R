@@ -32,10 +32,13 @@ pecan.ma <- function(trait.data, priors, j.iter){
 
     data <- trait.data[[trait.name]]
     data <- data[order(data$site,data$trt),]#not sure why, but required for JAGS model
-    writeLines(paste('prior:' prior['distn'], '(',prior['a'], ', ', prior['b'], ')', sep = ''))
-    writeLines('data max:', max(data$mean), '\ndata min:', min(data$mean), '\nmean:', mean(data$mean))
-    print(data)
-    
+    writeLines(paste('prior:', prior['distn'], '(',prior['parama'], ', ', prior['paramb'], ')', sep = ''))
+    writeLines(paste('data max:', max(data$Y), '\ndata min:', min(data$Y), '\nmean:', signif(mean(data$Y),3), '\nn:', length(data$Y)))
+    writeLines('stem plot of data points')
+    writeLines(paste(stem(data$Y)))
+    writeLines('stem plot of SD:')
+    writeLines(paste(stem(1/(data$n*data$obs.prec^2))))
+
     if (!1 %in% data$ghs) {
       jag.model <- model1
       data <- data[,-which(names(data) == 'ghs')]
