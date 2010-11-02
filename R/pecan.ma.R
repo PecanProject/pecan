@@ -38,6 +38,7 @@ pecan.ma <- function(trait.data, priors, j.iter){
     writeLines(paste(stem(data$Y)))
     writeLines('stem plot of SD:')
     writeLines(paste(stem(1/(data$n*data$obs.prec^2))))
+    writeLines(paste(data))
 
     if (!1 %in% data$ghs) {
       jag.model <- model1
