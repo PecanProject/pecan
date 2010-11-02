@@ -27,5 +27,6 @@ modelg <- function(){
   thetaSD  <- 1 / sqrt(tau.site)                # across site variance
   ySD      <- 1 / sqrt(prec.y)                  # within site variance
   trtSD    <- 1 / sqrt(tau.trt)                 # within trt variance
+  ghsSD    <- 1/  sqrt(tau.ghs)                
 }
  
