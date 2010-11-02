@@ -5,7 +5,8 @@ trait.dictionary <- function(traits) {
                          fileid = c("c2nleaf", "darkresp", "flabile", "growthresp", "leaftnvrrate", "leafwidth", "mort2", "nldisprs", "q", "quantef", "rtresp", "rttnvrrate", "SLA", "stmslope", "Vm0", "Vmlowtemp", "h2ocndctnc", "cuticularcond","seedlingmortality","rfract","storagetnvrrate"),
                          figid = c("Leaf C:N" ,"Dark Respiration Rate", "Litter% Labile C", "Growth Respiration (%GPP)", "Leaf Turnover Rate", "Leaf Width", "Mortality Rate", "Seed Dispersal", "Fine Root Allocation","Quantum Efficiency", "Root Respiration Rate", "Root Turnover Rate", "Specific Leaf Area", "Stomatal Slope", "Carboxylase Rate Constant (Vm0)", "Vm Low Temp", "Water Conductance","Cuticular Conductance", "Seedling Mortality", "Reproductive Allocation","Storage Turnover Rate")
                     )
-  trait.defs <- defs[which(defs$id %in% traits),] 
+  trait.defs <- defs[defs$id %in% traits,]
+  rownames(trait.defs) <- 1:length(trait.defs$id)
   return(trait.defs)
 }
  
