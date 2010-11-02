@@ -11,7 +11,7 @@ pecan.dtheta <- function(samps){
   rownames(dtheta) <- traits
 
   for (tr.i in traits) {
-    dtheta[tr.i, ] <- dtheta.q(samps[ ,tr.i])
+    dtheta[tr.i, ] <- dtheta.q(samps[ ,tr.i], tr.i)
   }
 
   return(dtheta)

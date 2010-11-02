@@ -5,11 +5,10 @@ M     <- as.numeric(system("echo $ENSN", intern = TRUE))
 outdir   <- system("echo $PECANOUT", intern = TRUE)
 outfile1 <- paste(outdir, '/pecan.parms.Rdata', sep = '')
 save.image(outfile1)
- 
+#load('out/pecan.parms.Rdata') # for use from inside R 
 print(cat("PECAn run with ",pft,
           "\nmeta-analysis has",ITER,"iterations",
-          "\nensemble has",M,"config files"))
-
+          "\nensemble has",M,"config files\n", sep = " "))
 
 ## 1. get species list based on pft
 spp <- query.bety.pft_species(pft)
@@ -20,11 +19,11 @@ priors <- query.bety.priors(pft)
 print(priors)
 
 prvec <- rownames(priors) # vector of traits with prior distributions for pft 
-prstr <- vecpaste(prvec)  # string of " " " " used to query priors
+prstr <- vecpaste(prvec)  # string of " " " " used to query priors 
 
-trvec <- gsub('Vm0', 'Vcmax', prvec)  
+trvec <- gsub('Vm0', 'Vcmax', prvec)
 traits <- trvec
-trait.defs <- trait.dictionary(traits)
+trait.defs <- trait.dictionary(gsub('leafN', 'c2n_leaf', prvec))
 save(trait.defs, file = paste(outdir, '/trait.defs.Rdata', sep=''))
 ## now it is time to query the data
 trait.data <- query.bety.traits(spstr,trvec) 
@@ -36,3 +35,4 @@ trait.mcmc <- pecan.ma(trait.data, priors, j.iter = ITER)
 pecan.ma.summary(trait.mcmc, pft)
 outfile2 <- paste(outdir, '/pecan.MA.Rdata', sep = '')
 save.image(outfile2)
+save(outdir, file='outdir.Rdata')
