@@ -13,7 +13,7 @@ pecan.ma.summary <- function(mcmc.object, pft){
     mtext(text = note, line = 3)
 
     ## reordering maparms so that beta.o etc not sent to end
-    .maparms <- names(trait.mcmc[['SLA']][1,][1][[1]])
+    .maparms <- names(mcmc.object[[trait]][1,][1][[1]])
     .parms <- c('beta.o', 'thetaSD', 'trtSD', 'ySD')
     maparms <- .maparms[ c(which(.maparms %in% .parms), which(!.maparms %in% .parms))]
 
@@ -22,8 +22,7 @@ pecan.ma.summary <- function(mcmc.object, pft){
     for (i in maparms) {
       plot(mcmc.object[[trait]][,i], trace = FALSE, density = TRUE,
            main = paste('summary plots of',i ,'for', pft, trait))
-      plot(trait.mcmc[[trait]][,i],density = FALSE, xlim =c(1, 50000),
-           main = note)
+      plot(mcmc.object[[trait]][,i],density = FALSE, xlim =c(1, 50000))
       autocorr.plot(mcmc.object[[trait]][,i][1])
     }
     dev.off()
