@@ -28,9 +28,14 @@ pecan.ma <- function(trait.data, priors, j.iter){
     prior.name <- ifelse(trait.name != 'Vcmax', trait.name, 'Vm0')
     prior <- priors[prior.name, c('distn', 'parama', 'paramb', 'n')]
     colnames(prior) <- c("distn", "a", "b", "n")
+    writeLines(paste('starting meta-analysis for', trait.name))
 
     data <- trait.data[[trait.name]]
     data <- data[order(data$site,data$trt),]#not sure why, but required for JAGS model
+    writeLines(paste('prior:' prior['distn'], '(',prior['a'], ', ', prior['b'], ')', sep = ''))
+    writeLines('data max:', max(data$mean), '\ndata min:', min(data$mean), '\nmean:', mean(data$mean))
+    print(data)
+    
     if (!1 %in% data$ghs) {
       jag.model <- model1
       data <- data[,-which(names(data) == 'ghs')]
