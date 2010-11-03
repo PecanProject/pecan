@@ -1128,3 +1128,6 @@ DATE
 pecan.edrunfiles.tgz
 saconfigs.tgz
 SAplots.ggp
+filenames.Rdata
+outdir.Rdata
+foo.pdf
