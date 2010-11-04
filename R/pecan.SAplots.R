@@ -3,7 +3,7 @@ plot.sa <- function (satables, outvar) {
   pr <- satables[['prior']][[outvar]]
   po <- satables[['post']][[outvar]]
   data = data.frame(
-    trait = pr$figid,
+    trait = factor(pr$figid),
     pr.cv = pr$cv.theta, #prior coef. var
     po.cv = po$cv.theta,  #post  " "
     pr.el = pr$elast,     #prior elasticity
@@ -32,13 +32,13 @@ plot.sa <- function (satables, outvar) {
                panel.grid.major = theme_blank(),
                panel.grid.minor = theme_blank(),
                panel.border = theme_blank())
-         
+  
   trait.plot <- base.plot +
     opts( title = outvar) +
-         geom_text(aes(y = 1, x = seq(nrow(data)), label=trait), data=data, hjust = 1) +
-         scale_y_continuous( breaks = c(0,0),
-                            limits = c(0,1))
- 
+      geom_text(aes(y = 1, x = seq(nrow(data)), label=trait), data=data, hjust = 1) +
+        scale_y_continuous( breaks = c(0,0),
+                           limits = c(0,1))
+  
   cv.plot <- base.plot +
     opts( title = 'CV') +
       geom_pointrange(aes(seq(nrow(data)), pr.cv, ymin = 0, ymax = pr.cv ), size = 1.25, color = 'grey')+
@@ -60,8 +60,7 @@ plot.sa <- function (satables, outvar) {
       geom_pointrange(aes(seq(nrow(data)), pr.ev, ymin = 0, ymax = pr.ev), size = 1.25, color = 'grey')+
         geom_pointrange(aes(seq(nrow(data)), po.ev, ymin = 0, ymax = po.ev), size = 1.25) +
           scale_y_continuous(#breaks =  seq(0, ev.ymax, by=ev.ymax/5), 
-                             limits = c(0, ev.ymax)) 
-
-  
-  return(grid.arrange(trait.plot, cv.plot, el.plot, ev.plot, ncol=4))
+                             limits = c(0, ev.ymax))
+  saplot <- list(trait.plot, cv.plot, el.plot, ev.plot)
+  return(saplot)
 }
