@@ -61,6 +61,6 @@ plot.sa <- function (satables, outvar) {
         geom_pointrange(aes(seq(nrow(data)), po.ev, ymin = 0, ymax = po.ev), size = 1.25) +
           scale_y_continuous(#breaks =  seq(0, ev.ymax, by=ev.ymax/5), 
                              limits = c(0, ev.ymax))
-  saplot <- list(trait.plot, cv.plot, el.plot, ev.plot)
+  saplot <- grid.arrange(trait.plot, cv.plot, el.plot, ev.plot, ncol=4)
   return(saplot)
 }
