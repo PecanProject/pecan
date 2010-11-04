@@ -3,9 +3,9 @@ DATE=`date +%Y%m%d`
 OUTDIR=/home/scratch/$USER/pecan/out$DATE
 EDIN=/home/scratch/$USER/pecan/edin
 echo $DATE > $EDIN/DATE
-if [ ! -d $OUTDIR ] #if [output directory] exists 
+if [ ! -d $OUTDIR ] # if [output directory] does not exist 
 then
-    mkdir $OUTDIR    #if not, make new directory
+    mkdir $OUTDIR   # make new directory
 fi
 
 cd $EDIN

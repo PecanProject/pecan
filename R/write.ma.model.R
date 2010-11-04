@@ -2,37 +2,25 @@
 ##      inserts prior distribution name and parameter values
 ##      adapted from R2WinBUGS write.model(
 ## The function is currently defined as
-write.ma.model <- function (ma.model, con = "model.bug", pr.dist,
-                            pr.param.a, pr.param.b, total.n, total.trt, total.site){
+write.ma.model <- function (ma.model, con = "model.bug",
+                            pr.dist, pr.param.a, pr.param.b,
+                            n, trt.n, site.n, ghs.n) {
 
-  if (is.R()) {
-    model.text <- attr(ma.model, "source")
-    if(!is.null(ma.model) & is.null(model.text)){
-      sink(".temp.jags")
-      print(ma.model)
-      sink()
-      
-      model.text <- scan(file=".temp.jags",what="character",sep="@")
-      ## chose an uncommon separator in order to capture whole lines
-    }
-    model.text <- sub("^\\s*function\\s*\\(\\s*\\)", "model",
-                      model.text)
-  } else {
-    model.text <- as.character(ma.model)
-    model.text <- paste("model", model.text)
-  }
+  model.text <- scan(file=".temp.jags",what="character",sep="@")
+  ## chose an uncommon separator in order to capture whole lines
+
   model.text <- gsub("%_%", "", model.text)
   model.text <- gsub("PRIORDIST", paste("d", pr.dist,sep=""), model.text)
   model.text <- gsub("PRIORPARAMA", pr.param.a, model.text)
   model.text <- gsub("PRIORPARAMB", pr.param.b, model.text)
-  model.text <- gsub("LENGTHK", total.n, model.text)
-  model.text <- gsub("LENGTHJ", total.trt, model.text)
-  model.text <- gsub("LENGTHG", total.site, model.text)
-                                        
-  if (!is.R()) {
-    model.text <- replaceScientificNotation(model.text)
-    model.text <- gsub("invisible[ ]*\\([ ]*\\)", "", model.text)
-  }
-
+  model.text <- gsub("LENGTHK", n, model.text)
+  model.text <- gsub("LENGTHJ", trt.n, model.text)
+  model.text <- gsub("LENGTHG", site.n, model.text)
+  if(ghs.n == 1)  model.text <- gsub("\\#GGG", '\\#', model.text)
+  if(site.n == 1) model.text <- gsub("\\#SSS", '\\#', model.text)
+  if(trt.n == 1)  model.text <- gsub("\\#TTT", '\\#', model.text)
+  if(ghs.n > 1)   model.text <- gsub("\\#GGG", '', model.text)
+  if(site.n > 1)  model.text <- gsub("\\#SSS", '', model.text)
+  if(trt.n > 1)   model.text <- gsub("\\#TTT", '', model.text)
   writeLines(model.text, con = con)
 }
