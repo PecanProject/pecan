@@ -9,9 +9,9 @@ save(satables, file='out/satables.Rdata')
 save(transformed.samps, file = 'out/transformed.samps.Rdata')
 
 
+saplots<-list()
 for (outvar in c('agb', 'ssc')){
-  pdf(paste('out/', outvar, 'saplots.pdf', sep=''))
+  pdf(paste('saplots',outvar,'.pdf', sep=''))
   plot.sa(satables, outvar)
   dev.off()
 }
-

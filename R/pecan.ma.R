@@ -7,13 +7,7 @@ pecan.ma <- function(trait.data, priors, j.iter){
   j.chains <- 4
   j.adapt  <- 500
   j.thin   <- 100    # thinning interval for mcmc monitors
-  
-  ## set variables to follow in mcmc, defined in model (below
-  ##       global mean: beta.o
-  ##         global SD: thetaSD
-  ##   within study SD: ySD 
-  vars.noghs     <- c( 'beta.o','thetaSD', 'ySD', 'trtSD')
-  vars.ghs <- c( 'beta.o','thetaSD', 'ySD', 'trtSD', 'ghsSD', 'b.ghs[2]')
+
 
   ## log the mcmc chain parameters 
   cat(paste( 'Each meta-analysis will be run with: \n',
@@ -47,35 +41,38 @@ pecan.ma <- function(trait.data, priors, j.iter){
     
     print(data)
 
-    if (!1 %in% data$ghs) {
-      jag.model <- model1
-      data <- data[,-which(names(data) == 'ghs')]
-      j.vars <- vars.noghs
-    } else {
-      jag.model <-modelg
-      if(0 %in% data$ghs) data$ghs <- data$ghs + 1
-      j.vars <- vars.ghs
-    }
-    nsite <- length(unique(data$site))
-    m <- min(nsite, 5)
-    for ( i in 1:m){
-      j.vars <- c(j.vars, paste('b.site[',i,']',sep=''))
-    }
-    ntrt <- length(unique(data$trt))
-    m <- max(ntrt, 5)
-    if (ntrt > 1) {
-      m <- min(ntrt, 5)
-      for ( i in 2:m){
-        j.vars <- c(j.vars, paste('b.trt[',i,']',sep=''))
+    #determine what factors to include in meta-analysis
+    model.parms <- list(mean = length(data$Y),
+                        ghs  = length(unique(data$ghs)),
+                        site = length(unique(data$site)),
+                        trt  = length(unique(data$trt)))
+
+    ## parameters for jags to follow
+    vars <- c( 'beta.o', 'sd.y') 
+    
+    for (x in c('ghs','site', 'trt')) {
+      if(model.parms[[x]] == 1) {
+        data <- data[, -which(names(data) == x)]
+      } else {
+        data <- data
+        vars <- c(vars, paste('sd.', x, sep = ''))
+        m <- min(model.parms[[x]], 5)
+        for (i in 1:m) {
+          if(!i == 1 && x == 'trt') {
+            vars <- c(vars, paste('b.', x, '[', i, ']', sep=''))
+          }
+        }
       }
     }
+
     
     jag.model.file <-  paste( trait.name, ".model.bug",sep="")  # file to store model
-    write.ma.model ( jag.model, jag.model.file,
+    write.ma.model (ma.model, jag.model.file,
                     prior$distn, prior$a, prior$b,
                     length ( data$Y ),
-                    length(unique(data$trt)),
-                    length(unique(data$site)))
+                    model.parms[['trt']],
+                    model.parms[['site']],
+                    model.parms[['ghs']])
 
     j.model    <- jags.model ( file = jag.model.file,
                               data = data,

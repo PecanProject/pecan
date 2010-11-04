@@ -18,3 +18,7 @@ to install the PECAn R library in your ~/lib/R, run:
 $ kepler kepler/pecan.kar
 2. post-analysis 
 $ kepler kepler/pecan_SA.kar
+
+##### Useful Bash Scripts
+to return a list of ed runs that end in error:
+ssh -T ebi-cluster < ./bash/find_edout_errors.sh
