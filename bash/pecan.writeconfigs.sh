@@ -22,4 +22,5 @@ for i in *water*xml; do mv "${i}" "${i/water/h2o}"; done
 for i in *stomatalslope*xml; do mv "${i}" "${i/stomatalslope/stmslope}"; done
 for i in c*xml; do mv "${i}" "${i/.xml/}"; done
 echo "zipping config files to saconfigs.tgz"
-tar zcf saconfigs.tgz c*  
+tar zcf saconfigs.tgz c.*
+rm c.*
