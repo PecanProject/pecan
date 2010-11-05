@@ -22,8 +22,8 @@ pecan.ma.summary <- function(mcmc.object, pft){
     for (i in maparms) {
       plot(mcmc.object[[trait]][,i], trace = FALSE, density = TRUE,
            main = paste('summary plots of',i ,'for', pft, trait))
-      plot(mcmc.object[[trait]][,i],density = FALSE, xlim =c(1, 50000))
-      autocorr.plot(mcmc.object[[trait]][,i][1])
+      plot(mcmc.object[[trait]][,i],density = FALSE, xlim =c(1, 5000))
+      autocorr.plot(mcmc.object[[trait]][,i][1], xlim = c(1, 5000))
     }
     dev.off()
   }
