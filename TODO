@@ -1,0 +1,4 @@
+
+send output simultaneously to sink and log file
+add to each function:
+    sink('foo.log', split=TRUE)
