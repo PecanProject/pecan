@@ -5,8 +5,8 @@ pecan.ma <- function(trait.data, priors, j.iter){
   
   ## Set inputs for jags.model()
   j.chains <- 4
-  j.adapt  <- 500
-  j.thin   <- 100    # thinning interval for mcmc monitors
+  j.adapt  <- 100
+  j.thin   <- 50    # thinning interval for mcmc monitors
 
 
   ## log the mcmc chain parameters
@@ -35,8 +35,8 @@ pecan.ma <- function(trait.data, priors, j.iter){
     writeLines('stem plot of data points')
     writeLines(paste(stem(data$Y)))
     if(FALSE %in% is.na(data$obs.prec)){
-      writeLines('stem plot of SD:')
-      writeLines(paste(stem(1/(data$n*data$obs.prec^2))))
+      writeLines('stem plot of obs.prec:')
+      writeLines(paste(stem(data$obs.prec^2)))
     } else {
       writeLines(paste('no estimates of SD for', trait.name))
     }
@@ -86,16 +86,23 @@ pecan.ma <- function(trait.data, priors, j.iter){
                     model.parms[['site']],
                     model.parms[['ghs']])
 
-    j.model    <- jags.model ( file = jag.model.file,
+    j.model   <- jags.model ( file = jag.model.file,
                               data = data,
                               n.adapt = j.adapt,
                               n.chains = j.chains)
     
-    mcmc.object[[prior.name]] <- coda.samples ( model = j.model,
-                                               variable.names = vars,
-                                               n.iter = j.iter,
-                                               thin = j.thin)
+    jags.out   <- coda.samples ( model = j.model,
+                                variable.names = vars,
+                                n.iter = j.iter,
+                                thin = j.thin)
+    print(summary(jags.out))
     
+    gd.vec <- apply(gelman.plot(jags.out)$shrink[, ,'median'], 1, max)
+    window.start <- min(as.numeric(names(which(gd.vec - 1.1 < 0))))
+    window.end   <- summary(jags.out)$end
+    jags.win.out <- window(jags.out, window.start, window.end)
+    
+    mcmc.object[[prior.name]] <- jags.win.out
   }
   sink()
   return(mcmc.object)
