@@ -40,7 +40,6 @@ pecan.ma <- function(trait.data, priors, j.iter){
     } else {
       writeLines(paste('no estimates of SD for', trait.name))
     }
-    print(data)
     #todo? could add internal check to make sure data contains Y, n, trt, site, trt, obs.prec
 
     # determine what factors to include in meta-analysis
