@@ -6,9 +6,6 @@ outdir   <- system("echo $PECANOUT", intern = TRUE)
 outfile1 <- paste(outdir, '/pecan.parms.Rdata', sep = '')
 save.image(outfile1)
 #load('out/pecan.parms.Rdata') # for use from inside R 
-print(cat("PECAn run with ",pft,
-          "\nmeta-analysis has",ITER,"iterations",
-          "\nensemble has",M,"config files\n", sep = " "))
 
 ## 1. get species list based on pft
 spp <- query.bety.pft_species(pft)

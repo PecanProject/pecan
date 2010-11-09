@@ -6,7 +6,7 @@ pecan.samps <- function(trait.mcmc, priors) {
   priors$n <- nrow(trait.mat[[1]])
   colnames(priors)[which(colnames(priors) %in% c('parama','paramb'))] <- c('a', 'b')
 
-  prior.samps <- sapply(1:n.samp, function(x) do.call(pr.samp,priors[x,]))
+  prior.samps <- sapply(1:nrow(priors), function(x) do.call(pr.samp,priors[x,]))
   colnames(prior.samps) <- rownames(priors)
 
   post.samps <- prior.samps

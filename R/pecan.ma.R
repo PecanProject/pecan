@@ -97,7 +97,12 @@ pecan.ma <- function(trait.data, priors, j.iter){
 
     jags.out.trunc <- window(jags.out, start = j.iter/2)
     acm <- autocorr.diag(jags.out.trunc, lags = c(1, 5, 10, 15, 25))
-    thin.int <- min(apply(acm2 < 0, 2, function(x) match(TRUE, x)), 50)
+    thin.int <- min(apply(acm < 0, 2, function(x) match(TRUE, x)), 50)
+    print(paste('Thinning interval:', thin.int))
+    #if(thin.int == 50) {
+      #todo: break here if acceptance rate < 1%
+     # writeLines('chains autocorrelated, require visual inspection')
+    #}
     jags.out.thin <- window(jags.out.trunc, thin = thin.int)
 
     mcmc.object[[prior.name]] <- jags.out.thin
