@@ -1,12 +1,12 @@
+#for debugging
 pecan.ma <- function(trait.data, priors, j.iter){
+  
   ## Meta-analysis for each trait
   mcmc.object <- list() #  initialize output list of mcmc objects for each trait
   mcmc.mat    <- list()
   
   ## Set inputs for jags.model()
   j.chains <- 4
-  j.adapt  <- 100
-  j.thin   <- 50    # thinning interval for mcmc monitors
 
 
   ## log the mcmc chain parameters
@@ -14,9 +14,8 @@ pecan.ma <- function(trait.data, priors, j.iter){
   cat(paste( 'Each meta-analysis will be run with: \n',
             j.iter, ' total iterations,\n',
             j.chains, ' chains, \n',
-            'a burnin of ', j.adapt, ' samples,\n',
-            'a thinning interval of ', j.thin,
-            ', \nthus the total number of samples will be ', j.chains*(j.iter-j.adapt)/j.thin,'\n', sep = '')
+            'a burnin of ', j.iter/2, ' samples,\n',
+            ', \nthus the total number of samples will be ', j.chains*(j.iter/2),'\n', sep = '')
       )
   
   for(trait.name in names(trait.data)) {
@@ -29,7 +28,7 @@ pecan.ma <- function(trait.data, priors, j.iter){
     data <- data[order(data$site,data$trt),]#not sure why, but required for JAGS model
 
     #print out some data summaries to check
-    print(paste('prior for ', trait.name, ':',
+    writeLines(paste('prior for ', trait.name, ':',
                 prior[1], '(',prior[2], ', ', prior[3], ')', sep = ''))
     writeLines(paste('data max:', max(data$Y), '\ndata min:', min(data$Y), '\nmean:', signif(mean(data$Y),3), '\nn:', length(data$Y)))
     writeLines('stem plot of data points')
@@ -73,7 +72,6 @@ pecan.ma <- function(trait.data, priors, j.iter){
         }
       }
     }
-
     
     jag.model.file <-  paste( trait.name, ".model.bug",sep="")  # file to store model
     write.ma.model (modelfile = 'rscripts/ma.model.template.bug',
@@ -87,21 +85,22 @@ pecan.ma <- function(trait.data, priors, j.iter){
 
     j.model   <- jags.model ( file = jag.model.file,
                               data = data,
-                              n.adapt = j.adapt,
+                              n.adapt = 100, #will burn in below
                               n.chains = j.chains)
     
     jags.out   <- coda.samples ( model = j.model,
                                 variable.names = vars,
                                 n.iter = j.iter,
-                                thin = j.thin)
+                                thin = 1)
     print(summary(jags.out))
-    
-    gd.vec <- apply(gelman.plot(jags.out)$shrink[, ,'median'], 1, max)
-    window.start <- min(as.numeric(names(which(gd.vec - 1.1 < 0))))
-    window.end   <- summary(jags.out)$end
-    jags.win.out <- window(jags.out, window.start, window.end)
-    
-    mcmc.object[[prior.name]] <- jags.win.out
+    summary.jags.out <- summary(jags.out)
+
+    jags.out.trunc <- window(jags.out, start = j.iter/2)
+    acm <- autocorr.diag(jags.out.trunc, lags = c(1, 5, 10, 15, 25))
+    thin.int <- min(apply(acm2 < 0, 2, function(x) match(TRUE, x)), 50)
+    jags.out.thin <- window(jags.out.trunc, thin = thin.int)
+
+    mcmc.object[[prior.name]] <- jags.out.thin
   }
   sink()
   return(mcmc.object)
