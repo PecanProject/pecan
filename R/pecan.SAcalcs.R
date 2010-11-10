@@ -75,10 +75,12 @@ pecan.SAcalcs <- function(runname, outvar, dat, dtheta.q, trait.defs, trait.samp
   rownames(dfdth.terms) <- c('df', 'd2f')
 
   satable <- cbind(satable, t(dfdth.terms))
+  satable$df <- as.numeric(satable$df)
+  satable$d2f <- as.numeric(satable$d2f)
   
   ## elasticity = (df/dth)/(mean.f/mean.theta)
   satable$elast <- with(satable,
-                        as.numeric(df)/(mean.f/mean.theta))
+                        df/(mean.f/mean.theta))
   dev.off()
 
   sum.var <- sum(satable$var.theta)
@@ -102,9 +104,9 @@ pecan.SAcalcs <- function(runname, outvar, dat, dtheta.q, trait.defs, trait.samp
   for (.jid in seq(satable$id)) {
     ## Var explained by param i 
     ## percent var: var(f) as denominator
-    satable$per.var[.jid] <- satable$o2[.jid]/var.f
+    satable$per.var[.jid] <- satable$o1[.jid]/var.f
     ## rel.var: var(f) - higher order closure terms as denominator
-    satable$rel.var[.jid] <- satable$o2[.jid]/sum.rhs
+    satable$rel.var[.jid] <- satable$o1[.jid]/sum.rhs
   }
   var.explained <- sum(satable$per.var)
   satable$null <- rep(0, length(satable$id))

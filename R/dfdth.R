@@ -1,9 +1,10 @@
 dfdth <- function(f, th, yrange, name) {
-  
+  f <- as.numeric(f)
+  th <- as.numeric(th)
   X <- as.matrix(cbind(th^2,th,rep(1,3)))
   beta <- solve(X,f)
   
-  ##m.quad = f'(th) = 2*a*x + b evaluated at x2
+  ## m.quad = f'(th) = 2*a*x + b evaluated at x2
   ## f''(th) = 2*a
   m.quad <- 2*beta[1]*th[2]+beta[2]
   dfdth.terms <- list('dfdth1' = m.quad, 'dfdth2' = 2*beta[1])

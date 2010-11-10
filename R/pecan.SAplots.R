@@ -15,7 +15,7 @@ plot.sa <- function (satables, outvar) {
   cv.ymax <- max(abs(data[,c('pr.cv', 'po.cv')])) * 1.1 #po.cv =< pr.cv by definition
   el.ymax <- max(abs(data[,c('pr.el', 'po.el')])) * 1.1
   el.ymin <- -el.ymax
-  ev.ymax <- max(data[,c('pr.ev', 'po.ev')]) * 1.1
+  ev.ymax <- max(data[,c('pr.ev', 'po.ev')])*1.1
   fontsize = 14 
   print(data$trait)
   base.plot <- ggplot(data) +
@@ -61,8 +61,8 @@ plot.sa <- function (satables, outvar) {
         geom_pointrange(aes(seq(nrow(data)), po.ev, ymin = 0, ymax = po.ev), size = 1.25) +
           scale_y_continuous(#breaks =  seq(0, ev.ymax, by=ev.ymax/5), 
                              limits = c(0, ev.ymax))
-  pdf(paste('saplot', outvar,'.pdf', sep=''))
-  grid.arrange(trait.plot, cv.plot, el.plot, ev.plot)
+  pdf(paste('saplot', outvar,'.pdf', sep=''), width = 22, height = 8)
+  grid.arrange(trait.plot, cv.plot, el.plot, ev.plot, ncol=4)
   dev.off()
   return()
 }
