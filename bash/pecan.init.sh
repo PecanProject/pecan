@@ -1,4 +1,5 @@
 ###
+
 if [ ! -d ~/lib ]
 then
     mkdir ~/lib/ 
@@ -14,11 +15,13 @@ then
     bzr branch /home/dlebauer/dev/pecan/trunk pecan
 fi
 
-$CLUSTERCMD="if [ ! -d /home/scratch/$USER/pecan ]; then; mkdir /home/scratch/$USER/pecan; fi"
+cd ~/pecan
 
-$TESTCMD="if [ ! -d /home/$USER/testfoo ]; then; mkdir /home/$USER/testfoo; fi"
+bzr pull /home/dlebauer/dev/pecan/trunk
 
-ssh -T ebi-forecast $CLUSTERCMD
+## set up folders on ebi-cluster
+ssh ebi-cluster "if [ ! -d /home/scratch/$USER/pecan ];   then     mkdir /home/scratch/$USER/pecan;   fi;"
+ssh ebi-cluster "if [ ! -d /home/scratch/$USER/pecan/out ];   then     mkdir /home/scratch/$USER/pecan/out;   fi;"
 
 ## move .my.cnf_forecast to /home/user/.my.cnf
 if [ ! -f ~/.my.cnf ]
@@ -38,5 +41,3 @@ then
     $KEPALIAS
     echo $KEPALIAS >> .bash_aliases
 fi
-
-
