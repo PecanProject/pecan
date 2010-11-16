@@ -1,43 +1,50 @@
 ###
-
-if [ ! -d ~/lib ]
+if [ ! -f ~/.pecan_init_indicator ]
 then
-    mkdir ~/lib/ 
-fi
+    touch ~/.pecan_init_indicator
 
-if [ ! -d ~/lib/R ]
-then
-    mkdir ~/lib/R
-fi
+    if [ ! -d ~/lib ]
+    then
+	mkdir ~/lib/ 
+    fi
+    
+    if [ ! -d ~/lib/R ]
+    then
+	mkdir ~/lib/R
+    fi
+    
+## check out pecan
+    if [ ! -d ~/pecan ]
+    then
+	bzr branch /home/dlebauer/dev/pecan/trunk pecan
+    fi
+## move .my.cnf_forecast to /home/user/.my.cnf
+    if [ ! -f ~/.my.cnf ]
+    then 
+	cp .my.cnf_forecast .my.cnf
+    fi
+    
+## make sure that alias 
+    if [ ! -f ~/.bash_aliases ]
+    then
+	touch ~/.bash_aliases
+    fi
 
-if [ ! -d ~/pecan ]
-then
-    bzr branch /home/dlebauer/dev/pecan/trunk pecan
-fi
+    if ! grep kepler ~/.bash_aliases > /dev/null
+    then 
+	KEPALIAS='/usr/local/Kepler-2.0/kepler.sh'
+	echo "alias kepler='$KEPALIAS'" >> .bash_aliases
+    fi
 
+
+## set up folders on ebi-cluster
+ssh -T ebi-cluster < bash/pecan.init.cluster.sh 
+fi
+   
 cd ~/pecan
 
 bzr pull /home/dlebauer/dev/pecan/trunk
 
-## set up folders on ebi-cluster
-ssh ebi-cluster "if [ ! -d /home/scratch/$USER/pecan ];   then     mkdir /home/scratch/$USER/pecan;   fi;"
-ssh ebi-cluster "if [ ! -d /home/scratch/$USER/pecan/out ];   then     mkdir /home/scratch/$USER/pecan/out;   fi;"
+##set environment variables
 
-## move .my.cnf_forecast to /home/user/.my.cnf
-if [ ! -f ~/.my.cnf ]
-then 
-    cp .my.cnf_forecast .my.cnf
-fi
-
-## make sure that alias 
-if [ ! -f ~/.bash_aliases ]
-then
-    touch ~/.bash_aliases
-fi
-
-if ! grep kepler ~/.bash_aliases > /dev/null
-then 
-    KEPALIAS="alias kepler='/usr/local/Kepler-2.0/kepler.sh'"
-    $KEPALIAS
-    echo $KEPALIAS >> .bash_aliases
-fi
+. ./bash/env.vars.sh

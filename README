@@ -1,10 +1,6 @@
 See the PECAn wiki, especially the development page, for details
 http://128.174.125.122/wiki/index.php/PECAn_Documentation:Development
 
-## how to check out pecan
-    cd
-    bzr branch sftp://ebi-forecast/home/dlebauer/dev/pecan/trunk pefan
-    cd pecan
 
 ## directories
 all instructions assume that you are in the PECANHOME directory on ebi-forecast
@@ -12,6 +8,9 @@ PECAn home directory
     PECANHOME=/home/$USER/pecan
 PECAn out directory: this is where PECAn output goes
     PECANOUT=$PECANHOME/out
+
+## Step 1: initialize pecan
+
 
 ## build the pecan R library
     ./bash/pecanbuild.sh
