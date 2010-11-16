@@ -1,4 +1,4 @@
-pecan.dtheta <- function(samps){
+pecan.dtheta <- function(samps, q){
   ##calculate values of:
   ## dtheta_0.35, dtheta_0.5, dtheta_0.65 
   ## var(theta_i)
@@ -11,7 +11,7 @@ pecan.dtheta <- function(samps){
   rownames(dtheta) <- traits
 
   for (tr.i in traits) {
-    dtheta[tr.i, ] <- dtheta.q(samps[ ,tr.i], tr.i)
+    dtheta[tr.i, ] <- dtheta.q(samps[ ,tr.i], tr.i, q)
   }
 
   return(dtheta)
