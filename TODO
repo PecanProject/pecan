@@ -2,3 +2,7 @@
 send output simultaneously to sink and log file
 add to each function:
     sink('foo.log', split=TRUE)
+
+
+## Cleanup
+remove prior.mean.f, prior.var.f, post.mean.f, post.var.f objects from edout list
