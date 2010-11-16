@@ -1,3 +1,7 @@
+EDIN="/home/scratch/$USER/pecan/edin"
+cd $EDIN
+tar -zxf saconfigs.tgz
+
 DATE=`date +%Y%m%d`
 
 OUTDIR=/home/scratch/$USER/pecan/out$DATE
