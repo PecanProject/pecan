@@ -21,7 +21,7 @@ dev.off()
 
 ## Trait Pdfs
 load('out/pecan.samps.Rdata')
-load('out/pecan.MA.Rdata')
+load('madata.Rdata')
 traits <- colnames(prior.samps)
 
 trait.plots <- list()
@@ -36,10 +36,20 @@ for (i in seq(traits)) {
           scale_y_continuous('Density') +
             opts(title = as.character(trait.defs[trait.defs$id == tri, 'figid']))
 
-  tr <- trait.data[[tri]]
+  if(tri == 'Vm0') {
+    tr <- trait.data[['Vcmax']]
+  } else if (tri == 'c2n_leaf') {
+    tr <- trait.data[['leafN']]
+    tr$Y <- 48/tr$Y
+  } else if (tri =='leaf_width') {
+    tr <- trait.data[['leafN']]
+    tr$Y <- tr$Y/1000
+  } else {
+    tr <- trait.data[[tri]]
+  }
+
   if(!is.null(nrow(tr))) {
     plot <- plot + geom_density(aes(x = post))
-    tri <- ifelse(tri == 'Vm0', 'Vcmax', tri)
     plot <- plot + geom_point(aes(x=Y, y=0), data=tr) 
   }
   trait.plots[[tri]] <- plot
