@@ -8,7 +8,7 @@ plot.sa <- function (satables, outvar) {
     po.cv = po$cv.theta,  #post  " "
     pr.el = pr$elast,     #prior elasticity
     po.el = po$elast,     #post  "
-    pr.ev = pr$per.var,  #prior, explained variance by parameter i
+    pr.ev = pr$rel.var,  #prior, explained variance by parameter i
     po.ev = po$rel.var,  #post   "         "        "  " 
     null  = pr$null)     #dummy for label plot
   ## fig. parameters

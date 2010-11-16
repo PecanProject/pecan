@@ -9,7 +9,7 @@ pecan.SA <- function(dat, dtheta.q) {
   satables <- list()
   for (runname in c('post', 'prior')) {
     satables[[runname]] <- list()
-    for ( outvar in c('agb', 'ssc')) {
+    for ( outvar in c('agb')) {
       satables[[runname]][[outvar]] <- pecan.SAcalcs(runname, outvar,
                                                      dat, dtheta.q,
                                                      trait.defs, trait.samps)
