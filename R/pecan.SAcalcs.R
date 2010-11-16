@@ -60,7 +60,7 @@ pecan.SAcalcs <- function(runname, outvar, dat, dtheta.q, trait.defs, trait.samp
   ## required inputs: sa.df, var.f, dtheta, dfdth()
   ##~~~~~~~~~~~~~~~~~~~~~~~
  
-  pdf(paste(runname, outvar, 'dfdth.SA.pdf', sep = ""))
+  pdf(paste('out/', runname, outvar, 'dfdth.SA.pdf', sep = ""))
   ymin <- min(satable[,c('mean.f', 'lcl.f', 'ucl.f')])*0.95
   ymax <- max(satable[,c('mean.f', 'lcl.f', 'ucl.f')])*1.05
   if(is.na(ymin)) ymin <- min(0, mean.f - sqrt(var.f))
@@ -72,6 +72,7 @@ pecan.SAcalcs <- function(runname, outvar, dat, dtheta.q, trait.defs, trait.samp
                                 th = satable[x, c('lcl.theta', 'mean.theta', 'ucl.theta')],
                                 yrange = c(ymin, ymax),
                                 name = x)})
+  dev.off()
   rownames(dfdth.terms) <- c('df', 'd2f')
 
   satable <- cbind(satable, t(dfdth.terms))
@@ -81,9 +82,6 @@ pecan.SAcalcs <- function(runname, outvar, dat, dtheta.q, trait.defs, trait.samp
   ## elasticity = (df/dth)/(mean.f/mean.theta)
   satable$elast <- with(satable,
                         df/(mean.f/mean.theta))
-  dev.off()
-
-  sum.var <- sum(satable$var.theta)
 
   ## var.f = (df)^2 * var.theta + 
   for (.jid in seq(satable$id)) {
@@ -95,11 +93,10 @@ pecan.SAcalcs <- function(runname, outvar, dat, dtheta.q, trait.defs, trait.samp
     o2 <- var(df*x + 0.5 * d2f * (x-a)^2)#var to second order\
     print(satable$id[.jid])
     print(cbind(c('n',length(x)), c('O1 term',signif(o1,2)),c('O2 term',signif(o2,2)), c('ratio O1:O2',signif(o1/o2,2))))
-
     satable$o1[.jid] <- o1
     satable$o2[.jid] <- o2
   }
-  sum.rhs <- sum(satable$o2)
+  sum.rhs <- sum(satable$o1)
   
   for (.jid in seq(satable$id)) {
     ## Var explained by param i 
@@ -109,7 +106,7 @@ pecan.SAcalcs <- function(runname, outvar, dat, dtheta.q, trait.defs, trait.samp
     satable$rel.var[.jid] <- satable$o1[.jid]/sum.rhs
   }
   var.explained <- sum(satable$per.var)
-  satable$null <- rep(0, length(satable$id))
-  satable$rel.var[which(satable$rel.var < 0.00001)] <- 0
+  satable$null <- rep(0, length(satable$id)) #dummy for plotting probably obsolete
+  # satable$rel.var[which(satable$rel.var < 0.00001)] <- 0
   return(satable)
 }

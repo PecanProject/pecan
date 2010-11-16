@@ -8,7 +8,9 @@ transformed.samps <- saout[['transformed.samps']]
 save(satables, file='out/satables.Rdata')
 save(transformed.samps, file = 'out/transformed.samps.Rdata')
 
-
-for (outvar in c('agb', 'ssc')){
+## code for debugging plots
+## setwd('~/pecan/')
+## load('out/satables.Rdata')
+for (outvar in c('agb')){
   plot.sa(satables, outvar)
 }
