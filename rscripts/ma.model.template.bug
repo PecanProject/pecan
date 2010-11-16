@@ -16,14 +16,12 @@ model
   #SSS  beta.site[g] ~ dnorm(0, tau.site)
   #SSS }
   #GGG beta.ghs[1]  <- 0                               
-  #GGG beta.ghs[2]  ~ dnorm(0, tau.ghs)
+  #GGG beta.ghs[2]  ~ dnorm(0, 0.01)
   beta.o    ~ PRIORDIST (PRIORPARAMA, PRIORPARAMB)
   #SSS tau.site  ~ dgamma(0.1, 0.1)
   #TTT tau.trt   ~ dgamma(0.1, 0.1)
-  #GGG tau.ghs   ~ dgamma(0.1, 0.1)
   prec.y    ~ dgamma(0.1, 0.1)     
   #SSS sd.site   <- 1 / sqrt(tau.site)
   sd.y      <- 1 / sqrt(prec.y)       
   #TTT sd.trt    <- 1 / sqrt(tau.trt) 
-  #GGG sd.ghs    <- 1/  sqrt(tau.ghs)
 }
