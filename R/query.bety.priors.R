@@ -18,5 +18,8 @@ query.bety.priors <- function(pft){
   priors <- fetch ( q2, n = -1 )
   rownames(priors) <- priors$name
   priors <- priors[,-1]
+  sink(file = 'out/priors.tex', split = FALSE)
+  xtable(priors, caption="Raw table of priors")
+  sink()
   return(priors)
 }
