@@ -1,5 +1,4 @@
 #!/bin/bash
-CLUSTERPECAN=ebi-cluster:/home/scratch/$USER/pecan
 rsync -routi ~/pecan/R/trait.dictionary.R  $CLUSTERPECAN/R/
 rsync -routi ~/pecan/out/*.Rdata  $CLUSTERPECAN/out/
 rsync -routi ~/pecan/R/pecan.edout.R  $CLUSTERPECAN/R/
