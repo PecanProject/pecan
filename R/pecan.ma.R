@@ -60,7 +60,9 @@ pecan.ma <- function(trait.data, priors, j.iter){
         data <- data[, -which(names(data) == x)]
       } else {
         data <- data
-        vars <- c(vars, paste('sd.', x, sep = ''))
+        if(x!='ghs') {
+          vars <- c(vars, paste('sd.', x, sep = ''))
+        }
         m <- min(model.parms[[x]], 5)
         for (i in 1:m) {
           if(i == 1 && x == 'site') {
@@ -97,14 +99,15 @@ pecan.ma <- function(trait.data, priors, j.iter){
 
     jags.out.trunc <- window(jags.out, start = j.iter/2)
     acm <- autocorr.diag(jags.out.trunc, lags = c(1, 5, 10, 15, 25))
-    thin.int <- apply(acm < 0, 2, function(x) match(TRUE, x, nomatch=50))
+    max.acm <- max(apply(acm < 0, 2, function(x) match(TRUE, x, nomatch=50)))
+    thin.int <- min(max.acm, 50)
     print(paste('Thinning interval:', thin.int))
     #if(thin.int == 50) {
       #todo: break here if acceptance rate < 1%
      # writeLines('chains autocorrelated, require visual inspection')
     #}
     jags.out.thin <- window(jags.out.trunc, thin = thin.int)
-
+ 
     mcmc.object[[prior.name]] <- jags.out.thin
   }
   save(madata, file = 'madata.Rdata')
