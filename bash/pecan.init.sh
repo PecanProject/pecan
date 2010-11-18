@@ -1,4 +1,6 @@
-###
+###Initialization file to set up system for PECAn
+###new commands added to .bashrc: pullpecan buildpecan
+###env vars set PECANHOME PECANOUT CLUSTERHOME EDIN 
 if [ ! -f ~/.pecan_init_indicator ]
 then
     touch ~/.pecan_init_indicator
@@ -24,27 +26,36 @@ then
 	cp .my.cnf_forecast .my.cnf
     fi
     
-## make sure that alias 
-    if [ ! -f ~/.bash_aliases ]
-    then
-	touch ~/.bash_aliases
-    fi
 
-    if ! grep kepler ~/.bash_aliases > /dev/null
+    if ! grep kepler ~/.bashrc > /dev/null
     then 
 	KEPALIAS='/usr/local/Kepler-2.0/kepler.sh'
-	echo "alias kepler='$KEPALIAS'" >> .bash_aliases
+	echo "alias kepler='$KEPALIAS'" >> ~/.bashrc
     fi
 
+    ##set environment variables
+    if ! grep env.vars.sh ~/.bashrc > /dev/null
+    then
+	echo ". /home/$USER/pecan/bash/env.vars.sh" >> ~/.bashrc
+    fi
+
+    if ! grep pecanbuild ~/.bashrc > /dev/null
+    then
+	echo "alias buildpecan='/home/$USER/pecan/bash/pecanbuild.sh'" >> ~/.bashrc
+    fi
+
+    if ! grep pecanpull ~/.bashrc > /dev/null
+    then
+	echo "alias pullpecan='bzr pull /home/dlebauer/dev/pecan/trunk'" >> ~/.bashrc
+    fi
 
 ## set up folders on ebi-cluster
-ssh -T ebi-cluster < bash/pecan.init.cluster.sh 
+ssh -T ebi-cluster < ~/pecan/bash/pecan.init.cluster.sh 
 fi
    
 cd ~/pecan
 
-bzr pull /home/dlebauer/dev/pecan/trunk
-
-##set environment variables
+# optional automatic update
+# 
 
 . ./bash/env.vars.sh
