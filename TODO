@@ -3,6 +3,17 @@ send output simultaneously to sink and log file
 add to each function:
     sink('foo.log', split=TRUE)
 
+sink .tex tables of:
+  priors (done, query.bety.priors())
+  trait.data
+  satables
+e.g:  
+ sink(file = 'out/priors.tex', 
+      split = FALSE)
+ xtable(priors, 
+        caption="Raw table of priors")
+ sink()
+
 
 ## Cleanup
 remove prior.mean.f, prior.var.f, post.mean.f, post.var.f objects from edout list
