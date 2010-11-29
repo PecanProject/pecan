@@ -2,13 +2,10 @@
 ##      inserts prior distribution name and parameter values
 ##      adapted from R2WinBUGS write.model(
 ## The function is currently defined as
-write.ma.model <- function (modelfile, outfile, reg.model,
-                            pr.dist, pr.param.a, pr.param.b,
-                            n, trt.n, site.n, ghs.n) {
+write.ma.model <- function (modelfile, outfile, reg.model, pr.dist, pr.param.a, pr.param.b, n, trt.n, site.n, ghs.n) {
 
-  model.text <- scan(file=modelfile, what="character",sep="@")
+  model.text <- scan(file=modelfile, what="character",sep="@@")
   ## chose an uncommon separator in order to capture whole lines
-
   model.text <- gsub("%_%", "", model.text)
   model.text <- gsub("REGMODEL", reg.model, model.text)
   model.text <- gsub("PRIORDIST", paste("d", pr.dist,sep=""), model.text)

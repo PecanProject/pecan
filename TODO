@@ -1,3 +1,9 @@
+standardize Rdata file names 
+  object.Rdata - object dumps for use in subsequent scripts
+  script.Rdata - script dumps for provenance trackign 
+
+standardize out directories $PECANOUT
+unique env.vars.sh for cluster
 
 send output simultaneously to sink and log file
 add to each function:

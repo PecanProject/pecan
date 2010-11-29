@@ -32,7 +32,7 @@ qpost <- llply(traits, calculate.quantiles, post.samps, quantiles)
 qprior <- llply(traits, calculate.quantiles, prior.samps, quantiles)
 names(qpost) <- traits
 names(qprior) <- traits
-save(qpost, qprior, file="qpostqprior.Rdata")
+save(qpost, qprior, file="out/qpostqprior.Rdata")
 
 ##write mean config files
 n.lcl45 <- 1
@@ -165,15 +165,14 @@ ssh -T ebi-cluster < bash/pecan.ed2in.create.sh \n
 ssh -T ebi-cluster < bash/pecan.ed.batchjobs.sh \n
 ")
 
-stop('switch to using R on the cluster')
-## next run pecan.postrun.sh 2005 2009
 
-system("./bash/pecan.postrun.sh 2005 2009")
 
+# switch to cluster and run:
+library(ggplot2)
 source('R/pecan.edout.R')
 pecanhome <- system("echo $PWD", intern=TRUE)
 pecanout <- paste(pecanhome, '/out', sep = '')
-date <-  20101118
+date <-  20101129
 M <- 0
 outdir   <- paste(pecanout, date, sep = '')
 yr0   <- 2005
@@ -190,16 +189,20 @@ time.range <- c(yr0, yrf)
 ## saruntype - e.g.: post, prior
 saruns    <- saruntype <- list()
 runid     <- c('prior', 'post')
-cl        <- c('lcl30','lcl15', 'ucl15','ucl30')
+cl        <- c('lcl45','lcl30','lcl15', 'ucl15','ucl30','ucl45')
 runid.cl  <- melt(sapply(runid, paste,  cl, '.', sep = ''))
-saruns    <- melt(sapply(runid.cl$value, paste,  tri, '-', sep = ""))
-saruns$X2[saruns$X2%in%1:4] <- runid[2]
-saruns$X2[saruns$X2%in%5:8] <- runid[1]
+trait.fileid <- trait.defs$fileid
+saruns    <- melt(sapply(runid.cl$value, paste,  trait.fileid, '-', sep = ""))
+saruns$X2[saruns$X2%in%1:6] <- runid[1]
+saruns$X2[saruns$X2%in%7:12] <- runid[2]
 saruns <- saruns[order(saruns$X1),]
-for(i in seq(tri)){
-  saruns$X1[saruns$X1==i] <- tri[i]
+
+for(i in seq(trait.fileid)){
+  saruns$X1[saruns$X1 == i] <- as.character(trait.fileid[i])
 }
+
 colnames(saruns) <- c('trait','runtype', 'runnames')
+
 edoutfiles    <- dir(outdir, full.names = TRUE)      ## grab all files in outdir
 edoutfiles.yr <- edoutfiles[grep("-Y-", edoutfiles)]            ## select annual output
 
@@ -218,33 +221,33 @@ readagb <- function(runname, year) {
 edout  <- data.frame(saruns,
                      agb=rowMeans(sapply(yr0:yrf, function(x) sapply(saruns$runname, readagb, x))))
 
-postmean.f  <- mean(sapply(yr0:yrf, readagb, runname = 'postmeans'))
+postmean.f  <- mean(sapply(yr0:yrf, readagb, runname = 'postmeans'),na.rm =TRUE)
 priormean.f <- mean(sapply(yr0:yrf, readagb, runname = 'priormeans'))
-mean.f <- list(post=3.1798017, prior=91.34352) 
-save(edout, file=paste(pecanout, '/edout.satest.Rdata', sep=''))
-
+mean.f <- list(post=postmean.f, prior=priormean.f) 
+save(mean.f, edout, file=paste(pecanout, '/edout.satest.Rdata', sep=''))
+ 
 ############
 stop('switch to desktop')
+library(ggplot2)
 system('rsync -routi ebi-cluster.igb.uiuc.edu:/home/scratch/dlebauer/pecan/out/*.Rdata ~/pecan/out/')
-load('qpostqprior.Rdata')
-qpost.theta <- t(as.data.frame(qpost))
-qprior.theta <- t(as.data.frame(qprior))
-colnames(qprior.theta) <- colnames(qpost.theta)  <- c('lcl30','lcl15','mean', 'ucl15','ucl30')
-
+load('out/qpostqprior.Rdata')
 load('out/edout.satest.Rdata')
 
+qpost.theta <- ldply(qpost)[,-1]
+qprior.theta <- ldply(qprior)[,-1]
+rownames(qprior.theta) <- rownames(qpost.theta) <- names(qpost)
+colnames(qprior.theta) <- colnames(qpost.theta)  <- c('lcl45', 'lcl30','lcl15','mean', 'ucl15','ucl30', 'ucl45')
 
-traits <- rownames(qpost.theta)
 #run defs from trait.dictionary
 source('rscripts/defs.R')
-trait.defs <- defs[defs$id %in% traits,]
-
+trait.defs <- defs[defs$id %in% names(qpost),]
 
 fcls <-   function(x, runtypei){
   y <- trait.defs$fileid[match(x, trait.defs$id)]
   c(edout$agb[edout$trait == y & edout$runtype==runtypei], mean.f[[runtypei]])[c(1,2,5,3,4)]
 }
-qprior.f <- lapply(traits,fcls, 'prior')
+
+qprior.f <- lapply(traits, fcls, 'prior')
 qpost.f  <- lapply(traits, fcls, 'post')
 names(qprior.f) <- names(qpost.f)  <- traits
 

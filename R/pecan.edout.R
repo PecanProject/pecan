@@ -37,33 +37,29 @@ pecan.edout <- function(M, yr0, yrf, outdir) {
   runtype <- c(rep("postsamp", M),
                rep("priorsamp", M),
                saruntype, 'postmeans', 'priormeans')
-  outlist <- list('output' = matrix(nrow = length(runnames), ncol = yrf - yr0 + 1),
-                  prior.mean.f = numeric(),
-                  prior.var.f = numeric(),
-                  post.mean.f = numeric(),
-                  post.var.f = numeric())
-  dat <- list(runtype = runtype, # specifies prior, posterior, or SA quantile run
+  outlist <- list('output' = matrix(nrow = length(runnames), ncol = yrf - yr0 + 1))
+  edout <- list(runtype = runtype, # specifies prior, posterior, or SA quantile run
               'agb' = outlist,
               'ssc' = outlist) 
 
-  for(i in names(dat)[-1]) {
-    rownames(dat[[i]][['output']]) <- runnames
-    colnames(dat[[i]][['output']]) <- seq(yr0, yrf)
+  for(i in names(edout)[-1]) {
+    rownames(edout[[i]][['output']]) <- runnames
+    colnames(edout[[i]][['output']]) <- seq(yr0, yrf)
   }
 
 
-  ## extract data from hdf5 output files to dat
+  ## extract data from hdf5 output files to edout
   for (.iyr in seq(yr0, yrf)) {
     .f.iyr <- .f.yr[grep(.iyr,.f.yr)]
     for (.i.run in seq(runnames)) {
       .f.iyr.irun <- .f.iyr[grep(runnames[.i.run], .f.iyr)]
       if(!identical(.f.iyr.irun, character(0))) {
         .a<- hdf5load(.f.iyr.irun, load=FALSE)[c("AGB_CO", "SLOW_SOIL_C", "NPLANT")]
-        dat[['agb']][['output']][runnames[.i.run], as.character(.iyr)] <- sum(.a$AGB_CO * .a$NPLANT) * 20
+        edout[['agb']][['output']][runnames[.i.run], as.character(.iyr)] <- sum(.a$AGB_CO * .a$NPLANT) * 20
                                         #*20 converts from g/m^2 to Mt/ha
-        dat[['ssc']][['output']][runnames[.i.run], as.character(.iyr)] <- .a$SLOW_SOIL_C
+        edout[['ssc']][['output']][runnames[.i.run], as.character(.iyr)] <- .a$SLOW_SOIL_C
       }
     }
   }
-  return(dat)
+  return(edout)
 }

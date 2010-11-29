@@ -20,3 +20,4 @@ for i in c*xml; do mv "${i}" "${i/.xml/}"; done
 echo "zipping config files to saconfigs.tgz"
 tar zcf saconfigs.tgz c.*
 rm c.*
+## next: pecan.sendjobs.sh
