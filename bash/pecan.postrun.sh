@@ -1,8 +1,9 @@
 #!/bin/bash
-rsync -routi ~/pecan/R/trait.dictionary.R  $CLUSTERPECAN/R/
-rsync -routi ~/pecan/out/*.Rdata  $CLUSTERPECAN/out/
-rsync -routi ~/pecan/R/pecan.edout.R  $CLUSTERPECAN/R/
-rsync -routi ~/pecan/rscripts/pecan.postrun.R $CLUSTERPECAN/rscripts/
+cd $PECANHOME
+rsync -routi R/trait.dictionary.R  $CLUSTERPECAN/R/
+rsync -routi out/*.Rdata  $CLUSTERPECAN/out/
+rsync -routi R/pecan.edout.R  $CLUSTERPECAN/R/
+rsync -routi rscripts/pecan.postrun.R $CLUSTERPECAN/rscripts/
 echo "begin post-run data extraction"
 ssh ebi-cluster "cd /home/scratch/$USER/pecan/; env YR0=$1 YRF=$2 R --vanilla < rscripts/pecan.postrun.R"
 echo "done with post-run data extraction"

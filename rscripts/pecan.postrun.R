@@ -11,4 +11,5 @@ yr0       <- as.numeric(system("echo $YR0", intern =TRUE))
 yrf       <- as.numeric(system("echo $YRF", intern =TRUE))
 edout     <- pecan.edout(M, yr0, yrf, outdir)
 
-save(edout, file=paste(pecanout, '/edout.Rdata', sep=''))
+save.image(file=paste(outdir, '/pecan.postrun.Rdata')
+save(edout, file=paste(outdir, '/edout.Rdata', sep=''))

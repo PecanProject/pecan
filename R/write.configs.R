@@ -1,4 +1,4 @@
-write.configs <- function(M, SA, pft, prior.samps, post.samps, q, outdir) {
+write.configs <- function(M, SA, pft, prior.samps, post.samps, outdir) {
 
   const <- pecan.config.constants(pft)
   PFT <- const$PFT
@@ -41,6 +41,9 @@ write.configs <- function(M, SA, pft, prior.samps, post.samps, q, outdir) {
       file <- paste(outdir, "/config.priorsamp",zm,".xml",sep="")
       saveXML(CONFIGi, file = file, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
       filenames[['prior.ensemble']][m]<-file
+    }
+
+    if (SA) { #if SA is true    
       
       PFTm <- PFT
       for (tri in tr) {
@@ -50,10 +53,7 @@ write.configs <- function(M, SA, pft, prior.samps, post.samps, q, outdir) {
       file <- paste(outdir, "/config.postmeans.xml", sep = '')
       filenames[['postmeans']] <- file
       saveXML(CONFIGm, file = file, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
-    }
-  }
 
-  if (SA) { #if SA is true    
     for ( j in seq(tr)){
       notj <- seq(tr)[-j]
       PFTl <- append.xmlNode(PFT, xmlNode(tr[j], post.dtheta.q[tr[j], 'lcl']))
@@ -65,8 +65,8 @@ write.configs <- function(M, SA, pft, prior.samps, post.samps, q, outdir) {
       }
       CONFIGl <- append.xmlNode(CONFIG, PFTl)
       CONFIGu <- append.xmlNode(CONFIG, PFTu)
-      filel <- paste(outdir, "/config.postlcl", q*100,".", tr[j],".xml", sep="")
-      fileu <- paste(outdir, "/config.postucl", q*100,".", tr[j],".xml", sep="")
+      filel <- paste(outdir, "/config.postlcl.", tr[j],".xml", sep="")
+      fileu <- paste(outdir, "/config.postucl.", tr[j],".xml", sep="")
       filenames[['postSA']] <- c(filel, fileu)
       saveXML(CONFIGl, file = filel, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
       saveXML(CONFIGu, file = fileu, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
@@ -94,8 +94,8 @@ write.configs <- function(M, SA, pft, prior.samps, post.samps, q, outdir) {
       }
       CONFIGl <- append.xmlNode(CONFIG, PFTl)
       CONFIGu <- append.xmlNode(CONFIG, PFTu)
-      filel <- paste(outdir, "/config.priorlcl", q*100,".", tr[j],".xml", sep="")
-      fileu <- paste(outdir, "/config.priorucl", q*100,".", tr[j],".xml", sep="")
+      filel <- paste(outdir, "/config.priorlcl.", tr[j],".xml", sep="")
+      fileu <- paste(outdir, "/config.priorucl.", tr[j],".xml", sep="")
       filenames[['priorSA']] <- c(filel, fileu)
       saveXML(CONFIGl, file = filel, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
       saveXML(CONFIGu, file = fileu, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
