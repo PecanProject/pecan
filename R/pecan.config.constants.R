@@ -3,6 +3,7 @@ pecan.config.constants <- function(pft) {
   if(pft == 'ebifarm.c4crop'){
     PFT <- xmlNode ("pft")
     PFT <- append.xmlNode(PFT, xmlNode("num", 15))
+    PFT <- append.xmlNode(PFT, xmlNode("phenology", 3))
     PFT <- append.xmlNode(PFT, xmlNode("max_dbh", 0.78))
     PFT <- append.xmlNode(PFT, xmlNode("hgt_min", 2.0))
     PFT <- append.xmlNode(PFT, xmlNode("dark_respiration_factor",0.015 ))
