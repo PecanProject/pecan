@@ -6,9 +6,9 @@ Date: 2010-10-05
 Author: David LeBauer, Xiaohui Feng, Dan Wang, Mike Dietze
 Maintainer: David LeBauer <dlebauer@illinois.edu>
 Description: More about what it does (maybe more than one line)
-Depends: XML, MASS, randtoolbox, hdf5, rjags, ggplot2, RMySQL, gridExtra
-Suggests: 
-SystemRequirements: JAGS, bash, ED2
+Depends: XML, MASS, randtoolbox, rjags, ggplot2, RMySQL, gridExtra, xtable
+Suggests: hdf5
+SystemRequirements: JAGS2.2.0, bash, ED2, kepler
 OS_type: unix
 License: GPL-3
 Copyright: Energy Biosciences Institute, Authors
