@@ -50,6 +50,10 @@ then
     echo "alias edstat='ssh ebi-cluster qstat'" >> ~/.bashrc
 fi
 
+if ! grep ederrors ~/.bashrc > /dev/null
+then
+    echo "alias ederrors='ssh ebi-cluster < ~/pecan/bash/find_edout_errors.sh"
+fi
 
 ## set up folders on ebi-cluster
 ssh -T ebi-cluster < ~/pecan/bash/pecan.init.cluster.sh 
