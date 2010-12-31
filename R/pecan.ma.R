@@ -124,22 +124,13 @@ pecan.ma <- function(trait.data, priors, j.iter){
     jags.out   <- coda.samples ( model = j.model,
                                 variable.names = vars,
                                 n.iter = j.iter,
-                                thin = 1)
+                                thin = 50)
     print(summary(jags.out))
     summary.jags.out <- summary(jags.out)
 
     jags.out.trunc <- window(jags.out, start = j.iter/2)
-    acm <- autocorr.diag(jags.out.trunc, lags = c(1, 5, 10, 15, 25))
-    max.acm <- max(apply(acm < 0, 2, function(x) match(TRUE, x, nomatch=50)))
-    thin.int <- min(max.acm, 50)
-    print(paste('Thinning interval:', thin.int))
-    #if(thin.int == 50) {
-      #todo: break here if acceptance rate < 1%
-     # writeLines('chains autocorrelated, require visual inspection')
-    #}
-    jags.out.thin <- window(jags.out.trunc, thin = thin.int)
  
-    mcmc.object[[prior.name]] <- jags.out.thin
+    mcmc.object[[prior.name]] <- jags.out.trunc
   }
   save(madata, file = 'madata.Rdata')
   sink()
