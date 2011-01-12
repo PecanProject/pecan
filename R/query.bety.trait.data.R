@@ -22,57 +22,50 @@ query.bety.trait.data <- function(trait, spstr){
   if(!trait %in% c('Vcmax','SLA','root_respiration_rate', 'c2n_leaf') ) {
     query <- paste("select traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
     query.result <- dbSendQuery(con, query)
-    result <- fetch(query.result, n = -1)
-    result <- pecan.transformstats(result)
+    result <- pecan.transformstats(fetch(query.result, n = -1))
 
   } else if(trait == 'Vcmax') {
     query <- paste("select trt.site_id, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n, tdhc1.level as 'temp', tdhc2.level as 'canopy_layer' from traits as trt left join covariates as tdhc1 on (tdhc1.trait_id = trt.id) left join covariates as tdhc2 on (tdhc2.trait_id = trt.id) left join treatments as treat on (trt.treatment_id = treat.id) left join variables as tdhc1_var on (tdhc1.variable_id = tdhc1_var.id) left join variables as tdhc2_var on ( tdhc2.variable_id = tdhc2_var.id ) left join sites on (sites.id = trt.site_id)  left join species as spec on (trt.specie_id = spec.id) left join plants on (spec.plant_id = plants.id) left join variables as var on (var.id = trt.variable_id) where trt.variable_id in (select id from variables where name = 'Vcmax') and specie_id in (",spstr,") and tdhc1_var.name = 'leafT' and ( ( tdhc2_var.name = 'canopy_layer' and tdhc2.level >= .8 )  or tdhc2.level is null) and (month(trt.date) between 4 and 7 or trt.date is null);", sep = '') 
     q    <- dbSendQuery(con, query)
-    data <- fetch ( q, n = -1 )
+    data <- pecan.transformstats(fetch ( q, n = -1 ))
     data$mean <- data$mean / exp (3000 * ( 1 / 288.15 - 1 / (273.15 + data$temp)))
-    .l <- c("SE", "SD")
-    data$stat[data$statname %in% .l] <- data$stat / exp (3000 * ( 1 / 288.15 - 1 / (273.15 + data$temp)))
-    .s <- "MSE"
-    data$stat[!data$statname %in% .s] <- data$stat / exp (3000 * ( 1 / 288.15 - 1 / (273.15 + data$temp)))^2
+    data$stat <- data$stat / exp (3000 * ( 1 / 288.15 - 1 / (273.15 + data$temp)))
     result <- data[,-which(colnames(data) %in% c('temp', 'canopy_layer'))] #drop covariates
-    result <- pecan.transformstats(result)
 
   } else if (trait == 'SLA') {
     query <- paste("select trt.site_id, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n, tdhc1.level as 'canopy_layer' from traits as trt  left join covariates as tdhc1 on (tdhc1.trait_id = trt.id)  left join treatments as treat on (trt.treatment_id = treat.id)  left join variables as tdhc1_var on (tdhc1.variable_id = tdhc1_var.id)  left join sites on (sites.id = trt.site_id) left join species as spec on (trt.specie_id = spec.id)  left join plants on (spec.plant_id = plants.id)  left join variables as var on (var.id = trt.variable_id)  where trt.variable_id in (select id from variables where name = 'SLA')  and specie_id in (",spstr,")  and ( ( tdhc1_var.name = 'canopy_layer' and tdhc1.level >= .8 )   or tdhc1.level is null) and (month(trt.date) between 4 and 7 or trt.date is null);", sep = "")
     q    <- dbSendQuery(con, query)
-    data <-  fetch ( q, n = -1 )
+    data <-  pecan.transformstats(fetch ( q, n = -1 ))
     result <- data[,-which(colnames(data)=='canopy_layer')]
-    result <- pecan.transformstats(result)
     result[, c('mean','stat')] <- result[, c('mean','stat')] / 0.48 #convert from kg leaf / m2 to kg C / m2
 
   } else if (trait == 'root_respiration_rate') {
     query <- paste("select trt.site_id, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n, tdhc1.level as 'temp' from traits as trt left join covariates as tdhc1 on (tdhc1.trait_id = trt.id)  left join treatments as treat on (trt.treatment_id = treat.id) left join variables as tdhc1_var on (tdhc1.variable_id = tdhc1_var.id) left join sites on (sites.id = trt.site_id)  left join species as spec on (trt.specie_id = spec.id) left join plants on (spec.plant_id = plants.id) left join variables as var on (var.id = trt.variable_id) where trt.variable_id in (select id from variables where name = 'root_respiration_rate') and specie_id in (",spstr,") and tdhc1_var.name = 'rootT';", sep = '') 
     q    <- dbSendQuery(con, query)
-    data <- fetch ( q, n = -1 )
+    data <- pecan.transformstats(fetch ( q, n = -1 ))
     ## Scale to 15C using Arrhenius scaling
     data$mean <- data$mean / exp (3000 * ( 1 / 288.15 - 1 / (273.15 + data$temp)))
-    .l <- c("SE", "SD")
-    data$stat[data$statname %in% .l] <- data$stat / exp (3000 * ( 1 / 288.15 - 1 / (273.15 + data$temp)))
-    .s <- "MSE"
-    data$stat[!data$statname %in% .s] <- data$stat / exp (3000 * ( 1 / 288.15 - 1 / (273.15 + data$temp)))^2
-    result <- data[,-which(colnames(data) %in% c('temp'))] #drop covariates
+    data$stat <- data$stat / exp (3000 * ( 1 / 288.15 - 1 / (273.15 + data$temp)))
     ## Convert root_respiration_rate to root_respiration_factor (i.e. maintenance respiration)
     ## assuming a 1:1 partitioning of growth:maintenance respiration
-    result$mean <- data$mean/2
-    result$stat <- data$stat/2
-
+    data$mean <- data$mean/2
+    data$stat <- data$stat/2
+    result <- data[,-which(colnames(data) %in% c('temp'))] #drop covariates
+    
   } else if (trait == 'c2n_leaf') {
     query <- paste("select traits.id, variables.name, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) left join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,")  and variables.name in ('c2n_leaf', 'leafN');", sep = "")
     query.result <- dbSendQuery(con, query)
-    result <- fetch(query.result, n = -1)
-    result <- pecan.transformstats(result)
-    leafNdata <- result$name == 'leafN'
-    leafNdataSE <- leafNdata & result$statname == 'SE'
+    data <- pecan.transformstats(fetch(query.result, n = -1))
+    leafNdata   <- data$name == 'leafN'
+    leafNdataSE <- leafNdata & data$statname == 'SE'
     inv.se <- function(mean, stat, n) signif(sd(48/rnorm(100000, mean, stat*sqrt(n)))/sqrt(n),3)
-    result$stat[leafNdataSE] <- apply(result[leafNdataSE, c('mean', 'stat', 'n')],1, function(x) inv.se(x[1],x[2],x[3]) )
-    result$mean[result$name == 'leafN'] <- 48/result$mean[result$name == 'leafN']
-  }  
+    data$stat[leafNdataSE] <- apply(data[leafNdataSE, c('mean', 'stat', 'n')],1, function(x) inv.se(x[1],x[2],x[3]) )
+    data$mean[data$name == 'leafN'] <- 48/data$mean[data$name == 'leafN']
+    result <- data
+  }
 
+  if (trait == 'leaf_width') result <- transform(result, mean = mean/1000, stat=stat/1000) 
+  
   ## rename name column from treatment table to trt_id
   names(result)[names(result)=='name'] <- 'trt_id'
 
