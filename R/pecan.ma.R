@@ -118,10 +118,16 @@ pecan.ma <- function(trait.data, priors, j.iter){
                     model.parms[['site']],
                     model.parms[['ghs']])
 
-    j.model   <- jags.model ( file = jag.model.file,
-                              data = data,
-                              n.adapt = 100, #will burn in below
-                              n.chains = j.chains)
+    
+    j.inits <- function(chain) list("beta.o" = do.call(paste('q',prior$dist,sep=''),
+                                      list(chain * 1/(j.chains + 1), prior$a, prior$b)),
+                                    .RNG.seed = chain,
+                                    .RNG.name = "base::Mersenne-Twister")
+    j.model   <- jags.model (file = jag.model.file,
+                             data = data,
+                             n.adapt = 100, #will burn in below
+                             n.chains = j.chains,
+                             init =  j.inits)
     
     jags.out   <- coda.samples ( model = j.model,
                                 variable.names = vars,
