@@ -69,13 +69,33 @@ query.bety.trait.data <- function(trait, spstr){
   ## rename name column from treatment table to trt_id
   names(result)[names(result)=='name'] <- 'trt_id'
 
-  ##if no control trt, set median value to control
-  if(!1 %in% result$control){
-    result$control[which.min((mean(result$mean)-result$mean)^2)] <- 1
-  }
   ## labeling control treatments based on treatments.control flag
   result$trt_id[which(result$control == 1)] <- 'control'
-  
+ 
+  for(sitei in unique(result$site_id)) {
+    i <- result$site_id == sitei 
+    if(!1 %in% result$control[i]){
+      warning(cat('\nWARNING: no control treatment set for site_id', sitei,
+                  '\nif there is only one treatment,',
+                  '\nthat treatment is set to control',
+                  '\nif there is more than one treatment,',
+                  '\nPECAn sets the treatment with mean closest',
+                  '\nto the mean of other controls as the control',
+                  '\nthis assumption may be FALSE',
+                  '\nplease review data from this site\n'),
+              eval = print(query.bety(paste("select url, author, year, title
+                                       from citations
+                                       where id in (select citation_id from
+                                       traits
+                                       where site_id =",sitei,");"))))
+      control.mean <- ifelse(1 %in% result$control,
+                             mean(result$mean[result$control == 1]),
+                             mean(result$mean))
+      result$control[i & which.min((control.mean - result$mean[i])^2)] <- 1
+    }
+  }
+
+    
   ## assign all unknown sites to 0
   result$site_id[is.na(result$site_id)] <- 0
   ## by default, assume obs. are from difft treatments
