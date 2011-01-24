@@ -3,6 +3,7 @@ load('out/pecan.MA.Rdata')
 load('outdir.Rdata')
 
 ## sample values for ensemble
+priors$distn[priors$distn=='weib']<-'weibull'
 trait.samps <- pecan.samps(trait.mcmc, priors)
 prior.dists <- trait.samps[['priors']]
 post.samps <- trait.samps[['post.samps']]     
@@ -17,6 +18,6 @@ write.configs(M, SA=TRUE, pft, prior.samps, post.samps, outdir)
 setwd(outdir)
 save(M, file='M.Rdata')
 rm(outdir)
-save.image('pecan.samps.Rdata')
+save(post.samps, prior.samps,file='pecan.samps.Rdata')
 
 ## print out some statistical summaries and figures from meta-analysis
