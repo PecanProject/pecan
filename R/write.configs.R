@@ -42,7 +42,7 @@ write.configs <- function(M, SA, pft, prior.samps, post.samps, outdir) {
       saveXML(CONFIGi, file = file, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
       filenames[['prior.ensemble']][m]<-file
     }
-
+    
     if (SA) { #if SA is true    
       
       PFTm <- PFT
@@ -54,57 +54,53 @@ write.configs <- function(M, SA, pft, prior.samps, post.samps, outdir) {
       filenames[['postmeans']] <- file
       saveXML(CONFIGm, file = file, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
 
-    for ( j in seq(tr)){
-      notj <- seq(tr)[-j]
-      PFTl <- append.xmlNode(PFT, xmlNode(tr[j], post.dtheta.q[tr[j], 'lcl']))
-      PFTu <- append.xmlNode(PFT, xmlNode(tr[j], post.dtheta.q[tr[j], 'ucl']))
-      for (k in notj) {
-        pmean <- post.dtheta.q[tr[k], 'mean']
-        PFTl <- append.xmlNode(PFTl, xmlNode(tr[k], pmean))
-        PFTu <- append.xmlNode(PFTu, xmlNode(tr[k], pmean))
+      for ( j in seq(tr)){
+        notj <- seq(tr)[-j]
+        PFTl <- append.xmlNode(PFT, xmlNode(tr[j], post.dtheta.q[tr[j], 'lcl']))
+        PFTu <- append.xmlNode(PFT, xmlNode(tr[j], post.dtheta.q[tr[j], 'ucl']))
+        for (k in notj) {
+          pmean <- post.dtheta.q[tr[k], 'mean']
+          PFTl <- append.xmlNode(PFTl, xmlNode(tr[k], pmean))
+          PFTu <- append.xmlNode(PFTu, xmlNode(tr[k], pmean))
+        }
+        CONFIGl <- append.xmlNode(CONFIG, PFTl)
+        CONFIGu <- append.xmlNode(CONFIG, PFTu)
+        filel <- paste(outdir, "/config.postlcl.", tr[j],".xml", sep="")
+        fileu <- paste(outdir, "/config.postucl.", tr[j],".xml", sep="")
+        filenames[['postSA']] <- c(filel, fileu)
+        saveXML(CONFIGl, file = filel, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
+        saveXML(CONFIGu, file = fileu, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
       }
-      CONFIGl <- append.xmlNode(CONFIG, PFTl)
-      CONFIGu <- append.xmlNode(CONFIG, PFTu)
-      filel <- paste(outdir, "/config.postlcl.", tr[j],".xml", sep="")
-      fileu <- paste(outdir, "/config.postucl.", tr[j],".xml", sep="")
-      filenames[['postSA']] <- c(filel, fileu)
-      saveXML(CONFIGl, file = filel, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
-      saveXML(CONFIGu, file = fileu, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
-    }
-    
-    PFTm <- PFT
-    for (tri in tr) {
-      PFTm <- append.xmlNode(PFTm, xmlNode(tri, prior.dtheta.q[tri, 'mean']))
-    }
-    CONFIGm <- append.xmlNode(CONFIG, PFTm)
-    file <- paste(outdir, "/config.priormeans.xml", sep = '')
-    filenames[['priormeans']] <- file
-    saveXML(CONFIGm, file = file, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
-    
-    ##following will test +/- 15% CI
-    ##make prior<ucl|lcl><trait>
-    for ( j in seq(tr)){
-      notj <- seq(tr)[-j]
-      PFTl <- append.xmlNode(PFT, xmlNode(tr[j], prior.dtheta.q[tr[j], 'lcl']))
-      PFTu <- append.xmlNode(PFT, xmlNode(tr[j], prior.dtheta.q[tr[j], 'ucl']))
-      for (k in notj) {
-        pmean <- prior.dtheta.q[tr[k], 'mean']
-        PFTl <- append.xmlNode(PFTl, xmlNode(tr[k], pmean))
-        PFTu <- append.xmlNode(PFTu, xmlNode(tr[k], pmean))
+      
+      PFTm <- PFT
+      for (tri in tr) {
+        PFTm <- append.xmlNode(PFTm, xmlNode(tri, prior.dtheta.q[tri, 'mean']))
       }
-      CONFIGl <- append.xmlNode(CONFIG, PFTl)
-      CONFIGu <- append.xmlNode(CONFIG, PFTu)
-      filel <- paste(outdir, "/config.priorlcl.", tr[j],".xml", sep="")
-      fileu <- paste(outdir, "/config.priorucl.", tr[j],".xml", sep="")
-      filenames[['priorSA']] <- c(filel, fileu)
-      saveXML(CONFIGl, file = filel, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
-      saveXML(CONFIGu, file = fileu, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
+      CONFIGm <- append.xmlNode(CONFIG, PFTm)
+      file <- paste(outdir, "/config.priormeans.xml", sep = '')
+      filenames[['priormeans']] <- file
+      saveXML(CONFIGm, file = file, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
+      
+      ##following will test +/- 15% CI
+      ##make prior<ucl|lcl><trait>
+      for ( j in seq(tr)){
+        notj <- seq(tr)[-j]
+        PFTl <- append.xmlNode(PFT, xmlNode(tr[j], prior.dtheta.q[tr[j], 'lcl']))
+        PFTu <- append.xmlNode(PFT, xmlNode(tr[j], prior.dtheta.q[tr[j], 'ucl']))
+        for (k in notj) {
+          pmean <- prior.dtheta.q[tr[k], 'mean']
+          PFTl <- append.xmlNode(PFTl, xmlNode(tr[k], pmean))
+          PFTu <- append.xmlNode(PFTu, xmlNode(tr[k], pmean))
+        }
+        CONFIGl <- append.xmlNode(CONFIG, PFTl)
+        CONFIGu <- append.xmlNode(CONFIG, PFTu)
+        filel <- paste(outdir, "/config.priorlcl.", tr[j],".xml", sep="")
+        fileu <- paste(outdir, "/config.priorucl.", tr[j],".xml", sep="")
+        filenames[['priorSA']] <- c(filel, fileu)
+        saveXML(CONFIGl, file = filel, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
+        saveXML(CONFIGu, file = fileu, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
+      }
     }
   }
   save(filenames, file = 'filenames.Rdata')
 }
-
-
-##M  = integer, if = 0 no ens. runs
-##SA = logical if TRUE, run SA
-##q  = quantiles sampled in the meta-analysis

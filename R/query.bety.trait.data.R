@@ -71,7 +71,8 @@ query.bety.trait.data <- function(trait, spstr){
 
   ## labeling control treatments based on treatments.control flag
   result$trt_id[which(result$control == 1)] <- 'control'
- 
+
+  ## Force a control treatment at each site
   for(sitei in unique(result$site_id)) {
     i <- result$site_id == sitei 
     if(!1 %in% result$control[i]){

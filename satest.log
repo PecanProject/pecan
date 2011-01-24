@@ -1,3 +1,8 @@
 14 Jan 2011
 
 Fixing code. Recently tried to change the code for transforming leaf width from mm to m, but code error has this transformation done twice. Now, need to debug
+
+Added generic function r2jags.distributions to pecan.ma.R transform priors from R parameterizations to JAGS parameterizations
+
+BETYdb:
+remove sarah virani tyler harpole from betydb from users, change permissions to manager, dietzelab (2,1) for non-admin dietze lab members; set to creator, collaborator for non-dietze lab members
