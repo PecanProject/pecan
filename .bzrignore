@@ -1220,3 +1220,4 @@ out/*
 ../out/transformed.samps.Rdata
 out20101109
 quantiles1530.Rdata
+satest.log
