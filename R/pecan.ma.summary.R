@@ -23,11 +23,7 @@ pecan.ma.summary <- function(mcmc.object, pft){
       plot(mcmc.object[[trait]][,i], trace = FALSE, density = TRUE,
            main = paste('summary plots of',i ,'for', pft, trait))
       plot(mcmc.object[[trait]][,i],density = FALSE, xlim =c(1, 50000))
-<<<<<<< TREE
-      autocorr.plot(mcmc.object[[trait]][,i][1], xlim = c(1, 2500))
-=======
       autocorr.plot(mcmc.object[[trait]][,i][1], xlim = c(1, 500))
->>>>>>> MERGE-SOURCE
     }
     dev.off()
   }
