@@ -1,16 +1,18 @@
 library(PECAn, lib.loc = '~/lib/R')
+source('R/pecan.samps.R')
 library(xtable)
 pft <- 'ebifarm.c4crop'
-ITER  <- 250000
+ITER  <- 50000
 M     <- 500
 outdir   <- system("echo $PECANOUT", intern = TRUE)
 outfile1 <- paste(outdir, '/pecan.parms.Rdata', sep = '')
 save.image(outfile1)
+set.seed(1)
 
 spp <- query.bety.pft_species(pft)
 spstr <- spp$spstr 
 
-trstr <- "'mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','growth_resp_factor','leaf_turnover_rate','leaf_width','nonlocal_dispersal','q','root_respiration_factor','root_turnover_rate','seedling_mortality','SLA_gC_per_m2','stomatal_slope','Vm_low_temp','quantum_efficiency','f_labile','c2n_leaf','water_conductance','Vm0','r_fract','storage_turnover_rate'" #SLA_gC_per_m2 is converted to SLA in query.bety.priors
+trstr <- "'mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','growth_resp_factor','leaf_turnover_rate','leaf_width','nonlocal_dispersal','q','root_respiration_factor','root_turnover_rate','seedling_mortality','SLA_gC_per_m2','stomatal_slope','Vm_low_temp','quantum_efficiency','f_labile','water_conductance','Vm0','r_fract','storage_turnover_rate', 'T'" #SLA_gC_per_m2 is converted to SLA in query.bety.priors
 
 priors <- query.bety.priors(pft, trstr)
 print(priors)
@@ -20,31 +22,28 @@ trait.defs <- trait.dictionary(trvec)
 
 save(trait.defs, file = paste(outdir, '/trait.defs.Rdata', sep=''))
 ## now it is time to query the data
-trait.data <- query.bety.traits(spstr,trvec) 
-## returns list 'trait.data' with one dataframe per variable 
+trait.data <- query.bety.traits(spstr,trvec)
 
+## returns list 'trait.data' with one dataframe per variable 
+ 
 ## run the meta-analysis
 trait.mcmc <- pecan.ma(trait.data, priors, j.iter = ITER)
 
 pecan.ma.summary(trait.mcmc, pft)
 outfile2 <- paste(outdir, '/pecan.MA.Rdata', sep = '')
 save.image(outfile2)
-save(outdir, file='outdir.Rdata')
-trait.samps <- pecan.samps(trait.mcmc, priors)
-prior.dists <- trait.samps[['priors']]
-post.samps <- trait.samps[['post.samps']]     
-prior.samps <- trait.samps[['prior.samps']] #matrix of samples from all priors
-save(post.samps, prior.samps,file='pecan.samps.Rdata')
+priors$distn[priors$distn=='weib'] <- 'weibull'
+#trait.samps <- pecan.samps(trait.mcmc, priors)
+#priors <- prior.dists <- trait.samps[['priors']]
+#post.samps <- trait.samps[['post.samps']]     
+#prior.samps <- trait.samps[['prior.samps']] #matrix of samples from all priors
 
-load('out/pecan.samps.Rdata')
-load('out/pecan.MA.Rdata')
 const <- pecan.config.constants(pft)
 PFT <- const$PFT
 CONFIG <- const$CONFIG
 traits <- tr <- colnames(post.samps)
 filenames <- list()
 outdir <- 'out'
-
 
 trait.beta.o <- list()
 for(i in names(trait.mcmc)){
@@ -53,10 +52,11 @@ for(i in names(trait.mcmc)){
 
 i <- 1:10000
 trait.mat <- data.frame(SLA=trait.beta.o$SLA[i],
-                        c2n_leaf=trait.beta.o$c2n_leaf[i],
                         leaf_width=trait.beta.o$leaf_width[i],
+                        seedling_mortality=trait.beta.o$seedling_mortality[i],
                         Vm0=trait.beta.o$Vm0[i],
-                        q=trait.beta.o$q[i])
+                        q=trait.beta.o$q[i],
+                        root_turnover_rate = trait.beta.o$root_turnover_rate[i])
 
 n.samp <- 10000
 traits <- names(trait.mcmc)
@@ -67,10 +67,10 @@ prior.samps <- sapply(1:nrow(priors), function(x) do.call(pr.samp,priors[x,]))
 colnames(prior.samps) <- rownames(priors)
 
 post.samps <- prior.samps
-for (tri in traits) post.samps[1:n.samp,tri] <- trait.mat[1:n.samp, tri]
+for (tri in colnames(trait.mat)) post.samps[1:n.samp,tri] <- trait.mat[1:n.samp, tri]
+save(post.samps, prior.samps,file='out/pecan.samps.Rdata')
 
-quantiles <- c(0.05, 0.20, 0.35, 0.5, 0.65, 0.80, 0.95)
-
+quantiles <- 1-pnorm(-3:3)
 calculate.quantiles <- function(x,samps, quantiles) {
   quantile(samps[,x], quantiles)
 }
@@ -90,6 +90,7 @@ n.mean  <- 4
 n.ucl15 <- 5
 n.ucl30 <- 6
 n.ucl45 <- 7
+
 PFTm <- PFT
 for (tri in traits) { 
   PFTm <- append.xmlNode(PFTm, xmlNode(tri, qprior[[tri]][n.mean]))
@@ -188,6 +189,46 @@ for ( tri in traits){
   saveXML(CONFIGu45, file = fileu45, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
 }
 
+if (M>0) { #if M==0, only do sens.anal.runs
+  seqM <- seq(1,M)
+  ## add leading zeroes to the file names to avoid confusion
+  zerosM <- sprintf("%04.0f", seqM) #"%05.0f" if > 10^5 runs, etc.
+  
+  
+  samps <- halton(n = M, dim = ncol(post.samps)) 
+  colnames(samps) <-  traits
+  
+  ## Insert samples from trait posteriors into config.xml files
+  for (m in seqM) {
+    zm <- zerosM[m]
+    PFTi <- PFT
+    for (k in tr) {
+      samp <- quantile( post.samps[,k], samps[m,k])
+      PFTi <- append.xmlNode(PFTi, xmlNode(k, samp))
+      
+    }
+    CONFIGi <- append.xmlNode(CONFIG, PFTi)
+    file <- paste(outdir, "/config.postsamp",zm,".xml",sep="")
+    saveXML(CONFIGi, file = file, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
+    filenames[['post.ensemble']][m]<-file
+    rm(PFTi)
+    
+
+    ## Insert samples from trait priors into config.xml files
+    PFTi <- PFT
+    for (k in tr) {
+      samp <- quantile(prior.samps[,k], samps[m,k])
+      PFTi <- append.xmlNode(PFTi, xmlNode(k, samp))
+    }
+    CONFIGi <- append.xmlNode(CONFIG, PFTi)
+    file <- paste(outdir, "/config.priorsamp",zm,".xml",sep="")
+    saveXML(CONFIGi, file = file, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
+    filenames[['prior.ensemble']][m]<-file
+  }
+}
+  
+  
+  
 ##next run cleanup script from pecan.writeconfigs.sh
 system("
 cd $PECANOUT \n
@@ -206,27 +247,38 @@ for i in *stomatalslope*xml; do mv \"${i}\" \"${i/stomatalslope/stmslope}\"; don
 for i in c*xml; do mv \"${i}\" \"${i/.xml/}\"; done \n
 echo \"zipping config files to saconfigs.tgz\" \n
 tar zcf saconfigs.tgz c.* \n
-rm c.*\n")
+rm c.*\n
+cp saconfigs.tgz saconfigs20101223.tgz")
+
 system("cd $PECANHOME\n
 rsync -routi out/saconfigs.tgz ebi-cluster:/home/scratch/dlebauer/pecan/edin/ \n
 ssh -T ebi-cluster < bash/pecan.ed2in.create.sh \n
 ssh -T ebi-cluster < bash/pecan.ed.batchjobs.sh \n
 ")
-                                        # switch to cluster and run:
+save(traits, file = 'traits.Rdata')
+
+## switch to cluster and run:
+setwd("/home/scratch/dlebauer/pecan/")
+system('rsync ebi-forecast:pecan/traits.Rdata ./')
+load('traits.Rdata')
+system('rsync ebi-forecast:pecan/R/trait.dictionary.R ./')
+source('trait.dictionary.R')
+trait.defs <- trait.dictionary(traits)
 library(ggplot2)
 source('R/pecan.edout.R')
 pecanhome <- system("echo $PWD", intern=TRUE)
 pecanout <- paste(pecanhome, '/out', sep = '')
-date <-  20101215
-M <- 0
+date <-  20110119
+M <- 500
 outdir   <- paste(pecanout, date, sep = '')
-yr0   <- 2005
-yrf   <- 2009
-
+yr0   <- 2001
+yrf   <- 2003
+ 
 ## code from pecan.edout()
 library('hdf5')
-load('out/trait.defs.Rdata')
-
+system('rsync ebi-forecast:pecan/out/trait.defs.Rdata ./')
+load('trait.defs.Rdata')
+#trait.defs <- as.matrix(trait.defs)
 time.range <- c(yr0, yrf)
 
 ## create vectors sarun, saruntype
@@ -237,19 +289,21 @@ runid     <- c('prior', 'post')
 cl        <- c('lcl45','lcl30','lcl15', 'ucl15','ucl30','ucl45')
 runid.cl  <- melt(sapply(runid, paste,  cl, '.', sep = ''))
 trait.fileid <- trait.defs$fileid
+
 saruns    <- melt(sapply(runid.cl$value, paste,  trait.fileid, '-', sep = ""))
+
 saruns$X2[saruns$X2%in%1:6] <- runid[1]
 saruns$X2[saruns$X2%in%7:12] <- runid[2]
 saruns <- saruns[order(saruns$X1),]
 
 for(i in seq(trait.fileid)){
-  saruns$X1[saruns$X1==i] <- as.character(trait.fileid[i])
+  saruns$trait[saruns$X1==i] <- as.character(trait.fileid[i])
 }
 colnames(saruns) <- c('trait','runtype', 'runnames')
 
 edoutfiles    <- dir(outdir, full.names = TRUE)      ## grab all files in outdir
 edoutfiles.yr <- edoutfiles[grep("-Y-", edoutfiles)]            ## select annual output
-
+edoutfiles.mo <- edoutfiles[grep("-E-", edoutfiles)]            ## select annual output
 readagb <- function(runname, year) {
   files <- edoutfiles.yr[grep(runname, edoutfiles.yr)]
   file  <- unique(files[grep(year, files)])
@@ -262,37 +316,54 @@ readagb <- function(runname, year) {
   return(agb)
 }
 
-edout  <- data.frame(saruns,
+agbmeans <- data.frame(yr=1994:2006, po=rep(NA,13), pr=rep(NA,13))
+for(i in 1:13){
+  agbmeans$po[i] <- readagb('postmean', agbmeans$yr[i])
+  agbmeans$pr[i] <- readagb('priormean', agbmeans$yr[i])
+}
+
+edout.sa  <- data.frame(saruns,
                      agb=rowMeans(sapply(yr0:yrf, function(x) sapply(saruns$runname, readagb, x))))
 
-postmean.f  <- mean(sapply(yr0:yrf, readagb, runname = 'postmeans'),na.rm =TRUE)
-priormean.f <- mean(sapply(yr0:yrf, readagb, runname = 'priormeans'))
+ensnames <- c(paste('priorsamp0',1:M,sep=''), paste('postsamp0',1:M,sep='')) 
+edout.ens <- data.frame(ensnames,
+                       runtype = c(rep('prior', M), rep('post', M)),
+                       agb     = rowMeans(sapply(yr0:yrf, function(x) sapply(ensnames, readagb, x))))  
+
+save(edout.ens, file='out/edout.ens.Rdata')
+save(edout.sa, file='out/edout.sa.Rdata')
+###
+#Plot output
+###
+postmean.f  <- mean(sapply(yr0:yrf, readagb, runname = 'postmean'),na.rm =TRUE)
+priormean.f <- mean(sapply(yr0:yrf, readagb, runname = 'priormean'),na.rm =TRUE)
 mean.f <- list(post=postmean.f, prior=priormean.f) 
-save(mean.f, edout, file=paste(pecanout, '/edout.satest.Rdata', sep=''))
+save(mean.f, edout.sa, file=paste(pecanout, '/edout.sa.satest.Rdata', sep=''))
 
 ############
-stop('switch to desktop')
-library(ggplot2)
+stop('switch to forecast')
+library(PECAn, lib.loc='~/lib/R')
 system('rsync -routi ebi-cluster.igb.uiuc.edu:/home/scratch/dlebauer/pecan/out/*.Rdata ~/pecan/out/')
-system('rsync -routi ebi-forecast.igb.uiuc.edu:/home/dlebauer/pecan/out/qpostqprior.Rdata ~/pecan/out/')
 
+load('out/edout.sa.satest.Rdata')
+load('out/pecan.MA.Rdata')
 load('out/qpostqprior.Rdata')
-load('out/edout.satest.Rdata')
+load('out/pecan.samps.Rdata')
 
 qpost.theta <- ldply(qpost)[,-1]
 qprior.theta <- ldply(qprior)[,-1]
-traits <- names(qpost)
+
 rownames(qprior.theta) <- rownames(qpost.theta) <- traits
 colnames(qprior.theta) <- colnames(qpost.theta)  <- c('lcl45', 'lcl30','lcl15','mean', 'ucl15','ucl30', 'ucl45')
 
                                         #run defs from trait.dictionary
-source('rscripts/defs.R')
-trait.defs <- defs[defs$id %in% names(qpost),]
+trait.defs <- trait.dictionary(traits)
 
-traits <- trait.defs$id
-fcls <-   function(x, runtypei){
-  y <- trait.defs$fileid[match(x, trait.defs$id)]
-  c(edout$agb[edout$trait == y & edout$runtype==runtypei], mean.f[[runtypei]])[c(1,2,3,7,4,5,6)]
+
+fcls <-   function(trait, runtype){
+  tr <- trait.defs$fileid[trait.defs$id == trait]
+  a <- edout.sa[edout.sa$runtype == runtype, ]
+  c(a$agb[grep(paste(tr, '-',sep=''), a$runnames)], mean.f[[runtype]])[c(1,2,3,7,4,5,6)]
 }
 
 qprior.f <- lapply(traits, fcls, 'prior')
@@ -306,77 +377,9 @@ qprior.theta <- as.data.frame(t(qprior.theta))
 qpost.theta <- as.data.frame(t(qpost.theta))
 
 rownames(qprior.f) <- rownames(qpost.f)  <- c('lcl45', 'lcl30','lcl15','mean', 'ucl15','ucl30','ucl45')
-                                        #colnames(qprior.theta) <- colnames(qpost.theta)  <- paste(c('lcl30','lcl15','mean', 'ucl15','ucl30'),'theta', sep = '')
-
-
-
-save(qprior.f, qpost.f, qprior.theta, qpost.theta, file = 'out/satest.Rdata')
-##start plotting
-
-                                        #system('rsync -routi ebi-forecast.igb.uiuc.edu:/home/dlebauer/pecan/out/satest.Rdata ~/pecan/out/')
-
-load('out/satest.Rdata')
-
-
-traits <- colnames(qpost.f)
-library(splines)
-library(ggplot2)
-
-max.y <- 180
-min.y <- 0
-max.x <- sapply(names(qpost.f), function(x) signif(max(qpost[[x]], qprior[[x]]),2)*1.1)
-min.x <- sapply(names(qpost.f), function(x) signif(min(qpost[[x]], qprior[[x]]),2)*0.9)
-
-plotsa <- function(trait, runtype){
-  if(runtype == 'post') {
-    f<-qpost.f[,trait]
-    theta<-qpost.theta[,trait]
-  }
-  if(runtype == 'prior') {
-    f<-qprior.f[,trait]
-    theta<-qprior.theta[,trait]
-  }
-  xmax <- max.x[[trait]]
-  xmin <- min.x[[trait]]
-  
-  data <- data.frame(x = theta, y=f)
-  ggplot(data=data) +
-    opts(title=paste(runtype,trait)) +
-      coord_cartesian(xlim = c(xmin, xmax),ylim = c(min.y,max.y)) +
-        theme_bw() +
-          stat_smooth(aes(x = x,y = y),data=data,method = 'lm', formula = 'y ~ ns(x,6)', color = 'black', size = 2, fill = '#fefefe') +
-  geom_point(aes(x=x, y= y), data=data, size = 2, color = 'white')
-  ##stat_smooth(aes(x = x,y = y),data=data,method = 'loess', color = 'red', fill = '#fefefe')  +
-}
-
-plotsa('SLA', 'prior')
-plotsa('q', 'prior')
-plotsa('c2n_leaf', 'prior')
-plots <- list(prior=list(), post=list())
-for(trait in traits){
-  for(runtype in c('prior', 'post')) {
-    plots[[runtype]][[trait]] <- plotsa(trait, runtype)
-  }
-}
-
-pdf('stomatal_slope_sensitivity.pdf')
-  for(runtype in c('prior', 'post')) {
-    plots[[runtype]][[trait]] <- plotsa('stomatal_slope', runtype)
-  }
-dev.off()
-pdf('SAtest.pdf')
-plots
-dev.off()
-
+colnames(qprior.theta) <- colnames(qpost.theta)  <- traits
+ 
 ####Variance Decomposition
-##on forecast
-library(PECAn, lib.loc='~/lib/R')
-load('out/qpostqprior.Rdata')
-load('out/satest.Rdata')
-load('out/pecan.samps.Rdata')
-load('out/edout.satest.Rdata')
-
-
 trait.samps<-list()
 trait.samps[['post']] <- post.samps
 trait.samps[['prior']] <- prior.samps
@@ -386,35 +389,98 @@ prior.mean.theta <- adply(trait.samps[['prior']],2, mean)
 traits <- names(qprior)
 
 satable <- data.frame(var.f.hat = rep(NA,length(traits)),
+                      var.theta = rep(NA,length(traits)),
                       sens      = rep(NA,length(traits)),
                       var.theta = rep(NA,length(traits)),
                       mean.f    = rep(NA,length(traits)),
                       mean.theta= rep(NA,length(traits)),
+                      y95ci     = rep(NA,length(traits)),
                       row.names = traits)
 satables <- list(post=satable, prior=satable)                      
 qtheta <- list(post = qpost.theta, prior = qprior.theta)
 qf <- list(post = qpost.f, prior = qprior.f)
 
+splinelines <- list('prior'=list(), 'post'=list())
+splinepoints<- list('prior'=list(), 'post'=list())
+
 for(runname in c('prior','post')){
-  for(tr in traits) {
-    tr. <- ifelse(tr=='leafN','c2n_leaf',tr)
-    f <- splinefun(qtheta[[runname]][[tr.]], qf[[runname]][[tr.]])
-    x <- trait.samps[[runname]][,tr]
-    x[x<0 | is.na(x)] <- 0
-    satable[tr, 'var.f.hat'] <- var(f(x))
-    satable[tr, 'sens']      <- f(mean(x),1)/(mean(f(x))/mean(x))
-    satable[tr, 'mean.theta']<- mean(x)
-    satable[tr, 'mean.f']    <- mean(f(x))
-    satable[tr, 'var.theta'] <- var(x)
+  for(trait in traits) {
+    x <- qtheta[[runname]][[trait]]
+    y <- qf[[runname]][[trait]]
+    f <- splinefun(x, y, method = "monoH.FC")
+    splinepoints[[runname]][[trait]] <- data.frame(x=x,y=y)
+    xpts <- seq(min(x),max(x),length.out=100)
+    splinelines[[runname]][[trait]]  <- data.frame(x=xpts,y=f(xpts))
+    x <- trait.samps[[runname]][,trait]
+    #rangex <- quantile(x, pnorm(c(-3,3)))
+    #x<-x[x>rangex[1] & x<rangex[2]]
+    y <- f(x)
+    y[y<0 | is.na(y)] <- 0
+    satable[trait, 'var.f.hat'] <- var(y)
+    satable[trait, 'var.theta'] <- var(x)
+    satable[trait, 'sens']      <- f(mean(x),1)
+    satable[trait, 'mean.theta']<- mean(x)
+    satable[trait, 'mean.f']    <- mean(y)
+    satable[trait, 'var.theta'] <- var(x)
+    satable[trait, 'y95ci']     <- diff(quantile(y, c(0,1)))    
   }
   var.f.hat.total <- sum(satable$var.f.hat)
   satable$per.var <- satable$var.f.hat/var.f.hat.total
+  satable$var     <- satable$var.f.hat
   satable$cv      <- sqrt(satable$var.theta)/satable$mean.theta
   vmi <- which(rownames(satable)=='Vm_low_temp')
   satable$cv[vmi] <- sqrt(satable$var.theta[vmi])/(satable$mean.theta[vmi]+273.15)
   satable$elas    <- with(satable, sens / (mean.f / mean.theta))
   satables[[runname]] <- satable
 }
+
+##start plotting SA plots
+
+max.y <- 10
+min.y <- 0 
+plotsa<-function(trait) {
+  dpr <- splinepoints[['prior']][[trait]]
+  dpo <- splinepoints[['post']][[trait]]
+  lpr <- splinelines[['prior']][[trait]]
+  lpo <- splinelines[['post']][[trait]]
+  ggplot() +
+    scale_y_continuous(limits = c(0,60), breaks = c(0, 10, 20, 30))+
+    opts(title=trait.dictionary(trait)$figid) +
+      coord_cartesian(x=c(0, max(dpr$x)*1.1)) +
+        theme_bw() +
+            geom_line(aes(x, y),
+                      color = 'grey',
+                      size = 2.5,
+                      data = lpr ) +
+                        geom_point(aes(x,y),
+                                   data = dpr,
+                                   color = 'pink',
+                                   size = 1.5) +
+                                     geom_line(aes(x, y),                                                       
+                                               color = 'black',
+                                               size = 2.5,
+                                               data = lpo) +
+                                                 geom_point(aes(x,y),
+                                                            data=dpo,
+                                                            color = 'pink',
+                                                            size = 1.5)
+}
+ 
+
+plotsa(traits[2])
+plotsa('q')
+plotsa('seedling_mortality')
+plotsa('SLA')
+#plotsa('Vm0')
+
+plots <- lapply(traits,plotsa)
+ 
+pdf('out/sensitivity_analysis.pdf')
+plots
+dev.off()
+
+
+##begin plotting Var Decomp Tryptich
 
 pr    <- satables[['prior']]
 po    <- satables[['post']]
@@ -431,14 +497,14 @@ po_rank_per_var <- order(po$per.var)
 po <- po[po_rank_per_var,]
 pr <- pr[po_rank_per_var,]
 
-data <- data.frame(
-                   trait = pr$figid,
+data <- data.frame(trait = po$id,
+                   title = po$figid,
                    pr.cv = pr$cv, #prior coef. var
                    po.cv = po$cv,  #post  " "
                    pr.el = pr$elas,     #prior elasticity
                    po.el = po$elas,     #post  "
-                   pr.ev = pr$per.var,  #prior, explained variance by parameter i
-                   po.ev = po$per.var,  #post   "         "        "  " 
+                   pr.ev = pr$var,  #prior, explained variance by parameter i
+                   po.ev = po$var,  #post   "         "        "  " 
                    null  = rep(0,nrow(po)))     #dummy for label plot
 ## fig. parameters
 cv.ymax <- max(abs(data[,c('pr.cv', 'po.cv')])) * 1.1 #po.cv =< pr.cv by definition
@@ -456,15 +522,15 @@ base.plot <- ggplot(data) +
        axis.text.y = theme_text(size=0.01),
        axis.title.x = theme_blank(), 
        axis.title.y = theme_blank(),
-       ## theme_text(size = 20),
-       ## axis.ticks = theme_blank(),
+       theme_text(size = 20),
+       axis.ticks = theme_blank(),
        panel.grid.major = theme_blank(),
        panel.grid.minor = theme_blank(),
        panel.border = theme_blank())
 
  trait.plot <- base.plot +
-    opts( title = 'agb') +
-      geom_text(aes(y = 1, x = seq(nrow(data)), label=trait), data=data, hjust = 1) +
+    opts( title = 'parameter') +
+      geom_text(aes(y = 1, x = seq(nrow(data)), label=title, data=data, hjust = 1)) +
         scale_y_continuous( breaks = c(0,0),
                            limits = c(0,1))
   
@@ -474,28 +540,88 @@ base.plot <- ggplot(data) +
         geom_pointrange(aes(seq(nrow(data)), po.cv, ymin = 0, ymax = po.cv), size = 1.25) +
           scale_y_continuous(breaks =  seq(0, cv.ymax, by=0.2), 
                              limits = c(0, cv.ymax)) 
-  
+ 
 
   el.plot <- base.plot +
-    opts( title = 'Elasticity') +
-      geom_pointrange(aes(seq(nrow(data)), pr.el, ymin = 0, ymax = pr.el), size = 1.25, color = 'grey')+
-        geom_pointrange(aes(seq(nrow(data)), po.el, ymin = 0, ymax = po.el), size = 1.25) +
+    opts( title = 'log Elasticity') +
+      geom_pointrange(aes(seq(nrow(data)), log10(abs(pr.el)+1), ymin = 0, ymax = log10(abs(pr.el)+1)), size = 1.25, color = 'grey')+
+       geom_pointrange(aes(seq(nrow(data)), log10(abs(po.el)+1), ymin = 0, ymax = log10(abs(po.el)+1)), size = 1.25) +
           scale_y_continuous(#breaks =  seq(el.ymin, el.ymax, by=???), 
-                             limits = c(el.ymin, el.ymax)) 
+                             limits = c(0, 2)) 
 
 
   ev.plot <- base.plot +
-    opts( title = 'Explained Variance') +
-      geom_pointrange(aes(seq(nrow(data)), pr.ev, ymin = 0, ymax = pr.ev), size = 1.25, color = 'grey')+
-        geom_pointrange(aes(seq(nrow(data)), po.ev, ymin = 0, ymax = po.ev), size = 1.25) +
+    opts( title = 'log Explained Variance') +
+      geom_pointrange(aes(seq(nrow(data)), log10(pr.ev+1), ymin = 0, ymax = log10(pr.ev+1)), size = 1.25, color = 'grey')+
+        geom_pointrange(aes(seq(nrow(data)), log10(po.ev+1), ymin = 0, ymax = log10(po.ev+1)), size = 1.25) +
           scale_y_continuous(#breaks =  seq(0, ev.ymax, by=ev.ymax/5), 
-                             limits = c(0, ev.ymax))
-  pdf(paste('saplotagb.pdf', sep=''), width = 18 , height = 8)
+                            limits = c(0, 3))
+
+
+  pdf(paste('out/vardecomp.pdf', sep=''), width = 18 , height = 8)
   grid.arrange(trait.plot, cv.plot, el.plot, ev.plot, ncol=4)
   dev.off()
 
 
-##diagnostics
-tr <- 'SLA'
-f <- splinefun(qtheta[[runname]][[tr]], qf[[runname]][[tr]])
-x <- trait.samps[[paste(runname,'.samps',sep='')]][,tr]
+#############
+#Ens plots
+############
+
+load('out/edout.ens.Rdata')
+
+
+ 
+ens <- edout.ens[edout.ens$agb<100 & edout.ens$agb > 0 & !is.na(edout.ens$agb),]
+
+pr.q <- quantile(ens$agb[ens$runtype=='prior'], c(0.05, 0.5, 0.95))
+po.q <- quantile(ens$agb[ens$runtype=='post'], c(0.05, 0.5, 0.95))
+pr.dens <- density(ens$agb[ens$runtype=='prior'], from = 0)
+po.dens <- density(ens$agb[ens$runtype=='post'], from = 0)
+
+pr.densdf <- data.frame(x = c(0, pr.dens$x), y = c(0, pr.dens$y))
+po.densdf <- data.frame(x = c(0, po.dens$x), y = c(0, po.dens$y))
+
+pdf('out/ensemble_density.pdf')
+fontsize <- 14
+ggplot() +
+  theme_bw() +
+  opts(title = "Aboveground Biomass \n prior (grey) \n post (dark grey)",
+       axis.text.y = theme_blank(),
+       axis.text.x = theme_text(size=fontsize),
+       axis.line = theme_blank(),
+       axis.title.x = theme_blank(), 
+       axis.title.y = theme_blank(),
+       theme_text(size = 20),
+       axis.ticks.x = theme_blank(),
+       panel.grid.major = theme_blank(),
+       panel.grid.minor = theme_blank(),
+       panel.border = theme_blank(),
+       axis.color.y = 'white',
+       legend.position=c(-10,0)) +
+  geom_area(data = subset(pr.densdf, x >= pr.q[1] & x<= pr.q[3]),
+            aes(x=x, y=y), fill = 'grey50', alpha = 0.5) +
+  geom_area(data = subset(po.densdf, x >= po.q[1] & x<= po.q[3]),
+            aes(x=x, y=y), fill = 'grey20') +
+  geom_line(data = pr.densdf, aes(x=x, y = y) , color = 'grey50') +
+  geom_line(data = po.densdf, aes(x=x, y = y) , color = 'grey20') +
+  scale_x_continuous(limits = c(0, 50))#, breaks = c(0, 20, 40, 60, 80, 100))
+
+dev.off()
+
+system('rsync -routi /home/dlebauer/pecan/out/ensemble_density.pdf dlebauer:research/writing/pecan/')
+system('rsync -routi /home/dlebauer/pecan/out/sensitivity_analysis.pdf dlebauer:research/writing/pecan/')
+system('rsync -routi /home/dlebauer/pecan/out/vardecomp.pdf dlebauer:research/writing/pecan/')
+
+ 
+########Calculate var(f) and sum(var(theta))
+prior.varf <- var(c(ens$agb[ens$runtype=='prior']))
+post.varf  <- var(c(ens$agb[ens$runtype=='post']))
+prior.varest <- sum(satables[['prior']]$var)
+post.varest <- sum(satables[['post']]$var)
+cat(' run ', ' varf ',' varest\n prior ', prior.varf, prior.varest,' \n post ', post.varf, post.varest)
+
+
+######Get Dan's Pavi Yield data
+paviyield <- query.bety("select mean from yields where specie_id = 938 and user_id != 11;")
+plot(density(paviyield$mean))
+abline(v=quantile(paviyield$mean,c(0.025,0.0975)))
