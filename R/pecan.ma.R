@@ -49,8 +49,11 @@ pecan.ma <- function(trait.data, priors, j.iter){
   
   for(trait.name in names(trait.data)) {
     prior.name <- ifelse(trait.name != 'Vcmax', trait.name, 'Vm0')
-    prior <- jagspriors[prior.name, c('distn', 'parama', 'paramb', 'n')]
+    jagsprior <- jagspriors[prior.name, c('distn', 'parama', 'paramb', 'n')]
+    colnames(jagsprior) <- c("distn", "a", "b", "n")
+    prior <- priors[prior.name, c('distn', 'parama', 'paramb', 'n')]
     colnames(prior) <- c("distn", "a", "b", "n")
+
     writeLines(paste('starting meta-analysis for', trait.name))
 
     data <- trait.data[[trait.name]]
@@ -58,7 +61,7 @@ pecan.ma <- function(trait.data, priors, j.iter){
 
     #print out some data summaries to check
     writeLines(paste('prior for ', trait.name, ':',
-                prior[1], '(',prior[2], ', ', prior[3], ')', sep = ''))
+                jagsprior[1], '(',jagsprior[2], ', ', jagsprior[3], ')', sep = ''))
     writeLines(paste('data max:', max(data$Y), '\ndata min:', min(data$Y), '\nmean:', signif(mean(data$Y),3), '\nn:', length(data$Y)))
     writeLines('stem plot of data points')
     writeLines(paste(stem(data$Y)))
@@ -112,7 +115,7 @@ pecan.ma <- function(trait.data, priors, j.iter){
     write.ma.model (modelfile = 'rscripts/ma.model.template.bug',
                     outfile = jag.model.file,
                     reg.model = reg.model,
-                    prior$distn, prior$a, prior$b,
+                    jagsprior$distn, jagsprior$a, jagsprior$b,
                     length ( data$Y ),
                     model.parms[['trt']],
                     model.parms[['site']],
@@ -128,7 +131,6 @@ pecan.ma <- function(trait.data, priors, j.iter){
                              n.adapt = 100, #will burn in below
                              n.chains = j.chains,
                              init =  j.inits)
-    
     jags.out   <- coda.samples ( model = j.model,
                                 variable.names = vars,
                                 n.iter = j.iter,
