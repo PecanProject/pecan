@@ -1,28 +1,50 @@
-load('out/edout.Rdata')
-library(ggplot2)
-pr.samp <- which(edout[['runtype']]=='priorsamp')
-po.samp <- which(edout[['runtype']]=='postsamp')
-agb <-edout[['agb']][['output']]
+fontsize = 14 
 
-data <-data.frame(prior = agb[pr.samp,3],post = agb[po.samp,3]) 
 
-## Manuscript Figures
-agbens <- ggplot(data=data) +
-  opts(title = 'Switchgrass Yield (grey = prior, black = posterior)') +
-  geom_density(aes(x = post)) +
-  geom_density(aes(x = prior),colour = 'grey') +
-  scale_x_continuous('November Aboveground Biomass (Mg ha-1 y-1) average over years 5-10') +
-  scale_y_continuous('Density') +
-  theme_bw()
+######AGB ENSEMBLE PLOTS
 
-pdf('out/agbens.pdf')
-agbens
+load('out/edout.ens.Rdata')
+ens <- edout.ens[edout.ens$agb<100 & edout.ens$agb > 0 & !is.na(edout.ens$agb),]
+pr.q <- quantile(ens$agb[ens$runtype=='prior'], c(0.05, 0.5, 0.95))
+po.q <- quantile(ens$agb[ens$runtype=='post'], c(0.05, 0.5, 0.95))
+pr.dens <- density(ens$agb[ens$runtype=='prior'], from = 0)
+po.dens <- density(ens$agb[ens$runtype=='post'], from = 0)
+
+pr.densdf <- data.frame(x = c(0, pr.dens$x), y = c(0, pr.dens$y))
+po.densdf <- data.frame(x = c(0, po.dens$x), y = c(0, po.dens$y))
+
+pdf('out/ensemble_density.pdf')
+
+ggplot() +
+  theme_bw() +
+  opts(title = "Aboveground Biomass \n prior (grey) \n post (dark grey)",
+       axis.text.y = theme_blank(),
+       axis.text.x = theme_text(size=fontsize),
+       axis.line = theme_blank(),
+       axis.title.x = theme_blank(), 
+       axis.title.y = theme_blank(),
+       theme_text(size = 20),
+       axis.ticks.x = theme_blank(),
+       panel.grid.major = theme_blank(),
+       panel.grid.minor = theme_blank(),
+       panel.border = theme_blank(),
+       axis.color.y = 'white',
+       legend.position=c(-10,0)) +
+  geom_area(data = subset(pr.densdf, x >= pr.q[1] & x<= pr.q[3]),
+            aes(x=x, y=y), fill = 'grey50', alpha = 0.5) +
+  geom_area(data = subset(po.densdf, x >= po.q[1] & x<= po.q[3]),
+            aes(x=x, y=y), fill = 'grey20') +
+  geom_line(data = pr.densdf, aes(x=x, y = y) , color = 'grey50') +
+  geom_line(data = po.densdf, aes(x=x, y = y) , color = 'grey20') +
+  scale_x_continuous(limits = c(0, 50))#, breaks = c(0, 20, 40, 60, 80, 100))
+
 dev.off()
 
 ## Trait Pdfs
 load('out/pecan.samps.Rdata')
 load('madata.Rdata')
-traits <- colnames(prior.samps)
+load('out/trait.defs.Rdata')
+traits <- colnames(prior.samps)#trait.defs$id
 
 trait.plots <- list()
 for (i in seq(traits)) {
@@ -38,12 +60,6 @@ for (i in seq(traits)) {
 
   if(tri == 'Vm0') {
     tr <- trait.data[['Vcmax']]
-  } else if (tri == 'c2n_leaf') {
-    tr <- trait.data[['leafN']]
-    tr$Y <- 48/tr$Y
-  } else if (tri =='leaf_width') {
-    tr <- trait.data[['leafN']]
-    tr$Y <- tr$Y/1000
   } else {
     tr <- trait.data[[tri]]
   }
@@ -55,7 +71,7 @@ for (i in seq(traits)) {
   trait.plots[[tri]] <- plot
 }
 
-pdf('traitpdfs.pdf')
+pdf('out/traitpdfs.pdf')
 trait.plots
 dev.off()
 
