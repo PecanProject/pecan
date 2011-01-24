@@ -11,16 +11,20 @@ save.image(outfile1)
 spp <- query.bety.pft_species(pft)
 spstr <- spp$spstr 
 
+
+
 ## 2. get priors available for pft
-priors <- query.bety.priors(pft)
+## trstr is a list of the traits that ED can use
+  trstr <- "'mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','growth_resp_factor','leaf_turnover_rate','leaf_width','nonlocal_dispersal','q','root_respiration_factor','root_turnover_rate','seedling_mortality','SLA_gC_per_m2','stomatal_slope','Vm_low_temp','quantum_efficiency','f_labile','c2n_leaf','water_conductance','Vm0','r_fract','storage_turnover_rate'" #SLA_gC_per_m2 is converted to SLA in query.bety.priors
+
+priors <- query.bety.priors(pft, trstr)
 print(priors)
 
-prvec <- rownames(priors) # vector of traits with prior distributions for pft 
-prstr <- vecpaste(prvec)  # string of " " " " used to query priors 
+trvec <- rownames(priors) # vector of traits with prior distributions for pft 
 
-trvec <- gsub('Vm0', 'Vcmax', prvec)
 traits <- trvec
-trait.defs <- trait.dictionary(gsub('leafN', 'c2n_leaf', prvec))
+trait.defs <- trait.dictionary(trvec)
+
 save(trait.defs, file = paste(outdir, '/trait.defs.Rdata', sep=''))
 ## now it is time to query the data
 trait.data <- query.bety.traits(spstr,trvec) 
