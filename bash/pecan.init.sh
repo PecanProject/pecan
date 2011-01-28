@@ -15,7 +15,7 @@ fi
 ## check out pecan
 if [ ! -d ~/pecan ]
 then
-    bzr branch /home/dlebauer/dev/pecan/trunk pecan
+    bzr branch /home/dlebauer/dev/pecan/trunk ~/pecan
 fi
 ## move .my.cnf_forecast to /home/user/.my.cnf
 if [ ! -f ~/.my.cnf ]
