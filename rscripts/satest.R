@@ -197,15 +197,17 @@ if (M>0) { #if M==0, only do sens.anal.runs
   
   samps <- halton(n = M, dim = ncol(post.samps)) 
   colnames(samps) <-  traits
-  
+
+  ens.samps <- list(prior= matrix(nrow = M, ncol = length(traits)), post=matrix(nrow = M, ncol = length(traits)))
+  colnames(ens.samps[[1]])<-colnames(ens.samps[[2]])<- traits
   ## Insert samples from trait posteriors into config.xml files
   for (m in seqM) {
     zm <- zerosM[m]
     PFTi <- PFT
-    for (k in tr) {
+    for (k in traits) {
       samp <- quantile( post.samps[,k], samps[m,k])
-      PFTi <- append.xmlNode(PFTi, xmlNode(k, samp))
-      
+     PFTi <- append.xmlNode(PFTi, xmlNode(k, samp))
+      ens.samps[['post']][m,k] <- samp
     }
     CONFIGi <- append.xmlNode(CONFIG, PFTi)
     file <- paste(outdir, "/config.postsamp",zm,".xml",sep="")
@@ -216,9 +218,10 @@ if (M>0) { #if M==0, only do sens.anal.runs
 
     ## Insert samples from trait priors into config.xml files
     PFTi <- PFT
-    for (k in tr) {
+    for (k in traits) {
       samp <- quantile(prior.samps[,k], samps[m,k])
       PFTi <- append.xmlNode(PFTi, xmlNode(k, samp))
+      ens.samps[['prior']][m,k] <- samp
     }
     CONFIGi <- append.xmlNode(CONFIG, PFTi)
     file <- paste(outdir, "/config.priorsamp",zm,".xml",sep="")
@@ -256,6 +259,7 @@ ssh -T ebi-cluster < bash/pecan.ed2in.create.sh \n
 ssh -T ebi-cluster < bash/pecan.ed.batchjobs.sh \n
 ")
 save(traits, file = 'traits.Rdata')
+save(ens.samps, file = 'ens.samps.Rdata')
 
 ## switch to cluster and run:
 setwd("/home/scratch/dlebauer/pecan/")
@@ -402,12 +406,14 @@ qf <- list(post = qpost.f, prior = qprior.f)
 
 splinelines <- list('prior'=list(), 'post'=list())
 splinepoints<- list('prior'=list(), 'post'=list())
+splinefuns  <- list('prior'=list(), 'post'=list())
 
 for(runname in c('prior','post')){
   for(trait in traits) {
     x <- qtheta[[runname]][[trait]]
     y <- qf[[runname]][[trait]]
     f <- splinefun(x, y, method = "monoH.FC")
+    splinefuns[[runname]][[trait]] <- f 
     splinepoints[[runname]][[trait]] <- data.frame(x=x,y=y)
     xpts <- seq(min(x),max(x),length.out=100)
     splinelines[[runname]][[trait]]  <- data.frame(x=xpts,y=f(xpts))
@@ -434,6 +440,8 @@ for(runname in c('prior','post')){
   satables[[runname]] <- satable
 }
 
+  
+
 ##start plotting SA plots
 
 max.y <- 10
@@ -444,37 +452,55 @@ plotsa<-function(trait) {
   lpr <- splinelines[['prior']][[trait]]
   lpo <- splinelines[['post']][[trait]]
   ggplot() +
-    scale_y_continuous(limits = c(0,60), breaks = c(0, 10, 20, 30))+
-    opts(title=trait.dictionary(trait)$figid) +
-      coord_cartesian(x=c(0, max(dpr$x)*1.1)) +
-        theme_bw() +
-            geom_line(aes(x, y),
-                      color = 'grey',
-                      size = 2.5,
-                      data = lpr ) +
-                        geom_point(aes(x,y),
-                                   data = dpr,
-                                   color = 'pink',
-                                   size = 1.5) +
-                                     geom_line(aes(x, y),                                                       
-                                               color = 'black',
-                                               size = 2.5,
-                                               data = lpo) +
-                                                 geom_point(aes(x,y),
-                                                            data=dpo,
-                                                            color = 'pink',
-                                                            size = 1.5)
+    scale_y_continuous(limits = c(0,50), breaks = c(0, 10, 20, 30))+
+     scale_x_continuous(limits = c(ifelse((max(dpr$x)-min(dpr$x))/4>min(dpr$x),0,0.9*min(dpr$x)), signif(max(dpr$x)+min(dpr$x),2))) +
+        coord_cartesian(x=c(0, max(dpr$x)*1.1)) +
+          geom_line(aes(x, y),
+                    color = 'grey',
+                    size = 2,
+                    data = lpr ) +
+                      geom_point(aes(x,y),
+                                 data = dpr,
+                                 color = 'grey',
+                                 size = 3) +
+                                   geom_line(aes(x, y),                                                       
+                                             color = 'black',
+                                             size = 2,
+                                             data = lpo) +
+                                               geom_point(aes(x,y),
+                                                          data=dpo,
+                                                          color = 'black',
+                                                          size = 3) +
+                                                            geom_point(aes(x,y), data= dpr[4,], color = 'grey', size = 5) +
+                                                              geom_point(aes(x,y), data= dpo[4,], color = 'black', size = 5) + scale_shape(solid=FALSE) +
+                                                                theme_bw() +
+                                                                  opts(title=trait.dictionary(trait)$figid,
+                                                                       axis.text.x = theme_text(size=14),
+                                                                       axis.text.y = theme_text(size=14),
+                                                                       axis.title.x = theme_blank(), 
+                                                                       axis.title.y = theme_blank(),
+                                        #theme_text(size = 28),
+                                                                       plot.title = theme_text(size = 20),
+                                        #axis.ticks = theme_blank(),
+                                        #panel.grid.major = theme_blank(),
+                                        #panel.grid.minor = theme_blank(),
+                                                                       panel.border = theme_blank()) 
 }
- 
+
 
 plotsa(traits[2])
 plotsa('q')
-plotsa('seedling_mortality')
-plotsa('SLA')
-#plotsa('Vm0')
+#plotsa('seedling_mortality')
+#plotsa('SLA')
+plotsa('Vm0')
 
 plots <- lapply(traits,plotsa)
- 
+
+
+pdf('mikessensitivities.pdf', height = 12, width = 20)
+do.call(grid.arrange, plots)#left='Aboveground Biomass', main='Parameter Sensitivity', nrow=3,ncol=5) 
+dev.off()
+
 pdf('out/sensitivity_analysis.pdf')
 plots
 dev.off()
@@ -618,10 +644,87 @@ prior.varf <- var(c(ens$agb[ens$runtype=='prior']))
 post.varf  <- var(c(ens$agb[ens$runtype=='post']))
 prior.varest <- sum(satables[['prior']]$var)
 post.varest <- sum(satables[['post']]$var)
-cat(' run ', ' varf ',' varest\n prior ', prior.varf, prior.varest,' \n post ', post.varf, post.varest)
+cat(' run ', ' varf ',' varest\n prior ', prior.varf, prior.varest,' \n post ', post.varf, post.varest,'\n')
 
 
 ######Get Dan's Pavi Yield data
 paviyield <- query.bety("select mean from yields where specie_id = 938 and user_id != 11;")
 plot(density(paviyield$mean))
 abline(v=quantile(paviyield$mean,c(0.025,0.0975)))
+
+
+
+
+## Spline ensemble plots
+## Construct a estimate based on the residuals from the splines
+
+spline.ens <- list()
+load('ens.samps.Rdata')
+pr.spline.mat <- mapply(do.call, splinefuns[['prior']], lapply(as.data.frame(ens.samps[['prior']]), list))
+spline.ens[['prior']] <-  sapply(rowSums(pr.spline.mat - mean.f[['prior']]), function(x) max(0,x+mean.f[['prior']]))
+po.spline.mat <- mapply(do.call, splinefuns[['post']], lapply(as.data.frame(ens.samps[['post']]), list))
+spline.ens[['post']] <-  sapply(rowSums(po.spline.mat - mean.f[['post']]), function(x) max(0,x+mean.f[['post']]))
+
+pdf('~/pecan/out/evaluatedbysplines.pdf',width=11,height=6)
+par(mfrow=c(1,2))
+plot(density(spline.ens[['prior']],from=0), main = 'model ensemble \nspline ensemble (dotted)', xlab='AGB',lty=2, ylim =c(0, 0.07),xlim=c(0,60),col='grey')
+lines(density(spline.ens[['post']],,from=0),lty=2)
+lines(density(ens$agb[ens$runtype=='prior' ],from=0),col='grey' )
+lines(density(ens$agb[ens$runtype=='post'],from=0))
+
+
+agb<-list()
+agb[['prior']] <- subset(data.frame(runid=ens$ensnames, agb=ens$agb, run=ens$runtype),subset = run=='prior')
+agb$prior$runid <- gsub('priorsamp0','',agb$prior$runid)
+
+agb[['post']] <- subset(data.frame(runid=ens$ensnames, agb=ens$agb, run=ens$runtype),subset = run=='post')
+agb$post$runid <- gsub('postsamp0','',agb$post$runid)
+
+foo<-list()
+foo$prior <- merge(agb$prior, data.frame(runid=1:500,spline.ens = spline.ens$prior))
+foo$post  <- merge(agb$post,  data.frame(runid=1:500,spline.ens = spline.ens$post))
+
+
+plot(foo$prior$spline.ens, foo$prior$agb, xlab='spline estimate', ylab = 'model estimate', main = '500 parameter sets',col='grey',cex=0.5,xlim=c(0,70),ylim=c(0,70))
+points(foo$post$spline.ens, foo$post$agb, cex=0.5)
+abline(1,1,lty=2)
+abline(lm(foo$prior$agb~foo$prior$spline.ens), col='grey')
+abline(lm(foo$post$agb~foo$post$spline.ens))
+dev.off()
+##abline(lm(foo$prior$agb~foo$prior$spline.ens, subset = foo$prior$spline.ens >0), col='grey')
+##abline(lm(foo$post$agb~foo$post$spline.ens, subset = foo$post$spline.ens >0))
+
+
+# Compare contributions to ens. va
+x<- data.frame(id=po$id,
+               pr.cvt = pr$cv,
+               po.cv = po$cv,
+               prior.pervar = pr$per.var*100,
+               post.pervar = po$per.var*100,
+               prior.var = pr$var,
+               post.var = po$var,
+               var.ratio = (pr$var-po$var)/pr$var
+           )
+print(cbind(x$id,round(x[,2:7],2),x[,8]))
+
+save(splinefuns, ens.samps, mean.f, ens, file = 'splineens.Rdata') 
+
+
+mean.f
+quantile(foo$prior$agb, c(0.05, 0.95))
+quantile(foo$post$agb, c(0.05, 0.95))
+
+foofn <- function(n,runnname) replicate(10,var(sample(spline.ens[[runname]],n)))
+x<- c(2, 4, 8, 16, 32, 64, 128, 256)
+
+y <- data.frame(n=x, t(sapply(x, function(x) c(mean(foofn(x)), sd(foofn(x))))))
+
+set.seed(1)
+par(mfrow=c(2,1))
+y <- data.frame(n=x, t(sapply(x, function(x) c(mean(foofn(x,'prior')), sd(foofn(x,'prior'))))))
+plot(y$n, y$X1, main = 'prior ens size n vs. var(500 choose n)', ylim = c(0,200))
+arrows(y$n, y$X1,y$n,y$X1+y$X2, angle = 90)
+
+y <- data.frame(n=x, t(sapply(x, function(x) c(mean(foofn(x,'post')), sd(foofn(x,'post'))))))
+plot(y$n, y$X1, main = 'post ens size n vs. var(500 choose n)', ylim = c(0,200))
+arrows(y$n, y$X1,y$n,y$X1+y$X2, angle = 90)
