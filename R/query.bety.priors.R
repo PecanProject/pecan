@@ -1,5 +1,5 @@
-query.bety.priors <- function(pft, trstr){
-  con <- query.bety.con()
+query.bety.priors <- function(pft, trstr,out=NULL,...){
+  con <- query.bety.con(...)
   ## prior traits will be used in meta-analysis for traits w/ data
   ## or to query priors for traits w/o data
   
@@ -25,8 +25,10 @@ query.bety.priors <- function(pft, trstr){
                 ' distribution to query.bety.priors.R',
                 sep = '' ))
   }
-  sink(file = 'out/priors.tex', split = FALSE)
-  xtable(priors, caption="Raw table of priors")
-  sink()
+  if(!is.null(out)){
+    sink(file = paste(out,'/priors.tex',sep=""), split = FALSE)
+    xtable(priors, caption="Raw table of priors")
+    sink()
+  }
   return(priors)
 }
