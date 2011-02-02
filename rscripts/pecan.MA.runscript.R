@@ -1,4 +1,4 @@
-library(PECAn, lib.loc = '~/lib/R')
+require(PECAn)
 pft   <- system("echo $PFT", intern = TRUE)
 ITER  <- as.numeric(system("echo $ITER", intern = TRUE)) 
 M     <- as.numeric(system("echo $ENSN", intern = TRUE))
@@ -17,7 +17,7 @@ spstr <- spp$spstr
 ## trstr is a list of the traits that ED can use
   trstr <- "'mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','growth_resp_factor','leaf_turnover_rate','leaf_width','nonlocal_dispersal','q','root_respiration_factor','root_turnover_rate','seedling_mortality','SLA_gC_per_m2','stomatal_slope','Vm_low_temp','quantum_efficiency','f_labile','c2n_leaf','water_conductance','Vm0','r_fract','storage_turnover_rate'" #SLA_gC_per_m2 is converted to SLA in query.bety.priors
 
-priors <- query.bety.priors(pft, trstr)
+priors <- query.bety.priors(pft, trstr,out=outdir)
 print(priors)
 
 trvec <- rownames(priors) # vector of traits with prior distributions for pft 
