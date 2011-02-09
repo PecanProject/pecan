@@ -1,7 +1,7 @@
 pecan.samps <- function(trait.mcmc, priors) {
 
   trait.mat <- lapply(trait.mcmc, as.matrix)
-  trait.nrows <- sapply(trait.mat, function(x) nrow(x))
+  trait.nrows <- lapply(trait.mat, function(x) nrow(x))
   n.samp <- do.call(min, trait.nrows)
   traits <- names(trait.mcmc)
   priors$n <- nrow(trait.mat[[1]])
