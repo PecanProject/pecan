@@ -27,7 +27,7 @@
 ##'
 ##'
 
-pecan.ma <- function(trait.data, priors, j.iter){
+pecan.ma <- function(trait.data, priors, taupriors, j.iter){
   madata <- list()
   ## Meta-analysis for each trait
   mcmc.object <- list() #  initialize output list of mcmc objects for each trait
@@ -110,6 +110,7 @@ pecan.ma <- function(trait.data, priors, j.iter){
         }
       }
     }
+
     madata[[trait.name]] <- data
     jag.model.file <-  paste( trait.name, ".model.bug",sep="")  # file to store model
     write.ma.model (modelfile = 'rscripts/ma.model.template.bug',
@@ -119,7 +120,9 @@ pecan.ma <- function(trait.data, priors, j.iter){
                     length ( data$Y ),
                     model.parms[['trt']],
                     model.parms[['site']],
-                    model.parms[['ghs']])
+                    model.parms[['ghs']],
+                    tauA <- taupriors$tauA,
+                    tauB <- taupriors$tauB[[prior.name]])
 
     
     j.inits <- function(chain) list("beta.o" = do.call(paste('q',prior$dist,sep=''),
