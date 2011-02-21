@@ -16,7 +16,7 @@ query.bety.priors <- function(pft, trstr){
   priors$name[priors$name == 'SLA_gC_per_m2'] <- 'SLA'
   rownames(priors) <- priors$name
   priors <- priors[, -which(colnames(priors)=='name')]
-  if(!is.null(priors['leaf_width', 'distn'])){
+  if(!is.na(priors['leaf_width', 'distn'])){
     if(priors['leaf_width', 'distn']=='lnorm') {
       priors['leaf_width','parama'] <- priors['leaf_width','parama'] - log(1000)
     } else if(priors['leaf_width', 'distn']=='unif') {
