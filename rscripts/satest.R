@@ -1,6 +1,4 @@
 library(PECAn, lib.loc = '~/lib/R')
-source('R/pecan.samps.R')
-library(xtable)
 pft <- 'ebifarm.c4crop'
 ITER  <- 50000
 M     <- 500
@@ -17,6 +15,12 @@ trstr <- "'mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','g
 priors <- query.bety.priors(pft, trstr)
 print(priors)
 
+## Set gamma distribution prior on
+prior.variances <- data.frame(var = unlist(t(sapply(1:nrow(priors), function(i) with(priors[i,], pdf.stats(distn, parama, paramb)))['var',])), row.names = rownames(priors))
+
+taupriors <- list(tauA = 0.01,
+                  tauB = apply(prior.variances, 1, function(x) min(0.01, x)))
+
 traits <- trvec <- rownames(priors) # vector of traits with prior distributions for pft 
 trait.defs <- trait.dictionary(trvec)
 
@@ -27,7 +31,7 @@ trait.data <- query.bety.traits(spstr,trvec)
 ## returns list 'trait.data' with one dataframe per variable 
  
 ## run the meta-analysis
-trait.mcmc <- pecan.ma(trait.data, priors, j.iter = ITER)
+trait.mcmc <- pecan.ma(trait.data, priors, taupriors, j.iter = ITER)
 
 pecan.ma.summary(trait.mcmc, pft)
 outfile2 <- paste(outdir, '/pecan.MA.Rdata', sep = '')
@@ -38,6 +42,8 @@ priors$distn[priors$distn=='weib'] <- 'weibull'
 #post.samps <- trait.samps[['post.samps']]     
 #prior.samps <- trait.samps[['prior.samps']] #matrix of samples from all priors
 
+
+## this needs to be merged into pecan.write.configs.R
 const <- pecan.config.constants(pft)
 PFT <- const$PFT
 CONFIG <- const$CONFIG
@@ -51,6 +57,8 @@ for(i in names(trait.mcmc)){
 }
 
 i <- 1:10000
+
+## this need to be made generic
 trait.mat <- data.frame(SLA=trait.beta.o$SLA[i],
                         leaf_width=trait.beta.o$leaf_width[i],
                         seedling_mortality=trait.beta.o$seedling_mortality[i],
@@ -83,14 +91,19 @@ names(qprior) <- traits
 save(qpost, qprior, file="out/qpostqprior.Rdata")
 
 ##write mean config files
-n.lcl45 <- 1
-n.lcl30 <- 2
+n.lcl45 <- 1 #actually lcl3sigma
+n.lcl30 <- 2 #actually lcl2sigma
 n.lcl15 <- 3
-n.mean  <- 4
+n.mean  <- 4 #actually median
 n.ucl15 <- 5
 n.ucl30 <- 6
-n.ucl45 <- 7
+n.ucl45 <- 7 #actually ucl3sigma
 
+## TODO need to make this whole process generic, so that we can have 7 pts or 2 pts or n pts
+## start making generic where I define quantiles quantiles <- 1-pnorm(-3:3) above
+## e.g. could use quantiles <- c(1:9/10) but that would prob. be a bad idea b/c undersamples the tails; could use quantiles <- c(1:999/1000) but that would have too many runs for each parameter. 
+
+## Create the config for median run
 PFTm <- PFT
 for (tri in traits) { 
   PFTm <- append.xmlNode(PFTm, xmlNode(tri, qprior[[tri]][n.mean]))
@@ -206,7 +219,7 @@ if (M>0) { #if M==0, only do sens.anal.runs
     PFTi <- PFT
     for (k in traits) {
       samp <- quantile( post.samps[,k], samps[m,k])
-     PFTi <- append.xmlNode(PFTi, xmlNode(k, samp))
+      PFTi <- append.xmlNode(PFTi, xmlNode(k, samp))
       ens.samps[['post']][m,k] <- samp
     }
     CONFIGi <- append.xmlNode(CONFIG, PFTi)
@@ -231,7 +244,6 @@ if (M>0) { #if M==0, only do sens.anal.runs
 }
   
   
-  
 ##next run cleanup script from pecan.writeconfigs.sh
 system("
 cd $PECANOUT \n
@@ -251,7 +263,7 @@ for i in c*xml; do mv \"${i}\" \"${i/.xml/}\"; done \n
 echo \"zipping config files to saconfigs.tgz\" \n
 tar zcf saconfigs.tgz c.* \n
 rm c.*\n
-cp saconfigs.tgz saconfigs20101223.tgz")
+cp saconfigs.tgz saconfigs20101.tgz")
 
 system("cd $PECANHOME\n
 rsync -routi out/saconfigs.tgz ebi-cluster:/home/scratch/dlebauer/pecan/edin/ \n
@@ -261,6 +273,7 @@ ssh -T ebi-cluster < bash/pecan.ed.batchjobs.sh \n
 save(traits, file = 'traits.Rdata')
 save(ens.samps, file = 'ens.samps.Rdata')
 
+stop('switch to cluster and run')
 ## switch to cluster and run:
 setwd("/home/scratch/dlebauer/pecan/")
 system('rsync ebi-forecast:pecan/traits.Rdata ./')
@@ -354,6 +367,8 @@ load('out/pecan.MA.Rdata')
 load('out/qpostqprior.Rdata')
 load('out/pecan.samps.Rdata')
 
+
+###START SPLINES
 qpost.theta <- ldply(qpost)[,-1]
 qprior.theta <- ldply(qprior)[,-1]
 
@@ -479,11 +494,7 @@ plotsa<-function(trait) {
                                                                        axis.text.y = theme_text(size=14),
                                                                        axis.title.x = theme_blank(), 
                                                                        axis.title.y = theme_blank(),
-                                        #theme_text(size = 28),
                                                                        plot.title = theme_text(size = 20),
-                                        #axis.ticks = theme_blank(),
-                                        #panel.grid.major = theme_blank(),
-                                        #panel.grid.minor = theme_blank(),
                                                                        panel.border = theme_blank()) 
 }
 
@@ -497,7 +508,7 @@ plotsa('Vm0')
 plots <- lapply(traits,plotsa)
 
 
-pdf('mikessensitivities.pdf', height = 12, width = 20)
+pdf('sensitivity_analysis.pdf', height = 12, width = 20)
 do.call(grid.arrange, plots)#left='Aboveground Biomass', main='Parameter Sensitivity', nrow=3,ncol=5) 
 dev.off()
 
@@ -607,11 +618,15 @@ po.dens <- density(ens$agb[ens$runtype=='post'], from = 0)
 pr.densdf <- data.frame(x = c(0, pr.dens$x), y = c(0, pr.dens$y))
 po.densdf <- data.frame(x = c(0, po.dens$x), y = c(0, po.dens$y))
 
-pdf('out/ensemble_density.pdf')
-fontsize <- 14
+paviyield <- query.bety("select mean from yields where specie_id = 938 and user_id != 11;")
+
+
+pdf('out/ensemble_density.pdf', height = 8, width = 8)
+
+fontsize <- 16
 ggplot() +
   theme_bw() +
-  opts(title = "Aboveground Biomass \n prior (grey) \n post (dark grey)",
+  opts(title = "Aboveground Biomass \n prior (grey) \n post (dark grey) \n Heaton et al 2008 (mean +/- 2 se, n=3)\n Wang et al 2010 (n=1892) ",
        axis.text.y = theme_blank(),
        axis.text.x = theme_text(size=fontsize),
        axis.line = theme_blank(),
@@ -625,12 +640,15 @@ ggplot() +
        axis.color.y = 'white',
        legend.position=c(-10,0)) +
   geom_area(data = subset(pr.densdf, x >= pr.q[1] & x<= pr.q[3]),
-            aes(x=x, y=y), fill = 'grey50', alpha = 0.5) +
+            aes(x=x, y=y), alpha = 0.1,) +
+  geom_line(data = pr.densdf, aes(x=x, y = y), size = 2, color = 'grey') +
   geom_area(data = subset(po.densdf, x >= po.q[1] & x<= po.q[3]),
-            aes(x=x, y=y), fill = 'grey20') +
-  geom_line(data = pr.densdf, aes(x=x, y = y) , color = 'grey50') +
-  geom_line(data = po.densdf, aes(x=x, y = y) , color = 'grey20') +
-  scale_x_continuous(limits = c(0, 50))#, breaks = c(0, 20, 40, 60, 80, 100))
+            aes(x=x, y=y), alpha = 0.4) +
+  geom_line(data = po.densdf, aes(x=x, y = y), size = 2, color = 'grey40') +
+  scale_x_continuous(limits = c(0, 50)) +#, breaks = c(0, 20, 40, 60, 80, 100))
+  geom_point(data=paviyield, aes(y=jitter(rep(0, length(mean)))/15-0.005, x=mean), color = 'black', alpha=0.1) +
+  geom_point(aes(x=13, y=-0.001), size = 4)+
+  geom_segment(aes(x=10.8, y=-0.001, xend=15.5, yend=-0.001), size = 1.5)
 
 dev.off()
 
@@ -648,9 +666,7 @@ cat(' run ', ' varf ',' varest\n prior ', prior.varf, prior.varest,' \n post ', 
 
 
 ######Get Dan's Pavi Yield data
-paviyield <- query.bety("select mean from yields where specie_id = 938 and user_id != 11;")
-plot(density(paviyield$mean))
-abline(v=quantile(paviyield$mean,c(0.025,0.0975)))
+
 
 
 
@@ -728,3 +744,64 @@ arrows(y$n, y$X1,y$n,y$X1+y$X2, angle = 90)
 y <- data.frame(n=x, t(sapply(x, function(x) c(mean(foofn(x,'post')), sd(foofn(x,'post'))))))
 plot(y$n, y$X1, main = 'post ens size n vs. var(500 choose n)', ylim = c(0,200))
 arrows(y$n, y$X1,y$n,y$X1+y$X2, angle = 90)
+
+
+
+
+## Trait Pdfs
+load('out/pecan.samps.Rdata')
+load('madata.Rdata')
+load('out/trait.defs.Rdata')
+traits <- colnames(prior.samps)#trait.defs$id
+
+trait.plots <- function(trait) {
+  n.x <- nrow(post.samps)
+  max.x <- max(prior.samps[,trait])
+  seq.x <- seq(0+1/n.x,1-1/n.x, length.out = n.x)
+  rowi <- rownames(priors) == trait
+  prior <- do.call(paste('q',priors$distn[rowi],sep=''), list(seq.x, priors$parama[rowi],priors$paramb[rowi]))
+  post  <- post.samps[,trait]
+  data <- data.frame(prior=prior, post=post)
+  plot <- ggplot(data=data) +
+    geom_density(aes(x=prior), color='grey') +
+      theme_bw() +
+        scale_x_continuous('units') +
+          scale_y_continuous('Density') +
+            opts(title = as.character(trait.defs[trait.defs$id == trait, 'figid']),
+                 axis.text.x = theme_text(size=12),
+                 axis.text.y = theme_text(size=0.01),
+                 axis.title.x = theme_blank(), 
+                 axis.title.y = theme_blank(),
+                 plot.title = theme_text(size = 20),
+                 panel.border = theme_blank()) 
+  if(trait == 'Vm0') {
+    tr <- trait.data[['Vcmax']]
+  } else {
+    tr <- trait.data[[trait]]
+  }
+  if(!is.null(nrow(tr))) {
+    plot <- plot + geom_density(aes(x = post))
+    plot <- plot + geom_point(aes(x=Y, y=0), data=tr, size = 4, alpha = 0.2) 
+  }
+  return(plot)
+}
+
+plots <- lapply(traits, trait.plots)
+
+pdf('out/traitpdfs.pdf', height = 12, width = 20)
+do.call(grid.arrange, plots)
+dev.off()
+
+load('out/edout.ens.Rdata')
+agb <- edout.ens$agb[edout.ens$runtype =='post']
+agb[is.na(agb)] <- 0
+
+a <- data.frame(n = c(rep(10, 5), rep(20, 5), rep(40, 5), rep(60, 5), rep(125, 4), 250, 250, 500),
+                varf_n = c(
+                  var(agb[1:10]), var(agb[101:110]), var(agb[201:210]), var(agb[301:310]), var(agb[401:410]),  
+                  var(agb[81:100]), var(agb[181:200]), var(agb[281:300]), var(agb[381:320]), var(agb[401:420]), 
+                  var(agb[61:80]), var(agb[161:180]), var(agb[261:280]), var(agb[361:380]), var(agb[461:480]), 
+                  var(agb[1:60]), var(agb[101:160]), var(agb[201:260]), var(agb[301:360]), var(agb[401:460]),
+                  var(agb[1:125]), var(agb[126:250]), var(agb[251:375]), var(agb[376:500]),  
+                  var(agb[1:250]), var(agb[251:500]),
+                  var(agb)))
