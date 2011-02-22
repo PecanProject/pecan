@@ -1,7 +1,18 @@
 ## Set default fixed parameters below: 
 pecan.config.constants <- function(pft) {
+  CONFIG <- xmlNode("config")
+  PFT <- xmlNode ("pft")
+  if(pft == 'tundra.grass'){
+    PFT <- append.xmlNode(PFT, xmlNode("num", 5))
+  }
+  if(pft == 'tundra.deciduous'){
+    PFT <- append.xmlNode(PFT, xmlNode("num", 11))
+  }
+  if(pft == 'tundra.evergreen'){
+    PFT <- append.xmlNode(PFT, xmlNode("num", 8))
+  }
+  
   if(pft == 'ebifarm.c4crop'){
-    PFT <- xmlNode ("pft")
     PFT <- append.xmlNode(PFT, xmlNode("num", 15))
     PFT <- append.xmlNode(PFT, xmlNode("phenology", 2))
     PFT <- append.xmlNode(PFT, xmlNode("max_dbh", 0.78))
@@ -20,7 +31,6 @@ pecan.config.constants <- function(pft) {
     MISC <- xmlNode("ed_misc")
     MISC <- append.xmlNode(MISC, xmlNode("outputMonth", 12))
 
-    CONFIG <- xmlNode("config")
     CONFIG <- append.xmlNode(CONFIG, RAD)
     CONFIG <- append.xmlNode(CONFIG, MISC) 
     
@@ -35,11 +45,9 @@ pecan.config.constants <- function(pft) {
     MISC <- xmlNode("ed_misc")
     MISC <- append.xmlNode(MISC, xmlNode("burnin", 1))
 
-    CONFIG <- xmlNode("config")
     CONFIG <- append.xmlNode(CONFIG, HYDRO)
     CONFIG <- append.xmlNode(CONFIG, MISC) 
 
-    PFT <- xmlNode ("pft")
     PFT <- append.xmlNode(PFT, xmlNode("num", 9))
     PFT <- append.xmlNode(PFT, xmlNode("max_dbh", 75))
     PFT <- append.xmlNode(PFT, xmlNode("hgt_max", 25))
