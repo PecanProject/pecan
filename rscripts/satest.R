@@ -7,8 +7,7 @@ outfile1 <- paste(outdir, '/pecan.parms.Rdata', sep = '')
 save.image(outfile1)
 set.seed(1)
 
-spp <- query.bety.pft_species(pft)
-spstr <- spp$spstr 
+spstr <- query.bety.pft_species(pft)
 
 trstr <- "'mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','growth_resp_factor','leaf_turnover_rate','leaf_width','nonlocal_dispersal','q','root_respiration_factor','root_turnover_rate','seedling_mortality','SLA_gC_per_m2','stomatal_slope','Vm_low_temp','quantum_efficiency','f_labile','water_conductance','Vm0','r_fract','storage_turnover_rate', 'T'" #SLA_gC_per_m2 is converted to SLA in query.bety.priors
 

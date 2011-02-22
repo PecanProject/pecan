@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<pecan>
+  <pft>temperate.Late_Hardwood</pft>
+  <ma_iter>1000</ma_iter>
+  <ensemble_size>0</ensemble_size>
+  <outdir>/home/mdietze/output/pecan/</outdir>
+  <Rlib>/home/mdietze/lib/R</Rlib>
+  <database>
+    <location>localhost</location>
+    <name>ebi_production</name>
+    <userid>mdietze</userid>
+    <passwd>goillini</passwd>
+  </database>
+  <pecanDir>/home/mdietze/pecan/</pecanDir>
+</pecan>

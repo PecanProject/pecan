@@ -14,23 +14,46 @@
 #' @author David LeBauer \email{dlebauer@illinois.edu}
 
 ##* indicates lines that need to be uncommented after Vcmax query is corrected
-query.bety.trait.data <- function(trait, spstr){
-  con <- query.bety.con()
+query.bety.trait.data <- function(trait, spstr,con=NULL,...){
+  if(is.null(con)){
+    con <- query.bety.con(...)
+  }
+  if(is.list(con)){
+    print("query.bety.trait.data")
+    print("WEB QUERY OF DATABASE NOTE IMPLEMENTED")
+    return(NULL)
+  }
+  
   if(trait == 'root_respiration_factor') trait <- 'root_respiration_rate'
   if(trait == 'Vm0') trait <- 'Vcmax'
 
   if(!trait %in% c('Vcmax','SLA','root_respiration_rate', 'c2n_leaf') ) {
-    query <- paste("select traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
+        query <- paste("select traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
     query.result <- dbSendQuery(con, query)
     result <- pecan.transformstats(fetch(query.result, n = -1))
 
   } else if(trait == 'Vcmax') {
-    query <- paste("select trt.site_id, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n, tdhc1.level as 'temp', tdhc2.level as 'canopy_layer' from traits as trt left join covariates as tdhc1 on (tdhc1.trait_id = trt.id) left join covariates as tdhc2 on (tdhc2.trait_id = trt.id) left join treatments as treat on (trt.treatment_id = treat.id) left join variables as tdhc1_var on (tdhc1.variable_id = tdhc1_var.id) left join variables as tdhc2_var on ( tdhc2.variable_id = tdhc2_var.id ) left join sites on (sites.id = trt.site_id)  left join species as spec on (trt.specie_id = spec.id) left join plants on (spec.plant_id = plants.id) left join variables as var on (var.id = trt.variable_id) where trt.variable_id in (select id from variables where name = 'Vcmax') and specie_id in (",spstr,") and tdhc1_var.name = 'leafT' and ( ( tdhc2_var.name = 'canopy_layer' and tdhc2.level >= .8 )  or tdhc2.level is null) and (month(trt.date) between 4 and 7 or trt.date is null);", sep = '') 
+##    query <- paste("select trt.site_id, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n, tdhc1.level as 'temp', tdhc2.level as 'canopy_layer' from traits as trt left join covariates as tdhc1 on (tdhc1.trait_id = trt.id) left join covariates as tdhc2 on (tdhc2.trait_id = trt.id) left join treatments as treat on (trt.treatment_id = treat.id) left join variables as tdhc1_var on (tdhc1.variable_id = tdhc1_var.id) left join variables as tdhc2_var on ( tdhc2.variable_id = tdhc2_var.id ) left join sites on (sites.id = trt.site_id)  left join species as spec on (trt.specie_id = spec.id) left join plants on (spec.plant_id = plants.id) left join variables as var on (var.id = trt.variable_id) where trt.variable_id in (select id from variables where name = 'Vcmax') and specie_id in (",spstr,") and tdhc1_var.name = 'leafT' and ( ( tdhc2_var.name = 'canopy_layer' and tdhc2.level >= .8 )  or tdhc2.level is null) and (month(trt.date) between 4 and 7 or trt.date is null);", sep = '')    
+    query <- paste("select traits.id, traits.site_id, treatments.name, traits.date, traits.dateloc, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
     q    <- dbSendQuery(con, query)
-    data <- pecan.transformstats(fetch ( q, n = -1 ))
-    data$mean <- data$mean / exp (3000 * ( 1 / 288.15 - 1 / (273.15 + data$temp)))
-    data$stat <- data$stat / exp (3000 * ( 1 / 288.15 - 1 / (273.15 + data$temp)))
-    result <- data[,-which(colnames(data) %in% c('temp', 'canopy_layer'))] #drop covariates
+    data <- fetch ( q, n = -1 )
+    data <- pecan.transformstats(data)
+
+    ## grab covariate data
+    q = dbSendQuery(con,paste("select covariates.trait_id, covariates.level,variables.name from covariates left join variables on variables.id = covariates.variable_id where trait_id in (",vecpaste(data$id),")",sep=""))
+    covs = fetch(q,n=-1)
+    leafT = rep(25,nrow(data))
+    canopy_layer = rep(1.0,nrow(data))
+    data = cbind(data,leafT,canopy_layer)
+    for(j in which(covs$name %in% c("leafT","canopy_layer"))){
+      data[match(covs$trait_id[j],data$id),covs$name[j]] = covs$level[j]
+    }
+    ## select sunleaf data
+    data = data[data$canopy_layer >= 0.66,]
+    
+    data$mean <- data$mean / exp (3000 * ( 1 / 288.15 - 1 / (273.15 + data$leafT)))
+    data$stat <- data$stat / exp (3000 * ( 1 / 288.15 - 1 / (273.15 + data$leafT)))
+    result <- data[,-which(colnames(data) %in% c('leafT', 'canopy_layer','id','date','dateloc'))] #drop covariates
 
   } else if (trait == 'SLA') {
     query <- paste("select trt.site_id, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n, tdhc1.level as 'canopy_layer' from traits as trt  left join covariates as tdhc1 on (tdhc1.trait_id = trt.id)  left join treatments as treat on (trt.treatment_id = treat.id)  left join variables as tdhc1_var on (tdhc1.variable_id = tdhc1_var.id)  left join sites on (sites.id = trt.site_id) left join species as spec on (trt.specie_id = spec.id)  left join plants on (spec.plant_id = plants.id)  left join variables as var on (var.id = trt.variable_id)  where trt.variable_id in (select id from variables where name = 'SLA')  and specie_id in (",spstr,")  and ( ( tdhc1_var.name = 'canopy_layer' and tdhc1.level >= .8 )   or tdhc1.level is null) and (month(trt.date) between 4 and 7 or trt.date is null);", sep = "")
@@ -75,6 +98,9 @@ query.bety.trait.data <- function(trait, spstr){
   ## Force a control treatment at each site
   for(sitei in unique(result$site_id)) {
     i <- result$site_id == sitei 
+    if(is.na(sitei)){
+      i = which(is.na(result$site_id))
+    }
     if(!1 %in% result$control[i]){
       warning(cat('\nWARNING: no control treatment set for site_id', sitei,
                   '\nif there is only one treatment,',
@@ -88,7 +114,7 @@ query.bety.trait.data <- function(trait, spstr){
                                        from citations
                                        where id in (select citation_id from
                                        traits
-                                       where site_id =",sitei,");"))))
+                                       where site_id =",sitei,");"),con=con)))
       control.mean <- ifelse(1 %in% result$control,
                              mean(result$mean[result$control == 1]),
                              mean(result$mean))
