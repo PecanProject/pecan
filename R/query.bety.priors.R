@@ -1,5 +1,4 @@
 query.bety.priors <- function(pft, trstr,out=NULL,con=NULL,...){
-
   if(is.null(con)){
     con <- query.bety.con(...)
   }
@@ -29,27 +28,21 @@ query.bety.priors <- function(pft, trstr,out=NULL,con=NULL,...){
   priors$name[priors$name == 'SLA_gC_per_m2'] <- 'SLA'
   rownames(priors) <- priors$name
   priors <- priors[, -which(colnames(priors)=='name')]
-  if(priors['leaf_width', 'distn']=='lnorm') {
-    priors['leaf_width','parama'] <- priors['leaf_width','parama'] - log(1000)
-<<<<<<< TREE
-  } elseif(priors['leaf_width', 'distn']=='unif') {
-    priors['leaf_width','parama'] <- priors['leaf_width','parama'] / 1000
-    priors['leaf_width','paramb'] <- priors['leaf_width','paramb'] / 1000
-  } else {
-=======
-  } else if(priors['leaf_width', 'distn']=='unif'){
-    priors['leaf_width','parama'] <- priors['leaf_width','parama']/1000
-    priors['leaf_width','paramb'] <- priors['leaf_width','paramb']/1000
-  }
-  else 
-  {
->>>>>>> MERGE-SOURCE
-    stop (paste('leaf_width prior not transformed \n
-           change prior distribution on leaf_width to \n
-           lognormal or uniform distribution \n
-           or add transformation of ', priors['leaf_width', 'distn'],
-                ' distribution to query.bety.priors.R',
-                sep = '' ))
+
+  if(!is.na(priors['leaf_width', 'distn'])){
+    if(priors['leaf_width', 'distn']=='lnorm') {
+      priors['leaf_width','parama'] <- priors['leaf_width','parama'] - log(1000)
+    } else if(priors['leaf_width', 'distn']=='unif') {
+      priors['leaf_width','parama'] <- priors['leaf_width','parama'] / 1000
+      priors['leaf_width','paramb'] <- priors['leaf_width','paramb'] / 1000
+    } else {
+      stop (paste('leaf_width prior not transformed \n
+             change prior distribution on leaf_width to \n
+             lognormal or uniform distribution \n
+             or add transformation of ', priors['leaf_width', 'distn'],
+                  ' distribution to query.bety.priors.R',
+                  sep = '' ))
+    }
   }
   if(!is.null(out)){
     sink(file = paste(out,'/priors.tex',sep=""), split = FALSE)
