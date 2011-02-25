@@ -36,11 +36,6 @@ pecan.ma.summary(trait.mcmc, pft)
 outfile2 <- paste(outdir, '/pecan.MA.Rdata', sep = '')
 save.image(outfile2)
 priors$distn[priors$distn=='weib'] <- 'weibull'
-#trait.samps <- pecan.samps(trait.mcmc, priors)
-#priors <- prior.dists <- trait.samps[['priors']]
-#post.samps <- trait.samps[['post.samps']]     
-#prior.samps <- trait.samps[['prior.samps']] #matrix of samples from all priors
-
 
 ## this needs to be merged into pecan.write.configs.R
 const <- pecan.config.constants(pft)
@@ -48,12 +43,7 @@ PFT <- const$PFT
 CONFIG <- const$CONFIG
 traits <- tr <- colnames(post.samps)
 filenames <- list()
-outdir <- 'out'
 
-trait.beta.o <- list()
-for(i in names(trait.mcmc)){
-  trait.beta.o[[i]] <-   as.matrix(trait.mcmc[[i]][,'beta.o'])
-}
 
 i <- 1:10000
 
@@ -83,43 +73,14 @@ calculate.quantiles <- function(x,samps, quantiles) {
 }
 
 traits<-colnames(post.samps)
-qpost <- llply(traits, calculate.quantiles, post.samps, quantiles)
-qprior <- llply(traits, calculate.quantiles, prior.samps, quantiles)
-names(qpost) <- traits
-names(qprior) <- traits
+q <- list(post  = lapply(traits, calculate.quantiles, post.samps, quantiles),
+          prior = lapply(traits, calculate.quantiles, prior.samps, quantiles))
+
+
 save(qpost, qprior, file="out/qpostqprior.Rdata")
 
-##write mean config files
-n.lcl45 <- 1 #actually lcl3sigma
-n.lcl30 <- 2 #actually lcl2sigma
-n.lcl15 <- 3
-n.mean  <- 4 #actually median
-n.ucl15 <- 5
-n.ucl30 <- 6
-n.ucl45 <- 7 #actually ucl3sigma
 
-## TODO need to make this whole process generic, so that we can have 7 pts or 2 pts or n pts
-## start making generic where I define quantiles quantiles <- 1-pnorm(-3:3) above
-## e.g. could use quantiles <- c(1:9/10) but that would prob. be a bad idea b/c undersamples the tails; could use quantiles <- c(1:999/1000) but that would have too many runs for each parameter. 
 
-## Create the config for median run
-PFTm <- PFT
-for (tri in traits) { 
-  PFTm <- append.xmlNode(PFTm, xmlNode(tri, qprior[[tri]][n.mean]))
-}
-CONFIGm <- append.xmlNode(CONFIG, PFTm)
-file <- paste(outdir, "/config.priormeans.xml", sep = '')
-filenames[['priormeans']] <- file
-saveXML(CONFIGm, file = file, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
-
-PFTm <- PFT
-for (tri in traits) {
-  PFTm <- append.xmlNode(PFTm, xmlNode(tri, qpost[[tri]][n.mean]))
-}
-CONFIGm <- append.xmlNode(CONFIG, PFTm)
-file <- paste(outdir, "/config.postmeans.xml", sep = '')
-filenames[['postmeans']] <- file
-saveXML(CONFIGm, file = file, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
 
 ##make post ucl/lcl config files
 for ( tri in traits){
@@ -206,12 +167,10 @@ if (M>0) { #if M==0, only do sens.anal.runs
   ## add leading zeroes to the file names to avoid confusion
   zerosM <- sprintf("%04.0f", seqM) #"%05.0f" if > 10^5 runs, etc.
   
-  
   samps <- halton(n = M, dim = ncol(post.samps)) 
   colnames(samps) <-  traits
 
-  ens.samps <- list(prior= matrix(nrow = M, ncol = length(traits)), post=matrix(nrow = M, ncol = length(traits)))
-  colnames(ens.samps[[1]])<-colnames(ens.samps[[2]])<- traits
+  
   ## Insert samples from trait posteriors into config.xml files
   for (m in seqM) {
     zm <- zerosM[m]

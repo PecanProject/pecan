@@ -1,16 +1,13 @@
 query.bety.priors <- function(pft, trstr,out=NULL,con=NULL,...){
-  if(is.null(con)){
-    con <- query.bety.con(...)
+  if(!exists('con')){
+    con <- query.bety.con()
   }
   if(is.list(con)){
     print("query.bety.priors")
-    print("WEB QUERY OF DATABASE NOTE IMPLEMENTED")
+    print("WEB QUERY OF DATABASE NOT IMPLEMENTED")
     return(NULL)
   }
-  
-  ## prior traits will be used in meta-analysis for traits w/ data
-  ## or to query priors for traits w/o data
-  
+    
   ## query 1: query the prior_id s assoc. with pft
   query1 <- paste("select pfts_priors.prior_id from pfts_priors where pfts_priors.pft_id in (select pfts.id from pfts where pfts.name in ('",pft,"'));", sep = "")
   q1    <- dbSendQuery(con, query1)
@@ -44,10 +41,9 @@ query.bety.priors <- function(pft, trstr,out=NULL,con=NULL,...){
                   sep = '' ))
     }
   }
-  if(!is.null(out)){
-    sink(file = paste(out,'/priors.tex',sep=""), split = FALSE)
-    xtable(priors, caption="Raw table of priors")
-    sink()
-  }
+  sink(file = paste('out/priors.tex',sep=""), split = FALSE)
+  xtable(priors, caption="Raw table of priors")
+  sink()
+  
   return(priors)
 }
