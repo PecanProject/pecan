@@ -1,5 +1,6 @@
+R/write.configs*
 out/*Rdata
-out/
+out/*
 kepler/
 rscripts/
 bash/
