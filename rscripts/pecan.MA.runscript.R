@@ -35,6 +35,14 @@ spstr <- query.bety.pft_species(pft,con=con)
 priors <- query.bety.priors(pft, trstr,out=outdir,con=con)
 print(priors)
 
+#prior.variances <- data.frame(var = unlist(t(sapply(1:nrow(priors), function(i) with(priors[i,], pdf.stats(distn, parama, paramb)))['var',])), row.names = rownames(priors))
+prior.variances = as.data.frame(rep(1,nrow(priors)))  ######## HACK ###########
+row.names(prior.variances) = row.names(priors)
+
+taupriors <- list(tauA = 0.01,
+                  tauB = apply(prior.variances, 1, function(x) min(0.01, x)))
+
+
 trvec <- rownames(priors) # vector of traits with prior distributions for pft 
 
 traits <- trvec
@@ -46,7 +54,7 @@ trait.data <- query.bety.traits(spstr,trvec,con=con)
 ## returns list 'trait.data' with one dataframe per variable 
 
 ## run the meta-analysis
-trait.mcmc <- pecan.ma(trait.data, priors, j.iter = ITER,settings)
+trait.mcmc <- pecan.ma(trait.data, priors, taupriors,j.iter = ITER,settings)
 
 pecan.ma.summary(trait.mcmc, pft,outdir)
 outfile2 <- paste(outdir, '/pecan.MA.Rdata', sep = '')
