@@ -27,7 +27,11 @@
 ##'
 ##'
 
+<<<<<<< TREE
+pecan.ma <- function(trait.data, priors, taupriors, j.iter){
+=======
 pecan.ma <- function(trait.data, priors, j.iter,settings){
+>>>>>>> MERGE-SOURCE
   madata <- list()
   ## Meta-analysis for each trait
   mcmc.object <- list() #  initialize output list of mcmc objects for each trait
@@ -110,6 +114,7 @@ pecan.ma <- function(trait.data, priors, j.iter,settings){
         }
       }
     }
+
     madata[[trait.name]] <- data
     jag.model.file <-  paste(settings$outdir, trait.name, ".model.bug",sep="")  # file to store model
     write.ma.model (modelfile = paste(settings$pecanDir,'rscripts/ma.model.template.bug',sep=""),
@@ -119,7 +124,9 @@ pecan.ma <- function(trait.data, priors, j.iter,settings){
                     length ( data$Y ),
                     model.parms[['trt']],
                     model.parms[['site']],
-                    model.parms[['ghs']])
+                    model.parms[['ghs']],
+                    tauA <- taupriors$tauA,
+                    tauB <- taupriors$tauB[[prior.name]])
 
     
     j.inits <- function(chain) list("beta.o" = do.call(paste('q',prior$dist,sep=''),
