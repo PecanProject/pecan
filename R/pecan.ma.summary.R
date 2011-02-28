@@ -3,14 +3,14 @@ pecan.ma.summary <- function(mcmc.object, pft,outdir){
     ## G-R diagnostics to ensure convergence    
     gd<-gelman.diag(mcmc.object[[trait]])
     mpsrf<-round(gd$mpsrf,digits=4)
-    if(mpsrf<1.1){
-      note <-  paste ("JAGS model converged for", pft, trait,
-                    "\nGD MPSRF = ",mpsrf,"\n", sep=" ")
+    if(mpsrf < 1.1){
+      writeLines(paste ("JAGS model converged for", pft, trait,
+                    "\nGD MPSRF = ",mpsrf,"\n", sep=" "))
     } else {
-      note <- paste ("JAGS model did not converge for", pft, trait,
-                   "\nGD MPSRF = ",mpsrf,"\n", sep=" ") 
+      stop( paste ("JAGS model did not converge for", pft, trait,
+                   "\nGD MPSRF = ",mpsrf,"\n", sep=" ") )
     }
-    writeLines(note)
+
 
     ## reordering maparms so that beta.o etc not sent to end
     .maparms <- names(mcmc.object[[trait]][1,][1][[1]])
