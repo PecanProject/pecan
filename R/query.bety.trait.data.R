@@ -76,7 +76,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     result <- data[,-which(colnames(data) %in% c('temp'))] #drop covariates
     
   } else if (trait == 'c2n_leaf') {
-    query <- paste("selecttraits.citation_id, traits.id, variables.name, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) left join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,")  and variables.name in ('c2n_leaf', 'leafN');", sep = "")
+    query <- paste("select traits.citation_id, traits.id, variables.name, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) left join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,")  and variables.name in ('c2n_leaf', 'leafN');", sep = "")
     query.result <- dbSendQuery(con, query)
     data <- pecan.transformstats(fetch(query.result, n = -1))
     leafNdata   <- data$name == 'leafN'

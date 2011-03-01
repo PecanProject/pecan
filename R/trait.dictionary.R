@@ -11,7 +11,7 @@ trait.dictionary <- function(traits) {
                    figid = c("Leaf C:N" ,"Dark Respiration Rate", "Litter% Labile C", "Growth Respiration", "Leaf Turnover Rate", "Leaf Width", "Mortality Rate", "Seed Dispersal", "Fine Root Allocation","Quantum Efficiency", "Root Respiration Rate", "Root Turnover Rate", "Specific Leaf Area", "Stomatal Slope", "Vcmax", "Photosynthesis min temp", "Water Conductance","Cuticular Conductance", "Seedling Mortality", "Reproductive Allocation","Storage Turnover Rate","Transpiration")
                    )
   
-  if(!traits=='all') {
+  if(!("all" %in% traits)) {
     trait.defs <- merge(data.frame(id=traits), defs, by.x = 'id', by.y = 'id', sort = FALSE)
   } else {
     trait.defs <- defs
