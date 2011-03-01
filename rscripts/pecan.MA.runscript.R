@@ -8,12 +8,16 @@ if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)}
 #ITER  <- as.numeric(system("echo $ITER", intern = TRUE)) 
 #M     <- as.numeric(system("echo $ENSN", intern = TRUE))
 #outdir   <- system("echo $PECANOUT", intern = TRUE)
-pft    = settings$pft
 ITER   = as.numeric(settings$ma_iter)
 M      = as.numeric(settings$ensemble_size)
-outdir = settings$outdir
-outfile1 <- paste(outdir, '/pecan.parms.Rdata', sep = '')
-save.image(outfile1)
+
+## trstr is a list of the traits that ED can use
+trstr <- "'mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','growth_resp_factor','leaf_turnover_rate','leaf_width','nonlocal_dispersal','q','root_respiration_factor','root_turnover_rate','seedling_mortality','SLA_gC_per_m2','stomatal_slope','Vm_low_temp','quantum_efficiency','f_labile','c2n_leaf','water_conductance','Vm0','r_fract','storage_turnover_rate'" #SLA_gC_per_m2 is converted to SLA in query.bety.priors
+trait.name = strsplit(trstr,",")
+trait.name = sub("'","",trait.name[[1]])
+trait.name = sub("'","",trait.name)
+trait.name2 = sub("Vm0","Vcmax",trait.name)
+n.trait = length(trait.name)
 
 require(PECAn)
 #load('out/pecan.parms.Rdata') # for use from inside R 
@@ -24,39 +28,71 @@ if(settings$database$location == 'localhost'){
   con <- query.bety.con(dbname=con$name,password=con$passwd,username=con$userid)
 }
 
-## 1. get species list based on pft
-spstr <- query.bety.pft_species(pft,con=con)
 
+### loop over pfts
+pfts   = which(names(settings) == 'pft'); pft.name = sapply(settings[pfts],function(x){x$name})
+npft   = length(pfts);
+if(npft < 1 | is.null(npft)) stop('no PFT specified')
+mtemp = matrix(NA,n.trait,npft);row.names(mtemp) = trait.name; colnames(mtemp)=pft.name
+pft.summary <- list(mean = mtemp,sd=mtemp,n=mtemp)
+for( i in 1:length(pfts)){
 
-## 2. get priors available for pft
-## trstr is a list of the traits that ED can use
-  trstr <- "'mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','growth_resp_factor','leaf_turnover_rate','leaf_width','nonlocal_dispersal','q','root_respiration_factor','root_turnover_rate','seedling_mortality','SLA_gC_per_m2','stomatal_slope','Vm_low_temp','quantum_efficiency','f_labile','c2n_leaf','water_conductance','Vm0','r_fract','storage_turnover_rate'" #SLA_gC_per_m2 is converted to SLA in query.bety.priors
+  pft    = settings[[pfts[i]]]$name
+  outdir = settings[[pfts[i]]]$outdir
+  outfile1 <- paste(outdir, '/pecan.parms.Rdata', sep = '')
+  save.image(outfile1)
+  
+  
+  ## 1. get species list based on pft
+  spstr <- query.bety.pft_species(pft,con=con)
+  
+  
+  ## 2. get priors available for pft  
+  priors <- query.bety.priors(pft, trstr,out=outdir,con=con)
+  print(priors)
+  
+  trvec <- rownames(priors) # vector of traits with prior distributions for pft 
+  
+  traits <- trvec
+  trait.defs <- trait.dictionary(trvec)
+  save(trait.defs, file = paste(outdir, '/trait.defs.Rdata', sep=''))
+  
+  ## now it is time to query the data
+  ## returns list 'trait.data' with one dataframe per variable
+  trait.data <- query.bety.traits(spstr,trvec,con=con) 
 
-priors <- query.bety.priors(pft, trstr,out=outdir,con=con)
-print(priors)
+  ## DATA HACKS **** THESE SHOULD BE FIXED IN THE DATABASE*******
+  if("root_respiration_factor" %in% names(trait.data)){
+    sel = which(trait.data[["root_respiration_factor"]]$Y < 0.05)
+    trait.data[["root_respiration_factor"]]$Y[sel] = trait.data[["root_respiration_factor"]]$Y[sel]*1000
+  }
+  
+  trait.count <- sapply(trait.data,nrow)
+  trait.average <- sapply(trait.data,function(x){mean(x$Y,na.rm=TRUE)}); names(trait.average)[names(trait.average)=="Vcmax"] = "Vm0"
+  pft.summary$n[match(names(trait.count),trait.name2),i] = trait.count
+  
 
-#prior.variances <- data.frame(var = unlist(t(sapply(1:nrow(priors), function(i) with(priors[i,], pdf.stats(distn, parama, paramb)))['var',])), row.names = rownames(priors))
-prior.variances = as.data.frame(rep(1,nrow(priors)))  ######## HACK ###########
-row.names(prior.variances) = row.names(priors)
+  ##prior.variances <- data.frame(var = unlist(t(sapply(1:nrow(priors), function(i) with(priors[i,], pdf.stats(distn, parama, paramb)))['var',])), row.names = rownames(priors))
+  prior.variances = as.data.frame(rep(1,nrow(priors)))   
+  row.names(prior.variances) = row.names(priors)
+  prior.variances[names(trait.average),] = 0.001*trait.average^2 
 
-taupriors <- list(tauA = 0.01,
-                  tauB = apply(prior.variances, 1, function(x) min(0.01, x)))
+  taupriors <- list(tauA = 0.01,
+                    tauB = apply(prior.variances, 1, function(x) min(0.01, x)))
+  
+  
+  ## run the meta-analysis
+  trait.mcmc <- pecan.ma(trait.data, priors, taupriors,j.iter = ITER,settings,outdir)
+  trait.stats <- sapply(trait.mcmc,function(x){summary(x)$statistics['beta.o',1:2]})
+  pft.summary$mean[match(colnames(trait.stats),trait.name),i] = trait.stats[1,]
+  pft.summary$sd[match(colnames(trait.stats),trait.name),i] = trait.stats[2,]
+  
+  outfile2 <- paste(outdir, '/pecan.MA.Rdata', sep = '')
+  save.image(outfile2)
+  ##save(outdir, file='outdir.Rdata')
 
+  pecan.ma.summary(trait.mcmc, pft,outdir)
+  
+} ## end loop over pfts
 
-trvec <- rownames(priors) # vector of traits with prior distributions for pft 
-
-traits <- trvec
-trait.defs <- trait.dictionary(trvec)
-
-save(trait.defs, file = paste(outdir, '/trait.defs.Rdata', sep=''))
-## now it is time to query the data
-trait.data <- query.bety.traits(spstr,trvec,con=con) 
-## returns list 'trait.data' with one dataframe per variable 
-
-## run the meta-analysis
-trait.mcmc <- pecan.ma(trait.data, priors, taupriors,j.iter = ITER,settings)
-
-pecan.ma.summary(trait.mcmc, pft,outdir)
-outfile2 <- paste(outdir, '/pecan.MA.Rdata', sep = '')
-save.image(outfile2)
-#save(outdir, file='outdir.Rdata')
+save(pft.summary,file=paste(settings$outdir,"pft.summary.RData",sep=""))
