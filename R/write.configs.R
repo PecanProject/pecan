@@ -1,76 +1,81 @@
-PREFIX_XML = '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
+PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
+
+const <- pecan.config.constants(pft)
+pftXml <- const$PFT
+configXml <- const$CONFIG
+
+runIds <- list()
+sampleEnsemble <- list(prior= matrix(nrow = M, ncol = length(traits)), post=matrix(nrow = M, ncol = length(traits)))
+colnames(sampleEnsemble[[1]]) <- colnames(sampleEnsemble[[2]]) <- traits
 
 #returns a string representing a given number 
 #left padded by zeros up to a given number of digits
-leftPadZeros = function(num, digits){
-    format_string = paste('%',sprintf('0%.0f.0f',digits),sep='')
+leftPadZeros <- function(num, digits){
+    format_string <- paste('%',sprintf('0%.0f.0f',digits),sep='')
     return(sprintf(format_string, seq(1, ensemble_size)))
 }
-registerFileName = function(type, typeIndex, id){
-  file = paste(outdir, '/config.', type, quantile, '.xml', sep='')
-  filenames[[typeIndex]][id] = file
-  return(file)
+ 
+configFileName <- function(outdir, runtype, runname, index, trait=''){
+  runid <- paste(trait, runtype, runname, index, sep='')
+  runIds <- c(runIds, runid)
+  configfilename <- paste(outdir, 'c.', runid, sep='')
+  return(configfilename)
 }
-writeSampleXml = function(file, pft, traits, samples, samplePosteriors, sampleEnsemble, 
-      prefixXml = PREFIX_XML){
-  pftXml = pft
+
+
+writeENSXml <- function(outdir, runname, ensembleId, pftXml, traits, haltonSamples, samples,  
+                           prefixXml = PREFIX_XML){
+  pftXml.i <- pftXml
   for (trait in traits) {
-    sample = quantile(samplePosteriors[,trait], samples[trait])
-    pftXml = append.xmlNode(pftXml, xmlNode(trait, sample)
-    sampleEnsemble[k] = sample
+    sample <- quantile(samples[[runname]][,trait], haltonSamples[ensembleId, trait])
+    pftXml.i <- append.xmlNode(pftXml.i, xmlNode(trait, sample))
+    sampleEnsemble[[runname]][ensembleId, trait] <- sample
   }
-  configXml = append.xmlNode(config, pftXml)
-  saveXML(configXml, file = file, indent=TRUE, prefix = prefix)
-}
-#David: are these function names appropriate?
-writeQuantileXml = function(file, pft, traits, quantile, qdata, prefixXml = PREFIX_XML){
-	pftXml = pft
-	for (trait in traits) {
-	  pftXml = append.xmlNode(pftXml, xmlNode(trait, qdata[[trait]][quantile]))
-	  for (otherTrait in traits[which(traits!=trait)]) {
-	    pftXml = append.xmlNode(pftXml, xmlNode(otherTrait, qdata[[otherTrait]][n.mean]))
-	    #TODO: define n.mean
-	  }
-	}
-	configXml = append.xmlNode(config, pftXml)
-	saveXML(configXml, file=file, indent=TRUE, prefix = PREFIX_XML)
+  configXml.i <- append.xmlNode(configXml, pftXml.i)
+  file <- configFileName(outdir, runname, 'ENS', ensembleId)
+  saveXML(configXml.i, file = file, indent=TRUE, prefix = prefixXml)
 }
 
-
-write.configs <- function(ensemble_size, sensitivity_analysis, pft, ens.samps, quantile.samples, outdir, quantiles, traits) {
-
-  priors$distn[priors$distn=='weib'] = 'weibull'
-  
-  for (quantile in quantiles) {
-    writeQuantileXml(registerFileName('prior', 'priorSA', quantile),
-        pft, traits, quantile, qprior)
-    writeQuantileXml(registerFileName('post', 'postSA', quantile),
-        pft, traits, quantile, qpost)
+writeSAXml <- function(outdir, runname, pftXml, traits, Quantile.samples, prefixXml = PREFIX_XML){  
+  pftXml.median <- pftXml
+  for (trait in traits) {
+    Quantiles <- as.numeric(gsub('\\%', '',names(Quantile.samples[[runname]][trait])))
+    median.i <- which(Quantiles == 0.5)
+    pftXml.median <- append.xmlNode(pftXml.median, xmlNode(trait, Quantile.samples[[trait]][median.i]))
+    for(Quantile in seq(Quantiles)) {
+      if (Quantile !=median.i) {
+        pftXml.i <- append.xmlNode(pftXml, xmlNode(trait, Quantile.samples[[runname]][[trait]][Quantile.i])) 
+        for (otherTrait in traits[which(traits!=trait)]) {
+          pftXml.i <- append.xmlNode(pftXml.i, xmlNode(otherTrait, Quantile.samples[[otherTrait]][median.i]))
+        }
+        configXml.i <- append.xmlNode(configXml, pftXml.i)
+        file <- configFileName(outdir, 'SA', runname, Quantile)
+        saveXML(configXml.i, file=file, indent=TRUE, prefix = prefixXml)
+      }
+    }
   }
+  configXml.median <- append.xmlNode(configXml, pftXml.median)
+  file <- configFileName(outdir, 'SA', runname, 'median')
+  saveXML(configXml.median, file=file, indent=TRUE, prefix = prefixXml)
+}
+
+
+
+write.configs <- function(ensemble_size, sensitivity_analysis, pftXml, samples,
+                          Quantile.samples, outdir, traits, runname) {
 
   if(ensemble_size > 0 ) { # write files for ensemble
-
-    #foo <- lapply(ens.samps, function(x) subset(x, subset = )
-    for(run in seq(ensemble_size)) {
-      samples = halton(n =length(traits) dim = 1)
-      runName = leftPadZeros(zero.run, log10(ensemble_size))
-      writeSampleXml(registerFileName('postsamp','post.ensemble',runName), 
-          pft, traits, samples, post.samps, ens.samps[['post']][run,])
-      writeSampleXml(registerFileName('priorsamp','prior.ensemble', runName), 
-          pft, traits, samples, prior.samps, ens.samps[['prior']][run,])
+    haltonSamples <- halton(n = ensemble_size, dim=length(traits))
+    colnames(haltonSamples) <- traits
+    for(ensembleId in seq(ensemble_size)) {
+      runName <- leftPadZeros(zero.run, log10(ensemble_size))
+      writeENSXml(outdir, runname, ensembleId, pftXml, traits, samples, samps)
     }
   }
   if (sensitivity_analysis) {
-  ## Create the config for median runs
-    for(runname in names(quantile.samples)) {
-      PFTm <- PFT
-      for (tri in traits) { 
-        PFTm <- append.xmlNode(PFTm, xmlNode(tri, quantile.samples[[runname]][[tri]]))
-      }
-      CONFIGm <- append.xmlNode(CONFIG, PFTm)
-      file <- paste(outdir, "/config.priormeans.xml", sep = '')
-      filenames[['priormeans']] <- file
-      saveXML(CONFIGm, file = file, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
-      
-  }
+    writeSAXml(outdir, runname, pft, traits, Quantile, Quantile.samples[[runname]])
+  }   
 }
+
+write.configs(ensemble_size=10, sensitivity_analysis=TRUE, pftXml=PFT, samples,
+                          Quantile.samples,  outdir, Quantiles, runname='post')
