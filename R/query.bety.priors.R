@@ -21,7 +21,6 @@ query.bety.priors <- function(pft, trstr,out=NULL,con=NULL,...){
   ## query 2: query the variable names assoc. with priors.
   query2 <- paste("select distinct variables.name, distn, parama, paramb, n from priors join variables on priors.variable_id = variables.id where priors.id in (",pr.id.str,") and variables.name in (",trstr,");", sep = "")
   
-  print(query2)
   q2 <- dbSendQuery(con, query2)
   priors <- fetch ( q2, n = -1 )
   priors$name[priors$name == 'SLA_gC_per_m2'] <- 'SLA'
