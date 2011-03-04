@@ -1,3 +1,3 @@
-pr.samp <- function(distn,a,b,n) {
-    do.call(paste('r',distn,sep=""),list(n,a,b))
+pr.samp <- function(distn,parama,paramb,n) {
+    do.call(paste('r',distn,sep=""),list(n,parama,paramb))
 }
