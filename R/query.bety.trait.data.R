@@ -53,7 +53,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     
     data$mean <- data$mean / exp (3000 * ( 1 / 288.15 - 1 / (273.15 + data$leafT)))
     data$stat <- data$stat / exp (3000 * ( 1 / 288.15 - 1 / (273.15 + data$leafT)))
-    result <- data[,-which(colnames(data) %in% c('leafT', 'canopy_layer','id','date','dateloc'))] #drop covariates
+    result <- data[,-which(colnames(data) %in% c('leafT', 'canopy_layer','date','dateloc'))] #drop covariates
 
   } else if (trait == 'SLA') {
     query <- paste("select  trt.id, trt.citation_id, trt.site_id, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n, tdhc1.level as 'canopy_layer' from traits as trt  left join covariates as tdhc1 on (tdhc1.trait_id = trt.id)  left join treatments as treat on (trt.treatment_id = treat.id)  left join variables as tdhc1_var on (tdhc1.variable_id = tdhc1_var.id)  left join sites on (sites.id = trt.site_id) left join species as spec on (trt.specie_id = spec.id)  left join plants on (spec.plant_id = plants.id)  left join variables as var on (var.id = trt.variable_id)  where trt.variable_id in (select id from variables where name = 'SLA')  and specie_id in (",spstr,")  and ( ( tdhc1_var.name = 'canopy_layer' and tdhc1.level >= .8 )   or tdhc1.level is null) and (month(trt.date) between 4 and 7 or trt.date is null);", sep = "")
@@ -145,11 +145,11 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   data$n[is.na(data$n)] <- 1
   data$n[!is.na(data$stat)] <- 2
   data$ghs <- data$greenhouse #jags won't recognize 0 as an index
-  
+        
   names(data)[names(data)=='stat'] <- 'se'
   data$stdev <- sqrt(data$n) * data$se
   data$obs.prec <- 1 / data$stdev^2
-  ma.data <- data[, c('mean', 'n', 'site', 'trt', 'greenhouse', 'obs.prec')]
-  names(ma.data) <- c('Y', 'n', 'site', 'trt', 'ghs', 'obs.prec')
+  ma.data <- data[, c('mean', 'n', 'site', 'trt', 'greenhouse', 'obs.prec', 'se', 'id', 'citation_id')]
+  names(ma.data) <- c('Y', 'n', 'site', 'trt', 'ghs', 'obs.prec', 'se', 'trait_id', 'citation_id')
   return(ma.data)
 }
