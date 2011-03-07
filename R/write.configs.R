@@ -65,17 +65,28 @@ write.configs <- function(ensemble_size, sensitivity_analysis, pftXml, samples,
                           Quantile.samples, outdir, traits, runname) {
 
   if(ensemble_size > 0 ) { # write files for ensemble
+
     haltonSamples <- halton(n = ensemble_size, dim=length(traits))
     colnames(haltonSamples) <- traits
     for(ensembleId in seq(ensemble_size)) {
       runName <- leftPadZeros(zero.run, log10(ensemble_size))
       writeENSXml(outdir, runname, ensembleId, pftXml, traits, samples, samps)
     }
+                
+
+
   }
   if (sensitivity_analysis) {
     writeSAXml(outdir, runname, pft, traits, Quantile, Quantile.samples[[runname]])
   }   
+    for(runname in names(quantile.samples)) {
+      PFTm <- PFT
+      for (tri in traits) { 
+        PFTm <- append.xmlNode(PFTm, xmlNode(tri, quantile.samples[[runname]][[tri]]))
+      }
+      CONFIGm <- append.xmlNode(CONFIG, PFTm)
+      file <- paste(outdir, "/config.priormeans.xml", sep = '')
+      filenames[['priormeans']] <- file
+      saveXML(CONFIGm, file = file, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
+  }
 }
-
-write.configs(ensemble_size=10, sensitivity_analysis=TRUE, pftXml=PFT, samples,
-                          Quantile.samples,  outdir, Quantiles, runname='post')
