@@ -27,13 +27,18 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   if(trait == 'root_respiration_factor') trait <- 'root_respiration_rate'
   if(trait == 'Vm0') trait <- 'Vcmax'
 
-  if(!trait %in% c('Vcmax','SLA','root_respiration_rate', 'c2n_leaf') ) {
+
+  if(!trait %in% c('Vcmax','SLA','root_respiration_rate', 'c2n_leaf', 'q') ) {
+
+#########################  GENERIC CASE  ############################
         query <- paste("select traits.id, traits.citation_id, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
     query.result <- dbSendQuery(con, query)
     result <- pecan.transformstats(fetch(query.result, n = -1))
 
   } else if(trait == 'Vcmax') {
-##    query <- paste("select trt.site_id, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n, tdhc1.level as 'temp', tdhc2.level as 'canopy_layer' from traits as trt left join covariates as tdhc1 on (tdhc1.trait_id = trt.id) left join covariates as tdhc2 on (tdhc2.trait_id = trt.id) left join treatments as treat on (trt.treatment_id = treat.id) left join variables as tdhc1_var on (tdhc1.variable_id = tdhc1_var.id) left join variables as tdhc2_var on ( tdhc2.variable_id = tdhc2_var.id ) left join sites on (sites.id = trt.site_id)  left join species as spec on (trt.specie_id = spec.id) left join plants on (spec.plant_id = plants.id) left join variables as var on (var.id = trt.variable_id) where trt.variable_id in (select id from variables where name = 'Vcmax') and specie_id in (",spstr,") and tdhc1_var.name = 'leafT' and ( ( tdhc2_var.name = 'canopy_layer' and tdhc2.level >= .8 )  or tdhc2.level is null) and (month(trt.date) between 4 and 7 or trt.date is null);", sep = '')    
+
+    #########################   VCMAX   ############################
+    
     query <- paste("select traits.id, traits.citation_id, traits.site_id, treatments.name, traits.date, traits.dateloc, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
     q    <- dbSendQuery(con, query)
     data <- fetch ( q, n = -1 )
@@ -56,16 +61,35 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     result <- data[,-which(colnames(data) %in% c('leafT', 'canopy_layer','date','dateloc'))] #drop covariates
 
   } else if (trait == 'SLA') {
-   query <- paste("select  trt.id, trt.citation_id, trt.site_id, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n, tdhc1.level as 'canopy_layer' from traits as trt  left join covariates as tdhc1 on (tdhc1.trait_id = trt.id)  left join treatments as treat on (trt.treatment_id = treat.id)  left join variables as tdhc1_var on (tdhc1.variable_id = tdhc1_var.id)  left join sites on (sites.id = trt.site_id) left join species as spec on (trt.specie_id = spec.id)  left join plants on (spec.plant_id = plants.id)  left join variables as var on (var.id = trt.variable_id)  where trt.variable_id in (select id from variables where name = 'SLA')  and specie_id in (",spstr,")  and ( ( tdhc1_var.name = 'canopy_layer' and tdhc1.level >= .8 )   or tdhc1.level is null) and (month(trt.date) between 4 and 7 or trt.date is null);", sep = "")
+    
+    #########################    SLA    ############################
+    query <- paste("select trt.id, trt.citation_id, trt.site_id, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n from traits as trt left join treatments as treat on (trt.treatment_id = treat.id)  left join left join sites on (sites.id = trt.site_id) where trt.variable_id in (select id from variables where name = 'SLA')  and specie_id in (",spstr,")", sep = "")
     q    <- dbSendQuery(con, query)
     data <-  pecan.transformstats(fetch ( q, n = -1 ))
+
+    ## grab covariate data
+    q = dbSendQuery(con,paste("select covariates.trait_id, covariates.level,variables.name from covariates left join variables on variables.id = covariates.variable_id where trait_id in (",vecpaste(data$id),")",sep=""))
+    covs = fetch(q,n=-1)
+    canopy_layer = rep(1.0,nrow(data))
+    data = cbind(data,canopy_layer)
+    for(j in which(covs$name %in% c("canopy_layer"))){
+      data[match(covs$trait_id[j],data$id),covs$name[j]] = covs$level[j]
+    }
+    ## select sunleaf data
+    data = data[data$canopy_layer >= 0.66,]    
     result <- data[,-which(colnames(data)=='canopy_layer')]
-    result[, c('mean','stat')] <- result[, c('mean','stat')] / 0.48 #convert from kg leaf / m2 to kg C / m2
+
+    #convert from kg leaf / m2 to kg C / m2
+    result[, c('mean','stat')] <- result[, c('mean','stat')] / 0.48 
 
   } else if (trait == 'root_respiration_rate') {
+
+    #########################  ROOT RESPIRATION   ############################
+
     query <- paste("select trt.id, trt.citation_id, trt.site_id, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n, tdhc1.level as 'temp' from traits as trt left join covariates as tdhc1 on (tdhc1.trait_id = trt.id)  left join treatments as treat on (trt.treatment_id = treat.id) left join variables as tdhc1_var on (tdhc1.variable_id = tdhc1_var.id) left join sites on (sites.id = trt.site_id)  left join species as spec on (trt.specie_id = spec.id) left join plants on (spec.plant_id = plants.id) left join variables as var on (var.id = trt.variable_id) where trt.variable_id in (select id from variables where name = 'root_respiration_rate') and specie_id in (",spstr,") and tdhc1_var.name = 'rootT';", sep = '') 
     q    <- dbSendQuery(con, query)
     data <- pecan.transformstats(fetch ( q, n = -1 ))
+    
     ## Scale to 15C using Arrhenius scaling
     data$mean <- data$mean / exp (3000 * ( 1 / 288.15 - 1 / (273.15 + data$temp)))
     data$stat <- data$stat / exp (3000 * ( 1 / 288.15 - 1 / (273.15 + data$temp)))
@@ -76,6 +100,9 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     result <- data[,-which(colnames(data) %in% c('temp'))] #drop covariates
     
   } else if (trait == 'c2n_leaf') {
+
+    #########################  LEAF C:N   ############################
+
     query <- paste("select traits.id, traits.citation_id, variables.name, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) left join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,")  and variables.name in ('c2n_leaf', 'leafN');", sep = "")
     query.result <- dbSendQuery(con, query)
     data <- pecan.transformstats(fetch(query.result, n = -1))
@@ -84,6 +111,24 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     inv.se <- function(mean, stat, n) signif(sd(48/rnorm(100000, mean, stat*sqrt(n)))/sqrt(n),3)
     data$stat[leafNdataSE] <- apply(data[leafNdataSE, c('mean', 'stat', 'n')],1, function(x) inv.se(x[1],x[2],x[3]) )
     data$mean[data$name == 'leafN'] <- 48/data$mean[data$name == 'leafN']
+    result <- data
+  } else if (trait == 'q') {
+
+    #########################  FINE ROOT ALLOCATION  ############################
+    ## query Q or FRC_RC
+    query <- paste("select traits.citation_id, traits.id, variables.name, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) left join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,")  and variables.name in ('q', 'FRC_RC');", sep = "")
+    query.result <- dbSendQuery(con, query)
+    data <- pecan.transformstats(fetch(query.result, n = -1))
+
+    ## query fine root biomass and leaf biomass
+    query <- paste("select traits.citation_id, traits.id, variables.name, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n, traits.specie_idfrom traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) left join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,")  and variables.name in ('fine_root_biomass','leaf_biomass');", sep = "")
+    query.result <- dbSendQuery(con, query)
+    data2 <- pecan.transformstats(fetch(query.result, n = -1))
+
+    ## match above and below ground biomass
+    ## match on citation_id, site_id, treatment_id, specie_id where different variables.name
+
+    
     result <- data
   }
 
