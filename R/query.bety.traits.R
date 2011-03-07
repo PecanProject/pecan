@@ -1,9 +1,7 @@
-query.bety.traits <- function(spstr, trvec,con = NULL){
+query.bety.traits <- function(spstr, traits, con = NULL){
   ## check which traits in trvec (those for which priors exist)
   ##    have trait data available for species in spstr
-  if(is.null(con)){
-    con <- query.bety.con()
-  }
+  con <- query.bety.con()
   if(is.list(con)){
     print("query.bety.traits")
     print("WEB QUERY OF DATABASE NOTE IMPLEMENTED")
