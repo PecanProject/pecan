@@ -1,7 +1,5 @@
 query.bety.priors <- function(pft, trstr,out=NULL,con=NULL,...){
-  if(!exists('con')){
-    con <- query.bety.con()
-  }
+  con <- query.bety.con()
   if(is.list(con)){
     print("query.bety.priors")
     print("WEB QUERY OF DATABASE NOT IMPLEMENTED")
