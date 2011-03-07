@@ -52,14 +52,14 @@ writeSAConfigs <- function(pft, Quantile.samples, runname, outdir){
     median.i <- 0.5
     xml.median <- append.xmlNode(xml.median, xmlNode(trait, Quantile.samples[[trait]][median.i]))
     for(QuantileStr in QuantilesStr) {
-      Quantile <- as.numeric(gsub('\\%', '', QuantileStr))/100 
+      Quantile <- as.numeric(gsub('\\%', '',QuantileStr))/100
       if (!is.na(Quantile) && Quantile != median.i) {
-        xml.i <- append.xmlNode(pft$PFT, xmlNode(trait, Quantile.samples[[runname]][[trait]][Quantile])) 
+        xml.i <- append.xmlNode(pft$PFT, xmlNode(trait, Quantile.samples[[runname]][[trait]][QuantileStr])) 
         for (otherTrait in traits[which(traits!=trait)]) {
           xml.i <- append.xmlNode(xml.i, xmlNode(otherTrait, Quantile.samples[[otherTrait]][median.i]))
         }
         xml.i <- append.xmlNode(pft$CONFIG, xml.i)
-        file <- configFileName(outdir, 'SA', runname, QuantileStr)
+        file <- configFileName(outdir, 'SA', runname, round(Quantile,3), trait)
         print(file)
         saveXML(xml.i, file=file, indent=TRUE, prefix = PREFIX_XML)
       }
@@ -92,6 +92,7 @@ write.configs <- function(pftName, ensembleSize, isSensitivityAnalysis, samples,
 
 #Tests the write.configs function
 test <- function(){
+  load('out20110119/pecan.MA.Rdata')
   pftName = 'ebifarm.c4crop'
   trstr <- 
     "'mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','growth_resp_factor',
@@ -101,22 +102,18 @@ test <- function(){
     'T'" #SLA_gC_per_m2 is converted to SLA in query.bety.priors
   priors <- query.bety.priors(pftName, trstr)
   traits<-rownames(priors)
+  samps <- pecan.samps(trait.mcmc, priors)
+  save(samps, file='out/pecan.samps.Rdata')
 
-  prior.samps <- sapply(1:nrow(priors), function(x) do.call(pr.samp, priors[x,]))
-  names(prior.samps) <- traits
-  post.samps <- prior.samps
-  samples <- list(post=post.samps, prior=prior.samps)
   Quantiles<-1-pnorm(-3:3)
-  calculate.quantiles <- function(x,samps) {
-    quantile(samps[[x]], Quantiles)
-  }
-  Quantile.samples <- list(post  = lapply(traits, calculate.quantiles, post.samps),
-                           prior = lapply(traits, calculate.quantiles, prior.samps))
+
+  Quantile.samples <- list(post  = lapply(traits, function(x) quantile(samps[['post']][,x], Quantiles)),
+                           prior = lapply(traits, function(x) quantile(samps[['post']][,x], Quantiles)))
   names(Quantile.samples$post) <- traits
   names(Quantile.samples$prior) <- traits
   tryCatch({
     write.configs(pftName = pftName, ensembleSize=10, isSensitivityAnalysis=TRUE, 
-                  samples, Quantile.samples,  outdir='~/pecan/out')
+                  samps, Quantile.samples,  outdir='~/pecan/out')
   },
   error = function(ex) {
     print(ex)
