@@ -66,7 +66,7 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings){
     writeLines(paste('data max:', max(data$Y), '\ndata min:', min(data$Y), '\nmean:', signif(mean(data$Y),3), '\nn:', length(data$Y)))
     writeLines('stem plot of data points')
     writeLines(paste(stem(data$Y)))
-    if(FALSE %in% is.na(data$obs.prec)){
+    if(any(!is.na(data$obs.prec)) && all(!is.infinite(data$obs.prec))){
       writeLines('stem plot of obs.prec:')
       writeLines(paste(stem(data$obs.prec^2)))
     } else {
