@@ -15,7 +15,11 @@
 
 ##* indicates lines that need to be uncommented after Vcmax query is corrected
 query.bety.trait.data <- function(trait, spstr,con=NULL,...){
-
+  
+  if(is.null(con)){
+    con <- query.bety.con(...)
+  }
+ 
   if(is.list(con)){
     print("query.bety.trait.data")
     print("WEB QUERY OF DATABASE NOTE IMPLEMENTED")
