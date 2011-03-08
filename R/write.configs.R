@@ -1,14 +1,9 @@
-if(interactive()){
-  library(PECAn, lib.loc = '~/lib/R')
-  source('~/pecan/R/pecan.config.constants.R')
-}
-
 PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
 runIds <- list()
 #TODO: sampleEnsemble should really not be a global variable
 #it's instatiation depends upon the pft variable, which itself is a parameter to write.configs
 #it should be passed as a parameter to write.configs, which would then modify its reference.
-sampleEnsemble <- list()
+#sampleEnsemble <- list()
 
 #returns a string representing a given number 
 #left padded by zeros up to a given number of digits
@@ -18,7 +13,7 @@ leftPadZeros <- function(num, digits){
 }
  
 configFileName <- function(outdir, runtype, runname, index, trait=''){
-  runid <- paste(trait, runtype, runname, index, sep='')
+  runid <- paste(runname, runtype, trait, index, sep='')
   runIds <- c(runIds, runid)
   configfilename <- paste(outdir, '/c.', runid, sep='')
   return(configfilename)
@@ -35,7 +30,7 @@ writeEnsembleConfigs <- function(pft, ensembleSize, samples, runname, outdir){
     for (trait in traits) {
       sample <- quantile(samples[[runname]][[trait]], haltonSamples[ensembleId, trait])
       xml <- append.xmlNode(xml, xmlNode(trait, sample))
-      sampleEnsemble[[runname]][ensembleId, trait] <- sample
+      #sampleEnsemble[[runname]][ensembleId, trait] <- sample
     }
     xml <- append.xmlNode(pft$CONFIG, xml)
     file <- configFileName(outdir, runname, 'ENS', leftPadZeros(ensembleId, log10(ensembleSize)))
@@ -75,35 +70,24 @@ write.configs <- function(pftName, ensembleSize, isSensitivityAnalysis, samples,
                           Quantile.samples, outdir) {
   #KLUDGE: code assumes traits are the same throughout samples, and length(samples)>1
   traits <- names(samples[[1]])
-  pft <- pecan.config.constants(pftName)
+  pftXml <- pecan.config.constants(pftName)
   
-  sampleEnsemble <<- list(prior= matrix(nrow = ensembleSize, ncol = length(traits)), 
-                          post=matrix(nrow = ensembleSize, ncol = length(traits)))
-  colnames(sampleEnsemble[[1]]) <<- colnames(sampleEnsemble[[2]]) <<- traits
+#  sampleEnsemble <<- list(prior= matrix(nrow = ensembleSize, ncol = length(traits)), 
+#                          post=matrix(nrow = ensembleSize, ncol = length(traits)))
+#  colnames(sampleEnsemble[[1]]) <- colnames(sampleEnsemble[[2]]) <- traits
   
-  for(runname in names(samples)) {
-    writeEnsembleConfigs(pft, ensembleSize, samples, runname, outdir)
+  for(runname in c('prior','post')) {
+    writeEnsembleConfigs(pftXml, ensembleSize, samples, runname, outdir)
 
     if (isSensitivityAnalysis) {
-      writeSAConfigs(pft, Quantile.samples, runname, outdir)
+      writeSAConfigs(pftXml, Quantile.samples, runname, outdir)
     }
   }
 }
 
-#Tests the write.configs function
-test <- function(){
-  load('out20110119/pecan.MA.Rdata')
-  pftName = 'ebifarm.c4crop'
-  trstr <- 
-    "'mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','growth_resp_factor',
-    'leaf_turnover_rate','leaf_width','nonlocal_dispersal','q','root_respiration_factor',
-    'root_turnover_rate','seedling_mortality','SLA_gC_per_m2','stomatal_slope','Vm_low_temp',
-    'quantum_efficiency','f_labile','water_conductance','Vm0','r_fract','storage_turnover_rate', 
-    'T'" #SLA_gC_per_m2 is converted to SLA in query.bety.priors
-  priors <- query.bety.priors(pftName, trstr)
+priors <- query.bety.priors(pftName, trstr)
   traits<-rownames(priors)
-  samps <- pecan.samps(trait.mcmc, priors)
-  save(samps, file='out/pecan.samps.Rdata')
+  source('R/pecan.samps.R')##not sure why error occurs????
 
   Quantiles<-1-pnorm(-3:3)
 
@@ -119,15 +103,4 @@ test <- function(){
     print(ex)
     traceback()
   })
-}
-
-#Reloads the script
-reload <- function(){
-  do.call(rm, as.list(ls()))
-  source('~/pecan/R/write.configs.R')
-}
-
-retest <- function() {
-  reload()
-  test()
 }
