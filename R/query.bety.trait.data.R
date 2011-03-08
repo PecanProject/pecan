@@ -24,9 +24,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     print("query.bety.trait.data")
     print("WEB QUERY OF DATABASE NOTE IMPLEMENTED")
     return(NULL)
-  } else {
-    con <- query.bety.con()
-  }
+  } 
   
   if(trait == 'root_respiration_factor') trait <- 'root_respiration_rate'
   if(trait == 'Vm0') trait <- 'Vcmax'
