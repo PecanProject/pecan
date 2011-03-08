@@ -15,18 +15,17 @@
 
 ##* indicates lines that need to be uncommented after Vcmax query is corrected
 query.bety.trait.data <- function(trait, spstr,con=NULL,...){
-  if(is.null(con)){
-    con <- query.bety.con()
-  }
+
   if(is.list(con)){
     print("query.bety.trait.data")
     print("WEB QUERY OF DATABASE NOTE IMPLEMENTED")
     return(NULL)
+  } else {
+    con <- query.bety.con()
   }
   
   if(trait == 'root_respiration_factor') trait <- 'root_respiration_rate'
   if(trait == 'Vm0') trait <- 'Vcmax'
-
 
   if(!trait %in% c('Vcmax','SLA','root_respiration_rate', 'c2n_leaf', 'q') ) {
 
