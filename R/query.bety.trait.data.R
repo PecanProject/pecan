@@ -139,20 +139,46 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   
   ## rename name column from treatment table to trt_id
   names(result)[names(result)=='name'] <- 'trt_id'
-
+  
   ## labeling control treatments based on treatments.control flag
   result$control[is.na(result$control)]     <- 1
   result$trt_id[which(result$control == 1)] <- 'control'
-    
+
+## Force a control treatment at each site
+  for(sitei in unique(result$site_id)) {
+    i <- result$site_id == sitei 
+    if(is.na(sitei)){
+      i = which(is.na(result$site_id))
+    }
+    if(!1 %in% result$control[i]){
+      warning(cat('\nWARNING: no control treatment set for site_id', sitei,
+                  '\nif there is only one treatment,',
+                  '\nthat treatment is set to control',
+                  '\nif there is more than one treatment,',
+                  '\nPECAn sets the treatment with mean closest',
+                  '\nto the mean of other controls as the control',
+                  '\nthis assumption may be FALSE',
+                  '\nplease review data from this site\n'),
+              eval = print(query.bety(paste("select url, author, year, title
+                                       from citations
+                                       where id in (select citation_id from
+                                       traits
+                                       where site_id =",sitei,");"),con=con)))
+      control.mean <- ifelse(1 %in% result$control,
+                             mean(result$mean[result$control == 1]),
+                             mean(result$mean))
+      result$control[i & which.min((control.mean - result$mean[i])^2)] <- 1
+    }
+  }
+  
   ## assign all unknown sites to 0
   result$site_id[is.na(result$site_id)] <- 0
 
   ## assume not in greenhouse when is.na(greenhouse)
   result$greenhouse[is.na(result$greenhouse)] <- 0
   
-
-  result$n[is.na(data$n)] <- 1
-  result$n[!is.na(data$stat)] <- 2
+  result$n[is.na(result$n)] <- 1
+  result$n[!is.na(result$stat)] <- 2
 
   ## assign a unique sequential integer to site and trt; for trt, all controls == 0
   data <- transform(result,
@@ -164,17 +190,17 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
                     cite = citation_id
                     )
   
-#  sites = unique(data$site)
-#  for(ss in sites){
-#    #if only one treatment, it's control
-#    if(length(unique(data$trt[data$site == ss])) == 1) data$trt[data$site == ss] <- 0
+  sites = unique(data$site)
+  for(ss in sites){
+    #if only one treatment, it's control
+    if(length(unique(data$trt[data$site == ss])) == 1) data$trt[data$site == ss] <- 0
 #    #make sure at least one control per site
 #
 #    #this is redundant with what should be done above under the comment "Force a control treatment at each site"
 #
-#  }
-  data$n[is.na(data$n)] <- 1
-  data$n[!is.na(data$stat)] <- 2
+  }
+#  data$n[is.na(data$n)] <- 1
+#  data$n[!is.na(data$stat)] <- 2
   data$ghs <- data$greenhouse #jags won't recognize 0 as an index
         
   names(data)[names(data)=='stat'] <- 'se'
