@@ -17,8 +17,8 @@ print(priors)
 ## Set gamma distribution prior on
 prior.variances <- data.frame(var = unlist(t(sapply(1:nrow(priors), function(i) with(priors[i,], pdf.stats(distn, parama, paramb)))['var',])), row.names = rownames(priors))
 
-taupriors <- list(tauA = 0.01,
-                  tauB = apply(prior.variances, 1, function(x) min(0.01, x)))
+taupriors <- list(tauA = 0.1,
+                  tauB = apply(prior.variances, 1, function(x) min(0.1, 0.1*x)))
 
 traits <- trvec <- rownames(priors) # vector of traits with prior distributions for pft 
 trait.defs <- trait.dictionary(trvec)
@@ -27,8 +27,38 @@ save(trait.defs, file = paste(outdir, '/trait.defs.Rdata', sep=''))
 ## now it is time to query the data
 trait.data <- query.bety.traits(spstr,trvec)
 
+##
+## for documentation/ table
+SLA <- trait.data$SLA
+
+
+
+bibtexify <- function (author, year, title) {
+  acronym <- abbreviate(title, minlength = 3, strict=TRUE)
+  paste(author, year, acronym, sep='')
+}
+
+trait.table <- function(trait) {
+  data <- trait.data[[trait]]
+  citationids <- vecpaste(unique(data$citation_id))
+  citations <- query.bety(paste('select id, author, year, title from citations where id in (',citationids,');'))
+  citations$bibtex <- with(citations, bibtexify(author, year, title))
+  data <- merge(data, citations[,c('id', 'bibtex')])
+  data$SE <- signif(data$se, 3)
+  data$Mean  <- signif(data$Y, 3)
+  data$Trait <- trait
+  return(data[,c('Mean', 'n', 'SE', 'bibtex', 'trait_id')])
+}
+
+data.table <- lapply(names(trait.data), trait.table)
+latex.table <- xtable(do.call('rbind', data.table),
+                      display = c('d','f','d','f','s','d' ), 
+                      caption = 'Switchgrass trait data used in meta-analysis')
+digits(latex.table)[c(2,3,4)] <-c(4,1,5)
+
+print(latex.table, include.rownames = FALSE)
 ## returns list 'trait.data' with one dataframe per variable 
- 
+
 ## run the meta-analysis
 trait.mcmc <- pecan.ma(trait.data, priors, taupriors, j.iter = ITER)
 
@@ -36,11 +66,6 @@ pecan.ma.summary(trait.mcmc, pft)
 outfile2 <- paste(outdir, '/pecan.MA.Rdata', sep = '')
 save.image(outfile2)
 priors$distn[priors$distn=='weib'] <- 'weibull'
-#trait.samps <- pecan.samps(trait.mcmc, priors)
-#priors <- prior.dists <- trait.samps[['priors']]
-#post.samps <- trait.samps[['post.samps']]     
-#prior.samps <- trait.samps[['prior.samps']] #matrix of samples from all priors
-
 
 ## this needs to be merged into pecan.write.configs.R
 const <- pecan.config.constants(pft)
@@ -48,12 +73,7 @@ PFT <- const$PFT
 CONFIG <- const$CONFIG
 traits <- tr <- colnames(post.samps)
 filenames <- list()
-outdir <- 'out'
 
-trait.beta.o <- list()
-for(i in names(trait.mcmc)){
-  trait.beta.o[[i]] <-   as.matrix(trait.mcmc[[i]][,'beta.o'])
-}
 
 i <- 1:10000
 
@@ -83,43 +103,14 @@ calculate.quantiles <- function(x,samps, quantiles) {
 }
 
 traits<-colnames(post.samps)
-qpost <- llply(traits, calculate.quantiles, post.samps, quantiles)
-qprior <- llply(traits, calculate.quantiles, prior.samps, quantiles)
-names(qpost) <- traits
-names(qprior) <- traits
+q <- list(post  = lapply(traits, calculate.quantiles, post.samps, quantiles),
+          prior = lapply(traits, calculate.quantiles, prior.samps, quantiles))
+
+
 save(qpost, qprior, file="out/qpostqprior.Rdata")
 
-##write mean config files
-n.lcl45 <- 1 #actually lcl3sigma
-n.lcl30 <- 2 #actually lcl2sigma
-n.lcl15 <- 3
-n.mean  <- 4 #actually median
-n.ucl15 <- 5
-n.ucl30 <- 6
-n.ucl45 <- 7 #actually ucl3sigma
 
-## TODO need to make this whole process generic, so that we can have 7 pts or 2 pts or n pts
-## start making generic where I define quantiles quantiles <- 1-pnorm(-3:3) above
-## e.g. could use quantiles <- c(1:9/10) but that would prob. be a bad idea b/c undersamples the tails; could use quantiles <- c(1:999/1000) but that would have too many runs for each parameter. 
 
-## Create the config for median run
-PFTm <- PFT
-for (tri in traits) { 
-  PFTm <- append.xmlNode(PFTm, xmlNode(tri, qprior[[tri]][n.mean]))
-}
-CONFIGm <- append.xmlNode(CONFIG, PFTm)
-file <- paste(outdir, "/config.priormeans.xml", sep = '')
-filenames[['priormeans']] <- file
-saveXML(CONFIGm, file = file, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
-
-PFTm <- PFT
-for (tri in traits) {
-  PFTm <- append.xmlNode(PFTm, xmlNode(tri, qpost[[tri]][n.mean]))
-}
-CONFIGm <- append.xmlNode(CONFIG, PFTm)
-file <- paste(outdir, "/config.postmeans.xml", sep = '')
-filenames[['postmeans']] <- file
-saveXML(CONFIGm, file = file, indent = TRUE, prefix = '<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n')
 
 ##make post ucl/lcl config files
 for ( tri in traits){
@@ -206,12 +197,10 @@ if (M>0) { #if M==0, only do sens.anal.runs
   ## add leading zeroes to the file names to avoid confusion
   zerosM <- sprintf("%04.0f", seqM) #"%05.0f" if > 10^5 runs, etc.
   
-  
   samps <- halton(n = M, dim = ncol(post.samps)) 
   colnames(samps) <-  traits
 
-  ens.samps <- list(prior= matrix(nrow = M, ncol = length(traits)), post=matrix(nrow = M, ncol = length(traits)))
-  colnames(ens.samps[[1]])<-colnames(ens.samps[[2]])<- traits
+  
   ## Insert samples from trait posteriors into config.xml files
   for (m in seqM) {
     zm <- zerosM[m]
@@ -359,12 +348,13 @@ save(mean.f, edout.sa, file=paste(pecanout, '/edout.sa.satest.Rdata', sep=''))
 ############
 stop('switch to forecast')
 library(PECAn, lib.loc='~/lib/R')
-system('rsync -routi ebi-cluster.igb.uiuc.edu:/home/scratch/dlebauer/pecan/out/*.Rdata ~/pecan/out/')
+outdir <- 'out20110119/'
+#system('rsync -routi ebi-cluster.igb.uiuc.edu:/home/scratch/dlebauer/pecan/out/*.Rdata ~/pecan/out/')
 
-load('out/edout.sa.satest.Rdata')
-load('out/pecan.MA.Rdata')
-load('out/qpostqprior.Rdata')
-load('out/pecan.samps.Rdata')
+load('out20110119/edout.sa.satest.Rdata')
+load('out20110119/pecan.MA.Rdata')
+load('out20110119/qpostqprior.Rdata')
+load('out20110119/pecan.samps.Rdata')
 
 
 ###START SPLINES
@@ -432,8 +422,6 @@ for(runname in c('prior','post')){
     xpts <- seq(min(x),max(x),length.out=100)
     splinelines[[runname]][[trait]]  <- data.frame(x=xpts,y=f(xpts))
     x <- trait.samps[[runname]][,trait]
-    #rangex <- quantile(x, pnorm(c(-3,3)))
-    #x<-x[x>rangex[1] & x<rangex[2]]
     y <- f(x)
     y[y<0 | is.na(y)] <- 0
     satable[trait, 'var.f.hat'] <- var(y)
@@ -496,7 +484,7 @@ plotsa<-function(trait) {
                                                                        plot.title = theme_text(size = 20),
                                                                        panel.border = theme_blank()) 
 }
-
+ 
 
 plotsa(traits[2])
 plotsa('q')
@@ -603,7 +591,7 @@ base.plot <- ggplot(data) +
 #Ens plots
 ############
 
-load('out/edout.ens.Rdata')
+load('out20110119/edout.ens.Rdata')
 
 
  
@@ -613,19 +601,22 @@ pr.q <- quantile(ens$agb[ens$runtype=='prior'], c(0.05, 0.5, 0.95))
 po.q <- quantile(ens$agb[ens$runtype=='post'], c(0.05, 0.5, 0.95))
 pr.dens <- density(ens$agb[ens$runtype=='prior'], from = 0)
 po.dens <- density(ens$agb[ens$runtype=='post'], from = 0)
-
+sp.dens <- density(spline.ens, from = 0)
 pr.densdf <- data.frame(x = c(0, pr.dens$x), y = c(0, pr.dens$y))
 po.densdf <- data.frame(x = c(0, po.dens$x), y = c(0, po.dens$y))
+sp.densdf <- data.frame(x = c(0, sp.dens$x), y = c(0, sp.dens$y))
+#get data from Dan's Publication (Wang et al 2010)
+paviyield <- query.bety("select mean, month(date) from yields where specie_id = 938 and user_id != 11;")
+pavi.dens <- density(paviyield$mean, from = 0)
+pavi.densdf <- data.frame(x = c(0, pavi.dens$x), y = c(0, pavi.dens$y))
 
-paviyield <- query.bety("select mean from yields where specie_id = 938 and user_id != 11;")
-
-
-pdf('out/ensemble_density.pdf', height = 8, width = 8)
+pdf('out/ensemble_density.pdf')
 
 fontsize <- 16
 ggplot() +
   theme_bw() +
-  opts(title = "Aboveground Biomass \n prior (grey) \n post (dark grey) \n Heaton et al 2008 (mean +/- 2 se, n=3)\n Wang et al 2010 (n=1892) ",
+  opts(
+       #title = "Aboveground Biomass \n prior (grey) \n post (dark grey) \n spline ensemble (dotted) \n Heaton et al 2008 (mean +/- 2 se, n=3)\n Wang et al 2010 (n=1892) ",
        axis.text.y = theme_blank(),
        axis.text.x = theme_text(size=fontsize),
        axis.line = theme_blank(),
@@ -638,22 +629,21 @@ ggplot() +
        panel.border = theme_blank(),
        axis.color.y = 'white',
        legend.position=c(-10,0)) +
+  geom_line(data = pavi.densdf, aes(x=x, y = y), size = 1, color = 'black') +
   geom_area(data = subset(pr.densdf, x >= pr.q[1] & x<= pr.q[3]),
             aes(x=x, y=y), alpha = 0.1,) +
-  geom_line(data = pr.densdf, aes(x=x, y = y), size = 2, color = 'grey') +
+  geom_line(data = pr.densdf, aes(x=x, y = y), size = 1, color = 'grey') +
   geom_area(data = subset(po.densdf, x >= po.q[1] & x<= po.q[3]),
             aes(x=x, y=y), alpha = 0.4) +
-  geom_line(data = po.densdf, aes(x=x, y = y), size = 2, color = 'grey40') +
+  geom_line(data = po.densdf, aes(x=x, y = y), size = 1, color = 'grey40') +
+  geom_line(data = sp.densdf, aes(x=x, y = y), size = 1, color = 'grey',lty=3) +
+
   scale_x_continuous(limits = c(0, 50)) +#, breaks = c(0, 20, 40, 60, 80, 100))
-  geom_point(data=paviyield, aes(y=jitter(rep(0, length(mean)))/15-0.005, x=mean), color = 'black', alpha=0.1) +
-  geom_point(aes(x=13, y=-0.001), size = 4)+
-  geom_segment(aes(x=10.8, y=-0.001, xend=15.5, yend=-0.001), size = 1.5)
+#  geom_point(data=paviyield, aes(y=jitter(rep(0, length(mean)))/15-0.005, x=mean), size = 0.5, color = 'black', alpha=0.1) +
+  geom_point(aes(x=13, y=-0.001), size = 2)+
+  geom_segment(aes(x=10.8, y=-0.001, xend=15.5, yend=-0.001), size = 1)
 
 dev.off()
-
-system('rsync -routi /home/dlebauer/pecan/out/ensemble_density.pdf dlebauer:research/writing/pecan/')
-system('rsync -routi /home/dlebauer/pecan/out/sensitivity_analysis.pdf dlebauer:research/writing/pecan/')
-system('rsync -routi /home/dlebauer/pecan/out/vardecomp.pdf dlebauer:research/writing/pecan/')
 
  
 ########Calculate var(f) and sum(var(theta))
@@ -664,24 +654,33 @@ post.varest <- sum(satables[['post']]$var)
 cat(' run ', ' varf ',' varest\n prior ', prior.varf, prior.varest,' \n post ', post.varf, post.varest,'\n')
 
 
-######Get Dan's Pavi Yield data
-
-
-
-
-
 ## Spline ensemble plots
 ## Construct a estimate based on the residuals from the splines
-
-spline.ens <- list()
+## only done for posteriors
 load('ens.samps.Rdata')
-pr.spline.mat <- mapply(do.call, splinefuns[['prior']], lapply(as.data.frame(ens.samps[['prior']]), list))
-spline.ens[['prior']] <-  sapply(rowSums(pr.spline.mat - mean.f[['prior']]), function(x) max(0,x+mean.f[['prior']]))
-po.spline.mat <- mapply(do.call, splinefuns[['post']], lapply(as.data.frame(ens.samps[['post']]), list))
-spline.ens[['post']] <-  sapply(rowSums(po.spline.mat - mean.f[['post']]), function(x) max(0,x+mean.f[['post']]))
+spline.mat <- mapply(do.call, splinefuns[['post']], lapply(as.data.frame(ens.samps[['post']]), list))
+spline.ens <-  sapply(rowSums(po.spline.mat - mean.f[['post']]), function(x) max(0,x+mean.f[['post']]))
+spline.inout <- data.frame(id = 1:500, ens.samps[['post']], spline.ens)
 
-pdf('~/pecan/out/evaluatedbysplines.pdf',width=11,height=6)
-par(mfrow=c(1,2))
+ens.post <- data.frame(id = ens$ensnames, agb = ens$agb)[grep('postsamp', ens$ensname),]
+ens.post$id <- gsub('postsamp0','',ens.post$id)
+ens.all <-  merge(spline.inout, ens.post,by = 'id',all=TRUE)
+
+
+resid <- lm(agb~spline.ens, data=ens.all)$residuals
+
+fit <- lm(resid ~ mort2+growth_resp_factor+leaf_turnover_rate+leaf_width+nonlocal_dispersal+q+root_turnover_rate+seedling_mortality+stomatal_slope+quantum_efficiency+r_fract+root_respiration_factor+Vm_low_temp+SLA+Vm0, data = ens.all[!is.na(ens.all$agb),])
+
+step <- stepAIC(fit)
+
+fit <- lm(resid ~ leaf_turnover_rate + leaf_width + q + seedling_mortality + quantum_efficiency + r_fract + root_respiration_factor + Vm_low_temp + SLA + Vm0, data = ens.all[!is.na(ens.all$agb), ]))
+library(relaimpo)
+plot(calc.relimp(fit))
+
+pdf('~/pecan/out/splineens.pdf',width=11,height=6)
+dens <- ggplot()
+
+
 plot(density(spline.ens[['prior']],from=0), main = 'model ensemble \nspline ensemble (dotted)', xlab='AGB',lty=2, ylim =c(0, 0.07),xlim=c(0,60),col='grey')
 lines(density(spline.ens[['post']],,from=0),lty=2)
 lines(density(ens$agb[ens$runtype=='prior' ],from=0),col='grey' )
