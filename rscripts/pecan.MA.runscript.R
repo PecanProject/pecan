@@ -1,6 +1,6 @@
 require(XML)
-#settings.file = "~/pecan/settings.xml"
-settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
+settings.file = '~/pecan/tundra.grass.xml'
+#settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
 settings.xml = xmlTreeParse(settings.file)
 settings = xmlToList(settings.xml)
 if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 

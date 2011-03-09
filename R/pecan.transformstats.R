@@ -31,7 +31,7 @@ pecan.transformstats <- function(data) {
   ## conservatively assuming 3 groups being tested so df =2
   if ("HSD" %in% data$statname) {
     hsdi <- which(data$statname == "HSD" & data$n > 1)
-    data$stat[hsdi] <- data$stat[hsdi] / (qtukey(0.975, data$n[lsdi], df = 2))
+    data$stat[hsdi] <- data$stat[hsdi] / (qtukey(0.975, data$n[hsdi], df = 2))
     data$statname[hsdi] <- "SE"
   }              
   ## MSD Minimum Squared Difference

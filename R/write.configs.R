@@ -54,12 +54,13 @@ writeSAConfigs <- function(pft, Quantile.samples, runname, outdir){
     for(QuantileStr in QuantilesStr) {
       Quantile <- as.numeric(gsub('\\%', '', QuantileStr))/100 
       if (!is.na(Quantile) && Quantile != median.i) {
-        xml.i <- append.xmlNode(pft$PFT, xmlNode(trait, Quantile.samples[[runname]][[trait]][Quantile])) 
+        xml.i <- append.xmlNode(pft$PFT, 
+             xmlNode(trait, Quantile.samples[[runname]][[trait]][QuantileStr])) 
         for (otherTrait in traits[which(traits!=trait)]) {
           xml.i <- append.xmlNode(xml.i, xmlNode(otherTrait, Quantile.samples[[otherTrait]][median.i]))
         }
         xml.i <- append.xmlNode(pft$CONFIG, xml.i)
-        file <- configFileName(outdir, 'SA', runname, QuantileStr)
+        file <- configFileName(outdir, 'SA', runname, round(Quantile,3), trait)
         print(file)
         saveXML(xml.i, file=file, indent=TRUE, prefix = PREFIX_XML)
       }
@@ -93,6 +94,8 @@ write.configs <- function(pftName, ensembleSize, isSensitivityAnalysis, samples,
 #Tests the write.configs function
 test <- function(){
   pftName = 'ebifarm.c4crop'
+  spstr <- query.bety.pft_species(pftName)
+
   trstr <- 
     "'mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','growth_resp_factor',
     'leaf_turnover_rate','leaf_width','nonlocal_dispersal','q','root_respiration_factor',
@@ -100,11 +103,17 @@ test <- function(){
     'quantum_efficiency','f_labile','water_conductance','Vm0','r_fract','storage_turnover_rate', 
     'T'" #SLA_gC_per_m2 is converted to SLA in query.bety.priors
   priors <- query.bety.priors(pftName, trstr)
+  #names(priors)[which(names(priors) %in% c('parama','paramb'))] <- c('a', 'b')
+
+  i <- 1:10
   traits<-rownames(priors)
+  trait.data <- query.bety.traits(spstr,traits)
+  trait.mat <- data.frame(Vm0=trait.data$Vm0[i])
 
   prior.samps <- sapply(1:nrow(priors), function(x) do.call(pr.samp, priors[x,]))
   names(prior.samps) <- traits
   post.samps <- prior.samps
+  for (trait in colnames(trait.mat)) post.samps[i,trait] <- trait.mat[i, trait]
   samples <- list(post=post.samps, prior=prior.samps)
   Quantiles<-1-pnorm(-3:3)
   calculate.quantiles <- function(x,samps) {
@@ -126,7 +135,7 @@ test <- function(){
 
 #Reloads the script
 reload <- function(){
-  do.call(rm, as.list(ls()))
+  rm(list=ls())
   source('~/pecan/R/write.configs.R')
 }
 
