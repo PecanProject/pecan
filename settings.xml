@@ -1,15 +1,20 @@
 <?xml version="1.0"?>
 <pecan>
-  <pft>temperate.Late_Hardwood</pft>
-  <ma_iter>1000</ma_iter>
-  <ensemble_size>0</ensemble_size>
+  <pft>ebifarm.c4crop</pft>
+  <ma_iter>10000</ma_iter>
+  <ensemble_size>100</ensemble_size>
   <sensitivity_analysis>TRUE</sensitivity_analysis>
-  <outdir>/home/mdietze/output/pecan/</outdir>
-  <Rlib>/home/mdietze/lib/R</Rlib>
+  <outdir>/home/dlebauer/pecan/out</outdir>
+  <Rlib>/home/dlebauer/lib/R</Rlib>
   <!-- Q-->
   <quantiles>
-    <quantile></quantile>
-    <sigma></sigma>
+<!--    <quantile></quantile>-->
+    <sigma>-3</sigma>
+    <sigma>-2</sigma>
+    <sigma>-1</sigma>
+    <sigma>1</sigma>
+    <sigma>2</sigma>
+    <sigma>3</sigma>
   </quantiles>
   <database>
     <userid>ebi_analys_user</userid>
@@ -17,5 +22,5 @@
     <location>localhost</location>
     <name>ebi_analysis</name>
   </database>
-  <pecanDir>/home/mdietze/pecan/</pecanDir>
+  <pecanDir>/home/dlebauer/pecan/</pecanDir>
 </pecan>
