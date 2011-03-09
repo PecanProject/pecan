@@ -1,5 +1,6 @@
 library(PECAn, lib.loc = '~/lib/R')
 load('out/pecan.MA.Rdata')
+browser()
 
 ## sample values for ensemble
 trait.beta.o <- list()
