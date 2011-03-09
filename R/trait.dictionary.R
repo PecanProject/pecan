@@ -15,8 +15,8 @@ trait.dictionary <- function(traits) {
     trait.defs <- merge(data.frame(id=traits), defs, by.x = 'id', by.y = 'id', sort = FALSE)
   } else {
     trait.defs <- defs
-    return(trait.defs)
   }
+  return(trait.defs)
 }
 
 
