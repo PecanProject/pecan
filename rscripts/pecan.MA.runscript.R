@@ -1,4 +1,4 @@
-
+library(XML)
 #settings.file = "~/pecan/settings.xml"
 settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
 
@@ -8,7 +8,7 @@ if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)}
 
 
 ## trstr is a list of the traits that ED can use
-trstr <- "'mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','growth_resp_factor','leaf_turnover_rate','leaf_width','nonlocal_dispersal','q','root_respiration_factor','root_turnover_rate','seedling_mortality','SLA_gC_per_m2','stomatal_slope','Vm_low_temp','quantum_efficiency','f_labile','c2n_leaf','water_conductance','Vm0','r_fract','storage_turnover_rate'" #SLA_gC_per_m2 is converted to SLA in query.bety.priors
+trstr <- "'mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','growth_resp_factor','leaf_turnover_rate','leaf_width','nonlocal_dispersal','q','root_respiration_factor','root_turnover_rate','seedling_mortality','SLA_gC_per_m2','stomatal_slope','Vm_low_temp','quantum_efficiency','f_labile','c2n_leaf','water_conductance','Vm0','r_fract','storage_turnover_rate','agf_bs'" #SLA_gC_per_m2 is converted to SLA in query.bety.priors
 trait.name = strsplit(trstr,",")
 trait.name = sub("'","",trait.name[[1]])
 trait.name = sub("'","",trait.name)
@@ -71,14 +71,14 @@ for( i in 1:length(pfts)){
   
 
   ##prior.variances <- data.frame(var = unlist(t(sapply(1:nrow(priors), function(i) with(priors[i,], pdf.stats(distn, parama, paramb)))['var',])), row.names = rownames(priors))
-#  prior.variances = as.data.frame(rep(1,nrow(priors)))   
-#  row.names(prior.variances) = row.names(priors)
-#  prior.variances[names(trait.average),] = 0.001*trait.average^2 
+  prior.variances = as.data.frame(rep(1,nrow(priors)))
+  row.names(prior.variances) = row.names(priors)
+  prior.variances[names(trait.average),] = 0.001*trait.average^2 
 
   ## Set gamma distribution prior on
-  prior.var <- function(x) do.call(pdf.stats, list(x$distn, x$parama, x$paramb))['var']
-  prior.variances <- data.frame(var = sapply(1:nrow(priors), function(i) prior.var(priors[i,])),
-                                row.names = rownames(priors))
+#  prior.var <- function(x) do.call(pdf.stats, list(x$distn, x$parama, x$paramb))['var']
+#  prior.variances <- data.frame(var = sapply(1:nrow(priors), function(i) prior.var(priors[i,])),
+#                                row.names = rownames(priors))
   
   
   taupriors <- list(tauA = 0.01,

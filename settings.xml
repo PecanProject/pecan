@@ -1,6 +1,13 @@
 <?xml version="1.0"?>
 <pecan>
-  <pft>temperate.Late_Hardwood</pft>
+  <pft>
+     <name>temperate.Late_Hardwood</name>
+     <outdir>/home/mdietze/output/pecan/LH/</outdir>
+  </pft>
+  <pft>
+     <name>temperate.North_Mid_Hardwood</name>
+     <outdir>/home/mdietze/output/pecan/MH/</outdir>
+  </pft>
   <ma_iter>1000</ma_iter>
   <ensemble_size>0</ensemble_size>
   <sensitivity_analysis>TRUE</sensitivity_analysis>
