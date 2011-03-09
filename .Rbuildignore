@@ -1,5 +1,3 @@
-R/write.configs*
-out/*Rdata
 out/*
 kepler/
 rscripts/

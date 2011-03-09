@@ -2,10 +2,10 @@ library(XML)
 #settings.file = "~/pecan/settings.xml"
 settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
 
-settings.xml = xmlTreeParse(settings.file)
-settings = xmlToList(settings.xml)
-if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
+settings.xml <- xmlTreeParse(settings.file)
+settings <- xmlToList(settings.xml)
 
+if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
 
 ## trstr is a list of the traits that ED can use
 trstr <- "'mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','growth_resp_factor','leaf_turnover_rate','leaf_width','nonlocal_dispersal','q','root_respiration_factor','root_turnover_rate','seedling_mortality','SLA_gC_per_m2','stomatal_slope','Vm_low_temp','quantum_efficiency','f_labile','c2n_leaf','water_conductance','Vm0','r_fract','storage_turnover_rate','agf_bs'" #SLA_gC_per_m2 is converted to SLA in query.bety.priors
@@ -18,11 +18,11 @@ ma_iter   = as.numeric(settings$ma_iter)
 ensemble_size = as.numeric(settings$ensemble_size)
 sensitivity_analysis = as.logical(settings$sensitivity_analysis)
 
+
 require(PECAn)
-#load('out/pecan.parms.Rdata') # for use from inside R 
 
 ## connect to database
-con = settings$database
+con <- settings$database
 if(settings$database$location == 'localhost'){
   con <- query.bety.con(dbname=con$name,password=con$passwd,username=con$userid)
 }
