@@ -14,7 +14,7 @@
 #' @author David LeBauer \email{dlebauer@illinois.edu}
 
 ##* indicates lines that need to be uncommented after Vcmax query is corrected
-query.bety.trait.data <- function(trait, spstr,con=NULL,...){
+query.bety.trait.data <- function(trait, spstr,con=NULL){
   if(is.null(con)){
     con <- query.bety.con()
   }
@@ -175,7 +175,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   result$trt_id[is.na(result$control)] <- .u[1:sum(is.na(result$control))]
 
   ## remove control flag
-  result <- result[,-which(names(result) == 'control')]
+##  result <- result[,-which(names(result) == 'control')]
   ## assume not in greenhouse when is.na(greenhouse)
   result$greenhouse[is.na(result$greenhouse)] <- 0
   
@@ -202,6 +202,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   data$ghs <- data$greenhouse #jags won't recognize 0 as an index
         
   names(data)[names(data)=='stat'] <- 'se'
+  data$se[data$se <= 0.0] <- NA
   data$stdev <- sqrt(data$n) * data$se
   data$obs.prec <- 1 / data$stdev^2
   ma.data <- data[, c('mean', 'n', 'site', 'trt', 'greenhouse', 'obs.prec', 'se', 'id', 'citation_id')]
