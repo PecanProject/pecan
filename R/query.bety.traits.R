@@ -1,8 +1,8 @@
 query.bety.traits <- function(spstr, traits, con = NULL){
-  ## check which traits in trvec (those for which priors exist)
+  ## check which traits in traits (those for which priors exist)
   ##    have trait data available for species in spstr
 
-   if(is.null(con)){
+  if(is.null(con)){
     con <- query.bety.con(...)
   }
   if(is.list(con)){
@@ -12,7 +12,7 @@ query.bety.traits <- function(spstr, traits, con = NULL){
   }
   
   trait.data <- list()
-  trvec <- gsub('Vm0','Vcmax',gsub('root_respiration_factor','root_respiration_rate',trvec))
+  traits <- gsub('Vm0','Vcmax',gsub('root_respiration_factor','root_respiration_rate',traits))
   query <- paste("select distinct variables.name from traits join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,") and variable_id in (select id from variables where name in (", vecpaste(traits),"));", sep = "")
   ##*TODO
   ## Need to write query for:
