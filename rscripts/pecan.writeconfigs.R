@@ -1,5 +1,12 @@
 library(PECAn, lib.loc = '~/lib/R')
-load('out20110121/pecan.MA.Rdata')
+load('out20110119/pecan.MA.Rdata')
+
+pftName <- settings$pft
+quantiles <- settings$quantiles
+samps <- pecan.samps(trait.mcmc, priors)
+save(samps, file='out/pecan.samps.Rdata')
+
+
 
 ## sample values for ensemble
 trait.beta.o <- list()
