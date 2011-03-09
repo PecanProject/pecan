@@ -1,17 +1,17 @@
 PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
 runIds <- list()
-#TODO: sampleEnsemble should really not be a global variable
-#it's instatiation depends upon the pft variable, which itself is a parameter to write.configs
-#it should be passed as a parameter to write.configs, which would then modify its reference.
-#sampleEnsemble <- list()
+                                        #TODO: sampleEnsemble should really not be a global variable
+                                        #it's instatiation depends upon the pft variable, which itself is a parameter to write.configs
+                                        #it should be passed as a parameter to write.configs, which would then modify its reference.
+                                        #SampEns# sampleEnsemble <- list()
 
-#returns a string representing a given number 
-#left padded by zeros up to a given number of digits
+                                        #returns a string representing a given number 
+                                        #left padded by zeros up to a given number of digits
 leftPadZeros <- function(num, digits){
-    format_string <- paste('%',sprintf('0%.0f.0f',digits),sep='')
-    return(sprintf(format_string, num))
+  format_string <- paste('%',sprintf('0%.0f.0f',digits),sep='')
+  return(sprintf(format_string, num))
 }
- 
+
 configFileName <- function(outdir, runtype, runname, index, trait=''){
   runid <- paste(runname, runtype, trait, index, sep='')
   runIds <- c(runIds, runid)
@@ -30,7 +30,7 @@ writeEnsembleConfigs <- function(pft, ensembleSize, samples, runname, outdir){
     for (trait in traits) {
       sample <- quantile(samples[[runname]][[trait]], haltonSamples[ensembleId, trait])
       xml <- append.xmlNode(xml, xmlNode(trait, sample))
-      #sampleEnsemble[[runname]][ensembleId, trait] <- sample
+                                        #SampEns#sampleEnsemble[[runname]][ensembleId, trait] <- sample
     }
     xml <- append.xmlNode(pft$CONFIG, xml)
     file <- configFileName(outdir, runname, 'ENS', leftPadZeros(ensembleId, log10(ensembleSize)))
@@ -68,13 +68,13 @@ writeSAConfigs <- function(pft, Quantile.samples, runname, outdir){
 
 write.configs <- function(pftName, ensembleSize, isSensitivityAnalysis, samples, 
                           Quantile.samples, outdir) {
-  #KLUDGE: code assumes traits are the same throughout samples, and length(samples)>1
+                                        #KLUDGE: code assumes traits are the same throughout samples, and length(samples)>1
   traits <- names(samples[[1]])
   pftXml <- pecan.config.constants(pftName)
   
-#  sampleEnsemble <<- list(prior= matrix(nrow = ensembleSize, ncol = length(traits)), 
-#                          post=matrix(nrow = ensembleSize, ncol = length(traits)))
-#  colnames(sampleEnsemble[[1]]) <- colnames(sampleEnsemble[[2]]) <- traits
+                                        #SampEns#  sampleEnsemble <<- list(prior= matrix(nrow = ensembleSize, ncol = length(traits)), 
+  ##SampEns#                          post=matrix(nrow = ensembleSize, ncol = length(traits)))
+                                        #SampEns#  colnames(sampleEnsemble[[1]]) <- colnames(sampleEnsemble[[2]]) <- traits
   
   for(runname in c('prior','post')) {
     writeEnsembleConfigs(pftXml, ensembleSize, samples, runname, outdir)
@@ -83,24 +83,4 @@ write.configs <- function(pftName, ensembleSize, isSensitivityAnalysis, samples,
       writeSAConfigs(pftXml, Quantile.samples, runname, outdir)
     }
   }
-}
-
-priors <- query.bety.priors(pftName, trstr)
-  traits<-rownames(priors)
-  source('R/pecan.samps.R')##not sure why error occurs????
-
-  Quantiles<-1-pnorm(-3:3)
-
-  Quantile.samples <- list(post  = lapply(traits, function(x) quantile(samps[['post']][,x], Quantiles)),
-                           prior = lapply(traits, function(x) quantile(samps[['post']][,x], Quantiles)))
-  names(Quantile.samples$post) <- traits
-  names(Quantile.samples$prior) <- traits
-  tryCatch({
-    write.configs(pftName = pftName, ensembleSize=10, isSensitivityAnalysis=TRUE, 
-                  samps, Quantile.samples,  outdir='~/pecan/out')
-  },
-  error = function(ex) {
-    print(ex)
-    traceback()
-  })
 }
