@@ -31,7 +31,7 @@ pecan.transformstats <- function(data) {
   ## conservatively assuming 3 groups being tested so df =2
   if ("HSD" %in% data$statname) {
     hsdi <- which(data$statname == "HSD" & data$n > 1)
-    data$stat[hsdi] <- data$stat[hsdi] / (qtukey(0.975, data$n[lsdi], df = 2))
+    data$stat[hsdi] <- data$stat[hsdi] / (qtukey(0.975, data$n[hsdi], df = 2))
     data$statname[hsdi] <- "SE"
   }              
   ## MSD Minimum Squared Difference
@@ -39,7 +39,7 @@ pecan.transformstats <- function(data) {
   ## SE  = MSD*n/(t*sqrt(2))
   if ("MSD" %in% data$statname) {
     msdi <- which(data$statname == "MSD")
-    data$stat[msdi] <- data$stat[msdi] * data$n[msdi] / ( qt(0.975,2*data$n[lsdi]-2)*sqrt(2))
+    data$stat[msdi] <- data$stat[msdi] * data$n[msdi] / ( qt(0.975,2*data$n[msdi]-2)*sqrt(2))
     data$statname[msdi] <- "SE"
   }
   if (FALSE %in% c('SE','none') %in% data$statname) {

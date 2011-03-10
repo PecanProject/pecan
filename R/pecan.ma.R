@@ -28,7 +28,8 @@
 ##'
 
 
-pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings){
+pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings, outdir){
+  
   madata <- list()
   ## Meta-analysis for each trait
   mcmc.object <- list() #  initialize output list of mcmc objects for each trait
@@ -40,7 +41,7 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings){
   ## Convert R distributions to JAGS distributions
   jagspriors <- r2bugs.distributions(priors)
   ## log the mcmc chain parameters
-  sink(file = paste(settings$outdir,'meta-analysis.log',sep=""), split = TRUE)
+  sink(file = paste(outdir,'meta-analysis.log',sep=""), split = TRUE)
   cat(paste( 'Each meta-analysis will be run with: \n',
             j.iter, ' total iterations,\n',
             j.chains, ' chains, \n',
@@ -58,8 +59,16 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings){
     writeLines(paste('starting meta-analysis for', trait.name))
 
     data <- trait.data[[trait.name]]
+    data <- data[,-which(colnames(data) %in% c("citation_id","trait_id"))] ## remove citation column
     data <- data[order(data$site,data$trt),]#not sure why, but required for JAGS model
 
+    ##check for excess missing data
+    if(sum(!is.na(data$obs.prec))==0){
+      writeLines("NO ERROR STATS PROVIDED, DROPPING RANDOM EFFECTS")
+      data$site = rep(1,nrow(data))
+      data$trt  = rep(0,nrow(data))
+    }
+    
     #print out some data summaries to check
     writeLines(paste('prior for ', trait.name, ':',
                 jagsprior[1], '(',jagsprior[2], ', ', jagsprior[3], ')', sep = ''))
@@ -113,23 +122,31 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings){
     }
 
     madata[[trait.name]] <- data
-    jag.model.file <-  paste(settings$outdir, trait.name, ".model.bug",sep="")  # file to store model
+    jag.model.file <-  paste(outdir, trait.name, ".model.bug",sep="")  # file to store model
     write.ma.model (modelfile = paste(settings$pecanDir,'rscripts/ma.model.template.bug',sep=""),
                     outfile = jag.model.file,
                     reg.model = reg.model,
                     jagsprior$distn, jagsprior$a, jagsprior$b,
-                    length ( data$Y ),
-                    model.parms[['trt']],
-                    model.parms[['site']],
-                    model.parms[['ghs']],
-                    tauA <- taupriors$tauA,
-                    tauB <- taupriors$tauB[[prior.name]])
+                    n     = length ( data$Y ),
+                    trt.n = model.parms[['trt']],
+                    site.n= model.parms[['site']],
+                    ghs.n = model.parms[['ghs']],
+                    ##                    tauA  = taupriors$tauA,
+                    tauA  = taupriors$tauB[prior.name],
+                    tauB  = taupriors$tauB[prior.name])
 
-    
+    ## overdispersed chains
     j.inits <- function(chain) list("beta.o" = do.call(paste('q',prior$dist,sep=''),
                                       list(chain * 1/(j.chains + 1), prior$a, prior$b)),
                                     .RNG.seed = chain,
                                     .RNG.name = "base::Mersenne-Twister")
+
+    ## chains fixed at data mean - used if above code does not converge,
+    ## invalidates assumptions about convergence, e.g. Gelman-Rubin diagnostic
+    ## TODO set flag to choose overdispersed vs fixed chains
+    ##    j.inits <- function(chain) list("beta.o" = mean(data$Y))
+
+
     j.model   <- jags.model (file = jag.model.file,
                              data = data,
                              n.adapt = 100, #will burn in below
@@ -146,7 +163,7 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings){
  
     mcmc.object[[prior.name]] <- jags.out.trunc
   }
-  save(madata, file = paste(settings$outdir,'madata.Rdata',sep=""))
+  save(madata, file = paste(outdir,'madata.Rdata',sep=""))
   sink()
   return(mcmc.object)
 }
