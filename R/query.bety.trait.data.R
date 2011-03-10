@@ -105,7 +105,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
 
     #########################  LEAF C:N   ############################
 
-    query <- paste("select traits.id, traits.citation_id, variables.name, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) left join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,")  and variables.name in ('c2n_leaf', 'leafN');", sep = "")
+    query <- paste("select traits.id, traits.citation_id, variables.name as vname, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) left join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,")  and variables.name in ('c2n_leaf', 'leafN');", sep = "")
 
     query.result <- dbSendQuery(con, query)
     data <- pecan.transformstats(fetch(query.result, n = -1))
@@ -113,26 +113,63 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     leafNdataSE <- leafNdata & data$statname == 'SE'
     inv.se <- function(mean, stat, n) signif(sd(48/rnorm(100000, mean, stat*sqrt(n)))/sqrt(n),3)
     data$stat[leafNdataSE] <- apply(data[leafNdataSE, c('mean', 'stat', 'n')],1, function(x) inv.se(x[1],x[2],x[3]) )
-    data$mean[data$name == 'leafN'] <- 48/data$mean[data$name == 'leafN']
+    data$mean[data$vname == 'leafN'] <- 48/data$mean[data$name == 'leafN']
     result <- data
   } else if (trait == 'q') {
 
     #########################  FINE ROOT ALLOCATION  ############################
     ## query Q or FRC_RC
-    query <- paste("select traits.citation_id, traits.id, variables.name, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) left join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,")  and variables.name in ('q', 'FRC_RC');", sep = "")
+    query <- paste("select traits.citation_id, traits.id, variables.name as vname, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) left join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,")  and variables.name in ('q', 'FRC_RC');", sep = "")
     query.result <- dbSendQuery(con, query)
     data <- pecan.transformstats(fetch(query.result, n = -1))
 
     ## query fine root biomass and leaf biomass
-    query <- paste("select traits.citation_id, traits.id, variables.name, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n, traits.specie_id from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) left join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,")  and variables.name in ('fine_root_biomass','leaf_biomass');", sep = "")
+    query <- paste("select traits.citation_id, traits.id, variables.name as vname, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n, traits.specie_id from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) left join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,")  and variables.name in ('fine_root_biomass','leaf_biomass');", sep = "")
     query.result <- dbSendQuery(con, query)
     data2 <- pecan.transformstats(fetch(query.result, n = -1))
 
     ## match above and below ground biomass
     ## match on citation_id, site_id, treatment_id, specie_id where different variables.name
+    data3 = NULL
+    if(nrow(data2) > 0){
+#      pair = list(); counter = 0;
+      for(cite in unique(data2$citation_id)){
+        selC = which(data2$citation_id == cite)
+        for(site in unique(data2$site_id[selC])){
+          selS = selC[which(data2$site_id[selC] == site)]
+          for(spp in unique(data2$specie_id[selS])){
+            selSp = selS[which(data2$specie_id[selS] == spp)]
+            for(tmt in unique(data2$name[selSp])){
+              selT = selSp[which(data2$name[selSp] == tmt)]
 
+              #ok, after all this you have a unique data -- does it constitute a root/leaf pair?
+              roots  = selT[which(data2$vname[selT] == "fine_root_biomass")]
+              leaves = selT[which(data2$vname[selT] == "leaf_biomass")]
+
+              if(length(roots) == 1 & length(leaves) == 1){
+                newrow = data2[roots,]; newrow$vname = 'q'
+                if(is.na(data2$stat[leaves])){
+                  newrow$mean = newrow$mean/data2$mean[leaves]
+                  newrow$stat = newrow$stat/data2$mean[leaves]
+                } else {
+                  ## approximate by numerical simulation
+                  if(is.na(newrow$stat)) newrow$stat = 0
+                  x = rnorm(10000,newrow$mean,newrow$stat)/rnorm(10000,data2$mean[leaves],data2$stat[leaves])
+                  newrow$mean = mean(x)
+                  newrow$stat = sd(x)
+                }
+                newrow$n    = min(newrow$n,data2$n[leaves])
+                if(is.null(data3)){ data3 = newrow} else {data3 = rbind(data3,newrow)}
+                
+              }
+            }
+          }
+        }        
+      }
+      if(!is.null(data3)) data3 <-  data3[,-which(colnames(data3)=="specie_id")]
+    }
     
-    result <- data
+    result <- rbind(data,data3)
   }
 
   if (trait == 'leaf_width') result <- transform(result, mean = mean/1000, stat=stat/1000) 
