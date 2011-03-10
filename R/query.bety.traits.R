@@ -1,5 +1,6 @@
 query.bety.traits <- function(spstr, traits, con = NULL){
   ## check which traits in traits (those for which priors exist)
+
   ##    have trait data available for species in spstr
 
   if(is.null(con)){
@@ -22,6 +23,11 @@ query.bety.traits <- function(spstr, traits, con = NULL){
   query.result <- dbSendQuery(con, query)
   traits.in.bety <- fetch(query.result, n = -1)
   trait.data <- lapply(traits.in.bety$name, function(x)  query.bety.trait.data(x, spstr, con=con))
+  if(FALSE){ ## alt loop for debugging
+    for(trait in traits.in.bety$name){
+      trait.data[[trait]] = query.bety.trait.data(trait,spstr,con)
+    }
+  }
   names(trait.data) <- gsub('root_respiration_rate', 'root_respiration_factor', traits.in.bety$name)
   return(trait.data)
 }

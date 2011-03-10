@@ -1,6 +1,9 @@
 <?xml version="1.0"?>
 <pecan>
-  <pft>ebifarm.c4crop</pft>
+  <pft>
+      <name>ebifarm.c4crop</name>
+      <outdir>/home/dlebauer/pecan/out</outdir>
+  </pft>
   <ma_iter>10000</ma_iter>
   <ensemble_size>100</ensemble_size>
   <sensitivity_analysis>TRUE</sensitivity_analysis>

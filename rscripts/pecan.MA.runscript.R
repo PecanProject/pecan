@@ -1,17 +1,24 @@
-require(XML)
-setwd('~/pecan')  
-settings.file <- "~/pecan/settings.xml"
-#settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
+library(XML)
+#settings.file = "~/pecan/settings.xml"
+settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
 
 settings.xml <- xmlTreeParse(settings.file)
 settings <- xmlToList(settings.xml)
+
 if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
 
-pft                  <- settings$pft
-ma_iter              <- as.numeric(settings$ma_iter)
-ensemble_size        <- as.numeric(settings$ensemble_size)
-sensitivity_analysis <- as.logical(settings$sensitivity_analysis)
-outdir               <- settings$outdir
+## trstr is a list of the traits that ED can use
+trstr <- "'mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','growth_resp_factor','leaf_turnover_rate','leaf_width','nonlocal_dispersal','q','root_respiration_factor','root_turnover_rate','seedling_mortality','SLA','stomatal_slope','Vm_low_temp','quantum_efficiency','f_labile','c2n_leaf','water_conductance','Vm0','r_fract','storage_turnover_rate','agf_bs'" #SLA_gC_per_m2 is converted to SLA in query.bety.priors
+trait.name = strsplit(trstr,",")
+trait.name = sub("'","",trait.name[[1]])
+trait.name = sub("'","",trait.name)
+trait.name2 = sub("Vm0","Vcmax",trait.name)
+n.trait = length(trait.name)
+ma_iter   = as.numeric(settings$ma_iter)
+ensemble_size = as.numeric(settings$ensemble_size)
+sensitivity_analysis = as.logical(settings$sensitivity_analysis)
+
+
 require(PECAn)
 
 ## connect to database
@@ -20,27 +27,82 @@ if(settings$database$location == 'localhost'){
   con <- query.bety.con(dbname=con$name,password=con$passwd,username=con$userid)
 }
 
-## 1. get species list based on pft
-spstr <- query.bety.pft_species(pft, con=con)
+## identify pfts
+pfts   = which(names(settings) == 'pft'); pft.name = sapply(settings[pfts],function(x){x$name})
+npft   = length(pfts);
+if(npft < 1 | is.null(npft)) stop('no PFT specified')
+mtemp = matrix(NA,n.trait,npft);row.names(mtemp) = trait.name; colnames(mtemp)=pft.name
+pft.summary <- list(mean = mtemp,sd=mtemp,n=mtemp)
 
+### loop over pfts
+for( i in 1:length(pfts)){
 
-## 2. get priors available for pft
-## trstr is a list of the traits that ED can use
-  trstr <- "'mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','growth_resp_factor','leaf_turnover_rate','leaf_width','nonlocal_dispersal','q','root_respiration_factor','root_turnover_rate','seedling_mortality','SLA_m2_per_gC','stomatal_slope','Vm_low_temp','quantum_efficiency','f_labile','c2n_leaf','water_conductance','Vm0','r_fract','storage_turnover_rate'" #SLA_gC_per_m2 is converted to SLA in query.bety.priors
+  pft    = settings[[pfts[i]]]$name
+  outdir = settings[[pfts[i]]]$outdir
+  outfile1 <- paste(outdir, '/pecan.parms.Rdata', sep = '')
+  save.image(outfile1)
+  
+  
+  ## 1. get species list based on pft
+  spstr <- query.bety.pft_species(pft,con=con)
+  
+  
+  ## 2. get priors available for pft  
+  priors <- query.bety.priors(pft, trstr,out=outdir,con=con)
+  print(priors)
+  
+  traits <-trvec <- rownames(priors) # vector of traits with prior distributions for pft 
+  trait.defs <- trait.dictionary(trvec)
+  save(trait.defs, file = paste(outdir, '/trait.defs.Rdata', sep=''))
+  
+  ## now it is time to query the data
+  ## returns list 'trait.data' with one dataframe per variable
+  trait.data <- query.bety.traits(spstr,trvec,con=con) 
 
-priors <- query.bety.priors(pft, trstr,out=outdir,con=con)
+  ## DATA HACKS **** THESE SHOULD BE FIXED IN THE DATABASE*******
+  if("root_respiration_factor" %in% names(trait.data)){
+    sel = which(trait.data[["root_respiration_factor"]]$Y < 0.05)
+    trait.data[["root_respiration_factor"]]$Y[sel] = trait.data[["root_respiration_factor"]]$Y[sel]*1000
+  }
+  if("SLA" %in% names(trait.data)){
+    sel = which(trait.data[["SLA"]]$citation_id %in% c(333,311))
+    if(length(sel) > 0){
+      trait.data[["SLA"]] = trait.data[["SLA"]][-sel,]            
+    }
+  }
+  
+  trait.count <- sapply(trait.data,nrow)
+  trait.average <- sapply(trait.data,function(x){mean(x$Y,na.rm=TRUE)}); names(trait.average)[names(trait.average)=="Vcmax"] = "Vm0"
+  pft.summary$n[match(names(trait.count),trait.name2),i] = trait.count
+  
 
-traits <- rownames(priors) # vector of traits with prior distributions for pft 
+  ##prior.variances <- data.frame(var = unlist(t(sapply(1:nrow(priors), function(i) with(priors[i,], pdf.stats(distn, parama, paramb)))['var',])), row.names = rownames(priors))
+  prior.variances = as.data.frame(rep(1,nrow(priors)))
+  row.names(prior.variances) = row.names(priors)
+  prior.variances[names(trait.average),] = 0.001*trait.average^2 
 
-trait.defs <- trait.dictionary(traits)
+  ## Set gamma distribution prior on
+#  prior.var <- function(x) do.call(pdf.stats, list(x$distn, x$parama, x$paramb))['var']
+#  prior.variances <- data.frame(var = sapply(1:nrow(priors), function(i) prior.var(priors[i,])),
+#                                row.names = rownames(priors))
+  
+  
+  taupriors <- list(tauA = 0.01,
+                    tauB = apply(prior.variances, 1, function(x) min(0.01, x)))
+  
+  
+  ## run the meta-analysis
+  trait.mcmc <- pecan.ma(trait.data, priors, taupriors,j.iter = ma_iter,settings,outdir)
+  trait.stats <- sapply(trait.mcmc,function(x){summary(x)$statistics['beta.o',1:2]})
+  pft.summary$mean[match(colnames(trait.stats),trait.name),i] = trait.stats[1,]
+  pft.summary$sd[match(colnames(trait.stats),trait.name),i] = trait.stats[2,]
+  
+  outfile2 <- paste(outdir, '/pecan.MA.Rdata', sep = '')
+  save.image(outfile2)
+  ##save(outdir, file='outdir.Rdata')
 
-## now it is time to query the data
-trait.data <- query.bety.traits(spstr, vecpaste(traits), con=con) 
-## returns list 'trait.data' with one dataframe per variable 
+  pecan.ma.summary(trait.mcmc, pft,outdir)
+  
+} ## end loop over pfts
 
-## run the meta-analysis
-trait.mcmc <- pecan.ma(trait.data, priors, taupriors, j.iter = ITER, settings)
-pecan.ma.summary(trait.mcmc, pft,outdir)
-outfile <- paste(outdir, '/pecan.MA.Rdata', sep = '')
-save.image(outfile)
-
+save(pft.summary,file=paste(settings$outdir,"pft.summary.RData",sep=""))
