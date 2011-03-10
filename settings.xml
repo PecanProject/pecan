@@ -4,15 +4,15 @@
   <ma_iter>10000</ma_iter>
   <ensemble_size>100</ensemble_size>
   <sensitivity_analysis>TRUE</sensitivity_analysis>
+  <homedir>/home/dlebauer/pecan/</homedir>
   <outdir>/home/dlebauer/pecan/out</outdir>
+  <Rlibdir>/home/dlebauer/lib/R</Rlibdir>
   <runnames>
     <runname>prior</runname>
     <runname>post</runname>
   </runnames>
-  <Rlib>/home/dlebauer/lib/R</Rlib>
-  <!-- Q-->
   <quantiles>
-<!--    <quantile></quantile>-->
+<!--<quantile></quantile>-->
     <sigma>-3</sigma>
     <sigma>-2</sigma>
     <sigma>-1</sigma>
@@ -26,5 +26,4 @@
     <location>localhost</location>
     <name>ebi_analysis</name>
   </database>
-  <pecanDir>/home/dlebauer/pecan/</pecanDir>
 </pecan>
