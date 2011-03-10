@@ -5,6 +5,10 @@
   <ensemble_size>100</ensemble_size>
   <sensitivity_analysis>TRUE</sensitivity_analysis>
   <outdir>/home/dlebauer/pecan/out</outdir>
+  <runnames>
+    <runname>prior</runname>
+    <runname>post</runname>
+  </runnames>
   <Rlib>/home/dlebauer/lib/R</Rlib>
   <!-- Q-->
   <quantiles>
