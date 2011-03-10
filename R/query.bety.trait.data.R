@@ -124,7 +124,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     data <- pecan.transformstats(fetch(query.result, n = -1))
 
     ## query fine root biomass and leaf biomass
-    query <- paste("select traits.citation_id, traits.id, variables.name, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n, traits.specie_idfrom traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) left join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,")  and variables.name in ('fine_root_biomass','leaf_biomass');", sep = "")
+    query <- paste("select traits.citation_id, traits.id, variables.name, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n, traits.specie_id from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) left join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,")  and variables.name in ('fine_root_biomass','leaf_biomass');", sep = "")
     query.result <- dbSendQuery(con, query)
     data2 <- pecan.transformstats(fetch(query.result, n = -1))
 

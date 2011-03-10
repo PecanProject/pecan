@@ -8,7 +8,7 @@ settings <- xmlToList(settings.xml)
 if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
 
 ## trstr is a list of the traits that ED can use
-trstr <- "'mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','growth_resp_factor','leaf_turnover_rate','leaf_width','nonlocal_dispersal','q','root_respiration_factor','root_turnover_rate','seedling_mortality','SLA_gC_per_m2','stomatal_slope','Vm_low_temp','quantum_efficiency','f_labile','c2n_leaf','water_conductance','Vm0','r_fract','storage_turnover_rate','agf_bs'" #SLA_gC_per_m2 is converted to SLA in query.bety.priors
+trstr <- "'mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','growth_resp_factor','leaf_turnover_rate','leaf_width','nonlocal_dispersal','q','root_respiration_factor','root_turnover_rate','seedling_mortality','SLA','stomatal_slope','Vm_low_temp','quantum_efficiency','f_labile','c2n_leaf','water_conductance','Vm0','r_fract','storage_turnover_rate','agf_bs'" #SLA_gC_per_m2 is converted to SLA in query.bety.priors
 trait.name = strsplit(trstr,",")
 trait.name = sub("'","",trait.name[[1]])
 trait.name = sub("'","",trait.name)
@@ -63,6 +63,12 @@ for( i in 1:length(pfts)){
   if("root_respiration_factor" %in% names(trait.data)){
     sel = which(trait.data[["root_respiration_factor"]]$Y < 0.05)
     trait.data[["root_respiration_factor"]]$Y[sel] = trait.data[["root_respiration_factor"]]$Y[sel]*1000
+  }
+  if("SLA" %in% names(trait.data)){
+    sel = which(trait.data[["SLA"]]$citation_id %in% c(333,311))
+    if(length(sel) > 0){
+      trait.data[["SLA"]] = trait.data[["SLA"]][-sel,]            
+    }
   }
   
   trait.count <- sapply(trait.data,nrow)
