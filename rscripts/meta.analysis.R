@@ -1,19 +1,29 @@
+
 library(XML)
-#settings.file = "~/pecan/settings.xml"
+#settings.file = '~/pecan/tundra.grass.xml'
 settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
 
 settings.xml <- xmlTreeParse(settings.file)
 settings <- xmlToList(settings.xml)
 
 if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
+#pft   <- system("echo $PFT", intern = TRUE)
+#ITER  <- as.numeric(system("echo $ITER", intern = TRUE)) 
+#M     <- as.numeric(system("echo $ENSN", intern = TRUE))
+#outdir   <- system("echo $PECANOUT", intern = TRUE)
+ITER   = as.numeric(settings$ma_iter)
+M      = as.numeric(settings$ensemble_size)
 
 ## trstr is a list of the traits that ED can use
+
 trstr <- "'mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','growth_resp_factor','leaf_turnover_rate','leaf_width','nonlocal_dispersal','q','root_respiration_factor','root_turnover_rate','seedling_mortality','SLA','stomatal_slope','Vm_low_temp','quantum_efficiency','f_labile','c2n_leaf','water_conductance','Vm0','r_fract','storage_turnover_rate','agf_bs'" #SLA_gC_per_m2 is converted to SLA in query.bety.priors
+
 trait.name = strsplit(trstr,",")
 trait.name = sub("'","",trait.name[[1]])
 trait.name = sub("'","",trait.name)
 trait.name2 = sub("Vm0","Vcmax",trait.name)
 n.trait = length(trait.name)
+
 ma_iter   = as.numeric(settings$ma_iter)
 ensemble_size = as.numeric(settings$ensemble_size)
 sensitivity_analysis = as.logical(settings$sensitivity_analysis)
@@ -27,12 +37,14 @@ if(settings$database$location == 'localhost'){
   con <- query.bety.con(dbname=con$name,password=con$passwd,username=con$userid)
 }
 
+
 ## identify pfts
 pfts   = which(names(settings) == 'pft'); pft.name = sapply(settings[pfts],function(x){x$name})
 npft   = length(pfts);
 if(npft < 1 | is.null(npft)) stop('no PFT specified')
 mtemp = matrix(NA,n.trait,npft);row.names(mtemp) = trait.name; colnames(mtemp)=pft.name
 pft.summary <- list(mean = mtemp,sd=mtemp,n=mtemp)
+
 
 ### loop over pfts
 for( i in 1:length(pfts)){
@@ -51,6 +63,7 @@ for( i in 1:length(pfts)){
   priors <- query.bety.priors(pft, trstr,out=outdir,con=con)
   print(priors)
   
+
   traits <-trvec <- rownames(priors) # vector of traits with prior distributions for pft 
   trait.defs <- trait.dictionary(trvec)
   save(trait.defs, file = paste(outdir, '/trait.defs.Rdata', sep=''))
@@ -93,6 +106,7 @@ for( i in 1:length(pfts)){
   
   
   ## run the meta-analysis
+
   trait.mcmc <- pecan.ma(trait.data, priors, taupriors,j.iter = ma_iter,settings,outdir)
   save(trait.mcmc, file = paste(outdir, '/trait.mcmc.Rdata', sep=''))
        
