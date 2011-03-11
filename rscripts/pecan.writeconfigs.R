@@ -1,6 +1,12 @@
 library(PECAn, lib.loc = '~/lib/R')
 load('out/pecan.MA.Rdata')
-browser()
+
+pftName <- settings$pft
+quantiles <- settings$quantiles
+samps <- pecan.samps(trait.mcmc, priors)
+save(samps, file='out/pecan.samps.Rdata')
+
+
 
 ## sample values for ensemble
 trait.beta.o <- list()
@@ -19,6 +25,8 @@ samps <- list(prior = sapply(1:nrow(priors), function(x) do.call(pr.samp,priors[
 for (i in names(samps)){
   colnames(samps[[i]]) <- rownames(priors)
 }
+
+#???  priors$distn[priors$distn=='weib'] <- 'weibull'
 
 for (tri in ncol(trait.posteriors)) samps[['post']][,tri] <- trait.posteriors[, tri]
 
@@ -45,8 +53,10 @@ calculate.quantiles <- function(x,samps, quantiles) {
   quantile(samps[,x], quantiles)
 }
 
-quantile.samples <- list(post  = lapply(traits, calculate.quantiles, post.samps, quantiles),
-                         prior = lapply(traits, calculate.quantiles, prior.samps, quantiles))
+
+quantile.samples <- list(post  = lapply(traits, calculate.quantiles, samps[['post']], quantiles),
+                         prior = lapply(traits, calculate.quantiles, samps[['prior']], quantiles))
+
 
 for(i in names(quantile.samples)) {
   names(quantile.samples[[i]]) <- traits
@@ -58,6 +68,5 @@ save(quantile.samples, file = "out/quantile.samples.Rdata")
 
 write.configs(ensemble_size, sensitivity_analysis, pft, ens.samps, quantile.samples, outdir, quantiles)
 
-save(post.samps, prior.samps,file='pecan.samps.Rdata')
+save(samps, file="samps.Rdata')
 
-## print out some statistical summaries and figures from meta-analysis

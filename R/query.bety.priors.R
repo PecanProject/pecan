@@ -1,6 +1,6 @@
 query.bety.priors <- function(pft, trstr,out=NULL,con=NULL,...){
   if(is.null(con)){
-    con <- query.bety.con()
+    con <- query.bety.con(...)
   }
   if(is.list(con)){
     print("query.bety.priors")
@@ -23,7 +23,7 @@ query.bety.priors <- function(pft, trstr,out=NULL,con=NULL,...){
   
   q2 <- dbSendQuery(con, query2)
   priors <- fetch ( q2, n = -1 )
-  priors$name[priors$name == 'SLA_gC_per_m2'] <- 'SLA'
+  priors$name[priors$name == 'SLA_m2_per_gC'] <- 'SLA'
   rownames(priors) <- priors$name
   priors <- priors[, -which(colnames(priors)=='name')]
 
@@ -42,9 +42,11 @@ query.bety.priors <- function(pft, trstr,out=NULL,con=NULL,...){
                   sep = '' ))
     }
   }
-  sink(file = paste('out/priors.tex',sep=""), split = FALSE)
-  xtable(priors, caption="Raw table of priors")
-  sink()
+  if(!is.null(out)){
+    sink(file = paste(out,'priors.tex',sep=""), split = FALSE)
+    xtable(priors, caption="Raw table of priors")
+    sink()
+  }
   
   return(priors)
 }

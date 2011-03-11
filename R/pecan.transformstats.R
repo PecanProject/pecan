@@ -39,7 +39,7 @@ pecan.transformstats <- function(data) {
   ## SE  = MSD*n/(t*sqrt(2))
   if ("MSD" %in% data$statname) {
     msdi <- which(data$statname == "MSD")
-    data$stat[msdi] <- data$stat[msdi] * data$n[msdi] / ( qt(0.975,2*data$n[lsdi]-2)*sqrt(2))
+    data$stat[msdi] <- data$stat[msdi] * data$n[msdi] / ( qt(0.975,2*data$n[msdi]-2)*sqrt(2))
     data$statname[msdi] <- "SE"
   }
   if (FALSE %in% c('SE','none') %in% data$statname) {

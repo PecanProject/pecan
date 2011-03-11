@@ -27,7 +27,8 @@
 ##'
 ##'
 
-pecan.ma <- function(trait.data, priors, taupriors, j.iter,settings,outdir){
+
+pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings, outdir){
   
   madata <- list()
   ## Meta-analysis for each trait
@@ -58,8 +59,7 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter,settings,outdir){
     writeLines(paste('starting meta-analysis for', trait.name))
     
     data <- trait.data[[trait.name]]
-    browser()
-    data <- data[,-which(colnames(data) == "cite")] ## remove citation column
+    data <- data[,-which(colnames(data) %in% c("citation_id","trait_id"))] ## remove citation column
     data <- data[order(data$site,data$trt),]#not sure why, but required for JAGS model
 
     ##check for excess missing data
@@ -102,7 +102,6 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter,settings,outdir){
     
     ## parameters for jags to follow
     vars <- c( 'beta.o', 'sd.y') 
-    browser()
     for (x in c('ghs', 'site', 'trt')) {
       if(model.parms[[x]] == 1) {
         data <- data[, -which(names(data) == x)]
@@ -137,25 +136,23 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter,settings,outdir){
                     tauA  = taupriors$tauB[prior.name],
                     tauB  = taupriors$tauB[prior.name])
 
-    
-##    j.inits <- function(chain) list("beta.o" = do.call(paste('q',prior$dist,sep=''),
-##                                      list(chain * 1/(j.chains + 1), prior$a, prior$b)),
-##                                    .RNG.seed = chain,
-##                                    .RNG.name = "base::Mersenne-Twister")
-    j.inits <- function(chain) list("beta.o" = mean(data$Y))
-    
-    j.model   <- NULL
-    tryCatch({
-        j.model   <- jags.model (file = jag.model.file,
-                                 data = data,
-                                 n.adapt = 100, #will burn in below
-                                 n.chains = j.chains,
-                                 init =  j.inits)
-      },
-      error = function(ex) {
-        print(ex)
-        browser()
-      })
+    ## overdispersed chains
+    j.inits <- function(chain) list("beta.o" = do.call(paste('q',prior$dist,sep=''),
+                                      list(chain * 1/(j.chains + 1), prior$a, prior$b)),
+                                    .RNG.seed = chain,
+                                    .RNG.name = "base::Mersenne-Twister")
+
+    ## chains fixed at data mean - used if above code does not converge,
+    ## invalidates assumptions about convergence, e.g. Gelman-Rubin diagnostic
+    ## TODO set flag to choose overdispersed vs fixed chains
+    ##    j.inits <- function(chain) list("beta.o" = mean(data$Y))
+
+
+    j.model   <- jags.model (file = jag.model.file,
+                             data = data,
+                             n.adapt = 100, #will burn in below
+                             n.chains = j.chains,
+                             init =  j.inits)
     jags.out   <- coda.samples ( model = j.model,
                                 variable.names = vars,
                                 n.iter = j.iter,
