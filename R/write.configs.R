@@ -1,9 +1,6 @@
 
 PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
 run.ids <- list()
-                                        #TODO: sampleEnsemble should really not be a global variable
-                                        #it's instatiation depends upon the pft variable, which itself is a parameter to write.configs
-                                        #it should be passed as a parameter to write.configs, which would then modify its reference.
 
                                         #returns a string representing a given number 
                                         #left padded by zeros up to a given number of digits
@@ -24,7 +21,7 @@ config.file.name <- function(outdir, runtype, runname, index, trait=''){
 
 write.ensemble.configs <- function(pft, ensembleSize, samples, runname, outdir){
   traits <- names(samples[[runname]])
-  sampleEnsemble <- matrix(nrow = ensembleSize, ncol = length(traits))
+  sample.ensemble <- matrix(nrow = ensembleSize, ncol = length(traits))
 
   haltonSamples <- halton(n = ensembleSize, dim=length(traits))
   colnames(haltonSamples) <- traits
@@ -34,14 +31,14 @@ write.ensemble.configs <- function(pft, ensembleSize, samples, runname, outdir){
     for (trait in traits) {
       sample <- quantile(samples[[runname]][[trait]], haltonSamples[ensembleId, trait])
       xml <- append.xmlNode(xml, xmlNode(trait, sample))
-      sampleEnsemble[ensembleId, trait] <- sample
+      sample.ensemble[ensembleId, trait] <- sample
     }
     xml <- append.xmlNode(pft$CONFIG, xml)
     file <- config.file.name(outdir, runname, 'ENS', lef.pad.zeros(ensembleId, log10(ensembleSize)))
     print(file)
     saveXML(xml, file = file, indent=TRUE, prefix = PREFIX_XML)
   }
-  return(sampleEnsemble)
+  return(sample.ensemble)
 }
 
 write.sa.configs <- function(pft, Quantile.samples, runname, outdir){
@@ -73,7 +70,7 @@ write.sa.configs <- function(pft, Quantile.samples, runname, outdir){
 
 write.configs <- function(pftName, ensembleSize, isSensitivityAnalysis, samples, 
                           Quantile.samples, outdir) {
-                                        #KLUDGE: code assumes traits are the same throughout samples, and length(samples)>1
+                                        #KLUDGE: code assumes traits are the same throughout samples, and length(samples)>=1
   traits <- names(samples[[1]])
 
   pftXml <- pecan.config.constants(pftName)
