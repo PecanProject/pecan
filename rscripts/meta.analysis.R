@@ -1,9 +1,13 @@
 
 library(XML)
-#settings.file = '~/pecan/tundra.grass.xml'
-settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
+if(interactive()){
+  settings.file = '~/pecan/settings.xml'
+} else {
+  settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
+}
 
 settings.xml <- xmlTreeParse(settings.file)
+
 settings <- xmlToList(settings.xml)
 
 if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
@@ -11,9 +15,9 @@ if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)}
 #ITER  <- as.numeric(system("echo $ITER", intern = TRUE)) 
 #M     <- as.numeric(system("echo $ENSN", intern = TRUE))
 #outdir   <- system("echo $PECANOUT", intern = TRUE)
-ITER   = as.numeric(settings$ma_iter)
-M      = as.numeric(settings$ensemble_size)
-
+ITER   <- as.numeric(settings$ma_iter)
+M      <- as.numeric(settings$ensemble_size)
+outdir <- settings$outdir
 ## trstr is a list of the traits that ED can use
 
 trstr <- "'mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','growth_resp_factor','leaf_turnover_rate','leaf_width','nonlocal_dispersal','q','root_respiration_factor','root_turnover_rate','seedling_mortality','SLA','stomatal_slope','Vm_low_temp','quantum_efficiency','f_labile','c2n_leaf','water_conductance','Vm0','r_fract','storage_turnover_rate','agf_bs'" #SLA_gC_per_m2 is converted to SLA in query.bety.priors
@@ -105,7 +109,7 @@ for( i in 1:length(pfts)){
   
   ## run the meta-analysis
 
-  trait.mcmc <- pecan.ma(trait.data, priors, taupriors,j.iter = ma_iter,settings,outdir)
+  trait.mcmc <- pecan.ma(trait.data, priors, taupriors, j.iter = ma_iter, settings, outdir)
   trait.stats <- sapply(trait.mcmc,function(x){summary(x)$statistics['beta.o',1:2]})
   pft.summary$mean[match(colnames(trait.stats),trait.name),i] = trait.stats[1,]
   pft.summary$sd[match(colnames(trait.stats),trait.name),i] = trait.stats[2,]
