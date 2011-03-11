@@ -206,6 +206,8 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   }
   
   ## assign all unknown sites to 0
+  ## TODO different site for each citation - dsl
+
   result$site_id[is.na(result$site_id)] <- 0
 
   ## assume not in greenhouse when is.na(greenhouse)
@@ -228,14 +230,14 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   for(ss in sites){
     #if only one treatment, it's control
     if(length(unique(data$trt[data$site == ss])) == 1) data$trt[data$site == ss] <- 0
-#    #make sure at least one control per site
-#
-#    #this is redundant with what should be done above under the comment "Force a control treatment at each site"
+    #make sure at least one control per site
+    #this is redundant with what should be done above under the comment "Force a control treatment at each site"
 #
   }
-#  data$n[is.na(data$n)] <- 1
-#  data$n[!is.na(data$stat)] <- 2
-  browser()
+
+  ##TODO are following assumptions okay? These seem to get commented out in revisions. Why? -dsl
+  data$n[is.na(data$n)] <- 1 # if n=NA, n=1
+  data$n[!is.na(data$stat)] <- 2 # if there is a statistic, assume n>= 2
   data$ghs <- data$greenhouse #jags won't recognize 0 as an index
         
   names(data)[names(data)=='stat'] <- 'se'
