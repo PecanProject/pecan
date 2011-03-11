@@ -33,8 +33,8 @@ npft   = length(pfts);
 if(npft < 1 | is.null(npft)) stop('no PFT specified')
 mtemp = matrix(NA,n.trait,npft);row.names(mtemp) = trait.name; colnames(mtemp)=pft.name
 pft.summary <- list(mean = mtemp,sd=mtemp,n=mtemp)
-
-### loop over pfts
+#
+## loop over pfts
 for( i in 1:length(pfts)){
 
   pft    = settings[[pfts[i]]]$name
