@@ -59,7 +59,7 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings, outdir){
     writeLines(paste('starting meta-analysis for', trait.name))
     
     data <- trait.data[[trait.name]]
-    data <- data[,-which(colnames(data) %in% c("citation_id","trait_id","se"))] ## remove citation column
+    data <- data[, which(!colnames(data) %in% c("citation_id","trait_id","se"))] ## remove citation column
     data <- data[order(data$site,data$trt),]#not sure why, but required for JAGS model
 
     ##check for excess missing data
@@ -97,14 +97,12 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings, outdir){
     } else {
       reg.model <- paste('+', reg.parms[model.parms > 1], collapse = " ")
     }
-    if (model.parms[['ghs']] >1) data$ghs = data$ghs + 1 #avoid index beta.ghs[0]
-    #if (model.parms[['trt']] >1) data$trt = data$trt + 1 #avoid index beta.trt[0]
-    
+        
     ## parameters for jags to follow
     vars <- c( 'beta.o', 'sd.y') 
     for (x in c('ghs', 'site', 'trt')) {
       if(model.parms[[x]] == 1) {
-        data <- data[, -which(names(data) == x)]
+        data <- data[, which(names(data) != x)]
       } else {
         data <- data
         if(x!='ghs') {
@@ -147,12 +145,14 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings, outdir){
     ## TODO set flag to choose overdispersed vs fixed chains
     ##    j.inits <- function(chain) list("beta.o" = mean(data$Y))
 
-    browser()
+    
+    tryCatch({
     j.model   <- jags.model (file = jag.model.file,
                              data = data,
                              n.adapt = 100, #will burn in below
                              n.chains = j.chains,
                              init =  j.inits)
+  }, error=function(ex){print(ex) ; browser()})
     jags.out   <- coda.samples ( model = j.model,
                                 variable.names = vars,
                                 n.iter = j.iter,
