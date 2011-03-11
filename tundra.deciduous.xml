@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<pecan>
+  <pft>
+     <name>tundra.deciduous</name>
+     <outdir>~/pecan/out/</outdir>
+  </pft>
+  <ma_iter>50000</ma_iter>
+  <ensemble_size>100</ensemble_size>
+  <sensitivity_analysis>TRUE</sensitivity_analysis>
+  <outdir>~/pecan/out/</outdir>
+  <Rlib>~/lib/R/</Rlib>
+  <quantiles>
+    <quantile>.25</quantile>
+    <quantile>.5</quantile>
+    <quantile>.75</quantile>
+  </quantiles>
+  <database>
+    <userid>ebi_analys_user</userid>
+    <passwd>b742xsAu</passwd>
+    <location>localhost</location>
+    <name>ebi_analysis</name>
+  </database>
+  <pecanDir>~/pecan/</pecanDir>
+</pecan>
