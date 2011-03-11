@@ -98,7 +98,7 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings, outdir){
       reg.model <- paste('+', reg.parms[model.parms > 1], collapse = " ")
     }
     if (model.parms[['ghs']] >1) data$ghs = data$ghs + 1 #avoid index beta.ghs[0]
-    if (model.parms[['trt']] >1) data$trt = data$trt + 1 #avoid index beta.trt[0]
+    #if (model.parms[['trt']] >1) data$trt = data$trt + 1 #avoid index beta.trt[0]
     
     ## parameters for jags to follow
     vars <- c( 'beta.o', 'sd.y') 
@@ -147,7 +147,7 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings, outdir){
     ## TODO set flag to choose overdispersed vs fixed chains
     ##    j.inits <- function(chain) list("beta.o" = mean(data$Y))
 
-
+    browser()
     j.model   <- jags.model (file = jag.model.file,
                              data = data,
                              n.adapt = 100, #will burn in below

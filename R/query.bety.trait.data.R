@@ -15,6 +15,17 @@
 
 ##* indicates lines that need to be uncommented after Vcmax query is corrected
 
+fetch.transformed <- function(connection, query){
+  query.result <- dbSendQuery(connection, query)
+  result <- pecan.transformstats(fetch(query.result, n = -1))
+  return(result)
+}
+transform.vcmax.data <- function(data, leafT){
+  return(data / exp (3000 * ( 1 / 288.15 - 1 / (273.15 + leafT))))
+}
+
+
+
 query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   
   if(is.null(con)){
@@ -31,23 +42,10 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   if(trait == 'Vm0') trait <- 'Vcmax'
 
 
-  if(!trait %in% c('Vcmax','SLA','root_respiration_rate', 'c2n_leaf', 'q') ) {
-
-    #########################  GENERIC CASE  ############################
-        query <- paste("select traits.id, traits.citation_id, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
-        
-    query.result <- dbSendQuery(con, query)
-    result <- pecan.transformstats(fetch(query.result, n = -1))
-
-  } else if(trait == 'Vcmax') {
-
-
+  if(trait == 'Vcmax') {
     #########################   VCMAX   ############################
     query <- paste("select traits.id, traits.citation_id, traits.site_id, treatments.name, traits.date, traits.dateloc, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
-
-    q    <- dbSendQuery(con, query)
-    data <- fetch ( q, n = -1 )
-    data <- pecan.transformstats(data)
+    data <- fetch.transformed(con, query)
 
     ## grab covariate data
     q = dbSendQuery(con,paste("select covariates.trait_id, covariates.level,variables.name from covariates left join variables on variables.id = covariates.variable_id where trait_id in (",vecpaste(data$id),")",sep=""))
@@ -61,8 +59,8 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     ## select sunleaf data
     data = data[data$canopy_layer >= 0.66,]
     
-    data$mean <- data$mean / exp (3000 * ( 1 / 288.15 - 1 / (273.15 + data$leafT)))
-    data$stat <- data$stat / exp (3000 * ( 1 / 288.15 - 1 / (273.15 + data$leafT)))
+    data$mean <- transform.vcmax.data(data$mean, data$leafT)
+    data$stat <- transform.vcmax.data(data$stat, data$leafT)
     result <- data[,-which(colnames(data) %in% c('leafT', 'canopy_layer','date','dateloc'))] #drop covariates
 
   } else if (trait == 'SLA') {
@@ -70,8 +68,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     
     #########################    SLA    ############################
     query <- paste("select trt.id, trt.citation_id, trt.site_id, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n from traits as trt left join treatments as treat on (trt.treatment_id = treat.id)  left join sites on (sites.id = trt.site_id) where trt.variable_id in (select id from variables where name = 'SLA')  and specie_id in (",spstr,");", sep = "")
-    q    <- dbSendQuery(con, query)
-    data <-  pecan.transformstats(fetch ( q, n = -1 ))
+    data <- fetch.transformed(con, query)
 
     ## grab covariate data
     q = dbSendQuery(con,paste("select covariates.trait_id, covariates.level,variables.name from covariates left join variables on variables.id = covariates.variable_id where trait_id in (",vecpaste(data$id),")",sep=""))
@@ -174,6 +171,12 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     
     result <- rbind(data,data3)
   }
+  else {
+    #########################  GENERIC CASE  ############################
+        query <- paste("select traits.id, traits.citation_id, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
+        
+    result <- fetch.transformed(con, query)
+  }
 
   if (trait == 'leaf_width') result <- transform(result, mean = mean/1000, stat=stat/1000) 
   
@@ -241,6 +244,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   }
 #  data$n[is.na(data$n)] <- 1
 #  data$n[!is.na(data$stat)] <- 2
+  browser()
   data$ghs <- data$greenhouse #jags won't recognize 0 as an index
         
   names(data)[names(data)=='stat'] <- 'se'
