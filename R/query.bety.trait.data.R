@@ -65,8 +65,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     
     #########################    SLA    ############################
     query <- paste("select trt.id, trt.citation_id, trt.site_id, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n from traits as trt left join treatments as treat on (trt.treatment_id = treat.id)  left join sites on (sites.id = trt.site_id) where trt.variable_id in (select id from variables where name = 'SLA')  and specie_id in (",spstr,");", sep = "")
-    q    <- dbSendQuery(con, query)
-    data <-  pecan.transformstats(fetch ( q, n = -1 ))
+    data <- fetch.transformed(con, query)
 
     ## grab covariate data
     q = dbSendQuery(con,paste("select covariates.trait_id, covariates.level,variables.name from covariates left join variables on variables.id = covariates.variable_id where trait_id in (",vecpaste(data$id),")",sep=""))
@@ -165,6 +164,11 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   } else {
     #########################  GENERIC CASE  ############################
     query <- paste("select traits.id, traits.citation_id, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
+    result <- fetch.transformed(con, query)
+  }
+  else {
+    #########################  GENERIC CASE  ############################
+        query <- paste("select traits.id, traits.citation_id, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
     result <- fetch.transformed(con, query)
   }
 
