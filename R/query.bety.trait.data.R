@@ -38,7 +38,6 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   if(trait == 'root_respiration_factor') trait <- 'root_respiration_rate'
   if(trait == 'Vm0') trait <- 'Vcmax'
 
-
   if(trait == 'Vcmax') {
     #########################   VCMAX   ############################
     query <- paste("select traits.id, traits.citation_id, traits.site_id, treatments.name, traits.date, traits.dateloc, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
@@ -161,22 +160,16 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     }
     
     result <- rbind(data,data3)
-  } else {
-    #########################  GENERIC CASE  ############################
-    query <- paste("select traits.id, traits.citation_id, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
-    result <- fetch.transformed(con, query)
-  }
-  else {
+  }  else {
     #########################  GENERIC CASE  ############################
         query <- paste("select traits.id, traits.citation_id, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
     result <- fetch.transformed(con, query)
   }
-
-  
-    
-  if(!exists('result')|nrow(result)==0) stop(paste('no data in database for', trait))
-  
+  browser()
   if (trait == 'leaf_width') result <- transform(result, mean = mean/1000, stat=stat/1000) 
+
+  ## if result is empty, stop run
+  if(!exists('result')|nrow(result)==0) stop(paste('no data in database for', trait))
   
   ## rename name column from treatment table to trt_id
   names(result)[names(result)=='name'] <- 'trt_id'
@@ -185,36 +178,14 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   result$control[is.na(result$control)]     <- 1
   result$trt_id[which(result$control == 1)] <- 'control'
 
-## Force a control treatment at each site
-  for(sitei in unique(result$site_id)) {
-    i <- result$site_id == sitei 
-    if(is.na(sitei)){
-      i = which(is.na(result$site_id))
-    }
-    if(!1 %in% result$control[i]){
-      warning(cat('\nWARNING: no control treatment set for site_id', sitei,
-                  '\nif there is only one treatment,',
-                  '\nthat treatment is set to control',
-                  '\nif there is more than one treatment,',
-                  '\nPECAn sets the treatment with mean closest',
-                  '\nto the mean of other controls as the control',
-                  '\nthis assumption may be FALSE',
-                  '\nplease review data from this site\n'),
-              eval = print(query.bety(paste("select url, author, year, title
-                                       from citations
-                                       where id in (select citation_id from
-                                       traits
-                                       where site_id =",sitei,");"),con=con)))
-      control.mean <- ifelse(1 %in% result$control,
-                             mean(result$mean[result$control == 1]),
-                             mean(result$mean))
-      result$control[i & which.min((control.mean - result$mean[i])^2)] <- 1
-    }
-  }
+  error <-  function(site.i, result) paste('No control treatment set for site_id:',
+                                       unique(result$site_id[site.i]),
+                                       'and citation id',
+                                       unique(result$citation_id[site.i]),
+                                       '\nplease set control treatment for this site / citation in database\n')
   
   ## assign all unknown sites to 0
   ## TODO different site for each citation - dsl
-
   result$site_id[is.na(result$site_id)] <- 0
 
   ## assume not in greenhouse when is.na(greenhouse)
@@ -223,33 +194,49 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   result$n[is.na(result$n)] <- 1
   result$n[!is.na(result$stat)] <- 2
 
+  sites <- unique(result$site_id)
+  for(ss in sites){
+    site.i <- result$site == ss
+    if(!'control' %in% result$trt_id[site.i]){
+      stop(error(site.i, result))
+    }
+    #if only one treatment, it's control
+    if(length(unique(result$trt[site.i])) == 1) result$trt_id[site.i] <- 'control'
+  }
+  
   ## assign a unique sequential integer to site and trt; for trt, all controls == 0
-  data <- transform(result,
+  data <- subset(transform(result,
                     stat = as.numeric(stat),
                     n    = as.numeric(n),
-                    site = as.integer(factor(site_id, unique(site_id))),
-                    trt = as.integer(factor(trt_id, unique(c('control', as.character(trt_id))))),
-                    Y = mean,
-                    cite = citation_id
-                    )
-  
-  sites = unique(data$site)
-  for(ss in sites){
-    #if only one treatment, it's control
-    if(length(unique(data$trt[data$site == ss])) == 1) data$trt[data$site == ss] <- 0
-#    #make sure at least one control per site
-  }
+                    site_id = as.integer(factor(site_id, unique(site_id))),
+                    trt_id = as.integer(factor(trt_id, unique(c('control', as.character(trt_id))))),
+                    mean = mean,
+                    citation_id = citation_id
+                    ), select = c('stat', 'n', 'site_id', 'trt_id', 'mean', 'citation_id', 'greenhouse')) 
+    
 
   ##TODO are following assumptions okay? These seem to get commented out in revisions. Why? -dsl
   data$n[is.na(data$n)] <- 1 # if n=NA, n=1
-  data$n[!is.na(data$stat)] <- 2 # if there is a statistic, assume n>= 2
-  data$ghs <- data$greenhouse #jags won't recognize 0 as an index
-        
-  names(data)[names(data)=='stat'] <- 'se'
-  data$se[data$se <= 0.0] <- NA
-  data$stdev <- sqrt(data$n) * data$se
-  data$obs.prec <- 1 / data$stdev^2
-  ma.data <- data[, c('mean', 'n', 'site', 'trt', 'greenhouse', 'obs.prec', 'se', 'id', 'citation_id')]
-  names(ma.data) <- c('Y', 'n', 'site', 'trt', 'ghs', 'obs.prec', 'se', 'trait_id', 'citation_id')
+  data$n[!is.na(data$stat)] <- 2 # if there is a statistic, assume n >= 2
+  if(length(data$stat[data$stat <= 0.0]) > 0) {
+    warning(paste('there are implausible values of SE, SE <= 0 in the data and these are set to NA from citation', unique(data$citation_id[which(data$stat >= 0.0)], ' ')))
+    data$stat[data$stat <= 0.0] <- NA
+  }
+  
+  ma.data <- rename.cols.forjags(data)
   return(ma.data)
+}
+
+rename.cols.forjags <- function(data) {
+  data2 <-  transform(data,
+                      Y        = mean,
+                      se       = stat,
+                      obs.prec = 1 / (sqrt(n) * stat) ^2,
+                      trt      = trt_id,
+                      site     = site_id,
+                      cite     = citation_id,
+                      ghs      = greenhouse
+                      )
+  data3 <- subset (data2 ,  select = c('Y', 'n', 'site', 'trt', 'ghs', 'obs.prec', 'se', 'cite'))
+  return(data3)
 }
