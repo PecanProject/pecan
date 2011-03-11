@@ -66,10 +66,20 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   } else if (trait == 'SLA') {
     
     #########################    SLA    ############################
-    query <- paste("select trt.id, trt.citation_id, trt.site_id, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n from traits as trt left join treatments as treat on (trt.treatment_id = treat.id)  left join sites on (sites.id = trt.site_id) where trt.variable_id in (select id from variables where name = 'SLA')  and specie_id in (",spstr,");", sep = "")
+    query <- paste("select trt.id, trt.citation_id, variables.name as vname, trt.site_id, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n from traits as trt left join treatments as treat on (trt.treatment_id = treat.id)  left join sites on (sites.id = trt.site_id) left join variables on (variables.id = trt.variable_id) where variables.name in ('SLA','LMA') and specie_id in (",spstr,");", sep = "")
     q    <- dbSendQuery(con, query)
     data <-  pecan.transformstats(fetch ( q, n = -1 ))
 
+    ## convert LMA to SLA
+    selLMA = which(data$vname == "LMA")
+    if(length(selLMA)>0){
+      for(i in selLMA){
+        x = 1/rnorm(100000,data$mean[i],data$stat[i])
+        data$mean[i] = mean(x)
+        data$stat[i] = sd(x)
+      }
+    }
+    
     ## grab covariate data
     q = dbSendQuery(con,paste("select covariates.trait_id, covariates.level,variables.name from covariates left join variables on variables.id = covariates.variable_id where trait_id in (",vecpaste(data$id),")",sep=""))
     covs = fetch(q,n=-1)
@@ -81,7 +91,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     ## select sunleaf data
     data = data[data$canopy_layer >= 0.66,]    
     result <- data[,-which(colnames(data)=='canopy_layer')]
-
+    
     #convert from kg leaf / m2 to kg C / m2
     result[, c('mean','stat')] <- result[, c('mean','stat')] / 0.48 
 
@@ -109,11 +119,11 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
 
     query.result <- dbSendQuery(con, query)
     data <- pecan.transformstats(fetch(query.result, n = -1))
-    leafNdata   <- data$name == 'leafN'
+    leafNdata   <- data$vname == 'leafN'
     leafNdataSE <- leafNdata & data$statname == 'SE'
     inv.se <- function(mean, stat, n) signif(sd(48/rnorm(100000, mean, stat*sqrt(n)))/sqrt(n),3)
     data$stat[leafNdataSE] <- apply(data[leafNdataSE, c('mean', 'stat', 'n')],1, function(x) inv.se(x[1],x[2],x[3]) )
-    data$mean[data$vname == 'leafN'] <- 48/data$mean[data$name == 'leafN']
+    data$mean[leafNdata] <- 48/data$mean[leafNdata]
     result <- data
   } else if (trait == 'q') {
 
@@ -213,9 +223,10 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
 
   ## assume not in greenhouse when is.na(greenhouse)
   result$greenhouse[is.na(result$greenhouse)] <- 0
-  
+
+  result$n[is.na(result$n) & !is.na(result$stat)] <- 2
   result$n[is.na(result$n)] <- 1
-  result$n[!is.na(result$stat)] <- 2
+
 
   ## assign a unique sequential integer to site and trt; for trt, all controls == 0
   data <- transform(result,
@@ -230,7 +241,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   sites = unique(data$site)
   for(ss in sites){
     #if only one treatment, it's control
-    if(length(unique(data$trt[data$site == ss])) == 1) data$trt[data$site == ss] <- 0
+    if(length(unique(data$trt[data$site == ss])) == 1) data$trt[data$site == ss] <- 1
 #    #make sure at least one control per site
 #
 #    #this is redundant with what should be done above under the comment "Force a control treatment at each site"
