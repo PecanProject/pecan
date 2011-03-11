@@ -30,7 +30,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   if(trait == 'root_respiration_factor') trait <- 'root_respiration_rate'
   if(trait == 'Vm0') trait <- 'Vcmax'
 
-  if(!trait %in% c('Vcmax','SLA','root_respiration_rate', 'c2n_leaf', 'q') ) {
+  if(!trait %in% c('Vcmax','SLA','root_respiration_rate', 'c2n_leaf', 'q','leaf_turnover_rate') ) {
 
     #########################  GENERIC CASE  ############################
         query <- paste("select traits.id, traits.citation_id, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
@@ -74,9 +74,13 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     selLMA = which(data$vname == "LMA")
     if(length(selLMA)>0){
       for(i in selLMA){
-        x = 1/rnorm(100000,data$mean[i],data$stat[i])
-        data$mean[i] = mean(x)
-        data$stat[i] = sd(x)
+        if(is.na(data$stat[i])){
+          data$mean[i] = 1/data$mean[i]
+        } else {
+          x = 1/rnorm(100000,data$mean[i],data$stat[i])
+          data$mean[i] = mean(x)
+          data$stat[i] = sd(x)
+        }
       }
     }
     
@@ -95,6 +99,30 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     #convert from kg leaf / m2 to kg C / m2
     result[, c('mean','stat')] <- result[, c('mean','stat')] / 0.48 
 
+  } else if (trait == 'leaf_turnover_rate'){
+
+        
+    #########################    LEAF TURNOVER    ############################
+    query <- paste("select trt.id, trt.citation_id, variables.name as vname, trt.site_id, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n from traits as trt left join treatments as treat on (trt.treatment_id = treat.id)  left join sites on (sites.id = trt.site_id) left join variables on (variables.id = trt.variable_id) where variables.name in ('leaf_turnover_rate','Leaf Longevity') and specie_id in (",spstr,");", sep = "")
+    q    <- dbSendQuery(con, query)
+    data <-  pecan.transformstats(fetch ( q, n = -1 ))
+
+    ## convert LL to turnover
+    selLL = which(data$vname == "Leaf Longevity")
+    if(length(selLL)>0){
+      for(i in selLL){
+        if(is.na(data$stat[i])){
+          data$mean[i] = 1/data$mean[i]
+        } else {
+          x = 1/rnorm(100000,data$mean[i],data$stat[i])
+          data$mean[i] = mean(x)
+          data$stat[i] = sd(x)
+        }
+      }
+    }
+
+    result <- data
+    
   } else if (trait == 'root_respiration_rate') {
 
     #########################  ROOT RESPIRATION   ############################

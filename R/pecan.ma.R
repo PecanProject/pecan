@@ -68,6 +68,13 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter,settings,outdir){
       data$site = rep(1,nrow(data))
       data$trt  = rep(0,nrow(data))
     }
+
+    if(!is.null(settings$incRandomEffects)){
+      if(!as.logical(settings$incRandomEffects)){
+        data$site = rep(1,nrow(data))
+        data$trt  = rep(0,nrow(data))
+      }
+    }
     
     #print out some data summaries to check
     writeLines(paste('prior for ', trait.name, ':',
