@@ -1,5 +1,5 @@
 library(PECAn, lib.loc = '~/lib/R')
-load('out20110119/pecan.MA.Rdata')
+load('out/pecan.MA.Rdata')
 
 pftName <- settings$pft
 quantiles <- settings$quantiles
