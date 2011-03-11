@@ -65,7 +65,7 @@ for( i in 1:length(pfts)){
     trait.data[["root_respiration_factor"]]$Y[sel] = trait.data[["root_respiration_factor"]]$Y[sel]*1000
   }
   if("SLA" %in% names(trait.data)){
-    sel = which(trait.data[["SLA"]]$citation_id %in% c(333,311))
+    sel = which(trait.data[["SLA"]]$citation_id %in% c(311))
     if(length(sel) > 0){
       trait.data[["SLA"]] = trait.data[["SLA"]][-sel,]            
     }
