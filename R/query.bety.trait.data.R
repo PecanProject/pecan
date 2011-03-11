@@ -20,11 +20,9 @@ fetch.transformed <- function(connection, query){
   result <- pecan.transformstats(fetch(query.result, n = -1))
   return(result)
 }
-transform.vcmax.data <- function(data, leafT){
-  return(data / exp (3000 * ( 1 / 288.15 - 1 / (273.15 + leafT))))
+arrhenius.scaling <- function(mean, temp){
+  return(mean / exp (3000 * ( 1 / 288.15 - 1 / (273.15 + temp))))
 }
-
-
 
 query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   
@@ -59,9 +57,9 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     ## select sunleaf data
     data = data[data$canopy_layer >= 0.66,]
     
-    data$mean <- transform.vcmax.data(data$mean, data$leafT)
-    data$stat <- transform.vcmax.data(data$stat, data$leafT)
-    result <- data[,-which(colnames(data) %in% c('leafT', 'canopy_layer','date','dateloc'))] #drop covariates
+    data$mean <- arrhenius.scaling(data$mean, data$leafT)
+    data$stat <- arrhenius.scaling(data$stat, data$leafT)
+    result <- data[,which(!colnames(data) %in% c('leafT', 'canopy_layer','date','dateloc'))] #drop covariates
 
   } else if (trait == 'SLA') {
 
@@ -80,7 +78,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     }
     ## select sunleaf data
     data = data[data$canopy_layer >= 0.66,]    
-    result <- data[,-which(colnames(data)=='canopy_layer')]
+    result <- data[,which(colnames(data)!='canopy_layer')]
 
     #convert from kg leaf / m2 to kg C / m2
     result[, c('mean','stat')] <- result[, c('mean','stat')] / 0.48 
@@ -89,17 +87,14 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
 
     #########################  ROOT RESPIRATION   ############################
     query <- paste("select trt.id, trt.citation_id, trt.site_id, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n, tdhc1.level as 'temp' from traits as trt left join covariates as tdhc1 on (tdhc1.trait_id = trt.id)  left join treatments as treat on (trt.treatment_id = treat.id) left join variables as tdhc1_var on (tdhc1.variable_id = tdhc1_var.id) left join sites on (sites.id = trt.site_id)  left join species as spec on (trt.specie_id = spec.id) left join plants on (spec.plant_id = plants.id) left join variables as var on (var.id = trt.variable_id) where trt.variable_id in (select id from variables where name = 'root_respiration_rate') and specie_id in (",spstr,") and tdhc1_var.name = 'rootT';", sep = '') 
-    q    <- dbSendQuery(con, query)
-    data <- pecan.transformstats(fetch ( q, n = -1 ))
+    data <- fetch.transformed(con, query)
     
-    ## Scale to 15C using Arrhenius scaling
-    data$mean <- data$mean / exp (3000 * ( 1 / 288.15 - 1 / (273.15 + data$temp)))
-    data$stat <- data$stat / exp (3000 * ( 1 / 288.15 - 1 / (273.15 + data$temp)))
+    ## Scale to 15C using Arrhenius scaling,
     ## Convert root_respiration_rate to root_respiration_factor (i.e. maintenance respiration)
     ## assuming a 1:1 partitioning of growth:maintenance respiration
-    data$mean <- data$mean/2
-    data$stat <- data$stat/2
-    result <- data[,-which(colnames(data) %in% c('temp'))] #drop covariates
+    data$mean <- arrhenius.scaling(data$mean, data$temp)/2
+    data$stat <- arrhenius.scaling(data$stat, data$temp)/2
+    result <- data[,which(!colnames(data) %in% c('temp'))] #drop covariates
     
   } else if (trait == 'c2n_leaf') {
 
@@ -107,8 +102,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
 
     query <- paste("select traits.id, traits.citation_id, variables.name as vname, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) left join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,")  and variables.name in ('c2n_leaf', 'leafN');", sep = "")
 
-    query.result <- dbSendQuery(con, query)
-    data <- pecan.transformstats(fetch(query.result, n = -1))
+    data <- fetch.transformed(con, query)
     leafNdata   <- data$name == 'leafN'
     leafNdataSE <- leafNdata & data$statname == 'SE'
     inv.se <- function(mean, stat, n) signif(sd(48/rnorm(100000, mean, stat*sqrt(n)))/sqrt(n),3)
@@ -120,13 +114,11 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     #########################  FINE ROOT ALLOCATION  ############################
     ## query Q or FRC_RC
     query <- paste("select traits.citation_id, traits.id, variables.name as vname, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) left join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,")  and variables.name in ('q', 'FRC_RC');", sep = "")
-    query.result <- dbSendQuery(con, query)
-    data <- pecan.transformstats(fetch(query.result, n = -1))
+    data <- fetch.transformed(con, query)
 
     ## query fine root biomass and leaf biomass
     query <- paste("select traits.citation_id, traits.id, variables.name as vname, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n, traits.specie_id from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) left join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,")  and variables.name in ('fine_root_biomass','leaf_biomass');", sep = "")
-    query.result <- dbSendQuery(con, query)
-    data2 <- pecan.transformstats(fetch(query.result, n = -1))
+    data2 <- fetch.transformed(con, query)
 
     ## match above and below ground biomass
     ## match on citation_id, site_id, treatment_id, specie_id where different variables.name
@@ -166,7 +158,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
           }
         }        
       }
-      if(!is.null(data3)) data3 <-  data3[,-which(colnames(data3)=="specie_id")]
+      if(!is.null(data3)) data3 <-  data3[,which(colnames(data3)!="specie_id")]
     }
     
     result <- rbind(data,data3)
@@ -174,7 +166,6 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   else {
     #########################  GENERIC CASE  ############################
         query <- paste("select traits.id, traits.citation_id, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
-        
     result <- fetch.transformed(con, query)
   }
 
