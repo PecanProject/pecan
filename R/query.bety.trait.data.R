@@ -11,12 +11,9 @@
 #' @param spstr is the species.id integer or string of integers associated with the species
 #'
 #' @return dataframe ready for use in meta-analysis
-#' @author David LeBauer \email{dlebauer@illinois.edu}
 
-##* indicates lines that need to be uncommented after Vcmax query is corrected
-
-query.bety.trait.data <- function(trait, spstr,con=NULL,...){
-  
+query.bety.trait.data <- function(trait, spstr, con=NULL,...){
+  print(trait)  
   if(is.null(con)){
     con <- query.bety.con(...)
   }
@@ -26,10 +23,9 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     print("WEB QUERY OF DATABASE NOTE IMPLEMENTED")
     return(NULL)
   } 
-  
+   
   if(trait == 'root_respiration_factor') trait <- 'root_respiration_rate'
   if(trait == 'Vm0') trait <- 'Vcmax'
-
   if(!trait %in% c('Vcmax','SLA','root_respiration_rate', 'c2n_leaf', 'q') ) {
 
     #########################  GENERIC CASE  ############################
@@ -171,7 +167,9 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     
     result <- rbind(data,data3)
   }
-
+    
+  if(!exists('result')|nrow(result)==0) stop(paste('no data in database for', trait))
+  
   if (trait == 'leaf_width') result <- transform(result, mean = mean/1000, stat=stat/1000) 
   
   ## rename name column from treatment table to trt_id
@@ -232,14 +230,14 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     #if only one treatment, it's control
     if(length(unique(data$trt[data$site == ss])) == 1) data$trt[data$site == ss] <- 0
 #    #make sure at least one control per site
-#
-#    #this is redundant with what should be done above under the comment "Force a control treatment at each site"
-#
   }
-#  data$n[is.na(data$n)] <- 1
-#  data$n[!is.na(data$stat)] <- 2
+
+  data$n[is.na(data$n) & is.na(data$stat)] <- 1     # 
+  data$n[!is.na(data$stat)] <- 2 # if a statistic has been reported, assume n >= 2
   data$ghs <- data$greenhouse #jags won't recognize 0 as an index
-        
+
+  if(min(data$trt) == 0) data <-  transform(data, trt = trt + 1)
+
   names(data)[names(data)=='stat'] <- 'se'
   data$se[data$se <= 0.0] <- NA
   data$stdev <- sqrt(data$n) * data$se
