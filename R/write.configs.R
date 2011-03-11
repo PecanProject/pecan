@@ -1,30 +1,30 @@
 
 PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
-runIds <- list()
+run.ids <- list()
                                         #TODO: sampleEnsemble should really not be a global variable
                                         #it's instatiation depends upon the pft variable, which itself is a parameter to write.configs
                                         #it should be passed as a parameter to write.configs, which would then modify its reference.
-                                        #SampEns# sampleEnsemble <- list()
 
                                         #returns a string representing a given number 
                                         #left padded by zeros up to a given number of digits
-leftPadZeros <- function(num, digits){
+lef.pad.zeros <- function(num, digits){
 
   format_string <- paste('%',sprintf('0%.0f.0f',digits),sep='')
   return(sprintf(format_string, num))
 }
 
 
-configFileName <- function(outdir, runtype, runname, index, trait=''){
+config.file.name <- function(outdir, runtype, runname, index, trait=''){
 
   runid <- paste(runname, runtype, trait, index, sep='')
-  runIds <- c(runIds, runid)
-  configfilename <- paste(outdir, '/c.', runid, sep='')
-  return(configfilename)
+  run.ids <<- c(run.ids, runid)
+  config.file.name <- paste(outdir, '/c.', runid, sep='')
+  return(config.file.name)
 }
 
-writeEnsembleConfigs <- function(pft, ensembleSize, samples, runname, outdir){
+write.ensemble.configs <- function(pft, ensembleSize, samples, runname, outdir){
   traits <- names(samples[[runname]])
+  sampleEnsemble <- matrix(nrow = ensembleSize, ncol = length(traits))
 
   haltonSamples <- halton(n = ensembleSize, dim=length(traits))
   colnames(haltonSamples) <- traits
@@ -34,16 +34,17 @@ writeEnsembleConfigs <- function(pft, ensembleSize, samples, runname, outdir){
     for (trait in traits) {
       sample <- quantile(samples[[runname]][[trait]], haltonSamples[ensembleId, trait])
       xml <- append.xmlNode(xml, xmlNode(trait, sample))
-                                        #SampEns#sampleEnsemble[[runname]][ensembleId, trait] <- sample
+      sampleEnsemble[ensembleId, trait] <- sample
     }
     xml <- append.xmlNode(pft$CONFIG, xml)
-    file <- configFileName(outdir, runname, 'ENS', leftPadZeros(ensembleId, log10(ensembleSize)))
+    file <- config.file.name(outdir, runname, 'ENS', lef.pad.zeros(ensembleId, log10(ensembleSize)))
     print(file)
     saveXML(xml, file = file, indent=TRUE, prefix = PREFIX_XML)
   }
+  return(sampleEnsemble)
 }
 
-writeSAConfigs <- function(pft, Quantile.samples, runname, outdir){
+write.sa.configs <- function(pft, Quantile.samples, runname, outdir){
   traits <- names(Quantile.samples[[runname]])
   xml.median <- pft$PFT
   for (trait in traits) {
@@ -58,14 +59,14 @@ writeSAConfigs <- function(pft, Quantile.samples, runname, outdir){
           xml.i <- append.xmlNode(xml.i, xmlNode(otherTrait, Quantile.samples[[otherTrait]][median.i]))
         }
         xml.i <- append.xmlNode(pft$CONFIG, xml.i)
-        file <- configFileName(outdir, 'SA', runname, round(Quantile,3), trait)
+        file <- config.file.name(outdir, 'SA', runname, round(Quantile,3), trait)
         print(file)
         saveXML(xml.i, file=file, indent=TRUE, prefix = PREFIX_XML)
       }
     }
   }
   xml.median <- append.xmlNode(pft$CONFIG, xml.median)
-  file <- configFileName(outdir, 'SA', runname, 'median')
+  file <- config.file.name(outdir, 'SA', runname, 'median')
   print(file)
   saveXML(xml.median, file=file, indent=TRUE, prefix = PREFIX_XML)
 }
@@ -77,16 +78,16 @@ write.configs <- function(pftName, ensembleSize, isSensitivityAnalysis, samples,
 
   pftXml <- pecan.config.constants(pftName)
   
-                                        #SampEns#  sampleEnsemble <<- list(prior= matrix(nrow = ensembleSize, ncol = length(traits)), 
-  ##SampEns#                          post=matrix(nrow = ensembleSize, ncol = length(traits)))
-                                        #SampEns#  colnames(sampleEnsemble[[1]]) <- colnames(sampleEnsemble[[2]]) <- traits
+  sample.ensemble <- list()
   
   for(runname in c('prior','post')) {
-    writeEnsembleConfigs(pftXml, ensembleSize, samples, runname, outdir)
+    sample.ensemble.matrix <- list(write.ensemble.configs(pftXml, ensembleSize, samples, runname, outdir))
+    names(sample.ensemble.matrix) <- runname
+    sample.ensemble <- append(sample.ensemble, list(runname=sample.ensemble.matrix))
 
     if (isSensitivityAnalysis) {
-      writeSAConfigs(pftXml, Quantile.samples, runname, outdir)
+      write.sa.configs(pftXml, Quantile.samples, runname, outdir)
     }
   }
-
+  save(sample.ensemble, file = paste(outdir, 'sample.ensemble.RData', sep=''))
 }
