@@ -57,7 +57,7 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings, outdir){
     colnames(prior) <- c("distn", "a", "b", "n")
 
     writeLines(paste('starting meta-analysis for', trait.name))
-
+    
     data <- trait.data[[trait.name]]
     data <- data[,-which(colnames(data) %in% c("citation_id","trait_id","se"))] ## remove citation column
     data <- data[order(data$site,data$trt),]#not sure why, but required for JAGS model
@@ -77,12 +77,13 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings, outdir){
     writeLines(paste(stem(data$Y)))
     if(any(!is.na(data$obs.prec)) && all(!is.infinite(data$obs.prec))){
       writeLines('stem plot of obs.prec:')
+      print(data$obs.prec)
+      print(data$obs.prec^2)
       writeLines(paste(stem(data$obs.prec^2)))
     } else {
       writeLines(paste('no estimates of SD for', trait.name))
     }
     #todo? could add internal check to make sure data contains Y, n, trt, site, trt, obs.prec
-
     # determine what factors to include in meta-analysis
     model.parms <- list(ghs  = length(unique(data$ghs)),
                         site = length(unique(data$site)),
@@ -97,10 +98,10 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings, outdir){
       reg.model <- paste('+', reg.parms[model.parms > 1], collapse = " ")
     }
     if (model.parms[['ghs']] >1) data$ghs = data$ghs + 1 #avoid index beta.ghs[0]
+    #if (model.parms[['trt']] >1) data$trt = data$trt + 1 #avoid index beta.trt[0]
     
     ## parameters for jags to follow
     vars <- c( 'beta.o', 'sd.y') 
-    
     for (x in c('ghs', 'site', 'trt')) {
       if(model.parms[[x]] == 1) {
         data <- data[, -which(names(data) == x)]
@@ -146,7 +147,7 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings, outdir){
     ## TODO set flag to choose overdispersed vs fixed chains
     ##    j.inits <- function(chain) list("beta.o" = mean(data$Y))
 
-
+    browser()
     j.model   <- jags.model (file = jag.model.file,
                              data = data,
                              n.adapt = 100, #will burn in below
