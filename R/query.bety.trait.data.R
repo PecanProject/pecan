@@ -168,6 +168,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
 
     ## match above and below ground biomass
     ## match on citation_id, site_id, treatment_id, specie_id where different variables.name
+    ## TODO following could be simplified in SQL
     data3 = NULL
     if(nrow(data2) > 0){
 #      pair = list(); counter = 0;
@@ -272,11 +273,9 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     if(length(unique(data$trt[data$site == ss])) == 1) data$trt[data$site == ss] <- 1
 #    #make sure at least one control per site
 #
-#    #this is redundant with what should be done above under the comment "Force a control treatment at each site"
-#
   }
-#  data$n[is.na(data$n)] <- 1
-#  data$n[!is.na(data$stat)] <- 2
+  data$n[is.na(data$n)] <- 1
+  data$n[!is.na(data$stat)] <- 2
   data$ghs <- data$greenhouse #jags won't recognize 0 as an index
         
   names(data)[names(data)=='stat'] <- 'se'
