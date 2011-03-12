@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<pecan>
+  <pft>
+    <name>
+      ebifarm.c4crop
+    </name>
+    <outdir>
+      /home/davids14/pecan/out/
+    </outdir>
+  </pft>
+  <ma_iter>10000</ma_iter>
+  <ensemble_size>100</ensemble_size>
+  <sensitivity_analysis>TRUE</sensitivity_analysis>
+  <pecanDir>/home/davids14/pecan/</pecanDir>
+  <Rlibdir>/home/davids14/lib/R/</Rlibdir>
+  <outdir>/home/davids14/pecan/out/</outdir>
+  <runnames>
+    <runname>prior</runname>
+    <runname>post</runname>
+  </runnames>
+  <quantiles>
+<!--<quantile></quantile>-->
+    <sigma>-3</sigma>
+    <sigma>-2</sigma>
+    <sigma>-1</sigma>
+    <sigma>1</sigma>
+    <sigma>2</sigma>
+    <sigma>3</sigma>
+  </quantiles>
+  <database>
+    <userid>ebi_analys_user</userid>
+    <passwd>b742xsAu</passwd>
+    <location>localhost</location>
+    <name>ebi_analysis</name>
+  </database>
+</pecan>
