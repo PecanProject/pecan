@@ -48,8 +48,8 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings, outdir){
             'a burnin of ', j.iter/2, ' samples,\n',
             ', \nthus the total number of samples will be ', j.chains*(j.iter/2),'\n', sep = '')
       )
-  
-  for(trait.name in names(trait.data)) {
+  variables<-names(trait.data)[which(names(trait.data) %in% rownames(priors))]
+  for(trait.name in variables) {
     prior.name <- ifelse(trait.name != 'Vcmax', trait.name, 'Vm0')
     jagsprior <- jagspriors[prior.name, c('distn', 'parama', 'paramb', 'n')]
     colnames(jagsprior) <- c("distn", "a", "b", "n")
