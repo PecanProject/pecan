@@ -44,7 +44,7 @@ transform.nas <- function(data){
   data$site_id[is.na(data$site_id)] <- 0
 
   #greenhouse defaults to false (0)
-  data$greenhouse[is.na(data$greenhouse)] <- 0
+  data$greenhouse[is.na(data$greenhouse)] <- 1
   
   #number of observations defaults to 2 for statistics, 1 otherwise
   data$n[is.na(data$n)] <- 1
@@ -236,7 +236,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
                     n    = as.numeric(n),
                     site_id = as.integer(factor(site_id, unique(site_id))),
                     trt_id = as.integer(factor(trt_id, unique(c('control', as.character(trt_id))))),
-                    #greenhouse = as.integer(factor(greenhouse, unique(greenhouse)),
+                    greenhouse = as.integer(factor(greenhouse, unique(greenhouse))),
                     mean = mean,
                     citation_id = citation_id), 
                  select = c('stat', 'n', 'site_id', 'trt_id', 'mean', 'citation_id', 'greenhouse')) 
