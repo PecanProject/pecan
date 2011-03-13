@@ -147,12 +147,17 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings, outdir){
 
     
     tryCatch({
-    j.model   <- jags.model (file = jag.model.file,
-                             data = data,
-                             n.adapt = 100, #will burn in below
-                             n.chains = j.chains,
-                             init =  j.inits)
-  }, error=function(ex){print(ex) ; browser()})
+      j.model   <- jags.model (file = jag.model.file,
+                               data = data,
+                               n.adapt = 100, #will burn in below
+                               n.chains = j.chains,
+                               init =  j.inits)
+    }, 
+    error=function(ex){
+      print(ex)
+      browser()
+    })
+
     jags.out   <- coda.samples ( model = j.model,
                                 variable.names = vars,
                                 n.iter = j.iter,
