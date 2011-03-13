@@ -216,7 +216,6 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
         query <- paste("select traits.id, traits.citation_id, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
     result <- fetch.transformed(con, query)
   }
-  browser()
 
   ## if result is empty, stop run
   if(!exists('result') || nrow(result)==0) stop(paste('no data in database for', trait))
