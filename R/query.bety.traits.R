@@ -1,10 +1,11 @@
-query.bety.traits <- function(spstr, traits, con = NULL){
-  ## check which traits in traits (those for which priors exist)
-
-  trt = c("SLA","c2n_leaf","q",     "q")   
-  syn = c("LMA","leafN",   "FRC_RC","fine_root_biomass")
-  
-  ##    have trait data available for species in spstr
+query.bety.traits <- function(spstr, priors, con = NULL){
+  ## check traits for which priors exist
+  synonyms = list('LMA'='SLA',
+                  'leafN'='c2n_leaf',
+                  'FRC_RC'='q',
+                  'fine_root_biomass'='q',
+                  'root_respiration_factor'='root_respiration_rate',
+                  'Vm0'='Vcmax')
 
   if(is.null(con)){
     con <- query.bety.con(...)
@@ -15,30 +16,22 @@ query.bety.traits <- function(spstr, traits, con = NULL){
     return(NULL)
   }
   
-  trait.data <- list()
-  traits <- gsub('Vm0','Vcmax',gsub('root_respiration_factor','root_respiration_rate',traits))
-  query <- paste("select distinct variables.name from traits join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,") and variable_id in (select id from variables where name in (", vecpaste(c(traits,syn)),"));", sep = "")
+  query <- paste("select distinct variables.name from traits join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,");", sep = "")
+  query.result <- dbSendQuery(con, query)
+  traits <- fetch(query.result, n = -1)$name
+  traits <- replace(traits, names(synonyms), synonyms)
+  traits <- unique(traits)
+  traits <- traits[which(traits %in% priors)]
+
   ##*TODO
   ## Need to write query for:
   ## first check pft_species for grass or tree 
   ##      if grass, root and shoot to calculate q
   ##      if tree, fine root and leaf to calculate q
-  query.result <- dbSendQuery(con, query)
-  traits.in.bety <- fetch(query.result, n = -1)
-
-  ## match synonyms
-  mch = which(syn %in% traits.in.bety$name)
-  traits.in.bety$name[match(syn[mch],traits.in.bety$name)] = trt[mch]
-  traits.in.bety = unique(traits.in.bety$name)
 
   ## grab trait data
-  trait.data <- lapply(traits.in.bety, function(x)  query.bety.trait.data(x, spstr, con=con))
-  if(FALSE){ ## alt loop for debugging
-    for(trait in traits.in.bety){
-      trait.data[[trait]] = query.bety.trait.data(trait,spstr,con)
-    }
-  }
-  names(trait.data) <- gsub('root_respiration_rate', 'root_respiration_factor', traits.in.bety)
+  trait.data <- lapply(traits, function(trait) query.bety.trait.data(trait, spstr, con=con))
+  names(trait.data) <- traits
   return(trait.data)
 }
 
