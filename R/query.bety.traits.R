@@ -19,7 +19,7 @@ query.bety.traits <- function(spstr, priors, con = NULL){
   query <- paste("select distinct variables.name from traits join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,");", sep = "")
   query.result <- dbSendQuery(con, query)
   traits <- fetch(query.result, n = -1)$name
-  traits <- replace(traits, names(synonyms), synonyms)
+  for(synonym in names(synonyms)) traits <- gsub(synonym, synonyms[synonym], traits)
   traits <- unique(traits)
   traits <- traits[which(traits %in% priors)]
 

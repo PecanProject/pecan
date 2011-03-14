@@ -164,7 +164,6 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     ## query Q or FRC_RC
     query <- paste("select traits.citation_id, traits.id, variables.name as vname, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) left join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,")  and variables.name in ('q', 'FRC_RC');", sep = "")
     data <- fetch.transformed(con, query)
-
     ## query fine root biomass and leaf biomass
     query <- paste("select traits.citation_id, traits.id, variables.name as vname, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n, traits.specie_id from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) left join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,")  and variables.name in ('fine_root_biomass','leaf_biomass');", sep = "")
     data2 <- fetch.transformed(con, query)
@@ -209,7 +208,6 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
       }
       if(!is.null(data3)) data3 <- drop.columns(data3, "specie_id")
     }
-    
     result <- rbind(data,data3)
   }  else {
     #########################  GENERIC CASE  ############################
