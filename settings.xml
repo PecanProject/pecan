@@ -7,6 +7,12 @@
     <outdir>
       /home/davids14/pecan/out/
     </outdir>
+    <priors>
+      <prior>leaf_width</prior>
+      <prior>q</prior>
+      <prior>root_respiration_factor</prior>
+      <prior>root_turnover_rate</prior>
+    </priors>
   </pft>
   <ma_iter>10000</ma_iter>
   <ensemble_size>100</ensemble_size>

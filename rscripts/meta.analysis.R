@@ -1,7 +1,7 @@
 
 library(XML)
 if(interactive()){
-  settings.file = '~/pecan/tundra.grass.xml'
+  settings.file = '~/pecan/settings.xml'
 } else {
   settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
 }
@@ -57,18 +57,17 @@ for( i in 1:length(pfts)){
   outfile1 <- paste(outdir, '/pecan.parms.Rdata', sep = '')
   save.image(outfile1)
   
-  
   ## 1. get species list based on pft
   spstr <- query.bety.pft_species(pft,con=con)
   
-  
   ## 2. get priors available for pft  
   prior.data <- query.bety.priors(pft, trstr,out=outdir,con=con)
+  print(prior.data)
+  if(!is.null(settings[[pfts[i]]]$priors))
+    prior.data <- prior.data[which(rownames(prior.data) %in% settings[[pfts[i]]]$priors),]
   priors <- rownames(prior.data) # vector of variables with prior distributions for pft 
   prior.defs <- trait.dictionary(priors)
   save(prior.defs, file = paste(outdir, '/prior.defs.Rdata', sep=''))
-  print(prior.data)
-  browser()
   
   ## get traits for pft as a list with one dataframe per variable
   trait.data <- query.bety.traits(spstr,priors,con=con)
