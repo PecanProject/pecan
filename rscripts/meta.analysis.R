@@ -67,14 +67,11 @@ for( i in 1:length(pfts)){
   priors <- rownames(prior.data) # vector of variables with prior distributions for pft 
   prior.defs <- trait.dictionary(priors)
   save(prior.defs, file = paste(outdir, '/prior.defs.Rdata', sep=''))
-  
   print(prior.data)
   browser()
   
-  ## now it is time to query the data
-  ## returns list 'trait.data' with one dataframe per variable
+  ## get traits for pft as a list with one dataframe per variable
   trait.data <- query.bety.traits(spstr,priors,con=con)
-  trait.data <- trait.data[which(names(trait.data) %in% priors)]
   traits <- names(trait.data)
 
   ## DATA HACKS **** THESE SHOULD BE FIXED IN THE DATABASE*******
