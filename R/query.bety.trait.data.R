@@ -274,7 +274,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
 #    #make sure at least one control per site
 #
   }
-  data$n[is.na(data$n)] <- 1
+  data$n[is.na(data$n)] <-1 
   data$n[!is.na(data$stat)] <- 2
   data$ghs <- data$greenhouse #jags won't recognize 0 as an index
         

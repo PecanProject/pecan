@@ -106,9 +106,9 @@ for( i in 1:length(pfts)){
   
   
   ## run the meta-analysis
-
   trait.mcmc <- pecan.ma(trait.data, priors, taupriors,j.iter = ma_iter,settings,outdir)
-  save(trait.mcmc, file = paste(outdir, '/trait.mcmc.Rdata', sep=''))
+  posteriors = approx.posterior(trait.mcmc,priors,trait.data,outdir)
+  save(trait.mcmc, posteriors,file = paste(outdir, '/trait.mcmc.Rdata', sep=''))
        
   trait.stats <- sapply(trait.mcmc,function(x){summary(x)$statistics['beta.o',1:2]})
   pft.summary$mean[match(colnames(trait.stats),trait.name),i] = trait.stats[1,]
