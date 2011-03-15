@@ -1,4 +1,3 @@
-
 library(XML)
 if(interactive()){
   settings.file = '~/pecan/settings.xml'
@@ -7,14 +6,9 @@ if(interactive()){
 }
 
 settings.xml <- xmlTreeParse(settings.file)
-
 settings <- xmlToList(settings.xml)
 
 if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
-#pft   <- system("echo $PFT", intern = TRUE)
-#ITER  <- as.numeric(system("echo $ITER", intern = TRUE)) 
-#M     <- as.numeric(system("echo $ENSN", intern = TRUE))
-#outdir   <- system("echo $PECANOUT", intern = TRUE)
 ITER   <- as.numeric(settings$ma_iter)
 M      <- as.numeric(settings$ensemble_size)
 outdir <- settings$outdir
