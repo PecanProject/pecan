@@ -235,11 +235,12 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   sites <- unique(result$site_id)
   for(ss in sites){
     site.i <- result$site == ss
+    ##if only one treatment, it's control
+    if(length(unique(result$trt[site.i])) == 1) result$trt_id[site.i] <- 'control'
+    ##if that didn't solve the problem, then stop
     if(!'control' %in% result$trt_id[site.i]){
       stop(error(site.i, result))
     }
-    #if only one treatment, it's control
-    if(length(unique(result$trt[site.i])) == 1) result$trt_id[site.i] <- 'control'
   }
   
   ## assign a unique sequential integer to site and trt; for trt, all controls == 0
@@ -275,7 +276,7 @@ rename.cols.forjags <- function(data) {
                       trt      = trt_id,
                       site     = site_id,
                       cite     = citation_id,
-                      ghs      = greenhouse
+                      ghs      = greenhouse + 1
                       )
   data3 <- subset (data2 ,  select = c('Y', 'n', 'site', 'trt', 'ghs', 'obs.prec', 'se', 'cite'))
   return(data3)
