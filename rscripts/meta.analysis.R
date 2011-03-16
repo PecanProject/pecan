@@ -1,7 +1,7 @@
 
 library(XML)
 if(interactive()){
-  settings.file = '~/pecan/settings.xml'
+  settings.file = '~/pecan/tundra.xml'
 } else {
   settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
 }
