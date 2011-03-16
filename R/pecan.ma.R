@@ -48,7 +48,6 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings, outdir){
             'a burnin of ', j.iter/2, ' samples,\n',
             ', \nthus the total number of samples will be ', j.chains*(j.iter/2),'\n', sep = '')
       )
-  
   for(trait.name in names(trait.data)) {
     prior.name <- ifelse(trait.name != 'Vcmax', trait.name, 'Vm0')
     jagsprior <- jagspriors[prior.name, c('distn', 'parama', 'paramb', 'n')]
@@ -147,12 +146,17 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings, outdir){
 
     
     tryCatch({
-    j.model   <- jags.model (file = jag.model.file,
-                             data = data,
-                             n.adapt = 100, #will burn in below
-                             n.chains = j.chains,
-                             init =  j.inits)
-  }, error=function(ex){print(ex) ; browser()})
+      j.model   <- jags.model (file = jag.model.file,
+                               data = data,
+                               n.adapt = 100, #will burn in below
+                               n.chains = j.chains,
+                               init =  j.inits)
+    }, 
+    error=function(ex){
+      print(ex)
+      browser()
+    })
+
     jags.out   <- coda.samples ( model = j.model,
                                 variable.names = vars,
                                 n.iter = j.iter,
