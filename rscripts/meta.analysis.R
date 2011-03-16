@@ -1,7 +1,7 @@
 
 library(XML)
 if(interactive()){
-  settings.file = '~/pecan/settings.xml'
+  settings.file = '~/pecan/tundra.xml'
 } else {
   settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
 }
@@ -57,23 +57,21 @@ for( i in 1:length(pfts)){
   outfile1 <- paste(outdir, '/pecan.parms.Rdata', sep = '')
   save.image(outfile1)
   
-  
   ## 1. get species list based on pft
   spstr <- query.bety.pft_species(pft,con=con)
   
-  
   ## 2. get priors available for pft  
-  priors <- query.bety.priors(pft, trstr,out=outdir,con=con)
-  print(priors)
+  prior.data <- query.bety.priors(pft, trstr,out=outdir,con=con)
+  print(prior.data)
+  if(!is.null(settings[[pfts[i]]]$priors))
+    prior.data <- prior.data[which(rownames(prior.data) %in% settings[[pfts[i]]]$priors),]
+  priors <- rownames(prior.data) # vector of variables with prior distributions for pft 
+  prior.defs <- trait.dictionary(priors)
+  save(prior.defs, file = paste(outdir, '/prior.defs.Rdata', sep=''))
   
-
-  traits <-trvec <- rownames(priors) # vector of traits with prior distributions for pft 
-  trait.defs <- trait.dictionary(trvec)
-  save(trait.defs, file = paste(outdir, '/trait.defs.Rdata', sep=''))
-  
-  ## now it is time to query the data
-  ## returns list 'trait.data' with one dataframe per variable
-  trait.data <- query.bety.traits(spstr,trvec,con=con) 
+  ## get traits for pft as a list with one dataframe per variable
+  trait.data <- query.bety.traits(spstr,priors,con=con)
+  traits <- names(trait.data)
 
   ## DATA HACKS **** THESE SHOULD BE FIXED IN THE DATABASE*******
   if("root_respiration_factor" %in% names(trait.data)){
@@ -92,15 +90,15 @@ for( i in 1:length(pfts)){
   pft.summary$n[match(names(trait.count),trait.name2),i] = trait.count
   
 
-  ##prior.variances <- data.frame(var = unlist(t(sapply(1:nrow(priors), function(i) with(priors[i,], pdf.stats(distn, parama, paramb)))['var',])), row.names = rownames(priors))
-  prior.variances = as.data.frame(rep(1,nrow(priors)))
-  row.names(prior.variances) = row.names(priors)
+  ##prior.variances <- data.frame(var = unlist(t(sapply(1:nrow(prior.data), function(i) with(prior.data[i,], pdf.stats(distn, parama, paramb)))['var',])), row.names = priors)
+  prior.variances = as.data.frame(rep(1,nrow(prior.data)))
+  row.names(prior.variances) = row.names(prior.data)
   prior.variances[names(trait.average),] = 0.001*trait.average^2 
 
   ## Set gamma distribution prior on
 #  prior.var <- function(x) do.call(pdf.stats, list(x$distn, x$parama, x$paramb))['var']
-#  prior.variances <- data.frame(var = sapply(1:nrow(priors), function(i) prior.var(priors[i,])),
-#                                row.names = rownames(priors))
+#  prior.variances <- data.frame(var = sapply(1:nrow(prior.data), function(i) prior.var(prior.data[i,])),
+#                                row.names = priors)
   
   
   taupriors <- list(tauA = 0.01,
@@ -108,8 +106,7 @@ for( i in 1:length(pfts)){
   
   
   ## run the meta-analysis
-
-  trait.mcmc <- pecan.ma(trait.data, priors, taupriors, j.iter = ma_iter, settings, outdir)
+  trait.mcmc <- pecan.ma(trait.data, prior.data, taupriors, j.iter = ma_iter, settings, outdir)
   trait.stats <- sapply(trait.mcmc,function(x){summary(x)$statistics['beta.o',1:2]})
   pft.summary$mean[match(colnames(trait.stats),trait.name),i] = trait.stats[1,]
   pft.summary$sd[match(colnames(trait.stats),trait.name),i] = trait.stats[2,]

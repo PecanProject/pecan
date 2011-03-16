@@ -5,15 +5,21 @@
       ebifarm.c4crop
     </name>
     <outdir>
-      /home/dlebauer/pecan/out/
+      /home/davids14/pecan/out/
     </outdir>
+    <priors>
+      <prior>leaf_width</prior>
+      <prior>q</prior>
+      <prior>root_respiration_factor</prior>
+      <prior>root_turnover_rate</prior>
+    </priors>
   </pft>
   <ma_iter>10000</ma_iter>
   <ensemble_size>100</ensemble_size>
   <sensitivity_analysis>TRUE</sensitivity_analysis>
-  <pecanDir>/home/dlebauer/pecan/</pecanDir>
-  <Rlibdir>/home/dlebauer/lib/R/</Rlibdir>
-  <outdir>/home/dlebauer/pecan/out/</outdir>
+  <pecanDir>/home/davids14/pecan/</pecanDir>
+  <Rlibdir>/home/davids14/lib/R/</Rlibdir>
+  <outdir>/home/davids14/pecan/out/</outdir>
   <runnames>
     <runname>prior</runname>
     <runname>post</runname>
