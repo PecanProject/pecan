@@ -1,4 +1,3 @@
-
 library(XML)
 if(interactive()){
   settings.file = '~/pecan/tundra.xml'
@@ -7,14 +6,9 @@ if(interactive()){
 }
 
 settings.xml <- xmlTreeParse(settings.file)
-
 settings <- xmlToList(settings.xml)
 
 if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
-#pft   <- system("echo $PFT", intern = TRUE)
-#ITER  <- as.numeric(system("echo $ITER", intern = TRUE)) 
-#M     <- as.numeric(system("echo $ENSN", intern = TRUE))
-#outdir   <- system("echo $PECANOUT", intern = TRUE)
 ITER   <- as.numeric(settings$ma_iter)
 M      <- as.numeric(settings$ensemble_size)
 outdir <- settings$outdir
@@ -84,7 +78,8 @@ for( i in 1:length(pfts)){
       trait.data[["SLA"]] = trait.data[["SLA"]][-sel,]            
     }
   }
-  
+  save(trait.data, file = paste(outdir, '/trait.data.Rdata', sep=''))
+
   trait.count <- sapply(trait.data,nrow)
   trait.average <- sapply(trait.data,function(x){mean(x$Y,na.rm=TRUE)}); names(trait.average)[names(trait.average)=="Vcmax"] = "Vm0"
   pft.summary$n[match(names(trait.count),trait.name2),i] = trait.count
@@ -107,6 +102,9 @@ for( i in 1:length(pfts)){
   
   ## run the meta-analysis
   trait.mcmc <- pecan.ma(trait.data, prior.data, taupriors, j.iter = ma_iter, settings, outdir)
+  posteriors = approx.posterior(trait.mcmc,priors,trait.data,outdir)
+  save(trait.mcmc, posteriors,file = paste(outdir, '/trait.mcmc.Rdata', sep=''))
+
   trait.stats <- sapply(trait.mcmc,function(x){summary(x)$statistics['beta.o',1:2]})
   pft.summary$mean[match(colnames(trait.stats),trait.name),i] = trait.stats[1,]
   pft.summary$sd[match(colnames(trait.stats),trait.name),i] = trait.stats[2,]
