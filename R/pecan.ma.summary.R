@@ -29,5 +29,5 @@ pecan.ma.summary <- function(mcmc.object, pft,outdir){
     }
     
   }
-  if(fail)stop()
+  if(fail)stop('JAGS model failed to converge for one or more pft.')
 }

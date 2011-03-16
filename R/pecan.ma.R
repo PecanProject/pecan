@@ -48,7 +48,6 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings, outdir){
             'a burnin of ', j.iter/2, ' samples,\n',
             ', \nthus the total number of samples will be ', j.chains*(j.iter/2),'\n', sep = '')
       )
-  
   for(trait.name in names(trait.data)) {
     prior.name <- ifelse(trait.name != 'Vcmax', trait.name, 'Vm0')
     jagsprior <- jagspriors[prior.name, c('distn', 'parama', 'paramb', 'n')]
@@ -68,6 +67,13 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings, outdir){
       data$site = rep(1,nrow(data))
       data$trt  = rep(0,nrow(data))
     }
+
+    if(!is.null(settings$incRandomEffects)){
+      if(!as.logical(settings$incRandomEffects)){
+        data$site = rep(1,nrow(data))
+        data$trt  = rep(0,nrow(data))
+      }
+    }
     
     #print out some data summaries to check
     writeLines(paste('prior for ', trait.name, ':',
@@ -77,8 +83,6 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings, outdir){
     writeLines(paste(stem(data$Y)))
     if(any(!is.na(data$obs.prec)) && all(!is.infinite(data$obs.prec))){
       writeLines('stem plot of obs.prec:')
-      print(data$obs.prec)
-      print(data$obs.prec^2)
       writeLines(paste(stem(data$obs.prec^2)))
     } else {
       writeLines(paste('no estimates of SD for', trait.name))
@@ -145,14 +149,18 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings, outdir){
     ## TODO set flag to choose overdispersed vs fixed chains
     ##    j.inits <- function(chain) list("beta.o" = mean(data$Y))
 
-    
     tryCatch({
-    j.model   <- jags.model (file = jag.model.file,
-                             data = data,
-                             n.adapt = 100, #will burn in below
-                             n.chains = j.chains,
-                             init =  j.inits)
-  }, error=function(ex){print(ex) ; browser()})
+      j.model   <- jags.model (file = jag.model.file,
+                               data = data,
+                               n.adapt = 100, #will burn in below
+                               n.chains = j.chains,
+                               init =  j.inits)
+    }, 
+    error=function(ex){
+      print(ex)
+      browser()
+    })
+
     jags.out   <- coda.samples ( model = j.model,
                                 variable.names = vars,
                                 n.iter = j.iter,

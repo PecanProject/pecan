@@ -1,10 +1,22 @@
 <?xml version="1.0"?>
 <pecan>
   <pft>
+     <name>tundra.grass</name>
+     <outdir>~/pecan/out/</outdir>
+  </pft>
+  <pft>
      <name>tundra.evergreen</name>
      <outdir>~/pecan/out/</outdir>
   </pft>
-  <ma_iter>50000</ma_iter>
+  <pft>
+     <name>tundra.deciduous</name>
+     <outdir>~/pecan/out/</outdir>
+     <priors>
+       <prior>leaf_turnover_rate<prior>
+       <prior>SLA</prior>
+     </priors>
+  </pft>
+  <ma_iter>100000</ma_iter>
   <ensemble_size>100</ensemble_size>
   <sensitivity_analysis>TRUE</sensitivity_analysis>
   <outdir>~/pecan/out/</outdir>
