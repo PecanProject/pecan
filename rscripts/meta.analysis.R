@@ -1,6 +1,6 @@
 library(XML)
 if(interactive()){
-  settings.file = '~/pecan/settings.pavi.xml'
+  settings.file <- '~/pecan/settings.pavi.xml'
 } else {
   settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
 }
@@ -9,24 +9,24 @@ settings.xml <- xmlTreeParse(settings.file)
 settings <- xmlToList(settings.xml)
 
 if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
-ITER   <- as.numeric(settings$ma_iter)
-M      <- as.numeric(settings$ensemble_size)
+ITER   <- as.numeric(settings$meta.analysis$iter)
+M      <- as.numeric(settings$ensemble$size)
 outdir <- settings$outdir
 ## trstr is a list of the traits that ED can use
 
-trstr <- "'mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','growth_resp_factor','leaf_turnover_rate','leaf_width','nonlocal_dispersal','q','root_respiration_factor','root_turnover_rate','seedling_mortality','SLA','stomatal_slope','Vm_low_temp','quantum_efficiency','f_labile','c2n_leaf','water_conductance','Vm0','r_fract','storage_turnover_rate','agf_bs'"
- 
-trait.name = strsplit(trstr,",")
-trait.name = gsub("'","",trait.name[[1]])
-trait.name2 = sub("Vm0","Vcmax",trait.name)
-n.trait = length(trait.name)
-
-ma_iter   = as.numeric(settings$ma_iter)
-ensemble_size = as.numeric(settings$ensemble_size)
-sensitivity_analysis = as.logical(settings$sensitivity_analysis)
-
 
 require(PECAn)
+
+trait.names <- c('mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','growth_resp_factor','leaf_turnover_rate','leaf_width','nonlocal_dispersal','q','root_respiration_factor','root_turnover_rate','seedling_mortality','SLA','stomatal_slope','Vm_low_temp','quantum_efficiency','f_labile','c2n_leaf','water_conductance','Vcmax','r_fract','storage_turnover_rate','agf_bs')
+trstr <- vecpaste(trait.names)
+ 
+n.trait = length(trait.names)
+
+ma.iter   = as.numeric(settings$meta.analysis$iter)
+ensemble.size = as.numeric(settings$ensemble$size)
+sensitivity.analysis = !is.null(settings$sensitivity.analysis)
+
+
 
 ## connect to database
 con <- settings$database
@@ -36,10 +36,12 @@ if(settings$database$location == 'localhost'){
 
 
 ## identify pfts
-pft.name = sapply(settings[['pft']],function(x){x$name})
-npft   = length(pfts);
+pft.name <- sapply(settings[['pft']],function(x){x$name})
+npft   <- length(pfts);
 if(npft < 1 | is.null(npft)) stop('no PFT specified')
-mtemp = matrix(NA,n.trait,npft);row.names(mtemp) = trait.name; colnames(mtemp)=pft.name
+mtemp <- matrix(NA,n.trait,npft)
+row.names(mtemp) <- trait.names
+colnames(mtemp) <- pft.name
 pft.summary <- list(mean = mtemp,sd=mtemp,n=mtemp)
 
 ### loop over pfts
@@ -100,7 +102,7 @@ for( i in 1:length(pfts)){
   
   
   ## run the meta-analysis
-  trait.mcmc <- pecan.ma(trait.data, prior.data, taupriors, j.iter = ma_iter, settings, outdir)
+  trait.mcmc <- pecan.ma(trait.data, prior.data, taupriors, j.iter = ma.iter, settings, outdir)
   posteriors = approx.posterior(trait.mcmc,priors,trait.data,outdir)
   save(trait.mcmc, posteriors,file = paste(outdir, '/trait.mcmc.Rdata', sep=''))
 
