@@ -11,8 +11,6 @@
 start.run.ed <- function(model.settings, pecan.settings, config.file, site) {
 # move scripts to remote host
 
-# call write.config
-  write.config(list, filename, configheader))
 # run script on remote machine
 
 # figure out when runs are finished
