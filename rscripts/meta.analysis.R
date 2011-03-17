@@ -1,6 +1,6 @@
 library(XML)
 if(interactive()){
-  settings.file = '~/pecan/tundra.xml'
+  settings.file = '~/pecan/settings.pavi.xml'
 } else {
   settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
 }
@@ -14,11 +14,10 @@ M      <- as.numeric(settings$ensemble_size)
 outdir <- settings$outdir
 ## trstr is a list of the traits that ED can use
 
-trstr <- "'mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','growth_resp_factor','leaf_turnover_rate','leaf_width','nonlocal_dispersal','q','root_respiration_factor','root_turnover_rate','seedling_mortality','SLA','stomatal_slope','Vm_low_temp','quantum_efficiency','f_labile','c2n_leaf','water_conductance','Vm0','r_fract','storage_turnover_rate','agf_bs'" #SLA_gC_per_m2 is converted to SLA in query.bety.priors
-
+trstr <- "'mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','growth_resp_factor','leaf_turnover_rate','leaf_width','nonlocal_dispersal','q','root_respiration_factor','root_turnover_rate','seedling_mortality','SLA','stomatal_slope','Vm_low_temp','quantum_efficiency','f_labile','c2n_leaf','water_conductance','Vm0','r_fract','storage_turnover_rate','agf_bs'"
+ 
 trait.name = strsplit(trstr,",")
-trait.name = sub("'","",trait.name[[1]])
-trait.name = sub("'","",trait.name)
+trait.name = gsub("'","",trait.name[[1]])
 trait.name2 = sub("Vm0","Vcmax",trait.name)
 n.trait = length(trait.name)
 
