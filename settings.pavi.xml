@@ -13,18 +13,17 @@
       </exclude>
     </pft>
   </pfts>
-  <metaanalysis>
+  <meta.analysis>
     <iter>10000</iter>
-  </metaanalysis>
+    <random.effects>FALSE</random.effects>
+  </meta.analysis>
   <ensemble>
     <size>10000</size>
-    <incRandomEffects>FALSE</incRandomEffects>
   </ensemble>
-  <sensitivity_analysis>TRUE</sensitivity_analysis>
   <pecanDir>/home/dlebauer/pecan/</pecanDir>
   <Rlibdir>/home/dlebauer/lib/R/</Rlibdir>
   <outdir>/home/dlebauer/pecan/out/</outdir>
-  <sensitivity>
+  <sensitivity.analysis>
     <quantiles>
       <quantile></quantile>
       <sigma>-3</sigma>
@@ -34,7 +33,7 @@
       <sigma>2</sigma>
       <sigma>3</sigma>
     </quantiles>
-  </sensitivity>
+  </sensitivity.analysis>
   <database>
     <userid>ebi_analys_user</userid>
     <passwd>b742xsAu</passwd>
@@ -45,9 +44,9 @@
     <site>
       <lat></lat>
       <lon></lon>
-      <metdataheader></metdataheader>
+      <met.data.header></met.data.header>
       <hostname></hostname>
-      <modeloutdir></modeloutdir>
-    </site>>
+      <model.outdir></model.outdir>
+    </site>
   </run>
 </pecan>
