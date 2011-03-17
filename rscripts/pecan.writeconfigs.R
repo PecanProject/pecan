@@ -66,7 +66,7 @@ save(quantile.samples, file = "out/quantile.samples.Rdata")
 
 ## generate config files
 
-write.configs(ensemble_size, sensitivity_analysis, pft, ens.samps, quantile.samples, outdir, quantiles)
+write.configs(ensemble.size, sensitivity.analysis, pft, ens.samps, quantile.samples, outdir, quantiles)
 
 save(samps, file="samps.Rdata')
 
