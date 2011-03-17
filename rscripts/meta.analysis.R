@@ -34,7 +34,6 @@ if(settings$database$location == 'localhost'){
   con <- query.bety.con(dbname=con$name,password=con$passwd,username=con$userid)
 }
 
-
 ## identify pfts
 pft.name <- sapply(settings[['pft']],function(x){x$name})
 npft   <- length(pfts);
