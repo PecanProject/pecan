@@ -16,11 +16,62 @@
 
 fetch.transformed <- function(connection, query){
   query.result <- dbSendQuery(connection, query)
-  result <- pecan.transformstats(fetch(query.result, n = -1))
-  return(result)
+  transformed <- pecan.transformstats(fetch(query.result, n = -1))
+  return(transformed)
 }
 arrhenius.scaling <- function(mean, temp){
   return(mean / exp (3000 * ( 1 / 288.15 - 1 / (273.15 + temp))))
+}
+
+rename.jags.columns <- function(data) {
+  transformed <-  transform(data,
+                      Y        = mean,
+                      se       = stat,
+                      obs.prec = 1 / (sqrt(n) * stat) ^2,
+                      trt      = trt_id,
+                      site     = site_id,
+                      cite     = citation_id,
+                      ghs      = greenhouse)
+  selected <- subset (transformed, select = c('Y', 'n', 'site', 'trt', 'ghs', 'obs.prec', 'se', 'cite'))
+  return(selected)
+}
+transform.nas <- function(data){
+  #control defaults to 1
+  data$control[is.na(data$control)]     <- 1
+  
+  #site defaults to 0
+  #TODO assign different site for each citation - dsl
+  data$site_id[is.na(data$site_id)] <- 0
+
+  #greenhouse defaults to false (0)
+  data$greenhouse[is.na(data$greenhouse)] <- 1
+  
+  #number of observations defaults to 2 for statistics, 1 otherwise
+  data$n[is.na(data$n)] <- 1
+  data$n[!is.na(data$stat)] <- 2
+
+  return(data)
+}
+assign.controls <- function(data){
+  data$trt_id[which(data$control == 1)] <- 'control'
+  sites <- unique(data$site_id)
+  for(ss in sites){
+    site.i <- data$site == ss
+    #if only one treatment, it's control
+    if(length(unique(data$trt[site.i])) == 1) data$trt_id[site.i] <- 'control'
+    if(!'control' %in% data$trt_id[site.i]){
+      if(interactive()) browser()
+      stop(  paste('No control treatment set for site_id:',
+        unique(data$site_id[site.i]),
+        'and citation id',
+        unique(data$citation_id[site.i]),
+        '\nplease set control treatment for this site / citation in database\n'))
+    }
+  }
+  return(data)
+}
+drop.columns <- function(data, columns){
+  return(data[,which(!colnames(data) %in% columns)])
 }
 
 query.bety.trait.data <- function(trait, spstr,con=NULL,...){
@@ -57,8 +108,8 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     
     data$mean <- arrhenius.scaling(data$mean, data$leafT)
     data$stat <- arrhenius.scaling(data$stat, data$leafT)
-    result <- data[,which(!colnames(data) %in% c('leafT', 'canopy_layer','date','dateloc'))] #drop covariates
-
+    result <- drop.columns(data, c('leafT', 'canopy_layer','date','dateloc'))
+    
   } else if (trait == 'SLA') {
 
     
@@ -90,7 +141,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     }
     ## select sunleaf data
     data = data[data$canopy_layer >= 0.66,]    
-    result <- data[,which(colnames(data)!='canopy_layer')]
+    result <- drop.columns(data, 'canopy_layer')
 
     #convert from kg leaf / m2 to kg C / m2
     result[, c('mean','stat')] <- result[, c('mean','stat')] / 0.48 
@@ -130,7 +181,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     ## assuming a 1:1 partitioning of growth:maintenance respiration
     data$mean <- arrhenius.scaling(data$mean, data$temp)/2
     data$stat <- arrhenius.scaling(data$stat, data$temp)/2
-    result <- data[,which(!colnames(data) %in% c('temp'))] #drop covariates
+    result <- drop.columns(data, 'temp')
     
   } else if (trait == 'c2n_leaf') {
 
@@ -194,9 +245,8 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
           }
         }        
       }
-      if(!is.null(data3)) data3 <-  data3[,which(colnames(data3)!="specie_id")]
+      if(!is.null(data3)) data3 <- drop.columns(data3, "specie_id")
     }
-    
     result <- rbind(data,data3)
   }  else {
     #########################  GENERIC CASE  ############################
@@ -204,80 +254,37 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     result <- fetch.transformed(con, query)
   }
 
+  ## if result is empty, stop run
+  if(!exists('result') || nrow(result)==0) stop(paste('no data in database for', trait))
+
   if (trait == 'leaf_width') result <- transform(result, mean = mean/1000, stat=stat/1000) 
 
-  ## if result is empty, stop run
-  if(!exists('result')|nrow(result)==0) stop(paste('no data in database for', trait))
   
   ## rename name column from treatment table to trt_id
   names(result)[names(result)=='name'] <- 'trt_id'
   
-  ## labeling control treatments based on treatments.control flag
-  result$control[is.na(result$control)]     <- 1
-  result$trt_id[which(result$control == 1)] <- 'control'
+  result <- transform.nas(result)
+  result <- assign.controls(result)
 
-  error <-  function(site.i, result) paste('No control treatment set for site_id:',
-                                       unique(result$site_id[site.i]),
-                                       'and citation id',
-                                       unique(result$citation_id[site.i]),
-                                       '\nplease set control treatment for this site / citation in database\n')
-  
-  ## assign all unknown sites to 0
-  ## TODO different site for each citation - dsl
-  result$site_id[is.na(result$site_id)] <- 0
-
-  ## assume not in greenhouse when is.na(greenhouse)
-  result$greenhouse[is.na(result$greenhouse)] <- 0
-  
-  result$n[is.na(result$n)] <- 1
-  result$n[!is.na(result$stat)] <- 2
-
-  sites <- unique(result$site_id)
-  for(ss in sites){
-    site.i <- result$site == ss
-    ##if only one treatment, it's control
-    if(length(unique(result$trt[site.i])) == 1) result$trt_id[site.i] <- 'control'
-    ##if that didn't solve the problem, then stop
-    if(!'control' %in% result$trt_id[site.i]){
-      stop(error(site.i, result))
-    }
-  }
-  
   ## assign a unique sequential integer to site and trt; for trt, all controls == 0
   data <- subset(transform(result,
                     stat = as.numeric(stat),
                     n    = as.numeric(n),
                     site_id = as.integer(factor(site_id, unique(site_id))),
                     trt_id = as.integer(factor(trt_id, unique(c('control', as.character(trt_id))))),
+                    greenhouse = as.integer(factor(greenhouse, unique(greenhouse))),
                     mean = mean,
-                    citation_id = citation_id
-                    ), select = c('stat', 'n', 'site_id', 'trt_id', 'mean', 'citation_id', 'greenhouse')) 
+                    citation_id = citation_id), 
+                 select = c('stat', 'n', 'site_id', 'trt_id', 'mean', 'citation_id', 'greenhouse')) 
     
 
-  ##TODO are following assumptions okay? These seem to get commented out in revisions. Why? -dsl
-  ##TODO: Looks good to me --MCD
-  data$n[is.na(data$n)] <- 1 # if n=NA, n=1
-  data$n[!is.na(data$stat)] <- 2 # if there is a statistic, assume n >= 2
   if(length(data$stat[data$stat <= 0.0]) > 0) {
     warning(paste('there are implausible values of SE, SE <= 0 in the data and these are set to NA from citation', unique(data$citation_id[which(data$stat >= 0.0)], ' ')))
     data$stat[data$stat <= 0.0] <- NA
   }
-
-  ma.data <- rename.cols.forjags(data)
-
-  return(ma.data)
+  
+  renamed <- rename.jags.columns(data)
+  return(renamed)
 }
 
-rename.cols.forjags <- function(data) {
-  data2 <-  transform(data,
-                      Y        = mean,
-                      se       = stat,
-                      obs.prec = 1 / (sqrt(n) * stat) ^2,
-                      trt      = trt_id,
-                      site     = site_id,
-                      cite     = citation_id,
-                      ghs      = greenhouse + 1
-                      )
-  data3 <- subset (data2 ,  select = c('Y', 'n', 'site', 'trt', 'ghs', 'obs.prec', 'se', 'cite'))
-  return(data3)
-}
+
