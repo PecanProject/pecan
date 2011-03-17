@@ -36,7 +36,7 @@ if(settings$database$location == 'localhost'){
 
 
 ## identify pfts
-pfts   = which(names(settings) == 'pft'); pft.name = sapply(settings[pfts],function(x){x$name})
+pft.name = sapply(settings[['pft']],function(x){x$name})
 npft   = length(pfts);
 if(npft < 1 | is.null(npft)) stop('no PFT specified')
 mtemp = matrix(NA,n.trait,npft);row.names(mtemp) = trait.name; colnames(mtemp)=pft.name
