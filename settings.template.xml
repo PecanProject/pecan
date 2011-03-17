@@ -10,7 +10,7 @@
       </outdir>
       <exclude>
 	<parm></parm>
-      </excludes>
+      </exclude>
     </pft>
   </pfts>
   <metaanalysis>
