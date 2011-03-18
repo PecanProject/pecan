@@ -35,8 +35,8 @@ if(settings$database$location == 'localhost'){
 }
 
 ## identify pfts
-pft.name <- sapply(settings[['pft']],function(x){x$name})
-npft   <- length(pfts);
+pft.name <- sapply(settings['pfts']$pft, function(x)x$name)
+npft   <- length(pft.name)
 if(npft < 1 | is.null(npft)) stop('no PFT specified')
 mtemp <- matrix(NA,n.trait,npft)
 row.names(mtemp) <- trait.names
@@ -44,12 +44,10 @@ colnames(mtemp) <- pft.name
 pft.summary <- list(mean = mtemp,sd=mtemp,n=mtemp)
 
 ### loop over pfts
-for( i in 1:length(pfts)){
+for( i in 1:length(pft.name)){
 
-  pft    = settings[[pfts[i]]]$name
-  outdir = settings[[pfts[i]]]$outdir
-  outfile1 <- paste(outdir, '/pecan.parms.Rdata', sep = '')
-  save.image(outfile1)
+  pft    <- settings[['pfts']][[i]]$name
+  outdir <- settings[['pfts']][[i]]$outdir
   
   ## 1. get species list based on pft
   spstr <- query.bety.pft_species(pft,con=con)
@@ -57,8 +55,9 @@ for( i in 1:length(pfts)){
   ## 2. get priors available for pft  
   prior.data <- query.bety.priors(pft, trstr,out=outdir,con=con)
   print(prior.data)
-  if(!is.null(settings[[pfts[i]]]$priors))
+  if(!is.null(settings[['pfts']][[i]]$priors)) {
     prior.data <- prior.data[which(rownames(prior.data) %in% settings[[pfts[i]]]$priors),]
+  }
   priors <- rownames(prior.data) # vector of variables with prior distributions for pft 
   prior.defs <- trait.dictionary(priors)
   save(prior.defs, file = paste(outdir, '/prior.defs.Rdata', sep=''))
