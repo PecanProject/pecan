@@ -55,9 +55,6 @@ for( i in 1:length(pft.name)){
   ## 2. get priors available for pft  
   prior.data <- query.bety.priors(pft, trstr,out=outdir,con=con)
   print(prior.data)
-  if(!is.null(settings[['pfts']][[i]]$priors)) {
-    prior.data <- prior.data[which(rownames(prior.data) %in% settings[[pfts[i]]]$priors),]
-  }
   priors <- rownames(prior.data) # vector of variables with prior distributions for pft 
   prior.defs <- trait.dictionary(priors)
   save(prior.defs, file = paste(outdir, '/prior.defs.Rdata', sep=''))
