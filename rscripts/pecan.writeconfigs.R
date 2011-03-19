@@ -3,7 +3,7 @@ load('out/pecan.MA.Rdata')
 
 pftName <- settings$pft
 quantiles <- settings$quantiles
-samps <- pecan.samps(trait.mcmc, priors)
+samps <- pecan.samps(trait.mcmc, prior.data)
 save(samps, file='out/pecan.samps.Rdata')
 
 
@@ -16,17 +16,17 @@ for(i in names(trait.mcmc)){
 trait.posteriors <- as.data.frame(trait.beta.o)
 colnames(trait.posteriors) <- names(trait.beta.o)
 
-priors$n <- nrow(trait.posteriors)
-colnames(priors)[which(colnames(priors) %in% c('parama','paramb'))] <- c('a', 'b')
+prior.data$n <- nrow(trait.posteriors)
+colnames(prior.data)[which(colnames(prior.data) %in% c('parama','paramb'))] <- c('a', 'b')
 
-samps <- list(prior = sapply(1:nrow(priors), function(x) do.call(pr.samp,priors[x,])),
-              post  = sapply(1:nrow(priors), function(x) do.call(pr.samp,priors[x,])))
+samps <- list(prior = sapply(1:nrow(prior.data), function(x) do.call(pr.samp,prior.data[x,])),
+              post  = sapply(1:nrow(prior.data), function(x) do.call(pr.samp,prior.data[x,])))
 
 for (i in names(samps)){
-  colnames(samps[[i]]) <- rownames(priors)
+  colnames(samps[[i]]) <- rownames(prior.data)
 }
 
-#???  priors$distn[priors$distn=='weib'] <- 'weibull'
+#???  prior.data$distn[prior.data$distn=='weib'] <- 'weibull'
 
 for (tri in ncol(trait.posteriors)) samps[['post']][,tri] <- trait.posteriors[, tri]
 
@@ -68,5 +68,5 @@ save(quantile.samples, file = "out/quantile.samples.Rdata")
 
 write.configs(ensemble_size, sensitivity_analysis, pft, ens.samps, quantile.samples, outdir, quantiles)
 
-save(samps, file="samps.Rdata')
+save(samps, file='samps.Rdata')
 
