@@ -1,5 +1,4 @@
 pecan.samps <- function(trait.mcmc, priors) {
-  browser()
   trait.mat <- lapply(trait.mcmc, as.matrix)
   trait.nrows <- lapply(trait.mat, function(x) nrow(x))
   n.samp <- do.call(min, trait.nrows)
