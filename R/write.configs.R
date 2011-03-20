@@ -1,73 +1,130 @@
 
 PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
-run.ids <- list()
 
-                                        #returns a string representing a given number 
-                                        #left padded by zeros up to a given number of digits
-lef.pad.zeros <- function(num, digits){
-
+##### Generic functions #####
+#returns a string representing a given number 
+#left padded by zeros up to a given number of digits
+left.pad.zeros <- function(num, digits){
   format_string <- paste('%',sprintf('0%.0f.0f',digits),sep='')
   return(sprintf(format_string, num))
 }
-
-
-config.file.name <- function(outdir, runtype, runname, index, trait=''){
-
-  runid <- paste(runname, runtype, trait, index, sep='')
-  run.ids <<- c(run.ids, runid)
-  config.file.name <- paste(outdir, '/c.', runid, sep='')
-  return(config.file.name)
+#returns an id representing a model run
+#for use in model input files and indices
+get.run.id <- function(run.name, run.type, index, trait=''){
+  return(paste(run.name, run.type, trait, index, sep=''))
 }
-
-
-write.ensemble.configs <- function(pft, ensembleSize, samples, runname, outdir){
-  browser()
-  traits <- names(samples)
-  sample.ensemble <- matrix(nrow = ensembleSize, ncol = length(traits))
-  colnames(sample.ensemble) <- traits
-
-  haltonSamples <- halton(n = ensembleSize, dim=length(traits))
-  colnames(haltonSamples) <- traits
-
-  for(ensembleId in 1:ensembleSize) {
-    xml <- pft$PFT
-    for (trait in traits) {
-      sample <- quantile(samples[[trait]], haltonSamples[ensembleId, trait])
-      xml <- append.xmlNode(xml, xmlNode(trait, sample))
-      sample.ensemble[ensembleId, trait] <- sample
-    }
-    xml <- append.xmlNode(pft$CONFIG, xml)
-    file <- config.file.name(outdir, runname, 'ENS', lef.pad.zeros(ensembleId, log10(ensembleSize)+1))
-    print(file)
-    saveXML(xml, file = file, indent=TRUE, prefix = PREFIX_XML)
-  }
-  return(sample.ensemble)
+#returns a standardized name for a model input file
+get.file.name <- function(outdir, run.id){
+  return(paste(outdir,'/c.',run.id,sep=''))
 }
-
-write.sa.configs <- function(pft, Quantile.samples, runname, outdir){
-  traits <- names(Quantile.samples)
-  xml.median <- pft$PFT
+#Writes an xml based input file for use with the Ecological Demography model.
+#Requires a pft object, a list of trait values for a *single* model run,
+#and the name of the file to create
+write.config.ED <- function(pft, trait.samples, file.name){
+  traits <- names(trait.samples)
+  xml <- pft$PFT
   for (trait in traits) {
-    QuantilesStr <- names(Quantile.samples[[trait]])
-    median.i <- 0.5
-    xml.median <- append.xmlNode(xml.median, xmlNode(trait, Quantile.samples[[trait]][median.i]))
-    for(QuantileStr in QuantilesStr) {
-      Quantile <- as.numeric(gsub('\\%', '',QuantileStr))/100
-      if (!is.na(Quantile) && Quantile != median.i) {
-        xml.i <- append.xmlNode(pft$PFT, xmlNode(trait, Quantile.samples[[trait]][QuantileStr])) 
-        for (otherTrait in traits[which(traits!=trait)]) {
-          xml.i <- append.xmlNode(xml.i, xmlNode(otherTrait, Quantile.samples[[otherTrait]][median.i]))
-        }
-        xml.i <- append.xmlNode(pft$CONFIG, xml.i)
-        file <- config.file.name(outdir, 'SA', runname, round(Quantile,3), trait)
-        print(file)
-        saveXML(xml.i, file=file, indent=TRUE, prefix = PREFIX_XML)
+    xml <- append.xmlNode(xml, xmlNode(trait, trait.samples[trait]))
+  }
+  xml <- append.xmlNode(pft$CONFIG, xml)
+  saveXML(xml, file = file.name, indent=TRUE, prefix = PREFIX_XML)
+}
+
+
+##### Ensemble functions #####
+#Returns a matrix of pseudo random values assigned to traits over several model runs.
+#given the number of model runs and a list of sample distributions for traits
+#The model run is indexed first by model run, then by trait
+get.ensemble.samples <- function(ensemble.size, samples) {
+  halton.samples <- halton(n = ensemble.size, dim=length(samples))
+
+  ensemble.samples <- matrix(nrow = ensemble.size, ncol = length(samples))
+  colnames(ensemble.samples) <- names(samples)
+  for(ensemble.id in 1:ensemble.size) {
+    for(trait.i in seq(samples)) {
+      ensemble.samples[ensemble.id, trait.i] <- 
+        quantile(samples[[trait.i]], halton.samples[ensemble.id, trait.i])
+    }
+  }
+  return(ensemble.samples)
+}
+#Writes config files for use in meta-analysis and returns a list of run ids.
+#Given a pft object, a list of lists as supplied by get.sa.samples, 
+#a name to distinguish the output files, and the directory to place the files.
+write.ensemble.configs <- function(pft, ensemble.samples, run.name, outdir,
+    write.config = write.config.ED){
+  ensemble.digits <- log10(nrow(ensemble.samples))+1
+  run.ids<-list()
+  for(ensemble.id in 1:nrow(ensemble.samples)) {
+    run.id <- get.run.id(run.name, 'ENS', left.pad.zeros(ensemble.id, ensemble.digits))
+    run.ids <- append(run.ids, run.id)
+    file.name <- get.file.name(outdir, run.id)
+    write.config(pft, ensemble.samples[ensemble.id,], file.name)
+    run.ids<-append(run.ids, file.name)
+    print(file.name)
+  }
+  return(run.ids)
+}
+
+
+##### Sensitivity analysis functions #####
+#Returns a vector of quantiles specified by a given <quantiles> xml tag
+get.quantiles <- function(quantiles.tag) {
+  quantiles<-vector()
+  if (!is.null(quantiles.tag$quantile)) {
+    quantiles <- as.numeric(quantiles.tag[names(quantiles.tag)=='quantile'])
+  }
+  if (!is.null(quantiles.tag$sigma)){
+    sigmas <- as.numeric(quantiles.tag[names(quantiles.tag)=='sigma'])
+    quantiles <- append(quantiles, pnorm(1-sigma))
+  }
+  if (length(quantiles) == 0) {
+    quantiles <- 1-pnorm(-3:3) #default
+  }
+  if (!0.5 %in% quantiles) {
+    quantiles <- append(quantiles, 0.5)
+  }
+  return(sort(quantiles))
+}
+#Returns a list of lists representing quantile values of trait distributions,
+#given a list of sample distributions for traits and a list of quantiles
+#The list is indexed first by trait, then by quantile
+get.sa.samples <- function(samples, quantiles){
+  return(lapply(names(samples), 
+      function(trait) quantile(samples[[trait]], quantiles)))
+}
+#Writes config files for use in sensitivity analysis, and returns a list of run ids.
+#Given a pft object, a list of lists as supplied by get.sa.samples, 
+#a name to distinguish the output files, and the directory to place the files.
+write.sa.configs <- function(pft, quantile.samples, runname, outdir,
+    write.config=write.config.ED){
+  MEDIAN <- '50%'
+  traits <- names(quantile.samples)
+  
+  median.samples <- lapply(traits, 
+      function(trait) quantile.samples[[trait]][MEDIAN])
+  names(median.samples) <- traits
+  run.id <- get.run.id(run.name, 'SA', 'median')
+  file.name <- get.file.name(outdir, run.id)
+  write.config(pft, median.samples, file.name)
+  print(file.name)
+
+  run.ids <- list(run.id)
+  for (trait in traits) {
+    quantiles.str <- names(quantile.samples[[trait]])
+    for(quantile.str in quantiles.str) {
+      if (quantile.str != MEDIAN) {
+        quantile <- as.numeric(gsub('\\%', '',quantile.str))/100
+        trait.samples <- median.samples
+        trait.samples[trait] <- quantile.samples[[trait]][quantile.str]
+        run.id <- get.run.id(run.name, 'SA', round(quantile,3), trait)
+        file.name <- get.file.name(outdir, run.id)
+        write.config(pft, trait.samples, get.file.name(outdir, run.id))
+        print(file.name)
+        run.ids <- append(run.ids, run.id)
       }
     }
   }
-  xml.median <- append.xmlNode(pft$CONFIG, xml.median)
-  file <- config.file.name(outdir, 'SA', runname, 'median')
-  print(file)
-  saveXML(xml.median, file=file, indent=TRUE, prefix = PREFIX_XML)
+  return(run.ids)
 }
 

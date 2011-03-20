@@ -7,12 +7,16 @@
   <pft>
      <name>tundra.evergreen</name>
      <outdir>~/pecan/out/</outdir>
+     <priors>
+       <prior>leaf_turnover_rate</prior>
+       <prior>SLA</prior>
+     </priors>
   </pft>
   <pft>
      <name>tundra.deciduous</name>
      <outdir>~/pecan/out/</outdir>
      <priors>
-       <prior>leaf_turnover_rate<prior>
+       <prior>quantum_efficiency</prior>
        <prior>SLA</prior>
      </priors>
   </pft>
