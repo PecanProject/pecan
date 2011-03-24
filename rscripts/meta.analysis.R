@@ -35,7 +35,7 @@ if(settings$database$location == 'localhost'){
 }
 
 ## identify pfts
-pft.name <- sapply(settings['pfts']$pft, function(x)x$name)
+pft.name <- settings[['pfts']]$pft.name
 npft   <- length(pft.name)
 if(npft < 1 | is.null(npft)) stop('no PFT specified')
 mtemp <- matrix(NA,n.trait,npft)
@@ -44,18 +44,21 @@ colnames(mtemp) <- pft.name
 pft.summary <- list(mean = mtemp,sd=mtemp,n=mtemp)
 
 ### loop over pfts
-for( i in 1:length(pft.name)){
+for( i in 1:npft){
 
-  pft    <- settings[['pfts']][[i]]$name
-  outdir <- settings[['pfts']][[i]]$outdir
+  ##hack for dlebauer
+  pft <- settings[['pfts']]['name',][[1]]
+  outdir <- settings[['pfts']]['outdir',][[1]]
+#  pft    <- settings[['pfts']][[i]]$name
+#  outdir <- settings[['pfts']][[i]]$outdir
   
   ## 1. get species list based on pft
   spstr <- query.bety.pft_species(pft,con=con)
   
   ## 2. get priors available for pft  
-  prior.data <- query.bety.priors(pft, trstr,out=outdir,con=con)
-  print(prior.data)
-  priors <- rownames(prior.data) # vector of variables with prior distributions for pft 
+  prior.distns <- query.bety.priors(pft, trstr,out=outdir,con=con)
+  print(prior.distns)
+  priors <- rownames(prior.distns) # vector of variables with prior distributions for pft 
   prior.defs <- trait.dictionary(priors)
   save(prior.defs, file = paste(outdir, '/prior.defs.Rdata', sep=''))
   
@@ -77,33 +80,38 @@ for( i in 1:length(pft.name)){
   save(trait.data, file = paste(outdir, '/trait.data.Rdata', sep=''))
 
   trait.count <- sapply(trait.data,nrow)
-  trait.average <- sapply(trait.data,function(x){mean(x$Y,na.rm=TRUE)}); names(trait.average)[names(trait.average)=="Vcmax"] = "Vm0"
-  pft.summary$n[match(names(trait.count),trait.name2),i] = trait.count
+  trait.average <- sapply(trait.data,function(x){mean(x$Y,na.rm=TRUE)})
+  names(trait.average)[names(trait.average)=="Vcmax"] <- "Vm0"
+  pft.summary$n[match(names(trait.count),traits), i] <- trait.count
   
-
-  ##prior.variances <- data.frame(var = unlist(t(sapply(1:nrow(prior.data), function(i) with(prior.data[i,], pdf.stats(distn, parama, paramb)))['var',])), row.names = priors)
-  prior.variances = as.data.frame(rep(1,nrow(prior.data)))
-  row.names(prior.variances) = row.names(prior.data)
+  ##prior.variances <- data.frame(var = unlist(t(sapply(1:nrow(prior.distns), function(i) with(prior.distns[i,], pdf.stats(distn, parama, paramb)))['var',])), row.names = priors)
+  prior.variances = as.data.frame(rep(1,nrow(prior.distns)))
+  row.names(prior.variances) = row.names(prior.distns)
   prior.variances[names(trait.average),] = 0.001*trait.average^2 
 
   ## Set gamma distribution prior on
 #  prior.var <- function(x) do.call(pdf.stats, list(x$distn, x$parama, x$paramb))['var']
-#  prior.variances <- data.frame(var = sapply(1:nrow(prior.data), function(i) prior.var(prior.data[i,])),
+#  prior.variances <- data.frame(var = sapply(1:nrow(prior.distns), function(i) prior.var(prior.distns[i,])),
 #                                row.names = priors)
   
   
   taupriors <- list(tauA = 0.01,
-                    tauB = apply(prior.variances, 1, function(x) min(0.01, x)))
-  
-  
+                    tauB = 0.01)
+  ##NOTE: with leaf_width in units of mm instead of m, all parameters are on similar scale
+  ##NOTE: could reinstate this, but I am not sure that we have the correct transformation here
+  ##NOTE: for now, these will be fixed at 0.01
+  ##tauB = apply(prior.variances, 1, function(x) min(0.01, 0.01*x)))
+    
   ## run the meta-analysis
-  trait.mcmc <- pecan.ma(trait.data, prior.data, taupriors, j.iter = ma.iter, settings, outdir)
-  posteriors = approx.posterior(trait.mcmc,priors,trait.data,outdir)
+  trait.mcmc <- pecan.ma(trait.data, prior.distns, taupriors, j.iter = ma.iter, settings, outdir)
+  posteriors = approx.posterior(trait.mcmc,prior.distns,trait.data,outdir)
   save(trait.mcmc, posteriors,file = paste(outdir, '/trait.mcmc.Rdata', sep=''))
 
   trait.stats <- sapply(trait.mcmc,function(x){summary(x)$statistics['beta.o',1:2]})
-  pft.summary$mean[match(colnames(trait.stats),trait.name),i] = trait.stats[1,]
-  pft.summary$sd[match(colnames(trait.stats),trait.name),i] = trait.stats[2,]
+
+  ma.traitnames <- names(trait.mcmc)
+  pft.summary$mean[match(colnames(trait.stats), ma.traitnames),i] <- trait.stats[1, ]
+  pft.summary$sd[match(colnames(trait.stats), ma.traitnames),i] <- trait.stats[2, ]
   
   outfile2 <- paste(outdir, '/pecan.MA.Rdata', sep = '')
   save.image(outfile2)
