@@ -5,12 +5,8 @@
       <name>
 	ebifarm.c4crop
       </name>
-      <outdir>
-	/home/dlebauer/pecan/out/
-      </outdir>
-      <exclude>
-	<parm></parm>
-      </exclude>
+      <dir>
+      </dir>
     </pft>
   </pfts>
   <meta.analysis>

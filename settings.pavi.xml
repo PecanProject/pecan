@@ -6,11 +6,8 @@
 	ebifarm.c4crop
       </name>
       <outdir>
-	/home/dlebauer/pecan/out/
+	/home/dlebauer/pecan/out
       </outdir>
-      <exclude>
-	<parm></parm>
-      </exclude>
     </pft>
   </pfts>
   <meta.analysis>
@@ -33,6 +30,8 @@
       <sigma>2</sigma>
       <sigma>3</sigma>
     </quantiles>
+    <start.year></start.year>
+    <end.year></end.year>
   </sensitivity.analysis>
   <database>
     <userid>ebi_analys_user</userid>
@@ -44,6 +43,8 @@
     <site>
       <lat></lat>
       <lon></lon>
+      <start.date></start.date>
+      <end.date></end.date>
       <met.data.header></met.data.header>
       <hostname></hostname>
       <model.outdir></model.outdir>
