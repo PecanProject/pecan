@@ -35,7 +35,7 @@ if(settings$database$location == 'localhost'){
 }
 
 ## identify pfts
-pft.name <- settings[['pfts']]$pft.name
+pft.name <- settings[['pfts']][,'pft']$name
 npft   <- length(pft.name)
 if(npft < 1 | is.null(npft)) stop('no PFT specified')
 mtemp <- matrix(NA,n.trait,npft)
