@@ -5,7 +5,7 @@ if(interactive()){
   settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
 }
 
-settings.xml <- xmlTreeParse(settings.file)
+settings.xml <- xmlParse(settings.file)
 settings <- xmlToList(settings.xml)
 
 if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
