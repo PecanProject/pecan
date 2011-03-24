@@ -25,7 +25,7 @@ trait.defs <- trait.dictionary(trvec)
 
 save(trait.defs, file = paste(outdir, '/trait.defs.Rdata', sep=''))
 ## now it is time to query the data
-trait.data <- query.bety.traits(spstr,trvec)
+trait.data <- query.bety.traits(spstr,'SLA')
 
 ##
 ## for documentation/ table
@@ -253,11 +253,13 @@ tar zcf saconfigs.tgz c.* \n
 rm c.*\n
 cp saconfigs.tgz saconfigs20101.tgz")
 
+##this is where ed runs are started
 system("cd $PECANHOME\n
 rsync -routi out/saconfigs.tgz ebi-cluster:/home/scratch/dlebauer/pecan/edin/ \n
 ssh -T ebi-cluster < bash/pecan.ed2in.create.sh \n
 ssh -T ebi-cluster < bash/pecan.ed.batchjobs.sh \n
 ")
+
 save(traits, file = 'traits.Rdata')
 save(ens.samps, file = 'ens.samps.Rdata')
 
@@ -308,7 +310,20 @@ colnames(saruns) <- c('trait','runtype', 'runnames')
 
 edoutfiles    <- dir(outdir, full.names = TRUE)      ## grab all files in outdir
 edoutfiles.yr <- edoutfiles[grep("-Y-", edoutfiles)]            ## select annual output
-edoutfiles.mo <- edoutfiles[grep("-E-", edoutfiles)]            ## select annual output
+edoutfiles.mo <- edoutfiles[grep("-E-", edoutfiles)]            ## select monthly output
+
+
+edoutfiles <- NA
+read.output <- function(runname, year, output.variable = 'agb', month = 0, day = 0){
+  if(!is.na(edoutfiles)) {
+    edoutfiles <<- dir(outdir, full.names = TRUE)
+  }
+  if(day == 0 & month == 0) {
+  } else {
+    stop('day / month unimplemented')
+  }
+}
+
 readagb <- function(runname, year) {
   files <- edoutfiles.yr[grep(runname, edoutfiles.yr)]
   file  <- unique(files[grep(year, files)])
@@ -328,19 +343,17 @@ for(i in 1:13){
 }
 
 edout.sa  <- data.frame(saruns,
-                     agb=rowMeans(sapply(yr0:yrf, function(x) sapply(saruns$runname, readagb, x))))
-
-ensnames <- c(paste('priorsamp0',1:M,sep=''), paste('postsamp0',1:M,sep='')) 
-edout.ens <- data.frame(ensnames,
+                        agb=rowMeans(sapply(yr0:yrf, function(x) sapply(saruns$runname, readagb, x))))
+     
+     ensnames <- c(paste('priorsamp0',1:M,sep=''), paste('postsamp0',1:M,sep='')) 
+     edout.ens <- data.frame(ensnames,
                        runtype = c(rep('prior', M), rep('post', M)),
                        agb     = rowMeans(sapply(yr0:yrf, function(x) sapply(ensnames, readagb, x))))  
 
-save(edout.ens, file='out/edout.ens.Rdata')
-save(edout.sa, file='out/edout.sa.Rdata')
-###
-#Plot output
-###
-postmean.f  <- mean(sapply(yr0:yrf, readagb, runname = 'postmean'),na.rm =TRUE)
+     save(edout.ens, file='out/edout.ens.Rdata')
+     save(edout.sa, file='out/edout.sa.Rdata')
+
+     postmean.f  <- mean(sapply(yr0:yrf, readagb, runname = 'postmean'),na.rm =TRUE)
 priormean.f <- mean(sapply(yr0:yrf, readagb, runname = 'priormean'),na.rm =TRUE)
 mean.f <- list(post=postmean.f, prior=priormean.f) 
 save(mean.f, edout.sa, file=paste(pecanout, '/edout.sa.satest.Rdata', sep=''))
@@ -356,7 +369,6 @@ load('out20110119/pecan.MA.Rdata')
 load('out20110119/qpostqprior.Rdata')
 load('out20110119/pecan.samps.Rdata')
 
-
 ###START SPLINES
 qpost.theta <- ldply(qpost)[,-1]
 qprior.theta <- ldply(qprior)[,-1]
@@ -366,7 +378,6 @@ colnames(qprior.theta) <- colnames(qpost.theta)  <- c('lcl45', 'lcl30','lcl15','
 
                                         #run defs from trait.dictionary
 trait.defs <- trait.dictionary(traits)
-
 
 fcls <-   function(trait, runtype){
   tr <- trait.defs$fileid[trait.defs$id == trait]
@@ -397,6 +408,7 @@ prior.mean.theta <- adply(trait.samps[['prior']],2, mean)
 traits <- names(qprior)
 
 satable <- data.frame(var.f.hat = rep(NA,length(traits)),
+                      sd.var.fhat = rep(NA,length(traits)),
                       var.theta = rep(NA,length(traits)),
                       sens      = rep(NA,length(traits)),
                       var.theta = rep(NA,length(traits)),
@@ -412,37 +424,55 @@ splinelines <- list('prior'=list(), 'post'=list())
 splinepoints<- list('prior'=list(), 'post'=list())
 splinefuns  <- list('prior'=list(), 'post'=list())
 
-for(runname in c('prior','post')){
-  for(trait in traits) {
-    x <- qtheta[[runname]][[trait]]
-    y <- qf[[runname]][[trait]]
-    f <- splinefun(x, y, method = "monoH.FC")
-    splinefuns[[runname]][[trait]] <- f 
-    splinepoints[[runname]][[trait]] <- data.frame(x=x,y=y)
-    xpts <- seq(min(x),max(x),length.out=100)
-    splinelines[[runname]][[trait]]  <- data.frame(x=xpts,y=f(xpts))
-    x <- trait.samps[[runname]][,trait]
-    y <- f(x)
-    y[y<0 | is.na(y)] <- 0
-    satable[trait, 'var.f.hat'] <- var(y)
-    satable[trait, 'var.theta'] <- var(x)
-    satable[trait, 'sens']      <- f(mean(x),1)
-    satable[trait, 'mean.theta']<- mean(x)
-    satable[trait, 'mean.f']    <- mean(y)
-    satable[trait, 'var.theta'] <- var(x)
-    satable[trait, 'y95ci']     <- diff(quantile(y, c(0,1)))    
-  }
-  var.f.hat.total <- sum(satable$var.f.hat)
-  satable$per.var <- satable$var.f.hat/var.f.hat.total
-  satable$var     <- satable$var.f.hat
-  satable$cv      <- sqrt(satable$var.theta)/satable$mean.theta
-  vmi <- which(rownames(satable)=='Vm_low_temp')
-  satable$cv[vmi] <- sqrt(satable$var.theta[vmi])/(satable$mean.theta[vmi]+273.15)
-  satable$elas    <- with(satable, sens / (mean.f / mean.theta))
-  satables[[runname]] <- satable
+for(pft in pfts){
+runname <- 'prior'
+
+vd.var.sd <- list()
+for(trait in traits) {
+## sensitivity.analysis <- function(
+##  trait, trait.quantiles, output.quantiles){
+#  qtheta <- trait.quantiles
+#  qf <- output.quantiles
+  x <- qtheta[[runname]][[trait]]
+  y <- qf[[runname]][[trait]]
+  f <- splinefun(x, y, method = "monoH.FC")
+  splinefuns[[runname]][[trait]] <- f 
+  splinepoints[[runname]][[trait]] <- data.frame(x=x,y=y)
+  xpts <- seq(min(x),max(x),length.out=100)
+  splinelines[[runname]][[trait]]  <- data.frame(x=xpts,y=f(xpts))
+  x <- trait.samps[[runname]][,trait]
+  y <- f(x)
+  y[y<0 | is.na(y)] <- 0
+  satable[trait, 'var.f.hat'] <- var(y)
+  satable[trait, 'sd.var.fhat'] <- var(y)^2*(2/(length(y)-1) + kurtosis(y)/length(y))
+  satable[trait, 'var.theta'] <- var(x)
+  satable[trait, 'sens']      <- f(mean(x),1)
+  satable[trait, 'mean.theta']<- mean(x)
+  satable[trait, 'mean.f']    <- mean(y)
+  satable[trait, 'var.theta'] <- var(x)
+  satable[trait, 'y95ci']     <- diff(quantile(y, c(0,1)))    
 }
 
-  
+vd.var.est <- list()
+vd.var.sd  <- list()
+for(trait in traits) {
+  x.ens <- ens.samps[['post']][,trait]
+  f <-  splinefuns[['post']][[trait]]
+  y.ens <- f(x.ens)
+  vd.var.est[[trait]] <- var(y.ens)
+  vd.var.sd[[trait]] <- var(y.ens)^2*(2/499 + kurtosis(y.ens)/500) 
+}
+
+
+
+var.f.hat.total <- sum(satable$var.f.hat)
+satable$per.var <- satable$var.f.hat/var.f.hat.total
+satable$var     <- satable$var.f.hat
+satable$cv      <- sqrt(satable$var.theta)/satable$mean.theta
+vmi <- which(rownames(satable)=='Vm_low_temp')
+satable$cv[vmi] <- sqrt(satable$var.theta[vmi])/(satable$mean.theta[vmi]+273.15)
+satable$elas    <- with(satable, sens / (mean.f / mean.theta))
+satables[[runname]] <- satable
 
 ##start plotting SA plots
 
@@ -592,10 +622,12 @@ base.plot <- ggplot(data) +
 ############
 
 load('out20110119/edout.ens.Rdata')
-
+load('splineens.Rdata')
 
  
-ens <- edout.ens[edout.ens$agb<100 & edout.ens$agb > 0 & !is.na(edout.ens$agb),]
+ens <- edout.ens[!is.na(edout.ens$agb),]
+ensagb <- ens$agb[ens$runtype == 'post']
+ensagb <- append(ensagb, rep(0,500-length(ensagb))
 
 pr.q <- quantile(ens$agb[ens$runtype=='prior'], c(0.05, 0.5, 0.95))
 po.q <- quantile(ens$agb[ens$runtype=='post'], c(0.05, 0.5, 0.95))
@@ -659,8 +691,11 @@ cat(' run ', ' varf ',' varest\n prior ', prior.varf, prior.varest,' \n post ', 
 ## only done for posteriors
 load('ens.samps.Rdata')
 spline.mat <- mapply(do.call, splinefuns[['post']], lapply(as.data.frame(ens.samps[['post']]), list))
-spline.ens <-  sapply(rowSums(po.spline.mat - mean.f[['post']]), function(x) max(0,x+mean.f[['post']]))
+spline.ens <-  sapply(rowSums(spline.mat - mean.f[['post']]), function(x) max(0,x+mean.f[['post']]))
 spline.inout <- data.frame(id = 1:500, ens.samps[['post']], spline.ens)
+
+spline.10kmat <- mapply(do.call, splinefuns[['post']], lapply(as.data.frame(post.samps), list))
+spline.10kens <-  sapply(rowSums(spline.10kmat - mean.f[['post']]), function(x) max(0,x+mean.f[['post']]))
 
 ens.post <- data.frame(id = ens$ensnames, agb = ens$agb)[grep('postsamp', ens$ensname),]
 ens.post$id <- gsub('postsamp0','',ens.post$id)
@@ -747,7 +782,7 @@ arrows(y$n, y$X1,y$n,y$X1+y$X2, angle = 90)
 
 
 ## Trait Pdfs
-load('out/pecan.samps.Rdata')
+load('out20110119/pecan.samps.Rdata')
 load('madata.Rdata')
 load('out/trait.defs.Rdata')
 traits <- colnames(prior.samps)#trait.defs$id
@@ -803,3 +838,15 @@ a <- data.frame(n = c(rep(10, 5), rep(20, 5), rep(40, 5), rep(60, 5), rep(125, 4
                   var(agb[1:125]), var(agb[126:250]), var(agb[251:375]), var(agb[376:500]),  
                   var(agb[1:250]), var(agb[251:500]),
                   var(agb)))
+
+
+### agb estimates from model ensemble, spline ensemble
+load('agb.Rdata')
+agb.m    <- agb$model.ensemble
+agb.s    <- agb$spline.500ens
+agb.s10k <- agb$spline.10kens
+
+## Compare variance estimates using Wilcox' method
+library(WMS)
+comvar(agb[[1]], agb[[3]])
+
