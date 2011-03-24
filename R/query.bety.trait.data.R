@@ -143,9 +143,6 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     data = data[data$canopy_layer >= 0.66,]    
     result <- drop.columns(data, 'canopy_layer')
 
-    #convert from kg leaf / m2 to kg C / m2
-    result[, c('mean','stat')] <- result[, c('mean','stat')] / 0.48 
-
   } else if (trait == 'leaf_turnover_rate'){
 
         
