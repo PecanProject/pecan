@@ -37,6 +37,8 @@ write.config.ED <- function(pft, trait.samples, file.name){
 #The model run is indexed first by model run, then by trait
 get.ensemble.samples <- function(ensemble.size, samples) {
   halton.samples <- halton(n = ensemble.size, dim=length(samples))
+  #force as a matrix in case length(samples)=1
+  halton.samples <- as.matrix(halton.samples)
 
   ensemble.samples <- matrix(nrow = ensemble.size, ncol = length(samples))
   colnames(ensemble.samples) <- names(samples)
