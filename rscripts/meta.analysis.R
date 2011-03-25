@@ -1,6 +1,6 @@
 library(XML)
 if(interactive()){
-  settings.file <- '/home/mdietze/pecan/tests/settings.bartlett.xml'
+  settings.file <- '/home/dlebauer/pecan/tests/settings.pavi.xml'
 } else {
   settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
 }
