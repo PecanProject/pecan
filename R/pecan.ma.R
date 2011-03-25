@@ -59,7 +59,7 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
     writeLines(paste('starting meta-analysis for:\n\n', trait.name,'\n'))
     
     data <- trait.data[[trait.name]]
-    data <- data[, which(!colnames(data) %in% c("cite","trait_id","se"))] ## remove citation and other unneeded columns
+    data <- data[, which(!colnames(data) %in% c("cite","trait_id","se"))] ## remove citation and other unneeded co lumns
     data <- data[order(data$site,data$trt),]#not sure why, but required for JAGS model
 
     ##check for excess missing data
@@ -135,8 +135,8 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
                     trt.n = model.parms[['trt']],
                     site.n= model.parms[['site']],
                     ghs.n = model.parms[['ghs']],
-                    tauA  = taupriors$tauA,
-                    tauB  = taupriors$tauB)
+                    tauA  = taupriors$tauB[prior.name],
+                    tauB  = taupriors$tauB[prior.name])
 
     ## overdispersed chains
     j.inits <- function(chain) list("beta.o" = do.call(paste('q',prior$dist,sep=''),
@@ -166,8 +166,7 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
                                 n.iter = j.iter,
                                 thin = max(c(2,j.iter/(5000*2))))
     print(summary(jags.out))
-    summary.jags.out <- summary(jags.out)
-
+    
     jags.out.trunc <- window(jags.out, start = j.iter/2)
  
     mcmc.object[[prior.name]] <- jags.out.trunc

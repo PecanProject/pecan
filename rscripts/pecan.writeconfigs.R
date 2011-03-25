@@ -1,4 +1,19 @@
-library(PECAn, lib.loc = '~/lib/R')
+### LOAD SETTINGS ###
+library(XML)
+if(interactive()){
+  settings.file = '~/pecan/tundra.xml'
+} else {
+  settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
+}
+settings.xml <- xmlTreeParse(settings.file)
+settings <- xmlToList(settings.xml)
+outdir   <- settings$outdir
+
+if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
+library(PECAn)
+
+pftName <- settings$pft$name
+quantiles <- settings$quantiles
 load('out/pecan.MA.Rdata')
 
 
@@ -35,3 +50,4 @@ if(sensitivity_analysis) {
 
   save(quantile.samples, file = "out/quantile.samples.Rdata")
 }
+
