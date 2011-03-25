@@ -1,6 +1,6 @@
 library(XML)
 if(interactive()){
-  settings.file <- '~/pecan/settings.pavi.xml'
+  settings.file <- '/home/mdietze/pecan/tests/settings.bartlett.xml'
 } else {
   settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
 }
@@ -35,7 +35,8 @@ if(settings$database$location == 'localhost'){
 }
 
 ## identify pfts
-pft.name <- settings[['pfts']][,'pft']$name
+pft.name <- unlist(xpathApply(settings.xml, '//pfts//pft//name', xmlValue))
+outdirs <- unlist(xpathApply(settings.xml, '//pfts//pft//outdir', xmlValue))
 npft   <- length(pft.name)
 if(npft < 1 | is.null(npft)) stop('no PFT specified')
 mtemp <- matrix(NA,n.trait,npft)
@@ -47,8 +48,8 @@ pft.summary <- list(mean = mtemp,sd=mtemp,n=mtemp)
 for( i in 1:npft){
 
   ##hack for dlebauer
-  pft <- settings[['pfts']]['name',][[1]]
-  outdir <- settings[['pfts']]['outdir',][[1]]
+  pft <- pft.name[i]
+  outdir <- outdir[i]
 #  pft    <- settings[['pfts']][[i]]$name
 #  outdir <- settings[['pfts']][[i]]$outdir
   
