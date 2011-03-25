@@ -86,7 +86,8 @@ for( i in 1:npft){
   prior.variances = as.data.frame(rep(1,nrow(prior.distns)))
   row.names(prior.variances) = row.names(prior.distns)
   prior.variances[names(trait.average),] = 0.001*trait.average^2 
-
+  prior.variances["seedling_mortality",1] = 1.0
+  
   ## Set gamma distribution prior on
 #  prior.var <- function(x) do.call(pdf.stats, list(x$distn, x$parama, x$paramb))['var']
 #  prior.variances <- data.frame(var = sapply(1:nrow(prior.distns), function(i) prior.var(prior.distns[i,])),
