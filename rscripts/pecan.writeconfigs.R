@@ -1,6 +1,14 @@
 ### LOAD SETTINGS ###
-settings <- settings()
+library(XML)
+if(interactive()){
+  settings.file = '~/pecan/tundra.xml'
+} else {
+  settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
+}
+settings.xml <- xmlTreeParse(settings.file)
+settings <- xmlToList(settings.xml)
 outdir   <- settings$outdir
+
 if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
 library(PECAn)
 quantiles <- settings$sensitivity.analysis$quantiles
