@@ -1,6 +1,6 @@
 library(XML)
 if(interactive()){
-  settings.file <- '~/pecan/tundra.xml'
+  settings.file <- '~/pecan/settings.pavi.xml'
 } else {
   settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
 }
@@ -24,7 +24,7 @@ trstr <- vecpaste(trait.names)
 n.trait = length(trait.names)
 
 ma.iter   = as.numeric(settings$meta.analysis$iter)
-ensemble.size = as.numeric(settings$ensemble)
+ensemble.size = as.numeric(settings$ensemble$size)
 sensitivity.analysis = !is.null(settings$sensitivity.analysis)
 
 
@@ -37,13 +37,13 @@ if(settings$database$location == 'localhost'){
 
 ## identify pfts
 pfts <- settings$pfts
-pft.name <- unlist(xpathApply(settings.xml, '//pfts//pft//name', xmlValue))
+pft.names <- unlist(xpathApply(settings.xml, '//pfts//pft//name', xmlValue))
 npft   <- length(pfts)
 
 if(npft < 1 | is.null(npft)) stop('no PFT specified')
 mtemp <- matrix(NA,n.trait,npft)
 row.names(mtemp) <- trait.names
-colnames(mtemp) <- pft.name
+colnames(mtemp) <- pft.names
 pft.summary <- list(mean = mtemp,sd=mtemp,n=mtemp)
 
 ### loop over pfts
