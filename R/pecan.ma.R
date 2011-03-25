@@ -58,7 +58,7 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings, outdir){
     writeLines(paste('starting meta-analysis for', trait.name))
     
     data <- trait.data[[trait.name]]
-    data <- data[, which(!colnames(data) %in% c("citation_id","trait_id","se"))] ## remove citation column
+    data <- data[, which(!colnames(data) %in% c("citation_id","cite","trait_id","se"))] ## remove citation column
     data <- data[order(data$site,data$trt),]#not sure why, but required for JAGS model
 
     ##check for excess missing data
@@ -66,6 +66,13 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings, outdir){
       writeLines("NO ERROR STATS PROVIDED, DROPPING RANDOM EFFECTS")
       data$site = rep(1,nrow(data))
       data$trt  = rep(0,nrow(data))
+    }
+
+    if(!is.null(settings$meta.analysis$random.effects)){
+      if(!as.logical(settings$meta.analysis$random.effects)){
+        data$site = rep(1,nrow(data))
+        data$trt  = rep(0,nrow(data))
+      }
     }
     
     #print out some data summaries to check
@@ -76,8 +83,6 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings, outdir){
     writeLines(paste(stem(data$Y)))
     if(any(!is.na(data$obs.prec)) && all(!is.infinite(data$obs.prec))){
       writeLines('stem plot of obs.prec:')
-      print(data$obs.prec)
-      print(data$obs.prec^2)
       writeLines(paste(stem(data$obs.prec^2)))
     } else {
       writeLines(paste('no estimates of SD for', trait.name))
@@ -144,7 +149,6 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings, outdir){
     ## TODO set flag to choose overdispersed vs fixed chains
     ##    j.inits <- function(chain) list("beta.o" = mean(data$Y))
 
-    
     tryCatch({
       j.model   <- jags.model (file = jag.model.file,
                                data = data,
@@ -162,8 +166,7 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings, outdir){
                                 n.iter = j.iter,
                                 thin = max(c(2,j.iter/(5000*2))))
     print(summary(jags.out))
-    summary.jags.out <- summary(jags.out)
-
+    
     jags.out.trunc <- window(jags.out, start = j.iter/2)
  
     mcmc.object[[prior.name]] <- jags.out.trunc

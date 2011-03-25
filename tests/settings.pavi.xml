@@ -2,35 +2,20 @@
 <pecan>
   <pfts>
     <pft>
-      <name>tundra.grass</name>
-      <outdir>~/pecan/out/grass/</outdir>
-    </pft>
-    <pft>
-       <name>tundra.evergreen</name>
-       <outdir>~/pecan/out/evergreen/</outdir>
-       <exclude>
-         <trait>c2n_leaf</trait>
-       </exclude>
-    </pft>
-    <pft>
-       <name>tundra.deciduous</name>
-       <outdir>~/pecan/out/deciduous/</outdir>
-       <exclude>
-         <trait>c2n_leaf</trait>
-         <trait>SLA</trait>
-       </exclude>
+      <name>ebifarm.c4crop</name>
+      <outdir>/home/share/tests/pavi/</outdir>
     </pft>
   </pfts>
   <meta.analysis>
-    <iter>50000</iter>
+    <iter>10000</iter>
     <random.effects>TRUE</random.effects>
   </meta.analysis>
   <ensemble>
     <size>100</size>
   </ensemble>
-  <pecanDir>~/pecan/</pecanDir>
-  <Rlibdir>~/lib/R/</Rlibdir>
-  <outdir>~/pecan/out/</outdir>
+  <pecanDir>/home/dlebauer/pecan/</pecanDir>
+  <Rlibdir>/home/dlebauer/lib/R/</Rlibdir>
+  <outdir>/home/share/tests/pavi/</outdir>
   <sensitivity.analysis>
     <quantiles>
       <quantile></quantile>

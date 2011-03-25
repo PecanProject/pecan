@@ -2,9 +2,9 @@
 #' @name query.bety.trait.data
 #'
 #' query.bety.trait.data extracts data from BETYdb for a given trait and species, converts all statistics to 
-#' summary statistics, and prepares a dataframe for use in meta-analyiss.
+#' summary statistics, and prepares a dataframe for use in meta-analysis.
 #' For Vcmax and SLA data, only data collected between  April and July are queried, and only data collected from
-#' the top of the canopy (canopy height > 0.8). For Vcmax and root_respiration_factor, data are scaled
+#' the top of the canopy (canopy height > 0.66). For Vcmax and root_respiration_factor, data are scaled
 #' converted from measurement temperature to \eqn{15^oC} (ED default) via the arrhenius equation.
 #'
 #' @param trait is the trait name used in BETY, stored in variables.name
@@ -82,7 +82,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
  
   if(is.list(con)){
     print("query.bety.trait.data")
-    print("WEB QUERY OF DATABASE NOTE IMPLEMENTED")
+    print("WEB QUERY OF DATABASE NOT IMPLEMENTED")
     return(NULL)
   } 
    
@@ -117,6 +117,20 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     query <- paste("select trt.id, trt.citation_id, trt.site_id, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n from traits as trt left join treatments as treat on (trt.treatment_id = treat.id)  left join sites on (sites.id = trt.site_id) where trt.variable_id in (select id from variables where name = 'SLA')  and specie_id in (",spstr,");", sep = "")
     data <- fetch.transformed(con, query)
 
+    ## convert LMA to SLA
+    selLMA = which(data$vname == "LMA")
+    if(length(selLMA)>0){
+      for(i in selLMA){
+        if(is.na(data$stat[i])){
+          data$mean[i] = 1/data$mean[i]
+        } else {
+          x = 1/rnorm(100000,data$mean[i],data$stat[i])
+          data$mean[i] = mean(x)
+          data$stat[i] = sd(x)
+        }
+      }
+    }
+    
     ## grab covariate data
     q = dbSendQuery(con,paste("select covariates.trait_id, covariates.level,variables.name from covariates left join variables on variables.id = covariates.variable_id where trait_id in (",vecpaste(data$id),")",sep=""))
     covs = fetch(q,n=-1)
@@ -129,9 +143,30 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     data = data[data$canopy_layer >= 0.66,]    
     result <- drop.columns(data, 'canopy_layer')
 
-    #convert from kg leaf / m2 to kg C / m2
-    result[, c('mean','stat')] <- result[, c('mean','stat')] / 0.48 
+  } else if (trait == 'leaf_turnover_rate'){
 
+        
+    #########################    LEAF TURNOVER    ############################
+    query <- paste("select trt.id, trt.citation_id, variables.name as vname, trt.site_id, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n from traits as trt left join treatments as treat on (trt.treatment_id = treat.id)  left join sites on (sites.id = trt.site_id) left join variables on (variables.id = trt.variable_id) where variables.name in ('leaf_turnover_rate','Leaf Longevity') and specie_id in (",spstr,");", sep = "")
+    q    <- dbSendQuery(con, query)
+    data <-  pecan.transformstats(fetch ( q, n = -1 ))
+
+    ## convert LL to turnover
+    selLL = which(data$vname == "Leaf Longevity")
+    if(length(selLL)>0){
+      for(i in selLL){
+        if(is.na(data$stat[i])){
+          data$mean[i] = 1/data$mean[i]
+        } else {
+          x = 1/rnorm(100000,data$mean[i],data$stat[i])
+          data$mean[i] = mean(x)
+          data$stat[i] = sd(x)
+        }
+      }
+    }
+
+    result <- data
+    
   } else if (trait == 'root_respiration_rate') {
 
     #########################  ROOT RESPIRATION   ############################
@@ -164,6 +199,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     ## query Q or FRC_RC
     query <- paste("select traits.citation_id, traits.id, variables.name as vname, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) left join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,")  and variables.name in ('q', 'FRC_RC');", sep = "")
     data <- fetch.transformed(con, query)
+
     ## query fine root biomass and leaf biomass
     query <- paste("select traits.citation_id, traits.id, variables.name as vname, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n, traits.specie_id from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) left join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,")  and variables.name in ('fine_root_biomass','leaf_biomass');", sep = "")
     data2 <- fetch.transformed(con, query)
@@ -218,7 +254,6 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   ## if result is empty, stop run
   if(!exists('result') || nrow(result)==0) stop(paste('no data in database for', trait))
 
-  if (trait == 'leaf_width') result <- transform(result, mean = mean/1000, stat=stat/1000) 
 
   
   ## rename name column from treatment table to trt_id
@@ -238,9 +273,12 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
                     citation_id = citation_id), 
                  select = c('stat', 'n', 'site_id', 'trt_id', 'mean', 'citation_id', 'greenhouse')) 
     
-
-  if(length(data$stat[data$stat <= 0.0]) > 0) {
+  
+  if(length(data$stat[!is.na(data$stat) & data$stat <= 0.0]) > 0) {
+    browser()
     warning(paste('there are implausible values of SE, SE <= 0 in the data and these are set to NA from citation', unique(data$citation_id[which(data$stat >= 0.0)], ' ')))
+    print(data)
+    print(trait)
     data$stat[data$stat <= 0.0] <- NA
   }
   
