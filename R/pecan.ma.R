@@ -135,8 +135,8 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
                     trt.n = model.parms[['trt']],
                     site.n= model.parms[['site']],
                     ghs.n = model.parms[['ghs']],
-                    tauA  = taupriors$tauA,
-                    tauB  = taupriors$tauB)
+                    tauA  = taupriors$tauB[prior.name],
+                    tauB  = taupriors$tauB[prior.name])
 
     ## overdispersed chains
     j.inits <- function(chain) list("beta.o" = do.call(paste('q',prior$dist,sep=''),
