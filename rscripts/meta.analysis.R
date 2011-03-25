@@ -37,6 +37,10 @@ if(settings$database$location == 'localhost'){
 ## identify pfts
 pft.name <- unlist(xpathApply(settings.xml, '//pfts//pft//name', xmlValue))
 outdirs <- unlist(xpathApply(settings.xml, '//pfts//pft//outdir', xmlValue))
+##NOTE: above code only works when name and outdir tags are in-line,
+##NOTE: e.g. <name>foo</name> instead of on separate lines
+##TODO: can replace with sapply(getNodeSet(xml, "//pfts//pft//name"), xpathApply, "normalize-space()") 
+
 npft   <- length(pft.name)
 if(npft < 1 | is.null(npft)) stop('no PFT specified')
 mtemp <- matrix(NA,n.trait,npft)
