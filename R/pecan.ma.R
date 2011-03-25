@@ -58,7 +58,7 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings, outdir){
     writeLines(paste('starting meta-analysis for', trait.name))
     
     data <- trait.data[[trait.name]]
-    data <- data[, which(!colnames(data) %in% c("citation_id","trait_id","se"))] ## remove citation column
+    data <- data[, which(!colnames(data) %in% c("citation_id","cite","trait_id","se"))] ## remove citation column
     data <- data[order(data$site,data$trt),]#not sure why, but required for JAGS model
 
     ##check for excess missing data
@@ -166,8 +166,7 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings, outdir){
                                 n.iter = j.iter,
                                 thin = max(c(2,j.iter/(5000*2))))
     print(summary(jags.out))
-    summary.jags.out <- summary(jags.out)
-
+    
     jags.out.trunc <- window(jags.out, start = j.iter/2)
  
     mcmc.object[[prior.name]] <- jags.out.trunc
