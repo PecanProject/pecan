@@ -3,40 +3,39 @@
   <pfts>
     <pft>
       <name>temperate.Late_Hardwood</name>
-      <outdir>/home/share/tests/temperate/LH/</outdir>
+      <outdir>/home/share/temperate/LH/</outdir>
     </pft>
     <pft>
       <name>temperate.North_Mid_Hardwood</name>
-      <outdir>/home/share/tests/temperate/MH/</outdir>
+      <outdir>/home/share/temperate/MH/</outdir>
     </pft>
     <pft>
       <name>temperate.Early_Hardwood</name>
-      <outdir>/home/share/tests/temperate/EH/</outdir>
+      <outdir>/home/share/temperate/EH/</outdir>
     </pft>
     <pft>
       <name>temperate.Northern_Pine</name>
-      <outdir>/home/share/tests/temperate/NP/</outdir>
+      <outdir>/home/share/temperate/NP/</outdir>
     </pft>
     <pft>
       <name>temperate.Mid_Conifer</name>
-      <outdir>/home/share/tests/temperate/MC/</outdir>
+      <outdir>/home/share/temperate/MC/</outdir>
     </pft>
     <pft>
       <name>temperate.Late_Conifer</name>
-      <outdir>/home/share/tests/temperate/LC/</outdir>
+      <outdir>/home/share/temperate/LC/</outdir>
     </pft>
   </pfts>
   <meta.analysis>
-    <iter>1000</iter>
-    <random.effects>TRUE</random.effects>
+    <iter>10000</iter>
+    <random.effects>FALSE</random.effects>
   </meta.analysis>
   <ensemble>
     <size>20000</size>
   </ensemble>
   <sensitivity.analysis></sensitivity.analysis>
-  <outdir>/home/share/tests/temperate/</outdir>
+  <outdir>/home/share/temperate/</outdir>
   <Rlibdir>~/lib/R</Rlibdir>
-  <incRandomEffects>FALSE</incRandomEffects>
   <database>
     <location>localhost</location>
     <name>ebi_analysis</name>

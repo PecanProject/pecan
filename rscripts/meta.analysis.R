@@ -47,11 +47,8 @@ pft.summary <- list(mean = mtemp,sd=mtemp,n=mtemp)
 ### loop over pfts
 for( i in 1:npft){
 
-  ##hack for dlebauer
   pft <- pft.name[i]
-  outdir <- outdir[i]
-#  pft    <- settings[['pfts']][[i]]$name
-#  outdir <- settings[['pfts']][[i]]$outdir
+  outdir <- outdirs[i]
   
   ## 1. get species list based on pft
   spstr <- query.bety.pft_species(pft,con=con)
@@ -89,7 +86,8 @@ for( i in 1:npft){
   prior.variances = as.data.frame(rep(1,nrow(prior.distns)))
   row.names(prior.variances) = row.names(prior.distns)
   prior.variances[names(trait.average),] = 0.001*trait.average^2 
-
+  prior.variances["seedling_mortality",1] = 1.0
+  
   ## Set gamma distribution prior on
 #  prior.var <- function(x) do.call(pdf.stats, list(x$distn, x$parama, x$paramb))['var']
 #  prior.variances <- data.frame(var = sapply(1:nrow(prior.distns), function(i) prior.var(prior.distns[i,])),
@@ -97,7 +95,7 @@ for( i in 1:npft){
   
   
   taupriors <- list(tauA = 0.01,
-                    tauB = 0.01)
+                    tauB = apply(prior.variances, 1, function(x) min(0.01, x)))
   ##NOTE: with leaf_width in units of mm instead of m, all parameters are on similar scale
   ##NOTE: could reinstate this, but I am not sure that we have the correct transformation here
   ##NOTE: for now, these will be fixed at 0.01
