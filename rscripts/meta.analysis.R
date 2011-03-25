@@ -120,7 +120,11 @@ for( i in 1:npft){
   
 } ## end loop over pfts
 
-outfile2 <- paste(outdir, '/pecan.MA.Rdata', sep = '')
-save.image(outfile2)
 
-save(pft.summary,file=paste(settings$outdir,"pft.summary.RData",sep=""))
+
+save.object(settings)
+save.object(pft.summary)
+
+save.image(paste(outdir, '/pecan.MA.Rdata', sep = ''))##replace with individual objects that are needed in next step
+
+
