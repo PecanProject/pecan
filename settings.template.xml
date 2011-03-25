@@ -2,35 +2,23 @@
 <pecan>
   <pfts>
     <pft>
-      <name>tundra.grass</name>
-      <outdir>~/pecan/out/grass/</outdir>
-    </pft>
-    <pft>
-       <name>tundra.evergreen</name>
-       <outdir>~/pecan/out/evergreen/</outdir>
-       <exclude>
-         <trait>c2n_leaf</trait>
-       </exclude>
-    </pft>
-    <pft>
-       <name>tundra.deciduous</name>
-       <outdir>~/pecan/out/deciduous/</outdir>
-       <exclude>
-         <trait>c2n_leaf</trait>
-         <trait>SLA</trait>
-       </exclude>
+      <name>
+	ebifarm.c4crop
+      </name>
+      <dir>
+      </dir>
     </pft>
   </pfts>
   <meta.analysis>
-    <iter>50000</iter>
-    <random.effects>TRUE</random.effects>
+    <iter>10000</iter>
+    <random.effects>FALSE</random.effects>
   </meta.analysis>
   <ensemble>
     <size>100</size>
   </ensemble>
-  <pecanDir>~/pecan/</pecanDir>
-  <Rlibdir>~/lib/R/</Rlibdir>
-  <outdir>~/pecan/out/</outdir>
+  <pecanDir>/home/dlebauer/pecan/</pecanDir>
+  <Rlibdir>/home/dlebauer/lib/R/</Rlibdir>
+  <outdir>/home/dlebauer/pecan/out/</outdir>
   <sensitivity.analysis>
     <quantiles>
       <quantile></quantile>
@@ -41,8 +29,6 @@
       <sigma>2</sigma>
       <sigma>3</sigma>
     </quantiles>
-    <start.year></start.year>
-    <end.year></end.year>
   </sensitivity.analysis>
   <database>
     <userid>ebi_analys_user</userid>
@@ -54,8 +40,6 @@
     <site>
       <lat></lat>
       <lon></lon>
-      <start.date></start.date>
-      <end.date></end.date>
       <met.data.header></met.data.header>
       <hostname></hostname>
       <model.outdir></model.outdir>

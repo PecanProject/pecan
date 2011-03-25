@@ -1,39 +1,33 @@
-
 library(XML)
 if(interactive()){
-  settings.file = '~/pecan/tundra.xml'
+  settings.file <- '~/pecan/tundra.xml'
 } else {
   settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
 }
 
-settings.xml <- xmlTreeParse(settings.file)
-
+browser()
+settings.xml <- xmlParse(settings.file)
 settings <- xmlToList(settings.xml)
 
 if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
-#pft   <- system("echo $PFT", intern = TRUE)
-#ITER  <- as.numeric(system("echo $ITER", intern = TRUE)) 
-#M     <- as.numeric(system("echo $ENSN", intern = TRUE))
-#outdir   <- system("echo $PECANOUT", intern = TRUE)
-ITER   <- as.numeric(settings$ma_iter)
-M      <- as.numeric(settings$ensemble_size)
+ITER   <- as.numeric(settings$meta.analysis$iter)
+M      <- as.numeric(settings$ensemble$size)
 outdir <- settings$outdir
 ## trstr is a list of the traits that ED can use
 
-trstr <- "'mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','growth_resp_factor','leaf_turnover_rate','leaf_width','nonlocal_dispersal','q','root_respiration_factor','root_turnover_rate','seedling_mortality','SLA','stomatal_slope','Vm_low_temp','quantum_efficiency','f_labile','c2n_leaf','water_conductance','Vm0','r_fract','storage_turnover_rate','agf_bs'" #SLA_gC_per_m2 is converted to SLA in query.bety.priors
-
-trait.name = strsplit(trstr,",")
-trait.name = sub("'","",trait.name[[1]])
-trait.name = sub("'","",trait.name)
-trait.name2 = sub("Vm0","Vcmax",trait.name)
-n.trait = length(trait.name)
-
-ma_iter   = as.numeric(settings$ma_iter)
-ensemble_size = as.numeric(settings$ensemble_size)
-sensitivity_analysis = as.logical(settings$sensitivity_analysis)
-
 
 require(PECAn)
+
+trait.names <- c('mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','growth_resp_factor','leaf_turnover_rate','leaf_width','nonlocal_dispersal','q','root_respiration_factor','root_turnover_rate','seedling_mortality','SLA','stomatal_slope','Vm_low_temp','quantum_efficiency','f_labile','c2n_leaf','water_conductance','Vcmax','r_fract','storage_turnover_rate','agf_bs')
+trstr <- vecpaste(trait.names)
+ 
+n.trait = length(trait.names)
+
+ma.iter   = as.numeric(settings$meta.analysis$iter)
+ensemble.size = as.numeric(settings$ensemble)
+sensitivity.analysis = !is.null(settings$sensitivity.analysis)
+
+
 
 ## connect to database
 con <- settings$database
@@ -41,33 +35,29 @@ if(settings$database$location == 'localhost'){
   con <- query.bety.con(dbname=con$name,password=con$passwd,username=con$userid)
 }
 
-
 ## identify pfts
-pfts   = which(names(settings) == 'pft'); pft.name = sapply(settings[pfts],function(x){x$name})
-npft   = length(pfts);
+pfts <- settings$pfts
+pft.name <- unlist(xpathApply(settings.xml, '//pfts//pft//name', xmlValue))
+npft   <- length(pfts)
 if(npft < 1 | is.null(npft)) stop('no PFT specified')
-mtemp = matrix(NA,n.trait,npft);row.names(mtemp) = trait.name; colnames(mtemp)=pft.name
+mtemp <- matrix(NA,n.trait,npft)
+row.names(mtemp) <- trait.names
+colnames(mtemp) <- pft.name
 pft.summary <- list(mean = mtemp,sd=mtemp,n=mtemp)
 
 ### loop over pfts
-for( i in 1:length(pfts)){
-
-  pft    = settings[[pfts[i]]]$name
-  outdir = settings[[pfts[i]]]$outdir
-  outfile1 <- paste(outdir, '/pecan.parms.Rdata', sep = '')
-  save.image(outfile1)
+for( pft in pfts){
   
   ## 1. get species list based on pft
-  spstr <- query.bety.pft_species(pft,con=con)
+  spstr <- query.bety.pft_species(pft$name,con=con)
   
   ## 2. get priors available for pft  
-  prior.data <- query.bety.priors(pft, trstr,out=outdir,con=con)
-  print(prior.data)
-  if(!is.null(settings[[pfts[i]]]$priors))
-    prior.data <- prior.data[which(rownames(prior.data) %in% settings[[pfts[i]]]$priors),]
-  priors <- rownames(prior.data) # vector of variables with prior distributions for pft 
+  prior.distns <- query.bety.priors(pft$name, trstr,out=pft$outdir,con=con)
+  prior.distns <- prior.distns[which(!rownames(prior.distns) %in% pft$exclude),]
+  print(prior.distns)
+  priors <- rownames(prior.distns) # vector of variables with prior distributions for pft 
   prior.defs <- trait.dictionary(priors)
-  save(prior.defs, file = paste(outdir, '/prior.defs.Rdata', sep=''))
+  save(prior.defs, file = paste(pft$outdir, '/prior.defs.Rdata', sep=''))
   
   ## get traits for pft as a list with one dataframe per variable
   trait.data <- query.bety.traits(spstr,priors,con=con)
@@ -84,38 +74,48 @@ for( i in 1:length(pfts)){
       trait.data[["SLA"]] = trait.data[["SLA"]][-sel,]            
     }
   }
-  
+  save(trait.data, file = paste(pft$outdir, '/trait.data.Rdata', sep=''))
+
   trait.count <- sapply(trait.data,nrow)
-  trait.average <- sapply(trait.data,function(x){mean(x$Y,na.rm=TRUE)}); names(trait.average)[names(trait.average)=="Vcmax"] = "Vm0"
-  pft.summary$n[match(names(trait.count),trait.name2),i] = trait.count
+  trait.average <- sapply(trait.data,function(x){mean(x$Y,na.rm=TRUE)})
+  names(trait.average)[names(trait.average)=="Vcmax"] <- "Vm0"
+  pft.summary$n[match(names(trait.count),traits), pft$name] <- trait.count
   
-
-  ##prior.variances <- data.frame(var = unlist(t(sapply(1:nrow(prior.data), function(i) with(prior.data[i,], pdf.stats(distn, parama, paramb)))['var',])), row.names = priors)
-  prior.variances = as.data.frame(rep(1,nrow(prior.data)))
-  row.names(prior.variances) = row.names(prior.data)
+  ##prior.variances <- data.frame(var = unlist(t(sapply(1:nrow(prior.distns), function(i) with(prior.distns[i,], pdf.stats(distn, parama, paramb)))['var',])), row.names = priors)
+  prior.variances = as.data.frame(rep(1,nrow(prior.distns)))
+  row.names(prior.variances) = row.names(prior.distns)
   prior.variances[names(trait.average),] = 0.001*trait.average^2 
-
+  prior.variances["seedling_mortality",1] = 1.0
+  
   ## Set gamma distribution prior on
 #  prior.var <- function(x) do.call(pdf.stats, list(x$distn, x$parama, x$paramb))['var']
-#  prior.variances <- data.frame(var = sapply(1:nrow(prior.data), function(i) prior.var(prior.data[i,])),
+#  prior.variances <- data.frame(var = sapply(1:nrow(prior.distns), function(i) prior.var(prior.distns[i,])),
 #                                row.names = priors)
   
   
   taupriors <- list(tauA = 0.01,
                     tauB = apply(prior.variances, 1, function(x) min(0.01, x)))
-  
-  
+  ##NOTE: with leaf_width in units of mm instead of m, all parameters are on similar scale
+  ##NOTE: could reinstate this, but I am not sure that we have the correct transformation here
+  ##NOTE: for now, these will be fixed at 0.01
+  ##tauB = apply(prior.variances, 1, function(x) min(0.01, 0.01*x)))
+    
   ## run the meta-analysis
-  trait.mcmc <- pecan.ma(trait.data, prior.data, taupriors, j.iter = ma_iter, settings, outdir)
-  trait.stats <- sapply(trait.mcmc,function(x){summary(x)$statistics['beta.o',1:2]})
-  pft.summary$mean[match(colnames(trait.stats),trait.name),i] = trait.stats[1,]
-  pft.summary$sd[match(colnames(trait.stats),trait.name),i] = trait.stats[2,]
-  
-  outfile2 <- paste(outdir, '/pecan.MA.Rdata', sep = '')
-  save.image(outfile2)
-  ##save(outdir, file='outdir.Rdata')
+  trait.mcmc <- pecan.ma(trait.data, prior.distns, taupriors, j.iter = ma.iter, settings, pft$outdir)
+  posteriors = approx.posterior(trait.mcmc,prior.distns,trait.data,pft$outdir)
+  save(trait.mcmc, posteriors,file = paste(pft$outdir, '/trait.mcmc.Rdata', sep=''))
 
-  pecan.ma.summary(trait.mcmc, pft,outdir)
+  trait.stats <- sapply(trait.mcmc,function(x){summary(x)$statistics['beta.o',1:2]})
+
+  ma.traitnames <- names(trait.mcmc)
+  pft.summary$mean[match(colnames(trait.stats), ma.traitnames),pft$name] <- trait.stats[1, ]
+  pft.summary$sd[match(colnames(trait.stats), ma.traitnames),pft$name] <- trait.stats[2, ]
+  
+  outfile2 <- paste(pft$outdir, '/pecan.MA.Rdata', sep = '')
+  save.image(outfile2)
+  ##save(pft$outdir, file='outdir.Rdata')
+
+  pecan.ma.summary(trait.mcmc, pft$name,pft$outdir)
   
 } ## end loop over pfts
 
