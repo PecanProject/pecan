@@ -30,7 +30,7 @@ approx.posterior <- function(trait.mcmc,priors,trait.data=NULL,outdir=NULL){
     }
     
     ## first determine the candidate set of models based on any range restrictions
-    zerobound = c("exp","gamma","lnorm","weibull")
+    zerobound = c("exp","gamma","lnorm")#,"weibull")
     if(pdist %in% "beta"){
       fit = fitdistr(dat,"beta",list(shape1=1,shape2=1))
       if(do.plot){
@@ -50,8 +50,8 @@ approx.posterior <- function(trait.mcmc,priors,trait.data=NULL,outdir=NULL){
 #      fit[[2]] = fitdistr(dat,"f",list(df1=10,df2=2*mean(dat)/(max(mean(dat)-1,1))))
       fit[[2]] = fitdistr(dat,"gamma")
       fit[[3]] = fitdistr(dat,"lognormal")
-      fit[[4]] = fitdistr(dat,"weibull")
-      fit[[5]] = fitdistr(dat,"normal")
+#      fit[[4]] = fitdistr(dat,"weibull")
+      fit[[4]] = fitdistr(dat,"normal")
       fparm <- lapply(fit,function(x){as.numeric(x$estimate)})
       fAIC  <- lapply(fit,function(x){AIC(x)})
       

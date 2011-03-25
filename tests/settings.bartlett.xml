@@ -27,8 +27,8 @@
     </pft>
   </pfts>
   <meta.analysis>
-    <iter>1000</iter>
-    <random.effects>TRUE</random.effects>
+    <iter>10000</iter>
+    <random.effects>FALSE</random.effects>
   </meta.analysis>
   <ensemble>
     <size>20000</size>
@@ -36,7 +36,6 @@
   <sensitivity.analysis></sensitivity.analysis>
   <outdir>/home/share/tests/temperate/</outdir>
   <Rlibdir>~/lib/R</Rlibdir>
-  <incRandomEffects>FALSE</incRandomEffects>
   <database>
     <location>localhost</location>
     <name>ebi_analysis</name>
