@@ -166,8 +166,7 @@ pecan.ma <- function(trait.data, priors, taupriors, j.iter, settings, outdir){
                                 n.iter = j.iter,
                                 thin = max(c(2,j.iter/(5000*2))))
     print(summary(jags.out))
-    summary.jags.out <- summary(jags.out)
-
+    
     jags.out.trunc <- window(jags.out, start = j.iter/2)
  
     mcmc.object[[prior.name]] <- jags.out.trunc
