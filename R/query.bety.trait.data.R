@@ -2,9 +2,9 @@
 #' @name query.bety.trait.data
 #'
 #' query.bety.trait.data extracts data from BETYdb for a given trait and species, converts all statistics to 
-#' summary statistics, and prepares a dataframe for use in meta-analyiss.
+#' summary statistics, and prepares a dataframe for use in meta-analysis.
 #' For Vcmax and SLA data, only data collected between  April and July are queried, and only data collected from
-#' the top of the canopy (canopy height > 0.8). For Vcmax and root_respiration_factor, data are scaled
+#' the top of the canopy (canopy height > 0.66). For Vcmax and root_respiration_factor, data are scaled
 #' converted from measurement temperature to \eqn{15^oC} (ED default) via the arrhenius equation.
 #'
 #' @param trait is the trait name used in BETY, stored in variables.name
@@ -82,7 +82,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
  
   if(is.list(con)){
     print("query.bety.trait.data")
-    print("WEB QUERY OF DATABASE NOTE IMPLEMENTED")
+    print("WEB QUERY OF DATABASE NOT IMPLEMENTED")
     return(NULL)
   } 
    
@@ -142,9 +142,6 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     ## select sunleaf data
     data = data[data$canopy_layer >= 0.66,]    
     result <- drop.columns(data, 'canopy_layer')
-
-    #convert from kg leaf / m2 to kg C / m2
-    result[, c('mean','stat')] <- result[, c('mean','stat')] / 0.48 
 
   } else if (trait == 'leaf_turnover_rate'){
 
@@ -257,7 +254,6 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   ## if result is empty, stop run
   if(!exists('result') || nrow(result)==0) stop(paste('no data in database for', trait))
 
-  if (trait == 'leaf_width') result <- transform(result, mean = mean/1000, stat=stat/1000) 
 
   
   ## rename name column from treatment table to trt_id
@@ -277,9 +273,12 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
                     citation_id = citation_id), 
                  select = c('stat', 'n', 'site_id', 'trt_id', 'mean', 'citation_id', 'greenhouse')) 
     
-
-  if(length(data$stat[data$stat <= 0.0]) > 0) {
+  
+  if(length(data$stat[!is.na(data$stat) & data$stat <= 0.0]) > 0) {
+    browser()
     warning(paste('there are implausible values of SE, SE <= 0 in the data and these are set to NA from citation', unique(data$citation_id[which(data$stat >= 0.0)], ' ')))
+    print(data)
+    print(trait)
     data$stat[data$stat <= 0.0] <- NA
   }
   

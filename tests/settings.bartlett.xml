@@ -1,41 +1,46 @@
 <?xml version="1.0"?>
 <pecan>
-  <pft>
-     <name>temperate.Late_Hardwood</name>
-     <outdir>/home/share/temperate/LH/</outdir>
-  </pft>
-  <pft>
-     <name>temperate.North_Mid_Hardwood</name>
-     <outdir>/home/share/temperate/MH/</outdir>
-  </pft>
-  <pft>
-     <name>temperate.Early_Hardwood</name>
-     <outdir>/home/share/temperate/EH/</outdir>
-  </pft>
-  <pft>
-     <name>temperate.Northern_Pine</name>
-     <outdir>/home/share/temperate/NP/</outdir>
-  </pft>
-  <pft>
-     <name>temperate.Mid_Conifer</name>
-     <outdir>/home/share/temperate/MC/</outdir>
-  </pft>
-  <pft>
-     <name>temperate.Late_Conifer</name>
-     <outdir>/home/share/temperate/LC/</outdir>
-  </pft>
-  <ma_iter>20000</ma_iter>
-  <ensemble_size>0</ensemble_size>
-  <sensitivity_analysis>TRUE</sensitivity_analysis>
+  <pfts>
+    <pft>
+      <name>temperate.Late_Hardwood</name>
+      <outdir>/home/share/temperate/LH/</outdir>
+    </pft>
+    <pft>
+      <name>temperate.North_Mid_Hardwood</name>
+      <outdir>/home/share/temperate/MH/</outdir>
+    </pft>
+    <pft>
+      <name>temperate.Early_Hardwood</name>
+      <outdir>/home/share/temperate/EH/</outdir>
+    </pft>
+    <pft>
+      <name>temperate.Northern_Pine</name>
+      <outdir>/home/share/temperate/NP/</outdir>
+    </pft>
+    <pft>
+      <name>temperate.Mid_Conifer</name>
+      <outdir>/home/share/temperate/MC/</outdir>
+    </pft>
+    <pft>
+      <name>temperate.Late_Conifer</name>
+      <outdir>/home/share/temperate/LC/</outdir>
+    </pft>
+  </pfts>
+  <meta.analysis>
+    <iter>10000</iter>
+    <random.effects>FALSE</random.effects>
+  </meta.analysis>
+  <ensemble>
+    <size>20000</size>
+  </ensemble>
+  <sensitivity.analysis></sensitivity.analysis>
   <outdir>/home/share/temperate/</outdir>
-  <Rlib>~/lib/R</Rlib>
-  <incRandomEffects>FALSE</incRandomEffects>
+  <Rlibdir>~/lib/R</Rlibdir>
   <database>
     <location>localhost</location>
-    <name>ebi_production</name>
+    <name>ebi_analysis</name>
     <userid>mdietze</userid>
     <passwd>goillini</passwd>
   </database>
   <pecanDir>~/pecan/</pecanDir>  
-  <sensitivity_analysis>FALSE</sensitivity_analysis>
 </pecan>

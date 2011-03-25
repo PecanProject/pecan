@@ -3,7 +3,7 @@
   <pfts>
     <pft>
       <name>ebifarm.c4crop</name>
-      <outdir>/home/dlebauer/pecan/out</outdir>
+      <outdir>/home/share/tests/pavi/</outdir>
     </pft>
   </pfts>
   <meta.analysis>
@@ -15,7 +15,7 @@
   </ensemble>
   <pecanDir>/home/dlebauer/pecan/</pecanDir>
   <Rlibdir>/home/dlebauer/lib/R/</Rlibdir>
-  <outdir>/home/dlebauer/pecan/out/</outdir>
+  <outdir>/home/share/tests/pavi/</outdir>
   <sensitivity.analysis>
     <quantiles>
       <quantile></quantile>
