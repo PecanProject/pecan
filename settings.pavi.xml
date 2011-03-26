@@ -3,11 +3,11 @@
   <pfts>
     <pft>
       <name>ebifarm.c4crop</name>
-      <outdir>/home/dlebauer/pecan/out</outdir>
+      <outdir>/home/dlebauer/pecan/out/</outdir>
     </pft>
   </pfts>
   <meta.analysis>
-    <iter>10000</iter>
+    <iter>50000</iter>
     <random.effects>TRUE</random.effects>
   </meta.analysis>
   <ensemble>
