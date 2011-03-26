@@ -5,7 +5,6 @@ if(interactive()){
   settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
 }
 
-browser()
 settings.xml <- xmlParse(settings.file)
 settings <- xmlToList(settings.xml)
 
@@ -24,7 +23,7 @@ trstr <- vecpaste(trait.names)
 n.trait = length(trait.names)
 
 ma.iter   = as.numeric(settings$meta.analysis$iter)
-ensemble.size = as.numeric(settings$ensemble)
+ensemble.size = as.numeric(settings$ensemble$size)
 sensitivity.analysis = !is.null(settings$sensitivity.analysis)
 
 
@@ -37,12 +36,13 @@ if(settings$database$location == 'localhost'){
 
 ## identify pfts
 pfts <- settings$pfts
-pft.name <- unlist(xpathApply(settings.xml, '//pfts//pft//name', xmlValue))
+pft.names <- unlist(xpathApply(settings.xml, '//pfts//pft//name', xmlValue))
 npft   <- length(pfts)
+
 if(npft < 1 | is.null(npft)) stop('no PFT specified')
 mtemp <- matrix(NA,n.trait,npft)
 row.names(mtemp) <- trait.names
-colnames(mtemp) <- pft.name
+colnames(mtemp) <- pft.names
 pft.summary <- list(mean = mtemp,sd=mtemp,n=mtemp)
 
 ### loop over pfts
@@ -58,7 +58,7 @@ for( pft in pfts){
   priors <- rownames(prior.distns) # vector of variables with prior distributions for pft 
   prior.defs <- trait.dictionary(priors)
   save(prior.defs, file = paste(pft$outdir, '/prior.defs.Rdata', sep=''))
-  
+  browser()
   ## get traits for pft as a list with one dataframe per variable
   trait.data <- query.bety.traits(spstr,priors,con=con)
   traits <- names(trait.data)
@@ -111,9 +111,8 @@ for( pft in pfts){
   pft.summary$mean[match(colnames(trait.stats), ma.traitnames),pft$name] <- trait.stats[1, ]
   pft.summary$sd[match(colnames(trait.stats), ma.traitnames),pft$name] <- trait.stats[2, ]
   
-  outfile2 <- paste(pft$outdir, '/pecan.MA.Rdata', sep = '')
-  save.image(outfile2)
-  ##save(pft$outdir, file='outdir.Rdata')
+  save(trait.mcmc, file=paste(pft$outdir, '/trait.mcmc.Rdata', sep = ''))
+  save(prior.distns, file=paste(pft$outdir, '/prior.distns.Rdata', sep = ''))
 
   pecan.ma.summary(trait.mcmc, pft$name,pft$outdir)
   
