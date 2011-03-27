@@ -10,7 +10,7 @@ left.pad.zeros <- function(num, digits){
 }
 #returns an id representing a model run
 #for use in model input files and indices
-get.run.id <- function(run.type, index, trait='', pft.name){
+get.run.id <- function(run.type, index, trait='', pft.name=''){
   return(paste(pft.name, run.type, trait, index, sep=''))
 }
 #returns a standardized name for a model input file
@@ -29,6 +29,27 @@ write.config.ED <- function(pft.xml, trait.samples, file.name){
   xml <- append.xmlNode(pft.xml$CONFIG, xml)
   saveXML(xml, file = file.name, indent=TRUE, prefix = PREFIX_XML)
 }
+#Performs model specific unit conversions on a a list of trait values,
+#such as those provided to write.config
+convert.samples.ED <- function(trait.samples){
+  DEFAULT.LEAF.C <- 0.48
+  ## convert SLA from kg leaf / m2 to kg C / m2
+  if('SLA' %in% names(trait.samples)){
+    if('leafC' %in% names(trait.samples))
+      trait.samples[['SLA']] <- trait.samples[['SLA']] * trait.samples[['leafC']]
+    else
+      trait.samples[['SLA']] <- trait.samples[['SLA']] * DEFAULT.LEAF.C
+  }
+
+  ## convert leaf width / 1000
+  if('leaf_width' %in% names(trait.samples)){
+    trait.samples[['leaf_width']] <- trait.samples[['leaf_width']] / 1000.0
+  }
+
+  ## TODO: result[, c('mean','stat')] <- result[, c('mean','stat')] / 0.48 
+  
+  return(trait.samples)
+}
 
 
 ##### Ensemble functions #####
@@ -36,6 +57,8 @@ write.config.ED <- function(pft.xml, trait.samples, file.name){
 #given the number of model runs and a list of sample distributions for traits
 #The model run is indexed first by model run, then by trait
 get.ensemble.samples <- function(ensemble.size, samples) {
+  #force as numeric for compatibility with Fortran code in halton()
+  ensemble.size <- as.numeric(ensemble.size)
   halton.samples <- halton(n = ensemble.size, dim=length(samples))
   #force as a matrix in case length(samples)=1
   halton.samples <- as.matrix(halton.samples)
@@ -53,15 +76,16 @@ get.ensemble.samples <- function(ensemble.size, samples) {
 #Writes config files for use in meta-analysis and returns a list of run ids.
 #Given a pft.xml object, a list of lists as supplied by get.sa.samples, 
 #a name to distinguish the output files, and the directory to place the files.
-write.ensemble.configs <- function(pft.xml, ensemble.samples, outdir, pft.name,
-    write.config = write.config.ED){
+write.ensemble.configs <- function(pft.xml, ensemble.samples, outdir, pft.name='',
+    write.config = write.config.ED, convert.samples=convert.samples.ED){
   ensemble.digits <- log10(nrow(ensemble.samples))+1
   run.ids<-list()
   for(ensemble.id in 1:nrow(ensemble.samples)) {
-    run.id <- get.run.id(pft.name, 'ENS', left.pad.zeros(ensemble.id, ensemble.digits))
+    run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, ensemble.digits), 
+                         pft.name=pft.name)
     run.ids <- append(run.ids, run.id)
     file.name <- get.file.name(outdir, run.id)
-    write.config(pft.xml, ensemble.samples[ensemble.id,], file.name)
+    write.config(pft.xml, convert.samples(ensemble.samples[ensemble.id,]), file.name)
     run.ids<-append(run.ids, file.name)
     print(file.name)
   }
@@ -78,7 +102,7 @@ get.quantiles <- function(quantiles.tag) {
   }
   if (!is.null(quantiles.tag$sigma)){
     sigmas <- as.numeric(quantiles.tag[names(quantiles.tag)=='sigma'])
-    quantiles <- append(quantiles, pnorm(1-sigma))
+    quantiles <- append(quantiles, pnorm(1-sigmas))
   }
   if (length(quantiles) == 0) {
     quantiles <- 1-pnorm(-3:3) #default
@@ -92,23 +116,24 @@ get.quantiles <- function(quantiles.tag) {
 #given a list of sample distributions for traits and a list of quantiles
 #The list is indexed first by trait, then by quantile
 get.sa.samples <- function(samples, quantiles){
-  return(lapply(names(samples), 
-      function(trait) quantile(samples[[trait]], quantiles)))
+  sa.samples <- lapply(names(samples), function(trait) quantile(samples[[trait]], quantiles))
+  names(sa.samples) <- names(samples)
+  return(sa.samples)
 }
 #Writes config files for use in sensitivity analysis, and returns a list of run ids.
 #Given a pft.xml object, a list of lists as supplied by get.sa.samples, 
 #a name to distinguish the output files, and the directory to place the files.
-write.sa.configs <- function(pft.xml, quantile.samples, outdir, pft.name,
-                             write.config=write.config.ED){
+write.sa.configs <- function(pft.xml, quantile.samples, outdir, pft.name='',
+                             write.config=write.config.ED, convert.samples=convert.samples.ED){
   MEDIAN <- '50%'
   traits <- names(quantile.samples)
   
   median.samples <- lapply(traits, 
-      function(trait) quantile.samples[[trait]][MEDIAN])
+      function(trait) quantile.samples[[trait]][[MEDIAN]])
   names(median.samples) <- traits
-  run.id <- get.run.id(pft.name, 'SA', 'median')
+  run.id <- get.run.id('SA', 'median', pft.name=pft.name)
   file.name <- get.file.name(outdir, run.id)
-  write.config(pft.xml, median.samples, file.name)
+  write.config(pft.xml, convert.samples(median.samples), file.name)
   print(file.name)
 
   run.ids <- list(run.id)
@@ -119,9 +144,9 @@ write.sa.configs <- function(pft.xml, quantile.samples, outdir, pft.name,
         quantile <- as.numeric(gsub('\\%', '',quantile.str))/100
         trait.samples <- median.samples
         trait.samples[trait] <- quantile.samples[[trait]][quantile.str]
-        run.id <- get.run.id(pft.name, 'SA', round(quantile,3), trait)
+        run.id <- get.run.id('SA', round(quantile,3), trait=trait, pft.name=pft.name)
         file.name <- get.file.name(outdir, run.id)
-        write.config(pft.xml, trait.samples, get.file.name(outdir, run.id))
+        write.config(pft.xml, convert.samples(trait.samples), get.file.name(outdir, run.id))
         print(file.name)
         run.ids <- append(run.ids, run.id)
       }

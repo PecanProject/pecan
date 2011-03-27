@@ -1,49 +1,34 @@
-EDIN="/home/scratch/$USER/pecan/edin"
-cd $EDIN
-tar -zxf saconfigs.tgz
-
-DATE=`date +%Y%m%d`
-
-OUTDIR=/home/scratch/$USER/pecan/out$DATE
 EDIN=/home/scratch/$USER/pecan/edin
+DATE=`date +%Y%m%d`
+OUTDIR=/home/scratch/pecan/$USER/out$DATE
+ED_RUN=$HOME/EDBRAMS/ED/run
+
 echo $DATE > $EDIN/DATE
-if [ ! -d $OUTDIR ] # if [output directory] does not exist 
-then
-    mkdir $OUTDIR   # make new directory
-fi
+
+# make new directory
+mkdir --parents $OUTDIR   
+
+# remove old config and ED2IN files
+rm $ED_RUN/ED2INc*
+rm $EDIN/c.* 
 
 cd $EDIN
-# remove old config and ED2IN files
-for i in ED2IN*
-do 
-    if [ -a $i ] 
-    then rm $i
-    fi
-done
-
-for i in c.p* 
-do 
-    if [ -a $i ] 
-    then rm $i
-    fi
-done
 
 # unzip new config files
 tar -zxf saconfigs.tgz 
-# create new ED2IN file for each config file
-cp aED2IN ED2IN
-sed -i 's/YYYYMMDD/'$DATE'/g' ED2IN
 
+# create new ED2IN file for each config file
 for f in c.*
 do 
-    cp ED2IN ED2IN$f
-    sed -i 's/ENSNAME/'$f'/g' ED2IN$f
-    sed -i 's/USER/'$USER'/g' ED2IN$f
-    sed -i 's/CONFIGFILE/'$f'/g' ED2IN$f
-    sed -i 's/OUTFILE/out'$f'/g' ED2IN$f 
-    sed -i 's/outconfig./out./g' ED2IN$f
-    sed -i 's/HISTFILE/hist'$f'/g' ED2IN$f
-    sed -i 's/histconfig./hist./g' ED2IN$f
+  #Create ED2IN file from template
+  ED2INc=$ED_RUN/ED2IN$f
+  cp aED2IN $ED2INc
+  sed -i 's/YYYYMMDD/'$DATE'/g' $ED2INc
+  sed -i 's/ENSNAME/'$f'/g' $ED2INc
+  sed -i 's/USER/'$USER'/g' $ED2INc
+  sed -i 's/CONFIGFILE/'$f'/g' $ED2INc
+  sed -i 's/OUTFILE/out'$f'/g' $ED2INc
+  sed -i 's/outconfig./out./g' $ED2INc
+  sed -i 's/HISTFILE/hist'$f'/g' $ED2INc
+  sed -i 's/histconfig./hist./g' $ED2INc
 done
-
-rm ED2IN

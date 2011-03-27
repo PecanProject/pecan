@@ -1,5 +1,4 @@
 query.bety.traits <- function(spstr, priors, con = NULL){
-  ## check traits for which priors exist
   synonyms = list('LMA'='SLA',
                   'leafN'='c2n_leaf',
                   'FRC_RC'='q',
