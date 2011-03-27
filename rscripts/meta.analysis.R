@@ -1,6 +1,14 @@
 library(XML)
 if(interactive()){
-  settings.file <- '~/pecan/tundra.xml'
+   user <- system('echo $USER', intern = TRUE)
+  if(user == 'dlebauer'){
+    settings.file = '~/pecan/settings.pavi.xml'
+  } else if(user == 'davids14') {
+    settings.file = '~/pecan/tundra.xml'
+  } else {
+    paste('please specify settings file in meta.analysis.R')
+  }
+  settings.file <- '~/pecan/settings.pavi.xml'
 } else {
   settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
 }
