@@ -55,8 +55,9 @@ for (i in seq(pft.names)){
   if('sensitivity.analysis' %in% names(settings)) {
     quantiles <- get.quantiles(settings$sensitivity.analysis$quantiles)
     sa.samples[[pft.name]] <-  get.sa.samples(trait.samples[[pft.name]], quantiles)
-    run.ids <- write.sa.configs(pft.xml, sa.samples[[pft.name]], outdirs[i])
+    run.ids[[pft.name]] <- append(run.ids[[pft.name]], write.sa.configs(pft.xml, sa.samples[[pft.name]], outdirs[i]))
   } 
+  
 }
 
 save(ensemble.samples, file = paste(outdir, 'sample.ensemble.RData', sep=''))
