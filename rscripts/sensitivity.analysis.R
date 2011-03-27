@@ -1,9 +1,14 @@
-library(PECAn, lib.loc='~/lib/R')
+if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
+library(PECAn)
 
 load('settings.Rdata')
 load(paste(outdirs[i], 'sample.ensemble.RData', sep=''))
-load(paste(outdir, 'trait.samples.Rdata')
+load(paste(outdir, 'trait.samples.Rdata'))
 load(paste(outdir, "sa.samples.Rdata", sep=''))
+
+trait.defs <- trait.dictionary(traits)
+
+edout.filenames <<- dir(outdir, full.names = TRUE)
 
 
 dtheta.q <- list(prior = prior.dtheta.q, post = post.dtheta.q)

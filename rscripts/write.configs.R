@@ -15,7 +15,6 @@ library(PECAn)
 pft.names <- unlist(xpathApply(settings.xml, '//pfts//pft//name', xmlValue))
 outdirs <- unlist(xpathApply(settings.xml, '//pfts//pft//outdir', xmlValue))
 
-
 ##TODO determine what Rdata objects need to be loaded for this script and save it in meta.analysis.R then load it. Perhaps get the load.object/save.object fns working
 ## ensemble.size 
 ## for each pft
