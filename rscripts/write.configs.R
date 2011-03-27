@@ -5,9 +5,9 @@ if(interactive()){
   if(user == 'dlebauer'){
     settings.file = '~/pecan/settings.pavi.xml'
   } else if(user == 'davids14') {
-    settings.file = '~/pecan/settings.pavi.xml'
+    settings.file = '~/pecan/tundra.xml'
   } else {
-    paste('please specify settings file')
+    paste('please specify settings file in write.configs.R')
   }
 } else {
   settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
