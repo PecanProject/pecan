@@ -1,7 +1,14 @@
 ### LOAD SETTINGS ###
 library(XML)
 if(interactive()){
-  settings.file = '~/pecan/tundra.xml'
+  user <- system('echo $USER', intern = TRUE)
+  if(user == 'dlebauer'){
+    settings.file = '~/pecan/settings.pavi.xml'
+  } else if(user == 'davids14') {
+    settings.file = '~/pecan/tundra.xml'
+  } else {
+    paste('please specify settings file in write.configs.R')
+  }
 } else {
   settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
 }
@@ -14,7 +21,6 @@ library(PECAn)
 
 pft.names <- unlist(xpathApply(settings.xml, '//pfts//pft//name', xmlValue))
 outdirs <- unlist(xpathApply(settings.xml, '//pfts//pft//outdir', xmlValue))
-
 
 ##TODO determine what Rdata objects need to be loaded for this script and save it in meta.analysis.R then load it. Perhaps get the load.object/save.object fns working
 ## ensemble.size 
@@ -59,7 +65,7 @@ for (i in seq(pft.names)){
   } 
   
 }
-
+save(run.ids, file = paste(outdir, 'run.ids.Rdata', sep = ''))
 save(ensemble.samples, file = paste(outdir, 'sample.ensemble.RData', sep=''))
-save(trait.samples, file=paste(outdir, 'trait.samples.Rdata'))
+save(trait.samples, file=paste(outdir, 'trait.samples.Rdata', sep = ''))
 save(sa.samples, file = paste(outdir, 'sa.samples.Rdata', sep=''))

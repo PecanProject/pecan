@@ -293,6 +293,10 @@ time.range <- c(yr0, yrf)
 ## saruntype - e.g.: post, prior
 saruns    <- saruntype <- list()
 runid     <- c('prior', 'post')
+
+pft <- settings$pfts$name
+filenames <- load('filenames.Rdata')
+
 cl        <- c('lcl45','lcl30','lcl15', 'ucl15','ucl30','ucl45')
 runid.cl  <- melt(sapply(runid, paste,  cl, '.', sep = ''))
 trait.fileid <- trait.defs$fileid
@@ -314,7 +318,7 @@ edoutfiles.mo <- edoutfiles[grep("-E-", edoutfiles)]            ## select monthl
 
 
 edoutfiles <- NA
-read.output <- function(runname, year, output.variable = 'agb', month = 0, day = 0){
+read.output <- function(runname, year, output.variable = 'agb', ){
   if(!is.na(edoutfiles)) {
     edoutfiles <<- dir(outdir, full.names = TRUE)
   }
@@ -345,15 +349,15 @@ for(i in 1:13){
 edout.sa  <- data.frame(saruns,
                         agb=rowMeans(sapply(yr0:yrf, function(x) sapply(saruns$runname, readagb, x))))
      
-     ensnames <- c(paste('priorsamp0',1:M,sep=''), paste('postsamp0',1:M,sep='')) 
-     edout.ens <- data.frame(ensnames,
-                       runtype = c(rep('prior', M), rep('post', M)),
-                       agb     = rowMeans(sapply(yr0:yrf, function(x) sapply(ensnames, readagb, x))))  
+ensnames <- c(paste('priorsamp0',1:M,sep=''), paste('postsamp0',1:M,sep='')) 
+edout.ens <- data.frame(ensnames,
+                        runtype = c(rep('prior', M), rep('post', M)),
+                        agb     = rowMeans(sapply(yr0:yrf, function(x) sapply(ensnames, readagb, x))))  
 
-     save(edout.ens, file='out/edout.ens.Rdata')
-     save(edout.sa, file='out/edout.sa.Rdata')
+save(edout.ens, file='out/edout.ens.Rdata')
+save(edout.sa, file='out/edout.sa.Rdata')
 
-     postmean.f  <- mean(sapply(yr0:yrf, readagb, runname = 'postmean'),na.rm =TRUE)
+postmean.f  <- mean(sapply(yr0:yrf, readagb, runname = 'postmean'),na.rm =TRUE)
 priormean.f <- mean(sapply(yr0:yrf, readagb, runname = 'priormean'),na.rm =TRUE)
 mean.f <- list(post=postmean.f, prior=priormean.f) 
 save(mean.f, edout.sa, file=paste(pecanout, '/edout.sa.satest.Rdata', sep=''))
@@ -362,7 +366,7 @@ save(mean.f, edout.sa, file=paste(pecanout, '/edout.sa.satest.Rdata', sep=''))
 stop('switch to forecast')
 library(PECAn, lib.loc='~/lib/R')
 outdir <- 'out20110119/'
-#system('rsync -routi ebi-cluster.igb.uiuc.edu:/home/scratch/dlebauer/pecan/out/*.Rdata ~/pecan/out/')
+system('rsync -routi ebi-cluster.igb.uiuc.edu:/home/scratch/dlebauer/pecan/out/*.Rdata ~/pecan/out/')
 
 load('out20110119/edout.sa.satest.Rdata')
 load('out20110119/pecan.MA.Rdata')
@@ -405,20 +409,6 @@ trait.samps[['prior']] <- prior.samps
 post.mean.theta <- adply(trait.samps[['post']],2, mean)
 prior.mean.theta <- adply(trait.samps[['prior']],2, mean) 
 
-traits <- names(qprior)
-
-satable <- data.frame(var.f.hat = rep(NA,length(traits)),
-                      sd.var.fhat = rep(NA,length(traits)),
-                      var.theta = rep(NA,length(traits)),
-                      sens      = rep(NA,length(traits)),
-                      var.theta = rep(NA,length(traits)),
-                      mean.f    = rep(NA,length(traits)),
-                      mean.theta= rep(NA,length(traits)),
-                      y95ci     = rep(NA,length(traits)),
-                      row.names = traits)
-satables <- list(post=satable, prior=satable)                      
-qtheta <- list(post = qpost.theta, prior = qprior.theta)
-qf <- list(post = qpost.f, prior = qprior.f)
 
 splinelines <- list('prior'=list(), 'post'=list())
 splinepoints<- list('prior'=list(), 'post'=list())
@@ -427,30 +417,43 @@ splinefuns  <- list('prior'=list(), 'post'=list())
 for(pft in pfts){
 runname <- 'prior'
 
-vd.var.sd <- list()
-for(trait in traits) {
-## sensitivity.analysis <- function(
-##  trait, trait.quantiles, output.quantiles){
-#  qtheta <- trait.quantiles
-#  qf <- output.quantiles
-  x <- qtheta[[runname]][[trait]]
-  y <- qf[[runname]][[trait]]
-  f <- splinefun(x, y, method = "monoH.FC")
-  splinefuns[[runname]][[trait]] <- f 
-  splinepoints[[runname]][[trait]] <- data.frame(x=x,y=y)
-  xpts <- seq(min(x),max(x),length.out=100)
-  splinelines[[runname]][[trait]]  <- data.frame(x=xpts,y=f(xpts))
-  x <- trait.samps[[runname]][,trait]
-  y <- f(x)
-  y[y<0 | is.na(y)] <- 0
-  satable[trait, 'var.f.hat'] <- var(y)
-  satable[trait, 'sd.var.fhat'] <- var(y)^2*(2/(length(y)-1) + kurtosis(y)/length(y))
-  satable[trait, 'var.theta'] <- var(x)
-  satable[trait, 'sens']      <- f(mean(x),1)
-  satable[trait, 'mean.theta']<- mean(x)
-  satable[trait, 'mean.f']    <- mean(y)
-  satable[trait, 'var.theta'] <- var(x)
-  satable[trait, 'y95ci']     <- diff(quantile(y, c(0,1)))    
+
+
+newsplinefun <- function(quantiles.input, quantiles.output){
+  newfn <- splinefun(quantile.input, quantile.output, method = "monoH.FC")
+  return(newfn)
+}
+sd.var <- function(x){
+  var(x)^2*(2/(length(x)-1) + kurtosis(x)/length(x))
+}
+sensitivity <- function(splinefun, traitmean){
+  sensitivity <- splinefun(traitmean, 1)
+}
+  
+##' .. content for \description{} (no empty lines) ..
+##'
+##' .. content for \details{} ..
+##' @title 
+##' @param newx 
+##' @param newy 
+##' @param splinefun 
+##' @return table of the results of the sensitivity analysis  
+
+sa.results <- function(samps, splinefun) {
+##TODO need to use by()
+  x <- samps
+  y <- splinefun(x)
+  y[y<0 | is.na(y)] <- 0 #enforce y > 0 as physiological constraint valid for most traits  
+  out <- data.frame(
+                    var.f.hat   <- var(y)
+                    sd.var.fhat <- sd.var(y)
+                    var.theta   <- var(x) # used in table
+                    sens        <- sensitiivty(splinefun, mean(x)) # Sensitivity Analysis
+                    mean.theta  <- mean(x)      #
+                    mean.f      <- mean(y)      #
+                    var.theta   <- var(x)       #used in VD
+                    )
+  return(out)
 }
 
 vd.var.est <- list()
@@ -464,9 +467,12 @@ for(trait in traits) {
 }
 
 
+var.f.hat.each.trait <- tapply(traits, function(x) var(f(samps[,x])
+sd.var.f.hat         <- tapply(traits, sd.var)
 
-var.f.hat.total <- sum(satable$var.f.hat)
-satable$per.var <- satable$var.f.hat/var.f.hat.total
+var.f.hat.total <- sum(sa.results$var.f.hat) #satable$var.f.hat)
+
+per.var <- satable$var.f.hat/var.f.hat.total
 satable$var     <- satable$var.f.hat
 satable$cv      <- sqrt(satable$var.theta)/satable$mean.theta
 vmi <- which(rownames(satable)=='Vm_low_temp')
@@ -622,12 +628,11 @@ base.plot <- ggplot(data) +
 ############
 
 load('out20110119/edout.ens.Rdata')
-load('splineens.Rdata')
+load('out20110119/splineens.Rdata')
 
- 
 ens <- edout.ens[!is.na(edout.ens$agb),]
 ensagb <- ens$agb[ens$runtype == 'post']
-ensagb <- append(ensagb, rep(0,500-length(ensagb))
+ensagb <- append(ensagb, rep(0,500-length(ensagb)))
 
 pr.q <- quantile(ens$agb[ens$runtype=='prior'], c(0.05, 0.5, 0.95))
 po.q <- quantile(ens$agb[ens$runtype=='post'], c(0.05, 0.5, 0.95))
@@ -689,7 +694,8 @@ cat(' run ', ' varf ',' varest\n prior ', prior.varf, prior.varest,' \n post ', 
 ## Spline ensemble plots
 ## Construct a estimate based on the residuals from the splines
 ## only done for posteriors
-load('ens.samps.Rdata')
+load('out20110119/ens.samps.Rdata')
+
 spline.mat <- mapply(do.call, splinefuns[['post']], lapply(as.data.frame(ens.samps[['post']]), list))
 spline.ens <-  sapply(rowSums(spline.mat - mean.f[['post']]), function(x) max(0,x+mean.f[['post']]))
 spline.inout <- data.frame(id = 1:500, ens.samps[['post']], spline.ens)
@@ -745,7 +751,7 @@ dev.off()
 
 
 # Compare contributions to ens. va
-x<- data.frame(id=po$id,
+x <- data.frame(id=po$id,
                pr.cvt = pr$cv,
                po.cv = po$cv,
                prior.pervar = pr$per.var*100,
@@ -828,7 +834,7 @@ dev.off()
 load('out/edout.ens.Rdata')
 agb <- edout.ens$agb[edout.ens$runtype =='post']
 agb[is.na(agb)] <- 0
-
+ 
 a <- data.frame(n = c(rep(10, 5), rep(20, 5), rep(40, 5), rep(60, 5), rep(125, 4), 250, 250, 500),
                 varf_n = c(
                   var(agb[1:10]), var(agb[101:110]), var(agb[201:210]), var(agb[301:310]), var(agb[401:410]),  
