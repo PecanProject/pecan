@@ -8,6 +8,7 @@ mkdir --parents $OUTDIR
 
 # remove old config and ED2IN files
 rm $ED_RUN/ED2INc*
+rm $ED_RUN/c*
 rm $EDIN/c.* 
 
 cd $EDIN
@@ -20,6 +21,7 @@ for f in c.*
 do 
   #Create ED2IN file from template
   ED2INc=$ED_RUN/ED2IN$f
+  cp $f $ED_RUN/$f
   cp aED2IN $ED2INc
   sed -i 's/YYYYMMDD/'$DATE'/g' $ED2INc
   sed -i 's/ENSNAME/'$f'/g' $ED2INc
