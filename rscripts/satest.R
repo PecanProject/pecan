@@ -644,39 +644,10 @@ po.densdf <- data.frame(x = c(0, po.dens$x), y = c(0, po.dens$y))
 sp.densdf <- data.frame(x = c(0, sp.dens$x), y = c(0, sp.dens$y))
 #get data from Dan's Publication (Wang et al 2010)
 paviyield <- query.bety("select mean, month(date) from yields where specie_id = 938 and user_id != 11;")
-pavi.dens <- density(paviyield$mean, from = 0)
-pavi.densdf <- data.frame(x = c(0, pavi.dens$x), y = c(0, pavi.dens$y))
 
-pdf('out/ensemble_density.pdf')
 
-fontsize <- 16
-ggplot() +
-  theme_bw() +
-  opts(
-       #title = "Aboveground Biomass \n prior (grey) \n post (dark grey) \n spline ensemble (dotted) \n Heaton et al 2008 (mean +/- 2 se, n=3)\n Wang et al 2010 (n=1892) ",
-       axis.text.y = theme_blank(),
-       axis.text.x = theme_text(size=fontsize),
-       axis.line = theme_blank(),
-       axis.title.x = theme_blank(), 
-       axis.title.y = theme_blank(),
-       theme_text(size = 20),
-       axis.ticks.x = theme_blank(),
-       panel.grid.major = theme_blank(),
-       panel.grid.minor = theme_blank(),
-       panel.border = theme_blank(),
-       axis.color.y = 'white',
-       legend.position=c(-10,0)) +
-  geom_line(data = pavi.densdf, aes(x=x, y = y), size = 1, color = 'black') +
-  geom_area(data = subset(pr.densdf, x >= pr.q[1] & x<= pr.q[3]),
-            aes(x=x, y=y), alpha = 0.1,) +
-  geom_line(data = pr.densdf, aes(x=x, y = y), size = 1, color = 'grey') +
-  geom_area(data = subset(po.densdf, x >= po.q[1] & x<= po.q[3]),
-            aes(x=x, y=y), alpha = 0.4) +
-  geom_line(data = po.densdf, aes(x=x, y = y), size = 1, color = 'grey40') +
-  geom_line(data = sp.densdf, aes(x=x, y = y), size = 1, color = 'grey',lty=3) +
 
-  scale_x_continuous(limits = c(0, 50)) +#, breaks = c(0, 20, 40, 60, 80, 100))
-#  geom_point(data=paviyield, aes(y=jitter(rep(0, length(mean)))/15-0.005, x=mean), size = 0.5, color = 'black', alpha=0.1) +
+  geom_point(data=paviyield, aes(y=jitter(rep(0, length(mean)))/15-0.005, x=mean), size = 0.5, color = 'black', alpha=0.1) +
   geom_point(aes(x=13, y=-0.001), size = 2)+
   geom_segment(aes(x=10.8, y=-0.001, xend=15.5, yend=-0.001), size = 1)
 
