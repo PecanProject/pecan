@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "start writing configs"
-R --vanilla < $PECANHOME/rscripts/pecan.writeconfigs.R
+R --vanilla < $PECANHOME/rscripts/write.configs.R
 cd $PECANOUT
 echo "finished writing configs"
 echo "renaming config files"
