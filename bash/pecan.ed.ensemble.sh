@@ -1,5 +1,5 @@
 #!/bin/bash
-R --vanilla < ./rscripts/pecan.writeconfigs.R
+R --vanilla < ./rscripts/write.configs.R
 
 for i in config*xml; do mv "${i}" "${i/config/c}"; done
 for i in *_*xml; do mv "${i}" "${i/_/}"; done
