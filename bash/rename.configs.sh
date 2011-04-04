@@ -1,6 +1,7 @@
 #!/bin/bash
 OUTDIR=$1
 cd $OUTDIR
+echo "renaming output files in " $OUTDIR
 rename _ '' c.*
 rename factor '' c.*
 rename root rt c.*
