@@ -63,8 +63,10 @@ for (i in seq(pft.names)){
     sa.samples[[pft.name]] <-  get.sa.samples(trait.samples[[pft.name]], quantiles)
     run.ids[[pft.name]] <- append(run.ids[[pft.name]], write.sa.configs(pft.xml, sa.samples[[pft.name]], outdirs[i]))
   } 
-  system(paste(settings$pecanDir, 'bash/rename.configs.sh ', outdirs[i] sep = '')) 
 }
+
+lapply(outdirs, function(x) system(paste(settings$pecanDir, 'bash/rename.configs.sh ', x, sep = ''))) 
+
 save(run.ids, file = paste(outdir, 'run.ids.Rdata', sep = ''))
 save(ensemble.samples, file = paste(outdir, 'sample.ensemble.RData', sep=''))
 save(trait.samples, file=paste(outdir, 'trait.samples.Rdata', sep = ''))

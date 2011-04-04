@@ -8,7 +8,6 @@ if(interactive()){
   } else {
     paste('please specify settings file in meta.analysis.R')
   }
-  settings.file <- '~/pecan/settings.pavi.xml'
 } else {
   settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
 }
