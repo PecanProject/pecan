@@ -29,6 +29,7 @@ system(paste("echo 'cd ", model.outdir, "' | cat - ",   pecanDir, "bash/write.na
 
 ## move config files to run directory
 system(paste('ssh ', model.host, ' rsync -outi ', model.outdir, '*c.* ',  model.rundir, sep = '')) 
-system(paste('ssh -T', model.host,  '< ', pecanDir, '/bash/batch.jobs.sh', sep = ''))
+## submit ensemble runs
+system(paste("echo 'cd ", model.rundir, "' | cat - ", pecanDir, "bash/batch.jobs.sh | ssh -T ", model.host, sep = ''))
 
-##after runs complete, run pecan.SA.sh
+
