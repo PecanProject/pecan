@@ -1,5 +1,3 @@
-EDOUTDIR=$1
-cd $EDOUTDIR
 # remove old config and ED2IN files
 rm ED2INc*
 rm c.*
