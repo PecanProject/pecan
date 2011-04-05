@@ -24,7 +24,8 @@ model.outdir   <-  unlist(xpathApply(settings.xml, '//run//host//outdir', xmlVal
 
 system(paste('cd', outdir))
 system(paste('rsync -outi ', outdir, 'configs.tgz ', model.host, ':', model.outdir, sep = ''))
-system(paste('ssh -T  <', pecanDir, '/bash/write.namelists.sh', model.outdir, '; wait', sep = ''))
+system(paste("echo 'cd ", model.outdir, "' | cat - ",   pecanDir, "bash/write.namelists.sh | ssh -T  ", model.host, sep = ''))
+ 
 
 ## move config files to run directory
 system(paste('ssh ', model.host, ' rsync -outi ', model.outdir, '*c.* ',  model.rundir, sep = '')) 
