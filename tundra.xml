@@ -17,12 +17,11 @@
        <outdir>~/pecan/out/deciduous/</outdir>
        <exclude>
          <trait>c2n_leaf</trait>
-         <trait>SLA</trait>
        </exclude>
     </pft>
   </pfts>
   <meta.analysis>
-    <iter>50000</iter>
+    <iter>300000</iter>
     <random.effects>TRUE</random.effects>
   </meta.analysis>
   <ensemble>
