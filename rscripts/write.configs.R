@@ -68,7 +68,7 @@ for (i in seq(pft.names)){
 lapply(outdirs, function(x) system(paste(settings$pecanDir, 'bash/rename.configs.sh ', x, sep = ''))) 
 
 save(run.ids, file = paste(outdir, 'run.ids.Rdata', sep = ''))
-save(ensemble.samples, file = paste(outdir, 'sample.ensemble.RData', sep=''))
+save(ensemble.samples, file = paste(outdir, 'ensemble.samples.Rdata', sep=''))
 save(trait.samples, file=paste(outdir, 'trait.samples.Rdata', sep = ''))
 save(sa.samples, file = paste(outdir, 'sa.samples.Rdata', sep=''))
 
