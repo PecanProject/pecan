@@ -14,5 +14,5 @@ rename water h2o c.*
 rename stomatalslope stmslope c.*
 
 echo "zipping config files to saconfigs.tgz"
-tar zcf saconfigs.tgz c.*
+tar zcf configs.tgz c.*
 rm c.*
