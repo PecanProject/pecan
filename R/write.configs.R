@@ -78,10 +78,10 @@ get.ensemble.samples <- function(ensemble.size, samples) {
 #a name to distinguish the output files, and the directory to place the files.
 write.ensemble.configs <- function(pft.xml, ensemble.samples, outdir, pft.name='',
     write.config = write.config.ED, convert.samples=convert.samples.ED){
-  ensemble.digits <- log10(nrow(ensemble.samples))+1
+
   run.ids<-list()
   for(ensemble.id in 1:nrow(ensemble.samples)) {
-    run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, ensemble.digits), 
+    run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, 5), 
                          pft.name=pft.name)
     run.ids <- append(run.ids, run.id)
     file.name <- get.file.name(outdir, run.id)
