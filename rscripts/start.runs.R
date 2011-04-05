@@ -18,15 +18,16 @@ settings <- xmlToList(settings.xml)
 outdir       <- settings$outdir
 pecanDir    <- settings$pecanDir
 
-run.host     <-  unlist(xpathApply(settings.xml, '//run//host//hostname', xmlValue))
-model.rundir <-  unlist(xpathApply(settings.xml, '//run//host//model.rundir', xmlValue))
-model.outdir <-  unlist(xpathApply(settings.xml, '//run//host//model.outdir', xmlValue))
+model.host     <-  unlist(xpathApply(settings.xml, '//run//host//name', xmlValue))
+model.rundir   <-  unlist(xpathApply(settings.xml, '//run//host//rundir', xmlValue))
+model.outdir   <-  unlist(xpathApply(settings.xml, '//run//host//outdir', xmlValue))
 
 system(paste('cd', outdir))
-system(paste('rsync -outi configs.tgz ', run.host, ':', model.outdir, sep = ''))
-system(paste('ssh -T ebi-cluster:', model.outdir, ' < ' ,  pecanDir, '/bash/pecan.ed2in.create.sh', sep = ''))
-wait
-## unzip config files, set env vars, run ED ensemble, 
-ssh -T ebi-cluster < $PECANDIR/bash/pecan.ed.batchjobs.sh
-#next: wait for runs to compled, can use $edstat
-#then  pecan.SA.sh
+system(paste('rsync -outi ', outdir, 'configs.tgz ', model.host, ':', model.outdir, sep = ''))
+system(paste('ssh -T  <', pecanDir, '/bash/write.namelists.sh', model.outdir, '; wait', sep = ''))
+
+## move config files to run directory
+system(paste('ssh ', model.host, ' rsync -outi ', model.outdir, '*c.* ',  model.rundir, sep = '')) 
+system(paste('ssh -T', model.host,  '< ', pecanDir, '/bash/batch.jobs.sh', sep = ''))
+
+##after runs complete, run pecan.SA.sh
