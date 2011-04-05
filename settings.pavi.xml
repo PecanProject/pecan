@@ -7,7 +7,7 @@
     </pft>
   </pfts>
   <meta.analysis>
-    <iter>10000</iter>
+    <iter>50000</iter>
     <random.effects>TRUE</random.effects>
   </meta.analysis>
   <ensemble>
