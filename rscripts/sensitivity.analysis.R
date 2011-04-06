@@ -50,5 +50,18 @@ pdf('sensitivity.analysis.pdf', height = 12, width = 20)
 do.call(grid.arrange, plots)#left='Aboveground Biomass', main='Parameter Sensitivity', nrow=3,ncol=5) 
 dev.off()
 
+########Variance Decomposition
+elasticities <- sensitivities / (output.means / trait.means)
 
+coef.vars    <- ifelse(traits != 'Vm_low_temp',
+                       sqrt(trait.variance) / trait.means,
+                       sqrt(trait.variance) / (trait.means + 273.15))
 
+total.variance <- sum(output.variance)
+explained.variance <- output.variance / total.variance
+
+## stand in to be replaced by plot used in publication
+grid.arrange(qplot(names(explained.variance), coef.vars) + coord_flip(),
+             qplot(1:length(explained.variance), elasticities) + coord_flip(),
+             qplot(1:length(explained.variance), explained.variance) + coord_flip(),
+             ncol = 3)
