@@ -24,12 +24,9 @@ library(PECAn)
 outdirs <- unlist(xpathApply(settings.xml, '//pfts//pft//outdir', xmlValue))
 outdir <- settings$outdir
 
-#load(paste(outdirs, 'ensemble.samples.RData', sep=''))
-load(paste(outdir, 'trait.samples.Rdata', sep = ''))
-#load(paste(outdir, "sa.samples.Rdata", sep=''))
-
+load('tests/trait.samples.Rdata')
 load('tests/sa.test.Rdata')
-
+#load('tests/ensemble.output.Rdata')
 
 traits <- names(trait.samples[[pft]])
 
@@ -47,7 +44,7 @@ sensitivities <- sapply(traits,
 saplots <-  lapply(traits, function(x) sensitivity.plot(sa.trait[[x]], sa.splines[[x]], x))
 
 pdf('sensitivity.analysis.pdf', height = 12, width = 20)
-do.call(grid.arrange, plots)#left='Aboveground Biomass', main='Parameter Sensitivity', nrow=3,ncol=5) 
+saplots#left='Aboveground Biomass', main='Parameter Sensitivity', nrow=3,ncol=5) 
 dev.off()
 
 ########Variance Decomposition
@@ -61,7 +58,9 @@ total.variance <- sum(output.variance)
 explained.variance <- output.variance / total.variance
 
 ## stand in to be replaced by plot used in publication
+pdf('variancedecomposition.pdf', width = 12, height = 8)
 grid.arrange(qplot(names(explained.variance), coef.vars) + coord_flip(),
              qplot(1:length(explained.variance), elasticities) + coord_flip(),
              qplot(1:length(explained.variance), explained.variance) + coord_flip(),
              ncol = 3)
+dev.off()
