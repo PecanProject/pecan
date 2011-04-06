@@ -1,23 +1,54 @@
+library(XML)
+if(interactive()){
+   user <- system('echo $USER', intern = TRUE)
+  if(user == 'dlebauer'){
+    settings.file = '~/pecan/settings.pavi.xml'
+  } else if(user == 'davids14') {
+    settings.file = '~/pecan/tundra.xml'
+  } else {
+    paste('please specify settings file in meta.analysis.R')
+  }
+} else {
+  settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
+}
+
+settings.xml <- xmlParse(settings.file)
+settings <- xmlToList(settings.xml)
+
+##TODO get code to handle > 1 pft
+pft <- settings$pfts$pft$name
+
 if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
 library(PECAn)
 
-load('settings.Rdata')
-load(paste(outdirs[i], 'sample.ensemble.RData', sep=''))
-load(paste(outdir, 'trait.samples.Rdata'))
-load(paste(outdir, "sa.samples.Rdata", sep=''))
+outdirs <- unlist(xpathApply(settings.xml, '//pfts//pft//outdir', xmlValue))
+outdir <- settings$outdir
 
-trait.defs <- trait.dictionary(traits)
+#load(paste(outdirs, 'ensemble.samples.RData', sep=''))
+load(paste(outdir, 'trait.samples.Rdata', sep = ''))
+#load(paste(outdir, "sa.samples.Rdata", sep=''))
 
-edout.filenames <<- dir(outdir, full.names = TRUE)
+load('tests/sa.test.Rdata')
 
 
-dtheta.q <- list(prior = prior.dtheta.q, post = post.dtheta.q)
-saout <- pecan.SA(edout, dtheta.q)
-satables <- saout[['satables']]
-transformed.samps <- saout[['transformed.samps']] 
-save(satables, file='out/satables.Rdata')
-save(transformed.samps, file = 'out/transformed.samps.Rdata')
+traits <- names(trait.samples[[pft]])
 
-for (outvar in c('agb')){
-  plot.sa(satables, outvar)
-}
+sa.splines <- sapply(traits, function(x) sa.spline(sa.trait[[x]], sa.agb[[x]]))
+##TODO need to do this for each pft
+spline.estimates <-  sapply(traits, function(x) spline.estimate(sa.splines[[x]], trait.samples[[pft]][[x]]))
+spline.estimates.trunc <-  zero.truncate(spline.estimates)
+trait.means  <- unlist(lapply(trait.samples[[pft]], mean))
+trait.variance <- unlist(lapply(trait.samples[[pft]], var))
+output.means <- colMeans(spline.estimates.trunc)
+output.variance <- apply(spline.estimates.trunc, 2, var)
+sensitivities <- sapply(traits,
+                        function(x) sa.splines[[x]](trait.means[[x]], 1)) 
+
+saplots <-  lapply(traits, function(x) sensitivity.plot(sa.trait[[x]], sa.splines[[x]], x))
+
+pdf('sensitivity.analysis.pdf', height = 12, width = 20)
+do.call(grid.arrange, plots)#left='Aboveground Biomass', main='Parameter Sensitivity', nrow=3,ncol=5) 
+dev.off()
+
+
+
