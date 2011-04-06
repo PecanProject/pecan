@@ -58,6 +58,11 @@
       <met.data.header></met.data.header>
       <hostname></hostname>
       <model.outdir></model.outdir>
+      <host>
+        <name>ebi-cluster.igb.uiuc.edu</name>
+        <rundir>/home/dlebauer/EDBRAMS/ED/run/</rundir>
+        <outdir>/home/scratch/test/out/</outdir>
+      </host> 
     </site>
   </run>
 </pecan>
