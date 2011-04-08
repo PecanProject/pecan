@@ -20,6 +20,9 @@
        </exclude>
     </pft>
   </pfts>
+  <write.config.input>
+    <edin>~/pecan/edin/templateED2IN-toolik</edin>
+  </write.config.input>
   <meta.analysis>
     <iter>300000</iter>
     <random.effects>TRUE</random.effects>
@@ -29,7 +32,7 @@
   </ensemble>
   <pecanDir>~/pecan/</pecanDir>
   <Rlibdir>~/lib/R/</Rlibdir>
-  <outdir>~/pecan/out/</outdir>
+  <outdir>~/pecan/out/grass/</outdir>
   <sensitivity.analysis>
     <quantiles>
       <quantile></quantile>
@@ -58,11 +61,11 @@
       <met.data.header></met.data.header>
       <hostname></hostname>
       <model.outdir></model.outdir>
-      <host>
-        <name>ebi-cluster.igb.uiuc.edu</name>
-        <rundir>/home/dlebauer/EDBRAMS/ED/run/</rundir>
-        <outdir>/home/scratch/test/out/</outdir>
-      </host> 
     </site>
+    <host>
+      <name>ebi-cluster.igb.uiuc.edu</name>
+      <rundir>/home/davids14/EDBRAMS/ED/run/</rundir>
+      <outdir>/home/scratch/davids14/pecan/out/</outdir>
+    </host> 
   </run>
 </pecan>

@@ -1,4 +1,3 @@
-
 PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
 
 ##### Generic functions #####
@@ -13,21 +12,34 @@ left.pad.zeros <- function(num, digits){
 get.run.id <- function(run.type, index, trait='', pft.name=''){
   return(paste(pft.name, run.type, trait, index, sep=''))
 }
-#returns a standardized name for a model input file
-get.file.name <- function(outdir, run.id){
-  return(paste(outdir,'/c.',run.id,sep=''))
+get.run.time <- function(){
+  format(Sys.time(), '%Y.%m.%d')
 }
-#Writes an xml based input file for use with the Ecological Demography model.
-#Requires a pft.xml object, a list of trait values for a *single* model run,
+#Writes an xml and ED2IN config files for use with the Ecological Demography model.
+#Requires a pft.xml object, a list of trait values for a single model run,
 #and the name of the file to create
-write.config.ED <- function(pft.xml, trait.samples, file.name){
+write.config.ED <- function(pft.xml, trait.samples, settings, outdir, run.id){
   traits <- names(trait.samples)
   xml <- pft.xml$PFT
   for (trait in traits) {
     xml <- append.xmlNode(xml, xmlNode(trait, trait.samples[trait]))
   }
   xml <- append.xmlNode(pft.xml$CONFIG, xml)
-  saveXML(xml, file = file.name, indent=TRUE, prefix = PREFIX_XML)
+  xml.file.name <-paste('/c.',run.id,sep='')
+  saveXML(xml, file = paste(outdir, xml.file.name, sep=''), 
+		  indent=TRUE, prefix = PREFIX_XML)
+  
+  ed2in.text <- scan(file=settings$write.config.input$edin, 
+		  what="character",sep='@', quote=NULL)
+  ed2in.text <- gsub('OUTDIR', settings$run$host$outdir, ed2in.text)
+  ed2in.text <- gsub('RUNTIME', get.run.time(), ed2in.text)
+  ed2in.text <- gsub('ENSNAME', run.id, ed2in.text)
+  ed2in.text <- gsub('USER', system('echo $USER', intern=TRUE), ed2in.text)
+  ed2in.text <- gsub('CONFIGFILE', xml.file.name, ed2in.text)
+  ed2in.text <- gsub('OUTFILE', paste('out', run.id, sep=''), ed2in.text)
+  ed2in.text <- gsub('HISTFILE', paste('hist', run.id, sep=''), ed2in.text)
+  ed2in.file.name <- paste('ED2INc.',run.id, sep='')
+  writeLines(ed2in.text, con = paste(outdir, ed2in.file.name, sep=''))
 }
 #Performs model specific unit conversions on a a list of trait values,
 #such as those provided to write.config
@@ -47,6 +59,7 @@ convert.samples.ED <- function(trait.samples){
   }
 
   ## TODO: result[, c('mean','stat')] <- result[, c('mean','stat')] / 0.48 
+  ## TODO: Vcmax -> Vm0
   
   return(trait.samples)
 }
@@ -76,18 +89,18 @@ get.ensemble.samples <- function(ensemble.size, samples) {
 #Writes config files for use in meta-analysis and returns a list of run ids.
 #Given a pft.xml object, a list of lists as supplied by get.sa.samples, 
 #a name to distinguish the output files, and the directory to place the files.
-write.ensemble.configs <- function(pft.xml, ensemble.samples, outdir, pft.name='',
+write.ensemble.configs <- function(pft.xml, ensemble.samples, outdir, settings, pft.name='', 
     write.config = write.config.ED, convert.samples=convert.samples.ED){
-  ensemble.digits <- log10(nrow(ensemble.samples))+1
+
   run.ids<-list()
   for(ensemble.id in 1:nrow(ensemble.samples)) {
-    run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, ensemble.digits), 
+    run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, 5), 
                          pft.name=pft.name)
     run.ids <- append(run.ids, run.id)
-    file.name <- get.file.name(outdir, run.id)
-    write.config(pft.xml, convert.samples(ensemble.samples[ensemble.id,]), file.name)
-    run.ids<-append(run.ids, file.name)
-    print(file.name)
+    write.config(pft.xml, convert.samples(ensemble.samples[ensemble.id,]), 
+        settings, outdir, run.id)
+	  print(run.id)
+    run.ids<-append(run.ids, run.id)
   }
   return(run.ids)
 }
@@ -123,7 +136,7 @@ get.sa.samples <- function(samples, quantiles){
 #Writes config files for use in sensitivity analysis, and returns a list of run ids.
 #Given a pft.xml object, a list of lists as supplied by get.sa.samples, 
 #a name to distinguish the output files, and the directory to place the files.
-write.sa.configs <- function(pft.xml, quantile.samples, outdir, pft.name='',
+write.sa.configs <- function(pft.xml, quantile.samples, outdir, settings, pft.name='', 
                              write.config=write.config.ED, convert.samples=convert.samples.ED){
   MEDIAN <- '50%'
   traits <- names(quantile.samples)
@@ -131,10 +144,9 @@ write.sa.configs <- function(pft.xml, quantile.samples, outdir, pft.name='',
   median.samples <- lapply(traits, 
       function(trait) quantile.samples[[trait]][[MEDIAN]])
   names(median.samples) <- traits
-  run.id <- get.run.id('SA', 'median', pft.name=pft.name)
-  file.name <- get.file.name(outdir, run.id)
-  write.config(pft.xml, convert.samples(median.samples), file.name)
-  print(file.name)
+  run.id <- get.run.id('SA', 'median', pft.name=pft.name) 
+  write.config(pft.xml, convert.samples(median.samples), settings, outdir, run.id)
+  print(run.id)
 
   run.ids <- list(run.id)
   for (trait in traits) {
@@ -145,9 +157,9 @@ write.sa.configs <- function(pft.xml, quantile.samples, outdir, pft.name='',
         trait.samples <- median.samples
         trait.samples[trait] <- quantile.samples[[trait]][quantile.str]
         run.id <- get.run.id('SA', round(quantile,3), trait=trait, pft.name=pft.name)
-        file.name <- get.file.name(outdir, run.id)
-        write.config(pft.xml, convert.samples(trait.samples), get.file.name(outdir, run.id))
-        print(file.name)
+        write.config(pft.xml, convert.samples(trait.samples), 
+            settings, outdir, run.id)
+		    print(run.id)
         run.ids <- append(run.ids, run.id)
       }
     }
