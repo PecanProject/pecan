@@ -1,10 +1,9 @@
-ED_RUN=$HOME/EDBRAMS/ED/run
-EMAIL='davids14@illinois.edu'
-
-cd $ED_RUN
-for f in $ED_RUN/ED2INc*; do
+#!/bin/bash
+rm c.* ED2INc.*
+tar -zxf configs.tgz 
+for f in ED2INc*; do
   LOG="$f-`date +%Y.%m.%d-%H.%M`.log" #name with date tag for log files, one per ED2IN file 
-  CMD="qsub -cwd -pe mpich 1 -j y -m eas -M $EMAIL -o $LOG ./run 1 $f" #defines command to be run
+  CMD="qsub -cwd -pe mpich 1 -j y -o $LOG ./run 1 $f" #defines command to be run
   echo $CMD > $LOG # enters command into first line of log file
   echo $f > $LOG
   $CMD             # runs command

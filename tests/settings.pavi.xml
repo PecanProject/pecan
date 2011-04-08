@@ -3,19 +3,19 @@
   <pfts>
     <pft>
       <name>ebifarm.c4crop</name>
-      <outdir>/home/share/tests/pavi/</outdir>
+      <outdir>/home/dlebauer/pecan/out/</outdir>
     </pft>
   </pfts>
   <meta.analysis>
-    <iter>10000</iter>
+    <iter>5000</iter>
     <random.effects>TRUE</random.effects>
   </meta.analysis>
   <ensemble>
-    <size>100</size>
+    <size>10</size>
   </ensemble>
   <pecanDir>/home/dlebauer/pecan/</pecanDir>
   <Rlibdir>/home/dlebauer/lib/R/</Rlibdir>
-  <outdir>/home/share/tests/pavi/</outdir>
+  <outdir>/home/dlebauer/pecan/out/</outdir>
   <sensitivity.analysis>
     <quantiles>
       <quantile></quantile>
@@ -39,11 +39,14 @@
     <site>
       <lat></lat>
       <lon></lon>
-      <start.date></start.date>
-      <end.date></end.date>
       <met.data.header></met.data.header>
-      <hostname></hostname>
-      <model.outdir></model.outdir>
     </site>
+    <start.date></start.date>
+    <end.date></end.date>
+    <host>
+      <name>ebi-cluster.igb.uiuc.edu</name>
+      <rundir>/home/dlebauer/EDBRAMS/ED/run/</rundir>
+      <outdir>/home/scratch/test/out/</outdir>
+    </host>
   </run>
 </pecan>

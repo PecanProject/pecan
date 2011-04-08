@@ -56,16 +56,21 @@ for (i in seq(pft.names)){
 
   ## subset the trait.samples to ensemble size using Halton sequence 
   ensemble.samples[[pft.name]] <- get.ensemble.samples(settings$ensemble$size, trait.samples[[pft.name]])
-  run.ids[[pft.name]] <- write.ensemble.configs(pft.xml, ensemble.samples[[pft.name]], outdirs[i])
+  run.ids[[pft.name]] <- write.ensemble.configs(pft.xml, ensemble.samples[[pft.name]], outdirs[i], settings)
   
   if('sensitivity.analysis' %in% names(settings)) {
     quantiles <- get.quantiles(settings$sensitivity.analysis$quantiles)
     sa.samples[[pft.name]] <-  get.sa.samples(trait.samples[[pft.name]], quantiles)
-    run.ids[[pft.name]] <- append(run.ids[[pft.name]], write.sa.configs(pft.xml, sa.samples[[pft.name]], outdirs[i]))
+    run.ids[[pft.name]] <- append(run.ids[[pft.name]], 
+        write.sa.configs(pft.xml, sa.samples[[pft.name]], outdirs[i], settings))
   } 
-  
 }
+
+lapply(outdirs, function(x) system(paste(settings$pecanDir, 'bash/rename.configs.sh ', x, sep = ''))) 
+
 save(run.ids, file = paste(outdir, 'run.ids.Rdata', sep = ''))
-save(ensemble.samples, file = paste(outdir, 'sample.ensemble.RData', sep=''))
+save(ensemble.samples, file = paste(outdir, 'ensemble.samples.Rdata', sep=''))
 save(trait.samples, file=paste(outdir, 'trait.samples.Rdata', sep = ''))
 save(sa.samples, file = paste(outdir, 'sa.samples.Rdata', sep=''))
+
+
