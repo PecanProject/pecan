@@ -19,18 +19,17 @@ get.run.time <- function(){
 #Requires a pft.xml object, a list of trait values for a single model run,
 #and the name of the file to create
 write.config.ED <- function(pft.xml, trait.samples, settings, outdir, run.id){
-  traits <- names(trait.samples)
   xml <- pft.xml$PFT
-  for (trait in traits) {
+  for (trait in names(trait.samples)) {
     xml <- append.xmlNode(xml, xmlNode(trait, trait.samples[trait]))
   }
   xml <- append.xmlNode(pft.xml$CONFIG, xml)
-  xml.file.name <-paste('/c.',run.id,sep='')
+  xml.file.name <-paste('c.',run.id,sep='')
   saveXML(xml, file = paste(outdir, xml.file.name, sep=''), 
 		  indent=TRUE, prefix = PREFIX_XML)
   
   ed2in.text <- scan(file=settings$write.config.input$edin, 
-		  what="character",sep='@', quote=NULL)
+		  what="character",sep='@', quote=NULL, quiet=TRUE)
   ed2in.text <- gsub('OUTDIR', settings$run$host$outdir, ed2in.text)
   ed2in.text <- gsub('RUNTIME', get.run.time(), ed2in.text)
   ed2in.text <- gsub('ENSNAME', run.id, ed2in.text)
@@ -129,8 +128,12 @@ get.quantiles <- function(quantiles.tag) {
 #given a list of sample distributions for traits and a list of quantiles
 #The list is indexed first by trait, then by quantile
 get.sa.samples <- function(samples, quantiles){
-  sa.samples <- lapply(names(samples), function(trait) quantile(samples[[trait]], quantiles))
-  names(sa.samples) <- names(samples)
+  sa.samples <- data.frame()
+  for(trait in names(samples)){
+    for(quantile in quantiles){
+      sa.samples[as.character(round(quantile*100,3)), trait] <- quantile(samples[[trait]], quantile)
+    }
+  }
   return(sa.samples)
 }
 #Writes config files for use in sensitivity analysis, and returns a list of run ids.
@@ -138,27 +141,24 @@ get.sa.samples <- function(samples, quantiles){
 #a name to distinguish the output files, and the directory to place the files.
 write.sa.configs <- function(pft.xml, quantile.samples, outdir, settings, pft.name='', 
                              write.config=write.config.ED, convert.samples=convert.samples.ED){
-  MEDIAN <- '50%'
-  traits <- names(quantile.samples)
+  MEDIAN <- '50'
+  traits <- colnames(quantile.samples)
   
-  median.samples <- lapply(traits, 
-      function(trait) quantile.samples[[trait]][[MEDIAN]])
-  names(median.samples) <- traits
-  run.id <- get.run.id('SA', 'median', pft.name=pft.name) 
+  median.samples <- quantile.samples[MEDIAN,]
+  run.id <- get.run.id('SA', 'median', pft.name=pft.name)
   write.config(pft.xml, convert.samples(median.samples), settings, outdir, run.id)
   print(run.id)
 
   run.ids <- list(run.id)
   for (trait in traits) {
-    quantiles.str <- names(quantile.samples[[trait]])
+    quantiles.str <- rownames(quantile.samples)
     for(quantile.str in quantiles.str) {
       if (quantile.str != MEDIAN) {
-        quantile <- as.numeric(gsub('\\%', '',quantile.str))/100
+        quantile <- as.numeric(quantile.str)/100
         trait.samples <- median.samples
-        trait.samples[trait] <- quantile.samples[[trait]][quantile.str]
+        trait.samples[trait] <- quantile.samples[quantile.str, trait]
         run.id <- get.run.id('SA', round(quantile,3), trait=trait, pft.name=pft.name)
-        write.config(pft.xml, convert.samples(trait.samples), 
-            settings, outdir, run.id)
+        write.config(pft.xml, convert.samples(trait.samples), settings, outdir, run.id)
 		    print(run.id)
         run.ids <- append(run.ids, run.id)
       }
