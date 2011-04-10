@@ -41,7 +41,6 @@ sensitivity.analysis <- function(trait.samples, sa.samples, sa.output){
   traits <- names(trait.samples)
   sa.splinefuns <- sapply(traits, function(trait) sa.splinefun(sa.samples[[trait]], sa.output[[trait]]))
   
-  
   saplots <-  lapply(traits, function(x) sensitivity.plot(sa.samples[[x]], sa.splinefuns[[x]], x))
   pdf('sensitivity.analysis.pdf', height = 12, width = 20)
   saplots#left='Aboveground Biomass', main='Parameter Sensitivity', nrow=3,ncol=5) 
@@ -59,10 +58,5 @@ sensitivity.analysis <- function(trait.samples, sa.samples, sa.output){
     trait.samples[which(traits == 'Vm_low_temp')] <- trait.samples[which(traits == 'Vm_low_temp')] + 273.15
   coef.vars <- sapply(trait.samples, get.coef.var)
   
-  pdf('variancedecomposition.pdf', width = 12, height = 8)
-  grid.arrange(qplot(names(explained.variances), coef.vars) + coord_flip(),
-      qplot(1:length(explained.variances), elasticities) + coord_flip(),
-      qplot(1:length(explained.variances), explained.variances) + coord_flip(),
-      ncol = 3)
-  dev.off()
+  plot.variance.decomposition(coef.vars, elasticities, explained.variances)
 }
