@@ -1,6 +1,6 @@
 library(XML)
 if(interactive()){
-   user <- system('echo $USER', intern = TRUE)
+  user <- system('echo $USER', intern = TRUE)
   if(user == 'dlebauer'){
     settings.file = '~/pecan/settings.pavi.xml'
   } else if(user == 'davids14') {
@@ -15,27 +15,26 @@ if(interactive()){
 settings.xml <- xmlParse(settings.file)
 settings <- xmlToList(settings.xml)
 
-##TODO get code to handle > 1 pft
-pft <- settings$pfts$pft$name
-
 if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
 library(PECAn)
 
-outdirs <- unlist(xpathApply(settings.xml, '//pfts//pft//outdir', xmlValue))
+pft <- settings$pfts[[1]]
 outdir <- settings$outdir
 
-load('tests/trait.samples.Rdata')
-load('tests/sa.test.Rdata')
-#load('tests/ensemble.output.Rdata')
+load(paste(outdir, 'trait.samples.Rdata', sep=''))
+load(paste(outdir, 'sa.output.Rdata', sep=''))
+load(paste(outdir, 'sa.samples.Rdata', sep=''))
+#load(paste(outdir,'ensemble.output.Rdata', sep='')
+sa.trait<-sa.samples[[1]]
 
-traits <- names(trait.samples[[pft]])
+traits <- names(trait.samples[[pft$name]])
 
 sa.splines <- sapply(traits, function(x) sa.spline(sa.trait[[x]], sa.agb[[x]]))
 ##TODO need to do this for each pft
-spline.estimates <-  sapply(traits, function(x) spline.estimate(sa.splines[[x]], trait.samples[[pft]][[x]]))
+spline.estimates <-  sapply(traits, function(x) spline.estimate(sa.splines[[x]], trait.samples[[pft$name]][[x]]))
 spline.estimates.trunc <-  zero.truncate(spline.estimates)
-trait.means  <- unlist(lapply(trait.samples[[pft]], mean))
-trait.variance <- unlist(lapply(trait.samples[[pft]], var))
+trait.means  <- unlist(lapply(trait.samples[[pft$name]], mean))
+trait.variance <- unlist(lapply(trait.samples[[pft$name]], var))
 output.means <- colMeans(spline.estimates.trunc)
 output.variance <- apply(spline.estimates.trunc, 2, var)
 sensitivities <- sapply(traits,

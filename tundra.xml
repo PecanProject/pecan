@@ -32,7 +32,7 @@
   </ensemble>
   <pecanDir>~/pecan/</pecanDir>
   <Rlibdir>~/lib/R/</Rlibdir>
-  <outdir>~/pecan/out/grass/</outdir>
+  <outdir>~/pecan/out/</outdir>
   <sensitivity.analysis>
     <quantiles>
       <quantile></quantile>
