@@ -63,3 +63,14 @@ sensitivity.plot <- function(x.values, fun, trait, prior.x.values = NA, prior.fu
 ##                                                   geom_point(aes(x,y), data= dpr[4,], color = 'grey', size = 5) +
 ##                                                     geom_point(aes(x,y), data= dpo[4,], color = 'black', size = 5) + scale_shape(solid=FALSE) +
 
+plot.variance.decomposition <- function(coef.vars, elasticities, explained.variances){
+  ## stand in to be replaced by plot used in publication
+  pdf('variancedecomposition.pdf', width = 12, height = 8)
+  grid.arrange(qplot(names(explained.variances), coef.vars) + coord_flip(),
+      qplot(1:length(explained.variances), elasticities) + coord_flip(),
+      qplot(1:length(explained.variances), explained.variances) + coord_flip(),
+      ncol = 3)
+  dev.off()
+}
+
+

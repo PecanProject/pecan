@@ -31,8 +31,7 @@ system(paste('rsync -outi ',
        pft$outdir, sep = ''))
 
 load(paste(outdir, 'ensemble.samples.Rdata', sep=''))
-ensemble.size <- nrow(ensemble.samples[[pft$name]])
-ensemble.output <- read.ensemble.output(ensemble.size, pft$outdir)
+ensemble.output <- read.ensemble.output(settings$ensemble$size, pft$outdir)
 save(ensemble.output, file = paste(outdir, 'ensemble.output.Rdata', sep = ''))
 
 if('sensitivity.analysis' %in% names(settings)) {
