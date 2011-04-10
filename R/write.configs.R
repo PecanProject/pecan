@@ -101,7 +101,6 @@ write.ensemble.configs <- function(pft.xml, ensemble.samples, outdir, settings, 
 	  print(run.id)
     run.ids<-append(run.ids, run.id)
   }
-  return(run.ids)
 }
 
 
@@ -164,6 +163,5 @@ write.sa.configs <- function(pft.xml, quantile.samples, outdir, settings, pft.na
       }
     }
   }
-  return(run.ids)
 }
 
