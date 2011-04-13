@@ -36,18 +36,16 @@ convert.samples.ED <- function(trait.samples){
   ## convert SLA from kg leaf / m2 to kg C / m2
   if('SLA' %in% names(trait.samples)){
     if('leafC' %in% names(trait.samples))
-      trait.samples[['SLA']] <- trait.samples[['SLA']] * trait.samples[['leafC']]
+      trait.samples[['SLA']] <- trait.samples[['SLA']] / trait.samples[['leafC']]
     else
-      trait.samples[['SLA']] <- trait.samples[['SLA']] * DEFAULT.LEAF.C
+      trait.samples[['SLA']] <- trait.samples[['SLA']] / DEFAULT.LEAF.C
   }
 
   ## convert leaf width / 1000
   if('leaf_width' %in% names(trait.samples)){
     trait.samples[['leaf_width']] <- trait.samples[['leaf_width']] / 1000.0
   }
-
-  ## TODO: result[, c('mean','stat')] <- result[, c('mean','stat')] / 0.48 
-  
+   
   return(trait.samples)
 }
 
