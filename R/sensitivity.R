@@ -24,39 +24,32 @@ get.coef.var <- function(set){
 get.elasticity <- function(sensitivity, samples, outputs){
   return(sensitivity / (mean(outputs) / mean(samples)))
 }
-#Given a set of numerical sets, 
-#this returns the fraction each set contributes to the total variance
-get.explained.variances <- function(sets){
-  set.variances <- apply(sets, 2, var)
-  total.variance <- sum(set.variances)
-  return(set.variances / total.variance)
-}
 
 zero.truncate <- function(y) {
   y[y<0 | is.na(y)] <- 0
   return(y)
 }
 
-sensitivity.analysis <- function(trait.samples, sa.samples, sa.output){
+sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
   traits <- names(trait.samples)
   sa.splinefuns <- sapply(traits, function(trait) sa.splinefun(sa.samples[[trait]], sa.output[[trait]]))
   
-  saplots <-  lapply(traits, function(x) sensitivity.plot(sa.samples[[x]], sa.splinefuns[[x]], x))
-  pdf('sensitivity.analysis.pdf', height = 12, width = 20)
-  saplots#left='Aboveground Biomass', main='Parameter Sensitivity', nrow=3,ncol=5) 
+  pdf(paste(outdir, 'sensitivity.analysis.pdf', sep=''), height = 12, width = 20)
+  print(lapply(traits, function(x) sensitivity.plot(sa.samples[[x]], sa.splinefuns[[x]], x)))
+  #left='Aboveground Biomass', main='Parameter Sensitivity', nrow=3,ncol=5) 
   dev.off()
-  
-  spline.estimates <- sapply(traits, function(trait) sa.splinefuns[[trait]](trait.samples[[trait]]))
-  spline.estimates <- zero.truncate(spline.estimates)
+  spline.estimates <- lapply(traits, function(trait) zero.truncate(sa.splinefuns[[trait]](trait.samples[[trait]])))
+  names(spline.estimates) <- traits
   sensitivities <- sapply(traits, function(trait) get.sensitivity(trait.samples[[trait]], sa.splinefuns[[trait]]))
   elasticities <- sapply(traits, 
-      function(trait) get.elasticity(sensitivities[[trait]], trait.samples[[trait]], spline.estimates[,trait]))
-  explained.variances <- get.explained.variances(spline.estimates)
+      function(trait) get.elasticity(sensitivities[[trait]], trait.samples[[trait]], spline.estimates[[trait]]))
+  variances <- sapply(traits, function(trait) var(spline.estimates[[trait]]))
+  explained.variances <- variances / sum(variances)
   
   #TODO: move unit conversions to their own method, called before sensitivity analysis 
   if('Vm_low_temp' %in% traits)
-    trait.samples[which(traits == 'Vm_low_temp')] <- trait.samples[which(traits == 'Vm_low_temp')] + 273.15
+    trait.samples[[which(traits == 'Vm_low_temp')]] <- trait.samples[[which(traits == 'Vm_low_temp')]] + 273.15
   coef.vars <- sapply(trait.samples, get.coef.var)
-  
-  plot.variance.decomposition(coef.vars, elasticities, explained.variances)
+  plot.variance.decomposition(coef.vars, elasticities, explained.variances, outdir)
 }
+
