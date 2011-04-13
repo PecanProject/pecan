@@ -3,38 +3,38 @@
   <pfts>
     <pft>
       <name>temperate.Late_Hardwood</name>
-      <outdir>/home/share/temperate/LH/</outdir>
+      <outdir>/home/share/tests/temperate/LH/</outdir>
     </pft>
     <pft>
       <name>temperate.North_Mid_Hardwood</name>
-      <outdir>/home/share/temperate/MH/</outdir>
+      <outdir>/home/share/tests/temperate/MH/</outdir>
     </pft>
     <pft>
       <name>temperate.Early_Hardwood</name>
-      <outdir>/home/share/temperate/EH/</outdir>
+      <outdir>/home/share/tests/temperate/EH/</outdir>
     </pft>
     <pft>
       <name>temperate.Northern_Pine</name>
-      <outdir>/home/share/temperate/NP/</outdir>
+      <outdir>/home/share/tests/temperate/NP/</outdir>
     </pft>
     <pft>
       <name>temperate.Mid_Conifer</name>
-      <outdir>/home/share/temperate/MC/</outdir>
+      <outdir>/home/share/tests/temperate/MC/</outdir>
     </pft>
     <pft>
       <name>temperate.Late_Conifer</name>
-      <outdir>/home/share/temperate/LC/</outdir>
+      <outdir>/home/share/tests/temperate/LC/</outdir>
     </pft>
   </pfts>
   <meta.analysis>
-    <iter>10000</iter>
+    <iter>5000</iter>
     <random.effects>FALSE</random.effects>
   </meta.analysis>
   <ensemble>
-    <size>20000</size>
+    <size>20</size>
   </ensemble>
   <sensitivity.analysis></sensitivity.analysis>
-  <outdir>/home/share/temperate/</outdir>
+  <outdir>/home/share/tests/temperate/</outdir>
   <Rlibdir>~/lib/R</Rlibdir>
   <database>
     <location>localhost</location>
@@ -43,4 +43,18 @@
     <passwd>goillini</passwd>
   </database>
   <pecanDir>~/pecan/</pecanDir>  
+  <run>
+    <site>
+      <lat></lat>
+      <lon></lon>
+    </site>
+    <start.date></start.date>
+    <end.date></end.date>
+    <host>
+      <name>ebi-cluster.igb.uiuc.edu</name>
+      <rundir>/home/mdietze/EDBRAMS/ED/run/</rundir>
+      <outdir>/home/scratch/test/out/</outdir>
+    </host>
+  </run>
+
 </pecan>

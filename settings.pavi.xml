@@ -3,11 +3,11 @@
   <pfts>
     <pft>
       <name>ebifarm.c4crop</name>
-      <outdir>/home/dlebauer/pecan/out</outdir>
+      <outdir>/home/dlebauer/pecan/out/</outdir>
     </pft>
   </pfts>
   <meta.analysis>
-    <iter>10000</iter>
+    <iter>50000</iter>
     <random.effects>TRUE</random.effects>
   </meta.analysis>
   <ensemble>
@@ -39,11 +39,14 @@
     <site>
       <lat></lat>
       <lon></lon>
-      <start.date></start.date>
-      <end.date></end.date>
       <met.data.header></met.data.header>
-      <hostname></hostname>
-      <model.outdir></model.outdir>
     </site>
+    <start.date></start.date>
+    <end.date></end.date>
+    <host>
+      <name>ebi-cluster.igb.uiuc.edu</name>
+      <rundir>/home/dlebauer/EDBRAMS/ED/run/</rundir>
+      <outdir>/home/scratch/dlebauer/pecan/out/</outdir>
+    </host>
   </run>
 </pecan>
