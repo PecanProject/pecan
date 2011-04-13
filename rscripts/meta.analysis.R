@@ -1,6 +1,13 @@
 library(XML)
 if(interactive()){
-  settings.file <- '/home/dlebauer/pecan/tests/settings.pavi.xml'
+   user <- system('echo $USER', intern = TRUE)
+  if(user == 'dlebauer'){
+    settings.file = '~/pecan/settings.pavi.xml'
+  } else if(user == 'davids14') {
+    settings.file = '~/pecan/tundra.xml'
+  } else {
+    paste('please specify settings file in meta.analysis.R')
+  }
 } else {
   settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
 }
@@ -35,31 +42,30 @@ if(settings$database$location == 'localhost'){
 }
 
 ## identify pfts
-pft.name <- unlist(xpathApply(settings.xml, '//pfts//pft//name', xmlValue))
-outdirs <- unlist(xpathApply(settings.xml, '//pfts//pft//outdir', xmlValue))
-npft   <- length(pft.name)
+pfts <- settings$pfts
+pft.names <- unlist(xpathApply(settings.xml, '//pfts//pft//name', xmlValue))
+npft   <- length(pfts)
+
 if(npft < 1 | is.null(npft)) stop('no PFT specified')
 mtemp <- matrix(NA,n.trait,npft)
 row.names(mtemp) <- trait.names
-colnames(mtemp) <- pft.name
+colnames(mtemp) <- pft.names
 pft.summary <- list(mean = mtemp,sd=mtemp,n=mtemp)
 
 ### loop over pfts
-for( i in 1:npft){
-
-  pft <- pft.name[i]
-  outdir <- outdirs[i]
+for( pft in pfts){
   
   ## 1. get species list based on pft
-  spstr <- query.bety.pft_species(pft,con=con)
+  spstr <- query.bety.pft_species(pft$name,con=con)
   
   ## 2. get priors available for pft  
-  prior.distns <- query.bety.priors(pft, trstr,out=outdir,con=con)
+  prior.distns <- query.bety.priors(pft$name, trstr,out=pft$outdir,con=con)
+  prior.distns <- prior.distns[which(!rownames(prior.distns) %in% pft$exclude),]
   print(prior.distns)
   priors <- rownames(prior.distns) # vector of variables with prior distributions for pft 
   prior.defs <- trait.dictionary(priors)
-  save(prior.defs, file = paste(outdir, '/prior.defs.Rdata', sep=''))
-  
+  save(prior.defs, file = paste(pft$outdir, '/prior.defs.Rdata', sep=''))
+  browser()
   ## get traits for pft as a list with one dataframe per variable
   trait.data <- query.bety.traits(spstr,priors,con=con)
   traits <- names(trait.data)
@@ -75,12 +81,12 @@ for( i in 1:npft){
       trait.data[["SLA"]] = trait.data[["SLA"]][-sel,]            
     }
   }
-  save(trait.data, file = paste(outdir, '/trait.data.Rdata', sep=''))
+  save(trait.data, file = paste(pft$outdir, '/trait.data.Rdata', sep=''))
 
   trait.count <- sapply(trait.data,nrow)
   trait.average <- sapply(trait.data,function(x){mean(x$Y,na.rm=TRUE)})
   names(trait.average)[names(trait.average)=="Vcmax"] <- "Vm0"
-  pft.summary$n[match(names(trait.count),traits), i] <- trait.count
+  pft.summary$n[match(names(trait.count),traits), pft$name] <- trait.count
   
   ##prior.variances <- data.frame(var = unlist(t(sapply(1:nrow(prior.distns), function(i) with(prior.distns[i,], pdf.stats(distn, parama, paramb)))['var',])), row.names = priors)
   prior.variances = as.data.frame(rep(1,nrow(prior.distns)))
@@ -102,21 +108,20 @@ for( i in 1:npft){
   ##tauB = apply(prior.variances, 1, function(x) min(0.01, 0.01*x)))
     
   ## run the meta-analysis
-  trait.mcmc <- pecan.ma(trait.data, prior.distns, taupriors, j.iter = ma.iter, settings, outdir)
-  posteriors = approx.posterior(trait.mcmc,prior.distns,trait.data,outdir)
-  save(trait.mcmc, posteriors,file = paste(outdir, '/trait.mcmc.Rdata', sep=''))
+  trait.mcmc <- pecan.ma(trait.data, prior.distns, taupriors, j.iter = ma.iter, settings, pft$outdir)
+  posteriors = approx.posterior(trait.mcmc,prior.distns,trait.data,pft$outdir)
+  save(trait.mcmc, posteriors,file = paste(pft$outdir, '/trait.mcmc.Rdata', sep=''))
 
   trait.stats <- sapply(trait.mcmc,function(x){summary(x)$statistics['beta.o',1:2]})
 
   ma.traitnames <- names(trait.mcmc)
-  pft.summary$mean[match(colnames(trait.stats), ma.traitnames),i] <- trait.stats[1, ]
-  pft.summary$sd[match(colnames(trait.stats), ma.traitnames),i] <- trait.stats[2, ]
+  pft.summary$mean[match(colnames(trait.stats), ma.traitnames),pft$name] <- trait.stats[1, ]
+  pft.summary$sd[match(colnames(trait.stats), ma.traitnames),pft$name] <- trait.stats[2, ]
   
-  outfile2 <- paste(outdir, '/pecan.MA.Rdata', sep = '')
-  save.image(outfile2)
-  ##save(outdir, file='outdir.Rdata')
+  save(trait.mcmc, file=paste(pft$outdir, '/trait.mcmc.Rdata', sep = ''))
+  save(prior.distns, file=paste(pft$outdir, '/prior.distns.Rdata', sep = ''))
 
-  pecan.ma.summary(trait.mcmc, pft,outdir)
+  pecan.ma.summary(trait.mcmc, pft$name,pft$outdir)
   
 } ## end loop over pfts
 
