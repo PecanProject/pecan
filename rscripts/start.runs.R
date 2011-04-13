@@ -17,12 +17,6 @@ settings.xml <- xmlParse(settings.file)
 settings <- xmlToList(settings.xml)
 host     <-  settings$run$host
 
-pft <- settings$pfts[[1]]
-
-#move config files to machine hosting the model
-system(paste('rsync -outi ', 
-             pft$outdir, 'configs.tgz ', 
-             host$name, ':', host$rundir, sep = ''))
 #Make outdirectory
 system(paste('ssh -T ', host$name, 
              ' "mkdir ', host$outdir, get.run.time(), '"',sep=''))

@@ -4,10 +4,12 @@
     <pft>
       <name>tundra.grass</name>
       <outdir>~/pecan/out/grass/</outdir>
+      <edin>~/pecan/edin/templateED2IN-tundra.grass</edin>
     </pft>
     <pft>
        <name>tundra.evergreen</name>
        <outdir>~/pecan/out/evergreen/</outdir>
+      <edin>~/pecan/edin/templateED2IN-tundra.evergreen</edin>
        <exclude>
          <trait>c2n_leaf</trait>
        </exclude>
@@ -15,14 +17,12 @@
     <pft>
        <name>tundra.deciduous</name>
        <outdir>~/pecan/out/deciduous/</outdir>
+       <edin>~/pecan/edin/templateED2IN-tundra.deciduous</edin>
        <exclude>
          <trait>c2n_leaf</trait>
        </exclude>
     </pft>
   </pfts>
-  <write.config.input>
-    <edin>~/pecan/edin/templateED2IN-toolik</edin>
-  </write.config.input>
   <meta.analysis>
     <iter>300000</iter>
     <random.effects>TRUE</random.effects>
