@@ -30,14 +30,11 @@ zero.truncate <- function(y) {
   return(y)
 }
 
+
 sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
   traits <- names(trait.samples)
   sa.splinefuns <- sapply(traits, function(trait) sa.splinefun(sa.samples[[trait]], sa.output[[trait]]))
   
-  pdf(paste(outdir, 'sensitivity.analysis.pdf', sep=''), height = 12, width = 20)
-  print(lapply(traits, function(x) sensitivity.plot(sa.samples[[x]], sa.splinefuns[[x]], x)))
-  #left='Aboveground Biomass', main='Parameter Sensitivity', nrow=3,ncol=5) 
-  dev.off()
   spline.estimates <- lapply(traits, function(trait) zero.truncate(sa.splinefuns[[trait]](trait.samples[[trait]])))
   names(spline.estimates) <- traits
   sensitivities <- sapply(traits, function(trait) get.sensitivity(trait.samples[[trait]], sa.splinefuns[[trait]]))
@@ -50,6 +47,7 @@ sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
   if('Vm_low_temp' %in% traits)
     trait.samples[[which(traits == 'Vm_low_temp')]] <- trait.samples[[which(traits == 'Vm_low_temp')]] + 273.15
   coef.vars <- sapply(trait.samples, get.coef.var)
+  plot.sensitivities(sa.samples, sa.splinefuns, outdir)
+  
   plot.variance.decomposition(coef.vars, elasticities, explained.variances, outdir)
 }
-

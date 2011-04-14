@@ -44,8 +44,6 @@ for (i in seq(pft.names)){
   load(paste(outdirs[i], 'prior.distns.Rdata', sep=''))
 
   pft.name <- pft.names[i]
-  ## config header
-  pft.xml <- pecan.config.constants(pft.name)
 
   ## when no ma for a trait, sample from  prior
   traits <- names(trait.mcmc)
@@ -61,14 +59,16 @@ for (i in seq(pft.names)){
   }
 
   ## subset the trait.samples to ensemble size using Halton sequence 
-  ensemble.samples[[pft.name]] <- get.ensemble.samples(settings$ensemble$size, trait.samples[[pft.name]])
-  write.ensemble.configs(pft.xml, settings$pfts[[i]], ensemble.samples[[pft.name]], 
-      host, outdir, settings)
+  if('ensemble' %in% names(settings) && settings$ensemble$size > 0) {
+    ensemble.samples[[pft.name]] <- get.ensemble.samples(settings$ensemble$size, trait.samples[[pft.name]])
+    write.ensemble.configs(settings$pfts[[i]], ensemble.samples[[pft.name]], 
+        host, outdir, settings)
+  }
   
   if('sensitivity.analysis' %in% names(settings)) {
     quantiles <- get.quantiles(settings$sensitivity.analysis$quantiles)
     sa.samples[[pft.name]] <-  get.sa.samples(trait.samples[[pft.name]], quantiles)
-    write.sa.configs(pft.xml, settings$pfts[[i]], sa.samples[[pft.name]], 
+    write.sa.configs(settings$pfts[[i]], sa.samples[[pft.name]], 
         host, outdir, settings)
   }
 }
