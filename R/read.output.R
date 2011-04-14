@@ -1,33 +1,3 @@
-##' Read ED output 
-
-##'
-##' Extract ED output for specific variables from an hdf5 file
-##' @title 
-##' @param filename 
-##' @param variables 
-##' @return single value of AGB from  filename for all plants
-read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
-  library(hdf5, lib.loc='~/lib/R/')
-  MAGIC_NUMBER = 20
-  data <- hdf5load(filename, load = FALSE)[variables]
-  if(all(c("AGB_CO", "NPLANT") %in% variables)) {
-    return(sum(data$AGB_CO * data$NPLANT) * MAGIC_NUMBER)
-  }
-}
-
-##' ##' .. content for \description{} (no empty lines) ..
-##'
-##' Reads the output of a single model run
-##' @title 
-##' @param run.id the id distiguishing the model run
-##' @param outdir the directory that the model's output was sent to
-##' @return vector of output variable for all runs within ensemble
-read.output.ed <- function(run.id, outdir){
-  file.names <- dir(outdir, pattern=run.id, full.names=TRUE)
-  file.names <- file.names[grep('-Y-', file.names)]
-  return(sum(sapply(file.names, read.output.file.ed)))
-}
-
 ##' .. content for \description{} (no empty lines) ..
 ##'
 ##' 
