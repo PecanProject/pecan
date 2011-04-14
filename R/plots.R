@@ -76,7 +76,7 @@ plot.variance.decomposition <- function(coef.vars, elasticities, explained.varia
     elasticity.plot <- elasticity.plot + scale_y_log10(limits=c(elasticity.min, max(elasticities)))
   }
   
-  explained.var.plot <- qplot(traits, explained.variances, xlab='') + scale_y_log10(limits=c(1e-10, 1))
+  explained.var.plot <- qplot(traits, explained.variances, xlab='') + scale_y_log10(limits=c(1e-8, 1))
   
   ## stand in to be replaced by plot used in publication
   pdf(paste(outdir, 'variancedecomposition.pdf', sep=''), width = 12, height = 8)

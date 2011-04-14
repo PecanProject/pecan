@@ -39,27 +39,39 @@ abbreviate.run.id.ED <- function(run.id){
 get.run.time <- function(){
   format(Sys.time(), '%Y.%m.%d')
 }
+listToXml <- function(item, tag){
+  if(typeof(item)!='list')
+    return(xmlNode(tag, item))
+  xml <- xmlNode(tag)
+  for(name in names(item)){
+    xml <- append.xmlNode(xml, listToXml(item[[name]], name))
+  }
+  return(xml)
+}
 #Writes an xml and ED2IN config files for use with the Ecological Demography model.
-#Requires a pft.xml object, a list of trait values for a single model run,
+#Requires a pft xml object, a list of trait values for a single model run,
 #and the name of the file to create
-write.config.ED <- function(pft.xml, pft, trait.samples, settings, outdir, run.id){
-  
-  xml <- pft.xml$PFT
+write.config.ED <- function(pft, trait.samples, settings, outdir, run.id){
+  xml <- listToXml(pft$constants, 'pft')
   for (trait in names(trait.samples)) {
     xml <- append.xmlNode(xml, xmlNode(trait, trait.samples[trait]))
   }
-  xml <- append.xmlNode(pft.xml$CONFIG, xml)
+  config.header <- xmlNode("config")
+  if ('config.header' %in% names(settings)){
+    config.header <- listToXml(settings$config.header, 'config')
+  } 
+  xml <- append.xmlNode(config.header, xml)
   #c stands for config, abbreviated to work within ED's character limit
   xml.file.name <-paste('c.',run.id,sep='')  
   if(nchar(xml.file.name) >= 32) 
     stop(paste('The file name, "',xml.file.name,
-               '" is too long and will cause your ED run to crash ',
-               'if allowed to continue. '))
+            '" is too long and will cause your ED run to crash ',
+            'if allowed to continue. '))
   saveXML(xml, file = paste(outdir, xml.file.name, sep=''), 
-		  indent=TRUE, prefix = PREFIX_XML)
+      indent=TRUE, prefix = PREFIX_XML)
   
   ed2in.text <- scan(file=pft$edin, 
-		  what="character",sep='@', quote=NULL, quiet=TRUE)
+      what="character",sep='@', quote=NULL, quiet=TRUE)
   ed2in.text <- gsub('OUTDIR', settings$run$host$outdir, ed2in.text)
   ed2in.text <- gsub('RUNTIME', get.run.time(), ed2in.text)
   ed2in.text <- gsub('ENSNAME', run.id, ed2in.text)
@@ -79,16 +91,16 @@ convert.samples.ED <- function(trait.samples){
   ## convert SLA from kg leaf / m2 to kg C / m2
   if('SLA' %in% names(trait.samples)){
     if('leafC' %in% names(trait.samples))
-      trait.samples[['SLA']] <- trait.samples[['SLA']] * trait.samples[['leafC']]
+      trait.samples[['SLA']] <- trait.samples[['SLA']] / trait.samples[['leafC']]
     else
-      trait.samples[['SLA']] <- trait.samples[['SLA']] * DEFAULT.LEAF.C
+      trait.samples[['SLA']] <- trait.samples[['SLA']] / DEFAULT.LEAF.C
   }
-
+  
   ## convert leaf width / 1000
   if('leaf_width' %in% names(trait.samples)){
     trait.samples[['leaf_width']] <- trait.samples[['leaf_width']] / 1000.0
   }
-
+  
   ## TODO: result[, c('mean','stat')] <- result[, c('mean','stat')] / 0.48 
   ## TODO: Vcmax -> Vm0
   
@@ -103,16 +115,17 @@ convert.samples.ED <- function(trait.samples){
 get.ensemble.samples <- function(ensemble.size, samples) {
   #force as numeric for compatibility with Fortran code in halton()
   ensemble.size <- as.numeric(ensemble.size)
+  
   halton.samples <- halton(n = ensemble.size, dim=length(samples))
   #force as a matrix in case length(samples)=1
   halton.samples <- as.matrix(halton.samples)
-
+  
   ensemble.samples <- matrix(nrow = ensemble.size, ncol = length(samples))
   colnames(ensemble.samples) <- names(samples)
   for(ensemble.id in 1:ensemble.size) {
     for(trait.i in seq(samples)) {
       ensemble.samples[ensemble.id, trait.i] <- 
-        quantile(samples[[trait.i]], halton.samples[ensemble.id, trait.i])
+          quantile(samples[[trait.i]], halton.samples[ensemble.id, trait.i])
     }
   }
   return(ensemble.samples)
@@ -120,16 +133,16 @@ get.ensemble.samples <- function(ensemble.size, samples) {
 #Writes config files for use in meta-analysis and returns a list of run ids.
 #Given a pft.xml object, a list of lists as supplied by get.sa.samples, 
 #a name to distinguish the output files, and the directory to place the files.
-write.ensemble.configs <- function(pft.xml, pft, ensemble.samples, host, outdir, settings,
+write.ensemble.configs <- function(pft, ensemble.samples, host, outdir, settings,
     write.config = write.config.ED, convert.samples=convert.samples.ED){
   
   system(paste('ssh -T ', host$name, 
           ' "rm ', host$rundir, '/*', get.run.id('ENS', '', pft.name=pft.name), '*"', sep=''))
   for(ensemble.id in 1:nrow(ensemble.samples)) {
     run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, 5), 
-                         pft.name=pft$name)
+        pft.name=pft$name)
     unlink(paste(outdir, '/*', run.id, '*', sep=''))
-    write.config(pft.xml, pft, convert.samples(ensemble.samples[ensemble.id,]), 
+    write.config(pft, convert.samples(ensemble.samples[ensemble.id,]), 
         settings, outdir, run.id)
   }
   rsync(paste(outdir, '/*', get.run.id('ENS', '', pft.name=pft.name), '*', sep=''), 
@@ -171,8 +184,8 @@ get.sa.samples <- function(samples, quantiles){
 #Writes config files for use in sensitivity analysis, and returns a list of run ids.
 #Given a pft.xml object, a list of lists as supplied by get.sa.samples, 
 #a name to distinguish the output files, and the directory to place the files.
-write.sa.configs <- function(pft.xml, pft, quantile.samples, host, outdir, settings, 
-                             write.config=write.config.ED, convert.samples=convert.samples.ED){
+write.sa.configs <- function(pft, quantile.samples, host, outdir, settings, 
+    write.config=write.config.ED, convert.samples=convert.samples.ED){
   MEDIAN <- '50'
   traits <- colnames(quantile.samples)
   
@@ -181,8 +194,8 @@ write.sa.configs <- function(pft.xml, pft, quantile.samples, host, outdir, setti
   
   median.samples <- quantile.samples[MEDIAN,]
   run.id <- get.run.id('SA', 'median', pft.name=pft$name)
-  write.config(pft.xml, pft, convert.samples(median.samples), settings, outdir, run.id)
-
+  write.config(pft, convert.samples(median.samples), settings, outdir, run.id)
+  
   for (trait in traits) {
     quantiles.str <- rownames(quantile.samples)
     for(quantile.str in quantiles.str) {
@@ -192,7 +205,7 @@ write.sa.configs <- function(pft.xml, pft, quantile.samples, host, outdir, setti
         trait.samples[trait] <- quantile.samples[quantile.str, trait]
         run.id <- get.run.id('SA', round(quantile,3), trait=trait, pft.name=pft$name)
         unlink(paste(outdir, '/*', run.id, '*', sep=''))
-        write.config(pft.xml, pft, convert.samples(trait.samples), settings, outdir, run.id)
+        write.config(pft, convert.samples(trait.samples), settings, outdir, run.id)
       }
     }
   }
