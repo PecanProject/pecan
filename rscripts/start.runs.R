@@ -1,6 +1,6 @@
 library(XML)
 if(interactive()){
-   user <- system('echo $USER', intern = TRUE)
+  user <- system('echo $USER', intern = TRUE)
   if(user == 'dlebauer'){
     settings.file = '~/pecan/settings.pavi.xml'
   } else if(user == 'davids14') {
@@ -12,24 +12,15 @@ if(interactive()){
   settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
 }
 
+library(PECAn, lib.loc='~/lib/R')
 settings.xml <- xmlParse(settings.file)
 settings <- xmlToList(settings.xml)
+host     <-  settings$run$host
 
-outdir       <- settings$outdir
-pecanDir    <- settings$pecanDir
-
-model.host     <-  unlist(xpathApply(settings.xml, '//run//host//name', xmlValue))
-model.rundir   <-  unlist(xpathApply(settings.xml, '//run//host//rundir', xmlValue))
-model.outdir   <-  unlist(xpathApply(settings.xml, '//run//host//outdir', xmlValue))
-
-system(paste('cd', outdir))
-system(paste('rsync -outi ', outdir, 'configs.tgz ', model.host, ':', model.outdir, sep = ''))
-system(paste("echo 'cd ", model.outdir, "' | cat - ",   pecanDir, "bash/write.namelists.sh | ssh -T  ", model.host, sep = ''))
- 
-
-## move config files to run directory
-system(paste('ssh ', model.host, ' rsync -outi ', model.outdir, '*c.* ',  model.rundir, sep = '')) 
-## submit ensemble runs
-system(paste("echo 'cd ", model.rundir, "' | cat - ", pecanDir, "bash/batch.jobs.sh | ssh -T ", model.host, sep = ''))
-
-
+#Make outdirectory
+system(paste('ssh -T ', host$name, 
+             ' "mkdir ', host$outdir, get.run.time(), '"',sep=''))
+#Run model from user made bash script 
+system(paste("echo 'cd ", host$rundir, "' | ",
+             "cat - ", settings$pecanDir, "bash/batch.jobs.sh | ",
+             'ssh -T ', host$name, sep = ''))
