@@ -1,7 +1,6 @@
-out/*
+out/
 kepler/
 rscripts/
 bash/
 .*pdf
 .*Rdata
-out*
