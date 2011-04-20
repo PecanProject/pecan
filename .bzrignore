@@ -1221,3 +1221,5 @@ out/*
 out20101109
 quantiles1530.Rdata
 satest.log
+sensitivity.analysis.pdf
+variancedecomposition.pdf

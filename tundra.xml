@@ -4,29 +4,40 @@
     <pft>
       <name>tundra.grass</name>
       <outdir>~/pecan/out/grass/</outdir>
+      <edin>~/pecan/edin/templateED2IN-tundra.grass</edin>
+      <constants>
+        <num>5</num>    
+      </constants>
     </pft>
     <pft>
        <name>tundra.evergreen</name>
        <outdir>~/pecan/out/evergreen/</outdir>
+       <edin>~/pecan/edin/templateED2IN-tundra.evergreen</edin>
        <exclude>
          <trait>c2n_leaf</trait>
        </exclude>
+       <constants>
+         <num>8</num>
+       </constants>
     </pft>
     <pft>
        <name>tundra.deciduous</name>
        <outdir>~/pecan/out/deciduous/</outdir>
+       <edin>~/pecan/edin/templateED2IN-tundra.deciduous</edin>
        <exclude>
          <trait>c2n_leaf</trait>
-         <trait>SLA</trait>
        </exclude>
+       <constants>
+         <num>11</num>    
+       </constants>
     </pft>
   </pfts>
   <meta.analysis>
-    <iter>50000</iter>
+    <iter>300000</iter>
     <random.effects>TRUE</random.effects>
   </meta.analysis>
   <ensemble>
-    <size>100</size>
+    <size>0</size>
   </ensemble>
   <pecanDir>~/pecan/</pecanDir>
   <Rlibdir>~/lib/R/</Rlibdir>
@@ -60,5 +71,10 @@
       <hostname></hostname>
       <model.outdir></model.outdir>
     </site>
+    <host>
+      <name>ebi-cluster.igb.uiuc.edu</name>
+      <rundir>/home/davids14/EDBRAMS/ED/run/</rundir>
+      <outdir>/home/scratch/davids14/pecan/out/</outdir>
+    </host> 
   </run>
 </pecan>
