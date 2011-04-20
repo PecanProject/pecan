@@ -2,9 +2,7 @@
 <pecan>
   <pfts>
     <pft>
-      <name>
-	ebifarm.c4crop
-      </name>
+      <name>ebifarm.c4crop</name>
       <dir>
       </dir>
     </pft>

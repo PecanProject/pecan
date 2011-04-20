@@ -24,7 +24,7 @@ outdir <- settings$outdir
 
 require(PECAn)
 
-trait.names <- c('mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','growth_resp_factor','leaf_turnover_rate','leaf_width','nonlocal_dispersal','q','root_respiration_factor','root_turnover_rate','seedling_mortality','SLA','stomatal_slope','Vm_low_temp','quantum_efficiency','f_labile','c2n_leaf','water_conductance','Vcmax','r_fract','storage_turnover_rate','agf_bs')
+trait.names <- c('mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','growth_resp_factor','leaf_turnover_rate','leaf_width','nonlocal_dispersal','q','root_respiration_factor','root_turnover_rate','seedling_mortality','SLA','stomatal_slope','Vm_low_temp','quantum_efficiency','f_labile','c2n_leaf','water_conductance','Vcmax','r_fract','storage_turnover_rate','agf_bs', 'Vm0')
 trstr <- vecpaste(trait.names)
  
 n.trait = length(trait.names)
