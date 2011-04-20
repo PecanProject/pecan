@@ -225,12 +225,12 @@
    !      be avoided by all means, unless you are                                          !
    !      absolute sure of what you're doing;                                              !
    !---------------------------------------------------------------------------------------!
-   NL%IED_INIT_MODE   = 0
+   NL%IED_INIT_MODE   = 2
 
    NL%EDRES  = 1.0                     ! ED2/ED1 restart grid resolution
                                        !    (Ignored unless ied_init_mode is 3.
 
-   NL%SFILIN   = '/home/scratch/dietze_lab/toolik/'
+   NL%SFILIN   = '/home/davids14/EDBRAMS/ED/run/startup/toolik.'
 
 !----- Time of the history start ----------------------------------------------------------!
    NL%ITIMEH   = 0000     ! UTC
@@ -442,7 +442,7 @@
    NL%PLANTATION_STOCK  = 11      ! Plantation PFT  (used only if ianth_disturb=1)
 
 
-   NL%PFT_1ST_CHECK = 0 ! What should I do when I find a cohort with an unexpected PFT 
+   NL%PFT_1ST_CHECK = 2 ! What should I do when I find a cohort with an unexpected PFT 
                         !    in the history start?
                         ! 0. Stop the run;
                         ! 1. Add the PFT in the INCLUDE_THESE_PFT list;
