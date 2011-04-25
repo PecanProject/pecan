@@ -1,8 +1,8 @@
 query.bety.traits <- function(spstr, priors, con = NULL){
   synonyms = list('LMA'='SLA',
                   'leafN'='c2n_leaf',
-                  'FRC_RC'='q',
-                  'fine_root_biomass'='q',
+                  'FRC_RC'='fineroot2leaf',
+                  'fine_root_biomass'='fineroot2leaf',
                   'root_respiration_factor'='root_respiration_rate',
                   'Vm0'='Vcmax')
 
