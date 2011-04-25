@@ -193,11 +193,11 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     data$stat[leafNdataSE] <- apply(data[leafNdataSE, c('mean', 'stat', 'n')],1, function(x) inv.se(x[1],x[2],x[3]) )
     data$mean[data$vname == 'leafN'] <- 48/data$mean[data$vname == 'leafN']
     result <- data
-  } else if (trait == 'q') {
+  } else if (trait == 'fineroot2leaf') {
 
     #########################  FINE ROOT ALLOCATION  ############################
     ## query Q or FRC_RC
-    query <- paste("select traits.citation_id, traits.id, variables.name as vname, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) left join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,")  and variables.name in ('q', 'FRC_RC');", sep = "")
+    query <- paste("select traits.citation_id, traits.id, variables.name as vname, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) left join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,")  and variables.name in ('fineroot2leaf', 'FRC_RC');", sep = "")
     data <- fetch.transformed(con, query)
 
     ## query fine root biomass and leaf biomass
@@ -223,7 +223,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
               leaves = selT[which(data2$vname[selT] == "leaf_biomass")]
 
               if(length(roots) == 1 & length(leaves) == 1){
-                newrow = data2[roots,]; newrow$vname = 'q'
+                newrow = data2[roots,]; newrow$vname = 'fineroot2leaf'
                 if(is.na(data2$stat[leaves])){
                   newrow$mean = newrow$mean/data2$mean[leaves]
                   newrow$stat = newrow$stat/data2$mean[leaves]
