@@ -2,6 +2,7 @@
 #this function abbreviates run.ids for use in input files
 abbreviate.run.id.ED <- function(run.id){
   run.id <- gsub('tundra.', '', run.id)
+  run.id <- gsub('ebifarm.', '', run.id)
   run.id <- gsub('deciduous', 'decid', run.id)
   run.id <- gsub('evergreen', 'everg', run.id)
   run.id <- gsub('_', '', run.id)

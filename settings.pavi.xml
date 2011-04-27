@@ -3,8 +3,11 @@
   <pfts>
     <pft>
       <name>ebifarm.c4crop</name>
-      <outdir>/home/dlebauer/pecan/out/</outdir>
-      <edin>~/pecan/edin/ebifarm/aED2IN/</edin>
+      <outdir>~/pecan/out/pavi/</outdir>
+      <edin>~/pecan/edin/ebifarm/aED2IN</edin>
+      <exclude>
+        <trait>seedling_mortality</trait>    
+      </exclude>
       <constants>
         <num>15</num>
         <phenology>2</phenology>
@@ -51,9 +54,9 @@
     <end.year></end.year>
   </sensitivity.analysis>
   
-  <pecanDir>/home/dlebauer/pecan/</pecanDir>
-  <Rlibdir>/home/dlebauer/lib/R/</Rlibdir>
-  <outdir>/home/dlebauer/pecan/out/</outdir>
+  <pecanDir>~/pecan/</pecanDir>
+  <Rlibdir>~/lib/R/</Rlibdir>
+  <outdir>~/pecan/out/</outdir>
   <database>
     <userid>ebi_analys_user</userid>
     <passwd>b742xsAu</passwd>
@@ -71,8 +74,8 @@
     <end.date></end.date>
     <host>
       <name>ebi-cluster.igb.uiuc.edu</name>
-      <rundir>/home/dlebauer/EDBRAMS/ED/run/</rundir>
-      <outdir>/home/scratch/dlebauer/pecan/out/</outdir>
+      <rundir>~/EDBRAMS/ED/run/</rundir>
+      <outdir>/home/scratch/$USER/pecan/out/</outdir>
     </host>
   </run>
 </pecan>
