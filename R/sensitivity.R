@@ -39,7 +39,7 @@ sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
   names(spline.estimates) <- traits
   sensitivities <- sapply(traits, function(trait) get.sensitivity(trait.samples[[trait]], sa.splinefuns[[trait]]))
   elasticities <- sapply(traits, 
-      function(trait) get.elasticity(sensitivities[[trait]], trait.samples[[trait]], spline.estimates[[trait]]))
+      function(trait) abs(get.elasticity(sensitivities[[trait]], trait.samples[[trait]], spline.estimates[[trait]])))
   variances <- sapply(traits, function(trait) var(spline.estimates[[trait]]))
   explained.variances <- variances / sum(variances)
   

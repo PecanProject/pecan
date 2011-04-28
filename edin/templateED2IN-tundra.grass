@@ -230,7 +230,7 @@
    NL%EDRES  = 1.0                     ! ED2/ED1 restart grid resolution
                                        !    (Ignored unless ied_init_mode is 3.
 
-   NL%SFILIN   = '/home/scratch/dietze_lab/toolik/'
+   NL%SFILIN   = '/home/davids14/EDBRAMS/ED/run/startup/toolik.'
 
 !----- Time of the history start ----------------------------------------------------------!
    NL%ITIMEH   = 0000     ! UTC
