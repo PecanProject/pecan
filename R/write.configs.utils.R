@@ -1,36 +1,3 @@
-PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
-
-##### Generic functions #####
-#returns a string representing a given number 
-#left padded by zeros up to a given number of digits
-left.pad.zeros <- function(num, digits){
-  format_string <- paste('%',sprintf('0%.0f.0f',digits),sep='')
-  return(sprintf(format_string, num))
-}
-rsync <- function(from, to){
-  system(paste('rsync -outi', from, to, sep = ' '), intern=TRUE)
-}
-#returns an id representing a model run
-#for use in model input files and indices
-get.run.id <- function(run.type, index, trait='', pft.name=''){
-  run.id <- paste(pft.name, run.type, trait, index, sep='')
-  return(abbreviate.run.id.ED(run.id))
-}
-get.run.time <- function(){
-  format(Sys.time(), '%Y.%m.%d')
-}
-listToXml <- function(item, tag){
-  if(typeof(item)!='list')
-    return(xmlNode(tag, item))
-  xml <- xmlNode(tag)
-  for(name in names(item)){
-    xml <- append.xmlNode(xml, listToXml(item[[name]], name))
-  }
-  return(xml)
-}
-
-
-
 ##### Ensemble functions #####
 #Returns a matrix of pseudo random values assigned to traits over several model runs.
 #given the number of model runs and a list of sample distributions for traits

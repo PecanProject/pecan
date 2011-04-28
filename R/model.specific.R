@@ -1,6 +1,9 @@
+PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
+
 #As is the case with ED, input files must be <32 characters long.
 #this function abbreviates run.ids for use in input files
 abbreviate.run.id.ED <- function(run.id){
+  #TODO: remove references to specific pft names and use outdir
   run.id <- gsub('tundra.', '', run.id)
   run.id <- gsub('ebifarm.', '', run.id)
   run.id <- gsub('deciduous', 'decid', run.id)
