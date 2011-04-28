@@ -1,36 +1,3 @@
-PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
-
-##### Generic functions #####
-#returns a string representing a given number 
-#left padded by zeros up to a given number of digits
-left.pad.zeros <- function(num, digits){
-  format_string <- paste('%',sprintf('0%.0f.0f',digits),sep='')
-  return(sprintf(format_string, num))
-}
-rsync <- function(from, to){
-  system(paste('rsync -outi', from, to, sep = ' '), intern=TRUE)
-}
-#returns an id representing a model run
-#for use in model input files and indices
-get.run.id <- function(run.type, index, trait='', pft.name=''){
-  run.id <- paste(pft.name, run.type, trait, index, sep='')
-  return(abbreviate.run.id.ED(run.id))
-}
-get.run.time <- function(){
-  format(Sys.time(), '%Y.%m.%d')
-}
-listToXml <- function(item, tag){
-  if(typeof(item)!='list')
-    return(xmlNode(tag, item))
-  xml <- xmlNode(tag)
-  for(name in names(item)){
-    xml <- append.xmlNode(xml, listToXml(item[[name]], name))
-  }
-  return(xml)
-}
-
-
-
 ##### Ensemble functions #####
 #Returns a matrix of pseudo random values assigned to traits over several model runs.
 #given the number of model runs and a list of sample distributions for traits
@@ -38,11 +5,7 @@ listToXml <- function(item, tag){
 get.ensemble.samples <- function(ensemble.size, samples) {
   #force as numeric for compatibility with Fortran code in halton()
   ensemble.size <- as.numeric(ensemble.size)
-<<<<<<< TREE
   
-=======
-  if(ensemble.size <= 0) return(NULL)
->>>>>>> MERGE-SOURCE
   halton.samples <- halton(n = ensemble.size, dim=length(samples))
   #force as a matrix in case length(samples)=1
   halton.samples <- as.matrix(halton.samples)
@@ -62,16 +25,9 @@ get.ensemble.samples <- function(ensemble.size, samples) {
 #a name to distinguish the output files, and the directory to place the files.
 write.ensemble.configs <- function(pft, ensemble.samples, host, outdir, settings,
     write.config = write.config.ED, convert.samples=convert.samples.ED){
-<<<<<<< TREE
   
   system(paste('ssh -T ', host$name, 
           ' "rm ', host$rundir, '/*', get.run.id('ENS', '', pft.name=pft.name), '*"', sep=''))
-=======
-
-  if(is.null(ensemble.samples)) return(NULL)
-
-  run.ids<-list()
->>>>>>> MERGE-SOURCE
   for(ensemble.id in 1:nrow(ensemble.samples)) {
     run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, 5), 
         pft.name=pft$name)
