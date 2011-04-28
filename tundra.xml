@@ -2,14 +2,6 @@
 <pecan>
   <pfts>
     <pft>
-      <name>tundra.grass</name>
-      <outdir>~/pecan/out/grass/</outdir>
-      <edin>~/pecan/edin/templateED2IN-tundra.grass</edin>
-      <constants>
-        <num>5</num>    
-      </constants>
-    </pft>
-    <pft>
        <name>tundra.evergreen</name>
        <outdir>~/pecan/out/evergreen/</outdir>
        <edin>~/pecan/edin/templateED2IN-tundra.evergreen</edin>
@@ -30,6 +22,14 @@
        <constants>
          <num>11</num>    
        </constants>
+    </pft>
+    <pft>
+      <name>tundra.grass</name>
+      <outdir>~/pecan/out/grass/</outdir>
+      <edin>~/pecan/edin/templateED2IN-tundra.grass</edin>
+      <constants>
+        <num>5</num>    
+      </constants>
     </pft>
   </pfts>
   <meta.analysis>
