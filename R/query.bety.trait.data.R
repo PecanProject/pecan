@@ -4,7 +4,7 @@
 #' query.bety.trait.data extracts data from BETYdb for a given trait and species, converts all statistics to 
 #' summary statistics, and prepares a dataframe for use in meta-analysis.
 #' For Vcmax and SLA data, only data collected between  April and July are queried, and only data collected from
-#' the top of the canopy (canopy height > 0.66). For Vcmax and root_respiration_factor, data are scaled
+#' the top of the canopy (canopy height > 0.66). For Vcmax and root_respiration_maintenance, data are scaled
 #' converted from measurement temperature to \eqn{15^oC} (ED default) via the arrhenius equation.
 #'
 #' @param trait is the trait name used in BETY, stored in variables.name
@@ -86,7 +86,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     return(NULL)
   } 
    
-  if(trait == 'root_respiration_factor') trait <- 'root_respiration_rate'
+  if(trait == 'root_respiration_maintenance') trait <- 'root_respiration_total'
   if(trait == 'Vm0') trait <- 'Vcmax'
 
   if(trait == 'Vcmax') {
@@ -167,14 +167,14 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
 
     result <- data
     
-  } else if (trait == 'root_respiration_rate') {
+  } else if (trait == 'root_respiration_total') {
 
     #########################  ROOT RESPIRATION   ############################
-    query <- paste("select trt.id, trt.citation_id, trt.site_id, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n, tdhc1.level as 'temp' from traits as trt left join covariates as tdhc1 on (tdhc1.trait_id = trt.id)  left join treatments as treat on (trt.treatment_id = treat.id) left join variables as tdhc1_var on (tdhc1.variable_id = tdhc1_var.id) left join sites on (sites.id = trt.site_id)  left join species as spec on (trt.specie_id = spec.id) left join plants on (spec.plant_id = plants.id) left join variables as var on (var.id = trt.variable_id) where trt.variable_id in (select id from variables where name = 'root_respiration_rate') and specie_id in (",spstr,") and tdhc1_var.name = 'rootT';", sep = '') 
+    query <- paste("select trt.id, trt.citation_id, trt.site_id, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n, tdhc1.level as 'temp' from traits as trt left join covariates as tdhc1 on (tdhc1.trait_id = trt.id)  left join treatments as treat on (trt.treatment_id = treat.id) left join variables as tdhc1_var on (tdhc1.variable_id = tdhc1_var.id) left join sites on (sites.id = trt.site_id)  left join species as spec on (trt.specie_id = spec.id) left join plants on (spec.plant_id = plants.id) left join variables as var on (var.id = trt.variable_id) where trt.variable_id in (select id from variables where name = 'root_respiration_total') and specie_id in (",spstr,") and tdhc1_var.name = 'rootT';", sep = '') 
     data <- fetch.transformed(con, query)
     
     ## Scale to 15C using Arrhenius scaling,
-    ## Convert root_respiration_rate to root_respiration_factor (i.e. maintenance respiration)
+    ## Convert root_respiration_total to root_respiration_maintenance (i.e. maintenance respiration)
     ## assuming a 1:1 partitioning of growth:maintenance respiration
     data$mean <- arrhenius.scaling(data$mean, data$temp)/2
     data$stat <- arrhenius.scaling(data$stat, data$temp)/2

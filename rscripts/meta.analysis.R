@@ -24,7 +24,7 @@ outdir <- settings$outdir
 
 require(PECAn)
 
-trait.names <- c('mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','growth_resp_factor','leaf_turnover_rate','leaf_width','nonlocal_dispersal','fineroot2leaf','root_respiration_factor','root_turnover_rate','seedling_mortality','SLA','stomatal_slope','Vm_low_temp','quantum_efficiency','f_labile','c2n_leaf','water_conductance','Vcmax','r_fract','storage_turnover_rate','agf_bs')
+trait.names <- c('mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','growth_resp_factor','leaf_turnover_rate','leaf_width','nonlocal_dispersal','fineroot2leaf','root_respiration_maintenance','root_turnover_rate','seedling_mortality','SLA','stomatal_slope','Vm_low_temp','quantum_efficiency','f_labile','c2n_leaf','water_conductance','Vcmax','r_fract','storage_turnover_rate','agf_bs')
 
 trstr <- vecpaste(trait.names)
  
@@ -72,9 +72,9 @@ for( pft in pfts){
   traits <- names(trait.data)
 
   ## DATA HACKS **** THESE SHOULD BE FIXED IN THE DATABASE*******
-  if("root_respiration_factor" %in% names(trait.data)){
-    sel = which(trait.data[["root_respiration_factor"]]$Y < 0.05)
-    trait.data[["root_respiration_factor"]]$Y[sel] = trait.data[["root_respiration_factor"]]$Y[sel]*1000
+  if("root_respiration_maintenance" %in% names(trait.data)){
+    sel = which(trait.data[["root_respiration_maintenance"]]$Y < 0.05)
+    trait.data[["root_respiration_maintenance"]]$Y[sel] = trait.data[["root_respiration_maintenance"]]$Y[sel]*1000
   }
   if("SLA" %in% names(trait.data)){
     sel = which(trait.data[["SLA"]]$citation_id %in% c(311))
