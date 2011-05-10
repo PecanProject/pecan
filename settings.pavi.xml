@@ -2,12 +2,9 @@
 <pecan>
   <pfts>
     <pft>
-      <name>ebifarm.c4crop</name>
+      <name>ebifarm.pavi</name>
       <outdir>~/pecan/out/pavi/</outdir>
       <edin>~/pecan/edin/ebifarm/aED2IN</edin>
-      <exclude>
-        <trait>seedling_mortality</trait>    
-      </exclude>
       <constants>
         <num>15</num>
         <phenology>2</phenology>

@@ -3,7 +3,7 @@ query.bety.traits <- function(spstr, priors, con = NULL){
                   'leafN'='c2n_leaf',
                   'FRC_RC'='fineroot2leaf',
                   'fine_root_biomass'='fineroot2leaf',
-                  'root_respiration_factor'='root_respiration_rate',
+                  'root_respiration_maintenance'='root_respiration_total',
                   'Vm0'='Vcmax')
 
   if(is.null(con)){
