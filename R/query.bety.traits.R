@@ -1,10 +1,11 @@
 query.bety.traits <- function(spstr, priors, con = NULL){
-  synonyms = list('LMA'='SLA',
-                  'leafN'='c2n_leaf',
-                  'FRC_RC'='fineroot2leaf',
-                  'fine_root_biomass'='fineroot2leaf',
-                  'root_respiration_maintenance'='root_respiration_total',
-                  'Vm0'='Vcmax')
+  trait.synonym.dictionary = list(SLA = 'LMA',
+    c2n_leaf = 'leafN',
+    root_respiration_maintenance = 'root_respiration_total',
+    fineroot2leaf = 'FRC_RC',
+    fineroot2leaf = 'fine_root_biomass')
+  sel <- names(trait.synonym.dictionary) %in% priors
+  trait.synonyms <-  unlist(trait.synonym.dictionary[sel])
 
   if(is.null(con)){
     con <- query.bety.con(...)
@@ -18,15 +19,15 @@ query.bety.traits <- function(spstr, priors, con = NULL){
   query <- paste("select distinct variables.name from traits join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,");", sep = "")
   query.result <- dbSendQuery(con, query)
   traits <- fetch(query.result, n = -1)$name
-  for(synonym in names(synonyms)) traits <- gsub(synonym, synonyms[synonym], traits)
+ 
   traits <- unique(traits)
-  traits <- traits[which(traits %in% priors)]
+  traits <- traits[which(traits %in% append(trait.synonyms, priors))]
 
   ##*TODO
   ## Need to write query for:
   ## first check pft_species for grass or tree 
-  ##      if grass, root and shoot to calculate q
-  ##      if tree, fine root and leaf to calculate q
+  ##      if grass, root and shoot to calculate fineroot2leaf
+  ##      if tree, fine root and leaf to calculate fineroot2leaf
 
   ## grab trait data
   trait.data <- lapply(traits, function(trait) query.bety.trait.data(trait, spstr, con=con))
