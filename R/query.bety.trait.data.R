@@ -128,7 +128,6 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     result <- drop.columns(data, c('leafT', 'canopy_layer','date','dateloc'))
     
   } else if (trait == 'SLA') {
-
     
     #########################    SLA    ############################
     query <- paste("select trt.id, trt.citation_id, trt.site_id, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n from traits as trt left join treatments as treat on (trt.treatment_id = treat.id)  left join sites on (sites.id = trt.site_id) where trt.variable_id in (select id from variables where name = 'SLA')  and specie_id in (",spstr,");", sep = "")
@@ -187,13 +186,20 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   } else if (trait == 'root_respiration_rate') {
 
     #########################  ROOT RESPIRATION   ############################
-    query <- paste("select trt.id, trt.citation_id, trt.site_id, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n, tdhc1.level as 'temp' from traits as trt left join covariates as tdhc1 on (tdhc1.trait_id = trt.id)  left join treatments as treat on (trt.treatment_id = treat.id) left join variables as tdhc1_var on (tdhc1.variable_id = tdhc1_var.id) left join sites on (sites.id = trt.site_id)  left join species as spec on (trt.specie_id = spec.id) left join plants on (spec.plant_id = plants.id) left join variables as var on (var.id = trt.variable_id) where trt.variable_id in (select id from variables where name = 'root_respiration_rate') and specie_id in (",spstr,") and tdhc1_var.name = 'rootT';", sep = '') 
+    query <- paste("select traits.id, traits.citation_id, traits.site_id, treatments.name, traits.date, traits.dateloc, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
     data <- fetch.stats2se(con, query)
+
+    q <- dbSendQuery(con,paste("select covariates.trait_id, covariates.level,variables.name from covariates left join variables on variables.id = covariates.variable_id where trait_id in (",vecpaste(data$id),")",sep=""))
+    all.covs <- fetch(q,n=-1)
+    t.temp <- all.covs[all.covs$name %in% c('rootT', 'airT'), ]
+    temp.cov <- transform(t.temp, id = trait_id, rootT = level)[, c('id', 'rootT')]
+
+    data <- merge(temp.cov, data, all = TRUE)
     
     ## Scale to 25C using Arrhenius scaling,
     data$mean <- arrhenius.scaling(data$mean, old.temp = data$temp, new.temp = 25)
     data$stat <- arrhenius.scaling(data$stat, old.temp = data$temp, new.temp = 25)
-    result <- drop.columns(data, 'temp')
+    result <- drop.columns(data, c('rootT', 'date', 'dateloc'))
     
   } else if (trait == 'c2n_leaf') {
 
