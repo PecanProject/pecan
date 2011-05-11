@@ -17,7 +17,7 @@ model
   #SSS }
   #GGG beta.ghs[1]  <- 0                               
   #GGG beta.ghs[2]  ~ dnorm(0, 0.01)
-  beta.o    ~ PRIORDIST (PRIORPARAMA, PRIORPARAMB)
+  beta.o    ~ PRIORDIST (PRIORPARAMA, PRIORPARAMB)#BBB
   #SSS tau.site  ~ dgamma(TAUA, TAUB)
   #TTT tau.trt   ~ dgamma(TAUA, TAUB)
   prec.y    ~ dgamma(TAUA, TAUB)     
