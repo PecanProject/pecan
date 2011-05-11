@@ -2,6 +2,7 @@ PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
 
 #As is the case with ED, input files must be <32 characters long.
 #this function abbreviates run.ids for use in input files
+##TODO fix this filename restriction bug in ED, remove abbreviate.run.id.ED 
 abbreviate.run.id.ED <- function(run.id){
   #TODO: remove references to specific pft names and use outdir
   run.id <- gsub('tundra.', '', run.id)
@@ -26,21 +27,24 @@ abbreviate.run.id.ED <- function(run.id){
 #such as those provided to write.config
 convert.samples.ED <- function(trait.samples){
   DEFAULT.LEAF.C <- 0.48
+  DEFAULT.MAINTENANCE.RESPIRATION <- 1/2
   ## convert SLA from kg leaf / m2 to kg C / m2
   if('SLA' %in% names(trait.samples)){
-    if('leafC' %in% names(trait.samples))
-      trait.samples[['SLA']] <- trait.samples[['SLA']] / trait.samples[['leafC']]
-    else
-      trait.samples[['SLA']] <- trait.samples[['SLA']] / DEFAULT.LEAF.C
+      transform(trait.samples, SLA = SLA / DEFAULT.LEAF.C)
   }
   
   ## convert leaf width / 1000
   if('leaf_width' %in% names(trait.samples)){
-    trait.samples[['leaf_width']] <- trait.samples[['leaf_width']] / 1000.0
+    transform(trait.samples, leaf_width = leaf_width / 1000.0)
   }
   
-  ## TODO: result[, c('mean','stat')] <- result[, c('mean','stat')] / 0.48 
-  ## TODO: Vcmax -> Vm0
+  if('root_respiration_rate' %in% names(trait.samples)) {
+    transform(trait.samples, root_respiration_rate = root_respiration_rate * DEFAULT.MAINTENANCE.RESPIRATION)
+  }
+     
+  if('Vcmax' %in% names(trait.samples)) {
+       transform(trait.samples, Vcmax = arrhenius.scaling(Vcmax, old.temp = 25, new.temp = 15)
+  }
   
   return(trait.samples)
 }
