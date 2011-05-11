@@ -80,13 +80,13 @@ drop.columns <- function(data, columns){
 ##' Extract trait data from BETYdb
 ##' @name query.bety.trait.data
 ##'
-##' query.bety.trait.data extracts data from BETYdb for a given trait and species, converts all statistics to 
-##' summary statistics, and prepares a dataframe for use in meta-analysis.
-##' For Vcmax and SLA data, only data collected between  April and July are queried, and only data collected from
-##' the top of the canopy (canopy height > 0.66). For Vcmax and root_respiration_rate, data are scaled
+##' \code{query.bety.trait.data} extracts data from BETYdb for a given trait and set of species,
+##' converts all statistics to summary statistics, and prepares a dataframe for use in meta-analysis.
+##' For Vcmax and SLA data, only data collected between  April and July are queried, and only data collected from the top of the canopy (canopy height > 0.66).
+##' For Vcmax and root_respiration_rate, data are scaled
 ##' converted from measurement temperature to \eqn{25^oC} via the arrhenius equation.
 ##'
-##' @param trait is the trait name used in BETY, stored in variables.name
+##' @param trait is the traiat name used in BETY, stored in variables.name
 ##' @param spstr is the species.id integer or string of integers associated with the species
 ##'  
 ##' @return dataframe ready for use in meta-analysis
@@ -111,9 +111,15 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     ## grab covariate data
     q <- dbSendQuery(con,paste("select covariates.trait_id, covariates.level,variables.name from covariates left join variables on variables.id = covariates.variable_id where trait_id in (",vecpaste(data$id),")",sep=""))
     all.covs <- fetch(q,n=-1)
-    t.temp <- all.covs[all.covs$name %in% c('leafT', 'airT'), ]
-    temp.cov <- transform(t.temp, id = trait_id, leafT = level)[, c('id', 'leafT')]
 
+    ## get temperature covariates
+    leafT.covs  <- all.covs[all.covs$name == 'leafT',]
+    ## use airT as leafT if only airT available
+    airT.covs   <- all.covs[all.covs$name == 'airT' & ! all.covs$trait_id %in% leafT.covs$trait_id, ]
+    t.covs      <- rbind(leafT.covs, airT.covs)
+    temp.cov <- transform(t.covs, id = trait_id, leafT = level)[, c('id', 'leafT')]
+
+    ## get canopy height covariates
     ht.temp <- all.covs[all.covs$name == 'canopy_layer', ]
     ht.cov  <- transform(ht.temp, id = trait_id, canopy_layer = level)[, c('id', 'canopy_layer')]
 
@@ -121,10 +127,17 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     
     ## select sunleaf data
     data <- data[data$canopy_layer >= 0.66 | is.na(data$canopy_layer), ]
+    ## set default leafT to 25 if unknown
     data$leafT[is.na(data$leafT)] <-  25
 
     data$mean <- arrhenius.scaling(data$mean, old.temp = data$leafT)
     data$stat <- arrhenius.scaling(data$stat, old.temp = data$leafT)
+
+    ## select only summer data for Panicum virgatum
+    ##TODO fix following hack to select only summer data
+    if (spstr == "'938'"){
+      data <- subset(data, subset = as.POSIXlt(data$date)$mon %in% c(0,5,6,7))
+    }
     result <- drop.columns(data, c('leafT', 'canopy_layer','date','dateloc'))
     
   } else if (trait == 'SLA') {
@@ -156,7 +169,14 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
       data[match(covs$trait_id[j],data$id),covs$name[j]] = covs$level[j]
     }
     ## select sunleaf data
-    data = data[data$canopy_layer >= 0.66,]    
+    data = data[data$canopy_layer >= 0.66,]
+
+    ## select only summer data for Panicum virgatum
+    ##TODO fix this kludge
+    if (spstr == "'938'"){
+      data <- subset(data, subset = as.POSIXlt(data$date)$mon %in% c(0,5,6,7))
+    }
+
     result <- drop.columns(data, 'canopy_layer')
 
   } else if (trait == 'leaf_turnover_rate'){
@@ -191,8 +211,13 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
 
     q <- dbSendQuery(con,paste("select covariates.trait_id, covariates.level,variables.name from covariates left join variables on variables.id = covariates.variable_id where trait_id in (",vecpaste(data$id),")",sep=""))
     all.covs <- fetch(q,n=-1)
-    t.temp <- all.covs[all.covs$name %in% c('rootT', 'airT'), ]
-    temp.cov <- transform(t.temp, id = trait_id, rootT = level)[, c('id', 'rootT')]
+
+    ## get temperature covariates
+    rootT.covs  <- all.covs[all.covs$name == 'rootT',]
+    ## use airT as rootT if only airT available
+    airT.covs   <- all.covs[all.covs$name == 'airT' & ! all.covs$trait_id %in% rootT.covs$trait_id, ]
+    t.covs      <- rbind(rootT.covs, airT.covs)
+    temp.cov <- transform(t.covs, id = trait_id, rootT = level)[, c('id', 'rootT')]
 
     data <- merge(temp.cov, data, all = TRUE)
     
