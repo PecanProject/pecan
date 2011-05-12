@@ -35,13 +35,19 @@ write.ensemble.configs <- function(pft, ensemble.samples, host, outdir, settings
     write.config(pft, convert.samples(ensemble.samples[ensemble.id,]), 
         settings, outdir, run.id)
   }
+  browser()
   rsync(paste(outdir, '/*', get.run.id('ENS', '', pft.name=pft.name), '*', sep=''), 
       paste(host$name, ':', host$rundir,  sep=''))
 }
 
 
-##### Sensitivity analysis functions #####
-#Returns a vector of quantiles specified by a given <quantiles> xml tag
+
+
+##' Returns a vector of quantiles specified by a given <quantiles> xml tag
+##'
+##' @title Get Quantiles  
+##' @param quantiles.tag specifies tag used to specify quantiles
+##' @return vector of quantiles
 get.quantiles <- function(quantiles.tag) {
   quantiles<-vector()
   if (!is.null(quantiles.tag$quantile)) {
@@ -59,6 +65,7 @@ get.quantiles <- function(quantiles.tag) {
   }
   return(sort(quantiles))
 }
+
 #Returns a list of lists representing quantile values of trait distributions,
 #given a list of sample distributions for traits and a list of quantiles
 #The list is indexed first by trait, then by quantile
@@ -71,9 +78,22 @@ get.sa.samples <- function(samples, quantiles){
   }
   return(sa.samples)
 }
-#Writes config files for use in sensitivity analysis, and returns a list of run ids.
-#Given a pft.xml object, a list of lists as supplied by get.sa.samples, 
-#a name to distinguish the output files, and the directory to place the files.
+
+
+
+
+##'
+##'
+##' Writes config files for use in sensitivity analysis, and returns a list of run ids... content for \details{} ..
+##' @title 
+##' @param pft a pft.xml object, a list of lists as supplied by get.sa.samples 
+##' @param quantile.samples 
+##' @param host host where model is run
+##' @param outdir directory to place the files.
+##' @param settings 
+##' @param write.config 
+##' @param convert.samples 
+##' @return 
 write.sa.configs <- function(pft, quantile.samples, host, outdir, settings, 
     write.config=write.config.ED, convert.samples=convert.samples.ED){
   MEDIAN <- '50'
