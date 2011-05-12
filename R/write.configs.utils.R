@@ -1,13 +1,13 @@
 ##### Ensemble functions #####
-#Returns a matrix of pseudo random values assigned to traits over several model runs.
-#given the number of model runs and a list of sample distributions for traits
-#The model run is indexed first by model run, then by trait
+                                        #Returns a matrix of pseudo random values assigned to traits over several model runs.
+                                        #given the number of model runs and a list of sample distributions for traits
+                                        #The model run is indexed first by model run, then by trait
 get.ensemble.samples <- function(ensemble.size, samples) {
-  #force as numeric for compatibility with Fortran code in halton()
+                                        #force as numeric for compatibility with Fortran code in halton()
   ensemble.size <- as.numeric(ensemble.size)
   
   halton.samples <- halton(n = ensemble.size, dim=length(samples))
-  #force as a matrix in case length(samples)=1
+                                        #force as a matrix in case length(samples)=1
   halton.samples <- as.matrix(halton.samples)
   
   ensemble.samples <- matrix(nrow = ensemble.size, ncol = length(samples))
@@ -15,29 +15,29 @@ get.ensemble.samples <- function(ensemble.size, samples) {
   for(ensemble.id in 1:ensemble.size) {
     for(trait.i in seq(samples)) {
       ensemble.samples[ensemble.id, trait.i] <- 
-          quantile(samples[[trait.i]], halton.samples[ensemble.id, trait.i])
+        quantile(samples[[trait.i]], halton.samples[ensemble.id, trait.i])
     }
   }
   return(ensemble.samples)
 }
-#Writes config files for use in meta-analysis and returns a list of run ids.
-#Given a pft.xml object, a list of lists as supplied by get.sa.samples, 
-#a name to distinguish the output files, and the directory to place the files.
+                                        #Writes config files for use in meta-analysis and returns a list of run ids.
+                                        #Given a pft.xml object, a list of lists as supplied by get.sa.samples, 
+                                        #a name to distinguish the output files, and the directory to place the files.
 write.ensemble.configs <- function(pft, ensemble.samples, host, outdir, settings,
-    write.config = write.config.ED, convert.samples=convert.samples.ED){
+                                   write.config <- write.config.ED, convert.samples=convert.samples.ED){
   
   system(paste('ssh -T ', host$name, 
-          ' "rm ', host$rundir, '/*', get.run.id('ENS', '', pft.name=pft.name), '*"', sep=''))
+               ' "rm ', host$rundir, '/*', get.run.id('ENS', '', pft.name=pft.name), '*"', sep=''))
   for(ensemble.id in 1:nrow(ensemble.samples)) {
     run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, 5), 
-        pft.name=pft$name)
+                         pft.name=pft$name)
     unlink(paste(outdir, '/*', run.id, '*', sep=''))
     write.config(pft, convert.samples(ensemble.samples[ensemble.id,]), 
-        settings, outdir, run.id)
+                 settings, outdir, run.id)
   }
   browser()
   rsync(paste(outdir, '/*', get.run.id('ENS', '', pft.name=pft.name), '*', sep=''), 
-      paste(host$name, ':', host$rundir,  sep=''))
+        paste(host$name, ':', host$rundir,  sep=''))
 }
 
 
@@ -66,9 +66,9 @@ get.quantiles <- function(quantiles.tag) {
   return(sort(quantiles))
 }
 
-#Returns a list of lists representing quantile values of trait distributions,
-#given a list of sample distributions for traits and a list of quantiles
-#The list is indexed first by trait, then by quantile
+                                        #Returns a list of lists representing quantile values of trait distributions,
+                                        #given a list of sample distributions for traits and a list of quantiles
+                                        #The list is indexed first by trait, then by quantile
 get.sa.samples <- function(samples, quantiles){
   sa.samples <- data.frame()
   for(trait in names(samples)){
@@ -95,12 +95,12 @@ get.sa.samples <- function(samples, quantiles){
 ##' @param convert.samples 
 ##' @return 
 write.sa.configs <- function(pft, quantile.samples, host, outdir, settings, 
-    write.config=write.config.ED, convert.samples=convert.samples.ED){
+                             write.config=write.config.ED, convert.samples=convert.samples.ED){
   MEDIAN <- '50'
   traits <- colnames(quantile.samples)
   
   system(paste('ssh -T ', host$name, 
-          ' "rm ', host$rundir, '/*', get.run.id('SA', '', pft.name=pft.name), '*"', sep=''))
+               ' "rm ', host$rundir, '/*', get.run.id('SA', '', pft.name=pft.name), '*"', sep=''))
   
   median.samples <- quantile.samples[MEDIAN,]
   run.id <- get.run.id('SA', 'median', pft.name=pft$name)
@@ -120,6 +120,6 @@ write.sa.configs <- function(pft, quantile.samples, host, outdir, settings,
     }
   }
   rsync(paste(outdir, '/*', get.run.id('SA', '', pft.name=pft.name), '*', sep=''), 
-      paste(host$name, ':', host$rundir,  sep=''))
+        paste(host$name, ':', host$rundir,  sep=''))
 }
 
