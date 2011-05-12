@@ -29,21 +29,27 @@ convert.samples.ED <- function(trait.samples){
   DEFAULT.LEAF.C <- 0.48
   DEFAULT.MAINTENANCE.RESPIRATION <- 1/2
   ## convert SLA from kg leaf / m2 to kg C / m2
+  trait.samples <- as.data.frame(trait.samples)
   if('SLA' %in% names(trait.samples)){
-      transform(trait.samples, SLA = SLA / DEFAULT.LEAF.C)
+    sla <- trait.samples$SLA
+    trait.samples$SLA <- sla / DEFAULT.LEAF.C
   }
   
   ## convert leaf width / 1000
   if('leaf_width' %in% names(trait.samples)){
-    transform(trait.samples, leaf_width = leaf_width / 1000.0)
+    lw <- trait.samples$leaf_width
+    trait.samples$leaf_width / 1000.0
   }
   
   if('root_respiration_rate' %in% names(trait.samples)) {
-    transform(trait.samples, root_respiration_rate = root_respiration_rate * DEFAULT.MAINTENANCE.RESPIRATION)
+    rrr1 <- trait.samples$root_respiration_rate
+    rrr2 <-  rrr1 * DEFAULT.MAINTENANCE.RESPIRATION
+    trait.samples$root_respiration_rate <- arrhenius.scaling(rrr2, old.temp = 25, new.temp = 15)
   }
      
   if('Vcmax' %in% names(trait.samples)) {
-       transform(trait.samples, Vcmax = arrhenius.scaling(Vcmax, old.temp = 25, new.temp = 15)
+    vcmax <- trait.samples$Vcmax
+    trait.samples$Vcmax <- arrhenius.scaling(vcmax, old.temp = 25, new.temp = 15)
   }
   
   return(trait.samples)
