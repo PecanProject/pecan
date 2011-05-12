@@ -34,10 +34,12 @@ ensemble.samples <- list()
 host<- settings$run$host
 
 #Remove config files on host
-system(paste('ssh -T ', host$name, 
-        ' "rm ', host$rundir, 'ED2INc.*"',sep=''))
-system(paste('ssh -T ', host$name, 
-        ' "rm ', host$rundir, 'c.*"',sep=''))
+
+system(paste("ssh -T ", host$name,
+             " '",'find ', host$rundir, 'ED2INc.* -delete',"'",sep=''))
+system(paste("ssh -T ", host$name,
+             " '",'find ', host$rundir, 'c.* -delete',"'",sep=''))
+
 
 for (i in seq(pft.names)){
   load(paste(outdirs[i], 'trait.mcmc.Rdata', sep=''))
