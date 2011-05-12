@@ -1,11 +1,18 @@
+##' .. content for \description{} (no empty lines) ..
+##'
+##' .. content for \details{} ..
+##' @title 
+##' @param spstr string of species id's from BETYdb database
+##' @param priors vector of parameters for which priors have been specified 
+##' @param con 
+##' @return
+##' @seealso \code{\link{query.bety.traits.data}}
+##' @examples
+##' spstr <- query.bety.pft_species('ebifarm.c4crop')$spstr
+##' trvec <- c('leafN', 'SLA')
+##' trait.data <- query.bety.traits(spstr, trvec)
+
 query.bety.traits <- function(spstr, priors, con = NULL){
-  trait.synonym.dictionary = list(SLA = 'LMA',
-    c2n_leaf = 'leafN',
-    root_respiration_maintenance = 'root_respiration_total',
-    fineroot2leaf = 'FRC_RC',
-    fineroot2leaf = 'fine_root_biomass')
-  sel <- names(trait.synonym.dictionary) %in% priors
-  trait.synonyms <-  unlist(trait.synonym.dictionary[sel])
 
   if(is.null(con)){
     con <- query.bety.con(...)
@@ -20,8 +27,7 @@ query.bety.traits <- function(spstr, priors, con = NULL){
   query.result <- dbSendQuery(con, query)
   traits <- fetch(query.result, n = -1)$name
  
-  traits <- unique(traits)
-  traits <- traits[which(traits %in% append(trait.synonyms, priors))]
+  traits <- unique(traits[which(traits %in% priors)])
 
   ##*TODO
   ## Need to write query for:
