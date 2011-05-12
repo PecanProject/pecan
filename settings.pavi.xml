@@ -4,7 +4,7 @@
     <pft>
       <name>ebifarm.pavi</name>
       <outdir>~/pecan/out/pavi/</outdir>
-      <edin>~/pecan/edin/ebifarm/aED2IN</edin>
+      <edin>~/pecan/edin/templateED2IN-ebifarm.pavi</edin>
       <constants>
         <num>15</num>
         <phenology>2</phenology>
