@@ -92,20 +92,20 @@ drop.columns <- function(data, columns){
 ##' @return dataframe ready for use in meta-analysis
 
 query.bety.trait.data <- function(trait, spstr,con=NULL,...){
-  
   if(is.null(con)){
     con <- query.bety.con(...)
   }
- 
+  
   if(is.list(con)){
     print("query.bety.trait.data")
     print("WEB QUERY OF DATABASE NOT IMPLEMENTED")
     return(NULL)
   } 
-   
+  print(trait)
+ 
   if(trait == 'Vcmax') {
     #########################   VCMAX   ############################
-    query <- paste("select traits.id, traits.citation_id, traits.site_id, treatments.name, traits.date, traits.dateloc, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
+    query <- paste("select traits.id, traits.citation_id, traits.site_id, treatments.name, month(traits.date) as month, traits.dateloc, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
     data <- fetch.stats2se(con, query)
 
     ## grab covariate data
@@ -136,14 +136,14 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     ## select only summer data for Panicum virgatum
     ##TODO fix following hack to select only summer data
     if (spstr == "'938'"){
-      data <- subset(data, subset = as.POSIXlt(data$date)$mon %in% c(0,5,6,7))
+      data <- subset(data, subset = data$month %in% c(0,5,6,7))
     }
     result <- drop.columns(data, c('leafT', 'canopy_layer','date','dateloc'))
     
   } else if (trait == 'SLA') {
     
     #########################    SLA    ############################
-    query <- paste("select trt.id, trt.citation_id, trt.site_id, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n from traits as trt left join treatments as treat on (trt.treatment_id = treat.id)  left join sites on (sites.id = trt.site_id) where trt.variable_id in (select id from variables where name = 'SLA')  and specie_id in (",spstr,");", sep = "")
+    query <- paste("select trt.id, trt.citation_id, trt.site_id, month(trt.date) as month, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n from traits as trt left join treatments as treat on (trt.treatment_id = treat.id)  left join sites on (sites.id = trt.site_id) where trt.variable_id in (select id from variables where name = 'SLA')  and specie_id in (",spstr,");", sep = "")
     data <- fetch.stats2se(con, query)
 
     ## convert LMA to SLA
@@ -162,19 +162,21 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     
     ## grab covariate data
     q = dbSendQuery(con,paste("select covariates.trait_id, covariates.level,variables.name from covariates left join variables on variables.id = covariates.variable_id where trait_id in (",vecpaste(data$id),")",sep=""))
-    covs = fetch(q,n=-1)
-    canopy_layer = rep(1.0,nrow(data))
-    data = cbind(data,canopy_layer)
-    for(j in which(covs$name %in% c("canopy_layer"))){
-      data[match(covs$trait_id[j],data$id),covs$name[j]] = covs$level[j]
-    }
+    all.covs = fetch(q,n=-1)
+
+    ## get canopy height covariates
+    ht.temp <- all.covs[all.covs$name == 'canopy_layer', ]
+    ht.cov  <- transform(ht.temp, id = trait_id, canopy_layer = level)[, c('id', 'canopy_layer')]
+
+
+    data <- merge(ht.cov, data, all = TRUE)
+
     ## select sunleaf data
-    data = data[data$canopy_layer >= 0.66,]
+    data <-  data[data$canopy_layer >= 0.66 | is.na(data$canopy_layer),]
 
     ## select only summer data for Panicum virgatum
-    ##TODO fix this kludge
     if (spstr == "'938'"){
-      data <- subset(data, subset = as.POSIXlt(data$date)$mon %in% c(0,5,6,7))
+      data <- subset(data, subset = data$month %in% c(0,5,6,7))
     }
 
     result <- drop.columns(data, 'canopy_layer')
@@ -206,7 +208,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   } else if (trait == 'root_respiration_rate') {
 
     #########################  ROOT RESPIRATION   ############################
-    query <- paste("select traits.id, traits.citation_id, traits.site_id, treatments.name, traits.date, traits.dateloc, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
+    query <- paste("select traits.id, traits.citation_id, traits.site_id, treatments.name, month(traits.date) as month, traits.dateloc, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
     data <- fetch.stats2se(con, query)
 
     q <- dbSendQuery(con,paste("select covariates.trait_id, covariates.level,variables.name from covariates left join variables on variables.id = covariates.variable_id where trait_id in (",vecpaste(data$id),")",sep=""))
@@ -222,8 +224,8 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     data <- merge(temp.cov, data, all = TRUE)
     
     ## Scale to 25C using Arrhenius scaling,
-    data$mean <- arrhenius.scaling(data$mean, old.temp = data$temp, new.temp = 25)
-    data$stat <- arrhenius.scaling(data$stat, old.temp = data$temp, new.temp = 25)
+    data$mean <- arrhenius.scaling(data$mean, old.temp = data$rootT, new.temp = 25)
+    data$stat <- arrhenius.scaling(data$stat, old.temp = data$rootT, new.temp = 25)
     result <- drop.columns(data, c('rootT', 'date', 'dateloc'))
     
   } else if (trait == 'c2n_leaf') {
@@ -321,7 +323,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     
   
   if(length(data$stat[!is.na(data$stat) & data$stat <= 0.0]) > 0) {
-    browser()
+
     warning(paste('there are implausible values of SE, SE <= 0 in the data and these are set to NA from citation', unique(data$citation_id[which(data$stat >= 0.0)], ' ')))
     print(data)
     print(trait)
