@@ -35,6 +35,8 @@ write.ma.model <- function (modelfile, outfile, reg.model, pr.dist, pr.param.a, 
   if(ghs.n > 1)   model.text <- gsub("\\#GGG", '', model.text)
   if(site.n > 1)  model.text <- gsub("\\#SSS", '', model.text)
   if(trt.n > 1)   model.text <- gsub("\\#TTT", '', model.text)
-  if(pr.dist == 'beta' & pr.param.b < 1) model.text <- gsub("\\#BBB", 'T(,0.9999)')
+  if(pr.dist == 'beta' & pr.param.b < 1) {
+    model.text <- gsub("\\#BBB", "T(,0.9999)", model.text)
+  }
   writeLines(model.text, con = outfile)
 }
