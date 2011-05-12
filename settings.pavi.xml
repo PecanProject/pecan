@@ -34,7 +34,7 @@
   </meta.analysis>
   
   <ensemble>
-    <size>100</size>
+    <size>500</size>
   </ensemble>
   
   <sensitivity.analysis>
@@ -72,7 +72,7 @@
     <host>
       <name>ebi-cluster.igb.uiuc.edu</name>
       <rundir>~/EDBRAMS/ED/run/</rundir>
-      <outdir>/home/scratch/$USER/pecan/out/</outdir>
+      <outdir>/home/scratch/dlebauer/pecan/out/</outdir>
     </host>
   </run>
 </pecan>
