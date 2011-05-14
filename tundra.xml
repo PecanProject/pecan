@@ -21,6 +21,7 @@
        </exclude>
        <constants>
          <num>11</num>    
+         <storage_turnover_rate>0.0</storage_turnover_rate>
        </constants>
     </pft>
     <pft>
