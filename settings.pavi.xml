@@ -2,12 +2,9 @@
 <pecan>
   <pfts>
     <pft>
-      <name>ebifarm.c4crop</name>
+      <name>ebifarm.pavi</name>
       <outdir>~/pecan/out/pavi/</outdir>
-      <edin>~/pecan/edin/ebifarm/aED2IN</edin>
-      <exclude>
-        <trait>seedling_mortality</trait>    
-      </exclude>
+      <edin>~/pecan/edin/templateED2IN-ebifarm.pavi</edin>
       <constants>
         <num>15</num>
         <phenology>2</phenology>
@@ -37,7 +34,7 @@
   </meta.analysis>
   
   <ensemble>
-    <size>100</size>
+    <size>500</size>
   </ensemble>
   
   <sensitivity.analysis>
@@ -75,7 +72,7 @@
     <host>
       <name>ebi-cluster.igb.uiuc.edu</name>
       <rundir>~/EDBRAMS/ED/run/</rundir>
-      <outdir>/home/scratch/$USER/pecan/out/</outdir>
+      <outdir>/home/scratch/dlebauer/pecan/out/</outdir>
     </host>
   </run>
 </pecan>

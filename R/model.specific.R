@@ -2,6 +2,7 @@ PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
 
 #As is the case with ED, input files must be <32 characters long.
 #this function abbreviates run.ids for use in input files
+##TODO fix this filename restriction bug in ED, remove abbreviate.run.id.ED 
 abbreviate.run.id.ED <- function(run.id){
   #TODO: remove references to specific pft names and use outdir
   run.id <- gsub('tundra.', '', run.id)
@@ -26,22 +27,35 @@ abbreviate.run.id.ED <- function(run.id){
 #such as those provided to write.config
 convert.samples.ED <- function(trait.samples){
   DEFAULT.LEAF.C <- 0.48
+  DEFAULT.MAINTENANCE.RESPIRATION <- 1/2
   ## convert SLA from kg leaf / m2 to kg C / m2
+    
   if('SLA' %in% names(trait.samples)){
-    if('leafC' %in% names(trait.samples))
-      trait.samples[['SLA']] <- trait.samples[['SLA']] / trait.samples[['leafC']]
-    else
-      trait.samples[['SLA']] <- trait.samples[['SLA']] / DEFAULT.LEAF.C
+    sla <- trait.samples[['SLA']]
+    trait.samples[['SLA']] <- sla / DEFAULT.LEAF.C
   }
   
   ## convert leaf width / 1000
   if('leaf_width' %in% names(trait.samples)){
-    trait.samples[['leaf_width']] <- trait.samples[['leaf_width']] / 1000.0
+    lw <- trait.samples[['leaf_width']]
+    trait.samples[['leaf_width']] / 1000.0
   }
   
-  ## TODO: result[, c('mean','stat')] <- result[, c('mean','stat')] / 0.48 
-  ## TODO: Vcmax -> Vm0
-  
+  if('root_respiration_rate' %in% names(trait.samples)) {
+    rrr1 <- trait.samples[['root_respiration_rate']]
+    rrr2 <-  rrr1 * DEFAULT.MAINTENANCE.RESPIRATION
+    trait.samples[['root_respiration_rate']] <- arrhenius.scaling(rrr2, old.temp = 25, new.temp = 15)
+  }
+     
+  if('Vcmax' %in% names(trait.samples)) {
+    vcmax <- trait.samples[['Vcmax']]
+    trait.samples[['Vcmax']] <- arrhenius.scaling(vcmax, old.temp = 25, new.temp = 15)
+    names(trait.samples)[names(trait.samples) == 'Vcmax'] <- 'Vm0'
+  }
+
+  if('fineroot2leaf' %in% names(trait.samples)){
+    names(trait.samples)[names(trait.samples) == 'fineroot2leaf'] <- 'q'
+  }
   return(trait.samples)
 }
 #Writes an xml and ED2IN config files for use with the Ecological Demography model.
@@ -66,7 +80,7 @@ write.config.ED <- function(pft, trait.samples, settings, outdir, run.id){
   saveXML(xml, file = paste(outdir, xml.file.name, sep=''), 
       indent=TRUE, prefix = PREFIX_XML)
   
-  ed2in.text <- scan(file=pft$edin, 
+  ed2in.text <- scan(file = pft$edin, 
       what="character",sep='@', quote=NULL, quiet=TRUE)
   ed2in.text <- gsub('OUTDIR', settings$run$host$outdir, ed2in.text)
   ed2in.text <- gsub('RUNTIME', get.run.time(), ed2in.text)
