@@ -7,7 +7,7 @@ left.pad.zeros <- function(num, digits){
   return(sprintf(format_string, num))
 }
 rsync <- function(from, to, pattern=''){
-  system(paste('rsync -outi', from, to, '/*', pattern, '*', sep = ' '), intern=TRUE)
+  system(paste('rsync -outi', from, to, sep = ' '), intern=TRUE)
 }
 
 #returns an id representing a model run

@@ -50,10 +50,9 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
       )
 
   for(trait.name in names(trait.data)) {
-    prior.name <- ifelse(trait.name != 'Vcmax', trait.name, 'Vm0')
-    jagsprior <- jagspriors[prior.name, c('distn', 'parama', 'paramb', 'n')]
+    jagsprior <- jagspriors[trait.name, c('distn', 'parama', 'paramb', 'n')]
     colnames(jagsprior) <- c("distn", "a", "b", "n")
-    prior <- prior.distns[prior.name, c('distn', 'parama', 'paramb', 'n')]
+    prior <- prior.distns[trait.name, c('distn', 'parama', 'paramb', 'n')]
     colnames(prior) <- c("distn", "a", "b", "n")
 
     writeLines(paste('starting meta-analysis for:\n\n', trait.name,'\n'))
@@ -88,7 +87,7 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
     } else {
       writeLines(paste('no estimates of SD for', trait.name))
     }
-    #todo? could add internal check to make sure data contains Y, n, trt, site, trt, obs.prec
+    ##TODO? could add internal check to make sure data contains Y, n, trt, site, trt, obs.prec
     # determine what factors to include in meta-analysis
     model.parms <- list(ghs  = length(unique(data$ghs)),
                         site = length(unique(data$site)),
@@ -127,6 +126,7 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
 
     madata[[trait.name]] <- data
     jag.model.file <-  paste(outdir, trait.name, ".model.bug",sep="")  # file to store model
+
     write.ma.model (modelfile = paste(settings$pecanDir,'rscripts/ma.model.template.bug',sep=""),
                     outfile = jag.model.file,
                     reg.model = reg.model,
@@ -135,8 +135,8 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
                     trt.n = model.parms[['trt']],
                     site.n= model.parms[['site']],
                     ghs.n = model.parms[['ghs']],
-                    tauA  = taupriors$tauB[prior.name],
-                    tauB  = taupriors$tauB[prior.name])
+                    tauA  = taupriors$tauB[trait.name],
+                    tauB  = taupriors$tauB[trait.name])
 
     ## overdispersed chains
     j.inits <- function(chain) list("beta.o" = do.call(paste('q',prior$dist,sep=''),
@@ -169,7 +169,7 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
     
     jags.out.trunc <- window(jags.out, start = j.iter/2)
  
-    mcmc.object[[prior.name]] <- jags.out.trunc
+    mcmc.object[[trait.name]] <- jags.out.trunc
   }
   save(madata, file = paste(outdir,'madata.Rdata',sep=""))
   sink()

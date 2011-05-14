@@ -17,14 +17,14 @@
 !----- Start of simulation (RUNTYPE=initial only) -----------------------------------------!
    NL%IMONTHA  = 01        ! Month
    NL%IDATEA   = 01        ! Day
-   NL%IYEARA   = 2002      ! 
+   NL%IYEARA   = 1995      ! 
    NL%ITIMEA   = 0000      ! UTC
 
 !----- End of simulation ------------------------------------------------------------------!
 
    NL%IMONTHZ  = 12       ! Month
    NL%IDATEZ   = 01       ! Day
-   NL%IYEARZ   = 2010     ! Year
+   NL%IYEARZ   = 2006     ! Year
    NL%ITIMEZ   = 0000     ! UTC
 !------------------------------------------------------------------------------------------!
 
@@ -136,9 +136,9 @@
 
 !------------------------------------------------------------------------------------------!
 ! Analysis/history/restart file: path, prefix, settings                                    !
-!------------------------------					------------------------------------------------------------!
-   NL%FFILOUT = '/home/scratch/USER/pecan/outYYYYMMDD/OUTFILE'         ! Analysis output prefix
-   NL%SFILOUT   = '/home/scratch/USER/pecan/outYYYYMMDD/HISTFILE'           ! History output prefix
+!------------------------------------------------------------------------------------------!
+   NL%FFILOUT = 'OUTDIR/RUNTIME/OUTFILE'         ! Analysis output prefix
+   NL%SFILOUT   = 'OUTDIR/RUNTIME/HISTFILE'           ! History output prefix
 
    NL%IED_INIT_MODE   = 0
    !---------------------------------------------------------------------------------------!
@@ -216,8 +216,8 @@
    ! and slxclay and slxsand are defined between 0 and 1, with the sum of these variables  !
    ! not exceeding 1.  Otherwise, the default ED parameters will be used.                  !
    !---------------------------------------------------------------------------------------!
-   NL%SLXCLAY = 0.23 
-   NL%SLXSAND = 0.26
+!   NL%SLXCLAY = 0.23 
+!   NL%SLXSAND = 0.26
 
 !----- Depth (m) of bottom of soil model grid levels --------------------------------------!
    NL%SLZ     = -2.17, -1.50, -1.10, -0.80, -0.60, -0.45, -0.30, -0.20, -0.12, -0.06
@@ -343,7 +343,7 @@
                               !     when zref<h
 
 
-!  NL%ISFCLYRM        = 3     ! Surface layer model (used to compute ustar, tstar,...)
+  NL%ISFCLYRM        = 3     ! Surface layer model (used to compute ustar, tstar,...)
                               ! This variable controls the SLM for both LEAF and ED.
                               !  1 - BRAMS default, based on Louis (1979)
                               !      It uses empirical relations to estimate the flux
@@ -447,8 +447,8 @@
 !------------------------------------------------------------------------------------------!
 
    NL%IMETTYPE  = 1          ! 0 = ASCII, 1 = HDF5
-   NL%METCYC1         = 2007 ! First year of met data
-   NL%METCYCF         = 2008 ! Last year of met data
+   NL%METCYC1         = 2002 ! First year of met data
+   NL%METCYCF         = 2006 ! Last year of met data
    NL%ISHUFFLE  = 0          ! How to choose an year outside the met data range:
                              ! 0. Sequentially cycle over years
                              ! 1. Randomly pick the years, using the same sequence
@@ -464,7 +464,8 @@
    NL%IPHENYSF = 2003 ! final year for spring
    NL%IPHENYF1 = 1992 ! initial year for fall
    NL%IPHENYFF = 2003 ! final year for fall
-   !NL%PHENPATH   = '/n/Moorcroft_Lab/Users/mlongo/EDBRAMS/ed-test/inputs' !! path/prefix for where to find presecribed phenology driver
+   !! path/prefix for where to find presecribed phenology driver
+   !NL%PHENPATH   = '/n/Moorcroft_Lab/Users/mlongo/EDBRAMS/ed-test/inputs' 
 !------------------------------------------------------------------------------------------!
 
 
@@ -474,7 +475,7 @@
 !------------------------------------------------------------------------------------------!
   NL%IEDCNFGF   = 'CONFIGFILE'
   ! NL%EVENT_FILE = '/home/scratch/USER/pecan/edin/ebifarm'
-  ! NL%PHENPATH   = '/home/dlebauer/inputs/'
+  ! NL%PHENPATH   = '/home/USER/inputs/'
 !------------------------------------------------------------------------------------------!
 
 

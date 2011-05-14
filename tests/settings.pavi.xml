@@ -2,20 +2,41 @@
 <pecan>
   <pfts>
     <pft>
-      <name>ebifarm.c4crop</name>
-      <outdir>/home/dlebauer/pecan/out/</outdir>
+      <name>ebifarm.pavi</name>
+      <outdir>~/pecan/out/pavi/</outdir>
+      <edin>~/pecan/edin/ebifarm/aED2IN</edin>
+      <constants>
+        <num>15</num>
+        <phenology>2</phenology>
+        <max_dbh>0.78</max_dbh>
+        <hgt_min>2.0</hgt_min>
+        <dark_respiration_factor>0.015</dark_respiration_factor>
+        <qsw>0.0</qsw>
+        <mort1>1.0</mort1>
+        <plant_min_temp>-100</plant_min_temp>
+        <storage_turnover_rate>0</storage_turnover_rate>
+      </constants>
     </pft>
   </pfts>
+  
+  <config.header>
+    <radiation>
+      <lai_min>0.01</lai_min>
+    </radiation>
+    <ed_misc>
+      <output_month>12</output_month>      
+    </ed_misc> 
+  </config.header>
+  
   <meta.analysis>
-    <iter>5000</iter>
+    <iter>10000</iter>
     <random.effects>TRUE</random.effects>
   </meta.analysis>
+  
   <ensemble>
     <size>10</size>
   </ensemble>
-  <pecanDir>/home/dlebauer/pecan/</pecanDir>
-  <Rlibdir>/home/dlebauer/lib/R/</Rlibdir>
-  <outdir>/home/dlebauer/pecan/out/</outdir>
+  
   <sensitivity.analysis>
     <quantiles>
       <quantile></quantile>
@@ -29,12 +50,17 @@
     <start.year></start.year>
     <end.year></end.year>
   </sensitivity.analysis>
+  
+  <pecanDir>~/pecan/</pecanDir>
+  <Rlibdir>~/lib/R/</Rlibdir>
+  <outdir>~/pecan/out/</outdir>
   <database>
     <userid>ebi_analys_user</userid>
     <passwd>b742xsAu</passwd>
     <location>localhost</location>
     <name>ebi_analysis</name>
   </database>
+  
   <run>
     <site>
       <lat></lat>
@@ -45,8 +71,8 @@
     <end.date></end.date>
     <host>
       <name>ebi-cluster.igb.uiuc.edu</name>
-      <rundir>/home/dlebauer/EDBRAMS/ED/run/</rundir>
-      <outdir>/home/scratch/test/out/</outdir>
+      <rundir>~/EDBRAMS/ED/run/</rundir>
+      <outdir>/home/scratch/$USER/pecan/out/</outdir>
     </host>
   </run>
 </pecan>
