@@ -76,6 +76,11 @@ drop.columns <- function(data, columns){
   return(data[,which(!colnames(data) %in% columns)])
 }
 
+get.canopy.height.covariates<-function(all.covs){
+  ht.temp <- all.covs[all.covs$name == 'canopy_layer', ]
+  ht.cov  <- transform(ht.temp, id = trait_id, canopy_layer = level)[, c('id', 'canopy_layer')]
+  return(ht.cov)
+}
 
 ##' Extract trait data from BETYdb
 ##' @name query.bety.trait.data
@@ -118,15 +123,15 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     airT.covs   <- all.covs[all.covs$name == 'airT' & ! all.covs$trait_id %in% leafT.covs$trait_id, ]
     t.covs      <- rbind(leafT.covs, airT.covs)
     temp.cov <- transform(t.covs, id = trait_id, leafT = level)[, c('id', 'leafT')]
-
-    ## get canopy height covariates
-    ht.temp <- all.covs[all.covs$name == 'canopy_layer', ]
-    ht.cov  <- transform(ht.temp, id = trait_id, canopy_layer = level)[, c('id', 'canopy_layer')]
-
-    data <- merge(merge(ht.cov, temp.cov, all = TRUE), data, all = TRUE)
     
-    ## select sunleaf data
-    data <- data[data$canopy_layer >= 0.66 | is.na(data$canopy_layer), ]
+    #conditional added to prevent crash when trying to transform an empty data frame
+    if(length(all.covs>0)) {  
+      ht.cov<-get.canopy.height.covariates(all.covs)
+      data <- merge(merge(ht.cov, temp.cov, all = TRUE), data, all = TRUE)
+      ## select sunleaf data
+      data <- data[data$canopy_layer >= 0.66 | is.na(data$canopy_layer), ]
+    }    
+    
     ## set default leafT to 25 if unknown
     data$leafT[is.na(data$leafT)] <-  25
 
@@ -147,7 +152,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     data <- fetch.stats2se(con, query)
 
     ## convert LMA to SLA
-    selLMA = which(data$vname == "LMA")
+    selLMA <- which(data$vname == "LMA")
     if(length(selLMA)>0){
       for(i in selLMA){
         if(is.na(data$stat[i])){
@@ -161,18 +166,18 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     }
     
     ## grab covariate data
-    q = dbSendQuery(con,paste("select covariates.trait_id, covariates.level,variables.name from covariates left join variables on variables.id = covariates.variable_id where trait_id in (",vecpaste(data$id),")",sep=""))
-    all.covs = fetch(q,n=-1)
+    covariate.query<-paste("select covariates.trait_id, covariates.level,variables.name from covariates left join variables on variables.id = covariates.variable_id where trait_id in (",vecpaste(data$id),")",sep="")
+    q <- dbSendQuery(con,covariate.query)
+    all.covs = fetch(q,n=-1)  
 
     ## get canopy height covariates
-    ht.temp <- all.covs[all.covs$name == 'canopy_layer', ]
-    ht.cov  <- transform(ht.temp, id = trait_id, canopy_layer = level)[, c('id', 'canopy_layer')]
-
-
-    data <- merge(ht.cov, data, all = TRUE)
-
-    ## select sunleaf data
-    data <-  data[data$canopy_layer >= 0.66 | is.na(data$canopy_layer),]
+    #conditional added to prevent crash when trying to transform an empty data frame
+    if(length(all.covs)>0) {  
+      ht.cov<-get.canopy.height.covariates(all.covs)
+      data <- merge(ht.cov, data, all = TRUE)
+      ## select sunleaf data
+      data <-  data[data$canopy_layer >= 0.66 | is.na(data$canopy_layer),]
+    }
 
     ## select only summer data for Panicum virgatum
     if (spstr == "'938'"){
