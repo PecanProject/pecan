@@ -28,6 +28,9 @@
       <name>tundra.grass</name>
       <outdir>~/pecan/out/grass/</outdir>
       <edin>~/pecan/edin/templateED2IN-tundra.grass</edin>
+      <exclude>
+        <trait>c2n_leaf</trait>
+      </exclude>
       <constants>
         <num>5</num>    
       </constants>

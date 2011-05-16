@@ -140,7 +140,7 @@
    NL%ITOUTPUT  =  0            ! Instantaneous fluxes (site average)
                                 ! single annual file, no patch/cohort, for optimization or 
                                 !     flux tower comparision 
-   NL%ISOUTPUT  =  3            ! History files
+   NL%ISOUTPUT  =  0            ! History files
                                 ! 0 - no file;
                                 ! 1 - save ascii (deprecated);
                                 ! 2 - save RAMS-vfm file (deprecated);
@@ -230,7 +230,7 @@
    NL%EDRES  = 1.0                     ! ED2/ED1 restart grid resolution
                                        !    (Ignored unless ied_init_mode is 3.
 
-   NL%SFILIN   = '/home/davids14/EDBRAMS/ED/run/startup/toolik.'
+   NL%SFILIN   = '/home/davids14/EDBRAMS/ED/run/startup/toolik3.'
 
 !----- Time of the history start ----------------------------------------------------------!
    NL%ITIMEH   = 0000     ! UTC
@@ -245,7 +245,7 @@
 !  Soil/Surface water variables                                                            !
 !------------------------------------------------------------------------------------------!
 
-   NL%NZG = 9           ! Number of soil layers
+   NL%NZG = 12           ! Number of soil layers
    NL%NZS = 4           ! Maximum number of snowcover layers
 
    NL%ISOILFLG = 2,2    ! Options are: 1. Read from LAT/LON
@@ -253,7 +253,7 @@
                         ! This variable must be defined for all grids. The order is
                         ! all ED regions first followed by ED POIs. 
    
-   NL%NSLCON   = 3      ! Default soil type if ISOILFLG = 2 (choices below:)
+   NL%NSLCON   = 4      ! Default soil type if ISOILFLG = 2 (choices below:)
    !-----------------------------------------------------------------------!
    ! ED Soil classes:                                                      !
    !-----------------------------------------------------------------------!
@@ -268,15 +268,15 @@
    ! and slxclay and slxsand are defined between 0 and 1, with the sum of these variables  !
    ! not exceeding 1.  Otherwise, the default ED parameters will be used.                  !
    !---------------------------------------------------------------------------------------!
-   NL%SLXCLAY = -1.0
-   NL%SLXSAND = -1.0
+   NL%SLXCLAY = 0.241
+   NL%SLXSAND = 0.383
 
    !----- Depth (m) of bottom of soil model grid levels -----------------------------------!
-   NL%SLZ     = -4.50, -3.50, -2.75, -2.00, -1.50, -1.10, -0.80, 
-                -0.60, -0.45, -0.30, -0.20, -0.12, -0.06, -0.02
+   !NL%SLZ     = -4.50, -3.50, -2.75, -2.00, -1.50, -1.10, -0.80, -0.60, -0.45, -0.30, -0.20, -0.12, -0.06, -0.02
+   NL%SLZ     = -8.00, -6.00, -4.00, -2.00, -1.40, -0.80, -0.54, -0.41, -0.32, -0.19, -0.13, -0.08
+   !NL%SLZ     = -8.00, -6.00, -4.50, -3.50, -2.75, -2.00, -1.50, -1.10, -0.80, -0.60, -0.45, -0.30
    !----- Initial soil moisture (fraction of saturation) ----------------------------------!
-   NL%SLMSTR  =  0.60,  0.60,  0.60,  0.60,  0.60,  0.60,  0.60,
-                 0.60,  0.60,  0.60,  0.60,  0.60,  0.60,  0.60
+   NL%SLMSTR  =  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0
    !----- Initial soil temperature offset (with respect to the atmospheric temperature). --!
    NL%STGOFF  =   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0, 
                   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0
@@ -442,7 +442,7 @@
    NL%PLANTATION_STOCK  = 11      ! Plantation PFT  (used only if ianth_disturb=1)
 
 
-   NL%PFT_1ST_CHECK = 0 ! What should I do when I find a cohort with an unexpected PFT 
+   NL%PFT_1ST_CHECK = 2 ! What should I do when I find a cohort with an unexpected PFT 
                         !    in the history start?
                         ! 0. Stop the run;
                         ! 1. Add the PFT in the INCLUDE_THESE_PFT list;
