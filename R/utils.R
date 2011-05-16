@@ -9,6 +9,10 @@ left.pad.zeros <- function(num, digits){
 rsync <- function(from, to, pattern=''){
   system(paste('rsync -outi', from, to, sep = ' '), intern=TRUE)
 }
+ssh <- function(host, ..., args=''){
+  command<-paste('ssh -T ', host, ' "', ..., '" ', args, sep='')
+  system(command)
+}
 
 #returns an id representing a model run
 #for use in model input files and indices
