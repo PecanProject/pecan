@@ -10,6 +10,6 @@ Depends: XML, MASS, randtoolbox, rjags, ggplot2, RMySQL, gridExtra, xtable
 Suggests:
 SystemRequirements: JAGS2.2.0, bash, ED2, kepler
 OS_type: unix
-License: GPL-3
+License: University of Illinois/NCSA Open Source License
 Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes
