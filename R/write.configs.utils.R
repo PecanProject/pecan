@@ -24,7 +24,7 @@ get.ensemble.samples <- function(ensemble.size, samples) {
                                         #Given a pft.xml object, a list of lists as supplied by get.sa.samples, 
                                         #a name to distinguish the output files, and the directory to place the files.
 write.ensemble.configs <- function(pft, ensemble.samples, host, outdir, settings,
-                                   write.config <- write.config.ED, convert.samples=convert.samples.ED){
+                                   write.config = write.config.ED, convert.samples=convert.samples.ED){
   
   system(paste('ssh -T ', host$name, 
                ' "rm ', host$rundir, '/*', get.run.id('ENS', '', pft.name=pft.name), '*"', sep=''))
@@ -99,8 +99,7 @@ write.sa.configs <- function(pft, quantile.samples, host, outdir, settings,
   MEDIAN <- '50'
   traits <- colnames(quantile.samples)
   
-  system(paste('ssh -T ', host$name, 
-               ' "rm ', host$rundir, '/*', get.run.id('SA', '', pft.name=pft.name), '*"', sep=''))
+  ssh(host$name, 'rm ', host$rundir, '/*', get.run.id('SA', '', pft.name=pft.name, '*'))
   
   median.samples <- quantile.samples[MEDIAN,]
   run.id <- get.run.id('SA', 'median', pft.name=pft$name)

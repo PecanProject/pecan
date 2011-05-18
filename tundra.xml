@@ -21,12 +21,16 @@
        </exclude>
        <constants>
          <num>11</num>    
+         <storage_turnover_rate>0.0</storage_turnover_rate>
        </constants>
     </pft>
     <pft>
       <name>tundra.grass</name>
       <outdir>~/pecan/out/grass/</outdir>
       <edin>~/pecan/edin/templateED2IN-tundra.grass</edin>
+      <exclude>
+        <trait>c2n_leaf</trait>
+      </exclude>
       <constants>
         <num>5</num>    
       </constants>

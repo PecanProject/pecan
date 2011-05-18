@@ -17,9 +17,6 @@ settings.xml <- xmlParse(settings.file)
 settings <- xmlToList(settings.xml)
 host     <-  settings$run$host
 
-#Make outdirectory
-system(paste('ssh -T ', host$name, 
-             ' "mkdir ', host$outdir, get.run.time(), '"',sep=''))
 #Run model from user made bash script 
 system(paste("echo 'cd ", host$rundir, "' | ",
              "cat - ", settings$pecanDir, "bash/batch.jobs.sh | ",
