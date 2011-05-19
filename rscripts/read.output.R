@@ -47,10 +47,19 @@ read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
 ##' @param run.id the id distiguishing the model run
 ##' @param outdir the directory that the model's output was sent to
 ##' @return vector of output variable for all runs within ensemble
-read.output.ed <- function(run.id, outdir){
+read.output.ed <- function(run.id, outdir, start.date=NA, end.date=NA){
   file.names <- dir(outdir, pattern=run.id, full.names=TRUE)
-  file.names <- file.names[grep('-Y-', file.names)]
-  return(sum(sapply(file.names, read.output.file.ed)))
+  file.names <- grep('-Y-([0-9]{4}).*', file.names, value=TRUE)
+  years <- sub('((?!-Y-).)*([0-9]{4}).*', '\\2', file.names, perl=TRUE)
+  if(!is.na(start.date) && nchar(start.date) > 0){
+    start.year <- strftime(as.POSIXlt(start.date), format='%Y')
+    file.names <- file.names[years>=start.year]
+  }
+  if(!is.na(end.date) && nchar(end.date) > 0){
+    end.year <- strftime(as.POSIXlt(end.date), format='%Y')
+    file.names <- file.names[years<=end.year]
+  }
+  return(mean(sapply(file.names, read.output.file.ed)))
 }
 
 ##' .. content for \description{} (no empty lines) ..
@@ -59,11 +68,12 @@ read.output.ed <- function(run.id, outdir){
 ##' @title 
 ##' @returns a list of ensemble output 
 ##' @author David
-read.ensemble.output <- function(ensemble.size, outdir, run.time, pft.name='', read.output = read.output.ed){
+read.ensemble.output <- function(ensemble.size, outdir, run.time, pft.name='', 
+    start.date, end.date, read.output = read.output.ed){
   ensemble.output <- list()
   for(ensemble.id in seq(ensemble.size)) {
     run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, 5), pft.name=pft.name)#log10(ensemble.size)+1))
-    ensemble.output[[ensemble.id]] <- read.output(run.id, outdir)
+    ensemble.output[[ensemble.id]] <- read.output(run.id, outdir, start.date, end.date)
   }
   return(ensemble.output)
 }
@@ -75,21 +85,21 @@ read.ensemble.output <- function(ensemble.size, outdir, run.time, pft.name='', r
 ##' @return dataframe with one col per quantile analysed and one row per trait,
 ##'  each cell is a list of AGB over time
 ##' @author David
-read.sa.output <- function(traits, quantiles, outdir, pft.name='', read.output = read.output.ed){
+read.sa.output <- function(traits, quantiles, outdir, pft.name='', 
+    start.date, end.date, read.output = read.output.ed){
   sa.output <- data.frame()
   for(trait in traits){
     for(quantile in quantiles){
       run.id <- get.run.id('SA', round(quantile,3), trait=trait, pft.name=pft.name)
       print(run.id)
-      sa.output[as.character(round(quantile*100,3)), trait] <- read.output(run.id, outdir)
+      sa.output[as.character(round(quantile*100,3)), trait] <- read.output(run.id, outdir, start.date, end.date)
     }
   }
   sa.output['50',] <- read.output(get.run.id('SA', 'median'), outdir)
   return(sa.output)
 }
 
-outdir=commandArgs(trailingOnly=TRUE)
-load(paste(outdir, 'samples.Rdata', sep=''))
+load('samples.Rdata')
 sa.agb<-list()
 for(pft.name in names(trait.samples)){
   
@@ -98,8 +108,9 @@ for(pft.name in names(trait.samples)){
   quantiles.str <- quantiles.str[which(quantiles.str != '50')]
   quantiles <- as.numeric(quantiles.str)/100
   
-  sa.agb[[pft.name]] <- read.sa.output(traits, quantiles, outdir, pft.name=pft.name)
-  #ensemble.output[[pft.name]]<-read.ensemble.output(ensemble.size, outdir, pft.name=pft.name)
-  
+  sa.agb[[pft.name]] <- read.sa.output(traits, quantiles, settings$run$host$outdir, 
+      pft.name=pft.name, settings$run$start.date, settings$run$end.date)
+  #ensemble.output[[pft.name]]<-read.ensemble.output(ensemble.size, outdir, 
+  #    pft.name=pft.name, start.year, end.year)
 }
-save(sa.agb, file = paste(outdir, 'output.Rdata', sep=''))
+save(sa.agb, file = paste(settings$run$host$outdir, 'output.Rdata', sep=''))

@@ -62,13 +62,13 @@ convert.samples.ED <- function(trait.samples){
 #Requires a pft xml object, a list of trait values for a single model run,
 #and the name of the file to create
 write.config.ED <- function(pft, trait.samples, settings, outdir, run.id){
-  xml <- listToXml(pft$constants, 'pft')
+  xml <- list.to.xml(pft$constants, 'pft')
   for (trait in names(trait.samples)) {
     xml <- append.xmlNode(xml, xmlNode(trait, trait.samples[trait]))
   }
   config.header <- xmlNode("config")
   if ('config.header' %in% names(settings)){
-    config.header <- listToXml(settings$config.header, 'config')
+    config.header <- list.to.xml(settings$config.header, 'config')
   } 
   xml <- append.xmlNode(config.header, xml)
   #c stands for config, abbreviated to work within ED's character limit
@@ -116,8 +116,17 @@ read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
 ##' @param run.id the id distiguishing the model run
 ##' @param outdir the directory that the model's output was sent to
 ##' @return vector of output variable for all runs within ensemble
-read.output.ed <- function(run.id, outdir){
+read.output.ed <- function(run.id, outdir, start.date=NA, end.date=NA){
   file.names <- dir(outdir, pattern=run.id, full.names=TRUE)
-  file.names <- file.names[grep('-Y-', file.names)]
-  return(sum(sapply(file.names, read.output.file.ed)))
+  file.names <- grep('-Y-([0-9]{4}).*', file.names, value=TRUE)
+  years <- sub('((?!-Y-).)*([0-9]{4}).*', '\\2', file.names, perl=TRUE)
+  if(!is.na(start.date) && nchar(start.date) > 0){
+    start.year <- strftime(start.date, format='%Y')
+    file.names <- file.names[years>=start.year]
+  }
+  if(!is.na(end.date) && nchar(end.date) > 0){
+    end.year <- strftime(end.date, format='%Y')
+    file.names <- file.names[years<=end.year]
+  }
+  return(mean(sapply(file.names, read.output.file.ed)))
 }
