@@ -38,6 +38,7 @@ read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
   if(all(c("AGB_CO", "NPLANT") %in% variables)) {
     return(sum(data$AGB_CO * data$NPLANT) * MAGIC_NUMBER)
   }
+  else return(sum(data[[variables]]))
 }
 
 ##' ##' .. content for \description{} (no empty lines) ..
