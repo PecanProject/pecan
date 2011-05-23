@@ -294,15 +294,15 @@
                         ! Directory where chd, dgd and glu data are kept.
 
 !----- File containing information for meteorological drivers -----------------------------!
-   NL%ED_MET_DRIVER_DB = '/home/USER/EDBRAMS/ED/run/ED_MET_DRIVER_HEADER'
+   NL%ED_MET_DRIVER_DB = '/home/davids14/EDBRAMS/ED/run/ED_MET_DRIVER_HEADER'
 
    !---------------------------------------------------------------------------------------!
    ! SOILSTATE_DB - Soil state (temperature and moisture) database, used only when         !
    !                ISOILSTATEINIT is set to 1.                                            !
    ! SOILDEPTH_DB -  Soil depth database, used only when ISOILDEPTHFLG is set to 1.        !
    !---------------------------------------------------------------------------------------!
-   NL%SOILSTATE_DB     = '/home/USER/EDBRAMS/ED/run/STW1996OCT.dat'
-   NL%SOILDEPTH_DB     = '/home/USER/EDBRAMS/ED/run/soil_depths.dat'
+   NL%SOILSTATE_DB     = '/home/davids14/EDBRAMS/ED/run/STW1996OCT.dat'
+   NL%SOILDEPTH_DB     = '/home/davids14/EDBRAMS/ED/run/soil_depths.dat'
 
    NL%ISOILSTATEINIT = 0  ! 0 -- use slmstr
                           ! 1 -- read from file
