@@ -47,8 +47,8 @@
       <sigma>2</sigma>
       <sigma>3</sigma>
     </quantiles>
-    <start.year></start.year>
-    <end.year></end.year>
+    <start.year>2004</start.year>
+    <end.year>2006</end.year>
   </sensitivity.analysis>
   
   <pecanDir>~/pecan/</pecanDir>
@@ -63,12 +63,13 @@
   
   <run>
     <site>
+      <name></name>
       <lat></lat>
       <lon></lon>
       <met.data.header></met.data.header>
     </site>
-    <start.date>2004/01/01</start.date>
-    <end.date>2005/01/01</end.date>
+    <start.date>1996/01/01</start.date>
+    <end.date>2006/12/31</end.date>
     <host>
       <name>ebi-cluster.igb.uiuc.edu</name>
       <rundir>~/EDBRAMS/ED/run/</rundir>
