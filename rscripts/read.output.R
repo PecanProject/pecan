@@ -69,6 +69,7 @@ read.output.ed <- function(run.id, outdir, start.date=NA, end.date=NA){
     end.year <- strftime(as.POSIXlt(end.date), format='%Y')
     file.names <- file.names[years<=end.year]
   }
+  file.names <- file.names[!is.na(file.names)]
   return(mean(sapply(file.names, read.output.file.ed), na.rm = TRUE))
 }
 
