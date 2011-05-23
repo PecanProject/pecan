@@ -1,6 +1,13 @@
-#As is the case with ED, input files must be <32 characters long.
-#this function abbreviates run.ids for use in input files
+# As is the case with 
+#
 ##TODO fix this filename restriction bug in ED, remove abbreviate.run.id.ED 
+
+##' Abbreviates run.ids 
+##'
+##' For use in input files, because ED input files must be <32 characters long.
+##' @title abbreviate run.ids
+##' @param run.id 
+##' @return abbreviated run.id
 abbreviate.run.id.ED <- function(run.id){
   #TODO: remove references to specific pft names and use outdir
   run.id <- gsub('tundra.', '', run.id)
@@ -27,9 +34,9 @@ get.run.id <- function(run.type, index, trait='', pft.name=''){
 }
 
 ##' Extract ED output for specific variables from an hdf5 file
-##' @title 
-##' @param filename 
-##' @param variables 
+##' @title read output - ED
+##' @param filename string, name of file with data
+##' @param variables variables to extract from file
 ##' @return single value of AGB from  filename for all plants
 read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
   library(hdf5)
@@ -47,6 +54,8 @@ read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
 ##' @title 
 ##' @param run.id the id distiguishing the model run
 ##' @param outdir the directory that the model's output was sent to
+##' @param start.date 
+##' @param end.date 
 ##' @return vector of output variable for all runs within ensemble
 read.output.ed <- function(run.id, outdir, start.date=NA, end.date=NA){
   file.names <- dir(outdir, pattern=run.id, full.names=TRUE)
@@ -60,7 +69,7 @@ read.output.ed <- function(run.id, outdir, start.date=NA, end.date=NA){
     end.year <- strftime(as.POSIXlt(end.date), format='%Y')
     file.names <- file.names[years<=end.year]
   }
-  return(mean(sapply(file.names, read.output.file.ed)))
+  return(mean(sapply(file.names, read.output.file.ed), na.rm = TRUE))
 }
 
 ##' .. content for \description{} (no empty lines) ..
@@ -68,7 +77,13 @@ read.output.ed <- function(run.id, outdir, start.date=NA, end.date=NA){
 ##' 
 ##' @title 
 ##' @returns a list of ensemble output 
-##' @author David
+##' @param ensemble.size 
+##' @param outdir 
+##' @param run.time 
+##' @param pft.name 
+##' @param start.date 
+##' @param end.date 
+##' @param read.output 
 read.ensemble.output <- function(ensemble.size, outdir, run.time, pft.name='', 
     start.date, end.date, read.output = read.output.ed){
   ensemble.output <- list()
@@ -85,7 +100,13 @@ read.ensemble.output <- function(ensemble.size, outdir, run.time, pft.name='',
 ##' @title 
 ##' @return dataframe with one col per quantile analysed and one row per trait,
 ##'  each cell is a list of AGB over time
-##' @author David
+##' @param traits 
+##' @param quantiles 
+##' @param outdir 
+##' @param pft.name 
+##' @param start.date 
+##' @param end.date 
+##' @param read.output 
 read.sa.output <- function(traits, quantiles, outdir, pft.name='', 
     start.date, end.date, read.output = read.output.ed){
   sa.output <- data.frame()
