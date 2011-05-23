@@ -48,7 +48,7 @@ read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
   else return(sum(data[[variables]]))
 }
 
-##' ##' .. content for \description{} (no empty lines) ..
+##' .. content for \description{} (no empty lines) ..
 ##'
 ##' Reads the output of a single model run
 ##' @title 
@@ -131,7 +131,7 @@ for(pft.name in names(trait.samples)){
   quantiles.str <- quantiles.str[which(quantiles.str != '50')]
   quantiles <- as.numeric(quantiles.str)/100
   
-  sa.agb[[pft.name]] <- read.sa.output(traits, quantiles, settings$run$host$outdir, 
+  sa.agb[[pft.name]] <- read.sa.output(traits, quantiles, outdir = getwd(), 
       pft.name=pft.name, settings$run$start.date, settings$run$end.date)
   #ensemble.output[[pft.name]]<-read.ensemble.output(ensemble.size, outdir, 
   #    pft.name=pft.name, start.year, end.year)
