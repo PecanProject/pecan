@@ -60,7 +60,7 @@ read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
 read.output.ed <- function(run.id, outdir, start.date=NA, end.date=NA){
   file.names <- dir(outdir, pattern=run.id, full.names=TRUE)
   file.names <- grep('-Y-([0-9]{4}).*', file.names, value=TRUE)
-  years <- sub('((?!-Y-).)*([0-9]{4}).*', '\\2', file.names, perl=TRUE)
+  years <- sub('((?!-Y-).)*-Y-([0-9]{4}).*', '\\2', file.names, perl=TRUE)
   if(!is.na(start.date) && nchar(start.date) > 0){
     start.year <- strftime(as.POSIXlt(start.date), format='%Y')
     file.names <- file.names[years>=start.year]
