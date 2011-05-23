@@ -101,7 +101,7 @@ write.config.ED <- function(pft, trait.samples, settings, outdir, run.id){
 ##' @param variables 
 ##' @return single value of AGB from  filename for all plants
 read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
-  library(hdf5, lib.loc='~/lib/R/')
+  library(hdf5)
   MAGIC_NUMBER = 20
   data <- hdf5load(filename, load = FALSE)[variables]
   if(all(c("AGB_CO", "NPLANT") %in% variables)) {
