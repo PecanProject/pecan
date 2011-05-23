@@ -13,6 +13,8 @@ ssh <- function(host, ..., args=''){
   command<-paste('ssh -T ', host, ' "', ..., '" ', args, sep='')
   system(command)
 }
+## vecpaste, turns vector into comma delimited string fit for SQL statements. 
+vecpaste <- function(x) paste(paste("'", x, "'", sep=''), collapse=',')
 
 #returns an id representing a model run
 #for use in model input files and indices
@@ -23,12 +25,12 @@ get.run.id <- function(run.type, index, trait='', pft.name=''){
 get.run.time <- function(){
   format(Sys.time(), '%Y.%m.%d')
 }
-listToXml <- function(item, tag){
+list.to.xml <- function(item, tag){
   if(typeof(item)!='list')
     return(xmlNode(tag, item))
   xml <- xmlNode(tag)
   for(name in names(item)){
-    xml <- append.xmlNode(xml, listToXml(item[[name]], name))
+    xml <- append.xmlNode(xml, list.to.xml(item[[name]], name))
   }
   return(xml)
 }
