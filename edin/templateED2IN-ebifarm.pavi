@@ -177,7 +177,7 @@
                          
    NL%EDRES  = 1.0                     ! ED2/ED1 restart grid resolution
 
-    NL%SFILIN   = '/home/scratch/USER/pecan/edin/ebifarm/ebifarm.'
+    NL%SFILIN   = '/home/scratch/dlebauer/pecan/edin/ebifarm/ebifarm.'
 
 !----- Time of the history start ----------------------------------------------------------!
   !planting 2002
@@ -239,7 +239,7 @@
                     ! Directory where chd, dgd and glu data are kept.
 
 !----- File containing information for meteorological drivers -----------------------------!
-   NL%ED_MET_DRIVER_DB   = '/home/scratch/USER/pecan/edin/ebifarm/met/ED_MET_DRIVER_HEADER'
+   NL%ED_MET_DRIVER_DB   = '/home/scratch/dlebauer/pecan/edin/ebifarm/met/ED_MET_DRIVER_HEADER'
 
 
    NL%SOILSTATE_DB=''
@@ -474,8 +474,8 @@
 ! XML configuration file                                                                   !
 !------------------------------------------------------------------------------------------!
   NL%IEDCNFGF   = 'CONFIGFILE'
-  ! NL%EVENT_FILE = '/home/scratch/USER/pecan/edin/ebifarm'
-  ! NL%PHENPATH   = '/home/USER/inputs/'
+  ! NL%EVENT_FILE = '/home/scratch/dlebauer/pecan/edin/ebifarm'
+  ! NL%PHENPATH   = '/home/dlebauer/inputs/'
 !------------------------------------------------------------------------------------------!
 
 
