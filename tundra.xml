@@ -69,12 +69,10 @@
     <site>
       <lat></lat>
       <lon></lon>
-      <start.date></start.date>
-      <end.date></end.date>
       <met.data.header></met.data.header>
-      <hostname></hostname>
-      <model.outdir></model.outdir>
     </site>
+    <start.date>2006/01/01</start.date>
+    <end.date>2010/01/01</end.date>
     <host>
       <name>ebi-cluster.igb.uiuc.edu</name>
       <rundir>/home/davids14/EDBRAMS/ED/run/</rundir>
