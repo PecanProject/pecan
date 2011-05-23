@@ -67,8 +67,8 @@
       <lon></lon>
       <met.data.header></met.data.header>
     </site>
-    <start.date></start.date>
-    <end.date></end.date>
+    <start.date>2004/01/01</start.date>
+    <end.date>2005/01/01</end.date>
     <host>
       <name>ebi-cluster.igb.uiuc.edu</name>
       <rundir>~/EDBRAMS/ED/run/</rundir>
