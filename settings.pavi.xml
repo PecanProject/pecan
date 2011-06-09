@@ -3,8 +3,8 @@
   <pfts>
     <pft>
       <name>ebifarm.pavi</name>
-      <outdir>~/pecan/out/pavi/</outdir>
-      <edin>~/pecan/edin/templateED2IN-ebifarm.pavi</edin>
+      <outdir>/home/dlebauer/pecan/out/pavi/</outdir>
+      <edin>/home/dlebauer/pecan/edin/templateED2IN-ebifarm.pavi</edin>
       <constants>
         <num>15</num>
         <phenology>2</phenology>
@@ -50,20 +50,24 @@
     <start.year>2004</start.year>
     <end.year>2006</end.year>
   </sensitivity.analysis>
-  
+
+  <data.assimilation>
+    <nmcmc>1000</nmcmc>
+  </data.assimilation>
+      
   <pecanDir>~/pecan/</pecanDir>
   <Rlibdir>~/lib/R/</Rlibdir>
   <outdir>~/pecan/out/</outdir>
   <database>
+    <name>ebi_analysis</name>
     <userid>ebi_analys_user</userid>
     <passwd>b742xsAu</passwd>
     <location>localhost</location>
-    <name>ebi_analysis</name>
   </database>
   
   <run>
     <site>
-      <name></name>
+      <name>ebi.farm</name>
       <lat></lat>
       <lon></lon>
       <met.data.header></met.data.header>
@@ -72,7 +76,8 @@
     <end.date>2006/12/31</end.date>
     <host>
       <name>ebi-cluster.igb.uiuc.edu</name>
-      <rundir>~/EDBRAMS/ED/run/</rundir>
+      <rundir>/home/dlebauer/EDBRAMS/ED/run/</rundir>
+      <inputs>/home/scratch/dlebauer/pecan/edin/</inputs>
       <outdir>/home/scratch/dlebauer/pecan/out/</outdir>
     </host>
   </run>
