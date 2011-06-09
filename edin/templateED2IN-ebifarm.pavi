@@ -95,7 +95,7 @@
  
    NL%IFOUTPUT  =  0            ! Instantaneous analysis (site average)
    NL%IDOUTPUT  =  0            ! Daily means (site average)
-   NL%IMOUTPUT  =  3            ! Monthly means (site average)
+   NL%IMOUTPUT  =  0            ! Monthly means (site average)
    NL%IYOUTPUT  =  3            ! Annual output
    NL%ISOUTPUT  =  0            ! History files
                                 ! 0 - no file;
@@ -105,7 +105,11 @@
 				! Note: Performance gains may be significant when
 				! (IFOUTPUT and IDOUTPUT and IMOUTPUT) = 0
    
-   NL%ATTACH_METADATA = 0       ! Flag for attaching metadata to HDF datasets
+   NL%ITOUTPUT  =  3            ! Instantaneous fluxes (site average)
+                                ! single annual file, no patch/cohort, for optimization or 
+                                !     flux tower comparision 
+
+   NL%ATTACH_METADATA = 1       ! Flag for attaching metadata to HDF datasets
 	                        ! Attaching metadata will aid new users
 	                        ! in quickly identifying dataset descriptions
 	                        ! but will compromise I/O performance significantly
