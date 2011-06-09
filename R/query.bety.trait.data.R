@@ -148,12 +148,12 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   } else if (trait == 'SLA') {
     
     #########################    SLA    ############################
-    query <- paste("select trt.id, trt.citation_id, trt.site_id, month(trt.date) as month, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n from traits as trt left join treatments as treat on (trt.treatment_id = treat.id)  left join sites on (sites.id = trt.site_id) where trt.variable_id in (select id from variables where name = 'SLA')  and specie_id in (",spstr,");", sep = "")
+    query <- paste("select trt.id, trt.citation_id, trt.site_id, month(trt.date) as month, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n from traits as trt left join treatments as treat on (trt.treatment_id = treat.id)  left join sites on (sites.id = trt.site_id) where trt.variable_id in (select id from variables where name in('LMA','SLA'))  and specie_id in (",spstr,");", sep = "")
     data <- fetch.stats2se(con, query)
 
     ## convert LMA to SLA
     selLMA <- which(data$vname == "LMA")
-    if(length(selLMA)>0){
+    if(length(selLMA)>0){ 
       for(i in selLMA){
         if(is.na(data$stat[i])){
           data$mean[i] = 1/data$mean[i]
@@ -190,7 +190,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
 
         
     #########################    LEAF TURNOVER    ############################
-    query <- paste("select trt.id, trt.citation_id, variables.name as vname, trt.site_id, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n from traits as trt left join treatments as treat on (trt.treatment_id = treat.id)  left join sites on (sites.id = trt.site_id) left join variables on (variables.id = trt.variable_id) where variables.name in ('leaf_turnover_rate','Leaf Longevity') and specie_id in (",spstr,");", sep = "")
+    query <- paste("select trt.id, trt.citation_id, variables.name as vname, trt.site_id, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n from traits as trt left join treatments as treat on (trt.treatment_id = treat.id)  left join sites on (sites.id = trt.site_id) left join variables on (variables.id = trt.variable_id) where variables.name in ('leaf_turnover_rate','leaf_longevity') and specie_id in (",spstr,");", sep = "")
     q    <- dbSendQuery(con, query)
     data <-  pecan.transformstats(fetch ( q, n = -1 ))
 
