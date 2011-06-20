@@ -54,7 +54,7 @@ read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
 ##' @title 
 ##' @param run.id the id distiguishing the model run
 ##' @param outdir the directory that the model's output was sent to
-##' @param start.date 
+##' @param start.year 
 ##' @param end.year 
 ##' @return vector of output variable for all runs within ensemble
 read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA){
@@ -62,7 +62,7 @@ read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA){
   file.names <- grep('-Y-([0-9]{4}).*', file.names, value=TRUE)
   years <- sub('((?!-Y-).)*-Y-([0-9]{4}).*', '\\2', file.names, perl=TRUE)
   if(!is.na(start.year) && nchar(start.year) ==  4){
-    file.names <- file.names[years>=as.numeric(start.date)]
+    file.names <- file.names[years>=as.numeric(start.year)]
   }
   if(!is.na(end.year) && nchar(end.year) == 4){
     file.names <- file.names[years<=as.numeric(end.year)]
@@ -133,4 +133,4 @@ for(pft.name in names(trait.samples)){
   #ensemble.output[[pft.name]]<-read.ensemble.output(ensemble.size, outdir, 
   #    pft.name=pft.name, start.year, end.year)
 }
-save(sa.agb, file = paste(settings$run$host$outdir, 'output.Rdata', sep=''))
+save(sa.agb, file = output.Rdata)
