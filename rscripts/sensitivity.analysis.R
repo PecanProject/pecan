@@ -9,8 +9,9 @@ if(interactive()){
     paste('please specify settings file in meta.analysis.R')
   }
 } else {
-  settings.file <- commandArgs(trailingOnly=TRUE)
-}
+  settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
+  ## settings.file <- commandArgs(trailingOnly=TRUE)
+} 
 
 settings.xml <- xmlParse(settings.file)
 settings <- xmlToList(settings.xml)

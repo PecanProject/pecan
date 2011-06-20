@@ -116,6 +116,7 @@ read.sa.output <- function(traits, quantiles, outdir, pft.name='',
     }
   }
   sa.output['50',] <- read.output(get.run.id('SA', 'median'), outdir)
+  sa.output <- sa.output[order(as.numeric(rownames(sa.output))),]
   return(sa.output)
 }
 
@@ -127,7 +128,8 @@ for(pft.name in names(trait.samples)){
   quantiles.str <- rownames(sa.samples[[pft.name]])
   quantiles.str <- quantiles.str[which(quantiles.str != '50')]
   quantiles <- as.numeric(quantiles.str)/100
-  
+
+  ##TODO needs to be generic, to handle any model output 
   sa.agb[[pft.name]] <- read.sa.output(traits, quantiles, outdir = getwd(), 
       pft.name=pft.name, settings$sensitivity.analysis$start.year, settings$sensitivity.analysis$end.year)
   #ensemble.output[[pft.name]]<-read.ensemble.output(ensemble.size, outdir, 
