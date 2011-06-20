@@ -62,13 +62,13 @@ convert.samples.ED <- function(trait.samples){
 #Requires a pft xml object, a list of trait values for a single model run,
 #and the name of the file to create
 write.config.ED <- function(pft, trait.samples, settings, outdir, run.id){
-  xml <- list.to.xml(pft$constants, 'pft')
+  xml <- listToXml(pft$constants, 'pft')
   for (trait in names(trait.samples)) {
     xml <- append.xmlNode(xml, xmlNode(trait, trait.samples[trait]))
   }
   config.header <- xmlNode("config")
   if ('config.header' %in% names(settings)){
-    config.header <- list.to.xml(settings$config.header, 'config')
+    config.header <- listToXml(settings$config.header, 'config')
   } 
   xml <- append.xmlNode(config.header, xml)
   #c stands for config, abbreviated to work within ED's character limit
@@ -83,7 +83,6 @@ write.config.ED <- function(pft, trait.samples, settings, outdir, run.id){
   ed2in.text <- scan(file = pft$edin, 
       what="character",sep='@', quote=NULL, quiet=TRUE)
   ed2in.text <- gsub('OUTDIR', settings$run$host$outdir, ed2in.text)
-  ed2in.text <- gsub('RUNTIME', get.run.time(), ed2in.text)
   ed2in.text <- gsub('ENSNAME', run.id, ed2in.text)
   ed2in.text <- gsub('USER', system('echo $USER', intern=TRUE), ed2in.text)
   ed2in.text <- gsub('CONFIGFILE', xml.file.name, ed2in.text)

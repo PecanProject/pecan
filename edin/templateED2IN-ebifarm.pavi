@@ -95,7 +95,7 @@
  
    NL%IFOUTPUT  =  0            ! Instantaneous analysis (site average)
    NL%IDOUTPUT  =  0            ! Daily means (site average)
-   NL%IMOUTPUT  =  3            ! Monthly means (site average)
+   NL%IMOUTPUT  =  0            ! Monthly means (site average)
    NL%IYOUTPUT  =  3            ! Annual output
    NL%ISOUTPUT  =  0            ! History files
                                 ! 0 - no file;
@@ -105,7 +105,11 @@
 				! Note: Performance gains may be significant when
 				! (IFOUTPUT and IDOUTPUT and IMOUTPUT) = 0
    
-   NL%ATTACH_METADATA = 0       ! Flag for attaching metadata to HDF datasets
+   NL%ITOUTPUT  =  3            ! Instantaneous fluxes (site average)
+                                ! single annual file, no patch/cohort, for optimization or 
+                                !     flux tower comparision 
+
+   NL%ATTACH_METADATA = 1       ! Flag for attaching metadata to HDF datasets
 	                        ! Attaching metadata will aid new users
 	                        ! in quickly identifying dataset descriptions
 	                        ! but will compromise I/O performance significantly
@@ -137,8 +141,8 @@
 !------------------------------------------------------------------------------------------!
 ! Analysis/history/restart file: path, prefix, settings                                    !
 !------------------------------------------------------------------------------------------!
-   NL%FFILOUT = 'OUTDIR/RUNTIME/OUTFILE'         ! Analysis output prefix
-   NL%SFILOUT   = 'OUTDIR/RUNTIME/HISTFILE'           ! History output prefix
+   NL%FFILOUT = 'OUTDIR/OUTFILE'         ! Analysis output prefix
+   NL%SFILOUT   = 'OUTDIR/HISTFILE'           ! History output prefix
 
    NL%IED_INIT_MODE   = 0
    !---------------------------------------------------------------------------------------!
@@ -177,7 +181,7 @@
                          
    NL%EDRES  = 1.0                     ! ED2/ED1 restart grid resolution
 
-    NL%SFILIN   = '/home/scratch/USER/pecan/edin/ebifarm/ebifarm.'
+    NL%SFILIN   = '/home/scratch/dlebauer/pecan/edin/ebifarm/ebifarm.'
 
 !----- Time of the history start ----------------------------------------------------------!
   !planting 2002
@@ -239,7 +243,7 @@
                     ! Directory where chd, dgd and glu data are kept.
 
 !----- File containing information for meteorological drivers -----------------------------!
-   NL%ED_MET_DRIVER_DB   = '/home/scratch/USER/pecan/edin/ebifarm/met/ED_MET_DRIVER_HEADER'
+   NL%ED_MET_DRIVER_DB   = '/home/scratch/dlebauer/pecan/edin/ebifarm/met/ED_MET_DRIVER_HEADER'
 
 
    NL%SOILSTATE_DB=''
@@ -474,8 +478,8 @@
 ! XML configuration file                                                                   !
 !------------------------------------------------------------------------------------------!
   NL%IEDCNFGF   = 'CONFIGFILE'
-  ! NL%EVENT_FILE = '/home/scratch/USER/pecan/edin/ebifarm'
-  ! NL%PHENPATH   = '/home/USER/inputs/'
+  ! NL%EVENT_FILE = '/home/scratch/dlebauer/pecan/edin/ebifarm'
+  ! NL%PHENPATH   = '/home/dlebauer/inputs/'
 !------------------------------------------------------------------------------------------!
 
 
