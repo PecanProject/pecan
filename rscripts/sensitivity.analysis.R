@@ -25,6 +25,9 @@ load(paste(outdir, 'samples.Rdata', sep=''))
 rsync(from = paste(settings$pecanDir, 'rscripts/read.output.R ', sep = ''),
       to = paste(host$name, ':',host$outdir, sep = ''))
 system(paste("ssh -T", host$name, "'", "cd", host$outdir, "; R --vanilla < read.output.R'"))
+
+#ssh(host$name, 'cd ', host$outdir, run.time, '/ ; R --vanilla ',
+#    args=paste('<', settings$pecanDir, '/rscripts/read.output.R',sep=''))
 rsync(from = paste(host$name, ':', host$outdir, 'output.Rdata', sep=''),
       to = paste(settings$outdir))
 load(paste(outdir, 'output.Rdata', sep=''))
