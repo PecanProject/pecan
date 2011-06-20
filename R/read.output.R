@@ -4,9 +4,9 @@
 ##' @title 
 ##' @returns a list of ensemble output 
 ##' @author David
-read.ensemble.output <- function(ensemble.size, host, outdir, run.time, pft.name='', read.output = read.output.ed){
+read.ensemble.output <- function(ensemble.size, host, outdir, pft.name='', read.output = read.output.ed){
   ensemble.output <- list()
-  rsync(paste(host$name, ':', host$outdir, run.time, 
+  rsync(paste(host$name, ':', host$outdir, 
               '/*', get.run.id('ENS', '', pft.name=pft.name), '*', sep=''),
         outdir)
   for(ensemble.id in seq(ensemble.size)) {
@@ -23,9 +23,9 @@ read.ensemble.output <- function(ensemble.size, host, outdir, run.time, pft.name
 ##' @return dataframe with one col per quantile analysed and one row per trait,
 ##'  each cell is a list of AGB over time
 ##' @author David
-read.sa.output <- function(traits, quantiles, host, outdir, run.time, pft.name='', read.output = read.output.ed){
+read.sa.output <- function(traits, quantiles, host, outdir, pft.name='', read.output = read.output.ed){
   sa.output <- data.frame()
-  rsync(paste(host$name, ':', host$outdir, run.time, 
+  rsync(paste(host$name, ':', host$outdir, 
               '/*', get.run.id('SA', '', pft.name=pft.name), '*', sep=''),
         outdir)
   for(trait in traits){

@@ -18,6 +18,7 @@
        <edin>~/pecan/edin/templateED2IN-tundra.deciduous</edin>
        <exclude>
          <trait>c2n_leaf</trait>
+         <trait>SLA</trait>
        </exclude>
        <constants>
          <num>11</num>    
@@ -30,6 +31,7 @@
       <edin>~/pecan/edin/templateED2IN-tundra.grass</edin>
       <exclude>
         <trait>c2n_leaf</trait>
+        <trait>SLA</trait>
       </exclude>
       <constants>
         <num>5</num>    
@@ -37,8 +39,9 @@
     </pft>
   </pfts>
   <meta.analysis>
-    <iter>300000</iter>
+    <iter>200000</iter>
     <random.effects>TRUE</random.effects>
+    <threshold>1.2</threshold>
   </meta.analysis>
   <ensemble>
     <size>0</size>
@@ -76,7 +79,7 @@
     <host>
       <name>ebi-cluster.igb.uiuc.edu</name>
       <rundir>/home/davids14/EDBRAMS/ED/run/</rundir>
-      <outdir>/home/scratch/davids14/pecan/out/</outdir>
+      <outdir>/home/scratch/davids14/pecan/out/FixedSoilTemp/</outdir>
     </host> 
   </run>
 </pecan>
