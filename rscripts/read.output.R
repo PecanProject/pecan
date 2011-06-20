@@ -80,12 +80,11 @@ read.output.ed <- function(run.id, outdir, start.date=NA, end.year=NA){
 ##' @returns a list of ensemble output 
 ##' @param ensemble.size 
 ##' @param outdir 
-##' @param run.time 
 ##' @param pft.name 
 ##' @param start.year 
 ##' @param end.year 
 ##' @param read.output 
-read.ensemble.output <- function(ensemble.size, outdir, run.time, pft.name='', 
+read.ensemble.output <- function(ensemble.size, outdir, pft.name='', 
     start.year, end.year, read.output = read.output.ed){
   ensemble.output <- list()
   for(ensemble.id in seq(ensemble.size)) {

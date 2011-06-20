@@ -186,8 +186,8 @@
 !------------------------------------------------------------------------------------------!
 ! Analysis/history/restart file: path, prefix, settings                                    !
 !------------------------------------------------------------------------------------------!
-   NL%FFILOUT = 'OUTDIR/RUNTIME/OUTFILE'         ! Analysis output prefix
-   NL%SFILOUT   = 'OUTDIR/RUNTIME/HISTFILE'           ! History output prefix
+   NL%FFILOUT = 'OUTDIR/OUTFILE'         ! Analysis output prefix
+   NL%SFILOUT   = 'OUTDIR/HISTFILE'           ! History output prefix
 
    !---------------------------------------------------------------------------------------!
    ! IED_INIT_MODE determines how the ecosystem should be initialized.                     !
@@ -294,7 +294,7 @@
                         ! Directory where chd, dgd and glu data are kept.
 
 !----- File containing information for meteorological drivers -----------------------------!
-   NL%ED_MET_DRIVER_DB = '/home/davids14/EDBRAMS/ED/run/ED_MET_DRIVER_HEADER'
+   NL%ED_MET_DRIVER_DB = '/home/davids14/EDBRAMS/ED/run/ED_MET_DRIVER_HEADER-toolik'
 
    !---------------------------------------------------------------------------------------!
    ! SOILSTATE_DB - Soil state (temperature and moisture) database, used only when         !

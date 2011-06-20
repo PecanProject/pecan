@@ -22,15 +22,12 @@ get.run.id <- function(run.type, index, trait='', pft.name=''){
   run.id <- paste(pft.name, run.type, trait, index, sep='')
   return(abbreviate.run.id.ED(run.id))
 }
-get.run.time <- function(){
-  format(Sys.time(), '%Y.%m.%d')
-}
-list.to.xml <- function(item, tag){
+listToXml <- function(item, tag){
   if(typeof(item)!='list')
     return(xmlNode(tag, item))
   xml <- xmlNode(tag)
   for(name in names(item)){
-    xml <- append.xmlNode(xml, list.to.xml(item[[name]], name))
+    xml <- append.xmlNode(xml, listToXml(item[[name]], name))
   }
   return(xml)
 }

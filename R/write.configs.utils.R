@@ -35,7 +35,6 @@ write.ensemble.configs <- function(pft, ensemble.samples, host, outdir, settings
     write.config(pft, convert.samples(ensemble.samples[ensemble.id,]), 
                  settings, outdir, run.id)
   }
-  browser()
   rsync(paste(outdir, '/*', get.run.id('ENS', '', pft.name=pft.name), '*', sep=''), 
         paste(host$name, ':', host$rundir,  sep=''))
 }

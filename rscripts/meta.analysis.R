@@ -120,7 +120,7 @@ for( pft in pfts){
   save(trait.mcmc, file=paste(pft$outdir, '/trait.mcmc.Rdata', sep = ''))
   save(prior.distns, file=paste(pft$outdir, '/prior.distns.Rdata', sep = ''))
 
-  pecan.ma.summary(trait.mcmc, pft$name,pft$outdir)
+  pecan.ma.summary(trait.mcmc, pft$name,pft$outdir, settings$meta.analysis$threshold)
   
 } ## end loop over pfts
 
