@@ -25,8 +25,8 @@ load(paste(outdir, 'samples.Rdata', sep=''))
 rsync(from = paste(settings$pecanDir, 'rscripts/read.output.R ', sep = ''),
       to = paste(host$name, ':',host$outdir, sep = ''))
 system(paste("ssh -T", host$name, "'", "cd", host$outdir, "; R --vanilla < read.output.R'"))
-rsync(paste(host$name, ':', host$outdir, '/output.Rdata', sep=''),
-      outdir)
+rsync(from = paste(host$name, ':', host$outdir, 'output.Rdata', sep=''),
+      to = paste(settings$outdir))
 load(paste(outdir, 'output.Rdata', sep=''))
 
 for(pft in settings$pfts){
@@ -40,4 +40,3 @@ for(pft in settings$pfts){
     sensitivity.analysis(trait.samples[[pft$name]], sa.samples[[pft$name]], sa.agb[[pft$name]], pft$outdir)
   }
 }
-
