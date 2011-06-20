@@ -75,11 +75,41 @@ assign.controls <- function(data){
 drop.columns <- function(data, columns){
   return(data[,which(!colnames(data) %in% columns)])
 }
+query.covariates<-function(trait.ids){
+  covariate.query<-paste("select covariates.trait_id, covariates.level,variables.name",
+                         "from covariates left join variables on variables.id = covariates.variable_id",
+                         "where trait_id in (",vecpaste(trait.ids),")")
+  q <- dbSendQuery(con,covariate.query)
+  all.covs = fetch(q,n=-1)  
+  return(all.covs)
+}
 
-get.canopy.height.covariates<-function(all.covs){
-  ht.temp <- all.covs[all.covs$name == 'canopy_layer', ]
-  ht.cov  <- transform(ht.temp, id = trait_id, canopy_layer = level)[, c('id', 'canopy_layer')]
-  return(ht.cov)
+##' Append covariate data as a column within a table
+##' @name append.covariate
+##'
+##' \code{append.covariate} appends one or more tables of covariate data 
+##' as a single column in a given table of trait data.
+##' In the event a trait has several covariates across several given tables, 
+##' the first table given will take precedence
+##'
+##' @param data trait dataframe that will be appended to.
+##' @param covariate name of the covariate as it will appear in the appended column
+##' @param ... one or more tables of covariate data, ordered by the precedence 
+##' they will assume in the event a trait has covariates across multiple tables.
+##' All tables must contain an 'id' and 'level' column, at minimum. 
+append.covariate<-function(data, covariate, ...){
+  merged <- data.frame()
+  for(covariate.data in list(...)){
+    if(length(covariate.data)>1){
+      #conditional added to prevent crash when trying to transform an empty data frame
+      transformed <- transform(covariate.data, id = trait_id, level = level)
+      selected <- transformed[!transformed$id %in% merged$id, c('id', 'level')]
+      merged <- rbind(merged, selected)
+    }
+  }
+  colnames(merged) <- c('id', covariate)
+  merged <- merge(merged, data, all = TRUE)
+  return(merged)
 }
 
 ##' Extract trait data from BETYdb
@@ -112,25 +142,19 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     #########################   VCMAX   ############################
     query <- paste("select traits.id, traits.citation_id, traits.site_id, treatments.name, month(traits.date) as month, traits.dateloc, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
     data <- fetch.stats2se(con, query)
-
-    ## grab covariate data
-    q <- dbSendQuery(con,paste("select covariates.trait_id, covariates.level,variables.name from covariates left join variables on variables.id = covariates.variable_id where trait_id in (",vecpaste(data$id),")",sep=""))
-    all.covs <- fetch(q,n=-1)
-
-    ## get temperature covariates
-    leafT.covs  <- all.covs[all.covs$name == 'leafT',]
-    ## use airT as leafT if only airT available
-    airT.covs   <- all.covs[all.covs$name == 'airT' & ! all.covs$trait_id %in% leafT.covs$trait_id, ]
-    t.covs      <- rbind(leafT.covs, airT.covs)
-    temp.cov <- transform(t.covs, id = trait_id, leafT = level)[, c('id', 'leafT')]
+    all.covs <- query.covariates(data$id)
     
-    #conditional added to prevent crash when trying to transform an empty data frame
-    if(length(all.covs>0)) {  
-      ht.cov<-get.canopy.height.covariates(all.covs)
-      data <- merge(merge(ht.cov, temp.cov, all = TRUE), data, all = TRUE)
+    if(length(all.covs)>0) {
+      ## get temperature covariates
+      data <- append.covariate(data, 'leafT', 
+          all.covs[all.covs$name == 'leafT',],
+          all.covs[all.covs$name == 'airT',])
+      ## get canopy height covariates
+      data <- append.covariate(data, 'canopy_layer',
+          all.covs[all.covs$name == 'canopy_layer',])
       ## select sunleaf data
       data <- data[data$canopy_layer >= 0.66 | is.na(data$canopy_layer), ]
-    }    
+    }
     
     ## set default leafT to 25 if unknown
     data$leafT[is.na(data$leafT)] <-  25
@@ -148,12 +172,12 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   } else if (trait == 'SLA') {
     
     #########################    SLA    ############################
-    query <- paste("select trt.id, trt.citation_id, trt.site_id, month(trt.date) as month, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n from traits as trt left join treatments as treat on (trt.treatment_id = treat.id)  left join sites on (sites.id = trt.site_id) where trt.variable_id in (select id from variables where name = 'SLA')  and specie_id in (",spstr,");", sep = "")
+    query <- paste("select trt.id, trt.citation_id, trt.site_id, month(trt.date) as month, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n from traits as trt left join treatments as treat on (trt.treatment_id = treat.id)  left join sites on (sites.id = trt.site_id) where trt.variable_id in (select id from variables where name in('LMA','SLA'))  and specie_id in (",spstr,");", sep = "")
     data <- fetch.stats2se(con, query)
 
     ## convert LMA to SLA
     selLMA <- which(data$vname == "LMA")
-    if(length(selLMA)>0){
+    if(length(selLMA)>0){ 
       for(i in selLMA){
         if(is.na(data$stat[i])){
           data$mean[i] = 1/data$mean[i]
@@ -166,16 +190,13 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     }
     
     ## grab covariate data
-    covariate.query<-paste("select covariates.trait_id, covariates.level,variables.name from covariates left join variables on variables.id = covariates.variable_id where trait_id in (",vecpaste(data$id),")",sep="")
-    q <- dbSendQuery(con,covariate.query)
-    all.covs = fetch(q,n=-1)  
+    all.covs = query.covariates(data$id)
 
     ## get canopy height covariates
     #conditional added to prevent crash when trying to transform an empty data frame
     if(length(all.covs)>0) {  
-      ht.cov<-get.canopy.height.covariates(all.covs)
-      data <- merge(ht.cov, data, all = TRUE)
-      ## select sunleaf data
+      data <- append.covariate(data, 'canopy_layer',
+          all.covs[all.covs$name == 'canopy_layer',])
       data <-  data[data$canopy_layer >= 0.66 | is.na(data$canopy_layer),]
     }
 
@@ -187,10 +208,9 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     result <- drop.columns(data, 'canopy_layer')
 
   } else if (trait == 'leaf_turnover_rate'){
-
-        
+    
     #########################    LEAF TURNOVER    ############################
-    query <- paste("select trt.id, trt.citation_id, variables.name as vname, trt.site_id, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n from traits as trt left join treatments as treat on (trt.treatment_id = treat.id)  left join sites on (sites.id = trt.site_id) left join variables on (variables.id = trt.variable_id) where variables.name in ('leaf_turnover_rate','Leaf Longevity') and specie_id in (",spstr,");", sep = "")
+    query <- paste("select trt.id, trt.citation_id, variables.name as vname, trt.site_id, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n from traits as trt left join treatments as treat on (trt.treatment_id = treat.id)  left join sites on (sites.id = trt.site_id) left join variables on (variables.id = trt.variable_id) where variables.name in ('leaf_turnover_rate','leaf_longevity') and specie_id in (",spstr,");", sep = "")
     q    <- dbSendQuery(con, query)
     data <-  pecan.transformstats(fetch ( q, n = -1 ))
 
@@ -216,15 +236,12 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     query <- paste("select traits.id, traits.citation_id, traits.site_id, treatments.name, month(traits.date) as month, traits.dateloc, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
     data <- fetch.stats2se(con, query)
 
-    q <- dbSendQuery(con,paste("select covariates.trait_id, covariates.level,variables.name from covariates left join variables on variables.id = covariates.variable_id where trait_id in (",vecpaste(data$id),")",sep=""))
-    all.covs <- fetch(q,n=-1)
+    all.covs = query.covariates(data$id)
 
     ## get temperature covariates
-    rootT.covs  <- all.covs[all.covs$name == 'rootT',]
-    ## use airT as rootT if only airT available
-    airT.covs   <- all.covs[all.covs$name == 'airT' & ! all.covs$trait_id %in% rootT.covs$trait_id, ]
-    t.covs      <- rbind(rootT.covs, airT.covs)
-    temp.cov <- transform(t.covs, id = trait_id, rootT = level)[, c('id', 'rootT')]
+    data <- append.covariate(data, 'rootT', 
+        all.covs[all.covs$name == 'rootT',],
+        all.covs[all.covs$name == 'airT',])
 
     data <- merge(temp.cov, data, all = TRUE)
     

@@ -25,7 +25,7 @@ query.bety.priors <- function(pft, trstr,out=NULL,con=NULL,...){
   priors <- fetch ( q2, n = -1 )
   priors$name[priors$name == 'SLA_m2_per_gC'] <- 'SLA'
   rownames(priors) <- priors$name
-  priors <- priors[, -which(colnames(priors)=='name')]
+  priors <- priors[, which(colnames(priors)!='name')]
 
   if(!is.null(out)){
     sink(file = paste(out,'priors.tex',sep=""), split = FALSE)

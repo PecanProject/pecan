@@ -1,4 +1,5 @@
-pecan.ma.summary <- function(mcmc.object, pft,outdir){
+pecan.ma.summary <- function(mcmc.object, pft,outdir, threshold=NA){
+  if(is.na(threshold)) threshold <- 1.1
   fail = FALSE
   for (trait in names(mcmc.object)){
     ## reordering maparms so that beta.o etc not sent to end
@@ -19,7 +20,7 @@ pecan.ma.summary <- function(mcmc.object, pft,outdir){
     ## G-R diagnostics to ensure convergence    
     gd<-gelman.diag(mcmc.object[[trait]])
     mpsrf<-round(gd$mpsrf,digits=4)
-    if(mpsrf < 1.1){
+    if(mpsrf < threshold){
       writeLines(paste ("JAGS model converged for", pft, trait,
                     "\nGD MPSRF = ",mpsrf,"\n", sep=" "))
     } else {
