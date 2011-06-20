@@ -133,4 +133,4 @@ for(pft.name in names(trait.samples)){
   #ensemble.output[[pft.name]]<-read.ensemble.output(ensemble.size, outdir, 
   #    pft.name=pft.name, start.year, end.year)
 }
-save(sa.agb, file = output.Rdata)
+save(sa.agb, file = 'output.Rdata')

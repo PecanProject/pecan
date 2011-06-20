@@ -78,7 +78,7 @@
       <name>ebi-cluster.igb.uiuc.edu</name>
       <rundir>/home/dlebauer/EDBRAMS/ED/run/</rundir>
       <inputs>/home/scratch/dlebauer/pecan/edin/</inputs>
-      <outdir>/home/scratch/dlebauer/pecan/out/</outdir>
+      <outdir>/home/scratch/dlebauer/pecan/out/2011.05.24/</outdir>
     </host>
   </run>
 </pecan>
