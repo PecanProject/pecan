@@ -57,17 +57,15 @@ read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
 ##' @param start.date 
 ##' @param end.year 
 ##' @return vector of output variable for all runs within ensemble
-read.output.ed <- function(run.id, outdir, start.date=NA, end.year=NA){
+read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA){
   file.names <- dir(outdir, pattern=run.id, full.names=TRUE)
   file.names <- grep('-Y-([0-9]{4}).*', file.names, value=TRUE)
   years <- sub('((?!-Y-).)*-Y-([0-9]{4}).*', '\\2', file.names, perl=TRUE)
-  if(!is.na(start.date) && nchar(start.date) > 0){
-    start.year <- strftime(as.POSIXlt(start.date), format='%Y')
-    file.names <- file.names[years>=start.year]
+  if(!is.na(start.year) && nchar(start.year) ==  4){
+    file.names <- file.names[years>=as.numeric(start.date)]
   }
-  if(!is.na(end.year) && nchar(end.year) > 0){
-    end.year <- strftime(as.POSIXlt(end.year), format='%Y')
-    file.names <- file.names[years<=end.year]
+  if(!is.na(end.year) && nchar(end.year) == 4){
+    file.names <- file.names[years<=as.numeric(end.year)]
   }
   file.names <- file.names[!is.na(file.names)]
   return(mean(sapply(file.names, read.output.file.ed), na.rm = TRUE))
