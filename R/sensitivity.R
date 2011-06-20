@@ -11,13 +11,23 @@ sa.splinefun <- function(quantiles.input, quantiles.output){
 }
 ##' Calculates the standard deviation of the variance estimate
 ##'
-##' Uses the equation 
-##' @title 
-##' @param x 
-##' @return 
-##' @author David
+##' Uses the equation  
+##' @title Standard deviation of sample variance
+##' @param x sample
+##' @return estimate of standard deviation of the sample variance
+##' @references \href{Wikipedia}{http://en.wikipedia.org/wiki/Variance#Distribution_of_the_sample_variance}
 sd.var <- function(x){
   var(x)^2*(2/(length(x)-1) + kurtosis(x)/length(x))
+}
+##' Calculates the kurtosis of a vector
+##'
+##' @title Calculate kurtosis from a vector
+##' @param x vector of values
+##' @return numeric value of kurtosis
+##' @references  NIST/SEMATECH e-Handbook of Statistical Methods, \url{http://www.itl.nist.gov/div898/handbook/eda/section3/eda35b.htm}, 2011-06-20.
+kurtosis <- function(x) {
+  kappa <- sum((x - mean(x))^4)/((length(x) - 1) * sd(x)^4) - 3
+  return(kappa)
 }
 
 get.sensitivity <- function(trait.samples, sa.splinefun){
