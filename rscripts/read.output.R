@@ -116,7 +116,7 @@ read.sa.output <- function(traits, quantiles, outdir, pft.name='',
     }
   }
   sa.output['50',] <- read.output(get.run.id('SA', 'median'), outdir)
-  sa.output <- sa.output[order(rownames(sa.output)),]
+  sa.output <- sa.output[order(as.numeric(rownames(sa.output))),]
   return(sa.output)
 }
 
