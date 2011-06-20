@@ -14,7 +14,7 @@ if(interactive()){
 
 print('Enter runtime: ')
 run.time <- readline()
-
+paste(settings.file)
 settings.xml <- xmlParse(settings.file)
 settings <- xmlToList(settings.xml)
 
@@ -25,6 +25,8 @@ outdir <- settings$outdir
 host<- settings$run$host
 load(paste(outdir, 'samples.Rdata', sep=''))
 
+rsync(paste(host$name, ':', host$outdir, run.time, '/output.Rdata', sep=''),
+      outdir)
 ssh(host$name, 'cd ', host$outdir, run.time, '/ ; R --vanilla ',
     args=paste('<', settings$pecanDir, '/rscripts/read.output.R',sep=''))
 rsync(paste(host$name, ':', host$outdir, run.time, '/output.Rdata', sep=''),

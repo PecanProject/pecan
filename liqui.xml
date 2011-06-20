@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<pecan>
+  <pfts>
+    <pft>
+     <name>ebifarm.liqui</name>
+      <outdir>~/pecan/out/liqui/</outdir>
+      <edin>/home/dwng/pecan/edin/templateED2IN.liqui</edin>
+      <constants>
+        <num>9</num>
+        <max_dbh>75</max_dbh>
+  	<hgt_max>25</hgt_max>
+      <mort1>1.0</mort1>
+        <plant_min_temp>-100</plant_min_temp>
+        <storage_turnover_rate>0</storage_turnover_rate>
+      </constants>
+    </pft>
+  </pfts>
+
+  <hydro>
+  <useTOPMODEL>0</useTOPMODEL>
+  <useRUNOFF>0</useRUNOFF>
+ </hydro>
+
+ <ed_misc>
+  <burnin>1</burnin>
+ </ed_misc>
+
+  <config.header>
+    <radiation>
+      <lai_min>0.01</lai_min>
+    </radiation>
+    <ed_misc>
+      <output_month>12</output_month>      
+    </ed_misc> 
+  </config.header>
+  
+  <meta.analysis>
+    <iter>50000</iter>
+    <random.effects>TRUE</random.effects>
+  </meta.analysis>
+  
+  <ensemble>
+    <size>50</size>
+  </ensemble>
+  
+  <sensitivity.analysis>
+    <quantiles>
+      <quantile></quantile>
+      <sigma>-3</sigma>
+      <sigma>-2</sigma>
+      <sigma>-1</sigma>
+      <sigma>1</sigma>
+      <sigma>2</sigma>
+      <sigma>3</sigma>
+    </quantiles>
+    <start.year>2006</start.year>
+    <end.year>2010</end.year>
+  </sensitivity.analysis>
+
+  <data.assimilation>
+    <nmcmc>1000</nmcmc>
+  </data.assimilation>
+      
+  <pecanDir>~/pecan/</pecanDir>
+  <Rlibdir>~/lib/R/</Rlibdir>
+  <outdir>~/pecan/out/</outdir>
+  <database>
+    <name>ebi_analysis</name>
+    <userid>ebi_analys_user</userid>
+    <passwd>b742xsAu</passwd>
+    <location>localhost</location>
+  </database>
+  
+  <run>
+    <site>
+      <name>ebi.farm</name>
+      <lat></lat>
+      <lon></lon>
+      <met.data.header></met.data.header>
+    </site>
+    <start.date>2006/01/01</start.date>
+    <end.date>2009/12/31</end.date>
+    <host>
+      <name>ebi-cluster.igb.uiuc.edu</name>
+      <rundir>/home/dwng/EDBRAMS/ED/run/</rundir>
+      <inputs>/home/scratch/dwng/pecan/edin/</inputs>
+      <outdir>/home/scratch/dwng/pecan/out/</outdir>
+    </host>
+  </run>
+</pecan>
