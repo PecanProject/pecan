@@ -1,5 +1,7 @@
-pecan.ma.summary <- function(mcmc.object, pft,outdir, threshold=NA){
-  if(is.na(threshold)) threshold <- 1.1
+pecan.ma.summary <- function(mcmc.object, pft,outdir, threshold=1.1){
+  if(!is.null(settings$meta.analysis$threshold)) {
+    threshold = settings$meta.analysis$threshold
+  }
   fail = FALSE
   for (trait in names(mcmc.object)){
     ## reordering maparms so that beta.o etc not sent to end
