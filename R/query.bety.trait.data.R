@@ -242,8 +242,6 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     data <- append.covariate(data, 'rootT', 
         all.covs[all.covs$name == 'rootT',],
         all.covs[all.covs$name == 'airT',])
-
-    data <- merge(temp.cov, data, all = TRUE)
     
     ## Scale to 25C using Arrhenius scaling,
     data$mean <- arrhenius.scaling(data$mean, old.temp = data$rootT, new.temp = 25)
