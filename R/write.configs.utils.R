@@ -54,7 +54,7 @@ get.quantiles <- function(quantiles.tag) {
   }
   if (!is.null(quantiles.tag$sigma)){
     sigmas <- as.numeric(quantiles.tag[names(quantiles.tag)=='sigma'])
-    quantiles <- append(quantiles, pnorm(1-sigmas))
+    quantiles <- append(quantiles, 1 - pnorm(sigmas))
   }
   if (length(quantiles) == 0) {
     quantiles <- 1-pnorm(-3:3) #default
