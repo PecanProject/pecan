@@ -2,7 +2,7 @@ library(XML)
 if(interactive()){
    user <- system('echo $USER', intern = TRUE)
   if(user == 'dlebauer'){
-    settings.file = '~/pecan/settings.pavi.xml'
+    settings.file = '~/pecan/tests/settings.pavi.xml'
   } else if(user == 'davids14') {
     settings.file = '~/pecan/tundra.xml'
   } else {
