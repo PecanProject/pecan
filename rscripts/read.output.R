@@ -1,5 +1,3 @@
-# As is the case with 
-#
 ##TODO fix this filename restriction bug in ED, remove abbreviate.run.id.ED 
 
 ##' Abbreviates run.ids 
@@ -68,7 +66,12 @@ read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA){
     file.names <- file.names[years<=as.numeric(end.year)]
   }
   file.names <- file.names[!is.na(file.names)]
-  return(mean(sapply(file.names, read.output.file.ed), na.rm = TRUE))
+  if(length(file.names > 0)) {
+    result <- mean(sapply(file.names, read.output.file.ed), na.rm = TRUE)
+  } else {
+    result <- NA
+  }
+  return(result)
 }
 
 ##' .. content for \description{} (no empty lines) ..
