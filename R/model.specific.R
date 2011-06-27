@@ -83,6 +83,7 @@ write.config.ED <- function(pft, trait.samples, settings, outdir, run.id){
   ed2in.text <- scan(file = pft$edin, 
       what="character",sep='@', quote=NULL, quiet=TRUE)
   ed2in.text <- gsub('OUTDIR', settings$run$host$outdir, ed2in.text)
+  ed2in.text <- gsub('RUNTIME', get.run.time(), ed2in.text)
   ed2in.text <- gsub('ENSNAME', run.id, ed2in.text)
   ed2in.text <- gsub('USER', system('echo $USER', intern=TRUE), ed2in.text)
   ed2in.text <- gsub('CONFIGFILE', xml.file.name, ed2in.text)
@@ -101,10 +102,10 @@ write.config.ED <- function(pft, trait.samples, settings, outdir, run.id){
 ##' @return single value of AGB from  filename for all plants
 read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
   library(hdf5)
-  MAGIC_NUMBER = 20
+  Carbon2Yield = 20
   data <- hdf5load(filename, load = FALSE)[variables]
   if(all(c("AGB_CO", "NPLANT") %in% variables)) {
-    return(sum(data$AGB_CO * data$NPLANT) * MAGIC_NUMBER)
+    return(sum(data$AGB_CO * data$NPLANT, na.rm =TRUE) * Carbon2Yield)
   }
 }
 
@@ -115,17 +116,8 @@ read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
 ##' @param run.id the id distiguishing the model run
 ##' @param outdir the directory that the model's output was sent to
 ##' @return vector of output variable for all runs within ensemble
-read.output.ed <- function(run.id, outdir, start.date=NA, end.date=NA){
+read.output.ed <- function(run.id, outdir){
   file.names <- dir(outdir, pattern=run.id, full.names=TRUE)
-  file.names <- grep('-Y-([0-9]{4}).*', file.names, value=TRUE)
-  years <- sub('((?!-Y-).)*([0-9]{4}).*', '\\2', file.names, perl=TRUE)
-  if(!is.na(start.date) && nchar(start.date) > 0){
-    start.year <- strftime(start.date, format='%Y')
-    file.names <- file.names[years>=start.year]
-  }
-  if(!is.na(end.date) && nchar(end.date) > 0){
-    end.year <- strftime(end.date, format='%Y')
-    file.names <- file.names[years<=end.year]
-  }
-  return(mean(sapply(file.names, read.output.file.ed)))
+  file.names <- file.names[grep('-Y-', file.names)]
+  return(sum(sapply(file.names, read.output.file.ed)))
 }
