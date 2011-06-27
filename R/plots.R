@@ -1,41 +1,43 @@
-##' .. content for \description{} (no empty lines) ..
+##' Plot univariate response of model output to a trait parameter.
 ##'
 ##' .. content for \details{} ..
-##' @title 
+##' @title Sensitivity plot 
 ##' @param x.values trait quantiles used in sensitivity analysis
 ##' @param fun spline function estimated from sensitivity analysis
 ##' @param trait trait name for title
 ##' @param prior.x.values if given, plots sensitivity for prior run 
 ##' @param prior.fun if given, plots sensitivity for prior run
 ##' @return object of class ggplot
-plot.sensitivity <- function(x.values, fun, trait, prior.x.values = NA, prior.fun = NA) {
-  print(x.values)
-  LENGTH_OUT=100
+plot.sensitivity <- function(x.values, fun, trait, ylim = c(0,50), median.i = 4, prior.x.values = NA, prior.fun = NA) {
+  LENGTH_OUT <- 100
+  all.x <- c(x.values, prior.x.values[!is.na(prior.x.values)])
   x <- seq(from = min(x.values), to = max(x.values), length.out = LENGTH_OUT)
   y <- fun(x)
-  ylim = ceiling(max(y))
+  xlim <- c(ifelse((max(all.x)-min(all.x))/4>min(all.x),0,0.9*min(all.x)), signif(max(all.x)+min(all.x),2))
   line.data <- data.frame(x = x, y = y)
   point.data <- data.frame(x = x.values, y = fun(x.values))
-  range(x)
-  range(x.values)
-  print(line.data)
+  median.i <- which(as.numeric(rownames(x.values)) == 50)
   saplot <- ggplot() +
       geom_line(data = line.data, aes(x, y), size = 2) +
-      geom_point(data = point.data, aes(x, y), size = 3) +
-      scale_y_continuous(limits = c(0,ylim), breaks = seq(0, ylim, 0.5)) +
-      theme_bw() +
-      opts(title=trait.dictionary(trait)$figid,
-          axis.text.x = theme_text(size=14),
-          axis.text.y = theme_text(size=14),
-          axis.title.x = theme_blank(), 
-          axis.title.y = theme_blank(),
-          plot.title = theme_text(size = 20),
-          panel.border = theme_blank())
+        geom_point(data = point.data, aes(x, y), size = 3) +
+             geom_point(data = point.data[median.i,], aes(x, y), size = 5) + #indicate location of medians
+               scale_y_continuous(limits = c(0,ylim), breaks = seq(0, ylim, 0.5)) +
+                 coord_cartesian(x=c(0, max(x)*1.1)) +
+          theme_bw() +
+            opts(title=trait.dictionary(trait)$figid,
+                 axis.text.x = theme_text(size=14),
+                 axis.text.y = theme_text(size=14),
+                 axis.title.x = theme_blank(), 
+                 axis.title.y = theme_blank(),
+                 plot.title = theme_text(size = 20),
+                 panel.border = theme_blank())
   if(!is.na(prior.x.values) & !is.na(prior.fun)){
     x <- seq(from = min(prior.x.values), to = max(prior.x.values), length.out = LENGTH_OUT)
     saplot <- saplot +
-        geom_line(aes(x, fun(x)), size = 2, color = 'grey') +
-        geom_point(aes(x.values, fun(x.values)), size = 3, color = 'grey')
+      geom_line(aes(x, fun(x)), size = 2, color = 'grey') +
+        geom_point(aes(x.values, fun(x.values)), size = 3, color = 'grey') + 
+          geom_point(data = point.data[median.i,], aes(x, y), size = 5, color = 'grey') #indicate location of medians
+
   }
   return(saplot)
 }
@@ -44,7 +46,7 @@ plot.sensitivity <- function(x.values, fun, trait, prior.x.values = NA, prior.fu
 #                             c(0, max(x) * 1.1),
 #                             c(0.9, 1.1) * range(x))) 
 #                            
-#                               coord_cartesian(x=c(0, max(x)*1.1))
+#                               
 
 
 ## geom_line(aes(x, y),
@@ -90,8 +92,18 @@ plot.variance.decomposition <- function(coef.vars, elasticities, explained.varia
 plot.sensitivities <- function(sa.samples, sa.splinefuns, outdir){
   traits<-names(sa.samples)
   pdf(paste(outdir, 'sensitivity.analysis.pdf', sep=''), height = 12, width = 20)
-  for(trait in traits)
-    print(plot.sensitivity(sa.samples[[trait]], sa.splinefuns[[trait]], trait))
+  ## pre-calculate the maximum value of all of the y-axis
+  round.up <- function(x, place = 10) ceiling(x / place)*place
+  max.y <- max(mapply(do.call, sa.splinefuns, lapply(sa.samples, list)), na.rm = TRUE)
+
+
+  for(trait in traits) {
+    print(plot.sensitivity(x.values = sa.samples[[trait]],
+                           fun = sa.splinefuns[[trait]],
+                           trait = trait,
+                           ylim = c(0, roundup(max.y)),
+                           median.i =  which(as.numeric(rownames(sa.samples)) == 50)))
+  }
   dev.off()
 }
 
@@ -245,4 +257,11 @@ if(is.character(nbins))
 		return(list(heights = heights, xbr = xbr,counts=counts))
 	}
 }
+
+##' Calculate interquartile range
+##'
+##' Calculates the 25th and 75th quantiles given a vector x.
+##' @title Interquartile range
+##' @param x vector
+##' @return numeric vector of length 2, with the 25th and 75th quantiles of input vector x. 
 iqr<-function(x){ return(diff(quantile(x,c(.25,.75),na.rm=T))) }
