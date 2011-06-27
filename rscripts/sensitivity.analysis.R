@@ -27,8 +27,8 @@ rsync(from = paste(settings$pecanDir, 'rscripts/read.output.R ', sep = ''),
       to = paste(host$name, ':',host$outdir, sep = ''))
 system(paste("ssh -T", host$name, "'", "cd", host$outdir, "; R --vanilla < read.output.R'"))
 
-#ssh(host$name, 'cd ', host$outdir, run.time, '/ ; R --vanilla ',
-#    args=paste('<', settings$pecanDir, '/rscripts/read.output.R',sep=''))
+                                        #ssh(host$name, 'cd ', host$outdir, run.time, '/ ; R --vanilla ',
+                                        #    args=paste('<', settings$pecanDir, '/rscripts/read.output.R',sep=''))
 rsync(from = paste(host$name, ':', host$outdir, 'output.Rdata', sep=''),
       to = paste(settings$outdir))
 load(paste(outdir, 'output.Rdata', sep=''))
@@ -38,9 +38,14 @@ for(pft in settings$pfts){
   quantiles.str <- rownames(sa.samples[[pft$name]])
   quantiles.str <- quantiles.str[which(quantiles.str != '50')]
   quantiles <- as.numeric(quantiles.str)/100
-  #ensemble.output <- read.ensemble.output(settings$ensemble$size, outdir, pft.name=pft$name)
+                                        #ensemble.output <- read.ensemble.output(settings$ensemble$size, outdir, pft.name=pft$name)
   
   if('sensitivity.analysis' %in% names(settings)) {
-    sensitivity.analysis(trait.samples[[pft$name]], sa.samples[[pft$name]], sa.agb[[pft$name]], pft$outdir)
+    sensitivity.results <- sensitivity.analysis(trait.samples = trait.samples[[pft$name]],
+                                                sa.samples = sa.samples[[pft$name]],
+                                                sa.output = sa.agb[[pft$name]],
+                                                outdir = pft$outdir)
+    plot.sensitivities(sensitivity.results[['sensitivity.plot.inputs']], outdir = pft$outdir)  
+    plot.variance.decomposition(sensitivity.results[[variance.decomposition.plot.inputs]], outdir = pft$outdir)
   }
 }
