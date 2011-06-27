@@ -1,4 +1,4 @@
-citHeader("To cite PEcAn in publications, please use:")
+citHeader("To cite PEcAn in publications, please use the following citation:")
 
 citEntry(entry = "article",
   author = "David LeBauer, Dan Wang, Carl Davidson, Mike Dietze",
