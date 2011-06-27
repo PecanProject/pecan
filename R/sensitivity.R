@@ -91,7 +91,12 @@ sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
   if('Vm_low_temp' %in% traits)
     trait.samples[[which(traits == 'Vm_low_temp')]] <- trait.samples[[which(traits == 'Vm_low_temp')]] + 273.15
   coef.vars <- sapply(trait.samples, get.coef.var)
-  plot.sensitivities(sa.samples, sa.splinefuns, outdir)  
-  plot.variance.decomposition(coef.vars, elasticities, explained.variances, outdir)
+  outlist <- list(sensitivity.plot.inputs = list(
+                    sa.samples = sa.samples,
+                    sa.splinefuns = sa.splinefuns),
+                  variance.decomposition.plot.inputs = list(
+                    coef.vars = coef.vars,
+                    elasticities = elasticities,
+                    explained.variances = explained.variances))
 }
 
