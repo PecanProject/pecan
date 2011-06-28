@@ -31,3 +31,15 @@ listToXml <- function(item, tag){
   }
   return(xml)
 }
+##' Get units for a trait or set of traits
+##'
+##' @title Get Units
+##' @param traits trait or set of traits
+##' @return data.frame with trait names and trait units as provided by BETY
+##' @author David LeBauer
+get.units <- function(traits) {
+  units <- query.bety(paste('select name, units from variables where name in (',
+                            vecpaste(trait.dictionary(traits)$id),');'))
+  return(units)
+}
+ 
