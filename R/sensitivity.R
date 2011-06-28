@@ -44,28 +44,29 @@ get.sensitivity <- function(trait.samples, sa.splinefun){
   sensitivity <- sa.splinefun(median(trait.samples, na.rm = TRUE), 1)
 }
 
-##' Given a set of numbers, this returns the set's coefficient of variance.
+##' Given a set of numbers (a numeric vector), this returns the set's coefficient of variance.
 ##'
 ##' @title Get coefficient of variance 
-##' @param set 
-##' @return 
+##' @param set numeric vector of trait values
+##' @return coeficient of variance
 get.coef.var <- function(set){
   sqrt(var(set)) / mean(set)
 }
 
+##' Generic function for the elasticity
+##'
 ##' Given the sensitivity, samples, and outputs for a single trait, return elasticity
-##' 
-##' @title Get elasticity 
-##' @param sensitivity 
-##' @param samples 
-##' @param outputs 
-##' @return numeric value, elasticity = normalized sensitivity 
+##' @title Get Elasticity 
+##' @param sensitivity univariate sensitivity of model to a parameter, can be calculated by \link{get.sensitivity}  
+##' @param samples samples from trait distribution
+##' @param outputs model output from ensemble runs
+##' @return elasticity = normalized sensitivity 
 get.elasticity <- function(sensitivity, samples, outputs){
   return(sensitivity / (mean(outputs) / mean(samples)))
 }
 ##' Truncates vector at 0
 ##'
-##' @title Zero truncate 
+##' @title Zero Truncate 
 ##' @param y numeric vector
 ##' @return numeric vector with all values less than 0 set to 0
 zero.truncate <- function(y) {
@@ -95,8 +96,8 @@ sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
   variances <- sapply(traits, function(trait) var(spline.estimates[[trait]]))
   explained.variances <- variances / sum(variances)
   
-                                        #TODO: move unit conversions to their own method, called before sensitivity analysis
-                                        #TODO: possibly subset this function into a univariate sensitivity analysis that is performed once per trait and a variance decomposition that takes output from a set of sensitivity analyses 
+  ##TODO: move unit conversions to their own method, called before sensitivity analysis
+  ##TODO: possibly subset this function into a univariate sensitivity analysis that is performed once per trait and a variance decomposition that takes output from a set of sensitivity analyses 
   if('Vm_low_temp' %in% traits)
     trait.samples[[which(traits == 'Vm_low_temp')]] <- trait.samples[[which(traits == 'Vm_low_temp')]] + 273.15
   coef.vars <- sapply(trait.samples, get.coef.var)
