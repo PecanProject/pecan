@@ -9,6 +9,7 @@
 sa.splinefun <- function(quantiles.input, quantiles.output){
   return(splinefun(quantiles.input, quantiles.output, method = "monoH.FC"))
 }
+
 ##' Calculates the standard deviation of the variance estimate
 ##'
 ##' Uses the equation  
@@ -19,6 +20,7 @@ sa.splinefun <- function(quantiles.input, quantiles.output){
 sd.var <- function(x){
   var(x)^2*(2/(length(x)-1) + kurtosis(x)/length(x))
 }
+
 ##' Calculates the kurtosis of a vector
 ##'
 ##' @title Calculate kurtosis from a vector
@@ -29,12 +31,19 @@ kurtosis <- function(x) {
   kappa <- sum((x - mean(x))^4)/((length(x) - 1) * sd(x)^4) - 3
   return(kappa)
 }
-
+##' Calculate the sensitivity of a function at the median
+##'
+##' This function evaluates the sensitivity of a model to a parameter.
+##' This is done by evaluating the first derivative of the univariate spline estimate of the model response
+##' at the parameter median.
+##' @title Calculate Sensitivity
+##' @param trait.samples 
+##' @param sa.splinefun 
+##' @return numeric estimate of model sensitivity to parameter
 get.sensitivity <- function(trait.samples, sa.splinefun){
-  sensitivity <- sa.splinefun(mean(trait.samples), 1)
+  sensitivity <- sa.splinefun(median(trait.samples, na.rm = TRUE), 1)
 }
 
-                          
 ##' Given a set of numbers, this returns the set's coefficient of variance.
 ##'
 ##' @title Get coefficient of variance 
@@ -82,12 +91,12 @@ sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
   names(spline.estimates) <- traits
   sensitivities <- sapply(traits, function(trait) get.sensitivity(trait.samples[[trait]], sa.splinefuns[[trait]]))
   elasticities <- sapply(traits, 
-      function(trait) abs(get.elasticity(sensitivities[[trait]], trait.samples[[trait]], spline.estimates[[trait]])))
+                         function(trait) abs(get.elasticity(sensitivities[[trait]], trait.samples[[trait]], spline.estimates[[trait]])))
   variances <- sapply(traits, function(trait) var(spline.estimates[[trait]]))
   explained.variances <- variances / sum(variances)
   
-  #TODO: move unit conversions to their own method, called before sensitivity analysis
-  #TODO: possibly subset this function into a univariate sensitivity analysis that is performed once per trait and a variance decomposition that takes output from a set of sensitivity analyses 
+                                        #TODO: move unit conversions to their own method, called before sensitivity analysis
+                                        #TODO: possibly subset this function into a univariate sensitivity analysis that is performed once per trait and a variance decomposition that takes output from a set of sensitivity analyses 
   if('Vm_low_temp' %in% traits)
     trait.samples[[which(traits == 'Vm_low_temp')]] <- trait.samples[[which(traits == 'Vm_low_temp')]] + 273.15
   coef.vars <- sapply(trait.samples, get.coef.var)
