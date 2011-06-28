@@ -34,7 +34,7 @@ get.ensemble.samples <- function(ensemble.size, samples) {
 ##' Writes config files for use in meta-analysis and returns a list of run ids.
 ##' Given a pft.xml object, a list of lists as supplied by get.sa.samples, 
 ##' a name to distinguish the output files, and the directory to place the files.
-##' @title 
+##' @title Write ensemble configs 
 ##' @param pft pft
 ##' @param ensemble.samples list of lists supplied by \link{get.ensemble.samples}
 ##' @param host server to which config files will be sent
@@ -87,7 +87,9 @@ get.quantiles <- function(quantiles.tag) {
 
 ##' Samples parameters for a model run at specified quantiles.
 ##' 
-##' Samples from long (>2000) vectors that represent random samples from a trait distribution. Samples are either the MCMC chains output from the Bayesian meta-analysis or are randomly sampled from the closed-form distribution of the parameter probabiolity distribution function.
+##' Samples from long (>2000) vectors that represent random samples from a trait distribution.
+##' Samples are either the MCMC chains output from the Bayesian meta-analysis or are randomly sampled from
+##' the closed-form distribution of the parameter probabiolity distribution function.
 ##' The list is indexed first by trait, then by quantile.
 ##' @title get sensitivity analysis samples
 ##' @param samples random samples from trait distribution   
@@ -142,4 +144,3 @@ write.sa.configs <- function(pft, quantile.samples, host, outdir, settings,
   rsync(paste(outdir, '/*', get.run.id('SA', '', pft.name=pft.name), '*', sep=''), 
         paste(host$name, ':', host$rundir,  sep=''))
 }
-
