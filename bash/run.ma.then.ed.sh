@@ -1,4 +1,6 @@
 #!/bin/bash
+buildpecan
+wait
 cd ~/pecan
 ./bash/meta.analysis.sh $1
 wait
