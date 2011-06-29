@@ -40,6 +40,7 @@ listToXml <- function(item, tag){
 get.units <- function(traits) {
   units <- query.bety(paste('select name, units from variables where name in (',
                             vecpaste(trait.dictionary(traits)$id),');'))
-  return(units)
+  ans <- merge(data.frame(name = traits), units, by = 'name', sort =FALSE)
+  return(ans)
 }
  
