@@ -86,15 +86,23 @@ zero.truncate <- function(y) {
 ##' sensitivity.analysis(trait.samples[[pft$name]], sa.samples[[pft$name]], sa.agb[[pft$name]], pft$outdir)
 sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
   traits <- names(trait.samples)
-  sa.splinefuns <- sapply(traits, function(trait) sa.splinefun(sa.samples[[trait]], sa.output[[trait]]))
+  sa.splinefuns <- sapply(traits, function(trait) sa.splinefun(sa.samples[[trait]],
+                                                               sa.output[[trait]]))
   
-  spline.estimates <- lapply(traits, function(trait) zero.truncate(sa.splinefuns[[trait]](trait.samples[[trait]])))
+  spline.estimates <- lapply(traits, function(trait)
+                             zero.truncate(sa.splinefuns[[trait]](trait.samples[[trait]])))
   names(spline.estimates) <- traits
-  sensitivities <- sapply(traits, function(trait) get.sensitivity(trait.samples[[trait]], sa.splinefuns[[trait]]))
+  sensitivities <- sapply(traits, function(trait)
+                          get.sensitivity(trait.samples[[trait]],
+                                          sa.splinefuns[[trait]]))
   elasticities <- sapply(traits, 
-                         function(trait) abs(get.elasticity(sensitivities[[trait]], trait.samples[[trait]], spline.estimates[[trait]])))
-  variances <- sapply(traits, function(trait) var(spline.estimates[[trait]]))
-  explained.variances <- variances / sum(variances)
+                         function(trait)
+                         abs(get.elasticity(sensitivities[[trait]],
+                                            trait.samples[[trait]],
+                                            spline.estimates[[trait]])))
+  variances <- sapply(traits, function(trait)
+                      var(spline.estimates[[trait]]))
+  partial.variances <- variances / sum(variances)
   
   ##TODO: move unit conversions to their own method, called before sensitivity analysis
   ##TODO: possibly subset this function into a univariate sensitivity analysis that is performed once per trait and a variance decomposition that takes output from a set of sensitivity analyses 
@@ -102,11 +110,13 @@ sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
     trait.samples[[which(traits == 'Vm_low_temp')]] <- trait.samples[[which(traits == 'Vm_low_temp')]] + 273.15
   coef.vars <- sapply(trait.samples, get.coef.var)
   outlist <- list(sensitivity.plot.inputs = list(
-                    sa.samples = sa.samples,
+                    sa.samples    = sa.samples,
                     sa.splinefuns = sa.splinefuns),
                   variance.decomposition.plot.inputs = list(
-                    coef.vars = coef.vars,
-                    elasticities = elasticities,
-                    explained.variances = explained.variances))
+                    coef.vars         = coef.vars,
+                    elasticities      = elasticities,
+                    sensitivities     = sensitivities,
+                    partial.variances = partial.variances))
+  return(outlist)
 }
 

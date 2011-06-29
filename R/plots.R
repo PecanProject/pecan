@@ -10,7 +10,11 @@
 ##' @param prior.sa.splinefun similar to sa.splinefun, but for prior trait distribution. 
 ##' @param fontsize (optional) list with three arguments that can be set to vary the fontsize of the title, axis labels, and axis title in the sensitivity plots
 ##' @return object of class ggplot
-plot.sensitivity <- function(sa.sample, sa.splinefun, trait, y.range = c(0,50), median.i = 4, prior.sa.sample = NA, prior.sa.splinefun = NA, fontsize = list(title = 34, axislabel = 24)) {
+##' @author David LeBauer
+plot.sensitivity <- function(sa.sample, sa.splinefun, trait,
+                             y.range = c(0,50), median.i = 4,
+                             prior.sa.sample = NA, prior.sa.splinefun = NA,
+                             fontsize = list(title = 34, axis = 24)) {
   LENGTH_OUT <- 1000
   all.x <- c(sa.sample, prior.sa.sample[!is.na(prior.sa.sample)])
   x <- seq(from = min(sa.sample), to = max(sa.sample), length.out = LENGTH_OUT)
@@ -20,52 +24,142 @@ plot.sensitivity <- function(sa.sample, sa.splinefun, trait, y.range = c(0,50), 
   point.data <- data.frame(x = sa.sample, y = sa.splinefun(sa.sample))
   units <- gsub(get.units(trait)$units, '%', 'fraction')
   saplot <- ggplot() +
+    ## plot spline function
     geom_line(data = line.data, aes(x, y), size = 2) +
+      ## plot points used to evaluate spline
       geom_point(data = point.data, aes(x, y), size = 3.5) +
-        geom_point(data = point.data[median.i,], aes(x, y), size = 4.5) + #indicate location of medians
+        #indicate median with larger point
+        geom_point(data = point.data[median.i,], aes(x, y), size = 4.5) + 
           scale_y_continuous(limits = range(pretty(y.range)), breaks = pretty(y.range)) +
               scale_x_continuous(units, limits = range(pretty(x)), breaks = pretty(x)) +
                 theme_bw() +
                   opts(title= paste(trait.dictionary(trait)$figid, " (", units, ")", sep = ''), 
-                       axis.text.x = theme_text(size = fontsize$axislabel),
-                       axis.text.y = theme_text(size = fontsize$axislabel),
+                       axis.text.x = theme_text(size = fontsize$axis),
+                       axis.text.y = theme_text(size = fontsize$axis),
                        axis.title.x = theme_blank(),
-                       #axis.title.x = theme_text(size = fontsize$axistitle), 
                        axis.title.y = theme_blank(),
                        plot.title = theme_text(size = fontsize$title),
                        panel.border = theme_blank())
   if(!is.na(prior.sa.sample) & !is.na(prior.sa.splinefun)){
     x <- seq(from = min(prior.sa.sample), to = max(prior.sa.sample), length.out = LENGTH_OUT)
     saplot <- saplot +
+      ## plot spline
       geom_line(aes(x, sa.splinefun(x)), size = 2, color = 'grey') +
-        geom_point(aes(sa.sample, sa.splinefun(sa.sample)), size = 3.5, color = 'grey') + 
-          geom_point(data = point.data[median.i,], aes(x, y), size = 4.5, color = 'grey') #indicate location of medians
+        ## plot points used to evaluate spline 
+        geom_point(aes(sa.sample, sa.splinefun(sa.sample)), size = 3.5, color = 'grey') +
+          ## indicate location of medians
+          geom_point(data = point.data[median.i,], aes(x, y), size = 4.5, color = 'grey') 
   }
   return(saplot)
 }
 
-plot.variance.decomposition <- function(variance.decompostion.plot.inputs, outdir){
-  coef.vars <- variance.decompostion.plot.inputs$coef.vars
-  elasticities <- variance.decompostion.plot.inputs$elasticities
-  explained.variances <- variance.decompostion.plot.inputs$explained.variances
-  traits<-names(explained.variances)
-  coef.var.plot <- qplot(traits, coef.vars, log='y')
-  elasticity.plot <- qplot(traits, elasticities, xlab='')
-  elasticity.min <-min(elasticities[elasticities>1e-10])
-  if(log10(elasticity.min)+1 < log10(max(elasticities))){
-    elasticity.plot <- elasticity.plot + scale_y_log10(limits=c(elasticity.min, max(elasticities)))
+plot.variance.decomposition <- function(plot.inputs, outdir,
+                                        prior.plot.inputs = NA,
+                                        fontsize = list(title = 18, axis = 14)) {
+  traits    <- names(plot.inputs$partial.variances)
+  units     <- get.units(traits)$units
+  trait.labels <- trait.dictionary(traits)[,'figid']
+  plot.data <- data.frame(trait.labels        = trait.labels,
+                          units               = units,
+                          coef.vars           = plot.inputs$coef.vars * 100,
+                          elasticities        = plot.inputs$elasticities,
+                          partial.variances   = plot.inputs$partial.variances * 100,
+                          points              = 1:length(traits))
+
+  if(!is.na(prior.plot.inputs)) {
+    prior.plot.data <- data.frame(trait.labels              = trait.labels,
+                                  units                     = units,
+                                  prior.coef.vars           = prior.plot.inputs$coef.vars,
+                                  prior.elasticities        = prior.plot.inputs$elasticities,
+                                  prior.partial.variances   = prior.plot.inputs$partial.variances)
+    plot.data <- merge(plot.data, prior.plot.data, by = 'trait.labels')
   }
   
-  explained.var.plot <- qplot(traits, explained.variances, xlab='') + scale_y_log10(limits=c(1e-8, 1))
+  base.plot <- ggplot(plot.data) +
+    coord_flip() +
+      theme_bw() +
+        scale_y_continuous(expand = c(0,0)) + 
+          opts(axis.line.y = theme_segment(),
+               axis.line.x = theme_blank(),
+               axis.text.x = theme_text(size=fontsize$axis),
+               axis.text.y = theme_blank(),
+               axis.title.x = theme_blank(), 
+               axis.title.y = theme_blank(),
+               axis.ticks = theme_blank(),
+               panel.grid.major = theme_blank(),
+               panel.grid.minor = theme_blank(),
+               panel.border = theme_blank())
+
+if(!is.na(prior.plot.inputs)) {
+  .cv.plot <-  base.plot +
+    geom_pointrange(aes(x = points, y = prior.coef.vars,
+                        ymin = 0, ymax = prior.coef.vars),
+                    size = 1.25, alpha = 0.25) +
+                       scale_y_continuous(breaks =  pretty(plot.data$prior.coef.vars, n = 4))
+
   
+  .el.plot <- base.plot +
+    geom_pointrange(aes(x = points, prior.elasticities,
+                        ymin = 0, ymax = prior.elasticities),
+                    size = 1.25, color = 'grey') +
+                      scale_y_continuous(breaks =
+                                         pretty(c(plot.data[,grep('elasticities',
+                                                                  colnames(plot.data))])[[1]], n = 4))
+
+
+  .pv.plot <- base.plot +
+    geom_pointrange(aes(x = points, y = prior.partial.variances,
+                        ymin = 0, ymax = prior.partial.variances),
+                    size = 1.25, color = 'grey') +
+                      scale_y_continuous(breaks =
+                                         pretty(c(plot.data[,grep('partial.var',
+                                                                  colnames(plot.data))])[[1]], n = 4))
+} else {
+  .cv.plot <- base.plot + scale_y_continuous(breaks =  pretty(plot.data$coef.vars, n = 4))
+  .el.plot <- base.plot + scale_y_continuous(breaks =  pretty(plot.data$elasticities, n = 4))
+  .pv.plot <- base.plot + scale_y_continuous(breaks =  pretty(plot.data$prior.variances, n = 4))
+ }
+
+  
+  trait.plot <- base.plot + 
+    opts(title = 'Parameter',
+         plot.title = theme_text(hjust = 0.96, size = fontsize$title),
+         axis.text.x = theme_text(colour='white'),
+         axis.line.x = theme_blank()) +
+           geom_text(aes(y = 1, x = points,
+                         label=trait.labels, hjust = 1),
+                     size = fontsize$axis/3) +
+                       scale_y_continuous( breaks = c(0,0), limits = c(0,1))
+  
+  cv.plot <- .cv.plot + 
+    opts(title = 'CV (%)', plot.title = theme_text(size = fontsize$title)) +
+      geom_pointrange(data = plot.data,
+                      aes(x = points, y = coef.vars, ymin = 0, ymax = coef.vars),
+                      size = 1.25)
+  
+  el.plot <- .el.plot + 
+    opts(title = 'Elasticity', plot.title = theme_text(size = fontsize$title)) +
+       geom_pointrange(aes(x = points, y = elasticities, ymin = 0, ymax = elasticities),
+                       size = 1.25)
+
+  pv.plot <- .pv.plot + 
+    opts(title = 'Partial Variance (%)', plot.title = theme_text(size = fontsize$title)) +
+      geom_pointrange(aes(x = points, partial.variances,
+                          ymin = 0, ymax = partial.variances), size = 1.25)
+
+  
+ 
+
   ## stand in to be replaced by plot used in publication
-  pdf(paste(outdir, 'variancedecomposition.pdf', sep=''), width = 12, height = 8)
-  grid.arrange(coef.var.plot + coord_flip(),
-               elasticity.plot + coord_flip(),
-               explained.var.plot + coord_flip(),
-               ncol = 3)
+  pdf(paste(outdir, 'variance.decomposition.pdf', sep=''), width = 11, height = 8)
+  grid.arrange(trait.plot,
+               cv.plot,
+               el.plot,
+               pv.plot,
+               ncol = 4)
   dev.off()
 }
+
 ##' .. content for \description{} (no empty lines) ..
 ##'
 ##' .. content for \details{} ..
