@@ -1,6 +1,7 @@
 library(XML)
 if(interactive()){
   user <- system('echo $USER', intern = TRUE)
+  options(error = browser)
   if(user == 'dlebauer'){
     settings.file = '~/pecan/settings.pavi.xml'
   } else if(user == 'davids14') {
@@ -45,7 +46,7 @@ for(pft in settings$pfts){
                                                 sa.samples = sa.samples[[pft$name]],
                                                 sa.output = sa.agb[[pft$name]],
                                                 outdir = pft$outdir)
-    plot.sensitivities(sensitivity.results[['sensitivity.plot.inputs']], outdir = pft$outdir)  
-    plot.variance.decomposition(sensitivity.results[[variance.decomposition.plot.inputs]], outdir = pft$outdir)
+    plot.sensitivities(sensitivity.results$sensitivity.plot.inputs, outdir = pft$outdir)  
+    plot.variance.decomposition(sensitivity.results$variance.decomposition.plot.inputs, outdir = pft$outdir)
   }
 }
