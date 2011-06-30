@@ -58,6 +58,7 @@ read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
 read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA){
   file.names <- dir(outdir, pattern=run.id, full.names=TRUE)
   file.names <- grep('-Y-([0-9]{4}).*', file.names, value=TRUE)
+  if(length(filenames) == 0) stop(paste('no output files in', outdir)) 
   years <- sub('((?!-Y-).)*-Y-([0-9]{4}).*', '\\2', file.names, perl=TRUE)
   if(!is.na(start.year) && nchar(start.year) ==  4){
     file.names <- file.names[years>=as.numeric(start.year)]
