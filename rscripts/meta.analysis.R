@@ -2,7 +2,7 @@ library(XML)
 if(interactive()){
    user <- system('echo $USER', intern = TRUE)
   if(user == 'dlebauer'){
-    settings.file = '~/pecan/tests/settings.pavi.xml'
+    settings.file = '~/pecan/2011.07.05/settings.pavi.xml'
   } else if(user == 'davids14') {
     settings.file = '~/pecan/tundra.xml'
   } else {
@@ -68,7 +68,7 @@ for( pft in pfts){
   ## get traits for pft as a list with one dataframe per variable
   trait.data <- query.bety.traits(spstr,priors,con=con)
   traits <- names(trait.data)
-
+  
   ## DATA HACKS **** THESE SHOULD BE FIXED IN THE DATABASE*******
   if("root_respiration_rate" %in% names(trait.data)){
     sel = which(trait.data[["root_respiration_rate"]]$Y < 0.05)
@@ -82,46 +82,47 @@ for( pft in pfts){
   }
   save(trait.data, file = paste(pft$outdir, '/trait.data.Rdata', sep=''))
 
-  trait.count <- sapply(trait.data,nrow)
-  trait.average <- sapply(trait.data,function(x){mean(x$Y,na.rm=TRUE)})
-  names(trait.average)[names(trait.average)=="Vcmax"] <- "Vm0"
-  pft.summary$n[match(names(trait.count),traits), pft$name] <- trait.count
-  
-  ##prior.variances <- data.frame(var = unlist(t(sapply(1:nrow(prior.distns), function(i) with(prior.distns[i,], pdf.stats(distn, parama, paramb)))['var',])), row.names = priors)
-  prior.variances = as.data.frame(rep(1,nrow(prior.distns)))
-  row.names(prior.variances) = row.names(prior.distns)
-  prior.variances[names(trait.average),] = 0.001*trait.average^2 
-  prior.variances["seedling_mortality",1] = 1.0
-  
-  ## Set gamma distribution prior on
-#  prior.var <- function(x) do.call(pdf.stats, list(x$distn, x$parama, x$paramb))['var']
-#  prior.variances <- data.frame(var = sapply(1:nrow(prior.distns), function(i) prior.var(prior.distns[i,])),
-#                                row.names = priors)
-  
-  
-  taupriors <- list(tauA = 0.01,
-                    tauB = apply(prior.variances, 1, function(x) min(0.01, x)))
-  ##NOTE: with leaf_width in units of mm instead of m, all parameters are on similar scale
-  ##NOTE: could reinstate this, but I am not sure that we have the correct transformation here
-  ##NOTE: for now, these will be fixed at 0.01
-  ##tauB = apply(prior.variances, 1, function(x) min(0.01, 0.01*x)))
+  if(spstr != "''"){
+    trait.count <- sapply(trait.data,nrow)
+    trait.average <- sapply(trait.data,function(x){mean(x$Y,na.rm=TRUE)})
+    names(trait.average)[names(trait.average)=="Vcmax"] <- "Vm0"
+    pft.summary$n[match(names(trait.count),traits), pft$name] <- trait.count
     
-  ## run the meta-analysis
-  trait.mcmc <- pecan.ma(trait.data, prior.distns, taupriors, j.iter = ma.iter, settings, pft$outdir)
-  posteriors = approx.posterior(trait.mcmc,prior.distns,trait.data,pft$outdir)
-  save(trait.mcmc, posteriors,file = paste(pft$outdir, '/trait.mcmc.Rdata', sep=''))
-
-  trait.stats <- sapply(trait.mcmc,function(x){summary(x)$statistics['beta.o',1:2]})
-
-  ma.traitnames <- names(trait.mcmc)
-  pft.summary$mean[match(colnames(trait.stats), ma.traitnames),pft$name] <- trait.stats[1, ]
-  pft.summary$sd[match(colnames(trait.stats), ma.traitnames),pft$name] <- trait.stats[2, ]
+    ##prior.variances <- data.frame(var = unlist(t(sapply(1:nrow(prior.distns), function(i) with(prior.distns[i,], pdf.stats(distn, parama, paramb)))['var',])), row.names = priors)
+    prior.variances = as.data.frame(rep(1,nrow(prior.distns)))
+    row.names(prior.variances) = row.names(prior.distns)
+    prior.variances[names(trait.average),] = 0.001*trait.average^2 
+    prior.variances["seedling_mortality",1] = 1.0
+    
+    ## Set gamma distribution prior on
+    ##  prior.var <- function(x) do.call(pdf.stats, list(x$distn, x$parama, x$paramb))['var']
+    ##  prior.variances <- data.frame(var = sapply(1:nrow(prior.distns), function(i) prior.var(prior.distns[i,])),
+    ##                                row.names = priors)
   
-  save(trait.mcmc, file=paste(pft$outdir, '/trait.mcmc.Rdata', sep = ''))
+  
+    taupriors <- list(tauA = 0.01,
+                      tauB = apply(prior.variances, 1, function(x) min(0.01, x)))
+    ##NOTE: with leaf_width in units of mm instead of m, all parameters are on similar scale
+    ##NOTE: could reinstate this, but I am not sure that we have the correct transformation here
+    ##NOTE: for now, these will be fixed at 0.01
+    ##tauB = apply(prior.variances, 1, function(x) min(0.01, 0.01*x)))
+  
+    ## run the meta-analysis
+    trait.mcmc <- pecan.ma(trait.data, prior.distns, taupriors, j.iter = ma.iter, settings, pft$outdir)
+    posteriors = approx.posterior(trait.mcmc,prior.distns,trait.data,pft$outdir)
+    save(trait.mcmc, posteriors,file = paste(pft$outdir, '/trait.mcmc.Rdata', sep=''))
+  
+    trait.stats <- sapply(trait.mcmc,function(x){summary(x)$statistics['beta.o',1:2]})
+    
+    ma.traitnames <- names(trait.mcmc)
+    pft.summary$mean[match(colnames(trait.stats), ma.traitnames),pft$name] <- trait.stats[1, ]
+    pft.summary$sd[match(colnames(trait.stats), ma.traitnames),pft$name] <- trait.stats[2, ]
+  
+    save(trait.mcmc, file=paste(pft$outdir, '/trait.mcmc.Rdata', sep = ''))
+    pecan.ma.summary(trait.mcmc, pft$name, pft$outdir)
+  }
   save(prior.distns, file=paste(pft$outdir, '/prior.distns.Rdata', sep = ''))
-
-  pecan.ma.summary(trait.mcmc, pft$name, pft$outdir)
-  
+    
 } ## end loop over pfts
 
 save(pft.summary,file=paste(settings$outdir,"pft.summary.RData",sep=""))
