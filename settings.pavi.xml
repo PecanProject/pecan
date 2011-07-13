@@ -34,7 +34,7 @@
   </meta.analysis>
   
   <ensemble>
-    <size>500</size>
+    <size>5</size>
   </ensemble>
   
   <sensitivity.analysis>
@@ -67,7 +67,7 @@
   
   <run>
     <site>
-      <name>ebi.farm</name>
+      <name>EBI Energy Farm - Switchgrass</name>
       <lat></lat>
       <lon></lon>
       <met.data.header></met.data.header>
@@ -78,7 +78,7 @@
       <name>ebi-cluster.igb.uiuc.edu</name>
       <rundir>/home/dlebauer/EDBRAMS/ED/run/</rundir>
       <inputs>/home/scratch/dlebauer/pecan/edin/</inputs>
-      <outdir>/home/scratch/dlebauer/pecan/out/2011.05.24/</outdir>
+      <outdir>/home/scratch/dlebauer/pecan/out/2011.06.29/</outdir>
     </host>
   </run>
 </pecan>

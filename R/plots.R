@@ -11,77 +11,97 @@
 ##' @param fontsize (optional) list with three arguments that can be set to vary the fontsize of the title, axis labels, and axis title in the sensitivity plots
 ##' @return object of class ggplot
 ##' @author David LeBauer
-plot.sensitivity <- function(sa.sample, sa.splinefun, trait,
+plot.sensitivity <- function(sa.sample, sa.splinefn, trait,
                              y.range = c(0,50), median.i = 4,
-                             prior.sa.sample = NA, prior.sa.splinefun = NA,
-                             fontsize = list(title = 34, axis = 24)) {
+                             prior.sa.sample = NULL, prior.sa.splinefn = NULL,
+                             fontsize = list(title = 18, axis = 14),
+                             linesize = 0.5,
+                             dotsize = 1) {
   LENGTH_OUT <- 1000
-  all.x <- c(sa.sample, prior.sa.sample[!is.na(prior.sa.sample)])
-  x <- seq(from = min(sa.sample), to = max(sa.sample), length.out = LENGTH_OUT)
-  x.ticks <- pretty(all.x)  
-  xlim <- range(x.ticks)
-  line.data <- data.frame(x = x, y = sa.splinefun(x))
-  point.data <- data.frame(x = sa.sample, y = sa.splinefun(sa.sample))
-  units <- gsub(get.units(trait)$units, '%', 'fraction')
-  saplot <- ggplot() +
-    ## plot spline function
-    geom_line(data = line.data, aes(x, y), size = 2) +
+  
+  units <- gsub('percent', 'fraction', get.units(trait)$units)
+  saplot <- ggplot()
+
+  post.x <- seq(from = min(sa.sample), to = max(sa.sample), length.out = LENGTH_OUT)
+
+  
+  saplot <- saplot + 
+    ## plot spline function 
+    geom_line(aes(x,y), data = data.frame(x = post.x, y = sa.splinefn(post.x)), size = linesize) + 
       ## plot points used to evaluate spline
-      geom_point(data = point.data, aes(x, y), size = 3.5) +
+      geom_point(aes(x,y), data = data.frame(x = sa.sample, y = sa.splinefn(sa.sample)), size = dotsize) +
         #indicate median with larger point
-        geom_point(data = point.data[median.i,], aes(x, y), size = 4.5) + 
-          scale_y_continuous(limits = range(pretty(y.range)), breaks = pretty(y.range)) +
-              scale_x_continuous(units, limits = range(pretty(x)), breaks = pretty(x)) +
+        geom_point(aes(x,y), data = data.frame(x = sa.sample[median.i], y = sa.splinefn(sa.sample[median.i])), size = dotsize * 1.5) + 
+          scale_y_continuous(limits = range(pretty(y.range)), breaks = pretty(y.range, n = 3)[1:3]) +
                 theme_bw() +
-                  opts(title= paste(trait.dictionary(trait)$figid, " (", units, ")", sep = ''), 
+                  opts(title= trait.dictionary(trait)$figid, 
                        axis.text.x = theme_text(size = fontsize$axis),
                        axis.text.y = theme_text(size = fontsize$axis),
-                       axis.title.x = theme_blank(),
+                       axis.title.x = theme_text(size = fontsize$axis),
                        axis.title.y = theme_blank(),
                        plot.title = theme_text(size = fontsize$title),
                        panel.border = theme_blank())
-  if(!is.na(prior.sa.sample) & !is.na(prior.sa.splinefun)){
-    x <- seq(from = min(prior.sa.sample), to = max(prior.sa.sample), length.out = LENGTH_OUT)
+  ## Following conditional can be removed to only plot posterior sa
+  ##    if(!is.null(prior.sa.sample) & !is.null(prior.sa.splinefn)){
+    prior.x <- seq(from = min(prior.sa.sample), to = max(prior.sa.sample), length.out = LENGTH_OUT)
     saplot <- saplot +
       ## plot spline
-      geom_line(aes(x, sa.splinefun(x)), size = 2, color = 'grey') +
+      geom_line(aes(x,y), data = data.frame(x = prior.x, y = prior.sa.splinefn(prior.x)),
+                size = linesize, color = 'grey') +
         ## plot points used to evaluate spline 
-        geom_point(aes(sa.sample, sa.splinefun(sa.sample)), size = 3.5, color = 'grey') +
+        geom_point(aes(x,y), data = data.frame(x = prior.sa.sample, y = prior.sa.splinefn(prior.sa.sample)),
+                   size = dotsize, color = 'grey') +
           ## indicate location of medians
-          geom_point(data = point.data[median.i,], aes(x, y), size = 4.5, color = 'grey') 
-  }
+          geom_point(aes(x,y), data = data.frame(x = prior.sa.sample[median.i], 
+                                 y = prior.sa.splinefn(prior.sa.sample[median.i])),
+                     size = dotsize * 1.5, color = 'grey') 
+  ## }
+  max.x <- max(prior.x)
+  min.x <- 0
+  x.breaks <- pretty(c(min.x, max.x), 4)
+
+  saplot <- saplot + scale_x_continuous(units, limits = range(x.breaks),
+                                        breaks = x.breaks)
+#  print(saplot)
   return(saplot)
 }
-
+ 
 plot.variance.decomposition <- function(plot.inputs, outdir,
-                                        prior.plot.inputs = NA,
+                                        prior.plot.inputs = NULL,
                                         fontsize = list(title = 18, axis = 14)) {
   traits    <- names(plot.inputs$partial.variances)
   units     <- get.units(traits)$units
   trait.labels <- trait.dictionary(traits)[,'figid']
-  plot.data <- data.frame(trait.labels        = trait.labels,
-                          units               = units,
-                          coef.vars           = plot.inputs$coef.vars * 100,
-                          elasticities        = plot.inputs$elasticities,
-                          partial.variances   = plot.inputs$partial.variances * 100,
-                          points              = 1:length(traits))
-
-  if(!is.na(prior.plot.inputs)) {
+  .plot.data <- data.frame(trait.labels        = trait.labels,
+                           units               = units,
+                           coef.vars           = plot.inputs$coef.vars * 100,
+                           elasticities        = plot.inputs$elasticities,
+                           partial.variances   = plot.inputs$partial.variances * 100)
+#  recover()
+  if(!is.null(prior.plot.inputs)) {
     prior.plot.data <- data.frame(trait.labels              = trait.labels,
                                   units                     = units,
-                                  prior.coef.vars           = prior.plot.inputs$coef.vars,
+                                  prior.coef.vars           = prior.plot.inputs$coef.vars * 100,
                                   prior.elasticities        = prior.plot.inputs$elasticities,
-                                  prior.partial.variances   = prior.plot.inputs$partial.variances)
-    plot.data <- merge(plot.data, prior.plot.data, by = 'trait.labels')
+                                  prior.partial.variances   = prior.plot.inputs$partial.variances * 100)
+    .plot.data <- merge(.plot.data, prior.plot.data, by = 'trait.labels')
   }
+  pv.order <- order(.plot.data$partial.variances, decreasing = FALSE)
+
+  ## location of words and lollipops set by 'points'
+  ##    these points can be moved up or down by adjusting the offset X in 1:length(traits) - X
+  plot.data <- data.frame(.plot.data[pv.order, ], points = 1:length(traits) - 0.5)
+
+  ## Notes on fine-tuning plots below
+  ## axis lines and ticks drawn for each plot using geom_segment  
+  ## size of x axis tick set by xend = ...
+  ## vertical location of axis numbers set in base.plot using vjust
   
   base.plot <- ggplot(plot.data) +
     coord_flip() +
       theme_bw() +
-        scale_y_continuous(expand = c(0,0)) + 
-          opts(axis.line.y = theme_segment(),
-               axis.line.x = theme_blank(),
-               axis.text.x = theme_text(size=fontsize$axis),
+          opts(axis.line.y = theme_blank(),
+               axis.text.x = theme_text(size=fontsize$axis, vjust = -1),
                axis.text.y = theme_blank(),
                axis.title.x = theme_blank(), 
                axis.title.y = theme_blank(),
@@ -90,37 +110,28 @@ plot.variance.decomposition <- function(plot.inputs, outdir,
                panel.grid.minor = theme_blank(),
                panel.border = theme_blank())
 
-if(!is.na(prior.plot.inputs)) {
+if(!is.null(prior.plot.inputs)) {
   .cv.plot <-  base.plot +
     geom_pointrange(aes(x = points, y = prior.coef.vars,
                         ymin = 0, ymax = prior.coef.vars),
-                    size = 1.25, alpha = 0.25) +
-                       scale_y_continuous(breaks =  pretty(plot.data$prior.coef.vars, n = 4))
-
+                    size = 1.25, color = 'grey')
   
   .el.plot <- base.plot +
     geom_pointrange(aes(x = points, prior.elasticities,
                         ymin = 0, ymax = prior.elasticities),
-                    size = 1.25, color = 'grey') +
-                      scale_y_continuous(breaks =
-                                         pretty(c(plot.data[,grep('elasticities',
-                                                                  colnames(plot.data))])[[1]], n = 4))
-
+                    size = 1.25, color = 'grey') 
 
   .pv.plot <- base.plot +
-    geom_pointrange(aes(x = points, y = prior.partial.variances,
+      geom_pointrange(aes(x = points, y = prior.partial.variances,
                         ymin = 0, ymax = prior.partial.variances),
-                    size = 1.25, color = 'grey') +
-                      scale_y_continuous(breaks =
-                                         pretty(c(plot.data[,grep('partial.var',
-                                                                  colnames(plot.data))])[[1]], n = 4))
+                    size = 1.25, color = 'grey') 
 } else {
   .cv.plot <- base.plot + scale_y_continuous(breaks =  pretty(plot.data$coef.vars, n = 4))
   .el.plot <- base.plot + scale_y_continuous(breaks =  pretty(plot.data$elasticities, n = 4))
-  .pv.plot <- base.plot + scale_y_continuous(breaks =  pretty(plot.data$prior.variances, n = 4))
+  .pv.plot <- base.plot + scale_y_continuous(breaks =  pretty(plot.data$partial.variances, n = 4))
  }
 
-  
+
   trait.plot <- base.plot + 
     opts(title = 'Parameter',
          plot.title = theme_text(hjust = 0.96, size = fontsize$title),
@@ -129,80 +140,124 @@ if(!is.na(prior.plot.inputs)) {
            geom_text(aes(y = 1, x = points,
                          label=trait.labels, hjust = 1),
                      size = fontsize$axis/3) +
-                       scale_y_continuous( breaks = c(0,0), limits = c(0,1))
-  
-  cv.plot <- .cv.plot + 
+                       scale_y_continuous( breaks = c(0,0), limits = c(0,1)) +
+                        ##  Add Invisible Axes to resize like other plots
+                        geom_segment(aes(x = c(0,0), y = c(0,0),
+                                         yend = c(0, max(pretty(coef.vars, 4))),
+                                         xend = c(length(traits), 0)), colour = 'white')  + 
+                                           ## Add invisible ticks
+                                           geom_segment(aes(x = 0,
+                                                            y = pretty(coef.vars, 4),
+                                                            xend = -0.1,
+                                                            yend = pretty(coef.vars, 4)), colour = 'white') 
+
+  cv.xticks <- pretty(range(plot.data[,grep('coef.var', colnames(plot.data))]), 4)  
+  cv.plot <- .cv.plot +
     opts(title = 'CV (%)', plot.title = theme_text(size = fontsize$title)) +
-      geom_pointrange(data = plot.data,
-                      aes(x = points, y = coef.vars, ymin = 0, ymax = coef.vars),
-                      size = 1.25)
-  
+      scale_y_continuous(breaks = cv.xticks, limits = range(cv.xticks)) +
+      geom_pointrange(aes(x = points, y = coef.vars, ymin = 0, ymax = coef.vars),
+                      size = 1.25) + 
+                        ##  Add Axes
+                        geom_segment(aes(x = c(0,0), y = c(0,0),
+                                         yend = c(0, max(pretty(coef.vars, 4))),
+                                         xend = c(length(traits), 0)))  + 
+                                           ## Add Ticks
+                                           geom_segment(aes(x = 0,
+                                                            y = pretty(coef.vars, 4),
+                                                            xend = -0.1,
+                                                            yend = pretty(coef.vars, 4))) 
+
+  el.xticks <- pretty(range(plot.data[,grep('elasticities', colnames(plot.data))]), 4)  
   el.plot <- .el.plot + 
     opts(title = 'Elasticity', plot.title = theme_text(size = fontsize$title)) +
+      scale_y_continuous(breaks = el.xticks, limits = range(el.xticks)) +
        geom_pointrange(aes(x = points, y = elasticities, ymin = 0, ymax = elasticities),
-                       size = 1.25)
+                       size = 1.25) +
+                         ##  Add Axes
+                         geom_segment(aes(x = c(0,0), y = c(0,0),
+                                          yend = c(0, max(pretty(elasticities, 4))),
+                                          xend = c(length(traits), 0)))  + 
+                                            ## Add Ticks
+                                            geom_segment(aes(x = 0,
+                                                             y = pretty(elasticities, 4),
+                                                             xend = -0.1,
+                                                             yend = pretty(elasticities, 4))) 
 
+  pv.xticks <- pretty(range(plot.data[,grep('partial.variance', colnames(plot.data))]), 4)  
   pv.plot <- .pv.plot + 
-    opts(title = 'Partial Variance (%)', plot.title = theme_text(size = fontsize$title)) +
-      geom_pointrange(aes(x = points, partial.variances,
-                          ymin = 0, ymax = partial.variances), size = 1.25)
-
+    opts(title = 'Partial Variance (%)',
+         plot.title = theme_text(size = fontsize$title)) +
+           scale_y_continuous(breaks = pv.xticks, limits = range(pv.xticks)) +
+           geom_pointrange(aes(x = points, partial.variances,
+                          ymin = 0, ymax = partial.variances), size = 1.25) +
+                            ##  Add Axes
+                            geom_segment(aes(x = c(0,0), y = c(0,0),
+                                             yend = c(0, max(pretty(partial.variances, 4))),
+                                             xend = c(length(traits), 0)))  + 
+                                               ## Add Ticks
+                                               geom_segment(aes(x = 0,
+                                                             y = pretty(partial.variances, 4),
+                                                                xend = -0.1,
+                                                                yend = pretty(partial.variances, 4))) 
   
- 
+  
+  return(list(trait.plot = trait.plot, cv.plot = cv.plot, el.plot = el.plot, pv.plot = pv.plot))
 
-  ## stand in to be replaced by plot used in publication
-  pdf(paste(outdir, 'variance.decomposition.pdf', sep=''), width = 11, height = 8)
-  grid.arrange(trait.plot,
-               cv.plot,
-               el.plot,
-               pv.plot,
-               ncol = 4)
-  dev.off()
+
 }
 
-##' .. content for \description{} (no empty lines) ..
+##' Plot functions and quantiles used in sensitivity analysis
 ##'
-##' .. content for \details{} ..
-##' @title 
-##' @param sensitivity.results list containing sa.samples and sa.splinefuns 
+##' @title Plot Sensitivities
+##' @param sensitivity.results list containing sa.samples and sa.splinefns 
 ##' @param outdir 
-##' @return 
-##' @author David
-plot.sensitivities <- function(sensitivity.plot.inputs, outdir, ...){
+##' @return outputs plots in outdir/sensitivity.analysis.pdf file 
+##' @author David LeBauer
+plot.sensitivities <- function(sensitivity.plot.inputs, outdir, prior.sensitivity.plot.inputs = NULL, ...){
   sa.samples <- sensitivity.plot.inputs$sa.samples
-  sa.splinefuns <- sensitivity.plot.inputs$sa.splinefuns
+  sa.splinefns <- sensitivity.plot.inputs$sa.splinefns
+  if(!is.null(prior.sensitivity.plot.inputs)) {
+    prior.sa.samples <- prior.sensitivity.plot.inputs$sa.samples
+    prior.sa.splinefns <- prior.sensitivity.plot.inputs$sa.splinefns
+  }
   traits <- names(sa.samples)
   pdf(paste(outdir, 'sensitivity.analysis.pdf', sep=''), height = 12, width = 20)
 
-  y.range <- c(0, max(mapply(do.call, sa.splinefuns, lapply(sa.samples, list)), na.rm = TRUE))
+  y.range <- c(0, max(mapply(do.call, sa.splinefns, lapply(sa.samples, list)), na.rm = TRUE))
 
   for(trait in traits) {
-    sensitivity.plot <- plot.sensitivity(sa.sample =  sa.samples[,trait],
-                                         sa.splinefun = sa.splinefuns[[trait]],
-                                         trait <- trait,
-                                         y.range = y.range,
-                                         median.i =  which(as.numeric(rownames(sa.samples)) == 50),
-                                         ...)
+    sensitivity.plot <-plot.sensitivity(sa.sample =  sa.samples[,trait],
+                                        sa.splinefn = sa.splinefns[[trait]],
+                                        trait <- trait,
+                                        y.range = y.range,
+                                        median.i =  4,#which(as.numeric(rownames(sa.samples)) == 50),
+                                        prior.sa.sample = prior.sa.samples[,trait],
+                                        prior.sa.splinefn = prior.sa.splinefns[[trait]],
+                                        ...)
     print(sensitivity.plot)
   }
   dev.off()
 }
 
-##' .. content for \description{} (no empty lines) ..
-##' Functions for creating variable width histogram
-##' From Lorraine Denby, Colin Mallows. Journal of Computational and Graphical Statistics. March 1, 2009, 18(1): 21-31. doi:10.1198/jcgs.2009.0002. http://pubs.amstat.org/doi/pdf/10.1198/jcgs.2009.0002
-##' .. content for \details{} ..
-##' @title 
-##' @param x is the data
+##' Variable-width (dagonally cut) histogram
+##'
+##' 
+##' When constructing a histogram, it is common to make all bars the same width.
+##' One could also choose to make them all have the same area.
+##' These two options have complementary strengths and weaknesses; the equal-width histogram oversmooths in regions of high density, and is poor at identifying sharp peaks; the equal-area histogram oversmooths in regions of low density, and so does not identify outliers.
+##' We describe a compromise approach which avoids both of these defects. We regard the histogram as an exploratory device, rather than as an estimate of a density. 
+##' @title Diagonally Cut Histogram 
+##' @param x is a numeric vector (the data)
 ##' @param a is the scaling factor, default is 5 * IQR
 ##' @param nbins is the number of bins, default is assigned by the Stuges method
 ##' @param rx  is the range used for the left of the left-most bin to the right of the right-most bin  
-##' @param eps 
+##' @param eps used to set artificial bound on min width / max height of bins as described in Denby and Mallows (2009) on page 24.
 ##' @param xlab is label for the x axis 
 ##' @param plot = T produces the plot, F returns the heights, breaks and counts
 ##' @param lab.spikes = T labels the % of data in the spikes
-##' @return 
+##' @return list with two elements, heights of length n and breaks of length n+1 indicating the heights and break points of the histogram bars. 
 ##' @author Lorraine Denby, Colin Mallows
+##' @references Lorraine Denby, Colin Mallows. Journal of Computational and Graphical Statistics. March 1, 2009, 18(1): 21-31. doi:10.1198/jcgs.2009.0002. \url{http://pubs.amstat.org/doi/pdf/10.1198/jcgs.2009.0002}
 dhist<-function(x, a=5*iqr(x),
                 nbins=nclass.Sturges(x), rx = range(x,na.rm=T),
                 eps=.15, xlab = "x", plot = T,lab.spikes=T)
@@ -341,8 +396,164 @@ dhist<-function(x, a=5*iqr(x),
 
 ##' Calculate interquartile range
 ##'
-##' Calculates the 25th and 75th quantiles given a vector x.
+##' Calculates the 25th and 75th quantiles given a vector x; used in function \link{dhist}.
 ##' @title Interquartile range
 ##' @param x vector
 ##' @return numeric vector of length 2, with the 25th and 75th quantiles of input vector x. 
 iqr<-function(x){ return(diff(quantile(x,c(.25,.75),na.rm=T))) }
+ 
+
+## PDF plots
+create.base.plot <- function() {
+  base.plot <- ggplot()
+  return(base.plot)
+}
+add.prior.density <- function(prior, base.plot = NULL, prior.color = 'black') {
+  if(is.null(base.plot)) base.plot <- create.base.plot()
+  prior.density <- do.call(pr.dens, prior)
+  new.plot <- base.plot +  geom_line(data = prior.density,
+                                     aes(x = x, y = y),
+                                     color = prior.color)
+  return(new.plot)
+}
+
+##' Returns a data frame from \link{density} function 
+##'
+##' @title Create Density Data Frame from Sample
+##' @param sample 
+##' @param ... additional arguments to density 
+##' @return data frame with x and y
+##' @author David LeBauer
+create.density.df <- function(sample, zero.bounded = FALSE) {
+  if(zero.bounded) {
+    new.density <- zero.bounded.density(sample)
+  } else {    
+    new.density <- density(sample)
+  }
+  density.df <- with(new.density,
+                     data.frame(x = x,
+                                y = y))
+  return(density.df)
+}
+  
+add.posterior.density <- function(posterior.density, base.plot = NULL) {
+  if(is.null(base.plot)) base.plot <- create.base.plot()
+  new.plot <- base.plot +  geom_line(data = posterior.density,
+                                     aes(x = x, y = y))
+  return(new.plot)  
+}
+
+add.data <- function(trait.data, base.plot = NULL, ymax) {
+  if(is.null(base.plot)) base.plot <- create.base.plot()
+  plot.data <- with(trait.data,
+                    data.frame(x = Y,
+                               y = seq(0, ymax / 5, length.out = nrow(trait.data)),
+                               se = se))
+  new.plot <- base.plot +
+    geom_point(data = plot.data, aes(x = x, y = y)) +
+      geom_segment(data = plot.data, aes(x = x - se, y = y, xend = x + se, yend = y))
+  return(new.plot)
+}
+  
+##' Plot trait density and data
+##'
+##' @title Plot trait density
+##' @param trait 
+##' @param posterior.sample 
+##' @param trait.df 
+##' @return plot (grob) object
+##' @author David LeBauer
+plot.trait <- function(trait,
+                       prior,
+                       posterior.sample = NULL,
+                       trait.data = NULL,
+                       fontsize = list(title = 18, axis = 14)) {
+  
+  ## Determine plot components
+  plot.posterior <- !is.null(posterior.sample)
+  plot.prior     <- !is.null(prior.density)
+  plot.data      <- !is.null(trait.data)
+  
+  ## If no posterior, set prior density to black
+  prior.color <- ifelse(plot.posterior, 'grey', 'black')
+
+  ## get units for plot title
+  units <- gsub('percent', 'fraction', get.units(trait)$units)
+
+  base.plot <- create.base.plot() + theme_bw()
+
+  prior.density   <- do.call(pr.dens, prior) 
+  prior.ymax      <- ifelse(plot.prior,
+                            max(prior.density$y),
+                            NA)
+  posterior.ymax  <- ifelse(plot.posterior,
+                            max(posterior.density$y),
+                            NA)
+  ymax           <- max(prior.ymax, posterior.ymax, na.rm = TRUE) 
+
+  prior.xmax     <- ifelse(plot.prior,
+                           quantile(prior.density$x, 0.999),
+                           NA)
+  posterior.xmax <- ifelse(plot.posterior,
+                           quantile(posterior.density$x, 0.999),
+                           NA)
+  xmax           <- max(prior.xmax, posterior.xmax, na.rm = TRUE) 
+  x.ticks        <- pretty(c(0,xmax))
+  y.ticks        <- pretty(c(0,ymax))
+  x.ticklength   <- max(y.ticks)/50
+
+  browser()
+  if(plot.prior){
+    base.plot <- add.prior.density(prior, base.plot = base.plot, prior.color = prior.color)
+  }
+  if(plot.posterior){
+    posterior.density <- create.density.df(posterior.sample)
+    base.plot <- add.posterior.density(posterior.density, base.plot = base.plot)
+  }
+  if(plot.data){
+    base.plot <- add.data(trait.data, base.plot = base.plot, ymax = ymax)
+  }
+
+  trait.plot <- base.plot +
+    opts(title= paste(trait.dictionary(trait)$figid, " (", units, ")", sep = ''), 
+         axis.text.x = theme_text(size = fontsize$axis, vjust = -2),
+         axis.text.y = theme_blank(),
+         axis.title.x = theme_blank(),
+         axis.title.y = theme_blank(),
+         axis.ticks = theme_blank(),
+         axis.line = theme_blank(),
+         plot.title = theme_text(size = fontsize$title),
+         panel.grid.major = theme_blank(),
+         panel.grid.minor = theme_blank(),
+         panel.border = theme_blank())# +
+#           geom_segment(aes(x = 0, y = 0, yend = 0, xend = max(x.ticks))) +
+#             geom_segment(aes(x = x.ticks, y = 0,
+#                              xend = x.ticks, yend = -x.ticklength)) +
+#                                scale_x_continuous(breaks = x.ticks)
+  print(trait.plot)
+}
+
+
+##' Plot probability density and data
+##'
+##' @title Plot Trait Probability Densities
+##' @param sensitivity.results list containing sa.samples and sa.splinefns 
+##' @param outdir 
+##' @return outputs plots in outdir/sensitivity.analysis.pdf file 
+##' @author David LeBauer
+plot.densities <- function(density.plot.inputs, outdir, ...){
+  trait.samples          <- density.plot.inputs$trait.samples
+  trait.df             <- density.plot.inputs$trait.df
+  prior.trait.samples    <- density.plot.inputs$trait.df
+  
+  traits <- names(trait.samples)
+  pdf(paste(outdir, 'trait.densities.pdf', sep=''), height = 12, width = 20)
+
+  for(trait in traits) {
+    density.plot <- plot.density(trait.sample       =  trait.samples[,trait],
+                                 trait.df         = trait.df[[trait]],
+                                 ...)
+    print(sensitivity.plot)
+  }
+  dev.off()
+}

@@ -3,8 +3,8 @@
   <pfts>
     <pft>
       <name>ebifarm.pavi</name>
-      <outdir>~/pecan/out/pavi/</outdir>
-      <edin>~/pecan/edin/ebifarm/aED2IN</edin>
+      <outdir>/home/dlebauer/pecan/out/pavi/</outdir>
+      <edin>/home/dlebauer/pecan/edin/templateED2IN-ebifarm.pavi</edin>
       <constants>
         <num>15</num>
         <phenology>2</phenology>
@@ -29,7 +29,7 @@
   </config.header>
   
   <meta.analysis>
-    <iter>10000</iter>
+    <iter>20000</iter>
     <random.effects>TRUE</random.effects>
   </meta.analysis>
   
@@ -47,32 +47,38 @@
       <sigma>2</sigma>
       <sigma>3</sigma>
     </quantiles>
-    <start.year></start.year>
-    <end.year></end.year>
+    <start.year>2005</start.year>
+    <end.year>2006</end.year>
   </sensitivity.analysis>
-  
+
+  <data.assimilation>
+    <nmcmc>1000</nmcmc>
+  </data.assimilation>
+      
   <pecanDir>~/pecan/</pecanDir>
   <Rlibdir>~/lib/R/</Rlibdir>
   <outdir>~/pecan/out/</outdir>
   <database>
+    <name>ebi_analysis</name>
     <userid>ebi_analys_user</userid>
     <passwd>b742xsAu</passwd>
     <location>localhost</location>
-    <name>ebi_analysis</name>
   </database>
   
   <run>
     <site>
+      <name>ebi.farm</name>
       <lat></lat>
       <lon></lon>
       <met.data.header></met.data.header>
     </site>
-    <start.date></start.date>
-    <end.date></end.date>
+    <start.date>2005/01/01</start.date>
+    <end.date>2006/12/31</end.date>
     <host>
       <name>ebi-cluster.igb.uiuc.edu</name>
-      <rundir>~/EDBRAMS/ED/run/</rundir>
-      <outdir>/home/scratch/$USER/pecan/out/</outdir>
+      <rundir>/home/dlebauer/EDBRAMS/ED/run/</rundir>
+      <inputs>/home/scratch/dlebauer/pecan/edin/</inputs>
+      <outdir>/home/scratch/dlebauer/pecan/out/test1/</outdir>
     </host>
   </run>
 </pecan>
