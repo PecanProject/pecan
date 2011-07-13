@@ -3,7 +3,7 @@ library(XML)
 if(interactive()){
   user <- system('echo $USER', intern = TRUE)
   if(user == 'dlebauer'){
-    settings.file = '/home/dlebauer/pecan/2011.07.05/settings.pavi.xml'
+    settings.file = '/home/dlebauer/pecan/2011.07.07/settings.pavi.xml'
   } else if(user == 'davids14') {
     settings.file = '~/pecan/tundra.xml'
   } else {
@@ -71,7 +71,7 @@ for (i in seq(pft.names)){
         host, outdir, settings)
   }
   
-  if('sensitivity.analysis' %in% names(settings)) {
+  if('sensitivity.analysis' %in% names(settings) & !is.null(names(settings$sensitivity.analysis))) {
     quantiles <- get.quantiles(settings$sensitivity.analysis$quantiles)
     sa.samples[[pft.name]] <-  get.sa.samples(trait.samples[[pft.name]], quantiles)
     write.sa.configs(settings$pfts[[i]], sa.samples[[pft.name]], 
