@@ -93,31 +93,3 @@ write.config.ED <- function(pft, trait.samples, settings, outdir, run.id){
   
   print(run.id)
 }
-
-##' Extract ED output for specific variables from an hdf5 file
-##' @title 
-##' @param filename 
-##' @param variables 
-##' @return single value of AGB from  filename for all plants
-read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
-  library(hdf5)
-  Carbon2Yield = 20
-  data <- hdf5load(filename, load = FALSE)[variables]
-  if(all(c("AGB_CO", "NPLANT") %in% variables)) {
-    return(sum(data$AGB_CO * data$NPLANT, na.rm =TRUE) * Carbon2Yield)
-  }
-}
-
-##' ##' .. content for \description{} (no empty lines) ..
-##'
-##' Reads the output of a single model run
-##' @title 
-##' @param run.id the id distiguishing the model run
-##' @param outdir the directory that the model's output was sent to
-##' @param output.type type of output file to read, can be "-Y-" for annual output, "-M-" for monthly means, "-D-" for daily means, "-T-" for instantaneous fluxes. Output types are set in the ED2IN namelist as NL%I[DMYT]OUTPUT  
-##' @return vector of output variable for all runs within ensemble
-read.output.ed <- function(run.id, outdir, output.type = "-Y-"){
-  file.names <- dir(outdir, pattern=run.id, full.names=TRUE)
-  file.names <- file.names[grep(runtype, file.names)]
-  return(sum(sapply(file.names, read.output.file.ed)))
-}
