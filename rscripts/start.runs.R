@@ -17,7 +17,8 @@ settings.xml <- xmlParse(settings.file)
 settings <- xmlToList(settings.xml)
 host     <-  settings$run$host
 
-#Sync ED2IN config files from forecast to cluster
+## Redundant sync of ED2IN config files from forecast to cluster; redundant with what is done in write.configs
+
 system(paste('rsync -routi ',
              settings$outdir,'ED2IN*[0-9n] ',
              host$name, ':', host$rundir, sep = '')) 
