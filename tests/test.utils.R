@@ -16,9 +16,14 @@ test_that('utility functions work as expected',{
   expect_that(sum(pr.dens('norm', 0, 10, n=10, alpha=0.4)$x),
               equals(0))
 
+  ## pr.samp()
+  expect_that(length(pr.samp('norm', 0, 1, 2)),
+              equals(2))
+  expect_that(pr.samp('norm', 0, 1, 1) < 100,
+              is_true())
+  
 
-
-
+  ## get.units()
   expect_that(get.units(1),
               throws_error())
   expect_that(get.units('a'),
@@ -30,11 +35,13 @@ test_that('utility functions work as expected',{
   expect_that(order(get.units(traits)$name),
               equals(order(traits)))
 
+  ## vecpaste()
   expect_that(vecpaste(c('a','b')),
               equals("'a','b'"))
   expect_that(vecpaste(1),
               equals("'1'"))
 
+  ## left.pad.zeros()
   expect_that(left.pad.zeros(1,2),
               equals("01"))
   expect_that(left.pad.zeros(100,2),
