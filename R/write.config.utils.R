@@ -13,7 +13,7 @@
 get.ensemble.samples <- function(ensemble.size, samples) {
   ##force as numeric for compatibility with Fortran code in halton()
   ensemble.size <- as.numeric(ensemble.size)
-  
+  if(ensemble.size <= 0) return(NULL)
   halton.samples <- halton(n = ensemble.size, dim=length(samples))
   ##force as a matrix in case length(samples)=1
   halton.samples <- as.matrix(halton.samples)
@@ -28,6 +28,7 @@ get.ensemble.samples <- function(ensemble.size, samples) {
   }
   return(ensemble.samples)
 }
+
 
 ##' Write ensemble config files
 ##'
@@ -48,6 +49,11 @@ write.ensemble.configs <- function(pft, ensemble.samples, host, outdir, settings
   
   system(paste('ssh -T ', host$name, 
                ' "rm ', host$rundir, '/*', get.run.id('ENS', '', pft.name=pft.name), '*"', sep=''))
+
+  if(is.null(ensemble.samples)) return(NULL)
+
+  run.ids<-list()
+
   for(ensemble.id in 1:nrow(ensemble.samples)) {
     run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, 5), 
                          pft.name=pft$name)
