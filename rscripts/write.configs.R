@@ -70,8 +70,13 @@ for (i in seq(pft.names)){
     write.ensemble.configs(settings$pfts[[i]], ensemble.samples[[pft.name]], 
         host, outdir, settings)
   }
-  
-  if('sensitivity.analysis' %in% names(settings) & !is.null(names(settings$sensitivity.analysis))) {
+
+ 
+
+  if('sensitivity.analysis' %in% names(settings)) {
+    if( !is.null(names(settings$sensitivity.analysis))) {
+      stop(print(paste('sensitivity analysis settings are NULL')))
+    }
     quantiles <- get.quantiles(settings$sensitivity.analysis$quantiles)
     sa.samples[[pft.name]] <-  get.sa.samples(trait.samples[[pft.name]], quantiles)
     write.sa.configs(settings$pfts[[i]], sa.samples[[pft.name]], 
