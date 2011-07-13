@@ -2,7 +2,7 @@
 
 #returns a string representing a given number 
 #left padded by zeros up to a given number of digits
-left.pad.zeros <- function(num, digits){
+left.pad.zeros <- function(num, digits = 5){
   format_string <- paste('%',sprintf('0%.0f.0f',digits),sep='')
   return(sprintf(format_string, num))
 }
