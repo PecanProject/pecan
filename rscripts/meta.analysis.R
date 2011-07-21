@@ -59,9 +59,10 @@ for( pft in pfts){
   
   ## 2. get priors available for pft  
   prior.distns <- query.bety.priors(pft$name, trstr,out=pft$outdir,con=con)
-  ### exclude any parameters either as indicated by exclude tag or as indicated by constants 
+  ### exclude any parameters for which a constant is provided 
+
   prior.distns <- prior.distns[which(!rownames(prior.distns) %in%
-                                     c(pft$exclude, names(settings$pfts$pft$constants)) ),]
+                                     names(settings$pfts$pft$constants)),]
   print(prior.distns)
   priors <- rownames(prior.distns) # vector of variables with prior distributions for pft 
   prior.defs <- trait.dictionary(priors)
