@@ -44,25 +44,31 @@ system(paste("ssh -T ", host$name,
 for (i in seq(pft.names)){
   load(paste(outdirs[i], '/prior.distns.Rdata', sep=''))
 
-  if("trait.mcmc.Rdata" %in% dir(outdirs[2])) {
+  if("trait.mcmc.Rdata" %in% dir(outdirs)) {
     load(paste(outdirs[i], '/trait.mcmc.Rdata', sep=''))
   }
 
   pft.name <- pft.names[i]
 
   ## when no ma for a trait, sample from  prior
-  traits <- ifelse(exists('trait.mcmc'), names(trait.mcmc), NA)
+  traits <- if(exists('trait.mcmc')) {
+    names(trait.mcmc)
+  } else {
+    NA
+  }
   #KLUDGE: assumes mcmc for first trait is the same size as others
   samples.num <- ifelse(exists('trait.mcmc'), nrow(as.matrix(trait.mcmc[[1]])), 20000)
 
   priors <- rownames(prior.distns)
   for (prior in priors) {
-    if (prior %in% traits)
+    if (prior %in% traits) {
       samples <- as.matrix(trait.mcmc[[prior]][,'beta.o'])
-    else
+    } else {
       samples <- get.sample(prior.distns[prior,], samples.num)
     trait.samples[[pft.name]][[prior]] <- samples
+    }
   }
+    
 
   ## subset the trait.samples to ensemble size using Halton sequence 
   if('ensemble' %in% names(settings) && settings$ensemble$size > 0) {
