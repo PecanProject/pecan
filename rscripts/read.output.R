@@ -123,10 +123,16 @@ read.sa.output <- function(traits, quantiles, outdir, pft.name='',
       sa.output[as.character(round(quantile*100,3)), trait] <- read.output(run.id, outdir, start.year, end.year)
     }
   }
-  sa.output['50',] <- read.output(get.run.id('SA', 'median'), outdir)
+  sa.output['50',] <- read.output(get.run.id('SA', 'median'), outdir, start.year, end.year)
   sa.output <- sa.output[order(as.numeric(rownames(sa.output))),]
   return(sa.output)
 }
+
+left.pad.zeros <- function(num, digits = 5){
+  format_string <- paste('%',sprintf('0%.0f.0f',digits),sep='')
+  return(sprintf(format_string, num))
+}
+
 
 load('samples.Rdata')
 sa.agb<-list()
