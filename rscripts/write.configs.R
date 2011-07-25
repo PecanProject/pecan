@@ -3,7 +3,7 @@ library(XML)
 if(interactive()){
   user <- system('echo $USER', intern = TRUE)
   if(user == 'dlebauer'){
-    settings.file = '/home/dlebauer/pecan/2011.07.05/settings.pavi.xml'
+    settings.file = '/home/dlebauer/pecan/2011.07.18/settings.pavi.xml'
   } else if(user == 'davids14') {
     settings.file = '~/pecan/tundra.xml'
   } else {
@@ -44,25 +44,31 @@ system(paste("ssh -T ", host$name,
 for (i in seq(pft.names)){
   load(paste(outdirs[i], '/prior.distns.Rdata', sep=''))
 
-  if("trait.mcmc.Rdata" %in% dir(outdirs[2])) {
+  if("trait.mcmc.Rdata" %in% dir(outdirs)) {
     load(paste(outdirs[i], '/trait.mcmc.Rdata', sep=''))
   }
 
   pft.name <- pft.names[i]
 
   ## when no ma for a trait, sample from  prior
-  traits <- ifelse(exists('trait.mcmc'), names(trait.mcmc), NA)
+  traits <- if(exists('trait.mcmc')) {
+    names(trait.mcmc)
+  } else {
+    NA
+  }
   #KLUDGE: assumes mcmc for first trait is the same size as others
   samples.num <- ifelse(exists('trait.mcmc'), nrow(as.matrix(trait.mcmc[[1]])), 20000)
 
   priors <- rownames(prior.distns)
   for (prior in priors) {
-    if (prior %in% traits)
+    if (prior %in% traits) {
       samples <- as.matrix(trait.mcmc[[prior]][,'beta.o'])
-    else
+    } else {
       samples <- get.sample(prior.distns[prior,], samples.num)
     trait.samples[[pft.name]][[prior]] <- samples
+    }
   }
+    
 
   ## subset the trait.samples to ensemble size using Halton sequence 
   if('ensemble' %in% names(settings) && settings$ensemble$size > 0) {
@@ -70,12 +76,18 @@ for (i in seq(pft.names)){
     write.ensemble.configs(settings$pfts[[i]], ensemble.samples[[pft.name]], 
         host, outdir, settings)
   }
-  
+
+ 
+
   if('sensitivity.analysis' %in% names(settings)) {
-    quantiles <- get.quantiles(settings$sensitivity.analysis$quantiles)
-    sa.samples[[pft.name]] <-  get.sa.samples(trait.samples[[pft.name]], quantiles)
-    write.sa.configs(settings$pfts[[i]], sa.samples[[pft.name]], 
-        host, outdir, settings)
+    if( is.null(settings$sensitivity.analysis)) {
+      print(paste('sensitivity analysis settings are NULL'))
+    } else {
+      quantiles <- get.quantiles(settings$sensitivity.analysis$quantiles)
+      sa.samples[[pft.name]] <-  get.sa.samples(trait.samples[[pft.name]], quantiles)
+      write.sa.configs(settings$pfts[[i]], sa.samples[[pft.name]], 
+                       host, outdir, settings)
+    }
   }
 }
 
