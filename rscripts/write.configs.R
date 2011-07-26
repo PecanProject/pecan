@@ -33,7 +33,12 @@ trait.samples <- list()
 sa.samples <- list()
 ensemble.samples <- list()
 
-#Remove config files on host
+#Remove existing config files locally and on  host
+
+todelete <- dir(paste(settings$pfts$pft$outdir, '/out/', sep = ''),
+                c('ED2INc.*','c.*'),
+                recursive=TRUE, full.names = TRUE)
+file.remove(todelete)
 
 system(paste("ssh -T ", host$name,
              " '",'find ', host$rundir, 'ED2INc.* -delete',"'",sep=''))
@@ -65,6 +70,7 @@ for (i in seq(pft.names)){
       samples <- as.matrix(trait.mcmc[[prior]][,'beta.o'])
     } else {
       samples <- get.sample(prior.distns[prior,], samples.num)
+    }
     trait.samples[[pft.name]][[prior]] <- samples
     }
   }
