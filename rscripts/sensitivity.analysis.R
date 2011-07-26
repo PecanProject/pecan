@@ -3,7 +3,7 @@ if(interactive()){
   user <- system('echo $USER', intern = TRUE)
   options(error = browser)
   if(user == 'dlebauer'){
-    settings.file = '~/pecan/settings.pavi.xml'
+    settings.file = '~/pecan/2011.07.18/settings.pavi.xml'
   } else if(user == 'davids14') {
     settings.file = '~/pecan/tundra.xml'
   } else {
@@ -28,8 +28,8 @@ rsync(from = paste(settings$pecanDir, 'rscripts/read.output.R ', sep = ''),
       to = paste(host$name, ':',host$outdir, sep = ''))
 system(paste("ssh -T", host$name, "'", "cd", host$outdir, "; R --vanilla < read.output.R'"))
 
-                                        #ssh(host$name, 'cd ', host$outdir, run.time, '/ ; R --vanilla ',
-                                        #    args=paste('<', settings$pecanDir, '/rscripts/read.output.R',sep=''))
+##ssh(host$name, 'cd ', host$outdir, run.time, '/ ; R --vanilla ',
+##args=paste('<', settings$pecanDir, '/rscripts/read.output.R',sep=''))
 rsync(from = paste(host$name, ':', host$outdir, 'output.Rdata', sep=''),
       to = paste(settings$outdir))
 load(paste(outdir, 'output.Rdata', sep=''))
@@ -46,7 +46,16 @@ for(pft in settings$pfts){
                                                 sa.samples = sa.samples[[pft$name]],
                                                 sa.output = sa.agb[[pft$name]],
                                                 outdir = pft$outdir)
-    plot.sensitivities(sensitivity.results$sensitivity.plot.inputs, outdir = pft$outdir)  
-    plot.variance.decomposition(sensitivity.results$variance.decomposition.plot.inputs, outdir = pft$outdir)
+    sa.plots <- plot.sensitivities(sensitivity.results$sensitivity.plot.inputs)
+    pdf(paste(outdir, 'sensitivityanalysis.pdf', sep = ''), height = 12, width = 9)
+    do.call(grid.arrange, c(sa.plots, nrow = 4, ncol = ceiling(length(traits)/4)))
+    dev.off()
+
+    vd.plots <- plot.variance.decomposition(sensitivity.results$variance.decomposition.plot.inputs)
+    pdf(paste(outdir, 'variancedecomposition.pdf', sep=''), width = 11, height = 8)
+    do.call(grid.arrange, c(vd.plots, ncol = 4))
+    grid.edit(gPath("axis_v", "axis.ticks"), grep = TRUE, gp = gpar(col = 'white'))
+    dev.off() 
+  
   }
 }
