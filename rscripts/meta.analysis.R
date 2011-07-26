@@ -2,7 +2,7 @@ library(XML)
 if(interactive()){
    user <- system('echo $USER', intern = TRUE)
   if(user == 'dlebauer'){
-    settings.file = '~/pecan/2011.07.05/settings.pavi.xml'
+    settings.file = '~/pecan/2011.07.18/settings.pavi.xml'
   } else if(user == 'davids14') {
     settings.file = '~/pecan/tundra.xml'
   } else {
@@ -77,7 +77,7 @@ for( pft in pfts){
     trait.data[["root_respiration_rate"]]$Y[sel] = trait.data[["root_respiration_rate"]]$Y[sel]*1000
   }
   if("SLA" %in% names(trait.data)){
-    sel = which(trait.data[["SLA"]]$citation_id %in% c(311))
+    sel = which(trait.data[["SLA"]]$cite %in% c(311))
     if(length(sel) > 0){
       trait.data[["SLA"]] = trait.data[["SLA"]][-sel,]            
     }
@@ -87,7 +87,7 @@ for( pft in pfts){
   if(spstr != "''"){
     trait.count <- sapply(trait.data,nrow)
     trait.average <- sapply(trait.data,function(x){mean(x$Y,na.rm=TRUE)})
-    names(trait.average)[names(trait.average)=="Vcmax"] <- "Vm0"
+
     pft.summary$n[match(names(trait.count),traits), pft$name] <- trait.count
     
     ##prior.variances <- data.frame(var = unlist(t(sapply(1:nrow(prior.distns), function(i) with(prior.distns[i,], pdf.stats(distn, parama, paramb)))['var',])), row.names = priors)
