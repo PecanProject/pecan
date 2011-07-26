@@ -42,7 +42,8 @@ plot.sensitivity <- function(sa.sample, sa.splinefn, trait,
                        plot.title = theme_text(size = fontsize$title),
                        panel.border = theme_blank())
   ## Following conditional can be removed to only plot posterior sa
-  ##    if(!is.null(prior.sa.sample) & !is.null(prior.sa.splinefn)){
+  prior.x <- post.x
+  if(!is.null(prior.sa.sample) & !is.null(prior.sa.splinefn)){
     prior.x <- seq(from = min(prior.sa.sample), to = max(prior.sa.sample), length.out = LENGTH_OUT)
     saplot <- saplot +
       ## plot spline
@@ -55,7 +56,7 @@ plot.sensitivity <- function(sa.sample, sa.splinefn, trait,
           geom_point(aes(x,y), data = data.frame(x = prior.sa.sample[median.i], 
                                  y = prior.sa.splinefn(prior.sa.sample[median.i])),
                      size = dotsize * 1.5, color = 'grey') 
-  ## }
+  }
   max.x <- max(prior.x)
   min.x <- 0
   x.breaks <- pretty(c(min.x, max.x), 4)
@@ -215,28 +216,34 @@ if(!is.null(prior.plot.inputs)) {
 ##' @author David LeBauer
 plot.sensitivities <- function(sensitivity.plot.inputs, outdir, prior.sensitivity.plot.inputs = NULL, ...){
   sa.samples <- sensitivity.plot.inputs$sa.samples
-  sa.splinefns <- sensitivity.plot.inputs$sa.splinefns
+  sa.splinefns <- sensitivity.plot.inputs$sa.splinefuns
   if(!is.null(prior.sensitivity.plot.inputs)) {
     prior.sa.samples <- prior.sensitivity.plot.inputs$sa.samples
     prior.sa.splinefns <- prior.sensitivity.plot.inputs$sa.splinefns
   }
   traits <- names(sa.samples)
-  pdf(paste(outdir, 'sensitivity.analysis.pdf', sep=''), height = 12, width = 20)
 
   y.range <- c(0, max(mapply(do.call, sa.splinefns, lapply(sa.samples, list)), na.rm = TRUE))
 
+  sensitivity.plots <- list()
   for(trait in traits) {
-    sensitivity.plot <-plot.sensitivity(sa.sample =  sa.samples[,trait],
-                                        sa.splinefn = sa.splinefns[[trait]],
-                                        trait <- trait,
-                                        y.range = y.range,
-                                        median.i =  4,#which(as.numeric(rownames(sa.samples)) == 50),
-                                        prior.sa.sample = prior.sa.samples[,trait],
-                                        prior.sa.splinefn = prior.sa.splinefns[[trait]],
-                                        ...)
-    print(sensitivity.plot)
+    if(!is.null(prior.sensitivity.plot.inputs)) {
+      prior.sa.sample <- prior.sa.samples[,trait]
+      prior.sa.splinefn <- prior.sa.splinefns[[trait]]
+    } else {
+      prior.sa.sample <- NULL
+      prior.sa.splinefn <- NULL
+    }
+    sensitivity.plots[[trait]] <-plot.sensitivity(sa.sample =  sa.samples[,trait],
+                                                  sa.splinefn = sa.splinefns[[trait]],
+                                                  trait <- trait,
+                                                  y.range = y.range,
+                                                  median.i =  4,#which(as.numeric(rownames(sa.samples)) == 50),
+                                                  prior.sa.sample = prior.sa.sample,
+                                                  prior.sa.splinefn = prior.sa.splinefn,
+                                                  ...)
   }
-  dev.off()
+  return(sensitivity.plots)
 }
 
 ##' Variable-width (dagonally cut) histogram
