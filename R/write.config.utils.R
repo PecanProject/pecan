@@ -1,13 +1,21 @@
-##### Ensemble functions #####
-                                        #Returns a matrix of pseudo random values assigned to traits over several model runs.
-                                        #given the number of model runs and a list of sample distributions for traits
-                                        #The model run is indexed first by model run, then by trait
+##' Get parameter values used in ensemble
+##'
+##' Returns a matrix of trait values sampled quasi-randomly based on the Halton sequence
+##' to be assigned to traits over several model runs.
+##' given the number of model runs and a list of sample distributions for traits
+##' The model run is indexed first by model run, then by trait
+##' 
+##' @title Get Ensemble Samples 
+##' @param ensemble.size number of runs in model ensemble
+##' @param samples random samples from parameter distribution, e.g. from a MCMC chain or a 
+##' @return matrix of quasi-random (overdispersed) samples from trait distributions
+##' @references \href{http://dx.doi.org/10.1145/355588.365104}{Halton, J. (1964), Algorithm 247: Radical-inverse quasi-random point sequence, ACM, p. 701, doi:10.1145/355588.365104.
 get.ensemble.samples <- function(ensemble.size, samples) {
-                                        #force as numeric for compatibility with Fortran code in halton()
+  ##force as numeric for compatibility with Fortran code in halton()
   ensemble.size <- as.numeric(ensemble.size)
-  
+  if(ensemble.size <= 0) return(NULL)
   halton.samples <- halton(n = ensemble.size, dim=length(samples))
-                                        #force as a matrix in case length(samples)=1
+  ##force as a matrix in case length(samples)=1
   halton.samples <- as.matrix(halton.samples)
   
   ensemble.samples <- matrix(nrow = ensemble.size, ncol = length(samples))
@@ -20,14 +28,32 @@ get.ensemble.samples <- function(ensemble.size, samples) {
   }
   return(ensemble.samples)
 }
-                                        #Writes config files for use in meta-analysis and returns a list of run ids.
-                                        #Given a pft.xml object, a list of lists as supplied by get.sa.samples, 
-                                        #a name to distinguish the output files, and the directory to place the files.
+
+
+##' Write ensemble config files
+##'
+##' Writes config files for use in meta-analysis and returns a list of run ids.
+##' Given a pft.xml object, a list of lists as supplied by get.sa.samples, 
+##' a name to distinguish the output files, and the directory to place the files.
+##' @title Write ensemble configs 
+##' @param pft pft
+##' @param ensemble.samples list of lists supplied by \link{get.ensemble.samples}
+##' @param host server to which config files will be sent
+##' @param outdir directory for model output (on server)
+##' @param settings list of settings
+##' @param write.config a model-specific function to write config files, e.g. \link{write.config.ED}  
+##' @param convert.samples a model-specific function that transforms variables from units used in database to units used by model, e.g. \link{convert.samples.ED} 
+##' @return nothing, writes ensemble configuration files as a side effect 
 write.ensemble.configs <- function(pft, ensemble.samples, host, outdir, settings,
                                    write.config = write.config.ED, convert.samples=convert.samples.ED){
   
   system(paste('ssh -T ', host$name, 
                ' "rm ', host$rundir, '/*', get.run.id('ENS', '', pft.name=pft.name), '*"', sep=''))
+
+  if(is.null(ensemble.samples)) return(NULL)
+
+  run.ids<-list()
+
   for(ensemble.id in 1:nrow(ensemble.samples)) {
     run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, 5), 
                          pft.name=pft$name)
@@ -65,9 +91,16 @@ get.quantiles <- function(quantiles.tag) {
   return(sort(quantiles))
 }
 
-                                        #Returns a list of lists representing quantile values of trait distributions,
-                                        #given a list of sample distributions for traits and a list of quantiles
-                                        #The list is indexed first by trait, then by quantile
+##' Samples parameters for a model run at specified quantiles.
+##' 
+##' Samples from long (>2000) vectors that represent random samples from a trait distribution.
+##' Samples are either the MCMC chains output from the Bayesian meta-analysis or are randomly sampled from
+##' the closed-form distribution of the parameter probabiolity distribution function.
+##' The list is indexed first by trait, then by quantile.
+##' @title get sensitivity analysis samples
+##' @param samples random samples from trait distribution   
+##' @param quantiles list of quantiles to at which to sample, set in settings file
+##' @return a list of lists representing quantile values of trait distributions 
 get.sa.samples <- function(samples, quantiles){
   sa.samples <- data.frame()
   for(trait in names(samples)){
@@ -78,21 +111,18 @@ get.sa.samples <- function(samples, quantiles){
   return(sa.samples)
 }
 
-
-
-
+##' Write sensitivity analysis config files
 ##'
-##'
-##' Writes config files for use in sensitivity analysis, and returns a list of run ids... content for \details{} ..
-##' @title 
-##' @param pft a pft.xml object, a list of lists as supplied by get.sa.samples 
-##' @param quantile.samples 
-##' @param host host where model is run
-##' @param outdir directory to place the files.
-##' @param settings 
-##' @param write.config 
-##' @param convert.samples 
-##' @return 
+##' Writes config files for use in sensitivity analysis.
+##' @title Write sensitivity analysis configs
+##' @param pft pft id used to query BETYdb
+##' @param ensemble.samples list of lists supplied by \link{get.sa.samples}
+##' @param host server to which config files will be sent
+##' @param outdir directory for model output (on server)
+##' @param settings list of settings
+##' @param write.config a model-specific function to write config files, e.g. \link{write.config.ED}  
+##' @param convert.samples a model-specific function that transforms variables from units used in database to units used by model, e.g. \link{convert.samples.ED} 
+##' @return nothing, writes sensitivity analysis configuration files as a side effect 
 write.sa.configs <- function(pft, quantile.samples, host, outdir, settings, 
                              write.config=write.config.ED, convert.samples=convert.samples.ED){
   MEDIAN <- '50'
@@ -120,4 +150,3 @@ write.sa.configs <- function(pft, quantile.samples, host, outdir, settings,
   rsync(paste(outdir, '/*', get.run.id('SA', '', pft.name=pft.name), '*', sep=''), 
         paste(host$name, ':', host$rundir,  sep=''))
 }
-

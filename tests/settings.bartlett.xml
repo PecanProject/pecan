@@ -47,7 +47,6 @@
     <site>
       <lat></lat>
       <lon></lon>
-      <met.data.header></met.data.header>
     </site>
     <start.date></start.date>
     <end.date></end.date>
