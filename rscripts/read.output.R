@@ -54,20 +54,18 @@ read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
 ##' @title 
 ##' @param run.id the id distiguishing the model run
 ##' @param outdir the directory that the model's output was sent to
-##' @param start.date 
+##' @param start.year 
 ##' @param end.year 
 ##' @return vector of output variable for all runs within ensemble
-read.output.ed <- function(run.id, outdir, start.date=NA, end.year=NA){
+read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA){
   file.names <- dir(outdir, pattern=run.id, full.names=TRUE)
   file.names <- grep('-Y-([0-9]{4}).*', file.names, value=TRUE)
   years <- sub('((?!-Y-).)*-Y-([0-9]{4}).*', '\\2', file.names, perl=TRUE)
-  if(!is.na(start.date) && nchar(start.date) > 0){
-    start.year <- strftime(as.POSIXlt(start.date), format='%Y')
-    file.names <- file.names[years>=start.year]
+  if(!is.na(start.year) && nchar(start.year) ==  4){
+    file.names <- file.names[years>=as.numeric(start.year)]
   }
-  if(!is.na(end.year) && nchar(end.year) > 0){
-    end.year <- strftime(as.POSIXlt(end.year), format='%Y')
-    file.names <- file.names[years<=end.year]
+  if(!is.na(end.year) && nchar(end.year) == 4){
+    file.names <- file.names[years<=as.numeric(end.year)]
   }
   file.names <- file.names[!is.na(file.names)]
   return(mean(sapply(file.names, read.output.file.ed), na.rm = TRUE))
@@ -118,6 +116,7 @@ read.sa.output <- function(traits, quantiles, outdir, pft.name='',
     }
   }
   sa.output['50',] <- read.output(get.run.id('SA', 'median'), outdir)
+  sa.output <- sa.output[order(as.numeric(rownames(sa.output))),]
   return(sa.output)
 }
 
@@ -129,10 +128,11 @@ for(pft.name in names(trait.samples)){
   quantiles.str <- rownames(sa.samples[[pft.name]])
   quantiles.str <- quantiles.str[which(quantiles.str != '50')]
   quantiles <- as.numeric(quantiles.str)/100
-  
+
+  ##TODO needs to be generic, to handle any model output 
   sa.agb[[pft.name]] <- read.sa.output(traits, quantiles, outdir = getwd(), 
       pft.name=pft.name, settings$sensitivity.analysis$start.year, settings$sensitivity.analysis$end.year)
   #ensemble.output[[pft.name]]<-read.ensemble.output(ensemble.size, outdir, 
   #    pft.name=pft.name, start.year, end.year)
 }
-save(sa.agb, file = paste(settings$run$host$outdir, 'output.Rdata', sep=''))
+save(sa.agb, file = 'output.Rdata')
