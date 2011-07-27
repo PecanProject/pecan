@@ -93,39 +93,3 @@ write.config.ED <- function(pft, trait.samples, settings, outdir, run.id){
   
   print(run.id)
 }
-
-##' Extract ED output for specific variables from an hdf5 file
-##' @title 
-##' @param filename 
-##' @param variables 
-##' @return single value of AGB from  filename for all plants
-read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
-  library(hdf5)
-  MAGIC_NUMBER = 20
-  data <- hdf5load(filename, load = FALSE)[variables]
-  if(all(c("AGB_CO", "NPLANT") %in% variables)) {
-    return(sum(data$AGB_CO * data$NPLANT) * MAGIC_NUMBER)
-  }
-}
-
-##' ##' .. content for \description{} (no empty lines) ..
-##'
-##' Reads the output of a single model run
-##' @title 
-##' @param run.id the id distiguishing the model run
-##' @param outdir the directory that the model's output was sent to
-##' @return vector of output variable for all runs within ensemble
-read.output.ed <- function(run.id, outdir, start.date=NA, end.date=NA){
-  file.names <- dir(outdir, pattern=run.id, full.names=TRUE)
-  file.names <- grep('-Y-([0-9]{4}).*', file.names, value=TRUE)
-  years <- sub('((?!-Y-).)*([0-9]{4}).*', '\\2', file.names, perl=TRUE)
-  if(!is.na(start.date) && nchar(start.date) > 0){
-    start.year <- strftime(start.date, format='%Y')
-    file.names <- file.names[years>=start.year]
-  }
-  if(!is.na(end.date) && nchar(end.date) > 0){
-    end.year <- strftime(end.date, format='%Y')
-    file.names <- file.names[years<=end.year]
-  }
-  return(mean(sapply(file.names, read.output.file.ed)))
-}

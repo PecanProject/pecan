@@ -50,7 +50,7 @@ transform.nas <- function(data){
   
   #number of observations defaults to 2 for statistics, 1 otherwise
   data$n[is.na(data$n)] <- 1
-  data$n[!is.na(data$stat)] <- 2
+  data$n[data$n ==1 & !is.na(data$stat)] <- 2
 
   return(data)
 }
@@ -172,7 +172,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   } else if (trait == 'SLA') {
     
     #########################    SLA    ############################
-    query <- paste("select trt.id, trt.citation_id, trt.site_id, month(trt.date) as month, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n from traits as trt left join treatments as treat on (trt.treatment_id = treat.id)  left join sites on (sites.id = trt.site_id) where trt.variable_id in (select id from variables where name in('LMA','SLA'))  and specie_id in (",spstr,");", sep = "")
+    query <- paste("select trt.id, trt.citation_id, trt.site_id, month(trt.date) as month, treat.name, treat.control, sites.greenhouse, variables.name as vname, trt.mean, trt.statname, trt.stat, trt.n from traits as trt left join treatments as treat on (trt.treatment_id = treat.id)  left join sites on (sites.id = trt.site_id) join variables on trt.variable_id = variables.id where variables.name in('LMA','SLA')  and specie_id in (",spstr,");", sep = "")
     data <- fetch.stats2se(con, query)
 
     ## convert LMA to SLA
@@ -199,10 +199,10 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
           all.covs[all.covs$name == 'canopy_layer',])
       data <-  data[data$canopy_layer >= 0.66 | is.na(data$canopy_layer),]
     }
-
+ 
     ## select only summer data for Panicum virgatum
     if (spstr == "'938'"){
-      data <- subset(data, subset = data$month %in% c(0,5,6,7))
+      data <- subset(data, subset = data$month %in% c(0,5,6,7,8,NA))
     }
 
     result <- drop.columns(data, 'canopy_layer')
