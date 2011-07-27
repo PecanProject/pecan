@@ -2,23 +2,29 @@
 <pecan>
   <pfts>
     <pft>
-      <name>ebifarm.pavi</name>
-      <outdir>/home/dlebauer/pecan/out/pavi/</outdir>
-      <edin>/home/dlebauer/pecan/edin/templateED2IN-ebifarm.pavi</edin>
+     <name>ebifarm.liqui</name>
+      <outdir>~/pecan/out/liqui/</outdir>
+      <edin>/home/dwng/pecan/edin/templateED2IN.liqui</edin>
       <constants>
-        <num>15</num>
-        <phenology>2</phenology>
-        <max_dbh>0.78</max_dbh>
-        <hgt_min>2.0</hgt_min>
-        <dark_respiration_factor>0.015</dark_respiration_factor>
-        <qsw>0.0</qsw>
-        <mort1>1.0</mort1>
+        <num>9</num>
+        <max_dbh>75</max_dbh>
+  	<hgt_max>25</hgt_max>
+      <mort1>1.0</mort1>
         <plant_min_temp>-100</plant_min_temp>
         <storage_turnover_rate>0</storage_turnover_rate>
       </constants>
     </pft>
   </pfts>
-  
+
+  <hydro>
+  <useTOPMODEL>0</useTOPMODEL>
+  <useRUNOFF>0</useRUNOFF>
+ </hydro>
+
+ <ed_misc>
+  <burnin>1</burnin>
+ </ed_misc>
+
   <config.header>
     <radiation>
       <lai_min>0.01</lai_min>
@@ -34,7 +40,7 @@
   </meta.analysis>
   
   <ensemble>
-    <size>500</size>
+    <size>50</size>
   </ensemble>
   
   <sensitivity.analysis>
@@ -47,8 +53,8 @@
       <sigma>2</sigma>
       <sigma>3</sigma>
     </quantiles>
-    <start.year>2004</start.year>
-    <end.year>2006</end.year>
+    <start.year>2006</start.year>
+    <end.year>2010</end.year>
   </sensitivity.analysis>
 
   <data.assimilation>
@@ -72,13 +78,13 @@
       <lon></lon>
       <met.data.header></met.data.header>
     </site>
-    <start.date>1996/01/01</start.date>
-    <end.date>2006/12/31</end.date>
+    <start.date>2006/01/01</start.date>
+    <end.date>2009/12/31</end.date>
     <host>
       <name>ebi-cluster.igb.uiuc.edu</name>
-      <rundir>/home/dlebauer/EDBRAMS/ED/run/</rundir>
-      <inputs>/home/scratch/dlebauer/pecan/edin/</inputs>
-      <outdir>/home/scratch/dlebauer/pecan/out/2011.05.24/</outdir>
+      <rundir>/home/dwng/EDBRAMS/ED/run/</rundir>
+      <inputs>/home/scratch/dwng/pecan/edin/</inputs>
+      <outdir>/home/scratch/dwng/pecan/out/</outdir>
     </host>
   </run>
 </pecan>
