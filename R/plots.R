@@ -73,6 +73,7 @@ plot.variance.decomposition <- function(plot.inputs, outdir,
   traits    <- names(plot.inputs$partial.variances)
   units     <- get.units(traits)$units
   trait.labels <- trait.dictionary(traits)[,'figid']
+  
   .plot.data <- data.frame(trait.labels        = trait.labels,
                            units               = units,
                            coef.vars           = plot.inputs$coef.vars * 100,
@@ -87,6 +88,7 @@ plot.variance.decomposition <- function(plot.inputs, outdir,
                                   prior.partial.variances   = prior.plot.inputs$partial.variances * 100)
     .plot.data <- merge(.plot.data, prior.plot.data, by = 'trait.labels')
   }
+  print(.plot.data)
   pv.order <- order(.plot.data$partial.variances, decreasing = FALSE)
 
   ## location of words and lollipops set by 'points'

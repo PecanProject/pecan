@@ -59,6 +59,7 @@ read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
 ##' @param output.type type of output file to read, can be "-Y-" for annual output, "-M-" for monthly means, "-D-" for daily means, "-T-" for instantaneous fluxes. Output types are set in the ED2IN namelist as NL%I[DMYT]OUTPUT  
 ##' @return vector of output variable for all runs within ensemble
 read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA, output.type = 'Y'){
+  
   file.names <- dir(outdir, pattern=run.id, full.names=TRUE)
   file.names <- grep(paste('-', output.type, '-', sep = ''), file.names, value = TRUE)
   file.names <- grep('([0-9]{4}).*', file.names, value=TRUE)
