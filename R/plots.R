@@ -88,7 +88,6 @@ plot.variance.decomposition <- function(plot.inputs, outdir,
                                   prior.partial.variances   = prior.plot.inputs$partial.variances * 100)
     .plot.data <- merge(.plot.data, prior.plot.data, by = 'trait.labels')
   }
-  print(.plot.data)
   pv.order <- order(.plot.data$partial.variances, decreasing = FALSE)
 
   ## location of words and lollipops set by 'points'
