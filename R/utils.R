@@ -52,9 +52,6 @@ get.units <- function(traits) {
   return(ans)
 }
  
-pr.samp <- function(distn, parama, paramb, n) {
-    do.call(paste('r', distn, sep=""), list(n, parama, paramb))
-}
 ##' Take n random samples from prior
 ##'
 ##' @title Sample from prior 
@@ -68,6 +65,7 @@ pr.samp <- function(distn, parama, paramb, n) {
 pr.samp <- function(distn, parama, paramb, n) {
     do.call(paste('r', distn, sep=""), list(n, parama, paramb))
 }
+
 
 ##' Take n random samples from prior
 ##'
