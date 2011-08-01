@@ -46,8 +46,6 @@ listToXml <- function(item, tag){
 ##' @return data.frame with trait names and trait units as provided by BETY
 ##' @author David LeBauer
 get.units <- function(traits) {
-  print(traits)
-  print(trait.dictionary(traits))
   units <- query.bety(paste('select name, units from variables where name in (',
                             vecpaste(trait.dictionary(traits)$id),');'))
   ans <- merge(data.frame(name = traits), units, by = 'name', sort =FALSE)

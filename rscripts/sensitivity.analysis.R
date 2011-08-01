@@ -43,15 +43,15 @@ for(pft in settings$pfts){
                                                 sa.output = sa.agb[[pft$name]],
                                                 outdir = pft$outdir)
     sa.plots <- plot.sensitivities(sensitivity.results$sensitivity.plot.inputs)
-    pdf(paste(outdir, 'sensitivityanalysis.pdf', sep = ''), height = 12, width = 9)
+    pdf(paste(pft$outdir, 'sensitivityanalysis.pdf', sep = ''), height = 12, width = 9)
     do.call(grid.arrange, c(sa.plots, nrow = 4, ncol = ceiling(length(traits)/4)))
     dev.off()
 
     vd.plots <- plot.variance.decomposition(sensitivity.results$variance.decomposition.plot.inputs)
-    pdf(paste(outdir, 'variancedecomposition.pdf', sep=''), width = 11, height = 8)
+    pdf(paste(pft$outdir, 'variancedecomposition.pdf', sep=''), width = 11, height = 8)
     do.call(grid.arrange, c(vd.plots, ncol = 4))
     grid.edit(gPath("axis_v", "axis.ticks"), grep = TRUE, gp = gpar(col = 'white'))
-    dev.off() 
+    dev.off()
   
   }
 }
