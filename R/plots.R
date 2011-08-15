@@ -18,8 +18,8 @@ plot.sensitivity <- function(sa.sample, sa.splinefn, trait,
                              linesize = 0.5,
                              dotsize = 1) {
   LENGTH_OUT <- 1000
-  
-  units <- gsub('percent', 'fraction', get.units(trait)$units)
+  units <- get.units(trait)$units
+  #units <- gsub('percent', 'fraction', get.units(trait)$units)
   saplot <- ggplot()
 
   post.x <- seq(from = min(sa.sample), to = max(sa.sample), length.out = LENGTH_OUT)
@@ -73,6 +73,7 @@ plot.variance.decomposition <- function(plot.inputs, outdir,
   traits    <- names(plot.inputs$partial.variances)
   units     <- get.units(traits)$units
   trait.labels <- trait.dictionary(traits)[,'figid']
+  
   .plot.data <- data.frame(trait.labels        = trait.labels,
                            units               = units,
                            coef.vars           = plot.inputs$coef.vars * 100,
