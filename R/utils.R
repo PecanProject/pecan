@@ -151,7 +151,7 @@ trait.dictionary <- function(traits = NULL) {
   if(is.null(traits)) {
     trait.defs <- defs
   } else {
-    trait.defs <- defs
+    trait.defs <- defs[defs$id %in% traits,]
   }
   return(trait.defs)
 }
