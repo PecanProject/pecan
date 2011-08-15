@@ -59,8 +59,8 @@
       <sigma>2</sigma>
       <sigma>3</sigma>
     </quantiles>
-    <start.year></start.year>
-    <end.year></end.year>
+    <start.year>2006</start.year>
+    <end.year>2010</end.year>
   </sensitivity.analysis>
   <database>
     <userid>ebi_analys_user</userid>
