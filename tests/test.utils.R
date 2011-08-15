@@ -1,8 +1,13 @@
-traits <- c("mort2", "growth_resp_factor", "leaf_turnover_rate", "leaf_width", 
-            "nonlocal_dispersal", "fineroot2leaf", "root_turnover_rate", 
-            "seedling_mortality", "stomatal_slope", "quantum_efficiency",
-            "r_fract", "root_respiration_rate", "Vm_low_temp", "SLA", "Vcmax")
+traits <- trait.dictionary()$id
+#traits <- c("mort2", "growth_resp_factor", "leaf_turnover_rate", "leaf_width", 
+#            "nonlocal_dispersal", "fineroot2leaf", "root_turnover_rate", 
+#            "seedling_mortality", "stomatal_slope", "quantum_efficiency",
+#            "r_fract", "root_respiration_rate", "Vm_low_temp", "SLA", "Vcmax")
 
+
+test_that('get.units works for all traits', {
+  expect_true(all(traits[traits %in% get.units(traits)$name] == traits))
+}
 
 test_that('utility functions work as expected',{
 
