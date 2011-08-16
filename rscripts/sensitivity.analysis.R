@@ -54,7 +54,6 @@ for(pft in settings$pfts){
     vd.plots <- plot.variance.decomposition(sensitivity.results$variance.decomposition.plot.inputs)
     pdf(paste(outdir, 'variancedecomposition.pdf', sep=''), width = 11, height = 8)
     do.call(grid.arrange, c(vd.plots, ncol = 4))
-    grid.edit(gPath("axis_v", "axis.ticks"), grep = TRUE, gp = gpar(col = 'white'))
     dev.off() 
   
   }
