@@ -2,24 +2,24 @@
 ##'
 ##' @title Sensitivity plot 
 ##' @param sa.sample trait quantiles used in sensitivity analysis 
-##' @param sa.splinefun spline function estimated from sensitivity analysis
+##' @param sa.spline spline function estimated from sensitivity analysis
 ##' @param trait trait name for title
 ##' @param y.range 
 ##' @param median.i index of median value in sa.sample; \code{median.i == which(as.numeric(rownames(sa.sample)) == 50) }
 ##' @param prior.sa.sample similar to sa.sample, but for prior distribution. If given, plots sensitivity for prior run
-##' @param prior.sa.splinefun similar to sa.splinefun, but for prior trait distribution. 
+##' @param prior.sa.spline similar to sa.spline, but for prior trait distribution. 
 ##' @param fontsize (optional) list with three arguments that can be set to vary the fontsize of the title, axis labels, and axis title in the sensitivity plots
 ##' @return object of class ggplot
 ##' @author David LeBauer
-plot.sensitivity <- function(sa.sample, sa.splinefn, trait,
+plot.sensitivity <- function(sa.sample, sa.spline, trait,
                              y.range = c(0,50), median.i = 4,
-                             prior.sa.sample = NULL, prior.sa.splinefn = NULL,
+                             prior.sa.sample = NULL, prior.sa.spline = NULL,
                              fontsize = list(title = 18, axis = 14),
                              linesize = 0.5,
                              dotsize = 1) {
   LENGTH_OUT <- 1000
-  units <- get.units(trait)$units
-  #units <- gsub('percent', 'fraction', get.units(trait)$units)
+  
+  units <- gsub('percent', 'fraction', get.units(trait)$units)
   saplot <- ggplot()
 
   post.x <- seq(from = min(sa.sample), to = max(sa.sample), length.out = LENGTH_OUT)
@@ -27,11 +27,11 @@ plot.sensitivity <- function(sa.sample, sa.splinefn, trait,
   
   saplot <- saplot + 
     ## plot spline function 
-    geom_line(aes(x,y), data = data.frame(x = post.x, y = sa.splinefn(post.x)), size = linesize) + 
+    geom_line(aes(x,y), data = data.frame(x = post.x, y = sa.spline(post.x)), size = linesize) + 
       ## plot points used to evaluate spline
-      geom_point(aes(x,y), data = data.frame(x = sa.sample, y = sa.splinefn(sa.sample)), size = dotsize) +
+      geom_point(aes(x,y), data = data.frame(x = sa.sample, y = sa.spline(sa.sample)), size = dotsize) +
         #indicate median with larger point
-        geom_point(aes(x,y), data = data.frame(x = sa.sample[median.i], y = sa.splinefn(sa.sample[median.i])), size = dotsize * 1.5) + 
+        geom_point(aes(x,y), data = data.frame(x = sa.sample[median.i], y = sa.spline(sa.sample[median.i])), size = dotsize * 1.5) + 
           scale_y_continuous(limits = range(pretty(y.range)), breaks = pretty(y.range, n = 3)[1:3]) +
                 theme_bw() +
                   opts(title= trait.dictionary(trait)$figid, 
@@ -43,18 +43,18 @@ plot.sensitivity <- function(sa.sample, sa.splinefn, trait,
                        panel.border = theme_blank())
   ## Following conditional can be removed to only plot posterior sa
   prior.x <- post.x
-  if(!is.null(prior.sa.sample) & !is.null(prior.sa.splinefn)){
+  if(!is.null(prior.sa.sample) & !is.null(prior.sa.spline)){
     prior.x <- seq(from = min(prior.sa.sample), to = max(prior.sa.sample), length.out = LENGTH_OUT)
     saplot <- saplot +
       ## plot spline
-      geom_line(aes(x,y), data = data.frame(x = prior.x, y = prior.sa.splinefn(prior.x)),
+      geom_line(aes(x,y), data = data.frame(x = prior.x, y = prior.sa.spline(prior.x)),
                 size = linesize, color = 'grey') +
         ## plot points used to evaluate spline 
-        geom_point(aes(x,y), data = data.frame(x = prior.sa.sample, y = prior.sa.splinefn(prior.sa.sample)),
+        geom_point(aes(x,y), data = data.frame(x = prior.sa.sample, y = prior.sa.spline(prior.sa.sample)),
                    size = dotsize, color = 'grey') +
           ## indicate location of medians
           geom_point(aes(x,y), data = data.frame(x = prior.sa.sample[median.i], 
-                                 y = prior.sa.splinefn(prior.sa.sample[median.i])),
+                                 y = prior.sa.spline(prior.sa.sample[median.i])),
                      size = dotsize * 1.5, color = 'grey') 
   }
   max.x <- max(prior.x)
@@ -73,7 +73,6 @@ plot.variance.decomposition <- function(plot.inputs, outdir,
   traits    <- names(plot.inputs$partial.variances)
   units     <- get.units(traits)$units
   trait.labels <- trait.dictionary(traits)[,'figid']
-  
   .plot.data <- data.frame(trait.labels        = trait.labels,
                            units               = units,
                            coef.vars           = plot.inputs$coef.vars * 100,
@@ -211,37 +210,37 @@ if(!is.null(prior.plot.inputs)) {
 ##' Plot functions and quantiles used in sensitivity analysis
 ##'
 ##' @title Plot Sensitivities
-##' @param sensitivity.results list containing sa.samples and sa.splinefns 
+##' @param sensitivity.results list containing sa.samples and sa.splines 
 ##' @param outdir 
 ##' @return outputs plots in outdir/sensitivity.analysis.pdf file 
 ##' @author David LeBauer
 plot.sensitivities <- function(sensitivity.plot.inputs, outdir, prior.sensitivity.plot.inputs = NULL, ...){
   sa.samples <- sensitivity.plot.inputs$sa.samples
-  sa.splinefns <- sensitivity.plot.inputs$sa.splinefuns
+  sa.splines <- sensitivity.plot.inputs$sa.splines
   if(!is.null(prior.sensitivity.plot.inputs)) {
     prior.sa.samples <- prior.sensitivity.plot.inputs$sa.samples
-    prior.sa.splinefns <- prior.sensitivity.plot.inputs$sa.splinefns
+    prior.sa.splines <- prior.sensitivity.plot.inputs$sa.splines
   }
   traits <- names(sa.samples)
 
-  y.range <- c(0, max(mapply(do.call, sa.splinefns, lapply(sa.samples, list)), na.rm = TRUE))
+  y.range <- c(0, max(mapply(do.call, sa.splines, lapply(sa.samples, list)), na.rm = TRUE))
 
   sensitivity.plots <- list()
   for(trait in traits) {
     if(!is.null(prior.sensitivity.plot.inputs)) {
       prior.sa.sample <- prior.sa.samples[,trait]
-      prior.sa.splinefn <- prior.sa.splinefns[[trait]]
+      prior.sa.spline <- prior.sa.splines[[trait]]
     } else {
       prior.sa.sample <- NULL
-      prior.sa.splinefn <- NULL
+      prior.sa.spline <- NULL
     }
     sensitivity.plots[[trait]] <-plot.sensitivity(sa.sample =  sa.samples[,trait],
-                                                  sa.splinefn = sa.splinefns[[trait]],
+                                                  sa.spline = sa.splines[[trait]],
                                                   trait <- trait,
                                                   y.range = y.range,
                                                   median.i =  4,#which(as.numeric(rownames(sa.samples)) == 50),
                                                   prior.sa.sample = prior.sa.sample,
-                                                  prior.sa.splinefn = prior.sa.splinefn,
+                                                  prior.sa.spline = prior.sa.spline,
                                                   ...)
   }
   return(sensitivity.plots)
@@ -545,7 +544,7 @@ plot.trait <- function(trait,
 ##' Plot probability density and data
 ##'
 ##' @title Plot Trait Probability Densities
-##' @param sensitivity.results list containing sa.samples and sa.splinefns 
+##' @param sensitivity.results list containing sa.samples and sa.splines 
 ##' @param outdir 
 ##' @return outputs plots in outdir/sensitivity.analysis.pdf file 
 ##' @author David LeBauer
