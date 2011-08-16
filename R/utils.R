@@ -123,19 +123,6 @@ zero.bounded.density <- function (x, bw = "SJ") {
   g$x <- c(0, xgrid)
   return(g)
 }
-##' Update ebi_analysis with information in ebi_production
-##'
-##' Backs up ebi_analysis, copies ebi_production to ebi_analysis. This function is based on the db_copy.sh script, and is useful 
-##' @title 
-##' @param tables.to.exclude list of large tables that do not need to be backed up (excluding default values add 1 hr to backup time)
-##' @return updated ebi_analysis
-##' @author David LeBauer, Patrick Mulrooney
-transfer.bety <- function()#tables.to.exclude =
-                           #c('counties', 'county_boundaries',
-                           #  'county_paths', 'location_yields')){
-  system('db_copy')
-}
-
 
 #' Dictionary of terms used to identify traits in ed, filenames, and figures 
 #'
