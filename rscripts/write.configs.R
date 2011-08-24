@@ -1,7 +1,7 @@
 ### LOAD SETTINGS ###
 library(XML)
 if(interactive()){
-  user <- system('echo $USER', intern = TRUE)
+  user <- Sys.getenv('USER')
   if(user == 'dlebauer'){
     settings.file = '/home/dlebauer/pecan/2011.07.18/settings.pavi.xml'
   } else if(user == 'davids14') {
@@ -10,7 +10,7 @@ if(interactive()){
     paste('please specify settings file in meta.analysis.R')
   }
 } else {
-  settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
+  settings.file <- Sys.getenv("PECANSETTINGS")
 }
 settings.xml <- xmlParse(settings.file)
 settings <- xmlToList(settings.xml)

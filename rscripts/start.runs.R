@@ -1,6 +1,6 @@
 library(XML)
 if(interactive()){
-  user <- system('echo $USER', intern = TRUE)
+  user <- Sys.getenv('USER')
   if(user == 'dlebauer'){
     settings.file = '~/pecan/settings.pavi.xml'
   } else if(user == 'davids14') {
@@ -9,7 +9,7 @@ if(interactive()){
     paste('please specify settings file in meta.analysis.R')
   }
 } else {
-  settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
+  settings.file <- Sys.getenv("PECANSETTINGS")
 }
 
 library(PECAn, lib.loc='~/lib/R')
