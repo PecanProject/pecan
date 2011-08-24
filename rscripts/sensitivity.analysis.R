@@ -1,6 +1,6 @@
 library(XML)
 if(interactive()){
-  user <- system('echo $USER', intern = TRUE)
+  user <- Sys.getenv('USER')
   options(error = browser)
   if(user == 'dlebauer'){
     settings.file = '~/pecan/2011.07.18/settings.pavi.xml'
@@ -10,7 +10,7 @@ if(interactive()){
     paste('please specify settings file in meta.analysis.R')
   }
 } else {
-  settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
+  settings.file <- Sys.getenv("PECANSETTINGS")
   ## settings.file <- commandArgs(trailingOnly=TRUE)
 } 
 
