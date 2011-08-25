@@ -13,6 +13,16 @@ ssh <- function(host, ..., args=''){
   command<-paste('ssh -T ', host, ' "', ..., '" ', args, sep='')
   system(command)
 }
+sed <- function(find, replace, dirname = getwd(), filename){
+  system(paste("sed -i 's/", find, "/", replace, "/g' ", dirname, '/', filename, sep = ''))
+}
+cp  <- function(option = '', from = getwd(), to = getwd(), oldfilename, newfilename) {
+  system(paste('cp', option, paste(from, oldfilename, sep = '/'), paste(to, newfilename, sep = '/')))
+}
+mkdir <- function(dir) {
+  system(paste('mkdir', dir))
+}
+
 ## vecpaste, turns vector into comma delimited string fit for SQL statements. 
 vecpaste <- function(x) paste(paste("'", x, "'", sep=''), collapse=',')
 
