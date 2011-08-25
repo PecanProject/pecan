@@ -1,6 +1,6 @@
-out/
-kepler/
-rscripts/
-bash/
-.*pdf
-.*Rdata
+^out/
+^kepler/
+^rscripts/
+^bash/
+pdf$
+[rR]data$
