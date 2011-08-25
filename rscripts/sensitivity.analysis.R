@@ -1,6 +1,6 @@
 library(XML)
 if(interactive()){
-  user <- system('echo $USER', intern = TRUE)
+  user <- Sys.getenv('USER')
   options(error = browser)
   if(user == 'dlebauer'){
     settings.file = '~/pecan/2011.07.18/settings.pavi.xml'
@@ -10,7 +10,7 @@ if(interactive()){
     paste('please specify settings file in meta.analysis.R')
   }
 } else {
-  settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
+  settings.file <- Sys.getenv("PECANSETTINGS")
   ## settings.file <- commandArgs(trailingOnly=TRUE)
 } 
 
@@ -54,7 +54,6 @@ for(pft in settings$pfts){
     vd.plots <- plot.variance.decomposition(sensitivity.results$variance.decomposition.plot.inputs)
     pdf(paste(outdir, 'variancedecomposition.pdf', sep=''), width = 11, height = 8)
     do.call(grid.arrange, c(vd.plots, ncol = 4))
-    grid.edit(gPath("axis_v", "axis.ticks"), grep = TRUE, gp = gpar(col = 'white'))
     dev.off() 
   
   }
