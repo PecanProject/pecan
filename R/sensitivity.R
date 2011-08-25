@@ -41,7 +41,7 @@ kurtosis <- function(x) {
 ##' @param sa.spline 
 ##' @return numeric estimate of model sensitivity to parameter
 get.sensitivity <- function(trait.samples, sa.spline){
-  sensitivity <- sa.splinefun(median(trait.samples, na.rm = TRUE), 1)
+  sensitivity <- sa.spline(median(trait.samples, na.rm = TRUE), 1)
 }
 
 ##' Given a set of numbers (a numeric vector), this returns the set's coefficient of variance.
@@ -97,9 +97,9 @@ sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
                                           sa.splines[[trait]]))
   elasticities <- sapply(traits, 
                          function(trait)
-                         abs(get.elasticity(sensitivities[[trait]],
+                         get.elasticity(sensitivities[[trait]],
                                             trait.samples[[trait]],
-                                            spline.estimates[[trait]])))
+                                            spline.estimates[[trait]]))
   variances <- sapply(traits, function(trait)
                       var(spline.estimates[[trait]]))
   partial.variances <- variances / sum(variances)
