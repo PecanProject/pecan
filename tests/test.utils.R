@@ -1,13 +1,8 @@
 traits <- trait.dictionary()$id
-#traits <- c("mort2", "growth_resp_factor", "leaf_turnover_rate", "leaf_width", 
-#            "nonlocal_dispersal", "fineroot2leaf", "root_turnover_rate", 
-#            "seedling_mortality", "stomatal_slope", "quantum_efficiency",
-#            "r_fract", "root_respiration_rate", "Vm_low_temp", "SLA", "Vcmax")
-
 
 test_that('get.units works for all traits', {
   expect_true(all(traits[traits %in% get.units(traits)$name] == traits))
-}
+})
 
 test_that('utility functions work as expected',{
 
@@ -51,4 +46,27 @@ test_that('utility functions work as expected',{
               equals("01"))
   expect_that(left.pad.zeros(100,2),
               equals("100"))
+})
+
+  
+  
+test_that("summarize.result works appropriately", {
+## generate testdata  
+  testresult <- data.frame(citation_id = 1,
+                           site_id = 1:10,
+                           name = rep(c('control', 'fert'),5),
+                           control = rep(c(0,1), 5), 
+                           greenhouse = c(rep(0,5), rep(1,5)),
+                           date = 1,
+                           time = NA,
+                           cultivar_id = 1,
+                           specie_id = 1,
+                           n = 1,
+                           mean = sqrt(1:10),
+                           stat = 'none',
+                           statname = 'none'
+                           )
+  testresult2 <- transform(testresult, site_id= 1) 
+  expect_that(summarize.result(testresult)$mean, equals(testresult$mean))
+  expect_that(nrow(summarize.result(testresult2)), equals(4))
 })
