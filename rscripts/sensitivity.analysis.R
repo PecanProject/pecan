@@ -3,7 +3,7 @@ if(interactive()){
   user <- Sys.getenv('USER')
   options(error = browser)
   if(user == 'dlebauer'){
-    settings.file = '~/pecan/2011.07.18/settings.pavi.xml'
+    settings.file = '~/pecan/2011.08.26/settings.ebifarm.pavi.xml'
   } else if(user == 'davids14') {
     settings.file = '~/pecan/tundra.xml'
   } else {
@@ -48,7 +48,7 @@ for(pft in settings$pfts){
                                                 outdir = pft$outdir)
     sa.plots <- plot.sensitivities(sensitivity.results$sensitivity.plot.inputs)
     pdf(paste(outdir, 'sensitivityanalysis.pdf', sep = ''), height = 12, width = 9)
-    do.call(grid.arrange, c(sa.plots, nrow = 4, ncol = ceiling(length(traits)/4)))
+    sa.plots
     dev.off()
 
     vd.plots <- plot.variance.decomposition(sensitivity.results$variance.decomposition.plot.inputs)
