@@ -1,6 +1,5 @@
 ###Initialization file to set up system for PECAn
-###new commands added to .bashrc: pullpecan buildpecan
-###env vars set PECANHOME PECANOUT CLUSTERHOME EDIN 
+###new commands added to .bashrc: buildpecan
 
 if [ ! -d ~/lib ]
 then
@@ -12,11 +11,6 @@ then
     mkdir ~/lib/R
 fi
 
-## check out pecan
-if [ ! -d ~/pecan ]
-then
-    bzr branch /home/dlebauer/dev/pecan/trunk ~/pecan
-fi
 ## move .my.cnf_forecast to /home/user/.my.cnf
 if [ ! -f ~/.my.cnf ]
 then 
@@ -30,32 +24,7 @@ then
 fi
 
     ##set environment variables
-if ! grep env.vars.sh ~/.bashrc > /dev/null
-then
-    echo ". /home/$USER/pecan/bash/env.vars.sh" >> ~/.bashrc
-fi
-
-if ! grep pecanbuild ~/.bashrc > /dev/null
+if ! grep buildpecan ~/.bashrc > /dev/null
 then
     echo "alias buildpecan='/home/$USER/pecan/bash/pecanbuild.sh'" >> ~/.bashrc
 fi
-
-if ! grep pecanpull ~/.bashrc > /dev/null
-then
-    echo "alias pullpecan='bzr pull /home/dlebauer/dev/pecan/trunk'" >> ~/.bashrc
-fi
-
-if ! grep edstat ~/.bashrc > /dev/null
-then
-    echo "alias edstat='ssh ebi-cluster qstat'" >> ~/.bashrc
-fi
-
-if ! grep ederrors ~/.bashrc > /dev/null
-then
-    echo "alias ederrors='ssh ebi-cluster < ~/pecan/bash/find_edout_errors.sh"
-fi
-
-## set up folders on ebi-cluster
-ssh -T ebi-cluster < ~/pecan/bash/pecan.init.cluster.sh 
-
-cd ~/pecan
