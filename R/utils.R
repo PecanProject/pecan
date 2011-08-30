@@ -19,8 +19,8 @@ sed <- function(find, replace, dirname = getwd(), filename){
 cp  <- function(option = '', from = getwd(), to = getwd(), oldfilename, newfilename) {
   system(paste('cp', option, paste(from, oldfilename, sep = '/'), paste(to, newfilename, sep = '/')))
 }
-mkdir <- function(dir) {
-  system(paste('mkdir', dir))
+mkdir <- function(args = '', dir) {
+  system(paste('mkdir', args, dir))
 }
 
 ## vecpaste, turns vector into comma delimited string fit for SQL statements. 
@@ -181,3 +181,20 @@ trait.dictionary <- function(traits = NULL) {
 #'     return(data.frame(id=trait, figid=trait))
 #'   }
 #' }
+
+##' Identifies experimental replicates and calculates summary statistics.
+##'
+##' Used after queries in \code{\link{query.bety.trait.data}}
+##' @title Summarize Results
+##' @param result dataframe of results from query of trait data 
+##' @return dataframe with experimental replicates summarized
+##' @seealso \code{\link{query.bety.trait.data}}
+##' @author David LeBauer
+summarize.result <- function(result) {
+  ans1 <- ddply(result[result$n==1,],
+                .(citation_id, site_id, name, control, greenhouse, date, time, cultivar_id, specie_id),
+                summarise, n = length(n), y = mean(mean), statname = ifelse(length(n)==1,'none','SE'), stat = sd(mean)/sqrt(length(n)))
+  ans2 <- result[result$n!=1,]
+  return(rbind(ans1, ans2))
+}
+  
