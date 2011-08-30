@@ -9,4 +9,3 @@ if(length(new.packages)) install.packages(new.packages[new.packages != c('XML', 
 			 lib = '~/lib/R', 
 			 repos = "http://lib.stat.cmu.edu/R/CRAN")
 if('XML' %in% 'new.packages') system('apt-get install r-core-xml')
-if('rjags' %in% 'new.packages') system('apt-get install r-cran-rjags')
