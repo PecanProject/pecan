@@ -28,3 +28,9 @@ if ! grep buildpecan ~/.bashrc > /dev/null
 then
     echo "alias buildpecan='/home/$USER/pecan/bash/pecanbuild.sh'" >> ~/.bashrc
 fi
+
+## make sure that appropriate software is installed
+add-apt-repository ppa:marutter/rrutter
+apt-get update
+apt-get install mysql-server mysql-client libdbd-mysql libmysqlclient16-dev r-base jags r-cran-rjags
+R --vanilla < ~/pecan/rscripts/pecan.init.R
