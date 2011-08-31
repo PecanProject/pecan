@@ -110,21 +110,23 @@ for( pft in pfts){
     ##tauB = apply(prior.variances, 1, function(x) min(0.01, 0.01*x)))
   
     ## run the meta-analysis
-    trait.mcmc <- pecan.ma(trait.data, prior.distns, taupriors, j.iter = ma.iter, settings, pft$outdir)
-    posteriors = approx.posterior(trait.mcmc,prior.distns,trait.data,pft$outdir)
-    save(trait.mcmc, posteriors,file = paste(pft$outdir, '/trait.mcmc.Rdata', sep=''))
+    trait.mcmc  <- pecan.ma(trait.data, prior.distns, taupriors, j.iter = ma.iter, settings, pft$outdir)
+    post.distns <- approx.posterior(trait.mcmc,prior.distns,trait.data,pft$outdir)
+    save(trait.mcmc, posteriors, file = paste(pft$outdir, '/trait.mcmc.Rdata', sep=''))
   
-    trait.stats <- sapply(trait.mcmc,function(x){summary(x)$statistics['beta.o',1:2]})
     
     ma.traitnames <- names(trait.mcmc)
+
+    ## Is the following code useful? Perhaps we should plot this instead
+    trait.stats <- sapply(trait.mcmc,function(x){summary(x)$statistics['beta.o',1:2]})
     pft.summary$mean[match(colnames(trait.stats), ma.traitnames),pft$name] <- trait.stats[1, ]
     pft.summary$sd[match(colnames(trait.stats), ma.traitnames),pft$name] <- trait.stats[2, ]
   
-    save(trait.mcmc, file=paste(pft$outdir, '/trait.mcmc.Rdata', sep = ''))
     pecan.ma.summary(trait.mcmc, pft$name, pft$outdir)
   }
   save(prior.distns, file=paste(pft$outdir, '/prior.distns.Rdata', sep = ''))
+  save(post.distns, file=paste(pft$outdir, '/post.distns.Rdata', sep = ''))
     
 } ## end loop over pfts
 
-save(pft.summary,file=paste(settings$outdir,"pft.summary.RData",sep=""))
+save(pft.summary,file=paste(settings$outdir,"pft.summary.Rdata",sep=""))
