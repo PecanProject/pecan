@@ -30,7 +30,8 @@ then
 fi
 
 ## make sure that appropriate software is installed
+apt-get install python-software-properties
 add-apt-repository ppa:marutter/rrutter
 apt-get update
 apt-get install mysql-server mysql-client libdbd-mysql libmysqlclient16-dev r-base jags r-cran-rjags r-cran-xml r-cran-hdf5
-R --vanilla < ~/pecan/rscripts/pecan.init.R
+R --vanilla < ~/pecan/rscripts/install.dependencies.R 
