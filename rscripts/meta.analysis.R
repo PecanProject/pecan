@@ -2,7 +2,7 @@ library(XML)
 if(interactive()){
    user <- Sys.getenv('USER')
   if(user == 'dlebauer'){
-    settings.file = '~/pecan/2011.07.18/settings.pavi.xml'
+    settings.file = '~/pecan/settings.ebifarm.pavi.xml'
   } else if(user == 'davids14') {
     settings.file = '~/pecan/tundra.xml'
   } else {
@@ -35,10 +35,9 @@ ensemble.size = as.numeric(settings$ensemble$size)
 sensitivity.analysis = !is.null(settings$sensitivity.analysis)
 
 ## connect to database
-con <- settings$database
-if(settings$database$location == 'localhost'){
-  con <- query.bety.con(dbname=con$name,password=con$passwd,username=con$userid)
-}
+con <- query.bety.con(dbname=settings$database$name,
+                      password=settings$database$passwd,
+                      username=settings$database$userid)
 
 ## identify pfts
 pfts <- settings$pfts
