@@ -22,7 +22,7 @@ source(paste(template.settings$pecanDir, 'R/utils.R', sep = ''))
 outdir <- paste(template.settings$pecanDir, rundirname, '/', sep = '')
 
 ## create new run directory
-if(!rundirname %in% dir(template.settings$pecanDir)) mkdir(outdir)
+if(!rundirname %in% dir(template.settings$pecanDir)) mkdir('-p', paste(outdir, '/out', sep = ''))
 
 ## name settings and ed2in files
 settings.filename <- paste('settings.', template.settings$pfts$pft$name, '.xml', sep = '')
