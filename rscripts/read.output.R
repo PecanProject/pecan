@@ -94,7 +94,7 @@ read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA, output.ty
 read.ensemble.output <- function(ensemble.size, outdir, pft.name='', 
     start.year, end.year, read.output = read.output.ed){
   ensemble.output <- list()
-  for(ensemble.id in seq(ensemble.size)) {
+  for(ensemble.id in 1:ensemble.size) {
     run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, 5), pft.name=pft.name)#log10(ensemble.size)+1))
     ensemble.output[[ensemble.id]] <- read.output(run.id, outdir, start.year, end.year)
   }
@@ -137,6 +137,7 @@ left.pad.zeros <- function(num, digits = 5){
 
 load('samples.Rdata')
 sa.agb<-list()
+ensemble.output<-list()
 for(pft.name in names(trait.samples)){
   
   traits <- names(trait.samples[[pft.name]])
@@ -147,7 +148,7 @@ for(pft.name in names(trait.samples)){
   ##TODO needs to be generic, to handle any model output 
   sa.agb[[pft.name]] <- read.sa.output(traits, quantiles, outdir = getwd(), 
       pft.name=pft.name, settings$sensitivity.analysis$start.year, settings$sensitivity.analysis$end.year)
-  #ensemble.output[[pft.name]]<-read.ensemble.output(ensemble.size, outdir, 
-  #    pft.name=pft.name, start.year, end.year)
+  ensemble.output[[pft.name]] <- read.ensemble.output(settings$ensemble$size, outdir = getwd(), 
+      pft.name=pft.name, settings$sensitivity.analysis$start.year, settings$sensitivity.analysis$end.year)
 }
 save(sa.agb, file = 'output.Rdata')

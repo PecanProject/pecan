@@ -17,13 +17,12 @@ settings.xml <- xmlParse(settings.file)
 settings <- xmlToList(settings.xml)
 host     <-  settings$run$host
 
-## Redundant sync of ED2IN config files from forecast to cluster; redundant with what is done in write.configs
-
-system(paste('rsync -routi ',
-             settings$outdir,'ED2IN*[0-9n] ',
-             host$name, ':', host$rundir, sep = '')) 
-
 #Run model from user made bash script 
-system(paste("echo 'cd ", host$rundir, "' | ",
-             "cat - ", settings$pecanDir, "bash/batch.jobs.sh | ",
-             'ssh -T ', host$name, sep = ''))
+if(host$name == 'localhost') {
+  system(paste('cd ', host$rundir, ';',
+               settings$pecanDir, "bash/batch.jobs.sh"), sep = '')
+}else{
+  system(paste("echo 'cd ", host$rundir, "' | ",
+               "cat - ", settings$pecanDir, "bash/batch.jobs.sh | ",
+               'ssh -T ', host$name, sep = ''))
+}
