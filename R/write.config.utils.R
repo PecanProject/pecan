@@ -51,7 +51,7 @@ write.ensemble.configs <- function(pft, ensemble.samples,
 
   if(host$name == 'localhost') {
     file.remove(paste(host$rundir, '/*',
-                 get.run.id('ENS', '', pft.name=pft.name), '*"', sep='')
+                      get.run.id('ENS', '', pft.name=pft.name), '*"', sep=''))
   } else {
     ssh(host$name, 'rm ', host$rundir, '/*',
         get.run.id('ENS', '', pft.name=pft.name, '*'))
@@ -68,8 +68,15 @@ write.ensemble.configs <- function(pft, ensemble.samples,
     write.config(pft, convert.samples(ensemble.samples[ensemble.id,]), 
                  settings, outdir, run.id)
   }
-  rsync(paste(outdir, '/*', get.run.id('ENS', '', pft.name=pft.name), '*', sep=''), 
-        paste(host$name, ':', host$rundir,  sep=''))
+  if(host$name == 'localhost'){
+    rsync(paste(outdir, '/*',
+                get.run.id('ENS', '', pft.name=pft.name), '*', sep=''),
+          host$rundir)
+  } else {
+    rsync(paste(outdir, '/*',
+                get.run.id('ENS', '', pft.name=pft.name), '*', sep=''), 
+          paste(host$name, ':', host$rundir,  sep=''))
+  }
 }
 
 
@@ -123,22 +130,23 @@ get.sa.samples <- function(samples, quantiles){
 ##' Writes config files for use in sensitivity analysis.
 ##' @title Write sensitivity analysis configs
 ##' @param pft pft id used to query BETYdb
-##' @param ensemble.samples list of lists supplied by \link{get.sa.samples}
+##' @param quantile.samples 
 ##' @param host server to which config files will be sent
 ##' @param outdir directory for model output (on server)
 ##' @param settings list of settings
 ##' @param write.config a model-specific function to write config files, e.g. \link{write.config.ED}  
 ##' @param convert.samples a model-specific function that transforms variables from units used in database to units used by model, e.g. \link{convert.samples.ED} 
+##' @param ensemble.samples list of lists supplied by \link{get.sa.samples}
 ##' @return nothing, writes sensitivity analysis configuration files as a side effect 
 write.sa.configs <- function(pft, quantile.samples, host, outdir, settings, 
                              write.config=write.config.ED, convert.samples=convert.samples.ED){
   MEDIAN <- '50'
   traits <- colnames(quantile.samples)
-
+  
   if(host$name == 'localhost'){
     file.remove(paste(host$rundir, '/*',
-                      get.run.id('SA', '', pft.name=pft.name), '*"', sep='')
-                
+                      get.run.id('SA', '', pft.name=pft.name), '*"', sep=''))
+    
   } else {
     ssh(host$name, 'rm ', host$rundir, '/*',
         get.run.id('SA', '', pft.name=pft.name, '*'))
@@ -161,6 +169,12 @@ write.sa.configs <- function(pft, quantile.samples, host, outdir, settings,
       }
     }
   }
-  rsync(paste(outdir, '/*', get.run.id('SA', '', pft.name=pft.name), '*', sep=''), 
-        paste(host$name, ':', host$rundir,  sep=''))
+  if(host$name == 'localhost'){
+    rsync(paste(outdir, '/*',
+                get.run.id('SA', '', pft.name=pft.name), '*', sep=''),
+          host$rundir)
+  } else {
+    rsync(paste(outdir, '/*', get.run.id('SA', '', pft.name=pft.name), '*', sep=''), 
+          paste(host$name, ':', host$rundir,  sep=''))
+  }
 }
