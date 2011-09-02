@@ -3,7 +3,7 @@ library(XML)
 if(interactive()){
   user <- Sys.getenv('USER')
   if(user == 'dlebauer'){
-    settings.file = '/home/dlebauer/pecan/2011.07.18/settings.pavi.xml'
+    settings.file = '/home/ed/pecan/fast.settings.xml'
   } else if(user == 'davids14') {
     settings.file = '~/pecan/tundra.xml'
   } else {
@@ -41,18 +41,17 @@ todelete <- dir(paste(settings$pfts$pft$outdir, '/out/', sep = ''),
 file.remove(todelete)
 
 
-if(host$name != 'localhost'){
+if(host$name == 'localhost'){
+  todelete <- dir(host$outdir,
+                  c('ED2INc.*','c.*'),
+                  recursive=TRUE, full.names = TRUE)
+  file.remove(todelete)
+} else {
   system(paste("ssh -T ", host$name,
                " '",'find ', host$rundir, 'ED2INc.* -delete',"'",sep=''))
   system(paste("ssh -T ", host$name,
                " '",'find ', host$rundir, 'c.* -delete',"'",sep=''))
-} else {
-  todelete <- dir(host$outdir,
-                c('ED2INc.*','c.*'),
-                recursive=TRUE, full.names = TRUE)
-  file.remove(todelete)
 }
-
 
 ## Load priors and posteriors
 
@@ -71,8 +70,11 @@ for (i in seq(pft.names)){
   } else {
     NA
   }
-                                        #KLUDGE: assumes mcmc for first trait is the same size as others
-  samples.num <- ifelse(exists('trait.mcmc'), nrow(as.matrix(trait.mcmc[[1]])), 20000)
+  ## trim all chains to shortest mcmc chain, else 20000 samples
+  samples.num <- ifelse(exists('trait.mcmc'),
+                        min(sapply(trait.mcmc,
+                                   function(x) nrow(as.matrix(x)))),
+                        20000)
 
   priors <- rownames(prior.distns)
   for (prior in priors) {
