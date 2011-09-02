@@ -44,12 +44,19 @@ get.ensemble.samples <- function(ensemble.size, samples) {
 ##' @param write.config a model-specific function to write config files, e.g. \link{write.config.ED}  
 ##' @param convert.samples a model-specific function that transforms variables from units used in database to units used by model, e.g. \link{convert.samples.ED} 
 ##' @return nothing, writes ensemble configuration files as a side effect 
-write.ensemble.configs <- function(pft, ensemble.samples, host, outdir, settings,
-                                   write.config = write.config.ED, convert.samples=convert.samples.ED){
-  
-  system(paste('ssh -T ', host$name, 
-               ' "rm ', host$rundir, '/*', get.run.id('ENS', '', pft.name=pft.name), '*"', sep=''))
+write.ensemble.configs <- function(pft, ensemble.samples,
+                                   host, outdir, settings,
+                                   write.config = write.config.ED,
+                                   convert.samples=convert.samples.ED){
 
+  if(host$name == 'localhost') {
+    file.remove(paste(host$rundir, '/*',
+                 get.run.id('ENS', '', pft.name=pft.name), '*"', sep='')
+  } else {
+    ssh(host$name, 'rm ', host$rundir, '/*',
+        get.run.id('ENS', '', pft.name=pft.name, '*'))
+  }
+  
   if(is.null(ensemble.samples)) return(NULL)
 
   run.ids<-list()
@@ -127,8 +134,15 @@ write.sa.configs <- function(pft, quantile.samples, host, outdir, settings,
                              write.config=write.config.ED, convert.samples=convert.samples.ED){
   MEDIAN <- '50'
   traits <- colnames(quantile.samples)
-  
-  ssh(host$name, 'rm ', host$rundir, '/*', get.run.id('SA', '', pft.name=pft.name, '*'))
+
+  if(host$name == 'localhost'){
+    file.remove(paste(host$rundir, '/*',
+                      get.run.id('SA', '', pft.name=pft.name), '*"', sep='')
+                
+  } else {
+    ssh(host$name, 'rm ', host$rundir, '/*',
+        get.run.id('SA', '', pft.name=pft.name, '*'))
+  }
   
   median.samples <- quantile.samples[MEDIAN,]
   run.id <- get.run.id('SA', 'median', pft.name=pft$name)
