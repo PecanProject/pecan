@@ -108,8 +108,14 @@ if('sensitivity.analysis' %in% names(settings)) {
 
 
                                         #Make outdirectory
-ssh(host$name, 'mkdir ', host$outdir)
-save(ensemble.samples, trait.samples, sa.samples, settings, file = paste(outdir, 'samples.Rdata', sep=''))
+if(host$name == 'localhost'){
+  dir.create(host$outdir)
+} else {
+  ssh(host$name, 'mkdir ', host$outdir)
+}
+
+save(ensemble.samples, trait.samples, sa.samples, settings,
+     file = paste(outdir, 'samples.Rdata', sep=''))
 rsync(paste(outdir, 'samples.Rdata', sep=''),
       paste(host$name, ':', host$outdir, sep=''))
 
