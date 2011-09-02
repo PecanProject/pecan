@@ -47,7 +47,7 @@ CONDITION="id in (select prior_id from pfts_priors where pft_id in (select id fr
 mysqldump --where="$CONDITION" --lock-all-tables $IGNORE $DB ${table}s > ${table}s.sql
 
 table="pft" 
-CONDITION="id in (select prior_id from pfts_species where specie_id in ($SPID));" 
+CONDITION="name in ('$PFT');" 
 mysqldump --where="$CONDITION" --lock-all-tables $IGNORE $DB ${table}s > ${table}s.sql
 
 table="yield" 
