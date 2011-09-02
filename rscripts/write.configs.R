@@ -2,7 +2,7 @@
 library(XML)
 if(interactive()){
   user <- Sys.getenv('USER')
-  if(user == 'dlebauer'){
+  if(user == 'ed'){
     settings.file = '/home/ed/pecan/fast.settings.xml'
   } else if(user == 'davids14') {
     settings.file = '~/pecan/tundra.xml'
@@ -22,12 +22,6 @@ library(PECAn)
 
 pft.names <- unlist(xpathApply(settings.xml, '//pfts//pft//name', xmlValue))
 outdirs <- unlist(xpathApply(settings.xml, '//pfts//pft//outdir', xmlValue))
-
-##TODO determine what Rdata objects need to be loaded for this script and save 
-                                        #it in meta.analysis.R then load it. Perhaps get the load.object/save.object fns working
-## ensemble.size 
-## for each pft
-## traits, prior distributions, trait.mcmc
 
 trait.samples <- list()
 sa.samples <- list()
@@ -110,14 +104,18 @@ if('sensitivity.analysis' %in% names(settings)) {
 
 
                                         #Make outdirectory
-if(host$name == 'localhost'){
-  dir.create(host$outdir)
-} else {
-  ssh(host$name, 'mkdir ', host$outdir)
-}
-
 save(ensemble.samples, trait.samples, sa.samples, settings,
      file = paste(outdir, 'samples.Rdata', sep=''))
-rsync(paste(outdir, 'samples.Rdata', sep=''),
-      paste(host$name, ':', host$outdir, sep=''))
 
+if(host$name == 'localhost'){
+  dir.create(host$outdir)
+  file.copy(from = paste(outdir, 'samples.Rdata', sep=''),
+            to   = paste(host$outdir, 'samples.Rdata', sep = ''),
+            overwrite = TRUE)
+} else {
+  ssh(host$name, 'mkdir ', host$outdir)
+  rsync(paste(outdir, 'samples.Rdata', sep=''),
+      paste(host$name, ':', host$outdir, sep=''))
+}
+
+ 
