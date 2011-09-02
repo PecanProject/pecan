@@ -33,18 +33,28 @@ trait.samples <- list()
 sa.samples <- list()
 ensemble.samples <- list()
 
-                                        #Remove existing config files locally and on  host
+## Remove existing config files
 
 todelete <- dir(paste(settings$pfts$pft$outdir, '/out/', sep = ''),
                 c('ED2INc.*','c.*'),
                 recursive=TRUE, full.names = TRUE)
 file.remove(todelete)
 
-system(paste("ssh -T ", host$name,
-             " '",'find ', host$rundir, 'ED2INc.* -delete',"'",sep=''))
-system(paste("ssh -T ", host$name,
-             " '",'find ', host$rundir, 'c.* -delete',"'",sep=''))
 
+if(host$name != 'localhost'){
+  system(paste("ssh -T ", host$name,
+               " '",'find ', host$rundir, 'ED2INc.* -delete',"'",sep=''))
+  system(paste("ssh -T ", host$name,
+               " '",'find ', host$rundir, 'c.* -delete',"'",sep=''))
+} else {
+  todelete <- dir(host$outdir,
+                c('ED2INc.*','c.*'),
+                recursive=TRUE, full.names = TRUE)
+  file.remove(todelete)
+}
+
+
+## Load priors and posteriors
 
 for (i in seq(pft.names)){
   load(paste(outdirs[i], '/prior.distns.Rdata', sep=''))
