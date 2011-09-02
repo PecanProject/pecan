@@ -18,6 +18,11 @@ settings <- xmlToList(settings.xml)
 host     <-  settings$run$host
 
 #Run model from user made bash script 
-system(paste("echo 'cd ", host$rundir, "' | ",
-             "cat - ", settings$pecanDir, "bash/batch.jobs.sh | ",
-             'ssh -T ', host$name, sep = ''))
+if(host$name == 'localhost') {
+  system(paste('cd ', host$rundir, ';',
+               settings$pecanDir, "bash/batch.jobs.sh"), sep = '')
+}else{
+  system(paste("echo 'cd ", host$rundir, "' | ",
+               "cat - ", settings$pecanDir, "bash/batch.jobs.sh | ",
+               'ssh -T ', host$name, sep = ''))
+}
