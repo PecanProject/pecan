@@ -75,7 +75,10 @@ assign.controls <- function(data){
 drop.columns <- function(data, columns){
   return(data[,which(!colnames(data) %in% columns)])
 }
-query.covariates<-function(trait.ids){
+query.covariates<-function(trait.ids, con = NULL, ...){
+  if(is.null(con)){
+    con <- query.bety.con(...)
+  }
   covariate.query<-paste("select covariates.trait_id, covariates.level,variables.name",
                          "from covariates left join variables on variables.id = covariates.variable_id",
                          "where trait_id in (",vecpaste(trait.ids),")")
