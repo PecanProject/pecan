@@ -2,7 +2,7 @@ library(XML)
 if(interactive()){
    user <- Sys.getenv('USER')
   if(user == 'dlebauer'){
-    settings.file = '~/pecan/settings.ebifarm.pavi.xml'
+    settings.file = '~/pecan/fast.settings.xml'
   } else if(user == 'davids14') {
     settings.file = '~/pecan/tundra.xml'
   } else {
@@ -61,6 +61,7 @@ for( pft in pfts){
   ### exclude any parameters for which a constant is provided 
   prior.distns <- prior.distns[which(!rownames(prior.distns) %in%
                                      names(settings$pfts$pft$constants)),]
+  print('Summary of Prior distributions')
   print(prior.distns)
   priors <- rownames(prior.distns) # vector of variables with prior distributions for pft 
   prior.defs <- trait.dictionary(priors)
@@ -111,7 +112,7 @@ for( pft in pfts){
     ## run the meta-analysis
     trait.mcmc  <- pecan.ma(trait.data, prior.distns, taupriors, j.iter = ma.iter, settings, pft$outdir)
     post.distns <- approx.posterior(trait.mcmc,prior.distns,trait.data,pft$outdir)
-    save(trait.mcmc, posteriors, file = paste(pft$outdir, '/trait.mcmc.Rdata', sep=''))
+    save(trait.mcmc, post.distns, file = paste(pft$outdir, '/trait.mcmc.Rdata', sep=''))
   
     
     ma.traitnames <- names(trait.mcmc)
