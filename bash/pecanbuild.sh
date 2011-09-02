@@ -6,4 +6,9 @@ fi
 
 R CMD build pecan
 PECAn=`ls -v PECAn*tar.gz | tail -n 1`
-R CMD INSTALL $PECAn --library='~/lib/R'
+if [ "`id -u`" == 0 ] 
+then 
+    R CMD INSTALL $PECAn
+else
+    R CMD INSTALL $PECAn --library='~/lib/R'
+fi
