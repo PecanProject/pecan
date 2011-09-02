@@ -34,7 +34,7 @@ apt-get install -y python-software-properties
 add-apt-repository ppa:marutter/rrutter
 apt-get update
 
-apt-get install -y default-jre mysql-server mysql-client libdbd-mysql libmysqlclient16-dev r-base jags r-cran-rjags r-cran-xml r-cran-hdf5 r-cran-mass r-cran-rmysql r-cran-xtable xorg xfce4
+apt-get install -y evince default-jre mysql-server mysql-client libdbd-mysql libmysqlclient16-dev r-base jags r-cran-rjags r-cran-xml r-cran-hdf5 r-cran-mass r-cran-rmysql r-cran-xtable xorg xfce4
 
 mkdir kepler
 cd kepler
