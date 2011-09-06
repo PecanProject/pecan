@@ -10,7 +10,7 @@ rsync <- function(from, to, pattern=''){
   system(paste('rsync -outi', from, to, sep = ' '), intern=TRUE)
 }
 ssh <- function(host, ..., args=''){
-  if(host = 'localhost'){
+  if(host == 'localhost'){
     command <- paste(..., args, sep='')
   } else {
     command <- paste('ssh -T ', host, ' "', ..., '" ', args, sep='')
