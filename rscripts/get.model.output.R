@@ -26,7 +26,11 @@ load(paste(outdir, 'samples.Rdata', sep=''))
 
 
 if(host$name == 'localhost'){
-  source(paste(settings$pecanDir, '/rscripts/read.output.R', sep = ''))
+  file.copy(from = paste(settings$pecanDir, '/rscripts/read.output.R', sep = ''),
+            to   = outdir,
+            overwrite = TRUE)
+  # system(paste('cd ', outdir, '; R --vanilla < read.output.R'))
+  source(paste(outdir, '/read.output.R', sep = ''))
   file.copy(from = paste(host$outdir, 'output.Rdata', sep = ''),
             to   = outdir,
             overwrite = TRUE)
