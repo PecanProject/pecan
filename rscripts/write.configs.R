@@ -89,8 +89,6 @@ if('ensemble' %in% names(settings) && settings$ensemble$size > 0) {
                          host, outdir, settings)
 }
 
-
-
 if('sensitivity.analysis' %in% names(settings)) {
   if( is.null(settings$sensitivity.analysis)) {
     print(paste('sensitivity analysis settings are NULL'))
@@ -108,10 +106,12 @@ save(ensemble.samples, trait.samples, sa.samples, settings,
      file = paste(outdir, 'samples.Rdata', sep=''))
 
 if(host$name == 'localhost'){
-  dir.create(host$outdir)
-  file.copy(from = paste(outdir, 'samples.Rdata', sep=''),
-            to   = paste(host$outdir, 'samples.Rdata', sep = ''),
-            overwrite = TRUE)
+  if(!host$outdir == outdir) {
+    dir.create(host$outdir)
+    file.copy(from = paste(outdir, 'samples.Rdata', sep=''),
+              to   = paste(host$outdir, 'samples.Rdata', sep = ''),
+              overwrite = TRUE)
+  }
 } else {
   ssh(host$name, 'mkdir ', host$outdir)
   rsync(paste(outdir, 'samples.Rdata', sep=''),
