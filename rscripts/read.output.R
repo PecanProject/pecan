@@ -96,7 +96,11 @@ read.ensemble.output <- function(ensemble.size, outdir, pft.name='',
   ensemble.output <- list()
   for(ensemble.id in 1:ensemble.size) {
     run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, 5), pft.name=pft.name)#log10(ensemble.size)+1))
-    ensemble.output[[ensemble.id]] <- read.output(run.id, outdir, start.year, end.year)
+    if(any(grep('h5',dir()[grep(run.id, dir())]))) {
+      ensemble.output[[ensemble.id]] <- read.output(run.id, outdir, start.year, end.year)
+    } else {
+      ensemble.output[[ensemble.id]] <- NA
+    }
   }
   return(ensemble.output)
 }
@@ -145,10 +149,27 @@ for(pft.name in names(trait.samples)){
   quantiles.str <- quantiles.str[which(quantiles.str != '50')]
   quantiles <- as.numeric(quantiles.str)/100
 
-  ##TODO needs to be generic, to handle any model output 
-  sa.agb[[pft.name]] <- read.sa.output(traits, quantiles, outdir = getwd(), 
-      pft.name=pft.name, settings$sensitivity.analysis$start.year, settings$sensitivity.analysis$end.year)
-  ensemble.output[[pft.name]] <- read.ensemble.output(settings$ensemble$size, outdir = getwd(), 
-      pft.name=pft.name, settings$sensitivity.analysis$start.year, settings$sensitivity.analysis$end.year)
+  ##TODO needs to be generic, to handle any model output
+  start.year <- ifelse(is.null(settings$sensitivity.analysis$start.year),
+                        NA, settings$sensitivity.analysis$start.year)
+  end.year   <- ifelse(is.null(settings$sensitivity.analysis$end.year),
+                        NA, settings$sensitivity.analysis$end.year)
+
+  if(exists('settings$sensitivity.analysis')) {
+    sa.agb[[pft.name]] <- read.sa.output(traits,
+                                         quantiles,
+                                         outdir = getwd(), 
+                                         pft.name=pft.name,
+                                         start.year,
+                                         end.year)
+  }
+
+  if(settings$ensemble$size > 0) {
+    ensemble.output[[pft.name]] <- read.ensemble.output(settings$ensemble$size,
+                                                        outdir = getwd(), 
+                                                        pft.name=pft.name,
+                                                        start.year,
+                                                        end.year)
+  }
 }
-save(sa.agb, file = 'output.Rdata')
+save(ensemble.output, sa.agb, file = 'output.Rdata')
