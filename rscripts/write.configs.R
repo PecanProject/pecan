@@ -115,7 +115,7 @@ if(host$name == 'localhost'){
 } else {
   ssh(host$name, 'mkdir ', host$outdir)
   rsync(paste(outdir, 'samples.Rdata', sep=''),
-      paste(host$name, ':', host$outdir, sep=''))
+        paste(host$name, ':', host$outdir, sep=''))
 }
 
  

@@ -12,15 +12,18 @@ if(interactive()){
   settings.file <- Sys.getenv("PECANSETTINGS")
 }
 
-library(PECAn, lib.loc='~/lib/R')
+
+
 settings.xml <- xmlParse(settings.file)
 settings <- xmlToList(settings.xml)
 host     <-  settings$run$host
+if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
+library(PECAn)
 
 #Run model from user made bash script 
 if(host$name == 'localhost') {
   system(paste('cd ', host$rundir, ';',
-               settings$pecanDir, "bash/batch.jobs.sh"), sep = '')
+               settings$pecanDir, "bash/batch.jobs.sh", sep = ''))
 }else{
   system(paste("echo 'cd ", host$rundir, "' | ",
                "cat - ", settings$pecanDir, "bash/batch.jobs.sh | ",
