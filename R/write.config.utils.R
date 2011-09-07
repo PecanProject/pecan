@@ -50,8 +50,10 @@ write.ensemble.configs <- function(pft, ensemble.samples,
                                    convert.samples=convert.samples.ED){
 
   if(host$name == 'localhost') {
-    file.remove(paste(host$rundir, '/*',
-                      get.run.id('ENS', '', pft.name=pft.name), '*"', sep=''))
+    if("ENS" %in% dir(host$rundir)){
+      file.remove(paste(host$rundir, '/*',
+                        get.run.id('ENS', '', pft.name=pft.name), '*"', sep=''))
+    }
   } else {
     ssh(host$name, 'rm ', host$rundir, '/*',
         get.run.id('ENS', '', pft.name=pft.name, '*'))
@@ -144,9 +146,10 @@ write.sa.configs <- function(pft, quantile.samples, host, outdir, settings,
   traits <- colnames(quantile.samples)
   
   if(host$name == 'localhost'){
-    file.remove(paste(host$rundir, '/*',
+      if("SA" %in% dir(host$rundir)){
+        file.remove(paste(host$rundir, '/*',
                       get.run.id('SA', '', pft.name=pft.name), '*"', sep=''))
-    
+      }
   } else {
     ssh(host$name, 'rm ', host$rundir, '/*',
         get.run.id('SA', '', pft.name=pft.name, '*'))
