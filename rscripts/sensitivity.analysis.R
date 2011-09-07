@@ -22,23 +22,7 @@ library(PECAn)
 
 outdir <- settings$outdir
 host<- settings$run$host
-load(paste(outdir, 'samples.Rdata', sep=''))
 
-
-if(host$name == 'localhost'){
-  source(paste(settings$pecanDir, '/rscripts/read.output.R', sep = ''))
-  file.copy(from = paste(host$outdir, 'output.Rdata', sep = ''),
-            to   = outdir,
-            overwrite = TRUE)
-} else {
-  rsync(from = paste(settings$pecanDir, 'rscripts/read.output.R ', sep = ''),
-        to   = paste(host$name, ':',host$outdir, sep = ''))
-  system(paste("ssh -T", host$name, "'",
-               "cd", host$outdir, "; R --vanilla < read.output.R'"))
-  
-  rsync(from = paste(host$name, ':', host$outdir, 'output.Rdata', sep=''),
-        to = outdir)
-}
 
 load(paste(outdir, 'output.Rdata', sep=''))
 
