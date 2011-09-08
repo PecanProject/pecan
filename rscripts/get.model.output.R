@@ -22,8 +22,7 @@ library(PECAn)
 
 outdir <- settings$outdir
 host<- settings$run$host
-load(paste(outdir, 'samples.Rdata', sep=''))
-
+ 
 
 if(host$name == 'localhost'){
   file.copy(from = paste(settings$pecanDir, '/rscripts/read.output.R', sep = ''),
