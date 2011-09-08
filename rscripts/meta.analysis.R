@@ -1,10 +1,13 @@
 library(XML)
 if(interactive()){
-   user <- Sys.getenv('USER')
+  user <- Sys.getenv('USER')
   if(user == 'ed'){
     settings.file = '~/pecan/fast.settings.xml'
+  } else if(user == 'mantoot2'){
+    settings.file = '~/pecan/ebifarm.acsa3.xml'
   } else if(user == 'dlebauer'){
     settings.file = '~/pecan/settings.ebifarm.pavi.xml'
+    settings.file = '~/pecan/ebifarm.acsa3.xml'
   } else if(user == 'davids14') {
     settings.file = '~/pecan/tundra.xml'
   } else {
