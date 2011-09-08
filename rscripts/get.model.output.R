@@ -30,15 +30,15 @@ if(host$name == 'localhost'){
             overwrite = TRUE)
   setwd(outdir)
   source('read.output.R')
-  file.copy(from = paste(host$outdir, 'output.Rdata', sep = ''),
+  file.copy(from = paste(host$outdir, '/output.Rdata', sep = ''),
             to   = outdir,
             overwrite = TRUE)
 } else {
-  rsync(from = paste(settings$pecanDir, 'rscripts/read.output.R ', sep = ''),
+  rsync(from = paste(settings$pecanDir, '/rscripts/read.output.R ', sep = ''),
         to   = paste(host$name, ':',host$outdir, sep = ''))
   system(paste("ssh -T", host$name, "'",
                "cd", host$outdir, "; R --vanilla < read.output.R'"))
   
-  rsync(from = paste(host$name, ':', host$outdir, 'output.Rdata', sep=''),
+  rsync(from = paste(host$name, ':', host$outdir, '/output.Rdata', sep=''),
         to = outdir)
 }
