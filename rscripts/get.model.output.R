@@ -29,8 +29,8 @@ if(host$name == 'localhost'){
   file.copy(from = paste(settings$pecanDir, '/rscripts/read.output.R', sep = ''),
             to   = outdir,
             overwrite = TRUE)
-  # system(paste('cd ', outdir, '; R --vanilla < read.output.R'))
-  source(paste(outdir, '/read.output.R', sep = ''))
+  setwd(outdir)
+  source('read.output.R')
   file.copy(from = paste(host$outdir, 'output.Rdata', sep = ''),
             to   = outdir,
             overwrite = TRUE)
