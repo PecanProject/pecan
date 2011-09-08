@@ -23,9 +23,9 @@ library(PECAn)
 outdir <- settings$outdir
 host<- settings$run$host
 
-
+browser()
 load(paste(outdir, 'output.Rdata', sep=''))
-load(paste(outdir, 'samples.Rdata', sep=''))
+load(paste(outdir, '/samples.Rdata', sep=''))
 
 for(pft in settings$pfts){
   traits <- names(trait.samples[[pft$name]])

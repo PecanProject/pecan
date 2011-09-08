@@ -79,11 +79,11 @@ query.covariates<-function(trait.ids, con = NULL, ...){
   if(is.null(con)){
     con <- query.bety.con(...)
   }
-  covariate.query<-paste("select covariates.trait_id, covariates.level,variables.name",
+  covariate.query <- paste("select covariates.trait_id, covariates.level,variables.name",
                          "from covariates left join variables on variables.id = covariates.variable_id",
                          "where trait_id in (",vecpaste(trait.ids),")")
-  q <- dbSendQuery(con,covariate.query)
-  all.covs = fetch(q,n=-1)  
+  q <- dbSendQuery(con, covariate.query)
+  all.covs = fetch(q, n = -1)  
   return(all.covs)
 }
 
@@ -145,7 +145,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     #########################   VCMAX   ############################
     query <- paste("select traits.id, traits.citation_id, traits.site_id, treatments.name, month(traits.date) as month, traits.dateloc, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n, traits.date, traits.time, traits.cultivar_id, traits.specie_id from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
     data <- fetch.stats2se(con, query)
-    all.covs <- query.covariates(data$id)
+    all.covs <- query.covariates(data$id, con)
     
     if(length(all.covs)>0) {
       ## get temperature covariates
@@ -193,7 +193,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     }
     
     ## grab covariate data
-    all.covs = query.covariates(data$id)
+    all.covs = query.covariates(data$id, con = con)
 
     ## get canopy height covariates
     #conditional added to prevent crash when trying to transform an empty data frame
@@ -239,7 +239,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     query <- paste("select traits.id, traits.citation_id, traits.site_id, treatments.name, month(traits.date) as month, traits.dateloc, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n, traits.date, traits.time, traits.cultivar_id, traits.specie_id from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
     data <- fetch.stats2se(con, query)
 
-    all.covs = query.covariates(data$id)
+    all.covs = query.covariates(data$id, con = con)
 
     ## get temperature covariates
     data <- append.covariate(data, 'rootT', 
