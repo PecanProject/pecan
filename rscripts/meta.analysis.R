@@ -40,9 +40,10 @@ ensemble.size = as.numeric(settings$ensemble$size)
 sensitivity.analysis = !is.null(settings$sensitivity.analysis)
 
 ## connect to database
-con <- query.bety.con(dbname=settings$database$name,
-                      password=settings$database$passwd,
-                      username=settings$database$userid)
+con <- query.bety.con(dbname   = settings$database$name,
+                      password = settings$database$passwd,
+                      username = settings$database$userid,
+                      host     = settings$database$host)
 
 ## identify pfts
 pfts <- settings$pfts
