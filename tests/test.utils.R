@@ -4,6 +4,11 @@ test_that('get.units works for all traits', {
   expect_true(all(traits[traits %in% get.units(traits)$name] == traits))
 })
 
+test_that('convert.samples and arrhenius scaling works', {
+  expect_equal(as.numeric(convert.samples.ED(data.frame("Vcmax" = 1))), 0.7052557)
+})
+
+
 test_that('utility functions work as expected',{
 
   ## pr.dens()
