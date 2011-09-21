@@ -24,7 +24,13 @@ outdir <- settings$outdir
 
 require(PECAn)
 
-trait.names <- c('mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','growth_resp_factor','leaf_turnover_rate','leaf_width','nonlocal_dispersal','fineroot2leaf','root_respiration_rate','root_turnover_rate','seedling_mortality','SLA','stomatal_slope','Vm_low_temp','quantum_efficiency','f_labile','c2n_leaf','water_conductance','r_fract','storage_turnover_rate','agf_bs','Vcmax')
+trait.names <- c('mort2','cuticular_cond','dark_respiration_factor',
+    'plant_min_temp','growth_resp_factor','leaf_turnover_rate','leaf_width',
+    'nonlocal_dispersal','fineroot2leaf','root_respiration_rate',
+    'root_turnover_rate','seedling_mortality','SLA','stomatal_slope',
+    'Vm_low_temp','quantum_efficiency','f_labile','c2n_leaf',
+    'water_conductance','r_fract','storage_turnover_rate','agf_bs','Vcmax',
+    'b1Ht', 'b2Ht', 'b1Bl', 'b2Bl', 'b1Bs', 'b2Bs')
 
 trstr <- vecpaste(trait.names)
  
@@ -61,7 +67,7 @@ for( pft in pfts){
   prior.distns <- query.bety.priors(pft$name, trstr,out=pft$outdir,con=con)
   ### exclude any parameters for which a constant is provided 
   prior.distns <- prior.distns[which(!rownames(prior.distns) %in%
-                                     names(settings$pfts$pft$constants)),]
+                                     names(pft$constants)),]
   print(prior.distns)
   priors <- rownames(prior.distns) # vector of variables with prior distributions for pft 
   prior.defs <- trait.dictionary(priors)

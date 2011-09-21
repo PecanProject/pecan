@@ -86,6 +86,10 @@ zero.truncate <- function(y) {
 ##' sensitivity.analysis(trait.samples[[pft$name]], sa.samples[[pft$name]], sa.agb[[pft$name]], pft$outdir)
 sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
   traits <- names(trait.samples)
+  sa.output<-sa.output[row.names(sa.output)!='50',]
+  sa.samples<-sa.samples[row.names(sa.samples)!='50',]
+  print(sa.output)
+  print(sa.samples)
   sa.splinefuns <- sapply(traits, function(trait) sa.splinefun(sa.samples[[trait]],
                                                                sa.output[[trait]]))
   
