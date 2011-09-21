@@ -1,18 +1,17 @@
 library(XML)
 if(interactive()){
-  user <- Sys.getenv('USER')
+  user <- system('echo $USER', intern = TRUE)
   options(error = browser)
   if(user == 'dlebauer'){
-    settings.file = '~/pecan/settings.ebifarm.pavi.xml'
+    settings.file = '~/pecan/2011.07.18/settings.pavi.xml'
   } else if(user == 'davids14') {
     settings.file = '~/pecan/tundra.xml'
   } else {
     paste('please specify settings file in meta.analysis.R')
   }
 } else {
-  settings.file <- Sys.getenv("PECANSETTINGS")
-  ## settings.file <- commandArgs(trailingOnly=TRUE)
-} 
+  settings.file <- commandArgs(trailingOnly=TRUE)[[1]]
+}
 
 settings.xml <- xmlParse(settings.file)
 settings <- xmlToList(settings.xml)
@@ -22,10 +21,14 @@ library(PECAn)
 
 outdir <- settings$outdir
 host<- settings$run$host
+load(paste(outdir, 'samples.Rdata', sep=''))
 
-browser()
+ssh(host$name, 'cd ', host$outdir, '/ ; R --vanilla ',
+    args=paste('<', settings$pecanDir, '/rscripts/read.output.R',sep=''))
+rsync(paste(host$name, ':', host$outdir, '/output.Rdata', sep=''),
+      outdir)
+
 load(paste(outdir, 'output.Rdata', sep=''))
-load(paste(outdir, '/samples.Rdata', sep=''))
 
 for(pft in settings$pfts){
   traits <- names(trait.samples[[pft$name]])
@@ -41,14 +44,16 @@ for(pft in settings$pfts){
                                                 outdir = pft$outdir)
     print(sensitivity.results$variance.decomposition.plot.inputs)
     sa.plots <- plot.sensitivities(sensitivity.results$sensitivity.plot.inputs)
-    pdf(paste(outdir, 'sensitivityanalysis.pdf', sep = ''), height = 12, width = 9)
-    sa.plots
+    pdf(paste(pft$outdir, 'sensitivityanalysis.pdf', sep = ''), height = 12, width = 9)
+    do.call(grid.arrange, c(sa.plots, nrow = 4, ncol = ceiling(length(traits)/4)))
     dev.off()
 
     vd.plots <- plot.variance.decomposition(sensitivity.results$variance.decomposition.plot.inputs)
-    pdf(paste(outdir, 'variancedecomposition.pdf', sep=''), width = 11, height = 8)
+    pdf(paste(pft$outdir, 'variancedecomposition.pdf', sep=''), width = 11, height = 8)
     do.call(grid.arrange, c(vd.plots, ncol = 4))
-    dev.off() 
+    grid.edit(gPath("axis_v", "axis.ticks"), grep = TRUE, gp = gpar(col = 'white'))
+    dev.off()
   
   }
 }
+

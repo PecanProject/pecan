@@ -38,10 +38,10 @@ kurtosis <- function(x) {
 ##' at the parameter median.
 ##' @title Calculate Sensitivity
 ##' @param trait.samples 
-##' @param sa.spline 
+##' @param sa.splinefun 
 ##' @return numeric estimate of model sensitivity to parameter
-get.sensitivity <- function(trait.samples, sa.spline){
-  sensitivity <- sa.spline(median(trait.samples, na.rm = TRUE), 1)
+get.sensitivity <- function(trait.samples, sa.splinefun){
+  sensitivity <- sa.splinefun(median(trait.samples, na.rm = TRUE), 1)
 }
 
 ##' Given a set of numbers (a numeric vector), this returns the set's coefficient of variance.
@@ -86,20 +86,24 @@ zero.truncate <- function(y) {
 ##' sensitivity.analysis(trait.samples[[pft$name]], sa.samples[[pft$name]], sa.agb[[pft$name]], pft$outdir)
 sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
   traits <- names(trait.samples)
-  sa.splines <- sapply(traits, function(trait) sa.splinefun(sa.samples[[trait]],
+  sa.output<-sa.output[row.names(sa.output)!='50',]
+  sa.samples<-sa.samples[row.names(sa.samples)!='50',]
+  print(sa.output)
+  print(sa.samples)
+  sa.splinefuns <- sapply(traits, function(trait) sa.splinefun(sa.samples[[trait]],
                                                                sa.output[[trait]]))
   
   spline.estimates <- lapply(traits, function(trait)
-                             zero.truncate(sa.splines[[trait]](trait.samples[[trait]])))
+                             zero.truncate(sa.splinefuns[[trait]](trait.samples[[trait]])))
   names(spline.estimates) <- traits
   sensitivities <- sapply(traits, function(trait)
                           get.sensitivity(trait.samples[[trait]],
-                                          sa.splines[[trait]]))
+                                          sa.splinefuns[[trait]]))
   elasticities <- sapply(traits, 
                          function(trait)
-                         get.elasticity(sensitivities[[trait]],
+                         abs(get.elasticity(sensitivities[[trait]],
                                             trait.samples[[trait]],
-                                            spline.estimates[[trait]]))
+                                            spline.estimates[[trait]])))
   variances <- sapply(traits, function(trait)
                       var(spline.estimates[[trait]]))
   partial.variances <- variances / sum(variances)
@@ -111,7 +115,7 @@ sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
   coef.vars <- sapply(trait.samples, get.coef.var)
   outlist <- list(sensitivity.plot.inputs = list(
                     sa.samples    = sa.samples,
-                    sa.splines = sa.splines),
+                    sa.splinefuns = sa.splinefuns),
                   variance.decomposition.plot.inputs = list(
                     coef.vars         = coef.vars,
                     elasticities      = elasticities,

@@ -36,7 +36,7 @@ get.run.id <- function(run.type, index, trait='', pft.name=''){
 ##' @param filename string, name of file with data
 ##' @param variables  variables to extract from file
 ##' @return single value of output variable from filename. In the case of AGB, it is summed across all plants
-read.output.file.ed <- function(filename, variables = c("AVG_SNOWDEPTH"), FUN=sum){
+read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT"), FUN=mean){
   library(hdf5)
   Carbon2Yield = 20
   data <- hdf5load(filename, load = FALSE)[variables]
@@ -59,7 +59,6 @@ read.output.file.ed <- function(filename, variables = c("AVG_SNOWDEPTH"), FUN=su
 ##' @param output.type type of output file to read, can be "-Y-" for annual output, "-M-" for monthly means, "-D-" for daily means, "-T-" for instantaneous fluxes. Output types are set in the ED2IN namelist as NL%I[DMYT]OUTPUT  
 ##' @return vector of output variable for all runs within ensemble
 read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA, output.type = 'Y'){
-  
   file.names <- dir(outdir, pattern=run.id, full.names=TRUE)
   file.names <- grep(paste('-', output.type, '-', sep = ''), file.names, value = TRUE)
   file.names <- grep('([0-9]{4}).*', file.names, value=TRUE)
@@ -128,7 +127,7 @@ read.sa.output <- function(traits, quantiles, outdir, pft.name='',
       sa.output[as.character(round(quantile*100,3)), trait] <- read.output(run.id, outdir, start.year, end.year)
     }
   }
-  sa.output['50',] <- read.output(get.run.id('SA', 'median'), outdir, start.year, end.year)
+  sa.output['50',] <- read.output(get.run.id('SA', 'median', pft.name=pft.name), outdir, start.year, end.year)
   sa.output <- sa.output[order(as.numeric(rownames(sa.output))),]
   return(sa.output)
 }
@@ -143,33 +142,35 @@ load('samples.Rdata')
 sa.agb<-list()
 ensemble.output<-list()
 for(pft.name in names(trait.samples)){
-  
+  browser()
   traits <- names(trait.samples[[pft.name]])
   quantiles.str <- rownames(sa.samples[[pft.name]])
   quantiles.str <- quantiles.str[which(quantiles.str != '50')]
   quantiles <- as.numeric(quantiles.str)/100
-
+  
   ##TODO needs to be generic, to handle any model output
   start.year <- ifelse(is.null(settings$sensitivity.analysis$start.year),
-                        NA, settings$sensitivity.analysis$start.year)
+      NA, settings$sensitivity.analysis$start.year)
   end.year   <- ifelse(is.null(settings$sensitivity.analysis$end.year),
-                        NA, settings$sensitivity.analysis$end.year)
-
-  if(exists('settings$sensitivity.analysis')) {
+      NA, settings$sensitivity.analysis$end.year)
+  
+  if('sensitivity.analysis' %in% names(settings)) {
     sa.agb[[pft.name]] <- read.sa.output(traits,
-                                         quantiles,
-                                         outdir = getwd(), 
-                                         pft.name=pft.name,
-                                         start.year,
-                                         end.year)
+        quantiles,
+        outdir = getwd(), 
+        pft.name=pft.name,
+        start.year,
+        end.year)
   }
-
+  
   if(settings$ensemble$size > 0) {
     ensemble.output[[pft.name]] <- read.ensemble.output(settings$ensemble$size,
-                                                        outdir = getwd(), 
-                                                        pft.name=pft.name,
-                                                        start.year,
-                                                        end.year)
+        outdir = getwd(), 
+        pft.name=pft.name,
+        start.year,
+        end.year)
   }
+  
+  #HACK: save saves empty lists if it is invoked outside the for loop
+  save(ensemble.output, sa.agb, file = 'output.Rdata')
 }
-save(ensemble.output, sa.agb, file = 'output.Rdata')
