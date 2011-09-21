@@ -6,7 +6,7 @@ if(interactive()){
   } else if(user == 'mantoot2'){
     settings.file = '~/pecan/ebifarm.acsa3.xml'
   } else if(user == 'dlebauer'){
-    settings.file = '~/pecan/settings.ebifarm.pavi.xml'
+    settings.file = '~/pecan/settings.pavi.xml'
 #    settings.file = '~/pecan/ebifarm.acsa3.xml'
   } else if(user == 'davids14') {
     settings.file = '~/pecan/tundra.xml'
@@ -40,10 +40,11 @@ ensemble.size = as.numeric(settings$ensemble$size)
 sensitivity.analysis = !is.null(settings$sensitivity.analysis)
 
 ## connect to database
-con <- query.bety.con(dbname   = settings$database$name,
+newcon <- function(){query.bety.con(dbname   = settings$database$name,
                       password = settings$database$passwd,
                       username = settings$database$userid,
-                      host     = settings$database$host)
+                      host     = settings$database$host)}
+con <- newcon()
 
 ## identify pfts
 pfts <- settings$pfts
