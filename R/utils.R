@@ -10,9 +10,23 @@ rsync <- function(from, to, pattern=''){
   system(paste('rsync -outi', from, to, sep = ' '), intern=TRUE)
 }
 ssh <- function(host, ..., args=''){
-  command<-paste('ssh -T ', host, ' "', ..., '" ', args, sep='')
+  if(host == 'localhost'){
+    command <- paste(..., args, sep='')
+  } else {
+    command <- paste('ssh -T ', host, ' "', ..., '" ', args, sep='')
+  }
   system(command)
 }
+sed <- function(find, replace, dirname = getwd(), filename){
+  system(paste("sed -i 's/", find, "/", replace, "/g' ", dirname, '/', filename, sep = ''))
+}
+cp  <- function(option = '', from = getwd(), to = getwd(), oldfilename, newfilename) {
+  system(paste('cp', option, paste(from, oldfilename, sep = '/'), paste(to, newfilename, sep = '/')))
+}
+mkdir <- function(args = '', dir) {
+  system(paste('mkdir', args, dir))
+}
+
 ## vecpaste, turns vector into comma delimited string fit for SQL statements. 
 vecpaste <- function(x) paste(paste("'", x, "'", sep=''), collapse=',')
 
@@ -45,16 +59,17 @@ listToXml <- function(item, tag){
 ##' @param traits trait or set of traits
 ##' @return data.frame with trait names and trait units as provided by BETY
 ##' @author David LeBauer
-get.units <- function(traits) {
+get.units <- function(traits = NULL) {
   units <- query.bety(paste('select name, units from variables where name in (',
                             vecpaste(trait.dictionary(traits)$id),');'))
+  if(is.null(traits)){
+    units <- query.bety(paste('select name, units from variables where name in (',
+                            vecpaste(trait.dictionary()$id),');'))
+  }
   ans <- merge(data.frame(name = traits), units, by = 'name', sort =FALSE)
   return(ans)
 }
  
-pr.samp <- function(distn, parama, paramb, n) {
-    do.call(paste('r', distn, sep=""), list(n, parama, paramb))
-}
 ##' Take n random samples from prior
 ##'
 ##' @title Sample from prior 
@@ -68,6 +83,7 @@ pr.samp <- function(distn, parama, paramb, n) {
 pr.samp <- function(distn, parama, paramb, n) {
     do.call(paste('r', distn, sep=""), list(n, parama, paramb))
 }
+
 
 ##' Take n random samples from prior
 ##'
@@ -121,34 +137,68 @@ zero.bounded.density <- function (x, bw = "SJ") {
   g$x <- c(0, xgrid)
   return(g)
 }
-##' Update ebi_analysis with information in ebi_production
-##'
-##' Backs up ebi_analysis, copies ebi_production to ebi_analysis. This function is based on the db_copy.sh script, and is useful 
-##' @title 
-##' @param tables.to.exclude list of large tables that do not need to be backed up (excluding default values add 1 hr to backup time)
-##' @return updated ebi_analysis
-##' @author David LeBauer, Patrick Mulrooney
-transfer.bety <- function(tables.to.exclude =
-                          c('counties', 'county_boundaries',
-                            'county_paths', 'location_yields')){
-  
-  USER="ebi_user"
-  PASSWORD="mScGKxhPhdq"
-  DB="ebi_analysis"
-  backup.dir <- "/home/share/ebi_analysis-backup.sql"
-  ignore.tables <- paste(paste(' --ignore-table=', tables.to.exclude, sep = ''), collapse = " ")
-  print("Backing up $DB to $DB-backup.sql")
-  backup.db <- paste("mysqldump ", DB, ignore.tables, " -u ", USER, " -p", PASSWORD," >> ", backup.dir, sep = '')
-  system(backup.db)
-  
-  print("Dropping tables from $DB")
-  drop.tables <- paste("mysqldump ", DB, " -u ", USER, " -p", PASSWORD, ' ', ignore.tables," --add-drop-table --no-data | grep ^DROP | mysql -u ", USER, " -p", PASSWORD, ' ', DB, sep = '')
-  system(drop.tables)
-  
 
-  print("Transfering tables from ebi_production to $DB")
-  transfer.tables <- paste("mysqldump -u", USER, " -p", PASSWORD, ' ', ignore.tables, " ebi_production | mysql -u ", USER, " -p", PASSWORD, ' ', DB, sep = '')
-  system(transfer.tables)
-                                        #mysqldump -u $DB_USER -p$DB_PASSWORD ebi_production | mysql -u $DB_USER -p$DB_PASSWORD $DB                                                                     
-  print("Done!") 
+#' Dictionary of terms used to identify traits in ed, filenames, and figures 
+#'
+#' @return a dataframe with id, the name used by ED and BETY for a parameter; fileid, an abbreviated  
+#'     name used for files; figid, the parameter name written out as best known in english for figures 
+#'     and tables.
+#'
+#' @param traits a vector of trait names, if traits = NULL, all of the traits will be returned.
+trait.dictionary <- function(traits = NULL) {
+  defs<-data.frame(id = c("plant_min_temp", "c2n_leaf", "dark_respiration_factor", "f_labile", "growth_resp_factor", "leaf_turnover_rate", "leaf_width", "mort2", "nonlocal_dispersal", "fineroot2leaf", "quantum_efficiency", "root_respiration_rate", "root_turnover_rate", "SLA", "stomatal_slope", "Vcmax", "Vm_low_temp", "water_conductance","cuticular_cond","seedling_mortality","r_fract","storage_turnover_rate", "T"),
+      figid = c("Plant Minimum Temperature", "Leaf C:N" ,"Dark Respiration Rate", "Litter% Labile C", "Growth Respiration", "Leaf Turnover Rate", "Leaf Width", "Mortality Rate", "Seed Dispersal", "Fine Root Allocation","Quantum Efficiency", "Root Respiration Rate", "Root Turnover Rate", "Specific Leaf Area", "Stomatal Slope", "Vcmax", "Photosynthesis min temp", "Water Conductance","Cuticular Conductance", "Seedling Mortality", "Reproductive Allocation","Storage Turnover Rate","Transpiration")
+  )
+  if(is.null(traits)) {
+    trait.defs <- defs
+  } else {
+    trait.defs <- defs[defs$id %in% traits,]
+  }
+  return(trait.defs)
 }
+
+
+#' @examples
+#' #translate a parameter name
+#' trait.dictionary(c('growth_resp_factor'))
+#' trait.dictionary(c('growth_resp_factor'))$figid
+#' 
+#' #append the names to a dataframe of priors
+#' priors <- query.bety("select priors.id, name, phylogeny, distn, parama, paramb, from priors join variables
+#'                       on priors.variable_id = variables.id where priors.id in
+#'                       (select prior_id from pfts_priors where pft_id = 10);")
+#' data.frame(name = trait.dictionary(priors$name)$figid, priors)
+#'
+#' 
+
+#' do.call(rbind, lapply(traits, .trait.dictionary))
+#' 
+#' .trait.dictionary<-function(trait)
+#' {
+#'   defs<-data.frame(id = c("plant_min_temp", "c2n_leaf", "dark_respiration_factor", "f_labile", "growth_resp_factor", "leaf_turnover_rate", "leaf_width", "mort2", "nonlocal_dispersal", "fineroot2leaf", "quantum_efficiency", "root_respiration_rate", "root_turnover_rate", "SLA", "stomatal_slope", "Vcmax", "Vm_low_temp", "water_conductance","cuticular_cond","seedling_mortality","r_fract","storage_turnover_rate", "T"),
+#'       figid = c("Plant Minimum Temperature", "Leaf C:N" ,"Dark Respiration Rate", "Litter% Labile C", "Growth Respiration", "Leaf Turnover Rate", "Leaf Width", "Mortality Rate", "Seed Dispersal", "Fine Root Allocation","Quantum Efficiency", "Root Respiration Rate", "Root Turnover Rate", "Specific Leaf Area", "Stomatal Slope", "Vcmax", "Photosynthesis min temp", "Water Conductance","Cuticular Conductance", "Seedling Mortality", "Reproductive Allocation","Storage Turnover Rate","Transpiration")
+#'   )
+#'   if(trait %in% defs$id) {
+#'     return(defs[defs$id == trait,])
+#'   }
+#'   else{
+#'     return(data.frame(id=trait, figid=trait))
+#'   }
+#' }
+
+##' Identifies experimental replicates and calculates summary statistics.
+##'
+##' Used after queries in \code{\link{query.bety.trait.data}}
+##' @title Summarize Results
+##' @param result dataframe of results from query of trait data 
+##' @return dataframe with experimental replicates summarized
+##' @seealso \code{\link{query.bety.trait.data}}
+##' @author David LeBauer
+summarize.result <- function(result) {
+  ans1 <- ddply(result[result$n==1,],
+                .(citation_id, site_id, name, control, greenhouse, date, time, cultivar_id, specie_id),
+                summarise, n = length(n), y = mean(mean), statname = ifelse(length(n)==1,'none','SE'), stat = sd(mean)/sqrt(length(n)))
+  ans2 <- result[result$n!=1,]
+  return(rbind(ans1, ans2))
+}
+  

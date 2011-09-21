@@ -1,15 +1,20 @@
 library(XML)
 if(interactive()){
-   user <- system('echo $USER', intern = TRUE)
-  if(user == 'dlebauer'){
-    settings.file = '~/pecan/2011.07.18/settings.pavi.xml'
+  user <- Sys.getenv('USER')
+  if(user == 'ed'){
+    settings.file = '~/pecan/fast.settings.xml'
+  } else if(user == 'mantoot2'){
+    settings.file = '~/pecan/ebifarm.acsa3.xml'
+  } else if(user == 'dlebauer'){
+    settings.file = '~/pecan/settings.ebifarm.pavi.xml'
+#    settings.file = '~/pecan/ebifarm.acsa3.xml'
   } else if(user == 'davids14') {
     settings.file = '~/pecan/tundra.xml'
   } else {
     paste('please specify settings file in meta.analysis.R')
   }
 } else {
-  settings.file <- system("echo $PECANSETTINGS", intern = TRUE)
+  settings.file <- Sys.getenv("PECANSETTINGS")
 }
 
 settings.xml <- xmlParse(settings.file)
@@ -41,10 +46,10 @@ ensemble.size = as.numeric(settings$ensemble$size)
 sensitivity.analysis = !is.null(settings$sensitivity.analysis)
 
 ## connect to database
-con <- settings$database
-if(settings$database$location == 'localhost'){
-  con <- query.bety.con(dbname=con$name,password=con$passwd,username=con$userid)
-}
+con <- query.bety.con(dbname   = settings$database$name,
+                      password = settings$database$passwd,
+                      username = settings$database$userid,
+                      host     = settings$database$host)
 
 ## identify pfts
 pfts <- settings$pfts
@@ -68,6 +73,7 @@ for( pft in pfts){
   ### exclude any parameters for which a constant is provided 
   prior.distns <- prior.distns[which(!rownames(prior.distns) %in%
                                      names(pft$constants)),]
+  print('Summary of Prior distributions')
   print(prior.distns)
   priors <- rownames(prior.distns) # vector of variables with prior distributions for pft 
   prior.defs <- trait.dictionary(priors)
@@ -116,21 +122,23 @@ for( pft in pfts){
     ##tauB = apply(prior.variances, 1, function(x) min(0.01, 0.01*x)))
   
     ## run the meta-analysis
-    trait.mcmc <- pecan.ma(trait.data, prior.distns, taupriors, j.iter = ma.iter, settings, pft$outdir)
-    posteriors = approx.posterior(trait.mcmc,prior.distns,trait.data,pft$outdir)
-    save(trait.mcmc, posteriors,file = paste(pft$outdir, '/trait.mcmc.Rdata', sep=''))
+    trait.mcmc  <- pecan.ma(trait.data, prior.distns, taupriors, j.iter = ma.iter, settings, pft$outdir)
+    post.distns <- approx.posterior(trait.mcmc,prior.distns,trait.data,pft$outdir)
+    save(trait.mcmc, post.distns, file = paste(pft$outdir, '/trait.mcmc.Rdata', sep=''))
   
-    trait.stats <- sapply(trait.mcmc,function(x){summary(x)$statistics['beta.o',1:2]})
     
     ma.traitnames <- names(trait.mcmc)
+
+    ## Is the following code useful? Perhaps we should plot this instead
+    trait.stats <- sapply(trait.mcmc,function(x){summary(x)$statistics['beta.o',1:2]})
     pft.summary$mean[match(colnames(trait.stats), ma.traitnames),pft$name] <- trait.stats[1, ]
     pft.summary$sd[match(colnames(trait.stats), ma.traitnames),pft$name] <- trait.stats[2, ]
   
-    save(trait.mcmc, file=paste(pft$outdir, '/trait.mcmc.Rdata', sep = ''))
     pecan.ma.summary(trait.mcmc, pft$name, pft$outdir)
   }
   save(prior.distns, file=paste(pft$outdir, '/prior.distns.Rdata', sep = ''))
+  save(post.distns, file=paste(pft$outdir, '/post.distns.Rdata', sep = ''))
     
 } ## end loop over pfts
 
-save(pft.summary,file=paste(settings$outdir,"pft.summary.RData",sep=""))
+save(pft.summary,file=paste(settings$outdir,"pft.summary.Rdata",sep=""))
