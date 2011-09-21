@@ -349,10 +349,12 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
 
 
   if(length(data$stat[!is.na(data$stat) & data$stat <= 0.0]) > 0) {
-
-    warning(paste('there are implausible values of SE, SE <= 0 in the data and these are set to NA from citation', unique(data$citation_id[which(data$stat >= 0.0)], ' ')))
+    citationswithbadstats <- unique(data$citation_id[which(data$stat <= 0.0)])
+    warning.message <- paste('there are implausible values of SE: SE <= 0 \n',
+                             'for', trait, 'data from citation',citationswithbadstats,'\n',
+                             'SE <=0 set to NA \n')
+    warning(warning.message)
     print(data)
-    print(trait)
     data$stat[data$stat <= 0.0] <- NA
   }
   
