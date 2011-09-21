@@ -5,7 +5,14 @@ test_that('get.units works for all traits', {
 })
 
 test_that('convert.samples and arrhenius scaling works', {
-  expect_equal(as.numeric(convert.samples.ED(data.frame("Vcmax" = 1))), 0.7052557)
+  expect_equivalent(convert.samples.ED(c("Vcmax" = 1)),
+                    0.7052557)
+  expect_equivalent(signif(convert.samples.ED(c("root_respiration_rate" = 1)),5),
+                    c("root_respiration_factor" = 0.35263))
+  expect_equivalent(signif(arrhenius.scaling(1,2,3),5),
+                    c(1.0403))
+  expect_equivalent(signif(arrhenius.scaling(1,3,2),5),
+                    c(0.96129))  
 })
 
 
