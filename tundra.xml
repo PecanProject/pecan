@@ -5,36 +5,38 @@
        <name>tundra.evergreen</name>
        <outdir>~/pecan/out/evergreen/</outdir>
        <edin>~/pecan/edin/templateED2IN-tundra.evergreen</edin>
-       <exclude>
-         <trait>c2n_leaf</trait>
-       </exclude>
        <constants>
          <num>8</num>
+         <hgt_min>0.01</hgt_min>
+         <repro_min_h>0.02</repro_min_h>
+         <c2n_leaf>41.7190655469206</c2n_leaf>
+         <hgt_ref>0.0101801</hgt_ref>
        </constants>
     </pft>
     <pft>
        <name>tundra.deciduous</name>
        <outdir>~/pecan/out/deciduous/</outdir>
        <edin>~/pecan/edin/templateED2IN-tundra.deciduous</edin>
-       <exclude>
-         <trait>c2n_leaf</trait>
-         <trait>SLA</trait>
-       </exclude>
        <constants>
          <num>11</num>    
+         <hgt_min>0.01</hgt_min>
+         <repro_min_h>0.02</repro_min_h>
          <storage_turnover_rate>0.0</storage_turnover_rate>
+         <c2n_leaf>41.7190655469206</c2n_leaf>
+         <SLA>11.6391215544060</SLA>
+         <hgt_ref>0.0124571</hgt_ref>
        </constants>
     </pft>
     <pft>
       <name>tundra.grass</name>
       <outdir>~/pecan/out/grass/</outdir>
       <edin>~/pecan/edin/templateED2IN-tundra.grass</edin>
-      <exclude>
-        <trait>c2n_leaf</trait>
-        <trait>SLA</trait>
-      </exclude>
       <constants>
         <num>5</num>    
+        <hgt_min>0.01</hgt_min>
+        <repro_min_h>0.0</repro_min_h>
+        <c2n_leaf>41.7190655469206</c2n_leaf>
+        <SLA>22.8503445152676</SLA>
       </constants>
     </pft>
   </pfts>
@@ -63,10 +65,10 @@
     <end.year>2010</end.year>
   </sensitivity.analysis>
   <database>
-    <userid>ebi_analys_user</userid>
-    <passwd>b742xsAu</passwd>
+    <name>ebi_production</name>
+    <userid>davids14</userid>
+    <passwd>2theE@st2MW</passwd>
     <location>localhost</location>
-    <name>ebi_analysis</name>
   </database>
   <run>
     <site>
@@ -79,7 +81,7 @@
     <host>
       <name>ebi-cluster.igb.uiuc.edu</name>
       <rundir>/home/davids14/EDBRAMS/ED/run/</rundir>
-      <outdir>/home/scratch/davids14/pecan/out/FixedSoilTemp/</outdir>
+      <outdir>/home/scratch/davids14/pecan/out/Allometry/</outdir>
     </host> 
   </run>
 </pecan>

@@ -36,14 +36,14 @@ get.run.id <- function(run.type, index, trait='', pft.name=''){
 ##' @param filename string, name of file with data
 ##' @param variables  variables to extract from file
 ##' @return single value of output variable from filename. In the case of AGB, it is summed across all plants
-read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
+read.output.file.ed <- function(filename, variables = c("AVG_SNOWDEPTH"), FUN=sum){
   library(hdf5)
   Carbon2Yield = 20
   data <- hdf5load(filename, load = FALSE)[variables]
   if(all(c("AGB_CO", "NPLANT") %in% variables)) {
-    return(sum(data$AGB_CO * data$NPLANT, na.rm =TRUE) * Carbon2Yield)
+    return(FUN(data$AGB_CO * data$NPLANT, na.rm =TRUE) * Carbon2Yield)
   } else {
-    return(sum(data[[variables]]))
+    return(FUN(data[[variables]]))
   }
 }
 

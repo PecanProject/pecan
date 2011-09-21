@@ -72,7 +72,6 @@ for (i in seq(pft.names)){
       samples <- get.sample(prior.distns[prior,], samples.num)
     }
     trait.samples[[pft.name]][[prior]] <- samples
-    }
   }
     
 
