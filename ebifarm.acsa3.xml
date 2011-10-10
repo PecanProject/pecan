@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<pecan>
+  <pfts>
+    <pft>
+       <name>ebifarm.acer.saccharinum</name>
+       <outdir>/home/a-m/dlebauer/pecan/out/acsa3/</outdir>
+       <edin>/home/a-m/dlebauer/pecan/edin/templateED2IN-ebifarm.acsa3</edin>
+       <exclude>
+         <trait></trait>
+       </exclude>
+       <constants>
+         <num>10</num>
+	 <root_respiration_rate>1</root_respiration_rate>
+       </constants>
+    </pft>
+  </pfts>
+ <meta.analysis>
+    <iter>20000</iter>
+   <random.effects>FALSE</random.effects>
+ </meta.analysis>
+  <pecanDir>/home/a-m/dlebauer/pecan/</pecanDir>
+  <Rlibdir>~/lib/R/</Rlibdir>
+  <outdir>/home/a-m/dlebauer/pecan/out/acsa3/</outdir>
+  <sensitivity.analysis>
+    <quantiles>
+      <quantile></quantile>
+      <sigma>-3</sigma>
+      <sigma>-2</sigma>
+      <sigma>-1</sigma>
+      <sigma>1</sigma>
+      <sigma>2</sigma>
+      <sigma>3</sigma>
+    </quantiles>
+    <start.year>2006/01/01</start.year>
+    <end.year>2010/01/01</end.year>
+  </sensitivity.analysis>
+  <database>
+    <userid>ebi_analys_user</userid>
+    <passwd>b742xsAu</passwd>
+    <location>localhost</location>
+    <name>ebi_analysis</name>
+  </database>
+  <run>
+    <site>
+      <lat></lat>
+      <lon></lon>
+      
+<met.data.header>/home/scratch/dlebauer/pecan/edin/ebifarm/met/ED_MET_DRIVER_HEADER</met.data.header>
+    </site>
+    <start.date>2006/01/01</start.date>
+    <end.date>2010/01/01</end.date>
+    <host>
+      <name>ebi-cluster.igb.uiuc.edu</name>
+      <rundir>/home/jamED/EDBRAMS/ED/run/</rundir>
+      <outdir>/home/a-m/dlebauer/pecan/out/acsa3/</outdir>
+    </host>
+  </run>
+</pecan>
+
+
