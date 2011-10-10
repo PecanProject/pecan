@@ -155,7 +155,7 @@ for(pft.name in names(trait.samples)){
   end.year   <- ifelse(is.null(settings$sensitivity.analysis$end.year),
                         NA, settings$sensitivity.analysis$end.year)
 
-  if(exists('settings$sensitivity.analysis')) {
+  if('sensitivity.analysis' %in% names(settings))) {
     sa.agb[[pft.name]] <- read.sa.output(traits,
                                          quantiles,
                                          outdir = getwd(), 
@@ -172,4 +172,5 @@ for(pft.name in names(trait.samples)){
                                                         end.year)
   }
 }
+
 save(ensemble.output, sa.agb, file = 'output.Rdata')
