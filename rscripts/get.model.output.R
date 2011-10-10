@@ -3,7 +3,7 @@ if(interactive()){
   user <- Sys.getenv('USER')
   options(error = browser)
   if(user == 'dlebauer'){
-    settings.file = '~/pecan/2011.08.26/settings.ebifarm.pavi.xml'
+    settings.file = '~/out/2011.08.26/settings.ebifarm.pavi.xml'
   } else if(user == 'davids14') {
     settings.file = '~/pecan/tundra.xml'
   } else {
