@@ -3,7 +3,7 @@ library(XML)
 if(interactive()){
   user <- Sys.getenv('USER')
   if(user == 'ed'){
-    settings.file = '/home/ed/pecan/fast.settings.xml'
+    settings.file = '/home/dlebauer/out/2011.08.26/settings.ebifarm.pavi.xml'
   } else if(user == 'davids14') {
     settings.file = '~/pecan/tundra.xml'
   } else {
