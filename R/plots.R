@@ -15,8 +15,8 @@ plot.sensitivity <- function(sa.sample, sa.spline, trait,
                              y.range = c(0,50), median.i = 4,
                              prior.sa.sample = NULL, prior.sa.spline = NULL,
                              fontsize = list(title = 18, axis = 14),
-                             linesize = 0.5,
-                             dotsize = 1) {
+                             linesize = 1,
+                             dotsize = 2) {
   LENGTH_OUT <- 1000
   
   units <- gsub('percent', 'fraction', get.units(trait)$units)
@@ -31,7 +31,7 @@ plot.sensitivity <- function(sa.sample, sa.spline, trait,
       ## plot points used to evaluate spline
       geom_point(aes(x,y), data = data.frame(x = sa.sample, y = sa.spline(sa.sample)), size = dotsize) +
         #indicate median with larger point
-        geom_point(aes(x,y), data = data.frame(x = sa.sample[median.i], y = sa.spline(sa.sample[median.i])), size = dotsize * 1.5) + 
+        geom_point(aes(x,y), data = data.frame(x = sa.sample[median.i], y = sa.spline(sa.sample[median.i])), size = dotsize * 1.3) + 
           scale_y_continuous(limits = range(pretty(y.range)), breaks = pretty(y.range, n = 3)[1:3]) +
                 theme_bw() +
                   opts(title= trait.dictionary(trait)$figid, 
