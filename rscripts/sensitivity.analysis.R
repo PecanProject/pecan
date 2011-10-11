@@ -38,7 +38,9 @@ for(pft in settings$pfts){
                                                 sa.samples = sa.samples[[pft$name]],
                                                 sa.output = sa.agb[[pft$name]],
                                                 outdir = pft$outdir)
-    sa.plots <- plot.sensitivities(sensitivity.results$sensitivity.plot.inputs)
+    sa.plots <- plot.sensitivities(sensitivity.results$sensitivity.plot.inputs,
+                                   linesize = 1,
+                                   dotsize = 3)
     pdf(paste(outdir, 'sensitivityanalysis.pdf', sep = ''), height = 12, width = 9)
     sa.plots
     dev.off()
