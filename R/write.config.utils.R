@@ -62,7 +62,7 @@ write.ensemble.configs <- function(pft, ensemble.samples,
   if(is.null(ensemble.samples)) return(NULL)
 
   run.ids<-list()
-
+ 
   for(ensemble.id in 1:nrow(ensemble.samples)) {
     run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, 5), 
                          pft.name=pft$name)
@@ -75,9 +75,9 @@ write.ensemble.configs <- function(pft, ensemble.samples,
                 get.run.id('ENS', '', pft.name=pft.name), '*', sep=''),
           host$rundir)
   } else {
-    rsync(paste(outdir, '/*',
-                get.run.id('ENS', '', pft.name=pft.name), '*', sep=''), 
-          paste(host$name, ':', host$rundir,  sep=''))
+    system(paste('rsync -routi ',
+                 paste(outdir, '/*', get.run.id('ENS', '', pft.name=pft.name), '*', sep=''), 
+                 paste(host$name, ':', host$rundir,  sep=''), sep = ' '))
   }
 }
 
@@ -177,7 +177,8 @@ write.sa.configs <- function(pft, quantile.samples, host, outdir, settings,
                 get.run.id('SA', '', pft.name=pft.name), '*', sep=''),
           host$rundir)
   } else {
-    rsync(paste(outdir, '/*', get.run.id('SA', '', pft.name=pft.name), '*', sep=''), 
-          paste(host$name, ':', host$rundir,  sep=''))
+    system(paste('rsync -routi ',
+                 paste(outdir, '/*', get.run.id('SA', '', pft.name=pft.name), '*', sep=''), 
+                 paste(host$name, ':', host$rundir,  sep='')))
   }
 }
