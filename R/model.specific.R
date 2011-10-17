@@ -28,7 +28,7 @@ abbreviate.run.id.ED <- function(run.id){
 convert.samples.ED <- function(trait.samples){
   DEFAULT.LEAF.C <- 0.48
   DEFAULT.MAINTENANCE.RESPIRATION <- 1/2
-  ## convert SLA from kg leaf / m2 to kg C / m2
+  ## convert SLA from m2 / kg leaf to m2 / kg C 
     
   if('SLA' %in% names(trait.samples)){
     sla <- trait.samples[['SLA']]

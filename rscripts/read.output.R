@@ -153,7 +153,7 @@ for(pft.name in names(trait.samples)){
       NA, settings$sensitivity.analysis$start.year)
   end.year   <- ifelse(is.null(settings$sensitivity.analysis$end.year),
       NA, settings$sensitivity.analysis$end.year)
-  
+
   if('sensitivity.analysis' %in% names(settings)) {
     sa.agb[[pft.name]] <- read.sa.output(traits,
         quantiles,
