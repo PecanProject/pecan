@@ -196,9 +196,13 @@ trait.dictionary <- function(traits = NULL) {
 ##' @author David LeBauer
 summarize.result <- function(result) {
   ans1 <- ddply(result[result$n==1,],
-                .(citation_id, site_id, name, control, greenhouse, date, time, cultivar_id, specie_id),
-                summarise, n = length(n), y = mean(mean), statname = ifelse(length(n)==1,'none','SE'), stat = sd(mean)/sqrt(length(n)))
-  ans2 <- result[result$n!=1,]
+                .(citation_id, site_id, trt_id, control, greenhouse, date, time, cultivar_id, specie_id),
+                summarise,
+                n = length(n),
+                mean = mean(mean),
+                statname = ifelse(length(n)==1,'none','SE'),
+                stat = sd(mean)/sqrt(length(n)))
+  ans2 <- result[result$n!=1,which(colnames(result) %in% colnames(ans1))]
   return(rbind(ans1, ans2))
 }
   

@@ -3,11 +3,11 @@ library(XML)
 if(interactive()){
   user <- Sys.getenv('USER')
   if(user == 'ed'){
-    settings.file = '/home/ed/pecan/fast.settings.xml'
+    settings.file = '~/in/ebifarm/prior/settings.pavi.xml'
   } else if(user == 'davids14') {
     settings.file = '~/pecan/tundra.xml'
   } else {
-    paste('please specify settings file in meta.analysis.R')
+    paste('please specify settings file in write.configs.R')
   }
 } else {
   settings.file <- Sys.getenv("PECANSETTINGS")
@@ -114,8 +114,8 @@ if(host$name == 'localhost'){
   }
 } else {
   ssh(host$name, 'mkdir ', host$outdir)
-  rsync(paste(outdir, 'samples.Rdata', sep=''),
-        paste(host$name, ':', host$outdir, sep=''))
+  system(paste('rsync -routi ', paste(outdir, 'samples.Rdata', sep=''),
+        paste(host$name, ':', host$outdir, sep='')))
 }
 
 >>>>>>> MERGE-SOURCE

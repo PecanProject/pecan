@@ -42,6 +42,7 @@ for(pft in settings$pfts){
                                                 sa.samples = sa.samples[[pft$name]],
                                                 sa.output = sa.agb[[pft$name]],
                                                 outdir = pft$outdir)
+
     print(sensitivity.results$variance.decomposition.plot.inputs)
     sa.plots <- plot.sensitivities(sensitivity.results$sensitivity.plot.inputs)
     pdf(paste(pft$outdir, 'sensitivityanalysis.pdf', sep = ''), height = 12, width = 9)
