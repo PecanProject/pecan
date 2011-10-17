@@ -1,4 +1,4 @@
-query.bety.priors <- function(pft, trstr,out=NULL,con=NULL,...){
+query.bety.priors <- function(pft, trstr, out=NULL,con=NULL,...){
   if(is.null(con)){
     con <- query.bety.con(...)
   }
@@ -8,24 +8,30 @@ query.bety.priors <- function(pft, trstr,out=NULL,con=NULL,...){
     return(NULL)
   }
     
-  ## query 1: query the prior_id s assoc. with pft
-  query1 <- paste("select pfts_priors.prior_id from pfts_priors where pfts_priors.pft_id in (select pfts.id from pfts where pfts.name in ('",pft,"'));", sep = "")
-  q1    <- dbSendQuery(con, query1)
-  prior.id <- fetch(q1, n = -1 )$prior_id
-  pr.id.str <- vecpaste(prior.id)
-  if(is.null(prior.id)){
-    print("**** NO PRIORS FOUND ****")
-    return(prior.id)
-  }
+  query.text <- paste("select variables.name, distn, parama, paramb, n ",
+                  "from priors",
+                  "join variables on priors.variable_id = variables.id",
+                  "join pft_priors on pfts_priors.prior_id = priors.id",
+                  "join pfts on pfts.id = pfts_priors.prior_id",
+                  "where pfts.name in (", pft, "')",
+                  "and variables.name in (", trstr, ");")
+  query    <- dbSendQuery(con, query.text)
+  priors <- fetch ( query.text, n = -1 )
   
-  ## query 2: query the variable names assoc. with priors.
-  query2 <- paste("select distinct variables.name, distn, parama, paramb, n from priors join variables on priors.variable_id = variables.id where priors.id in (",pr.id.str,") and variables.name in (",trstr,");", sep = "")
-  
-  q2 <- dbSendQuery(con, query2)
-  priors <- fetch ( q2, n = -1 )
+  #HACK: this rename does not belong here. 
+  #There should be a separate function for this called after query.bety.priors. 
+  #-carl
   priors$name[priors$name == 'SLA_m2_per_gC'] <- 'SLA'
-  rownames(priors) <- priors$name
-  priors <- priors[, which(colnames(priors)!='name')]
+
+  if(nrow(priors) > 0){
+    warning(paste("No priors found for pft(s): ", pft))
+    priors <- priors[, which(colnames(priors)!='name')]
+    return(priors)
+  }
+  else {    
+    rownames(priors) <- priors$name
+    priors <- priors[, which(colnames(priors)!='name')]
+  }
 
 #  if(!is.null(out)){
 #    sink(file = paste(out,'priors.tex',sep=""), split = FALSE)

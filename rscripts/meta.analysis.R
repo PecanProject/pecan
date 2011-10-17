@@ -118,7 +118,7 @@ for( pft in pfts){
     save(trait.mcmc, file = paste(pft$outdir, '/trait.mcmc.Rdata', sep=''))
     save(post.distns, file = paste(pft$outdir, '/post.distns.Rdata', sep = ''))  
 
-  } ## end loop over pfts
-} else {
-  print('settings file does not call for meta-analysis')
-}
+  } else {
+    print('settings file does not call for meta-analysis')
+  }
+} ## end loop over pfts
