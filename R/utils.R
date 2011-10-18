@@ -195,14 +195,21 @@ trait.dictionary <- function(traits = NULL) {
 ##' @seealso \code{\link{query.bety.trait.data}}
 ##' @author David LeBauer
 summarize.result <- function(result) {
-  ans1 <- ddply(result[result$n==1,],
-                .(citation_id, site_id, trt_id, control, greenhouse, date, time, cultivar_id, specie_id),
+  groupby <- c('citation_id', 'site_id', 'trt_id', 'control', 'greenhouse', 'time', 'cultivar_id', 'specie_id')
+  summarized <- result[result$n==1,]
+  ans1 <- ddply(summarized,
+                #the following line was added after a particularly obstruse bug and
+                #address cases where columns in result have been dropped without 
+                #changes being made to summarize.result
+                groupby[groupby %in% names(summarized)],
                 summarise,
                 n = length(n),
                 mean = mean(mean),
                 statname = ifelse(length(n)==1,'none','SE'),
                 stat = sd(mean)/sqrt(length(n)))
+  print(ans1)
   ans2 <- result[result$n!=1,which(colnames(result) %in% colnames(ans1))]
+  print(ans2)
   return(rbind(ans1, ans2))
 }
   
