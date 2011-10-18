@@ -35,7 +35,7 @@ trait.names <- c('mort2','cuticular_cond','dark_respiration_factor',
     'root_turnover_rate','seedling_mortality','SLA','stomatal_slope',
     'Vm_low_temp','quantum_efficiency','f_labile','c2n_leaf',
     'water_conductance','r_fract','storage_turnover_rate','agf_bs','Vcmax',
-    'b1Ht', 'b2Ht', 'b1Bl', 'b2Bl', 'b1Bs', 'b2Bs')
+    'b1Ht', 'b2Ht', 'b1Bl', 'b2Bl', 'b1Bs', 'b2Bs', 'Jmax')
 
 trstr <- vecpaste(trait.names)
  
@@ -76,6 +76,7 @@ for( pft in pfts){
   print('Summary of Prior distributions')
   print(prior.distns)
   priors <- rownames(prior.distns) # vector of variables with prior distributions for pft 
+  print(priors)
   prior.defs <- trait.dictionary(priors)
   save(prior.defs, file = paste(pft$outdir, '/prior.defs.Rdata', sep=''))
   
