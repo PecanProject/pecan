@@ -156,12 +156,14 @@ for(pft.name in names(trait.samples)){
                         NA, settings$sensitivity.analysis$end.year)
 
   if('sensitivity.analysis' %in% names(settings)) {
-    sa.agb[[pft.name]] <- read.sa.output(traits,
-                                         quantiles,
-                                         outdir = getwd(), 
-                                         pft.name=pft.name,
-                                         start.year,
-                                         end.year)
+    sensitivity.output[[pft.name]] <- read.sa.output(traits,
+                                                     quantiles,
+                                                     outdir = getwd(), 
+                                                     pft.name=pft.name,
+                                                     start.year,
+                                                     end.year)
+    save(sa.output, file = 'output.Rdata')
+
   }
 
   if(settings$ensemble$size > 0) {
@@ -170,7 +172,11 @@ for(pft.name in names(trait.samples)){
                                                         pft.name=pft.name,
                                                         start.year,
                                                         end.year)
+    save(ensemble.output, file = 'output.Rdata')
+  }
+  if(settings$ensemble$size > 0 & 'sensitivity.analysis' %in% names(settings)) {
+    save(ensemble.output, sa.output, file = 'output.Rdata')
   }
 }
 
-save(ensemble.output, sa.agb, file = 'output.Rdata')
+
