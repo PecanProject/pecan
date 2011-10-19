@@ -36,7 +36,7 @@ for(pft in settings$pfts){
   if('sensitivity.analysis' %in% names(settings)) {
     sensitivity.results <- sensitivity.analysis(trait.samples = trait.samples[[pft$name]],
                                                 sa.samples = sa.samples[[pft$name]],
-                                                sa.output = sa.agb[[pft$name]],
+                                                sa.output = sa.output[[pft$name]],
                                                 outdir = pft$outdir)
     sa.plots <- plot.sensitivities(sensitivity.results$sensitivity.plot.inputs,
                                    linesize = 1,
