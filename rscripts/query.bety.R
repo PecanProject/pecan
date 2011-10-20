@@ -21,10 +21,8 @@ settings <- xmlToList(settings.xml)
 if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
 require(PECAn)
 
-trait.names <- c('mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','growth_resp_factor',
-                 'leaf_turnover_rate','leaf_width','nonlocal_dispersal','fineroot2leaf','root_respiration_rate',
-                 'root_turnover_rate','seedling_mortality','SLA','stomatal_slope','Vm_low_temp','quantum_efficiency',
-                 'f_labile','c2n_leaf','water_conductance','r_fract','storage_turnover_rate','agf_bs','Vcmax')
+trait.names <- trait.dictionary()$id
+
 ## connect to database
 newcon <- function(){query.bety.con(dbname   = settings$database$name,
                                     password = settings$database$passwd,
