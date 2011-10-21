@@ -31,11 +31,7 @@ plot.sensitivity <- function(sa.sample, sa.spline, trait,
       ## plot points used to evaluate spline
       geom_point(aes(x,y), data = data.frame(x = sa.sample, y = sa.spline(sa.sample)), size = dotsize) +
         #indicate median with larger point
-<<<<<<< TREE
-        geom_point(aes(x,y), data = data.frame(x = sa.sample[median.i], y = sa.spline(sa.sample[median.i])), size = dotsize * 1.5) + 
-=======
         geom_point(aes(x,y), data = data.frame(x = sa.sample[median.i], y = sa.spline(sa.sample[median.i])), size = dotsize * 1.3) + 
->>>>>>> MERGE-SOURCE
           scale_y_continuous(limits = range(pretty(y.range)), breaks = pretty(y.range, n = 3)[1:3]) +
                 theme_bw() +
                   opts(title= trait.dictionary(trait)$figid, 
