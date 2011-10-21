@@ -318,14 +318,14 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     result <- rbind(data,data3)
   }  else {
     #########################  GENERIC CASE  ############################
-        query <- paste("select traits.id, traits.citation_id, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n, traits.date, traits.time, traits.cultivar_id, traits.specie_id from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
+    query <- paste("select traits.id, traits.citation_id, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n, traits.date, traits.time, traits.cultivar_id, traits.specie_id from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
     result <- fetch.stats2se(con, query)
   }
-
+  
   ## if result is empty, stop run
   if(!exists('result') || nrow(result)==0) stop(paste('no data in database for', trait))
-
-
+  
+  
   
   ## rename name column from treatment table to trt_id
   names(result)[names(result)=='name'] <- 'trt_id'
@@ -334,8 +334,9 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   result <- assign.controls(result)
 
   ## calculate summary statistics from experimental replicates
-  result <- summarize.result(result)
-
+  if(any(result$n == 1)){
+    result <- summarize.result(result)
+  }
   ## assign a unique sequential integer to site and trt; for trt, all controls == 0
   data <- subset(transform(result,
                            stat = as.numeric(stat),
