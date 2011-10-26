@@ -170,7 +170,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     if (spstr == "'938'"){
       data <- subset(data, subset = data$month %in% c(0,5,6,7))
     }
-    result <- drop.columns(data, c('leafT', 'canopy_layer','date','dateloc'))
+    result <- drop.columns(data, c('leafT', 'canopy_layer','dateloc'))
     
   } else if (trait == 'SLA') {
     
@@ -208,7 +208,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
       data <- subset(data, subset = data$month %in% c(0,5,6,7,8,NA))
     }
 
-    result <- drop.columns(data, 'canopy_layer')
+    result <- drop.columns(data, c('canopy_layer', 'vname'))
 
   } else if (trait == 'leaf_turnover_rate'){
     
@@ -249,7 +249,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     ## Scale to 25C using Arrhenius scaling,
     data$mean <- arrhenius.scaling(data$mean, old.temp = data$rootT, new.temp = 25)
     data$stat <- arrhenius.scaling(data$stat, old.temp = data$rootT, new.temp = 25)
-    result <- drop.columns(data, c('rootT', 'date', 'dateloc'))
+    result <- drop.columns(data, c('rootT', 'dateloc'))
     
   } else if (trait == 'c2n_leaf') {
 
