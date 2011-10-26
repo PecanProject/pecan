@@ -4,7 +4,7 @@ if(interactive()){
   if(user == 'ed'){
     settings.file = '~/pecan/fast.settings.xml'
   } else if(user == 'mantoot2'){
-    settings.file = '~/pecan/ebifarm.acru.xml'
+    settings.file = '/home/dlebauer/pecan/ebifarm.acru.xml'
   } else if(user == 'dlebauer'){
     settings.file = '~/in/ebifarm/post/settings.pavi.xml'
 #    settings.file = '~/pecan/ebifarm.acsa3.xml'
@@ -21,10 +21,8 @@ settings <- xmlToList(settings.xml)
 if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
 require(PECAn)
 
-trait.names <- c('mort2','cuticular_cond','dark_respiration_factor','plant_min_temp','growth_resp_factor',
-                 'leaf_turnover_rate','leaf_width','nonlocal_dispersal','fineroot2leaf','root_respiration_rate',
-                 'root_turnover_rate','seedling_mortality','SLA','stomatal_slope','Vm_low_temp','quantum_efficiency',
-                 'f_labile','c2n_leaf','water_conductance','r_fract','storage_turnover_rate','agf_bs','Vcmax')
+trait.names <- trait.dictionary()$id
+
 ## connect to database
 newcon <- function(){query.bety.con(dbname   = settings$database$name,
                                     password = settings$database$passwd,
@@ -41,6 +39,7 @@ for(pft in settings$pfts){
   ### exclude any parameters for which a constant is provided 
   prior.distns <- prior.distns[which(!rownames(prior.distns) %in%
                                      names(settings$pfts$pft$constants)),]
+  
   print('Summary of Prior distributions')
   print(prior.distns)
   traits <- rownames(prior.distns) # vector of variables with prior distributions for pft 
