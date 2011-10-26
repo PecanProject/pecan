@@ -19,7 +19,7 @@ plot.sensitivity <- function(sa.sample, sa.spline, trait,
                              dotsize = 2) {
   LENGTH_OUT <- 1000
   
-  units <- gsub('percent', 'fraction', get.units(trait)$units)
+  units <- trait.dictionary(trait)$units
   saplot <- ggplot()
 
   post.x <- seq(from = min(sa.sample), to = max(sa.sample), length.out = LENGTH_OUT)
@@ -31,11 +31,7 @@ plot.sensitivity <- function(sa.sample, sa.spline, trait,
       ## plot points used to evaluate spline
       geom_point(aes(x,y), data = data.frame(x = sa.sample, y = sa.spline(sa.sample)), size = dotsize) +
         #indicate median with larger point
-<<<<<<< TREE
-        geom_point(aes(x,y), data = data.frame(x = sa.sample[median.i], y = sa.spline(sa.sample[median.i])), size = dotsize * 1.5) + 
-=======
         geom_point(aes(x,y), data = data.frame(x = sa.sample[median.i], y = sa.spline(sa.sample[median.i])), size = dotsize * 1.3) + 
->>>>>>> MERGE-SOURCE
           scale_y_continuous(limits = range(pretty(y.range)), breaks = pretty(y.range, n = 3)[1:3]) +
                 theme_bw() +
                   opts(title= trait.dictionary(trait)$figid, 
@@ -75,14 +71,9 @@ plot.variance.decomposition <- function(plot.inputs, outdir,
                                         prior.plot.inputs = NULL,
                                         fontsize = list(title = 18, axis = 14)) {
   traits    <- names(plot.inputs$partial.variances)
-  units     <- get.units(traits)$units
-<<<<<<< TREE
+  units     <- trait.dictionary(traits)$units
   trait.labels <- merge(data.frame(id = traits), trait.dictionary(traits), by = 'id', sort = FALSE)$figid
-  
-=======
-  trait.labels <- trait.dictionary(traits)[,'figid']
->>>>>>> MERGE-SOURCE
-  .plot.data <- data.frame(trait.labels        = trait.labels,
+   .plot.data <- data.frame(trait.labels        = trait.labels,
                            units               = units,
                            coef.vars           = plot.inputs$coef.vars * 100,
                            elasticities        = plot.inputs$elasticities,
@@ -494,7 +485,7 @@ plot.trait <- function(trait,
   prior.color <- ifelse(plot.posterior, 'grey', 'black')
 
   ## get units for plot title
-  units <- gsub('percent', 'fraction', get.units(trait)$units)
+  units <- trait.dictionary(trait)$units
 
   base.plot <- create.base.plot() + theme_bw()
 

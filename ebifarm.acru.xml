@@ -9,6 +9,7 @@
        </exclude>
        <constants>
          <num>10</num>
+	 <fineroot2leaf>1</fineroot2leaf>
 	 <root_respiration_rate>1</root_respiration_rate>
 	 <c2n_leaf>1</c2n_leaf>
        </constants>

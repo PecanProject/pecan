@@ -170,7 +170,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     if (spstr == "'938'"){
       data <- subset(data, subset = data$month %in% c(0,5,6,7))
     }
-    result <- drop.columns(data, c('leafT', 'canopy_layer','date','dateloc'))
+    result <- drop.columns(data, c('leafT', 'canopy_layer','dateloc'))
     
   } else if (trait == 'SLA') {
     
@@ -208,7 +208,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
       data <- subset(data, subset = data$month %in% c(0,5,6,7,8,NA))
     }
 
-    result <- drop.columns(data, 'canopy_layer')
+    result <- drop.columns(data, c('canopy_layer', 'vname'))
 
   } else if (trait == 'leaf_turnover_rate'){
     
@@ -249,7 +249,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     ## Scale to 25C using Arrhenius scaling,
     data$mean <- arrhenius.scaling(data$mean, old.temp = data$rootT, new.temp = 25)
     data$stat <- arrhenius.scaling(data$stat, old.temp = data$rootT, new.temp = 25)
-    result <- drop.columns(data, c('rootT', 'date', 'dateloc'))
+    result <- drop.columns(data, c('rootT', 'dateloc'))
     
   } else if (trait == 'c2n_leaf') {
 
@@ -318,14 +318,14 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     result <- rbind(data,data3)
   }  else {
     #########################  GENERIC CASE  ############################
-        query <- paste("select traits.id, traits.citation_id, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n, traits.date, traits.time, traits.cultivar_id, traits.specie_id from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
+    query <- paste("select traits.id, traits.citation_id, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n, traits.date, traits.time, traits.cultivar_id, traits.specie_id from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
     result <- fetch.stats2se(con, query)
   }
-
+  
   ## if result is empty, stop run
   if(!exists('result') || nrow(result)==0) stop(paste('no data in database for', trait))
-
-
+  
+  
   
   ## rename name column from treatment table to trt_id
   names(result)[names(result)=='name'] <- 'trt_id'
@@ -334,8 +334,9 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   result <- assign.controls(result)
 
   ## calculate summary statistics from experimental replicates
-  result <- summarize.result(result)
-
+  if(any(result$n == 1)){
+    result <- summarize.result(result)
+  }
   ## assign a unique sequential integer to site and trt; for trt, all controls == 0
   data <- subset(transform(result,
                            stat = as.numeric(stat),
