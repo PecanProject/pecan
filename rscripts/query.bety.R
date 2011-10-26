@@ -4,7 +4,7 @@ if(interactive()){
   if(user == 'ed'){
     settings.file = '~/pecan/fast.settings.xml'
   } else if(user == 'mantoot2'){
-    settings.file = '/home/dlebauer/pecan/ebifarm.acru.xml'
+    settings.file = '/home/mantoot2/pecan/ebifarm.acru.xml'
   } else if(user == 'dlebauer'){
     settings.file = '~/in/ebifarm/post/settings.pavi.xml'
 #    settings.file = '~/pecan/ebifarm.acsa3.xml'
@@ -48,14 +48,6 @@ for(pft in settings$pfts){
   if('meta.analysis' %in% names(settings)) {
     trait.data <- query.bety.traits(spstr, traits, con = newcon())
     traits <- names(trait.data)
-  
-    ## DATA HACKS **** THESE SHOULD BE FIXED IN THE DATABASE*******
-    if("SLA" %in% names(trait.data)){
-      sel = which(trait.data[["SLA"]]$cite %in% c(311))
-      if(length(sel) > 0){
-        trait.data[["SLA"]] = trait.data[["SLA"]][-sel,]            
-      }
-    }
     save(trait.data, file = paste(pft$outdir, '/trait.data.Rdata', sep=''))
   }
   save(prior.distns, file=paste(pft$outdir, '/prior.distns.Rdata', sep = ''))
