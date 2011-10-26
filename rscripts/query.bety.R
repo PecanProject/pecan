@@ -4,7 +4,7 @@ if(interactive()){
   if(user == 'ed'){
     settings.file = '~/pecan/fast.settings.xml'
   } else if(user == 'mantoot2'){
-    settings.file = '~/pecan/ebifarm.acsa3.xml'
+    settings.file = '~/pecan/ebifarm.acru.xml'
   } else if(user == 'dlebauer'){
     settings.file = '~/in/ebifarm/post/settings.pavi.xml'
 #    settings.file = '~/pecan/ebifarm.acsa3.xml'
@@ -51,10 +51,6 @@ for(pft in settings$pfts){
     traits <- names(trait.data)
   
     ## DATA HACKS **** THESE SHOULD BE FIXED IN THE DATABASE*******
-    if("root_respiration_rate" %in% names(trait.data)){
-      sel = which(trait.data[["root_respiration_rate"]]$Y < 0.05)
-      trait.data[["root_respiration_rate"]]$Y[sel] = trait.data[["root_respiration_rate"]]$Y[sel]*1000
-    }
     if("SLA" %in% names(trait.data)){
       sel = which(trait.data[["SLA"]]$cite %in% c(311))
       if(length(sel) > 0){
