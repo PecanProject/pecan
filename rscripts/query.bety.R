@@ -4,7 +4,7 @@ if(interactive()){
   if(user == 'ed'){
     settings.file = '~/pecan/fast.settings.xml'
   } else if(user == 'mantoot2'){
-    settings.file = '~/pecan/ebifarm.acsa3.xml'
+    settings.file = '/home/dlebauer/pecan/ebifarm.acru.xml'
   } else if(user == 'dlebauer'){
     settings.file = '~/in/ebifarm/post/settings.pavi.xml'
 #    settings.file = '~/pecan/ebifarm.acsa3.xml'
@@ -39,6 +39,7 @@ for(pft in settings$pfts){
   ### exclude any parameters for which a constant is provided 
   prior.distns <- prior.distns[which(!rownames(prior.distns) %in%
                                      names(settings$pfts$pft$constants)),]
+  
   print('Summary of Prior distributions')
   print(prior.distns)
   traits <- rownames(prior.distns) # vector of variables with prior distributions for pft 
