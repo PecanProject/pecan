@@ -48,7 +48,7 @@ for(pft in settings$pfts){
   if('meta.analysis' %in% names(settings)) {
     trait.data <- query.bety.traits(spstr, traits, con = newcon())
     traits <- names(trait.data)
-    save(trait.data, file = paste(pft$outdir, '/trait.data.Rdata', sep=''))
+    save(trait.data, file = paste(pft$outdir, 'trait.data.Rdata', sep=''))
   }
-  save(prior.distns, file=paste(pft$outdir, '/prior.distns.Rdata', sep = ''))
+  save(prior.distns, file=paste(pft$outdir, 'prior.distns.Rdata', sep = ''))
 }
