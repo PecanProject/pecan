@@ -181,7 +181,7 @@ trait.dictionary <- function(traits = NULL) {
 ##' @author David LeBauer
 summarize.result <- function(result) {
   ans1 <- ddply(result[result$n==1,],
-                .(citation_id, site_id, name, control, greenhouse, date, time, cultivar_id, specie_id),
+                .(citation_id, site_id, trt_id, control, greenhouse, date, time, cultivar_id, specie_id),
                 summarise,
                 n = length(n),
                 mean = mean(mean),

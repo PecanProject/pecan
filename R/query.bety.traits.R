@@ -27,7 +27,7 @@ query.bety.traits <- function(spstr, priors, con = NULL){
   query.result <- dbSendQuery(con, query)
   traits <- fetch(query.result, n = -1)$name
  
-  traits <- unique(traits[which(traits %in% priors)])
+  traits <- unique(traits[traits %in% priors])
 
   ##*TODO
   ## Need to write query for:
