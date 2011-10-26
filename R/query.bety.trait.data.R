@@ -159,8 +159,8 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
       data <- data[data$canopy_layer >= 0.66 | is.na(data$canopy_layer), ]
     }
     
-    ## set default leafT to 25 if unknown
-    data$leafT[is.na(data$leafT)] <-  25
+    ## remove data where leafT is unknown
+    data <- data[!is.na(data$leafT), ]
 
     data$mean <- arrhenius.scaling(data$mean, old.temp = data$leafT)
     data$stat <- arrhenius.scaling(data$stat, old.temp = data$leafT)
@@ -245,6 +245,9 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     data <- append.covariate(data, 'rootT', 
         all.covs[all.covs$name == 'rootT',],
         all.covs[all.covs$name == 'airT',])
+
+    ## remove data where rootT is unknown
+    data <- data[!is.na(data$rootT), ]
     
     ## Scale to 25C using Arrhenius scaling,
     data$mean <- arrhenius.scaling(data$mean, old.temp = data$rootT, new.temp = 25)
