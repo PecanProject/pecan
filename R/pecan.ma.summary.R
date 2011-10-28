@@ -33,6 +33,6 @@ pecan.ma.summary <- function(mcmc.object, pft,outdir, threshold=1.1){
     }
     
   }
-  if(fail)stop('JAGS model failed to converge for one or more pft.')
+  if(fail)warning('JAGS model failed to converge for one or more pft.')
   sink()
 }
