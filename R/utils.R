@@ -7,7 +7,7 @@ left.pad.zeros <- function(num, digits = 5){
   return(sprintf(format_string, num))
 }
 rsync <- function(from, to, pattern=''){
-  system(paste('rsync -outi', from, to, sep = ' '), intern=TRUE)
+  system(paste('rsync -outi', from, to, sep = ' '))
 }
 ssh <- function(host, ..., args=''){
   if(host == 'localhost'){
@@ -18,13 +18,13 @@ ssh <- function(host, ..., args=''){
   system(command)
 }
 sed <- function(find, replace, dirname = getwd(), filename){
-  system(paste("sed -i 's/", find, "/", replace, "/g' ", dirname, '/', filename, sep = ''))
+  system(paste("sed -i 's/", find, "/", replace, "/g' ", dirname, filename, sep = ''))
 }
 cp  <- function(option = '', from = getwd(), to = getwd(), oldfilename, newfilename) {
   system(paste('cp', option, paste(from, oldfilename, sep = '/'), paste(to, newfilename, sep = '/')))
 }
 mkdir <- function(args = '', dir) {
-  system(paste('mkdir', args, dir))
+  system(paste('mkdir -p ', args, dir))
 }
 
 ## vecpaste, turns vector into comma delimited string fit for SQL statements. 

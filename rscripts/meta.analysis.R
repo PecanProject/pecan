@@ -33,8 +33,8 @@ if('meta.analysis' %in% names(settings)) {
   
   ## loop over pfts
   for(pft in settings$pfts){
-    load(paste(pft$outdir, '/trait.data.Rdata', sep=''))
-    load(paste(pft$outdir, '/prior.distns.Rdata', sep=''))
+    load(paste(pft$outdir, 'trait.data.Rdata', sep=''))
+    load(paste(pft$outdir, 'prior.distns.Rdata', sep=''))
     trait.average <- sapply(trait.data,function(x){mean(x$Y,na.rm=TRUE)})
     
     ## Set gamma distribution prior
@@ -51,8 +51,8 @@ if('meta.analysis' %in% names(settings)) {
 
     pecan.ma.summary(trait.mcmc, pft$name, pft$outdir)
 
-    save(trait.mcmc, file = paste(pft$outdir, '/trait.mcmc.Rdata', sep=''))
-    save(post.distns, file = paste(pft$outdir, '/post.distns.Rdata', sep = ''))  
+    save(trait.mcmc, file = paste(pft$outdir, 'trait.mcmc.Rdata', sep=''))
+    save(post.distns, file = paste(pft$outdir, 'post.distns.Rdata', sep = ''))  
 
   } ## end loop over pfts
 } else {

@@ -3,7 +3,7 @@ library(XML)
 if(interactive()){
   user <- Sys.getenv('USER')
   if(user == 'ed'){
-    settings.file = '~/in/ebifarm/prior/settings.pavi.xml'
+    settings.file = '~/in/ebifarm/fast/ebifarm.pavi.xml'
   } else if(user == 'davids14') {
     settings.file = '~/pecan/tundra.xml'
   } else {
@@ -29,31 +29,31 @@ ensemble.samples <- list()
 
 ## Remove existing config files
 
-todelete <- dir(paste(settings$pfts$pft$outdir, '/out/', sep = ''),
+todelete <- dir(paste(settings$pfts$pft$outdir, 'out/', sep = ''),
                 c('ED2INc.*','c.*'),
                 recursive=TRUE, full.names = TRUE)
-file.remove(todelete)
+if(length(todelete>0)) file.remove(todelete)
 
 
 if(host$name == 'localhost'){
   todelete <- dir(host$outdir,
                   c('ED2INc.*','c.*'),
                   recursive=TRUE, full.names = TRUE)
-  file.remove(todelete)
+  if(length(todelete>0)) file.remove(todelete)
 } else {
+  todelete <- paste(host$rundir, "*c.*", sep = '')
   system(paste("ssh -T ", host$name,
-               " '",'find ', host$rundir, 'ED2INc.* -delete',"'",sep=''))
-  system(paste("ssh -T ", host$name,
-               " '",'find ', host$rundir, 'c.* -delete',"'",sep=''))
+                " 'if ls ", todelete, " > /dev/null ; then for f in ", todelete,"; do rm $f; done; fi'",sep='')) 
+
 }
 
 ## Load priors and posteriors
 
 for (i in seq(pft.names)){
-  load(paste(outdirs[i], '/prior.distns.Rdata', sep=''))
+  load(paste(outdirs[i], 'prior.distns.Rdata', sep=''))
 
   if("trait.mcmc.Rdata" %in% dir(outdirs)) {
-    load(paste(outdirs[i], '/trait.mcmc.Rdata', sep=''))
+    load(paste(outdirs[i], 'trait.mcmc.Rdata', sep=''))
   }
 
   pft.name <- pft.names[i]
@@ -113,7 +113,7 @@ if(host$name == 'localhost'){
               overwrite = TRUE)
   }
 } else {
-  ssh(host$name, 'mkdir ', host$outdir)
+  ssh(host$name, 'mkdir -p ', host$outdir)
   system(paste('rsync -routi ', paste(outdir, 'samples.Rdata', sep=''),
         paste(host$name, ':', host$outdir, sep='')))
 }
