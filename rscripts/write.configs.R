@@ -113,7 +113,7 @@ if(host$name == 'localhost'){
               overwrite = TRUE)
   }
 } else {
-  ssh(host$name, 'mkdir -p ', host$outdir)
+  system(paste("ssh", host$name, "'mkdir -p ", host$outdir, "'"))
   system(paste('rsync -routi ', paste(outdir, 'samples.Rdata', sep=''),
         paste(host$name, ':', host$outdir, sep='')))
 }
