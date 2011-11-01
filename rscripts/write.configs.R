@@ -15,7 +15,7 @@ if(interactive()){
 settings.xml <- xmlParse(settings.file)
 settings <- xmlToList(settings.xml)
 outdir   <- settings$outdir
-host<- settings$run$host
+host <- settings$run$host
 
 if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
 library(PECAn)
@@ -34,17 +34,22 @@ todelete <- dir(paste(settings$pfts$pft$outdir, 'out/', sep = ''),
                 recursive=TRUE, full.names = TRUE)
 if(length(todelete>0)) file.remove(todelete)
 
+filename.root <- get.run.id('c.','ebifarm.pavi')
 
 if(host$name == 'localhost'){
-  todelete <- dir(host$outdir,
-                  c('ED2INc.*','c.*'),
-                  recursive=TRUE, full.names = TRUE)
-  if(length(todelete>0)) file.remove(todelete)
+  if(length(dir(host$rundir, pattern = filename.root)) > 0) {
+    todelete <- dir(host$outdir,
+                    pattern = paste(filename.root, "*[^log]", sep = ''), 
+                    recursive=TRUE, full.names = TRUE)
+    file.remove(todelete)
+  }
 } else {
-  todelete <- paste(host$rundir, "*c.*", sep = '')
-  system(paste("ssh -T ", host$name,
-                " 'if ls ", todelete, " > /dev/null ; then for f in ", todelete,"; do rm $f; done; fi'",sep='')) 
-
+  files <- system(paste("ssh ", host$name, " 'ls ", host$rundir, "*", filename.root, "*'", sep = ''), intern = TRUE)
+  if(length(files) > 0 ) {
+    todelete <- files[-grep('log', files)]
+    system(paste("ssh -T ", host$name,
+                " 'for f in ", paste(todelete, collapse = ' '),"; do rm $f; done'",sep=''))
+  }
 }
 
 ## Load priors and posteriors
@@ -113,9 +118,11 @@ if(host$name == 'localhost'){
               overwrite = TRUE)
   }
 } else {
-  system(paste("ssh", host$name, "'mkdir -p ", host$outdir, "'"))
+  
+  mkdir.cmd <- paste("'if ! ls ", host$outdir, " > /dev/null ; then mkdir -p ", host$outdir," ; fi'",sep='')
+  system(paste("ssh", host$name, mkdir.cmd))
   system(paste('rsync -routi ', paste(outdir, 'samples.Rdata', sep=''),
-        paste(host$name, ':', host$outdir, sep='')))
+               paste(host$name, ':', host$outdir, sep='')))
 }
 
  
