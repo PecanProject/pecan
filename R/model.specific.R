@@ -45,7 +45,7 @@ convert.samples.ED <- function(trait.samples){
     rrr1 <- trait.samples[['root_respiration_rate']]
     rrr2 <-  rrr1 * DEFAULT.MAINTENANCE.RESPIRATION
     trait.samples[['root_respiration_rate']] <- arrhenius.scaling(rrr2, old.temp = 25, new.temp = 15)
-    names(trait.samples)[names(trait.samples)=='root_respiration_rate']<-'root_respiration_factor'
+    names(trait.samples)[names(trait.samples)=='root_respiration_rate'] <- 'root_respiration_factor'
   }
   
   if('Vcmax' %in% names(trait.samples)) {
