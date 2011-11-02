@@ -1,5 +1,3 @@
-##TODO fix this filename restriction bug in ED, remove abbreviate.run.id.ED 
-
 ##' Abbreviates run.ids 
 ##'
 ##' For use in input files, because ED input files must be <32 characters long.
@@ -7,7 +5,6 @@
 ##' @param run.id 
 ##' @return abbreviated run.id
 abbreviate.run.id.ED <- function(run.id){
-  #TODO: remove references to specific pft names and use outdir
   run.id <- gsub('tundra.', '', run.id)
   run.id <- gsub('ebifarm.', '', run.id)
   run.id <- gsub('deciduous', 'decid', run.id)
@@ -149,7 +146,6 @@ for(pft.name in names(trait.samples)){
   quantiles.str <- quantiles.str[which(quantiles.str != '50')]
   quantiles <- as.numeric(quantiles.str)/100
 
-  ##TODO needs to be generic, to handle any model output
   start.year <- ifelse(is.null(settings$sensitivity.analysis$start.year),
                         NA, settings$sensitivity.analysis$start.year)
   end.year   <- ifelse(is.null(settings$sensitivity.analysis$end.year),
