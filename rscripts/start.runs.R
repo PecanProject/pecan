@@ -21,10 +21,9 @@ library(PECAn)
 if(is.null(settings$run$priority)|as.numeric(settings$run$priority) == 0){
   batch.jobs.script <- "bash/batch.jobs.sh"
 } else if (as.numeric(settings$run$priority) < 0) {
-  P <- as.numeric(settings$run$priority)
   file.copy("bash/batch.jobs.sh", "bash/batch.jobs.lowp.sh", overwrite = TRUE)
   ## set priority 
-  system(paste("sed -i 's/qsub/qsub\ -p\ ", P,
+  system(paste("sed -i 's/\"qsub/\"qsub\ -p\ ", settings$run$priority,
                "/g' bash/batch.jobs.lowp.sh", sep = ''))
   batch.jobs.script <- "bash/batch.jobs.lowp.sh"
 } else {
