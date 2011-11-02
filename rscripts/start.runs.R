@@ -2,9 +2,9 @@ library(XML)
 if(interactive()){
   user <- Sys.getenv('USER')
   if(user == 'dlebauer'){
-    settings.file = '~/pecan/settings.pavi.xml'
+    settings.file <- '~/in/ebifarm/post/ebifarm.pavi.xml'
   } else if(user == 'davids14') {
-    settings.file = '~/pecan/tundra.xml'
+    settings.file <- '~/pecan/tundra.xml'
   } else {
     paste('please specify settings file in meta.analysis.R')
   }
@@ -12,20 +12,30 @@ if(interactive()){
   settings.file <- Sys.getenv("PECANSETTINGS")
 }
 
-
-
 settings.xml <- xmlParse(settings.file)
 settings <- xmlToList(settings.xml)
 host     <-  settings$run$host
 if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
 library(PECAn)
 
+if(is.null(settings$run$priority)|as.numeric(settings$run$priority) == 0){
+  batch.jobs.script <- "bash/batch.jobs.sh"
+} else if (as.numeric(settings$run$priority) < 0) {
+  P <- as.numeric(settings$run$priority)
+  file.copy("bash/batch.jobs.sh", "bash/batch.jobs.lowp.sh", overwrite = TRUE)
+  ## set priority 
+  system(paste("sed -i 's/qsub/qsub\ -p\ ", P,
+               "/g' bash/batch.jobs.lowp.sh", sep = ''))
+  batch.jobs.script <- "bash/batch.jobs.lowp.sh"
+} else {
+  stop("need admin rights to set higher priority")
+}
 #Run model from user made bash script 
 if(host$name == 'localhost') {
   system(paste('cd ', host$rundir, ';',
-               settings$pecanDir, "bash/batch.jobs.sh", sep = ''))
+               settings$pecanDir, batch.jobs.script, sep = ''))
 }else{
   system(paste("echo 'cd ", host$rundir, "' | ",
-               "cat - ", settings$pecanDir, "bash/batch.jobs.sh | ",
+               "cat - ", settings$pecanDir, batch.jobs.script, " | ",
                'ssh -T ', host$name, sep = ''))
 }
