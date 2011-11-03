@@ -60,7 +60,7 @@ read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA, output.ty
   file.names <- dir(outdir, pattern=run.id, full.names=TRUE)
   file.names <- grep(paste('-', output.type, '-', sep = ''), file.names, value = TRUE)
   file.names <- grep('([0-9]{4}).*', file.names, value=TRUE)
-  if(length(file.names) == 0) stop(paste('no output files in', outdir)) 
+  if(length(file.names) == 0) warning(paste('no output files in', outdir)) 
   years <- sub('((?!-Y-).)*-Y-([0-9]{4}).*', '\\2', file.names, perl=TRUE)
   if(!is.na(start.year) && nchar(start.year) ==  4){
     file.names <- file.names[years>=as.numeric(start.year)]
@@ -137,8 +137,8 @@ left.pad.zeros <- function(num, digits = 5){
 
 
 load('samples.Rdata')
-sa.agb<-list()
-ensemble.output<-list()
+sensitivity.output <- list()
+ensemble.output    <- list()
 for(pft.name in names(trait.samples)){
   
   traits <- names(trait.samples[[pft.name]])
@@ -158,7 +158,7 @@ for(pft.name in names(trait.samples)){
                                                      pft.name=pft.name,
                                                      start.year,
                                                      end.year)
-    save(sa.output, file = 'output.Rdata')
+    save(sensitivity.output, file = 'output.Rdata')
 
   }
 
@@ -171,7 +171,7 @@ for(pft.name in names(trait.samples)){
     save(ensemble.output, file = 'output.Rdata')
   }
   if(settings$ensemble$size > 0 & 'sensitivity.analysis' %in% names(settings)) {
-    save(ensemble.output, sa.output, file = 'output.Rdata')
+    save(ensemble.output, sensitivity.output, file = 'output.Rdata')
   }
 }
 
