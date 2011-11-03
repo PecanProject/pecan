@@ -2,7 +2,7 @@ library(XML)
 if(interactive()){
   user <- Sys.getenv('USER')
   if(user == 'dlebauer'){
-    settings.file <- '~/in/ebifarm/post/ebifarm.pavi.xml'
+    settings.file <- '~/in/ebifarm/prior/ebifarm.pavi.xml'
   } else if(user == 'davids14') {
     settings.file <- '~/pecan/tundra.xml'
   } else {
@@ -18,7 +18,7 @@ host     <-  settings$run$host
 if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
 library(PECAn)
 
-if(is.null(settings$run$priority)|as.numeric(settings$run$priority) == 0){
+if(is.null(settings$run$priority)){
   batch.jobs.script <- "bash/batch.jobs.sh"
 } else if (as.numeric(settings$run$priority) < 0) {
   file.copy("bash/batch.jobs.sh", "bash/batch.jobs.lowp.sh", overwrite = TRUE)
