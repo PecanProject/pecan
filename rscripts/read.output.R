@@ -1,5 +1,3 @@
-##TODO fix this filename restriction bug in ED, remove abbreviate.run.id.ED 
-
 ##' Abbreviates run.ids 
 ##'
 ##' For use in input files, because ED input files must be <32 characters long.
@@ -7,7 +5,6 @@
 ##' @param run.id 
 ##' @return abbreviated run.id
 abbreviate.run.id.ED <- function(run.id){
-  #TODO: remove references to specific pft names and use outdir
   run.id <- gsub('tundra.', '', run.id)
   run.id <- gsub('ebifarm.', '', run.id)
   run.id <- gsub('deciduous', 'decid', run.id)
@@ -63,7 +60,7 @@ read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA, output.ty
   file.names <- dir(outdir, pattern=run.id, full.names=TRUE)
   file.names <- grep(paste('-', output.type, '-', sep = ''), file.names, value = TRUE)
   file.names <- grep('([0-9]{4}).*', file.names, value=TRUE)
-  if(length(file.names) == 0) stop(paste('no output files in', outdir)) 
+  if(length(file.names) == 0) warning(paste('no output files in', outdir)) 
   years <- sub('((?!-Y-).)*-Y-([0-9]{4}).*', '\\2', file.names, perl=TRUE)
   if(!is.na(start.year) && nchar(start.year) ==  4){
     file.names <- file.names[years>=as.numeric(start.year)]
@@ -94,9 +91,13 @@ read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA, output.ty
 read.ensemble.output <- function(ensemble.size, outdir, pft.name='', 
     start.year, end.year, read.output = read.output.ed){
   ensemble.output <- list()
-  for(ensemble.id in seq(ensemble.size)) {
+  for(ensemble.id in 1:ensemble.size) {
     run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, 5), pft.name=pft.name)#log10(ensemble.size)+1))
-    ensemble.output[[ensemble.id]] <- read.output(run.id, outdir, start.year, end.year)
+    if(any(grep('h5',dir()[grep(run.id, dir())]))) {
+      ensemble.output[[ensemble.id]] <- read.output(run.id, outdir, start.year, end.year)
+    } else {
+      ensemble.output[[ensemble.id]] <- NA
+    }
   }
   return(ensemble.output)
 }
@@ -136,7 +137,8 @@ left.pad.zeros <- function(num, digits = 5){
 
 
 load('samples.Rdata')
-sa.agb<-list()
+sensitivity.output <- list()
+ensemble.output    <- list()
 for(pft.name in names(trait.samples)){
   
   traits <- names(trait.samples[[pft.name]])
@@ -144,10 +146,33 @@ for(pft.name in names(trait.samples)){
   quantiles.str <- quantiles.str[which(quantiles.str != '50')]
   quantiles <- as.numeric(quantiles.str)/100
 
-  ##TODO needs to be generic, to handle any model output 
-  sa.agb[[pft.name]] <- read.sa.output(traits, quantiles, outdir = getwd(), 
-      pft.name=pft.name, settings$sensitivity.analysis$start.year, settings$sensitivity.analysis$end.year)
-  #ensemble.output[[pft.name]]<-read.ensemble.output(ensemble.size, outdir, 
-  #    pft.name=pft.name, start.year, end.year)
+  start.year <- ifelse(is.null(settings$sensitivity.analysis$start.year),
+                        NA, settings$sensitivity.analysis$start.year)
+  end.year   <- ifelse(is.null(settings$sensitivity.analysis$end.year),
+                        NA, settings$sensitivity.analysis$end.year)
+
+  if('sensitivity.analysis' %in% names(settings)) {
+    sensitivity.output[[pft.name]] <- read.sa.output(traits,
+                                                     quantiles,
+                                                     outdir = getwd(), 
+                                                     pft.name=pft.name,
+                                                     start.year,
+                                                     end.year)
+    save(sensitivity.output, file = 'output.Rdata')
+
+  }
+
+  if(settings$ensemble$size > 0) {
+    ensemble.output[[pft.name]] <- read.ensemble.output(settings$ensemble$size,
+                                                        outdir = getwd(), 
+                                                        pft.name=pft.name,
+                                                        start.year,
+                                                        end.year)
+    save(ensemble.output, file = 'output.Rdata')
+  }
+  if(settings$ensemble$size > 0 & 'sensitivity.analysis' %in% names(settings)) {
+    save(ensemble.output, sensitivity.output, file = 'output.Rdata')
+  }
 }
-save(sa.agb, file = 'output.Rdata')
+
+

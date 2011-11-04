@@ -3,6 +3,7 @@ pecan.ma.summary <- function(mcmc.object, pft,outdir, threshold=1.1){
     threshold = settings$meta.analysis$threshold
   }
   fail = FALSE
+  sink(file = paste(outdir,'meta-analysis.log',sep=""), append = TRUE, split = TRUE)
   for (trait in names(mcmc.object)){
     ## reordering maparms so that beta.o etc not sent to end
     .maparms <- names(mcmc.object[[trait]][1,][1][[1]])
@@ -18,7 +19,7 @@ pecan.ma.summary <- function(mcmc.object, pft,outdir, threshold=1.1){
       autocorr.plot(mcmc.object[[trait]][,i][1], xlim = c(1, 50))
     }
     dev.off()
-
+ 
     ## G-R diagnostics to ensure convergence    
     gd<-gelman.diag(mcmc.object[[trait]])
     mpsrf<-round(gd$mpsrf,digits=4)
@@ -32,5 +33,6 @@ pecan.ma.summary <- function(mcmc.object, pft,outdir, threshold=1.1){
     }
     
   }
-  if(fail)stop('JAGS model failed to converge for one or more pft.')
+  if(fail)warning('JAGS model failed to converge for one or more pft.')
+  sink()
 }

@@ -31,7 +31,7 @@
     <random.effects>FALSE</random.effects>
   </meta.analysis>
   <ensemble>
-    <size>20</size>
+    <size>0</size>
   </ensemble>
   <sensitivity.analysis></sensitivity.analysis>
   <outdir>/home/share/tests/temperate/</outdir>

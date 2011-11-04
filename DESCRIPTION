@@ -1,11 +1,11 @@
 Package: PECAn
 Type: Package
-Title:  PECAn functions used for ecological forecasts and reanalysis
-Version: 0.1.1
+Title:  PEcAn functions used for ecological forecasts and reanalysis
+Version: 1.0
 Date: 2010-10-05
-Author: David LeBauer, Xiaohui Feng, Dan Wang, Mike Dietze, Carl Davidson
+Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Mike Dietze, Carl Davidson, Rob Kooper
 Maintainer: David LeBauer <dlebauer@illinois.edu>
-Description: The Predictive Ecosystem Carbon Analyzer (PECAn) is a scientific workflow management tool that is designed to simplify the management of model parameterization, execution, and analysis. The goal of PECAn is to streamline the interaction between data and models, and to improve the efficacy of scientific investigation. 
+Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific workflow management tool that is designed to simplify the management of model parameterization, execution, and analysis. The goal of PECAn is to streamline the interaction between data and models, and to improve the efficacy of scientific investigation. 
 Depends: XML, MASS, randtoolbox, rjags, ggplot2, RMySQL, gridExtra, xtable
 Suggests: hdf5
 SystemRequirements: JAGS2.2.0, bash, ED2, kepler

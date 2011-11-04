@@ -22,7 +22,7 @@ fetch.stats2se <- function(connection, query){
 ##' @param new.temp temperature to be scaled to, default = 25 C  
 ##' @return numeric value at reference temperature
 arrhenius.scaling <- function(observed.value, old.temp, new.temp = 25){
-  return(observed.value / exp (3000 * ( 1 / (273.15 + old.temp) - 1 / (273.15 + new.temp))))
+  return(observed.value / exp (3000 * ( 1 / (273.15 + new.temp) - 1 / (273.15 + old.temp))))
 }
 
 rename.jags.columns <- function(data) {
@@ -75,12 +75,15 @@ assign.controls <- function(data){
 drop.columns <- function(data, columns){
   return(data[,which(!colnames(data) %in% columns)])
 }
-query.covariates<-function(trait.ids){
-  covariate.query<-paste("select covariates.trait_id, covariates.level,variables.name",
+query.covariates<-function(trait.ids, con = NULL, ...){
+  if(is.null(con)){
+    con <- query.bety.con(...)
+  }
+  covariate.query <- paste("select covariates.trait_id, covariates.level,variables.name",
                          "from covariates left join variables on variables.id = covariates.variable_id",
                          "where trait_id in (",vecpaste(trait.ids),")")
-  q <- dbSendQuery(con,covariate.query)
-  all.covs = fetch(q,n=-1)  
+  q <- dbSendQuery(con, covariate.query)
+  all.covs = fetch(q, n = -1)  
   return(all.covs)
 }
 
@@ -140,9 +143,9 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
  
   if(trait == 'Vcmax') {
     #########################   VCMAX   ############################
-    query <- paste("select traits.id, traits.citation_id, traits.site_id, treatments.name, month(traits.date) as month, traits.dateloc, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
+    query <- paste("select traits.id, traits.citation_id, traits.site_id, treatments.name, month(traits.date) as month, traits.dateloc, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n, traits.date, traits.time, traits.cultivar_id, traits.specie_id from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
     data <- fetch.stats2se(con, query)
-    all.covs <- query.covariates(data$id)
+    all.covs <- query.covariates(data$id, con)
     
     if(length(all.covs)>0) {
       ## get temperature covariates
@@ -156,8 +159,8 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
       data <- data[data$canopy_layer >= 0.66 | is.na(data$canopy_layer), ]
     }
     
-    ## set default leafT to 25 if unknown
-    data$leafT[is.na(data$leafT)] <-  25
+    ## remove data where leafT is unknown
+    data <- data[!is.na(data$leafT), ]
 
     data$mean <- arrhenius.scaling(data$mean, old.temp = data$leafT)
     data$stat <- arrhenius.scaling(data$stat, old.temp = data$leafT)
@@ -167,12 +170,12 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     if (spstr == "'938'"){
       data <- subset(data, subset = data$month %in% c(0,5,6,7))
     }
-    result <- drop.columns(data, c('leafT', 'canopy_layer','date','dateloc'))
+    result <- drop.columns(data, c('leafT', 'canopy_layer','dateloc'))
     
   } else if (trait == 'SLA') {
     
     #########################    SLA    ############################
-    query <- paste("select trt.id, trt.citation_id, trt.site_id, month(trt.date) as month, treat.name, treat.control, sites.greenhouse, variables.name as vname, trt.mean, trt.statname, trt.stat, trt.n from traits as trt left join treatments as treat on (trt.treatment_id = treat.id)  left join sites on (sites.id = trt.site_id) join variables on trt.variable_id = variables.id where variables.name in('LMA','SLA')  and specie_id in (",spstr,");", sep = "")
+    query <- paste("select trt.id, trt.citation_id, trt.site_id, month(trt.date) as month, treat.name, treat.control, sites.greenhouse, variables.name as vname, trt.mean, trt.statname, trt.stat, trt.n, trt.date, trt.time, trt.cultivar_id, trt.specie_id from traits as trt left join treatments as treat on (trt.treatment_id = treat.id)  left join sites on (sites.id = trt.site_id) join variables on trt.variable_id = variables.id where variables.name in('LMA','SLA')  and specie_id in (",spstr,");", sep = "")
     data <- fetch.stats2se(con, query)
 
     ## convert LMA to SLA
@@ -190,7 +193,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     }
     
     ## grab covariate data
-    all.covs = query.covariates(data$id)
+    all.covs = query.covariates(data$id, con = con)
 
     ## get canopy height covariates
     #conditional added to prevent crash when trying to transform an empty data frame
@@ -205,12 +208,12 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
       data <- subset(data, subset = data$month %in% c(0,5,6,7,8,NA))
     }
 
-    result <- drop.columns(data, 'canopy_layer')
+    result <- drop.columns(data, c('canopy_layer', 'vname'))
 
   } else if (trait == 'leaf_turnover_rate'){
     
     #########################    LEAF TURNOVER    ############################
-    query <- paste("select trt.id, trt.citation_id, variables.name as vname, trt.site_id, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n from traits as trt left join treatments as treat on (trt.treatment_id = treat.id)  left join sites on (sites.id = trt.site_id) left join variables on (variables.id = trt.variable_id) where variables.name in ('leaf_turnover_rate','leaf_longevity') and specie_id in (",spstr,");", sep = "")
+    query <- paste("select trt.id, trt.citation_id, variables.name as vname, trt.site_id, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n, trt.date, trt.time, trt.cultivar_id, trt.specie_id from traits as trt left join treatments as treat on (trt.treatment_id = treat.id)  left join sites on (sites.id = trt.site_id) left join variables on (variables.id = trt.variable_id) where variables.name in ('leaf_turnover_rate','leaf_longevity') and specie_id in (",spstr,");", sep = "")
     q    <- dbSendQuery(con, query)
     data <-  pecan.transformstats(fetch ( q, n = -1 ))
 
@@ -233,26 +236,29 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   } else if (trait == 'root_respiration_rate') {
 
     #########################  ROOT RESPIRATION   ############################
-    query <- paste("select traits.id, traits.citation_id, traits.site_id, treatments.name, month(traits.date) as month, traits.dateloc, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
+    query <- paste("select traits.id, traits.citation_id, traits.site_id, treatments.name, month(traits.date) as month, traits.dateloc, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n, traits.date, traits.time, traits.cultivar_id, traits.specie_id from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
     data <- fetch.stats2se(con, query)
 
-    all.covs = query.covariates(data$id)
+    all.covs = query.covariates(data$id, con = con)
 
     ## get temperature covariates
     data <- append.covariate(data, 'rootT', 
         all.covs[all.covs$name == 'rootT',],
         all.covs[all.covs$name == 'airT',])
+
+    ## remove data where rootT is unknown
+    data <- data[!is.na(data$rootT), ]
     
     ## Scale to 25C using Arrhenius scaling,
     data$mean <- arrhenius.scaling(data$mean, old.temp = data$rootT, new.temp = 25)
     data$stat <- arrhenius.scaling(data$stat, old.temp = data$rootT, new.temp = 25)
-    result <- drop.columns(data, c('rootT', 'date', 'dateloc'))
+    result <- drop.columns(data, c('rootT', 'dateloc'))
     
   } else if (trait == 'c2n_leaf') {
 
     #########################  LEAF C:N   ############################
 
-    query <- paste("select traits.id, traits.citation_id, variables.name as vname, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) left join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,")  and variables.name in ('c2n_leaf', 'leafN');", sep = "")
+    query <- paste("select traits.id, traits.citation_id, variables.name as vname, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n, traits.date, traits.time, traits.cultivar_id, traits.specie_id from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) left join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,")  and variables.name in ('c2n_leaf', 'leafN');", sep = "")
 
     data <- fetch.stats2se(con, query)
     leafNdata   <- data$name == 'leafN'
@@ -265,11 +271,11 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
 
     #########################  FINE ROOT ALLOCATION  ############################
     ## query Q or FRC_RC
-    query <- paste("select traits.citation_id, traits.id, variables.name as vname, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) left join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,")  and variables.name in ('fineroot2leaf', 'FRC_RC');", sep = "")
+    query <- paste("select traits.citation_id, traits.id, variables.name as vname, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n, traits.date, traits.time, traits.cultivar_id, traits.specie_id from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) left join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,")  and variables.name in ('fineroot2leaf', 'FRC_RC');", sep = "")
     data <- fetch.stats2se(con, query)
 
     ## query fine root biomass and leaf biomass
-    query <- paste("select traits.citation_id, traits.id, variables.name as vname, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n, traits.specie_id from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) left join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,")  and variables.name in ('fine_root_biomass','leaf_biomass');", sep = "")
+    query <- paste("select traits.citation_id, traits.id, variables.name as vname, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n, traits.date, traits.time, traits.cultivar_id, traits.specie_id, traits.specie_id from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) left join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,")  and variables.name in ('fine_root_biomass','leaf_biomass');", sep = "")
     data2 <- fetch.stats2se(con, query)
 
     ## match above and below ground biomass
@@ -315,14 +321,14 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     result <- rbind(data,data3)
   }  else {
     #########################  GENERIC CASE  ############################
-        query <- paste("select traits.id, traits.citation_id, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
+    query <- paste("select traits.id, traits.citation_id, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n, traits.date, traits.time, traits.cultivar_id, traits.specie_id from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) where specie_id in (", spstr,") and variable_id in ( select id from variables where name = '", trait,"');", sep = "")
     result <- fetch.stats2se(con, query)
   }
-
+  
   ## if result is empty, stop run
   if(!exists('result') || nrow(result)==0) stop(paste('no data in database for', trait))
-
-
+  
+  
   
   ## rename name column from treatment table to trt_id
   names(result)[names(result)=='name'] <- 'trt_id'
@@ -330,23 +336,29 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   result <- transform.nas(result)
   result <- assign.controls(result)
 
+  ## calculate summary statistics from experimental replicates
+  if(any(result$n == 1)){
+    result <- summarize.result(result)
+  }
   ## assign a unique sequential integer to site and trt; for trt, all controls == 0
   data <- subset(transform(result,
-                    stat = as.numeric(stat),
-                    n    = as.numeric(n),
-                    site_id = as.integer(factor(site_id, unique(site_id))),
-                    trt_id = as.integer(factor(trt_id, unique(c('control', as.character(trt_id))))),
-                    greenhouse = as.integer(factor(greenhouse, unique(greenhouse))),
-                    mean = mean,
-                    citation_id = citation_id), 
+                           stat = as.numeric(stat),
+                           n    = as.numeric(n),
+                           site_id = as.integer(factor(site_id, unique(site_id))),
+                           trt_id = as.integer(factor(trt_id, unique(c('control', as.character(trt_id))))),
+                           greenhouse = as.integer(factor(greenhouse, unique(greenhouse))),
+                           mean = mean,
+                           citation_id = citation_id), 
                  select = c('stat', 'n', 'site_id', 'trt_id', 'mean', 'citation_id', 'greenhouse')) 
-    
-  
-  if(length(data$stat[!is.na(data$stat) & data$stat <= 0.0]) > 0) {
 
-    warning(paste('there are implausible values of SE, SE <= 0 in the data and these are set to NA from citation', unique(data$citation_id[which(data$stat >= 0.0)], ' ')))
+
+  if(length(data$stat[!is.na(data$stat) & data$stat <= 0.0]) > 0) {
+    citationswithbadstats <- unique(data$citation_id[which(data$stat <= 0.0)])
+    warning.message <- paste('there are implausible values of SE: SE <= 0 \n',
+                             'for', trait, 'data from citation',citationswithbadstats,'\n',
+                             'SE <=0 set to NA \n')
+    warning(warning.message)
     print(data)
-    print(trait)
     data$stat[data$stat <= 0.0] <- NA
   }
   

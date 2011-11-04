@@ -28,7 +28,7 @@ abbreviate.run.id.ED <- function(run.id){
 convert.samples.ED <- function(trait.samples){
   DEFAULT.LEAF.C <- 0.48
   DEFAULT.MAINTENANCE.RESPIRATION <- 1/2
-  ## convert SLA from kg leaf / m2 to kg C / m2
+  ## convert SLA from m2 / kg leaf to m2 / kg C 
     
   if('SLA' %in% names(trait.samples)){
     sla <- trait.samples[['SLA']]
@@ -45,7 +45,7 @@ convert.samples.ED <- function(trait.samples){
     rrr1 <- trait.samples[['root_respiration_rate']]
     rrr2 <-  rrr1 * DEFAULT.MAINTENANCE.RESPIRATION
     trait.samples[['root_respiration_rate']] <- arrhenius.scaling(rrr2, old.temp = 25, new.temp = 15)
-    names(trait.samples)[names(trait.samples)=='root_respiration_rate']<-'root_respiration_factor'
+    names(trait.samples)[names(trait.samples)=='root_respiration_rate'] <- 'root_respiration_factor'
   }
   
   if('Vcmax' %in% names(trait.samples)) {
@@ -81,11 +81,18 @@ write.config.ED <- function(pft, trait.samples, settings, outdir, run.id){
   saveXML(xml, file = paste(outdir, xml.file.name, sep=''), 
       indent=TRUE, prefix = PREFIX_XML)
   
+  startdate <- as.Date(settings$run$start.date)
+  enddate <- as.Date(settings$run$end.date)
   ed2in.text <- scan(file = pft$edin, 
       what="character",sep='@', quote=NULL, quiet=TRUE)
+  ed2in.text <- gsub('START_MONTH', format(startdate, "%m"), ed2in.text)
+  ed2in.text <- gsub('START_DAY', format(startdate, "%d"), ed2in.text)
+  ed2in.text <- gsub('START_YEAR', format(startdate, "%Y"), ed2in.text)
+  ed2in.text <- gsub('END_MONTH', format(enddate, "%m"), ed2in.text)
+  ed2in.text <- gsub('END_DAY', format(enddate, "%d"), ed2in.text)
+  ed2in.text <- gsub('END_YEAR', format(enddate, "%Y"), ed2in.text)
   ed2in.text <- gsub('OUTDIR', settings$run$host$outdir, ed2in.text)
   ed2in.text <- gsub('ENSNAME', run.id, ed2in.text)
-  ed2in.text <- gsub('USER', system('echo $USER', intern=TRUE), ed2in.text)
   ed2in.text <- gsub('CONFIGFILE', xml.file.name, ed2in.text)
   ed2in.text <- gsub('OUTFILE', paste('out', run.id, sep=''), ed2in.text)
   ed2in.text <- gsub('HISTFILE', paste('hist', run.id, sep=''), ed2in.text)

@@ -27,11 +27,11 @@ query.bety.priors <- function(pft, trstr,out=NULL,con=NULL,...){
   rownames(priors) <- priors$name
   priors <- priors[, which(colnames(priors)!='name')]
 
-  if(!is.null(out)){
-    sink(file = paste(out,'priors.tex',sep=""), split = FALSE)
-    xtable(priors, caption="Raw table of priors")
-    sink()
-  }
+#  if(!is.null(out)){
+#    sink(file = paste(out,'priors.tex',sep=""), split = FALSE)
+#    xtable(priors, caption="Raw table of priors")
+#    sink()
+#  }
   
   return(priors)
 }
