@@ -1,7 +1,0 @@
-[client]
-user = ebi_analys_user
-password = b742xsAu
-host = ebi-forecast.igb.uiuc.edu
-
-[ebi_analysis]
-database=ebi_analysis
