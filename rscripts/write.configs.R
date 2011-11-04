@@ -2,12 +2,12 @@
 library(XML)
 if(interactive()){
   user <- Sys.getenv('USER')
-  if(user == 'dlebauer'){
-    settings.file = '/home/dlebauer/pecan/2011.07.18/settings.pavi.xml'
+  if(user == 'ed'){
+    settings.file = '~/in/ebifarm/fast/ebifarm.pavi.xml'
   } else if(user == 'davids14') {
     settings.file = '~/pecan/tundra.xml'
   } else {
-    paste('please specify settings file in meta.analysis.R')
+    paste('please specify settings file in write.configs.R')
   }
 } else {
   settings.file <- Sys.getenv("PECANSETTINGS")
@@ -15,7 +15,7 @@ if(interactive()){
 settings.xml <- xmlParse(settings.file)
 settings <- xmlToList(settings.xml)
 outdir   <- settings$outdir
-host<- settings$run$host
+host <- settings$run$host
 
 if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
 library(PECAn)
@@ -23,34 +23,42 @@ library(PECAn)
 pft.names <- unlist(xpathApply(settings.xml, '//pfts//pft//name', xmlValue))
 outdirs <- unlist(xpathApply(settings.xml, '//pfts//pft//outdir', xmlValue))
 
-##TODO determine what Rdata objects need to be loaded for this script and save 
-#it in meta.analysis.R then load it. Perhaps get the load.object/save.object fns working
-## ensemble.size 
-## for each pft
-## traits, prior distributions, trait.mcmc
-
 trait.samples <- list()
 sa.samples <- list()
 ensemble.samples <- list()
 
-#Remove existing config files locally and on  host
+## Remove existing config files
 
-todelete <- dir(paste(settings$pfts$pft$outdir, '/out/', sep = ''),
+todelete <- dir(paste(settings$pfts$pft$outdir, 'out/', sep = ''),
                 c('ED2INc.*','c.*'),
                 recursive=TRUE, full.names = TRUE)
-file.remove(todelete)
+if(length(todelete>0)) file.remove(todelete)
 
-system(paste("ssh -T ", host$name,
-             " '",'find ', host$rundir, 'ED2INc.* -delete',"'",sep=''))
-system(paste("ssh -T ", host$name,
-             " '",'find ', host$rundir, 'c.* -delete',"'",sep=''))
+filename.root <- get.run.id('c.','ebifarm.pavi')
 
+if(host$name == 'localhost'){
+  if(length(dir(host$rundir, pattern = filename.root)) > 0) {
+    todelete <- dir(host$outdir,
+                    pattern = paste(filename.root, "*[^log]", sep = ''), 
+                    recursive=TRUE, full.names = TRUE)
+    file.remove(todelete)
+  }
+} else {
+  files <- system(paste("ssh ", host$name, " 'ls ", host$rundir, "*", filename.root, "*'", sep = ''), intern = TRUE)
+  if(length(files) > 0 ) {
+    todelete <- files[-grep('log', files)]
+    system(paste("ssh -T ", host$name,
+                " 'for f in ", paste(todelete, collapse = ' '),"; do rm $f; done'",sep=''))
+  }
+}
+
+## Load priors and posteriors
 
 for (i in seq(pft.names)){
-  load(paste(outdirs[i], '/prior.distns.Rdata', sep=''))
+  load(paste(outdirs[i], 'prior.distns.Rdata', sep=''))
 
   if("trait.mcmc.Rdata" %in% dir(outdirs)) {
-    load(paste(outdirs[i], '/trait.mcmc.Rdata', sep=''))
+    load(paste(outdirs[i], 'trait.mcmc.Rdata', sep=''))
   }
 
   pft.name <- pft.names[i]
@@ -61,8 +69,11 @@ for (i in seq(pft.names)){
   } else {
     NA
   }
-  #KLUDGE: assumes mcmc for first trait is the same size as others
-  samples.num <- ifelse(exists('trait.mcmc'), nrow(as.matrix(trait.mcmc[[1]])), 20000)
+  ## trim all chains to shortest mcmc chain, else 20000 samples
+  samples.num <- ifelse(exists('trait.mcmc'),
+                        min(sapply(trait.mcmc,
+                                   function(x) nrow(as.matrix(x)))),
+                        20000)
 
   priors <- rownames(prior.distns)
   for (prior in priors) {
@@ -72,34 +83,46 @@ for (i in seq(pft.names)){
       samples <- get.sample(prior.distns[prior,], samples.num)
     }
     trait.samples[[pft.name]][[prior]] <- samples
-    }
-  }
-    
-
-  ## subset the trait.samples to ensemble size using Halton sequence 
-  if('ensemble' %in% names(settings) && settings$ensemble$size > 0) {
-    ensemble.samples[[pft.name]] <- get.ensemble.samples(settings$ensemble$size, trait.samples[[pft.name]])
-    write.ensemble.configs(settings$pfts[[i]], ensemble.samples[[pft.name]], 
-        host, outdir, settings)
-  }
-
- 
-
-  if('sensitivity.analysis' %in% names(settings)) {
-    if( is.null(settings$sensitivity.analysis)) {
-      print(paste('sensitivity analysis settings are NULL'))
-    } else {
-      quantiles <- get.quantiles(settings$sensitivity.analysis$quantiles)
-      sa.samples[[pft.name]] <-  get.sa.samples(trait.samples[[pft.name]], quantiles)
-      write.sa.configs(settings$pfts[[i]], sa.samples[[pft.name]], 
-                       host, outdir, settings)
-    }
   }
 }
 
-#Make outdirectory
-ssh(host$name, 'mkdir ', host$outdir)
-save(ensemble.samples, trait.samples, sa.samples, settings, file = paste(outdir, 'samples.Rdata', sep=''))
-rsync(paste(outdir, 'samples.Rdata', sep=''),
-      paste(host$name, ':', host$outdir, sep=''))
+
+## subset the trait.samples to ensemble size using Halton sequence 
+if('ensemble' %in% names(settings) && settings$ensemble$size > 0) {
+  ensemble.samples[[pft.name]] <- get.ensemble.samples(settings$ensemble$size, trait.samples[[pft.name]])
+  write.ensemble.configs(settings$pfts[[i]], ensemble.samples[[pft.name]], 
+                         host, outdir, settings)
+}
+
+if('sensitivity.analysis' %in% names(settings)) {
+  if( is.null(settings$sensitivity.analysis)) {
+    print(paste('sensitivity analysis settings are NULL'))
+  } else {
+    quantiles <- get.quantiles(settings$sensitivity.analysis$quantiles)
+    sa.samples[[pft.name]] <-  get.sa.samples(trait.samples[[pft.name]], quantiles)
+    write.sa.configs(settings$pfts[[i]], sa.samples[[pft.name]], 
+                     host, outdir, settings)
+  }
+}
+
+
+                                        #Make outdirectory
+save(ensemble.samples, trait.samples, sa.samples, settings,
+     file = paste(outdir, 'samples.Rdata', sep=''))
+
+if(host$name == 'localhost'){
+  if(!host$outdir == outdir) {
+    dir.create(host$outdir)
+    file.copy(from = paste(outdir, 'samples.Rdata', sep=''),
+              to   = paste(host$outdir, 'samples.Rdata', sep = ''),
+              overwrite = TRUE)
+  }
+} else {
+  
+  mkdir.cmd <- paste("'if ! ls ", host$outdir, " > /dev/null ; then mkdir -p ", host$outdir," ; fi'",sep='')
+  system(paste("ssh", host$name, mkdir.cmd))
+  system(paste('rsync -routi ', paste(outdir, 'samples.Rdata', sep=''),
+               paste(host$name, ':', host$outdir, sep='')))
+}
+
  

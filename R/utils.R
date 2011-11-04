@@ -7,20 +7,24 @@ left.pad.zeros <- function(num, digits = 5){
   return(sprintf(format_string, num))
 }
 rsync <- function(from, to, pattern=''){
-  system(paste('rsync -outi', from, to, sep = ' '), intern=TRUE)
+  system(paste('rsync -outi', from, to, sep = ' '))
 }
 ssh <- function(host, ..., args=''){
-  command<-paste('ssh -T ', host, ' "', ..., '" ', args, sep='')
+  if(host == 'localhost'){
+    command <- paste(..., args, sep='')
+  } else {
+    command <- paste('ssh -T ', host, ' "', ..., '" ', args, sep='')
+  }
   system(command)
 }
 sed <- function(find, replace, dirname = getwd(), filename){
-  system(paste("sed -i 's/", find, "/", replace, "/g' ", dirname, '/', filename, sep = ''))
+  system(paste("sed -i 's/", find, "/", replace, "/g' ", dirname, filename, sep = ''))
 }
 cp  <- function(option = '', from = getwd(), to = getwd(), oldfilename, newfilename) {
   system(paste('cp', option, paste(from, oldfilename, sep = '/'), paste(to, newfilename, sep = '/')))
 }
-mkdir <- function(dir) {
-  system(paste('mkdir', dir))
+mkdir <- function(args = '', dir) {
+  system(paste('mkdir -p ', args, dir))
 }
 
 ## vecpaste, turns vector into comma delimited string fit for SQL statements. 
@@ -48,22 +52,6 @@ listToXml <- function(item, tag){
     xml <- append.xmlNode(xml, listToXml(item[[name]], name))
   }
   return(xml)
-}
-##' Get units for a trait or set of traits
-##'
-##' @title Get Units
-##' @param traits trait or set of traits
-##' @return data.frame with trait names and trait units as provided by BETY
-##' @author David LeBauer
-get.units <- function(traits = NULL) {
-  units <- query.bety(paste('select name, units from variables where name in (',
-                            vecpaste(trait.dictionary(traits)$id),');'))
-  if(is.null(traits)){
-    units <- query.bety(paste('select name, units from variables where name in (',
-                            vecpaste(trait.dictionary()$id),');'))
-  }
-  ans <- merge(data.frame(name = traits), units, by = 'name', sort =FALSE)
-  return(ans)
 }
  
 ##' Take n random samples from prior
@@ -142,9 +130,10 @@ zero.bounded.density <- function (x, bw = "SJ") {
 #'
 #' @param traits a vector of trait names, if traits = NULL, all of the traits will be returned.
 trait.dictionary <- function(traits = NULL) {
-  defs<-data.frame(id = c("plant_min_temp", "c2n_leaf", "dark_respiration_factor", "f_labile", "growth_resp_factor", "leaf_turnover_rate", "leaf_width", "mort2", "nonlocal_dispersal", "fineroot2leaf", "quantum_efficiency", "root_respiration_rate", "root_turnover_rate", "SLA", "stomatal_slope", "Vcmax", "Vm_low_temp", "water_conductance","cuticular_cond","seedling_mortality","r_fract","storage_turnover_rate", "T"),
-      figid = c("Plant Minimum Temperature", "Leaf C:N" ,"Dark Respiration Rate", "Litter% Labile C", "Growth Respiration", "Leaf Turnover Rate", "Leaf Width", "Mortality Rate", "Seed Dispersal", "Fine Root Allocation","Quantum Efficiency", "Root Respiration Rate", "Root Turnover Rate", "Specific Leaf Area", "Stomatal Slope", "Vcmax", "Photosynthesis min temp", "Water Conductance","Cuticular Conductance", "Seedling Mortality", "Reproductive Allocation","Storage Turnover Rate","Transpiration")
-  )
+  defs<-data.frame(id = c("plant_min_temp", "c2n_leaf", "dark_respiration_factor", "f_labile", "growth_resp_factor", "leaf_turnover_rate", "leaf_width", "mort2", "nonlocal_dispersal", "fineroot2leaf", "quantum_efficiency", "root_respiration_rate", "root_turnover_rate", "SLA", "stomatal_slope", "Vcmax", "Vm_low_temp", "water_conductance","cuticular_cond","seedling_mortality","r_fract","storage_turnover_rate", "T", "agf_bs"),
+                   figid = c("Plant Minimum Temperature", "Leaf C:N" ,"Dark Respiration Rate", "Litter% Labile C", "Growth Respiration", "Leaf Turnover Rate", "Leaf Width", "Mortality Rate", "Seed Dispersal", "Fine Root Allocation","Quantum Efficiency", "Root Respiration Rate", "Root Turnover Rate", "Specific Leaf Area", "Stomatal Slope", "Vcmax", "Photosynthesis min temp", "Water Conductance","Cuticular Conductance", "Seedling Mortality", "Reproductive Allocation","Storage Turnover Rate","Transpiration", "Abovground fraction of structural biomass"),
+                   units = c("Celsius ", "ratio ", "fraction", "fraction", "fraction", "yr-1 ", "mm", "yr-1 ", "fraction", "ratio", "fraction", "umol CO2 kg-1 s-1", "yr-1 ", "m2 kg-1", "ratio ", "umol CO2 m-2 s-1", "Celsius ", "mm", "umol H2O m-2 s-1", "fraction", "fraction", "yr-1 ", "mm  H2O m-1s-1", "fraction")
+)
   if(is.null(traits)) {
     trait.defs <- defs
   } else {
@@ -181,3 +170,54 @@ trait.dictionary <- function(traits = NULL) {
 #'     return(data.frame(id=trait, figid=trait))
 #'   }
 #' }
+
+##' Identifies experimental replicates and calculates summary statistics.
+##'
+##' Used after queries in \code{\link{query.bety.trait.data}}
+##' @title Summarize Results
+##' @param result dataframe of results from query of trait data 
+##' @return dataframe with experimental replicates summarized
+##' @seealso \code{\link{query.bety.trait.data}}
+##' @author David LeBauer
+summarize.result <- function(result) {
+  ans1 <- ddply(result[result$n==1,],
+                .(citation_id, site_id, trt_id, control, greenhouse, date, time, cultivar_id, specie_id),
+                summarise,
+                n = length(n),
+                mean = mean(mean),
+                statname = ifelse(length(n)==1,'none','SE'),
+                stat = sd(mean)/sqrt(length(n)))
+  ans2 <- result[result$n!=1,which(colnames(result) %in% colnames(ans1))]
+  return(rbind(ans1, ans2))
+}
+  
+##' @title calculate mean and variance statistics from a known distribution 
+##' @param distn name of distribution used by R (beta, f, gamma, lnorm, norm, weibull) 
+##' @param A first parameter 
+##' @param B second parameter
+##' @return list with mean, variance, and 95% CI
+##' @author David LeBauer
+pdf.stats <- function(distn, A, B) {
+  mean <- switch(distn,
+                 gamma   = A/B,
+                 lnorm   = exp(A + 1/2 * B^2),
+                 beta    = A/(A+B),
+                 weibull = B * gamma(1 + 1/A),
+                 norm    = A,
+                 f       = ifelse(B>2, B/(B - 2), mean(rf(10000, A, B)))
+                 )
+  var <- switch(distn,
+                gamma   = A/B^2,
+                lnorm   = exp(2*A + B^2) * (exp(B^2) - 1),
+                beta    =  A*B/((A+B)^2 * (A + B + 1)),
+                weibull = B^2 * (gamma(1 + 2 / A) - gamma(1 + 1/A)^2),
+                norm    = B^2,
+                f       = ifelse(B>4, 2*B^2*(A+B-2) / (A*(B-2)^2*(B-4)), var(rf(100000, A, B)))
+                )
+  qci  <- get(paste("q", distn, sep = ""))
+  ci <- qci(c(0.025, 0.975), A, B)
+  lcl <- ci[1]
+  ucl <- ci[2]
+  out  <- unlist(list(mean = mean, var = var, lcl = lcl, ucl = ucl)) 
+  return(out)
+}

@@ -3,7 +3,7 @@
 ! ED2IN template for use with PECAn
 !------------------------------------------------------------------------------------------!
 
-   NL%EXPNME = 'ED 2.1 PECAn run PAVI2 Soy FACE ENSNAME'   ! Simulation name
+   NL%EXPNME = 'ED 2.1 PECAn run PAVI2 Soy FACE @ENSNAME@'   ! Simulation name
 
    NL%RUNTYPE  = 'INITIAL'   ! Runtype: either INITIAL or HISTORY
                              ! 'INITIAL' - Starts a new run, that can be based on a previous
@@ -15,17 +15,17 @@
                              !             history will be used here.
 
 !----- Start of simulation (RUNTYPE=initial only) -----------------------------------------!
-   NL%IMONTHA  = 01        ! Month
-   NL%IDATEA   = 01        ! Day
-   NL%IYEARA   = 1995      ! 
-   NL%ITIMEA   = 0000      ! UTC
+   NL%IMONTHA  = @START_MONTH@ ! Month
+   NL%IDATEA   = @START_DAY@   ! Day
+   NL%IYEARA   = @START_YEAR@  ! 
+   NL%ITIMEA   = 0000        ! UTC
 
 !----- End of simulation ------------------------------------------------------------------!
 
-   NL%IMONTHZ  = 12       ! Month
-   NL%IDATEZ   = 01       ! Day
-   NL%IYEARZ   = 2006     ! Year
-   NL%ITIMEZ   = 0000     ! UTC
+   NL%IMONTHZ  = @END_MONTH@   ! Month
+   NL%IDATEZ   = @END_DAY@     ! Day
+   NL%IYEARZ   = @END_YEAR@    ! Year
+   NL%ITIMEZ   = 0000        ! UTC
 !------------------------------------------------------------------------------------------!
 
 
@@ -84,7 +84,7 @@
 
 !----- You can pinpoint individual locations, known as SOI. -------------------------------!
    NL%N_SOI    =    1   ! number of sites of interest (SOIs).  This could be zero.
-                
+!RK INPUT                
    NL%SOI_LAT  =  40.06 ! list of the latitudes of the SOIs (degrees north)
    NL%SOI_LON  = -88.20 ! list of the longitudes of the SOIs (degrees east)
 !------------------------------------------------------------------------------------------!
@@ -95,7 +95,7 @@
  
    NL%IFOUTPUT  =  0            ! Instantaneous analysis (site average)
    NL%IDOUTPUT  =  0            ! Daily means (site average)
-   NL%IMOUTPUT  =  0            ! Monthly means (site average)
+   NL%IMOUTPUT  =  3            ! Monthly means (site average)
    NL%IYOUTPUT  =  3            ! Annual output
    NL%ISOUTPUT  =  0            ! History files
                                 ! 0 - no file;
@@ -141,8 +141,8 @@
 !------------------------------------------------------------------------------------------!
 ! Analysis/history/restart file: path, prefix, settings                                    !
 !------------------------------------------------------------------------------------------!
-   NL%FFILOUT = 'OUTDIR/OUTFILE'         ! Analysis output prefix
-   NL%SFILOUT   = 'OUTDIR/HISTFILE'           ! History output prefix
+   NL%FFILOUT = '@OUTDIR@/@OUTFILE@'         ! Analysis output prefix
+   NL%SFILOUT   = '@OUTDIR@/@HISTFILE@'           ! History output prefix
 
    NL%IED_INIT_MODE   = 0
    !---------------------------------------------------------------------------------------!
@@ -181,7 +181,8 @@
                          
    NL%EDRES  = 1.0                     ! ED2/ED1 restart grid resolution
 
-    NL%SFILIN   = '/home/scratch/dlebauer/pecan/edin/ebifarm/ebifarm.'
+!RK SYSTEM
+!   NL%SFILIN   = '/home/scratch/dlebauer/pecan/edin/ebifarm/ebifarm.'
 
 !----- Time of the history start ----------------------------------------------------------!
   !planting 2002
@@ -237,13 +238,20 @@
 !  Input databases                                                                         !
 !------------------------------------------------------------------------------------------!
 
+!RK INPUT
+   ! On ebi-cluster
    NL%VEG_DATABASE = '/home/mdietze/data/oge2OLD/OGE2_'
    NL%SOIL_DATABASE = '/home/share/faoOLD/FAO_'
    NL%ED_INPUTS_DIR   = '/home/share/dietze_lab/ed_db/ed_inputs/'
+   ! On pecan VM
+   !   NL%VEG_DATABASE = '/home/@USER@/oge2OLD/OGE2_'
+   !   NL%SOIL_DATABASE = '/home/@USER@/faoOLD/FAO_'
+   !   NL%ED_INPUTS_DIR   = '/home/@USER@/ed_inputs/'
                     ! Directory where chd, dgd and glu data are kept.
 
 !----- File containing information for meteorological drivers -----------------------------!
-   NL%ED_MET_DRIVER_DB   = '/home/scratch/dlebauer/pecan/edin/ebifarm/met/ED_MET_DRIVER_HEADER'
+!RK INPUT
+   NL%ED_MET_DRIVER_DB   = '/home/pecan/ebifarm/met/ED_MET_DRIVER_HEADER'
 
 
    NL%SOILSTATE_DB=''
@@ -451,8 +459,8 @@
 !------------------------------------------------------------------------------------------!
 
    NL%IMETTYPE  = 1          ! 0 = ASCII, 1 = HDF5
-   NL%METCYC1         = 2002 ! First year of met data
-   NL%METCYCF         = 2006 ! Last year of met data
+   NL%METCYC1         = @START_YEAR@ ! First year of met data
+   NL%METCYCF         = @END_YEAR@ ! Last year of met data
    NL%ISHUFFLE  = 0          ! How to choose an year outside the met data range:
                              ! 0. Sequentially cycle over years
                              ! 1. Randomly pick the years, using the same sequence
