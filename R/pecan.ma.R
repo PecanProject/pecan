@@ -1,6 +1,6 @@
 ##' Runs heirarchical meta-analysis of plant trait data 
 ##'
-##' pecan.ma runs a heirarchical Bayes meta-analytical model.
+##' \code{pecan.ma} runs a heirarchical Bayes meta-analytical model.
 ##' This model combines prior information with data from studies on the particular species or group of interest.
 ##' Data that is incorporated into the meta-analysis include the mean (Y), sample size (n),
 ##' and precision (obs.prec). 
@@ -20,7 +20,7 @@
 ##' @param outdir 
 ##' @param overdispersed TRUE by default, if set to FALSE, data mean will be used as starting point for MCMC chains (use with caution)
 ##' @return four chains with 5000 total samples from posterior 
-##' @author David LeBauer
+##' @author David LeBauer, Michael C. Dietze
 ##'
 ##' @examples
 ##' prior.distns <- query.bety.priors('ebifarm.c4crop', c('SLA', 'c2n_leaf'))

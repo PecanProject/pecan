@@ -3,9 +3,11 @@
 ##' Given a connection and a query, will return a query as a data frame
 ##' @title Query BETY
 ##' @param query SQL query string
-##' @param con connection
-##' @param ... additional arguments passed to dbConnect (e.g. password, database)
+##' @param con database connection object
+##' @param ... optional arguments for connecting to database (e.g. password, user name, database)
 ##' @return data frame with query results
+##' @examples
+##' query.bety('select count(id) from traits;')
 query.bety <- function(query,con=NULL,...){
   if(is.null(con)){
     con <- query.bety.con(...)
@@ -14,16 +16,31 @@ query.bety <- function(query,con=NULL,...){
   data <- fetch(q, n=-1)
   return(data)
 }
+##' Creates database connection object.
+##'
+##' Also removes any existing connections. 
+##' @title Query BETY connection
+##' @param ... optional arguments for connecting to database (e.g. password, user name, database)
+##' @return database connection object
+##' @examples
+##' con <- query.bety.con()
+query.bety.con <- function (...) {
+    lapply(dbListConnections(MySQL()), dbDisconnect)
+    dvr <- dbDriver("MySQL")
+    con <- dbConnect(dvr, group = "ebi_analysis", ...)
+    return(con)
+}
 
 ##'  select plant id's associated with pft
 ##'
 ##' @title Query species given pft name 
 ##' @param pft string pft name
 ##' @param con database connection
-##' @param ... arguments passed to query.bety.con
+##' @param ... optional arguments for connecting to database (e.g. password, user name, database)
 ##' @return string of species.id for species associated with pft
+##' @examples
+##' query.bety.pft_species('ebifarm.pavi')
 query.bety.pft_species <- function(pft,con=NULL,...){
-
   if(is.null(con)){
     con <- query.bety.con(...)
   }
@@ -35,8 +52,17 @@ query.bety.pft_species <- function(pft,con=NULL,...){
   spstr <- vecpaste(species$id)
   return(spstr)
 }
-
-query.bety.priors <- function(pft, trstr,out=NULL,con=NULL,...){
+##' Query priors associated with a string of traits and plant functional type
+##'
+##' @title Query Priors
+##' @param pft String name of the PFT in the database
+##' @param trstr string of traits to query priors for
+##' @param con database connection, can be list of arguments for connecting to database
+##' @param ... optional arguments for connecting to database (e.g. password, user name, database)
+##' @return return priors for a given pft
+##' @examples
+##' query.bety.priors('ebifarm.pavi', c('SLA', 'Vcmax', 'leaf_width'))
+query.bety.priors <- function(pft, trstr, con=NULL,...){
   if(is.null(con)){
     con <- query.bety.con(...)
   }

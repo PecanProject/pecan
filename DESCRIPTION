@@ -32,7 +32,6 @@ Collate:
     'dtheta.q.R'
     'help.R'
     'model.specific.R'
-    'pdf.stats.R'
     'pecan.arrange.R'
     'pecan.dtheta.R'
     'pecan.ma.R'
