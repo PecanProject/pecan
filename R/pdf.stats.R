@@ -1,5 +1,10 @@
-##' @title calculate stats from a distribution 
-##' @param distn name of distribution used by R (beta, f, gamma, lnorm, norm, weibull) 
+##' Takes a standard proability function and returns mean, variance, and 95\%CI
+##'
+##' Probability density function summary statistics calculated, currently implemented for a subset of
+##' the following distributions: beta, f, gamma, lnorm, norm, weibull
+##' @title calculate stats from a distribution
+##' @name pdf.stats
+##' @param distn name of distribution 
 ##' @param A first parameter 
 ##' @param B second parameter
 ##' @return list with mean, variance, and 95% CI

@@ -1,10 +1,11 @@
 PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
 
-#As is the case with ED, input files must be <32 characters long.
-#this function abbreviates run.ids for use in input files
-##TODO fix this filename restriction bug in ED, remove abbreviate.run.id.ED 
+##' Abbreviate run id to ed limits
+##'
+##' As is the case with ED, input files must be <32 characters long.
+##' this function abbreviates run.ids for use in input files
+##' @param run.id string indicating nature of the run
 abbreviate.run.id.ED <- function(run.id){
-  #TODO: remove references to specific pft names and use outdir
   run.id <- gsub('tundra.', '', run.id)
   run.id <- gsub('ebifarm.', '', run.id)
   run.id <- gsub('deciduous', 'decid', run.id)
@@ -20,11 +21,17 @@ abbreviate.run.id.ED <- function(run.id){
   run.id <- gsub('stomatalslope', 'stmslope', run.id)
   run.id <- gsub('nonlocaldispersal', 'nldisprs', run.id)
   run.id <- gsub('quantumefficiency', 'quantef', run.id)
-  
   return(run.id)
-} 
-#Performs model specific unit conversions on a a list of trait values,
-#such as those provided to write.config
+}
+
+
+##' convert parameters from BETY default units to ED defaults
+##' 
+##' Performs model specific unit conversions on a a list of trait values,
+##' such as those provided to write.config
+##' @title Convert samples for ed
+##' @param trait.samples a matrix or dataframe of samples from the trait distribution
+##' @return matrix or dataframe with values transformed
 convert.samples.ED <- function(trait.samples){
   DEFAULT.LEAF.C <- 0.48
   DEFAULT.MAINTENANCE.RESPIRATION <- 1/2
@@ -59,9 +66,19 @@ convert.samples.ED <- function(trait.samples){
   }
   return(trait.samples)
 }
-#Writes an xml and ED2IN config files for use with the Ecological Demography model.
-#Requires a pft xml object, a list of trait values for a single model run,
-#and the name of the file to create
+
+##' Writes an xml and ED2IN config files for use with the Ecological Demography model.
+##'
+##' Requires a pft xml object, a list of trait values for a single model run,
+##' and the name of the file to create
+##' @title Write ED configuration files
+##' @param pft 
+##' @param trait.samples vector of samples for a given trait
+##' @param settings list of settings from pecan settings file
+##' @param outdir directory for config files to be written to
+##' @param run.id id of run
+##' @return configuration file and ED2IN namelist for given run
+##' @author David
 write.config.ED <- function(pft, trait.samples, settings, outdir, run.id){
   xml <- listToXml(pft$constants, 'pft')
   for (trait in names(trait.samples)) {

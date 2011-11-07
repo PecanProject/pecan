@@ -10,7 +10,6 @@
 ##' @param prior.sa.spline similar to sa.spline, but for prior trait distribution. 
 ##' @param fontsize (optional) list with three arguments that can be set to vary the fontsize of the title, axis labels, and axis title in the sensitivity plots
 ##' @return object of class ggplot
-##' @author David LeBauer
 plot.sensitivity <- function(sa.sample, sa.spline, trait,
                              y.range = c(0,50), median.i = 4,
                              prior.sa.sample = NULL, prior.sa.spline = NULL,
@@ -212,8 +211,7 @@ if(!is.null(prior.plot.inputs)) {
 ##' @title Plot Sensitivities
 ##' @param sensitivity.results list containing sa.samples and sa.splines 
 ##' @param outdir 
-##' @return outputs plots in outdir/sensitivity.analysis.pdf file 
-##' @author David LeBauer
+##' @return outputs plots in outdir/sensitivity.analysis.pdf 
 plot.sensitivities <- function(sensitivity.plot.inputs, outdir, prior.sensitivity.plot.inputs = NULL, ...){
   sa.samples <- sensitivity.plot.inputs$sa.samples
   sa.splines <- sensitivity.plot.inputs$sa.splines
@@ -260,11 +258,11 @@ plot.sensitivities <- function(sensitivity.plot.inputs, outdir, prior.sensitivit
 ##' @param rx  is the range used for the left of the left-most bin to the right of the right-most bin  
 ##' @param eps used to set artificial bound on min width / max height of bins as described in Denby and Mallows (2009) on page 24.
 ##' @param xlab is label for the x axis 
-##' @param plot = T produces the plot, F returns the heights, breaks and counts
-##' @param lab.spikes = T labels the % of data in the spikes
+##' @param plot = TRUE produces the plot, FALSE returns the heights, breaks and counts
+##' @param lab.spikes = TRUE labels the \% of data in the spikes
 ##' @return list with two elements, heights of length n and breaks of length n+1 indicating the heights and break points of the histogram bars. 
 ##' @author Lorraine Denby, Colin Mallows
-##' @references Lorraine Denby, Colin Mallows. Journal of Computational and Graphical Statistics. March 1, 2009, 18(1): 21-31. doi:10.1198/jcgs.2009.0002. \url{http://pubs.amstat.org/doi/pdf/10.1198/jcgs.2009.0002}
+##' @references Lorraine Denby, Colin Mallows. Journal of Computational and Graphical Statistics. March 1, 2009, 18(1): 21-31. doi:10.1198/jcgs.2009.0002.
 dhist<-function(x, a=5*iqr(x),
                 nbins=nclass.Sturges(x), rx = range(x,na.rm = TRUE),
                 eps=.15, xlab = "x", plot = TRUE,lab.spikes = TRUE)
@@ -303,9 +301,11 @@ dhist<-function(x, a=5*iqr(x),
                                         # will be 2 for obs. that straddle two bins
     straddlers <- (1:n)[checksum == 2]
                                         # to allow for zero counts
-    if(length(straddlers) > 0) counts <- table(c(1:nbins, cmtx[
-                                                               - straddlers, 1])) else counts <- table(c(
-                                                                                                         1:nbins, cmtx[, 1]))
+    if(length(straddlers) > 0) {
+      counts <- table(c(1:nbins, cmtx[ - straddlers, 1]))
+    } else {
+      counts <- table(c(1:nbins, cmtx[, 1]))
+    }
     counts <- counts - 1
                                         #
     if(length(straddlers) > 0) {
@@ -345,13 +345,12 @@ dhist<-function(x, a=5*iqr(x),
     }
     else flag.vec<-flag.vec[-length(flag.vec)]
     widths <- abs(diff(xbr))
-                                        # N.B. argument "widths" in barplot must be xbr
+    ## N.B. argument "widths" in barplot must be xbr
     heights <- counts/widths
   }
   bin.size <- length(x)/nbins
-  cut.pt <- unique(c(min(x) - abs(min(x))/1000, approx(seq(length(
-                                                                  x)), x, (1:(nbins - 1)) * bin.size, rule = 2)$y, max(
-                                                                                                        x)))
+  cut.pt <- unique(c(min(x) - abs(min(x))/1000,
+                     approx(seq(length(x)), x, (1:(nbins - 1)) * bin.size, rule = 2)$y, max(x)))
   aa <- hist(x, breaks = cut.pt, plot = FALSE, probability = TRUE)
   if(a == Inf) {
     heights <- aa$counts
@@ -403,7 +402,7 @@ dhist<-function(x, a=5*iqr(x),
 
 ##' Calculate interquartile range
 ##'
-##' Calculates the 25th and 75th quantiles given a vector x; used in function \link{dhis}.
+##' Calculates the 25th and 75th quantiles given a vector x; used in function \link{dhist}.
 ##' @title Interquartile range
 ##' @param x vector
 ##' @return numeric vector of length 2, with the 25th and 75th quantiles of input vector x. 
@@ -417,6 +416,16 @@ create.base.plot <- function() {
   base.plot <- ggplot()
   return(base.plot)
 }
+##' Plots a prior density from a parameterized probability distribution  
+##'
+##' @title 
+##' @param prior dataframe or list with density name and parameters
+##' @param base.plot existing plot, new plot will be generated if left at default NULL
+##' @param prior.color 
+##' @return plot with prior density added
+##' @seealso \link{\code{pr.dens}}
+##' @examples
+##' add.prior.density(c('norm', 0, 1))
 add.prior.density <- function(prior, base.plot = NULL, prior.color = 'black') {
   if(is.null(base.plot)) base.plot <- create.base.plot()
   prior.density <- do.call(pr.dens, prior)
@@ -432,7 +441,6 @@ add.prior.density <- function(prior, base.plot = NULL, prior.color = 'black') {
 ##' @param sample 
 ##' @param ... additional arguments to density 
 ##' @return data frame with x and y
-##' @author David LeBauer
 create.density.df <- function(sample, zero.bounded = FALSE) {
   if(zero.bounded) {
     new.density <- zero.bounded.density(sample)
@@ -445,6 +453,12 @@ create.density.df <- function(sample, zero.bounded = FALSE) {
   return(density.df)
 }
   
+##'  Add posterior density to a plot
+##'
+##' @title Add posterior density. 
+##' @param posterior.density 
+##' @param base.plot 
+##' @return 
 add.posterior.density <- function(posterior.density, base.plot = NULL) {
   if(is.null(base.plot)) base.plot <- create.base.plot()
   new.plot <- base.plot +  geom_line(data = posterior.density,
@@ -452,6 +466,17 @@ add.posterior.density <- function(posterior.density, base.plot = NULL) {
   return(new.plot)  
 }
 
+##' Add data to an existing plot or create a new one from \link{\code{base.plot}}
+##'
+##' Used to add raw data or summary statistics to the plot of a distribution.
+##' The height of Y is arbitrary, and can be set to optimize visualization.
+##' If SE estimates are available, tehse wil be plotted
+##' @title Add data to plot 
+##' @param trait.data data to be plotted
+##' @param base.plot plot created by \link{\code{base.plot}}
+##' @param ymax maximum height of y
+##' @seealso \link{\code{base.plot}}
+##' @return updated plot object
 add.data <- function(trait.data, base.plot = NULL, ymax) {
   if(is.null(base.plot)) base.plot <- create.base.plot()
   plot.data <- with(trait.data,
@@ -471,7 +496,6 @@ add.data <- function(trait.data, base.plot = NULL, ymax) {
 ##' @param posterior.sample 
 ##' @param trait.df 
 ##' @return plot (grob) object
-##' @author David LeBauer
 plot.trait <- function(trait,
                        prior,
                        posterior.sample = NULL,
@@ -549,10 +573,9 @@ plot.trait <- function(trait,
 ##' @param sensitivity.results list containing sa.samples and sa.splines 
 ##' @param outdir 
 ##' @return outputs plots in outdir/sensitivity.analysis.pdf file 
-##' @author David LeBauer
 plot.densities <- function(density.plot.inputs, outdir, ...){
   trait.samples          <- density.plot.inputs$trait.samples
-  trait.df             <- density.plot.inputs$trait.df
+  trait.df               <- density.plot.inputs$trait.df
   prior.trait.samples    <- density.plot.inputs$trait.df
   
   traits <- names(trait.samples)
