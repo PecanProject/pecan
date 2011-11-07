@@ -1,14 +1,37 @@
 #Small, miscellaneous functions for use throughout PECAn
 
-#returns a string representing a given number 
-#left padded by zeros up to a given number of digits
+#
+#
+##' left padded by zeros up to a given number of digits.
+##'
+##' returns a string representing a given number 
+##' @title Left Pad Zeros
+##' @param num number to be padded (integer)
+##' @param digits number of digits to add
+##' @return num with zeros to the left
+##' @author Carl Davidson
 left.pad.zeros <- function(num, digits = 5){
   format_string <- paste('%',sprintf('0%.0f.0f',digits),sep='')
   return(sprintf(format_string, num))
 }
+##' R implementation of rsync
+##'
+##' rsync is a file copying tool in bash
+##' @title rsync 
+##' @param from source 
+##' @param to destination
+##' @param pattern file pattern to be matched 
+##' @return 
+
 rsync <- function(from, to, pattern=''){
   system(paste('rsync -outi', from, to, sep = ' '))
 }
+##' R implementation of SSH
+##'
+##' @title SSH
+##' @param host 
+##' @param ... 
+##' @param args 
 ssh <- function(host, ..., args=''){
   if(host == 'localhost'){
     command <- paste(..., args, sep='')
@@ -17,21 +40,26 @@ ssh <- function(host, ..., args=''){
   }
   system(command)
 }
-sed <- function(find, replace, dirname = getwd(), filename){
-  system(paste("sed -i 's/", find, "/", replace, "/g' ", dirname, filename, sep = ''))
-}
-cp  <- function(option = '', from = getwd(), to = getwd(), oldfilename, newfilename) {
-  system(paste('cp', option, paste(from, oldfilename, sep = '/'), paste(to, newfilename, sep = '/')))
-}
-mkdir <- function(args = '', dir) {
-  system(paste('mkdir -p ', args, dir))
-}
 
-## vecpaste, turns vector into comma delimited string fit for SQL statements. 
+
+##' Convert vector to comma delimited string
+##'
+##' ## vecpaste, turns vector into comma delimited string fit for SQL statements.
+##' @title vecpaste
+##' @param x vector
+##' @return comma delimited string
 vecpaste <- function(x) paste(paste("'", x, "'", sep=''), collapse=',')
 
-#returns an id representing a model run
-#for use in model input files and indices
+##' returns an id representing a model run
+##'
+##' for use in model input files and indices
+##' @title Get Run ID
+##' @param run.type 
+##' @param index 
+##' @param trait 
+##' @param pft.name 
+##' @return 
+##' @author Carl Davidson
 get.run.id <- function(run.type, index, trait='', pft.name=''){
   run.id <- paste(pft.name, run.type, trait, index, sep='')
   return(abbreviate.run.id.ED(run.id))
@@ -39,7 +67,7 @@ get.run.id <- function(run.type, index, trait='', pft.name=''){
 
 ##' Convert List to XML
 ##'
-##' .. content for \details{} ..
+##' Can convert list or other object to an xml object using xmlNode
 ##' @title List to XML
 ##' @param item 
 ##' @param tag xml tag
@@ -122,13 +150,13 @@ zero.bounded.density <- function (x, bw = "SJ") {
   return(g)
 }
 
-#' Dictionary of terms used to identify traits in ed, filenames, and figures 
-#'
-#' @return a dataframe with id, the name used by ED and BETY for a parameter; fileid, an abbreviated  
-#'     name used for files; figid, the parameter name written out as best known in english for figures 
-#'     and tables.
-#'
-#' @param traits a vector of trait names, if traits = NULL, all of the traits will be returned.
+##' Dictionary of terms used to identify traits in ed, filenames, and figures 
+##'
+##' @return a dataframe with id, the name used by ED and BETY for a parameter; fileid, an abbreviated  
+##'     name used for files; figid, the parameter name written out as best known in english for figures 
+##'     and tables.
+##'
+##' @param traits a vector of trait names, if traits = NULL, all of the traits will be returned.
 trait.dictionary <- function(traits = NULL) {
   defs<-data.frame(id = c("plant_min_temp", "c2n_leaf", "dark_respiration_factor", "f_labile", "growth_resp_factor", "leaf_turnover_rate", "leaf_width", "mort2", "nonlocal_dispersal", "fineroot2leaf", "quantum_efficiency", "root_respiration_rate", "root_turnover_rate", "SLA", "stomatal_slope", "Vcmax", "Vm_low_temp", "water_conductance","cuticular_cond","seedling_mortality","r_fract","storage_turnover_rate", "T", "agf_bs"),
                    figid = c("Plant Minimum Temperature", "Leaf C:N" ,"Dark Respiration Rate", "Litter% Labile C", "Growth Respiration", "Leaf Turnover Rate", "Leaf Width", "Mortality Rate", "Seed Dispersal", "Fine Root Allocation","Quantum Efficiency", "Root Respiration Rate", "Root Turnover Rate", "Specific Leaf Area", "Stomatal Slope", "Vcmax", "Photosynthesis min temp", "Water Conductance","Cuticular Conductance", "Seedling Mortality", "Reproductive Allocation","Storage Turnover Rate","Transpiration", "Abovground fraction of structural biomass"),
@@ -141,35 +169,14 @@ trait.dictionary <- function(traits = NULL) {
   }
   return(trait.defs)
 }
-
-
-#' @examples
-#' #translate a parameter name
-#' trait.dictionary(c('growth_resp_factor'))
-#' trait.dictionary(c('growth_resp_factor'))$figid
-#' 
-#' #append the names to a dataframe of priors
-#' priors <- query.bety("select priors.id, name, phylogeny, distn, parama, paramb, from priors join variables
-#'                       on priors.variable_id = variables.id where priors.id in
-#'                       (select prior_id from pfts_priors where pft_id = 10);")
-#' data.frame(name = trait.dictionary(priors$name)$figid, priors)
-#'
-#' 
-
-#' do.call(rbind, lapply(traits, .trait.dictionary))
-#' 
-#' .trait.dictionary<-function(trait)
-#' {
-#'   defs<-data.frame(id = c("plant_min_temp", "c2n_leaf", "dark_respiration_factor", "f_labile", "growth_resp_factor", "leaf_turnover_rate", "leaf_width", "mort2", "nonlocal_dispersal", "fineroot2leaf", "quantum_efficiency", "root_respiration_rate", "root_turnover_rate", "SLA", "stomatal_slope", "Vcmax", "Vm_low_temp", "water_conductance","cuticular_cond","seedling_mortality","r_fract","storage_turnover_rate", "T"),
-#'       figid = c("Plant Minimum Temperature", "Leaf C:N" ,"Dark Respiration Rate", "Litter% Labile C", "Growth Respiration", "Leaf Turnover Rate", "Leaf Width", "Mortality Rate", "Seed Dispersal", "Fine Root Allocation","Quantum Efficiency", "Root Respiration Rate", "Root Turnover Rate", "Specific Leaf Area", "Stomatal Slope", "Vcmax", "Photosynthesis min temp", "Water Conductance","Cuticular Conductance", "Seedling Mortality", "Reproductive Allocation","Storage Turnover Rate","Transpiration")
-#'   )
-#'   if(trait %in% defs$id) {
-#'     return(defs[defs$id == trait,])
-#'   }
-#'   else{
-#'     return(data.frame(id=trait, figid=trait))
-#'   }
-#' }
+##' @examples
+##' # convert parameter name to a string appropriate for end-use plotting 
+##' trait.dictionary('growth_resp_factor')
+##' trait.dictionary('growth_resp_factor')$figid
+##'
+##' # get a list of all traits and units in dictionary
+##' trait.dictionary()[,c('figid', 'units')]
+##' 
 
 ##' Identifies experimental replicates and calculates summary statistics.
 ##'
