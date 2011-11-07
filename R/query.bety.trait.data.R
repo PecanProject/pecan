@@ -42,16 +42,21 @@ rename.jags.columns <- function(data) {
   selected <- subset (transformed, select = c('Y', 'n', 'site', 'trt', 'ghs', 'obs.prec', 'se', 'cite'))
   return(selected)
 }
+##' Transform NA values in data to appropriate values for meta-analysis
+##'
+##' Assume if not specified: treatment is control (1), site is generic (0), study not performed in greenhouse or other controlled condition so greenhouse is false (0), 
+##' @title Transform NAs
+##' @param data 
+##' @return data with NAs transformed
 transform.nas <- function(data){
   #control defaults to 1
-  data$control[is.na(data$control)]     <- 1
+  data$control[is.na(data$control)] <- 1
   
   #site defaults to 0
-  #TODO assign different site for each citation - dsl
   data$site_id[is.na(data$site_id)] <- 0
 
   #greenhouse defaults to false (0)
-  data$greenhouse[is.na(data$greenhouse)] <- 1
+  data$greenhouse[is.na(data$greenhouse)] <- 0
   
   #number of observations defaults to 2 for statistics, 1 otherwise
   data$n[is.na(data$n)] <- 1
@@ -179,7 +184,6 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     data$stat <- arrhenius.scaling(data$stat, old.temp = data$leafT)
 
     ## select only summer data for Panicum virgatum
-    ##TODO fix following hack to select only summer data
     if (spstr == "'938'"){
       data <- subset(data, subset = data$month %in% c(0,5,6,7))
     }
