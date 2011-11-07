@@ -22,13 +22,7 @@
 ##' prior.distns <- query.bety.priors('ebifarm.c4crop', c('SLA', 'c2n_leaf'))
 ##' trait.data <- query.bety.traits('938', c('SLA', 'c2n_leaf'))
 ##' pecan.ma(prior.distns, trait.data, 25000)
-##'
-##' @todo compare data with priors and posteriors as a sanity check
-##'
-##'
-
-
-pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outdir){
+pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outdir, overdispersed = TRUE){
   
   madata <- list()
   ## Meta-analysis for each trait
@@ -87,7 +81,6 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
     } else {
       writeLines(paste('no estimates of SD for', trait.name))
     }
-    ##TODO? could add internal check to make sure data contains Y, n, trt, site, trt, obs.prec
     # determine what factors to include in meta-analysis
     model.parms <- list(ghs  = length(unique(data$ghs)),
                         site = length(unique(data$site)),
@@ -138,17 +131,17 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
                     tauA  = taupriors$tauB[trait.name],
                     tauB  = taupriors$tauB[trait.name])
 
-    ## overdispersed chains
-    j.inits <- function(chain) list("beta.o" = do.call(paste('q',prior$dist,sep=''),
-                                      list(chain * 1/(j.chains + 1), prior$a, prior$b)),
-                                    .RNG.seed = chain,
-                                    .RNG.name = "base::Mersenne-Twister")
-
-    ## chains fixed at data mean - used if above code does not converge,
-    ## invalidates assumptions about convergence, e.g. Gelman-Rubin diagnostic
-    ## TODO set flag to choose overdispersed vs fixed chains
-    ##    j.inits <- function(chain) list("beta.o" = mean(data$Y))
-
+    if(overdispersed == TRUE){
+      ## overdispersed chains
+      j.inits <- function(chain) list("beta.o" = do.call(paste('q',prior$dist,sep=''),
+                                        list(chain * 1/(j.chains + 1), prior$a, prior$b)),
+                                      .RNG.seed = chain,
+                                      .RNG.name = "base::Mersenne-Twister")
+    } else if (overdispersed == FALSE) {
+      ## chains fixed at data mean - used if above code does not converge,
+      ## invalidates assumptions about convergence, e.g. Gelman-Rubin diagnostic
+      j.inits <- function(chain) list("beta.o" = mean(data$Y))
+    }
     tryCatch({
       j.model   <- jags.model (file = jag.model.file,
                                data = data,
