@@ -7,7 +7,7 @@
 ##' @param acronym USDA Plants Database Symbol. (standard genus-species acronym) see \url{http://plants.usda.gov}
 ##' @param test  Runs the function in test mode.  No species are actually added, but checks are run for existing species-PFT pairs, unmatched acronyms, missing species, or duplicate species
 ##' @param con Database connection object.  If not provided will use \code{\link{query.bety.con}} to connect to BETY-db.
-##' @param ... optional arguements for connecting to database (e.g. password, user name, database
+##' @param ... optional arguements for connecting to database (e.g. password, user name, database)
 ##' @return Function does not return a value but does print out diagnostic statements.
 ##' @author Michael C. Dietze
 pft.add.spp <- function(pft,acronym,test=TRUE,con=NULL,...){

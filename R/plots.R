@@ -410,20 +410,18 @@ iqr<-function(x){
   return(diff(quantile(x, c(0.25, 0.75), na.rm = TRUE)))
 }
  
-
-## PDF plots
 create.base.plot <- function() {
   base.plot <- ggplot()
   return(base.plot)
 }
 ##' Plots a prior density from a parameterized probability distribution  
 ##'
-##' @title 
+##' @title Add Prior Density
 ##' @param prior dataframe or list with density name and parameters
-##' @param base.plot existing plot, new plot will be generated if left at default NULL
-##' @param prior.color 
+##' @param base.plot a ggplot object (grob), created by \code{\link{create.base.plot}} if none provided
+##' @param prior.color color of line to be plotted
 ##' @return plot with prior density added
-##' @seealso \link{\code{pr.dens}}
+##' @seealso \code{\link{pr.dens}}
 ##' @examples
 ##' add.prior.density(c('norm', 0, 1))
 add.prior.density <- function(prior, base.plot = NULL, prior.color = 'black') {
@@ -435,7 +433,7 @@ add.prior.density <- function(prior, base.plot = NULL, prior.color = 'black') {
   return(new.plot)
 }
 
-##' Returns a data frame from \link{density} function 
+##' Returns a data frame from \link{stats::density} function 
 ##'
 ##' @title Create Density Data Frame from Sample
 ##' @param sample 
@@ -457,8 +455,8 @@ create.density.df <- function(sample, zero.bounded = FALSE) {
 ##'
 ##' @title Add posterior density. 
 ##' @param posterior.density 
-##' @param base.plot 
-##' @return 
+##' @param base.plot a ggplot object (grob), created by \code{\link{create.base.plot}} if none provided
+##' @return plot with posterior density line added
 add.posterior.density <- function(posterior.density, base.plot = NULL) {
   if(is.null(base.plot)) base.plot <- create.base.plot()
   new.plot <- base.plot +  geom_line(data = posterior.density,
@@ -466,16 +464,16 @@ add.posterior.density <- function(posterior.density, base.plot = NULL) {
   return(new.plot)  
 }
 
-##' Add data to an existing plot or create a new one from \link{\code{base.plot}}
+##' Add data to an existing plot or create a new one from \code{\link{create.base.plot}}
 ##'
 ##' Used to add raw data or summary statistics to the plot of a distribution.
 ##' The height of Y is arbitrary, and can be set to optimize visualization.
 ##' If SE estimates are available, tehse wil be plotted
 ##' @title Add data to plot 
 ##' @param trait.data data to be plotted
-##' @param base.plot plot created by \link{\code{base.plot}}
+##' @param base.plot a ggplot object (grob), created by \code{\link{create.base.plot}} if none provided
 ##' @param ymax maximum height of y
-##' @seealso \link{\code{base.plot}}
+##' @seealso \code{\link{create.base.plot}}
 ##' @return updated plot object
 add.data <- function(trait.data, base.plot = NULL, ymax) {
   if(is.null(base.plot)) base.plot <- create.base.plot()

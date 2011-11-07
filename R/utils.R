@@ -128,7 +128,7 @@ pr.dens <- function(distn, parama, paramb, n = 1000, alpha = 0.0001) {
 ##' Zero bounded density using log density transform
 ##'
 ##' Provides a zero bounded density estimate of a parameter.
-##' Kernel Density Estimation used by the \code{\link{density}} function will cause problems at the left hand end because it will put some weight on negative values. One useful approach is to transform to logs, estimate the density using KDE, and then transform back.
+##' Kernel Density Estimation used by the \code{\link{stats::density}} function will cause problems at the left hand end because it will put some weight on negative values. One useful approach is to transform to logs, estimate the density using KDE, and then transform back.
 ##' @title Zero Bounded Density
 ##' @param x 
 ##' @param bw The smoothing bandwidth to be used. See 'bw.nrd'
@@ -142,6 +142,59 @@ zero.bounded.density <- function (x, bw = "SJ") {
   g$y <- c(0, g$y/xgrid)
   g$x <- c(0, xgrid)
   return(g)
+}
+
+
+
+
+##' Summarize results of replicate observations in trait data query
+##'
+##' @title Summarize Results
+##' @param result dataframe with results of trait data query
+##' @return result with replicate observations summarized 
+summarize.result <- function(result) {
+  ans1 <- ddply(result[result$n==1,],
+                .(citation_id, site_id, trt_id, control, greenhouse, date, time, cultivar_id, specie_id),
+                summarise,
+                n = length(n),
+                mean = mean(mean),
+                statname = ifelse(length(n)==1,'none','SE'),
+                stat = sd(mean)/sqrt(length(n)))
+  ans2 <- result[result$n!=1,which(colnames(result) %in% colnames(ans1))]
+  return(rbind(ans1, ans2))
+}
+
+##' Calculate mean, variance statistics, and CI from a known distribution 
+##'
+##' @title Probability Distirbution Function Statistics
+##' @param distn name of distribution used by R (beta, f, gamma, lnorm, norm, weibull) 
+##' @param A first parameter 
+##' @param B second parameter
+##' @return list with mean, variance, and 95 CI
+##' @author David LeBauer
+pdf.stats <- function(distn, A, B) {
+  mean <- switch(distn,
+                 gamma   = A/B,
+                 lnorm   = exp(A + 1/2 * B^2),
+                 beta    = A/(A+B),
+                 weibull = B * gamma(1 + 1/A),
+                 norm    = A,
+                 f       = ifelse(B>2, B/(B - 2), mean(rf(10000, A, B)))
+                 )
+  var <- switch(distn,
+                gamma   = A/B^2,
+                lnorm   = exp(2*A + B^2) * (exp(B^2) - 1),
+                beta    =  A*B/((A+B)^2 * (A + B + 1)),
+                weibull = B^2 * (gamma(1 + 2 / A) - gamma(1 + 1/A)^2),
+                norm    = B^2,
+                f       = ifelse(B>4, 2*B^2*(A+B-2) / (A*(B-2)^2*(B-4)), var(rf(100000, A, B)))
+                )
+  qci  <- get(paste("q", distn, sep = ""))
+  ci <- qci(c(0.025, 0.975), A, B)
+  lcl <- ci[1]
+  ucl <- ci[2]
+  out  <- unlist(list(mean = mean, var = var, lcl = lcl, ucl = ucl)) 
+  return(out)
 }
 
 ##' Dictionary of terms used to identify traits in ed, filenames, and figures 
@@ -172,51 +225,3 @@ trait.dictionary <- function(traits = NULL) {
 ##' trait.dictionary()[,c('figid', 'units')]
 ##' 
 
-
-##' Summarize results of replicate observations in trait data query
-##'
-##' @title Summarize Results
-##' @param result dataframe with results of trait data query
-##' @return result with replicate observations summarized 
-summarize.result <- function(result) {
-  ans1 <- ddply(result[result$n==1,],
-                .(citation_id, site_id, trt_id, control, greenhouse, date, time, cultivar_id, specie_id),
-                summarise,
-                n = length(n),
-                mean = mean(mean),
-                statname = ifelse(length(n)==1,'none','SE'),
-                stat = sd(mean)/sqrt(length(n)))
-  ans2 <- result[result$n!=1,which(colnames(result) %in% colnames(ans1))]
-  return(rbind(ans1, ans2))
-}
-  
-##' @title calculate mean and variance statistics from a known distribution 
-##' @param distn name of distribution used by R (beta, f, gamma, lnorm, norm, weibull) 
-##' @param A first parameter 
-##' @param B second parameter
-##' @return list with mean, variance, and 95\% CI
-##' @author David LeBauer
-pdf.stats <- function(distn, A, B) {
-  mean <- switch(distn,
-                 gamma   = A/B,
-                 lnorm   = exp(A + 1/2 * B^2),
-                 beta    = A/(A+B),
-                 weibull = B * gamma(1 + 1/A),
-                 norm    = A,
-                 f       = ifelse(B>2, B/(B - 2), mean(rf(10000, A, B)))
-                 )
-  var <- switch(distn,
-                gamma   = A/B^2,
-                lnorm   = exp(2*A + B^2) * (exp(B^2) - 1),
-                beta    =  A*B/((A+B)^2 * (A + B + 1)),
-                weibull = B^2 * (gamma(1 + 2 / A) - gamma(1 + 1/A)^2),
-                norm    = B^2,
-                f       = ifelse(B>4, 2*B^2*(A+B-2) / (A*(B-2)^2*(B-4)), var(rf(100000, A, B)))
-                )
-  qci  <- get(paste("q", distn, sep = ""))
-  ci <- qci(c(0.025, 0.975), A, B)
-  lcl <- ci[1]
-  ucl <- ci[2]
-  out  <- unlist(list(mean = mean, var = var, lcl = lcl, ucl = ucl)) 
-  return(out)
-}

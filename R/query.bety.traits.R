@@ -5,7 +5,7 @@
 ##' @param priors vector of parameters for which priors have been specified 
 ##' @param con 
 ##' @return dataframe with trait data
-##' @seealso \code{\link{query.bety.traits.data}}
+##' @seealso \code{\link{query.bety.trait.data}}
 ##' @examples
 ##' spstr <- query.bety.pft_species('ebifarm.c4crop')$spstr
 ##' trvec <- c('leafN', 'SLA')
