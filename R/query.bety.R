@@ -1,7 +1,7 @@
 ##' Generic function to query BETYdb
 ##'
 ##' Given a connection and a query, will return a query as a data frame
-##' @title 
+##' @title Query BETY
 ##' @param query SQL query string
 ##' @param con connection
 ##' @param ... additional arguments passed to dbConnect (e.g. password, database)

@@ -81,7 +81,7 @@ zero.truncate <- function(y) {
 ##' @param sa.samples data.frame with one column per trait and one row for the set of quantiles used in sensitivity analysis. Each cell contains the value of the trait at the given quantile.
 ##' @param sa.output  list of data.frames, similar to sa.samples, except cells contain the results of a model run with that trait x quantile combination and all other traits held at their median value  
 ##' @param outdir directory to which plots are written
-##' @return 
+##' @return results of sensitivity analysis
 ##' @examples
 ##' sensitivity.analysis(trait.samples[[pft$name]], sa.samples[[pft$name]], sa.agb[[pft$name]], pft$outdir)
 sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
@@ -104,8 +104,8 @@ sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
                       var(spline.estimates[[trait]]))
   partial.variances <- variances / sum(variances)
   
-  ##TODO: move unit conversions to their own method, called before sensitivity analysis
-  ##TODO: possibly subset this function into a univariate sensitivity analysis that is performed once per trait and a variance decomposition that takes output from a set of sensitivity analyses 
+  ## change Vm_low_temp to Kelvin prior to calculation of coefficient of variance.
+  ## This conversion is only required at this point in the code
   if('Vm_low_temp' %in% traits)
     trait.samples[[which(traits == 'Vm_low_temp')]] <- trait.samples[[which(traits == 'Vm_low_temp')]] + 273.15
   coef.vars <- sapply(trait.samples, get.coef.var)

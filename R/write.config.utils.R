@@ -9,7 +9,7 @@
 ##' @param ensemble.size number of runs in model ensemble
 ##' @param samples random samples from parameter distribution, e.g. from a MCMC chain or a 
 ##' @return matrix of quasi-random (overdispersed) samples from trait distributions
-##' @references \href{http://dx.doi.org/10.1145/355588.365104}{Halton, J. (1964), Algorithm 247: Radical-inverse quasi-random point sequence, ACM, p. 701, doi:10.1145/355588.365104.
+##' @references Halton, J. (1964), Algorithm 247: Radical-inverse quasi-random point sequence, ACM, p. 701, doi:10.1145/355588.365104.
 get.ensemble.samples <- function(ensemble.size, samples) {
   ##force as numeric for compatibility with Fortran code in halton()
   ensemble.size <- as.numeric(ensemble.size)

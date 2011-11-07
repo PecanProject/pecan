@@ -1,9 +1,8 @@
-##' .. content for \description{} (no empty lines) ..
+##' Returns list of ensemble output
 ##'
 ##' 
-##' @title 
-##' @returns a list of ensemble output 
-##' @author David
+##' @title Read Ensemble Output
+##' @return list of ensemble output 
 read.ensemble.output <- function(ensemble.size, host, outdir, pft.name='', read.output = read.output.ed){
   ensemble.output <- list()
   rsync(paste(host$name, ':', host$outdir, 
@@ -16,10 +15,9 @@ read.ensemble.output <- function(ensemble.size, host, outdir, pft.name='', read.
   return(ensemble.output)
 }
 
-##' .. content for \description{} (no empty lines) ..
+##' Read output from sensitivity runs
 ##'
-##' 
-##' @title 
+##' @title Read SA output
 ##' @return dataframe with one col per quantile analysed and one row per trait,
 ##'  each cell is a list of AGB over time
 ##' @author David

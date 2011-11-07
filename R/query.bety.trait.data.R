@@ -23,13 +23,11 @@ fetch.stats2se <- function(connection, query){
 arrhenius.scaling <- function(observed.value, old.temp, new.temp = 25){
   return(observed.value / exp (3000 * ( 1 / (273.15 + new.temp) - 1 / (273.15 + old.temp))))
 }
-##' .. content for \description{} (no empty lines) ..
+##' rename data columns for JAGS meta-analysis model
 ##'
-##' .. content for \details{} ..
-##' @title 
-##' @param data 
-##' @return 
-##' @author David
+##' @title Rename JAGS columns
+##' @param data dataframe with data for meta analysis
+##' @return dataframe with columns renamed
 rename.jags.columns <- function(data) {
   transformed <-  transform(data,
                       Y        = mean,

@@ -1,7 +1,5 @@
-#Small, miscellaneous functions for use throughout PECAn
+# Small, miscellaneous functions for use throughout PECAn
 
-#
-#
 ##' left padded by zeros up to a given number of digits.
 ##'
 ##' returns a string representing a given number 
@@ -21,8 +19,7 @@ left.pad.zeros <- function(num, digits = 5){
 ##' @param from source 
 ##' @param to destination
 ##' @param pattern file pattern to be matched 
-##' @return 
-
+##' @return nothing, transfers files as a side effect 
 rsync <- function(from, to, pattern=''){
   system(paste('rsync -outi', from, to, sep = ' '))
 }
@@ -58,8 +55,7 @@ vecpaste <- function(x) paste(paste("'", x, "'", sep=''), collapse=',')
 ##' @param index 
 ##' @param trait 
 ##' @param pft.name 
-##' @return 
-##' @author Carl Davidson
+##' @return id representing a model run
 get.run.id <- function(run.type, index, trait='', pft.name=''){
   run.id <- paste(pft.name, run.type, trait, index, sep='')
   return(abbreviate.run.id.ED(run.id))
@@ -90,7 +86,6 @@ listToXml <- function(item, tag){
 ##' @param paramb 
 ##' @param n number of samples to return
 ##' @return vector with n random samples from prior
-##' @author David LeBauer
 ##' @seealso \link{get.sample}
 pr.samp <- function(distn, parama, paramb, n) {
     do.call(paste('r', distn, sep=""), list(n, parama, paramb))
@@ -119,7 +114,6 @@ get.sample <- function(prior, n) {
 ##' @param n length of vector to be returned
 ##' @param alpha sets range at which the distribution will be evaluated (e.g. from alpha to 1-alpha)
 ##' @return dataframe with equally spaced x values and the corresponding densities
-##' @author David LeBauer
 pr.dens <- function(distn, parama, paramb, n = 1000, alpha = 0.0001) {
   alpha <- ifelse(alpha < 0.5, alpha, 1-alpha)
   n <- ifelse(alpha == 0.5, 1, n)
@@ -178,14 +172,12 @@ trait.dictionary <- function(traits = NULL) {
 ##' trait.dictionary()[,c('figid', 'units')]
 ##' 
 
-##' Identifies experimental replicates and calculates summary statistics.
+
+##' Summarize results of replicate observations in trait data query
 ##'
-##' Used after queries in \code{\link{query.bety.trait.data}}
 ##' @title Summarize Results
-##' @param result dataframe of results from query of trait data 
-##' @return dataframe with experimental replicates summarized
-##' @seealso \code{\link{query.bety.trait.data}}
-##' @author David LeBauer
+##' @param result dataframe with results of trait data query
+##' @return result with replicate observations summarized 
 summarize.result <- function(result) {
   ans1 <- ddply(result[result$n==1,],
                 .(citation_id, site_id, trt_id, control, greenhouse, date, time, cultivar_id, specie_id),
@@ -202,7 +194,7 @@ summarize.result <- function(result) {
 ##' @param distn name of distribution used by R (beta, f, gamma, lnorm, norm, weibull) 
 ##' @param A first parameter 
 ##' @param B second parameter
-##' @return list with mean, variance, and 95% CI
+##' @return list with mean, variance, and 95\% CI
 ##' @author David LeBauer
 pdf.stats <- function(distn, A, B) {
   mean <- switch(distn,
