@@ -29,12 +29,6 @@ query.bety.traits <- function(spstr, priors, con = NULL){
  
   traits <- unique(traits[traits %in% priors])
 
-  ##*TODO
-  ## Need to write query for:
-  ## first check pft_species for grass or tree 
-  ##      if grass, root and shoot to calculate fineroot2leaf
-  ##      if tree, fine root and leaf to calculate fineroot2leaf
-
   ## grab trait data
   trait.data <- lapply(traits, function(trait) query.bety.trait.data(trait, spstr, con=con))
   names(trait.data) <- traits

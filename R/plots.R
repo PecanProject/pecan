@@ -291,8 +291,8 @@ dhist<-function(x, a=5*iqr(x),
     ylower <- yupper - a/n
                                         #
     cmtx <- cbind(cut(yupper, breaks = ybr), cut(yupper, breaks = 
-                                ybr, left.include = T), cut(ylower, breaks = ybr),
-                  cut(ylower, breaks = ybr, left.include = T))
+                                ybr, left.include = TRUE), cut(ylower, breaks = ybr),
+                  cut(ylower, breaks = ybr, left.include = TRUE))
     cmtx[1, 3] <- cmtx[1, 4] <- 1
                                         # to replace NAs when default r is used
     cmtx[n, 1] <- cmtx[n, 2] <- nbins
@@ -352,7 +352,7 @@ dhist<-function(x, a=5*iqr(x),
   cut.pt <- unique(c(min(x) - abs(min(x))/1000, approx(seq(length(
                                                                   x)), x, (1:(nbins - 1)) * bin.size, rule = 2)$y, max(
                                                                                                         x)))
-  aa <- hist(x, breaks = cut.pt, plot = F, probability = T)
+  aa <- hist(x, breaks = cut.pt, plot = FALSE, probability = TRUE)
   if(a == Inf) {
     heights <- aa$counts
     xbr <- aa$breaks
@@ -403,7 +403,7 @@ dhist<-function(x, a=5*iqr(x),
 
 ##' Calculate interquartile range
 ##'
-##' Calculates the 25th and 75th quantiles given a vector x; used in function \link{dhist}.
+##' Calculates the 25th and 75th quantiles given a vector x; used in function \link{dhis}.
 ##' @title Interquartile range
 ##' @param x vector
 ##' @return numeric vector of length 2, with the 25th and 75th quantiles of input vector x. 
