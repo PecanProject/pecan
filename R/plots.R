@@ -266,8 +266,8 @@ plot.sensitivities <- function(sensitivity.plot.inputs, outdir, prior.sensitivit
 ##' @author Lorraine Denby, Colin Mallows
 ##' @references Lorraine Denby, Colin Mallows. Journal of Computational and Graphical Statistics. March 1, 2009, 18(1): 21-31. doi:10.1198/jcgs.2009.0002. \url{http://pubs.amstat.org/doi/pdf/10.1198/jcgs.2009.0002}
 dhist<-function(x, a=5*iqr(x),
-                nbins=nclass.Sturges(x), rx = range(x,na.rm=T),
-                eps=.15, xlab = "x", plot = T,lab.spikes=T)
+                nbins=nclass.Sturges(x), rx = range(x,na.rm = TRUE),
+                eps=.15, xlab = "x", plot = TRUE,lab.spikes = TRUE)
 {
 
   if(is.character(nbins))
@@ -388,7 +388,7 @@ dhist<-function(x, a=5*iqr(x),
           if (flag.vec[i]) {
             txt<-paste(' ',format(round(counts[i]/
                                         sum(counts)*100)),'%',sep='')
-            par(xpd=T)
+            par(xpd = TRUE)
             text(xbr[i+1]-xbr[1],ylim.height-par('cxy')[2]*(amt.txt-1),txt, adj=0)
           }}
       }
@@ -407,7 +407,9 @@ dhist<-function(x, a=5*iqr(x),
 ##' @title Interquartile range
 ##' @param x vector
 ##' @return numeric vector of length 2, with the 25th and 75th quantiles of input vector x. 
-iqr<-function(x){ return(diff(quantile(x,c(.25,.75),na.rm=T))) }
+iqr<-function(x){
+  return(diff(quantile(x, c(0.25, 0.75), na.rm = TRUE)))
+}
  
 
 ## PDF plots
