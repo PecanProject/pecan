@@ -182,3 +182,4 @@ write.sa.configs <- function(pft, quantile.samples, host, outdir, settings,
                  paste(host$name, ':', host$rundir,  sep='')))
   }
 }
+

@@ -29,6 +29,11 @@ if(is.null(settings$run$priority)){
 } else {
   stop("need admin rights to set higher priority")
 }
+
+## if using ED, write runscript that rsyncs at the end
+if(any(grep("ED", settings$run$host$rundir))){ #if using ED
+  write.run.ED(settings)
+}
 #Run model from user made bash script 
 if(host$name == 'localhost') {
   system(paste('cd ', host$rundir, ';',

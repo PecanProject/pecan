@@ -118,3 +118,18 @@ write.config.ED <- function(pft, trait.samples, settings, outdir, run.id){
   
   print(run.id)
 }
+
+write.run.ED <- function(settings){
+  run.text <- scan(file = paste(settings$pecanDir,
+                     'bash/run-template.ED', sep = ''), 
+                   what="character",sep='@', quote=NULL, quiet=TRUE)
+  run.text <- gsub('OUTDIR', settings$run$host$outdir, run.text)
+  runfile <- paste(settings$outdir, 'run', sep='')
+  writeLines(run.text, con = runfile)
+  if(settings$run$host$name == 'localhost') {
+    system(paste('cp ', runfile, settings$run$host$rundir))
+  }else{
+    system(paste("rsync -outi ", runfile , ' ', settings$run$host$name, ":",
+                 settings$run$host$rundir, sep = ''))
+  }
+}
