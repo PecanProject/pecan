@@ -12,13 +12,13 @@ sa.splinefun <- function(quantiles.input, quantiles.output){
 
 ##' Calculates the standard deviation of the variance estimate
 ##'
-##' Uses the equation  
+##' Uses the equation \sigma^4\left(\frac{2}{n-1}+\frac{\kappa}{n}\right)
 ##' @title Standard deviation of sample variance
 ##' @param x sample
 ##' @return estimate of standard deviation of the sample variance
 ##' @references \href{Wikipedia}{http://en.wikipedia.org/wiki/Variance#Distribution_of_the_sample_variance}
 sd.var <- function(x){
-  var(x)^2*(2/(length(x)-1) + kurtosis(x)/length(x))
+  var(x, na.rm = TRUE)^2*(2/(sum(!is.na(x))-1) + kurtosis(x)/sum(!is.na(x)))
 }
 
 ##' Calculates the kurtosis of a vector
@@ -28,7 +28,7 @@ sd.var <- function(x){
 ##' @return numeric value of kurtosis
 ##' @references  NIST/SEMATECH e-Handbook of Statistical Methods, \url{http://www.itl.nist.gov/div898/handbook/eda/section3/eda35b.htm}, 2011-06-20.
 kurtosis <- function(x) {
-  kappa <- sum((x - mean(x))^4)/((length(x) - 1) * sd(x)^4) - 3
+  kappa <- sum((x - mean(x, na.rm = TRUE))^4)/((sum(!is.na(x)) - 1) * sd(x, na.rm = TRUE)^4) - 3
   return(kappa)
 }
 ##' Calculate the sensitivity of a function at the median
