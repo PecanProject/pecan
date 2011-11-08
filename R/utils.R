@@ -225,3 +225,14 @@ trait.dictionary <- function(traits = NULL) {
 ##' trait.dictionary()[,c('figid', 'units')]
 ##' 
 
+##' Convert number to n significant digits
+##'
+##' @title Table numbers
+##' @param x numeric value or vector
+##' @param n number of significant figures
+##' @return x rounded to n significant figures
+tabnum <- function(x, n=3) {
+  ans <- as.numeric(signif(x,n))
+  names(ans) <- names(x)
+  return(ans)
+}
