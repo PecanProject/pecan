@@ -1,0 +1,7 @@
+#!/bin/bash
+#$ -S /bin/bash
+#$ -V
+LOG=$1
+ED2IN=$2
+mpirun -np $LOG "../build/ed_2.1-ebi" -f $ED2IN
+rsync -routi /scratch/out${ED2IN:7}* @OUTDIR@
