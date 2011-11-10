@@ -58,12 +58,17 @@ read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT"), FUN
 ##' @param end.year
 ##' @param output.type type of output file to read, can be "-Y-" for annual output, "-M-" for monthly means, "-D-" for daily means, "-T-" for instantaneous fluxes. Output types are set in the ED2IN namelist as NL%I[DMYT]OUTPUT  
 ##' @return vector of output variable for all runs within ensemble
-read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA, output.type = 'Y'){
+read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA, output.type = 'E'){
   file.names <- dir(outdir, pattern=run.id, full.names=TRUE)
   file.names <- grep(paste('-', output.type, '-', sep = ''), file.names, value = TRUE)
   file.names <- grep('([0-9]{4}).*', file.names, value=TRUE)
-  if(length(file.names) == 0) stop(paste('no output files in', outdir)) 
-  years <- sub('((?!-Y-).)*-Y-([0-9]{4}).*', '\\2', file.names, perl=TRUE)
+  print(file.names)
+  if(length(file.names) <= 0) {
+    warning(paste('no output files in', outdir,
+                  'with pattern:', run.id))
+  }
+  years <- sub(paste('((?!-', output.type, '-).)*-', output.type, '-([0-9]{4}).*', sep=''), 
+      '\\2', file.names, perl=TRUE)
   if(!is.na(start.year) && nchar(start.year) ==  4){
     file.names <- file.names[years>=as.numeric(start.year)]
   }
@@ -71,11 +76,21 @@ read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA, output.ty
     file.names <- file.names[years<=as.numeric(end.year)]
   }
   file.names <- file.names[!is.na(file.names)]
+  
+  expected.years<-(as.numeric(start.year)+1) : (as.numeric(end.year)-1)
+  incompleted.years<-expected.years[!expected.years %in% as.numeric(years)]
+  if(length(incompleted.years) > 0){
+    #run did not complete successfully
+    warning(paste('Model run, "', run.id,'" was not completed for years: ', 
+                  incompleted.years))
+    return(NA)
+  }  
   if(length(file.names > 0)) {
     result <- mean(sapply(file.names, read.output.file.ed), na.rm = TRUE)
   } else {
     result <- NA
   }
+  print(result)
   return(result)
 }
 
@@ -137,7 +152,7 @@ left.pad.zeros <- function(num, digits = 5){
   return(sprintf(format_string, num))
 }
 
-
+print(getwd())
 load('samples.Rdata')
 sa.agb<-list()
 ensemble.output<-list()
