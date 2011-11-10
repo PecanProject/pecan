@@ -82,7 +82,11 @@ approx.posterior <- function(trait.mcmc,priors,trait.data=NULL,outdir=NULL){
         if(!is.null(trait.data)) rng = range(trait.data[[trait]]$Y)
         
         plot(density(dat),col=2,lwd=2,main=trait,xlim=rng)
-        if(!is.null(trait.data)) hist(trait.data[[trait]]$Y,probability=TRUE,add=TRUE,border="purple")
+        if(!is.null(trait.data)) {
+          rug(trait.data[[trait]]$Y)
+          ##hist(trait.data[[trait]]$Y,
+          ##     breaks = sqrt(nrow(trait.data[[trait]])),
+          ##     probability=TRUE,add=TRUE,border="purple")
         lines(x,f(x),lwd=2,type='l')
         lines(x,fp(x),lwd=3,type='l',col=3)
         legend("topleft",legend=c("data","prior","post","approx"),col=c("purple",3,2,1),lwd=2)
