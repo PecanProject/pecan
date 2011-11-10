@@ -23,6 +23,20 @@
 query.bety.con <- function(...){
   lapply(dbListConnections(MySQL()), dbDisconnect) #first kill all connections
   dvr <- dbDriver ("MySQL")
+  
+  #KLUDGE: not all invocations of query.bet.con() make use of the settings file.
+  #This effectively limits PEcAn to using ebi_analysis at certain places.
+  #What follows is a quick fix - it relies on settings as a global variable,
+  #which are generally recommended against
+  if(exists('settings')){
+    con <- dbConnect(dvr, group  = 'ebi_analysis',
+        dbname=settings$database$name, 
+        password=settings$database$passwd, 
+        username=settings$database$userid, 
+        host=settings$database$host)
+    return(con)
+  }
+  
   con <- dbConnect(dvr, group  = 'ebi_analysis',...)
   return(con)
 }
