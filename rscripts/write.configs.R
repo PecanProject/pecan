@@ -1,4 +1,6 @@
 ### LOAD SETTINGS ###
+print(ls())
+rm(list=ls())
 library(XML)
 if(interactive()){
   user <- Sys.getenv('USER')
@@ -50,7 +52,8 @@ if(host$name == 'localhost'){
 ## Load priors and posteriors
 
 for (i in seq(pft.names)){
-  load(paste(outdirs[i], '/prior.distns.Rdata', sep=''))
+  browser()
+  load(paste(outdirs[i], '/post.distns.Rdata', sep=''))
 
   if("trait.mcmc.Rdata" %in% dir(outdirs)) {
     load(paste(outdirs[i], '/trait.mcmc.Rdata', sep=''))
@@ -70,35 +73,35 @@ for (i in seq(pft.names)){
                                    function(x) nrow(as.matrix(x)))),
                         20000)
 
-  priors <- rownames(prior.distns)
-  for (prior in priors) {
-    if (prior %in% traits) {
-      samples <- as.matrix(trait.mcmc[[prior]][,'beta.o'])
+  distns <- rownames(post.distns)
+  for (distn in distns) {
+    if (distn %in% traits) {
+      samples <- as.matrix(trait.mcmc[[distn]][,'beta.o'])
     } else {
-      samples <- get.sample(prior.distns[prior,], samples.num)
+      samples <- get.sample(post.distns[distn,], samples.num)
     }
-    trait.samples[[pft.name]][[prior]] <- samples
+    trait.samples[[pft.name]][[distn]] <- samples
+  }
+  
+  ## subset the trait.samples to ensemble size using Halton sequence 
+  if('ensemble' %in% names(settings) && settings$ensemble$size > 0) {
+    ensemble.samples[[pft.name]] <- get.ensemble.samples(settings$ensemble$size, trait.samples[[pft.name]])
+    write.ensemble.configs(settings$pfts[[i]], ensemble.samples[[pft.name]], 
+        host, outdir, settings)
+  }
+  
+  if('sensitivity.analysis' %in% names(settings)) {
+    if( is.null(settings$sensitivity.analysis)) {
+      print(paste('sensitivity analysis settings are NULL'))
+    } else {
+      quantiles <- get.quantiles(settings$sensitivity.analysis$quantiles)
+      sa.samples[[pft.name]] <-  get.sa.samples(trait.samples[[pft.name]], quantiles)
+      write.sa.configs(settings$pfts[[i]], sa.samples[[pft.name]], 
+          host, outdir, settings)
+    }
   }
 }
 
-
-## subset the trait.samples to ensemble size using Halton sequence 
-if('ensemble' %in% names(settings) && settings$ensemble$size > 0) {
-  ensemble.samples[[pft.name]] <- get.ensemble.samples(settings$ensemble$size, trait.samples[[pft.name]])
-  write.ensemble.configs(settings$pfts[[i]], ensemble.samples[[pft.name]], 
-                         host, outdir, settings)
-}
-
-if('sensitivity.analysis' %in% names(settings)) {
-  if( is.null(settings$sensitivity.analysis)) {
-    print(paste('sensitivity analysis settings are NULL'))
-  } else {
-    quantiles <- get.quantiles(settings$sensitivity.analysis$quantiles)
-    sa.samples[[pft.name]] <-  get.sa.samples(trait.samples[[pft.name]], quantiles)
-    write.sa.configs(settings$pfts[[i]], sa.samples[[pft.name]], 
-                     host, outdir, settings)
-  }
-}
 
 
                                         #Make outdirectory
@@ -118,5 +121,4 @@ if(host$name == 'localhost'){
         paste(host$name, ':', host$outdir, sep='')))
 }
 
->>>>>>> MERGE-SOURCE
  
