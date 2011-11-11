@@ -23,7 +23,9 @@ library(PECAn)
 pft.names <- unlist(xpathApply(settings.xml, '//pfts//pft//name', xmlValue))
 outdirs <- unlist(xpathApply(settings.xml, '//pfts//pft//outdir', xmlValue))
 
-sa.samples <- ensemble.samples <- trait.samples <- list()
+trait.samples <- list()
+sa.samples <- list()
+ensemble.samples <- list()
 
 ## Remove existing config files
 
@@ -32,7 +34,7 @@ todelete <- dir(paste(settings$pfts$pft$outdir, 'out/', sep = ''),
                 recursive=TRUE, full.names = TRUE)
 if(length(todelete>0)) file.remove(todelete)
 
-filename.root <- get.run.id('c.','')
+filename.root <- get.run.id('c.','ebifarm.pavi')
 
 if(host$name == 'localhost'){
   if(length(dir(host$rundir, pattern = filename.root)) > 0) {
@@ -46,20 +48,20 @@ if(host$name == 'localhost'){
   if(length(files) > 0 ) {
     todelete <- files[-grep('log', files)]
     system(paste("ssh -T ", host$name,
-                " 'for f in ", paste(todelete, collapse = ' '),"; do rm $f; done'",sep=''))
+                 " 'for f in ", paste(todelete, collapse = ' '),"; do rm $f; done'",sep=''))
   }
 }
 
 ## Load priors and posteriors
 
 for (i in seq(pft.names)){
-  pft.name <- pft.names[i]
   load(paste(outdirs[i], 'prior.distns.Rdata', sep=''))
 
   if("trait.mcmc.Rdata" %in% dir(outdirs)) {
     load(paste(outdirs[i], 'trait.mcmc.Rdata', sep=''))
   }
 
+  pft.name <- pft.names[i]
 
   ## when no ma for a trait, sample from  prior
   traits <- if(exists('trait.mcmc')) {
@@ -83,8 +85,6 @@ for (i in seq(pft.names)){
     trait.samples[[pft.name]][[prior]] <- samples
   }
 
-
-
   ## subset the trait.samples to ensemble size using Halton sequence 
   if('ensemble' %in% names(settings) && settings$ensemble$size > 0) {
     ensemble.samples[[pft.name]] <- get.ensemble.samples(settings$ensemble$size, trait.samples[[pft.name]])
@@ -105,22 +105,22 @@ for (i in seq(pft.names)){
 }
 
                                         #Make outdirectory
-save(ensemble.samples, trait.samples, sa.samples, settings,
-     file = paste(outdir, 'samples.Rdata', sep=''))
+  save(ensemble.samples, trait.samples, sa.samples, settings,
+       file = paste(outdir, 'samples.Rdata', sep=''))
 
-if(host$name == 'localhost'){
-  if(!host$outdir == outdir) {
-    dir.create(host$outdir)
-    file.copy(from = paste(outdir, 'samples.Rdata', sep=''),
-              to   = paste(host$outdir, 'samples.Rdata', sep = ''),
-              overwrite = TRUE)
+  if(host$name == 'localhost'){
+    if(!host$outdir == outdir) {
+      dir.create(host$outdir)
+      file.copy(from = paste(outdir, 'samples.Rdata', sep=''),
+                to   = paste(host$outdir, 'samples.Rdata', sep = ''),
+                overwrite = TRUE)
+    }
+  } else {
+    
+    mkdir.cmd <- paste("'if ! ls ", host$outdir, " > /dev/null ; then mkdir -p ", host$outdir," ; fi'",sep='')
+    system(paste("ssh", host$name, mkdir.cmd))
+    system(paste('rsync -routi ', paste(outdir, 'samples.Rdata', sep=''),
+                 paste(host$name, ':', host$outdir, sep='')))
   }
-} else {
-  
-  mkdir.cmd <- paste("'if ! ls ", host$outdir, " > /dev/null ; then mkdir -p ", host$outdir," ; fi'",sep='')
-  system(paste("ssh", host$name, mkdir.cmd))
-  system(paste('rsync -routi ', paste(outdir, 'samples.Rdata', sep=''),
-               paste(host$name, ':', host$outdir, sep='')))
-}
 
- 
+  
