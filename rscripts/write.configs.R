@@ -23,7 +23,7 @@ library(PECAn)
 pft.names <- unlist(xpathApply(settings.xml, '//pfts//pft//name', xmlValue))
 outdirs <- unlist(xpathApply(settings.xml, '//pfts//pft//outdir', xmlValue))
 
-trait.samples <- list()
+sa.samples <- ensemble.samples <- trait.samples <- list()
 
 ## Remove existing config files
 
