@@ -24,8 +24,6 @@ pft.names <- unlist(xpathApply(settings.xml, '//pfts//pft//name', xmlValue))
 outdirs <- unlist(xpathApply(settings.xml, '//pfts//pft//outdir', xmlValue))
 
 trait.samples <- list()
-sa.samples <- list()
-ensemble.samples <- list()
 
 ## Remove existing config files
 
@@ -34,7 +32,7 @@ todelete <- dir(paste(settings$pfts$pft$outdir, 'out/', sep = ''),
                 recursive=TRUE, full.names = TRUE)
 if(length(todelete>0)) file.remove(todelete)
 
-filename.root <- get.run.id('c.','ebifarm.pavi')
+filename.root <- get.run.id('c.','')
 
 if(host$name == 'localhost'){
   if(length(dir(host$rundir, pattern = filename.root)) > 0) {
@@ -55,13 +53,13 @@ if(host$name == 'localhost'){
 ## Load priors and posteriors
 
 for (i in seq(pft.names)){
+  pft.name <- pft.names[i]
   load(paste(outdirs[i], 'prior.distns.Rdata', sep=''))
 
   if("trait.mcmc.Rdata" %in% dir(outdirs)) {
     load(paste(outdirs[i], 'trait.mcmc.Rdata', sep=''))
   }
 
-  pft.name <- pft.names[i]
 
   ## when no ma for a trait, sample from  prior
   traits <- if(exists('trait.mcmc')) {
@@ -84,27 +82,27 @@ for (i in seq(pft.names)){
     }
     trait.samples[[pft.name]][[prior]] <- samples
   }
-}
 
 
-## subset the trait.samples to ensemble size using Halton sequence 
-if('ensemble' %in% names(settings) && settings$ensemble$size > 0) {
-  ensemble.samples[[pft.name]] <- get.ensemble.samples(settings$ensemble$size, trait.samples[[pft.name]])
-  write.ensemble.configs(settings$pfts[[i]], ensemble.samples[[pft.name]], 
-                         host, outdir, settings)
-}
 
-if('sensitivity.analysis' %in% names(settings)) {
-  if( is.null(settings$sensitivity.analysis)) {
-    print(paste('sensitivity analysis settings are NULL'))
-  } else {
-    quantiles <- get.quantiles(settings$sensitivity.analysis$quantiles)
-    sa.samples[[pft.name]] <-  get.sa.samples(trait.samples[[pft.name]], quantiles)
-    write.sa.configs(settings$pfts[[i]], sa.samples[[pft.name]], 
-                     host, outdir, settings)
+  ## subset the trait.samples to ensemble size using Halton sequence 
+  if('ensemble' %in% names(settings) && settings$ensemble$size > 0) {
+    ensemble.samples[[pft.name]] <- get.ensemble.samples(settings$ensemble$size, trait.samples[[pft.name]])
+    write.ensemble.configs(settings$pfts[[i]], ensemble.samples[[pft.name]], 
+                           host, outdir, settings)
+  }
+
+  if('sensitivity.analysis' %in% names(settings)) {
+    if( is.null(settings$sensitivity.analysis)) {
+      print(paste('sensitivity analysis settings are NULL'))
+    } else {
+      quantiles <- get.quantiles(settings$sensitivity.analysis$quantiles)
+      sa.samples[[pft.name]] <-  get.sa.samples(trait.samples[[pft.name]], quantiles)
+      write.sa.configs(settings$pfts[[i]], sa.samples[[pft.name]], 
+                       host, outdir, settings)
+    }
   }
 }
-
 
                                         #Make outdirectory
 save(ensemble.samples, trait.samples, sa.samples, settings,
