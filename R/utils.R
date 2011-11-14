@@ -247,3 +247,99 @@ tabnum <- function(x, n=3) {
 arrhenius.scaling <- function(observed.value, old.temp, new.temp = 25){
   return(observed.value / exp (3000 * ( 1 / (273.15 + new.temp) - 1 / (273.15 + old.temp))))
 }
+
+##' Capitalize a string
+##'
+##' @title Capitalize a string 
+##' @param x string
+##' @return x, capitalized
+##' @author David LeBauer
+capitalize <- function(x) {
+  s <- strsplit(x, " ")[[1]]
+  paste(toupper(substring(s, 1,1)), substring(s, 2),
+        sep="", collapse=" ")
+}
+
+##' Calculate the density of a distribution for use in plotting
+##'
+##' @title Prior Density 
+##' @param distribution one of R's supported distributions (character)
+##' @param a first parameter of distribution (numeric)
+##' @param b second parameter of distribution (numeric)
+##' @return data frame with values of x, the density at each x and the probability at each x
+##' @author David LeBauer
+prior.density <- function(distribution, a, b){
+  distribution <- gsub('lognormal', 'lnorm', distribution)
+  if(distribution != 'beta'){
+    range.x <- range(pretty(do.call(paste('q', distribution, sep = ''), list(c(0.005, 0.995),a,b))))
+    prior.x <- seq(from=range.x[1], to = range.x[2], length = 1000)  
+  } else {
+    range.x <- c(0,1)
+    prior.x <- seq(from=0, to = 1, length = 1000)  
+  }
+  dens.x  <- do.call(paste('d', distribution, sep=''),list(prior.x, a, b))
+  prob.x  <- do.call(paste('p', distribution, sep=''),list(prior.x, a, b))
+  return(data.frame(prior.x, dens.x, prob.x))
+}
+
+##' .. content for \description{} (no empty lines) ..
+##'
+##' .. content for \details{} ..
+##' @title 
+##' @param priordata observations to be plotted as points
+##' @param priordensity density of prior distribution, calculated by \code{\link{prior.density}}
+##' @param trait name of trait
+##' @param xlim limits for x axis
+##' @return plot / grob of prior distribution with data used to inform the distribution 
+priorfig <- function(priordata = 'n', priordensity = 'n', trait = '', xlim = 'auto'){
+  x.breaks <- pretty(priordensity$prior.x, 4)
+  xlim <- range(priordensity$prior.x)
+  priorfigure <- ggplot() + theme_bw() + 
+    scale_x_continuous(limits = xlim, breaks = x.breaks, trait.dictionary(trait)$units) +
+    opts(title = trait.dictionary(trait)$figid,
+         panel.grid.major = theme_blank(),    
+         panel.grid.minor = theme_blank(),
+         axis.text.y = theme_blank(),
+         axis.text.x = theme_text(size=12)
+     ) 
+  
+
+  if(is.data.frame(priordata)){
+    rug <- geom_point(data = priordata, aes(x=x, y = 0), size = 4, alpha = 2/sqrt(nrow(priordata)))
+    #hist <-  geom_histogram(data = priordata, aes(x=x, y = ..density..),  alpha = 0.5, binwidth = diff(range(priordata))/sqrt(nrow(priordata)))
+    priorfigure <- priorfigure + rug
+  } 
+  if(is.data.frame(priordensity[1])){
+    dens <- geom_line(data=priordensity, aes(x=prior.x, y=dens.x))
+    priorfigure <- priorfigure + dens
+  } 
+  return(priorfigure)
+} 
+
+##' Fit a distribution to data
+##'
+##' @title Fit distribution to data  
+##' @param trait.data data for distribution
+##' @param dists list of distribution names
+##' @return best fit distribution
+##' @author David LeBauer
+fit.dist <- function(trait.data, dists = c('weibull', 'lognormal', 'gamma') {
+  warning(immediate. = TRUE)
+  a <- lapply(dists[!dists == 'f'] , function(x) suppressWarnings(fitdistr(trait.data[,1],x)))
+  trait <- colnames(trait.data)
+  names(a) <- dists[!dists == 'f']
+  if('f' %in% dists){
+    if(trait == 'tt') {
+      a[['f']] <- suppressWarnings(fitdistr(trait.data[,1], 'f', start = list(df1=100, df2=2)))
+    } else if (trait == 'sla') {
+      a[['f']] <- suppressWarnings(fitdistr(trait.data[,1], 'f', start = list(df1=6, df2=1 )))
+    }
+  }
+  aicvalues <- lapply(a, AIC)
+  bestfitdist <- names(which.min(aicvalues))
+  parms <- tabnum(a[[bestfitdist]]$estimate)
+  return(data.frame(distribution = bestfitdist, 
+                    a = as.numeric(parms[1]), 
+                    b = as.numeric(parms[2]), 
+                    n = nrow(trait.data)))
+} 
