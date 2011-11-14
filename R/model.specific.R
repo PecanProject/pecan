@@ -45,7 +45,7 @@ convert.samples.ED <- function(trait.samples){
   ## convert leaf width / 1000
   if('leaf_width' %in% names(trait.samples)){
     lw <- trait.samples[['leaf_width']]
-    trait.samples[['leaf_width']] / 1000.0
+    trait.samples[['leaf_width']] <- lw / 1000.0
   }
   
   if('root_respiration_rate' %in% names(trait.samples)) {
