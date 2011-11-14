@@ -13,16 +13,6 @@ fetch.stats2se <- function(connection, query){
   return(transformed)
 }
 
-##' Scale temperature dependent trait from measurement temperature to reference temperature 
-##'
-##' @title Arrhenius scaling 
-##' @param observed.value observed value of temperature dependent trait, e.g. Vcmax, root respiration rate
-##' @param old.temp temperature at which measurement was taken or previously scaled to
-##' @param new.temp temperature to be scaled to, default = 25 C  
-##' @return numeric value at reference temperature
-arrhenius.scaling <- function(observed.value, old.temp, new.temp = 25){
-  return(observed.value / exp (3000 * ( 1 / (273.15 + new.temp) - 1 / (273.15 + old.temp))))
-}
 ##' rename data columns for JAGS meta-analysis model
 ##'
 ##' @title Rename JAGS columns
