@@ -282,10 +282,9 @@ prior.density <- function(distribution, a, b){
   return(data.frame(prior.x, dens.x, prob.x))
 }
 
-##' .. content for \description{} (no empty lines) ..
+##' Plot prior density and data
 ##'
-##' .. content for \details{} ..
-##' @title 
+##' @title Prior Figure 
 ##' @param priordata observations to be plotted as points
 ##' @param priordensity density of prior distribution, calculated by \code{\link{prior.density}}
 ##' @param trait name of trait
@@ -323,7 +322,7 @@ priorfig <- function(priordata = 'n', priordensity = 'n', trait = '', xlim = 'au
 ##' @param dists list of distribution names
 ##' @return best fit distribution
 ##' @author David LeBauer
-fit.dist <- function(trait.data, dists = c('weibull', 'lognormal', 'gamma') {
+fit.dist <- function(trait.data, dists = c('weibull', 'lognormal', 'gamma')) {
   warning(immediate. = TRUE)
   a <- lapply(dists[!dists == 'f'] , function(x) suppressWarnings(fitdistr(trait.data[,1],x)))
   trait <- colnames(trait.data)
@@ -333,6 +332,8 @@ fit.dist <- function(trait.data, dists = c('weibull', 'lognormal', 'gamma') {
       a[['f']] <- suppressWarnings(fitdistr(trait.data[,1], 'f', start = list(df1=100, df2=2)))
     } else if (trait == 'sla') {
       a[['f']] <- suppressWarnings(fitdistr(trait.data[,1], 'f', start = list(df1=6, df2=1 )))
+    } else if(trait == 'rrr') {
+      suppressWarnings(fitdistr(trait.data[,1], 'f', start = list(df1=6, df2=1 )))
     }
   }
   aicvalues <- lapply(a, AIC)
