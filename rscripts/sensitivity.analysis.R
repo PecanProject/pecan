@@ -54,7 +54,9 @@ for(pft in settings$pfts){
 
     vd.plots <- plot.variance.decomposition(sensitivity.results$variance.decomposition.plot.inputs)
     pdf(paste(settings$outdir, 'variancedecomposition.pdf', sep=''), width = 11, height = 8)
-    cv.xticks <- pretty(c(0,150)) ## workaround to intractable error "cv.xticks not found"
+    cv.xticks <- pretty(c(0,150),4)
+    el.xticks <- pretty(c(-1.5,1.5),3)
+    pv.xticks <-pretty(c(0,50),4)
     do.call(grid.arrange, c(vd.plots, ncol = 4))
     dev.off() 
   
