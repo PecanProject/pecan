@@ -255,6 +255,7 @@ arrhenius.scaling <- function(observed.value, old.temp, new.temp = 25){
 ##' @return x, capitalized
 ##' @author David LeBauer
 capitalize <- function(x) {
+  x <- as.character(x)
   s <- strsplit(x, " ")[[1]]
   paste(toupper(substring(s, 1,1)), substring(s, 2),
         sep="", collapse=" ")
@@ -322,19 +323,23 @@ priorfig <- function(priordata = 'n', priordensity = 'n', trait = '', xlim = 'au
 ##' @param dists list of distribution names
 ##' @return best fit distribution
 ##' @author David LeBauer
-fit.dist <- function(trait.data, dists = c('weibull', 'lognormal', 'gamma')) {
+fit.dist <- function(trait.data, dists = c('weibull', 'lognormal', 'gamma'), n = NULL) {
   warning(immediate. = TRUE)
-  a <- lapply(dists[!dists == 'f'] , function(x) suppressWarnings(fitdistr(trait.data[,1],x)))
+  nostart.dists <- dists[dists %in% c('weibull', 'lognormal', 'gamma')]
+  a <- lapply(nostart.dists, function(x) suppressWarnings(fitdistr(trait.data[,1],x)))
   trait <- colnames(trait.data)
-  names(a) <- dists[!dists == 'f']
+  names(a) <- nostart.dists
   if('f' %in% dists){
     if(trait == 'tt') {
       a[['f']] <- suppressWarnings(fitdistr(trait.data[,1], 'f', start = list(df1=100, df2=2)))
     } else if (trait == 'sla') {
       a[['f']] <- suppressWarnings(fitdistr(trait.data[,1], 'f', start = list(df1=6, df2=1 )))
     } else if(trait == 'rrr') {
-      suppressWarnings(fitdistr(trait.data[,1], 'f', start = list(df1=6, df2=1 )))
+      a[['f']] <- suppressWarnings(fitdistr(trait.data[,1], 'f', start = list(df1=6, df2=1 )))
     }
+  }
+  if('beta' %in% dists){
+    a[['beta']] <- suppressWarnings(fitdistr(trait.data[,1], 'beta', start = list(shape1 = 2, shape2 = 1 )))
   }
   aicvalues <- lapply(a, AIC)
   bestfitdist <- names(which.min(aicvalues))
@@ -342,5 +347,58 @@ fit.dist <- function(trait.data, dists = c('weibull', 'lognormal', 'gamma')) {
   return(data.frame(distribution = bestfitdist, 
                     a = as.numeric(parms[1]), 
                     b = as.numeric(parms[2]), 
-                    n = nrow(trait.data)))
+                    n = ifelse(is.null(n), nrow(trait.data), n)))
 } 
+
+##' Reads output from model ensemble
+##'
+##' Reads output for an ensemble of length specified by \code{ensemble.size} and bounded by \code{start.year} and \code{end.year}
+##' @title Read ensemble output
+##' @return a list of ensemble output 
+##' @param ensemble.size 
+##' @param outdir 
+##' @param pft.name 
+##' @param start.year 
+##' @param end.year 
+##' @param read.output model specific read output function, \cite{\link{read.output.ed}} by default.
+read.ensemble.output <- function(ensemble.size, outdir, pft.name='', 
+                                 start.year, end.year, read.output = read.output.ed){
+  ensemble.output <- list()
+  for(ensemble.id in 1:ensemble.size) {
+    run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, 5), pft.name=pft.name)#log10(ensemble.size)+1))
+    if(any(grep('h5',dir()[grep(run.id, dir())]))) {
+      ensemble.output[[ensemble.id]] <- read.output(run.id, outdir, start.year, end.year)
+    } else {
+      ensemble.output[[ensemble.id]] <- NA
+    }
+  }
+  return(ensemble.output)
+}
+
+##' Reads output of sensitivity analysis runs
+##'
+##' 
+##' @title Read Sensitivity Analysis output 
+##' @return dataframe with one col per quantile analysed and one row per trait,
+##'  each cell is a list of AGB over time
+##' @param traits 
+##' @param quantiles 
+##' @param outdir 
+##' @param pft.name 
+##' @param start.year 
+##' @param end.year 
+##' @param read.output model specific read.output function
+read.sa.output <- function(traits, quantiles, outdir, pft.name='', 
+                           start.year, end.year, read.output = read.output.ed){
+  sa.output <- data.frame()
+  for(trait in traits){
+    for(quantile in quantiles){
+      run.id <- get.run.id('SA', round(quantile,3), trait=trait, pft.name=pft.name)
+      print(run.id)
+      sa.output[as.character(round(quantile*100,3)), trait] <- read.output(run.id, outdir, start.year, end.year)
+    }
+  }
+  sa.output['50',] <- read.output(get.run.id('SA', 'median'), outdir, start.year, end.year)
+  sa.output <- sa.output[order(as.numeric(rownames(sa.output))),]
+  return(sa.output)
+}
