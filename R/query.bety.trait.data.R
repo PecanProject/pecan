@@ -173,7 +173,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
 
     ## select only summer data for Panicum virgatum
     if (spstr == "'938'"){
-      data <- subset(data, subset = data$month %in% c(0,6))
+      data <- subset(data, subset = data$month %in% c(0,6,7))
     }
     result <- drop.columns(data, c('leafT', 'canopy_layer','dateloc'))
     
