@@ -3,7 +3,7 @@ if(interactive()){
   user <- Sys.getenv('USER')
   options(error = browser)
   if(user == 'dlebauer'){
-    settings.file = '~/in/ebifarm/prior/ebifarm.pavi.xml'
+    settings.file = '~/in/ebifarm/post/ebifarm.pavi.xml'
   } else if(user == 'davids14') {
     settings.file = '~/pecan/tundra.xml'
   } else {
@@ -54,11 +54,11 @@ for(pft in settings$pfts){
 
     vd.plots <- plot.variance.decomposition(sensitivity.results$variance.decomposition.plot.inputs)
     pdf(paste(settings$outdir, 'variancedecomposition.pdf', sep=''), width = 11, height = 8)
-    cv.xticks <- pretty(c(0,150),4)
-    el.xticks <- pretty(c(-1.5,1.5),3)
-    pv.xticks <-pretty(c(0,50),4)
+    cv.xticks <- pretty(sensitivity.results$variance.decomposition.plot.inputs$coef.vars*100,4)
+    el.xticks <- pretty(sensitivity.results$variance.decomposition.plot.inputs$elasticities,4)
+    el.xrange <- range(pretty(sensitivity.results$variance.decomposition.plot.inputs$elasticities,6))
+    pv.xticks <- pretty(sensitivity.results$variance.decomposition.plot.inputs$partial.variances*100,4)
     do.call(grid.arrange, c(vd.plots, ncol = 4))
     dev.off() 
-  
   }
 }

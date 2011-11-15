@@ -68,10 +68,8 @@ plot.sensitivity <- function(sa.sample, sa.spline, trait,
 
 plot.variance.decomposition <- function(plot.inputs, outdir,
                                         prior.plot.inputs = NULL,
-                                        fontsize = list(title = 18, axis = 14),
-                                        cv.xticks = pretty(c(0,150),4),
-                                        el.xticks = pretty(c(-1.5,1.5),3),
-                                        pv.xticks = pretty(c(0,50),4)) {
+                                        fontsize = list(title = 18, axis = 14))
+{
   traits    <- names(plot.inputs$partial.variances)
   units     <- trait.dictionary(traits)$units
   trait.labels <- merge(data.frame(id = traits), trait.dictionary(traits), by = 'id', sort = FALSE)$figid
@@ -94,7 +92,12 @@ plot.variance.decomposition <- function(plot.inputs, outdir,
   ## location of words and lollipops set by 'points'
   ##    these points can be moved up or down by adjusting the offset X in 1:length(traits) - X
   plot.data <- data.frame(.plot.data[pv.order, ], points = 1:length(traits) - 0.5)
+  cv.xticks <- pretty(plot.data[,grep('coef.var', colnames(plot.data))], 4)
+  pv.xticks <- pretty(plot.data[,grep('partial.variance', colnames(plot.data))], 4)  
+  el.xticks <- pretty(plot.data[,grep('elasticities', colnames(plot.data))], 3)
+  el.xrange <- range(pretty(plot.data[,grep('elasticities', colnames(plot.data))], 4))
 
+  
   ## Notes on fine-tuning plots below
   ## axis lines and ticks drawn for each plot using geom_segment  
   ## size of x axis tick set by xend = ...
@@ -129,9 +132,9 @@ plot.variance.decomposition <- function(plot.inputs, outdir,
                           ymin = 0, ymax = prior.partial.variances),
                       size = 1.25, color = 'grey') 
   } else {
-    .cv.plot <- base.plot + scale_y_continuous(breaks =  pretty(plot.data$coef.vars, n = 4))
-    .el.plot <- base.plot + scale_y_continuous(breaks =  pretty(plot.data$elasticities, n = 4))
-    .pv.plot <- base.plot + scale_y_continuous(breaks =  pretty(plot.data$partial.variances, n = 4))
+    .cv.plot <- base.plot + scale_y_continuous(breaks = cv.xticks)
+    .el.plot <- base.plot + scale_y_continuous(breaks = el.xrange)
+    .pv.plot <- base.plot + scale_y_continuous(breaks = pv.xticks)
   }
 
 
@@ -154,7 +157,6 @@ plot.variance.decomposition <- function(plot.inputs, outdir,
                                                              xend = -0.1,
                                                              yend = cv.xticks), colour = 'white') 
 
-  cv.xticks <- pretty(range(plot.data[,grep('coef.var', colnames(plot.data))]), 4)  
   cv.plot <- .cv.plot +
     opts(title = 'CV (%)', plot.title = theme_text(size = fontsize$title)) +
       scale_y_continuous(breaks = cv.xticks, limits = range(cv.xticks)) +
@@ -171,24 +173,22 @@ plot.variance.decomposition <- function(plot.inputs, outdir,
                                                               yend = cv.xticks))
 
 
-  el.range <-  range(abs(plot.data[,grep('elasticities', colnames(plot.data))]))
-  el.xticks <- pretty(el.range, 3)   
+  if (diff(range(el.xticks)) < 4) el.xticks <- c(-1,0,1)
   el.plot <- .el.plot + 
     opts(title = 'Elasticity', plot.title = theme_text(size = fontsize$title)) +
-      scale_y_continuous(breaks = el.xticks, limits = range(el.xticks)) +
+      scale_y_continuous(breaks = el.xticks, limits = range(el.xrange)) +
         geom_pointrange(aes(x = points, y = elasticities, ymin = 0, ymax = elasticities),
                         size = 1.25) +
                           ##  Add Axes
-                          geom_segment(aes(x = c(0,0), y = c(0,min(el.xticks)),
+                          geom_segment(aes(x = c(0,0), y = c(0, min(el.xticks)),
                                            yend = c(0, max(el.xticks)),
-                                           xend = c(length(traits), 0)))  + 
+                                           xend = c(length(traits), 0)))  +
                                              ## Add Ticks
                                              geom_segment(aes(x = 0,
                                                               y = el.xticks,
                                                               xend = -0.1,
                                                               yend = el.xticks)) 
 
-  pv.xticks <- pretty(range(plot.data[,grep('partial.variance', colnames(plot.data))]), 4)  
   pv.plot <- .pv.plot + 
     opts(title = 'Partial Variance (%)',
          plot.title = theme_text(size = fontsize$title)) +
