@@ -3,27 +3,27 @@
   <pfts>
     <pft>
       <name>temperate.Late_Hardwood</name>
-      <outdir>/home/share/tests/temperate/LH/</outdir>
+      <outdir>/home/mdietze/output/pecan/LH/</outdir>
     </pft>
     <pft>
       <name>temperate.North_Mid_Hardwood</name>
-      <outdir>/home/share/tests/temperate/MH/</outdir>
+      <outdir>/home/mdietze/output/pecan/MH/</outdir>
     </pft>
     <pft>
       <name>temperate.Early_Hardwood</name>
-      <outdir>/home/share/tests/temperate/EH/</outdir>
+      <outdir>/home/mdietze/output/pecan/EH/</outdir>
     </pft>
     <pft>
       <name>temperate.Northern_Pine</name>
-      <outdir>/home/share/tests/temperate/NP/</outdir>
+      <outdir>/home/mdietze/output/pecan/NP/</outdir>
     </pft>
     <pft>
       <name>temperate.Mid_Conifer</name>
-      <outdir>/home/share/tests/temperate/MC/</outdir>
+      <outdir>/home/mdietze/output/pecan/MC/</outdir>
     </pft>
     <pft>
       <name>temperate.Late_Conifer</name>
-      <outdir>/home/share/tests/temperate/LC/</outdir>
+      <outdir>/home/mdietze/output/pecan/LC/</outdir>
     </pft>
   </pfts>
   <meta.analysis>
@@ -34,11 +34,11 @@
     <size>0</size>
   </ensemble>
   <sensitivity.analysis></sensitivity.analysis>
-  <outdir>/home/share/tests/temperate/</outdir>
+  <outdir>/home/mdietze/output/pecan/</outdir>
   <Rlibdir>~/lib/R</Rlibdir>
   <database>
     <location>localhost</location>
-    <name>ebi_analysis</name>
+    <name>ebi_production</name>
     <userid>mdietze</userid>
     <passwd>goillini</passwd>
   </database>

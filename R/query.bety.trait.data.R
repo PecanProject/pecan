@@ -241,19 +241,21 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
 
     all.covs = query.covariates(data$id, con = con)
 
-    ## get temperature covariates
-    data <- append.covariate(data, 'rootT', 
+    if(length(all.covs) > 0){
+      ## get temperature covariates
+      data <- append.covariate(data, 'rootT', 
         all.covs[all.covs$name == 'rootT',],
         all.covs[all.covs$name == 'airT',])
 
-    ## remove data where rootT is unknown
-    data <- data[!is.na(data$rootT), ]
+      ## remove data where rootT is unknown
+      data <- data[!is.na(data$rootT), ]
     
-    ## Scale to 25C using Arrhenius scaling,
-    data$mean <- arrhenius.scaling(data$mean, old.temp = data$rootT, new.temp = 25)
-    data$stat <- arrhenius.scaling(data$stat, old.temp = data$rootT, new.temp = 25)
-    result <- drop.columns(data, c('rootT', 'dateloc'))
-    
+      ## Scale to 25C using Arrhenius scaling,
+      data$mean <- arrhenius.scaling(data$mean, old.temp = data$rootT, new.temp = 25)
+      data$stat <- arrhenius.scaling(data$stat, old.temp = data$rootT, new.temp = 25)
+      result <- drop.columns(data, c('rootT', 'dateloc'))
+
+    }
   } else if (trait == 'c2n_leaf') {
 
     #########################  LEAF C:N   ############################
@@ -261,8 +263,9 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     query <- paste("select traits.id, traits.citation_id, variables.name as vname, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n, traits.date, traits.time, traits.cultivar_id, traits.specie_id from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) left join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,")  and variables.name in ('c2n_leaf', 'leafN');", sep = "")
 
     data <- fetch.stats2se(con, query)
-    leafNdata   <- data$name == 'leafN'
+    leafNdata   <- data$vname == 'leafN'
     leafNdataSE <- leafNdata & data$statname == 'SE'
+    leafNdataSE[is.na(leafNdataSE)] = FALSE
     inv.se <- function(mean, stat, n) signif(sd(48/rnorm(100000, mean, stat*sqrt(n)))/sqrt(n),3)
     data$stat[leafNdataSE] <- apply(data[leafNdataSE, c('mean', 'stat', 'n')],1, function(x) inv.se(x[1],x[2],x[3]) )
     data$mean[data$vname == 'leafN'] <- 48/data$mean[data$vname == 'leafN']
@@ -316,7 +319,8 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
           }
         }        
       }
-      if(!is.null(data3)) data3 <- drop.columns(data3, "specie_id")
+#      if(!is.null(data3)) data3 <- drop.columns(data3, "specie_id")
+      if(!is.null(data3)) data3 <- data3[,1:15]
     }
     result <- rbind(data,data3)
   }  else {
