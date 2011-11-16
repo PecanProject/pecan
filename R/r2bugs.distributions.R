@@ -11,8 +11,9 @@ r2bugs.distributions <- function(priors) {
   sd2tau <- priors$distn %in% c('lnorm', 'norm')
   priors$paramb[sd2tau] <-  1/priors$paramb[sd2tau]^2
 
-  scale2rate <- priors$dist %in% c('weibull')
-  priors$paramb[scale2rate] <-  1 / priors$paramb[scale2rate]
+  ## not used with JAGS, perhaps with BUGS?
+  ## scale2rate <- priors$dist %in% c('weibull')
+  ## priors$paramb[scale2rate] <-  1 / priors$paramb[scale2rate]
 
   reverse.order <- priors$dist %in% c('binom')
   priors$paramb[reverse.order] <-  priors$parama[reverse.order]
