@@ -2,8 +2,8 @@
 pecan.transformstats <- function(data) {
   ## Transformation of stats to SE
   ## transform SD to SE
-  if ("SD" %in% data$statname) {
-    sdi <- which(data$statname == "SD")
+  if (max(c("SD","sd") %in% data$statname)) {
+    sdi <- which(data$statname %in% c("SD","sd"))
     data$stat[sdi] <- data$stat[sdi] / sqrt(data$n[sdi])
     data$statname[sdi] <- "SE"
   }
@@ -30,9 +30,12 @@ pecan.transformstats <- function(data) {
   ## Tukey's Honestly Significant Difference (HSD),
   ## conservatively assuming 3 groups being tested so df =2
   if ("HSD" %in% data$statname) {
-    hsdi <- which(data$statname == "HSD" & data$n > 1)
-    data$stat[hsdi] <- data$stat[hsdi] / (qtukey(0.975, data$n[hsdi], df = 2))
+    hsdi <- which(data$statname == "HSD")
+    n = data$n[hsdi]
+    n[is.na(n)] = 2 ## minimum n that can be used if NA
+    data$stat[hsdi] <- data$stat[hsdi] / (qtukey(0.975, n, df = 2))
     data$statname[hsdi] <- "SE"
+    data$n[hsdi] <- n
   }              
   ## MSD Minimum Squared Difference
   ## MSD = t_{\alpha/2, 2n-2}*SD*sqrt(2/n)
