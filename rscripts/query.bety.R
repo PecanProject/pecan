@@ -24,18 +24,20 @@ require(PECAn)
 trait.names <- trait.dictionary()$id
 
 ## connect to database
-newcon <- function(){query.bety.con(dbname   = settings$database$name,
+newcon <- query.bety.con(dbname   = settings$database$name,
                                     password = settings$database$passwd,
                                     username = settings$database$userid,
-                                    host     = settings$database$host)}
-
+                                    host     = settings$database$host)
+cnt = 0;
+all.trait.data = list()
 for(pft in settings$pfts){
+  cnt = cnt + 1
   
   ## 1. get species list based on pft
-  spstr <- query.bety.pft_species(pft$name,con=newcon())
+  spstr <- query.bety.pft_species(pft$name,con=newcon)
   
   ## 2. get priors available for pft  
-  prior.distns <- query.bety.priors(pft$name, vecpaste(trait.names), out=pft$outdir,con=newcon())
+  prior.distns <- query.bety.priors(pft$name, vecpaste(trait.names), out=pft$outdir,con=newcon)
   ### exclude any parameters for which a constant is provided 
   prior.distns <- prior.distns[which(!rownames(prior.distns) %in%
                                      names(settings$pfts$pft$constants)),]
@@ -46,9 +48,18 @@ for(pft in settings$pfts){
 
   ## if meta-analysis to be run, get traits for pft as a list with one dataframe per variable
   if('meta.analysis' %in% names(settings)) {
-    trait.data <- query.bety.traits(spstr, traits, con = newcon())
+    trait.data <- query.bety.traits(spstr, traits, con = newcon)
     traits <- names(trait.data)
     save(trait.data, file = paste(pft$outdir, 'trait.data.Rdata', sep=''))
+    
+    all.trait.data[[cnt]] <- trait.data
+    names(all.trait.data)[cnt] <- pft$name
+    
   }
   save(prior.distns, file=paste(pft$outdir, 'prior.distns.Rdata', sep = ''))
+}
+
+for(i in 1:length(all.trait.data)){
+  print(names(all.trait.data)[i])
+  print(sapply(all.trait.data[[i]],dim)[1,])
 }
