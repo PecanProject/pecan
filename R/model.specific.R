@@ -45,7 +45,7 @@ convert.samples.ED <- function(trait.samples){
   ## convert leaf width / 1000
   if('leaf_width' %in% names(trait.samples)){
     lw <- trait.samples[['leaf_width']]
-    trait.samples[['leaf_width']] / 1000.0
+    trait.samples[['leaf_width']] <- lw / 1000.0
   }
   
   if('root_respiration_rate' %in% names(trait.samples)) {
@@ -138,3 +138,53 @@ write.run.ED <- function(settings){
                  settings$run$host$rundir, sep = ''))
   }
 }
+
+##' Extract ED output for specific variables from an hdf5 file
+##' @title read output - ED
+##' @param filename string, name of file with data
+##' @param variables  variables to extract from file
+##' @return single value of output variable from filename. In the case of AGB, it is summed across all plants
+read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
+  library(hdf5)
+  Carbon2Yield = 20
+  data <- hdf5load(filename, load = FALSE)[variables]
+  if(all(c("AGB_CO", "NPLANT") %in% variables)) {
+    return(sum(data$AGB_CO * data$NPLANT, na.rm =TRUE) * Carbon2Yield)
+  } else {
+    return(sum(data[[variables]]))
+  }
+}
+
+##' Reads the output of a single model run
+##'
+##' This function applies \link{\code{read.output.file.ed}} to a list of files from a single run
+##' @title Read ED output
+##' @param run.id the id distiguishing the model run
+##' @param outdir the directory that the model's output was sent to
+##' @param start.year 
+##' @param end.year
+##' @param output.type type of output file to read, can be "-Y-" for annual output, "-M-" for monthly means, "-D-" for daily means, "-T-" for instantaneous fluxes. Output types are set in the ED2IN namelist as NL%I[DMYT]OUTPUT  
+##' @return vector of output variable for all runs within ensemble
+read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA, output.type = 'Y'){
+  
+  file.names <- dir(outdir, pattern=run.id, full.names=TRUE)
+  file.names <- grep(paste('-', output.type, '-', sep = ''), file.names, value = TRUE)
+  file.names <- grep('([0-9]{4}).*', file.names, value=TRUE)
+  if(length(file.names) > 0) {
+    years <- sub('((?!-Y-).)*-Y-([0-9]{4}).*', '\\2', file.names, perl=TRUE)
+    if(!is.na(start.year) && nchar(start.year) ==  4){
+      file.names <- file.names[years>=as.numeric(start.year)]
+    }
+    if(!is.na(end.year) && nchar(end.year) == 4){
+      file.names <- file.names[years<=as.numeric(end.year)]
+    }
+    file.names <- file.names[!is.na(file.names)]
+    
+    result <- mean(sapply(file.names, read.output.file.ed), na.rm = TRUE)
+  } else {
+    warning(cat(paste('no output files in', outdir, '\nfor', run.id, '\n')))
+    result <- NA
+  }
+  return(result)
+}
+

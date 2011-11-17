@@ -48,7 +48,7 @@ if(host$name == 'localhost'){
   if(length(files) > 0 ) {
     todelete <- files[-grep('log', files)]
     system(paste("ssh -T ", host$name,
-                " 'for f in ", paste(todelete, collapse = ' '),"; do rm $f; done'",sep=''))
+                 " 'for f in ", paste(todelete, collapse = ' '),"; do rm $f; done'",sep=''))
   }
 }
 
@@ -84,45 +84,43 @@ for (i in seq(pft.names)){
     }
     trait.samples[[pft.name]][[prior]] <- samples
   }
-}
 
+  ## subset the trait.samples to ensemble size using Halton sequence 
+  if('ensemble' %in% names(settings) && settings$ensemble$size > 0) {
+    ensemble.samples[[pft.name]] <- get.ensemble.samples(settings$ensemble$size, trait.samples[[pft.name]])
+    write.ensemble.configs(settings$pfts[[i]], ensemble.samples[[pft.name]], 
+                           host, outdir, settings)
+  }
 
-## subset the trait.samples to ensemble size using Halton sequence 
-if('ensemble' %in% names(settings) && settings$ensemble$size > 0) {
-  ensemble.samples[[pft.name]] <- get.ensemble.samples(settings$ensemble$size, trait.samples[[pft.name]])
-  write.ensemble.configs(settings$pfts[[i]], ensemble.samples[[pft.name]], 
-                         host, outdir, settings)
-}
-
-if('sensitivity.analysis' %in% names(settings)) {
-  if( is.null(settings$sensitivity.analysis)) {
-    print(paste('sensitivity analysis settings are NULL'))
-  } else {
-    quantiles <- get.quantiles(settings$sensitivity.analysis$quantiles)
-    sa.samples[[pft.name]] <-  get.sa.samples(trait.samples[[pft.name]], quantiles)
-    write.sa.configs(settings$pfts[[i]], sa.samples[[pft.name]], 
-                     host, outdir, settings)
+  if('sensitivity.analysis' %in% names(settings)) {
+    if( is.null(settings$sensitivity.analysis)) {
+      print(paste('sensitivity analysis settings are NULL'))
+    } else {
+      quantiles <- get.quantiles(settings$sensitivity.analysis$quantiles)
+      sa.samples[[pft.name]] <-  get.sa.samples(trait.samples[[pft.name]], quantiles)
+      write.sa.configs(settings$pfts[[i]], sa.samples[[pft.name]], 
+                       host, outdir, settings)
+    }
   }
 }
-
 
                                         #Make outdirectory
-save(ensemble.samples, trait.samples, sa.samples, settings,
-     file = paste(outdir, 'samples.Rdata', sep=''))
+  save(ensemble.samples, trait.samples, sa.samples, settings,
+       file = paste(outdir, 'samples.Rdata', sep=''))
 
-if(host$name == 'localhost'){
-  if(!host$outdir == outdir) {
-    dir.create(host$outdir)
-    file.copy(from = paste(outdir, 'samples.Rdata', sep=''),
-              to   = paste(host$outdir, 'samples.Rdata', sep = ''),
-              overwrite = TRUE)
+  if(host$name == 'localhost'){
+    if(!host$outdir == outdir) {
+      dir.create(host$outdir)
+      file.copy(from = paste(outdir, 'samples.Rdata', sep=''),
+                to   = paste(host$outdir, 'samples.Rdata', sep = ''),
+                overwrite = TRUE)
+    }
+  } else {
+    
+    mkdir.cmd <- paste("'if ! ls ", host$outdir, " > /dev/null ; then mkdir -p ", host$outdir," ; fi'",sep='')
+    system(paste("ssh", host$name, mkdir.cmd))
+    system(paste('rsync -routi ', paste(outdir, 'samples.Rdata', sep=''),
+                 paste(host$name, ':', host$outdir, sep='')))
   }
-} else {
-  
-  mkdir.cmd <- paste("'if ! ls ", host$outdir, " > /dev/null ; then mkdir -p ", host$outdir," ; fi'",sep='')
-  system(paste("ssh", host$name, mkdir.cmd))
-  system(paste('rsync -routi ', paste(outdir, 'samples.Rdata', sep=''),
-               paste(host$name, ':', host$outdir, sep='')))
-}
 
- 
+  
