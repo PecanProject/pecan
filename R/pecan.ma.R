@@ -53,8 +53,10 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
     prior <- prior.distns[trait.name, c('distn', 'parama', 'paramb', 'n')]
     colnames(prior) <- c("distn", "a", "b", "n")
 
+    writeLines(paste('################################################'))
+    writeLines(paste('------------------------------------------------'))
     writeLines(paste('starting meta-analysis for:\n\n', trait.name,'\n'))
-    
+    writeLines(paste('------------------------------------------------'))
     data <- trait.data[[trait.name]]
     data <- data[, which(!colnames(data) %in% c("cite","trait_id","se"))] ## remove citation and other unneeded co lumns
     data <- data[order(data$site,data$trt),]#not sure why, but required for JAGS model
