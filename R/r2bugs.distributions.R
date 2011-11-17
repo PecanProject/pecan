@@ -8,28 +8,32 @@
 
 r2bugs.distributions <- function(priors) {
 
-  sd2tau <- priors$distn %in% c('lnorm', 'norm')
-  priors$paramb[sd2tau] <-  1/priors$paramb[sd2tau]^2
-
-  ## not used with JAGS, perhaps with BUGS?
-  ## scale2rate <- priors$dist %in% c('weibull')
-  ## priors$paramb[scale2rate] <-  1 / priors$paramb[scale2rate]
-
-  reverse.order <- priors$dist %in% c('binom')
-  priors$paramb[reverse.order] <-  priors$parama[reverse.order]
-  priors$parama[reverse.order] <-  priors$paramb[reverse.order]
+  norm   <- priors$distn %in% 'norm'
+  lnorm  <- priors$distn %in% 'lnorm'
+  weib   <- priors$distn %in% 'weibull'
+  bin    <- priors$distn %in% 'binom'
+  chisqr <- priors$distn %in% 'chisq'
+  negbin <- priors$distn %in% 'nbinom'
   
-  priors$distn[priors$distn == 'weibull'] <- 'weib'
-  priors$distn[priors$distn == 'binom']   <- 'bin'
-  priors$distn[priors$distn == 'chisq']   <- 'chisqr'
-  priors$distn[priors$distn == 'nbinom']  <- 'negbin'
+  ## Convert sd to precision for norm & lnorm
+  priors$paramb[norm | lnorm] <-  1/priors$paramb[norm | lnorm]^2
+  ## Convert R parameter b to JAGS parameter lambda by l = (1/b)^a
+  priors$paramb[weib] <-   1 / priors$paramb[weib]^priors$parama[weib]
+  ## Reverse parameter order for binomial
+  priors[bin, c('parama', 'paramb')] <-  priors[bin, c('parama', 'paramb')]
 
+  ## Translate distribution names
+  priors$distn <- gsub('weibull', 'weib',
+                       gsub('binom', 'bin',
+                            gsub('chisq', 'chisqr',
+                                 gsub('nbinom', 'negbin',
+                                      as.vector(priors$distn)))))
   return(priors)
 }
 
 
 ##' @examples
 ##' priors <- data.frame(distn = c('weibull', 'lnorm', 'norm', 'gamma'),
-##'                     parama = c(1, 1, 1, 1),
-##'                     paramb = c(2, 2, 2, 2))
+##'                      parama = c(1, 1, 1, 1),
+##'                      paramb = c(2, 2, 2, 2))
 ##' r2bugs.distributions(priors)
