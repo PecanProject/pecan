@@ -109,7 +109,8 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
         if(x!='ghs') {
           vars <- c(vars, paste('sd.', x, sep = ''))
         }
-        m <- min(model.parms[[x]], 5)
+        # m <- min(model.parms[[x]], 5)
+        m <- model.parms[[x]]
         for (i in 1:m) {
           if(i == 1 && x == 'site') {
             vars <- c(vars, 'beta.site[1]')
