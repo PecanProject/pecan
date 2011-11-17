@@ -269,7 +269,7 @@ capitalize <- function(x) {
 ##' @param b second parameter of distribution (numeric)
 ##' @return data frame with values of x, the density at each x and the probability at each x
 ##' @author David LeBauer
-prior.density <- function(distribution, a, b){
+prior.density <- function(distribution = 'norm', a = 0, b = 1){
   distribution <- gsub('lognormal', 'lnorm', distribution)
   if(distribution != 'beta'){
     range.x <- range(pretty(do.call(paste('q', distribution, sep = ''), list(c(0.005, 0.995),a,b))))
