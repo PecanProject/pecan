@@ -342,6 +342,9 @@ fit.dist <- function(trait.data, dists = c('weibull', 'lognormal', 'gamma'), n =
     a[['beta']] <- suppressWarnings(fitdistr(trait.data[,1], 'beta', start = list(shape1 = 2, shape2 = 1 )))
   }
   aicvalues <- lapply(a, AIC)
+  result <- t(sapply(dists, function(x) cbind(t(tabnum(a[[x]]$estimate)), signif(aicvalues[[x]]))))
+  colnames(result) <- c('a', 'b', 'AIC')
+  print(result)
   bestfitdist <- names(which.min(aicvalues))
   parms <- tabnum(a[[bestfitdist]]$estimate)
   return(data.frame(distribution = bestfitdist, 
