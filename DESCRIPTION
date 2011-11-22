@@ -1,7 +1,7 @@
 Package: PECAn
 Type: Package
 Title: PEcAn functions used for ecological forecasts and reanalysis
-Version: 1.0
+Version: 1.1
 Date: 2010-10-05
 Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Mike Dietze, Carl
     Davidson, Rob Kooper
@@ -21,7 +21,10 @@ Depends:
     gridExtra,
     xtable
 Suggests:
-    hdf5
+    hdf5,
+    MCMCpack,
+    mvtnorm,
+    time
 SystemRequirements: JAGS2.2.0, bash, ED2, kepler
 OS_type: unix
 License: University of Illinois/NCSA Open Source License
