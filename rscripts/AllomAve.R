@@ -31,8 +31,7 @@ sel    =  floor(seq(ngibbs*0.25,ngibbs,length=min(ngibbs*0.75,5000)))
 ########## BAYESIAN VERSION ###############
 for(pft in settings$pfts){  ## loop over PFTs
 
-#  for(component in c(6,18,43)){ ## 6=stem (Bs), 18 = leaf (Bl)
-  for(component in c(43)){ ## 6=stem (Bs), 18 = leaf (Bl)
+  for(component in c(6,18,43)){ ## 6=stem (Bs), 18 = leaf (Bl), 
                                    ## 40 = height (Ht)
                                    ## 41 = rooting depth (Rd)
                                    ## 42 = Rooting volume (Vol)
