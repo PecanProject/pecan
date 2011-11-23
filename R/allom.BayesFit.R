@@ -37,7 +37,7 @@ allom.BayesFit <- function(allom,nrep=10000) {
 
   require(mvtnorm)
   require(MCMCpack)
-  haveTime <- FALSE #require(time)
+  haveTime <- require(time)
   
   ##grab required variables from allom$parm
   n    <- nu(allom[['parm']]$n)
@@ -54,9 +54,14 @@ allom.BayesFit <- function(allom,nrep=10000) {
   rng  <- cbind(nu(allom$parm$Xmin),nu(allom$parm$Xmax))
 
   ## declare constants
-  ntally = nrow(allom[['parm']])
+  ntally = nrow(allom[['parm']]); if(is.null(ntally)) ntally = 0;
   nfield = length(allom[['field']])
   nsite  = ntally + nfield
+
+  if(nsite == 0){
+    print(c("allomBayesFit no data"))
+    return(NULL)
+  }
   
   ## define priors
   s1  = s2 = 0.1 # IG prior on the within-study variance
@@ -87,8 +92,10 @@ allom.BayesFit <- function(allom,nrep=10000) {
   sigma = rep(0.3,nsite)
   sinv  = 1/sigma
   data  = allom[['field']]
-  for(i in 1:ntally){
-    data[[i+nfield]] = list(x=rep(0,n[i]),y=rep(0,n[i]))
+  if(ntally > 0){
+    for(i in 1:ntally){
+      data[[i+nfield]] = list(x=rep(0,n[i]),y=rep(0,n[i]))
+    }
   }
   x=y<-NULL
   Sg = 1
@@ -101,6 +108,7 @@ allom.BayesFit <- function(allom,nrep=10000) {
   for(g in 1:nrep){
     
     ## For tabulated equations, impute X,Y data
+    if(ntally > 0){
     for(j in 1:ntally){
       x0 <- runif(n[j],rng[j,1],rng[j,2])
       if(!is.na(Xcor[j])){
@@ -147,7 +155,8 @@ allom.BayesFit <- function(allom,nrep=10000) {
       s2 = which(!is.na(y))
       data[[nfield+j]]$x = x0[s2] ## store the std units, not the transformed
       data[[nfield+j]]$y = y[s2]  ## store y transformed to std units
-    }
+    } ## end loop over tally entries
+    } ## end check for ntally > 0
     
   if(FALSE){
     #diagnostics

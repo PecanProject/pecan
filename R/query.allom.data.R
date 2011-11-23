@@ -40,6 +40,45 @@ query.allom.data <- function(pft_name,variable,con,nsim = 10000){
   ## Field data from 'Raw' data table
   ####################################################################
   allomField <- NULL
+  q <- dbSendQuery(con,"select * from raws as r join formats as f on f.id = r.format_id where f.name like 'crownAllom'")
+  allom.files <- fetch(q,n=-1)
+  if(length(allom.files)>0){
+    for(f in allom.files$filepath){
+
+      ## load data
+      dat <- read.csv(f)
+
+      ## grab the response variable
+      y = switch(as.character(variable),
+        '40' = dat$Ht,
+        '43' = dat$Ca
+        )
+
+      ## if it exists, grab the other columns
+      if(!is.null(y)){
+        spp = dat$spp
+        x = dat$Dia
+        entry = data.frame(x,y,spp)
+        
+        ## match spp to PFT
+        spp2pft <- match(dat$spp,pft.data$acronym)
+        entry<- entry[!is.na(spp2pft),]
+
+        ## insert each species separately
+        for(s in unique(entry$spp)){
+          sel = which(entry$spp == s)
+          if(is.null(allomField)){
+            allomField <- list();
+            allomField[[1]] <- entry[sel,]
+          } else {
+            allomField[[length(allomField)+1]] <- entry[sel,]
+          }
+        }
+      } ## end Y data exists
+
+    } ## end loop over FIELD files
+  }   ## end field fiels exist
+  
   
   ## Tally data from 'Raw' data table
   #####################################################################
@@ -52,12 +91,14 @@ query.allom.data <- function(pft_name,variable,con,nsim = 10000){
   allom.files <- fetch(q,n=-1)
   if(length(allom.files)>0){
     for(f in allom.files$filepath){
-      allom <- rbind(allom,read.csv(f,skip=2))
+      if(file.exists(f)){
+        allom <- rbind(allom,read.csv(f,skip=2))
+      }
     }
   }
   
   ## debugging hack
-  allom <- read.csv("/home/mdietze/stats/AllomAve/Table3_GTR-NE-319.csv",skip=2)
+  ##allom <- read.csv("/home/mdietze/stats/AllomAve/Table3_GTR-NE-319.csv",skip=2)
 
   ## make sure some data was found
   #####################################################
