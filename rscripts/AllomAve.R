@@ -31,12 +31,21 @@ sel    =  floor(seq(ngibbs*0.25,ngibbs,length=min(ngibbs*0.75,5000)))
 ########## BAYESIAN VERSION ###############
 for(pft in settings$pfts){  ## loop over PFTs
 
-  for(component in c(6,18)){ ## 6=stem, 18 = leaf 
-
+#  for(component in c(6,18,43)){ ## 6=stem (Bs), 18 = leaf (Bl)
+  for(component in c(43)){ ## 6=stem (Bs), 18 = leaf (Bl)
+                                   ## 40 = height (Ht)
+                                   ## 41 = rooting depth (Rd)
+                                   ## 42 = Rooting volume (Vol)
+                                   ## 43 = Canopy Area
     print(c(pft,component))
     
     ## load data
     allom <- query.allom.data(pft$name,component,con)
+
+    if(is.null(allom) | (is.null(allom$parm) & is.null(allom$field))){
+      next
+    }
+    
     mc <- list()
     for(i in 1:nchain){
       mc[[i]] <- as.mcmc(allom.BayesFit(allom,ngibbs)[sel,])
