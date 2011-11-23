@@ -33,8 +33,27 @@
 ## University of Illinois, 2011
 ## mdietze@illinois.edu
 
-allom.BayesFit <- function(allom,nrep=10000) {
+allom.BayesFit <- function(allom,nrep=10000,form="power") {
 
+  ## check for valid inputs
+  if(!(form %in% ('power'))){
+    print(c("allom.BayesFit: Requested functional form",form,"not currently supported"))
+    return(NULL)
+  }
+  if(is.null(allom)){
+    print("allom.BayesFit: no data recieved, allom is NULL")
+    return(NULL)
+  }
+  if(!is.list(allom)){
+    print("allom.BayesFit: arguement allom must be a list")
+    return(NULL)
+  }
+  if(!is.numeric(nrep) | nrep <= 0){
+    print(c("allom.BayesFit: invalid nrep",nrep))
+    return(NULL)
+  }
+  
+  
   require(mvtnorm)
   require(MCMCpack)
   haveTime <- require(time)
