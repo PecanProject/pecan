@@ -91,6 +91,7 @@ for (i in seq(pft.names)){
     write.ensemble.configs(settings$pfts[[i]], ensemble.samples[[pft.name]], 
                            host, outdir, settings)
   }
+  
 
   if('sensitivity.analysis' %in% names(settings)) {
     if( is.null(settings$sensitivity.analysis)) {
@@ -104,23 +105,21 @@ for (i in seq(pft.names)){
   }
 }
 
-                                        #Make outdirectory
-  save(ensemble.samples, trait.samples, sa.samples, settings,
-       file = paste(outdir, 'samples.Rdata', sep=''))
+save(ensemble.samples, trait.samples, sa.samples, settings,
+     file = paste(outdir, 'samples.Rdata', sep=''))
 
-  if(host$name == 'localhost'){
-    if(!host$outdir == outdir) {
-      dir.create(host$outdir)
-      file.copy(from = paste(outdir, 'samples.Rdata', sep=''),
-                to   = paste(host$outdir, 'samples.Rdata', sep = ''),
-                overwrite = TRUE)
-    }
-  } else {
-    
-    mkdir.cmd <- paste("'if ! ls ", host$outdir, " > /dev/null ; then mkdir -p ", host$outdir," ; fi'",sep='')
-    system(paste("ssh", host$name, mkdir.cmd))
-    system(paste('rsync -routi ', paste(outdir, 'samples.Rdata', sep=''),
-                 paste(host$name, ':', host$outdir, sep='')))
+## Make outdirectory, send samples to outdir
+
+if(host$name == 'localhost'){
+  if(!host$outdir == outdir) {
+    dir.create(host$outdir)
+    file.copy(from = paste(outdir, 'samples.Rdata', sep=''),
+              to   = paste(host$outdir, 'samples.Rdata', sep = ''),
+              overwrite = TRUE)
   }
-
-  
+} else {  
+  mkdir.cmd <- paste("'if ! ls ", host$outdir, " > /dev/null ; then mkdir -p ", host$outdir," ; fi'",sep='')
+  system(paste("ssh", host$name, mkdir.cmd))
+  system(paste('rsync -routi ', paste(outdir, 'samples.Rdata', sep=''),
+               paste(host$name, ':', host$outdir, sep='')))
+}
