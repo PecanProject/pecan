@@ -70,7 +70,8 @@ get.elasticity <- function(sensitivity, samples, outputs){
 ##' @param y numeric vector
 ##' @return numeric vector with all values less than 0 set to 0
 zero.truncate <- function(y) {
-  y[y<0 | is.na(y)] <- 0
+  y[#y<0 | 
+          is.na(y)] <- 0
   return(y)
 }
 ##' Performs univariate sensitivity analysis and variance decomposition 
@@ -88,8 +89,10 @@ sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
   traits <- names(trait.samples)
   sa.output<-sa.output[row.names(sa.output)!='50',]
   sa.samples<-sa.samples[row.names(sa.samples)!='50',]
-  print(sa.output)
+  print('INPUT:')
   print(sa.samples)
+  print('OUTPUT:')
+  print(sa.output)
   sa.splinefuns <- sapply(traits, function(trait) sa.splinefun(sa.samples[[trait]],
                                                                sa.output[[trait]]))
   
@@ -106,6 +109,8 @@ sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
                                             spline.estimates[[trait]])))
   variances <- sapply(traits, function(trait)
                       var(spline.estimates[[trait]]))
+  print('VARIANCES')
+  print(variances)
   partial.variances <- variances / sum(variances)
   
   ##TODO: move unit conversions to their own method, called before sensitivity analysis
