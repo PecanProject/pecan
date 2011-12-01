@@ -3,9 +3,9 @@ if(interactive()){
   user <- system('echo $USER', intern = TRUE)
   options(error = browser)
   if(user == 'dlebauer'){
-    settings.file = '~/pecan/2011.07.18/settings.pavi.xml'
+    settings.file = '~/in/ebifarm/post/ebifarm.pavi.xml'
   } else if(user == 'davids14') {
-    settings.file = '~/pecan/tundra.xml'
+    settings.file = '~/pecan/toolik.xml'
   } else {
     paste('please specify settings file in meta.analysis.R')
   }
@@ -19,47 +19,50 @@ settings <- xmlToList(settings.xml)
 if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
 library(PECAn)
 
-outdir <- settings$outdir
-host<- settings$run$host
-load(paste(outdir, 'samples.Rdata', sep=''))
+load(paste(settings$outdir, 'output.Rdata', sep=''))
+load(paste(settings$outdir, 'samples.Rdata', sep=''))
 
-#ssh(host$name, 'cd ', host$outdir, '/ ; R --vanilla ',
-#    args=paste('<', settings$pecanDir, '/rscripts/read.output.R',sep=''))
-rsync(paste(host$name, ':', host$outdir, '/output.Rdata', sep=''),
-      outdir)
-
-load(paste(outdir, 'output.Rdata', sep=''))
 for(pft in settings$pfts){
-  print(pft$name)
-  traits <- names(trait.samples[[pft$name]])
-  quantiles.str <- rownames(sa.samples[[pft$name]])
-  quantiles.str <- quantiles.str[which(quantiles.str != '50')]
-  quantiles <- as.numeric(quantiles.str)/100
-                                        #ensemble.output <- read.ensemble.output(settings$ensemble$size, outdir, pft.name=pft$name)
-  
   if('sensitivity.analysis' %in% names(settings)) {
-    sensitivity.results <- sensitivity.analysis(trait.samples = trait.samples[[pft$name]],
-                                                sa.samples = sa.samples[[pft$name]],
-                                                sa.output = sa.agb[[pft$name]],
+
+    quantiles.str <- rownames(sa.samples[[pft$name]])
+    quantiles.str <- quantiles.str[which(quantiles.str != '50')]
+    quantiles <- as.numeric(quantiles.str)/100
+    ## ensemble.output <- read.ensemble.output(settings$ensemble$size, settings$outdir, pft.name=pft$name)
+
+    ## only perform sensitivity analysis on traits where no more than 2 results are missing
+    traits <- names(trait.samples[[pft$name]])
+    good.saruns <- sapply(sensitivity.output[[pft$name]], function(x) sum(is.na(x)) <=2)
+    if(!all(good.saruns)) { # if any bad saruns, reduce list of traits and print warning
+      bad.saruns <- !good.saruns
+      warning(paste('missing >2 runs for', vecpaste(traits[bad.saruns]),
+                    '\n sensitivity analysis or variance decomposition will be performed on these trait(s)',
+                    '\n it is likely that the runs did not complete, this should be fixed !!!!!!'))
+    }
+    
+    sensitivity.results <- sensitivity.analysis(trait.samples = trait.samples[[pft$name]][traits],
+                                                sa.samples = sa.samples[[pft$name]][ ,traits],
+                                                sa.output = sensitivity.output[[pft$name]][ ,traits],
                                                 outdir = pft$outdir)
-    print('SENSITIVITY:')
-    print(sensitivity.results$variance.decomposition.plot.inputs)
+
+    sensitivity.plots <- plot.sensitivities(sensitivity.results$sensitivity.plot.inputs,
+                                   linesize = 1,
+                                   dotsize = 3)
+    pdf(paste(settings$outdir, 'sensitivityanalysis.pdf', sep = ''), height = 12, width = 9)
+    sensitivity.plots
+    dev.off()
 
     vd.plots <- plot.variance.decomposition(sensitivity.results$variance.decomposition.plot.inputs)
-    pdf(paste(pft$outdir, 'variancedecomposition.pdf', sep=''), width = 11, height = 8)
+
+    pdf(paste(settings$outdir, 'variancedecomposition.pdf', sep=''), width = 11, height = 8)
+    cv.xticks <- pretty(sensitivity.results$variance.decomposition.plot.inputs$coef.vars*100,4)
+    el.xticks <- pretty(sensitivity.results$variance.decomposition.plot.inputs$elasticities,4)
+    el.xrange <- range(pretty(sensitivity.results$variance.decomposition.plot.inputs$elasticities,6))
+    pv.xticks <- pretty(sensitivity.results$variance.decomposition.plot.inputs$partial.variances*100,4)
+
     do.call(grid.arrange, c(vd.plots, ncol = 4))
-    #following line is nonessential, yet causes the following error:
-    #Error in editDLfromGPath(gPath, specs, strict, grep, global, redraw) : 
-    #    'gPath' (axis_v::axis.ticks) not found
-    #grid.edit(gPath("axis_v", "axis.ticks"), grep = TRUE, gp = gpar(col = 'white'))
-    dev.off()
-    
-    "print(sensitivity.results$variance.decomposition.plot.inputs)
-    sa.plots <- plot.sensitivities(sensitivity.results$sensitivity.plot.inputs)
-    pdf(paste(pft$outdir, 'sensitivityanalysis.pdf', sep = ''), height = 12, width = 9)
-    do.call(grid.arrange, c(sa.plots, nrow = 4, ncol = ceiling(length(traits)/4)))
-    dev.off()"
-  
+
+    dev.off() 
   }
 }
 
