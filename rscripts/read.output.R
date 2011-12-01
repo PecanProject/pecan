@@ -39,12 +39,15 @@ get.run.id <- function(run.type, index, trait='', pft.name=''){
 read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT"), FUN=mean){
   library(hdf5)
   Carbon2Yield = 20
-  data <- hdf5load(filename, load = FALSE)[variables]
-  if(all(c("AGB_CO", "NPLANT") %in% variables)) {
-    return(FUN(data$AGB_CO * data$NPLANT, na.rm =TRUE) * Carbon2Yield)
-  } else {
-    return(FUN(data[[variables]]))
-  }
+  data <- hdf5load(filename, load = FALSE)
+  #if(all(c("AGB_CO", "NPLANT") %in% variables)) {
+  #  
+  #} else if(variables=='NEE'){
+  return(FUN(data$AGB_CO * data$NPLANT, na.rm =TRUE) * Carbon2Yield)
+  #return(FUN(data$AVG_GPP-data$AVG_PLANT_RESP-data$AVG_HTROPH_RESP))
+  #} else {
+  #  return(FUN(data[[variables]]))
+  #}
 }
 
 
@@ -78,11 +81,11 @@ read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA, output.ty
   file.names <- file.names[!is.na(file.names)]
   
   expected.years<-(as.numeric(start.year)+1) : (as.numeric(end.year)-1)
-  incompleted.years<-expected.years[!expected.years %in% as.numeric(years)]
-  if(length(incompleted.years) > 0){
+  incomplete.years<-expected.years[!expected.years %in% as.numeric(years)]
+  if(length(incomplete.years) > 0){
     #run did not complete successfully
     warning(paste('Model run, "', run.id,'" was not completed for years: ', 
-                  incompleted.years))
+                  incomplete.years))
     return(NA)
   }  
   if(length(file.names > 0)) {
@@ -152,7 +155,6 @@ left.pad.zeros <- function(num, digits = 5){
   return(sprintf(format_string, num))
 }
 
-print(getwd())
 load('samples.Rdata')
 sa.agb<-list()
 ensemble.output<-list()

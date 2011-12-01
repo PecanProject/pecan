@@ -3,6 +3,7 @@ PECAn/kepler/out/.*
 PECAn/rscripts/.*
 PECAn/bash/.*
 PECAn/\.bzr/.*
+\.[^R]$
 \.sql$
 \.pdf$
 \.[rR]data$

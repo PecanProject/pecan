@@ -37,8 +37,7 @@ convert.samples.ED <- function(trait.samples){
   
   ## convert leaf width / 1000
   if('leaf_width' %in% names(trait.samples)){
-    lw <- trait.samples[['leaf_width']]
-    trait.samples[['leaf_width']] / 1000.0
+    trait.samples[['leaf_width']] <- trait.samples[['leaf_width']] / 1000.0
   }
   
   if('root_respiration_rate' %in% names(trait.samples)) {
@@ -68,8 +67,8 @@ write.config.ED <- function(pft, trait.samples, settings, outdir, run.id){
     xml <- append.xmlNode(xml, xmlNode(trait, trait.samples[trait]))
   }
   config.header <- xmlNode("config")
-  if ('config.header' %in% names(settings)){
-    config.header <- listToXml(settings$config.header, 'config')
+  if ('config.header' %in% names(pft)){
+    config.header <- listToXml(pft$config.header, 'config')
   } 
   xml <- append.xmlNode(config.header, xml)
   #c stands for config, abbreviated to work within ED's character limit

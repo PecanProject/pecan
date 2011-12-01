@@ -31,7 +31,7 @@ require(PECAn)
 
 trait.names <- c('mort2','cuticular_cond','dark_respiration_factor',
     'plant_min_temp','growth_resp_factor','leaf_turnover_rate','leaf_width',
-    'nonlocal_dispersal','fineroot2leaf','root_respiration_rate',
+    'nonlocal_dispersal','fineroot2leaf',#'root_respiration_rate',
     'root_turnover_rate','seedling_mortality','SLA','stomatal_slope',
     'Vm_low_temp','quantum_efficiency','f_labile','c2n_leaf',
     'water_conductance','r_fract','storage_turnover_rate','agf_bs','Vcmax',
@@ -100,6 +100,7 @@ for( pft in pfts){
   if(spstr != "''"){
     trait.count <- sapply(trait.data,nrow)
 
+    browser()
     trait.average <- sapply(trait.data,function(x){mean(x$Y,na.rm=TRUE)})
     
     ## Set gamma distribution prior
