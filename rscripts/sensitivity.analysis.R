@@ -3,7 +3,7 @@ if(interactive()){
   user <- Sys.getenv('USER')
   options(error = browser)
   if(user == 'dlebauer'){
-    settings.file = '~/in/ebifarm/post/ebifarm.pavi.xml'
+    settings.file = '~/in/ebifarm/prior/ebifarm.pavi.xml'
   } else if(user == 'davids14') {
     settings.file = '~/pecan/tundra.xml'
   } else {
@@ -24,6 +24,7 @@ load(paste(settings$outdir, 'output.Rdata', sep=''))
 load(paste(settings$outdir, 'samples.Rdata', sep=''))
 
 for(pft in settings$pfts){
+  print(pft)
   if('sensitivity.analysis' %in% names(settings)) {
 
     quantiles.str <- rownames(sa.samples[[pft$name]])
@@ -49,7 +50,7 @@ for(pft in settings$pfts){
                                    linesize = 1,
                                    dotsize = 3)
     pdf(paste(settings$outdir, 'sensitivityanalysis.pdf', sep = ''), height = 12, width = 9)
-    sensitivity.plots
+    print(sensitivity.plots)
     dev.off()
 
     vd.plots <- plot.variance.decomposition(sensitivity.results$variance.decomposition.plot.inputs)
