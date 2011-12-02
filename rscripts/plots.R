@@ -21,6 +21,9 @@ end_year <- format(end_date, "%Y")
 # data points written per day.
 values_day <- 24
 
+# The timestamp to get out of the data
+initial <- 12
+
 umol2gc <- 1.0368
 
 for (year in start_year:end_year) {
@@ -38,26 +41,33 @@ for (year in start_year:end_year) {
   filename <- list.files(settings$run$host$outdir, full.names=TRUE,pattern=paste('.*-T-', year, '-.*.h5', sep=''))[1]
   data <- hdf5load(filename, load = FALSE)
 
-  GPP         <- data$AVG_GPP[1:(values_day*(1+end_day-start_day))]
-  PLANT_RESP  <- data$AVG_PLANT_RESP[1:(values_day*(1+end_day-start_day))]
-  HTROPH_RESP <- data$AVG_HTROPH_RESP[1:(values_day*(1+end_day-start_day))]
+  subset <- seq(initial, (values_day*(1+end_day-start_day)), values_day)
+
+  GPP         <- data$AVG_GPP[subset]
+  PLANT_RESP  <- data$AVG_PLANT_RESP[subset]
+  HTROPH_RESP <- data$AVG_HTROPH_RESP[subset]
   Reco        <- (PLANT_RESP + HTROPH_RESP) * umol2gc
   NPP         <- (GPP - PLANT_RESP)  * umol2gc
   NEE         <- (GPP - (PLANT_RESP + HTROPH_RESP))  * umol2gc
 
-  gpp.year <- qplot(start_day:end_day, Reco, geom=c('smooth','point'), span=0.2, xlab='doy', ylab='Reco')
+  plot <- qplot(start_day:end_day, GPP, geom=c('smooth','point'), span=0.2, xlab='doy', ylab='GPP')
+  png(filename=sprintf("%d-GPP-year.png", year))
+  print(plot)
+  dev.off()
+
+  plot <- qplot(start_day:end_day, Reco, geom=c('smooth','point'), span=0.2, xlab='doy', ylab='Reco')
   png(filename=sprintf("%d-Reco-year.png", year))
-  print(gpp.year)
+  print(plot)
   dev.off()
 
-  gpp.year <- qplot(start_day:end_day, NPP, geom=c('smooth','point'), span=0.2, xlab='doy', ylab='NPP')
+  plot <- qplot(start_day:end_day, NPP, geom=c('smooth','point'), span=0.2, xlab='doy', ylab='NPP')
   png(filename=sprintf("%d-NPP-year.png", year))
-  print(gpp.year)
+  print(plot)
   dev.off()
 
-  gpp.year <- qplot(start_day:end_day, NEE, geom=c('smooth','point'), span=0.2, xlab='doy', ylab='NEE')
+  plot <- qplot(start_day:end_day, NEE, geom=c('smooth','point'), span=0.2, xlab='doy', ylab='NEE')
   png(filename=sprintf("%d-NEE-year.png", year))
-  print(gpp.year)
+  print(plot)
   dev.off()
 }
 
