@@ -105,9 +105,10 @@ sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
   partial.variances <- variances / sum(variances)
   
   ## change Vm_low_temp to Kelvin prior to calculation of coefficient of variance.
-  ## This conversion is only required at this point in the code
-  if('Vm_low_temp' %in% traits)
-    trait.samples[[which(traits == 'Vm_low_temp')]] <- trait.samples[[which(traits == 'Vm_low_temp')]] + 273.15
+  ## this conversion is only required at this point in the code, for calculating CV
+  C.units <- grep('Celsius', trait.dictionary(traits)$units, ignore.case = TRUE)
+  trait.samples[[C.units]] <- trait.samples[[C.units]] + 273.15
+
   coef.vars <- sapply(trait.samples, get.coef.var)
   outlist <- list(sensitivity.plot.inputs = list(
                     sa.samples    = sa.samples,
