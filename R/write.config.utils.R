@@ -16,7 +16,7 @@ get.ensemble.samples <- function(ensemble.size, samples) {
   if(ensemble.size <= 0){
     ans <- NULL
   } else if (ensemble.size == 1) {
-    ans <- lapply(samples, median)
+    ans <- as.data.frame(lapply(samples, median))
   } else {
     halton.samples <- halton(n = ensemble.size, dim=length(samples))
     ##force as a matrix in case length(samples)=1
