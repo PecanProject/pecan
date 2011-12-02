@@ -33,12 +33,16 @@ $end = substr($run['finish_time'], 0, 4);
 
 echo "<h1>Results</h1>";
 while($year <= $end) {
-  echo "<h2>$year <a href=\"dataset.php?runid=$runid&year=$year&type=tower\">Tower Data</a></h2>";
-  echo "<img src=\"dataset.php?runid=$runid&year=$year&type=GPP\"><br>";
-  echo "<img src=\"dataset.php?runid=$runid&year=$year&type=Reco\"><br>";
-  echo "<img src=\"dataset.php?runid=$runid&year=$year&type=NPP\"><br>";
-  echo "<img src=\"dataset.php?runid=$runid&year=$year&type=NEE\"><br>";
-  $year++;
+	echo "<h2>$year</h2>";
+	echo "<ul>";
+	echo "<li><a href=\"dataset.php?runid=$runid&year=$year&type=tower\">Tower Data</a></li>";
+	echo "<li><a href=\"dataset.php?runid=$runid&year=$year&type=pecan\">pecan.xml</a></li>";
+	echo "</ul>";
+	echo "<img src=\"dataset.php?runid=$runid&year=$year&type=GPP\"><br>";
+	echo "<img src=\"dataset.php?runid=$runid&year=$year&type=Reco\"><br>";
+	echo "<img src=\"dataset.php?runid=$runid&year=$year&type=NPP\"><br>";
+	echo "<img src=\"dataset.php?runid=$runid&year=$year&type=NEE\"><br>";
+	$year++;
 }
 
 ?>
