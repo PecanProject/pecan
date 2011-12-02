@@ -8,8 +8,7 @@ rm STATUS
 # setup pecan (create scripts, folders, etc.)
 echo -e -n "SETUP\t`date +'%F %T'`" >> STATUS
 R CMD BATCH --vanilla ${PECANHOME}/rscripts/setup.R
-chmod 755 pecan/*.sh
-pecan/setup.sh
+bash ./setup.sh
 echo -e "\t`date +'%F %T'`" >> STATUS
 
 # get data from bety
@@ -29,11 +28,11 @@ echo -e "\t`date +'%F %T'`" >> STATUS
 
 #launch job
 echo -e -n "MODEL\t`date +'%F %T'`" >> STATUS
-JOBS=$( pecan/launcher.sh )
+JOBS=$( bash ./launcher.sh )
 echo $JOBS > jobs
 
 # check if job is done
-pecan/check.sh
+bash ./check.sh
 rm jobs
 echo -e "\t`date +'%F %T'`" >> STATUS
 

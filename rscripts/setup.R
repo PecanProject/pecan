@@ -64,13 +64,13 @@ if ( settings$run$host$name != "" && settings$run$host$name != "localhost" ) {
   writeLines(c( '#!/bin/bash',
                 paste('mpirun -np 1', settings$run$host$ed$binary, '-f $1'),
                 paste('rsync -routi /scratch/out*', settings$run$host$outputs)),
-             con=paste(settings$outdir, 'runjob.sh', sep=''))
+             con=paste(settings$outdir, 'runjob.sh', sep='/'))
 
   # launcher used to start process
   writeLines(c( '#!/bin/bash',
                 paste('rsync -outip ', settings$outdir, '*.sh ', settings$run$host$name, ':', settings$run$host$rundir, ' 2>&1 >/dev/null', sep=''),
                 paste('ssh -T ', settings$run$host$name, ' ', settings$run$host$rundir, 'qsub.sh', sep='')),
-             con=paste(settings$outdir, 'launcher.sh', sep=''))
+             con=paste(settings$run$folder, 'launcher.sh', sep='/'))
 
   # write check script to disk
   writeLines(c( '#!/bin/bash',
@@ -88,23 +88,23 @@ if ( settings$run$host$name != "" && settings$run$host$name != "localhost" ) {
                 '  done',
                 '  JOBS=$LEFT',
                 'done'),
-             con=paste(settings$outdir, 'check.sh', sep=''))
+             con=paste(settings$run$folder, 'check.sh', sep='/'))
 } else {
   # write script to create tunnel and folders
   writeLines(c( '#!/bin/bash',
                 paste('mkdir -p', settings$run$host$rundir),
                 paste('mkdir -p', settings$run$host$outdir)),
-             con=paste(settings$outdir, 'setup.sh', sep=''))
+             con=paste(settings$run$folder, 'setup.sh', sep='/'))
 
   # actual command to start ed
   script <- gsub('@CMD@',  paste(settings$run$host$ed$binary, '-f $f'), script)
   script <- gsub('@ID@',   'ID=""', script)
 
   # write script to disk
-  writeLines(script, con=paste(settings$outdir, 'launcher.sh', sep=''))
+  writeLines(script, con=paste(settings$run$folder, 'launcher.sh', sep='/'))
 
   # write check script to disk
   writeLines(c( '#!/bin/bash',
                 '/bin/true' ),
-             con=paste(settings$outdir, 'check.sh', sep=''))
+             con=paste(settings$run$folder, 'check.sh', sep='/'))
 }

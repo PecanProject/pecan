@@ -125,6 +125,7 @@ fwrite($fh, "    </ed_misc> " . PHP_EOL);
 fwrite($fh, "  </config.header>" . PHP_EOL);
 fwrite($fh, "  <run>" . PHP_EOL);
 fwrite($fh, "    <id>${runid}</id>" . PHP_EOL);
+fwrite($fh, "    <folder>${folder}</folder>" . PHP_EOL);
 fwrite($fh, "    <site>" . PHP_EOL);
 fwrite($fh, "      <name>{$siteinfo['sitename']}</name>" . PHP_EOL);
 fwrite($fh, "      <lat>{$siteinfo['lat']}</lat>" . PHP_EOL);
