@@ -33,10 +33,11 @@ $end = substr($run['finish_time'], 0, 4);
 
 echo "<h1>Results</h1>";
 while($year <= $end) {
-  echo "<h2>$year</h2>";
-  echo "<img src=\"image.php?runid=$runid&type=Reco&year=$year\"><br>";
-  echo "<img src=\"image.php?runid=$runid&type=NPP&year=$year\"><br>";
-  echo "<img src=\"image.php?runid=$runid&type=NEE&year=$year\"><br>";
+  echo "<h2>$year <a href=\"dataset.php?runid=$runid&year=$year&type=tower\">Tower Data</a></h2>";
+  echo "<img src=\"dataset.php?runid=$runid&year=$year&type=GPP\"><br>";
+  echo "<img src=\"dataset.php?runid=$runid&year=$year&type=Reco\"><br>";
+  echo "<img src=\"dataset.php?runid=$runid&year=$year&type=NPP\"><br>";
+  echo "<img src=\"dataset.php?runid=$runid&year=$year&type=NEE\"><br>";
   $year++;
 }
 
