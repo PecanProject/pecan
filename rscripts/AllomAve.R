@@ -47,7 +47,11 @@ for(pft in settings$pfts){  ## loop over PFTs
     
     mc <- list()
     for(i in 1:nchain){
-      mc[[i]] <- as.mcmc(allom.BayesFit(allom,ngibbs)[sel,])
+      if(component == 40){
+        mc[[i]] <- as.mcmc(allom.BayesFit(allom,ngibbs)[sel,],"exp")
+      } else {
+        mc[[i]] <- as.mcmc(allom.BayesFit(allom,ngibbs)[sel,])
+      }
     }
     mc <- as.mcmc.list(mc)
 
