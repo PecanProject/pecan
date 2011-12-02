@@ -1,4 +1,5 @@
 <?php
+
 // runid
 if (!isset($_REQUEST['runid'])) {
   die("Need a runid.");
@@ -57,8 +58,14 @@ switch ($type) {
 	case "Reco":
 	case "NPP":
 	case "NEE":
+		if (!file_exists("$folder/$year-$type-year.png")) {
+			print("Could not find data $folder/$year-$type-year.png.\n");
+		}
 		header('Content-type: image/png');
 		readfile("$folder/$year-$type-year.png");
+		break;
+	default:
+		print("Invalid type.\n");
 		break;
 }
 ?>
