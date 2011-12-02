@@ -135,11 +135,11 @@ while ($row = @mysql_fetch_assoc($result)){
 			<div class="spacer"></div>
 
 			<label>Start Date</label>
-			<input type="text" name="start" value="2005/12/01" />
+			<input type="text" name="start" value="2006/01/01" />
 			<div class="spacer"></div>
 			
 			<label>End Date </label>
-			<input type="text" name="end" value="2006/04/01" />
+			<input type="text" name="end" value="2006/12/31" />
 			<div class="spacer"></div>
 			
 			<label>PFT</label>
