@@ -13,22 +13,28 @@
 get.ensemble.samples <- function(ensemble.size, samples) {
   ##force as numeric for compatibility with Fortran code in halton()
   ensemble.size <- as.numeric(ensemble.size)
-  if(ensemble.size <= 0) return(NULL)
-  halton.samples <- halton(n = ensemble.size, dim=length(samples))
-  ##force as a matrix in case length(samples)=1
-  halton.samples <- as.matrix(halton.samples)
-  
-  ensemble.samples <- matrix(nrow = ensemble.size, ncol = length(samples))
-  colnames(ensemble.samples) <- names(samples)
-  for(ensemble.id in 1:ensemble.size) {
-    for(trait.i in seq(samples)) {
-      ensemble.samples[ensemble.id, trait.i] <- 
-        quantile(samples[[trait.i]], halton.samples[ensemble.id, trait.i])
+  if(ensemble.size <= 0){
+    ans <- NULL
+  } else if (ensemble.size == 1) {
+    ans <- lapply(samples, median)
+  } else {
+    halton.samples <- halton(n = ensemble.size, dim=length(samples))
+    ##force as a matrix in case length(samples)=1
+    halton.samples <- as.matrix(halton.samples)
+    
+    ensemble.samples <- matrix(nrow = ensemble.size, ncol = length(samples))
+    colnames(ensemble.samples) <- names(samples)
+    for(ensemble.id in 1:ensemble.size) {
+      for(trait.i in seq(samples)) {
+        ensemble.samples[ensemble.id, trait.i] <- 
+          quantile(samples[[trait.i]], halton.samples[ensemble.id, trait.i])
+      }
     }
+    ans <- ensemble.samples
   }
-  return(ensemble.samples)
+  return(ans)
 }
-
+  
 
 ##' Write ensemble config files
 ##'

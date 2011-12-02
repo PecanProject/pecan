@@ -16,9 +16,9 @@ r2bugs.distributions <- function(priors) {
   negbin <- priors$distn %in% 'nbinom'
   
   ## Convert sd to precision for norm & lnorm
-  priors$paramb[norm | lnorm] <-  1/priors$paramb[norm | lnorm]^2
+  priors$paramb[norm | lnorm] <-  signif(1/priors$paramb[norm | lnorm]^2, 4)
   ## Convert R parameter b to JAGS parameter lambda by l = (1/b)^a
-  priors$paramb[weib] <-   1 / priors$paramb[weib]^priors$parama[weib]
+  priors$paramb[weib] <-   signif(1 / priors$paramb[weib]^priors$parama[weib], 4)
   ## Reverse parameter order for binomial
   priors[bin, c('parama', 'paramb')] <-  priors[bin, c('parama', 'paramb')]
 

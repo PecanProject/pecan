@@ -207,7 +207,7 @@ pdf.stats <- function(distn, A, B) {
 trait.dictionary <- function(traits = NULL) {
   defs<-data.frame(id = c("plant_min_temp", "c2n_leaf", "dark_respiration_factor", "f_labile", "growth_resp_factor", "leaf_turnover_rate", "leaf_width", "mort2", "nonlocal_dispersal", "fineroot2leaf", "quantum_efficiency", "root_respiration_rate", "root_turnover_rate", "SLA", "stomatal_slope", "Vcmax", "Vm_low_temp", "water_conductance","cuticular_cond","seedling_mortality","r_fract","storage_turnover_rate", "T", "agf_bs"),
                    figid = c("Plant Minimum Temperature", "Leaf C:N" ,"Dark Respiration Rate", "Litter% Labile C", "Growth Respiration", "Leaf Turnover Rate", "Leaf Width", "Mortality Rate", "Seed Dispersal", "Fine Root Allocation","Quantum Efficiency", "Root Respiration Rate", "Root Turnover Rate", "Specific Leaf Area", "Stomatal Slope", "Vcmax", "Photosynthesis min temp", "Water Conductance","Cuticular Conductance", "Seedling Mortality", "Reproductive Allocation","Storage Turnover Rate","Transpiration", "Abovground fraction of structural biomass"),
-                   units = c("Celsius ", "ratio ", "fraction", "fraction", "fraction", "yr-1 ", "mm", "yr-1 ", "fraction", "ratio", "fraction", "umol CO2 kg-1 s-1", "yr-1 ", "m2 kg-1", "ratio ", "umol CO2 m-2 s-1", "Celsius ", "mm", "umol H2O m-2 s-1", "fraction", "fraction", "yr-1 ", "mm  H2O m-1s-1", "fraction")
+                   units = c("Celsius", "ratio", "fraction", "fraction", "fraction", "yr-1", "mm", "yr-1", "fraction", "ratio", "fraction", "umol CO2 kg-1 s-1", "yr-1", "m2 kg-1", "ratio", "umol CO2 m-2 s-1", "Celsius", "mm", "umol H2O m-2 s-1", "fraction", "fraction", "yr-1", "mm  H2O m-1s-1", "fraction")
 )
   if(is.null(traits)) {
     trait.defs <- defs
@@ -323,31 +323,37 @@ priorfig <- function(priordata = 'n', priordensity = 'n', trait = '', xlim = 'au
 ##' @param dists list of distribution names
 ##' @return best fit distribution
 ##' @author David LeBauer
-fit.dist <- function(trait.data, dists = c('weibull', 'lognormal', 'gamma'), n = NULL) {
-  warning(immediate. = TRUE)
-  nostart.dists <- dists[dists %in% c('weibull', 'lognormal', 'gamma')]
-  a <- lapply(nostart.dists, function(x) suppressWarnings(fitdistr(trait.data[,1],x)))
-  trait <- colnames(trait.data)
+fit.dist <- function(trait.data, trait = colnames(trait.data), dists = c('weibull', 'lognormal', 'gamma'), n = NULL) {
+  if(class(trait.data) == 'data.frame') trait.data <- trait.data[,1]
+  ## warning(immediate. = TRUE)
+  nostart.dists <- dists[dists %in% c('weibull', 'lognormal', 'gamma', 'normal')]
+  a <- lapply(nostart.dists, function(x) suppressWarnings(fitdistr(trait.data,x)))
   names(a) <- nostart.dists
   if('f' %in% dists){
+    print(trait)
     if(trait == 'tt') {
-      a[['f']] <- suppressWarnings(fitdistr(trait.data[,1], 'f', start = list(df1=100, df2=2)))
+      a[['f']] <- suppressWarnings(fitdistr(trait.data, 'f', start = list(df1=100, df2=200)))
     } else if (trait == 'sla') {
-      a[['f']] <- suppressWarnings(fitdistr(trait.data[,1], 'f', start = list(df1=6, df2=1 )))
+      a[['f']] <- suppressWarnings(fitdistr(trait.data, 'f', start = list(df1=6, df2=1)))
     } else if(trait == 'rrr') {
-      a[['f']] <- suppressWarnings(fitdistr(trait.data[,1], 'f', start = list(df1=6, df2=1 )))
+      a[['f']] <- suppressWarnings(fitdistr(trait.data, 'f', start = list(df1=6, df2=1)))
+    } else if (trait == 'q'){
+      a[['f']] <- suppressWarnings(fitdistr(trait.data, 'f', start = list(df1=1, df2=2)))
     }
   }
   if('beta' %in% dists){
-    a[['beta']] <- suppressWarnings(fitdistr(trait.data[,1], 'beta', start = list(shape1 = 2, shape2 = 1 )))
+    a[['beta']] <- suppressWarnings(fitdistr(trait.data, 'beta', start = list(shape1 = 2, shape2 = 1 )))
   }
   aicvalues <- lapply(a, AIC)
+  result <- t(sapply(dists, function(x) cbind(t(tabnum(a[[x]]$estimate)), signif(aicvalues[[x]]))))
+  colnames(result) <- c('a', 'b', 'AIC')
+  print(result)
   bestfitdist <- names(which.min(aicvalues))
   parms <- tabnum(a[[bestfitdist]]$estimate)
   return(data.frame(distribution = bestfitdist, 
                     a = as.numeric(parms[1]), 
                     b = as.numeric(parms[2]), 
-                    n = ifelse(is.null(n), nrow(trait.data), n)))
+                    n = ifelse(is.null(n), length(trait.data), n)))
 } 
 
 ##' Reads output from model ensemble
@@ -402,3 +408,5 @@ read.sa.output <- function(traits, quantiles, outdir, pft.name='',
   sa.output <- sa.output[order(as.numeric(rownames(sa.output))),]
   return(sa.output)
 }
+
+isFALSE <- function(x) !isTRUE(x)
