@@ -8,6 +8,7 @@ mpirun -np $LOG "../build/ed_2.1-ebi" -f $ED2IN
 wait
 rsync -routi /scratch/out${ED2IN:7}* OUTDIR
 rm /scratch/out${ED2IN:7}*  
+touch OUTDIR${ED2IN:7}-finished
 
 ## notes: 
 ## ${ED2IN:7} removes first 7 chars (ED2IN.c) from ED2IN file name

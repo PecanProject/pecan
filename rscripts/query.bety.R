@@ -22,7 +22,7 @@ if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)}
 require(PECAn)
 
 trait.names <- trait.dictionary()$id
-
+file.remove(dir(settings$outdir, full.names=TRUE))
 ## connect to database
 newcon <- query.bety.con(dbname   = settings$database$name,
                                     password = settings$database$passwd,
