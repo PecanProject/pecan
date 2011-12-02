@@ -64,16 +64,14 @@ for (i in seq(pft.names)){
   pft.name <- pft.names[i]
 
   ## when no ma for a trait, sample from  prior
-  traits <- if(exists('trait.mcmc')) {
-    names(trait.mcmc)
+  ## trim all chains to shortest mcmc chain, else 20000 samples
+  if(exists('trait.mcmc')) {
+    traits <- names(trait.mcmc)
+    samples.num <- min(sapply(trait.mcmc, function(x) nrow(as.matrix(x))))
   } else {
     NA
+    samples.num <- 20000
   }
-  ## trim all chains to shortest mcmc chain, else 20000 samples
-  samples.num <- ifelse(exists('trait.mcmc'),
-                        min(sapply(trait.mcmc,
-                                   function(x) nrow(as.matrix(x)))),
-                        20000)
 
   priors <- rownames(prior.distns)
   for (prior in priors) {
