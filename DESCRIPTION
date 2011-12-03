@@ -31,6 +31,7 @@ License: University of Illinois/NCSA Open Source License
 Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes
 Collate:
+    'allom.BayesFit.R'
     'approx.posterior.R'
     'dtheta.q.R'
     'help.R'
@@ -45,6 +46,7 @@ Collate:
     'pecan.transformstats.R'
     'pft.add.spp.R'
     'plots.R'
+    'query.allom.data.R'
     'query.bety.R'
     'query.bety.trait.data.R'
     'query.bety.traits.R'
