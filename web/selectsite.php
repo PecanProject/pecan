@@ -51,26 +51,41 @@ while ($row = @mysql_fetch_assoc($result)){
 	google.load("maps", "3",  {other_params:"sensor=false"});
 	google.load("jquery", "1.3.2");
 
+        function checkDate(date, field) {
+                var arr = date.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+                if (arr == null) {
+                        alert(field + " date should be entered as \"YYYY/MM/DD\"");
+                        return false;
+                }
+
+                arr[1] = parseInt(arr[1], 10);
+                arr[2] = parseInt(arr[2], 10)-1;
+                arr[3] = parseInt(arr[3], 10);
+                var test = new Date(arr[1], arr[2], arr[3]);
+
+                if (arr[1] != test.getFullYear() || arr[2] != test.getMonth() || arr[3] != test.getDate()) {
+                        alert(field + " date is not a valid date.");
+                        return false;
+                }
+
+                return test;
+        }
+
 	function validate(form) {
-		var reDate = /^\d{4}\/\d{1,2}\/\d{1,2}$/;
+                var start = checkDate(form.start.value, "Start");
+                if (!start) {
+                        return false;
+                }
+                var end = checkDate(form.end.value, "End");
+                if (!end) {
+                        return false;
+                }
 
-		// check start date
-		if(form.start.value != '' && !form.start.value.match(reDate)) {
-			alert("Start date should be entered as \"YYYY/MM/DD\"");
-			return false;
-		}
-
-		// check end date
-		if(form.end.value != '' && !form.end.value.match(reDate)) {
-			alert("End date should be entered as \"YYYY/MM/DD\"");
-			return false;
-		}
-
-		// see if start date is before end date
-		if (Date.parse(form.start.value) >= Date.parse(form.end.value)) {
-			alert("End date should be after start date.");
-			return false;
-		}
+                // see if start date is before end date
+                if (start >= end) {
+                        alert("End date should be after start date.");
+                        return false;
+                }
 
 		// check pft
 		var count = 0;

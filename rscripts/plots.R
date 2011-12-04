@@ -12,9 +12,9 @@ settings <- xmlToList(settings.xml)
 # ----------------------------------------------------------------------
 # CREATE PLOTS
 # ----------------------------------------------------------------------
-start_date <- as.Date(settings$run$start.date, format="%Y/%m/%d")
+start_date <- as.Date(settings$run$start.date)
 start_year <- format(start_date, "%Y")
-end_date <- as.Date(settings$run$end.date, format="%Y/%m/%d")
+end_date <- as.Date(settings$run$end.date)
 end_year <- format(end_date, "%Y")
 
 # This depends on NL%FRQFAST in template and should reflect the number of
