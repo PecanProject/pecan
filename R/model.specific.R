@@ -98,8 +98,8 @@ write.config.ED <- function(pft, trait.samples, settings, outdir, run.id){
   saveXML(xml, file = paste(outdir, xml.file.name, sep=''), 
       indent=TRUE, prefix = PREFIX_XML)
   
-  startdate <- as.Date(settings$run$start.date, format="%Y/%m/%d")
-  enddate <- as.Date(settings$run$end.date, format="%Y/%m/%d")
+  startdate <- as.Date(settings$run$start.date)
+  enddate <- as.Date(settings$run$end.date)
 
   ed2in.text <- readLines(con=pft$edin, n=-1)
 
