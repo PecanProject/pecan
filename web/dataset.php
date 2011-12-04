@@ -61,7 +61,6 @@ switch ($type) {
 #		$file="$folder/out/$name";
 #		break;
 	case "tower":
-		header('Content-Disposition: attachment; filename='.basename($file));
 		$mime="application/octet-stream";
 		$files=array_values(array_filter(scandir("$folder/out"), function ($item) {
 			global $year;
@@ -71,6 +70,7 @@ switch ($type) {
 			die("Could not find a tower file.");
 		}
 		$file="$folder/out/{$files[0]}";
+		header('Content-Disposition: attachment; filename='.basename($file));
 		break;
 	case "GPP":
 	case "Reco":
