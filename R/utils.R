@@ -212,7 +212,7 @@ trait.dictionary <- function(traits = NULL) {
   if(is.null(traits)) {
     trait.defs <- defs
   } else {
-    trait.defs <- defs[defs$id %in% traits,]
+    trait.defs <- defs[match(traits, defs$id),]
   }
   return(trait.defs)
 }
@@ -406,7 +406,7 @@ prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NU
   }
   if (distn == 'beta') {
     a <- parms[1]
-    if(central.tendency == 'mean' & trait == 'q'){ ## fixed mean, optimize for a
+    if(central.tendency == 'mean' & trait == 'fineroot2leaf'){ ## fixed mean, optimize for a
       b <- a * (1/x[3] - 1)
     } else {
       b <- parms[2]
@@ -426,15 +426,15 @@ prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NU
   return(sum(abs(c(lcl, ucl, ct) - x)))
 }
 
-##' .. content for \description{} (no empty lines) ..
+##' New xtable
 ##'
-##' .. content for \details{} ..
-##' @title 
-##' @param x 
+##' utility to properly escape the "%" sign for latex
+##' @title newxtable
+##' @param x data.frame to be converted to latex table
 ##' @param environment can be 'table'; 'sidewaystable' if using latex rotating package
 ##' @return Latex version of table, with percentages properly formatted 
 ##' @author David LeBauer
-newxtable <- function(x, environment = 'table', placement = 'ht') {
+newxtable <- function(x, environment = 'table', placement = 'ht', label = NULL, cap = NULL ) {
   print(xtable(x, label = label, caption = cap),
         floating.environment = environment,
         table.placement = placement,
