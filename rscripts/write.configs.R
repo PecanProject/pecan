@@ -69,7 +69,7 @@ for (i in seq(pft.names)){
     traits <- names(trait.mcmc)
     samples.num <- min(sapply(trait.mcmc, function(x) nrow(as.matrix(x))))
   } else {
-    NA
+    traits <- NA
     samples.num <- 20000
   }
 
