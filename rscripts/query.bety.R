@@ -6,7 +6,7 @@ if(interactive()){
   } else if(user == 'mantoot2'){
     settings.file = '/home/mantoot2/pecan/ebifarm.acru.xml'
   } else if(user == 'dlebauer'){
-    settings.file = '~/in/ebifarm/post/settings.pavi.xml'
+    settings.file = '~/in/ebifarm/prior/settings.pavi.xml'
 #    settings.file = '~/pecan/ebifarm.acsa3.xml'
   } else if(user == 'davids14') {
     settings.file = '~/pecan/tundra.xml'
@@ -54,12 +54,13 @@ for(pft in settings$pfts){
     
     all.trait.data[[cnt]] <- trait.data
     names(all.trait.data)[cnt] <- pft$name
+
+    for(i in 1:length(all.trait.data)){
+      print(names(all.trait.data)[i])
+      print(sapply(all.trait.data[[i]],dim)[1,])
+    }
     
   }
   save(prior.distns, file=paste(pft$outdir, 'prior.distns.Rdata', sep = ''))
 }
 
-for(i in 1:length(all.trait.data)){
-  print(names(all.trait.data)[i])
-  print(sapply(all.trait.data[[i]],dim)[1,])
-}
