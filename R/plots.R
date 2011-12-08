@@ -429,7 +429,7 @@ create.base.plot <- function() {
 ##' @seealso \code{\link{pr.dens}}
 ##' @examples
 ##' add.prior.density(c('norm', 0, 1))
-add.prior.density <- function(prior, base.plot = NULL, prior.color = 'black') {
+add.prior.density <- function(prior, base.plot = NULL, prior.color = 'black' ) {
   if(is.null(base.plot)) base.plot <- create.base.plot()
   prior.density <- do.call(pr.dens, prior)
   new.plot <- base.plot +  geom_line(data = prior.density,
@@ -602,11 +602,15 @@ plot.densities <- function(density.plot.inputs, outdir, ...){
 ##' @param b second parameter of distribution (numeric)
 ##' @return data frame with values of x, the density at each x and the probability at each x
 ##' @author David LeBauer
-prior.density <- function(distribution = 'norm', a = 0, b = 1){
+prior.density <- function(distribution = 'norm', a = 0, b = 1, xlim = NA){
   distribution <- gsub('lognormal', 'lnorm', distribution)
   if(distribution != 'beta'){
-    range.x <- range(pretty(do.call(paste('q', distribution, sep = ''), list(c(0.005, 0.995),a,b))))
-    prior.x <- seq(from=range.x[1], to = range.x[2], length = 1000)  
+    if(isTRUE(is.na(xlim))){
+      range.x <- range(pretty(do.call(paste('q', distribution, sep = ''), list(c(0.005, 0.995),a,b))))
+    } else if (isTRUE(!is.na(xlim))) {
+      range.x <- xlim
+    }
+    prior.x <- seq(from=range.x[1], to = range.x[2], length = 1000)
   } else {
     range.x <- c(0,1)
     prior.x <- seq(from=0, to = 1, length = 1000)  
@@ -624,11 +628,19 @@ prior.density <- function(distribution = 'norm', a = 0, b = 1){
 ##' @param trait name of trait
 ##' @param xlim limits for x axis
 ##' @return plot / grob of prior distribution with data used to inform the distribution 
-priorfig <- function(priordata = 'n', priordensity = 'n', trait = '', xlim = 'auto'){
-  if(!priordata == 'n') colnames(priordata) <- 'x'
-  x.breaks <- pretty(priordensity$prior.x, 4)
-  xlim <- range(priordensity$prior.x)
-  print(xlim)
+priorfig <- function(priordata = NA, priordensity = NA, trait = '', xlim = 'auto', fontsize = 18){
+  if(is.data.frame(priordata)){
+    colnames(priordata) <- 'x'
+  }
+
+  if(isTRUE(xlim == 'auto')) {
+    x.breaks <- pretty(c(signif(priordensity$prior.x, 2)), 4)
+    xlim <- range(x.breaks)
+  } else {
+    x.breaks <- pretty(signif(xlim, 2), 4)
+    xlim <- range(c(x.breaks, xlim))
+  }
+
   priorfigure <- ggplot() + theme_bw() + 
     scale_x_continuous(limits = xlim, breaks = x.breaks, trait.dictionary(trait)$units) +
       scale_y_continuous(breaks=NA)+
@@ -636,14 +648,24 @@ priorfig <- function(priordata = 'n', priordensity = 'n', trait = '', xlim = 'au
              panel.grid.major = theme_blank(),    
              panel.grid.minor = theme_blank(),
              axis.text.y = theme_blank(),
-             axis.text.x = theme_text(size=12),
+             axis.text.x = theme_text(size= fontsize),
              axis.title.y = theme_blank(), ## hide y axis label
+             axis.title.x = theme_text(size = fontsize * 0.9), ## hide y axis label
+             plot.title = theme_text(size = fontsize*1.1),
+             ## plot.margin = unit(c(0.4, 0.1, 0.1, 0.1), 'lines'), 
              panel.border = theme_border(c('bottom'))
              ) 
   
   
   if(is.data.frame(priordata)){
-    rug <- geom_point(data = priordata, aes(x=x, y = 0), size = 4, alpha = 2/sqrt(nrow(priordata)))
+    priordata <- subset(priordata, subset = !is.na(x))
+    dx <- with(priordata,
+               min(abs(diff(x)[diff(x)!=0])))
+    priordata <- transform(priordata,
+                           x = x + runif(length(x), -dx/2, dx/2))# this adds jitter to separate equal values 
+    rug <- geom_rug(data = priordata, aes(x))
+
+    #rug <- geom_point(data = priordata, aes(x=x, y = seq(0,max(priordensity$dens.x)/30, length = length(x))), size = 3, alpha = 3/sqrt(nrow(priordata)))
                                         #hist <-  geom_histogram(data = priordata, aes(x=x, y = ..density..),  alpha = 0.5, binwidth = diff(range(priordata))/sqrt(nrow(priordata)))
     priorfigure <- priorfigure + rug
   } 
