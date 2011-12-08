@@ -382,13 +382,21 @@ prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NU
     sigma <- parms[2]         
     lcl <- mu + qnorm(alpha/2)*sigma
     ucl <- mu + qnorm(1-alpha/2)*sigma
-    ct <-  mu - sigma^2 
+    if(is.null(central.tendency)) {
+      ct <- x[3]
+    } else if (central.tendency == 'mean'){
+      ct <-  mu - sigma^2
+    } else if (central.tendency == 'median') {
+      ct <- qlnorm(0.5, parms[1], parms[2])
+    }
     x <- log(x)
   }
   if(distn == 'gamma'){
     lcl <- qgamma(alpha/2,   parms[1], parms[2])
     ucl <- qgamma(1-alpha/2, parms[1], parms[2])
-    if(central.tendency == 'median'){
+    if(is.null(central.tendency)) {
+      ct <- x[3]
+    } else if(central.tendency == 'median'){
       ct <- qgamma(0.5, parms[1], parms[2])
     } else if (central.tendency == 'mean') {
       ct <- parms[1]/parms[2]
@@ -418,3 +426,18 @@ prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NU
   return(sum(abs(c(lcl, ucl, ct) - x)))
 }
 
+##' .. content for \description{} (no empty lines) ..
+##'
+##' .. content for \details{} ..
+##' @title 
+##' @param x 
+##' @param environment can be 'table'; 'sidewaystable' if using latex rotating package
+##' @return Latex version of table, with percentages properly formatted 
+##' @author David LeBauer
+newxtable <- function(x, environment = 'table', placement = 'ht') {
+  print(xtable(x, label = label, caption = cap),
+        floating.environment = environment,
+        table.placement = placement,
+        sanitize.text.function = function(x) gsub('%', '\\\\%', x),
+        sanitize.rownames.function = function(x) paste(''))
+}
