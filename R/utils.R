@@ -434,10 +434,12 @@ prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NU
 ##' @param environment can be 'table'; 'sidewaystable' if using latex rotating package
 ##' @return Latex version of table, with percentages properly formatted 
 ##' @author David LeBauer
-newxtable <- function(x, environment = 'table', placement = 'ht', label = NULL, cap = NULL ) {
-  print(xtable(x, label = label, caption = cap),
+newxtable <- function(x, environment = 'table', table.placement = 'ht',
+                      label = NULL, caption = NULL, caption.placement = NULL, align = NULL) {
+  print(xtable(x, label = label, caption = caption, align = align),
         floating.environment = environment,
-        table.placement = placement,
+        table.placement = table.placement,
+        caption.placement = caption.placement,
         sanitize.text.function = function(x) gsub('%', '\\\\%', x),
         sanitize.rownames.function = function(x) paste(''))
 }
