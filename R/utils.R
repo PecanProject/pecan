@@ -212,7 +212,7 @@ trait.dictionary <- function(traits = NULL) {
   if(is.null(traits)) {
     trait.defs <- defs
   } else {
-    trait.defs <- defs[defs$id %in% traits,]
+    trait.defs <- defs[match(traits, defs$id),]
   }
   return(trait.defs)
 }
@@ -260,61 +260,6 @@ capitalize <- function(x) {
   paste(toupper(substring(s, 1,1)), substring(s, 2),
         sep="", collapse=" ")
 }
-
-##' Calculate the density of a distribution for use in plotting
-##'
-##' @title Prior Density 
-##' @param distribution one of R's supported distributions (character)
-##' @param a first parameter of distribution (numeric)
-##' @param b second parameter of distribution (numeric)
-##' @return data frame with values of x, the density at each x and the probability at each x
-##' @author David LeBauer
-prior.density <- function(distribution = 'norm', a = 0, b = 1){
-  distribution <- gsub('lognormal', 'lnorm', distribution)
-  if(distribution != 'beta'){
-    range.x <- range(pretty(do.call(paste('q', distribution, sep = ''), list(c(0.005, 0.995),a,b))))
-    prior.x <- seq(from=range.x[1], to = range.x[2], length = 1000)  
-  } else {
-    range.x <- c(0,1)
-    prior.x <- seq(from=0, to = 1, length = 1000)  
-  }
-  dens.x  <- do.call(paste('d', distribution, sep=''),list(prior.x, a, b))
-  prob.x  <- do.call(paste('p', distribution, sep=''),list(prior.x, a, b))
-  return(data.frame(prior.x, dens.x, prob.x))
-}
-
-##' Plot prior density and data
-##'
-##' @title Prior Figure 
-##' @param priordata observations to be plotted as points
-##' @param priordensity density of prior distribution, calculated by \code{\link{prior.density}}
-##' @param trait name of trait
-##' @param xlim limits for x axis
-##' @return plot / grob of prior distribution with data used to inform the distribution 
-priorfig <- function(priordata = 'n', priordensity = 'n', trait = '', xlim = 'auto'){
-  x.breaks <- pretty(priordensity$prior.x, 4)
-  xlim <- range(priordensity$prior.x)
-  priorfigure <- ggplot() + theme_bw() + 
-    scale_x_continuous(limits = xlim, breaks = x.breaks, trait.dictionary(trait)$units) +
-    opts(title = trait.dictionary(trait)$figid,
-         panel.grid.major = theme_blank(),    
-         panel.grid.minor = theme_blank(),
-         axis.text.y = theme_blank(),
-         axis.text.x = theme_text(size=12)
-     ) 
-  
-
-  if(is.data.frame(priordata)){
-    rug <- geom_point(data = priordata, aes(x=x, y = 0), size = 4, alpha = 2/sqrt(nrow(priordata)))
-    #hist <-  geom_histogram(data = priordata, aes(x=x, y = ..density..),  alpha = 0.5, binwidth = diff(range(priordata))/sqrt(nrow(priordata)))
-    priorfigure <- priorfigure + rug
-  } 
-  if(is.data.frame(priordensity[1])){
-    dens <- geom_line(data=priordensity, aes(x=prior.x, y=dens.x))
-    priorfigure <- priorfigure + dens
-  } 
-  return(priorfigure)
-} 
 
 ##' Fit a distribution to data
 ##'
@@ -410,3 +355,89 @@ read.sa.output <- function(traits, quantiles, outdir, pft.name='',
 }
 
 isFALSE <- function(x) !isTRUE(x)
+
+##' Prior fitting function for optimization
+##'
+##' This function is used within \cite{\link{DEoptim}} to parameterize a distribution to the central tendency and confidence interval of a parameter. This function is not very robust; currently it needs to be tweaked when distributions require starting values (e.g. beta, f, 
+##' @title prior.fn 
+##' @param parms target for optimization
+##' @param x vector with c(lcl, ucl, ct) lcl / ucl = confidence limits, ct = entral tendency 
+##' @param alpha quantile at which lcl/ucl are estimated (e.g. for a 95% CI, alpha = 0.5)
+##' @param distn named distribution, one of 'lnorm', 'gamma', 'beta'; support for other distributions not currently implemented 
+##' @param central.tendency one of 'mode', 'median', and 'mean' 
+##' @param trait name of trait, can be used for exceptions (currently used for trait == 'q')
+##' @return parms
+##' @author David LeBauer
+##' @examples
+##' DEoptim(fn = prior.fn, 
+##'                 lower = c(0, 0), 
+##'                 upper = c(1000, 1000), 
+##'                 x=c(2, 6, 3.3), 
+##'                 alpha = 0.05, 
+##'                 distn = 'lnorm')$optim$bestmem
+
+prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NULL) {
+  if(distn == 'lnorm') {
+    mu <- parms[1]
+    sigma <- parms[2]         
+    lcl <- mu + qnorm(alpha/2)*sigma
+    ucl <- mu + qnorm(1-alpha/2)*sigma
+    if(is.null(central.tendency)) {
+      ct <- x[3]
+    } else if (central.tendency == 'mean'){
+      ct <-  mu - sigma^2
+    } else if (central.tendency == 'median') {
+      ct <- qlnorm(0.5, parms[1], parms[2])
+    }
+    x <- log(x)
+  }
+  if(distn == 'gamma'){
+    lcl <- qgamma(alpha/2,   parms[1], parms[2])
+    ucl <- qgamma(1-alpha/2, parms[1], parms[2])
+    if(is.null(central.tendency)) {
+      ct <- x[3]
+    } else if(central.tendency == 'median'){
+      ct <- qgamma(0.5, parms[1], parms[2])
+    } else if (central.tendency == 'mean') {
+      ct <- parms[1]/parms[2]
+    } else if (central.tendency == 'mode') {
+      ct <- ifelse (parms[1]>1, (parms[1]-1)/parms[2], 0)
+    }
+  }
+  if (distn == 'beta') {
+    a <- parms[1]
+    if(central.tendency == 'mean' & trait == 'fineroot2leaf'){ ## fixed mean, optimize for a
+      b <- a * (1/x[3] - 1)
+    } else {
+      b <- parms[2]
+    }
+    lcl <- qbeta(alpha/2,   a, b)  
+    ucl <- qbeta(1-alpha/2, a, b) 
+    if(is.null(central.tendency)) {
+      ct <- x[3]
+    } else if (central.tendency == 'mean'){
+      ct <- a/(a+b)
+    } else if (central.tendency == 'median'){
+      ct <- qbeta(0.5, a, b)  ## median
+    } else if (central.tendency == 'mode') {
+      ct <- ifelse(a>1 & b>1,(a-1)/(a+b-2) , 0) ## mode
+    } 
+  } 
+  return(sum(abs(c(lcl, ucl, ct) - x)))
+}
+
+##' New xtable
+##'
+##' utility to properly escape the "%" sign for latex
+##' @title newxtable
+##' @param x data.frame to be converted to latex table
+##' @param environment can be 'table'; 'sidewaystable' if using latex rotating package
+##' @return Latex version of table, with percentages properly formatted 
+##' @author David LeBauer
+newxtable <- function(x, environment = 'table', placement = 'ht', label = NULL, cap = NULL ) {
+  print(xtable(x, label = label, caption = cap),
+        floating.environment = environment,
+        table.placement = placement,
+        sanitize.text.function = function(x) gsub('%', '\\\\%', x),
+        sanitize.rownames.function = function(x) paste(''))
+}
