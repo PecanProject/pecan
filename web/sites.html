@@ -15,72 +15,78 @@
       var markersArray = [];
 
       function resize(){
-//        $("#map_canvas").height($(window).height() - $('#form').height() - 10);
-        $("#stylized").height($(window).height() - 5);
-        $("#map_canvas").height($(window).height() - 1);
-        $("#map_canvas").width($(window).width() - $('#form').width() - 5);
+		$("#stylized").height($(window).height() - 5);
+		$("#map_canvas").height($(window).height() - 1);
+		$("#map_canvas").width($(window).width() - $('#form').width() - 5);
       } 
 
-      function initialize() {
-        var myLatlng = new google.maps.LatLng(40.11642, -88.243382);
-        var myOptions = {
-          zoom: 5,
-          center: myLatlng,
-          mapTypeId: google.maps.MapTypeId.ROADMAP
-        }
+      function mapsLoaded() {
+		var myLatlng = new google.maps.LatLng(40.11642, -88.243382);
+		var myOptions = {
+			zoom: 5,
+			center: myLatlng,
+			mapTypeId: google.maps.MapTypeId.ROADMAP
+		}
 
-        map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
-	loadSites();
+		map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+		infowindow = new google.maps.InfoWindow({content: ""});
+		loadSites();
       }
 
       function goHome() {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(function(position) {
-            var latlng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-            map.panTo(latlng);
-            map.setZoom(12);
-          }, function() {
-            alert("Could not get your location, please make sure you enabled location for safari if you use an iPAD.");
-          }, {maximumAge:60000, timeout: 20000});
-        } else {  
-          alert("I'm sorry, but geolocation services are not supported by your browser.");  
-        }  
+		if (navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition(function(position) {
+				var latlng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+				map.panTo(latlng);
+				map.setZoom(12);
+			}, function() {
+				alert("Could not get your location, please make sure you enabled location for safari if you use an iPAD.");
+			}, {maximumAge:60000, timeout: 20000});
+		} else {  
+			alert("I'm sorry, but geolocation services are not supported by your browser.");  
+		}  
       }
 
       function loadSites() {
-        if (markersArray) {
-          for (i in markersArray) {
-            markersArray[i].setMap(null);
-          }
-          markersArray.length = 0;
-        }
+		if (markersArray) {
+			for (i in markersArray) {
+				markersArray[i].setMap(null);
+			}
+			markersArray.length = 0;
+		}
 
-        var url="sites.php?met=" + $('#met').is(':checked');
-        jQuery.get(url, {}, function(data) {
-          jQuery(data).find("marker").each(function() {
-            // create a marker
-            var marker = jQuery(this);
-            var latlng = new google.maps.LatLng(parseFloat(marker.attr("lat")), parseFloat(marker.attr("lon")));
-            var gmarker = new google.maps.Marker({position: latlng, map: map});
-            markersArray.push(gmarker);
+		var url="sites.php?met=" + $('#met').is(':checked');
+		jQuery.get(url, {}, function(data) {
+			jQuery(data).find("marker").each(function() {
+				// create a marker
+				var marker = jQuery(this);
+				var latlng;
+				if (marker.attr("lat") == "" || marker.attr("lon") == "") {
+					console.log("Bad marker (id=" + marker.attr("id") + " site=" + marker.attr("sitename") + " lat=" + marker.attr("lat") + " lon=" + marker.attr("lon") + ")");
+				} else {
+					latlng = new google.maps.LatLng(parseFloat(marker.attr("lat")), parseFloat(marker.attr("lon")));
+					var gmarker = new google.maps.Marker({position: latlng, map: map});
+					markersArray.push(gmarker);
 
-            // create the tooltip and its text
-            var info='<b>'+marker.attr("sitename")+'</b><br/>'+marker.attr("city") + ', ' + marker.attr("country") + '<br />';
-            info += '<a href="selectsite.php?site=' + marker.attr("id") + '">Select Site</a>';
-            // add a listener to open the tooltip when a user clicks on one of the markers
-            google.maps.event.addListener(gmarker, 'click', function() {
-              if (infowindow) infowindow.close();
-              infowindow = new google.maps.InfoWindow({content: info});
-              infowindow.open(map, gmarker);
-            });
-          });
-        });
+					// create the tooltip and its text
+					gmarker.html  = '<b>' + marker.attr("sitename") + '</b><br />'
+					gmarker.html += marker.attr("city") + ', ' + marker.attr("country") + '<br />';
+					gmarker.html += '<a href="selectsite.php?site=' + marker.attr("id") + '">Select Site</a>';
+
+					// add a listener to open the tooltip when a user clicks on one of the markers
+					google.maps.event.addListener(gmarker, 'click', function() {
+						infowindow.setContent(this.html);
+						infowindow.open(map, this);
+					});
+				}
+			});
+		});
       }
 
       window.onresize = resize;
       window.onload = resize;
-      google.setOnLoadCallback(initialize);
-    </script>
+      google.setOnLoadCallback(mapsLoaded);
+</script>
 </head>
 <body>
 <div id="wrap">
