@@ -4,26 +4,45 @@
     <pft>
       <name>temperate.Late_Hardwood</name>
       <outdir>/home/mdietze/output/pecan/LH/</outdir>
+      <constants>
+        <num>11</num>
+      </constants>
     </pft>
     <pft>
       <name>temperate.North_Mid_Hardwood</name>
       <outdir>/home/mdietze/output/pecan/MH/</outdir>
+      <edin>/home/mdietze/pecan/tests/ED2IN-HarvardR76</edin>
+      <constants>
+        <num>10</num>
+      </constants>
     </pft>
     <pft>
       <name>temperate.Early_Hardwood</name>
       <outdir>/home/mdietze/output/pecan/EH/</outdir>
+      <constants>
+        <num>9</num>
+      </constants>
     </pft>
     <pft>
       <name>temperate.Northern_Pine</name>
       <outdir>/home/mdietze/output/pecan/NP/</outdir>
+      <constants>
+        <num>6</num>
+      </constants>
     </pft>
     <pft>
       <name>temperate.Mid_Conifer</name>
       <outdir>/home/mdietze/output/pecan/MC/</outdir>
+      <constants>
+        <num>7</num>
+      </constants>
     </pft>
     <pft>
       <name>temperate.Late_Conifer</name>
       <outdir>/home/mdietze/output/pecan/LC/</outdir>
+      <constants>
+        <num>8</num>
+      </constants>
     </pft>
   </pfts>
   <meta.analysis>
@@ -33,7 +52,15 @@
   <ensemble>
     <size>0</size>
   </ensemble>
-  <sensitivity.analysis></sensitivity.analysis>
+  <sensitivity.analysis>
+    <quantiles>
+      <quantile></quantile>
+      <sigma>-2</sigma>
+      <sigma>2</sigma>
+    </quantiles>
+    <start.year>2005</start.year>
+    <end.year>2006</end.year>
+   </sensitivity.analysis>
   <outdir>/home/mdietze/output/pecan/</outdir>
   <Rlibdir>~/lib/R</Rlibdir>
   <database>
@@ -45,16 +72,17 @@
   <pecanDir>~/pecan/</pecanDir>  
   <run>
     <site>
-      <lat></lat>
-      <lon></lon>
+      <lat>44.5</lat>
+      <lon>-71.5</lon>
     </site>
-    <start.date></start.date>
-    <end.date></end.date>
+    <start.date>2002/01/01</start.date>
+    <end.date>2008/01/01</end.date>
     <host>
       <name>ebi-cluster.igb.uiuc.edu</name>
-      <rundir>/home/mdietze/EDBRAMS/ED/run/</rundir>
-      <outdir>/home/scratch/test/out/</outdir>
+      <rundir>/home/mdietze/HarvardR76/EDBRAMS/ED/run/</rundir>
+      <outdir>/scratch/mdietze/pecan/out/</outdir>
     </host>
+     <edin>/home/mdietze/pecan/tests/ED2IN-HarvardR76</edin>
   </run>
 
 </pecan>

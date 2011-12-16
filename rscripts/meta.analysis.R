@@ -6,7 +6,7 @@ if(interactive()){
   } else if(user == 'mantoot2'){
     settings.file = '~/pecan/ebifarm.acsa3.xml'
   } else if(user == 'dlebauer'){
-    settings.file = '~/in/ebifarm/prior/settings.pavi.xml'
+    settings.file = '~/in/ebifarm/fast/ebifarm.pavi.xml'
                                         #    settings.file = '~/pecan/ebifarm.acsa3.xml'
   } else if(user == 'davids14') {
     settings.file = '~/pecan/tundra.xml'

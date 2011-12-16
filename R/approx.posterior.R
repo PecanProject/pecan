@@ -7,7 +7,6 @@
 ##' @param trait.data data used in meta-analysis (used for plotting)
 ##' @param outdir directory in which to plot results
 ##' @return posteriors data frame, similar to priors, but with closed form pdfs fit to meta-analysis results  
-##' @TODO increase bins used in plotting trait data; current implimentation is univariate, future version will be joint posterior
 ##' @author David LeBauer, Carl Davidson, Mike Dietze
 approx.posterior <- function(trait.mcmc,priors,trait.data=NULL,outdir=NULL){
   ##initialization
@@ -36,11 +35,21 @@ approx.posterior <- function(trait.mcmc,priors,trait.data=NULL,outdir=NULL){
     ## first determine the candidate set of models based on any range restrictions
     zerobound = c("exp","gamma","lnorm")#,"weibull")
     if(pdist %in% "beta"){
-      fit = fitdistr(dat,"beta",list(shape1=1,shape2=1))
+      m = mean(dat)
+      v = var(dat)
+      k = (1-m)/m
+      a = ( k/((1+k)^2*v)-1)/(1+k)
+      b = a*k
+      fit = try(fitdistr(dat,"beta",list(shape1=a,shape2=b)))      
       if(do.plot){
         x = seq(0,1,length=1000)
         plot(density(dat),col=2,lwd=2,main=trait)
-        if(!is.null(trait.data)) hist(trait.data[[trait]]$Y,probability=TRUE,add=TRUE,border="purple")
+        if(!is.null(trait.data)){
+          rug(trait.data[[trait]]$Y, lwd = 2) 
+          #hist(trait.data[[trait]]$Y,probability=TRUE,
+          #     breaks = sqrt(nrow(trait.data[[trait]])),
+          #     add=TRUE,border="purple")
+        }
         lines(x,dbeta(x,fit$estimate[1],fit$estimate[2]),lwd=2,type='l')
         lines(x,dbeta(x,pparm[1],pparm[2]),lwd=3,type='l',col=3)
         legend("topleft",legend=c("data","prior","post","approx"),col=c("purple",3,2,1),lwd=2)
@@ -50,12 +59,12 @@ approx.posterior <- function(trait.mcmc,priors,trait.data=NULL,outdir=NULL){
     } else if(pdist %in% zerobound | (pdist == "unif" & pparm[1] > 0)){
 
       fit = list()
-      fit[[1]] = fitdistr(dat,"exponential")
+      fit[[1]] = suppressWarnings(fitdistr(dat,"exponential"))
 #      fit[[2]] = fitdistr(dat,"f",list(df1=10,df2=2*mean(dat)/(max(mean(dat)-1,1))))
-      fit[[2]] = fitdistr(dat,"gamma")
-      fit[[3]] = fitdistr(dat,"lognormal")
+      fit[[2]] = suppressWarnings(fitdistr(dat,"gamma"))
+      fit[[3]] = suppressWarnings(fitdistr(dat,"lognormal"))
 #      fit[[4]] = fitdistr(dat,"weibull")
-      fit[[4]] = fitdistr(dat,"normal")
+      fit[[4]] = suppressWarnings(fitdistr(dat,"normal"))
       fparm <- lapply(fit,function(x){as.numeric(x$estimate)})
       fAIC  <- lapply(fit,function(x){AIC(x)})
       
@@ -83,7 +92,12 @@ approx.posterior <- function(trait.mcmc,priors,trait.data=NULL,outdir=NULL){
         if(!is.null(trait.data)) rng = range(trait.data[[trait]]$Y)
         
         plot(density(dat),col=2,lwd=2,main=trait,xlim=rng)
-        if(!is.null(trait.data)) hist(trait.data[[trait]]$Y,probability=TRUE,add=TRUE,border="purple")
+        if(!is.null(trait.data)) {
+          rug(trait.data[[trait]]$Y, lwd = 2) 
+          ##hist(trait.data[[trait]]$Y,
+          ##     breaks = sqrt(nrow(trait.data[[trait]])),
+          ##     probability=TRUE,add=TRUE,border="purple")
+        }
         lines(x,f(x),lwd=2,type='l')
         lines(x,fp(x),lwd=3,type='l',col=3)
         legend("topleft",legend=c("data","prior","post","approx"),col=c("purple",3,2,1),lwd=2)
@@ -100,7 +114,12 @@ approx.posterior <- function(trait.mcmc,priors,trait.data=NULL,outdir=NULL){
         if(!is.null(trait.data)) rng = range(trait.data[[trait]]$Y)
         x = seq(rng[1],rng[2],length=1000)
         plot(density(dat),col=2,lwd=2,main=trait,xlim=rng)
-        if(!is.null(trait.data)) hist(trait.data[[trait]]$Y,probability=TRUE,add=TRUE,border="purple")
+        if(!is.null(trait.data)) {
+          rug(trait.data[[trait]]$Y, lwd = 2) 
+          ## hist(trait.data[[trait]]$Y,probability=TRUE,
+          ##     breaks = sqrt(nrow(trait.data[[trait]])),
+          ##     add=TRUE,border="purple")
+        }
         lines(x,dnorm(x,mean(dat),sd(dat)),lwd=2,type='l')
         lines(x,fp(x),lwd=3,type='l',col=3)
         legend("topleft",legend=c("data","prior","post","approx"),col=c("purple",3,2,1),lwd=2)
