@@ -1,5 +1,4 @@
-setwd('/home/dlebauer/pecantest/test/')
-library(PECAn, lib.loc = '~/lib/R')
+library(PECAn)
 ##input variables
 pft <- 'ebifarm.c4crop'
 

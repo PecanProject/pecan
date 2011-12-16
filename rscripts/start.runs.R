@@ -2,7 +2,7 @@ library(XML)
 if(interactive()){
   user <- Sys.getenv('USER')
   if(user == 'dlebauer'){
-    settings.file <- '~/in/ebifarm/prior/ebifarm.pavi.xml'
+    settings.file <- '~/in/ebifarm/fast/ebifarm.pavi.xml'
   } else if(user == 'davids14') {
     settings.file <- '~/pecan/tundra.xml'
   } else {
@@ -26,8 +26,13 @@ if(is.null(settings$run$priority)){
   system(paste("sed -i 's/\"qsub/\"qsub\ -p\ ", settings$run$priority,
                "/g' bash/batch.jobs.lowp.sh", sep = ''))
   batch.jobs.script <- "bash/batch.jobs.lowp.sh"
-} else {
+} else if (as.numeric(settings$run$priority) > 0){
   stop("need admin rights to set higher priority")
+}
+
+## if using ED, write runscript that rsyncs at the end
+if(any(grep("ED", settings$run$host$rundir))){ #if using ED
+  write.run.ED(settings)
 }
 #Run model from user made bash script 
 if(host$name == 'localhost') {

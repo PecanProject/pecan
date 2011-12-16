@@ -1,4 +1,4 @@
-##' Queries data from BETY and transforms statistics to SE
+##' Queries data from BETY and transforms statistics to SE 
 ##'
 ##' Performs query and then uses \code{pecan.transformstats} to convert miscellaneous statistical summaries
 ##' to SE
@@ -13,18 +13,11 @@ fetch.stats2se <- function(connection, query){
   return(transformed)
 }
 
-##' Scale temperature dependent trait from measurement temperature to reference temperature 
+##' rename data columns for JAGS meta-analysis model
 ##'
-##' .. content for \details{} ..
-##' @title 
-##' @param observed.value observed value of temperature dependent trait, e.g. Vcmax, root respiration rate
-##' @param old.temp temperature at which measurement was taken or previously scaled to
-##' @param new.temp temperature to be scaled to, default = 25 C  
-##' @return numeric value at reference temperature
-arrhenius.scaling <- function(observed.value, old.temp, new.temp = 25){
-  return(observed.value / exp (3000 * ( 1 / (273.15 + new.temp) - 1 / (273.15 + old.temp))))
-}
-
+##' @title Rename JAGS columns
+##' @param data dataframe with data for meta analysis
+##' @return dataframe with columns renamed
 rename.jags.columns <- function(data) {
   transformed <-  transform(data,
                       Y        = mean,
@@ -37,16 +30,21 @@ rename.jags.columns <- function(data) {
   selected <- subset (transformed, select = c('Y', 'n', 'site', 'trt', 'ghs', 'obs.prec', 'se', 'cite'))
   return(selected)
 }
+##' Transform NA values in data to appropriate values for meta-analysis
+##'
+##' Assume if not specified: treatment is control (1), site is generic (0), study not performed in greenhouse or other controlled condition so greenhouse is false (0), 
+##' @title Transform NAs
+##' @param data 
+##' @return data with NAs transformed
 transform.nas <- function(data){
   #control defaults to 1
-  data$control[is.na(data$control)]     <- 1
+  data$control[is.na(data$control)] <- 1
   
   #site defaults to 0
-  #TODO assign different site for each citation - dsl
   data$site_id[is.na(data$site_id)] <- 0
 
   #greenhouse defaults to false (0)
-  data$greenhouse[is.na(data$greenhouse)] <- 1
+  data$greenhouse[is.na(data$greenhouse)] <- 0
   
   #number of observations defaults to 2 for statistics, 1 otherwise
   data$n[is.na(data$n)] <- 1
@@ -54,6 +52,7 @@ transform.nas <- function(data){
 
   return(data)
 }
+
 assign.controls <- function(data){
   data$trt_id[which(data$control == 1)] <- 'control'
   sites <- unique(data$site_id)
@@ -72,9 +71,17 @@ assign.controls <- function(data){
   }
   return(data)
 }
+
 drop.columns <- function(data, columns){
   return(data[,which(!colnames(data) %in% columns)])
 }
+##' Query covariates for a vector of ids from traits table
+##'
+##' @title Query covariates 
+##' @param trait.ids vector of traits.id values for which to query associated covariates
+##' @param con database connection
+##' @param ... arguments to query.bety.con
+##' @return covariates associated with traits
 query.covariates<-function(trait.ids, con = NULL, ...){
   if(is.null(con)){
     con <- query.bety.con(...)
@@ -88,13 +95,13 @@ query.covariates<-function(trait.ids, con = NULL, ...){
 }
 
 ##' Append covariate data as a column within a table
-##' @name append.covariate
 ##'
-##' \code{append.covariate} appends one or more tables of covariate data 
+##' appends one or more tables of covariate data 
 ##' as a single column in a given table of trait data.
 ##' In the event a trait has several covariates across several given tables, 
 ##' the first table given will take precedence
 ##'
+##' @title append.covariate
 ##' @param data trait dataframe that will be appended to.
 ##' @param covariate name of the covariate as it will appear in the appended column
 ##' @param ... one or more tables of covariate data, ordered by the precedence 
@@ -116,19 +123,18 @@ append.covariate<-function(data, covariate, ...){
 }
 
 ##' Extract trait data from BETYdb
-##' @name query.bety.trait.data
-##'
-##' \code{query.bety.trait.data} extracts data from BETYdb for a given trait and set of species,
+##' extracts data from BETYdb for a given trait and set of species,
 ##' converts all statistics to summary statistics, and prepares a dataframe for use in meta-analysis.
 ##' For Vcmax and SLA data, only data collected between  April and July are queried, and only data collected from the top of the canopy (canopy height > 0.66).
 ##' For Vcmax and root_respiration_rate, data are scaled
 ##' converted from measurement temperature to \eqn{25^oC} via the arrhenius equation.
+##' @name query.bety.trait.data
+##' @title Query trait data
 ##'
 ##' @param trait is the traiat name used in BETY, stored in variables.name
 ##' @param spstr is the species.id integer or string of integers associated with the species
 ##'  
 ##' @return dataframe ready for use in meta-analysis
-
 query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   if(is.null(con)){
     con <- query.bety.con(...)
@@ -166,9 +172,8 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     data$stat <- arrhenius.scaling(data$stat, old.temp = data$leafT)
 
     ## select only summer data for Panicum virgatum
-    ##TODO fix following hack to select only summer data
     if (spstr == "'938'"){
-      data <- subset(data, subset = data$month %in% c(0,5,6,7))
+      data <- subset(data, subset = data$month %in% c(0,6,7))
     }
     result <- drop.columns(data, c('leafT', 'canopy_layer','dateloc'))
     
@@ -369,5 +374,3 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
   renamed <- rename.jags.columns(data)
   return(renamed)
 }
-
-

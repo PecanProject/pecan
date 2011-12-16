@@ -26,6 +26,7 @@ outdirs <- unlist(xpathApply(settings.xml, '//pfts//pft//outdir', xmlValue))
 trait.samples <- list()
 sa.samples <- list()
 ensemble.samples <- list()
+env.samples <- list()
 
 ## Remove existing config files
 
@@ -48,32 +49,31 @@ if(host$name == 'localhost'){
   if(length(files) > 0 ) {
     todelete <- files[-grep('log', files)]
     system(paste("ssh -T ", host$name,
-                " 'for f in ", paste(todelete, collapse = ' '),"; do rm $f; done'",sep=''))
+                 " 'for f in ", paste(todelete, collapse = ' '),"; do rm $f; done'",sep=''))
   }
 }
 
-## Load priors and posteriors
+## Load PFT priors and posteriors
 
 for (i in seq(pft.names)){
+  
   load(paste(outdirs[i], 'prior.distns.Rdata', sep=''))
-
+  
   if("trait.mcmc.Rdata" %in% dir(outdirs)) {
     load(paste(outdirs[i], 'trait.mcmc.Rdata', sep=''))
   }
-
+ 
   pft.name <- pft.names[i]
 
   ## when no ma for a trait, sample from  prior
-  traits <- if(exists('trait.mcmc')) {
-    names(trait.mcmc)
-  } else {
-    NA
-  }
   ## trim all chains to shortest mcmc chain, else 20000 samples
-  samples.num <- ifelse(exists('trait.mcmc'),
-                        min(sapply(trait.mcmc,
-                                   function(x) nrow(as.matrix(x)))),
-                        20000)
+  if(exists('trait.mcmc')) {
+    traits <- names(trait.mcmc)
+    samples.num <- min(sapply(trait.mcmc, function(x) nrow(as.matrix(x))))
+  } else {
+    traits <- NA
+    samples.num <- 20000
+  }
 
   priors <- rownames(prior.distns)
   for (prior in priors) {
@@ -84,31 +84,39 @@ for (i in seq(pft.names)){
     }
     trait.samples[[pft.name]][[prior]] <- samples
   }
+  
 }
 
+## Load Environmental Priors and Posteriors
 
-## subset the trait.samples to ensemble size using Halton sequence 
+   ## NEED TO IMPLEMENT
+
+
+## Write ENSEMBLE
 if('ensemble' %in% names(settings) && settings$ensemble$size > 0) {
-  ensemble.samples[[pft.name]] <- get.ensemble.samples(settings$ensemble$size, trait.samples[[pft.name]])
-  write.ensemble.configs(settings$pfts[[i]], ensemble.samples[[pft.name]], 
+  ## subset the trait.samples to ensemble size using Halton sequence 
+  ensemble.samples <- get.ensemble.samples(settings$ensemble$size, trait.samples, env.samples,method='unif')
+  write.ensemble.configs(settings$pfts, ensemble.samples, 
                          host, outdir, settings)
 }
 
+
+## write SENSITIVITY ANALYSIS 
 if('sensitivity.analysis' %in% names(settings)) {
   if( is.null(settings$sensitivity.analysis)) {
     print(paste('sensitivity analysis settings are NULL'))
   } else {
     quantiles <- get.quantiles(settings$sensitivity.analysis$quantiles)
-    sa.samples[[pft.name]] <-  get.sa.samples(trait.samples[[pft.name]], quantiles)
-    write.sa.configs(settings$pfts[[i]], sa.samples[[pft.name]], 
-                     host, outdir, settings)
+    sa.samples <-  get.sa.sample.list(trait.samples,env.samples,quantiles)
+    write.sa.configs(settings$pfts, sa.samples, 
+                       host, outdir, settings)    
   }
 }
 
-
-                                        #Make outdirectory
 save(ensemble.samples, trait.samples, sa.samples, settings,
      file = paste(outdir, 'samples.Rdata', sep=''))
+
+## Make outdirectory, send samples to outdir
 
 if(host$name == 'localhost'){
   if(!host$outdir == outdir) {
@@ -117,12 +125,9 @@ if(host$name == 'localhost'){
               to   = paste(host$outdir, 'samples.Rdata', sep = ''),
               overwrite = TRUE)
   }
-} else {
-  
+} else {  
   mkdir.cmd <- paste("'if ! ls ", host$outdir, " > /dev/null ; then mkdir -p ", host$outdir," ; fi'",sep='')
   system(paste("ssh", host$name, mkdir.cmd))
   system(paste('rsync -routi ', paste(outdir, 'samples.Rdata', sep=''),
                paste(host$name, ':', host$outdir, sep='')))
 }
-
- 

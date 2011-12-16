@@ -1,15 +1,55 @@
 Package: PECAn
 Type: Package
-Title:  PEcAn functions used for ecological forecasts and reanalysis
-Version: 1.0
-Date: 2010-10-05
-Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Mike Dietze, Carl Davidson, Rob Kooper
+Title: PEcAn functions used for ecological forecasts and reanalysis
+Version: 1.1
+Date: 2011-11-11
+Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Mike Dietze, Carl
+    Davidson, Rob Kooper
 Maintainer: David LeBauer <dlebauer@illinois.edu>
-Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific workflow management tool that is designed to simplify the management of model parameterization, execution, and analysis. The goal of PECAn is to streamline the interaction between data and models, and to improve the efficacy of scientific investigation. 
-Depends: XML, MASS, randtoolbox, rjags, ggplot2, RMySQL, gridExtra, xtable
-Suggests: hdf5
+Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
+    workflow management tool that is designed to simplify the management of
+    model parameterization, execution, and analysis. The goal of PECAn is to
+    streamline the interaction between data and models, and to improve the
+    efficacy of scientific investigation.
+Depends:
+    XML,
+    MASS,
+    randtoolbox,
+    rjags,
+    ggplot2,
+    RMySQL,
+    gridExtra,
+    xtable
+Suggests:
+    hdf5
 SystemRequirements: JAGS2.2.0, bash, ED2, kepler
 OS_type: unix
 License: University of Illinois/NCSA Open Source License
 Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes
+Collate:
+    'allom.BayesFit.R'
+    'approx.posterior.R'
+    'dtheta.q.R'
+    'help.R'
+    'model.specific.R'
+    'pecan.arrange.R'
+    'pecan.dtheta.R'
+    'pecan.ma.R'
+    'pecan.ma.summary.R'
+    'pecan.samps.R'
+    'pecan.SAplots.R'
+    'pecan.tools.R'
+    'pecan.transformstats.R'
+    'pft.add.spp.R'
+    'plots.R'
+    'query.allom.data.R'
+    'query.bety.R'
+    'query.bety.trait.data.R'
+    'query.bety.traits.R'
+    'r2bugs.distributions.R'
+    'read.output.R'
+    'sensitivity.R'
+    'utils.R'
+    'write.config.utils.R'
+    'write.ma.model.R'

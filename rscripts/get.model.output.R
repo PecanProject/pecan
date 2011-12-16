@@ -3,7 +3,7 @@ if(interactive()){
   user <- Sys.getenv('USER')
   options(error = browser)
   if(user == 'dlebauer'){
-    settings.file = '~/in/ebifarm/post/ebifarm.pavi.xml'
+    settings.file = '~/in/ebifarm/prior/ebifarm.pavi.xml'
   } else if(user == 'davids14') {
     settings.file = '~/pecan/tundra.xml'
   } else {
@@ -20,22 +20,30 @@ settings <- xmlToList(settings.xml)
 if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
 library(PECAn)
 
-outdir <- settings$outdir
-host<- settings$run$host
- 
-
-if(host$name == 'localhost'){
-  file.copy(from = paste(settings$pecanDir, 'rscripts/read.output.R', sep = ''),
-            to   = outdir,
-            overwrite = TRUE)
-  setwd(outdir)
+if(settings$run$host$name == 'localhost'){
+  send.files <- function(x){
+    file.copy(from = paste(settings$pecanDir,x, sep = ''),
+              to   = settings$outdir,
+              overwrite = TRUE)
+  }
+  lapply(c('R/utils.R', 'R/model.specific.R', 'rscripts/read.output.R', paste(settings$outdir, 'samples.Rdata', sep = '')), move.files)
+  setwd(settings$outdir)
   source('read.output.R')
-} else {
-  rsync(from = paste(settings$pecanDir, 'rscripts/read.output.R ', sep = ''),
-        to   = paste(host$name, ':',host$outdir, sep = ''))
-  system(paste("ssh -T", host$name, "'",
-               "cd", host$outdir, "; R --vanilla < read.output.R'"))
+} else { ## if not on localhost
+  send.files <- function(filename){
+    rsync(from = filename,
+          to   = paste(settings$run$host$name, ':',settings$run$host$outdir, sep = ''))
+  }
+  lapply(c(paste(settings$outdir, 'samples.Rdata ', sep = ''),
+           paste(settings$pecanDir, c('R/utils.R',
+                                      'R/model.specific.R',
+                                      'rscripts/read.output.R'),sep = '')),
+         send.files)
+  system(paste("ssh -T", settings$run$host$name, "'",
+               "cd", settings$run$host$outdir, "; R --vanilla < read.output.R'"))
   
-  rsync(from = paste(host$name, ':', host$outdir, 'output.Rdata', sep=''),
-        to = outdir)
+  rsync(from = paste(settings$run$host$name, ':', settings$run$host$outdir, 'output.Rdata', sep=''),
+        to = settings$outdir)
 }
+## debugging
+## source('rscripts/get.model.output.R', echo = TRUE, print.eval = TRUE, verbose = TRUE)
