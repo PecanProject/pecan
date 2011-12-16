@@ -20,6 +20,11 @@ if (!isset($_REQUEST['met'])) {
 }
 $met=$_REQUEST['met'];
 
+if (!isset($_REQUEST['psscss'])) {
+  die("Need a psscss.");
+}
+$psscss=$_REQUEST['psscss'];
+
 if (!isset($_REQUEST['start'])) {
   die("Need a start.");
 }
@@ -50,7 +55,8 @@ $siteinfo = mysql_fetch_assoc($result);
 print_r($siteinfo);
 
 # folders
-$folder = tempnam(sys_get_temp_dir(), 'PEcAn_');
+mkdir("$folder",  0777, true);
+$folder = tempnam($output_folder, 'PEcAn_');
 unlink($folder);
 if (!mkdir("$folder/out",  0777, true)) {
     die("Failed to create folders $folder/out");
@@ -146,6 +152,7 @@ fwrite($fh, "      <name>{$siteinfo['sitename']}</name>" . PHP_EOL);
 fwrite($fh, "      <lat>{$siteinfo['lat']}</lat>" . PHP_EOL);
 fwrite($fh, "      <lon>{$siteinfo['lon']}</lon>" . PHP_EOL);
 fwrite($fh, "      <met>$met</met>" . PHP_EOL);
+fwrite($fh, "      <psscss>$psscss</psscss>" . PHP_EOL);
 fwrite($fh, "    </site>" . PHP_EOL);
 fwrite($fh, "    <start.date>$start</start.date>" . PHP_EOL);
 fwrite($fh, "    <end.date>$end</end.date>" . PHP_EOL);

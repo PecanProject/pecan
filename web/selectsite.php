@@ -5,6 +5,9 @@ if (!isset($_REQUEST['site'])) {
 	$site=$_REQUEST['site'];
 }
 
+// system parameters
+require("system.php");
+
 // database parameters
 require("dbinfo.php");
 
@@ -145,9 +148,23 @@ while ($row = @mysql_fetch_assoc($result)){
 
 			<label>MET Data file</label>
 			<select name="met">
-				<option value="/home/kooper/projects/EBI/ebifarm/met/ED_MET_DRIVER_HEADER">ebifarm</option>
+<?php
+	foreach ($site_files[$site]['met'] as $k => $v) {
+		echo "<option value=\"$k\">$v</option>\n";
+	}
+?>
 			</select>
 			<div class="spacer"></div>
+
+                        <label>Site files (PSS/CSS)</label>
+                        <select name="psscss">
+<?php
+        foreach ($site_files[$site]['site'] as $k => $v) {
+                echo "<option value=\"$k\">$v</option>\n";
+        }
+?>
+                        </select>
+                        <div class="spacer"></div>
 
 			<label>Start Date</label>
 			<input type="text" name="start" value="2006/01/01" />

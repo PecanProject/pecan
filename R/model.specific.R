@@ -106,6 +106,7 @@ write.config.ED <- function(pft, trait.samples, settings, outdir, run.id){
   ed2in.text <- gsub('@SITE_LAT@', settings$run$site$lat, ed2in.text)
   ed2in.text <- gsub('@SITE_LON@', settings$run$site$lon, ed2in.text)
   ed2in.text <- gsub('@SITE_MET@', settings$run$site$met, ed2in.text)
+  ed2in.text <- gsub('@SITE_PSSCSS@', settings$run$site$psscss, ed2in.text)
 
   ed2in.text <- gsub('@ED_VEG@', settings$run$host$ed$veg, ed2in.text)
   ed2in.text <- gsub('@ED_SOIL@', settings$run$host$ed$soil, ed2in.text)
