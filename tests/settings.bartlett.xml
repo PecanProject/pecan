@@ -50,7 +50,7 @@
     <random.effects>FALSE</random.effects>
   </meta.analysis>
   <ensemble>
-    <size>0</size>
+    <size>10</size>
   </ensemble>
   <sensitivity.analysis>
     <quantiles>
@@ -59,7 +59,7 @@
       <sigma>2</sigma>
     </quantiles>
     <start.year>2005</start.year>
-    <end.year>2006</end.year>
+    <end.year>2005</end.year>
    </sensitivity.analysis>
   <outdir>/home/mdietze/output/pecan/</outdir>
   <Rlibdir>~/lib/R</Rlibdir>
@@ -75,12 +75,12 @@
       <lat>44.5</lat>
       <lon>-71.5</lon>
     </site>
-    <start.date>2002/01/01</start.date>
-    <end.date>2008/01/01</end.date>
+    <start.date>2005/01/01</start.date>
+    <end.date>2005/01/10</end.date>
     <host>
       <name>ebi-cluster.igb.uiuc.edu</name>
       <rundir>/home/mdietze/HarvardR76/EDBRAMS/ED/run/</rundir>
-      <outdir>/scratch/mdietze/pecan/out/</outdir>
+      <outdir>/scratch/mdietze/pecan/test/</outdir>
     </host>
      <edin>/home/mdietze/pecan/tests/ED2IN-HarvardR76</edin>
   </run>

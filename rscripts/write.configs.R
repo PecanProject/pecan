@@ -29,30 +29,31 @@ ensemble.samples <- list()
 env.samples <- list()
 
 ## Remove existing config files
-
-todelete <- dir(paste(settings$pfts$pft$outdir, 'out/', sep = ''),
-                c('ED2INc.*','c.*'),
-                recursive=TRUE, full.names = TRUE)
-if(length(todelete>0)) file.remove(todelete)
-
-filename.root <- get.run.id('c.','ebifarm.pavi')
-
-if(host$name == 'localhost'){
-  if(length(dir(host$rundir, pattern = filename.root)) > 0) {
-    todelete <- dir(host$outdir,
+if(FALSE){
+  todelete <- dir(paste(settings$pfts$pft$outdir, 'out/', sep = ''),
+                  c('ED2INc.*','c.*'),
+                  recursive=TRUE, full.names = TRUE)
+  if(length(todelete>0)) file.remove(todelete)
+  
+  filename.root <- get.run.id('c.','*')
+  
+  if(host$name == 'localhost'){
+    if(length(dir(host$rundir, pattern = filename.root)) > 0) {
+      todelete <- dir(host$outdir,
                     pattern = paste(filename.root, "*[^log]", sep = ''), 
-                    recursive=TRUE, full.names = TRUE)
-    file.remove(todelete)
-  }
-} else {
-  files <- system(paste("ssh ", host$name, " 'ls ", host$rundir, "*", filename.root, "*'", sep = ''), intern = TRUE)
-  if(length(files) > 0 ) {
-    todelete <- files[-grep('log', files)]
-    system(paste("ssh -T ", host$name,
-                 " 'for f in ", paste(todelete, collapse = ' '),"; do rm $f; done'",sep=''))
+                      recursive=TRUE, full.names = TRUE)
+      file.remove(todelete)
+    }
+  } else {
+    files <- system(paste("ssh ", host$name, " 'ls ", host$rundir, "*", filename.root, "*'", sep = ''), intern = TRUE)
+    if(length(files) > 0 ) {
+      todelete <- files[-grep('log', files)]
+      system(paste("ssh -T ", host$name,
+                   " 'for f in ", paste(todelete, collapse = ' '),"; do rm $f; done'",sep=''))
+    }
   }
 }
-
+  
 ## Load PFT priors and posteriors
 
 for (i in seq(pft.names)){

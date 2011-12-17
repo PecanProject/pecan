@@ -241,7 +241,7 @@ plot.sensitivities <- function(sensitivity.plot.inputs, outdir, prior.sensitivit
                                                   sa.spline = sa.splines[[trait]],
                                                   trait <- trait,
                                                   y.range = y.range,
-                                                  median.i =  4,#which(as.numeric(rownames(sa.samples)) == 50),
+                                                  median.i =  which(as.numeric(rownames(sa.samples)) == 50),
                                                   prior.sa.sample = prior.sa.sample,
                                                   prior.sa.spline = prior.sa.spline,
                                                   ...)
