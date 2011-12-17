@@ -117,6 +117,7 @@ sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
                     coef.vars         = coef.vars,
                     elasticities      = elasticities,
                     sensitivities     = sensitivities,
+ #                   variances         = variances,
                     partial.variances = partial.variances))
   return(outlist)
 }

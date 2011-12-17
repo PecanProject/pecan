@@ -22,11 +22,11 @@ library(PECAn)
 
 if(settings$run$host$name == 'localhost'){
   send.files <- function(x){
-    file.copy(from = paste(settings$pecanDir,x, sep = ''),
+    file.copy(from = x,
               to   = settings$outdir,
               overwrite = TRUE)
   }
-  lapply(c('R/utils.R', 'R/model.specific.R', 'rscripts/read.output.R', paste(settings$outdir, 'samples.Rdata', sep = '')), move.files)
+  lapply( c(paste(settings$pecanDir,c('R/utils.R', 'R/model.specific.R', 'rscripts/read.output.R'),sep=""), paste(settings$outdir, 'samples.Rdata', sep = '')), send.files)
   setwd(settings$outdir)
   source('read.output.R')
 } else { ## if not on localhost

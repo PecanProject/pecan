@@ -4,7 +4,6 @@
     <pft>
       <name>ebifarm.pavi</name>
       <outdir>/home/dlebauer/pecan/out/pavi/</outdir>
-      <edin>/home/dlebauer/pecan/edin/templateED2IN-ebifarm.pavi</edin>
       <constants>
         <num>15</num>
         <phenology>2</phenology>
@@ -80,5 +79,6 @@
       <inputs>/home/scratch/dlebauer/pecan/edin/</inputs>
       <outdir>/home/scratch/dlebauer/pecan/out/test1/</outdir>
     </host>
+    <edin>/home/dlebauer/pecan/edin/templateED2IN-ebifarm.pavi</edin>
   </run>
 </pecan>

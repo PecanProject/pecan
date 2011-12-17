@@ -23,17 +23,17 @@ library(PECAn)
 load(paste(settings$outdir, 'output.Rdata', sep=''))
 load(paste(settings$outdir, 'samples.Rdata', sep=''))
 
-for(pft in settings$pfts){
-  print(pft)
-  if('sensitivity.analysis' %in% names(settings)) {
+if('sensitivity.analysis' %in% names(settings)) {
+  for(pft in settings$pfts){
+    print(pft)
 
+    traits <- names(trait.samples[[pft$name]])
     quantiles.str <- rownames(sa.samples[[pft$name]])
     quantiles.str <- quantiles.str[which(quantiles.str != '50')]
     quantiles <- as.numeric(quantiles.str)/100
     ## ensemble.output <- read.ensemble.output(settings$ensemble$size, settings$outdir, pft.name=pft$name)
 
     ## only perform sensitivity analysis on traits where no more than 2 results are missing
-    traits <- names(trait.samples[[pft$name]])
     good.saruns <- sapply(sensitivity.output[[pft$name]], function(x) sum(is.na(x)) <=2)
     if(!all(good.saruns)) { # if any bad saruns, reduce list of traits and print warning
       bad.saruns <- !good.saruns
@@ -49,12 +49,12 @@ for(pft in settings$pfts){
     sensitivity.plots <- plot.sensitivities(sensitivity.results$sensitivity.plot.inputs,
                                    linesize = 1,
                                    dotsize = 3)
-    pdf(paste(settings$outdir, 'sensitivityanalysis.pdf', sep = ''), height = 12, width = 9)
+    pdf(paste(pft$outdir, 'sensitivityanalysis.pdf', sep = ''), height = 12, width = 9)
     print(sensitivity.plots)
     dev.off()
 
     vd.plots <- plot.variance.decomposition(sensitivity.results$variance.decomposition.plot.inputs)
-    pdf(paste(settings$outdir, 'variancedecomposition.pdf', sep=''), width = 11, height = 8)
+    pdf(paste(pft$outdir, 'variancedecomposition.pdf', sep=''), width = 11, height = 8)
     cv.xticks <- pretty(sensitivity.results$variance.decomposition.plot.inputs$coef.vars*100,4)
     el.xticks <- pretty(sensitivity.results$variance.decomposition.plot.inputs$elasticities,4)
     el.xrange <- range(pretty(sensitivity.results$variance.decomposition.plot.inputs$elasticities,6))
@@ -62,4 +62,4 @@ for(pft in settings$pfts){
     do.call(grid.arrange, c(vd.plots, ncol = 4))
     dev.off() 
   }
-}
+}  ## end if sensitivity analysis
