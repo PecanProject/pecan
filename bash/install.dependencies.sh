@@ -14,10 +14,4 @@ apt-get update
 
 apt-get install -y e3 mysql-server mysql-client libdbd-mysql libmysqlclient16-dev r-base jags r-cran-rjags r-cran-xml r-cran-hdf5 r-cran-mass r-cran-rmysql 
 
-mkdir kepler
-cd kepler
-wget https://code.kepler-project.org/code/kepler/releases/installers/2.2/kepler-2.2-linux.tar.gz
-tar -xvf kepler*tar.gz
-cd ..
-
 R --vanilla < ~/pecan/rscripts/install.dependencies.R 
