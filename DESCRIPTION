@@ -49,5 +49,6 @@ Collate:
     'read.output.R'
     'sensitivity.R'
     'utils.R'
+    'variance.R'
     'write.config.utils.R'
     'write.ma.model.R'
