@@ -114,13 +114,14 @@ get.sample <- function(prior, n) {
 ##' @param n length of vector to be returned
 ##' @param alpha sets range at which the distribution will be evaluated (e.g. from alpha to 1-alpha)
 ##' @return dataframe with equally spaced x values and the corresponding densities
-pr.dens <- function(distn, parama, paramb, n = 1000, alpha = 0.0001) {
+pr.dens <- function(distn, parama, paramb, n = 1000, alpha = 0.001) {
   alpha <- ifelse(alpha < 0.5, alpha, 1-alpha)
   n <- ifelse(alpha == 0.5, 1, n)
   range.x <- do.call(paste('q', distn, sep = ""), list(c(alpha, 1-alpha), parama, paramb))
   seq.x   <- seq(from = range.x[1], to = range.x[2], length.out = n)
   dens.df <- data.frame(x = seq.x,
-                        y = do.call(paste('d', distn, sep=""), list(seq.x, parama, paramb)))
+                        y = do.call(paste('d', distn, sep=""),
+                          list(seq.x, parama, paramb)))
   return(dens.df)
 }
 
@@ -164,6 +165,39 @@ summarize.result <- function(result) {
   return(rbind(ans1, ans2))
 }
 
+##' Further summarizes output from summary.mcmc
+##'
+## .. content for \details{} ..
+##' @title Get MCMC stats
+##' @param mcmc.summary 
+##' @param sample.size 
+##' @return 
+##' @author David LeBauer
+get.stats.mcmc <- function(mcmc.summary, sample.size){
+  a <- list(n = sample.size)
+  for (parm in c('beta.o','sd.y', 'sd.site','sd.trt','beta.ghs[2]')){
+    parm.name <- ifelse(parm == 'beta.ghs[2]', 'beta.ghs', parm)
+    if(parm %in% rownames(mcmc.summary$statistics)){
+      a[[parm.name]] <-  get.parm.stat(mcmc.summary, parameter = parm)
+    } else {
+      a[[parm.name]] <- NA
+    }
+  }
+  return(unlist(a))
+}
+
+paste.stats <- function(mcmc.summary, median, lcl, ucl, n = 2) {  
+  paste("$", tabnum(median, n),  "(", tabnum(lcl, n), ",", tabnum(ucl,n), ")", "$", sep = '')
+}
+
+get.parm.stat <- function(mcmc.summary, parameter){
+  paste.stats(median = mcmc.summary$quantiles[parameter, "50%"],
+               lcl   = mcmc.summary$quantiles[parameter, c("2.5%")],
+               ucl   = mcmc.summary$quantiles[parameter, c("97.5%")],
+               n     = 2)
+}
+## @example get.parameter.stat(mcmc.summaries[[1]], 'beta.o')
+
 ##' Calculate mean, variance statistics, and CI from a known distribution 
 ##'
 ##' @title Probability Distirbution Function Statistics
@@ -172,7 +206,10 @@ summarize.result <- function(result) {
 ##' @param B second parameter
 ##' @return list with mean, variance, and 95 CI
 ##' @author David LeBauer
+## in future, perhaps create S3 functions:
+## get.stats.pdf <- pdf.stats
 pdf.stats <- function(distn, A, B) {
+
   mean <- switch(distn,
                  gamma   = A/B,
                  lnorm   = exp(A + 1/2 * B^2),
@@ -440,6 +477,20 @@ newxtable <- function(x, environment = 'table', table.placement = 'ht',
         floating.environment = environment,
         table.placement = table.placement,
         caption.placement = caption.placement,
-        sanitize.text.function = function(x) gsub('%', '\\\\%', x),
+#        sanitize.text.function = function(x) gsub("%", "\\\\%", x),
         sanitize.rownames.function = function(x) paste(''))
+}
+
+
+##' Convert author, year, title to bibtex citation format
+##'
+##' Converts author year title to author1999abc format
+##' @title 
+##' @param author name of first author
+##' @param year year of publication
+##' @param title manuscript title
+##' @return bibtex citation
+bibtexify <- function (author, year, title) {
+  acronym <- abbreviate(title, minlength = 3, strict=TRUE)
+  paste(author, year, acronym, sep='')
 }
