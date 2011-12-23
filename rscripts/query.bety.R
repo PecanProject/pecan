@@ -43,7 +43,7 @@ for(pft in settings$pfts){
                                      names(settings$pfts$pft$constants)),]
   
   print('Summary of Prior distributions')
-  print(format(prior.distns, scientific = FALSE))
+  print(prior.distns)
   traits <- rownames(prior.distns) # vector of variables with prior distributions for pft 
 
   ## if meta-analysis to be run, get traits for pft as a list with one dataframe per variable
@@ -56,9 +56,8 @@ for(pft in settings$pfts){
     names(all.trait.data)[cnt] <- pft$name
 
     for(i in 1:length(all.trait.data)){
-      writeLines(paste('pft:', pft$name,
-                       '\n number of observations found for each trait'))
-      print(as.list(sapply(all.trait.data[[i]], dim)[1, ]))
+      print(names(all.trait.data)[i])
+      print(sapply(all.trait.data[[i]],dim)[1,])
     }
     
   }
