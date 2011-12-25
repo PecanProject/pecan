@@ -101,7 +101,7 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
       reg.model <- paste('+', reg.parms[model.parms > 1], collapse = " ")
     }
         
-    ## parameters for jags to follow
+    ## generate list of parameters for jags to follow and produce mcmc output for
     vars <- c( 'beta.o', 'sd.y') 
     for (x in c('ghs', 'site', 'trt')) {
       if(model.parms[[x]] == 1) {
@@ -135,7 +135,7 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
                     trt.n = model.parms[['trt']],
                     site.n= model.parms[['site']],
                     ghs.n = model.parms[['ghs']],
-                    tauA  = taupriors$tauB[trait.name],
+                    tauA  = taupriors$tauA[trait.name],
                     tauB  = taupriors$tauB[trait.name])
 
     if(overdispersed == TRUE){
