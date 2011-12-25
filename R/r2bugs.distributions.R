@@ -11,6 +11,7 @@ r2bugs.distributions <- function(priors) {
   norm   <- priors$distn %in% 'norm'
   lnorm  <- priors$distn %in% 'lnorm'
   weib   <- priors$distn %in% 'weibull'
+  gamma  <- priors$distn %in% 'gamma'
   bin    <- priors$distn %in% 'binom'
   chisqr <- priors$distn %in% 'chisq'
   negbin <- priors$distn %in% 'nbinom'
@@ -21,7 +22,9 @@ r2bugs.distributions <- function(priors) {
   priors$paramb[weib] <-   signif(1 / priors$paramb[weib]^priors$parama[weib], 4)
   ## Reverse parameter order for binomial
   priors[bin, c('parama', 'paramb')] <-  priors[bin, c('parama', 'paramb')]
-
+  ## Convert Gamma rate to scale parameter
+  priors[gamma, 'paramb'] <-  1 / priors[gamma, 'paramb']
+  
   ## Translate distribution names
   priors$distn <- gsub('weibull', 'weib',
                        gsub('binom', 'bin',
