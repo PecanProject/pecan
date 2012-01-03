@@ -70,30 +70,30 @@ plot.sensitivity <- function(sa.sample, sa.spline, trait,
 plot.variance.decomposition <- function(plot.inputs,
                                         prior.plot.inputs = NULL,
                                         fontsize = list(title = 18, axis = 14)){
-  traits    <- names(plot.inputs$partial.variances)
+  traits    <- names(plot.inputs$variances)
   units     <- trait.dictionary(traits)$units
   trait.labels <- merge(data.frame(id = traits), trait.dictionary(traits), by = 'id', sort = FALSE)$figid
-  .plot.data <- data.frame(trait.labels        = trait.labels,
-                           units               = units,
-                           coef.vars           = plot.inputs$coef.vars * 100,
-                           elasticities        = plot.inputs$elasticities,
-                           partial.variances   = plot.inputs$partial.variances * 100)
+  .plot.data <- data.frame(trait.labels  = trait.labels,
+                           units         = units,
+                           coef.vars     = plot.inputs$coef.vars * 100,
+                           elasticities  = plot.inputs$elasticities,
+                           variances     = plot.inputs$variances)
                                         #  recover()
   if(!is.null(prior.plot.inputs)) {
-    prior.plot.data <- data.frame(trait.labels              = trait.labels,
-                                  units                     = units,
-                                  prior.coef.vars           = prior.plot.inputs$coef.vars * 100,
-                                  prior.elasticities        = prior.plot.inputs$elasticities,
-                                  prior.partial.variances   = prior.plot.inputs$partial.variances * 100)
+    prior.plot.data <- data.frame(trait.labels       = trait.labels,
+                                  units              = units,
+                                  prior.coef.vars    = prior.plot.inputs$coef.vars * 100,
+                                  prior.elasticities = prior.plot.inputs$elasticities,
+                                  prior.variances    = prior.plot.inputs$variances)
     .plot.data <- merge(.plot.data, prior.plot.data, by = 'trait.labels')
   }
-  pv.order <- order(.plot.data$partial.variances, decreasing = FALSE)
+  pv.order <- order(.plot.data$variances, decreasing = FALSE)
 
   ## location of words and lollipops set by 'points'
   ##    these points can be moved up or down by adjusting the offset X in 1:length(traits) - X
   plot.data <- data.frame(.plot.data[pv.order, ], points = 1:length(traits) - 0.5)
   cv.xticks <<- pretty(as.matrix(plot.data[,grep('coef.var', colnames(plot.data))]), 4)
-  pv.xticks <<- pretty(as.matrix(plot.data[,grep('partial.variance', colnames(plot.data))]), 4)  
+  pv.xticks <<- pretty(as.matrix(plot.data[,grep('variances', colnames(plot.data))]), 4)  
   el.xticks <<- pretty(as.matrix(plot.data[,grep('elasticities', colnames(plot.data))]), 3)
   el.xrange <<- range(pretty(as.matrix(plot.data[,grep('elasticities', colnames(plot.data))]), 4))
 
@@ -128,8 +128,8 @@ plot.variance.decomposition <- function(plot.inputs,
                       size = 1.25, color = 'grey') 
 
     .pv.plot <- base.plot +
-      geom_pointrange(aes(x = points, y = prior.partial.variances,
-                          ymin = 0, ymax = prior.partial.variances),
+      geom_pointrange(aes(x = points, y = prior.variances,
+                          ymin = 0, ymax = prior.variances),
                       size = 1.25, color = 'grey') 
   } else {
     .cv.plot <- base.plot + scale_y_continuous(breaks = cv.xticks)
@@ -180,8 +180,8 @@ plot.variance.decomposition <- function(plot.inputs,
         geom_pointrange(aes(x = points, y = elasticities, ymin = 0, ymax = elasticities),
                         size = 1.25) +
                           ##  Add Axes
-                          geom_segment(aes(x = c(0,0), y = c(0, min(el.xticks)),
-                                           yend = c(0, max(el.xticks)),
+                          geom_segment(aes(x = c(0,0), y = c(0, min(el.xrange)),
+                                           yend = c(0, max(el.xrange)),
                                            xend = c(length(traits), 0)))  +
                                              ## Add Ticks
                                              geom_segment(aes(x = 0,
@@ -190,11 +190,11 @@ plot.variance.decomposition <- function(plot.inputs,
                                                               yend = el.xticks)) 
 
   pv.plot <- .pv.plot + 
-    opts(title = 'Partial Variance (%)',
+    opts(title = 'Partial Variance',
          plot.title = theme_text(size = fontsize$title)) +
            scale_y_continuous(breaks = pv.xticks, limits = range(pv.xticks)) +
-             geom_pointrange(aes(x = points, partial.variances,
-                                 ymin = 0, ymax = partial.variances), size = 1.25) +
+             geom_pointrange(aes(x = points, variances,
+                                 ymin = 0, ymax = variances), size = 1.25) +
                                    ##  Add Axes
                                    geom_segment(aes(x = c(0,0), y = c(0,0),
                                                     yend = c(0, max(pv.xticks)),
