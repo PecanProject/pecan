@@ -209,7 +209,7 @@ get.parm.stat <- function(mcmc.summary, parameter){
 ## in future, perhaps create S3 functions:
 ## get.stats.pdf <- pdf.stats
 pdf.stats <- function(distn, A, B) {
-
+  distn <- as.character(distn)
   mean <- switch(distn,
                  gamma   = A/B,
                  lnorm   = exp(A + 1/2 * B^2),
@@ -400,7 +400,7 @@ isFALSE <- function(x) !isTRUE(x)
 ##' @param parms target for optimization
 ##' @param x vector with c(lcl, ucl, ct) lcl / ucl = confidence limits, ct = entral tendency 
 ##' @param alpha quantile at which lcl/ucl are estimated (e.g. for a 95% CI, alpha = 0.5)
-##' @param distn named distribution, one of 'lnorm', 'gamma', 'beta'; support for other distributions not currently implemented 
+##' @param distn named distribution, one of 'lnorm', 'gamma', 'weibull', 'beta'; support for other distributions not currently implemented 
 ##' @param central.tendency one of 'mode', 'median', and 'mean' 
 ##' @param trait name of trait, can be used for exceptions (currently used for trait == 'q')
 ##' @return parms
@@ -414,6 +414,8 @@ isFALSE <- function(x) !isTRUE(x)
 ##'                 distn = 'lnorm')$optim$bestmem
 
 prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NULL) {
+  if(!distn %in% c('lnorm', 'gamma', 'weibull', 'beta'){
+    stop(paste(distn, "not currently supported by prior.fn"))
   if(distn == 'lnorm') {
     mu <- parms[1]
     sigma <- parms[2]         
@@ -439,6 +441,19 @@ prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NU
       ct <- parms[1]/parms[2]
     } else if (central.tendency == 'mode') {
       ct <- ifelse (parms[1]>1, (parms[1]-1)/parms[2], 0)
+    }
+  }
+    if(distn == 'weibull'){
+    lcl <- qweibull(alpha/2,   parms[1], parms[2])
+    ucl <- qweibull(1-alpha/2, parms[1], parms[2])
+    if(is.null(central.tendency)) {
+      ct <- x[3]
+    } else if(central.tendency == 'median'){
+      ct <- parms[2] * log(2))^(1/parms[1])
+    } else if (central.tendency == 'mean') {
+      ct <- parms[2] * gamma(1 +  parms[2])
+    } else if (central.tendency == 'mode') {
+      stop("mode calculation not currently supported for weibull distribution")
     }
   }
   if (distn == 'beta') {
