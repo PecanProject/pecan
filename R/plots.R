@@ -742,12 +742,23 @@ priorfig <- function(priordata = NA, priordensity = NA, trait = '', xlim = 'auto
     priorfigure <- priorfigure + rug
   } 
   if(is.data.frame(priordensity[1])){
-    dens <- geom_line(data=priordensity, aes(x=prior.x, y=dens.x))
-    priorfigure <- priorfigure + dens
+    dens.line <- geom_line(data=priordensity, aes(x=prior.x, y=dens.x))
+    qpts <- get.quantiles.from.density(priordensity)
+    dens.ci <- geom_point(data = qpts, aes(x,y))
+    priorfigure <- priorfigure + dens.line + dens.ci
   }
   return(priorfigure)
 } 
 
+
+get.quantiles.from.density <- function(priordensity){
+  qi <- c(which.min(abs(priordensity$prob.x - 0.025)),
+          which.min(abs(priordensity$prob.x - 0.5)),
+          which.min(abs(priordensity$prob.x - 0.975)))
+  qs <- priordensity[qi,c('prior.x', 'dens.x')]
+  colnames(qs) <- c('x', 'y')
+  return(qs)
+}
 ##' .. content for \description{} (no empty lines) ..
 ##'
 ##' .. content for \details{} ..
