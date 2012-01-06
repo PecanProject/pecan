@@ -5,10 +5,10 @@ require("system.php");
 $pft_id=15;
 
 # parameters
-if (!isset($_REQUEST['site'])) {
-  die("Need a site.");
+if (!isset($_REQUEST['siteid'])) {
+  die("Need a siteid.");
 }
-$site=$_REQUEST['site'];
+$siteid=$_REQUEST['siteid'];
 
 if (!isset($_REQUEST['pft'])) {
   die("Need a pft.");
@@ -46,7 +46,7 @@ if (!$db_selected) {
 } 
 
 // get site information
-$query = "SELECT * FROM sites WHERE sites.id=$site";
+$query = "SELECT * FROM sites WHERE sites.id=$siteid";
 $result = mysql_query($query);
 if (!$result) {
   die('Invalid query: ' . mysql_error());
@@ -73,7 +73,7 @@ if (!mkdir("$folder/run",  0777, true)) {
 
 // create the run
 $params=mysql_real_escape_string(str_replace("\n", "", var_export($_REQUEST, true)));
-if (mysql_query("INSERT INTO runs (site_id, start_time, finish_time, outdir, parameter_list, created_at, started_at) values ('$site', '$start', '${end}', '${folder}', '${params}', NOW(), NOW())") === FALSE) {
+if (mysql_query("INSERT INTO runs (site_id, start_time, finish_time, outdir, parameter_list, created_at, started_at) values ('$siteid', '$start', '${end}', '${folder}', '${params}', NOW(), NOW())") === FALSE) {
 	die('Can\'t insert run : ' . mysql_error());
 }
 $runid=mysql_insert_id();
