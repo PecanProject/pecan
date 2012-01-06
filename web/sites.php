@@ -19,8 +19,8 @@ if (!$db_selected) {
 } 
 
 // check for valid MET data
-if (isset($_REQUEST['met']) && ($_REQUEST['met'] == "true")) {
-	$query = "SELECT sites.* FROM sites, inputs where inputs.format_id=9 and inputs.site_id=sites.id";
+if (isset($_REQUEST['host']) && ($_REQUEST['host'] != "")) {
+	$query = "SELECT sites.* FROM sites, inputs WHERE inputs.filepath LIKE '{$_REQUEST['host']}:%' AND inputs.format_id=12 AND inputs.site_id=sites.id";
 } else {
 	$query = "SELECT sites.* FROM sites";
 }
@@ -35,7 +35,7 @@ if (!$result) {
 while ($row = @mysql_fetch_assoc($result)){ 
 	$node = $dom->createElement("marker");
 	$newnode = $parnode->appendChild($node);	 
-	$newnode->setAttribute("id",$row['id']);
+	$newnode->setAttribute("siteid",$row['id']);
 	$newnode->setAttribute("city", $row['city']);
 	$newnode->setAttribute("country", $row['country']);	
 	$newnode->setAttribute("lat", $row['lat']);	

@@ -1,3 +1,39 @@
+<?php
+// system parameters
+require("system.php");
+
+// database parameters
+require("dbinfo.php");
+
+// Opens a connection to a MySQL server
+$connection=mysql_connect ($hostname, $username, $password);
+if (!$connection) {
+	die('Not connected : ' . mysql_error());
+}
+
+// Set the active MySQL database
+$db_selected = mysql_select_db($database, $connection);
+if (!$db_selected) {
+	die ('Can\'t use db : ' . mysql_error());
+}
+
+// get hosts
+$query = "SELECT SUBSTRING_INDEX(filepath, ':', 1) AS host FROM inputs WHERE filepath LIKE '%:%' AND inputs.format_id=12 GROUP BY host";
+$result = mysql_query($query);
+if (!$result) {
+	die('Invalid query: ' . mysql_error());
+}
+$hosts = "";
+$hostname = gethostname();
+while ($row = @mysql_fetch_assoc($result)){
+	if ($hostname == $row['host']) {
+		$hosts = "$hosts<option selected>{$row['host']}</option>\n";
+	} else {
+		$hosts = "$hosts<option>{$row['host']}</option>\n";
+	}
+}
+
+?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -7,8 +43,9 @@
 <link rel="stylesheet" type="text/css" href="sites.css" />
 <script type="text/javascript" src="http://www.google.com/jsapi"></script>
 <script type="text/javascript">
-      google.load("maps", "3",  {other_params:"sensor=false"});
       google.load("jquery", "1.3.2");
+      google.load("maps", "3",  {other_params:"sensor=false"});
+
 
       var map = null;
       var infowindow = null;
@@ -55,14 +92,15 @@
 			markersArray.length = 0;
 		}
 
-		var url="sites.php?met=" + $('#met').is(':checked');
+		var host=$('#host')[0].value;
+		var url="sites.php?host=" + $('#host')[0].value;
 		jQuery.get(url, {}, function(data) {
 			jQuery(data).find("marker").each(function() {
 				// create a marker
 				var marker = jQuery(this);
 				var latlng;
 				if (marker.attr("lat") == "" || marker.attr("lon") == "") {
-					console.log("Bad marker (id=" + marker.attr("id") + " site=" + marker.attr("sitename") + " lat=" + marker.attr("lat") + " lon=" + marker.attr("lon") + ")");
+					console.log("Bad marker (siteid=" + marker.attr("siteid") + " site=" + marker.attr("sitename") + " lat=" + marker.attr("lat") + " lon=" + marker.attr("lon") + ")");
 				} else {
 					latlng = new google.maps.LatLng(parseFloat(marker.attr("lat")), parseFloat(marker.attr("lon")));
 					var gmarker = new google.maps.Marker({position: latlng, map: map});
@@ -71,7 +109,7 @@
 					// create the tooltip and its text
 					gmarker.html  = '<b>' + marker.attr("sitename") + '</b><br />'
 					gmarker.html += marker.attr("city") + ', ' + marker.attr("country") + '<br />';
-					gmarker.html += '<a href="selectsite.php?site=' + marker.attr("id") + '">Select Site</a>';
+					gmarker.html += '<a href="selectsite.php?siteid=' + marker.attr("siteid") + '&host=' + host + '">Select Site</a>';
 
 					// add a listener to open the tooltip when a user clicks on one of the markers
 					google.maps.event.addListener(gmarker, 'click', function() {
@@ -95,12 +133,15 @@
 			<h1>Filter input data.</h1>
 			<p>Filter the sites using options below.</p>
 
-			<label>Only sites with MET data</label>
-			<input style="width: auto;" id="met" type="checkbox" value="false" onChange="met=loadSites();" />
+			<label>Sites with MET data on host:</label>
+			<select id="host" onChange="loadSites();">
+				<option value="">All Sites</option>
+				<?=$hosts?>
+			</select>
 			<div class="spacer"></div>
 
 			<label>Goto current location</label>
-			<input style="width: auto;" id="home" type="button" value="Home" onclick="goHome();" />
+			<input id="home" type="button" value="Home" onclick="goHome();" />
 			<div class="spacer"></div>
 		</form>
 	</div>
