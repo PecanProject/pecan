@@ -1,9 +1,18 @@
 <?php
-if (!isset($_REQUEST['site'])) {
-	die("Need a site.");
+if (!isset($_REQUEST['siteid'])) {
+	die("Need a siteid.");
 } else {
-	$site=$_REQUEST['site'];
+	$siteid=$_REQUEST['siteid'];
 }
+
+if (isset($_REQUEST['host']) && ($_REQUEST['host'] != "")) {
+	$where="AND filepath LIKE '{$_REQUEST['host']}:%'";
+} else {
+	$where="";
+}
+
+// system parameters
+require("system.php");
 
 // database parameters
 require("dbinfo.php");
@@ -21,12 +30,36 @@ if (!$db_selected) {
 }
 
 // get site information
-$query = "SELECT * FROM sites WHERE sites.id=$site";
+$query = "SELECT * FROM sites WHERE sites.id=$siteid";
 $result = mysql_query($query);
 if (!$result) {
 	die('Invalid query: ' . mysql_error());
 }
 $siteinfo = mysql_fetch_assoc($result);
+
+// get met data
+// FIXME what to do if not on this host?
+$query = "SELECT SUBSTRING_INDEX(filepath, ':', -1) AS file, CONCAT(SUBSTRING(start_date, 1, 4), '-', SUBSTRING(end_date, 1, 4)) AS name FROM inputs WHERE site_id=$siteid AND format_id=12 $where";
+$result = mysql_query($query);
+if (!$result) {
+	die('Invalid query: ' . mysql_error());
+}
+$mets = "";
+while ($row = @mysql_fetch_assoc($result)){
+	$mets = "$mets<option value='{$row['file']}'>{$row['name']}</option>\n";
+}
+
+// get psscss data
+$query = "SELECT SUBSTRING_INDEX(filepath, ':', -1) AS file, name FROM inputs WHERE site_id=$siteid AND format_id=10 $where";
+$result = mysql_query($query);
+if (!$result) {
+	die('Invalid query: ' . mysql_error());
+}
+$psscss = "";
+while ($row = @mysql_fetch_assoc($result)){
+    $path = substr($row['file'], 0,  1+strripos($row['file'], '/'));
+	$psscss = "$psscss<option value='$path'>{$row['name']}</option>\n";
+}
 
 // show list of PFTs
 $query = "SELECT * FROM pfts ORDER BY name";
@@ -139,15 +172,21 @@ while ($row = @mysql_fetch_assoc($result)){
 <div id="wrap">
 	<div id="stylized">
 		<form id="form" action="runsite.php" method="post" onsubmit="return validate(this);">
-			<input type="hidden" name="site" value="<?=$site?>" />
+			<input type="hidden" name="siteid" value="<?=$siteid?>" />
 			<h1>Selected Site</h1>
 			<p>Set parameters for the run.</p>
 
 			<label>MET Data file</label>
 			<select name="met">
-				<option value="/home/kooper/projects/EBI/ebifarm/met/ED_MET_DRIVER_HEADER">ebifarm</option>
+			<?=$mets?>
 			</select>
 			<div class="spacer"></div>
+
+            <label>Site files (Site/PSS/CSS)</label>
+            <select name="psscss">
+			<?=$psscss?>
+            </select>
+            <div class="spacer"></div>
 
 			<label>Start Date</label>
 			<input type="text" name="start" value="2006/01/01" />

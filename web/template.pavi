@@ -178,8 +178,7 @@
 
    NL%EDRES  = 1.0                     ! ED2/ED1 restart grid resolution
 
-!HACK
-   NL%SFILIN   = '/home/kooper/projects/EBI/ebifarm/ebifarm.'
+   NL%SFILIN   = '@SITE_PSSCSS@'
 
 !----- Time of the history start ----------------------------------------------------------!
   !planting 2002

@@ -5,10 +5,10 @@ require("system.php");
 $pft_id=15;
 
 # parameters
-if (!isset($_REQUEST['site'])) {
-  die("Need a site.");
+if (!isset($_REQUEST['siteid'])) {
+  die("Need a siteid.");
 }
-$site=$_REQUEST['site'];
+$siteid=$_REQUEST['siteid'];
 
 if (!isset($_REQUEST['pft'])) {
   die("Need a pft.");
@@ -19,6 +19,11 @@ if (!isset($_REQUEST['met'])) {
   die("Need a met.");
 }
 $met=$_REQUEST['met'];
+
+if (!isset($_REQUEST['psscss'])) {
+  die("Need a psscss.");
+}
+$psscss=$_REQUEST['psscss'];
 
 if (!isset($_REQUEST['start'])) {
   die("Need a start.");
@@ -41,7 +46,7 @@ if (!$db_selected) {
 } 
 
 // get site information
-$query = "SELECT * FROM sites WHERE sites.id=$site";
+$query = "SELECT * FROM sites WHERE sites.id=$siteid";
 $result = mysql_query($query);
 if (!$result) {
   die('Invalid query: ' . mysql_error());
@@ -50,7 +55,8 @@ $siteinfo = mysql_fetch_assoc($result);
 print_r($siteinfo);
 
 # folders
-$folder = tempnam(sys_get_temp_dir(), 'PEcAn_');
+mkdir("$folder",  0777, true);
+$folder = tempnam($output_folder, 'PEcAn_');
 unlink($folder);
 if (!mkdir("$folder/out",  0777, true)) {
     die("Failed to create folders $folder/out");
@@ -67,7 +73,7 @@ if (!mkdir("$folder/run",  0777, true)) {
 
 // create the run
 $params=mysql_real_escape_string(str_replace("\n", "", var_export($_REQUEST, true)));
-if (mysql_query("INSERT INTO runs (site_id, start_time, finish_time, outdir, parameter_list, created_at, started_at) values ('$site', '$start', '${end}', '${folder}', '${params}', NOW(), NOW())") === FALSE) {
+if (mysql_query("INSERT INTO runs (site_id, start_time, finish_time, outdir, parameter_list, created_at, started_at) values ('$siteid', '$start', '${end}', '${folder}', '${params}', NOW(), NOW())") === FALSE) {
 	die('Can\'t insert run : ' . mysql_error());
 }
 $runid=mysql_insert_id();
@@ -146,6 +152,7 @@ fwrite($fh, "      <name>{$siteinfo['sitename']}</name>" . PHP_EOL);
 fwrite($fh, "      <lat>{$siteinfo['lat']}</lat>" . PHP_EOL);
 fwrite($fh, "      <lon>{$siteinfo['lon']}</lon>" . PHP_EOL);
 fwrite($fh, "      <met>$met</met>" . PHP_EOL);
+fwrite($fh, "      <psscss>$psscss</psscss>" . PHP_EOL);
 fwrite($fh, "    </site>" . PHP_EOL);
 fwrite($fh, "    <start.date>$start</start.date>" . PHP_EOL);
 fwrite($fh, "    <end.date>$end</end.date>" . PHP_EOL);
