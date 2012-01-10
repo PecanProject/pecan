@@ -308,7 +308,7 @@ capitalize <- function(x) {
 fit.dist <- function(trait.data, trait = colnames(trait.data), dists = c('weibull', 'lognormal', 'gamma'), n = NULL) {
   if(class(trait.data) == 'data.frame') trait.data <- trait.data[,1]
   ## warning(immediate. = TRUE)
-  nostart.dists <- dists[dists %in% c('weibull', 'lognormal', 'gamma', 'normal')]
+  nostart.dists <- dists[dists %in% c('weibull', 'lognormal', 'gamma', 'norm')]
   a <- lapply(nostart.dists, function(x) suppressWarnings(fitdistr(trait.data,x)))
   names(a) <- nostart.dists
   if('f' %in% dists){
@@ -414,8 +414,9 @@ isFALSE <- function(x) !isTRUE(x)
 ##'                 distn = 'lnorm')$optim$bestmem
 
 prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NULL) {
-  if(!distn %in% c('lnorm', 'gamma', 'weibull', 'beta'){
+  if(!distn %in% c('lnorm', 'gamma', 'weibull', 'beta')){
     stop(paste(distn, "not currently supported by prior.fn"))
+  }
   if(distn == 'lnorm') {
     mu <- parms[1]
     sigma <- parms[2]         
@@ -443,15 +444,15 @@ prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NU
       ct <- ifelse (parms[1]>1, (parms[1]-1)/parms[2], 0)
     }
   }
-    if(distn == 'weibull'){
+  if(distn == 'weibull'){
     lcl <- qweibull(alpha/2,   parms[1], parms[2])
     ucl <- qweibull(1-alpha/2, parms[1], parms[2])
     if(is.null(central.tendency)) {
       ct <- x[3]
     } else if(central.tendency == 'median'){
-      ct <- parms[2] * log(2))^(1/parms[1])
+      ct <- parms[2] * log(2)^(1/parms[1])
     } else if (central.tendency == 'mean') {
-      ct <- parms[2] * gamma(1 +  parms[2])
+      ct <- parms[2] * gamma(1 +  1 / parms[2])
     } else if (central.tendency == 'mode') {
       stop("mode calculation not currently supported for weibull distribution")
     }
