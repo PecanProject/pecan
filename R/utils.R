@@ -209,7 +209,7 @@ get.parm.stat <- function(mcmc.summary, parameter){
 ## in future, perhaps create S3 functions:
 ## get.stats.pdf <- pdf.stats
 pdf.stats <- function(distn, A, B) {
-
+  distn <- as.character(distn)
   mean <- switch(distn,
                  gamma   = A/B,
                  lnorm   = exp(A + 1/2 * B^2),
@@ -243,8 +243,8 @@ pdf.stats <- function(distn, A, B) {
 ##' @param traits a vector of trait names, if traits = NULL, all of the traits will be returned.
 trait.dictionary <- function(traits = NULL) {
   defs<-data.frame(id = c("plant_min_temp", "c2n_leaf", "dark_respiration_factor", "f_labile", "growth_resp_factor", "leaf_turnover_rate", "leaf_width", "mort2", "nonlocal_dispersal", "fineroot2leaf", "quantum_efficiency", "root_respiration_rate", "root_turnover_rate", "SLA", "stomatal_slope", "Vcmax", "Vm_low_temp", "water_conductance","cuticular_cond","seedling_mortality","r_fract","storage_turnover_rate", "T", "agf_bs"),
-                   figid = c("Plant Minimum Temperature", "Leaf C:N" ,"Dark Respiration Rate", "Litter% Labile C", "Growth Respiration", "Leaf Turnover Rate", "Leaf Width", "Mortality Rate", "Seed Dispersal", "Fine Root Allocation","Quantum Efficiency", "Root Respiration Rate", "Root Turnover Rate", "Specific Leaf Area", "Stomatal Slope", "Vcmax", "Photosynthesis min temp", "Water Conductance","Cuticular Conductance", "Seedling Mortality", "Reproductive Allocation","Storage Turnover Rate","Transpiration", "Abovground fraction of structural biomass"),
-                   units = c("Celsius", "ratio", "fraction", "fraction", "fraction", "yr-1", "mm", "yr-1", "fraction", "ratio", "fraction", "umol CO2 kg-1 s-1", "yr-1", "m2 kg-1", "ratio", "umol CO2 m-2 s-1", "Celsius", "mm", "umol H2O m-2 s-1", "fraction", "fraction", "yr-1", "mm  H2O m-1s-1", "fraction")
+                   figid = c("Plant Minimum Temperature", "Leaf C:N" ,"Dark Respiration Rate", "Litter% Labile C", "Growth Respiration", "Leaf Turnover Rate", "Leaf Width", "Mortality Coefficient", "Seed Dispersal", "Fine Root Allocation","Quantum Efficiency", "Root Respiration Rate", "Root Turnover Rate", "Specific Leaf Area", "Stomatal Slope", "Vcmax", "Photosynthesis min temp", "Water Conductance","Cuticular Conductance", "Seedling Mortality", "Reproductive Allocation","Storage Turnover Rate","Transpiration", "Abovground fraction of structural biomass"),
+                   units = c("Celsius", "ratio", "fraction", "fraction", "fraction", "yr-1", "mm", "dimensionless", "fraction", "ratio", "fraction", "umol CO2 kg-1 s-1", "yr-1", "m2 kg-1", "ratio", "umol CO2 m-2 s-1", "Celsius", "mm", "umol H2O m-2 s-1", "fraction", "fraction", "yr-1", "mm  H2O m-1s-1", "fraction")
 )
   if(is.null(traits)) {
     trait.defs <- defs
@@ -332,7 +332,8 @@ fit.dist <- function(trait.data, trait = colnames(trait.data), dists = c('weibul
   print(result)
   bestfitdist <- names(which.min(aicvalues))
   parms <- tabnum(a[[bestfitdist]]$estimate)
-  return(data.frame(distribution = bestfitdist, 
+  dist <- ifelse(bestfitdist == 'normal', 'norm', bestfitdist)
+  return(data.frame(distribution = dist, 
                     a = as.numeric(parms[1]), 
                     b = as.numeric(parms[2]), 
                     n = ifelse(is.null(n), length(trait.data), n)))
@@ -400,7 +401,7 @@ isFALSE <- function(x) !isTRUE(x)
 ##' @param parms target for optimization
 ##' @param x vector with c(lcl, ucl, ct) lcl / ucl = confidence limits, ct = entral tendency 
 ##' @param alpha quantile at which lcl/ucl are estimated (e.g. for a 95% CI, alpha = 0.5)
-##' @param distn named distribution, one of 'lnorm', 'gamma', 'beta'; support for other distributions not currently implemented 
+##' @param distn named distribution, one of 'lnorm', 'gamma', 'weibull', 'beta'; support for other distributions not currently implemented 
 ##' @param central.tendency one of 'mode', 'median', and 'mean' 
 ##' @param trait name of trait, can be used for exceptions (currently used for trait == 'q')
 ##' @return parms
@@ -414,6 +415,9 @@ isFALSE <- function(x) !isTRUE(x)
 ##'                 distn = 'lnorm')$optim$bestmem
 
 prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NULL) {
+  if(!distn %in% c('lnorm', 'gamma', 'weibull', 'beta')){
+    stop(paste(distn, "not currently supported by prior.fn"))
+  }
   if(distn == 'lnorm') {
     mu <- parms[1]
     sigma <- parms[2]         
@@ -439,6 +443,19 @@ prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NU
       ct <- parms[1]/parms[2]
     } else if (central.tendency == 'mode') {
       ct <- ifelse (parms[1]>1, (parms[1]-1)/parms[2], 0)
+    }
+  }
+  if(distn == 'weibull'){
+    lcl <- qweibull(alpha/2,   parms[1], parms[2])
+    ucl <- qweibull(1-alpha/2, parms[1], parms[2])
+    if(is.null(central.tendency)) {
+      ct <- x[3]
+    } else if(central.tendency == 'median'){
+      ct <- parms[2] * log(2)^(1/parms[1])
+    } else if (central.tendency == 'mean') {
+      ct <- parms[2] * gamma(1 +  1 / parms[2])
+    } else if (central.tendency == 'mode') {
+      stop("mode calculation not currently supported for weibull distribution")
     }
   }
   if (distn == 'beta') {
@@ -494,3 +511,69 @@ bibtexify <- function (author, year, title) {
   acronym <- abbreviate(title, minlength = 3, strict=TRUE)
   paste(author, year, acronym, sep='')
 }
+
+
+##' Transform misc. statistics to SE
+##'
+##' Automates transformations of SD, MSE, LSD, 95\%CI, HSD, and MSD to conservative estimates of SE.
+##' @title Transform Stats 
+##' @param data data frame with mean, statistic, n, and statistic name: \code{example data <- data.frame(Y=rep(1,5), stat=rep(1,5), n=rep(4,5), statname=c('SD', 'MSE', 'LSD', 'HSD', 'MSD'))}
+##' @return dataframe with statistics transformed to SE
+##' @author David LeBauer
+##' @export
+transformstats <- function(data) {
+  if(!"SE" %in% levels(data$statname)){
+    data$statname <- factor(data$statname, levels = c(levels(data$statname), "SE"))
+  }
+  ## Transformation of stats to SE
+  ## transform SD to SE
+  if (max(c("SD","sd") %in% data$statname)) {
+    sdi <- which(data$statname %in% c("SD","sd"))
+    data$stat[sdi] <- data$stat[sdi] / sqrt(data$n[sdi])
+    data$statname[sdi] <- "SE"
+  }
+  ## transform MSE to SE
+  if ("MSE" %in% data$statname) {
+    msei <- which(data$statname == "MSE")
+    data$stat[msei] <- sqrt (data$stat[msei]/data$n[msei])
+    data$statname[msei] <- "SE"
+  }
+  ## 95%CI measured from mean to upper or lower CI
+  ## SE = CI/t
+  if ("95%CI" %in% data$statname) {
+    cii <- which(data$statname == '95%CI')
+    data$stat[cii] <- data$stat[cii]/qt(0.975,data$n[cii])
+    data$statname[cii] <- "SE"
+  }
+  ## Fisher's Least Significant Difference (LSD)
+  ## conservatively assume no within block replication
+  if ("LSD" %in% data$statname) {
+    lsdi <- which(data$statname == "LSD")
+    data$stat[lsdi] <- data$stat[lsdi] / (qt(0.975,data$n[lsdi]) * sqrt( (2 * data$n[lsdi])))
+    data$statname[lsdi] <- "SE"
+  }
+  ## Tukey's Honestly Significant Difference (HSD),
+  ## conservatively assuming 3 groups being tested so df =2
+  if ("HSD" %in% data$statname) {
+    hsdi <- which(data$statname == "HSD")
+    n = data$n[hsdi]
+    n[is.na(n)] = 2 ## minimum n that can be used if NA
+    data$stat[hsdi] <- data$stat[hsdi] / (qtukey(0.975, n, df = 2))
+    data$statname[hsdi] <- "SE"
+    data$n[hsdi] <- n
+  }              
+  ## MSD Minimum Squared Difference
+  ## MSD = t_{\alpha/2, 2n-2}*SD*sqrt(2/n)
+  ## SE  = MSD*n/(t*sqrt(2))
+  if ("MSD" %in% data$statname) {
+    msdi <- which(data$statname == "MSD")
+    data$stat[msdi] <- data$stat[msdi] * data$n[msdi] / ( qt(0.975,2*data$n[msdi]-2)*sqrt(2))
+    data$statname[msdi] <- "SE"
+  }
+  if (FALSE %in% c('SE','none') %in% data$statname) {
+    print(paste(trait, ': ERROR!!! data contains untransformed statistics'))
+  }
+  return(data)
+}
+##' @example statdf <- data.frame(Y=rep(1,5), stat=rep(1,5), n=rep(4,5), statname=c('SD', 'MSE', 'LSD', 'HSD', 'MSD'))
+##' transformstats(statdf)

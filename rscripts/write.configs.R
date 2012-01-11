@@ -3,7 +3,7 @@ library(XML)
 if(interactive()){
   user <- Sys.getenv('USER')
   if(user == 'ed'){
-    settings.file = '~/in/ebifarm/fast/ebifarm.pavi.xml'
+    settings.file = '~/in/ebifarm/fast/pavi.xml'
   } else if(user == 'davids14') {
     settings.file = '~/pecan/tundra.xml'
   } else {
@@ -27,7 +27,7 @@ trait.samples <- list()
 sa.samples <- list()
 ensemble.samples <- list()
 
-## Remove existing config files
+## Remove existing outputs. 
 
 todelete <- dir(paste(settings$pfts$pft$outdir, 'out/', sep = ''),
                 c('ED2INc.*','c.*'),
@@ -38,13 +38,19 @@ filename.root <- get.run.id('c.','ebifarm.pavi')
 
 if(host$name == 'localhost'){
   if(length(dir(host$rundir, pattern = filename.root)) > 0) {
-    todelete <- dir(host$outdir,
-                    pattern = paste(filename.root, "*[^log]", sep = ''), 
-                    recursive=TRUE, full.names = TRUE)
-    file.remove(todelete)
+    old.outputs <- dir(host$outdir,
+                         pattern = paste(filename.root, "*[^log]", sep = ''), 
+                         recursive=TRUE, full.names = TRUE)
+    old.completion.indicators <- dir(host$outdir,
+                                     pattern = "*-finished", 
+                                     recursive=TRUE, full.names = TRUE) 
+
+    file.remove(c(old.outputs, old.completion.indicators))
   }
 } else {
-  files <- system(paste("ssh ", host$name, " 'ls ", host$rundir, "*", filename.root, "*'", sep = ''), intern = TRUE)
+  old.configs  <- system(paste("ssh ", host$name, " 'ls ", host$rundir, "*", filename.root, "*[^log]'", sep = ''), intern = TRUE)
+  old.outputs <- system(paste("ssh ", host$name, " 'ls ", host$outdir, "*'", sep = ''), intern = TRUE)
+  files <- c(old.configs, old.outputs)
   if(length(files) > 0 ) {
     todelete <- files[-grep('log', files)]
     system(paste("ssh -T ", host$name,
