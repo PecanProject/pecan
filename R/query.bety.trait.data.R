@@ -1,15 +1,15 @@
 ##' Queries data from BETY and transforms statistics to SE 
 ##'
-##' Performs query and then uses \code{pecan.transformstats} to convert miscellaneous statistical summaries
+##' Performs query and then uses \code{transformstats} to convert miscellaneous statistical summaries
 ##' to SE
 ##' @title Fetch data and transform stats to SE
 ##' @param connection connection to BETYdb
 ##' @param query MySQL query to traits table
 ##' @return dataframe with trait data
-##' @seealso used in \code{\link{query.bety.trait.data}}; \code{\link{pecan.transformstats}} performs transformation calculations
+##' @seealso used in \code{\link{query.bety.trait.data}}; \code{\link{transformstats}} performs transformation calculations
 fetch.stats2se <- function(connection, query){
   query.result <- dbSendQuery(connection, query)
-  transformed <- pecan.transformstats(fetch(query.result, n = -1))
+  transformed <- transformstats(fetch(query.result, n = -1))
   return(transformed)
 }
 
@@ -220,7 +220,7 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     #########################    LEAF TURNOVER    ############################
     query <- paste("select trt.id, trt.citation_id, variables.name as vname, trt.site_id, treat.name, treat.control, sites.greenhouse, trt.mean, trt.statname, trt.stat, trt.n, trt.date, trt.time, trt.cultivar_id, trt.specie_id from traits as trt left join treatments as treat on (trt.treatment_id = treat.id)  left join sites on (sites.id = trt.site_id) left join variables on (variables.id = trt.variable_id) where variables.name in ('leaf_turnover_rate','leaf_longevity') and specie_id in (",spstr,");", sep = "")
     q    <- dbSendQuery(con, query)
-    data <-  pecan.transformstats(fetch ( q, n = -1 ))
+    data <-  transformstats(fetch ( q, n = -1 ))
 
     ## convert LL to turnover
     selLL = which(data$vname == "Leaf Longevity")

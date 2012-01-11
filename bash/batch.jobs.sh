@@ -7,6 +7,6 @@ for f in ED2INc*[0-9n]; do
       CMD="ed2 -f $f"
   fi
   echo $CMD > $LOG # enters command into first line of log file
-  echo $f > $LOG
+  echo $f >> $LOG
   $CMD             # runs command
 done
