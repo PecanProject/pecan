@@ -38,8 +38,6 @@ Collate:
     'pecan.ma.summary.R'
     'pecan.samps.R'
     'pecan.SAplots.R'
-    'pecan.tools.R'
-    'pecan.transformstats.R'
     'pft.add.spp.R'
     'plots.R'
     'query.bety.R'
