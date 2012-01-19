@@ -15,7 +15,7 @@
 ##' @param tauA parameter a for gamma prior on precision 
 ##' @param tauB parameter b for gamma prior on precision
 ##' @return Nothing, but as a side effect, the model is written
-##' @author \author{David LeBauer and Mike Dietze, based on original work on the \code{write.model} function in the \code{R2WinBUGS} package by Jouni Kerman and Uwe Ligges.
+##' @author David LeBauer and Mike Dietze, based on original work on the \code{write.model} function in the \code{R2WinBUGS} package by Jouni Kerman and Uwe Ligges.
 write.ma.model <- function (modelfile, outfile, reg.model, pr.dist, pr.param.a, pr.param.b, n, trt.n, site.n, ghs.n, tauA, tauB) {
   model.text <- scan(file=modelfile, what="character",sep="@")
   ## chose an uncommon separator in order to capture whole lines
