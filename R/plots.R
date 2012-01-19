@@ -31,7 +31,7 @@ plot.sensitivity <- function(sa.sample, sa.spline, trait,
       geom_point(aes(x,y), data = data.frame(x = sa.sample, y = sa.spline(sa.sample)), size = dotsize) +
                                         #indicate median with larger point
         geom_point(aes(x,y), data = data.frame(x = sa.sample[median.i], y = sa.spline(sa.sample[median.i])), size = dotsize * 1.3) + 
-          scale_y_continuous(limits = range(pretty(y.range)), breaks = pretty(y.range, n = 3)[1:3]) +
+          scale_y_continuous(limits = range(pretty.hack(y.range)), breaks = pretty.hack(y.range, n = 3)[1:3]) +
             theme_bw() +
               opts(title= trait.dictionary(trait)$figid, 
                    axis.text.x = theme_text(size = fontsize$axis),
@@ -58,7 +58,7 @@ plot.sensitivity <- function(sa.sample, sa.spline, trait,
   }
   max.x <- max(prior.x)
   min.x <- 0
-  x.breaks <- pretty(c(min.x, max.x), 4)
+  x.breaks <- pretty.hack(c(min.x, max.x), 4)
 
   saplot <- saplot + scale_x_continuous(units, limits = range(x.breaks),
                                         breaks = x.breaks)
@@ -66,6 +66,15 @@ plot.sensitivity <- function(sa.sample, sa.spline, trait,
   return(saplot)
 }
 
+#HACK: pretty() on my machine does not seem to work over data.frames, 
+#yet a good bit of code is already written under that assumption.
+#Here, we address the issue. 
+pretty.hack <- function(foo, ...){
+  if(is.data.frame(foo)){
+    return(pretty(as.vector(do.call(c, foo)), ...))
+  }
+  return(pretty(foo, ...))
+}
 plot.variance.decomposition <- function(plot.inputs, outdir,
                                         prior.plot.inputs = NULL,
                                         fontsize = list(title = 18, axis = 14))
@@ -75,27 +84,39 @@ plot.variance.decomposition <- function(plot.inputs, outdir,
   trait.labels <- merge(data.frame(id = traits), trait.dictionary(traits), by = 'id', sort = FALSE)$figid
   .plot.data <- data.frame(trait.labels        = trait.labels,
                            units               = units,
-                           coef.vars           = plot.inputs$coef.vars * 100,
-                           elasticities        = plot.inputs$elasticities,
-                           partial.variances   = plot.inputs$partial.variances * 100)
+                           coef.vars           = abs(plot.inputs$coef.vars * 100),
+                           elasticities        = abs(plot.inputs$elasticities),
+                           partial.variances   = log(plot.inputs$partial.variances))
                                         #  recover()
   if(!is.null(prior.plot.inputs)) {
-    prior.plot.data <- data.frame(trait.labels              = trait.labels,
-                                  units                     = units,
-                                  prior.coef.vars           = prior.plot.inputs$coef.vars * 100,
-                                  prior.elasticities        = prior.plot.inputs$elasticities,
-                                  prior.partial.variances   = prior.plot.inputs$partial.variances * 100)
-    .plot.data <- merge(.plot.data, prior.plot.data, by = 'trait.labels')
+    prior.traits <- names(prior.plot.inputs$partial.variances)
+    prior.matched <- prior.traits %in% traits
+    post.matched <- traits %in% prior.traits
+    
+    prior.plot.data <- data.frame(trait.labels              = trait.dictionary(prior.traits)$figid,
+                                  units                     = trait.dictionary(prior.traits)$units,
+                                  prior.coef.vars           = abs(prior.plot.inputs$coef.vars * 100),
+                                  prior.elasticities        = abs(prior.plot.inputs$elasticities),
+                                  prior.partial.variances   = log(prior.plot.inputs$partial.variances))
+    .plot.data <- merge(.plot.data, prior.plot.data, by = 'trait.labels')#, all.x=TRUE)
+    
+    
+    print(names(prior.plot.inputs$coef.vars)[!prior.matched])
+    print(traits[!post.matched])
+    
+    traits    <- traits[post.matched]
+    units     <- .plot.data$units
+    trait.labels <- .plot.data$trait.labels
   }
   pv.order <- order(.plot.data$partial.variances, decreasing = FALSE)
 
   ## location of words and lollipops set by 'points'
   ##    these points can be moved up or down by adjusting the offset X in 1:length(traits) - X
   plot.data <- data.frame(.plot.data[pv.order, ], points = 1:length(traits) - 0.5)
-  cv.xticks <- pretty(plot.data[,grep('coef.var', colnames(plot.data))], 4)
-  pv.xticks <- pretty(plot.data[,grep('partial.variance', colnames(plot.data))], 4)  
-  el.xticks <- pretty(plot.data[,grep('elasticities', colnames(plot.data))], 3)
-  el.xrange <- range(pretty(plot.data[,grep('elasticities', colnames(plot.data))], 4))
+  cv.xticks <- pretty.hack(plot.data[,grep('coef.var', colnames(plot.data))], 4)
+  pv.xticks <- pretty.hack(plot.data[,grep('partial.variance', colnames(plot.data))], 4)  
+  el.xticks <- pretty.hack(plot.data[,grep('elasticities', colnames(plot.data))], 3)
+  el.xrange <- range(pretty.hack(plot.data[,grep('elasticities', colnames(plot.data))], 4))
 
   
   ## Notes on fine-tuning plots below
@@ -190,12 +211,12 @@ plot.variance.decomposition <- function(plot.inputs, outdir,
                                                               yend = el.xticks)) 
 
   pv.plot <- .pv.plot + 
-    opts(title = 'Partial Variance (%)',
+    opts(title = 'Log(Explained Var.)',
          plot.title = theme_text(size = fontsize$title)) +
            scale_y_continuous(breaks = pv.xticks, limits = range(pv.xticks)) +
              geom_pointrange(aes(x = points, partial.variances,
                                  ymin = 0, ymax = partial.variances), size = 1.25) +
-                                   ##  Add Axes
+                                   ###  Add Axes
                                    geom_segment(aes(x = c(0,0), y = c(0,0),
                                                     yend = c(0, max(pv.xticks)),
                                                     xend = c(length(traits), 0)))  + 
@@ -375,7 +396,7 @@ dhist<-function(x, a=5*iqr(x),
   if(plot) {
     barplot(heights, abs(diff(xbr)), space = 0, density = -1, xlab = 
             xlab, plot = TRUE, xaxt = "n",yaxt='n')
-    at <- pretty(xbr)
+    at <- pretty.hack(xbr)
     axis(1, at = at - xbr[1], labels = as.character(at))
     if (lab.spikes) {
       if (sum(flag.vec)>=1) {
@@ -534,8 +555,8 @@ plot.trait <- function(trait,
                            quantile(posterior.density$x, 0.999),
                            NA)
   xmax           <- max(prior.xmax, posterior.xmax, na.rm = TRUE) 
-  x.ticks        <- pretty(c(0,xmax))
-  y.ticks        <- pretty(c(0,ymax))
+  x.ticks        <- pretty.hack(c(0,xmax))
+  y.ticks        <- pretty.hack(c(0,ymax))
   x.ticklength   <- max(y.ticks)/50
 
   browser()
