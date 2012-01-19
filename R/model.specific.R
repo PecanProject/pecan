@@ -84,7 +84,6 @@ write.config.ED <- function(pft, trait.samples, settings, outdir, run.id){
       what="character",sep='@', quote=NULL, quiet=TRUE)
   ed2in.text <- gsub('OUTDIR', settings$run$host$outdir, ed2in.text)
   ed2in.text <- gsub('ENSNAME', run.id, ed2in.text)
-  ed2in.text <- gsub('USER', system('echo $USER', intern=TRUE), ed2in.text)
   ed2in.text <- gsub('CONFIGFILE', xml.file.name, ed2in.text)
   ed2in.text <- gsub('OUTFILE', paste('out', run.id, sep=''), ed2in.text)
   ed2in.text <- gsub('HISTFILE', paste('hist', run.id, sep=''), ed2in.text)
