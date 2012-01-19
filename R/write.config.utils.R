@@ -9,26 +9,32 @@
 ##' @param ensemble.size number of runs in model ensemble
 ##' @param samples random samples from parameter distribution, e.g. from a MCMC chain or a 
 ##' @return matrix of quasi-random (overdispersed) samples from trait distributions
-##' @references \href{http://dx.doi.org/10.1145/355588.365104}{Halton, J. (1964), Algorithm 247: Radical-inverse quasi-random point sequence, ACM, p. 701, doi:10.1145/355588.365104.
+##' @references Halton, J. (1964), Algorithm 247: Radical-inverse quasi-random point sequence, ACM, p. 701, doi:10.1145/355588.365104.
 get.ensemble.samples <- function(ensemble.size, samples) {
   ##force as numeric for compatibility with Fortran code in halton()
   ensemble.size <- as.numeric(ensemble.size)
-  if(ensemble.size <= 0) return(NULL)
-  halton.samples <- halton(n = ensemble.size, dim=length(samples))
-  ##force as a matrix in case length(samples)=1
-  halton.samples <- as.matrix(halton.samples)
-  
-  ensemble.samples <- matrix(nrow = ensemble.size, ncol = length(samples))
-  colnames(ensemble.samples) <- names(samples)
-  for(ensemble.id in 1:ensemble.size) {
-    for(trait.i in seq(samples)) {
-      ensemble.samples[ensemble.id, trait.i] <- 
-        quantile(samples[[trait.i]], halton.samples[ensemble.id, trait.i])
+  if(ensemble.size <= 0){
+    ans <- NULL
+  } else if (ensemble.size == 1) {
+    ans <- as.data.frame(lapply(samples, median))
+  } else {
+    halton.samples <- halton(n = ensemble.size, dim=length(samples))
+    ##force as a matrix in case length(samples)=1
+    halton.samples <- as.matrix(halton.samples)
+    
+    ensemble.samples <- matrix(nrow = ensemble.size, ncol = length(samples))
+    colnames(ensemble.samples) <- names(samples)
+    for(ensemble.id in 1:ensemble.size) {
+      for(trait.i in seq(samples)) {
+        ensemble.samples[ensemble.id, trait.i] <- 
+          quantile(samples[[trait.i]], halton.samples[ensemble.id, trait.i])
+      }
     }
+    ans <- ensemble.samples
   }
-  return(ensemble.samples)
+  return(ans)
 }
-
+  
 
 ##' Write ensemble config files
 ##'
@@ -51,11 +57,11 @@ write.ensemble.configs <- function(pft, ensemble.samples,
 
   if(host$name == 'localhost') {
     if("ENS" %in% dir(host$rundir)){
-      file.remove(paste(host$rundir, '/*',
+      file.remove(paste(host$rundir, '*',
                         get.run.id('ENS', '', pft.name=pft.name), '*"', sep=''))
     }
   } else {
-    ssh(host$name, 'rm ', host$rundir, '/*',
+    ssh(host$name, 'rm -f ', host$rundir, '*',
         get.run.id('ENS', '', pft.name=pft.name, '*'))
   }
   
@@ -66,17 +72,17 @@ write.ensemble.configs <- function(pft, ensemble.samples,
   for(ensemble.id in 1:nrow(ensemble.samples)) {
     run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, 5), 
                          pft.name=pft$name)
-    unlink(paste(outdir, '/*', run.id, '*', sep=''))
+    unlink(paste(outdir, '*', run.id, '*', sep=''))
     write.config(pft, convert.samples(ensemble.samples[ensemble.id,]), 
                  settings, outdir, run.id)
   }
   if(host$name == 'localhost'){
-    rsync(paste(outdir, '/*',
+    rsync(paste(outdir, '*',
                 get.run.id('ENS', '', pft.name=pft.name), '*', sep=''),
           host$rundir)
   } else {
     system(paste('rsync -routi ',
-                 paste(outdir, '/*', get.run.id('ENS', '', pft.name=pft.name), '*', sep=''), 
+                 paste(outdir, '*', get.run.id('ENS', '', pft.name=pft.name), '*', sep=''), 
                  paste(host$name, ':', host$rundir,  sep=''), sep = ' '))
   }
 }
@@ -147,11 +153,11 @@ write.sa.configs <- function(pft, quantile.samples, host, outdir, settings,
   
   if(host$name == 'localhost'){
       if("SA" %in% dir(host$rundir)){
-        file.remove(paste(host$rundir, '/*',
+        file.remove(paste(host$rundir, '*',
                       get.run.id('SA', '', pft.name=pft.name), '*"', sep=''))
       }
   } else {
-    ssh(host$name, 'rm ', host$rundir, '/*',
+    ssh(host$name, 'rm -f ', host$rundir, '*',
         get.run.id('SA', '', pft.name=pft.name, '*'))
   }
   
@@ -167,18 +173,19 @@ write.sa.configs <- function(pft, quantile.samples, host, outdir, settings,
         trait.samples <- median.samples
         trait.samples[trait] <- quantile.samples[quantile.str, trait]
         run.id <- get.run.id('SA', round(quantile,3), trait=trait, pft.name=pft$name)
-        unlink(paste(outdir, '/*', run.id, '*', sep=''))
+        unlink(paste(outdir, '*', run.id, '*', sep=''))
         write.config(pft, convert.samples(trait.samples), settings, outdir, run.id)
       }
     }
   }
   if(host$name == 'localhost'){
-    rsync(paste(outdir, '/*',
+    rsync(paste(outdir, '*',
                 get.run.id('SA', '', pft.name=pft.name), '*', sep=''),
           host$rundir)
   } else {
     system(paste('rsync -routi ',
-                 paste(outdir, '/*', get.run.id('SA', '', pft.name=pft.name), '*', sep=''), 
+                 paste(outdir, '*', get.run.id('SA', '', pft.name=pft.name), '*', sep=''), 
                  paste(host$name, ':', host$rundir,  sep='')))
   }
 }
+

@@ -3,7 +3,7 @@ citHeader("To cite PEcAn in publications, please use the following citation:")
 citEntry(entry = "article",
   author = "David LeBauer, Dan Wang, Carl Davidson, Mike Dietze",
   title = "Feedbacks between measurements and models facilitated by scientific workflows: the Predictive Ecosystem Analyzer",
-  journal = "",
+  journal = "submitted",
   year = "201x",
   doi = "",
   url = "pecanproject.org",

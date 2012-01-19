@@ -1,13 +1,12 @@
-##' .. content for \description{} (no empty lines) ..
+##' Returns list of ensemble output
 ##'
 ##' 
-##' @title 
-##' @returns a list of ensemble output 
-##' @author David
+##' @title Read Ensemble Output
+##' @return list of ensemble output 
 read.ensemble.output <- function(ensemble.size, host, outdir, pft.name='', read.output = read.output.ed){
   ensemble.output <- list()
   rsync(paste(host$name, ':', host$outdir, 
-              '/*', get.run.id('ENS', '', pft.name=pft.name), '*', sep=''),
+              '*', get.run.id('ENS', '', pft.name=pft.name), '*', sep=''),
         outdir)
   for(ensemble.id in seq(ensemble.size)) {
     run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, 5), pft.name=pft.name)#log10(ensemble.size)+1))
@@ -16,17 +15,15 @@ read.ensemble.output <- function(ensemble.size, host, outdir, pft.name='', read.
   return(ensemble.output)
 }
 
-##' .. content for \description{} (no empty lines) ..
+##' Read output from sensitivity runs
 ##'
-##' 
-##' @title 
+##' @title Read SA output
 ##' @return dataframe with one col per quantile analysed and one row per trait,
 ##'  each cell is a list of AGB over time
-##' @author David
 read.sa.output <- function(traits, quantiles, host, outdir, pft.name='', read.output = read.output.ed){
   sa.output <- data.frame()
   rsync(paste(host$name, ':', host$outdir, 
-              '/*', get.run.id('SA', '', pft.name=pft.name), '*', sep=''),
+              '*', get.run.id('SA', '', pft.name=pft.name), '*', sep=''),
         outdir)
   for(trait in traits){
     for(quantile in quantiles){
