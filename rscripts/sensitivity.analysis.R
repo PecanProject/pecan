@@ -3,7 +3,7 @@ if(interactive()){
   user <- Sys.getenv('USER')
   options(error = browser)
   if(user == 'dlebauer'){
-    settings.file = '~/in/ebifarm/prior/ebifarm.pavi.xml'
+    settings.file = '~/in/ebifarm/prior/pavi.xml'
   } else if(user == 'davids14') {
     settings.file = '~/pecan/tundra.xml'
   } else {
@@ -46,7 +46,7 @@ for(pft in settings$pfts){
                                                 sa.samples = sa.samples[[pft$name]][ ,traits],
                                                 sa.output = sensitivity.output[[pft$name]][ ,traits],
                                                 outdir = pft$outdir)
-    sensitivity.plots <- plot.sensitivities(sensitivity.results$sensitivity.plot.inputs,
+    sensitivity.plots <- plot.sensitivities(sensitivity.results$sensitivity.output,
                                    linesize = 1,
                                    dotsize = 3)
     pdf(paste(settings$outdir, 'sensitivityanalysis.pdf', sep = ''), height = 12, width = 9)
