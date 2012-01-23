@@ -22,7 +22,7 @@ library(PECAn)
 
 load(paste(settings$outdir, 'output.Rdata', sep=''))
 load(paste(settings$outdir, 'samples.Rdata', sep=''))
-
+sensitivity.results <- list()
 for(pft in settings$pfts){
   print(pft)
   if('sensitivity.analysis' %in% names(settings)) {
@@ -42,24 +42,25 @@ for(pft in settings$pfts){
                     '\n it is likely that the runs did not complete, this should be fixed !!!!!!'))
     }
     
-    sensitivity.results <- sensitivity.analysis(trait.samples = trait.samples[[pft$name]][traits],
+    sensitivity.results[[pft$name]] <- sensitivity.analysis(trait.samples = trait.samples[[pft$name]][traits],
                                                 sa.samples = sa.samples[[pft$name]][ ,traits],
                                                 sa.output = sensitivity.output[[pft$name]][ ,traits],
                                                 outdir = pft$outdir)
-    sensitivity.plots <- plot.sensitivities(sensitivity.results$sensitivity.output,
+    sensitivity.plots <- plot.sensitivities(sensitivity.results[[pft$name]]$sensitivity.output,
                                    linesize = 1,
                                    dotsize = 3)
     pdf(paste(settings$outdir, 'sensitivityanalysis.pdf', sep = ''), height = 12, width = 9)
     print(sensitivity.plots)
     dev.off()
 
-    vd.plots <- plot.variance.decomposition(sensitivity.results$variance.decomposition.plot.inputs)
+    vd.plots <- plot.variance.decomposition(sensitivity.results[[pft$name]]$variance.decomposition.output)
     pdf(paste(settings$outdir, 'variancedecomposition.pdf', sep=''), width = 11, height = 8)
-    cv.xticks <- pretty(sensitivity.results$variance.decomposition.plot.inputs$coef.vars*100,4)
-    el.xticks <- pretty(sensitivity.results$variance.decomposition.plot.inputs$elasticities,4)
-    el.xrange <- range(pretty(sensitivity.results$variance.decomposition.plot.inputs$elasticities,6))
-    pv.xticks <- pretty(sensitivity.results$variance.decomposition.plot.inputs$partial.variances*100,4)
+    cv.xticks <- pretty(sensitivity.results[[pft$name]]$variance.decomposition.output$coef.vars*100,4)
+    el.xticks <- pretty(sensitivity.results[[pft$name]]$variance.decomposition.output$elasticities,4)
+    el.xrange <- range(pretty(sensitivity.results[[pft$name]]$variance.decomposition.output$elasticities,6))
+    pv.xticks <- pretty(sensitivity.results[[pft$name]]$variance.decomposition.output$partial.variances*100,4)
     do.call(grid.arrange, c(vd.plots, ncol = 4))
     dev.off() 
   }
 }
+save(sensitivity.results, file = paste(pft$outdir, "sensitivity.results.Rdata", sep = ""))
