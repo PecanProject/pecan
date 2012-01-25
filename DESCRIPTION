@@ -21,7 +21,10 @@ Depends:
     gridExtra,
     xtable
 Suggests:
-    hdf5
+    hdf5,
+    MCMCpack,
+    mvtnorm,
+    time
 SystemRequirements: JAGS2.2.0, bash, ED2, kepler
 OS_type: unix
 License: University of Illinois/NCSA Open Source License
