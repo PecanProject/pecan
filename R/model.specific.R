@@ -103,7 +103,7 @@ write.config.ED <- function(pft, trait.samples, settings, outdir, run.id){
   ed2in.text <- scan(file = pft$edin, 
       what="character",sep='@', quote=NULL, quiet=TRUE)
   if(any(grep("OUTDIR/OUTFILE", ed2in.text)) &
-     grep('ebi-cluster', settings$run$host$name)){
+     length(grep('ebi-cluster', settings$run$host$name)) > 0){
     print(cat("speed up runs by changing \n",
               "NL%FFILOUT = '/OUTDIR/OUTFILE' to NL%FFILOUT = '/scratch/OUTFILE' \n",
               "in ED2IN template as per feature #421"))
