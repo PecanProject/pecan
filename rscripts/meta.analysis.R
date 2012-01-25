@@ -1,22 +1,14 @@
-library(XML)
 if(interactive()){
   user <- Sys.getenv('USER')
-  if(user == 'ed'){
-    settings.file = '~/pecan/fast.settings.xml'
-  } else if(user == 'mantoot2'){
-    settings.file = '~/pecan/ebifarm.acsa3.xml'
-  } else if(user == 'dlebauer'){
-    settings.file = '~/in/ebifarm/fast/ebifarm.pavi.xml'
-                                        #    settings.file = '~/pecan/ebifarm.acsa3.xml'
-  } else if(user == 'davids14') {
-    settings.file = '~/pecan/tundra.xml'
+  if(user == 'pecan'){
+    settings.file = '~/in/ebifarm/fast/pavi.xml'
   } else {
     paste('please specify settings file in meta.analysis.R')
   }
 } else {
   settings.file <- Sys.getenv("PECANSETTINGS")
 }
-
+library(XML)
 settings.xml <- xmlParse(settings.file)
 settings <- xmlToList(settings.xml)
 if('meta.analysis' %in% names(settings)) {
@@ -46,7 +38,7 @@ if('meta.analysis' %in% names(settings)) {
                       tauB = apply(prior.variances, 1, function(x) min(0.01, x)))
     
     ## run the meta-analysis
-    trait.mcmc  <- pecan.ma(trait.data, prior.distns, taupriors, j.iter = ma.iter, settings, pft$outdir)
+    trait.mcmc  <- pecan.ma(trait.data, prior.distns, taupriors, j.iter = ma.iter, settings, outdir = pft$outdir)
     post.distns <- approx.posterior(trait.mcmc,prior.distns,trait.data,pft$outdir)
 
     pecan.ma.summary(trait.mcmc, pft$name, pft$outdir)
