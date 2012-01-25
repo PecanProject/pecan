@@ -76,8 +76,8 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
     }
     
     #print out some data summaries to check
-    writeLines(paste('prior for ', trait.name, ':',
-                jagsprior[1], '(',jagsprior[2], ', ', jagsprior[3], ')', sep = ''))
+    writeLines(paste('prior for ', trait.name, ' (using R parameterization):\n',
+                prior$distn, '(',prior$a, ', ', prior$b, ')', sep = ''))
     writeLines(paste('data max:', max(data$Y), '\ndata min:', min(data$Y), '\nmean:', signif(mean(data$Y),3), '\nn:', length(data$Y)))
     writeLines('stem plot of data points')
     writeLines(paste(stem(data$Y)))
@@ -149,17 +149,13 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
       ## invalidates assumptions about convergence, e.g. Gelman-Rubin diagnostic
       j.inits <- function(chain) list("beta.o" = mean(data$Y))
     }
-    tryCatch({
-      j.model   <- jags.model (file = jag.model.file,
-                               data = data,
-                               n.adapt = 100, #will burn in below
-                               n.chains = j.chains,
-                               init =  j.inits)
-    }, 
-    error=function(ex){
-      print(ex)
-      browser()
-    })
+    
+    j.model   <- jags.model (file = jag.model.file,
+                             data = data,
+                             #n.adapt = 100, #will burn in below
+                             n.chains = j.chains,
+                             init =  j.inits)
+
 
     jags.out   <- coda.samples ( model = j.model,
                                 variable.names = vars,
