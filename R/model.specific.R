@@ -79,19 +79,51 @@ convert.samples.ED <- function(trait.samples){
 ##' @param run.id id of run
 ##' @return configuration file and ED2IN namelist for given run
 ##' @author David
-write.config.ED <- function(pft, trait.samples, settings, outdir, run.id){
-  xml <- listToXml(pft$constants, 'pft')
-  for (trait in names(trait.samples)) {
-    xml <- append.xmlNode(xml, xmlNode(trait, trait.samples[trait]))
+write.config.ED <- function(defaults, trait.values, settings, outdir, run.id){
+  #defaults = settings$pfts
+  config <- list()
+  pft.names  <- sapply(defaults,function(x){return(x$name)})
+  for(i in 1:length(trait.values)){
+    group <- names(trait.values)[i]
+    if(group == "env"){
+
+      ## set defaults from config.header
+
+      ##
+
+    } else {
+      ##is a PFT
+      pft = which(pft.names == group)
+      config[[i]] <- list(name=group)
+      names(config)[i] <- "pft"
+      ## copy constants
+      if(!is.null(defaults[[pft]]$constants)){
+        for(j in 1:length(defaults[[pft]]$constants)){
+          config[[i]][[names(defaults[[pft]]$constants)[j]]] <- defaults[[pft]]$constants[[j]]
+        }
+      }
+      ## copy values
+      if(!is.null(trait.values[[i]])){
+        vals <- convert.samples.ED(trait.values[[i]])
+        for(j in 1:length(vals)){
+          config[[i]][[names(vals)[j]]] <- as.numeric(vals[j])
+        }
+      }           
+    }
   }
-  config.header <- xmlNode("config")
-  if ('config.header' %in% names(settings)){
-    config.header <- listToXml(settings$config.header, 'config')
-  } 
-  xml <- append.xmlNode(config.header, xml)
+  xml <- list2XML(config) 
+#  xml <- listToXml(pft$constants, 'pft')
+#  for (trait in names(trait.samples)) {
+#    xml <- append.xmlNode(xml, xmlNode(trait, trait.samples[trait]))
+#  }
+#  config.header <- xmlNode("config")
+#  if ('config.header' %in% names(settings)){
+#    config.header <- listToXml(settings$config.header, 'config')
+#  } 
+#  xml <- append.xmlNode(config.header, xml)
   #c stands for config, abbreviated to work within ED's character limit
   xml.file.name <-paste('c.',run.id,sep='')  
-  if(nchar(xml.file.name) >= 32) 
+  if(nchar(xml.file.name) >= 128) 
     stop(paste('The file name, "',xml.file.name,
             '" is too long and will cause your ED run to crash ',
             'if allowed to continue. '))
@@ -100,26 +132,31 @@ write.config.ED <- function(pft, trait.samples, settings, outdir, run.id){
   
   startdate <- as.Date(settings$run$start.date)
   enddate <- as.Date(settings$run$end.date)
-  ed2in.text <- scan(file = pft$edin, 
-      what="character",sep='@', quote=NULL, quiet=TRUE)
-  if(any(grep("OUTDIR/OUTFILE", ed2in.text)) &
-     length(grep('ebi-cluster', settings$run$host$name)) > 0){
-    print(cat("speed up runs by changing \n",
-              "NL%FFILOUT = '/OUTDIR/OUTFILE' to NL%FFILOUT = '/scratch/OUTFILE' \n",
-              "in ED2IN template as per feature #421"))
-  }
 
-  ed2in.text <- gsub('START_MONTH', format(startdate, "%m"), ed2in.text)
-  ed2in.text <- gsub('START_DAY', format(startdate, "%d"), ed2in.text)
-  ed2in.text <- gsub('START_YEAR', format(startdate, "%Y"), ed2in.text)
-  ed2in.text <- gsub('END_MONTH', format(enddate, "%m"), ed2in.text)
-  ed2in.text <- gsub('END_DAY', format(enddate, "%d"), ed2in.text)
-  ed2in.text <- gsub('END_YEAR', format(enddate, "%Y"), ed2in.text)
-  ed2in.text <- gsub('OUTDIR', settings$run$host$outdir, ed2in.text)
-  ed2in.text <- gsub('ENSNAME', run.id, ed2in.text)
-  ed2in.text <- gsub('CONFIGFILE', xml.file.name, ed2in.text)
-  ed2in.text <- gsub('OUTFILE', paste('out', run.id, sep=''), ed2in.text)
-  ed2in.text <- gsub('HISTFILE', paste('hist', run.id, sep=''), ed2in.text)
+  ed2in.text <- readLines(con=settings$run$edin, n=-1)
+
+  ed2in.text <- gsub('@SITE_LAT@', settings$run$site$lat, ed2in.text)
+  ed2in.text <- gsub('@SITE_LON@', settings$run$site$lon, ed2in.text)
+  ed2in.text <- gsub('@SITE_MET@', settings$run$site$met, ed2in.text)
+  ed2in.text <- gsub('@SITE_PSSCSS@', settings$run$site$psscss, ed2in.text)
+
+  ed2in.text <- gsub('@ED_VEG@', settings$run$host$ed$veg, ed2in.text)
+  ed2in.text <- gsub('@ED_SOIL@', settings$run$host$ed$soil, ed2in.text)
+  ed2in.text <- gsub('@ED_INPUTS@', settings$run$host$ed$inputs, ed2in.text)
+  
+  ed2in.text <- gsub('@START_MONTH@', format(startdate, "%m"), ed2in.text)
+  ed2in.text <- gsub('@START_DAY@', format(startdate, "%d"), ed2in.text)
+  ed2in.text <- gsub('@START_YEAR@', format(startdate, "%Y"), ed2in.text)
+  ed2in.text <- gsub('@END_MONTH@', format(enddate, "%m"), ed2in.text)
+  ed2in.text <- gsub('@END_DAY@', format(enddate, "%d"), ed2in.text)
+  ed2in.text <- gsub('@END_YEAR@', format(enddate, "%Y"), ed2in.text)
+
+  ed2in.text <- gsub('@OUTDIR@', settings$run$host$outdir, ed2in.text)
+  ed2in.text <- gsub('@ENSNAME@', run.id, ed2in.text)
+  ed2in.text <- gsub('@CONFIGFILE@', xml.file.name, ed2in.text)
+  ed2in.text <- gsub('@OUTFILE@', paste('out', run.id, sep=''), ed2in.text)
+  ed2in.text <- gsub('@HISTFILE@', paste('hist', run.id, sep=''), ed2in.text)
+ 
   ed2in.file.name <- paste('ED2INc.',run.id, sep='')
   writeLines(ed2in.text, con = paste(outdir, ed2in.file.name, sep=''))
   
