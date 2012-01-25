@@ -58,9 +58,15 @@ plot.sensitivity <- function(sa.sample, sa.spline, trait,
                                           size = dotsize * 1.5, color = 'grey') 
   }
   max.x <- max(prior.x)
-  min.x <- 0
+#  min.x <- ifelse((range(prior.sa.sample) - min(prior.sa.sample))/max(prior.sa.sample) > 0.25, min(prior.x), 0)
+  if(trait == 'Vm_low_temp'){
+    min.x <- 6
+  } else if (trait == 'quantum_efficiency') {
+    min.x <- 0.04
+  } else {
+    min.x <- 0
+  }
   x.breaks <- pretty(c(min.x, max.x), 4)
-
   saplot <- saplot + scale_x_continuous(units, limits = range(x.breaks),
                                         breaks = x.breaks)
                                         #  print(saplot)
@@ -77,14 +83,14 @@ plot.variance.decomposition <- function(plot.inputs,
                            units         = units,
                            coef.vars     = plot.inputs$coef.vars * 100,
                            elasticities  = plot.inputs$elasticities,
-                           variances     = plot.inputs$variances)
+                           variances     = sqrt(plot.inputs$variances))
                                         #  recover()
   if(!is.null(prior.plot.inputs)) {
     prior.plot.data <- data.frame(trait.labels       = trait.labels,
                                   units              = units,
                                   prior.coef.vars    = prior.plot.inputs$coef.vars * 100,
                                   prior.elasticities = prior.plot.inputs$elasticities,
-                                  prior.variances    = prior.plot.inputs$variances)
+                                  prior.variances    = sqrt(prior.plot.inputs$variances))
     .plot.data <- merge(.plot.data, prior.plot.data, by = 'trait.labels')
   }
   pv.order <- order(.plot.data$variances, decreasing = FALSE)
@@ -190,7 +196,7 @@ plot.variance.decomposition <- function(plot.inputs,
                                                               yend = el.xticks)) 
 
   pv.plot <- .pv.plot + 
-    opts(title = 'Partial Variance',
+    opts(title = 'Partial Root Variance (Mg/ha)',
          plot.title = theme_text(size = fontsize$title)) +
            scale_y_continuous(breaks = pv.xticks, limits = range(pv.xticks)) +
              geom_pointrange(aes(x = points, variances,
@@ -444,7 +450,8 @@ add.prior.density <- function(prior.density, base.plot = NULL, prior.color = 'bl
 ##'
 ##' @title Create Density Data Frame from Sample
 ##' @param sample 
-##' @param ... additional arguments to density 
+##' @param ... additional arguments to density
+##' @export
 ##' @return data frame with x and y
 create.density.df <- function(samps = NULL,
                               zero.bounded = FALSE,
@@ -503,18 +510,27 @@ add.posterior.density <- function(posterior.density, base.plot = NULL) {
 add.data <- function(trait.data, base.plot = NULL, ymax, color = 'black') {
   if(is.null(base.plot)) base.plot <- create.base.plot()
   n.pts <- nrow(trait.data)
-  ymax <- ymax * sqrt(n.pts + 1)/sqrt((n.pts + 1) * 64)
+  if(n.pts == 1){
+    ymax <- ymax/8
+  } else if (n.pts < 5) {
+    ymax <- ymax / 4
+  } else {
+    ymax <- ymax / 2
+  }
   y.pts <- seq(0, ymax, length.out = 1 + n.pts)[-1]
   plot.data <- data.frame(x = trait.data$Y,
                           y = y.pts,
-                          se = trait.data$se)
+                          se = trait.data$se,
+                          control = !trait.data$trt == 1 & trait.data$ghs == 1)
   new.plot <- base.plot +
     geom_point(data = plot.data,
-               aes(x = x, y = y),
-               color = color) +
+               aes(x = x, y = y,
+               color = control)) +
                  geom_segment(data = plot.data,
-                              aes(x = x - se, y = y, xend = x + se, yend = y),
-                              color = color)
+                              aes(x = x - se, y = y, xend = x + se, yend = y,
+                                  color = control)) +
+                                    scale_color_manual(values = c('black', 'grey')) +
+                                      opts(legend_position = "none")
   return(new.plot)
 }
 
@@ -534,7 +550,7 @@ add.data <- function(trait.data, base.plot = NULL, ymax, color = 'black') {
 ##' data1  <- data.frame(Y = c(19, 21), se = c(1,1))
 ##' plot.trait(trait = 'Vcmax',
 ##'           prior = prior1,
-##'           trait.data = data1)
+##'           trait.df = data1)
 plot.trait <- function(trait,
                        prior = NULL,
                        posterior.sample = NULL,
@@ -566,7 +582,12 @@ plot.trait <- function(trait,
   }
 
   if(is.null(x.lim)){
-    x.lim <- range(posterior.density$x, prior.density$x, na.rm = TRUE)
+    if(!is.null(trait.df)){
+      data.range <- max(c(trait.df$Y, trait.df$Y + trait.df$se), na.rm = TRUE)
+    } else {
+      data.range <- NULL
+    }
+    x.lim <- range(c(posterior.density$x, prior.density$x, data.range), na.rm = TRUE)
   }
   if(is.null(y.lim)){
     y.lim <- range(posterior.density$y, prior.density$y, na.rm = TRUE)
@@ -579,7 +600,6 @@ plot.trait <- function(trait,
   print(ticks)
   x.lim <<- range(ticks$x)
   y.lim <<- range(ticks$y) 
-
 
   base.plot <- create.base.plot() + theme_bw()
   if(logx == TRUE){
@@ -629,6 +649,7 @@ plot.trait <- function(trait,
          axis.title.y = theme_blank(),
          axis.ticks = theme_blank(),
          axis.line = theme_blank(),
+         legend.position = "none",
          plot.title = theme_text(size = fontsize$title),
          panel.grid.major = theme_blank(),
          panel.grid.minor = theme_blank(),
