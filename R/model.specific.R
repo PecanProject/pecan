@@ -108,6 +108,7 @@ write.config.ED <- function(pft, trait.samples, settings, outdir, run.id){
               "NL%FFILOUT = '/OUTDIR/OUTFILE' to NL%FFILOUT = '/scratch/OUTFILE' \n",
               "in ED2IN template as per feature #421"))
   }
+
   ed2in.text <- gsub('START_MONTH', format(startdate, "%m"), ed2in.text)
   ed2in.text <- gsub('START_DAY', format(startdate, "%d"), ed2in.text)
   ed2in.text <- gsub('START_YEAR', format(startdate, "%Y"), ed2in.text)
@@ -186,7 +187,7 @@ read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA, output.ty
       file.names <- file.names[!is.na(file.names)]
       
       result <- mean(sapply(file.names, read.output.file.ed)) ## if any are NA, NA is returned
-      result[is.na(result)] <- NULL
+      result[is.na(result)] <- NA
     } else {
       warning(cat(paste('no output files in', outdir, '\nfor', run.id, '\n')))
       result <- NA

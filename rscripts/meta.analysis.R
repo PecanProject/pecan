@@ -1,7 +1,14 @@
 if(interactive()){
   user <- Sys.getenv('USER')
-  if(user == 'pecan'){
+
+  if(user == 'ed'){
+    settings.file = '~/pecan/fast.settings.xml'
+  } else if(user == 'mantoot2'){
+    settings.file = '~/pecan/ebifarm.acsa3.xml'
+  } else if(user %in% c('pecan', 'dlebauer')){
     settings.file = '~/in/ebifarm/fast/pavi.xml'
+  } else if(user == 'davids14') {
+    settings.file = '~/pecan/tundra.xml'
   } else {
     paste('please specify settings file in meta.analysis.R')
   }

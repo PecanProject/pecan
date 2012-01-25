@@ -1,7 +1,7 @@
 library(XML)
 if(interactive()){
   user <- Sys.getenv('USER')
-  if(user == 'pecan'){
+  if(user %in% c('pecan', 'dlebauer')){
     settings.file = '~/in/ebifarm/fast/pavi.xml'
   } else {
     paste('please specify settings file in meta.analysis.R')
@@ -23,6 +23,7 @@ newconfn <- function() query.bety.con(dbname   = settings$database$name,
                                         host     = settings$database$host)
 
 newcon <- newconfn()
+
 cnt = 0;
 all.trait.data = list()
 for(pft in settings$pfts){
