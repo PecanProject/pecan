@@ -132,24 +132,31 @@ write.config.ED <- function(defaults, trait.values, settings, outdir, run.id){
   
   startdate <- as.Date(settings$run$start.date)
   enddate <- as.Date(settings$run$end.date)
-  ed2in.text <- scan(file = settings$run$edin, 
-      what="character",sep='@', quote=NULL, quiet=TRUE)
-  if(any(grep("OUTDIR/OUTFILE", ed2in.text))){
-    print(cat("speed up runs by changing \n",
-              "NL%FFILOUT = '/OUTDIR/OUTFILE' to NL%FFILOUT = '/scratch/OUTFILE' \n",
-              "in ED2IN template as per feature #421"))
-  }
-  ed2in.text <- gsub('START_MONTH', format(startdate, "%m"), ed2in.text)
-  ed2in.text <- gsub('START_DAY', format(startdate, "%d"), ed2in.text)
-  ed2in.text <- gsub('START_YEAR', format(startdate, "%Y"), ed2in.text)
-  ed2in.text <- gsub('END_MONTH', format(enddate, "%m"), ed2in.text)
-  ed2in.text <- gsub('END_DAY', format(enddate, "%d"), ed2in.text)
-  ed2in.text <- gsub('END_YEAR', format(enddate, "%Y"), ed2in.text)
-  ed2in.text <- gsub('OUTDIR', settings$run$host$outdir, ed2in.text)
-  ed2in.text <- gsub('ENSNAME', run.id, ed2in.text)
-  ed2in.text <- gsub('CONFIGFILE', xml.file.name, ed2in.text)
-  ed2in.text <- gsub('OUTFILE', paste('out', run.id, sep=''), ed2in.text)
-  ed2in.text <- gsub('HISTFILE', paste('hist', run.id, sep=''), ed2in.text)
+
+  ed2in.text <- readLines(con=settings$run$edin, n=-1)
+
+  ed2in.text <- gsub('@SITE_LAT@', settings$run$site$lat, ed2in.text)
+  ed2in.text <- gsub('@SITE_LON@', settings$run$site$lon, ed2in.text)
+  ed2in.text <- gsub('@SITE_MET@', settings$run$site$met, ed2in.text)
+  ed2in.text <- gsub('@SITE_PSSCSS@', settings$run$site$psscss, ed2in.text)
+
+  ed2in.text <- gsub('@ED_VEG@', settings$run$host$ed$veg, ed2in.text)
+  ed2in.text <- gsub('@ED_SOIL@', settings$run$host$ed$soil, ed2in.text)
+  ed2in.text <- gsub('@ED_INPUTS@', settings$run$host$ed$inputs, ed2in.text)
+  
+  ed2in.text <- gsub('@START_MONTH@', format(startdate, "%m"), ed2in.text)
+  ed2in.text <- gsub('@START_DAY@', format(startdate, "%d"), ed2in.text)
+  ed2in.text <- gsub('@START_YEAR@', format(startdate, "%Y"), ed2in.text)
+  ed2in.text <- gsub('@END_MONTH@', format(enddate, "%m"), ed2in.text)
+  ed2in.text <- gsub('@END_DAY@', format(enddate, "%d"), ed2in.text)
+  ed2in.text <- gsub('@END_YEAR@', format(enddate, "%Y"), ed2in.text)
+
+  ed2in.text <- gsub('@OUTDIR@', settings$run$host$outdir, ed2in.text)
+  ed2in.text <- gsub('@ENSNAME@', run.id, ed2in.text)
+  ed2in.text <- gsub('@CONFIGFILE@', xml.file.name, ed2in.text)
+  ed2in.text <- gsub('@OUTFILE@', paste('out', run.id, sep=''), ed2in.text)
+  ed2in.text <- gsub('@HISTFILE@', paste('hist', run.id, sep=''), ed2in.text)
+ 
   ed2in.file.name <- paste('ED2INc.',run.id, sep='')
   writeLines(ed2in.text, con = paste(outdir, ed2in.file.name, sep=''))
   
