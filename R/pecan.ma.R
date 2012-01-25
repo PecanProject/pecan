@@ -135,7 +135,7 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
                     trt.n = model.parms[['trt']],
                     site.n= model.parms[['site']],
                     ghs.n = model.parms[['ghs']],
-                    tauA  = taupriors$tauB[trait.name],
+                    tauA  = taupriors$tauA,
                     tauB  = taupriors$tauB[trait.name])
 
     if(overdispersed == TRUE){
