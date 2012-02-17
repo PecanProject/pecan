@@ -11,6 +11,6 @@ else
     pecandir=pecan
 fi
 
-R --vanilla CMD build pecandir
+R --vanilla CMD build $pecandir
 PECAn=`ls -v PECAn*tar.gz | tail -n 1`
 R --vanilla CMD INSTALL $PECAn
