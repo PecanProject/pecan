@@ -31,6 +31,7 @@ newcon <- query.bety.con(dbname   = settings$database$name,
 cnt = 0;
 all.trait.data = list()
 for(pft in settings$pfts){
+  dir.create(pft$outdir)
   cnt = cnt + 1
   
   ## 1. get species list based on pft
@@ -40,7 +41,7 @@ for(pft in settings$pfts){
   prior.distns <- query.bety.priors(pft$name, vecpaste(trait.names), out=pft$outdir,con=newcon)
   ### exclude any parameters for which a constant is provided 
   prior.distns <- prior.distns[which(!rownames(prior.distns) %in%
-                                     names(settings$pfts$pft$constants)),]
+                                     names(pft$constants)),]
   
   print('Summary of Prior distributions')
   print(prior.distns)
@@ -63,4 +64,3 @@ for(pft in settings$pfts){
   }
   save(prior.distns, file=paste(pft$outdir, 'prior.distns.Rdata', sep = ''))
 }
-
