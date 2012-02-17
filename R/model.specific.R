@@ -79,17 +79,32 @@ convert.samples.ED <- function(trait.samples){
 ##' @param run.id id of run
 ##' @return configuration file and ED2IN namelist for given run
 ##' @author David
-write.config.ED <- function(pft, trait.samples, settings, outdir, run.id){
-  xml <- listToXml(pft$constants, 'pft')
-  for (trait in names(trait.samples)) {
-    xml <- append.xmlNode(xml, xmlNode(trait, trait.samples[trait]))
+write.config.ED <- function(defaults, trait.values, settings, outdir, run.id){
+  #defaults = settings$pfts
+  xml <- xmlNode('config')
+  names(defaults) <- sapply(defaults,function(x) x$name)
+  for(group in names(trait.samples)){
+    if(group == "env"){
+      
+      ## set defaults from config.header
+      
+      ##
+      
+    } else {
+      ##is a PFT
+      pft <- defaults[[group]]
+      pft.xml <- listToXml(pft$constants, 'pft')
+      ## copy values
+      if(!is.null(trait.values[[group]])){
+        vals <- convert.samples.ED(trait.values[[group]])
+        for(trait in names(vals)){
+          pft.xml <- append.xmlNode(pft.xml, 
+              xmlNode(trait, vals[trait]))
+        }
+      }
+      xml <- append.xmlNode(xml, pft.xml)
+    }
   }
-  config.header <- xmlNode("config")
-  if ('config.header' %in% names(settings)){
-    config.header <- listToXml(settings$config.header, 'config')
-  } 
-  xml <- append.xmlNode(config.header, xml)
-  #c stands for config, abbreviated to work within ED's character limit
   xml.file.name <-paste('c.',run.id,sep='')  
   if(nchar(xml.file.name) >= 32) 
     stop(paste('The file name, "',xml.file.name,
@@ -100,9 +115,13 @@ write.config.ED <- function(pft, trait.samples, settings, outdir, run.id){
   
   startdate <- as.Date(settings$run$start.date)
   enddate <- as.Date(settings$run$end.date)
-
-  ed2in.text <- readLines(con=pft$edin, n=-1)
-
+  ed2in.text <- readLines(con=settings$run$edin, n=-1)
+  if(any(grep("OUTDIR/OUTFILE", ed2in.text))){
+    print(cat("speed up runs by changing \n",
+            "NL%FFILOUT = '/OUTDIR/OUTFILE' to NL%FFILOUT = '/scratch/OUTFILE' \n",
+            "in ED2IN template as per feature #421"))
+  }
+  
   ed2in.text <- gsub('@SITE_LAT@', settings$run$site$lat, ed2in.text)
   ed2in.text <- gsub('@SITE_LON@', settings$run$site$lon, ed2in.text)
   ed2in.text <- gsub('@SITE_MET@', settings$run$site$met, ed2in.text)
@@ -132,11 +151,11 @@ write.config.ED <- function(pft, trait.samples, settings, outdir, run.id){
 }
 
 write.run.ED <- function(settings){
-  run.text <- scan(file = paste(settings$pecanDir,
-                     'bash/run-template.ED', sep = ''), 
-                   what="character",sep='@', quote=NULL, quiet=TRUE)
-  run.text <- gsub('OUTDIR', settings$run$host$outdir, run.text)
-  runfile <- paste(settings$outdir, 'run', sep='')
+  run.text <- readLines(con=paste(settings$pecanDir,
+                        'bash/run-template.ED', sep = '/'), n=-1)
+  run.text <- gsub('@OUTDIR@', settings$run$host$outdir, run.text)
+  run.text <- gsub('@MODELDIR@', settings$run$host$modelfile, run.text)
+  runfile <- paste(settings$outdir, 'run', sep='/')
   writeLines(run.text, con = runfile)
   if(settings$run$host$name == 'localhost') {
     system(paste('cp ', runfile, settings$run$host$rundir))
@@ -178,7 +197,7 @@ read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
 ##' @return vector of output variable for all runs within ensemble
 read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA, output.type = 'Y'){
   print(run.id)
-  if(any(grep(run.id, dir(pattern = 'finished')))){
+  if(any(grep(run.id, dir(outdir, pattern = 'finished')))){
     file.names <- dir(outdir, pattern=run.id, full.names=FALSE)
     file.names <- grep(paste('-', output.type, '-', sep = ''), file.names, value = TRUE)
     file.names <- grep('([0-9]{4}).*', file.names, value=TRUE)
