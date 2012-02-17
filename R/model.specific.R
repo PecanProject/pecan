@@ -52,17 +52,11 @@ convert.samples.ED <- function(trait.samples){
     rrr1 <- trait.samples[['root_respiration_rate']]
     rrr2 <-  rrr1 * DEFAULT.MAINTENANCE.RESPIRATION
     trait.samples[['root_respiration_rate']] <- arrhenius.scaling(rrr2, old.temp = 25, new.temp = 15)
-    names(trait.samples)[names(trait.samples)=='root_respiration_rate'] <- 'root_respiration_factor'
   }
   
   if('Vcmax' %in% names(trait.samples)) {
     vcmax <- trait.samples[['Vcmax']]
     trait.samples[['Vcmax']] <- arrhenius.scaling(vcmax, old.temp = 25, new.temp = 15)
-    names(trait.samples)[names(trait.samples) == 'Vcmax'] <- 'Vm0'
-  }
-
-  if('fineroot2leaf' %in% names(trait.samples)){
-    names(trait.samples)[names(trait.samples) == 'fineroot2leaf'] <- 'q'
   }
   return(trait.samples)
 }
@@ -97,6 +91,7 @@ write.config.ED <- function(defaults, trait.values, settings, outdir, run.id){
       ## copy values
       if(!is.null(trait.values[[group]])){
         vals <- convert.samples.ED(trait.values[[group]])
+        names(vals) <- trait.dictionary(names(vals))$model.id
         for(trait in names(vals)){
           pft.xml <- append.xmlNode(pft.xml, 
               xmlNode(trait, vals[trait]))
