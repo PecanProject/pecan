@@ -24,11 +24,26 @@ query.bety <- function(query,con=NULL,...){
 ##' @return database connection object
 ##' @examples
 ##' con <- query.bety.con()
-query.bety.con <- function (...) {
-    lapply(dbListConnections(MySQL()), dbDisconnect)
-    dvr <- dbDriver("MySQL")
-    con <- dbConnect(dvr, group = "ebi_analysis", ...)
+query.bety.con <- function(...){
+  lapply(dbListConnections(MySQL()), dbDisconnect) #first kill all connections
+  dvr <- dbDriver ("MySQL")
+  
+  con <- dbConnect(dvr, group  = 'ebi_analysis',...)
+  
+  #KLUDGE: not all invocations of query.bet.con() make use of the settings file.
+  #This effectively limits PEcAn to using ebi_analysis at certain places.
+  #What follows is a quick fix - it relies on settings as a global variable,
+  #which are generally recommended against
+  if(exists('settings')){
+    con <- dbConnect(dvr, group  = settings$database$name,
+        dbname=settings$database$name, 
+        password=settings$database$passwd, 
+        username=settings$database$userid, 
+        host=settings$database$host)
     return(con)
+  }
+  
+  return(con)
 }
 
 ##'  select plant id's associated with pft
@@ -62,7 +77,7 @@ query.bety.pft_species <- function(pft,con=NULL,...){
 ##' @return return priors for a given pft
 ##' @examples
 ##' query.bety.priors('ebifarm.pavi', c('SLA', 'Vcmax', 'leaf_width'))
-query.bety.priors <- function(pft, trstr, con=NULL,...){
+query.bety.priors <- function(pft, trstr, out=NULL,con=NULL,...){
   if(is.null(con)){
     con <- query.bety.con(...)
   }
@@ -71,24 +86,30 @@ query.bety.priors <- function(pft, trstr, con=NULL,...){
     print("WEB QUERY OF DATABASE NOT IMPLEMENTED")
     return(NULL)
   }
-    
-  ## query 1: query the prior_id s assoc. with pft
-  query1 <- paste("select pfts_priors.prior_id from pfts_priors where pfts_priors.pft_id in (select pfts.id from pfts where pfts.name in ('",pft,"'));", sep = "")
-  q1    <- dbSendQuery(con, query1)
-  prior.id <- fetch(q1, n = -1 )$prior_id
-  pr.id.str <- vecpaste(prior.id)
-  if(is.null(prior.id)){
-    print("**** NO PRIORS FOUND ****")
-    return(prior.id)
-  }
   
-  ## query 2: query the variable names assoc. with priors.
-  query2 <- paste("select distinct variables.name, distn, parama, paramb, n from priors join variables on priors.variable_id = variables.id where priors.id in (",pr.id.str,") and variables.name in (",trstr,");", sep = "")
+  query.text <- paste("select variables.name, distn, parama, paramb, n",
+      "from priors",
+      "join variables on priors.variable_id = variables.id",
+      "join pfts_priors on pfts_priors.prior_id = priors.id",
+      "join pfts on pfts.id = pfts_priors.pft_id",
+      "where pfts.name in (", vecpaste(pft), ")",
+      "and variables.name in (", trstr, ");")
+  query    <- dbSendQuery(con, query.text)
+  priors <- fetch ( query, n = -1 )
   
-  q2 <- dbSendQuery(con, query2)
-  priors <- fetch ( q2, n = -1 )
+  #HACK: this rename does not belong here. 
+  #There should be a separate function for this called after query.bety.priors. 
+  #-carl
   priors$name[priors$name == 'SLA_m2_per_gC'] <- 'SLA'
-  rownames(priors) <- priors$name
-  priors <- priors[, which(colnames(priors)!='name')]
-  return(priors)
+  
+  if(nrow(priors) <= 0){
+    warning(paste("No priors found for pft(s): ", pft))
+    priors <- priors[, which(colnames(priors)!='name')]
+    return(priors)
+  }
+  else {    
+    rownames(priors) <- priors$name
+    priors <- priors[, which(colnames(priors)!='name')]
+    return(priors)
+  }
 }
