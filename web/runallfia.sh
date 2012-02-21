@@ -13,6 +13,7 @@ echo -e "\t`date +'%F %T'`" >> STATUS
 
 # setup pss/css by running fia2ED
 echo -e -n "FIA2ED\t`date +'%F %T'`" >> STATUS
+R CMD BATCH --vanilla ${PECANHOME}/rscripts/fia2ED.R
 echo -e "\t`date +'%F %T'`" >> STATUS
 
 # get data from bety

@@ -9,4 +9,3 @@ $ed_veg="/home/kooper/projects/EBI/oge2OLD/OGE2_";
 $ed_soil="/home/kooper/projects/EBI/faoOLD/FAO_";
 $ed_inputs="/home/kooper/projects/EBI/ed_inputs/";
 ?>
-

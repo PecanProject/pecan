@@ -103,6 +103,12 @@ header( "refresh:5" );
 			<td><?=status("SETUP");?></td>
 		</tr>
 		<tr>
+			<th>fia2ed</th>
+			<td><?=startTime("FIA2ED");?></td>
+			<td><?=endTime("FIA2ED");?></td>
+			<td><?=status("FIA2ED");?></td>
+		</tr>
+		<tr>
 			<th>query.bety</th>
 			<td><?=startTime("BETY");?></td>
 			<td><?=endTime("BETY");?></td>
