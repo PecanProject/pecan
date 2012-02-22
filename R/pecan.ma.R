@@ -76,8 +76,8 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
     }
     
     #print out some data summaries to check
-    writeLines(paste('prior for ', trait.name, ':',
-                jagsprior[1], '(',jagsprior[2], ', ', jagsprior[3], ')', sep = ''))
+    writeLines(paste('prior for ', trait.name, ' (using R parameterization):\n',
+                prior$distn, '(',prior$a, ', ', prior$b, ')', sep = ''))
     writeLines(paste('data max:', max(data$Y), '\ndata min:', min(data$Y), '\nmean:', signif(mean(data$Y),3), '\nn:', length(data$Y)))
     writeLines('stem plot of data points')
     writeLines(paste(stem(data$Y)))
@@ -101,7 +101,7 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
       reg.model <- paste('+', reg.parms[model.parms > 1], collapse = " ")
     }
         
-    ## parameters for jags to follow
+    ## generate list of parameters for jags to follow and produce mcmc output for
     vars <- c( 'beta.o', 'sd.y') 
     for (x in c('ghs', 'site', 'trt')) {
       if(model.parms[[x]] == 1) {
@@ -135,7 +135,7 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
                     trt.n = model.parms[['trt']],
                     site.n= model.parms[['site']],
                     ghs.n = model.parms[['ghs']],
-                    tauA  = taupriors$tauB[trait.name],
+                    tauA  = taupriors$tauA,
                     tauB  = taupriors$tauB[trait.name])
 
     if(overdispersed == TRUE){
@@ -149,17 +149,13 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
       ## invalidates assumptions about convergence, e.g. Gelman-Rubin diagnostic
       j.inits <- function(chain) list("beta.o" = mean(data$Y))
     }
-    tryCatch({
-      j.model   <- jags.model (file = jag.model.file,
-                               data = data,
-                               n.adapt = 100, #will burn in below
-                               n.chains = j.chains,
-                               init =  j.inits)
-    }, 
-    error=function(ex){
-      print(ex)
-      browser()
-    })
+    
+    j.model   <- jags.model (file = jag.model.file,
+                             data = data,
+                             #n.adapt = 100, #will burn in below
+                             n.chains = j.chains,
+                             init =  j.inits)
+
 
     jags.out   <- coda.samples ( model = j.model,
                                 variable.names = vars,

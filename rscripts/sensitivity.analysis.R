@@ -1,17 +1,18 @@
 library(XML)
 if(interactive()){
-  user <- system('echo $USER', intern = TRUE)
+  user <- Sys.getenv('USER')
   options(error = browser)
   if(user == 'dlebauer'){
-    settings.file = '~/in/ebifarm/post/ebifarm.pavi.xml'
+    settings.file = '~/in/ebifarm/prior/pavi.xml'
   } else if(user == 'davids14') {
     settings.file = '~/pecan/toolik.xml'
   } else {
     paste('please specify settings file in meta.analysis.R')
   }
 } else {
-  settings.file <- commandArgs(trailingOnly=TRUE)[[1]]
-}
+  settings.file <- commandArgs(trailingOnly=TRUE)
+} 
+options(error=traceback)
 
 settings.xml <- xmlParse(settings.file)
 settings <- xmlToList(settings.xml)
@@ -20,29 +21,19 @@ if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)}
 library(PECAn)
 
 load(paste(settings$outdir, 'output.Rdata', sep=''))
-sensitivity.output<-sa.agb
 load(paste(settings$outdir, 'samples.Rdata', sep=''))
 
-initial.analysis<-read.csv('initial.analysis.csv')
-initial.analysis$partial.variances <- 10^-initial.analysis$partial.variances
-initial.analysis$elasticities[initial.analysis$pft!='tundra.grass'] <- 10^-(initial.analysis$elasticities[initial.analysis$pft!='tundra.grass']+1)
-initial.analysis$coef.vars<-10^-(initial.analysis$coef.vars)
-initial.analysis$coef.vars[initial.analysis$trait=='Vm_low_temp'] <- get.coef.var(rnorm(10000, -3, 2))
-initial.analysis$coef.vars[initial.analysis$trait=='quantum_efficiency'] <- get.coef.var(rnorm(10000, 0.0600, 0.0100))
-
+sensitivity.results <- list()
 for(pft in settings$pfts){
-
-  
-  prior.decomp <- list()
+  print(pft$name)
   if('sensitivity.analysis' %in% names(settings)) {
-
+    traits <- names(trait.samples[[pft$name]])
     quantiles.str <- rownames(sa.samples[[pft$name]])
     quantiles.str <- quantiles.str[which(quantiles.str != '50')]
     quantiles <- as.numeric(quantiles.str)/100
     ## ensemble.output <- read.ensemble.output(settings$ensemble$size, settings$outdir, pft.name=pft$name)
 
     ## only perform sensitivity analysis on traits where no more than 2 results are missing
-    traits <- names(trait.samples[[pft$name]])
     good.saruns <- sapply(sensitivity.output[[pft$name]], function(x) sum(is.na(x)) <=2)
     if(!all(good.saruns)) { # if any bad saruns, reduce list of traits and print warning
       bad.saruns <- !good.saruns
@@ -50,61 +41,33 @@ for(pft in settings$pfts){
                     '\n sensitivity analysis or variance decomposition will be performed on these trait(s)',
                     '\n it is likely that the runs did not complete, this should be fixed !!!!!!'))
     }
-    browser()
-    sensitivity.results <- sensitivity.analysis(trait.samples = trait.samples[[pft$name]][traits],
+    
+    
+    sensitivity.results[[pft$name]] <- sensitivity.analysis(trait.samples = trait.samples[[pft$name]][traits],
                                                 sa.samples = sa.samples[[pft$name]][ ,traits],
                                                 sa.output = sensitivity.output[[pft$name]][ ,traits],
                                                 outdir = pft$outdir)
-    save(sensitivity.results, file=paste(pft$outdir, 'sensitivity.results.Rdata', sep=''))
-    initial.analysis.pft <- initial.analysis[initial.analysis$pft==pft$name,]
-    
-    initial.partial.variances <- initial.analysis.pft$partial.variances
-    names(initial.partial.variances) <- initial.analysis.pft$trait
-    
-    initial.elasticities <- initial.analysis.pft$elasticities
-    names(initial.elasticities) <- initial.analysis.pft$trait
-    foo<-intersect(names(initial.elasticities), traits)
-    initial.elasticities[foo] <- sensitivity.results$variance.decomposition.plot.inputs$elasticities[foo]
-    
-    initial.coef.vars <- initial.analysis.pft$coef.vars
-    names(initial.coef.vars) <- initial.analysis.pft$trait
-    
-    
-    initial.decomp <- list(coef.vars=initial.coef.vars,
-        elasticities = initial.elasticities,
-        partial.variances = initial.partial.variances)
-"    sensitivity.plots <- plot.sensitivities(sensitivity.results$sensitivity.plot.inputs,
+    print(sensitivity.results[[pft$name]]$variance.decomposition.output)
+    print(sensitivity.output[[pft$name]])
+    sensitivity.plots <- plot.sensitivities(sensitivity.results[[pft$name]]$sensitivity.output,
                                    linesize = 1,
                                    dotsize = 3)
-    pdf(paste(settings$outdir, 'sensitivityanalysis.pdf', sep = ''), height = 12, width = 9)
-    sensitivity.plots
-    dev.off()"
+    pdf(paste(pft$outdir, 'sensitivityanalysis.pdf', sep = ''), height = 12, width = 9)
+    dev.off()
 
+
+    vd.plots <- plot.variance.decomposition(sensitivity.results[[pft$name]]$variance.decomposition.output)
+                                            #variance.scale = log, variance.prefix='Log')
     pdf(paste(pft$outdir, 'variancedecomposition.pdf', sep=''), width = 11, height = 8)
-
-    vd.plots <- plot.variance.decomposition(sensitivity.results$variance.decomposition.plot.inputs,
-        prior.plot.inputs = initial.decomp)
-    cv.xticks <- pretty(sensitivity.results$variance.decomposition.plot.inputs$coef.vars*100,4)
-    el.xticks <- pretty(sensitivity.results$variance.decomposition.plot.inputs$elasticities,4)
-    el.xrange <- range(pretty(sensitivity.results$variance.decomposition.plot.inputs$elasticities,6))
-    pv.xticks <- pretty(sensitivity.results$variance.decomposition.plot.inputs$partial.variances*100,4)
+    cv.xticks <- pretty(sensitivity.results[[pft$name]]$variance.decomposition.output$coef.vars*100,4)
+    el.xticks <- pretty(sensitivity.results[[pft$name]]$variance.decomposition.output$elasticities,4)
+    el.xrange <- range(pretty(sensitivity.results[[pft$name]]$variance.decomposition.output$elasticities,6))
+    pv.xticks <- pretty(sensitivity.results[[pft$name]]$variance.decomposition.output$partial.variances*100,4)
     do.call(grid.arrange, c(vd.plots, ncol = 4))
-    
-    vd.plots <- plot.variance.decomposition(sensitivity.results$variance.decomposition.plot.inputs)
-    cv.xticks <- pretty(sensitivity.results$variance.decomposition.plot.inputs$coef.vars*100,4)
-    el.xticks <- pretty(sensitivity.results$variance.decomposition.plot.inputs$elasticities,4)
-    el.xrange <- range(pretty(sensitivity.results$variance.decomposition.plot.inputs$elasticities,6))
-    pv.xticks <- pretty(sensitivity.results$variance.decomposition.plot.inputs$partial.variances*100,4)
-    do.call(grid.arrange, c(vd.plots, ncol = 4))
-    
-    vd.plots <- plot.variance.decomposition(initial.decomp)
-    cv.xticks <- pretty(initial.decomp$coef.vars*100,4)
-    el.xticks <- pretty(initial.decomp$elasticities,4)
-    el.xrange <- range(pretty(initial.decomp$elasticities,6))
-    pv.xticks <- pretty(initial.decomp$partial.variances*100,4)
-    do.call(grid.arrange, c(vd.plots, ncol = 4))
-
     dev.off() 
   }
-}
+}  ## end if sensitivity analysis
 
+save(sensitivity.results,
+     file = paste(settings$outdir,
+       "sensitivity.results.Rdata", sep = ""))

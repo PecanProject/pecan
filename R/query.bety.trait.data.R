@@ -1,16 +1,16 @@
 ######################## DATA FUNCTIONS #################################
 ##' Queries data from BETY and transforms statistics to SE
 ##'
-##' Performs query and then uses \code{pecan.transformstats} to convert miscellaneous statistical summaries
+##' Performs query and then uses \code{transformstats} to convert miscellaneous statistical summaries
 ##' to SE
 ##' @title Fetch data and transform stats to SE
 ##' @param connection connection to BETYdb
 ##' @param query MySQL query to traits table
 ##' @return dataframe with trait data
-##' @seealso used in \code{\link{query.bety.trait.data}}; \code{\link{pecan.transformstats}} performs transformation calculations
+##' @seealso used in \code{\link{query.bety.trait.data}}; \code{\link{transformstats}} performs transformation calculations
 fetch.stats2se <- function(connection, query){
   query.result <- dbSendQuery(connection, query)
-  transformed <- pecan.transformstats(fetch(query.result, n = -1))
+  transformed <- transformstats(fetch(query.result, n = -1))
   return(transformed)
 }
 query.data<-function(trait, spstr, extra.columns='', con=query.bety.con(...), ...){
@@ -79,9 +79,9 @@ arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp
     
     data$mean <- arrhenius.scaling(data$mean, old.temp = data$temp, new.temp=new.temp)
     data$stat <- arrhenius.scaling(data$stat, old.temp = data$temp, new.temp=new.temp)
+    #remove temporary covariate column
+    data<-data[,colnames(data)!='temp']
   }
-  #remove temporary covariate column
-  data<-data[,colnames(data)!='temp']
   return(data)
 }
 filter.sunleaf.traits <- function(data, covariates){
@@ -335,7 +335,8 @@ query.bety.trait.data <- function(trait, spstr,con=query.bety.con(...), ...){
   result <- data
 
   ## if result is empty, stop run
-  if(!exists('result') || nrow(result)==0) {
+  print(result)
+  if(nrow(result)==0) {
     return(NA)
   }
 

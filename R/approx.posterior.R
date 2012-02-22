@@ -35,7 +35,12 @@ approx.posterior <- function(trait.mcmc,priors,trait.data=NULL,outdir=NULL){
     ## first determine the candidate set of models based on any range restrictions
     zerobound = c("exp","gamma","lnorm")#,"weibull")
     if(pdist %in% "beta"){
-      fit = fitdistr(dat,"beta",list(shape1=1,shape2=1))
+      m = mean(dat)
+      v = var(dat)
+      k = (1-m)/m
+      a = ( k/((1+k)^2*v)-1)/(1+k)
+      b = a*k
+      fit = try(fitdistr(dat,"beta",list(shape1=a,shape2=b)))      
       if(do.plot){
         x = seq(0,1,length=1000)
         plot(density(dat),col=2,lwd=2,main=trait)
@@ -54,12 +59,12 @@ approx.posterior <- function(trait.mcmc,priors,trait.data=NULL,outdir=NULL){
     } else if(pdist %in% zerobound | (pdist == "unif" & pparm[1] > 0)){
 
       fit = list()
-      fit[[1]] = fitdistr(dat,"exponential")
+      fit[[1]] = suppressWarnings(fitdistr(dat,"exponential"))
 #      fit[[2]] = fitdistr(dat,"f",list(df1=10,df2=2*mean(dat)/(max(mean(dat)-1,1))))
-      fit[[2]] = fitdistr(dat,"gamma")
-      fit[[3]] = fitdistr(dat,"lognormal")
+      fit[[2]] = suppressWarnings(fitdistr(dat,"gamma"))
+      fit[[3]] = suppressWarnings(fitdistr(dat,"lognormal"))
 #      fit[[4]] = fitdistr(dat,"weibull")
-      fit[[4]] = fitdistr(dat,"normal")
+      fit[[4]] = suppressWarnings(fitdistr(dat,"normal"))
       fparm <- lapply(fit,function(x){as.numeric(x$estimate)})
       fAIC  <- lapply(fit,function(x){AIC(x)})
       

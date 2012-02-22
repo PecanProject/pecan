@@ -28,7 +28,6 @@ read.sa.output <- function(traits, quantiles, host, outdir, pft.name='', read.ou
   for(trait in traits){
     for(quantile in quantiles){
       run.id <- get.run.id('SA', round(quantile,3), trait=trait, pft.name=pft.name)
-      print(run.id)
       sa.output[as.character(round(quantile*100,3)), trait] <- read.output(run.id, outdir)
     }
   }
