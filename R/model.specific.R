@@ -75,7 +75,7 @@ convert.samples.ED <- function(trait.samples){
 ##' @author David
 write.config.ED <- function(defaults, trait.values, settings, outdir, run.id){
   #defaults = settings$pfts
-  xml <- xmlNode('config')
+  xml <- listToXml(settings$config.header, 'config')
   names(defaults) <- sapply(defaults,function(x) x$name)
   for(group in names(trait.samples)){
     if(group == "env"){
@@ -100,7 +100,7 @@ write.config.ED <- function(defaults, trait.values, settings, outdir, run.id){
       xml <- append.xmlNode(xml, pft.xml)
     }
   }
-  xml.file.name <-paste('c.',run.id,sep='')  
+  xml.file.name <-paste('c2.',run.id,sep='')  
   if(nchar(xml.file.name) >= 32) 
     stop(paste('The file name, "',xml.file.name,
             '" is too long and will cause your ED run to crash ',
@@ -139,7 +139,7 @@ write.config.ED <- function(defaults, trait.values, settings, outdir, run.id){
   ed2in.text <- gsub('@OUTFILE@', paste('out', run.id, sep=''), ed2in.text)
   ed2in.text <- gsub('@HISTFILE@', paste('hist', run.id, sep=''), ed2in.text)
  
-  ed2in.file.name <- paste('ED2INc.',run.id, sep='')
+  ed2in.file.name <- paste('ED2IN', xml.file.name, sep='')
   writeLines(ed2in.text, con = paste(outdir, ed2in.file.name, sep=''))
   
   print(run.id)
@@ -192,7 +192,7 @@ read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
 ##' @return vector of output variable for all runs within ensemble
 read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA, output.type = 'Y'){
   print(run.id)
-  if(any(grep(run.id, dir(outdir, pattern = 'finished')))){
+  #if(any(grep(run.id, dir(outdir, pattern = 'finished')))){
     file.names <- dir(outdir, pattern=run.id, full.names=FALSE)
     file.names <- grep(paste('-', output.type, '-', sep = ''), file.names, value = TRUE)
     file.names <- grep('([0-9]{4}).*', file.names, value=TRUE)
@@ -205,16 +205,17 @@ read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA, output.ty
         file.names <- file.names[years<=as.numeric(end.year)]
       }
       file.names <- file.names[!is.na(file.names)]
+      print(file.names)
       
       result <- mean(sapply(file.names, read.output.file.ed)) ## if any are NA, NA is returned
     } else {
       warning(cat(paste('no output files in', outdir, '\nfor', run.id, '\n')))
       result <- NA
     }
-  } else {
-    warning(cat(paste(run.id, 'not finished \n')))
-    result <- NA
-  }
+  #} else {
+  #  warning(cat(paste(run.id, 'not finished \n')))
+  #  result <- NA
+  #}
   return(result)
 }
 

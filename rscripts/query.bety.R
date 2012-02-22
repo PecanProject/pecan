@@ -1,15 +1,8 @@
 library(XML)
 if(interactive()){
   user <- Sys.getenv('USER')
-  if(user == 'ed'){
-    settings.file = '~/pecan/fast.settings.xml'
-  } else if(user == 'mantoot2'){
-    settings.file = '/home/mantoot2/pecan/ebifarm.acru.xml'
-  } else if(user == 'dlebauer'){
-    settings.file = '~/in/ebifarm/prior/settings.pavi.xml'
-#    settings.file = '~/pecan/ebifarm.acsa3.xml'
-  } else if(user == 'davids14') {
-    settings.file = '~/pecan/tundra.xml'
+  if(user %in% c('pecan', 'dlebauer')){
+    settings.file = '~/in/ebifarm/fast/pavi.xml'
   } else {
     paste('please specify settings file in meta.analysis.R')
   }
@@ -24,10 +17,13 @@ require(PECAn)
 trait.names <- trait.dictionary()$id
 file.remove(dir(settings$outdir, full.names=TRUE))
 ## connect to database
-newcon <- query.bety.con(dbname   = settings$database$name,
-                                    password = settings$database$passwd,
-                                    username = settings$database$userid,
-                                    host     = settings$database$host)
+newconfn <- function() query.bety.con(dbname   = settings$database$name,
+                                      password = settings$database$passwd,
+                                      username = settings$database$userid,
+                                      host     = settings$database$host)
+
+newcon <- newconfn()
+
 cnt = 0;
 all.trait.data = list()
 for(pft in settings$pfts){
@@ -58,7 +54,7 @@ for(pft in settings$pfts){
 
     for(i in 1:length(all.trait.data)){
       print(names(all.trait.data)[i])
-      print(sapply(all.trait.data[[i]],dim)[1,])
+      print(sapply(all.trait.data[[i]],dim))
     }
     
   }

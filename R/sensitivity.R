@@ -111,14 +111,15 @@ sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
   trait.samples[[C.units]] <- trait.samples[[C.units]] + 273.15
   
   coef.vars <- sapply(trait.samples, get.coef.var)
-  outlist <- list(sensitivity.plot.inputs = list(
-          sa.samples    = sa.samples,
-          sa.splines = sa.splines),
-      variance.decomposition.plot.inputs = list(
-          coef.vars         = coef.vars,
-          elasticities      = elasticities,
-          sensitivities     = sensitivities,
-          partial.variances = partial.variances))
+  outlist <- list(sensitivity.output = list(
+                    sa.samples    = sa.samples,
+                    sa.splines = sa.splines),
+                  variance.decomposition.output = list(
+                    coef.vars         = coef.vars,
+                    elasticities      = elasticities,
+                    sensitivities     = sensitivities,
+                    variances         = variances,
+                    partial.variances = partial.variances))
   return(outlist)
 }
 

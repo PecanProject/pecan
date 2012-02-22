@@ -18,7 +18,24 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
   } else if (ensemble.size == 1) {
     ans <- get.sa.sample.list(pft.samples,env.samples,0.50)
   } else {
-    pft.samples[['env']] <- env.samples
+    pft.samples[[length(pft.samples)+1]] = env.samples
+    names(pft.samples)[length(pft.samples)] <- 'env'
+    pft2col <- NULL
+    for(i in 1:length(pft.samples)){
+      pft2col <- c(pft2col,rep(i,length(pft.samples[[i]])))
+    }
+
+    halton.samples <- NULL
+    if(method == "halton"){
+      halton.samples <- halton(n = ensemble.size, dim=length(pft2col))
+      ##force as a matrix in case length(samples)=1
+      halton.samples <- as.matrix(halton.samples)
+    } else {
+      #uniform random
+      halton.samples <- matrix(runif(ensemble.size*length(pft2col))
+                                ,ensemble.size,length(pft2col))
+      
+    }
     
     total.sample.num <- sum(sapply(pft.samples, length))
     halton.samples <- NULL
@@ -69,15 +86,14 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
 ##' @param convert.samples a model-specific function that transforms variables from units used in database to units used by model, e.g. \link{convert.samples.ED} 
 ##' @return nothing, writes ensemble configuration files as a side effect 
 write.ensemble.configs <- function(defaults, ensemble.samples,
-    host, outdir, settings,
-    write.config = write.config.ED,clean=FALSE){
-  
+                                   host, outdir, settings,
+                                   write.config = write.config.ED,clean=FALSE){
   if(clean){
     ## Remove old files
     if(host$name == 'localhost') {
       if("ENS" %in% dir(host$rundir)){
         file.remove(paste(host$rundir, '*',
-                get.run.id('ENS', '', pft.name=pft.name), '*"', sep=''))
+                          get.run.id('ENS', '', pft.name=pft.name), '*"', sep=''))
       }
     } else {
       ssh(host$name, 'rm -f ', host$rundir, '*',
@@ -86,23 +102,22 @@ write.ensemble.configs <- function(defaults, ensemble.samples,
   }
   
   if(is.null(ensemble.samples)) return(NULL)
-  
   for(ensemble.id in 1:settings$ensemble$size) {
     run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, 5))
     if(clean) unlink(paste(outdir, '*', run.id, '*', sep=''))
     
     write.config(defaults,
-        lapply(ensemble.samples,function(x,n){x[n,]}, n=ensemble.id),
-        settings, outdir, run.id)
+                 lapply(ensemble.samples,function(x,n){x[n,]},n=ensemble.id),
+                 settings, outdir, run.id)
   }
   if(host$name == 'localhost'){
     rsync(paste(outdir, '*',
-            get.run.id('ENS', ''), '*', sep=''),
-        host$rundir)
+                get.run.id('ENS', ''), '*', sep=''),
+          host$rundir)
   } else {
     system(paste('rsync -routi ',
-            paste(outdir, '*', get.run.id('ENS', ''), '*', sep=''), 
-            paste(host$name, ':', host$rundir,  sep=''), sep = ' '))
+                 paste(outdir, '*', get.run.id('ENS', ''), '*', sep=''), 
+                 paste(host$name, ':', host$rundir,  sep=''), sep = ' '))
   }
 }
 
@@ -180,15 +195,14 @@ get.sa.samples <- function(samples, quantiles){
 ##' @param ensemble.samples list of lists supplied by \link{get.sa.samples}
 ##' @return nothing, writes sensitivity analysis configuration files as a side effect 
 write.sa.configs <- function(defaults, quantile.samples, host, outdir, settings, 
-    write.config=write.config.ED,clean=FALSE){
+                             write.config=write.config.ED,clean=FALSE){
   MEDIAN <- '50'
-  
   ## clean out old files
   if(clean){
     if(host$name == 'localhost'){
       if("SA" %in% dir(host$rundir)){
         file.remove(paste(host$rundir, '*',
-                get.run.id('SA', ''), '*', sep=''))
+                          get.run.id('SA', ''), '*', sep=''))
       }
     } else {
       ssh(host$name, 'rm -f ', host$rundir, '*',
@@ -204,7 +218,6 @@ write.sa.configs <- function(defaults, quantile.samples, host, outdir, settings,
   names(median.samples) = names(quantile.samples)
   run.id <- get.run.id('SA', 'median')
   write.config(defaults, median.samples, settings, outdir, run.id)
-  
   ## loop over pfts
   for(i in seq(names(quantile.samples))){
     
@@ -227,12 +240,12 @@ write.sa.configs <- function(defaults, quantile.samples, host, outdir, settings,
   }
   if(host$name == 'localhost'){
     rsync(paste(outdir, '*',
-            get.run.id('SA', ''), '*', sep=''),
-        host$rundir)
+                get.run.id('SA', ''), '*', sep=''),
+          host$rundir)
   } else {
     system(paste('rsync -routi ',
-            paste(outdir, '*', get.run.id('SA', ''), '*', sep=''), 
-            paste(host$name, ':', host$rundir,  sep='')))
+                 paste(outdir, '*', get.run.id('SA', ''), '*', sep=''), 
+                 paste(host$name, ':', host$rundir,  sep='')))
   }
 }
 
