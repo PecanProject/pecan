@@ -198,7 +198,7 @@ while ($row = @mysql_fetch_assoc($result)){
 			<div class="spacer"></div>
 			
 			<label>PFT</label>
-			<select name="pft[]" single size=5>
+			<select name="pft[]" multiple size=5>
 			<?=$pfts?>
 			</select>
 			<div class="spacer"></div>
