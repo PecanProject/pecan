@@ -41,11 +41,7 @@ bash ./check.sh
 rm jobs
 echo -e "\t`date +'%F %T'`" >> STATUS
 
-# create plots
-echo -e -n "PLOTS\t`date +'%F %T'`" >> STATUS
-R CMD BATCH --vanilla ${PECANHOME}/rscripts/plots.R
-echo -e "\t`date +'%F %T'`" >> STATUS
-
 # all done
+echo -e -n "FINISHED\t`date +'%F %T'`" >> STATUS
 R CMD BATCH --vanilla ${PECANHOME}/rscripts/finished.R
-
+echo -e "\t`date +'%F %T'`" >> STATUS
