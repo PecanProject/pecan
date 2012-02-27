@@ -43,6 +43,15 @@ $outputs  = "";
 $outputs .= "<option>pecan.xml</option>";
 
 $files=scandir("$folder/out");
+
+// history file
+$history = array_pop(array_filter($files, function ($item) {
+	global $year;
+	return preg_match("/hist.*.xml/", $item);
+}));
+$outputs .= createOption("out/$history");
+
+
 for($year=$start; $year<=$end; $year++) {
 	$years .= "<option>$year</option>";
 	
