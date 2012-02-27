@@ -36,7 +36,7 @@ $status=file("$folder/STATUS");
 if ($status === FALSE) {
 	$status = array();
 }
-if (endTime("PLOTS") != "") {
+if (endTime("FINISHED") != "") {
 	header("Location: finished.php?runid=$runid");
 }
 
