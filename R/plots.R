@@ -85,19 +85,18 @@ pretty.hack <- function(foo, ...){
 plot.variance.decomposition <- function(plot.inputs, outdir,
                                         prior.plot.inputs = NULL,
                                         fontsize = list(title = 18, axis = 14),
+                                        filter = TRUE,
                                         variance.scale=sqrt, 
                                         #ex: log, sqrt, identity 
                                         variance.prefix='Root'){
                                         #EX: Log, Root, Partial
   
   traits    <- names(plot.inputs$variances)
-  units     <- trait.dictionary(traits)$units
-  trait.labels <- merge(data.frame(id = traits), trait.dictionary(traits), by = 'id', sort = FALSE)$figid
-  .plot.data <- data.frame(trait.labels  = trait.labels,
-                           units         = units,
+  .plot.data <- data.frame(trait.labels  = merge(data.frame(id = traits), trait.dictionary(traits), by = 'id', sort = FALSE)$figid,
+                           units         = trait.dictionary(traits)$units,
                            coef.vars     = abs(plot.inputs$coef.vars * 100),
                            elasticities  = abs(plot.inputs$elasticities),
-                           variances     = variance.scale(abs(plot.inputs$variances)))
+                           variances     = variance.scale(abs(plot.inputs$variances)))[filter,]
                                        #  recover()
   if(!is.null(prior.plot.inputs)) {
     prior.traits <- names(prior.plot.inputs$partial.variances)
@@ -108,27 +107,22 @@ plot.variance.decomposition <- function(plot.inputs, outdir,
                                   units                     = trait.dictionary(prior.traits)$units,
                                   prior.coef.vars           = abs(prior.plot.inputs$coef.vars * 100),
                                   prior.elasticities        = abs(prior.plot.inputs$elasticities),
-                                  prior.partial.variances   = variance.scale(abs(prior.plot.inputs$partial.variances)))
-    .plot.data <- merge(.plot.data, prior.plot.data, by = 'trait.labels')#, all.x=TRUE)
-    
-    
-    print(names(prior.plot.inputs$coef.vars)[!prior.matched])
-    print(traits[!post.matched])
-    
-    traits    <- traits[post.matched]
-    units     <- .plot.data$units
-    trait.labels <- .plot.data$trait.labels
+                                  prior.variances           = variance.scale(abs(prior.plot.inputs$variances)))
+    .plot.data <- merge(.plot.data, prior.plot.data, by = 'trait.labels')
+    pv.order <- order(.plot.data$prior.variances, decreasing = FALSE)
   }
-  pv.order <- order(.plot.data$variances, decreasing = FALSE)
+  else {
+    pv.order <- order(.plot.data$variances, decreasing = FALSE)
+  }
 
   ## location of words and lollipops set by 'points'
   ##    these points can be moved up or down by adjusting the offset X in 1:length(traits) - X
-  plot.data <- data.frame(.plot.data[pv.order, ], points = 1:length(traits) - 0.5)
-
-  cv.xticks <- pretty.hack(plot.data[,grep('coef.var', colnames(plot.data))], 4)
-  pv.xticks <- pretty.hack(plot.data[,grep('variance', colnames(plot.data))], 4)  
-  el.xticks <- pretty.hack(plot.data[,grep('elasticities', colnames(plot.data))], 3)
-  el.xrange <- range(pretty.hack(plot.data[,grep('elasticities', colnames(plot.data))], 4))
+  plot.data <- data.frame(.plot.data[pv.order, ], points = 1:nrow(.plot.data) - 0.5)
+  trait.labels <<- plot.data$trait.labels
+  cv.xticks <<- pretty.hack(plot.data[,grep('coef.var', colnames(plot.data))], 4)
+  pv.xticks <<- pretty.hack(plot.data[,grep('variance', colnames(plot.data))], 4)  
+  el.xticks <<- pretty.hack(plot.data[,grep('elasticities', colnames(plot.data))], 3)
+  el.xrange <<- range(pretty.hack(plot.data[,grep('elasticities', colnames(plot.data))], 4))
   
   ## Notes on fine-tuning plots below
   ## axis lines and ticks drawn for each plot using geom_segment  
@@ -182,7 +176,7 @@ plot.variance.decomposition <- function(plot.inputs, outdir,
                          ##  Add Invisible Axes to resize like other plots
                          geom_segment(aes(x = c(0,0), y = c(0,0),
                                           yend = c(0, max(cv.xticks)),
-                                          xend = c(length(traits), 0)), colour = 'white')  + 
+                                          xend = c(length(trait.labels), 0)), colour = 'white')  + 
                                             ## Add invisible ticks
                                             geom_segment(aes(x = 0,
                                                              y = cv.xticks,
@@ -197,7 +191,7 @@ plot.variance.decomposition <- function(plot.inputs, outdir,
                           ##  Add Axes
                           geom_segment(aes(x = c(0,0), y = c(0,0),
                                            yend = c(0, max(cv.xticks)),
-                                           xend = c(length(traits), 0)))  + 
+                                           xend = c(length(trait.labels), 0)))  + 
                                              ## Add Ticks
                                              geom_segment(aes(x = 0,
                                                               y = cv.xticks,
@@ -214,7 +208,7 @@ plot.variance.decomposition <- function(plot.inputs, outdir,
                           ##  Add Axes
                           geom_segment(aes(x = c(0,0), y = c(0, min(el.xrange)),
                                            yend = c(0, max(el.xrange)),
-                                           xend = c(length(traits), 0)))  +
+                                           xend = c(length(trait.labels), 0)))  +
                                              ## Add Ticks
                                              geom_segment(aes(x = 0,
                                                               y = el.xticks,
@@ -230,7 +224,7 @@ plot.variance.decomposition <- function(plot.inputs, outdir,
                                    ##  Add Axes
                                    geom_segment(aes(x = c(0,0), y = c(0,0),
                                                     yend = c(0, max(pv.xticks)),
-                                                    xend = c(length(traits), 0)))  + 
+                                                    xend = c(length(trait.labels), 0)))  + 
                                                       ## Add Ticks
                                                       geom_segment(aes(x = 0,
                                                                        y = pv.xticks,
