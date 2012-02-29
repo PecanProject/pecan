@@ -59,12 +59,8 @@ for(pft in settings$pfts){
     vd.plots <- plot.variance.decomposition(sensitivity.results[[pft$name]]$variance.decomposition.output)
                                             #variance.scale = log, variance.prefix='Log')
     pdf(paste(pft$outdir, 'variancedecomposition.pdf', sep=''), width = 11, height = 8)
-    cv.xticks <- pretty(sensitivity.results[[pft$name]]$variance.decomposition.output$coef.vars*100,4)
-    el.xticks <- pretty(sensitivity.results[[pft$name]]$variance.decomposition.output$elasticities,4)
-    el.xrange <- range(pretty(sensitivity.results[[pft$name]]$variance.decomposition.output$elasticities,6))
-    pv.xticks <- pretty(sensitivity.results[[pft$name]]$variance.decomposition.output$partial.variances*100,4)
     do.call(grid.arrange, c(vd.plots, ncol = 4))
-    dev.off() 
+    dev.off()  
   }
 }  ## end if sensitivity analysis
 
