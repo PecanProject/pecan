@@ -22,7 +22,9 @@ if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)}
 require(PECAn)
 
 trait.names <- trait.dictionary()$id
-file.remove(dir(settings$outdir, full.names=TRUE))
+#file.remove(dir(settings$outdir, full.names=TRUE)) # <---- Original code causing warnings
+file.remove(list.files(path=settings$outdir,full.names=TRUE)
+            [which(file.info(list.files(path=settings$outdir,full.names=TRUE))$isdir==FALSE)]) # <---- Added by SPS (03/07/2012)
 ## connect to database
 newcon <- query.bety.con(dbname   = settings$database$name,
                                     password = settings$database$passwd,
