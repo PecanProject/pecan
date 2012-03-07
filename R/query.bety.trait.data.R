@@ -131,7 +131,7 @@ append.covariate<-function(data, covariate, ...){
 ##' @name query.bety.trait.data
 ##' @title Query trait data
 ##'
-##' @param trait is the traiat name used in BETY, stored in variables.name
+##' @param trait is the trait name used in BETY, stored in variables.name
 ##' @param spstr is the species.id integer or string of integers associated with the species
 ##'  
 ##' @return dataframe ready for use in meta-analysis
@@ -266,7 +266,6 @@ query.bety.trait.data <- function(trait, spstr,con=NULL,...){
     #########################  LEAF C:N   ############################
 
     query <- paste("select traits.id, traits.citation_id, variables.name as vname, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n, traits.date, traits.time, traits.cultivar_id, traits.specie_id from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) left join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,")  and variables.name in ('c2n_leaf', 'leafN');", sep = "")
-
     data <- fetch.stats2se(con, query)
     leafNdata   <- data$vname == 'leafN'
     leafNdataSE <- leafNdata & data$statname == 'SE'

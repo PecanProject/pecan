@@ -9,7 +9,8 @@ library(XML)
 # ----------------------------------------------------------------------
 # SETUP
 # ----------------------------------------------------------------------
-settings.file <- Sys.getenv('PECANSETTINGS')
+#settings.file <- Sys.getenv('PECANSETTINGS')
+settings.file = list.files(pattern=".xml")
 settings.xml <- xmlParse(settings.file)
 settings <- xmlToList(settings.xml)
 
@@ -18,8 +19,8 @@ settings <- xmlToList(settings.xml)
 ## SETTINGS
 
 ## database info
-login   <- "fia5data_user"
-passwd  <- "v3tXaJ8ACx"
+login   <- "mdietze"	#"fia5data_user"
+passwd  <- "goillini"	#"v3tXaJ8ACx"
 FIADB   <- "fia5data"
 
 ## file info
