@@ -1224,3 +1224,6 @@ satest.log
 sensitivity.analysis.pdf
 variancedecomposition.pdf
 .DS_Store
+.Rhistory
+.RData
+._.DS_Store
