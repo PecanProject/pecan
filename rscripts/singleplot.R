@@ -171,12 +171,14 @@ yval_min  <- data.fetch(yvar, fun=min)
 
 # remove all NA's
 removeme <- unique(c(which(is.na(xval_min)), which(is.na(yval_min)), which(is.na(xval_mean)), which(is.na(yval_mean)), which(is.na(xval_max)), which(is.na(yval_max))))
-xval_mean <- xval_mean[-removeme]
-xval_max  <- xval_max[-removeme]
-xval_min  <- xval_min[-removeme]
-yval_mean <- yval_mean[-removeme]
-yval_max  <- yval_max[-removeme]
-yval_min  <- yval_min[-removeme]
+if (length(removeme) > 0) {
+  xval_mean <- xval_mean[-removeme]
+  xval_max  <- xval_max[-removeme]
+  xval_min  <- xval_min[-removeme]
+  yval_mean <- yval_mean[-removeme]
+  yval_max  <- yval_max[-removeme]
+  yval_min  <- yval_min[-removeme]
+}
 
 # combine
 xvals <- c(xval_max, rev(xval_min))
