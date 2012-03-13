@@ -35,99 +35,99 @@ umol2gc <- 1.0368
 # FUNCTION DEFINITION
 # ----------------------------------------------------------------------
 data.fetch2 <- function(var, start=start_day, end=end_day, values=values_day, fun=mean) {
-	# get a specific set of values from the HDF data
-	#
-	# Args:
-	#   var:    the variable to extract from the hdf data
-	#   start:  the start time in the array
-	#   end:    the end time in the array
-	#   values: number of values per day
-	#   fun:    the function to apply to the data at the same time
-	#
-	# Returns:
-	#   values extracted from the hdf data
-	
-	# find the variable in the data
-        if (is.null(data[[var]])) {
-                useme <- sprintf("AVG_%s", var)
-                if (is.null(data[[useme]])) {
-                        stop(sprintf("Could not find the variable '%s' in the data.", var))
-                }
-        } else {
-                useme <- var
-        }
-
-        # some precomputations
-        lastval  <- (values_day*(1+end-start))
-        aggrlist <- list(rep(start:(end), each=values_day))
-
-        # aggregate the data
-        val <- aggregate(data[[useme]][1:lastval], by=aggrlist, FUN=fun)$x		
-		if (grep("TEMP", useme, fixed=TRUE)) {
-			val[val<200] <- NA
-		}
-		
-        # get the label
-        metadata <- attr(data[[useme]], "Metadata")
-        if (is.null(metadata)) {
-                attr(val, "lbl") <- "Unknown"
-        } else {
-                title <- gsub(" *$", "", gsub("Long Name: (.*)", "\\1", metadata[pmatch("Long Name:", metadata)]))
-                units <- gsub("Units: \\[(.*)\\] *", "\\1", metadata[pmatch("Units:", metadata)])
-                if ((title == "") && (units == "")) {
-                        attr(val, "lbl") <- "Unknown"
-                } else if (title == "") {
-                        attr(val, "lbl") <- paste("Unknown in ", units)
-                } else if (units == "") {
-                        attr(val, "lbl") <- title
-                } else {
-                        attr(val, "lbl") <- paste(title, "in", units)
-                }
-        }
-
-        # done
-        return(val)
+  # get a specific set of values from the HDF data
+  #
+  # Args:
+  #   var:    the variable to extract from the hdf data
+  #   start:  the start time in the array
+  #   end:    the end time in the array
+  #   values: number of values per day
+  #   fun:    the function to apply to the data at the same time
+  #
+  # Returns:
+  #   values extracted from the hdf data
+  
+  # find the variable in the data
+  if (is.null(data[[var]])) {
+    useme <- sprintf("AVG_%s", var)
+    if (is.null(data[[useme]])) {
+      stop(sprintf("Could not find the variable '%s' in the data.", var))
+    }
+  } else {
+    useme <- var
+  }
+  
+  # some precomputations
+  lastval  <- (values_day*(1+end-start))
+  aggrlist <- list(rep(start:(end), each=values_day))
+  
+  # aggregate the data
+  val <- aggregate(data[[useme]][1:lastval], by=aggrlist, FUN=fun)$x		
+  if (length(grep("TEMP", useme, fixed=TRUE)) != 0) {
+    val[val<200] <- NA
+  }
+  
+  # get the label
+  metadata <- attr(data[[useme]], "Metadata")
+  if (is.null(metadata)) {
+    attr(val, "lbl") <- "Unknown"
+  } else {
+    title <- gsub(" *$", "", gsub("Long Name: (.*)", "\\1", metadata[pmatch("Long Name:", metadata)]))
+    units <- gsub("Units: \\[(.*)\\] *", "\\1", metadata[pmatch("Units:", metadata)])
+    if ((title == "") && (units == "")) {
+      attr(val, "lbl") <- "Unknown"
+    } else if (title == "") {
+      attr(val, "lbl") <- paste("Unknown in ", units)
+    } else if (units == "") {
+      attr(val, "lbl") <- title
+    } else {
+      attr(val, "lbl") <- paste(title, "in", units)
+    }
+  }
+  
+  # done
+  return(val)
 }
 
 # 
 data.fetch <- function(var, start=start_day, end=end_day, values=values_day, fun=mean) {
-	# get specific dataset either by computation or from dataset
-	#
-	# Args:
-	#   var:    the variable to extract from the hdf data
-	#   start:  the start time in the array
-	#   end:    the end time in the array
-	#   values: number of values per day
-	#   fun:    the function to apply to the data at the same time
-	#
-	# Returns:
-	#   values extracted from the hdf data
-	if (var == "time") {
-                val <- start:end
-                attr(val, "lbl") <- "Day of the year"
-                return(val)
-        } else if (var == "Reco") {
-                PLANT_RESP  <- data.fetch2("AVG_PLANT_RESP", start, end, values, fun);
-                HTROPH_RESP <- data.fetch2("AVG_HTROPH_RESP", start, end, values, fun);
-                val         <- (PLANT_RESP + HTROPH_RESP) * umol2gc
-                attr(val, "lbl") <- "unknown"
-                return(val)
-        } else if (var == "NPP") {
-                GPP         <- data.fetch2("AVG_GPP", start, end, values, fun);
-                PLANT_RESP  <- data.fetch2("AVG_PLANT_RESP", start, end, values, fun);
-                val         <- (GPP - PLANT_RESP)  * umol2gc
-                attr(val, "lbl") <- "unknown"
-                return(val)
-        } else if (var == "NEE") {
-                GPP         <- data.fetch2("AVG_GPP", start, end, values, fun);
-                PLANT_RESP  <- data.fetch2("AVG_PLANT_RESP", start, end, values, fun);
-                HTROPH_RESP <- data.fetch2("AVG_HTROPH_RESP", start, end, values, fun);
-                val         <- (GPP - (PLANT_RESP + HTROPH_RESP))  * umol2gc
-                attr(val, "lbl") <- "unknown"
-                return(val)
-        } else {
-                return(data.fetch2(var, start, end, values, fun));
-        }
+  # get specific dataset either by computation or from dataset
+  #
+  # Args:
+  #   var:    the variable to extract from the hdf data
+  #   start:  the start time in the array
+  #   end:    the end time in the array
+  #   values: number of values per day
+  #   fun:    the function to apply to the data at the same time
+  #
+  # Returns:
+  #   values extracted from the hdf data
+  if (var == "time") {
+    val <- start:end
+    attr(val, "lbl") <- "Day of the year"
+    return(val)
+  } else if (var == "Reco") {
+    PLANT_RESP  <- data.fetch2("AVG_PLANT_RESP", start, end, values, fun);
+    HTROPH_RESP <- data.fetch2("AVG_HTROPH_RESP", start, end, values, fun);
+    val         <- (PLANT_RESP + HTROPH_RESP) * umol2gc
+    attr(val, "lbl") <- "unknown"
+    return(val)
+  } else if (var == "NPP") {
+    GPP         <- data.fetch2("AVG_GPP", start, end, values, fun);
+    PLANT_RESP  <- data.fetch2("AVG_PLANT_RESP", start, end, values, fun);
+    val         <- (GPP - PLANT_RESP)  * umol2gc
+    attr(val, "lbl") <- "unknown"
+    return(val)
+  } else if (var == "NEE") {
+    GPP         <- data.fetch2("AVG_GPP", start, end, values, fun);
+    PLANT_RESP  <- data.fetch2("AVG_PLANT_RESP", start, end, values, fun);
+    HTROPH_RESP <- data.fetch2("AVG_HTROPH_RESP", start, end, values, fun);
+    val         <- (GPP - (PLANT_RESP + HTROPH_RESP))  * umol2gc
+    attr(val, "lbl") <- "unknown"
+    return(val)
+  } else {
+    return(data.fetch2(var, start, end, values, fun));
+  }
 }
 
 # ----------------------------------------------------------------------
@@ -147,14 +147,14 @@ start_year <- format(start_date, "%Y")
 end_date <- as.Date(settings$run$end.date)
 end_year <- format(end_date, "%Y")
 if (year == start_year) {
-	start_day <- as.numeric(format(start_date, "%j")) - 1
+  start_day <- as.numeric(format(start_date, "%j")) - 1
 } else {
-	start_day <- 0
+  start_day <- 0
 }
 if (year == end_year) {
-	end_day <- as.numeric(format(end_date, "%j")) - 1
+  end_day <- as.numeric(format(end_date, "%j")) - 1
 } else {
-	end_day <- as.numeric(format(as.Date(sprintf("%s-12-31", year)), "%j")) - 1
+  end_day <- as.numeric(format(as.Date(sprintf("%s-12-31", year)), "%j")) - 1
 }
 
 # find the Tower file
@@ -186,9 +186,9 @@ yvals <- c(yval_max, rev(yval_min))
 png(filename=png)
 plot.new()
 if (xvar == "time") {
-	title(main=paste(yvar))
+  title(main=paste(yvar))
 } else {
-	title(main=paste(xvar, "VS", yvar))
+  title(main=paste(xvar, "VS", yvar))
 }
 title(xlab=attr(xval_mean, "lbl"))
 title(ylab=attr(yval_mean, "lbl"))
