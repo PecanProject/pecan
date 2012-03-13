@@ -1223,6 +1223,11 @@ quantiles1530.Rdata
 satest.log
 sensitivity.analysis.pdf
 variancedecomposition.pdf
+data/FIA/data/*.log
+data/FIA/data/*.ZIP
+data/FIA/data/changes.txt
+data/FIA/data/recent_load_history.html
+data/FIA/tmp/
 .DS_Store
 .Rhistory
 .RData
