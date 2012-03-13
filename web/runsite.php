@@ -2,7 +2,7 @@
 require("dbinfo.php");
 require("system.php");
 
-$pft_id=15;
+$pft_id=1;
 
 # parameters
 if (!isset($_REQUEST['siteid'])) {
