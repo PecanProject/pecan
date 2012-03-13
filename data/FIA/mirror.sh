@@ -2,7 +2,7 @@
 
 export DB="fia5data"
 export DB_USER="fia5data_user"
-export DB_PASS="password"
+export DB_PASS="v3tXaJ8ACx"
 export VER=5_1
 
 FILES="FIADB_REFERENCE AK AL AR AZ CA CO CT DE FL GA IA ID IL IN KS KY LA MA MD ME MI MN MO MS MT NC ND NE NH NJ NM NV NY OH OK OR PA PR RI SC SD TN TX UT VA VI VT WA WI WV WY"
@@ -12,6 +12,8 @@ FILES="FIADB_REFERENCE AK AL AR AZ CA CO CT DE FL GA IA ID IL IN KS KY LA MA MD 
 function mirror {
   filename="$1" 
   url="http://apps.fs.fed.us/fiadb-downloads/$2/${filename}"
+
+  echo "Checking ${filename}"
 
   # ONLY WORKS IF NOT ALL FILES ARE CHANGED! OTHERWISE NEED A CMP
   if [ -e data/${filename} ]; then
@@ -93,6 +95,9 @@ if [ "${reload}" == "yes" ]; then
   echo "----------------------------------------------------------------------"
   echo "LOADING DATABASE"
   mysql -u ${DB_USER} -p${DB_PASS} ${DB} < fiadb${VER}.sql
+  if [ -e fiadb${VER}_index.sql ]; then
+    mysql -u ${DB_USER} -p${DB_PASS} ${DB} < fiadb${VER}_index.sql
+  fi
 
   for f in ${FILES}; do
     unzip -q -d data/$f data/$f.ZIP
