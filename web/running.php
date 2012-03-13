@@ -134,9 +134,9 @@ header( "refresh:5" );
 		</tr>
 		<tr>
 			<th>plots</th>
-			<td><?=startTime("PLOTS");?></td>
-			<td><?=endTime("PLOTS");?></td>
-			<td><?=status("PLOTS");?></td>
+			<td><?=startTime("FINISHED");?></td>
+			<td><?=endTime("FINISHED");?></td>
+			<td><?=status("FINISHED");?></td>
 		</tr>
 	</table>
 </body>
