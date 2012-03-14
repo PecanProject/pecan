@@ -1,10 +1,10 @@
 ####################################################################################################
-#/file									  			   #
-#								          			   #
-#				ED2 Meteorology Driver Utilities				   #
-#				-- v1					 			   #
-#				-- Draft version. Watch out of hidden files!!!	    		   #
-#									  			   #
+#/file									  			   
+#								          			   
+#				ED2 Meteorology Driver Utilities				   
+#				-- v1					 			   
+#				-- Draft version.    		   
+#									  			   
 ####################################################################################################
 
 #---------------- Close all devices and delete all variables. -------------------------------------#
@@ -224,6 +224,7 @@ if (args[3]==1) {
 }else{
 	
 	print("************* OUTPUT STATS & DIAGNOSTIC PLOTS *************")
+  message("************* OUTPUT STATS & DIAGNOSTIC PLOTS *************")
 	#---------------- Generate Diagnostic Plots -----------------------------------------------#
 	ptcex 	= 1.0	
 	axcex 	= 1.4
@@ -241,6 +242,8 @@ if (args[3]==1) {
 	
 	############# vgrd
 	num=1
+  message('')
+	message("************* Plotting meridional wind [m/s] *************")
 	print("************* Plotting meridional wind [m/s] *************")
 	pdf(paste("ED2_",vars[num],"_Met_Drivers.pdf",sep=""),width=14,height=7)	
 	par(mfrow=c(1,1),mar=c(4.5,5.2,1,0.8), mgp=c(3,1,0)) # B, L, T, R

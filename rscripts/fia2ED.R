@@ -19,8 +19,8 @@ settings <- xmlToList(settings.xml)
 ## SETTINGS
 
 ## database info
-login   <- "mdietze"	#"fia5data_user"
-passwd  <- "goillini"	#"v3tXaJ8ACx"
+login   <- "fia5data_user"
+passwd  <- "v3tXaJ8ACx"
 FIADB   <- "fia5data"
 
 ## file info

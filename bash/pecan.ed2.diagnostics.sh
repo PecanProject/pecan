@@ -13,16 +13,13 @@
 #		    arg2 - ED2IN file name. Could also set to "-f" to find file with "ED2IN"	   #
 #			   in the filename. E.g. MetUtils pwd -f 2				   #
 #												   #
-#		    arg3 - 1 for stats only, 2 for stats and diagnostic plots			   #
-#		    E.g. MetUtils pwd -f 2.  Option 1 not yet implimented.  Defaults to option 2   #
-#												   #
 #												   #
 ####################################################################################################
 
 clear
 echo "********************************************************************"
 echo "********************************************************************"
-echo "********************* Running ED2 Met Utilities ********************"
+echo "******************* Running PEcAn ED2 Diagnostics ******************"
 echo "********************************************************************"
 echo "********************************************************************"
 echo " "
@@ -38,19 +35,19 @@ fi
 echo " "
 
 ### This needs to be edited to reflect your local setup.
-script_loc="/home/$USER/pecan/rscripts/"		# ----> Local pecan directory
-script="MetUtils.R"					# ----> R script name
+script_loc="/home/$USER/pecan/R/"			# ----> Local R script folder
+script="pecan.ed2.diagnostics.R"				# ----> R script name
 
-### Run MetUtils Script ---- Output log to MetUtils.log in working dir
-R --vanilla --args $1 $2 $3 < $script_loc$script > $loc"/"MetUtils.log
+### Run PEcAn Diagnostocs ---- Output log to PEcAn_ED2_Diagnostics.log in working dir
+#env PECANHOME="/home/$USER/pecan/" 
+env PECANHOME="/home/$USER/pecan/" R --vanilla --args $1 $2 < $script_loc$script > $loc"/"PEcAn_ED2_Diagnostics.log
 
 clear
 echo "********************************************************************"
 echo "********************************************************************"
-echo "**************** Finished Running ED2 Met Utilities ****************"
+echo "************** Finished Running PEcAn ED2 Diagnostics  *************"
 echo "********************************************************************"
 echo "********************************************************************"
-
 
 ####################################################################################################
 ### EOF
