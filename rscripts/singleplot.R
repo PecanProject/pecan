@@ -169,6 +169,20 @@ yval_mean <- data.fetch(yvar, fun=mean)
 yval_max  <- data.fetch(yvar, fun=max)
 yval_min  <- data.fetch(yvar, fun=min)
 
+# setup plot (needs to be done before removing of NA since that removes attr as well).
+png(filename=png)
+plot.new()
+axis(1)
+axis(2)
+box()
+title(xlab=attr(xval_mean, "lbl"))
+title(ylab=attr(yval_mean, "lbl"))
+if (xvar == "time") {
+  title(main=paste(yvar))
+} else {
+  title(main=paste(xvar, "VS", yvar))
+}
+
 # remove all NA's
 removeme <- unique(c(which(is.na(xval_min)), which(is.na(yval_min)), which(is.na(xval_mean)), which(is.na(yval_mean)), which(is.na(xval_max)), which(is.na(yval_max))))
 if (length(removeme) > 0) {
@@ -184,20 +198,8 @@ if (length(removeme) > 0) {
 xvals <- c(xval_max, rev(xval_min))
 yvals <- c(yval_max, rev(yval_min))
 
-# draw plot
-png(filename=png)
-plot.new()
-if (xvar == "time") {
-  title(main=paste(yvar))
-} else {
-  title(main=paste(xvar, "VS", yvar))
-}
-title(xlab=attr(xval_mean, "lbl"))
-title(ylab=attr(yval_mean, "lbl"))
+# plot actual data
 plot.window(xlim=c(min(xvals), max(xvals)), ylim=c(min(yvals), max(yvals)))
-axis(1)
-axis(2)
-box()
 polygon(c(xval_max, rev(xval_min)), c(yval_max, rev(yval_min)), col="gray", border="black")
 points(xval_mean, yval_mean, col="black", pch=20)
 dev.off()
