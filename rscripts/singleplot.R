@@ -63,7 +63,7 @@ data.fetch2 <- function(var, start=start_day, end=end_day, values=values_day, fu
   
   # aggregate the data
   val <- aggregate(data[[useme]][1:lastval], by=aggrlist, FUN=fun)$x		
-  if (length(grep("TEMP", useme, fixed=TRUE)) != 0) {
+  if (length(grep("TE?MP$", useme)) != 0) {
     val[val<200] <- NA
   }
   
