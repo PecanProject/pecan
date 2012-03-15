@@ -1,12 +1,15 @@
 ####################################################################################################
-#                   Driver script for PEcAn ED2 diagnostic plots
-#                   -- V1.  Called by bash script "pecan.ed2.diagnostics.sh"
-#                   -- Use differet output based on requested plots.  E.g. tower files
-#                      for fluxes, daily for.....LAI.  Or check to see what types of outputs
-#                      were created for model run and generate various plots.  E.g. no -D-
-#                      output then only plot -M-, -Y-, or -T- data
-#                   -- Include time options. E.g. Day, month, year on X-axis for temporal
-#                      plots?
+#                 Driver script for PEcAn ED2 diagnostic plots
+#                 -- V1.  Called by bash script "pecan.ed2.diagnostics.sh"
+#                 -- Use differet output based on requested plots.  E.g. tower files
+#                    for fluxes, daily for.....LAI.  Or check to see what types of outputs
+#                    were created for model run and generate various plots.  E.g. no -D-
+#                    output then only plot -M-, -Y-, or -T- data
+#
+#                 -- TODO: Allow choice of which output to plot?
+#                 -- TODO: Include some dynamic time options. E.g. Day, month, year on X-axis 
+#                   for temporal plots?
+#                 -- TODO: Clean up and doc code.              
 ####################################################################################################
 
 
@@ -31,6 +34,8 @@ pecan.home <- Sys.getenv("PECANHOME") #<--- Import PEcAn home directory
 
 # ED2 diagnostic plot functions
 source(paste(pecan.home,"rscripts/pecan.ed2.diag.plots.R",sep=""))
+# Time utilities.  Stolen from Harvard group.
+source(paste(pecan.home,"rscripts/timeutils.R",sep=""))
 #--------------------------------------------------------------------------------------------------#
 
 
@@ -265,10 +270,17 @@ daterange	= seq(from=as.numeric(chron(start)),to=as.numeric(chron(end)),by=delta
 daterange	= chron(daterange)
 n.range 	= length(daterange)
 
-dates       = data.frame(Date=as.Date(daterange))
-times       = rep(seq(0.5,24,0.5),each=1,times=1)
 n.months    = (as.numeric(IYEARZ)-as.numeric(IYEARA)-1)*12+
   as.numeric(IMONTHZ)+(12-as.numeric(IMONTHA)+1)
+list.mths   = nummonths(daterange)
+list.days   = numdays(daterange)
+list.mins   = minutes(daterange)
+frac        = hms2frac(daterange)
+days        = days(daterange)
+times1       = rep(seq(0.0,23.5,0.5),each=1,times=1)
+times2       = rep(seq(0.5,24,0.5),each=1,times=1)
+dates       = data.frame(Date=as.Date(daterange),mon=list.mths,doy=list.days,
+                         fjday=frac)
 #--------------------------------------------------------------------------------------------------#
 
 
@@ -297,11 +309,11 @@ message('')
   # PLOT AVG DIEL CYCLE FOR SUMMER/WINTER
 #}
 
-message('')
-if (IMOUTPUT=="Yes"){
-  message('---- Plotting Mean Monthly (IMOUTPUT) ----')
-  plot_monthly(model_run,analysis,output_dir)
-}
+#message('')
+#if (IMOUTPUT=="Yes"){
+#  message('---- Plotting Mean Monthly (IMOUTPUT) ----')
+#  plot_monthly(model_run,analysis,output_dir)
+#}
 
 # PUT CODE HERE.  Egs. plot_fast.r, plot_monthly.r, etc
 
