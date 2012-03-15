@@ -222,7 +222,7 @@ if (args[3]==1) {
 	print("************* !NOT COMPLETED YET! *************")
 	#TODO: Create statistics here
 }else{
-	
+	message('')
 	print("************* OUTPUT STATS & DIAGNOSTIC PLOTS *************")
   message("************* OUTPUT STATS & DIAGNOSTIC PLOTS *************")
 	#---------------- Generate Diagnostic Plots -----------------------------------------------#
@@ -264,6 +264,8 @@ if (args[3]==1) {
 
 	############# vddsf
 	num=2
+	message('')
+	message("************* Plotting visible diffuse downward solar radiation [W/m2] *************")
 	print("************* Plotting visible diffuse downward solar radiation [W/m2] *************")
 	pdf(paste("ED2_",vars[num],"_Met_Drivers.pdf",sep=""),width=14,height=7)	
 	par(mfrow=c(1,1),mar=c(4.5,5.2,1,0.8), mgp=c(3,1,0)) # B, L, T, R
@@ -284,6 +286,8 @@ if (args[3]==1) {
 
 	############# vbdsf
 	num=3
+	message('')
+	message("************* Plotting visible beam downward solar radiation [W/m2] *************")
 	print("************* Plotting visible beam downward solar radiation [W/m2] *************")
 	pdf(paste("ED2_",vars[num],"_Met_Drivers.pdf",sep=""),width=14,height=7)	
 	par(mfrow=c(1,1),mar=c(4.5,5.2,1,0.8), mgp=c(3,1,0)) # B, L, T, R
@@ -304,6 +308,8 @@ if (args[3]==1) {
 
 	############# ugrd
 	num=4
+	message('')
+	message("************* Plotting zonal wind [m/s] *************")
 	print("************* Plotting zonal wind [m/s] *************")
 	pdf(paste("ED2_",vars[num],"_Met_Drivers.pdf",sep=""),width=14,height=7)	
 	par(mfrow=c(1,1),mar=c(4.5,5.2,1,0.8), mgp=c(3,1,0)) # B, L, T, R
@@ -324,6 +330,8 @@ if (args[3]==1) {
 
 	############# Tair
 	num=5
+	message('')
+	message("************* Plotting air temp (degC) *************")
 	print("************* Plotting air temp (degC) *************")
 	pdf(paste("ED2_",vars[num],"_Met_Drivers.pdf",sep=""),width=14,height=7)	
 	par(mfrow=c(1,1),mar=c(4.5,5.2,1,0.8), mgp=c(3,1,0)) # B, L, T, R
@@ -343,6 +351,8 @@ if (args[3]==1) {
 
 	############# Specific Humidity
 	num=6
+	message('')
+	message("************* Plotting Specific Humidity (kg H20/Kg air) *************")
 	print("************* Plotting Specific Humidity (kg H20/Kg air) *************")
 	pdf(paste("ED2_",vars[num],"_Met_Drivers.pdf",sep=""),width=14,height=7)	
 	par(mfrow=c(1,1),mar=c(4.5,5.2,1,0.8), mgp=c(3,1,0)) # B, L, T, R
@@ -362,6 +372,8 @@ if (args[3]==1) {
 	
 	############# pres
 	num=7
+	message('')
+	message("************* Plotting Pressure [Pa] *************")
 	print("************* Plotting Pressure [Pa] *************")
 	pdf(paste("ED2_",vars[num],"_Met_Drivers.pdf",sep=""),width=14,height=7)	
 	par(mfrow=c(1,1),mar=c(4.5,5.2,1,0.8), mgp=c(3,1,0)) # B, L, T, R
@@ -381,6 +393,8 @@ if (args[3]==1) {
 
 	############# Precip rate
 	num=8
+	message('')
+	message("************* Plotting Precip Rate (kg H20/m2/s) *************")
 	print("************* Plotting Precip Rate (kg H20/m2/s) *************")
 	pdf(paste("ED2_",vars[num],"_Met_Drivers.pdf",sep=""),width=14,height=7)	
 	par(mfrow=c(1,1),mar=c(4.5,5.2,1,0.8), mgp=c(3,1,0)) # B, L, T, R
@@ -401,6 +415,8 @@ if (args[3]==1) {
 
 	############# cumulative precip
 	num=9
+	message('')
+	message("************* Plotting Cumulative Precip *************")
 	print("************* Plotting Cumulative Precip *************")
 	pdf(paste("ED2_",vars[num],"_Met_Drivers.pdf",sep=""),width=14,height=7)	
 	par(mfrow=c(1,1),mar=c(4.5,5.2,1,0.8), mgp=c(3,1,0)) # B, L, T, R
@@ -423,6 +439,8 @@ if (args[3]==1) {
 
 	############# nddsf
 	num=10
+	message('')
+	message("************* Plotting IR diffuse downward solar radiation [W/m2] *************")
 	print("************* Plotting IR diffuse downward solar radiation [W/m2] *************")
 	pdf(paste("ED2_",vars[num],"_Met_Drivers.pdf",sep=""),width=14,height=7)	
 	par(mfrow=c(1,1),mar=c(4.5,5.2,1,0.8), mgp=c(3,1,0)) # B, L, T, R
@@ -443,6 +461,8 @@ if (args[3]==1) {
 
 	############# nbdsf
 	num=11
+	message('')
+	message("************* Plotting IR direct beam downward solar radiation [W/m2] *************")
 	print("************* Plotting IR direct beam downward solar radiation [W/m2] *************")
 	pdf(paste("ED2_",vars[num],"_Met_Drivers.pdf",sep=""),width=14,height=7)	
 	par(mfrow=c(1,1),mar=c(4.5,5.2,1,0.8), mgp=c(3,1,0)) # B, L, T, R
@@ -463,6 +483,8 @@ if (args[3]==1) {
 
 	############# hgt
 	num=12
+	message('')
+	message("************* Plotting Geopotential Height [m] *************")
 	print("************* Plotting Geopotential Height [m] *************")
 	pdf(paste("ED2_",vars[num],"_Met_Drivers.pdf",sep=""),width=14,height=7)	
 	par(mfrow=c(1,1),mar=c(4.5,5.2,1,0.8), mgp=c(3,1,0)) # B, L, T, R
@@ -483,6 +505,8 @@ if (args[3]==1) {
 
 	############# dlwrf
 	num=13
+	message('')
+	message("************* Plotting Downward long wave radiation [W/m2] *************")
 	print("************* Plotting Downward long wave radiation [W/m2] *************")
 	pdf(paste("ED2_",vars[num],"_Met_Drivers.pdf",sep=""),width=14,height=7)	
 	par(mfrow=c(1,1),mar=c(4.5,5.2,1,0.8), mgp=c(3,1,0)) # B, L, T, R
@@ -503,6 +527,8 @@ if (args[3]==1) {
 
 	############# CO2 Concentration
 	num=14
+	message('')
+	message("************* Plotting CO2 Concentration (ppm) *************")
 	print("************* Plotting CO2 Concentration (ppm) *************")
 	pdf(paste("ED2_",vars[num],"_Met_Drivers.pdf",sep=""),width=14,height=7)	
 	par(mfrow=c(1,1),mar=c(4.5,5.2,1,0.8), mgp=c(3,1,0)) # B, L, T, R

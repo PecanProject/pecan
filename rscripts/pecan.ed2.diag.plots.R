@@ -7,29 +7,54 @@
 #
 ######################################################################################################
 
+
+#----------------------------------------------------------------------------------------------------#
 # Plot Mean Daily
 plot_daily = function(model.run,in.dir,out.dir){
   
-}
+  i = 1
+  for (year in start_year:end_year) {
+    
+    message(paste("--- PROCESSING YEAR: ",year," ---"))
+    
+    #---------------- Generate Subset Length --------------------------------------------------#
+    if (year == start_year) {
+      start_day <- as.numeric(format(start_date, "%j"))
+    } else {
+      start_day = 1
+    }
+    if (year == end_year) {
+      end_day = as.numeric(format(end_date, "%j"))
+    } else {
+      end_day = as.numeric(format(as.Date(sprintf("%s-12-31", year)), "%j"))
+    }
+    
+  } 
+  
+  
+} # End of plot_daily
+#----------------------------------------------------------------------------------------------------#
+  
 
+#----------------------------------------------------------------------------------------------------#
 # Plot Site Average Fluxes
 site_fluxes = function(model.run,in.dir,out.dir){
   
   #---------------- Init. Arrays --------------------------------------------------------------------#
-  GPP.AVG          = rep(0,times=n.range)
+  GPP.AVG           = rep(0,times=n.range)
   VLEAF.RESP.AVG		= rep(0,times=n.range)
   LEAF.RESP.AVG 		= rep(0,times=n.range) 
   STORAGE.RESP.AVG	= rep(0,times=n.range)
   GROWTH.RESP.AVG		= rep(0,times=n.range)
-  ROOT.RESP.AVG		= rep(0,times=n.range)
+  ROOT.RESP.AVG		  = rep(0,times=n.range)
   PLANT.RESP.AVG   	= rep(0,times=n.range)
   HTROPH.RESP.AVG		= rep(0,times=n.range)
-  Reco.AVG		= rep(0,times=n.range)
-  NPP.AVG			= rep(0,times=n.range)
-  NEE.AVG      		= rep(0,times=n.range)
-  SOIL.TEMP.AVG		= rep(0,times=n.range)
+  Reco.AVG		      = rep(0,times=n.range)
+  NPP.AVG			      = rep(0,times=n.range)
+  NEE.AVG      		  = rep(0,times=n.range)
+  SOIL.TEMP.AVG		  = rep(0,times=n.range)
   CAN.AIR.TEMP.AVG	= rep(0,times=n.range)
-  SWC.AVG			= rep(0,times=n.range)
+  SWC.AVG			      = rep(0,times=n.range)
   
   #---------------- Pheno data, if exists ----------------------------------------------------------#
   # probably should get rid of this as it is mostly ED specific
@@ -81,7 +106,7 @@ site_fluxes = function(model.run,in.dir,out.dir){
       print(var_names)
       print("")
     }
-    
+    i=i+1
     
     #---------------- Get Phenology Information -----------------------------------------------#
     chk = which(site_pheno==year)
@@ -124,6 +149,9 @@ site_fluxes = function(model.run,in.dir,out.dir){
     par(mfrow=c(3,2),mar=c(5,5.4,0.6,0.2),mgp=c(3.3,1.5,0)) # B, L, T, R
     
     ######################### COMPONENT FLUXES ###########################
+    
+    # Convert to for loop??
+    
     ## GPP
     plot(start_day:end_day,GPP.AVG,xlab='',ylab=expression(paste(GPP," (gC",~m^{-2}~d^{-1},")")),
          pch=21,col="dark grey", bg="dark grey",
@@ -245,6 +273,88 @@ site_fluxes = function(model.run,in.dir,out.dir){
     ##################################### MET ##########################################
     
     dev.off() # Close PDF
-    i=i+1
+
   } # END for loop
 }
+#----------------------------------------------------------------------------------------------------#
+
+
+#----------------------------------------------------------------------------------------------------#
+# Plot monthly
+plot_monthly = function(model.run,in.dir,out.dir){
+  
+  #
+  pft.names       = c("C4 Grass","Early Tropical","Mid Tropical","Late Tropical"
+                      ,"C3 Grass","North Pine","South Pine","Late Conifer"
+                      ,"Early Temperate","Mid Temperate","Late Temperate"
+                      ,"C3 Pasture","C3 Crop","C4 Pasture","C4 Crop","Subtropical C3 grass ",
+                      "Araucaria","Total")
+  n.pft           = length(pft.names) - 1
+  #
+  
+  
+  nplant.pft = matrix(0,nrow=n.months,ncol=n.pft+1)
+  lai.pft    = matrix(0,nrow=n.months,ncol=n.pft+1)
+  agb.pft    = matrix(0,nrow=n.months,ncol=n.pft+1)
+  coh.area   = list()
+  coh.age    = list()
+  coh.dbh    = list()
+  coh.pft    = list()
+  coh.nplant = list()
+  coh.height = list()
+  coh.gpp    = list()
+  coh.resp   = list()
+  coh.npp    = list()
+  
+  #----------------------------------------------------------------------------------------------#
+  #       Loop over time.                                                                        #
+  #----------------------------------------------------------------------------------------------#
+  
+  i = 1 # counter printing variable names to log file
+  j = 0 # counter for month in output
+  
+  for (year in start_year:end_year) {
+    message(paste("--- PROCESSING YEAR: ",year," ---"))
+    
+    # Need something like this here
+    if (yy == yeara){
+      month.begin = montha
+    }else{
+      month.begin = 1
+    }#end if
+    
+    if (yy == yearz){
+      month.end = monthz
+    }else{
+      month.end = 12
+    }#end if
+    
+    
+    for (mm in as.numeric(IMONTHA):as.numeric(IMONTHZ)) {
+      j = j+1
+      message(paste("-------- PROCESSING MONTH: ",mm))
+      #---------------- Load ED2 Model Output (hdf5) ----------------------------------------------#
+      filename = list.files(in.dir,full.names=TRUE,
+                          pattern=paste('.*-E-', year, '-.*.h5', sep=''))[1]
+      if (is.na(filename)==1) {
+        break  # BREAK OUT OF LOOP IF LAST YEAR DOESN'T CONTAIN DATA. Needed?
+      }else{
+        data <- hdf5load(filename, load = FALSE,tidy=TRUE) # LOAD ED2 OUTPUT
+      }
+      var_names = summary(data) # View info about vars. For debugging
+      if (i==1){
+        print("Mean Monthly Output Variables (IMOUTPUT)")
+        print(var_names)
+        print("")
+      } # end of complex if/then
+    
+      lai.pft  [j,1:n.pft] = data$MMEAN.LAI.PFT
+      agb.pft  [j,1:n.pft] = data$AGB.PFT
+    
+      i=i+1 # counter for printing variable names to log file
+      
+    } # end for loop
+  } # end for loop 
+  
+} # end of function
+#----------------------------------------------------------------------------------------------------#
