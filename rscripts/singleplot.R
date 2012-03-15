@@ -172,9 +172,6 @@ yval_min  <- data.fetch(yvar, fun=min)
 # setup plot (needs to be done before removing of NA since that removes attr as well).
 png(filename=png)
 plot.new()
-axis(1)
-axis(2)
-box()
 title(xlab=attr(xval_mean, "lbl"))
 title(ylab=attr(yval_mean, "lbl"))
 if (xvar == "time") {
@@ -202,4 +199,9 @@ yvals <- c(yval_max, rev(yval_min))
 plot.window(xlim=c(min(xvals), max(xvals)), ylim=c(min(yvals), max(yvals)))
 polygon(c(xval_max, rev(xval_min)), c(yval_max, rev(yval_min)), col="gray", border="black")
 points(xval_mean, yval_mean, col="black", pch=20)
+
+# draw axis and box
+axis(1)
+axis(2)
+box()
 dev.off()
