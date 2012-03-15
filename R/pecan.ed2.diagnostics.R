@@ -1,14 +1,12 @@
 ####################################################################################################
-#                       Driver script for PEcAn ED2 diagnostic plots
-#                       -- V1.  Called by bash script " xxx"
-#                       -- Create helper functions to do actuall plotting based on requested 
-#                          plots
-#                       -- Use differet output based on requested plots.  E.g. tower files
-#                          for fluxes, daily for.....LAI.  Or check to see what types of outputs
-#                          were created for model run and generate various plots.  E.g. no -D-
-#                          output then only plot -M-, -Y-, or -T- data
-#                       -- Include time options. E.g. Day, month, year on X-axis for temporal
-#                         plots?
+#                   Driver script for PEcAn ED2 diagnostic plots
+#                   -- V1.  Called by bash script "pecan.ed2.diagnostics.sh"
+#                   -- Use differet output based on requested plots.  E.g. tower files
+#                      for fluxes, daily for.....LAI.  Or check to see what types of outputs
+#                      were created for model run and generate various plots.  E.g. no -D-
+#                      output then only plot -M-, -Y-, or -T- data
+#                   -- Include time options. E.g. Day, month, year on X-axis for temporal
+#                      plots?
 ####################################################################################################
 
 
@@ -29,7 +27,7 @@ ok = require(XML) ; if (! ok) stop("Package XML is not available...")
 #---------------- Import command arguments from shell ---------------------------------------------#
 args = commandArgs(trailingOnly = TRUE) # import any needed arguments for the terminal
 print(args)   			#---> Print command arguments in R output. For debugging.
-pecan.home <- Sys.getenv("PECANHOME")
+pecan.home <- Sys.getenv("PECANHOME") #<--- Import PEcAn home directory
 
 # ED2 diagnostic plot functions
 source(paste(pecan.home,"rscripts/pecan.ed2.diag.plots.R",sep=""))
@@ -53,7 +51,7 @@ if (! file.exists(output_dir)) dir.create(output_dir)
 #--------------------------------------------------------------------------------------------------#
 
 
-#---------------- Parse Info From ED2IN or Config File --------------------------------------------#
+#---------------- Read ED2IN or Config File -------------------------------------------------------#
 print('******************** Reading ED2IN File *********************')
 # Info: SET THIS PART UP!
 #if (args[]=="xml"){  
@@ -69,6 +67,11 @@ if (args[2]=="-f"){
 
 #---- Import ED2IN file
 ED2IN = readLines(ED2IN_fn)
+#--------------------------------------------------------------------------------------------------#
+
+
+#---------------- Get Run info From ED2IN File ----------------------------------------------------#
+# Info: INFO HERE
 
 # Temporarily turn off warning messages when readin ED2IN
 options(warn=-1)
@@ -84,27 +87,32 @@ RUNID = grep(ED2IN,pattern='NL%EXPNME',value=TRUE)
 indices = gregexpr("'", RUNID)[[1]]
 RUNID = substr(RUNID,indices[1]+1, indices[2]-1)
 
-#---- Get run length info.  Can also get this from XML file
+#---- Get run length info.  Start month.  Can also get this from XML file
 IMONTHA = grep(ED2IN,pattern='NL%IMONTHA',value=TRUE)
 indices = gregexpr("[0-9]", IMONTHA)[[1]]
 IMONTHA = substr(IMONTHA,indices[1], indices[2])
 
+#---- Get start date
 IDATEA = grep(ED2IN,pattern='NL%IDATEA',value=TRUE)
 indices = gregexpr("[0-9]", IDATEA)[[1]]
 IDATEA = substr(IDATEA,indices[1], indices[2])
 
+#---- Get start year
 IYEARA = grep(ED2IN,pattern='NL%IYEARA',value=TRUE)
 indices = gregexpr("[0-9][0-9][0-9][0-9]", IYEARA)[[1]]
 IYEARA = substr(IYEARA,indices[1], indices[1]+4)
 
+#---- Get final month
 IMONTHZ = grep(ED2IN,pattern='NL%IMONTHZ',value=TRUE)
 indices = gregexpr("[0-9]", IMONTHZ)[[1]]
 IMONTHZ = substr(IMONTHZ,indices[1], indices[2])
 
+#---- Get final day
 IDATEZ = grep(ED2IN,pattern='NL%IDATEZ',value=TRUE)
 indices = gregexpr("[0-9]", IDATEZ)[[1]]
 IDATEZ = substr(IDATEZ,indices[1], indices[2])
 
+#---- Get final year
 IYEARZ = grep(ED2IN,pattern='NL%IYEARZ',value=TRUE)
 indices = gregexpr("[0-9][0-9][0-9][0-9]", IYEARZ)[[1]]
 IYEARZ = substr(IYEARZ,indices[1], indices[1]+4)
@@ -127,9 +135,7 @@ if (neg1==-1){
 }
 
 #---- Get output type settings (i.e. I, D, E, Y, T)
-# PUT CODE HERE.  Will be used to determine what will be availible to plot
-
-# Site average inst.
+#---- Site average inst.
 IFOUTPUT = grep(ED2IN,pattern='NL%IFOUTPUT',value=TRUE)
 indices = gregexpr("[0-9]", IFOUTPUT)[[1]]
 IFOUTPUT = substr(IFOUTPUT,indices[1], indices[length(indices)])
@@ -137,7 +143,7 @@ IFOUTPUT=as.numeric(IFOUTPUT)
 IFOUTPUT[IFOUTPUT==0]="No"
 IFOUTPUT[IFOUTPUT==0]="Yes"
 
-# Daily mean output
+#---- Daily mean output
 IDOUTPUT = grep(ED2IN,pattern='NL%IDOUTPUT',value=TRUE)
 indices = gregexpr("[0-9]", IDOUTPUT)[[1]]
 IDOUTPUT = substr(IDOUTPUT,indices[1], indices[length(indices)])
@@ -145,7 +151,7 @@ IDOUTPUT=as.numeric(IDOUTPUT)
 IDOUTPUT[IDOUTPUT==0]="No"
 IDOUTPUT[IDOUTPUT==3]="Yes"
 
-# Monthly mean output
+#---- Monthly mean output
 IMOUTPUT = grep(ED2IN,pattern='NL%IMOUTPUT',value=TRUE)
 indices = gregexpr("[0-9]", IMOUTPUT)[[1]]
 IMOUTPUT = substr(IMOUTPUT,indices[1], indices[length(indices)])
@@ -153,7 +159,7 @@ IMOUTPUT=as.numeric(IMOUTPUT)
 IMOUTPUT[IMOUTPUT==0]="No"
 IMOUTPUT[IMOUTPUT==3]="Yes"
 
-# Site average flux files
+#---- Site average flux files
 ITOUTPUT = grep(ED2IN,pattern='NL%ITOUTPUT',value=TRUE)
 indices = gregexpr("[0-9]", ITOUTPUT)[[1]]
 ITOUTPUT = substr(ITOUTPUT,indices[1], indices[length(indices)])
@@ -174,7 +180,7 @@ FFILOUT = substr(FFILOUT,indices[1]+1, indices[2]-1)
 indices = gregexpr("/", FFILOUT)[[1]]
 FFILOUT = substr(FFILOUT,1,indices)
 
-# Get soil flag (NL%ISOILFLG)
+#---- Get soil flag (NL%ISOILFLG)
 ISOILFLG = grep(ED2IN,pattern='NL%ISOILFLG',value=TRUE)
 indices = gregexpr("[0-9]", ISOILFLG)[[1]]
 ISOILFLG = substr(ISOILFLG,indices[1], indices[1])
@@ -228,24 +234,23 @@ message(paste("---- Soil Clay Frac.: ", SLXCLAY,sep=""))
 message(paste("---- Soil Sand Frac.: ", SLXSAND,sep=""))
 message('')
 message("*********************************************************")
+
 # can print more info here
-Sys.sleep(2)
+
+Sys.sleep(2) # pause for 2 seconds
 #--------------------------------------------------------------------------------------------------#
 
 
 #---------------- Setup output for diagnostic plot ------------------------------------------------#
 # Info: INFO HERE
-# 
+
 ####### First and last day to include in the plots (MM/DD/YYYY). #######
 start_date  = as.Date(paste(as.numeric(IYEARA),"/",as.numeric(IMONTHA),
-                            "/",as.numeric(IDATEA),sep=""),format="%Y/%m/%d")
+                           "/",as.numeric(IDATEA),sep=""),format="%Y/%m/%d")
 start_year  = format(start_date, "%Y")
 start_month = format(start_date, "%m")
 start_day   = format(start_date, "%d")
 start       = paste(start_month,"/",start_day,"/",start_year,sep="")
-
-#start_year  = as.numeric(IYEARA)
-#start       = paste(IMONTHA,"/",IDATEA,"/",IYEARA,sep="")
 
 end_date    = as.Date(paste(as.numeric(IYEARZ),"/",as.numeric(IMONTHZ),
                             "/",as.numeric(IDATEZ),sep=""),format="%Y/%m/%d")
@@ -254,29 +259,21 @@ end_month   = format(end_date, "%m")
 end_day     = format(end_date, "%d")
 end         = paste(end_month,"/",end_day,"/",end_year,sep="")
 
-#end_year  = as.numeric(IYEARZ)
-#end         = paste(IMONTHZ,"/",IDATEZ,"/",IYEARZ,sep="")
-
 out_day   = 86400/FRQFAST
 deltaT   	= 24/(86400/FRQFAST)	# ---> sets the number of obs per day based on FRQFAST
 daterange	= seq(from=as.numeric(chron(start)),to=as.numeric(chron(end)),by=deltaT/24)
 daterange	= chron(daterange)
 n.range 	= length(daterange)
 
-# Setup Y,M,D, DATE, and DOY by year
-#dates = data.frame(Date=as.Date(daterange))
 dates       = data.frame(Date=as.Date(daterange))
-#times       = as.vector(rep(seq(0.5,24,0.5),each=1,times=n.range/48))
 times       = rep(seq(0.5,24,0.5),each=1,times=1)
-#dates
-#times
-#message(dim(dates))
-#message(length(times))
+n.months    = (as.numeric(IYEARZ)-as.numeric(IYEARA)-1)*12+
+  as.numeric(IMONTHZ)+(12-as.numeric(IMONTHA)+1)
 #--------------------------------------------------------------------------------------------------#
 
 
 #---------------- Call plot functions based on setup ----------------------------------------------#
-# Info: MORE HERE
+# Info: MORE INFO HERE
 
 message('')
 message('')
@@ -288,10 +285,10 @@ if (ITOUTPUT=="Yes"){
 } # END ITOUTPUT
 
 message('')
-if (IDOUTPUT=="Yes"){
-  message('---- Plotting Site Averaged Fluxes (ITOUTPUT) ----')
-  plot_daily(model_run,analysis,output_dir)
-}
+#if (IDOUTPUT=="Yes"){
+#  message('---- Plotting Mean Daily (IDOUTPUT) ----')
+#  plot_daily(model_run,analysis,output_dir)
+#}
   
   
 #}
@@ -300,9 +297,11 @@ if (IDOUTPUT=="Yes"){
   # PLOT AVG DIEL CYCLE FOR SUMMER/WINTER
 #}
 
-#if (monthly==TRUE){
-  # PLOT MONTHLY MEAN DATA.
-#}
+message('')
+if (IMOUTPUT=="Yes"){
+  message('---- Plotting Mean Monthly (IMOUTPUT) ----')
+  plot_monthly(model_run,analysis,output_dir)
+}
 
 # PUT CODE HERE.  Egs. plot_fast.r, plot_monthly.r, etc
 
