@@ -3,6 +3,8 @@
 # This code expects 3 arguments
 # - year: the year to plot
 # - yvar: the variable to plot on the y-axis
+# - width: the width of the plot
+# - height: the height of the plot
 # - png:  the filename of the PNG file that is generated
 #
 # TODO Right now this only works with time on the X variable
@@ -16,11 +18,13 @@ library(hdf5)
 # COMMAND LINE ARGUMENTS
 # ----------------------------------------------------------------------
 # arguments are --args year variable
-args <- commandArgs(trailingOnly = TRUE)
-year <- args[1]
-xvar <- 'time'
-yvar <- args[2]
-png  <- args[3]
+args   <- commandArgs(trailingOnly = TRUE)
+year   <- args[1]
+xvar   <- 'time'
+yvar   <- args[2]
+width  <- as.numeric(args[3])
+height <- as.numeric(args[4])
+png    <- args[5]
 
 # ----------------------------------------------------------------------
 # CONSTANTS
@@ -170,7 +174,7 @@ yval_max  <- data.fetch(yvar, fun=max)
 yval_min  <- data.fetch(yvar, fun=min)
 
 # setup plot (needs to be done before removing of NA since that removes attr as well).
-png(filename=png)
+png(filename=png, width=width, height=height)
 plot.new()
 title(xlab=attr(xval_mean, "lbl"))
 title(ylab=attr(yval_mean, "lbl"))

@@ -68,11 +68,17 @@ switch ($type) {
 			die("Need var.");
 		}
 		$var=$_REQUEST['var'];
-		$mime = "image/png";
-		$file = "$folder/$year-$var.png";
-		if (!file_exists($file)) {
-			shell_exec("PECANSETTINGS=$folder/pecan.xml R CMD BATCH --vanilla '--args $year $var $folder/$year-$var.png' ${pecan_home}/rscripts/singleplot.R $folder/plot.out");				
+		$width=600;
+		if (isset($_REQUEST['width']) && ($_REQUEST['width'] > 600)) {
+			$width=$_REQUEST['width'];
 		}
+		$height=600;
+		if (isset($_REQUEST['height']) && ($_REQUEST['height'] > 600)) {
+			$height=$_REQUEST['height'];
+		}
+		$mime = "image/png";
+		$file = tempnam('','');
+		shell_exec("PECANSETTINGS=$folder/pecan.xml R CMD BATCH --vanilla '--args $year $var $width $height $file' ${pecan_home}/rscripts/singleplot.R $folder/plot.out");				
 		break;
 		
 	default:
@@ -86,5 +92,8 @@ if ($mime != "") {
 	header("Content-type: $mime");
 }
 readfile($file);
-?>
 
+if ($type == "plot") {
+  unlink($file);
+}
+?>
