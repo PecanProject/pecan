@@ -280,8 +280,8 @@ list.days   = numdays(daterange)
 list.mins   = minutes(daterange)
 frac        = hms2frac(daterange)
 days        = days(daterange)
-times1       = rep(seq(0.0,23.5,0.5),each=1,times=1)
-times2       = rep(seq(0.5,24,0.5),each=1,times=1)
+times1      = rep(seq(0.0,23.5,0.5),each=1,times=1)
+times2      = rep(seq(0.5,24,0.5),each=1,times=1)
 dates       = data.frame(Date=as.Date(daterange),mon=list.mths,doy=list.days,
                          fjday=frac)
 #--------------------------------------------------------------------------------------------------#
