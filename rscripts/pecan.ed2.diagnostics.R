@@ -1,15 +1,16 @@
 ####################################################################################################
-#                 Driver script for PEcAn ED2 diagnostic plots
-#                 -- V1.  Called by bash script "pecan.ed2.diagnostics.sh"
-#                 -- Use differet output based on requested plots.  E.g. tower files
-#                    for fluxes, daily for.....LAI.  Or check to see what types of outputs
-#                    were created for model run and generate various plots.  E.g. no -D-
-#                    output then only plot -M-, -Y-, or -T- data
+#               Driver script for PEcAn ED2 diagnostic plots
+#               -- V1.  Called by bash script "pecan.ed2.diagnostics.sh"
+#               -- Use differet output based on requested plots.  E.g. tower files
+#                  for fluxes, daily for fluxes, LAI, etc.  Check to see what types of outputs
+#                  were created for model run and generate various plots.  E.g. no -D-
+#                  output then only plot -M-, -Y-, or -T- data. Needs to become flexible
 #
-#                 -- TODO: Allow choice of which output to plot?
-#                 -- TODO: Include some dynamic time options. E.g. Day, month, year on X-axis 
-#                   for temporal plots?
-#                 -- TODO: Clean up and doc code.              
+#               -- TODO: Allow choice of which output to plot?  Make flexbile based on input
+#               -- TODO: Include some dynamic time options. E.g. Day, month, year on X-axis 
+#                  for temporal plots?
+#               -- Allow for bi-variate plots?  Maybe add this as another function/script file?
+#               -- TODO: Clean up and document code.              
 ####################################################################################################
 
 
@@ -205,9 +206,11 @@ if (ISOILFLG=="2"){
   indices = gregexpr("[0.0-1.0]", SLXSAND)[[1]]
   SLXSAND = substr(SLXSAND,indices[1], indices[1]+3)
 }
-# can put more info here
 
-# Turn back on warning messages
+# TODO: Could export more info from ED2IN or eventually XML file here.  Useful for review in log
+# file
+
+# Turn back on warning messages.  Off for irrelevant errors when parsing ED2IN file
 options(warn=0)
 #--------------------------------------------------------------------------------------------------#
 
@@ -247,7 +250,7 @@ Sys.sleep(2) # pause for 2 seconds
 
 
 #---------------- Setup output for diagnostic plot ------------------------------------------------#
-# Info: INFO HERE
+# Info: Get the time info for the run.  There are probably things here that can be elliminated. 
 
 ####### First and last day to include in the plots (MM/DD/YYYY). #######
 start_date  = as.Date(paste(as.numeric(IYEARA),"/",as.numeric(IMONTHA),
@@ -327,7 +330,6 @@ message('')
 message("*********************************************************")
 message("**************** PROCESSING COMPLETE! *******************")
 message("*********************************************************")
-Sys.sleep(1)
 ####################################################################################################
 ### EOF
 ####################################################################################################

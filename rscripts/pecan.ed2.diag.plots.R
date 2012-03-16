@@ -54,20 +54,20 @@ site_fluxes = function(model.run,in.dir,out.dir){
   
   #---------------- Init. Arrays --------------------------------------------------------------------#
   # Info: Initialize arrays for entire model run and populate with for loop (below)
-  GPP.AVG           = rep(0,times=n.range)
-  VLEAF.RESP.AVG		= rep(0,times=n.range)
-  LEAF.RESP.AVG 		= rep(0,times=n.range) 
+  GPP.AVG               = rep(0,times=n.range)
+  VLEAF.RESP.AVG	= rep(0,times=n.range)
+  LEAF.RESP.AVG 	= rep(0,times=n.range) 
   STORAGE.RESP.AVG	= rep(0,times=n.range)
-  GROWTH.RESP.AVG		= rep(0,times=n.range)
-  ROOT.RESP.AVG		  = rep(0,times=n.range)
+  GROWTH.RESP.AVG	= rep(0,times=n.range)
+  ROOT.RESP.AVG		= rep(0,times=n.range)
   PLANT.RESP.AVG   	= rep(0,times=n.range)
-  HTROPH.RESP.AVG		= rep(0,times=n.range)
-  Reco.AVG		      = rep(0,times=n.range)
-  NPP.AVG			      = rep(0,times=n.range)
-  NEE.AVG      		  = rep(0,times=n.range)
-  SOIL.TEMP.AVG		  = rep(0,times=n.range)
+  HTROPH.RESP.AVG	= rep(0,times=n.range)
+  Reco.AVG		= rep(0,times=n.range)
+  NPP.AVG		= rep(0,times=n.range)
+  NEE.AVG      		= rep(0,times=n.range)
+  SOIL.TEMP.AVG		= rep(0,times=n.range)
   CAN.AIR.TEMP.AVG	= rep(0,times=n.range)
-  SWC.AVG			      = rep(0,times=n.range)
+  SWC.AVG		= rep(0,times=n.range)
   #--------------------------------------------------------------------------------------------------#
   
   #---------------- Pheno data, if exists -----------------------------------------------------------#
@@ -105,20 +105,24 @@ site_fluxes = function(model.run,in.dir,out.dir){
     }
     
     polyx = start_day:end_day # <--- for plotting below
-    vals_day    = out_day # <--- values written out per day, 86400/FRQFAST
-    hdflength   = (vals_day*(1+end_day-start_day)) # length
+    vals_day    = out_day     # <--- values written out per day, 86400/FRQFAST
+    hdflength   = (vals_day*(1+end_day-start_day))
     
     # Info from driver script
     # dates contains YYmmdd, month (num), doy. fjday (0-1)  
     init    = dates[1,4]
-    total   = seq(1,hdflength,1)
-    reps    = hdflength/vals_day
-    dayfrac = rep(seq(0,23.5,0.5), each=1, times=reps) # t
-    subset    = 0
-    
-    s      = seq(9.0,19.0,0.5) #<--- need to make this dynamic. user specific
-    subset = which(dayfrac >= 9.0 & dayfrac <= 19.0) # just temporary.  need to make this dynamic
-    hours = dayfrac[dayfrac >= 9.0 & dayfrac <= 19.0] 
+    total   = seq(1,hdflength,1) # <--- is this unused?
+    reps    = hdflength/vals_day # <--- this should set the total number of days of data based on
+				 # hdf length.  E.g. 48 obs per day -- 17520/48 = 365
+    dayfrac = rep(seq(deltaT,24,deltaT), each=1, times=reps) # <--- setup daily output rate for subset
+                                                             # rep over total lenght (hdflength/vals) 
+    subset    = 0 # <--- initialize variable
+   
+    period = c(11.0,17.0) # <--- choose which times to average over.  Can make user selectable.
+     
+    s      = seq(period[1],period[2],deltaT) #<--- need to make this dynamic. user specific
+    subset = which(dayfrac >= period[1] & dayfrac <= period[2]) # just temporary.  need to make this dynamic
+    hours = dayfrac[dayfrac >= period[2] & dayfrac <= period[1]] 
     aggrlist = rep(start_day:(end_day), each=length(s))
 
     #---------------- Load ED2 Model Output (hdf5) --------------------------------------------------#
@@ -134,6 +138,7 @@ site_fluxes = function(model.run,in.dir,out.dir){
       print("Site Averaged Fluxes (ITOUTPUT)")
       print(var_names) # Show variable names in log file
       print("")
+      #print(str(data))
     }
     i=i+1
     
@@ -156,43 +161,44 @@ site_fluxes = function(model.run,in.dir,out.dir){
     labcex = 2
     axiscex = 2
     maincex = 2
-    umol2gc <- 1.0368 # conver to gC
+    umol2gc <- 1.0368 # convert to gC
     ######################## ED2 OUTPUT ##############################################################
-    GPP.AVG       	        = data$AVG.GPP[subset]
-    GPP.AVG.mn              = aggregate(GPP.AVG,by=list(aggrlist),mean)
-    GPP.AVG.sd              = aggregate(GPP.AVG,by=list(aggrlist),sd)
-    GPP.AVG.ll              = GPP.AVG.mn[,2] - GPP.AVG.sd[,2] 
-    GPP.AVG.ul              = GPP.AVG.mn[,2] + GPP.AVG.sd[,2]
+    GPP.AVG       	    = data$AVG.GPP[subset] *umol2gc
+    GPP.AVG.mn              = aggregate(GPP.AVG,by=list(aggrlist),mean)[[2]]
+    GPP.AVG.ll              = aggregate(GPP.AVG,by=list(aggrlist),min)[[2]]
+    GPP.AVG.ul              = aggregate(GPP.AVG,by=list(aggrlist),max)[[2]]
+    #-----------------------------------------------------------------------------------------------#
+    LEAF.RESP.AVG	    = data$AVG.LEAF.RESP[subset] *umol2gc
+    LEAF.RESP.AVG.mn        = aggregate(LEAF.RESP.AVG,by=list(aggrlist),mean)[[2]]
+    LEAF.RESP.AVG.ll        = aggregate(LEAF.RESP.AVG,by=list(aggrlist),min)[[2]]
+    LEAF.RESP.AVG.ul        = aggregate(LEAF.RESP.AVG,by=list(aggrlist),max)[[2]]
+    #-----------------------------------------------------------------------------------------------#
+    VLEAF.RESP.AVG	    = data$AVG.VLEAF.RESP[subset] *umol2gc
+    STORAGE.RESP.AVG	    = data$AVG.STORAGE.RESP[subset]
+    GROWTH.RESP.AVG	    = data$AVG.GROWTH.RESP[subset]
+    ROOT.RESP.AVG	    = data$AVG.ROOT.RESP[subset]
     #------------------------------------------------------------------------------------------#
-    #LEAF.RESP.AVG		= data$AVG.LEAF.RESP[subset]
-    #VLEAF.RESP.AVG		= data$AVG.VLEAF.RESP[subset]
-    #STORAGE.RESP.AVG	= data$AVG.STORAGE.RESP[subset]
-    #GROWTH.RESP.AVG		= data$AVG.GROWTH.RESP[subset]
-    #ROOT.RESP.AVG		= data$AVG.ROOT.RESP[subset]
+    PLANT.RESP.AVG  	    = data$AVG.PLANT.RESP[subset] *umol2gc 
+    PLANT.RESP.AVG.mn       = aggregate(PLANT.RESP.AVG,by=list(aggrlist),mean)[[2]]
+    PLANT.RESP.AVG.ll       = aggregate(PLANT.RESP.AVG,by=list(aggrlist),min)[[2]]
+    PLANT.RESP.AVG.ul       = aggregate(PLANT.RESP.AVG,by=list(aggrlist),max)[[2]]
     #------------------------------------------------------------------------------------------#
-    PLANT.RESP.AVG  	      = data$AVG.PLANT.RESP[subset] ## Extract "tower" plant resp
-    PLANT.RESP.AVG.mn       = aggregate(PLANT.RESP.AVG,by=list(aggrlist),mean)
-    PLANT.RESP.AVG.sd       = aggregate(PLANT.RESP.AVG,by=list(aggrlist),sd)
-    PLANT.RESP.AVG.ll       = PLANT.RESP.AVG.mn[,2]-PLANT.RESP.AVG.sd[,2]
-    PLANT.RESP.AVG.ul       = PLANT.RESP.AVG.mn[,2]+PLANT.RESP.AVG.sd[,2]
+    HTROPH.RESP.AVG 	    = data$AVG.HTROPH.RESP[subset] *umol2gc
+    HTROPH.RESP.AVG.mn      = aggregate(HTROPH.RESP.AVG,by=list(aggrlist),mean)[[2]]
+    HTROPH.RESP.AVG.ll      = aggregate(HTROPH.RESP.AVG,by=list(aggrlist),min)[[2]]
+    HTROPH.RESP.AVG.ul      = aggregate(HTROPH.RESP.AVG,by=list(aggrlist),max)[[2]]
     #------------------------------------------------------------------------------------------#
-    HTROPH.RESP.AVG 	      = data$AVG.HTROPH.RESP[subset]
-    HTROPH.RESP.AVG.mn      = aggregate(HTROPH.RESP.AVG,by=list(aggrlist),mean)
-    HTROPH.RESP.AVG.sd      = aggregate(HTROPH.RESP.AVG,by=list(aggrlist),sd)
-    HTROPH.RESP.AVG.ll      = HTROPH.RESP.AVG.mn[,2]-HTROPH.RESP.AVG.sd[,2]
-    HTROPH.RESP.AVG.ul      = HTROPH.RESP.AVG.mn[,2]+HTROPH.RESP.AVG.sd[,2]
+    Reco.AVG.mn	            = (PLANT.RESP.AVG.mn + HTROPH.RESP.AVG.mn) 
+    Reco.AVG.ll             = (PLANT.RESP.AVG.ll + HTROPH.RESP.AVG.ll)
+    Reco.AVG.ul             = (PLANT.RESP.AVG.ul + HTROPH.RESP.AVG.ul)
     #------------------------------------------------------------------------------------------#
-    Reco.AVG.mn	            = (PLANT.RESP.AVG.mn[,2] + HTROPH.RESP.AVG.mn[,2]) * umol2gc 
-    Reco.AVG.ll             = (PLANT.RESP.AVG.ll + HTROPH.RESP.AVG.ll) * umol2gc
-    Reco.AVG.ul             = (PLANT.RESP.AVG.ul + HTROPH.RESP.AVG.ul) * umol2gc
+    NPP.AVG.mn        	    = (GPP.AVG.mn - PLANT.RESP.AVG.mn) 
+    NPP.AVG.ll              = (GPP.AVG.ll - PLANT.RESP.AVG.ul)
+    NPP.AVG.ul              = (GPP.AVG.ul - PLANT.RESP.AVG.ll)
     #------------------------------------------------------------------------------------------#
-    NPP.AVG.mn        		  = (GPP.AVG.mn[,2] - PLANT.RESP.AVG.mn[,2])  * umol2gc # avg
-    NPP.AVG.ll              = (GPP.AVG.ll - PLANT.RESP.AVG.ll)  * umol2gc
-    NPP.AVG.ul              = (GPP.AVG.ul - PLANT.RESP.AVG.ul)  * umol2gc
-    #------------------------------------------------------------------------------------------#
-    NEE.AVG.mn         	    = (GPP.AVG.mn[,2] - (PLANT.RESP.AVG.mn[,2] + HTROPH.RESP.AVG.mn[,2]))  * umol2gc
-    NEE.AVG.ll              = (GPP.AVG.ll - (PLANT.RESP.AVG.ll + HTROPH.RESP.AVG.ll))  * umol2gc
-    NEE.AVG.ul              = (GPP.AVG.ul - (PLANT.RESP.AVG.ul + HTROPH.RESP.AVG.ul))  * umol2gc
+    NEE.AVG.mn         	    = -1*(GPP.AVG.mn - (PLANT.RESP.AVG.mn + HTROPH.RESP.AVG.mn)) 
+    NEE.AVG.ll              = -1*(GPP.AVG.ll - (PLANT.RESP.AVG.ul + HTROPH.RESP.AVG.ul))
+    NEE.AVG.ul              = -1*(GPP.AVG.ul - (PLANT.RESP.AVG.ll + HTROPH.RESP.AVG.ll))
     #------------------------------------------------------------------------------------------#
     
     #SOIL.TEMP.AVG		= (data$AVG.SOIL.TEMP[subset,1,9])-273.15 # convert to celcius
@@ -203,20 +209,20 @@ site_fluxes = function(model.run,in.dir,out.dir){
     ##################################### COMPONENT FLUXES ####################################################
     pdf(paste(out.dir,"/","ED2_",year,"_Site_Avg_Fluxes.pdf",sep=""),width=12,height=11,
         onefile=TRUE)
-    par(mfrow=c(3,2),mar=c(5,5.4,0.6,0.2),mgp=c(3.3,1.5,0)) # B, L, T, R
+    par(mfrow=c(3,2),mar=c(5,5.4,0.7,0.3),mgp=c(3.3,1.5,0)) # B, L, T, R
     
     #==========================================================================================================
     # GPP
     #==========================================================================================================
     ylim = range(c(GPP.AVG.ll,GPP.AVG.ul),na.rm=TRUE) # define Y lims
-    plot(start_day:end_day,GPP.AVG.mn[,2],xlab='',ylab=expression(paste(GPP," (gC",~m^{-2}~d^{-1},")")),
+    plot(start_day:end_day,GPP.AVG.mn,xlab='',ylab=expression(paste(GPP," (gC",~m^{-2},")")),
          ylim=ylim,pch=21,col="black", bg="black",
          cex=cex,cex.lab=labcex,cex.axis=axiscex,cex.main=maincex)
     abline(v=phenology[,2],lty=2,lwd=1.5,col="green3")
     abline(v=phenology[,3],lty=2,lwd=1.5,col="brown")
     polygon(c(polyx, rev(polyx)), c(GPP.AVG.ul, rev(GPP.AVG.ll)), col="light gray", border="dark grey",lty=2)  
-    lines(start_day:end_day,GPP.AVG.mn[,2],lty=1,col="black")
-    points(start_day:end_day,GPP.AVG.mn[,2],pch=21,col="black", bg="black",
+    lines(start_day:end_day,GPP.AVG.mn,lty=1,col="black")
+    points(start_day:end_day,GPP.AVG.mn,pch=21,col="black", bg="black",
            cex=cex,cex.lab=labcex,cex.axis=axiscex,cex.main=maincex)
     if (is.nan(mean(chk))==0) {
       legend("topleft",legend=c("Greenup","Leaf Off"),bty="n",
@@ -228,12 +234,11 @@ site_fluxes = function(model.run,in.dir,out.dir){
     abline(h=0,lty=2,lwd=1.5,col="black")
     rm(chk)
     box(lwd=2.2)
-    
     #==========================================================================================================
     # NPP
     #==========================================================================================================
     ylim = range(c(NPP.AVG.ll,NPP.AVG.ul),na.rm=TRUE) # define Y lims
-    plot(start_day:end_day,NPP.AVG.mn,xlab='',ylab=expression(paste(NPP," (gC",~m^{-2}~d^{-1},")")),
+    plot(start_day:end_day,NPP.AVG.mn,xlab='',ylab=expression(paste(NPP," (gC",~m^{-2},")")),
          pch=21,col="black", bg="black",ylim=ylim,
          cex=cex,cex.lab=labcex,cex.axis=axiscex,cex.main=maincex)
     polygon(c(polyx, rev(polyx)), c(NPP.AVG.ul, rev(NPP.AVG.ll)), 
@@ -243,43 +248,40 @@ site_fluxes = function(model.run,in.dir,out.dir){
            cex=cex,cex.lab=labcex,cex.axis=axiscex,cex.main=maincex)
     abline(h=0,lty=2,lwd=1.5,col="black")
     box(lwd=2.2)
-    
     #==========================================================================================================
     # Plant Resp
     #==========================================================================================================
     ylim = range(c(PLANT.RESP.AVG.ll,PLANT.RESP.AVG.ul),na.rm=TRUE) # define Y lims
-    plot(start_day:end_day,PLANT.RESP.AVG.mn[,2]*umol2gc,xlab='',ylim=ylim,
-         ylab=expression(paste(italic(R)[a]," (gC",~m^{-2}~d^{-1},")")),pch=21,col="black", 
+    plot(start_day:end_day,PLANT.RESP.AVG.mn,xlab='',ylim=ylim,
+         ylab=expression(paste(italic(R)[a]," (gC",~m^{-2},")")),pch=21,col="black", 
          bg="black",cex=cex,cex.lab=labcex,cex.axis=axiscex,cex.main=maincex)
     polygon(c(polyx, rev(polyx)), c(PLANT.RESP.AVG.ul, rev(PLANT.RESP.AVG.ll)), 
             col="light gray", border="dark grey",lty=2)
-    lines(start_day:end_day,PLANT.RESP.AVG.mn[,2],lty=1,col="black")
-    points(start_day:end_day,PLANT.RESP.AVG.mn[,2],pch=21,col="black", bg="black",
+    lines(start_day:end_day,PLANT.RESP.AVG.mn,lty=1,col="black")
+    points(start_day:end_day,PLANT.RESP.AVG.mn,pch=21,col="black", bg="black",
            cex=cex,cex.lab=labcex,cex.axis=axiscex,cex.main=maincex)
     abline(h=0,lty=2,lwd=1.5,col="black")
     box(lwd=2.2)
-    
     #==========================================================================================================
     # Heterotrophic Resp
     #==========================================================================================================
     ylim = range(c(HTROPH.RESP.AVG.ll,HTROPH.RESP.AVG.ul),na.rm=TRUE) # define Y lims
-    plot(start_day:end_day,HTROPH.RESP.AVG.mn[,2]*umol2gc,xlab='',ylim=ylim,
-         ylab=expression(paste(italic(R)[h]," (gC",~m^{-2}~d^{-1},")")),pch=21,col="black", 
+    plot(start_day:end_day,HTROPH.RESP.AVG.mn,xlab='',ylim=ylim,
+         ylab=expression(paste(italic(R)[h]," (gC",~m^{-2},")")),pch=21,col="black", 
          bg="black",cex=cex,cex.lab=labcex,cex.axis=axiscex,cex.main=maincex)
     polygon(c(polyx, rev(polyx)), c(HTROPH.RESP.AVG.ul, rev(HTROPH.RESP.AVG.ll)), 
             col="light gray", border="dark grey",lty=2)
-    lines(start_day:end_day,HTROPH.RESP.AVG.mn[,2],lty=1,col="black")
-    points(start_day:end_day,HTROPH.RESP.AVG.mn[,2],pch=21,col="black", bg="black",
+    lines(start_day:end_day,HTROPH.RESP.AVG.mn,lty=1,col="black")
+    points(start_day:end_day,HTROPH.RESP.AVG.mn,pch=21,col="black", bg="black",
            cex=cex,cex.lab=labcex,cex.axis=axiscex,cex.main=maincex)
     abline(h=0,lty=2,lwd=1.5,col="black")
     box(lwd=2.2)
-    
     #==========================================================================================================
     # Reco
     #==========================================================================================================
     ylim = range(c(Reco.AVG.ll,Reco.AVG.ul),na.rm=TRUE)
     plot(start_day:end_day,Reco.AVG.mn,xlab=paste("DOY",as.character(year)),ylim=ylim,
-         ylab=expression(paste(italic(R)[eco.]," (gC",~m^{-2}~d^{-1},")")),
+         ylab=expression(paste(italic(R)[eco.]," (gC",~m^{-2},")")),
          pch=21,col="black", bg="black",
          cex=cex,cex.lab=labcex,cex.axis=axiscex,cex.main=maincex)
     polygon(c(polyx, rev(polyx)), c(Reco.AVG.ul, rev(Reco.AVG.ll)),col="light gray", border="dark grey",lty=2)
@@ -288,13 +290,12 @@ site_fluxes = function(model.run,in.dir,out.dir){
            cex=cex,cex.lab=labcex,cex.axis=axiscex,cex.main=maincex)
     abline(h=0,lty=2,lwd=1.5,col="black")
     box(lwd=2.2)
-    
     #==========================================================================================================
     # NEE
     #==========================================================================================================
     ylim = range(c(NEE.AVG.ll,NEE.AVG.ul),na.rm=TRUE) 
     plot(start_day:end_day,NEE.AVG.mn,xlab=paste("DOY",as.character(year)),ylim=ylim,
-         ylab=expression(paste(NEE," (gC",~m^{-2}~d^{-1},")")),
+         ylab=expression(paste(NEE," (gC",~m^{-2},")")),
          pch=21,col="black", bg="black",
          cex=cex,cex.lab=labcex,cex.axis=axiscex,cex.main=maincex)
     polygon(c(polyx, rev(polyx)), c(NEE.AVG.ul, rev(NEE.AVG.ll)),col="light gray", border="dark grey",lty=2)
@@ -303,26 +304,34 @@ site_fluxes = function(model.run,in.dir,out.dir){
            cex=cex,cex.lab=labcex,cex.axis=axiscex,cex.main=maincex)
     abline(h=0,lty=2,lwd=1.5,col="black")    
     box(lwd=2.2)
-    
     ############################# RESPIRATION COMPONENTS ###############################
-#     par(mfrow=c(3,2),mar=c(5,5.6,0.6,0.2),mgp=c(3.3,1.5,0)) # B, L, T, R
-#     ## Plant Resp
-#     plot(start_day:end_day,PLANT.RESP.AVG*umol2gc,xlab='',
-#          ylab=expression(paste(italic(R)[a]," (gC",~m^{-2}~d^{-1},")")),pch=21,
-#          col="dark grey",bg="dark grey",cex=cex,cex.lab=labcex,cex.axis=axiscex,
-#          cex.main=maincex)
-#     abline(h=0,lty=2,lwd=1.5,col="black")
-#     lines(smooth.spline(start_day:end_day,PLANT.RESP.AVG,spar=0.4),col="black",lwd=5)
-#     box(lwd=2.2)
-#     
-#     ## Leaf Resp
-#     plot(start_day:end_day,LEAF.RESP.AVG*umol2gc,xlab='',
-#          ylab=expression(paste(italic(R)[leaf]," (gC",~m^{-2}~d^{-1},")")),pch=21,col="dark grey", 
-#          bg="dark grey",cex=cex,cex.lab=labcex,cex.axis=axiscex,cex.main=maincex)
-#     abline(h=0,lty=2,lwd=1.5,col="black")
-#     lines(smooth.spline(start_day:end_day,LEAF.RESP.AVG*umol2gc,spar=0.4),col="black",lwd=5)
-#     box(lwd=2.2)
-#     
+    par(mfrow=c(3,2),mar=c(5,5.6,0.6,0.2),mgp=c(3.3,1.5,0)) # B, L, T, R
+    ## Plant Resp
+    ylim = range(c(PLANT.RESP.AVG.ll,PLANT.RESP.AVG.ul),na.rm=TRUE) # define Y lims
+    plot(start_day:end_day,PLANT.RESP.AVG.mn,xlab='',ylim=ylim,
+         ylab=expression(paste(italic(R)[a]," (gC",~m^{-2},")")),pch=21,col="black",
+         bg="black",cex=cex,cex.lab=labcex,cex.axis=axiscex,cex.main=maincex)
+    polygon(c(polyx, rev(polyx)), c(PLANT.RESP.AVG.ul, rev(PLANT.RESP.AVG.ll)),
+            col="light gray", border="dark grey",lty=2)
+    lines(start_day:end_day,PLANT.RESP.AVG.mn,lty=1,col="black")
+    points(start_day:end_day,PLANT.RESP.AVG.mn,pch=21,col="black", bg="black",
+           cex=cex,cex.lab=labcex,cex.axis=axiscex,cex.main=maincex)
+    abline(h=0,lty=2,lwd=1.5,col="black")
+    box(lwd=2.2) 
+    
+    ## Leaf Resp
+    ylim = range(c(LEAF.RESP.AVG.ll,LEAF.RESP.AVG.ul),na.rm=TRUE)
+    plot(start_day:end_day,LEAF.RESP.AVG.mn,xlab='',ylim=ylim,
+         ylab=expression(paste(italic(R)[leaf]," (gC",~m^{-2},")")),pch=21,col="black", 
+          bg="black",cex=cex,cex.lab=labcex,cex.axis=axiscex,cex.main=maincex)
+   polygon(c(polyx,rev(polyx)),c(LEAF.RESP.AVG.ul,rev(LEAF.RESP.AVG.ll)),col="light gray",
+            border="dark grey",lty=2)
+   lines(start_day:end_day,LEAF.RESP.AVG.mn,lty=1,col="black")
+   points(start_day:end_day,LEAF.RESP.AVG.mn,pch=21,col="black", bg="black",
+           cex=cex,cex.lab=labcex,cex.axis=axiscex,cex.main=maincex)
+   abline(h=0,lty=2,lwd=1.5,col="black")
+   box(lwd=2.2)
+     
 #     ## Root Resp
 #     plot(start_day:end_day,ROOT.RESP.AVG*umol2gc,xlab='',
 #          ylab=expression(paste(italic(R)[root]," (gC",~m^{-2}~d^{-1},")")),pch=21,col="dark grey", 
