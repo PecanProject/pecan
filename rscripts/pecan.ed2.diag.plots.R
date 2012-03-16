@@ -112,7 +112,7 @@ site_fluxes = function(model.run,in.dir,out.dir){
     # dates contains YYmmdd, month (num), doy. fjday (0-1)  
     init    = dates[1,4]
     total   = seq(1,hdflength,1)
-    reps    = hdflength/48
+    reps    = hdflength/vals_day
     dayfrac = rep(seq(0,23.5,0.5), each=1, times=reps) # t
     subset    = 0
     
