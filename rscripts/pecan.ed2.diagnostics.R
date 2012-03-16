@@ -123,11 +123,11 @@ indices = gregexpr("[0-9][0-9][0-9][0-9]", IYEARZ)[[1]]
 IYEARZ = substr(IYEARZ,indices[1], indices[1]+4)
 
 #---- Get location info (NL%POI_LAT,NLPOI_LON). Prob better to get from XML file
-POI_LAT = grep(ED2IN,pattern='NL%POI_LAT',value=TRUE)
+POI_LAT = grep(ED2IN,pattern='NL%[PS]OI_LAT',value=TRUE)
 indices = gregexpr("[0-9]", POI_LAT)[[1]]
 POI_LAT = substr(POI_LAT,indices[1], indices[length(indices)])
 
-POI_LON = grep(ED2IN,pattern='NL%POI_LON',value=TRUE)
+POI_LON = grep(ED2IN,pattern='NL%[PS]OI_LON',value=TRUE)
 neg1 = gregexpr("-", POI_LON)[[1]]
 if (neg1==-1){
   indices = gregexpr("[0-9]", POI_LON)[[1]]
@@ -182,7 +182,7 @@ FRQFAST=as.numeric(FRQFAST)
 FFILOUT = grep(ED2IN,pattern='NL%FFILOUT',value=TRUE)
 indices = gregexpr("'", FFILOUT)[[1]]
 FFILOUT = substr(FFILOUT,indices[1]+1, indices[2]-1)
-indices = gregexpr("/", FFILOUT)[[1]]
+indices = tail(gregexpr("/", FFILOUT)[[1]], n=1)
 FFILOUT = substr(FFILOUT,1,indices)
 
 #---- Get soil flag (NL%ISOILFLG)
@@ -289,7 +289,9 @@ dates       = data.frame(Date=as.Date(daterange),mon=list.mths,doy=list.days,
 
 message('')
 message('')
-analysis = paste(model_run,FFILOUT,sep="")
+model_run
+FFILOUT
+analysis = FFILOUT #paste(model_run,FFILOUT,sep="")
 
 if (ITOUTPUT=="Yes"){
   message('---- Plotting Site Averaged Fluxes (ITOUTPUT) ----')

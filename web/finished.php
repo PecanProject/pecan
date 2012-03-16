@@ -51,16 +51,20 @@ $history = array_pop(array_filter($files, function ($item) {
 }));
 $outputs .= createOption("out/$history");
 
-
 for($year=$start; $year<=$end; $year++) {
 	$years .= "<option>$year</option>";
 	
 	// tower file
 	$tower = array_pop(array_filter($files, function ($item) {
 		global $year;
-		return preg_match("/.*-T-$year-00-00-000000-g01.h5/", $item);
+		return preg_match("/.*-T-${year}-00-00-000000-g01.h5/", $item);
 	}));
 	$outputs .= createOption("out/$tower");
+
+	// diagnostics
+	if (file_exists("$folder/run/ED2_Diagnostics/ED2_${year}_Site_Avg_Fluxes.pdf")) {
+		$outputs .= createOption("run/ED2_Diagnostics/ED2_${year}_Site_Avg_Fluxes.pdf");
+        }
 	
 	// get variables
 	$vars .= shell_exec("h5ls $folder/out/$tower | awk '{print \"<option>\" $1 \"</option>\" }'");	
