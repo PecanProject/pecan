@@ -110,7 +110,7 @@ function createOption($file) {
 	} 
 
     function showPlot() {
-		var url="dataset.php?runid=<?=$runid?>&type=plot&year=" + $('#year')[0].value + "&var=" + $('#var')[0].value;
+		var url="dataset.php?runid=<?=$runid?>&type=plot&year=" + $('#year')[0].value + "&var=" + $('#var')[0].value + "&width=" + ($("#output").width()-10) + "&height=" + ($("#output").height() - 10);
 		$("#output").html("<img src=\"" + url + "\">");
 	}
 	
