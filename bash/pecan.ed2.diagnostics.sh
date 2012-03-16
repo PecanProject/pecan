@@ -35,11 +35,10 @@ fi
 echo " "
 
 ### This needs to be edited to reflect your local setup.
-script_loc="/home/$USER/pecan/R/"			# ----> Local R script folder
+script_loc="/home/$USER/pecan/rscripts/"			# ----> Local R script folder
 script="pecan.ed2.diagnostics.R"				# ----> R script name
 
 ### Run PEcAn Diagnostocs ---- Output log to PEcAn_ED2_Diagnostics.log in working dir
-#env PECANHOME="/home/$USER/pecan/" 
 env PECANHOME="/home/$USER/pecan/" R --vanilla --args $1 $2 < $script_loc$script > $loc"/"PEcAn_ED2_Diagnostics.log
 
 clear
