@@ -92,3 +92,13 @@ query.bety.priors <- function(pft, trstr, con=NULL,...){
   priors <- priors[, which(colnames(priors)!='name')]
   return(priors)
 }
+
+##' Kill existing database connections
+##'
+##' resolves (provides workaround to) bug #769 caused by having too many open connections \code{Error during wrapup: RS-DBI driver: (cannot allocate a new connection -- maximum of 16 connections already opened)}
+##' @title Kill existing database connections 
+##' @return nothing, as a side effect closes all open connections
+##' @author David LeBauer
+killdbcons <- function(){
+  for (i in dbListConnections(MySQL())) dbDisconnect(i)
+}
