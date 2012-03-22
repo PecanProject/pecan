@@ -37,16 +37,29 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
       
     }
     
-    ensemble.samples <- list()#matrix(nrow = ensemble.size, ncol = length(pft2col))
-#    colnames(ensemble.samples) <- names(samples)
-    for(pft.i in 1:length(pft.samples)){
-      sel = which(pft2col == pft.i) #select col's that belong to this pft
+    total.sample.num <- sum(sapply(pft.samples, length))
+    halton.samples <- NULL
+    if(method == "halton"){
+      halton.samples <- halton(n = ensemble.size, dim=total.sample.num)
+      ##force as a matrix in case length(samples)=1
+      halton.samples <- as.matrix(halton.samples)
+    } else {
+      #uniform random
+      halton.samples <- matrix(runif(ensemble.size*total.sample.num),
+          ensemble.size, dim=total.sample.num)
+    }
+    
+    ensemble.samples <- list()
+    
+    col.i <- 0
+    for(pft.i in seq(pft.samples)){
       ensemble.samples[[pft.i]] <-
-        matrix(nrow=ensemble.size,ncol=length(pft.samples[[pft.i]]))
+          matrix(nrow=ensemble.size,ncol=length(pft.samples[[pft.i]]))
       for(trait.i in seq(pft.samples[[pft.i]])) {
+        col.i<-col.i+1
         ensemble.samples[[pft.i]][, trait.i] <- 
-          quantile(pft.samples[[pft.i]][[trait.i]],
-                   halton.samples[, sel[trait.i]])
+            quantile(pft.samples[[pft.i]][[trait.i]],
+                     halton.samples[, col.i])
       } # end trait
       ensemble.samples[[pft.i]] <- as.data.frame(ensemble.samples[[pft.i]])
       colnames(ensemble.samples[[pft.i]]) <- names(pft.samples[[pft.i]])
@@ -56,7 +69,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
   }
   return(ans)
 }
-  
+
 
 ##' Write ensemble config files
 ##'
@@ -75,7 +88,6 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
 write.ensemble.configs <- function(defaults, ensemble.samples,
                                    host, outdir, settings,
                                    write.config = write.config.ED,clean=FALSE){
-
   if(clean){
     ## Remove old files
     if(host$name == 'localhost') {
@@ -90,9 +102,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples,
   }
   
   if(is.null(ensemble.samples)) return(NULL)
-
-  run.ids<-list() 
-  for(ensemble.id in 1:nrow(ensemble.samples[[1]])) {
+  for(ensemble.id in 1:settings$ensemble$size) {
     run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, 5))
     if(clean) unlink(paste(outdir, '*', run.id, '*', sep=''))
     
@@ -187,7 +197,6 @@ get.sa.samples <- function(samples, quantiles){
 write.sa.configs <- function(defaults, quantile.samples, host, outdir, settings, 
                              write.config=write.config.ED,clean=FALSE){
   MEDIAN <- '50'
-
   ## clean out old files
   if(clean){
     if(host$name == 'localhost'){
@@ -208,8 +217,7 @@ write.sa.configs <- function(defaults, quantile.samples, host, outdir, settings,
   }
   names(median.samples) = names(quantile.samples)
   run.id <- get.run.id('SA', 'median')
-  write.config(defaults,median.samples, settings, outdir, run.id)
-
+  write.config(defaults, median.samples, settings, outdir, run.id)
   ## loop over pfts
   for(i in seq(names(quantile.samples))){
     

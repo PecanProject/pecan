@@ -38,10 +38,10 @@ kurtosis <- function(x) {
 ##' at the parameter median.
 ##' @title Calculate Sensitivity
 ##' @param trait.samples 
-##' @param sa.spline 
+##' @param sa.splinefun 
 ##' @return numeric estimate of model sensitivity to parameter
-get.sensitivity <- function(trait.samples, sa.spline){
-  sensitivity <- sa.spline(median(trait.samples, na.rm = TRUE), 1)
+get.sensitivity <- function(trait.samples, sa.splinefun){
+  sensitivity <- sa.splinefun(mean(trait.samples), 1)
 }
 
 ##' Given a set of numbers (a numeric vector), this returns the set's coefficient of variance.
@@ -70,7 +70,8 @@ get.elasticity <- function(sensitivity, samples, outputs){
 ##' @param y numeric vector
 ##' @return numeric vector with all values less than 0 set to 0
 zero.truncate <- function(y) {
-  y[y<0 | is.na(y)] <- 0
+  y[#y<0 | 
+          is.na(y)] <- 0
   return(y)
 }
 ##' Performs univariate sensitivity analysis and variance decomposition 
@@ -87,28 +88,28 @@ zero.truncate <- function(y) {
 sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
   traits <- names(trait.samples)
   sa.splines <- sapply(traits, function(trait) sa.splinefun(sa.samples[[trait]],
-                                                               sa.output[[trait]]))
+            sa.output[[trait]]))
   
   spline.estimates <- lapply(traits, function(trait)
-                             zero.truncate(sa.splines[[trait]](trait.samples[[trait]])))
+        zero.truncate(sa.splines[[trait]](trait.samples[[trait]])))
   names(spline.estimates) <- traits
   sensitivities <- sapply(traits, function(trait)
-                          get.sensitivity(trait.samples[[trait]],
-                                          sa.splines[[trait]]))
+        get.sensitivity(trait.samples[[trait]],
+            sa.splines[[trait]]))
   elasticities <- sapply(traits, 
-                         function(trait)
-                         get.elasticity(sensitivities[[trait]],
-                                            trait.samples[[trait]],
-                                            spline.estimates[[trait]]))
+      function(trait)
+        get.elasticity(sensitivities[[trait]],
+            trait.samples[[trait]],
+            spline.estimates[[trait]]))
   variances <- sapply(traits, function(trait)
-                      var(spline.estimates[[trait]]))
-  partial.variances <- variances / sum(variances)
+        var(spline.estimates[[trait]]))
+  partial.variances <- variances #/ sum(variances)
   
   ## change Vm_low_temp to Kelvin prior to calculation of coefficient of variance.
   ## this conversion is only required at this point in the code, for calculating CV
   C.units <- grep('Celsius', trait.dictionary(traits)$units, ignore.case = TRUE)
   trait.samples[[C.units]] <- trait.samples[[C.units]] + 273.15
-
+  
   coef.vars <- sapply(trait.samples, get.coef.var)
   outlist <- list(sensitivity.output = list(
                     sa.samples    = sa.samples,
@@ -121,4 +122,5 @@ sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
                     partial.variances = partial.variances))
   return(outlist)
 }
+
 
