@@ -18,15 +18,16 @@ trait.names <- trait.dictionary()$id
 file.remove(dir(settings$outdir, full.names=TRUE))
 ## connect to database
 newconfn <- function() query.bety.con(dbname   = settings$database$name,
-                                        password = settings$database$passwd,
-                                        username = settings$database$userid,
-                                        host     = settings$database$host)
+                                      password = settings$database$passwd,
+                                      username = settings$database$userid,
+                                      host     = settings$database$host)
 
 newcon <- newconfn()
 
 cnt = 0;
 all.trait.data = list()
 for(pft in settings$pfts){
+  dir.create(pft$outdir)
   cnt = cnt + 1
   
   ## 1. get species list based on pft
@@ -36,7 +37,7 @@ for(pft in settings$pfts){
   prior.distns <- query.bety.priors(pft$name, vecpaste(trait.names), out=pft$outdir,con=newcon)
   ### exclude any parameters for which a constant is provided 
   prior.distns <- prior.distns[which(!rownames(prior.distns) %in%
-                                     names(settings$pfts$pft$constants)),]
+                                     names(pft$constants)),]
   
   print('Summary of Prior distributions')
   print(prior.distns)
@@ -53,10 +54,9 @@ for(pft in settings$pfts){
 
     for(i in 1:length(all.trait.data)){
       print(names(all.trait.data)[i])
-      print(sapply(all.trait.data[[i]],dim)[1,])
+      print(sapply(all.trait.data[[i]],dim))
     }
     
   }
   save(prior.distns, file=paste(pft$outdir, 'prior.distns.Rdata', sep = ''))
 }
-

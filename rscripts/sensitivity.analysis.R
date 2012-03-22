@@ -5,14 +5,14 @@ if(interactive()){
   if(user == 'dlebauer'){
     settings.file = '~/in/ebifarm/prior/pavi.xml'
   } else if(user == 'davids14') {
-    settings.file = '~/pecan/tundra.xml'
+    settings.file = '~/pecan/toolik.xml'
   } else {
     paste('please specify settings file in meta.analysis.R')
   }
 } else {
-  settings.file <- Sys.getenv("PECANSETTINGS")
-  ## settings.file <- commandArgs(trailingOnly=TRUE)
+  settings.file <- commandArgs(trailingOnly=TRUE)
 } 
+options(error=traceback)
 
 settings.xml <- xmlParse(settings.file)
 settings <- xmlToList(settings.xml)
@@ -25,7 +25,7 @@ load(paste(settings$outdir, 'samples.Rdata', sep=''))
 
 sensitivity.results <- list()
 for(pft in settings$pfts){
-  print(pft)
+  print(pft$name)
   if('sensitivity.analysis' %in% names(settings)) {
     traits <- names(trait.samples[[pft$name]])
     quantiles.str <- rownames(sa.samples[[pft$name]])
@@ -42,29 +42,28 @@ for(pft in settings$pfts){
                     '\n it is likely that the runs did not complete, this should be fixed !!!!!!'))
     }
     
+    
     sensitivity.results[[pft$name]] <- sensitivity.analysis(trait.samples = trait.samples[[pft$name]][traits],
                                                 sa.samples = sa.samples[[pft$name]][ ,traits],
                                                 sa.output = sensitivity.output[[pft$name]][ ,traits],
                                                 outdir = pft$outdir)
+    print(sensitivity.results[[pft$name]]$variance.decomposition.output)
+    print(sensitivity.output[[pft$name]])
     sensitivity.plots <- plot.sensitivities(sensitivity.results[[pft$name]]$sensitivity.output,
                                    linesize = 1,
                                    dotsize = 3)
     pdf(paste(pft$outdir, 'sensitivityanalysis.pdf', sep = ''), height = 12, width = 9)
-    print(sensitivity.plots)
     dev.off()
 
 
     vd.plots <- plot.variance.decomposition(sensitivity.results[[pft$name]]$variance.decomposition.output)
-    pdf(paste(settings$outdir, 'variancedecomposition.pdf', sep=''), width = 11, height = 8)
-    cv.xticks <- pretty(sensitivity.results[[pft$name]]$variance.decomposition.output$coef.vars*100,4)
-    el.xticks <- pretty(sensitivity.results[[pft$name]]$variance.decomposition.output$elasticities,4)
-    el.xrange <- range(pretty(sensitivity.results[[pft$name]]$variance.decomposition.output$elasticities,6))
-    pv.xticks <- pretty(sensitivity.results[[pft$name]]$variance.decomposition.output$partial.variances*100,4)
+                                            #variance.scale = log, variance.prefix='Log')
+    pdf(paste(pft$outdir, 'variancedecomposition.pdf', sep=''), width = 11, height = 8)
     do.call(grid.arrange, c(vd.plots, ncol = 4))
-    dev.off() 
+    dev.off()  
   }
 }  ## end if sensitivity analysis
 
 save(sensitivity.results,
-     file = paste(pft$outdir,
+     file = paste(settings$outdir,
        "sensitivity.results.Rdata", sep = ""))

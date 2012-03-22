@@ -138,7 +138,7 @@
 !------------------------------------------------------------------------------------------!
 ! Analysis/history/restart file: path, prefix, settings                                    !
 !------------------------------------------------------------------------------------------!
-   NL%FFILOUT = '@OUTDIR@/@OUTFILE@'         ! Analysis output prefix
+   NL%FFILOUT = '@OUTDIR@/@ENSNAME@'         ! Analysis output prefix
    NL%SFILOUT = '@OUTDIR@/@HISTFILE@'        ! History output prefix
 
    NL%IED_INIT_MODE   = 0
