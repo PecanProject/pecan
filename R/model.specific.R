@@ -123,7 +123,7 @@ write.config.ED <- function(defaults, trait.values, settings, outdir, run.id){
 #  xml <- append.xmlNode(config.header, xml)
   #c stands for config, abbreviated to work within ED's character limit
   xml.file.name <-paste('c.',run.id,sep='')  
-  if(nchar(xml.file.name) >= 128) 
+  if(nchar(xml.file.name) >= 512)  # was 128.  Changed in ED to 512
     stop(paste('The file name, "',xml.file.name,
             '" is too long and will cause your ED run to crash ',
             'if allowed to continue. '))
@@ -135,15 +135,36 @@ write.config.ED <- function(defaults, trait.values, settings, outdir, run.id){
 
   ed2in.text <- readLines(con=settings$run$edin, n=-1)
 
+#---------------------------------------------------------------------------------------------------
   ed2in.text <- gsub('@SITE_LAT@', settings$run$site$lat, ed2in.text)
   ed2in.text <- gsub('@SITE_LON@', settings$run$site$lon, ed2in.text)
   ed2in.text <- gsub('@SITE_MET@', settings$run$site$met, ed2in.text)
+  ed2in.text <- gsub('@MET_START@', settings$run$site$met.start, ed2in.text)
+  ed2in.text <- gsub('@MET_END@', settings$run$site$met.end, ed2in.text)
   ed2in.text <- gsub('@SITE_PSSCSS@', settings$run$site$psscss, ed2in.text)
-
+if(settings$run$host$ed$phenol.scheme==1){
+        # Set prescribed phenology switch in ED2IN
+	ed2in.text <- gsub(' @PHENOL_SCHEME@', settings$run$host$ed$phenol.scheme, ed2in.text)
+	# Phenology filename
+  	ed2in.text <- gsub('@PHENOL@', settings$run$site$phenol, ed2in.text)
+	# Set start year of phenology
+  	ed2in.text <- gsub('@PHENOL_START@', settings$run$site$phenol.start, ed2in.text)
+	# Set end year of phenology
+  	ed2in.text <- gsub('@PHENOL_END@', settings$run$site$phenol.end, ed2in.text)
+	
+	# If not prescribed set alternative phenology scheme.
+	} else {
+	ed2in.text <- gsub(' @PHENOL_SCHEME@', settings$run$host$ed$phenol.scheme, ed2in.text)
+	
+}
+#---------------------------------------------------------------------------------------------------
   ed2in.text <- gsub('@ED_VEG@', settings$run$host$ed$veg, ed2in.text)
   ed2in.text <- gsub('@ED_SOIL@', settings$run$host$ed$soil, ed2in.text)
   ed2in.text <- gsub('@ED_INPUTS@', settings$run$host$ed$inputs, ed2in.text)
-  
+  # This next line may not be needed.  Set above.
+  ed2in.text <- gsub(' @PHENOL_SCHEME@', settings$run$host$ed$phenol.scheme, ed2in.text)
+
+#---------------------------------------------------------------------------------------------------
   ed2in.text <- gsub('@START_MONTH@', format(startdate, "%m"), ed2in.text)
   ed2in.text <- gsub('@START_DAY@', format(startdate, "%d"), ed2in.text)
   ed2in.text <- gsub('@START_YEAR@', format(startdate, "%Y"), ed2in.text)
@@ -151,12 +172,15 @@ write.config.ED <- function(defaults, trait.values, settings, outdir, run.id){
   ed2in.text <- gsub('@END_DAY@', format(enddate, "%d"), ed2in.text)
   ed2in.text <- gsub('@END_YEAR@', format(enddate, "%Y"), ed2in.text)
 
+#---------------------------------------------------------------------------------------------------
   ed2in.text <- gsub('@OUTDIR@', settings$run$host$outdir, ed2in.text)
   ed2in.text <- gsub('@ENSNAME@', run.id, ed2in.text)
   ed2in.text <- gsub('@CONFIGFILE@', xml.file.name, ed2in.text)
+  ed2in.text <- gsub('@SCRATCH@', paste('/scratch/', settings$run$scratch, sep=''), ed2in.text)
   ed2in.text <- gsub('@OUTFILE@', paste('out', run.id, sep=''), ed2in.text)
   ed2in.text <- gsub('@HISTFILE@', paste('hist', run.id, sep=''), ed2in.text)
  
+#---------------------------------------------------------------------------------------------------
   ed2in.file.name <- paste('ED2INc.',run.id, sep='')
   writeLines(ed2in.text, con = paste(outdir, ed2in.file.name, sep=''))
   
@@ -167,8 +191,9 @@ write.run.ED <- function(settings){
   run.text <- scan(file = paste(settings$pecanDir,
                      'bash/run-template.ED', sep = ''), 
                    what="character",sep='@', quote=NULL, quiet=TRUE)
-  run.text <- gsub('OUTDIR', settings$run$host$outdir, run.text)
+  run.text  <- gsub('TMP', paste("/scratch/",settings$run$scratch,sep=""), run.text)
   run.text  <- gsub('BINARY', settings$run$host$ed$binary, run.text)
+  run.text <- gsub('OUTDIR', settings$run$host$outdir, run.text)
   runfile <- paste(settings$outdir, 'run', sep='')
   writeLines(run.text, con = runfile)
   if(settings$run$host$name == 'localhost') {
