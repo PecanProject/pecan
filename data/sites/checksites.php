@@ -1,9 +1,9 @@
 #!/usr/bin/php
 
 <?php
-$db_user = "bety";
-$db_pass = "bety";
-$db_db   = "bety";
+$db_user = "ebi_user";
+$db_pass = "mScGKxhPhdq";
+$db_db   = "ebi_analysis";
 $db_host = "localhost";
 
 $accuracy = 0.5;
@@ -53,14 +53,22 @@ while ($row = @mysql_fetch_assoc($result)) {
   $geocode_pending = true;
   $request_url = $base_url . urlencode($address);
   while ($geocode_pending) {
-    $xml = simplexml_load_file($request_url) or die("url not loading");
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $request_url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    // get the result of http query
+    $output = curl_exec($ch);
+    curl_close($ch);
+    // feed the curl output to simplexml_load_string
+    $xml = simplexml_load_string($output) or die("XML string not loading");
+    #$xml = simplexml_load_file($request_url) or die("url not loading");
 
     $status = $xml->Response->Status->code;
     if (strcmp($status, "200") == 0) {
       // Successful geocode
       $geocode_pending = false;
       $coordinates = $xml->Response->Placemark->Point->coordinates;
-      $coordinatesSplit = split(",", $coordinates);
+      $coordinatesSplit = preg_split("/,/", $coordinates);
       // Format: Longitude, Latitude, Altitude
       $lat = $coordinatesSplit[1];
       $lng = $coordinatesSplit[0];
