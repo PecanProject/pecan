@@ -82,3 +82,12 @@ test_that("summarize.result works appropriately", {
   expect_that(summarize.result(testresult)$mean, equals(testresult$mean))
   expect_that(nrow(summarize.result(testresult2)), equals(4))
 })
+
+test_that("as.sequence works";{
+  expect_identical(as.sequence(c("a", "b")),
+                   1:2)
+  expect_identical(as.sequence(c("a", NA)),
+                   1:2)
+  expect_equal(as.sequence(c("a", NA), na.rm = FALSE),
+               c(1,NA))
+})
