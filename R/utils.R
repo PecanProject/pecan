@@ -624,6 +624,14 @@ transformstats <- function(data) {
 ##' This transformation is required for using data in BUGS/JAGS
 ##' @title as.sequence
 ##' @param x categorical variable as vector
+##' @param na.rm logical: return NA's or replace with max(x) + 1 
 ##' @return sequence from 1:length(unique(x))
 ##' @author David LeBauer
-as.sequence <- function(x) as.integer(factor(x, unique(x)))
+as.sequence <- function(x, na.rm = TRUE){
+  x2 <- as.integer(factor(x, unique(x)))
+  if(na.rm == TRUE){
+    x2[is.na(x2)] <- max(x2, na.rm = TRUE) + 1
+  }
+  return(x2)
+}
+ 
