@@ -126,7 +126,17 @@ transform.nas <- function(data){
 
   return(data)
 }
-assign.controls <- function(data){
+##' Change treatments to sequential integers
+##'
+##' Assigns all control treatments the same value, then assigns unique treatments
+##' within each site. Each site is required to have a control treatment.
+##' The algorithm (incorrectly) assumes that each site has a unique set of experimental
+##' treatments.
+##' @title assign.congrols 
+##' @param data 
+##' @return 
+##' @author David LeBauer, Carl Davidson
+assign.treatments <- function(data){
   data$trt_id[which(data$control == 1)] <- 'control'
   sites <- unique(data$site_id)
   for(ss in sites){
@@ -346,7 +356,7 @@ query.bety.trait.data <- function(trait, spstr,con=query.bety.con(...), ...){
   names(result)[names(result)=='name'] <- 'trt_id'
   
   result <- transform.nas(result)
-  result <- assign.controls(result)
+  result <- assign.treatments(result)
 
   ## calculate summary statistics from experimental replicates
   result <- summarize.result(result)
@@ -355,9 +365,9 @@ query.bety.trait.data <- function(trait, spstr,con=query.bety.con(...), ...){
   data <- subset(transform(result,
                            stat = as.numeric(stat),
                            n    = as.numeric(n),
-                           site_id = as.integer(factor(site_id, unique(site_id))),
-                           trt_id = as.integer(factor(trt_id, unique(c('control', as.character(trt_id))))),
-                           greenhouse = as.integer(factor(greenhouse, unique(greenhouse))),
+                           site_id = as.sequence(site_id),
+                           trt_id = as.sequence(trt_id),
+                           greenhouse = as.sequence(greenhouse),
                            mean = mean,
                            citation_id = citation_id), 
                  select = c('stat', 'n', 'site_id', 'trt_id', 'mean', 'citation_id', 'greenhouse')) 
