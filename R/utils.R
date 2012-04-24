@@ -617,3 +617,13 @@ transformstats <- function(data) {
 }
 ##' @example statdf <- data.frame(Y=rep(1,5), stat=rep(1,5), n=rep(4,5), statname=c('SD', 'MSE', 'LSD', 'HSD', 'MSD'))
 ##' transformstats(statdf)
+
+##' Convert categorical variable into sequential integers
+##'
+##' Turns any categorical variable into a sequential integer.
+##' This transformation is required for using data in BUGS/JAGS
+##' @title as.sequence
+##' @param x categorical variable as vector
+##' @return sequence from 1:length(unique(x))
+##' @author David LeBauer
+as.sequence <- function(x) as.integer(factor(x, unique(x)))
