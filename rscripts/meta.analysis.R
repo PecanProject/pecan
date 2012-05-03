@@ -21,7 +21,7 @@ settings <- xmlToList(settings.xml)
 if('meta.analysis' %in% names(settings)) {
 
   if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
-  require(PECAn)
+  require(PEcAn)
   
   ma.iter   = as.numeric(settings$meta.analysis$iter)
   

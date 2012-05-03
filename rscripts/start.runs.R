@@ -16,7 +16,7 @@ settings.xml <- xmlParse(settings.file)
 settings <- xmlToList(settings.xml)
 host     <-  settings$run$host
 if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
-library(PECAn)
+library(PEcAn)
 
 if(is.null(settings$run$priority)){
   batch.jobs.script <- "bash/batch.jobs.sh"

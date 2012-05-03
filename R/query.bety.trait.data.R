@@ -258,7 +258,8 @@ derive.traits <- function(FUN, ..., input=list(...),
 ##' @param spstr is the species.id integer or string of integers associated with the species
 ##'  
 ##' @return dataframe ready for use in meta-analysis
-
+##' @examples
+##' query.bety.trait.data("Vcmax", "938", con = newcon())
 query.bety.trait.data <- function(trait, spstr,con=query.bety.con(...), ...){
   
   if(is.list(con)){
