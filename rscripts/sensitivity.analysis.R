@@ -18,7 +18,7 @@ settings.xml <- xmlParse(settings.file)
 settings <- xmlToList(settings.xml)
 
 if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
-library(PECAn)
+library(PEcAn)
 
 load(paste(settings$outdir, 'output.Rdata', sep=''))
 load(paste(settings$outdir, 'samples.Rdata', sep=''))

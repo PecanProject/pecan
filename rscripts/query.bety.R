@@ -12,7 +12,7 @@ if(interactive()){
 settings.xml <- xmlParse(settings.file)
 settings <- xmlToList(settings.xml)
 if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
-require(PECAn)
+require(PEcAn)
 
 trait.names <- trait.dictionary()$id
 file.remove(dir(settings$outdir, full.names=TRUE))

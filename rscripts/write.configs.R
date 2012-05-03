@@ -18,7 +18,7 @@ outdir   <- settings$outdir
 host <- settings$run$host
 
 if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
-library(PECAn)
+library(PEcAn)
 
 pft.names <- unlist(xpathApply(settings.xml, '//pfts//pft//name', xmlValue))
 outdirs <- unlist(xpathApply(settings.xml, '//pfts//pft//outdir', xmlValue))
