@@ -90,4 +90,5 @@ test_that("as.sequence works";{
                    1:2)
   expect_equal(as.sequence(c("a", NA), na.rm = FALSE),
                c(1,NA))
+  expect_equal(as.sequence(c(NA,NA)), c(1,1))
 })
