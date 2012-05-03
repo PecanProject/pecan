@@ -1,4 +1,4 @@
-Package: PECAn
+Package: PEcAn
 Type: Package
 Title: PEcAn functions used for ecological forecasts and reanalysis
 Version: 1.1
@@ -33,6 +33,7 @@ LazyLoad: yes
 Collate:
     'allom.BayesFit.R'
     'approx.posterior.R'
+    'sipnet.specific.R'
     'dtheta.q.R'
     'help.R'
     'model.specific.R'
