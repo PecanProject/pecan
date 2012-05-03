@@ -46,9 +46,6 @@ approx.posterior <- function(trait.mcmc,priors,trait.data=NULL,outdir=NULL){
         plot(density(dat),col=2,lwd=2,main=trait)
         if(!is.null(trait.data)){
           rug(trait.data[[trait]]$Y, lwd = 2) 
-          #hist(trait.data[[trait]]$Y,probability=TRUE,
-          #     breaks = sqrt(nrow(trait.data[[trait]])),
-          #     add=TRUE,border="purple")
         }
         lines(x,dbeta(x,fit$estimate[1],fit$estimate[2]),lwd=2,type='l')
         lines(x,dbeta(x,pparm[1],pparm[2]),lwd=3,type='l',col=3)
