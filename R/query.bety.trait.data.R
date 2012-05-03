@@ -132,9 +132,9 @@ transform.nas <- function(data){
 ##' within each site. Each site is required to have a control treatment.
 ##' The algorithm (incorrectly) assumes that each site has a unique set of experimental
 ##' treatments.
-##' @title assign.congrols 
+##' @title assign.controls 
 ##' @param data 
-##' @return 
+##' @return dataframe with sequential treatments 
 ##' @author David LeBauer, Carl Davidson
 assign.treatments <- function(data){
   data$trt_id[which(data$control == 1)] <- 'control'
