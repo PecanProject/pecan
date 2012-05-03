@@ -384,6 +384,7 @@ query.bety.trait.data <- function(trait, spstr,con=query.bety.con(...), ...){
   }
   
   renamed <- rename.jags.columns(data)
+  if(nrow(renamed == 0)) stop(paste("there is no data for", trait))
   return(renamed)
 }
 
