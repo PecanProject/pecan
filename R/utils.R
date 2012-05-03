@@ -629,6 +629,9 @@ transformstats <- function(data) {
 ##' @author David LeBauer
 as.sequence <- function(x, na.rm = TRUE){
   x2 <- as.integer(factor(x, unique(x)))
+  if(all(is.na(x2))){
+    x2 <- rep(1, length(x2))
+  }
   if(na.rm == TRUE){
     x2[is.na(x2)] <- max(x2, na.rm = TRUE) + 1
   }
