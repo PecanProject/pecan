@@ -13,13 +13,17 @@ fetch.stats2se <- function(connection, query){
   transformed <- transformstats(fetch(query.result, n = -1))
   return(transformed)
 }
+
+
+
+
 query.data<-function(trait, spstr, extra.columns='', con=query.bety.con(...), ...){
   query <- paste("select 
             traits.id, traits.citation_id, traits.site_id, treatments.name, 
             traits.date, traits.time, traits.cultivar_id, traits.specie_id,
             traits.mean, traits.statname, traits.stat, traits.n, 
             variables.name as vname,
-            month(traits.date) as month,",
+    month(traits.date) as month,",
             extra.columns,
             "treatments.control, sites.greenhouse
           from traits 
@@ -28,6 +32,26 @@ query.data<-function(trait, spstr, extra.columns='', con=query.bety.con(...), ..
             left join variables on (traits.variable_id = variables.id) 
           where specie_id in (", spstr,") 
             and variables.name in ('", trait,"');", sep = "")
+  return(fetch.stats2se(con, query))
+}
+query.yields <- function(trait = 'yield', spstr, extra.columns='', con=query.bety.con(...), ...){
+    query <- paste("select 
+            yields.id, yields.citation_id, yields.site_id, treatments.name, 
+            yields.date, yields.time, yields.cultivar_id, yields.specie_id,
+            yields.mean, yields.statname, yields.stat, yields.n, 
+            variables.name as vname,
+            month(yields.date) as month,",
+                   extra.columns,
+                   "treatments.control, sites.greenhouse
+          from yields 
+            left join treatments on  (yields.treatment_id = treatments.id) 
+            left join sites on (yields.site_id = sites.id) 
+            left join variables on (yields.variable_id = variables.id) 
+          where specie_id in (", spstr,");", sep = "")
+    if(!trait == 'yield'){
+      query <- gsub(");", paste(" and variables.name in ('", trait,"');", sep = ""), query)
+    }
+
   return(fetch.stats2se(con, query))
 }
 
@@ -269,13 +293,13 @@ query.bety.trait.data <- function(trait, spstr,con=query.bety.con(...), ...){
   } 
   print(trait)
   
-  data<-query.data(trait, spstr, con=con)
-  covariates<-query.covariates(data$id, con=con)
+  data <- query.data(trait, spstr, con=con)
+  covariates <- query.covariates(data$id, con=con)
   
   if(trait == 'Vcmax') {
     #########################   VCMAX   ############################
-    data<-arrhenius.scaling.traits(data, covariates, c('leafT', 'airT'))
-    data<-filter.sunleaf.traits(data, covariates)
+    data <- arrhenius.scaling.traits(data, covariates, c('leafT', 'airT'))
+    data <- filter.sunleaf.traits(data, covariates)
     
     ## select only summer data for Panicum virgatum
     ##TODO fix following hack to select only summer data
@@ -287,11 +311,11 @@ query.bety.trait.data <- function(trait, spstr,con=query.bety.con(...), ...){
     #########################    SLA    ############################
     
     ## convert LMA to SLA
-    data<-rbind(data, 
+    data <- rbind(data, 
         derive.traits(function(lma){1/lma}, 
                       query.data('LMA', spstr, con=con)))
               
-    data<-filter.sunleaf.traits(data, covariates)
+    data <- filter.sunleaf.traits(data, covariates)
  
     ## select only summer data for Panicum virgatum
     ##TODO fix following hack to select only summer data
@@ -302,32 +326,32 @@ query.bety.trait.data <- function(trait, spstr,con=query.bety.con(...), ...){
   } else if (trait == 'leaf_turnover_rate'){
     #########################    LEAF TURNOVER    ############################
     ## convert LMA to SLA
-    data<-rbind(data, 
+    data <- rbind(data, 
         derive.traits(function(leaf.longevity){1/leaf.longevity}, 
             query.data('Leaf Longevity', spstr, con=con)))
     
   } else if (trait == 'root_respiration_rate') {
     #########################  ROOT RESPIRATION   ############################
     
-    data<-arrhenius.scaling.traits(data, covariates, c('rootT', 'airT'))
+    data <- arrhenius.scaling.traits(data, covariates, c('rootT', 'airT'))
     
   } else if (trait == 'dark_respiration_factor') {
     #########################  DARK RESPIRATION   ############################
     browser()
-    data<-arrhenius.scaling.traits(data, covariates, c('leafT', 'airT'))
+    data <- arrhenius.scaling.traits(data, covariates, c('leafT', 'airT'))
     
     dark.resp.rate <- query.data('dark_respiration_rate', spstr, con=con)
     vcmax <- query.data('Vcmax', spstr, con=con)
     #TODO: apply arrhenius scaling
     
-    data<-rbind(data, 
+    data <- rbind(data, 
         derive.traits(function(dark.resp.rate, vcmax) {dark.resp.rate / vcmax}, 
                       dark.resp.rate, vcmax, var.name='dark_respiration_factor'))
     
   } else if (trait == 'c2n_leaf') {
     #########################  LEAF C:N   ############################
     
-    data<-rbind(data, 
+    data <- rbind(data, 
         derive.traits(function(leafN){48/leafN}, 
             query.data('leafN', spstr, con=con)))
     
@@ -346,47 +370,14 @@ query.bety.trait.data <- function(trait, spstr,con=query.bety.con(...), ...){
   result <- data
 
   ## if result is empty, stop run
-  print(result)
+
   if(nrow(result)==0) {
     return(NA)
+    warning(paste("there is no data for", trait))
+  } else {
+    print(result)
+    jagged <- jagify(result)
+    renamed <- rename.jags.columns(jagged)
+    return(renamed)
   }
-
-
-  
-  ## rename name column from treatment table to trt_id
-  names(result)[names(result)=='name'] <- 'trt_id'
-  
-  result <- transform.nas(result)
-  result <- assign.treatments(result)
-
-  ## calculate summary statistics from experimental replicates
-  result <- summarize.result(result)
-
-  ## assign a unique sequential integer to site and trt; for trt, all controls == 0
-  data <- subset(transform(result,
-                           stat = as.numeric(stat),
-                           n    = as.numeric(n),
-                           site_id = as.sequence(site_id),
-                           trt_id = as.sequence(trt_id),
-                           greenhouse = as.sequence(greenhouse),
-                           mean = mean,
-                           citation_id = citation_id), 
-                 select = c('stat', 'n', 'site_id', 'trt_id', 'mean', 'citation_id', 'greenhouse')) 
-
-
-  if(length(data$stat[!is.na(data$stat) & data$stat <= 0.0]) > 0) {
-    citationswithbadstats <- unique(data$citation_id[which(data$stat <= 0.0)])
-    warning.message <- paste('there are implausible values of SE: SE <= 0 \n',
-                             'for', trait, 'data from citation',citationswithbadstats,'\n',
-                             'SE <=0 set to NA \n')
-    warning(warning.message)
-    print(data)
-    data$stat[data$stat <= 0.0] <- NA
-  }
-  
-  renamed <- rename.jags.columns(data)
-  if(nrow(renamed == 0)) stop(paste("there is no data for", trait))
-  return(renamed)
 }
-
-
