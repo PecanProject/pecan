@@ -3,10 +3,13 @@ if(interactive()){
   user <- Sys.getenv('USER')
   if(user == 'dlebauer'){
     settings.file <- '~/in/ebifarm/fast/ebifarm.pavi.xml'
+  if(user == 'djaiswal'){
+    settings.file <- '~/in/ebifarm/fast/ebifarm.pavi.xml'
   } else if(user == 'davids14') {
     settings.file <- '~/pecan/tundra.xml'
   } else {
     paste('please specify settings file in meta.analysis.R')
+  }
   }
 } else {
   settings.file <- Sys.getenv("PECANSETTINGS")
@@ -18,6 +21,10 @@ host     <-  settings$run$host
 if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
 library(PEcAn)
 
+
+## Priority only needs to be set for very big jobs as with ED2
+## priority can be NULL in settings, if null,
+## only batch.jobs.sh is required to exist
 if(is.null(settings$run$priority)){
   batch.jobs.script <- "bash/batch.jobs.sh"
 } else if (as.numeric(settings$run$priority) < 0) {
