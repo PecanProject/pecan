@@ -20,7 +20,8 @@ if (!$db_selected) {
 
 // check for valid MET data
 if (isset($_REQUEST['host']) && ($_REQUEST['host'] != "")) {
-	$query = "SELECT sites.* FROM sites, inputs WHERE inputs.filepath LIKE '{$_REQUEST['host']}:%' AND inputs.format_id=12 AND inputs.site_id=sites.id";
+	//$query = "SELECT sites.* FROM sites";
+	$query = "SELECT sites.* FROM sites, inputs, input_files, machines WHERE machines.hostname='{$_REQUEST['host']}' AND input_files.machine_id=machines.id AND input_files.format_id=12 AND input_files.file_id = inputs.file_id AND inputs.site_id=sites.id";
 } else {
 	$query = "SELECT sites.* FROM sites";
 }
