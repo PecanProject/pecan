@@ -55,7 +55,7 @@ function endTime($token) {
   global $status;
   foreach ($status as $line) {
     $data = explode("\t", $line);
-    if ($data[0] == $token && count($data) == 3) {
+    if ($data[0] == $token && count($data) >= 3) {
       return $data[2];
     }
   }
@@ -63,22 +63,35 @@ function endTime($token) {
 }
 
 function status($token) {
-	global $folder;
+  global $folder;
+  global $status;
 
-  if (startTime($token) == "") {
-    return "Waiting";
+  foreach ($status as $line) {
+    $data = explode("\t", $line);
+    if ($data[0] == $token) {
+      if (count($data) >= 4) {
+        return $data[3];
+      }
+      if ($token == "MODEL") {
+        return exec("tail -20 `ls -1rt $folder/run/*.log` |  grep '^Simulating' | tail -1 | awk '{ print $2 }'");
+      }
+      return "Running";
+    }
   }
-  if (endTime($token) != "") {
-    return "Done";
-  }
-	if ($token == "MODEL") {
-		return exec("tail -20 `ls -1rt $folder/run/*.log` |  grep '^Simulating' | tail -1 | awk '{ print $2 }'");
-	} else {
-		return "Running";
-	}
+  return "Waiting";
 }
 
-header( "refresh:5" );
+$refresh=true;
+foreach ($status as $line) {
+  $data = explode("\t", $line);
+  if ((count($data) >= 4) && ($data[3] == 'ERROR')) {
+    $refresh=false;
+  }
+}
+
+if ($refresh) {
+  header( "refresh:5" );
+}
 
 ?>
 <html>
