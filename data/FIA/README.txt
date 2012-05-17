@@ -1,4 +1,4 @@
-TThis document describes the code to download and install the FIA
+This document describes the code to download and install the FIA
 database locally in a mysql database. The code leverages of a single
 script (called mirror.sh to download all the new files from
 apps.fs.fed.us. If any new files are downloaded it will reload the
