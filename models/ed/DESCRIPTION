@@ -1,0 +1,32 @@
+Package: PEcAn-ED
+Type: Package
+Title: PEcAn functions to write ED configurations
+Version: 1.2
+Date: 2012-05-17
+Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Mike Dietze, Carl
+    Davidson, Rob Kooper
+Maintainer: David LeBauer <dlebauer@illinois.edu>
+Description: This package contains the specific functions to write the ED
+    configuration files.
+Depends:
+    PEcAn-base,
+    XML,
+    MASS,
+    randtoolbox,
+    rjags,
+    ggplot2,
+    RMySQL,
+    gridExtra,
+    xtable
+Suggests:
+    hdf5,
+    MCMCpack,
+    mvtnorm,
+    time
+SystemRequirements: ED2
+OS_type: unix
+License: University of Illinois/NCSA Open Source License
+Copyright: Energy Biosciences Institute, Authors
+LazyLoad: yes
+Collate:
+    'write.configs.R'
