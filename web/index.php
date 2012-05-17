@@ -18,7 +18,7 @@ if (!$db_selected) {
 }
 
 // get hosts
-$query = "SELECT SUBSTRING_INDEX(filepath, ':', 1) AS host FROM inputs WHERE filepath LIKE '%:%' AND inputs.format_id=12 GROUP BY host";
+$query = "SELECT hostname FROM machines ORDER BY hostname";
 $result = mysql_query($query);
 if (!$result) {
 	die('Invalid query: ' . mysql_error());
@@ -27,9 +27,9 @@ $hosts = "";
 $hostname = gethostname();
 while ($row = @mysql_fetch_assoc($result)){
 	if ($hostname == $row['host']) {
-		$hosts = "$hosts<option selected>{$row['host']}</option>\n";
+		$hosts = "$hosts<option selected>{$row['hostname']}</option>\n";
 	} else {
-		$hosts = "$hosts<option>{$row['host']}</option>\n";
+		$hosts = "$hosts<option>{$row['hostname']}</option>\n";
 	}
 }
 
