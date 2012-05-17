@@ -11,6 +11,10 @@ R CMD BATCH --vanilla ${PECANHOME}/rscripts/setup.R
 bash ./setup.sh
 echo -e "\t`date +'%F %T'`" >> STATUS
 
+# setup pss/css by running fia2ED
+echo -e -n "FIA2ED\t`date +'%F %T'`" >> STATUS
+echo -e "\t`date +'%F %T'`" >> STATUS
+
 # get data from bety
 echo -e -n "BETY\t`date +'%F %T'`" >> STATUS
 R CMD BATCH --vanilla ${PECANHOME}/rscripts/query.bety.R
@@ -36,11 +40,12 @@ bash ./check.sh
 rm jobs
 echo -e "\t`date +'%F %T'`" >> STATUS
 
-# create plots
+# diagnostics plots
 echo -e -n "PLOTS\t`date +'%F %T'`" >> STATUS
-R CMD BATCH --vanilla ${PECANHOME}/rscripts/plots.R
+R CMD BATCH --vanilla "--args ${PWD}/run ${PWD}/run/ED2INc.ENS00001" ${PECANHOME}/rscripts/pecan.ed2.diagnostics.R
 echo -e "\t`date +'%F %T'`" >> STATUS
 
 # all done
+echo -e -n "FINISHED\t`date +'%F %T'`" >> STATUS
 R CMD BATCH --vanilla ${PECANHOME}/rscripts/finished.R
-
+echo -e "\t`date +'%F %T'`" >> STATUS

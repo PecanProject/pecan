@@ -60,6 +60,7 @@ while ($row = @mysql_fetch_assoc($result)){
     $path = substr($row['file'], 0,  1+strripos($row['file'], '/'));
 	$psscss = "$psscss<option value='$path'>{$row['name']}</option>\n";
 }
+$psscss = "$psscss<option value='FIA'>Use FIA</option>\n";
 
 // show list of PFTs
 $query = "SELECT * FROM pfts ORDER BY name";
@@ -197,7 +198,7 @@ while ($row = @mysql_fetch_assoc($result)){
 			<div class="spacer"></div>
 			
 			<label>PFT</label>
-			<select name="pft[]" single size=5>
+			<select name="pft[]" multiple size=5>
 			<?=$pfts?>
 			</select>
 			<div class="spacer"></div>

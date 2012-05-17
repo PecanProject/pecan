@@ -3,11 +3,51 @@
 #$ -V
 LOG=$1
 ED2IN=$2
-mpirun -np $LOG "../build/ed_2.1-opt" -f $ED2IN
+#
+#
+echo "---- Creating temporary output folder ----"
+if [ ! -d "$TMP" ]; then
+   mkdir TMP  # Temporary output folder on local scratch
+   else 
+   # This will delete the temp directory
+   rm -r TMP  # Delete temp local scratch folder
+   mkdir TMP  # Temporary output folder on local scratch
+fi
+#
+#
+# -----------------------------------------------------------------------
+# binary - location of ED2 compiled binary in users home folder.
+# Set in PEcAn config.xml file in settings$run$host$ed$binary
+echo ""
+echo "---- Running model ----"
+mpirun -np $LOG BINARY -f $ED2IN
+#
 wait
-rsync -routi /scratch/out${ED2IN:7}* OUTDIR
-if [ -f /scratch/out${ED2IN:7}* ]; then rm /scratch/out${ED2IN:7}*; fi
+#
+# -----------------------------------------------------------------------
+# copy output from scratch to output folder
+echo ""
+echo "---- Moving model output for completed runs ----"
+rsync -routi TMP/out${ED2IN:7}* OUTDIR
+wait
+#
+#
+# Indicate which runs have completed
+echo ""
+echo "---- Marking which runs finished ----"
 touch OUTDIR${ED2IN:7}-finished
-
+#
+#
+echo ""
+echo "---- Deleting temporary model output on local scratch ----"
+#rm -r TMP  # Delete temporary folder in local scratch
+if [ -f TMP/out${ED2IN:7}* ]; then rm TMP/out${ED2IN:7}*; fi
+wait
+echo ""
+echo "---- Run complete ----"
+#if [ -f /scratch/out${ED2IN:7}* ]; then rm /scratch/out${ED2IN:7}*; fi 
+# -----------------------------------------------------------------------
+#
+#
 ## notes: 
 ## ${ED2IN:7} removes first 7 chars (ED2IN.c) from ED2IN file name

@@ -36,7 +36,7 @@ $status=file("$folder/STATUS");
 if ($status === FALSE) {
 	$status = array();
 }
-if (endTime("PLOTS") != "") {
+if (endTime("FINISHED") != "") {
 	header("Location: finished.php?runid=$runid");
 }
 
@@ -103,6 +103,12 @@ header( "refresh:5" );
 			<td><?=status("SETUP");?></td>
 		</tr>
 		<tr>
+			<th>fia2ed</th>
+			<td><?=startTime("FIA2ED");?></td>
+			<td><?=endTime("FIA2ED");?></td>
+			<td><?=status("FIA2ED");?></td>
+		</tr>
+		<tr>
 			<th>query.bety</th>
 			<td><?=startTime("BETY");?></td>
 			<td><?=endTime("BETY");?></td>
@@ -131,6 +137,12 @@ header( "refresh:5" );
 			<td><?=startTime("PLOTS");?></td>
 			<td><?=endTime("PLOTS");?></td>
 			<td><?=status("PLOTS");?></td>
+		</tr>
+		<tr>
+			<th>finished</th>
+			<td><?=startTime("FINISHED");?></td>
+			<td><?=endTime("FINISHED");?></td>
+			<td><?=status("FINISHED");?></td>
 		</tr>
 	</table>
 </body>

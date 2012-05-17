@@ -1,94 +1,99 @@
 <?php
 
+// database parameters
+require("dbinfo.php");
+require("system.php");
+
 // runid
 if (!isset($_REQUEST['runid'])) {
-  print("Need a runid.");
+  die("Need a runid.");
 }
 $runid=$_REQUEST['runid'];
 
-if (!isset($_REQUEST['year']) || !is_numeric($_REQUEST['year'])) {
-  print("Need year.");
-}
-$year=$_REQUEST['year'];
-
 if (!isset($_REQUEST['type'])) {
-  print("Need type.");
+  die("Need type.");
 }
 $type=$_REQUEST['type'];
-
-if (isset($_REQUEST['name'])) {
-	$name=$_REQUEST['name'];
-	if (!preg_match('/[a-zA-Z0-9\-]+/', $name)) {
-		print("Invalid name specified.");
-		exit(0);
-	}
-} else {
-	$name="unknown";
-}
-
-// database parameters
-require("dbinfo.php");
 
 // Opens a connection to a MySQL server
 $connection=mysql_connect ($hostname, $username, $password);
 if (!$connection) {
-	print('Not connected : ' . mysql_error());
+	die('Not connected : ' . mysql_error());
 }
 
 // Set the active MySQL database
 $db_selected = mysql_select_db($database, $connection);
 if (!$db_selected) {
-	print ('Can\'t use db : ' . mysql_error());
+	die ('Can\'t use db : ' . mysql_error());
 }
 
 // get run information
 $query = "SELECT outdir FROM runs WHERE runs.id=$runid";
 $result = mysql_query($query);
 if (!$result) {
-	print('Invalid query: ' . mysql_error());
+	die('Invalid query: ' . mysql_error());
 }
 $run = mysql_fetch_assoc($result);
 $folder = $run['outdir'];
 
 // return dataset
 switch ($type) {
-	case "pecan":
-		$mime = "text/xml";
-		$file="$folder/pecan.xml";
-		break;
-#	case "ed2in":
-#		$mime = "text/plain";
-#		$file="$folder/out/$name";
-#		break;
-	case "tower":
-		$mime="application/octet-stream";
-		$files=array_values(array_filter(scandir("$folder/out"), function ($item) {
-			global $year;
-			return preg_match("/.*-T-$year-.*.h5/", $item);
-		}));
-		if (count($files) < 1) {
-			die("Could not find a tower file.");
+	case "file":
+		if (!isset($_REQUEST['name'])) {
+			die("Need name.");
 		}
-		$file="$folder/out/{$files[0]}";
-		header('Content-Disposition: attachment; filename='.basename($file));
+		$name = $_REQUEST['name'];
+		
+		$file = realpath("$folder/$name");
+		if (substr($file, 0, strlen($folder)) != $folder) {
+			die("Invalid file name specified.");			
+		}
+		
+		if (substr($name, -4) === ".xml") {
+			$mime = "text/xml";
+		} else if (substr($name, -4) === ".log") {
+			$mime = "text/plain";					
+		} else {
+			$mime = "application/octet-stream";
+			header('Content-Disposition: attachment; filename='.basename($name));			
+		}
 		break;
-	case "GPP":
-	case "Reco":
-	case "NPP":
-	case "NEE":
+		
+	case "plot":
+		if (!isset($_REQUEST['year']) || !is_numeric($_REQUEST['year'])) {
+			die("Need year.");
+		}
+		$year=$_REQUEST['year'];
+		if (!isset($_REQUEST['var'])) {
+			die("Need var.");
+		}
+		$var=$_REQUEST['var'];
+		$width=600;
+		if (isset($_REQUEST['width']) && ($_REQUEST['width'] > 600)) {
+			$width=$_REQUEST['width'];
+		}
+		$height=600;
+		if (isset($_REQUEST['height']) && ($_REQUEST['height'] > 600)) {
+			$height=$_REQUEST['height'];
+		}
 		$mime = "image/png";
-		$file = "$folder/$year-$type-year.png";
+		$file = tempnam('','');
+		shell_exec("PECANSETTINGS=$folder/pecan.xml R CMD BATCH --vanilla '--args $year $var $width $height $file' ${pecan_home}/rscripts/singleplot.R $folder/plot.out");				
 		break;
+		
 	default:
-		$file="unknown.file";
-		break;
+		die("unknown type.");
 }
 
 if (!file_exists($file)) {
-	print("Could not find data $file.\n");
-	return;
+	die("Invalid file name specified.");			
 }
-header('Content-type: $mime');
+if ($mime != "") {
+	header("Content-type: $mime");
+}
 readfile($file);
-?>
 
+if ($type == "plot") {
+  unlink($file);
+}
+?>
