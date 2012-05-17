@@ -2,7 +2,7 @@
 require("dbinfo.php");
 require("system.php");
 
-$pft_id=15;
+$pft_id=1;
 
 # parameters
 if (!isset($_REQUEST['siteid'])) {
@@ -55,7 +55,6 @@ $siteinfo = mysql_fetch_assoc($result);
 print_r($siteinfo);
 
 # folders
-mkdir("$folder",  0777, true);
 $folder = tempnam($output_folder, 'PEcAn_');
 unlink($folder);
 if (!mkdir("$folder/out",  0777, true)) {
@@ -69,6 +68,14 @@ if (!mkdir("$folder/pft",  0777, true)) {
 }
 if (!mkdir("$folder/run",  0777, true)) {
     die("Failed to create folders $folder/run");
+}
+
+// Generate pss/css if needed
+if ($psscss == "FIA") {
+	$psscss="${folder}/run/";
+	$FIA2ED=true;
+} else {
+	$FIA2ED=false;
 }
 
 // create the run
@@ -92,7 +99,6 @@ foreach($pft as $p) {
 	fwrite($fh, "    <pft>" . PHP_EOL);
 	fwrite($fh, "      <name>${p}</name> " . PHP_EOL);
 	fwrite($fh, "      <outdir>${folder}/pft/${pft_id}/</outdir>" . PHP_EOL);
-	fwrite($fh, "      <edin>${folder}/template.pavi</edin>" . PHP_EOL);
 	fwrite($fh, "      <constants>" . PHP_EOL);
 	fwrite($fh, "        <num>${pft_id}</num>" . PHP_EOL);
 	fwrite($fh, "        <phenology>2</phenology>" . PHP_EOL);
@@ -147,6 +153,7 @@ fwrite($fh, "  </config.header>" . PHP_EOL);
 fwrite($fh, "  <run>" . PHP_EOL);
 fwrite($fh, "    <id>${runid}</id>" . PHP_EOL);
 fwrite($fh, "    <folder>${folder}</folder>" . PHP_EOL);
+fwrite($fh, "    <edin>${folder}/template.pavi</edin>" . PHP_EOL);
 fwrite($fh, "    <site>" . PHP_EOL);
 fwrite($fh, "      <name>{$siteinfo['sitename']}</name>" . PHP_EOL);
 fwrite($fh, "      <lat>{$siteinfo['lat']}</lat>" . PHP_EOL);
@@ -174,8 +181,14 @@ fclose($fh);
 # copy template.pavi
 copy("template.pavi", "${folder}/template.pavi");
 
-# execute runall.sh
-shell_exec("sed -e 's#@PECAN_HOME@#${pecan_home}#' runall.sh > ${folder}/runall.sh");
+# setup pecan
+if ($FIA2ED) {
+	shell_exec("sed -e 's#@PECAN_HOME@#${pecan_home}#' runallfia.sh > ${folder}/runall.sh");	
+} else {
+	shell_exec("sed -e 's#@PECAN_HOME@#${pecan_home}#' runall.sh > ${folder}/runall.sh");
+}
+
+# start the actual workflow
 chdir($folder);
 pclose(popen('bash ./runall.sh >/dev/null &', 'r'));
 

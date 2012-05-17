@@ -278,7 +278,7 @@ derive.traits <- function(FUN, ..., input=list(...),
 ##' For Vcmax and root_respiration_rate, data are scaled
 ##' converted from measurement temperature to \eqn{25^oC} via the arrhenius equation.
 ##'
-##' @param trait is the traiat name used in BETY, stored in variables.name
+##' @param trait is the trait name used in BETY, stored in variables.name
 ##' @param spstr is the species.id integer or string of integers associated with the species
 ##'  
 ##' @return dataframe ready for use in meta-analysis
@@ -350,11 +350,24 @@ query.bety.trait.data <- function(trait, spstr,con=query.bety.con(...), ...){
     
   } else if (trait == 'c2n_leaf') {
     #########################  LEAF C:N   ############################
+<<<<<<< TREE
     
     data <- rbind(data, 
         derive.traits(function(leafN){48/leafN}, 
             query.data('leafN', spstr, con=con)))
     
+=======
+
+    query <- paste("select traits.id, traits.citation_id, variables.name as vname, traits.site_id, treatments.name, treatments.control, sites.greenhouse, traits.mean, traits.statname, traits.stat, traits.n, traits.date, traits.time, traits.cultivar_id, traits.specie_id from traits left join treatments on  (traits.treatment_id = treatments.id) left join sites on (traits.site_id = sites.id) left join variables on (traits.variable_id = variables.id) where specie_id in (", spstr,")  and variables.name in ('c2n_leaf', 'leafN');", sep = "")
+    data <- fetch.stats2se(con, query)
+    leafNdata   <- data$vname == 'leafN'
+    leafNdataSE <- leafNdata & data$statname == 'SE'
+    leafNdataSE[is.na(leafNdataSE)] = FALSE
+    inv.se <- function(mean, stat, n) signif(sd(48/rnorm(100000, mean, stat*sqrt(n)))/sqrt(n),3)
+    data$stat[leafNdataSE] <- apply(data[leafNdataSE, c('mean', 'stat', 'n')],1, function(x) inv.se(x[1],x[2],x[3]) )
+    data$mean[data$vname == 'leafN'] <- 48/data$mean[data$vname == 'leafN']
+    result <- data
+>>>>>>> MERGE-SOURCE
   } else if (trait == 'fineroot2leaf') {
     #########################  FINE ROOT ALLOCATION  ############################
     data<-rbind(data,

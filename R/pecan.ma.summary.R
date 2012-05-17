@@ -11,12 +11,15 @@ pecan.ma.summary <- function(mcmc.object, pft,outdir, threshold=1.1){
     maparms <- .maparms[ c(which(.maparms %in% .parms), which(!.maparms %in% .parms))]
 
     ## plots for mcmc diagnosis
-    pdf(paste(outdir,'ma.summaryplots.',pft, trait, '.pdf', sep = ''))
+    pdf(paste(outdir, 'ma.summaryplots.', pft, '.', trait, '.pdf', sep = ''))
     for (i in maparms) {
       plot(mcmc.object[[trait]][,i], trace = FALSE, density = TRUE,
            main = paste('summary plots of',i ,'for', pft, trait))
+      box(lwd=2)
       plot(mcmc.object[[trait]][,i],density = FALSE)
+      box(lwd=2)
       autocorr.plot(mcmc.object[[trait]][,i][1], xlim = c(1, 50))
+      box(lwd=2)
     }
     dev.off()
  
