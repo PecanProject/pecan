@@ -1,8 +1,8 @@
 #!/bin/bash
 
 export DB="fia5data"
-export DB_USER="fia5data_user"
-export DB_PASS="v3tXaJ8ACx"
+export DB_USER="fia5data"
+export DB_PASS="fia5data"
 export VER=5_1
 
 FILES="FIADB_REFERENCE AK AL AR AZ CA CO CT DE FL GA IA ID IL IN KS KY LA MA MD ME MI MN MO MS MT NC ND NE NH NJ NM NV NY OH OK OR PA PR RI SC SD TN TX UT VA VI VT WA WI WV WY"

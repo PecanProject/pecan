@@ -5,12 +5,6 @@ if (!isset($_REQUEST['siteid'])) {
 	$siteid=$_REQUEST['siteid'];
 }
 
-if (isset($_REQUEST['host']) && ($_REQUEST['host'] != "")) {
-	$where="AND filepath LIKE '{$_REQUEST['host']}:%'";
-} else {
-	$where="";
-}
-
 // system parameters
 require("system.php");
 
@@ -30,28 +24,33 @@ if (!$db_selected) {
 }
 
 // get site information
-$query = "SELECT * FROM sites WHERE sites.id=$siteid";
-$result = mysql_query($query);
+$result = mysql_query("SELECT * FROM sites WHERE sites.id=$siteid");
 if (!$result) {
 	die('Invalid query: ' . mysql_error());
 }
 $siteinfo = mysql_fetch_assoc($result);
 
+// setup default part of query
+$query="SELECT file_path AS file, name, start_date, end_date FROM inputs, input_files, machines WHERE inputs.site_id=$siteid AND inputs.file_id=input_files.file_id";
+if (isset($_REQUEST['host']) && ($_REQUEST['host'] != "")) {
+	$query="$query AND machines.hostname='${_REQUEST['host']}' AND input_files.machine_id=machines.id";
+}
+
 // get met data
-// FIXME what to do if not on this host?
-$query = "SELECT SUBSTRING_INDEX(filepath, ':', -1) AS file, CONCAT(SUBSTRING(start_date, 1, 4), '-', SUBSTRING(end_date, 1, 4)) AS name FROM inputs WHERE site_id=$siteid AND format_id=12 $where";
-$result = mysql_query($query);
+$result = mysql_query($query . " AND input_files.format_id=12");
 if (!$result) {
 	die('Invalid query: ' . mysql_error());
 }
 $mets = "";
 while ($row = @mysql_fetch_assoc($result)){
+	if ($row['name'] == 'ED_MET_DRIVER_HEADER') {
+		$row['name']=substr($row['start_date'], 0, 4) . "-" . substr($row['end_date'], 0, 4);
+	}
 	$mets = "$mets<option value='{$row['file']}'>{$row['name']}</option>\n";
 }
 
 // get psscss data
-$query = "SELECT SUBSTRING_INDEX(filepath, ':', -1) AS file, name FROM inputs WHERE site_id=$siteid AND format_id=10 $where";
-$result = mysql_query($query);
+$result = mysql_query($query . " AND input_files.format_id=10");
 if (!$result) {
 	die('Invalid query: ' . mysql_error());
 }
@@ -63,8 +62,7 @@ while ($row = @mysql_fetch_assoc($result)){
 $psscss = "$psscss<option value='FIA'>Use FIA</option>\n";
 
 // show list of PFTs
-$query = "SELECT * FROM pfts ORDER BY name";
-$result = mysql_query($query);
+$result = mysql_query("SELECT * FROM pfts ORDER BY name");
 if (!$result) {
 	die('Invalid query: ' . mysql_error());
 }
