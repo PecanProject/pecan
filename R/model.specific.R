@@ -130,6 +130,7 @@ write.run.ED <- function(settings){
                      'bash/run-template.ED', sep = ''), 
                    what="character",sep='@', quote=NULL, quiet=TRUE)
   run.text <- gsub('OUTDIR', settings$run$host$outdir, run.text)
+  run.text  <- gsub('BINARY', settings$run$host$ed$binary, run.text)
   runfile <- paste(settings$outdir, 'run', sep='')
   writeLines(run.text, con = runfile)
   if(settings$run$host$name == 'localhost') {

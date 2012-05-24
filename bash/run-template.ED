@@ -1,10 +1,26 @@
 #!/bin/bash
+
+# Active comments for PBS
+##PBS -S /bin/bash
+#PBS -V
+#PBS -l nodes=1:ppn=1
+#PBS -j oe
+# -cwd for PBS
+[[ $PBS_O_WORKDIR ]] && cd $PBS_O_WORKDIR
+
+# Active comments for SGE
 #$ -S /bin/bash
 #$ -V
-LOG=$1
+#$ -pe mpich 1
+#$ -j y
+#$ -cwd
+
+# command line arguments
+NCPUS=$1
 ED2IN=$2
+
 if [ -f /scratch/out${ED2IN:7}* ]; then rm /scratch/out${ED2IN:7}*; fi
-mpirun -np $LOG "../build/ed_2.1-ebi" -f $ED2IN
+mpirun -np $NCPUS BINARY -f $ED2IN
 wait
 rsync -routi /scratch/out${ED2IN:7}* OUTDIR
 rm /scratch/out${ED2IN:7}*  
