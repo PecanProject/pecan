@@ -1,4 +1,4 @@
 library(testthat)
-library(foo)
+library(PEcAn.DB)
 
-test_package("foo")
+#test_package("foo")
