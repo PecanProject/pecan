@@ -1,8 +1,24 @@
 #!/bin/bash
+
+# Active comments for PBS
+##PBS -S /bin/bash
+#PBS -V
+#PBS -l nodes=1:ppn=1
+#PBS -j oe
+# -cwd for PBS
+[[ $PBS_O_WORKDIR ]] && cd $PBS_O_WORKDIR
+
+# Active comments for SGE
 #$ -S /bin/bash
 #$ -V
+#$ -pe mpich 1
+#$ -j y
+#$ -cwd
+
+# command line arguments
 NPROC=$1
 ED2IN=$2
+
 #
 #
 echo "---- Creating temporary output folder ----"
