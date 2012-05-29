@@ -1,4 +1,4 @@
 library(testthat)
-library(visualization)
+library(PEcAn.DB)
 
 #test_package("foo")
