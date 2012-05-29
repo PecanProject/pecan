@@ -39,6 +39,7 @@ convert.samples.ED <- function(trait.samples){
     
   if('SLA' %in% names(trait.samples)){
     sla <- trait.samples[['SLA']]
+    # This appears incorrect.  Should be sla*DEFAULT.LEAF.C ??
     trait.samples[['SLA']] <- sla / DEFAULT.LEAF.C
   }
   
