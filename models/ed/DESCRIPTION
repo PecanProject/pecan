@@ -1,8 +1,8 @@
-Package: PEcAn-ED
+Package: PEcAn.ED
 Type: Package
 Title: PEcAn functions to write ED configurations
 Version: 1.2
-Date: 2012-05-17
+Date: 2012-05-25
 Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Mike Dietze, Carl
     Davidson, Rob Kooper
 Maintainer: David LeBauer <dlebauer@illinois.edu>

@@ -6,7 +6,15 @@ DATE=`date +"%Y-%m-%d"`
 UPDATE_REQUIRE="yes"
 UPDATE_COLLATE="yes"
 
-for d in `find . -name DESCRIPTION -print`; do
+if [ $# -gt 0 ]; then
+  FILES="$*"
+else
+  FILES=$( find . -name DESCRIPTION -print )
+fi
+
+echo $FILES
+
+for d in $FILES; do
   DIR=`dirname $d`
 
   echo "Modifying $d"
@@ -15,7 +23,7 @@ for d in `find . -name DESCRIPTION -print`; do
   sed -i -e "s/^Version: .*$/Version: $VERSION/" -e "s/^Date: .*$/Date: $DATE/" $d
 
   if [ "$UPDATE_REQUIRE" == "yes" ]; then
-    REQUIRE=`grep -h 'require[\s]*(' $DIR/R/* | sed -e 's/.*require[\s]*(\([^)]*\)).*/\1 /' | sort -u`
+    REQUIRE=$( echo `grep -h 'require\|library[\s]*(' $DIR/R/* | sed -e 's/.*require[\s]*(\([^)]*\)).*/\1 /' -e 's/.*library[\s]*(\([^)]*\)).*/\1 /' | sort -u` )
     echo "Require: $REQUIRE"
     sed -i -e "s/^Require: .*/Require: $REQUIRE/" $d
   fi

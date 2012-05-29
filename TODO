@@ -1,2 +1,4 @@
 - check if we need only JAGS2.2.0
 - check all DESCRIPTION for packages
+- use dump to dump a function to be send across network.
+
