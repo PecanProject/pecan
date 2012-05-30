@@ -16,4 +16,4 @@ Suggests: testthat
 License: FreeBSD + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes
-Collate: query.allom.data.R query.bety.R query.bety.trait.data.R query.bety.traits.R
+Collate: db.query.trait.data.R query.allom.data.R query.bety.R query.bety.trait.data.R query.bety.traits.R
