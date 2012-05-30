@@ -14,7 +14,7 @@
 #---------------- Load requirements for function. -------------------------------------------------#
 # Info: Current set as hacks.  Need to replace once the packages compile
 
-setwd('/Users/serbin/DATA/pecan_trunk/')
+setwd('/home/n-z/sserbin/pecan_trunk/')
 
 #ok = require(db); if (! ok) stop("Package db is not available...")      # R XML library
 source('db/R/query.bety.db.R')
@@ -25,17 +25,19 @@ source('db/R/query.bety.traits.R')
 
 # Utils
 source('utils/R/utils.R')
+source('utils/R/jagify.R')
 
 
 # HACK: Just a hack for now.
 source('common/R/read.settings.R')
 
 ok = require(RMySQL); if (! ok) stop("Package RMySQL is not available...")      # R MySQL library
+ok = require(rjags); if (! ok) stop("Package rjags is not available...")      # R MySQL library
 #--------------------------------------------------------------------------------------------------#
 
 
 #---------------- Load PEcAn settings file. -------------------------------------------------------#
-pecan.settings.file = '/Users/serbin/DATA/pecan_in/US-WCr.settings.xml'
+pecan.settings.file = '/home/n-z/sserbin/pecan_in/US-WCr.settings.xml'
 settings = read.settings(pecan.settings.file)
 #--------------------------------------------------------------------------------------------------#
 
@@ -68,7 +70,7 @@ trait.names <- trait.dictionary()$id
 #--------------------------------------------------------------------------------------------------#
 
 
-#---------------- Load trait dictionary. ----------------------------------------------------------#
+#---------------- Open database connection. -------------------------------------------------------#
 newconfn <- function() query.bety.con(dbname   = settings$database$name,
                                       password = settings$database$passwd,
                                       username = settings$database$userid,
@@ -78,15 +80,52 @@ newcon <- newconfn()
 #--------------------------------------------------------------------------------------------------#
 
 
-
-
-
-
-
-
-
-
-
+#---------------- Query trait data. ---------------------------------------------------------------#
+cnt = 0;
+all.trait.data = list()
+for(pft in settings$pfts){
+  out.dir = pft$outdir
+  if (! file.exists(out.dir)) dir.create(out.dir)
+  #dir.create(pft$outdir)  # keep this here or do this above?
+  cnt = cnt + 1
+  
+  ## 1. get species list based on pft
+  spstr <- query.bety.pft_species(pft$name,con=newcon)
+  
+  ## 2. get priors available for pft  
+  prior.distns <- query.bety.priors(pft$name, vecpaste(trait.names), out=pft$outdir,con=newcon)
+  ### exclude any parameters for which a constant is provided 
+  prior.distns <- prior.distns[which(!rownames(prior.distns) %in%
+    names(pft$constants)),]
+  
+  # 3. display info to the console
+  print(" ")
+  print("-------------------------------------------------------------------")
+  print(paste('Summary of Prior distributions for: ',pft$name,sep=""))
+  print(prior.distns)
+  traits <- rownames(prior.distns) # vector of variables with prior distributions for pft 
+  print("-------------------------------------------------------------------")
+  print(" ")
+  
+  ## if meta-analysis to be run, get traits for pft as a list with one dataframe per variable
+  if('meta.analysis' %in% names(settings)) {
+    trait.data <- query.bety.traits(spstr, traits, con = newcon)
+    traits <- names(trait.data)
+    save(trait.data, file = paste(pft$outdir, 'trait.data.Rdata', sep=''))
+    
+    all.trait.data[[cnt]] <- trait.data
+    names(all.trait.data)[cnt] <- pft$name
+    
+    for(i in 1:length(all.trait.data)){
+      print(names(all.trait.data)[i])
+      print(sapply(all.trait.data[[i]],dim))
+    }
+    
+  }
+  
+  save(prior.distns, file=paste(pft$outdir, 'prior.distns.Rdata', sep = ''))
+  
+}
 
 
 
