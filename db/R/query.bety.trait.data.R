@@ -242,7 +242,8 @@ derive.traits <- function(FUN, ..., input=list(...),
     return(input)
   }
   else if(length(match.columns) > 0){
-    browser()
+    #browser() # not sure why this is here.
+    
     #function works recursively to reduce the number of match columns
     match.column <- match.columns[[1]]
     #find unique values within the column that intersect among all input datasets
@@ -375,9 +376,17 @@ query.bety.trait.data <- function(trait, spstr,con=query.bety.con(...), ...){
     return(NA)
     warning(paste("there is no data for", trait))
   } else {
-    print(result)
+    
+    # Do we really want to print each trait table?? Seems like a lot of
+    # info to send to console.  Maybe just print summary stats?
+    #print(result)
+    print(paste("Mean ",trait," : ",round(mean(result$mean),digits=3),sep=""))
+    return(result)
+    
+    # Convert to format applicable for JAGS meta-analysis
     jagged <- jagify(result)
     renamed <- rename.jags.columns(jagged)
     return(renamed)
+
   }
 }
