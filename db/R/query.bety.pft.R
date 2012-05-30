@@ -15,6 +15,7 @@ query.bety.pft_species <- function(pft,con=NULL,...){
   q    <- dbSendQuery(con, query)
   species <- NA
   species <- fetch ( q, n = -1 )
+  print(paste("List of species included in PFT: ",pft,sep=""))
   print(species)
   spstr <- vecpaste(species$id)
   return(spstr)
