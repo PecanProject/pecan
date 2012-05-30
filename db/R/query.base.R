@@ -1,3 +1,4 @@
+#---------------- Base database query function. ---------------------------------------------------#
 ##' Generic function to query BETYdb
 ##'
 ##' Given a connection and a query, will return a query as a data frame
@@ -8,20 +9,24 @@
 ##' @return data frame with query results
 ##' @examples
 ##' query.bety('select count(id) from traits;')
-query.bety <- function(query,con=NULL,...){
+#--------------------------------------------------------------------------------------------------#
+query.base <- function(query,con=NULL,...){
   iopened <- false
   if(is.null(con)){
-    con <- query.bety.con(...)
-    iopened < true
+    con <- query.base.con(...)
+    iopened <- true
   }
   q  <- dbSendQuery(con, query)
-  data <- fetch(q, n=-1)
+  data <- fetch(q, n = -1)
   if(iopened) {
     dbDisconnect(con)
   }
   return(data)
 }
+#==================================================================================================#
 
+
+#---------------- Base database connection function. ----------------------------------------------#
 ##' Creates database connection object.
 ##'
 ##' Also removes any existing connections. 
@@ -30,7 +35,8 @@ query.bety <- function(query,con=NULL,...){
 ##' @return database connection object
 ##' @examples
 ##' con <- query.bety.con()
-query.bety.con <- function(...){
+#--------------------------------------------------------------------------------------------------#
+query.base.con <- function(...){
   lapply(dbListConnections(MySQL()), dbDisconnect) #first kill all connections
   dvr <- dbDriver ("MySQL")
   
@@ -42,22 +48,32 @@ query.bety.con <- function(...){
   #which are generally recommended against
   if(exists('settings')){
     con <- dbConnect(dvr, group  = settings$database$name,
-        dbname=settings$database$name, 
-        password=settings$database$passwd, 
-        username=settings$database$userid, 
-        host=settings$database$host)
+        dbname = settings$database$name, 
+        password = settings$database$passwd, 
+        username = settings$database$userid, 
+        host = settings$database$host)
     return(con)
   }
   
   return(con)
 }
+#==================================================================================================#
 
+
+#---------------- Close all open database connections. --------------------------------------------#
 ##' Kill existing database connections
 ##'
 ##' resolves (provides workaround to) bug #769 caused by having too many open connections \code{Error during wrapup: RS-DBI driver: (cannot allocate a new connection -- maximum of 16 connections already opened)}
 ##' @title Kill existing database connections 
 ##' @return nothing, as a side effect closes all open connections
 ##' @author David LeBauer
+#--------------------------------------------------------------------------------------------------#
 killdbcons <- function(){
   for (i in dbListConnections(MySQL())) dbDisconnect(i)
 }
+#==================================================================================================#
+
+
+####################################################################################################
+### EOF.  End of R script file.      				
+####################################################################################################

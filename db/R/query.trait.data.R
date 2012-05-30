@@ -1,4 +1,4 @@
-######################## DATA FUNCTIONS #################################
+#--------------------------------------------------------------------------------------------------#
 ##' Queries data from BETY and transforms statistics to SE
 ##'
 ##' Performs query and then uses \code{transformstats} to convert miscellaneous statistical summaries
@@ -8,16 +8,23 @@
 ##' @param query MySQL query to traits table
 ##' @return dataframe with trait data
 ##' @seealso used in \code{\link{query.bety.trait.data}}; \code{\link{transformstats}} performs transformation calculations
+#--------------------------------------------------------------------------------------------------#
 fetch.stats2se <- function(connection, query){
   query.result <- dbSendQuery(connection, query)
   transformed <- transformstats(fetch(query.result, n = -1))
   return(transformed)
 }
+#==================================================================================================#
 
 
-
-
-query.data<-function(trait, spstr, extra.columns='', con=query.bety.con(...), ...){
+#--------------------------------------------------------------------------------------------------#
+##' 
+##'
+##'
+##'
+##'
+#--------------------------------------------------------------------------------------------------#
+query.data<-function(trait, spstr, extra.columns='', con=query.base.con(...), ...){
   query <- paste("select 
             traits.id, traits.citation_id, traits.site_id, treatments.name, 
             traits.date, traits.time, traits.cultivar_id, traits.specie_id,
@@ -34,7 +41,15 @@ query.data<-function(trait, spstr, extra.columns='', con=query.bety.con(...), ..
             and variables.name in ('", trait,"');", sep = "")
   return(fetch.stats2se(con, query))
 }
-query.yields <- function(trait = 'yield', spstr, extra.columns='', con=query.bety.con(...), ...){
+#==================================================================================================#
+
+
+#--------------------------------------------------------------------------------------------------#
+##' 
+##'
+##'
+#--------------------------------------------------------------------------------------------------#
+query.yields <- function(trait = 'yield', spstr, extra.columns='', con=query.base.con(...), ...){
     query <- paste("select 
             yields.id, yields.citation_id, yields.site_id, treatments.name, 
             yields.date, yields.time, yields.cultivar_id, yields.specie_id,
@@ -54,9 +69,12 @@ query.yields <- function(trait = 'yield', spstr, extra.columns='', con=query.bet
 
   return(fetch.stats2se(con, query))
 }
+#==================================================================================================#
 
 
 ######################## COVARIATE FUNCTIONS #################################
+
+#--------------------------------------------------------------------------------------------------#
 ##' Append covariate data as a column within a table
 ##' @name append.covariate
 ##'
@@ -70,6 +88,7 @@ query.yields <- function(trait = 'yield', spstr, extra.columns='', con=query.bet
 ##' @param covariates.data one or more tables of covariate data, ordered by the precedence 
 ##' they will assume in the event a trait has covariates across multiple tables.
 ##' All tables must contain an 'id' and 'level' column, at minimum. 
+#--------------------------------------------------------------------------------------------------#
 append.covariate<-function(data, column.name, ..., covariates.data=list(...)){
   merged <- data.frame()
   for(covariate.data in covariates.data){
@@ -84,7 +103,20 @@ append.covariate<-function(data, column.name, ..., covariates.data=list(...)){
   merged <- merge(merged, data, all = TRUE)
   return(merged)
 }
-query.covariates<-function(trait.ids, con =query.bety.con(...), ...){
+#==================================================================================================#
+
+
+#--------------------------------------------------------------------------------------------------#
+##' 
+##' @name query.covariates
+##'
+##' \code{query.covariates} queries covariates from database for a given vector of trait id's
+##' 
+##' @param trait.ids list of trait ids
+##'
+##'
+#--------------------------------------------------------------------------------------------------#
+query.covariates<-function(trait.ids, con = query.bety.con(...), ...){
   covariate.query <- paste("select covariates.trait_id, covariates.level,variables.name",
       "from covariates left join variables on variables.id = covariates.variable_id",
       "where trait_id in (",vecpaste(trait.ids),")")
@@ -92,7 +124,17 @@ query.covariates<-function(trait.ids, con =query.bety.con(...), ...){
   covariates = fetch(q, n = -1)  
   return(covariates)
 }
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
+##' 
+##' @name arrhenius.scaling.traits
+##'
+##'
+##'
+##'
+#--------------------------------------------------------------------------------------------------#
 arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp=25){
   if(length(covariates)>0) {
     data <- append.covariate(data, 'temp', 
@@ -108,6 +150,17 @@ arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp
   }
   return(data)
 }
+#==================================================================================================#
+
+
+#--------------------------------------------------------------------------------------------------#
+##' 
+##' @name filter.sunleaf.traits
+##'
+##'
+##'
+##'
+#--------------------------------------------------------------------------------------------------#
 filter.sunleaf.traits <- function(data, covariates){
   if(length(covariates)>0) {  
     data <- append.covariate(data, 'canopy_layer', 
@@ -118,10 +171,22 @@ filter.sunleaf.traits <- function(data, covariates){
   }
   return(data)
 }
+#==================================================================================================#
 
 
-
+#--------------------------------------------------------------------------------------------------#
+##' 
+##' @name rename.jags.columns
+##'
+##' \code{rename.jags.columns} renames the variables within output data frame trait.data
+##' 
+##' @param data data frame to with variables to rename
+##' 
+##' @seealso used with \code{\link{jagify}};
+#--------------------------------------------------------------------------------------------------#
 rename.jags.columns <- function(data) {
+  
+  # Change variable names and calculate obs.prec within data frame
   transformed <-  transform(data,
                       Y        = mean,
                       se       = stat,
@@ -130,9 +195,24 @@ rename.jags.columns <- function(data) {
                       site     = site_id,
                       cite     = citation_id,
                       ghs      = greenhouse)
-  selected <- subset (transformed, select = c('Y', 'n', 'site', 'trt', 'ghs', 'obs.prec', 'se', 'cite'))
+  
+  # Subset data frame
+  selected <- subset(transformed, select = c('Y', 'n', 'site', 'trt', 'ghs', 'obs.prec', 
+                                              'se', 'cite'))
+  # Return subset data frame
   return(selected)
 }
+#==================================================================================================#
+
+
+#--------------------------------------------------------------------------------------------------#
+##' 
+##' @name transform.nas
+##'
+##'
+##'
+##'
+#--------------------------------------------------------------------------------------------------#
 transform.nas <- function(data){
   #control defaults to 1
   data$control[is.na(data$control)]     <- 1
@@ -150,16 +230,21 @@ transform.nas <- function(data){
 
   return(data)
 }
+#==================================================================================================#
+
+
+#--------------------------------------------------------------------------------------------------#
 ##' Change treatments to sequential integers
 ##'
 ##' Assigns all control treatments the same value, then assigns unique treatments
 ##' within each site. Each site is required to have a control treatment.
 ##' The algorithm (incorrectly) assumes that each site has a unique set of experimental
 ##' treatments.
-##' @title assign.controls 
+##' @title assign.treatments 
 ##' @param data 
 ##' @return dataframe with sequential treatments 
 ##' @author David LeBauer, Carl Davidson
+#--------------------------------------------------------------------------------------------------#
 assign.treatments <- function(data){
   data$trt_id[which(data$control == 1)] <- 'control'
   sites <- unique(data$site_id)
@@ -181,10 +266,10 @@ assign.treatments <- function(data){
 drop.columns <- function(data, columns){
   return(data[,which(!colnames(data) %in% columns)])
 }
+#==================================================================================================#
 
 
-
-
+#--------------------------------------------------------------------------------------------------#
 ##' sample from normal distribution, given summary stats
 ##'
 ##' @title take.samples
@@ -198,6 +283,7 @@ drop.columns <- function(data, columns){
 ##' ## return vector of length \code{sample.size} from N(mean,stat) 
 ##' take.samples(summary = data.frame(mean = 10, stat = 10), sample.size = 10)
 ##' 
+#--------------------------------------------------------------------------------------------------#
 take.samples <- function(summary, sample.size = 10^6){
   if(is.na(summary$stat)){
     ans <- summary$mean
@@ -206,8 +292,10 @@ take.samples <- function(summary, sample.size = 10^6){
   }
   return(ans)
 }
+#==================================================================================================#
 
 
+#--------------------------------------------------------------------------------------------------#
 ##' Transforms data using specified function (FUN)
 ##'
 ##' Performs an arithmetic function, FUN, over a series of traits and returns 
@@ -227,6 +315,7 @@ take.samples <- function(summary, sample.size = 10^6){
 ##' @examples
 ##' input <- list(x = data.frame(mean = 1, stat = 1, n = 1))
 ##' derive.trait(FUN = identity, input = input, var.name = 'x')
+#--------------------------------------------------------------------------------------------------#
 derive.trait <- function(FUN, ..., input=list(...), var.name=NA, sample.size=100000){
   if(any(lapply(input, nrow) > 1)){
     return(NULL)
@@ -240,7 +329,10 @@ derive.trait <- function(FUN, ..., input=list(...), var.name=NA, sample.size=100
   output$vname <- ifelse(is.na(var.name), output$vname, var.name)
   return(output)
 }
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##' Equivalent to derive.trait(), but operates over a series of trait datasets,
 ##' as opposed to individual trait rows. See derive.trait() for more information.
 ##'
@@ -252,6 +344,7 @@ derive.trait <- function(FUN, ..., input=list(...), var.name=NA, sample.size=100
 ##' @param match.columns in the event more than one trait dataset is supplied, 
 ##'        this specifies the columns that identify a unique data point 
 ##' @return a copy of the first input trait with modified mean, stat, and n
+#--------------------------------------------------------------------------------------------------#
 derive.traits <- function(FUN, ..., input=list(...), 
                           match.columns=c('citation_id', 'site_id', 'specie_id'), 
                           var.name=NA, sample.size=100000){
@@ -264,7 +357,7 @@ derive.traits <- function(FUN, ..., input=list(...),
     return(input)
   }
   else if(length(match.columns) > 0){
-    #browser() # not sure why this is here.
+    #browser() # !!!not sure why this is here.
     
     #function works recursively to reduce the number of match columns
     match.column <- match.columns[[1]]
@@ -291,9 +384,12 @@ derive.traits <- function(FUN, ..., input=list(...),
             var.name=var.name, sample.size=sample.size))
   }
 }
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##' Extract trait data from BETYdb
-##' @name query.bety.trait.data
+##' @name query.trait.data
 ##'
 ##' \code{query.bety.trait.data} extracts data from BETYdb for a given trait and set of species,
 ##' converts all statistics to summary statistics, and prepares a dataframe for use in meta-analysis.
@@ -307,7 +403,8 @@ derive.traits <- function(FUN, ..., input=list(...),
 ##' @return dataframe ready for use in meta-analysis
 ##' @examples
 ##' query.bety.trait.data("Vcmax", "938", con = newcon())
-query.bety.trait.data <- function(trait, spstr,con=query.bety.con(...), ...){
+#--------------------------------------------------------------------------------------------------#
+query.trait.data <- function(trait, spstr,con=query.base.con(...), ...){
   
   if(is.list(con)){
     print("query.bety.trait.data")
@@ -405,10 +502,16 @@ query.bety.trait.data <- function(trait, spstr,con=query.bety.con(...), ...){
     print(paste("Mean ",trait," : ",round(mean(result$mean),digits=3),sep=""))
     return(result)
     
-    # Convert to format applicable for JAGS meta-analysis
-    jagged <- jagify(result)
-    renamed <- rename.jags.columns(jagged)
-    return(renamed)
+    # Convert to format applicable for JAGS meta-analysis. remove from this script file
+#     jagged <- jagify(result)
+#     renamed <- rename.jags.columns(jagged)
+#     return(renamed)
 
   }
 }
+#==================================================================================================#
+
+
+####################################################################################################
+### EOF.  End of R script file.            	
+####################################################################################################

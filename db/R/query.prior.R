@@ -1,3 +1,4 @@
+#--------------------------------------------------------------------------------------------------#
 ##' Query priors associated with a string of traits and plant functional type
 ##'
 ##' @title Query Priors
@@ -8,9 +9,10 @@
 ##' @return return priors for a given pft
 ##' @examples
 ##' query.bety.priors('ebifarm.pavi', c('SLA', 'Vcmax', 'leaf_width'))
-query.bety.priors <- function(pft, trstr, out=NULL,con=NULL,...){
+#--------------------------------------------------------------------------------------------------#
+query.priors <- function(pft, trstr, out=NULL,con=NULL,...){
   if(is.null(con)){
-    con <- query.bety.con(...)
+    con <- query.base.con(...)
   }
   if(is.list(con)){
     print("query.bety.priors")
@@ -44,3 +46,9 @@ query.bety.priors <- function(pft, trstr, out=NULL,con=NULL,...){
     return(priors)
   }
 }
+#==================================================================================================#
+
+
+####################################################################################################
+### EOF.  End of R script file.        			
+####################################################################################################
