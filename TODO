@@ -4,3 +4,4 @@
 - update and clean up code in script files.
 - use dump to dump a function to be send across network.
 - create a PEcAn.all package
+- create all output folders in read.settings
