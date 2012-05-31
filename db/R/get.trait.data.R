@@ -15,7 +15,7 @@
 #---------------- Load requirements for function. -------------------------------------------------#
 # Info: Current set as hacks.  Need to replace once the packages compile
 
-setwd('/Users/serbin/DATA/pecan_trunk/')
+setwd('/home/sserbin/pecan_trunk/')
 
 #ok = require(db); if (! ok) stop("Package db is not available...")      # R XML library
 source('./db/R/query.base.R')
@@ -30,7 +30,7 @@ source('./modules/meta.analysis/R/jagify.R')
 
 
 # HACK: Just a hack for now.
-source('common/R/read.settings.R')
+source('./common/R/read.settings.R')
 
 ok = require(RMySQL); if (! ok) stop("Package RMySQL is not available...")      # R MySQL library
 ok = require(rjags); if (! ok) stop("Package rjags is not available...")      # R MySQL library
@@ -44,19 +44,23 @@ args <- commandArgs(trailingOnly = TRUE)                          # Import comma
 
 if (is.na(args[1])==TRUE){
   pecan.settings.file <- default.settings[1]
+  print(paste("---- PEcAn settings file: ",pecan.settings.file, sep = ""))
+  print(" ")
 } else {
   pecan.settings.file <- args[1]
+  print(paste("---- PEcAn settings file: ",pecan.settings.file, sep = ""))
+  print(" ")
 }
 
-#pecan.settings.file <- '/Users/serbin/DATA/pecan_in/US-WCr.settings.xml'
+# Open and read in settings file for PEcAn run.
 settings = read.settings(pecan.settings.file)
 #--------------------------------------------------------------------------------------------------#
 
 
 #---------------- Clean up output directory. ------------------------------------------------------#
 # Info: May not want to keep all of this code block?
-file.remove(list.files(path=settings$outdir,full.names=TRUE)
-            [which(file.info(list.files(path=settings$outdir,full.names=TRUE))$isdir==FALSE)])
+#file.remove(list.files(path=settings$outdir,full.names=TRUE)
+#            [which(file.info(list.files(path=settings$outdir,full.names=TRUE))$isdir==FALSE)])
 
 # Create output directories if they don't already exist.  Clean up old files.
 num = length(settings$pfts)
