@@ -17,15 +17,15 @@
 setwd('/home/n-z/sserbin/pecan_trunk/')
 
 #ok = require(db); if (! ok) stop("Package db is not available...")      # R XML library
-source('db/R/query.bety.db.R')
-source('db/R/query.bety.pft.R')
-source('db/R/query.bety.prior.R')
-source('db/R/query.bety.trait.data.R')
-source('db/R/query.bety.traits.R')
+source('db/R/query.base.R')
+source('db/R/query.pft.R')
+source('db/R/query.prior.R')
+source('db/R/query.trait.data.R')
+source('db/R/query.traits.R')
 
 # Utils
 source('utils/R/utils.R')
-source('utils/R/jagify.R')
+source('modules/meta.analysis/R/jagify.R')
 
 
 # HACK: Just a hack for now.
@@ -33,6 +33,7 @@ source('common/R/read.settings.R')
 
 ok = require(RMySQL); if (! ok) stop("Package RMySQL is not available...")      # R MySQL library
 ok = require(rjags); if (! ok) stop("Package rjags is not available...")      # R MySQL library
+ok = require(plyr); if (! ok) stop("Package plyr is not available...")      # R MySQL library
 #--------------------------------------------------------------------------------------------------#
 
 
@@ -71,7 +72,7 @@ trait.names <- trait.dictionary()$id
 
 
 #---------------- Open database connection. -------------------------------------------------------#
-newconfn <- function() query.bety.con(dbname   = settings$database$name,
+newconfn <- function() query.base.con(dbname   = settings$database$name,
                                       password = settings$database$passwd,
                                       username = settings$database$userid,
                                       host     = settings$database$host)
@@ -90,10 +91,10 @@ for(pft in settings$pfts){
   cnt = cnt + 1
   
   ## 1. get species list based on pft
-  spstr <- query.bety.pft_species(pft$name,con=newcon)
+  spstr <- query.pft_species(pft$name,con=newcon)
   
   ## 2. get priors available for pft  
-  prior.distns <- query.bety.priors(pft$name, vecpaste(trait.names), out=pft$outdir,con=newcon)
+  prior.distns <- query.priors(pft$name, vecpaste(trait.names), out=pft$outdir,con=newcon)
   ### exclude any parameters for which a constant is provided 
   prior.distns <- prior.distns[which(!rownames(prior.distns) %in%
     names(pft$constants)),]
@@ -109,7 +110,7 @@ for(pft in settings$pfts){
   
   ## if meta-analysis to be run, get traits for pft as a list with one dataframe per variable
   if('meta.analysis' %in% names(settings)) {
-    trait.data <- query.bety.traits(spstr, traits, con = newcon)
+    trait.data <- query.traits(spstr, traits, con = newcon)
     traits <- names(trait.data)
     save(trait.data, file = paste(pft$outdir, 'trait.data.Rdata', sep=''))
     
@@ -126,12 +127,6 @@ for(pft in settings$pfts){
   save(prior.distns, file=paste(pft$outdir, 'prior.distns.Rdata', sep = ''))
   
 }
-
-
-
-
-
-
 
 
 ####################################################################################################

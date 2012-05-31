@@ -14,7 +14,7 @@ jagify <- function(result){
   names(result)[names(result)=='name'] <- 'trt_id'
   
   result <- transform.nas(result)
-  result <- assign.controls(result)
+  result <- assign.treatments(result)
   
   ## calculate summary statistics from experimental replicates
   result <- summarize.result(result)
@@ -29,16 +29,16 @@ jagify <- function(result){
                              mean = mean,
                              citation_id = citation_id), 
                    select = c('stat', 'n', 'site_id', 'trt_id', 'mean', 'citation_id', 'greenhouse')) 
-  
-  if(length(data$stat[!is.na(data$stat) & data$stat <= 0.0]) > 0) {
-    citationswithbadstats <- unique(data$citation_id[which(data$stat <= 0.0)])
-    warning.message <- paste('there are implausible values of SE: SE <= 0 \n',
-                             'for', trait, 'data from citation',citationswithbadstats,'\n',
-                             'SE <=0 set to NA \n')
-    warning(warning.message)
-    print(result)
-    result$stat[result$stat <= 0.0] <- NA
-  }
+
+#   if(length(result$stat[!is.na(result$stat) & result$stat <= 0.0]) > 0) {
+#     citationswithbadstats <- unique(result$citation_id[which(result$stat <= 0.0)])
+#     warning.message <- paste('there are implausible values of SE: SE <= 0 \n',
+#                              'for', trait, 'result from citation',citationswithbadstats,'\n',
+#                              'SE <=0 set to NA \n')
+#     warning(warning.message)
+#     print(result)
+#     result$stat[result$stat <= 0.0] <- NA
+#   }
 }
 #--------------------------------------------------------------------------------------------------#
 
