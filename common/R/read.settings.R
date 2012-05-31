@@ -14,7 +14,7 @@
 
 #---------------- Load requirements for function. -------------------------------------------------#
 # Info: Load required libraries for running this function inside the PEcAn workflow.
-ok = require(XML); if (! ok) stop("Package XML is not available...")      # R XML library
+if (!require(XML)) stop("Package XML is not available...")      # R XML library
 #--------------------------------------------------------------------------------------------------#
 
 
@@ -28,7 +28,7 @@ read.settings <- function(pecan.settings.file){
   if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)}
   
   # Create main output directory if it doesn't already exist
-  if (! file.exists(settings$outdir)) dir.create(settings$outdir)
+  if (! file.exists(settings$outdir)) dir.create(settings$outdir, recursive=TRUE)
   
   # Move settings file to main output directory
   if (! file.exists(file.path(pecan.settings.file,settings$outdir))){
