@@ -285,11 +285,11 @@ trait.dictionary <- function(traits = NULL) {
   #This could also be represented in Bety, 
   #but because it is used to determine which parameters to feed to the model,
   #it could be argued that it's conceptually model specific
-  defs <- read.csv(paste(settings$pecanDir, 'utils/data/ed.trait.dictionary.csv', sep='/'), header=TRUE)
+  data(ed.trait.dictionary)
   if(is.null(traits)) {
-    trait.defs <- defs
+    trait.defs <- ed.trait.dictionary
   } else {
-    trait.defs <- defs[match(traits, defs$id),]
+    trait.defs <- ed.trait.dictionary[match(traits, ed.trait.dictionary$id),]
   }
   return(trait.defs)
 }

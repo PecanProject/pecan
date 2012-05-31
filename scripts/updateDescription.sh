@@ -20,7 +20,9 @@ for d in $FILES; do
   echo "Modifying $d"
   echo "Version: $VERSION"
   echo "Date: $DATE"
-  sed -i -e "s/^Version: .*$/Version: $VERSION/" -e "s/^Date: .*$/Date: $DATE/" $d
+  sed -i -e "s/^Version: .*$/Version: $VERSION/" \
+         -e "s/^Date: .*$/Date: $DATE/" \
+         -e "s/^License: .*/License: FreeBSD + file LICENSE/" $d
 
   if [ "$UPDATE_REQUIRE" == "yes" ]; then
     REQUIRE=$( echo `grep -h 'require\|library[\s]*(' $DIR/R/* | sed -e 's/.*require[\s]*(\([^)]*\)).*/\1 /' -e 's/.*library[\s]*(\([^)]*\)).*/\1 /' | sort -u` )

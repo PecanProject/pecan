@@ -2,7 +2,7 @@ Package: PEcAn.DB
 Type: Package
 Title: PEcAn functions used for ecological forecasts and reanalysis
 Version: 1.2
-Date: 2012-05-25
+Date: 2012-05-31
 Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Mike Dietze, Carl
     Davidson, Rob Kooper, Shawn Serbin
 Maintainer: David LeBauer <dlebauer@illinois.edu>
@@ -11,9 +11,9 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     model parameterization, execution, and analysis. The goal of PECAn is to
     streamline the interaction between data and models, and to improve the
     efficacy of scientific investigation.
-Depends: RMySQL
+Depends: RMySQL, PEcAn.utils
 Suggests: testthat
 License: FreeBSD + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes
-Collate: query.allom.data.R query.bety.R query.bety.trait.data.R query.bety.traits.R get.trait.data.R
+Collate: get.trait.data.R query.allom.data.R query.base.R query.pft.R query.prior.R query.trait.data.R query.traits.R
