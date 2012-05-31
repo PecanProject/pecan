@@ -13,11 +13,8 @@
 
 
 #---------------- Load requirements for function. -------------------------------------------------#
-# Info: Current set as hacks.  Need to replace once the packages compile
+# Info: Current set as hacks.  Need to replace once the packages compiles
 
-setwd('/home/sserbin/pecan_trunk/')
-
-#ok = require(db); if (! ok) stop("Package db is not available...")      # R XML library
 source('./db/R/query.base.R')
 source('./db/R/query.pft.R')
 source('./db/R/query.prior.R')
@@ -32,9 +29,10 @@ source('./modules/meta.analysis/R/jagify.R')
 # HACK: Just a hack for now.
 source('./common/R/read.settings.R')
 
-ok = require(RMySQL); if (! ok) stop("Package RMySQL is not available...")      # R MySQL library
-ok = require(rjags); if (! ok) stop("Package rjags is not available...")      # R MySQL library
-ok = require(plyr); if (! ok) stop("Package plyr is not available...")      # R MySQL library
+ok = require(XML); if (! ok) stop("Package XML is not available...")
+ok = require(RMySQL); if (! ok) stop("Package RMySQL is not available...")
+ok = require(rjags); if (! ok) stop("Package rjags is not available...")
+ok = require(plyr); if (! ok) stop("Package plyr is not available...")
 #--------------------------------------------------------------------------------------------------#
 
 
@@ -58,11 +56,10 @@ settings = read.settings(pecan.settings.file)
 
 
 #---------------- Clean up output directory. ------------------------------------------------------#
-# Info: May not want to keep all of this code block?
-#file.remove(list.files(path=settings$outdir,full.names=TRUE)
-#            [which(file.info(list.files(path=settings$outdir,full.names=TRUE))$isdir==FALSE)])
+# Info: Create output directories if they don't already exist.  Clean up old files. May not want to 
+# keep this code block?
 
-# Create output directories if they don't already exist.  Clean up old files.
+# Loop over pfts and create/clean up output directories.
 num = length(settings$pfts)
 for (i in 1:num){
   out.dir = settings$pfts[i]$pft$outdir
@@ -98,9 +95,13 @@ newcon <- newconfn()
 cnt = 0;
 all.trait.data = list()
 for(pft in settings$pfts){
-  out.dir = pft$outdir
-  if (! file.exists(out.dir)) dir.create(out.dir)
-  #dir.create(pft$outdir)  # keep this here or do this above?
+  out.dir = pft$outdir # loop over pfts
+  
+  # Code executed above
+  #if (! file.exists(out.dir)) dir.create(out.dir)
+  #dir.create(pft$outdir)
+  #
+  
   cnt = cnt + 1
   
   ## 1. get species list based on pft
@@ -140,6 +141,7 @@ for(pft in settings$pfts){
   save(prior.distns, file=paste(pft$outdir, 'prior.distns.Rdata', sep = ''))
   
 }
+#==================================================================================================#
 
 
 ####################################################################################################
