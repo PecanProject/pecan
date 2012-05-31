@@ -1,3 +1,4 @@
+#--------------------------------------------------------------------------------------------------#
 ##' 
 ##'
 ##'
@@ -14,18 +15,18 @@
 #---------------- Load requirements for function. -------------------------------------------------#
 # Info: Current set as hacks.  Need to replace once the packages compile
 
-setwd('/home/n-z/sserbin/pecan_trunk/')
+setwd('/Users/serbin/DATA/pecan_trunk/')
 
 #ok = require(db); if (! ok) stop("Package db is not available...")      # R XML library
-source('db/R/query.base.R')
-source('db/R/query.pft.R')
-source('db/R/query.prior.R')
-source('db/R/query.trait.data.R')
-source('db/R/query.traits.R')
+source('./db/R/query.base.R')
+source('./db/R/query.pft.R')
+source('./db/R/query.prior.R')
+source('./db/R/query.trait.data.R')
+source('./db/R/query.traits.R')
 
 # Utils
-source('utils/R/utils.R')
-source('modules/meta.analysis/R/jagify.R')
+source('./utils/R/utils.R')
+source('./modules/meta.analysis/R/jagify.R')
 
 
 # HACK: Just a hack for now.
@@ -38,14 +39,22 @@ ok = require(plyr); if (! ok) stop("Package plyr is not available...")      # R 
 
 
 #---------------- Load PEcAn settings file. -------------------------------------------------------#
-pecan.settings.file = '/home/n-z/sserbin/pecan_in/US-WCr.settings.xml'
+default.settings <- Sys.getenv(x = c("SETTINGS","USER","HOME"))   # Import default location
+args <- commandArgs(trailingOnly = TRUE)                          # Import command argument
+
+if (is.na(args[1])==TRUE){
+  pecan.settings.file <- default.settings[1]
+} else {
+  pecan.settings.file <- args[1]
+}
+
+#pecan.settings.file <- '/Users/serbin/DATA/pecan_in/US-WCr.settings.xml'
 settings = read.settings(pecan.settings.file)
 #--------------------------------------------------------------------------------------------------#
 
 
 #---------------- Clean up output directory. ------------------------------------------------------#
-# Info: May not want to keep this code block?
-
+# Info: May not want to keep all of this code block?
 file.remove(list.files(path=settings$outdir,full.names=TRUE)
             [which(file.info(list.files(path=settings$outdir,full.names=TRUE))$isdir==FALSE)])
 
