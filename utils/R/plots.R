@@ -361,13 +361,13 @@ dhist<-function(x, a=5*iqr(x),
       diff.xbr<-abs(diff(xbr))
       amt.spike<-diff.xbr[length(diff.xbr)]
       for (i in rev(2:length(diff.xbr))) {
-        if (diff.xbr[i-1]<=spike&diff.xbr[i]<=spike&
+        if (diff.xbr[i-1] <= spike&diff.xbr[i] <= spike &
             !is.na(diff.xbr[i])) {
-          amt.spike<-amt.spike+diff.xbr[i-1]
-          counts.new[i-1]<-counts.new[i-1]+counts.new[i]
-          xbr.new[i]<-NA
-          counts.new[i]<-NA
-          flag.vec[i-1]<-T
+          amt.spike <- amt.spike+diff.xbr[i-1]
+          counts.new[i-1] <- counts.new[i-1]+counts.new[i]
+          xbr.new[i] <- NA
+          counts.new[i] <- NA
+          flag.vec[i-1] <- T
         }
         else amt.spike<-diff.xbr[i-1]
       }
@@ -764,7 +764,7 @@ priorfig <- function(priordata = NA, priordensity = NA, trait = '', xlim = 'auto
 
   priorfigure <- ggplot() + theme_bw() + 
     scale_x_continuous(limits = xlim, breaks = x.breaks, trait.dictionary(trait)$units) +
-      scale_y_continuous(breaks=NA)+
+      scale_y_continuous(breaks = NULL)+
         opts(title = trait.dictionary(trait)$figid,
              panel.grid.major = theme_blank(),    
              panel.grid.minor = theme_blank(),
