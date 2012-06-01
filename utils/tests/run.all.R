@@ -1,4 +1,4 @@
 library(testthat)
-library(foo)
+library(utils)
 
-#test_package("foo")
+test_package("utils")
