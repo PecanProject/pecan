@@ -1,4 +1,4 @@
 library(testthat)
-library(utils)
+library(PEcAn.utils)
 
-test_package("utils")
+test_package("PEcAn.utils")
