@@ -2,7 +2,7 @@ Package: PEcAn.common
 Type: Package
 Title: PEcAn functions used for ecological forecasts and reanalysis
 Version: 1.2
-Date: 2012-05-31
+Date: 2012-06-01
 Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Mike Dietze, Carl
     Davidson, Rob Kooper, Shawn Serbin
 Maintainer: David LeBauer <dlebauer@illinois.edu>

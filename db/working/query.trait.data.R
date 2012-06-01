@@ -426,18 +426,12 @@ query.trait.data <- function(trait, spstr,con=query.base.con(...), ...){
   } 
   print(trait)
   
-  ### Query the data from the database for trait X.
   data <- query.data(trait, spstr, con=con)
-  
-  ### Query associated covariates from database for trait X.
   covariates <- query.covariates(data$id, con=con)
   
   if(trait == 'Vcmax') {
     #########################   VCMAX   ############################
-    ### Apply Arrhenius scaling to convert Vcmax at measurement temp to that at 25 degC (ref temp).
     data <- arrhenius.scaling.traits(data, covariates, c('leafT', 'airT'))
-    
-    ### Keep only top of canopy/sunlit leaf samples based on covariate.
     data <- filter.sunleaf.traits(data, covariates)
     
     ## select only summer data for Panicum virgatum
@@ -453,8 +447,7 @@ query.trait.data <- function(trait, spstr,con=query.base.con(...), ...){
     data <- rbind(data, 
         derive.traits(function(lma){1/lma}, 
                       query.data('LMA', spstr, con=con)))
-    
-    ### Keep only top of canopy/sunlit leaf samples based on covariate.
+              
     data <- filter.sunleaf.traits(data, covariates)
  
     ## select only summer data for Panicum virgatum
@@ -472,7 +465,7 @@ query.trait.data <- function(trait, spstr,con=query.base.con(...), ...){
     
   } else if (trait == 'root_respiration_rate') {
     #########################  ROOT RESPIRATION   ############################
-    ### Apply Arrhenius scaling to convert Vcmax at measurement temp to that at 25 degC (ref temp).
+    
     data <- arrhenius.scaling.traits(data, covariates, c('rootT', 'airT'))
     
   } else if (trait == 'dark_respiration_factor') {
@@ -519,7 +512,7 @@ query.trait.data <- function(trait, spstr,con=query.base.con(...), ...){
     # Do we really want to print each trait table?? Seems like a lot of
     # info to send to console.  Maybe just print summary stats?
     #print(result)
-    print(paste("Mean ",trait," : ",round(mean(result$mean,na.rm=TRUE),digits=3),sep=""))
+    print(paste("Mean ",trait," : ",round(mean(result$mean),digits=3),sep=""))
     return(result)
     
     # Convert to format applicable for JAGS meta-analysis. remove from this script file

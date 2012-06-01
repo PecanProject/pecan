@@ -1,5 +1,9 @@
+#--------------------------------------------------------------------------------------------------#
 # Small, miscellaneous functions for use throughout PECAn
+#--------------------------------------------------------------------------------------------------#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##' left padded by zeros up to a given number of digits.
 ##'
 ##' returns a string representing a given number 
@@ -8,10 +12,15 @@
 ##' @param digits number of digits to add
 ##' @return num with zeros to the left
 ##' @author Carl Davidson
+#--------------------------------------------------------------------------------------------------#
 left.pad.zeros <- function(num, digits = 5){
   format_string <- paste('%',sprintf('0%.0f.0f',digits),sep='')
   return(sprintf(format_string, num))
 }
+#==================================================================================================#
+
+
+#--------------------------------------------------------------------------------------------------#
 ##' R implementation of rsync
 ##'
 ##' rsync is a file copying tool in bash
@@ -20,15 +29,21 @@ left.pad.zeros <- function(num, digits = 5){
 ##' @param to destination
 ##' @param pattern file pattern to be matched 
 ##' @return nothing, transfers files as a side effect 
+#--------------------------------------------------------------------------------------------------#
 rsync <- function(from, to, pattern=''){
   system(paste('rsync -outi', from, to, sep = ' '))
 }
+#==================================================================================================#
+
+
+#--------------------------------------------------------------------------------------------------#
 ##' R implementation of SSH
 ##'
 ##' @title SSH
 ##' @param host 
 ##' @param ... 
 ##' @param args 
+#--------------------------------------------------------------------------------------------------#
 ssh <- function(host, ..., args=''){
   if(host == 'localhost'){
     command <- paste(..., args, sep='')
@@ -37,16 +52,22 @@ ssh <- function(host, ..., args=''){
   }
   system(command)
 }
+#==================================================================================================#
 
 
+#--------------------------------------------------------------------------------------------------#
 ##' Convert vector to comma delimited string
 ##'
 ##' ## vecpaste, turns vector into comma delimited string fit for SQL statements.
 ##' @title vecpaste
 ##' @param x vector
 ##' @return comma delimited string
+#--------------------------------------------------------------------------------------------------#
 vecpaste <- function(x) paste(paste("'", x, "'", sep=''), collapse=',')
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##' returns an id representing a model run
 ##'
 ##' for use in model input files and indices
@@ -56,11 +77,15 @@ vecpaste <- function(x) paste(paste("'", x, "'", sep=''), collapse=',')
 ##' @param trait 
 ##' @param pft.name 
 ##' @return id representing a model run
+#--------------------------------------------------------------------------------------------------#
 get.run.id <- function(run.type, index, trait='', pft.name=''){
   run.id <- paste(pft.name, run.type, trait, index, sep='')
   return(abbreviate.run.id.ED(run.id))
 }
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##' Convert List to XML
 ##'
 ##' Can convert list or other object to an xml object using xmlNode
@@ -68,6 +93,7 @@ get.run.id <- function(run.type, index, trait='', pft.name=''){
 ##' @param item 
 ##' @param tag xml tag
 ##' @return xmlNode
+#--------------------------------------------------------------------------------------------------#
 listToXml <- function(item, tag){
   if(typeof(item)!='list')
     return(xmlNode(tag, item))
@@ -77,7 +103,17 @@ listToXml <- function(item, tag){
   }
   return(xml)
 }
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
+##' Convert List to XML
+##'
+##'
+##'
+##'
+##'
+#--------------------------------------------------------------------------------------------------#
 list2XML <- function (dat, myName = "config", delim = ",") 
 {
     if (!require(XML)) {
@@ -114,8 +150,10 @@ list2XML <- function (dat, myName = "config", delim = ",")
     }
     n
 }
+#==================================================================================================#
 
 
+#--------------------------------------------------------------------------------------------------#
 ##' Take n random samples from prior
 ##'
 ##' @title Sample from prior 
@@ -125,11 +163,14 @@ list2XML <- function (dat, myName = "config", delim = ",")
 ##' @param n number of samples to return
 ##' @return vector with n random samples from prior
 ##' @seealso \link{get.sample}
+#--------------------------------------------------------------------------------------------------#
 pr.samp <- function(distn, parama, paramb, n) {
     do.call(paste('r', distn, sep=""), list(n, parama, paramb))
 }
+#==================================================================================================#
 
 
+#--------------------------------------------------------------------------------------------------#
 ##' Take n random samples from prior
 ##'
 ##' Like pr.samp, with prior as a single input
@@ -138,10 +179,14 @@ pr.samp <- function(distn, parama, paramb, n) {
 ##' @param n number of samples to return
 ##' @return vector with n random samples from prior
 ##' @seealso \link{pr.samp}
+#--------------------------------------------------------------------------------------------------#
 get.sample <- function(prior, n) {
   do.call(paste('r', prior$distn, sep=""), list(n, prior$parama, prior$paramb))
 }
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##' Calculates density at n points across the range of a parameter
 ##'
 ##' For a distribution and parameters, return the density for values ranging from alpha to 1-alpha 
@@ -152,6 +197,7 @@ get.sample <- function(prior, n) {
 ##' @param n length of vector to be returned
 ##' @param alpha sets range at which the distribution will be evaluated (e.g. from alpha to 1-alpha)
 ##' @return dataframe with equally spaced x values and the corresponding densities
+#--------------------------------------------------------------------------------------------------#
 pr.dens <- function(distn, parama, paramb, n = 1000, alpha = 0.001) {
   alpha <- ifelse(alpha < 0.5, alpha, 1-alpha)
   n <- ifelse(alpha == 0.5, 1, n)
@@ -162,8 +208,10 @@ pr.dens <- function(distn, parama, paramb, n = 1000, alpha = 0.001) {
                           list(seq.x, parama, paramb)))
   return(dens.df)
 }
+#==================================================================================================#
 
 
+#--------------------------------------------------------------------------------------------------#
 ##' Zero bounded density using log density transform
 ##'
 ##' Provides a zero bounded density estimate of a parameter.
@@ -174,6 +222,7 @@ pr.dens <- function(distn, parama, paramb, n = 1000, alpha = 0.001) {
 ##' @return data frame with back-transformed log density estimate 
 ##' @author \href{http://stats.stackexchange.com/q/6588/2750}{Rob Hyndman}
 ##' @references M. P. Wand, J. S. Marron and D. Ruppert, 1991. Transformations in Density Estimation. Journal of the American Statistical Association. 86(414):343-353 \url{http://www.jstor.org/stable/2290569}
+#--------------------------------------------------------------------------------------------------#
 zero.bounded.density <- function (x, bw = "SJ") {
   y <- log(x)
   g <- density(y, bw = bw, n = 1001)
@@ -182,15 +231,16 @@ zero.bounded.density <- function (x, bw = "SJ") {
   g$x <- c(0, xgrid)
   return(g)
 }
+#==================================================================================================#
 
 
-
-
+#--------------------------------------------------------------------------------------------------#
 ##' Summarize results of replicate observations in trait data query
 ##'
 ##' @title Summarize Results
 ##' @param result dataframe with results of trait data query
 ##' @return result with replicate observations summarized 
+#--------------------------------------------------------------------------------------------------#
 summarize.result <- function(result) {
   ans1 <- ddply(result[result$n==1,],
                 .(citation_id, site_id, trt_id, control, greenhouse, date, time, cultivar_id, specie_id),
@@ -202,7 +252,10 @@ summarize.result <- function(result) {
   ans2 <- result[result$n!=1,which(colnames(result) %in% colnames(ans1))]
   return(rbind(ans1, ans2))
 }
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##' Further summarizes output from summary.mcmc
 ##'
 ## .. content for \details{} ..
@@ -211,6 +264,7 @@ summarize.result <- function(result) {
 ##' @param sample.size 
 ##' @return 
 ##' @author David LeBauer
+#--------------------------------------------------------------------------------------------------#
 get.stats.mcmc <- function(mcmc.summary, sample.size){
   a <- list(n = sample.size)
   for (parm in c('beta.o','sd.y', 'sd.site','sd.trt','beta.ghs[2]')){
@@ -223,7 +277,14 @@ get.stats.mcmc <- function(mcmc.summary, sample.size){
   }
   return(unlist(a))
 }
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
+##'
+##'
+##'
+#--------------------------------------------------------------------------------------------------#
 paste.stats <- function(mcmc.summary, median, lcl, ucl, n = 2) {  
   paste("$", tabnum(median, n),  "(", tabnum(lcl, n), ",", tabnum(ucl,n), ")", "$", sep = '')
 }
@@ -234,6 +295,10 @@ get.parm.stat <- function(mcmc.summary, parameter){
                ucl   = mcmc.summary$quantiles[parameter, c("97.5%")],
                n     = 2)
 }
+#==================================================================================================#
+
+
+#--------------------------------------------------------------------------------------------------#
 ## @example get.parameter.stat(mcmc.summaries[[1]], 'beta.o')
 
 ##' Calculate mean, variance statistics, and CI from a known distribution 
@@ -246,6 +311,7 @@ get.parm.stat <- function(mcmc.summary, parameter){
 ##' @author David LeBauer
 ## in future, perhaps create S3 functions:
 ## get.stats.pdf <- pdf.stats
+#--------------------------------------------------------------------------------------------------#
 pdf.stats <- function(distn, A, B) {
   distn <- as.character(distn)
   mean <- switch(distn,
@@ -271,7 +337,10 @@ pdf.stats <- function(distn, A, B) {
   out  <- unlist(list(mean = mean, var = var, lcl = lcl, ucl = ucl)) 
   return(out)
 }
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##' Dictionary of terms used to identify traits in ed, filenames, and figures 
 ##'
 ##' @return a dataframe with id, the name used by ED and BETY for a parameter; fileid, an abbreviated  
@@ -279,6 +348,7 @@ pdf.stats <- function(distn, A, B) {
 ##'     and tables.
 ##'
 ##' @param traits a vector of trait names, if traits = NULL, all of the traits will be returned.
+#--------------------------------------------------------------------------------------------------#
 trait.dictionary <- function(traits = NULL) {
   #HACK: shameless hack
   #Ultimately we'll want this to be read once at the start of run time
@@ -293,6 +363,10 @@ trait.dictionary <- function(traits = NULL) {
   }
   return(trait.defs)
 }
+#==================================================================================================#
+
+
+#--------------------------------------------------------------------------------------------------#
 ##' @examples
 ##' # convert parameter name to a string appropriate for end-use plotting 
 ##' trait.dictionary('growth_resp_factor')
@@ -308,12 +382,16 @@ trait.dictionary <- function(traits = NULL) {
 ##' @param x numeric value or vector
 ##' @param n number of significant figures
 ##' @return x rounded to n significant figures
+#--------------------------------------------------------------------------------------------------#
 tabnum <- function(x, n=3) {
   ans <- as.numeric(signif(x,n))
   names(ans) <- names(x)
   return(ans)
 }
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##' Scale temperature dependent trait from measurement temperature to reference temperature 
 ##'
 ##' @title Arrhenius scaling 
@@ -321,23 +399,31 @@ tabnum <- function(x, n=3) {
 ##' @param old.temp temperature at which measurement was taken or previously scaled to
 ##' @param new.temp temperature to be scaled to, default = 25 C  
 ##' @return numeric value at reference temperature
+#--------------------------------------------------------------------------------------------------#
 arrhenius.scaling <- function(observed.value, old.temp, new.temp = 25){
   return(observed.value / exp (3000 * ( 1 / (273.15 + new.temp) - 1 / (273.15 + old.temp))))
 }
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##' Capitalize a string
 ##'
 ##' @title Capitalize a string 
 ##' @param x string
 ##' @return x, capitalized
 ##' @author David LeBauer
+#--------------------------------------------------------------------------------------------------#
 capitalize <- function(x) {
   x <- as.character(x)
   s <- strsplit(x, " ")[[1]]
   paste(toupper(substring(s, 1,1)), substring(s, 2),
         sep="", collapse=" ")
 }
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##' Fit a distribution to data
 ##'
 ##' @title Fit distribution to data  
@@ -345,7 +431,9 @@ capitalize <- function(x) {
 ##' @param dists list of distribution names
 ##' @return best fit distribution
 ##' @author David LeBauer
-fit.dist <- function(trait.data, trait = colnames(trait.data), dists = c('weibull', 'lognormal', 'gamma'), n = NULL) {
+#--------------------------------------------------------------------------------------------------#
+fit.dist <- function(trait.data, trait = colnames(trait.data), 
+                     dists = c('weibull', 'lognormal', 'gamma'), n = NULL) {
   if(class(trait.data) == 'data.frame') trait.data <- trait.data[,1]
   ## warning(immediate. = TRUE)
   nostart.dists <- dists[dists %in% c('weibull', 'lognormal', 'gamma', 'normal')]
@@ -364,10 +452,12 @@ fit.dist <- function(trait.data, trait = colnames(trait.data), dists = c('weibul
     }
   }
   if('beta' %in% dists){
-    a[['beta']] <- suppressWarnings(fitdistr(trait.data, 'beta', start = list(shape1 = 2, shape2 = 1 )))
+    a[['beta']] <- suppressWarnings(fitdistr(trait.data, 'beta', 
+                                             start = list(shape1 = 2, shape2 = 1 )))
   }
   aicvalues <- lapply(a, AIC)
-  result <- t(sapply(dists, function(x) cbind(t(tabnum(a[[x]]$estimate)), signif(aicvalues[[x]]))))
+  result <- t(sapply(dists, function(x) cbind(t(tabnum(a[[x]]$estimate)), 
+                                              signif(aicvalues[[x]]))))
   colnames(result) <- c('a', 'b', 'AIC')
   print(result)
   bestfitdist <- names(which.min(aicvalues))
@@ -378,7 +468,10 @@ fit.dist <- function(trait.data, trait = colnames(trait.data), dists = c('weibul
                     b = as.numeric(parms[2]), 
                     n = ifelse(is.null(n), length(trait.data), n)))
 } 
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##' Reads output from model ensemble
 ##'
 ##' Reads output for an ensemble of length specified by \code{ensemble.size} and bounded by \code{start.year} and \code{end.year}
@@ -390,6 +483,7 @@ fit.dist <- function(trait.data, trait = colnames(trait.data), dists = c('weibul
 ##' @param start.year 
 ##' @param end.year 
 ##' @param read.output model specific read output function, \cite{\link{read.output.ed}} by default.
+#--------------------------------------------------------------------------------------------------#
 read.ensemble.output <- function(ensemble.size, outdir, 
                                  start.year, end.year, read.output = read.output.ed){
   ensemble.output <- list()
@@ -403,7 +497,10 @@ read.ensemble.output <- function(ensemble.size, outdir,
   }
   return(ensemble.output)
 }
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##' Reads output of sensitivity analysis runs
 ##'
 ##' 
@@ -417,6 +514,7 @@ read.ensemble.output <- function(ensemble.size, outdir,
 ##' @param start.year 
 ##' @param end.year 
 ##' @param read.output model specific read.output function
+#--------------------------------------------------------------------------------------------------#
 read.sa.output <- function(traits, quantiles, outdir, pft.name='', 
                            start.year, end.year, read.output = read.output.ed){
   sa.output <- data.frame()
@@ -424,16 +522,26 @@ read.sa.output <- function(traits, quantiles, outdir, pft.name='',
     for(quantile in quantiles){
       run.id <- get.run.id('SA', round(quantile,3), trait=trait, pft.name=pft.name)
       print(run.id)
-      sa.output[as.character(round(quantile*100,3)), trait] <- read.output(run.id, outdir, start.year, end.year)
+      sa.output[as.character(round(quantile*100,3)), 
+                trait] <- read.output(run.id, outdir, start.year, end.year)
     }
   }
   sa.output['50',] <- read.output(get.run.id('SA', 'median'), outdir, start.year, end.year)
   sa.output <- sa.output[order(as.numeric(rownames(sa.output))),]
   return(sa.output)
 }
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
+##'
+##'
+#--------------------------------------------------------------------------------------------------#
 isFALSE <- function(x) !isTRUE(x)
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##' Prior fitting function for optimization
 ##'
 ##' This function is used within \cite{\link{DEoptim}} to parameterize a distribution to the central tendency and confidence interval of a parameter. This function is not very robust; currently it needs to be tweaked when distributions require starting values (e.g. beta, f, 
@@ -453,7 +561,7 @@ isFALSE <- function(x) !isTRUE(x)
 ##'                 x=c(2, 6, 3.3), 
 ##'                 alpha = 0.05, 
 ##'                 distn = 'lnorm')$optim$bestmem
-
+#--------------------------------------------------------------------------------------------------#
 prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NULL) {
   if(!distn %in% c('lnorm', 'gamma', 'weibull', 'beta')){
     stop(paste(distn, "not currently supported by prior.fn"))
@@ -519,7 +627,10 @@ prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NU
   } 
   return(sum(abs(c(lcl, ucl, ct) - x)))
 }
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##' New xtable
 ##'
 ##' utility to properly escape the "%" sign for latex
@@ -528,6 +639,7 @@ prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NU
 ##' @param environment can be 'table'; 'sidewaystable' if using latex rotating package
 ##' @return Latex version of table, with percentages properly formatted 
 ##' @author David LeBauer
+#--------------------------------------------------------------------------------------------------#
 newxtable <- function(x, environment = 'table', table.placement = 'ht',
                       label = NULL, caption = NULL, caption.placement = NULL, align = NULL) {
   print(xtable(x, label = label, caption = caption, align = align),
@@ -537,8 +649,10 @@ newxtable <- function(x, environment = 'table', table.placement = 'ht',
 #        sanitize.text.function = function(x) gsub("%", "\\\\%", x),
         sanitize.rownames.function = function(x) paste(''))
 }
+#==================================================================================================#
 
 
+#--------------------------------------------------------------------------------------------------#
 ##' Convert author, year, title to bibtex citation format
 ##'
 ##' Converts author year title to author1999abc format
@@ -547,12 +661,15 @@ newxtable <- function(x, environment = 'table', table.placement = 'ht',
 ##' @param year year of publication
 ##' @param title manuscript title
 ##' @return bibtex citation
+#--------------------------------------------------------------------------------------------------#
 bibtexify <- function (author, year, title) {
   acronym <- abbreviate(title, minlength = 3, strict=TRUE)
   paste(author, year, acronym, sep='')
 }
+#==================================================================================================#
 
 
+#--------------------------------------------------------------------------------------------------#
 ##' Transform misc. statistics to SE
 ##'
 ##' Automates transformations of SD, MSE, LSD, 95\%CI, HSD, and MSD to conservative estimates of SE.
@@ -561,6 +678,7 @@ bibtexify <- function (author, year, title) {
 ##' @return dataframe with statistics transformed to SE
 ##' @author David LeBauer
 ##' @export
+#--------------------------------------------------------------------------------------------------#
 transformstats <- function(data) {
   if(!"SE" %in% levels(data$statname)){
     data$statname <- factor(data$statname, levels = c(levels(data$statname), "SE"))
@@ -615,6 +733,10 @@ transformstats <- function(data) {
   }
   return(data)
 }
+#==================================================================================================#
+
+
+#--------------------------------------------------------------------------------------------------#
 ##' @example statdf <- data.frame(Y=rep(1,5), stat=rep(1,5), n=rep(4,5), statname=c('SD', 'MSE', 'LSD', 'HSD', 'MSD'))
 ##' transformstats(statdf)
 
@@ -627,6 +749,7 @@ transformstats <- function(data) {
 ##' @param na.rm logical: return NA's or replace with max(x) + 1 
 ##' @return sequence from 1:length(unique(x))
 ##' @author David LeBauer
+#--------------------------------------------------------------------------------------------------#
 as.sequence <- function(x, na.rm = TRUE){
   x2 <- as.integer(factor(x, unique(x)))
   if(all(is.na(x2))){
@@ -637,4 +760,9 @@ as.sequence <- function(x, na.rm = TRUE){
   }
   return(x2)
 }
- 
+#==================================================================================================#
+
+
+####################################################################################################
+### EOF.  End of R script file.              
+####################################################################################################
