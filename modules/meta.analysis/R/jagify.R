@@ -1,3 +1,5 @@
+#--------------------------------------------------------------------------------------------------#
+##'
 ##' Convert queried data to format required by JAGS meta-analysis model 
 ##'
 ##' 
@@ -5,7 +7,7 @@
 ##' @param result 
 ##' @return result transformed to meet requirements of PEcAn meta-analysis model
 ##' @author David LeBauer
-#==================================================================================================#
+#--------------------------------------------------------------------------------------------------#
 
 
 #---------------- Define jagify function. ---------------------------------------------------------#
@@ -30,6 +32,7 @@ jagify <- function(result){
                              citation_id = citation_id), 
                    select = c('stat', 'n', 'site_id', 'trt_id', 'mean', 'citation_id', 'greenhouse')) 
 
+  ## !!! THIS BIT OF CODE IS CAUSING PROBLEMS.  NEEDS TO BE CHECKED.
 #   if(length(result$stat[!is.na(result$stat) & result$stat <= 0.0]) > 0) {
 #     citationswithbadstats <- unique(result$citation_id[which(result$stat <= 0.0)])
 #     warning.message <- paste('there are implausible values of SE: SE <= 0 \n',
@@ -40,7 +43,7 @@ jagify <- function(result){
 #     result$stat[result$stat <= 0.0] <- NA
 #   }
 }
-#--------------------------------------------------------------------------------------------------#
+#==================================================================================================#
 
 
 ####################################################################################################
