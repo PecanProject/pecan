@@ -1,3 +1,4 @@
+#--------------------------------------------------------------------------------------------------#
 ##' Runs heirarchical meta-analysis of plant trait data 
 ##'
 ##' \code{pecan.ma} runs a heirarchical Bayes meta-analytical model.
@@ -26,7 +27,9 @@
 ##' prior.distns <- query.bety.priors('ebifarm.c4crop', c('SLA', 'c2n_leaf'))
 ##' trait.data <- query.bety.traits('938', c('SLA', 'c2n_leaf'))
 ##' pecan.ma(prior.distns, trait.data, 25000)
-pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outdir, overdispersed = TRUE){
+#--------------------------------------------------------------------------------------------------#
+pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outdir, 
+                     overdispersed = TRUE){
   
   madata <- list()
   ## Meta-analysis for each trait
@@ -44,7 +47,8 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
             j.iter, ' total iterations,\n',
             j.chains, ' chains, \n',
             'a burnin of ', j.iter/2, ' samples,\n',
-            ', \nthus the total number of samples will be ', j.chains*(j.iter/2),'\n', sep = '')
+            ', \nthus the total number of samples will be ', j.chains*(j.iter/2),
+             '\n', sep = '')
       )
 
   for(trait.name in names(trait.data)) {
@@ -78,7 +82,8 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
     #print out some data summaries to check
     writeLines(paste('prior for ', trait.name, ' (using R parameterization):\n',
                 prior$distn, '(',prior$a, ', ', prior$b, ')', sep = ''))
-    writeLines(paste('data max:', max(data$Y), '\ndata min:', min(data$Y), '\nmean:', signif(mean(data$Y),3), '\nn:', length(data$Y)))
+    writeLines(paste('data max:', max(data$Y), '\ndata min:', min(data$Y), '\nmean:',
+                     signif(mean(data$Y),3), '\nn:', length(data$Y)))
     writeLines('stem plot of data points')
     writeLines(paste(stem(data$Y)))
     if(any(!is.na(data$obs.prec)) && all(!is.infinite(data$obs.prec))){
@@ -126,8 +131,13 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
 
     madata[[trait.name]] <- data
     jag.model.file <-  paste(outdir, trait.name, ".model.bug",sep="")  # file to store model
-
-    write.ma.model (modelfile = paste(settings$pecanDir,'rscripts/ma.model.template.bug',sep=""),
+    
+    ### Import defaul JAGS model file
+    modelfile = system.file("data", "ma.model.template.bug", package="PEcAn.MA")
+    
+    ### Write JAGS bug file based on user settings and default bug file
+    #write.ma.model (modelfile = paste(settings$pecanDir,'rscripts/ma.model.template.bug',sep=""),
+    write.ma.model (modelfile = modelfile,
                     outfile = jag.model.file,
                     reg.model = reg.model,
                     jagsprior$distn, jagsprior$a, jagsprior$b,
@@ -153,8 +163,8 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
     j.model   <- jags.model (file = jag.model.file,
                              data = data,
                              #n.adapt = 100, #will burn in below
-                             n.chains = j.chains,
-                             init =  j.inits)
+                             inits = j.inits,
+                             n.chains = j.chains)
 
 
     jags.out   <- coda.samples ( model = j.model,
@@ -171,3 +181,9 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
   sink()
   return(mcmc.object)
 }
+#==================================================================================================#
+
+
+####################################################################################################
+### EOF.  End of R script file.    					
+####################################################################################################

@@ -22,7 +22,7 @@ require(PEcAn.utils)
 
 # Loop over pfts and create/clean up output directories.
 get.trait.data <- function() {
-	num = length(settings$pfts)
+	num <- length(settings$pfts)
 	for (i in 1:num){
 	  out.dir = settings$pfts[i]$pft$outdir
 	  if (! file.exists(out.dir)) dir.create(out.dir, recursive=TRUE)

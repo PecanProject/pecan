@@ -1,3 +1,10 @@
+#--------------------------------------------------------------------------------------------------#
+##'
+##' @name pecan.ma.summary
+##' @title Generate summary statitics and diagnostics for PEcAn meta.analysis
+##'
+##'
+#--------------------------------------------------------------------------------------------------#
 pecan.ma.summary <- function(mcmc.object, pft,outdir, threshold=1.1){
   if(!is.null(settings$meta.analysis$threshold)) {
     threshold = settings$meta.analysis$threshold
@@ -39,3 +46,9 @@ pecan.ma.summary <- function(mcmc.object, pft,outdir, threshold=1.1){
   if(fail)warning('JAGS model failed to converge for one or more pft.')
   sink()
 }
+#==================================================================================================#
+
+
+####################################################################################################
+### EOF.  End of R script file.    					
+####################################################################################################

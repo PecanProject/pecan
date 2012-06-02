@@ -1,5 +1,7 @@
 if (!require("PEcAn.DB")) stop("Could not load PEcAn.DB")
-if (!require("PEcAn.common")) stop("Could not load PEcAn.DB")
+if (!require("PEcAn.common")) stop("Could not load PEcAn.common")
+if (!require("PEcAn.utils")) stop("Could not load PEcAn.utils")
+if (!require("PEcAn.MA")) stop("Could not load PEcAn.MA")
 
 #---------------- Load PEcAn settings file. -------------------------------------------------------#
 default.settings <- Sys.getenv(x = c("SETTINGS","USER","HOME"))   # Import default location
@@ -20,3 +22,5 @@ settings = read.settings(pecan.settings.file)
 #--------------------------------------------------------------------------------------------------#
 
 get.trait.data()
+
+run.meta.analysis.R()
