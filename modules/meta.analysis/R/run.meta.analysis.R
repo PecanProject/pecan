@@ -64,11 +64,11 @@ system.time(run.meta.analysis.R <- function() {
       
       ### Jagify trait data for meta.analysis
       jagged.data <- jagify(trait.data)
-      ma.data <- rename.jags.columns(jagged)
+      ma.data <- rename.jags.columns(ldply(jagged.data,data.frame))
       trait.data <- ma.data
       
       ### Average trait data
-      trait.average <- sapply(trait.data,function(x){mean(x$Y,na.rm=TRUE)})
+      trait.average <- sapply(trait.data2,function(x){mean(x$Y,na.rm=TRUE)})
       
       ### Set gamma distribution prior
       prior.variances = as.data.frame(rep(1,nrow(prior.distns)))

@@ -228,7 +228,7 @@ rename.jags.columns <- function(data) {
 #--------------------------------------------------------------------------------------------------#
 transform.nas <- function(data){
   #control defaults to 1
-  data$control[is.na(data$control)]     <- 1
+  data$control[is.na(data$control)] <- 1
   
   #site defaults to 0
   #TODO assign different site for each citation - dsl
