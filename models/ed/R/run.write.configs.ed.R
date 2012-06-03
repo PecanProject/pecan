@@ -12,7 +12,7 @@ run.write.configs.ed <- function() {
   ### Identify PFTs in the input settings.xml file
   num.pfts <- length(settings$pfts)
   pft.names=as.list(rep(NA,num.pfts))
-  
+  outdirs=as.list(rep(NA,num.pfts))
   for (i in 1:num.pfts){
     pft.names[i] <- settings$pfts[i]$pft$name
     
@@ -39,7 +39,7 @@ run.write.configs.ed <- function() {
   env.samples <- list()
   ###
   
-  ### Prepare for model output
+  ### Prepare for model output.  Cleanup any old config files (if exists)
   remove.config()
   
   ### Sensitivity Analysis

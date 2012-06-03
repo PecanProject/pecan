@@ -84,26 +84,26 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
 #--------------------------------------------------------------------------------------------------#
 remove.config <- function() {
   if(FALSE){
-    todelete <- dir(paste(settings$pfts$pft$outdir, 'out/', sep = ''),
-                    c('ED2INc.*','c.*'),
+    todelete <- dir(unlist(outdirs),c('ED2INc.*','c.*'),
                     recursive=TRUE, full.names = TRUE)
     if(length(todelete>0)) file.remove(todelete)
   
-    filename.root <- get.run.id('c.','*')
+    filename.root <- get.run.id('c.','*')  # TODO: depreciate abbrev run ids
   
     if(host$name == 'localhost'){
-      if(length(dir(host$rundir, pattern = filename.root)) > 0) {
-        todelete <- dir(host$outdir,
+      if(length(dir(settings$run$host$rundir, pattern = filename.root)) > 0) {
+        todelete <- dir(settings$run$host$outdir,
                         pattern = paste(filename.root, "*[^log]", sep = ''), 
                         recursive=TRUE, full.names = TRUE)
         file.remove(todelete)
       }
     } else {
-      files <- system(paste("ssh ", host$name, " 'ls ", host$rundir, "*", 
+      files <- system(paste("ssh ", settings$run$host$name, " 'ls ", 
+                            settings$run$host$rundir, "*", 
                             filename.root, "*'", sep = ''), intern = TRUE)
       if(length(files) > 0 ) {
         todelete <- files[-grep('log', files)]
-        system(paste("ssh -T ", host$name,
+        system(paste("ssh -T ", settings$run$host$name,
                     " 'for f in ", paste(todelete, collapse = ' '),"; do rm $f; done'",sep=''))
         }
       }
