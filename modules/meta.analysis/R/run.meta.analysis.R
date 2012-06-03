@@ -9,7 +9,7 @@
 ##'
 ##' @author Shawn Serbin
 #--------------------------------------------------------------------------------------------------#
-run.meta.analysis.R <- function() {
+run.meta.analysis <- function() {
   if('meta.analysis' %in% names(settings)) {
     
     ### Get info on how many iterations should be run within the meta.analysis

@@ -1,7 +1,10 @@
+#---------------- Load libraries. -----------------------------------------------------------------#
 if (!require("PEcAn.DB")) stop("Could not load PEcAn.DB")
 if (!require("PEcAn.common")) stop("Could not load PEcAn.common")
 if (!require("PEcAn.utils")) stop("Could not load PEcAn.utils")
 if (!require("PEcAn.MA")) stop("Could not load PEcAn.MA")
+#--------------------------------------------------------------------------------------------------#
+
 
 #---------------- Load PEcAn settings file. -------------------------------------------------------#
 default.settings <- Sys.getenv(x = c("SETTINGS","USER","HOME"))   # Import default location
@@ -21,6 +24,13 @@ if (is.na(args[1])==TRUE){
 settings = read.settings(pecan.settings.file)
 #--------------------------------------------------------------------------------------------------#
 
-get.trait.data()
 
-run.meta.analysis.R()
+#---------------- Run PEcAn workflow. -------------------------------------------------------------#
+get.trait.data()        # Query the trait database for data and priors
+
+run.meta.analysis()     # Run the PEcAn meta.analysis
+
+#write.model.config()   # calls model specific write.configs e.g. write.config.ed.R
+
+#run.sa()
+#--------------------------------------------------------------------------------------------------#
