@@ -73,8 +73,6 @@ system.time(run.meta.analysis.R <- function() {
       ### Average trait data
       trait.average <- sapply(trait.data,function(x){mean(x$Y,na.rm=TRUE)})
       
-      trait.average <- sapply(ma.data,function(x){mean(x$Y,na.rm=TRUE)})
-      
       ### Set gamma distribution prior
       prior.variances = as.data.frame(rep(1,nrow(prior.distns)))
       row.names(prior.variances) = row.names(prior.distns)
