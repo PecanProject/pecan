@@ -11,38 +11,68 @@
 
 
 #---------------- Define jagify function. ---------------------------------------------------------#
-jagify <- function(result){
-  ## rename name column from treatment table to trt_id
-  names(result)[names(result)=='name'] <- 'trt_id'
-  
-  result <- transform.nas(result)
-  result <- assign.treatments(result)
-  
-  ## calculate summary statistics from experimental replicates
-  result <- summarize.result(result)
-  
-  ## assign a unique sequential integer to site and trt; for trt, all controls == 0
-  result <- subset(transform(result,
-                             stat = as.numeric(stat),
-                             n    = as.numeric(n),
-                             site_id = as.integer(factor(site_id, unique(site_id))),
-                             trt_id = as.integer(factor(trt_id, unique(c('control', as.character(trt_id))))),
-                             greenhouse = as.integer(factor(greenhouse, unique(greenhouse))),
-                             mean = mean,
-                             citation_id = citation_id), 
-                   select = c('stat', 'n', 'site_id', 'trt_id', 'mean', 'citation_id', 'greenhouse')) 
+## TODO: replace for loops by converting nested list to data.frame is the plyr/ldply command.
+## E.g. data = ldply (result, data.frame) will convert to data frame so the original code
+## will work, without for loops.  Whoops..... shawn
 
-  ## !!! THIS BIT OF CODE IS CAUSING PROBLEMS.  NEEDS TO BE CHECKED.
-#   if(length(result$stat[!is.na(result$stat) & result$stat <= 0.0]) > 0) {
-#     citationswithbadstats <- unique(result$citation_id[which(result$stat <= 0.0)])
-#     warning.message <- paste('there are implausible values of SE: SE <= 0 \n',
-#                              'for', trait, 'result from citation',citationswithbadstats,'\n',
-#                              'SE <=0 set to NA \n')
-#     warning(warning.message)
-#     print(result)
-#     result$stat[result$stat <= 0.0] <- NA
-#   }
-}
+jagify <- function(result){
+  
+  ### Rename name column from treatment table to trt_id.  Remove NAs. Assign treatments.
+  ### Finally, summarize the results by calculating summary statistics from experimental 
+  ### replicates
+  
+  # !!! old code
+  #names(result)[names(result)=='name'] <- 'trt_id'  # old code
+  #result <- transform.nas(result)  # old code
+  #result <- assign.treatments(result)
+  #result <- summarize.result(result)
+  # !!!
+  
+  #result = trait.data  # TEMP
+  
+  length.data = length(result)
+  for (i in 1:length.data){
+    names(result[[i]])[which(names(result[[i]])=="name")] <- 'trt_id'
+    result[[i]] <- transform.nas(result[[i]])
+    result[[i]] <- assign.treatments(result[[i]])
+    result[[i]] <- summarize.result(result[[i]])
+  } # End for loop
+  rm(i)
+  
+  ### Assign a unique sequential integer to site and trt; for trt, all controls == 0 
+  for (i in 1:length.data){
+    result[[i]] <- subset(transform(result[[i]],
+                               stat = as.numeric(stat),
+                               n    = as.numeric(n),
+                               site_id = as.integer(factor(site_id, unique(site_id))),
+                               trt_id = as.integer(factor(trt_id, 
+                                                          unique(c('control', as.character(trt_id))))),
+                               greenhouse = as.integer(factor(greenhouse, unique(greenhouse))),
+                               mean = mean,
+                               citation_id = citation_id), 
+                     select = c('stat', 'n', 'site_id', 'trt_id', 'mean', 'citation_id', 'greenhouse'))
+  } # End for loop
+  rm(i)
+
+  ## !!!! THIS BIT OF CODE IS CAUSING PROBLEMS.  NEEDS TO BE CHECKED.
+  for (i in 1:length.data){
+    if(length(result[[i]]$stat[!is.na(result[[i]]$stat) & result[[i]]$stat <= 0.0]) > 0) {
+      citationswithbadstats <- unique(result[[i]]$citation_id[which(result[[i]]$stat <= 0.0)])
+      warning.message <- paste('there are implausible values of SE: SE <= 0 \n',
+                               'for', trait, 'result from citation',citationswithbadstats,'\n',
+                               'SE <=0 set to NA \n')
+      warning(warning.message)
+      print(result[[i]])
+      result[[i]]$stat[result[[i]]$stat <= 0.0] <- NA
+    } ### End of if statement
+  } # End for loop
+  rm(i)
+
+  ## !!!!
+  
+  return(result)
+  
+} ### End of function
 #==================================================================================================#
 
 
