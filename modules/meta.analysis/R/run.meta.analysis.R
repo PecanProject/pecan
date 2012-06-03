@@ -50,7 +50,7 @@ run.meta.analysis.R <- function() {
     ###
     
     ## loop over pfts
-    for(pft in settings$pfts){
+    for(pft in settings$pfts[3]){
       
       print(" ")
       print("-------------------------------------------------------------------")
@@ -66,8 +66,8 @@ run.meta.analysis.R <- function() {
       print(paste("Trait data loaded for PFT: ", pft$name,sep=""))
       print("-------------------------------------------------------------------")
       print(" ")
-      Sys.sleep(1)
-      
+      Sys.sleep(1) 
+
       ### Jagify trait data for meta.analysis
       jagged.data <- jagify(trait.data)
       ma.data = jagged.data
