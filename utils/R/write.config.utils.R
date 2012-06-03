@@ -1,3 +1,4 @@
+#--------------------------------------------------------------------------------------------------#
 ##' Get parameter values used in ensemble
 ##'
 ##' Returns a matrix of trait values sampled quasi-randomly based on the Halton sequence
@@ -10,6 +11,7 @@
 ##' @param samples random samples from parameter distribution, e.g. from a MCMC chain or a 
 ##' @return matrix of quasi-random (overdispersed) samples from trait distributions
 ##' @references Halton, J. (1964), Algorithm 247: Radical-inverse quasi-random point sequence, ACM, p. 701, doi:10.1145/355588.365104.
+#--------------------------------------------------------------------------------------------------#
 get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="halton") {
   ##force as numeric for compatibility with Fortran code in halton()
   ensemble.size <- as.numeric(ensemble.size)
@@ -68,9 +70,49 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
     ans <- ensemble.samples
   }
   return(ans)
+}  ### End of function: get.ensemble.samples
+#==================================================================================================#
+
+
+#--------------------------------------------------------------------------------------------------#
+##'
+##' @name remove.config
+##'
+##'
+##'
+##'
+#--------------------------------------------------------------------------------------------------#
+remove.config <- function() {
+  if(FALSE){
+    todelete <- dir(paste(settings$pfts$pft$outdir, 'out/', sep = ''),
+                    c('ED2INc.*','c.*'),
+                    recursive=TRUE, full.names = TRUE)
+    if(length(todelete>0)) file.remove(todelete)
+  
+    filename.root <- get.run.id('c.','*')
+  
+    if(host$name == 'localhost'){
+      if(length(dir(host$rundir, pattern = filename.root)) > 0) {
+        todelete <- dir(host$outdir,
+                        pattern = paste(filename.root, "*[^log]", sep = ''), 
+                        recursive=TRUE, full.names = TRUE)
+        file.remove(todelete)
+      }
+    } else {
+      files <- system(paste("ssh ", host$name, " 'ls ", host$rundir, "*", 
+                            filename.root, "*'", sep = ''), intern = TRUE)
+      if(length(files) > 0 ) {
+        todelete <- files[-grep('log', files)]
+        system(paste("ssh -T ", host$name,
+                    " 'for f in ", paste(todelete, collapse = ' '),"; do rm $f; done'",sep=''))
+        }
+      }
+    }
 }
+#==================================================================================================#
 
 
+#--------------------------------------------------------------------------------------------------#
 ##' Write ensemble config files
 ##'
 ##' Writes config files for use in meta-analysis and returns a list of run ids.
@@ -85,6 +127,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
 ##' @param write.config a model-specific function to write config files, e.g. \link{write.config.ED}  
 ##' @param convert.samples a model-specific function that transforms variables from units used in database to units used by model, e.g. \link{convert.samples.ED} 
 ##' @return nothing, writes ensemble configuration files as a side effect 
+#--------------------------------------------------------------------------------------------------#
 write.ensemble.configs <- function(defaults, ensemble.samples,
                                    host, outdir, settings,
                                    write.config = write.config.ED,clean=FALSE){
@@ -119,16 +162,17 @@ write.ensemble.configs <- function(defaults, ensemble.samples,
                  paste(outdir, '*', get.run.id('ENS', ''), '*', sep=''), 
                  paste(host$name, ':', host$rundir,  sep=''), sep = ' '))
   }
-}
+} ### End of function: write.ensemble.configs
+#==================================================================================================#
 
 
-
-
+#--------------------------------------------------------------------------------------------------#
 ##' Returns a vector of quantiles specified by a given <quantiles> xml tag
 ##'
 ##' @title Get Quantiles  
 ##' @param quantiles.tag specifies tag used to specify quantiles
 ##' @return vector of quantiles
+#--------------------------------------------------------------------------------------------------#
 get.quantiles <- function(quantiles.tag) {
   quantiles<-vector()
   if (!is.null(quantiles.tag$quantile)) {
@@ -146,11 +190,16 @@ get.quantiles <- function(quantiles.tag) {
   }
   return(sort(quantiles))
 }
+#==================================================================================================#
 
-##
-##
-##
 
+#--------------------------------------------------------------------------------------------------#
+##'
+##' @name get.sa.sample.list
+##'
+##'
+##'
+#--------------------------------------------------------------------------------------------------#
 get.sa.sample.list <- function(pft,env,quantiles){
   sa.sample.list <- list()
   for(i in 1:length(pft)){
@@ -160,7 +209,10 @@ get.sa.sample.list <- function(pft,env,quantiles){
   names(sa.sample.list) <- c(names(pft),"env")
   return(sa.sample.list)
 }
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##' Samples parameters for a model run at specified quantiles.
 ##' 
 ##' Samples from long (>2000) vectors that represent random samples from a trait distribution.
@@ -171,16 +223,21 @@ get.sa.sample.list <- function(pft,env,quantiles){
 ##' @param samples random samples from trait distribution   
 ##' @param quantiles list of quantiles to at which to sample, set in settings file
 ##' @return a list of lists representing quantile values of trait distributions 
+#--------------------------------------------------------------------------------------------------#
 get.sa.samples <- function(samples, quantiles){
   sa.samples <- data.frame()
   for(trait in names(samples)){
     for(quantile in quantiles){
-      sa.samples[as.character(round(quantile*100,3)), trait] <- quantile(samples[[trait]], quantile)
+      sa.samples[as.character(round(quantile*100,3)), trait] <- quantile(samples[[trait]], 
+                                                                         quantile)
     }
   }
   return(sa.samples)
 }
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##' Write sensitivity analysis config files
 ##'
 ##' Writes config files for use in sensitivity analysis.
@@ -194,6 +251,7 @@ get.sa.samples <- function(samples, quantiles){
 ##' @param convert.samples a model-specific function that transforms variables from units used in database to units used by model, e.g. \link{convert.samples.ED} 
 ##' @param ensemble.samples list of lists supplied by \link{get.sa.samples}
 ##' @return nothing, writes sensitivity analysis configuration files as a side effect 
+#--------------------------------------------------------------------------------------------------#
 write.sa.configs <- function(defaults, quantile.samples, host, outdir, settings, 
                              write.config=write.config.ED,clean=FALSE){
   MEDIAN <- '50'
@@ -231,7 +289,8 @@ write.sa.configs <- function(defaults, quantile.samples, host, outdir, settings,
           quantile <- as.numeric(quantile.str)/100
           trait.samples <- median.samples
           trait.samples[[i]][trait] <- quantile.samples[[i]][quantile.str, trait]
-          run.id <- get.run.id('SA', round(quantile,3), trait=trait, pft.name=names(trait.samples)[i])
+          run.id <- get.run.id('SA', round(quantile,3), trait=trait, 
+                               pft.name=names(trait.samples)[i])
           if(clean){unlink(paste(outdir, '*', run.id, '*', sep=''))}
           write.config(defaults, trait.samples, settings, outdir, run.id)
         }
@@ -248,4 +307,9 @@ write.sa.configs <- function(defaults, quantile.samples, host, outdir, settings,
                  paste(host$name, ':', host$rundir,  sep='')))
   }
 }
+#==================================================================================================#
 
+
+####################################################################################################
+### EOF.  End of R script file.          		
+####################################################################################################

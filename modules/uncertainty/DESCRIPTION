@@ -1,4 +1,4 @@
-Package: PEcAn.utils
+Package: PEcAn.uncertainty
 Type: Package
 Title: PEcAn functions used for ecological forecasts and reanalysis
 Version: 1.2
@@ -11,10 +11,10 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     model parameterization, execution, and analysis. The goal of PECAn is to
     streamline the interaction between data and models, and to improve the
     efficacy of scientific investigation.
-Depends: RMySQL, plyr
+Depends: RMySQL, PEcAn.utils, PEcAn.common
 Suggests: testthat
 License: FreeBSD + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes
 Require: hdf5
-Collate: approx.posterior.R plots.R r2bugs.distributions.R timeutils.R utils.R variance.R write.config.utils.R
+Collate: read.output.R sensitivity.analysis.R sensitivity.analysis.plots.R sensitivity.analysis.rscript.R

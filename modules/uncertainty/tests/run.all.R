@@ -1,4 +1,4 @@
 library(testthat)
-library(foo)
+library(PEcAn.uncertainty)
 
-test_package("foo")
+test_package("PEcAn.uncertainty")
