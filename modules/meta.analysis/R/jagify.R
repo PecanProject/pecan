@@ -36,6 +36,19 @@ jagify <- function(result){
     result[[i]] <- transform.nas(result[[i]])
     result[[i]] <- assign.treatments(result[[i]])
     result[[i]] <- summarize.result(result[[i]])
+    
+    # HACK.  Not sure why but root respiration rate for late.hardwood has one queried
+    # value with all columns NA?  As if there is blank line in the database.  This
+    # will remove that bad data for now.  However we should probably figure out
+    # why this is happening. SPS
+    remove = which(is.na(result[[i]]$mean))
+    if(length(remove)>=1){
+      result[[i]] = result[[i]][-remove,1:length(result[[i]])]
+      warning.message <- paste('There was at least one mean value of "NA" in the trait.data \n',
+                               'of ',names(result)[i],'.', ' Row with bad data has been removed.',sep="")
+      warning(warning.message)
+    } # End if
+    
   } # End for loop
   rm(i)
   

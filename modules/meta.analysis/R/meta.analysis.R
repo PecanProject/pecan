@@ -82,8 +82,8 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
     #print out some data summaries to check
     writeLines(paste('prior for ', trait.name, ' (using R parameterization):\n',
                 prior$distn, '(',prior$a, ', ', prior$b, ')', sep = ''))
-    writeLines(paste('data max:', max(data$Y), '\ndata min:', min(data$Y), '\nmean:',
-                     signif(mean(data$Y),3), '\nn:', length(data$Y)))
+    writeLines(paste('data max:', max(data$Y,na.rm=TRUE), '\ndata min:', min(data$Y,na.rm=TRUE), '\nmean:',
+                     signif(mean(data$Y,na.rm=TRUE),3), '\nn:', length(data$Y)))
     writeLines('stem plot of data points')
     writeLines(paste(stem(data$Y)))
     if(any(!is.na(data$obs.prec)) && all(!is.infinite(data$obs.prec))){
