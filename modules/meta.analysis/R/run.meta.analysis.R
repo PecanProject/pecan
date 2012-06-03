@@ -50,7 +50,7 @@ run.meta.analysis.R <- function() {
     ###
     
     ## loop over pfts
-    for(pft in settings$pfts[3]){
+    for(pft in settings$pfts){
       
       print(" ")
       print("-------------------------------------------------------------------")
