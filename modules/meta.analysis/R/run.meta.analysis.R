@@ -9,7 +9,7 @@
 ##'
 ##' @author Shawn Serbin
 #--------------------------------------------------------------------------------------------------#
-system.time(run.meta.analysis.R <- function() {
+run.meta.analysis.R <- function() {
   if('meta.analysis' %in% names(settings)) {
     
     ### Get info on how many iterations should be run within the meta.analysis
@@ -54,13 +54,19 @@ system.time(run.meta.analysis.R <- function() {
       
       print(" ")
       print("-------------------------------------------------------------------")
-      
+      print(paste(" Running meta.analysis for PFT: ",pft$name,sep="") )
       print("-------------------------------------------------------------------")
       print(" ")
     
       ### Load trait data for PFT
       load(paste(pft$outdir, 'trait.data.Rdata', sep=''))
       load(paste(pft$outdir, 'prior.distns.Rdata', sep=''))
+      
+      print("-------------------------------------------------------------------")
+      print(paste("Trait data loaded for PFT: ", pft$name,sep=""))
+      print("-------------------------------------------------------------------")
+      print(" ")
+      Sys.sleep(1)
       
       ### Jagify trait data for meta.analysis
       jagged.data <- jagify(trait.data)
@@ -85,7 +91,7 @@ system.time(run.meta.analysis.R <- function() {
       trait.mcmc  <- pecan.ma(trait.data, prior.distns, taupriors, j.iter = ma.iter, 
                               settings, outdir = pft$outdir)
       post.distns <- approx.posterior(trait.mcmc,prior.distns,trait.data,pft$outdir)
-      
+
       ### Generate summaries and diagnostics
       pecan.ma.summary(trait.mcmc, pft$name, pft$outdir)
       
@@ -101,7 +107,7 @@ system.time(run.meta.analysis.R <- function() {
     
   } ### End if/else
   
-}) ### End of function: run.meta.analysis.R
+} ### End of function: run.meta.analysis.R
 #==================================================================================================#
 
 
