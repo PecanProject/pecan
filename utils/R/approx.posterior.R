@@ -1,3 +1,4 @@
+#--------------------------------------------------------------------------------------------------#
 ##' Approximate the posterior MCMC with a closed form pdf
 ##'
 ##' returns priors where posterior MCMC are missing
@@ -8,6 +9,7 @@
 ##' @param outdir directory in which to plot results
 ##' @return posteriors data frame, similar to priors, but with closed form pdfs fit to meta-analysis results  
 ##' @author David LeBauer, Carl Davidson, Mike Dietze
+#--------------------------------------------------------------------------------------------------#
 approx.posterior <- function(trait.mcmc,priors,trait.data=NULL,outdir=NULL){
   ##initialization
   posteriors = priors
@@ -28,7 +30,8 @@ approx.posterior <- function(trait.mcmc,priors,trait.data=NULL,outdir=NULL){
     if(trait == "Vm0") trait = "Vcmax"
 
     fp <- function(x){
-      cl <- call(paste("d",priors[ptrait,"distn"],sep=""),x,priors[ptrait,"parama"],priors[ptrait,"paramb"])
+      cl <- call(paste("d",priors[ptrait,"distn"],sep=""),x,priors[ptrait,"parama"],
+                 priors[ptrait,"paramb"])
       eval(cl)
     }
     
@@ -49,7 +52,8 @@ approx.posterior <- function(trait.mcmc,priors,trait.data=NULL,outdir=NULL){
         }
         lines(x,dbeta(x,fit$estimate[1],fit$estimate[2]),lwd=2,type='l')
         lines(x,dbeta(x,pparm[1],pparm[2]),lwd=3,type='l',col=3)
-        legend("topleft",legend=c("data","prior","post","approx"),col=c("purple",3,2,1),lwd=2)
+        legend("topleft",legend=c("data","prior","post","approx"),
+               col=c("purple",3,2,1),lwd=2)
       }
       posteriors[trait,"parama"] = fit$estimate[1]
       posteriors[trait,"paramb"] = fit$estimate[2]
@@ -76,11 +80,13 @@ approx.posterior <- function(trait.mcmc,priors,trait.data=NULL,outdir=NULL){
       
       if(do.plot){
         f <- function(x){
-          cl <- call(paste("d",posteriors[ptrait,"distn"],sep=""),x,posteriors[ptrait,"parama"],posteriors[ptrait,"paramb"])
+          cl <- call(paste("d",posteriors[ptrait,"distn"],sep=""),x,
+                     posteriors[ptrait,"parama"],posteriors[ptrait,"paramb"])
           eval(cl)
         }
         fq <- function(x){
-          cl <- call(paste("q",priors[ptrait,"distn"],sep=""),x,priors[ptrait,"parama"],priors[ptrait,"paramb"])
+          cl <- call(paste("q",priors[ptrait,"distn"],sep=""),x,
+                     priors[ptrait,"parama"],priors[ptrait,"paramb"])
           eval(cl)
         }        
         qbounds = fq(c(0.01,0.99))
@@ -97,7 +103,8 @@ approx.posterior <- function(trait.mcmc,priors,trait.data=NULL,outdir=NULL){
         }
         lines(x,f(x),lwd=2,type='l')
         lines(x,fp(x),lwd=3,type='l',col=3)
-        legend("topleft",legend=c("data","prior","post","approx"),col=c("purple",3,2,1),lwd=2)
+        legend("topleft",legend=c("data","prior","post","approx"),
+               col=c("purple",3,2,1),lwd=2)
       }
       
     } else {
@@ -119,7 +126,8 @@ approx.posterior <- function(trait.mcmc,priors,trait.data=NULL,outdir=NULL){
         }
         lines(x,dnorm(x,mean(dat),sd(dat)),lwd=2,type='l')
         lines(x,fp(x),lwd=3,type='l',col=3)
-        legend("topleft",legend=c("data","prior","post","approx"),col=c("purple",3,2,1),lwd=2)
+        legend("topleft",legend=c("data","prior","post","approx"),
+               col=c("purple",3,2,1),lwd=2)
       }
     }
   }  ## end trait loop
@@ -129,3 +137,9 @@ approx.posterior <- function(trait.mcmc,priors,trait.data=NULL,outdir=NULL){
   return(posteriors)
   
 }
+#==================================================================================================#
+
+
+####################################################################################################
+### EOF.  End of R script file.      				
+####################################################################################################

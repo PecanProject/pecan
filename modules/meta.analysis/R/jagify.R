@@ -59,12 +59,14 @@ jagify <- function(result){
     if(length(result[[i]]$stat[!is.na(result[[i]]$stat) & result[[i]]$stat <= 0.0]) > 0) {
       citationswithbadstats <- unique(result[[i]]$citation_id[which(result[[i]]$stat <= 0.0)])
       warning.message <- paste('there are implausible values of SE: SE <= 0 \n',
-                               'for', trait, 'result from citation',citationswithbadstats,'\n',
+                               'for', names(result)[i], 'result from citation',
+                               citationswithbadstats,'\n',
                                'SE <=0 set to NA \n')
       warning(warning.message)
       print(result[[i]])
       result[[i]]$stat[result[[i]]$stat <= 0.0] <- NA
     } ### End of if statement
+    
   } # End for loop
   rm(i)
 
