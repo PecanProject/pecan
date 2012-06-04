@@ -1,10 +1,22 @@
+#--------------------------------------------------------------------------------------------------#
+# Functions to prepare and write out ED2.2 config.xml files for MA, SA, and Ensemble runs
+#--------------------------------------------------------------------------------------------------#
+
+
+#--------------------------------------------------------------------------------------------------#
 PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
 
+### TODO: Update this script file to use the database for setting up ED2IN and config files
+#--------------------------------------------------------------------------------------------------#
+
+
+#--------------------------------------------------------------------------------------------------#
 ##' Abbreviate run id to ed limits
 ##'
 ##' As is the case with ED, input files must be <32 characters long.
 ##' this function abbreviates run.ids for use in input files
 ##' @param run.id string indicating nature of the run
+#--------------------------------------------------------------------------------------------------#
 abbreviate.run.id.ED <- function(run.id){
   run.id <- gsub('tundra.', '', run.id)
   run.id <- gsub('ebifarm.', '', run.id)
@@ -23,8 +35,10 @@ abbreviate.run.id.ED <- function(run.id){
   run.id <- gsub('quantumefficiency', 'quantef', run.id)
   return(run.id)
 }
+#==================================================================================================#
 
 
+#--------------------------------------------------------------------------------------------------#
 ##' convert parameters from BETY default units to ED defaults
 ##' 
 ##' Performs model specific unit conversions on a a list of trait values,
@@ -32,6 +46,7 @@ abbreviate.run.id.ED <- function(run.id){
 ##' @title Convert samples for ed
 ##' @param trait.samples a matrix or dataframe of samples from the trait distribution
 ##' @return matrix or dataframe with values transformed
+#--------------------------------------------------------------------------------------------------#
 convert.samples.ED <- function(trait.samples){
   DEFAULT.LEAF.C <- 0.48
   DEFAULT.MAINTENANCE.RESPIRATION <- 1/2
@@ -61,7 +76,10 @@ convert.samples.ED <- function(trait.samples){
   }
   return(trait.samples)
 }
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##' Writes an xml and ED2IN config files for use with the Ecological Demography model.
 ##'
 ##' Requires a pft xml object, a list of trait values for a single model run,
@@ -74,6 +92,7 @@ convert.samples.ED <- function(trait.samples){
 ##' @param run.id id of run
 ##' @return configuration file and ED2IN namelist for given run
 ##' @author David
+#--------------------------------------------------------------------------------------------------#
 write.config.ED <- function(defaults, trait.values, settings, outdir, run.id){
   #defaults = settings$pfts
   xml <- listToXml(settings$config.header, 'config')
@@ -166,7 +185,15 @@ if(settings$run$host$ed$phenol.scheme==1){
   
   print(run.id)
 }
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
+##'
+##' @name write.run.ED
+##'
+##'
+#--------------------------------------------------------------------------------------------------#
 write.run.ED <- function(settings){
   run.text <- scan(file = paste(settings$pecanDir,
                      'bash/run-template.ED', sep = ''), 
@@ -183,12 +210,16 @@ write.run.ED <- function(settings){
                  settings$run$host$rundir, sep = ''))
   }
 }
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##' Extract ED output for specific variables from an hdf5 file
 ##' @title read output - ED
 ##' @param filename string, name of file with data
 ##' @param variables  variables to extract from file
 ##' @return single value of output variable from filename. In the case of AGB, it is summed across all plants
+#--------------------------------------------------------------------------------------------------#
 read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
   if(filename %in% dir(pattern = 'h5')){
     require(hdf5)
@@ -203,7 +234,10 @@ read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
     return(NA)
   }
 }
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##' Reads the output of a single model run
 ##'
 ##' This function applies \link{\code{read.output.file.ed}} to a list of files from a single run
@@ -214,6 +248,7 @@ read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
 ##' @param end.year
 ##' @param output.type type of output file to read, can be "-Y-" for annual output, "-M-" for monthly means, "-D-" for daily means, "-T-" for instantaneous fluxes. Output types are set in the ED2IN namelist as NL%I[DMYT]OUTPUT  
 ##' @return vector of output variable for all runs within ensemble
+#--------------------------------------------------------------------------------------------------#
 read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA, output.type = 'Y'){
   print(run.id)
   #if(any(grep(run.id, dir(outdir, pattern = 'finished')))){
@@ -242,4 +277,9 @@ read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA, output.ty
   #}
   return(result)
 }
+#==================================================================================================#
 
+
+####################################################################################################
+### EOF.  End of R script file.            	
+####################################################################################################

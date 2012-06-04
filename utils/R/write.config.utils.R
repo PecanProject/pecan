@@ -1,4 +1,9 @@
 #--------------------------------------------------------------------------------------------------#
+### TODO: Generalize this code for all ecosystem models (e.g. ED2.2, SiPNET, etc).
+#--------------------------------------------------------------------------------------------------#
+
+
+#--------------------------------------------------------------------------------------------------#
 ##' Get parameter values used in ensemble
 ##'
 ##' Returns a matrix of trait values sampled quasi-randomly based on the Halton sequence
