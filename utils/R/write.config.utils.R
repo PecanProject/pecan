@@ -89,7 +89,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
 #--------------------------------------------------------------------------------------------------#
 remove.config <- function() {
   if(FALSE){
-    todelete <- dir(unlist(outdirs),c('ED2INc.*','c.*'),
+    todelete <- dir(unlist(main.outdir),c('ED2INc.*','c.*'),
                     recursive=TRUE, full.names = TRUE)
     if(length(todelete>0)) file.remove(todelete)
   

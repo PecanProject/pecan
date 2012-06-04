@@ -42,9 +42,6 @@ run.write.configs.ed <- function() {
   print("-------------------------------------------------------------------")
   print(" ")
   
-  ### Prepare for model output.  Cleanup any old config files (if exists)
-  remove.config()
-  
   ### Generate empty list arrays for output.
   trait.samples <- list()
   sa.samples <- list()
@@ -55,6 +52,9 @@ run.write.configs.ed <- function() {
   ### Define main output directory and host for SA/Ensemble run.
   main.outdir   <- settings$outdir
   host <- settings$run$host
+  
+  ### Prepare for model output.  Cleanup any old config files (if exists)
+  remove.config()
   
   ### Load PFT priors and posteriors
   for (i in seq(pft.names)){
