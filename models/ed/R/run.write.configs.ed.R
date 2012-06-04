@@ -124,6 +124,7 @@ run.write.configs.ed <- function() {
                                         env.samples,
                                         quant)
       ### Write out SA config files
+      cnt = 0
       write.sa.configs(settings$pfts, sa.samples, 
                        host, main.outdir, settings)
     }
@@ -141,7 +142,7 @@ run.write.configs.ed <- function() {
   ######################## Finish up runs ########################
   ### Save output from SA/Ensemble runs
   save(ensemble.samples, trait.samples, sa.samples, settings,
-       file = paste(outdir, 'samples.Rdata', sep=''))
+       file = paste(main.outdir, 'samples.Rdata', sep=''))
   
   ### Make outdirectory, send samples to outdir
   if(host$name == 'localhost'){
@@ -155,7 +156,7 @@ run.write.configs.ed <- function() {
     mkdir.cmd <- paste("'if ! ls ", host$outdir, " > /dev/null ; then mkdir -p ", 
                        host$outdir," ; fi'",sep='')
     system(paste("ssh", host$name, mkdir.cmd))
-    system(paste('rsync -routi ', paste(outdir, 'samples.Rdata', sep=''),
+    system(paste('rsync -routi ', paste(main.outdir, 'samples.Rdata', sep=''),
                  paste(host$name, ':', host$outdir, sep='')))
   }
   
