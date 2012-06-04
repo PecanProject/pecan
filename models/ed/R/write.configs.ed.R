@@ -97,7 +97,12 @@ write.config.ED <- function(defaults, trait.values, settings, outdir, run.id){
   #defaults = settings$pfts
   xml <- listToXml(settings$config.header, 'config')
   names(defaults) <- sapply(defaults,function(x) x$name)
-  for(group in names(trait.samples)){
+  
+  ### !!! THIS WAS CAUSING PROBLEMS.  LIKELY WAS A BUG AND IS CORRECT NOW.
+  #for(group in names(trait.samples
+  ### !!!
+  
+  for(group in names(trait.values)){
     if(group == "env"){
       
       ## set defaults from config.header
@@ -120,7 +125,12 @@ write.config.ED <- function(defaults, trait.values, settings, outdir, run.id){
       xml <- append.xmlNode(xml, pft.xml)
     }
   }
-  xml <- list2XML(config) 
+  
+  ### !!! PROBLEM CODE. PROBLEM A BAD MERGE AND SHOULD BE REMOVED
+  #xml <- list2XML(config) # I dont think this is correct? SPS
+  #xml <- list2XML(settings)
+  ### !!!
+  
   xml.file.name <-paste('c.',run.id,sep='')  
   if(nchar(xml.file.name) >= 512)  # was 128.  Changed in ED to 512
     stop(paste('The file name, "',xml.file.name,
