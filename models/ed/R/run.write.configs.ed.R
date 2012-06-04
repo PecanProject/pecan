@@ -123,10 +123,9 @@ run.write.configs.ed <- function() {
       sa.samples <-  get.sa.sample.list(trait.samples, 
                                         env.samples,
                                         quant)
-      
       ### Write out SA config files
       write.sa.configs(settings$pfts, sa.samples, 
-                       host, outdir, settings)
+                       host, main.outdir, settings)
     }
   } ### End of SA
   
