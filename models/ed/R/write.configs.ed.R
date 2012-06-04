@@ -141,60 +141,72 @@ write.config.ED <- function(defaults, trait.values, settings, outdir, run.id){
   
   startdate <- as.Date(settings$run$start.date)
   enddate <- as.Date(settings$run$end.date)
-  ed2in.text <- readLines(con=settings$run$edin, n=-1)
-
+  
 #---------------------------------------------------------------------------------------------------
-
+  ### Edit ED2IN file for runs
+  ed2in.text <- readLines(con=settings$run$edin, n=-1)
+  
   ed2in.text <- gsub('@SITE_LAT@', settings$run$site$lat, ed2in.text)
   ed2in.text <- gsub('@SITE_LON@', settings$run$site$lon, ed2in.text)
   ed2in.text <- gsub('@SITE_MET@', settings$run$site$met, ed2in.text)
   ed2in.text <- gsub('@MET_START@', settings$run$site$met.start, ed2in.text)
   ed2in.text <- gsub('@MET_END@', settings$run$site$met.end, ed2in.text)
   ed2in.text <- gsub('@SITE_PSSCSS@', settings$run$site$psscss, ed2in.text)
-if(settings$run$host$ed$phenol.scheme==1){
-        # Set prescribed phenology switch in ED2IN
-	ed2in.text <- gsub(' @PHENOL_SCHEME@', settings$run$host$ed$phenol.scheme, ed2in.text)
-	# Phenology filename
+  
+  if(settings$run$host$ed$phenol.scheme==1){
+    # Set prescribed phenology switch in ED2IN
+	  ed2in.text <- gsub(' @PHENOL_SCHEME@', settings$run$host$ed$phenol.scheme, ed2in.text)
+	  # Phenology filename
   	ed2in.text <- gsub('@PHENOL@', settings$run$site$phenol, ed2in.text)
-	# Set start year of phenology
+	  # Set start year of phenology
   	ed2in.text <- gsub('@PHENOL_START@', settings$run$site$phenol.start, ed2in.text)
-	# Set end year of phenology
+	  # Set end year of phenology
   	ed2in.text <- gsub('@PHENOL_END@', settings$run$site$phenol.end, ed2in.text)
 	
-	# If not prescribed set alternative phenology scheme.
-	} else {
-	ed2in.text <- gsub(' @PHENOL_SCHEME@', settings$run$host$ed$phenol.scheme, ed2in.text)
-	
-}
+	  # If not prescribed set alternative phenology scheme.
+    } else {
+	  ed2in.text <- gsub(' @PHENOL_SCHEME@', settings$run$host$ed$phenol.scheme, ed2in.text)
+	}
 #---------------------------------------------------------------------------------------------------
-  ed2in.text <- gsub('@ED_VEG@', settings$run$host$ed$veg, ed2in.text)
-  ed2in.text <- gsub('@ED_SOIL@', settings$run$host$ed$soil, ed2in.text)
-  ed2in.text <- gsub('@ED_INPUTS@', settings$run$host$ed$inputs, ed2in.text)
-  # This next line may not be needed.  Set above.
-  ed2in.text <- gsub(' @PHENOL_SCHEME@', settings$run$host$ed$phenol.scheme, ed2in.text)
+  
+    ed2in.text <- gsub('@ED_VEG@', settings$run$host$ed$veg, ed2in.text)
+    ed2in.text <- gsub('@ED_SOIL@', settings$run$host$ed$soil, ed2in.text)
+    ed2in.text <- gsub('@ED_INPUTS@', settings$run$host$ed$inputs, ed2in.text)
+  
+    # This next line may not be needed.  Set above.
+    ed2in.text <- gsub(' @PHENOL_SCHEME@', settings$run$host$ed$phenol.scheme, ed2in.text)
 
 #---------------------------------------------------------------------------------------------------
-  ed2in.text <- gsub('@START_MONTH@', format(startdate, "%m"), ed2in.text)
-  ed2in.text <- gsub('@START_DAY@', format(startdate, "%d"), ed2in.text)
-  ed2in.text <- gsub('@START_YEAR@', format(startdate, "%Y"), ed2in.text)
-  ed2in.text <- gsub('@END_MONTH@', format(enddate, "%m"), ed2in.text)
-  ed2in.text <- gsub('@END_DAY@', format(enddate, "%d"), ed2in.text)
-  ed2in.text <- gsub('@END_YEAR@', format(enddate, "%Y"), ed2in.text)
+    ed2in.text <- gsub('@START_MONTH@', format(startdate, "%m"), ed2in.text)
+    ed2in.text <- gsub('@START_DAY@', format(startdate, "%d"), ed2in.text)
+    ed2in.text <- gsub('@START_YEAR@', format(startdate, "%Y"), ed2in.text)
+    ed2in.text <- gsub('@END_MONTH@', format(enddate, "%m"), ed2in.text)
+    ed2in.text <- gsub('@END_DAY@', format(enddate, "%d"), ed2in.text)
+    ed2in.text <- gsub('@END_YEAR@', format(enddate, "%Y"), ed2in.text)
 
 #---------------------------------------------------------------------------------------------------
-  ed2in.text <- gsub('@OUTDIR@', settings$run$host$outdir, ed2in.text)
-  ed2in.text <- gsub('@ENSNAME@', run.id, ed2in.text)
-  ed2in.text <- gsub('@CONFIGFILE@', xml.file.name, ed2in.text)
-  ed2in.text <- gsub('@SCRATCH@', paste('/scratch/', settings$run$scratch, sep=''), ed2in.text)
-  ed2in.text <- gsub('@OUTFILE@', paste('out', run.id, sep=''), ed2in.text)
-  ed2in.text <- gsub('@HISTFILE@', paste('hist', run.id, sep=''), ed2in.text)
+    ed2in.text <- gsub('@OUTDIR@', settings$run$host$outdir, ed2in.text)
+    ed2in.text <- gsub('@ENSNAME@', run.id, ed2in.text)
+    ed2in.text <- gsub('@CONFIGFILE@', xml.file.name, ed2in.text)
+  
+    ### Generate a numbered suffix for scratch output folder.  Useful for cleanup.  TEMP CODE. NEED TO UPDATE.
+    cnt = cnt + 1
+    scratch = paste(Sys.getenv("USER"),".",cnt,"/",sep="")
+    #ed2in.text <- gsub('@SCRATCH@', paste('/scratch/', settings$run$scratch, sep=''), ed2in.text)
+    ed2in.text <- gsub('@SCRATCH@', paste('/scratch/', scratch, sep=''), ed2in.text)
+    ###
+  
+    ed2in.text <- gsub('@OUTFILE@', paste('out', run.id, sep=''), ed2in.text)
+    ed2in.text <- gsub('@HISTFILE@', paste('hist', run.id, sep=''), ed2in.text)
  
 #---------------------------------------------------------------------------------------------------
-  ed2in.file.name <- paste('ED2INc.',run.id, sep='')
-  writeLines(ed2in.text, con = paste(outdir, ed2in.file.name, sep=''))
-  
-  print(run.id)
-}
+    ed2in.file.name <- paste('ED2INc.',run.id, sep='')
+    writeLines(ed2in.text, con = paste(outdir, ed2in.file.name, sep=''))
+    
+    ### Display info to the console.
+    print(run.id)
+  return(cnt)
+  }
 #==================================================================================================#
 
 
