@@ -58,7 +58,6 @@ run.write.configs.ed <- function() {
   
   ### Load PFT priors and posteriors
   for (i in seq(pft.names)){
-    print(i)
     
     ### Load priors
     load(paste(outdirs[i], 'prior.distns.Rdata', sep=''))
