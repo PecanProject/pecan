@@ -8,7 +8,7 @@
 ##' @author Shawn Serbin
 #--------------------------------------------------------------------------------------------------#
 run.write.configs.ed <- function() {
-  
+
   ### Read in settings file if not in workspace
   if(!exists("settings")){
     settings = read.settings(pecan.settings.file)
@@ -124,7 +124,10 @@ run.write.configs.ed <- function() {
                                         env.samples,
                                         quant)
       ### Write out SA config files
-      cnt = 0
+      if(!exists("cnt")) {
+        cnt=0
+        assign("cnt",cnt,.GlobalEnv)
+        }
       write.sa.configs(settings$pfts, sa.samples, 
                        host, main.outdir, settings)
     }

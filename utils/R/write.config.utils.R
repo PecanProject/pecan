@@ -88,11 +88,21 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
 ##'
 #--------------------------------------------------------------------------------------------------#
 remove.config <- function() {
-  if(FALSE){
-    todelete <- dir(unlist(main.outdir),c('ED2INc.*','c.*'),
+  #if(FALSE){
+    todelete <- dir(unlist(main.outdir), pattern = 'ED2INc.*',
                     recursive=TRUE, full.names = TRUE)
     if(length(todelete>0)) file.remove(todelete)
-  
+    rm(todelete)
+    
+    #todelete <- dir(unlist(main.outdir), pattern = "c.*",
+    #                recursive=TRUE, full.names = TRUE)
+    
+    ### Other code wasn't working properly.  This won't recurse however.
+    # TODO: Fix this code so it finds the correct files and will recurse
+    todelete <- Sys.glob(file.path(unlist(main.outdir), "c.*") )
+    if(length(todelete>0)) file.remove(todelete)
+    rm(todelete)
+
     filename.root <- get.run.id('c.','*')  # TODO: depreciate abbrev run ids
   
     if(host$name == 'localhost'){
@@ -112,7 +122,7 @@ remove.config <- function() {
                     " 'for f in ", paste(todelete, collapse = ' '),"; do rm $f; done'",sep=''))
         }
       }
-    }
+    #}
 }
 #==================================================================================================#
 
@@ -311,6 +321,20 @@ write.sa.configs <- function(defaults, quantile.samples, host, outdir, settings,
                  paste(outdir, '*', get.run.id('SA', ''), '*', sep=''), 
                  paste(host$name, ':', host$rundir,  sep='')))
   }
+}
+#==================================================================================================#
+
+
+#--------------------------------------------------------------------------------------------------#
+#   Counter function for writing configs
+##'
+##'
+##'
+#--------------------------------------------------------------------------------------------------#
+counter <- function(cnt){
+  cnt = cnt + 1
+  #return(cnt)
+  assign("cnt",cnt,.GlobalEnv) # Assign count to the environment
 }
 #==================================================================================================#
 

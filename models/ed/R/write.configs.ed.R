@@ -166,7 +166,7 @@ write.config.ED <- function(defaults, trait.values, settings, outdir, run.id){
 	  # If not prescribed set alternative phenology scheme.
     } else {
 	  ed2in.text <- gsub(' @PHENOL_SCHEME@', settings$run$host$ed$phenol.scheme, ed2in.text)
-	}
+    }
 #---------------------------------------------------------------------------------------------------
   
     ed2in.text <- gsub('@ED_VEG@', settings$run$host$ed$veg, ed2in.text)
@@ -190,7 +190,8 @@ write.config.ED <- function(defaults, trait.values, settings, outdir, run.id){
     ed2in.text <- gsub('@CONFIGFILE@', xml.file.name, ed2in.text)
   
     ### Generate a numbered suffix for scratch output folder.  Useful for cleanup.  TEMP CODE. NEED TO UPDATE.
-    cnt = cnt + 1
+    cnt = counter(cnt) # generate sequential scratch output directory names 
+    #print(cnt)
     scratch = paste(Sys.getenv("USER"),".",cnt,"/",sep="")
     #ed2in.text <- gsub('@SCRATCH@', paste('/scratch/', settings$run$scratch, sep=''), ed2in.text)
     ed2in.text <- gsub('@SCRATCH@', paste('/scratch/', scratch, sep=''), ed2in.text)
@@ -205,8 +206,7 @@ write.config.ED <- function(defaults, trait.values, settings, outdir, run.id){
     
     ### Display info to the console.
     print(run.id)
-  return(cnt)
-  }
+}
 #==================================================================================================#
 
 
