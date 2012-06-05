@@ -25,17 +25,18 @@ left.pad.zeros <- function(num, digits = 5){
 ##'
 ##' rsync is a file copying tool in bash
 ##' @title rsync 
+##' @param args rsync arguments (see man rsync)
 ##' @param from source 
 ##' @param to destination
 ##' @param pattern file pattern to be matched 
 ##' @return nothing, transfers files as a side effect 
 #--------------------------------------------------------------------------------------------------#
-rsync <- function(from, to, pattern=''){
-  system(paste('rsync -outi', from, to, sep = ' '))
+rsync <- function(args, from, to, pattern=''){
+  system(paste('rsync',' ', args,' ', from, pattern, ' ', to, sep = ''), intern=TRUE )
 }
 #==================================================================================================#
 
-
+rsync(from='/Users/serbin/Documents/',pattern = paste("*.xml*",sep=""),to = '/Users/serbin/Downloads/')
 #--------------------------------------------------------------------------------------------------#
 ##' R implementation of SSH
 ##'
