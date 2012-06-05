@@ -36,7 +36,7 @@ rsync <- function(args, from, to, pattern=''){
 }
 #==================================================================================================#
 
-rsync(from='/Users/serbin/Documents/',pattern = paste("*.xml*",sep=""),to = '/Users/serbin/Downloads/')
+
 #--------------------------------------------------------------------------------------------------#
 ##' R implementation of SSH
 ##'

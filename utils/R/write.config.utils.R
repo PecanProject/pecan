@@ -314,7 +314,7 @@ write.sa.configs <- function(defaults, quantile.samples, host, outdir, settings,
   }
   if(host$name == 'localhost'){
     rsync('-outi', from = outdir, to = host$rundir, 
-          pattern = paste('*', get.run.id('SA', ''), '*',sep='')
+          pattern = paste('*', get.run.id('SA', ''), '*',sep='') )
   } else {
     # rsync(args, from, to, pattern).  pattern --> file patter for rsync
     rsync('-outi', from = outdir, to = paste(host$name, ':', host$rundir,  sep=''), 
