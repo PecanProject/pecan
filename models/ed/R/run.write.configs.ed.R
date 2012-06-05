@@ -8,7 +8,7 @@
 ##' @author Shawn Serbin
 #--------------------------------------------------------------------------------------------------#
 run.write.configs.ed <- function() {
-
+  
   ### Read in settings file if not in workspace
   if(!exists("settings")){
     settings = read.settings(pecan.settings.file)
@@ -123,6 +123,7 @@ run.write.configs.ed <- function() {
       sa.samples <-  get.sa.sample.list(trait.samples, 
                                         env.samples,
                                         quant)
+      print("Done with SA samples")
       ### Write out SA config files
       if(!exists("cnt")) {
         cnt=0
@@ -140,6 +141,8 @@ run.write.configs.ed <- function() {
                                              trait.samples, env.samples)
     write.ensemble.configs(settings$pfts, ensemble.samples, 
                            host, outdir, settings)
+  }else{
+    print(paste('Ensemble analysis settings are NULL'))
   } ### End of Ensemble
   
   ######################## Finish up runs ########################
