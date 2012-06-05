@@ -16,14 +16,17 @@ run.meta.analysis <- function() {
     ma.iter   = as.numeric(settings$meta.analysis$iter)
     
     ### Warn user if no iterations are specified.  Could also change to throw warning but then use a default number.
-    if(length(ma.iter)==0) stop("**** WARNING: PEcAn meta.analysis requested without specifying the number of iterations****")
+    #if(length(ma.iter)==0) stop("**** WARNING: PEcAn meta.analysis requested without specifying the number of iterations****")
     
-    ### could be
-#     if(length(ma.iter)==0) {
-#       print("**** WARNING: PEcAn meta.analysis requested without specifying the number of iterations****")
-#       print("****Using default number of 10000****")
-#       ma.iter=10000
-#     }
+    ## Warn user if no MA iterations are specified.  Set default to 10e6
+    if(length(ma.iter)==0) {
+      print("----------------------------------------------------------------------------------------------")
+      print("**** WARNING: PEcAn meta.analysis requested without specifying the number of iterations ****")
+      print("**** Using default number of 1,00,000.  This will take a very long time. ****")
+      print("**** Please set the number of iterations for future PEcAn runs ****")
+      ma.iter=10000
+      print("----------------------------------------------------------------------------------------------")
+    }
     ###
     
     ### Identify PFTs in the input settings.xml file
