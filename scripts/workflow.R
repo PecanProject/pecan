@@ -1,8 +1,13 @@
 #---------------- Load libraries. -----------------------------------------------------------------#
-if (!require("PEcAn.DB")) stop("Could not load PEcAn.DB")
-if (!require("PEcAn.common")) stop("Could not load PEcAn.common")
-if (!require("PEcAn.utils")) stop("Could not load PEcAn.utils")
-if (!require("PEcAn.MA")) stop("Could not load PEcAn.MA")
+pecan.pkgs <- lapply(c("DB", "common", "utils", "MA"),
+                     function(x) paste("PEcAn.", x, sep = ''))
+try.load <- function(pkg = NULL){
+  ifelse(!require(pkg, character.only = TRUE), FALSE, TRUE)
+}
+loaded <- sapply(pecan.pkgs, try.load)  #loads available packages,
+                                        # returns logical vector of success
+print(paste("Could not load", pecan.pkgs[!loaded]))
+if(any(!loaded)) stop()
 #--------------------------------------------------------------------------------------------------#
 
 
