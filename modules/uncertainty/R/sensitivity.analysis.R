@@ -64,16 +64,7 @@ get.coef.var <- function(set){
 get.elasticity <- function(sensitivity, samples, outputs){
   return(sensitivity / (mean(outputs) / mean(samples)))
 }
-##' Truncates vector at 0
-##'
-##' @title Zero Truncate 
-##' @param y numeric vector
-##' @return numeric vector with all values less than 0 set to 0
-zero.truncate <- function(y) {
-  y[#y<0 | 
-          is.na(y)] <- 0
-  return(y)
-}
+
 ##' Performs univariate sensitivity analysis and variance decomposition 
 ##'
 ##' This function estimates the univariate responses of a model to a parameter for a set of traits, calculates the model sensitivity at the median, and performs a variance decomposition. This function results in a set of sensitivity plots (one per variable) and variance decomposition plot.
