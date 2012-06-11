@@ -1,14 +1,14 @@
 #--------------------------------------------------------------------------------------------------#
+##' Run meta analysis
 ##' 
-##' @name run.meta.analysis.R
+##' @name run.meta.analysis
 ##'
 ##' @title Invoke PEcAn meta.analysis
-##'
-##'
-##'
-##'
-##' @author Shawn Serbin
-#--------------------------------------------------------------------------------------------------#
+##' @return nothing, as side effect saves \code{trait.mcmc} created by
+##' \code{\link{pecan.ma}} and post.distns created by
+##' \code{\link{approx.posterior(trait.mcmc, ...)}}  to trait.mcmc.Rdata \
+##' and post.distns.Rdata, respectively
+##' @author Shawn Serbin, David LeBauer
 run.meta.analysis <- function() {
   if('meta.analysis' %in% names(settings)) {
     
