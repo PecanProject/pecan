@@ -16,16 +16,22 @@ sa.splinefun <- function(quantiles.input, quantiles.output){
 ##' @title Standard deviation of sample variance
 ##' @param x sample
 ##' @return estimate of standard deviation of the sample variance
-##' @references \href{Wikipedia}{http://en.wikipedia.org/wiki/Variance#Distribution_of_the_sample_variance}
+##' @author David LeBauer
+##' @references  Mood, Graybill, Boes 1974 "Introduction to the Theory of Statistics" 3rd ed. p 229; Casella and Berger "Statistical Inference" p 364 ex. 7.45; "Reference for Var(s^2)" CrossValidated \url{http://stats.stackexchange.com/q/29905/1381}, "Calculating required sample size, precision of variance estimate" CrossValidated \url{http://stats.stackexchange.com/q/7004/1381}, "Variance of Sample Variance?" Mathematics - Stack Exchange \url{http://math.stackexchange.com/q/72975/3733}
 sd.var <- function(x){
   var(x, na.rm = TRUE)^2*(2/(sum(!is.na(x))-1) + kurtosis(x)/sum(!is.na(x)))
 }
 
-##' Calculates the kurtosis of a vector
+##' Calculates the excess kurtosis of a vector
 ##'
-##' @title Calculate kurtosis from a vector
+##' Note that this calculates the "excess kurtosis", which is defined as kurtosis - 3.
+##' This statistic is used in the calculation of the standard deviation of sample variance
+##' in the function \code{\link{sd.var}}.  
+##' Additional details 
+##' @title Calculate excess kurtosis from a vector
 ##' @param x vector of values
 ##' @return numeric value of kurtosis
+##' @author David LeBauer
 ##' @references  NIST/SEMATECH e-Handbook of Statistical Methods, \url{http://www.itl.nist.gov/div898/handbook/eda/section3/eda35b.htm}, 2011-06-20.
 kurtosis <- function(x) {
   kappa <- sum((x - mean(x, na.rm = TRUE))^4)/((sum(!is.na(x)) - 1) * sd(x, na.rm = TRUE)^4) - 3
@@ -34,8 +40,8 @@ kurtosis <- function(x) {
 ##' Calculate the sensitivity of a function at the median
 ##'
 ##' This function evaluates the sensitivity of a model to a parameter.
-##' This is done by evaluating the first derivative of the univariate spline estimate of the model response
-##' at the parameter median.
+##' This is done by evaluating the first derivative of the univariate spline estimate
+##' of the model response at the parameter mean.
 ##' @title Calculate Sensitivity
 ##' @param trait.samples 
 ##' @param sa.splinefun 
@@ -57,7 +63,7 @@ get.coef.var <- function(set){
 ##'
 ##' Given the sensitivity, samples, and outputs for a single trait, return elasticity
 ##' @title Get Elasticity 
-##' @param sensitivity univariate sensitivity of model to a parameter, can be calculated by \link{get.sensitivity}  
+##' @param sensitivity univariate sensitivity of model to a parameter, can be calculated by \code{\link{get.sensitivity}}
 ##' @param samples samples from trait distribution
 ##' @param outputs model output from ensemble runs
 ##' @return elasticity = normalized sensitivity 
@@ -74,6 +80,7 @@ get.elasticity <- function(sensitivity, samples, outputs){
 ##' @param sa.output  list of data.frames, similar to sa.samples, except cells contain the results of a model run with that trait x quantile combination and all other traits held at their median value  
 ##' @param outdir directory to which plots are written
 ##' @return results of sensitivity analysis
+##' @author David LeBauer
 ##' @examples
 ##' sensitivity.analysis(trait.samples[[pft$name]], sa.samples[[pft$name]], sa.agb[[pft$name]], pft$outdir)
 sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
