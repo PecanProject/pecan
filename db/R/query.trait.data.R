@@ -472,7 +472,7 @@ query.trait.data <- function(trait, spstr,con=query.base.con(...), ...){
     
   } else if (trait == 'root_respiration_rate') {
     #########################  ROOT RESPIRATION   ############################
-    ### Apply Arrhenius scaling to convert Vcmax at measurement temp to that at 25 degC (ref temp).
+    ### Apply Arrhenius scaling to convert root respiration at measurement temp to that at 25 degC (ref temp).
     data <- arrhenius.scaling.traits(data, covariates, c('rootT', 'airT'))
     
   } else if (trait == 'dark_respiration_factor') {
