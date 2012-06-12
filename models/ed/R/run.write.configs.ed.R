@@ -9,7 +9,7 @@
 #--------------------------------------------------------------------------------------------------#
 run.write.configs.ed <- function() {
   
-  ### Read in settings file if not in workspace
+  ### Read in settings file if not in workspace.  Should eventually remove.
   if(!exists("settings")){
     settings = read.settings(pecan.settings.file)
     print("-------------------------------------------------------------------")
@@ -18,6 +18,7 @@ run.write.configs.ed <- function() {
     print(" ")
     print(" ")
   }
+  ###
   
   ### Identify PFTs in the input settings.xml file
   num.pfts <- length(settings$pfts)
@@ -123,9 +124,8 @@ run.write.configs.ed <- function() {
       sa.samples <-  get.sa.sample.list(trait.samples, 
                                         env.samples,
                                         quant)
-      print("Done with SA samples")
       ### Write out SA config files
-      if(!exists("cnt")) {
+      if(!exists("cnt")) {            
         cnt=0
         assign("cnt",cnt,.GlobalEnv)
         }
