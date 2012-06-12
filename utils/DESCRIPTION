@@ -17,4 +17,5 @@ License: FreeBSD + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes
 Require: hdf5
-Collate: approx.posterior.R plots.R r2bugs.distributions.R timeutils.R utils.R variance.R write.config.utils.R read.output.R
+Collate: approx.posterior.R plots.R r2bugs.distributions.R read.output.R timeutils.R utils.R variance.R write.config.utils.R
+
