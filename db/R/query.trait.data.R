@@ -477,17 +477,19 @@ query.trait.data <- function(trait, spstr,con=query.base.con(...), ...){
     
   } else if (trait == 'dark_respiration_factor') {
     #########################  DARK RESPIRATION   ############################
-    browser()
+    ## converted to using leaf respiration on an area basis
+    browser()  ## TODO: Remove this debugging
     data <- arrhenius.scaling.traits(data, covariates, c('leafT', 'airT'))
     
-    dark.resp.rate <- query.data('dark_respiration_rate', spstr, con=con)
+    #dark.resp.rate <- query.data('dark_respiration_rate', spstr, con=con)
+    leaf.resp.rate <- query.data('leaf_respiration_rate_m2', spstr, con=con)
     vcmax <- query.data('Vcmax', spstr, con=con)
     #TODO: apply arrhenius scaling
     
     data <- rbind(data, 
-        derive.traits(function(dark.resp.rate, vcmax) {dark.resp.rate / vcmax}, 
-                      dark.resp.rate, vcmax, var.name='dark_respiration_factor'))
-    
+        derive.traits(function(leaf.resp.rate, vcmax) {leaf.resp.rate / vcmax}, 
+                      leaf.resp.rate, vcmax, var.name='dark_respiration_factor'))
+    browser()  ## TODO: Remove this debugging
   } else if (trait == 'c2n_leaf') {
     #########################  LEAF C:N   ############################
     
