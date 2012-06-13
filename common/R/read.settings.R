@@ -148,7 +148,7 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
   }
   settings.output <- file.path(settings.outdir, outputfile)
   if (file.exists(settings.output)) {
-    print(paste("File already exists [", settings.output, "file will be overwritten"))
+    print(paste("File already exists [", settings.output, "] file will be overwritten"))
     #logwarn(paste("File already exists [", settings.output, "file will be overwritten"), logger='PEcAn.common.read.settings')
   } 
   saveXML(settings.xml, file=settings.output)

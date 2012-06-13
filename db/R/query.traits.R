@@ -29,7 +29,7 @@ query.traits <- function(spstr, priors, con = NULL){
   traits <- fetch(query.result, n = -1)$name
  
   traits <- unique(traits[traits %in% priors])
-
+  
   ### Grab trait data
   trait.data <- lapply(traits, function(trait) query.trait.data(trait, spstr, con=con))
   names(trait.data) <- traits
