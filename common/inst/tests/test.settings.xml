@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<pecan>
+  <pfts>
+    <pft>
+      <name>ebifarm.pavi</name>
+      <outdir>/tmp/</outdir>
+      <constants>
+        <num>15</num>
+        <phenology>2</phenology>
+        <max_dbh>0.78</max_dbh>
+        <hgt_min>2.0</hgt_min>
+        <dark_respiration_factor>0.015</dark_respiration_factor>
+        <qsw>0.0</qsw>
+        <mort1>1.0</mort1>
+        <plant_min_temp>-100</plant_min_temp>
+        <storage_turnover_rate>0</storage_turnover_rate>
+        <r_fract>0.25</r_fract>
+      </constants>
+    </pft>
+  </pfts>
+  
+  <config.header>
+    <radiation>
+      <lai_min>0.01</lai_min>
+    </radiation>
+    <ed_misc>
+      <output_month>12</output_month>      
+    </ed_misc> 
+  </config.header>
+  
+  <meta.analysis>
+    <iter>5000</iter>
+    <random.effects>TRUE</random.effects>
+  </meta.analysis>
+  
+  <ensemble>
+    <size>1</size>
+  </ensemble>
+  
+<!--
+    <sensitivity.analysis>
+      <start.year>1995</start.year>
+      <end.year>1998</end.year>
+      <quantiles>
+	<quantile>0.65</quantile> 
+      </quantiles>
+    </sensitivity.analysis>
+-->     
+  <outdir>/tmp/</outdir>
+  <database>
+    <userid>ebi_analys_user</userid>
+    <passwd>b742xsAu</passwd>
+    <location>ebi-forecast.igb.uiuc.edu</location>
+    <name>ebi_analysis</name>
+  </database>
+  <run>
+    <site>
+      <name>Test Settings</name>
+      <lat></lat>
+      <lon></lon>
+      <met.data.header></met.data.header>
+    </site>
+    <start.date>1996/01/01</start.date>
+    <end.date>1998/12/31</end.date>
+    <host>
+      <name>$USER@ebi-cluster.igb.uiuc.edu</name>
+      <rundir>/home/$USER/EDBRAMS/ED/run/</rundir>
+      <inputs>/home/scratch/dlebauer/edin/</inputs>
+      <outdir>/tmp/</outdir>
+    </host>
+  </run>
+</pecan>
