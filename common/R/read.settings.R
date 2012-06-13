@@ -67,11 +67,11 @@ xmlMergeNodes <- function(node1, node2) {
 #' in a file later in the order
 #' 
 #' \enumerate{
-#' \item /etc/pecan.xml}
-#' \item ~/.pecan.xml}
-#' \item environment variable PECAN_SETTINGS
-#' \item passed as file argument to function
-#' \item passed as command line argument using --settings
+#' \item {/etc/pecan.xml}{global file for all users}
+#' \item {~/.pecan.xml}{settings for all projects for the user}
+#' \item {PECAN_SETTINGS}{environment variable PECAN_SETTINGS pointing to a specific file}
+#' \item {inputfile}{passed as argument to function}
+#' \item {--settings <file>}{passed as command line argument using --settings}
 #' }
 #' @param inputfile the PEcAn settings file to be merged with the others.
 #' @param outputfile the name of file to which the settings will be
@@ -134,11 +134,9 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
   # 6b either save or load pecan.xml for main output folder
   settings.output <- file.path(outputfile, settings.list$outdir)
   if (file.exists(settings.output)) {
-    settings.xml <- xmlParse(settings.output)
-    settings.list <- xmlToList(settings.xml)
-  } else {
-    saveXML(settings.xml, file=settings.output)
+    print("File already exists, file will be overwritten.")
   }
+  saveXML(settings.xml, file=settings.output)
   
   # setup Rlib from settings
   if(!is.null(settings.list$Rlib)){ 
