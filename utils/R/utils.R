@@ -122,7 +122,7 @@ listToXml <- function(item, tag){
 ##'
 ##'
 ##'
-##'
+##'  I THINK THIS IS DEPRECIATED [sps]
 ##'
 #--------------------------------------------------------------------------------------------------#
 list2XML <- function (dat, myName = "config", delim = ",") 

@@ -1,14 +1,14 @@
 #---------------- Base database query function. ---------------------------------------------------#
-##' Generic function to query BETYdb
+##' Generic function to query trait database
 ##'
 ##' Given a connection and a query, will return a query as a data frame
-##' @title Query BETY
+##' @title Query database
 ##' @param query SQL query string
 ##' @param con database connection object
 ##' @param ... optional arguments for connecting to database (e.g. password, user name, database)
 ##' @return data frame with query results
 ##' @examples
-##' query.bety('select count(id) from traits;')
+##' query.base('select count(id) from traits;')
 #--------------------------------------------------------------------------------------------------#
 query.base <- function(query,con=NULL,...){
   iopened <- false
