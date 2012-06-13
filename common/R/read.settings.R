@@ -136,6 +136,8 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
   if (file.exists(settings.output)) {
     print("File already exists, file will be overwritten.")
   }
+  #browser()
+  #print(settings.output)
   saveXML(settings.xml, file=settings.output)
   
   # setup Rlib from settings
