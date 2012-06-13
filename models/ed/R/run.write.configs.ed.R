@@ -51,7 +51,7 @@ run.write.configs.ed <- function() {
   ###
   
   ### Define main output directory and host for SA/Ensemble run.
-  main.outdir   <- settings$outdir
+  main.outdir <- settings$outdir
   host <- settings$run$host
   
   ### Prepare for model output.  Cleanup any old config files (if exists)
