@@ -94,11 +94,9 @@ run.write.configs.ed <- function() {
     trait.samples[[pft.name]] <- calc.ed.specific(trait.samples[[pft.name]])
   } ### End for loop
   
-
   ### NEED TO IMPLEMENT: 
   ## Load Environmental Priors and Posteriors
   ###
-  
   
   ### Sensitivity Analysis
   if('sensitivity.analysis' %in% names(settings)) {
