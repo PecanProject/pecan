@@ -4,7 +4,6 @@
 ##'
 ##' @name run.write.configs
 ##' @param model the ecosystem model to generate the configuration files for
-##'
 ##' @author
 #--------------------------------------------------------------------------------------------------#
 run.write.configs <- function(model){

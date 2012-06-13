@@ -14,7 +14,7 @@
 
 #--------------------------------------------------------------------------------------------------#
 
-require(PEcAn.utils)
+#require(PEcAn.utils)
 
 #---------------- Clean up output directory. ------------------------------------------------------#
 # Info: Create output directories if they don't already exist.  Clean up old files. May not want to 

@@ -121,9 +121,9 @@ listToXml <- function(item, tag){
 ##' Convert List to XML
 ##'
 ##'
-##'
+##'  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ##'  I THINK THIS IS DEPRECIATED [sps]
-##'
+##'  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #--------------------------------------------------------------------------------------------------#
 list2XML <- function (dat, myName = "config", delim = ",") 
 {
@@ -293,8 +293,10 @@ get.stats.mcmc <- function(mcmc.summary, sample.size){
 
 #--------------------------------------------------------------------------------------------------#
 ##'
+##' @name paste.stats
 ##'
 ##'
+##' @author
 #--------------------------------------------------------------------------------------------------#
 paste.stats <- function(mcmc.summary, median, lcl, ucl, n = 2) {  
   paste("$", tabnum(median, n),  "(", tabnum(lcl, n), ",", tabnum(ucl,n), ")", "$", sep = '')
@@ -688,7 +690,6 @@ bibtexify <- function (author, year, title) {
 ##' @param data data frame with mean, statistic, n, and statistic name: \code{example data <- data.frame(Y=rep(1,5), stat=rep(1,5), n=rep(4,5), statname=c('SD', 'MSE', 'LSD', 'HSD', 'MSD'))}
 ##' @return dataframe with statistics transformed to SE
 ##' @author David LeBauer
-##' @export
 #--------------------------------------------------------------------------------------------------#
 transformstats <- function(data) {
   if(!"SE" %in% levels(data$statname)){
@@ -748,9 +749,6 @@ transformstats <- function(data) {
 
 
 #--------------------------------------------------------------------------------------------------#
-##' @example statdf <- data.frame(Y=rep(1,5), stat=rep(1,5), n=rep(4,5), statname=c('SD', 'MSE', 'LSD', 'HSD', 'MSD'))
-##' transformstats(statdf)
-
 ##' Convert categorical variable into sequential integers
 ##'
 ##' Turns any categorical variable into a sequential integer.

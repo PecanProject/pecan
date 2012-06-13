@@ -7,7 +7,7 @@
 ##' @param ... optional arguments for connecting to database (e.g. password, user name, database)
 ##' @return string of species.id for species associated with pft
 ##' @examples
-##' query.bety.pft_species('ebifarm.pavi')
+##' query.pft_species('ebifarm.pavi')
 #--------------------------------------------------------------------------------------------------#
 query.pft_species <- function(pft,con=NULL,...){
   if(is.null(con)){
