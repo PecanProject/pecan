@@ -1,15 +1,5 @@
 #---------------- Load libraries. -----------------------------------------------------------------#
-pecan.pkgs <- lapply(c("DB", "common", "utils", "MA", "uncertainty"),
-                     function(x) paste("PEcAn.", x, sep = ''))
-try.load <- function(pkg = NULL){
-  ifelse(!require(pkg, character.only = TRUE), FALSE, TRUE)
-}
-loaded <- sapply(pecan.pkgs, try.load)  #loads available packages,
-                                        # returns logical vector of success
-if(any(!loaded)) {
-  print(paste("Could not load", pecan.pkgs[!loaded]))
-  stop()
-}
+require(PEcAn.all)
 #--------------------------------------------------------------------------------------------------#
 
 
