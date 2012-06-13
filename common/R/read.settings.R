@@ -1,25 +1,17 @@
 #--------------------------------------------------------------------------------------------------#
-#' 
-#' @name read.settings.R
-#' @title Generic function to open and parse PEcAn XML config/settings file 
-#'
-#' NEED MORE HERE. WORKING DRAFT OF SCRIPT TO OPEN PECAN SETTINGS
-#'
-#'
-#==================================================================================================#
-
-
-#---------------- Load requirements for function. -------------------------------------------------#
-# Info: Load required libraries for running this function inside the PEcAn workflow.
-#' @import XML
-if (!require(XML)) stop("Package XML is not available...")      # R XML library
-#--------------------------------------------------------------------------------------------------#
-
-#--------------------------------------------------------------------------------------------------#
 # INTERNAL FUNCTIONS DO NOT EXPORT
 #--------------------------------------------------------------------------------------------------#
-# merge 2 xml documents
+#
+##'  merge 2 xml documents
+##'
+##' combines content from xml1 and xml2. In the case of a conflict (both xml1 and xml2 have the same node), node in xml2 replaces node in xml1 
+##' @title xmlMerge
+##' @param xml1 first xml list 
+##' @param xml2 second xml list
+##' @return xml object with 
+##' @author Rob Kooper
 xmlMerge <- function(xml1, xml2) {
+  require(XML)
   if (is.null(xml2)) {
     return(xml1)
   }
