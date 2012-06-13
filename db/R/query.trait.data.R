@@ -158,7 +158,7 @@ arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp
     
     data$mean <- arrhenius.scaling(data$mean, old.temp = data$temp, new.temp=new.temp)
     data$stat <- arrhenius.scaling(data$stat, old.temp = data$temp, new.temp=new.temp)
-    #remove temporary covariate column
+    #remove temporary covariate column. turned off to check function [sps]
     data<-data[,colnames(data)!='temp']
   }
   return(data)
@@ -415,7 +415,11 @@ derive.traits <- function(FUN, ..., input=list(...),
 ##'  
 ##' @return dataframe ready for use in meta-analysis
 ##' @examples
-##' query.bety.trait.data("Vcmax", "938", con = newcon())
+##' newconfn <- function() query.base.con(dbname   = settings$database$name,
+##'                                       password = settings$database$passwd,
+##'                                       username = settings$database$userid,
+##'                                       host     = settings$database$host)
+##' query.trait.data("Vcmax", "938", con = newconfn())
 #--------------------------------------------------------------------------------------------------#
 query.trait.data <- function(trait, spstr,con=query.base.con(...), ...){
   
@@ -472,24 +476,16 @@ query.trait.data <- function(trait, spstr,con=query.base.con(...), ...){
     
   } else if (trait == 'root_respiration_rate') {
     #########################  ROOT RESPIRATION   ############################
-    ### Apply Arrhenius scaling to convert root respiration at measurement temp to that at 25 degC (ref temp).
+    ## Apply Arrhenius scaling to convert root respiration at measurement temp 
+    ## to that at 25 degC (ref temp).
     data <- arrhenius.scaling.traits(data, covariates, c('rootT', 'airT'))
     
-  } else if (trait == 'dark_respiration_factor') {
-    #########################  DARK RESPIRATION   ############################
-    ## converted to using leaf respiration on an area basis
-    browser()  ## TODO: Remove this debugging
+  } else if (trait == 'leaf_respiration_rate_m2') {
+    #########################  LEAF RESPIRATION   ############################
+    ## Apply Arrhenius scaling to convert leaf respiration at measurement temp 
+    ## to that at 25 degC (ref temp).
     data <- arrhenius.scaling.traits(data, covariates, c('leafT', 'airT'))
     
-    #dark.resp.rate <- query.data('dark_respiration_rate', spstr, con=con)
-    leaf.resp.rate <- query.data('leaf_respiration_rate_m2', spstr, con=con)
-    vcmax <- query.data('Vcmax', spstr, con=con)
-    #TODO: apply arrhenius scaling
-    
-    data <- rbind(data, 
-        derive.traits(function(leaf.resp.rate, vcmax) {leaf.resp.rate / vcmax}, 
-                      leaf.resp.rate, vcmax, var.name='dark_respiration_factor'))
-    browser()  ## TODO: Remove this debugging
   } else if (trait == 'c2n_leaf') {
     #########################  LEAF C:N   ############################
     

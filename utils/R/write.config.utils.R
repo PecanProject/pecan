@@ -81,6 +81,9 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
 
 #--------------------------------------------------------------------------------------------------#
 ##'
+##' Clear out old config and ED model run files.  TODO: Move this code to the model specific
+##' module
+##'
 ##' @name remove.config
 ##'
 ##'
@@ -325,10 +328,10 @@ write.sa.configs <- function(defaults, quantile.samples, host, outdir, settings,
 
 
 #--------------------------------------------------------------------------------------------------#
-#   Counter function for writing configs
+##'   Counter function for writing configs
 ##'
 ##'
-##'
+##' @author 
 #--------------------------------------------------------------------------------------------------#
 counter <- function(cnt){
   cnt = cnt + 1

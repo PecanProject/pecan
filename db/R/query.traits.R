@@ -8,7 +8,7 @@
 ##' @return dataframe with trait data
 ##' @seealso \code{\link{query.bety.trait.data}}
 ##' @examples
-##' spstr <- query.bety.pft_species('ebifarm.c4crop')$spstr
+##' spstr <- query.pft_species('ebifarm.c4crop')$spstr
 ##' trvec <- c('leafN', 'SLA')
 ##' trait.data <- query.bety.traits(spstr, trvec)
 #--------------------------------------------------------------------------------------------------#
@@ -30,7 +30,7 @@ query.traits <- function(spstr, priors, con = NULL){
  
   traits <- unique(traits[traits %in% priors])
 
-  ## grab trait data
+  ### Grab trait data
   trait.data <- lapply(traits, function(trait) query.trait.data(trait, spstr, con=con))
   names(trait.data) <- traits
   return(trait.data)
