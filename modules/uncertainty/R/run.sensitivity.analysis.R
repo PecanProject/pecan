@@ -6,6 +6,13 @@
 ##' as variancedecomposition.pdf a side effect.
 ##' @author David LeBauer
 run.sensitivity.analysis <- function(){
+  if(!exists("settings")){ # temporary hack
+                        # waiting on http://stackoverflow.com/q/11005478/199217
+    settings <- list(outdir = "/tmp/",
+                     pfts = list(pft = list(name = "ebifarm.pavi",
+                                   outdir = "/tmp/")),
+                     sensitivity.analysis = NULL)
+  }
   if ('sensitivity.analysis' %in% names(settings)) {
     load(paste(settings$outdir, 'output.Rdata', sep=''))
     load(paste(settings$outdir, 'samples.Rdata', sep=''))
