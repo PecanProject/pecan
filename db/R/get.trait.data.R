@@ -44,27 +44,17 @@ get.trait.data <- function() {
 
 
 	#---------------- Open database connection. -------------------------------------------------------#
-	newconfn <- function() query.base.con(dbname   = settings$database$name,
-		                              password = settings$database$passwd,
-		                              username = settings$database$userid,
-		                              host     = settings$database$host)
+	newcon <- query.base.con(dbname   = settings$database$name,
+		                     password = settings$database$passwd,
+		                     username = settings$database$userid,
+		                     host     = settings$database$host)
 
-	newcon <- newconfn()
 	#--------------------------------------------------------------------------------------------------#
 
 
 	#---------------- Query trait data. ---------------------------------------------------------------#
-	cnt = 0;
-	all.trait.data = list()
-	for(pft in settings$pfts){
+	for(pft in settings$pfts) {
 	  out.dir = pft$outdir # loop over pfts
-	  
-	  # Code executed above
-	  #if (! file.exists(out.dir)) dir.create(out.dir)
-	  #dir.create(pft$outdir)
-	  #
-	  
-	  cnt = cnt + 1
 	  
 	  ## 1. get species list based on pft
 	  spstr <- query.pft_species(pft$name,con=newcon)
@@ -72,9 +62,13 @@ get.trait.data <- function() {
 	  ## 2. get priors available for pft  
 	  prior.distns <- query.priors(pft$name, vecpaste(trait.names), out=pft$outdir,con=newcon)
 	  ### exclude any parameters for which a constant is provided 
-	  prior.distns <- prior.distns[which(!rownames(prior.distns) %in%
-	    names(pft$constants)),]
-	  
+	  prior.distns <- prior.distns[which(!rownames(prior.distns) %in% names(pft$constants)),]
+	  save(prior.distns, file=paste(pft$outdir, 'prior.distns.Rdata', sep = ''))
+
+	  ## 3. get the trait data for the pft
+	  trait.data <- query.traits(spstr, traits, con = newcon)
+      save(trait.data, file = paste(pft$outdir, 'trait.data.Rdata', sep=''))
+
 	  # 3. display info to the console
 	  print(" ")
 	  print("-------------------------------------------------------------------")
@@ -82,27 +76,20 @@ get.trait.data <- function() {
 	  print(prior.distns)
 	  traits <- rownames(prior.distns) # vector of variables with prior distributions for pft 
 	  print("-------------------------------------------------------------------")
-	  print(" ")
+	  print(" ") 
 	  
-	  ## if meta-analysis to be run, get traits for pft as a list with one dataframe per variable
-	  if('meta.analysis' %in% names(settings)) {
-	    trait.data <- query.traits(spstr, traits, con = newcon)
-	    traits <- names(trait.data)
-	    save(trait.data, file = paste(pft$outdir, 'trait.data.Rdata', sep=''))
-	    
-	    all.trait.data[[cnt]] <- trait.data
-	    names(all.trait.data)[cnt] <- pft$name
-	    
-	    for(i in 1:length(all.trait.data)){
-	      print(names(all.trait.data)[i])
-	      print(sapply(all.trait.data[[i]],dim))
-	    }
-	    
-	  }
-	  
-	  save(prior.distns, file=paste(pft$outdir, 'prior.distns.Rdata', sep = ''))
+#	  traits <- names(trait.data)	  
+#	  all.trait.data[[cnt]] <- trait.data
+#	  names(all.trait.data)[cnt] <- pft$name
+#	  
+#	  for(i in 1:length(all.trait.data)){
+#		  print(names(all.trait.data)[i])
+#		  print(sapply(all.trait.data[[i]],dim))
+#	  }
 	  
 	}
+	
+	newcon.dbDisconnect()
 }
 #==================================================================================================#
 
