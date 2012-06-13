@@ -1,10 +1,11 @@
 #--------------------------------------------------------------------------------------------------#
-##' 
-##' @name plot.sa
-##' 
-##' @title
-##' @return 
-#--------------------------------------------------------------------------------------------------#
+##' Plot parameter value vs model output
+##'
+##' @title Plot Sensitivities
+##' @param satables 
+##' @param outvar 
+##' @return plots
+##' @author David LeBauer
 plot.sa <- function (satables, outvar) {
   ## Set up dataframes for figs
   pr <- satables[['prior']][[outvar]]

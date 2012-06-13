@@ -81,8 +81,9 @@ get.elasticity <- function(sensitivity, samples, outputs){
 ##' @param outdir directory to which plots are written
 ##' @return results of sensitivity analysis
 ##' @author David LeBauer
-##' @examples
-##' sensitivity.analysis(trait.samples[[pft$name]], sa.samples[[pft$name]], sa.agb[[pft$name]], pft$outdir)
+##' ## @examples
+##' ## not run
+##' ## sensitivity.analysis(trait.samples[[pft$name]], sa.samples[[pft$name]], sa.agb[[pft$name]], pft$outdir)
 sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
   traits <- names(trait.samples)
   sa.splines <- sapply(traits, function(trait) sa.splinefun(sa.samples[[trait]],

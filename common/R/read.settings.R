@@ -1,27 +1,17 @@
 #--------------------------------------------------------------------------------------------------#
-##' 
+##' Read settings file
+##'
+##' Function to read in and parse settings file.
+##' Returns XML info as R list object.
+##' This function is called by other modules to open and parse XML config file.
 ##' @name read.settings.R
 ##' @title Generic function to open and parse PEcAn XML config/settings file 
-##'
-##' NEED MORE HERE. WORKING DRAFT OF SCRIPT TO OPEN PECAN SETTINGS
-##'
-##'
 ##' @return list object with information from input PEcAn XML settings file 
-##'
 ##' @author Shawn Serbin
+##' @examples
+##' ## not run
+##' ## read.settings('common/inst/tests/test.settings.xml')
 #--------------------------------------------------------------------------------------------------#
-
-
-#---------------- Load requirements for function. -------------------------------------------------#
-# Info: Load required libraries for running this function inside the PEcAn workflow.
-if (!require(XML)) stop("Package XML is not available...")      # R XML library
-#--------------------------------------------------------------------------------------------------#
-
-
-#---------------- Define function. ----------------------------------------------------------------#
-# Info: Function to read in and parse settings file. Returns XML info as R list object.
-#       This function is called by other modules to open and parse XML config file.
-
 read.settings <- function(pecan.settings.file){
   settings.xml <- xmlParse(pecan.settings.file)
   settings <- xmlToList(settings.xml)
