@@ -9,11 +9,11 @@ settings <- read.settings()
 
 
 #---------------- Run PEcAn workflow. -------------------------------------------------------------#
-get.trait.data()        # Query the trait database for data and priors
+get.trait.data()        	# Query the trait database for data and priors
 
-run.meta.analysis()     # Run the PEcAn meta.analysis
+run.meta.analysis()     	# Run the PEcAn meta.analysis
 
-# write.model.config()   # calls model specific write.configs e.g. write.config.ed.R
+#run.write.configs("ED2")   	# calls model specific write.configs e.g. write.config.ed.R
 
 #start.runs()
 #get.output()

@@ -42,7 +42,7 @@ query.base.con <- function(...){
   
   con <- dbConnect(dvr, group  = 'ebi_analysis',...)
   
-  #KLUDGE: not all invocations of query.bet.con() make use of the settings file.
+  #KLUDGE: not all invocations of query.base.con() make use of the settings file.
   #This effectively limits PEcAn to using ebi_analysis at certain places.
   #What follows is a quick fix - it relies on settings as a global variable,
   #which are generally recommended against
