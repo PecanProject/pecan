@@ -67,12 +67,28 @@ convert.samples.ED <- function(trait.samples){
   if('root_respiration_rate' %in% names(trait.samples)) {
     rrr1 <- trait.samples[['root_respiration_rate']]
     rrr2 <-  rrr1 * DEFAULT.MAINTENANCE.RESPIRATION
-    trait.samples[['root_respiration_rate']] <- arrhenius.scaling(rrr2, old.temp = 25, new.temp = 15)
+    trait.samples[['root_respiration_rate']] <- arrhenius.scaling(rrr2, old.temp = 25, 
+                                                                  new.temp = 15)
   }
   
   if('Vcmax' %in% names(trait.samples)) {
     vcmax <- trait.samples[['Vcmax']]
     trait.samples[['Vcmax']] <- arrhenius.scaling(vcmax, old.temp = 25, new.temp = 15)
+  }
+  
+  ### Convert leaf_respiration_rate_m2 to dark_resp_factor
+  if('leaf_respiration_rate_m2' %in% names(trait.samples)) {
+    leaf_resp = trait.samples[['leaf_respiration_rate_m2']]
+    ### First scale to 15 degC
+    trait.samples[['leaf_respiration_rate_m2']] <- 
+      arrhenius.scaling(leaf_resp, old.temp = 25, new.temp = 15)
+    
+    # need to add back dark resp prior?? no?
+    
+    ### Calculate dark_resp_factor
+    trait.samples[['dark_resp_factor']] <- trait.samples[['leaf_respiration_rate_m2']]/
+      trait.samples[['Vcmax']]
+    
   }
   return(trait.samples)
 }
