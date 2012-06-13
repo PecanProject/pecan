@@ -1,4 +1,5 @@
-for f in common utils db modules/meta.analysis models/ed; do
+for f in all common utils db modules/meta.analysis modules/uncertainty models/ed
+do
   echo "---- Checking PEcAn package: $f"
   R CMD check $f
   wait
