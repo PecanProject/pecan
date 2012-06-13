@@ -9,6 +9,7 @@
 ##' @param prior.sa.sample similar to sa.sample, but for prior distribution. If given, plots sensitivity for prior run
 ##' @param prior.sa.spline similar to sa.spline, but for prior trait distribution. 
 ##' @param fontsize (optional) list with three arguments that can be set to vary the fontsize of the title, axis labels, and axis title in the sensitivity plots
+##' @export
 ##' @return object of class ggplot
 plot.sensitivity <- function(sa.sample, sa.spline, trait,
                              y.range = c(0,50), median.i = 4,
@@ -244,7 +245,8 @@ plot.variance.decomposition <- function(plot.inputs, outdir,
 ##' @param sensitivity.plot.inputs 
 ##' @param prior.sensitivity.plot.inputs 
 ##' @param ... arguments passed to \code{\link{plot.sensitivity}}
-##' @param sensitivity.results list containing sa.samples and sa.splines 
+##' @param sensitivity.results list containing sa.samples and sa.splines
+##' @export
 ##' @return list of plots, one per trait
 plot.sensitivities <- function(sensitivity.plot.inputs, prior.sensitivity.plot.inputs = NULL, ...){
   sa.samples <- sensitivity.plot.inputs$sa.samples
@@ -297,7 +299,7 @@ plot.sensitivities <- function(sensitivity.plot.inputs, prior.sensitivity.plot.i
 ##' @return list with two elements, heights of length n and breaks of length n+1 indicating the heights and break points of the histogram bars. 
 ##' @author Lorraine Denby, Colin Mallows
 ##' @references Lorraine Denby, Colin Mallows. Journal of Computational and Graphical Statistics. March 1, 2009, 18(1): 21-31. doi:10.1198/jcgs.2009.0002.
-dhist<-function(x, a=5*iqr(x),
+dhist <- function(x, a=5*iqr(x),
                 nbins=nclass.Sturges(x), rx = range(x,na.rm = TRUE),
                 eps=.15, xlab = "x", plot = TRUE,lab.spikes = TRUE)
 {
@@ -440,7 +442,7 @@ dhist<-function(x, a=5*iqr(x),
 ##' @title Interquartile range
 ##' @param x vector
 ##' @return numeric vector of length 2, with the 25th and 75th quantiles of input vector x. 
-iqr<-function(x){
+iqr <- function(x){
   return(diff(quantile(x, c(0.25, 0.75), na.rm = TRUE)))
 }
 
@@ -456,6 +458,7 @@ create.base.plot <- function() {
 ##' @param prior.color color of line to be plotted
 ##' @return plot with prior density added
 ##' @seealso \code{\link{pr.dens}}
+##' @author David LeBauer
 ##' @examples
 ##' add.prior.density(c('norm', 0, 1))
 add.prior.density <- function(prior.density, base.plot = NULL, prior.color = 'black' ) {
@@ -471,7 +474,7 @@ add.prior.density <- function(prior.density, base.plot = NULL, prior.color = 'bl
 ##' @title Create Density Data Frame from Sample
 ##' @param sample 
 ##' @param ... additional arguments to density
-##' @export
+##' @author David LeBauer
 ##' @return data frame with x and y
 create.density.df <- function(samps = NULL,
                               zero.bounded = FALSE,
@@ -507,6 +510,7 @@ create.density.df <- function(samps = NULL,
 ##' @param posterior.density 
 ##' @param base.plot a ggplot object (grob), created by \code{\link{create.base.plot}} if none provided
 ##' @return plot with posterior density line added
+##' @author David LeBauer
 add.posterior.density <- function(posterior.density, base.plot = NULL) {
   if(is.null(base.plot)) base.plot <- create.base.plot()
   new.plot <- base.plot +  geom_line(data = posterior.density,
@@ -525,6 +529,7 @@ add.posterior.density <- function(posterior.density, base.plot = NULL) {
 ##' @param ymax maximum height of y
 ##' @seealso \code{\link{create.base.plot}}
 ##' @return updated plot object
+##' @author David LeBauer
 ##' @examples
 ##' add.data(data.frame(Y = c(1, 2), se = c(1,2)), base.plot = NULL, ymax = 10)
 add.data <- function(trait.data, base.plot = NULL, ymax, color = 'black') {
@@ -563,6 +568,7 @@ add.data <- function(trait.data, base.plot = NULL, ymax, color = 'black') {
 ##' @param trait.data 
 ##' @param fontsize 
 ##' @return plot (grob) object
+##' @author David LeBauer
 ##' @examples
 ##' prior1 <- data.frame(distn = 'norm',
 ##'                      parama = 20,
@@ -695,7 +701,8 @@ plot.trait <- function(trait,
 ##'
 ##' @title Plot Trait Probability Densities
 ##' @param sensitivity.results list containing sa.samples and sa.splines 
-##' @param outdir 
+##' @param outdir
+##' @author David LeBauer
 ##' @return outputs plots in outdir/sensitivity.analysis.pdf file 
 plot.densities <- function(density.plot.inputs, outdir, ...){
   trait.samples          <- density.plot.inputs$trait.samples
@@ -748,6 +755,7 @@ prior.density <- function(distribution = 'norm', a = 0, b = 1, xlim = NA){
 ##' @param priordensity density of prior distribution, calculated by \code{\link{prior.density}}
 ##' @param trait name of trait
 ##' @param xlim limits for x axis
+##' @author David LeBauer
 ##' @return plot / grob of prior distribution with data used to inform the distribution 
 priorfig <- function(priordata = NA, priordensity = NA, trait = '', xlim = 'auto', fontsize = 18){
   if(is.data.frame(priordata)){
@@ -819,8 +827,7 @@ get.quantiles.from.density <- function(priordensity){
 ##' @return adds borders to ggplot as a side effect
 ##' @author Rudolf Cardinal
 ##' @author \url{ggplot2 google group}{https://groups.google.com/forum/?fromgroups#!topic/ggplot2/-ZjRE2OL8lE}
-##' @example
-##' library(ggplot2)
+##' @examples
 ##' df = data.frame( x=c(1,2,3), y=c(4,5,6) )
 ##' ggplot(data=df, aes(x=x, y=y)) + geom_point() + theme_bw() +
 ##'        opts(panel.border = theme_border(c("bottom","left")) )
