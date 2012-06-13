@@ -10,7 +10,9 @@
 #---------------- Load requirements for function. -------------------------------------------------#
 # Info: Load required libraries for running this function inside the PEcAn workflow.
 #' @import XML
-if (!require(XML)) stop("Package XML is not available...")      # R XML library
+if (!require(XML)) stop("Package XML is not available...")          # R XML library
+##' @import logging
+##' if (!require(logging)) stop("Package logging is not available...")  # R logging library
 #--------------------------------------------------------------------------------------------------#
 
 #--------------------------------------------------------------------------------------------------#
@@ -24,7 +26,7 @@ xmlMerge <- function(xml1, xml2) {
   if (is.null(xml1)) {
     return(xml2)
   }
-  
+   
   xmlMergeNodes(xmlRoot(xml1), xmlRoot(xml2))
   return(xml1)
 }
@@ -101,7 +103,6 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
   if (file.exists("pecan.xml")) {
     settings.xml <- xmlMerge(settings.xml, xmlParse("pecan.xml"))
   }
-  print(settings.xml)
   
   # 4 merge PECAN_SETTINGS
   if (file.exists(Sys.getenv("PECAN_SETTINGS"))) {
@@ -121,21 +122,35 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
         settings.xml <- xmlMerge(settings.xml, xmlParse(commandArgs()[idx+1]))
       }
     }
-  }
+  }  
+  
+  # conver the xml to a list for ease and return
   settings.list <- xmlToList(settings.xml)
   
-  # 6a create main output folder
-  if (!file.exists(settings.list$outdir)) {
-    dir.create(settings.list$outdir, recursive=TRUE)
+  # get the outputfolder
+  settings.outdir <- settings.list$outdir
+  if (is.null(settings.outdir)) {
+    print(paste("No output folder specified, using", tempdir()))
+    #logwarn(paste("No output folder specified, using", tempdir()), logger='PEcAn.common.read.settings')
+    settings.outdir <- tempdir()
   }
   
-  # 6b either save or load pecan.xml for main output folder
-  settings.output <- file.path(outputfile, settings.list$outdir)
-  if (file.exists(settings.output)) {
-    print("File already exists, file will be overwritten.")
+  # create folder(s)
+  if (!file.exists(settings.outdir)) {
+    if (!dir.create(settings.outdir, recursive=TRUE)) {
+      stop("Could not create outputfolder.")
+    }
   }
-  #browser()
-  #print(settings.output)
+  
+  # save the merged pecan.xml
+  if (is.null(outputfile)) {
+    outputfile="pecan.xml"
+  }
+  settings.output <- file.path(settings.outdir, outputfile)
+  if (file.exists(settings.output)) {
+    print(paste("File already exists [", settings.output, "file will be overwritten"))
+    #logwarn(paste("File already exists [", settings.output, "file will be overwritten"), logger='PEcAn.common.read.settings')
+  } 
   saveXML(settings.xml, file=settings.output)
   
   # setup Rlib from settings
@@ -144,7 +159,7 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
   }
    
   # Return settings file as a list
-  return(settings.list)
+  invisible(settings.list)
 }
 
 #==================================================================================================#
