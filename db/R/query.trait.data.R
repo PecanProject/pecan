@@ -159,7 +159,7 @@ arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp
     data$mean <- arrhenius.scaling(data$mean, old.temp = data$temp, new.temp=new.temp)
     data$stat <- arrhenius.scaling(data$stat, old.temp = data$temp, new.temp=new.temp)
     #remove temporary covariate column. turned off to check function [sps]
-    #data<-data[,colnames(data)!='temp']
+    data<-data[,colnames(data)!='temp']
   }
   return(data)
 }
@@ -415,7 +415,11 @@ derive.traits <- function(FUN, ..., input=list(...),
 ##'  
 ##' @return dataframe ready for use in meta-analysis
 ##' @examples
-##' query.bety.trait.data("Vcmax", "938", con = newcon())
+##' newconfn <- function() query.base.con(dbname   = settings$database$name,
+##'                                       password = settings$database$passwd,
+##'                                       username = settings$database$userid,
+##'                                       host     = settings$database$host)
+##' query.trait.data("Vcmax", "938", con = newconfn())
 #--------------------------------------------------------------------------------------------------#
 query.trait.data <- function(trait, spstr,con=query.base.con(...), ...){
   

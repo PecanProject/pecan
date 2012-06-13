@@ -89,9 +89,12 @@ run.write.configs.ed <- function() {
       }
       trait.samples[[pft.name]][[prior]] <- samples
     }
+    
+    ### Calculate ED specific variables from trait samples for SA.  E.g. dark_resp_factor
+    trait.samples[[pft.name]] <- calc.ed.specific(trait.samples[[pft.name]])
   } ### End for loop
   
-  
+
   ### NEED TO IMPLEMENT: 
   ## Load Environmental Priors and Posteriors
   ###
