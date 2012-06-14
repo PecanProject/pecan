@@ -21,6 +21,7 @@ Suggests:
 License: FreeBSD + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes
+LazyData: TRUE
 Require: hdf5
 Collate:
     'approx.posterior.R'
@@ -32,3 +33,4 @@ Collate:
     'utils.R'
     'variance.R'
     'write.config.utils.R'
+    'time.constants.R'
