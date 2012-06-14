@@ -4,8 +4,7 @@
 ##'
 ##' @name run.write.configs
 ##' @param model the ecosystem model to generate the configuration files for
-##' @author
-#--------------------------------------------------------------------------------------------------#
+##' @author Shawn Serbin
 run.write.configs <- function(model){
   
   if (model=="ED2"){

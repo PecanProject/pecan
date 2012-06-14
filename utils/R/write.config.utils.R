@@ -163,7 +163,7 @@ get.quantiles <- function(quantiles.tag) {
 
 #--------------------------------------------------------------------------------------------------#
 ##' @name get.sa.sample.list
-##'
+##' @title Get Sensitivity Analysis samples as list
 ##' @param pft 
 ##' @param env 
 ##' @param quantiles
