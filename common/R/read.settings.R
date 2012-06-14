@@ -18,12 +18,19 @@ xmlMerge <- function(xml1, xml2) {
   if (is.null(xml1)) {
     return(xml2)
   }
-  
+   
   xmlMergeNodes(xmlRoot(xml1), xmlRoot(xml2))
   return(xml1)
 }
 
-# merge 2 nodes, this is called recursively
+
+##' merge 2 nodes, this is called recursively
+##'
+##' @title xmlMergeNodes
+##' @param node1 
+##' @param node2 
+##' @return merged nodes
+##' @author Rob Kooper
 xmlMergeNodes <- function(node1, node2) {
   # first replace all attributes from node2 to node1
   if (!is.null(xmlAttrs(node2))) {
@@ -52,32 +59,32 @@ xmlMergeNodes <- function(node1, node2) {
 # EXTERNAL FUNCTIONS
 #--------------------------------------------------------------------------------------------------#
 
-#' Loads PEcAn settings file
-#' 
-#' This will load the PEcAn settings file in the following order,
-#' merging their values and overriding any values that are specified
-#' in a file later in the order
-#' 
-#' \enumerate{
-#' \item {/etc/pecan.xml}{global file for all users}
-#' \item {~/.pecan.xml}{settings for all projects for the user}
-#' \item {PECAN_SETTINGS}{environment variable PECAN_SETTINGS pointing to a specific file}
-#' \item {inputfile}{passed as argument to function}
-#' \item {--settings <file>}{passed as command line argument using --settings}
-#' }
-#' @param inputfile the PEcAn settings file to be merged with the others.
-#' @param outputfile the name of file to which the settings will be
-#'        written inside the outputdir.
-#' @return list of all settings as loaded from the XML file(s)
-#' @export
-#' @import XML
-#' @author Shawn Serbin
-#' @author Rob Kooper
-#' @examples
-#' \dontrun{
-#' settings <- read.settings()
-#' settings <- read.settings(file="willowcreek.xml")
-#' }
+##' Loads PEcAn settings file
+##' 
+##' This will load the PEcAn settings file in the following order,
+##' merging their values and overriding any values that are specified
+##' in a file later in the order
+##' 
+##' \enumerate{
+##' \item {/etc/pecan.xml}{global file for all users}
+##' \item {~/.pecan.xml}{settings for all projects for the user}
+##' \item {PECAN_SETTINGS}{environment variable PECAN_SETTINGS pointing to a specific file}
+##' \item {inputfile}{passed as argument to function}
+##' \item {--settings <file>}{passed as command line argument using --settings}
+##' }
+##' @param inputfile the PEcAn settings file to be merged with the others.
+##' @param outputfile the name of file to which the settings will be
+##'        written inside the outputdir.
+##' @return list of all settings as loaded from the XML file(s)
+##' @export
+##' @import XML
+##' @author Shawn Serbin
+##' @author Rob Kooper
+##' @examples
+##' \dontrun{
+##' settings <- read.settings()
+##' settings <- read.settings(file="willowcreek.xml")
+##' }
 read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
   settings.xml <- NULL
   
@@ -95,7 +102,6 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
   if (file.exists("pecan.xml")) {
     settings.xml <- xmlMerge(settings.xml, xmlParse("pecan.xml"))
   }
-  print(settings.xml)
   
   # 4 merge PECAN_SETTINGS
   if (file.exists(Sys.getenv("PECAN_SETTINGS"))) {
@@ -115,19 +121,35 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
         settings.xml <- xmlMerge(settings.xml, xmlParse(commandArgs()[idx+1]))
       }
     }
-  }
+  }  
+  
+  # conver the xml to a list for ease and return
   settings.list <- xmlToList(settings.xml)
   
-  # 6a create main output folder
-  if (!file.exists(settings.list$outdir)) {
-    dir.create(settings.list$outdir, recursive=TRUE)
+  # get the outputfolder
+  settings.outdir <- settings.list$outdir
+  if (is.null(settings.outdir)) {
+    print(paste("No output folder specified, using", tempdir()))
+    #logwarn(paste("No output folder specified, using", tempdir()), logger='PEcAn.common.read.settings')
+    settings.outdir <- tempdir()
   }
   
-  # 6b either save or load pecan.xml for main output folder
-  settings.output <- file.path(outputfile, settings.list$outdir)
-  if (file.exists(settings.output)) {
-    print("File already exists, file will be overwritten.")
+  # create folder(s)
+  if (!file.exists(settings.outdir)) {
+    if (!dir.create(settings.outdir, recursive=TRUE)) {
+      stop("Could not create outputfolder.")
+    }
   }
+  
+  # save the merged pecan.xml
+  if (is.null(outputfile)) {
+    outputfile="pecan.xml"
+  }
+  settings.output <- file.path(settings.outdir, outputfile)
+  if (file.exists(settings.output)) {
+    print(paste("File already exists [", settings.output, "] file will be overwritten"))
+    #logwarn(paste("File already exists [", settings.output, "file will be overwritten"), logger='PEcAn.common.read.settings')
+  } 
   saveXML(settings.xml, file=settings.output)
   
   # setup Rlib from settings
@@ -136,7 +158,7 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
   }
    
   # Return settings file as a list
-  return(settings.list)
+  invisible(settings.list)
 }
 
 #==================================================================================================#
