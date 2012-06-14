@@ -49,7 +49,7 @@ approx.posterior <- function(trait.mcmc,priors,trait.data=NULL,outdir=NULL){
         x = seq(0,1,length=1000)
         plot(density(dat),col=2,lwd=2,main=trait)
         if(!is.null(trait.data)){
-          rug(trait.data[[trait]]$Y, lwd = 2) 
+          rug(trait.data[[trait]]$Y, lwd = 2,col="purple") 
         }
         lines(x,dbeta(x,fit$estimate[1],fit$estimate[2]),lwd=2,type='l')
         lines(x,dbeta(x,pparm[1],pparm[2]),lwd=3,type='l',col=3)
