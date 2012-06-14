@@ -72,6 +72,7 @@ ssh <- function(host, ..., args=''){
 ##' @title vecpaste
 ##' @param x vector
 ##' @return comma delimited string
+##' @export
 #--------------------------------------------------------------------------------------------------#
 vecpaste <- function(x) paste(paste("'", x, "'", sep=''), collapse=',')
 #==================================================================================================#
@@ -250,6 +251,7 @@ zero.bounded.density <- function (x, bw = "SJ") {
 ##' @title Summarize Results
 ##' @param result dataframe with results of trait data query
 ##' @return result with replicate observations summarized
+##' @export
 ##' @author David LeBauer
 summarize.result <- function(result) {
   ans1 <- ddply(result[result$n==1,],
@@ -303,7 +305,10 @@ get.stats.mcmc <- function(mcmc.summary, sample.size){
 paste.stats <- function(mcmc.summary, median, lcl, ucl, n = 2) {  
   paste("$", tabnum(median, n),  "(", tabnum(lcl, n), ",", tabnum(ucl,n), ")", "$", sep = '')
 }
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##' Gets statistics for LaTeX - formatted table
 ##'
 ##' @title Get Parameter Statistics
@@ -320,7 +325,10 @@ get.parameter.stat <- function(mcmc.summary, parameter){
               ucl   = mcmc.summary$quantiles[parameter, c("97.5%")],
               n     = 2)
 }
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##' Calculate mean, variance statistics, and CI from a known distribution 
 ##'
 ##' @title Probability Distirbution Function Statistics
@@ -420,6 +428,8 @@ tabnum <- function(x, n=3) {
 ##' @param old.temp temperature at which measurement was taken or previously scaled to
 ##' @param new.temp temperature to be scaled to, default = 25 C  
 ##' @return numeric value at reference temperature
+##' @export
+##' @author
 #--------------------------------------------------------------------------------------------------#
 arrhenius.scaling <- function(observed.value, old.temp, new.temp = 25){
   return(observed.value / exp (3000 * ( 1 / (273.15 + new.temp) - 1 / (273.15 + old.temp))))
