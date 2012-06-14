@@ -8,6 +8,7 @@
 ##' @param trait.data data used in meta-analysis (used for plotting)
 ##' @param outdir directory in which to plot results
 ##' @return posteriors data frame, similar to priors, but with closed form pdfs fit to meta-analysis results  
+##' @export
 ##' @author David LeBauer, Carl Davidson, Mike Dietze
 #--------------------------------------------------------------------------------------------------#
 approx.posterior <- function(trait.mcmc,priors,trait.data=NULL,outdir=NULL){
