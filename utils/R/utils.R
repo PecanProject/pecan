@@ -269,11 +269,10 @@ summarize.result <- function(result) {
 #--------------------------------------------------------------------------------------------------#
 ##' Further summarizes output from summary.mcmc
 ##'
-## .. content for \details{} ..
-##' @title Get MCMC stats
+##' @title Get stats for parameters in MCMC output
 ##' @param mcmc.summary 
 ##' @param sample.size 
-##' @return 
+##' @return list with summary statistics for parameters in an MCMC chain
 ##' @author David LeBauer
 #--------------------------------------------------------------------------------------------------#
 get.stats.mcmc <- function(mcmc.summary, sample.size){
@@ -363,7 +362,7 @@ pdf.stats <- function(distn, A, B) {
 trait.dictionary <- function(traits = NULL) {
   #HACK: shameless hack
   #Ultimately we'll want this to be read once at the start of run time
-  #This could also be represented in Bety, 
+  #This could also be represented in BETY, 
   #but because it is used to determine which parameters to feed to the model,
   #it could be argued that it's conceptually model specific
   data(ed.trait.dictionary)
@@ -648,9 +647,13 @@ prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NU
 ##' @title newxtable
 ##' @param x data.frame to be converted to latex table
 ##' @param environment can be 'table'; 'sidewaystable' if using latex rotating package
+##' @param table.placement 
+##' @param label 
+##' @param caption 
+##' @param caption.placement 
+##' @param align 
 ##' @return Latex version of table, with percentages properly formatted 
 ##' @author David LeBauer
-#--------------------------------------------------------------------------------------------------#
 newxtable <- function(x, environment = 'table', table.placement = 'ht',
                       label = NULL, caption = NULL, caption.placement = NULL, align = NULL) {
   print(xtable(x, label = label, caption = caption, align = align),
@@ -667,7 +670,7 @@ newxtable <- function(x, environment = 'table', table.placement = 'ht',
 ##' Convert author, year, title to bibtex citation format
 ##'
 ##' Converts author year title to author1999abc format
-##' @title 
+##' @title bibtexify
 ##' @param author name of first author
 ##' @param year year of publication
 ##' @param title manuscript title
@@ -689,7 +692,12 @@ bibtexify <- function (author, year, title) {
 ##' @return dataframe with statistics transformed to SE
 ##' @author David LeBauer
 ##' @export
-#--------------------------------------------------------------------------------------------------#
+##' @examples statdf <- data.frame(Y=rep(1,5),
+##'                                stat=rep(1,5),
+##'                                n=rep(4,5),
+##'                                statname=c('SD', 'MSE', 'LSD', 'HSD', 'MSD'))
+##' transformstats(statdf)
+
 transformstats <- function(data) {
   if(!"SE" %in% levels(data$statname)){
     data$statname <- factor(data$statname, levels = c(levels(data$statname), "SE"))
@@ -748,8 +756,6 @@ transformstats <- function(data) {
 
 
 #--------------------------------------------------------------------------------------------------#
-##' @example statdf <- data.frame(Y=rep(1,5), stat=rep(1,5), n=rep(4,5), statname=c('SD', 'MSE', 'LSD', 'HSD', 'MSD'))
-##' transformstats(statdf)
 
 ##' Convert categorical variable into sequential integers
 ##'

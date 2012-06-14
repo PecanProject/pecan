@@ -11,7 +11,8 @@
 ##' given the number of model runs and a list of sample distributions for traits
 ##' The model run is indexed first by model run, then by trait
 ##' 
-##' @title Get Ensemble Samples 
+##' @title Get Ensemble Samples
+##' @name get.ensemble.samples
 ##' @param ensemble.size number of runs in model ensemble
 ##' @param samples random samples from parameter distribution, e.g. from a MCMC chain or a 
 ##' @return matrix of quasi-random (overdispersed) samples from trait distributions
@@ -161,12 +162,11 @@ get.quantiles <- function(quantiles.tag) {
 
 
 #--------------------------------------------------------------------------------------------------#
-##'
 ##' @name get.sa.sample.list
 ##'
-##'
-##'
-#--------------------------------------------------------------------------------------------------#
+##' @param pft 
+##' @param env 
+##' @param quantiles
 get.sa.sample.list <- function(pft,env,quantiles){
   sa.sample.list <- list()
   for(i in 1:length(pft)){

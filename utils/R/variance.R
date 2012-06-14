@@ -9,11 +9,12 @@ variance.stats <- function(x){
   list(var = var(x), sd = sd.var(x))
 }
 
-##' .. content for \description{} (no empty lines) ..
+##' Calculate distribution of function of a variable
 ##'
-##' Given a matrix of parameter sets, calculates a matrix of model output by applying appropriate spline function to each parameter. Output is use with \link{\code{variance.decomposition}} and \link{\code{spline.ensemble}}  
+##' Transform trait parameter through trait-specific univariate model emulator spline function
+##' Given a matrix of parameter sets, calculates a matrix of model output by applying appropriate spline function to each parameter. Output is use with \code{\link{variance.decomposition}} and \code{\link{spline.ensemble}}  
 ##' @title Get g_i(phi_i)
-##' @param splinefuns univariate spline functions created for each trait, e.g. by the \link{\code{sensitivity.analysis}} function. 
+##' @param splinefuns univariate spline functions created for each trait, e.g. by the \code{\link{sensitivity.analysis}} function. 
 ##' @param trait.samples n x m matrix (or list with m vectors of length n) of n parameter sets, each with a sample from m traits 
 ##' @param maxn maximum number of parameter sets to evaluate
 ##' @return matrix of spline estimates of model output for each of n parameter sets 
@@ -44,13 +45,16 @@ get.gi.phii <- function(splinefuns, trait.samples, maxn = NULL){
   return(gi.phii)
 }
 
-##' .. content for \description{} (no empty lines) ..
+##' Estimate model output based on univariate splines
 ##'
-##' .. content for \details{} ..
+##' Accepts output from get.gi.phii (the matrix $g(\phi_i)$) and produces
+##' spline estimate of $f(phi)$ for use in estimating closure term associated with
+##' spline approximation
 ##' @title Spline Ensemble
 ##' @author David LeBauer
-##' @param gi.phii matrix given as output from \link{\code{get.gi.phii}}
+##' @param gi.phii matrix given as output from \code{\link{get.gi.phii}}
 ##' @param median median value around which variance will be calculated
+##' @author David LeBauer
 spline.ensemble <- function(gi.phii, median){
   ## Calculate ensemble output for each parameter set (each row of trait.samples)
   ## Equation 3

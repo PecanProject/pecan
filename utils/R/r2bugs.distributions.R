@@ -5,7 +5,12 @@
 ##' @param priors data.frame with columns distn = distribution name, parama, paramb using R default parameterizations
 ##' @return priors dataframe using JAGS default parameterizations
 ##' @author David LeBauer
-
+##' @export
+##' @examples
+##' priors <- data.frame(distn = c('weibull', 'lnorm', 'norm', 'gamma'),
+##'                      parama = c(1, 1, 1, 1),
+##'                      paramb = c(2, 2, 2, 2))
+##' r2bugs.distributions(priors)
 r2bugs.distributions <- function(priors) {
 
   norm   <- priors$distn %in% 'norm'
@@ -33,10 +38,3 @@ r2bugs.distributions <- function(priors) {
                                       as.vector(priors$distn)))))
   return(priors)
 }
-
-
-##' @examples
-##' priors <- data.frame(distn = c('weibull', 'lnorm', 'norm', 'gamma'),
-##'                      parama = c(1, 1, 1, 1),
-##'                      paramb = c(2, 2, 2, 2))
-##' r2bugs.distributions(priors)
