@@ -51,7 +51,7 @@ run.write.configs.ed <- function() {
   ###
   
   ### Define main output directory and host for SA/Ensemble run.
-  main.outdir   <- settings$outdir
+  main.outdir <- settings$outdir
   host <- settings$run$host
   
   ### Prepare for model output.  Cleanup any old config files (if exists)
@@ -94,11 +94,9 @@ run.write.configs.ed <- function() {
     trait.samples[[pft.name]] <- calc.ed.specific(trait.samples[[pft.name]])
   } ### End for loop
   
-
   ### NEED TO IMPLEMENT: 
   ## Load Environmental Priors and Posteriors
   ###
-  
   
   ### Sensitivity Analysis
   if('sensitivity.analysis' %in% names(settings)) {

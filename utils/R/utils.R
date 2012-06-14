@@ -121,9 +121,9 @@ listToXml <- function(item, tag){
 ##' Convert List to XML
 ##'
 ##'
-##'
+##'  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ##'  I THINK THIS IS DEPRECIATED [sps]
-##'
+##'  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #--------------------------------------------------------------------------------------------------#
 list2XML <- function (dat, myName = "config", delim = ",") 
 {
@@ -292,8 +292,10 @@ get.stats.mcmc <- function(mcmc.summary, sample.size){
 
 #--------------------------------------------------------------------------------------------------#
 ##'
+##' @name paste.stats
 ##'
 ##'
+##' @author
 #--------------------------------------------------------------------------------------------------#
 paste.stats <- function(mcmc.summary, median, lcl, ucl, n = 2) {  
   paste("$", tabnum(median, n),  "(", tabnum(lcl, n), ",", tabnum(ucl,n), ")", "$", sep = '')
@@ -697,7 +699,6 @@ bibtexify <- function (author, year, title) {
 ##'                                n=rep(4,5),
 ##'                                statname=c('SD', 'MSE', 'LSD', 'HSD', 'MSD'))
 ##' transformstats(statdf)
-
 transformstats <- function(data) {
   if(!"SE" %in% levels(data$statname)){
     data$statname <- factor(data$statname, levels = c(levels(data$statname), "SE"))
@@ -756,7 +757,6 @@ transformstats <- function(data) {
 
 
 #--------------------------------------------------------------------------------------------------#
-
 ##' Convert categorical variable into sequential integers
 ##'
 ##' Turns any categorical variable into a sequential integer.
