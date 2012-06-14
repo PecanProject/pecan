@@ -429,6 +429,7 @@ tabnum <- function(x, n=3) {
 ##' @param new.temp temperature to be scaled to, default = 25 C  
 ##' @return numeric value at reference temperature
 ##' @export
+##' @author
 #--------------------------------------------------------------------------------------------------#
 arrhenius.scaling <- function(observed.value, old.temp, new.temp = 25){
   return(observed.value / exp (3000 * ( 1 / (273.15 + new.temp) - 1 / (273.15 + old.temp))))
