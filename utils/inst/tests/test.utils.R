@@ -66,7 +66,7 @@ test_that("summarize.result works appropriately", {
 ## generate testdata  
   testresult <- data.frame(citation_id = 1,
                            site_id = 1:10,
-                           name = rep(c('control', 'fert'),5),
+                           trt_id = rep(c('control', 'fert'),5),
                            control = rep(c(0,1), 5), 
                            greenhouse = c(rep(0,5), rep(1,5)),
                            date = 1,
@@ -84,11 +84,11 @@ test_that("summarize.result works appropriately", {
 })
 
 
-test_that("as.sequence works";{
+test_that("as.sequence works",{
   expect_identical(as.sequence(c("a", "b")),
-                   1:2)
+                   c(1,2))
   expect_identical(as.sequence(c("a", NA)),
-                   1:2)
+                   c(1,2))
   expect_equal(as.sequence(c("a", NA), na.rm = FALSE),
                c(1,NA))
   expect_equal(as.sequence(c(NA,NA)), c(1,1))
