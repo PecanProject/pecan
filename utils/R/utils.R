@@ -207,7 +207,8 @@ get.sample <- function(prior, n) {
 ##' @param n length of vector to be returned
 ##' @param alpha sets range at which the distribution will be evaluated (e.g. from alpha to 1-alpha)
 ##' @return dataframe with equally spaced x values and the corresponding densities
-#--------------------------------------------------------------------------------------------------#
+##' @export
+##' @author David LeBauer
 pr.dens <- function(distn, parama, paramb, n = 1000, alpha = 0.001) {
   alpha <- ifelse(alpha < 0.5, alpha, 1-alpha)
   n <- ifelse(alpha == 0.5, 1, n)
@@ -277,7 +278,7 @@ get.stats.mcmc <- function(mcmc.summary, sample.size){
   for (parm in c('beta.o','sd.y', 'sd.site','sd.trt','beta.ghs[2]')){
     parm.name <- ifelse(parm == 'beta.ghs[2]', 'beta.ghs', parm)
     if(parm %in% rownames(mcmc.summary$statistics)){
-      a[[parm.name]] <-  get.parm.stat(mcmc.summary, parameter = parm)
+      a[[parm.name]] <-  get.parameter.stat(mcmc.summary, parameter = parm)
     } else {
       a[[parm.name]] <- NA
     }
@@ -290,7 +291,7 @@ get.stats.mcmc <- function(mcmc.summary, sample.size){
 #--------------------------------------------------------------------------------------------------#
 ##' A helper function for building a LaTex table.
 ##'
-##' Used by \code{\link{get.parm.stat}}.
+##' Used by \code{\link{get.parameter.stat}}.
 ##' @title Paste Stats
 ##' @name paste.stats
 ##' @param mcmc.summary 
@@ -310,13 +311,14 @@ paste.stats <- function(mcmc.summary, median, lcl, ucl, n = 2) {
 ##' @param parameter 
 ##' @return table with parameter statistics
 ##' @author David LeBauer
+##' @export
 ##' @examples
-##' get.parameter.stat(mcmc.summaries[[1]], 'beta.o')
-get.parm.stat <- function(mcmc.summary, parameter){
+##' \dontrun{get.parameter.stat(mcmc.summaries[[1]], 'beta.o')}
+get.parameter.stat <- function(mcmc.summary, parameter){
   paste.stats(median = mcmc.summary$quantiles[parameter, "50%"],
-               lcl   = mcmc.summary$quantiles[parameter, c("2.5%")],
-               ucl   = mcmc.summary$quantiles[parameter, c("97.5%")],
-               n     = 2)
+              lcl   = mcmc.summary$quantiles[parameter, c("2.5%")],
+              ucl   = mcmc.summary$quantiles[parameter, c("97.5%")],
+              n     = 2)
 }
 
 ##' Calculate mean, variance statistics, and CI from a known distribution 
@@ -366,13 +368,16 @@ pdf.stats <- function(distn, A, B) {
 ##'     and tables.
 ##'
 ##' @param traits a vector of trait names, if traits = NULL, all of the traits will be returned.
+##' @export
 ##' @examples
-##' # convert parameter name to a string appropriate for end-use plotting 
+##' # convert parameter name to a string appropriate for end-use plotting
+##' \dontrun{
 ##' trait.dictionary('growth_resp_factor')
 ##' trait.dictionary('growth_resp_factor')$figid
 ##'
 ##' # get a list of all traits and units in dictionary
 ##' trait.dictionary()[,c('figid', 'units')]
+##' }
 trait.dictionary <- function(traits = NULL) {
   #HACK: shameless hack
   #Ultimately we'll want this to be read once at the start of run time
@@ -399,7 +404,6 @@ trait.dictionary <- function(traits = NULL) {
 ##' @param x numeric value or vector
 ##' @param n number of significant figures
 ##' @return x rounded to n significant figures
-#--------------------------------------------------------------------------------------------------#
 tabnum <- function(x, n=3) {
   ans <- as.numeric(signif(x,n))
   names(ans) <- names(x)
