@@ -158,7 +158,7 @@ arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp
     
     data$mean <- arrhenius.scaling(data$mean, old.temp = data$temp, new.temp=new.temp)
     data$stat <- arrhenius.scaling(data$stat, old.temp = data$temp, new.temp=new.temp)
-    #remove temporary covariate column. turned off to check function [sps]
+    #remove temporary covariate column.
     data<-data[,colnames(data)!='temp']
   }
   return(data)

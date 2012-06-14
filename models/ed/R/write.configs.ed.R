@@ -105,12 +105,6 @@ convert.samples.ED <- function(trait.samples){
     vcmax <- trait.samples[['Vcmax']]
     trait.samples[['Vcmax']] <- arrhenius.scaling(vcmax, old.temp = 25, new.temp = 15)
   }
-    ##### !!!! NEED TO CHECK WHETHER WE NEED THE CODE BELOW #####
-    ### This was not in here but in ChEAS branch??
-    #if('fineroot2leaf' %in% names(trait.samples)){
-    #  names(trait.samples)[names(trait.samples) == 'fineroot2leaf'] <- 'q' 
-    ### !! I THINK THIS IS DONE USING THE TRAIT DICTIONARY.  Depreciated? 
-  #}
   
   return(trait.samples)
 }
