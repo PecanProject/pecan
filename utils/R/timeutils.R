@@ -72,8 +72,15 @@ daymax = function(month,year){
 
 #==========================================================================================#
 #==========================================================================================#
-#      Function that determines the number of the month given the character name.          #
+#      
 #------------------------------------------------------------------------------------------#
+##' convert month abbrev. to numeric
+##'
+##' Function that determines the number of the month given the character name.
+##' @title mmm2mon
+##' @param mmm three letter character string for month
+##' @param lang currently english and portugese 
+##' @return month as three letter 
 mmm2mon = function(mmm,lang="English"){
   lang = tolower(lang)
   if (lang == "english"){
@@ -87,17 +94,22 @@ mmm2mon = function(mmm,lang="English"){
   return(monout)
 } #end function
 #==========================================================================================#
-#==========================================================================================#
-
-
-
-
 
 
 #==========================================================================================#
 #==========================================================================================#
-#      Function that determines 3-letter name of the month given their number.             #
+#
 #------------------------------------------------------------------------------------------#
+##' Convert numeric month to 3-letter abbrev.
+##'
+##' Function that determines 3-letter name of the month given their number.
+##' @title mon2mmm
+##' @param mon 3-letter month abbreviation
+##' @param lang charcter, currently supports "english", "portugese"
+##' @return month as three letter abbreviation
+##' @examples
+##' mon2mmm(1)
+##' mon2mmm(1:3)
 mon2mmm = function(mon,lang="English"){
   lang = tolower(lang)
   if (lang == "english"){

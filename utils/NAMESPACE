@@ -1,1 +1,4 @@
-exportPattern("^[[:alpha:]]+")
+export(plot.sensitivities)
+export(plot.sensitivity)
+export(r2bugs.distributions)
+export(transformstats)
