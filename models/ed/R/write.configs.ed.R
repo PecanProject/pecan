@@ -43,8 +43,7 @@ abbreviate.run.id.ED <- function(run.id){
 ##'
 ##' @param trait.samples a matrix or dataframe of samples from the trait distribution
 ##' @return matrix or dataframe with derived ED specific traits
-##' @author Shawn Serbin
-#--------------------------------------------------------------------------------------------------#
+##' @author Shawn Serbin, David LeBauer, Carl Davidson
 calc.ed.specific <- function(trait.samples){
   
     ### Convert leaf_respiration_rate_m2 to dark_resp_factor
@@ -77,7 +76,7 @@ calc.ed.specific <- function(trait.samples){
 ##' @title Convert samples for ed
 ##' @param trait.samples a matrix or dataframe of samples from the trait distribution
 ##' @return matrix or dataframe with values transformed
-#--------------------------------------------------------------------------------------------------#
+##' @author Shawn Serbin, David LeBauer, Carl Davidson
 convert.samples.ED <- function(trait.samples){
   DEFAULT.LEAF.C <- 0.48
   DEFAULT.MAINTENANCE.RESPIRATION <- 1/2
@@ -130,16 +129,12 @@ convert.samples.ED <- function(trait.samples){
 ##' @param outdir directory for config files to be written to
 ##' @param run.id id of run
 ##' @return configuration file and ED2IN namelist for given run
-##' @author David
+##' @author David LeBauer, Shawn Serbin, Carl Davidson
 #--------------------------------------------------------------------------------------------------#
 write.config.ED <- function(defaults, trait.values, settings, outdir, run.id){
   #defaults = settings$pfts
   xml <- listToXml(settings$config.header, 'config')
   names(defaults) <- sapply(defaults,function(x) x$name)
-  
-  ### !!! THIS WAS CAUSING PROBLEMS.  LIKELY WAS A BUG AND IS CORRECT NOW.
-  #for(group in names(trait.samples
-  ### !!!
   
   for(group in names(trait.values)){
     if(group == "env"){
@@ -280,7 +275,7 @@ write.run.ED <- function(settings){
 ##' @param filename string, name of file with data
 ##' @param variables  variables to extract from file
 ##' @return single value of output variable from filename. In the case of AGB, it is summed across all plants
-#--------------------------------------------------------------------------------------------------#
+##' @author David LeBauer, Carl Davidson
 read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
   if(filename %in% dir(pattern = 'h5')){
     require(hdf5)
@@ -309,7 +304,7 @@ read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
 ##' @param end.year
 ##' @param output.type type of output file to read, can be "-Y-" for annual output, "-M-" for monthly means, "-D-" for daily means, "-T-" for instantaneous fluxes. Output types are set in the ED2IN namelist as NL%I[DMYT]OUTPUT  
 ##' @return vector of output variable for all runs within ensemble
-#--------------------------------------------------------------------------------------------------#
+##' @author David LeBauer, Carl Davidson
 read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA, output.type = 'Y'){
   print(run.id)
   #if(any(grep(run.id, dir(outdir, pattern = 'finished')))){
@@ -339,6 +334,51 @@ read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA, output.ty
   return(result)
 }
 #==================================================================================================#
+
+##' Clear out old config and ED model run files.
+##'
+##' @name remove.config
+##' @return nothing, removes config files as side effect
+##' @author Shawn Serbin, David LeBauer
+remove.config <- function() {
+  #if(FALSE){
+    todelete <- dir(unlist(main.outdir), pattern = 'ED2INc.*',
+                    recursive=TRUE, full.names = TRUE)
+    if(length(todelete>0)) file.remove(todelete)
+    rm(todelete)
+    
+    #todelete <- dir(unlist(main.outdir), pattern = "c.*",
+    #                recursive=TRUE, full.names = TRUE)
+    
+    ### Other code wasn't working properly.  This won't recurse however.
+    # TODO: Fix this code so it finds the correct files and will recurse
+    todelete <- Sys.glob(file.path(unlist(main.outdir), "c.*") )
+    if(length(todelete>0)) file.remove(todelete)
+    rm(todelete)
+
+    filename.root <- get.run.id('c.','*')  # TODO: depreciate abbrev run ids
+  
+    if(host$name == 'localhost'){
+      if(length(dir(settings$run$host$rundir, pattern = filename.root)) > 0) {
+        todelete <- dir(settings$run$host$outdir,
+                        pattern = paste(filename.root, "*[^log]", sep = ''), 
+                        recursive=TRUE, full.names = TRUE)
+        file.remove(todelete)
+      }
+    } else {
+      files <- system(paste("ssh ", settings$run$host$name, " 'ls ", 
+                            settings$run$host$rundir, "*", 
+                            filename.root, "*'", sep = ''), intern = TRUE)
+      if(length(files) > 0 ) {
+        todelete <- files[-grep('log', files)]
+        system(paste("ssh -T ", settings$run$host$name,
+                    " 'for f in ", paste(todelete, collapse = ' '),"; do rm $f; done'",sep=''))
+        }
+      }
+    #}
+}
+#==================================================================================================#
+
 
 
 ####################################################################################################

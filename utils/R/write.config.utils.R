@@ -16,7 +16,7 @@
 ##' @param samples random samples from parameter distribution, e.g. from a MCMC chain or a 
 ##' @return matrix of quasi-random (overdispersed) samples from trait distributions
 ##' @references Halton, J. (1964), Algorithm 247: Radical-inverse quasi-random point sequence, ACM, p. 701, doi:10.1145/355588.365104.
-#--------------------------------------------------------------------------------------------------#
+##' @author David LeBauer
 get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="halton") {
   ##force as numeric for compatibility with Fortran code in halton()
   ensemble.size <- as.numeric(ensemble.size)
@@ -80,57 +80,6 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
 
 
 #--------------------------------------------------------------------------------------------------#
-##'
-##' Clear out old config and ED model run files.  TODO: Move this code to the model specific
-##' module
-##'
-##' @name remove.config
-##'
-##'
-##'
-##'
-#--------------------------------------------------------------------------------------------------#
-remove.config <- function() {
-  #if(FALSE){
-    todelete <- dir(unlist(main.outdir), pattern = 'ED2INc.*',
-                    recursive=TRUE, full.names = TRUE)
-    if(length(todelete>0)) file.remove(todelete)
-    rm(todelete)
-    
-    #todelete <- dir(unlist(main.outdir), pattern = "c.*",
-    #                recursive=TRUE, full.names = TRUE)
-    
-    ### Other code wasn't working properly.  This won't recurse however.
-    # TODO: Fix this code so it finds the correct files and will recurse
-    todelete <- Sys.glob(file.path(unlist(main.outdir), "c.*") )
-    if(length(todelete>0)) file.remove(todelete)
-    rm(todelete)
-
-    filename.root <- get.run.id('c.','*')  # TODO: depreciate abbrev run ids
-  
-    if(host$name == 'localhost'){
-      if(length(dir(settings$run$host$rundir, pattern = filename.root)) > 0) {
-        todelete <- dir(settings$run$host$outdir,
-                        pattern = paste(filename.root, "*[^log]", sep = ''), 
-                        recursive=TRUE, full.names = TRUE)
-        file.remove(todelete)
-      }
-    } else {
-      files <- system(paste("ssh ", settings$run$host$name, " 'ls ", 
-                            settings$run$host$rundir, "*", 
-                            filename.root, "*'", sep = ''), intern = TRUE)
-      if(length(files) > 0 ) {
-        todelete <- files[-grep('log', files)]
-        system(paste("ssh -T ", settings$run$host$name,
-                    " 'for f in ", paste(todelete, collapse = ' '),"; do rm $f; done'",sep=''))
-        }
-      }
-    #}
-}
-#==================================================================================================#
-
-
-#--------------------------------------------------------------------------------------------------#
 ##' Write ensemble config files
 ##'
 ##' Writes config files for use in meta-analysis and returns a list of run ids.
@@ -144,8 +93,8 @@ remove.config <- function() {
 ##' @param settings list of settings
 ##' @param write.config a model-specific function to write config files, e.g. \link{write.config.ED}  
 ##' @param convert.samples a model-specific function that transforms variables from units used in database to units used by model, e.g. \link{convert.samples.ED} 
-##' @return nothing, writes ensemble configuration files as a side effect 
-#--------------------------------------------------------------------------------------------------#
+##' @return nothing, writes ensemble configuration files as a side effect
+##' @author David LeBauer, Carl Davidson
 write.ensemble.configs <- function(defaults, ensemble.samples,
                                    host, outdir, settings,
                                    write.config = write.config.ED,clean=FALSE){
@@ -190,7 +139,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples,
 ##' @title Get Quantiles  
 ##' @param quantiles.tag specifies tag used to specify quantiles
 ##' @return vector of quantiles
-#--------------------------------------------------------------------------------------------------#
+##' @author David LeBauer
 get.quantiles <- function(quantiles.tag) {
   quantiles<-vector()
   if (!is.null(quantiles.tag$quantile)) {
@@ -240,8 +189,8 @@ get.sa.sample.list <- function(pft,env,quantiles){
 ##' @title get sensitivity analysis samples
 ##' @param samples random samples from trait distribution   
 ##' @param quantiles list of quantiles to at which to sample, set in settings file
-##' @return a list of lists representing quantile values of trait distributions 
-#--------------------------------------------------------------------------------------------------#
+##' @return a list of lists representing quantile values of trait distributions
+##' @author David LeBauer
 get.sa.samples <- function(samples, quantiles){
   sa.samples <- data.frame()
   for(trait in names(samples)){
@@ -268,8 +217,8 @@ get.sa.samples <- function(samples, quantiles){
 ##' @param write.config a model-specific function to write config files, e.g. \link{write.config.ED}  
 ##' @param convert.samples a model-specific function that transforms variables from units used in database to units used by model, e.g. \link{convert.samples.ED} 
 ##' @param ensemble.samples list of lists supplied by \link{get.sa.samples}
-##' @return nothing, writes sensitivity analysis configuration files as a side effect 
-#--------------------------------------------------------------------------------------------------#
+##' @return nothing, writes sensitivity analysis configuration files as a side effect
+##' @author David LeBauer, Carl Davidson
 write.sa.configs <- function(defaults, quantile.samples, host, outdir, settings, 
                              write.config=write.config.ED,clean=FALSE){
   MEDIAN <- '50'
@@ -329,10 +278,10 @@ write.sa.configs <- function(defaults, quantile.samples, host, outdir, settings,
 
 #--------------------------------------------------------------------------------------------------#
 ##'   Counter function for writing configs
-##'
-##'
-##' @author 
-#--------------------------------------------------------------------------------------------------#
+##' 
+##' @title counter 
+##' @param cnt 
+##' @return updated value of cnt to global environment
 counter <- function(cnt){
   cnt = cnt + 1
   #return(cnt)
