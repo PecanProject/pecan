@@ -12,7 +12,6 @@
 ##' @param digits number of digits to add
 ##' @return num with zeros to the left
 ##' @author Carl Davidson
-#--------------------------------------------------------------------------------------------------#
 left.pad.zeros <- function(num, digits = 5){
   format_string <- paste('%',sprintf('0%.0f.0f',digits),sep='')
   return(sprintf(format_string, num))
@@ -233,7 +232,6 @@ pr.dens <- function(distn, parama, paramb, n = 1000, alpha = 0.001) {
 ##' @return data frame with back-transformed log density estimate 
 ##' @author \href{http://stats.stackexchange.com/q/6588/2750}{Rob Hyndman}
 ##' @references M. P. Wand, J. S. Marron and D. Ruppert, 1991. Transformations in Density Estimation. Journal of the American Statistical Association. 86(414):343-353 \url{http://www.jstor.org/stable/2290569}
-#--------------------------------------------------------------------------------------------------#
 zero.bounded.density <- function (x, bw = "SJ") {
   y <- log(x)
   g <- density(y, bw = bw, n = 1001)
@@ -250,8 +248,8 @@ zero.bounded.density <- function (x, bw = "SJ") {
 ##'
 ##' @title Summarize Results
 ##' @param result dataframe with results of trait data query
-##' @return result with replicate observations summarized 
-#--------------------------------------------------------------------------------------------------#
+##' @return result with replicate observations summarized
+##' @author David LeBauer
 summarize.result <- function(result) {
   ans1 <- ddply(result[result$n==1,],
                 .(citation_id, site_id, trt_id, control, greenhouse, date, time, cultivar_id, specie_id),
@@ -274,7 +272,6 @@ summarize.result <- function(result) {
 ##' @param sample.size 
 ##' @return list with summary statistics for parameters in an MCMC chain
 ##' @author David LeBauer
-#--------------------------------------------------------------------------------------------------#
 get.stats.mcmc <- function(mcmc.summary, sample.size){
   a <- list(n = sample.size)
   for (parm in c('beta.o','sd.y', 'sd.site','sd.trt','beta.ghs[2]')){
@@ -291,27 +288,36 @@ get.stats.mcmc <- function(mcmc.summary, sample.size){
 
 
 #--------------------------------------------------------------------------------------------------#
+##' A helper function for building a LaTex table.
 ##'
+##' Used by \code{\link{get.parm.stat}}.
+##' @title Paste Stats
 ##' @name paste.stats
-##'
-##'
-##' @author
-#--------------------------------------------------------------------------------------------------#
+##' @param mcmc.summary 
+##' @param median 
+##' @param lcl 
+##' @param ucl 
+##' @param n
+##' @author David LeBauer
 paste.stats <- function(mcmc.summary, median, lcl, ucl, n = 2) {  
   paste("$", tabnum(median, n),  "(", tabnum(lcl, n), ",", tabnum(ucl,n), ")", "$", sep = '')
 }
 
+##' Gets statistics for LaTeX - formatted table
+##'
+##' @title Get Parameter Statistics
+##' @param mcmc.summary 
+##' @param parameter 
+##' @return table with parameter statistics
+##' @author David LeBauer
+##' @examples
+##' get.parameter.stat(mcmc.summaries[[1]], 'beta.o')
 get.parm.stat <- function(mcmc.summary, parameter){
   paste.stats(median = mcmc.summary$quantiles[parameter, "50%"],
                lcl   = mcmc.summary$quantiles[parameter, c("2.5%")],
                ucl   = mcmc.summary$quantiles[parameter, c("97.5%")],
                n     = 2)
 }
-#==================================================================================================#
-
-
-#--------------------------------------------------------------------------------------------------#
-## @example get.parameter.stat(mcmc.summaries[[1]], 'beta.o')
 
 ##' Calculate mean, variance statistics, and CI from a known distribution 
 ##'
@@ -360,7 +366,13 @@ pdf.stats <- function(distn, A, B) {
 ##'     and tables.
 ##'
 ##' @param traits a vector of trait names, if traits = NULL, all of the traits will be returned.
-#--------------------------------------------------------------------------------------------------#
+##' @examples
+##' # convert parameter name to a string appropriate for end-use plotting 
+##' trait.dictionary('growth_resp_factor')
+##' trait.dictionary('growth_resp_factor')$figid
+##'
+##' # get a list of all traits and units in dictionary
+##' trait.dictionary()[,c('figid', 'units')]
 trait.dictionary <- function(traits = NULL) {
   #HACK: shameless hack
   #Ultimately we'll want this to be read once at the start of run time
@@ -379,13 +391,6 @@ trait.dictionary <- function(traits = NULL) {
 
 
 #--------------------------------------------------------------------------------------------------#
-##' @examples
-##' # convert parameter name to a string appropriate for end-use plotting 
-##' trait.dictionary('growth_resp_factor')
-##' trait.dictionary('growth_resp_factor')$figid
-##'
-##' # get a list of all traits and units in dictionary
-##' trait.dictionary()[,c('figid', 'units')]
 ##' 
 
 ##' Convert number to n significant digits

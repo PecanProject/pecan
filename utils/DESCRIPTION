@@ -27,6 +27,7 @@ Collate:
     'plots.R'
     'r2bugs.distributions.R'
     'read.output.R'
+    'run.write.configs.R'
     'timeutils.R'
     'utils.R'
     'variance.R'
