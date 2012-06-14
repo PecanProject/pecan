@@ -14,8 +14,8 @@
 approx.posterior <- function(trait.mcmc,priors,trait.data=NULL,outdir=NULL){
   ##initialization
   posteriors = priors
-  do.plot = !is.null(outdir)
-  if(do.plot){
+  do.plot = exists("outdir")
+  if(do.plot==TRUE){
     pdf(paste(outdir,"posteriors.pdf",sep=""))
   }
   
@@ -97,7 +97,7 @@ approx.posterior <- function(trait.mcmc,priors,trait.data=NULL,outdir=NULL){
         
         plot(density(dat),col=2,lwd=2,main=trait,xlim=rng)
         if(!is.null(trait.data)) {
-          rug(trait.data[[trait]]$Y, lwd = 2) 
+          rug(trait.data[[trait]]$Y, lwd = 2,col="purple") 
           ##hist(trait.data[[trait]]$Y,
           ##     breaks = sqrt(nrow(trait.data[[trait]])),
           ##     probability=TRUE,add=TRUE,border="purple")
@@ -116,11 +116,11 @@ approx.posterior <- function(trait.mcmc,priors,trait.data=NULL,outdir=NULL){
       posteriors[trait,"paramb"] = sd(dat)
       if(do.plot){
         rng = range(dat)
-        if(!is.null(trait.data)) rng = range(trait.data[[trait]]$Y)
+        if(!is.null(trait.data) && length(trait.data[[trait]]$Y)>1) rng = range(trait.data[[trait]]$Y)
         x = seq(rng[1],rng[2],length=1000)
         plot(density(dat),col=2,lwd=2,main=trait,xlim=rng)
         if(!is.null(trait.data)) {
-          rug(trait.data[[trait]]$Y, lwd = 2) 
+          rug(trait.data[[trait]]$Y, lwd = 2,col="purple") 
           ## hist(trait.data[[trait]]$Y,probability=TRUE,
           ##     breaks = sqrt(nrow(trait.data[[trait]])),
           ##     add=TRUE,border="purple")
