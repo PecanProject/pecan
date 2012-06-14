@@ -5,26 +5,7 @@
 #
 ############################################################################################
 
-
-#==========================================================================================#
-#==========================================================================================#
-# Time conversion units                                                                    #
-#------------------------------------------------------------------------------------------#
-yr.day  <<- 365.2425         # # of days in a year                              [   day/yr]
-day.sec <<- 86400.           # # of seconds in a day                            [    s/day]
-day.min <<- 1440.            # # of minutes in a day                            [  min/day]
-day.hr  <<- 24.              # # of hours in a day                              [   hr/day]
-hr.sec  <<- 3600.            # # of seconds in an hour                          [     s/hr]
-hr.min  <<- 60.              # # of minutes in an hour                          [   min/hr]
-min.sec <<- 60.              # # of seconds in a minute                         [    s/min]
-yr.sec  <<- yr.day * day.sec # # of seconds in a year                           [     s/yr]
-#==========================================================================================#
-#==========================================================================================#
-
-
-
-
-
+data(time.constants)
 
 #==========================================================================================#
 #==========================================================================================#
@@ -107,6 +88,7 @@ mmm2mon = function(mmm,lang="English"){
 ##' @param mon 3-letter month abbreviation
 ##' @param lang charcter, currently supports "english", "portugese"
 ##' @return month as three letter abbreviation
+##' @export
 ##' @examples
 ##' mon2mmm(1)
 ##' mon2mmm(1:3)
@@ -124,15 +106,14 @@ mon2mmm = function(mon,lang="English"){
 #==========================================================================================#
 #==========================================================================================#
 
-
-
-
-
-
 #==========================================================================================#
 #==========================================================================================#
-#      Function that converts a chron object to numeric years.                             #
-#------------------------------------------------------------------------------------------#
+##' Convert a chron object to numeric years.
+##'
+##' @title numyears
+##' @param when chron object
+##' @return numeric year
+##' @author Shawn Serbin
 numyears = function(when){
    yrs    = years(when)
    lyrs   = levels(yrs)

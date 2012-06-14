@@ -445,7 +445,15 @@ dhist <- function(x, a=5*iqr(x),
 iqr <- function(x){
   return(diff(quantile(x, c(0.25, 0.75), na.rm = TRUE)))
 }
-
+##' Creates empty ggplot object
+##'
+##' An empty base plot to which layers created by other functions
+##' (\code{\link{add.data}}, \code{\link{add.prior.density}},
+##' \code{\link{add.posterior.density}}) can be added.
+##' @title Create Base Plot
+##' @return empty ggplot object
+##' @export
+##' @author David LeBauer
 create.base.plot <- function() {
   base.plot <- ggplot()
   return(base.plot)
@@ -459,8 +467,9 @@ create.base.plot <- function() {
 ##' @return plot with prior density added
 ##' @seealso \code{\link{pr.dens}}
 ##' @author David LeBauer
+##' @export
 ##' @examples
-##' add.prior.density(c('norm', 0, 1))
+##' add.prior.density(pr.dens('norm', 0, 1))
 add.prior.density <- function(prior.density, base.plot = NULL, prior.color = 'black' ) {
   if(is.null(base.plot)) base.plot <- create.base.plot()
   new.plot <- base.plot +  geom_line(data = prior.density,
@@ -475,6 +484,7 @@ add.prior.density <- function(prior.density, base.plot = NULL, prior.color = 'bl
 ##' @param sample 
 ##' @param ... additional arguments to density
 ##' @author David LeBauer
+##' @export
 ##' @return data frame with x and y
 create.density.df <- function(samps = NULL,
                               zero.bounded = FALSE,
@@ -510,6 +520,7 @@ create.density.df <- function(samps = NULL,
 ##' @param posterior.density 
 ##' @param base.plot a ggplot object (grob), created by \code{\link{create.base.plot}} if none provided
 ##' @return plot with posterior density line added
+##' @export
 ##' @author David LeBauer
 add.posterior.density <- function(posterior.density, base.plot = NULL) {
   if(is.null(base.plot)) base.plot <- create.base.plot()
@@ -525,13 +536,15 @@ add.posterior.density <- function(posterior.density, base.plot = NULL) {
 ##' If SE estimates are available, tehse wil be plotted
 ##' @title Add data to plot 
 ##' @param trait.data data to be plotted
-##' @param base.plot a ggplot object (grob), created by \code{\link{create.base.plot}} if none provided
+##' @param base.plot a ggplot object (grob),
+##' created by \code{\link{create.base.plot}} if none provided
 ##' @param ymax maximum height of y
 ##' @seealso \code{\link{create.base.plot}}
 ##' @return updated plot object
 ##' @author David LeBauer
+##' @export
 ##' @examples
-##' add.data(data.frame(Y = c(1, 2), se = c(1,2)), base.plot = NULL, ymax = 10)
+##' \dontrun{add.data(data.frame(Y = c(1, 2), se = c(1,2)), base.plot = NULL, ymax = 10)}
 add.data <- function(trait.data, base.plot = NULL, ymax, color = 'black') {
   if(is.null(base.plot)) base.plot <- create.base.plot()
   n.pts <- nrow(trait.data)
@@ -569,7 +582,9 @@ add.data <- function(trait.data, base.plot = NULL, ymax, color = 'black') {
 ##' @param fontsize 
 ##' @return plot (grob) object
 ##' @author David LeBauer
+##' @export
 ##' @examples
+##' \dontrun{
 ##' prior1 <- data.frame(distn = 'norm',
 ##'                      parama = 20,
 ##'                      paramb = 5)
@@ -577,6 +592,7 @@ add.data <- function(trait.data, base.plot = NULL, ymax, color = 'black') {
 ##' plot.trait(trait = 'Vcmax',
 ##'           prior = prior1,
 ##'           trait.df = data1)
+##' }
 plot.trait <- function(trait,
                        prior = NULL,
                        posterior.sample = NULL,
@@ -828,11 +844,13 @@ get.quantiles.from.density <- function(priordensity){
 ##' @author Rudolf Cardinal
 ##' @author \url{ggplot2 google group}{https://groups.google.com/forum/?fromgroups#!topic/ggplot2/-ZjRE2OL8lE}
 ##' @examples
+##' \dontrun{
 ##' df = data.frame( x=c(1,2,3), y=c(4,5,6) )
 ##' ggplot(data=df, aes(x=x, y=y)) + geom_point() + theme_bw() +
 ##'        opts(panel.border = theme_border(c("bottom","left")) )
 ##' ggplot(data=df, aes(x=x, y=y)) + geom_point() + theme_bw() +
 ##'        opts(panel.border = theme_border(c("b","l")) )
+##' }
 theme_border <- function(type = c("left", "right", "bottom", "top", 
                            "none"), colour = "black", size = 1, linetype = 1) {
   type <- match.arg(type, several.ok=TRUE) 
