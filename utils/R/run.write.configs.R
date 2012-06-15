@@ -4,6 +4,7 @@
 ##'
 ##' @name run.write.configs
 ##' @param model the ecosystem model to generate the configuration files for
+##' @export
 ##' @author Shawn Serbin
 run.write.configs <- function(model){
   
@@ -13,6 +14,7 @@ run.write.configs <- function(model){
     print(" Generating ED2 model run and configuration files")
     print("-------------------------------------------------------------------")
     print(" ")
+    Sys.sleep(1)
     run.write.configs.ed()
     
   }else if (model=="SIPNET") {

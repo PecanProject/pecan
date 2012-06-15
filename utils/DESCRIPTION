@@ -33,4 +33,3 @@ Collate:
     'utils.R'
     'variance.R'
     'write.config.utils.R'
-    'time.constants.R'

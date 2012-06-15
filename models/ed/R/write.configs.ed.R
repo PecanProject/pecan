@@ -16,6 +16,7 @@ PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
 ##' As is the case with ED, input files must be <32 characters long.
 ##' this function abbreviates run.ids for use in input files. Depreciated.
 ##' @param run.id string indicating nature of the run
+##' @export
 ##' @author unknown
 #--------------------------------------------------------------------------------------------------#
 abbreviate.run.id.ED <- function(run.id){
@@ -123,6 +124,7 @@ convert.samples.ED <- function(trait.samples){
 ##' @param outdir directory for config files to be written to
 ##' @param run.id id of run
 ##' @return configuration file and ED2IN namelist for given run
+##' @export
 ##' @author David LeBauer, Shawn Serbin, Carl Davidson
 #--------------------------------------------------------------------------------------------------#
 write.config.ED <- function(defaults, trait.values, settings, outdir, run.id){
@@ -218,9 +220,10 @@ write.config.ED <- function(defaults, trait.values, settings, outdir, run.id){
     ed2in.text <- gsub('@CONFIGFILE@', xml.file.name, ed2in.text)
   
     ### Generate a numbered suffix for scratch output folder.  Useful for cleanup.  TEMP CODE. NEED TO UPDATE.
-    cnt = counter(cnt) # generate sequential scratch output directory names 
+    #cnt = counter(cnt) # generate sequential scratch output directory names 
     #print(cnt)
-    scratch = paste(Sys.getenv("USER"),".",cnt,"/",sep="")
+    #scratch = paste(Sys.getenv("USER"),".",cnt,"/",sep="")
+    scratch = Sys.getenv("USER")
     #ed2in.text <- gsub('@SCRATCH@', paste('/scratch/', settings$run$scratch, sep=''), ed2in.text)
     ed2in.text <- gsub('@SCRATCH@', paste('/scratch/', scratch, sep=''), ed2in.text)
     ###
@@ -246,10 +249,10 @@ write.config.ED <- function(defaults, trait.values, settings, outdir, run.id){
 ##' @import PEcAn.utils
 #--------------------------------------------------------------------------------------------------#
 write.run.ED <- function(settings){
-  run.text <- scan(file = paste(settings$pecanDir,
-                     'bash/run-template.ED', sep = ''), 
+  run.script.template = system.file("data", "run.template.ED", package="PEcAn.ED")
+  run.text <- scan(file = run.script.template, 
                    what="character",sep='@', quote=NULL, quiet=TRUE)
-  run.text  <- gsub('TMP', paste("/scratch/",settings$run$scratch,sep=""), run.text)
+  run.text  <- gsub('TMP', paste("/scratch/",Sys.getenv("USER"),sep=""), run.text)
   run.text  <- gsub('BINARY', settings$run$host$ed$binary, run.text)
   run.text <- gsub('OUTDIR', settings$run$host$outdir, run.text)
   runfile <- paste(settings$outdir, 'run', sep='')
@@ -266,10 +269,12 @@ write.run.ED <- function(settings){
 
 #--------------------------------------------------------------------------------------------------#
 ##' Extract ED output for specific variables from an hdf5 file
+##' @name read.output.file.ed
 ##' @title read output - ED
 ##' @param filename string, name of file with data
 ##' @param variables  variables to extract from file
 ##' @return single value of output variable from filename. In the case of AGB, it is summed across all plants
+##' @export
 ##' @author David LeBauer, Carl Davidson
 read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
   if(filename %in% dir(pattern = 'h5')){
@@ -291,14 +296,16 @@ read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
 #--------------------------------------------------------------------------------------------------#
 ##' Reads the output of a single model run
 ##'
-##' This function applies \link{\code{read.output.file.ed}} to a list of files from a single run
+##' This function applies \link{read.output.file.ed} to a list of files from a single run
 ##' @title Read ED output
+##' @name read.output.ed
 ##' @param run.id the id distiguishing the model run
 ##' @param outdir the directory that the model's output was sent to
 ##' @param start.year 
 ##' @param end.year
 ##' @param output.type type of output file to read, can be "-Y-" for annual output, "-M-" for monthly means, "-D-" for daily means, "-T-" for instantaneous fluxes. Output types are set in the ED2IN namelist as NL%I[DMYT]OUTPUT  
 ##' @return vector of output variable for all runs within ensemble
+##' @export
 ##' @author David LeBauer, Carl Davidson
 read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA, output.type = 'Y'){
   print(run.id)
@@ -334,8 +341,9 @@ read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA, output.ty
 ##'
 ##' @name remove.config
 ##' @return nothing, removes config files as side effect
+##' @export
 ##' @author Shawn Serbin, David LeBauer
-remove.config <- function() {
+remove.config <- function(main.outdir,settings) {
   #if(FALSE){
     todelete <- dir(unlist(main.outdir), pattern = 'ED2INc.*',
                     recursive=TRUE, full.names = TRUE)
@@ -353,7 +361,7 @@ remove.config <- function() {
 
     filename.root <- get.run.id('c.','*')  # TODO: depreciate abbrev run ids
   
-    if(host$name == 'localhost'){
+    if(settings$run$host$name == 'localhost'){
       if(length(dir(settings$run$host$rundir, pattern = filename.root)) > 0) {
         todelete <- dir(settings$run$host$outdir,
                         pattern = paste(filename.root, "*[^log]", sep = ''), 

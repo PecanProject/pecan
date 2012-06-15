@@ -1,0 +1,22 @@
+\name{fit.dist}
+\alias{fit.dist}
+\title{Fit distribution to data}
+\usage{
+  fit.dist(trait.data, trait = colnames(trait.data),
+    dists = c("weibull", "lognormal", "gamma"), n = NULL)
+}
+\arguments{
+  \item{trait.data}{data for distribution}
+
+  \item{dists}{list of distribution names}
+}
+\value{
+  best fit distribution
+}
+\description{
+  Fit a distribution to data
+}
+\author{
+  David LeBauer
+}
+
