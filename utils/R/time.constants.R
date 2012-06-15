@@ -11,4 +11,3 @@ hr.min  <<- 60.              # # of minutes in an hour                          
 min.sec <<- 60.              # # of seconds in a minute                         [    s/min]
 yr.sec  <<- yr.day * day.sec # # of seconds in a year                           [     s/yr]
 #==========================================================================================#
-

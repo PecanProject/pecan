@@ -39,6 +39,9 @@ zero.truncate <- function(y) {
 ##' @param to destination
 ##' @param pattern file pattern to be matched 
 ##' @return nothing, transfers files as a side effect 
+##' @export
+##' @author David LeBauer
+##' @author Shawn Serbin
 #--------------------------------------------------------------------------------------------------#
 rsync <- function(args, from, to, pattern=''){
   system(paste('rsync',' ', args,' ', from, pattern, ' ', to, sep = ''), intern=TRUE )
@@ -88,6 +91,7 @@ vecpaste <- function(x) paste(paste("'", x, "'", sep=''), collapse=',')
 ##' @param trait 
 ##' @param pft.name 
 ##' @return id representing a model run
+##' @export
 #--------------------------------------------------------------------------------------------------#
 get.run.id <- function(run.type, index, trait='', pft.name=''){
   run.id <- paste(pft.name, run.type, trait, index, sep='')
@@ -104,6 +108,8 @@ get.run.id <- function(run.type, index, trait='', pft.name=''){
 ##' @param item 
 ##' @param tag xml tag
 ##' @return xmlNode
+##' @export
+##' @author unknown
 #--------------------------------------------------------------------------------------------------#
 listToXml <- function(item, tag){
   if(typeof(item)!='list')
@@ -190,6 +196,7 @@ pr.samp <- function(distn, parama, paramb, n) {
 ##' @param n number of samples to return
 ##' @return vector with n random samples from prior
 ##' @seealso \link{pr.samp}
+##' @export
 #--------------------------------------------------------------------------------------------------#
 get.sample <- function(prior, n) {
   do.call(paste('r', prior$distn, sep=""), list(n, prior$parama, prior$paramb))
@@ -708,6 +715,7 @@ bibtexify <- function (author, year, title) {
 ##' Transform misc. statistics to SE
 ##'
 ##' Automates transformations of SD, MSE, LSD, 95\%CI, HSD, and MSD to conservative estimates of SE.
+##' @name transformstats
 ##' @title Transform Stats 
 ##' @param data data frame with mean, statistic, n, and statistic name: \code{example data <- data.frame(Y=rep(1,5), stat=rep(1,5), n=rep(4,5), statname=c('SD', 'MSE', 'LSD', 'HSD', 'MSD'))}
 ##' @return dataframe with statistics transformed to SE

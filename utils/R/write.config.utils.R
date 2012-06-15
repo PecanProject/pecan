@@ -140,6 +140,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples,
 ##' @title Get Quantiles  
 ##' @param quantiles.tag specifies tag used to specify quantiles
 ##' @return vector of quantiles
+##' @export
 ##' @author David LeBauer
 get.quantiles <- function(quantiles.tag) {
   quantiles<-vector()
@@ -167,6 +168,8 @@ get.quantiles <- function(quantiles.tag) {
 ##' @param pft 
 ##' @param env 
 ##' @param quantiles
+##' @export
+##' @author unknown
 get.sa.sample.list <- function(pft,env,quantiles){
   sa.sample.list <- list()
   for(i in 1:length(pft)){
@@ -190,6 +193,7 @@ get.sa.sample.list <- function(pft,env,quantiles){
 ##' @param samples random samples from trait distribution   
 ##' @param quantiles list of quantiles to at which to sample, set in settings file
 ##' @return a list of lists representing quantile values of trait distributions
+##' @export
 ##' @author David LeBauer
 get.sa.samples <- function(samples, quantiles){
   sa.samples <- data.frame()
@@ -218,6 +222,7 @@ get.sa.samples <- function(samples, quantiles){
 ##' @param convert.samples a model-specific function that transforms variables from units used in database to units used by model, e.g. \link{convert.samples.ED} 
 ##' @param ensemble.samples list of lists supplied by \link{get.sa.samples}
 ##' @return nothing, writes sensitivity analysis configuration files as a side effect
+##' @export
 ##' @author David LeBauer, Carl Davidson
 write.sa.configs <- function(defaults, quantile.samples, host, outdir, settings, 
                              write.config=write.config.ED,clean=FALSE){
@@ -282,6 +287,7 @@ write.sa.configs <- function(defaults, quantile.samples, host, outdir, settings,
 ##' @title counter 
 ##' @param cnt 
 ##' @return updated value of cnt to global environment
+##' @export
 counter <- function(cnt){
   cnt = cnt + 1
   #return(cnt)

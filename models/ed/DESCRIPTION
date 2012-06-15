@@ -11,12 +11,20 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     model parameterization, execution, and analysis. The goal of PECAn is to
     streamline the interaction between data and models, and to improve the
     efficacy of scientific investigation.
-Depends: PEcAn.common, PEcAn.utils, coda
-Suggests: testthat
+Depends:
+    PEcAn.common,
+    PEcAn.utils,
+    coda
+Suggests:
+    testthat
 SystemRequirements: ED2.2 Model
 OS_type: unix
 License: FreeBSD + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes
 Require: hdf5
-Collate: get.model.output.ed.R read.output.ed.R run.write.configs.ed.R write.configs.ed.R
+Collate:
+    'get.model.output.ed.R'
+    'read.output.ed.R'
+    'run.write.configs.ed.R'
+    'write.configs.ed.R'

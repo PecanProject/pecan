@@ -1,14 +1,17 @@
 #--------------------------------------------------------------------------------------------------#
 ##'  select plant id's associated with pft
 ##'
-##' @title Query species given pft name 
+##' @title Query species given pft name
+##' @name query.pft_species
 ##' @param pft string pft name
 ##' @param con database connection
 ##' @param ... optional arguments for connecting to database (e.g. password, user name, database)
 ##' @return string of species.id for species associated with pft
+##' @export
 ##' @examples
+##' \dontrun{
 ##' query.pft_species('ebifarm.pavi')
-#--------------------------------------------------------------------------------------------------#
+##' }
 query.pft_species <- function(pft,con=NULL,...){
   if(is.null(con)){
     con <- query.base.con(...)

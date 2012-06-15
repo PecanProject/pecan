@@ -1,17 +1,20 @@
 #--------------------------------------------------------------------------------------------------#
 ##' Query available trait data associated with a given pft and a list of traits
-##'
+##' 
+##' @name query.traits
 ##' @title Query trait data
 ##' @param spstr string of species id's from BETYdb database
 ##' @param priors vector of parameters for which priors have been specified 
 ##' @param con 
 ##' @return dataframe with trait data
-##' @seealso \code{\link{query.bety.trait.data}}
+##' @seealso \code{\link{query.trait.data}}
+##' @export
 ##' @examples
+##' \dontrun{
 ##' spstr <- query.pft_species('ebifarm.c4crop')$spstr
 ##' trvec <- c('leafN', 'SLA')
 ##' trait.data <- query.bety.traits(spstr, trvec)
-#--------------------------------------------------------------------------------------------------#
+##' }
 query.traits <- function(spstr, priors, con = NULL){
 
   if(is.null(con)){

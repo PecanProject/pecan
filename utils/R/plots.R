@@ -1,3 +1,4 @@
+#--------------------------------------------------------------------------------------------------#
 ##' Plot univariate response of model output to a trait parameter.
 ##'
 ##' @title Sensitivity plot 
@@ -73,7 +74,10 @@ plot.sensitivity <- function(sa.sample, sa.spline, trait,
                                         #  print(saplot)
   return(saplot)
 }
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
 #HACK: pretty() on my machine does not seem to work over data.frames, 
 #yet a good bit of code is already written under that assumption.
 #Here, we address the issue. 
@@ -83,6 +87,13 @@ pretty.hack <- function(foo, ...){
   }
   return(pretty(foo, ...))
 }
+#==================================================================================================#
+
+
+#--------------------------------------------------------------------------------------------------#
+#
+#
+#--------------------------------------------------------------------------------------------------#
 plot.variance.decomposition <- function(plot.inputs, outdir,
                                         prior.plot.inputs = NULL,
                                         fontsize = list(title = 18, axis = 14),
@@ -237,7 +248,10 @@ plot.variance.decomposition <- function(plot.inputs, outdir,
 
 
 }
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##' Plot functions and quantiles used in sensitivity analysis
 ##'
 ##' 
@@ -279,7 +293,10 @@ plot.sensitivities <- function(sensitivity.plot.inputs, prior.sensitivity.plot.i
   }
   return(sensitivity.plots)
 }
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##' Variable-width (dagonally cut) histogram
 ##'
 ##' 
@@ -435,7 +452,10 @@ dhist <- function(x, a=5*iqr(x),
     return(list(heights = heights, xbr = xbr,counts=counts))
   }
 }
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##' Calculate interquartile range
 ##'
 ##' Calculates the 25th and 75th quantiles given a vector x; used in function \link{dhist}.
@@ -445,6 +465,10 @@ dhist <- function(x, a=5*iqr(x),
 iqr <- function(x){
   return(diff(quantile(x, c(0.25, 0.75), na.rm = TRUE)))
 }
+#==================================================================================================#
+
+
+#--------------------------------------------------------------------------------------------------#
 ##' Creates empty ggplot object
 ##'
 ##' An empty base plot to which layers created by other functions
@@ -458,6 +482,10 @@ create.base.plot <- function() {
   base.plot <- ggplot()
   return(base.plot)
 }
+#==================================================================================================#
+
+
+#--------------------------------------------------------------------------------------------------#
 ##' Plots a prior density from a parameterized probability distribution  
 ##'
 ##' @title Add Prior Density
@@ -477,7 +505,10 @@ add.prior.density <- function(prior.density, base.plot = NULL, prior.color = 'bl
                                      color = prior.color)
   return(new.plot)
 }
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##' Returns a data frame from \link{stats::density} function 
 ##'
 ##' @title Create Density Data Frame from Sample
@@ -513,7 +544,10 @@ create.density.df <- function(samps = NULL,
   }
   return(density.df)
 }
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##'  Add posterior density to a plot
 ##'
 ##' @title Add posterior density. 
@@ -528,7 +562,10 @@ add.posterior.density <- function(posterior.density, base.plot = NULL) {
                                      aes(x = x, y = y))
   return(new.plot)  
 }
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##' Add data to an existing plot or create a new one from \code{\link{create.base.plot}}
 ##'
 ##' Used to add raw data or summary statistics to the plot of a distribution.
@@ -571,7 +608,10 @@ add.data <- function(trait.data, base.plot = NULL, ymax, color = 'black') {
                                       opts(legend_position = "none")
   return(new.plot)
 }
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##' Plot trait density and data
 ##'
 ##' @title Plot trait density
@@ -711,8 +751,10 @@ plot.trait <- function(trait,
                               yend = -y.lim[2]/50)) 
   return(trait.plot)
 }
+#==================================================================================================#
 
 
+#--------------------------------------------------------------------------------------------------#
 ##' Plot probability density and data
 ##'
 ##' @title Plot Trait Probability Densities
@@ -736,8 +778,10 @@ plot.densities <- function(density.plot.inputs, outdir, ...){
   }
   dev.off()
 }
+#==================================================================================================#
 
 
+#--------------------------------------------------------------------------------------------------#
 ##' Calculate the density of a distribution for use in plotting
 ##'
 ##' @title Prior Density 
@@ -763,7 +807,10 @@ prior.density <- function(distribution = 'norm', a = 0, b = 1, xlim = NA){
   prob.x  <- do.call(paste('p', distribution, sep=''),list(prior.x, a, b))
   return(data.frame(prior.x, dens.x, prob.x))
 }
+#==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##' Plot prior density and data
 ##'
 ##' @title Prior Figure 
@@ -822,8 +869,10 @@ priorfig <- function(priordata = NA, priordensity = NA, trait = '', xlim = 'auto
   }
   return(priorfigure)
 } 
+#==================================================================================================#
 
 
+#--------------------------------------------------------------------------------------------------#
 get.quantiles.from.density <- function(priordensity){
   qi <- c(which.min(abs(priordensity$prob.x - 0.025)),
           which.min(abs(priordensity$prob.x - 0.5)),
@@ -832,6 +881,10 @@ get.quantiles.from.density <- function(priordensity){
   colnames(qs) <- c('x', 'y')
   return(qs)
 }
+#==================================================================================================#
+
+
+#--------------------------------------------------------------------------------------------------#
 ##' Add borders to .. content for \description{} (no empty lines) ..
 ##'
 ##' Has ggplot2 display only specified borders, e.g. ("L"-shaped) borders, rather than a rectangle or no border. Note that the order can be significant; for example, if you specify the L border option and then a theme, the theme settings will override the border option, so you need to specify the theme (if any) before the border option, as above.
@@ -889,3 +942,9 @@ theme_border <- function(type = c("left", "right", "bottom", "top",
             call = match.call() 
             ) 
 } 
+#==================================================================================================#
+
+
+####################################################################################################
+### EOF.  End of R script file.        			
+####################################################################################################

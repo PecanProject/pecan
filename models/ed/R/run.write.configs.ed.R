@@ -4,8 +4,11 @@
 ##'
 ##' @title Generate input ED2.2 model ED2IN and settings.xml files for PEcAn workflow
 ##'
+##' @import PEcAn.utils
 ##'
 ##' @author Shawn Serbin
+##' @author David LeBauer
+##' @author Carl Davidson
 #--------------------------------------------------------------------------------------------------#
 run.write.configs.ed <- function() {
   
