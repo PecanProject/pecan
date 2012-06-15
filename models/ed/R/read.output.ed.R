@@ -1,11 +1,12 @@
-### TODO: Update this code.
-
-#source('utils.R')
-#source('model.specific.R')
-#load('samples.Rdata')
-
+#--------------------------------------------------------------------------------------------------#
+##' 
+##' @name read.output.ed
+##' @title Extract ED2 model output for analysis
+##'
+##' @import PEcAn.utils
+##' @export
 read.output.ed <- function(){
-  
+  ### OLD CODE THAT NEEDS TO BE UPDATED. SPS
   sensitivity.output <- list()
   ensemble.output    <- list()
   

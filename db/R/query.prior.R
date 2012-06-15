@@ -1,15 +1,18 @@
 #--------------------------------------------------------------------------------------------------#
 ##' Query priors associated with a string of traits and plant functional type
 ##'
+##' @name query.priors
 ##' @title Query Priors
 ##' @param pft String name of the PFT in the database
 ##' @param trstr string of traits to query priors for
 ##' @param con database connection, can be list of arguments for connecting to database
 ##' @param ... optional arguments for connecting to database (e.g. password, user name, database)
 ##' @return return priors for a given pft
+##' @export
 ##' @examples
+##' \dontrun{
 ##' query.bety.priors('ebifarm.pavi', c('SLA', 'Vcmax', 'leaf_width'))
-#--------------------------------------------------------------------------------------------------#
+##' }
 query.priors <- function(pft, trstr, out=NULL,con=NULL,...){
   if(is.null(con)){
     con <- query.base.con(...)

@@ -14,8 +14,9 @@ PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
 ##' Abbreviate run id to ed limits
 ##'
 ##' As is the case with ED, input files must be <32 characters long.
-##' this function abbreviates run.ids for use in input files
+##' this function abbreviates run.ids for use in input files. Depreciated.
 ##' @param run.id string indicating nature of the run
+##' @author unknown
 #--------------------------------------------------------------------------------------------------#
 abbreviate.run.id.ED <- function(run.id){
   run.id <- gsub('tundra.', '', run.id)
@@ -84,7 +85,6 @@ convert.samples.ED <- function(trait.samples){
     
   if('SLA' %in% names(trait.samples)){
     sla <- trait.samples[['SLA']]
-    # This appears incorrect.  Should be sla*DEFAULT.LEAF.C ??
     trait.samples[['SLA']] <- sla / DEFAULT.LEAF.C
   }
   
@@ -241,8 +241,9 @@ write.config.ED <- function(defaults, trait.values, settings, outdir, run.id){
 #--------------------------------------------------------------------------------------------------#
 ##'
 ##' @name write.run.ED
-##'
-##'
+##' @title Function to generate ED2.2 model run script files
+##' @author unknown
+##' @import PEcAn.utils
 #--------------------------------------------------------------------------------------------------#
 write.run.ED <- function(settings){
   run.text <- scan(file = paste(settings$pecanDir,

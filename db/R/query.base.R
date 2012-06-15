@@ -2,23 +2,27 @@
 ##' Generic function to query trait database
 ##'
 ##' Given a connection and a query, will return a query as a data frame
+##' @name query.base
 ##' @title Query database
 ##' @param query SQL query string
 ##' @param con database connection object
 ##' @param ... optional arguments for connecting to database (e.g. password, user name, database)
 ##' @return data frame with query results
+##' @export
 ##' @examples
+##' \dontrun{
 ##' query.base('select count(id) from traits;')
+##' }
 #--------------------------------------------------------------------------------------------------#
 query.base <- function(query,con=NULL,...){
-  iopened <- false
+  iopened <- 0
   if(is.null(con)){
     con <- query.base.con(...)
-    iopened <- true
+    iopened <- 1
   }
   q  <- dbSendQuery(con, query)
   data <- fetch(q, n = -1)
-  if(iopened) {
+  if(iopened==1) {
     dbDisconnect(con)
   }
   return(data)
@@ -30,12 +34,15 @@ query.base <- function(query,con=NULL,...){
 ##' Creates database connection object.
 ##'
 ##' Also removes any existing connections. 
-##' @title Query BETY connection
+##' @name query.base.con
+##' @title Query database connection
 ##' @param ... optional arguments for connecting to database (e.g. password, user name, database)
 ##' @return database connection object
+##' @export
 ##' @examples
+##' \dontrun{
 ##' con <- query.bety.con()
-#--------------------------------------------------------------------------------------------------#
+##' }
 query.base.con <- function(...){
   lapply(dbListConnections(MySQL()), dbDisconnect) #first kill all connections
   dvr <- dbDriver ("MySQL")
@@ -64,10 +71,10 @@ query.base.con <- function(...){
 ##' Kill existing database connections
 ##'
 ##' resolves (provides workaround to) bug #769 caused by having too many open connections \code{Error during wrapup: RS-DBI driver: (cannot allocate a new connection -- maximum of 16 connections already opened)}
+##' @name killdbcons
 ##' @title Kill existing database connections 
 ##' @return nothing, as a side effect closes all open connections
 ##' @author David LeBauer
-#--------------------------------------------------------------------------------------------------#
 killdbcons <- function(){
   for (i in dbListConnections(MySQL())) dbDisconnect(i)
 }

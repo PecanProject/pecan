@@ -11,9 +11,20 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     model parameterization, execution, and analysis. The goal of PECAn is to
     streamline the interaction between data and models, and to improve the
     efficacy of scientific investigation.
-Depends: RMySQL, PEcAn.common, PEcAn.utils
-Suggests: testthat
+Depends:
+    RMySQL,
+    PEcAn.common,
+    PEcAn.utils
+Suggests:
+    testthat
 License: FreeBSD + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes
-Collate: get.trait.data.R query.allom.data.R query.base.R query.pft.R query.prior.R query.trait.data.R query.traits.R
+Collate:
+    'get.trait.data.R'
+    'query.allom.data.R'
+    'query.base.R'
+    'query.pft.R'
+    'query.prior.R'
+    'query.trait.data.R'
+    'query.traits.R'

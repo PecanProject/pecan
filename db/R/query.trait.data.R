@@ -7,7 +7,7 @@
 ##' @param connection connection to BETYdb
 ##' @param query MySQL query to traits table
 ##' @return dataframe with trait data
-##' @seealso used in \code{\link{query.bety.trait.data}}; \code{\link{transformstats}} performs transformation calculations
+##' @seealso used in \code{\link{query.trait.data}}; \code{\link{transformstats}} performs transformation calculations
 #--------------------------------------------------------------------------------------------------#
 fetch.stats2se <- function(connection, query){
   query.result <- dbSendQuery(connection, query)
@@ -25,7 +25,7 @@ fetch.stats2se <- function(connection, query){
 ##' @title Query data and transform stats to SE by calling \code{\link{fetch.stats2se}};
 ##' @param trait trait to query from the database
 ##' @param spstr 
-##' @extra.columns
+##' @param extra.columns
 ##' @param con database connection
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}}; \code{\link{transformstats}} performs transformation calculations
 #--------------------------------------------------------------------------------------------------#
@@ -57,7 +57,7 @@ query.data<-function(trait, spstr, extra.columns='', con=query.base.con(...), ..
 ##' @title Query yield data and transform stats to SE by calling \code{\link{fetch.stats2se}};
 ##' @param trait yield trait to query
 ##' @param spstr species to query for yield data
-##' @extra.columns
+##' @param extra.columns
 ##' @param con database connection
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}}; \code{\link{transformstats}} performs transformation calculations
 #--------------------------------------------------------------------------------------------------#
@@ -87,9 +87,9 @@ query.yields <- function(trait = 'yield', spstr, extra.columns='', con=query.bas
 ######################## COVARIATE FUNCTIONS #################################
 
 #--------------------------------------------------------------------------------------------------#
-##' Append covariate data as a column within a table
+##' 
 ##' @name append.covariate
-##'
+##' @title Append covariate data as a column within a table
 ##' \code{append.covariate} appends one or more tables of covariate data 
 ##' as a single column in a given table of trait data.
 ##' In the event a trait has several covariates across several given tables, 
@@ -121,8 +121,7 @@ append.covariate<-function(data, column.name, ..., covariates.data=list(...)){
 #--------------------------------------------------------------------------------------------------#
 ##' 
 ##' @name query.covariates
-##'
-##' \code{query.covariates} queries covariates from database for a given vector of trait id's
+##' @title Queries covariates from database for a given vector of trait id's
 ##' 
 ##' @param trait.ids list of trait ids
 ##'
@@ -169,10 +168,10 @@ arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp
 #--------------------------------------------------------------------------------------------------#
 ##' 
 ##' @name filter.sunleaf.traits
+##' @title Function to filter out upper canopy leaves
 ##'
 ##'
-##'
-##'
+##' @author unknown
 #--------------------------------------------------------------------------------------------------#
 filter.sunleaf.traits <- function(data, covariates){
   if(length(covariates)>0) {  
@@ -191,7 +190,7 @@ filter.sunleaf.traits <- function(data, covariates){
 ##' 
 ##' @name rename.jags.columns
 ##'
-##' \code{rename.jags.columns} renames the variables within output data frame trait.data
+##' @title \code{rename.jags.columns} renames the variables within output data frame trait.data
 ##' 
 ##' @param data data frame to with variables to rename
 ##' 
@@ -221,7 +220,7 @@ rename.jags.columns <- function(data) {
 #--------------------------------------------------------------------------------------------------#
 ##' 
 ##' @name transform.nas
-##'
+##' @title Function to remove NA values from database queries
 ##'
 ##'
 ##'
@@ -285,18 +284,19 @@ drop.columns <- function(data, columns){
 #--------------------------------------------------------------------------------------------------#
 ##' sample from normal distribution, given summary stats
 ##'
-##' @title take.samples
+##' @name take.samples
+##' @title Sample from normal distribution, given summary stats
 ##' @param trait data.frame with values of mean and sd
 ##' @param sample.size 
 ##' @return sample of length sample.size
 ##' @author David LeBauer, Carl Davidson
+##' @export
 ##' @examples
 ##' ## return the mean when stat = NA
 ##' take.samples(summary = data.frame(mean = 10, stat = NA))
 ##' ## return vector of length \code{sample.size} from N(mean,stat) 
 ##' take.samples(summary = data.frame(mean = 10, stat = 10), sample.size = 10)
 ##' 
-#--------------------------------------------------------------------------------------------------#
 take.samples <- function(summary, sample.size = 10^6){
   if(is.na(summary$stat)){
     ans <- summary$mean
@@ -309,7 +309,6 @@ take.samples <- function(summary, sample.size = 10^6){
 
 
 #--------------------------------------------------------------------------------------------------#
-##' Transforms data using specified function (FUN)
 ##'
 ##' Performs an arithmetic function, FUN, over a series of traits and returns 
 ##' the result as a derived trait. 
@@ -320,11 +319,13 @@ take.samples <- function(summary, sample.size = 10^6){
 ##' The output trait is effectively a copy of the first input trait with 
 ##' modified mean, stat, and n.
 ##'
-##' @title derive.trait
+##' @name derive.trait
+##' @title Performs an arithmetic function, FUN, over a series of traits and returns the result as a derived trait.
 ##' @param FUN arithmetic function 
 ##' @param ... traits that will be supplied to FUN as input
 ##' @param sample.size number of random samples generated by rnorm for normally distributed trait input
 ##' @return a copy of the first input trait with mean, stat, and n reflecting the derived trait
+##' @export
 ##' @examples
 ##' input <- list(x = data.frame(mean = 1, stat = 1, n = 1))
 ##' derive.trait(FUN = identity, input = input, var.name = 'x')
@@ -347,10 +348,11 @@ derive.trait <- function(FUN, ..., input=list(...), var.name=NA, sample.size=100
 
 #--------------------------------------------------------------------------------------------------#
 ##' Equivalent to derive.trait(), but operates over a series of trait datasets,
-##' as opposed to individual trait rows. See derive.trait() for more information.
+##' as opposed to individual trait rows. See \code{\link{derive.trait}}; for more information.
 ##'
-##' .. content for \details{} ..
-##' @title 
+##' @name derive.traits
+##' @title Performs an arithmetic function, FUN, over a series of traits and returns the result as a derived trait.
+##' 
 ##' @param FUN arithmetic function 
 ##' @param ... trait datasets that will be supplied to FUN as input
 ##' @param sample.size where traits are normally distributed with a given  
@@ -401,26 +403,28 @@ derive.traits <- function(FUN, ..., input=list(...),
 
 
 #--------------------------------------------------------------------------------------------------#
-##' Extract trait data from BETYdb
+##' Extract trait data from database
 ##' @name query.trait.data
-##'
-##' \code{query.bety.trait.data} extracts data from BETYdb for a given trait and set of species,
+##' @title Extract trait data from database
+##' Extracts data from database for a given trait and set of species,
 ##' converts all statistics to summary statistics, and prepares a dataframe for use in meta-analysis.
 ##' For Vcmax and SLA data, only data collected between  April and July are queried, and only data collected from the top of the canopy (canopy height > 0.66).
 ##' For Vcmax and root_respiration_rate, data are scaled
 ##' converted from measurement temperature to \eqn{25^oC} via the arrhenius equation.
 ##'
-##' @param trait is the trait name used in BETY, stored in variables.name
+##' @param trait is the trait name used in the database, stored in variables.name
 ##' @param spstr is the species.id integer or string of integers associated with the species
 ##'  
 ##' @return dataframe ready for use in meta-analysis
+##' @export
 ##' @examples
+##' \dontrun{
 ##' newconfn <- function() query.base.con(dbname   = settings$database$name,
 ##'                                       password = settings$database$passwd,
 ##'                                       username = settings$database$userid,
 ##'                                       host     = settings$database$host)
 ##' query.trait.data("Vcmax", "938", con = newconfn())
-#--------------------------------------------------------------------------------------------------#
+##' }
 query.trait.data <- function(trait, spstr,con=query.base.con(...), ...){
   
   if(is.list(con)){
