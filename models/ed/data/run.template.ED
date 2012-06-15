@@ -1,0 +1,59 @@
+#!/bin/bash
+
+NPROC=$1
+ED2IN=$2
+
+#--------------------------------------------------------------------------------------------------#
+# mpirun location
+MPIRUN=/opt/openmpi/bin/mpirun
+#--------------------------------------------------------------------------------------------------#
+
+
+#--------------------------------------------------------------------------------------------------#
+# Use local scratch for temporary output
+if [ ! -d "$TMP" ]; then
+        echo "---- Creating scratch folder: /scratch/$TMP/";
+        mkdir TMP  # Temporary output folder on local scratch
+else
+        echo "---- WARNING: scratch folder '$TMP/' already exists!";
+fi
+#--------------------------------------------------------------------------------------------------#
+
+
+#--------------------------------------------------------------------------------------------------#
+# binary - location of ED2 compiled binary in users home folder.
+# Set in PEcAn config.xml file in settings$run$host$ed$binary
+echo ""
+echo "---- Running model ----"
+${MPIRUN} -np $NPROC BINARY -f $ED2IN
+echo ""
+echo ""
+#
+wait
+#
+#--------------------------------------------------------------------------------------------------#
+
+
+#--------------------------------------------------------------------------------------------------#
+# copy output from scratch to output folder
+echo ""
+echo "---- Moving model output for completed runs ----"
+rsync -routi TMP/out${ED2IN:7}* OUTDIR
+wait
+#
+# Indicate which runs have completed
+echo ""
+echo "---- Marking which runs finished ----"
+touch OUTDIR${ED2IN:7}-finished
+#
+#
+echo ""
+echo "---- Deleting temporary model output on local scratch ----"
+# Delete temporary folder in local scratch
+if [ -f TMP/out${ED2IN:7}* ]; then rm TMP/out${ED2IN:7}*; fi
+wait
+echo ""
+echo "---- Run complete ----"
+#--------------------------------------------------------------------------------------------------#
+
+

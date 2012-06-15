@@ -1,0 +1,24 @@
+\name{variance.stats}
+\alias{variance.stats}
+\title{variance statistics}
+\usage{
+  variance.stats(x)
+}
+\arguments{
+  \item{x}{numeric vector}
+}
+\value{
+  list with variance and sd of variance
+}
+\description{
+  Variance and SD(variance)
+}
+\details{
+  calculates variance and sd of variance using the
+  \code{var} from base R and \code{\link{sd.var}} from
+  PEcAn.
+}
+\author{
+  David LeBauer
+}
+

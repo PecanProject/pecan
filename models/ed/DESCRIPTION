@@ -25,6 +25,6 @@ LazyLoad: yes
 Require: hdf5
 Collate:
     'get.model.output.ed.R'
-    'read.output.ed.R'
     'run.write.configs.ed.R'
     'write.configs.ed.R'
+    'start.runs.ed.R'

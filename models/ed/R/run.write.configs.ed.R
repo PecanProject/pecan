@@ -1,10 +1,11 @@
 #--------------------------------------------------------------------------------------------------#
 ##' 
-##' @name run.write.configs.ed.R
+##' @name run.write.configs.ed
 ##'
 ##' @title Generate input ED2.2 model ED2IN and settings.xml files for PEcAn workflow
 ##'
 ##' @import PEcAn.utils
+##' @export
 ##'
 ##' @author Shawn Serbin
 ##' @author David LeBauer
@@ -58,7 +59,7 @@ run.write.configs.ed <- function() {
   host <- settings$run$host
   
   ### Prepare for model output.  Cleanup any old config files (if exists)
-  remove.config()
+  remove.config(main.outdir,settings)
   
   ### Load PFT priors and posteriors
   for (i in seq(pft.names)){
