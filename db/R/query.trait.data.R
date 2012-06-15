@@ -222,7 +222,7 @@ rename.jags.columns <- function(data) {
 ##' @name transform.nas
 ##' @title Function to remove NA values from database queries
 ##'
-##'
+##' @export
 ##'
 #--------------------------------------------------------------------------------------------------#
 transform.nas <- function(data){
@@ -255,6 +255,7 @@ transform.nas <- function(data){
 ##' @title assign.treatments 
 ##' @param data 
 ##' @return dataframe with sequential treatments 
+##' @export
 ##' @author David LeBauer, Carl Davidson
 #--------------------------------------------------------------------------------------------------#
 assign.treatments <- function(data){
