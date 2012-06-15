@@ -8,6 +8,7 @@
 ##' \code{\link{pecan.ma}} and post.distns created by
 ##' \code{\link{approx.posterior(trait.mcmc, ...)}}  to trait.mcmc.Rdata \
 ##' and post.distns.Rdata, respectively
+##' @export
 ##' @author Shawn Serbin, David LeBauer
 run.meta.analysis <- function() {
   if('meta.analysis' %in% names(settings)) {
