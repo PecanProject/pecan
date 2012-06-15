@@ -24,9 +24,11 @@
 ##' @author David LeBauer, Michael C. Dietze
 ##'
 ##' @examples
-##' prior.distns <- query.bety.priors('ebifarm.c4crop', c('SLA', 'c2n_leaf'))
-##' trait.data <- query.bety.traits('938', c('SLA', 'c2n_leaf'))
+##' \dontrun{
+##' prior.distns <- query.priors('ebifarm.c4crop', c('SLA', 'c2n_leaf'))
+##' trait.data <- query.traits('938', c('SLA', 'c2n_leaf'))
 ##' pecan.ma(prior.distns, trait.data, 25000)
+##' }
 #--------------------------------------------------------------------------------------------------#
 pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outdir, 
                      overdispersed = TRUE){

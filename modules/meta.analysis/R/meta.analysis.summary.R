@@ -2,8 +2,8 @@
 ##'
 ##' @name pecan.ma.summary
 ##' @title Generate summary statitics and diagnostics for PEcAn meta.analysis
-##'
-##'
+##' @export
+##' @author unknown
 #--------------------------------------------------------------------------------------------------#
 pecan.ma.summary <- function(mcmc.object, pft,outdir, threshold=1.1){
   if(!is.null(settings$meta.analysis$threshold)) {

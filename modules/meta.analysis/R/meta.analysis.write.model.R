@@ -2,6 +2,7 @@
 ##' Convert template ma.model.template.R to a JAGS model.
 ##'
 ##'  Writes a meta-analysis model based on available data and prior specification. Adapted from \code{\link[R2WinBUGS]{write.model}}
+##' @name write.ma.model
 ##' @title write.ma.model
 ##' @param modelfile model template file (ma.model.template.R)
 ##' @param outfile file name of model created 
