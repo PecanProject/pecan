@@ -1,18 +1,15 @@
 #--------------------------------------------------------------------------------------------------#
 ##' 
-##'
-##'
+##' @name get.trait.data
+##' @title Gets trait data from the database
 ##'
 ##'
 ##' @import PEcAn.utils
+##' @export
 ##'
-##'
-#==================================================================================================#
-# Info:  lots of hacks for now.  Needs to be updated once full workflow is ready.
-
-
 #--------------------------------------------------------------------------------------------------#
 
+# Info:  lots of hacks for now.  Needs to be updated once full workflow is ready.
 #require(PEcAn.utils)
 
 #---------------- Clean up output directory. ------------------------------------------------------#
