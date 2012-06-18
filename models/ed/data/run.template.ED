@@ -1,11 +1,14 @@
 #!/bin/bash
 
-NPROC=$1
-ED2IN=$2
-
 #--------------------------------------------------------------------------------------------------#
 # mpirun location
 MPIRUN=/opt/openmpi/bin/mpirun
+#--------------------------------------------------------------------------------------------------#
+
+
+#--------------------------------------------------------------------------------------------------#
+NPROC=$1
+ED2IN=$2
 #--------------------------------------------------------------------------------------------------#
 
 
@@ -24,7 +27,8 @@ fi
 # binary - location of ED2 compiled binary in users home folder.
 # Set in PEcAn config.xml file in settings$run$host$ed$binary
 echo ""
-echo "---- Running model ----"
+echo "----- Running model -----"
+echo "BINARY"
 ${MPIRUN} -np $NPROC BINARY -f $ED2IN
 echo ""
 echo ""
