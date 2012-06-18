@@ -5,6 +5,6 @@
   start.runs.ed()
 }
 \description{
-  Start ED2 model runs
+  Start ED2 model runs on local or remote server
 }
 

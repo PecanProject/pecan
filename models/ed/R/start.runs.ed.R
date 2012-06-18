@@ -1,27 +1,48 @@
 #--------------------------------------------------------------------------------------------------#
-##'
+##' 
+##' Start ED2 model runs on local or remote server
 ##' @title Start ED2 model runs
 ##' @name start.runs.ed
-##' 
+##' @export
 ##'
 start.runs.ed <- function(){
-  ### TODO: Old code, needs to be updated.  NOT YET WORKING
+  ### TODO: Old code, needs to be updated.  Probably can make this a generalized script in
+  ### utils package
+  
+  host     <-  settings$run$host
   
   ## Priority only needs to be set for very big jobs as with ED2
   ## priority can be NULL in settings, if null,
   ## only batch.jobs.sh is required to exist
   if(is.null(settings$run$priority)){
     batch.jobs.script <- system.file("data", "batch.jobs.sh", package="PEcAn.ED")
+    
   } else if (as.numeric(settings$run$priority) < 0) {
-    reg.prior <- system.file("data", "batch.jobs.sh", package="PEcAn.ED")
-    low.prior <- system.file("data", "batch.jobs.lowp.sh", package="PEcAn.ED")
-    file.copy(reg.prior, low.prior, overwrite = TRUE)
-    ## set priority 
-    system(paste("sed 's/\"qsub/\"qsub\ -p\ ", settings$run$priority,
-                 "/g' >", low.prior, sep = ''))
-    batch.jobs.script <- low.prior
+    batch.jobs.script <- system.file("data", "batch.jobs.lowp.sh", package="PEcAn.ED")
+
   } else if (as.numeric(settings$run$priority) > 0){
     stop("need admin rights to set higher priority")
   }
   
-} ### ENd of function
+  ## if using ED, write runscript that rsyncs at the end
+  if(any(grep("ED", settings$run$host$rundir))){ #if using ED
+    write.run.ED(settings)
+  }
+  
+  #Run model from user made bash script 
+  if(host$name == 'localhost') {
+    system(paste('cd ', host$rundir, ';',
+                 settings$pecanDir, batch.jobs.script, sep = ''))
+  }else{
+    system(paste("echo 'cd ", host$rundir, "' | ",
+                 "cat - ", batch.jobs.script, " | ",
+                 'ssh -T ', host$name, sep = ''))
+  }
+  
+} ### End of function
+#==================================================================================================#
+
+
+####################################################################################################
+### EOF.  End of R script file.          		
+####################################################################################################
