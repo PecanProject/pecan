@@ -63,10 +63,10 @@ calc.ed.specific <- function(trait.samples){
       ### Calculate dark_resp_factor
       trait.samples[['dark_respiration_factor']] <- trait.samples[['leaf_respiration_rate_m2']]/
         vcmax_15
-      }
+      } ### End dark_respiration_factor loop
     
   return(trait.samples)
-}
+} ### End of function
 #==================================================================================================#
 
 
