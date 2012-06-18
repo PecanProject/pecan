@@ -1,4 +1,5 @@
 #!/bin/bash
+#
 
 #--------------------------------------------------------------------------------------------------#
 # mpirun location
@@ -14,11 +15,13 @@ ED2IN=$2
 
 #--------------------------------------------------------------------------------------------------#
 # Use local scratch for temporary output
-if [ ! -d "$TMP" ]; then
-        echo "---- Creating scratch folder: /scratch/$TMP/";
-        mkdir TMP  # Temporary output folder on local scratch
+LOC=TMP
+echo "---- ED2 temporary output location: $LOC"
+if [ ! -d "$LOC" ]; then
+        echo "---- Creating scratch folder: "$LOC;
+        mkdir $LOC  # Temporary output folder on local scratch
 else
-        echo "---- WARNING: scratch folder '$TMP/' already exists!";
+        echo "---- WARNING: scratch folder '$LOC' already exists!";
 fi
 #--------------------------------------------------------------------------------------------------#
 
@@ -42,7 +45,7 @@ wait
 # copy output from scratch to output folder
 echo ""
 echo "---- Moving model output for completed runs ----"
-rsync -routi TMP/out${ED2IN:7}* OUTDIR
+rsync -routi $LOC/out${ED2IN:7}* OUTDIR
 wait
 #
 # Indicate which runs have completed
@@ -54,7 +57,7 @@ touch OUTDIR${ED2IN:7}-finished
 echo ""
 echo "---- Deleting temporary model output on local scratch ----"
 # Delete temporary folder in local scratch
-if [ -f TMP/out${ED2IN:7}* ]; then rm TMP/out${ED2IN:7}*; fi
+if [ -f $LOC/out${ED2IN:7}* ]; then rm $LOC/out${ED2IN:7}*; fi
 wait
 echo ""
 echo "---- Run complete ----"
