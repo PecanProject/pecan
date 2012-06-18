@@ -63,6 +63,11 @@ calc.ed.specific <- function(trait.samples){
       ### Calculate dark_resp_factor
       trait.samples[['dark_respiration_factor']] <- trait.samples[['leaf_respiration_rate_m2']]/
         vcmax_15
+      
+      ### Remove leaf_respiration_rate from trait samples
+      remove <- which(names(trait.samples)=='leaf_respiration_rate_m2')
+      trait.samples = trait.samples[-remove]
+      
       } ### End dark_respiration_factor loop
     
   return(trait.samples)
