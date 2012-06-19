@@ -1,13 +1,20 @@
 #--------------------------------------------------------------------------------------------------#
-##' Main driver function to call the ecosystem model specific (e.g. ED, SiPNET) 
-##' run and configuration file scripts 
 ##'
-##' @name run.write.configs
-##' @param model the ecosystem model to generate the configuration files for
+##' This function retrieves model output for further analyses
+##' @name run.write.configs.ed
+##' @title Retrieve model output
+##'
+##' @param model the ecosystem model run
+##'
 ##' @export
+##' 
+##' @examples
+##' \dontrun{
+##' get.model.output(model)
+##' get.model.output("ED2")
+##' }
 ##'
-##' @author Shawn Serbin
-run.write.configs <- function(model){
+get.model.output <- function(model){
   
   if (model=="ED2"){
     print(" ")
@@ -16,7 +23,11 @@ run.write.configs <- function(model){
     print("-------------------------------------------------------------------")
     print(" ")
     Sys.sleep(1)
-    run.write.configs.ed()
+    
+    ### Retrieve model output from local or remote server
+    get.model.output.ed()
+  
+    ### Parse model output
     
   }else if (model=="SIPNET") {
     #write.configs.sipnet()
@@ -25,13 +36,15 @@ run.write.configs <- function(model){
     print(" Generating SIPNET model run and configuration files")
     print("-------------------------------------------------------------------")
     print(" ")
-  }
+    
+    print("!!!! Not yet implemented !!!!")
+    
+  } ### End of if/else
   
-  
-}
+} ### End of function
 #==================================================================================================#
 
 
 ####################################################################################################
-### EOF.  End of R script file.          		
+### EOF.  End of R script file.            	
 ####################################################################################################
