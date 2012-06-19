@@ -19,7 +19,7 @@ get.model.output <- function(model){
   if (model=="ED2"){
     print(" ")
     print("-------------------------------------------------------------------")
-    print(" Generating ED2 model run and configuration files")
+    print(" Retrieving ED2 model output")
     print("-------------------------------------------------------------------")
     print(" ")
     Sys.sleep(1)
