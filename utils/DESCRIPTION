@@ -34,3 +34,4 @@ Collate:
     'variance.R'
     'write.config.utils.R'
     'clear.scratch.R'
+    'get.model.output.R'

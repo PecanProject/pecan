@@ -8,6 +8,7 @@
 ##'
 ##' returns a string representing a given number 
 ##' @title Left Pad Zeros
+##' @export
 ##' @param num number to be padded (integer)
 ##' @param digits number of digits to add
 ##' @return num with zeros to the left

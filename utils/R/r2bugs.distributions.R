@@ -1,3 +1,4 @@
+#--------------------------------------------------------------------------------------------------#
 ##' convert R parameterizations to BUGS paramaterizations
 ##' 
 ##' R and BUGS have different parameterizations for some distributions. This function transforms the distributions from R defaults to BUGS defaults. BUGS is an implementation of the BUGS language, and these transformations are expected to work for bugs.
@@ -38,3 +39,9 @@ r2bugs.distributions <- function(priors) {
                                       as.vector(priors$distn)))))
   return(priors)
 }
+#==================================================================================================#
+
+
+####################################################################################################
+### EOF.  End of R script file.            	
+####################################################################################################

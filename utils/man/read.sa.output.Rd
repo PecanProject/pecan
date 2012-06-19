@@ -25,7 +25,7 @@
 }
 \value{
   dataframe with one col per quantile analysed and one row
-  per trait, each cell is a list of AGB over time
+  per trait, each cell is a list of model output over time
 
   dataframe with one col per quantile analysed and one row
   per trait, each cell is a list of AGB over time

@@ -1,4 +1,5 @@
 #--------------------------------------------------------------------------------------------------#
+##' Generate input ED2.2 model ED2IN and settings.xml files for PEcAn workflow
 ##' 
 ##' @name run.write.configs.ed
 ##'
