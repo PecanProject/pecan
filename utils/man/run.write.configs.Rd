@@ -1,7 +1,6 @@
 \name{run.write.configs}
 \alias{run.write.configs}
-\title{Main driver function to call the ecosystem model specific (e.g. ED, SiPNET)
-run and configuration file scripts}
+\title{Run model specific write configuration functions}
 \usage{
   run.write.configs(model)
 }

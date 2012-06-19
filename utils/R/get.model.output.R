@@ -1,7 +1,7 @@
 #--------------------------------------------------------------------------------------------------#
 ##'
 ##' This function retrieves model output for further analyses
-##' @name run.write.configs.ed
+##' @name get.model.output
 ##' @title Retrieve model output
 ##'
 ##' @param model the ecosystem model run
