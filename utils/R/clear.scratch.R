@@ -5,6 +5,7 @@
 ##' @name clear.scratch
 ##' @author Shawn Serbin
 ##' @return nothing
+##' @export
 ##' @examples
 ##' \dontrun{
 ##' clear.scratch(settings)
