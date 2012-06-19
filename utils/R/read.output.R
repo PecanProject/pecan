@@ -4,6 +4,7 @@
 ##' @name read.ensemble.output
 ##' @title Read Ensemble Output
 ##' @return list of ensemble output 
+##' @export
 ##'
 read.ensemble.output <- function(ensemble.size, host, outdir, pft.name='', read.output = read.output.ed){
   ensemble.output <- list()
@@ -26,6 +27,8 @@ read.ensemble.output <- function(ensemble.size, host, outdir, pft.name='', read.
 ##' @title Read SA output
 ##' @return dataframe with one col per quantile analysed and one row per trait,
 ##'  each cell is a list of model output over time
+##' @export
+##'
 read.sa.output <- function(traits, quantiles, host, outdir, pft.name='', read.output = read.output.ed){
   sa.output <- data.frame()
   rsync(paste(host$name, ':', host$outdir, 
