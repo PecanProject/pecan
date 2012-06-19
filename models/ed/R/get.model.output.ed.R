@@ -15,7 +15,7 @@ get.model.output.ed <- function(){
     ### Move required functions to host
     ## TODO: take out functions read.output.file.ed & read.output.ed from write.configs.ed &
     ## put into a new file specific for reading ED output
-    dump(c("get.run.id","abbreviate.run.id.ED","left.pad.zeros","read.output","read.ensemble.output",
+    dump(c("get.run.id","abbreviate.run.id.ED","left.pad.zeros","read.ensemble.output",
            "read.sa.output","read.output.file.ed"),
          file=paste(settings$outdir,"PEcAn.scripts.R",sep=""))
     
@@ -29,7 +29,7 @@ get.model.output.ed <- function(){
   } else {
     
     ### Make a copy of required functions and place in file PEcAn.scripts.R
-    dump(c("get.run.id","abbreviate.run.id.ED","left.pad.zeros","read.output","read.ensemble.output",
+    dump(c("get.run.id","abbreviate.run.id.ED","left.pad.zeros","read.ensemble.output",
            "read.sa.output","read.output.file.ed"),
          file=paste(settings$outdir,"PEcAn.scripts.R",sep=""))
 
