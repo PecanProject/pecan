@@ -15,8 +15,9 @@ get.model.output.ed <- function(){
     ### Move required functions to host
     ## TODO: take out functions read.output.file.ed & read.output.ed from write.configs.ed &
     ## put into a new file specific for reading ED output
-    dump(c("get.run.id","abbreviate.run.id.ED","left.pad.zeros","read.output","read.output.ed",
-           "read.output.file.ed"),file=paste(settings$outdir,"PEcAn.scripts.R",sep=""))
+    dump(c("get.run.id","abbreviate.run.id.ED","left.pad.zeros","read.output","read.ensemble.output",
+           "read.sa.output","read.output.file.ed"),
+         file=paste(settings$outdir,"PEcAn.scripts.R",sep=""))
     
     ### Is the previous necessary for localhost?  These functions should be availible within R
     ### & should not need to be copied and run but could instead be called within the running R
@@ -28,8 +29,9 @@ get.model.output.ed <- function(){
   } else {
     
     ### Make a copy of required functions and place in file PEcAn.scripts.R
-    dump(c("get.run.id","abbreviate.run.id.ED","left.pad.zeros","read.output","read.output.ed",
-           "read.output.file.ed"),file=paste(settings$outdir,"PEcAn.scripts.R",sep=""))
+    dump(c("get.run.id","abbreviate.run.id.ED","left.pad.zeros","read.output","read.ensemble.output",
+           "read.sa.output","read.output.file.ed"),
+         file=paste(settings$outdir,"PEcAn.scripts.R",sep=""))
 
     ### Copy PEcAn.scripts.R to remote host
     rsync('-outi',paste(settings$outdir,"PEcAn.scripts.R",sep=""),
