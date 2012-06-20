@@ -39,10 +39,11 @@
   decomposition plot.
 }
 \examples{
-## not run
-## sensitivity.analysis(trait.samples[[pft$name]], sa.samples[[pft$name]], sa.agb[[pft$name]], pft$outdir)
+\dontrun{
+sensitivity.analysis(trait.samples[[pft$name]], sa.samples[[pft$name]], sa.agb[[pft$name]], pft$outdir)
+}
 }
 \author{
-  David LeBauer ##
+  David LeBauer
 }
 

@@ -2,20 +2,16 @@
 ##'
 ##' Convert queried data to format required by JAGS meta-analysis model 
 ##'
-##' 
-##' @title jagify
+##' @name jagify
+##' @title Prepare trait data for JAGS meta-analysis
 ##' @param result 
 ##' @return result transformed to meet requirements of PEcAn meta-analysis model
 ##' @author David LeBauer
-#--------------------------------------------------------------------------------------------------#
-
-
-#---------------- Define jagify function. ---------------------------------------------------------#
-## TODO: replace for loops by converting nested list to data.frame is the plyr/ldply command.
-## E.g. data = ldply (result, data.frame) will convert to data frame so the original code
-## will work, without for loops.  Whoops..... shawn
-
 jagify <- function(result){
+  
+  ## TODO: replace for loops by converting nested list to data.frame is the plyr/ldply command.
+  ## E.g. data = ldply (result, data.frame) will convert to data frame so the original code
+  ## will work, without for loops.  Whoops..... shawn
   
   ### Rename name column from treatment table to trt_id.  Remove NAs. Assign treatments.
   ### Finally, summarize the results by calculating summary statistics from experimental 
@@ -67,7 +63,6 @@ jagify <- function(result){
   } # End for loop
   rm(i)
 
-  ## !!!! THIS BIT OF CODE IS CAUSING PROBLEMS.  NEEDS TO BE CHECKED.
   for (i in 1:length.data){
     if(length(result[[i]]$stat[!is.na(result[[i]]$stat) & result[[i]]$stat <= 0.0]) > 0) {
       citationswithbadstats <- unique(result[[i]]$citation_id[which(result[[i]]$stat <= 0.0)])
@@ -83,8 +78,6 @@ jagify <- function(result){
   } # End for loop
   rm(i)
 
-  ## !!!!
-  
   return(result)
   
 } ### End of function
