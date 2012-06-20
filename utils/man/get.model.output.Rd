@@ -16,4 +16,7 @@ get.model.output(model)
 get.model.output("ED2")
 }
 }
+\author{
+  Shawn Serbin, David LeBauer
+}
 

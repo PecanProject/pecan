@@ -1,5 +1,6 @@
 export(abbreviate.run.id.ED)
 export(get.model.output.ed)
+export(get.results.ed)
 export(read.output.ed)
 export(read.output.file.ed)
 export(remove.config)
