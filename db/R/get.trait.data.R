@@ -7,17 +7,10 @@
 ##' @import PEcAn.utils
 ##' @export
 ##'
-#--------------------------------------------------------------------------------------------------#
-
-# Info:  lots of hacks for now.  Needs to be updated once full workflow is ready.
-#require(PEcAn.utils)
-
-#---------------- Clean up output directory. ------------------------------------------------------#
-# Info: Create output directories if they don't already exist.  Clean up old files. May not want to 
-# keep this code block?
-
-# Loop over pfts and create/clean up output directories.
 get.trait.data <- function() {
+  
+  # Info:  lots of hacks for now.  Needs to be updated once full workflow is ready.
+  
 	num <- length(settings$pfts)
 	for (i in 1:num){
 	  out.dir = settings$pfts[i]$pft$outdir
