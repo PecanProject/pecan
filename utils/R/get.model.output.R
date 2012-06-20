@@ -14,6 +14,7 @@
 ##' get.model.output("ED2")
 ##' }
 ##'
+##' @author Shawn Serbin, David LeBauer
 get.model.output <- function(model){
   
   if (model=="ED2"){
