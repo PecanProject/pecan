@@ -3,12 +3,13 @@
 ##'
 ##' Performs query and then uses \code{transformstats} to convert miscellaneous statistical summaries
 ##' to SE
+##' @name fetch.stats2se
 ##' @title Fetch data and transform stats to SE
 ##' @param connection connection to BETYdb
 ##' @param query MySQL query to traits table
 ##' @return dataframe with trait data
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{transformstats}} performs transformation calculations
-#--------------------------------------------------------------------------------------------------#
+##' @author <unknown>
 fetch.stats2se <- function(connection, query){
   query.result <- dbSendQuery(connection, query)
   transformed <- transformstats(fetch(query.result, n = -1))
@@ -27,8 +28,9 @@ fetch.stats2se <- function(connection, query){
 ##' @param spstr 
 ##' @param extra.columns
 ##' @param con database connection
+##' @param ... extra arguments
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}}; \code{\link{transformstats}} performs transformation calculations
-#--------------------------------------------------------------------------------------------------#
+##' @author <unknown>
 query.data<-function(trait, spstr, extra.columns='', con=query.base.con(...), ...){
   query <- paste("select 
             traits.id, traits.citation_id, traits.site_id, treatments.name, 
@@ -59,8 +61,9 @@ query.data<-function(trait, spstr, extra.columns='', con=query.base.con(...), ..
 ##' @param spstr species to query for yield data
 ##' @param extra.columns
 ##' @param con database connection
+##' @param ... extra arguments
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}}; \code{\link{transformstats}} performs transformation calculations
-#--------------------------------------------------------------------------------------------------#
+##' @author <unknown>
 query.yields <- function(trait = 'yield', spstr, extra.columns='', con=query.base.con(...), ...){
     query <- paste("select 
             yields.id, yields.citation_id, yields.site_id, treatments.name, 
@@ -124,9 +127,10 @@ append.covariate<-function(data, column.name, ..., covariates.data=list(...)){
 ##' @title Queries covariates from database for a given vector of trait id's
 ##' 
 ##' @param trait.ids list of trait ids
+##' @param con database connection
+##' @param ... extra arguments
 ##'
-##'
-#--------------------------------------------------------------------------------------------------#
+##' @author <unknown>
 query.covariates<-function(trait.ids, con = query.bety.con(...), ...){
   covariate.query <- paste("select covariates.trait_id, covariates.level,variables.name",
       "from covariates left join variables on variables.id = covariates.variable_id",
@@ -146,7 +150,7 @@ query.covariates<-function(trait.ids, con = query.bety.con(...), ...){
 ##' @param covariates the relevant covariates
 ##' @param temp.covariates
 ##' @param new.temp the reference temperature for the scaled traits. Curerntly 25 degC
-#--------------------------------------------------------------------------------------------------#
+##' @author <unknown>
 arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp=25){
   if(length(covariates)>0) {
     data <- append.covariate(data, 'temp', 
@@ -169,10 +173,10 @@ arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp
 ##' 
 ##' @name filter.sunleaf.traits
 ##' @title Function to filter out upper canopy leaves
+##' @param data input data
+##' @param covariates covariate data
 ##'
-##'
-##' @author unknown
-#--------------------------------------------------------------------------------------------------#
+##' @author <unknown>
 filter.sunleaf.traits <- function(data, covariates){
   if(length(covariates)>0) {  
     data <- append.covariate(data, 'canopy_layer', 
@@ -196,7 +200,6 @@ filter.sunleaf.traits <- function(data, covariates){
 ##' 
 ##' @seealso used with \code{\link{jagify}};
 ##' @export
-#--------------------------------------------------------------------------------------------------#
 rename.jags.columns <- function(data) {
   
   # Change variable names and calculate obs.prec within data frame
@@ -223,9 +226,9 @@ rename.jags.columns <- function(data) {
 ##' @name transform.nas
 ##' @title Function to remove NA values from database queries
 ##'
+##' @param data input data
 ##' @export
 ##'
-#--------------------------------------------------------------------------------------------------#
 transform.nas <- function(data){
   #control defaults to 1
   data$control[is.na(data$control)] <- 1
@@ -253,12 +256,12 @@ transform.nas <- function(data){
 ##' within each site. Each site is required to have a control treatment.
 ##' The algorithm (incorrectly) assumes that each site has a unique set of experimental
 ##' treatments.
+##' @name assign.treatments
 ##' @title assign.treatments 
-##' @param data 
+##' @param data input data
 ##' @return dataframe with sequential treatments 
 ##' @export
 ##' @author David LeBauer, Carl Davidson
-#--------------------------------------------------------------------------------------------------#
 assign.treatments <- function(data){
   data$trt_id[which(data$control == 1)] <- 'control'
   sites <- unique(data$site_id)
@@ -331,7 +334,6 @@ take.samples <- function(summary, sample.size = 10^6){
 ##' @examples
 ##' input <- list(x = data.frame(mean = 1, stat = 1, n = 1))
 ##' derive.trait(FUN = identity, input = input, var.name = 'x')
-#--------------------------------------------------------------------------------------------------#
 derive.trait <- function(FUN, ..., input=list(...), var.name=NA, sample.size=100000){
   if(any(lapply(input, nrow) > 1)){
     return(NULL)
@@ -361,7 +363,6 @@ derive.trait <- function(FUN, ..., input=list(...), var.name=NA, sample.size=100
 ##' @param match.columns in the event more than one trait dataset is supplied, 
 ##'        this specifies the columns that identify a unique data point 
 ##' @return a copy of the first input trait with modified mean, stat, and n
-#--------------------------------------------------------------------------------------------------#
 derive.traits <- function(FUN, ..., input=list(...), 
                           match.columns=c('citation_id', 'site_id', 'specie_id'), 
                           var.name=NA, sample.size=100000){
@@ -427,6 +428,7 @@ derive.traits <- function(FUN, ..., input=list(...),
 ##'                                       host     = settings$database$host)
 ##' query.trait.data("Vcmax", "938", con = newconfn())
 ##' }
+##' @author <unknown>
 query.trait.data <- function(trait, spstr,con=query.base.con(...), ...){
   
   if(is.list(con)){

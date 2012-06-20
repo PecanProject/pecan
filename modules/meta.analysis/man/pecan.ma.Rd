@@ -20,7 +20,7 @@
 
   \item{settings}{list of settings from settings file}
 
-  \item{outdir}{}
+  \item{outdir}{output directory}
 
   \item{overdispersed}{TRUE by default, if set to FALSE,
   data mean will be used as starting point for MCMC chains

@@ -5,7 +5,7 @@
   assign.treatments(data)
 }
 \arguments{
-  \item{data}{}
+  \item{data}{input data}
 }
 \value{
   dataframe with sequential treatments

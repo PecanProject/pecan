@@ -9,11 +9,15 @@ settings <- read.settings()
 
 
 #---------------- Run PEcAn workflow. -------------------------------------------------------------#
-get.trait.data()        	# Query the trait database for data and priors
+get.trait.data()        	      # Query the trait database for data and priors
 
-run.meta.analysis()     	# Run the PEcAn meta.analysis
+run.meta.analysis()     	      # Run the PEcAn meta.analysis
 
-#run.write.configs("ED2")   	# calls model specific write.configs e.g. write.config.ed.R
+run.write.configs("ED2")        # calls model specific write.configs e.g. write.config.ed.R
+
+clear.scratch(settings)         # clear any old model output in scratch/$USER on worker nodes
+
+start.model.runs("ED2")         # start ecosystem model runs
 
 #start.runs()
 #get.output()

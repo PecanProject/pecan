@@ -5,9 +5,10 @@
 ##' @title Query Priors
 ##' @param pft String name of the PFT in the database
 ##' @param trstr string of traits to query priors for
+##' @param out output location
 ##' @param con database connection, can be list of arguments for connecting to database
 ##' @param ... optional arguments for connecting to database (e.g. password, user name, database)
-##' @return return priors for a given pft
+##' @return priors for a given pft
 ##' @export
 ##' @examples
 ##' \dontrun{
