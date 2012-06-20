@@ -1,6 +1,6 @@
 \name{jagify}
 \alias{jagify}
-\title{jagify}
+\title{Prepare trait data for JAGS meta-analysis}
 \usage{
   jagify(result)
 }

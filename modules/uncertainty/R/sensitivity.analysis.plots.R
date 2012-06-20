@@ -1,6 +1,7 @@
 #--------------------------------------------------------------------------------------------------#
 ##' Plot parameter value vs model output
 ##'
+##' @name plot.sa
 ##' @title Plot Sensitivities
 ##' @param satables 
 ##' @param outvar 

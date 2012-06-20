@@ -1,6 +1,6 @@
 \name{run.sensitivity.analysis}
 \alias{run.sensitivity.analysis}
-\title{run.sensitivity.analysis}
+\title{run sensitivity.analysis}
 \usage{
   run.sensitivity.analysis()
 }

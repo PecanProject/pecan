@@ -1,10 +1,14 @@
+#--------------------------------------------------------------------------------------------------#
 ##' run sensitivity.analysis
-##'
-##' @title run.sensitivity.analysis
+##' 
+##' @name run.sensitivity.analysis
+##' @title run sensitivity.analysis
 ##' @return nothing, saves \code{sensitivity.results} as sensitivity.results.Rdata,
 ##' sensitivity plots as sensitivityanalysis.pdf, and variance decomposition 'popsicle plot'
 ##' as variancedecomposition.pdf a side effect.
+##' @export
 ##' @author David LeBauer
+##'
 run.sensitivity.analysis <- function(){
   if(!exists("settings")){ # temporary hack
                         # waiting on http://stackoverflow.com/q/11005478/199217
@@ -63,3 +67,9 @@ run.sensitivity.analysis <- function(){
            "sensitivity.results.Rdata", sep = ""))
   }
 }
+#==================================================================================================#
+
+
+####################################################################################################
+### EOF.  End of R script file.        			
+####################################################################################################
