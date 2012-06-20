@@ -19,4 +19,7 @@
   Function to apply Arrhenius scaling to 25 degC for
   temperature-dependent traits
 }
+\author{
+  <unknown>
+}
 

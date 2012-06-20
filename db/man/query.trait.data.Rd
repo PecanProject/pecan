@@ -32,4 +32,7 @@ newconfn <- function() query.base.con(dbname   = settings$database$name,
 query.trait.data("Vcmax", "938", con = newconfn())
 }
 }
+\author{
+  <unknown>
+}
 

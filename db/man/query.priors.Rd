@@ -9,6 +9,8 @@
 
   \item{trstr}{string of traits to query priors for}
 
+  \item{out}{output location}
+
   \item{con}{database connection, can be list of arguments
   for connecting to database}
 
@@ -16,7 +18,7 @@
   (e.g. password, user name, database)}
 }
 \value{
-  return priors for a given pft
+  priors for a given pft
 }
 \description{
   Query priors associated with a string of traits and plant

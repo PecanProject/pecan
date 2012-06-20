@@ -13,7 +13,6 @@
 ##' \dontrun{
 ##' query.base('select count(id) from traits;')
 ##' }
-#--------------------------------------------------------------------------------------------------#
 query.base <- function(query,con=NULL,...){
   iopened <- 0
   if(is.null(con)){

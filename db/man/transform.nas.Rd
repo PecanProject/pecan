@@ -4,6 +4,9 @@
 \usage{
   transform.nas(data)
 }
+\arguments{
+  \item{data}{input data}
+}
 \description{
   Function to remove NA values from database queries
 }

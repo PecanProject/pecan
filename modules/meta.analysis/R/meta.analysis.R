@@ -18,7 +18,7 @@
 ##' @param taupriors priors on variance parameters, can be scaled as needed with data mean
 ##' @param j.iter number of mcmc samples
 ##' @param settings list of settings from settings file
-##' @param outdir 
+##' @param outdir output directory
 ##' @param overdispersed TRUE by default, if set to FALSE, data mean will be used as starting point for MCMC chains (use with caution)
 ##' @return four chains with 5000 total samples from posterior 
 ##' @author David LeBauer, Michael C. Dietze
@@ -135,7 +135,7 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
     jag.model.file <-  paste(outdir, trait.name, ".model.bug",sep="")  # file to store model
     
     ### Import defaul JAGS model file
-    modelfile = system.file("data", "ma.model.template.bug", package="PEcAn.MA")
+    modelfile = system.file("inst", "ma.model.template.bug", package="PEcAn.MA")
     
     ### Write JAGS bug file based on user settings and default bug file
     #write.ma.model (modelfile = paste(settings$pecanDir,'rscripts/ma.model.template.bug',sep=""),
