@@ -177,7 +177,7 @@ write.config.ED <- function(defaults, trait.values, settings, outdir, run.id){
   startdate <- as.Date(settings$run$start.date)
   enddate <- as.Date(settings$run$end.date)
   
-#---------------------------------------------------------------------------------------------------
+  #-----------------------------------------------------------------------
   ### Edit ED2IN file for runs
   ed2in.text <- readLines(con=settings$run$edin, n=-1)
   
@@ -202,8 +202,8 @@ write.config.ED <- function(defaults, trait.values, settings, outdir, run.id){
     } else {
 	  ed2in.text <- gsub(' @PHENOL_SCHEME@', settings$run$host$ed$phenol.scheme, ed2in.text)
     }
-#---------------------------------------------------------------------------------------------------
   
+    #-----------------------------------------------------------------------
     ed2in.text <- gsub('@ED_VEG@', settings$run$host$ed$veg, ed2in.text)
     ed2in.text <- gsub('@ED_SOIL@', settings$run$host$ed$soil, ed2in.text)
     ed2in.text <- gsub('@ED_INPUTS@', settings$run$host$ed$inputs, ed2in.text)
@@ -211,7 +211,7 @@ write.config.ED <- function(defaults, trait.values, settings, outdir, run.id){
     # This next line may not be needed.  Set above.
     ed2in.text <- gsub(' @PHENOL_SCHEME@', settings$run$host$ed$phenol.scheme, ed2in.text)
 
-#---------------------------------------------------------------------------------------------------
+    #-----------------------------------------------------------------------
     ed2in.text <- gsub('@START_MONTH@', format(startdate, "%m"), ed2in.text)
     ed2in.text <- gsub('@START_DAY@', format(startdate, "%d"), ed2in.text)
     ed2in.text <- gsub('@START_YEAR@', format(startdate, "%Y"), ed2in.text)
@@ -219,7 +219,7 @@ write.config.ED <- function(defaults, trait.values, settings, outdir, run.id){
     ed2in.text <- gsub('@END_DAY@', format(enddate, "%d"), ed2in.text)
     ed2in.text <- gsub('@END_YEAR@', format(enddate, "%Y"), ed2in.text)
 
-#---------------------------------------------------------------------------------------------------
+    #-----------------------------------------------------------------------
     ed2in.text <- gsub('@OUTDIR@', settings$run$host$outdir, ed2in.text)
     ed2in.text <- gsub('@ENSNAME@', run.id, ed2in.text)
     ed2in.text <- gsub('@CONFIGFILE@', xml.file.name, ed2in.text)
@@ -236,7 +236,7 @@ write.config.ED <- function(defaults, trait.values, settings, outdir, run.id){
     ed2in.text <- gsub('@OUTFILE@', paste('out', run.id, sep=''), ed2in.text)
     ed2in.text <- gsub('@HISTFILE@', paste('hist', run.id, sep=''), ed2in.text)
  
-#---------------------------------------------------------------------------------------------------
+    #-----------------------------------------------------------------------
     ed2in.file.name <- paste('ED2INc.',run.id, sep='')
     writeLines(ed2in.text, con = paste(outdir, ed2in.file.name, sep=''))
     
@@ -273,75 +273,6 @@ write.run.ED <- function(settings){
 
 
 #--------------------------------------------------------------------------------------------------#
-##' Extract ED output for specific variables from an hdf5 file
-##' @name read.output.file.ed
-##' @title read output - ED
-##' @param filename string, name of file with data
-##' @param variables  variables to extract from file
-##' @return single value of output variable from filename. In the case of AGB, it is summed across all plants
-##' @export
-##' @author David LeBauer, Carl Davidson
-read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
-  if(filename %in% dir(pattern = 'h5')){
-    require(hdf5)
-    Carbon2Yield = 20
-    data <- hdf5load(filename, load = FALSE)[variables]
-    if(all(c("AGB_CO", "NPLANT") %in% variables)) {
-      return(sum(data$AGB_CO * data$NPLANT, na.rm =TRUE) * Carbon2Yield)
-    } else {
-      return(sum(data[[variables]]))
-    }
-  } else {
-    return(NA)
-  }
-}
-#==================================================================================================#
-
-
-#--------------------------------------------------------------------------------------------------#
-##' Reads the output of a single model run
-##'
-##' This function applies \link{read.output.file.ed} to a list of files from a single run
-##' @title Read ED output
-##' @name read.output.ed
-##' @param run.id the id distiguishing the model run
-##' @param outdir the directory that the model's output was sent to
-##' @param start.year 
-##' @param end.year
-##' @param output.type type of output file to read, can be "-Y-" for annual output, "-M-" for monthly means, "-D-" for daily means, "-T-" for instantaneous fluxes. Output types are set in the ED2IN namelist as NL%I[DMYT]OUTPUT  
-##' @return vector of output variable for all runs within ensemble
-##' @export
-##' @author David LeBauer, Carl Davidson
-read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA, output.type = 'Y'){
-  print(run.id)
-  #if(any(grep(run.id, dir(outdir, pattern = 'finished')))){
-    file.names <- dir(outdir, pattern=run.id, full.names=FALSE)
-    file.names <- grep(paste('-', output.type, '-', sep = ''), file.names, value = TRUE)
-    file.names <- grep('([0-9]{4}).*', file.names, value=TRUE)
-    if(length(file.names) > 0) {
-      years <- sub('((?!-Y-).)*-Y-([0-9]{4}).*', '\\2', file.names, perl=TRUE)
-      if(!is.na(start.year) && nchar(start.year) ==  4){
-        file.names <- file.names[years>=as.numeric(start.year)]
-      }
-      if(!is.na(end.year) && nchar(end.year) == 4){
-        file.names <- file.names[years<=as.numeric(end.year)]
-      }
-      file.names <- file.names[!is.na(file.names)]
-      print(file.names)
-      
-      result <- mean(sapply(file.names, read.output.file.ed)) ## if any are NA, NA is returned
-    } else {
-      warning(cat(paste('no output files in', outdir, '\nfor', run.id, '\n')))
-      result <- NA
-    }
-  #} else {
-  #  warning(cat(paste(run.id, 'not finished \n')))
-  #  result <- NA
-  #}
-  return(result)
-}
-#==================================================================================================#
-
 ##' Clear out old config and ED model run files.
 ##'
 ##' @name remove.config
@@ -386,7 +317,6 @@ remove.config <- function(main.outdir,settings) {
     #}
 }
 #==================================================================================================#
-
 
 
 ####################################################################################################
