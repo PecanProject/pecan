@@ -135,7 +135,7 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
     jag.model.file <-  paste(outdir, trait.name, ".model.bug",sep="")  # file to store model
     
     ### Import defaul JAGS model file
-    modelfile = system.file("inst", "ma.model.template.bug", package="PEcAn.MA")
+    modelfile = system.file("ma.model.template.bug", package="PEcAn.MA")
     
     ### Write JAGS bug file based on user settings and default bug file
     #write.ma.model (modelfile = paste(settings$pecanDir,'rscripts/ma.model.template.bug',sep=""),

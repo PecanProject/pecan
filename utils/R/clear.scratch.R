@@ -13,7 +13,7 @@
 clear.scratch <- function(settings){
   
   ### Setup script
-  clear.scratch <- system.file("inst", "clear.scratch.sh", package="PEcAn.utils")
+  clear.scratch <- system.file("clear.scratch.sh", package="PEcAn.utils")
   host <-  settings$run$host
   nodes <- paste("all.q@compute-0-",seq(0,24,1),".local",sep="")
   
