@@ -1,6 +1,7 @@
 #--------------------------------------------------------------------------------------------------#
 ##' Plot univariate response of model output to a trait parameter.
 ##'
+##' @name plot.sensitivity
 ##' @title Sensitivity plot 
 ##' @param sa.sample trait quantiles used in sensitivity analysis 
 ##' @param sa.spline spline function estimated from sensitivity analysis
@@ -91,9 +92,12 @@ pretty.hack <- function(foo, ...){
 
 
 #--------------------------------------------------------------------------------------------------#
-#
-#
-#--------------------------------------------------------------------------------------------------#
+##'
+##'
+##' @name plot.variance.decomposition
+##' @title Plot results of variance decomposition
+##' @export
+##' @author David LeBauer
 plot.variance.decomposition <- function(plot.inputs, outdir,
                                         prior.plot.inputs = NULL,
                                         fontsize = list(title = 18, axis = 14),
@@ -254,7 +258,7 @@ plot.variance.decomposition <- function(plot.inputs, outdir,
 #--------------------------------------------------------------------------------------------------#
 ##' Plot functions and quantiles used in sensitivity analysis
 ##'
-##' 
+##' @name plot.sensitivities 
 ##' @title Plot Sensitivities
 ##' @param sensitivity.plot.inputs 
 ##' @param prior.sensitivity.plot.inputs 
@@ -304,6 +308,7 @@ plot.sensitivities <- function(sensitivity.plot.inputs, prior.sensitivity.plot.i
 ##' One could also choose to make them all have the same area.
 ##' These two options have complementary strengths and weaknesses; the equal-width histogram oversmooths in regions of high density, and is poor at identifying sharp peaks; the equal-area histogram oversmooths in regions of low density, and so does not identify outliers.
 ##' We describe a compromise approach which avoids both of these defects. We regard the histogram as an exploratory device, rather than as an estimate of a density. 
+##' @name dhist
 ##' @title Diagonally Cut Histogram 
 ##' @param x is a numeric vector (the data)
 ##' @param a is the scaling factor, default is 5 * IQR
@@ -459,6 +464,7 @@ dhist <- function(x, a=5*iqr(x),
 ##' Calculate interquartile range
 ##'
 ##' Calculates the 25th and 75th quantiles given a vector x; used in function \link{dhist}.
+##' @name iqr
 ##' @title Interquartile range
 ##' @param x vector
 ##' @return numeric vector of length 2, with the 25th and 75th quantiles of input vector x. 
@@ -474,6 +480,7 @@ iqr <- function(x){
 ##' An empty base plot to which layers created by other functions
 ##' (\code{\link{add.data}}, \code{\link{add.prior.density}},
 ##' \code{\link{add.posterior.density}}) can be added.
+##' @name create.base.plot
 ##' @title Create Base Plot
 ##' @return empty ggplot object
 ##' @export
@@ -488,6 +495,7 @@ create.base.plot <- function() {
 #--------------------------------------------------------------------------------------------------#
 ##' Plots a prior density from a parameterized probability distribution  
 ##'
+##' @name add.prior.density
 ##' @title Add Prior Density
 ##' @param prior.density 
 ##' @param base.plot a ggplot object (grob), created by \code{\link{create.base.plot}} if none provided
@@ -511,6 +519,7 @@ add.prior.density <- function(prior.density, base.plot = NULL, prior.color = 'bl
 #--------------------------------------------------------------------------------------------------#
 ##' Returns a data frame from \link{stats::density} function 
 ##'
+##' @name create.density.df
 ##' @title Create Density Data Frame from Sample
 ##' @param sample 
 ##' @param ... additional arguments to density
@@ -550,6 +559,7 @@ create.density.df <- function(samps = NULL,
 #--------------------------------------------------------------------------------------------------#
 ##'  Add posterior density to a plot
 ##'
+##' @name add.posterior.density
 ##' @title Add posterior density. 
 ##' @param posterior.density 
 ##' @param base.plot a ggplot object (grob), created by \code{\link{create.base.plot}} if none provided
@@ -571,6 +581,7 @@ add.posterior.density <- function(posterior.density, base.plot = NULL) {
 ##' Used to add raw data or summary statistics to the plot of a distribution.
 ##' The height of Y is arbitrary, and can be set to optimize visualization.
 ##' If SE estimates are available, tehse wil be plotted
+##' @name add.data
 ##' @title Add data to plot 
 ##' @param trait.data data to be plotted
 ##' @param base.plot a ggplot object (grob),
@@ -614,6 +625,7 @@ add.data <- function(trait.data, base.plot = NULL, ymax, color = 'black') {
 #--------------------------------------------------------------------------------------------------#
 ##' Plot trait density and data
 ##'
+##' @name plot.trait
 ##' @title Plot trait density
 ##' @param trait character, name of trait to be plotted
 ##' @param prior named distribution with parameters
@@ -757,6 +769,7 @@ plot.trait <- function(trait,
 #--------------------------------------------------------------------------------------------------#
 ##' Plot probability density and data
 ##'
+##' @name plot.densities
 ##' @title Plot Trait Probability Densities
 ##' @param sensitivity.results list containing sa.samples and sa.splines 
 ##' @param outdir
@@ -784,6 +797,7 @@ plot.densities <- function(density.plot.inputs, outdir, ...){
 #--------------------------------------------------------------------------------------------------#
 ##' Calculate the density of a distribution for use in plotting
 ##'
+##' @name prior.density
 ##' @title Prior Density 
 ##' @param distribution one of R's supported distributions (character)
 ##' @param a first parameter of distribution (numeric)
@@ -813,6 +827,7 @@ prior.density <- function(distribution = 'norm', a = 0, b = 1, xlim = NA){
 #--------------------------------------------------------------------------------------------------#
 ##' Plot prior density and data
 ##'
+##' @name priorfig
 ##' @title Prior Figure 
 ##' @param priordata observations to be plotted as points
 ##' @param priordensity density of prior distribution, calculated by \code{\link{prior.density}}
@@ -873,6 +888,12 @@ priorfig <- function(priordata = NA, priordensity = NA, trait = '', xlim = 'auto
 
 
 #--------------------------------------------------------------------------------------------------#
+##'
+##'
+##' @name get.quantiles.from.density
+##' @title Get the quantiles from prior density
+##' @author <unknown>
+##'
 get.quantiles.from.density <- function(priordensity){
   qi <- c(which.min(abs(priordensity$prob.x - 0.025)),
           which.min(abs(priordensity$prob.x - 0.5)),
@@ -888,7 +909,8 @@ get.quantiles.from.density <- function(priordensity){
 ##' Add borders to .. content for \description{} (no empty lines) ..
 ##'
 ##' Has ggplot2 display only specified borders, e.g. ("L"-shaped) borders, rather than a rectangle or no border. Note that the order can be significant; for example, if you specify the L border option and then a theme, the theme settings will override the border option, so you need to specify the theme (if any) before the border option, as above.
-##' @title theme_border
+##' @name theme_border
+##' @title Theme border for plot
 ##' @param type 
 ##' @param colour 
 ##' @param size 

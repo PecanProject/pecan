@@ -20,15 +20,19 @@ left.pad.zeros <- function(num, digits = 5){
 #==================================================================================================#
 
 ##' Truncates vector at 0
-##'
+##' @name zero.truncate
 ##' @title Zero Truncate 
 ##' @param y numeric vector
 ##' @return numeric vector with all values less than 0 set to 0
+##' @export
+##' @author <unknown>
 zero.truncate <- function(y) {
   y[y<0 | 
           is.na(y)] <- 0
   return(y)
 }
+#==================================================================================================#
+
 
 #--------------------------------------------------------------------------------------------------#
 ##' R implementation of rsync
