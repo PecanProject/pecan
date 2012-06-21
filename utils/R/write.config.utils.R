@@ -14,8 +14,12 @@
 ##' @title Get Ensemble Samples
 ##' @name get.ensemble.samples
 ##' @param ensemble.size number of runs in model ensemble
-##' @param samples random samples from parameter distribution, e.g. from a MCMC chain or a 
+##' @param pft.samples random samples from parameter distribution, e.g. from a MCMC chain or a 
+##' @param env.samples env samples
+##' @param method the method used to generate the ensemble samples.  default = halton
 ##' @return matrix of quasi-random (overdispersed) samples from trait distributions
+##' @export
+##' @import randtoolbox
 ##' @references Halton, J. (1964), Algorithm 247: Radical-inverse quasi-random point sequence, ACM, p. 701, doi:10.1145/355588.365104.
 ##' @author David LeBauer
 get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="halton") {
@@ -87,14 +91,15 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
 ##' Given a pft.xml object, a list of lists as supplied by get.sa.samples, 
 ##' a name to distinguish the output files, and the directory to place the files.
 ##' @title Write ensemble configs 
-##' @param pft pft
+##' @param defaults pft
 ##' @param ensemble.samples list of lists supplied by \link{get.ensemble.samples}
 ##' @param host server to which config files will be sent
 ##' @param outdir directory for model output (on server)
-##' @param settings list of settings
+##' @param settings list of PEcAn settings
 ##' @param write.config a model-specific function to write config files, e.g. \link{write.config.ED}  
-##' @param convert.samples a model-specific function that transforms variables from units used in database to units used by model, e.g. \link{convert.samples.ED} 
+##' @param clean remote old output first?
 ##' @return nothing, writes ensemble configuration files as a side effect
+##' @export
 ##' @author David LeBauer, Carl Davidson
 write.ensemble.configs <- function(defaults, ensemble.samples,
                                    host, outdir, settings,

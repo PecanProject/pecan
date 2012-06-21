@@ -8,8 +8,13 @@
 \arguments{
   \item{ensemble.size}{number of runs in model ensemble}
 
-  \item{samples}{random samples from parameter
+  \item{pft.samples}{random samples from parameter
   distribution, e.g. from a MCMC chain or a}
+
+  \item{env.samples}{env samples}
+
+  \item{method}{the method used to generate the ensemble
+  samples.  default = halton}
 }
 \value{
   matrix of quasi-random (overdispersed) samples from trait

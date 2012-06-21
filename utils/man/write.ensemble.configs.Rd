@@ -7,7 +7,7 @@
     clean = FALSE)
 }
 \arguments{
-  \item{pft}{pft}
+  \item{defaults}{pft}
 
   \item{ensemble.samples}{list of lists supplied by
   \link{get.ensemble.samples}}
@@ -16,14 +16,12 @@
 
   \item{outdir}{directory for model output (on server)}
 
-  \item{settings}{list of settings}
+  \item{settings}{list of PEcAn settings}
 
   \item{write.config}{a model-specific function to write
   config files, e.g. \link{write.config.ED}}
 
-  \item{convert.samples}{a model-specific function that
-  transforms variables from units used in database to units
-  used by model, e.g. \link{convert.samples.ED}}
+  \item{clean}{remote old output first?}
 }
 \value{
   nothing, writes ensemble configuration files as a side
