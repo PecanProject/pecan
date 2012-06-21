@@ -142,11 +142,22 @@ run.write.configs.ed <- function() {
   
   ### Write ENSEMBLE
   if('ensemble' %in% names(settings) && settings$ensemble$size > 0) {
+    
     ## subset the trait.samples to ensemble size using Halton sequence 
     ensemble.samples <- get.ensemble.samples(settings$ensemble$size, 
                                              trait.samples, env.samples)
+    
+    print(" ")
+    print(" ")
+    print("-------------------------------------------------------------------")
+    print(paste("Ensemble size: ",settings$ensemble$size))
+    print("-------------------------------------------------------------------")
+    print(" ")
+    print(" ")
+    
     write.ensemble.configs(settings$pfts, ensemble.samples, 
-                           host, outdir, settings)
+                           host, main.outdir, settings)
+    
   }else{
     print(paste('Ensemble analysis settings are NULL'))
   } ### End of Ensemble

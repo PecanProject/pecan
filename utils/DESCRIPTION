@@ -15,7 +15,8 @@ Depends:
     RMySQL,
     plyr,
     XML,
-    ggplot2
+    ggplot2,
+    randtoolbox
 Suggests:
     testthat
 License: FreeBSD + file LICENSE
