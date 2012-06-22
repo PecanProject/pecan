@@ -5,9 +5,9 @@
   tav(teta, ref)
 }
 \arguments{
-  \item{teta}{transmission}
+  \item{teta}{angle}
 
-  \item{ref}{reflectance}
+  \item{ref}{refractive index value by wavelength}
 }
 \description{
   Transmission of isotropic radiation across an interface

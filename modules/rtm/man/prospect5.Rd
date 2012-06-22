@@ -1,14 +1,16 @@
-\name{prospect4}
-\alias{prospect4}
-\title{PROSPECT-4 leaf radiative transfer model}
+\name{prospect5}
+\alias{prospect5}
+\title{PROSPECT-5 leaf radiative transfer model}
 \usage{
-  prospect4(N, Cab, Cw, Cm)
+  prospect5(N, Cab, Car, Cw, Cm)
 }
 \arguments{
   \item{N}{leaf structure parameter.  Number of elementary
   layers}
 
   \item{Cab}{leaf chlorophyll a+b content in ug/cm2}
+
+  \item{Car}{leaf carotenoid content ug/cm2}
 
   \item{Cw}{leaf equivalent water thickness (EWT) in g/cm2
   or cm-1}
@@ -22,7 +24,7 @@
   parameters:
 }
 \examples{
-LRT <- prospect4(2,65,0.004,0.002)
+LRT <- prospect5(2,65,30,0.004,0.002)
 }
 \author{
   Shawn Serbin

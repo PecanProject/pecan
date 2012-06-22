@@ -57,7 +57,9 @@ touch OUTDIR${ED2IN:7}-finished
 echo ""
 echo "---- Deleting temporary model output on local scratch ----"
 # Delete temporary folder in local scratch
-if [ -f $LOC/out${ED2IN:7}* ]; then rm $LOC/out${ED2IN:7}*; fi
+if [ -f $LOC/out${ED2IN:7}* ]; then 
+	rm $LOC/out${ED2IN:7}*; 
+fi
 wait
 echo ""
 echo "---- Run complete ----"
