@@ -2,7 +2,7 @@
 \alias{query.base.con}
 \title{Query database connection}
 \usage{
-  query.base.con(...)
+  query.base.con(settings, ...)
 }
 \arguments{
   \item{...}{optional arguments for connecting to database
@@ -19,7 +19,7 @@
 }
 \examples{
 \dontrun{
-con <- query.bety.con()
+con <- query.bety.con(settings)
 }
 }
 

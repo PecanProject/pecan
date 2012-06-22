@@ -16,7 +16,7 @@
 query.base <- function(query,con=NULL,...){
   iopened <- 0
   if(is.null(con)){
-    con <- query.base.con(...)
+    con <- query.base.con(settings)
     iopened <- 1
   }
   q  <- dbSendQuery(con, query)
@@ -40,26 +40,31 @@ query.base <- function(query,con=NULL,...){
 ##' @export
 ##' @examples
 ##' \dontrun{
-##' con <- query.bety.con()
+##' con <- query.bety.con(settings)
 ##' }
-query.base.con <- function(...){
+query.base.con <- function(settings,...){
   lapply(dbListConnections(MySQL()), dbDisconnect) #first kill all connections
   dvr <- dbDriver ("MySQL")
   
-  con <- dbConnect(dvr, group  = 'ebi_analysis',...)
-  
+  #con <- dbConnect(dvr, group  = 'ebi_analysis',...)
+  con <- dbConnect(dvr, group  = settings$database$name,
+                   dbname = settings$database$name, 
+                   password = settings$database$passwd, 
+                   username = settings$database$userid, 
+                   host = settings$database$host)
+                   
   #KLUDGE: not all invocations of query.base.con() make use of the settings file.
   #This effectively limits PEcAn to using ebi_analysis at certain places.
   #What follows is a quick fix - it relies on settings as a global variable,
   #which are generally recommended against
-  if(exists('settings')){
-    con <- dbConnect(dvr, group  = settings$database$name,
-        dbname = settings$database$name, 
-        password = settings$database$passwd, 
-        username = settings$database$userid, 
-        host = settings$database$host)
-    return(con)
-  }
+  #if(exists('settings')){
+  #  con <- dbConnect(dvr, group  = settings$database$name,
+  #      dbname = settings$database$name, 
+  #      password = settings$database$passwd, 
+  #      username = settings$database$userid, 
+  #      host = settings$database$host)
+  #  return(con)
+ #}
   
   return(con)
 }

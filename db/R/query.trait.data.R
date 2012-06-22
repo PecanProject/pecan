@@ -31,7 +31,7 @@ fetch.stats2se <- function(connection, query){
 ##' @param ... extra arguments
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}}; \code{\link{transformstats}} performs transformation calculations
 ##' @author <unknown>
-query.data<-function(trait, spstr, extra.columns='', con=query.base.con(...), ...){
+query.data<-function(trait, spstr, extra.columns='', con=query.base.con(settings), ...){
   query <- paste("select 
             traits.id, traits.citation_id, traits.site_id, treatments.name, 
             traits.date, traits.time, traits.cultivar_id, traits.specie_id,
@@ -64,7 +64,7 @@ query.data<-function(trait, spstr, extra.columns='', con=query.base.con(...), ..
 ##' @param ... extra arguments
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}}; \code{\link{transformstats}} performs transformation calculations
 ##' @author <unknown>
-query.yields <- function(trait = 'yield', spstr, extra.columns='', con=query.base.con(...), ...){
+query.yields <- function(trait = 'yield', spstr, extra.columns='', con=query.base.con(settings), ...){
     query <- paste("select 
             yields.id, yields.citation_id, yields.site_id, treatments.name, 
             yields.date, yields.time, yields.cultivar_id, yields.specie_id,
@@ -422,14 +422,11 @@ derive.traits <- function(FUN, ..., input=list(...),
 ##' @export
 ##' @examples
 ##' \dontrun{
-##' newconfn <- function() query.base.con(dbname   = settings$database$name,
-##'                                       password = settings$database$passwd,
-##'                                       username = settings$database$userid,
-##'                                       host     = settings$database$host)
+##' newconfn <- function() query.base.con(settings)
 ##' query.trait.data("Vcmax", "938", con = newconfn())
 ##' }
 ##' @author <unknown>
-query.trait.data <- function(trait, spstr,con=query.base.con(...), ...){
+query.trait.data <- function(trait, spstr,con=query.base.con(settings), ...){
   
   if(is.list(con)){
     print("query.bety.trait.data")
