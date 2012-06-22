@@ -184,7 +184,7 @@ list2XML <- function (dat, myName = "config", delim = ",")
 ##' @param paramb 
 ##' @param n number of samples to return
 ##' @return vector with n random samples from prior
-##' @seealso \link{get.sample}
+##' @seealso \{code{\link{get.sample}}
 #--------------------------------------------------------------------------------------------------#
 pr.samp <- function(distn, parama, paramb, n) {
     do.call(paste('r', distn, sep=""), list(n, parama, paramb))
