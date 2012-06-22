@@ -17,10 +17,15 @@ run.sensitivity.analysis <- function(){
                                    outdir = "/tmp/")),
                      sensitivity.analysis = NULL)
   }
+  
+  ### !!! This with below seems repetitive.  Should only need one if sa.analysis check. SPS
   if ('sensitivity.analysis' %in% names(settings)) {
+    
+    ### Load parsed model results
     load(paste(settings$outdir, 'output.Rdata', sep=''))
     load(paste(settings$outdir, 'samples.Rdata', sep=''))
     
+    ### Generate SA output and diagnostic plots
     sensitivity.results <- list()
     for(pft in settings$pfts){
       print(pft$name)
@@ -40,20 +45,25 @@ run.sensitivity.analysis <- function(){
                         '\n it is likely that the runs did not complete, this should be fixed !!!!!!'))
         }
         
-        
+        ### Gather SA results
         sensitivity.results[[pft$name]] <- sensitivity.analysis(trait.samples = trait.samples[[pft$name]][traits],
                                                                 sa.samples = sa.samples[[pft$name]][ ,traits],
                                                                 sa.output = sensitivity.output[[pft$name]][ ,traits],
                                                                 outdir = pft$outdir)
+        
+        ### Send diagnostic output to the console
         print(sensitivity.results[[pft$name]]$variance.decomposition.output)
         print(sensitivity.output[[pft$name]])
+        
+        ### Generate SA diagnostic plots
         sensitivity.plots <- plot.sensitivities(sensitivity.results[[pft$name]]$sensitivity.output,
                                                 linesize = 1,
                                                 dotsize = 3)
         pdf(paste(pft$outdir, 'sensitivityanalysis.pdf', sep = ''), height = 12, width = 9)
+        print(sensitivity.plots)
         dev.off()
 
-
+        ### Generate VD diagnostic plots
         vd.plots <- plot.variance.decomposition(sensitivity.results[[pft$name]]$variance.decomposition.output)
                                         #variance.scale = log, variance.prefix='Log')
         pdf(paste(pft$outdir, 'variancedecomposition.pdf', sep=''), width = 11, height = 8)

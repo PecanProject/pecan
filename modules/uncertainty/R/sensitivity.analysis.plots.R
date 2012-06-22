@@ -3,8 +3,8 @@
 ##'
 ##' @name plot.sa
 ##' @title Plot Sensitivities
-##' @param satables 
-##' @param outvar 
+##' @param satables output sensitivity tables 
+##' @param outvar output variable for run
 ##' @return plots
 ##' @author David LeBauer
 plot.sa <- function (satables, outvar) {

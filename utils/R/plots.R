@@ -260,8 +260,8 @@ plot.variance.decomposition <- function(plot.inputs, outdir,
 ##'
 ##' @name plot.sensitivities 
 ##' @title Plot Sensitivities
-##' @param sensitivity.plot.inputs 
-##' @param prior.sensitivity.plot.inputs 
+##' @param sensitivity.plot.inputs inputs
+##' @param prior.sensitivity.plot.inputs priors
 ##' @param ... arguments passed to \code{\link{plot.sensitivity}}
 ##' @param sensitivity.results list containing sa.samples and sa.splines
 ##' @export

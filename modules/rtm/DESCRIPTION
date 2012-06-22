@@ -27,3 +27,4 @@ LazyLoad: yes
 Collate:
     'tav.R'
     'prospect4.R'
+    'prospect5.R'
