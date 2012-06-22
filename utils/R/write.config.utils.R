@@ -218,7 +218,7 @@ get.sa.samples <- function(samples, quantiles){
 ##'
 ##' Writes config files for use in sensitivity analysis.
 ##' @title Write sensitivity analysis configs
-##' @param pft pft id used to query BETYdb
+##' @param pft pft id used to query PEcAn database
 ##' @param quantile.samples 
 ##' @param host server to which config files will be sent
 ##' @param outdir directory for model output (on server)

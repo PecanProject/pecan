@@ -7,7 +7,7 @@
     clean = FALSE)
 }
 \arguments{
-  \item{pft}{pft id used to query BETYdb}
+  \item{pft}{pft id used to query PEcAn database}
 
   \item{quantile.samples}{}
 

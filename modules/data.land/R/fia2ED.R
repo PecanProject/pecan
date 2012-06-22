@@ -1,5 +1,5 @@
 # make sure indeces exist
-# CREATE INDEX spcd ON bety.species (spcd);
+# CREATE INDEX spcd ON species (spcd);
 # CREATE INDEX tree_spcd on fia5data.TREE (SPCD);
 # CREATE INDEX tree_plt_cn on fia5data.TREE (PLT_CN);
 # CREATE INDEX plot_cn on fia5data.PLOT (CN);
