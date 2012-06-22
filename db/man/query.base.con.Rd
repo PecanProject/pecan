@@ -19,7 +19,7 @@
 }
 \examples{
 \dontrun{
-con <- query.bety.con(settings)
+con <- query.base.con(settings)
 }
 }
 

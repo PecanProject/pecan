@@ -12,14 +12,14 @@
 ##' @export
 ##' @examples
 ##' \dontrun{
-##' query.bety.priors('ebifarm.pavi', c('SLA', 'Vcmax', 'leaf_width'))
+##' query.priors('ebifarm.pavi', c('SLA', 'Vcmax', 'leaf_width'))
 ##' }
 query.priors <- function(pft, trstr, out=NULL,con=NULL,...){
   if(is.null(con)){
     con <- query.base.con(settings)
   }
   if(is.list(con)){
-    print("query.bety.priors")
+    print("query.priors")
     print("WEB QUERY OF DATABASE NOT IMPLEMENTED")
     return(NULL)
   }
@@ -35,7 +35,7 @@ query.priors <- function(pft, trstr, out=NULL,con=NULL,...){
   priors <- fetch ( query, n = -1 )
   
   #HACK: this rename does not belong here. 
-  #There should be a separate function for this called after query.bety.priors. 
+  #There should be a separate function for this called after query.priors. 
   #-carl
   priors$name[priors$name == 'SLA_m2_per_gC'] <- 'SLA'
   

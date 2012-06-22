@@ -26,7 +26,7 @@
 }
 \examples{
 \dontrun{
-query.bety.priors('ebifarm.pavi', c('SLA', 'Vcmax', 'leaf_width'))
+query.priors('ebifarm.pavi', c('SLA', 'Vcmax', 'leaf_width'))
 }
 }
 

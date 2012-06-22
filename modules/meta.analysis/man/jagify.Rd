@@ -5,7 +5,7 @@
   jagify(result)
 }
 \arguments{
-  \item{result}{}
+  \item{result}{input trait data}
 }
 \value{
   result transformed to meet requirements of PEcAn

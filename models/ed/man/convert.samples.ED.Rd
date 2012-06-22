@@ -12,7 +12,8 @@
   matrix or dataframe with values transformed
 }
 \description{
-  convert parameters from BETY default units to ED defaults
+  convert parameters from PEcAn database default units to
+  ED defaults
 }
 \details{
   Performs model specific unit conversions on a a list of

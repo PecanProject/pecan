@@ -5,7 +5,7 @@
   fetch.stats2se(connection, query)
 }
 \arguments{
-  \item{connection}{connection to BETYdb}
+  \item{connection}{connection to trait database}
 
   \item{query}{MySQL query to traits table}
 }
@@ -13,7 +13,8 @@
   dataframe with trait data
 }
 \description{
-  Queries data from BETY and transforms statistics to SE
+  Queries data from the trait database and transforms
+  statistics to SE
 }
 \details{
   Performs query and then uses \code{transformstats} to

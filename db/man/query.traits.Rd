@@ -5,7 +5,7 @@
   query.traits(spstr, priors, con = NULL)
 }
 \arguments{
-  \item{spstr}{string of species id's from BETYdb database}
+  \item{spstr}{string of species id's from trait database}
 
   \item{priors}{vector of parameters for which priors have
   been specified}
@@ -23,7 +23,7 @@
 \dontrun{
 spstr <- query.pft_species('ebifarm.c4crop')$spstr
 trvec <- c('leafN', 'SLA')
-trait.data <- query.bety.traits(spstr, trvec)
+trait.data <- query.traits(spstr, trvec)
 }
 }
 \seealso{
