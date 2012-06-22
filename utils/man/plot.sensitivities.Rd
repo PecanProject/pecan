@@ -6,9 +6,9 @@
     prior.sensitivity.plot.inputs = NULL, ...)
 }
 \arguments{
-  \item{sensitivity.plot.inputs}{}
+  \item{sensitivity.plot.inputs}{inputs}
 
-  \item{prior.sensitivity.plot.inputs}{}
+  \item{prior.sensitivity.plot.inputs}{priors}
 
   \item{...}{arguments passed to
   \code{\link{plot.sensitivity}}}

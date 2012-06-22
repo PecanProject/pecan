@@ -20,6 +20,6 @@
   Take n random samples from prior
 }
 \seealso{
-  \link{get.sample}
+  \{code{\link{get.sample}}
 }
 

@@ -383,7 +383,7 @@ pdf.stats <- function(distn, A, B) {
 #--------------------------------------------------------------------------------------------------#
 ##' Dictionary of terms used to identify traits in ed, filenames, and figures 
 ##'
-##' @return a dataframe with id, the name used by ED and BETY for a parameter; fileid, an abbreviated  
+##' @return a dataframe with id, the name used by ED and PEcAn database for a parameter; fileid, an abbreviated  
 ##'     name used for files; figid, the parameter name written out as best known in english for figures 
 ##'     and tables.
 ##'
@@ -401,7 +401,7 @@ pdf.stats <- function(distn, A, B) {
 trait.dictionary <- function(traits = NULL) {
   #HACK: shameless hack
   #Ultimately we'll want this to be read once at the start of run time
-  #This could also be represented in BETY, 
+  #This could also be represented in the database, 
   #but because it is used to determine which parameters to feed to the model,
   #it could be argued that it's conceptually model specific
   data(ed.trait.dictionary)
