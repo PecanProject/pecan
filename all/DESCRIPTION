@@ -20,6 +20,7 @@ Depends:
     PEcAn.ED,
     PEcAn.MA,
     PEcAn.utils,
+    PEcAn.rtm,
     PEcAn.uncertainty
 License: FreeBSD + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
