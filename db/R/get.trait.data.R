@@ -33,11 +33,12 @@ get.trait.data <- function() {
 
 
 	#---------------- Open database connection. -------------------------------------------------------#
-	newconfn <- function() query.base.con(dbname   = settings$database$name,
-		                              password = settings$database$passwd,
-		                              username = settings$database$userid,
-		                              host     = settings$database$host)
-
+	#newconfn <- function() query.base.con(dbname   = settings$database$name,
+	#	                              password = settings$database$passwd,
+	#	                              username = settings$database$userid,
+	#	                              host     = settings$database$host)
+  
+	newconfn <- function() query.base.con(settings)
 	#newcon <- newconfn()
 	#--------------------------------------------------------------------------------------------------#
 

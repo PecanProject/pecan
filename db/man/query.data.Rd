@@ -3,7 +3,7 @@
 \title{Query data and transform stats to SE by calling \code{\link{fetch.stats2se}};}
 \usage{
   query.data(trait, spstr, extra.columns = "",
-    con = query.base.con(...), ...)
+    con = query.base.con(settings), ...)
 }
 \arguments{
   \item{trait}{trait to query from the database}

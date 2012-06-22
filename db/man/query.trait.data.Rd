@@ -7,8 +7,8 @@ For Vcmax and SLA data, only data collected between  April and July are queried,
 For Vcmax and root_respiration_rate, data are scaled
 converted from measurement temperature to \eqn{25^oC} via the arrhenius equation.}
 \usage{
-  query.trait.data(trait, spstr, con = query.base.con(...),
-    ...)
+  query.trait.data(trait, spstr,
+    con = query.base.con(settings), ...)
 }
 \arguments{
   \item{trait}{is the trait name used in the database,
@@ -25,10 +25,7 @@ converted from measurement temperature to \eqn{25^oC} via the arrhenius equation
 }
 \examples{
 \dontrun{
-newconfn <- function() query.base.con(dbname   = settings$database$name,
-                                      password = settings$database$passwd,
-                                      username = settings$database$userid,
-                                      host     = settings$database$host)
+newconfn <- function() query.base.con(settings)
 query.trait.data("Vcmax", "938", con = newconfn())
 }
 }

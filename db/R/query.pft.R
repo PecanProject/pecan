@@ -14,7 +14,7 @@
 ##' }
 query.pft_species <- function(pft,con=NULL,...){
   if(is.null(con)){
-    con <- query.base.con(...)
+    con <- query.base.con(settings)
   }
   query <- paste("select id, genus, species.species from species 
                  where id in ( select specie_id from pfts_species 

@@ -16,7 +16,7 @@
 ##' }
 query.priors <- function(pft, trstr, out=NULL,con=NULL,...){
   if(is.null(con)){
-    con <- query.base.con(...)
+    con <- query.base.con(settings)
   }
   if(is.list(con)){
     print("query.bety.priors")
