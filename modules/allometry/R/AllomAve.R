@@ -18,7 +18,7 @@ library(MCMCpack)
 haveMPI <- require(Rmpi)
 library(RMySQL)
 dvr <- dbDriver("MySQL")
-con <- query.bety.con(dbname   = settings$database$name,
+con <- query.base.con(dbname   = settings$database$name,
                                     password = settings$database$passwd,
                                     username = settings$database$userid,
                                     host     = settings$database$host)

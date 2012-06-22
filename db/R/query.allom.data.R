@@ -30,7 +30,7 @@ query.allom.data <- function(pft_name,variable,con,nsim = 10000){
   
   require(RMySQL)
 
-  ## PFTs from BETY
+  ## PFTs from trait database
   ##################################################################
   ## used to match species data to functional type
   q <- dbSendQuery(con,paste("select s.spcd, p.id as pft,s.commonname as common,s.scientificname as scientific, s.Symbol as acronym, s.genus,s.Family,p.name from pfts as p join pfts_species on p.id = pfts_species.pft_id join species as s on pfts_species.specie_id = s.id where p.name like '%",pft_name,"%'",sep=""))

@@ -2,8 +2,17 @@
 ##'
 ##' @name pecan.ma.summary
 ##' @title Generate summary statitics and diagnostics for PEcAn meta.analysis
+##' @param mcmc.object JAGS mcmc output
+##' @param pft plant functional type
+##' @param outdir output directory
+##' @param threshold convergence threshold. Default=1.1 
 ##' @export
-##' @author unknown
+##'
+##' @examples
+##' \dontrun{
+##' summary <- pecan.ma.summary(trait.mcmc,settings$pfts$pft,settings$outdir,settings$meta.analysis$threshold)
+##' }
+##' @author <unknown>
 pecan.ma.summary <- function(mcmc.object, pft,outdir, threshold=1.1){
   if(!is.null(settings$meta.analysis$threshold)) {
     threshold = settings$meta.analysis$threshold

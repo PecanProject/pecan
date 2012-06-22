@@ -40,7 +40,7 @@ query.base <- function(query,con=NULL,...){
 ##' @export
 ##' @examples
 ##' \dontrun{
-##' con <- query.bety.con(settings)
+##' con <- query.base.con(settings)
 ##' }
 query.base.con <- function(settings,...){
   lapply(dbListConnections(MySQL()), dbDisconnect) #first kill all connections

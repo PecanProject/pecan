@@ -1,11 +1,11 @@
 #--------------------------------------------------------------------------------------------------#
-##' Queries data from BETY and transforms statistics to SE
+##' Queries data from the trait database and transforms statistics to SE
 ##'
 ##' Performs query and then uses \code{transformstats} to convert miscellaneous statistical summaries
 ##' to SE
 ##' @name fetch.stats2se
 ##' @title Fetch data and transform stats to SE
-##' @param connection connection to BETYdb
+##' @param connection connection to trait database
 ##' @param query MySQL query to traits table
 ##' @return dataframe with trait data
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{transformstats}} performs transformation calculations
@@ -131,7 +131,7 @@ append.covariate<-function(data, column.name, ..., covariates.data=list(...)){
 ##' @param ... extra arguments
 ##'
 ##' @author <unknown>
-query.covariates<-function(trait.ids, con = query.bety.con(...), ...){
+query.covariates<-function(trait.ids, con = query.base.con(settings), ...){
   covariate.query <- paste("select covariates.trait_id, covariates.level,variables.name",
       "from covariates left join variables on variables.id = covariates.variable_id",
       "where trait_id in (",vecpaste(trait.ids),")")
@@ -429,7 +429,7 @@ derive.traits <- function(FUN, ..., input=list(...),
 query.trait.data <- function(trait, spstr,con=query.base.con(settings), ...){
   
   if(is.list(con)){
-    print("query.bety.trait.data")
+    print("query.trait.data")
     print("WEB QUERY OF DATABASE NOT IMPLEMENTED")
     return(NULL)
   } 
