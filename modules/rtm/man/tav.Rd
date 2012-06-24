@@ -11,8 +11,9 @@
 }
 \description{
   Transmission of isotropic radiation across an interface
-  between two dielectrics The transmission of radiation
-  through elementary layers within PROSPECT
+  between two dielectrics. The computation of the
+  transmittivity at the leaf surface for a given incidence
+  solid angle within PROSPECT
 }
 \author{
   Shawn Serbin

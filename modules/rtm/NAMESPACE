@@ -1,3 +1,6 @@
+export(invprospect)
+export(plot.prospect.inv)
 export(prospect4)
 export(prospect5)
+export(prospect5B)
 import(gsl)

@@ -15,10 +15,13 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
 Depends:
     XML,
     gsl,
+    DEoptim,
     PEcAn.common,
     PEcAn.utils,
 Suggests:
-    testthat
+    testthat,
+    snowfall,
+    doSNOW
 SystemRequirements: JAGS2.2.0
 OS_type: unix
 License: FreeBSD + file LICENSE
@@ -28,3 +31,7 @@ Collate:
     'tav.R'
     'prospect4.R'
     'prospect5.R'
+    'prospect5B.R'
+    'invprospect.R'
+    'merit.R'
+    'diagnostics.R'
