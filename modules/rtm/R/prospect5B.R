@@ -3,27 +3,30 @@
 ##' Plant leaf reflectance and transmittance are calculated from 400 nm to
 ##' 2500 nm (1 nm step) with the following parameters: 
 ##'
-##' @name prospect4
-##' @title PROSPECT-4 leaf radiative transfer model
+##' @name prospect5B
+##' @title PROSPECT-5B leaf radiative transfer model
 ##' @param N leaf structure parameter.  Number of elementary layers
 ##' @param Cab leaf chlorophyll a+b content in ug/cm2
+##' @param Car leaf carotenoid content ug/cm2
+##' @param Cbrown brown pigments content in arbitrary units
 ##' @param Cw leaf equivalent water thickness (EWT) in g/cm2 or cm-1
 ##' @param Cm leaf dry matter content in g/cm2 (alias leaf mass per area [LMA])
 ##'
 ##' @import gsl
 ##' @export
 ##' @examples
-##' LRT <- prospect4(2,65,0.004,0.002)
+##' LRT <- prospect5B(2,65,30,0.3,0.004,0.002)
 ##'
 ##' @references Stokes G.G. (1862), On the intensity of the light reflected from or transmitted through a pile of plates, Proc. Roy. Soc. Lond., 11:545-556.
 ##' @references Allen W.A., Gausman H.W., Richardson A.J., Thomas J.R. (1969), Interaction of isotropic ligth with a compact plant leaf, J. Opt. Soc. Am., 59(10):1376-1379.
 ##' @references Jacquemoud S., Ustin S.L., Verdebout J., Schmuck G., Andreoli G., Hosgood B. (1996), Estimating leaf biochemistry using the PROSPECT leaf optical properties model, Remote Sens. Environ., 56:194-202.
 ##' @references Jacquemoud S., Baret F. (1990), PROSPECT: a model of leaf optical properties spectra, Remote Sens. Environ., 34:75-91.
 ##' @references Feret et al. (2008), PROSPECT-4 and 5: Advances in the Leaf Optical Properties Model Separating Photosynthetic Pigments, Remote Sensing of Environment
+##' @references The specific absorption coefficient corresponding to brown pigment is provided by Frederic Baret and used with his autorization.
 ##' @references Feret et al. (2008). http://teledetection.ipgp.jussieu.fr/prosail/
 ##' @author Shawn Serbin
 ##'
-prospect4 <- function(N,Cab,Cw,Cm){
+prospect5B <- function(N,Cab,Car,Cbrown,Cw,Cm){
   
   # Here are some examples observed during the LOPEX'93 experiment on
   # fresh (F) and dry (D) leaves :
@@ -47,18 +50,19 @@ prospect4 <- function(N,Cab,Cw,Cm){
   # ---------------------------------------------
   
   ### Load the spec. abs. features
-  data(dataSpec_p4)
+  data(dataSpec_p5B)
   
-  l <- dataSpec_p4[,1]
-  n <- dataSpec_p4[,2]
+  l <- dataSpec_p5B[,1]
+  n <- dataSpec_p5B[,2]
   
   ### Global absorption feature
-  k <- (Cab*dataSpec_p4[,3]+Cw*dataSpec_p4[,5]+Cm*dataSpec_p4[,6])/N
+  k <- (Cab*dataSpec_p5B[,3]+Car*dataSpec_p5B[,4]+Cbrown*dataSpec_p5B[,5]+
+    Cw*dataSpec_p5B[,6]+Cm*dataSpec_p5B[,7])/N
   eps <- k[which(k==0)]
   
   trans <- (1-k)*exp(-k)+k^2*expint_E1(k) ### global trans
   
-  ### reflectivity and transmissivity at the interface. Leaf surface at 90 and 40 deg ang
+  ### reflectivity and transmissivity at the interface. Leaf surface
   #-------------------------------------------------
   alpha <- 40
   t12 <- tav(alpha,n)       #trans
@@ -67,7 +71,7 @@ prospect4 <- function(N,Cab,Cw,Cm){
   r21 <- 1-t21              #refl
   x <- (tav(alpha,n))/tav(90,n)
   y <- x*(tav(90,n)-1)+1-tav(alpha,n)
-
+  
   ### reflectance and transmittance of the elementary layer N = 1
   #------------------------------------------------------------
   ra <- r12+(t12*t21*r21*trans^2)/(1-r21^2*trans^2)
@@ -81,13 +85,16 @@ prospect4 <- function(N,Cab,Cw,Cm){
   delta <- sqrt((t90^2-r90^2-1)^2-4*r90^2)
   beta <- (1+r90^2-t90^2-delta)/(2*r90)
   va <- (1+r90^2-t90^2+delta)/(2*r90)
+  vb <- sqrt(beta*(va-r90)/(va*(beta-r90)))
   
+  #!!! NOT SURE IF THIS SHOULD BE IN THIS VERSION OF THE MODEL
   if (any(va*(beta-r90)<=1e-14)) {
     vb <- sqrt(beta*(va-r90)/(1e-14))
   } else {
     vb <- sqrt(beta*(va-r90)/(va*(beta-r90)))
   }
-
+  #!!!
+  
   ### Calc over N layers
   vbNN <- vb^(N-1)
   vbNNinv <- 1/vbNN
@@ -104,6 +111,7 @@ prospect4 <- function(N,Cab,Cw,Cm){
                     Transmittance=TN) # Output: wavelength, reflectance, transmittance
   
   return(LRT)
+  
 }
 #==================================================================================================#
 
