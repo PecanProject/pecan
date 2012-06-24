@@ -16,11 +16,12 @@
 ##' @param strategy DEoptim strategy (see DEoptim)
 ##' @param threshold minimum threshold of the difference between observed and modeled spectra during optimization. Default = 0.0001 
 ##' @param cpus the number of cpus to use in parallel inversion of PROSPECT (optional)
+##' @param type the type of cluster to run the parallel inversion. Options: 'SOCK','MPI'.  Default: 'SOCK'.  Also see ?snowfall
 ##' @return output optimum set of leaf parameters (N,Cab,Car,Cbrown,Cw,Cm), rmse of the inversion, and associated modeled reflectance and transmittance
 ##' @export
 ##'
 ##' @author Shawn Serbin
-invprospect <- function(refl,tran,model,method,strategy,threshold,cpus){
+invprospect <- function(refl,tran,model,method,strategy,threshold,cpus,type){
 
   ### Determine if it is possible to run optimization in parallel
   if(! require(snowfall) | ! require(doSNOW)) {
@@ -36,6 +37,7 @@ invprospect <- function(refl,tran,model,method,strategy,threshold,cpus){
   if (method=="DEoptim" & missing(strategy)) strategy <- 2
   if (missing(threshold)) threshold <- 0.015
   if (missing(cpus)) cpus <- 2
+  if (missing(type)) type <- "SOCK"
 
   if (model==4){
     
@@ -63,7 +65,7 @@ invprospect <- function(refl,tran,model,method,strategy,threshold,cpus){
       print(paste("---- Processing time: ", round(ellapsed,2),"s" ))
       
     } else {
-      sfInit(parallel=TRUE, cpus=cpus)
+      sfInit(parallel=TRUE, cpus=cpus, type=type)
       cl <- sfGetCluster()
       clusterExport(cl,list("refl","tran"))
       clusterEvalQ(cl,library(PEcAn.rtm,DEoptim))
@@ -128,7 +130,7 @@ invprospect <- function(refl,tran,model,method,strategy,threshold,cpus){
       print(paste("---- Processing time: ", round(ellapsed,2),"s" ))
       
     } else {
-      sfInit(parallel=TRUE, cpus=cpus)
+      sfInit(parallel=TRUE, cpus=cpus,type=type)
       cl <- sfGetCluster()
       clusterExport(cl,list("refl","tran"))
       clusterEvalQ(cl,library(PEcAn.rtm,DEoptim))

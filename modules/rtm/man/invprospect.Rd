@@ -3,7 +3,7 @@
 \title{Invert the PROSPECT family (PROSPECT-4,PROSPECT-5,PROSPECT-5B) of leaf radiative transfer models}
 \usage{
   invprospect(refl, tran, model, method, strategy,
-    threshold, cpus)
+    threshold, cpus, type)
 }
 \arguments{
   \item{refl}{observed leaf reflectance data}
@@ -25,6 +25,10 @@
 
   \item{cpus}{the number of cpus to use in parallel
   inversion of PROSPECT (optional)}
+
+  \item{type}{the type of cluster to run the parallel
+  inversion. Options: 'SOCK','MPI'.  Default: 'SOCK'.  Also
+  see ?snowfall}
 }
 \value{
   output optimum set of leaf parameters
