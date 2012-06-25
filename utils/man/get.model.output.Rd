@@ -1,0 +1,22 @@
+\name{get.model.output}
+\alias{get.model.output}
+\title{Retrieve model output}
+\usage{
+  get.model.output(model)
+}
+\arguments{
+  \item{model}{the ecosystem model run}
+}
+\description{
+  This function retrieves model output for further analyses
+}
+\examples{
+\dontrun{
+get.model.output(model)
+get.model.output("ED2")
+}
+}
+\author{
+  Shawn Serbin, David LeBauer
+}
+

@@ -1,0 +1,36 @@
+\name{read.output.ed}
+\alias{read.output.ed}
+\title{Read ED output}
+\usage{
+  read.output.ed(run.id, outdir, start.year = NA,
+    end.year = NA, output.type = "Y")
+}
+\arguments{
+  \item{run.id}{the id distiguishing the model run}
+
+  \item{outdir}{the directory that the model's output was
+  sent to}
+
+  \item{start.year}{}
+
+  \item{end.year}{}
+
+  \item{output.type}{type of output file to read, can be
+  "-Y-" for annual output, "-M-" for monthly means, "-D-"
+  for daily means, "-T-" for instantaneous fluxes. Output
+  types are set in the ED2IN namelist as NL%I[DMYT]OUTPUT}
+}
+\value{
+  vector of output variable for all runs within ensemble
+}
+\description{
+  Reads the output of a single model run
+}
+\details{
+  This function applies \link{read.output.file.ed} to a
+  list of files from a single run
+}
+\author{
+  David LeBauer, Carl Davidson
+}
+

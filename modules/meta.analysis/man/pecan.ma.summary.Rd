@@ -1,0 +1,29 @@
+\name{pecan.ma.summary}
+\alias{pecan.ma.summary}
+\title{Generate summary statitics and diagnostics for PEcAn meta.analysis}
+\usage{
+  pecan.ma.summary(mcmc.object, pft, outdir,
+    threshold = 1.1)
+}
+\arguments{
+  \item{mcmc.object}{JAGS mcmc output}
+
+  \item{pft}{plant functional type}
+
+  \item{outdir}{output directory}
+
+  \item{threshold}{convergence threshold. Default=1.1}
+}
+\description{
+  Generate summary statitics and diagnostics for PEcAn
+  meta.analysis
+}
+\examples{
+\dontrun{
+summary <- pecan.ma.summary(trait.mcmc,settings$pfts$pft,settings$outdir,settings$meta.analysis$threshold)
+}
+}
+\author{
+  <unknown>
+}
+
