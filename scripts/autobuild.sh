@@ -121,6 +121,6 @@ if [ "$LOCAL" == "yes" -o $? -eq 1 ]; then
 
   # cleanup
   rm -rf changes.log out.log autobuild *.Rcheck PEcAn.*.tar.gz
-#fi
+fi
 
 rm running
