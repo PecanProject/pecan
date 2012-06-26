@@ -6,10 +6,13 @@
 # */15 * * * * cd ${HOME}/autobuild/trunk && ./build.sh
 
 # packages that are to be compiled
-PACKAGES="common utils db modules/meta.analysis modules/uncertainty models/ed"
+PACKAGES="common utils db modules/meta.analysis modules/uncertainty modules/data.land models/ed"
 
 # people to notify of the build
 TO="kooper@illinois.edu,sserbin@illinois.edu,dlebauer@illinois.edu,mdietze@illinois.edu"
+
+# turn debug mode on
+#LOCAL="yes"
 
 # are we still running
 if [ -e running ]; then
@@ -21,21 +24,25 @@ touch running
 touch lastrun
 
 # check to see if there are any updates
-bzr missing >/dev/null
-if [ $? -eq 1 ]; then
+if [ "$LOCAL" != "yes" ]; then
+  bzr missing >/dev/null
+fi
+
+if [ "$LOCAL" == "yes" -o $? -eq 1 ]; then
   START=`date +'%s.%N'`
   STATUS="OK"
 
   # update repository
-  bzr pull -q > changes.log
-
-  # get changes
-  echo "----------------------------------------------------------------------" >> changes.log
-  echo "CHANGES" >> changes.log
-  echo "----------------------------------------------------------------------" >> changes.log
-  bzr log > newlog
-  diff bzr.log newlog | grep '^> ' | sed 's/^> //' > changes.log
-  mv newlog bzr.log
+  if [ "$LOCAL" != "yes" ]; then
+	  # get changes
+	  echo "----------------------------------------------------------------------" >> changes.log
+	  echo "CHANGES" >> changes.log
+	  echo "----------------------------------------------------------------------" >> changes.log
+    bzr pull -q > changes.log
+	  bzr log > newlog
+	  diff bzr.log newlog | grep '^> ' | sed 's/^> //' > changes.log
+    mv newlog bzr.log
+  fi
 
   # get committer names and emails
   # TODO all commiters are smushed together
@@ -61,6 +68,7 @@ if [ $? -eq 1 ]; then
   # check/install packages
   for p in ${PACKAGES}; do
     PACKAGE="OK"
+
     R CMD check --library=${R_LIBS_USER} $p &> out.log
     if [ $? -ne 0 ]; then
       STATUS="BROKEN"
@@ -69,7 +77,12 @@ if [ $? -eq 1 ]; then
       echo "CHECK $p BROKEN" >> changes.log
       echo "----------------------------------------------------------------------" >> changes.log
       cat out.log >> changes.log
+      if [ "$LOCAL" == "yes" ]; then
+        cat changes.log
+        rm changes.log
+      fi
     fi
+
     R CMD INSTALL --build --library=${R_LIBS_USER} $p &> out.log
     if [ $? -ne 0 ]; then
       STATUS="BROKEN"
@@ -78,11 +91,20 @@ if [ $? -eq 1 ]; then
       echo "INSTALL $p BROKEN" >> changes.log
       echo "----------------------------------------------------------------------" >> changes.log
       cat out.log >> changes.log
+      if [ "$LOCAL" == "yes" ]; then
+        cat changes.log
+        rm changes.log
+      fi
     fi
+    
     if [ "$PACKAGE" == "OK" ]; then
       echo "----------------------------------------------------------------------" >> changes.log
       echo "CHECK/INSTALL $p OK" >> changes.log
       echo "----------------------------------------------------------------------" >> changes.log
+      if [ "$LOCAL" == "yes" ]; then
+        cat changes.log
+        rm changes.log
+      fi
     fi
   done
 
@@ -91,10 +113,14 @@ if [ $? -eq 1 ]; then
   echo "----------------------------------------------------------------------" >> changes.log
   echo "build took ${TIME} seconds." >> changes.log
   echo "----------------------------------------------------------------------" >> changes.log
-  cat changes.log | mail -s "PEcAn BUILD ${REVNO} is ${STATUS}" ${TO}
+  if [ "$LOCAL" == "yes" ]; then
+    cat changes.log
+  else
+    cat changes.log | mail -s "PEcAn BUILD ${REVNO} is ${STATUS}" ${TO}
+  fi
 
   # cleanup
   rm -rf changes.log out.log autobuild *.Rcheck PEcAn.*.tar.gz
-fi
+#fi
 
 rm running
