@@ -21,6 +21,7 @@ query.base <- function(query,con=NULL,...){
   }
   q  <- dbSendQuery(con, query)
   data <- fetch(q, n = -1)
+  ign <- dbClearResult(q)
   if(iopened==1) {
     dbDisconnect(con)
   }
