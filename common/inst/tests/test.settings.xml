@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<pecan>
+  <pfts>
+    <pft>
+      <name>ebifarm.pavi</name>
+      <outdir>~/out/ebifarm/fast/</outdir>
+      <constants>
+        <num>15</num>
+        <phenology>2</phenology>
+        <max_dbh>0.78</max_dbh>
+        <hgt_min>2.0</hgt_min>
+        <dark_respiration_factor>0.015</dark_respiration_factor>
+        <qsw>0.0</qsw>
+        <mort1>1.0</mort1>
+        <plant_min_temp>-100</plant_min_temp>
+        <storage_turnover_rate>0</storage_turnover_rate>
+        <r_fract>0.25</r_fract>
+      </constants>
+    </pft>
+  </pfts>
+  
+  <config.header>
+    <radiation>
+      <lai_min>0.01</lai_min>
+    </radiation>
+    <ed_misc>
+      <output_month>12</output_month>      
+    </ed_misc> 
+  </config.header>
+  
+  <meta.analysis>
+    <iter>1000</iter>
+    <random.effects>FALSE</random.effects>
+  </meta.analysis>
+  
+  <ensemble>
+    <size>1</size>
+  </ensemble>
+  
+<!--
+    <sensitivity.analysis>
+      <start.year>1995</start.year>
+      <end.year>1998</end.year>
+      <quantiles>
+	<quantile>0.65</quantile> 
+      </quantiles>
+    </sensitivity.analysis>
+-->     
+  <outdir>/tmp/</outdir>
+  <database>
+    <userid>pecan</userid>
+    <passwd>pecan</passwd>
+    <location>localhost</location>
+    <name>ebi_analysis</name>
+  </database>
+  <run>
+    <edin>~/in/ebifarm/ed2in-template-pavi</edin>
+    <site>
+      <psscss>/home/scratch/dlebauer/pecan/edin/ebifarm/ebifarm.</psscss>
+      <name>EBI Energy Farm - Switchgrass</name>
+      <lat>40.06</lat>
+      <lon>-88.20</lon>
+      <met>/home/scratch/dlebauer/pecan/edin/ebifarm/met/ED_MET_DRIVER_HEADER</met>
+      <met.start>1996</met.start>
+      <met.end>1998</met.end>
+    </site>
+    <start.date>1996/01/01</start.date>
+    <end.date>1998/12/31</end.date>
+    <host>
+      <ed><phenol.scheme>1</phenol.scheme></ed>
+      <name>dlebauer@ebi-cluster.igb.uiuc.edu</name>
+      <rundir>/home/dlebauer/EDBRAMS/ED/run/</rundir>
+      <inputs>/home/scratch/dlebauer/edin/</inputs>
+      <outdir>/home/scratch/dlebauer/out/ebifarm/fast/</outdir>
+    </host>
+  </run>
+</pecan>
