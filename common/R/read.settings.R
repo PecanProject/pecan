@@ -13,16 +13,20 @@ library(XML)
 ##' @return xml object with 
 ##' @author Rob Kooper
 xmlMerge <- function(xml1, xml2) {
-  require(XML)
   if (is.null(xml2)) {
     return(xml1)
   }
-  if (is.null(xml1)) {
-    return(xml2)
-  }
-   
-  xmlMergeNodes(xmlRoot(xml1), xmlRoot(xml2))
-  return(xml1)
+  
+  # TODO no merging for now, it will simply return latest file
+  # TODO see https://ebi-forecast.igb.illinois.edu/redmine/issues/1091
+  return(xml2)
+  
+#  if (is.null(xml1)) {
+#    return(xml2)
+#  }
+#   
+#  xmlMergeNodes(xmlRoot(xml1), xmlRoot(xml2))
+#  return(xml1)
 }
 
 
@@ -47,7 +51,10 @@ xmlMergeNodes <- function(node1, node2) {
   
   # loop through all nodes in common
   for(name in names(node2)[names(node2) %in% names(node1)]) {
-    if ((length(names(xmlChildren(node1[[name]]))) == 1) && (names(xmlChildren(node1[[name]])) == "text")) {
+    if ("XMLInternalCommentNode" %in% class(node1[[name]])) {
+      next
+    }
+    if ((length(names(xmlChildren(node1[[name]]))) == 1) &&( names(xmlChildren(node1[[name]])) == "text")) {
       addAttributes(node=node1[[name]], .attrs=xmlAttrs(node2[[name]]), append=TRUE)
       addAttributes(node=node2[[name]], .attrs=xmlAttrs(node1[[name]]), append=FALSE)
       replaceNodes(node1[[name]], node2[[name]])
@@ -56,6 +63,7 @@ xmlMergeNodes <- function(node1, node2) {
     }
   }
 }
+
 
 #--------------------------------------------------------------------------------------------------#
 # EXTERNAL FUNCTIONS
@@ -137,10 +145,11 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
   }
   
   # create folder(s)
-  if (!file.exists(settings.outdir)) {
-    if (!dir.create(settings.outdir, recursive=TRUE)) {
-      stop("Could not create outputfolder.")
-    }
+  if (!file.exists(settings$outdir) && !dir.create(settings$outdir, recursive=TRUE)) {
+    stop("Could not create out folder.")
+  }
+  if (!file.exists(settings$pfts$pft$outdir) && !dir.create(settings$pfts$pft$outdir, recursive=TRUE)) {
+    stop("Could not create pft folders.")
   }
   
   # save the merged pecan.xml
