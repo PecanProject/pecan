@@ -5,4 +5,4 @@ test_that("check.prior.v.mapost function is functional",{
                                     ma.post = rnorm(1000, 3, 1)))
   expect_message(check.prior.v.mapost(prior,0),
                  "prior and posterior are consistent") 
-})c
+})
