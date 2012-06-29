@@ -1,8 +1,7 @@
-test_that("check.prior.v.mapost function is functional",{
-  set.seed(0)
+test_that("p.point.in.prior function is functional",{
   prior <- list(distn = "norm", parama = 0, paramb = 1)
-  expect_error(check.prior.v.mapost(prior,
-                                    ma.post = rnorm(1000, 3, 1)))
-  expect_message(check.prior.v.mapost(prior,0),
-                 "prior and posterior are consistent") 
+  expect_equal(p.point.in.prior(point = 3, prior = prior),
+               pnorm(3))
+  expect_equal(p.point.in.prior(point = -3, prior = prior),
+               pnorm(-3))
 })
