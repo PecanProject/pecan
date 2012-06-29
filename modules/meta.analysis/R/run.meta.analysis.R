@@ -50,7 +50,8 @@ run.meta.analysis <- function() {
     print(" ")
     
     ### Check that PFT(s) were specified in settings.xml file.  Otherwise stop and report error.
-    if(length(settings$pfts)==0) stop("**** WARNING: No PFT(s) specified in the PEcAn XML settings file ****......Please check.")
+    if(length(settings$pfts) == 0){
+      stop("**** WARNING: No PFT(s) specified in the PEcAn XML settings file ****......Please check.")}
     ###
     
     ## loop over pfts
@@ -81,7 +82,8 @@ run.meta.analysis <- function() {
       trait.data <- ma.data
       
       ### Average trait data
-      trait.average <- sapply(trait.data,function(x){mean(x$Y,na.rm=TRUE)})
+      trait.average <- sapply(trait.data,
+                              function(x){mean(x$Y, na.rm = TRUE)})
       
       ### Set gamma distribution prior
       prior.variances = as.data.frame(rep(1,nrow(prior.distns)))
@@ -94,13 +96,16 @@ run.meta.analysis <- function() {
       ### Run the meta-analysis
       trait.mcmc  <- pecan.ma(trait.data, prior.distns, taupriors, j.iter = ma.iter, 
                               settings, outdir = pft$outdir)
-      post.distns <- approx.posterior(trait.mcmc,prior.distns,trait.data,pft$outdir)
-
+      ### Check that meta-analysis posteriors are consistent with priors
+      
       ### Generate summaries and diagnostics
       pecan.ma.summary(trait.mcmc, pft$name, pft$outdir)
-      
+
       ### Save the meta.analysis output
       save(trait.mcmc, file = paste(pft$outdir, 'trait.mcmc.Rdata', sep=''))
+
+      post.distns <- approx.posterior(trait.mcmc, prior.distns,
+                                      trait.data, pft$outdir)
       save(post.distns, file = paste(pft$outdir, 'post.distns.Rdata', sep = ''))  
 
     } ### End meta.analysis for loop
@@ -113,6 +118,32 @@ run.meta.analysis <- function() {
   
 } ### End of function: run.meta.analysis.R
 #==================================================================================================#
+
+##' Check meta analysis posterior and prior
+##'
+##' provides a sanity check that meta analysis posterior
+##' is consistent with prior
+##' @title check meta analysis posterior
+##' @param prior 
+##' @param ma.post 
+##' @return error if meta analysis posterior is inconsistent with prior
+##' @author David LeBauer
+check.prior.v.mapost <- function(prior, ma.post){
+  post.median    <- median(as.matrix(ma.post))
+  prior.median <- do.call(paste('q', prior$distn, sep = ""),
+                          list(0.5, prior$parama, prior$paramb))
+  writeLines(paste(rownames(prior),
+                   "\n posterior median is", tabnum(post.median),
+                   "\n prior median is", tabnum(prior.median)))
+  p.post <- do.call(paste('p', prior$distn, sep = ""),
+                    list(post.median, prior$parama, prior$paramb))
+  if(p.post < 0.95 & p.post > 0.05){
+    message("OK! prior and posterior are consistent")
+  } else { 
+    stop(writeLines("NOT OK! meta analysis posterior is inconsistent with prior"))
+  }
+}
+
 
 
 ####################################################################################################
