@@ -89,7 +89,7 @@ run.meta.analysis <- function() {
         if(p.data < 0.95 & p.data > 0.05){
           message(paste(trait, "OK! prior and data are consistent"))
         } else {
-          stop("NOT OK! data is inconsistent with prior")))
+          stop("NOT OK! data is inconsistent with prior")
         }
       }
 
@@ -116,7 +116,7 @@ run.meta.analysis <- function() {
         if(p.ma.post < 0.95 & p.ma.post > 0.05){
           message(paste(trait, "OK! prior and posterior are consistent"))
         } else {
-          stop("NOT OK! meta analysis posterior is inconsistent with prior")))
+          stop("NOT OK! meta analysis posterior is inconsistent with prior")
         }
       }
 
