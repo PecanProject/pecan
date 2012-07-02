@@ -25,7 +25,7 @@ Suggests:
 License: FreeBSD + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes
-LazyData: TRUE
+LazyData: FALSE
 Collate:
     'sensitivity.analysis.R'
     'sensitivity.analysis.plots.R'

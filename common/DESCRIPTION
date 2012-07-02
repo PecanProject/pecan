@@ -21,7 +21,7 @@ Suggests:
 License: FreeBSD + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes
-LazyData: TRUE
+LazyData: FALSE
 Collate:
     'help.R'
     'read.settings.R'
