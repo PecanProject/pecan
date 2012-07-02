@@ -14,6 +14,9 @@
 ##' r2bugs.distributions(priors)
 r2bugs.distributions <- function(priors) {
 
+  if(is.null(priors$parama)) priors$parama <- priors$a
+  if(is.null(priors$paramb)) priors$paramb <- priors$b
+  
   norm   <- priors$distn %in% 'norm'
   lnorm  <- priors$distn %in% 'lnorm'
   weib   <- priors$distn %in% 'weibull'

@@ -132,7 +132,6 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
       }
     }
   }  
-  
   # conver the xml to a list for ease and return
   settings.list <- xmlToList(settings.xml)
   
@@ -145,10 +144,10 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
   }
   
   # create folder(s)
-  if (!file.exists(settings$outdir) && !dir.create(settings$outdir, recursive=TRUE)) {
+  if (!file.exists(settings.outdir) && !dir.create(settings.outdir, recursive=TRUE)) {
     stop("Could not create out folder.")
   }
-  if (!file.exists(settings$pfts$pft$outdir) && !dir.create(settings$pfts$pft$outdir, recursive=TRUE)) {
+  if (!file.exists(settings.list$pfts$pft$outdir) && !dir.create(settings.list$pfts$pft$outdir, recursive=TRUE)) {
     stop("Could not create pft folders.")
   }
   

@@ -41,8 +41,6 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
   ## Set inputs for jags.model()
   j.chains <- 4
 
-  ## Convert R distributions to JAGS distributions
-  jagspriors <- r2bugs.distributions(prior.distns)
   ## log the mcmc chain parameters
   sink(file = paste(outdir,'meta-analysis.log',sep=""), split = TRUE)
   cat(paste( 'Each meta-analysis will be run with: \n',
@@ -54,11 +52,9 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
       )
 
   for(trait.name in names(trait.data)) {
-    jagsprior <- jagspriors[trait.name, c('distn', 'parama', 'paramb', 'n')]
-    colnames(jagsprior) <- c("distn", "a", "b", "n")
+    
     prior <- prior.distns[trait.name, c('distn', 'parama', 'paramb', 'n')]
-    colnames(prior) <- c("distn", "a", "b", "n")
-
+    
     writeLines(paste('################################################'))
     writeLines(paste('------------------------------------------------'))
     writeLines(paste('starting meta-analysis for:\n\n', trait.name,'\n'))
@@ -83,7 +79,7 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
     
     #print out some data summaries to check
     writeLines(paste('prior for ', trait.name, ' (using R parameterization):\n',
-                prior$distn, '(',prior$a, ', ', prior$b, ')', sep = ''))
+                prior$distn, '(',prior$parama, ', ', prior$paramb, ')', sep = ''))
     writeLines(paste('data max:', max(data$Y,na.rm=TRUE), '\ndata min:', min(data$Y,na.rm=TRUE), '\nmean:',
                      signif(mean(data$Y,na.rm=TRUE),3), '\nn:', length(data$Y)))
     writeLines('stem plot of data points')
@@ -94,85 +90,14 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
     } else {
       writeLines(paste('no estimates of SD for', trait.name))
     }
-    # determine what factors to include in meta-analysis
-    model.parms <- list(ghs  = length(unique(data$ghs)),
-                        site = length(unique(data$site)),
-                        trt  = length(unique(data$trt)))
-    # define regression model
-    reg.parms   <- list(ghs  = 'beta.ghs[ghs[k]]', #beta.o will be included by default
-                        site = 'beta.site[site[k]]',
-                        trt  = 'beta.trt[trt[k]]')
-    if(sum(model.parms>1)==0) {
-      reg.model <- ''
-    } else {
-      reg.model <- paste('+', reg.parms[model.parms > 1], collapse = " ")
-    }
         
-    ## generate list of parameters for jags to follow and produce mcmc output for
-    vars <- c( 'beta.o', 'sd.y') 
-    for (x in c('ghs', 'site', 'trt')) {
-      if(model.parms[[x]] == 1) {
-        data <- data[, which(names(data) != x)]
-      } else {
-        data <- data
-        if(x!='ghs') {
-          vars <- c(vars, paste('sd.', x, sep = ''))
-        }
-        # m <- min(model.parms[[x]], 5)
-        m <- model.parms[[x]]
-        for (i in 1:m) {
-          if(i == 1 && x == 'site') {
-            vars <- c(vars, 'beta.site[1]')
-          }
-          if (i > 1) {
-            vars <- c(vars, paste('beta.', x, '[', i, ']', sep=''))
-          }
-        }
-      }
-    }
 
     madata[[trait.name]] <- data
     jag.model.file <-  paste(outdir, trait.name, ".model.bug",sep="")  # file to store model
-    
-    ### Import defaul JAGS model file
-    modelfile = system.file("ma.model.template.bug", package="PEcAn.MA")
-    
-    ### Write JAGS bug file based on user settings and default bug file
-    #write.ma.model (modelfile = paste(settings$pecanDir,'rscripts/ma.model.template.bug',sep=""),
-    write.ma.model (modelfile = modelfile,
-                    outfile = jag.model.file,
-                    reg.model = reg.model,
-                    jagsprior$distn, jagsprior$a, jagsprior$b,
-                    n     = length ( data$Y ),
-                    trt.n = model.parms[['trt']],
-                    site.n= model.parms[['site']],
-                    ghs.n = model.parms[['ghs']],
-                    tauA  = taupriors$tauA,
-                    tauB  = taupriors$tauB[trait.name])
 
-    if(overdispersed == TRUE){
-      ## overdispersed chains
-      j.inits <- function(chain) list("beta.o" = do.call(paste('q',prior$dist,sep=''),
-                                        list(chain * 1/(j.chains + 1), prior$a, prior$b)),
-                                      .RNG.seed = chain,
-                                      .RNG.name = "base::Mersenne-Twister")
-    } else if (overdispersed == FALSE) {
-      ## chains fixed at data mean - used if above code does not converge,
-      ## invalidates assumptions about convergence, e.g. Gelman-Rubin diagnostic
-      j.inits <- function(chain) list("beta.o" = mean(data$Y))
-    }
+    ## run the meta-analysis in JAGS
+    jags.out <- single.MA(data,j.chains,j.iter,taupriors$tauA,taupriors$tauB[trait.name],prior,jag.model.file,overdispersed)
     
-    j.model   <- jags.model (file = jag.model.file,
-                             data = data,
-                             #n.adapt = 100, #will burn in below
-                             inits = j.inits,
-                             n.chains = j.chains)
-
-
-    jags.out   <- coda.samples ( model = j.model,
-                                variable.names = vars,
-                                n.iter = j.iter,
-                                thin = max(c(2,j.iter/(5000*2))))
     print(summary(jags.out))
     
     jags.out.trunc <- window(jags.out, start = j.iter/2)
