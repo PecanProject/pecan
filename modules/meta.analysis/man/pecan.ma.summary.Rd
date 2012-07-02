@@ -6,13 +6,15 @@
     threshold = 1.1)
 }
 \arguments{
-  \item{mcmc.object}{JAGS mcmc output}
+  \item{mcmc.object}{JAGS mcmc output from
+  \code{\link{pecan.ma}}}
 
   \item{pft}{plant functional type}
 
   \item{outdir}{output directory}
 
-  \item{threshold}{convergence threshold. Default=1.1}
+  \item{threshold}{Gelman-Rubin convergence threshold;
+  default = 1.1}
 }
 \description{
   Generate summary statitics and diagnostics for PEcAn
@@ -24,6 +26,6 @@ summary <- pecan.ma.summary(trait.mcmc,settings$pfts$pft,settings$outdir,setting
 }
 }
 \author{
-  <unknown>
+  David LeBauer, Shawn Serbin
 }
 

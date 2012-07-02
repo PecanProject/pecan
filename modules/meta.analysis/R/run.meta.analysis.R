@@ -50,7 +50,8 @@ run.meta.analysis <- function() {
     print(" ")
     
     ### Check that PFT(s) were specified in settings.xml file.  Otherwise stop and report error.
-    if(length(settings$pfts)==0) stop("**** WARNING: No PFT(s) specified in the PEcAn XML settings file ****......Please check.")
+    if(length(settings$pfts) == 0){
+      stop("**** WARNING: No PFT(s) specified in the PEcAn XML settings file ****......Please check.")}
     ###
     
     ## loop over pfts
@@ -79,41 +80,82 @@ run.meta.analysis <- function() {
         ma.data[[i]] <- rename.jags.columns(jagged.data[[i]])
       }
       trait.data <- ma.data
-      
+      ### Check that data is consistent with prior
+            ### Check that meta-analysis posteriors are consistent with priors
+      for(trait in names(trait.data)){
+        data.median    <- median(trait.data[[trait]])
+        prior          <- prior.distns[trait, ]
+        p.data         <- p.point.in.prior(point = data.median, prior = prior)
+        if(p.data < 0.95 & p.data > 0.05){
+          message(paste(trait, "OK! prior and data are consistent"))
+        } else {
+          stop("NOT OK! data is inconsistent with prior")
+        }
+      }
+
       ### Average trait data
-      trait.average <- sapply(trait.data,function(x){mean(x$Y,na.rm=TRUE)})
+      trait.average <- sapply(trait.data,
+                              function(x){mean(x$Y, na.rm = TRUE)})
       
       ### Set gamma distribution prior
-      prior.variances = as.data.frame(rep(1,nrow(prior.distns)))
+      prior.variances = as.data.frame(rep(1, nrow(prior.distns)))
       row.names(prior.variances) = row.names(prior.distns)
-      prior.variances[names(trait.average),] = 0.001*trait.average^2 
-      prior.variances["seedling_mortality",1] = 1.0
+      prior.variances[names(trait.average), ] = 0.001 * trait.average^2 
+      prior.variances["seedling_mortality", 1] = 1.0
       taupriors <- list(tauA = 0.01,
                         tauB = apply(prior.variances, 1, function(x) min(0.01, x)))
       
       ### Run the meta-analysis
       trait.mcmc  <- pecan.ma(trait.data, prior.distns, taupriors, j.iter = ma.iter, 
                               settings, outdir = pft$outdir)
-      post.distns <- approx.posterior(trait.mcmc,prior.distns,trait.data,pft$outdir)
+      ### Check that meta-analysis posteriors are consistent with priors
+      for(trait in names(trait.mcmc)){
+        post.median    <- median(as.matrix(trait.mcmc[[trait]][,'beta.o']))
+        prior          <- prior.distns[trait, ]
+        p.ma.post      <- p.point.in.prior(point = post.median, prior = prior)
+        if(p.ma.post < 0.95 & p.ma.post > 0.05){
+          message(paste(trait, "OK! prior and posterior are consistent"))
+        } else {
+          stop("NOT OK! meta analysis posterior is inconsistent with prior")
+        }
+      }
 
       ### Generate summaries and diagnostics
       pecan.ma.summary(trait.mcmc, pft$name, pft$outdir)
-      
+
       ### Save the meta.analysis output
       save(trait.mcmc, file = paste(pft$outdir, 'trait.mcmc.Rdata', sep=''))
+
+      post.distns <- approx.posterior(trait.mcmc, prior.distns,
+                                      trait.data, pft$outdir)
       save(post.distns, file = paste(pft$outdir, 'post.distns.Rdata', sep = ''))  
 
     } ### End meta.analysis for loop
     
-  } else {
+    } else {
     
     print('PEcAn settings file does not call for a trait meta-analysis')
     
   } ### End if/else
-  
+    
 } ### End of function: run.meta.analysis.R
 #==================================================================================================#
 
+##' compare point to prior distribution
+##'
+##' used to compare data to prior, meta analysis posterior to prior
+##' @title find quantile of point within prior distribution
+##' @param point 
+##' ##' @param prior list of distn, parama, paramb
+##' @return result of p<distn>(point, parama, paramb)
+##' @author David LeBauer
+p.point.in.prior <- function(point, prior){
+  prior.median <- do.call(paste('q', prior$distn, sep = ""),
+                          list(0.5, prior$parama, prior$paramb))
+  p.point <- do.call(paste('p', prior$distn, sep = ""),
+                     list(point, prior$parama, prior$paramb))
+  return(p.point)
+}
 
 ####################################################################################################
 ### EOF.  End of R script file.      				
