@@ -32,3 +32,4 @@ Collate:
     'meta.analysis.summary.R'
     'meta.analysis.write.model.R'
     'run.meta.analysis.R'
+    'single.MA.R'
