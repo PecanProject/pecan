@@ -18,4 +18,5 @@ Suggests: testthat
 License: FreeBSD + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes
+LazyData: FALSE
 Collate: plot.hdf5.R

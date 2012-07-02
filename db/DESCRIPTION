@@ -20,6 +20,7 @@ Suggests:
 License: FreeBSD + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes
+LazyData: FALSE
 Collate:
     'get.trait.data.R'
     'query.allom.data.R'
