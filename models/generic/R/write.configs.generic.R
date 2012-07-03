@@ -59,7 +59,7 @@ write.config.ED <- function(defaults, trait.values, settings, outdir, run.id){
 ##'
 ##' @name write.run.generic
 ##' @title Function to generate generic model run script files
-##' @author unknown
+##' @author <unknown>
 ##' @import PEcAn.utils
 #--------------------------------------------------------------------------------------------------#
 write.run.generic <- function(settings){
