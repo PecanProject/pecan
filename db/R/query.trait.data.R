@@ -502,11 +502,7 @@ query.trait.data <- function(trait, spstr,con=query.base.con(settings), ...){
 #    q <- 
     data<-rbind(data,
                 ## FRC_LC is the ratio of fine root carbon to leaf carbon
-                query.data('FRC_LC', spstr, con=con),                
-                #Calculate from above/below ground biomass
-                derive.traits(function(root, leaf){root/leaf},
-                query.data('fine_root_biomass', spstr, con=con),
-                query.data('leaf_biomass', spstr, con=con)))
+                query.data('FRC_LC', spstr, con=con))
 
   }
   result <- data
