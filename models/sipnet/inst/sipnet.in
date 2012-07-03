@@ -2,7 +2,7 @@
 
 ! --- INPUTS FOR ALL RUN TYPES ---
 
-RUNTYPE = @RUNTYPE@
+RUNTYPE = 'standard'
 ! RUNTYPE must be one of 'standard', 'senstest', or 'montecarlo'
 
 FILENAME = @FILENAME@
@@ -11,7 +11,7 @@ FILENAME = @FILENAME@
 !  (first line must contain a single integer: # of locations)
 ! FILENAME.clim is the file of climate data for each time step
 
-LOCATION = @LOC@
+LOCATION = 0
 ! Location to run at (-1 means run at all locations)
 ! (If doing a sensitivity test or monte carlo run, location defaults to
 !  0: can only do these types of runs at a single location)
