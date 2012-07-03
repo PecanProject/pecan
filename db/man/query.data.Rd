@@ -21,7 +21,7 @@
   and convert stat to SE
 }
 \author{
-  <unknown>
+  David LeBauer, Carl Davidson
 }
 \seealso{
   used in \code{\link{query.trait.data}};
