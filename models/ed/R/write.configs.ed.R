@@ -123,7 +123,7 @@ convert.samples.ED <- function(trait.samples){
 write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
 
   ### Get ED2 specific model settings and put into output config xml file
-  xml <- listToXml(settings$run$model$config.header, 'config')
+  xml <- listToXml(settings$model$config.header, 'config')
   names(defaults) <- sapply(defaults,function(x) x$name)
   
   for(group in names(trait.values)){
@@ -170,7 +170,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
   
   #-----------------------------------------------------------------------
   ### Edit ED2IN file for runs
-  ed2in.text <- readLines(con=settings$run$model$edin, n=-1)
+  ed2in.text <- readLines(con=settings$model$edin, n=-1)
   
   ed2in.text <- gsub('@SITE_LAT@', settings$run$site$lat, ed2in.text)
   ed2in.text <- gsub('@SITE_LON@', settings$run$site$lon, ed2in.text)
@@ -179,25 +179,25 @@ write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
   ed2in.text <- gsub('@MET_END@', settings$run$site$met.end, ed2in.text)
   ed2in.text <- gsub('@SITE_PSSCSS@', settings$run$site$psscss, ed2in.text)
   
-  if(settings$run$model$phenol.scheme==1){
+  if(settings$model$phenol.scheme==1){
     # Set prescribed phenology switch in ED2IN
-	  ed2in.text <- gsub(' @PHENOL_SCHEME@', settings$run$model$phenol.scheme, ed2in.text)
+	  ed2in.text <- gsub('@PHENOL_SCHEME@', settings$model$phenol.scheme, ed2in.text)
 	  # Phenology filename
-  	ed2in.text <- gsub('@PHENOL@', settings$run$model$phenol, ed2in.text)
+  	ed2in.text <- gsub('@PHENOL@', settings$model$phenol, ed2in.text)
 	  # Set start year of phenology
-  	ed2in.text <- gsub('@PHENOL_START@', settings$run$model$phenol.start, ed2in.text)
+  	ed2in.text <- gsub('@PHENOL_START@', settings$model$phenol.start, ed2in.text)
 	  # Set end year of phenology
-  	ed2in.text <- gsub('@PHENOL_END@', settings$run$model$phenol.end, ed2in.text)
+  	ed2in.text <- gsub('@PHENOL_END@', settings$model$phenol.end, ed2in.text)
 	
 	  # If not prescribed set alternative phenology scheme.
     } else {
-	  ed2in.text <- gsub(' @PHENOL_SCHEME@', settings$run$model$phenol.scheme, ed2in.text)
+	  ed2in.text <- gsub(' @PHENOL_SCHEME@', settings$model$phenol.scheme, ed2in.text)
     }
   
     #-----------------------------------------------------------------------
-    ed2in.text <- gsub('@ED_VEG@', settings$run$model$veg, ed2in.text)
-    ed2in.text <- gsub('@ED_SOIL@', settings$run$model$soil, ed2in.text)
-    ed2in.text <- gsub('@ED_INPUTS@', settings$run$model$inputs, ed2in.text)
+    ed2in.text <- gsub('@ED_VEG@', settings$model$veg, ed2in.text)
+    ed2in.text <- gsub('@ED_SOIL@', settings$model$soil, ed2in.text)
+    ed2in.text <- gsub('@ED_INPUTS@', settings$model$inputs, ed2in.text)
 
     #-----------------------------------------------------------------------
     ed2in.text <- gsub('@START_MONTH@', format(startdate, "%m"), ed2in.text)
