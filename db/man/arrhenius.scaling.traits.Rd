@@ -20,6 +20,6 @@
   temperature-dependent traits
 }
 \author{
-  <unknown>
+  Carl Davidson, David LeBauer
 }
 

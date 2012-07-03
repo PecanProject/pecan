@@ -48,9 +48,9 @@
 -->     
   <outdir>/tmp/</outdir>
   <database>
-    <userid>pecan</userid>
-    <passwd>pecan</passwd>
-    <location>localhost</location>
+    <userid>ebi_analys_user</userid>
+    <passwd>b742xsAu</passwd>
+    <location>ebi-forecast.igb.illinois.edu</location>
     <name>ebi_analysis</name>
   </database>
   <run>

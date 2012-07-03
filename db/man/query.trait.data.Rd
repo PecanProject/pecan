@@ -25,11 +25,11 @@ converted from measurement temperature to \eqn{25^oC} via the arrhenius equation
 }
 \examples{
 \dontrun{
-newconfn <- function() query.base.con(settings)
-query.trait.data("Vcmax", "938", con = newconfn())
+settings <- read.settings()
+query.trait.data("Vcmax", "938", con = query.base.con(settings))
 }
 }
 \author{
-  <unknown>
+  David LeBauer, Carl Davidson, Shawn Serbin
 }
 
