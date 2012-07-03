@@ -105,9 +105,9 @@ write.ensemble.configs <- function(defaults, ensemble.samples,
                                    host, outdir, settings,
                                    model="ED2",clean=FALSE){
 
-  my,write.config <- paste("write.config",model,sep="")
+  my.write.config <- paste("write.config",model,sep="")
   if(!exists(my.write.config)){
-    print(paste(my.write,config,"does not exist"))
+    print(paste(my.write.config,"does not exist"))
     print(paste("please make sure that the PEcAn interface is loaded for",model))
     exit()
   }
@@ -241,9 +241,9 @@ get.sa.samples <- function(samples, quantiles){
 write.sa.configs <- function(defaults, quantile.samples, host, outdir, settings, 
                              model="ED2",clean=FALSE){
 
-  my,write.config <- paste("write.config",model,sep="")
+  my.write.config <- paste("write.config",model,sep="")
   if(!exists(my.write.config)){
-    print(paste(my.write,config,"does not exist"))
+    print(paste(my.write.config,"does not exist"))
     print(paste("please make sure that the PEcAn interface is loaded for",model))
     exit()
   }
@@ -270,7 +270,7 @@ write.sa.configs <- function(defaults, quantile.samples, host, outdir, settings,
   }
   names(median.samples) = names(quantile.samples)
   run.id <- get.run.id('SA', 'median')
-  do.call(my.write.config,list=(defaults, median.samples, settings, outdir, run.id))
+  do.call(my.write.config,list(defaults, median.samples, settings, outdir, run.id))
   
   ## loop over pfts
   for(i in seq(names(quantile.samples))){
@@ -288,7 +288,7 @@ write.sa.configs <- function(defaults, quantile.samples, host, outdir, settings,
           run.id <- get.run.id('SA', round(quantile,3), trait=trait, 
                                pft.name=names(trait.samples)[i])
           if(clean){unlink(paste(outdir, '*', run.id, '*', sep=''))}
-          do.call(my.write.config,list=(defaults, trait.samples, settings, outdir, run.id))
+          do.call(my.write.config,list(defaults, trait.samples, settings, outdir, run.id))
         }
       }
     }
