@@ -22,6 +22,7 @@ OS_type: unix
 License: FreeBSD + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes
+LazyData: FALSE
 Require: hdf5
 Collate:
     'get.model.output.ed.R'

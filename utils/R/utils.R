@@ -127,54 +127,6 @@ listToXml <- function(item, tag){
 }
 #==================================================================================================#
 
-
-#--------------------------------------------------------------------------------------------------#
-##' Convert List to XML
-##'
-##'
-##'  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-##'  I THINK THIS IS DEPRECIATED [sps]
-##'  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#--------------------------------------------------------------------------------------------------#
-list2XML <- function (dat, myName = "config", delim = ",") 
-{
-    if (!require(XML)) {
-        print("Requires XML library")
-        return(0)
-    }
-    if (typeof(dat) != "list") 
-        dat <- as.list(dat)
-    n <- xmlNode(myName)
-    if (length(dat) <= 0) 
-        return(n)
-    myNodeNames <- names(dat)
-    for (i in 1:length(dat)) {
-        if (is.null(myNodeNames[i])) 
-            myNodeNames[i] <- as.character(i)
-        if (typeof(dat[[i]]) == "list") {
-            n <- append.xmlNode(n, list2XML(dat[[i]], myNodeNames[i], 
-                delim))
-        }
-        else {
-            if (length(dat[[i]]) > 0) {
-                val <- as.character(dat[[i]])
-                if (length(val) > 1) {
-                  vtemp <- val[1]
-                  for (j in 2:length(val)) {
-                    vtemp <- paste(vtemp, val[j], sep = delim)
-                  }
-                  val <- vtemp
-                }
-                n <- append.xmlNode(n, xmlNode(myNodeNames[i], 
-                  val))
-            }
-        }
-    }
-    n
-}
-#==================================================================================================#
-
-
 #--------------------------------------------------------------------------------------------------#
 ##' Take n random samples from prior
 ##'

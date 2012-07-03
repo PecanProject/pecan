@@ -22,7 +22,7 @@ Suggests:
 License: FreeBSD + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes
-LazyData: TRUE
+LazyData: FALSE
 Require: hdf5
 Collate:
     'approx.posterior.R'
