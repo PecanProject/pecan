@@ -9,17 +9,26 @@
 write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id){
 
   ### WRITE sipnet.in
-  template <- system.file("sipnet.in", package="PEcAn.SIPNET")
-  config.text <- readLines(con=template, n=-1)
-  config.text <- gsub('@FILENAME@', run.id, config.text)
+  template.in <- system.file("sipnet.in", package="PEcAn.SIPNET")
+  config.text <- readLines(con=template.in, n=-1)
+  config.text <- gsub('@FILENAME@', paste(outdir,"/",run.id,sep=""), config.text)
   config.file.name <- paste(run.id,".in", sep='')
   writeLines(config.text, con = paste(outdir, config.file.name, sep=''))
     
   ### Display info to the console.
   print(run.id)
 
+  ### WRITE *.param-spatial
+  template.param-spatial <- system.file("template.param-spatial",package="PEcAn.SIPNET")
+  system(paste("cp ",template.param-spatial," ",outdir,"/",run.id,".param-spatial"))
   
   ### WRITE *.param
+  template.param <- system.file("template.param",package="PEcAn.SIPNET")
+  if("default.param" %in% names(settings$model)){template.param <- settings$model$default.param}
+
+  param <- read.table(template.param)
+
+  write.table(param,paste(outdir,"/",run.id,".param"),row.names=FALSE,col.names=FALSE)
   
   return()
 
