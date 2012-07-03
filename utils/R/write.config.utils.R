@@ -105,7 +105,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples,
                                    host, outdir, settings,
                                    model="ED2",clean=FALSE){
 
-  my.write.config <- paste("write.config",model,sep="")
+  my.write.config <- paste("write.config.",model,sep="")
   if(!exists(my.write.config)){
     print(paste(my.write.config,"does not exist"))
     print(paste("please make sure that the PEcAn interface is loaded for",model))
@@ -241,7 +241,7 @@ get.sa.samples <- function(samples, quantiles){
 write.sa.configs <- function(defaults, quantile.samples, host, outdir, settings, 
                              model="ED2",clean=FALSE){
 
-  my.write.config <- paste("write.config",model,sep="")
+  my.write.config <- paste("write.config.",model,sep="")
   if(!exists(my.write.config)){
     print(paste(my.write.config,"does not exist"))
     print(paste("please make sure that the PEcAn interface is loaded for",model))
