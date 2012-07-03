@@ -41,41 +41,6 @@ abbreviate.run.id.ED <- function(run.id){
 
 
 #--------------------------------------------------------------------------------------------------#
-##' Calculate ED specific variables from other database traits
-##'
-##' @param trait.samples a matrix or dataframe of samples from the trait distribution
-##' @return matrix or dataframe with derived ED specific traits
-##' @author Shawn Serbin, David LeBauer, Carl Davidson
-calc.ed.specific <- function(trait.samples){
-  
-    ### Convert leaf_respiration_rate_m2 to dark_resp_factor
-    if('leaf_respiration_rate_m2' %in% names(trait.samples)) {
-      leaf_resp = trait.samples[['leaf_respiration_rate_m2']]
-      vcmax <- trait.samples[['Vcmax']]
-    
-      ### First scale variables to 15 degC
-      trait.samples[['leaf_respiration_rate_m2']] <- 
-        arrhenius.scaling(leaf_resp, old.temp = 25, new.temp = 15)
-      vcmax_15 <- arrhenius.scaling(vcmax, old.temp = 25, new.temp = 15)
-    
-      # need to add back dark resp prior?? no?
-    
-      ### Calculate dark_resp_factor
-      trait.samples[['dark_respiration_factor']] <- trait.samples[['leaf_respiration_rate_m2']]/
-        vcmax_15
-      
-      ### Remove leaf_respiration_rate from trait samples
-      remove <- which(names(trait.samples)=='leaf_respiration_rate_m2')
-      trait.samples = trait.samples[-remove]
-      
-      } ### End dark_respiration_factor loop
-    
-  return(trait.samples)
-} ### End of function
-#==================================================================================================#
-
-
-#--------------------------------------------------------------------------------------------------#
 ##' convert parameters from PEcAn database default units to ED defaults
 ##' 
 ##' Performs model specific unit conversions on a a list of trait values,
@@ -111,6 +76,29 @@ convert.samples.ED <- function(trait.samples){
     vcmax <- trait.samples[['Vcmax']]
     trait.samples[['Vcmax']] <- arrhenius.scaling(vcmax, old.temp = 25, new.temp = 15)
   }
+
+   ### Convert leaf_respiration_rate_m2 to dark_resp_factor
+   if('leaf_respiration_rate_m2' %in% names(trait.samples)) {
+      leaf_resp = trait.samples[['leaf_respiration_rate_m2']]
+      vcmax <- trait.samples[['Vcmax']]
+    
+      ### First scale variables to 15 degC
+      trait.samples[['leaf_respiration_rate_m2']] <- 
+        arrhenius.scaling(leaf_resp, old.temp = 25, new.temp = 15)
+      vcmax_15 <- arrhenius.scaling(vcmax, old.temp = 25, new.temp = 15)
+    
+      # need to add back dark resp prior?? no?
+    
+      ### Calculate dark_resp_factor
+      trait.samples[['dark_respiration_factor']] <- trait.samples[['leaf_respiration_rate_m2']]/
+        vcmax_15
+      
+      ### Remove leaf_respiration_rate from trait samples
+      remove <- which(names(trait.samples)=='leaf_respiration_rate_m2')
+      trait.samples = trait.samples[-remove]
+      
+   } ### End dark_respiration_factor loop
+   
   
   return(trait.samples)
 }
@@ -132,7 +120,7 @@ convert.samples.ED <- function(trait.samples){
 ##' @export
 ##' @author David LeBauer, Shawn Serbin, Carl Davidson
 #--------------------------------------------------------------------------------------------------#
-write.config.ED <- function(defaults, trait.values, settings, outdir, run.id){
+write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
   #defaults = settings$pfts
   xml <- listToXml(settings$config.header, 'config')
   names(defaults) <- sapply(defaults,function(x) x$name)
