@@ -136,7 +136,14 @@ write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
     } else {
       ##is a PFT
       pft <- defaults[[group]]
+      ### Insert PFT names into output xml file
+      #pft.xml <- xmlNode('pft',listToXml(pft$name,"name"))
+      ### Insert PFT constants into output xml file  
       pft.xml <- listToXml(pft$constants, 'pft')
+      #constants <- listToXml(pft$constants,'')
+      #pft.xml <- append.xmlNode(pft.xml,pft$constants)
+      #pft.xml <- append.xmlNode(pft.xml, constants)
+      
       ## copy values
       if(!is.null(trait.values[[group]])){
         vals <- convert.samples.ED(trait.values[[group]])
@@ -163,7 +170,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
   
   #-----------------------------------------------------------------------
   ### Edit ED2IN file for runs
-  ed2in.text <- readLines(con=settings$run$edin, n=-1)
+  ed2in.text <- readLines(con=settings$run$model$edin, n=-1)
   
   ed2in.text <- gsub('@SITE_LAT@', settings$run$site$lat, ed2in.text)
   ed2in.text <- gsub('@SITE_LON@', settings$run$site$lon, ed2in.text)
@@ -172,7 +179,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
   ed2in.text <- gsub('@MET_END@', settings$run$site$met.end, ed2in.text)
   ed2in.text <- gsub('@SITE_PSSCSS@', settings$run$site$psscss, ed2in.text)
   
-  if(settings$run$host$ed$phenol.scheme==1){
+  if(settings$run$model$phenol.scheme==1){
     # Set prescribed phenology switch in ED2IN
 	  ed2in.text <- gsub(' @PHENOL_SCHEME@', settings$run$model$phenol.scheme, ed2in.text)
 	  # Phenology filename
