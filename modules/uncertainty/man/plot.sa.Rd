@@ -5,9 +5,9 @@
   plot.sa(satables, outvar)
 }
 \arguments{
-  \item{satables}{}
+  \item{satables}{output sensitivity tables}
 
-  \item{outvar}{}
+  \item{outvar}{output variable for run}
 }
 \value{
   plots

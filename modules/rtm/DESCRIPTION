@@ -27,6 +27,7 @@ OS_type: unix
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
+LazyData: FALSE
 Collate:
     'tav.R'
     'prospect4.R'

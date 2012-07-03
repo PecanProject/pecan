@@ -24,5 +24,6 @@ Depends:
 License: FreeBSD + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes
+LazyData: FALSE
 Collate:
     ''

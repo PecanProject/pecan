@@ -9,22 +9,9 @@
 ##' @author David LeBauer
 jagify <- function(result){
   
-  ## TODO: replace for loops by converting nested list to data.frame is the plyr/ldply command.
-  ## E.g. data = ldply (result, data.frame) will convert to data frame so the original code
-  ## will work, without for loops.  Whoops..... shawn
-  
   ### Rename name column from treatment table to trt_id.  Remove NAs. Assign treatments.
   ### Finally, summarize the results by calculating summary statistics from experimental 
   ### replicates
-  
-  # !!! old code
-  #names(result)[names(result)=='name'] <- 'trt_id'  # old code
-  #result <- transform.nas(result)  # old code
-  #result <- assign.treatments(result)
-  #result <- summarize.result(result)
-  # !!!
-  
-  #result = trait.data  # TEMP
   
   length.data = length(result)
   for (i in 1:length.data){
@@ -54,8 +41,6 @@ jagify <- function(result){
                                stat = as.numeric(stat),
                                n    = as.numeric(n),
                                site_id = as.integer(factor(site_id, unique(site_id))),
-                               trt_id = as.integer(factor(trt_id, 
-                                                          unique(c('control', as.character(trt_id))))),
                                greenhouse = as.integer(factor(greenhouse, unique(greenhouse))),
                                mean = mean,
                                citation_id = citation_id), 
