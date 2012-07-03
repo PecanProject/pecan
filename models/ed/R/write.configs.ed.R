@@ -121,8 +121,9 @@ convert.samples.ED <- function(trait.samples){
 ##' @author David LeBauer, Shawn Serbin, Carl Davidson
 #--------------------------------------------------------------------------------------------------#
 write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
-  #defaults = settings$pfts
-  xml <- listToXml(settings$config.header, 'config')
+
+  ### Get ED2 specific model settings and put into output config xml file
+  xml <- listToXml(settings$run$model$config.header, 'config')
   names(defaults) <- sapply(defaults,function(x) x$name)
   
   for(group in names(trait.values)){
@@ -173,26 +174,23 @@ write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
   
   if(settings$run$host$ed$phenol.scheme==1){
     # Set prescribed phenology switch in ED2IN
-	  ed2in.text <- gsub(' @PHENOL_SCHEME@', settings$run$host$ed$phenol.scheme, ed2in.text)
+	  ed2in.text <- gsub(' @PHENOL_SCHEME@', settings$run$model$phenol.scheme, ed2in.text)
 	  # Phenology filename
-  	ed2in.text <- gsub('@PHENOL@', settings$run$site$phenol, ed2in.text)
+  	ed2in.text <- gsub('@PHENOL@', settings$run$model$phenol, ed2in.text)
 	  # Set start year of phenology
-  	ed2in.text <- gsub('@PHENOL_START@', settings$run$site$phenol.start, ed2in.text)
+  	ed2in.text <- gsub('@PHENOL_START@', settings$run$model$phenol.start, ed2in.text)
 	  # Set end year of phenology
-  	ed2in.text <- gsub('@PHENOL_END@', settings$run$site$phenol.end, ed2in.text)
+  	ed2in.text <- gsub('@PHENOL_END@', settings$run$model$phenol.end, ed2in.text)
 	
 	  # If not prescribed set alternative phenology scheme.
     } else {
-	  ed2in.text <- gsub(' @PHENOL_SCHEME@', settings$run$host$ed$phenol.scheme, ed2in.text)
+	  ed2in.text <- gsub(' @PHENOL_SCHEME@', settings$run$model$phenol.scheme, ed2in.text)
     }
   
     #-----------------------------------------------------------------------
-    ed2in.text <- gsub('@ED_VEG@', settings$run$host$ed$veg, ed2in.text)
-    ed2in.text <- gsub('@ED_SOIL@', settings$run$host$ed$soil, ed2in.text)
-    ed2in.text <- gsub('@ED_INPUTS@', settings$run$host$ed$inputs, ed2in.text)
-  
-    # This next line may not be needed.  Set above.
-    ed2in.text <- gsub(' @PHENOL_SCHEME@', settings$run$host$ed$phenol.scheme, ed2in.text)
+    ed2in.text <- gsub('@ED_VEG@', settings$run$model$veg, ed2in.text)
+    ed2in.text <- gsub('@ED_SOIL@', settings$run$model$soil, ed2in.text)
+    ed2in.text <- gsub('@ED_INPUTS@', settings$run$model$inputs, ed2in.text)
 
     #-----------------------------------------------------------------------
     ed2in.text <- gsub('@START_MONTH@', format(startdate, "%m"), ed2in.text)
@@ -233,11 +231,11 @@ write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
 ##'
 ##' @name write.run.ED
 ##' @title Function to generate ED2.2 model run script files
-##' @author unknown
+##' @author <unknown>
 ##' @import PEcAn.utils
 #--------------------------------------------------------------------------------------------------#
 write.run.ED <- function(settings){
-  run.script.template = system.file("data", "run.template.ED", package="PEcAn.ED")
+  run.script.template = system.file("inst", "run.template.ED", package="PEcAn.ED")
   run.text <- scan(file = run.script.template, 
                    what="character",sep='@', quote=NULL, quiet=TRUE)
   run.text  <- gsub('TMP', paste("/scratch/",Sys.getenv("USER"),sep=""), run.text)

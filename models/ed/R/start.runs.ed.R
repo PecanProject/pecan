@@ -4,9 +4,9 @@
 ##' @title Start ED2 model runs
 ##' @name start.runs.ed
 ##' @export
-##'
+##' @author David LeBauer, Shawn Serbin, Carl Davidson
 start.runs.ed <- function(){
-  ### TODO: Old code, needs to be updated.  Probably can make this a generalized script in
+  ### TODO: Old code, needs to be updated.  Could can make this a generalized script in
   ### utils package
   
   host     <-  settings$run$host
@@ -15,10 +15,10 @@ start.runs.ed <- function(){
   ## priority can be NULL in settings, if null,
   ## only batch.jobs.sh is required to exist
   if(is.null(settings$run$priority)){
-    batch.jobs.script <- system.file("data", "batch.jobs.sh", package="PEcAn.ED")
+    batch.jobs.script <- system.file("inst", "batch.jobs.sh", package="PEcAn.ED")
     
   } else if (as.numeric(settings$run$priority) < 0) {
-    batch.jobs.script <- system.file("data", "batch.jobs.lowp.sh", package="PEcAn.ED")
+    batch.jobs.script <- system.file("inst", "batch.jobs.lowp.sh", package="PEcAn.ED")
 
   } else if (as.numeric(settings$run$priority) > 0){
     stop("need admin rights to set higher priority")
