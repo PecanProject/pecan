@@ -55,12 +55,7 @@ read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA, output.ty
     file.names <- file.names[!is.na(file.names)]
     print(file.names)
     
-    #result <- mean(sapply(file.names, read.output.file.ed)) ## if any are NA, NA is returned
-    mean <- mean(sapply(file.names, read.output.file.ed))
-    median <- median(sapply(file.names, read.output.file.ed))
-    sd <- sd(sapply(file.names, read.output.file.ed))
-    min <- min(sapply(file.names, read.output.file.ed))
-    max <- max(sapply(file.names, read.output.file.ed))
+    result <- mean(sapply(file.names, read.output.file.ed)) ## if any are NA, NA is returned
 
   } else {
     warning(cat(paste('no output files in', outdir, '\nfor', run.id, '\n')))
@@ -70,7 +65,7 @@ read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA, output.ty
   #  warning(cat(paste(run.id, 'not finished \n')))
   #  result <- NA
   #}
-  result <- data.frame(mean=mean,median=median,sd=sd,min=min,max=max)
+
   return(result)
 }
 #==================================================================================================#
@@ -144,6 +139,8 @@ get.results.ed <- function(){
 ##' @import PEcAn.utils
 ##' @export
 ##'
+##' @author Shawn Serbin
+##' @author David LeBauer
 get.model.output.ED2 <- function(){
   
   ### Get ED2 model output on the localhost
