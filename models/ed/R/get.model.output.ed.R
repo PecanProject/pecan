@@ -137,7 +137,7 @@ get.results.ed <- function(){
 ##' @import PEcAn.utils
 ##' @export
 ##'
-get.model.output.ed <- function(){
+get.model.output.ED2 <- function(){
   
   ### Get ED2 model output on the localhost
   if(settings$run$host$name == 'localhost'){
