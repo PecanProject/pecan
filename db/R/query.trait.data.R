@@ -499,9 +499,10 @@ query.trait.data <- function(trait, spstr,con=query.base.con(settings), ...){
     
   } else if (trait == 'fineroot2leaf') {
 #########################  FINE ROOT ALLOCATION  ############################
+#    q <- 
     data<-rbind(data,
                 ## FRC_LC is the ratio of fine root carbon to leaf carbon
-                query.data('FRC_LC', spstr, con=con),
+                query.data('FRC_LC', spstr, con=con)
                 )
 
   }
