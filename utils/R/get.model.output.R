@@ -23,8 +23,8 @@ get.model.output <- function(model){
     do.call(my.fcn,args=list())
   } else {
     print("-------------------------------------------------------------------")
-    print(c(my.fcn,"could not be found")
-    print(c("please make sure module for:",model,"is implemented and loaded")
+    print(c(my.fcn,"could not be found"))
+    print(c("please make sure module for:",model,"is implemented and loaded"))
     print("-------------------------------------------------------------------")
     print(" ")
 
