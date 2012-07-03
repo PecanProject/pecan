@@ -75,7 +75,7 @@ single.MA <- function(data,j.chains,j.iter,tauA,tauB,prior,jag.model.file,overdi
     
     j.model   <- jags.model (file = jag.model.file,
                              data = data,
-                             #n.adapt = 100, #will burn in below
+#                             n.adapt = 100, #will burn in below
                              inits = j.inits,
                              n.chains = j.chains)
 

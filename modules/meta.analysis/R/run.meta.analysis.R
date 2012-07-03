@@ -83,7 +83,7 @@ run.meta.analysis <- function() {
       ### Check that data is consistent with prior
             ### Check that meta-analysis posteriors are consistent with priors
       for(trait in names(trait.data)){
-        data.median    <- median(trait.data[[trait]])
+        data.median    <- median(trait.data[[trait]]$Y)
         prior          <- prior.distns[trait, ]
         p.data         <- p.point.in.prior(point = data.median, prior = prior)
         if(p.data < 0.95 & p.data > 0.05){
@@ -116,7 +116,7 @@ run.meta.analysis <- function() {
         if(p.ma.post < 0.95 & p.ma.post > 0.05){
           message(paste(trait, "OK! prior and posterior are consistent"))
         } else {
-          stop("NOT OK! meta analysis posterior is inconsistent with prior")
+          stop(paste(trait,"NOT OK! meta analysis posterior is inconsistent with prior"))
         }
       }
 
