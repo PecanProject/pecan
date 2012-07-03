@@ -10,11 +10,6 @@
 ##' @author Shawn Serbin
 run.write.configs <- function(model){
 
-  my.config.fcn <- paste("write.config",model,sep=".")
-  if(!exists(my.config.fcn)){
-    print(paste(my.config.fcn,"does not exist"))
-    print(paste("please make sure that the PEcAn interface is loaded for",model)) 
-  }
   
   ### Read in settings file if not in workspace.  Should eventually remove.
   if(!exists("settings")){
@@ -24,6 +19,7 @@ run.write.configs <- function(model){
     print("-------------------------------------------------------------------")
     print(" ")
     print(" ")
+    exit()
   }
   ###
   
@@ -141,7 +137,7 @@ run.write.configs <- function(model){
         assign("cnt",cnt,.GlobalEnv)
         }
       write.sa.configs(settings$pfts, sa.samples, 
-                       host, main.outdir, settings)
+                       host, main.outdir, settings,model=model)
     }
   } ### End of SA
   
@@ -161,7 +157,7 @@ run.write.configs <- function(model){
     print(" ")
     
     write.ensemble.configs(settings$pfts, ensemble.samples, 
-                           host, main.outdir, settings)
+                           host, main.outdir, settings,model=model)
     
   }else{
     print(paste('Ensemble analysis settings are NULL'))

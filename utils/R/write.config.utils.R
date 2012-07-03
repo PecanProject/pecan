@@ -103,7 +103,16 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
 ##' @author David LeBauer, Carl Davidson
 write.ensemble.configs <- function(defaults, ensemble.samples,
                                    host, outdir, settings,
-                                   write.config = write.config.ED,clean=FALSE){
+                                   model="ED2",clean=FALSE){
+
+  my,write.config <- paste("write.config",model,sep="")
+  if(!exists(my.write.config)){
+    print(paste(my.write,config,"does not exist"))
+    print(paste("please make sure that the PEcAn interface is loaded for",model))
+    exit()
+  }
+
+  
   if(clean){
     ## Remove old files
     if(host$name == 'localhost') {
@@ -122,9 +131,9 @@ write.ensemble.configs <- function(defaults, ensemble.samples,
     run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, 5))
     if(clean) unlink(paste(outdir, '*', run.id, '*', sep=''))
     
-    write.config(defaults,
+    do.call(my.write.config,args=list(defaults,
                  lapply(ensemble.samples,function(x,n){x[n,]},n=ensemble.id),
-                 settings, outdir, run.id)
+                 settings, outdir, run.id))
   }
   if(host$name == 'localhost'){
     rsync(paste(outdir, '*',
@@ -230,7 +239,16 @@ get.sa.samples <- function(samples, quantiles){
 ##' @export
 ##' @author David LeBauer, Carl Davidson
 write.sa.configs <- function(defaults, quantile.samples, host, outdir, settings, 
-                             write.config=write.config.ED,clean=FALSE){
+                             model="ED2",clean=FALSE){
+
+  my,write.config <- paste("write.config",model,sep="")
+  if(!exists(my.write.config)){
+    print(paste(my.write,config,"does not exist"))
+    print(paste("please make sure that the PEcAn interface is loaded for",model))
+    exit()
+  }
+
+  
   MEDIAN <- '50'
   ## clean out old files
   if(clean){
@@ -252,7 +270,8 @@ write.sa.configs <- function(defaults, quantile.samples, host, outdir, settings,
   }
   names(median.samples) = names(quantile.samples)
   run.id <- get.run.id('SA', 'median')
-  write.config(defaults, median.samples, settings, outdir, run.id)
+  do.call(my.write.config,list=(defaults, median.samples, settings, outdir, run.id))
+  
   ## loop over pfts
   for(i in seq(names(quantile.samples))){
     
@@ -269,7 +288,7 @@ write.sa.configs <- function(defaults, quantile.samples, host, outdir, settings,
           run.id <- get.run.id('SA', round(quantile,3), trait=trait, 
                                pft.name=names(trait.samples)[i])
           if(clean){unlink(paste(outdir, '*', run.id, '*', sep=''))}
-          write.config(defaults, trait.samples, settings, outdir, run.id)
+          do.call(my.write.config,list=(defaults, trait.samples, settings, outdir, run.id))
         }
       }
     }
