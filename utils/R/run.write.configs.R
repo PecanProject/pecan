@@ -93,9 +93,6 @@ run.write.configs <- function(model){
       trait.samples[[pft.name]][[prior]] <- samples
     }
     
-    ### Calculate ED specific variables from trait samples for SA.  E.g. dark_resp_factor
-    ### trait.samples[[pft.name]] <- calc.ed.specific(trait.samples[[pft.name]])
-    ### *** need to move this into model-specific function!!
     
   } ### End for loop
   

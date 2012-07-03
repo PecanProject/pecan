@@ -18,6 +18,7 @@ Depends:
     PEcAn.common,
     PEcAn.DB,
     PEcAn.ED,
+    PEcAn.SIPNET,
     PEcAn.MA,
     PEcAn.utils,
     PEcAn.uncertainty
