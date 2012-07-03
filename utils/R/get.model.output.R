@@ -14,8 +14,23 @@
 ##' get.model.output("ED2")
 ##' }
 ##'
-##' @author Shawn Serbin, David LeBauer
+##' @author Michael Dietze, Shawn Serbin, David LeBauer
 get.model.output <- function(model){
+
+  my.fcn = paste("get.model.output",model,sep=".")
+
+  if(exists(my,fcn)){
+    do.call(my.fcn,args=list())
+  } else {
+    print("-------------------------------------------------------------------")
+    print(c(my.fcn,"could not be found")
+    print(c("please make sure module for:",model,"is implemented and loaded")
+    print("-------------------------------------------------------------------")
+    print(" ")
+
+  }
+
+  return()
   
   if (model=="ED2"){
     print(" ")
