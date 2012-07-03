@@ -1,4 +1,4 @@
-#--------------------------------------------------------------------------------------------------#
+##--------------------------------------------------------------------------------------------------#
 ##' Queries data from the trait database and transforms statistics to SE
 ##'
 ##' Performs query and then uses \code{transformstats} to convert miscellaneous statistical summaries
@@ -15,10 +15,10 @@ fetch.stats2se <- function(connection, query){
   transformed <- transformstats(fetch(query.result, n = -1))
   return(transformed)
 }
-#==================================================================================================#
+##==================================================================================================#
 
 
-#--------------------------------------------------------------------------------------------------#
+##--------------------------------------------------------------------------------------------------#
 ##' 
 ##' Function to query data from database for specific species and convert stat to SE
 ##' 
@@ -30,28 +30,27 @@ fetch.stats2se <- function(connection, query){
 ##' @param con database connection
 ##' @param ... extra arguments
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}}; \code{\link{transformstats}} performs transformation calculations
-##' @author <unknown>
-query.data<-function(trait, spstr, extra.columns='', con=query.base.con(settings), ...){
+##' @author David LeBauer, Carl Davidson
+query.data <- function(trait, spstr, extra.columns='', con=query.base.con(settings), ...){
   query <- paste("select 
-            traits.id, traits.citation_id, traits.site_id, treatments.name, 
-            traits.date, traits.time, traits.cultivar_id, traits.specie_id,
-            traits.mean, traits.statname, traits.stat, traits.n, 
-            variables.name as vname,
-    month(traits.date) as month,",
+              traits.id, traits.citation_id, traits.site_id, traits.treatment_id,
+              treatments.name, traits.date, traits.time, traits.cultivar_id, traits.specie_id,
+              traits.mean, traits.statname, traits.stat, traits.n, variables.name as vname,
+              month(traits.date) as month,",
             extra.columns,
             "treatments.control, sites.greenhouse
-          from traits 
-            left join treatments on  (traits.treatment_id = treatments.id) 
-            left join sites on (traits.site_id = sites.id) 
-            left join variables on (traits.variable_id = variables.id) 
-          where specie_id in (", spstr,") 
+              from traits 
+              left join treatments on  (traits.treatment_id = treatments.id) 
+              left join sites on (traits.site_id = sites.id) 
+              left join variables on (traits.variable_id = variables.id) 
+            where specie_id in (", spstr,") 
             and variables.name in ('", trait,"');", sep = "")
   return(fetch.stats2se(con, query))
 }
-#==================================================================================================#
+##==================================================================================================#
 
 
-#--------------------------------------------------------------------------------------------------#
+##--------------------------------------------------------------------------------------------------#
 ##' 
 ##' Function to query yields data from database for specific species and convert stat to SE
 ##'
@@ -65,31 +64,31 @@ query.data<-function(trait, spstr, extra.columns='', con=query.base.con(settings
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}}; \code{\link{transformstats}} performs transformation calculations
 ##' @author <unknown>
 query.yields <- function(trait = 'yield', spstr, extra.columns='', con=query.base.con(settings), ...){
-    query <- paste("select 
+  query <- paste("select 
             yields.id, yields.citation_id, yields.site_id, treatments.name, 
             yields.date, yields.time, yields.cultivar_id, yields.specie_id,
             yields.mean, yields.statname, yields.stat, yields.n, 
             variables.name as vname,
             month(yields.date) as month,",
-                   extra.columns,
-                   "treatments.control, sites.greenhouse
+                 extra.columns,
+                 "treatments.control, sites.greenhouse
           from yields 
             left join treatments on  (yields.treatment_id = treatments.id) 
             left join sites on (yields.site_id = sites.id) 
             left join variables on (yields.variable_id = variables.id) 
           where specie_id in (", spstr,");", sep = "")
-    if(!trait == 'yield'){
-      query <- gsub(");", paste(" and variables.name in ('", trait,"');", sep = ""), query)
-    }
+  if(!trait == 'yield'){
+    query <- gsub(");", paste(" and variables.name in ('", trait,"');", sep = ""), query)
+  }
 
   return(fetch.stats2se(con, query))
 }
-#==================================================================================================#
+##==================================================================================================#
 
 
 ######################## COVARIATE FUNCTIONS #################################
 
-#--------------------------------------------------------------------------------------------------#
+##--------------------------------------------------------------------------------------------------#
 ##' 
 ##' @name append.covariate
 ##' @title Append covariate data as a column within a table
@@ -103,12 +102,12 @@ query.yields <- function(trait = 'yield', spstr, extra.columns='', con=query.bas
 ##' @param covariates.data one or more tables of covariate data, ordered by the precedence 
 ##' they will assume in the event a trait has covariates across multiple tables.
 ##' All tables must contain an 'id' and 'level' column, at minimum. 
-#--------------------------------------------------------------------------------------------------#
+##--------------------------------------------------------------------------------------------------#
 append.covariate<-function(data, column.name, ..., covariates.data=list(...)){
   merged <- data.frame()
   for(covariate.data in covariates.data){
     if(length(covariate.data)>1){
-      #conditional added to prevent crash when trying to transform an empty data frame
+                                        #conditional added to prevent crash when trying to transform an empty data frame
       transformed <- transform(covariate.data, id = trait_id, level = level)
       selected <- transformed[!transformed$id %in% merged$id, c('id', 'level')]
       merged <- rbind(merged, selected)
@@ -118,10 +117,10 @@ append.covariate<-function(data, column.name, ..., covariates.data=list(...)){
   merged <- merge(merged, data, all = TRUE)
   return(merged)
 }
-#==================================================================================================#
+##==================================================================================================#
 
 
-#--------------------------------------------------------------------------------------------------#
+##--------------------------------------------------------------------------------------------------#
 ##' 
 ##' @name query.covariates
 ##' @title Queries covariates from database for a given vector of trait id's
@@ -133,16 +132,16 @@ append.covariate<-function(data, column.name, ..., covariates.data=list(...)){
 ##' @author <unknown>
 query.covariates<-function(trait.ids, con = query.base.con(settings), ...){
   covariate.query <- paste("select covariates.trait_id, covariates.level,variables.name",
-      "from covariates left join variables on variables.id = covariates.variable_id",
-      "where trait_id in (",vecpaste(trait.ids),")")
+                           "from covariates left join variables on variables.id = covariates.variable_id",
+                           "where trait_id in (",vecpaste(trait.ids),")")
   q <- dbSendQuery(con, covariate.query)
   covariates = fetch(q, n = -1)  
   return(covariates)
 }
-#==================================================================================================#
+##==================================================================================================#
 
 
-#--------------------------------------------------------------------------------------------------#
+##--------------------------------------------------------------------------------------------------#
 ##' 
 ##' @name arrhenius.scaling.traits
 ##' @title Function to apply Arrhenius scaling to 25 degC for temperature-dependent traits
@@ -150,26 +149,26 @@ query.covariates<-function(trait.ids, con = query.base.con(settings), ...){
 ##' @param covariates the relevant covariates
 ##' @param temp.covariates
 ##' @param new.temp the reference temperature for the scaled traits. Curerntly 25 degC
-##' @author <unknown>
+##' @author Carl Davidson, David LeBauer
 arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp=25){
   if(length(covariates)>0) {
     data <- append.covariate(data, 'temp', 
-        covariates.data=lapply(temp.covariates, 
-            function(temp.covariate){covariates[covariates$name == temp.covariate,]}))
+                             covariates.data = lapply(temp.covariates, 
+                               function(temp.covariate){covariates[covariates$name == temp.covariate,]}))
     
     data$temp[is.na(data$temp)] <-  new.temp
     
     data$mean <- arrhenius.scaling(data$mean, old.temp = data$temp, new.temp=new.temp)
     data$stat <- arrhenius.scaling(data$stat, old.temp = data$temp, new.temp=new.temp)
-    #remove temporary covariate column.
+                                        #remove temporary covariate column.
     data<-data[,colnames(data)!='temp']
   }
   return(data)
 }
-#==================================================================================================#
+##==================================================================================================#
 
 
-#--------------------------------------------------------------------------------------------------#
+##--------------------------------------------------------------------------------------------------#
 ##' 
 ##' @name filter.sunleaf.traits
 ##' @title Function to filter out upper canopy leaves
@@ -180,17 +179,17 @@ arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp
 filter.sunleaf.traits <- function(data, covariates){
   if(length(covariates)>0) {  
     data <- append.covariate(data, 'canopy_layer', 
-        covariates[covariates$name == 'canopy_layer',])
+                             covariates[covariates$name == 'canopy_layer',])
     data <-  data[data$canopy_layer >= 0.66 | is.na(data$canopy_layer),]
-    #remove temporary covariate column
+                                        #remove temporary covariate column
     data<-data[,colnames(data)!='canopy_layer']
   }
   return(data)
 }
-#==================================================================================================#
+##==================================================================================================#
 
 
-#--------------------------------------------------------------------------------------------------#
+##--------------------------------------------------------------------------------------------------#
 ##' 
 ##' @name rename.jags.columns
 ##'
@@ -202,26 +201,26 @@ filter.sunleaf.traits <- function(data, covariates){
 ##' @export
 rename.jags.columns <- function(data) {
   
-  # Change variable names and calculate obs.prec within data frame
+                                        # Change variable names and calculate obs.prec within data frame
   transformed <-  transform(data,
-                      Y        = mean,
-                      se       = stat,
-                      obs.prec = 1 / (sqrt(n) * stat) ^2,
-                      trt      = trt_id,
-                      site     = site_id,
-                      cite     = citation_id,
-                      ghs      = greenhouse)
+                            Y        = mean,
+                            se       = stat,
+                            obs.prec = 1 / (sqrt(n) * stat) ^2,
+                            trt      = trt_id,
+                            site     = site_id,
+                            cite     = citation_id,
+                            ghs      = greenhouse)
   
-  # Subset data frame
+                                        # Subset data frame
   selected <- subset(transformed, select = c('Y', 'n', 'site', 'trt', 'ghs', 'obs.prec', 
-                                              'se', 'cite'))
-  # Return subset data frame
+                                    'se', 'cite'))
+                                        # Return subset data frame
   return(selected)
 }
-#==================================================================================================#
+##==================================================================================================#
 
 
-#--------------------------------------------------------------------------------------------------#
+##--------------------------------------------------------------------------------------------------#
 ##' 
 ##' @name transform.nas
 ##' @title Function to remove NA values from database queries
@@ -230,26 +229,26 @@ rename.jags.columns <- function(data) {
 ##' @export
 ##'
 transform.nas <- function(data){
-  #control defaults to 1
+                                        #control defaults to 1
   data$control[is.na(data$control)] <- 1
   
-  #site defaults to 0
-  #TODO assign different site for each citation - dsl
+                                        #site defaults to 0
+                                        #TODO assign different site for each citation - dsl
   data$site_id[is.na(data$site_id)] <- 0
 
-  #greenhouse defaults to false (0)
+                                        #greenhouse defaults to false (0)
   data$greenhouse[is.na(data$greenhouse)] <- 1
   
-  #number of observations defaults to 2 for statistics, 1 otherwise
+                                        #number of observations defaults to 2 for statistics, 1 otherwise
   data$n[is.na(data$n)] <- 1
   data$n[data$n ==1 & !is.na(data$stat)] <- 2
 
   return(data)
 }
-#==================================================================================================#
+##==================================================================================================#
 
 
-#--------------------------------------------------------------------------------------------------#
+##--------------------------------------------------------------------------------------------------#
 ##' Change treatments to sequential integers
 ##'
 ##' Assigns all control treatments the same value, then assigns unique treatments
@@ -267,15 +266,15 @@ assign.treatments <- function(data){
   sites <- unique(data$site_id)
   for(ss in sites){
     site.i <- data$site == ss
-    #if only one treatment, it's control
+                                        #if only one treatment, it's control
     if(length(unique(data$trt[site.i])) == 1) data$trt_id[site.i] <- 'control'
     if(!'control' %in% data$trt_id[site.i]){
       if(interactive()) browser()
       stop(  paste('No control treatment set for site_id:',
-        unique(data$site_id[site.i]),
-        'and citation id',
-        unique(data$citation_id[site.i]),
-        '\nplease set control treatment for this site / citation in database\n'))
+                   unique(data$site_id[site.i]),
+                   'and citation id',
+                   unique(data$citation_id[site.i]),
+                   '\nplease set control treatment for this site / citation in database\n'))
     }
   }
   return(data)
@@ -283,10 +282,10 @@ assign.treatments <- function(data){
 drop.columns <- function(data, columns){
   return(data[,which(!colnames(data) %in% columns)])
 }
-#==================================================================================================#
+##==================================================================================================#
 
 
-#--------------------------------------------------------------------------------------------------#
+##--------------------------------------------------------------------------------------------------#
 ##' sample from normal distribution, given summary stats
 ##'
 ##' @name take.samples
@@ -310,10 +309,10 @@ take.samples <- function(summary, sample.size = 10^6){
   }
   return(ans)
 }
-#==================================================================================================#
+##==================================================================================================#
 
 
-#--------------------------------------------------------------------------------------------------#
+##--------------------------------------------------------------------------------------------------#
 ##'
 ##' Performs an arithmetic function, FUN, over a series of traits and returns 
 ##' the result as a derived trait. 
@@ -347,10 +346,10 @@ derive.trait <- function(FUN, ..., input=list(...), var.name=NA, sample.size=100
   output$vname <- ifelse(is.na(var.name), output$vname, var.name)
   return(output)
 }
-#==================================================================================================#
+##==================================================================================================#
 
 
-#--------------------------------------------------------------------------------------------------#
+##--------------------------------------------------------------------------------------------------#
 ##' Equivalent to derive.trait(), but operates over a series of trait datasets,
 ##' as opposed to individual trait rows. See \code{\link{derive.trait}}; for more information.
 ##'
@@ -368,44 +367,44 @@ derive.traits <- function(FUN, ..., input=list(...),
                           var.name=NA, sample.size=100000){
   if(length(input) == 1){
     input<-input[[1]]
-    #KLUDGE: modified to handle empty datasets
+                                        #KLUDGE: modified to handle empty datasets
     for(i in (0:nrow(input))[-1]){
       input[i,]<-derive.trait(FUN, input[i,], sample.size=sample.size)
     }
     return(input)
   }
   else if(length(match.columns) > 0){
-    #browser() # !!!not sure why this is here.
+                                        #browser() # !!!not sure why this is here.
     
-    #function works recursively to reduce the number of match columns
+                                        #function works recursively to reduce the number of match columns
     match.column <- match.columns[[1]]
-    #find unique values within the column that intersect among all input datasets
+                                        #find unique values within the column that intersect among all input datasets
     columns <- lapply(input, function(data){data[[match.column]]})
     intersection <- Reduce(intersect, columns)
     
-    #run derive.traits() on subsets of input that contain those unique values 
+                                        #run derive.traits() on subsets of input that contain those unique values 
     derived.traits<-lapply(intersection, 
-        function(id){
-          filtered.input <- lapply(input, 
-              function(data){data[data[[match.column]] == id,]})
-          derive.traits(FUN, input=filtered.input, 
-              match.columns=match.columns[-1], 
-              var.name=var.name,
-              sample.size=sample.size)
-        })
+                           function(id){
+                             filtered.input <- lapply(input, 
+                                                      function(data){data[data[[match.column]] == id,]})
+                             derive.traits(FUN, input=filtered.input, 
+                                           match.columns=match.columns[-1], 
+                                           var.name=var.name,
+                                           sample.size=sample.size)
+                           })
     derived.traits <- derived.traits[!is.null(derived.traits)]
     derived.traits <- do.call(rbind, derived.traits)
     return(derived.traits)
   }
   else{
     return(derive.trait(FUN, input=input, 
-            var.name=var.name, sample.size=sample.size))
+                        var.name=var.name, sample.size=sample.size))
   }
 }
-#==================================================================================================#
+##==================================================================================================#
 
 
-#--------------------------------------------------------------------------------------------------#
+##--------------------------------------------------------------------------------------------------#
 ##' Extract trait data from database
 ##' @name query.trait.data
 ##' @title Extract trait data from database
@@ -422,10 +421,10 @@ derive.traits <- function(FUN, ..., input=list(...),
 ##' @export
 ##' @examples
 ##' \dontrun{
-##' newconfn <- function() query.base.con(settings)
-##' query.trait.data("Vcmax", "938", con = newconfn())
+##' settings <- read.settings()
+##' query.trait.data("Vcmax", "938", con = query.base.con(settings))
 ##' }
-##' @author <unknown>
+##' @author David LeBauer, Carl Davidson, Shawn Serbin
 query.trait.data <- function(trait, spstr,con=query.base.con(settings), ...){
   
   if(is.list(con)){
@@ -435,18 +434,18 @@ query.trait.data <- function(trait, spstr,con=query.base.con(settings), ...){
   } 
   print(trait)
   
-  ### Query the data from the database for trait X.
+### Query the data from the database for trait X.
   data <- query.data(trait, spstr, con=con)
   
-  ### Query associated covariates from database for trait X.
+### Query associated covariates from database for trait X.
   covariates <- query.covariates(data$id, con=con)
   
   if(trait == 'Vcmax') {
-    #########################   VCMAX   ############################
-    ### Apply Arrhenius scaling to convert Vcmax at measurement temp to that at 25 degC (ref temp).
+#########################   VCMAX   ############################
+### Apply Arrhenius scaling to convert Vcmax at measurement temp to that at 25 degC (ref temp).
     data <- arrhenius.scaling.traits(data, covariates, c('leafT', 'airT'))
     
-    ### Keep only top of canopy/sunlit leaf samples based on covariate.
+### Keep only top of canopy/sunlit leaf samples based on covariate.
     data <- filter.sunleaf.traits(data, covariates)
     
     ## select only summer data for Panicum virgatum
@@ -456,59 +455,55 @@ query.trait.data <- function(trait, spstr,con=query.base.con(settings), ...){
     }
     
   } else if (trait == 'SLA') {
-    #########################    SLA    ############################
+#########################    SLA    ############################
     
     ## convert LMA to SLA
     data <- rbind(data, 
-        derive.traits(function(lma){1/lma}, 
-                      query.data('LMA', spstr, con=con)))
+                  derive.traits(function(lma){1/lma}, 
+                                query.data('LMA', spstr, con=con)))
     
-    ### Keep only top of canopy/sunlit leaf samples based on covariate.
+### Keep only top of canopy/sunlit leaf samples based on covariate.
     data <- filter.sunleaf.traits(data, covariates)
- 
+    
     ## select only summer data for Panicum virgatum
     ##TODO fix following hack to select only summer data
     if (spstr == "'938'"){
       data <- subset(data, subset = data$month %in% c(0,5,6,7,8,NA))
     }
- 
+    
   } else if (trait == 'leaf_turnover_rate'){
-    #########################    LEAF TURNOVER    ############################
+#########################    LEAF TURNOVER    ############################
     ## convert LMA to SLA
     data <- rbind(data, 
-        derive.traits(function(leaf.longevity){1/leaf.longevity}, 
-            query.data('Leaf Longevity', spstr, con=con)))
+                  derive.traits(function(leaf.longevity){1/leaf.longevity}, 
+                                query.data('Leaf Longevity', spstr, con=con)))
     
   } else if (trait == 'root_respiration_rate') {
-    #########################  ROOT RESPIRATION   ############################
+#########################  ROOT RESPIRATION   ############################
     ## Apply Arrhenius scaling to convert root respiration at measurement temp 
     ## to that at 25 degC (ref temp).
     data <- arrhenius.scaling.traits(data, covariates, c('rootT', 'airT'))
     
   } else if (trait == 'leaf_respiration_rate_m2') {
-    #########################  LEAF RESPIRATION   ############################
+#########################  LEAF RESPIRATION   ############################
     ## Apply Arrhenius scaling to convert leaf respiration at measurement temp 
     ## to that at 25 degC (ref temp).
     data <- arrhenius.scaling.traits(data, covariates, c('leafT', 'airT'))
     
   } else if (trait == 'c2n_leaf') {
-    #########################  LEAF C:N   ############################
+#########################  LEAF C:N   ############################
     
     data <- rbind(data, 
-        derive.traits(function(leafN){48/leafN}, 
-            query.data('leafN', spstr, con=con)))
+                  derive.traits(function(leafN){48/leafN}, 
+                                query.data('leafN', spstr, con=con)))
     
   } else if (trait == 'fineroot2leaf') {
-    #########################  FINE ROOT ALLOCATION  ############################
+#########################  FINE ROOT ALLOCATION  ############################
     data<-rbind(data,
-        
-        #Alternate name
-        query.data('FRC_RC', spstr, con=con),
-        
-        #Calculate from above/below ground biomass
-        derive.traits(function(root, leaf){root/leaf}, 
-            query.data('fine_root_biomass', spstr, con=con),
-            query.data('leaf_biomass', spstr, con=con)))
+                ## FRC_LC is the ratio of fine root carbon to leaf carbon
+                query.data('FRC_LC', spstr, con=con),
+                )
+
   }
   result <- data
 
@@ -519,20 +514,20 @@ query.trait.data <- function(trait, spstr,con=query.base.con(settings), ...){
     warning(paste("there is no data for", trait))
   } else {
     
-    # Do we really want to print each trait table?? Seems like a lot of
-    # info to send to console.  Maybe just print summary stats?
-    #print(result)
+    ## Do we really want to print each trait table?? Seems like a lot of
+    ## info to send to console.  Maybe just print summary stats?
+    ## print(result)
     print(paste("Mean ",trait," : ",round(mean(result$mean,na.rm=TRUE),digits=3),sep=""))
     return(result)
     
-    # Convert to format applicable for JAGS meta-analysis. remove from this script file
-#     jagged <- jagify(result)
-#     renamed <- rename.jags.columns(jagged)
-#     return(renamed)
+    ## Convert to format applicable for JAGS meta-analysis. remove from this script file
+    ##     jagged <- jagify(result)
+    ##     renamed <- rename.jags.columns(jagged)
+    ##     return(renamed)
 
   }
 }
-#==================================================================================================#
+##==================================================================================================#
 
 
 ####################################################################################################
