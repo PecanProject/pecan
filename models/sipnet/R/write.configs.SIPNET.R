@@ -19,8 +19,8 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
   print(run.id)
 
   ### WRITE *.param-spatial
-  template.param-spatial <- system.file("template.param-spatial",package="PEcAn.SIPNET")
-  system(paste("cp ",template.param-spatial," ",outdir,"/",run.id,".param-spatial"))
+  template.paramSpatial <- system.file("template.param-spatial",package="PEcAn.SIPNET")
+  system(paste("cp ",template.paramSpatial," ",outdir,"/",run.id,".param-spatial",sep=""))
   
   ### WRITE *.param
   template.param <- system.file("template.param",package="PEcAn.SIPNET")
@@ -28,6 +28,60 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
 
   param <- read.table(template.param)
 
+#### write INITAL CONDITIONS here ####
+
+
+  
+#### write run-specific environmental parameters here ####
+  env.traits <- which(names(trait.values) %in% 'env')
+  env.traits <- trait.values[[env.traits]]
+  env.names <- names(env.traits)
+
+  #### write run-specific PFT parameters here ####
+  pft.traits <- which(!(names(trait.values) %in% 'env'))[1]
+  pft.traits <- trait.values[[pft.traits]]
+  pft.names  <- names(pft.traits)
+
+  leafC = 0.5
+  if("leafC" %in% pft.names){
+    leafC = pft.traits[which(pft.names) == 'leafC']
+  }
+
+  SLA = NA
+  id = which(param[,1] == 'leafCSpWt')
+  if("SLA" %in% pft.names){
+    SLA = pft.traits[which(pft.names == 'SLA')]
+    param[id,2] = 1000*leafC/SLA
+  } else {
+    SLA = 1000*leafC/param[id,2]
+  }
+
+  Amax = NA
+  id = which(param[,1] == 'aMax')
+  if("Amax" %in% pft.names){
+    Amax = pft.traits[which(pft.names == 'Amax')]
+    param[id,2] = Amax*SLA
+  } else {
+    Amax = param[id,2]*SLA
+  }
+
+  if("leaf_respiration_rate_m2" %in% pft.names){
+    Rd = pft.traits[which(pft.names == 'leaf_respiration_rate_m2')]
+    id = which(param[,1] == 'baseFolRespFrac')
+    param[id,2] = max(min(Rd/Amax,1),0)
+  }
+
+  if("Vm_low_temp" %in% pft.names){
+    param[which(param[,1] == 'psnTMin'),2] = pft.traits[which(pft.names == 'Vm_low_temp')]
+  }
+
+  if("growth_resp_factor" %in% pft.names){
+    param[which(param[,1] == 'growthRespFrac'),2] =
+      pft.traits[which(pft.names == 'growth_resp_factor')]
+  }
+
+  
+  
   write.table(param,paste(outdir,"/",run.id,".param"),row.names=FALSE,col.names=FALSE)
   
   return()
