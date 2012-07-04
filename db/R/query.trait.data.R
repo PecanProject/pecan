@@ -517,7 +517,7 @@ query.trait.data <- function(trait, spstr,con=query.base.con(settings), ...){
     ## Do we really want to print each trait table?? Seems like a lot of
     ## info to send to console.  Maybe just print summary stats?
     ## print(result)
-    print(paste("Mean ",trait," : ",round(mean(result$mean,na.rm=TRUE),digits=3),sep=""))
+    print(paste("Median ",trait," : ",round(median(result$mean,na.rm=TRUE),digits=3),sep=""))
     return(result)
     
     ## Convert to format applicable for JAGS meta-analysis. remove from this script file
