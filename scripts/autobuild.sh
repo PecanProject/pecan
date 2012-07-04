@@ -9,7 +9,7 @@
 PACKAGES="common utils db"
 PACKAGES="${PACKAGES} modules/meta.analysis modules/uncertainty"
 PACKAGES="${PACKAGES} modules/data.land"
-PACKAGES="${PACKAGES} models/ed"
+PACKAGES="${PACKAGES} models/ed models/sipnet"
 
 # people to notify of the build
 TO="kooper@illinois.edu,sserbin@illinois.edu,dlebauer@illinois.edu,mdietze@illinois.edu"
