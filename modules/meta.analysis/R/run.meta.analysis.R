@@ -86,13 +86,21 @@ run.meta.analysis <- function() {
         data.median    <- median(trait.data[[trait]]$Y)
         prior          <- prior.distns[trait, ]
         p.data         <- p.point.in.prior(point = data.median, prior = prior)
-        if(p.data < 0.95 & p.data > 0.05){
-          message(paste(trait, "OK! prior and data are consistent"))
-        } else {
-          stop(paste(trait,"NOT OK! data is inconsistent with prior"))
+        if(prior$distn == "unif"){
+          if(data.median > prior$parama & data.median < prior$paramb){
+            message(paste(trait, "OK! prior and data are consistent"))
+          } else {
+            stop(paste(trait,"NOT OK! data is inconsistent with prior"))
+          }
+        } else if(prior$distn != "unif") {
+          if(p.data < 0.95 & p.data > 0.05){
+            message(paste(trait, "OK! prior and data are consistent"))
+          } else {
+            stop(paste(trait,"NOT OK! data is inconsistent with prior"))
+          }
         }
       }
-
+        
       ### Average trait data
       trait.average <- sapply(trait.data,
                               function(x){mean(x$Y, na.rm = TRUE)})
@@ -113,13 +121,30 @@ run.meta.analysis <- function() {
         post.median    <- median(as.matrix(trait.mcmc[[trait]][,'beta.o']))
         prior          <- prior.distns[trait, ]
         p.ma.post      <- p.point.in.prior(point = post.median, prior = prior)
-        if(p.ma.post < 0.95 & p.ma.post > 0.05){
-          message(paste(trait, "OK! prior and posterior are consistent"))
-        } else {
-          stop(paste(trait,"NOT OK! meta analysis posterior is inconsistent with prior"))
+#         if(p.ma.post < 0.95 & p.ma.post > 0.05){
+#           message(paste(trait, "OK! prior and posterior are consistent"))
+#         } else {
+#           stop(paste(trait,"NOT OK! meta analysis posterior is inconsistent with prior"))
+#         }
+        if(prior$distn == "unif"){
+          if(post.median > prior$parama & data.median < prior$paramb){
+            message(paste(trait, "OK! prior and posterior are consistent"))
+          } else {
+            stop(paste(trait,"NOT OK! meta analysis posterior is inconsistent with prior"))
+          }
+        } else if(prior$distn != "unif") {
+          if(p.ma.post < 0.95 & p.ma.post > 0.05){
+            message(paste(trait, "OK! prior and posterior are consistent"))
+          } else {
+            stop(paste(trait,"NOT OK! meta analysis posterior is inconsistent with prior"))
+          }
         }
       }
-
+      
+      ### Add some space between console info
+      print(" ")
+      print(" ")
+      
       ### Generate summaries and diagnostics
       pecan.ma.summary(trait.mcmc, pft$name, pft$outdir)
 
@@ -141,12 +166,14 @@ run.meta.analysis <- function() {
 } ### End of function: run.meta.analysis.R
 #==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##' compare point to prior distribution
 ##'
 ##' used to compare data to prior, meta analysis posterior to prior
 ##' @title find quantile of point within prior distribution
 ##' @param point 
-##' ##' @param prior list of distn, parama, paramb
+##' @param prior list of distn, parama, paramb
 ##' @return result of p<distn>(point, parama, paramb)
 ##' @author David LeBauer
 p.point.in.prior <- function(point, prior){
@@ -156,6 +183,8 @@ p.point.in.prior <- function(point, prior){
                      list(point, prior$parama, prior$paramb))
   return(p.point)
 }
+#==================================================================================================#
+
 
 ####################################################################################################
 ### EOF.  End of R script file.      				
