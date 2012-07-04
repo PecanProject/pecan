@@ -30,6 +30,14 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
 
 #### write INITAL CONDITIONS here ####
 
+  ##plantWoodInit gC/m2
+  ##laiInit m2/m2
+  ##litterInit gC/m2
+  ##soilInit gC/m2
+  ##litterWFracInit fraction
+  ##soilWFracInit fraction
+  ##snowInit cm water equivalent
+  ##microbeInit mgC/g soil
 
   
 #### write run-specific environmental parameters here ####
@@ -37,6 +45,12 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
   env.traits <- trait.values[[env.traits]]
   env.names <- names(env.traits)
 
+
+  if("turn_over_time" %in% env.names){
+    id = which(param[,1] == 'litterBreakdownRate')
+    param[id,2] = env.traits[which(env.names == 'turn_over_time')]
+  }
+  
   #### write run-specific PFT parameters here ####
   pft.traits <- which(!(names(trait.values) %in% 'env'))[1]
   pft.traits <- trait.values[[pft.traits]]
@@ -80,7 +94,48 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
       pft.traits[which(pft.names == 'growth_resp_factor')]
   }
 
-  
+  Jmax = NA
+  if("Jmax" %in% pft.names){
+    Jmax = pft.traits[which(pft.names == 'Jmax')]
+  }
+
+  alpha = NA
+  if("quantum_efficiency" %in% pft.names){
+    alpha = pft.traits[which(pft.names == 'quantum_efficiency')]
+  }
+
+  if(!is.na(Jmax) & !is.na(alpha)){
+    param[which(param[,1] == "halfSatPar"),2] = Jmax/(2*alpha)
+    ### WARNING: this is a very coarse linear approximation and needs improvement *****
+  }
+
+  if("leaf_turnover_rate" %in% pft.names){
+    param[which(param[,1] == 'leafTurnoverRate'),2] =
+      pft.traits[which(pft.names == 'leaf_turnover_rate')]
+  }
+
+  if("stem_respiration_rate" %in% pft.names){
+    vegRespQ10 = param[which(param[,1] == "vegRespQ10"),2]
+    id = which(param[,1] == 'baseVegResp')
+    ## use Q10 to convert stem resp from reference of 25C to 0C
+    param[id,2] = pft.traits[which(pft.names='stem_respiration_rate')]*vegRespQ10^(-25/10)
+  }
+
+  if("stomatal_slope.BB" %in% pft.name){
+    id = which(param[,1] == 'm_ballBerry')
+    param[id,2] = pft.traits[which(pft.names == 'stomatal_slope.BB')]
+  }
+
+  if("root_turnover_rate" %in% pft.name){
+    id = which(param[,1] == 'fineRootTurnoverRate')
+    param[id,2] = pft.traits[which(pft.names == 'root_turnover_rate')]
+  }
+
+  if("root_respiration_rate" %in% pft.name){
+    fineRootQ10 = param[which(param[,1] == "fineRootQ10"),2]
+    id = which(param[,1] == 'baseFineRootResp')
+    param[id,2] = pft.traits[which(pft.names='root_respiration_rate')]*fineRootQ10^(-25/10)
+  }
   
   write.table(param,paste(outdir,"/",run.id,".param"),row.names=FALSE,col.names=FALSE)
   
