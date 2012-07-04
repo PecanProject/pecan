@@ -127,7 +127,7 @@ run.meta.analysis <- function() {
 #           stop(paste(trait,"NOT OK! meta analysis posterior is inconsistent with prior"))
 #         }
         if(prior$distn == "unif"){
-          if(post.median > prior$parama & data.median < prior$paramb){
+          if(post.median > prior$parama & post.median < prior$paramb){
             message(paste(trait, "OK! prior and posterior are consistent"))
           } else {
             stop(paste(trait,"NOT OK! meta analysis posterior is inconsistent with prior"))
