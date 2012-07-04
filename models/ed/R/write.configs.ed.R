@@ -246,7 +246,7 @@ write.run.ED <- function(settings){
   run.text <- scan(file = run.script.template, 
                    what="character",sep='@', quote=NULL, quiet=TRUE)
   run.text  <- gsub('TMP', paste("/scratch/",Sys.getenv("USER"),sep=""), run.text)
-  run.text  <- gsub('BINARY', settings$run$host$ed$binary, run.text)
+  run.text  <- gsub('BINARY', settings$model$binary, run.text)
   run.text <- gsub('OUTDIR', settings$run$host$outdir, run.text)
   runfile <- paste(settings$outdir, 'run', sep='')
   writeLines(run.text, con = runfile)
