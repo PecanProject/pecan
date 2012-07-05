@@ -136,14 +136,14 @@ write.ensemble.configs <- function(defaults, ensemble.samples,
                  settings, outdir, run.id))
   }
   if(host$name == 'localhost'){
-    rsync(paste(outdir, '*',
-                get.run.id('ENS', ''), '*', sep=''),
-          host$rundir)
+    rsync('-outi', from = outdir, to = host$rundir, 
+          pattern = paste('*', get.run.id('ENS', ''), '*',sep='') )
   } else {
     system(paste('rsync -routi ',
                  paste(outdir, '*', get.run.id('ENS', ''), '*', sep=''), 
                  paste(host$name, ':', host$rundir,  sep=''), sep = ' '))
   }
+  
 } ### End of function: write.ensemble.configs
 #==================================================================================================#
 
