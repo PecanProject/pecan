@@ -136,15 +136,14 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
   settings.list <- xmlToList(settings.xml)
   
   # get the outputfolder
-  settings.outdir <- settings.list$outdir
-  if (is.null(settings.outdir)) {
+  if (is.null(settings.list$outdir)) {
     print(paste("No output folder specified, using", tempdir()))
     #logwarn(paste("No output folder specified, using", tempdir()), logger='PEcAn.common.read.settings')
-    settings.outdir <- tempdir()
+    settings.list$outdir <- tempdir()
   }
   
   # create folder(s)
-  if (!file.exists(settings.outdir) && !dir.create(settings.outdir, recursive=TRUE)) {
+  if (!file.exists(settings.list$outdir) && !dir.create(settings.list$outdir, recursive=TRUE)) {
     stop("Could not create out folder.")
   }
   if (!file.exists(settings.list$pfts$pft$outdir) && !dir.create(settings.list$pfts$pft$outdir, recursive=TRUE)) {
@@ -155,7 +154,7 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
   if (is.null(outputfile)) {
     outputfile="pecan.xml"
   }
-  settings.output <- file.path(settings.outdir, outputfile)
+  settings.output <- file.path(settings.list$outdir, outputfile)
   if (file.exists(settings.output)) {
     print(paste("File already exists [", settings.output, "] file will be overwritten"))
     #logwarn(paste("File already exists [", settings.output, "file will be overwritten"), logger='PEcAn.common.read.settings')

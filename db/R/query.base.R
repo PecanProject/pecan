@@ -19,13 +19,11 @@ query.base <- function(query,con=NULL,...){
     con <- query.base.con(settings)
     iopened <- 1
   }
-  q  <- dbSendQuery(con, query)
-  data <- fetch(q, n = -1)
-  ign <- dbClearResult(q)
+  data  <- dbGetQuery(con, query)
   if(iopened==1) {
     dbDisconnect(con)
   }
-  return(data)
+  invisible(data)
 }
 #==================================================================================================#
 
@@ -71,6 +69,20 @@ query.base.con <- function(settings,...){
 }
 #==================================================================================================#
 
+#---------------- Close open database connections. --------------------------------------------#
+##' Close database connection
+##'
+##' Closes a database connection
+##' @name query.close
+##' @title Close existing database connections 
+##' @param con database connection object
+##' @return nothing, as a side effect closes all open connections
+##' @author Rob Kooper
+##' @export
+query.close <- function(con) {
+  invisible(dbDisconnect(con))
+}
+#==================================================================================================#
 
 #---------------- Close all open database connections. --------------------------------------------#
 ##' Kill existing database connections
