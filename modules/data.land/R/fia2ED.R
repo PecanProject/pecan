@@ -34,11 +34,11 @@ table.expand <- function(x){
 
 ##' convert x into a table
 ##'
-##' @title fia2ed
-##' @param create pss/css/site files based on data in the fia database
+##' @title fia.to.psscss
+##' @param create pss/css files based on data in the fia database
 ##' @return nothing
 ##' @author Mike Dietze, Rob Kooper
-fia2ed <- function(settings) {
+fia.to.psscss <- function(settings) {
 	## spatial info
 	POI	    <- TRUE	 ## point or region?
 	gridres	<- 0.1
@@ -52,10 +52,7 @@ fia2ed <- function(settings) {
 	soil = c(1.0,5.0,5.0,0.01,0.0,1.0,1.0) #soil C & N pools (biogeochem) defaults (fsc,stsc,stsl,ssc,psc,msn,fsn)	
 	
 	## connect to database
-	con <-  query.base.con(dbname   = settings$database$name,
-			password = settings$database$passwd,
-			username = settings$database$userid,
-			host     = settings$database$host)
+	con <-  query.base.con(settings)
 	
 	### collect mapping from spcd to pftid
 	query <- NULL

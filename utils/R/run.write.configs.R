@@ -166,9 +166,9 @@ run.write.configs <- function(model){
   
   ### Make outdirectory, send samples to outdir
   if(host$name == 'localhost'){
-    if(!host$outdir == outdir) {
+    if(!host$outdir == settings$outdir) {
       dir.create(host$outdir)
-      file.copy(from = paste(outdir, 'samples.Rdata', sep=''),
+      file.copy(from = paste(settings$outdir, 'samples.Rdata', sep=''),
                 to   = paste(host$outdir, 'samples.Rdata', sep = ''),
                 overwrite = TRUE)
     }
