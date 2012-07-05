@@ -3,16 +3,29 @@
 # To run this from cron add the following line to your crontab (crontab -e)
 #
 # # m h  dom mon dow   command
-# */15 * * * * cd ${HOME}/autobuild/trunk && ./build.sh
+# */15 * * * * cd ${HOME}/autobuild/trunk && ./scripts/autobuild.sh
 
 # packages that are to be compiled
-PACKAGES="common utils db modules/meta.analysis modules/uncertainty modules/data.land models/ed"
+PACKAGES="common utils db"
+PACKAGES="${PACKAGES} modules/meta.analysis modules/uncertainty"
+PACKAGES="${PACKAGES} modules/data.land"
+PACKAGES="${PACKAGES} models/ed models/sipnet"
 
 # people to notify of the build
 TO="kooper@illinois.edu,sserbin@illinois.edu,dlebauer@illinois.edu,mdietze@illinois.edu"
 
-# turn debug mode on
-#LOCAL="yes"
+# run script in local mode (yes) or for the autobuild on ebi-forecast (no)
+LOCAL="no"
+
+# run check before install
+CHECK="yes"
+
+# location where to install packages
+if [ -z $R_LIBS_USER ]; then
+  export R_LIBS_USER="autobuild"
+fi
+if [ ! -e ${R_LIBS_USER} ]; then mkdir -p ${R_LIBS_USER}; fi
+rm -rf ${R_LIBS_USER}/PEcAn.*
 
 # are we still running
 if [ -e running ]; then
@@ -61,27 +74,25 @@ if [ "$LOCAL" == "yes" -o $? -eq 1 ]; then
   # get version number
   REVNO=$( grep 'revno: ' bzr.log | head -1 | sed -e 's/revno: //' )
 
-  # location where packages are installed
-  if [ ! -e autobuild ]; then mkdir autobuild; fi
-  export R_LIBS_USER="autobuild"
-
   # check/install packages
   for p in ${PACKAGES}; do
     PACKAGE="OK"
 
-    R CMD check --library=${R_LIBS_USER} $p &> out.log
-    if [ $? -ne 0 ]; then
-      STATUS="BROKEN"
-      PACKAGE="BROKEN"
-      echo "----------------------------------------------------------------------" >> changes.log
-      echo "CHECK $p BROKEN" >> changes.log
-      echo "----------------------------------------------------------------------" >> changes.log
-      cat out.log >> changes.log
-      if [ "$LOCAL" == "yes" ]; then
-        cat changes.log
-        rm changes.log
-      fi
-    fi
+    if [ "$CHECK" == "yes" ]; then
+	    R CMD check --library=${R_LIBS_USER} $p &> out.log
+	    if [ $? -ne 0 ]; then
+	      STATUS="BROKEN"
+	      PACKAGE="BROKEN"
+	      echo "----------------------------------------------------------------------" >> changes.log
+	      echo "CHECK $p BROKEN" >> changes.log
+	      echo "----------------------------------------------------------------------" >> changes.log
+	      cat out.log >> changes.log
+	      if [ "$LOCAL" == "yes" ]; then
+	        cat changes.log
+	        rm changes.log
+	      fi
+	    fi
+	  fi
 
     R CMD INSTALL --build --library=${R_LIBS_USER} $p &> out.log
     if [ $? -ne 0 ]; then
@@ -120,7 +131,7 @@ if [ "$LOCAL" == "yes" -o $? -eq 1 ]; then
   fi
 
   # cleanup
-  rm -rf changes.log out.log autobuild *.Rcheck PEcAn.*.tar.gz
+  rm -rf changes.log out.log *.Rcheck PEcAn.*.tar.gz
 fi
 
 rm running
