@@ -26,3 +26,4 @@ Require:
 Collate:
     'write.configs.SIPNET.R'
     'get.model.output.SIPNET.R'
+    'start.runs.SIPNET.R'

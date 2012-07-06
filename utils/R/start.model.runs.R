@@ -13,29 +13,23 @@
 ##' @author Shawn Serbin
 ##'
 start.model.runs <- function(model){
-  
-  if (model=="ED2"){
+
+  fcn.name <- paste("start.runs.",model,sep="")
+  if(exists(fcn.name)){
     print(" ")
     print("-------------------------------------------------------------------")
-    print(" Starting ED2 model runs")
-    print("-------------------------------------------------------------------")
-    print(" ")
-    Sys.sleep(2)
-    
-    ### Retrieve model output from local or remote server
-    start.runs.ed()
-    
-  }else if (model=="SIPNET") {
-    #write.configs.sipnet()
-    print(" ")
-    print("-------------------------------------------------------------------")
-    print(" Starting SIPNET model runs")
+    print(paste(" Starting model runs",model))
     print("-------------------------------------------------------------------")
     print(" ")
     
-    print("!!!! Not yet implemented !!!!")
+    do.call(fcn.name,args=list())
     
-  } ### End of if/else
+  } else {
+    warning(paste(fcn.name,"does not exist"))
+    warning(paste("This function is required, please make sure the model module is loaded for",model))
+    stop()
+  }
+
   
 } ### End of function
 #==================================================================================================#
