@@ -1,4 +1,4 @@
-#--------------------------------------------------------------------------------------------------#
+##--------------------------------------------------------------------------------------------------##
 ##' Run meta analysis
 ##' 
 ##' @name run.meta.analysis
@@ -63,7 +63,7 @@ run.meta.analysis <- function() {
       print("-------------------------------------------------------------------")
       print(" ")
     
-      ### Load trait data for PFT
+      ## Load trait data for PFT
       load(paste(pft$outdir, 'trait.data.Rdata', sep=''))
       load(paste(pft$outdir, 'prior.distns.Rdata', sep=''))
       
@@ -73,39 +73,35 @@ run.meta.analysis <- function() {
       print(" ")
       Sys.sleep(1) 
 
-      ### Jagify trait data for meta.analysis
+      ## Jagify trait data for meta.analysis
       jagged.data <- jagify(trait.data)
       ma.data = jagged.data
       for (i in 1:length(jagged.data)){
         ma.data[[i]] <- rename.jags.columns(jagged.data[[i]])
       }
       trait.data <- ma.data
-      ### Check that data is consistent with prior
-            ### Check that meta-analysis posteriors are consistent with priors
+      ## Check that data is consistent with prior
       for(trait in names(trait.data)){
         data.median    <- median(trait.data[[trait]]$Y)
         prior          <- prior.distns[trait, ]
         p.data         <- p.point.in.prior(point = data.median, prior = prior)
-        if(prior$distn == "unif"){
-          if(data.median > prior$parama & data.median < prior$paramb){
-            message(paste(trait, "OK! prior and data are consistent"))
-          } else {
-            stop(paste(trait,"NOT OK! data is inconsistent with prior"))
-          }
-        } else if(prior$distn != "unif") {
-          if(p.data < 0.95 & p.data > 0.05){
-            message(paste(trait, "OK! prior and data are consistent"))
-          } else {
-            stop(paste(trait,"NOT OK! data is inconsistent with prior"))
-          }
+        if(p.data < 0.975 & p.data > 0.025){
+          message("OK! ", trait, " data and prior are consistent:\n",
+                  "P[X<x] = ", p.data)
+        } else if (p.data <= 0.9995 & p.data >= 0.0005){
+          warning("CHECK THIS: ", trait, " data and prior are inconsistent:\n",
+                  "P[X<x] = ", p.data)
+        } else if (p.data > 0.9995 | p.data < 0.0005) {
+          stop("NOT OK! ", trait," data and prior are probably not the same\n",
+               "P[X<x] = ", p.data)
         }
       }
-        
-      ### Average trait data
+      
+      ## Average trait data
       trait.average <- sapply(trait.data,
                               function(x){mean(x$Y, na.rm = TRUE)})
       
-      ### Set gamma distribution prior
+      ## Set gamma distribution prior
       prior.variances = as.data.frame(rep(1, nrow(prior.distns)))
       row.names(prior.variances) = row.names(prior.distns)
       prior.variances[names(trait.average), ] = 0.001 * trait.average^2 
@@ -121,24 +117,17 @@ run.meta.analysis <- function() {
         post.median    <- median(as.matrix(trait.mcmc[[trait]][,'beta.o']))
         prior          <- prior.distns[trait, ]
         p.ma.post      <- p.point.in.prior(point = post.median, prior = prior)
-#         if(p.ma.post < 0.95 & p.ma.post > 0.05){
-#           message(paste(trait, "OK! prior and posterior are consistent"))
-#         } else {
-#           stop(paste(trait,"NOT OK! meta analysis posterior is inconsistent with prior"))
-#         }
-        if(prior$distn == "unif"){
-          if(post.median > prior$parama & post.median < prior$paramb){
-            message(paste(trait, "OK! prior and posterior are consistent"))
-          } else {
-            stop(paste(trait,"NOT OK! meta analysis posterior is inconsistent with prior"))
-          }
-        } else if(prior$distn != "unif") {
-          if(p.ma.post < 0.95 & p.ma.post > 0.05){
-            message(paste(trait, "OK! prior and posterior are consistent"))
-          } else {
-            stop(paste(trait,"NOT OK! meta analysis posterior is inconsistent with prior"))
-          }
-        }
+        ### if inside 95%CI, ok.
+        if(p.ma.post < 0.975 & p.ma.post > 0.025){
+           message("OK! ", trait, " prior and posterior are consistent:\n",
+                   "P[X<x] = ", p.ma.post)
+         } else if (p.ma.post <= 0.9995 & p.ma.post >= 0.0005){
+           warning("CHECK THIS: ", trait, " prior and posterior are inconsistent:\n",
+                   "P[X<x] = ", p.ma.post)
+         } else if (p.ma.post > 0.9995 | p.ma.post < 0.0005) {
+           stop("NOT OK! ", trait," meta analysis posterior is inconsistent with prior\n",
+                   "P[X<x] = ", p.ma.post)
+         }
       }
       
       ### Add some space between console info
@@ -164,10 +153,10 @@ run.meta.analysis <- function() {
   } ### End if/else
     
 } ### End of function: run.meta.analysis.R
-#==================================================================================================#
+##==================================================================================================#
 
 
-#--------------------------------------------------------------------------------------------------#
+##--------------------------------------------------------------------------------------------------#
 ##' compare point to prior distribution
 ##'
 ##' used to compare data to prior, meta analysis posterior to prior
