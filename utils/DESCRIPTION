@@ -37,3 +37,4 @@ Collate:
     'clear.scratch.R'
     'get.model.output.R'
     'start.model.runs.R'
+    'remove.config.R'

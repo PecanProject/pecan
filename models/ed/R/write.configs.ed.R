@@ -267,7 +267,7 @@ write.run.ED <- function(settings){
 ##' @return nothing, removes config files as side effect
 ##' @export
 ##' @author Shawn Serbin, David LeBauer
-remove.config <- function(main.outdir,settings) {
+remove.config.ED2 <- function(main.outdir,settings) {
   #if(FALSE){
     todelete <- dir(unlist(main.outdir), pattern = 'ED2INc.*',
                     recursive=TRUE, full.names = TRUE)

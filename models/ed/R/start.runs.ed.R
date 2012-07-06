@@ -5,7 +5,7 @@
 ##' @name start.runs.ed
 ##' @export
 ##' @author David LeBauer, Shawn Serbin, Carl Davidson
-start.runs.ed <- function(){
+start.runs.ED2 <- function(){
   ### TODO: Old code, needs to be updated.  Could can make this a generalized script in
   ### utils package
   
