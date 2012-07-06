@@ -85,16 +85,16 @@ run.meta.analysis <- function() {
         data.median    <- median(trait.data[[trait]]$Y)
         prior          <- prior.distns[trait, ]
         p.data         <- p.point.in.prior(point = data.median, prior = prior)
-        if(p.data < 0.975 & p.data > 0.025){
-          message("OK! ", trait, " data and prior are consistent:\n",
-                  "P[X<x] = ", p.data)
-        } else if (p.data <= 0.9995 & p.data >= 0.0005){
-          warning("CHECK THIS: ", trait, " data and prior are inconsistent:\n",
-                  "P[X<x] = ", p.data)
+        if(p.data <= 0.9995 & p.data >= 0.0005){
+          if (p.data <= 0.975 & p.data >= 0.025) {
+            message("OK! ", trait, " data and prior are consistent:\n")
+          } else {
+            warning("CHECK THIS: ", trait, " data and prior are inconsistent:\n")
+          }
         } else if (p.data > 0.9995 | p.data < 0.0005) {
-          stop("NOT OK! ", trait," data and prior are probably not the same\n",
-               "P[X<x] = ", p.data)
+          stop("NOT OK! ", trait," data and prior are probably not the same:\n")
         }
+        message(trait, " P[X<x] = ", p.data)
       }
       
       ## Average trait data
@@ -117,17 +117,17 @@ run.meta.analysis <- function() {
         post.median    <- median(as.matrix(trait.mcmc[[trait]][,'beta.o']))
         prior          <- prior.distns[trait, ]
         p.ma.post      <- p.point.in.prior(point = post.median, prior = prior)
-        ### if inside 95%CI, ok.
-        if(p.ma.post < 0.975 & p.ma.post > 0.025){
-           message("OK! ", trait, " prior and posterior are consistent:\n",
-                   "P[X<x] = ", p.ma.post)
-         } else if (p.ma.post <= 0.9995 & p.ma.post >= 0.0005){
-           warning("CHECK THIS: ", trait, " prior and posterior are inconsistent:\n",
-                   "P[X<x] = ", p.ma.post)
-         } else if (p.ma.post > 0.9995 | p.ma.post < 0.0005) {
-           stop("NOT OK! ", trait," meta analysis posterior is inconsistent with prior\n",
-                   "P[X<x] = ", p.ma.post)
-         }
+        ## if inside 95%CI, ok.
+        if(p.ma.post <= 0.9995 & p.ma.post >= 0.0005){
+          if (p.ma.post <= 0.975 & p.ma.post >= 0.025) {
+            message("OK! ", trait, " posterior and prior are consistent:\n")
+          } else {
+            warning("CHECK THIS: ", trait, " posterior and prior are inconsistent:\n")
+          }
+        } else if (p.ma.post > 0.9995 | p.ma.post < 0.0005) {
+          stop("NOT OK! ", trait," posterior and prior are probably not the same:\n")
+        }
+        message(trait, " P[X<x] = ", p.ma.post)
       }
       
       ### Add some space between console info
