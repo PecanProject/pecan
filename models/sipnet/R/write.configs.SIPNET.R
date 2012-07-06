@@ -14,13 +14,18 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
   ### WRITE sipnet.in
   template.in <- system.file("sipnet.in", package="PEcAn.SIPNET")
   config.text <- readLines(con=template.in, n=-1)
-  config.text <- gsub('@FILENAME@', paste(outdir,run.id,sep=""), config.text)
+  config.text <- gsub('@FILENAME@', paste(my.outdir,run.id,sep=""), config.text)
   config.file.name <- paste(run.id,"/sipnet.in", sep='')
   writeLines(config.text, con = paste(outdir,"/", config.file.name, sep=''))
     
   ### Display info to the console.
   print(run.id)
 
+  ### WRITE *.clim
+  template.clim <- settings$run$site$met.data.header
+  system(paste("cp ",template.clim," ",my.outdir,run.id,".clim",sep=""))
+  ### **** WE SHOULD SET THIS UP AS A LINK, RATHER THAN AS A COPY ****
+  
   ### WRITE *.param-spatial
   template.paramSpatial <- system.file("template.param-spatial",package="PEcAn.SIPNET")
   system(paste("cp ",template.paramSpatial," ",my.outdir,run.id,".param-spatial",sep=""))
@@ -140,7 +145,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
     param[id,2] = pft.traits[which(pft.names=='root_respiration_rate')]*fineRootQ10^(-25/10)
   }
   
-  write.table(param,paste(my.outdir,"/",run.id,".param",sep=""),row.names=FALSE,col.names=FALSE)
+  write.table(param,paste(my.outdir,"/",run.id,".param",sep=""),row.names=FALSE,col.names=FALSE,quote=FALSE)
   
   return()
 
