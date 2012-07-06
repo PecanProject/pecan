@@ -270,7 +270,7 @@ write.sa.configs <- function(defaults, quantile.samples, host, outdir, settings,
   }
   names(median.samples) = names(quantile.samples)
   run.id <- get.run.id('SA', 'median')
-  do.call(my.write.config,list(defaults, median.samples, settings, outdir, run.id))
+  do.call(my.write.config,args=list(defaults=defaults, trait.values=median.samples, settings=settings, outdir=outdir, run.id=run.id))
   
   ## loop over pfts
   for(i in seq(names(quantile.samples))){
