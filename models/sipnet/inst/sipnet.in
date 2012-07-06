@@ -2,7 +2,7 @@
 
 ! --- INPUTS FOR ALL RUN TYPES ---
 
-RUNTYPE = 'standard'
+RUNTYPE = standard
 ! RUNTYPE must be one of 'standard', 'senstest', or 'montecarlo'
 
 FILENAME = @FILENAME@
