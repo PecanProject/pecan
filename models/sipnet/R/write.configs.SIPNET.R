@@ -8,19 +8,27 @@
 #--------------------------------------------------------------------------------------------------#
 write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id){
 
+  my.outdir = paste(outdir,"/",run.id,"/",sep="") 
+  dir.create(my.outdir)
+  
   ### WRITE sipnet.in
   template.in <- system.file("sipnet.in", package="PEcAn.SIPNET")
   config.text <- readLines(con=template.in, n=-1)
-  config.text <- gsub('@FILENAME@', paste(outdir,"/",run.id,sep=""), config.text)
-  config.file.name <- paste(run.id,".in", sep='')
-  writeLines(config.text, con = paste(outdir, config.file.name, sep=''))
+  config.text <- gsub('@FILENAME@', paste(my.outdir,run.id,sep=""), config.text)
+  config.file.name <- paste(run.id,"/sipnet.in", sep='')
+  writeLines(config.text, con = paste(outdir,"/", config.file.name, sep=''))
     
   ### Display info to the console.
   print(run.id)
 
+  ### WRITE *.clim
+  template.clim <- settings$run$site$met.data.header
+  system(paste("cp ",template.clim," ",my.outdir,run.id,".clim",sep=""))
+  ### **** WE SHOULD SET THIS UP AS A LINK, RATHER THAN AS A COPY ****
+  
   ### WRITE *.param-spatial
   template.paramSpatial <- system.file("template.param-spatial",package="PEcAn.SIPNET")
-  system(paste("cp ",template.paramSpatial," ",outdir,"/",run.id,".param-spatial",sep=""))
+  system(paste("cp ",template.paramSpatial," ",my.outdir,run.id,".param-spatial",sep=""))
   
   ### WRITE *.param
   template.param <- system.file("template.param",package="PEcAn.SIPNET")
@@ -121,23 +129,23 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
     param[id,2] = pft.traits[which(pft.names='stem_respiration_rate')]*vegRespQ10^(-25/10)
   }
 
-  if("stomatal_slope.BB" %in% pft.name){
+  if("stomatal_slope.BB" %in% pft.names){
     id = which(param[,1] == 'm_ballBerry')
     param[id,2] = pft.traits[which(pft.names == 'stomatal_slope.BB')]
   }
 
-  if("root_turnover_rate" %in% pft.name){
+  if("root_turnover_rate" %in% pft.names){
     id = which(param[,1] == 'fineRootTurnoverRate')
     param[id,2] = pft.traits[which(pft.names == 'root_turnover_rate')]
   }
 
-  if("root_respiration_rate" %in% pft.name){
+  if("root_respiration_rate" %in% pft.names){
     fineRootQ10 = param[which(param[,1] == "fineRootQ10"),2]
     id = which(param[,1] == 'baseFineRootResp')
-    param[id,2] = pft.traits[which(pft.names='root_respiration_rate')]*fineRootQ10^(-25/10)
+    param[id,2] = pft.traits[which(pft.names=='root_respiration_rate')]*fineRootQ10^(-25/10)
   }
   
-  write.table(param,paste(outdir,"/",run.id,".param"),row.names=FALSE,col.names=FALSE)
+  write.table(param,paste(my.outdir,"/",run.id,".param",sep=""),row.names=FALSE,col.names=FALSE,quote=FALSE)
   
   return()
 

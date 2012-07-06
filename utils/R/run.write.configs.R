@@ -58,7 +58,7 @@ run.write.configs <- function(model){
   host <- settings$run$host
   
   ### Prepare for model output.  Cleanup any old config files (if exists)
-  remove.config(main.outdir,settings)
+  remove.config(main.outdir,settings,model)
 
   ### Load PFT priors and posteriors
   for (i in seq(pft.names)){
@@ -159,13 +159,15 @@ run.write.configs <- function(model){
     print(paste('Ensemble analysis settings are NULL'))
   } ### End of Ensemble
   
-  ######################## Finish up runs ########################
+print("  ######################## Finish up runs ########################")
   ### Save output from SA/Ensemble runs
   save(ensemble.samples, trait.samples, sa.samples, settings,
        file = paste(main.outdir, 'samples.Rdata', sep=''))
   
   ### Make outdirectory, send samples to outdir
+  print(host$name)
   if(host$name == 'localhost'){
+    print(c(host$outdir,"move to",settings$outdir))
     if(!host$outdir == settings$outdir) {
       dir.create(host$outdir)
       file.copy(from = paste(settings$outdir, 'samples.Rdata', sep=''),
