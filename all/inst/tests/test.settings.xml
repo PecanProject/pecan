@@ -1,9 +1,11 @@
 <?xml version="1.0"?>
 <pecan>
+  <outdir>/tmp/</outdir>
+  <!-- PFTs --> 
   <pfts>
     <pft>
       <name>ebifarm.pavi</name>
-      <outdir>~/out/ebifarm/fast/</outdir>
+      <outdir>/tmp/</outdir>
       <constants>
         <num>15</num>
         <phenology>2</phenology>
@@ -16,45 +18,70 @@
         <storage_turnover_rate>0</storage_turnover_rate>
         <r_fract>0.25</r_fract>
       </constants>
-    </pft>
+    </pft> <!-- can repeat for multiple pfts -->
   </pfts>
-  
-  <config.header>
-    <radiation>
-      <lai_min>0.01</lai_min>
-    </radiation>
-    <ed_misc>
-      <output_month>12</output_month>      
-    </ed_misc> 
-  </config.header>
-  
-  <meta.analysis>
-    <iter>1000</iter>
-    <random.effects>FALSE</random.effects>
-  </meta.analysis>
-  
-  <ensemble>
-    <size>1</size>
-  </ensemble>
-  
-<!--
-    <sensitivity.analysis>
-      <start.year>1995</start.year>
-      <end.year>1998</end.year>
-      <quantiles>
-	<quantile>0.65</quantile> 
-      </quantiles>
-    </sensitivity.analysis>
--->     
-  <outdir>/tmp/</outdir>
+  <!-- database -->
   <database>
     <userid>ebi_analys_user</userid>
     <passwd>b742xsAu</passwd>
     <location>ebi-forecast.igb.illinois.edu</location>
     <name>ebi_analysis</name>
   </database>
+  <!-- meta analysis -->
+  <meta.analysis>
+    <iter>1000</iter>
+    <random.effects>FALSE</random.effects>
+  </meta.analysis>
+  <!-- ensemble -->
+  <ensemble>
+    <size>1</size>
+  </ensemble>
+  <!-- sensitivity analysis -->
+  <sensitivity.analysis>
+    <start.year>1995</start.year>
+    <end.year>1998</end.year>
+    <quantiles><!-- note, generally would use either quantile _or_ sigma, but not both.
+		    both are included here for testing / demonstration
+		    if neither are included, will use default quantiles = pnorm(-3:3) --> 
+      <quantile>0.35</quantile> 
+      <quantile>0.65</quantile> 
+      <sigma>-3</sigma>
+      <sigma>3</sigma>
+    </quantiles>
+  </sensitivity.analysis>
+  <!-- model settings, using ED2 in this test -->
+  <model>
+    <name>ED2</name>
+    <edin>ed2in-template-pavi</edin>
+    <binary>/home/dlebauer/EDBRAMS/ED/build/ed_2.1-opt</binary>
+    <!-- Other ED2 inputs                   -->
+    <veg>/home/mdietze/data/oge2OLD/OGE2_</veg>
+    <soil>/home/mdietze/data/faoOLD/FAO_</soil>
+    <inputs>/home/mdietze/data/ed_inputs/</inputs>
+    <config.header>
+      <!-- Radiation settings -->
+      <radiation>
+	<lai_min>0.01</lai_min>
+      </radiation>
+      <!-- Hydrology settings -->
+      <hydro>
+	<useTOPMODEL>1</useTOPMODEL>
+	<useRUNOFF>0</useRUNOFF>
+	<outputPeriod>96</outputPeriod>
+	<MoistdWT>100000000.0</MoistdWT>
+	<MoistRateTuning>0.4</MoistRateTuning>
+	<FracLiqRunoff>0.00001</FracLiqRunoff>
+	<dewmax>1.0e-8</dewmax>
+      </hydro>
+      <!-- ED2 Misc settings -->
+      <ed_misc>
+	<output_month>12</output_month>
+	<burnin>1</burnin>
+      </ed_misc>
+    </config.header>
+  </model>
+  <!-- model run settings -->
   <run>
-    <edin>~/in/ebifarm/ed2in-template-pavi</edin>
     <site>
       <psscss>/home/scratch/dlebauer/pecan/edin/ebifarm/ebifarm.</psscss>
       <name>EBI Energy Farm - Switchgrass</name>
@@ -68,10 +95,12 @@
     <end.date>1998/12/31</end.date>
     <host>
       <ed><phenol.scheme>1</phenol.scheme></ed>
-      <name>dlebauer@ebi-cluster.igb.uiuc.edu</name>
+      <name>ebi-cluster.igb.illinois.edu</name>
       <rundir>/home/dlebauer/EDBRAMS/ED/run/</rundir>
       <inputs>/home/scratch/dlebauer/edin/</inputs>
       <outdir>/home/scratch/dlebauer/out/ebifarm/fast/</outdir>
     </host>
+    <priority>-5</priority>
+    <scratch>tmp</scratch>
   </run>
 </pecan>
