@@ -17,6 +17,6 @@ get.model.output("ED2")
 }
 }
 \author{
-  Shawn Serbin, David LeBauer
+  Michael Dietze, Shawn Serbin, David LeBauer
 }
 

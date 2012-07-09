@@ -3,18 +3,27 @@
 \title{Create Density Data Frame from Sample}
 \usage{
   create.density.df(samps = NULL, zero.bounded = FALSE,
-    distribution = NULL)
+    distribution = NULL, n = 1000, ...)
 }
 \arguments{
-  \item{sample}{}
+  \item{samps}{a vector of samples from a distribution}
 
-  \item{...}{additional arguments to density}
+  \item{zero.bounded}{}
+
+  \item{distribution}{list with elements distn, parama,
+  paramb, e.g. \code{list('norm', 0, 1)}}
 }
 \value{
-  data frame with x and y
+  data frame with x and y = dens(x)
 }
 \description{
   Returns a data frame from \link{stats::density} function
+}
+\examples{
+prior.df <- create.density.df(distribution = list('norm',0,1))
+plot(prior.df)
+samp.df <- create.density.df(samps = rnorm(100))
+lines(samp.df)
 }
 \author{
   David LeBauer

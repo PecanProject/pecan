@@ -198,9 +198,9 @@ pr.dens <- function(distn, parama, paramb, n = 1000, alpha = 0.001) {
 ##' @return data frame with back-transformed log density estimate 
 ##' @author \href{http://stats.stackexchange.com/q/6588/2750}{Rob Hyndman}
 ##' @references M. P. Wand, J. S. Marron and D. Ruppert, 1991. Transformations in Density Estimation. Journal of the American Statistical Association. 86(414):343-353 \url{http://www.jstor.org/stable/2290569}
-zero.bounded.density <- function (x, bw = "SJ") {
+zero.bounded.density <- function (x, bw = "SJ", n = 1001) {
   y <- log(x)
-  g <- density(y, bw = bw, n = 1001)
+  g <- density(y, bw = bw, n = n)
   xgrid <- exp(g$x)
   g$y <- c(0, g$y/xgrid)
   g$x <- c(0, xgrid)

@@ -233,7 +233,8 @@ add.prior.density <- function(prior.density, base.plot = NULL, prior.color = 'bl
 ##' lines(samp.df)
 create.density.df <- function(samps = NULL,
                               zero.bounded = FALSE,
-                              distribution = NULL) {
+                              distribution = NULL,
+                              n = 1000, ...) {
   samp.exists <- !is.null(samps)
   dist.exists <- !is.null(distribution)
   if(identical(samp.exists, dist.exists)){
@@ -244,9 +245,9 @@ create.density.df <- function(samps = NULL,
   }
   if(samp.exists){
     if(zero.bounded) {
-      new.density <- zero.bounded.density(samps)
+      new.density <- zero.bounded.density(samps, n = 1000, ...)
     } else {    
-      new.density <- density(samps)
+      new.density <- density(samps, n = 1000, ...)
     }
     density.df <- with(new.density,
                        data.frame(x = x,
@@ -254,7 +255,7 @@ create.density.df <- function(samps = NULL,
   }
   
   if(dist.exists) {
-    density.df <- do.call(pr.dens, c(distribution[1:3], n = 1000))
+    density.df <- do.call(pr.dens, c(distribution[1:3]))
   }
   return(density.df)
 }

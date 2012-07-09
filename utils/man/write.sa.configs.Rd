@@ -3,8 +3,7 @@
 \title{Write sensitivity analysis configs}
 \usage{
   write.sa.configs(defaults, quantile.samples, host,
-    outdir, settings, write.config = write.config.ED,
-    clean = FALSE)
+    outdir, settings, model = "ED2", clean = FALSE)
 }
 \arguments{
   \item{pft}{pft id used to query PEcAn database}
