@@ -242,7 +242,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
 ##' @import PEcAn.utils
 #--------------------------------------------------------------------------------------------------#
 write.run.ED <- function(settings){
-  run.script.template = system.file("inst", "run.template.ED", package="PEcAn.ED")
+  run.script.template = system.file("run.template.ED", package="PEcAn.ED")
   run.text <- scan(file = run.script.template, 
                    what="character",sep='@', quote=NULL, quiet=TRUE)
   run.text  <- gsub('TMP', paste("/scratch/",Sys.getenv("USER"),sep=""), run.text)
