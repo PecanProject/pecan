@@ -54,7 +54,10 @@
     <name>ED2</name>
     <edin>ed2in-template-pavi</edin>
     <binary>/home/dlebauer/EDBRAMS/ED/build/ed_2.1-opt</binary>
+    <!-- Set ED2 phenology scheme. -->
+    <phenol.scheme>1</phenol.scheme>
     <!-- Other ED2 inputs                   -->
+    <psscss>/home/scratch/dlebauer/pecan/edin/ebifarm/ebifarm.</psscss>
     <veg>/home/mdietze/data/oge2OLD/OGE2_</veg>
     <soil>/home/mdietze/data/faoOLD/FAO_</soil>
     <inputs>/home/mdietze/data/ed_inputs/</inputs>
@@ -83,7 +86,6 @@
   <!-- model run settings -->
   <run>
     <site>
-      <psscss>/home/scratch/dlebauer/pecan/edin/ebifarm/ebifarm.</psscss>
       <name>EBI Energy Farm - Switchgrass</name>
       <lat>40.06</lat>
       <lon>-88.20</lon>
@@ -94,7 +96,6 @@
     <start.date>1996/01/01</start.date>
     <end.date>1998/12/31</end.date>
     <host>
-      <ed><phenol.scheme>1</phenol.scheme></ed>
       <name>ebi-cluster.igb.illinois.edu</name>
       <rundir>/home/dlebauer/EDBRAMS/ED/run/</rundir>
       <inputs>/home/scratch/dlebauer/edin/</inputs>
