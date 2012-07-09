@@ -19,6 +19,9 @@
         <r_fract>0.25</r_fract>
       </constants>
     </pft> <!-- can repeat for multiple pfts -->
+    <pft>
+      <name>foo</name>
+    </pft>
   </pfts>
   <!-- database -->
   <database>
