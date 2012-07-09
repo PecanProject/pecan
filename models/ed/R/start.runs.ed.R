@@ -15,10 +15,10 @@ start.runs.ED2 <- function(){
   ## priority can be NULL in settings, if null,
   ## only batch.jobs.sh is required to exist
   if(is.null(settings$run$priority)){
-    batch.jobs.script <- system.file("inst", "batch.jobs.sh", package="PEcAn.ED")
+    batch.jobs.script <- system.file("batch.jobs.sh", package="PEcAn.ED")
     
   } else if (as.numeric(settings$run$priority) < 0) {
-    batch.jobs.script <- system.file("inst", "batch.jobs.lowp.sh", package="PEcAn.ED")
+    batch.jobs.script <- system.file("batch.jobs.lowp.sh", package="PEcAn.ED")
 
   } else if (as.numeric(settings$run$priority) > 0){
     stop("need admin rights to set higher priority")
