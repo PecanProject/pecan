@@ -19,8 +19,9 @@ start.runs.ED2 <- function(){
     batch.jobs.script.lowp <- system.file("batch.jobs.lowp.sh", package="PEcAn.ED")
     batch.jobs.script.lowp <- readLines(con=batch.jobs.script.lowp, n=-1)
     batch.jobs.script.lowp <- gsub('@PRIOR@', settings$run$priority, batch.jobs.script.lowp)
-    batch.jobs.script <- batch.jobs.script.lowp
-    
+    writeLines(batch.jobs.script.lowp, con = paste(settings$outdir,"/batch.jobs.script.lowp.sh" , sep=''))
+    batch.jobs.script <- file.path(paste(settings$outdir,"/batch.jobs.script.lowp.sh" , sep=''))   
+ 
   } else if (as.numeric(settings$run$priority) > 0){
     stop("need admin rights to set higher priority")
   }
