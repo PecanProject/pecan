@@ -177,7 +177,6 @@ write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
   ed2in.text <- gsub('@SITE_MET@', settings$run$site$met, ed2in.text)
   ed2in.text <- gsub('@MET_START@', settings$run$site$met.start, ed2in.text)
   ed2in.text <- gsub('@MET_END@', settings$run$site$met.end, ed2in.text)
-  ed2in.text <- gsub('@SITE_PSSCSS@', settings$run$site$psscss, ed2in.text)
   
   if(settings$model$phenol.scheme==1){
     # Set prescribed phenology switch in ED2IN
@@ -195,6 +194,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
     }
   
     #-----------------------------------------------------------------------
+    ed2in.text <- gsub('@SITE_PSSCSS@', settings$model$psscss, ed2in.text)
     ed2in.text <- gsub('@ED_VEG@', settings$model$veg, ed2in.text)
     ed2in.text <- gsub('@ED_SOIL@', settings$model$soil, ed2in.text)
     ed2in.text <- gsub('@ED_INPUTS@', settings$model$inputs, ed2in.text)
