@@ -28,5 +28,5 @@ LazyLoad: yes
 LazyData: FALSE
 Collate:
     'sensitivity.analysis.R'
-    'sensitivity.analysis.plots.R'
     'run.sensitivity.analysis.R'
+    'plots.R'

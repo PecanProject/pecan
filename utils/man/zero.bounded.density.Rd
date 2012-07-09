@@ -2,7 +2,7 @@
 \alias{zero.bounded.density}
 \title{Zero Bounded Density}
 \usage{
-  zero.bounded.density(x, bw = "SJ")
+  zero.bounded.density(x, bw = "SJ", n = 1001)
 }
 \arguments{
   \item{x}{}

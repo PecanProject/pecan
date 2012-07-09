@@ -1,1 +1,4 @@
+export(plot.sensitivities)
+export(plot.sensitivity)
+export(plot.variance.decomposition)
 export(run.sensitivity.analysis)
