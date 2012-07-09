@@ -1,7 +1,7 @@
 context("test approx.posterior function")
 
-data("trait.mcmc")
-data("prior.distns")
+data("trait.mcmc", package = "PEcAn.common")
+data("prior.distns", package = "PEcAn.common")
 
 test_that("test data are as expected", {
   expect_equal(names(trait.mcmc),
