@@ -7,10 +7,14 @@
 ##' @param priors dataframe of priors used in meta analysis
 ##' @param trait.data data used in meta-analysis (used for plotting)
 ##' @param outdir directory in which to plot results
-##' @return posteriors data frame, similar to priors, but with closed form pdfs fit to meta-analysis results  
+##' @return posteriors data frame, similar to priors,
+##' but with closed form pdfs fit to meta-analysis results  
 ##' @export
 ##' @author David LeBauer, Carl Davidson, Mike Dietze
-#--------------------------------------------------------------------------------------------------#
+##' @examples
+##' data('trait.mcmc')
+##' data('prior.distns')
+##' approx.posterior(trait.mcmc, priors = prior.distns)
 approx.posterior <- function(trait.mcmc, priors, trait.data=NULL, outdir=NULL){
   ##initialization
   posteriors <- priors
@@ -65,7 +69,7 @@ approx.posterior <- function(trait.mcmc, priors, trait.data=NULL, outdir=NULL){
       ## fit[[2]] <- fitdistr(dat,"f",list(df1=10,df2=2*mean(dat)/(max(mean(dat)-1,1))))
       fit[[2]] <- suppressWarnings(fitdistr(dat, "gamma"))
       fit[[3]] <- suppressWarnings(fitdistr(dat, "lognormal"))
-      fit[[4]] <- fitdistr(dat, "weibull")
+      fit[[4]] <- suppressWarnings(fitdistr(dat, "weibull"))
       fit[[5]] <- suppressWarnings(fitdistr(dat, "normal"))
       fparm <- lapply(fit,function(x){as.numeric(x$estimate)})
       fAIC  <- lapply(fit,function(x){AIC(x)})
@@ -75,7 +79,7 @@ approx.posterior <- function(trait.mcmc, priors, trait.data=NULL, outdir=NULL){
       posteriors[ptrait,"parama"] <- fit[[bestfit]]$estimate[1]
       if(bestfit == 1){
         posteriors[ptrait,"paramb"] <- NA
-      }else{
+      } else {
         posteriors[ptrait,"paramb"] <- fit[[bestfit]]$estimate[2]
       }
       
