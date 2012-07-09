@@ -11,7 +11,7 @@
 ##' @export
 ##' @author David LeBauer, Carl Davidson, Mike Dietze
 #--------------------------------------------------------------------------------------------------#
-approx.posterior <- function(trait.mcmc,priors,trait.data=NULL,outdir=NULL){
+approx.posterior <- function(trait.mcmc, priors, trait.data=NULL, outdir=NULL){
   ##initialization
   posteriors <- priors
   do.plot <- exists("outdir")
@@ -23,13 +23,12 @@ approx.posterior <- function(trait.mcmc,priors,trait.data=NULL,outdir=NULL){
   for(trait in names(trait.mcmc)){
     print(trait)
     
-    dat  <- trait.mcmc[[trait]]
-    vname <- colnames(dat[[1]])
-    dat <- as.vector(as.array(dat)[,which(vname == "beta.o"),])
-    pdist <- priors[trait,"distn"]
-    pparm <- as.numeric(priors[trait,2:3])
+    dat    <- trait.mcmc[[trait]]
+    vname  <- colnames(dat[[1]])
+    dat    <- as.vector(as.array(dat)[,which(vname == "beta.o"),])
+    pdist  <- priors[trait, "distn"]
+    pparm  <- as.numeric(priors[trait, 2:3])
     ptrait <- trait
-    if(trait == "Vm0") trait = "Vcmax"
 
     fp <- function(x){
       cl <- call(paste("d",priors[ptrait,"distn"],sep=""),x,priors[ptrait,"parama"],
@@ -38,7 +37,7 @@ approx.posterior <- function(trait.mcmc,priors,trait.data=NULL,outdir=NULL){
     }
     
     ## first determine the candidate set of models based on any range restrictions
-    zerobound = c("exp","gamma","lnorm")#,"weibull")
+    zerobound = c("exp", "gamma", "lnorm", "weibull")
     if(pdist %in% "beta"){
       m <- mean(dat)
       v <- var(dat)
@@ -63,11 +62,11 @@ approx.posterior <- function(trait.mcmc,priors,trait.data=NULL,outdir=NULL){
 
       fit <- list()
       fit[[1]] <- suppressWarnings(fitdistr(dat,"exponential"))
-#      fit[[2]] <- fitdistr(dat,"f",list(df1=10,df2=2*mean(dat)/(max(mean(dat)-1,1))))
-      fit[[2]] <- suppressWarnings(fitdistr(dat,"gamma"))
-      fit[[3]] <- suppressWarnings(fitdistr(dat,"lognormal"))
-#      fit[[4]] <- fitdistr(dat,"weibull")
-      fit[[4]] <- suppressWarnings(fitdistr(dat,"normal"))
+      ## fit[[2]] <- fitdistr(dat,"f",list(df1=10,df2=2*mean(dat)/(max(mean(dat)-1,1))))
+      fit[[2]] <- suppressWarnings(fitdistr(dat, "gamma"))
+      fit[[3]] <- suppressWarnings(fitdistr(dat, "lognormal"))
+      fit[[4]] <- fitdistr(dat, "weibull")
+      fit[[5]] <- suppressWarnings(fitdistr(dat, "normal"))
       fparm <- lapply(fit,function(x){as.numeric(x$estimate)})
       fAIC  <- lapply(fit,function(x){AIC(x)})
       
