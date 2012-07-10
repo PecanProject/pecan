@@ -2,7 +2,7 @@
 ##' Reads the output of a single model run
 ##'
 ##' @title Read output
-##' @name read.output.generic
+##' @name read.output.SIPNET
 ##' @param run.id the id distiguishing the model run
 ##' @param outdir the directory that the model's output was sent to
 ##' @param start.year 
@@ -26,7 +26,7 @@ read.output.SIPNET <- function(run.id, outdir, start.year=NA, end.year=NA){
 #--------------------------------------------------------------------------------------------------#
 ##' Function to retrieve model output from local or remote server
 ##'
-##' @name get.model.output.generic
+##' @name get.model.output.SIPNET
 ##' @title Retrieve model output from local or remote server
 ##' 
 ##' @import PEcAn.utils
