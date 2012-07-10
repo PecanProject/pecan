@@ -9,9 +9,6 @@ start.runs.ED2 <- function(){
   
   host     <-  settings$run$host
   
-  ## Priority only needs to be set for very big jobs as with ED2
-  ## priority can be NULL in settings, if null,
-  ## only batch.jobs.sh is required to exist
   if(is.null(settings$run$priority)){
     batch.jobs.script <- system.file("batch.jobs.sh", package="PEcAn.ED")
     

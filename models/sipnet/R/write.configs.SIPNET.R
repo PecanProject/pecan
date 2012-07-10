@@ -5,6 +5,9 @@
 
 #--------------------------------------------------------------------------------------------------#
 ##' Writes a configuration files for your model
+##' @name write.config.SIPNET
+##' @title Writes a configuration files for your model
+##' @author Michael Dietze
 #--------------------------------------------------------------------------------------------------#
 write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id){
 

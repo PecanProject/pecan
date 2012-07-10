@@ -198,7 +198,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
     ed2in.text <- gsub('@ED_VEG@', settings$model$veg, ed2in.text)
     ed2in.text <- gsub('@ED_SOIL@', settings$model$soil, ed2in.text)
     ed2in.text <- gsub('@ED_INPUTS@', settings$model$inputs, ed2in.text)
-
+    
     #-----------------------------------------------------------------------
     ed2in.text <- gsub('@START_MONTH@', format(startdate, "%m"), ed2in.text)
     ed2in.text <- gsub('@START_DAY@', format(startdate, "%d"), ed2in.text)
