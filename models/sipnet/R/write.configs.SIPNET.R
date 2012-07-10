@@ -68,7 +68,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
   pft.traits <- trait.values[[pft.traits]]
   pft.names  <- names(pft.traits)
 
-  leafC = 0.5
+  leafC = 0.48  #0.5
   if("leafC" %in% pft.names){
     leafC = pft.traits[which(pft.names) == 'leafC']
   }
@@ -119,6 +119,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
   if(!is.na(Jmax) & !is.na(alpha)){
     param[which(param[,1] == "halfSatPar"),2] = Jmax/(2*alpha)
     ### WARNING: this is a very coarse linear approximation and needs improvement *****
+    ### Yes, we also need to work on doing a paired query where we have both data together.
   }
 
   if("leaf_turnover_rate" %in% pft.names){
