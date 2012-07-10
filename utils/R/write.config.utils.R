@@ -173,24 +173,24 @@ get.quantiles <- function(quantiles.tag) {
   }
   return(sort(quantiles))
 }
-#==================================================================================================#
+##==================================================================================================#
 
-
-#--------------------------------------------------------------------------------------------------#
-##' @name get.sa.sample.list
-##' @title Get Sensitivity Analysis samples as list
-##' @param pft 
+##' get sensitivity samples as a list
+##'
+##' @title get.sa.sample.list 
+##' @param pft Plant Functional Type
 ##' @param env 
-##' @param quantiles
+##' @param quantiles quantiles at which to obtain samples from parameter for
+##' sensitivity analysis
 ##' @export
-##' @author unknown
-get.sa.sample.list <- function(pft,env,quantiles){
+##' @return sa.sample.list
+get.sa.sample.list <- function(pft, env, quantiles){
   sa.sample.list <- list()
   for(i in 1:length(pft)){
-    sa.sample.list[[i]] = get.sa.samples(pft[[i]],quantiles)
+    sa.sample.list[[i]] = get.sa.samples(pft[[i]], quantiles)
   }
-  sa.sample.list[[length(pft)+1]] <- get.sa.samples(env,quantiles)
-  names(sa.sample.list) <- c(names(pft),"env")
+  sa.sample.list[[length(pft)+1]] <- get.sa.samples(env, quantiles)
+  names(sa.sample.list) <- c(names(pft), "env")
   return(sa.sample.list)
 }
 #==================================================================================================#

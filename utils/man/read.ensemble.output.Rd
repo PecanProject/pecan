@@ -3,10 +3,10 @@
 \title{Read Ensemble Output}
 \usage{
   read.ensemble.output(ensemble.size, outdir, start.year,
-    end.year, read.output = read.output.ed)
+  end.year, read.output = read.output.ed)
 
   read.ensemble.output(ensemble.size, outdir, start.year,
-    end.year, read.output = read.output.ed)
+  end.year, read.output = read.output.ed)
 }
 \arguments{
   \item{ensemble.size}{}

@@ -3,10 +3,10 @@
 \title{Read SA output}
 \usage{
   read.sa.output(traits, quantiles, outdir, pft.name = "",
-    start.year, end.year, read.output = read.output.ed)
+  start.year, end.year, read.output = read.output.ed)
 
   read.sa.output(traits, quantiles, outdir, pft.name = "",
-    start.year, end.year, read.output = read.output.ed)
+  start.year, end.year, read.output = read.output.ed)
 }
 \arguments{
   \item{traits}{}

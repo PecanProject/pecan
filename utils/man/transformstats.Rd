@@ -22,9 +22,9 @@
 }
 \examples{
 statdf <- data.frame(Y=rep(1,5),
-                               stat=rep(1,5),
-                               n=rep(4,5),
-                               statname=c('SD', 'MSE', 'LSD', 'HSD', 'MSD'))
+stat=rep(1,5),
+n=rep(4,5),
+statname=c('SD', 'MSE', 'LSD', 'HSD', 'MSD'))
 transformstats(statdf)
 }
 \author{

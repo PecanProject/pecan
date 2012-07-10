@@ -3,7 +3,7 @@
 \title{Approximate posterior}
 \usage{
   approx.posterior(trait.mcmc, priors, trait.data = NULL,
-    outdir = NULL)
+  outdir = NULL)
 }
 \arguments{
   \item{trait.mcmc}{meta analysis outputs}
@@ -24,6 +24,11 @@
 }
 \details{
   returns priors where posterior MCMC are missing
+}
+\examples{
+\dontrun{data("trait.mcmc", package = "PEcAn.common")
+data("prior.distns", package = "PEcAn.common")
+approx.posterior(trait.mcmc, priors = prior.distns)}
 }
 \author{
   David LeBauer, Carl Davidson, Mike Dietze

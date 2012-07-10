@@ -3,7 +3,7 @@
 \title{Write ensemble configs}
 \usage{
   write.ensemble.configs(defaults, ensemble.samples, host,
-    outdir, settings, model = "ED2", clean = FALSE)
+  outdir, settings, model = "ED2", clean = FALSE)
 }
 \arguments{
   \item{defaults}{pft}

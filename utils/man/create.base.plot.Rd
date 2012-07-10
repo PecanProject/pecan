@@ -1,9 +1,6 @@
 \name{create.base.plot}
 \alias{create.base.plot}
 \title{Create Base Plot}
-\usage{
-  create.base.plot()
-}
 \value{
   empty ggplot object
 }
