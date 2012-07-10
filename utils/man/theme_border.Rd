@@ -2,8 +2,8 @@
 \alias{theme_border}
 \title{Theme border for plot}
 \usage{
-  theme_border(type = c("left", "right", "bottom", "top", "none"),
-    colour = "black", size = 1, linetype = 1)
+  theme_border(type = c("left", "right", "bottom", "top",
+  "none"), colour = "black", size = 1, linetype = 1)
 }
 \arguments{
   \item{type}{}
@@ -34,9 +34,9 @@
 \dontrun{
 df = data.frame( x=c(1,2,3), y=c(4,5,6) )
 ggplot(data=df, aes(x=x, y=y)) + geom_point() + theme_bw() +
-       opts(panel.border = theme_border(c("bottom","left")) )
+opts(panel.border = theme_border(c("bottom","left")) )
 ggplot(data=df, aes(x=x, y=y)) + geom_point() + theme_bw() +
-       opts(panel.border = theme_border(c("b","l")) )
+opts(panel.border = theme_border(c("b","l")) )
 }
 }
 \author{

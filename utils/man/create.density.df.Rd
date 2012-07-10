@@ -3,7 +3,7 @@
 \title{Create Density Data Frame from Sample}
 \usage{
   create.density.df(samps = NULL, zero.bounded = FALSE,
-    distribution = NULL, n = 1000, ...)
+  distribution = NULL, n = 1000, ...)
 }
 \arguments{
   \item{samps}{a vector of samples from a distribution}

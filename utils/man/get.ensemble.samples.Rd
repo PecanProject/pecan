@@ -3,7 +3,7 @@
 \title{Get Ensemble Samples}
 \usage{
   get.ensemble.samples(ensemble.size, pft.samples,
-    env.samples, method = "halton")
+  env.samples, method = "halton")
 }
 \arguments{
   \item{ensemble.size}{number of runs in model ensemble}

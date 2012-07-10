@@ -3,7 +3,7 @@
 \title{prior.fn}
 \usage{
   prior.fn(parms, x, alpha, distn, central.tendency = NULL,
-    trait = NULL)
+  trait = NULL)
 }
 \arguments{
   \item{parms}{target for optimization}
@@ -39,11 +39,11 @@
 }
 \examples{
 DEoptim(fn = prior.fn,
-                lower = c(0, 0),
-                upper = c(1000, 1000),
-                x=c(2, 6, 3.3),
-                alpha = 0.05,
-                distn = 'lnorm')$optim$bestmem
+lower = c(0, 0),
+upper = c(1000, 1000),
+x=c(2, 6, 3.3),
+alpha = 0.05,
+distn = 'lnorm')$optim$bestmem
 }
 \author{
   David LeBauer

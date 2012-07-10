@@ -2,8 +2,8 @@
 \alias{fit.dist}
 \title{Fit distribution to data}
 \usage{
-  fit.dist(trait.data, trait = colnames(trait.data),
-    dists = c("weibull", "lognormal", "gamma"), n = NULL)
+  fit.dist(trait.data, trait = colnames(trait.data), dists
+  = c("weibull", "lognormal", "gamma"), n = NULL)
 }
 \arguments{
   \item{trait.data}{data for distribution}
