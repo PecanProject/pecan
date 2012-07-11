@@ -1,6 +1,6 @@
 \name{write.config.SIPNET}
 \alias{write.config.SIPNET}
-\title{Writes a configuration files for your model}
+\title{Writes a configuration files for SIPNET model}
 \usage{
   write.config.SIPNET(defaults, trait.values, settings,
     outdir, run.id)
