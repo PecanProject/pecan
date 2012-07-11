@@ -131,7 +131,13 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
         settings.xml <- xmlMerge(settings.xml, xmlParse(commandArgs()[idx+1]))
       }
     }
-  }  
+  }
+
+  # make sure something was loaded
+  if (is.null(settings.xml)) {
+    stop("Did not find any settings file to load.")
+  }
+
   # conver the xml to a list for ease and return
   settings.list <- xmlToList(settings.xml)
   
