@@ -133,7 +133,7 @@ get.results.ed <- function(){
 #--------------------------------------------------------------------------------------------------#
 ##' Function to retrieve ED2 HDF model output from local or remote server
 ##'
-##' @name get.model.output.ed
+##' @name get.model.output.ED2
 ##' @title Retrieve ED2 HDF model output from local or remote server
 ##' 
 ##' @import PEcAn.utils

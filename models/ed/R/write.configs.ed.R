@@ -45,6 +45,7 @@ abbreviate.run.id.ED <- function(run.id){
 ##' 
 ##' Performs model specific unit conversions on a a list of trait values,
 ##' such as those provided to write.config
+##' @name convert.samples.ED
 ##' @title Convert samples for ed
 ##' @param trait.samples a matrix or dataframe of samples from the trait distribution
 ##' @return matrix or dataframe with values transformed
@@ -110,6 +111,7 @@ convert.samples.ED <- function(trait.samples){
 ##'
 ##' Requires a pft xml object, a list of trait values for a single model run,
 ##' and the name of the file to create
+##' @name write.config.ED2
 ##' @title Write ED configuration files
 ##' @param pft 
 ##' @param trait.samples vector of samples for a given trait
@@ -263,7 +265,8 @@ write.run.ED <- function(settings){
 #--------------------------------------------------------------------------------------------------#
 ##' Clear out old config and ED model run files.
 ##'
-##' @name remove.config
+##' @name remove.config.ED2
+##' @title Clear out old config and ED model run files.
 ##' @return nothing, removes config files as side effect
 ##' @export
 ##' @author Shawn Serbin, David LeBauer

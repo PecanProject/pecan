@@ -7,8 +7,6 @@
 ##' 
 ##' @export
 ##' @author Shawn Serbin, Michael Dietze
-#--------------------------------------------------------------------------------------------------#
-
 model2netcdf.SIPNET <- function(outdir,run.id) {
   
   require(ncdf)
