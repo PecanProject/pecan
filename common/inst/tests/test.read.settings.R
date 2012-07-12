@@ -4,7 +4,7 @@ context("tests for read.settings and related functions")
 test_that("read settings returns error if no settings file found (issue #1124)",{
   default.settings.files <- c("/etc/pecan.xml", "~/.pecan.xml",
                               "pecan.xml", Sys.getenv("PECAN_SETTINGS"))
-  if(!all(sapply(default.settings.files, file.exists))){
+  if(!any(sapply(default.settings.files, file.exists))){
     expect_error(read.settings(), "Did not find any settings file to load.")
   }
 })
@@ -41,9 +41,9 @@ test_that("read.settings gives expected warnings",{
                         <outdir>/tmp/</outdir>
                       </pft></pfts></pecan>")
   expect_error(read.settings("bug1444.xml"), "invalid 'file' argument")
-  expect_warning(read.settings("warning1444.xml"), "No output folder specified")
+  expect_output(read.settings("warning1444.xml"), "No output folder specified")
   fixed1444 <- read.settings("fixed1444.xml")
-  expect_equal(fixed1444$pfts$pft, "testPFTname")
+  expect_equal(fixed1444$pfts$pft$name, "testPFTname")
   file.remove("bug1444.xml", "warning1444.xml", "fixed1444.xml")
 })
 
