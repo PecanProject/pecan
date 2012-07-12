@@ -81,10 +81,8 @@ get.model.output.SIPNET <- function(){
 
     olddir <- getwd()
     setwd(settings$outdir)
-    get.results()
+    get.results("SIPNET")
     setwd(olddir)
-
-    print("HERE")
     
   } else {
 

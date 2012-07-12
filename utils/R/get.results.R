@@ -6,7 +6,7 @@
 ##' @import PEcAn.utils
 ##' @export
 ##'
-get.results <- function(){
+get.results <- function(model){
   
   ### OLD CODE, SLIGHTYL MODIFIED, THAT NEEDS TO BE UPDATED. previously names read.output.ed and was in the 
   ### scripts folder.  SPS
@@ -36,7 +36,8 @@ get.results <- function(){
                                                        outdir = getwd(), 
                                                        pft.name=pft.name,
                                                        start.year,
-                                                       end.year)
+                                                       end.year,
+                                                       model)
       save(sensitivity.output, file = 'output.Rdata')
       
     }
@@ -46,7 +47,8 @@ get.results <- function(){
     ensemble.output <- read.ensemble.output(settings$ensemble$size,
                                             outdir = getwd(), 
                                             start.year,
-                                            end.year)
+                                            end.year,
+                                            model)
     save(ensemble.output, file = 'output.Rdata')
   }
   
