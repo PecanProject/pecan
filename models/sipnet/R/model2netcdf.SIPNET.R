@@ -12,7 +12,7 @@ model2netcdf.SIPNET <- function(outdir,run.id) {
   require(ncdf)
   
   ### Read in model output in SIPNET format
-  sipnet.output <- read.table(paste(outdir,run.id,".out",sep=""),header=T,skip=1,sep='')
+  sipnet.output <- read.table(paste(outdir,"/",run.id,"/",run.id,".out",sep=""),header=T,skip=1,sep='')
   sipnet.output.dims <- dim(sipnet.output)
   
   ### Determine number of years and output timestep
@@ -84,7 +84,7 @@ model2netcdf.SIPNET <- function(outdir,run.id) {
     var[[16]]  <- var.def.ncdf("SWE","kg/m2",t,-999,"Snow Water Equivalent")              # SWE
     
     #******************** Declar netCDF variables ********************#
-    nc <- create.ncdf(paste(outdir,run.id,".",y,".nc",sep=""),var)
+    nc <- create.ncdf(paste(outdir,"/",run.id,"/",run.id,".",y,".nc",sep=""),var)
     
     ### Output netCDF data
     for(i in 1:length(var)){
