@@ -9,7 +9,6 @@ test_that("read settings returns error if no settings file found (issue #1124)",
   }
 })
 
-
 context("check that example settings file is valid")
 
 settings.list <- read.settings(inputfile = system.file("tests/test.settings.xml",
@@ -23,6 +22,29 @@ test_that("test.settings.xml has an unique output directory for each PFT",{
   expect_equal(sum(i.pfts), length(unique(pfts[i.pfts])))
   expect_equal(length(unique(pfts[i.pfts])), length(unique(pfts[i.outdir])))
   rm(i.pfts, i.outdir)      
+})
+
+test_that("read.settings gives expected warnings",{
+  writeLines(con = "bug1444.xml",
+             text = "<pecan><pfts><pft>
+                      <name>testPFTname</name>
+                      </pft></pfts></pecan>") 
+  writeLines(con = "warning1444.xml",
+             text = "<pecan><pfts><pft>
+                      <name>testPFTname</name>
+                      <outdir>/tmp/</outdir></pft></pfts></pecan>") 
+  writeLines(con = "fixed1444.xml",
+             text = "<pecan>
+                      <outdir>/tmp/</outdir>
+                      <pfts><pft>
+                        <name>testPFTname</name>
+                        <outdir>/tmp/</outdir>
+                      </pft></pfts></pecan>")
+  expect_error(read.settings("bug1444.xml"), "invalid 'file' argument")
+  expect_warning(read.settings("warning1444.xml"), "No output folder specified")
+  fixed1444 <- read.settings("fixed1444.xml")
+  expect_equal(fixed1444$pfts$pft, "testPFTname")
+  file.remove("bug1444.xml", "warning1444.xml", "fixed1444.xml")
 })
 
 test_that("merge 2 xml files", {
