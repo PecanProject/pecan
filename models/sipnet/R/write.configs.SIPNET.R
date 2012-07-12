@@ -13,8 +13,9 @@
 write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id){
 
   my.outdir = paste(outdir,"/",run.id,"/",sep="") 
-  dir.create(my.outdir)
-  
+  #dir.create(my.outdir)
+  if (! file.exists(my.outdir)) dir.create(my.outdir)
+
   ### WRITE sipnet.in
   template.in <- system.file("sipnet.in", package="PEcAn.SIPNET")
   config.text <- readLines(con=template.in, n=-1)
@@ -26,7 +27,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
   print(run.id)
 
   ### WRITE *.clim
-  template.clim <- settings$run$site$met.data.header
+  template.clim <- settings$run$site$met
   system(paste("cp ",template.clim," ",my.outdir,run.id,".clim",sep=""))
   ### **** WE SHOULD SET THIS UP AS A LINK, RATHER THAN AS A COPY ****
   
