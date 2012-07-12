@@ -9,15 +9,54 @@
 ##' @param end.year
 ##' @return vector of output variable
 ##' @export
-read.output.SIPNET <- function(run.id, outdir, start.year=NA, end.year=NA){
+read.output.SIPNET <- function(run.id, outdir, start.year=NA, end.year=NA,variables="NPP"){
+  
+  require(ncdf)
+  
   print(run.id)
-  file.names <- dir(outdir, pattern=run.id, full.names=FALSE)
+
+  ## get list of files
+  file.names <- dir(paste(outdir,run.id,sep="/"), pattern=run.id, full.names=TRUE)
+  ### model-specific code to parse each file 
   if(length(file.names) > 0) {
 
-### model-specific code to parse each file 
+    #subset output files
+    ncfiles  <- file.names[grep(".nc",file.names)]
+    outfiles <- file.names[grep(".out",file.names)]
+
+    #check that there are output files
+    if(length(ncfiles) | length(outfiles)){
+
+      ## if files have not been converted yet, convert to standard format
+      if(length(ncfiles) == 0){
+        model2netcdf.SIPNET(outdir,run.id)
+        ncfiles <- dir(paste(outdir,run.id,sep="/"), pattern=run.id, full.names=TRUE)
+        ncfiles <- ncfiles[grep(".nc",ncfiles)]
+        if(length(ncfiles) == 0){
+          stop("Conversion of SIPNET files to netCDF unsuccessful")
+        }
+      }
+
+      ## load files
+      data <- matrix(NA,length(ncfiles),length(variables))
+      for(i in 1:length(ncfiles)){
+        nc <- open.ncdf(ncfiles[i])
+        for(j in 1:length(variables)){
+          if(variables[j] %in% names(nc$var)){      
+            data[i,j] <- mean(get.var.ncdf(nc,variables[j]))
+          } else {
+            warning(paste(variables[j],"missing in",ncfiles[i]))
+          }
+        }
+        close.ncdf(nc)
+      }
+      return(apply(data,2,mean))
+    } else {
+      stop("no output files present")
+    }
     
   }
-  return(result)
+  return(NA)
 }
 #==================================================================================================#
 
