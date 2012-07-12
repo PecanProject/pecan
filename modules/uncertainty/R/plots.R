@@ -42,10 +42,10 @@ plot.variance.decomposition <- function(plot.inputs, outdir,
   ##    these points can be moved up or down by adjusting the offset X in 1:length(traits) - X
   plot.data <- data.frame(.plot.data[pv.order, ], points = 1:nrow(.plot.data) - 0.5)
   trait.labels <<- plot.data$trait.labels
-  cv.xticks <<- pretty.hack(plot.data[,grep('coef.var', colnames(plot.data))], 4)
-  pv.xticks <<- pretty.hack(plot.data[,grep('variance', colnames(plot.data))], 4)  
-  el.xticks <<- pretty.hack(plot.data[,grep('elasticities', colnames(plot.data))], 3)
-  el.xrange <<- range(pretty.hack(plot.data[,grep('elasticities', colnames(plot.data))], 4))
+  cv.xticks <<- pretty(plot.data[,grep('coef.var', colnames(plot.data))], 4)
+  pv.xticks <<- pretty(plot.data[,grep('variance', colnames(plot.data))], 4)  
+  el.xticks <<- pretty(plot.data[,grep('elasticities', colnames(plot.data))], 3)
+  el.xrange <<- range(pretty(plot.data[,grep('elasticities', colnames(plot.data))], 4))
   
   ## Notes on fine-tuning plots below
   ## axis lines and ticks drawn for each plot using geom_segment  
