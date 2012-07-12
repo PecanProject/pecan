@@ -136,10 +136,10 @@ write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
     } else {
       ##is a PFT
       pft <- defaults[[group]]
-      ### Insert PFT names into output xml file
-      #pft.xml <- xmlNode('pft',listToXml(pft$name,"name"))
       ### Insert PFT constants into output xml file  
       pft.xml <- listToXml(pft$constants, 'pft')
+      ### Insert PFT names into output xml file
+      pft.xml <- append.xmlNode(pft.xml,xmlNode("name", pft$name))
       #constants <- listToXml(pft$constants,'')
       #pft.xml <- append.xmlNode(pft.xml,pft$constants)
       #pft.xml <- append.xmlNode(pft.xml, constants)
