@@ -1,213 +1,209 @@
 <?php
-if (!isset($_REQUEST['siteid'])) {
-	die("Need a siteid.");
-} else {
-	$siteid=$_REQUEST['siteid'];
-}
-
 // system parameters
 require("system.php");
 
 // database parameters
 require("dbinfo.php");
+$connection = open_database();
 
-// Opens a connection to a MySQL server
-$connection=mysql_connect ($hostname, $username, $password);
-if (!$connection) {
-	die('Not connected : ' . mysql_error());
-}
-
-// Set the active MySQL database
-$db_selected = mysql_select_db($database, $connection);
-if (!$db_selected) {
-	die ('Can\'t use db : ' . mysql_error());
-}
-
-// get site information
-$result = mysql_query("SELECT * FROM sites WHERE sites.id=$siteid");
+// get hosts
+$query = "SELECT hostname FROM machines ORDER BY hostname";
+$result = mysql_query($query);
 if (!$result) {
 	die('Invalid query: ' . mysql_error());
 }
-$siteinfo = mysql_fetch_assoc($result);
-
-// setup default part of query
-$query="SELECT file_path AS file, name, start_date, end_date FROM inputs, input_files, machines WHERE inputs.site_id=$siteid AND inputs.file_id=input_files.file_id";
-if (isset($_REQUEST['host']) && ($_REQUEST['host'] != "")) {
-	$query="$query AND machines.hostname='${_REQUEST['host']}' AND input_files.machine_id=machines.id";
-}
-
-// get met data
-$result = mysql_query($query . " AND input_files.format_id=12");
-if (!$result) {
-	die('Invalid query: ' . mysql_error());
-}
-$mets = "";
+$hosts = "";
+$hostname = gethostname();
 while ($row = @mysql_fetch_assoc($result)){
-	if ($row['name'] == 'ED_MET_DRIVER_HEADER') {
-		$row['name']=substr($row['start_date'], 0, 4) . "-" . substr($row['end_date'], 0, 4);
+	if ($hostname == $row['hostname']) {
+		$hosts = "$hosts<option selected>{$row['hostname']}</option>\n";
+	} else {
+		$hosts = "$hosts<option>{$row['hostname']}</option>\n";
 	}
-	$mets = "$mets<option value='{$row['file']}'>{$row['name']}</option>\n";
 }
 
-// get psscss data
-$result = mysql_query($query . " AND input_files.format_id=10");
-if (!$result) {
-	die('Invalid query: ' . mysql_error());
-}
-$psscss = "";
-while ($row = @mysql_fetch_assoc($result)){
-    $path = substr($row['file'], 0,  1+strripos($row['file'], '/'));
-	$psscss = "$psscss<option value='$path'>{$row['name']}</option>\n";
-}
-$psscss = "$psscss<option value='FIA'>Use FIA</option>\n";
-
-// show list of PFTs
-$result = mysql_query("SELECT * FROM pfts ORDER BY name");
-if (!$result) {
-	die('Invalid query: ' . mysql_error());
-}
-$pfts = "";
-while ($row = @mysql_fetch_assoc($result)){
-	$pfts = "$pfts<option value='{$row['name']}'>{$row['name']}</option>\n";
-}
 ?>
 <!DOCTYPE html>
 <html>
 <head>
-<title>EBI Sites</title>
+<title>PEcAn Site/Model Selection</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 <link rel="stylesheet" type="text/css" href="sites.css" />
 <script type="text/javascript" src="http://www.google.com/jsapi"></script>
 <script type="text/javascript">
-	google.load("maps", "3",  {other_params:"sensor=false"});
 	google.load("jquery", "1.3.2");
+    google.load("maps", "3",  {other_params:"sensor=false"});
 
-        function checkDate(date, field) {
-                var arr = date.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
-                if (arr == null) {
-                        alert(field + " date should be entered as \"YYYY/MM/DD\"");
-                        return false;
-                }
+    window.onresize = resize;
+    window.onload = resize;
+    google.setOnLoadCallback(mapsLoaded);
+    
+	function resize() {
+    	$("#stylized").height($(window).height() - 5);
+    	$("#map_canvas").height($(window).height() - 1);
+    	$("#map_canvas").width($(window).width() - $('#stylized').width() - 5);
+    }
 
-                arr[1] = parseInt(arr[1], 10);
-                arr[2] = parseInt(arr[2], 10)-1;
-                arr[3] = parseInt(arr[3], 10);
-                var test = new Date(arr[1], arr[2], arr[3]);
-
-                if (arr[1] != test.getFullYear() || arr[2] != test.getMonth() || arr[3] != test.getDate()) {
-                        alert(field + " date is not a valid date.");
-                        return false;
-                }
-
-                return test;
+    function validate() {
+    	if ($("#siteid").val() == "") {
+            $("#next").attr("disabled", "disabled");
+            $("#error").html("Select a site to continue");
+            return;
+        }
+        if ($("#modelid").val() == null) {
+            $("#next").attr("disabled", "disabled");
+            $("#error").html("Select a model to continue");
+            return;
+        }
+        if ($("#hostname").val() != "<?=$hostname?>") {
+            $("#next").attr("disabled", "disabled");
+            $("#error").html("Select <?=$hostname?> to continue");
+            return;
         }
 
-	function validate(form) {
-                var start = checkDate(form.start.value, "Start");
-                if (!start) {
-                        return false;
-                }
-                var end = checkDate(form.end.value, "End");
-                if (!end) {
-                        return false;
-                }
-
-                // see if start date is before end date
-                if (start >= end) {
-                        alert("End date should be after start date.");
-                        return false;
-                }
-
-		// check pft
-		var count = 0;
-		for (i=0; i<form["pft[]"].length; i++) {
-			if (form["pft[]"][i].selected) {
-				count++;
-			}
-		}
-		if (count == 0) {
-			alert("Make sure at least one PFT is selected.");
-			return false;
+	    // all is OK
+        $("#next").removeAttr("disabled");       
+	    $("#error").html("&nbsp;");
+    }
+        
+	function prevStep() {
+		$("#formprev").submit();
 		}
 
-		// form is valid
-		return true;
+	function nextStep() {
+		$("#formnext").submit();
 	}
+	
+    var map = null;
+    var infowindow = null;
+    var markersArray = [];
 
-	function resize(){
-		$("#stylized").height($(window).height() - 5);
-		$("#map_canvas").height($(window).height() - 1);
-		$("#map_canvas").width($(window).width() - $('#form').width() - 5);
-
-	} 
-
-	function initialize() {
-		var latlng = new google.maps.LatLng(<?=$siteinfo['lat']?>, <?=$siteinfo['lon']?>);
+    function mapsLoaded() {
+		var myLatlng = new google.maps.LatLng(40.11642, -88.243382);
 		var myOptions = {
-			zoom: 10,
-			center: latlng,
+			zoom: 5,
+			center: myLatlng,
 			mapTypeId: google.maps.MapTypeId.ROADMAP
 		}
 
-		var map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
-
-		// create a marker
-		var marker = new google.maps.Marker({position: latlng, map: map});
-
-		// create the tooltip and its text
-		var info="<b><?=$siteinfo['sitename']?></b><br />";
-		info+="<?=$siteinfo['city']?>, <?=$siteinfo['state']?>, <?=$siteinfo['country']?>";
-		var infowindow = new google.maps.InfoWindow({content: info});
-		infowindow.open(map, marker);
+		map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+		infowindow = new google.maps.InfoWindow({content: ""});
+		hostSelected();
+    	validate();
 	}
 
-	window.onresize = resize;
-	window.onload = resize;
-	google.setOnLoadCallback(initialize);
-    </script>
+    function goHome() {
+		if (navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition(function(position) {
+				var latlng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+				map.panTo(latlng);
+				map.setZoom(12);
+			}, function() {
+				alert("Could not get your location, please make sure you enabled location for safari if you use an iPAD.");
+			}, {maximumAge:60000, timeout: 20000});
+		} else {  
+			alert("I'm sorry, but geolocation services are not supported by your browser.");  
+		}  
+	}
+
+    function hostSelected() {
+        // remove everything
+		if (markersArray) {
+			for (i in markersArray) {
+				markersArray[i].setMap(null);
+			}
+			markersArray.length = 0;
+		}
+		$('#modelid').find('option').remove();	    
+		$("#siteid").val("");
+		$("#sitename").val("");
+    	validate();
+		
+		// get all sites
+		var url="sites.php?host=" + $('#hostname')[0].value;
+		jQuery.get(url, {}, function(data) {
+			jQuery(data).find("marker").each(function() {
+				// create a marker
+				var marker = jQuery(this);
+				var latlng;
+				if (marker.attr("lat") == "" || marker.attr("lon") == "") {
+					console.log("Bad marker (siteid=" + marker.attr("siteid") + " site=" + marker.attr("sitename") + " lat=" + marker.attr("lat") + " lon=" + marker.attr("lon") + ")");
+				} else {
+					latlng = new google.maps.LatLng(parseFloat(marker.attr("lat")), parseFloat(marker.attr("lon")));
+					var gmarker = new google.maps.Marker({position: latlng, map: map});
+					markersArray.push(gmarker);
+
+					// create the tooltip and its text
+					gmarker.sitename = marker.attr("sitename");
+					gmarker.siteid   = marker.attr("siteid");
+					gmarker.html  = '<b>' + marker.attr("sitename") + '</b><br />'
+					gmarker.html += marker.attr("city") + ', ' + marker.attr("country") + '<br />';
+
+					// add a listener to open the tooltip when a user clicks on one of the markers
+					google.maps.event.addListener(gmarker, 'click', function() {
+						$("#siteid").val(this.siteid);
+						$("#sitename").val(this.sitename);
+						infowindow.setContent(this.html);
+						infowindow.open(map, this);
+				    	validate();
+					});
+				}
+			});
+		});
+
+		// get all models
+		var url="models.php?host=" + $('#hostname')[0].value;
+		jQuery.get(url, {}, function(data) {
+			jQuery(data).find("model").each(function() {
+				var model = jQuery(this);
+				var name = model.attr("name") + " r" + model.attr("revision");
+				$('#modelid').append('<option value="' + model.attr("id") + '">' +name + '</option>')
+			});
+		});
+    }
+</script>
 </head>
 <body>
 <div id="wrap">
 	<div id="stylized">
-		<form id="form" action="runsite.php" method="post" onsubmit="return validate(this);">
-			<input type="hidden" name="siteid" value="<?=$siteid?>" />
-			<h1>Selected Site</h1>
-			<p>Set parameters for the run.</p>
+		<form id="formprev" method="POST" action="index.php">
+		</form>
+		<form id="formnext" method="POST" action="selectdata.php">
+			<h1>Select host</h1>
+			<p>Based on the host selected certain sites and models
+			will be available. In the current version you can only
+			pick as host <b><?=$hostname?></b></p>
 
-			<label>MET Data file</label>
-			<select name="met">
-			<?=$mets?>
+			<label>Host:</label>
+			<select name="hostname" id="hostname" onChange="hostSelected();">
+				<option value="">All Sites</option>
+				<?=$hosts?>
 			</select>
 			<div class="spacer"></div>
 
-            <label>Site files (Site/PSS/CSS)</label>
-            <select name="psscss">
-			<?=$psscss?>
-            </select>
-            <div class="spacer"></div>
+			<label>Site:</label>
+			<input name="siteid" id="siteid" type="hidden"/>
+			<input name="sitename" id="sitename" type="text" readonly value="No site selected" />
+			<div class="spacer"></div>
 
-			<label>Start Date</label>
-			<input type="text" name="start" value="2006/01/01" />
-			<div class="spacer"></div>
-			
-			<label>End Date </label>
-			<input type="text" name="end" value="2006/12/31" />
-			<div class="spacer"></div>
-			
-			<label>PFT</label>
-			<select name="pft[]" multiple size=5>
-			<?=$pfts?>
+			<label>Model:</label>
+			<select name="modelid" id="modelid" onChange="validate();">
 			</select>
 			<div class="spacer"></div>
 
-			<button>Submit Run</button>
+			<p></p>
+			<span id="error" class="small"></span>
+			<input id="prev" type="button" value="Prev" onclick="prevStep();" />
+			<input id="next" type="button" value="Next" onclick="nextStep();" />		
 			<div class="spacer"></div>
-			
-			&nbsp;
 		</form>
 	</div>
 	<div id="map_canvas"></div>
 </div>
 </body>
 </html>
+
+<?php 
+close_database($connection);
+?>

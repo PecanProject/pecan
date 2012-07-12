@@ -1,22 +1,11 @@
 <?php	
-require("dbinfo.php"); 
+require("dbinfo.php");
+$connection = open_database();
 
 // Start XML file, create parent node
 $dom = new DOMDocument("1.0");
 $node = $dom->createElement("markers");
 $parnode = $dom->appendChild($node); 
-
-// Opens a connection to a MySQL server
-$connection=mysql_connect ($hostname, $username, $password);
-if (!$connection) {
-	die('Not connected : ' . mysql_error());
-} 
-
-// Set the active MySQL database
-$db_selected = mysql_select_db($database, $connection);
-if (!$db_selected) {
-	die ('Can\'t use db : ' . mysql_error());
-} 
 
 // check for valid MET data
 if (isset($_REQUEST['host']) && ($_REQUEST['host'] != "")) {
@@ -45,4 +34,6 @@ while ($row = @mysql_fetch_assoc($result)){
 } 
 
 echo $dom->saveXML();
+
+close_database($connection);
 ?>
