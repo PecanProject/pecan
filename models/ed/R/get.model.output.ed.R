@@ -71,64 +71,6 @@ read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA, output.ty
 #==================================================================================================#
 
 
-#--------------------------------------------------------------------------------------------------#
-##' 
-##' @name get.results.ed
-##' @title Generate ED2 model output for PEcAn analyses
-##'
-##' @import PEcAn.utils
-##' @export
-##'
-get.results.ed <- function(){
-  
-  ### OLD CODE, SLIGHTYL MODIFIED, THAT NEEDS TO BE UPDATED. previously names read.output.ed and was in the 
-  ### scripts folder.  SPS
-
-  ### Load PEcAn sa info
-  load('samples.Rdata')
-  
-  sensitivity.output <- list()
-  ensemble.output    <- list()
-  
-  start.year <- ifelse(is.null(settings$sensitivity.analysis$start.year),
-                       NA, settings$sensitivity.analysis$start.year)
-  end.year   <- ifelse(is.null(settings$sensitivity.analysis$end.year),
-                       NA, settings$sensitivity.analysis$end.year)
-  
-  if('sensitivity.analysis' %in% names(settings)) {
-    
-    for(pft.name in names(trait.samples)){
-      
-      traits <- names(trait.samples[[pft.name]])
-      quantiles.str <- rownames(sa.samples[[pft.name]])
-      quantiles.str <- quantiles.str[which(quantiles.str != '50')]
-      quantiles <- as.numeric(quantiles.str)/100
-      
-      sensitivity.output[[pft.name]] <- read.sa.output(traits,
-                                                       quantiles,
-                                                       outdir = getwd(), 
-                                                       pft.name=pft.name,
-                                                       start.year,
-                                                       end.year)
-      save(sensitivity.output, file = 'output.Rdata')
-      
-    }
-  }
-  
-  if('ensemble' %in% names(settings)) {
-    ensemble.output <- read.ensemble.output(settings$ensemble$size,
-                                            outdir = getwd(), 
-                                            start.year,
-                                            end.year)
-    save(ensemble.output, file = 'output.Rdata')
-  }
-  
-  if(all(c('ensemble', 'sensitivity.analysis') %in% names(settings))) {
-    save(ensemble.output, sensitivity.output, file = 'output.Rdata')
-  }
-}
-#==================================================================================================#
-
 
 #--------------------------------------------------------------------------------------------------#
 ##' Function to retrieve ED2 HDF model output from local or remote server
@@ -150,7 +92,7 @@ get.model.output.ED2 <- function(){
     ## TODO: take out functions read.output.file.ed & read.output.ed from write.configs.ed &
     ## put into a new file specific for reading ED output
     dump(c("get.run.id","abbreviate.run.id.ED","left.pad.zeros","read.ensemble.output",
-           "read.sa.output","read.output.file.ed","read.output.ed", "get.results.ed"),
+           "read.sa.output","read.output.file.ed","read.output.ed", "get.results"),
          file=paste(settings$outdir,"PEcAn.functions.R",sep=""))
     
     ### Is the previous necessary for localhost?  These functions should be availible within R
@@ -165,12 +107,12 @@ get.model.output.ED2 <- function(){
     
     ### Make a copy of required functions and place in file PEcAn.functions.R
     dump(c("get.run.id","abbreviate.run.id.ED","left.pad.zeros","read.ensemble.output",
-           "read.sa.output","read.output.file.ed","read.output.ed","get.results.ed"),
+           "read.sa.output","read.output.file.ed","read.output.ed","get.results"),
          file=paste(settings$outdir,"PEcAn.functions.R",sep=""))
     
-    ### Add execution of get.results.ed to the end of the PEcAn.functions.R file
+    ### Add execution of get.results to the end of the PEcAn.functions.R file
     ### This will execute all the code needed to extract output on remote host
-    cat("get.results.ed()",file=paste(settings$outdir,"PEcAn.functions.R",sep=""),
+    cat("get.results()",file=paste(settings$outdir,"PEcAn.functions.R",sep=""),
         append=TRUE)
 
     ### Copy required PEcAn.functions.R to remote host
