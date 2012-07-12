@@ -12,17 +12,11 @@ get.trait.data <- function() {
   ## Info:  lots of hacks for now.  Needs to be updated once full workflow is ready.
   num <- sum(names(unlist(settings$pfts)) == "pft.name")
   for (i in 1:num){
-    out.dir <- settings$pfts[i]$pft$outdir
-    if (!file.exists(out.dir)) {
-      dir.create(out.dir, recursive=TRUE)
-    }
     ## Remove old files.  Clean up.
     old.files <- list.files(path=settings$pfts[i]$pft$outdir,
                             full.names=TRUE, pattern = "*.Rdata") 
     file.remove(old.files[which(file.info(list.files(path=settings$pfts[i]$pft$outdir,
                                                      full.names=TRUE))$isdir==FALSE)])
-    
-    rm(out.dir)
   }
   ##--------------------------------------------------------------------------------------------------#
 

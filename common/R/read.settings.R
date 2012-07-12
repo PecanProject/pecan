@@ -152,6 +152,13 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
   if (!file.exists(settings.list$outdir) && !dir.create(settings.list$outdir, recursive=TRUE)) {
     stop("Could not create out folder.")
   }
+  for (i in 1:sum(names(unlist(settings.list$pfts)) == "pft.name")){
+    out.dir <- settings.list$pfts[i]$pft$outdir
+      if (!file.exists(out.dir) && !dir.create(out.dir, recursive=TRUE)) {
+        stop("Could not create pft folders.")
+      }
+  }
+
   if (!file.exists(settings.list$pfts$pft$outdir) && !dir.create(settings.list$pfts$pft$outdir, recursive=TRUE)) {
     stop("Could not create pft folders.")
   }
