@@ -12,7 +12,8 @@ test_that("read settings returns error if no settings file found (issue #1124)",
 
 context("check that example settings file is valid")
 
-settings.list <- read.settings(inputfile = "all/inst/tests/test.settings.xml")
+settings.list <- read.settings(inputfile = system.file("tests/test.settings.xml",
+                                 package = "PEcAn.all"))
 
 test_that("test.settings.xml has an unique output directory for each PFT",{
   pfts <- unlist(settings.list$pfts)
