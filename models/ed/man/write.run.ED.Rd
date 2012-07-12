@@ -8,6 +8,6 @@
   Function to generate ED2.2 model run script files
 }
 \author{
-  unknown
+  <unknown>
 }
 

@@ -1,5 +1,5 @@
-\name{start.runs.ed}
-\alias{start.runs.ed}
+\name{start.runs.ED2}
+\alias{start.runs.ED2}
 \title{Start ED2 model runs}
 \usage{
   start.runs.ED2()

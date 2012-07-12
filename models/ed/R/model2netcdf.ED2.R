@@ -1,14 +1,20 @@
-### Modified from Code to convert ED2.1's HDF5 output into
-### the NACP Intercomparison format (ALMA using netCDF)
-###
-### M. Dietze  08/14/08
-###
+#--------------------------------------------------------------------------------------------------#
+##' Modified from Code to convert ED2.1's HDF5 output into the NACP Intercomparison format (ALMA using netCDF)
+##' 
+##' @name model2netcdf.ED2
+##' @title Code to convert ED2's -T- HDF5 output into netCDF format
+##'
+##' @param outdir Location of SIPNET model output
+##' @param run.id Name of SIPNET model output file.
+##' @export
+##'
+##' @author Michael Dietze
 ### modified M. Dietze 07/08/12
-
-model2netcdf.ED2 <- function(outdir,run.id)
-  {
-require(ncdf)
-require(hdf5)
+model2netcdf.ED2 <- function(outdir,run.id) {
+  
+  ### Load library requirements for function
+  require(ncdf)
+  require(hdf5)
 
 flist <- dir(outdir,paste(run.id,"-T-",sep=""))
 
@@ -303,3 +309,9 @@ close.ncdf(nc)
 }  ## end year loop
 
 }  ## end model2netcdf.ED2
+#==================================================================================================#
+
+
+####################################################################################################
+### EOF.  End of R script file.              
+####################################################################################################

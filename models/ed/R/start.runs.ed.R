@@ -2,7 +2,7 @@
 ##' 
 ##' Start ED2 model runs on local or remote server
 ##' @title Start ED2 model runs
-##' @name start.runs.ed
+##' @name start.runs.ED2
 ##' @export
 ##' @author David LeBauer, Shawn Serbin, Carl Davidson
 start.runs.ED2 <- function(){
