@@ -19,7 +19,7 @@ get.model.output <- function(model){
 
   my.fcn = paste("get.model.output",model,sep=".")
 
-  if(exists(my,fcn)){
+  if(exists(my.fcn)){
     do.call(my.fcn,args=list())
   } else {
     print("-------------------------------------------------------------------")

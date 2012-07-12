@@ -77,7 +77,18 @@ read.output.SIPNET <- function(run.id, outdir, start.year=NA, end.year=NA,variab
 get.model.output.SIPNET <- function(){
   
   ### Get model output on the localhost
-  if(settings$run$host$name != 'localhost'){
+  if(settings$run$host$name == 'localhost'){
+
+    olddir <- getwd()
+    setwd(settings$outdir)
+    get.results()
+    setwd(olddir)
+
+    print("HERE")
+    
+  } else {
+
+    ## model output is on a remote host
         
     ### Make a copy of required functions and place in file PEcAn.functions.R
     dump(c("get.run.id","read.ensemble.output","read.sa.output","read.output.generic","get.results"),

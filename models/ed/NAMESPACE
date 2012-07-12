@@ -1,6 +1,5 @@
 export(abbreviate.run.id.ED)
 export(get.model.output.ED2)
-export(get.results.ed)
 export(model2netcdf.ED2)
 export(read.output.ed)
 export(read.output.file.ed)
