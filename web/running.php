@@ -1,43 +1,27 @@
 <?php
-require("dbinfo.php");
-
 // runid
-if (!isset($_REQUEST['runid'])) {
-  die("Need a runid.");
+if (!isset($_REQUEST['workflowid'])) {
+  die("Need a workflowid.");
 }
-$runid=$_REQUEST['runid'];
+$workflowid=$_REQUEST['workflowid'];
 
 // database parameters
 require("dbinfo.php");
-
-// Opens a connection to a MySQL server
-$connection=mysql_connect ($hostname, $username, $password);
-if (!$connection) {
-	die('Not connected : ' . mysql_error());
-}
-
-// Set the active MySQL database
-$db_selected = mysql_select_db($database, $connection);
-if (!$db_selected) {
-	die ('Can\'t use db : ' . mysql_error());
-}
+$connection=open_database();
 
 // get run information
-$query = "SELECT outdir FROM runs WHERE runs.id=$runid";
+$query = "SELECT site_id, model_id, model_type, hostname, folder FROM workflows WHERE workflows.id=$workflowid";
 $result = mysql_query($query);
 if (!$result) {
 	die('Invalid query: ' . mysql_error());
 }
-$run = mysql_fetch_assoc($result);
-$folder = $run['outdir'];
+$workflow = mysql_fetch_assoc($result);
+$folder = $workflow['folder'];
 
 // check result
-$status=file("$folder/STATUS");
+$status=file($folder . DIRECTORY_SEPARATOR . "STATUS");
 if ($status === FALSE) {
 	$status = array();
-}
-if (endTime("FINISHED") != "") {
-	header("Location: finished.php?runid=$runid");
 }
 
 function startTime($token) {
@@ -73,7 +57,7 @@ function status($token) {
         return $data[3];
       }
       if ($token == "MODEL") {
-        return exec("tail -20 `ls -1rt $folder/run/*.log` |  grep '^Simulating' | tail -1 | awk '{ print $2 }'");
+        return exec("tail -20 `ls -1rt $folder/run/*.log` |  grep 'Simulating:' | tail -1 | sed 's/^.*Simulating:[ ]*//' | awk '{print $1}'");
       }
       return "Running";
     }
@@ -82,26 +66,85 @@ function status($token) {
 }
 
 $refresh=true;
+$nextenabled="disabled=\"disabled\"";
+if (endTime("FINISHED") != "") {
+    $refresh=false;
+    $nextenabled="";
+}
 foreach ($status as $line) {
   $data = explode("\t", $line);
   if ((count($data) >= 4) && ($data[3] == 'ERROR')) {
     $refresh=false;
+    $nextenabled="";
   }
 }
 
 if ($refresh) {
-  header( "refresh:5" );
+	header( "refresh:5" );
+} else {
+	mysql_query("UPDATE workflows SET finished_at=NOW() WHERE id=${workflowid} AND finished_at IS NULL");
+	header( "Location: finished.php?workflowid=$workflowid");
 }
 
 ?>
+<!DOCTYPE html>
 <html>
 <head>
-	<title>Site Run Setup</title>
-	<link rel="stylesheet" type="text/css" href="sites.css" />
+<title>PEcAn Running</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<link rel="stylesheet" type="text/css" href="sites.css" />
+<script type="text/javascript" src="http://www.google.com/jsapi"></script>
+<script type="text/javascript">
+	google.load("jquery", "1.3.2");
+	
+	window.onresize = resize;
+	window.onload = resize;
+	
+	function resize() {
+    	$("#stylized").height($(window).height() - 5);
+    	$("#output").height($(window).height() - 1);
+    	$("#output").width($(window).width() - $('#stylized').width() - 5);
+
+    	$('#log').scrollTop($('#log')[0].scrollHeight);
+	}
+
+	function prevStep() {
+		$("#formprev").submit();
+	}
+
+	function nextStep() {
+		$("#formnext").submit();
+	}
+</script>
 </head>
 <body>
-	<h1>JOB IS RUNNING</h1>
-
+<div id="wrap">
+	<div id="stylized">
+		<h1>Job is running</h1>
+		<p>Job is currently executing, please wait.</p>
+		
+		<form id="formprev" method="POST" action="selectdata.php">
+		<input type="hidden" name="siteid" value="<?=$workflow['site_id']?>" />
+		<input type="hidden" name="modelid" value="<?=$workflow['model_id']?>" />
+		<input type="hidden" name="modeltype" value="<?=$workflow['model_type']?>" />
+		<input type="hidden" name="hostname" value="<?=$workflow['hostname']?>" />
+		</form>
+		
+		<form id="formemail" method="POST" action="sendemail.php">
+		<input type="hidden" name="workflowid" value="<?=$workflowid?>" />
+		</form>
+		
+		<form id="formnext" method="POST" action="finished.php">
+		<input type="hidden" name="workflowid" value="<?=$workflowid?>" />
+		<span id="error" class="small">&nbsp;</span>
+		<input id="prev" type="button" value="Prev" onclick="prevStep();" />
+		<input id="next" type="button" value="Next" onclick="nextStep();" <?=$nextenabled?>/>		
+		<div class="spacer"></div>
+		</form>
+	</div>
+	<div id="output">
+	<h2>Execution Status</h2>
 	<table border=1>
 		<tr>
 			<th>Stage Name</th>
@@ -146,17 +189,52 @@ if ($refresh) {
 			<td><?=status("MODEL");?></td>
 		</tr>
 		<tr>
-			<th>plots</th>
-			<td><?=startTime("PLOTS");?></td>
-			<td><?=endTime("PLOTS");?></td>
-			<td><?=status("PLOTS");?></td>
-		</tr>
-		<tr>
 			<th>finished</th>
 			<td><?=startTime("FINISHED");?></td>
 			<td><?=endTime("FINISHED");?></td>
 			<td><?=status("FINISHED");?></td>
 		</tr>
 	</table>
+	<hr/>
+ 	<h2>Output from PEcAn</h2>
+ 	<textarea id="log" cols="80" rows="10" readonly="readonly">
+<?php
+  parselog($folder . DIRECTORY_SEPARATOR . "workflow.Rout");
+?>
+ 	</textarea>
+	</div>
+</div>
 </body>
+</html>
 
+<?php 
+close_database($connection);
+
+function parselog($filename)
+{
+	// Open the file
+	$f = fopen($filename, "rb");
+	if ($f === false) {
+		return "file does not exist.";
+	}
+
+	// read the file line by line
+	$check = false;
+	while (($buffer = fgets($f, 4096)) !== false) {
+		if ($check && ($buffer[0]==" ")) {
+			print($buffer);
+		} else if (stristr($buffer, "error") !== false) {
+			print($buffer);
+			$check = true;
+		} else if (stristr($buffer, "warn") !== false) {
+			print($buffer);
+			$check = true;
+		} else {
+			$check = false;
+		}
+	}
+
+	// Close file and return
+	fclose($f);
+}
+?>

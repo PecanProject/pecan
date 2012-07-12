@@ -1,39 +1,3 @@
-<?php
-// system parameters
-require("system.php");
-
-// database parameters
-require("dbinfo.php");
-
-// Opens a connection to a MySQL server
-$connection=mysql_connect ($hostname, $username, $password);
-if (!$connection) {
-	die('Not connected : ' . mysql_error());
-}
-
-// Set the active MySQL database
-$db_selected = mysql_select_db($database, $connection);
-if (!$db_selected) {
-	die ('Can\'t use db : ' . mysql_error());
-}
-
-// get hosts
-$query = "SELECT hostname FROM machines ORDER BY hostname";
-$result = mysql_query($query);
-if (!$result) {
-	die('Invalid query: ' . mysql_error());
-}
-$hosts = "";
-$hostname = gethostname();
-while ($row = @mysql_fetch_assoc($result)){
-	if ($hostname == $row['host']) {
-		$hosts = "$hosts<option selected>{$row['hostname']}</option>\n";
-	} else {
-		$hosts = "$hosts<option>{$row['hostname']}</option>\n";
-	}
-}
-
-?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -43,109 +7,73 @@ while ($row = @mysql_fetch_assoc($result)){
 <link rel="stylesheet" type="text/css" href="sites.css" />
 <script type="text/javascript" src="http://www.google.com/jsapi"></script>
 <script type="text/javascript">
-      google.load("jquery", "1.3.2");
-      google.load("maps", "3",  {other_params:"sensor=false"});
+	google.load("jquery", "1.3.2");
 
-
-      var map = null;
-      var infowindow = null;
-      var markersArray = [];
-
-      function resize(){
-		$("#stylized").height($(window).height() - 5);
-		$("#map_canvas").height($(window).height() - 1);
-		$("#map_canvas").width($(window).width() - $('#form').width() - 5);
-      } 
-
-      function mapsLoaded() {
-		var myLatlng = new google.maps.LatLng(40.11642, -88.243382);
-		var myOptions = {
-			zoom: 5,
-			center: myLatlng,
-			mapTypeId: google.maps.MapTypeId.ROADMAP
+	window.onresize = resize;
+	window.onload = resize;
+	
+	function resize() {
+    	$("#stylized").height($(window).height() - 5);
+    	$("#output").height($(window).height() - 1);
+    	$("#output").width($(window).width() - $('#stylized').width() - 5);
 		}
 
-		map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
-		infowindow = new google.maps.InfoWindow({content: ""});
-		loadSites();
-      }
-
-      function goHome() {
-		if (navigator.geolocation) {
-			navigator.geolocation.getCurrentPosition(function(position) {
-				var latlng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-				map.panTo(latlng);
-				map.setZoom(12);
-			}, function() {
-				alert("Could not get your location, please make sure you enabled location for safari if you use an iPAD.");
-			}, {maximumAge:60000, timeout: 20000});
-		} else {  
-			alert("I'm sorry, but geolocation services are not supported by your browser.");  
-		}  
-      }
-
-      function loadSites() {
-		if (markersArray) {
-			for (i in markersArray) {
-				markersArray[i].setMap(null);
-			}
-			markersArray.length = 0;
+    function validate() {
+        $("#error").html("");
+    }
+        
+	function prevStep() {
+		$("#formprev").submit();
 		}
 
-		var host=$('#host')[0].value;
-		var url="sites.php?host=" + $('#host')[0].value;
-		jQuery.get(url, {}, function(data) {
-			jQuery(data).find("marker").each(function() {
-				// create a marker
-				var marker = jQuery(this);
-				var latlng;
-				if (marker.attr("lat") == "" || marker.attr("lon") == "") {
-					console.log("Bad marker (siteid=" + marker.attr("siteid") + " site=" + marker.attr("sitename") + " lat=" + marker.attr("lat") + " lon=" + marker.attr("lon") + ")");
-				} else {
-					latlng = new google.maps.LatLng(parseFloat(marker.attr("lat")), parseFloat(marker.attr("lon")));
-					var gmarker = new google.maps.Marker({position: latlng, map: map});
-					markersArray.push(gmarker);
-
-					// create the tooltip and its text
-					gmarker.html  = '<b>' + marker.attr("sitename") + '</b><br />'
-					gmarker.html += marker.attr("city") + ', ' + marker.attr("country") + '<br />';
-					gmarker.html += '<a href="selectsite.php?siteid=' + marker.attr("siteid") + '&host=' + host + '">Select Site</a>';
-
-					// add a listener to open the tooltip when a user clicks on one of the markers
-					google.maps.event.addListener(gmarker, 'click', function() {
-						infowindow.setContent(this.html);
-						infowindow.open(map, this);
-					});
-				}
-			});
-		});
-      }
-
-      window.onresize = resize;
-      window.onload = resize;
-      google.setOnLoadCallback(mapsLoaded);
+	function nextStep() {
+		console.log($("#formnext"));
+		$("#formnext").submit();
+	}
 </script>
 </head>
 <body>
 <div id="wrap">
 	<div id="stylized">
-		<form action="#" id="form">
-			<h1>Filter input data.</h1>
-			<p>Filter the sites using options below.</p>
-
-			<label>Sites with MET data on host:</label>
-			<select id="host" onChange="loadSites();">
-				<option value="">All Sites</option>
-				<?=$hosts?>
-			</select>
-			<div class="spacer"></div>
-
-			<label>Goto current location</label>
-			<input id="home" type="button" value="Home" onclick="goHome();" />
-			<div class="spacer"></div>
+		<form id="formprev" method="POST" action="history.php">
 		</form>
+		<form id="formnext" method="POST" action="selectsite.php">
+			<h1>Introduction</h1>
+			<p>Below you will find the buttons to step through the
+			workflow creation process.</p>
+
+			<label>Workflow</label>
+			<span id="error" class="small">&nbsp;</span>
+			<input id="prev" type="button" value="History" onclick="prevStep();" />
+			<input id="next" type="button" value="Next" onclick="nextStep();" />
+			
+			<div class="spacer"></div>
+			</form>
 	</div>
-	<div id="map_canvas"></div>
+	<div id="output">
+		<h1>Introduction</h1>
+		<p>The following pages will guide you through setting up a
+		PEcAn worlflow. You will be able to always go back to a
+		previous step to change inputs. However once the model is
+		runnign it will continue to run until it finishes. You will
+		be able to use the history button to jump to existing 
+		executions of PEcAn.</p>
+		<p>The following webpages will help to setup the PEcAn
+		workflow. You will be asked the following questions:</p>
+		<ol>
+		<li><b>Host and Model</b> You will first select the host to
+		run the workflow on as well as the model to be exectuted.</li>
+		<li><b>Site</b> The next step is to select the site where
+		the model should be run for.</li>
+		<li><b>Model Parameters</b> Based on the site some final
+		parameters for the model will need to be selected.</li>
+		<li><b>Model Execution</b> Once all variables are selected
+		PEcAn will execute the workflow.</li>
+		<li><b>Results</b> After execution of the PEcAn workflow you
+		will be presented with a page showing the results of the
+		PEcAn workflow.</li> 
+		</ol>
+	</div>
 </div>
 </body>
 </html>

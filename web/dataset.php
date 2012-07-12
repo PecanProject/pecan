@@ -1,40 +1,29 @@
 <?php
 
-// database parameters
-require("dbinfo.php");
-require("system.php");
-
 // runid
-if (!isset($_REQUEST['runid'])) {
-  die("Need a runid.");
+if (!isset($_REQUEST['workflowid'])) {
+  die("Need a workflowid.");
 }
-$runid=$_REQUEST['runid'];
+$workflowid=$_REQUEST['workflowid'];
 
 if (!isset($_REQUEST['type'])) {
   die("Need type.");
 }
 $type=$_REQUEST['type'];
 
-// Opens a connection to a MySQL server
-$connection=mysql_connect ($hostname, $username, $password);
-if (!$connection) {
-	die('Not connected : ' . mysql_error());
-}
-
-// Set the active MySQL database
-$db_selected = mysql_select_db($database, $connection);
-if (!$db_selected) {
-	die ('Can\'t use db : ' . mysql_error());
-}
+// database parameters
+require("system.php");
+require("dbinfo.php");
+$connection=open_database();
 
 // get run information
-$query = "SELECT outdir FROM runs WHERE runs.id=$runid";
+$query = "SELECT folder FROM workflows WHERE workflows.id=${workflowid}";
 $result = mysql_query($query);
 if (!$result) {
 	die('Invalid query: ' . mysql_error());
 }
 $run = mysql_fetch_assoc($result);
-$folder = $run['outdir'];
+$folder = $run['folder'];
 
 // return dataset
 switch ($type) {
@@ -78,7 +67,7 @@ switch ($type) {
 		}
 		$mime = "image/png";
 		$file = tempnam('','');
-		shell_exec("PECANSETTINGS=$folder/pecan.xml R CMD BATCH --vanilla '--args $year $var $width $height $file' ${pecan_home}/rscripts/singleplot.R $folder/plot.out");				
+		shell_exec("PECANSETTINGS=$folder/pecan.xml R CMD BATCH --vanilla '--args $year $var $width $height $file' plot.hdf5.R $folder/plot.out");				
 		break;
 		
 	default:

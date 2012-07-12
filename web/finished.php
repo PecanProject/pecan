@@ -1,94 +1,96 @@
 <?php
 
 // runid
-if (!isset($_REQUEST['runid'])) {
-  die("Need a runid.");
+if (!isset($_REQUEST['workflowid'])) {
+  die("Need a workflowid.");
 }
-$runid=$_REQUEST['runid'];
+$workflowid=$_REQUEST['workflowid'];
 
 // database parameters
 require("dbinfo.php");
-
-// Opens a connection to a MySQL server
-$connection=mysql_connect ($hostname, $username, $password);
-if (!$connection) {
-	die('Not connected : ' . mysql_error());
-}
-
-// Set the active MySQL database
-$db_selected = mysql_select_db($database, $connection);
-if (!$db_selected) {
-	die ('Can\'t use db : ' . mysql_error());
-}
+$connection=open_database();
 
 // get run information
-$query = "SELECT start_time, finish_time, outdir FROM runs WHERE runs.id=$runid";
+$query = "SELECT * FROM workflows WHERE workflows.id=$workflowid";
 $result = mysql_query($query);
 if (!$result) {
 	die('Invalid query: ' . mysql_error());
 }
-$run = mysql_fetch_assoc($result);
-$start = substr($run['start_time'], 0, 4);
-$end = substr($run['finish_time'], 0, 4);
-$folder = $run['outdir'];
+$workflow = mysql_fetch_assoc($result);
+$start = substr($workflow['start_date'], 0, 4);
+$end = substr($workflow['end_date'], 0, 4);
+$folder = $workflow['folder'];
+
+# check to make sure all is ok
+$error=false;
+$status=file($folder . DIRECTORY_SEPARATOR . "STATUS");
+if ($status === FALSE) {
+	$status = array();
+	$error = true;
+}
+foreach ($status as $line) {
+	$data = explode("\t", $line);
+	if ((count($data) >= 4) && ($data[3] == 'ERROR')) {
+		$error = true;
+	}
+}
 
 $years="";
-
-$vars  = "";
-$vars .= "<option>Reco</option>\n";
-$vars .= "<option>NPP</option>\n";
-$vars .= "<option>NEE</option>\n";
-
-$outputs  = "";
-$outputs .= "<option>pecan.xml</option>";
-
-$files=scandir("$folder/out");
-
-// history file
-$history = array_pop(array_filter($files, function ($item) {
-	global $year;
-	return preg_match("/hist.*.xml/", $item);
-}));
-$outputs .= createOption("out/$history");
-
 for($year=$start; $year<=$end; $year++) {
 	$years .= "<option>$year</option>";
-	
-	// tower file
-	$tower = array_pop(array_filter($files, function ($item) {
-		global $year;
-		return preg_match("/.*-T-${year}-00-00-000000-g01.h5/", $item);
-	}));
-	$outputs .= createOption("out/$tower");
+}
 
-	// diagnostics
-	if (file_exists("$folder/run/ED2_Diagnostics/ED2_${year}_Site_Avg_Fluxes.pdf")) {
-		$outputs .= createOption("run/ED2_Diagnostics/ED2_${year}_Site_Avg_Fluxes.pdf");
-        }
-	
-	// get variables
-	$vars .= shell_exec("h5ls $folder/out/$tower | awk '{print \"<option>\" $1 \"</option>\" }'");	
+$vars  = "";
+if ($error === false) {
+	$vars .= "<option>Reco</option>\n";
+	$vars .= "<option>NPP</option>\n";
+	$vars .= "<option>NEE</option>\n";
 }
 
 $logs="";
-$logs .= createOption("setup.Rout");
-if (file_exists("$folder/fia2ED.Rout")) {
-	$logs .= createOption("fia2ED.Rout");
-}
-$logs .= createOption("query.bety.Rout");
-$logs .= createOption("meta.analysis.Rout");
-$logs .= createOption("write.configs.Rout");
+$logs .= createOption("workflow.Rout");
+
+$outputs  = "";
+$outputs .= "<option>pecan.xml</option>";
+$outputs .= "<option>workflow.R</option>";
+
+# check the run output folder
 foreach(scandir("$folder/run") as $file) {
-	if (substr($file, -4) === ".log") {
-		$logs .= createOption("run/$file");
+	if (substr($file, 0, 5) === "c.ENS") {
+		$outputs .= createOption("run/${file}");
+		$outputs .= createOption("run/ED2IN${file}");
+		$logs .= createOption("run/ED2IN${file}.log");
 	}
 }
-$logs .= createOption("plots.Rout");
-$logs .= createOption("finished.Rout");
+
+# check the out folder
+foreach(scandir("$folder/out") as $file) {
+	if ($file[0] == ".") {
+		continue;
+	}
+	$outputs .= createOption("out/$file");
+	if (preg_match("/.*-T-${year}-00-00-000000-g01.h5/", $file)) {
+		$vars .= shell_exec("h5ls $folder/out/$file | awk '{print \"<option>\" $1 \"</option>\" }'");
+	}
+}
+
+# check the pft folder
+foreach(scandir("$folder/pft") as $pft) {
+	if ($file[0] == ".") {
+		continue;
+	}
+	foreach(scandir("$folder/pft/${pft}") as $file) {
+		if (preg_match("/^ma.summaryplots./", $file)) {
+			$logs .= "<option>pft/${pft}/${file}</option>\n";
+		}
+		if ($file == "meta-analysis.log") {
+			$logs .= "<option>pft/${pft}/${file}</option>\n";
+		}
+	}
+}
 
 function createOption($file) {
-	$ext = strrchr($file, ".");
-	$name = basename($file, $ext);
+	$name = basename($file);
 	return "<option value=\"$file\">$name</option>\n";
 }
 ?>
@@ -104,27 +106,41 @@ function createOption($file) {
 	google.load("jquery", "1.3.2");
 
 	function resize() {
-		$("#stylized").height($(window).height() - 5);
-		$("#output").height($(window).height() - 1);
-		$("#output").width($(window).width() - $('#form').width() - 15);
+    	$("#stylized").height($(window).height() - 5);
+    	$("#output").height($(window).height() - 1);
+    	$("#output").width($(window).width() - $('#stylized').width() - 5);
 	} 
 
+	function prevStep() {
+		$("#formprev").submit();
+	}
+
+	function nextStep() {
+		$("#formnext").submit();
+	}
+	
     function showPlot() {
-		var url="dataset.php?runid=<?=$runid?>&type=plot&year=" + $('#year')[0].value + "&var=" + $('#var')[0].value + "&width=" + ($("#output").width()-10) + "&height=" + ($("#output").height() - 10);
+		var url="dataset.php?workflowid=<?=$workflowid?>&type=plot&year=" + $('#year')[0].value + "&var=" + $('#var')[0].value + "&width=" + ($("#output").width()-10) + "&height=" + ($("#output").height() - 10);
 		$("#output").html("<img src=\"" + url + "\">");
 	}
 	
 	function showLog() {
-		var url="dataset.php?runid=<?=$runid?>&type=file&name=" + $('#log')[0].value;
+		var url="dataset.php?workflowid=<?=$workflowid?>&type=file&name=" + $('#log')[0].value;
 		jQuery.get(url, {}, setOuput);
 	}
 
-	function showFile() {
-		var url="dataset.php?runid=<?=$runid?>&type=file&name=" + $('#outputs')[0].value;
+	function show(name) {
+		var url="dataset.php?workflowid=<?=$workflowid?>&type=file&name=" + name;
 		if (endsWith(url, ".xml")) {
 			jQuery.get(url, {}, function(data) {
 				setOuput((new XMLSerializer()).serializeToString(data));
 			});
+		} else if (endsWith(url, ".R") || endsWith(url, ".pavi") || endsWith(url, ".log")) {
+			jQuery.get(url, {}, setOuput);
+		} else if (url.indexOf("c.ENS") != -1) {
+			jQuery.get(url, {}, setOuput);
+		} else if (url.indexOf("ED2IN.template") != -1) {
+			jQuery.get(url, {}, setOuput);
 		} else {
 			window.location = url;
 		}
@@ -137,6 +153,10 @@ function createOption($file) {
 
 	function endsWith(haystack, needle) {
 		return (haystack.substr(haystack.length - needle.length) === needle);
+	}
+
+	function startsWith(haystack, needle) {
+		return (haystack.substr(0, needle.length) === needle);
 	}
 	
     window.onresize = resize;
@@ -156,11 +176,13 @@ function createOption($file) {
 				<?=$years?>
 			</select>
 			<div class="spacer"></div>
+			
 			<label>Selected Variable</label>
 			<select id="var">
 				<?=$vars?>
 			</select>
 			<div class="spacer"></div>
+			
 			<input id="home" type="button" value="Show Plot" onclick="showPlot();" />
 			<div class="spacer"></div>
 
@@ -169,7 +191,8 @@ function createOption($file) {
 				<?=$outputs?>
 			</select>
 			<div class="spacer"></div>
-			<input id="home" type="button" value="Download File" onclick="showFile();" />
+			
+			<input id="home" type="button" value="Show File" onclick="show($('#outputs')[0].value);" />
 			<div class="spacer"></div>
 
 			<h2>Log Files</h2>
@@ -177,11 +200,27 @@ function createOption($file) {
 				<?=$logs?>
 			</select>
 			<div class="spacer"></div>
-			<input id="home" type="button" value="Show Log" onclick="showLog();" />
+			<input id="home" type="button" value="Show File" onclick="show($('#log')[0].value);" />
+			
 			<div class="spacer"></div>
+		</form>
+		
+		<form id="formprev" method="POST" action="history.php">
+		</form>
+		
+		<form id="formnext" method="POST" action="selectsite.php">
+		<p></p>
+		<span id="error" class="small">&nbsp;</span>
+		<input id="prev" type="button" value="History" onclick="prevStep();" />
+		<input id="next" type="button" value="Start Over" onclick="nextStep();"/>		
+		<div class="spacer"></div>
 		</form>
 	</div>
 	<div id="output">Please select an option on the left.</div>
 </div>
 </body>
 </html>
+
+<?php 
+close_database($connection);
+?>
