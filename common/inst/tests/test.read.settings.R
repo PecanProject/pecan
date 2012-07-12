@@ -1,5 +1,9 @@
 require(XML)
 
+context("tests for read.settings and related functions")
+test_that("read settings returns error if no settings file found (issue #1124)",{
+  expect_message(read.settings(), "
+  
 test_that("merge 2 xml files", {
 #  ## merge the files
 #  print(xmlMerge(xmlParse("a.xml"), xmlParse("b.xml")))
