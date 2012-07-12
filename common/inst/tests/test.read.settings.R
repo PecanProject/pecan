@@ -1,5 +1,30 @@
 require(XML)
 
+context("tests for read.settings and related functions")
+test_that("read settings returns error if no settings file found (issue #1124)",{
+  default.settings.files <- c("/etc/pecan.xml", "~/.pecan.xml",
+                              "pecan.xml", Sys.getenv("PECAN_SETTINGS"))
+  if(!all(sapply(default.settings.files, file.exists))){
+    expect_error(read.settings(), "Did not find any settings file to load.")
+  }
+})
+
+
+context("check that example settings file is valid")
+
+settings.list <- read.settings(inputfile = system.file("tests/test.settings.xml",
+                                 package = "PEcAn.all"))
+
+test_that("test.settings.xml has an unique output directory for each PFT",{
+  pfts <- unlist(settings.list$pfts)
+  i.pfts   <- names(pfts) == "pft.name"
+  i.outdir <- names(pfts) == "pft.outdir"
+  expect_equal(sum(i.pfts), sum(i.outdir))
+  expect_equal(sum(i.pfts), length(unique(pfts[i.pfts])))
+  expect_equal(length(unique(pfts[i.pfts])), length(unique(pfts[i.outdir])))
+  rm(i.pfts, i.outdir)      
+})
+
 test_that("merge 2 xml files", {
 #  ## merge the files
 #  print(xmlMerge(xmlParse("a.xml"), xmlParse("b.xml")))

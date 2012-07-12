@@ -95,6 +95,8 @@ xmlMergeNodes <- function(node1, node2) {
 ##' settings <- read.settings()
 ##' settings <- read.settings(file="willowcreek.xml")
 ##' }
+##' test.settings.file <- system.file("tests/test.settings.xml", package = "PEcAn.all")
+##' settings <- read.settings(test.settings.file)
 read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
   settings.xml <- NULL
   
@@ -122,7 +124,6 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
   if (!is.null(inputfile) && file.exists(inputfile)) {
     settings.xml <- xmlMerge(settings.xml, xmlParse(inputfile))
   }
-  
   # 6 merge command line arguments
   loc <- which(commandArgs() == "--settings")
   if (length(loc) != 0) {
@@ -140,14 +141,13 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
 
   # conver the xml to a list for ease and return
   settings.list <- xmlToList(settings.xml)
-  
+
   # get the outputfolder
   if (is.null(settings.list$outdir)) {
     print(paste("No output folder specified, using", tempdir()))
     #logwarn(paste("No output folder specified, using", tempdir()), logger='PEcAn.common.read.settings')
     settings.list$outdir <- tempdir()
   }
-  
   # create folder(s)
   if (!file.exists(settings.list$outdir) && !dir.create(settings.list$outdir, recursive=TRUE)) {
     stop("Could not create out folder.")
