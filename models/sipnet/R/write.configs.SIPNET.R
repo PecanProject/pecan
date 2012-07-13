@@ -225,6 +225,22 @@ write.run.generic <- function(settings){
 #==================================================================================================#
 
 
+#--------------------------------------------------------------------------------------------------#
+##'
+##' Clear out previous SIPNET config and parameter files.
+##'
+##' @name remove.config.SIPNET
+##' @title Clear out previous SIPNET config and parameter files.
+##' @return nothing, removes config files as side effect
+##' @export
+##'
+##' @author Shawn Serbin, David LeBauer
+remove.config.SIPNET <- function(main.outdir,settings) {
+  print("*** Not yet implemented ***")
+
+}
+#==================================================================================================#
+
 
 ####################################################################################################
 ### EOF.  End of R script file.            	

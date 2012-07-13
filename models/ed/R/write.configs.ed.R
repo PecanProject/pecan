@@ -142,9 +142,6 @@ write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
       pft.xml <- listToXml(pft$constants, 'pft')
       ### Insert PFT names into output xml file
       pft.xml <- append.xmlNode(pft.xml,xmlNode("name", pft$name))
-      #constants <- listToXml(pft$constants,'')
-      #pft.xml <- append.xmlNode(pft.xml,pft$constants)
-      #pft.xml <- append.xmlNode(pft.xml, constants)
       
       ## copy values
       if(!is.null(trait.values[[group]])){
@@ -271,7 +268,11 @@ write.run.ED <- function(settings){
 ##' @export
 ##' @author Shawn Serbin, David LeBauer
 remove.config.ED2 <- function(main.outdir,settings) {
-  #if(FALSE){
+  
+  print(" ")
+  print("---- Removing previous ED2 config files and output before starting new run ----")
+  print(" ")
+  
     todelete <- dir(unlist(main.outdir), pattern = 'ED2INc.*',
                     recursive=TRUE, full.names = TRUE)
     if(length(todelete>0)) file.remove(todelete)
@@ -286,26 +287,41 @@ remove.config.ED2 <- function(main.outdir,settings) {
     if(length(todelete>0)) file.remove(todelete)
     rm(todelete)
 
+    ### I AM NOT SURE THIS IS NESCESSARY.
     filename.root <- get.run.id('c.','*')  # TODO: depreciate abbrev run ids
   
+    ### Remove model run configs and model run log files on local/remote host
     if(settings$run$host$name == 'localhost'){
       if(length(dir(settings$run$host$rundir, pattern = filename.root)) > 0) {
         todelete <- dir(settings$run$host$outdir,
                         pattern = paste(filename.root, "*[^log]", sep = ''), 
                         recursive=TRUE, full.names = TRUE)
         file.remove(todelete)
+        ### Need to check that this is removing all config files on localhost
       }
     } else {
-      files <- system(paste("ssh ", settings$run$host$name, " 'ls ", 
-                            settings$run$host$rundir, "*", 
+      ### Remove model run congfig and log files on remote host
+      config <- system(paste("ssh ", settings$run$host$name, " 'ls ", 
+                            settings$run$host$rundir, 
                             filename.root, "*'", sep = ''), intern = TRUE)
-      if(length(files) > 0 ) {
-        todelete <- files[-grep('log', files)]
-        system(paste("ssh -T ", settings$run$host$name,
-                    " 'for f in ", paste(todelete, collapse = ' '),"; do rm $f; done'",sep=''))
+      ed2in <- system(paste("ssh ", settings$run$host$name, " 'ls ", 
+                             settings$run$host$rundir, 
+                             "ED2INc.", "*'", sep = ''), intern = TRUE)
+      output <- paste(settings$run$host$outdir,
+                      system(paste("ssh ", settings$run$host$name, " 'ls ", 
+                           settings$run$host$outdir,
+                           "'", sep = ''), intern = TRUE),sep="/")
+      if(length(config) > 0 | length(ed2in) > 0) {
+        todelete <- c(config,ed2in[-grep('log', ed2in)],output) ### Keep log files
+        
+        ### Very slow method.  NEEDS UPDATING
+        for(i in todelete){
+          print(i)
+          system(paste("ssh -T ", settings$run$host$name, " 'rm ",i,"'",sep=""))
+        }
+        
         }
       }
-    #}
 }
 #==================================================================================================#
 
