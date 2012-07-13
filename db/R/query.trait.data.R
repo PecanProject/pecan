@@ -229,17 +229,17 @@ rename.jags.columns <- function(data) {
 ##' @export
 ##'
 transform.nas <- function(data){
-                                        #control defaults to 1
+  #control defaults to 1
   data$control[is.na(data$control)] <- 1
   
-                                        #site defaults to 0
-                                        #TODO assign different site for each citation - dsl
+  #site defaults to 0
+  #TODO assign different site for each citation - dsl
   data$site_id[is.na(data$site_id)] <- 0
 
-                                        #greenhouse defaults to false (0)
+  #greenhouse defaults to false (0)
   data$greenhouse[is.na(data$greenhouse)] <- 1
   
-                                        #number of observations defaults to 2 for statistics, 1 otherwise
+  #number of observations defaults to 2 for statistics, 1 otherwise
   data$n[is.na(data$n)] <- 1
   data$n[data$n ==1 & !is.na(data$stat)] <- 2
 
@@ -266,7 +266,7 @@ assign.treatments <- function(data){
   sites <- unique(data$site_id)
   for(ss in sites){
     site.i <- data$site == ss
-                                        #if only one treatment, it's control
+    #if only one treatment, it's control
     if(length(unique(data$trt[site.i])) == 1) data$trt_id[site.i] <- 'control'
     if(!'control' %in% data$trt_id[site.i]){
       if(interactive()) browser()
@@ -519,12 +519,6 @@ query.trait.data <- function(trait, spstr,con=query.base.con(settings), ...){
     ## print(result)
     print(paste("Median ",trait," : ",round(median(result$mean,na.rm=TRUE),digits=3),sep=""))
     return(result)
-    
-    ## Convert to format applicable for JAGS meta-analysis. remove from this script file
-    ##     jagged <- jagify(result)
-    ##     renamed <- rename.jags.columns(jagged)
-    ##     return(renamed)
-
   }
 }
 ##==================================================================================================#

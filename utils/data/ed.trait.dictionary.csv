@@ -16,6 +16,7 @@
 "SLA";"Specific Leaf Area";"m2 kg-1";"SLA"
 "stomatal_slope";"Stomatal Slope";"ratio";"stomatal_slope"
 "Vcmax";"Vcmax";"umol CO2 m-2 s-1";"Vm0"
+"Jmax";"Jmax";"umol CO2 m-2 s-1";"Jm0"
 "Amax";"Amax";"umol CO2 m-2 s-1";"Amax"
 "Vm_low_temp";"Photosynthesis Min Temp";"Celsius";"Vm_low_temp"
 "water_conductance";"Water Conductance";"mm";"water_conductance"

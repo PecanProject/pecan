@@ -21,6 +21,7 @@ get.model.output <- function(model){
 
   if(exists(my.fcn)){
     do.call(my.fcn,args=list())
+    
   } else {
     print("-------------------------------------------------------------------")
     print(c(my.fcn,"could not be found"))
@@ -31,6 +32,8 @@ get.model.output <- function(model){
   }
 
   return()
+  
+  ### ALL BELOW SEEMS DEPRECIATED ###
   
   if (model=="ED2"){
     print(" ")

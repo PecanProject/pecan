@@ -1,0 +1,22 @@
+\name{query.close}
+\alias{query.close}
+\title{Close existing database connections}
+\usage{
+  query.close(con)
+}
+\arguments{
+  \item{con}{database connection object}
+}
+\value{
+  nothing, as a side effect closes all open connections
+}
+\description{
+  Close database connection
+}
+\details{
+  Closes a database connection
+}
+\author{
+  Rob Kooper
+}
+

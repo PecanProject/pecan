@@ -110,6 +110,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
   Jmax = NA
   if("Jmax" %in% pft.names){
     Jmax = pft.traits[which(pft.names == 'Jmax')]
+    ### Using Jmax scaled to 25 degC. Maybe not be the best approach
   }
 
   alpha = NA

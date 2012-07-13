@@ -7,4 +7,7 @@
 \description{
   Gets trait data from the database
 }
+\author{
+  David LeBauer, Shawn Serbin
+}
 
