@@ -49,11 +49,12 @@ get.trait.data <- function() {
     ## 2. get priors available for pft  
     prior.distns <- query.priors(pft$name, vecpaste(trait.names),
                                  out=pft$outdir,con=newconfn())
-### exclude any parameters for which a constant is provided 
+    
+    ### exclude any parameters for which a constant is provided 
     prior.distns <- prior.distns[which(!rownames(prior.distns) %in%
                                        names(pft$constants)),]
     
-                                        # 3. display info to the console
+    # 3. display info to the console
     print(" ")
     print("-------------------------------------------------------------------")
     print(paste('Summary of Prior distributions for: ',pft$name,sep=""))

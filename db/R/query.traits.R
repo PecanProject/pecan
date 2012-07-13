@@ -11,10 +11,11 @@
 ##' @export
 ##' @examples
 ##' \dontrun{
-##' spstr <- query.pft_species('ebifarm.c4crop')$spstr
+##' spstr <- query.pft_species('ebifarm.c4crop')
 ##' trvec <- c('leafN', 'SLA')
 ##' trait.data <- query.traits(spstr, trvec)
 ##' }
+##' @author David LeBauer, Carl Davidson, Shawn Serbin
 query.traits <- function(spstr, priors, con = NULL){
 
   if(is.null(con)){

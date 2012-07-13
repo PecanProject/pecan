@@ -9,6 +9,7 @@
 ##' @param end.year
 ##' @return vector of output variable
 ##' @export
+##' @author Michael Dietze
 read.output.SIPNET <- function(run.id, outdir, start.year=NA, end.year=NA,variables="NPP"){
   
   require(ncdf)
