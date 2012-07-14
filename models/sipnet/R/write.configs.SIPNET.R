@@ -122,6 +122,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
     param[which(param[,1] == "halfSatPar"),2] = Jmax/(2*alpha)
     ### WARNING: this is a very coarse linear approximation and needs improvement *****
     ### Yes, we also need to work on doing a paired query where we have both data together.
+    ### Once halfSatPar is calculated, need to remove Jmax and quantum_efficiency from param list so they are not included in SA
   }
 
   if("leaf_turnover_rate" %in% pft.names){
@@ -231,13 +232,25 @@ write.run.generic <- function(settings){
 ##'
 ##' @name remove.config.SIPNET
 ##' @title Clear out previous SIPNET config and parameter files.
+##' @param main.outdir Primary PEcAn output directory (will be depreciated)
+##' @param settings PEcAn settings file 
 ##' @return nothing, removes config files as side effect
 ##' @export
 ##'
 ##' @author Shawn Serbin, David LeBauer
 remove.config.SIPNET <- function(main.outdir,settings) {
-  print("*** Not yet implemented ***")
-
+  
+  ### Remove files on localhost
+  if(settings$run$host$name == 'localhost'){
+    files <- paste(settings$outdir,
+                   list.files(path=settings$outdir, recursive=FALSE),sep="/") # Need to change this to the run folder when implemented
+    files <- files[-grep('*.xml',files)] # Keep pecan.xml file
+    file.remove(files)
+    
+    ### On remote host
+  } else {
+    print("*** WARNING: Removal of files on remote host not yet implemented ***")
+  }
 }
 #==================================================================================================#
 

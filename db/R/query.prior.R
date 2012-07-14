@@ -12,7 +12,7 @@
 ##' @export
 ##' @examples
 ##' \dontrun{
-##' query.priors('ebifarm.pavi', c('SLA', 'Vcmax', 'leaf_width'))
+##' query.priors('ebifarm.pavi', vecpaste('SLA', 'Vcmax', 'leaf_width'))
 ##' }
 query.priors <- function(pft, trstr, out=NULL,con=NULL,...){
   if(is.null(con)){

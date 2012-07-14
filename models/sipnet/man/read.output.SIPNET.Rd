@@ -3,7 +3,7 @@
 \title{Read output}
 \usage{
   read.output.SIPNET(run.id, outdir, start.year = NA,
-    end.year = NA)
+    end.year = NA, variables = "NPP")
 }
 \arguments{
   \item{run.id}{the id distiguishing the model run}
@@ -20,5 +20,8 @@
 }
 \description{
   Reads the output of a single model run
+}
+\author{
+  Michael Dietze
 }
 
