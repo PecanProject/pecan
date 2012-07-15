@@ -1,3 +1,11 @@
+#-------------------------------------------------------------------------------
+# Copyright (c) 2012 University of Illinois, NCSA.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the 
+# University of Illinois/NCSA Open Source License
+# which accompanies this distribution, and is available at
+# http://opensource.ncsa.illinois.edu/license.html
+#-------------------------------------------------------------------------------
 ##' R package to support PEcAn, the Predictive Ecosystem Analyzer
 ##'
 ##' Instructions for the use of this package are provided in the project wiki \url{http://128.174.125.122/wiki/index.php/PECAn_Documentation:Use}.
