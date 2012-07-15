@@ -1,11 +1,7 @@
 # ----------------------------------------------------------------------
 # Load required libraries
 # ----------------------------------------------------------------------
-library(PEcAn.common)
-library(PEcAn.DB)
-library(PEcAn.data.land)
-library(PEcAn.MA)
-library(PEcAn.ED)
+library(PEcAn.all)
 
 # ----------------------------------------------------------------------
 # initialization
@@ -165,7 +161,7 @@ status.end()
 
 # write model specific configs
 status.start("CONFIG")
-run.write.configs("ED2")
+run.write.configs(settings$model$name)
 status.end()
 
 # run model
@@ -175,8 +171,13 @@ con <- query.base.con(settings)
 query.base(paste("INSERT INTO runs (site_id, start_time, finish_time, outdir, created_at, started_at) values ('", settings$run$site$id, "', '", settings$run$start.date, "', '", settings$run$end.date, "', '",settings$outdir , "', NOW(), NOW())", sep=''), con)
 id <- query.base(paste("SELECT LAST_INSERT_ID() AS ID"), con)
 oldwd <- getwd()
-setwd(settings$outdir)
-system2(paste(settings$outdir, 'launcher.sh', sep=''), wait=TRUE)
+if (settings$model$name == "ED2") {
+  setwd(settings$outdir)
+  system2(paste(settings$outdir, 'launcher.sh', sep=''), wait=TRUE)
+} else if (settings$model$name == "SIPNET") {
+  setwd(paste(settings$outdir, "SAmedian", sep="/"))
+  system2(settings$model$binary, wait=TRUE)
+}
 setwd(oldwd)
 # TODO need to add code to check if remote jobs are done
 #system2(paste(settings$outdir, 'check.sh', sep=''), wait=TRUE)
