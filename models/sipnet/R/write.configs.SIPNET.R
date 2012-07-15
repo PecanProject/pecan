@@ -245,7 +245,8 @@ remove.config.SIPNET <- function(main.outdir,settings) {
     files <- paste(settings$outdir,
                    list.files(path=settings$outdir, recursive=FALSE),sep="/") # Need to change this to the run folder when implemented
     files <- files[-grep('*.xml',files)] # Keep pecan.xml file
-    file.remove(files)
+    #files <- files[-grep(settings$pfts$pft$outdir,files)] # Keep pft folder
+    file.remove(files,recursive=FALSE)
     
     ### On remote host
   } else {
