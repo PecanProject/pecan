@@ -1,21 +1,8 @@
-
-## packages available from debian repository installed by install.dependencies.sh
-# packages required by PEcAn:
-
-list.of.packages <- c('DEoptim','randtoolbox','ggplot2', 'RMySQL', 'gridExtra','xtable','chron', 'testthat')
-
-# of the required packages, these are not yet installed:
+list.of.packages <- c('MCMCpack', 'PECAn', 'RMySQL', 'Rmpi', 'XML', 'chron', 'doSNOW', 'hdf5', 'mvtnorm', 'ncdf', 'stringr', 'time')
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) {
+  print("installing : ")
+  print(new.packages)
+  install.packages(new.packages, repos="http://cran.us.r-project.org")
+}
 
-# install required packages:
-r <- getOption("repos")
-r["CRAN"] <- "http://cran.us.r-project.org"
-options(repos = r)
-rm(r)
-
-
-cat(paste('packages to be installed \n', new.packages))
-
-
-
-if(length(new.packages)) install.packages(new.packages)
