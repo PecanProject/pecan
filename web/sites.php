@@ -7,13 +7,21 @@ $dom = new DOMDocument("1.0");
 $node = $dom->createElement("markers");
 $parnode = $dom->appendChild($node); 
 
-// check for valid MET data
+$query = "SELECT sites.* FROM sites";
 if (isset($_REQUEST['host']) && ($_REQUEST['host'] != "")) {
-	//$query = "SELECT sites.* FROM sites";
-	$query = "SELECT sites.* FROM sites, inputs, input_files, machines WHERE machines.hostname='{$_REQUEST['host']}' AND input_files.machine_id=machines.id AND input_files.format_id=12 AND input_files.file_id = inputs.file_id AND inputs.site_id=sites.id";
-} else {
-	$query = "SELECT sites.* FROM sites";
+	$query  = "SELECT sites.* FROM sites, inputs, input_files, machines WHERE input_files.file_id = inputs.file_id AND inputs.site_id=sites.id";
+	$query .= " AND machines.hostname='{$_REQUEST['host']}' AND input_files.machine_id=machines.id";
+
+	if (isset($_REQUEST['model']) && ($_REQUEST['model'] != "")) {
+		$model = strtolower($_REQUEST['model']);
+		if (preg_match('/^ed/', $model)) {
+			$query .= " AND input_files.format_id=12";
+		} else if (preg_match('/^sipnet/', $model)) {
+			$query .= " AND input_files.format_id=24";
+		}
+	}
 }
+
 
 // Select all the rows in the markers table
 $result = mysql_query($query);

@@ -63,6 +63,11 @@ foreach(scandir("$folder/run") as $file) {
 	}
 }
 
+# SIPNET HACK
+if (file_exists("$folder/pecan/SAmedian/SAmedian.out")) {
+	$outputs .= createOption("pecan/SAmedian/SAmedian.out");
+}
+
 # check the out folder
 foreach(scandir("$folder/out") as $file) {
 	if ($file[0] == ".") {
@@ -135,7 +140,7 @@ function createOption($file) {
 			jQuery.get(url, {}, function(data) {
 				setOuput((new XMLSerializer()).serializeToString(data));
 			});
-		} else if (endsWith(url, ".R") || endsWith(url, ".pavi") || endsWith(url, ".log")) {
+		} else if (endsWith(url, ".R") || endsWith(url, ".pavi") || endsWith(url, ".log") || endsWith(url, ".Rout") || endsWith(url, ".out")) {
 			jQuery.get(url, {}, setOuput);
 		} else if (url.indexOf("c.ENS") != -1) {
 			jQuery.get(url, {}, setOuput);

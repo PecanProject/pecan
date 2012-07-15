@@ -35,11 +35,12 @@ $model = mysql_fetch_assoc($result);
 
 // split based on model info
 if (preg_match('/^ed/', strtolower($model["model_name"]))) {
-	$model['type'] = "ED";
-} else {
+	$model['type'] = "ED2";
+} else if (preg_match('/^sipnet/', strtolower($model["model_name"]))) {
 	$model['type'] = "SIPNET";
-}
-	
+} else {
+	die("Unknown model type {$model['model_name']}");
+}	
 
 ?>
 <!DOCTYPE html>
@@ -59,61 +60,70 @@ if (preg_match('/^ed/', strtolower($model["model_name"]))) {
 	google.setOnLoadCallback(mapsLoaded);
 	
 	function resize() {
-    	$("#stylized").height($(window).height() - 5);
-    	$("#map_canvas").height($(window).height() - 1);
-    	$("#map_canvas").width($(window).width() - $('#stylized').width() - 5);
+		$("#stylized").height($(window).height() - 5);
+		$("#map_canvas").height($(window).height() - 1);
+		$("#map_canvas").width($(window).width() - $('#stylized').width() - 5);
 	}
 	
 	function validate() {
-        // check dates
-		var start = checkDate($("#start").val(), "Start");
-        if (!start) {
-        	return;
-        }
-        var end = checkDate($("#end").val(), "End");
-        if (!end) {
-        	return;
-        }
-        if (start >= end) {
-	        $("#next").attr("disabled", "disabled");
-	        $("#error").html("End date should be after start date.");
-            return;
-        }
+		// check PFTs
+		if ($("#pft").val() == null) {
+			$("#next").attr("disabled", "disabled");
+			$("#error").html("Select a pft to continue");
+			return;
+		}
 
-        // check PFTs
-	    if ($("#pft").val() == null) {
-	        $("#next").attr("disabled", "disabled");
-	        $("#error").html("Select a pft to continue");
-	        return;
-	    }
 <?php
-if ($model["type"] == "ED") {
+if ($model["type"] == "ED2") {
 ?>
-        // check MET
-	    if ($("#met").val() == null) {
-	        $("#next").attr("disabled", "disabled");
-	        $("#error").html("Select a MET file to continue");
-	        return;
-	    }
+		// check dates
+		var start = checkDate($("#start").val(), "Start");
+		if (!start) {
+	        	return;
+		}
+		var end = checkDate($("#end").val(), "End");
+		if (!end) {
+			return;
+		}
+		if (start >= end) {
+			$("#next").attr("disabled", "disabled");
+			$("#error").html("End date should be after start date.");
+			return;
+		}
 
-        // check psscss
-	    if ($("#psscss").val() == null) {
-	        $("#next").attr("disabled", "disabled");
-	        $("#error").html("Select site files to continue");
-	        return;
-	    }
+		// check MET
+		if ($("#met").val() == null) {
+			$("#next").attr("disabled", "disabled");
+			$("#error").html("Select a MET file to continue");
+			return;
+		}
+
+		// check psscss
+		if ($("#psscss").val() == null) {
+			$("#next").attr("disabled", "disabled");
+			$("#error").html("Select site files to continue");
+			return;
+		}
 <?php
 } else if ($model["type"] == "SIPNET") {
+?>
+		// check Climate
+		if ($("#climate").val() == null) {
+			$("#next").attr("disabled", "disabled");
+			$("#error").html("Select a climate file to continue");
+			return;
+		}
+<?php
 }
 ?>
-	    // all is OK
-	    $("#next").removeAttr("disabled");       
-	    $("#error").html("&nbsp;");
+		// all is OK
+		$("#next").removeAttr("disabled");       
+		$("#error").html("&nbsp;");
 	}
 	    
 	function prevStep() {
 		$("#formprev").submit();
-		}
+	}
 
 	function nextStep() {
 		$("#formnext").submit();
@@ -176,14 +186,6 @@ if ($model["type"] == "ED") {
 			<h1>Selected Site</h1>
 			<p>Set parameters for the run.</p>
 
-			<label>Start Date</label>
-			<input type="text" name="start" id="start" value="2006/01/01" onChange="validate();"/>
-			<div class="spacer"></div>
-			
-			<label>End Date</label>
-			<input type="text" name="end" id="end" value="2006/12/31" onChange="validate();"/>
-			<div class="spacer"></div>
-			
 			<label>PFT</label>
 			<select id="pft" name="pft[]" multiple size=5 onChange="validate();">
 <?php 
@@ -201,24 +203,29 @@ while ($row = @mysql_fetch_assoc($result)){
 			<div class="spacer"></div>
 			
 <?php
-if ($model["type"] == "ED") {
-	// setup default part of query
-	$query="SELECT file_path AS file, name, start_date, end_date FROM inputs, input_files, machines WHERE inputs.site_id=$siteid AND inputs.file_id=input_files.file_id AND machines.hostname='${_REQUEST['hostname']}' AND input_files.machine_id=machines.id";
+if ($model["type"] == "ED2") {
 ?>
+                        <label>Start Date</label>
+                        <input type="text" name="start" id="start" value="2006/01/01" onChange="validate();"/>
+                        <div class="spacer"></div>
+
+                        <label>End Date</label>
+                        <input type="text" name="end" id="end" value="2006/12/31" onChange="validate();"/>
+                        <div class="spacer"></div>
 
 			<label>MET Data file</label>
 			<select id="met" name="met" onChange="validate();">
 <?php
+        // setup default part of query
+	$query="SELECT file_path AS file, name, start_date, end_date FROM inputs, input_files, machines WHERE inputs.site_id=$siteid AND inputs.file_id=input_files.file_id AND machines.hostname='${_REQUEST['hostname']}' AND input_files.machine_id=machines.id";
+
 	// get met data
 	$result = mysql_query($query . " AND input_files.format_id=12");
 	if (!$result) {
 		die('Invalid query: ' . mysql_error());
 	}
-	$mets = "";
 	while ($row = @mysql_fetch_assoc($result)){
-		if ($row['name'] == 'ED_MET_DRIVER_HEADER') {
-			$row['name']=substr($row['start_date'], 0, 4) . "-" . substr($row['end_date'], 0, 4);
-		}
+		$row['name']="ED " . substr($row['start_date'], 0, 4) . "-" . substr($row['end_date'], 0, 4);
 		print "<option value='{$row['file']}'>{$row['name']}</option>\n";
 	}
 ?>
@@ -244,6 +251,26 @@ if ($model["type"] == "ED") {
 
 <?php
 } else if ($model["type"] == "SIPNET") {
+        // setup default part of query
+        $query="SELECT file_path AS file, name, start_date, end_date FROM inputs, input_files, machines WHERE inputs.site_id=$siteid AND inputs.file_id=input_files.file_id AND machines.hostname='${_REQUEST['hostname']}' AND input_files.machine_id=machines.id";
+?>
+
+                        <label>Climate Data file</label>
+                        <select id="climate" name="climate" onChange="validate();">
+<?php
+        // get met data
+        $result = mysql_query($query . " AND input_files.format_id=24");
+        if (!$result) {
+                die('Invalid query: ' . mysql_error());
+        }
+        while ($row = @mysql_fetch_assoc($result)){
+                $row['name']="CLIMATE " . substr($row['start_date'], 0, 4) . "-" . substr($row['end_date'], 0, 4);
+                print "<option value='{$row['file']}'>{$row['name']}</option>\n";
+        }
+?>
+                        </select>
+                        <div class="spacer"></div>
+<?php
 }
 ?>			
 			<p></p>

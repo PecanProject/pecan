@@ -107,18 +107,64 @@ while ($row = @mysql_fetch_assoc($result)){
 		}  
 	}
 
-    function hostSelected() {
-        // remove everything
+	function modelSelected() {
+                // remove everything
+                if (markersArray) {
+                        for (i in markersArray) {
+                                markersArray[i].setMap(null);
+                        }
+                        markersArray.length = 0;
+                }
+		$("#siteid").val("");
+		$("#sitename").val("");
+		validate();
+
+                // get all sites
+                var url="sites.php?host=" + $('#hostname')[0].value + "&model=" + $('#modelid option:selected').html()
+                jQuery.get(url, {}, function(data) {
+                        jQuery(data).find("marker").each(function() {
+                                // create a marker
+                                var marker = jQuery(this);
+                                var latlng;
+                                if (marker.attr("lat") == "" || marker.attr("lon") == "") {
+                                        console.log("Bad marker (siteid=" + marker.attr("siteid") + " site=" + marker.attr("sitename") + " lat=" + marker.attr("lat") + " lon=" + marker.attr("lon") + ")");
+                                } else {
+                                        latlng = new google.maps.LatLng(parseFloat(marker.attr("lat")), parseFloat(marker.attr("lon")));
+                                        var gmarker = new google.maps.Marker({position: latlng, map: map});
+                                        markersArray.push(gmarker);
+
+                                        // create the tooltip and its text
+                                        gmarker.sitename = marker.attr("sitename");
+                                        gmarker.siteid   = marker.attr("siteid");
+                                        gmarker.html  = '<b>' + marker.attr("sitename") + '</b><br />'
+                                        gmarker.html += marker.attr("city") + ', ' + marker.attr("country") + '<br />';
+
+                                        // add a listener to open the tooltip when a user clicks on one of the markers
+                                        google.maps.event.addListener(gmarker, 'click', function() {
+                                                $("#siteid").val(this.siteid);
+                                                $("#sitename").val(this.sitename);
+                                                infowindow.setContent(this.html);
+                                                infowindow.open(map, this);
+                                        validate();
+                                        });
+                                }
+                        });
+                });
+	}
+
+	function hostSelected() {
+		// remove everything
 		if (markersArray) {
 			for (i in markersArray) {
 				markersArray[i].setMap(null);
 			}
 			markersArray.length = 0;
 		}
-		$('#modelid').find('option').remove();	    
 		$("#siteid").val("");
 		$("#sitename").val("");
-    	validate();
+		$('#modelid').find('option').remove();	    
+		$('#modelid').append('<option value="">All Models</option>');
+		validate();
 		
 		// get all sites
 		var url="sites.php?host=" + $('#hostname')[0].value;
@@ -188,7 +234,7 @@ while ($row = @mysql_fetch_assoc($result)){
 			<div class="spacer"></div>
 
 			<label>Model:</label>
-			<select name="modelid" id="modelid" onChange="validate();">
+			<select name="modelid" id="modelid" onChange="modelSelected();">
 			</select>
 			<div class="spacer"></div>
 

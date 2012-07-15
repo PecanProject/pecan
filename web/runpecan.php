@@ -16,21 +16,21 @@ if (!isset($_REQUEST['hostname'])) {
   die("Need a hostname.");
 }
 $hostname=$_REQUEST['hostname'];
-if (!isset($_REQUEST['start'])) {
-	die("Need a start date.");
-}
-$startdate=$_REQUEST['start'];
-if (!isset($_REQUEST['end'])) {
-	die("Need a end date.");
-}
-$enddate=$_REQUEST['end'];
 if (!isset($_REQUEST['pft'])) {
 	die("Need a pft.");
 }
 $pft=$_REQUEST['pft'];
 
 # specific for each model type
-if ($modeltype == "ED") {
+if ($modeltype == "ED2") {
+	if (!isset($_REQUEST['start'])) {
+		die("Need a start date.");
+	}
+	$startdate=$_REQUEST['start'];
+	if (!isset($_REQUEST['end'])) {
+		die("Need a end date.");
+	}
+	$enddate=$_REQUEST['end'];
 	if (!isset($_REQUEST['met'])) {
 		die("Need a met.");
 	}
@@ -40,7 +40,10 @@ if ($modeltype == "ED") {
 	}
 	$psscss=$_REQUEST['psscss'];
 } else if ($modeltype == "SIPNET") {
-	
+        if (!isset($_REQUEST['climate'])) {
+                die("Need a climate.");
+        }
+        $climate=$_REQUEST['climate'];
 }
 
 require("system.php");
@@ -128,16 +131,34 @@ fwrite($fh, "    <name>${db_database}</name>" . PHP_EOL);
 fwrite($fh, "  </database>" . PHP_EOL);
 
 fwrite($fh, "  <meta.analysis>" . PHP_EOL);
-fwrite($fh, "    <iter>1000</iter>" . PHP_EOL);
+fwrite($fh, "    <iter>10000</iter>" . PHP_EOL);
 fwrite($fh, "    <random.effects>TRUE</random.effects>" . PHP_EOL);
 fwrite($fh, "  </meta.analysis>" . PHP_EOL);
 
-fwrite($fh, "  <ensemble>" . PHP_EOL);
-fwrite($fh, "    <size>1</size>" . PHP_EOL);
-fwrite($fh, "  </ensemble>" . PHP_EOL);
+if ($modeltype == "ED2") {
+	fwrite($fh, "  <ensemble>" . PHP_EOL);
+	fwrite($fh, "    <size>1</size>" . PHP_EOL);
+	fwrite($fh, "  </ensemble>" . PHP_EOL);
+} else if ($modeltype == "SIPNET") {
+        fwrite($fh, "    <sensitivity.analysis>" . PHP_EOL);
+        fwrite($fh, "      <quantiles>" . PHP_EOL);
+        fwrite($fh, "        <quantile></quantile>" . PHP_EOL);
+        fwrite($fh, "        <sigma>-3</sigma>" . PHP_EOL);
+        fwrite($fh, "        <sigma>-2</sigma>" . PHP_EOL);
+        fwrite($fh, "        <sigma>-1</sigma>" . PHP_EOL);
+        fwrite($fh, "        <sigma>1</sigma>" . PHP_EOL);
+        fwrite($fh, "        <sigma>2</sigma>" . PHP_EOL);
+        fwrite($fh, "        <sigma>3</sigma>" . PHP_EOL);
+        fwrite($fh, "      </quantiles>" . PHP_EOL);
+        fwrite($fh, "      <start.year>2002</start.year>" . PHP_EOL);
+        fwrite($fh, "      <end.year>2006</end.year>" . PHP_EOL);
+        fwrite($fh, "    </sensitivity.analysis>" . PHP_EOL);
+}
 
 fwrite($fh, "  <model>" . PHP_EOL);
-if ($modeltype == "ED") {
+fwrite($fh, "    <name>$modeltype</name>" . PHP_EOL);
+fwrite($fh, "    <binary>${binary}</binary>" . PHP_EOL);
+if ($modeltype == "ED2") {
 	fwrite($fh, "    <config.header>" . PHP_EOL);
 	fwrite($fh, "      <radiation>" . PHP_EOL);
 	fwrite($fh, "        <lai_min>0.01</lai_min>" . PHP_EOL);
@@ -147,12 +168,12 @@ if ($modeltype == "ED") {
 	fwrite($fh, "      </ed_misc> " . PHP_EOL);
 	fwrite($fh, "    </config.header>" . PHP_EOL);
 	fwrite($fh, "    <edin>${folder}/ED2IN.template</edin>" . PHP_EOL);
-	fwrite($fh, "    <binary>${binary}</binary>" . PHP_EOL);
 	fwrite($fh, "    <veg>${ed_veg}</veg>" . PHP_EOL);
 	fwrite($fh, "    <soil>${ed_soil}</soil>" . PHP_EOL);
 	fwrite($fh, "    <psscss>$psscss</psscss>" . PHP_EOL);
 	fwrite($fh, "    <inputs>${ed_inputs}</inputs>" . PHP_EOL);
 	fwrite($fh, "    <phenol.scheme>0</phenol.scheme>" . PHP_EOL);
+#} else ($modeltype = "SIPNET") {
 }
 fwrite($fh, "  </model>" . PHP_EOL);
 fwrite($fh, "  <run>" . PHP_EOL);
@@ -161,10 +182,12 @@ fwrite($fh, "    <site>" . PHP_EOL);
 fwrite($fh, "      <name>{$siteinfo['sitename']}</name>" . PHP_EOL);
 fwrite($fh, "      <lat>{$siteinfo['lat']}</lat>" . PHP_EOL);
 fwrite($fh, "      <lon>{$siteinfo['lon']}</lon>" . PHP_EOL);
-if ($modeltype == "ED") {
+if ($modeltype == "ED2") {
 	fwrite($fh, "      <met>$met</met>" . PHP_EOL);
 	fwrite($fh, "      <met.start>${startdate}</met.start>" . PHP_EOL);
 	fwrite($fh, "      <met.end>${enddate}</met.end>" . PHP_EOL);
+} else if ($modeltype = "SIPNET") {
+	fwrite($fh, "      <met>$climate</met>" . PHP_EOL);
 }
 fwrite($fh, "    </site>" . PHP_EOL);
 fwrite($fh, "    <start.date>${startdate}</start.date>" . PHP_EOL);
@@ -180,8 +203,12 @@ fwrite($fh, "  </run>" . PHP_EOL);
 fwrite($fh, "</pecan>" . PHP_EOL);
 fclose($fh); 
 
-# copy ED2IN.template
-copy("template/{$model['model_name']}_r{$model['revision']}", "${folder}/ED2IN.template");
+# copy ED template
+if ($modeltype == "ED2") {
+	copy("template/{$model['model_name']}_r{$model['revision']}", "${folder}/ED2IN.template");
+}
+
+# copy workflow
 copy("workflow.R", "${folder}/workflow.R");
 
 # start the actual workflow
