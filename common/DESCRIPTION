@@ -24,4 +24,5 @@ LazyLoad: yes
 LazyData: FALSE
 Collate:
     'help.R'
+    'logger.R'
     'read.settings.R'

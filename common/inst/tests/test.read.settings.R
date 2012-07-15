@@ -97,3 +97,26 @@
 ## #  expect_equal(names(settings$c$g), NULL)
 ## #  expect_equal(settings$c$g, "b")
 ## })
+
+test_that("logger prints right messages",{
+#log.debug("debug")
+#log.enable("DEBUG", FALSE)
+#log.debug("debug")
+
+#log.info("info")
+#log.enable("INFO", FALSE)
+#log.info("info")
+
+#log.warn("warn")
+#log.enable("WARN", FALSE)
+#log.warn("warn")
+
+#log.error("error")
+#log.enable("ERROR", FALSE)
+#log.error("error")
+
+#log.enable("ERROR", TRUE)
+#log.output(console=FALSE)
+#log.error("error")
+                })
+

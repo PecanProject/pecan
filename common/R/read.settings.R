@@ -13,14 +13,14 @@ library(XML)
 ##' @return xml object with 
 ##' @author Rob Kooper
 xmlMerge <- function(xml1, xml2) {
-  if (is.null(xml2)) {
-    return(xml1)
-  }
-  
-  # TODO no merging for now, it will simply return latest file
-  # TODO see https://ebi-forecast.igb.illinois.edu/redmine/issues/1091
-  return(xml2)
-  
+	if (is.null(xml2)) {
+		return(xml1)
+	}
+	
+	# TODO no merging for now, it will simply return latest file
+	# TODO see https://ebi-forecast.igb.illinois.edu/redmine/issues/1091
+	return(xml2)
+	
 #  if (is.null(xml1)) {
 #    return(xml2)
 #  }
@@ -38,30 +38,30 @@ xmlMerge <- function(xml1, xml2) {
 ##' @return merged nodes
 ##' @author Rob Kooper
 xmlMergeNodes <- function(node1, node2) {
-  # first replace all attributes from node2 to node1
-  if (!is.null(xmlAttrs(node2))) {
-    addAttributes(node=node1, .attrs=xmlAttrs(node2), append=TRUE)   
-  }
-  
-  # add all nodes in node2 that are not in node1
-  kidsnames <- names(node2)[!(names(node2) %in% names(node1))]
-  if (length(kidsnames) > 0) {
-    addChildren(node1, kids=xmlChildren(node2)[kidsnames])
-  }
-  
-  # loop through all nodes in common
-  for(name in names(node2)[names(node2) %in% names(node1)]) {
-    if ("XMLInternalCommentNode" %in% class(node1[[name]])) {
-      next
-    }
-    if ((length(names(xmlChildren(node1[[name]]))) == 1) &&( names(xmlChildren(node1[[name]])) == "text")) {
-      addAttributes(node=node1[[name]], .attrs=xmlAttrs(node2[[name]]), append=TRUE)
-      addAttributes(node=node2[[name]], .attrs=xmlAttrs(node1[[name]]), append=FALSE)
-      replaceNodes(node1[[name]], node2[[name]])
-    } else {
-      xmlMergeNodes(xmlChildren(node1)[[name]], xmlChildren(node2)[[name]])         
-    }
-  }
+	# first replace all attributes from node2 to node1
+	if (!is.null(xmlAttrs(node2))) {
+		addAttributes(node=node1, .attrs=xmlAttrs(node2), append=TRUE)   
+	}
+	
+	# add all nodes in node2 that are not in node1
+	kidsnames <- names(node2)[!(names(node2) %in% names(node1))]
+	if (length(kidsnames) > 0) {
+		addChildren(node1, kids=xmlChildren(node2)[kidsnames])
+	}
+	
+	# loop through all nodes in common
+	for(name in names(node2)[names(node2) %in% names(node1)]) {
+		if ("XMLInternalCommentNode" %in% class(node1[[name]])) {
+			next
+		}
+		if ((length(names(xmlChildren(node1[[name]]))) == 1) &&( names(xmlChildren(node1[[name]])) == "text")) {
+			addAttributes(node=node1[[name]], .attrs=xmlAttrs(node2[[name]]), append=TRUE)
+			addAttributes(node=node2[[name]], .attrs=xmlAttrs(node1[[name]]), append=FALSE)
+			replaceNodes(node1[[name]], node2[[name]])
+		} else {
+			xmlMergeNodes(xmlChildren(node1)[[name]], xmlChildren(node2)[[name]])         
+		}
+	}
 }
 
 
@@ -98,89 +98,118 @@ xmlMergeNodes <- function(node1, node2) {
 ##' test.settings.file <- system.file("tests/test.settings.xml", package = "PEcAn.all")
 ##' settings <- read.settings(test.settings.file)
 read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
-  settings.xml <- NULL
-  
-  # 1 load /etc/pecan.xml
-  if (file.exists("/etc/pecan.xml")) {
-    settings.xml <- xmlMerge(settings.xml, xmlParse("/etc/pecan.xml"))
-  }
-  
-  # 2 merge ~/.pecan.xml
-  if (file.exists("~/.pecan.xml")) {
-    settings.xml <- xmlMerge(settings.xml, xmlParse("~/.pecan.xml"))
-  }
-  
-  # 3 merge pecan.xml
-  if (file.exists("pecan.xml")) {
-    settings.xml <- xmlMerge(settings.xml, xmlParse("pecan.xml"))
-  }
-  
-  # 4 merge PECAN_SETTINGS
-  if (file.exists(Sys.getenv("PECAN_SETTINGS"))) {
-    settings.xml <- xmlMerge(settings.xml, xmlParse(Sys.getenv("PECAN_SETTINGS")))
-  }
-  
-  # 5 merge file  
-  if (!is.null(inputfile) && file.exists(inputfile)) {
-    settings.xml <- xmlMerge(settings.xml, xmlParse(inputfile))
-  }
-  # 6 merge command line arguments
-  loc <- which(commandArgs() == "--settings")
-  if (length(loc) != 0) {
-    for(idx in loc) {
-      if (!is.null(commandArgs()[idx+1]) && file.exists(commandArgs()[idx+1])) {
-        settings.xml <- xmlMerge(settings.xml, xmlParse(commandArgs()[idx+1]))
-      }
-    }
-  }
+	settings.xml <- NULL
+	
+	# 1 load /etc/pecan.xml
+	if (file.exists("/etc/pecan.xml")) {
+		settings.xml <- xmlMerge(settings.xml, xmlParse("/etc/pecan.xml"))
+	}
+	
+	# 2 merge ~/.pecan.xml
+	if (file.exists("~/.pecan.xml")) {
+		settings.xml <- xmlMerge(settings.xml, xmlParse("~/.pecan.xml"))
+	}
+	
+	# 3 merge pecan.xml
+	if (file.exists("pecan.xml")) {
+		settings.xml <- xmlMerge(settings.xml, xmlParse("pecan.xml"))
+	}
+	
+	# 4 merge PECAN_SETTINGS
+	if (file.exists(Sys.getenv("PECAN_SETTINGS"))) {
+		settings.xml <- xmlMerge(settings.xml, xmlParse(Sys.getenv("PECAN_SETTINGS")))
+	}
+	
+	# 5 merge file  
+	if (!is.null(inputfile) && file.exists(inputfile)) {
+		settings.xml <- xmlMerge(settings.xml, xmlParse(inputfile))
+	}
+	# 6 merge command line arguments
+	loc <- which(commandArgs() == "--settings")
+	if (length(loc) != 0) {
+		for(idx in loc) {
+			if (!is.null(commandArgs()[idx+1]) && file.exists(commandArgs()[idx+1])) {
+				settings.xml <- xmlMerge(settings.xml, xmlParse(commandArgs()[idx+1]))
+			}
+		}
+	}
+	
+	# make sure something was loaded
+	if (is.null(settings.xml)) {
+		log.error("Did not find any settings file to load.")
+		stop("Did not find any settings file to load.")
+	}
+	
+	# conver the xml to a list for ease and return
+	settings.list <- xmlToList(settings.xml)
+	
+	# crate the outputfolder
+	if (is.null(settings.list$outdir)) {
+		settings.list$outdir <- tempdir()
+		log.warn("No output folder specified, using", settings.list$outdir)
+	} else {
+		log.debug("output folder =", settings.list$outdir)
+	}
+	if (!file.exists(settings.list$outdir) && !dir.create(settings.list$outdir, recursive=TRUE)) {
+		log.error("Could not create folder", settings.list$outdir)
+		stop("Could not create out folder.")
+	}
+	
+	# create the PFT folders
+	for (i in 1:sum(names(unlist(settings.list$pfts)) == "pft.name")) {
+		if (is.null(settings.list$pfts[i]$pft$outdir)) {
+			settings.list$pfts[i]$pft$outdir <- paste(settings.list$outdir, "pft", settings.list$pfts[i]$pft$name, sep="/")
+			log.info("No output folder specified for", settings.list$pfts[i]$pft$name, "will use", settings.list$pfts[i]$pft$outdir);
+		}
+		out.dir <- settings.list$pfts[i]$pft$outdir
+		log.debug("Storing pft", settings.list$pfts[i]$pft$name, "in", out.dir)
+		if (!file.exists(out.dir) && !dir.create(out.dir, recursive=TRUE)) {
+			log.error("Could not create folder", out.dir)
+			stop("Could not create pft folders.")
+		}
+	}
+	
+	# create the model configuration folder
+	if (is.null(settings.list$run$host$rundir)) {
+		settings.list$run$host$rundir <- paste(settings.list$outdir, "run", sep="/")
+		log.info("No output folder for model configuration using", settings.list$run$host$rundir)
+	} else {
+		log.debug("model configuration folder =", settings.list$run$host$rundir)
+	}
+	if (!file.exists(settings.list$run$host$rundir) && !dir.create(settings.list$run$host$rundir, recursive=TRUE)) {
+		log.error("Could not create folder", settings.list$run$host$rundir)
+		stop("Could not create model configuration folder.")
+	}
 
-  # make sure something was loaded
-  if (is.null(settings.xml)) {
-    stop("Did not find any settings file to load.")
-  }
+	# create the model output folder
+	if (is.null(settings.list$run$host$outdir)) {
+		settings.list$run$host$outdir <- paste(settings.list$outdir, "out", sep="/")
+		log.info("No output folder for model runs using", settings.list$run$host$outdir)
+	} else {
+		log.debug("model output folder =", settings.list$run$host$outdir)
+	}
+	if (!file.exists(settings.list$run$host$outdir) && !dir.create(settings.list$run$host$outdir, recursive=TRUE)) {
+		log.error("Could not create folder", settings.list$run$host$outdir)
+		stop("Could not create model output folder.")
+	}
 
-  # conver the xml to a list for ease and return
-  settings.list <- xmlToList(settings.xml)
-
-  # get the outputfolder
-  if (is.null(settings.list$outdir)) {
-    print(paste("No output folder specified, using", tempdir()))
-    #logwarn(paste("No output folder specified, using", tempdir()), logger='PEcAn.common.read.settings')
-    settings.list$outdir <- tempdir()
-  }
-  # create folder(s)
-  if (!file.exists(settings.list$outdir) && !dir.create(settings.list$outdir, recursive=TRUE)) {
-    stop("Could not create out folder.")
-  }
-  for (i in 1:sum(names(unlist(settings.list$pfts)) == "pft.name")){
-    out.dir <- settings.list$pfts[i]$pft$outdir
-      if (!file.exists(out.dir) && !dir.create(out.dir, recursive=TRUE)) {
-        stop("Could not create pft folders.")
-      }
-  }
-
-  if (!file.exists(settings.list$pfts$pft$outdir) && !dir.create(settings.list$pfts$pft$outdir, recursive=TRUE)) {
-    stop("Could not create pft folders.")
-  }
-  
-  # save the merged pecan.xml
-  if (is.null(outputfile)) {
-    outputfile="pecan.xml"
-  }
-  settings.output <- file.path(settings.list$outdir, outputfile)
-  if (file.exists(settings.output)) {
-    print(paste("File already exists [", settings.output, "] file will be overwritten"))
-    #logwarn(paste("File already exists [", settings.output, "file will be overwritten"), logger='PEcAn.common.read.settings')
-  } 
-  saveXML(settings.xml, file=settings.output)
-  
-  # setup Rlib from settings
-  if(!is.null(settings.list$Rlib)){ 
-    .libPaths(settings.list$Rlib)
-  }
-   
-  # Return settings file as a list
-  invisible(settings.list)
+	# save the merged pecan.xml
+	if (is.null(outputfile)) {
+		outputfile="pecan.xml"
+	}
+	settings.output <- file.path(settings.list$outdir, outputfile)
+	if (file.exists(settings.output)) {
+		log.warn(paste("File already exists [", settings.output, "] file will be overwritten"))
+	} 
+	saveXML(settings.xml, file=settings.output)
+	
+	# setup Rlib from settings
+	if(!is.null(settings.list$Rlib)){ 
+		.libPaths(settings.list$Rlib)
+	}
+	
+	# Return settings file as a list
+	invisible(settings.list)
 }
 
 #==================================================================================================#
