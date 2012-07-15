@@ -1,2 +1,8 @@
 export(read.settings)
+export(log.debug)
+export(log.info)
+export(log.warn)
+export(log.error)
+export(log.output)
+export(log.enable)
 import(XML)
