@@ -26,7 +26,6 @@ LazyLoad: yes
 LazyData: FALSE
 Require: hdf5
 Collate:
-    'parse.history.R'
     'write.configs.ed.R'
     'start.runs.ed.R'
     'get.model.output.ed.R'
