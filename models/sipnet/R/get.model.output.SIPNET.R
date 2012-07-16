@@ -18,7 +18,7 @@
 ##' @return vector of output variable
 ##' @export
 ##' @author Michael Dietze
-read.output.SIPNET <- function(run.id, outdir, start.year=NA, end.year=NA,variables="NPP"){
+read.output.SIPNET <- function(run.id, outdir, start.year=NA, end.year=NA,variables="GPP"){
   
   require(ncdf)
   
@@ -31,7 +31,7 @@ read.output.SIPNET <- function(run.id, outdir, start.year=NA, end.year=NA,variab
 
     #subset output files
     ncfiles  <- file.names[grep(".nc",file.names)]
-    outfiles <- file.names[grep(".out",file.names)]
+    outfiles <- list.files(path=paste(outdir,run.id,sep="/"),pattern=".out",full.names=TRUE)
 
     #check that there are output files
     if(length(ncfiles) | length(outfiles)){
@@ -51,9 +51,12 @@ read.output.SIPNET <- function(run.id, outdir, start.year=NA, end.year=NA,variab
       for(i in 1:length(ncfiles)){
         nc <- open.ncdf(ncfiles[i])
         for(j in 1:length(variables)){
-          if(variables[j] %in% names(nc$var)){      
-            #data[i,j] <- mean(get.var.ncdf(nc,variables[j]))
-            data[i,j] <- sum(get.var.ncdf(nc,variables[j])*1000*3600)
+          if(variables[j] %in% names(nc$var)){  
+            ### Convert output to annual values.  Mult by seconds in a 365d year and convert per ha
+            data[i,j] <- (mean(get.var.ncdf(nc,variables[j]))*31536000)*10000 # kgC/ha
+            #data[i,j] <- sum(get.var.ncdf(nc,variables[j]))
+            #data[i,j] <- sum(get.var.ncdf(nc,variables[j])*31536000)
+            #print(data[i,j]) #!!! Just here for debugging !!!
           } else {
             warning(paste(variables[j],"missing in",ncfiles[i]))
           }
