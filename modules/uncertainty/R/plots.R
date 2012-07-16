@@ -236,9 +236,7 @@ plot.sensitivity <- function(sa.sample, sa.spline, trait,
   }
   max.x <- max(prior.x)
   if(trait == 'Vm_low_temp'){
-    min.x <- 6
-  } else if (trait == 'quantum_efficiency') {
-    min.x <- 0.04
+    min.x <- min(prior.x)
   } else {
     min.x <- 0
   }
