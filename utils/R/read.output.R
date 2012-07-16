@@ -37,7 +37,8 @@ read.ensemble.output <- function(ensemble.size, host, outdir, pft.name='', read.
 ##'  each cell is a list of model output over time
 ##' @export
 ##'
-read.sa.output <- function(traits, quantiles, host, outdir, pft.name='', read.output = read.output.ed){
+read.sa.output <- function(traits, quantiles, host, outdir, pft.name='', model=model){
+  read.output <- paste("read.output",model,sep=".")
   sa.output <- data.frame()
   rsync(paste(host$name, ':', host$outdir, 
               '*', get.run.id('SA', '', pft.name=pft.name), '*', sep=''),
@@ -45,10 +46,12 @@ read.sa.output <- function(traits, quantiles, host, outdir, pft.name='', read.ou
   for(trait in traits){
     for(quantile in quantiles){
       run.id <- get.run.id('SA', round(quantile,3), trait=trait, pft.name=pft.name)
-      sa.output[as.character(round(quantile*100,3)), trait] <- read.output(run.id, outdir)
+      #sa.output[as.character(round(quantile*100,3)), trait] <- read.output(run.id, outdir)
+      sa.output[as.character(round(quantile*100,3)), trait] <- do.call(read.output,args=list(run.id, outdir))
     }
   }
-  sa.output['50',] <- read.output(get.run.id('SA', 'median'), outdir)
+  #sa.output['50',] <- read.output(get.run.id('SA', 'median'), outdir)
+  sa.output['50',] <- do.call(read.output,args=list(get.run.id('SA', 'median'), outdir))
   return(sa.output)
 }
 #==================================================================================================#

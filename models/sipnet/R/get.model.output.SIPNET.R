@@ -52,7 +52,8 @@ read.output.SIPNET <- function(run.id, outdir, start.year=NA, end.year=NA,variab
         nc <- open.ncdf(ncfiles[i])
         for(j in 1:length(variables)){
           if(variables[j] %in% names(nc$var)){      
-            data[i,j] <- mean(get.var.ncdf(nc,variables[j]))
+            #data[i,j] <- mean(get.var.ncdf(nc,variables[j]))
+            data[i,j] <- sum(get.var.ncdf(nc,variables[j])*1000*3600)
           } else {
             warning(paste(variables[j],"missing in",ncfiles[i]))
           }
