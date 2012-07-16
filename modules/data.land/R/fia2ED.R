@@ -58,7 +58,7 @@ fia.to.psscss <- function(settings) {
 	query <- NULL
 	for (pft in settings$pfts) {
 		if (is.null(query)) {
-			query <- paste("SELECT bp.name as pft, bs.spcd FROM bety.pfts as bp INNER JOIN bety.pfts_species AS bps ON bps.pft_id = bp.id INNER JOIN bety.species AS bs ON bs.id = bps.specie_id WHERE bp.name = '", pft$name, "'", sep='')
+			query <- paste("SELECT bp.name as pft, bs.spcd FROM ",  settings$database$name, ".pfts as bp INNER JOIN ",  settings$database$name, ".pfts_species AS bps ON bps.pft_id = bp.id INNER JOIN ",  settings$database$name, ".species AS bs ON bs.id = bps.specie_id WHERE bp.name = '", pft$name, "'", sep='')
 		} else {
 			query <- paste(query, " OR bp.name = '", pft$name, "'", sep='')
 		}

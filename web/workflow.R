@@ -149,8 +149,8 @@ status.start("FIA2ED")
 #}
 status.end()
 
-# get data from bety
-status.start("BETY")
+# get data from pecan DB
+status.start("TRAIT")
 get.trait.data()
 status.end()
 
