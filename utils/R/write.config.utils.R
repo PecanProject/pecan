@@ -111,7 +111,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
 ##' @author David LeBauer, Carl Davidson
 write.ensemble.configs <- function(defaults, ensemble.samples,
                                    host, outdir, settings,
-                                   model="ED2",clean=FALSE){
+                                   model,clean=FALSE){
 
   my.write.config <- paste("write.config.",model,sep="")
   if(!exists(my.write.config)){
@@ -247,7 +247,7 @@ get.sa.samples <- function(samples, quantiles){
 ##' @export
 ##' @author David LeBauer, Carl Davidson
 write.sa.configs <- function(defaults, quantile.samples, host, outdir, settings, 
-                             model="ED2",clean=FALSE){
+                             model,clean=FALSE){
 
   my.write.config <- paste("write.config.",model,sep="")
   if(!exists(my.write.config)){

@@ -178,9 +178,9 @@ print("  ######################## Finish up runs ########################")
   if(host$name == 'localhost'){
     print(c(host$outdir,"move to",settings$outdir))
     if(!host$outdir == settings$outdir) {
-      dir.create(host$outdir)
+      dir.create(host$outdir,showWarnings=FALSE)
       file.copy(from = paste(settings$outdir, 'samples.Rdata', sep=''),
-                to   = paste(host$outdir, 'samples.Rdata', sep = ''),
+                to   = paste(host$outdir, 'samples.Rdata', sep = '/'),
                 overwrite = TRUE)
     }
   } else {  
