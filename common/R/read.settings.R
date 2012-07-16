@@ -166,7 +166,7 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
 	# create the PFT folders
 	for (i in 1:sum(names(unlist(settings.list$pfts)) == "pft.name")) {
 		if (is.null(settings.list$pfts[i]$pft$outdir)) {
-			settings.list$pfts[i]$pft$outdir <- paste(settings.list$outdir, "pft", settings.list$pfts[i]$pft$name, sep="/")
+			settings.list$pfts[i]$pft$outdir <- paste(settings.list$outdir, "pft", settings.list$pfts[i]$pft$name, "", sep="/")
 			log.info("No output folder specified for", settings.list$pfts[i]$pft$name, "will use", settings.list$pfts[i]$pft$outdir);
 		}
 		out.dir <- settings.list$pfts[i]$pft$outdir
@@ -179,7 +179,7 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
 	
 	# create the model configuration folder
 	if (is.null(settings.list$run$host$rundir)) {
-		settings.list$run$host$rundir <- paste(settings.list$outdir, "run", sep="/")
+		settings.list$run$host$rundir <- paste(settings.list$outdir, "run", "", sep="/")
 		log.info("No output folder for model configuration using", settings.list$run$host$rundir)
 	} else {
 		log.debug("model configuration folder =", settings.list$run$host$rundir)
@@ -191,7 +191,7 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
 
 	# create the model output folder
 	if (is.null(settings.list$run$host$outdir)) {
-		settings.list$run$host$outdir <- paste(settings.list$outdir, "out", sep="/")
+		settings.list$run$host$outdir <- paste(settings.list$outdir, "out", "", sep="/")
 		log.info("No output folder for model runs using", settings.list$run$host$outdir)
 	} else {
 		log.debug("model output folder =", settings.list$run$host$outdir)
