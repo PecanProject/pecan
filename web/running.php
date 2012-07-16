@@ -173,10 +173,10 @@ if ($refresh) {
 			<td><?=status("FIA2ED");?></td>
 		</tr>
 		<tr>
-			<th>query.bety</th>
-			<td><?=startTime("BETY");?></td>
-			<td><?=endTime("BETY");?></td>
-			<td><?=status("BETY");?></td>
+			<th>query.trait</th>
+			<td><?=startTime("TRAIT");?></td>
+			<td><?=endTime("TRAIT");?></td>
+			<td><?=status("TRAIT");?></td>
 		</tr>
 		<tr>
 			<th>meta.analysis</th>
