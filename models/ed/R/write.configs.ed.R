@@ -143,6 +143,10 @@ write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
   } else {
 	  edhistory <- read.csv2(system.file("data/history.csv",  package="PEcAn.ED"), sep=";")
   }
+  edtraits <- names(edhistory)
+  edtraits <- edtraits[which(edtraits!="num")]
+  edtraits <- edtraits[which(edtraits!="include_pft")]
+  edtraits <- edtraits[which(edtraits!="include_pft_ag")]
   data(pftmapping)
   
   for(group in names(trait.values)){
@@ -171,23 +175,30 @@ write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
       if(!is.null(trait.values[[group]])){
         vals <- convert.samples.ED(trait.values[[group]])
         names(vals) <- droplevels(trait.dictionary(names(vals))$model.id)
-		traits <- unique(c(names(vals), names(edhistory)))
-		traits <- traits[which(traits!="num")]
-		traits <- traits[which(traits!="include_pft")]
-		traits <- traits[which(traits!="include_pft_ag")]
+		traits <- names(vals)
 		for(trait in traits) {
-			if (! trait %in% names(edhistory)) {
+			if (! trait %in% edtraits) {
 				log.error(trait, "not found in ED history")
-			} 
-			if (trait %in% names(vals)) {
-				pft.xml <- append.xmlNode(pft.xml, xmlNode(trait, vals[trait]))
-			} else {
-				pft.xml <- append.xmlNode(pft.xml, xmlNode(trait, edhistory[[trait]][edpft]))
 			}
+			pft.xml <- append.xmlNode(pft.xml, xmlNode(trait, vals[trait]))
         }
-      }
-	  print(pft.xml)
-      xml <- append.xmlNode(xml, pft.xml)
+#		pft.xml <- append.xmlNode(pft.xml, xmlNode("edpft", edpft))
+#		for(trait in edtraits) {
+#			if (! trait %in% traits) {
+#				pft.xml <- append.xmlNode(pft.xml, xmlNode(trait, edhistory[[trait]][edpft]))
+#			}
+#		}
+#      } else {
+#		  for(trait in edtraits) {
+#			  pft.xml <- append.xmlNode(pft.xml, xmlNode(trait, edhistory[[trait]][edpft]))
+#		  }
+	  }
+	  if (is.null(pft.xml[["num"]])) {
+		  pft.xml <- append.xmlNode(pft.xml, xmlNode("num", edpft))
+	  } else {
+		  xmlValue( pft.xml[["num"]]) <- edpft
+	  }
+	  xml <- append.xmlNode(xml, pft.xml)
     }
   }
     
@@ -308,8 +319,7 @@ remove.config.ED2 <- function(main.outdir,settings) {
   print("---- Removing previous ED2 config files and output before starting new run ----")
   print(" ")
   
-    todelete <- dir(unlist(main.outdir), pattern = 'ED2INc.*',
-                    recursive=TRUE, full.names = TRUE)
+    todelete <- dir(unlist(main.outdir), pattern = 'ED2INc.*', recursive=TRUE, full.names = TRUE)
     if(length(todelete>0)) file.remove(todelete)
     rm(todelete)
     
@@ -328,10 +338,10 @@ remove.config.ED2 <- function(main.outdir,settings) {
     ### Remove model run configs and model run log files on local/remote host
     if(settings$run$host$name == 'localhost'){
       if(length(dir(settings$run$host$rundir, pattern = filename.root)) > 0) {
-        todelete <- dir(settings$run$host$outdir,
-                        pattern = paste(filename.root, "*[^log]", sep = ''), 
-                        recursive=TRUE, full.names = TRUE)
-        file.remove(todelete)
+        #todelete <- dir(settings$run$host$outdir,
+        #                pattern = paste(filename.root, "*[^log]", sep = ''), 
+        #                recursive=TRUE, full.names = TRUE)
+        #file.remove(todelete)
         ### Need to check that this is removing all config files on localhost
       }
     } else {
