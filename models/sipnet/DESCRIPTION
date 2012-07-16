@@ -2,7 +2,7 @@ Package: PEcAn.SIPNET
 Type: Package
 Title: PEcAn functions used for ecological forecasts and reanalysis
 Version: 1.2
-Date: 2012-07-03
+Date: 2012-07-15
 Author: Mike Dietze
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
