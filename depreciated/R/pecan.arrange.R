@@ -1,3 +1,11 @@
+#-------------------------------------------------------------------------------
+# Copyright (c) 2012 University of Illinois, NCSA.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the 
+# University of Illinois/NCSA Open Source License
+# which accompanies this distribution, and is available at
+# http://opensource.ncsa.illinois.edu/license.html
+#-------------------------------------------------------------------------------
 vp.layout <- function(x, y) viewport(layout.pos.row=x, layout.pos.col=y)
 arrange <- function(..., nrow=NULL, ncol=NULL, as.table=FALSE) {
   dots <- list(...)

@@ -1,3 +1,11 @@
+#-------------------------------------------------------------------------------
+# Copyright (c) 2012 University of Illinois, NCSA.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the 
+# University of Illinois/NCSA Open Source License
+# which accompanies this distribution, and is available at
+# http://opensource.ncsa.illinois.edu/license.html
+#-------------------------------------------------------------------------------
 pecan.samps <- function(trait.mcmc, priors) {
   trait.mat <- lapply(trait.mcmc, as.matrix)
   trait.nrows <- lapply(trait.mat, function(x) nrow(x))

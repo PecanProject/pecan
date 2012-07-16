@@ -2,7 +2,7 @@ Package: PEcAn
 Type: Package
 Title: PEcAn functions used for ecological forecasts and reanalysis
 Version: 1.2
-Date: 2012-05-25
+Date: 2012-07-15
 Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Mike Dietze, Carl
     Davidson, Rob Kooper
 Maintainer: David LeBauer <dlebauer@illinois.edu>
@@ -27,7 +27,7 @@ Suggests:
     time
 SystemRequirements: JAGS2.2.0, bash, ED2, kepler
 OS_type: unix
-License: University of Illinois/NCSA Open Source License
+License: FreeBSD + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes
 Collate:

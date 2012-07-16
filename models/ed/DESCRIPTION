@@ -2,7 +2,7 @@ Package: PEcAn.ED
 Type: Package
 Title: PEcAn package for integration of ED2 model
 Version: 1.2
-Date: 2012-06-03
+Date: 2012-07-15
 Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Mike Dietze, Carl
     Davidson, Rob Kooper, Shawn Serbin
 Maintainer: David LeBauer <dlebauer@illinois.edu>
@@ -26,6 +26,7 @@ LazyLoad: yes
 LazyData: FALSE
 Require: hdf5
 Collate:
+    'parse.history.R'
     'write.configs.ed.R'
     'start.runs.ed.R'
     'get.model.output.ed.R'
