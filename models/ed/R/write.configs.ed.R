@@ -135,6 +135,15 @@ write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
   ### Get ED2 specific model settings and put into output config xml file
   xml <- listToXml(settings$model$config.header, 'config')
   names(defaults) <- sapply(defaults,function(x) x$name)
+
+  # TODO this should come from the database
+  histfile <- paste("data/history.", settings$model$revision, ".csv", sep='')
+  if (file.exists(system.file(histfile, package="PEcAn.ED"))) {
+	  edhistory <- read.csv2(system.file(histfile, package="PEcAn.ED"), sep=";")
+  } else {
+	  edhistory <- read.csv2(system.file("data/history.csv",  package="PEcAn.ED"), sep=";")
+  }
+  data(pftmapping)
   
   for(group in names(trait.values)){
     if(group == "env"){
@@ -150,16 +159,34 @@ write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
       pft.xml <- listToXml(pft$constants, 'pft')
       ### Insert PFT names into output xml file
       pft.xml <- append.xmlNode(pft.xml,xmlNode("name", pft$name))
-      
+	  
+	  # TODO this should come from the database
+	  edpft <- pftmapping$ED[which(pftmapping==group)]
+	  if (is.null(edpft)) {
+		  log.warn("No mapping found for", group, "using 1")
+		  edpft <- 1
+	  }
+	  
       ## copy values
       if(!is.null(trait.values[[group]])){
         vals <- convert.samples.ED(trait.values[[group]])
         names(vals) <- droplevels(trait.dictionary(names(vals))$model.id)
-        for(trait in names(vals)){
-          pft.xml <- append.xmlNode(pft.xml, 
-              xmlNode(trait, vals[trait]))
+		traits <- unique(c(names(vals), names(edhistory)))
+		traits <- traits[which(traits!="num")]
+		traits <- traits[which(traits!="include_pft")]
+		traits <- traits[which(traits!="include_pft_ag")]
+		for(trait in traits) {
+			if (! trait %in% names(edhistory)) {
+				log.error(trait, "not found in ED history")
+			} 
+			if (trait %in% names(vals)) {
+				pft.xml <- append.xmlNode(pft.xml, xmlNode(trait, vals[trait]))
+			} else {
+				pft.xml <- append.xmlNode(pft.xml, xmlNode(trait, edhistory[[trait]][edpft]))
+			}
         }
       }
+	  print(pft.xml)
       xml <- append.xmlNode(xml, pft.xml)
     }
   }
