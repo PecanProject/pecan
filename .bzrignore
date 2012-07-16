@@ -30,6 +30,7 @@ DESCRIPTION.bak
 autobuild
 lastrun
 running
+PEcAn.*.tgz
 
 # files used by eclipse
 .metadata
