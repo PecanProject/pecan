@@ -81,8 +81,10 @@ foreach(scandir("$folder/out") as $file) {
 		continue;
 	}
 	$outputs .= createOption("out/$file");
-	if (preg_match("/.*-T-${year}-00-00-000000-g01.h5/", $file)) {
-		$vars .= shell_exec("h5ls $folder/out/$file | awk '{print \"<option>\" $1 \"</option>\" }'");
+	for($year=$start; $year<=$end; $year++) {
+		if (preg_match("/.*-T-${year}-.*.h5/", $file)) {
+			$vars .= shell_exec("h5ls $folder/out/$file | awk '{print \"<option>\" $1 \"</option>\" }'");
+		}
 	}
 }
 
