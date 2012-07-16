@@ -32,10 +32,6 @@ start.model.runs(model)         # Start ecosystem model runs
 
 get.model.output(model)         # Get results of model runs
 
-#analyze.ensemble()
-# run.sensitivity.analysis()
-#transform.trait.data()
-#variance.decomposition()
-#data.assimilation()
+run.sensitivity.analysis()      # Run sensitivity analysis and variance decomposition on model output
 
 #--------------------------------------------------------------------------------------------------#
