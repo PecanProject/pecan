@@ -6,10 +6,6 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-#--------------------------------------------------------------------------------------------------#
-# Template for functions to prepare and write out files model-specific configuration files for MA
-#--------------------------------------------------------------------------------------------------#
-
 
 #--------------------------------------------------------------------------------------------------#
 ##' Writes a configuration files for your model
@@ -127,7 +123,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
   }
 
   if(!is.na(Jmax) & !is.na(alpha)){
-    param[which(param[,1] == "halfSatPar"),2] = Jmax/(2*alpha)
+   # param[which(param[,1] == "halfSatPar"),2] = Jmax/(2*alpha)
     ### WARNING: this is a very coarse linear approximation and needs improvement *****
     ### Yes, we also need to work on doing a paired query where we have both data together.
     ### Once halfSatPar is calculated, need to remove Jmax and quantum_efficiency from param list so they are not included in SA
@@ -251,11 +247,15 @@ remove.config.SIPNET <- function(main.outdir,settings) {
   ### Remove files on localhost
   if(settings$run$host$name == 'localhost'){
     files <- paste(settings$outdir,
-                   list.files(path=settings$outdir, recursive=FALSE),sep="/") # Need to change this to the run folder when implemented
+                   list.files(path=settings$outdir, recursive=FALSE),sep="") # Need to change this to the run folder when implemented
     files <- files[-grep('*.xml',files)] # Keep pecan.xml file
-    #files <- files[-grep(settings$pfts$pft$outdir,files)] # Keep pft folder
-    file.remove(files,recursive=FALSE)
-    
+    pft.dir <- strsplit(settings$pfts$pft$outdir,"/")[[1]]
+    ln <- length(pft.dir)
+    pft.dir <- pft.dir[ln]
+    files <- files[-grep(pft.dir,files)] # Keep pft folder
+    #file.remove(files,recursive=TRUE)
+    system(paste("rm -r ",files,sep="",collapse=" "),ignore.stderr = TRUE) # remove files/dirs
+
     ### On remote host
   } else {
     print("*** WARNING: Removal of files on remote host not yet implemented ***")
