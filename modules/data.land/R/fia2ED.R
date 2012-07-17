@@ -1,11 +1,12 @@
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
+# are made available under the terms of the
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
+
 # make sure indeces exist
 # CREATE INDEX spcd ON species (spcd);
 # CREATE INDEX tree_spcd on fia5data.TREE (SPCD);
@@ -14,6 +15,8 @@
 
 library(XML)
 library(PEcAn.DB)
+
+fia.database <- "fia5data"
 
 #--------------------------------------------------------------------------------------------------#
 # INTERNAL FUNCTIONS DO NOT EXPORT
@@ -53,6 +56,13 @@ fia.to.psscss <- function(settings) {
 	lat     <- as.numeric(settings$run$site$lat)
 	lon     <- as.numeric(settings$run$site$lon)
 	
+	## output path
+	if ("text" %in% names(settings$model$psscss)) {
+		path <- settings$model$psscss$text
+	} else {
+		path <- settings$model$psscss
+	}
+	
 	## time info
 	year    <- as.numeric(format(as.Date(settings$run$start.date), '%Y'))
 	
@@ -66,7 +76,7 @@ fia.to.psscss <- function(settings) {
 	query <- NULL
 	for (pft in settings$pfts) {
 		if (is.null(query)) {
-			query <- paste("SELECT bp.name as pft, bs.spcd FROM ",  settings$database$name, ".pfts as bp INNER JOIN ",  settings$database$name, ".pfts_species AS bps ON bps.pft_id = bp.id INNER JOIN ",  settings$database$name, ".species AS bs ON bs.id = bps.specie_id WHERE bp.name = '", pft$name, "'", sep='')
+			query <- paste("SELECT bp.name as pft, bs.spcd FROM bety.pfts as bp INNER JOIN bety.pfts_species AS bps ON bps.pft_id = bp.id INNER JOIN bety.species AS bs ON bs.id = bps.specie_id WHERE bp.name = '", pft$name, "'", sep='')
 		} else {
 			query <- paste(query, " OR bp.name = '", pft$name, "'", sep='')
 		}
@@ -90,6 +100,7 @@ fia.to.psscss <- function(settings) {
 	}
 	
 	### select just most current
+	query <- paste("SELECT invyr, statecd, stateab, statenm, cycle, subcycle from ", fia.database , ".SURVEY", sep="")
 	surv <- query.base(query, con)
 	
 	states <- sort(unique(surv$statecd))
@@ -124,7 +135,9 @@ fia.to.psscss <- function(settings) {
 		##              ##
 		##################
 		## query to get PSS info
-		query <- paste("SELECT p.cycle,p.statecd,p.measyear as time,p.cn as patch,MIN(2-c.stdorgcd) as trk,AVG(c.stdage) as age,p.lat,p.lon FROM PLOT as p LEFT JOIN COND as c on p.cn=c.plt_cn WHERE p.lon >= ",lonmin[r]," and p.lon < ",lonmax[r]," and p.lat >= ",latmin[r]," and p.lat < ",latmax[r]," GROUP BY p.cn")
+		query <- paste("SELECT p.cycle,p.statecd,p.measyear as time,p.cn as patch,MIN(2-c.stdorgcd) as trk,AVG(c.stdage) as age,p.lat,p.lon FROM ",
+				fia.database, ".PLOT as p LEFT JOIN ", fia.database, ".COND as c on p.cn=c.plt_cn WHERE p.lon >= ",lonmin[r]," and p.lon < ",lonmax[r],
+				" and p.lat >= ",latmin[r]," and p.lat < ",latmax[r]," GROUP BY p.cn")
 		pss <- query.base(query, con)
 		pss <- pss[pss$cycle == cycle[pss$statecd],]
 		if(length(pss) == 0) next
@@ -159,7 +172,7 @@ fia.to.psscss <- function(settings) {
 			if(length(sel) > 0){
 				y <- floor((i-1)/nx)
 				x <- i-1-y*nx
-				fname <- paste(settings$run$site$psscss,"lat",(x+0.5)*gridres+latmin[r],"lon",(y+0.5)*gridres+lonmin[r],".pss",sep="") #filename
+				fname <- paste(path,"lat",(x+0.5)*gridres+latmin[r],"lon",(y+0.5)*gridres+lonmin[r],".pss",sep="") #filename
 				water = rep(0,length(sel))			
 				write.table(cbind(pss[sel,2+1:4],area[sel],water,matrix(soil,length(sel),7,byrow=TRUE)),file=fname,quote=FALSE,row.names=FALSE)
 			}
@@ -171,7 +184,9 @@ fia.to.psscss <- function(settings) {
 		##              ##
 		##################
 		## query to get CSS info
-		query <- paste("SELECT p.measyear as time,p.cycle,p.statecd,p.cn as patch,CONCAT(CAST(t.subp AS CHAR),CAST(t.tree AS CHAR)) as cohort,t.dia*2.54 as dbh, t.spcd as spcd, t.tpa_unadj*0.0002471 as n FROM fia5data.PLOT as p LEFT JOIN fia5data.TREE as t on p.cn=t.plt_cn WHERE p.lon >= ",lonmin[r]," and p.lon < ",lonmax[r]," and p.lat >= ",latmin[r]," and p.lat < ",latmax[r],sep='')
+		query <- paste("SELECT p.measyear as time,p.cycle,p.statecd,p.cn as patch, CONCAT(CAST(t.subp AS CHAR),CAST(t.tree AS CHAR)) as cohort,t.dia*2.54 as dbh, t.spcd as spcd, t.tpa_unadj*0.0002471 as n FROM ",
+				fia.database, ".PLOT as p LEFT JOIN ",fia.database, ".TREE as t on p.cn=t.plt_cn WHERE p.lon >= ",lonmin[r]," and p.lon < ",lonmax[r],
+				" and p.lat >= ",latmin[r]," and p.lat < ",latmax[r],sep='')
 		css <- query.base(query, con)
 		css <- css[css$cycle == cycle[css$statecd],]
 		
@@ -214,3 +229,4 @@ fia.to.psscss <- function(settings) {
 		}
 	}	## end loop over n.poi
 }
+

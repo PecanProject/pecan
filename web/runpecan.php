@@ -178,7 +178,11 @@ if ($modeltype == "ED2") {
 	fwrite($fh, "    <edin>${folder}/ED2IN.template</edin>" . PHP_EOL);
 	fwrite($fh, "    <veg>${ed_veg}</veg>" . PHP_EOL);
 	fwrite($fh, "    <soil>${ed_soil}</soil>" . PHP_EOL);
-	fwrite($fh, "    <psscss>$psscss</psscss>" . PHP_EOL);
+	if ($psscss == "FIA") {
+		fwrite($fh, "    <psscss generate=\"fia\">${folder}/fia.</psscss>" . PHP_EOL);
+	} else {
+		fwrite($fh, "    <psscss>$psscss</psscss>" . PHP_EOL);
+	}
 	fwrite($fh, "    <inputs>${ed_inputs}</inputs>" . PHP_EOL);
 	fwrite($fh, "    <phenol.scheme>0</phenol.scheme>" . PHP_EOL);
 #} else ($modeltype = "SIPNET") {

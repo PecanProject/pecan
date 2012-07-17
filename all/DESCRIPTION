@@ -21,7 +21,8 @@ Depends:
     PEcAn.SIPNET,
     PEcAn.MA,
     PEcAn.utils,
-    PEcAn.uncertainty
+    PEcAn.uncertainty,
+    PEcAn.data.land
 License: FreeBSD + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes
