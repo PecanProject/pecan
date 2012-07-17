@@ -70,7 +70,7 @@ run.sensitivity.analysis <- function(){
         pdf(paste(pft$outdir, 'sensitivityanalysis.pdf', sep = ''), height = 12, width = 9)
         ## arrange plots  http://stackoverflow.com/q/10706753/199217
         ncol <- floor(sqrt(length(sensitivity.plots)))
-        print(do.call("grid.arrange", c(sensitivity.plots, ncol=nCol)))
+        print(do.call("grid.arrange", c(sensitivity.plots, ncol=ncol)))
         #print(sensitivity.plots) # old method.  depreciated.
         dev.off()
 
