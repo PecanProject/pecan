@@ -15,7 +15,7 @@
 
 # packages that are to be compiled
 PACKAGES="common utils db"
-PACKAGES="${PACKAGES} modules/meta.analysis modules/uncertainty"
+PACKAGES="${PACKAGES} modules/meta.analysis modules/uncertainty modules/ensemble"
 PACKAGES="${PACKAGES} modules/data.land"
 PACKAGES="${PACKAGES} models/ed models/sipnet"
 PACKAGES="${PACKAGES} all"

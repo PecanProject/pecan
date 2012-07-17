@@ -22,6 +22,7 @@ Depends:
     PEcAn.MA,
     PEcAn.utils,
     PEcAn.uncertainty,
+    PEcAn.ensemble,
     PEcAn.data.land
 License: FreeBSD + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
