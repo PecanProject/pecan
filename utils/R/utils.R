@@ -488,7 +488,7 @@ fit.dist <- function(trait.data, trait = colnames(trait.data),
 ##' @param read.output model specific read output function, \cite{\link{read.output.ed}} by default.
 #--------------------------------------------------------------------------------------------------#
 read.ensemble.output <- function(ensemble.size, outdir, 
-                                 start.year, end.year, model){
+                                 start.year, end.year,variables, model){
 
   readfcn = paste("read.output",model,sep=".")
   if(!exists(readfcn)){
@@ -499,7 +499,7 @@ read.ensemble.output <- function(ensemble.size, outdir,
   for(ensemble.id in 1:ensemble.size) {
     run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, 5))#log10(ensemble.size)+1))
     if(any(grep('h5',dir()[grep(run.id, dir())]))) {
-      ensemble.output[[ensemble.id]] <- do.call(readfcn,list(run.id, outdir, start.year, end.year))
+      ensemble.output[[ensemble.id]] <- do.call(readfcn,list(run.id, outdir, start.year, end.year,variables))
     } else {
       ensemble.output[[ensemble.id]] <- NA
     }
@@ -525,7 +525,7 @@ read.ensemble.output <- function(ensemble.size, outdir,
 ##' @param read.output model specific read.output function
 #--------------------------------------------------------------------------------------------------#
 read.sa.output <- function(traits, quantiles, outdir, pft.name='', 
-                           start.year, end.year, model){
+                           start.year, end.year, variables, model){
   readfcn = paste("read.output",model,sep=".")
   if(!exists(readfcn)){
     exit(readfcn)
@@ -537,10 +537,10 @@ read.sa.output <- function(traits, quantiles, outdir, pft.name='',
       run.id <- get.run.id('SA', round(quantile,3), trait=trait, pft.name=pft.name)
       print(run.id)
       sa.output[as.character(round(quantile*100,3)), 
-                trait] <- do.call(readfcn,list(run.id, outdir, start.year, end.year))
+                trait] <- do.call(readfcn,list(run.id, outdir, start.year, end.year,variables))
     }
   }
-  sa.output['50',] <- do.call(readfcn,list(get.run.id('SA', 'median'), outdir, start.year, end.year))
+  sa.output['50',] <- do.call(readfcn,list(get.run.id('SA', 'median'), outdir, start.year, end.year,variables))
   sa.output <- sa.output[order(as.numeric(rownames(sa.output))),]
   return(sa.output)
 }

@@ -15,6 +15,8 @@
 ##' @export
 ##'
 get.results <- function(model){
+
+  variables = "GPP"
   
   ### OLD CODE, SLIGHTYL MODIFIED, THAT NEEDS TO BE UPDATED. previously names read.output.ed and was in the 
   ### scripts folder.  SPS
@@ -29,6 +31,16 @@ get.results <- function(model){
                        NA, settings$sensitivity.analysis$start.year)
   end.year   <- ifelse(is.null(settings$sensitivity.analysis$end.year),
                        NA, settings$sensitivity.analysis$end.year)
+
+  if("sensitivity.analysis" %in% names(settings)){
+    if("variable" %in% names(settings$sensitivity.analysis)){
+      var = which(names(settings$sensitivity.analysis) == 'variable')
+      for(i in 1:length(var)){
+        variables[i] = settings$sensitivity.analysis[[var[i]]]
+      }
+    }
+  }
+  print(variables)
   
   if('sensitivity.analysis' %in% names(settings)) {
     
@@ -43,9 +55,10 @@ get.results <- function(model){
                                                        quantiles,
                                                        outdir = getwd(), 
                                                        pft.name=pft.name,
-                                                       start.year,
-                                                       end.year,
-                                                       model)
+                                                       start.year=start.year,
+                                                       end.year=end.year,
+                                                       variables=variables,
+                                                       model=model)
       save(sensitivity.output, file = 'output.Rdata')
       
     }
@@ -54,9 +67,10 @@ get.results <- function(model){
   if('ensemble' %in% names(settings)) {
     ensemble.output <- read.ensemble.output(settings$ensemble$size,
                                             outdir = getwd(), 
-                                            start.year,
-                                            end.year,
-                                            model)
+                                            start.year=start.year,
+                                            end.year=end.year,
+                                            variables=variables,
+                                            model=model)
     save(ensemble.output, file = 'output.Rdata')
   }
   
