@@ -16,6 +16,9 @@
 ##' @author David LeBauer, Shawn Serbin
 ##'
 run.ensemble.analysis <- function(){
+  
+  variables = "GPP" # hack for now.  need to be able to dynamically update.
+  
   if(!exists("settings")){ # temporary hack
                         # waiting on http://stackoverflow.com/q/11005478/199217
     settings <- list(outdir = "/tmp/",
@@ -23,11 +26,36 @@ run.ensemble.analysis <- function(){
                                    outdir = "/tmp/")),
                      ensemble.analysis = NULL)
   }
-  if ('sensitivity.analysis' %in% names(settings)) {
+  
+  ### Check if ensemble was run and was larger than 0
+  if ('ensemble' %in% names(settings) & settings$ensemble$size>0) {
     ### Load parsed model results
     load(paste(settings$outdir, 'output.Rdata', sep=''))
   }
+  
+  ### ------------------- Start ensemble analysis -------------------
+  ensemble.results <- list()
+  if (is.null(settings$run$site$name)){
+    print("----- Running ensemble analysis -----")
+  } else{
+    print(paste("----- Running ensemble analysis for site: ",settings$run$site$name))
+  }
+  
+  ## Generate ensemble figure
+  fig.out <- settings$pfts$pft$outdir
+  
+  pdf(file=paste(fig.out,"ensemble.analysis.pdf",sep=""),width=13,height=6)
+  par(mfrow=c(1,2),mar=c(4,4.8,1,2.0)) # B, L, T, R
+  hist(unlist(ensemble.output),xlab=expression(paste("GPP (",mu*mols~m^{-2}~s^{-1},")")),
+       main="",cex.axis=1.1,cex.lab=1.4,col="grey85")
+  box(lwd=2.2)
+  
+  boxplot(unlist(ensemble.output),ylab=expression(paste("GPP (",mu*mols~m^{-2}~s^{-1},")")),
+          boxwex=0.6,col="grey85", cex.axis=1.1,range=2,pch=21,cex=1.4, bg="black",cex.lab=1.5)
+  box(lwd=2.2)
 
+  dev.off()
+  
 } ### End of function
 #==================================================================================================#
 
