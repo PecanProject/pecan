@@ -14,9 +14,7 @@
 ##' @export
 ##' @author Michael Dietze, David LeBauer, Shawn Serbin, Carl Davidson
 start.runs.SIPNET <- function(){
-  ### TODO: Old code, needs to be updated.  Could can make this a generalized script in
-  ### utils package
-  
+
   host     <-  settings$run$host
   
   #Run model from user made bash script 
@@ -26,9 +24,26 @@ start.runs.SIPNET <- function(){
     runs <- dir(settings$outdir,full.names=TRUE)
     runs <- runs[file.info(runs)$isdir]
     
+    ### Eliminate non-run dirs --------------------------------------------
+    pft.dir <- strsplit(settings$pfts$pft$outdir,"/")[[1]]
+    ln <- length(pft.dir)
+    pft.dir <- pft.dir[ln]
+    runs <- runs[-grep(pft.dir,runs)]
+    
+    run.dir <- strsplit(settings$run$host$rundir,"/")[[1]]
+    ln <- length(run.dir)
+    run.dir <- run.dir[ln]
+    runs <- runs[-grep(run.dir,runs)]
+    
+    out.dir <- strsplit(settings$run$host$outdir,"/")[[1]]
+    ln <- length(out.dir)
+    out.dir <- out.dir[ln]
+    runs <- runs[-grep(paste("/",out.dir,sep=""),runs)]
+    ### Done -------------------------------------------------------------
+    
     ## run SIPNET for each 
     for(run in runs){
-      print(run)
+      print(paste("---- SIPNET model run: ",run,sep=""))
       if("sipnet.in" %in% dir(run)){  ## make sure directory is a SIPNET folder
         system(paste('(cd ', run, '; ',settings$model$binary," )", sep = ''))
       }

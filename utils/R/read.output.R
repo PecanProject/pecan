@@ -6,7 +6,7 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-
+#--------------------------------------------------------------------------------------------------#
 ##' Reads the output of a single model run
 ##'
 ##' @title Read output
