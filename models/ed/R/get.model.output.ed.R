@@ -46,7 +46,7 @@ read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
 ##' @return vector of output variable for all runs within ensemble
 ##' @export
 ##' @author David LeBauer, Carl Davidson
-read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA, output.type = 'Y'){
+read.output.ED2 <- function(run.id, outdir, start.year=NA, end.year=NA, variables=c("AGB_CO", "NPLANT"), output.type = 'Y'){
   print(run.id)
   #if(any(grep(run.id, dir(outdir, pattern = 'finished')))){
   file.names <- dir(outdir, pattern=run.id, full.names=FALSE)
@@ -63,7 +63,7 @@ read.output.ed <- function(run.id, outdir, start.year=NA, end.year=NA, output.ty
     file.names <- file.names[!is.na(file.names)]
     print(file.names)
     
-    result <- mean(sapply(file.names, read.output.file.ed)) ## if any are NA, NA is returned
+    result <- mean(sapply(file.names, read.output.file.ed,variables)) ## if any are NA, NA is returned
 
   } else {
     warning(cat(paste('no output files in', outdir, '\nfor', run.id, '\n')))
@@ -100,7 +100,7 @@ get.model.output.ED2 <- function(){
     ## TODO: take out functions read.output.file.ed & read.output.ed from write.configs.ed &
     ## put into a new file specific for reading ED output
     dump(c("get.run.id","abbreviate.run.id.ED","left.pad.zeros","read.ensemble.output",
-           "read.sa.output","read.output.file.ed","read.output.ed", "get.results"),
+           "read.sa.output","read.output.file.ed","read.output.ED2", "get.results"),
          file=paste(settings$outdir,"PEcAn.functions.R",sep=""))
     
     ### Is the previous necessary for localhost?  These functions should be availible within R
@@ -115,7 +115,7 @@ get.model.output.ED2 <- function(){
     
     ### Make a copy of required functions and place in file PEcAn.functions.R
     dump(c("get.run.id","abbreviate.run.id.ED","left.pad.zeros","read.ensemble.output",
-           "read.sa.output","read.output.file.ed","read.output.ed","get.results"),
+           "read.sa.output","read.output.file.ed","read.output.ED2","get.results"),
          file=paste(settings$outdir,"PEcAn.functions.R",sep=""))
     
     ### Add execution of get.results to the end of the PEcAn.functions.R file
