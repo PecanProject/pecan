@@ -69,9 +69,9 @@ run.sensitivity.analysis <- function(){
                                                 dotsize = 3)
         pdf(paste(pft$outdir, 'sensitivityanalysis.pdf', sep = ''), height = 12, width = 9)
         ## arrange plots  http://stackoverflow.com/q/10706753/199217
-        ## ncol <- floor(sqrt(length(sensitivity.plots)))
-        ## print(do.call("grid.arrange", c(sensitivity.plots, ncol=nCol))
-        print(sensitivity.plots)
+        ncol <- floor(sqrt(length(sensitivity.plots)))
+        print(do.call("grid.arrange", c(sensitivity.plots, ncol=nCol)))
+        #print(sensitivity.plots) # old method.  depreciated.
         dev.off()
 
         ### Generate VD diagnostic plots

@@ -498,7 +498,14 @@ read.ensemble.output <- function(ensemble.size, outdir,
   ensemble.output <- list()
   for(ensemble.id in 1:ensemble.size) {
     run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, 5))#log10(ensemble.size)+1))
-    if(any(grep('h5',dir()[grep(run.id, dir())]))) {
+    print(run.id)
+    ### !!! Need to generalize this code to work for any model without having to hard code the output suffix
+    files.ed <- list.files(path=paste(settings$outdir,run.id,sep="/"),pattern=".h5",recursive=TRUE,full.names=TRUE)  # ED2 output
+    files.sipnet <- list.files(path=paste(settings$outdir,run.id,sep="/"),pattern=".out",recursive=TRUE,full.names=TRUE)  # SIPNET output
+    files <- c(files.ed,files.sipnet)
+    ### !!!
+    #if(any(grep('h5',dir()[grep(run.id, dir())]))) {
+    if(length(files)>0) {
       ensemble.output[[ensemble.id]] <- do.call(readfcn,list(run.id, outdir, start.year, end.year,variables))
     } else {
       ensemble.output[[ensemble.id]] <- NA
