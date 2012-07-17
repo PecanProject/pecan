@@ -148,13 +148,13 @@ status.end()
 # setup pss/css by running fia2ED
 status.start("FIA2ED")
 # TODO see if we need to call fia
-#if (names(settings$run$site$psscss) %in% ".attrs") {
-#  if (settings$run$site$psscss$.attrs[["generate"]] == "fia") {
-#    fia.to.psscss(settings)
-#  } else {
-#    stop("No inforamtion on how to generate psscss files.")
-#  }
-#}
+if (".attrs" %in% names(settings$model$psscss)) {
+	if (settings$model$psscss$.attrs[["generate"]] == "fia") {
+		fia.to.psscss(settings)
+	} else {
+		stop("No inforamtion on how to generate psscss files.")
+	}
+}
 status.end()
 
 # get data from pecan DB
