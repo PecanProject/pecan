@@ -75,14 +75,16 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
 
   leafC = 0.48  #0.5
   if("leafC" %in% pft.names){
-    leafC = pft.traits[which(pft.names) == 'leafC']
+    leafC = pft.traits[which(pft.names == 'leafC')]
+    id = which(param[,1] == 'cFracLeaf')
+    param[id,2] = leafC*0.01 # convert to percentage from 0 to 1
   }
 
   SLA = NA
   id = which(param[,1] == 'leafCSpWt')
   if("SLA" %in% pft.names){
     SLA = pft.traits[which(pft.names == 'SLA')]
-    param[id,2] = 1000*leafC/SLA
+    param[id,2] = 1000*leafC*0.01/SLA
   } else {
     SLA = 1000*leafC/param[id,2]
   }
@@ -95,6 +97,10 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
   } else {
     Amax = param[id,2]*SLA
   }
+ 
+  if("AmaxFrac" %in% pft.names){
+    param[which(param[,1] == 'aMaxFrac'),2] = pft.traits[which(pft.names == 'AmaxFrac')]
+  }  
 
   if("leaf_respiration_rate_m2" %in% pft.names){
     Rd = pft.traits[which(pft.names == 'leaf_respiration_rate_m2')]
@@ -105,29 +111,33 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
   if("Vm_low_temp" %in% pft.names){
     param[which(param[,1] == 'psnTMin'),2] = pft.traits[which(pft.names == 'Vm_low_temp')]
   }
+  
+  if("psnTOpt" %in% pft.names){
+    param[which(param[,1] == 'psnTOpt'),2] = pft.traits[which(pft.names == 'psnTOpt')]
+  }
 
   if("growth_resp_factor" %in% pft.names){
     param[which(param[,1] == 'growthRespFrac'),2] =
       pft.traits[which(pft.names == 'growth_resp_factor')]
   }
 
-  Jmax = NA
-  if("Jmax" %in% pft.names){
-    Jmax = pft.traits[which(pft.names == 'Jmax')]
+  #Jmax = NA
+  #if("Jmax" %in% pft.names){
+  #  Jmax = pft.traits[which(pft.names == 'Jmax')]
     ### Using Jmax scaled to 25 degC. Maybe not be the best approach
-  }
+  #}
 
-  alpha = NA
-  if("quantum_efficiency" %in% pft.names){
-    alpha = pft.traits[which(pft.names == 'quantum_efficiency')]
-  }
+  #alpha = NA
+  #if("quantum_efficiency" %in% pft.names){
+  #  alpha = pft.traits[which(pft.names == 'quantum_efficiency')]
+  #}
 
-  if(!is.na(Jmax) & !is.na(alpha)){
+  #if(!is.na(Jmax) & !is.na(alpha)){
    # param[which(param[,1] == "halfSatPar"),2] = Jmax/(2*alpha)
     ### WARNING: this is a very coarse linear approximation and needs improvement *****
     ### Yes, we also need to work on doing a paired query where we have both data together.
     ### Once halfSatPar is calculated, need to remove Jmax and quantum_efficiency from param list so they are not included in SA
-  }
+  #}
 
   if("leaf_turnover_rate" %in% pft.names){
     param[which(param[,1] == 'leafTurnoverRate'),2] =

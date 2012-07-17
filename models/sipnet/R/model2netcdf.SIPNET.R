@@ -31,7 +31,7 @@ model2netcdf.SIPNET <- function(outdir,run.id) {
   
   ### Loop over years in SIPNET output to create separate netCDF outputs
   for (y in years){
-    print(paste("---- Processing year: ",y))
+    print(paste("---- Processing year: ",y))  # turn on for debugging
     
     ### Subset data for processing
     sub.sipnet.output <- subset(sipnet.output,year==y)

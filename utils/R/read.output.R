@@ -14,14 +14,16 @@
 ##' @return list of ensemble output 
 ##' @export
 ##'
-read.ensemble.output <- function(ensemble.size, host, outdir, pft.name='', read.output = read.output.ed){
+read.ensemble.output <- function(ensemble.size, host, outdir, pft.name='', model=model){
+  read.output <- paste("read.output",model,sep=".")
   ensemble.output <- list()
   rsync(paste(host$name, ':', host$outdir, 
               '*', get.run.id('ENS', '', pft.name=pft.name), '*', sep=''),
         outdir)
   for(ensemble.id in seq(ensemble.size)) {
     run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, 5), pft.name=pft.name)#log10(ensemble.size)+1))
-    ensemble.output[[ensemble.id]] <- read.output(run.id, outdir)
+   # ensemble.output[[ensemble.id]] <- read.output(run.id, outdir)
+    ensemble.output[[ensemble.id]] <- do.call(read.output,args=list(run.id, outdir))
   }
   return(ensemble.output)
 }
