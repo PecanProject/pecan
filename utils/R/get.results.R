@@ -66,7 +66,7 @@ get.results <- function(model){
   
   if('ensemble' %in% names(settings)) {
     ensemble.output <- read.ensemble.output(settings$ensemble$size,
-                                            outdir = getwd(), 
+                                            outdir = settings$outdir, 
                                             start.year=start.year,
                                             end.year=end.year,
                                             variables=variables,
