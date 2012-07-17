@@ -235,11 +235,7 @@ plot.sensitivity <- function(sa.sample, sa.spline, trait,
                                           size = dotsize * 1.5, color = 'grey') 
   }
   max.x <- max(prior.x)
-  if(trait == 'Vm_low_temp'){
-    min.x <- min(prior.x)
-  } else {
-    min.x <- 0
-  }
+  min.x <- min(prior.x)
   x.breaks <- pretty(c(min.x, max.x), 4)
   saplot <- saplot + scale_x_continuous(units, limits = range(x.breaks),
                                         breaks = x.breaks)
