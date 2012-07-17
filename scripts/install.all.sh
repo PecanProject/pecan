@@ -1,4 +1,4 @@
-for f in common utils db modules/meta.analysis modules/uncertainty models/ed models/sipnet all
+for f in common utils db modules/meta.analysis modules/uncertainty modules/ensemble models/ed models/sipnet all
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
