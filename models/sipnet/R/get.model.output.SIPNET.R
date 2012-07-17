@@ -41,30 +41,32 @@ read.output.SIPNET <- function(run.id, outdir, start.year=NA, end.year=NA,variab
 ### *** THIS WHOLE FUNCTION SHOULD BE MADE INTO A GENERIC CASE IN UTILS THAT JUST HAS A FEW MODEL SPECIFIC PIECES OF INFO PASSED TO IT *** 
 
 get.model.output.SIPNET <- function(){
+
+  model="SIPNET"
   
   ### Get model output on the localhost
   if(settings$run$host$name == 'localhost'){
 
     olddir <- getwd()
     setwd(settings$outdir)
-    get.results("SIPNET")
+    get.results(model)
     setwd(olddir)
     
   } else {
 
     ## model output is on a remote host
+    remoteScript = paste(settings$outdir,"PEcAn.functions.R",sep="")
         
     ### Make a copy of required functions and place in file PEcAn.functions.R
-    dump(c("get.run.id","read.ensemble.output","read.sa.output","read.output.generic","get.results"),
-         file=paste(settings$outdir,"PEcAn.functions.R",sep=""))
+    dump(c(paste("model2netcdf",model,sep="."),"get.run.id","read.ensemble.output","read.sa.output","read.output","get.results"),
+         file=remoteScript)
     
     ### Add execution of get.results to the end of the PEcAn.functions.R file
     ### This will execute all the code needed to extract output on remote host
-    cat("get.results()",file=paste(settings$outdir,"PEcAn.functions.R",sep=""),
-        append=TRUE)
+    cat("get.results()",file=remoteScript, append=TRUE)
 
     ### Copy required PEcAn.functions.R to remote host
-    rsync('-outi',paste(settings$outdir,"PEcAn.functions.R",sep=""),
+    rsync('-outi',remoteScript,
           paste(settings$run$host$name, ':',settings$run$host$outdir, sep = '') )
 
     ### Run script on remote host
