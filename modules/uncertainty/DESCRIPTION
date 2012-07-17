@@ -30,3 +30,4 @@ Collate:
     'sensitivity.analysis.R'
     'run.sensitivity.analysis.R'
     'plots.R'
+    'run.ensemble.analysis.R'
