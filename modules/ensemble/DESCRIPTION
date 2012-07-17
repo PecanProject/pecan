@@ -27,3 +27,4 @@ Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes
 LazyData: FALSE
 Collate:
+    'run.ensemble.analysis.R'
