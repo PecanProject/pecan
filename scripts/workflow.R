@@ -20,9 +20,9 @@ if("model" %in% names(settings)){ model = settings$model$name}
 
 
 #---------------- Run PEcAn workflow. -------------------------------------------------------------#
-get.trait.data()        	      # Query the trait database for data and priors
+get.trait.data()        	# Query the trait database for data and priors
 
-run.meta.analysis()     	      # Run the PEcAn meta.analysis
+run.meta.analysis()     	# Run the PEcAn meta.analysis
 
 run.write.configs(model)        # Calls model specific write.configs e.g. write.config.ed.R
 
@@ -34,4 +34,8 @@ get.model.output(model)         # Get results of model runs
 
 run.sensitivity.analysis()      # Run sensitivity analysis and variance decomposition on model output
 
+run.ensemble.analysis()		# Run ensemble analysis on model output	
+
+### PEcAn workflow run complete
+print("---------- PEcAn Workflow Complete ----------")
 #--------------------------------------------------------------------------------------------------#

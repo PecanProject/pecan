@@ -34,12 +34,14 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,variables="GP
 
   ## get list of files
   file.names <- dir(paste(outdir,run.id,sep="/"), pattern=run.id, full.names=TRUE)
+  
   ### model-specific code to parse each file 
   if(length(file.names) > 0) {
 
     #subset output files
-    ncfiles  <- file.names[grep(".nc",file.names)]
-    outfiles <- list.files(path=paste(outdir,run.id,sep="/"),pattern=".out",full.names=TRUE)
+    #ncfiles  <- file.names[grep(".nc",file.names)]
+    ncfiles <- list.files(path=paste(outdir,run.id,sep="/"),pattern="\\.nc$",full.names=TRUE) ## previous was failing on filenames that have "nc" within them, for some reason? SPS
+    outfiles <- list.files(path=paste(outdir,run.id,sep="/"),pattern="\\.out$",full.names=TRUE)
 
     #check that there are output files
     if(length(ncfiles) | length(outfiles)){
@@ -47,8 +49,11 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,variables="GP
       ## if files have not been converted yet, convert to standard format
       if(length(ncfiles) == 0){
         do.call(model2nc,list(outdir,run.id))
-        ncfiles <- dir(paste(outdir,run.id,sep="/"), pattern=run.id, full.names=TRUE)
-        ncfiles <- ncfiles[grep(".nc",ncfiles)]
+        #!!! Replaced by SPS
+        #ncfiles <- dir(paste(outdir,run.id,sep="/"), pattern=run.id, full.names=TRUE)
+        #ncfiles <- ncfiles[grep(".nc",ncfiles)]
+        #!!!
+        ncfiles <- list.files(path=paste(outdir,run.id,sep="/"),pattern="\\.nc$",full.names=TRUE)
         if(length(ncfiles) == 0){
           stop("Conversion of model files to netCDF unsuccessful")
         }
@@ -56,11 +61,11 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,variables="GP
 
       ## determine years to load
       nc.years = as.numeric(sub(paste(run.id,".",sep=""),"",sub(".nc","",basename(ncfiles),fixed=TRUE),fixed=TRUE))
-      first = max(1,which(nc.years==start.year),na.rm=TRUE)
-      last = min(length(nc.years),which(nc.years == end.year),na.rm=TRUE)
+      first <- max(1,which(nc.years==start.year),na.rm=TRUE)
+      last <- min(length(nc.years),which(nc.years == end.year),na.rm=TRUE)
 
       ## load files
-      yrs = first:max(first,last)
+      yrs <- first:max(first,last)
       data <- matrix(NA,length(yrs),length(variables))
       for(i in 1:length(yrs)){
         nc <- open.ncdf(ncfiles[yrs[i]])
