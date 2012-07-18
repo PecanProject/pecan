@@ -21,8 +21,9 @@ get.trait.data <- function() {
   num <- sum(names(unlist(settings$pfts)) == "pft.name")
   for (i in 1:num){
     ## Remove old files.  Clean up.
-    old.files <- list.files(path=settings$pfts[i]$pft$outdir,
-                            full.names=TRUE, pattern = "*.Rdata") 
+    #old.files <- list.files(path=settings$pfts[i]$pft$outdir,
+    #                        full.names=TRUE, pattern = "*.Rdata") 
+    old.files <- list.files(path=settings$pfts[i]$pft$outdir,full.names=TRUE)
     file.remove(old.files[which(file.info(list.files(path=settings$pfts[i]$pft$outdir,
                                                      full.names=TRUE))$isdir==FALSE)])
   }
