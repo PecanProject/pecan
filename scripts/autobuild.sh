@@ -24,14 +24,14 @@ PACKAGES="${PACKAGES} all"
 TO="kooper@illinois.edu,sserbin@illinois.edu,dlebauer@illinois.edu,mdietze@illinois.edu"
 
 # run script in local mode (yes) or for the autobuild on ebi-forecast (no)
-LOCAL="no"
+LOCAL="yes"
 
 # run check before install
 CHECK="yes"
 
 # location where to install packages
 if [ -z $R_LIBS_USER ]; then
-  export R_LIBS_USER="autobuild"
+  export R_LIBS_USER="${HOME}/lib/R"
 fi
 if [ ! -e ${R_LIBS_USER} ]; then mkdir -p ${R_LIBS_USER}; fi
 rm -rf ${R_LIBS_USER}/PEcAn.*
