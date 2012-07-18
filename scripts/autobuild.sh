@@ -30,11 +30,16 @@ LOCAL="yes"
 CHECK="yes"
 
 # location where to install packages
-if [ -z $R_LIBS_USER ]; then
+if [ $UID -eq 0 ]; then
+  unset R_LIBS_USER
+elif [ -z $R_LIBS_USER ]; then
   export R_LIBS_USER="${HOME}/lib/R"
 fi
-if [ ! -e ${R_LIBS_USER} ]; then mkdir -p ${R_LIBS_USER}; fi
-rm -rf ${R_LIBS_USER}/PEcAn.*
+if [ ! -z $R_LIBS_USER ]; then
+  if [ ! -e ${R_LIBS_USER} ]; then mkdir -p ${R_LIBS_USER}; fi
+  rm -rf ${R_LIBS_USER}/PEcAn.*
+  R_LIB_INC="--library=${R_LIBS_USER}"
+fi
 
 # are we still running
 if [ -e running ]; then
@@ -88,7 +93,7 @@ if [ "$LOCAL" == "yes" -o $? -eq 1 ]; then
     PACKAGE="OK"
 
     if [ "$CHECK" == "yes" ]; then
-	    R CMD check --library=${R_LIBS_USER} $p &> out.log
+	    R CMD check ${R_LIB_INC} $p &> out.log
 	    if [ $? -ne 0 ]; then
 	      STATUS="BROKEN"
 	      PACKAGE="BROKEN"
@@ -103,7 +108,7 @@ if [ "$LOCAL" == "yes" -o $? -eq 1 ]; then
 	    fi
 	  fi
 
-    R CMD INSTALL --build --library=${R_LIBS_USER} $p &> out.log
+    R CMD INSTALL --build ${R_LIB_INC} $p &> out.log
     if [ $? -ne 0 ]; then
       STATUS="BROKEN"
       PACKAGE="BROKEN"
