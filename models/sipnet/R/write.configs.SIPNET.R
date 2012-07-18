@@ -101,6 +101,11 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
   if("AmaxFrac" %in% pft.names){
     param[which(param[,1] == 'aMaxFrac'),2] = pft.traits[which(pft.names == 'AmaxFrac')]
   }  
+   
+  ### Canopy extinction coefficiet (k)
+  if("extinction_coefficient" %in% pft.names){
+    param[which(param[,1] == 'attenuation'),2] = pft.traits[which(pft.names == 'extinction_coefficient')]
+  }
 
   if("leaf_respiration_rate_m2" %in% pft.names){
     Rd = pft.traits[which(pft.names == 'leaf_respiration_rate_m2')]
@@ -148,7 +153,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
     vegRespQ10 = param[which(param[,1] == "vegRespQ10"),2]
     id = which(param[,1] == 'baseVegResp')
     ## use Q10 to convert stem resp from reference of 25C to 0C
-    param[id,2] = pft.traits[which(pft.names='stem_respiration_rate')]*vegRespQ10^(-25/10)
+    param[id,2] = pft.traits[which(pft.names=='stem_respiration_rate')]*vegRespQ10^(-25/10)
   }
 
   if("stomatal_slope.BB" %in% pft.names){

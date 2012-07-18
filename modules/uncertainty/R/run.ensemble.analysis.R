@@ -16,9 +16,7 @@
 ##' @author David LeBauer, Shawn Serbin
 ##'
 run.ensemble.analysis <- function(){
-  
-  variables = "GPP" # hack for now.  need to be able to dynamically update.
-  
+ 
   if(!exists("settings")){ # temporary hack
                         # waiting on http://stackoverflow.com/q/11005478/199217
     settings <- list(outdir = "/tmp/",
@@ -26,6 +24,9 @@ run.ensemble.analysis <- function(){
                                    outdir = "/tmp/")),
                      ensemble.analysis = NULL)
   }
+
+  variables = settings$sensitivity.analysis$variable #grab target variable(s) from pecan.xml
+  print(paste("---- Variable: ",variables,sep=""))
   
   ### Check if ensemble was run and was larger than 0
   if ('ensemble' %in% names(settings) & settings$ensemble$size>0) {
