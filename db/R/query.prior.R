@@ -42,11 +42,6 @@ query.priors <- function(pft, trstr, out=NULL,con=NULL,...){
   query    <- dbSendQuery(con, query.text)
   priors <- fetch ( query, n = -1 )
   
-  #HACK: this rename does not belong here. 
-  #There should be a separate function for this called after query.priors. 
-  #-carl
-  priors$name[priors$name == 'SLA_m2_per_gC'] <- 'SLA'
-  
   if(nrow(priors) <= 0){
     warning(paste("No priors found for pft(s): ", pft))
     priors <- priors[, which(colnames(priors)!='name')]
