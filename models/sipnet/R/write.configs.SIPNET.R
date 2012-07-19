@@ -166,6 +166,12 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
     param[which(param[,1] == 'halfSatPar'),2] = pft.traits[which(pft.names == 'half_saturation_PAR')]
   }
 
+  # Ball-berry slomatal slope parameter m
+  if("stomatal_slope.BB" %in% pft.names){
+    id = which(param[,1] == 'm_ballBerry')
+    param[id,2] = pft.traits[which(pft.names == 'stomatal_slope.BB')]
+  }
+
   # Slope of VPD–photosynthesis relationship. dVpd = 1 - dVpdSlope * vpd^dVpdExp  
   if('dVPDSlope' %in% pft.names){
     param[which(param[,1] == 'dVpdSlope'),2] = pft.traits[which(pft.names == 'dVPDSlope')]
@@ -182,20 +188,23 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
       pft.traits[which(pft.names == 'leaf_turnover_rate')]
   }
 
+  # vegetation respiration Q10.
+  if('veg_respiration_Q10' %in% pft.names){
+    param[which(param[,1] == 'vegRespQ10'),2] = 
+      pft.traits[which(pft.names == 'veg_respiration_Q10')]
+  }
+
   # Base vegetation respiration. vegetation maintenance respiration at 0 degrees C (g C respired * g^-1 plant C * day^-1) 
   # NOTE: only counts plant wood C - leaves handled elsewhere (both above and below-ground: assumed for now to have same resp. rate)
   # NOTE: read in as per-year rate!
   if("stem_respiration_rate" %in% pft.names){
     vegRespQ10 = param[which(param[,1] == "vegRespQ10"),2]
     id = which(param[,1] == 'baseVegResp')
+    ## Convert from umols CO2 kg s-1 to gC g day-1
+    stem_resp_g <- (((pft.traits[which(pft.names=='stem_respiration_rate')])*(44.0096/1000000)*(12.01/44.0096))/1000)*86400
     ## use Q10 to convert stem resp from reference of 25C to 0C
-    param[id,2] = pft.traits[which(pft.names=='stem_respiration_rate')]*vegRespQ10^(-25/10)
-  }
-
-  # Ball-berry slomatal slope parameter m
-  if("stomatal_slope.BB" %in% pft.names){
-    id = which(param[,1] == 'm_ballBerry')
-    param[id,2] = pft.traits[which(pft.names == 'stomatal_slope.BB')]
+    #param[id,2] = pft.traits[which(pft.names=='stem_respiration_rate')]*vegRespQ10^(-25/10)
+     param[id,2] = stem_resp_g*vegRespQ10^(-25/10)
   }
 
   # turnover of fine roots (per year rate)
@@ -204,13 +213,25 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
     param[id,2] = pft.traits[which(pft.names == 'root_turnover_rate')]
   }
 
+  # fine root respiration Q10
+  if('fine_root_respiration_Q10' %in% pft.names){
+    param[which(param[,1] == 'fineRootQ10'),2] =
+      pft.traits[which(pft.names == 'fine_root_respiration_Q10')]
+  }
+
   # base respiration rate of fine roots  (per year rate)
   if("root_respiration_rate" %in% pft.names){
     fineRootQ10 = param[which(param[,1] == "fineRootQ10"),2]
     id = which(param[,1] == 'baseFineRootResp')
     param[id,2] = pft.traits[which(pft.names=='root_respiration_rate')]*fineRootQ10^(-25/10)
   }
-  
+
+  # coarse root respiration Q10
+  if('coarse_root_respiration_Q10' %in% pft.names){
+    param[which(param[,1] == 'coarseRootQ10'),2] =
+      pft.traits[which(pft.names == 'coarse_root_respiration_Q10')]
+  } 
+
   write.table(param,paste(my.outdir,"/",run.id,".param",sep=""),row.names=FALSE,col.names=FALSE,quote=FALSE)
   
   return()
