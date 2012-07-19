@@ -149,8 +149,7 @@ fwrite($fh, "    <name>${db_database}</name>" . PHP_EOL);
 fwrite($fh, "  </database>" . PHP_EOL);
 
 fwrite($fh, "  <meta.analysis>" . PHP_EOL);
-#fwrite($fh, "    <iter>10000</iter>" . PHP_EOL);
-fwrite($fh, "    <iter>1000</iter>" . PHP_EOL);
+fwrite($fh, "    <iter>10000</iter>" . PHP_EOL);
 fwrite($fh, "    <random.effects>TRUE</random.effects>" . PHP_EOL);
 fwrite($fh, "  </meta.analysis>" . PHP_EOL);
 
