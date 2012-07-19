@@ -7,12 +7,20 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 ##--------------------------------------------------------------------------------------------------#
+##'  Plot results of variance decomposition
 ##'
-##'
+##' Plots variance decomposition tryptich
 ##' @name plot.variance.decomposition
-##' @title Plot results of variance decomposition
+##' @title Variance Decomposition Plots
 ##' @export
 ##' @author David LeBauer
+##' @param plot.inputs 
+##' @param outdir 
+##' @param prior.plot.inputs 
+##' @param fontsize 
+##' @param filter 
+##' @param variance.scale 
+##' @param variance.prefix 
 plot.variance.decomposition <- function(plot.inputs, outdir,
                                         prior.plot.inputs = NULL,
                                         fontsize = list(title = 18, axis = 14),
