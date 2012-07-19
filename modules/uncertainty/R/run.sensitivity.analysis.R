@@ -72,7 +72,7 @@ run.sensitivity.analysis <- function(){
         ## arrange plots  http://stackoverflow.com/q/10706753/199217
         ncol <- floor(sqrt(length(sensitivity.plots)))
         print(do.call("grid.arrange", c(sensitivity.plots, ncol=ncol)))
-        lapply(sensitivity.plots, function(x) print(x + opts() # old method.  depreciated.
+        print(sensitivity.plots) # old method.  depreciated.
         dev.off()
 
         ### Generate VD diagnostic plots

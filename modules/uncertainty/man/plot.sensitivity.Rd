@@ -2,11 +2,10 @@
 \alias{plot.sensitivity}
 \title{Sensitivity plot}
 \usage{
-  plot.sensitivity(sa.sample, sa.spline, trait,
-    y.range = c(0, 50), median.i = 4,
-    prior.sa.sample = NULL, prior.sa.spline = NULL,
-    fontsize = list(title = 18, axis = 14), linesize = 1,
-    dotsize = 2)
+  plot.sensitivity(sa.sample, sa.spline, trait, y.range =
+  c(0, 50), median.i = 4, prior.sa.sample = NULL,
+  prior.sa.spline = NULL, fontsize = list(title = 12, axis
+  = 8), linesize = 1, dotsize = 2)
 }
 \arguments{
   \item{sa.sample}{trait quantiles used in sensitivity
