@@ -3,7 +3,7 @@
 \title{Plot Sensitivities}
 \usage{
   plot.sensitivities(sensitivity.plot.inputs,
-    prior.sensitivity.plot.inputs = NULL, ...)
+  prior.sensitivity.plot.inputs = NULL, ...)
 }
 \arguments{
   \item{sensitivity.plot.inputs}{inputs}
