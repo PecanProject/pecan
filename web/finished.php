@@ -92,6 +92,15 @@ foreach(scandir("$folder/out") as $file) {
 	}
 }
 
+# check the root folder for sipnet
+for($year=$start; $year<=$end; $year++) {
+        $file = "pecan/SAmedian/SAmedian.${year}.nc";
+        $outputs .= createOption("$file");
+        # TODO shows all variables for all years.
+        $vars .= shell_exec("ncdump -x $folder/$file | grep '<variable' | sed 's/.*name=\"\\([^\"]*\\)\".*/\\1/' | sort -u | awk '{print \"<option value=\\\"../${file}@\" $1 \"\\\">NC-${year}-\" $1 \"</option>\" }'");
+}
+
+
 # check the pft folder
 foreach(scandir("$folder/pft") as $pft) {
 	if ($file[0] == ".") {

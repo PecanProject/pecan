@@ -1,4 +1,4 @@
-for f in `find . -type d -name R`; do
+#!/bin/bash
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
@@ -7,6 +7,9 @@ for f in `find . -type d -name R`; do
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
+
+ALL="ggplot2 testthat"
+for f in `find . -type d -name R`; do
   NAME=$( echo $f | sed -e 's#\./##' -e 's#/R##' )
   LIB=$( grep 'library(.*)' $f/*.R 2>/dev/null | grep -v 'PEcAn' | grep -v '^#' | sed -e 's/.*library(\("*[A-Za-z0-9\.]*"*\).*/\1/' | sort -u )
   LIB=$( echo $LIB )
@@ -32,12 +35,12 @@ if [ ! -z "$ALL" ]; then
   echo ""
 
   cat << EOF
-list.of.packages <- c($ALL)
-new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+echo "list.of.packages <- c($ALL)
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]
 if(length(new.packages)) {
-  print("installing : ")
+  print('installing : ')
   print(new.packages)
-  install.packages(new.packages, repos="http://cran.us.r-project.org")
-}
+  install.packages(new.packages, lib=Sys.getenv('R_LIBS_USER'), repos='http://cran.us.r-project.org')
+} " | R --vanilla
 EOF
 fi
