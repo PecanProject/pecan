@@ -25,20 +25,23 @@ start.runs.SIPNET <- function(){
     runs <- runs[file.info(runs)$isdir]
     
     ### Eliminate non-run dirs --------------------------------------------
-    pft.dir <- strsplit(settings$pfts$pft$outdir,"/")[[1]]
-    ln <- length(pft.dir)
-    pft.dir <- pft.dir[ln]
-    runs <- runs[-grep(pft.dir,runs)]
+
+## This one is removing all the SA runs (since the pft name is in the SA name)    
+#    pft.dir <- strsplit(settings$pfts$pft$outdir,"/")[[1]]
+#    ln <- length(pft.dir)
+#    pft.dir <- pft.dir[ln]
+#    runs <- runs[-grep(pft.dir,runs)]
+
+## these two are removing all the run directories    
+#    run.dir <- strsplit(settings$run$host$rundir,"/")[[1]]
+#    ln <- length(run.dir)
+#    run.dir <- run.dir[ln]
+#    runs <- runs[-grep(run.dir,runs)]
     
-    run.dir <- strsplit(settings$run$host$rundir,"/")[[1]]
-    ln <- length(run.dir)
-    run.dir <- run.dir[ln]
-    runs <- runs[-grep(run.dir,runs)]
-    
-    out.dir <- strsplit(settings$run$host$outdir,"/")[[1]]
-    ln <- length(out.dir)
-    out.dir <- out.dir[ln]
-    runs <- runs[-grep(paste("/",out.dir,sep=""),runs)]
+#    out.dir <- strsplit(settings$run$host$outdir,"/")[[1]]
+#    ln <- length(out.dir)
+#    out.dir <- out.dir[ln]
+#    runs <- runs[-grep(paste("/",out.dir,sep=""),runs)]
     ### Done -------------------------------------------------------------
     
     ## run SIPNET for each 
