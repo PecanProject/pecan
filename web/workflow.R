@@ -41,108 +41,19 @@ options(error=quote({
 #options(warning.expression=status.end("ERROR"))
 
 # ----------------------------------------------------------------------
-# status functions
-# ----------------------------------------------------------------------
-pecan.setup <- function(settings) {
-    # ----------------------------------------------------------------------
-    # WRITE LAUNCH SCRIPTS
-    # ----------------------------------------------------------------------
-    # script that will either launch ed or do a qsub
-    script <- c("#!/bin/bash",
-                paste("cd", settings$run$host$rundir),
-                "JOBS=\"\"",
-                "export GFORTRAN_UNBUFFERED_ALL=1",
-                "for f in ED2INc*[0-9n]; do",
-                "  LOG=\"$f.log\"",
-                "  date +%Y.%m.%d-%H.%M > $LOG",
-                "  @CMD@ >> $LOG",
-                "  @ID@",
-                "  JOBS=\"$JOBS $ID\"",
-                "done",
-                "echo $JOBS")
-    
-    # figure out if we run local, or using qsub
-    if ( settings$run$host$name != "" && settings$run$host$name != "localhost" ) {
-        # write script to create tunnel and folders
-        writeLines(c( '#!/bin/bash',
-                      paste('REMOTEHOST=', settings$run$host$name, sep=''),
-                      'ssh -Nf ${REMOTEHOST}',
-                      'REMOTEPID=$( ps -ef | grep "ssh" | grep "${REMOTEHOST}" | awk \'{ print $2 }\' )',
-                      'echo ${REMOTEPID} > ssh.pid',
-                      paste('ssh -T ${REMOTEHOST} "mkdir -p', settings$run$host$rundir, settings$run$host$outdir, '"')),
-                    con=paste(settings$outdir, 'setup.sh', sep=''))
-        Sys.chmod(paste(settings$outdir, 'setup.sh', sep=''), mode = "0755")
-        
-        # running using qsub
-        script <- gsub('@CMD@',  'QSUB=$( qsub -cwd -N $f -pe mpich 1 -j y -o $LOG ./runjob.sh $f );', script)
-        script <- gsub('@ID@',   'ID=${QSUB#*Your job }; ID=${ID%% *};', script)
-        
-        # write script to disk
-        writeLines(script, con=paste(settings$outdir, 'qsub.sh', sep=''))
-        Sys.chmod(paste(settings$outdir, 'qsub.sh', sep=''), mode = "0755")
-    
-        # actual command to start ed
-        writeLines(c( '#!/bin/bash',
-                      paste('mpirun -np 1', settings$model$binary, '-f $1'),
-                      paste('rsync -routi /scratch/out*', settings$run$host$outputs)),
-                   con=paste(settings$outdir, 'runjob.sh', sep='/'))
-        Sys.chmod(paste(settings$outdir, 'runjob.sh', sep=''), mode = "0755")
-           
-        # launcher used to start process
-        writeLines(c( '#!/bin/bash',
-                      paste('rsync -outip ', settings$outdir, '*.sh ', settings$run$host$name, ':', settings$run$host$rundir, ' 2>&1 >/dev/null', sep=''),
-                      paste('ssh -T ', settings$run$host$name, ' ', settings$run$host$rundir, 'qsub.sh', sep='')),
-                   con=paste(settings$outdir, 'launcher.sh', sep='/'))
-        Sys.chmod(paste(settings$outdir, 'launcher.sh', sep=''), mode = "0755")
-           
-        # write check script to disk
-        writeLines(c( '#!/bin/bash',
-                      'JOBS=$( cat jobs )',
-                      'echo "Checking $JOBS"',
-                      'while [ "$JOBS" != "" ]; do',
-                      '  sleep 30',
-                      '  LEFT=""',
-                      '  for j in $JOBS; do',
-                      paste('    if [ "`ssh -T', settings$run$host$name, 'qstat -j $j 2>&1 | wc -l`" == 2 ]; then'),
-                      '      echo "JOB $j is finished."',
-                      '    else',
-                      '      LEFT="$LEFT $j"',
-                      '    fi',
-                      '  done',
-                      '  JOBS=$LEFT',
-                      'done'),
-                   con=paste(settings$outdir, 'check.sh', sep='/'))
-        Sys.chmod(paste(settings$outdir, 'check.sh', sep=''), mode = "0755")
-    } else {
-        # write script to create tunnel and folders
-        writeLines(c( '#!/bin/bash',
-                      paste('mkdir -p', settings$run$host$rundir),
-                      paste('mkdir -p', settings$run$host$outdir)),
-                   con=paste(settings$outdir, 'setup.sh', sep='/'))
-        Sys.chmod(paste(settings$outdir, 'setup.sh', sep=''), mode = "0755")
-           
-        # actual command to start ed
-        script <- gsub('@CMD@',  paste(settings$model$binary, '-f $f'), script)
-        script <- gsub('@ID@',   'ID=""', script)
-        
-        # write script to disk
-        writeLines(script, con=paste(settings$outdir, 'launcher.sh', sep='/'))
-        Sys.chmod(paste(settings$outdir, 'launcher.sh', sep=''), mode = "0755")
-    
-        # write check script to disk
-        writeLines(c( '#!/bin/bash',
-                      '/bin/true' ),
-                   con=paste(settings$outdir, 'check.sh', sep='/'))
-        Sys.chmod(paste(settings$outdir, 'check.sh', sep=''), mode = "0755")
-    }
-}
-
-# ----------------------------------------------------------------------
 # run workflow
 # ----------------------------------------------------------------------
 status.start("SETUP")
-pecan.setup(settings)
-system(paste(settings$outdir, 'setup.sh', sep='/'))
+script <- c("#!/bin/bash",
+		paste("cd", settings$run$host$rundir),
+		"export GFORTRAN_UNBUFFERED_ALL=1",
+		"for f in ED2INc*[0-9n]; do",
+		"  LOG=\"$f.log\"",
+		"  date +%Y.%m.%d-%H.%M > $LOG",
+		paste(" ", settings$model$binary, '-f $f', ">> $LOG"),
+		"done")
+writeLines(script, con=paste(settings$outdir, 'launcher.sh', sep='/'))
+Sys.chmod(paste(settings$outdir, 'launcher.sh', sep=''), mode = "0755")
 status.end()
 
 # setup pss/css by running fia2ED
@@ -152,7 +63,7 @@ if (".attrs" %in% names(settings$model$psscss)) {
 	if (settings$model$psscss$.attrs[["generate"]] == "fia") {
 		fia.to.psscss(settings)
 	} else {
-		stop("No inforamtion on how to generate psscss files.")
+		stop("No information on how to generate psscss files.")
 	}
 }
 status.end()
@@ -174,24 +85,7 @@ status.end()
 
 # run model
 status.start("MODEL")
-# write model started
-con <- query.base.con(settings)
-query.base(paste("INSERT INTO runs (site_id, start_time, finish_time, outdir, created_at, started_at) values ('", settings$run$site$id, "', '", settings$run$start.date, "', '", settings$run$end.date, "', '",settings$outdir , "', NOW(), NOW())", sep=''), con)
-id <- query.base(paste("SELECT LAST_INSERT_ID() AS ID"), con)
-oldwd <- getwd()
-if (settings$model$name == "ED2") {
-  setwd(settings$outdir)
-  system2(paste(settings$outdir, 'launcher.sh', sep=''), wait=TRUE)
-} else if (settings$model$name == "SIPNET") {
-  setwd(paste(settings$outdir, "SAmedian", sep="/"))
-  system2(settings$model$binary, wait=TRUE)
-}
-setwd(oldwd)
-# TODO need to add code to check if remote jobs are done
-#system2(paste(settings$outdir, 'check.sh', sep=''), wait=TRUE)
-# write model finished
-query.base(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", id), con)
-query.close(con)
+start.model.runs(settings$model$name)
 status.end()
 
 # all done

@@ -166,6 +166,7 @@ if ($modeltype == "ED2") {
 fwrite($fh, "  <model>" . PHP_EOL);
 fwrite($fh, "    <name>$modeltype</name>" . PHP_EOL);
 fwrite($fh, "    <binary>${binary}</binary>" . PHP_EOL);
+fwrite($fh, "    <id>${modelid}</id>" . PHP_EOL);
 if ($modeltype == "ED2") {
 	fwrite($fh, "    <config.header>" . PHP_EOL);
 	fwrite($fh, "      <radiation>" . PHP_EOL);
@@ -191,6 +192,7 @@ fwrite($fh, "  </model>" . PHP_EOL);
 fwrite($fh, "  <run>" . PHP_EOL);
 fwrite($fh, "    <folder>${folder}</folder>" . PHP_EOL);
 fwrite($fh, "    <site>" . PHP_EOL);
+fwrite($fh, "      <id>${siteid}</id>" . PHP_EOL);
 fwrite($fh, "      <name>{$siteinfo['sitename']}</name>" . PHP_EOL);
 fwrite($fh, "      <lat>{$siteinfo['lat']}</lat>" . PHP_EOL);
 fwrite($fh, "      <lon>{$siteinfo['lon']}</lon>" . PHP_EOL);
