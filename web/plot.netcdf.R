@@ -64,7 +64,7 @@ data.fetch <- function(var, nc, start, end, values, fun=mean) {
 	#   values extracted from the hdf data
 	
 	if (var == "time") {
-		val <- start:end
+		val <- unique(floor(nc$dim[['time']]$vals / (24*3600)))
 		attr(val, "lbl") <- "Day of the year"
 		return(val)
 	}
@@ -80,9 +80,11 @@ data.fetch <- function(var, nc, start, end, values, fun=mean) {
 	}
 	
 	# some precomputations
-	lastval  <- (values_day*(1+end-start))
-	indices <- c(lapply(start:(end),function(x) {seq(1+x*values_day+starttime, 1+x*values_day+endtime)}), recursive=TRUE)
-	aggrlist <- list(rep(start:(end), each=(1 + endtime - starttime)))
+#	lastval  <- (values_day*(1+end-start))
+#	indices <- c(lapply(start:(end),function(x) {seq(1+x*values_day+starttime, 1+x*values_day+endtime)}), recursive=TRUE)
+#	aggrlist <- list(rep(start:(end), each=(1 + endtime - starttime)))
+        indices  <- 0:length(nc$dim[['time']]$vals)
+        aggrlist <- list(floor(nc$dim[['time']]$vals / (24*3600)))
 	
 	# aggregate the data
 	data <- get.var.ncdf(nc, useme)
@@ -147,7 +149,6 @@ plot.netcdf <- function(datafile, year, yvar, xvar='time', width=800, height=600
 	
 	# open netcdf file
 	nc <- open.ncdf(paste(settings$run$host$outdir, datafile, sep="/"))
-	print(nc)
 	
 	# compute variables
 	xval_mean <- data.fetch(xvar, nc, start_day, end_day, values_day, mean)
