@@ -7,6 +7,10 @@
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
  */
+require("system.php");
+require("dbinfo.php");
+$connection=open_database();
+
 # parameters
 if (!isset($_REQUEST['siteid'])) {
   die("Need a siteid.");
@@ -51,12 +55,18 @@ if ($modeltype == "ED2") {
         if (!isset($_REQUEST['climate'])) {
                 die("Need a climate.");
         }
-        $climate=$_REQUEST['climate'];
+        $climid=$_REQUEST['climate'];
+        
+        $query="SELECT file_path, start_date, end_date FROM inputs, dbfiles, machines WHERE inputs.site_id=${siteid} AND inputs.file_id=${climid} AND dbfiles.file_id=${climid} AND machines.hostname='${hostname}' AND dbfiles.machine_id=machines.id;";
+        $result = mysql_query($query);
+        if (!$result) {
+          die('Invalid query: ' . mysql_error());
+        }
+        $row = mysql_fetch_assoc($result);
+        $startdate=$row['start_date'];
+        $enddate=$row['end_date'];
+        $climate=$row['file_path'];
 }
-
-require("system.php");
-require("dbinfo.php");
-$connection=open_database();
 
 // get site information
 $query = "SELECT * FROM sites WHERE sites.id=$siteid";
@@ -139,7 +149,8 @@ fwrite($fh, "    <name>${db_database}</name>" . PHP_EOL);
 fwrite($fh, "  </database>" . PHP_EOL);
 
 fwrite($fh, "  <meta.analysis>" . PHP_EOL);
-fwrite($fh, "    <iter>10000</iter>" . PHP_EOL);
+#fwrite($fh, "    <iter>10000</iter>" . PHP_EOL);
+fwrite($fh, "    <iter>1000</iter>" . PHP_EOL);
 fwrite($fh, "    <random.effects>TRUE</random.effects>" . PHP_EOL);
 fwrite($fh, "  </meta.analysis>" . PHP_EOL);
 
@@ -227,7 +238,7 @@ copy("workflow.R", "${folder}/workflow.R");
 
 # start the actual workflow
 chdir($folder);
-pclose(popen('R_LIBS_USER="/home/kooper/R/x86_64-pc-linux-gnu-library/2.15" R CMD BATCH workflow.R &', 'r'));
+pclose(popen('R_LIBS_USER="/home/kooper/lib/R" R CMD BATCH workflow.R &', 'r'));
 
 #done
 header("Location: running.php?workflowid=$workflowid");

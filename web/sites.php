@@ -17,15 +17,15 @@ $parnode = $dom->appendChild($node);
 
 $query = "SELECT sites.* FROM sites";
 if (isset($_REQUEST['host']) && ($_REQUEST['host'] != "")) {
-	$query  = "SELECT sites.* FROM sites, inputs, input_files, machines WHERE input_files.file_id = inputs.file_id AND inputs.site_id=sites.id";
-	$query .= " AND machines.hostname='{$_REQUEST['host']}' AND input_files.machine_id=machines.id";
+	$query  = "SELECT sites.* FROM sites, inputs, dbfiles, machines WHERE dbfiles.file_id = inputs.file_id AND inputs.site_id=sites.id";
+	$query .= " AND machines.hostname='{$_REQUEST['host']}' AND dbfiles.machine_id=machines.id";
 
 	if (isset($_REQUEST['model']) && ($_REQUEST['model'] != "")) {
 		$model = strtolower($_REQUEST['model']);
 		if (preg_match('/^ed/', $model)) {
-			$query .= " AND input_files.format_id=12";
+			$query .= " AND dbfiles.format_id=12";
 		} else if (preg_match('/^sipnet/', $model)) {
-			$query .= " AND input_files.format_id=24";
+			$query .= " AND dbfiles.format_id=24";
 		}
 	}
 }

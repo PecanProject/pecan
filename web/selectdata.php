@@ -225,10 +225,10 @@ if ($model["type"] == "ED2") {
 			<select id="met" name="met" onChange="validate();">
 <?php
         // setup default part of query
-	$query="SELECT file_path AS file, name, start_date, end_date FROM inputs, input_files, machines WHERE inputs.site_id=$siteid AND inputs.file_id=input_files.file_id AND machines.hostname='${_REQUEST['hostname']}' AND input_files.machine_id=machines.id";
+	$query="SELECT file_path AS file, name, start_date, end_date FROM inputs, dbfiles, machines WHERE inputs.site_id=$siteid AND inputs.file_id=dbfiles.file_id AND machines.hostname='${_REQUEST['hostname']}' AND dbfiles.machine_id=machines.id";
 
 	// get met data
-	$result = mysql_query($query . " AND input_files.format_id=12");
+	$result = mysql_query($query . " AND dbfiles.format_id=12");
 	if (!$result) {
 		die('Invalid query: ' . mysql_error());
 	}
@@ -244,7 +244,7 @@ if ($model["type"] == "ED2") {
             <select id="psscss" name="psscss" onChange="validate();">
 <?php 
 	// get psscss data
-	$result = mysql_query($query . " AND input_files.format_id=10");
+	$result = mysql_query($query . " AND dbfiles.format_id=10");
 	if (!$result) {
 		die('Invalid query: ' . mysql_error());
 	}
@@ -260,20 +260,20 @@ if ($model["type"] == "ED2") {
 <?php
 } else if ($model["type"] == "SIPNET") {
         // setup default part of query
-        $query="SELECT file_path AS file, name, start_date, end_date FROM inputs, input_files, machines WHERE inputs.site_id=$siteid AND inputs.file_id=input_files.file_id AND machines.hostname='${_REQUEST['hostname']}' AND input_files.machine_id=machines.id";
+        $query="SELECT dbfiles.file_id, name, start_date, end_date FROM inputs, dbfiles, machines WHERE inputs.site_id=$siteid AND inputs.file_id=dbfiles.file_id AND machines.hostname='${_REQUEST['hostname']}' AND dbfiles.machine_id=machines.id";
 ?>
 
                         <label>Climate Data file</label>
                         <select id="climate" name="climate" onChange="validate();">
 <?php
         // get met data
-        $result = mysql_query($query . " AND input_files.format_id=24");
+        $result = mysql_query($query . " AND dbfiles.format_id=24");
         if (!$result) {
                 die('Invalid query: ' . mysql_error());
         }
         while ($row = @mysql_fetch_assoc($result)){
                 $row['name']="CLIMATE " . substr($row['start_date'], 0, 4) . "-" . substr($row['end_date'], 0, 4);
-                print "<option value='{$row['file']}'>{$row['name']}</option>\n";
+                print "<option value='{$row['file_id']}'>{$row['name']}</option>\n";
         }
 ?>
                         </select>
