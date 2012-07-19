@@ -190,7 +190,7 @@ plot.variance.decomposition <- function(plot.inputs, outdir,
 plot.sensitivity <- function(sa.sample, sa.spline, trait,
                              y.range = c(0,50), median.i = 4,
                              prior.sa.sample = NULL, prior.sa.spline = NULL,
-                             fontsize = list(title = 18, axis = 14),
+                             fontsize = list(title = 12, axis = 8),
                              linesize = 1,
                              dotsize = 2) {
   LENGTH_OUT <- 1000
@@ -236,7 +236,7 @@ plot.sensitivity <- function(sa.sample, sa.spline, trait,
   }
   max.x <- max(prior.x)
   min.x <- min(prior.x)
-  x.breaks <- pretty(c(min.x, max.x), 4)
+  x.breaks <- pretty(c(min.x, max.x), 2)
   saplot <- saplot + scale_x_continuous(units, limits = range(x.breaks),
                                         breaks = x.breaks)
                                         #  print(saplot)
