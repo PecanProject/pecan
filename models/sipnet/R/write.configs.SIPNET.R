@@ -73,6 +73,12 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
   pft.traits <- trait.values[[pft.traits]]
   pft.names  <- names(pft.traits)
 
+  # GDD leaf on
+  if("GDD" %in% pft.names){
+    param[which(param[,1] == 'gddLeafOn'),2] = pft.traits[which(pft.names == 'GDD')]
+  }
+
+  # Leaf carbon concentration
   leafC = 0.48  #0.5
   if("leafC" %in% pft.names){
     leafC = pft.traits[which(pft.names == 'leafC')]
@@ -80,6 +86,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
     param[id,2] = leafC*0.01 # convert to percentage from 0 to 1
   }
 
+  # Specific leaf area converted to SLW
   SLA = NA
   id = which(param[,1] == 'leafCSpWt')
   if("SLA" %in% pft.names){
@@ -89,6 +96,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
     SLA = 1000*leafC/param[id,2]
   }
 
+  # Maximum photosynthesis
   Amax = NA
   id = which(param[,1] == 'aMax')
   if("Amax" %in% pft.names){
@@ -98,6 +106,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
     Amax = param[id,2]*SLA
   }
  
+  # Daily fraction of maximum photosynthesis
   if("AmaxFrac" %in% pft.names){
     param[which(param[,1] == 'aMaxFrac'),2] = pft.traits[which(pft.names == 'AmaxFrac')]
   }  
@@ -107,25 +116,30 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
     param[which(param[,1] == 'attenuation'),2] = pft.traits[which(pft.names == 'extinction_coefficient')]
   }
 
+  # Leaf respiration rate converted to baseFolRespFrac
   if("leaf_respiration_rate_m2" %in% pft.names){
     Rd = pft.traits[which(pft.names == 'leaf_respiration_rate_m2')]
     id = which(param[,1] == 'baseFolRespFrac')
     param[id,2] = max(min(Rd/Amax,1),0)
   }
 
+  # Low temp threshold for photosynethsis
   if("Vm_low_temp" %in% pft.names){
     param[which(param[,1] == 'psnTMin'),2] = pft.traits[which(pft.names == 'Vm_low_temp')]
   }
   
+  # Opt. temp for photosynthesis
   if("psnTOpt" %in% pft.names){
     param[which(param[,1] == 'psnTOpt'),2] = pft.traits[which(pft.names == 'psnTOpt')]
   }
 
+  # Growth respiration factor (fraction of GPP)
   if("growth_resp_factor" %in% pft.names){
     param[which(param[,1] == 'growthRespFrac'),2] =
       pft.traits[which(pft.names == 'growth_resp_factor')]
   }
 
+  ### !!! NOT YET USED
   #Jmax = NA
   #if("Jmax" %in% pft.names){
   #  Jmax = pft.traits[which(pft.names == 'Jmax')]
@@ -137,18 +151,40 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
   #  alpha = pft.traits[which(pft.names == 'quantum_efficiency')]
   #}
 
+  # Half saturation of PAR.  PAR at which photosynthesis occurs at 1/2 theoretical maximum (Einsteins * m^-2 ground area * day^-1).
   #if(!is.na(Jmax) & !is.na(alpha)){
    # param[which(param[,1] == "halfSatPar"),2] = Jmax/(2*alpha)
     ### WARNING: this is a very coarse linear approximation and needs improvement *****
     ### Yes, we also need to work on doing a paired query where we have both data together.
     ### Once halfSatPar is calculated, need to remove Jmax and quantum_efficiency from param list so they are not included in SA
   #}
+  ### !!!
+  
+  # Half saturation of PAR.  PAR at which photosynthesis occurs at 1/2 theoretical maximum (Einsteins * m^-2 ground area * day^-1).
+  # Temporary implementation until above is working.
+  if("half_saturation_PAR" %in% pft.names){ 
+    param[which(param[,1] == 'halfSatPar'),2] = pft.traits[which(pft.names == 'half_saturation_PAR')]
+  }
 
+  # Slope of VPD–photosynthesis relationship. dVpd = 1 - dVpdSlope * vpd^dVpdExp  
+  if('dVPDSlope' %in% pft.names){
+    param[which(param[,1] == 'dVpdSlope'),2] = pft.traits[which(pft.names == 'dVPDSlope')]
+  }
+
+  # VPD–water use efficiency relationship.  dVpd = 1 - dVpdSlope * vpd^dVpdExp
+  if('dVpdExp' %in% pft.names){
+    param[which(param[,1] == 'dVpdExp'),2] = pft.traits[which(pft.names == 'dVpdExp')]
+  }
+
+  # Leaf turnover rate average turnover rate of leaves, in fraction per day NOTE: read in as per-year rate!
   if("leaf_turnover_rate" %in% pft.names){
     param[which(param[,1] == 'leafTurnoverRate'),2] =
       pft.traits[which(pft.names == 'leaf_turnover_rate')]
   }
 
+  # Base vegetation respiration. vegetation maintenance respiration at 0 degrees C (g C respired * g^-1 plant C * day^-1) 
+  # NOTE: only counts plant wood C - leaves handled elsewhere (both above and below-ground: assumed for now to have same resp. rate)
+  # NOTE: read in as per-year rate!
   if("stem_respiration_rate" %in% pft.names){
     vegRespQ10 = param[which(param[,1] == "vegRespQ10"),2]
     id = which(param[,1] == 'baseVegResp')
@@ -156,16 +192,19 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
     param[id,2] = pft.traits[which(pft.names=='stem_respiration_rate')]*vegRespQ10^(-25/10)
   }
 
+  # Ball-berry slomatal slope parameter m
   if("stomatal_slope.BB" %in% pft.names){
     id = which(param[,1] == 'm_ballBerry')
     param[id,2] = pft.traits[which(pft.names == 'stomatal_slope.BB')]
   }
 
+  # turnover of fine roots (per year rate)
   if("root_turnover_rate" %in% pft.names){
     id = which(param[,1] == 'fineRootTurnoverRate')
     param[id,2] = pft.traits[which(pft.names == 'root_turnover_rate')]
   }
 
+  # base respiration rate of fine roots  (per year rate)
   if("root_respiration_rate" %in% pft.names){
     fineRootQ10 = param[which(param[,1] == "fineRootQ10"),2]
     id = which(param[,1] == 'baseFineRootResp')
