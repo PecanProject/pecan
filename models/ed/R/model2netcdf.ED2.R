@@ -35,7 +35,7 @@ for(i in 1:length(flist)){
 }
 
 ## set up storage
-block <- 48
+block <- 24
 add <- function(dat,col,row){
 
   ## first clone and fill data
@@ -49,11 +49,11 @@ add <- function(dat,col,row){
   ## Option 1 - add data anew
   if(length(out) < col){
     bdim <- dims
-    bdim[1] <- 366*48
+    bdim[1] <- 366*block
 #    if(length(dat) > 1){
-#      out[[col]] <- matrix(NA,366*48,length(dat))
+#      out[[col]] <- matrix(NA,366*block,length(dat))
 #    } else {
-#      out[[col]] <- rep(NA,366*48)
+#      out[[col]] <- rep(NA,366*block)
 #    }
     ##array(NA,dim=dims) 
     out[[col]] <- array(NA,dim=bdim)
@@ -252,7 +252,7 @@ out <- add(dat$BASEFLOW,46,row) ## Qsb
   
 ## declare variables
   ## need to SHIFT for partial years **********************
-t <- dim.def.ncdf("time","seconds",(1:dim(out[[1]])[1])*1800.0)
+t <- dim.def.ncdf("time","seconds",(1:dim(out[[1]])[1])*3600.0*24.0/block)
 zg <- dim.def.ncdf("SoilLayerMidpoint","meters",z[1:length(dz)]+dz/2)
 
 var <- list()
