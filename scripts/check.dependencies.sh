@@ -8,7 +8,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-ALL="ggplot2 testthat"
+ALL="ggplot2 randtoolbox gridExtra testthat"
 for f in `find . -type d -name R`; do
   NAME=$( echo $f | sed -e 's#\./##' -e 's#/R##' )
   LIB=$( grep 'library(.*)' $f/*.R 2>/dev/null | grep -v 'PEcAn' | grep -v '^#' | sed -e 's/.*library(\("*[A-Za-z0-9\.]*"*\).*/\1/' | sort -u )
