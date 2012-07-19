@@ -30,8 +30,19 @@ start.model.runs <- function(model){
     print("-------------------------------------------------------------------")
     print(" ")
     
-    do.call(fcn.name,args=list())
-    
+	# write to the runs table
+	con <- query.base.con(settings)
+	query.base(paste("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, started_at) values ('", settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", settings$run$end.date, "', '",settings$outdir , "', NOW(), NOW())", sep=''), con)
+	id <- query.base(paste("SELECT LAST_INSERT_ID() AS ID"), con)
+	
+	# launch actual model
+	do.call(fcn.name,args=list())
+	
+	# job is finished
+	# TODO this should move in case of launch of on HPC
+	query.base(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", id), con)
+	query.close(con)
+	
   } else {
     warning(paste(fcn.name,"does not exist"))
     warning(paste("This function is required, please make sure the model module is loaded for",model))
