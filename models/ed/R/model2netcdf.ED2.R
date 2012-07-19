@@ -81,9 +81,9 @@ for(y in 1:length(yrs)){
   ysel <- which(yr == yrs[y])
   n <- length(ysel)
   out <- list()
-  prevTime <- NULL
+  #prevTime <- NULL
   print(y)
-  if(haveTime) prevTime <- progressBar()
+  #if(haveTime) prevTime <- progressBar()
   row <- 1
   for(i in ysel){
 dat <- hdf5load(paste(outdir,flist[i],sep="/"),load=FALSE)
@@ -243,11 +243,12 @@ out <- add(dat$BASEFLOW,46,row) ## Qsb
   out[[8]]  <- out[[8]]*1.2e-8   ## umol/m2/s -> kg/m2/s
   out[[9]]  <- out[[9]]*1.2e-8   ## umol/m2/s -> kg/m2/s
   out[[10]] <- out[[10]]*1.2e-8  ## umol/m2/s -> kg/m2/s
-  for(t in 1:dim(out[[37]])[1]){
-    for(p in 1:dim(out[[37]])[2]){
-      out[[37]][t,p,] <- out[[37]][t,p,]*1000*dz ## m/m -> kg/m2
-    }
-  }
+  # TODO see bug #1174
+  #for(t in 1:dim(out[[37]])[1]){
+  #  for(p in 1:dim(out[[37]])[2]){
+  #    out[[37]][t,p,] <- out[[37]][t,p,]*1000*dz ## m/m -> kg/m2
+  #  }
+  #}
   
 ## declare variables
   ## need to SHIFT for partial years **********************
@@ -306,10 +307,12 @@ var[[46]] <- var.def.ncdf("Qsb","kg/m2s",t,-999)
 
 
 ## write ALMA
-nc <- create.ncdf(paste(outdir,run.id,yrs[y],"nc",sep="."),var)
+nc <- create.ncdf(paste(outdir,paste(run.id,yrs[y],"nc",sep="."), sep=""),var)
 for(i in 1:length(var)){
-  print(i)
-  put.var.ncdf(nc,var[[i]],out[[i]])  
+	# TODO see bug #1174
+	if (i != 37 && i != 38 && i != 39) {
+	  put.var.ncdf(nc,var[[i]],out[[i]])  
+  	}
 }
 close.ncdf(nc)
 

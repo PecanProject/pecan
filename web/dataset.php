@@ -63,7 +63,7 @@ switch ($type) {
 		if (!isset($_REQUEST['var'])) {
 			die("Need var.");
 		}
-		$var=$_REQUEST['var'];
+		list($datafile,$var)=explode("@", $_REQUEST['var']);
 		$width=600;
 		if (isset($_REQUEST['width']) && ($_REQUEST['width'] > 600)) {
 			$width=$_REQUEST['width'];
@@ -74,7 +74,13 @@ switch ($type) {
 		}
 		$mime = "image/png";
 		$file = tempnam('','');
-		shell_exec("PECANSETTINGS=$folder/pecan.xml R CMD BATCH --vanilla '--args $year $var $width $height $file' plot.hdf5.R $folder/plot.out");				
+		if (stripos($datafile, ".h5") !== FALSE) {
+			shell_exec("PECANSETTINGS=$folder/pecan.xml R CMD BATCH --vanilla '--args $year $var $width $height $file' plot.hdf5.R $folder/plot.out");
+		} else if (stripos($datafile, ".nc") !== FALSE) {
+			shell_exec("PECANSETTINGS=$folder/pecan.xml R CMD BATCH --vanilla '--args $datafile $year $var $width $height $file' plot.netcdf.R $folder/plot.out");
+		} else {
+			die("Can not plot $datafile");
+		}		
 		break;
 		
 	default:

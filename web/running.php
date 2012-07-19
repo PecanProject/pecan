@@ -196,7 +196,13 @@ if ($refresh) {
 			<td><?=endTime("MODEL");?></td>
 			<td><?=status("MODEL");?></td>
 		</tr>
-		<tr>
+				<tr>
+			<th>output.conversion</th>
+			<td><?=startTime("OUTPUT");?></td>
+			<td><?=endTime("OUTPUT");?></td>
+			<td><?=status("OUTPUT");?></td>
+		</tr>
+				<tr>
 			<th>finished</th>
 			<td><?=startTime("FINISHED");?></td>
 			<td><?=endTime("FINISHED");?></td>
