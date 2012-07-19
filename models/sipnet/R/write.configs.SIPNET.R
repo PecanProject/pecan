@@ -223,7 +223,11 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
   if("root_respiration_rate" %in% pft.names){
     fineRootQ10 = param[which(param[,1] == "fineRootQ10"),2]
     id = which(param[,1] == 'baseFineRootResp')
-    param[id,2] = pft.traits[which(pft.names=='root_respiration_rate')]*fineRootQ10^(-25/10)
+    ## Convert from umols CO2 kg s-1 to gC g day-1
+    root_resp_rate_g <- (((pft.traits[which(pft.names=='root_respiration_rate')])*(44.0096/1000000)*(12.01/44.0096))/1000)*86400
+    ## use Q10 to convert stem resp from reference of 25C to 0C
+    #param[id,2] = pft.traits[which(pft.names=='root_respiration_rate')]*fineRootQ10^(-25/10)
+    param[id,2] = root_resp_rate_g*fineRootQ10^(-25/10)
   }
 
   # coarse root respiration Q10
