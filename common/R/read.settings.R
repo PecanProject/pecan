@@ -102,9 +102,9 @@ xmlMergeNodes <- function(node1, node2) {
 ##' \dontrun{
 ##' settings <- read.settings()
 ##' settings <- read.settings(file="willowcreek.xml")
-##' }
 ##' test.settings.file <- system.file("tests/test.settings.xml", package = "PEcAn.all")
 ##' settings <- read.settings(test.settings.file)
+##' }
 read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
 	settings.xml <- NULL
 	

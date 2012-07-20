@@ -24,8 +24,8 @@
 }
 \examples{
 priors <- data.frame(distn = c('weibull', 'lnorm', 'norm', 'gamma'),
-parama = c(1, 1, 1, 1),
-paramb = c(2, 2, 2, 2))
+                     parama = c(1, 1, 1, 1),
+                     paramb = c(2, 2, 2, 2))
 r2bugs.distributions(priors)
 }
 \author{

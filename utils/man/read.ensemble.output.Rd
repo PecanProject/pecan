@@ -1,12 +1,9 @@
 \name{read.ensemble.output}
 \alias{read.ensemble.output}
-\title{Read Ensemble Output}
+\title{Read ensemble output}
 \usage{
   read.ensemble.output(ensemble.size, outdir, start.year,
-  end.year, read.output = read.output.ed)
-
-  read.ensemble.output(ensemble.size, outdir, start.year,
-  end.year, read.output = read.output.ed)
+    end.year, variables, model)
 }
 \arguments{
   \item{ensemble.size}{}
@@ -19,17 +16,14 @@
 
   \item{end.year}{}
 
-  \item{read.output}{model specific read output function,
-  \cite{\link{read.output.ed}} by default.}
+  \item{variable}{}
+
+  \item{model}{}
 }
 \value{
-  list of ensemble output
-
   a list of ensemble output
 }
 \description{
-  Returns list of ensemble output
-
   Reads output from model ensemble
 }
 \details{

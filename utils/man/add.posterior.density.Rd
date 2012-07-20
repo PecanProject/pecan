@@ -2,8 +2,8 @@
 \alias{add.posterior.density}
 \title{Add posterior density.}
 \usage{
-  add.posterior.density(posterior.density, base.plot =
-  NULL)
+  add.posterior.density(posterior.density,
+    base.plot = NULL)
 }
 \arguments{
   \item{posterior.density}{}

@@ -1,0 +1,19 @@
+\name{table.expand}
+\alias{table.expand}
+\title{table.expand}
+\usage{
+  table.expand(x)
+}
+\arguments{
+  \item{x}{first xml list}
+}
+\value{
+  table
+}
+\description{
+  convert x into a table
+}
+\author{
+  Mike Dietze
+}
+
