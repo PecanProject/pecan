@@ -70,6 +70,17 @@ run.ensemble.analysis <- function(){
 } ### End of function
 #==================================================================================================#
 
+
+#--------------------------------------------------------------------------------------------------#
+##'
+##' Plots an ensemble time-series from PEcAn for the selected target variables
+##'
+##' @name ensemble.ts
+##' @title Plots an ensemble time-series from PEcAn for the selected target variables
+##' @return nothing, generates an ensemble time-series plot
+##'
+##' @author Michael Dietze 
+##'
 ensemble.ts <- function(){
 
   ## SETTINGS
@@ -127,6 +138,7 @@ ensemble.ts <- function(){
   dev.off()
 
 }
+#==================================================================================================#
 
 
 ####################################################################################################

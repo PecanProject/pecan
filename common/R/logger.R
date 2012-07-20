@@ -17,7 +17,9 @@ log.variables <- list("filename"="", "console"=TRUE, "DEBUG"=TRUE, "INFO"=TRUE, 
 ##' @export
 ##' @author Rob Kooper
 ##' @examples
+##' \dontrun{
 ##' log.debug("variable", 5)
+##' }
 log.debug <- function(msg, ...) {
 	log.message("DEBUG", msg, ...)
 }
@@ -31,7 +33,9 @@ log.debug <- function(msg, ...) {
 ##' @export
 ##' @author Rob Kooper
 ##' @examples
+##' \dontrun{
 ##' log.info("PEcAn version 1.2")
+##' }
 log.info <- function(msg, ...) {
 	log.message("INFO", msg, ...)
 }
@@ -45,7 +49,9 @@ log.info <- function(msg, ...) {
 ##' @export
 ##' @author Rob Kooper
 ##' @examples
+##' \dontrun{
 ##' log.warn("detected NA values")
+##' }
 log.warn <- function(msg, ...) {
 	log.message("WARN", msg, ...)
 }
@@ -59,7 +65,9 @@ log.warn <- function(msg, ...) {
 ##' @export
 ##' @author Rob Kooper
 ##' @examples
+##' \dontrun{
 ##' log.error("system did not converge")
+##' }
 log.error <- function(msg, ...) {
 	log.message("ERROR", msg, ...)
 }
@@ -75,7 +83,9 @@ log.error <- function(msg, ...) {
 ##' @param ... any additional text that should be printed.
 ##' @author Rob Kooper
 ##' @examples
+##' \dontrun{
 ##' log.message("DEBUG", "variable", 5)
+##' }
 log.message <- function(level, msg, ...) {
 	if (log.variables[[level]]) {
 		text <- sprintf("%-5s [%s] : %s", level, Sys.time(), paste(msg, ...))
@@ -98,7 +108,9 @@ log.message <- function(level, msg, ...) {
 ##' @export
 ##' @author Rob Kooper
 ##' @examples
+##' \dontrun{
 ##' log.enable("DEBUG", TRUE)
+##' }
 log.enable <- function(level, enable=TRUE) {
 	if (level == "DEBUG") {
 		log.variables$DEBUG <<- enable
@@ -122,7 +134,9 @@ log.enable <- function(level, enable=TRUE) {
 ##' @export
 ##' @author Rob Kooper
 ##' @examples
+##' \dontrun{
 ##' log.output(console=FALSE)
+##' }
 log.output <- function(filename=log.variables$filename, console=log.variables$console) {
 	log.variables$console <<- console
 	log.variables$filename <<- filename

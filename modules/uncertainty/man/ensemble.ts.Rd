@@ -1,0 +1,17 @@
+\name{ensemble.ts}
+\alias{ensemble.ts}
+\title{Plots an ensemble time-series from PEcAn for the selected target variables}
+\usage{
+  ensemble.ts()
+}
+\value{
+  nothing, generates an ensemble time-series plot
+}
+\description{
+  Plots an ensemble time-series from PEcAn for the selected
+  target variables
+}
+\author{
+  Michael Dietze
+}
+

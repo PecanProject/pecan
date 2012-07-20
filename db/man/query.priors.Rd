@@ -26,7 +26,7 @@
 }
 \examples{
 \dontrun{
-query.priors('ebifarm.pavi', c('SLA', 'Vcmax', 'leaf_width'))
+query.priors('ebifarm.pavi', vecpaste('SLA', 'Vcmax', 'leaf_width'))
 }
 }
 

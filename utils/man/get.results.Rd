@@ -2,7 +2,7 @@
 \alias{get.results}
 \title{Generate model output for PEcAn analyses}
 \usage{
-  get.results()
+  get.results(model)
 }
 \description{
   Generate model output for PEcAn analyses
