@@ -136,23 +136,48 @@ ensemble.ts <- function(){
     
   }
 
+  ## temporary check for plots that should be >0
+  nonzero = c("GPP","NPP","TotalResp","AutoResp","HeteroResp","Evap","TVeg")
+  
   ## should probably add an extraction of the time axis from the first ensemble member
 
   ## should probably add extraction of meta-data from netCDF files
   
   ## plot
   fig.out <- settings$pfts$pft$outdir
-  pdf(paste(fig.out,"ensemble.ts.pdf",sep="/"))
+  pdf(paste(fig.out,"ensemble.ts.pdf",sep="/"),width=12,height=9)
   for(j in 1:length(variables)){
     ylim = range(ensemble.ts[[j]],na.rm=TRUE)
+    
+    ### temporary fix to values less than zero that are biologically unreasonable (e.g. GPP)
+    if (variables[j] %in% nonzero){
+      ylim <- c(0,ylim[2])
+    }
+    
     plot(apply(ensemble.ts[[j]],2,mean),ylim=ylim,lwd=2,xlab="time",ylab=variables[j],main=variables[j],
          type="l")
-    CI = apply(ensemble.ts[[j]],2,quantile,c(0.025,0.5,0.975),na.rm=TRUE)
-    for(i in 1:nrow(CI)){
-      lines(CI[i,],col=2,lty=c(2,1,2),lwd=2)
-    }
+    CI = apply(ensemble.ts[[j]],2,quantile,c(0.025,0.5,0.975))
+
+    ### Code to be updated with polygon (below)
+    #for(i in 1:nrow(CI)){
+    #  lines(CI[i,],col=2,lty=c(2,1,2),lwd=c(1.2,1.0,1.2))
+    #}
+    lines(CI[1,],col=2,lty=2,lwd=1.2)
+    #lines(CI[2,],col="dark grey",lty=1,lwd=1.5)
+    lines(CI[3,],col=2,lty=2,lwd=1.2)
+
+    ## generate plot polygon using CIs
+    #dims <- dim(CI)
+    #poly <- 1:dims[2]
+    #polygon(c(poly ,rev(poly)),c(CI[3,], rev(CI[1,])),col="#99CC99",border=NA)
+    ##
+
+    ## plot mean over others again
     lines(apply(ensemble.ts[[j]],2,mean),col="black",lwd=1.5)
-    legend("topleft",legend=c("mean","median","95% CI"),lwd=3,col=c(1,2,2),lty=c(1,1,2))
+    lines(CI[2,],col="dark grey",lty=1,lwd=1.5)
+    ## show legend
+    legend("topleft",legend=c("mean","median","95% CI"),lwd=3,col=c(1,"dark grey",2),lty=c(1,1,2))
+    ## add surrounding box to plot
     box(lwd=2.2)
   }
   
