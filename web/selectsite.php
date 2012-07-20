@@ -176,7 +176,6 @@ while ($row = @mysql_fetch_assoc($result)){
 			 				site.attr("sitename") + "</div>";
 		}
 		sites = sites + "</form>";
-		console.log(sites);
 		$("#map_canvas").html(sites);
 	}
 <?php } else { ?>
