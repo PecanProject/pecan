@@ -70,7 +70,7 @@ run.ensemble.analysis <- function(){
 } ### End of function
 #==================================================================================================#
 
-ensemble.timeseries <- function(){
+ensemble.ts <- function(){
 
   ## SETTINGS
   
@@ -117,14 +117,14 @@ ensemble.timeseries <- function(){
   pdf(paste(outdir,"ensemble.ts.pdf",sep="/"))
   for(j in 1:length(variables)){
     ylim = range(ensemble.ts[[j]])
-    plot(apply(ensemble.ts[[j]],2,mean),ylim=ylim,lwd=2,xlab="time",ylab=variable[j],main=variable[j])
+    plot(apply(ensemble.ts[[j]],2,mean),ylim=ylim,lwd=2,xlab="time",ylab=variables[j],main=variables[j])
     CI = apply(ensemble.ts[[j]],2,quantile,c(0.025,0.5,0.975))
     for(i in 1:nrow(CI)){
       lines(CI[i,],col=2,lty=c(2,1,2),lwd=2)
     }
     legend("topleft",legend=c("mean","median","95% CI"),lwd=3,col=c(1,2,2),lty=c(1,1,2))
   }
-  def.off()
+  dev.off()
 
 }
 
