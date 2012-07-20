@@ -25,7 +25,7 @@ if (isset($_REQUEST['host']) && ($_REQUEST['host'] != "")) {
 		if (preg_match('/^ed/', $model)) {
 			$query .= " AND dbfiles.format_id=12";
 		} else if (preg_match('/^sipnet/', $model)) {
-			$query .= " AND dbfiles.format_id=24";
+			$query .= " AND dbfiles.format_id=26";
 		}
 	}
 }
@@ -46,7 +46,11 @@ while ($row = @mysql_fetch_assoc($result)){
 	$newnode->setAttribute("country", $row['country']);	
 	$newnode->setAttribute("lat", $row['lat']);	
 	$newnode->setAttribute("lon", $row['lon']);
-	$newnode->setAttribute("sitename", $row['sitename']);	
+	if ($row['sitename'] != "") {
+		$newnode->setAttribute("sitename", $row['sitename']);
+	} else {	
+		$newnode->setAttribute("sitename", $row['id'] . " - " . $row['city']);
+	}
 } 
 
 echo $dom->saveXML();

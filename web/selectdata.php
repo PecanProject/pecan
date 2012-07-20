@@ -295,7 +295,7 @@ if ($model["type"] == "ED2") {
                         <select id="climate" name="climate" onChange="validate();">
 <?php
         // get met data
-        $result = mysql_query($query . " AND dbfiles.format_id=24");
+        $result = mysql_query($query . " AND dbfiles.format_id=26");
         if (!$result) {
                 die('Invalid query: ' . mysql_error());
         }
