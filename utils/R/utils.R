@@ -495,7 +495,7 @@ read.ensemble.output <- function(ensemble.size, outdir,
   for(ensemble.id in 1:ensemble.size) {
     run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, 5))#log10(ensemble.size)+1))
     print(run.id)
-      ensemble.output[[ensemble.id]] <- mean(read.output,run.id, outdir, start.year, end.year,variables,model))
+      ensemble.output[[ensemble.id]] <- mean(read.output(srun.id, outdir, start.year, end.year,variables,model))
   }
   return(ensemble.output)
 }
