@@ -70,6 +70,64 @@ run.ensemble.analysis <- function(){
 } ### End of function
 #==================================================================================================#
 
+ensemble.timeseries <- function(){
+
+  ## SETTINGS
+  
+  ensemble.ts <- list()
+  ensemble.size <- as.numeric(settings$ensemble$size)
+  outdir <- settings$outdir
+    start.year <- ifelse(is.null(settings$sensitivity.analysis$start.year),
+                       NA, settings$sensitivity.analysis$start.year)
+  end.year   <- ifelse(is.null(settings$sensitivity.analysis$end.year),
+                       NA, settings$sensitivity.analysis$end.year)
+
+  variables = "NPP"
+  if("sensitivity.analysis" %in% names(settings)){
+    if("variable" %in% names(settings$sensitivity.analysis)){
+      var = which(names(settings$sensitivity.analysis) == 'variable')
+      for(i in 1:length(var)){
+        variables[i] = settings$sensitivity.analysis[[var[i]]]
+      }
+    }
+  }
+  print(variables)
+
+  ## read ensemble output
+  for(i in 1:ensemble.size){
+    run.id <- get.run.id('ENS', left.pad.zeros(i, 5))#log10(ensemble.size)+1))
+    print(run.id)
+    newrun <- read.output(run.id,outdir,start.year,end.year,variables,model)
+
+    if(i == 1){
+      for(j in 1:length(variables)){
+        ensemble.ts[[j]] <- matrix(NA,ensemble.size,length(newrun[[j]]))
+      }
+    }
+
+    ensemble.ts[[j]][i,] <- newrun[[j]]
+    
+  }
+
+  ## should probably add an extraction of the time axis from the first ensemble member
+
+  ## should probably add extraction of meta-data from netCDF files
+  
+  ## plot
+  pdf(paste(outdir,"ensemble.ts.pdf",sep="/"))
+  for(j in 1:length(variables)){
+    ylim = range(ensemble.ts[[j]])
+    plot(apply(ensemble.ts[[j]],2,mean),ylim=ylim,lwd=2,xlab="time",ylab=variable[j],main=variable[j])
+    CI = apply(ensemble.ts[[j]],2,quantile,c(0.025,0.5,0.975))
+    for(i in 1:nrow(CI)){
+      lines(CI[i,],col=2,lty=c(2,1,2),lwd=2)
+    }
+    legend("topleft",legend=c("mean","median","95% CI"),lwd=3,col=c(1,2,2),lty=c(1,1,2))
+  }
+  def.off()
+
+}
+
 
 ####################################################################################################
 ### EOF.  End of R script file.        			
