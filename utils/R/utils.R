@@ -485,31 +485,17 @@ fit.dist <- function(trait.data, trait = colnames(trait.data),
 ##' @param pft.name 
 ##' @param start.year 
 ##' @param end.year 
-##' @param read.output model specific read output function, \cite{\link{read.output.ed}} by default.
+##' @param variable
+##' @param model
 #--------------------------------------------------------------------------------------------------#
 read.ensemble.output <- function(ensemble.size, outdir, 
-                                 start.year, end.year,variables, model){
-
-  readfcn = paste("read.output",model,sep=".")
-  if(!exists(readfcn)){
-    exit(readfcn)
-  }
+                                 start.year, end.year,variable, model){
 
   ensemble.output <- list()
   for(ensemble.id in 1:ensemble.size) {
     run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, 5))#log10(ensemble.size)+1))
     print(run.id)
-    ### !!! Need to generalize this code to work for any model without having to hard code the output suffix
-    files.ed <- list.files(path=paste(settings$outdir,run.id,sep="/"),pattern=".h5",recursive=TRUE,full.names=TRUE)  # ED2 output
-    files.sipnet <- list.files(path=paste(settings$outdir,run.id,sep="/"),pattern=".out",recursive=TRUE,full.names=TRUE)  # SIPNET output
-    files <- c(files.ed,files.sipnet)
-    ### !!!
-    #if(any(grep('h5',dir()[grep(run.id, dir())]))) {
-    if(length(files)>0) {
-      ensemble.output[[ensemble.id]] <- do.call(readfcn,list(run.id, outdir, start.year, end.year,variables))
-    } else {
-      ensemble.output[[ensemble.id]] <- NA
-    }
+      ensemble.output[[ensemble.id]] <- mean(read.output,run.id, outdir, start.year, end.year,variables,model))
   }
   return(ensemble.output)
 }
@@ -533,21 +519,17 @@ read.ensemble.output <- function(ensemble.size, outdir,
 #--------------------------------------------------------------------------------------------------#
 read.sa.output <- function(traits, quantiles, outdir, pft.name='', 
                            start.year, end.year, variables, model){
-  readfcn = paste("read.output",model,sep=".")
-  if(!exists(readfcn)){
-    exit(readfcn)
-  }
-    
-  sa.output <- data.frame()
+
+sa.output <- data.frame()
   for(trait in traits){
     for(quantile in quantiles){
       run.id <- get.run.id('SA', round(quantile,3), trait=trait, pft.name=pft.name)
       print(run.id)
       sa.output[as.character(round(quantile*100,3)), 
-                trait] <- do.call(readfcn,list(run.id, outdir, start.year, end.year,variables))
+                trait] <- mean(read.output(run.id, outdir, start.year, end.year,variables,model))
     }
   }
-  sa.output['50',] <- do.call(readfcn,list(get.run.id('SA', 'median'), outdir, start.year, end.year,variables))
+  sa.output['50',] <- mean(read.output(get.run.id('SA', 'median'), outdir, start.year, end.year,variables,model))
   sa.output <- sa.output[order(as.numeric(rownames(sa.output))),]
   return(sa.output)
 }
