@@ -495,7 +495,7 @@ read.ensemble.output <- function(ensemble.size, outdir,
   for(ensemble.id in 1:ensemble.size) {
     run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, 5))#log10(ensemble.size)+1))
     print(run.id)
-      ensemble.output[[ensemble.id]] <- mean(read.output(srun.id, outdir, start.year, end.year,variables,model))
+      ensemble.output[[ensemble.id]] <- sapply(read.output(srun.id, outdir, start.year, end.year,variables,model),mean)
   }
   return(ensemble.output)
 }
@@ -526,10 +526,10 @@ sa.output <- data.frame()
       run.id <- get.run.id('SA', round(quantile,3), trait=trait, pft.name=pft.name)
       print(run.id)
       sa.output[as.character(round(quantile*100,3)), 
-                trait] <- mean(read.output(run.id, outdir, start.year, end.year,variables,model))
+                trait] <- sapply(read.output(run.id, outdir, start.year, end.year,variables,model),mean)
     }
   }
-  sa.output['50',] <- mean(read.output(get.run.id('SA', 'median'), outdir, start.year, end.year,variables,model))
+  sa.output['50',] <- sapply(read.output(get.run.id('SA', 'median'), outdir, start.year, end.year,variables,model),mean)
   sa.output <- sa.output[order(as.numeric(rownames(sa.output))),]
   return(sa.output)
 }

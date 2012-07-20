@@ -66,23 +66,25 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,variables="GP
 
       ## load files
       yrs <- first:max(first,last)
-      data <- matrix(NA,length(yrs),length(variables))
+      data <- list()
       for(i in 1:length(yrs)){
         nc <- open.ncdf(ncfiles[yrs[i]])
         for(j in 1:length(variables)){
           if(variables[j] %in% names(nc$var)){
-            data[i,j] <- mean(get.var.ncdf(nc,variables[j]))
+            newdata <- get.var.ncdf(nc,variables[j])
             if(variables[j] %in% c(cflux,wflux)){
               ## Convert output to annual values.  Mult by seconds in a 365d year and convert per ha
-              data[i,j] <- data[i,j]*31536000*10000 # kgC/ha
+              newdata <- newdata*31536000*10000 # kgC/ha
             }
+            data[[j]] = ifelse(i == 1,newdata,c(data[[j]],newdata))
           } else {
             warning(paste(variables[j],"missing in",ncfiles[yrs[i]]))
           }
         }
         close.ncdf(nc)
       }
-      return(apply(data,2,mean))
+      names(data) <- variables
+      return(data)
     } else {
       stop("no output files present")
     }
