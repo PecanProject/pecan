@@ -177,6 +177,7 @@ sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
 ##' @param min.quantile threshold quantile for testing lower bound on variable
 ##' @return either x or a vector with values < 0 converted to zero
 ##' @author David LeBauer
+##' @export
 ##' @examples
 ##' set.seed(0)
 ##' x <- c(rgamma(998,1,1), rnorm(10)) 

@@ -3,7 +3,7 @@
 \title{Sensitivity Analysis}
 \usage{
   sensitivity.analysis(trait.samples, sa.samples,
-  sa.output, outdir)
+    sa.output, outdir)
 }
 \arguments{
   \item{trait.samples}{list of vectors, one per trait,
