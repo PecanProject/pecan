@@ -10,4 +10,4 @@ test_that("spline.truncate truncates a vector at zero iff only values < min.quan
   ## test that it does not truncate a vector with < 0 at  min.quantile
   x.tt <- spline.truncate(x, min.quantile =  sum(x<0)/length(x))
   expect_true(min(x.tt) < 0)
-}
+})
