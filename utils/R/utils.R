@@ -489,13 +489,13 @@ fit.dist <- function(trait.data, trait = colnames(trait.data),
 ##' @param model
 #--------------------------------------------------------------------------------------------------#
 read.ensemble.output <- function(ensemble.size, outdir, 
-                                 start.year, end.year,variable, model){
+                                 start.year, end.year,variables, model){
 
   ensemble.output <- list()
   for(ensemble.id in 1:ensemble.size) {
     run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, 5))#log10(ensemble.size)+1))
     print(run.id)
-      ensemble.output[[ensemble.id]] <- sapply(read.output(srun.id, outdir, start.year, end.year,variables,model),mean)
+      ensemble.output[[ensemble.id]] <- sapply(read.output(run.id, outdir, start.year, end.year,variables,model),mean)
   }
   return(ensemble.output)
 }
