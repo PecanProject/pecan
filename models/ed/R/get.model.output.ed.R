@@ -100,7 +100,7 @@ get.model.output.ED2 <- function(){
     ## TODO: take out functions read.output.file.ed & read.output.ed from write.configs.ed &
     ## put into a new file specific for reading ED output
     dump(c("get.run.id","abbreviate.run.id.ED","left.pad.zeros","read.ensemble.output",
-           "read.sa.output","read.output.file.ed","read.output.ED2", "get.results"),
+           "read.sa.output","read.output", "get.results"),
          file=paste(settings$outdir,"PEcAn.functions.R",sep=""))
     
     ### Is the previous necessary for localhost?  These functions should be availible within R
@@ -115,7 +115,7 @@ get.model.output.ED2 <- function(){
     
     ### Make a copy of required functions and place in file PEcAn.functions.R
     dump(c("get.run.id","abbreviate.run.id.ED","left.pad.zeros","read.ensemble.output",
-           "read.sa.output","read.output.file.ed","read.output.ED2","get.results"),
+           "read.sa.output","read.output","get.results"),
          file=paste(settings$outdir,"PEcAn.functions.R",sep=""))
     
     ### Add execution of get.results to the end of the PEcAn.functions.R file
