@@ -7,6 +7,13 @@
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
  */
+# offline mode?
+if (isset($_REQUEST['offline'])) {
+	$offline=true;
+} else {
+	$offline=false;
+}
+
 // runid
 if (!isset($_REQUEST['workflowid'])) {
   die("Need a workflowid.");
@@ -128,10 +135,8 @@ function createOption($file) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 <link rel="stylesheet" type="text/css" href="sites.css" />
-<script type="text/javascript" src="http://www.google.com/jsapi"></script>
+<script type="text/javascript" src="jquery-1.7.2.min.js"></script>
 <script type="text/javascript">
-	google.load("jquery", "1.3.2");
-
 	function resize() {
     	$("#stylized").height($(window).height() - 5);
     	$("#output").height($(window).height() - 1);
@@ -233,9 +238,15 @@ function createOption($file) {
 		</form>
 		
 		<form id="formprev" method="POST" action="history.php">
+<?php if ($offline) { ?>
+			<input name="offline" type="hidden" value="offline">
+<?php } ?>
 		</form>
 		
 		<form id="formnext" method="POST" action="selectsite.php">
+<?php if ($offline) { ?>
+			<input name="offline" type="hidden" value="offline">
+<?php } ?>
 		<p></p>
 		<span id="error" class="small">&nbsp;</span>
 		<input id="prev" type="button" value="History" onclick="prevStep();" />
