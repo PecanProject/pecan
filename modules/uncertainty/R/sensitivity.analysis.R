@@ -125,7 +125,7 @@ sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
             sa.output[[trait]]))
   
   spline.estimates <- lapply(traits, function(trait)
-        zero.truncate(sa.splines[[trait]](trait.samples[[trait]])))
+        spline.truncate(sa.splines[[trait]](trait.samples[[trait]])))
   names(spline.estimates) <- traits
   sensitivities <- sapply(traits, function(trait)
         get.sensitivity(trait.samples[[trait]],
@@ -164,6 +164,30 @@ sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
 }
 #==================================================================================================#
 
+##' Truncate spline at zero if..
+##'
+##' Truncate spline at zero if P[x<0] < pnorm(-3)
+##' pnorm(-3) chosen as default value for min quantile
+##' because this is the default low end of range for the
+##' sensitivity analysis.
+##' This parameter could be determined based on minimum value in
+##' settings$sensitivity.analysis$quantiles
+##' @title Truncate spline 
+##' @param x vector
+##' @param min.quantile threshold quantile for testing lower bound on variable
+##' @return either x or a vector with values < 0 converted to zero
+##' @author David LeBauer
+##' @examples
+##' set.seed(0)
+##' x <- c(rgamma(998,1,1), rnorm(10)) 
+##' min(x) # -0.5238
+##' min(spline.truncate(x))
+spline.truncate <- function(x, min.quantile = pnorm(-3)){
+  if(quantile(x, min.quantile) > 0){
+     x <- zero.truncate(x)
+   }
+  return(x)
+}
 
 ####################################################################################################
 ### EOF.  End of R script file.              
