@@ -76,7 +76,11 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,variables="GP
               ## Convert output to annual values.  Mult by seconds in a 365d year and convert per ha
               newdata <- newdata*31536000*10000 # kgC/ha
             }
-            data[[j]] = ifelse(i == 1,newdata,c(data[[j]],newdata))
+            if(i == 1){
+              data[[j]] = newdata
+            }else{
+              data[[j]] = c(data[[j]],newdata)
+            }
           } else {
             warning(paste(variables[j],"missing in",ncfiles[yrs[i]]))
           }
