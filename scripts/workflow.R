@@ -15,8 +15,7 @@ require(PEcAn.all)
 settings <- read.settings()
 #--------------------------------------------------------------------------------------------------#
 
-model = "ED2"
-if("model" %in% names(settings)){ model = settings$model$name}
+model = ifelse("model" %in% names(settings),settings$model$name,"ED2")
 
 
 #---------------- Run PEcAn workflow. -------------------------------------------------------------#
