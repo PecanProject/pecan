@@ -12,10 +12,11 @@
 ##' @name run.ensemble.analysis
 ##' @title run ensemble.analysis
 ##' @return nothing, creates ensemble plots as ensemble.analysis.pdf
+##' @param plot.timeseries if TRUE plots a modeled timeseries of target variable(s) with CIs
 ##' @export
 ##' @author David LeBauer, Shawn Serbin
 ##'
-run.ensemble.analysis <- function(){
+run.ensemble.analysis <- function(plot.timeseries=NA){
  
   if(!exists("settings")){ # temporary hack
                         # waiting on http://stackoverflow.com/q/11005478/199217
@@ -29,7 +30,7 @@ run.ensemble.analysis <- function(){
   wflux = c("Evap","TVeg","Qs","Qsb","Rainf") #kgH20 m-2 s-1
 
   variables = settings$sensitivity.analysis$variable #grab target variable(s) from pecan.xml
-  print(paste("---- Variable: ",variables,sep=""))
+  print(paste("----- Variable: ",variables,sep=""))
 
   ### Temp hack
   if (variables %in% cflux){
@@ -67,6 +68,16 @@ run.ensemble.analysis <- function(){
 
   dev.off()
   
+  print("----- Done!")
+  print(" ")
+  print("-----------------------------------------------")
+  print(" ")
+  print(" ")
+  ### Plot ensemble time-series
+  if (!is.na(plot.timeseries)){
+    ensemble.ts()
+  }
+
 } ### End of function
 #==================================================================================================#
 
@@ -79,16 +90,20 @@ run.ensemble.analysis <- function(){
 ##' @title Plots an ensemble time-series from PEcAn for the selected target variables
 ##' @return nothing, generates an ensemble time-series plot
 ##'
+##' @export
+##'
 ##' @author Michael Dietze 
 ##'
 ensemble.ts <- function(){
 
+  print("------ Generating ensemble time-series plot ------")
+  
   ## SETTINGS
   
   ensemble.ts <- list()
   ensemble.size <- as.numeric(settings$ensemble$size)
   outdir <- settings$outdir
-    start.year <- ifelse(is.null(settings$sensitivity.analysis$start.year),
+  start.year <- ifelse(is.null(settings$sensitivity.analysis$start.year),
                        NA, settings$sensitivity.analysis$start.year)
   end.year   <- ifelse(is.null(settings$sensitivity.analysis$end.year),
                        NA, settings$sensitivity.analysis$end.year)
@@ -102,8 +117,9 @@ ensemble.ts <- function(){
       }
     }
   }
-  print(variables)
-
+  print(paste("----- Variable: ",variables,sep=""))
+  print("----- Reading ensemble output ------")
+  Sys.sleep(1)
   ## read ensemble output
   for(i in 1:ensemble.size){
     run.id <- get.run.id('ENS', left.pad.zeros(i, 5))#log10(ensemble.size)+1))
@@ -125,18 +141,22 @@ ensemble.ts <- function(){
   ## should probably add extraction of meta-data from netCDF files
   
   ## plot
-  pdf(paste(outdir,"ensemble.ts.pdf",sep="/"))
+  fig.out <- settings$pfts$pft$outdir
+  pdf(paste(fig.out,"ensemble.ts.pdf",sep="/"))
   for(j in 1:length(variables)){
-    ylim = range(ensemble.ts[[j]])
-    plot(apply(ensemble.ts[[j]],2,mean),ylim=ylim,lwd=2,xlab="time",ylab=variables[j],main=variables[j])
-    CI = apply(ensemble.ts[[j]],2,quantile,c(0.025,0.5,0.975))
+    ylim = range(ensemble.ts[[j]],na.rm=TRUE)
+    plot(apply(ensemble.ts[[j]],2,mean),ylim=ylim,lwd=2,xlab="time",ylab=variables[j],main=variables[j],
+         type="l")
+    CI = apply(ensemble.ts[[j]],2,quantile,c(0.025,0.5,0.975),na.rm=TRUE)
     for(i in 1:nrow(CI)){
       lines(CI[i,],col=2,lty=c(2,1,2),lwd=2)
     }
+    lines(apply(ensemble.ts[[j]],2,mean),col="black",lwd=1.5)
     legend("topleft",legend=c("mean","median","95% CI"),lwd=3,col=c(1,2,2),lty=c(1,1,2))
+    box(lwd=2.2)
   }
+  
   dev.off()
-
 }
 #==================================================================================================#
 
