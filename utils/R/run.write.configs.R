@@ -170,7 +170,7 @@ run.write.configs <- function(model){
   
 print("  ######################## Finish up runs ########################")
   ### Save output from SA/Ensemble runs
-  save(ensemble.samples, trait.samples, sa.samples, settings,
+  save(ensemble.samples, trait.samples, sa.samples,
        file = paste(main.outdir, 'samples.Rdata', sep=''))
   
   ### Make outdirectory, send samples to outdir

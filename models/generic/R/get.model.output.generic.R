@@ -6,30 +6,6 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-#--------------------------------------------------------------------------------------------------#
-##' Reads the output of a single model run
-##'
-##' @title Read output
-##' @name read.output.generic
-##' @param run.id the id distiguishing the model run
-##' @param outdir the directory that the model's output was sent to
-##' @param start.year 
-##' @param end.year
-##' @return vector of output variable
-##' @export
-read.output.generic <- function(run.id, outdir, start.year=NA, end.year=NA){
-  print(run.id)
-  file.names <- dir(outdir, pattern=run.id, full.names=FALSE)
-  if(length(file.names) > 0) {
-
-### model-specific code to parse each file 
-    
-  }
-  return(result)
-}
-#==================================================================================================#
-
-
 
 #--------------------------------------------------------------------------------------------------#
 ##' Function to retrieve model output from local or remote server
