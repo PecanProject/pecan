@@ -275,7 +275,8 @@ plot.sensitivities <- function(sensitivity.plot.inputs,
   }
   traits <- names(sa.samples)
 
-  y.range <- c(0, max(mapply(do.call, sa.splines, lapply(sa.samples, list)), na.rm = TRUE))
+#  y.range <- c(0, max(mapply(do.call, sa.splines, lapply(sa.samples, list)), na.rm = TRUE))
+  y.range <- range(mapply(do.call, sa.splines, lapply(sa.samples, list)), na.rm = TRUE)
 
   sensitivity.plots <- list()
   for(trait in traits) {
