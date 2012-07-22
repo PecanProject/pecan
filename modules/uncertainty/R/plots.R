@@ -68,7 +68,7 @@ plot.variance.decomposition <- function(plot.inputs, outdir,
   ## size of x axis tick set by xend = ...
   ## vertical location of axis numbers set in base.plot using vjust
   
-  base.plot <- ggplot(plot.data) +
+  base.plot <- ggplot() +
     coord_flip() +
       theme_bw() +
         opts(axis.line.y = theme_blank(),
@@ -85,17 +85,17 @@ plot.variance.decomposition <- function(plot.inputs, outdir,
     .cv.plot <-  base.plot +
       geom_pointrange(aes(x = points, y = prior.coef.vars,
                           ymin = 0, ymax = prior.coef.vars),
-                      size = 1.25, color = 'grey')
+                      size = 1.25, color = 'grey', data=plot.data)
     
     .el.plot <- base.plot +
       geom_pointrange(aes(x = points, prior.elasticities,
                           ymin = 0, ymax = prior.elasticities),
-                      size = 1.25, color = 'grey') 
+                      size = 1.25, color = 'grey', data=plot.data) 
 
     .pv.plot <- base.plot +
       geom_pointrange(aes(x = points, y = prior.variances,
                           ymin = 0, ymax = prior.variances),
-                      size = 1.25, color = 'grey') 
+                      size = 1.25, color = 'grey', data=plot.data) 
   } else {
     .cv.plot <- base.plot + scale_y_continuous(breaks = cv.xticks)
     .el.plot <- base.plot + scale_y_continuous(breaks = el.xrange)
@@ -109,7 +109,7 @@ plot.variance.decomposition <- function(plot.inputs, outdir,
          axis.text.x = theme_text(colour='white'),
          axis.line.x = theme_blank()) +
            geom_text(aes(y = 1, x = points,
-                         label=trait.labels, hjust = 1),
+                         label=trait.labels, hjust = 1), data=plot.data, 
                      size = fontsize$axis/3) +
                        scale_y_continuous( breaks = c(0,0), limits = c(0,1)) +
                          ##  Add Invisible Axes to resize like other plots
@@ -126,16 +126,16 @@ plot.variance.decomposition <- function(plot.inputs, outdir,
     opts(title = 'CV (%)', plot.title = theme_text(size = fontsize$title)) +
       scale_y_continuous(breaks = cv.xticks, limits = range(cv.xticks)) +
         geom_pointrange(aes(x = points, y = coef.vars, ymin = 0, ymax = coef.vars),
-                        size = 1.25) + 
+                        size = 1.25, data=plot.data) + 
                           ##  Add Axes
                           geom_segment(aes(x = c(0,0), y = c(0,0),
                                            yend = c(0, max(cv.xticks)),
-                                           xend = c(length(trait.labels), 0)))  + 
+                                           xend = c(length(trait.labels), 0)), data=plot.data)  + 
                                              ## Add Ticks
                                              geom_segment(aes(x = 0,
                                                               y = cv.xticks,
                                                               xend = -0.1,
-                                                              yend = cv.xticks))
+                                                              yend = cv.xticks), data=plot.data)
 
 
   if (diff(range(el.xticks)) < 4) el.xticks <- c(-1,0,1)
@@ -143,32 +143,32 @@ plot.variance.decomposition <- function(plot.inputs, outdir,
     opts(title = 'Elasticity', plot.title = theme_text(size = fontsize$title)) +
       scale_y_continuous(breaks = el.xticks, limits = range(el.xrange)) +
         geom_pointrange(aes(x = points, y = elasticities, ymin = 0, ymax = elasticities),
-                        size = 1.25) +
+                        size = 1.25, data=plot.data) +
                           ##  Add Axes
                           geom_segment(aes(x = c(0,0), y = c(0, min(el.xrange)),
                                            yend = c(0, max(el.xrange)),
-                                           xend = c(length(trait.labels), 0)))  +
+                                           xend = c(length(trait.labels), 0)), data=plot.data)  +
                                              ## Add Ticks
                                              geom_segment(aes(x = 0,
                                                               y = el.xticks,
                                                               xend = -0.1,
-                                                              yend = el.xticks)) 
+                                                              yend = el.xticks), data=plot.data) 
 
   pv.plot <- .pv.plot + 
     opts(title = paste(variance.prefix, 'Variance (Mg/ha)'),
          plot.title = theme_text(size = fontsize$title)) +
            scale_y_continuous(breaks = pv.xticks, limits = range(pv.xticks)) +
              geom_pointrange(aes(x = points, variances,
-                                 ymin = 0, ymax = variances), size = 1.25) +
+                                 ymin = 0, ymax = variances), size = 1.25, data=plot.data) +
                                    ##  Add Axes
                                    geom_segment(aes(x = c(0,0), y = c(0,0),
                                                     yend = c(0, max(pv.xticks)),
-                                                    xend = c(length(trait.labels), 0)))  + 
+                                                    xend = c(length(trait.labels), 0)), data=plot.data)  + 
                                                       ## Add Ticks
                                                       geom_segment(aes(x = 0,
                                                                        y = pv.xticks,
                                                                        xend = -0.1,
-                                                                       yend = pv.xticks))
+                                                                       yend = pv.xticks), data=plot.data)
   
   
   return(list(trait.plot = trait.plot, cv.plot = cv.plot, el.plot = el.plot, pv.plot = pv.plot))
