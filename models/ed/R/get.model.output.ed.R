@@ -120,7 +120,7 @@ get.model.output.ED2 <- function(){
     
     ### Add execution of get.results to the end of the PEcAn.functions.R file
     ### This will execute all the code needed to extract output on remote host
-    cat("get.results()",file=paste(settings$outdir,"PEcAn.functions.R",sep=""),
+    cat(paste("get.results(",model,")",sep=""),file=paste(settings$outdir,"PEcAn.functions.R",sep=""),
         append=TRUE)
 
     ### Copy required PEcAn.functions.R to remote host
