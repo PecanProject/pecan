@@ -22,7 +22,7 @@
   \item{model}{ecosystem model run}
 }
 \value{
-  a list of ensemble output
+  a list of ensemble model output
 }
 \description{
   Reads output from model ensemble
