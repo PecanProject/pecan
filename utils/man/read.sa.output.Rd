@@ -6,17 +6,23 @@
     start.year, end.year, variables, model)
 }
 \arguments{
-  \item{traits}{}
+  \item{traits}{model parameters included in the
+  sensitivity analysis}
 
-  \item{quantiles}{}
+  \item{quantiles}{quantiles selected for sensitivity
+  analysis}
 
-  \item{outdir}{}
+  \item{outdir}{directory with model output to use in
+  sensitivity analysis}
 
-  \item{pft.name}{}
+  \item{pft.name}{name of PFT used in sensitivity analysis
+  (Optional)}
 
-  \item{start.year}{}
+  \item{start.year}{first year to include in sensitivity
+  analysis}
 
-  \item{end.year}{}
+  \item{end.year}{last year to include in sensitivity
+  analysis}
 
   \item{read.output}{model specific read.output function}
 }
