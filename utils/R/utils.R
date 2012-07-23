@@ -479,7 +479,7 @@ fit.dist <- function(trait.data, trait = colnames(trait.data),
 ##'
 ##' Reads output for an ensemble of length specified by \code{ensemble.size} and bounded by \code{start.year} and \code{end.year}
 ##' @title Read ensemble output
-##' @return a list of ensemble output 
+##' @return a list of ensemble model output 
 ##' @param ensemble.size the number of ensemble members run
 ##' @param outdir directory with model output to use in ensemble analysis
 ##' @param start.year first year to include in ensemble analysis

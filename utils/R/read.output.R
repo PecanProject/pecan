@@ -98,15 +98,15 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,variables="GP
 }
 #==================================================================================================#
 
-
+#### BELOW IS DEPRECIATED
 #--------------------------------------------------------------------------------------------------#
-##' Returns list of ensemble output
-##'
-##' @name read.ensemble.output
-##' @title Read Ensemble Output
-##' @return list of ensemble output 
-##' @export
-##'
+# Returns list of ensemble output
+#
+# @name read.ensemble.output
+# @title Read Ensemble Output
+# @return list of ensemble output 
+# @export
+#
 
 ### THIS FUNCTION IS DEFINED TWICE (also in utils.R), this is NOT the one that's called
 
@@ -128,14 +128,14 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,variables="GP
 
 
 #--------------------------------------------------------------------------------------------------#
-##' Read output from sensitivity runs
-##' 
-##' @name read.sa.output
-##' @title Read SA output
-##' @return dataframe with one col per quantile analysed and one row per trait,
-##'  each cell is a list of model output over time
-##' @export
-##'
+# Read output from sensitivity runs
+# 
+# @name read.sa.output
+# @title Read SA output
+# @return dataframe with one col per quantile analysed and one row per trait,
+#  each cell is a list of model output over time
+# @export
+#
 
 ### THIS FUNCTION IS DEFINED TWICE (also in utils.R), this is NOT the one that's called
 
