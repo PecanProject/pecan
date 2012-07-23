@@ -6,19 +6,20 @@
     end.year, variables, model)
 }
 \arguments{
-  \item{ensemble.size}{}
+  \item{ensemble.size}{the number of ensemble members run}
 
-  \item{outdir}{}
+  \item{outdir}{directory with model output to use in
+  ensemble analysis}
 
-  \item{pft.name}{}
+  \item{start.year}{first year to include in ensemble
+  analysis}
 
-  \item{start.year}{}
+  \item{end.year}{last year to include in ensemble
+  analysis}
 
-  \item{end.year}{}
+  \item{variables}{targe variables for ensemble analysis}
 
-  \item{variable}{}
-
-  \item{model}{}
+  \item{model}{ecosystem model run}
 }
 \value{
   a list of ensemble output

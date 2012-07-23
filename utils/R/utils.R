@@ -480,13 +480,13 @@ fit.dist <- function(trait.data, trait = colnames(trait.data),
 ##' Reads output for an ensemble of length specified by \code{ensemble.size} and bounded by \code{start.year} and \code{end.year}
 ##' @title Read ensemble output
 ##' @return a list of ensemble output 
-##' @param ensemble.size 
-##' @param outdir 
-##' @param pft.name 
-##' @param start.year 
-##' @param end.year 
-##' @param variable
-##' @param model
+##' @param ensemble.size the number of ensemble members run
+##' @param outdir directory with model output to use in ensemble analysis
+##' @param start.year first year to include in ensemble analysis
+##' @param end.year last year to include in ensemble analysis
+##' @param variables targe variables for ensemble analysis
+##' @param model ecosystem model run
+##' @export
 #--------------------------------------------------------------------------------------------------#
 read.ensemble.output <- function(ensemble.size, outdir, 
                                  start.year, end.year,variables, model){
@@ -509,13 +509,14 @@ read.ensemble.output <- function(ensemble.size, outdir,
 ##' @title Read Sensitivity Analysis output 
 ##' @return dataframe with one col per quantile analysed and one row per trait,
 ##'  each cell is a list of AGB over time
-##' @param traits 
-##' @param quantiles 
-##' @param outdir 
-##' @param pft.name 
-##' @param start.year 
-##' @param end.year 
+##' @param traits model parameters included in the sensitivity analysis
+##' @param quantiles quantiles selected for sensitivity analysis
+##' @param outdir directory with model output to use in sensitivity analysis
+##' @param pft.name name of PFT used in sensitivity analysis (Optional)
+##' @param start.year first year to include in sensitivity analysis 
+##' @param end.year last year to include in sensitivity analysis
 ##' @param read.output model specific read.output function
+##' @export
 #--------------------------------------------------------------------------------------------------#
 read.sa.output <- function(traits, quantiles, outdir, pft.name='', 
                            start.year, end.year, variables, model){
