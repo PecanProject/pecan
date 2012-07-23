@@ -16,7 +16,8 @@
 ##'
 get.results <- function(model){
 
-  variables = "GPP"
+  variables <- "GPP"
+  model <- settings$model$name
   
   ### OLD CODE, SLIGHTYL MODIFIED, THAT NEEDS TO BE UPDATED. previously names read.output.ed and was in the 
   ### scripts folder.  SPS
