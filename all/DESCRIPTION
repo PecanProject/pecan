@@ -22,9 +22,11 @@ Depends:
     PEcAn.MA,
     PEcAn.utils,
     PEcAn.uncertainty,
-    PEcAn.data.land
+    PEcAn.data.land,
+    PEcAn.assim.batch,
+    PEcAn.assim.sequential
 License: FreeBSD + file LICENSE
-Copyright: Energy Biosciences Institute, Authors
+Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Collate:
