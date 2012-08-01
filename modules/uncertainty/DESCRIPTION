@@ -23,7 +23,7 @@ Depends:
 Suggests:
     testthat
 License: FreeBSD + file LICENSE
-Copyright: Energy Biosciences Institute, Authors
+Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Collate:
@@ -31,4 +31,4 @@ Collate:
     'run.sensitivity.analysis.R'
     'plots.R'
     'run.ensemble.analysis.R'
-    'plot.flux.uncertainty.R'
+    'flux.uncertainty.R'

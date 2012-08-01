@@ -14,62 +14,89 @@ get.change <- function(measurement){
   return(measurement[even] - measurement[odd])
 }
 
-plot.flux.uncertainty <- function(measurement, QC=0, flags=TRUE, bin.num=10, transform=identity, ...){
+
+## measurement = flux time-series
+## QC = quality control flag time series (0 = best)
+## flags = additional flags on flux filtering of PAIRS (length = 1/2 that of the time series, TRUE = use).
+## bin.num = number of bins (default = 10)
+## transform = transformation of magnitude (default = identity)
+## minBin = minimum number of points allowed in a bin
+flux.uncertainty <- function(measurement, QC=0, flags=TRUE, bin.num=10, transform=identity, minBin=5,...){
+  ## calcuate paired differences between points
   change <- get.change(measurement)
   
+  ## convert gaps to NA
   gaps <- measurement %in% c(-6999, -9999)
           #| quality > 0
   measurement[gaps] <- NA
 
-#  beta <- mean(abs(change),na.rm=TRUE)
-#  sigma <- sqrt(2) * beta
-  
+  ## combine all indicators
   even <- seq(measurement) %% 2 == 0
   odd <- seq(measurement) %% 2 == 1
   Q2  <- QC[even]==0 & QC[odd]==0 & flags & !is.na(measurement[even]) & !is.na(measurement[odd])
-  
+
+  ## calulate error and flux magnitude for each pair of points
   indErr <- abs(change[Q2]) / sqrt(2)
   magnitude <- measurement[even][Q2]
 
+  ## calculate bins
   bins <- seq(from=min(magnitude, na.rm=TRUE), 
               to=max(magnitude, na.rm=TRUE), 
               length.out = bin.num)
+
+  ## calculate binned mean, error, bias, and sample size
   magBin <- c()
   errBin <- c()
-  for(k in 1:length(bins)-1){
+  biasBin <- c()
+  nBin <- c()
+  for(k in 1:(length(bins)-1)){
     use <- magnitude >= bins[k] & magnitude < bins[k+1]
-    if(length(magnitude[use]) > 5 ){ ## && sum(!is.na(change[use])) > 50) {
-      magBin[k] <- mean(transform(magnitude[use]), na.rm=TRUE)
+    nBin[k] <- sum(use,na.rm=TRUE)    
+    magBin[k] <- mean(transform(magnitude[use]), na.rm=TRUE)
+
+    if(nBin[k] > minBin ){ ## && sum(!is.na(change[use])) > 50) {
       errBin[k] <- sd(indErr[use], na.rm=TRUE)
+      biasBin[k] <- mean(indErr[use],na.rm=TRUE)
       print(paste(length(magnitude[use]), sum(!is.na(change[use])), magBin[k], errBin[k]))
     }
-    else { 
-      magBin[k] <- NA
+    else {
+      if(nBin[k] == 0) magBin[k] <- NA
       errBin[k] <- NA
+      biasBin[k] <- NA
       print(paste(length(magnitude[use]), sum(!is.na(change[use]))))
     }
   }
-  plot(magBin, errBin, ...)
+
+  ## separate fluxes into positive, negative, and zero bins
   zero <- diff(sign(bins)) > 0
   pos <- magBin > 0  & !zero
   neg <- magBin < 0 & !zero
+
+  ## subtract off zero bin, fit regression to positive and negative components
+  ## would be better to fit a two line model with a common intercept, but this
+  ## is quicker to implement for the time being
   E2 = errBin - errBin[zero]
   mp <- lm(E2[pos] ~ magBin[pos]-1)
   mn <- lm(E2[neg] ~ magBin[neg]-1)
   intercept <- errBin[zero]
   slopeP <- mp$coefficients[1]
   slopeN <- mn$coefficients[1]
-  abline(intercept,slopeP)
-  abline(intercept,slopeN)
-
-
-  legend('bottomleft', 
-         legend=c('intercept', intercept,
-                  'slopeP',     slopeP,
-                   'slopeN', slopeN))
-  return(list(mag=magBin, err=errBin,intercept,slopeP,slopeN))
+  
+  return(list(mag=magBin, err=errBin,bias=biasBin,n=nBin,intercept=intercept,slopeP=slopeP,slopeN=slopeN))
 }
 
+plot.flux.uncertainty <- function(f, ...){
+  plot(f$mag, f$err, ...)
+  big = 10000
+  lines(c(0,big),c(f$intercept,f$slopeP*big))
+  lines(c(0,-big),c(f$intercept,-f$slopeN*big))
+  legend('bottomleft', 
+         legend=c('intercept', f$intercept,
+                  'slopeP',     f$slopeP,
+                   'slopeN', f$slopeN))
+  
+}
+  
 plot.oechel.flux <- function(observations, site){
   par(mfrow=c(2,2))
   #only use data from March 1 through November 1
