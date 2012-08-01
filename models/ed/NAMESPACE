@@ -1,7 +1,12 @@
 export(abbreviate.run.id.ED)
 export(get.model.output.ED2)
 export(model2netcdf.ED2)
-export(read.output.ED2)
+export("parse.history
+
+This will generate the CSV file needed by write configs to write the
+config.xml. This is a hack right now, all this information should be
+in the PEcAn DB.")
+export(read.output.ed)
 export(read.output.file.ed)
 export(remove.config.ED2)
 export(start.runs.ED2)
