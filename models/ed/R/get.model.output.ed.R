@@ -126,6 +126,8 @@ get.model.output.ED2 <- function(){
     ### --- added loading of pecan settings object
     cat('load("settings.RData")',file=paste(settings$outdir,"PEcAn.functions.R",sep=""),
         append=TRUE)
+    cat("\n",file=paste(settings$outdir,"PEcAn.functions.R",sep=""),
+        append=TRUE)
     cat(paste("get.results(",model,")",sep=""),file=paste(settings$outdir,"PEcAn.functions.R",sep=""),
         append=TRUE)
 
