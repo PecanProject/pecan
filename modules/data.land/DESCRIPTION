@@ -1,8 +1,8 @@
 Package: PEcAn.data.land
 Type: Package
 Title: PEcAn functions used for ecological forecasts and reanalysis
-Version: 1.2.5
-Date: 2012-07-20
+Version: 1.2.6
+Date: 2012-08-01
 Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Mike Dietze, Carl
     Davidson, Rob Kooper
 Maintainer: David LeBauer <dlebauer@illinois.edu>
