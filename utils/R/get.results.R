@@ -18,7 +18,7 @@ get.results <- function(model){
 
   variables <- "GPP"
   model <- settings$model$name
-  
+
   ### OLD CODE, SLIGHTYL MODIFIED, THAT NEEDS TO BE UPDATED. previously names read.output.ed and was in the 
   ### scripts folder.  SPS
 
@@ -67,7 +67,7 @@ get.results <- function(model){
   
   if('ensemble' %in% names(settings)) {
     ensemble.output <- read.ensemble.output(settings$ensemble$size,
-                                            outdir = settings$outdir, 
+                                            outdir = getwd(), 
                                             start.year=start.year,
                                             end.year=end.year,
                                             variables=variables,

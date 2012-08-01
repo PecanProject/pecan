@@ -41,8 +41,18 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,variables="GP
     #subset output files
     #ncfiles  <- file.names[grep(".nc",file.names)]
     ncfiles <- list.files(path=paste(outdir,run.id,sep="/"),pattern="\\.nc$",full.names=TRUE) ## previous was failing on filenames that have "nc" within them, for some reason? SPS    
-    outfiles <- list.files(path=paste(outdir,run.id,sep="/"),pattern="\\.out$",full.names=TRUE)
-    outfiles <- list.files(path=paste(outdir,run.id,sep="/"),pattern="\\.h5$",full.names=TRUE)
+    ## !!! Below is a hack to search for multiple types of output files.  Needs to be updated to be general
+    outfiles.sipnet <- list.files(path=paste(outdir,run.id,sep="/"),pattern="\\.out$",full.names=TRUE)
+    outfiles.ed <- list.files(path=paste(outdir,run.id,sep="/"),pattern="\\.h5$",full.names=TRUE)
+    if (length(outfiles.sipnet)>0){
+      outfiles <- outfiles.sipnet
+    } else if (length(outfiles.ed)>0){
+      outfiles <- outfiles.ed
+    } else {
+      outfiles <- NULL
+      
+    }
+    ## !!!
     
     #check that there are output files
     if(length(ncfiles) | length(outfiles)){
