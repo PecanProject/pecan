@@ -43,31 +43,31 @@ get.model.output <- function(model){
   
   ### ALL BELOW SEEMS DEPRECIATED ###
   
-  if (model=="ED2"){
-    print(" ")
-    print("-------------------------------------------------------------------")
-    print(" Retrieving ED2 model output")
-    print("-------------------------------------------------------------------")
-    print(" ")
-    Sys.sleep(1)
-    
-    ### Retrieve model output from local or remote server
-    get.model.output.ed()
-  
-    ### Parse model output
-    
-  }else if (model=="SIPNET") {
-    #write.configs.sipnet()
-    print(" ")
-    print("-------------------------------------------------------------------")
-    print(" Generating SIPNET model run and configuration files")
-    print("-------------------------------------------------------------------")
-    print(" ")
-    
-    print("!!!! Not yet implemented !!!!")
-    
-  } ### End of if/else
-  
+#   if (model=="ED2"){
+#     print(" ")
+#     print("-------------------------------------------------------------------")
+#     print(" Retrieving ED2 model output")
+#     print("-------------------------------------------------------------------")
+#     print(" ")
+#     Sys.sleep(1)
+#     
+#     ### Retrieve model output from local or remote server
+#     get.model.output.ed()
+#   
+#     ### Parse model output
+#     
+#   }else if (model=="SIPNET") {
+#     #write.configs.sipnet()
+#     print(" ")
+#     print("-------------------------------------------------------------------")
+#     print(" Generating SIPNET model run and configuration files")
+#     print("-------------------------------------------------------------------")
+#     print(" ")
+#     
+#     print("!!!! Not yet implemented !!!!")
+#     
+#   } ### End of if/else
+#   
 } ### End of function
 #==================================================================================================#
 
