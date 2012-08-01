@@ -37,7 +37,7 @@ read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
 ##'
 ##' This function applies \link{read.output.file.ed} to a list of files from a single run
 ##' @title Read ED output
-##' @name read.output.ed
+##' @name read.output.ED2
 ##' @param run.id the id distiguishing the model run
 ##' @param outdir the directory that the model's output was sent to
 ##' @param start.year 
