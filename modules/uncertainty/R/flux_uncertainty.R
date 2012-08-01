@@ -14,19 +14,22 @@ get.change <- function(measurement){
   return(measurement[even] - measurement[odd])
 }
 
-plot.flux.uncertainty <- function(measurement, flags=TRUE, bin.num=10, transform=identity, ...){
+plot.flux.uncertainty <- function(measurement, QC=0, flags=TRUE, bin.num=10, transform=identity, ...){
   change <- get.change(measurement)
   
   gaps <- measurement %in% c(-6999, -9999)
           #| quality > 0
   measurement[gaps] <- NA
 
-  beta <- mean(abs(change))
-  sigma <- sqrt(2) * beta
-  indErr <- abs(change[flags]) / sqrt(2)
+#  beta <- mean(abs(change),na.rm=TRUE)
+#  sigma <- sqrt(2) * beta
   
   even <- seq(measurement) %% 2 == 0
-  magnitude <- measurement[even][flags]
+  odd <- seq(measurement) %% 2 == 1
+  Q2  <- QC[even]==0 & QC[odd]==0 & flags & !is.na(measurement[even]) & !is.na(measurement[odd])
+  
+  indErr <- abs(change[Q2]) / sqrt(2)
+  magnitude <- measurement[even][Q2]
 
   bins <- seq(from=min(magnitude, na.rm=TRUE), 
               to=max(magnitude, na.rm=TRUE), 
@@ -35,7 +38,7 @@ plot.flux.uncertainty <- function(measurement, flags=TRUE, bin.num=10, transform
   errBin <- c()
   for(k in 1:length(bins)-1){
     use <- magnitude >= bins[k] & magnitude < bins[k+1]
-    if(length(magnitude[use]) > 5 && sum(!is.na(change[use])) > 50) {
+    if(length(magnitude[use]) > 5 ){ ## && sum(!is.na(change[use])) > 50) {
       magBin[k] <- mean(transform(magnitude[use]), na.rm=TRUE)
       errBin[k] <- sd(indErr[use], na.rm=TRUE)
       print(paste(length(magnitude[use]), sum(!is.na(change[use])), magBin[k], errBin[k]))
@@ -47,14 +50,24 @@ plot.flux.uncertainty <- function(measurement, flags=TRUE, bin.num=10, transform
     }
   }
   plot(magBin, errBin, ...)
-  model <- lm(errBin ~ magBin)
-  abline(model)
-  intercept <- model$coefficients[1]
-  slope <- model$coefficients[2]
-  legend('topleft', 
+  zero <- diff(sign(bins)) > 0
+  pos <- magBin > 0  & !zero
+  neg <- magBin < 0 & !zero
+  E2 = errBin - errBin[zero]
+  mp <- lm(E2[pos] ~ magBin[pos]-1)
+  mn <- lm(E2[neg] ~ magBin[neg]-1)
+  intercept <- errBin[zero]
+  slopeP <- mp$coefficients[1]
+  slopeN <- mn$coefficients[1]
+  abline(intercept,slopeP)
+  abline(intercept,slopeN)
+
+
+  legend('bottomleft', 
          legend=c('intercept', intercept,
-                  'slope',     slope))
-  return(list(mag=magBin, err=errBin))
+                  'slopeP',     slopeP,
+                   'slopeN', slopeN))
+  return(list(mag=magBin, err=errBin,intercept,slopeP,slopeN))
 }
 
 plot.oechel.flux <- function(observations, site){
