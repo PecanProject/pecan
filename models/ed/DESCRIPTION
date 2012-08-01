@@ -21,7 +21,7 @@ Suggests:
 SystemRequirements: ED2.2 Model
 OS_type: unix
 License: FreeBSD + file LICENSE
-Copyright: Energy Biosciences Institute, Authors
+Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Require: hdf5
