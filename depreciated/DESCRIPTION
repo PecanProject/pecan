@@ -28,7 +28,7 @@ Suggests:
 SystemRequirements: JAGS2.2.0, bash, ED2, kepler
 OS_type: unix
 License: FreeBSD + file LICENSE
-Copyright: Energy Biosciences Institute, Authors
+Copyright: Authors
 LazyLoad: yes
 Collate:
     'allom.BayesFit.R'

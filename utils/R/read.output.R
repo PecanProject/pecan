@@ -40,7 +40,7 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,variables="GP
 
     #subset output files
     #ncfiles  <- file.names[grep(".nc",file.names)]
-    ncfiles <- list.files(path=paste(outdir,run.id,sep="/"),pattern="\\.nc$",full.names=TRUE) ## previous was failing on filenames that have "nc" within them, for some reason? SPS
+    ncfiles <- list.files(path=paste(outdir,run.id,sep="/"),pattern="\\.nc$",full.names=TRUE) ## previous was failing on filenames that have "nc" within them, for some reason? SPS    
     outfiles <- list.files(path=paste(outdir,run.id,sep="/"),pattern="\\.out$",full.names=TRUE)
 
     #check that there are output files
