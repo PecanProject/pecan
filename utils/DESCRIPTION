@@ -23,7 +23,7 @@ Depends:
 Suggests:
     testthat
 License: FreeBSD + file LICENSE
-Copyright: Energy Biosciences Institute, Authors
+Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Require: hdf5

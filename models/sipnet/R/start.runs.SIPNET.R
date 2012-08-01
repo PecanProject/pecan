@@ -13,6 +13,16 @@
 ##' @name start.runs.SIPNET
 ##' @export
 ##' @author Michael Dietze, David LeBauer, Shawn Serbin, Carl Davidson
+
+start.run.SIPNET <- function(run.id){
+  run <- paste(settings$outdir,run.id,sep="/")
+  print(paste("---- SIPNET model run: ",run,sep=""))
+  if("sipnet.in" %in% dir(run)){  ## make sure directory is a SIPNET folder
+    system(paste('(cd ', run, '; ',settings$model$binary," )", sep = ''))
+  }
+
+}
+
 start.runs.SIPNET <- function(){
 
   host     <-  settings$run$host
