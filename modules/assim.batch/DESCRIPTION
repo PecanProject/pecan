@@ -17,4 +17,4 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Collate: 
-  'pda.mcmc'
+  'pda.mcmc.R'
