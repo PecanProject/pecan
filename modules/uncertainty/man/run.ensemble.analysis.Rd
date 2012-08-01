@@ -2,7 +2,7 @@
 \alias{run.ensemble.analysis}
 \title{run ensemble.analysis}
 \usage{
-  run.ensemble.analysis(plot.timeseries = NULL)
+  run.ensemble.analysis(plot.timeseries = NA)
 }
 \arguments{
   \item{plot.timeseries}{if TRUE plots a modeled timeseries
