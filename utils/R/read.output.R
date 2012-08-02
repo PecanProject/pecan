@@ -21,7 +21,10 @@
 ##' @export
 ##' @author Michael Dietze
 read.output <- function(run.id, outdir, start.year=NA, end.year=NA,variables="GPP",model=model){
-
+  
+  ### Load requirements
+  require(ncdf)
+  
   model2nc = paste("model2netcdf",model,sep=".")
   if(!exists(model2nc)){
     warning(paste("File conversion function model2netcdf does not exist for",model))
@@ -30,29 +33,42 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,variables="GP
   cflux = c("GPP","NPP","NEE","TotalResp","AutoResp","HeteroResp","DOC_flux","Fire_flux") #kgC m-2 s-1
   wflux = c("Evap","TVeg","Qs","Qsb","Rainf") #kgH20 m-2 s-1
   
-  require(ncdf)
-
+  ### ----- Get run info ----- 
   ## get list of files
-  file.names <- dir(paste(outdir,run.id,sep="/"), pattern=run.id, full.names=TRUE)
+  if (model=="SIPNET"){
+     file.names <- dir(paste(outdir,run.id,sep="/"), pattern=run.id, full.names=TRUE)
+     outfiles <- list.files(path=paste(outdir,run.id,sep="/"),pattern="\\.out$",full.names=TRUE)
+  } else if (model=="ED2"){
+     #file.names <- dir(outdir, pattern=paste(run.id,"\\.h5$",sep=""), full.names=TRUE)
+      file.names <- dir(outdir, pattern=run.id, full.names=TRUE)
+      file.names <- file.names[grep("\\.h5$",file.names)]
+      outfiles <- list.files(path=outdir,pattern=run.id,full.names=TRUE)
+      outfiles <- outfiles[grep("\\.h5$",outfiles)]
+  }
+
+  # debug
+  print(length(file.names))
+  print(file.names[1])
   
   ### model-specific code to parse each file 
   if(length(file.names) > 0) {
 
     #subset output files
-    #ncfiles  <- file.names[grep(".nc",file.names)]
-    ncfiles <- list.files(path=paste(outdir,run.id,sep="/"),pattern="\\.nc$",full.names=TRUE) ## previous was failing on filenames that have "nc" within them, for some reason? SPS    
-    ## !!! Below is a hack to search for multiple types of output files.  Needs to be updated to be general
-    outfiles.sipnet <- list.files(path=paste(outdir,run.id,sep="/"),pattern="\\.out$",full.names=TRUE)
-    outfiles.ed <- list.files(path=paste(outdir,run.id,sep="/"),pattern="\\.h5$",full.names=TRUE)
-    if (length(outfiles.sipnet)>0){
-      outfiles <- outfiles.sipnet
-    } else if (length(outfiles.ed)>0){
-      outfiles <- outfiles.ed
-    } else {
-      outfiles <- NULL
-      
+    if (model=="SIPNET"){
+       ncfiles <- list.files(path=paste(outdir,run.id,sep="/"),pattern="\\.nc$",full.names=TRUE) ## previous was failing on filenames that have "nc" within them, for some reason? SPS    
+    } else if (model=="ED2"){
+       #ncfiles <- list.files(path=outdir,pattern="\\.nc$",full.names=TRUE)
+        ncfiles <- list.files(path=outdir,pattern=run.id,full.names=TRUE)
+        ncfiles <- ncfiles[grep("\\.nc$",ncfiles)]
     }
-    ## !!!
+   
+    # debug
+    print(length(ncfiles))
+    print(ncfiles[1])
+
+    # debug
+    print(length(outfiles))
+    print(outfiles[1])
     
     #check that there are output files
     if(length(ncfiles) | length(outfiles)){
@@ -60,11 +76,18 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,variables="GP
       ## if files have not been converted yet, convert to standard format
       if(length(ncfiles) == 0){
         do.call(model2nc,list(outdir,run.id))
+        print(list(outdir,run.id))
         #!!! Replaced by SPS
         #ncfiles <- dir(paste(outdir,run.id,sep="/"), pattern=run.id, full.names=TRUE)
         #ncfiles <- ncfiles[grep(".nc",ncfiles)]
         #!!!
-        ncfiles <- list.files(path=paste(outdir,run.id,sep="/"),pattern="\\.nc$",full.names=TRUE)
+        if (model=="SIPNET"){
+            ncfiles <- list.files(path=paste(outdir,run.id,sep="/"),pattern="\\.nc$",full.names=TRUE)
+        } else if (model=="ED2"){
+            #ncfiles <- list.files(path=outdir,pattern="\\.nc$",full.names=TRUE)
+            ncfiles <- list.files(path=outdir,pattern=run.id,full.names=TRUE)
+            ncfiles <- ncfiles[grep("\\.nc$",ncfiles)]
+        }
         if(length(ncfiles) == 0){
           stop("Conversion of model files to netCDF unsuccessful")
         }
