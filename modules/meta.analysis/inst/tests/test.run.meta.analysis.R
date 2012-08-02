@@ -13,3 +13,7 @@ test_that("p.point.in.prior function is functional",{
   expect_equal(p.point.in.prior(point = -3, prior = prior),
                pnorm(-3))
 })
+
+test_that("tests in this file (modules/meta.analysis/inst/tests) are being run",{
+  expect_true(FALSE)
+}
