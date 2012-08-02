@@ -14,6 +14,3 @@ test_that("p.point.in.prior function is functional",{
                pnorm(-3))
 })
 
-test_that("tests in this file (modules/meta.analysis/inst/tests) are being run",{
-  expect_true(FALSE)
-}
