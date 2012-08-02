@@ -25,17 +25,22 @@ model2netcdf.ED2 <- function(outdir,run.id) {
   require(hdf5)
 
 flist <- dir(outdir,paste(run.id,"-T-",sep=""))
-
+    
 ## extract data info from file names?
 yr <- rep(NA,length(flist))
 for(i in 1:length(flist)){
-  tmp <- sub(run.id,"",flist[i])
-  tmp <- sub("-T-","",tmp)
-  yr[i] <- as.numeric(substr(tmp,1,4))
+  #tmp <- sub(run.id,"",flist[i])
+  #tmp <- sub("-T-","",tmp)
+  index <- gregexpr("-T-",flist[i])[[1]]
+  index <- index[1]
+  yr[i] <- as.numeric(substr(flist[i],index+3,index+6))
+  #yr[i] <- as.numeric(substr(tmp,1,4))
 }
 
 ## set up storage
-block <- 24
+block <- 24 # assumes hourly
+#block <- 48 # assumes half-hourly
+
 add <- function(dat,col,row){
 
   ## first clone and fill data
