@@ -75,7 +75,7 @@ run.ensemble.analysis <- function(plot.timeseries=NA){
   print(" ")
   ### Plot ensemble time-series
   if (!is.na(plot.timeseries)){
-    ensemble.ts()
+    ensemble.ts(read.ensemble.ts(model))
   }
 
 } ### End of function
@@ -84,22 +84,19 @@ run.ensemble.analysis <- function(plot.timeseries=NA){
 
 #--------------------------------------------------------------------------------------------------#
 ##'
-##' Plots an ensemble time-series from PEcAn for the selected target variables
+##' Reads ensemble time-series from PEcAn for the selected target variables
 ##'
-##' @name ensemble.ts
-##' @title Plots an ensemble time-series from PEcAn for the selected target variables
-##' @return nothing, generates an ensemble time-series plot
+##' @name read.ensemble.ts
+##' @title Reads an ensemble time-series from PEcAn for the selected target variables
+##' @return list
 ##'
 ##' @export
 ##'
 ##' @author Michael Dietze 
 ##'
-ensemble.ts <- function(){
+read.ensemble.ts <- function(model){
 
-  print("------ Generating ensemble time-series plot ------")
-  
-  ## SETTINGS
-  
+  ## SETTINGS  
   ensemble.ts <- list()
   ensemble.size <- as.numeric(settings$ensemble$size)
   outdir <- settings$outdir
@@ -119,22 +116,42 @@ ensemble.ts <- function(){
   }
   print(paste("----- Variable: ",variables,sep=""))
   print("----- Reading ensemble output ------")
-  Sys.sleep(1)
+
   ## read ensemble output
   for(i in 1:ensemble.size){
     run.id <- get.run.id('ENS', left.pad.zeros(i, 5))#log10(ensemble.size)+1))
     print(run.id)
     newrun <- read.output(run.id,outdir,start.year,end.year,variables,model)
 
-    if(i == 1){
-      for(j in 1:length(variables)){
+    for(j in 1:length(variables)){
+      if(i == 1){
         ensemble.ts[[j]] <- matrix(NA,ensemble.size,length(newrun[[j]]))
       }
-    }
-
-    ensemble.ts[[j]][i,] <- newrun[[j]]
-    
+      ensemble.ts[[j]][i,] <- newrun[[j]]
+    }    
   }
+  names(ensemble.ts) <- variables
+
+  return(ensemble.ts)
+}
+
+#--------------------------------------------------------------------------------------------------#
+##'
+##' Plots an ensemble time-series from PEcAn for the selected target variables
+##'
+##' @name ensemble.ts
+##' @title Plots an ensemble time-series from PEcAn for the selected target variables
+##' @return nothing, generates an ensemble time-series plot
+##'
+##' @export
+##'
+##' @author Michael Dietze 
+##'
+ensemble.ts <- function(ensemble.ts){
+
+  print("------ Generating ensemble time-series plot ------")
+  variables = names(ensemble.ts)
+
 
   ## temporary check for plots that should be >0
   nonzero = c("GPP","NPP","TotalResp","AutoResp","HeteroResp","Evap","TVeg")
