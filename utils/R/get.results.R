@@ -18,7 +18,10 @@ get.results <- function(model){
 
   variables <- "GPP"
   model <- settings$model$name
-
+  
+  ### Set output dir to model output dir
+  outdir <- settings$run$host$outdir
+  
   ### OLD CODE, SLIGHTYL MODIFIED, THAT NEEDS TO BE UPDATED. previously names read.output.ed and was in the 
   ### scripts folder.  SPS
 
@@ -54,7 +57,7 @@ get.results <- function(model){
       
       sensitivity.output[[pft.name]] <- read.sa.output(traits,
                                                        quantiles,
-                                                       outdir = getwd(), 
+                                                       outdir = outdir, 
                                                        pft.name=pft.name,
                                                        start.year=start.year,
                                                        end.year=end.year,
@@ -67,7 +70,7 @@ get.results <- function(model){
   
   if('ensemble' %in% names(settings)) {
     ensemble.output <- read.ensemble.output(settings$ensemble$size,
-                                            outdir = getwd(), 
+                                            outdir = outdir, 
                                             start.year=start.year,
                                             end.year=end.year,
                                             variables=variables,
