@@ -1,6 +1,7 @@
 export(abbreviate.run.id.ED)
 export(get.model.output.ED2)
 export(model2netcdf.ED2)
+export(parse.history)
 export(read.output.ED2)
 export(read.output.file.ed)
 export(remove.config.ED2)

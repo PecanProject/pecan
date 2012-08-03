@@ -18,7 +18,7 @@ $parnode = $dom->appendChild($node);
 // only run this if we have a host
 if (isset($_REQUEST['host']) && ($_REQUEST['host'] != "")) {
 	// check for models
-	$query = "SELECT models.* FROM models WHERE models.model_path LIKE '{$_REQUEST['host']}%' ORDER BY models.model_name DESC, models.revision DESC";
+	$query = "SELECT models.* FROM models WHERE models.model_path LIKE '{$_REQUEST['host']}:%' ORDER BY models.model_name DESC, models.revision DESC";
 	
 	// Select all the rows in the models table
 	$result = mysql_query($query);

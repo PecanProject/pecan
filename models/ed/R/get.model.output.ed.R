@@ -37,7 +37,7 @@ read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
 ##'
 ##' This function applies \link{read.output.file.ed} to a list of files from a single run
 ##' @title Read ED output
-##' @name read.output.ed
+##' @name read.output.ED2
 ##' @param run.id the id distiguishing the model run
 ##' @param outdir the directory that the model's output was sent to
 ##' @param start.year 
@@ -92,6 +92,7 @@ read.output.ED2 <- function(run.id, outdir, start.year=NA, end.year=NA, variable
 ##' @author Shawn Serbin
 ##' @author David LeBauer
 get.model.output.ED2 <- function(){
+  model <- settings$model$name
   
   ### Get ED2 model output on the localhost
   if(settings$run$host$name == 'localhost'){
@@ -100,7 +101,7 @@ get.model.output.ED2 <- function(){
     ## TODO: take out functions read.output.file.ed & read.output.ed from write.configs.ed &
     ## put into a new file specific for reading ED output
     dump(c("get.run.id","abbreviate.run.id.ED","left.pad.zeros","read.ensemble.output",
-           "read.sa.output","read.output.file.ed","read.output.ED2", "get.results"),
+           "read.sa.output","read.output", "model2netcdf.ED2","get.results"),
          file=paste(settings$outdir,"PEcAn.functions.R",sep=""))
     
     ### Is the previous necessary for localhost?  These functions should be availible within R
@@ -112,18 +113,27 @@ get.model.output.ED2 <- function(){
     
     ### If running on remote host
   } else {
+    ### Make a copy of the settings object for use on the remote sever
+    save(settings,file=paste(settings$outdir,"settings.RData",sep=""))
     
     ### Make a copy of required functions and place in file PEcAn.functions.R
     dump(c("get.run.id","abbreviate.run.id.ED","left.pad.zeros","read.ensemble.output",
-           "read.sa.output","read.output.file.ed","read.output.ED2","get.results"),
+           "read.sa.output","read.output","model2netcdf.ED2","get.results"),
          file=paste(settings$outdir,"PEcAn.functions.R",sep=""))
     
     ### Add execution of get.results to the end of the PEcAn.functions.R file
     ### This will execute all the code needed to extract output on remote host
-    cat("get.results()",file=paste(settings$outdir,"PEcAn.functions.R",sep=""),
+    ### --- added loading of pecan settings object
+    cat('load("settings.RData")',file=paste(settings$outdir,"PEcAn.functions.R",sep=""),
+        append=TRUE)
+    cat("\n",file=paste(settings$outdir,"PEcAn.functions.R",sep=""),
+        append=TRUE)
+    cat(paste("get.results(",model,")",sep=""),file=paste(settings$outdir,"PEcAn.functions.R",sep=""),
         append=TRUE)
 
-    ### Copy required PEcAn.functions.R to remote host
+    ### Copy required PEcAn.functions.R and settings object to remote host
+    rsync('-outi',paste(settings$outdir,"settings.RData",sep=""),
+          paste(settings$run$host$name, ':',settings$run$host$outdir, sep = '') )
     rsync('-outi',paste(settings$outdir,"PEcAn.functions.R",sep=""),
           paste(settings$run$host$name, ':',settings$run$host$outdir, sep = '') )
 

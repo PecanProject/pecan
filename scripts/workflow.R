@@ -7,6 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 #---------------- Load libraries. -----------------------------------------------------------------#
+.libPaths("/home/mdietze/lib/R")
 require(PEcAn.all)
 #--------------------------------------------------------------------------------------------------#
 
@@ -15,9 +16,7 @@ require(PEcAn.all)
 settings <- read.settings()
 #--------------------------------------------------------------------------------------------------#
 
-model = "ED2"
-if("model" %in% names(settings)){ model = settings$model$name}
-
+model = ifelse("model" %in% names(settings),settings$model$name,"ED2")
 
 #---------------- Run PEcAn workflow. -------------------------------------------------------------#
 get.trait.data()        	# Query the trait database for data and priors
@@ -34,7 +33,9 @@ get.model.output(model)         # Get results of model runs
 
 run.sensitivity.analysis()      # Run sensitivity analysis and variance decomposition on model output
 
-run.ensemble.analysis()		# Run ensemble analysis on model output	
+run.ensemble.analysis()		      # Run ensemble analysis on model output. 
+                                # OPTIONAL: run.ensemble.analysis(plot.timeseries=TRUE) to get an esemble 
+                                # time-series output for the target variables set in the PEcAn.xml file
 
 ### PEcAn workflow run complete
 print("---------- PEcAn Workflow Complete ----------")

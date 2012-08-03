@@ -7,6 +7,13 @@
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
  */
+// offline mode?
+if (isset($_REQUEST['offline'])) {
+	$offline=true;
+} else {
+	$offline=false;
+}
+
 if (!isset($_REQUEST['siteid'])) {
 	die("Need a siteid.");
 }
@@ -58,14 +65,13 @@ if (preg_match('/^ed/', strtolower($model["model_name"]))) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 <link rel="stylesheet" type="text/css" href="sites.css" />
+<script type="text/javascript" src="jquery-1.7.2.min.js"></script>
+<?php if (!$offline) {?>
 <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+<?php }?>
 <script type="text/javascript">
-	google.load("jquery", "1.3.2");
-	google.load("maps", "3",  {other_params:"sensor=false"});
-	
 	window.onresize = resize;
 	window.onload = resize;
-	google.setOnLoadCallback(mapsLoaded);
 	
 	function resize() {
 		$("#stylized").height($(window).height() - 5);
@@ -159,6 +165,15 @@ if ($model["type"] == "ED2") {
         return test;
     }
 
+<?php if ($offline) { ?>
+	$(document).ready(function () {
+		validate();
+	});
+	
+<?php } else {?>
+    google.load("maps", "3",  {other_params:"sensor=false"});
+	google.setOnLoadCallback(mapsLoaded);
+    
     function mapsLoaded() {
 		var latlng = new google.maps.LatLng(<?=$siteinfo['lat']?>, <?=$siteinfo['lon']?>);
 		var myOptions = {
@@ -179,14 +194,21 @@ if ($model["type"] == "ED2") {
 		infowindow.open(map, marker);
 		validate();
 	}
+<?php } ?>
 </script>
 </head>
 <body>
 <div id="wrap">
 	<div id="stylized">
 		<form id="formprev" method="POST" action="selectsite.php">
+<?php if ($offline) { ?>
+			<input name="offline" type="hidden" value="offline">
+<?php } ?>
 		</form>
 		<form id="formnext" method="POST" action="runpecan.php">
+<?php if ($offline) { ?>
+			<input name="offline" type="hidden" value="offline">
+<?php } ?>
 			<input type="hidden" name="siteid" value="<?=$siteid?>" />
 			<input type="hidden" name="modelid" value="<?=$modelid?>" />
 			<input type="hidden" name="modeltype" value="<?=$model["type"]?>" />
@@ -198,7 +220,13 @@ if ($model["type"] == "ED2") {
 			<select id="pft" name="pft[]" multiple size=5 onChange="validate();">
 <?php 
 // show list of PFTs
-$result = mysql_query("SELECT * FROM pfts ORDER BY name");
+if ($model["type"] == "ED2") {
+	$result = mysql_query("SELECT * FROM pfts WHERE name NOT LIKE 'sipnet%' ORDER BY name;");
+} else if ($model["type"] == "SIPNET") {
+	$result = mysql_query("SELECT * FROM pfts WHERE name LIKE 'sipnet%' ORDER BY name;");
+} else  {
+	$result = mysql_query("SELECT * FROM pfts ORDER BY name");
+}
 if (!$result) {
 	die('Invalid query: ' . mysql_error());
 }
@@ -267,7 +295,7 @@ if ($model["type"] == "ED2") {
                         <select id="climate" name="climate" onChange="validate();">
 <?php
         // get met data
-        $result = mysql_query($query . " AND dbfiles.format_id=24");
+        $result = mysql_query($query . " AND dbfiles.format_id=26");
         if (!$result) {
                 die('Invalid query: ' . mysql_error());
         }
@@ -288,7 +316,11 @@ if ($model["type"] == "ED2") {
 			<div class="spacer"></div>
 		</form>
 	</div>
-	<div id="map_canvas"></div>
+	<div id="map_canvas">
+		name : <b><?=$siteinfo["sitename"]?></b><br/>
+		address : <?=$siteinfo["city"]?>, <?=$siteinfo["country"]?><br/>
+		location : <?=$siteinfo["lat"]?>, <?=$siteinfo["lon"]?><br/>
+	</div>
 </div>
 </body>
 </html>

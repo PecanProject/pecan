@@ -170,14 +170,14 @@ run.write.configs <- function(model){
   
 print("  ######################## Finish up runs ########################")
   ### Save output from SA/Ensemble runs
-  save(ensemble.samples, trait.samples, sa.samples, settings,
+  save(ensemble.samples, trait.samples, sa.samples,
        file = paste(main.outdir, 'samples.Rdata', sep=''))
   
   ### Make outdirectory, send samples to outdir
   print(host$name)
   if(host$name == 'localhost'){
     print(c(host$outdir,"move to",settings$outdir))
-    if(!host$outdir == settings$outdir) {
+    if(!(host$outdir == settings$outdir)) {
       dir.create(host$outdir,showWarnings=FALSE)
       file.copy(from = paste(settings$outdir, 'samples.Rdata', sep=''),
                 to   = paste(host$outdir, 'samples.Rdata', sep = '/'),

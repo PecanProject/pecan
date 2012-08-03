@@ -15,10 +15,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 <link rel="stylesheet" type="text/css" href="sites.css" />
-<script type="text/javascript" src="http://www.google.com/jsapi"></script>
+<script type="text/javascript" src="jquery-1.7.2.min.js"></script>
 <script type="text/javascript">
-	google.load("jquery", "1.3.2");
-
 	window.onresize = resize;
 	window.onload = resize;
 	
@@ -52,6 +50,12 @@
 			<p>Below you will find the buttons to step through the
 			workflow creation process.</p>
 
+			<label>Offline mode:</label>
+			<span id="error" class="small">This will disable Google Maps</span>
+			<input name="offline" id="offline" style="align: left" type="checkbox" value="offline">
+			<div class="spacer"></div>
+
+			<p></p>
 			<label>Workflow</label>
 			<span id="error" class="small">&nbsp;</span>
 			<input id="prev" type="button" value="History" onclick="prevStep();" />

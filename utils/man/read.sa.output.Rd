@@ -1,38 +1,36 @@
 \name{read.sa.output}
 \alias{read.sa.output}
-\title{Read SA output}
+\title{Read Sensitivity Analysis output}
 \usage{
   read.sa.output(traits, quantiles, outdir, pft.name = "",
-  start.year, end.year, read.output = read.output.ed)
-
-  read.sa.output(traits, quantiles, outdir, pft.name = "",
-  start.year, end.year, read.output = read.output.ed)
+    start.year, end.year, variables, model)
 }
 \arguments{
-  \item{traits}{}
+  \item{traits}{model parameters included in the
+  sensitivity analysis}
 
-  \item{quantiles}{}
+  \item{quantiles}{quantiles selected for sensitivity
+  analysis}
 
-  \item{outdir}{}
+  \item{outdir}{directory with model output to use in
+  sensitivity analysis}
 
-  \item{pft.name}{}
+  \item{pft.name}{name of PFT used in sensitivity analysis
+  (Optional)}
 
-  \item{start.year}{}
+  \item{start.year}{first year to include in sensitivity
+  analysis}
 
-  \item{end.year}{}
+  \item{end.year}{last year to include in sensitivity
+  analysis}
 
   \item{read.output}{model specific read.output function}
 }
 \value{
   dataframe with one col per quantile analysed and one row
-  per trait, each cell is a list of model output over time
-
-  dataframe with one col per quantile analysed and one row
   per trait, each cell is a list of AGB over time
 }
 \description{
-  Read output from sensitivity runs
-
   Reads output of sensitivity analysis runs
 }
 

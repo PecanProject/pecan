@@ -2,8 +2,8 @@
 \alias{add.data}
 \title{Add data to plot}
 \usage{
-  add.data(trait.data, base.plot = NULL, ymax, color =
-  "black")
+  add.data(trait.data, base.plot = NULL, ymax,
+    color = "black")
 }
 \arguments{
   \item{trait.data}{data to be plotted}

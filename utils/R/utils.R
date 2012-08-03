@@ -479,37 +479,23 @@ fit.dist <- function(trait.data, trait = colnames(trait.data),
 ##'
 ##' Reads output for an ensemble of length specified by \code{ensemble.size} and bounded by \code{start.year} and \code{end.year}
 ##' @title Read ensemble output
-##' @return a list of ensemble output 
-##' @param ensemble.size 
-##' @param outdir 
-##' @param pft.name 
-##' @param start.year 
-##' @param end.year 
-##' @param read.output model specific read output function, \cite{\link{read.output.ed}} by default.
+##' @return a list of ensemble model output 
+##' @param ensemble.size the number of ensemble members run
+##' @param outdir directory with model output to use in ensemble analysis
+##' @param start.year first year to include in ensemble analysis
+##' @param end.year last year to include in ensemble analysis
+##' @param variables targe variables for ensemble analysis
+##' @param model ecosystem model run
+##' @export
 #--------------------------------------------------------------------------------------------------#
 read.ensemble.output <- function(ensemble.size, outdir, 
                                  start.year, end.year,variables, model){
-
-  readfcn = paste("read.output",model,sep=".")
-  if(!exists(readfcn)){
-    exit(readfcn)
-  }
 
   ensemble.output <- list()
   for(ensemble.id in 1:ensemble.size) {
     run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, 5))#log10(ensemble.size)+1))
     print(run.id)
-    ### !!! Need to generalize this code to work for any model without having to hard code the output suffix
-    files.ed <- list.files(path=paste(settings$outdir,run.id,sep="/"),pattern=".h5",recursive=TRUE,full.names=TRUE)  # ED2 output
-    files.sipnet <- list.files(path=paste(settings$outdir,run.id,sep="/"),pattern=".out",recursive=TRUE,full.names=TRUE)  # SIPNET output
-    files <- c(files.ed,files.sipnet)
-    ### !!!
-    #if(any(grep('h5',dir()[grep(run.id, dir())]))) {
-    if(length(files)>0) {
-      ensemble.output[[ensemble.id]] <- do.call(readfcn,list(run.id, outdir, start.year, end.year,variables))
-    } else {
-      ensemble.output[[ensemble.id]] <- NA
-    }
+      ensemble.output[[ensemble.id]] <- sapply(read.output(run.id, outdir, start.year, end.year,variables,model),mean)
   }
   return(ensemble.output)
 }
@@ -523,31 +509,28 @@ read.ensemble.output <- function(ensemble.size, outdir,
 ##' @title Read Sensitivity Analysis output 
 ##' @return dataframe with one col per quantile analysed and one row per trait,
 ##'  each cell is a list of AGB over time
-##' @param traits 
-##' @param quantiles 
-##' @param outdir 
-##' @param pft.name 
-##' @param start.year 
-##' @param end.year 
+##' @param traits model parameters included in the sensitivity analysis
+##' @param quantiles quantiles selected for sensitivity analysis
+##' @param outdir directory with model output to use in sensitivity analysis
+##' @param pft.name name of PFT used in sensitivity analysis (Optional)
+##' @param start.year first year to include in sensitivity analysis 
+##' @param end.year last year to include in sensitivity analysis
 ##' @param read.output model specific read.output function
+##' @export
 #--------------------------------------------------------------------------------------------------#
 read.sa.output <- function(traits, quantiles, outdir, pft.name='', 
                            start.year, end.year, variables, model){
-  readfcn = paste("read.output",model,sep=".")
-  if(!exists(readfcn)){
-    exit(readfcn)
-  }
-    
-  sa.output <- data.frame()
+
+sa.output <- data.frame()
   for(trait in traits){
     for(quantile in quantiles){
       run.id <- get.run.id('SA', round(quantile,3), trait=trait, pft.name=pft.name)
       print(run.id)
       sa.output[as.character(round(quantile*100,3)), 
-                trait] <- do.call(readfcn,list(run.id, outdir, start.year, end.year,variables))
+                trait] <- sapply(read.output(run.id, outdir, start.year, end.year,variables,model),mean)
     }
   }
-  sa.output['50',] <- do.call(readfcn,list(get.run.id('SA', 'median'), outdir, start.year, end.year,variables))
+  sa.output['50',] <- sapply(read.output(get.run.id('SA', 'median'), outdir, start.year, end.year,variables,model),mean)
   sa.output <- sa.output[order(as.numeric(rownames(sa.output))),]
   return(sa.output)
 }

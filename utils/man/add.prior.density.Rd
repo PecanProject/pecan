@@ -3,7 +3,7 @@
 \title{Add Prior Density}
 \usage{
   add.prior.density(prior.density, base.plot = NULL,
-  prior.color = "black")
+    prior.color = "black")
 }
 \arguments{
   \item{prior.density}{}
