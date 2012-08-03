@@ -73,11 +73,6 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
   pft.traits <- trait.values[[pft.traits]]
   pft.names  <- names(pft.traits)
 
-  # GDD leaf on
-  if("GDD" %in% pft.names){
-    param[which(param[,1] == 'gddLeafOn'),2] = pft.traits[which(pft.names == 'GDD')]
-  }
-
   # Leaf carbon concentration
   leafC = 0.48  #0.5
   if("leafC" %in% pft.names){
@@ -235,6 +230,22 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
     param[which(param[,1] == 'coarseRootQ10'),2] =
       pft.traits[which(pft.names == 'coarse_root_respiration_Q10')]
   } 
+
+  ### ----- Phenology parameters
+  # GDD leaf on
+  if("GDD" %in% pft.names){
+    param[which(param[,1] == 'gddLeafOn'),2] = pft.traits[which(pft.names == 'GDD')]
+  }
+
+  # Fraction of leaf fall per year (should be 1 for decid)
+  if('fracLeafFall' %in% pft.names){
+    param[which(param[,1] == 'fracLeafFall'),2] = pft.traits[which(pft.names == 'fracLeafFall')]
+  }
+
+  # Leaf growth.  Amount of C added to the leaf during the greenup period
+  if('leafGrowth' %in% pft.names){
+    param[which(param[,1] == 'leafGrowth'),2] = pft.traits[which(pft.names == 'leafGrowth')]
+  }
 
   write.table(param,paste(my.outdir,"/",run.id,".param",sep=""),row.names=FALSE,col.names=FALSE,quote=FALSE)
   

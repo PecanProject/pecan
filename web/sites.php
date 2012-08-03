@@ -17,7 +17,7 @@ $parnode = $dom->appendChild($node);
 
 $query = "SELECT sites.* FROM sites";
 if (isset($_REQUEST['host']) && ($_REQUEST['host'] != "")) {
-	$query  = "SELECT sites.* FROM sites, inputs, dbfiles, machines WHERE dbfiles.file_id = inputs.file_id AND inputs.site_id=sites.id";
+	$query  = "SELECT DISTINCT sites.* FROM sites, inputs, dbfiles, machines WHERE dbfiles.file_id = inputs.file_id AND inputs.site_id=sites.id";
 	$query .= " AND machines.hostname='{$_REQUEST['host']}' AND dbfiles.machine_id=machines.id";
 
 	if (isset($_REQUEST['model']) && ($_REQUEST['model'] != "")) {
@@ -25,7 +25,7 @@ if (isset($_REQUEST['host']) && ($_REQUEST['host'] != "")) {
 		if (preg_match('/^ed/', $model)) {
 			$query .= " AND dbfiles.format_id=12";
 		} else if (preg_match('/^sipnet/', $model)) {
-			$query .= " AND dbfiles.format_id=24";
+			$query .= " AND dbfiles.format_id=26";
 		}
 	}
 }
@@ -46,7 +46,11 @@ while ($row = @mysql_fetch_assoc($result)){
 	$newnode->setAttribute("country", $row['country']);	
 	$newnode->setAttribute("lat", $row['lat']);	
 	$newnode->setAttribute("lon", $row['lon']);
-	$newnode->setAttribute("sitename", $row['sitename']);	
+	if ($row['sitename'] != "") {
+		$newnode->setAttribute("sitename", $row['sitename']);
+	} else {	
+		$newnode->setAttribute("sitename", $row['id'] . " - " . $row['city']);
+	}
 } 
 
 echo $dom->saveXML();

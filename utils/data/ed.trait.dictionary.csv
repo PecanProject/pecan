@@ -40,6 +40,8 @@
 "storage_turnover_rate";"Storage Turnover Rate";"yr-1";"storage_turnover_rate"
 "T";"Transpiration";"mm  H2O m-1s-1";"T"
 "agf_bs";"Aboveground Fraction of Structural Biomass";"fraction";"agf_bs"
+"fracLeafFall";"Frac. leaf C";"ratio";"fracLeafFall"
+"leafGrowth";"Seasonal leaf growth";"gC m-2";"leafGrowth" 
 "b1Ht";"Max Plant Height";"m";"b1Ht"
 "b2Ht";"Height Allometry Exponent";;"b2Ht"
 "b1Bl";"Leaf Allometry Intercept";"kg/plant/cm^b2bl";"b1Bl"

@@ -21,7 +21,10 @@
 ##' @export
 ##' @author Michael Dietze
 read.output <- function(run.id, outdir, start.year=NA, end.year=NA,variables="GPP",model=model){
-
+  
+  ### Load requirements
+  require(ncdf)
+  
   model2nc = paste("model2netcdf",model,sep=".")
   if(!exists(model2nc)){
     warning(paste("File conversion function model2netcdf does not exist for",model))
@@ -30,30 +33,49 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,variables="GP
   cflux = c("GPP","NPP","NEE","TotalResp","AutoResp","HeteroResp","DOC_flux","Fire_flux") #kgC m-2 s-1
   wflux = c("Evap","TVeg","Qs","Qsb","Rainf") #kgH20 m-2 s-1
   
-  require(ncdf)
-
+  ### ----- Get run info ----- 
   ## get list of files
-  file.names <- dir(paste(outdir,run.id,sep="/"), pattern=run.id, full.names=TRUE)
-  
+  if (model=="SIPNET"){
+     file.names <- dir(paste(outdir,run.id,sep="/"), pattern=run.id, full.names=TRUE)
+     outfiles <- list.files(path=paste(outdir,run.id,sep="/"),pattern="\\.out$",full.names=TRUE)
+  } else if (model=="ED2"){
+     #file.names <- dir(outdir, pattern=paste(run.id,"\\.h5$",sep=""), full.names=TRUE)
+      file.names <- dir(outdir, pattern=run.id, full.names=TRUE)
+      file.names <- file.names[grep("\\.h5$",file.names)]
+      outfiles <- list.files(path=outdir,pattern=run.id,full.names=TRUE)
+      outfiles <- outfiles[grep("\\.h5$",outfiles)]
+  }
+
   ### model-specific code to parse each file 
   if(length(file.names) > 0) {
 
     #subset output files
-    #ncfiles  <- file.names[grep(".nc",file.names)]
-    ncfiles <- list.files(path=paste(outdir,run.id,sep="/"),pattern="\\.nc$",full.names=TRUE) ## previous was failing on filenames that have "nc" within them, for some reason? SPS
-    outfiles <- list.files(path=paste(outdir,run.id,sep="/"),pattern="\\.out$",full.names=TRUE)
-
+    if (model=="SIPNET"){
+       ncfiles <- list.files(path=paste(outdir,run.id,sep="/"),pattern="\\.nc$",full.names=TRUE) ## previous was failing on filenames that have "nc" within them, for some reason? SPS    
+    } else if (model=="ED2"){
+       #ncfiles <- list.files(path=outdir,pattern="\\.nc$",full.names=TRUE)
+        ncfiles <- list.files(path=outdir,pattern=run.id,full.names=TRUE)
+        ncfiles <- ncfiles[grep("\\.nc$",ncfiles)]
+    }
+    
     #check that there are output files
     if(length(ncfiles) | length(outfiles)){
 
       ## if files have not been converted yet, convert to standard format
       if(length(ncfiles) == 0){
         do.call(model2nc,list(outdir,run.id))
+        print(list(outdir,run.id))
         #!!! Replaced by SPS
         #ncfiles <- dir(paste(outdir,run.id,sep="/"), pattern=run.id, full.names=TRUE)
         #ncfiles <- ncfiles[grep(".nc",ncfiles)]
         #!!!
-        ncfiles <- list.files(path=paste(outdir,run.id,sep="/"),pattern="\\.nc$",full.names=TRUE)
+        if (model=="SIPNET"){
+            ncfiles <- list.files(path=paste(outdir,run.id,sep="/"),pattern="\\.nc$",full.names=TRUE)
+        } else if (model=="ED2"){
+            #ncfiles <- list.files(path=outdir,pattern="\\.nc$",full.names=TRUE)
+            ncfiles <- list.files(path=outdir,pattern=run.id,full.names=TRUE)
+            ncfiles <- ncfiles[grep("\\.nc$",ncfiles)]
+        }
         if(length(ncfiles) == 0){
           stop("Conversion of model files to netCDF unsuccessful")
         }
@@ -66,15 +88,20 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,variables="GP
 
       ## load files
       yrs <- first:max(first,last)
-      data <- matrix(NA,length(yrs),length(variables))
+      data <- list()
       for(i in 1:length(yrs)){
         nc <- open.ncdf(ncfiles[yrs[i]])
         for(j in 1:length(variables)){
           if(variables[j] %in% names(nc$var)){
-            data[i,j] <- mean(get.var.ncdf(nc,variables[j]))
+            newdata <- get.var.ncdf(nc,variables[j])
             if(variables[j] %in% c(cflux,wflux)){
               ## Convert output to annual values.  Mult by seconds in a 365d year and convert per ha
-              data[i,j] <- data[i,j]*31536000*10000 # kgC/ha
+              newdata <- newdata*31536000*10000 # kgC/ha
+            }
+            if(i == 1){
+              data[[j]] = newdata
+            }else{
+              data[[j]] = c(data[[j]],newdata)
             }
           } else {
             warning(paste(variables[j],"missing in",ncfiles[yrs[i]]))
@@ -82,7 +109,8 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,variables="GP
         }
         close.ncdf(nc)
       }
-      return(apply(data,2,mean))
+      names(data) <- variables
+      return(data)
     } else {
       stop("no output files present")
     }
@@ -92,15 +120,15 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,variables="GP
 }
 #==================================================================================================#
 
-
+#### BELOW IS DEPRECIATED
 #--------------------------------------------------------------------------------------------------#
-##' Returns list of ensemble output
-##'
-##' @name read.ensemble.output
-##' @title Read Ensemble Output
-##' @return list of ensemble output 
-##' @export
-##'
+# Returns list of ensemble output
+#
+# @name read.ensemble.output
+# @title Read Ensemble Output
+# @return list of ensemble output 
+# @export
+#
 
 ### THIS FUNCTION IS DEFINED TWICE (also in utils.R), this is NOT the one that's called
 
@@ -122,14 +150,14 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,variables="GP
 
 
 #--------------------------------------------------------------------------------------------------#
-##' Read output from sensitivity runs
-##' 
-##' @name read.sa.output
-##' @title Read SA output
-##' @return dataframe with one col per quantile analysed and one row per trait,
-##'  each cell is a list of model output over time
-##' @export
-##'
+# Read output from sensitivity runs
+# 
+# @name read.sa.output
+# @title Read SA output
+# @return dataframe with one col per quantile analysed and one row per trait,
+#  each cell is a list of model output over time
+# @export
+#
 
 ### THIS FUNCTION IS DEFINED TWICE (also in utils.R), this is NOT the one that's called
 

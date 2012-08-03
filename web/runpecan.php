@@ -11,6 +11,13 @@ require("system.php");
 require("dbinfo.php");
 $connection=open_database();
 
+# offline mode?
+if (isset($_REQUEST['offline'])) {
+	$offline=true;
+} else {
+	$offline=false;
+}
+
 # parameters
 if (!isset($_REQUEST['siteid'])) {
   die("Need a siteid.");
@@ -149,8 +156,8 @@ fwrite($fh, "    <name>${db_database}</name>" . PHP_EOL);
 fwrite($fh, "  </database>" . PHP_EOL);
 
 fwrite($fh, "  <meta.analysis>" . PHP_EOL);
-fwrite($fh, "    <iter>10000</iter>" . PHP_EOL);
-fwrite($fh, "    <random.effects>TRUE</random.effects>" . PHP_EOL);
+fwrite($fh, "    <iter>1000</iter>" . PHP_EOL);
+fwrite($fh, "    <random.effects>FALSE</random.effects>" . PHP_EOL);
 fwrite($fh, "  </meta.analysis>" . PHP_EOL);
 
 if ($modeltype == "ED2") {
@@ -240,7 +247,11 @@ chdir($folder);
 pclose(popen('R_LIBS_USER="/home/kooper/lib/R" R CMD BATCH workflow.R &', 'r'));
 
 #done
-header("Location: running.php?workflowid=$workflowid");
+if ($offline) {
+	header("Location: running.php?workflowid=$workflowid&offline=offline");
+} else {
+	header("Location: running.php?workflowid=$workflowid");
+}
 close_database($connection);
 ?>
 

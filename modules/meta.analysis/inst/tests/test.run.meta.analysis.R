@@ -13,3 +13,4 @@ test_that("p.point.in.prior function is functional",{
   expect_equal(p.point.in.prior(point = -3, prior = prior),
                pnorm(-3))
 })
+

@@ -1,6 +1,9 @@
 \name{run.sensitivity.analysis}
 \alias{run.sensitivity.analysis}
 \title{run sensitivity.analysis}
+\usage{
+  run.sensitivity.analysis()
+}
 \value{
   nothing, saves \code{sensitivity.results} as
   sensitivity.results.Rdata, sensitivity plots as

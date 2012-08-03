@@ -1,7 +1,7 @@
 export(get.model.output.SIPNET)
 export(model2netcdf.SIPNET)
-export(read.output.SIPNET)
 export(remove.config.SIPNET)
 export(start.runs.SIPNET)
+export(start.run.SIPNET)
 export(write.config.SIPNET)
 import(PEcAn.utils)

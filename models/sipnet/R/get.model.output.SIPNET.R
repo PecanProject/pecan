@@ -8,25 +8,6 @@
 #-------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------#
 
-##' Reads the output of a single model run
-##'
-##' @title Read output
-##' @name read.output.SIPNET
-##' @param run.id the id distiguishing the model run
-##' @param outdir the directory that the model's output was sent to
-##' @param start.year 
-##' @param end.year
-##' @return vector of output variable
-##' @export
-##' @author Michael Dietze
-read.output.SIPNET <- function(run.id, outdir, start.year=NA, end.year=NA,variables="GPP"){
-
-  ## call to generic read output. function read.output.SIPNET to be eliminated once ED2 is generalized
-  read.output(run.id,outdir,start.year,end.year,variables,model="SIPNET")
-  
-}
-#==================================================================================================#
-
 
 #--------------------------------------------------------------------------------------------------#
 ##' Function to retrieve model output from local or remote server

@@ -7,6 +7,13 @@
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
  */
+# offline mode?
+if (isset($_REQUEST['offline'])) {
+	$offline=true;
+} else {
+	$offline=false;
+}
+
 // runid
 if (!isset($_REQUEST['workflowid'])) {
   die("Need a workflowid.");
@@ -48,11 +55,11 @@ for($year=$start; $year<=$end; $year++) {
 }
 
 $vars  = "";
-if ($error === false) {
-	$vars .= "<option>Reco</option>\n";
-	$vars .= "<option>NPP</option>\n";
-	$vars .= "<option>NEE</option>\n";
-}
+#if ($error === false) {
+#	$vars .= "<option>Reco</option>\n";
+#	$vars .= "<option>NPP</option>\n";
+#	$vars .= "<option>NEE</option>\n";
+#}
 
 $logs="";
 $logs .= createOption("workflow.Rout");
@@ -82,14 +89,14 @@ foreach(scandir("$folder/out") as $file) {
 	}
 	$outputs .= createOption("out/$file");
 	# TODO shows all variables for all years.
-	for($year=$start; $year<=$end; $year++) {
-		if (preg_match("/.*-T-${year}-.*.h5/", $file)) {
-			$vars .= shell_exec("h5ls $folder/out/$file | sort -u | awk '{print \"<option value=\\\"${file}@\" $1 \"\\\">H5-\" $1 \"</option>\" }'");
-		}
-		if (preg_match("/.*.${year}.nc/", $file)) {
-			$vars .= shell_exec("ncdump -x $folder/out/$file | grep '<variable' | sed 's/.*name=\"\\([^\"]*\\)\".*/\\1/' | sort -u | awk '{print \"<option value=\\\"${file}@\" $1 \"\\\">NC-\" $1 \"</option>\" }'");
-		}
-	}
+#	for($year=$start; $year<=$end; $year++) {
+#		if (preg_match("/.*-T-${year}-.*.h5/", $file)) {
+#			$vars .= shell_exec("h5ls $folder/out/$file | sort -u | awk '{print \"<option value=\\\"${file}@\" $1 \"\\\">H5-\" $1 \"</option>\" }'");
+#		}
+#		if (preg_match("/.*.${year}.nc/", $file)) {
+#			$vars .= shell_exec("ncdump -x $folder/out/$file | grep '<variable' | sed 's/.*name=\"\\([^\"]*\\)\".*/\\1/' | sort -u | awk '{print \"<option value=\\\"${file}@\" $1 \"\\\">NC-\" $1 \"</option>\" }'");
+#		}
+#	}
 }
 
 # check the root folder for sipnet
@@ -97,7 +104,7 @@ for($year=$start; $year<=$end; $year++) {
         $file = "pecan/SAmedian/SAmedian.${year}.nc";
         $outputs .= createOption("$file");
         # TODO shows all variables for all years.
-        $vars .= shell_exec("ncdump -x $folder/$file | grep '<variable' | sed 's/.*name=\"\\([^\"]*\\)\".*/\\1/' | sort -u | awk '{print \"<option value=\\\"../${file}@\" $1 \"\\\">NC-${year}-\" $1 \"</option>\" }'");
+        $vars .= shell_exec("ncdump -x $folder/$file | grep '<variable' | sed 's/.*name=\"\\([^\"]*\\)\".*/\\1/' | sort -u | awk '{print \"<option value=\\\"../${file}@\" $1 \"\\\">${year}-\" $1 \"</option>\" }'");
 }
 
 
@@ -128,10 +135,8 @@ function createOption($file) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 <link rel="stylesheet" type="text/css" href="sites.css" />
-<script type="text/javascript" src="http://www.google.com/jsapi"></script>
+<script type="text/javascript" src="jquery-1.7.2.min.js"></script>
 <script type="text/javascript">
-	google.load("jquery", "1.3.2");
-
 	function resize() {
     	$("#stylized").height($(window).height() - 5);
     	$("#output").height($(window).height() - 1);
@@ -233,9 +238,15 @@ function createOption($file) {
 		</form>
 		
 		<form id="formprev" method="POST" action="history.php">
+<?php if ($offline) { ?>
+			<input name="offline" type="hidden" value="offline">
+<?php } ?>
 		</form>
 		
 		<form id="formnext" method="POST" action="selectsite.php">
+<?php if ($offline) { ?>
+			<input name="offline" type="hidden" value="offline">
+<?php } ?>
 		<p></p>
 		<span id="error" class="small">&nbsp;</span>
 		<input id="prev" type="button" value="History" onclick="prevStep();" />

@@ -38,7 +38,8 @@
 ##' pecan.ma(prior.distns, trait.data, 25000)
 ##' }
 #--------------------------------------------------------------------------------------------------#
-pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outdir, 
+pecan.ma <- function(trait.data, prior.distns, taupriors,
+                     j.iter, settings, outdir,
                      overdispersed = TRUE){
   
   madata <- list()
@@ -104,7 +105,9 @@ pecan.ma <- function(trait.data, prior.distns, taupriors, j.iter, settings, outd
     jag.model.file <-  paste(outdir, trait.name, ".model.bug",sep="")  # file to store model
 
     ## run the meta-analysis in JAGS
-    jags.out <- single.MA(data,j.chains,j.iter,taupriors$tauA,taupriors$tauB[trait.name],prior,jag.model.file,overdispersed)
+    jags.out <- single.MA(data, j.chains, j.iter,
+                          taupriors$tauA, taupriors$tauB[trait.name],
+                          prior, jag.model.file, overdispersed)
     
     print(summary(jags.out))
     

@@ -440,6 +440,9 @@ query.trait.data <- function(trait, spstr,con=query.base.con(settings), ...){
     print("WEB QUERY OF DATABASE NOT IMPLEMENTED")
     return(NULL)
   } 
+  
+  # print trait info
+  print("---------------------------------------------------------")
   print(trait)
   
 ### Query the data from the database for trait X.
@@ -498,6 +501,12 @@ query.trait.data <- function(trait, spstr,con=query.base.con(settings), ...){
     ## to that at 25 degC (ref temp).
     data <- arrhenius.scaling.traits(data, covariates, c('leafT', 'airT'))
     
+  } else if (trait == 'stem_respiration_rate') {
+#########################  STEM RESPIRATION   ############################
+    ## Apply Arrhenius scaling to convert stem respiration at measurement temp 
+    ## to that at 25 degC (ref temp).
+    data <- arrhenius.scaling.traits(data, covariates, c('leafT', 'airT'))
+
   } else if (trait == 'c2n_leaf') {
 #########################  LEAF C:N   ############################
     
@@ -526,6 +535,9 @@ query.trait.data <- function(trait, spstr,con=query.base.con(settings), ...){
     ## info to send to console.  Maybe just print summary stats?
     ## print(result)
     print(paste("Median ",trait," : ",round(median(result$mean,na.rm=TRUE),digits=3),sep=""))
+    print("---------------------------------------------------------")
+ 
+    # print list of traits queried and number by outdoor/glasshouse
     return(result)
   }
 }

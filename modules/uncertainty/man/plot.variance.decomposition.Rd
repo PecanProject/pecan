@@ -3,9 +3,9 @@
 \title{Variance Decomposition Plots}
 \usage{
   plot.variance.decomposition(plot.inputs, outdir,
-  prior.plot.inputs = NULL, fontsize = list(title = 18,
-  axis = 14), filter = TRUE, variance.scale = sqrt,
-  variance.prefix = "Root")
+    prior.plot.inputs = NULL,
+    fontsize = list(title = 18, axis = 14), filter = TRUE,
+    variance.scale = sqrt, variance.prefix = "Root")
 }
 \arguments{
   \item{plot.inputs}{}

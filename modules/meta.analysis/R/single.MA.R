@@ -6,8 +6,24 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-single.MA <- function(data,j.chains,j.iter,tauA,tauB,prior,jag.model.file,overdispersed=TRUE)
-  {
+##' Individual Meta-analysis
+##'
+##'  Individual meta-analysis for a specific trait and PFT is run by the function
+##' single.MA. This will allow power analysis  to run repeated MA outside of the
+##' full loop over traits and PFTs. 
+##' @title Single MA
+##' @param data 
+##' @param j.chains number of chains in meta-analysis
+##' @param j.iter  number of mcmc samples
+##' @param tauA prior on variance parameters
+##' @param tauB  prior on variance parameters
+##' @param prior 
+##' @param jag.model.file file to which model will be written 
+##' @param overdispersed 
+##' @return jags.out, an mcmc.object with results of meta-analysis
+##' @author David LeBauer, Michael C. Dietze
+single.MA <- function(data, j.chains, j.iter, tauA, tauB, prior,
+                      jag.model.file, overdispersed=TRUE){
   ## Convert R distributions to JAGS distributions
   jagsprior <- r2bugs.distributions(prior)
   jagsprior <- jagsprior[, c('distn', 'parama', 'paramb', 'n')]
