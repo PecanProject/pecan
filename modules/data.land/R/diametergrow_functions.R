@@ -291,36 +291,3 @@ se.update <- function(){   #process error
 }
 
 
-#all plots
-mplot   <- length(diameters)
-dcens   <- numeric(0)
-dincr   <- numeric(0)
-surv    <- numeric(0)
-ijindex <- numeric(0)
-
-for(j in 1:mplot){    #stack data from all plots
-
-  if(length(surviv[[j]]) == 0)next
-
-  wc    <- match(colnames(diameters[[j]]),yrvec)
-  nr    <- nrow(diameters[[j]])
-
-  dc    <- matrix(NA,nr,length(yrvec))
-  dc[,wc] <- diameters[[j]]
-  dcens <- rbind(dcens,dc)
-
-  di    <- matrix(NA,nr,(length(yrvec)-1))
-  di[,wc[-length(wc)]] <- increment[[j]]
-  dincr <- rbind(dincr,di)
-
-  sv <- matrix(NA,nr,length(yrvec))
-  sv[,wc] <- surviv[[j]]
-  surv <- rbind(surv,sv)
-
-  ijindex <- rbind(ijindex,cbind(rep(j,nr),c(1:nr)))
-
-}
-
-
-
-
