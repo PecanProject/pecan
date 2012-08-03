@@ -87,7 +87,8 @@ for(y in 1:length(yrs)){
   n <- length(ysel)
   out <- list()
   #prevTime <- NULL
-  print(y)
+  #print(y)
+  print(paste("----- Processing year: ",yrs[y]))
   #if(haveTime) prevTime <- progressBar()
   row <- 1
   for(i in ysel){

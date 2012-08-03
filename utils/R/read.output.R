@@ -46,10 +46,6 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,variables="GP
       outfiles <- outfiles[grep("\\.h5$",outfiles)]
   }
 
-  # debug
-  print(length(file.names))
-  print(file.names[1])
-  
   ### model-specific code to parse each file 
   if(length(file.names) > 0) {
 
@@ -61,14 +57,6 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,variables="GP
         ncfiles <- list.files(path=outdir,pattern=run.id,full.names=TRUE)
         ncfiles <- ncfiles[grep("\\.nc$",ncfiles)]
     }
-   
-    # debug
-    print(length(ncfiles))
-    print(ncfiles[1])
-
-    # debug
-    print(length(outfiles))
-    print(outfiles[1])
     
     #check that there are output files
     if(length(ncfiles) | length(outfiles)){
