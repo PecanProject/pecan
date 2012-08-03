@@ -10,11 +10,11 @@ library(PEcAn.rtm)
 #################### Some examples for testing #####################
 
 ## Load test data
-data(poplar)
-data(clover)
-data(beech)
+data(poplar)  # test poplar dataset
+data(clover)  # test clover dataset
+data(beech)   # test beech dataset
 
-spectra = clover
+spectra = clover  # chosen spectra to invert
 plot(spectra[,1],spectra[,2],type="l",lwd=2.5,ylim=c(0,1))
 lines(spectra[,1],1-spectra[,3],lwd=2.5,col="dark grey")
 box(lwd=2.2)
@@ -26,10 +26,10 @@ tran <- spectra[,3]
 
 ## PROSPECT-4
 inv = invprospect(refl,tran,model=4,method="DEoptim",strategy=2,threshold=0.01,cpus=4)
-plot.prospect.inv(inv,outdir='/Users/serbin/DATA/',file='test_prospect.inv3')
+plot.prospect.inv(inv,outdir='/Users/serbin/Data/',file='test_prospect.inv4')
 
 ## PROSPECT-5
 inv = invprospect(refl,tran,model=5,"DEoptim",strategy=2,threshold=0.01,cpus=4)
-plot.prospect.inv(inv,outdir='/Users/serbin/DATA/',file='test_prospect.inv4')
+plot.prospect.inv(inv,outdir='/Users/serbin/Data/',file='test_prospect.inv5')
 
 
