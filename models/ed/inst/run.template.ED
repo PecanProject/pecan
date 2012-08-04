@@ -18,6 +18,7 @@ ED2IN=$2
 LOC=TMP
 echo "---- ED2 temporary output location: $LOC"
 if [ ! -d "$LOC" ]; then
+        mkdir /scratch"/"$USER
         echo "---- Creating scratch folder: "$LOC;
         mkdir $LOC  # Temporary output folder on local scratch
 else
