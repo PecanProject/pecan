@@ -25,3 +25,6 @@ Collate:
     'Read_Tuscon.R'
     'diametergrow.R'
     'diametergrow_functions.R'
+    'read.plot.R'
+    'read.velmex.R'
+    'fuse_plot_treering.R'
