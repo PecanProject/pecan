@@ -3,7 +3,7 @@
 ## Clark et al. 2007 Ecol Appl.
 ## modified by Mike Dietze
 
-diametergrow <- function(){
+diametergrow <- function(diameters,increment,survival = NULL){
 
 #### data structures:
 ##
@@ -12,7 +12,6 @@ diametergrow <- function(){
 ##
 ## both matrices have lots of NAs -- includes ALL years and trees, not just measured
 ##
-## spgroup   <- name of taxa 
 ##
 
 plotend <- function(fname){dev.off()}
@@ -25,48 +24,39 @@ plotstart <- function(fname){pdf(fname)}
 ###############################################
 
 ### set up input/output folders
-plotnames <- site
-spgroup <- SPP      ## character name for species group, for filenaming
 REMOTE  <- FALSE    ## if true produced graphics; if false, assumes running on node w/o graphics
 INCREMENTS <- FALSE ## if true, plots increment data 
-##outfolder <- "luquillo_data" ## output folder for saving files
+outfolder <- settings$outfolder  ## output folder for saving files
 
 ### set up years
-beginyr <- 2003
-endyr   <- 2008
-yrvec   <- c(beginyr:endyr)
+yrvec <- colnames(diameters[[1]])
 nyr     <- length(yrvec)
-colnames(diameters[[1]])  <- yrvec
-
-## load growth & survival data
-if(FALSE){
-  btmp <- read.table("luquillo_data/tabhetdiam.txt",header=T)  # Diameter data
-  diameters <- list(as.matrix(btmp[,-1]))
-  increment <- list(matrix(NA,nrow(btmp),(ncol(btmp)-2)))
-  btmp    <- read.table('luquillo_data/tabhetsurv.txt',header=T)
-  surviv  <- list(as.matrix(btmp[,-1]))
-  mtree   <- nrow(btmp) ## number of trees
-}
-
-##colnames(increment[[1]]) <- yrvec[-length(yrvec)]
+beginyr <- yrvec[1]
+endyr   <- yrvec[nyr]
 
 ierr <- .1           #width (in cm) of error window for increments
-
-
-######  INIIALIZE ######
-##source('../dbh/diametergrow_functions.r')  #initialize and functions
-
+mind    <- .005
+maxd    <- 3
 
 #all plots
-mplot   <- length(diameters)
-dcens   <- numeric(0)
-dincr   <- numeric(0)
-surv    <- numeric(0)
-ijindex <- numeric(0)
+mplot   <- length(diameters)   ## number of sites
+dcens   <- numeric(0)          ## combined diameter data
+dincr   <- numeric(0)          ## combined increment data
+surv    <- numeric(0)          ## combined survival data
+ijindex <- numeric(0)          ## indexing for combined data
 
-for(j in 1:mplot){    #stack data from all plots
+## if not provided, assume all trees survive
+if(is.null(survival)){
+  survival <- list()
+  for(i in 1:mplot){
+    if(length(diamters[[i]]) == 0) next
+    survival[[i]] <- matrix(TRUE,nrow(diameters[[i]]),nyr)
+  }
+}
 
-  if(length(surviv[[j]]) == 0)next
+#stack data from all plots
+for(j in 1:mplot){    
+  if(length(survival[[j]]) == 0)next
 
   wc    <- match(colnames(diameters[[j]]),yrvec)
   nr    <- nrow(diameters[[j]])
@@ -88,9 +78,8 @@ for(j in 1:mplot){    #stack data from all plots
 }
 
 
-
-n       <- nrow(dcens)
-nt      <- ncol(dcens)
+n       <- nrow(dcens)    ## number of trees
+nt      <- ncol(dcens)   ## number of years 
 dobs    <- which(is.finite(dcens),arr.ind=T)   #diameter obs
 nod     <- which(!is.finite(dcens) & surv == 1,arr.ind=T) #no diam obs
 ndobs   <- nrow(dobs)
@@ -99,35 +88,32 @@ noi     <- which(!is.finite(dincr) & surv[,-nt] == 1,arr.ind=T) #no diam obs
 niobs   <- nrow(iobs)
   if(length(niobs) == 0)niobs <- 0
 
-yr      <- yrvec
 time    <- c(1:length(yrvec))
 tindex  <- time[-nt]          #time index for plot 2
 
-mind    <- .005
-maxd    <- 3
 
-mindinc <- matrix(mind,nrow(dincr),ncol(dincr))
-maxdinc <- maxd + mindinc*0
+mindinc <- matrix(mind,nrow(dincr),ncol(dincr))  ## minimum incerment
+maxdinc <- maxd + mindinc*0                      ## maximum increment
 mindinc[iobs] <- dincr[iobs] - ierr
 maxdinc[iobs] <- dincr[iobs] + ierr
 mindinc[mindinc < mind] <- mind
 
-dtmp        <- diamint()
+  dtmp      <- diamint()
   diam.t    <- dtmp$diamt
   d0        <- dtmp$d0
   firstyr.i <- dtmp$firstyri
   dgrow     <- t(apply(diam.t,1,diff,na.rm=T))       #diameter increment
 
-dplot   <- matrix(rep(ijindex[,1],each=(nt-1)),n,(nt-1),byrow=T)
+  dplot   <- matrix(rep(ijindex[,1],each=(nt-1)),n,(nt-1),byrow=T)
   dplot[is.na(dgrow)] <- NA
-ntt     <- t(apply((dgrow*0 + 1),2,sum,na.rm=T)) #values per yr
-nti     <- t(apply((dgrow*0 + 1),1,sum,na.rm=T)) #values per individual
-ntmp    <- table(dplot,deparse.level=0)          #values per plot
+  ntt     <- t(apply((dgrow*0 + 1),2,sum,na.rm=T)) #values per yr
+  nti     <- t(apply((dgrow*0 + 1),1,sum,na.rm=T)) #values per individual
+  ntmp    <- table(dplot,deparse.level=0)          #values per plot
   ntp  <- rep(0,mplot)
   pii  <- match(as.numeric(unlist(dimnames(ntmp))),c(1:mplot))
   ntp[pii] <- ntmp
   
-nm      <- table(cut(ijindex[,1],c(0:mplot)))    #trees per plot
+  nm      <- table(cut(ijindex[,1],c(0:mplot)))    #trees per plot
 
 pmat    <- matrix(0,max(nm),mplot)              #matrix to hope plot values
 pindex  <- numeric(0)
@@ -258,7 +244,7 @@ printseq <- seq(10,ng,by=100)
 ######################################################
 for(g in 1:ng){
 
-  ftmp <- f.update()
+    ftmp <- f.update()
     mu      <- ftmp$mu
  #   beta.t  <- ftmp$beta.t
     alpha   <- ftmp$alpha
@@ -272,7 +258,7 @@ for(g in 1:ng){
     if(length(mu) == 1)mumat <- matrix(mu,n,(nt-1))
     if(!COVARIATES)mumat <- matrix(muVec[nindex],n,(nt-1))
 
-  beta.i <- in.update()
+    beta.i <- in.update()
     ieffect <- matrix(rep(beta.i,each=(nt-1)),nrow=n,byrow=T)
 
   if(mplot > 1) {
@@ -285,10 +271,10 @@ for(g in 1:ng){
   }
   peffect <- matrix( rep(beta.p,times=(nm*(nt-1))),nrow=n,byrow=T)
 
-  sig  <- se.update()  #proc
-  sigd <- sd.update()  #individuals
+    sig  <- se.update()  #proc
+    sigd <- sd.update()  #individuals
 
-  dtmp <- di.update()
+     dtmp <- di.update()
      diam.t  <- dtmp$diam.t
      w.error <- dtmp$sw  #error diam
      v.error <- dtmp$sv  #error growth
@@ -341,10 +327,10 @@ sdiam <- sqrt(d2gibbs/nk - mdiam^2)
 mgrow <- ggibbs/nk
 sgrow <- sqrt(g2gibbs/nk - mgrow^2)
 peff  <- bpgibbs/nk
-names(peff) <- plotnames
+#names(peff) <- plotnames
 sdp   <- sqrt(bp2gibbs/nk - peff^2)
 pci   <- cbind((peff-1.96*sdp),(peff+1.96*sdp))
-  rownames(pci) <- plotnames
+#  rownames(pci) <- plotnames
   pci[mtree == 0,] <- NA
 
 mldiam <- ldgibbs/nk
@@ -377,7 +363,7 @@ diampars[1:nrow(pvals),6:8] <- pvals
 rownames(diampars) <- names(estimate)
 colnames(diampars) <- c(colnames(p3),'par1','par2','prior mean')
 
-outfile <- paste(outfolder,spgroup,'_diampars.txt',sep='')
+outfile <- paste(outfolder,'diampars.txt',sep='')
   write.table(signif(diampars,3),outfile,row.names = TRUE,col.names=TRUE,quote=FALSE)
 
 #determine posterior means and sd's for diameter, growth, and other columns in treemat
@@ -472,7 +458,7 @@ for(j in 1:mplot){
      jcol  <- c(jcol,rep(j,(nyr[j]*mtree[j])))
      icol  <- c(icol,rep(c(1:mtree[j]),each=(ye - yb + 1)))
      ticol <- c(ticol,rep(c(treeindex[j,1]:treeindex[j,2]),each=(ye - yb + 1)))
-     surv  <- c(surv,as.vector(t(surviv[[j]])))
+     surv  <- c(surv,as.vector(t(survival[[j]])))
 }
 
 
@@ -482,7 +468,7 @@ for(j in 1:mplot){
 
 if(INCREMENTS){
 
-plotfile <- paste(outfolder,spgroup,".incrementdata.ps",sep="")
+plotfile <- paste(outfolder,"incrementdata.ps",sep="")
 plotstart(plotfile)
 
 par(mfrow=c(6,2),mar=c(1,1,2,1),bty='n')
@@ -504,7 +490,7 @@ par(mfrow=c(6,2),mar=c(1,1,2,1),bty='n')
     r1 <- rframe[rframe[,'order'] == ordring[i],]
     lines(r1[,'yr'],r1[,'cm'])
   }
-  title(plotnames[j])
+#  title(plotnames[j])
 
   }
 
@@ -531,7 +517,7 @@ plotend(plotfile)
 #plotend(plotfile)
 
 
-plotfile <- paste(outfolder,spgroup,'diampost.ps',sep='')
+plotfile <- paste(outfolder,'diampost.ps',sep='')
 plotstart(plotfile)
 
 vs <- seq(.00001,1.2,length=200)
@@ -563,7 +549,7 @@ for(j in 1:(nt-1)){
 plotend(plotfile)
 
 
-plotfile <- paste(outfolder,spgroup,'diamvars.ps',sep='')
+plotfile <- paste(outfolder,'diamvars.ps',sep='')
 plotstart(plotfile)
 
 #var comparison
@@ -628,7 +614,7 @@ plotend(plotfile)
 
 if(COVARIATES){
   
-  plotfile <- paste(outfolder,spgroup,'diam_ind.ps',sep='')
+  plotfile <- paste(outfolder,'diam_ind.ps',sep='')
   plotstart(plotfile)
 
   par(mfrow=c(2,2))
@@ -642,7 +628,7 @@ if(COVARIATES){
 }
 
 
-plotfile <- paste(outfolder,spgroup,'diam_fit.ps',sep='')  #large file
+plotfile <- paste(outfolder,'diam_fit.ps',sep='')  #large file
 plotstart(plotfile)
 
 #diameters and growth rates
@@ -733,7 +719,7 @@ if(!REMOTE){
 print('after diameter analysis')
 
 #################    FINAL OUTPUT     ##################
-save.image(paste(outfolder,site,".DBH.",SPP,".RData",sep=""))
+save.image(paste(outfolder,"DBH.RData",sep=""))
 
 ## mdiam -- modeled diameter mean
 ## sdiam -- modeled diameter s.d.
