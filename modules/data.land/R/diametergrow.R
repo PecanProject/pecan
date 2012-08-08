@@ -49,7 +49,7 @@ ijindex <- numeric(0)          ## indexing for combined data
 if(is.null(survival)){
   survival <- list()
   for(i in 1:mplot){
-    if(length(diamters[[i]]) == 0) next
+    if(length(diameters[[i]]) == 0) next
     survival[[i]] <- matrix(TRUE,nrow(diameters[[i]]),nyr)
   }
 }
