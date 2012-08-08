@@ -1,4 +1,4 @@
-fuse_plot_treering <- function(plot.data,inc.data){
+fuse_plot_treering <- function(plot.data,inc.data,inc.unit.conv = 0.1){
 
   plot.data <- as.data.frame(plot.data)
   
@@ -35,7 +35,7 @@ fuse_plot_treering <- function(plot.data,inc.data){
         if(length(mch) == 1){
           ## only one record, use it.
           growth = diff(inc.data[[mch]])
-          increments[[i]][j,nyr:(nyr-length(growth)+1)] <- growth
+          increments[[i]][j,nyr:(nyr-length(growth)+1)] <- growth*inc.unit.conv
         } else{          
            ## create mean increment record (eventually shift this to BAI eliptoid)
            growth =  matrix(NA,length(mch),nyr)
@@ -44,7 +44,7 @@ fuse_plot_treering <- function(plot.data,inc.data){
            }
            growth <- apply(growth,2,mean,na.rm=TRUE)
            growth[is.nan(growth)] <- NA
-           increments[[i]][j,] <- rev(growth)
+           increments[[i]][j,] <- rev(growth)*inc.unit.conv
 
          }
       } ## end mch > 0
@@ -55,11 +55,11 @@ fuse_plot_treering <- function(plot.data,inc.data){
   
   ## expand diameter data matri
    for(i in 1:length(diameters)){
-     dtmp <- matrix(NA,length(diameters[[i]]),nyr)
+     dtmp <- matrix(NA,length(diameters[[i]]),nyr+1)
      dnames <- names(diameters[[i]])
-     dtmp[,nyr] <- diameters[[i]]
+     dtmp[,nyr+1] <- diameters[[i]]
      diameters[[i]] <- dtmp
-     colnames(diameters[[i]]) <- 2012 - nyr:1 + 1
+     colnames(diameters[[i]]) <- 2012 - (nyr+1):1 + 1
      row.names(diameters[[i]])<- dnames
    }
 
