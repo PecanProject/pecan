@@ -1,6 +1,6 @@
 
 export(diametergrow)
-export(fia2ED)
+export(fia.to.psscss)
 export(fuse_plot_treering)
 export(read.plot)
 export(read.velmex)
