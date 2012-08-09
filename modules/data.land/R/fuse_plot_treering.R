@@ -3,9 +3,10 @@ fuse_plot_treering <- function(plot.data,inc.data,inc.unit.conv = 0.1){
   plot.data <- as.data.frame(plot.data)
   
   ## separate veg data to lists by plot
-   plot.id <- unique(plot.data$plot)
+  plot.id <- unique(plot.data$plot)
   diameters <- list()
   spp <- list()
+  depth <- list()
   for(i in 1:length(plot.id)){
 
     mch = which(plot.data$plot == plot.id[i]) 
@@ -15,7 +16,7 @@ fuse_plot_treering <- function(plot.data,inc.data,inc.unit.conv = 0.1){
     
     
   }
-  
+    
   ## match increment data to plot and tree
   ## note: much of this parsing is currently specific to Sam's data
   increments <- list()
@@ -24,9 +25,17 @@ fuse_plot_treering <- function(plot.data,inc.data,inc.unit.conv = 0.1){
   inc.rep <- substr(inc.names,nchar(inc.names),nchar(inc.names))
   inc.length <- sapply(inc.data,length)
   nyr <- max(inc.length,na.rm=TRUE)-1
+  
+  survival <- list()
+  for(i in 1:mplot){
+    if(length(diameters[[i]]) == 0) next
+    survival[[i]] <- matrix(TRUE,length(diameters[[i]]),nyr)
+  }
+  
   for(i in 1:length(plot.id)){ ## loop over plots
     ntree = length(diameters[[i]])
     increments[[i]] <- matrix(NA,ntree,nyr)
+    depth[[i]] <- rep(NA,ntree)
     for(j in 1:ntree){  ## loop over trees
       ## look for next tree in list
       tree.id <- as.numeric(names(diameters[[i]])[j])
@@ -34,20 +43,32 @@ fuse_plot_treering <- function(plot.data,inc.data,inc.unit.conv = 0.1){
       if(length(mch) > 0){
         if(length(mch) == 1){
           ## only one record, use it.
-          growth = diff(inc.data[[mch]])
+          y = inc.data[[mch]] 
+          maxy = max(y)
+          growth = diff(y)          
           increments[[i]][j,nyr:(nyr-length(growth)+1)] <- growth*inc.unit.conv
         } else{          
            ## create mean increment record (eventually shift this to BAI eliptoid)
            growth =  matrix(NA,length(mch),nyr)
+           maxy = NULL
            for(k in 1:length(mch)){
+             maxy = max(maxy,inc.data[[mch[k]]])
              growth[k,1:(inc.length[mch[k]]-1)] <- diff(inc.data[[mch[k]]])
            }
            growth <- apply(growth,2,mean,na.rm=TRUE)
            growth[is.nan(growth)] <- NA
            increments[[i]][j,] <- rev(growth)*inc.unit.conv
-
          }
+      
+        ## did core get to pith??
+        radius = diameters[[i]][j]/2
+        depth[[i]][j] = maxy*inc.unit.conv
+        if((radius*0.95 - 2) < depth[[i]][j]){ ## if you're within 5% of the diameter, assume hit middle
+          survival[[i]][j,which(is.na(increments[[i]][j,]))] <- FALSE   
+        }
+      
       } ## end mch > 0
+      
     }  ## end loop over trees
   } ## end loop over plots
   
@@ -63,5 +84,6 @@ fuse_plot_treering <- function(plot.data,inc.data,inc.unit.conv = 0.1){
      row.names(diameters[[i]])<- dnames
    }
 
-  return(list(diameters=diameters,increments=increments,species = spp))
+  return(list(diameters=diameters,increments=increments,
+              survival=survival,species = spp,depth=depth))
 }
