@@ -31,11 +31,13 @@ tnorm <- function(n,lo,hi,mu,sig){   #normal truncated lo and hi
 }
 ###########################################################
 
-diamint <- function(n,nt,surv,dcens,time){     # initialize diameters
+diamint <- function(){     # initialize diameters
   
   diamt <- matrix(NA,n,nt)  #true values, initialized here
   d0    <- matrix(0,n,2)   #range of values in yr 1
   first <- rep(0,n)        #first observation yr
+  
+  bginc <- mean(sapply(increment,mean,na.rm=TRUE),na.rm=TRUE)
   
   for(i in 1:n){
     
@@ -44,17 +46,22 @@ diamint <- function(n,nt,surv,dcens,time){     # initialize diameters
     first[i] <- wf
     
     wi <- which(is.finite(dcens[i,]),arr.ind=T)
-    xi <- time[wi]
+    xi <- time[wi] - wf + 1  # recenter to first year
     yi <- dcens[i,wi]
     intercept <- mean(yi) - mean(xi)*( cov(xi,yi)/var(xi) )
+    
+    ## modification: if only one census, assume mean increment
+    if(length(xi)==1) intercept <- yi - bginc*xi
+    
     if(!is.finite(intercept))intercept <- min(yi,na.rm=T)
-    if(intercept < .1)intercept <- max(.1,(min(yi) - 5) )
+    if(intercept < .1)intercept <- 0.1 #max(.1,(min(yi) - 5) )
     slope <- (mean(xi*yi) - intercept*mean(xi) )/mean(xi^2)
     if(slope < .001){
       slope     <- .001
       intercept <- mean(yi) - slope*mean(xi)
     }
-    dfit <- intercept + slope*time
+    
+    dfit <- intercept + slope*(time - wf + 1)
     diamt[i,wf:wl] <- dfit[wf:wl]
     d0[i,] <- c((diamt[i,wf] - 2),(diamt[i,wf] + 2))
   }
@@ -65,7 +72,7 @@ diamint <- function(n,nt,surv,dcens,time){     # initialize diameters
 }
 #############################################
 
-f.update <- function(sig,sigd,sigp,nyr,ntt,ny,nt,COVARIATES,nindex){  # sample fixed effects
+f.update <- function(){  # sample fixed effects
   
   alpha   <- numeric(0)
   allvars <- sig + sigd + sigp
@@ -396,7 +403,7 @@ maxdinc[iobs] <- dincr[iobs] + ierr
 mindinc[mindinc < mind] <- mind
 maxdinc[maxdinc < mindinc] <- maxd  
 
-  dtmp      <- diamint(n,nt,surv,dcens,time)
+  dtmp      <- diamint()
   diam.t    <- dtmp$diamt
   d0        <- dtmp$d0
   firstyr.i <- dtmp$firstyri
@@ -501,7 +508,7 @@ beta.t  <- rep(0,(nt-1))        #fixed year effects
   mumat   <- peffect*0
   teffect <- matrix(rep(beta.t,each=n),nrow=n,byrow=F)
 
-ng <- 5000    ## length of MCMC
+ng <- 1000    ## length of MCMC
 burnin <- 400  ## length of burn-in
 printseq <- seq(10,ng,by=20)
 
@@ -542,7 +549,7 @@ printseq <- seq(10,ng,by=100)
 ######################################################
 for(g in 1:ng){
 
-    ftmp <- f.update(sig,sigd,sigp,nyr,ntt,ny,nt,COVARIATES,nindex)
+    ftmp <- f.update()
     mu      <- ftmp$mu
  #   beta.t  <- ftmp$beta.t
     alpha   <- ftmp$alpha
