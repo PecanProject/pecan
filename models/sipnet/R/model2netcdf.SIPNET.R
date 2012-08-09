@@ -22,7 +22,6 @@ model2netcdf.SIPNET <- function(outdir,run.id) {
   ### Read in model output in SIPNET format
   sipnet.output <- read.table(paste(outdir,"/",run.id,"/",run.id,".out",sep=""),header=T,skip=1,sep='')
   sipnet.output.dims <- dim(sipnet.output)
-  
   ### Determine number of years and output timestep
   num.years <- length(unique(sipnet.output$year))
   years <- unique(sipnet.output$year)
@@ -66,11 +65,16 @@ model2netcdf.SIPNET <- function(outdir,run.id) {
     output[[14]] <- (sub.sipnet.output$soilWater*10)            # Soil moisture kgW/m2
     output[[15]] <- (sub.sipnet.output$soilWetnessFrac)         # Fractional soil wetness
     output[[16]] <- (sub.sipnet.output$snow*10)                 # SWE
-      
+          
     #******************** Declar netCDF variables ********************#
     t <- dim.def.ncdf("time",paste("seconds since ",y,"-","01","-","01 ","00:00:00 -6:00",sep=""),
                       (1:sub.sipnet.output.dims[1]*timestep.s)) #cumulative time
     ### ***** Need to dynamically update the UTC offset here *****
+    
+    for(i in 1:length(output)){
+      if(length(output[[i]])==0) output[[i]] <- rep(-999,length(t$vals))
+    }
+    
     
     var <- list()
     var[[1]]  <- var.def.ncdf("Year","YYYY",t,-999,"Year of model output")                # year

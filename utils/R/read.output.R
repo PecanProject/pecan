@@ -21,7 +21,7 @@
 ##' @export
 ##' @author Michael Dietze
 read.output <- function(run.id, outdir, start.year=NA, end.year=NA,variables="GPP",model=model){
-  
+    
   ### Load requirements
   require(ncdf)
   
@@ -46,6 +46,9 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,variables="GP
       outfiles <- outfiles[grep("\\.h5$",outfiles)]
   }
 
+  #print(file.names)
+  #print(outfiles)
+  
   ### model-specific code to parse each file 
   if(length(file.names) > 0) {
 
