@@ -494,7 +494,6 @@ read.ensemble.output <- function(ensemble.size, outdir,
   ensemble.output <- list()
   for(ensemble.id in 1:ensemble.size) {
     run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, 5))#log10(ensemble.size)+1))
-    print(run.id)
       ensemble.output[[ensemble.id]] <- sapply(read.output(run.id, outdir, start.year, end.year,variables,model),mean)
   }
   return(ensemble.output)
