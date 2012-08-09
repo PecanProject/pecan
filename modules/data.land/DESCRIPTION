@@ -27,3 +27,4 @@ Collate:
     'read.plot.R'
     'read.velmex.R'
     'fuse_plot_treering.R'
+    'plot2AGB.R'

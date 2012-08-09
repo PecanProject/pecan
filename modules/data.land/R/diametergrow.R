@@ -508,7 +508,8 @@ beta.t  <- rep(0,(nt-1))        #fixed year effects
   mumat   <- peffect*0
   teffect <- matrix(rep(beta.t,each=n),nrow=n,byrow=F)
 
-ng <- 1000    ## length of MCMC
+ng <- 5000    ## length of MCMC
+nrep <- 100
 burnin <- 400  ## length of burn-in
 printseq <- seq(10,ng,by=20)
 
@@ -541,6 +542,11 @@ lggibbs  <- diam.t[,-nt]*0   #sums and sums of squares, growth
 lg2gibbs <- diam.t[,-nt]*0
 
 printseq <- seq(10,ng,by=100)
+
+##full data
+to.save <- floor(seq(burnin,ng,length=nrep))
+full.dia <- list()
+  
 
 ######################################################
 ####                                              ####
@@ -612,10 +618,15 @@ for(g in 1:ng){
     ld2gibbs    <- ld2gibbs + log(diam.t)^2
     lggibbs     <- lggibbs + log(dgrow)
     lg2gibbs    <- lg2gibbs + log(dgrow)^2
+  } 
+    if(g %in% printseq){
+#     print(g)
+#     print(betaMat)#[5:6,])
   }
-  if(g %in% printseq){
-     print(g)
-     print(betaMat)#[5:6,])
+  if(g %in% to.save){
+    print(g)
+    full.dia[[which(to.save==g)]] <- diam.t    
+    print(is.null(full.dia[[which(to.save==g)]]))
   }
 }
 ########### END MCMC ##########
@@ -1030,11 +1041,12 @@ print('after diameter analysis')
 
 #################    FINAL OUTPUT     ##################
 save.image(paste(outfolder,"DBH.RData",sep=""))
-
+save(mdiam,sdiam,mgrow,sgrow,full.dia,ijindex,mplot,file=paste(outfolder,"DBH_summary.RData",sep=""))
 ## mdiam -- modeled diameter mean
 ## sdiam -- modeled diameter s.d.
 ## mgrow -- modeled growth mean
 ## sgrow -- modeled growth s.d.
 
 ## equivalents exist for log-transformed values as well
+print('after save')
 }
