@@ -6,14 +6,19 @@
 ## model = name of model (string)
 ## chain = ID number of mcmc chain
 ## params = previous output (used when updating MCMC)
+## vars = vector of indices of which parameters in the parameter vector to vary
+## jvar = jump variance
 
 
 pda.mcmc <- function(model,chain=1,vars=NULL,jvar=NULL,params=NULL){
-
+  
+  ## this bit of code is useful for defining the variables passed to this function 
+  ## if you are debugging
   if(FALSE){
     model = "SIPNET"
     chain = 1
     params = NULL
+    vars = NULL
     jvar = NULL
   }
   
@@ -32,12 +37,20 @@ pda.mcmc <- function(model,chain=1,vars=NULL,jvar=NULL,params=NULL){
     print(paste("please make sure that the PEcAn interface is loaded for",model))
     exit()
   }
-
   my.start.run <- paste("start.run.",model,sep="")
   if(!exists(my.start.run)){
     print(paste(my.start.run,"does not exist"))
     print(paste("please make sure that the PEcAn interface is loaded for",model))
     exit()
+  }
+  read.SIPNET.NEE <- function(run.id,outdir){
+    sipnet.output <- read.table(paste(outdir,"/",run.id,"/",run.id,".out",sep=""),header=T,skip=1,sep='')
+    sipnet.output.dims <- dim(sipnet.output)
+    ### Determine number of years and output timestep
+    num.years <- length(unique(sipnet.output$year))
+    years <- unique(sipnet.output$year)
+    timestep.s <- 86400/length(which(sipnet.output$year==years[1] & sipnet.output$day==1))
+    return((sipnet.output$nee/12*1e6)/timestep.s)     # NEE in gC/m2/timestep -> umolC/m2/s 
   }
 
   
@@ -78,13 +91,13 @@ pda.mcmc <- function(model,chain=1,vars=NULL,jvar=NULL,params=NULL){
        
   ## load data
   data <- read.csv(settings$assim.batch$input)
-  NEEo <- data$Fc
+  NEEo <- data$Fc   #umolCO2 m-2 s-1
   NEEq <- data$qf_Fc
   NEEo[NEEq > 0] <- NA
   
   ## calculate flux uncertainty parameters
   dTa <- get.change(data$Ta)
-  flags <- dTa < 3
+  flags <- dTa < 3   ## filter data to temperature differences that are less thatn 3 degrees
   NEE.params <- flux.uncertainty(NEEo,NEEq,flags,20)
   b0 <- NEE.params$intercept
   bp <- NEE.params$slopeP
@@ -99,7 +112,11 @@ pda.mcmc <- function(model,chain=1,vars=NULL,jvar=NULL,params=NULL){
   }
   
   ## set initial conditions
-  parm = as.vector(rmvprior(1))
+  if(start==1){
+    parm = as.vector(rmvprior(1))
+  } else{
+    parm <- params[start-1,]
+  }
   names(parm) = pname
   LL.old <- -Inf
   prior.old <- -Inf
@@ -127,12 +144,13 @@ pda.mcmc <- function(model,chain=1,vars=NULL,jvar=NULL,params=NULL){
         run.id = paste(chain,i,j,sep=".")
         do.call(my.write.config,args=list(defaults,list(pft=pstar,env=NA),
                  settings, outdir, run.id))        
-    
+
         ## start model run
         do.call(my.start.run,args=list(run.id))
-      
+
         ## read model output        
-        NEEm <- read.output(run.id,outdir,2006,2006,variables="NEE",model=model)$NEE
+#        NEEm <- read.output(run.id,outdir,variables="NEE",model=model)$NEE
+        NEEm <- read.SIPNET.NEE(run.id,outdir)
         NEEm <- rep(NEEm,each=2)
         set <- 1:length(NEEm)
         
