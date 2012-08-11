@@ -147,7 +147,7 @@ read.ensemble.ts <- function(model){
 ##'
 ##' @author Michael Dietze 
 ##'
-ensemble.ts <- function(ensemble.ts){
+ensemble.ts <- function(ensemble.ts,observations=NULL,window=NULL){
 
   print("------ Generating ensemble time-series plot ------")
   variables = names(ensemble.ts)
