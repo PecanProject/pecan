@@ -29,7 +29,7 @@ fuse_plot_treering <- function(plot.data,inc.data,inc.unit.conv = 0.1){
   survival <- list()
   for(i in 1:mplot){
     if(length(diameters[[i]]) == 0) next
-    survival[[i]] <- matrix(TRUE,length(diameters[[i]]),nyr)
+    survival[[i]] <- matrix(TRUE,length(diameters[[i]]),nyr+1)
   }
   
   for(i in 1:length(plot.id)){ ## loop over plots
