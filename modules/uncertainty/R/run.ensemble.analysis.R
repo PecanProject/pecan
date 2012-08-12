@@ -75,7 +75,10 @@ run.ensemble.analysis <- function(plot.timeseries=NA){
   print(" ")
   ### Plot ensemble time-series
   if (!is.na(plot.timeseries)){
+    fig.out <- settings$pfts$pft$outdir
+    pdf(paste(fig.out,"ensemble.ts.pdf",sep="/"),width=12,height=9)    
     ensemble.ts(read.ensemble.ts(model))
+    dev.off()
   }
 
 } ### End of function
@@ -135,6 +138,14 @@ read.ensemble.ts <- function(model){
   return(ensemble.ts)
 }
 
+filterNA <- function(x,w){
+  y <- rep(NA,length(x))
+  for(i in 1:length(x)){
+    y[i] = mean(x[i:(min(length(x),i+w))],na.rm=TRUE)    
+  }
+  return(y)
+}
+
 #--------------------------------------------------------------------------------------------------#
 ##'
 ##' Plots an ensemble time-series from PEcAn for the selected target variables
@@ -147,7 +158,7 @@ read.ensemble.ts <- function(model){
 ##'
 ##' @author Michael Dietze 
 ##'
-ensemble.ts <- function(ensemble.ts,observations=NULL,window=NULL){
+ensemble.ts <- function(ensemble.ts,observations=NULL,window=1){
 
   print("------ Generating ensemble time-series plot ------")
   variables = names(ensemble.ts)
@@ -161,19 +172,29 @@ ensemble.ts <- function(ensemble.ts,observations=NULL,window=NULL){
   ## should probably add extraction of meta-data from netCDF files
   
   ## plot
-  fig.out <- settings$pfts$pft$outdir
-  pdf(paste(fig.out,"ensemble.ts.pdf",sep="/"),width=12,height=9)
   for(j in 1:length(variables)){
-    ylim = range(ensemble.ts[[j]],na.rm=TRUE)
+    
+    if(window > 1){
+#      myens <- apply(ensemble.ts[[j]],1,filterNA,window)#rep(1/window,window))
+      myens <- t(apply(ensemble.ts[[j]],1,function(x){
+        tapply(x,rep(1:(length(x)/window+1),each=window)[1:length(x)],mean,na.rm=TRUE)
+      }))
+      
+    } else {
+      myens <- ensemble.ts[[j]]
+    }    
     
     ### temporary fix to values less than zero that are biologically unreasonable (e.g. GPP)
     if (variables[j] %in% nonzero){
       ylim <- c(0,ylim[2])
     }
     
-    plot(apply(ensemble.ts[[j]],2,mean),ylim=ylim,lwd=2,xlab="time",ylab=variables[j],main=variables[j],
+    ens.mean = apply(myens,2,mean)
+    CI = apply(myens,2,quantile,c(0.025,0.5,0.975))
+    ylim = range(CI,na.rm=TRUE)
+    
+    plot(ens.mean,ylim=ylim,lwd=2,xlab="time",ylab=variables[j],main=variables[j],
          type="l")
-    CI = apply(ensemble.ts[[j]],2,quantile,c(0.025,0.5,0.975))
 
     ### Code to be updated with polygon (below)
     #for(i in 1:nrow(CI)){
@@ -190,15 +211,26 @@ ensemble.ts <- function(ensemble.ts,observations=NULL,window=NULL){
     ##
 
     ## plot mean over others again
-    lines(apply(ensemble.ts[[j]],2,mean),col="black",lwd=1.5)
-    lines(CI[2,],col="dark grey",lty=1,lwd=1.5)
+#    lines(ens.mean,col="black",lwd=1.5)
+#    lines(CI[2,],col="dark grey",lty=1,lwd=1.5)
+    
+    if(window==1){
+      fobs <- observations
+    } else {
+      fobs <- tapply(observations,rep(1:(length(observations)/window+1),each=window)[1:length(observations)],mean,na.rm=TRUE)
+    }
+    if(!is.null(observations)){
+      #lines(filter(observations,rep(1/window,window)),col=2,lwd=1.5)
+      #lines(filterNA(observations,window),col=2,lwd=1.5)
+      points(fobs,col=3,lwd=1.5)
+    }
+
     ## show legend
-    legend("topleft",legend=c("mean","median","95% CI"),lwd=3,col=c(1,"dark grey",2),lty=c(1,1,2))
+    legend("topleft",legend=c("mean","95% CI","data"),lwd=3,col=c(1,2,3),lty=c(1,2,1))
     ## add surrounding box to plot
     box(lwd=2.2)
   }
   
-  dev.off()
 }
 #==================================================================================================#
 
