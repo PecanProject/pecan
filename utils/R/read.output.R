@@ -45,6 +45,8 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,variables="GP
       outfiles <- list.files(path=outdir,pattern=run.id,full.names=TRUE)
       outfiles <- outfiles[grep("\\.h5$",outfiles)]
   }
+ 
+#   print(file.names)  
 
   #print(file.names)
   #print(outfiles)
@@ -88,15 +90,17 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,variables="GP
       nc.years = as.numeric(sub(paste(run.id,".",sep=""),"",sub(".nc","",basename(ncfiles),fixed=TRUE),fixed=TRUE))
       first <- max(1,which(nc.years==start.year),na.rm=TRUE)
       last <- min(length(nc.years),which(nc.years == end.year),na.rm=TRUE)
-
+      
       ## load files
       yrs <- first:max(first,last)
       data <- list()
+      
       for(i in 1:length(yrs)){
-        nc <- open.ncdf(ncfiles[yrs[i]])
+        print(paste("----- Processing year: ",nc.years[yrs[i]]))
+        nc <- open.ncdf(ncfiles[yrs[i]],verbose=FALSE)
         for(j in 1:length(variables)){
           if(variables[j] %in% names(nc$var)){
-            newdata <- get.var.ncdf(nc,variables[j])
+            newdata <- get.var.ncdf(nc,varid=variables[j],verbose=FALSE)
             if(variables[j] %in% c(cflux,wflux)){
               ## Convert output to annual values.  Mult by seconds in a 365d year and convert per ha
               newdata <- newdata*31536000*10000 # kgC/ha
@@ -113,13 +117,18 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,variables="GP
         close.ncdf(nc)
       }
       names(data) <- variables
+      #print(summary(data))
+      print(paste("----- Median :",sapply(data,median,na.rm=TRUE)))
+      #print(str(data))
+      #print(data)
       return(data)
+   
     } else {
       stop("no output files present")
     }
     
   }
-  return(NA)
+  return(NA) 
 }
 #==================================================================================================#
 
