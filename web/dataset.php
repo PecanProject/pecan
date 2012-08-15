@@ -64,6 +64,7 @@ switch ($type) {
 			die("Need var.");
 		}
 		list($datafile,$var)=explode("@", $_REQUEST['var']);
+                $datafile.=$year . ".nc";
 		$width=600;
 		if (isset($_REQUEST['width']) && ($_REQUEST['width'] > 600)) {
 			$width=$_REQUEST['width'];

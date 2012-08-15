@@ -167,9 +167,9 @@ plot.netcdf <- function(datafile, year, yvar, xvar='time', width=800, height=600
 	title(xlab=attr(xval_mean, "lbl"))
 	title(ylab=attr(yval_mean, "lbl"))
 	if (xvar == "time") {
-		title(main=paste(yvar))
+		title(main=paste(yvar, "for", year))
 	} else {
-		title(main=paste(xvar, "VS", yvar))
+		title(main=paste(xvar, "VS", yvar, "for", year))
 	}
 	
 	# remove all NA's
