@@ -14,7 +14,7 @@
 ##' @export
 ##' @author Michael Dietze
 #--------------------------------------------------------------------------------------------------#
-write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id){
+write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id,inputs=NULL,IC=NULL){
 
   my.outdir = paste(outdir,"/",run.id,"/",sep="") 
   #dir.create(my.outdir)
@@ -31,7 +31,12 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
   print(run.id)
 
   ### WRITE *.clim
-  template.clim <- settings$run$site$met
+  template.clim <- settings$run$site$met      ## read from settings
+  if(!is.null(inputs)){                       ## override if specified in inputs
+    if('met' %in% names(inputs)){
+      template.clim <- inputs$met
+    }
+  }
   system(paste("cp ",template.clim," ",my.outdir,run.id,".clim",sep=""))
   ### **** WE SHOULD SET THIS UP AS A LINK, RATHER THAN AS A COPY ****
   
@@ -46,16 +51,41 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
   param <- read.table(template.param)
 
 #### write INITAL CONDITIONS here ####
-
-  ##plantWoodInit gC/m2
-  ##laiInit m2/m2
-  ##litterInit gC/m2
-  ##soilInit gC/m2
-  ##litterWFracInit fraction
-  ##soilWFracInit fraction
-  ##snowInit cm water equivalent
-  ##microbeInit mgC/g soil
-
+  if(!is.null(IC)){
+    ic.names = names(IC)
+    ##plantWoodInit gC/m2
+    if("plantWood" %in% ic.names){
+      param[which(param[,1] == 'plantWoodInit'),2] = IC$plantWood
+    } 
+    ##laiInit m2/m2
+    if("lai" %in% ic.names){
+      param[which(param[,1] == 'laiInit'),2] = IC$lai
+    }
+    ##litterInit gC/m2
+    if("litter" %in% ic.names){
+      param[which(param[,1] == 'litterInit'),2] = IC$litter
+    }
+    ##soilInit gC/m2
+    if("soil" %in% ic.names){
+      param[which(param[,1] == 'soilInit'),2] = IC$soil
+    }
+    ##litterWFracInit fraction
+    if("litterWFrac" %in% ic.names){
+      param[which(param[,1] == 'litterWFracInit'),2] = IC$litterWFrac
+    }
+    ##soilWFracInit fraction
+    if("soilWFrac" %in% ic.names){
+      param[which(param[,1] == 'soilWFracInit'),2] = IC$soilWFrac
+    }
+    ##snowInit cm water equivalent
+    if("snow" %in% ic.names){
+      param[which(param[,1] == 'snowInit'),2] = IC$snow
+    }
+    ##microbeInit mgC/g soil
+    if("microbe" %in% ic.names){
+      param[which(param[,1] == 'microbeInit'),2] = IC$microbe
+    }
+}
   
 #### write run-specific environmental parameters here ####
   env.traits <- which(names(trait.values) %in% 'env')
