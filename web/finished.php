@@ -80,6 +80,9 @@ foreach(scandir("$folder/out") as $file) {
 	if ($file[0] == ".") {
 		continue;
 	}
+        if (preg_match('/.nc$/', $file)) {
+		continue;
+	}
 	$outputs .= createOption("out/$file");
 }
 
@@ -87,18 +90,21 @@ foreach(scandir("$folder/out") as $file) {
 $vararr=array();
 for($year=$start; $year<=$end; $year++) {
         $file = "ENS00001.${year}.nc";
-        $outputs .= createOption("$file");
-        # TODO shows all variables for all years.
-        $vararr = array_merge($vararr, explode("\n", shell_exec("ncdump -x $folder/out/$file | grep '<variable' | sed 's/.*name=\"\\([^\"]*\\)\".*/\\1/' | sort -u | awk '{print \"<option value=\\\"ENS00001.@\" $1 \"\\\">\" $1 \"</option>\" }'")));
+	if (file_exists("$folder/out/$file")) {
+	        $outputs .= createOption("$file");
+       		# TODO shows all variables for all years.
+	        $vararr = array_merge($vararr, explode("\n", shell_exec("ncdump -x $folder/out/$file | grep '<variable' | sed 's/.*name=\"\\([^\"]*\\)\".*/\\1/' | sort -u | awk '{print \"<option value=\\\"ENS00001.@\" $1 \"\\\">\" $1 \"</option>\" }'")));
+	}
 }
-$vars = implode("\n", array_unique($vararr));
 
 # check the pecan folder for sipnet
 for($year=$start; $year<=$end; $year++) {
         $file = "pecan/SAmedian/SAmedian.${year}.nc";
-        $outputs .= createOption("$file");
-        # TODO shows all variables for all years.
-        $vararr = array_merge($vararr, explode("\n", shell_exec("ncdump -x $folder/$file | grep '<variable' | sed 's/.*name=\"\\([^\"]*\\)\".*/\\1/' | sort -u | awk '{print \"<option value=\\\"../pecan/SAmedian/SAmedian.@\" $1 \"\\\">\" $1 \"</option>\" }'")));
+	if (file_exists("$folder/$file")) {
+        	$outputs .= createOption("$file");
+	        # TODO shows all variables for all years.
+	        $vararr = array_merge($vararr, explode("\n", shell_exec("ncdump -x $folder/$file | grep '<variable' | sed 's/.*name=\"\\([^\"]*\\)\".*/\\1/' | sort -u | awk '{print \"<option value=\\\"../pecan/SAmedian/SAmedian.@\" $1 \"\\\">\" $1 \"</option>\" }'")));
+	}
 }
 $vars = implode("\n", array_unique($vararr));
 
