@@ -54,13 +54,6 @@ for($year=$start; $year<=$end; $year++) {
 	$years .= "<option>$year</option>";
 }
 
-$vars  = "";
-#if ($error === false) {
-#	$vars .= "<option>Reco</option>\n";
-#	$vars .= "<option>NPP</option>\n";
-#	$vars .= "<option>NEE</option>\n";
-#}
-
 $logs="";
 $logs .= createOption("workflow.Rout");
 
@@ -88,24 +81,26 @@ foreach(scandir("$folder/out") as $file) {
 		continue;
 	}
 	$outputs .= createOption("out/$file");
-	# TODO shows all variables for all years.
-#	for($year=$start; $year<=$end; $year++) {
-#		if (preg_match("/.*-T-${year}-.*.h5/", $file)) {
-#			$vars .= shell_exec("h5ls $folder/out/$file | sort -u | awk '{print \"<option value=\\\"${file}@\" $1 \"\\\">H5-\" $1 \"</option>\" }'");
-#		}
-#		if (preg_match("/.*.${year}.nc/", $file)) {
-#			$vars .= shell_exec("ncdump -x $folder/out/$file | grep '<variable' | sed 's/.*name=\"\\([^\"]*\\)\".*/\\1/' | sort -u | awk '{print \"<option value=\\\"${file}@\" $1 \"\\\">NC-\" $1 \"</option>\" }'");
-#		}
-#	}
 }
 
-# check the root folder for sipnet
+# check the out folder for ED
+$vararr=array();
+for($year=$start; $year<=$end; $year++) {
+        $file = "ENS00001.${year}.nc";
+        $outputs .= createOption("$file");
+        # TODO shows all variables for all years.
+        $vararr = array_merge($vararr, explode("\n", shell_exec("ncdump -x $folder/out/$file | grep '<variable' | sed 's/.*name=\"\\([^\"]*\\)\".*/\\1/' | sort -u | awk '{print \"<option value=\\\"ENS00001.@\" $1 \"\\\">\" $1 \"</option>\" }'")));
+}
+$vars = implode("\n", array_unique($vararr));
+
+# check the pecan folder for sipnet
 for($year=$start; $year<=$end; $year++) {
         $file = "pecan/SAmedian/SAmedian.${year}.nc";
         $outputs .= createOption("$file");
         # TODO shows all variables for all years.
-        $vars .= shell_exec("ncdump -x $folder/$file | grep '<variable' | sed 's/.*name=\"\\([^\"]*\\)\".*/\\1/' | sort -u | awk '{print \"<option value=\\\"../${file}@\" $1 \"\\\">${year}-\" $1 \"</option>\" }'");
+        $vararr = array_merge($vararr, explode("\n", shell_exec("ncdump -x $folder/$file | grep '<variable' | sed 's/.*name=\"\\([^\"]*\\)\".*/\\1/' | sort -u | awk '{print \"<option value=\\\"../pecan/SAmedian/SAmedian.@\" $1 \"\\\">\" $1 \"</option>\" }'")));
 }
+$vars = implode("\n", array_unique($vararr));
 
 
 # check the pft folder

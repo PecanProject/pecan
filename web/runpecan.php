@@ -156,7 +156,7 @@ fwrite($fh, "    <name>${db_database}</name>" . PHP_EOL);
 fwrite($fh, "  </database>" . PHP_EOL);
 
 fwrite($fh, "  <meta.analysis>" . PHP_EOL);
-fwrite($fh, "    <iter>1000</iter>" . PHP_EOL);
+fwrite($fh, "    <iter>3000</iter>" . PHP_EOL);
 fwrite($fh, "    <random.effects>FALSE</random.effects>" . PHP_EOL);
 fwrite($fh, "  </meta.analysis>" . PHP_EOL);
 
@@ -168,12 +168,13 @@ if ($modeltype == "ED2") {
         fwrite($fh, "    <sensitivity.analysis>" . PHP_EOL);
         fwrite($fh, "      <quantiles>" . PHP_EOL);
         fwrite($fh, "        <quantile></quantile>" . PHP_EOL);
-        fwrite($fh, "        <sigma>-3</sigma>" . PHP_EOL);
-        fwrite($fh, "        <sigma>-2</sigma>" . PHP_EOL);
-        fwrite($fh, "        <sigma>-1</sigma>" . PHP_EOL);
-        fwrite($fh, "        <sigma>1</sigma>" . PHP_EOL);
-        fwrite($fh, "        <sigma>2</sigma>" . PHP_EOL);
-        fwrite($fh, "        <sigma>3</sigma>" . PHP_EOL);
+#        fwrite($fh, "        <sigma>-3</sigma>" . PHP_EOL);
+#        fwrite($fh, "        <sigma>-2</sigma>" . PHP_EOL);
+#        fwrite($fh, "        <sigma>-1</sigma>" . PHP_EOL);
+        fwrite($fh, "        <sigma>0</sigma>" . PHP_EOL);
+#        fwrite($fh, "        <sigma>1</sigma>" . PHP_EOL);
+#        fwrite($fh, "        <sigma>2</sigma>" . PHP_EOL);
+#        fwrite($fh, "        <sigma>3</sigma>" . PHP_EOL);
         fwrite($fh, "      </quantiles>" . PHP_EOL);
         fwrite($fh, "      <start.year>2002</start.year>" . PHP_EOL);
         fwrite($fh, "      <end.year>2006</end.year>" . PHP_EOL);
@@ -244,7 +245,7 @@ copy("workflow.R", "${folder}/workflow.R");
 
 # start the actual workflow
 chdir($folder);
-pclose(popen('R_LIBS_USER="/home/kooper/lib/R" R CMD BATCH workflow.R &', 'r'));
+pclose(popen('R_LIBS_USER="/home/kooper/R/library" R CMD BATCH workflow.R &', 'r'));
 
 #done
 if ($offline) {
