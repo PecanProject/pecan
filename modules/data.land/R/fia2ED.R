@@ -48,6 +48,7 @@ table.expand <- function(x){
 ##' @title fia.to.psscss
 ##' @param create pss/css files based on data in the fia database
 ##' @return nothing
+##' @export
 ##' @author Mike Dietze, Rob Kooper
 fia.to.psscss <- function(settings) {
 	## spatial info
