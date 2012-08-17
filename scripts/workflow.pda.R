@@ -13,8 +13,8 @@ NEEo[NEEq > 0] <- NA
 
 ## load data L4
 w = 48*4
-dataL4 <- read.csv("~/inputs/fluxnet/sylvania/USSyv2002_L4_h.txt")
-NEEfil <- data$NEE_st_fMDS; NEEfil[NEEfil < -1000] <- NA
+dataL4 <- read.csv("~/flux/USSyv2002_L4_h.txt")
+NEEfil <- dataL4$NEE_st_fMDS; NEEfil[NEEfil < -1000] <- NA
 pdf("SylvaniaFlux.pdf",width=11,height=8.5)
   par(mfrow=c(1,2))
   plot(dataL4$DoY,NEEfil,xlab="Day of year",ylab="umol/m2/s",type='l',lwd=1.5)
@@ -24,32 +24,41 @@ dev.off()
 NEEhr <- tapply(NEEfil,rep(1:(length(NEEfil)/2),each=2),mean,na.rm=TRUE)  ##use gapfilled for plotting
 NEEhr[is.nan(NEEhr)] <- NA
 
-## ensemble analysis
+## pre-assimilation ensemble analysis
 ens <- read.ensemble.ts("SIPNET")
 ens$NEE <- ens$NEE*1000/12*1e6/10000/86400/365  #convert kgC/ha/yr -> umol/m2/s
-
 ensemble.ts(ens,observations=-NEEhr,window=24*3)  ## make ensemble plots
   
+## Define vars
+vars = NA
+jvar = rep(0.5,22)
+params = NULL
+
 ## MCMC
-settings$assim.batch$iter=50
+settings$assim.batch$iter=1500
 
 params <- pda.mcmc("SIPNET",vars=vars,jvar=jvar,params=params)
 
 ## Assess MCMC output
-
-dm <- as.mcmc(params[,vars])
+burnin = 1
+dm <- as.mcmc(params[burnin:nrow(params),vars])
 plot(dm)
 summary(dm)
 crosscorr(dm)
 pairs(params[,vars])
 
 a = 1-rejectionRate(dm)
-a = 1-rejectionRate(as.mcmc(params[nrow(params)-99:0,vars]))
+a = 1-rejectionRate(as.mcmc(params[nrow(params)-49:0,vars]))
 
 ## update jump variance
-jvar[vars] = jvar[vars]*a/0.4
+jvar[vars] = jvar[vars]*(a/0.4)
+
+save.image(paste(settings$outdir,"/pda.mcmc.Rdata",sep=""))
 
 ############  POST MCMC ##################
+
+###*** CHANGE OUTDIRS BEFORE GOING TO THE NEXT STEPS ***
+### Also, revert met file back to 2002-2006
 
 ## coerce parameter output into the same format as trait.mcmc
 pname <- rownames(post.distns)
@@ -78,6 +87,6 @@ get.model.output(model)         # Get results of model runs
 run.sensitivity.analysis()      # Run sensitivity analysis and variance decomposition on model output
 
 ## plot
-ens <- read.ensemble.ts("SIPNET")
-ens$NEE <- ens$NEE*1000/12*1e6/10000/86400/365  #convert kgC/ha/yr -> umol/m2/s
-ensemble.ts(ens,observations=-NEEhr,window=24*3)
+ens.post <- read.ensemble.ts("SIPNET")
+ens.post$NEE <- ens$NEE*1000/12*1e6/10000/86400/365  #convert kgC/ha/yr -> umol/m2/s
+ensemble.ts(ens.post,observations=-NEEhr,window=24*3)

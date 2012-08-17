@@ -10,6 +10,7 @@ plot2AGB <- function(unit.conv=0.02){
   outfolder <- settings$outdir
   load(paste(outfolder,"DBH_summary.RData",sep=""))
   nrep = length(full.dia)
+  nt = ncol(full.dia[[1]])
   
   ## set up storage
   NPP <- array(NA,c(mplot,nrep,nt-1))
@@ -56,6 +57,6 @@ plot2AGB <- function(unit.conv=0.02){
     lines(yrvec,lowA)
   }
   dev.off()
-  save(mNPP,sNPP,mAGB,sAGB,yrvec,file=paste(outdir,"plot2AGB.Rdata",sep="/"))
+  save(mNPP,sNPP,mAGB,sAGB,yrvec,file=paste(outfolder,"plot2AGB.Rdata",sep="/"))
   
 }
