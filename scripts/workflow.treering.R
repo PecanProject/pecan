@@ -9,10 +9,11 @@ settings <- read.settings("~/inputs/sylvania.SIPNET.xml")
 #--------------------------------------------------------------------------------------------------#
 model = ifelse("model" %in% names(settings),settings$model$name,"ED2")
 
-plot.data <- read.plot("~/inputs/SamTreeRing/FullPlotData.csv")
-inc.data <- read.velmex("~/inputs/SamTreeRing/")
+plot.data <- read.plot("~/inputs/plot/Sylvania_Plot_Sam.csv")
+inc.dataV <- read.velmex("~/inputs/plot/velmax/")
+inc.dataT <- Read_Tuscon("~/inputs/plot/tuscon/")
 
-fd <- fuse_plot_treering(plot.data,inc.data)
+fd <- fuse_plot_treering(plot.data,inc.dataV,inc.dataT)
 
 diametergrow(fd$diameters,fd$increments,fd$survival)
 

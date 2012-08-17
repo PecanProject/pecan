@@ -165,7 +165,7 @@ ensemble.ts <- function(ensemble.ts,observations=NULL,window=1){
 
 
   ## temporary check for plots that should be >0
-  nonzero = c("GPP","NPP","TotalResp","AutoResp","HeteroResp","Evap","TVeg")
+  nonzero = c("GPP","TotalResp","AutoResp","HeteroResp","Evap","TVeg")
   
   ## should probably add an extraction of the time axis from the first ensemble member
 
@@ -183,15 +183,15 @@ ensemble.ts <- function(ensemble.ts,observations=NULL,window=1){
     } else {
       myens <- ensemble.ts[[j]]
     }    
+
+    ens.mean = apply(myens,2,mean)
+    CI = apply(myens,2,quantile,c(0.025,0.5,0.975))
+    ylim = range(CI,na.rm=TRUE)
     
     ### temporary fix to values less than zero that are biologically unreasonable (e.g. GPP)
     if (variables[j] %in% nonzero){
       ylim <- c(0,ylim[2])
     }
-    
-    ens.mean = apply(myens,2,mean)
-    CI = apply(myens,2,quantile,c(0.025,0.5,0.975))
-    ylim = range(CI,na.rm=TRUE)
     
     plot(ens.mean,ylim=ylim,lwd=2,xlab="time",ylab=variables[j],main=variables[j],
          type="l")
@@ -214,19 +214,19 @@ ensemble.ts <- function(ensemble.ts,observations=NULL,window=1){
 #    lines(ens.mean,col="black",lwd=1.5)
 #    lines(CI[2,],col="dark grey",lty=1,lwd=1.5)
     
-    if(window==1){
-      fobs <- observations
-    } else {
-      fobs <- tapply(observations,rep(1:(length(observations)/window+1),each=window)[1:length(observations)],mean,na.rm=TRUE)
-    }
     if(!is.null(observations)){
+      if(window==1){
+        fobs <- observations
+      } else {
+        fobs <- tapply(observations,rep(1:(length(observations)/window+1),each=window)[1:length(observations)],mean,na.rm=TRUE)
+      }
       #lines(filter(observations,rep(1/window,window)),col=2,lwd=1.5)
       #lines(filterNA(observations,window),col=2,lwd=1.5)
       points(fobs,col=3,lwd=1.5)
     }
 
     ## show legend
-    legend("topleft",legend=c("mean","95% CI","data"),lwd=3,col=c(1,2,3),lty=c(1,2,1))
+#    legend("topleft",legend=c("mean","95% CI","data"),lwd=3,col=c(1,2,3),lty=c(1,2,1))
     ## add surrounding box to plot
     box(lwd=2.2)
   }
