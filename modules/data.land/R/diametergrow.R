@@ -54,7 +54,7 @@ diamint <- function(){     # initialize diameters
     if(length(xi)==1) intercept <- yi - bginc*xi
     
     if(!is.finite(intercept))intercept <- min(yi,na.rm=T)
-    if(intercept < .1)intercept <- 0.1 #max(.1,(min(yi) - 5) )
+    if(intercept < 1)intercept <- 0.001 #max(.1,(min(yi) - 5) )
     slope <- (mean(xi*yi) - intercept*mean(xi) )/mean(xi^2)
     if(slope < .001){
       slope     <- .001
@@ -1005,7 +1005,7 @@ if(!REMOTE){
     id <- paste(ijindex[iplot[j],1],ijindex[iplot[j],2],iplot[j],sep=', ')
     id <- ijindex[iplot[j],2]
 
-    plot(yrvec,md,type='l',ylim=c(y1,y2),xlab=' ',ylab=' ')
+    plot(yrvec,md,type='l',ylim=range(c(y1,y2,dcens[iplot[j],]),na.rm=TRUE),xlab=' ',ylab=' ')
     lines(yrvec,lsd,lty=2)
     lines(yrvec,hsd,lty=2)
     lines(yrvec,mdiam[iplot[j],],col=3)

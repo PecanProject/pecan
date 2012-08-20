@@ -1,7 +1,6 @@
 fuse_plot_treering <- function(plot.data,inc.data,tuscon.data,inc.unit.conv = 0.1){
 
   plot.data <- as.data.frame(plot.data)
-  tuscon.conv <- 0.001
   
   ## separate veg data to lists by plot
   plot.id <- unique(plot.data$plot)
@@ -82,14 +81,14 @@ fuse_plot_treering <- function(plot.data,inc.data,tuscon.data,inc.unit.conv = 0.
 
         if(length(mchT) == 1){
           ## only one record, use it.
-          growth = t(tuscon.data[[mchT]])        
-          maxy = sum(growth)*0.1
-          increments[[i]][j,(nyr-length(growth)+1):nyr] <- growth*0.1
+          growth = t(tuscon.data[[mchT]])*0.1
+          maxy = sum(growth)
+          increments[[i]][j,(nyr-length(growth)+1):nyr] <- growth
         } else{          
           ## create mean increment record (eventually shift this to BAI eliptoid)
           growth =  matrix(NA,length(mchT),nyr)
           for(k in 1:length(mchT)){
-            g <- t(tuscon.data[[mchT[k]]])
+            g <- t(tuscon.data[[mchT[k]]])*0.1
             growth[k,(nyr-length(g)+1):nyr] <- g
           }
           maxy = max(apply(growth,1,sum,na.rm=TRUE))
