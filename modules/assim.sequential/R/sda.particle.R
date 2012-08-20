@@ -40,7 +40,7 @@ sda.particle <- function(model){
     ref <- sample(1:np,1)       ## choose an ensemble member
     y <- rnorm(nt,ensp[ref,],sd) ## add noise
   } else {
-    load(paste(outdir,"plot2AGB.Rdata",sep="/"))
+    load(paste(settings$outdir,"plot2AGB.Rdata",sep="/"))
     mch = which(yrvec %in% time)
     y = mNPP[1,mch]   ## data mean
     sd = sNPP[1,mch]  ## data uncertainty 
@@ -127,19 +127,19 @@ legend("topleft",c("True","Data","PF","ens","ensmean"),col=c(1:3,"grey",6),lty=c
     ensp.conv[[i]] <- t(apply(ensp.all[[i]],1,tapply,Year,mean))*unit[i]
   }  
   ## plot scatter plots of outputs
-  par(mfrow=c(2,2))
-  for(i in 2:5){
+  par(mfrow=c(1,2))
+  for(i in 2:3){
     plot(ensp.conv[[1]][,nt],ensp.conv[[i]][,nt],xlab=names(ensp.all)[1],ylab=names(ensp.all)[i])
   }
   
   ##unweighted distributions
-  for(i in c(1,2,4,5)){
+  for(i in c(2,3)){
     hist(ensp.conv[[i]][,nt],main=names(ensp.all)[i],probability=TRUE)
   }  
   
   ## Weighted distributions
   library(plotrix)
-  for(i in c(1,2,4,5)){
+  for(i in c(2,3)){
     weighted.hist(ensp.conv[[i]][,nt],wc[,nt]/sum(wc[,nt]),main=names(ensp.all)[i])
   }
   
