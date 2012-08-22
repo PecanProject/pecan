@@ -16,7 +16,7 @@ require(PEcAn.all)
 settings <- read.settings()
 #--------------------------------------------------------------------------------------------------#
 
-model = ifelse("model" %in% names(settings),settings$model$name,"ED2")
+model <- ifelse("model" %in% names(settings),settings$model$name,"ED2")
 
 #---------------- Run PEcAn workflow. -------------------------------------------------------------#
 get.trait.data()        	# Query the trait database for data and priors
