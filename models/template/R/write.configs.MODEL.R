@@ -9,12 +9,13 @@
 #--------------------------------------------------------------------------------------------------#
 # Template for functions to prepare and write out files model-specific configuration files for MA
 #--------------------------------------------------------------------------------------------------#
+PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
 
 
 #--------------------------------------------------------------------------------------------------#
 ##' Writes a configuration files for your model
 #--------------------------------------------------------------------------------------------------#
-write.config.ED <- function(defaults, trait.values, settings, outdir, run.id){
+write.config.MODEL <- function(defaults, trait.values, settings, outdir, run.id){
   
   startdate <- as.Date(settings$run$start.date)
   enddate <- as.Date(settings$run$end.date)
@@ -65,17 +66,17 @@ write.config.ED <- function(defaults, trait.values, settings, outdir, run.id){
 
 #--------------------------------------------------------------------------------------------------#
 ##'
-##' @name write.run.generic
+##' @name write.run.MODEL
 ##' @title Function to generate generic model run script files
 ##' @author <unknown>
 ##' @import PEcAn.utils
 #--------------------------------------------------------------------------------------------------#
-write.run.generic <- function(settings){
-  run.script.template = system.file("data", "run.template.generic", package="PEcAn.generic")
+write.run.MODEL <- function(settings){
+  run.script.template = system.file("data", "run.template.MODEL", package="PEcAn.MODEL")
   run.text <- scan(file = run.script.template, 
                    what="character",sep='@', quote=NULL, quiet=TRUE)
   run.text  <- gsub('TMP', paste("/scratch/",Sys.getenv("USER"),sep=""), run.text)
-  run.text  <- gsub('BINARY', settings$run$host$ed$binary, run.text)
+  run.text  <- gsub('BINARY', settings$run$host$MODEL$binary, run.text)
   run.text <- gsub('OUTDIR', settings$run$host$outdir, run.text)
   runfile <- paste(settings$outdir, 'run', sep='')
   writeLines(run.text, con = runfile)
