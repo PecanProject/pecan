@@ -14,168 +14,175 @@
 ##' @title Variance Decomposition Plots
 ##' @export
 ##' @author David LeBauer
-##' @param plot.inputs 
-##' @param outdir 
-##' @param prior.plot.inputs 
-##' @param fontsize 
-##' @param filter 
-##' @param variance.scale 
-##' @param variance.prefix 
-plot.variance.decomposition <- function(plot.inputs, outdir,
-                                        prior.plot.inputs = NULL,
-                                        fontsize = list(title = 18, axis = 14),
-                                        filter = TRUE,
-                                        variance.scale=sqrt, 
-                                        #ex: log, sqrt, identity 
-                                        variance.prefix='Root'){
-                                        #EX: Log, Root, Partial
+##' @param ... Output from any number of sensitivity analyses. Output must be of the form 
+##'          given by sensitivity.results$variance.decomposition.output in model output
+##' @param all.plot.inputs Optional argument allowing output from sensitivity analyses to be specified in a list
+##' @param exclude vector of strings specifying parameters to omit from the variance decomposition graph
+##' @param convert.var function transforming variances to the value displayed in the graph
+##' @param var.label label to displayed over variance column
+##' @param order.plot.input Output from a sensitivity analysis that is to be used to order parameters.
+##'          Parameters are ordered by variance. Defaults to the first sensitivity analysis output given
+##' @param ticks.plot.input Output from a sensitivity analysis that is to be used.
+##'          Defaults to the first sensitivity analysis output given
+##' @param col Color of each sensitivity analysis. Equivalent to col parameter of the plot function.
+##' @param pch Shape of each sensitivity analysis. Equivalent to pch parameter of the plot function.
+##' @param main Plot title. Useful for multi-pft variance decompositions.
+##' @param fontsize list specifying the font size of the titles and axes of the graph
+plot.variance.decomposition <- function(...,
+    all.plot.inputs = list(...),
+    exclude=c(), convert.var=sqrt, var.label='Std Deviation (Mg/ha)',
+    order.plot.input = NA,
+    ticks.plot.input = NA,
+    col=c('black'),
+    pch=c(16),
+    main=NA,
+    fontsize = list(title = 18, axis = 14)) {
+
+  pretty.temp <- function(foo, ...){
+    if(is.data.frame(foo)){
+      return(pretty(as.vector(do.call(c, foo)), ...))
+    }
+    return(pretty(foo, ...))
+  }
+
+  if (is.na(order.plot.input)) {order.plot.input <- all.plot.inputs[[1]]}
+  if (is.na(ticks.plot.input)) {ticks.plot.input <- all.plot.inputs[[1]]}
   
-  traits    <- names(plot.inputs$variances)
-  .plot.data <- data.frame(trait.labels  = merge(data.frame(id = traits), trait.dictionary(traits), by = 'id', sort = FALSE)$figid,
-                           units         = trait.dictionary(traits)$units,
-                           coef.vars     = abs(plot.inputs$coef.vars * 100),
-                           elasticities  = abs(plot.inputs$elasticities),
-                           variances     = variance.scale(abs(plot.inputs$variances)))[filter,]
-                                       #  recover()
-  if(!is.null(prior.plot.inputs)) {
-    prior.traits <- names(prior.plot.inputs$partial.variances)
-    prior.matched <- prior.traits %in% traits
-    post.matched <- traits %in% prior.traits
-    
-    prior.plot.data <- data.frame(trait.labels              = trait.dictionary(prior.traits)$figid,
-                                  units                     = trait.dictionary(prior.traits)$units,
-                                  prior.coef.vars           = abs(prior.plot.inputs$coef.vars * 100),
-                                  prior.elasticities        = abs(prior.plot.inputs$elasticities),
-                                  prior.variances           = variance.scale(abs(prior.plot.inputs$variances)))
-    .plot.data <- merge(.plot.data, prior.plot.data, by = 'trait.labels')
-    pv.order <- order(.plot.data$prior.variances, decreasing = FALSE)
-  }
-  else {
-    pv.order <- order(.plot.data$variances, decreasing = FALSE)
-  }
+  trait.order <- names(order.plot.input$variances)[order(abs(order.plot.input$variances), decreasing = FALSE)]
+  trait.order <- trait.order[!trait.order %in% exclude]
+  
+  first.plot.data <- format.plot.input(order.plot.input, convert.var, trait.order)
+  ticks.plot.data <- format.plot.input(ticks.plot.input, convert.var)
+  all.plot.data <- lapply(all.plot.inputs, format.plot.input, convert.var, trait.order)
 
   ## location of words and lollipops set by 'points'
   ##    these points can be moved up or down by adjusting the offset X in 1:length(traits) - X
-  plot.data <- data.frame(.plot.data[pv.order, ], points = 1:nrow(.plot.data) - 0.5)
-  trait.labels <<- plot.data$trait.labels
-  cv.xticks <<- pretty(plot.data[,grep('coef.var', colnames(plot.data))], 4)
-  pv.xticks <<- pretty(plot.data[,grep('variance', colnames(plot.data))], 4)  
-  el.xticks <<- pretty(plot.data[,grep('elasticities', colnames(plot.data))], 3)
-  el.xrange <<- range(pretty(plot.data[,grep('elasticities', colnames(plot.data))], 4))
+  cv.xticks <<- pretty.temp(ticks.plot.data$coef.vars, 4)
+  pv.xticks <<- pretty.temp(ticks.plot.data$variances, 4)  
+  el.xticks <<- pretty.temp(ticks.plot.data$elasticities, 3)
+  el.xrange <<- range(pretty.temp(ticks.plot.data$elasticities, 3))
   
   ## Notes on fine-tuning plots below
   ## axis lines and ticks drawn for each plot using geom_segment  
   ## size of x axis tick set by xend = ...
   ## vertical location of axis numbers set in base.plot using vjust
   
-  base.plot <- ggplot() +
+  base.plot <- ggplot(first.plot.data) +
     coord_flip() +
       theme_bw() +
-        opts(axis.line.y = theme_blank(),
-             axis.text.x = theme_text(size=fontsize$axis, vjust = -1),
-             axis.text.y = theme_blank(),
-             axis.title.x = theme_blank(), 
-             axis.title.y = theme_blank(),
-             axis.ticks = theme_blank(),
-             panel.grid.major = theme_blank(),
-             panel.grid.minor = theme_blank(),
-             panel.border = theme_blank())
-
-  if(!is.null(prior.plot.inputs)) {
-    .cv.plot <-  base.plot +
-      geom_pointrange(aes(x = points, y = prior.coef.vars,
-                          ymin = 0, ymax = prior.coef.vars),
-                      size = 1.25, color = 'grey', data=plot.data)
+    opts(axis.line.y = theme_blank(),
+         axis.text.x = theme_text(size=fontsize$axis, vjust = -1),
+         axis.text.y = theme_blank(),
+         axis.title.x = theme_blank(), 
     
-    .el.plot <- base.plot +
-      geom_pointrange(aes(x = points, prior.elasticities,
-                          ymin = 0, ymax = prior.elasticities),
-                      size = 1.25, color = 'grey', data=plot.data) 
-
-    .pv.plot <- base.plot +
-      geom_pointrange(aes(x = points, y = prior.variances,
-                          ymin = 0, ymax = prior.variances),
-                      size = 1.25, color = 'grey', data=plot.data) 
-  } else {
-    .cv.plot <- base.plot + scale_y_continuous(breaks = cv.xticks)
-    .el.plot <- base.plot + scale_y_continuous(breaks = el.xrange)
-    .pv.plot <- base.plot + scale_y_continuous(breaks = pv.xticks)
-  }
-
-
+         axis.ticks = theme_blank(),
+         panel.grid.major = theme_blank(),
+         panel.grid.minor = theme_blank(),
+         panel.border = theme_blank())
+  
   trait.plot <- base.plot + 
     opts(title = 'Parameter',
-         plot.title = theme_text(hjust = 0.96, size = fontsize$title),
+         legend.position="none",
+         plot.title = theme_text(hjust = 1.0, size = fontsize$title),
          axis.text.x = theme_text(colour='white'),
+         axis.title.y = theme_text(angle=90, size=fontsize$title),
          axis.line.x = theme_blank()) +
-           geom_text(aes(y = 1, x = points,
-                         label=trait.labels, hjust = 1), data=plot.data, 
-                     size = fontsize$axis/3) +
-                       scale_y_continuous( breaks = c(0,0), limits = c(0,1)) +
-                         ##  Add Invisible Axes to resize like other plots
-                         geom_segment(aes(x = c(0,0), y = c(0,0),
-                                          yend = c(0, max(cv.xticks)),
-                                          xend = c(length(trait.labels), 0)), colour = 'white')  + 
-                                            ## Add invisible ticks
-                                            geom_segment(aes(x = 0,
-                                                             y = cv.xticks,
-                                                             xend = -0.1,
-                                                             yend = cv.xticks), colour = 'white') 
+     geom_text(aes(y = 1, x = points,
+                   label=trait.labels, hjust = 1),
+               size = fontsize$axis*0.29) +
+     scale_y_continuous( breaks = c(0,0), limits = c(0,1)) + xlab(main) +
+     ##  Add Invisible Axes to resize like other plots
+     geom_segment(aes(x = c(0,0), y = c(0,0),
+                      yend = c(0, max(cv.xticks)),
+                      xend = c(length(trait.labels), 0)), colour = 'white')  + 
+     ## Add invisible ticks
+     geom_segment(aes(x = 0,
+                      y = cv.xticks,
+                      xend = -0.1,
+                      yend = cv.xticks), colour = 'white')
 
-  cv.plot <- .cv.plot +
-    opts(title = 'CV (%)', plot.title = theme_text(size = fontsize$title)) +
-      scale_y_continuous(breaks = cv.xticks, limits = range(cv.xticks)) +
-        geom_pointrange(aes(x = points, y = coef.vars, ymin = 0, ymax = coef.vars),
-                        size = 1.25, data=plot.data) + 
-                          ##  Add Axes
-                          geom_segment(aes(x = c(0,0), y = c(0,0),
-                                           yend = c(0, max(cv.xticks)),
-                                           xend = c(length(trait.labels), 0)), data=plot.data)  + 
-                                             ## Add Ticks
-                                             geom_segment(aes(x = 0,
-                                                              y = cv.xticks,
-                                                              xend = -0.1,
-                                                              yend = cv.xticks), data=plot.data)
-
-
-  if (diff(range(el.xticks)) < 4) el.xticks <- c(-1,0,1)
-  el.plot <- .el.plot + 
-    opts(title = 'Elasticity', plot.title = theme_text(size = fontsize$title)) +
-      scale_y_continuous(breaks = el.xticks, limits = range(el.xrange)) +
-        geom_pointrange(aes(x = points, y = elasticities, ymin = 0, ymax = elasticities),
-                        size = 1.25, data=plot.data) +
-                          ##  Add Axes
-                          geom_segment(aes(x = c(0,0), y = c(0, min(el.xrange)),
-                                           yend = c(0, max(el.xrange)),
-                                           xend = c(length(trait.labels), 0)), data=plot.data)  +
-                                             ## Add Ticks
-                                             geom_segment(aes(x = 0,
-                                                              y = el.xticks,
-                                                              xend = -0.1,
-                                                              yend = el.xticks), data=plot.data) 
-
-  pv.plot <- .pv.plot + 
-    opts(title = paste(variance.prefix, 'Variance (Mg/ha)'),
+  cv.plot <- base.plot +
+    opts(title = 'CV (%)', 
+         legend.position='none',
          plot.title = theme_text(size = fontsize$title)) +
-           scale_y_continuous(breaks = pv.xticks, limits = range(pv.xticks)) +
-             geom_pointrange(aes(x = points, variances,
-                                 ymin = 0, ymax = variances), size = 1.25, data=plot.data) +
-                                   ##  Add Axes
-                                   geom_segment(aes(x = c(0,0), y = c(0,0),
-                                                    yend = c(0, max(pv.xticks)),
-                                                    xend = c(length(trait.labels), 0)), data=plot.data)  + 
-                                                      ## Add Ticks
-                                                      geom_segment(aes(x = 0,
-                                                                       y = pv.xticks,
-                                                                       xend = -0.1,
-                                                                       yend = pv.xticks), data=plot.data)
-  
-  
-  return(list(trait.plot = trait.plot, cv.plot = cv.plot, el.plot = el.plot, pv.plot = pv.plot))
+      scale_y_continuous(breaks = cv.xticks, limits = range(cv.xticks)) +
+      ##  Add Axes
+      geom_segment(aes(x = c(0,0), y = c(0,0),
+                       yend = c(0, max(cv.xticks)),
+                       xend = c(length(trait.labels), 0))) + 
+      ## Add Ticks
+      geom_segment(aes(x = 0,
+                       y = cv.xticks,
+                       xend = -0.1,
+                       yend = cv.xticks))
 
+  #if (diff(range(el.xticks)) < 4) el.xticks <- c(-1,0,1)
+  el.plot <- base.plot + 
+    opts(title = 'Elasticity',
+         legend.position='none',
+         plot.title = theme_text(size = fontsize$title)) +
+      scale_y_continuous(breaks = el.xticks, limits = range(el.xrange)) +
+      ##  Add Axes
+      geom_segment(aes(x = c(0,0), y = c(0, min(el.xrange)),
+                       yend = c(0, max(el.xrange)),
+                       xend = c(length(trait.labels), 0)))  +
+      ## Add Ticks
+      geom_segment(aes(x = 0,
+                       y = el.xticks,
+                       xend = -0.1,
+                       yend = el.xticks)) 
+
+  pv.plot <- base.plot + 
+    opts(title = var.label,
+         legend.position='none',
+         plot.title = theme_text(size = fontsize$title)) +
+     scale_y_continuous(breaks = pv.xticks, limits = range(pv.xticks)) +
+     ##  Add Axes
+     geom_segment(aes(x = c(0,0), y = c(0,0),
+                      yend = c(0, max(pv.xticks)),
+                      xend = c(length(trait.labels), 0)))  + 
+     ## Add Ticks
+     geom_segment(aes(x = 0,
+                      y = pv.xticks,
+                      xend = -0.1,
+                      yend = pv.xticks))
+  
+  for(i in seq(all.plot.data)){
+    cv.plot <- cv.plot +  geom_pointrange(data=all.plot.data[[i]], 
+        aes_string(x = 'points', y = 'coef.vars', ymin = 0, ymax = 'coef.vars'), 
+                  colour=col[i], shape=pch[i],
+                  size = 1.25)
+    el.plot <- el.plot + geom_pointrange(data=all.plot.data[[i]], 
+        aes_string(x = 'points', y = 'elasticities', ymin = 0, ymax = 'elasticities'), 
+                  colour=col[i], shape=pch[i],
+                  size = 1.25)
+    pv.plot <- pv.plot + geom_pointrange(data=all.plot.data[[i]], 
+        aes_string(x = 'points', y = 'variances', ymin = 0, ymax = 'variances'), 
+                  colour=col[i], shape=pch[i],
+                  size = 1.25)
+  }
+  
+  return(list(trait.plot = trait.plot, 
+              cv.plot = cv.plot, 
+              el.plot = el.plot, 
+              pv.plot = pv.plot))
 
 }
 ##==================================================================================================#
+
+format.plot.input <- function(plot.inputs, convert.var, trait.order=c()){
+  traits <- row.names(as.data.frame(plot.inputs))
+  if(length(trait.order) == 0){trait.order <- traits}
+  plot.data <- data.frame(traits              = traits,
+                          trait.labels        = trait.dictionary(traits)$figid,
+                          units               = trait.dictionary(traits)$units,
+                          coef.vars           = abs(plot.inputs$coef.vars * 100),
+                          elasticities        = (plot.inputs$elasticities),
+                          variances           = convert.var(abs(plot.inputs$variances)))
+  plot.data <- merge(data.frame(traits=trait.order, points = seq(trait.order) - 0.5), plot.data)
+  
+  return(plot.data)
+}
 
 
 ##--------------------------------------------------------------------------------------------------#
