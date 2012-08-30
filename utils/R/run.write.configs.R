@@ -33,13 +33,13 @@ run.write.configs <- function(model){
   
   ### Identify PFTs in the input settings.xml file
   num.pfts <- length(settings$pfts)
-  pft.names=as.list(rep(NA,num.pfts))
-  outdirs=as.list(rep(NA,num.pfts))
+  pft.names <- as.list(rep(NA, num.pfts))
+  outdirs <- as.list(rep(NA, num.pfts))
   for (i in 1:num.pfts){
     pft.names[i] <- settings$pfts[i]$pft$name
     
     ### If no PFT(s) are specified insert NULL to warn user 
-    if(length(pft.names)==0) pft.names[1]="NULL" 
+    if(length(pft.names)==0) pft.names[1] <- "NULL" 
     ###
     
     ### Get output directory info
@@ -67,17 +67,18 @@ run.write.configs <- function(model){
   
   ### Prepare for model output.  Cleanup any old config files (if exists)
   #remove.config(main.outdir,settings,model)
-  do.call(paste("remove.config",model,sep="."),args=list(main.outdir,settings))
+  do.call(paste("remove.config", model, sep="."),
+          args = list(main.outdir, settings))
 
   ### Load PFT priors and posteriors
   for (i in seq(pft.names)){
     
     ### Load priors
-    load(paste(outdirs[i], 'prior.distns.Rdata', sep=''))
+    load(paste(outdirs[i], 'prior.distns.Rdata', sep = ''))
     
     ### Load trait mcmc data (if exists)
     if("trait.mcmc.Rdata" %in% dir(unlist(outdirs))) {
-      load(paste(outdirs[i], 'trait.mcmc.Rdata', sep=''))
+      load(paste(outdirs[i], 'trait.mcmc.Rdata', sep = ''))
     }
     
     pft.name <- unlist(pft.names[i])
@@ -119,7 +120,7 @@ run.write.configs <- function(model){
       ### Get info on the quantiles to be run in the sensitivity analysis (if requested)
       quant <- get.quantiles(settings$sensitivity.analysis$quantiles)
       ### Get info on the years to run the sensitivity analysis (if requested)
-      sa.years = data.frame(sa.start = settings$sensitivity.analysis$start.year, 
+      sa.years <- data.frame(sa.start = settings$sensitivity.analysis$start.year, 
                             sa.end = settings$sensitivity.analysis$end.year)
       
       print(" ")
@@ -138,11 +139,11 @@ run.write.configs <- function(model){
                                         quant)
       ### Write out SA config files
       if(!exists("cnt")) {            
-        cnt=0
-        assign("cnt",cnt,.GlobalEnv)
+        cnt <- 0
+        assign("cnt", cnt, .GlobalEnv)
         }
       write.sa.configs(settings$pfts, sa.samples, 
-                       host, main.outdir, settings,model=model)
+                       host, main.outdir, settings, model = model)
     }
   } ### End of SA
   
@@ -162,7 +163,7 @@ run.write.configs <- function(model){
     print(" ")
     
     write.ensemble.configs(settings$pfts, ensemble.samples, 
-                           host, main.outdir, settings,model=model)
+                           host, main.outdir, settings, model = model)
     
   }else{
     print(paste('Ensemble analysis settings are NULL'))
@@ -171,7 +172,7 @@ run.write.configs <- function(model){
 print("  ######################## Finish up runs ########################")
   ### Save output from SA/Ensemble runs
   save(ensemble.samples, trait.samples, sa.samples,
-       file = paste(main.outdir, 'samples.Rdata', sep=''))
+       file = paste(main.outdir, 'samples.Rdata', sep = ''))
   
   ### Make outdirectory, send samples to outdir
   print(host$name)
@@ -179,16 +180,16 @@ print("  ######################## Finish up runs ########################")
     print(c(host$outdir,"move to",settings$outdir))
     if(!(host$outdir == settings$outdir)) {
       dir.create(host$outdir,showWarnings=FALSE)
-      file.copy(from = paste(settings$outdir, 'samples.Rdata', sep=''),
+      file.copy(from = paste(settings$outdir, 'samples.Rdata', sep = ''),
                 to   = paste(host$outdir, 'samples.Rdata', sep = '/'),
                 overwrite = TRUE)
     }
   } else {  
     mkdir.cmd <- paste("'if ! ls ", host$outdir, " > /dev/null ; then mkdir -p ", 
-                       host$outdir," ; fi'",sep='')
+                       host$outdir," ; fi'",sep = '')
     system(paste("ssh", host$name, mkdir.cmd))
     system(paste('rsync -routi ', paste(main.outdir, 'samples.Rdata', sep=''),
-                 paste(host$name, ':', host$outdir, sep='')))
+                 paste(host$name, ':', host$outdir, sep = '')))
   }
 
   

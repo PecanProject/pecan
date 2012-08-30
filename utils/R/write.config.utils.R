@@ -105,13 +105,13 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
 ##' @param outdir directory for model output (on server)
 ##' @param settings list of PEcAn settings
 ##' @param write.config a model-specific function to write config files, e.g. \link{write.config.ED}  
-##' @param clean remote old output first?
+##' @param clean remove old output first?
 ##' @return nothing, writes ensemble configuration files as a side effect
 ##' @export
 ##' @author David LeBauer, Carl Davidson
 write.ensemble.configs <- function(defaults, ensemble.samples,
                                    host, outdir, settings,
-                                   model,clean=FALSE){
+                                   model, clean=FALSE){
 
   my.write.config <- paste("write.config.",model,sep="")
   if(!exists(my.write.config)){
