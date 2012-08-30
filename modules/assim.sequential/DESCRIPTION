@@ -18,4 +18,4 @@ LazyLoad: yes
 LazyData: FALSE
 Collate:
    'sda.particle.R'
-   'split.met.SIPNET'
+   'split.met.SIPNET.R'
