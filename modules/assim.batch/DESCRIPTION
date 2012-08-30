@@ -18,3 +18,7 @@ LazyLoad: yes
 LazyData: FALSE
 Collate: 
   'pda.mcmc.R'
+  'get.da.data.R'
+  'get.da.data.growth.R'
+  'pda.emulator.R'
+  'plot.da.R'
