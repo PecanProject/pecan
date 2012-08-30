@@ -1,3 +1,7 @@
+## Originally names SimBrazil.r
+## written by Deepak Jaiswal
+## Contains code for handling both met NetCDF data and soils data
+
 ## This script has code to deal with both met and soil data
 
 args <- commandArgs(TRUE)
