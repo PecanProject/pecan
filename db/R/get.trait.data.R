@@ -45,15 +45,15 @@ get.trait.data <- function() {
 
 
   ##---------------- Query trait data. ---------------------------------------------------------------#
-  cnt = 0;
-  all.trait.data = list()
+  cnt <- 0;
+  all.trait.data <- list()
   for(pft in settings$pfts){
     out.dir = pft$outdir # loop over pfts
     
-    cnt = cnt + 1
+    cnt <- cnt + 1
     
     ## 1. get species list based on pft
-    spstr <- query.pft_species(pft$name,con=newconfn())
+    spstr <- query.pft_species(pft$name, con=newconfn())
     
     ## 2. get priors available for pft  
     prior.distns <- query.priors(pft$name, vecpaste(trait.names),
@@ -78,12 +78,11 @@ get.trait.data <- function() {
       traits <- names(trait.data)
       save(trait.data, file = paste(pft$outdir, 'trait.data.Rdata', sep=''))
       
-      all.trait.data[[cnt]] <- trait.data
-      names(all.trait.data)[cnt] <- pft$name
+      all.trait.data[[pft$name]] <- trait.data
       
       for(i in 1:length(all.trait.data)){
-        print(names(all.trait.data)[i])
-        print(sapply(all.trait.data[[i]],dim))
+        print(paste("number of observations per trait for", pft$name))
+        print(ldply(all.trait.data[[i]], nrow))
       }
       
     }
