@@ -33,8 +33,8 @@ run.write.configs <- function(model){
   
   ### Identify PFTs in the input settings.xml file
   num.pfts <- length(settings$pfts)
-  pft.names <- as.list(rep(NA, num.pfts))
-  outdirs <- as.list(rep(NA, num.pfts))
+  pft.names <- as.list(rep(NA,num.pfts))
+  outdirs <- as.list(rep(NA,num.pfts))
   for (i in 1:num.pfts){
     pft.names[i] <- settings$pfts[i]$pft$name
     
