@@ -134,7 +134,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
 
   ### Get ED2 specific model settings and put into output config xml file
   xml <- listToXml(settings$model$config.header, 'config')
-  names(defaults) <- sapply(defaults,function(x) x$name)
+  names(defaults) <- sapply(defaults, function(x) x$name)
 
   # TODO this should come from the database
   histfile <- paste("data/history.", settings$model$revision, ".csv", sep='')
@@ -162,7 +162,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
       ### Insert PFT constants into output xml file  
       pft.xml <- listToXml(pft$constants, 'pft')
       ### Insert PFT names into output xml file
-      pft.xml <- append.xmlNode(pft.xml,xmlNode("name", pft$name))
+      pft.xml <- append.xmlNode(pft.xml, xmlNode("name", pft$name))
 	  
 	  # TODO this should come from the database
 	  edpft <- pftmapping$ED[which(pftmapping==group)]
@@ -202,7 +202,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
     }
   }
     
-  xml.file.name <-paste('c.',run.id,sep='')  
+  xml.file.name <- paste('c.',run.id,sep='')  
   if(nchar(xml.file.name) >= 512)  # was 128.  Changed in ED to 512
     stop(paste('The file name, "',xml.file.name,
             '" is too long and will cause your ED run to crash ',
