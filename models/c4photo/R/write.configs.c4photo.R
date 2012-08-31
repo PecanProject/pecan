@@ -69,33 +69,6 @@ write.config.c4photo <- function(defaults = NULL,
 }
 #==================================================================================================#
 
-
-#--------------------------------------------------------------------------------------------------#
-##'
-##' @name write.run.generic
-##' @title Function to generate generic model run script files
-##' @author
-##' @import PEcAn.utils
-#--------------------------------------------------------------------------------------------------#
-write.run.generic <- function(settings){
-  run.script.template = system.file("data", "run.template.generic", package="PEcAn.generic")
-  run.text <- scan(file = run.script.template, 
-                   what="character",sep='@', quote=NULL, quiet=TRUE)
-  run.text  <- gsub('TMP', paste("/scratch/",Sys.getenv("USER"),sep=""), run.text)
-  run.text  <- gsub('BINARY', settings$run$host$ed$binary, run.text)
-  run.text <- gsub('OUTDIR', settings$run$host$outdir, run.text)
-  runfile <- paste(settings$outdir, 'run', sep='')
-  writeLines(run.text, con = runfile)
-  if(settings$run$host$name == 'localhost') {
-    system(paste('cp ', runfile, settings$run$host$rundir))
-  }else{
-    system(paste("rsync -outi ", runfile , ' ', settings$run$host$name, ":",
-                 settings$run$host$rundir, sep = ''))
-  }
-}
-#==================================================================================================#
-
-
 #--------------------------------------------------------------------------------------------------#
 ##'
 ##' Clear out previous config and parameter files.
