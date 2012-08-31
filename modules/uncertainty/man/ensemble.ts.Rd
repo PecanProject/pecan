@@ -2,7 +2,7 @@
 \alias{ensemble.ts}
 \title{Plots an ensemble time-series from PEcAn for the selected target variables}
 \usage{
-  ensemble.ts()
+  ensemble.ts(ensemble.ts, observations = NULL, window = 1)
 }
 \value{
   nothing, generates an ensemble time-series plot
