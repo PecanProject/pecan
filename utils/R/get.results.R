@@ -10,10 +10,7 @@
 ##' 
 ##' @name get.results
 ##' @title Generate model output for PEcAn analyses
-##'
-##' @import PEcAn.utils
 ##' @export
-##'
 get.results <- function(model){
 
   variables <- "GPP"
