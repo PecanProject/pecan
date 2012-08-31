@@ -20,6 +20,7 @@
 ##' @param num number to be padded (integer)
 ##' @param digits number of digits to add
 ##' @return num with zeros to the left
+##' @export
 ##' @author Carl Davidson
 left.pad.zeros <- function(num, digits = 5){
   format_string <- paste('%',sprintf('0%.0f.0f',digits),sep='')
@@ -89,7 +90,6 @@ ssh <- function(host, ..., args=''){
 ##' @param x vector
 ##' @return comma delimited string
 ##' @export
-#--------------------------------------------------------------------------------------------------#
 vecpaste <- function(x) paste(paste("'", x, "'", sep=''), collapse=',')
 #==================================================================================================#
 
@@ -144,6 +144,7 @@ listToXml <- function(item, tag){
 ##' @param paramb 
 ##' @param n number of samples to return
 ##' @return vector with n random samples from prior
+##' @export
 ##' @seealso \{code{\link{get.sample}}
 #--------------------------------------------------------------------------------------------------#
 pr.samp <- function(distn, parama, paramb, n) {
@@ -758,6 +759,7 @@ transformstats <- function(data) {
 ##' @param x categorical variable as vector
 ##' @param na.rm logical: return NA's or replace with max(x) + 1 
 ##' @return sequence from 1:length(unique(x))
+##' @export
 ##' @author David LeBauer
 #--------------------------------------------------------------------------------------------------#
 as.sequence <- function(x, na.rm = TRUE){
