@@ -8,7 +8,8 @@
 #-------------------------------------------------------------------------------
 context("tests of overall workflow")
 
-settings <<- read.settings("test.settings.xml")
+settings <<- read.settings(system.file("tests/test.settings.xml",
+                                       package = "PEcAn.all"))
 
 # get.trait.data()
 # run.meta.analysis()     

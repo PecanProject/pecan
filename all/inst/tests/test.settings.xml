@@ -1,107 +1,56 @@
 <?xml version="1.0"?>
 <pecan>
-  <outdir>/tmp/</outdir>
-  <!-- PFTs --> 
+  <pecanDir>$HOME/pecan/</pecanDir>
+  <outdir>$HOME/foo/</outdir>
   <pfts>
     <pft>
-      <name>ebifarm.pavi</name>
-      <outdir>/tmp/</outdir>
+      <name>sipnet.temperate.coniferous</name>
+      <outdir>$HOME/foo/</outdir>
       <constants>
-        <num>15</num>
-        <phenology>2</phenology>
-        <max_dbh>0.78</max_dbh>
-        <hgt_min>2.0</hgt_min>
-        <dark_respiration_factor>0.015</dark_respiration_factor>
-        <qsw>0.0</qsw>
-        <mort1>1.0</mort1>
-        <plant_min_temp>-100</plant_min_temp>
-        <storage_turnover_rate>0</storage_turnover_rate>
-        <r_fract>0.25</r_fract>
+        <num>1</num>
       </constants>
-    </pft> <!-- can repeat for multiple pfts -->
+    </pft>
   </pfts>
-  <!-- database -->
   <database>
-    <userid>ebi_analys_user</userid>
-    <passwd>b742xsAu</passwd>
-    <location>ebi-forecast.igb.illinois.edu</location>
-    <name>ebi_analysis</name>
+    <userid>bety</userid>
+    <passwd>bety</passwd>
+    <location>localhost</location>
+    <name>bety</name>
   </database>
-  <!-- meta analysis -->
   <meta.analysis>
-    <iter>1000</iter>
+    <iter>3000</iter>
     <random.effects>FALSE</random.effects>
   </meta.analysis>
-  <!-- ensemble -->
-  <ensemble>
-    <size>1</size>
-  </ensemble>
-  <!-- sensitivity analysis -->
   <sensitivity.analysis>
-    <start.year>1995</start.year>
-    <end.year>1998</end.year>
-    <quantiles><!-- note, generally would use either quantile _or_ sigma, but not both.
-		    both are included here for testing / demonstration
-		    if neither are included, will use default quantiles = pnorm(-3:3) --> 
-      <quantile>0.35</quantile> 
-      <quantile>0.65</quantile> 
-      <sigma>-3</sigma>
-      <sigma>3</sigma>
+    <quantiles>
+      <quantile/>
+      <sigma>0</sigma>
     </quantiles>
+    <start.year>2002</start.year>
+    <end.year>2006</end.year>
   </sensitivity.analysis>
-  <!-- model settings, using ED2 in this test -->
   <model>
-    <name>ED2</name>
-    <edin>ed2in-template-pavi</edin>
-    <binary>/home/dlebauer/EDBRAMS/ED/build/ed_2.1-opt</binary>
-    <!-- Set ED2 phenology scheme. -->
-    <phenol.scheme>1</phenol.scheme>
-    <!-- Other ED2 inputs                   -->
-    <psscss>/home/scratch/dlebauer/pecan/edin/ebifarm/ebifarm.</psscss>
-    <veg>/home/mdietze/data/oge2OLD/OGE2_</veg>
-    <soil>/home/mdietze/data/faoOLD/FAO_</soil>
-    <inputs>/home/mdietze/data/ed_inputs/</inputs>
-    <config.header>
-      <!-- Radiation settings -->
-      <radiation>
-	<lai_min>0.01</lai_min>
-      </radiation>
-      <!-- Hydrology settings -->
-      <hydro>
-	<useTOPMODEL>1</useTOPMODEL>
-	<useRUNOFF>0</useRUNOFF>
-	<outputPeriod>96</outputPeriod>
-	<MoistdWT>100000000.0</MoistdWT>
-	<MoistRateTuning>0.4</MoistRateTuning>
-	<FracLiqRunoff>0.00001</FracLiqRunoff>
-	<dewmax>1.0e-8</dewmax>
-      </hydro>
-      <!-- ED2 Misc settings -->
-      <ed_misc>
-	<output_month>12</output_month>
-	<burnin>1</burnin>
-      </ed_misc>
-    </config.header>
+    <name>SIPNET</name>
+    <binary>/usr/local/bin/sipnet.runk</binary>
+    <id>11</id>
   </model>
-  <!-- model run settings -->
   <run>
+    <folder>$HOME/foo/</folder>
     <site>
-      <name>EBI Energy Farm - Switchgrass</name>
-      <lat>40.06</lat>
-      <lon>-88.20</lon>
-      <met>/home/scratch/dlebauer/pecan/edin/ebifarm/met/ED_MET_DRIVER_HEADER</met>
-      <met.start>1996</met.start>
-      <met.end>1998</met.end>
+      <id>680</id>
+      <name>Young Jack Pine (YJP)</name>
+      <lat>42.430000</lat>
+      <lon>-84.020000</lon>
+      <met>$HOME/sites/clim/yjp.clim</met>
     </site>
-    <start.date>1996/01/01</start.date>
-    <end.date>1998/12/31</end.date>
+    <start.date>2004-01-01 06:00:00</start.date>
+    <end.date>2006-01-01 05:59:00</end.date>
     <host>
-      <name>ebi-cluster.igb.illinois.edu</name>
-      <rundir>/home/dlebauer/EDBRAMS/ED/run/</rundir>
-      <inputs>/home/scratch/dlebauer/edin/</inputs>
-      <outdir>/home/scratch/dlebauer/out/ebifarm/fast/</outdir>
+      <name>localhost</name>
+      <rundir>$HOME/foo/</rundir>
+      <outdir>$HOME/foo/</outdir>
+      <ed>
+      </ed>
     </host>
-    <priority>-5</priority>
-    <scratch>tmp</scratch>
   </run>
 </pecan>
