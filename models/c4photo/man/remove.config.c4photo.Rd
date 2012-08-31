@@ -1,8 +1,8 @@
-\name{remove.config.SIPNET}
-\alias{remove.config.SIPNET}
-\title{Clear out previous SIPNET config and parameter files.}
+\name{remove.config.c4photo}
+\alias{remove.config.c4photo}
+\title{Clear out previous c4photo config and parameter files.}
 \usage{
-  remove.config.SIPNET(main.outdir, settings)
+  remove.config.c4photo(main.outdir, settings)
 }
 \arguments{
   \item{main.outdir}{Primary PEcAn output directory (will
@@ -14,7 +14,7 @@
   nothing, removes config files as side effect
 }
 \description{
-  Clear out previous SIPNET config and parameter files.
+  Clear out previous config and parameter files.
 }
 \author{
   Shawn Serbin, David LeBauer
