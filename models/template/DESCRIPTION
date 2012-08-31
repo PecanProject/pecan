@@ -1,0 +1,19 @@
+Package: PEcAn.ModelName
+Type: Package
+Title: PEcAn package for integration of the ModelName model
+Version: 1.2
+Date: 2012-06-03
+Author: John Doe, Jane Doe
+Maintainer: John Doe <jdoe@illinois.edu>
+Description: This module provides functions to link the (ModelName) to PEcAn.
+Depends:
+    PEcAn.common,
+    PEcAn.utils
+Suggests:
+    testthat
+SystemRequirements: ModelName
+OS_type: unix
+License: FreeBSD + file LICENSE
+Copyright: Energy Biosciences Institute, Authors
+LazyLoad: yes
+LazyData: FALSE

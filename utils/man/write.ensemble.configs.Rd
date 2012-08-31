@@ -20,7 +20,7 @@
   \item{write.config}{a model-specific function to write
   config files, e.g. \link{write.config.ED}}
 
-  \item{clean}{remote old output first?}
+  \item{clean}{remove old output first?}
 }
 \value{
   nothing, writes ensemble configuration files as a side

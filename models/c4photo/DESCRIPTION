@@ -1,0 +1,21 @@
+Package: PEcAn.c4photo
+Type: Package
+Title: PEcAn package for integration of the c4photo model from BioCro
+Version: 1.2
+Date: 2012-06-03
+Author: David LeBauer, Deepak Jaiswal
+Maintainer: David LeBauer <dlebauer@illinois.edu>
+Description: This module provides functions to link the c4photo model to PEcAn.
+Depends:
+    PEcAn.common,
+    PEcAn.utils
+Suggests:
+    testthat
+SystemRequirements: c4photo, BioCro
+OS_type: unix
+License: FreeBSD + file LICENSE
+Copyright: Energy Biosciences Institute, Authors
+LazyLoad: yes
+LazyData: FALSE
+Collate:
+    'write.configs.c4photo.R'
