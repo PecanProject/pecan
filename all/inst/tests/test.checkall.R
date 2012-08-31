@@ -1,15 +1,16 @@
 data(pecan.packages, package = "PEcAn.all")
 pkgs <- pecan.packages[!pecan.packages == "all"]
-print("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF")
+
 setwd("../../../")
-test_that("documentation is valid",{
-  for (pkg in pkgs){
-    build(pkg)
-    install(pkg)
-    document(pkg)
-    test(pkg)
-  }
-})
+## test_that("documentation is valid",{
+##   for (pkg in pkgs){
+##     print(pkg)
+##     build(pkg)
+##     install(pkg)
+##     document(pkg)
+##     test(pkg)
+##   }
+## })
 
 test_that("check.all.sh script includes all packages listed in in all/data/pecan.packages.csv",{
   check.all.packages <- readLines("scripts/check.all.sh")[1]
