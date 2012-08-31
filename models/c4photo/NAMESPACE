@@ -1,3 +1,2 @@
-export(remove.config.SIPNET)
+export(remove.config.c4photo)
 export(write.config.c4photo)
-import(PEcAn.utils)

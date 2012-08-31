@@ -37,3 +37,4 @@ running
 .project
 .settings
 .buildpath
+all/inst/tests/$HOME
