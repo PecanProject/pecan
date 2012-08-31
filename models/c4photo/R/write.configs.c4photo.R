@@ -74,7 +74,7 @@ write.config.c4photo <- function(defaults = NULL,
 ##'
 ##' @name write.run.generic
 ##' @title Function to generate generic model run script files
-##' @author <unknown>
+##' @author
 ##' @import PEcAn.utils
 #--------------------------------------------------------------------------------------------------#
 write.run.generic <- function(settings){
@@ -98,17 +98,17 @@ write.run.generic <- function(settings){
 
 #--------------------------------------------------------------------------------------------------#
 ##'
-##' Clear out previous SIPNET config and parameter files.
+##' Clear out previous config and parameter files.
 ##'
-##' @name remove.config.SIPNET
-##' @title Clear out previous SIPNET config and parameter files.
+##' @name remove.config.c4photo
+##' @title Clear out previous c4photo config and parameter files.
 ##' @param main.outdir Primary PEcAn output directory (will be depreciated)
 ##' @param settings PEcAn settings file 
 ##' @return nothing, removes config files as side effect
 ##' @export
 ##'
 ##' @author Shawn Serbin, David LeBauer
-remove.config.SIPNET <- function(main.outdir, settings) {
+remove.config.c4photo <- function(main.outdir, settings) {
   
   ### Remove files on localhost
   if(settings$run$host$name == 'localhost'){
