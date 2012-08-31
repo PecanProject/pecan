@@ -31,9 +31,8 @@ get.trait.data <- function() {
 
 
   ##---------------- Load trait dictionary. ----------------------------------------------------------#
-  ed.trait.dictionary <- read.csv(system.file("data", "ed.trait.dictionary.csv",
-                                              package = "PEcAn.utils"), sep = ";")
-  trait.names <- ed.trait.dictionary$id
+  data(trait.dictionary)
+  trait.names <- trait.dictionary$id
   ##--------------------------------------------------------------------------------------------------#
 
 

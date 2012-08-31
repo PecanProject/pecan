@@ -364,11 +364,11 @@ trait.dictionary <- function(traits = NULL) {
   #This could also be represented in the database, 
   #but because it is used to determine which parameters to feed to the model,
   #it could be argued that it's conceptually model specific
-  data(ed.trait.dictionary)
+  data(trait.dictionary)
   if(is.null(traits)) {
-    trait.defs <- ed.trait.dictionary
+    trait.defs <- trait.dictionary
   } else {
-    trait.defs <- ed.trait.dictionary[match(traits, ed.trait.dictionary$id),]
+    trait.defs <- trait.dictionary[match(traits, trait.dictionary$id),]
   }
   return(trait.defs)
 }
