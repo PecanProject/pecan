@@ -9,8 +9,9 @@
 
 test_that("trait dictionary loads and has expected columns",{
   rm(list = ls())
-  trait.dictionary <- read.csv(system.file("data","trait.dictionary.csv",
-                                           package = "PEcAn.utils"), sep = ";")
+  trait.dictionary <- data(trait.dictionary, package = "PEcAn.utils")
+  ## trait.dictionary <- read.csv(system.file("data","trait.dictionary.csv",
+  ##                                          package = "PEcAn.utils"), sep = ";")
   expect_true(exists("trait.dictionary"))
   expect_true(all(c("id", "figid", "units", "model.id") %in%
                   colnames(trait.dictionary)))
