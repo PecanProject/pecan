@@ -20,40 +20,43 @@
 ##' }
 ##' @author Shawn Serbin
 ##'
-start.model.runs <- function(model){
+start.model.runs <- function(model, write.to.db = TRUE){
 
-  fcn.name <- paste("start.runs.",model,sep="")
+  fcn.name <- paste("start.runs.", model, sep="")
   if(exists(fcn.name)){
     print(" ")
     print("-------------------------------------------------------------------")
-    print(paste(" Starting model runs",model))
+    print(paste(" Starting model runs", model))
     print("-------------------------------------------------------------------")
     print(" ")
+    if(!write.to.db){
+      warning("Run provenance not being logged by database")
+    }
+    if(write.to.db){
+      ## write to the runs table
+      con <- try(query.base.con(settings), silent=TRUE)
+      if(!is.character(con)){
+        query.base(paste("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, started_at) values ('", settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", settings$run$end.date, "', '",settings$outdir , "', NOW(), NOW())", sep=''), con)
+        id <- query.base(paste("SELECT LAST_INSERT_ID() AS ID"), con)
+      }
+    }
     
-	# write to the runs table
-	con <- try(query.base.con(settings),silent=TRUE)
-  if(!is.character(con)){
-  	query.base(paste("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, started_at) values ('", settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", settings$run$end.date, "', '",settings$outdir , "', NOW(), NOW())", sep=''), con)
-	  id <- query.base(paste("SELECT LAST_INSERT_ID() AS ID"), con)
-  }
-    
-	# launch actual model
-	do.call(fcn.name,args=list())
+    ## launch actual model
+    do.call(fcn.name, args=list())
 	
-	# job is finished
-	# TODO this should move in case of launch of on HPC
-  if(!is.character(con)){
-  	query.base(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", id), con)
-	  query.close(con)
-  }
-	
+    ## job is finished
+    if(write.to.db){
+      ## TODO this should move in case of launch of on HPC
+      if(!is.character(con)){
+        query.base(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", id), con)
+        query.close(con)
+      }
+    }  
   } else {
-    warning(paste(fcn.name,"does not exist"))
+    warning(paste(fcn.name, "does not exist"))
     warning(paste("This function is required, please make sure the model module is loaded for",model))
     stop()
   }
-
-  
 } ### End of function
 #==================================================================================================#
 
