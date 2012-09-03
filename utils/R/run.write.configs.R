@@ -15,7 +15,7 @@
 ##' @param model the ecosystem model to generate the configuration files for
 ##' @export
 ##'
-##' @author Shawn Serbin
+##' @author David LeBauer, Shawn Serbin
 run.write.configs <- function(model){
 
   
@@ -33,8 +33,8 @@ run.write.configs <- function(model){
   
   ### Identify PFTs in the input settings.xml file
   num.pfts <- length(settings$pfts)
-  pft.names <- as.list(rep(NA,num.pfts))
-  outdirs <- as.list(rep(NA,num.pfts))
+  pft.names <- list()
+  outdirs <- list()
   for (i in 1:num.pfts){
     pft.names[i] <- settings$pfts[i]$pft$name
     
@@ -61,19 +61,19 @@ run.write.configs <- function(model){
   env.samples <- list()
   ###
   
-  ### Define main output directory and host for SA/Ensemble run.
+  ## Define main output directory and host for SA/Ensemble run.
   main.outdir <- settings$outdir
   host <- settings$run$host
   
-  ### Prepare for model output.  Cleanup any old config files (if exists)
+  ## Prepare for model output.  Cleanup any old config files (if exists)
   #remove.config(main.outdir,settings,model)
   do.call(paste("remove.config", model, sep="."),
           args = list(main.outdir, settings))
 
-  ### Load PFT priors and posteriors
+  ## Load PFT priors and posteriors
   for (i in seq(pft.names)){
-    
-    ### Load priors
+
+    ## Load priors
     load(paste(outdirs[i], 'prior.distns.Rdata', sep = ''))
     
     ### Load trait mcmc data (if exists)
@@ -127,7 +127,6 @@ run.write.configs <- function(model){
       print(" ")
       print("-------------------------------------------------------------------")
       print("Selected Quantiles: ")
-      #print("Lower             Mid             Upper")
       print(round(quant,3))
       print("-------------------------------------------------------------------")
       print(" ")
@@ -141,7 +140,7 @@ run.write.configs <- function(model){
       if(!exists("cnt")) {            
         cnt <- 0
         assign("cnt", cnt, .GlobalEnv)
-        }
+      }
       write.sa.configs(settings$pfts, sa.samples, 
                        host, main.outdir, settings, model = model)
     }
