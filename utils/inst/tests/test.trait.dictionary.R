@@ -6,12 +6,10 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-
+require(PEcAn.utils)
 test_that("trait dictionary loads and has expected columns",{
   rm(list = ls())
-  trait.dictionary <- data(trait.dictionary, package = "PEcAn.utils")
-  ## trait.dictionary <- read.csv(system.file("data","trait.dictionary.csv",
-  ##                                          package = "PEcAn.utils"), sep = ";")
+  data(trait.dictionary, package = "PEcAn.utils")
   expect_true(exists("trait.dictionary"))
   expect_true(all(c("id", "figid", "units", "model.id") %in%
                   colnames(trait.dictionary)))
