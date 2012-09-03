@@ -255,7 +255,6 @@ write.sa.configs <- function(defaults, quantile.samples, host, outdir, settings,
     print(paste("please make sure that the PEcAn interface is loaded for",model))
     exit()
   }
-
   
   MEDIAN <- '50'
   ## clean out old files
@@ -276,9 +275,13 @@ write.sa.configs <- function(defaults, quantile.samples, host, outdir, settings,
   for(i in 1:length(quantile.samples)){
     median.samples[[i]] <- quantile.samples[[i]][MEDIAN,]
   }
-  names(median.samples) = names(quantile.samples)
+  names(median.samples) <- names(quantile.samples)
   run.id <- get.run.id('SA', 'median')
-  do.call(my.write.config,args=list(defaults=defaults, trait.values=median.samples, settings=settings, outdir=outdir, run.id=run.id))
+  do.call(my.write.config, args=list(defaults = defaults,
+                             trait.values = median.samples,
+                             settings = settings,
+                             outdir = outdir,
+                             run.id = run.id))
   
   ## loop over pfts
   for(i in seq(names(quantile.samples))){

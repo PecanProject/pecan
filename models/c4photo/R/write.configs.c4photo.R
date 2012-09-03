@@ -18,19 +18,28 @@ PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
 ##' @name convert.samples.c4photo
 ##' @title Convert samples for c4photo
 ##' @param trait.samples a matrix or dataframe of samples from the trait distribution
+##' @export
 ##' @return matrix or dataframe with values transformed
 ##' @author David LeBauer
 convert.samples.c4photo <- function(trait.samples){
-  trait.names <- names(trait.samples)
-  names(trait.samples)[trait.names == "Vcmax"] <- "vmax"
-  names(trait.samples)[trait.names == "stomatal_slope.BB"] <- "b1"
-  names(trait.samples)[trait.names == "leaf_respiration_rate_m2"] <- "Rd"
-  names(trait.samples)[trait.names == "quantum_efficiency"] <- "alpha"  
+
+  ## first rename variables
+  trait.names <- colnames(trait.samples)
+  trait.names[trait.names == "Vcmax"] <- "vmax"
+  trait.names[trait.names == "leaf_respiration_rate_m2"] <- "Rd"
+  trait.names[trait.names == "cuticular_cond"] <- "b0"
+  trait.names[trait.names == "stomatal_slope.BB"] <- "b1"
+  colnames(trait.samples) <- trait.names
+
+  ## transform values with different units
+  ## cuticular conductance - BETY default is umol; BioCro uses mol
+  if("b1" %in% trait.names){
+    trait.samples[, trait.names == "b1"] <- trait.samples[, trait.names == "b1"]/1e6
+  }
+
   return(trait.samples)
 }
 #==================================================================================================#
-
-
 
 ##' Writes a configuration files for the c4photo model
 ##' @name write.config.c4photo
@@ -49,7 +58,10 @@ write.config.c4photo <- function(defaults = NULL,
                                  outdir,
                                  run.id){
 
-  trait.values  <- convert.samples.c4photo(trait.values[[trait]])
+  my.outdir = paste(outdir,"/",run.id,"/",sep="") 
+  if (! file.exists(my.outdir)) dir.create(my.outdir)
+
+  trait.values  <- convert.samples.c4photo(trait.values[[1]])
   trait.names   <- names(trait.values)
   parms.xml <- xmlNode("parms")
   for(trait in trait.names) {
@@ -58,9 +70,9 @@ write.config.c4photo <- function(defaults = NULL,
 
   config.xml <- append.xmlNode(xmlNode('traits'), parms.xml)
   run.outdir    <- paste(outdir,"/",run.id,"/",sep="")
-  xml.file.name <- paste('c.',run.id,sep='')
-  if (! file.exists(my.outdir)) dir.create(my.outdir)
-  saveXML(xml, file = paste(outdir, xml.file.name, sep=''), 
+  xml.file.name <- run.id
+  if (!file.exists(run.outdir)) dir.create(run.outdir)
+  saveXML(config.xml, file = paste(my.outdir, xml.file.name, sep=''), 
           indent=TRUE, prefix = PREFIX_XML)
 
   ### Display info to the console.
@@ -70,7 +82,6 @@ write.config.c4photo <- function(defaults = NULL,
 #==================================================================================================#
 
 #--------------------------------------------------------------------------------------------------#
-##'
 ##' Clear out previous config and parameter files.
 ##'
 ##' @name remove.config.c4photo
@@ -79,7 +90,6 @@ write.config.c4photo <- function(defaults = NULL,
 ##' @param settings PEcAn settings file 
 ##' @return nothing, removes config files as side effect
 ##' @export
-##'
 ##' @author Shawn Serbin, David LeBauer
 remove.config.c4photo <- function(main.outdir, settings) {
   
