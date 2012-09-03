@@ -27,8 +27,9 @@ get.trait.data <- function() {
 
 
   ##---------------- Load trait dictionary. ----------------------------------------------------------#
+
   trait.dictionary <- read.csv(system.file("data","trait.dictionary.csv",
-                                           package = "PEcAn.utils"), sep = ";")
+                                             package = "PEcAn.utils"), sep = ";")
 
   trait.names <- trait.dictionary$id
   ##--------------------------------------------------------------------------------------------------#
@@ -45,7 +46,7 @@ get.trait.data <- function() {
   cnt <- 0;
   all.trait.data <- list()
   for(pft in settings$pfts){
-    out.dir = pft$outdir # loop over pfts
+    out.dir <- pft$outdir # loop over pfts
     
     cnt <- cnt + 1
     

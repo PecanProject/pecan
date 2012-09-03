@@ -1,2 +1,4 @@
+export(convert.samples.c4photo)
 export(remove.config.c4photo)
+export(start.runs.c4photo)
 export(write.config.c4photo)
