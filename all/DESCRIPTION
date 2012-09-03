@@ -23,7 +23,8 @@ Depends:
     PEcAn.utils,
     PEcAn.uncertainty,
     PEcAn.data.land,
-    PEcAn.assim.batch
+    PEcAn.assim.batch,
+    PEcAn.priors
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
