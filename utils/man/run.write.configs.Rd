@@ -13,6 +13,6 @@
   (e.g. ED, SiPNET) run and configuration file scripts
 }
 \author{
-  Shawn Serbin
+  David LeBauer, Shawn Serbin
 }
 
