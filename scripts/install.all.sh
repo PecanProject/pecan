@@ -7,7 +7,8 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-for f in common utils db modules/meta.analysis modules/uncertainty modules/emulator modules/assim.batch modules/assim.sequential  modules/data.land models/ed models/sipnet all
+for f in utils common db modules/meta.analysis modules/uncertainty modules/emulator modules/assim.batch modules/assim.sequential modules/data.land modules/priors modules/rtm models/c4photo models/ed models/sipnet all
+
 do
   R CMD build $f && R CMD INSTALL $f
 done
