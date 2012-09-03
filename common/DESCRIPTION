@@ -16,8 +16,7 @@ Description: The Predictive Ecosystem Carbon Analyzer
     investigation.
 Depends:
     XML,
-    testthat,
-    devtools
+    testthat
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
