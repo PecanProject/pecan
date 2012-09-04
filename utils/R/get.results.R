@@ -7,20 +7,18 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------#
-##' 
+##' Reads model output and runs sensitivity and ensemble analyses
+##'
+##' Output is placed in model output directory (settings$run$host$outdir).
 ##' @name get.results
 ##' @title Generate model output for PEcAn analyses
 ##' @export
-get.results <- function(model, variables = "GPP"){
-
-  model <- settings$model$name
+##' @author Shawn Serbin, David LeBauer, Mike Dietze
+##' @param model name of model being used
+##' @param settings list, read from settings file (xml) using \code{\link{read.settings}}
+##' @author David LeBauer, Shawn Serbin, Mike Dietze
+get.results <- function(model, settings = settings){  
   
-  ### Set output dir to model output dir
-  outdir <- settings$run$host$outdir
-  
-  ### OLD CODE, SLIGHTYL MODIFIED, THAT NEEDS TO BE UPDATED. previously names read.output.ed and was in the 
-  ### scripts folder.  SPS
-
   ### Load PEcAn sa info
   load('samples.Rdata')
   
@@ -32,6 +30,7 @@ get.results <- function(model, variables = "GPP"){
   end.year   <- ifelse(is.null(settings$sensitivity.analysis$end.year),
                        NA, settings$sensitivity.analysis$end.year)
 
+  variables <- NULL
   if("sensitivity.analysis" %in% names(settings)){
     if("variable" %in% names(settings$sensitivity.analysis)){
       var <- which(names(settings$sensitivity.analysis) == 'variable')
@@ -47,13 +46,12 @@ get.results <- function(model, variables = "GPP"){
     for(pft.name in names(trait.samples)){
       
       traits <- names(trait.samples[[pft.name]])
-      quantiles.str <- rownames(sa.samples[[pft.name]])
-      quantiles.str <- quantiles.str[which(quantiles.str != '50')]
-      quantiles <- as.numeric(quantiles.str)/100
+      quantiles <- as.numeric(rownames(sa.samples[[pft.name]])) / 100
+      quantiles <- quantiles[!quantiles == 0.5] 
       
       sensitivity.output[[pft.name]] <- read.sa.output(traits,
                                                        quantiles,
-                                                       outdir = outdir, 
+                                                       outdir = settings$run$host$outdir, 
                                                        pft.name=pft.name,
                                                        start.year=start.year,
                                                        end.year=end.year,
@@ -66,7 +64,7 @@ get.results <- function(model, variables = "GPP"){
   
   if('ensemble' %in% names(settings)) {
     ensemble.output <- read.ensemble.output(settings$ensemble$size,
-                                            outdir = outdir, 
+                                            outdir = settings$run$host$outdir, 
                                             start.year=start.year,
                                             end.year=end.year,
                                             variables=variables,
