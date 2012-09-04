@@ -11,9 +11,8 @@
 ##' @name get.results
 ##' @title Generate model output for PEcAn analyses
 ##' @export
-get.results <- function(model){
+get.results <- function(model, variables = "GPP"){
 
-  variables <- "GPP"
   model <- settings$model$name
   
   ### Set output dir to model output dir
@@ -35,7 +34,7 @@ get.results <- function(model){
 
   if("sensitivity.analysis" %in% names(settings)){
     if("variable" %in% names(settings$sensitivity.analysis)){
-      var = which(names(settings$sensitivity.analysis) == 'variable')
+      var <- which(names(settings$sensitivity.analysis) == 'variable')
       for(i in 1:length(var)){
         variables[i] = settings$sensitivity.analysis[[var[i]]]
       }
