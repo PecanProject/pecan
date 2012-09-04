@@ -29,11 +29,12 @@ model2netcdf.c4photo <- function(outdir, run.id) {
   output[["Ci"]]    <- c4photo.output$Ci
   
   var <- list()
-  var[["Gs"]]    <- var.def.ncdf("Gs",    "mmol m-2 s-1", 1, -999,
+  null.dim <- dim.def.ncdf("NULL", "", 1) 
+  var[["Gs"]]    <- var.def.ncdf("Gs", "mmol m-2 s-1", null.dim, -999,
                                  "Stomatal Conductance")
-  var[["Assim"]] <- var.def.ncdf("Assim", "umol m-2 s-1", 1, -999,
+  var[["Assim"]] <- var.def.ncdf("Assim", "umol m-2 s-1", null.dim, -999,
                                  "Net Assimilation")
-  var[["Ci"]] <- var.def.ncdf("Ci", "umol m-2 s-1", 1, -999,
+  var[["Ci"]] <- var.def.ncdf("Ci", "umol m-2 s-1", null.dim, -999,
                               "Intracellular CO2")
   
   
