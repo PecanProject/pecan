@@ -44,7 +44,7 @@ write.config.BIOCRO <- function(defaults, trait.values, settings, outdir, run.id
       ## copy values
       if(!is.null(trait.values[[group]])){
         vals <- convert.samples.BIOCRO(trait.values[[group]])
-        names(vals) <- trait.dictionary(names(vals))$model.id
+        names(vals) <- trait.lookup(names(vals))$model.id
         for(trait in names(vals)){
           pft.xml <- append.xmlNode(pft.xml, 
               xmlNode(trait, vals[trait]))

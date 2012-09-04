@@ -82,8 +82,8 @@ good.runs <- y < quantile(y, 0.95)
 print(nrow(x))
 print(length(good.runs))
 for(i in 1:ncol(x)) {
-  trait.entry <- trait.dictionary(gsub('[1-2]$', '', traits[i]))
-  if(is.na(trait.entry)) trait.entry <- trait.dictionary(traits[i])
+  trait.entry <- trait.lookup(gsub('[1-2]$', '', traits[i]))
+  if(is.na(trait.entry)) trait.entry <- trait.lookup(traits[i])
   
   plot(x[good.runs,i], y[good.runs], main = trait.entry$figid, 
        xlim=p.rng[i,], xlab=trait.entry$units, ylab='-log(likelihood)', pch=1)
@@ -124,8 +124,8 @@ for(i in 1:ncol(samp[[1]])) {
   all <- do.call(rbind, lapply(samp, function(chain) chain[thin,i]))
     
   #Density plots
-  trait.entry <- trait.dictionary(gsub('[1-2]$', '', traits[i]))
-  if(is.na(trait.entry)) trait.entry <- trait.dictionary(traits[i])
+  trait.entry <- trait.lookup(gsub('[1-2]$', '', traits[i]))
+  if(is.na(trait.entry)) trait.entry <- trait.lookup(traits[i])
   plot(density(all), xlim=p.rng[i,], main = paste(trait.entry$figid), type = 'l', 
        ylab='', xlab=trait.entry$units)
   x <- seq(p.rng[i,1], p.rng[i,2], length=1000)

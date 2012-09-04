@@ -174,7 +174,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
       ## copy values
       if(!is.null(trait.values[[group]])){
         vals <- convert.samples.ED(trait.values[[group]])
-        names(vals) <- droplevels(trait.dictionary(names(vals))$model.id)
+        names(vals) <- droplevels(trait.lookup(names(vals))$model.id)
 		traits <- names(vals)
 		for(trait in traits) {
 			if (! trait %in% edtraits) {
