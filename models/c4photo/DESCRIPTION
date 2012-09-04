@@ -21,3 +21,5 @@ LazyData: FALSE
 Collate:
     'write.configs.c4photo.R'
     'start.runs.c4photo.R'
+    'get.model.output.c4photo.R'
+    'model2netcdf.c4photo.R'
