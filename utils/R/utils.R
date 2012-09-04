@@ -472,18 +472,31 @@ read.ensemble.output <- function(ensemble.size, outdir,
 #--------------------------------------------------------------------------------------------------#
 read.sa.output <- function(traits, quantiles, outdir, pft.name='', 
                            start.year, end.year, variables, model){
-
-sa.output <- data.frame()
+  
+  sa.output <- matrix(nrow = length(quantiles),
+                      ncol = length(traits),
+                      dimnames = list(quantiles, traits))
   for(trait in traits){
     for(quantile in quantiles){
-      run.id <- get.run.id('SA', round(quantile,3), trait=trait, pft.name=pft.name)
-      print(run.id)
-      sa.output[as.character(round(quantile*100,3)), 
-                trait] <- sapply(read.output(run.id, outdir, start.year, end.year,variables,model),mean,na.rm=TRUE)
+      if(!quantile == "50"){
+        run.id <- get.run.id('SA', round(as.numeric(quantile)/100, 3),
+                             trait = trait, pft.name = pft.name)
+        print(run.id)
+        sa.output[quantile, trait] <-
+          sapply(read.output(run.id, outdir,
+                             start.year, end.year,
+                             variables, model),
+                 mean, na.rm=TRUE)
+      } else if (quantile == "50") {
+        sa.output[quantile, trait] <- sapply(read.output(get.run.id('SA', 'median'),
+                                                         outdir,
+                                                         start.year, end.year,
+                                                         variables, model),
+                                             mean,na.rm=TRUE)
+      } ## end loop over quantiles
     }
-  }
-  sa.output['50',] <- sapply(read.output(get.run.id('SA', 'median'), outdir, start.year, end.year,variables,model),mean,na.rm=TRUE)
-  sa.output <- sa.output[order(as.numeric(rownames(sa.output))),]
+  } ## end loop over traits
+  sa.output <- as.data.frame(sa.output)
   return(sa.output)
 }
 #==================================================================================================#
