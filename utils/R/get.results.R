@@ -17,7 +17,7 @@
 ##' @param model name of model being used
 ##' @param settings list, read from settings file (xml) using \code{\link{read.settings}}
 ##' @author David LeBauer, Shawn Serbin, Mike Dietze
-get.results <- function(model, settings = settings){  
+get.results <- function(model){  
   
   ### Load PEcAn sa info
   load('samples.Rdata')
@@ -46,12 +46,11 @@ get.results <- function(model, settings = settings){
     for(pft.name in names(trait.samples)){
       
       traits <- names(trait.samples[[pft.name]])
-      quantiles <- as.numeric(rownames(sa.samples[[pft.name]])) / 100
-      quantiles <- quantiles[!quantiles == 0.5] 
+      quantiles <- rownames(sa.samples[[pft.name]])
       
-      sensitivity.output[[pft.name]] <- read.sa.output(traits,
-                                                       quantiles,
-                                                       outdir = settings$run$host$outdir, 
+      sensitivity.output[[pft.name]] <- read.sa.output(traits = traits,
+                                                       quantiles = quantiles,
+                                                       outdir = settings$outdir, 
                                                        pft.name=pft.name,
                                                        start.year=start.year,
                                                        end.year=end.year,
@@ -64,7 +63,7 @@ get.results <- function(model, settings = settings){
   
   if('ensemble' %in% names(settings)) {
     ensemble.output <- read.ensemble.output(settings$ensemble$size,
-                                            outdir = settings$run$host$outdir, 
+                                            outdir = settings$outdir, 
                                             start.year=start.year,
                                             end.year=end.year,
                                             variables=variables,
