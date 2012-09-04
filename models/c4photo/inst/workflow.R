@@ -24,8 +24,6 @@ run.meta.analysis()     	# Run the PEcAn meta.analysis
 
 run.write.configs(model)        # Calls model specific write.configs e.g. write.config.ed.R
 
-clear.scratch(settings)         # Clear any old model output in ebi-cluster scratch/$USER on worker nodes
-
 start.model.runs(model, write.to.db = FALSE)         # Start ecosystem model runs
 
 get.model.output(model)         # Get results of model runs
