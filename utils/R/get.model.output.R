@@ -28,8 +28,7 @@ get.model.output <- function(model){
   my.fcn = paste("get.model.output",model,sep=".")
 
   if(exists(my.fcn)){
-    do.call(my.fcn,args=list())
-    
+    do.call(my.fcn, args=list())    
   } else {
     print("-------------------------------------------------------------------")
     print(c(my.fcn,"could not be found"))
