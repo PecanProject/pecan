@@ -1,1 +1,2 @@
 export(fit.dist)
+export(prior.fn)
