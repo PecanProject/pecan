@@ -10,7 +10,6 @@ Depends:
     PEcAn.common,
     PEcAn.utils
 Suggests:
-    EnCro,
     testthat
 OS_type: unix
 License: FreeBSD + file LICENSE
