@@ -56,6 +56,7 @@ fit.dist <- function(trait.data, trait = colnames(trait.data),
 ##' @param distn named distribution, one of 'lnorm', 'gamma', 'weibull', 'beta'; support for other distributions not currently implemented 
 ##' @param central.tendency one of 'mode', 'median', and 'mean' 
 ##' @param trait name of trait, can be used for exceptions (currently used for trait == 'q')
+##' @export
 ##' @return parms
 ##' @author David LeBauer
 ##' @examples
