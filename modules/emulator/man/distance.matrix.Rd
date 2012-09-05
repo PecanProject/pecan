@@ -27,7 +27,7 @@ distance.matrix(x, power = 1)
 \author{ ~~who you are~~ }
 \note{ ~~further notes~~ 
 
- ~Make other sections like Warning with \section{Warning }{....} ~
+
 }
 \seealso{ ~~objects to See Also as \code{\link{help}}, ~~~ }
 \examples{

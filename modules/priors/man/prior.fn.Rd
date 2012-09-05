@@ -12,7 +12,7 @@
   confidence limits, ct = entral tendency}
 
   \item{alpha}{quantile at which lcl/ucl are estimated
-  (e.g. for a 95% CI, alpha = 0.5)}
+  (e.g. for a 95\% CI, alpha = 0.5)}
 
   \item{distn}{named distribution, one of 'lnorm', 'gamma',
   'weibull', 'beta'; support for other distributions not

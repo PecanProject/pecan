@@ -28,7 +28,6 @@ summarize.GP(gp, pdf_file = NULL, txt_file = NULL)
 \author{ ~~who you are~~ }
 \note{ ~~further notes~~ 
 
- ~Make other sections like Warning with \section{Warning }{....} ~
 }
 \seealso{ ~~objects to See Also as \code{\link{help}}, ~~~ }
 \examples{
