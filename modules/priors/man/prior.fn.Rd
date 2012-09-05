@@ -38,6 +38,7 @@
   distributions require starting values (e.g. beta, f,
 }
 \examples{
+library(DEoptim)
 DEoptim(fn = prior.fn,
                 lower = c(0, 0),
                 upper = c(1000, 1000),
