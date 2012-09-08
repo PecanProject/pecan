@@ -96,20 +96,21 @@ get.model.output.ED2 <- function(){
   
   ### Get ED2 model output on the localhost
   if(settings$run$host$name == 'localhost'){
-    
+    setwd(settings$run$host$outdir)  # Host model output directory
+    get.results(model)
     ### Move required functions to host
     ## TODO: take out functions read.output.file.ed & read.output.ed from write.configs.ed &
     ## put into a new file specific for reading ED output
-    dump(c("get.run.id","abbreviate.run.id.ED","left.pad.zeros","read.ensemble.output",
-           "read.sa.output","read.output", "model2netcdf.ED2","get.results"),
-         file=paste(settings$outdir,"PEcAn.functions.R",sep=""))
+#     dump(c("get.run.id","abbreviate.run.id.ED","left.pad.zeros","read.ensemble.output",
+#            "read.sa.output","read.output", "model2netcdf.ED2","get.results"),
+#          file=paste(settings$outdir,"PEcAn.functions.R",sep=""))
     
     ### Is the previous necessary for localhost?  These functions should be availible within R
     ### & should not need to be copied and run but could instead be called within the running R
     ### shell.  SPS
     
-    setwd(settings$outdir)
-    source('PEcAn.functions.R') # This won't work yet
+    #setwd(settings$outdir)
+    #source('PEcAn.functions.R') # This won't work yet
     
     ### If running on remote host
   } else {
