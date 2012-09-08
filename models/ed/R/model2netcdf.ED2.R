@@ -225,7 +225,7 @@ out <- add(dat$AVG_SOIL_WATER,37,row) ## SoilWater  **********
 #out <- add(sum(dat$AVG_SOIL_TEMP*dz)/-min(z),38) ## SoilTemp
 out <- add(dat$AVG_SOIL_TEMP,38,row) ## SoilTemp
 out <- add(dat$AVG_SOIL_TEMP*NA,39,row) ## SoilWet
-out <- add(dat$AVG_ALBEDT,40,row) ## Albedo
+out <- add(dat$AVG_ALBEDO,40,row) ## Albedo
 out <- add(dat$AVG_SNOWTEMP,41,row) ## SnowT
 out <- add(dat$AVG_SNOWMASS,42,row) ## SWE
 out <- add(dat$AVG_VEG_TEMP,43,row) ## VegT
