@@ -112,6 +112,10 @@ get.model.output.ED2 <- function(){
     #setwd(settings$outdir)
     #source('PEcAn.functions.R') # This won't work yet
     
+    ### Copy output to main output directory. May want to change how this is done.
+    file.copy(from = paste(settings$run$host$outdir, 'output.Rdata', sep=''), to = settings$outdir, overwrite=TRUE)
+
+    
     ### If running on remote host
   } else {
     ### Make a copy of the settings object for use on the remote sever
