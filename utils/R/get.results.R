@@ -50,7 +50,7 @@ get.results <- function(model){
       
       sensitivity.output[[pft.name]] <- read.sa.output(traits = traits,
                                                        quantiles = quantiles,
-                                                       outdir = settings$outdir, 
+                                                       outdir = settings$run$host$outdir, 
                                                        pft.name=pft.name,
                                                        start.year=start.year,
                                                        end.year=end.year,
@@ -63,7 +63,7 @@ get.results <- function(model){
   
   if('ensemble' %in% names(settings)) {
     ensemble.output <- read.ensemble.output(settings$ensemble$size,
-                                            outdir = settings$outdir, 
+                                            outdir = settings$run$host$outdir, 
                                             start.year=start.year,
                                             end.year=end.year,
                                             variables=variables,
