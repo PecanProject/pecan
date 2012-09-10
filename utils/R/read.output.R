@@ -125,6 +125,7 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,
           }
         }
         close.ncdf(nc)
+        showConnections(all = TRUE)
       }
       names(data) <- variables
       #print(paste("----- Mean :",sapply(data,median,na.rm=TRUE)))
@@ -135,6 +136,7 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,
     }    
   }
   return(NA) 
+  closeAllConnections()
 }
 #==================================================================================================#
 

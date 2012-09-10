@@ -24,7 +24,7 @@
 ##'
 ##' @author Michael Dietze, Shawn Serbin, David LeBauer
 get.model.output <- function(model){
-
+  print(paste("---- Getting output for ",model," model",sep=""))
   my.fcn = paste("get.model.output",model,sep=".")
 
   if(exists(my.fcn)){
