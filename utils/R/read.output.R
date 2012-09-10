@@ -22,6 +22,9 @@
 ##' @author Michael Dietze
 read.output <- function(run.id, outdir, start.year=NA, end.year=NA,
                         variables = "GPP", model = model){
+
+  # had to be added since model didn't seem to be passed to this code?
+  model <- settings$model$name
     
   ### Load requirements
   require(ncdf)

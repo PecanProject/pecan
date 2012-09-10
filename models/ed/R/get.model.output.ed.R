@@ -135,7 +135,9 @@ get.model.output.ED2 <- function(){
         append=TRUE)
     cat(paste("get.results(",model,")",sep=""),file=paste(settings$outdir,"PEcAn.functions.R",sep=""),
         append=TRUE)
-
+    #cat("get.results(model)",file=paste(settings$outdir,"PEcAn.functions.R",sep=""),
+    #    append=TRUE)
+    
     ### Copy required PEcAn.functions.R and settings object to remote host
     rsync('-outi',paste(settings$outdir,"settings.RData",sep=""),
           paste(settings$run$host$name, ':',settings$run$host$outdir, sep = '') )
