@@ -320,11 +320,12 @@ for(i in 1:length(var)){
 	  put.var.ncdf(nc,var[[i]],out[[i]])  
   	}
 }
-close.ncdf(nc)
-
-
+  close.ncdf(nc)
+  closeAllConnections()
 }  ## end year loop
-
+  
+  closeAllConnections() 
+  
 }  ## end model2netcdf.ED2
 #==================================================================================================#
 
