@@ -25,7 +25,11 @@ model2netcdf.ED2 <- function(outdir,run.id) {
   require(hdf5)
 
 flist <- dir(outdir,paste(run.id,"-T-",sep=""))
-    
+if (length(flist)==0) {
+  print(paste("*** WARNING: No tower output for :",run.id))
+  break
+}
+  
 ## extract data info from file names?
 yr <- rep(NA,length(flist))
 for(i in 1:length(flist)){
