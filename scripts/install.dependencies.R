@@ -6,7 +6,7 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-list.of.packages <- c('MCMCpack', 'PECAn', 'RMySQL', 'Rmpi', 'XML', 'chron', 'doSNOW', 'hdf5', 'mvtnorm', 'ncdf', 'stringr', 'time')
+list.of.packages <- c('MCMCpack', 'RMySQL', 'Rmpi', 'XML', 'chron', 'doSNOW', 'hdf5', 'mvtnorm', 'ncdf', 'stringr', 'time')
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) {
   print("installing : ")
