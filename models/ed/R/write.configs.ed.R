@@ -134,7 +134,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
 
   ### Get ED2 specific model settings and put into output config xml file
   xml <- listToXml(settings$model$config.header, 'config')
-  names(defaults) <- sapply(defaults,function(x) x$name)
+  names(defaults) <- sapply(defaults, function(x) x$name)
 
   # TODO this should come from the database
   histfile <- paste("data/history.", settings$model$revision, ".csv", sep='')
@@ -314,60 +314,44 @@ write.run.ED <- function(settings){
 ##' @return nothing, removes config files as side effect
 ##' @export
 ##' @author Shawn Serbin, David LeBauer
-remove.config.ED2 <- function(main.outdir,settings) {
-  
+remove.config.ED2 <- function(main.outdir = settings$outdir, settings) {
+
+
   print(" ")
   print("---- Removing previous ED2 config files and output before starting new run ----")
   print(" ")
   
-    todelete <- dir(unlist(main.outdir), pattern = 'ED2INc.*', recursive=TRUE, full.names = TRUE)
-    if(length(todelete>0)) file.remove(todelete)
-    rm(todelete)
-    
-    #todelete <- dir(unlist(main.outdir), pattern = "c.*",
-    #                recursive=TRUE, full.names = TRUE)
-    
-    ### Other code wasn't working properly.  This won't recurse however.
-    # TODO: Fix this code so it finds the correct files and will recurse
-    todelete <- Sys.glob(file.path(unlist(main.outdir), "c.*") )
-    if(length(todelete>0)) file.remove(todelete)
-    rm(todelete)
+  todelete <- dir(settings$outdir,
+                    pattern = c('/c.*', '/ED2INc.*'),
+                    recursive=TRUE, full.names = TRUE)
+                
+  if(length(todelete>0)) file.remove(todelete)
+  rm(todelete)
 
-    ### I AM NOT SURE THIS IS NESCESSARY.
-    filename.root <- get.run.id('c.','*')  # TODO: depreciate abbrev run ids
-  
-    ### Remove model run configs and model run log files on local/remote host
-    if(settings$run$host$name == 'localhost'){
-      if(length(dir(settings$run$host$rundir, pattern = filename.root)) > 0) {
-        #todelete <- dir(settings$run$host$outdir,
-        #                pattern = paste(filename.root, "*[^log]", sep = ''), 
-        #                recursive=TRUE, full.names = TRUE)
-        #file.remove(todelete)
-        ### Need to check that this is removing all config files on localhost
+  ## Remove model run configs and model run log files on local/remote host
+  if(!settings$run$host$name == 'localhost'){
+    ## Remove model run congfig and log files on remote host
+    config <- system(paste("ssh ", settings$run$host$name, " 'ls ", 
+                           settings$run$host$rundir, 
+                           "c.*'", sep = ''), intern = TRUE)
+    ed2in <- system(paste("ssh ", settings$run$host$name, " 'ls ", 
+                          settings$run$host$rundir, 
+                          "ED2INc.", "*'", sep = ''), intern = TRUE)
+    output <- paste(settings$run$host$outdir,
+                    system(paste("ssh ", settings$run$host$name, " 'ls ", 
+                                 settings$run$host$outdir,
+                                 "'", sep = ''), intern = TRUE),sep="/")
+    if(length(config) > 0 | length(ed2in) > 0) {
+      todelete <- c(config,ed2in[-grep('log', ed2in)],output) ### Keep log files
+      
+      ## Very slow method.  NEEDS UPDATING
+      for(i in todelete){
+        print(i)
+        system(paste("ssh -T ", settings$run$host$name, " 'rm ",i,"'",sep=""))
       }
-    } else {
-      ### Remove model run congfig and log files on remote host
-      config <- system(paste("ssh ", settings$run$host$name, " 'ls ", 
-                            settings$run$host$rundir, 
-                            filename.root, "*'", sep = ''), intern = TRUE)
-      ed2in <- system(paste("ssh ", settings$run$host$name, " 'ls ", 
-                             settings$run$host$rundir, 
-                             "ED2INc.", "*'", sep = ''), intern = TRUE)
-      output <- paste(settings$run$host$outdir,
-                      system(paste("ssh ", settings$run$host$name, " 'ls ", 
-                           settings$run$host$outdir,
-                           "'", sep = ''), intern = TRUE),sep="/")
-      if(length(config) > 0 | length(ed2in) > 0) {
-        todelete <- c(config,ed2in[-grep('log', ed2in)],output) ### Keep log files
-        
-        ### Very slow method.  NEEDS UPDATING
-        for(i in todelete){
-          print(i)
-          system(paste("ssh -T ", settings$run$host$name, " 'rm ",i,"'",sep=""))
-        }
-        
-        }
-      }
+      
+    }
+  }
 }
 #==================================================================================================#
 
