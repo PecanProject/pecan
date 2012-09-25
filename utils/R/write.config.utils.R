@@ -105,13 +105,13 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
 ##' @param outdir directory for model output (on server)
 ##' @param settings list of PEcAn settings
 ##' @param write.config a model-specific function to write config files, e.g. \link{write.config.ED}  
-##' @param clean remote old output first?
+##' @param clean remove old output first?
 ##' @return nothing, writes ensemble configuration files as a side effect
 ##' @export
 ##' @author David LeBauer, Carl Davidson
 write.ensemble.configs <- function(defaults, ensemble.samples,
                                    host, outdir, settings,
-                                   model,clean=FALSE){
+                                   model, clean=FALSE){
 
   my.write.config <- paste("write.config.",model,sep="")
   if(!exists(my.write.config)){
@@ -255,7 +255,6 @@ write.sa.configs <- function(defaults, quantile.samples, host, outdir, settings,
     print(paste("please make sure that the PEcAn interface is loaded for",model))
     exit()
   }
-
   
   MEDIAN <- '50'
   ## clean out old files
@@ -276,9 +275,13 @@ write.sa.configs <- function(defaults, quantile.samples, host, outdir, settings,
   for(i in 1:length(quantile.samples)){
     median.samples[[i]] <- quantile.samples[[i]][MEDIAN,]
   }
-  names(median.samples) = names(quantile.samples)
+  names(median.samples) <- names(quantile.samples)
   run.id <- get.run.id('SA', 'median')
-  do.call(my.write.config,args=list(defaults=defaults, trait.values=median.samples, settings=settings, outdir=outdir, run.id=run.id))
+  do.call(my.write.config, args=list(defaults = defaults,
+                             trait.values = median.samples,
+                             settings = settings,
+                             outdir = outdir,
+                             run.id = run.id))
   
   ## loop over pfts
   for(i in seq(names(quantile.samples))){

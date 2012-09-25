@@ -1,8 +1,8 @@
-\name{trait.dictionary}
-\alias{trait.dictionary}
+\name{trait.lookup}
+\alias{trait.lookup}
 \title{Dictionary of terms used to identify traits in ed, filenames, and figures}
 \usage{
-  trait.dictionary(traits = NULL)
+  trait.lookup(traits = NULL)
 }
 \arguments{
   \item{traits}{a vector of trait names, if traits = NULL,
@@ -21,11 +21,11 @@
 \examples{
 # convert parameter name to a string appropriate for end-use plotting
 \dontrun{
-trait.dictionary('growth_resp_factor')
-trait.dictionary('growth_resp_factor')$figid
+trait.lookup('growth_resp_factor')
+trait.lookup('growth_resp_factor')$figid
 
 # get a list of all traits and units in dictionary
-trait.dictionary()[,c('figid', 'units')]
+trait.lookup()[,c('figid', 'units')]
 }
 }
 

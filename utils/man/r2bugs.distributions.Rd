@@ -2,7 +2,7 @@
 \alias{r2bugs.distributions}
 \title{convert R parameterizations to BUGS paramaterizations}
 \usage{
-  r2bugs.distributions(priors)
+  r2bugs.distributions(priors, direction = "r2bugs")
 }
 \arguments{
   \item{priors}{data.frame with columns distn =
@@ -29,6 +29,6 @@ priors <- data.frame(distn = c('weibull', 'lnorm', 'norm', 'gamma'),
 r2bugs.distributions(priors)
 }
 \author{
-  David LeBauer
+  David LeBauer, Ben Bolker
 }
 

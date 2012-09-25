@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<pecan>
+  <pecanDir>/home/dlebauer/pecan_biocro/</pecanDir>
+  <outdir>/home/dlebauer/demo/pecan/</outdir>
+  <pfts>
+    <pft>
+      <name>c4photo.pavi</name>
+      <outdir>/home/dlebauer/demo/pavi/</outdir>
+      <constants>
+        <num>1</num>
+      </constants>
+    </pft>
+  </pfts>
+  <database>
+    <userid>ebi_analys_user</userid>
+    <passwd>b742xsAu</passwd>
+<!--    <location>ebi-forecast.igb.illinois.edu</location>-->
+    <host>ebi-forecast.igb.illinois.edu</host>
+    <name>ebi_analysis</name>
+  </database>
+  <meta.analysis>
+    <iter>3000</iter>
+    <random.effects>FALSE</random.effects>
+  </meta.analysis>
+  <ensemble>
+    <size>5</size>
+  </ensemble>
+  <sensitivity.analysis>
+    <quantiles>
+      <sigma>-1</sigma>
+      <sigma>0</sigma>
+      <sigma>1</sigma>
+    </quantiles>
+    <variable>Assim</variable>
+    <start.year>2002</start.year>
+    <end.year>2006</end.year>
+  </sensitivity.analysis>
+  <model>
+    <name>c4photo</name>
+    <binary>/usr/local/bin/c4photo</binary>
+    <id></id>
+  </model>
+  <run>
+    <folder>/home/dlebauer/demo/</folder>
+    <start.date>2004-01-01 06:00:00</start.date>
+    <end.date>2006-01-01 05:59:00</end.date>
+    <host>
+      <name>localhost</name>
+      <rundir>/home/dlebauer/demo/run/</rundir>
+      <outdir>/home/dlebauer/demo/out/</outdir>
+    </host>
+  </run>
+</pecan>

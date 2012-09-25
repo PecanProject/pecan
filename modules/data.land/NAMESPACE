@@ -1,7 +1,1 @@
-export(plot2AGB)
-export(diametergrow)
 export(fia.to.psscss)
-export(fuse_plot_treering)
-export(read.plot)
-export(read.velmex)
-export(Read_Tuscon)

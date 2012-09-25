@@ -10,11 +10,11 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     model parameterization, execution, and analysis. The goal of PECAn is to
     streamline the interaction between data and models, and to improve the
     efficacy of scientific investigation.
-Depends:
-Suggests:
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Collate:
-   'sda.particle.R'
+    'sda.particle.R'
+    'sda.enkf.R'
+    'split.met.SIPNET.R'
