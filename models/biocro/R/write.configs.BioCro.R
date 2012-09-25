@@ -26,7 +26,7 @@
 ##' @param run.id id of run
 ##' @return configuration file and ED2IN namelist for given run
 ##' @author David
-write.config.BIOCRO <- function(defaults, trait.values, settings, outdir, run.id){
+write.config.BioCro <- function(defaults, trait.values, settings, outdir, run.id){
   #defaults = settings$pfts
   xml <- listToXml(settings$config.header, 'config')
   names(defaults) <- sapply(defaults,function(x) x$name)
@@ -43,8 +43,8 @@ write.config.BIOCRO <- function(defaults, trait.values, settings, outdir, run.id
       pft.xml <- listToXml(pft$constants, 'pft')
       ## copy values
       if(!is.null(trait.values[[group]])){
-        vals <- convert.samples.BIOCRO(trait.values[[group]])
-        names(vals) <- trait.dictionary(names(vals))$model.id
+        vals <- convert.samples.BioCro(trait.values[[group]])
+        names(vals) <- trait.lookup(names(vals))$model.id
         for(trait in names(vals)){
           pft.xml <- append.xmlNode(pft.xml, 
               xmlNode(trait, vals[trait]))
@@ -70,7 +70,7 @@ write.config.BIOCRO <- function(defaults, trait.values, settings, outdir, run.id
 }
 
 
-write.run.BIOCRO <- function(settings){
+write.run.BioCro <- function(settings){
   run.text <- readLines(con=paste(settings$pecanDir,
                         'bash/run-template.BIOCRO', sep = '/'), n=-1)
   run.text <- gsub('@OUTDIR@', settings$run$host$outdir, run.text)
