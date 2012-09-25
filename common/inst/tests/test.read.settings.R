@@ -120,7 +120,8 @@ test_that("read.settings can set up directories on a remote server",{
     <name>ebi-cluster.igb.illinois.edu</name>
     <rundir>/home/scratch/tmp/</rundir>
     <outdir>/home/scratch/tmp/</outdir>
-  </host></run></pecan>") 
+  </host></run></pecan>")
+  read.settings("bug1322.xml")
   file.remove("bug1322.xml")
 })
 
