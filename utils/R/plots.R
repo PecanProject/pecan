@@ -374,7 +374,7 @@ plot.trait <- function(trait,
   ## If no posterior, set prior density to black
 
   ## get units for plot title
-  units <- trait.dictionary(trait)$units
+  units <- trait.lookup(trait)$units
 
   prior.density <- posterior.density <- data.frame(x = NA, y = NA)
   if(plot.prior){
@@ -457,7 +457,7 @@ plot.trait <- function(trait,
   }
 
   trait.plot <- base.plot +
-    opts(title= trait.dictionary(trait)$figid, 
+    opts(title= trait.lookup(trait)$figid, 
          axis.text.x = theme_text(size = fontsize$axis),
          axis.text.y = theme_blank(),
          axis.title.x = theme_text(size = fontsize$axis),
@@ -533,9 +533,9 @@ priorfig <- function(priordata = NA, priordensity = NA,
   }
 
   priorfigure <- ggplot() + theme_bw() + 
-    scale_x_continuous(limits = xlim, breaks = x.breaks, trait.dictionary(trait)$units) +
+    scale_x_continuous(limits = xlim, breaks = x.breaks, trait.lookup(trait)$units) +
       scale_y_continuous(breaks = NULL)+
-        opts(title = trait.dictionary(trait)$figid,
+        opts(title = trait.lookup(trait)$figid,
              panel.grid.major = theme_blank(),    
              panel.grid.minor = theme_blank(),
              axis.text.y = theme_blank(),

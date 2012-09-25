@@ -74,6 +74,18 @@ bugs2r.distributions <- function(..., direction = "bugs2r") {
   return(r2bugs.distributions(..., direction))
 }
 
+##' Sample from an R distribution using JAGS
+##'
+##' Takes a distribution with R parameterization, converts it to a
+##' BUGS parameterization, and then samples from the distribution using
+##' JAGS
+##' @title bugs.rdist
+##' @param prior dataframe with distribution name and parameters 
+##' @param n.iter number of samples, output will have n.iter/4 samples
+##' @param n 
+##' @return vector of samples
+##' @export
+##' @author David LeBauer
 bugs.rdist <- function(prior = data.frame(
                          distn = "norm",
                          parama = 0,

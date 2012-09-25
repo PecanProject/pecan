@@ -28,5 +28,6 @@ start.model.runs(model)         # Start ecosystem model runs
 
 sda.particle(model)
 
+sda.enkf(model)
 
 #--------------------------------------------------------------------------------------------------#

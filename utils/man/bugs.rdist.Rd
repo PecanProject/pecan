@@ -1,0 +1,31 @@
+\name{bugs.rdist}
+\alias{bugs.rdist}
+\title{bugs.rdist}
+\usage{
+  bugs.rdist(prior = data.frame(distn = "norm", parama = 0, paramb = 1),
+    n.iter = 1e+05, n = NULL)
+}
+\arguments{
+  \item{prior}{dataframe with distribution name and
+  parameters}
+
+  \item{n.iter}{number of samples, output will have
+  n.iter/4 samples}
+
+  \item{n}{}
+}
+\value{
+  vector of samples
+}
+\description{
+  Sample from an R distribution using JAGS
+}
+\details{
+  Takes a distribution with R parameterization, converts it
+  to a BUGS parameterization, and then samples from the
+  distribution using JAGS
+}
+\author{
+  David LeBauer
+}
+

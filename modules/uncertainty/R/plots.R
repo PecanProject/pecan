@@ -174,8 +174,8 @@ format.plot.input <- function(plot.inputs, convert.var, trait.order=c()){
   traits <- row.names(as.data.frame(plot.inputs))
   if(length(trait.order) == 0){trait.order <- traits}
   plot.data <- data.frame(traits              = traits,
-                          trait.labels        = trait.dictionary(traits)$figid,
-                          units               = trait.dictionary(traits)$units,
+                          trait.labels        = trait.lookup(traits)$figid,
+                          units               = trait.lookup(traits)$units,
                           coef.vars           = abs(plot.inputs$coef.vars * 100),
                           elasticities        = (plot.inputs$elasticities),
                           variances           = convert.var(abs(plot.inputs$variances)))
@@ -210,7 +210,7 @@ plot.sensitivity <- function(sa.sample, sa.spline, trait,
                              dotsize = 2) {
   LENGTH_OUT <- 1000
   
-  units <- trait.dictionary(trait)$units
+  units <- trait.lookup(trait)$units
   saplot <- ggplot()
 
   post.x <- seq(from = min(sa.sample),
@@ -226,7 +226,7 @@ plot.sensitivity <- function(sa.sample, sa.spline, trait,
         geom_point(aes(x,y), data = data.frame(x = sa.sample[median.i], y = sa.spline(sa.sample[median.i])), size = dotsize * 1.3) + 
           scale_y_continuous(limits = range(pretty(y.range)), breaks = pretty(y.range, n = 3)[1:3]) +
             theme_bw() +
-              opts(title= trait.dictionary(trait)$figid, 
+              opts(title= trait.lookup(trait)$figid, 
                    axis.text.x = theme_text(size = fontsize$axis),
                    axis.text.y = theme_text(size = fontsize$axis),
                    axis.title.x = theme_text(size = fontsize$axis),
