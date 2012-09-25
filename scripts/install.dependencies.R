@@ -7,7 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 list.of.packages <- c('MCMCpack', 'RMySQL', 'Rmpi', 'XML', 'chron', 'doSNOW', 'hdf5', 'mvtnorm', 'ncdf', 'stringr',
-'ggplot2', 'randtoolbox','testthat')
+'ggplot2', 'randtoolbox','testthat', 'gridExtra','DEoptim','roxygen2')
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) {
   print("installing : ")
