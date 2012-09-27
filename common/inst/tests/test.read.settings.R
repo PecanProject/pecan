@@ -12,8 +12,10 @@ context("tests for read.settings and related functions")
 test_that("read settings returns error if no settings file found (issue #1124)",{
   default.settings.files <- c("/etc/pecan.xml", "~/.pecan.xml",
                               "pecan.xml", Sys.getenv("PECAN_SETTINGS"))
+  ## need to be revised for use with log.* functions
   if(!any(sapply(default.settings.files, file.exists))){
-    expect_error(read.settings(), "Did not find any settings file to load.")
+    print("the following error messages are expected results of log.error")
+    expect_message(read.settings(), "Did not find any settings file to load.")
   }
 })
 
