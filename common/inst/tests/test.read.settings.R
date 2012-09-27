@@ -53,17 +53,17 @@ test_that("read.settings gives expected warnings",{
 
 test_that("merge 2 xml files", {
   ## merge the files
-  #print(xmlMerge(xmlParse("a.xml"), xmlParse("b.xml")))
-  #settings <- xmlToList(xmlMerge(xmlParse("a.xml"), xmlParse("b.xml")))
+  print(xmlMerge(xmlParse("a.xml"), xmlParse("b.xml")))
+  settings <- xmlToList(xmlMerge(xmlParse("a.xml"), xmlParse("b.xml")))
   
   ## check results
   ## expect_equal(names(settings), c("a", "b", "c"))
  
-  #expect_equal(names(settings$a), c("text", ".attrs"))
-  #expect_equal(settings$a$text, "b")
-  #expect_equal(names(settings$a$.attrs), c("var1", "var2"))
-  #expect_equal(settings$a$.attrs[['var1']], "2")
-  #expect_equal(settings$a$.attrs[['var2']], "2")
+  expect_equal(names(settings$a), c("text", ".attrs"))
+  expect_equal(settings$a$text, "b")
+  expect_equal(names(settings$a$.attrs), c("var1", "var2"))
+  expect_equal(settings$a$.attrs[['var1']], "2")
+  expect_equal(settings$a$.attrs[['var2']], "2")
   
   ## expect_equal(names(settings$b), c("text", ".attrs"))
   ## expect_equal(settings$b$text, "a")
@@ -74,20 +74,20 @@ test_that("merge 2 xml files", {
   ## expect_equal(names(settings$c$.attrs), c("var1", "var2"))
   ## expect_equal(settings$b$.attrs[['var1']], "1")
   
-  #expect_equal(names(settings$c$d), NULL)
-  #expect_equal(settings$c$d, "b")
+  expect_equal(names(settings$c$d), NULL)
+  expect_equal(settings$c$d, "b")
  
-  #expect_equal(names(settings$c$e), c("text", ".attrs"))
-  #expect_equal(settings$c$e$text, "b")
+  expect_equal(names(settings$c$e), c("text", ".attrs"))
+  expect_equal(settings$c$e$text, "b")
   ## expect_equal(names(settings$c$e$.attrs), c("var1", "var2"))
-  #expect_equal(settings$c$e$.attrs[['var1']], "2")      
+  expect_equal(settings$c$e$.attrs[['var1']], "2")      
   ## expect_equal(settings$c$e$.attrs[['var2']], "1")      
   
-  #expect_equal(names(settings$c$f), NULL)
+  expect_equal(names(settings$c$f), NULL)
   ## expect_equal(settings$c$f, "a")
   
-  #expect_equal(names(settings$c$g), NULL)
-  #expect_equal(settings$c$g, "b")
+  expect_equal(names(settings$c$g), NULL)
+  expect_equal(settings$c$g, "b")
 })
 
 test_that("logger prints right messages",{
@@ -112,16 +112,16 @@ test_that("logger prints right messages",{
   ## log.error("error")
 })
 
-test_that("read.settings can set up directories on a remote server",{
-  writeLines(con = "bug1322.xml", text = "<pecan><outdir>/tmp/</outdir>
-  <pfts><pft><name>'foo'</name><outdir>/tmp/</outdir></pft></pfts>
-  <run><folder>/tmp/</folder>
-  <host>
-    <name>ebi-cluster.igb.illinois.edu</name>
-    <rundir>/home/scratch/tmp/</rundir>
-    <outdir>/home/scratch/tmp/</outdir>
-  </host></run></pecan>")
-  read.settings("bug1322.xml")
-  file.remove("bug1322.xml")
-})
+## test_that("read.settings can set up directories on a remote server",{
+##   writeLines(con = "bug1322.xml", text = "<pecan><outdir>/tmp/</outdir>
+##   <pfts><pft><name>'foo'</name><outdir>/tmp/</outdir></pft></pfts>
+##   <run><folder>/tmp/</folder>
+##   <host>
+##     <name>ebi-cluster.igb.illinois.edu</name>
+##     <rundir>/home/scratch/tmp/</rundir>
+##     <outdir>/home/scratch/tmp/</outdir>
+##   </host></run></pecan>")
+##   read.settings("bug1322.xml")
+##   file.remove("bug1322.xml")
+## })
 
