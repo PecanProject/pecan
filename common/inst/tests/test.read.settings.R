@@ -111,8 +111,8 @@ test_that("logger prints right messages",{
   ## log.output(console=FALSE)
   ## log.error("error")
 })
-
 ## test_that("read.settings can set up directories on a remote server",{
+## if(PEcAn.utils::test.remote("ebi-cluster.igb.illinois.edu")){
 ##   writeLines(con = "bug1322.xml", text = "<pecan><outdir>/tmp/</outdir>
 ##   <pfts><pft><name>'foo'</name><outdir>/tmp/</outdir></pft></pfts>
 ##   <run><folder>/tmp/</folder>
@@ -123,5 +123,5 @@ test_that("logger prints right messages",{
 ##   </host></run></pecan>")
 ##   read.settings("bug1322.xml")
 ##   file.remove("bug1322.xml")
+##   }
 ## })
-

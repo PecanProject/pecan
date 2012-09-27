@@ -652,6 +652,20 @@ as.sequence <- function(x, na.rm = TRUE){
 #==================================================================================================#
 
 
+
+##' Test ssh access
+##'
+##' Test to determine if access to a remote server is available.
+##' Can be used to exclude / include tests or to prevent / identify access errors
+##' @title Test Remote
+##' @param host 
+##' @return 
+##' @author Rob Kooper
+test.remote <- function(host){
+  return(try(system(paste("ssh", host, "/bin/true"))) == 0)
+}
+
+
 ####################################################################################################
 ### EOF.  End of R script file.              
 ####################################################################################################
