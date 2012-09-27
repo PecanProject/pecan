@@ -17,7 +17,13 @@ start.run.c4photo <- function(run.id){
   print(paste("---- c4photo model run: ", run.id, sep=""))
   rundir <- paste(settings$outdir, run.id, sep = "")
   setwd(rundir)
-  system(paste(settings$model$binary, run.id))
+
+config <- xmlToList(xmlParse(run.id))
+
+result <- do.call(c4photo, list(RH = 0.50, Tl = 25, Qp = 2000,
+                                unlist(config$parms)))
+write.csv(result, paste(config.file, ".csv", sep = ""))
+
 }
 ##' Function to start all runs of c4photo model in directory
 ##' @title Start run of c4photo model
