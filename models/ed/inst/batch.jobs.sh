@@ -7,6 +7,7 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
+chmod a+x run
 for f in ED2INc*[0-9n]; do
   LOG="$f-`date +%Y.%m.%d-%H.%M`.log" #name with date tag for log files, one per ED2IN file 
   if which qsub > /dev/null; then
