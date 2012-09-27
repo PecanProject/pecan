@@ -49,10 +49,14 @@ start.runs.ED2 <- function(){
       system(paste('cd ', host$rundir, ';',
                    settings$pecanDir, batch.jobs.script, sep = ''))
     }else{
-      rsync(args = " -routi ", from = batch.jobs.script,
-            to = paste(host$name, ":",host$rundir, sep = ""))
-      system(paste("ssh ", host$name, " '",
-                   paste("cd ", host$rundir, "; ", "./", basename(batch.jobs.script), sep = "") ,"'", sep = ""))
+
+      system(paste("echo 'cd ", host$rundir, "' | ",                
+                   "cat - ", batch.jobs.script,
+                   " | ",'ssh -T ', host$name, sep = ''))                                                       
+##      rsync(args = " -routi ", from = batch.jobs.script,
+##            to = paste(host$name, ":",host$rundir, sep = ""))
+##      system(paste("ssh ", host$name, " '",
+##                   paste("cd ", host$rundir, "; ", "./", basename(batch.jobs.script), sep = "") ,"'", sep = ""))
     }
     
   }
