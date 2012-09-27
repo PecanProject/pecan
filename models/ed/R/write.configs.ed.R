@@ -283,6 +283,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
 ##'
 ##' @name write.run.ED
 ##' @title Function to generate ED2.2 model run script files
+##' @export
 ##' @author <unknown>
 ##' @import PEcAn.utils
 #--------------------------------------------------------------------------------------------------#
