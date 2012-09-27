@@ -215,22 +215,24 @@ write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
 
   if(is.null(settings$model$phenol.scheme)){
     print(paste("no phenology scheme set; \n",
+<<<<<<< TREE
                 "need to add <phenol.scheme> tag under <model> tag in settings file"))
+  } else if(settings$model$phenol.scheme==1) {
+    ## Set prescribed phenology switch in ED2IN
+    ed2in.text <- gsub('@PHENOL_SCHEME@', settings$model$phenol.scheme, ed2in.text)
+    ## Phenology filename
+    ed2in.text <- gsub('@PHENOL@', settings$model$phenol, ed2in.text)
+    ## Set start year of phenology
+    ed2in.text <- gsub('@PHENOL_START@', settings$model$phenol.start, ed2in.text)
+    ## Set end year of phenology
+    ed2in.text <- gsub('@PHENOL_END@', settings$model$phenol.end, ed2in.text)
+    
+    ## If not prescribed set alternative phenology scheme.
+=======
+                "need to add <phenol.scheme> tag under <model> tag in settings file"))
+>>>>>>> MERGE-SOURCE
   } else {
-    if(settings$model$phenol.scheme==1){
-      ## Set prescribed phenology switch in ED2IN
-      ed2in.text <- gsub('@PHENOL_SCHEME@', settings$model$phenol.scheme, ed2in.text)
-      ## Phenology filename
-      ed2in.text <- gsub('@PHENOL@', settings$model$phenol, ed2in.text)
-      ## Set start year of phenology
-      ed2in.text <- gsub('@PHENOL_START@', settings$model$phenol.start, ed2in.text)
-      ## Set end year of phenology
-      ed2in.text <- gsub('@PHENOL_END@', settings$model$phenol.end, ed2in.text)
-      
-      ## If not prescribed set alternative phenology scheme.
-    } else {
-      ed2in.text <- gsub(' @PHENOL_SCHEME@', settings$model$phenol.scheme, ed2in.text)
-    }
+    ed2in.text <- gsub(' @PHENOL_SCHEME@', settings$model$phenol.scheme, ed2in.text)
   }
   
   ##----------------------------------------------------------------------
