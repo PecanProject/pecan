@@ -215,7 +215,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
 
   if(is.null(settings$model$phenol.scheme)){
     print(paste("no phenology scheme set; \n",
-                "need to add <phenol.scheme> tag under <model> tag in settings file")
+                "need to add <phenol.scheme> tag under <model> tag in settings file"))
   } else {
     if(settings$model$phenol.scheme==1){
       ## Set prescribed phenology switch in ED2IN
