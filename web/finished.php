@@ -55,11 +55,19 @@ for($year=$start; $year<=$end; $year++) {
 }
 
 $logs="";
-$logs .= createOption("workflow.Rout");
+foreach(scandir($folder . DIRECTORY_SEPARATOR) as $file) {
+	if (preg_match("/^workflow_stage.*\.Rout$/", $file) === 1) {
+		$logs .= createOption($file);
+	}
+}
 
 $outputs  = "";
 $outputs .= "<option>pecan.xml</option>";
-$outputs .= "<option>workflow.R</option>";
+foreach(scandir($folder . DIRECTORY_SEPARATOR) as $file) {
+	if (preg_match("/^workflow_stage.*\.R$/", $file) === 1) {
+		$outputs .= createOption($file);
+	}
+}
 
 # check the run output folder
 foreach(scandir("$folder/run") as $file) {
