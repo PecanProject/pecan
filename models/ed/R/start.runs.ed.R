@@ -1,12 +1,14 @@
-                                        #-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 ##Copyright (c) 2012 University of Illinois, NCSA.
 ##All rights reserved. This program and the accompanying materials
 ##are made available under the terms of the 
 ##University of Illinois/NCSA Open Source License
 ##which accompanies this distribution, and is available at
 ##http://opensource.ncsa.illinois.edu/license.html
-                                        #-------------------------------------------------------------------------------
-                                        #--------------------------------------------------------------------------------------------------#
+#-------------------------------------------------------------------------------
+
+
+#--------------------------------------------------------------------------------------------------#
 ##' 
 ##' Start ED2 model runs on local or remote server
 ##' @title Start ED2 model runs
@@ -44,7 +46,7 @@ start.runs.ED2 <- function(){
       write.run.ED(settings)
     }
     
-                                        #Run model from user made bash script 
+    ## Run model from user made bash script 
     if(host$name == 'localhost') {
       system(paste('cd ', host$rundir, ';',
                    settings$pecanDir, batch.jobs.script, sep = ''))
@@ -62,7 +64,7 @@ start.runs.ED2 <- function(){
   }
   
 } ### End of function
-                                        #==================================================================================================#
+#==================================================================================================#
 
 
 ####################################################################################################
