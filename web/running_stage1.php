@@ -39,70 +39,31 @@ if ($status === FALSE) {
 	$status = array();
 }
 
-function startTime($token) {
-  global $status;
-  foreach ($status as $line) {
-    $data = explode("\t", $line);
-    if ($data[0] == $token) {
-      return $data[1];
-    }
-  }
-  return "";
-}
-
-function endTime($token) {
-  global $status;
-  foreach ($status as $line) {
-    $data = explode("\t", $line);
-    if ($data[0] == $token && count($data) >= 3) {
-      return $data[2];
-    }
-  }
-  return "";
-}
-
-function status($token) {
-  global $folder;
-  global $status;
-
-  foreach ($status as $line) {
-    $data = explode("\t", $line);
-    if ($data[0] == $token) {
-      if (count($data) >= 4) {
-        return $data[3];
-      }
-      if ($token == "MODEL") {
-        return exec("tail -20 `ls -1rt $folder/run/*.log` |  grep 'Simulating:' | tail -1 | sed 's/^.*Simulating:[ ]*//' | awk '{print $1}'");
-      }
-      return "Running";
-    }
-  }
-  return "Waiting";
-}
-
-$refresh=true;
-$nextenabled="disabled=\"disabled\"";
-if (endTime("FINISHED") != "") {
-    $refresh=false;
-    $nextenabled="";
-}
-foreach ($status as $line) {
-  $data = explode("\t", $line);
-  if ((count($data) >= 4) && ($data[3] == 'ERROR')) {
-    $refresh=false;
-    $nextenabled="";
-  }
-}
-
-if ($refresh) {
-	header( "refresh:5" );
-} else {
-	mysql_query("UPDATE workflows SET finished_at=NOW() WHERE id=${workflowid} AND finished_at IS NULL");
-	if ($offline) {
-		header( "Location: finished.php?workflowid=$workflowid&offline=offline");
-	} else {
-		header( "Location: finished.php?workflowid=$workflowid");
-	}
+// check the global status
+switch(checkStatus("CONFIG")) {
+	case 0:
+		$nextenabled="disabled=\"disabled\"";
+				header( "refresh:5" );
+		break;		
+	case 1:
+		$nextenabled="disabled=\"disabled\"";
+				chdir($folder);
+		pclose(popen('R_LIBS_USER="/home/kooper/lib/R" R CMD BATCH workflow_stage2.R &', 'r'));
+		if ($offline) {
+			header( "Location: running_stage2.php?workflowid=$workflowid&offline=offline");
+		} else {
+			header( "Location: running_stage2.php?workflowid=$workflowid");
+		}
+		break;
+	case 2:
+		$nextenabled="";
+		if ($offline) {
+			header( "Location: finished.php?workflowid=$workflowid&offline=offline");
+		} else {
+			header( "Location: finished.php?workflowid=$workflowid");
+		}
+		mysql_query("UPDATE workflows SET finished_at=NOW() WHERE id=${workflowid} AND finished_at IS NULL");
+		break;
 }
 
 ?>
@@ -228,7 +189,11 @@ if ($refresh) {
  	<h2>Output from PEcAn</h2>
  	<textarea id="log" cols="80" rows="10" readonly="readonly">
 <?php
-  parselog($folder . DIRECTORY_SEPARATOR . "workflow.Rout");
+  	foreach(scandir($folder . DIRECTORY_SEPARATOR) as $file) {
+  		if (preg_match("/^workflow_stage.*\.Rout$/", $file) === 1) {
+  			parselog($folder . DIRECTORY_SEPARATOR . $file);
+  		}
+	}
 ?>
  	</textarea>
 	</div>
@@ -238,6 +203,63 @@ if ($refresh) {
 
 <?php 
 close_database($connection);
+
+function checkStatus($token) {
+  	global $status;
+	foreach ($status as $line) {
+		$data = explode("\t", $line);
+		if ((count($data) >= 4) && ($data[3] == 'ERROR')) {
+			return 2;
+		}
+	}
+	
+	if (endTime($token) != "") {
+		return 1;
+	}
+		
+	return 0;
+}
+
+function startTime($token) {
+  global $status;
+  foreach ($status as $line) {
+    $data = explode("\t", $line);
+    if ($data[0] == $token) {
+      return $data[1];
+    }
+  }
+  return "";
+}
+
+function endTime($token) {
+  global $status;
+  foreach ($status as $line) {
+    $data = explode("\t", $line);
+    if ($data[0] == $token && count($data) >= 3) {
+      return $data[2];
+    }
+  }
+  return "";
+}
+
+function status($token) {
+  global $folder;
+  global $status;
+
+  foreach ($status as $line) {
+    $data = explode("\t", $line);
+    if ($data[0] == $token) {
+      if (count($data) >= 4) {
+        return $data[3];
+      }
+      if ($token == "MODEL") {
+        return exec("tail -20 `ls -1rt $folder/run/*.log` |  grep 'Simulating:' | tail -1 | sed 's/^.*Simulating:[ ]*//' | awk '{print $1}'");
+      }
+      return "Running";
+    }
+  }
+  return "Waiting";
+}
 
 function parselog($filename)
 {

@@ -241,17 +241,19 @@ if ($modeltype == "ED2") {
 }
 
 # copy workflow
-copy("workflow.R", "${folder}/workflow.R");
+copy("workflow_stage1.R", "${folder}/workflow_stage1.R");
+copy("workflow_stage2.R", "${folder}/workflow_stage2.R");
+copy("workflow_stage3.R", "${folder}/workflow_stage3.R");
 
 # start the actual workflow
 chdir($folder);
-pclose(popen('R_LIBS_USER="/home/kooper/R/library" R CMD BATCH workflow.R &', 'r'));
+pclose(popen('R_LIBS_USER="/home/kooper/lib/R" R CMD BATCH workflow_stage1.R &', 'r'));
 
 #done
 if ($offline) {
-	header("Location: running.php?workflowid=$workflowid&offline=offline");
+	header("Location: running_stage1.php?workflowid=$workflowid&offline=offline");
 } else {
-	header("Location: running.php?workflowid=$workflowid");
+	header("Location: running_stage1.php?workflowid=$workflowid");
 }
 close_database($connection);
 ?>
