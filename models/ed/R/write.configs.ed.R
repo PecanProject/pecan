@@ -229,6 +229,10 @@ write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
     ## If not prescribed set alternative phenology scheme.
   } else {
     ed2in.text <- gsub(' @PHENOL_SCHEME@', settings$model$phenol.scheme, ed2in.text)
+    # Insert blanks into ED2IN file so ED2 runs without error
+    ed2in.text <- gsub('@PHENOL@', "", ed2in.text)
+    ed2in.text <- gsub('@PHENOL_START@', "", ed2in.text)
+    ed2in.text <- gsub('@PHENOL_END@', "", ed2in.text)
   }
   
   ##----------------------------------------------------------------------
