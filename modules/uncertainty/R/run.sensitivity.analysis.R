@@ -13,11 +13,15 @@
 ##' @title run sensitivity.analysis
 ##' @return nothing, saves \code{sensitivity.results} as sensitivity.results.Rdata,
 ##' sensitivity plots as sensitivityanalysis.pdf, and variance decomposition 'popsicle plot'
-##' as variancedecomposition.pdf a side effect.
+##' as variancedecomposition.pdf a side effect (OPTIONAL)
+##' 
+##' @param plot logical. Option to generate sensitivity analysis and variance 
+##' decomposition plots (plot=TRUE) or to turn these plots off (plot=FALSE).
+##' 
 ##' @export
-##' @author David LeBauer
+##' @author David LeBauer, Shawn Serbin
 ##'
-run.sensitivity.analysis <- function(){
+run.sensitivity.analysis <- function(plot=TRUE){
   if(!exists("settings")){ # temporary hack
                         # waiting on http://stackoverflow.com/q/11005478/199217
     settings <- list(outdir = "/tmp/",
@@ -63,24 +67,26 @@ run.sensitivity.analysis <- function(){
         print(sensitivity.results[[pft$name]]$variance.decomposition.output)
         print(sensitivity.output[[pft$name]])
         
-        ### Generate SA diagnostic plots
-        sensitivity.plots <- plot.sensitivities(sensitivity.results[[pft$name]]$sensitivity.output,
-                                                linesize = 1,
-                                                dotsize = 3)
-        pdf(paste(pft$outdir, 'sensitivityanalysis.pdf', sep = ''), height = 12, width = 9)
- 
-        ## arrange plots  http://stackoverflow.com/q/10706753/199217
-        ncol <- floor(sqrt(length(sensitivity.plots)))
-        print(do.call("grid.arrange", c(sensitivity.plots, ncol=ncol)))
-        print(sensitivity.plots) # old method.  depreciated.
-        dev.off()
-
-        ### Generate VD diagnostic plots
-        vd.plots <- plot.variance.decomposition(sensitivity.results[[pft$name]]$variance.decomposition.output)
-                                        #variance.scale = log, variance.prefix='Log')
-        pdf(paste(pft$outdir, 'variancedecomposition.pdf', sep=''), width = 11, height = 8)
-        do.call(grid.arrange, c(vd.plots, ncol = 4))
-        dev.off()  
+        ### Plotting - Optional
+        if(plot){
+          ### Generate SA diagnostic plots
+          sensitivity.plots <- plot.sensitivities(sensitivity.results[[pft$name]]$sensitivity.output,
+                                                  linesize = 1,
+                                                  dotsize = 3)
+          pdf(paste(pft$outdir, 'sensitivityanalysis.pdf', sep = ''), height = 12, width = 9)
+          ## arrange plots  http://stackoverflow.com/q/10706753/199217
+          ncol <- floor(sqrt(length(sensitivity.plots)))
+          print(do.call("grid.arrange", c(sensitivity.plots, ncol=ncol)))
+          print(sensitivity.plots) # old method.  depreciated.
+          dev.off()
+          
+          ### Generate VD diagnostic plots
+          vd.plots <- plot.variance.decomposition(sensitivity.results[[pft$name]]$variance.decomposition.output)
+          #variance.scale = log, variance.prefix='Log')
+          pdf(paste(pft$outdir, 'variancedecomposition.pdf', sep=''), width = 11, height = 8)
+          do.call(grid.arrange, c(vd.plots, ncol = 4))
+          dev.off()
+        }
       }
     }  ## end if sensitivity analysis
 
