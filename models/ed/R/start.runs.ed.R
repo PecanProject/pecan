@@ -1,12 +1,14 @@
-                                        #-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 ##Copyright (c) 2012 University of Illinois, NCSA.
 ##All rights reserved. This program and the accompanying materials
 ##are made available under the terms of the 
 ##University of Illinois/NCSA Open Source License
 ##which accompanies this distribution, and is available at
 ##http://opensource.ncsa.illinois.edu/license.html
-                                        #-------------------------------------------------------------------------------
-                                        #--------------------------------------------------------------------------------------------------#
+#-------------------------------------------------------------------------------
+
+
+#--------------------------------------------------------------------------------------------------#
 ##' 
 ##' Start ED2 model runs on local or remote server
 ##' @title Start ED2 model runs
@@ -40,11 +42,15 @@ start.runs.ED2 <- function(){
     }
     
     ## if using ED, write runscript that rsyncs at the end
-    if(any(grep("ED", settings$run$host$rundir))){ #if using ED
-      write.run.ED(settings)
+    #if(any(grep("ED", settings$run$host$rundir))){ #if using ED
+    #  write.run.ED(settings)
+    #}
+    ## if using ED, write runscript that rsyncs at the end.  Previous code is incorrect/does not work.
+    if(settings$model$name=="ED2"){ #if using ED
+	write.run.ED(settings)
     }
-    
-                                        #Run model from user made bash script 
+
+    ## Run model from user made bash script 
     if(host$name == 'localhost') {
       system(paste('cd ', host$rundir, ';',
                    settings$pecanDir, batch.jobs.script, sep = ''))
@@ -62,7 +68,7 @@ start.runs.ED2 <- function(){
   }
   
 } ### End of function
-                                        #==================================================================================================#
+#==================================================================================================#
 
 
 ####################################################################################################

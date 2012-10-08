@@ -128,8 +128,14 @@ listToXml <- function(item, tag){
   if(typeof(item)!='list')
     return(xmlNode(tag, item))
   xml <- xmlNode(tag)
-  for(name in names(item)){
-    xml <- append.xmlNode(xml, listToXml(item[[name]], name))
+  for(i in seq(length(item))) {
+    if (names(item[i]) == ".attrs") {
+      for(name in names(item$.attrs)) {
+        xmlAttrs(xml)[[name]] <- item$.attrs[[name]]
+      }
+    } else {
+      xml <- append.xmlNode(xml, listToXml(item[[i]], names(item[i])))
+    }
   }
   return(xml)
 }
@@ -652,7 +658,7 @@ as.sequence <- function(x, na.rm = TRUE){
 #==================================================================================================#
 
 
-
+#--------------------------------------------------------------------------------------------------#
 ##' Test ssh access
 ##'
 ##' Test to determine if access to a remote server is available.
@@ -664,6 +670,7 @@ as.sequence <- function(x, na.rm = TRUE){
 test.remote <- function(host){
   return(try(system(paste("ssh", host, "/bin/true"))) == 0)
 }
+#==================================================================================================#
 
 
 ####################################################################################################
