@@ -42,10 +42,14 @@ start.runs.ED2 <- function(){
     }
     
     ## if using ED, write runscript that rsyncs at the end
-    if(any(grep("ED", settings$run$host$rundir))){ #if using ED
-      write.run.ED(settings)
+    #if(any(grep("ED", settings$run$host$rundir))){ #if using ED
+    #  write.run.ED(settings)
+    #}
+    ## if using ED, write runscript that rsyncs at the end.  Previous code is incorrect/does not work.
+    if(settings$model$name=="ED2"){ #if using ED
+	write.run.ED(settings)
     }
-    
+
     ## Run model from user made bash script 
     if(host$name == 'localhost') {
       system(paste('cd ', host$rundir, ';',
