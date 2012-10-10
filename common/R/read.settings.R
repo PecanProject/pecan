@@ -178,27 +178,29 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
 	}
 	
 	# create the model configuration folder
-	if (is.null(settings.list$run$host$rundir)) {
-		settings.list$run$host$rundir <- paste(settings.list$outdir, "run", "", sep="/")
-		log.info("No output folder for model configuration using", settings.list$run$host$rundir)
-	} else {
-		log.debug("model configuration folder =", settings.list$run$host$rundir)
-	}
-	if (!file.exists(settings.list$run$host$rundir) && !dir.create(settings.list$run$host$rundir, recursive=TRUE)) {
-		log.error("Could not create folder", settings.list$run$host$rundir)
-		stop("Could not create model configuration folder.")
-	}
+	if (settings.list$run$host$name == "localhost") {
+		if (is.null(settings.list$run$host$rundir)) {
+			settings.list$run$host$rundir <- paste(settings.list$outdir, "run", "", sep="/")
+			log.info("No output folder for model configuration using", settings.list$run$host$rundir)
+		} else {
+			log.debug("model configuration folder =", settings.list$run$host$rundir)
+		}
+		if (!file.exists(settings.list$run$host$rundir) && !dir.create(settings.list$run$host$rundir, recursive=TRUE)) {
+			log.error("Could not create folder", settings.list$run$host$rundir)
+			stop("Could not create model configuration folder.")
+		}
 
-	# create the model output folder
-	if (is.null(settings.list$run$host$outdir)) {
-		settings.list$run$host$outdir <- paste(settings.list$outdir, "out", "", sep="/")
-		log.info("No output folder for model runs using", settings.list$run$host$outdir)
-	} else {
-		log.debug("model output folder =", settings.list$run$host$outdir)
-	}
-	if (!file.exists(settings.list$run$host$outdir) && !dir.create(settings.list$run$host$outdir, recursive=TRUE)) {
-		log.error("Could not create folder", settings.list$run$host$outdir)
-		stop("Could not create model output folder.")
+		# create the model output folder
+		if (is.null(settings.list$run$host$outdir)) {
+			settings.list$run$host$outdir <- paste(settings.list$outdir, "out", "", sep="/")
+			log.info("No output folder for model runs using", settings.list$run$host$outdir)
+		} else {
+			log.debug("model output folder =", settings.list$run$host$outdir)
+		}
+		if (!file.exists(settings.list$run$host$outdir) && !dir.create(settings.list$run$host$outdir, recursive=TRUE)) {
+			log.error("Could not create folder", settings.list$run$host$outdir)
+			stop("Could not create model output folder.")
+		}
 	}
 
 	# save the merged pecan.xml
