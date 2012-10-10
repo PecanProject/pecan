@@ -48,7 +48,7 @@ switch(checkStatus("MODEL")) {
 	case 1:
 		$nextenabled="disabled=\"disabled\"";
 		chdir($folder);
-		pclose(popen('R_LIBS_USER="/home/kooper/lib/R" R CMD BATCH workflow_stage3.R &', 'r'));
+		pclose(popen('R_LIBS_USER="' . ${pecan_install} . '" R CMD BATCH workflow_stage3.R &', 'r'));
 		if ($offline) {
 			header( "Location: running_stage3.php?workflowid=$workflowid&offline=offline");
 		} else {
