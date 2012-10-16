@@ -128,8 +128,14 @@ listToXml <- function(item, tag){
   if(typeof(item)!='list')
     return(xmlNode(tag, item))
   xml <- xmlNode(tag)
-  for(name in names(item)){
-    xml <- append.xmlNode(xml, listToXml(item[[name]], name))
+  for(i in seq(length(item))) {
+    if (names(item[i]) == ".attrs") {
+      for(name in names(item$.attrs)) {
+        xmlAttrs(xml)[[name]] <- item$.attrs[[name]]
+      }
+    } else {
+      xml <- append.xmlNode(xml, listToXml(item[[i]], names(item[i])))
+    }
   }
   return(xml)
 }

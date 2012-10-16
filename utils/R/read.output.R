@@ -131,8 +131,8 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,
         showConnections(all = TRUE)
       }
       names(data) <- variables
-      #print(paste("----- Mean :",sapply(data,median,na.rm=TRUE)))
-      print(paste("----- Median :",sapply(data,median,na.rm=TRUE)))
+      print(paste("----- Mean ",variables," : ",sapply(data,median,na.rm=TRUE)))
+      print(paste("----- Median ",variables,": ",sapply(data,median,na.rm=TRUE)))
       return(data)   
     } else {
       stop("no output files present")
