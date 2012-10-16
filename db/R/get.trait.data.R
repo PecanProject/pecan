@@ -68,24 +68,21 @@ get.trait.data <- function() {
     print("-------------------------------------------------------------------")
     print(" ")
     
-    ## if meta-analysis to be run, get traits for pft as a list with one dataframe per variable
-    if('meta.analysis' %in% names(settings)) {
-      trait.data <- query.traits(spstr, traits, con = newconfn())
-      traits <- names(trait.data)
-      save(trait.data, file = paste(pft$outdir, 'trait.data.Rdata', sep=''))
-      
-      all.trait.data[[pft$name]] <- trait.data
-      
-      for(i in 1:length(all.trait.data)){
-        print(paste("number of observations per trait for", pft$name))
-        print(ldply(all.trait.data[[i]], nrow))
-      }
-      
+    trait.data <- query.traits(spstr, traits, con = newconfn())
+    traits <- names(trait.data)
+    save(trait.data, file = paste(pft$outdir, 'trait.data.Rdata', sep=''))
+    
+    all.trait.data[[pft$name]] <- trait.data
+    
+    for(i in 1:length(all.trait.data)){
+      print(paste("number of observations per trait for", pft$name))
+      print(ldply(all.trait.data[[i]], nrow))
     }
     
-    save(prior.distns, file=paste(pft$outdir, 'prior.distns.Rdata', sep = ''))
-    
   }
+  
+  save(prior.distns, file=paste(pft$outdir, 'prior.distns.Rdata', sep = ''))
+    
 }
 ##==================================================================================================#
 
