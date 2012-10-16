@@ -27,20 +27,20 @@ test_that("get.trait.data will return trait data even when there is no meta.anal
   <pfts>
     <pft>
       <name>ebifarm.pavi</name>
-      <outdir>/tmp/test/</outdir>
+      <outdir>test/</outdir>
     </pft>
   </pfts>
-  <outdir>/tmp/test/</outdir>
+  <outdir>test/</outdir>
   <database>
     <userid>ebi_analys_user</userid>
     <passwd>b742xsAu</passwd>
     <location>localhost</location>
     <name>ebi_analysis</name>
   </database>
-</pecan>", con = "/tmp/test/test.xml")
+</pecan>", con = "test/test.xml")
 
-  settings <- read.settings("/tmp/test/test.xml")
+  settings <- read.settings("test/test.xml")
   get.trait.data()
   
-  expect_true(file.exists("/tmp/out/trait.data.Rdata"))
+  expect_true(file.exists("test/trait.data.Rdata"))
 })
