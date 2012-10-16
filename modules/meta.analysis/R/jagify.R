@@ -45,6 +45,7 @@ jagify <- function(result){
   
   ### Assign a unique sequential integer to site and trt; for trt, all controls == 0 
   for (i in 1:length.data){
+    result[[i]]$greenhouse[is.na(result[[i]]$greenhouse)] <- 0
     result[[i]] <- subset(transform(result[[i]],
                                stat = as.numeric(stat),
                                n    = as.numeric(n),
