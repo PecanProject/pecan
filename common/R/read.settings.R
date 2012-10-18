@@ -131,7 +131,7 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
   
   ## 5 merge file
   if(!is.null(inputfile) | class(inputfile) == "character"){
-    if(file.exists(inputfile) | any(grepl("<pecan>", inputfile))){ 
+    if(any(c(file.exists(inputfile), grepl("<pecan>", inputfile)))){ 
       settings.xml <- xmlMerge(settings.xml, xmlParse(inputfile))
     }
   }

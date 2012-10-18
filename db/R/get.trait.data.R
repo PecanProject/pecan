@@ -15,6 +15,8 @@
 ##'
 get.trait.data <- function() {
   ## Info:  lots of hacks for now.  Needs to be updated once full workflow is ready.
+  require(RMySQL)
+  require(PEcAn.utils)
   num <- sum(names(unlist(settings$pfts)) == "pft.name")
   for (i in 1:num){
     ## Remove old files.  Clean up.

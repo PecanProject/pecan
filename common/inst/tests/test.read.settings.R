@@ -7,6 +7,33 @@
 ## # http://opensource.ncsa.illinois.edu/license.html
 ## #-------------------------------------------------------------------------------
 ## require(XML)
+temp.settings <- PEcAn.utils::temp.settings
+  settings.text <- "
+<pecan>
+  <pfts>
+    <pft>
+      <name>ebifarm.pavi</name>
+      <outdir>test/</outdir>
+    </pft>
+  </pfts>
+  <outdir>test/</outdir>
+  <database>
+    <userid>ebi_analys_user</userid>
+    <passwd>b742xsAu</passwd>
+    <location>localhost</location>
+    <name>ebi_analysis</name>
+  </database>
+</pecan>"
+
+
+test_that("read.settings works file,  or ",{
+## create settings file "tmp"
+  test.file <- tempfile()
+  writeLines(settings.text, con = test.file)
+  read.settings(test.file)
+  read.settings(settings.text)
+  read.settings(temp.settings(settings.text))
+})
 
 ## context("tests for read.settings and related functions")
 ## test_that("read settings returns error if no settings file found (issue #1124)",{
