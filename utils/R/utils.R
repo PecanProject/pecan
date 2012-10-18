@@ -644,7 +644,6 @@ transformstats <- function(data) {
 ##' @return sequence from 1:length(unique(x))
 ##' @export
 ##' @author David LeBauer
-#--------------------------------------------------------------------------------------------------#
 as.sequence <- function(x, na.rm = TRUE){
   x2 <- as.integer(factor(x, unique(x)))
   if(all(is.na(x2))){
@@ -655,8 +654,6 @@ as.sequence <- function(x, na.rm = TRUE){
   }
   return(x2)
 }
-#==================================================================================================#
-
 
 #--------------------------------------------------------------------------------------------------#
 ##' Test ssh access
@@ -665,19 +662,21 @@ as.sequence <- function(x, na.rm = TRUE){
 ##' Can be used to exclude / include tests or to prevent / identify access errors
 ##' @title Test Remote
 ##' @param host 
-##' @return 
+##' @return logical - TRUE if remote connection is available 
 ##' @author Rob Kooper
 test.remote <- function(host){
   return(try(system(paste("ssh", host, "/bin/true"))) == 0)
 }
+
 ##' Create a temporary settings file
 ##'
 ##' Uses \code{\link{tempfile}} function to provide a valid temporary file (OS independent)
 ##' Useful for testing functions that depend on settings file
 ##' Reference: http://stackoverflow.com/a/12940705/199217
-##' @title 
+##' @title temp.settings
 ##' @param settings.txt 
-##' @return 
+##' @return character vector written to and read from a temporary file
+##' @export
 ##' @author David LeBauer
 temp.settings <- function(settings.txt){
   temp <- tempfile()

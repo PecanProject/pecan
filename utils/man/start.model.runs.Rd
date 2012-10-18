@@ -8,7 +8,7 @@
   Start selected ecosystem model runs within PEcAn workflow
 }
 \examples{
-\dontrun{
+\dontrun {
 start.model.runs("ED2")
 start.model.runs("SIPNET")
 }
