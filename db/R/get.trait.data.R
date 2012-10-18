@@ -28,7 +28,7 @@ get.trait.data <- function() {
 
   ##---------------- Load trait dictionary. ----------------------------------------------------------#
 
-  data(trait.dictionary)
+  data(trait.dictionary, package = "PEcAn.utils")
   trait.names <- trait.dictionary$id
   ##--------------------------------------------------------------------------------------------------#
 
@@ -41,19 +41,16 @@ get.trait.data <- function() {
 
 
   ##---------------- Query trait data. ---------------------------------------------------------------#
-  cnt <- 0;
+
   all.trait.data <- list()
   for(pft in settings$pfts){
-    out.dir <- pft$outdir # loop over pfts
-    
-    cnt <- cnt + 1
     
     ## 1. get species list based on pft
     spstr <- query.pft_species(pft$name, con=newconfn())
     
     ## 2. get priors available for pft  
     prior.distns <- query.priors(pft$name, vecpaste(trait.names),
-                                 out=pft$outdir,con=newconfn())
+                                 out = pft$outdir, con = newconfn())
     
     ### exclude any parameters for which a constant is provided 
     prior.distns <- prior.distns[which(!rownames(prior.distns) %in%
@@ -70,7 +67,11 @@ get.trait.data <- function() {
     
     trait.data <- query.traits(spstr, traits, con = newconfn())
     traits <- names(trait.data)
-    save(trait.data, file = paste(pft$outdir, 'trait.data.Rdata', sep=''))
+    trait.data.file <- file.path(pft$outdir, "trait.data.Rdata")
+    save(trait.data, file = trait.data.file)
+    if(!file.exists(trait.data.file)){
+      stop("trait.data not saved")
+    }
     
     all.trait.data[[pft$name]] <- trait.data
     
@@ -81,7 +82,7 @@ get.trait.data <- function() {
     
   }
   
-  save(prior.distns, file=paste(pft$outdir, 'prior.distns.Rdata', sep = ''))
+  save(prior.distns, file = file.path(pft$outdir, "prior.distns.Rdata"))
     
 }
 ##==================================================================================================#
