@@ -21,8 +21,7 @@ test.stats <- data.frame(Y=rep(1,5),
                            statname=c('SD', 'MSE', 'LSD', 'HSD', 'MSD'))
 })
 
-test_that("get.trait.data will return trait data even when there is no meta.analysis tag in the settings file", {
-  writeLines(" 
+  settings.text <- "
 <pecan>
   <pfts>
     <pft>
@@ -37,10 +36,38 @@ test_that("get.trait.data will return trait data even when there is no meta.anal
     <location>localhost</location>
     <name>ebi_analysis</name>
   </database>
-</pecan>", con = "test/test.xml")
+</pecan>"
 
-  settings <- read.settings("test/test.xml")
-  get.trait.data()
+
+test_that("read.settings works file,  or ",{
+## create settings file "tmp"
+  test.file <- tempfile()
+  writeLines(settings.text, con = test.file)
+  read.settings(test.file)
+  read.settings(settings.text)
+  read.settings(temp.settings(settings.text))
+
+
+test_that("get.trait.data will return trait data even when there is no meta.analysis tag in the settings file", {
+ settings.xml <- temp.settings(" 
+<pecan>
+  <pfts>
+    <pft>
+      <name>ebifarm.pavi</name>
+      <outdir>test/</outdir>
+    </pft>
+  </pfts>
+  <outdir>test/</outdir>
+  <database>
+    <userid>ebi_analys_user</userid>
+    <passwd>b742xsAu</passwd>
+    <location>ebi-forecast.igb.illinois.edu</location>
+    <name>ebi_analysis@ebi-forecast.igb.illinois.edu</name>
+  </database>
+</pecan>")
+
+ settings <- read.settings(settings.xml)
+ get.trait.data()
   
   expect_true(file.exists("test/trait.data.Rdata"))
 })
