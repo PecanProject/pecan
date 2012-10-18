@@ -670,9 +670,22 @@ as.sequence <- function(x, na.rm = TRUE){
 test.remote <- function(host){
   return(try(system(paste("ssh", host, "/bin/true"))) == 0)
 }
-#==================================================================================================#
-
-
+##' Create a temporary settings file
+##'
+##' Uses \code{\link{tempfile}} function to provide a valid temporary file (OS independent)
+##' Useful for testing functions that depend on settings file
+##' Reference: http://stackoverflow.com/a/12940705/199217
+##' @title 
+##' @param settings.txt 
+##' @return 
+##' @author David LeBauer
+temp.settings <- function(settings.txt){
+  temp <- tempfile()
+  on.exit(unlink(temp))
+  writeLines(settings.txt, con = temp)
+  settings <- readLines(temp)
+  return(settings)
+}
 ####################################################################################################
 ### EOF.  End of R script file.              
 ####################################################################################################
