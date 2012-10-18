@@ -7,7 +7,7 @@
 ## # http://opensource.ncsa.illinois.edu/license.html
 ## #-------------------------------------------------------------------------------
 ## require(XML)
-temp.settings <- PEcAn.utils::temp.settings
+
   settings.text <- "
 <pecan>
   <pfts>
@@ -32,7 +32,6 @@ test_that("read.settings works file,  or ",{
   writeLines(settings.text, con = test.file)
   read.settings(test.file)
   read.settings(settings.text)
-  read.settings(temp.settings(settings.text))
 })
 
 ## context("tests for read.settings and related functions")
