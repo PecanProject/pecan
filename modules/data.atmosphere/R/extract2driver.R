@@ -7,238 +7,302 @@
 ##################################
 ## how to extract a specific cell
 
-## Energy Farm
-LAT <- 40.061187
-LON <- 360-88.195496
+#GLOBAL CONSTANTS (pun intended)
+daysInYear=365.25
+secsInHour=60*60
+secsInDay=secsInHour*24
+axialTilt=23.45
 
-## Bartlett
-LAT <- 44.0646
-LON <- 360-71.2881
-froot <- "bartlett"
+LAT <- 68.0+38.0/60.0
+LON <- 360-(149	+36.0/60.0)
 
-## ORNL FACE
-LAT <- 35.90
-LON <- 360-84.33
-froot <- "ORNL" 
+# TIME TO GRAB
+startyear <- 2010
+stopyear <- 2011
 
-## DUKE FACE
-LAT <- 35.97483
-LON <- 360-79.10975
-froot <- "duke"
+timestep <- 3*secsInHour
+timelag <- floor(LON/15)/24  # difference from GMT (fractional day)
 
-## TIME TO GRAB
-yr0 <- 1996
-yrf <- 2008
+narrdir <- "/home/scratch/dietze_lab/NARR/"
+nomaddir <- "/home/scratch/dietze_lab/NOMADS/"
+tempdir  <-paste(narrdir, '/toolik.obs.rad/', sep='')
+outdir <- "toolik.obs.rad"
 
-dirname <- "/home/scratch/dietze_lab/NARR"
-NDIR <- "/home/scratch/dietze_lab/NOMADS"
 
-gribgrab <- function(srch,vnam){
-  system(paste(NDIR,"/wgrib -d ",srch," ",dirname,"/soi_tmp/",fname[it]," -text -h -o ",dirname,"/soi_tmp/",vnam,".txt", sep=""))
-  V <- read.table(paste(dirname,"/soi_tmp/",vnam,".txt",sep=""),skip=1,header=FALSE)
-  V <- V[[1]]
-  system(paste("rm ",dirname,"/soi_tmp/",vnam,".txt",sep=""))
-  rval <- NA
-  if(length(V)> 0){
-    rval <- sum(V[ROWS]*WT,na.rm=TRUE)
-  }
-  rval
+#IO OPERATIONS
+readGrib<-function(indices, gribfile, tempfile=paste(tempdir,'GRIB.txt', sep='')){
+	command<-paste(nomaddir,"/wgrib -s -d ",indices,' ', gribfile," -text -h -o ", tempfile, sep='')
+	system(command, intern=TRUE)
+	V <- read.table(paste(tempfile,sep=""),skip=1,header=FALSE)[[1]]
+	system(paste("rm ",tempfile,sep=""))
+	return(V)
+}
+readMetGrib <- function(indices, gribfile, 
+		nearestCells, weights){
+        print(gribfile)
+	V<-readGrib(indices, gribfile)
+	if(length(V)> 0){
+		return(sum(V[nearestCells]*weights,na.rm=TRUE))
+	}
+	return(NA)
+}
+extractTar<-function(tarfile, sourcedir, targetdir){
+	system(paste("tar -xf ", sourcedir, tarfile, ' -C ', targetdir, sep=''), intern=TRUE)
+}
+readMetTar<-function(tarfile, indices, 
+		nearestCells, weights,
+		sourcedir=narrdir, targetdir=tempdir){
+        print(tarfile)
+	#returns meteorological data from a tar file 
+	#as a 2D matrix of parameters and tar subfiles
+	
+        system(paste("rm ",targetdir,'/merged_AWIP32*',sep="")) # clean up
+	# copy file to temp space and open up
+	extractTar(tarfile, sourcedir, targetdir)
+	
+	# get list of sub-files; parse
+	subfiles <- dir(targetdir,"merged")
+	subfiles <- paste(targetdir, subfiles, sep='')
+	
+	## LOOP OVER SMALL FILES
+	tarMetData <- matrix(NA,nrow=length(subfiles),ncol=length(indices))
+	if (length(indices) > 0){
+		for(i in 1:length(subfiles)){
+			for(k in 1:length(indices)){
+				tarMetData[i,k] <- readMetGrib(indices[k],subfiles[i],nearestCells, weights)
+			}
+			system(paste("rm ",subfiles[i],sep="")) # clean up
+		}# end loop within file
+	}
+	tarMetData
+}
+readMetTars<-function(tarfiles, indices, 
+		nearestCells, weights){
+	# returns meteorological data from a list of tar files
+	# bound into a single 2 dimensional matrix representing 4 dimensions
+	# each column represents a parameter
+	# each row represents a lat/lon coordinate at a specific time
+	foo<-sapply(tarfiles, 
+		function(tarfile){readMetTar(tarfile, indices, nearestCells, weights)})
+        if(!is.list(foo)){print(foo);browser()}
+        print(tarfiles)
+        do.call(rbind, foo)
+}
+writeHdf5<-function(file, metdata, potential, downscale.radiation=function(x){x}) {
+
+        as.met.array <- function(x) {array(x, dim=c(1,1,length(x)))}
+
+	shortWave <- monthMetData[,17]
+	shortWave[potential < shortWave] <- potential[potential<shortWave] # ensure radiation < max
+	shortWaveDiffuse <- shortWaveDiffuseRad(potential,shortWave)
+
+	nbdsf <- as.met.array((shortWave - shortWaveDiffuse) * 0.57) # near IR beam downward solar radiation [W/m2]
+	nddsf <- as.met.array(shortWaveDiffuse * 0.48)        # near IR diffuse downward solar radiation [W/m2]
+	vbdsf <- as.met.array((shortWave - shortWaveDiffuse) * 0.43) # visible beam downward solar radiation [W/m2]
+	vddsf <- as.met.array(shortWaveDiffuse * 0.52)        # visible diffuse downward solar radiation [W/m2]
+	prate <- as.met.array(metdata[,19]) # precipitation rate [kg_H2O/m2/s]
+	dlwrf <- as.met.array(metdata[,16]) # downward long wave radiation [W/m2]
+	pres  <- as.met.array(metdata[,18]) # pressure [Pa]
+	hgt   <- as.met.array(rep(50,nrow(monthMetData)))   # geopotential height [m]
+	ugrd  <- as.met.array(metdata[,3])  # zonal wind [m/s]
+	vgrd  <- as.met.array(metdata[,5])  # meridional wind [m/s]
+	sh    <- as.met.array(metdata[,7])  # specific humidity [kg_H2O/kg_air]
+	tmp   <- as.met.array(metdata[,1])  # temperature [K]
+
+	browser()
+
+	# downscale radiation
+	nbdsf <- as.met.array(downscale.radiation(nbdsf))
+	nddsf <- as.met.array(downscale.radiation(nddsf))
+	vbdsf <- as.met.array(downscale.radiation(vbdsf))
+	vddsf <- as.met.array(downscale.radiation(vddsf))
+	
+	hdf5save(file,"nbdsf","nddsf","vbdsf","vddsf","prate","dlwrf","pres","hgt","ugrd","vgrd","sh","tmp")
 }
 
-dm <- c(1,32,60,91,121,152,182,213,244,274,305,335,366)
-dl <- c(1,32,61,92,122,153,183,214,245,275,306,336,367)
-month <- c("JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC")
-mon_num <- c("01","02","03","04","05","06","07","08","09","10","11","12")
-m2d <- function(m,y){
-  ## convert from month to day of year
-  if(y %% 4 == 0){
-    return(dl[m])
-  }
-  return(dm[m])
+
+# MONTH PROCESSING CODE
+monthnames <- c("JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC")
+monthlengths = c(31,28,31,30,31,30,31,31,30,31,30,31)
+monthlengthsLeap = monthlengths
+monthlengthsLeap[2] = monthlengthsLeap[2]+1
+monthlength <- function(month,year){
+	if(year %% 4 == 0){
+		return(monthlengthsLeap[month])
+	}
+	return(monthlengths[month])
+}
+firstday <- function(month,year){
+	sum(monthlength(0:(month-1), year))
+}
+lastday <- function(month, year){
+	sum(monthlength(0:(month), year))-1
 }
 
 
-## check if GRIB files are there yet
-gfiles <- dir(dirname,"tar")
-if(length(gfiles) == 0) stop()
-fsplit <- strsplit(gfiles, ".",fixed=TRUE)
-var <- yr <- mo <- sday <- fday <- rep(NA,length(fsplit))
-for(i in 1:length(fsplit)){
-  var[i]  <- substr(fsplit[[i]][1],5,7)
-  yr[i]   <- substr(fsplit[[i]][1],9,12)
-  mo[i]   <- substr(fsplit[[i]][1],13,14)
-  sday[i] <- substr(fsplit[[i]][1],16,17)
-  fday[i] <- substr(fsplit[[i]][1],18,19)
+smoothedRadiation <- function(a, month, year, timelag, new.timestep,old.timestep){  ## radiation
+	k1 = c(1/6,1/2,1/2,-1/6)
+	k2 = c(-1/6,1/2,1/2,1/6)
+	dat <- rep(a,each=old.timestep/new.timestep)
+	lab <- rep(seq(a),each=old.timestep/new.timestep)
+	startday <- firstday(month,year)
+	startday <- lastday(month,year)
+	rin <- potentialRadiation(rep(startday:startday,each=secsInDay/new.timestep),
+                                  rep(seq(new.timestep,secsInDay,new.timestep),
+                                  monthlength(mo,year)), LAT, timelag*24)
+	rbar <- rep(tapply(rin,lab,mean),each=old.timestep/new.timestep)
+	r <-apply(cbind(dat*rin/rbar,rep(0,length(dat))),1,max)  
+	r[rbar == 0] <- 0
+
+	## filter
+	bound <- which(diff(lab)>0)
+	bound <- bound[rin[bound] > 0 & rin[bound+1] >0]
+	for(i in bound){
+		x1 = sum(k1*r[i + 1:4 -2 ])
+		x2 = sum(k2*r[i + 1:4 -2 ])
+		r[i] = x1
+		r[i+1]=x2
+	}
+
+	return(r)
 }
 
-### SELECT TARGET TIME
-sel <- which(yr >= yr0 & yr <= yrf)
-gfiles <- gfiles[sel]
-var <- var[sel]
-yr <- yr[sel]
-mo <- mo[sel]
-sday <- sday[sel]
-fday <- fday[sel]
+deg2rad<-function(degrees){
+	pi/180 * degrees
+}
+rad2deg<-function(radians){
+	180/pi * radians
+}
+potentialRadiation <- function(day,time,LAT,timelag){
+	#radiation as determined only by solar position
+	dayangle=2.0*pi*(day)/daysInYear
+	declination = 0.006918 - 
+			0.399912 * cos(dayangle)+
+			0.070257 * sin(dayangle)-
+			0.006758 * cos(2.0*dayangle)+
+			0.000907 * sin(2.0*dayangle)-
+			0.002697 * cos(3.0*dayangle)+
+			0.00148  * sin(3.0*dayangle)
+	eccentricity=1.00011  +
+			0.034221 * cos(dayangle)+
+			0.00128  * sin(dayangle)+
+			0.000719 * cos(2.0*dayangle)+
+			0.000077 * sin(2.0*dayangle)
+	solartime=time/secsInHour-12.0+timelag
+	radiation = 1367.0 * 
+			eccentricity * 
+			(cos(declination) * 
+				cos(deg2rad(LAT)) * 
+				cos(deg2rad(15.0)*(solartime)) +
+				sin(declination) * 
+				sin(deg2rad(LAT)))
+	radiation[radiation<0] <- 0
+	radiation
+}
+potentialRadiation2<-function(lat, lon, day, hours){
+	if(lon>180) lon <- lon-360
+	f <- deg2rad(279.5+0.9856*day)
+	eccentricity <- (-104.7*sin(f)
+				+596.2*sin(2*f)
+				+4.3*sin(4*f)
+				-429.3*cos(f)
+				-2.0*cos(2*f)
+				+19.3*cos(3*f))/3600
+	#equation of time -> eccentricity and obliquity
+	meridian <- floor(lon/15)*15
+	if(meridian<0) meridian <- meridian+15
+	lonCorrection <- (lon-meridian)*-4/60 
+	timeZone <- meridian/360*24
+	midbin <- 0.5*timestep/secsInHour # shift calc to middle of bin
+	solarTime <- 12+lonCorrection-eccentricity-timeZone-midbin
+	solarHour <- pi/12*(hours-solarTime)
+	dayangle<-2*pi*(day+10)/daysInYear
+	declenation <- -deg2rad(axialTilt) * cos(dayangle)
+	cosz <- sin(deg2rad(lat))*sin(declenation)+cos(deg2rad(lat))*cos(declenation)*cos(solarHour)
+	cosz[cosz<0] <- 0
+	1366*cosz
+}
+shortWaveDiffuseRad<-function(potentialRad, shortWaveRad){
+	## this causes trouble at twilight bc of missmatch btw bin avergage and bin midpoint
+	frac <- shortWaveRad/potentialRad
+	frac[frac>0.9] <- 0.9  # ensure some diffuse
+	frac[frac < 0.0] <- 0.0
+	frac[is.na(frac)] <- 0.0
+	frac[is.nan(frac)] <- 0.0
+	shortWaveRad*(1-frac)  # return diffuse portion of total short wave rad
+}
 
-METDATA <- list()
-## load maps
-map <- "rr-fixed.grb"
-system(paste(NDIR,"/wgrib -d 20 ",map," -text -h -o ",dirname,"/soi_tmp/NLAT.txt", sep=""))
-system(paste(NDIR,"/wgrib -d 19 ",map," -text -h -o ",dirname,"/soi_tmp/ELON.txt", sep=""))
-system(paste(NDIR,"/wgrib -d 16 ",map," -text -h -o ",dirname,"/soi_tmp/LAND.txt", sep=""))
 
-NLAT <- read.table(paste(dirname,"/soi_tmp/NLAT.txt",sep=""),skip=1,header=FALSE)[,1]
-ELON <- read.table(paste(dirname,"/soi_tmp/ELON.txt",sep=""),skip=1,header=FALSE)[,1]
-LAND <- read.table(paste(dirname,"/soi_tmp/LAND.txt",sep=""),skip=1,header=FALSE)[,1]
+# check if GRIB files are there yet
+tarfiles <- dir(narrdir,"NARR.*\\.tar$")
+if(length(tarfiles) == 0) stop()
+years<-substr(tarfiles, 9, 12)
+tarfiles<-tarfiles[which(years>=startyear & years<=stopyear)]
+vars =substr(tarfiles,5,7)
+years=substr(tarfiles,9,12)
+months=substr(tarfiles,13,14)
 
+# load maps
+mapfile <- paste(narrdir, "rr-fixed.grb", sep='')
+NLAT <- readGrib(20, mapfile)
+ELON <- readGrib(19, mapfile)
+isLand <- readGrib(16, mapfile)
 NLAT[NLAT>1.0e20] <- NA
 ELON[ELON>1.0e20] <- NA
-LAND[LAND>1.0e20] <- NA
-lsel <- which(LAND>0)
-## Determine extraction location
-ROW <- which.min((LAT-NLAT)^2 +(LON-ELON)^2)
-## Determine 4 nearest neighbors for interpolation
-dist <- (LAT-NLAT)^2 +(LON-ELON)^2
-ROWS <- lsel[order(dist[lsel])[1:4]]
-ROWS <- ROWS[which(LAND[ROWS] > 0)]
-if(length(ROWS) == 0) ROWS = ROW
-WT <- (1/sqrt(dist[ROWS]))/sum(1/sqrt(dist[ROWS]))
+isLand[isLand>1.0e20] <- NA
 
-## loop over large files
-for(i in 1:length(gfiles)){
+landCells <- which(isLand>0)
+# Determine extraction location
+distance <- (LAT-NLAT)^2 +(LON-ELON)^2
+nearestCell <- which.min(distance)
+# Determine 4 nearest neighbors for interpolation
+nearestCells <- landCells[order(distance[landCells])[1:4]]
+nearestCells <- nearestCells[which(isLand[nearestCells] > 0)]
+if(length(nearestCells) == 0) nearestCells = nearestCell
+weights <- (1/sqrt(distance[nearestCells]))/sum(1/sqrt(distance[nearestCells]))
+#print(weights)
+#stop()
 
-  ## copy file to temp space and open up
-  system(paste("cp",gfiles[i],"soi_tmp"))
-  system(paste("cd soi_tmp; tar -xf",gfiles[i]))
-  system(paste("rm soi_tmp/",gfiles[i],sep=""))
-  
-  ## get list of sub-files; parse
-  fname <- dir("soi_tmp","merged")
-  day <- hr <- rep(NA,length(fname))
-  for(j in 1:length(fname)){
-    day[j] <- substr(fname[j],21,22)
-    hr[j]  <- substr(fname[j],23,24)
-  }
-  
-  ### LOOP OVER SMALL FILES
-  met <- matrix(NA,nrow=length(fname),ncol=11)  
-  for(it in 1:length(fname)){
-    
-#######################
-######  IF SFC ########
-#######################
-    if(var[i] == "sfc"){
-      met[it,1] <- gribgrab(33,"CFRZR")
-      met[it,2] <- gribgrab(32,"CICEP")
-      met[it,3] <- gribgrab(34,"CRAIN")    
-      met[it,4] <- gribgrab(31,"CSNOW")
-      met[it,5] <- gribgrab(42,"DLWRF")
-      met[it,6] <- gribgrab(41,"DSWRF")
-      met[it,7] <- gribgrab(3,"PRES")
-      met[it,8] <- gribgrab(24,"PRATE")
-      met[it,9] <- gribgrab(5,"TMP")
-    } else{
-      if(var[i] == "flx"){
-        met[it,1]  <- gribgrab(38,"TMP10")
-        met[it,2]  <- gribgrab(44,"TMP30")
-        met[it,3]  <- gribgrab(35,"UGRD10")
-        met[it,4]  <- gribgrab(41,"UGRD30")
-        met[it,5]  <- gribgrab(36,"VGRD10")
-        met[it,6]  <- gribgrab(42,"VGRD30")
-        met[it,7]  <- gribgrab(40,"SPFH10")
-        met[it,8]  <- gribgrab(46,"SPFH30")
-        met[it,9]  <- gribgrab(39,"PRES10")
-        met[it,10] <- gribgrab(45,"PRES30")
-        met[it,11] <- gribgrab(4,"HGT1")
-        
-      } else {
-        print(c("FILE TYPE UNKNOWN",gfiles[i]))
-      }
-    }
-    system(paste("rm ",dirname,"/soi_tmp/",fname[it],sep="")) ## clean up
-  }  ## end loop within file    
+# loop over large files
+#library(hdf5,lib.loc="/home/mdietze/lib/R/Rhdf")
+library(hdf5)
+for(year in unique(years)){
+	yearTars <- which(years == year)
+	yearnum<-as.numeric(year)
+	for(month in c('08','09','10','11','12')){
+                browser()
+		monthTars <- yearTars[which(months[yearTars] == month)]
+		monthnum<-as.numeric(month)
+		print(paste(year,month))
+		
+		surfaceTars <- monthTars[which(vars[monthTars] == "sfc")]
+		surfaceMetData<-readMetTars(tarfiles[surfaceTars],
+				list(cfrzr=33,	cicep=32,	crain=34,	csnow=31,	dlwrf=42,	
+						dswrf=41,	pres =3,	prate=24,	tmp  =5),
+				nearestCells, weights)
+		
+		fluxTars <- monthTars[which(vars[monthTars] == "flx")]
+		fluxMetData<-readMetTars(tarfiles[fluxTars],
+				list(tmp10=38,	tmp30=44,	ugrd10=35,	ugrd30=41,	vgrd10=36,
+						vgrd30=42,	spfh10=40,	spfh30=46,	pres10=39,	pres30=45,
+						hgt1  =4),
+				nearestCells, weights)
+		monthMetData <- cbind(fluxMetData,surfaceMetData)
+		startday<-firstday(monthnum,yearnum)+1
+		stopday<-lastday(monthnum,yearnum)+1
+		days <- rep(startday:stopday, each = 24/3)
+		hours <- rep(seq(0,21,by=3),length=nrow(monthMetData))
+		
+		potential<-potentialRadiation2(LAT,LON,days, hours)
+		# write as h5
+		out.file <- paste(narrdir, outdir,"/",
+		                  outdir,"_", yearnum,
+		                  monthnames[monthnum],".h5",sep="")
+		print(out.file)
+		writeHdf5(out.file, monthMetData, potential, 
+                          downscale.radiation=function(x){x})
+                          #downscale.radiation=function(x){smoothedRadiation(x, monthnum, yearnum, timelag, new.timestep=900, old.timestep=timestep)})
+	}  # end month
+} # end year
 
-  METDATA[[i]] <- met
-  print(c(i,"of",length(gfiles)))
-}  ## end loop over ensemble members
-save.image("duke_face.NARR.RData")
-
-  #### MERGE CHUNKS INTO TIMESERIES
-library(hdf5,lib.loc="/home/mdietze/lib/R/Rhdf")
-dt <- 10800
-lon <- LON
-if(lon>180) lon <- lon-360
-lat <- LAT
-for(y in unique(yr)){
-  ysel <- which(yr == y)
-  for(m in unique(mo[ysel])){
-    msel <- ysel[which(mo[ysel] == m)]    
-    ssel <- msel[which(var[msel] == "sfc")]
-    fsel <- msel[which(var[msel] == "flx")]
-
-    sfc <- METDATA[[ssel[1]]]
-    for(i in 2:length(ssel)) sfc <- rbind(sfc,METDATA[[ssel[i]]])
-
-    flx <- METDATA[[fsel[1]]]
-    for(i in 2:length(fsel)) flx <- rbind(flx,METDATA[[fsel[i]]])
-
-    met <- cbind(flx,sfc[,1:9])
-    n     <- nrow(met)
-    
-    ## calculate time variables
-    doy <- rep(m2d(as.numeric(m),as.numeric(y)):(m2d(as.numeric(m)+1,as.numeric(y))-1),each = 8)
-    hr <- rep(seq(0,21,by=3),length=n)
-    
-    ## calculate potential radiation
-    ## in order to estimate diffuse/direct
-
-    f <- pi/180*(279.5+0.9856*doy)
-    et <- (-104.7*sin(f)+596.2*sin(2*f)+4.3*sin(4*f)
-           -429.3*cos(f)-2.0*cos(2*f)+19.3*cos(3*f))/3600
-           ##equation of time -> eccentricity and obliquity
-    merid <- floor(lon/15)*15
-    if(merid<0) merid <- merid+15
-    lc <- (lon-merid)*-4/60  ## longitude correction
-    tz <- merid/360*24 ## time zone
-    midbin <- 0.5*dt/86400*24 ## shift calc to middle of bin
-    t0 <- 12+lc-et-tz-midbin   ## solar time
-    h <- pi/12*(hr-t0)  ## solar hour
-    dec <- -23.45*pi/180*cos(2*pi*(doy+10)/365)  ## declination
-    
-    cosz <- sin(lat*pi/180)*sin(dec)+cos(lat*pi/180)*cos(dec)*cos(h)
-    cosz[cosz<0] <- 0
-    
-    rpot <- 1366*cosz
-
-    SW <- met[,17]
-    SW[rpot < SW] <- rpot[rpot<SW] ## ensure radiation < max
-    ### this causes trouble at twilight bc of missmatch btw bin avergage and bin midpoint
-    frac <- SW/rpot
-    frac[frac>0.9] <- 0.9  ## ensure some diffuse
-    frac[frac < 0.0] <- 0.0
-    frac[is.na(frac)] <- 0.0
-    frac[is.nan(frac)] <- 0.0
-    SWd <- SW*(1-frac)  ## Diffuse portion of total short wave rad
-    
-    
-    ## write as h5
-    mout <- paste(froot,"/",froot,"_",y,month[as.numeric(m)],".h5",sep="")
-    dims <- c(1,1,n)
-    nbdsf <- array((SW - SWd) * 0.57,dim=dims) # near IR beam downward solar radiation [W/m2]
-    nddsf <- array(SWd * 0.48,dim=dims)        # near IR diffuse downward solar radiation [W/m2]
-    vbdsf <- array((SW - SWd) * 0.43,dim=dims) # visible beam downward solar radiation [W/m2]
-    vddsf <- array(SWd * 0.52,dim=dims)        # visible diffuse downward solar radiation [W/m2]
-    prate <- array(met[,19],dim=dims)              # precipitation rate [kg_H2O/m2/s]
-    dlwrf <- array(met[,16],dim=dims)                # downward long wave radiation [W/m2]
-    pres  <- array(met[,18],dim=dims)              # pressure [Pa]
-    hgt   <- array(rep(50,n),dim=dims)         # geopotential height [m]
-    ugrd  <- array(met[,3],dim=dims)              # zonal wind [m/s]
-    vgrd  <- array(met[,5],dim=dims)          # meridional wind [m/s]
-    sh    <- array(met[,7],dim=dims)              # specific humidity [kg_H2O/kg_air]
-    tmp   <- array(met[,1],dim=dims)              # temperature [K]
-    hdf5save(mout,"nbdsf","nddsf","vbdsf","vddsf","prate","dlwrf","pres","hgt","ugrd","vgrd","sh","tmp")
-    
-  }  ## end month
-} ## end year
-    
 
