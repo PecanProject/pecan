@@ -19,7 +19,7 @@
   \item{output.type}{type of output file to read, can be
   "-Y-" for annual output, "-M-" for monthly means, "-D-"
   for daily means, "-T-" for instantaneous fluxes. Output
-  types are set in the ED2IN namelist as NL\%I[DMYT]OUTPUT}
+  types are set in the ED2IN namelist as NL%I[DMYT]OUTPUT}
 }
 \value{
   vector of output variable for all runs within ensemble
