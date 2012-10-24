@@ -67,9 +67,9 @@
 	<div id="output">
 		<h1>Introduction</h1>
 		<p>The following pages will guide you through setting up a
-		PEcAn worlflow. You will be able to always go back to a
+		PEcAn worklflow. You will be able to always go back to a
 		previous step to change inputs. However once the model is
-		runnign it will continue to run until it finishes. You will
+		runningn it will continue to run until it finishes. You will
 		be able to use the history button to jump to existing 
 		executions of PEcAn.</p>
 		<p>The following webpages will help to setup the PEcAn
