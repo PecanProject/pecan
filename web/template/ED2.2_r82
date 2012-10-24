@@ -240,7 +240,7 @@ $ED_NL
    ! FRQSTATE -- time interval between history files, units defined by UNITSTATE.          !
    !---------------------------------------------------------------------------------------!
    NL%ICLOBBER  = 1             ! 0 = stop if files exist, 1 = overwite files
-   NL%FRQFAST   = 3600.	        ! Time interval between analysis/history files
+   NL%FRQFAST   = 1800.	        ! Time interval between analysis/history files
    NL%FRQSTATE  = 1.            ! Time interval between history files
    !---------------------------------------------------------------------------------------!
    ! Analysis/history/restart file: path, prefix, settings                                 !

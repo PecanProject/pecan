@@ -33,7 +33,7 @@ echo "<th>finished</th>";
 echo "</tr>";
 while ($row = @mysql_fetch_assoc($result)) {
   echo "<tr>";
-  echo "<td><a href=\"running.php?workflowid={$row['id']}\">{$row['id']}</a></td>";
+  echo "<td><a href=\"running_stage1.php?workflowid={$row['id']}\">{$row['id']}</a></td>";
   echo "<td>{$row['site_id']}</td>";
   echo "<td>{$row['model_id']}</td>";
   echo "<td>{$row['model_type']}</td>";

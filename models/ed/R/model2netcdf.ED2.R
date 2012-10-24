@@ -42,8 +42,8 @@ for(i in 1:length(flist)){
 }
 
 ## set up storage
-block <- 24 # assumes hourly
-#block <- 48 # assumes half-hourly
+#block <- 24 # assumes hourly
+block <- 48 # assumes half-hourly
 
 add <- function(dat,col,row){
 

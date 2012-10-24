@@ -28,11 +28,9 @@ clear.scratch <- function(settings){
   if(any(grep('cluster',host$name))) {
     for (i in nodes){
       print(" ")
-      print(" ")
       print(paste("----- Removing output on node: ",i,sep=""))
       system(paste("ssh -T ", settings$run$host$name," qlogin -q ",
                    i," < ",clear.scratch,sep=""))
-      print(" ")
       print(" ")
     } ### End of for loop
     

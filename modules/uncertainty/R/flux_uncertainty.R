@@ -1,3 +1,14 @@
+#-------------------------------------------------------------------------------
+# Copyright (c) 2012 University of Illinois, NCSA.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the 
+# University of Illinois/NCSA Open Source License
+# which accompanies this distribution, and is available at
+# http://opensource.ncsa.illinois.edu/license.html
+#-------------------------------------------------------------------------------
+
+
+#--------------------------------------------------------------------------------------------------#
 read.ameriflux.L2 <- function(file.name, year){
   data<-as.data.frame(read.table(file.name, header=TRUE, sep=',', 
           na.strings=c('-9999','-6999'), stringsAsFactors=FALSE))
@@ -13,8 +24,10 @@ get.change <- function(measurement){
   odd  <- seq(measurement) %% 2 == 1
   return(measurement[even] - measurement[odd])
 }
+#--------------------------------------------------------------------------------------------------#
 
 
+#--------------------------------------------------------------------------------------------------#
 ## measurement = flux time-series
 ## QC = quality control flag time series (0 = best)
 ## flags = additional flags on flux filtering of PAIRS (length = 1/2 that of the time series, TRUE = use).
@@ -84,7 +97,10 @@ flux.uncertainty <- function(measurement, QC=0, flags=TRUE, bin.num=10, transfor
   
   return(list(mag=magBin, err=errBin,bias=biasBin,n=nBin,intercept=intercept,slopeP=slopeP,slopeN=slopeN))
 }
+#--------------------------------------------------------------------------------------------------#
 
+
+#--------------------------------------------------------------------------------------------------#
 plot.flux.uncertainty <- function(f, ...){
   plot(f$mag, f$err, ...)
   big = 10000
@@ -179,11 +195,9 @@ plot.flux.uncertainty(itex.climate$wfv[itex.climate$site %in% c('BD')],
 
 
 }
+#==================================================================================================#
 
 
-
-
-
-
-
-
+####################################################################################################
+### EOF.  End of R script file.          		
+####################################################################################################
