@@ -17,9 +17,10 @@
 ##' @author David LeBauer
 jagify <- function(result){
   
-  ### Rename name column from treatment table to trt_id.  Remove NAs. Assign treatments.
-  ### Finally, summarize the results by calculating summary statistics from experimental 
-  ### replicates
+  ## Rename 'name' column from 'treatment' table to trt_id.
+  ## Remove NAs. Assign treatments.
+  ## Finally, summarize the results by calculating summary statistics from experimental 
+  ## replicates
   
   length.data = length(result)
   for (i in 1:length.data){
