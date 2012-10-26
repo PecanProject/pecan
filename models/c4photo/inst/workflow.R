@@ -15,7 +15,7 @@ require(PEcAn.all)
 settings <- read.settings(system.file("pecan.c4photo.xml", package = "PEcAn.c4photo"))
 #--------------------------------------------------------------------------------------------------#
 
-model <- ifelse("model" %in% names(settings), settings$model$name, "ED2")
+model <- ifelse("model" %in% names(settings), settings$model$name, "c4photo")
 
 #---------------- Run PEcAn workflow. -------------------------------------------------------------#
 get.trait.data()        	# Query the trait database for data and priors
