@@ -47,7 +47,7 @@ plot.variance.decomposition <- function(plot.inputs,
                           variances     = plot.inputs$variances,
                           points = 1:length(traits) - 0.5)
 
-  plot.data <- plot.data[order(.plot.data$variances,
+  plot.data <- plot.data[order(plot.data$variances,
                                decreasing = FALSE), ]
   
   base.plot <- ggplot(plot.data) +
