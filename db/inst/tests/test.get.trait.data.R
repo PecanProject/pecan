@@ -27,7 +27,7 @@ temp.settings <- PEcAn.utils::temp.settings
 </pecan>"
 
 test_that("get.trait.data will return trait data even when there is no meta.analysis tag in the settings file", {
-  settings <- read.settings(settings.text)
+#  settings <- read.settings(settings.text)
 #  get.trait.data()
 #  expect_true(file.exists('/tmp/test/trait.data.Rdata'))
 })
