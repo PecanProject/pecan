@@ -158,7 +158,6 @@ sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
                     partial.variances = partial.variances))
   return(outlist)
 }
-#==================================================================================================#
 
 ##' Truncate spline at zero if..
 ##'
@@ -178,7 +177,7 @@ sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
 ##' set.seed(0)
 ##' x <- c(rgamma(998,1,1), rnorm(10)) 
 ##' min(x) # -0.5238
-##' min(spline.truncate(x))
+##' min(PEcAn.uncertainty::spline.truncate(x))
 spline.truncate <- function(x, min.quantile = pnorm(-3)){
   if(quantile(x, min.quantile) > 0){
      x <- zero.truncate(x)

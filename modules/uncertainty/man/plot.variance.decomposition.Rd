@@ -2,12 +2,7 @@
 \alias{plot.variance.decomposition}
 \title{Variance Decomposition Plots}
 \usage{
-  plot.variance.decomposition(...,
-    all.plot.inputs = list(...), exclude = c(),
-    convert.var = sqrt,
-    var.label = "Std Deviation (Mg/ha)",
-    order.plot.input = NA, ticks.plot.input = NA,
-    col = c("black"), pch = c(16), main = NA,
+  plot.variance.decomposition(plot.inputs,
     fontsize = list(title = 18, axis = 14))
 }
 \arguments{
@@ -54,7 +49,14 @@
 \details{
   Plots variance decomposition tryptich
 }
+\examples{
+x <- list(trait.labels = c("a", "b", "c"),
+          coef.vars = c(a=1,b=0.5, c=0.1),
+          elasticities = c(a=1,b=2,c=0.5),
+          variances    = c(a = 20, b=30, c = 10))
+do.call(grid.arrange, c(plot.variance.decomposition(x), ncol = 4))
+}
 \author{
-  David LeBauer
+  David LeBauer, Carl Davidson
 }
 
