@@ -143,7 +143,8 @@ sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
   ## this conversion is only required at this point in the code, for calculating CV
   C.units <- grepl('^Celsius$', trait.lookup(traits)$units, ignore.case = TRUE)
   if(any(C.units)){
-    trait.samples[[C.units]] <- trait.samples[[C.units]] + 273.15
+    #trait.samples[[C.units]] <- trait.samples[[C.units]] + 273.15
+    trait.samples[[which(C.units)]] <- trait.samples[[which(C.units)]] + 273.15 # changed by SPS on 09/08/2012
   }
   coef.vars <- sapply(trait.samples, get.coef.var)
   outlist <- list(sensitivity.output = list(
@@ -157,7 +158,6 @@ sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
                     partial.variances = partial.variances))
   return(outlist)
 }
-#==================================================================================================#
 
 ##' Truncate spline at zero if..
 ##'
@@ -177,7 +177,7 @@ sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
 ##' set.seed(0)
 ##' x <- c(rgamma(998,1,1), rnorm(10)) 
 ##' min(x) # -0.5238
-##' min(spline.truncate(x))
+##' min(PEcAn.uncertainty::spline.truncate(x))
 spline.truncate <- function(x, min.quantile = pnorm(-3)){
   if(quantile(x, min.quantile) > 0){
      x <- zero.truncate(x)

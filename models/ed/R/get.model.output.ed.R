@@ -96,20 +96,25 @@ get.model.output.ED2 <- function(){
   
   ### Get ED2 model output on the localhost
   if(settings$run$host$name == 'localhost'){
-    
+    setwd(settings$run$host$outdir)  # Host model output directory
+    get.results(model)
     ### Move required functions to host
     ## TODO: take out functions read.output.file.ed & read.output.ed from write.configs.ed &
     ## put into a new file specific for reading ED output
-    dump(c("get.run.id","abbreviate.run.id.ED","left.pad.zeros","read.ensemble.output",
-           "read.sa.output","read.output", "model2netcdf.ED2","get.results"),
-         file=paste(settings$outdir,"PEcAn.functions.R",sep=""))
+#     dump(c("get.run.id","abbreviate.run.id.ED","left.pad.zeros","read.ensemble.output",
+#            "read.sa.output","read.output", "model2netcdf.ED2","get.results"),
+#          file=paste(settings$outdir,"PEcAn.functions.R",sep=""))
     
     ### Is the previous necessary for localhost?  These functions should be availible within R
     ### & should not need to be copied and run but could instead be called within the running R
     ### shell.  SPS
     
-    setwd(settings$outdir)
-    source('PEcAn.functions.R') # This won't work yet
+    #setwd(settings$outdir)
+    #source('PEcAn.functions.R') # This won't work yet
+    
+    ### Copy output to main output directory. May want to change how this is done.
+    file.copy(from = paste(settings$run$host$outdir, 'output.Rdata', sep=''), to = settings$outdir, overwrite=TRUE)
+
     
     ### If running on remote host
   } else {
@@ -130,7 +135,9 @@ get.model.output.ED2 <- function(){
         append=TRUE)
     cat(paste("get.results(",model,")",sep=""),file=paste(settings$outdir,"PEcAn.functions.R",sep=""),
         append=TRUE)
-
+    #cat("get.results(model)",file=paste(settings$outdir,"PEcAn.functions.R",sep=""),
+    #    append=TRUE)
+    
     ### Copy required PEcAn.functions.R and settings object to remote host
     rsync('-outi',paste(settings$outdir,"settings.RData",sep=""),
           paste(settings$run$host$name, ':',settings$run$host$outdir, sep = '') )

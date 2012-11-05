@@ -1,24 +1,24 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
-#--------------------------------------------------------------------------------------------------#
-# Functions to prepare and write out ED2.2 config.xml files for MA, SA, and Ensemble runs
-#--------------------------------------------------------------------------------------------------#
+##------------------------------------------------------------------------------
+##Copyright (c) 2012 University of Illinois, NCSA.
+##All rights reserved. This program and the accompanying materials
+##are made available under the terms of the 
+##University of Illinois/NCSA Open Source License
+##which accompanies this distribution, and is available at
+##http://opensource.ncsa.illinois.edu/license.html
+##------------------------------------------------------------------------------
+##-------------------------------------------------------------------------------------------------#
+##Functions to prepare and write out ED2.2 config.xml files for MA, SA, and Ensemble runs
+##-------------------------------------------------------------------------------------------------#
 
 
-#--------------------------------------------------------------------------------------------------#
+##-------------------------------------------------------------------------------------------------#
 PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
 
-### TODO: Update this script file to use the database for setting up ED2IN and config files
-#--------------------------------------------------------------------------------------------------#
+## TODO: Update this script file to use the database for setting up ED2IN and config files
+##-------------------------------------------------------------------------------------------------#
 
 
-#--------------------------------------------------------------------------------------------------#
+##-------------------------------------------------------------------------------------------------#
 ##' Abbreviate run id to ed limits
 ##'
 ##' As is the case with ED, input files must be <32 characters long.
@@ -26,7 +26,7 @@ PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
 ##' @param run.id string indicating nature of the run
 ##' @export
 ##' @author unknown
-#--------------------------------------------------------------------------------------------------#
+##-------------------------------------------------------------------------------------------------#
 abbreviate.run.id.ED <- function(run.id){
   run.id <- gsub('tundra.', '', run.id)
   run.id <- gsub('ebifarm.', '', run.id)
@@ -48,7 +48,7 @@ abbreviate.run.id.ED <- function(run.id){
 #==================================================================================================#
 
 
-#--------------------------------------------------------------------------------------------------#
+##-------------------------------------------------------------------------------------------------#
 ##' convert parameters from PEcAn database default units to ED defaults
 ##' 
 ##' Performs model specific unit conversions on a a list of trait values,
@@ -62,7 +62,7 @@ convert.samples.ED <- function(trait.samples){
   DEFAULT.LEAF.C <- 0.48
   DEFAULT.MAINTENANCE.RESPIRATION <- 1/2
   ## convert SLA from m2 / kg leaf to m2 / kg C 
-    
+  
   if('SLA' %in% names(trait.samples)){
     sla <- trait.samples[['SLA']]
     trait.samples[['SLA']] <- sla / DEFAULT.LEAF.C
@@ -86,35 +86,35 @@ convert.samples.ED <- function(trait.samples){
     trait.samples[['Vcmax']] <- arrhenius.scaling(vcmax, old.temp = 25, new.temp = 15)
   }
 
-   ### Convert leaf_respiration_rate_m2 to dark_resp_factor
-   if('leaf_respiration_rate_m2' %in% names(trait.samples)) {
-      leaf_resp = trait.samples[['leaf_respiration_rate_m2']]
-      vcmax <- trait.samples[['Vcmax']]
+  ## Convert leaf_respiration_rate_m2 to dark_resp_factor
+  if('leaf_respiration_rate_m2' %in% names(trait.samples)) {
+    leaf_resp = trait.samples[['leaf_respiration_rate_m2']]
+    vcmax <- trait.samples[['Vcmax']]
     
-      ### First scale variables to 15 degC
-      trait.samples[['leaf_respiration_rate_m2']] <- 
-        arrhenius.scaling(leaf_resp, old.temp = 25, new.temp = 15)
-      vcmax_15 <- arrhenius.scaling(vcmax, old.temp = 25, new.temp = 15)
+    ## First scale variables to 15 degC
+    trait.samples[['leaf_respiration_rate_m2']] <- 
+      arrhenius.scaling(leaf_resp, old.temp = 25, new.temp = 15)
+    vcmax_15 <- arrhenius.scaling(vcmax, old.temp = 25, new.temp = 15)
     
-      # need to add back dark resp prior?? no?
+    ##need to add back dark resp prior?? no?
     
-      ### Calculate dark_resp_factor
-      trait.samples[['dark_respiration_factor']] <- trait.samples[['leaf_respiration_rate_m2']]/
-        vcmax_15
-      
-      ### Remove leaf_respiration_rate from trait samples
-      remove <- which(names(trait.samples)=='leaf_respiration_rate_m2')
-      trait.samples = trait.samples[-remove]
-      
-   } ### End dark_respiration_factor loop
-   
+    ## Calculate dark_resp_factor
+    trait.samples[['dark_respiration_factor']] <- trait.samples[['leaf_respiration_rate_m2']]/
+      vcmax_15
+    
+    ## Remove leaf_respiration_rate from trait samples
+    remove <- which(names(trait.samples)=='leaf_respiration_rate_m2')
+    trait.samples = trait.samples[-remove]
+    
+  } ## End dark_respiration_factor loop
+  
   
   return(trait.samples)
 }
 #==================================================================================================#
 
 
-#--------------------------------------------------------------------------------------------------#
+##-------------------------------------------------------------------------------------------------#
 ##' Writes an xml and ED2IN config files for use with the Ecological Demography model.
 ##'
 ##' Requires a pft xml object, a list of trait values for a single model run,
@@ -129,19 +129,19 @@ convert.samples.ED <- function(trait.samples){
 ##' @return configuration file and ED2IN namelist for given run
 ##' @export
 ##' @author David LeBauer, Shawn Serbin, Carl Davidson
-#--------------------------------------------------------------------------------------------------#
+##-------------------------------------------------------------------------------------------------#
 write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
 
-  ### Get ED2 specific model settings and put into output config xml file
+  ## Get ED2 specific model settings and put into output config xml file
   xml <- listToXml(settings$model$config.header, 'config')
   names(defaults) <- sapply(defaults, function(x) x$name)
 
-  # TODO this should come from the database
+  ## TODO this should come from the database
   histfile <- paste("data/history.", settings$model$revision, ".csv", sep='')
   if (file.exists(system.file(histfile, package="PEcAn.ED"))) {
-	  edhistory <- read.csv2(system.file(histfile, package="PEcAn.ED"), sep=";")
+    edhistory <- read.csv2(system.file(histfile, package="PEcAn.ED"), sep=";")
   } else {
-	  edhistory <- read.csv2(system.file("data/history.csv",  package="PEcAn.ED"), sep=";")
+    edhistory <- read.csv2(system.file("data/history.csv",  package="PEcAn.ED"), sep=";")
   }
   edtraits <- names(edhistory)
   edtraits <- edtraits[which(edtraits!="num")]
@@ -159,62 +159,52 @@ write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
     } else {
       ##is a PFT
       pft <- defaults[[group]]
-      ### Insert PFT constants into output xml file  
+      ## Insert PFT constants into output xml file  
       pft.xml <- listToXml(pft$constants, 'pft')
-      ### Insert PFT names into output xml file
+      ## Insert PFT names into output xml file
       pft.xml <- append.xmlNode(pft.xml, xmlNode("name", pft$name))
-	  
-	  # TODO this should come from the database
-	  edpft <- pftmapping$ED[which(pftmapping==group)]
-	  if (is.null(edpft)) {
-		  log.warn("No mapping found for", group, "using 1")
-		  edpft <- 1
-	  }
-	  
+      
+      ##TODO this should come from the database
+      edpft <- pftmapping$ED[which(pftmapping==group)]
+      if (is.null(edpft)) {
+        log.warn("No mapping found for", group, "using 1")
+        edpft <- 1
+      }
+      
       ## copy values
       if(!is.null(trait.values[[group]])){
         vals <- convert.samples.ED(trait.values[[group]])
         names(vals) <- droplevels(trait.lookup(names(vals))$model.id)
-		traits <- names(vals)
-		for(trait in traits) {
-			if (! trait %in% edtraits) {
-				log.error(trait, "not found in ED history")
-			}
-			pft.xml <- append.xmlNode(pft.xml, xmlNode(trait, vals[trait]))
+        traits <- names(vals)
+        for(trait in traits) {
+          if (! trait %in% edtraits) {
+            log.error(trait, "not found in ED history")
+          }
+          pft.xml <- append.xmlNode(pft.xml, xmlNode(trait, vals[trait]))
         }
-#		pft.xml <- append.xmlNode(pft.xml, xmlNode("edpft", edpft))
-#		for(trait in edtraits) {
-#			if (! trait %in% traits) {
-#				pft.xml <- append.xmlNode(pft.xml, xmlNode(trait, edhistory[[trait]][edpft]))
-#			}
-#		}
-#      } else {
-#		  for(trait in edtraits) {
-#			  pft.xml <- append.xmlNode(pft.xml, xmlNode(trait, edhistory[[trait]][edpft]))
-#		  }
-	  }
-	  if (is.null(pft.xml[["num"]])) {
-		  pft.xml <- append.xmlNode(pft.xml, xmlNode("num", edpft))
-	  } else {
-		  xmlValue( pft.xml[["num"]]) <- edpft
-	  }
-	  xml <- append.xmlNode(xml, pft.xml)
+      }
+      if (is.null(pft.xml[["num"]])) {
+        pft.xml <- append.xmlNode(pft.xml, xmlNode("num", edpft))
+      } else {
+        xmlValue( pft.xml[["num"]]) <- edpft
+      }
+      xml <- append.xmlNode(xml, pft.xml)
     }
   }
-    
+  
   xml.file.name <- paste('c.',run.id,sep='')  
-  if(nchar(xml.file.name) >= 512)  # was 128.  Changed in ED to 512
+  if(nchar(xml.file.name) >= 512)  ##was 128.  Changed in ED to 512
     stop(paste('The file name, "',xml.file.name,
-            '" is too long and will cause your ED run to crash ',
-            'if allowed to continue. '))
+               '" is too long and will cause your ED run to crash ',
+               'if allowed to continue. '))
   saveXML(xml, file = paste(outdir, xml.file.name, sep=''), 
-      indent=TRUE, prefix = PREFIX_XML)
+          indent=TRUE, prefix = PREFIX_XML)
   
   startdate <- as.Date(settings$run$start.date)
   enddate <- as.Date(settings$run$end.date)
   
-  #-----------------------------------------------------------------------
-  ### Edit ED2IN file for runs
+  ##----------------------------------------------------------------------
+  ## Edit ED2IN file for runs
   ed2in.text <- readLines(con=settings$model$edin, n=-1)
   
   ed2in.text <- gsub('@SITE_LAT@', settings$run$site$lat, ed2in.text)
@@ -222,70 +212,78 @@ write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
   ed2in.text <- gsub('@SITE_MET@', settings$run$site$met, ed2in.text)
   ed2in.text <- gsub('@MET_START@', settings$run$site$met.start, ed2in.text)
   ed2in.text <- gsub('@MET_END@', settings$run$site$met.end, ed2in.text)
-  
-  if(settings$model$phenol.scheme==1){
-    # Set prescribed phenology switch in ED2IN
-	  ed2in.text <- gsub('@PHENOL_SCHEME@', settings$model$phenol.scheme, ed2in.text)
-	  # Phenology filename
-  	ed2in.text <- gsub('@PHENOL@', settings$model$phenol, ed2in.text)
-	  # Set start year of phenology
-  	ed2in.text <- gsub('@PHENOL_START@', settings$model$phenol.start, ed2in.text)
-	  # Set end year of phenology
-  	ed2in.text <- gsub('@PHENOL_END@', settings$model$phenol.end, ed2in.text)
-	
-	  # If not prescribed set alternative phenology scheme.
-    } else {
-	  ed2in.text <- gsub(' @PHENOL_SCHEME@', settings$model$phenol.scheme, ed2in.text)
-    }
-  
-    #-----------------------------------------------------------------------
-    ed2in.text <- gsub('@SITE_PSSCSS@', settings$model$psscss, ed2in.text)
-    ed2in.text <- gsub('@ED_VEG@', settings$model$veg, ed2in.text)
-    ed2in.text <- gsub('@ED_SOIL@', settings$model$soil, ed2in.text)
-    ed2in.text <- gsub('@ED_INPUTS@', settings$model$inputs, ed2in.text)
-    
-    #-----------------------------------------------------------------------
-    ed2in.text <- gsub('@START_MONTH@', format(startdate, "%m"), ed2in.text)
-    ed2in.text <- gsub('@START_DAY@', format(startdate, "%d"), ed2in.text)
-    ed2in.text <- gsub('@START_YEAR@', format(startdate, "%Y"), ed2in.text)
-    ed2in.text <- gsub('@END_MONTH@', format(enddate, "%m"), ed2in.text)
-    ed2in.text <- gsub('@END_DAY@', format(enddate, "%d"), ed2in.text)
-    ed2in.text <- gsub('@END_YEAR@', format(enddate, "%Y"), ed2in.text)
 
-    #-----------------------------------------------------------------------
-    ed2in.text <- gsub('@OUTDIR@', settings$run$host$outdir, ed2in.text)
-    ed2in.text <- gsub('@ENSNAME@', run.id, ed2in.text)
-    ed2in.text <- gsub('@CONFIGFILE@', xml.file.name, ed2in.text)
-  
-    ### Generate a numbered suffix for scratch output folder.  Useful for cleanup.  TEMP CODE. NEED TO UPDATE.
-    #cnt = counter(cnt) # generate sequential scratch output directory names 
-    #print(cnt)
-    #scratch = paste(Sys.getenv("USER"),".",cnt,"/",sep="")
-    scratch = paste(Sys.getenv("USER"),"/",settings$run$scratch, sep='')
-    #ed2in.text <- gsub('@SCRATCH@', paste('/scratch/', settings$run$scratch, sep=''), ed2in.text)
-    ed2in.text <- gsub('@SCRATCH@', paste('/scratch/', scratch, sep=''), ed2in.text)
-    ###
-  
-    ed2in.text <- gsub('@OUTFILE@', paste('out', run.id, sep=''), ed2in.text)
-    ed2in.text <- gsub('@HISTFILE@', paste('hist', run.id, sep=''), ed2in.text)
- 
-    #-----------------------------------------------------------------------
-    ed2in.file.name <- paste('ED2INc.',run.id, sep='')
-    writeLines(ed2in.text, con = paste(outdir, ed2in.file.name, sep=''))
+  if(is.null(settings$model$phenol.scheme)){
+    print(paste("no phenology scheme set; \n",
+                "need to add <phenol.scheme> tag under <model> tag in settings file"))
+  } else if(settings$model$phenol.scheme==1) {
+    ## Set prescribed phenology switch in ED2IN
+    ed2in.text <- gsub('@PHENOL_SCHEME@', settings$model$phenol.scheme, ed2in.text)
+    ## Phenology filename
+    ed2in.text <- gsub('@PHENOL@', settings$model$phenol, ed2in.text)
+    ## Set start year of phenology
+    ed2in.text <- gsub('@PHENOL_START@', settings$model$phenol.start, ed2in.text)
+    ## Set end year of phenology
+    ed2in.text <- gsub('@PHENOL_END@', settings$model$phenol.end, ed2in.text)
     
-    ### Display info to the console.
-    print(run.id)
+    ## If not prescribed set alternative phenology scheme.
+  } else {
+    ed2in.text <- gsub(' @PHENOL_SCHEME@', settings$model$phenol.scheme, ed2in.text)
+    # Insert blanks into ED2IN file so ED2 runs without error
+    ed2in.text <- gsub('@PHENOL@', "", ed2in.text)
+    ed2in.text <- gsub('@PHENOL_START@', "", ed2in.text)
+    ed2in.text <- gsub('@PHENOL_END@', "", ed2in.text)
+  }
+  
+  ##----------------------------------------------------------------------
+  ed2in.text <- gsub('@SITE_PSSCSS@', settings$model$psscss, ed2in.text)
+  ed2in.text <- gsub('@ED_VEG@', settings$model$veg, ed2in.text)
+  ed2in.text <- gsub('@ED_SOIL@', settings$model$soil, ed2in.text)
+  ed2in.text <- gsub('@ED_INPUTS@', settings$model$inputs, ed2in.text)
+  
+  ##----------------------------------------------------------------------
+  ed2in.text <- gsub('@START_MONTH@', format(startdate, "%m"), ed2in.text)
+  ed2in.text <- gsub('@START_DAY@', format(startdate, "%d"), ed2in.text)
+  ed2in.text <- gsub('@START_YEAR@', format(startdate, "%Y"), ed2in.text)
+  ed2in.text <- gsub('@END_MONTH@', format(enddate, "%m"), ed2in.text)
+  ed2in.text <- gsub('@END_DAY@', format(enddate, "%d"), ed2in.text)
+  ed2in.text <- gsub('@END_YEAR@', format(enddate, "%Y"), ed2in.text)
+
+  ##----------------------------------------------------------------------
+  ed2in.text <- gsub('@OUTDIR@', settings$run$host$outdir, ed2in.text)
+  ed2in.text <- gsub('@ENSNAME@', run.id, ed2in.text)
+  ed2in.text <- gsub('@CONFIGFILE@', xml.file.name, ed2in.text)
+  
+  ## Generate a numbered suffix for scratch output folder.  Useful for cleanup.  TEMP CODE. NEED TO UPDATE.
+  ## cnt = counter(cnt) # generate sequential scratch output directory names 
+  ## print(cnt)
+  ## scratch = paste(Sys.getenv("USER"),".",cnt,"/",sep="")
+  scratch = paste(Sys.getenv("USER"),"/",settings$run$scratch, sep='')
+  ## ed2in.text <- gsub('@SCRATCH@', paste('/scratch/', settings$run$scratch, sep=''), ed2in.text)
+  ed2in.text <- gsub('@SCRATCH@', paste('/scratch/', scratch, sep=''), ed2in.text)
+  ##
+  
+  ed2in.text <- gsub('@OUTFILE@', paste('out', run.id, sep=''), ed2in.text)
+  ed2in.text <- gsub('@HISTFILE@', paste('hist', run.id, sep=''), ed2in.text)
+  
+  ##----------------------------------------------------------------------
+  ed2in.file.name <- paste('ED2INc.',run.id, sep='')
+  writeLines(ed2in.text, con = paste(outdir, ed2in.file.name, sep=''))
+  
+  ## Display info to the console.
+  print(run.id)
 }
 #==================================================================================================#
 
 
-#--------------------------------------------------------------------------------------------------#
+##-------------------------------------------------------------------------------------------------#
 ##'
 ##' @name write.run.ED
 ##' @title Function to generate ED2.2 model run script files
-##' @author <unknown>
+##' @export
+##' @author David LeBauer, Shawn Serbin, Rob Kooper, Mike Dietze
 ##' @import PEcAn.utils
-#--------------------------------------------------------------------------------------------------#
+##-------------------------------------------------------------------------------------------------#
 write.run.ED <- function(settings){
   scratch = paste(Sys.getenv("USER"),"/",settings$run$scratch, sep='')
   run.script.template = system.file("run.template.ED", package="PEcAn.ED")
@@ -306,7 +304,7 @@ write.run.ED <- function(settings){
 #==================================================================================================#
 
 
-#--------------------------------------------------------------------------------------------------#
+##-------------------------------------------------------------------------------------------------#
 ##' Clear out old config and ED model run files.
 ##'
 ##' @name remove.config.ED2
@@ -314,60 +312,44 @@ write.run.ED <- function(settings){
 ##' @return nothing, removes config files as side effect
 ##' @export
 ##' @author Shawn Serbin, David LeBauer
-remove.config.ED2 <- function(main.outdir,settings) {
-  
+remove.config.ED2 <- function(main.outdir = settings$outdir, settings) {
+
+
   print(" ")
   print("---- Removing previous ED2 config files and output before starting new run ----")
   print(" ")
   
-    todelete <- dir(unlist(main.outdir), pattern = 'ED2INc.*', recursive=TRUE, full.names = TRUE)
-    if(length(todelete>0)) file.remove(todelete)
-    rm(todelete)
-    
-    #todelete <- dir(unlist(main.outdir), pattern = "c.*",
-    #                recursive=TRUE, full.names = TRUE)
-    
-    ### Other code wasn't working properly.  This won't recurse however.
-    # TODO: Fix this code so it finds the correct files and will recurse
-    todelete <- Sys.glob(file.path(unlist(main.outdir), "c.*") )
-    if(length(todelete>0)) file.remove(todelete)
-    rm(todelete)
-
-    ### I AM NOT SURE THIS IS NESCESSARY.
-    filename.root <- get.run.id('c.','*')  # TODO: depreciate abbrev run ids
+  todelete <- dir(settings$outdir,
+                  pattern = c('/c.*', '/ED2INc.*'),
+                  recursive=TRUE, full.names = TRUE)
   
-    ### Remove model run configs and model run log files on local/remote host
-    if(settings$run$host$name == 'localhost'){
-      if(length(dir(settings$run$host$rundir, pattern = filename.root)) > 0) {
-        #todelete <- dir(settings$run$host$outdir,
-        #                pattern = paste(filename.root, "*[^log]", sep = ''), 
-        #                recursive=TRUE, full.names = TRUE)
-        #file.remove(todelete)
-        ### Need to check that this is removing all config files on localhost
+  if(length(todelete>0)) file.remove(todelete)
+  rm(todelete)
+
+  ## Remove model run configs and model run log files on local/remote host
+  if(!settings$run$host$name == 'localhost'){
+    ## Remove model run congfig and log files on remote host
+    config <- system(paste("ssh ", settings$run$host$name, " 'ls ", 
+                           settings$run$host$rundir, 
+                           "c.*'", sep = ''), intern = TRUE)
+    ed2in <- system(paste("ssh ", settings$run$host$name, " 'ls ", 
+                          settings$run$host$rundir, 
+                          "ED2INc.", "*'", sep = ''), intern = TRUE)
+    output <- paste(settings$run$host$outdir,
+                    system(paste("ssh ", settings$run$host$name, " 'ls ", 
+                                 settings$run$host$outdir,
+                                 "'", sep = ''), intern = TRUE),sep="/")
+    if(length(config) > 0 | length(ed2in) > 0) {
+      todelete <- c(config,ed2in[-grep('log', ed2in)],output) ## Keep log files
+      
+      ## Very slow method.  NEEDS UPDATING
+      for(i in todelete){
+        print(i)
+        system(paste("ssh -T ", settings$run$host$name, " 'rm ",i,"'",sep=""))
       }
-    } else {
-      ### Remove model run congfig and log files on remote host
-      config <- system(paste("ssh ", settings$run$host$name, " 'ls ", 
-                            settings$run$host$rundir, 
-                            filename.root, "*'", sep = ''), intern = TRUE)
-      ed2in <- system(paste("ssh ", settings$run$host$name, " 'ls ", 
-                             settings$run$host$rundir, 
-                             "ED2INc.", "*'", sep = ''), intern = TRUE)
-      output <- paste(settings$run$host$outdir,
-                      system(paste("ssh ", settings$run$host$name, " 'ls ", 
-                           settings$run$host$outdir,
-                           "'", sep = ''), intern = TRUE),sep="/")
-      if(length(config) > 0 | length(ed2in) > 0) {
-        todelete <- c(config,ed2in[-grep('log', ed2in)],output) ### Keep log files
-        
-        ### Very slow method.  NEEDS UPDATING
-        for(i in todelete){
-          print(i)
-          system(paste("ssh -T ", settings$run$host$name, " 'rm ",i,"'",sep=""))
-        }
-        
-        }
-      }
+      
+    }
+  }
 }
 #==================================================================================================#
 

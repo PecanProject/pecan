@@ -22,6 +22,9 @@
 ##' @author Michael Dietze
 read.output <- function(run.id, outdir, start.year=NA, end.year=NA,
                         variables = "GPP", model = model){
+
+  # had to be added since model didn't seem to be passed to this code?
+  model <- settings$model$name
     
   ### Load requirements
   require(ncdf)
@@ -40,7 +43,7 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,
      file.names <- dir(paste(outdir,run.id,sep="/"), pattern=run.id, full.names=TRUE)
      outfiles <- list.files(path=paste(outdir,run.id,sep="/"),pattern="\\.out$",full.names=TRUE)
    } else if (model=="ED2"){
-                                        #file.names <- dir(outdir, pattern=paste(run.id,"\\.h5$",sep=""), full.names=TRUE)
+     #file.names <- dir(outdir, pattern=paste(run.id,"\\.h5$",sep=""), full.names=TRUE)
      file.names <- dir(outdir, pattern=run.id, full.names = TRUE)
      file.names <- file.names[grep("\\.h5$",file.names)]
      outfiles <- list.files(path=outdir,pattern=run.id, full.names = TRUE)
@@ -125,15 +128,18 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,
           }
         }
         close.ncdf(nc)
+        showConnections(all = TRUE)
       }
       names(data) <- variables
-      print(paste("----- Median :",sapply(data,median,na.rm=TRUE)))
+      print(paste("----- Mean ",variables," : ",sapply(data,median,na.rm=TRUE)))
+      print(paste("----- Median ",variables,": ",sapply(data,median,na.rm=TRUE)))
       return(data)   
     } else {
       stop("no output files present")
     }    
   }
   return(NA) 
+  closeAllConnections()
 }
 #==================================================================================================#
 

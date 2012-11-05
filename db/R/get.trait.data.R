@@ -15,6 +15,8 @@
 ##'
 get.trait.data <- function() {
   ## Info:  lots of hacks for now.  Needs to be updated once full workflow is ready.
+  require(RMySQL)
+  require(PEcAn.utils)
   num <- sum(names(unlist(settings$pfts)) == "pft.name")
   for (i in 1:num){
     ## Remove old files.  Clean up.
@@ -28,7 +30,7 @@ get.trait.data <- function() {
 
   ##---------------- Load trait dictionary. ----------------------------------------------------------#
 
-  data(trait.dictionary)
+  data(trait.dictionary, package = "PEcAn.utils")
   trait.names <- trait.dictionary$id
   ##--------------------------------------------------------------------------------------------------#
 
@@ -41,19 +43,16 @@ get.trait.data <- function() {
 
 
   ##---------------- Query trait data. ---------------------------------------------------------------#
-  cnt <- 0;
+
   all.trait.data <- list()
   for(pft in settings$pfts){
-    out.dir <- pft$outdir # loop over pfts
-    
-    cnt <- cnt + 1
     
     ## 1. get species list based on pft
     spstr <- query.pft_species(pft$name, con=newconfn())
     
     ## 2. get priors available for pft  
     prior.distns <- query.priors(pft$name, vecpaste(trait.names),
-                                 out=pft$outdir,con=newconfn())
+                                 out = pft$outdir, con = newconfn())
     
     ### exclude any parameters for which a constant is provided 
     prior.distns <- prior.distns[which(!rownames(prior.distns) %in%
@@ -68,24 +67,25 @@ get.trait.data <- function() {
     print("-------------------------------------------------------------------")
     print(" ")
     
-    ## if meta-analysis to be run, get traits for pft as a list with one dataframe per variable
-    if('meta.analysis' %in% names(settings)) {
-      trait.data <- query.traits(spstr, traits, con = newconfn())
-      traits <- names(trait.data)
-      save(trait.data, file = paste(pft$outdir, 'trait.data.Rdata', sep=''))
-      
-      all.trait.data[[pft$name]] <- trait.data
-      
-      for(i in 1:length(all.trait.data)){
-        print(paste("number of observations per trait for", pft$name))
-        print(ldply(all.trait.data[[i]], nrow))
-      }
-      
+    trait.data <- query.traits(spstr, traits, con = newconfn())
+    traits <- names(trait.data)
+    trait.data.file <- file.path(pft$outdir, "trait.data.Rdata")
+    save(trait.data, file = trait.data.file)
+    if(!file.exists(trait.data.file)){
+      stop("trait.data not saved")
     }
     
-    save(prior.distns, file=paste(pft$outdir, 'prior.distns.Rdata', sep = ''))
+    all.trait.data[[pft$name]] <- trait.data
+    
+    for(i in 1:length(all.trait.data)){
+      print(paste("number of observations per trait for", pft$name))
+      print(ldply(all.trait.data[[i]], nrow))
+    }
     
   }
+  
+  save(prior.distns, file = file.path(pft$outdir, "prior.distns.Rdata"))
+    
 }
 ##==================================================================================================#
 

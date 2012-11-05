@@ -54,7 +54,8 @@ run.ensemble.analysis <- function(plot.timeseries=NA){
   }
   
   ## Generate ensemble figure
-  fig.out <- settings$pfts$pft$outdir
+  #fig.out <- settings$pfts$pft$outdir
+  fig.out <- settings$outdir # main output directory
   
   pdf(file=paste(fig.out,"ensemble.analysis.pdf",sep=""),width=13,height=6)
   par(mfrow=c(1,2),mar=c(4,4.8,1,2.0)) # B, L, T, R
@@ -73,9 +74,11 @@ run.ensemble.analysis <- function(plot.timeseries=NA){
   print("-----------------------------------------------")
   print(" ")
   print(" ")
+  
   ### Plot ensemble time-series
   if (!is.na(plot.timeseries)){
-    fig.out <- settings$pfts$pft$outdir
+    #fig.out <- settings$pfts$pft$outdir
+    fig.out <- settings$outdir # main output directory
     pdf(paste(fig.out,"ensemble.ts.pdf",sep="/"),width=12,height=9)    
     ensemble.ts(read.ensemble.ts(model))
     dev.off()
@@ -102,7 +105,8 @@ read.ensemble.ts <- function(model){
   ## SETTINGS  
   ensemble.ts <- list()
   ensemble.size <- as.numeric(settings$ensemble$size)
-  outdir <- settings$outdir
+  #outdir <- settings$outdir
+  outdir <- settings$run$host$outdir
   start.year <- ifelse(is.null(settings$sensitivity.analysis$start.year),
                        NA, settings$sensitivity.analysis$start.year)
   end.year   <- ifelse(is.null(settings$sensitivity.analysis$end.year),
@@ -134,9 +138,11 @@ read.ensemble.ts <- function(model){
     }    
   }
   names(ensemble.ts) <- variables
-
+  #save(ensemble.ts, file = paste(settings$outdir,"ensemble.ts.Rdata", sep = ""))
   return(ensemble.ts)
+
 }
+
 
 filterNA <- function(x,w){
   y <- rep(NA,length(x))
@@ -185,7 +191,7 @@ ensemble.ts <- function(ensemble.ts,observations=NULL,window=1){
     }    
 
     ens.mean = apply(myens,2,mean)
-    CI = apply(myens,2,quantile,c(0.025,0.5,0.975))
+    CI = apply(myens,2,quantile,c(0.025,0.5,0.975),na.rm=TRUE)
     ylim = range(CI,na.rm=TRUE)
     
     ### temporary fix to values less than zero that are biologically unreasonable (e.g. GPP)
@@ -226,10 +232,17 @@ ensemble.ts <- function(ensemble.ts,observations=NULL,window=1){
     }
 
     ## show legend
-#    legend("topleft",legend=c("mean","95% CI","data"),lwd=3,col=c(1,2,3),lty=c(1,2,1))
+    legend("topleft",legend=c("mean","95% CI","data"),lwd=3,col=c(1,2,3),lty=c(1,2,1))
     ## add surrounding box to plot
     box(lwd=2.2)
   }
+  ensemble.analysis.results <- list()
+  ensemble.analysis.results$mean <- ens.mean
+  ensemble.analysis.results$CI <- CI
+  
+  save(ensemble.analysis.results,
+       file = paste(settings$outdir,
+                    "ensemble.ts.analysis.results.Rdata", sep = ""))
   
 }
 #==================================================================================================#
