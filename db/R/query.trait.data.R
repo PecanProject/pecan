@@ -39,7 +39,7 @@ fetch.stats2se <- function(connection, query){
 ##' @param ... extra arguments
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}}; \code{\link{transformstats}} performs transformation calculations
 ##' @author David LeBauer, Carl Davidson
-query.data <- function(trait, spstr, extra.columns='', con=query.base.con(settings), ...){
+query.data <- function(trait, spstr, extra.columns='sites.lat, sites.lon, ', con=query.base.con(settings), ...){
   query <- paste("select 
               traits.id, traits.citation_id, traits.site_id, traits.treatment_id,
               treatments.name, traits.date, traits.time, traits.cultivar_id, traits.specie_id,

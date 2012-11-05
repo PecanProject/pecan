@@ -25,7 +25,11 @@ model2netcdf.ED2 <- function(outdir,run.id) {
   require(hdf5)
 
 flist <- dir(outdir,paste(run.id,"-T-",sep=""))
-    
+if (length(flist)==0) {
+  print(paste("*** WARNING: No tower output for :",run.id))
+  break
+}
+  
 ## extract data info from file names?
 yr <- rep(NA,length(flist))
 for(i in 1:length(flist)){
@@ -38,8 +42,8 @@ for(i in 1:length(flist)){
 }
 
 ## set up storage
-block <- 24 # assumes hourly
-#block <- 48 # assumes half-hourly
+#block <- 24 # assumes hourly
+block <- 48 # assumes half-hourly
 
 add <- function(dat,col,row){
 
@@ -225,7 +229,7 @@ out <- add(dat$AVG_SOIL_WATER,37,row) ## SoilWater  **********
 #out <- add(sum(dat$AVG_SOIL_TEMP*dz)/-min(z),38) ## SoilTemp
 out <- add(dat$AVG_SOIL_TEMP,38,row) ## SoilTemp
 out <- add(dat$AVG_SOIL_TEMP*NA,39,row) ## SoilWet
-out <- add(dat$AVG_ALBEDT,40,row) ## Albedo
+out <- add(dat$AVG_ALBEDO,40,row) ## Albedo
 out <- add(dat$AVG_SNOWTEMP,41,row) ## SnowT
 out <- add(dat$AVG_SNOWMASS,42,row) ## SWE
 out <- add(dat$AVG_VEG_TEMP,43,row) ## VegT
@@ -320,11 +324,12 @@ for(i in 1:length(var)){
 	  put.var.ncdf(nc,var[[i]],out[[i]])  
   	}
 }
-close.ncdf(nc)
-
-
+  close.ncdf(nc)
+  closeAllConnections()
 }  ## end year loop
-
+  
+  closeAllConnections() 
+  
 }  ## end model2netcdf.ED2
 #==================================================================================================#
 

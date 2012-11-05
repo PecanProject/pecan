@@ -13,7 +13,7 @@
 ##' @name plot.variance.decomposition
 ##' @title Variance Decomposition Plots
 ##' @export
-##' @author David LeBauer
+##' @author David LeBauer, Carl Davidson
 ##' @param ... Output from any number of sensitivity analyses. Output must be of the form 
 ##'          given by sensitivity.results$variance.decomposition.output in model output
 ##' @param all.plot.inputs Optional argument allowing output from sensitivity analyses to be specified in a list
@@ -28,144 +28,65 @@
 ##' @param pch Shape of each sensitivity analysis. Equivalent to pch parameter of the plot function.
 ##' @param main Plot title. Useful for multi-pft variance decompositions.
 ##' @param fontsize list specifying the font size of the titles and axes of the graph
-plot.variance.decomposition <- function(...,
-    all.plot.inputs = list(...),
-    exclude=c(), convert.var=sqrt, var.label='Std Deviation (Mg/ha)',
-    order.plot.input = NA,
-    ticks.plot.input = NA,
-    col=c('black'),
-    pch=c(16),
-    main=NA,
-    fontsize = list(title = 18, axis = 14)) {
+##' @examples
+##' x <- list(trait.labels = c("a", "b", "c"),
+##'           coef.vars = c(a=1,b=0.5, c=0.1),
+##'           elasticities = c(a=1,b=2,c=0.5),
+##'           variances    = c(a = 20, b=30, c = 10))
+##' do.call(grid.arrange, c(plot.variance.decomposition(x), ncol = 4))
+plot.variance.decomposition <- function(plot.inputs,
+                                        fontsize = list(title = 18, axis = 14)){
+  traits       <- names(plot.inputs$variances)
+  units        <- as.character(trait.lookup(traits)$units)
+  trait.labels <- as.character(trait.lookup(traits)$figid)
+  plot.data <- data.frame(trait.labels  = ifelse(!is.na(trait.labels),
+                            trait.labels, traits),
+                          units         = ifelse(!is.na(units), units, ""),
+                          coef.vars     = plot.inputs$coef.vars * 100,
+                          elasticities  = plot.inputs$elasticities,
+                          variances     = plot.inputs$variances,
+                          points = 1:length(traits) - 0.5)
 
-  pretty.temp <- function(foo, ...){
-    if(is.data.frame(foo)){
-      return(pretty(as.vector(do.call(c, foo)), ...))
-    }
-    return(pretty(foo, ...))
-  }
-
-  if (is.na(order.plot.input)) {order.plot.input <- all.plot.inputs[[1]]}
-  if (is.na(ticks.plot.input)) {ticks.plot.input <- all.plot.inputs[[1]]}
+  plot.data <- plot.data[order(plot.data$variances,
+                               decreasing = FALSE), ]
   
-  trait.order <- names(order.plot.input$variances)[order(abs(order.plot.input$variances), decreasing = FALSE)]
-  trait.order <- trait.order[!trait.order %in% exclude]
-  
-  first.plot.data <- format.plot.input(order.plot.input, convert.var, trait.order)
-  ticks.plot.data <- format.plot.input(ticks.plot.input, convert.var)
-  all.plot.data <- lapply(all.plot.inputs, format.plot.input, convert.var, trait.order)
-
-  ## location of words and lollipops set by 'points'
-  ##    these points can be moved up or down by adjusting the offset X in 1:length(traits) - X
-  cv.xticks <<- pretty.temp(ticks.plot.data$coef.vars, 4)
-  pv.xticks <<- pretty.temp(ticks.plot.data$variances, 4)  
-  el.xticks <<- pretty.temp(ticks.plot.data$elasticities, 3)
-  el.xrange <<- range(pretty.temp(ticks.plot.data$elasticities, 3))
-  
-  ## Notes on fine-tuning plots below
-  ## axis lines and ticks drawn for each plot using geom_segment  
-  ## size of x axis tick set by xend = ...
-  ## vertical location of axis numbers set in base.plot using vjust
-  
-  base.plot <- ggplot(first.plot.data) +
+  base.plot <- ggplot(plot.data) +
     coord_flip() +
       theme_bw() +
-    opts(axis.line.y = theme_blank(),
-         axis.text.x = theme_text(size=fontsize$axis, vjust = -1),
-         axis.text.y = theme_blank(),
-         axis.title.x = theme_blank(), 
-    
-         axis.ticks = theme_blank(),
-         panel.grid.major = theme_blank(),
-         panel.grid.minor = theme_blank(),
-         panel.border = theme_blank())
-  
+        opts(axis.text.x = theme_text(size=fontsize$axis, vjust = -1),
+             axis.text.y = theme_blank(),
+             axis.title.x = theme_blank(), 
+             axis.title.y = theme_blank(),
+             panel.grid.minor = theme_blank(),
+             panel.border = theme_blank())
+
   trait.plot <- base.plot + 
     opts(title = 'Parameter',
-         legend.position="none",
-         plot.title = theme_text(hjust = 1.0, size = fontsize$title),
+         plot.title = theme_text(hjust = 0.96, size = fontsize$title),
          axis.text.x = theme_text(colour='white'),
-         axis.title.y = theme_text(angle=90, size=fontsize$title),
          axis.line.x = theme_blank()) +
-     geom_text(aes(y = 1, x = points,
-                   label=trait.labels, hjust = 1),
-               size = fontsize$axis*0.29) +
-     scale_y_continuous( breaks = c(0,0), limits = c(0,1)) + xlab(main) +
-     ##  Add Invisible Axes to resize like other plots
-     geom_segment(aes(x = c(0,0), y = c(0,0),
-                      yend = c(0, max(cv.xticks)),
-                      xend = c(length(trait.labels), 0)), colour = 'white')  + 
-     ## Add invisible ticks
-     geom_segment(aes(x = 0,
-                      y = cv.xticks,
-                      xend = -0.1,
-                      yend = cv.xticks), colour = 'white')
+           geom_text(aes(y = 1, x = points,
+                         label=trait.labels, hjust = 1),
+                     size = fontsize$axis/3) +
+                       scale_y_continuous( breaks = c(0,0), limits = c(0,1)) 
 
   cv.plot <- base.plot +
-    opts(title = 'CV (%)', 
-         legend.position='none',
-         plot.title = theme_text(size = fontsize$title)) +
-      scale_y_continuous(breaks = cv.xticks, limits = range(cv.xticks)) +
-      ##  Add Axes
-      geom_segment(aes(x = c(0,0), y = c(0,0),
-                       yend = c(0, max(cv.xticks)),
-                       xend = c(length(trait.labels), 0))) + 
-      ## Add Ticks
-      geom_segment(aes(x = 0,
-                       y = cv.xticks,
-                       xend = -0.1,
-                       yend = cv.xticks))
+    opts(title = 'CV (%)', plot.title = theme_text(size = fontsize$title)) +
+        geom_pointrange(aes(x = points, y = coef.vars, ymin = 0, ymax = coef.vars),
+                        size = 1.25) 
 
-  #if (diff(range(el.xticks)) < 4) el.xticks <- c(-1,0,1)
   el.plot <- base.plot + 
-    opts(title = 'Elasticity',
-         legend.position='none',
-         plot.title = theme_text(size = fontsize$title)) +
-      scale_y_continuous(breaks = el.xticks, limits = range(el.xrange)) +
-      ##  Add Axes
-      geom_segment(aes(x = c(0,0), y = c(0, min(el.xrange)),
-                       yend = c(0, max(el.xrange)),
-                       xend = c(length(trait.labels), 0)))  +
-      ## Add Ticks
-      geom_segment(aes(x = 0,
-                       y = el.xticks,
-                       xend = -0.1,
-                       yend = el.xticks)) 
+    opts(title = 'Elasticity', plot.title = theme_text(size = fontsize$title)) +
+        geom_pointrange(aes(x = points, y = elasticities, ymin = 0, ymax = elasticities),
+                        size = 1.25) 
 
-  pv.plot <- base.plot + 
-    opts(title = var.label,
-         legend.position='none',
+  pv.plot <- base.plot+ 
+    opts(title = 'Root Variance (Mg/ha)',
          plot.title = theme_text(size = fontsize$title)) +
-     scale_y_continuous(breaks = pv.xticks, limits = range(pv.xticks)) +
-     ##  Add Axes
-     geom_segment(aes(x = c(0,0), y = c(0,0),
-                      yend = c(0, max(pv.xticks)),
-                      xend = c(length(trait.labels), 0)))  + 
-     ## Add Ticks
-     geom_segment(aes(x = 0,
-                      y = pv.xticks,
-                      xend = -0.1,
-                      yend = pv.xticks))
-  
-  for(i in seq(all.plot.data)){
-    cv.plot <- cv.plot +  geom_pointrange(data=all.plot.data[[i]], 
-        aes_string(x = 'points', y = 'coef.vars', ymin = 0, ymax = 'coef.vars'), 
-                  colour=col[i], shape=pch[i],
-                  size = 1.25)
-    el.plot <- el.plot + geom_pointrange(data=all.plot.data[[i]], 
-        aes_string(x = 'points', y = 'elasticities', ymin = 0, ymax = 'elasticities'), 
-                  colour=col[i], shape=pch[i],
-                  size = 1.25)
-    pv.plot <- pv.plot + geom_pointrange(data=all.plot.data[[i]], 
-        aes_string(x = 'points', y = 'variances', ymin = 0, ymax = 'variances'), 
-                  colour=col[i], shape=pch[i],
-                  size = 1.25)
-  }
-  
-  return(list(trait.plot = trait.plot, 
-              cv.plot = cv.plot, 
-              el.plot = el.plot, 
-              pv.plot = pv.plot))
+             geom_pointrange(aes(x = points, sqrt(variances),
+                                 ymin = 0, ymax = sqrt(variances)), size = 1.25) 
+    
+  return(list(trait.plot = trait.plot, cv.plot = cv.plot, el.plot = el.plot, pv.plot = pv.plot))
 
 }
 ##==================================================================================================#

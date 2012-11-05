@@ -6,6 +6,13 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+# STAGE 1 - run all steps until model
+# STAGE 2 - run the model
+# STAGE 3 - run everything after the model
+#-------------------------------------------------------------------------------
+
 # ----------------------------------------------------------------------
 # Load required libraries
 # ----------------------------------------------------------------------
@@ -81,26 +88,5 @@ status.end()
 # write model specific configs
 status.start("CONFIG")
 run.write.configs(settings$model$name)
-status.end()
-
-# run model
-status.start("MODEL")
-start.model.runs(settings$model$name)
-status.end()
-
-# convert output
-# TODO need to make it such that both take same arguments
-status.start("OUTPUT")
-if (settings$model$name == "ED2") {
-	model2netcdf.ED2(settings$run$host$outdir, "ENS00001")
-} else if (settings$model$name == "SIPNET") {
-	model2netcdf.SIPNET(settings$outdir, "SAmedian")
-} else {
-	stop("Could not convert output to netcdf")
-}
-status.end()
-
-# all done
-status.start("FINISHED")
 status.end()
 

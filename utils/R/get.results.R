@@ -16,6 +16,7 @@
 ##' @author Shawn Serbin, David LeBauer, Mike Dietze
 ##' @param model name of model being used
 ##' @param settings list, read from settings file (xml) using \code{\link{read.settings}}
+##' 
 ##' @author David LeBauer, Shawn Serbin, Mike Dietze
 get.results <- function(model){  
   
@@ -50,20 +51,19 @@ get.results <- function(model){
       
       sensitivity.output[[pft.name]] <- read.sa.output(traits = traits,
                                                        quantiles = quantiles,
-                                                       outdir = settings$outdir, 
+                                                       outdir = settings$run$host$outdir, 
                                                        pft.name=pft.name,
                                                        start.year=start.year,
                                                        end.year=end.year,
                                                        variables=variables,
                                                        model=model)
       save(sensitivity.output, file = 'output.Rdata')
-      
     }
   }
   
   if('ensemble' %in% names(settings)) {
     ensemble.output <- read.ensemble.output(settings$ensemble$size,
-                                            outdir = settings$outdir, 
+                                            outdir = settings$run$host$outdir, 
                                             start.year=start.year,
                                             end.year=end.year,
                                             variables=variables,
