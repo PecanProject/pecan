@@ -17,22 +17,33 @@ start.run.c4photo <- function(run.id){
   print(paste("---- c4photo model run: ", run.id, sep=""))
   rundir <- paste(settings$outdir, run.id, sep = "")
   setwd(rundir)
-  library(EnCro)
-  require(XML)
-  config <- xmlToList(xmlParse(run.id))
+#<<<<<<< TREE
+#  library(EnCro)
+#  require(XML)
+#  config <- xmlToList(xmlParse(run.id))
 # defaul data in EnCro  
-  data(weather05)
+#  data(weather05)
 
 #  result <- do.call(c4photo, list(RH = 0.50, Tl = 25, Qp = 2000,
 #                                unlist(config$parms)))
  
-   pp<-do.call(photoParms,list(unlist(config$parms)))
-   result<-BioGro(weather05,photoControl=pp)
-   save(result,file=paste(run.id,".RData",sep=""))
-   }
+#   pp<-do.call(photoParms,list(unlist(config$parms)))
+#   result<-BioGro(weather05,photoControl=pp)
+#   save(result,file=paste(run.id,".RData",sep=""))
+#   }
 
 
 
+#=======
+
+# config <- xmlToList(xmlParse(run.id))
+
+#result <- do.call(c4photo, list(RH = 0.50, Tl = 25, Qp = 2000,
+                                unlist(config$parms)))
+#write.csv(result, paste(config.file, ".csv", sep = ""))
+
+#}
+#>>>>>>> MERGE-SOURCE
 ##' Function to start all runs of c4photo model in directory
 ##' @title Start run of c4photo model
 ##' @export
