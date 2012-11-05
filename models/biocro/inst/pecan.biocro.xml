@@ -31,12 +31,12 @@
       <sigma>0</sigma>
       <sigma>1</sigma>
     </quantiles>
-    <variable>Assim</variable>
+    <variable>Stem</variable>
     <start.year>2002</start.year>
     <end.year>2006</end.year>
   </sensitivity.analysis>
   <model>
-    <name>c4photo</name>
+    <name>biocro</name>
     <binary>/usr/local/bin/c4photo</binary>
     <id></id>
   </model>

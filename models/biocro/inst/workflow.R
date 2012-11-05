@@ -12,10 +12,10 @@ require(PEcAn.all)
 
 #---------------- Load PEcAn settings file. -------------------------------------------------------#
 # Open and read in settings file for PEcAn run.
-settings <- read.settings(system.file("pecan.c4photo.xml", package = "PEcAn.c4photo"))
+settings <- read.settings(system.file("pecan.biocro.xml", package = "PEcAn.biocro"))
 #--------------------------------------------------------------------------------------------------#
 
-model <- ifelse("model" %in% names(settings), settings$model$name, "c4photo")
+model <- ifelse("model" %in% names(settings), settings$model$name, "biocro")
 
 #---------------- Run PEcAn workflow. -------------------------------------------------------------#
 get.trait.data()        	# Query the trait database for data and priors
@@ -23,6 +23,8 @@ get.trait.data()        	# Query the trait database for data and priors
 run.meta.analysis()     	# Run the PEcAn meta.analysis
 
 run.write.configs(model)        # Calls model specific write.configs e.g. write.config.ed.R
+
+clear.scratch(settings)         # Clear any old model output in ebi-cluster scratch/$USER on worker nodes
 
 start.model.runs(model, write.to.db = FALSE)         # Start ecosystem model runs
 
