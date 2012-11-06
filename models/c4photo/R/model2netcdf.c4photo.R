@@ -17,12 +17,12 @@
 ##' @author Shawn Serbin, Michael Dietze, David LeBauer
 model2netcdf.c4photo <- function(outdir, run.id) {
   
-  require(ncdf)
+  require(ncdf4)
   
   ### Read in model output in c4photo format
-  outfile <- paste(outdir,"/",run.id,"/",run.id,".csv",sep="")
-  c4photo.output <- read.csv(outfile)
-  
+  outfile <- paste(outdir,"/",run.id,"/",run.id,".Rdata",sep="")
+  load(outfile)
+  c4photo.output <- result 
   output <- list()
   output[["Gs"]]    <- c4photo.output$Gs
   output[["Assim"]] <- c4photo.output$Assim

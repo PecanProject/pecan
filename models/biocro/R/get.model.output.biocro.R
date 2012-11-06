@@ -12,7 +12,7 @@
 #--------------------------------------------------------------------------------------------------#
 ##' Function to retrieve model output from local server
 ##'
-##' @name get.model.output.c4photo
+##' @name get.model.output.biocro
 ##' @title Retrieve model output from local server
 ##' 
 ##' @import PEcAn.utils
@@ -31,7 +31,7 @@ get.model.output.biocro <- function(){
     setwd(olddir) 
     
   } else {
-    print(paste("c4photo model specific get.model.output not implemented for\n",
+    print(paste("biocro model specific get.model.output not implemented for\n",
                 "use on remote host; generic get.model.output under development"))
   } ### End of if/else
   

@@ -1,35 +1,28 @@
 <?xml version="1.0"?>
 <pecan>
-  <pecanDir>/home/djaiswal/pecanBioCro/</pecanDir>
-  <outdir>/home/djaiswal/demo/pecan/</outdir>
+  <outdir>./out/run/</outdir>
   <pfts>
     <pft>
-      <name>c4photo.pavi</name>
-      <outdir>/home/djaiswal/demo/pavi/</outdir>
-      <constants>
-        <num>1</num>
-      </constants>
+      <name>biocro.saof</name>
+      <outdir>./out/saof/</outdir>
     </pft>
   </pfts>
   <database>
+    <!--       <userid>ebi_pecan</userid>
+	 <passwd>hu2WHh32VC</passwd>
+	 <name>ebi_production</name>-->
     <userid>ebi_analys_user</userid>
     <passwd>b742xsAu</passwd>
-<!--    <location>ebi-forecast.igb.illinois.edu</location>-->
-    <host>ebi-forecast.igb.illinois.edu</host>
     <name>ebi_analysis</name>
+    <host>ebi-forecast.igb.illinois.edu</host>
   </database>
   <meta.analysis>
     <iter>3000</iter>
     <random.effects>FALSE</random.effects>
   </meta.analysis>
-  <ensemble>
-    <size>5</size>
-  </ensemble>
   <sensitivity.analysis>
     <quantiles>
-      <sigma>-1</sigma>
       <sigma>0</sigma>
-      <sigma>1</sigma>
     </quantiles>
     <variable>Stem</variable>
     <start.year>2002</start.year>
@@ -37,17 +30,16 @@
   </sensitivity.analysis>
   <model>
     <name>biocro</name>
-    <binary>/usr/local/bin/c4photo</binary>
     <id></id>
   </model>
   <run>
-    <folder>/home/djaiswal/demo/</folder>
+    <folder>~/out/run/</folder>
     <start.date>2004-01-01 06:00:00</start.date>
     <end.date>2006-01-01 05:59:00</end.date>
     <host>
       <name>localhost</name>
-      <rundir>/home/djaiswal/demo/run/</rundir>
-      <outdir>/home/djaiswal/demo/out/</outdir>
+      <rundir>./out/run/</rundir>
+      <outdir>./out/run/</outdir>
     </host>
   </run>
 </pecan>
