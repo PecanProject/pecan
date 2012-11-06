@@ -7,48 +7,56 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------#
+##' Convert BioCro output to netCDF
 ##'
-##' @name model2netcdf.c4photo
-##' @title Function to convert c4photo model output to standard netCDF format
-##' @param outdir Location of c4photo model output
-##' @param run.id Name of c4photo model output file.
-##' 
+##' Modified from on model2netcdf.sipnet and model2netcdf.ED2 by
+##' Shawn Serbin and Mike Dietze
+##' @name model2netcdf.biocro
+##' @title Function to convert biocro model output to standard netCDF format
+##' @param outdir Location of biocro model output
+##' @param run.id Name of biocro model output file.
 ##' @export
-##' @author Shawn Serbin, Michael Dietze, David LeBauer
+##' @author David LeBauer, Deepak Jaiswal
 model2netcdf.biocro <- function(outdir, run.id) {
   
   require(ncdf4)
-  
-  ### Read in model output in c4photo format
-  outfile <- paste(outdir,"/",run.id,"/",run.id,".Rdata",sep="")
+  require(lubridate)
+  ### Read in model output in biocro format
+  outfile <- file.path(outdir, run.id, paste0(run.id, ".Rdata"))
   load(outfile)
   biocro.output <- result 
   output <- list()
 
-# Focus on Stem Biomass only for now
-#   output[["Gs"]]    <- c4photo.output$Gs
-#   output[["Assim"]] <- c4photo.output$Assim
-  output[["Stem"]]    <- c4photo.output$Stem
+  ## Focus on Stem Biomass only for now
+  output[["Stem"]]    <- biocro.output$Stem
   
   var <- list()
-  null.dim <- dim.def.ncdf("NULL", "", 1) 
-#   var[["Gs"]]    <- var.def.ncdf("Gs", "mmol m-2 s-1", null.dim, -999,
-#                                 "Stomatal Conductance")
-#   var[["Assim"]] <- var.def.ncdf("Assim", "umol m-2 s-1", null.dim, -999,
-#                                 "Net Assimilation")
-  var[["Stem"]] <- var.def.ncdf("Stem", "Mg ha-1", null.dim, -999,
-                              "Stem Biomass")
-  
-  
+  t <- ncdim_def("time", "seconds", 3600)
+
+  var[["Stem"]]    <- ncvar_def("Stem", "Mg ha-1", t, -999,
+                                "Stem Biomass")
+  ## var[["Leaf"]]    <- ncvar_def("Leaf", "Mg ha-1", t, -999,
+  ##                               "Leaf Biomass")
+  ## var[["Root"]]    <- ncvar_def("Root", "Mg ha-1", t, -999,
+  ##                               "Root Biomass")
+  ## var[["Rhizome"]] <- ncvar_def("Rhizome", "Mg ha-1", t, -999,
+  ##                              "Rhizome Biomass")
+  ## var[["LAI"]]     <- ncvar_def("LAI", "m2/m2", t, -999,
+  ##                              "Leaf Area Index")
+  ## var[["GPP"]]     <- ncvar_def("GPP", "", t, -999,
+  ##                                "Canopy Assimilation")
+  ## var[["Transpiration"]]     <- ncvar_def("Assim", "?", t, -999,
+  ##                                        "Canopy Transpiration")
   
   ##******************** Declare netCDF variables ********************#
-  nc <- create.ncdf(paste(outdir,"/",run.id,"/",run.id,".nc",sep=""),var)
+  nc.outfile <- file.path(outdir, run.id, paste0(run.id, ".nc"))
+  nc <- nc_create(filename = nc.outfile, var)
   
   ## Output netCDF data
   for(i in 1:length(var)){
-    put.var.ncdf(nc,var[[i]],output[[i]])  
+    ncatt_put(nc, var[[i]], var[[i]]$name, output[[i]])  
   }
-  close.ncdf(nc) 
+  nc_close(nc) 
 }
 
 ####################################################################################################

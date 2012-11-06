@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <pecan>
-  <outdir>./out/run/</outdir>
+  <outdir>/tmp/out/run/</outdir>
   <pfts>
     <pft>
       <name>biocro.saof</name>
-      <outdir>./out/saof/</outdir>
+      <outdir>/tmp/out/saof/</outdir>
     </pft>
   </pfts>
   <database>
@@ -33,13 +33,13 @@
     <id></id>
   </model>
   <run>
-    <folder>~/out/run/</folder>
+    <folder>/tmp/out/run/</folder>
     <start.date>2004-01-01 06:00:00</start.date>
     <end.date>2006-01-01 05:59:00</end.date>
     <host>
       <name>localhost</name>
-      <rundir>./out/run/</rundir>
-      <outdir>./out/run/</outdir>
+      <rundir>/tmp/out/run/</rundir>
+      <outdir>/tmp/out/run/</outdir>
     </host>
   </run>
 </pecan>
