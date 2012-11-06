@@ -8,24 +8,33 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-ALL="ggplot2 randtoolbox gridExtra testthat"
+# packages needed which might not be required/library
+ALL="ggplot2 randtoolbox gridExtra testthat roxygen2"
+
+# packages that are not in cran
+SKIP="time EnCro"
+
+# find all packages needed (require and library)
 for f in `find . -type d -name R`; do
   NAME=$( echo $f | sed -e 's#\./##' -e 's#/R##' )
-  LIB=$( grep 'library(.*)' $f/*.R 2>/dev/null | grep -v 'PEcAn' | grep -v '^#' | sed -e 's/.*library(\("*[A-Za-z0-9\.]*"*\).*/\1/' | sort -u )
+  LIB=$( grep -h 'library(.*)' $f/*.R 2>/dev/null | grep -v 'PEcAn' | grep -v '^#' | sed -e 's/.*library("*\([A-Za-z0-9\.]*\).*/\1/' | sort -u )
   LIB=$( echo $LIB )
 
-  REQ=$( grep 'require(.*)' $f/*.R 2>/dev/null | grep -v 'PEcAn' | grep -v '^#' | sed -e 's/.*require(\("*[A-Za-z0-9\.]*"*\).*/\1/' | sort -u )
+  REQ=$( grep -h 'require(.*)' $f/*.R 2>/dev/null | grep -v 'PEcAn' | grep -v '^#' | sed -e 's/.*require("*\([A-Za-z0-9\.]*\).*/\1/' | sort -u )
   REQ=$( echo $REQ )
 
   PACKAGE=$( echo $LIB $REQ | tr -s [:space:] \\n | sort -u )
-  PACKAGE=$( echo $PACKAGE)
-  if [ ! -z "$PACKAGE" ]; then
-    echo "packages needed for $NAME : $PACKAGE"
-  fi
+  TEMP=$( echo $PACKAGE)
+  echo "packages needed for $NAME : $TEMP"
 
+  for s in $SKIP; do
+    PACKAGE=$( echo $PACKAGE | grep -v $s )
+  done
   ALL="${ALL} ${PACKAGE}"
+  echo $ALL
 done
 
+# sort packages and create little R script
 if [ ! -z "$ALL" ]; then
   ALL=$( echo $ALL | tr -s [:space:] \\n | sort -u )
   ALL=$( echo $ALL )
