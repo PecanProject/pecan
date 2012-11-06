@@ -2,7 +2,8 @@
 \alias{remove.config.ED2}
 \title{Clear out old config and ED model run files.}
 \usage{
-  remove.config.ED2(main.outdir, settings)
+  remove.config.ED2(main.outdir = settings$outdir,
+    settings)
 }
 \value{
   nothing, removes config files as side effect

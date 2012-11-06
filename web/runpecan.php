@@ -160,26 +160,24 @@ fwrite($fh, "    <iter>3000</iter>" . PHP_EOL);
 fwrite($fh, "    <random.effects>FALSE</random.effects>" . PHP_EOL);
 fwrite($fh, "  </meta.analysis>" . PHP_EOL);
 
-if ($modeltype == "ED2") {
-	fwrite($fh, "  <ensemble>" . PHP_EOL);
-	fwrite($fh, "    <size>1</size>" . PHP_EOL);
-	fwrite($fh, "  </ensemble>" . PHP_EOL);
-} else if ($modeltype == "SIPNET") {
-        fwrite($fh, "    <sensitivity.analysis>" . PHP_EOL);
-        fwrite($fh, "      <quantiles>" . PHP_EOL);
-        fwrite($fh, "        <quantile></quantile>" . PHP_EOL);
-#        fwrite($fh, "        <sigma>-3</sigma>" . PHP_EOL);
-#        fwrite($fh, "        <sigma>-2</sigma>" . PHP_EOL);
-#        fwrite($fh, "        <sigma>-1</sigma>" . PHP_EOL);
-        fwrite($fh, "        <sigma>0</sigma>" . PHP_EOL);
-#        fwrite($fh, "        <sigma>1</sigma>" . PHP_EOL);
-#        fwrite($fh, "        <sigma>2</sigma>" . PHP_EOL);
-#        fwrite($fh, "        <sigma>3</sigma>" . PHP_EOL);
-        fwrite($fh, "      </quantiles>" . PHP_EOL);
-        fwrite($fh, "      <start.year>2002</start.year>" . PHP_EOL);
-        fwrite($fh, "      <end.year>2006</end.year>" . PHP_EOL);
-        fwrite($fh, "    </sensitivity.analysis>" . PHP_EOL);
-}
+fwrite($fh, "  <ensemble>" . PHP_EOL);
+fwrite($fh, "    <size>1</size>" . PHP_EOL);
+fwrite($fh, "  </ensemble>" . PHP_EOL);
+
+#fwrite($fh, "  <sensitivity.analysis>" . PHP_EOL);
+#fwrite($fh, "    <quantiles>" . PHP_EOL);
+#fwrite($fh, "      <quantile></quantile>" . PHP_EOL);
+#fwrite($fh, "      <sigma>-3</sigma>" . PHP_EOL);
+#fwrite($fh, "      <sigma>-2</sigma>" . PHP_EOL);
+#fwrite($fh, "      <sigma>-1</sigma>" . PHP_EOL);
+#fwrite($fh, "      <sigma>0</sigma>" . PHP_EOL);
+#fwrite($fh, "      <sigma>1</sigma>" . PHP_EOL);
+#fwrite($fh, "      <sigma>2</sigma>" . PHP_EOL);
+#fwrite($fh, "      <sigma>3</sigma>" . PHP_EOL);
+#fwrite($fh, "    </quantiles>" . PHP_EOL);
+#fwrite($fh, "    <start.year>2002</start.year>" . PHP_EOL);
+#fwrite($fh, "    <end.year>2006</end.year>" . PHP_EOL);
+#fwrite($fh, "  </sensitivity.analysis>" . PHP_EOL);
 
 fwrite($fh, "  <model>" . PHP_EOL);
 fwrite($fh, "    <name>$modeltype</name>" . PHP_EOL);
@@ -208,6 +206,7 @@ if ($modeltype == "ED2") {
 }
 fwrite($fh, "  </model>" . PHP_EOL);
 fwrite($fh, "  <run>" . PHP_EOL);
+fwrite($fh, "    <id>$workflowid</id>" . PHP_EOL);
 fwrite($fh, "    <folder>${folder}</folder>" . PHP_EOL);
 fwrite($fh, "    <site>" . PHP_EOL);
 fwrite($fh, "      <id>${siteid}</id>" . PHP_EOL);
@@ -241,17 +240,19 @@ if ($modeltype == "ED2") {
 }
 
 # copy workflow
-copy("workflow.R", "${folder}/workflow.R");
+copy("workflow_stage1.R", "${folder}/workflow_stage1.R");
+copy("workflow_stage2.R", "${folder}/workflow_stage2.R");
+copy("workflow_stage3.R", "${folder}/workflow_stage3.R");
 
 # start the actual workflow
 chdir($folder);
-pclose(popen('R_LIBS_USER="/home/kooper/R/library" R CMD BATCH workflow.R &', 'r'));
+pclose(popen('R_LIBS_USER="' . ${pecan_install} . '" R CMD BATCH workflow_stage1.R &', 'r'));
 
 #done
 if ($offline) {
-	header("Location: running.php?workflowid=$workflowid&offline=offline");
+	header("Location: running_stage1.php?workflowid=$workflowid&offline=offline");
 } else {
-	header("Location: running.php?workflowid=$workflowid");
+	header("Location: running_stage1.php?workflowid=$workflowid");
 }
 close_database($connection);
 ?>

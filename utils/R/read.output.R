@@ -34,7 +34,7 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,
     warning(paste("File conversion function model2netcdf does not exist for",model))
   }
   
-  cflux = c("GPP","NPP","NEE","TotalResp","AutoResp","HeteroResp","DOC_flux","Fire_flux") #kgC m-2 s-1
+  cflux = c("GPP","NPP","NEE","TotalResp","AutoResp","HeteroResp","DOC_flux","Fire_flux","Stem") #kgC m-2 s-1
   wflux = c("Evap","TVeg","Qs","Qsb","Rainf") #kgH20 m-2 s-1
   
   ### ----- Get run info ----- 
@@ -48,23 +48,26 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,
      file.names <- file.names[grep("\\.h5$",file.names)]
      outfiles <- list.files(path=outdir,pattern=run.id, full.names = TRUE)
      outfiles <- outfiles[grep("\\.h5$", outfiles)]
-   } else if (model == "c4photo") {
-     file.names <- dir(paste(outdir,run.id,sep="/"),
-                       pattern=run.id, full.names=TRUE)
-     outfiles <- list.files(path=paste(outdir,run.id,sep="/"),
-                            pattern="\\.csv$",full.names=TRUE)
+   } else if (model %in% c("biocro", "c4photo")) {
+     file.names <- dir(file.path(outdir, run.id),
+                       pattern = run.id, full.names = TRUE)
+     outfiles <- list.files(path = file.path(outdir, run.id),
+                            pattern = "\\.Rdata$", full.names=TRUE)
   }
   ## model-specific code to parse each file 
   if(length(file.names) > 0) {
 
     ## subset output files
     if (model=="SIPNET"){
-       ncfiles <- list.files(path=paste(outdir,run.id,sep="/"),pattern="\\.nc$",full.names=TRUE) ## previous was failing on filenames that have "nc" within them, for some reason? SPS    
+       ncfiles <- list.files(path = file.path(outdir, run.id),
+                             pattern= "\\.nc$",
+                             full.names = TRUE) 
      } else if (model=="ED2"){
-       ## ncfiles <- list.files(path=outdir,pattern="\\.nc$",full.names=TRUE)
-       ncfiles <- list.files(path=outdir,pattern=run.id,full.names=TRUE)
-       ncfiles <- ncfiles[grep("\\.nc$",ncfiles)]
-     } else if (model == "c4photo") {
+       ncfiles <- list.files(path = outdir,
+                             pattern = run.id,
+                             full.names = TRUE)
+       ncfiles <- ncfiles[grep("\\.nc$", ncfiles)]
+     } else if (model %in% c("biocro", "c4photo")) {
        ncfiles <- file.names[grepl("\\.nc", file.names)]
      }
     
@@ -81,7 +84,7 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,
         } else if (model == "ED2") {
           ncfiles <- list.files(path=outdir, pattern=run.id, full.names=TRUE)
           ncfiles <- ncfiles[grep("\\.nc$",ncfiles)]
-        } else if (model == "c4photo") {
+        } else if (model %in% c("biocro", "c4photo")) {
           file.names <- dir(paste(outdir,run.id,sep="/"),
                             pattern=run.id, full.names=TRUE)
           ncfiles <- file.names[grepl("\\.nc", file.names)]
@@ -100,7 +103,7 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,
         
         ## load files
         yrs <- first:max(first,last)
-      } else if (model == "c4photo") {
+      } else if (model %in% c("biocro", "c4photo")) {
         nc.years <- list(1)
         yrs <- 1
       }
@@ -131,8 +134,8 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,
         showConnections(all = TRUE)
       }
       names(data) <- variables
-      #print(paste("----- Mean :",sapply(data,median,na.rm=TRUE)))
-      print(paste("----- Median :",sapply(data,median,na.rm=TRUE)))
+      print(paste("----- Mean ",variables," : ",sapply(data,median,na.rm=TRUE)))
+      print(paste("----- Median ",variables,": ",sapply(data,median,na.rm=TRUE)))
       return(data)   
     } else {
       stop("no output files present")

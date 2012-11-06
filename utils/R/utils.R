@@ -128,8 +128,14 @@ listToXml <- function(item, tag){
   if(typeof(item)!='list')
     return(xmlNode(tag, item))
   xml <- xmlNode(tag)
-  for(name in names(item)){
-    xml <- append.xmlNode(xml, listToXml(item[[name]], name))
+  for(i in seq(length(item))) {
+    if (names(item[i]) == ".attrs") {
+      for(name in names(item$.attrs)) {
+        xmlAttrs(xml)[[name]] <- item$.attrs[[name]]
+      }
+    } else {
+      xml <- append.xmlNode(xml, listToXml(item[[i]], names(item[i])))
+    }
   }
   return(xml)
 }
@@ -638,7 +644,6 @@ transformstats <- function(data) {
 ##' @return sequence from 1:length(unique(x))
 ##' @export
 ##' @author David LeBauer
-#--------------------------------------------------------------------------------------------------#
 as.sequence <- function(x, na.rm = TRUE){
   x2 <- as.integer(factor(x, unique(x)))
   if(all(is.na(x2))){
@@ -649,9 +654,37 @@ as.sequence <- function(x, na.rm = TRUE){
   }
   return(x2)
 }
-#==================================================================================================#
 
+#--------------------------------------------------------------------------------------------------#
+##' Test ssh access
+##'
+##' Test to determine if access to a remote server is available.
+##' Can be used to exclude / include tests or to prevent / identify access errors
+##' @title Test Remote
+##' @param host 
+##' @return logical - TRUE if remote connection is available 
+##' @author Rob Kooper
+test.remote <- function(host){
+  return(try(system(paste("ssh", host, "/bin/true"))) == 0)
+}
 
+##' Create a temporary settings file
+##'
+##' Uses \code{\link{tempfile}} function to provide a valid temporary file (OS independent)
+##' Useful for testing functions that depend on settings file
+##' Reference: http://stackoverflow.com/a/12940705/199217
+##' @title temp.settings
+##' @param settings.txt 
+##' @return character vector written to and read from a temporary file
+##' @export
+##' @author David LeBauer
+temp.settings <- function(settings.txt){
+  temp <- tempfile()
+  on.exit(unlink(temp))
+  writeLines(settings.txt, con = temp)
+  settings <- readLines(temp)
+  return(settings)
+}
 ####################################################################################################
 ### EOF.  End of R script file.              
 ####################################################################################################

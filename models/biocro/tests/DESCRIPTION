@@ -1,0 +1,20 @@
+Package: PEcAn.BioCro
+Type: Package
+Title: PEcAn package for integration of the BioCro model
+Version: 1.2
+Date: 2012-06-03
+Author: David LeBauer, Deepak Jaiswal
+Maintainer: David LeBauer <dlebauer@illinois.edu>
+Description: This module provides functions to link BioCro to PEcAn.
+Depends:
+    PEcAn.common,
+    PEcAn.utils
+Suggests:
+    testthat
+SystemRequirements: GenericModel
+OS_type: unix
+License: FreeBSD + file LICENSE
+Copyright: Energy Biosciences Institute, Authors
+LazyLoad: yes
+LazyData: FALSE
+

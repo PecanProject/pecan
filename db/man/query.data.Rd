@@ -2,7 +2,8 @@
 \alias{query.data}
 \title{Query data and transform stats to SE by calling \code{\link{fetch.stats2se}};}
 \usage{
-  query.data(trait, spstr, extra.columns = "",
+  query.data(trait, spstr,
+    extra.columns = "sites.lat, sites.lon, ",
     con = query.base.con(settings), ...)
 }
 \arguments{

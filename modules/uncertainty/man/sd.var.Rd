@@ -16,7 +16,7 @@
 }
 \details{
   Uses the equation
-  \deqn{\sigma^4\left(\frac{2}{n-1}+\frac{\kappa}{n}\right)}
+  \sigma^4\left(\frac{2}{n-1}+\frac{\kappa}{n}\right)
 }
 \author{
   David LeBauer

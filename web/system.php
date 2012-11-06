@@ -7,12 +7,13 @@
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
  */
-$pecan_home="/home/kooper/projects/EBI/pecan/";
+$pecan_home="/home/pecan/pecan/";
 #$output_folder=sys_get_temp_dir();
-$output_folder="/home/kooper/tmp/pecan";
+$output_folder="/home/pecan/output";
+$pecan_install="/home/pecan/R/library";
 
 # should come from database
-$ed_veg="/home/kooper/projects/EBI/oge2OLD/OGE2_";
-$ed_soil="/home/kooper/projects/EBI/faoOLD/FAO_";
-$ed_inputs="/home/kooper/projects/EBI/ed_inputs/";
+$ed_veg="/home/pecan/oge2OLD/OGE2_";
+$ed_soil="/home/pecan/faoOLD/FAO_";
+$ed_inputs="/home/pecan/ed_inputs/";
 ?>

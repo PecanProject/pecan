@@ -50,12 +50,11 @@ run.meta.analysis <- function() {
       
     } ### End of for loop to extract pft names
     
-    print(" ")
+
     print("-------------------------------------------------------------------")
     print("Selected PFT(s) for meta.analysis: ")
     print(pft.names)
     print("-------------------------------------------------------------------")
-    print(" ")
     
     ### Check that PFT(s) were specified in settings.xml file.  Otherwise stop and report error.
     if(length(settings$pfts) == 0){
