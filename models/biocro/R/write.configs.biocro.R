@@ -25,7 +25,7 @@ convert.samples.biocro <- function(trait.samples){
 
   ## first rename variables
   trait.names <- colnames(trait.samples)
-  trait.names[trait.names == "Vcmax"] <- "vmax"
+
   trait.names[trait.names == "leaf_respiration_rate_m2"] <- "Rd"
   trait.names[trait.names == "cuticular_cond"] <- "b0"
   trait.names[trait.names == "stomatal_slope.BB"] <- "b1"
