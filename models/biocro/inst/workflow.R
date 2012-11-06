@@ -12,10 +12,10 @@ require(PEcAn.all)
 
 #---------------- Load PEcAn settings file. -------------------------------------------------------#
 # Open and read in settings file for PEcAn run.
-settings <- read.settings(system.file("pecan.biocro.xml", package = "PEcAn.biocro"))
+settings <- read.settings("pecan.biocro.xml")
 #--------------------------------------------------------------------------------------------------#
 
-model <- ifelse("model" %in% names(settings), settings$model$name, "biocro")
+model <- settings$model$name
 
 #---------------- Run PEcAn workflow. -------------------------------------------------------------#
 get.trait.data()        	# Query the trait database for data and priors
