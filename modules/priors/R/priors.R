@@ -1,3 +1,13 @@
+#-------------------------------------------------------------------------------
+# Copyright (c) 2012 University of Illinois, NCSA.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the 
+# University of Illinois/NCSA Open Source License
+# which accompanies this distribution, and is available at
+# http://opensource.ncsa.illinois.edu/license.html
+#-------------------------------------------------------------------------------
+
+
 #--------------------------------------------------------------------------------------------------#
 ##' Fit a distribution to data
 ##'
@@ -133,4 +143,8 @@ prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NU
   return(sum(abs(c(lcl, ucl, ct) - x)))
 }
 #==================================================================================================#
-
+                                       
+                                       
+####################################################################################################
+### EOF.  End of R script file.          		
+####################################################################################################

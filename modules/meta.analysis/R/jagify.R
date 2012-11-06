@@ -17,9 +17,10 @@
 ##' @author David LeBauer
 jagify <- function(result){
   
-  ### Rename name column from treatment table to trt_id.  Remove NAs. Assign treatments.
-  ### Finally, summarize the results by calculating summary statistics from experimental 
-  ### replicates
+  ## Rename 'name' column from 'treatment' table to trt_id.
+  ## Remove NAs. Assign treatments.
+  ## Finally, summarize the results by calculating summary statistics from experimental 
+  ## replicates
   
   length.data = length(result)
   for (i in 1:length.data){
@@ -45,6 +46,7 @@ jagify <- function(result){
   
   ### Assign a unique sequential integer to site and trt; for trt, all controls == 0 
   for (i in 1:length.data){
+    result[[i]]$greenhouse[is.na(result[[i]]$greenhouse)] <- 0
     result[[i]] <- subset(transform(result[[i]],
                                stat = as.numeric(stat),
                                n    = as.numeric(n),

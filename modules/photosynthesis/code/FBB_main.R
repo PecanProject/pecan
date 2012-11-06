@@ -124,7 +124,7 @@ tauBB	= tauBB.ic[chain]	# variance of Ball-Berry model
 ## Run MCMC
 source(mcmcFile,print.eval=TRUE)
 
-save.image(paste(saveDirDat, runName, ".RData", sep=""))
+save.image(paste(saveDirDat, runName, ".Rdata", sep=""))
 #**********************************************************************
 
 elapsedTime = proc.time()[3] - startTime 

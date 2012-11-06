@@ -1,4 +1,4 @@
-Package: PEcAn.BioCro
+Package: PEcAn.biocro
 Type: Package
 Title: PEcAn package for integration of the BioCro model
 Version: 1.2
@@ -8,13 +8,19 @@ Maintainer: David LeBauer <dlebauer@illinois.edu>
 Description: This module provides functions to link BioCro to PEcAn.
 Depends:
     PEcAn.common,
-    PEcAn.utils
+    PEcAn.utils,
+    ncdf4,
+    lubridate
 Suggests:
     testthat
-SystemRequirements: GenericModel
+SystemRequirements: BioCro
 OS_type: unix
 License: FreeBSD + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes
 LazyData: FALSE
-
+Collate:
+    'get.model.output.biocro.R'
+    'model2netcdf.biocro.R'
+    'start.runs.biocro.R'
+    'write.configs.biocro.R'

@@ -17,7 +17,7 @@
 PACKAGES="common utils db"
 PACKAGES="${PACKAGES} modules/meta.analysis modules/uncertainty"
 PACKAGES="${PACKAGES} modules/data.land modules/assim.batch modules/assim.sequential modules/priors"
-PACKAGES="${PACKAGES} models/ed models/sipnet models/c4photo"
+PACKAGES="${PACKAGES} models/ed models/sipnet models/biocro"
 PACKAGES="${PACKAGES} all"
 
 # people to notify of the build

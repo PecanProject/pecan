@@ -18,7 +18,8 @@
   adds borders to ggplot as a side effect
 }
 \description{
-  Add borders to plot
+  Add borders to .. content for \description{} (no empty
+  lines) ..
 }
 \details{
   Has ggplot2 display only specified borders, e.g.

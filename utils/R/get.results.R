@@ -16,6 +16,7 @@
 ##' @author Shawn Serbin, David LeBauer, Mike Dietze
 ##' @param model name of model being used
 ##' @param settings list, read from settings file (xml) using \code{\link{read.settings}}
+##' 
 ##' @author David LeBauer, Shawn Serbin, Mike Dietze
 get.results <- function(model){  
   
@@ -57,7 +58,6 @@ get.results <- function(model){
                                                        variables=variables,
                                                        model=model)
       save(sensitivity.output, file = 'output.Rdata')
-      
     }
   }
   

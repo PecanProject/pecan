@@ -1,0 +1,130 @@
+<?xml version="1.0"?>
+<!DOCTYPE config SYSTEM "biocro.dtd">
+<config>
+ <location>
+  <latitude>-23</latitude>
+  <longitude>-47</longitude>
+ </location>
+ <simulationPeriod>
+  <dateofplanting>01/25/2010</dateofplanting>
+ <dateofharvest>01/25/2011</dateofharvest>
+ </simulationPeriod>
+ <pft>
+  <comment></comment>
+  <canopyParms>
+   <comment></comment>
+   <Sp>1.3</Sp>
+   <SpD> 0.001 </SpD>
+   <nlayers> 40 </nlayers>
+   <kd> 0.0 </kd>
+   <chi.l> 1.0 </chi.l>
+   <heightFactor> 3.0 </heightFactor>
+  </canopyParms>
+  <comment></comment>
+  <nitroParms>
+   <iLeafN>2.0</iLeafN>
+   <kLN>0.5</kLN>
+   <Vmax.b1>0.0</Vmax.b1>
+   <alpha.b1>0.0</alpha.b1>
+   <kpLN>0.174</kpLN>
+   <lnb0>-5</lnb0>
+   <lnb1>18</lnb1>
+   <lnFun>0</lnFun>
+   <minln>80</minln>
+   <maxln>80</maxln>
+   <daymaxln>80</daymaxln>
+  </nitroParms>
+  <comment></comment>
+  <photoParms>
+   <vmax> 39 </vmax>
+   <alpha> 0.04 </alpha>
+   <kparm> 0.7</kparm>
+   <theta> 0.83 </theta>
+   <beta> 0.93 </beta>
+   <Rd>0.0 </Rd>
+   <Catm> 380 </Catm>
+   <b0> 0.03 </b0>
+   <b1> 6.1 </b1>
+ <UPPERTEMP> 42 </UPPERTEMP>
+ <LOWERTEMP> 15 </LOWERTEMP>
+  </photoParms>
+  <comment></comment>
+  <soilParms>
+   <phi1>0.01 </phi1>
+   <phi2> 0.83 </phi2>
+   <iWatCont> 0.0 </iWatCont>
+   <soilType> 6 </soilType>
+   <soilLayers> 1 </soilLayers>
+   <soilDepths> 1.0 </soilDepths>
+   <hydrDist> 0 </hydrDist>
+   <wsFun>0</wsFun>
+   <scsf> 1.0 </scsf>
+   <transResp> 5000000 </transResp>
+   <leafPotTh> -800 </leafPotTh>
+   <rfl> 1.7 </rfl>
+   <rsec> 0.2 </rsec>
+   <rsdf> 0.44 </rsdf>
+   <optiontocalculaterootdepth> 0 </optiontocalculaterootdepth>
+   <rootfrontvelocity> 0.5 </rootfrontvelocity>
+  </soilParms>
+  <comment></comment>
+  <seneParms>
+   <senLeaf> 1400 </senLeaf>
+   <senStem> 10000 </senStem>
+   <senRoot> 0 </senRoot>
+   <senRhizome> 10000 </senRhizome>
+   <leafremobilizafraction> 0.0 </leafremobilizafraction>
+   <rootturnover> 0.2 </rootturnover>
+   <leafturnover> 1.38 </leafturnover>
+   </seneParms>
+  <comment></comment>
+  <phenoParms>
+   <tp1> 562 </tp1>
+   <tp2> 1312 </tp2>
+   <tp3> 2063</tp3>
+   <tp4> 2676</tp4>
+   <tp5> 3211</tp5>
+   <tp6> 7000</tp6>
+   <kLeaf1> 0.33 </kLeaf1>
+   <kStem1> 0.37 </kStem1>
+   <kRoot1> 0.3 </kRoot1>
+   <kRhizome1> -0.008 </kRhizome1>
+   <kLeaf2> 0.14 </kLeaf2>
+   <kStem2> 0.85 </kStem2>
+   <kRoot2> 0.01 </kRoot2>
+   <kRhizome2> -0.0005 </kRhizome2>
+   <kLeaf3> 0.01</kLeaf3>
+   <kStem3> 0.63 </kStem3>
+   <kRoot3> 0.01</kRoot3>
+   <kRhizome3> 0.35 </kRhizome3>
+   <kLeaf4> 0.01 </kLeaf4>
+   <kStem4> 0.63 </kStem4>
+   <kRoot4> 0.01</kRoot4>
+   <kRhizome4>0.35 </kRhizome4>
+   <kLeaf5> 0.01 </kLeaf5>
+   <kStem5> 0.63 </kStem5>
+   <kRoot5> 0.01</kRoot5>
+   <kRhizome5> 0.35</kRhizome5>
+   <kLeaf6> 0.01 </kLeaf6>
+   <kStem6> 0.63 </kStem6>
+   <kRoot6> 0.01 </kRoot6>
+   <kRhizome6> 0.35</kRhizome6>
+  </phenoParms>
+ <SugarPhenoParms>
+   <TT0> 200 </TT0>
+   <TTseed> 800 </TTseed>
+   <Tmaturity> 6000</Tmaturity>
+   <Rd> 0.8</Rd>
+   <Alm> 0.32</Alm>
+   <Arm> 0.08</Arm>
+   <Clstem> 0.05 </Clstem>
+   <Ilstem> 0.0 </Ilstem>
+   <Cestem> 0.02 </Cestem>
+   <Iestem> 15 </Iestem>
+   <Clsuc> 0.01 </Clsuc>
+   <Ilsuc> 25 </Ilsuc>
+   <Cesuc> 0.02 </Cesuc>
+   <Iesuc> 45 </Iesuc>
+  </SugarPhenoParms>
+ </pft>
+</config>
