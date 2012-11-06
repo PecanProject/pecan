@@ -12,15 +12,15 @@
 #--------------------------------------------------------------------------------------------------#
 ##' Function to retrieve model output from local server
 ##'
-##' @name get.model.output.c4photo
+##' @name get.model.output.biocro
 ##' @title Retrieve model output from local server
 ##' 
 ##' @import PEcAn.utils
 ##' @export
 ##' @author Mike Dietze, David LeBauer
-get.model.output.c4photo <- function(){
+get.model.output.biocro <- function(){
 
-  model="c4photo"
+  model="biocro"
   
   ### Get model output on the localhost
   if(settings$run$host$name == 'localhost'){
@@ -31,7 +31,7 @@ get.model.output.c4photo <- function(){
     setwd(olddir) 
     
   } else {
-    print(paste("c4photo model specific get.model.output not implemented for\n",
+    print(paste("biocro model specific get.model.output not implemented for\n",
                 "use on remote host; generic get.model.output under development"))
   } ### End of if/else
   

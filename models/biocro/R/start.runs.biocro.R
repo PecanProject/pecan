@@ -8,13 +8,13 @@
 #-------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------#
 ##' 
-##' Start c4photo model runs on local or remote server
-##' @title Start c4photo model runs
-##' @name start.runs.c4photo
+##' Start biocro model runs on local or remote server
+##' @title Start biocro model runs
+##' @name start.runs.biocro
 ##' @export
 ##' @author Michael Dietze, David LeBauer, Shawn Serbin, Carl Davidson
-start.run.c4photo <- function(run.id){
-  print(paste("---- c4photo model run: ", run.id, sep=""))
+start.run.biocro <- function(run.id){
+  print(paste("---- biocro model run: ", run.id, sep=""))
   rundir <- paste(settings$outdir, run.id, sep = "")
   setwd(rundir)
   library(EnCro)
@@ -23,7 +23,7 @@ start.run.c4photo <- function(run.id){
 # defaul data in EnCro  
   data(weather05)
 
-#  result <- do.call(c4photo, list(RH = 0.50, Tl = 25, Qp = 2000,
+#  result <- do.call(biocro, list(RH = 0.50, Tl = 25, Qp = 2000,
 #                                unlist(config$parms)))
  
    pp<-do.call(photoParms,list(unlist(config$parms)))
@@ -33,12 +33,12 @@ start.run.c4photo <- function(run.id){
 
 
 
-##' Function to start all runs of c4photo model in directory
-##' @title Start run of c4photo model
+##' Function to start all runs of biocro model in directory
+##' @title Start run of biocro model
 ##' @export
 ##' @return nothing, starts run as side effect
 ##' @author David LeBauer
-start.runs.c4photo <- function(){
+start.runs.biocro <- function(){
   host     <-  settings$run$host
   
   ## Run model from user Rscript 
@@ -46,12 +46,12 @@ start.runs.c4photo <- function(){
     ## find directories in rundir
     isrun <- file.info(dir(settings$outdir, full.names = TRUE))$isdir
     runs <- dir(settings$outdir)[isrun]
-    ## run c4photo for each 
+    ## run biocro for each 
     for(run.id in runs){
-      start.run.c4photo(run.id)
+      start.run.biocro(run.id)
     }    
   }else{
-    warning("Execution c4photo on Remote Server NOT YET IMPLEMENTED")
+    warning("Execution biocro on Remote Server NOT YET IMPLEMENTED")
     stop() 
   }
 } ### End of function

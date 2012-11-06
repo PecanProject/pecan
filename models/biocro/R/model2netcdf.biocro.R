@@ -15,27 +15,29 @@
 ##' 
 ##' @export
 ##' @author Shawn Serbin, Michael Dietze, David LeBauer
-model2netcdf.c4photo <- function(outdir, run.id) {
+model2netcdf.biocro <- function(outdir, run.id) {
   
   require(ncdf4)
   
   ### Read in model output in c4photo format
   outfile <- paste(outdir,"/",run.id,"/",run.id,".RData",sep="")
   load(outfile)
-  c4photo.output <- result 
+  biocro.output <- result 
   output <- list()
-  output[["Gs"]]    <- c4photo.output$Gs
-  output[["Assim"]] <- c4photo.output$Assim
-  output[["Ci"]]    <- c4photo.output$Ci
+
+# Focus on Stem Biomass only for now
+#   output[["Gs"]]    <- c4photo.output$Gs
+#   output[["Assim"]] <- c4photo.output$Assim
+  output[["Stem"]]    <- c4photo.output$Stem
   
   var <- list()
   null.dim <- dim.def.ncdf("NULL", "", 1) 
-  var[["Gs"]]    <- var.def.ncdf("Gs", "mmol m-2 s-1", null.dim, -999,
-                                 "Stomatal Conductance")
-  var[["Assim"]] <- var.def.ncdf("Assim", "umol m-2 s-1", null.dim, -999,
-                                 "Net Assimilation")
-  var[["Ci"]] <- var.def.ncdf("Ci", "umol m-2 s-1", null.dim, -999,
-                              "Intracellular CO2")
+#   var[["Gs"]]    <- var.def.ncdf("Gs", "mmol m-2 s-1", null.dim, -999,
+#                                 "Stomatal Conductance")
+#   var[["Assim"]] <- var.def.ncdf("Assim", "umol m-2 s-1", null.dim, -999,
+#                                 "Net Assimilation")
+  var[["Stem"]] <- var.def.ncdf("Stem", "Mg ha-1", null.dim, -999,
+                              "Stem Biomass")
   
   
   
