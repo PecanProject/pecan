@@ -8,7 +8,7 @@ plot2AGB <- function(unit.conv=0.02){
   
   ## load data
   outfolder <- settings$outdir
-  load(paste(outfolder,"DBH_summary.RData",sep=""))
+  load(paste(outfolder,"DBH_summary.Rdata",sep=""))
   nrep = length(full.dia)
   nt = ncol(full.dia[[1]])
   

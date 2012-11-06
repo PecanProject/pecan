@@ -74,7 +74,7 @@ for(pft in settings$pfts){  ## loop over PFTs
     
     ## Save MCMC objects (Pass to MCMC diagnostics module)
     save(mc,DIC,DICg,pD,pDg,
-         file=paste(pft$outdir,paste("Allom",pft$name,component,"RData",sep="."),sep=""))
+         file=paste(pft$outdir,paste("Allom",pft$name,component,"Rdata",sep="."),sep=""))
         
     
     ## Save Posterior information (Pass to update.posterior module)
