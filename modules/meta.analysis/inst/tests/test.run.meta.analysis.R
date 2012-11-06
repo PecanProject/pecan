@@ -14,28 +14,3 @@ test_that("p.point.in.prior function is functional",{
                pnorm(-3))
 })
 
-test_that("meta-analysis is skipped if trait.data is empty",{
-    settings.text <- "
-<pecan>
-  <pfts>
-    <pft>
-      <name>ebifarm.pavi</name>
-      <outdir>/tmp/test/</outdir>
-    </pft>
-  </pfts>
-  <outdir>/tmp/test/</outdir>
-  <database>
-    <userid>ebi_analys_user</userid>
-    <passwd>b742xsAu</passwd>
-    <host>ebi-forecast</host>
-    <name>ebi_analysis</name>
-  </database>
-  <meta.analysis>
-    <iter>3000</iter>
-    <random.effects>FALSE</random.effects>
-  </meta.analysis>
-</pecan>"
-    settings <- read.settings(settings.text)
-    trait.data <- list()
-    save(trait.data, file = file.path(settings$pfts$pft$outdir, "trait.data.Rdata"))
-    run.meta.analysis()

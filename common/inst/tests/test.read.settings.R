@@ -20,7 +20,7 @@
   <database>
     <userid>ebi_analys_user</userid>
     <passwd>b742xsAu</passwd>
-    <host>localhost</host>
+    <location>localhost</location>
     <name>ebi_analysis</name>
   </database>
 </pecan>"
