@@ -22,7 +22,7 @@ model2netcdf.biocro <- function(outdir, run.id) {
   require(ncdf4)
   require(lubridate)
   ### Read in model output in biocro format
-  outfile <- file.path(outdir, run.id, paste(run.id, ".Rdata", sep = ""))
+  outfile <- file.path(outdir, run.id, paste0(run.id, ".Rdata"))
   load(outfile)
   biocro.output <- result 
   output <- list()
@@ -49,7 +49,7 @@ model2netcdf.biocro <- function(outdir, run.id) {
   ##                                        "Canopy Transpiration")
   
   ##******************** Declare netCDF variables ********************#
-  nc.outfile <- file.path(outdir, run.id, paste(run.id, ".nc", sep=""))
+  nc.outfile <- file.path(outdir, run.id, paste0(run.id, ".nc"))
   nc <- nc_create(filename = nc.outfile, var)
   
   ## Output netCDF data
