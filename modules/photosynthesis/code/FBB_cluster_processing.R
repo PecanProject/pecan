@@ -72,7 +72,7 @@ pgs.allchains  		= matrix(NA, nrow=niter*nchains, ncol=npoints)
 ## EXTRACT DATA FOR EACH CHAIN AND COMPILE INTO ONE MATRIX PER VARIABLE
 for(chain in 1:nchains){
 oldrunName = paste(species.id, leaf, chain, sep="-")
-load(paste(saveDirDat,oldrunName,".RData",sep=""))
+load(paste(saveDirDat,oldrunName,".Rdata",sep=""))
 
 Vcmax.allchains[,chain] = Vcmax.mcmc[,chain]	
 Jmax.allchains[,chain] 	= Jmax.mcmc[,chain]	
@@ -100,7 +100,7 @@ pgs.allchains[((1+niter*(chain-1)):(niter+niter*(chain-1))),] = pgs.mcmc[((1+nit
 #**********************************************************************
 runName = paste(species.id, leaf, sep="-")
 SaveLeafDir		= paste(saveDirec, runName, "/", sep="")
-saveFileDat		= paste(SaveLeafDir, runName, ".RData", sep="")
+saveFileDat		= paste(SaveLeafDir, runName, ".Rdata", sep="")
 saveFileSum		= paste(SaveLeafDir, runName, "_summary.txt", sep="")
 dir.create(SaveLeafDir,showWarnings=FALSE,recursive=TRUE)
 
