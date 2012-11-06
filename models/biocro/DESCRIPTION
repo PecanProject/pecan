@@ -22,4 +22,3 @@ Collate:
     'model2netcdf.biocro.R'
     'start.runs.biocro.R'
     'write.configs.biocro.R'
-    'write.configs.BioCro.R'

@@ -20,7 +20,7 @@ model2netcdf.c4photo <- function(outdir, run.id) {
   require(ncdf4)
   
   ### Read in model output in c4photo format
-  outfile <- paste(outdir,"/",run.id,"/",run.id,".RData",sep="")
+  outfile <- paste(outdir,"/",run.id,"/",run.id,".Rdata",sep="")
   load(outfile)
   c4photo.output <- result 
   output <- list()

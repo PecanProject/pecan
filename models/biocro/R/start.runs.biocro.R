@@ -28,7 +28,7 @@ start.run.biocro <- function(run.id){
  
    pp<-do.call(photoParms,list(unlist(config$parms)))
    result<-BioGro(weather05,photoControl=pp)
-   save(result,file=paste(run.id,".RData",sep=""))
+   save(result,file=paste(run.id,".Rdata",sep=""))
    }
 
 

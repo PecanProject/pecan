@@ -1040,8 +1040,8 @@ if(!REMOTE){
 print('after diameter analysis')
 
 #################    FINAL OUTPUT     ##################
-save.image(paste(outfolder,"DBH.RData",sep=""))
-save(yrvec,mdiam,sdiam,mgrow,sgrow,full.dia,ijindex,mplot,file=paste(outfolder,"DBH_summary.RData",sep=""))
+save.image(paste(outfolder,"DBH.Rdata",sep=""))
+save(yrvec,mdiam,sdiam,mgrow,sgrow,full.dia,ijindex,mplot,file=paste(outfolder,"DBH_summary.Rdata",sep=""))
 ## mdiam -- modeled diameter mean
 ## sdiam -- modeled diameter s.d.
 ## mgrow -- modeled growth mean
