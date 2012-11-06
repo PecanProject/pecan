@@ -72,42 +72,43 @@ run.meta.analysis <- function() {
     
       ## Load trait data for PFT
       load(paste(pft$outdir, 'trait.data.Rdata', sep=''))
-      load(paste(pft$outdir, 'prior.distns.Rdata', sep=''))
-      
-      print("-------------------------------------------------------------------")
-      print(paste("Trait data loaded for PFT: ", pft$name,sep=""))
-      print("-------------------------------------------------------------------")
-      print(" ")
-      Sys.sleep(1) 
+      if(!identical(names(trait.data), character(0))){
+        load(paste(pft$outdir, 'prior.distns.Rdata', sep=''))
+        
+        print("-------------------------------------------------------------------")
+        print(paste("Trait data loaded for PFT: ", pft$name,sep=""))
+        print("-------------------------------------------------------------------")
+        print(" ")
+        Sys.sleep(1) 
 
-      ## Jagify trait data for meta.analysis
-      jagged.data <- jagify(trait.data)
-      ma.data = jagged.data
-      for (i in 1:length(jagged.data)){
-        ma.data[[i]] <- rename.jags.columns(jagged.data[[i]])
-      }
-      trait.data <- ma.data
-      ## Check that data is consistent with prior
-      for(trait in names(trait.data)){
-        data.median    <- median(trait.data[[trait]]$Y)
-        prior          <- prior.distns[trait, ]
-        p.data         <- p.point.in.prior(point = data.median, prior = prior)
-        if(p.data <= 0.9995 & p.data >= 0.0005){
-          if (p.data <= 0.975 & p.data >= 0.025) {
-            message("OK! ", trait, " data and prior are consistent:\n")
-          } else {
-            warning("CHECK THIS: ", trait, " data and prior are inconsistent:\n")
-          }
-        } else if (p.data > 0.9995 | p.data < 0.0005) {
-          stop("NOT OK! ", trait," data and prior are probably not the same:\n")
+        ## Jagify trait data for meta.analysis
+        jagged.data <- jagify(trait.data)
+        ma.data = jagged.data
+        for (i in 1:length(jagged.data)){
+          ma.data[[i]] <- rename.jags.columns(jagged.data[[i]])
         }
-        message(trait, " P[X<x] = ", p.data)
-      }
-      
-      ## Average trait data
-      trait.average <- sapply(trait.data,
-                              function(x){mean(x$Y, na.rm = TRUE)})
-      
+        trait.data <- ma.data
+        ## Check that data is consistent with prior
+        for(trait in names(trait.data)){
+          data.median    <- median(trait.data[[trait]]$Y)
+          prior          <- prior.distns[trait, ]
+          p.data         <- p.point.in.prior(point = data.median, prior = prior)
+          if(p.data <= 0.9995 & p.data >= 0.0005){
+            if (p.data <= 0.975 & p.data >= 0.025) {
+              message("OK! ", trait, " data and prior are consistent:\n")
+            } else {
+              warning("CHECK THIS: ", trait, " data and prior are inconsistent:\n")
+            }
+          } else if (p.data > 0.9995 | p.data < 0.0005) {
+            stop("NOT OK! ", trait," data and prior are probably not the same:\n")
+          }
+          message(trait, " P[X<x] = ", p.data)
+        }
+        
+        ## Average trait data
+        trait.average <- sapply(trait.data,
+                                function(x){mean(x$Y, na.rm = TRUE)})
+        
       ## Set gamma distribution prior
       prior.variances = as.data.frame(rep(1, nrow(prior.distns)))
       row.names(prior.variances) = row.names(prior.distns)
@@ -151,14 +152,19 @@ run.meta.analysis <- function() {
                                       trait.data, pft$outdir)
       save(post.distns, file = paste(pft$outdir, 'post.distns.Rdata', sep = ''))  
 
+      } else {
+        print(writeLines(paste("no data found in database for ",
+                               pft$name,
+                               "\n all traits based on priors")))
+      }
     } ### End meta.analysis for loop
     
-    } else {
-    
+  } else {
+      
     print('PEcAn settings file does not call for a trait meta-analysis')
     
   } ### End if/else
-    
+  
 } ### End of function: run.meta.analysis.R
 ##==================================================================================================#
 

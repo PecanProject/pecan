@@ -11,12 +11,12 @@ PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
 
 
 #--------------------------------------------------------------------------------------------------#
-##' convert parameters from PEcAn database default units to c4photo defaults
+##' convert parameters from PEcAn database default units to biocro defaults
 ##' 
 ##' Performs model specific unit conversions on a a list of trait values,
 ##' such as those provided to write.config
-##' @name convert.samples.c4photo
-##' @title Convert samples for c4photo
+##' @name convert.samples.biocro
+##' @title Convert samples for biocro
 ##' @param trait.samples a matrix or dataframe of samples from the trait distribution
 ##' @export
 ##' @return matrix or dataframe with values transformed
@@ -41,9 +41,9 @@ convert.samples.biocro <- function(trait.samples){
 }
 #==================================================================================================#
 
-##' Writes a configuration files for the c4photo model
-##' @name write.config.c4photo
-##' @title Write configuration files for the c4photo model
+##' Writes a configuration files for the biocro model
+##' @name write.config.biocro
+##' @title Write configuration files for the biocro model
 ##' @param defaults named list with default model parameter values 
 ##' @param trait.values 
 ##' @param settings 
@@ -84,8 +84,8 @@ write.config.biocro <- function(defaults = NULL,
 #--------------------------------------------------------------------------------------------------#
 ##' Clear out previous config and parameter files.
 ##'
-##' @name remove.config.c4photo
-##' @title Clear out previous c4photo config and parameter files.
+##' @name remove.config.biocro
+##' @title Clear out previous biocro config and parameter files.
 ##' @param main.outdir Primary PEcAn output directory (will be depreciated)
 ##' @param settings PEcAn settings file 
 ##' @return nothing, removes config files as side effect
