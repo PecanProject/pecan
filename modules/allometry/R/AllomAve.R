@@ -18,7 +18,7 @@ library(XML)
 settings.xml <- xmlParse(settings.file)
 settings <- xmlToList(settings.xml)
 if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
-require(PECAn)
+#require(PECAn)
 
 ## libraries & database connection
 library(mvtnorm)

@@ -1,1 +1,4 @@
 export(fia.to.psscss)
+export(shp2kml)
+import(plotKML)
+import(rgdal)

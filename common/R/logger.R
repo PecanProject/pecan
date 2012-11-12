@@ -88,9 +88,12 @@ log.error <- function(msg, ...) {
 ##' }
 log.message <- function(level, msg, ...) {
 	if (log.variables[[level]]) {
-		text <- sprintf("%-5s [%s] : %s", level, Sys.time(), paste(msg, ...))
+		dump.frames(dumpto="dump.log")
+		calls <- names(dump.log)
+	    func <- sub("\\(.*\\)", "", tail(calls[-(which(substr(calls, 0, 3) == "log"))], 1))
+		text <- sprintf("%s %-5s [%s] : %s\n", Sys.time(), level, func, paste(msg, ...))
 		if (log.variables$console) {
-			print(text)
+			cat(text)
 		}
 		if (log.variables$filename != "") {
 			cat(text, file=log.variables$filename, append=TRUE)
