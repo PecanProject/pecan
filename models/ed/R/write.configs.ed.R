@@ -17,37 +17,6 @@ PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
 ## TODO: Update this script file to use the database for setting up ED2IN and config files
 ##-------------------------------------------------------------------------------------------------#
 
-
-##-------------------------------------------------------------------------------------------------#
-##' Abbreviate run id to ed limits
-##'
-##' As is the case with ED, input files must be <32 characters long.
-##' this function abbreviates run.ids for use in input files. Depreciated.
-##' @param run.id string indicating nature of the run
-##' @export
-##' @author unknown
-##-------------------------------------------------------------------------------------------------#
-abbreviate.run.id.ED <- function(run.id){
-  run.id <- gsub('tundra.', '', run.id)
-  run.id <- gsub('ebifarm.', '', run.id)
-  run.id <- gsub('deciduous', 'decid', run.id)
-  run.id <- gsub('evergreen', 'everg', run.id)
-  run.id <- gsub('_', '', run.id)
-  run.id <- gsub('root', 'rt', run.id)
-  run.id <- gsub('water', 'h2o', run.id)
-  run.id <- gsub('factor', '', run.id)
-  run.id <- gsub('turnover', 'tnvr', run.id)
-  run.id <- gsub('mortality', 'mort', run.id)
-  run.id <- gsub('conductance', 'cond', run.id)
-  run.id <- gsub('respiration', 'resp', run.id)
-  run.id <- gsub('stomatalslope', 'stmslope', run.id)
-  run.id <- gsub('nonlocaldispersal', 'nldisprs', run.id)
-  run.id <- gsub('quantumefficiency', 'quantef', run.id)
-  return(run.id)
-}
-#==================================================================================================#
-
-
 ##-------------------------------------------------------------------------------------------------#
 ##' convert parameters from PEcAn database default units to ED defaults
 ##' 
