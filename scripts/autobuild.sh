@@ -123,9 +123,15 @@ if [ "$LOCAL" == "yes" -o $? -eq 1 ]; then
     fi
     
     if [ "$PACKAGE" == "OK" ]; then
-      echo "----------------------------------------------------------------------" >> changes.log
-      echo "CHECK/INSTALL $p OK" >> changes.log
-      echo "----------------------------------------------------------------------" >> changes.log
+      if [ "$CHECK" == "yes" ]; then
+        echo "----------------------------------------------------------------------" >> changes.log
+        echo "CHECK/INSTALL $p OK" >> changes.log
+        echo "----------------------------------------------------------------------" >> changes.log
+      else
+        echo "----------------------------------------------------------------------" >> changes.log
+        echo "INSTALL $p OK" >> changes.log
+        echo "----------------------------------------------------------------------" >> changes.log
+      fi
       if [ "$LOCAL" == "yes" ]; then
         cat changes.log
         rm changes.log
