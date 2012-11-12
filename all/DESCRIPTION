@@ -19,7 +19,6 @@ Depends:
     PEcAn.DB,
     PEcAn.ED,
     PEcAn.SIPNET,
-    PEcAn.biocro,
     PEcAn.MA,
     PEcAn.utils,
     PEcAn.uncertainty,

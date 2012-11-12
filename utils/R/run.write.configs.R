@@ -17,19 +17,6 @@
 ##'
 ##' @author David LeBauer, Shawn Serbin
 run.write.configs <- function(model){
-
-  
-  ### Read in settings file if not in workspace.  Should eventually remove.
-  if(!exists("settings")){
-    settings = read.settings(pecan.settings.file)
-    print("-------------------------------------------------------------------")
-    print(paste("Using PEcAn settings file: ",pecan.settings.file, sep = ""))
-    print("-------------------------------------------------------------------")
-    print(" ")
-    print(" ")
-    exit()
-  }
-  ###
   
   ### Identify PFTs in the input settings.xml file
   num.pfts <- length(settings$pfts)
