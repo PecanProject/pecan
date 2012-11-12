@@ -2,8 +2,8 @@
 \alias{shp2kml}
 \title{Convert shapefile to KML}
 \usage{
-  shp2kml(dir, ext, kmz = TRUE, proj4 = NULL, color = NULL,
-    NameField = NULL, out.dir = NULL)
+  shp2kml(dir, ext, kmz = FALSE, proj4 = NULL,
+    color = NULL, NameField = NULL, out.dir = NULL)
 }
 \arguments{
   \item{dir}{Directory of GIS shapefiles to convert to
@@ -15,7 +15,7 @@
   kml]}
 
   \item{kmz}{TRUE/FALSE. Option to write out file as a
-  compressed kml}
+  compressed kml. Requires zip utility}
 
   \item{proj4}{OPTIONAL. Define output proj4 projection
   string.  If set, input vector will be reprojected to
@@ -24,8 +24,8 @@
   \item{color}{OPTIONAL. Fill color for output kml/kmz
   file}
 
-  \item{NameField}{OPTIONAL. Define names for layers in KML
-  file}
+  \item{NameField}{OPTIONAL. Define names for individual
+  features in KML/KMZ file}
 
   \item{out.dir}{OPTIONAL. Output directory for converted
   files}

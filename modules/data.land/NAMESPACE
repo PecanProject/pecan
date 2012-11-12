@@ -1,4 +1,5 @@
 export(fia.to.psscss)
+export(get.attributes)
 export(shp2kml)
-import(plotKML)
+import(fields)
 import(rgdal)
