@@ -117,7 +117,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples,
   if(!exists(my.write.config)){
     print(paste(my.write.config,"does not exist"))
     print(paste("please make sure that the PEcAn interface is loaded for",model))
-    exit()
+    stop()
   }
 
   
@@ -253,7 +253,7 @@ write.sa.configs <- function(defaults, quantile.samples, host, outdir, settings,
   if(!exists(my.write.config)){
     print(paste(my.write.config,"does not exist"))
     print(paste("please make sure that the PEcAn interface is loaded for",model))
-    exit()
+    stop()
   }
   
   MEDIAN <- '50'
