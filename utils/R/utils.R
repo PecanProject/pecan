@@ -108,7 +108,6 @@ vecpaste <- function(x) paste(paste("'", x, "'", sep=''), collapse=',')
 #--------------------------------------------------------------------------------------------------#
 get.run.id <- function(run.type, index, trait='', pft.name=''){
   run.id <- paste(pft.name, run.type, trait, index, sep='')
-  return(abbreviate.run.id.ED(run.id))
 }
 #==================================================================================================#
 
