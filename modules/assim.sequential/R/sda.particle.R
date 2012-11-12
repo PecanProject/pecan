@@ -96,32 +96,40 @@ pdf(paste(outfolder,"ParticleFilter.pdf",sep="/"))
   lines(time,y+1.96*sd,col=2)
   lines(time,y-1.96*sd,col=2)
   
-  plot(time,y,ylim=range(Xci),type='b',xlab="time",ylab="Mg/ha/yr")
-  lines(time,y+1.96*sd,col=2)
-  lines(time,y-1.96*sd,col=2)
+
+  plot(time,y,ylim=range(Xci),type='n',xlab="time",ylab="Mg/ha/yr")
+  ## ensemble 
+  lines(time,Xbar[1:nt],col=6)
+  lines(time,Xci[1,1:nt],col=6,lty=2,lwd=2)
+  lines(time,Xci[2,1:nt],col=6,lty=2,lwd=2)
+  legend("topright",c("ens","Data","PF"),col=c(6,1,3),lty=1,pch=c(NA,1,2),cex=1.5)  
+  ## DATA  
+  lines(time,y,col=1,lwd=3,pch=1,type='b')
+  lines(time,y+1.96*sd,col=1,lwd=2,lty=2)
+  lines(time,y-1.96*sd,col=1,lwd=2,lty=2)
+  
 if(sda.demo) lines(time,ensp[ref,],col=2,lwd=2)
 #for(i in 1:min(500,np)){
 # lines(t2,ensp[,i],lty=3,col="grey")
 #}
 #lines(t,x,type='b')
 #points(tvec,yvec,col=2,pch=19)
-lines(time,Xbar[1:nt],col=6)
-lines(time,Xci[1,1:nt],col=6,lty=2)
-lines(time,Xci[2,1:nt],col=6,lty=2)
+
 #legend("topleft",c("True","Data","ens","ensmean"),col=c(1:2,"grey",6),lty=c(1,0,3,1),pch=c(1,19,1,1),cex=1.5)
 
-lines(time,Xap,col=3,type='b',lwd=2)
+  ## assimilation
+lines(time,Xap,col=3,type='b',lwd=3,pch=2)
 lines(time,XapCI[1,],col=3,lty=2,lwd=2)
 lines(time,XapCI[2,],col=3,lty=2,lwd=2)
 #lines(t,Xap+1.96*sqrt(Pap),col=3,lty=2)
 #lines(t,Xap-1.96*sqrt(Pap),col=3,lty=2)
-legend("topleft",c("True","Data","PF","ens","ensmean"),col=c(1:3,"grey",6),lty=c(1,0,1,3,1),pch=c(1,19,1,1,0),cex=1.5)
+legend("bottomleft",c("True","Data","PF","ens","ensmean"),col=c(1:3,"grey",6),lty=c(1,0,1,3,1),pch=c(1,19,1,1,0),cex=1.5)
   
 ### Plots demonstrating how the constraint of your target variable 
 ### impacts the other model pools and fluxes
   
   ## Calculate long-term means for all ensemble extracted variables
-  unit <- rep(unit.conv,5);unit[3] = 1
+  unit <- rep(unit.conv,5);#unit[3] = 1
   ensp.conv <- list()
   for(i in 1:length(ensp.all)){
     ensp.conv[[i]] <- t(apply(ensp.all[[i]],1,tapply,Year,mean))*unit[i]
@@ -131,6 +139,7 @@ legend("topleft",c("True","Data","PF","ens","ensmean"),col=c(1:3,"grey",6),lty=c
   for(i in 2:3){
     plot(ensp.conv[[1]][,nt],ensp.conv[[i]][,nt],xlab=names(ensp.all)[1],ylab=names(ensp.all)[i])
   }
+  abline(0,1,col=2)
   
   ##unweighted distributions
   for(i in c(2,3)){
@@ -143,13 +152,23 @@ legend("topleft",c("True","Data","PF","ens","ensmean"),col=c(1:3,"grey",6),lty=c
     weighted.hist(ensp.conv[[i]][,nt],wc[,nt]/sum(wc[,nt]),main=names(ensp.all)[i])
   }
   
-  for(i in c(1,2,4,5)){
+#  for(i in c(1,2,4,5)){
+  for(i in c(2,3)){
     if(i == 5){
       weighted.hist(ensp.conv[[i]][,nt],wc[,nt]/sum(wc[,nt]),main=names(ensp.all)[i],col=2)
     }else{
       weighted.hist(ensp.conv[[i]][,nt],wc[,nt]/sum(wc[,nt]),main=names(ensp.all)[i],xlim=range(ensp.conv[[i]][,nt])*c(0.9,1.1),col=2)
     }
     hist(ensp.conv[[i]][,nt],main=names(ensp.all)[i],probability=TRUE,add=TRUE)
+  }
+
+  for(i in c(2,3)){
+    h=hist(ensp.conv[[i]][,nt],plot=FALSE)
+    w = weighted.hist(ensp.conv[[i]][,nt],wc[,nt]/sum(wc[,nt]),plot=FALSE,breaks=h$breaks)
+    dx = diff(h$breaks)[1]                    
+    plot(w$mids-dx/2,w$density/dx,main=names(ensp.all)[i],xlim=range(ensp.conv[[i]][,nt])*c(0.9,1.1),col=2,type='s',lwd=2)
+    lines(h$mids-dx/2,h$density,col=1,type='s',lwd=2)
+#    hist(ensp.conv[[i]][,nt],main=names(ensp.all)[i],probability=TRUE,add=TRUE)
   }
   
   dev.off()
