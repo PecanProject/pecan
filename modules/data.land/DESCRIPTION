@@ -31,4 +31,4 @@ Collate:
     'read.velmex.R'
     'fuse_plot_treering.R'
     'plot2AGB.R'
-    'shp2kml.R'
+    'gis.functions.R'

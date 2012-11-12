@@ -6,6 +6,8 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
+
+
 #--------------------------------------------------------------------------------------------------#
 ##'
 ##' Convert ESRI shapefile format to keyhole markup language (KML) file format
@@ -23,7 +25,6 @@
 ##' @param out.dir OPTIONAL. Output directory for converted files
 ##'
 ##' @import rgdal
-##' @import plotKML
 ##'
 ##' @export
 ##'
@@ -36,7 +37,7 @@ shp2kml <- function(dir,ext,kmz=FALSE,proj4=NULL,color=NULL,NameField=NULL,out.d
   # TODO: Allow for customization of output fill colors and line size
   # TODO: Allow for selection of taget attribute in output kml/kmz file(s)
   # TODO: Allow for setting out labels
-
+  
   if (! is.null(out.dir)){
     if (! file.exists(out.dir)) dir.create(out.dir,recursive=TRUE)
     output <- out.dir
@@ -87,10 +88,10 @@ shp2kml <- function(dir,ext,kmz=FALSE,proj4=NULL,color=NULL,NameField=NULL,out.d
       system(OGRstring) # Run KML conversion
       
       # ADD COMPRESSION STEP HERE!!!
-                            
+      
     } else {
-       #kml(shp.file,file=paste(output,"test.kml"),colour = "grey70", alpha = 0.75, width=2,
-       #    balloon=FALSE)
+      #kml(shp.file,file=paste(output,"test.kml"),colour = "grey70", alpha = 0.75, width=2,
+      #    balloon=FALSE)
       #writeOGR(shp.file["STATE"],'test2.kml',layer='statep010',NameField='STATE',driver="KML")
       
       # Using ogr2ogr external system utility.  Works much better than R packages.
@@ -108,6 +109,64 @@ shp2kml <- function(dir,ext,kmz=FALSE,proj4=NULL,color=NULL,NameField=NULL,out.d
 #==================================================================================================#
 
 
+#--------------------------------------------------------------------------------------------------#
+##'
+##' Function to extract attribute information from vector or raster data layer.
+##' 
+##' @title Retrieve attribute information from a vector or raster layer
+##' @name get.attributes
+##' 
+##' @param file vector or raster layer
+##' @param coords vector containin xmin,ymin,xmax,ymax defing the bounding box for subset
+##' 
+##' @import rgdal
+##' @import fields
+##' 
+##' @export
+##'
+##' @author Shawn P. Serbin
+##' 
+get.attributes <- function(file,coords) {
+  print("*** NOT YET IMPLEMENTED ***")
+  
+  #bbox <- readWKT(paste("POLYGON ((",))
+  
+  
+#   print(paste(file,coords,sep=""))
+#   OGRstring <- paste("ogr2ogr -progress -spat 80 20 90 30"," ",
+#   ogr2ogr -spat 80 20 90 30 asisa_rivers_cut.shp asia_rivers.shp 
+}
+#==================================================================================================#
+
+
+#--------------------------------------------------------------------------------------------------#
+##'
+##' Function to subset and clip a GIS vector or raster layer by a bounding box
+##' or clip/subset layer (e.g. shapefile/KML)
+##' 
+##' @param file input file to be subset
+##' @param coords vector with xmin,ymin,xmax,ymax defing the bounding box for subset
+##' @param sub.layer Vector layer defining the subset region
+##' @param clip clip geometries to bounding box/subset layer? TRUE/FALSE
+##' 
+##' @import rgdal
+##' @export
+##' 
+##' @author Shawn P. Serbin
+##' 
+subset.layer <- function(file,coords=NULL,sub.layer=NULL,clip=FALSE){
+  print("*** NOT YET IMPLEMENTED ***")
+  
+  # BELOW IS THE BASE CODE NEEDED TO DO THIS.  JUST NEED TO INTEGRATE INTO A FUNCTION
+#   setwd('/Users/serbin/DATA/Dropbox/Global_Ecoregion_Maps/statep010_nt00798/')
+#   OGRstring <- paste("ogr2ogr -progress -spat -90 30 -80 40"," ","statep010.cut.shp"," ","statep010.shp",
+#                      " ","-overwrite"," ","-clipsrc"," ","spat_extent",sep="")
+#   system(OGRstring)
+  
+}
+#==================================================================================================#
+
+
 ####################################################################################################
-### EOF.  End of R script file.            	
+### EOF.  End of R script file.              
 ####################################################################################################
