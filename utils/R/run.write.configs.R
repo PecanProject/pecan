@@ -27,7 +27,6 @@ run.write.configs <- function(model){
     print("-------------------------------------------------------------------")
     print(" ")
     print(" ")
-    exit()
   }
   ###
   
