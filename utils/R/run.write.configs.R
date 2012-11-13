@@ -16,20 +16,11 @@
 ##' @export
 ##'
 ##' @author David LeBauer, Shawn Serbin
-run.write.configs <- function(model){
-
-  
-  ### Read in settings file if not in workspace.  Should eventually remove.
-  if(!exists("settings")){
-    settings = read.settings(pecan.settings.file)
-    print("-------------------------------------------------------------------")
-    print(paste("Using PEcAn settings file: ",pecan.settings.file, sep = ""))
-    print("-------------------------------------------------------------------")
-    print(" ")
-    print(" ")
-    stop()
+run.write.configs <- function(model=settings$model$name){
+  if (file.exists(file.path(settings$rundir, "runs.txt"))) {
+    log.warn("Already exist a runs.txt file, this will be removed.")
+    unlink(file.path(settings$rundir, "runs.txt"))
   }
-  ###
   
   ### Identify PFTs in the input settings.xml file
   num.pfts <- length(settings$pfts)
@@ -61,14 +52,10 @@ run.write.configs <- function(model){
   env.samples <- list()
   ###
   
-  ## Define main output directory and host for SA/Ensemble run.
-  main.outdir <- settings$outdir
-  host <- settings$run$host
-  
   ## Prepare for model output.  Cleanup any old config files (if exists)
-  #remove.config(main.outdir,settings,model)
+  #remove.config(settings$rundir,settings,model)
   do.call(paste("remove.config", model, sep="."),
-          args = list(main.outdir, settings))
+          args = list(settings$rundir, settings))
 
   ## Load PFT priors and posteriors
   for (i in seq(pft.names)){
@@ -141,8 +128,7 @@ run.write.configs <- function(model){
         cnt <- 0
         assign("cnt", cnt, .GlobalEnv)
       }
-      write.sa.configs(settings$pfts, sa.samples, 
-                       host, main.outdir, settings, model = model)
+      write.sa.configs(settings$pfts, sa.samples, settings, model = model)
     }
   } ### End of SA
   
@@ -161,34 +147,45 @@ run.write.configs <- function(model){
     print(" ")
     print(" ")
     
-    write.ensemble.configs(settings$pfts, ensemble.samples, 
-                           host, main.outdir, settings, model = model)
+    write.ensemble.configs(settings$pfts, ensemble.samples, settings, model = model)
     
   }else{
     print(paste('Ensemble analysis settings are NULL'))
   } ### End of Ensemble
-  
-print("  ######################## Finish up runs ########################")
+
+  print("  ######################## Finish up runs ########################")
   ### Save output from SA/Ensemble runs
   save(ensemble.samples, trait.samples, sa.samples,
-       file = paste(main.outdir, 'samples.Rdata', sep = ''))
+       file = paste(settings$rundir, 'samples.Rdata', sep = ''))
+
+  # TODO RK : move this to run model, why copy before the model is executed.  
+  # copy all run files to remote host
+  if(settings$run$host$name == 'localhost'){
+#    rsync('-outi', from = outdir, to = settings$rundir, 
+#          pattern = paste('*', get.run.id('SA', ''), '*',sep='') )
+  } else {
+    # rsync(args, from, to, pattern).  pattern --> file patter for rsync
+    rsync('-outi', from = settings$rundir, to = paste(settings$run$host$name, ':', settings$run$host$rundir,  sep=''), 
+          pattern = paste('*', get.run.id('SA', ''), '*',sep='') )
+  }
+
   
   ### Make outdirectory, send samples to outdir
-  print(host$name)
-  if(host$name == 'localhost'){
-    print(c(host$outdir,"move to",settings$outdir))
-    if(!(host$outdir == settings$outdir)) {
-      dir.create(host$outdir,showWarnings=FALSE)
+  print(settings$run$host$name)
+  if(settings$run$host$name == 'localhost'){
+    print(c(settings$run$host$outdir,"move to",settings$outdir))
+    if(!(settings$run$host$outdir == settings$outdir)) {
+      dir.create(settings$run$host$outdir,showWarnings=FALSE)
       file.copy(from = paste(settings$outdir, 'samples.Rdata', sep = ''),
-                to   = paste(host$outdir, 'samples.Rdata', sep = '/'),
+                to   = paste(settings$run$host$outdir, 'samples.Rdata', sep = '/'),
                 overwrite = TRUE)
     }
   } else {  
-    mkdir.cmd <- paste("'if ! ls ", host$outdir, " > /dev/null ; then mkdir -p ", 
-                       host$outdir," ; fi'",sep = '')
-    system(paste("ssh", host$name, mkdir.cmd))
-    system(paste('rsync -routi ', paste(main.outdir, 'samples.Rdata', sep=''),
-                 paste(host$name, ':', host$outdir, sep = '')))
+    mkdir.cmd <- paste("'if ! ls ", settings$run$host$outdir, " > /dev/null ; then mkdir -p ", 
+                       settings$run$host$outdir," ; fi'",sep = '')
+    system(paste("ssh", settings$run$host$name, mkdir.cmd))
+    system(paste('rsync -routi ', paste(settings$rundir, 'samples.Rdata', sep=''),
+                 paste(settings$run$host$name, ':', settings$run$host$outdir, sep = '')))
   }
 
   

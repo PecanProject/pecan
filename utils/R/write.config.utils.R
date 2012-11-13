@@ -101,17 +101,13 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
 ##' @title Write ensemble configs 
 ##' @param defaults pft
 ##' @param ensemble.samples list of lists supplied by \link{get.ensemble.samples}
-##' @param host server to which config files will be sent
-##' @param outdir directory for model output (on server)
 ##' @param settings list of PEcAn settings
 ##' @param write.config a model-specific function to write config files, e.g. \link{write.config.ED}  
 ##' @param clean remove old output first?
 ##' @return nothing, writes ensemble configuration files as a side effect
 ##' @export
 ##' @author David LeBauer, Carl Davidson
-write.ensemble.configs <- function(defaults, ensemble.samples,
-                                   host, outdir, settings,
-                                   model, clean=FALSE){
+write.ensemble.configs <- function(defaults, ensemble.samples, settings, model, clean=FALSE, write.to.db = TRUE){
 
   my.write.config <- paste("write.config.",model,sep="")
   if(!exists(my.write.config)){
@@ -120,38 +116,88 @@ write.ensemble.configs <- function(defaults, ensemble.samples,
     stop()
   }
 
-  
+  # TODO RK : fix this since names have changed
   if(clean){
     ## Remove old files
-    if(host$name == 'localhost') {
-      if("ENS" %in% dir(host$rundir)){
-        file.remove(paste(host$rundir, '*',
+    if(settings$run$host$name == 'localhost') {
+      if("ENS" %in% dir(settings$run$host$rundir)){
+        file.remove(paste(settings$run$host$rundir, '*',
                           get.run.id('ENS', '', pft.name=pft.name), '*"', sep=''))
       }
     } else {
-      ssh(host$name, 'rm -f ', host$rundir, '*',
+      ssh(settings$run$host$name, 'rm -f ', settings$run$host$rundir, '*',
           get.run.id('ENS', '', pft.name=pft.name, '*'))
     }
   }
   
   if(is.null(ensemble.samples)) return(NULL)
-  for(ensemble.id in 1:settings$ensemble$size) {
-    run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, 5))
-    if(clean) unlink(paste(outdir, '*', run.id, '*', sep=''))
-    
-    do.call(my.write.config,args=list(defaults,
-                 lapply(ensemble.samples,function(x,n){x[n,]},n=ensemble.id),
-                 settings, outdir, run.id))
-  }
-  if(host$name == 'localhost'){
-    rsync('-outi', from = outdir, to = host$rundir, 
-          pattern = paste('*', get.run.id('ENS', ''), '*',sep='') )
+
+  # Open connection to database so we can store all run/ensemble information
+  if(write.to.db){
+    con <- try(query.base.con(settings), silent=TRUE)
+    if(is.character(con)){
+      con <- NULL
+    }
   } else {
-    system(paste('rsync -routi ',
-                 paste(outdir, '*', get.run.id('ENS', ''), '*', sep=''), 
-                 paste(host$name, ':', host$rundir,  sep=''), sep = ' '))
+    log.warn("Run provenance not being logged by database")
+    con <- NULL
   }
-  
+
+  # create an ensemble id
+  if (!is.null(con)) {
+    # write enseblem first
+# TODO add column to ensemble with workflow_id
+#      if ("workflow" %in% names(settings)) {
+#        query.base(paste("INSERT INTO workflows_runs values ('", settings$workflow$id, "', '", run.id, "')", sep=''), con)
+#      }
+    query.base(paste("INSERT INTO ensembles (created_at, runtype) values (NOW(), 'ensemble')", sep=''), con)
+    ensemble.id <- query.base(paste("SELECT LAST_INSERT_ID() AS ID"), con)[['ID']]
+  }
+
+  # write configuration for each run of the ensemble
+  for(counter in 1:settings$ensemble$size) {
+    if (!is.null(con)) {
+      query.base(paste("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id) values ('", settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", settings$run$end.date, "', '",settings$run$outdir , "', NOW(), ", ensemble.id, ")", sep=''), con)
+      run.id <- query.base(paste("SELECT LAST_INSERT_ID() AS ID"), con)[['ID']]
+    } else {
+      run.id <- get.run.id('ENS', left.pad.zeros(counter, 5))
+    }
+
+    # create folders (cleaning up old ones if needed)
+    if(clean) {
+      unlink(file.path(settings$rundir, run.id))
+      unlink(file.path(settings$modeloutdir, run.id))
+    }
+    dir.create(file.path(settings$rundir, run.id), recursive=TRUE)
+    dir.create(file.path(settings$modeloutdir, run.id), recursive=TRUE)
+    
+    # write run information to disk
+    cat("runtype     : ensemble\n",
+        "ensemble id : ", ensemble.id, "\n",
+        "run         : ", counter, "/", settings$ensemble$size, "\n",
+        "run id      : ", run.id, "\n",
+        "pft names   : ", as.character(lapply(settings$pfts, function(x) x[['name']])), "\n",
+        "model       : ", model, "\n",
+        "model id    : ", settings$model$id, "\n",
+        "site        : ", settings$run$site$name, "\n",
+        "site  id    : ", settings$run$site$id, "\n",
+        "met data    : ", settings$run$site$met, "\n",
+        "start date  : ", settings$run$start.date, "\n",
+        "end date    : ", settings$run$end.date, "\n",
+        "hostname    : ", settings$run$host$name, "\n",
+        "rundir      : ", file.path(settings$run$host$rundir, run.id), "\n",
+        "outdir      : ", file.path(settings$run$host$outdir, run.id), "\n",
+        file=file.path(settings$rundir, run.id, "README.txt"), sep='')
+
+    do.call(my.write.config,args=list(defaults,
+                 lapply(ensemble.samples,function(x,n){x[n,]},n=counter),
+                 settings, run.id))
+    cat(run.id, file=file.path(settings$rundir, "runs.txt"), sep="\n", append=TRUE)
+  }
+  if (!is.null(con)) {
+    dbDisconnect(con)
+  }
+	  
 } ### End of function: write.ensemble.configs
 #==================================================================================================#
 
@@ -221,8 +267,7 @@ get.sa.samples <- function(samples, quantiles){
   sa.samples <- data.frame()
   for(trait in names(samples)){
     for(quantile in quantiles){
-      sa.samples[as.character(round(quantile*100,3)), trait] <- quantile(samples[[trait]], 
-                                                                         quantile)
+      sa.samples[as.character(round(quantile*100,3)), trait] <- quantile(samples[[trait]], quantile)
     }
   }
   return(sa.samples)
@@ -237,8 +282,6 @@ get.sa.samples <- function(samples, quantiles){
 ##' @title Write sensitivity analysis configs
 ##' @param pft pft id used to query PEcAn database
 ##' @param quantile.samples 
-##' @param host server to which config files will be sent
-##' @param outdir directory for model output (on server)
 ##' @param settings list of settings
 ##' @param write.config a model-specific function to write config files, e.g. \link{write.config.ED}  
 ##' @param convert.samples a model-specific function that transforms variables from units used in database to units used by model, e.g. \link{convert.samples.ED} 
@@ -246,8 +289,7 @@ get.sa.samples <- function(samples, quantiles){
 ##' @return nothing, writes sensitivity analysis configuration files as a side effect
 ##' @export
 ##' @author David LeBauer, Carl Davidson
-write.sa.configs <- function(defaults, quantile.samples, host, outdir, settings, 
-                             model,clean=FALSE){
+write.sa.configs <- function(defaults, quantile.samples, settings, model,clean=FALSE, write.to.db = TRUE){
 
   my.write.config <- paste("write.config.",model,sep="")
   if(!exists(my.write.config)){
@@ -257,32 +299,84 @@ write.sa.configs <- function(defaults, quantile.samples, host, outdir, settings,
   }
   
   MEDIAN <- '50'
+
   ## clean out old files
   if(clean){
-    if(host$name == 'localhost'){
-      if("SA" %in% dir(host$rundir)){
-        file.remove(paste(host$rundir, '*',
+    if(settings$run$host$name == 'localhost'){
+      if("SA" %in% dir(settings$run$host$rundir)){
+        file.remove(paste(settings$run$host$rundir, '*',
                           get.run.id('SA', ''), '*', sep=''))
       }
     } else {
-      ssh(host$name, 'rm -f ', host$rundir, '*',
-          get.run.id('SA', '', '*'))
+      ssh(settings$run$host$name, 'rm -f ', settings$run$host$rundir, '*',
+        get.run.id('SA', '', '*'))
     }
   }
-  
+
+  if(write.to.db){
+    con <- try(query.base.con(settings), silent=TRUE)
+    if(is.character(con)){
+      con <- NULL
+    }
+  } else {
+    log.warn("Run provenance not being logged by database")
+    con <- NULL
+  }
+ 
   ##write median run
   median.samples <- list()
   for(i in 1:length(quantile.samples)){
     median.samples[[i]] <- quantile.samples[[i]][MEDIAN,]
   }
   names(median.samples) <- names(quantile.samples)
-  run.id <- get.run.id('SA', 'median')
+
+  if (!is.null(con)) {
+# TODO add column to ensemble with workflow_id
+#    if ("workflow" %in% names(settings)) {
+#      query.base(paste("INSERT INTO workflows_runs values ('", settings$workflow$id, "', '", run.id, "')", sep=''), con)
+#    }
+    query.base(paste("INSERT INTO ensembles (created_at, runtype) values (NOW(), 'sensitivity analysis')", sep=''), con)
+    ensemble.id <- query.base(paste("SELECT LAST_INSERT_ID() AS ID"), con)[['ID']]
+    query.base(paste("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id) values ('", settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", settings$run$end.date, "', '",settings$run$outdir , "', NOW(), ", ensemble.id, ")", sep=''), con)
+    run.id <- query.base(paste("SELECT LAST_INSERT_ID() AS ID"), con)[['ID']]
+  } else {
+    run.id <- get.run.id('SA', 'median')
+    ensemble.id <- "NA"
+  }
+
+  # create folders (cleaning up old ones if needed)
+  if(clean) {
+    unlink(file.path(settings$rundir, run.id))
+    unlink(file.path(settings$modeloutdir, run.id))
+  }
+  dir.create(file.path(settings$rundir, run.id), recursive=TRUE)
+  dir.create(file.path(settings$modeloutdir, run.id), recursive=TRUE)
+
+  # write run information to disk
+  cat("runtype     : sensitivity analysis\n",
+      "ensemble id : ", ensemble.id, "\n",
+      "quantile    : MEDIAN\n",
+      "run id      : ", run.id, "\n",
+      "pft names   : ", as.character(lapply(settings$pfts, function(x) x[['name']])), "\n",
+      "model       : ", model, "\n",
+      "model id    : ", settings$model$id, "\n",
+      "site        : ", settings$run$site$name, "\n",
+      "site  id    : ", settings$run$site$id, "\n",
+      "met data    : ", settings$run$site$met, "\n",
+      "start date  : ", settings$run$start.date, "\n",
+      "end date    : ", settings$run$end.date, "\n",
+      "hostname    : ", settings$run$host$name, "\n",
+      "rundir      : ", file.path(settings$run$host$rundir, run.id), "\n",
+      "outdir      : ", file.path(settings$run$host$outdir, run.id), "\n",
+      file=file.path(settings$rundir, run.id, "README.txt"), sep='')
+
+  # write configuration
   do.call(my.write.config, args=list(defaults = defaults,
                              trait.values = median.samples,
                              settings = settings,
-                             outdir = outdir,
                              run.id = run.id))
-  
+  cat(run.id, file=file.path(settings$rundir, "runs.txt"), sep="\n", append=TRUE)
+
   ## loop over pfts
   for(i in seq(names(quantile.samples))){
     
@@ -296,21 +390,52 @@ write.sa.configs <- function(defaults, quantile.samples, host, outdir, settings,
           quantile <- as.numeric(quantile.str)/100
           trait.samples <- median.samples
           trait.samples[[i]][trait] <- quantile.samples[[i]][quantile.str, trait]
-          run.id <- get.run.id('SA', round(quantile,3), trait=trait, 
-                               pft.name=names(trait.samples)[i])
-          if(clean){unlink(paste(outdir, '*', run.id, '*', sep=''))}
+
+          if (!is.null(con)) {
+            query.base(paste("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id) values ('", settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", settings$run$end.date, "', '",settings$run$host$outdir , "', NOW(), ", ensemble.id, ")", sep=''), con)
+            run.id <- query.base(paste("SELECT LAST_INSERT_ID() AS ID"), con)[['ID']]
+          } else { 
+            run.id <- get.run.id('SA', round(quantile,3), trait=trait, 
+                                 pft.name=names(trait.samples)[i])
+          } 
+
+          # create folders (cleaning up old ones if needed)
+          if(clean) {
+            unlink(file.path(settings$rundir, run.id))
+            unlink(file.path(settings$modeloutdir, run.id))
+          }
+          dir.create(file.path(settings$rundir, run.id), recursive=TRUE)
+          dir.create(file.path(settings$modeloutdir, run.id), recursive=TRUE)
+
+          # write run information to disk
+          cat("runtype     : sensitivity analysis\n",
+              "ensemble id : ", ensemble.id, "\n",
+              "pft name    : ", names(trait.samples)[i], "\n",
+              "quantile    : ", quantile.str, "\n",
+              "trait       : ", trait, "\n",
+              "run id      : ", run.id, "\n",
+              "pft names   : ", as.character(lapply(settings$pfts, function(x) x[['name']])), "\n",
+              "model       : ", model, "\n",
+              "model id    : ", settings$model$id, "\n",
+              "site        : ", settings$run$site$name, "\n",
+              "site  id    : ", settings$run$site$id, "\n",
+              "met data    : ", settings$run$site$met, "\n",
+              "start date  : ", settings$run$start.date, "\n",
+              "end date    : ", settings$run$end.date, "\n",
+              "hostname    : ", settings$run$host$name, "\n",
+              "rundir      : ", file.path(settings$run$host$rundir, run.id), "\n",
+              "outdir      : ", file.path(settings$run$host$outdir, run.id), "\n",
+              file=file.path(settings$rundir, run.id, "README.txt"), sep='')
+
+          # write configuration
           do.call(my.write.config,list(defaults, trait.samples, settings, outdir, run.id))
+          cat(run.id, file=file.path(settings$rundir, "runs.txt"), sep="\n", append=TRUE)
         }
       }
     }
   }
-  if(host$name == 'localhost'){
-    rsync('-outi', from = outdir, to = host$rundir, 
-          pattern = paste('*', get.run.id('SA', ''), '*',sep='') )
-  } else {
-    # rsync(args, from, to, pattern).  pattern --> file patter for rsync
-    rsync('-outi', from = outdir, to = paste(host$name, ':', host$rundir,  sep=''), 
-          pattern = paste('*', get.run.id('SA', ''), '*',sep='') )
+  if (!is.null(con)) {
+    dbDisconnect(con)
   }
 }
 #==================================================================================================#
