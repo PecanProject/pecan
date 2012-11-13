@@ -20,7 +20,7 @@
 ##' }
 ##' @author Shawn Serbin
 ##'
-start.model.runs <- function(model, write.to.db = TRUE){
+start.model.runs <- function(model=settings$model$name, write.to.db = TRUE){
 
   fcn.name <- paste("start.runs.", model, sep="")
   if(exists(fcn.name)){
@@ -31,27 +31,44 @@ start.model.runs <- function(model, write.to.db = TRUE){
     print(" ")
     if(!write.to.db){
       warning("Run provenance not being logged by database")
+      con <- NULL
     }
     if(write.to.db){
       ## write to the runs table
       con <- try(query.base.con(settings), silent=TRUE)
-      if(!is.character(con)){
-        query.base(paste("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, started_at) values ('", settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", settings$run$end.date, "', '",settings$outdir , "', NOW(), NOW())", sep=''), con)
-        id <- query.base(paste("SELECT LAST_INSERT_ID() AS ID"), con)
+      if(is.character(con)) {
+        con <- NULL
       }
     }
-    
-    ## launch actual model
-    do.call(fcn.name, args=list())
-    
-    ## job is finished
-    if(write.to.db){
-      ## TODO this should move in case of launch of on HPC
-      if(!is.character(con)){
-        query.base(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", id), con)
-        query.close(con)
+
+    # TODO RK : create ssh connection to remote host and keep it open
+
+    # TODO RK : loop through runs in runs.txt and copy folder then execute
+    for (run in readLines(con=file.path(settings$rundir, "runs.txt"))) {
+      # write start time to database
+      if (!is.null(con)) {
+        query.base(paste("UPDATE runs SET started_at =  NOW() WHERE id = ", run), con)
       }
-    }  
+
+      # start the actual model run
+      do.call(fcn.name, args=list(run))
+
+      # write finished time to database
+      # TODO how do we deal with a qsub, do we know it is a qsub?
+      if (!is.null(con)) {
+        query.base(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", run), con)
+      }
+    }
+
+    # TODO RK: check to see if all runs are done
+
+    # TODO RK : close connection to remote site
+
+    ## job is finished
+    if (!is.null(con)) {
+      query.close(con)
+    }
+
   } else {
     warning(paste(fcn.name, "does not exist"))
     warning(paste("This function is required, please make sure the model module is loaded for",model))
