@@ -1,12 +1,12 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
-#--------------------------------------------------------------------------------------------------#
+##-------------------------------------------------------------------------------
+## Copyright (c) 2012 University of Illinois, NCSA.
+## All rights reserved. This program and the accompanying materials
+## are made available under the terms of the 
+## University of Illinois/NCSA Open Source License
+## which accompanies this distribution, and is available at
+## http://opensource.ncsa.illinois.edu/license.html
+##-------------------------------------------------------------------------------
+##--------------------------------------------------------------------------------------------------#
 ##'
 ##' Start selected ecosystem model runs within PEcAn workflow
 ##' 
@@ -43,7 +43,7 @@ start.model.runs <- function(model, write.to.db = TRUE){
     
     ## launch actual model
     do.call(fcn.name, args=list())
-	
+    
     ## job is finished
     if(write.to.db){
       ## TODO this should move in case of launch of on HPC
@@ -58,7 +58,7 @@ start.model.runs <- function(model, write.to.db = TRUE){
     stop()
   }
 } ### End of function
-#==================================================================================================#
+##==================================================================================================#
 
 
 ####################################################################################################
