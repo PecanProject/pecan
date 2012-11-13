@@ -25,7 +25,7 @@ require("dbinfo.php");
 $connection=open_database();
 
 // get run information
-$query = "SELECT site_id, model_id, model_type, hostname, folder FROM workflows WHERE workflows.id=$workflowid";
+$query = "SELECT site_id, model_id, model_type, hostname, folder FROM workflows, models WHERE workflows.id=$workflowid and model_id=models.id";
 $result = mysql_query($query);
 if (!$result) {
 	die('Invalid query: ' . mysql_error());

@@ -25,7 +25,7 @@ require("dbinfo.php");
 $connection=open_database();
 
 // get run information
-$query = "SELECT site_id, model_id, model_type, hostname, folder FROM workflows WHERE workflows.id=$workflowid";
+$query = "SELECT site_id, model_id, model_type, hostname, folder FROM workflows, models WHERE workflows.id=$workflowid and model_id=models.id";
 $result = mysql_query($query);
 if (!$result) {
 	die('Invalid query: ' . mysql_error());
@@ -42,17 +42,24 @@ if ($status === FALSE) {
 // check the global status
 switch(checkStatus("CONFIG")) {
 	case 0:
-		$nextenabled="disabled=\"disabled\"";
-				header( "refresh:5" );
+		$nextenabled="disabled=\"disabled\"";header( "refresh:5" );
 		break;		
 	case 1:
 		$nextenabled="disabled=\"disabled\"";
-				chdir($folder);
-		pclose(popen('R_LIBS_USER="' . ${pecan_install} . '" R CMD BATCH workflow_stage2.R &', 'r'));
-		if ($offline) {
-			header( "Location: running_stage2.php?workflowid=$workflowid&offline=offline");
+		if ($workflow['model_type'] == 'BIOCRO' && $workflow['advanced_edit']) {
+			if ($offline) {
+				header( "Location: sugarcane/index.php?workflowid=$workflowid&offline=offline");
+			} else {
+				header( "Location: sugarcane/index.php?workflowid=$workflowid");
+			}
 		} else {
-			header( "Location: running_stage2.php?workflowid=$workflowid");
+			chdir($folder);
+			pclose(popen('R_LIBS_USER="' . ${pecan_install} . '" R CMD BATCH workflow_stage2.R &', 'r'));
+			if ($offline) {
+				header( "Location: running_stage2.php?workflowid=$workflowid&offline=offline");
+			} else {
+				header( "Location: running_stage2.php?workflowid=$workflowid");
+			}			
 		}
 		break;
 	case 2:
