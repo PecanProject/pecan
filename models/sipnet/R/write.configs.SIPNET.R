@@ -14,18 +14,11 @@
 ##' @export
 ##' @author Michael Dietze
 #--------------------------------------------------------------------------------------------------#
-write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id,inputs=NULL,IC=NULL){
-
-  my.outdir = paste(outdir,"/",run.id,"/",sep="") 
-  #dir.create(my.outdir)
-  if (! file.exists(my.outdir)) dir.create(my.outdir)
-
+write.config.SIPNET <- function(defaults, trait.values, settings, run.id,inputs=NULL,IC=NULL){
   ### WRITE sipnet.in
   template.in <- system.file("sipnet.in", package="PEcAn.SIPNET")
   config.text <- readLines(con=template.in, n=-1)
-  config.text <- gsub('@FILENAME@', paste(my.outdir,run.id,sep=""), config.text)
-  config.file.name <- paste(run.id,"/sipnet.in", sep='')
-  writeLines(config.text, con = paste(outdir,"/", config.file.name, sep=''))
+  writeLines(config.text, con = file.path(settings$rundir, run.id, "sipnet.in"))
     
   ### Display info to the console.
   print(run.id)
@@ -37,12 +30,12 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
       template.clim <- inputs$met
     }
   }
-  system(paste("cp ",template.clim," ",my.outdir,run.id,".clim",sep=""))
+  system(paste("cp ",template.clim," ", file.path(settings$rundir, run.id, "sipnet.clim"),sep=""))
   ### **** WE SHOULD SET THIS UP AS A LINK, RATHER THAN AS A COPY ****
   
   ### WRITE *.param-spatial
   template.paramSpatial <- system.file("template.param-spatial",package="PEcAn.SIPNET")
-  system(paste("cp ",template.paramSpatial," ",my.outdir,run.id,".param-spatial",sep=""))
+  system(paste("cp ",template.paramSpatial," ",file.path(settings$rundir, run.id, "sipnet.param-spatial"),sep=""))
   
   ### WRITE *.param
   template.param <- system.file("template.param",package="PEcAn.SIPNET")
@@ -277,7 +270,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, outdir, run.id
     param[which(param[,1] == 'leafGrowth'),2] = pft.traits[which(pft.names == 'leafGrowth')]
   }
 
-  write.table(param,paste(my.outdir,"/",run.id,".param",sep=""),row.names=FALSE,col.names=FALSE,quote=FALSE)
+  write.table(param,file.path(settings$rundir, run.id,"sipnet.param"),row.names=FALSE,col.names=FALSE,quote=FALSE)
   
   return()
 

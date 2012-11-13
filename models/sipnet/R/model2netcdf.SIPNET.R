@@ -11,18 +11,14 @@
 ##' @name model2netcdf.SIPNET
 ##' @title Function to convert SIPNET model output to standard netCDF format
 ##' @param outdir Location of SIPNET model output
-##' @param run.id Name of SIPNET model output file.
 ##' 
 ##' @export
 ##' @author Shawn Serbin, Michael Dietze
-model2netcdf.SIPNET <- function(outdir,run.id) {
-  
+model2netcdf.SIPNET <- function(outdir) {
   require(ncdf)
   
   ### Read in model output in SIPNET format
-  sipnet.output <- read.table(file.path(outdir, run.id,
-                                        paste(run.id, ".out", sep="")),
-                              header=T, skip=1, sep='')
+  sipnet.output <- read.table(file.path(outdir, "sipnet.out"), header=T, skip=1, sep='')
   sipnet.output.dims <- dim(sipnet.output)
   ### Determine number of years and output timestep
   num.years <- length(unique(sipnet.output$year))
@@ -98,7 +94,7 @@ model2netcdf.SIPNET <- function(outdir,run.id) {
     var[[16]]  <- var.def.ncdf("SWE","kg/m2",t,-999,"Snow Water Equivalent")              # SWE
     
     #******************** Declar netCDF variables ********************#
-    nc <- create.ncdf(paste(outdir,"/",run.id,"/",run.id,".",y,".nc",sep=""),var)
+    nc <- create.ncdf(file.path(outdir, paste(y,"nc", sep=".")), var)
     
     ### Output netCDF data
     for(i in 1:length(var)){
