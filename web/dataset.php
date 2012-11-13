@@ -47,8 +47,12 @@ switch ($type) {
 		
 		if (substr($name, -4) === ".xml") {
 			$mime = "text/xml";
+		} else if (substr($name, -4) === ".txt") {
+			$mime = "text/plain";					
 		} else if (substr($name, -4) === ".log") {
 			$mime = "text/plain";					
+		} else if (substr($name, -4) === ".pdf") {
+			$mime = "application/pdf";					
 		} else {
 			$mime = "application/octet-stream";
 			header('Content-Disposition: attachment; filename='.basename($name));			
@@ -64,7 +68,7 @@ switch ($type) {
 			die("Need var.");
 		}
 		list($datafile,$var)=explode("@", $_REQUEST['var']);
-                $datafile.=$year . ".nc";
+        $datafile.=$year . ".nc";
 		$width=600;
 		if (isset($_REQUEST['width']) && ($_REQUEST['width'] > 600)) {
 			$width=$_REQUEST['width'];
