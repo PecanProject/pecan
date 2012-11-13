@@ -10,7 +10,7 @@
 
 #--------------------------------------------------------------------------------------------------#
 ##'
-##' Convert ESRI shapefile format to keyhole markup language (KML) file format
+##' Convert ESRI shapefile (*.shp) to keyhole markup language (KML) file format
 ##' 
 ##' @title Convert shapefile to KML
 ##' 
@@ -27,7 +27,15 @@
 ##' @import rgdal
 ##'
 ##' @export
-##'
+##' 
+##' @examples
+##' \dontrun{
+##' dir <- Sys.glob(file.path(R.home(), "library", "PEcAn.data.land","data"))
+##' out.dir <- path.expand("~/temp")
+##' shp2kml(dir,'.shp',kmz=FALSE,NameField="STATE",out.dir=out.dir)
+##' system(paste("rm -r ",out.dir))
+##'}
+##' 
 ##' @author Shawn P. Serbin
 ##'
 shp2kml <- function(dir,ext,kmz=FALSE,proj4=NULL,color=NULL,NameField=NULL,out.dir=NULL){
@@ -124,17 +132,21 @@ shp2kml <- function(dir,ext,kmz=FALSE,proj4=NULL,color=NULL,NameField=NULL,out.d
 ##' 
 ##' @export
 ##'
+##' @examples
+##' \dontrun{
+##' file <- Sys.glob(file.path(R.home(), "library", "PEcAn.data.land","data","*.kml"))
+##' out <- get.attributes(file=file,coords=c(-95,42,-84,47))
+##' print(out)
+##' }
+##'
 ##' @author Shawn P. Serbin
 ##' 
 get.attributes <- function(file,coords) {
-  print("*** NOT YET IMPLEMENTED ***")
+  # ogr tools do not seem to function properly in R.  Need to figure out a work around
+  # reading in kml files drops important fields inside the layers.
   
-  #bbox <- readWKT(paste("POLYGON ((",))
-  
-  
-#   print(paste(file,coords,sep=""))
-#   OGRstring <- paste("ogr2ogr -progress -spat 80 20 90 30"," ",
-#   ogr2ogr -spat 80 20 90 30 asisa_rivers_cut.shp asia_rivers.shp 
+  #print("NOT IMPLEMENTED YET")
+  #subset.layer(file,coords)
 }
 #==================================================================================================#
 
@@ -148,21 +160,72 @@ get.attributes <- function(file,coords) {
 ##' @param coords vector with xmin,ymin,xmax,ymax defing the bounding box for subset
 ##' @param sub.layer Vector layer defining the subset region
 ##' @param clip clip geometries to bounding box/subset layer? TRUE/FALSE
+##' @param out.dir output directory for subset layer. Defaults to location of
+##' input file.  Can also set to "pwd"
+##' @param out.name filename for subset layer.  Defaults to original filename with the suffix
+##' *.sub
 ##' 
 ##' @import rgdal
 ##' @export
 ##' 
+##' @examples
+##' \dontrun{
+##' # Test dataset
+##' file <- Sys.glob(file.path(R.home(), "library", "PEcAn.data.land","data","*.shp"))
+##' out.dir <- path.expand("~/temp")
+##' # with clipping enabled
+##' subset.layer(file=file,coords=c(-95,42,-84,47),clip=TRUE,out.dir=out.dir)
+##' # without clipping enables
+##' subset.layer(file=file,coords=c(-95,42,-84,47),out.dir=out.dir)
+##' system(paste("rm -r",out.dir,sep=""))
+##' }
+##' 
+##' @export
+##' 
 ##' @author Shawn P. Serbin
 ##' 
-subset.layer <- function(file,coords=NULL,sub.layer=NULL,clip=FALSE){
-  print("*** NOT YET IMPLEMENTED ***")
+subset.layer <- function(file,coords=NULL,sub.layer=NULL,clip=FALSE,out.dir=NULL,
+                         out.name=NULL){
   
-  # BELOW IS THE BASE CODE NEEDED TO DO THIS.  JUST NEED TO INTEGRATE INTO A FUNCTION
-#   setwd('/Users/serbin/DATA/Dropbox/Global_Ecoregion_Maps/statep010_nt00798/')
-#   OGRstring <- paste("ogr2ogr -progress -spat -90 30 -80 40"," ","statep010.cut.shp"," ","statep010.shp",
-#                      " ","-overwrite"," ","-clipsrc"," ","spat_extent",sep="")
-#   system(OGRstring)
+  # Setup output directory for subset layer
+  if (is.null(out.dir)){
+    out.dir <- dirname(file)
+  } else if (out.dir=="pwd"){
+    out.dir <- getwd()
+  } else {
+    out.dir <- out.dir
+  }
+  if (! file.exists(out.dir)) dir.create(out.dir,recursive=TRUE)
   
+  # Setup output file name for subset layer
+  if (is.null(out.name)){
+    out.name <- paste(unlist(strsplit(basename(file),'\\.'))[1],".sub.",
+                      unlist(strsplit(basename(file),'\\.'))[2],sep="")
+  } else {
+    out.name <- out.name
+  }
+  
+  print(paste("Subsetting layer: ",out.name,sep=""))
+  output <- file.path(out.dir,out.name,fsep = .Platform$file.sep)
+  
+  if (unlist(strsplit(basename(file),'\\.'))[2]=="kml"){
+    format <- "-f KML"
+  } else {
+    format <- paste("-f ","'ESRI Shapefile'",sep="")
+  }
+  
+  if (clip){
+    OGRstring <- paste("ogr2ogr -spat"," ",coords[1]," ",coords[2]," ",coords[3]," ",
+                       coords[4]," ",format," ",output," ",file," ",
+                       "-clipsrc"," ","spat_extent",sep="")
+  } else {
+    OGRstring <- paste("ogr2ogr -spat"," ",coords[1]," ",coords[2]," ",coords[3]," ",
+                       coords[4]," ",format," ",output," ",file,sep="")
+  }
+
+  # Run subset command
+  system(OGRstring)
+
 }
 #==================================================================================================#
 
