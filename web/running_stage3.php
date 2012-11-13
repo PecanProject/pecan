@@ -54,7 +54,6 @@ switch(checkStatus("FINISHED")) {
 		} else {
 			header( "Location: finished.php?workflowid=$workflowid");
 		}
-		mysql_query("UPDATE workflows SET finished_at=NOW() WHERE id=${workflowid} AND finished_at IS NULL");
 		break;
 }
 

@@ -48,18 +48,12 @@ options(error=quote({
 # run workflow
 # ----------------------------------------------------------------------
 # convert output
-# TODO need to make it such that both take same arguments
 status.start("OUTPUT")
-if (settings$model$name == "ED2") {
-	model2netcdf.ED2(settings$run$host$outdir, "ENS00001")
-} else if (settings$model$name == "SIPNET") {
-	model2netcdf.SIPNET(settings$outdir, "SAmedian")
-} else {
-	stop("Could not convert output to netcdf")
-}
+read.outputs()
 status.end()
 
 # all done
 status.start("FINISHED")
+query.base(paste("UPDATE workflows SET finished_at=NOW() WHERE id=", settings$workflow$id, "AND finished_at IS NULL"))
 status.end()
 
