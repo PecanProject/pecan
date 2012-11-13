@@ -12,21 +12,20 @@
 ##' @name model2netcdf.ED2
 ##' @title Code to convert ED2's -T- HDF5 output into netCDF format
 ##'
-##' @param outdir Location of SIPNET model output
-##' @param run.id Name of SIPNET model output file.
+##' @param outdir Location of ED model output
 ##' @export
 ##'
 ##' @author Michael Dietze
 ## modified M. Dietze 07/08/12
-model2netcdf.ED2 <- function(outdir,run.id) {
+model2netcdf.ED2 <- function(outdir) {
   
   ## Load library requirements for function
   require(ncdf)
   require(hdf5)
 
-  flist <- dir(outdir,paste(run.id,"-T-",sep=""))
+  flist <- dir(outdir,"analysis-T-")
   if (length(flist) == 0) {
-    print(paste("*** WARNING: No tower output for :",run.id))
+    print(paste("*** WARNING: No tower output for :",outdir))
     break
   }
   
@@ -96,7 +95,7 @@ model2netcdf.ED2 <- function(outdir,run.id) {
     ## if(haveTime) prevTime <- progressBar()
     row <- 1
     for(i in ysel){
-      dat <- hdf5load(paste(outdir, flist[i], sep="/"), load=FALSE)
+      dat <- hdf5load(file.path(outdir, flist[i]), load=FALSE)
       
       ## out <- add(dat$TOTAL_AGB,1,row) ## AbvGrndWood
       out <- add(dat$AVG_BDEAD*0.7,1,row) ## AbvGrndWood
@@ -330,8 +329,7 @@ model2netcdf.ED2 <- function(outdir,run.id) {
 
 
     ## write ALMA
-    nc <- create.ncdf(paste(outdir, paste(run.id, yrs[y], "nc", sep="."),
-                            sep=""), var)
+    nc <- create.ncdf(file.path(outdir, paste(yrs[y], "nc", sep=".")), var)
     for(i in 1:length(var)){
       ## TODO see bug #1174
       if (i != 37 && i != 38 && i != 39) {
