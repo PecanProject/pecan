@@ -160,6 +160,10 @@ function createOption($file) {
 		} else if (endsWith(url, ".txt") || endsWith(url, ".R") || endsWith(url, ".pavi") || 
 			       endsWith(url, ".log") || endsWith(url, ".Rout") || endsWith(url, ".out")) {
 			jQuery.get(url, {}, setOuput);
+		} else if (endsWith(url, ".pdf")) {
+			$("#output").html("<object data=\"" + url + "\" type=\"application/pdf\" width=\"100%\" height=\"99%\" >" +
+							  "alt : <a href=\"" + url + "\">Click here to download the PDF document</a>" +
+							  "</object>");
 		} else if (url.indexOf("c.ENS") != -1) {
 			jQuery.get(url, {}, setOuput);
 		} else if (url.indexOf("ED2IN.template") != -1) {
@@ -172,6 +176,10 @@ function createOption($file) {
 	function setOuput(data) {
 		data = data.replace(/&/g, "&amp;").replace(/</g,"&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;");
 		$("#output").html("<pre>" + data + "</pre>");
+	}
+
+	function showPDF(data) {
+
 	}
 
 	function endsWith(haystack, needle) {
