@@ -48,15 +48,6 @@ if (!$result) {
 }
 $model = mysql_fetch_assoc($result);
 
-// split based on model info
-if (preg_match('/^ed/', strtolower($model["model_name"]))) {
-	$model['type'] = "ED2";
-} else if (preg_match('/^sipnet/', strtolower($model["model_name"]))) {
-	$model['type'] = "SIPNET";
-} else {
-	die("Unknown model type {$model['model_name']}");
-}	
-
 ?>
 <!DOCTYPE html>
 <html>
@@ -88,7 +79,7 @@ if (preg_match('/^ed/', strtolower($model["model_name"]))) {
 		}
 
 <?php
-if ($model["type"] == "ED2") {
+if ($model["model_type"] == "ED2") {
 ?>
 		// check dates
 		var start = checkDate($("#start").val(), "Start");
@@ -119,7 +110,7 @@ if ($model["type"] == "ED2") {
 			return;
 		}
 <?php
-} else if ($model["type"] == "SIPNET") {
+} else if ($model["model_type"] == "SIPNET") {
 ?>
 		// check Climate
 		if ($("#climate").val() == null) {
@@ -211,7 +202,7 @@ if ($model["type"] == "ED2") {
 <?php } ?>
 			<input type="hidden" name="siteid" value="<?=$siteid?>" />
 			<input type="hidden" name="modelid" value="<?=$modelid?>" />
-			<input type="hidden" name="modeltype" value="<?=$model["type"]?>" />
+			<input type="hidden" name="modeltype" value="<?=$model["model_type"]?>" />
 			<input type="hidden" name="hostname" value="<?=$hostname?>" />
 			<h1>Selected Site</h1>
 			<p>Set parameters for the run.</p>
@@ -220,9 +211,9 @@ if ($model["type"] == "ED2") {
 			<select id="pft" name="pft[]" multiple size=5 onChange="validate();">
 <?php 
 // show list of PFTs
-if ($model["type"] == "ED2") {
+if ($model["model_type"] == "ED2") {
 	$result = mysql_query("SELECT * FROM pfts WHERE name NOT LIKE 'sipnet%' ORDER BY name;");
-} else if ($model["type"] == "SIPNET") {
+} else if ($model["model_type"] == "SIPNET") {
 	$result = mysql_query("SELECT * FROM pfts WHERE name LIKE 'sipnet%' ORDER BY name;");
 } else  {
 	$result = mysql_query("SELECT * FROM pfts ORDER BY name");
@@ -239,15 +230,15 @@ while ($row = @mysql_fetch_assoc($result)){
 			<div class="spacer"></div>
 			
 <?php
-if ($model["type"] == "ED2") {
+if ($model["model_type"] == "ED2") {
 ?>
-                        <label>Start Date</label>
-                        <input type="text" name="start" id="start" value="2006/01/01" onChange="validate();"/>
-                        <div class="spacer"></div>
+            <label>Start Date</label>
+            <input type="text" name="start" id="start" value="2006/01/01" onChange="validate();"/>
+            <div class="spacer"></div>
 
-                        <label>End Date</label>
-                        <input type="text" name="end" id="end" value="2006/12/31" onChange="validate();"/>
-                        <div class="spacer"></div>
+            <label>End Date</label>
+            <input type="text" name="end" id="end" value="2006/12/31" onChange="validate();"/>
+            <div class="spacer"></div>
 
 			<label>MET Data file</label>
 			<select id="met" name="met" onChange="validate();">
@@ -286,7 +277,7 @@ if ($model["type"] == "ED2") {
             <div class="spacer"></div>
 
 <?php
-} else if ($model["type"] == "SIPNET") {
+} else if ($model["model_type"] == "SIPNET") {
         // setup default part of query
         $query="SELECT dbfiles.file_id, name, start_date, end_date FROM inputs, dbfiles, machines WHERE inputs.site_id=$siteid AND inputs.file_id=dbfiles.file_id AND machines.hostname='${_REQUEST['hostname']}' AND dbfiles.machine_id=machines.id";
 ?>
@@ -295,7 +286,7 @@ if ($model["type"] == "ED2") {
                         <select id="climate" name="climate" onChange="validate();">
 <?php
         // get met data
-        $result = mysql_query($query . " AND dbfiles.format_id=26");
+        $result = mysql_query($query . " AND inputs.format_id=24");
         if (!$result) {
                 die('Invalid query: ' . mysql_error());
         }
@@ -306,6 +297,20 @@ if ($model["type"] == "ED2") {
 ?>
                         </select>
                         <div class="spacer"></div>
+<?php
+} else if ($model["model_type"] == "BIOCRO") {
+?>
+            <label>Start Date</label>
+            <input type="text" name="start" id="start" value="2006/01/01" onChange="validate();"/>
+            <div class="spacer"></div>
+
+            <label>End Date</label>
+            <input type="text" name="end" id="end" value="2006/12/31" onChange="validate();"/>
+            <div class="spacer"></div>
+
+			<label>Advanced edit</label>
+			<input id="advanced_edit" name="advanced_edit" type="checkbox" />	
+            <div class="spacer"></div>
 <?php
 }
 ?>			
