@@ -86,7 +86,7 @@ xmlMergeNodes <- function(node1, node2) {
 check.settings <- function(settings) {
   if (!is.null(settings$nocheck)) {
     log.info("Not doing sanity checks of pecan.xml")
-    return;
+    return(0)
   }
 
   # check database information
@@ -129,6 +129,23 @@ check.settings <- function(settings) {
     stop("No PFTS specified.")
   }
 }
+
+listToXml <- function(item, tag){
+  if(typeof(item)!='list')
+    return(xmlNode(tag, item))
+  xml <- xmlNode(tag)
+  for(i in seq(length(item))) {
+    if (names(item[i]) == ".attrs") {
+      for(name in names(item$.attrs)) {
+        xmlAttrs(xml)[[name]] <- item$.attrs[[name]]
+      }
+    } else {
+      xml <- append.xmlNode(xml, listToXml(item[[i]], names(item[i])))
+    }
+  }
+  return(xml)
+}
+
 ##--------------------------------------------------------------------------------------------------#
 ## EXTERNAL FUNCTIONS
 ##--------------------------------------------------------------------------------------------------#
@@ -207,7 +224,7 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
   }
   
   ## convert the xml to a list for ease and return
-  settings <- xmlToList(xml)
+  settings <<- xmlToList(xml)
 
   ## do a sanity check
   check.settings(settings)
@@ -225,7 +242,7 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
   }
   
   ## create the model configuration folder
-  if(settings$run$host$name == "localhost") {
+  if(!is.null(settings$run$host$name) && (settings$run$host$name == "localhost")) {
     if (is.null(settings$run$host$rundir)) {
       if (is.null(settings$rundir)) {
         settings$rundir <- file.path(settings$outdir, "run")
