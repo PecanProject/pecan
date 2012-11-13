@@ -3,6 +3,41 @@ require_once("inc/model/functions.php");
 require_once("config/file_locations.php");
 require_once("config/graph_variables.php");
 
+// START PEcAn additions
+
+// runid
+if (!isset($_REQUEST['workflowid'])) {
+  die("Need a workflowid.");
+}
+$workflowid=$_REQUEST['workflowid'];
+if (!isset($_REQUEST['workflowid'])) {
+  die("Need a workflowid.");
+}
+$workflowid=$_REQUEST['workflowid'];
+
+// database parameters
+require("../dbinfo.php");
+$connection=open_database();
+
+// get run information
+$query = "SELECT folder FROM workflows WHERE workflows.id=$workflowid";
+$result = mysql_query($query);
+if (!$result) {
+    die('Invalid query: ' . mysql_error());
+}
+$workflow = mysql_fetch_assoc($result);
+print_r($workflow);
+
+// set the datafile to be saved
+$new_xml_file=$workflow['folder'] . "/data_modified.xml";
+
+// load default values
+get_default($workflow['folder'] . "/data.xml");
+
+close_database($connection);
+
+// END PEcAn additions
+
 if(isset($_POST["command"]) and strpos($_POST["command"],"create_xml")!==False){
     error_reporting(0);
     $xml_string=generate_xml($_POST,$xml_structure_file);
@@ -17,6 +52,11 @@ if(isset($_POST["command"]) and strpos($_POST["command"],"create_xml")!==False){
     echo "successful";
     exit();
 }else if(isset($_POST["command"]) and $_POST["command"]=="run"){
+    // TODO check if file is modified and mark in database
+
+    // TODO save new configuration to run folder
+
+    // TODO 
     $result=shell_exec("sh ".$sh_file);
 
     if(strpos($result, "done")!==False){
