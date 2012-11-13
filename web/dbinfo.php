@@ -7,10 +7,8 @@
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
  */
-$db_hostname="localhost";
-$db_username="bety";
-$db_password="bety";
-$db_database="bety";
+
+require("system.php");
 
 function open_database() {
 	global $db_hostname;

@@ -7,12 +7,24 @@
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
  */
-$pecan_home="/home/pecan/pecan/";
-#$output_folder=sys_get_temp_dir();
-$output_folder="/home/pecan/output";
+
+# Information to connect to the database
+$db_hostname="localhost";
+$db_username="bety";
+$db_password="bety";
+$db_database="bety";
+
+# Folder where PEcAn is installed
 $pecan_install="/home/pecan/R/library";
 
-# should come from database
+# Location where PEcAn is installed, not really needed anymore
+$pecan_home="/home/pecan/pecan/";
+
+# Folder where the runs are stored
+#$output_folder=sys_get_temp_dir();
+$output_folder="/home/pecan/output";
+
+# ED specific inputs, should come from database
 $ed_veg="/home/pecan/oge2OLD/OGE2_";
 $ed_soil="/home/pecan/faoOLD/FAO_";
 $ed_inputs="/home/pecan/ed_inputs/";
