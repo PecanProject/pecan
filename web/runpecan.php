@@ -58,21 +58,33 @@ if ($modeltype == "ED2") {
 		die("Need a psscss.");
 	}
 	$psscss=$_REQUEST['psscss'];
+	$advanced_edit=false;
 } else if ($modeltype == "SIPNET") {
-        if (!isset($_REQUEST['climate'])) {
-                die("Need a climate.");
-        }
-        $climid=$_REQUEST['climate'];
-        
-        $query="SELECT file_path, start_date, end_date FROM inputs, dbfiles, machines WHERE inputs.site_id=${siteid} AND inputs.file_id=${climid} AND dbfiles.file_id=${climid} AND machines.hostname='${hostname}' AND dbfiles.machine_id=machines.id;";
-        $result = mysql_query($query);
-        if (!$result) {
-          die('Invalid query: ' . mysql_error());
-        }
-        $row = mysql_fetch_assoc($result);
-        $startdate=$row['start_date'];
-        $enddate=$row['end_date'];
-        $climate=$row['file_path'];
+    if (!isset($_REQUEST['climate'])) {
+        die("Need a climate.");
+    }
+    $climid=$_REQUEST['climate'];
+    
+    $query="SELECT file_path, start_date, end_date FROM inputs, dbfiles, machines WHERE inputs.site_id=${siteid} AND inputs.file_id=${climid} AND dbfiles.file_id=${climid} AND machines.hostname='${hostname}' AND dbfiles.machine_id=machines.id;";
+    $result = mysql_query($query);
+    if (!$result) {
+      die('Invalid query: ' . mysql_error());
+    }
+    $row = mysql_fetch_assoc($result);
+    $startdate=$row['start_date'];
+    $enddate=$row['end_date'];
+    $climate=$row['file_path'];
+	$advanced_edit=false;
+} else if ($modeltype == "BIOCRO") {
+	if (!isset($_REQUEST['start'])) {
+		die("Need a start date.");
+	}
+	$startdate=$_REQUEST['start'];
+	if (!isset($_REQUEST['end'])) {
+		die("Need a end date.");
+	}
+	$enddate=$_REQUEST['end'];
+    $advanced_edit=(isset($_REQUEST['advanced_edit']) && ($_REQUEST['advanced_edit'] == 'on'));
 }
 
 // get site information
@@ -95,7 +107,7 @@ $binary = $pieces[1];
 
 // create the workflow execution
 $params=mysql_real_escape_string(str_replace("\n", "", var_export($_REQUEST, true)));
-if (mysql_query("INSERT INTO workflows (site_id, model_type, model_id, hostname, start_date, end_date, params, started_at, created_at) values ('${siteid}', '${modeltype}', '${modelid}', '${hostname}', '${startdate}', '${enddate}', '${params}', NOW(), NOW())") === FALSE) {
+if (mysql_query("INSERT INTO workflows (site_id, model_id, hostname, start_date, end_date, params, advanced_edit, started_at, created_at) values ('${siteid}', '${modelid}', '${hostname}', '${startdate}', '${enddate}', '${params}', '${advanced_edit}', NOW(), NOW())") === FALSE) {
 	die('Can\'t insert workflow : ' . mysql_error());
 }
 $workflowid=mysql_insert_id();
