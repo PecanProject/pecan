@@ -124,13 +124,13 @@ convert.samples.ED <- function(trait.samples){
 ##' @param pft 
 ##' @param trait.samples vector of samples for a given trait
 ##' @param settings list of settings from pecan settings file
-##' @param outdir directory for config files to be written to
 ##' @param run.id id of run
 ##' @return configuration file and ED2IN namelist for given run
 ##' @export
 ##' @author David LeBauer, Shawn Serbin, Carl Davidson
 ##-------------------------------------------------------------------------------------------------#
-write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
+write.config.ED2 <- function(defaults, trait.values, settings, run.id){
+  # TODO RK : need to write launcher script here if remote host
 
   ## Get ED2 specific model settings and put into output config xml file
   xml <- listToXml(settings$model$config.header, 'config')
@@ -192,13 +192,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
     }
   }
   
-  xml.file.name <- paste('c.',run.id,sep='')  
-  if(nchar(xml.file.name) >= 512)  ##was 128.  Changed in ED to 512
-    stop(paste('The file name, "',xml.file.name,
-               '" is too long and will cause your ED run to crash ',
-               'if allowed to continue. '))
-  saveXML(xml, file = paste(outdir, xml.file.name, sep=''), 
-          indent=TRUE, prefix = PREFIX_XML)
+  saveXML(xml, file = file.path(settings$rundir, run.id, "config.xml"), indent=TRUE, prefix = PREFIX_XML)
   
   startdate <- as.Date(settings$run$start.date)
   enddate <- as.Date(settings$run$end.date)
@@ -252,7 +246,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
   ##----------------------------------------------------------------------
   ed2in.text <- gsub('@OUTDIR@', settings$run$host$outdir, ed2in.text)
   ed2in.text <- gsub('@ENSNAME@', run.id, ed2in.text)
-  ed2in.text <- gsub('@CONFIGFILE@', xml.file.name, ed2in.text)
+  ed2in.text <- gsub('@CONFIGFILE@', "config.xml", ed2in.text)
   
   ## Generate a numbered suffix for scratch output folder.  Useful for cleanup.  TEMP CODE. NEED TO UPDATE.
   ## cnt = counter(cnt) # generate sequential scratch output directory names 
@@ -263,12 +257,14 @@ write.config.ED2 <- function(defaults, trait.values, settings, outdir, run.id){
   ed2in.text <- gsub('@SCRATCH@', paste('/scratch/', scratch, sep=''), ed2in.text)
   ##
   
-  ed2in.text <- gsub('@OUTFILE@', paste('out', run.id, sep=''), ed2in.text)
-  ed2in.text <- gsub('@HISTFILE@', paste('hist', run.id, sep=''), ed2in.text)
+#  ed2in.text <- gsub('@OUTFILE@', file.path(settings$run$host$outdir, run.id, "analysis"), ed2in.text)
+#  ed2in.text <- gsub('@OUTFILE@', file.path(settings$run$host$outdir, run.id, "analysis"), ed2in.text)
+
+  ed2in.text <- gsub('@FFILOUT@', file.path(settings$run$host$outdir, run.id, "analysis"), ed2in.text)
+  ed2in.text <- gsub('@SFILOUT@', file.path(settings$run$host$outdir, run.id, "history"), ed2in.text)
   
   ##----------------------------------------------------------------------
-  ed2in.file.name <- paste('ED2INc.',run.id, sep='')
-  writeLines(ed2in.text, con = paste(outdir, ed2in.file.name, sep=''))
+  writeLines(ed2in.text, con = file.path(settings$rundir, run.id, "ED2IN"))
   
   ## Display info to the console.
   print(run.id)
@@ -289,8 +285,8 @@ write.run.ED <- function(settings){
   run.script.template = system.file("run.template.ED", package="PEcAn.ED")
   run.text <- scan(file = run.script.template, 
                    what="character",sep='@', quote=NULL, quiet=TRUE)
-  run.text  <- gsub('TMP', paste("/scratch/",scratch,sep=""), run.text)
-  run.text  <- gsub('BINARY', settings$model$binary, run.text)
+  run.text <- gsub('TMP', paste("/scratch/",scratch,sep=""), run.text)
+  run.text <- gsub('BINARY', settings$model$binary, run.text)
   run.text <- gsub('OUTDIR', settings$run$host$outdir, run.text)
   runfile <- paste(settings$outdir, 'run', sep='')
   writeLines(run.text, con = runfile)
