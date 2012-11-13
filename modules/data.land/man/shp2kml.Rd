@@ -31,8 +31,16 @@
   files}
 }
 \description{
-  Convert ESRI shapefile format to keyhole markup language
+  Convert ESRI shapefile (*.shp) to keyhole markup language
   (KML) file format
+}
+\examples{
+\dontrun{
+dir <- Sys.glob(file.path(R.home(), "library", "PEcAn.data.land","data"))
+out.dir <- path.expand("~/temp")
+shp2kml(dir,'.shp',kmz=FALSE,NameField="STATE",out.dir=out.dir)
+system(paste("rm -r ",out.dir))
+}
 }
 \author{
   Shawn P. Serbin
