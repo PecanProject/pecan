@@ -80,7 +80,6 @@ foreach (explode("\n", file_get_contents("${folder}/run/runs.txt")) as $runid) {
 	}
 	for($year=$start; $year<=$end; $year++) {
 		$file="${runid}/${year}.nc";
-	print_r("${folder}/out/${file}");
 		if (file_exists("${folder}/out/${file}")) {
         	$outputs .= createOption("$file");
 	        $vararr = array_merge($vararr, explode("\n", shell_exec("ncdump -x ${folder}/out/${file} | grep '<variable' | sed 's/.*name=\"\\([^\"]*\\)\".*/\\1/' | sort -u | awk '{print \"<option value=\\\"${runid}/@\" $1 \"\\\">\" $1 \"</option>\" }'")));
