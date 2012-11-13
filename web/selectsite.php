@@ -102,7 +102,8 @@ while ($row = @mysql_fetch_assoc($result)){
 		validate();
 
         // get all sites
-        var url="sites.php?host=" + $('#hostname')[0].value + "&model=" + $('#modelid option:selected').html()
+        console.log($('#modelid option:selected'))
+        var url="sites.php?host=" + $('#hostname')[0].value + "&model=" + $('#modelid option:selected')[0].value
         jQuery.get(url, {}, function(data) {
         	jQuery(data).find("marker").each(function() {
 				var marker = jQuery(this);

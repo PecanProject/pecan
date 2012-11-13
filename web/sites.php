@@ -15,21 +15,24 @@ $dom = new DOMDocument("1.0");
 $node = $dom->createElement("markers");
 $parnode = $dom->appendChild($node); 
 
+if (isset($_REQUEST['model']) && ($_REQUEST['model'] != "")) {
+	$result = mysql_query("SELECT * FROM models WHERE id='" . $_REQUEST['model'] . "'");
+	$model = mysql_fetch_assoc($result);
+	$modeltype = $model["model_type"];
+	mysql_free_result($result);
+}
+
 $query = "SELECT sites.* FROM sites";
 if (isset($_REQUEST['host']) && ($_REQUEST['host'] != "")) {
 	$query  = "SELECT DISTINCT sites.* FROM sites, inputs, dbfiles, machines WHERE dbfiles.file_id = inputs.file_id AND inputs.site_id=sites.id";
 	$query .= " AND machines.hostname='{$_REQUEST['host']}' AND dbfiles.machine_id=machines.id";
 
-	if (isset($_REQUEST['model']) && ($_REQUEST['model'] != "")) {
-		$model = strtolower($_REQUEST['model']);
-		if (preg_match('/^ed/', $model)) {
-			$query .= " AND dbfiles.format_id=12";
-		} else if (preg_match('/^sipnet/', $model)) {
-			$query .= " AND dbfiles.format_id=26";
-		}
+	if ($modeltype == "ED2") {
+		$query .= " AND inputs.format_id=12";
+	} else if ($modeltype == "SIPNET") {
+		$query .= " AND inputs.format_id=24";
 	}
 }
-
 
 // Select all the rows in the markers table
 $result = mysql_query($query);
