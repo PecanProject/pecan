@@ -12,7 +12,7 @@ require(PEcAn.all)
 
 #---------------- Load PEcAn settings file. -------------------------------------------------------#
 # Open and read in settings file for PEcAn run.
-settings <- read.settings(system.file("pecan.biocro.xml", package = "PEcAn.BioCro"))
+settings <<- read.settings("pecan.biocro.xml")
 #--------------------------------------------------------------------------------------------------#
 
 model <- settings$model$name
@@ -23,8 +23,6 @@ get.trait.data()        	# Query the trait database for data and priors
 run.meta.analysis()     	# Run the PEcAn meta.analysis
 
 run.write.configs(model)        # Calls model specific write.configs e.g. write.config.ed.R
-
-clear.scratch(settings)         # Clear any old model output in ebi-cluster scratch/$USER on worker nodes
 
 start.model.runs(model, write.to.db = FALSE)         # Start ecosystem model runs
 
