@@ -212,11 +212,9 @@ if ($model["model_type"] == "ED2") {
 <?php 
 // show list of PFTs
 if ($model["model_type"] == "ED2") {
-	$result = mysql_query("SELECT * FROM pfts WHERE name NOT LIKE 'sipnet%' ORDER BY name;");
-} else if ($model["model_type"] == "SIPNET") {
-	$result = mysql_query("SELECT * FROM pfts WHERE name LIKE 'sipnet%' ORDER BY name;");
+	$result = mysql_query("SELECT * FROM pfts WHERE name NOT LIKE 'sipnet%' AND name NOT LIKE 'biocro%' ORDER BY name;");
 } else  {
-	$result = mysql_query("SELECT * FROM pfts ORDER BY name");
+	$result = mysql_query("SELECT * FROM pfts WHERE name LIKE '" . strtolower($model["model_type"]) . "%' ORDER BY name");
 }
 if (!$result) {
 	die('Invalid query: ' . mysql_error());
