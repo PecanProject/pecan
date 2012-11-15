@@ -7,7 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
+PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "biocro.dtd">\n'
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -63,13 +63,16 @@ write.config.biocro <- function(defaults = NULL,
 
   trait.values  <- convert.samples.biocro(trait.values[[1]])
   trait.names   <- names(trait.values)
-  parms.xml <- xmlNode("parms")
-  append.xmlNode(parms.xml, settings$pfts$pft$constants)
-  for(trait in trait.names) {
-    parms.xml <- append.xmlNode(parms.xml, xmlNode(trait, trait.values[trait]))
-  }
 
-  config.xml <- append.xmlNode(xmlNode('traits'), parms.xml)
+  parms <- settings$pfts$pft$constants  
+  for(trait in trait.names) {
+    if(trait %in% c("vmax", "alpha", "kparm", "theta", "beta", "Rd", "Catm", "b0", "b1", "ws")){
+      parms$phenoParms[[trait]] <- trait.values[[trait]]
+    }
+  }
+  
+  traits.xml <- listToXml(parms, "traits")
+
   run.outdir    <- paste(outdir,"/",run.id,"/",sep="")
   xml.file.name <- run.id
   if (!file.exists(run.outdir)) dir.create(run.outdir)
