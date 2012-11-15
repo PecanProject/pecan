@@ -38,21 +38,46 @@ start.run.biocro <- function(run.id){
 ##' @export
 ##' @return nothing, starts run as side effect
 ##' @author David LeBauer
-start.runs.biocro <- function(){
-  host     <-  settings$run$host
-  
-  ## Run model from user Rscript 
-  if(host$name == 'localhost') {
-    ## find directories in rundir
-    isrun <- file.info(dir(settings$outdir, full.names = TRUE))$isdir
-    runs <- dir(settings$outdir)[isrun]
-    ## run biocro for each 
-    for(run.id in runs){
-      start.run.biocro(run.id)
-    }    
-  }else{
-    warning("Execution biocro on Remote Server NOT YET IMPLEMENTED")
-    stop() 
+start.runs.biocro <- function(runid){
+  if (settings$run$host$name == "localhost") {
+    print(paste("---- biocro model run: ", runid, sep=""))
+
+    cwd = getwd()
+    setwd(file.path(settings$run$host$rundir, as.character(runid)))
+
+    # defaul data in EnCro  
+    data(weather05)
+
+    # run model
+    require(EnCro)
+    require(XML)
+    config <- xmlToList(xmlParse("data.xml"))
+    pp<-do.call(photoParms,list(unlist(config$parms)))
+    result<-BioGro(weather05,photoControl=pp)
+
+    # save results
+    save(result, file.path(settings$run$host$outdir, runid, "result.RData"))
+    file.copy(file.path(settings$run$host$rundir, runid, "README.txt"), file.path(settings$run$host$outdir, runid, "README.txt"))
+
+    setwd(cwd)
+
+  } else {  
+    # ORIGINAL CODE
+    host     <-  settings$run$host
+    
+    ## Run model from user Rscript 
+    if(host$name == 'localhost') {
+      ## find directories in rundir
+      isrun <- file.info(dir(settings$outdir, full.names = TRUE))$isdir
+      runs <- dir(settings$outdir)[isrun]
+      ## run biocro for each 
+      for(run.id in runs){
+        start.run.biocro(run.id)
+      }    
+    }else{
+      warning("Execution biocro on Remote Server NOT YET IMPLEMENTED")
+      stop() 
+    }
   }
 } ### End of function
 #==================================================================================================#
