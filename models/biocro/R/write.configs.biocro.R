@@ -64,6 +64,7 @@ write.config.biocro <- function(defaults = NULL,
   trait.values  <- convert.samples.biocro(trait.values[[1]])
   trait.names   <- names(trait.values)
   parms.xml <- xmlNode("parms")
+  append.xmlNode(parms.xml, settings$pfts$pft$constants)
   for(trait in trait.names) {
     parms.xml <- append.xmlNode(parms.xml, xmlNode(trait, trait.values[trait]))
   }
