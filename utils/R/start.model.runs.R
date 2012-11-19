@@ -43,7 +43,14 @@ start.model.runs <- function(model=settings$model$name, write.to.db = TRUE){
 
     # TODO RK : create ssh connection to remote host and keep it open
 
-    # TODO RK : loop through runs in runs.txt and copy folder then execute
+    # copy all run/out dirs to remote host
+    if (settings$run$host$name != "localhost") {
+      rsync("-a", settings$rundir, paste(settings$run$host$name, settings$run$host$rundir, sep=":"), pattern="/*")
+      rsync("-a", settings$modeloutdir, paste(settings$run$host$name, settings$run$host$outdir, sep=":"), pattern="/*")
+    }
+
+    # loop through runs and either call start run, or launch job on remote machine
+    jobids <- list()
     for (run in readLines(con=file.path(settings$rundir, "runs.txt"))) {
       # write start time to database
       if (!is.null(con)) {
@@ -51,16 +58,42 @@ start.model.runs <- function(model=settings$model$name, write.to.db = TRUE){
       }
 
       # start the actual model run
-      do.call(fcn.name, args=list(run))
+      if (settings$run$host$name == "localhost") {
+        do.call(fcn.name, args=list(run))
 
-      # write finished time to database
-      # TODO how do we deal with a qsub, do we know it is a qsub?
-      if (!is.null(con)) {
-        query.base(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", run), con)
+        # write finished time to database
+        if (!is.null(con)) {
+          query.base(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", run), con)
+        }
+      } else {
+        qsub <- gsub("@NAME@", paste("PEcAn-", run, sep=""), settings$run$host$qsub)
+        qsub <- gsub("@STDOUT@", file.path(settings$run$host$outdir, run, "stdout.log"), qsub)
+        qsub <- gsub("@STDERR@", file.path(settings$run$host$outdir, run, "stderr.log"), qsub)
+        out <- system2("ssh", c(settings$run$host$name, qsub, file.path(settings$run$host$rundir, run, "job.sh")), stdout=TRUE)
+        log.info("Job submitted :", out)
+        m <- regexec(settings$run$host$qsub.jobid, out)
+        jobids[run] <- regmatches(out, m)[[1]][2]
       }
     }
 
-    # TODO RK: check to see if all runs are done
+    # check to see if all remote jobs are done
+    if (settings$run$host$name != "localhost") {
+      while(length(jobids) > 0) {
+        Sys.sleep(10)
+        for(run in names(jobids)) {
+          check <- gsub("@JOBID@", jobids[run], settings$run$host$qstat)
+          out <- system2("ssh", c(settings$run$host$name, check), stdout=TRUE)
+          if ((length(out) > 0) && (out == "DONE")) {
+            log.debug("Job", jobids[run], "for run", run, "finished")
+            jobids[run] <- NULL
+            # write finished time to database 
+            if (!is.null(con)) {
+              query.base(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", run), con)
+            }
+          }
+        }
+      }
+    }
 
     # TODO RK : close connection to remote site
 

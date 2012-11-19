@@ -57,7 +57,8 @@ zero.truncate <- function(y) {
 ##' @author David LeBauer
 ##' @author Shawn Serbin
 #--------------------------------------------------------------------------------------------------#
-rsync <- function(args, from, to, pattern=''){
+rsync <- function(args, from, to, pattern='') {
+  print(paste('rsync',' ', args,' ', from, pattern, ' ', to, sep = ''))
   system(paste('rsync',' ', args,' ', from, pattern, ' ', to, sep = ''), intern=TRUE )
 }
 #==================================================================================================#
