@@ -8,33 +8,28 @@
 #-------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------#
 ##' 
-##' Start SIPNET model runs on local or remote server
+##' Start SIPNET model runs on local server
 ##' @title Start SIPNET model runs
 ##' @name start.runs.SIPNET
+##' @param runid the id of the run that needs to be executed
 ##' @export
 ##' @author Michael Dietze, David LeBauer, Shawn Serbin, Carl Davidson
-
-start.run.SIPNET <- function(run.id){
-  run <- paste(settings$outdir,run.id,sep="/")
-  print(paste("---- SIPNET model run: ",run,sep=""))
-  if("sipnet.in" %in% dir(run)){  ## make sure directory is a SIPNET folder
-    system(paste('(cd ', run, '; ',settings$model$binary," )", sep = ''))
+start.runs.SIPNET <- function(runid){
+  if (settings$run$host$name != "localhost") {
+    stop("Only local runs are executed here")
   }
 
-}
+  rundir <- file.path(settings$run$host$rundir, as.character(runid))
+  outdir <- file.path(settings$run$host$outdir, as.character(runid))
 
-start.runs.SIPNET <- function(runid){
-  host <-  settings$run$host
+  cwd <- getwd()
+  setwd(rundir)
+  system2(settings$model$binary)
+  file.rename(file.path(rundir, "sipnet.out"), file.path(outdir, "sipnet.out"))
+  file.copy(file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))
+  setwd(cwd)
 
-  if (settings$run$host$name == "localhost") {
-    cwd = getwd()
-    setwd(file.path(settings$run$host$rundir, as.character(runid)))
-    system2(settings$model$binary)
-    file.rename(file.path(settings$run$host$rundir, runid, "sipnet.out"), file.path(settings$run$host$outdir, runid, "sipnet.out"))
-    file.copy(file.path(settings$run$host$rundir, runid, "README.txt"), file.path(settings$run$host$outdir, runid, "README.txt"))
-    setwd(cwd)
-  } else {  
-
+  if (FALSE) {
     #Run model from user made bash script 
     if(host$name == 'localhost') {
 

@@ -21,6 +21,8 @@ run.write.configs <- function(model=settings$model$name){
     log.warn("Already exist a runs.txt file, this will be removed.")
     unlink(file.path(settings$rundir, "runs.txt"))
   }
+
+  # TODO RK : need to write to runs_inputs table
   
   ### Identify PFTs in the input settings.xml file
   num.pfts <- length(settings$pfts)
@@ -158,36 +160,37 @@ run.write.configs <- function(model=settings$model$name){
   save(ensemble.samples, trait.samples, sa.samples,
        file = paste(settings$rundir, 'samples.Rdata', sep = ''))
 
-  # TODO RK : move this to run model, why copy before the model is executed.  
-  # copy all run files to remote host
-  if(settings$run$host$name == 'localhost'){
-#    rsync('-outi', from = outdir, to = settings$rundir, 
-#          pattern = paste('*', get.run.id('SA', ''), '*',sep='') )
-  } else {
-    # rsync(args, from, to, pattern).  pattern --> file patter for rsync
-    rsync('-outi', from = settings$rundir, to = paste(settings$run$host$name, ':', settings$run$host$rundir,  sep=''), 
-          pattern = paste('*', get.run.id('SA', ''), '*',sep='') )
-  }
-
-  
-  ### Make outdirectory, send samples to outdir
-  print(settings$run$host$name)
-  if(settings$run$host$name == 'localhost'){
-    print(c(settings$run$host$outdir,"move to",settings$outdir))
-    if(!(settings$run$host$outdir == settings$outdir)) {
-      dir.create(settings$run$host$outdir,showWarnings=FALSE)
-      file.copy(from = paste(settings$outdir, 'samples.Rdata', sep = ''),
-                to   = paste(settings$run$host$outdir, 'samples.Rdata', sep = '/'),
-                overwrite = TRUE)
+  if (FALSE) {
+    # TODO RK : move this to run model, why copy before the model is executed.  
+    # copy all run files to remote host
+    if(settings$run$host$name == 'localhost'){
+  #    rsync('-outi', from = outdir, to = settings$rundir, 
+  #          pattern = paste('*', get.run.id('SA', ''), '*',sep='') )
+    } else {
+      # rsync(args, from, to, pattern).  pattern --> file patter for rsync
+      rsync('-outi', from = settings$rundir, to = paste(settings$run$host$name, ':', settings$run$host$rundir,  sep=''), 
+            pattern = paste('*', get.run.id('SA', ''), '*',sep='') )
     }
-  } else {  
-    mkdir.cmd <- paste("'if ! ls ", settings$run$host$outdir, " > /dev/null ; then mkdir -p ", 
-                       settings$run$host$outdir," ; fi'",sep = '')
-    system(paste("ssh", settings$run$host$name, mkdir.cmd))
-    system(paste('rsync -routi ', paste(settings$rundir, 'samples.Rdata', sep=''),
-                 paste(settings$run$host$name, ':', settings$run$host$outdir, sep = '')))
-  }
 
+    
+    ### Make outdirectory, send samples to outdir
+    print(settings$run$host$name)
+    if(settings$run$host$name == 'localhost'){
+      print(c(settings$run$host$outdir,"move to",settings$outdir))
+      if(!(settings$run$host$outdir == settings$outdir)) {
+        dir.create(settings$run$host$outdir,showWarnings=FALSE)
+        file.copy(from = paste(settings$outdir, 'samples.Rdata', sep = ''),
+                  to   = paste(settings$run$host$outdir, 'samples.Rdata', sep = '/'),
+                  overwrite = TRUE)
+      }
+    } else {  
+      mkdir.cmd <- paste("'if ! ls ", settings$run$host$outdir, " > /dev/null ; then mkdir -p ", 
+                         settings$run$host$outdir," ; fi'",sep = '')
+      system(paste("ssh", settings$run$host$name, mkdir.cmd))
+      system(paste('rsync -routi ', paste(settings$rundir, 'samples.Rdata', sep=''),
+                   paste(settings$run$host$name, ':', settings$run$host$outdir, sep = '')))
+    }
+  }
   
 }
 #==================================================================================================#

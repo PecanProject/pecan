@@ -121,7 +121,7 @@ convert.samples.ED <- function(trait.samples){
 ##' and the name of the file to create
 ##' @name write.config.ED2
 ##' @title Write ED configuration files
-##' @param pft 
+##' @param defaults list of defaults to process
 ##' @param trait.samples vector of samples for a given trait
 ##' @param settings list of settings from pecan settings file
 ##' @param run.id id of run
@@ -130,7 +130,18 @@ convert.samples.ED <- function(trait.samples){
 ##' @author David LeBauer, Shawn Serbin, Carl Davidson
 ##-------------------------------------------------------------------------------------------------#
 write.config.ED2 <- function(defaults, trait.values, settings, run.id){
-  # TODO RK : need to write launcher script here if remote host
+    # create launch script
+  if (settings$run$host$name != "localhost") {
+    rundir <- file.path(settings$run$host$rundir, as.character(run.id))
+    outdir <- file.path(settings$run$host$outdir, as.character(run.id))
+    writeLines(c("#!/bin/bash",
+               paste("mkdir -p", outdir),
+               paste("cd", rundir),
+               settings$model$binary,
+               paste("cp ", file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))),
+               con=file.path(settings$rundir, run.id, "job.sh"))
+    Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
+  }
 
   ## Get ED2 specific model settings and put into output config xml file
   xml <- listToXml(settings$model$config.header, 'config')
@@ -265,9 +276,6 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   
   ##----------------------------------------------------------------------
   writeLines(ed2in.text, con = file.path(settings$rundir, run.id, "ED2IN"))
-  
-  ## Display info to the console.
-  print(run.id)
 }
 #==================================================================================================#
 
