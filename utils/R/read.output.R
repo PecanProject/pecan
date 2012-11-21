@@ -40,9 +40,12 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA, variables = 
      outfiles <- c(file.path(outdir, "sipnet.out"))
    } else if (model=="ED2"){
      outfiles <- list.files(path=outdir, pattern="analysis-T-.*\\.h5$", full.names=TRUE)
-   } else if (model %in% c("biocro", "c4photo")) {
-     outfiles <- list.files(path=outdir, pattern="\\.Rdata$", full.names=TRUE)
+   } else if (model %in% c("BIOCRO", "C4PHOTO")) {
+     outfiles <-  c(file.path(outdir, "result.Rdata"))
+  } else {
+    stop(paste("Don't know how to convert output for model", model))
   }
+  print(outfiles)
 
   ## model-specific code to parse each file 
   if(length(outfiles) > 0) {
@@ -56,7 +59,7 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA, variables = 
     }
 
     ## determine years to load
-    if(model != "c4photo"){
+    if(model != "C4PHOTO"){
       nc.years = as.numeric(sub(paste(run.id,".",sep=""),"",
         sub(".nc","",basename(ncfiles), fixed = TRUE), fixed = TRUE))
       first <- max(1, which(nc.years == start.year), na.rm = TRUE)
@@ -64,7 +67,7 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA, variables = 
       
       ## load files
       yrs <- first:max(first,last)
-    } else if (model %in% c("biocro", "c4photo")) {
+    } else if (model %in% c("BIOCRO", "C4PHOTO")) {
       nc.years <- list(1)
       yrs <- 1
     }
