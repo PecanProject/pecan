@@ -143,6 +143,13 @@ fwrite($fh, "<pecan>" . PHP_EOL);
 fwrite($fh, "  <pecanDir>${pecan_home}</pecanDir>" . PHP_EOL);
 fwrite($fh, "  <outdir>${folder}/pecan/</outdir>" . PHP_EOL);
 
+fwrite($fh, "  <database>" . PHP_EOL);
+fwrite($fh, "    <userid>${db_username}</userid>" . PHP_EOL);
+fwrite($fh, "    <passwd>${db_password}</passwd>" . PHP_EOL);
+fwrite($fh, "    <location>${db_hostname}</location>" . PHP_EOL);
+fwrite($fh, "    <name>${db_database}</name>" . PHP_EOL);
+fwrite($fh, "  </database>" . PHP_EOL);
+
 $pft_id=1;
 fwrite($fh, "  <pfts>" . PHP_EOL);
 foreach($pft as $p) {
@@ -154,18 +161,16 @@ foreach($pft as $p) {
 	fwrite($fh, "      <outdir>${folder}/pft/${pft_id}/</outdir>" . PHP_EOL);
 	fwrite($fh, "      <constants>" . PHP_EOL);
 	fwrite($fh, "        <num>${pft_id}</num>" . PHP_EOL);
+	if ($modeltype == "BIOCRO") {
+		$src = fopen("template/biocro.xml", 'r');
+		stream_copy_to_stream($src, $fh);
+		fclose($src);
+	}
 	fwrite($fh, "      </constants>" . PHP_EOL);
 	fwrite($fh, "    </pft>" . PHP_EOL);
 	$pft_id++;
 }
 fwrite($fh, "  </pfts>" . PHP_EOL);
-
-fwrite($fh, "  <database>" . PHP_EOL);
-fwrite($fh, "    <userid>${db_username}</userid>" . PHP_EOL);
-fwrite($fh, "    <passwd>${db_password}</passwd>" . PHP_EOL);
-fwrite($fh, "    <location>${db_hostname}</location>" . PHP_EOL);
-fwrite($fh, "    <name>${db_database}</name>" . PHP_EOL);
-fwrite($fh, "  </database>" . PHP_EOL);
 
 fwrite($fh, "  <meta.analysis>" . PHP_EOL);
 fwrite($fh, "    <iter>3000</iter>" . PHP_EOL);
@@ -217,8 +222,10 @@ if ($modeltype == "ED2") {
 #} else ($modeltype = "SIPNET") {
 }
 fwrite($fh, "  </model>" . PHP_EOL);
-fwrite($fh, "  <run>" . PHP_EOL);
+fwrite($fh, "  <workflow>" . PHP_EOL);
 fwrite($fh, "    <id>$workflowid</id>" . PHP_EOL);
+fwrite($fh, "  </workflow>" . PHP_EOL);
+fwrite($fh, "  <run>" . PHP_EOL);
 fwrite($fh, "    <folder>${folder}</folder>" . PHP_EOL);
 fwrite($fh, "    <site>" . PHP_EOL);
 fwrite($fh, "      <id>${siteid}</id>" . PHP_EOL);
