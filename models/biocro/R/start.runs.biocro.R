@@ -6,12 +6,12 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
+
 #--------------------------------------------------------------------------------------------------#
 ##' 
 ##' Start biocro model runs on local or remote server
 ##' @title Start biocro model runs
 ##' @name start.runs.biocro
-##' @export
 ##' @author Michael Dietze, David LeBauer, Shawn Serbin, Carl Davidson
 start.run.biocro <- function(run.id){
   print(paste("---- biocro model run: ", run.id, sep=""))
@@ -32,6 +32,37 @@ start.run.biocro <- function(run.id){
    }
 
 
+#--------------------------------------------------------------------------------------------------#
+##' 
+##' Start biocro model runs on local
+##' @title Start run of biocro model
+##' @param runid the id of the run (folder in runs) to execute
+##' @export
+##' @author David LeBauer
+start.runs.BIOCRO <- function(runid) {
+  if (settings$run$host$name != "localhost") {
+    stop("Only local runs are executed here")
+  }
+
+  rundir <- file.path(settings$run$host$rundir, as.character(runid))
+  outdir <- file.path(settings$run$host$outdir, as.character(runid))
+
+  cwd <- getwd()
+  setwd(rundir)
+
+  # run model
+  require(EnCro)
+  require(XML)
+
+  data(weather05)
+  config <- xmlToList(xmlParse("data.xml"))
+  pp<-do.call(photoParms,list(unlist(config$parms)))
+  result<-BioGro(weather05, photoControl=pp)
+
+  # save results
+  save(result, file=file.path(outdir, "result.Rdata"))
+  file.copy(file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))
+}
 
 ##' Function to start all runs of biocro model in directory
 ##' @title Start run of biocro model
@@ -56,7 +87,7 @@ start.runs.biocro <- function(runid){
     result<-BioGro(weather05,photoControl=pp)
 
     # save results
-    save(result, file.path(settings$run$host$outdir, runid, "result.RData"))
+    save(result, file.path(settings$run$host$outdir, runid, "result.Rdata"))
     file.copy(file.path(settings$run$host$rundir, runid, "README.txt"), file.path(settings$run$host$outdir, runid, "README.txt"))
 
     setwd(cwd)

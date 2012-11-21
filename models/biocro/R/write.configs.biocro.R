@@ -21,7 +21,7 @@ PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
 ##' @export
 ##' @return matrix or dataframe with values transformed
 ##' @author David LeBauer
-convert.samples.biocro <- function(trait.samples){
+convert.samples.BIOCRO <- function(trait.samples){
 
   ## first rename variables
   trait.names <- colnames(trait.samples)
@@ -51,9 +51,9 @@ convert.samples.biocro <- function(trait.samples){
 ##' @export
 ##' @return nothing, writes configuration file as side effect 
 ##' @author David LeBauer
-write.config.biocro <- function(defaults, trait.values, settings, run.id) {
+write.config.BIOCRO <- function(defaults, trait.values, settings, run.id) {
 file.path(settings$rundir, run.id, "config.xml")
-  trait.values  <- convert.samples.biocro(trait.values[[1]])
+  trait.values  <- convert.samples.BIOCRO(trait.values[[1]])
   trait.names   <- names(trait.values)
   parms.xml <- xmlNode("parms")
   for(trait in trait.names) {
@@ -75,7 +75,7 @@ file.path(settings$rundir, run.id, "config.xml")
 ##' @return nothing, removes config files as side effect
 ##' @export
 ##' @author Shawn Serbin, David LeBauer
-remove.config.biocro <- function(main.outdir, settings) {
+remove.config.BIOCRO <- function(main.outdir, settings) {
   
   ### Remove files on localhost
   if(settings$run$host$name == 'localhost'){
