@@ -32,7 +32,6 @@ if (!$result) {
 }
 $workflow = mysql_fetch_assoc($result);
 $folder = $workflow['folder'];
-print_r($folder);
 
 // check result
 $status=file($folder . DIRECTORY_SEPARATOR . "STATUS");
