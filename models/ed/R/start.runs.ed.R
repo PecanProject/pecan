@@ -26,7 +26,7 @@ start.runs.ED2 <- function(runid) {
 
   cwd <- getwd()
   setwd(rundir)
-  system2(settings$model$binary)
+  system2(settings$model$binary, env=c("GFORTRAN_UNBUFFERED_PRECONNECTED=yes"))
   file.copy(file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))
   setwd(cwd)
 

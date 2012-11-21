@@ -245,7 +245,7 @@ function status($token) {
         return $data[3];
       }
       if ($token == "MODEL") {
-        return exec("tail -20 `ls -1rt $folder/run/*.log` |  grep 'Simulating:' | tail -1 | sed 's/^.*Simulating:[ ]*//' | awk '{print $1}'");
+        return exec("awk '/Simulating/ { print $3 }' $folder/workflow_stage2.Rout | tail -1");
       }
       return "Running";
     }

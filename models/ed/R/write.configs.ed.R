@@ -137,6 +137,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
     writeLines(c("#!/bin/bash",
                paste("mkdir -p", outdir),
                paste("cd", rundir),
+               "export GFORTRAN_UNBUFFERED_PRECONNECTED=yes",
                settings$model$binary,
                paste("cp ", file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))),
                con=file.path(settings$rundir, run.id, "job.sh"))
