@@ -16,17 +16,23 @@
 ##' @param runid the id of the run (folder in runs) to execute
 ##' @export
 ##' @author David LeBauer, Shawn Serbin, Carl Davidson
-start.runs.ED2 <- function(runid){
-  
-  host <- settings$run$host
+start.runs.ED2 <- function(runid) {
+  if (settings$run$host$name != "localhost") {
+    stop("Only local runs are executed here")
+  }
 
-  if (settings$run$host$name == "localhost") {
-    cwd = getwd()
-    setwd(file.path(settings$run$host$rundir, as.character(runid)))
-    system2(settings$model$binary)
-    file.copy(file.path(settings$run$host$rundir, runid, "README.txt"), file.path(settings$run$host$outdir, runid, "README.txt"))
-    setwd(cwd)
-  } else { 
+  rundir <- file.path(settings$run$host$rundir, as.character(runid))
+  outdir <- file.path(settings$run$host$outdir, as.character(runid))
+
+  cwd <- getwd()
+  setwd(rundir)
+  system2(settings$model$binary, env=c("GFORTRAN_UNBUFFERED_PRECONNECTED=yes"))
+  file.copy(file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))
+  setwd(cwd)
+
+  if (FALSE) {
+    host <- settings$run$host
+
     ## TODO fix issue #1173
     if (file.exists(paste(settings$outdir, 'launcher.sh', sep='/'))) {
       oldwd <- getwd()

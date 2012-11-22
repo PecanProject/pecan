@@ -14,7 +14,7 @@
 ##' @export
 ##' @author Michael Dietze
 #--------------------------------------------------------------------------------------------------#
-write.config.SIPNET <- function(defaults, trait.values, settings, run.id,inputs=NULL,IC=NULL){
+write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs=NULL, IC=NULL){
   ### WRITE sipnet.in
   template.in <- system.file("sipnet.in", package="PEcAn.SIPNET")
   config.text <- readLines(con=template.in, n=-1)
@@ -30,8 +30,24 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id,inputs=
       template.clim <- inputs$met
     }
   }
-  system(paste("cp ",template.clim," ", file.path(settings$rundir, run.id, "sipnet.clim"),sep=""))
-  ### **** WE SHOULD SET THIS UP AS A LINK, RATHER THAN AS A COPY ****
+
+  if (settings$run$host$name == "localhost") {
+    # create symlink to datafile if running local
+    file.symlink(template.clim, file.path(settings$rundir, run.id, "sipnet.clim"))
+  } else {
+    # create launch script (which will create symlink)
+    rundir <- file.path(settings$run$host$rundir, as.character(run.id))
+    outdir <- file.path(settings$run$host$outdir, as.character(run.id))
+    writeLines(c("#!/bin/bash",
+               paste("mkdir -p", outdir),
+               paste("cd", rundir),
+               paste("ln -s", settings$run$site$met, "sipnet.clim"),
+               settings$model$binary,
+               paste("mv ", file.path(rundir, "sipnet.out"), file.path(outdir, "sipnet.out")),
+               paste("cp ", file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))),
+               con=file.path(settings$rundir, run.id, "job.sh"))
+    Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
+  }
   
   ### WRITE *.param-spatial
   template.paramSpatial <- system.file("template.param-spatial",package="PEcAn.SIPNET")
@@ -43,7 +59,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id,inputs=
 
   param <- read.table(template.param)
 
-#### write INITAL CONDITIONS here ####
+  #### write INITAL CONDITIONS here ####
   if(!is.null(IC)){
     ic.names = names(IC)
     ##plantWoodInit gC/m2
@@ -78,9 +94,9 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id,inputs=
     if("microbe" %in% ic.names){
       param[which(param[,1] == 'microbeInit'),2] = IC$microbe
     }
-}
+  }
   
-#### write run-specific environmental parameters here ####
+  #### write run-specific environmental parameters here ####
   env.traits <- which(names(trait.values) %in% 'env')
   env.traits <- trait.values[[env.traits]]
   env.names <- names(env.traits)
@@ -222,7 +238,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id,inputs=
     stem_resp_g <- (((pft.traits[which(pft.names=='stem_respiration_rate')])*(44.0096/1000000)*(12.01/44.0096))/1000)*86400
     ## use Q10 to convert stem resp from reference of 25C to 0C
     #param[id,2] = pft.traits[which(pft.names=='stem_respiration_rate')]*vegRespQ10^(-25/10)
-     param[id,2] = stem_resp_g*vegRespQ10^(-25/10)
+    param[id,2] = stem_resp_g*vegRespQ10^(-25/10)
   }
 
   # turnover of fine roots (per year rate)
@@ -271,48 +287,6 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id,inputs=
   }
 
   write.table(param,file.path(settings$rundir, run.id,"sipnet.param"),row.names=FALSE,col.names=FALSE,quote=FALSE)
-  
-  return()
-
-  
-  startdate <- as.Date(settings$run$start.date)
-  enddate <- as.Date(settings$run$end.date)
-  
-  #-----------------------------------------------------------------------
-  ### Edit a templated config file for runs
-  
-  config.text <- gsub('@SITE_LAT@', settings$run$site$lat, config.text)
-  config.text <- gsub('@SITE_LON@', settings$run$site$lon, config.text)
-  config.text <- gsub('@SITE_MET@', settings$run$site$met, config.text)
-  config.text <- gsub('@MET_START@', settings$run$site$met.start, config.text)
-  config.text <- gsub('@MET_END@', settings$run$site$met.end, config.text)
-
-    #-----------------------------------------------------------------------
-    config.text <- gsub('@START_MONTH@', format(startdate, "%m"), config.text)
-    config.text <- gsub('@START_DAY@', format(startdate, "%d"), config.text)
-    config.text <- gsub('@START_YEAR@', format(startdate, "%Y"), config.text)
-    config.text <- gsub('@END_MONTH@', format(enddate, "%m"), config.text)
-    config.text <- gsub('@END_DAY@', format(enddate, "%d"), config.text)
-    config.text <- gsub('@END_YEAR@', format(enddate, "%Y"), config.text)
-
-    #-----------------------------------------------------------------------
-    config.text <- gsub('@OUTDIR@', settings$run$host$outdir, config.text)
-    config.text <- gsub('@ENSNAME@', run.id, config.text)
-
-  
-    ### Generate a numbered suffix for scratch output folder.  Useful for cleanup.  TEMP CODE. NEED TO UPDATE.
-    #cnt = counter(cnt) # generate sequential scratch output directory names 
-    #print(cnt)
-    #scratch = paste(Sys.getenv("USER"),".",cnt,"/",sep="")
-    scratch = Sys.getenv("USER")
-    #config.text <- gsub('@SCRATCH@', paste('/scratch/', settings$run$scratch, sep=''), config.text)
-    config.text <- gsub('@SCRATCH@', paste('/scratch/', scratch, sep=''), config.text)
-    ###
-  
-    config.text <- gsub('@OUTFILE@', paste('out', run.id, sep=''), config.text)
- 
-    #-----------------------------------------------------------------------
-
 }
 #==================================================================================================#
 

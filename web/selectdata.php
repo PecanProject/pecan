@@ -212,11 +212,9 @@ if ($model["model_type"] == "ED2") {
 <?php 
 // show list of PFTs
 if ($model["model_type"] == "ED2") {
-	$result = mysql_query("SELECT * FROM pfts WHERE name NOT LIKE 'sipnet%' ORDER BY name;");
-} else if ($model["model_type"] == "SIPNET") {
-	$result = mysql_query("SELECT * FROM pfts WHERE name LIKE 'sipnet%' ORDER BY name;");
+	$result = mysql_query("SELECT * FROM pfts WHERE name NOT LIKE 'sipnet%' AND name NOT LIKE 'biocro%' ORDER BY name;");
 } else  {
-	$result = mysql_query("SELECT * FROM pfts ORDER BY name");
+	$result = mysql_query("SELECT * FROM pfts WHERE name LIKE '" . strtolower($model["model_type"]) . "%' ORDER BY name");
 }
 if (!$result) {
 	die('Invalid query: ' . mysql_error());
@@ -247,7 +245,7 @@ if ($model["model_type"] == "ED2") {
 	$query="SELECT file_path AS file, name, start_date, end_date FROM inputs, dbfiles, machines WHERE inputs.site_id=$siteid AND inputs.file_id=dbfiles.file_id AND machines.hostname='${_REQUEST['hostname']}' AND dbfiles.machine_id=machines.id";
 
 	// get met data
-	$result = mysql_query($query . " AND dbfiles.format_id=12");
+	$result = mysql_query($query . " AND inputs.format_id=12");
 	if (!$result) {
 		die('Invalid query: ' . mysql_error());
 	}
@@ -263,7 +261,7 @@ if ($model["model_type"] == "ED2") {
             <select id="psscss" name="psscss" onChange="validate();">
 <?php 
 	// get psscss data
-	$result = mysql_query($query . " AND dbfiles.format_id=10");
+	$result = mysql_query($query . " AND inputs.format_id=10");
 	if (!$result) {
 		die('Invalid query: ' . mysql_error());
 	}
