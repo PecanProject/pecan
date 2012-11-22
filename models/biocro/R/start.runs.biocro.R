@@ -29,7 +29,7 @@ start.run.biocro <- function(run.id){
   
   weather <- InputForWeach(lat, lon, year(dateofplanting), year(dateofharvest))
   pp <- do.call(photoParms, list(unlist(config$parms)))
-  result <- BioGro(weather05, photoControl = pp)
+  result <- BioGro(weather, photoControl = pp)
   save(result, file=paste(run.id,".Rdata",sep=""))
 }
 
