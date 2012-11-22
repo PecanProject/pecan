@@ -9,8 +9,10 @@ Description: This module provides functions to link BioCro to PEcAn.
 Depends:
     PEcAn.common,
     PEcAn.utils,
+    PEcAn.data.atmosphere,
     ncdf4,
-    lubridate
+    lubridate,
+    XML
 Suggests:
     testthat
 SystemRequirements: BioCro

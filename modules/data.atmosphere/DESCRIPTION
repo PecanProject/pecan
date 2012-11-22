@@ -5,7 +5,12 @@ Version: 1.2.6
 Date: 2012-11-15
 Author: Carl Davidson, Mike Dietze, Rob Kooper, Deepak Jaiswal, David LeBauer
 Maintainer: David LeBauer <dlebauer@illinois.edu>
-Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific workflow management tool that is designed to simplify the management of model parameterization, execution, and analysis. The PECAn.data.atmosphere package converts climate driver data into a standard format for models integrated into PEcAn. As a standalone package, it provides an interface to access diverse climate data sets.
+Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
+    workflow management tool that is designed to simplify the management of
+    model parameterization, execution, and analysis. The PECAn.data.atmosphere
+    package converts climate driver data into a standard format for models
+    integrated into PEcAn. As a standalone package, it provides an interface to
+    access diverse climate data sets.
 Depends:
     RMySQL,
     RNCEP
@@ -13,3 +18,5 @@ License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
+Collate:
+    'InputForWeach.R'

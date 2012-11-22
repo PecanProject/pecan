@@ -12,7 +12,7 @@ require(PEcAn.all)
 
 #---------------- Load PEcAn settings file. -------------------------------------------------------#
 # Open and read in settings file for PEcAn run.
-settings <<- read.settings("pecan.biocro.xml")
+settings <- read.settings("pecan.biocro.xml")
 #--------------------------------------------------------------------------------------------------#
 
 model <- settings$model$name

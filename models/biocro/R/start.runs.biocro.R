@@ -12,24 +12,26 @@
 ##' @title Start biocro model runs
 ##' @name start.runs.biocro
 ##' @export
-##' @author Michael Dietze, David LeBauer, Shawn Serbin, Carl Davidson
+##' @author David LeBauer, Deepak Jaiswal
 start.run.biocro <- function(run.id){
   print(paste("---- biocro model run: ", run.id, sep=""))
-  rundir <- paste(settings$outdir, run.id, sep = "")
+  rundir <- file.path(settings$outdir, run.id)
   setwd(rundir)
-  library(EnCro)
-  require(XML)
   config <- xmlToList(xmlParse(run.id))
-# defaul data in EnCro  
-  data(weather05)
 
-#  result <- do.call(biocro, list(RH = 0.50, Tl = 25, Qp = 2000,
-#                                unlist(config$parms)))
- 
-   pp<-do.call(photoParms,list(unlist(config$parms)))
-   result<-BioGro(weather05,photoControl=pp)
-   save(result,file=paste(run.id,".Rdata",sep=""))
-   }
+
+################ Read  Year and Location Details and derive model input############
+  lat <- as.numeric(settings$run$site$lat)
+  lon <- as.numeric(settings$run$site$lon)
+  dateofplanting <- ymd_hms(settings$run$start.date)
+  dateofharvest <- ymd_hms(settings$run$end.date)
+
+  
+  weather <- InputForWeach(lat, lon, year(dateofplanting), year(dateofharvest))
+  pp <- do.call(photoParms, list(unlist(config$parms)))
+  result <- BioGro(weather05, photoControl = pp)
+  save(result, file=paste(run.id,".Rdata",sep=""))
+}
 
 
 

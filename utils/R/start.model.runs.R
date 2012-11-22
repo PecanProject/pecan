@@ -40,29 +40,29 @@ start.model.runs <- function(model=settings$model$name, write.to.db = TRUE){
         con <- NULL
       }
     }
+    
+    ## TODO RK : create ssh connection to remote host and keep it open
 
-    # TODO RK : create ssh connection to remote host and keep it open
-
-    # TODO RK : loop through runs in runs.txt and copy folder then execute
-    for (run in readLines(con=file.path(settings$rundir, "runs.txt"))) {
-      # write start time to database
+    ## TODO RK : loop through runs in runs.txt and copy folder then execute
+    for (run in readLines(con = file.path(settings$rundir, "runs.txt"))) {
+      ## write start time to database
       if (!is.null(con)) {
         query.base(paste("UPDATE runs SET started_at =  NOW() WHERE id = ", run), con)
       }
 
-      # start the actual model run
+      ## start the actual model run
       do.call(fcn.name, args=list(run))
 
-      # write finished time to database
-      # TODO how do we deal with a qsub, do we know it is a qsub?
+      ## write finished time to database
+      ## TODO how do we deal with a qsub, do we know it is a qsub?
       if (!is.null(con)) {
         query.base(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", run), con)
       }
     }
 
-    # TODO RK: check to see if all runs are done
+    ## TODO RK: check to see if all runs are done
 
-    # TODO RK : close connection to remote site
+    ## TODO RK : close connection to remote site
 
     ## job is finished
     if (!is.null(con)) {
