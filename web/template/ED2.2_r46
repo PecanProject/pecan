@@ -244,8 +244,8 @@
    ! FFILOUT -- Path and prefix for analysis files (all but history/restart).              !
    ! SFILOUT -- Path and prefix for history files.                                         !
    !---------------------------------------------------------------------------------------!
-   NL%FFILOUT = '@OUTDIR@/@ENSNAME@'         ! Analysis output prefix
-   NL%SFILOUT = '@OUTDIR@/@HISTFILE@'        ! History output prefix
+   NL%FFILOUT = '@FFILOUT@'         ! Analysis output prefix
+   NL%SFILOUT = '@SFILOUT@'         ! History output prefix
 
    !---------------------------------------------------------------------------------------!
    ! IED_INIT_MODE -- This controls how the plant community and soil carbon pools are      !

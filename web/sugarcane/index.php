@@ -26,13 +26,15 @@ if (!$result) {
     die('Invalid query: ' . mysql_error());
 }
 $workflow = mysql_fetch_assoc($result);
-print_r($workflow);
 
-// set the datafile to be saved
-$new_xml_file=$workflow['folder'] . "/data_modified.xml";
+// datafile
+$default_xml=array_shift(glob($workflow["folder"] . "/run/*/data.xml"));
 
 // load default values
-get_default($workflow['folder'] . "/data.xml");
+get_default($default_xml);
+
+// set the datafile to be saved
+$new_xml_file=str_replace("data.xml", "data_modified.xml", $default_xml);
 
 close_database($connection);
 

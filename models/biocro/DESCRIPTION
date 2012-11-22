@@ -22,7 +22,7 @@ Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes
 LazyData: FALSE
 Collate:
-    'get.model.output.biocro.R'
-    'model2netcdf.biocro.R'
-    'start.runs.biocro.R'
-    'write.configs.biocro.R'
+    'get.model.output.BIOCRO.R'
+    'model2netcdf.BIOCRO.R'
+    'start.runs.BIOCRO.R'
+    'write.configs.BIOCRO.R'

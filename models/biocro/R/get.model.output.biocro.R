@@ -18,16 +18,14 @@
 ##' @import PEcAn.utils
 ##' @export
 ##' @author Mike Dietze, David LeBauer
-get.model.output.biocro <- function(){
+get.model.output.BIOCRO <- function(){
 
-  model="biocro"
-  
   ### Get model output on the localhost
   if(settings$run$host$name == 'localhost'){
 
     olddir <- getwd()
     setwd(settings$outdir)
-    get.results(model)
+    get.results(settings$model$name)
     setwd(olddir) 
     
   } else {

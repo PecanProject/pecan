@@ -21,7 +21,7 @@ PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
 ##' @export
 ##' @return matrix or dataframe with values transformed
 ##' @author David LeBauer
-convert.samples.biocro <- function(trait.samples){
+convert.samples.BIOCRO <- function(trait.samples){
 
   ## first rename variables
   trait.names <- colnames(trait.samples)
@@ -47,37 +47,21 @@ convert.samples.biocro <- function(trait.samples){
 ##' @param defaults named list with default model parameter values 
 ##' @param trait.values 
 ##' @param settings 
-##' @param outdir 
 ##' @param run.id
 ##' @export
 ##' @return nothing, writes configuration file as side effect 
 ##' @author David LeBauer
-write.config.biocro <- function(defaults = NULL,
-                                 trait.values,
-                                 settings,
-                                 outdir,
-                                 run.id){
-
-  my.outdir = paste(outdir,"/",run.id,"/",sep="") 
-  if (! file.exists(my.outdir)) dir.create(my.outdir)
-
-  trait.values  <- convert.samples.biocro(trait.values[[1]])
+write.config.BIOCRO <- function(defaults, trait.values, settings, run.id) {
+file.path(settings$rundir, run.id, "config.xml")
+  trait.values  <- convert.samples.BIOCRO(trait.values[[1]])
   trait.names   <- names(trait.values)
   parms.xml <- xmlNode("parms")
   for(trait in trait.names) {
     parms.xml <- append.xmlNode(parms.xml, xmlNode(trait, trait.values[trait]))
   }
-
   config.xml <- append.xmlNode(xmlNode('traits'), parms.xml)
-  run.outdir    <- paste(outdir,"/",run.id,"/",sep="")
-  xml.file.name <- run.id
-  if (!file.exists(run.outdir)) dir.create(run.outdir)
-  saveXML(config.xml, file = paste(my.outdir, xml.file.name, sep=''), 
-          indent=TRUE, prefix = PREFIX_XML)
 
-  ### Display info to the console.
-  print(run.id)
-
+  saveXML(config.xml, file=file.path(settings$rundir, run.id, "data.xml"), indent=TRUE, prefix=PREFIX_XML)
 }
 #==================================================================================================#
 
@@ -91,7 +75,7 @@ write.config.biocro <- function(defaults = NULL,
 ##' @return nothing, removes config files as side effect
 ##' @export
 ##' @author Shawn Serbin, David LeBauer
-remove.config.biocro <- function(main.outdir, settings) {
+remove.config.BIOCRO <- function(main.outdir, settings) {
   
   ### Remove files on localhost
   if(settings$run$host$name == 'localhost'){

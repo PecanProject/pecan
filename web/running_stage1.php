@@ -25,7 +25,7 @@ require("dbinfo.php");
 $connection=open_database();
 
 // get run information
-$query = "SELECT site_id, model_id, model_type, hostname, folder FROM workflows, models WHERE workflows.id=$workflowid and model_id=models.id";
+$query = "SELECT site_id, model_id, model_type, hostname, folder, advanced_edit FROM workflows, models WHERE workflows.id=$workflowid and model_id=models.id";
 $result = mysql_query($query);
 if (!$result) {
 	die('Invalid query: ' . mysql_error());
@@ -46,7 +46,7 @@ switch(checkStatus("CONFIG")) {
 		break;		
 	case 1:
 		$nextenabled="disabled=\"disabled\"";
-		if ($workflow['model_type'] == 'BIOCRO' && $workflow['advanced_edit']) {
+		if (($workflow['model_type'] == 'BIOCRO') && $workflow['advanced_edit']) {
 			if ($offline) {
 				header( "Location: sugarcane/index.php?workflowid=$workflowid&offline=offline");
 			} else {
@@ -260,7 +260,7 @@ function status($token) {
         return $data[3];
       }
       if ($token == "MODEL") {
-        return exec("tail -20 `ls -1rt $folder/run/*.log` |  grep 'Simulating:' | tail -1 | sed 's/^.*Simulating:[ ]*//' | awk '{print $1}'");
+        return exec("awk '/Simulating/ { print $3 }' $folder/workflow_stage2.Rout | tail -1");
       }
       return "Running";
     }
