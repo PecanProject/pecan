@@ -16,7 +16,8 @@
 # packages that are to be compiled
 PACKAGES="common utils db"
 PACKAGES="${PACKAGES} modules/meta.analysis modules/uncertainty"
-PACKAGES="${PACKAGES} modules/data.land modules/assim.batch modules/assim.sequential modules/priors"
+PACKAGES="${PACKAGES} modules/data.land modules/data.atmosphere"
+PACKAGES="${PACKAGES} modules/assim.batch modules/assim.sequential modules/priors"
 PACKAGES="${PACKAGES} models/ed models/sipnet models/biocro"
 PACKAGES="${PACKAGES} all"
 
