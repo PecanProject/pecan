@@ -5,7 +5,7 @@
 RUNTYPE = standard
 ! RUNTYPE must be one of 'standard', 'senstest', or 'montecarlo'
 
-FILENAME = @FILENAME@
+FILENAME = sipnet
 ! FILENAME.param is the file of parameter values & initial conditions
 ! FILENAME.param-spatial is the file of spatially-varying parameters
 !  (first line must contain a single integer: # of locations)

@@ -73,9 +73,81 @@ xmlMergeNodes <- function(node1, node2) {
   }
 }
 
+##' Sanity checks. Checks the settings file to make sure expected fields exist.
+##'
+##' Expected fields are:
+##' - pfts with at least one pft defined
+##' - database
+##' - model
+##' - run with the following fields
+##' -- site with id
+##' -- host with name
+##'
+check.settings <- function(settings) {
+  if (!is.null(settings$nocheck)) {
+    log.info("Not doing sanity checks of pecan.xml")
+    return(0)
+  }
+
+  # check database information
+  if (is.null(settings$database)) {
+    stop("No database information specified.")
+  }
+  if (is.null(settings$database$userid)) {
+    stop("No userid specified for the database")
+  }
+  if (is.null(settings$database$passwd)) {
+    stop("No passwd specified for the database")
+  }
+  if (is.null(settings$database$name)) {
+    stop("No name specified for the database")
+  }
+  if (is.null(settings$database$name)) {
+    settings$database$location = "localhost"
+    log.info("Setting localhost for database location.")
+  }
+
+  # TODO do a quick connection
+
+  # TODO check userid and userpassword
+
+  # check to make sure run information is filled out
+  if (is.null(settings$run$host$name)) {
+    stop("Did not set hostname in run section.")
+  }
+  if (settings$run$host$name != "localhost") {
+    if (is.null(settings$run$host$rundir)) {
+      stop("not rundir specified on remote machine.")
+    }
+    if (is.null(settings$run$host$outdir)) {
+      stop("not outdir specified on remote machine.")
+    }
+  }
+
+  # make sure there are pfts defined
+  if (is.null(settings$pfts) || (length(settings$pfts) == 0)) {
+    stop("No PFTS specified.")
+  }
+}
+
+listToXml <- function(item, tag){
+  if(typeof(item)!='list')
+    return(xmlNode(tag, item))
+  xml <- xmlNode(tag)
+  for(i in seq(length(item))) {
+    if (names(item[i]) == ".attrs") {
+      for(name in names(item$.attrs)) {
+        xmlAttrs(xml)[[name]] <- item$.attrs[[name]]
+      }
+    } else {
+      xml <- append.xmlNode(xml, listToXml(item[[i]], names(item[i])))
+    }
+  }
+  return(xml)
+}
 
 ##--------------------------------------------------------------------------------------------------#
-## XTERNAL FUNCTIONS
+## EXTERNAL FUNCTIONS
 ##--------------------------------------------------------------------------------------------------#
 
 ##' Loads PEcAn settings file
@@ -103,36 +175,36 @@ xmlMergeNodes <- function(node1, node2) {
 ##' \dontrun{
 ##' settings <- read.settings()
 ##' settings <- read.settings(file="willowcreek.xml")
-##' test.settings.file <- system.file("tests/test.settings.xml", package = "PEcAn.all")
+##' test.settings.file <- system.file("tests/test.xml", package = "PEcAn.all")
 ##' settings <- read.settings(test.settings.file)
 ##' }
 read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
-  settings.xml <- NULL
+  xml <- NULL
   
   ## 1 load /etc/pecan.xml
   if (file.exists("/etc/pecan.xml")) {
-    settings.xml <- xmlMerge(settings.xml, xmlParse("/etc/pecan.xml"))
+    xml <- xmlMerge(xml, xmlParse("/etc/pecan.xml"))
   }
   
   ## 2 merge ~/.pecan.xml
   if (file.exists("~/.pecan.xml")) {
-    settings.xml <- xmlMerge(settings.xml, xmlParse("~/.pecan.xml"))
+    xml <- xmlMerge(xml, xmlParse("~/.pecan.xml"))
   }
   
   ## 3 merge pecan.xml
   if (file.exists("pecan.xml")) {
-    settings.xml <- xmlMerge(settings.xml, xmlParse("pecan.xml"))
+    xml <- xmlMerge(xml, xmlParse("pecan.xml"))
   }
   
   ## 4 merge PECAN_SETTINGS
   if (file.exists(Sys.getenv("PECAN_SETTINGS"))) {
-    settings.xml <- xmlMerge(settings.xml, xmlParse(Sys.getenv("PECAN_SETTINGS")))
+    xml <- xmlMerge(xml, xmlParse(Sys.getenv("PECAN_SETTINGS")))
   }
   
   ## 5 merge file
   if(!is.null(inputfile) | class(inputfile) == "character"){
     if(any(c(file.exists(inputfile), grepl("<pecan>", inputfile)))){ 
-      settings.xml <- xmlMerge(settings.xml, xmlParse(inputfile))
+      xml <- xmlMerge(xml, xmlParse(inputfile))
     }
   }
   ## 6 merge command line arguments
@@ -140,92 +212,153 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
   if (length(loc) != 0) {
     for(idx in loc) {
       if (!is.null(commandArgs()[idx+1]) && file.exists(commandArgs()[idx+1])) {
-        settings.xml <- xmlMerge(settings.xml, xmlParse(commandArgs()[idx+1]))
+        xml <- xmlMerge(xml, xmlParse(commandArgs()[idx+1]))
       }
     }
   }
   
   ## make sure something was loaded
-  if (is.null(settings.xml)) {
+  if (is.null(xml)) {
     log.error("Did not find any settings file to load.")
     stop("Did not find any settings file to load.")
   }
   
-  ## conver the xml to a list for ease and return
-  settings.list <- xmlToList(settings.xml)
+  ## convert the xml to a list for ease and return
+  settings <<- xmlToList(xml)
+
+  ## do a sanity check
+  check.settings(settings)
   
   ## crate the outputfolder
-  if (is.null(settings.list$outdir)) {
-    settings.list$outdir <- tempdir()
-    log.warn("No output folder specified, using", settings.list$outdir)
+  if (is.null(settings$outdir)) {
+    settings$outdir <- tempdir()
+    log.warn("No output folder specified, using", settings$outdir)
   } else {
-    log.debug("output folder =", settings.list$outdir)
+    log.debug("output folder =", settings$outdir)
   }
-  if (!file.exists(settings.list$outdir) && !dir.create(settings.list$outdir, recursive=TRUE)) {
-    log.error("Could not create folder", settings.list$outdir)
+  if (!file.exists(settings$outdir) && !dir.create(settings$outdir, recursive=TRUE)) {
+    log.error("Could not create folder", settings$outdir)
     stop("Could not create out folder.")
   }
   
-  ## create the PFT folders
-  for (i in 1:sum(names(unlist(settings.list$pfts)) == "pft.name")) {
-    if (is.null(settings.list$pfts[i]$pft$outdir)) {
-      settings.list$pfts[i]$pft$outdir <- paste(settings.list$outdir, "pft", settings.list$pfts[i]$pft$name, "", sep="/")
-      log.info("No output folder specified for", settings.list$pfts[i]$pft$name, "will use", settings.list$pfts[i]$pft$outdir);
+  ## create the model configuration folder
+  if(!is.null(settings$run$host$name) && (settings$run$host$name == "localhost")) {
+    if (is.null(settings$run$host$rundir)) {
+      if (is.null(settings$rundir)) {
+        settings$rundir <- file.path(settings$outdir, "run")
+      }
+      settings$run$host$rundir <- settings$rundir
+      log.info("No output folder for model configuration using", settings$run$host$rundir)
+    } else {
+      if (is.null(settings$rundir)) {
+        settings$rundir <- settings$run$host$rundir
+      }
+      log.debug("model configuration folder =", settings$run$host$rundir)
     }
-    out.dir <- settings.list$pfts[i]$pft$outdir
-    log.debug("Storing pft", settings.list$pfts[i]$pft$name, "in", out.dir)
+    if (settings$rundir != settings$run$host$rundir) {
+      settings$rundir <- settings$run$host$rundir
+      log.warn("rundir does not match run$host$rundir, setting to", settings$rundir)
+    }
+    if (!file.exists(settings$run$host$rundir) && !dir.create(settings$run$host$rundir, recursive=TRUE)) {
+      log.error("Could not create folder", settings$run$host$rundir)
+      stop("Could not create model configuration folder.")
+    }
+
+    ## create the model output folder
+    if (is.null(settings$run$host$outdir)) {
+      if (is.null(settings$modeloutdir)) {
+        settings$modeloutdir <- file.path(settings$outdir, "out")
+      }
+      settings$run$host$outdir <- settings$modeloutdir
+      log.info("No output folder for model runs using", settings$run$host$outdir)
+    } else {
+      if (is.null(settings$modeloutdir)) {
+        settings$modeloutdir <- settings$run$host$outdir
+      }
+      log.debug("model output folder =", settings$run$host$outdir)
+    }
+    if (settings$modeloutdir != settings$run$host$outdir) {
+      settings$modeloutdir <- settings$run$host$outdir
+      log.warn("modeloutdir does not match run$host$outdir, setting to", settings$modeloutdir)
+    }
+    if (settings$modeloutdir != settings$run$host$outdir) {
+      settings$modeloutdir <- settings$run$host$outdir
+      log.warn("modeloutdir does not match run$host$outdir, setting to", settings$modeloutdir)
+    }
+    if (!file.exists(settings$run$host$outdir) && !dir.create(settings$run$host$outdir, recursive=TRUE)) {
+      log.error("Could not create folder", settings$run$host$outdir)
+      stop("Could not create model output folder.")
+    }
+
+  } else {
+    ## create the run folder to store run configurations
+    if (is.null(settings$rundir)) {
+      settings$rundir <- file.path(settings$outdir, "run")
+      log.warn("No run folder specified, using", settings$rundir)
+    } else {
+      log.debug("run folder =", settings$rundir)
+    }
+    if (!file.exists(settings$rundir) && !dir.create(settings$rundir, recursive=TRUE)) {
+      log.error("Could not create folder", settings$rundir)
+      stop("Could not create run folder.")
+    }
+
+    ## create the model output folder to store run outputs
+    if (is.null(settings$modeloutdir)) {
+      settings$modeloutdir <- file.path(settings$outdir, "out")
+      log.warn("No modeloutdir folder specified, using", settings$modeloutdir)
+    } else {
+      log.debug("modeloutdir folder =", settings$modeloutdir)
+    }
+    if (!file.exists(settings$modeloutdir) && !dir.create(settings$modeloutdir, recursive=TRUE)) {
+      log.error("Could not create folder", settings$modeloutdir)
+      stop("Could not create modeloutdir folder.")
+    }
+  }
+
+  ## create the PFT folders
+  for (i in 1:sum(names(unlist(settings$pfts)) == "pft.name")) {
+    if (is.null(settings$pfts[i]$pft$outdir)) {
+      settings$pfts[i]$pft$outdir <- file.path(settings$outdir, "pft", settings$pfts[i]$pft$name)
+      log.info("No output folder specified for", settings$pfts[i]$pft$name, "will use", settings$pfts[i]$pft$outdir);
+    }
+    out.dir <- settings$pfts[i]$pft$outdir
+    log.debug("Storing pft", settings$pfts[i]$pft$name, "in", out.dir)
     if (!file.exists(out.dir) && !dir.create(out.dir, recursive=TRUE)) {
       log.error("Could not create folder", out.dir)
       stop("Could not create pft folders.")
     }
   }
   
-  ## create the model configuration folder
-  if(exists("settings.list$run")){
-    if (settings.list$run$host$name == "localhost") {
-      if (is.null(settings.list$run$host$rundir)) {
-        settings.list$run$host$rundir <- paste(settings.list$outdir, "run", "", sep="/")
-        log.info("No output folder for model configuration using", settings.list$run$host$rundir)
-      } else {
-        log.debug("model configuration folder =", settings.list$run$host$rundir)
-      }
-      if (!file.exists(settings.list$run$host$rundir) && !dir.create(settings.list$run$host$rundir, recursive=TRUE)) {
-        log.error("Could not create folder", settings.list$run$host$rundir)
-        stop("Could not create model configuration folder.")
-      }
-      
-      ## create the model output folder
-      if (is.null(settings.list$run$host$outdir)) {
-        settings.list$run$host$outdir <- paste(settings.list$outdir, "out", "", sep="/")
-        log.info("No output folder for model runs using", settings.list$run$host$outdir)
-      } else {
-        log.debug("model output folder =", settings.list$run$host$outdir)
-      }
-      if (!file.exists(settings.list$run$host$outdir) && !dir.create(settings.list$run$host$outdir, recursive=TRUE)) {
-        log.error("Could not create folder", settings.list$run$host$outdir)
-        stop("Could not create model output folder.")
-      }
+  ## create the workflow
+  if (!'workflow' %in% names(settings)) {
+    con <- try(query.base.con(settings), silent=TRUE)
+    if(!is.character(con)){
+      query.base(paste("INSERT INTO workflows (site_id, model_id, hostname, start_date, end_date, started_at, created_at, folder) values ('",
+                       settings$run$site$id, "','", settings$model$id, "', '", settings$run$host$name, "', '",
+                       settings$run$start.date, "', '", settings$run$end.date, "', NOW(), NOW(), '", dirname(settings$outdir), "')", sep=''), con)
+      settings$workflow$id = query.base(paste("SELECT LAST_INSERT_ID() AS ID"), con)[['ID']]
+      dbDisconnect(con)
     }
   }
-
 
   ## save the merged pecan.xml
   if (is.null(outputfile)) {
     outputfile="pecan.xml"
   }
-  settings.output <- file.path(settings.list$outdir, outputfile)
-  if (file.exists(settings.output)) {
-    log.warn(paste("File already exists [", settings.output, "] file will be overwritten"))
+  output <- file.path(settings$outdir, outputfile)
+  if (file.exists(output)) {
+    log.warn(paste("File already exists [", output, "] file will be overwritten"))
   } 
-  saveXML(settings.xml, file=settings.output)
+  saveXML(listToXml(settings, "pecan"), file=output)
   
   ## setup Rlib from settings
-  if(!is.null(settings.list$Rlib)){ 
-    .libPaths(settings.list$Rlib)
+  if(!is.null(settings$Rlib)){ 
+    .libPaths(settings$Rlib)
   }
   
   ## Return settings file as a list
-  invisible(settings.list)
+  invisible(settings)
 }
 ##=================================================================================================#
 

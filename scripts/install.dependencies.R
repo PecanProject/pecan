@@ -7,9 +7,11 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 list.of.packages <- c('car', 'chron', 'coda', 'doSNOW', 'dplR', 'emulator',
-					  'ggplot2', 'gridExtra', 'hdf5', 'Hmisc', 'kernlab',
-					  'MASS', 'ncdf', 'plotrix', 'plyr', 'randtoolbox', 'rjags',
-					  'RMySQL', 'roxygen2', 'stringr', 'testthat', 'XML')
+                      'ggplot2', 'gridExtra', 'hdf5', 'Hmisc', 'kernlab',
+                      'lubridate', 'MASS', 'MCMCpack', 'mvtnorm', 'ncdf',
+                      'ncdf4', 'plotrix', 'plyr', 'randtoolbox', 'rjags',
+                      'Rmpi', 'RMySQL', 'roxygen2', 'stringr', 'testthat',
+                      'XML', 'RNCEP')
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) {
   print("installing : ")

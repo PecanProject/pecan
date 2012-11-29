@@ -25,7 +25,7 @@ require("dbinfo.php");
 $connection=open_database();
 
 // get run information
-$query = "SELECT site_id, model_id, model_type, hostname, folder FROM workflows WHERE workflows.id=$workflowid";
+$query = "SELECT site_id, model_id, model_type, hostname, folder FROM workflows, models WHERE workflows.id=$workflowid and model_id=models.id";
 $result = mysql_query($query);
 if (!$result) {
 	die('Invalid query: ' . mysql_error());
@@ -253,7 +253,7 @@ function status($token) {
         return $data[3];
       }
       if ($token == "MODEL") {
-        return exec("tail -20 `ls -1rt $folder/run/*.log` |  grep 'Simulating:' | tail -1 | sed 's/^.*Simulating:[ ]*//' | awk '{print $1}'");
+        return exec("awk '/Simulating/ { print $3 }' $folder/workflow_stage2.Rout | tail -1");
       }
       return "Running";
     }

@@ -32,7 +32,7 @@
 \dontrun{
 settings <- read.settings()
 settings <- read.settings(file="willowcreek.xml")
-test.settings.file <- system.file("tests/test.settings.xml", package = "PEcAn.all")
+test.settings.file <- system.file("tests/test.xml", package = "PEcAn.all")
 settings <- read.settings(test.settings.file)
 }
 }

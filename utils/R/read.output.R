@@ -20,18 +20,15 @@
 ##' @return vector of output variable
 ##' @export
 ##' @author Michael Dietze
-read.output <- function(run.id, outdir, start.year=NA, end.year=NA,
-                        variables = "GPP", model = model){
-
-  # had to be added since model didn't seem to be passed to this code?
-  model <- settings$model$name
-    
+read.output <- function(run.id, outdir, start.year=NA, end.year=NA, variables = "GPP") {
   ### Load requirements
   require(ncdf)
   
-  model2nc = paste("model2netcdf", model, sep=".")
+  model <- settings$model$name
+  model2nc <- paste("model2netcdf", model, sep=".")
   if(!exists(model2nc)){
-    warning(paste("File conversion function model2netcdf does not exist for",model))
+    log.warn("File conversion function model2netcdf does not exist for",model)
+    return(NA)
   }
   
   cflux = c("GPP","NPP","NEE","TotalResp","AutoResp","HeteroResp","DOC_flux","Fire_flux","Stem") #kgC m-2 s-1
@@ -40,109 +37,89 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA,
   ### ----- Get run info ----- 
   ## get list of files
   if (model=="SIPNET"){
-     file.names <- dir(paste(outdir,run.id,sep="/"), pattern=run.id, full.names=TRUE)
-     outfiles <- list.files(path=paste(outdir,run.id,sep="/"),pattern="\\.out$",full.names=TRUE)
+     outfiles <- c(file.path(outdir, "sipnet.out"))
    } else if (model=="ED2"){
-     #file.names <- dir(outdir, pattern=paste(run.id,"\\.h5$",sep=""), full.names=TRUE)
-     file.names <- dir(outdir, pattern=run.id, full.names = TRUE)
-     file.names <- file.names[grep("\\.h5$",file.names)]
-     outfiles <- list.files(path=outdir,pattern=run.id, full.names = TRUE)
-     outfiles <- outfiles[grep("\\.h5$", outfiles)]
-   } else if (model %in% c("biocro", "c4photo")) {
-     file.names <- dir(file.path(outdir, run.id),
-                       pattern = run.id, full.names = TRUE)
-     outfiles <- list.files(path = file.path(outdir, run.id),
-                            pattern = "\\.Rdata$", full.names=TRUE)
+     outfiles <- list.files(path=outdir, pattern="analysis-T-.*\\.h5$", full.names=TRUE)
+   } else if (model %in% c("BIOCRO", "C4PHOTO")) {
+     outfiles <-  c(file.path(outdir, "result.Rdata"))
+  } else {
+    stop(paste("Don't know how to convert output for model", model))
   }
+  print(outfiles)
+
   ## model-specific code to parse each file 
-  if(length(file.names) > 0) {
+  if(length(outfiles) > 0) {
+    ## Always call conversion to dangerous, should do check in conversion code since it knows what gets converted.
+    do.call(model2nc, list(outdir))
+    print(paste("Output from run", run.id, "has been converted to netCDF"))
+    ncfiles <- list.files(path=outdir, pattern="\\.nc$", full.names=TRUE)
+    if(length(ncfiles) == 0){
+      log.error("Conversion of model files to netCDF unsuccessful")
+      stop("Conversion of model files to netCDF unsuccessful")
+    }
 
-    ## subset output files
-    if (model=="SIPNET"){
-       ncfiles <- list.files(path = file.path(outdir, run.id),
-                             pattern= "\\.nc$",
-                             full.names = TRUE) 
-     } else if (model=="ED2"){
-       ncfiles <- list.files(path = outdir,
-                             pattern = run.id,
-                             full.names = TRUE)
-       ncfiles <- ncfiles[grep("\\.nc$", ncfiles)]
-     } else if (model %in% c("biocro", "c4photo")) {
-       ncfiles <- file.names[grepl("\\.nc", file.names)]
-     }
-    
-    ## check that there are output files
-    if(length(ncfiles) + length(outfiles) > 0){
-
-      ## if files have not been converted yet, convert to standard format
-      if(length(ncfiles) == 0){
-        do.call(model2nc, list(outdir, run.id))
-        print(paste("Output from run", run.id, "has been converted to netCDF"))
-        if (model == "SIPNET"){
-          ncfiles <- list.files(path=paste(outdir, run.id, sep="/"),
-                                pattern="\\.nc$",full.names=TRUE)
-        } else if (model == "ED2") {
-          ncfiles <- list.files(path=outdir, pattern=run.id, full.names=TRUE)
-          ncfiles <- ncfiles[grep("\\.nc$",ncfiles)]
-        } else if (model %in% c("biocro", "c4photo")) {
-          file.names <- dir(paste(outdir,run.id,sep="/"),
-                            pattern=run.id, full.names=TRUE)
-          ncfiles <- file.names[grepl("\\.nc", file.names)]
-        }
-        if(length(ncfiles) == 0){
-          stop("Conversion of model files to netCDF unsuccessful")
-        }
-      }
-
-      ## determine years to load
-      if(model != "c4photo"){
-        nc.years = as.numeric(sub(paste(run.id,".",sep=""),"",
-          sub(".nc","",basename(ncfiles), fixed = TRUE), fixed = TRUE))
-        first <- max(1, which(nc.years == start.year), na.rm = TRUE)
-        last <- min(length(nc.years),which(nc.years == end.year),na.rm=TRUE)
-        
-        ## load files
-        yrs <- first:max(first,last)
-      } else if (model %in% c("biocro", "c4photo")) {
-        nc.years <- list(1)
-        yrs <- 1
-      }
-
-      data <- list()
+    ## determine years to load
+    if(model != "C4PHOTO"){
+      nc.years = as.numeric(sub(paste(run.id,".",sep=""),"",
+        sub(".nc","",basename(ncfiles), fixed = TRUE), fixed = TRUE))
+      first <- max(1, which(nc.years == start.year), na.rm = TRUE)
+      last <- min(length(nc.years),which(nc.years == end.year),na.rm=TRUE)
       
-      for(i in 1:length(yrs)){
-        print(paste("----- Processing year: ", nc.years[yrs[i]]))
-        nc <- open.ncdf(ncfiles[yrs[i]], verbose=FALSE)
-        for(j in 1:length(variables)){
-          if(variables[j] %in% names(nc$var)){
-            newdata <- get.var.ncdf(nc, varid=variables[j], verbose=FALSE)
-            if(variables[j] %in% c(cflux, wflux)){
-              ## Convert output to annual values.
-              ## Multiply by seconds in a 365d year and convert per ha
-              newdata <- newdata*31536000*10000 # kgC/ha
-            }
-            if(i == 1) {
-              data[[j]] <- newdata
-            } else {
-              data[[j]] <- c(data[[j]],newdata)
-            }
-          } else {
-            warning(paste(variables[j], "missing in", ncfiles[yrs[i]]))
+      ## load files
+      yrs <- first:max(first,last)
+    } else if (model %in% c("BIOCRO", "C4PHOTO")) {
+      nc.years <- list(1)
+      yrs <- 1
+    }
+
+    data <- list()
+    
+    for(i in 1:length(yrs)){
+      print(paste("----- Processing year: ", nc.years[yrs[i]]))
+      nc <- open.ncdf(ncfiles[yrs[i]], verbose=FALSE)
+      for(j in 1:length(variables)){
+        if(variables[j] %in% names(nc$var)){
+          newdata <- get.var.ncdf(nc, varid=variables[j], verbose=FALSE)
+          if(variables[j] %in% c(cflux, wflux)){
+            ## Convert output to annual values.
+            ## Multiply by seconds in a 365d year and convert per ha
+            newdata <- newdata*31536000*10000 # kgC/ha
           }
+          if(i == 1) {
+            data[[j]] <- newdata
+          } else {
+            data[[j]] <- c(data[[j]],newdata)
+          }
+        } else {
+          warning(paste(variables[j], "missing in", ncfiles[yrs[i]]))
         }
-        close.ncdf(nc)
-        showConnections(all = TRUE)
       }
-      names(data) <- variables
-      print(paste("----- Mean ",variables," : ",sapply(data,median,na.rm=TRUE)))
-      print(paste("----- Median ",variables,": ",sapply(data,median,na.rm=TRUE)))
-      return(data)   
-    } else {
-      stop("no output files present")
-    }    
+      close.ncdf(nc)
+      showConnections(all = TRUE)
+    }
+    names(data) <- variables
+    print(paste("----- Mean ",variables," : ",sapply(data,median,na.rm=TRUE)))
+    print(paste("----- Median ",variables,": ",sapply(data,median,na.rm=TRUE)))
+    return(data)   
+
+  } else {
+    log.error("No output files present for", model)
   }
+
   return(NA) 
-  closeAllConnections()
+}
+
+#--------------------------------------------------------------------------------------------------#
+##' Reads the output of all model runs
+##'
+##' @title Read outputs
+##' @name read.outputs
+##' @export
+##' @author Rob Kooper
+read.outputs <- function() {
+  for (run in readLines(con=file.path(settings$rundir, "runs.txt"))) {
+    read.output(run, file.path(settings$run$host$outdir, run))
+  }
 }
 #==================================================================================================#
 
