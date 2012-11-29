@@ -11,7 +11,7 @@ list.of.packages <- c('car', 'chron', 'coda', 'doSNOW', 'dplR', 'emulator',
                       'lubridate', 'MASS', 'MCMCpack', 'mvtnorm', 'ncdf',
                       'ncdf4', 'plotrix', 'plyr', 'randtoolbox', 'rjags',
                       'Rmpi', 'RMySQL', 'roxygen2', 'stringr', 'testthat',
-                      'XML')
+                      'XML', 'RNCEP')
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) {
   print("installing : ")

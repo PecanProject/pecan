@@ -6,57 +6,46 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
+
 #--------------------------------------------------------------------------------------------------#
 ##' 
-##' Start biocro model runs on local or remote server
-##' @title Start biocro model runs
-##' @name start.runs.biocro
+##' Start biocro model runs on local
+##' @title Start run of biocro model
+##' @param runid the id of the run (folder in runs) to execute
 ##' @export
-##' @author David LeBauer, Deepak Jaiswal
-start.run.biocro <- function(run.id){
-  print(paste("---- biocro model run: ", run.id, sep=""))
-  rundir <- file.path(settings$outdir, run.id)
+##' @author Rob Kooper, David LeBauer, Deepak Jaiswal
+start.runs.BIOCRO <- function(runid) {
+  if (settings$run$host$name != "localhost") {
+    stop("Only local runs are executed here")
+  }
+
+  rundir <- file.path(settings$run$host$rundir, as.character(runid))
+  outdir <- file.path(settings$run$host$outdir, as.character(runid))
+
+  cwd <- getwd()
   setwd(rundir)
-  config <- xmlToList(xmlParse(run.id))
 
+  # run model
+  require(EnCro)
+  require(XML)
 
-################ Read  Year and Location Details and derive model input############
+  # compute/download weather
   lat <- as.numeric(settings$run$site$lat)
   lon <- as.numeric(settings$run$site$lon)
-  dateofplanting <- ymd_hms(settings$run$start.date)
-  dateofharvest <- ymd_hms(settings$run$end.date)
+  start <- ymd_hms(settings$run$start.date)
+  end <- ymd_hms(settings$run$end.date)
+  weather <- InputForWeach(lat, lon, year(start), year(end))
 
-  
-  weather <- InputForWeach(lat, lon, year(dateofplanting), year(dateofharvest))
-  pp <- do.call(photoParms, list(unlist(config$parms)))
-  result <- BioGro(weather, photoControl = pp)
-  save(result, file=paste(run.id,".Rdata",sep=""))
+  # run model
+  config <- xmlToList(xmlParse("data.xml"))
+  pp<-do.call(photoParms,list(unlist(config$parms)))
+  result<-BioGro(weather, photoControl=pp)
+
+  # save results
+  save(result, file=file.path(outdir, "result.Rdata"))
+  file.copy(file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))
 }
 
-
-
-##' Function to start all runs of biocro model in directory
-##' @title Start run of biocro model
-##' @export
-##' @return nothing, starts run as side effect
-##' @author David LeBauer
-start.runs.biocro <- function(){
-  host     <-  settings$run$host
-  
-  ## Run model from user Rscript 
-  if(host$name == 'localhost') {
-    ## find directories in rundir
-    isrun <- file.info(dir(settings$outdir, full.names = TRUE))$isdir
-    runs <- dir(settings$outdir)[isrun]
-    ## run biocro for each 
-    for(run.id in runs){
-      start.run.biocro(run.id)
-    }    
-  }else{
-    warning("Execution biocro on Remote Server NOT YET IMPLEMENTED")
-    stop() 
-  }
-} ### End of function
 #==================================================================================================#
 
 
