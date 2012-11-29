@@ -1,12 +1,12 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
-#--------------------------------------------------------------------------------------------------#
+##-------------------------------------------------------------------------------
+## Copyright (c) 2012 University of Illinois, NCSA.
+## All rights reserved. This program and the accompanying materials
+## are made available under the terms of the 
+## University of Illinois/NCSA Open Source License
+## which accompanies this distribution, and is available at
+## http://opensource.ncsa.illinois.edu/license.html
+##-------------------------------------------------------------------------------
+##--------------------------------------------------------------------------------------------------#
 ##'
 ##' Start selected ecosystem model runs within PEcAn workflow
 ##' 
@@ -20,7 +20,7 @@
 ##' }
 ##' @author Shawn Serbin
 ##'
-start.model.runs <- function(model, write.to.db = TRUE){
+start.model.runs <- function(model=settings$model$name, write.to.db = TRUE){
 
   fcn.name <- paste("start.runs.", model, sep="")
   if(exists(fcn.name)){
@@ -31,34 +31,84 @@ start.model.runs <- function(model, write.to.db = TRUE){
     print(" ")
     if(!write.to.db){
       warning("Run provenance not being logged by database")
+      con <- NULL
     }
     if(write.to.db){
       ## write to the runs table
       con <- try(query.base.con(settings), silent=TRUE)
-      if(!is.character(con)){
-        query.base(paste("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, started_at) values ('", settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", settings$run$end.date, "', '",settings$outdir , "', NOW(), NOW())", sep=''), con)
-        id <- query.base(paste("SELECT LAST_INSERT_ID() AS ID"), con)
+      if(is.character(con)) {
+        con <- NULL
       }
     }
-    
-    ## launch actual model
-    do.call(fcn.name, args=list())
-	
-    ## job is finished
-    if(write.to.db){
-      ## TODO this should move in case of launch of on HPC
-      if(!is.character(con)){
-        query.base(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", id), con)
-        query.close(con)
+
+    # TODO RK : create ssh connection to remote host and keep it open
+
+    # copy all run/out dirs to remote host
+    if (settings$run$host$name != "localhost") {
+      rsync("-a", settings$rundir, paste(settings$run$host$name, settings$run$host$rundir, sep=":"), pattern="/*")
+      rsync("-a", settings$modeloutdir, paste(settings$run$host$name, settings$run$host$outdir, sep=":"), pattern="/*")
+    }
+
+    # loop through runs and either call start run, or launch job on remote machine
+    jobids <- list()
+    for (run in readLines(con=file.path(settings$rundir, "runs.txt"))) {
+      # write start time to database
+      if (!is.null(con)) {
+        query.base(paste("UPDATE runs SET started_at =  NOW() WHERE id = ", run), con)
       }
-    }  
+
+      # start the actual model run
+      if (settings$run$host$name == "localhost") {
+        do.call(fcn.name, args=list(run))
+
+        # write finished time to database
+        if (!is.null(con)) {
+          query.base(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", run), con)
+        }
+      } else {
+        qsub <- gsub("@NAME@", paste("PEcAn-", run, sep=""), settings$run$host$qsub)
+        qsub <- gsub("@STDOUT@", file.path(settings$run$host$outdir, run, "stdout.log"), qsub)
+        qsub <- gsub("@STDERR@", file.path(settings$run$host$outdir, run, "stderr.log"), qsub)
+        out <- system2("ssh", c(settings$run$host$name, qsub, file.path(settings$run$host$rundir, run, "job.sh")), stdout=TRUE)
+        log.info("Job submitted :", out)
+        m <- regexec(settings$run$host$qsub.jobid, out)
+        jobids[run] <- regmatches(out, m)[[1]][2]
+      }
+    }
+
+    # check to see if all remote jobs are done
+    if (settings$run$host$name != "localhost") {
+      while(length(jobids) > 0) {
+        Sys.sleep(10)
+        for(run in names(jobids)) {
+          check <- gsub("@JOBID@", jobids[run], settings$run$host$qstat)
+          out <- system2("ssh", c(settings$run$host$name, check), stdout=TRUE)
+          if ((length(out) > 0) && (out == "DONE")) {
+            log.debug("Job", jobids[run], "for run", run, "finished")
+            jobids[run] <- NULL
+            # write finished time to database 
+            if (!is.null(con)) {
+              query.base(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", run), con)
+            }
+          }
+        }
+      }
+    }
+
+    # TODO RK : close connection to remote site
+
+    ## job is finished
+    if (!is.null(con)) {
+      query.close(con)
+    }
+
   } else {
     warning(paste(fcn.name, "does not exist"))
     warning(paste("This function is required, please make sure the model module is loaded for",model))
     stop()
   }
 } ### End of function
-#==================================================================================================#
+##==================================================================================================#
 
 
 ####################################################################################################

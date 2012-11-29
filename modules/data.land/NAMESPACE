@@ -1,4 +1,4 @@
 export(fia.to.psscss)
+export(get.attributes)
 export(shp2kml)
-import(plotKML)
-import(rgdal)
+export(subset.layer)

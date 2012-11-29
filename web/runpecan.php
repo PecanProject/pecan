@@ -58,21 +58,33 @@ if ($modeltype == "ED2") {
 		die("Need a psscss.");
 	}
 	$psscss=$_REQUEST['psscss'];
+	$advanced_edit=false;
 } else if ($modeltype == "SIPNET") {
-        if (!isset($_REQUEST['climate'])) {
-                die("Need a climate.");
-        }
-        $climid=$_REQUEST['climate'];
-        
-        $query="SELECT file_path, start_date, end_date FROM inputs, dbfiles, machines WHERE inputs.site_id=${siteid} AND inputs.file_id=${climid} AND dbfiles.file_id=${climid} AND machines.hostname='${hostname}' AND dbfiles.machine_id=machines.id;";
-        $result = mysql_query($query);
-        if (!$result) {
-          die('Invalid query: ' . mysql_error());
-        }
-        $row = mysql_fetch_assoc($result);
-        $startdate=$row['start_date'];
-        $enddate=$row['end_date'];
-        $climate=$row['file_path'];
+    if (!isset($_REQUEST['climate'])) {
+        die("Need a climate.");
+    }
+    $climid=$_REQUEST['climate'];
+    
+    $query="SELECT file_path, start_date, end_date FROM inputs, dbfiles, machines WHERE inputs.site_id=${siteid} AND inputs.file_id=${climid} AND dbfiles.file_id=${climid} AND machines.hostname='${hostname}' AND dbfiles.machine_id=machines.id;";
+    $result = mysql_query($query);
+    if (!$result) {
+      die('Invalid query: ' . mysql_error());
+    }
+    $row = mysql_fetch_assoc($result);
+    $startdate=$row['start_date'];
+    $enddate=$row['end_date'];
+    $climate=$row['file_path'];
+	$advanced_edit=false;
+} else if ($modeltype == "BIOCRO") {
+	if (!isset($_REQUEST['start'])) {
+		die("Need a start date.");
+	}
+	$startdate=$_REQUEST['start'];
+	if (!isset($_REQUEST['end'])) {
+		die("Need a end date.");
+	}
+	$enddate=$_REQUEST['end'];
+    $advanced_edit=(isset($_REQUEST['advanced_edit']) && ($_REQUEST['advanced_edit'] == 'on'));
 }
 
 // get site information
@@ -95,7 +107,7 @@ $binary = $pieces[1];
 
 // create the workflow execution
 $params=mysql_real_escape_string(str_replace("\n", "", var_export($_REQUEST, true)));
-if (mysql_query("INSERT INTO workflows (site_id, model_type, model_id, hostname, start_date, end_date, params, started_at, created_at) values ('${siteid}', '${modeltype}', '${modelid}', '${hostname}', '${startdate}', '${enddate}', '${params}', NOW(), NOW())") === FALSE) {
+if (mysql_query("INSERT INTO workflows (site_id, model_id, hostname, start_date, end_date, params, advanced_edit, started_at, created_at) values ('${siteid}', '${modelid}', '${hostname}', '${startdate}', '${enddate}', '${params}', '${advanced_edit}', NOW(), NOW())") === FALSE) {
 	die('Can\'t insert workflow : ' . mysql_error());
 }
 $workflowid=mysql_insert_id();
@@ -131,6 +143,13 @@ fwrite($fh, "<pecan>" . PHP_EOL);
 fwrite($fh, "  <pecanDir>${pecan_home}</pecanDir>" . PHP_EOL);
 fwrite($fh, "  <outdir>${folder}/pecan/</outdir>" . PHP_EOL);
 
+fwrite($fh, "  <database>" . PHP_EOL);
+fwrite($fh, "    <userid>${db_username}</userid>" . PHP_EOL);
+fwrite($fh, "    <passwd>${db_password}</passwd>" . PHP_EOL);
+fwrite($fh, "    <location>${db_hostname}</location>" . PHP_EOL);
+fwrite($fh, "    <name>${db_database}</name>" . PHP_EOL);
+fwrite($fh, "  </database>" . PHP_EOL);
+
 $pft_id=1;
 fwrite($fh, "  <pfts>" . PHP_EOL);
 foreach($pft as $p) {
@@ -142,18 +161,16 @@ foreach($pft as $p) {
 	fwrite($fh, "      <outdir>${folder}/pft/${pft_id}/</outdir>" . PHP_EOL);
 	fwrite($fh, "      <constants>" . PHP_EOL);
 	fwrite($fh, "        <num>${pft_id}</num>" . PHP_EOL);
+	if ($modeltype == "BIOCRO") {
+		$src = fopen("template/biocro.xml", 'r');
+		stream_copy_to_stream($src, $fh);
+		fclose($src);
+	}
 	fwrite($fh, "      </constants>" . PHP_EOL);
 	fwrite($fh, "    </pft>" . PHP_EOL);
 	$pft_id++;
 }
 fwrite($fh, "  </pfts>" . PHP_EOL);
-
-fwrite($fh, "  <database>" . PHP_EOL);
-fwrite($fh, "    <userid>${db_username}</userid>" . PHP_EOL);
-fwrite($fh, "    <passwd>${db_password}</passwd>" . PHP_EOL);
-fwrite($fh, "    <location>${db_hostname}</location>" . PHP_EOL);
-fwrite($fh, "    <name>${db_database}</name>" . PHP_EOL);
-fwrite($fh, "  </database>" . PHP_EOL);
 
 fwrite($fh, "  <meta.analysis>" . PHP_EOL);
 fwrite($fh, "    <iter>3000</iter>" . PHP_EOL);
@@ -205,8 +222,10 @@ if ($modeltype == "ED2") {
 #} else ($modeltype = "SIPNET") {
 }
 fwrite($fh, "  </model>" . PHP_EOL);
-fwrite($fh, "  <run>" . PHP_EOL);
+fwrite($fh, "  <workflow>" . PHP_EOL);
 fwrite($fh, "    <id>$workflowid</id>" . PHP_EOL);
+fwrite($fh, "  </workflow>" . PHP_EOL);
+fwrite($fh, "  <run>" . PHP_EOL);
 fwrite($fh, "    <folder>${folder}</folder>" . PHP_EOL);
 fwrite($fh, "    <site>" . PHP_EOL);
 fwrite($fh, "      <id>${siteid}</id>" . PHP_EOL);

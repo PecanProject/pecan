@@ -35,13 +35,13 @@ pda.mcmc <- function(model,chain=1,vars=NULL,jvar=NULL,params=NULL){
   if(!exists(my.write.config)){
     print(paste(my.write.config,"does not exist"))
     print(paste("please make sure that the PEcAn interface is loaded for",model))
-    exit()
+    stop()
   }
   my.start.run <- paste("start.run.",model,sep="")
   if(!exists(my.start.run)){
     print(paste(my.start.run,"does not exist"))
     print(paste("please make sure that the PEcAn interface is loaded for",model))
-    exit()
+    stop()
   }
   read.SIPNET.NEE <- function(run.id,outdir){
     sipnet.output <- read.table(paste(outdir,"/",run.id,"/",run.id,".out",sep=""),header=T,skip=1,sep='')

@@ -8,9 +8,6 @@
     </pft>
   </pfts>
   <database>
-    <!--       <userid>ebi_pecan</userid>
-	 <passwd>hu2WHh32VC</passwd>
-	 <name>ebi_production</name>-->
     <userid>ebi_analys_user</userid>
     <passwd>b742xsAu</passwd>
     <name>ebi_analysis</name>
@@ -20,9 +17,14 @@
     <iter>3000</iter>
     <random.effects>FALSE</random.effects>
   </meta.analysis>
+  <ensemble>
+    <size>1</size>
+  </ensemble>
   <sensitivity.analysis>
     <quantiles>
+      <sigma>1</sigma>
       <sigma>0</sigma>
+      <sigma>-1</sigma>
     </quantiles>
     <variable>Stem</variable>
     <start.year>2002</start.year>

@@ -10,6 +10,7 @@
 
   settings.text <- "
 <pecan>
+  <nocheck>nope</nocheck>
   <pfts>
     <pft>
       <name>ebifarm.pavi</name>
@@ -24,7 +25,6 @@
     <name>ebi_analysis</name>
   </database>
 </pecan>"
-
 
 test_that("read.settings works file,  or ",{
 ## create settings file "tmp"

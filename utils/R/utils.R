@@ -57,7 +57,8 @@ zero.truncate <- function(y) {
 ##' @author David LeBauer
 ##' @author Shawn Serbin
 #--------------------------------------------------------------------------------------------------#
-rsync <- function(args, from, to, pattern=''){
+rsync <- function(args, from, to, pattern='') {
+  print(paste('rsync',' ', args,' ', from, pattern, ' ', to, sep = ''))
   system(paste('rsync',' ', args,' ', from, pattern, ' ', to, sep = ''), intern=TRUE )
 }
 #==================================================================================================#
@@ -107,7 +108,29 @@ vecpaste <- function(x) paste(paste("'", x, "'", sep=''), collapse=',')
 ##' @export
 #--------------------------------------------------------------------------------------------------#
 get.run.id <- function(run.type, index, trait='', pft.name=''){
-  run.id <- paste(pft.name, run.type, trait, index, sep='')
+  result <- run.type
+  if (pft.name != "") {
+    if (result != "") {
+      result <- paste(result, pft.name, sep='-')
+    } else {
+      result <- pft.name
+    }
+  }
+  if (trait != "") {
+    if (result != "") {
+      result <- paste(result, trait, sep='-')
+    } else {
+      result <- trait
+    }
+  }
+  if (index != "") {
+    if (result != "") {
+      result <- paste(result, index, sep='-')
+    } else {
+      result <- index
+    }
+  }
+  return(result)
 }
 #==================================================================================================#
 

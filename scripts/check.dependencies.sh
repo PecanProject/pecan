@@ -12,7 +12,7 @@
 ALL="ggplot2 randtoolbox gridExtra testthat roxygen2"
 
 # packages that are not in cran
-SKIP="time EnCro"
+SKIP="(time|EnCro)"
 
 # find all packages needed (require and library)
 for f in `find . -type d -name R`; do
@@ -27,16 +27,17 @@ for f in `find . -type d -name R`; do
   TEMP=$( echo $PACKAGE)
   echo "packages needed for $NAME : $TEMP"
 
-  for s in $SKIP; do
-    PACKAGE=$( echo $PACKAGE | grep -v $s )
-  done
+#  for s in $SKIP; do
+#    PACKAGE=$( echo $PACKAGE | grep -v $s )
+#  done
   ALL="${ALL} ${PACKAGE}"
-  echo $ALL
 done
+
+echo $ALL
 
 # sort packages and create little R script
 if [ ! -z "$ALL" ]; then
-  ALL=$( echo $ALL | tr -s [:space:] \\n | sort -u )
+  ALL=$( echo $ALL | tr -s [:space:] \\n | sort -u | egrep -v "${SKIP}" )
   ALL=$( echo $ALL )
   ALL=$( echo "'$ALL'" | sed -e "s/ /', '/g" )
   echo "Make sure following packages are installed : "
@@ -49,7 +50,7 @@ new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'
 if(length(new.packages)) {
   print('installing : ')
   print(new.packages)
-  install.packages(new.packages, lib=Sys.getenv('R_LIBS_USER'), repos='http://cran.us.r-project.org')
+  install.packages(new.packages, repos='http://cran.us.r-project.org')
 } " | R --vanilla
 EOF
 fi

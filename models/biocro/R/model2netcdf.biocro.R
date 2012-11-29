@@ -17,24 +17,29 @@
 ##' @param run.id Name of biocro model output file.
 ##' @export
 ##' @author David LeBauer, Deepak Jaiswal
-model2netcdf.biocro <- function(outdir, run.id) {
+model2netcdf.BIOCRO <- function(outdir) {
   
+  # TODO : this is not working, only saves 1 year
+
   require(ncdf4)
   require(lubridate)
   ### Read in model output in biocro format
-  outfile <- file.path(outdir, run.id, paste0(run.id, ".Rdata"))
+  outfile <- file.path(outdir, "result.Rdata")
   load(outfile)
-  biocro.output <- result 
-  output <- list()
 
   ## Focus on Stem Biomass only for now
-  output[["Stem"]]    <- biocro.output$Stem
+  #output[["Stem"]]    <- biocro.output$Stem
+
+  # TODO : this is bogus probably!!!
+  # compute GPP
+  result[["GPP"]] <- result[["CanopyAssim"]]
   
-  var <- list()
   t <- ncdim_def("time", "seconds", 3600)
 
-  var[["Stem"]]    <- ncvar_def("Stem", "Mg ha-1", t, -999,
-                                "Stem Biomass")
+  var <- list()
+  var[["Stem"]]    <- ncvar_def("Stem", "Mg ha-1", t, -999, "Stem Biomass")
+  var[["GPP"]]    <- ncvar_def("GPP", "", t, -999, "Canopy Assimilation")
+
   ## var[["Leaf"]]    <- ncvar_def("Leaf", "Mg ha-1", t, -999,
   ##                               "Leaf Biomass")
   ## var[["Root"]]    <- ncvar_def("Root", "Mg ha-1", t, -999,
@@ -49,12 +54,15 @@ model2netcdf.biocro <- function(outdir, run.id) {
   ##                                        "Canopy Transpiration")
   
   ##******************** Declare netCDF variables ********************#
-  nc.outfile <- file.path(outdir, run.id, paste0(run.id, ".nc"))
+  start_year <- format(as.Date(settings$run$start.date), "%Y")
+  end_year <- format(as.Date(settings$run$end.date), "%Y")
+
+  nc.outfile <- file.path(outdir, paste0(start_year, ".nc"))
   nc <- nc_create(filename = nc.outfile, var)
   
   ## Output netCDF data
-  for(i in 1:length(var)){
-    ncatt_put(nc, var[[i]], var[[i]]$name, output[[i]])  
+  for(name in names(var)) {
+    ncatt_put(nc, var[[name]], name, result[[name]])  
   }
   nc_close(nc) 
 }
