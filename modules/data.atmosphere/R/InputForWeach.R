@@ -129,15 +129,108 @@ InputForWeach <- function(lat, lon, year1, year2){
 ##' @export
 ##' @examples 
 ##' Uwind <- ncep.gather2(variable = "uwnd.10m", inputs = list(lat = 40, lon = 40, start.year = 2000, end.year = 2001))
-ncep.gather2 <- function(variable, level = "gaussian", inputs) {
-  result <- RNCEP::NCEP.gather(variable = variable,
-                        level = level,
-                        months.minmax = c(1, 12),
-                        years.minmax = c(inputs$year1, inputs$year2),
-                        lat.southnorth = c(inputs$lat, inputs$lat),
-                        lon.westeast = c(inputs$lon, inputs$lon),
-                        reanalysis2 = TRUE,
-                        return.units = FALSE,
-                        status.bar = FALSE)
-  return(result)
+
+ncep.gather2 <- function (variable, level = "gaussian",
+                          months.minmax = c(1, 12),
+                          inputs,
+                          reanalysis2 = TRUE,
+                          return.units = FALSE) {
+  years.minmax <- c(inputs$year1, inputs$year2)
+  lat.southnorth <- c(inputs$lat, inputs$lat)
+  lon.westeast <- c(inputs$lon, inputs$lon)
+  
+  if (is.null(level)) {
+    stop("One of 'surface', 'gaussian', or a numeric pressure level must be given for 'level'")
+  }
+  if (length(level) > 1) {
+    stop("Cannot access multiple reference systems in a single function call")
+  }
+  if (is.numeric(level) == FALSE) {
+    if (level %in% c("surface", "gaussian") == FALSE) {
+      stop("level must be one of 'gaussian', 'surface' or a numeric pressure level")
+    }
+  }
+  if (reanalysis2 == TRUE && years.minmax[1] < 1979) {
+    stop("The datetimes specified are out of range for the Reanalysis 2 dataset.")
+  }
+  if (years.minmax[1] < 1948) {
+    stop("The datetimes specified are out of range.")
+  }
+  lon.westeast[1] <- ifelse(lon.westeast[1] < 0, 360 + lon.westeast[1], 
+                            lon.westeast[1])
+  lon.westeast[length(lon.westeast)] <- ifelse(lon.westeast[length(lon.westeast)] < 
+                                               0, 360 + lon.westeast[length(lon.westeast)], lon.westeast[length(lon.westeast)])
+  if (lon.westeast[1] > lon.westeast[length(lon.westeast)]) {
+    cross.prime <- TRUE
+  }
+  else {
+    cross.prime <- FALSE
+  }
+  tlength <- NULL
+  pb <- NULL
+  
+  if (cross.prime == FALSE) {
+    if (is.numeric(level)) {
+      out <- NCEP.gather.pressure(variable = variable, 
+                                  months.minmax = months.minmax, years.minmax = years.minmax, 
+                                  lat.minmax = lat.southnorth, lon.minmax = lon.westeast, 
+                                  pressure = level, reanalysis2 = reanalysis2, 
+                                  return.units = return.units, pb = pb, increments = tlength)
+    }
+    else if (level == "surface") {
+      out <- NCEP.gather.surface(variable = variable, months.minmax = months.minmax, 
+                                 years.minmax = years.minmax, lat.minmax = lat.southnorth, 
+                                 lon.minmax = lon.westeast, reanalysis2 = reanalysis2, 
+                                 return.units = return.units, pb = pb, increments = tlength)
+    }
+    else if (level == "gaussian") {
+      out <- NCEP.gather.gaussian(variable = variable, 
+                                  months.minmax = months.minmax, years.minmax = years.minmax, 
+                                  lat.minmax = lat.southnorth, lon.minmax = lon.westeast, 
+                                  reanalysis2 = reanalysis2, return.units = return.units, 
+                                  pb = pb, increments = tlength)
+    }
+  }
+  else if (cross.prime == TRUE) {
+    if (is.numeric(level)) {
+      out.west <- NCEP.gather.pressure(variable = variable, 
+                                       months.minmax = months.minmax, years.minmax = years.minmax, 
+                                       lat.minmax = lat.southnorth, lon.minmax = c(lon.westeast[1], 
+                                                                      357.5), pressure = level, reanalysis2 = reanalysis2, 
+                                       return.units = return.units, pb = pb, increments = tlength)
+      out.east <- NCEP.gather.pressure(variable = variable, 
+                                       months.minmax = months.minmax, years.minmax = years.minmax, 
+                                       lat.minmax = lat.southnorth, lon.minmax = c(0, 
+                                                                      lon.westeast[2]), pressure = level, reanalysis2 = reanalysis2, 
+                                       return.units = return.units, pb = pb, increments = tlength)
+      out <- NCEP.bind(data.west = out.west, data.east = out.east)
+    }
+    else if (level == "surface") {
+      out.west <- NCEP.gather.surface(variable = variable, 
+                                      months.minmax = months.minmax, years.minmax = years.minmax, 
+                                      lat.minmax = lat.southnorth, lon.minmax = c(lon.westeast[1], 
+                                                                     357.5), reanalysis2 = reanalysis2, return.units = return.units, 
+                                      pb = pb, increments = tlength)
+      out.east <- NCEP.gather.surface(variable = variable, 
+                                      months.minmax = months.minmax, years.minmax = years.minmax, 
+                                      lat.minmax = lat.southnorth, lon.minmax = c(0, 
+                                                                     lon.westeast[2]), reanalysis2 = reanalysis2, 
+                                      return.units = return.units, pb = pb, increments = tlength)
+      out <- NCEP.bind(data.west = out.west, data.east = out.east)
+    }
+    else if (level == "gaussian") {
+      out.west <- NCEP.gather.gaussian(variable = variable, 
+                                       months.minmax = months.minmax, years.minmax = years.minmax, 
+                                       lat.minmax = lat.southnorth, lon.minmax = c(lon.westeast[1], 
+                                                                      358.125), reanalysis2 = reanalysis2, return.units = return.units, 
+                                       pb = pb, increments = tlength)
+      out.east <- NCEP.gather.gaussian(variable = variable, 
+                                       months.minmax = months.minmax, years.minmax = years.minmax, 
+                                       lat.minmax = lat.southnorth, lon.minmax = c(0, 
+                                                                      lon.westeast[2]), reanalysis2 = reanalysis2, 
+                                       return.units = return.units, pb = pb, increments = tlength)
+      out <- NCEP.bind(data.west = out.west, data.east = out.east)
+    }
+  }
+  return(out)
 }
