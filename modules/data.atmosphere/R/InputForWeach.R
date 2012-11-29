@@ -5,30 +5,31 @@
 ##' @param lon numeric longitude
 ##' @param year1 integer
 ##' @param year2 integer
+##' @export
 ##' @return climate data to be parsed by the \code{\link{weachNEW}} function in BioCro
 ##' @author Deepak Jaiswal, David LeBauer
 InputForWeach <- function(lat, lon, year1, year2){
   ncep.inputs <- list(year1 = year1, year2 = year2, lat = lat, lon = lon)
   ## Get Temperature Records
   avgTemp <- ncep.gather2(variable = "air.2m", inputs = ncep.inputs)
-  avgTemp <- NCEP.aggregate(avgTemp, HOURS = FALSE, fxn = "mean")  # Average Flux for the whole day
-  avgTemp <- NCEP.array2df(avgTemp, var.name = "avgTemp")
+  avgTemp <- RNCEP::NCEP.aggregate(avgTemp, HOURS = FALSE, fxn = "mean")  # Average Flux for the whole day
+  avgTemp <- RNCEP::NCEP.array2df(avgTemp, var.name = "avgTemp")
   avgTemp <- aggregate(avgTemp ~ datetime, data = avgTemp, mean)  # mean of all nearby spatial locations
   avgTemp$datetime <- substr(avgTemp$datetime, 1, 10)
   avgTemp$avgTemp <- avgTemp$avgTemp - 273
   
   ## Get Solar Radiation Records
   solarR <- ncep.gather2(variable = "dswrf.sfc", inputs = ncep.inputs)
-  solarR <- NCEP.aggregate(solarR, HOURS = FALSE, fxn = "mean")  # Average Flux for the whole day
-  solarR <- NCEP.array2df(solarR, var.name = "solarR")
+  solarR <- RNCEP::NCEP.aggregate(solarR, HOURS = FALSE, fxn = "mean")  # Average Flux for the whole day
+  solarR <- RNCEP::NCEP.array2df(solarR, var.name = "solarR")
   solarR$solarR <- solarR$solarR * 24 * 60 * 60 * 1e-06  # To convert Wt/m2 to MJ/m2
   solarR <- aggregate(solarR ~ datetime, data = solarR, mean)  # mean of all nearby spatial locations
   solarR$datetime <- substr(solarR$datetime, 1, 10)
   
 ### T Maximum Data
   Tmax <- ncep.gather2(variable = "tmax.2m", inputs = ncep.inputs)
-  Tmax <- NCEP.aggregate(Tmax, HOURS = FALSE, fxn = "max")
-  Tmax <- NCEP.array2df(Tmax, var.name = "Tmax")
+  Tmax <- RNCEP::NCEP.aggregate(Tmax, HOURS = FALSE, fxn = "max")
+  Tmax <- RNCEP::NCEP.array2df(Tmax, var.name = "Tmax")
   Tmax <- aggregate(Tmax ~ datetime, data = Tmax, max)
   Tmax$datetime <- substr(Tmax$datetime, 1, 10)
   Tmax$Tmax <- Tmax$Tmax - 273
@@ -36,8 +37,8 @@ InputForWeach <- function(lat, lon, year1, year2){
   
   ## T Minimum Data
   Tmin <- ncep.gather2(variable = "tmin.2m", inputs = ncep.inputs)
-  Tmin <- NCEP.aggregate(Tmin, HOURS = FALSE, fxn = "max")
-  Tmin <- NCEP.array2df(Tmin, var.name = "Tmin")
+  Tmin <- RNCEP::NCEP.aggregate(Tmin, HOURS = FALSE, fxn = "max")
+  Tmin <- RNCEP::NCEP.array2df(Tmin, var.name = "Tmin")
   Tmin <- aggregate(Tmin ~ datetime, data = Tmin, max)
   Tmin$datetime <- substr(Tmin$datetime, 1, 10)
   Tmin$Tmin <- Tmin$Tmin - 273
@@ -48,12 +49,12 @@ InputForWeach <- function(lat, lon, year1, year2){
   
   ## Warnign Message, not available in Reanalysis 2, Instead using Reanalysis 1.
   
-  RHavg <- NCEP.aggregate(RH, HOURS = FALSE, fxn = "mean")
-  RHmax <- NCEP.aggregate(RH, HOURS = FALSE, fxn = "max")
-  RHmin <- NCEP.aggregate(RH, HOURS = FALSE, fxn = "min")
-  RHavg <- NCEP.array2df(RHavg, var.name = "RH")
-  RHmax <- NCEP.array2df(RHmax, var.name = "RH")
-  RHmin <- NCEP.array2df(RHmin, var.name = "RH")
+  RHavg <- RNCEP::NCEP.aggregate(RH, HOURS = FALSE, fxn = "mean")
+  RHmax <- RNCEP::NCEP.aggregate(RH, HOURS = FALSE, fxn = "max")
+  RHmin <- RNCEP::NCEP.aggregate(RH, HOURS = FALSE, fxn = "min")
+  RHavg <- RNCEP::NCEP.array2df(RHavg, var.name = "RH")
+  RHmax <- RNCEP::NCEP.array2df(RHmax, var.name = "RH")
+  RHmin <- RNCEP::NCEP.array2df(RHmin, var.name = "RH")
   
   RHavg <- aggregate(RH ~ datetime, data = RHavg, mean)
   RHmax <- aggregate(RH ~ datetime, data = RHmax, max)
@@ -69,14 +70,14 @@ InputForWeach <- function(lat, lon, year1, year2){
   ## Wind Speed
   
   Vwind <- ncep.gather2(variable = "vwnd.10m", inputs = ncep.inputs)
-  Vwind <- NCEP.aggregate(Vwind, HOURS = FALSE, fxn = "mean")
-  Vwind <- NCEP.array2df(Vwind, var.name = "Vwind")
+  Vwind <- RNCEP::NCEP.aggregate(Vwind, HOURS = FALSE, fxn = "mean")
+  Vwind <- RNCEP::NCEP.array2df(Vwind, var.name = "Vwind")
   Vwind <- aggregate(Vwind ~ datetime, data = Vwind, mean)
   Vwind$datetime <- substr(Vwind$datetime, 1, 10)
   
   Uwind <- ncep.gather2(variable = "uwnd.10m", inputs = ncep.inputs)
-  Uwind <- NCEP.aggregate(Uwind, HOURS = FALSE, fxn = "mean")
-  Uwind <- NCEP.array2df(Uwind, var.name = "Uwind")
+  Uwind <- RNCEP::NCEP.aggregate(Uwind, HOURS = FALSE, fxn = "mean")
+  Uwind <- RNCEP::NCEP.array2df(Uwind, var.name = "Uwind")
   Uwind <- aggregate(Uwind ~ datetime, data = Uwind, mean)
   Uwind$datetime <- substr(Uwind$datetime, 1, 10)
   
@@ -92,8 +93,8 @@ InputForWeach <- function(lat, lon, year1, year2){
   ## Precipitation
   
   Rain <- ncep.gather2(variable = "prate.sfc", inputs = ncep.inputs)
-  Rain <- NCEP.aggregate(Rain, HOURS = FALSE, fxn = "mean")
-  Rain <- NCEP.array2df(Rain, var.name = "Rain")
+  Rain <- RNCEP::NCEP.aggregate(Rain, HOURS = FALSE, fxn = "mean")
+  Rain <- RNCEP::NCEP.array2df(Rain, var.name = "Rain")
   Rain <- aggregate(Rain ~ datetime, data = Rain, mean)
   Rain$datetime <- substr(Rain$datetime, 1, 10)
   Rain$Rain <- Rain$Rain * (24 * 60 * 60) * (1/1000) * 39.37  # Converting from kg/m2 sec to kg/m2 to m3/m2 to inches
@@ -125,10 +126,11 @@ InputForWeach <- function(lat, lon, year1, year2){
 ##' @param inputs list of parameters passed to InputForWeach
 ##' @return data from NCEP
 ##' @author David LeBauer
+##' @export
 ##' @examples 
 ##' Uwind <- ncep.gather2(variable = "uwnd.10m", inputs = list(lat = 40, lon = 40, start.year = 2000, end.year = 2001))
 ncep.gather2 <- function(variable, level = "gaussian", inputs) {
-  result <- NCEP.gather(variable = variable,
+  result <- RNCEP::NCEP.gather(variable = variable,
                         level = level,
                         months.minmax = c(1, 12),
                         years.minmax = c(inputs$year1, inputs$year2),
