@@ -45,14 +45,10 @@ convert.samples.BIOCRO <- function(trait.samples){
 ##' @name write.config.biocro
 ##' @title Write configuration files for the biocro model
 ##' @param defaults named list with default model parameter values 
-##' @param trait.values list of pfts, each pft is a list of vectors (one per traits)
-##' @param settings 
+##' @param trait.values named list of trait values
+##' @param settings pecan settings file configured for BioCro
 ##' @param run.id
 ##' @export
-##' @examples
-##' defaults <- list(a = "1", b = "2")
-##' trait.values <- list(A = 1, B = 2)
-##' settings <- list(rundir = "/tmp/")
 ##' @return nothing, writes configuration file as side effect 
 ##' @author David LeBauer
 write.config.BIOCRO <- function(defaults,
