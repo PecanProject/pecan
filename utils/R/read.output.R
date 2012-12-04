@@ -76,7 +76,7 @@ read.output <- function(run.id, outdir, start.year=NA,
     first <- max(1, which(nc.years == start.year), na.rm = TRUE)
     last <- min(length(nc.years),which(nc.years == end.year),na.rm=TRUE)
 
-    if (model == "BIOCRO")) {
+    if (model == "BIOCRO") {
       nc.years <- list(last)
       yrs <- last
     }
