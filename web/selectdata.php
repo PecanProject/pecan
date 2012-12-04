@@ -221,7 +221,8 @@ if (!$result) {
 }
 $pfts = "";
 while ($row = @mysql_fetch_assoc($result)){
-	print "<option value='{$row['name']}'>{$row['name']}</option>\n";
+	$name=str_replace(strtolower($model["model_type"]) . ".", "", $row['name']);
+	print "<option value='{$row['name']}'>$name</option>\n";
 }
 ?>
 			</select>
@@ -266,8 +267,7 @@ if ($model["model_type"] == "ED2") {
 		die('Invalid query: ' . mysql_error());
 	}
 	while ($row = @mysql_fetch_assoc($result)){
-		$path = substr($row['file'], 0,  1+strripos($row['file'], '/'));
-		print "<option value='$path'>{$row['name']}</option>\n";
+		print "<option value='{$row['file_id']}'>{$row['name']}</option>\n";
 	}
 	print "<option value='FIA'>Use FIA</option>\n";
 ?>
@@ -305,13 +305,13 @@ if ($model["model_type"] == "ED2") {
             <label>End Date</label>
             <input type="text" name="end" id="end" value="2006/12/31" onChange="validate();"/>
             <div class="spacer"></div>
-
-			<label>Advanced edit</label>
-			<input id="advanced_edit" name="advanced_edit" type="checkbox" />	
-            <div class="spacer"></div>
 <?php
 }
 ?>			
+			<label>Advanced edit</label>
+			<input id="advanced_edit" name="advanced_edit" type="checkbox" />	
+            <div class="spacer"></div>
+
 			<p></p>
 			<span id="error" class="small"></span>
 			<input id="prev" type="button" value="Prev" onclick="prevStep();" />

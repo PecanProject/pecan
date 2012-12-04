@@ -21,8 +21,7 @@ $pecan_install="/home/pecan/R/library";
 $pecan_home="/home/pecan/pecan/";
 
 # Folder where the runs are stored
-#$output_folder=sys_get_temp_dir();
-$output_folder="/home/pecan/output";
+$output_folder=sys_get_temp_dir();
 
 # ED specific inputs, should come from database
 $ed_veg="/home/pecan/oge2OLD/OGE2_";

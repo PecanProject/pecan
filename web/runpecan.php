@@ -39,6 +39,8 @@ if (!isset($_REQUEST['pft'])) {
 	die("Need a pft.");
 }
 $pft=$_REQUEST['pft'];
+$advanced_edit=(isset($_REQUEST['advanced_edit']) && ($_REQUEST['advanced_edit'] == 'on'));
+
 
 # specific for each model type
 if ($modeltype == "ED2") {
@@ -54,9 +56,6 @@ if ($modeltype == "ED2") {
 		die("Need a weather file.");
 	}
 	$met=$_REQUEST['met'];	
-	if (!isset($_REQUEST['psscss'])) {
-		die("Need a psscss.");
-	}
     $query="SELECT file_path, file_name, start_date, end_date FROM inputs, dbfiles, machines WHERE inputs.site_id=${siteid} AND inputs.file_id=${met} AND dbfiles.file_id=${met} AND machines.hostname='${hostname}' AND dbfiles.machine_id=machines.id;";
     $result = mysql_query($query);
     if (!$result) {
@@ -66,8 +65,20 @@ if ($modeltype == "ED2") {
     $met=$row['file_path'] . DIRECTORY_SEPARATOR . $row['file_name'];
     $metstart=$row['start_date'];
     $metend=$row['end_date'];
+	if (!isset($_REQUEST['psscss'])) {
+		die("Need a psscss.");
+	}
 	$psscss=$_REQUEST['psscss'];
-	$advanced_edit=false;
+	if($psscss != "FIA") {
+	    $query="SELECT file_path, file_name FROM inputs, dbfiles, machines WHERE inputs.site_id=${siteid} AND inputs.file_id=${psscss} AND dbfiles.file_id=${psscss} AND machines.hostname='${hostname}' AND dbfiles.machine_id=machines.id;";
+	    $result = mysql_query($query);
+	    if (!$result) {
+	      die('Invalid query: ' . mysql_error());
+	    }
+	    $row = mysql_fetch_assoc($result);
+	    #$psscss=$row['file_path'] . DIRECTORY_SEPARATOR . $row['file_name'];
+	    $psscss=substr($row['file_path'], 0, strlen($row['file_path']) - 4);
+	}
 } else if ($modeltype == "SIPNET") {
     if (!isset($_REQUEST['met'])) {
         die("Need a weather file.");
@@ -82,7 +93,6 @@ if ($modeltype == "ED2") {
     $met=$row['file_path'] . DIRECTORY_SEPARATOR . $row['file_name'];
     $startdate=$row['start_date'];
     $enddate=$row['end_date'];
-	$advanced_edit=false;
 } else if ($modeltype == "BIOCRO") {
 	if (!isset($_REQUEST['start'])) {
 		die("Need a start date.");
@@ -92,7 +102,6 @@ if ($modeltype == "ED2") {
 		die("Need a end date.");
 	}
 	$enddate=$_REQUEST['end'];
-    $advanced_edit=(isset($_REQUEST['advanced_edit']) && ($_REQUEST['advanced_edit'] == 'on'));
 }
 
 // get site information
