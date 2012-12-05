@@ -1,2 +1,2 @@
 export(InputForWeach)
-import(RNCEP)
+export(ncep.gather2)
