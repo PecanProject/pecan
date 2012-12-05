@@ -90,12 +90,12 @@ read.output <- function(run.id, outdir, start.year=NA,
           if(variables[j] %in% c(cflux, wflux)){
             ## Convert output to annual values.
             ## Multiply by seconds in a 365d year and convert per ha
-            newdata <- newdata*31536000*10000 # kgC or kgH2O / ha
+            newdata <- newdata * 31536000 * 10000 # kgC or kgH2O / ha
           }
           if(i == 1) {
             data[[j]] <- newdata
           } else {
-            data[[j]] <- c(data[[j]],newdata)
+            data[[j]] <- c(data[[j]], newdata)
           }
         } else {
           warning(paste(variables[j], "missing in", ncfiles[yrs[i]]))
@@ -105,8 +105,10 @@ read.output <- function(run.id, outdir, start.year=NA,
       showConnections(all = TRUE)
     }
     names(data) <- variables
-    print(paste("----- Mean ",variables," : ",sapply(data,median,na.rm=TRUE)))
-    print(paste("----- Median ",variables,": ",sapply(data,median,na.rm=TRUE)))
+    print(paste("----- Mean ", variables, " : ",
+                sapply(data, median, na.rm = TRUE)))
+    print(paste("----- Median ", variables, ": ",
+                sapply(data, median, na.rm = TRUE)))
     return(data)   
 
   } else {
