@@ -99,7 +99,7 @@ if ($model["model_type"] == "ED2") {
 		// check MET
 		if ($("#met").val() == null) {
 			$("#next").attr("disabled", "disabled");
-			$("#error").html("Select a MET file to continue");
+			$("#error").html("Select a weather file to continue");
 			return;
 		}
 
@@ -112,10 +112,10 @@ if ($model["model_type"] == "ED2") {
 <?php
 } else if ($model["model_type"] == "SIPNET") {
 ?>
-		// check Climate
-		if ($("#climate").val() == null) {
+		// check MET
+		if ($("#met").val() == null) {
 			$("#next").attr("disabled", "disabled");
-			$("#error").html("Select a climate file to continue");
+			$("#error").html("Select a weather file to continue");
 			return;
 		}
 <?php
@@ -221,7 +221,8 @@ if (!$result) {
 }
 $pfts = "";
 while ($row = @mysql_fetch_assoc($result)){
-	print "<option value='{$row['name']}'>{$row['name']}</option>\n";
+	$name=str_replace(strtolower($model["model_type"]) . ".", "", $row['name']);
+	print "<option value='{$row['name']}'>$name</option>\n";
 }
 ?>
 			</select>
@@ -238,11 +239,11 @@ if ($model["model_type"] == "ED2") {
             <input type="text" name="end" id="end" value="2006/12/31" onChange="validate();"/>
             <div class="spacer"></div>
 
-			<label>MET Data file</label>
+			<label>Weather Data file</label>
 			<select id="met" name="met" onChange="validate();">
 <?php
         // setup default part of query
-	$query="SELECT file_path AS file, name, start_date, end_date FROM inputs, dbfiles, machines WHERE inputs.site_id=$siteid AND inputs.file_id=dbfiles.file_id AND machines.hostname='${_REQUEST['hostname']}' AND dbfiles.machine_id=machines.id";
+	$query="SELECT dbfiles.file_id, name, start_date, end_date FROM inputs, dbfiles, machines WHERE inputs.site_id=$siteid AND inputs.file_id=dbfiles.file_id AND machines.hostname='${_REQUEST['hostname']}' AND dbfiles.machine_id=machines.id";
 
 	// get met data
 	$result = mysql_query($query . " AND inputs.format_id=12");
@@ -250,8 +251,8 @@ if ($model["model_type"] == "ED2") {
 		die('Invalid query: ' . mysql_error());
 	}
 	while ($row = @mysql_fetch_assoc($result)){
-		$row['name']="ED " . substr($row['start_date'], 0, 4) . "-" . substr($row['end_date'], 0, 4);
-		print "<option value='{$row['file']}'>{$row['name']}</option>\n";
+		$row['name']="Weather " . substr($row['start_date'], 0, 4) . "-" . substr($row['end_date'], 0, 4);
+		print "<option value='{$row['file_id']}'>{$row['name']}</option>\n";
 	}
 ?>
 			</select>
@@ -266,8 +267,7 @@ if ($model["model_type"] == "ED2") {
 		die('Invalid query: ' . mysql_error());
 	}
 	while ($row = @mysql_fetch_assoc($result)){
-		$path = substr($row['file'], 0,  1+strripos($row['file'], '/'));
-		print "<option value='$path'>{$row['name']}</option>\n";
+		print "<option value='{$row['file_id']}'>{$row['name']}</option>\n";
 	}
 	print "<option value='FIA'>Use FIA</option>\n";
 ?>
@@ -280,8 +280,8 @@ if ($model["model_type"] == "ED2") {
         $query="SELECT dbfiles.file_id, name, start_date, end_date FROM inputs, dbfiles, machines WHERE inputs.site_id=$siteid AND inputs.file_id=dbfiles.file_id AND machines.hostname='${_REQUEST['hostname']}' AND dbfiles.machine_id=machines.id";
 ?>
 
-                        <label>Climate Data file</label>
-                        <select id="climate" name="climate" onChange="validate();">
+			<label>Weather Data file</label>
+			<select id="met" name="met" onChange="validate();">
 <?php
         // get met data
         $result = mysql_query($query . " AND inputs.format_id=24");
@@ -289,7 +289,7 @@ if ($model["model_type"] == "ED2") {
                 die('Invalid query: ' . mysql_error());
         }
         while ($row = @mysql_fetch_assoc($result)){
-                $row['name']="CLIMATE " . substr($row['start_date'], 0, 4) . "-" . substr($row['end_date'], 0, 4);
+                $row['name']="Weather " . substr($row['start_date'], 0, 4) . "-" . substr($row['end_date'], 0, 4);
                 print "<option value='{$row['file_id']}'>{$row['name']}</option>\n";
         }
 ?>
@@ -305,13 +305,13 @@ if ($model["model_type"] == "ED2") {
             <label>End Date</label>
             <input type="text" name="end" id="end" value="2006/12/31" onChange="validate();"/>
             <div class="spacer"></div>
-
-			<label>Advanced edit</label>
-			<input id="advanced_edit" name="advanced_edit" type="checkbox" />	
-            <div class="spacer"></div>
 <?php
 }
 ?>			
+			<label>Advanced edit</label>
+			<input id="advanced_edit" name="advanced_edit" type="checkbox" />	
+            <div class="spacer"></div>
+
 			<p></p>
 			<span id="error" class="small"></span>
 			<input id="prev" type="button" value="Prev" onclick="prevStep();" />

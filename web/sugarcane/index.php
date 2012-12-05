@@ -28,9 +28,11 @@ if (!$result) {
 $workflow = mysql_fetch_assoc($result);
 
 // datafile
+// TODO fix run folder name by looking at $workflow["folder"] . "/run/runs.txt"
 $default_xml=array_shift(glob($workflow["folder"] . "/run/*/data.xml"));
 
 // load default values
+// TODO check with daeyun about get_default function
 get_default($default_xml);
 
 // set the datafile to be saved
@@ -52,13 +54,24 @@ if(isset($_POST["command"]) and strpos($_POST["command"],"create_xml")!==False){
     chmod("$new_xml_file", 0666);
     fclose($f);
     echo "successful";
-    exit();
-}else if(isset($_POST["command"]) and $_POST["command"]=="run"){
     // TODO check if file is modified and mark in database
+    // diff -b $default_xml $new_xml_file
 
     // TODO save new configuration to run folder
+    // move $new_xml_file $default_xml
 
-    // TODO 
+    // TODO call R code to lauch stage 2 and redirect to running_stage2.php
+//            chdir($folder);
+//            pclose(popen('R_LIBS_USER="' . ${pecan_install} . '" R CMD BATCH workflow_stage2.R &', 'r'));
+//            if ($offline) {
+//                header( "Location: ../running_stage2.php?workflowid=$workflowid&offline=offline");
+//            } else {
+//                header( "Location: ../running_stage2.php?workflowid=$workflowid");
+//            }           
+
+    exit();
+}else if(isset($_POST["command"]) and $_POST["command"]=="run"){
+ 
     $result=shell_exec("sh ".$sh_file);
 
     if(strpos($result, "done")!==False){

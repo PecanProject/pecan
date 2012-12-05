@@ -198,7 +198,6 @@ function checkStatus($token) {
   	global $status;
 	foreach ($status as $line) {
 		$data = explode("\t", $line);
-		print ($data);
 		if ((count($data) >= 4) && ($data[3] == 'ERROR')) {
 			return 2;
 		}
