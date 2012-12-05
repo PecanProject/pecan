@@ -17,10 +17,20 @@
 ##' @param end.year
 ##' @param variables
 ##' @param model
+##' @details Generic function to convert model output in from
+##' MsTMIP units (kg m-2 s-1) to kg ha-1 y-1. Currently this function converts
+##' Carbon fluxes: GPP, NPP, NEE, TotalResp, AutoResp, HeteroResp,
+##' DOC_flux, Fire_flux, and Stem (Stem is specific to the BioCro model)
+##' and Water fluxes: Evaporation (Evap), Transpiration(TVeg),
+##' surface runoff (Qs), subsurface runoff (Qsb), and rainfall (Rainf).
+##' For more details, see the
+##' \href{http://nacp.ornl.gov/MsTMIP_variables.shtml}{MsTMIP variables}
+##' documentation 
 ##' @return vector of output variable
 ##' @export
 ##' @author Michael Dietze
-read.output <- function(run.id, outdir, start.year=NA, end.year=NA, variables = "GPP") {
+read.output <- function(run.id, outdir, start.year=NA,
+                        end.year=NA, variables = "GPP") {
   ### Load requirements
   require(ncdf)
   
@@ -31,8 +41,9 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA, variables = 
     return(NA)
   }
   
-  cflux = c("GPP","NPP","NEE","TotalResp","AutoResp","HeteroResp","DOC_flux","Fire_flux","Stem") #kgC m-2 s-1
-  wflux = c("Evap","TVeg","Qs","Qsb","Rainf") #kgH20 m-2 s-1
+  cflux = c("GPP", "NPP", "NEE", "TotalResp", "AutoResp", "HeteroResp",
+    "DOC_flux", "Fire_flux", "Stem") #kgC m-2 s-1
+  wflux = c("Evap", "TVeg", "Qs", "Qsb", "Rainf") #kgH20 m-2 s-1
   
   ### ----- Get run info ----- 
   ## get list of files
@@ -40,7 +51,7 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA, variables = 
      outfiles <- c(file.path(outdir, "sipnet.out"))
    } else if (model=="ED2"){
      outfiles <- list.files(path=outdir, pattern="analysis-T-.*\\.h5$", full.names=TRUE)
-   } else if (model %in% c("BIOCRO", "C4PHOTO")) {
+   } else if (model %in% c("BIOCRO")) {
      outfiles <-  c(file.path(outdir, "result.Rdata"))
   } else {
     stop(paste("Don't know how to convert output for model", model))
@@ -49,7 +60,8 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA, variables = 
 
   ## model-specific code to parse each file 
   if(length(outfiles) > 0) {
-    ## Always call conversion to dangerous, should do check in conversion code since it knows what gets converted.
+    ## Always call conversion to dangerous,
+    ## should do check in conversion code since it knows what gets converted.
     do.call(model2nc, list(outdir))
     print(paste("Output from run", run.id, "has been converted to netCDF"))
     ncfiles <- list.files(path=outdir, pattern="\\.nc$", full.names=TRUE)
@@ -59,18 +71,13 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA, variables = 
     }
 
     ## determine years to load
-    if(model != "C4PHOTO"){
-      nc.years = as.numeric(sub(paste(run.id,".",sep=""),"",
-        sub(".nc","",basename(ncfiles), fixed = TRUE), fixed = TRUE))
-      first <- max(1, which(nc.years == start.year), na.rm = TRUE)
-      last <- min(length(nc.years),which(nc.years == end.year),na.rm=TRUE)
-      
-      ## load files
-      yrs <- first:max(first,last)
-    } else if (model %in% c("BIOCRO", "C4PHOTO")) {
-      nc.years <- list(1)
-      yrs <- 1
-    }
+    nc.years = as.numeric(sub(paste(run.id,".",sep=""),"",
+      sub(".nc","",basename(ncfiles), fixed = TRUE), fixed = TRUE))
+    first <- max(1, which(nc.years == start.year), na.rm = TRUE)
+    last <- min(length(nc.years),which(nc.years == end.year),na.rm=TRUE)
+    
+    ## load files
+    yrs <- first:max(first,last)
 
     data <- list()
     
@@ -83,7 +90,7 @@ read.output <- function(run.id, outdir, start.year=NA, end.year=NA, variables = 
           if(variables[j] %in% c(cflux, wflux)){
             ## Convert output to annual values.
             ## Multiply by seconds in a 365d year and convert per ha
-            newdata <- newdata*31536000*10000 # kgC/ha
+            newdata <- newdata*31536000*10000 # kgC or kgH2O / ha
           }
           if(i == 1) {
             data[[j]] <- newdata
