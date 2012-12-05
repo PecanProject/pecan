@@ -56,7 +56,7 @@ write.config.BIOCRO <- function(defaults,
                                 settings,
                                 run.id) {
 
-  trait.values  <- convert.samples.BIOCRO(trait.values)
+  trait.values  <- convert.samples.BIOCRO(trait.values[[1]])
   all.parms <- c(defaults, trait.values)
   parms.xml <- xmlNode("parms")
   for(parm in names(all.parms)) {
