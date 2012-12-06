@@ -45,82 +45,61 @@ read.output <- function(run.id, outdir, start.year=NA,
     "DOC_flux", "Fire_flux", "Stem") #kgC m-2 s-1
   wflux = c("Evap", "TVeg", "Qs", "Qsb", "Rainf") #kgH20 m-2 s-1
   
-  ### ----- Get run info ----- 
-  ## get list of files
-  if (model=="SIPNET"){
-     outfiles <- c(file.path(outdir, "sipnet.out"))
-   } else if (model=="ED2"){
-     outfiles <- list.files(path=outdir, pattern="analysis-T-.*\\.h5$", full.names=TRUE)
-   } else if (model %in% c("BIOCRO")) {
-     outfiles <-  c(file.path(outdir, "result.Rdata"))
-  } else {
-    stop(paste("Don't know how to convert output for model", model))
+  ## Always call conversion to dangerous,
+  ## should do check in conversion code since it knows what gets converted.
+  do.call(model2nc, list(outdir))
+  print(paste("Output from run", run.id, "has been converted to netCDF"))
+  ncfiles <- list.files(path=outdir, pattern="\\.nc$", full.names=TRUE)
+  if(length(ncfiles) == 0){
+    log.error("Conversion of model files to netCDF unsuccessful")
+    stop("Conversion of model files to netCDF unsuccessful")
   }
-  print(outfiles)
 
-  ## model-specific code to parse each file 
-  if(length(outfiles) > 0) {
-    ## Always call conversion to dangerous,
-    ## should do check in conversion code since it knows what gets converted.
-    do.call(model2nc, list(outdir))
-    print(paste("Output from run", run.id, "has been converted to netCDF"))
-    ncfiles <- list.files(path=outdir, pattern="\\.nc$", full.names=TRUE)
-    if(length(ncfiles) == 0){
-      log.error("Conversion of model files to netCDF unsuccessful")
-      stop("Conversion of model files to netCDF unsuccessful")
-    }
+  ## determine years to load
+  nc.years = as.numeric(sub(paste(run.id,".",sep=""),"",
+    sub(".nc","",basename(ncfiles), fixed = TRUE), fixed = TRUE))
+  first <- max(1, which(nc.years == start.year), na.rm = TRUE)
+  last <- min(length(nc.years),which(nc.years == end.year),na.rm=TRUE)
 
-    ## determine years to load
-    nc.years = as.numeric(sub(paste(run.id,".",sep=""),"",
-      sub(".nc","",basename(ncfiles), fixed = TRUE), fixed = TRUE))
-    first <- max(1, which(nc.years == start.year), na.rm = TRUE)
-    last <- min(length(nc.years),which(nc.years == end.year),na.rm=TRUE)
+  if (model == "BIOCRO") {
+    nc.years <- list(last)
+    yrs <- last
+  }
+  
+  ## load files
+  yrs <- first:max(first,last)
 
-    if (model == "BIOCRO") {
-      nc.years <- list(last)
-      yrs <- last
-    }
-    
-    ## load files
-    yrs <- first:max(first,last)
-
-    data <- list()
-    
-    for(i in 1:length(yrs)){
-      print(paste("----- Processing year: ", nc.years[yrs[i]]))
-      nc <- open.ncdf(ncfiles[yrs[i]], verbose=FALSE)
-      for(j in 1:length(variables)){
-        if(variables[j] %in% names(nc$var)){
-          newdata <- get.var.ncdf(nc, varid=variables[j], verbose=FALSE)
-          if(variables[j] %in% c(cflux, wflux)){
-            ## Convert output to annual values.
-            ## Multiply by seconds in a 365d year and convert per ha
-            newdata <- newdata * 31536000 * 10000 # kgC or kgH2O / ha
-          }
-          if(i == 1) {
-            data[[j]] <- newdata
-          } else {
-            data[[j]] <- c(data[[j]], newdata)
-          }
-        } else {
-          warning(paste(variables[j], "missing in", ncfiles[yrs[i]]))
+  data <- list()
+  
+  for(i in 1:length(yrs)){
+    print(paste("----- Processing year: ", nc.years[yrs[i]]))
+    nc <- open.ncdf(ncfiles[yrs[i]], verbose=FALSE)
+    for(j in 1:length(variables)){
+      if(variables[j] %in% names(nc$var)){
+        newdata <- get.var.ncdf(nc, varid=variables[j], verbose=FALSE)
+        if(variables[j] %in% c(cflux, wflux)){
+          ## Convert output to annual values.
+          ## Multiply by seconds in a 365d year and convert per ha
+          newdata <- newdata * 31536000 * 10000 # kgC or kgH2O / ha
         }
+        if(i == 1) {
+          data[[j]] <- newdata
+        } else {
+          data[[j]] <- c(data[[j]], newdata)
+        }
+      } else {
+        warning(paste(variables[j], "missing in", ncfiles[yrs[i]]))
       }
-      close.ncdf(nc)
-      showConnections(all = TRUE)
     }
-    names(data) <- variables
-    print(paste("----- Mean ", variables, " : ",
-                sapply(data, median, na.rm = TRUE)))
-    print(paste("----- Median ", variables, ": ",
-                sapply(data, median, na.rm = TRUE)))
-    return(data)   
-
-  } else {
-    log.error("No output files present for", model)
+    close.ncdf(nc)
+    showConnections(all = TRUE)
   }
-
-  return(NA) 
+  names(data) <- variables
+  print(paste("----- Mean ", variables, " : ",
+              sapply(data, median, na.rm = TRUE)))
+  print(paste("----- Median ", variables, ": ",
+              sapply(data, median, na.rm = TRUE)))
+  return(data)   
 }
 
 #--------------------------------------------------------------------------------------------------#
