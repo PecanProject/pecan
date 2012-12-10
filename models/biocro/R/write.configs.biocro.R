@@ -74,7 +74,7 @@ write.config.BIOCRO <- function(defaults,
 #--------------------------------------------------------------------------------------------------#
 ##' Clear out previous config and parameter files.
 ##'
-##' @name remove.config.biocro
+##' @name remove.config.BIOCRO
 ##' @title Clear out previous biocro config and parameter files.
 ##' @param main.outdir Primary PEcAn output directory (will be depreciated)
 ##' @param settings PEcAn settings file 
