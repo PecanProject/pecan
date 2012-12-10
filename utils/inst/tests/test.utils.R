@@ -50,7 +50,8 @@ test_that("left.pad.zeros works",{
 })
 
 test_that("summarize.result works appropriately", {
-## generate testdata  
+  require(plyr)
+  ## generate testdata  
   testresult <- data.frame(citation_id = 1,
                            site_id = 1:10,
                            trt_id = rep(c('control', 'fert'),5),

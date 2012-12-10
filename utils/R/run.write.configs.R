@@ -81,8 +81,9 @@ run.write.configs <- function(model=settings$model$name){
       traits <- NA
       samples.num <- 20000
     }
-    
+    print(names(trait.mcmc))
     priors <- rownames(prior.distns)
+    print(priors)
     for (prior in priors) {
       if (prior %in% traits) {
         samples <- as.matrix(trait.mcmc[[prior]][,'beta.o'])
@@ -91,7 +92,6 @@ run.write.configs <- function(model=settings$model$name){
       }
       trait.samples[[pft.name]][[prior]] <- samples
     }
-    
     
   } ### End for loop
   
@@ -102,12 +102,11 @@ run.write.configs <- function(model=settings$model$name){
   ### Sensitivity Analysis
   if('sensitivity.analysis' %in% names(settings)) {
     
-    if( is.null(settings$sensitivity.analysis)) {
+    if(is.null(settings$sensitivity.analysis)) {
       print(paste('sensitivity analysis settings are NULL'))
-    } else {
-      
+    } else {      
       ### Get info on the quantiles to be run in the sensitivity analysis (if requested)
-      quant <- get.quantiles(settings$sensitivity.analysis$quantiles)
+      quantiles <- get.quantiles(settings$sensitivity.analysis$quantiles)
       ### Get info on the years to run the sensitivity analysis (if requested)
       sa.years <- data.frame(sa.start = settings$sensitivity.analysis$start.year, 
                             sa.end = settings$sensitivity.analysis$end.year)
@@ -116,7 +115,7 @@ run.write.configs <- function(model=settings$model$name){
       print(" ")
       print("-------------------------------------------------------------------")
       print("Selected Quantiles: ")
-      print(round(quant,3))
+      print(round(quantiles, 3))
       print("-------------------------------------------------------------------")
       print(" ")
       print(" ")
@@ -124,13 +123,16 @@ run.write.configs <- function(model=settings$model$name){
       ### Generate list of sample quantiles for SA run
       sa.samples <-  get.sa.sample.list(trait.samples, 
                                         env.samples,
-                                        quant)
+                                        quantiles)
       ### Write out SA config files
       if(!exists("cnt")) {            
         cnt <- 0
         assign("cnt", cnt, .GlobalEnv)
       }
-      write.sa.configs(settings$pfts, sa.samples, settings, model = model)
+      write.sa.configs(defaults = settings$pfts,
+                       quantile.samples = sa.samples,
+                       settings = settings,
+                       model = model)
     }
   } ### End of SA
   
