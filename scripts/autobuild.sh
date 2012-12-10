@@ -14,7 +14,7 @@
 # */15 * * * * cd ${HOME}/autobuild/trunk && ./scripts/autobuild.sh
 
 # packages that are to be compiled
-PACKAGES="common utils db"
+PACKAGES="utils db"
 PACKAGES="${PACKAGES} modules/meta.analysis modules/uncertainty"
 PACKAGES="${PACKAGES} modules/data.land modules/data.atmosphere"
 PACKAGES="${PACKAGES} modules/assim.batch modules/assim.sequential modules/priors"
