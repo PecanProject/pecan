@@ -46,11 +46,11 @@ switch(checkStatus("CONFIG")) {
 		break;		
 	case 1:
 		$nextenabled="disabled=\"disabled\"";
-		if (($workflow['model_type'] == 'BIOCRO') && $workflow['advanced_edit']) {
+		if ($workflow['advanced_edit']) {
 			if ($offline) {
-				header( "Location: sugarcane/index.php?workflowid=$workflowid&offline=offline");
+				header( "Location: advanced_edit.php?workflowid=$workflowid&offline=offline");
 			} else {
-				header( "Location: sugarcane/index.php?workflowid=$workflowid");
+				header( "Location: advanced_edit.php?workflowid=$workflowid");
 			}
 		} else {
 			chdir($folder);
@@ -113,10 +113,10 @@ switch(checkStatus("CONFIG")) {
 <?php if ($offline) { ?>
 			<input name="offline" type="hidden" value="offline">
 <?php } ?>
-				<input type="hidden" name="siteid" value="<?=$workflow['site_id']?>" />
-		<input type="hidden" name="modelid" value="<?=$workflow['model_id']?>" />
-		<input type="hidden" name="modeltype" value="<?=$workflow['model_type']?>" />
-		<input type="hidden" name="hostname" value="<?=$workflow['hostname']?>" />
+			<input type="hidden" name="siteid" value="<?=$workflow['site_id']?>" />
+			<input type="hidden" name="modelid" value="<?=$workflow['model_id']?>" />
+			<input type="hidden" name="modeltype" value="<?=$workflow['model_type']?>" />
+			<input type="hidden" name="hostname" value="<?=$workflow['hostname']?>" />
 		</form>
 		
 		<form id="formemail" method="POST" action="sendemail.php">

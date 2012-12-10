@@ -1,17 +1,26 @@
 <?xml version="1.0"?>
 <pecan>
   <outdir>/tmp/out/run/</outdir>
+  <rundir>/tmp/out/run/</rundir>
   <pfts>
     <pft>
-      <name>biocro.saof</name>
+      <name>ebifarm.pavi</name>
+<!--      <name>biocro.saof</name> -->
       <outdir>/tmp/out/saof/</outdir>
+      <constants>
+	<a>1</a>
+      </constants>
     </pft>
   </pfts>
   <database>
-    <userid>ebi_analys_user</userid>
+<!--    <userid>ebi_analys_user</userid>
     <passwd>b742xsAu</passwd>
     <name>ebi_analysis</name>
-    <host>ebi-forecast.igb.illinois.edu</host>
+    <host>ebi-forecast.igb.illinois.edu</host>-->
+    <userid>bety</userid>
+    <passwd>bety</passwd>
+    <name>bety</name>
+    <location>localhost</location>
   </database>
   <meta.analysis>
     <iter>3000</iter>
@@ -31,7 +40,7 @@
     <end.year>2006</end.year>
   </sensitivity.analysis>
   <model>
-    <name>biocro</name>
+    <name>BIOCRO</name>
     <id></id>
   </model>
   <run>
