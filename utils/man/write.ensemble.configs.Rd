@@ -2,18 +2,14 @@
 \alias{write.ensemble.configs}
 \title{Write ensemble configs}
 \usage{
-  write.ensemble.configs(defaults, ensemble.samples, host,
-    outdir, settings, model, clean = FALSE)
+  write.ensemble.configs(defaults, ensemble.samples,
+    settings, model, clean = FALSE, write.to.db = TRUE)
 }
 \arguments{
   \item{defaults}{pft}
 
   \item{ensemble.samples}{list of lists supplied by
   \link{get.ensemble.samples}}
-
-  \item{host}{server to which config files will be sent}
-
-  \item{outdir}{directory for model output (on server)}
 
   \item{settings}{list of PEcAn settings}
 

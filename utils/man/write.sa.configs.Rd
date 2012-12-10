@@ -2,17 +2,13 @@
 \alias{write.sa.configs}
 \title{Write sensitivity analysis configs}
 \usage{
-  write.sa.configs(defaults, quantile.samples, host,
-    outdir, settings, model, clean = FALSE)
+  write.sa.configs(defaults, quantile.samples, settings,
+    model, clean = FALSE, write.to.db = TRUE)
 }
 \arguments{
   \item{pft}{pft id used to query PEcAn database}
 
   \item{quantile.samples}{}
-
-  \item{host}{server to which config files will be sent}
-
-  \item{outdir}{directory for model output (on server)}
 
   \item{settings}{list of settings}
 
