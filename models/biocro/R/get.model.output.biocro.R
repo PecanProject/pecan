@@ -12,7 +12,7 @@
 #--------------------------------------------------------------------------------------------------#
 ##' Function to retrieve model output from local server
 ##'
-##' @name get.model.output.biocro
+##' @name get.model.output.BIOCRO
 ##' @title Retrieve model output from local server
 ##' 
 ##' @import PEcAn.utils

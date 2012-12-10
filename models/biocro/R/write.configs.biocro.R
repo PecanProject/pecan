@@ -15,7 +15,7 @@ PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
 ##' 
 ##' Performs model specific unit conversions on a a list of trait values,
 ##' such as those provided to write.config
-##' @name convert.samples.biocro
+##' @name convert.samples.BIOCRO
 ##' @title Convert samples for biocro
 ##' @param trait.samples a matrix or dataframe of samples from the trait distribution
 ##' @export
@@ -42,7 +42,7 @@ convert.samples.BIOCRO <- function(trait.samples){
 #==================================================================================================#
 
 ##' Writes a configuration files for the biocro model
-##' @name write.config.biocro
+##' @name write.config.BIOCRO
 ##' @title Write configuration files for the biocro model
 ##' @param defaults named list with default model parameter values 
 ##' @param trait.values named list of trait values
