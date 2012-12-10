@@ -7,7 +7,7 @@
 ## http://opensource.ncsa.illinois.edu/license.html
 ##-------------------------------------------------------------------------------
 
-read.settings <- PEcAn.common::read.settings
+read.settings <- PEcAn.utils::read.settings
 temp.settings <- PEcAn.utils::temp.settings
   settings.text <- "
 <pecan>

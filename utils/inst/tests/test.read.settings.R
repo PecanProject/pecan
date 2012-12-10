@@ -48,7 +48,7 @@ test_that("read.settings works file,  or ",{
 ## context("check that example settings file is valid")
 
 ## ## settings.list <- read.settings(inputfile = system.file("tests/test.settings.xml",
-## ##                                  package = "PEcAn.common"))
+## ##                                  package = "PEcAn.utils"))
 
 ## ## test_that("test.settings.xml has an unique output directory for each PFT",{
 ## ##   pfts <- unlist(settings.list$pfts)
