@@ -42,3 +42,6 @@ Collate:
     'start.model.runs.R'
     'remove.config.R'
     'get.results.R'
+    'help.R'
+    'logger.R'
+    'read.settings.R'
