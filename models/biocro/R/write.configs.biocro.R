@@ -45,23 +45,29 @@ convert.samples.BIOCRO <- function(trait.samples){
 ##' @name write.config.biocro
 ##' @title Write configuration files for the biocro model
 ##' @param defaults named list with default model parameter values 
-##' @param trait.values 
-##' @param settings 
+##' @param trait.values named list of trait values
+##' @param settings pecan settings file configured for BioCro
 ##' @param run.id
 ##' @export
 ##' @return nothing, writes configuration file as side effect 
 ##' @author David LeBauer
-write.config.BIOCRO <- function(defaults, trait.values, settings, run.id) {
-file.path(settings$rundir, run.id, "config.xml")
-  trait.values  <- convert.samples.BIOCRO(trait.values[[1]])
-  trait.names   <- names(trait.values)
-  parms.xml <- xmlNode("parms")
-  for(trait in trait.names) {
-    parms.xml <- append.xmlNode(parms.xml, xmlNode(trait, trait.values[trait]))
-  }
-  config.xml <- append.xmlNode(xmlNode('traits'), parms.xml)
+write.config.BIOCRO <- function(defaults,
+                                trait.values,
+                                settings,
+                                run.id) {
 
-  saveXML(config.xml, file=file.path(settings$rundir, run.id, "data.xml"), indent=TRUE, prefix=PREFIX_XML)
+  trait.values  <- convert.samples.BIOCRO(trait.values[[1]])
+  all.parms <- c(defaults, trait.values)
+  parms.xml <- xmlNode("parms")
+  for(parm in names(all.parms)) {
+    parms.xml <- append.xmlNode(parms.xml,
+                                xmlNode(parm, all.parms[parm]))
+  }
+  config.xml <- append.xmlNode(xmlNode('config'), parms.xml)
+
+  saveXML(config.xml, file = file.path(settings$rundir,
+                        run.id, "data.xml"),
+          indent=TRUE, prefix=PREFIX_XML)
 }
 #==================================================================================================#
 

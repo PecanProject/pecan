@@ -14,7 +14,6 @@ require(PEcAn.all)
 # Open and read in settings file for PEcAn run.
 settings <- read.settings("pecan.biocro.xml")
 #--------------------------------------------------------------------------------------------------#
-
 model <- settings$model$name
 
 #---------------- Run PEcAn workflow. -------------------------------------------------------------#
