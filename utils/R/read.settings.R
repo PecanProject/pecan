@@ -75,14 +75,17 @@ xmlMergeNodes <- function(node1, node2) {
 
 ##' Sanity checks. Checks the settings file to make sure expected fields exist.
 ##'
-##' Expected fields are:
+##' Expected fields in settings file are:
 ##' - pfts with at least one pft defined
 ##' - database
 ##' - model
 ##' - run with the following fields
 ##' -- site with id
 ##' -- host with name
-##'
+##' @title Check Settings
+##' @param settings settings file
+##' @return error if minimum fields are not provided
+##' @author Rob Kooper
 check.settings <- function(settings) {
   if (!is.null(settings$nocheck)) {
     log.info("Not doing sanity checks of pecan.xml")
