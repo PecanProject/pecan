@@ -22,7 +22,9 @@ PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
 ##' @return matrix or dataframe with values transformed
 ##' @author David LeBauer
 convert.samples.BIOCRO <- function(trait.samples){
-
+  if(is.list(trait.samples)){
+    trait.samples <- as.data.frame(trait.samples)
+  }
   ## first rename variables
   trait.names <- colnames(trait.samples)
   trait.names[trait.names == "Vcmax"] <- "vmax"
