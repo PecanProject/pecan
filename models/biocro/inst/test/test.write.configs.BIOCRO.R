@@ -1,5 +1,3 @@
-context("testing write configs")
-
 settings <- PEcAn.utils::read.settings(system.file("pecan.biocro.xml",
                                                    package = "PEcAn.BIOCRO"))
 samples <- structure(list(
@@ -20,6 +18,13 @@ test_that("convert.samples.BIOCRO works", {
   expect_equal(biocro.parms$SLA, samples$biocro.saof$SLA)
   expect_equal(biocro.parms$Rd, samples$biocro.saof$leaf_respiration_rate_m2)
   expect_equal(biocro.parms$b1, samples$biocro.saof$stomatal_slope.BB)
+
+  ## re-create bug #1491
+  test.list <- list(vmax = 1, b0 = 2)
+  convert.samples.BIOCRO(test.list) ## this should work
+  stop("fake error")
+  expect_true(FALSE)
+  
 })
 
 test_that("write.configs.BIOCRO produces expected output",{
@@ -30,7 +35,7 @@ test_that("write.configs.BIOCRO produces expected output",{
   config <- file.path(settings$outdir, "data.xml")
   xmlParse(config)
 
-}
+})
 
 test_that("run.write.configs produces expected output for BIOCRO",{
   PEcAn.utils::run.write.configs("BIOCRO")
