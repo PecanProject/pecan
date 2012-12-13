@@ -42,10 +42,13 @@ convert.samples.BIOCRO <- function(trait.samples){
 #==================================================================================================#
 
 ##' Writes a configuration files for the biocro model
+##' 
 ##' @name write.config.BIOCRO
 ##' @title Write configuration files for the biocro model
 ##' @param defaults named list with default model parameter values 
-##' @param trait.values named list of trait values
+##' @param trait.values named list (or dataframe of trait values)
+##'  can either be a data.frame or named list of traits, e.g.
+##' \code{data.frame(vmax = 1, b0 = 2)} or \code{list(vmax = 1, b0 = 2)}
 ##' @param settings pecan settings file configured for BioCro
 ##' @param run.id
 ##' @export
@@ -56,18 +59,25 @@ write.config.BIOCRO <- function(defaults,
                                 settings,
                                 run.id) {
 
-  trait.values  <- convert.samples.BIOCRO(trait.values[[1]])
-  all.parms <- c(defaults, trait.values)
-  parms.xml <- xmlNode("parms")
-  for(parm in names(all.parms)) {
-    parms.xml <- append.xmlNode(parms.xml,
-                                xmlNode(parm, all.parms[parm]))
+  biocro.trait.values  <- lapply(convert.samples.BIOCRO(trait.values),
+                                 as.character)
+  biocro.traits <- names(biocro.trait.values)
+  constants <- defaults$pft$constants
+  parms.xml <- listToXml(constants, "constants")
+  photoparm.names <- names(constants$photoParms)
+  for(parm.type in names(constants)){
+    parm.names <- names(constants[[parm.type]])
+    for(parm in parm.names) {
+      if(parm %in% biocro.traits){
+        xmlChildren(parms.xml[[parm.type]][[parm]]) <- biocro.trait.values[[parm]]
+      }
+    }
   }
   config.xml <- append.xmlNode(xmlNode('config'), parms.xml)
 
-  saveXML(config.xml, file = file.path(settings$rundir,
-                        run.id, "data.xml"),
-          indent=TRUE, prefix=PREFIX_XML)
+  saveXML(config.xml,
+          file = file.path(settings$rundir, run.id, "data.xml"),
+          indent=TRUE)
 }
 #==================================================================================================#
 
