@@ -18,7 +18,7 @@
 ##' @author David LeBauer, Shawn Serbin
 run.write.configs <- function(model=settings$model$name){
   if (file.exists(file.path(settings$rundir, "runs.txt"))) {
-    log.warn("Already exist a runs.txt file, this will be removed.")
+    log.warn("Existing runs.txt file will be removed.")
     unlink(file.path(settings$rundir, "runs.txt"))
   }
 

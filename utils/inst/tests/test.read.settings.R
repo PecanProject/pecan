@@ -26,7 +26,7 @@
   </database>
 </pecan>"
 
-test_that("read.settings works file,  or ",{
+test_that("read.settings works ",{
 ## create settings file "tmp"
   test.file <- tempfile()
   writeLines(settings.text, con = test.file)
