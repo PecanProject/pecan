@@ -75,14 +75,16 @@ write.config.BIOCRO <- function(defaults,
       }
     }
   }
-  config.xml <- xmlNode("config")
-  location.xml <- listToXml(list(location =
-                             list(latitude = settings$run$site$lat,
-                                  longitude = settings$run$site$lon)))
-  simulationPeriod.xml <- listToXml(list(simulationPeriod =
-                                     list(dateofplanting = settings$run$start.date,
-                                          dateofharvest = settings$run$end.date)))
+  location.xml <- listToXml(list(latitude = settings$run$site$lat,
+                                  longitude = settings$run$site$lon),
+                            "location")
+  slashdate <- function(x) substr(gsub("-", "/", x), 1, 10)
+  simulationPeriod.xml <- listToXml(
+    list(dateofplanting = slashdate(settings$run$start.date),
+         dateofharvest = slashdate(settings$run$end.date)),
+                                    "simulationPeriod")
 
+  config.xml <- xmlNode("config")
   config.xml <- append.xmlNode(config.xml, location.xml)
   config.xml <- append.xmlNode(config.xml, simulationPeriod.xml)
   config.xml <- append.xmlNode(config.xml, parms.xml)

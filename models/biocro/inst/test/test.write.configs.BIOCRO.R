@@ -11,7 +11,7 @@ samples <- structure(list(
     .Names = c("Vcmax", "cuticular_cond", "SLA", "leaf_respiration_rate_m2", "stomatal_slope.BB"), class = "data.frame")), .Names = "biocro.saof")
 
 test_that("convert.samples.BIOCRO works", {
-  biocro.parms <- convert.samples.biocro(samples$biocro.saof)
+  biocro.parms <- convert.samples.BIOCRO(samples$biocro.saof)
   expect_equal(dim(biocro.parms), dim(samples$biocro.saof))
   expect_equal(biocro.parms$vmax, samples$biocro.saof$Vcmax)
   expect_equal(biocro.parms$b0, samples$biocro.saof$cuticular_cond/1e6)
