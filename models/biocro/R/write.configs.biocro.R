@@ -65,7 +65,7 @@ write.config.BIOCRO <- function(defaults,
                                  as.character)
   biocro.traits <- names(biocro.trait.values)
   constants <- defaults$pft$constants
-  parms.xml <- listToXml(constants, "constants")
+  parms.xml <- listToXml(constants, "pft")
   photoparm.names <- names(constants$photoParms)
   for(parm.type in names(constants)){
     parm.names <- names(constants[[parm.type]])
@@ -75,7 +75,18 @@ write.config.BIOCRO <- function(defaults,
       }
     }
   }
-  config.xml <- append.xmlNode(xmlNode('config'), parms.xml)
+  config.xml <- xmlNode("config")
+  location.xml <- listToXml(list(location =
+                             list(latitude = settings$run$site$lat,
+                                  longitude = settings$run$site$lon)))
+  simulationPeriod.xml <- listToXml(list(simulationPeriod =
+                                     list(dateofplanting = settings$run$start.date,
+                                          dateofharvest = settings$run$end.date)))
+
+  config.xml <- append.xmlNode(config.xml, location.xml)
+  config.xml <- append.xmlNode(config.xml, simulationPeriod.xml)
+  config.xml <- append.xmlNode(config.xml, parms.xml)
+  
 
   saveXML(config.xml,
           file = file.path(settings$rundir, run.id, "data.xml"),
