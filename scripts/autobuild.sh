@@ -28,7 +28,7 @@ TO="kooper@illinois.edu,sserbin@illinois.edu,dlebauer@illinois.edu,mdietze@illin
 LOCAL="yes"
 
 # run check before install
-CHECK="yes"
+CHECK="no"
 
 # location where to install packages
 if [ $UID -eq 0 ]; then
