@@ -89,6 +89,7 @@ function get_default($path){
 	if(preg_match_all('#<([^<>/]*)>[ \n\r]*([^< >\n\r]+)[ \n\r]*</\1>#', $default_xml_raw, $arr, PREG_PATTERN_ORDER)){
 		foreach($arr[1] as $index=>$tag){
 			$value=trim($arr[2][$index]);
+			#print($value . "<br />");
 			if(preg_match('#<([^</!?\">]+)>[ \r\n]*(?:<([^<>]+)>.*</\2>[ \r\n]*)*[ \r\n]*<'.$tag.'>[ \r\n]*'.$value.'#', $default_xml_raw, $arr2)){
 				$parent_tag=trim($arr2[1]);
 				$var_name=$parent_tag.'_'.$tag;
