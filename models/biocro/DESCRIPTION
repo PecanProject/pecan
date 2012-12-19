@@ -1,4 +1,4 @@
-Package: PEcAn.biocro
+Package: PEcAn.BIOCRO
 Type: Package
 Title: PEcAn package for integration of the BioCro model
 Version: 1.2
@@ -7,7 +7,6 @@ Author: David LeBauer, Deepak Jaiswal
 Maintainer: David LeBauer <dlebauer@illinois.edu>
 Description: This module provides functions to link BioCro to PEcAn.
 Depends:
-    PEcAn.common,
     PEcAn.utils,
     PEcAn.data.atmosphere,
     ncdf4,

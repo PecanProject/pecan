@@ -16,7 +16,6 @@ Depends:
     XML,
     rjags,
     MASS,
-    PEcAn.common,
     PEcAn.utils,
     PEcAn.DB
 Suggests:

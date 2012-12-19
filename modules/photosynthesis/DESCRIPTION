@@ -17,7 +17,6 @@ Depends:
     rjags,
     MASS,
     DEoptim,
-    PEcAn.common,
     PEcAn.utils,
     PEcAn.DB
 Suggests:
