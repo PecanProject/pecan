@@ -57,7 +57,7 @@ touch lastrun
 # pull any changes
 if [ "$PULL" == "yes" ]; then
   git pull > changes.log
-  if `grep 'Already' changes.log > /dev/null`; then
+  if ! grep --quiet 'Already' changes.log; then
     BUILD="yes"
   fi
 fi
