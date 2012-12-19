@@ -1,3 +1,4 @@
+export(jagify)
 export(p.point.in.prior)
 export(pecan.ma.summary)
 export(run.meta.analysis)

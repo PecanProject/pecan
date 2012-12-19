@@ -14,6 +14,7 @@
 ##' @title Prepare trait data for JAGS meta-analysis
 ##' @param result input trait data
 ##' @return result transformed to meet requirements of PEcAn meta-analysis model
+##' @export
 ##' @author David LeBauer
 jagify <- function(result){
   
