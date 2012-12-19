@@ -16,7 +16,6 @@ Depends:
     XML,
     gsl,
     DEoptim,
-    PEcAn.common,
     PEcAn.utils,
 Suggests:
     testthat,

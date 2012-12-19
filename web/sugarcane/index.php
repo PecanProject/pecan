@@ -1,5 +1,5 @@
 <?php
-require_once("inc/model/functions.php");
+#require_once("inc/model/functions.php");
 require_once("config/file_locations.php");
 require_once("config/graph_variables.php");
 
@@ -26,67 +26,107 @@ if (!$result) {
     die('Invalid query: ' . mysql_error());
 }
 $workflow = mysql_fetch_assoc($result);
+$folder = $workflow['folder'];
+ 
+$runFolder = $folder . DIRECTORY_SEPARATOR . "run";
+$runs = explode("\n", file_get_contents($runFolder . DIRECTORY_SEPARATOR . "runs.txt"));
+// this is an advanced edit, so only one run is supported. use the last one in the file.
+$lastRun = $runs[count($runs)-2];
 
-// datafile
-$default_xml=array_shift(glob($workflow["folder"] . "/run/*/data.xml"));
-
-// load default values
-get_default($default_xml);
-
-// set the datafile to be saved
-$new_xml_file=str_replace("data.xml", "data_modified.xml", $default_xml);
+#$dataXml="/home/pecan/pecan/web/sugarcane/default/default.xml";
+$dataXml=array_shift(glob($workflow["folder"] . "/run/" . $lastRun . "/data.xml"));
 
 close_database($connection);
 
 // END PEcAn additions
 
-if(isset($_POST["command"]) and strpos($_POST["command"],"create_xml")!==False){
-    error_reporting(0);
-    $xml_string=generate_xml($_POST,$xml_structure_file);
-    $f = fopen($new_xml_file, 'w');
-    if($f==False){
-        echo "$new_xml_file is not writable";
-        exit();
+if(isset($_POST["command"]) and strpos($_POST["command"],"continue")!==False){
+
+    // prepare the datafile to be saved
+    $dataOrigXml=str_replace("data.xml", "data_orig.xml", $dataXml);
+
+    if (!copy($dataXml, $dataOrigXml)) {
+        die("Failed to copy parameters to new file, $dataOrigXml");    
     }
-    fwrite($f, $xml_string);
-    chmod("$new_xml_file", 0666);
-    fclose($f);
-    echo "successful";
-    exit();
-}else if(isset($_POST["command"]) and $_POST["command"]=="run"){
-    // TODO check if file is modified and mark in database
 
-    // TODO save new configuration to run folder
+    $doc = new DOMDocument();
+    $doc->load($dataXml);
+    //$doc->preserveWhiteSpace = false;
+    $xpath = new DOMXPath($doc);
 
-    // TODO 
-    $result=shell_exec("sh ".$sh_file);
-
-    if(strpos($result, "done")!==False){
-        echo "successful";
-    }else{
-        echo "$sh_file could not be executed. Try changing the persmission of the file to 755.";
+    // The name of most of the posted parameters will be an xpath to
+    // the same parameter in the data.xml file. Iterate through all the 
+    // posted parameters and set the value of the parameter to the posted value.
+    foreach($_POST as $key=>$value) {
+        // All xpaths for this document will start with /config
+        if(strpos($key,"/config") !== false) {
+            $query = "/" . $key;
+            $nodeList = $xpath->query($query);
+            // The above query will only ever return 1 node
+            $node = $nodeList->item(0);
+            $node->nodeValue = $value;
+        }
     }
-    exit();
-}else if(isset($_GET["command"]) and $_GET["command"]=="default"){
-    echo get_default($default_xml);
-    exit();
-}else if(isset($_POST["command"]) and $_POST["command"]=="plot"){
-    echo shell_exec("./python/png/delete_old.sh > /dev/null 2>/dev/null &");
-    $python_file="./python/plot.py";
 
-    $var1=strict_sanitize($_POST["var_group_x"]);
-    $var2=strict_sanitize($_POST["var_group_y"]);
-    $python_args=$var1." ".$var2;
-
-    $result=exec("python ".$python_file.' '.$python_args);
-    if(strpos($result, ".png")!==False){
-        echo trim($result);
-    }else{
-        echo "$python_file could not be executed. Try changing the persmission of the file to 755.";
+    if(!$doc->save($dataXml,LIBXML_NOEMPTYTAG)) {
+        die("$dataXml could not be saved");
     }
-    exit();
+
+    $dataDiff=str_replace("data.xml", "data.diff", $dataXml);
+    exec("diff $dataOrigXml $dataXml > $dataDiff");
+    // TODO do something more intelligent with the diff, like save in the database
+
+    // call R code to lauch stage 2 and redirect to running_stage2.php
+    chdir($folder);
+    pclose(popen('R_LIBS_USER="' . ${pecan_install} . '" R CMD BATCH workflow_stage2.R &', 'r'));
+    if ($offline) {
+        header( "Location: ../running_stage2.php?workflowid=$workflowid&offline=offline");
+    } else {
+        header( "Location: ../running_stage2.php?workflowid=$workflowid");
+    }           
+
 }
 
-$items=read_xml_structure($xml_structure_file);
+$doc = new DOMDocument();
+$doc->load($dataXml);
+$rootNode=$doc->documentElement;
+
+$tabs = array();
+
+foreach ($rootNode->childNodes as $tabNode) {
+    // filter out top level text nodes
+    if ($tabNode->nodeType != 3) {
+        if ($tabNode->nodeName != "pft") {
+            $tabName = $tabNode->nodeName;
+            $childNodes = $tabNode->childNodes;
+            $paramNodes=array();
+            // filter out text nodes from children
+            foreach ($childNodes as $childNode) {
+                if ($childNode->nodeType != 3) {
+                    $paramNodes[]=$childNode;
+                }
+            }
+            // add this tab and associated parameters to tabs array
+            $tabs[]=array($tabName,$paramNodes);
+        } else { // these are pft parameters, so we have to go down one level in the tree to create the rest of the tabs
+            foreach ($tabNode->childNodes as $pftTabNode) {
+                $nodeName = $pftTabNode->nodeName;
+                if ($pftTabNode->nodeType != 3 && $nodeName != "comment" && $nodeName != "num") {
+                    $tabName = $pftTabNode->nodeName;
+                    $childNodes = $pftTabNode->childNodes;
+                    $paramNodes=array();
+                    // filter out text nodes and comments nodes from children
+                    foreach ($childNodes as $childNode) {
+                        if ($childNode->nodeType != 3 && $childNode->nodeName != "comment") {
+                            $paramNodes[]=$childNode;
+                        }
+                    }
+                    $tabs[] = array($tabName,$paramNodes);
+                }
+            }
+        }
+    }
+}
+
 include_once("inc/view/main_view.php");
 ?>

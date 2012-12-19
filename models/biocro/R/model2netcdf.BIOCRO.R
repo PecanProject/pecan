@@ -11,7 +11,7 @@
 ##'
 ##' Modified from on model2netcdf.sipnet and model2netcdf.ED2 by
 ##' Shawn Serbin and Mike Dietze
-##' @name model2netcdf.biocro
+##' @name model2netcdf.BIOCRO
 ##' @title Function to convert biocro model output to standard netCDF format
 ##' @param outdir Location of biocro model output
 ##' @param run.id Name of biocro model output file.

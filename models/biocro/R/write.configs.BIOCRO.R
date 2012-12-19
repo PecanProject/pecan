@@ -15,14 +15,16 @@ PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
 ##' 
 ##' Performs model specific unit conversions on a a list of trait values,
 ##' such as those provided to write.config
-##' @name convert.samples.biocro
+##' @name convert.samples.BIOCRO
 ##' @title Convert samples for biocro
 ##' @param trait.samples a matrix or dataframe of samples from the trait distribution
 ##' @export
 ##' @return matrix or dataframe with values transformed
 ##' @author David LeBauer
 convert.samples.BIOCRO <- function(trait.samples){
-
+  if(is.list(trait.samples)){
+    trait.samples <- as.data.frame(trait.samples)
+  }
   ## first rename variables
   trait.names <- colnames(trait.samples)
   trait.names[trait.names == "Vcmax"] <- "vmax"
@@ -42,33 +44,62 @@ convert.samples.BIOCRO <- function(trait.samples){
 #==================================================================================================#
 
 ##' Writes a configuration files for the biocro model
-##' @name write.config.biocro
+##' 
+##' @name write.config.BIOCRO
 ##' @title Write configuration files for the biocro model
 ##' @param defaults named list with default model parameter values 
-##' @param trait.values 
-##' @param settings 
+##' @param trait.values named list (or dataframe of trait values)
+##'  can either be a data.frame or named list of traits, e.g.
+##' \code{data.frame(vmax = 1, b0 = 2)} or \code{list(vmax = 1, b0 = 2)}
+##' @param settings pecan settings file configured for BioCro
 ##' @param run.id
 ##' @export
 ##' @return nothing, writes configuration file as side effect 
 ##' @author David LeBauer
-write.config.BIOCRO <- function(defaults, trait.values, settings, run.id) {
-file.path(settings$rundir, run.id, "config.xml")
-  trait.values  <- convert.samples.BIOCRO(trait.values[[1]])
-  trait.names   <- names(trait.values)
-  parms.xml <- xmlNode("parms")
-  for(trait in trait.names) {
-    parms.xml <- append.xmlNode(parms.xml, xmlNode(trait, trait.values[trait]))
-  }
-  config.xml <- append.xmlNode(xmlNode('traits'), parms.xml)
+write.config.BIOCRO <- function(defaults,
+                                trait.values,
+                                settings,
+                                run.id) {
 
-  saveXML(config.xml, file=file.path(settings$rundir, run.id, "data.xml"), indent=TRUE, prefix=PREFIX_XML)
+  biocro.trait.values  <- lapply(convert.samples.BIOCRO(trait.values),
+                                 as.character)
+  biocro.traits <- names(biocro.trait.values)
+  constants <- defaults$pft$constants
+  parms.xml <- listToXml(constants, "pft")
+  photoparm.names <- names(constants$photoParms)
+  for(parm.type in names(constants)){
+    parm.names <- names(constants[[parm.type]])
+    for(parm in parm.names) {
+      if(parm %in% biocro.traits){
+        xmlChildren(parms.xml[[parm.type]][[parm]]) <- biocro.trait.values[[parm]]
+      }
+    }
+  }
+  location.xml <- listToXml(list(latitude = settings$run$site$lat,
+                                  longitude = settings$run$site$lon),
+                            "location")
+  slashdate <- function(x) substr(gsub("-", "/", x), 1, 10)
+  simulationPeriod.xml <- listToXml(
+    list(dateofplanting = slashdate(settings$run$start.date),
+         dateofharvest = slashdate(settings$run$end.date)),
+                                    "simulationPeriod")
+
+  config.xml <- xmlNode("config")
+  config.xml <- append.xmlNode(config.xml, location.xml)
+  config.xml <- append.xmlNode(config.xml, simulationPeriod.xml)
+  config.xml <- append.xmlNode(config.xml, parms.xml)
+  
+
+  saveXML(config.xml,
+          file = file.path(settings$rundir, run.id, "data.xml"),
+          indent=TRUE)
 }
 #==================================================================================================#
 
 #--------------------------------------------------------------------------------------------------#
 ##' Clear out previous config and parameter files.
 ##'
-##' @name remove.config.biocro
+##' @name remove.config.BIOCRO
 ##' @title Clear out previous biocro config and parameter files.
 ##' @param main.outdir Primary PEcAn output directory (will be depreciated)
 ##' @param settings PEcAn settings file 

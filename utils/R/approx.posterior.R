@@ -20,8 +20,8 @@
 ##' @export
 ##' @author David LeBauer, Carl Davidson, Mike Dietze
 ##' @examples
-##' \dontrun{data("trait.mcmc", package = "PEcAn.common")
-##' data("prior.distns", package = "PEcAn.common")
+##' \dontrun{data("trait.mcmc", package = "PEcAn.utils")
+##' data("prior.distns", package = "PEcAn.utils")
 ##' approx.posterior(trait.mcmc, priors = prior.distns)}
 approx.posterior <- function(trait.mcmc, priors, trait.data=NULL, outdir=NULL){
   ##initialization

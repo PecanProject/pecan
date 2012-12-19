@@ -107,7 +107,8 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
 ##' @return nothing, writes ensemble configuration files as a side effect
 ##' @export
 ##' @author David LeBauer, Carl Davidson
-write.ensemble.configs <- function(defaults, ensemble.samples, settings, model, clean=FALSE, write.to.db = TRUE){
+write.ensemble.configs <- function(defaults, ensemble.samples, settings,
+                                   model, clean=FALSE, write.to.db = TRUE){
 
   my.write.config <- paste("write.config.",model,sep="")
   if(!exists(my.write.config)){
@@ -289,7 +290,8 @@ get.sa.samples <- function(samples, quantiles){
 ##' @return nothing, writes sensitivity analysis configuration files as a side effect
 ##' @export
 ##' @author David LeBauer, Carl Davidson
-write.sa.configs <- function(defaults, quantile.samples, settings, model,clean=FALSE, write.to.db = TRUE){
+write.sa.configs <- function(defaults, quantile.samples, settings, model,
+                             clean=FALSE, write.to.db = TRUE){
 
   my.write.config <- paste("write.config.",model,sep="")
   if(!exists(my.write.config)){
@@ -298,8 +300,6 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,clean=F
     stop()
   }
   
-  MEDIAN <- '50'
-
   ## clean out old files
   if(clean){
     if(settings$run$host$name == 'localhost'){
@@ -324,6 +324,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,clean=F
   }
  
   ##write median run
+  MEDIAN <- '50'
   median.samples <- list()
   for(i in 1:length(quantile.samples)){
     median.samples[[i]] <- quantile.samples[[i]][MEDIAN,]
@@ -428,7 +429,10 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,clean=F
               file=file.path(settings$rundir, run.id, "README.txt"), sep='')
 
           # write configuration
-          do.call(my.write.config,list(defaults, trait.samples, settings, outdir, run.id))
+          do.call(my.write.config,
+                  args = list(defaults = defaults,
+                    trait.values = trait.samples,
+                    settings = settings, run.id))
           cat(run.id, file=file.path(settings$rundir, "runs.txt"), sep="\n", append=TRUE)
         }
       }

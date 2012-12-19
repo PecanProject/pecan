@@ -101,9 +101,6 @@ get.model.output.ED2 <- function(){
     ### Move required functions to host
     ## TODO: take out functions read.output.file.ed & read.output.ed from write.configs.ed &
     ## put into a new file specific for reading ED output
-#     dump(c("get.run.id","abbreviate.run.id.ED","left.pad.zeros","read.ensemble.output",
-#            "read.sa.output","read.output", "model2netcdf.ED2","get.results"),
-#          file=paste(settings$outdir,"PEcAn.functions.R",sep=""))
     
     ### Is the previous necessary for localhost?  These functions should be availible within R
     ### & should not need to be copied and run but could instead be called within the running R
@@ -112,7 +109,7 @@ get.model.output.ED2 <- function(){
     #setwd(settings$outdir)
     #source('PEcAn.functions.R') # This won't work yet
     
-    ### Copy output to main output directory. May want to change how this is done.
+     ### Copy output to main output directory. May want to change how this is done.
     file.copy(from = paste(settings$run$host$outdir, 'output.Rdata', sep=''), to = settings$outdir, overwrite=TRUE)
 
     
@@ -122,8 +119,8 @@ get.model.output.ED2 <- function(){
     save(settings,file=paste(settings$outdir,"settings.Rdata",sep=""))
     
     ### Make a copy of required functions and place in file PEcAn.functions.R
-    dump(c("get.run.id","abbreviate.run.id.ED","left.pad.zeros","read.ensemble.output",
-           "read.sa.output","read.output","model2netcdf.ED2","get.results"),
+    dump(c("get.run.id", "left.pad.zeros", "read.ensemble.output",
+           "read.sa.output", "read.output", "model2netcdf.ED2", "get.results"),
          file=paste(settings$outdir,"PEcAn.functions.R",sep=""))
     
     ### Add execution of get.results to the end of the PEcAn.functions.R file

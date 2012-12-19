@@ -7,9 +7,9 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 context("plotting utils")
-
+library(ggplot2)
 test_that("add.prior.density returns ggplot object",{
-  expect_is(add.prior.density(pr.dens('norm', 0, 1)), 'ggplot')
+  expect_is(add.prior.density(pr.dens('norm', 0, 1)), "ggplot")
 })
 
 test_that("create.density.df works on both stated distribution and samples", {

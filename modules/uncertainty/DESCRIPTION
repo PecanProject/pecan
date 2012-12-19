@@ -17,7 +17,6 @@ Description: The Predictive Ecosystem Carbon Analyzer
 Depends:
     RMySQL,
     PEcAn.utils,
-    PEcAn.common,
     ggplot2,
     gridExtra
 Suggests:

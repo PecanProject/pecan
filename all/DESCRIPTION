@@ -15,11 +15,10 @@ Description: The Predictive Ecosystem Carbon Analyzer
     models, and to improve the efficacy of scientific
     investigation.
 Depends:
-    PEcAn.common,
     PEcAn.DB,
     PEcAn.ED,
     PEcAn.SIPNET,
-    PEcAn.biocro,
+    PEcAn.BIOCRO,
     PEcAn.MA,
     PEcAn.utils,
     PEcAn.uncertainty,

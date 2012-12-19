@@ -2,7 +2,8 @@
 \alias{start.model.runs}
 \title{Start ecosystem model runs}
 \usage{
-  start.model.runs(model, write.to.db = TRUE)
+  start.model.runs(model = settings$model$name,
+    write.to.db = TRUE)
 }
 \description{
   Start selected ecosystem model runs within PEcAn workflow

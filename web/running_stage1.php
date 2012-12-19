@@ -32,6 +32,7 @@ if (!$result) {
 }
 $workflow = mysql_fetch_assoc($result);
 $folder = $workflow['folder'];
+$model_type = $workflow['model_type'];
 
 // check result
 $status=file($folder . DIRECTORY_SEPARATOR . "STATUS");
@@ -41,16 +42,24 @@ if ($status === FALSE) {
 
 // check the global status
 switch(checkStatus("CONFIG")) {
+	// No ERROR, and no endtime yet
 	case 0:
 		$nextenabled="disabled=\"disabled\"";header( "refresh:5" );
 		break;		
+	// CONFIG is complete
 	case 1:
 		$nextenabled="disabled=\"disabled\"";
-		if (($workflow['model_type'] == 'BIOCRO') && $workflow['advanced_edit']) {
+		if ($workflow['advanced_edit'] && $model_type == 'BIOCRO') {
 			if ($offline) {
 				header( "Location: sugarcane/index.php?workflowid=$workflowid&offline=offline");
 			} else {
 				header( "Location: sugarcane/index.php?workflowid=$workflowid");
+			}
+		} elseif ($workflow['advanced_edit'] ) {
+			if ($offline) {
+				header( "Location: advanced_edit.php?workflowid=$workflowid&offline=offline");
+			} else {
+				header( "Location: advanced_edit.php?workflowid=$workflowid");
 			}
 		} else {
 			chdir($folder);
@@ -62,6 +71,7 @@ switch(checkStatus("CONFIG")) {
 			}			
 		}
 		break;
+    // ERROR occurred
 	case 2:
 		$nextenabled="";
 		if ($offline) {
@@ -113,10 +123,10 @@ switch(checkStatus("CONFIG")) {
 <?php if ($offline) { ?>
 			<input name="offline" type="hidden" value="offline">
 <?php } ?>
-				<input type="hidden" name="siteid" value="<?=$workflow['site_id']?>" />
-		<input type="hidden" name="modelid" value="<?=$workflow['model_id']?>" />
-		<input type="hidden" name="modeltype" value="<?=$workflow['model_type']?>" />
-		<input type="hidden" name="hostname" value="<?=$workflow['hostname']?>" />
+			<input type="hidden" name="siteid" value="<?=$workflow['site_id']?>" />
+			<input type="hidden" name="modelid" value="<?=$workflow['model_id']?>" />
+			<input type="hidden" name="modeltype" value="<?=$workflow['model_type']?>" />
+			<input type="hidden" name="hostname" value="<?=$workflow['hostname']?>" />
 		</form>
 		
 		<form id="formemail" method="POST" action="sendemail.php">
