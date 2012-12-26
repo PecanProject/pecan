@@ -45,3 +45,4 @@ Collate:
     'help.R'
     'logger.R'
     'read.settings.R'
+    'distn.stats.R'
