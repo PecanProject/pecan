@@ -11,5 +11,6 @@ library("PEcAn.BIOCRO")
 test_that("run.write.configs works for sensitivity analyses and ensembles",{
   settings.file <- system.file("pecan.biocro.xml", package = "PEcAn.BIOCRO")
   settings <- read.settings(settings.file)
-  run.write.configs("BIOCRO")
+
+#  run.write.configs("BIOCRO")
 })

@@ -1,5 +1,6 @@
 ##' Implementation of standard equations used to calculate mean and sd for a variety of 
 ##' named distributions different
+##' 
 ##' @title Distribution Stats
 ##' @param distn named distribution, one of "beta", "exp", "f", "gamma", "lnorm", "norm", "t", 
 ##' @param a numeric; first parameter of \code{distn} 
@@ -15,7 +16,8 @@ distn.stats <- function(distn,a,b){
     mean <- a/(a+b)
     sd   <- sqrt(a*b/((a+b)^2 * (a+b+1)))
   } else if(distn == "exp"){
-    mean <- sd = 1/a
+    mean <- 1/a
+    sd <- 1/a
   } else if(distn == "f"){
     mean <- b/(b-2)
     sd   <- sqrt(2*b*b*(a + b -2)/(a*(b-2)^2*(b-4)))
@@ -41,25 +43,21 @@ distn.stats <- function(distn,a,b){
   return(c(mean, sd))
 }
 
-##' .. content for \description{} (no empty lines) ..
-##'
 ##' a helper function for computing summary statistics of a parametric distribution
+##' 
 ##' @title return mean and standard deviation of a distribution for each distribution in a table with \code{colnames = c("distn", "a", "b"), e.g. in a table of priors
 ##' @param distns table of distributions; see examples 
 ##' @return named vector of mean and SD
 ##' @export
 ##' @author David LeBauer
-##' @example 
-##' data("prior.distns", package = "PEcAn.utils")
-##' distn.table.stats(prior.distns)
 distn.table.stats <- function(distns){
   y = as.data.frame(matrix(NA,nrow(distns),2))
   for(i in 1:nrow(distns)){
     x = distns[i,]
-    y[i,] = distn.stats(as.character(x[1]),as.numeric(x[2]),as.numeric(x[3]))
+    y[i,] = distn.stats(x[1],as.numeric(x[2]),as.numeric(x[3]))
   }
   rownames(y) = rownames(distns)
   colnames(y) = c('mean', 'sd')
-  y
+  return(y)
 }
 
