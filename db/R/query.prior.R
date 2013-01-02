@@ -18,11 +18,12 @@
 ##' @param ... optional arguments for connecting to database (e.g. password, user name, database)
 ##' @return priors for a given pft
 ##' @export
+##' @author David LeBauer
 ##' @examples
 ##' \dontrun{
 ##' query.priors('ebifarm.pavi', vecpaste('SLA', 'Vcmax', 'leaf_width'))
 ##' }
-query.priors <- function(pft, trstr, out=NULL,con=NULL,...){
+query.priors <- function(pft, trstr, out=NULL, con=NULL,...){
   if(is.null(con)){
     con <- query.base.con(settings)
   }
