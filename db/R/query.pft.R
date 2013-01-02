@@ -16,6 +16,7 @@
 ##' @param ... optional arguments for connecting to database (e.g. password, user name, database)
 ##' @return string of species.id for species associated with pft
 ##' @export
+##' @author David LeBauer
 ##' @examples
 ##' \dontrun{
 ##' query.pft_species('ebifarm.pavi')

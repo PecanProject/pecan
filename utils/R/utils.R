@@ -302,6 +302,7 @@ get.stats.mcmc <- function(mcmc.summary, sample.size){
 ##' @param lcl 
 ##' @param ucl 
 ##' @param n
+##' @export
 ##' @author David LeBauer
 paste.stats <- function(mcmc.summary, median, lcl, ucl, n = 2) {  
   paste("$", tabnum(median, n),  "(", tabnum(lcl, n), ",", tabnum(ucl,n), ")", "$", sep = '')
@@ -405,14 +406,17 @@ trait.lookup <- function(traits = NULL) {
 
 
 #--------------------------------------------------------------------------------------------------#
-##' 
-
 ##' Convert number to n significant digits
 ##'
 ##' @title Table numbers
 ##' @param x numeric value or vector
 ##' @param n number of significant figures
+##' @export
+##' @author David LeBauer
 ##' @return x rounded to n significant figures
+##' @examples
+##' tabnum(1.2345)
+##' tabnum(1.2345, n = 4)
 tabnum <- function(x, n=3) {
   ans <- as.numeric(signif(x,n))
   names(ans) <- names(x)
