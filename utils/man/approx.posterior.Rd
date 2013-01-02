@@ -26,8 +26,8 @@
   returns priors where posterior MCMC are missing
 }
 \examples{
-\dontrun{data("trait.mcmc", package = "PEcAn.common")
-data("prior.distns", package = "PEcAn.common")
+\dontrun{data("trait.mcmc", package = "PEcAn.utils")
+data("prior.distns", package = "PEcAn.utils")
 approx.posterior(trait.mcmc, priors = prior.distns)}
 }
 \author{

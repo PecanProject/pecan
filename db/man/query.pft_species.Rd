@@ -23,4 +23,7 @@
 query.pft_species('ebifarm.pavi')
 }
 }
+\author{
+  David LeBauer
+}
 
