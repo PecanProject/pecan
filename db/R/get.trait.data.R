@@ -57,6 +57,10 @@ get.trait.data <- function() {
     ### exclude any parameters for which a constant is provided 
     prior.distns <- prior.distns[which(!rownames(prior.distns) %in%
                                        names(pft$constants)),]
+
+    ### save priors
+    save(prior.distns, file = file.path(pft$outdir, "prior.distns.Rdata"))
+
     
     # 3. display info to the console
     print(" ")
@@ -82,10 +86,7 @@ get.trait.data <- function() {
       print(ldply(all.trait.data[[i]], nrow))
     }
     
-  }
-  
-  save(prior.distns, file = file.path(pft$outdir, "prior.distns.Rdata"))
-    
+  }    
 }
 ##==================================================================================================#
 

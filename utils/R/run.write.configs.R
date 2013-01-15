@@ -63,11 +63,11 @@ run.write.configs <- function(model=settings$model$name){
   for (i in seq(pft.names)){
 
     ## Load priors
-    load(paste(outdirs[i], 'prior.distns.Rdata', sep = ''))
+    load(file.path(outdirs[i], 'prior.distns.Rdata'))
     
     ### Load trait mcmc data (if exists)
     if("trait.mcmc.Rdata" %in% dir(unlist(outdirs))) {
-      load(paste(outdirs[i], 'trait.mcmc.Rdata', sep = ''))
+      load(file.path(outdirs[i], 'trait.mcmc.Rdata'))
     }
     
     pft.name <- unlist(pft.names[i])
@@ -75,13 +75,13 @@ run.write.configs <- function(model=settings$model$name){
     ### When no ma for a trait, sample from  prior
     ### Trim all chains to shortest mcmc chain, else 20000 samples
     if(exists('trait.mcmc')) {
+      print(names(trait.mcmc))
       traits <- names(trait.mcmc)
       samples.num <- min(sapply(trait.mcmc, function(x) nrow(as.matrix(x))))
     } else {
       traits <- NA
       samples.num <- 20000
     }
-    print(names(trait.mcmc))
     priors <- rownames(prior.distns)
     print(priors)
     for (prior in priors) {
@@ -159,8 +159,7 @@ run.write.configs <- function(model=settings$model$name){
 
   print("  ######################## Finish up runs ########################")
   ### Save output from SA/Ensemble runs
-  save(ensemble.samples, trait.samples, sa.samples,
-       file = paste(settings$rundir, 'samples.Rdata', sep = ''))
+  save(ensemble.samples, trait.samples, sa.samples, file = paste(settings$outdir, 'samples.Rdata', sep = ''))
 
   if (FALSE) {
     # TODO RK : move this to run model, why copy before the model is executed.  
