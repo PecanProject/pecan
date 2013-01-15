@@ -71,8 +71,8 @@ run.meta.analysis <- function() {
       print(" ")
     
       ## Load trait data for PFT
-      load(paste(pft$outdir, 'trait.data.Rdata', sep=''))
-      load(paste(pft$outdir, 'prior.distns.Rdata', sep=''))
+      load(file.path(pft$outdir, 'trait.data.Rdata'))
+      load(file.path(pft$outdir, 'prior.distns.Rdata'))
       
       print("-------------------------------------------------------------------")
       print(paste("Trait data loaded for PFT: ", pft$name,sep=""))
@@ -145,11 +145,10 @@ run.meta.analysis <- function() {
       pecan.ma.summary(trait.mcmc, pft$name, pft$outdir)
 
       ### Save the meta.analysis output
-      save(trait.mcmc, file = paste(pft$outdir, 'trait.mcmc.Rdata', sep=''))
+      save(trait.mcmc, file = file.path(pft$outdir, 'trait.mcmc.Rdata'))
 
-      post.distns <- approx.posterior(trait.mcmc, prior.distns,
-                                      trait.data, pft$outdir)
-      save(post.distns, file = paste(pft$outdir, 'post.distns.Rdata', sep = ''))  
+      post.distns <- approx.posterior(trait.mcmc, prior.distns, trait.data, pft$outdir)
+      save(post.distns, file = file.path(pft$outdir, 'post.distns.Rdata'))
 
     } ### End meta.analysis for loop
     
