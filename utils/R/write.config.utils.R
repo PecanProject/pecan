@@ -144,14 +144,17 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings,
     con <- NULL
   }
 
+  # Get the workflow id
+  if ("workflow" %in% names(settings)) {
+    workflow.id <- settings$workflow$id
+  } else {
+    workflow.id <- -1
+  }
+
   # create an ensemble id
   if (!is.null(con)) {
     # write enseblem first
-# TODO add column to ensemble with workflow_id
-#      if ("workflow" %in% names(settings)) {
-#        query.base(paste("INSERT INTO workflows_runs values ('", settings$workflow$id, "', '", run.id, "')", sep=''), con)
-#      }
-    query.base(paste("INSERT INTO ensembles (created_at, runtype) values (NOW(), 'ensemble')", sep=''), con)
+    query.base(paste("INSERT INTO ensembles (created_at, runtype, workflow_id) values (NOW(), 'ensemble', ", workflow.id, ")", sep=''), con)
     ensemble.id <- query.base(paste("SELECT LAST_INSERT_ID() AS ID"), con)[['ID']]
   }
 
@@ -174,6 +177,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings,
     
     # write run information to disk
     cat("runtype     : ensemble\n",
+        "workflow id : ", workflow.id, "\n",
         "ensemble id : ", ensemble.id, "\n",
         "run         : ", counter, "/", settings$ensemble$size, "\n",
         "run id      : ", run.id, "\n",
@@ -322,6 +326,13 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
     log.warn("Run provenance not being logged by database")
     con <- NULL
   }
+
+  # Get the workflow id
+  if ("workflow" %in% names(settings)) {
+    workflow.id <- settings$workflow$id
+  } else {
+    workflow.id <- -1
+  }
  
   ##write median run
   MEDIAN <- '50'
@@ -332,11 +343,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
   names(median.samples) <- names(quantile.samples)
 
   if (!is.null(con)) {
-# TODO add column to ensemble with workflow_id
-#    if ("workflow" %in% names(settings)) {
-#      query.base(paste("INSERT INTO workflows_runs values ('", settings$workflow$id, "', '", run.id, "')", sep=''), con)
-#    }
-    query.base(paste("INSERT INTO ensembles (created_at, runtype) values (NOW(), 'sensitivity analysis')", sep=''), con)
+    query.base(paste("INSERT INTO ensembles (created_at, runtype, workflow_id) values (NOW(), 'sensitivity analysis', ", workflow.id, ")", sep=''), con)
     ensemble.id <- query.base(paste("SELECT LAST_INSERT_ID() AS ID"), con)[['ID']]
     query.base(paste("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id) values ('", settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", settings$run$end.date, "', '",settings$run$outdir , "', NOW(), ", ensemble.id, ")", sep=''), con)
     run.id <- query.base(paste("SELECT LAST_INSERT_ID() AS ID"), con)[['ID']]
@@ -355,6 +362,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
 
   # write run information to disk
   cat("runtype     : sensitivity analysis\n",
+      "workflow id : ", workflow.id, "\n",
       "ensemble id : ", ensemble.id, "\n",
       "quantile    : MEDIAN\n",
       "run id      : ", run.id, "\n",
@@ -410,6 +418,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
 
           # write run information to disk
           cat("runtype     : sensitivity analysis\n",
+              "workflow id : ", workflow.id, "\n",
               "ensemble id : ", ensemble.id, "\n",
               "pft name    : ", names(trait.samples)[i], "\n",
               "quantile    : ", quantile.str, "\n",

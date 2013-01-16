@@ -56,6 +56,10 @@ sda.enkf <- function(model,nens = 10){
   params <- ensemble.samples  ## have to be able to restart ensemble members with same parameters
   
   ## loop over time steps
+  for(t in 1:nt){
+    
+    
+  }
   
   ## write configs
   
