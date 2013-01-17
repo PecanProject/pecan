@@ -18,10 +18,10 @@
 ##' @param settings list, read from settings file (xml) using \code{\link{read.settings}}
 ##' 
 ##' @author David LeBauer, Shawn Serbin, Mike Dietze
-get.results <- function(model){  
+get.results <- function(model=settings$model$name){  
   
   ### Load PEcAn sa info
-  load('samples.Rdata')
+  load(file.path(settings$outdir, 'samples.Rdata'))
   
   sensitivity.output <- list()
   ensemble.output    <- list()
@@ -57,7 +57,6 @@ get.results <- function(model){
                                                        end.year=end.year,
                                                        variables=variables,
                                                        model=model)
-      save(sensitivity.output, file = 'output.Rdata')
     }
   }
   
@@ -68,12 +67,9 @@ get.results <- function(model){
                                             end.year=end.year,
                                             variables=variables,
                                             model=model)
-    save(ensemble.output, file = 'output.Rdata')
   }
   
-  if(all(c('ensemble', 'sensitivity.analysis') %in% names(settings))) {
-    save(ensemble.output, sensitivity.output, file = 'output.Rdata')
-  }
+  save(ensemble.output, sensitivity.output, file = 'output.Rdata')
 }
 #==================================================================================================#
 
