@@ -104,7 +104,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
 ##' @param settings list of PEcAn settings
 ##' @param write.config a model-specific function to write config files, e.g. \link{write.config.ED}  
 ##' @param clean remove old output first?
-##' @return nothing, writes ensemble configuration files as a side effect
+##' @return data frame of runids, writes ensemble configuration files as a side effect
 ##' @export
 ##' @author David LeBauer, Carl Davidson
 write.ensemble.configs <- function(defaults, ensemble.samples, settings,
@@ -159,13 +159,16 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings,
   }
 
   # write configuration for each run of the ensemble
+  runs <- data.frame()
   for(counter in 1:settings$ensemble$size) {
     if (!is.null(con)) {
-      query.base(paste("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id) values ('", settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", settings$run$end.date, "', '",settings$run$outdir , "', NOW(), ", ensemble.id, ")", sep=''), con)
+      paramlist <- paste("ensemble=", counter, sep='')
+      query.base(paste("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id, parameter_list) values ('", settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", settings$run$end.date, "', '",settings$run$outdir , "', NOW(), ", ensemble.id, ", '", paramlist, "')", sep=''), con)
       run.id <- query.base(paste("SELECT LAST_INSERT_ID() AS ID"), con)[['ID']]
     } else {
       run.id <- get.run.id('ENS', left.pad.zeros(counter, 5))
     }
+    runs[counter, 'id'] <- run.id
 
     # create folders (cleaning up old ones if needed)
     if(clean) {
@@ -202,6 +205,8 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings,
   if (!is.null(con)) {
     dbDisconnect(con)
   }
+
+  invisible(runs)
 	  
 } ### End of function: write.ensemble.configs
 #==================================================================================================#
@@ -291,7 +296,7 @@ get.sa.samples <- function(samples, quantiles){
 ##' @param write.config a model-specific function to write config files, e.g. \link{write.config.ED}  
 ##' @param convert.samples a model-specific function that transforms variables from units used in database to units used by model, e.g. \link{convert.samples.ED} 
 ##' @param ensemble.samples list of lists supplied by \link{get.sa.samples}
-##' @return nothing, writes sensitivity analysis configuration files as a side effect
+##' @return data frame of runids, writes sensitivity analysis configuration files as a side effect
 ##' @export
 ##' @author David LeBauer, Carl Davidson
 write.sa.configs <- function(defaults, quantile.samples, settings, model,
@@ -334,6 +339,8 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
     workflow.id <- -1
   }
  
+  runs <- data.frame()
+
   ##write median run
   MEDIAN <- '50'
   median.samples <- list()
@@ -345,12 +352,14 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
   if (!is.null(con)) {
     query.base(paste("INSERT INTO ensembles (created_at, runtype, workflow_id) values (NOW(), 'sensitivity analysis', ", workflow.id, ")", sep=''), con)
     ensemble.id <- query.base(paste("SELECT LAST_INSERT_ID() AS ID"), con)[['ID']]
-    query.base(paste("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id) values ('", settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", settings$run$end.date, "', '",settings$run$outdir , "', NOW(), ", ensemble.id, ")", sep=''), con)
+    paramlist <- paste("quantile=MEDIAN,trait=all,pft=", paste(lapply(settings$pfts, function(x) x[['name']]), sep=','), sep='')
+    query.base(paste("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id, parameter_list) values ('", settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", settings$run$end.date, "', '",settings$run$outdir , "', NOW(), ", ensemble.id, ", '", paramlist, "')", sep=''), con)
     run.id <- query.base(paste("SELECT LAST_INSERT_ID() AS ID"), con)[['ID']]
   } else {
     run.id <- get.run.id('SA', 'median')
     ensemble.id <- "NA"
   }
+  medianrun <- run.id
 
   # create folders (cleaning up old ones if needed)
   if(clean) {
@@ -361,12 +370,14 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
   dir.create(file.path(settings$modeloutdir, run.id), recursive=TRUE)
 
   # write run information to disk
+  ## TODO need to print list of pft names and trait names
   cat("runtype     : sensitivity analysis\n",
       "workflow id : ", workflow.id, "\n",
       "ensemble id : ", ensemble.id, "\n",
+      "pft name    : ALL PFT", "\n",
       "quantile    : MEDIAN\n",
+      "trait       : ALL TRAIT", "\n",
       "run id      : ", run.id, "\n",
-      "pft names   : ", as.character(lapply(settings$pfts, function(x) x[['name']])), "\n",
       "model       : ", model, "\n",
       "model id    : ", settings$model$id, "\n",
       "site        : ", settings$run$site$name, "\n",
@@ -387,10 +398,17 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
   cat(run.id, file=file.path(settings$rundir, "runs.txt"), sep="\n", append=TRUE)
 
   ## loop over pfts
+  runs <- list()
   for(i in seq(names(quantile.samples))){
+    pftname <- names(quantile.samples)[i]
+    if (pftname == "env") {
+      next
+    }
     
     traits <- colnames(quantile.samples[[i]])
     quantiles.str <- rownames(quantile.samples[[i]])
+
+    runs[[pftname]] <- data.frame()
     
     ## loop over variables
     for (trait in traits) {
@@ -401,12 +419,14 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
           trait.samples[[i]][trait] <- quantile.samples[[i]][quantile.str, trait]
 
           if (!is.null(con)) {
-            query.base(paste("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id) values ('", settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", settings$run$end.date, "', '",settings$run$host$outdir , "', NOW(), ", ensemble.id, ")", sep=''), con)
+            paramlist <- paste("quantile=", quantile.str, ",trait=", trait, ",pft=", pftname, sep='')
+            query.base(paste("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id, parameter_list) values ('", settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", settings$run$end.date, "', '",settings$run$outdir , "', NOW(), ", ensemble.id, ", '", paramlist, "')", sep=''), con)
             run.id <- query.base(paste("SELECT LAST_INSERT_ID() AS ID"), con)[['ID']]
           } else { 
             run.id <- get.run.id('SA', round(quantile,3), trait=trait, 
                                  pft.name=names(trait.samples)[i])
-          } 
+          }
+          runs[[pftname]][quantile.str, trait] <- run.id
 
           # create folders (cleaning up old ones if needed)
           if(clean) {
@@ -424,7 +444,6 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
               "quantile    : ", quantile.str, "\n",
               "trait       : ", trait, "\n",
               "run id      : ", run.id, "\n",
-              "pft names   : ", as.character(lapply(settings$pfts, function(x) x[['name']])), "\n",
               "model       : ", model, "\n",
               "model id    : ", settings$model$id, "\n",
               "site        : ", settings$run$site$name, "\n",
@@ -443,6 +462,8 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
                     trait.values = trait.samples,
                     settings = settings, run.id))
           cat(run.id, file=file.path(settings$rundir, "runs.txt"), sep="\n", append=TRUE)
+        } else {
+          runs[[pftname]][MEDIAN, trait] <- medianrun
         }
       }
     }
@@ -450,6 +471,8 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
   if (!is.null(con)) {
     dbDisconnect(con)
   }
+
+  invisible(runs)
 }
 #==================================================================================================#
 
