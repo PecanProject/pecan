@@ -20,9 +20,6 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   config.text <- readLines(con=template.in, n=-1)
   writeLines(config.text, con = file.path(settings$rundir, run.id, "sipnet.in"))
     
-  ### Display info to the console.
-  print(run.id)
-
   ### WRITE *.clim
   template.clim <- settings$run$site$met      ## read from settings
   if(!is.null(inputs)){                       ## override if specified in inputs
