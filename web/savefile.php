@@ -50,5 +50,5 @@ file_put_contents($file, $data);
 
 close_database($connection);
 
-print("data is saved to $file");
+//print("data is saved to $file");
 ?>
