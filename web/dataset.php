@@ -30,7 +30,7 @@ if (!$result) {
 	die('Invalid query: ' . mysql_error());
 }
 $run = mysql_fetch_assoc($result);
-$folder = $run['folder'];
+$folder = str_replace("//", "/", $run['folder']);
 
 // return dataset
 switch ($type) {
