@@ -52,6 +52,7 @@ run.write.configs <- function(model=settings$model$name){
   sa.samples <- list()
   ensemble.samples <- list()
   env.samples <- list()
+  runs.samples <- list()
   ###
   
   ## Prepare for model output.  Cleanup any old config files (if exists)
@@ -129,10 +130,10 @@ run.write.configs <- function(model=settings$model$name){
         cnt <- 0
         assign("cnt", cnt, .GlobalEnv)
       }
-      write.sa.configs(defaults = settings$pfts,
-                       quantile.samples = sa.samples,
-                       settings = settings,
-                       model = model)
+      runs.samples$sa <- write.sa.configs(defaults = settings$pfts,
+                                          quantile.samples = sa.samples,
+                                          settings = settings,
+                                          model = model)
     }
   } ### End of SA
   
@@ -151,7 +152,7 @@ run.write.configs <- function(model=settings$model$name){
     print(" ")
     print(" ")
     
-    write.ensemble.configs(settings$pfts, ensemble.samples, settings, model = model)
+    runs.samples$ensemble <- write.ensemble.configs(settings$pfts, ensemble.samples, settings, model = model)
     
   }else{
     print(paste('Ensemble analysis settings are NULL'))
@@ -159,7 +160,7 @@ run.write.configs <- function(model=settings$model$name){
 
   print("  ######################## Finish up runs ########################")
   ### Save output from SA/Ensemble runs
-  save(ensemble.samples, trait.samples, sa.samples, file = paste(settings$outdir, 'samples.Rdata', sep = ''))
+  save(ensemble.samples, trait.samples, sa.samples, runs.samples, file = file.path(settings$outdir, 'samples.Rdata'))
 
   if (FALSE) {
     # TODO RK : move this to run model, why copy before the model is executed.  

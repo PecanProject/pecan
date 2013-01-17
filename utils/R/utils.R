@@ -474,12 +474,14 @@ capitalize <- function(x) {
 #--------------------------------------------------------------------------------------------------#
 read.ensemble.output <- function(ensemble.size, outdir, 
                                  start.year, end.year,variables, model){
+  if (!exists('runs.samples')) {
+    load(file.path(settings$outdir, 'samples.Rdata'))    
+  }
 
   ensemble.output <- list()
-  for(ensemble.id in 1:ensemble.size) {
-    run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, 5))#log10(ensemble.size)+1))
-    print(run.id)
-      ensemble.output[[ensemble.id]] <- sapply(read.output(run.id, outdir, start.year, end.year,variables,model),mean,na.rm=TRUE)
+  for(row in rownames(runs.samples$ensemble)) {
+    run.id <- runs.samples$ensemble[row, 'id']
+    ensemble.output[[row]] <- sapply(read.output(run.id, outdir, start.year, end.year,variables,model),mean,na.rm=TRUE)
   }
   return(ensemble.output)
 }
@@ -505,28 +507,21 @@ read.ensemble.output <- function(ensemble.size, outdir,
 read.sa.output <- function(traits, quantiles, outdir, pft.name='', 
                            start.year, end.year, variables, model){
   
+  if (!exists('runs.samples')) {
+    load(file.path(settings$outdir, 'samples.Rdata'))    
+  }
+
   sa.output <- matrix(nrow = length(quantiles),
                       ncol = length(traits),
                       dimnames = list(quantiles, traits))
   for(trait in traits){
     for(quantile in quantiles){
-      if(!quantile == "50"){
-        run.id <- get.run.id('SA', round(as.numeric(quantile)/100, 3),
-                             trait = trait, pft.name = pft.name)
-        print(run.id)
-        sa.output[quantile, trait] <-
-          sapply(read.output(run.id, outdir,
-                             start.year, end.year,
-                             variables, model),
-                 mean, na.rm=TRUE)
-      } else if (quantile == "50") {
-        sa.output[quantile, trait] <- sapply(read.output(get.run.id('SA', 'median'),
-                                                         outdir,
-                                                         start.year, end.year,
-                                                         variables, model),
-                                             mean,na.rm=TRUE)
-      } ## end loop over quantiles
-    }
+      run.id <- runs.samples$sa[[pft.name]][quantile, trait]
+      sa.output[quantile, trait] <- sapply(read.output(run.id, outdir,
+                                                       start.year, end.year,
+                                                       variables, model),
+                                           mean, na.rm=TRUE)
+    } ## end loop over quantiles
   } ## end loop over traits
   sa.output <- as.data.frame(sa.output)
   return(sa.output)
