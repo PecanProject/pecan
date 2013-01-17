@@ -481,7 +481,7 @@ read.ensemble.output <- function(ensemble.size, outdir,
   ensemble.output <- list()
   for(row in rownames(runs.samples$ensemble)) {
     run.id <- runs.samples$ensemble[row, 'id']
-    ensemble.output[[row]] <- sapply(read.output(run.id, outdir, start.year, end.year,variables,model),mean,na.rm=TRUE)
+    ensemble.output[[row]] <- sapply(read.output(run.id, file.path(outdir, run.id), start.year, end.year,variables,model),mean,na.rm=TRUE)
   }
   return(ensemble.output)
 }
@@ -517,7 +517,7 @@ read.sa.output <- function(traits, quantiles, outdir, pft.name='',
   for(trait in traits){
     for(quantile in quantiles){
       run.id <- runs.samples$sa[[pft.name]][quantile, trait]
-      sa.output[quantile, trait] <- sapply(read.output(run.id, outdir,
+      sa.output[quantile, trait] <- sapply(read.output(run.id, file.path(outdir, run.id),
                                                        start.year, end.year,
                                                        variables, model),
                                            mean, na.rm=TRUE)
