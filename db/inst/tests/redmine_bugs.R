@@ -7,11 +7,14 @@
 ## http://opensource.ncsa.illinois.edu/license.html
 ##-------------------------------------------------------------------------------settings.text <- "
 
-data(settings, package = "PEcAn.utils")
+settings <- read.settings(system.file("tests/test.settings.xml", package = "PEcAn.all"))
 
 
 ## the following test should work after #1128 has been resolved
-# test_that("database has a managements table with appropriate columns",{
-#   workflows <- query.base("describe workflows;", con = query.base.con(settings))
-#   expect_true(all(c("site_id", "model_type", "model_id", "hostname", "start_date", "end_date", "params", "folder", "started_at", "finished_at", "created_at", "updated_at", "advanced_edit") %in% workflows$Field))
-# })
+
+if(db.exists()){
+  test_that("database has a managements table with appropriate columns",{
+    workflows <- query.base("describe workflows;", con = query.base.con(settings))
+    expect_true(all(c("site_id", "model_id", "hostname", "start_date", "end_date", "params", "folder", "started_at", "finished_at", "created_at", "updated_at", "advanced_edit") %in% workflows$Field))
+  })
+}
