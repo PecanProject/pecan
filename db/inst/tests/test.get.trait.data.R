@@ -19,10 +19,10 @@ temp.settings <- PEcAn.utils::temp.settings
   </pfts>
   <outdir>/tmp/test/</outdir>
   <database>
-    <userid>ebi_analys_user</userid>
-    <passwd>b742xsAu</passwd>
-    <location>localhost</location>
-    <name>ebi_analysis</name>
+    <userid>bety</userid>
+    <passwd>bety</passwd>
+    <host>localhost</host>
+    <name>bety</name>
   </database>
 </pecan>"
 
