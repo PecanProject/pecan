@@ -6,5 +6,12 @@
 ##' @export
 ##' @author David LeBauer
 db.exists <- function(){
+  if(!exists("settings")){
+    settings <- list(database = 
+                       list(userid = "bety", 
+                            passwd = "bety", 
+                            location = "localhost",
+                            name = "bety"))
+  }
   tryCatch(query.base.con(), error = function(e)TRUE)
 }
