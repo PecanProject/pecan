@@ -28,3 +28,4 @@ Collate:
     'query.prior.R'
     'query.trait.data.R'
     'query.traits.R'
+    'utils.R'
