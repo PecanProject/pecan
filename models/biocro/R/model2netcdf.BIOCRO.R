@@ -21,41 +21,27 @@ model2netcdf.BIOCRO <- function(outdir) {
   
   # TODO : this is not working, only saves 1 year
 
-  require(ncdf4)
-  require(lubridate)
   ### Read in model output in biocro format
-  outfile <- file.path(outdir, "result.Rdata")
-  load(outfile)
-
-  ## Focus on Stem Biomass only for now
-  #output[["Stem"]]    <- biocro.output$Stem
-
-  # TODO : this is bogus probably!!!
-  # compute GPP
-  result[["GPP"]] <- result[["CanopyAssim"]]
+  outfile <- file.path(outdir, "result.csv")
+  result <- read.csv(outfile)
   
   t <- ncdim_def("time", "seconds", 3600)
-
   var <- list()
   var[["Stem"]]    <- ncvar_def("Stem", "Mg ha-1", t, -999, "Stem Biomass")
-  var[["GPP"]]    <- ncvar_def("GPP", "", t, -999, "Canopy Assimilation")
 
-  ## var[["Leaf"]]    <- ncvar_def("Leaf", "Mg ha-1", t, -999,
-  ##                               "Leaf Biomass")
-  ## var[["Root"]]    <- ncvar_def("Root", "Mg ha-1", t, -999,
-  ##                               "Root Biomass")
+  var[["Leaf"]]    <- ncvar_def("Leaf", "Mg ha-1", t, -999,
+                                "Leaf Biomass")
+  var[["Root"]]    <- ncvar_def("Root", "Mg ha-1", t, -999,
+                                "Root Biomass")
   ## var[["Rhizome"]] <- ncvar_def("Rhizome", "Mg ha-1", t, -999,
   ##                              "Rhizome Biomass")
   ## var[["LAI"]]     <- ncvar_def("LAI", "m2/m2", t, -999,
   ##                              "Leaf Area Index")
-  ## var[["GPP"]]     <- ncvar_def("GPP", "", t, -999,
-  ##                                "Canopy Assimilation")
   ## var[["Transpiration"]]     <- ncvar_def("Assim", "?", t, -999,
   ##                                        "Canopy Transpiration")
   
   ##******************** Declare netCDF variables ********************#
   start_year <- format(as.Date(settings$run$start.date), "%Y")
-  end_year <- format(as.Date(settings$run$end.date), "%Y")
 
   nc.outfile <- file.path(outdir, paste0(start_year, ".nc"))
   nc <- nc_create(filename = nc.outfile, var)

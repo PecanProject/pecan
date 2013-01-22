@@ -113,13 +113,13 @@
   </ensemble>
   <sensitivity.analysis>
     <quantiles>
-      <sigma>1</sigma>
       <sigma>0</sigma>
-      <sigma>-1</sigma>
+<!--      <sigma>1</sigma>
+      <sigma>-1</sigma>-->
     </quantiles>
     <variable>Stem</variable>
-    <start.year>2002</start.year>
-    <end.year>2006</end.year>
+    <start.year>2004</start.year>
+    <end.year>2004</end.year>
   </sensitivity.analysis>
   <model>
     <name>BIOCRO</name>
@@ -128,14 +128,14 @@
   <run>
     <site>
       <id>76</id>
-      <name>EBI Energy farm</name>
-      <lat>40.08</lat>
-      <lon>-88.23</lon>
+      <name>Tallahassee, Florida</name>
+      <lat>30.5</lat>
+      <lon>-84.33</lon>
       <met>NULL</met>
     </site>
     <folder>/tmp/out/run/</folder>
     <start.date>2004-01-01 06:00:00</start.date>
-    <end.date>2006-01-01 05:59:00</end.date>
+    <end.date>2004-12-01 05:59:00</end.date>
     <host>
       <name>localhost</name>
       <rundir>/tmp/out/run/</rundir>
