@@ -21,14 +21,17 @@ PACKAGES="${PACKAGES} modules/assim.batch modules/assim.sequential modules/prior
 PACKAGES="${PACKAGES} models/ed models/sipnet models/biocro"
 PACKAGES="${PACKAGES} all"
 
-# people to notify of the build
-TO="kooper@illinois.edu,sserbin@illinois.edu,dlebauer@illinois.edu,mdietze@illinois.edu"
+# people to notify of the build, leave blank to not send email
+TO=""
 
-# run script in local mode (yes) or for the autobuild on ebi-forecast (no)
-LOCAL="yes"
+# Should a pull be done before building
+PULL="yes"
+
+# Should PEcAn be always build, or only if a change was made
+BUILD="no"
 
 # run check before install
-CHECK="no"
+CHECK="yes"
 
 # location where to install packages
 if [ $UID -eq 0 ]; then
@@ -51,26 +54,25 @@ fi
 touch running
 touch lastrun
 
-# check to see if there are any updates
-if [ "$LOCAL" != "yes" ]; then
-  bzr missing >/dev/null
+# pull any changes
+if [ "$PULL" == "yes" ]; then
+  git pull > changes.log
+  if ! grep --quiet 'Already' changes.log; then
+    BUILD="yes"
+  fi
 fi
 
-if [ "$LOCAL" == "yes" -o $? -eq 1 ]; then
+if [ "$BUILD" == "yes" ]; then
   START=`date +'%s.%N'`
   STATUS="OK"
 
-  # update repository
-  if [ "$LOCAL" != "yes" ]; then
-	  # get changes
-	  echo "----------------------------------------------------------------------" >> changes.log
-	  echo "CHANGES" >> changes.log
-	  echo "----------------------------------------------------------------------" >> changes.log
-    bzr pull -q > changes.log
-	  bzr log > newlog
-	  diff bzr.log newlog | grep '^> ' | sed 's/^> //' > changes.log
-    mv newlog bzr.log
-  fi
+  # get changes
+  echo "----------------------------------------------------------------------" >> changes.log
+  echo "CHANGES" >> changes.log
+  echo "----------------------------------------------------------------------" >> changes.log
+  git log > newlog
+  diff git.log newlog | grep '^> ' | sed 's/^> //' > changes.log
+  mv newlog git.log
 
   # get committer names and emails
   # TODO all commiters are smushed together
@@ -87,7 +89,7 @@ if [ "$LOCAL" == "yes" -o $? -eq 1 ]; then
   #TO="${TO} ${EMAILS}"
 
   # get version number
-  REVNO=$( grep 'revno: ' bzr.log | head -1 | sed -e 's/revno: //' )
+  REVNO=$( git show -s --pretty=format:%T master )
 
   # check/install packages
   for p in ${PACKAGES}; do
@@ -102,7 +104,7 @@ if [ "$LOCAL" == "yes" -o $? -eq 1 ]; then
 	      echo "CHECK $p BROKEN" >> changes.log
 	      echo "----------------------------------------------------------------------" >> changes.log
 	      cat out.log >> changes.log
-	      if [ "$LOCAL" == "yes" ]; then
+	      if [ "$TO" == "" ]; then
 	        cat changes.log
 	        rm changes.log
 	      fi
@@ -117,7 +119,7 @@ if [ "$LOCAL" == "yes" -o $? -eq 1 ]; then
       echo "INSTALL $p BROKEN" >> changes.log
       echo "----------------------------------------------------------------------" >> changes.log
       cat out.log >> changes.log
-      if [ "$LOCAL" == "yes" ]; then
+      if [ "$TO" == "" ]; then
         cat changes.log
         rm changes.log
       fi
@@ -133,7 +135,7 @@ if [ "$LOCAL" == "yes" -o $? -eq 1 ]; then
         echo "INSTALL $p OK" >> changes.log
         echo "----------------------------------------------------------------------" >> changes.log
       fi
-      if [ "$LOCAL" == "yes" ]; then
+      if [ "$TO" == "" ]; then
         cat changes.log
         rm changes.log
       fi
@@ -145,7 +147,7 @@ if [ "$LOCAL" == "yes" -o $? -eq 1 ]; then
   echo "----------------------------------------------------------------------" >> changes.log
   echo "build took ${TIME} seconds." >> changes.log
   echo "----------------------------------------------------------------------" >> changes.log
-  if [ "$LOCAL" == "yes" ]; then
+  if [ "$TO" == "" ]; then
     cat changes.log
   else
     cat changes.log | mail -s "PEcAn BUILD ${REVNO} is ${STATUS}" ${TO}
