@@ -5,9 +5,13 @@
 ## University of Illinois/NCSA Open Source License
 ## which accompanies this distribution, and is available at
 ## http://opensource.ncsa.illinois.edu/license.html
-##-------------------------------------------------------------------------------settings.text <- "
 
-settings <- read.settings(system.file("tests/test.settings.xml", package = "PEcAn.all"))
+
+settings <- list(database = 
+                   list(userid = "bety", 
+                        passwd = "bety", 
+                        location = "localhost",
+                        name = "bety"))
 
 
 ## the following test should work after #1128 has been resolved

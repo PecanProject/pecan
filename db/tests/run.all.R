@@ -9,4 +9,11 @@
 library(testthat)
 library(PEcAn.DB)
 
-test_package("PEcAn.DB")
+settings <- list(database = 
+                   list(userid = "bety", 
+                        passwd = "bety", 
+                        location = "localhost",
+                        name = "bety"))
+if(!grepl("Error", try(query.base.con(), silent = TRUE))){
+  test_package("PEcAn.DB")
+}
