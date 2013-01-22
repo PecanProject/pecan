@@ -7,7 +7,11 @@
 ## http://opensource.ncsa.illinois.edu/license.html
 ##-------------------------------------------------------------------------------
 
-data(settings, package = "PEcAn.DB")
+settings <- list(database = 
+                   list(userid = "bety", 
+                        passwd = "bety", 
+                        location = "localhost",
+                        name = "bety"))
 
 ## check database connection as condition of running tests:
 if(!grepl("Error", try(query.base.con(), silent = TRUE))){
