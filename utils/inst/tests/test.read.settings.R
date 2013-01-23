@@ -19,10 +19,10 @@
   </pfts>
   <outdir>test/</outdir>
   <database>
-    <userid>ebi_analys_user</userid>
-    <passwd>b742xsAu</passwd>
+    <userid>bety</userid>
+    <passwd>bety</passwd>
     <location>localhost</location>
-    <name>ebi_analysis</name>
+    <name>bety</name>
   </database>
 </pecan>"
 
