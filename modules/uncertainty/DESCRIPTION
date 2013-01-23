@@ -31,3 +31,5 @@ Collate:
     'plots.R'
     'run.ensemble.analysis.R'
     'flux_uncertainty.R'
+    'read.ensemble.output.R'
+    'read.sensitivity.output.R'

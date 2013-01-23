@@ -98,38 +98,22 @@ vecpaste <- function(x) paste(paste("'", x, "'", sep=''), collapse=',')
 #--------------------------------------------------------------------------------------------------#
 ##' returns an id representing a model run
 ##'
-##' for use in model input files and indices
+##' Provides a consistent method of naming runs; for use in model input files and indices
 ##' @title Get Run ID
-##' @param run.type 
-##' @param index 
-##' @param trait 
-##' @param pft.name 
+##' @param run.type character, can be any character; currently "SA" is used for sensitivity analysis, "ENS" for ensemble run.
+##' @param index unique index for different runs, e.g. integer counting members of an 
+##' ensemble or a quantile used to which a trait has been perturbed for sensitivity analysis   
+##' @param trait name of trait being sampled (for sensitivity analysis)
+##' @param pft.name name of PFT (value from pfts.names field in database)
 ##' @return id representing a model run
 ##' @export
+##' @examples
+##' get.run.id("ENS", left.pad.zeros(1, 5))
+##' get.run.id("SA", round(qnorm(-3),3), trait = "Vcmax")
+##' @author Carl Davidson, David LeBauer
 #--------------------------------------------------------------------------------------------------#
-get.run.id <- function(run.type, index, trait='', pft.name=''){
-  result <- run.type
-  if (pft.name != "") {
-    if (result != "") {
-      result <- paste(result, pft.name, sep='-')
-    } else {
-      result <- pft.name
-    }
-  }
-  if (trait != "") {
-    if (result != "") {
-      result <- paste(result, trait, sep='-')
-    } else {
-      result <- trait
-    }
-  }
-  if (index != "") {
-    if (result != "") {
-      result <- paste(result, index, sep='-')
-    } else {
-      result <- index
-    }
-  }
+get.run.id <- function(run.type, index, trait = NULL, pft.name = NULL){
+  result <- paste(c(run.type, pft.name, trait, index), collapse = "-")
   return(result)
 }
 #==================================================================================================#
@@ -459,85 +443,6 @@ capitalize <- function(x) {
 #==================================================================================================#
 
 #--------------------------------------------------------------------------------------------------#
-##' Reads output from model ensemble
-##'
-##' Reads output for an ensemble of length specified by \code{ensemble.size} and bounded by \code{start.year} and \code{end.year}
-##' @title Read ensemble output
-##' @return a list of ensemble model output 
-##' @param ensemble.size the number of ensemble members run
-##' @param outdir directory with model output to use in ensemble analysis
-##' @param start.year first year to include in ensemble analysis
-##' @param end.year last year to include in ensemble analysis
-##' @param variables targe variables for ensemble analysis
-##' @param model ecosystem model run
-##' @export
-#--------------------------------------------------------------------------------------------------#
-read.ensemble.output <- function(ensemble.size, outdir, 
-                                 start.year, end.year,variables, model){
-
-  ensemble.output <- list()
-  for(ensemble.id in 1:ensemble.size) {
-    run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, 5))#log10(ensemble.size)+1))
-    print(run.id)
-      ensemble.output[[ensemble.id]] <- sapply(read.output(run.id, outdir, start.year, end.year,variables,model),mean,na.rm=TRUE)
-  }
-  return(ensemble.output)
-}
-#==================================================================================================#
-
-
-#--------------------------------------------------------------------------------------------------#
-##' Reads output of sensitivity analysis runs
-##'
-##' 
-##' @title Read Sensitivity Analysis output 
-##' @return dataframe with one col per quantile analysed and one row per trait,
-##'  each cell is a list of AGB over time
-##' @param traits model parameters included in the sensitivity analysis
-##' @param quantiles quantiles selected for sensitivity analysis
-##' @param outdir directory with model output to use in sensitivity analysis
-##' @param pft.name name of PFT used in sensitivity analysis (Optional)
-##' @param start.year first year to include in sensitivity analysis 
-##' @param end.year last year to include in sensitivity analysis
-##' @param read.output model specific read.output function
-##' @export
-#--------------------------------------------------------------------------------------------------#
-read.sa.output <- function(traits, quantiles, outdir, pft.name='', 
-                           start.year, end.year, variables, model){
-  
-  sa.output <- matrix(nrow = length(quantiles),
-                      ncol = length(traits),
-                      dimnames = list(quantiles, traits))
-  for(trait in traits){
-    for(quantile in quantiles){
-      if(!quantile == "50"){
-        run.id <- get.run.id('SA', round(as.numeric(quantile)/100, 3),
-                             trait = trait, pft.name = pft.name)
-        print(run.id)
-        sa.output[quantile, trait] <-
-          sapply(read.output(run.id, outdir,
-                             start.year, end.year,
-                             variables, model),
-                 mean, na.rm=TRUE)
-      } else if (quantile == "50") {
-        sa.output[quantile, trait] <- sapply(read.output(get.run.id('SA', 'median'),
-                                                         outdir,
-                                                         start.year, end.year,
-                                                         variables, model),
-                                             mean,na.rm=TRUE)
-      } ## end loop over quantiles
-    }
-  } ## end loop over traits
-  sa.output <- as.data.frame(sa.output)
-  return(sa.output)
-}
-#==================================================================================================#
-
-
-#--------------------------------------------------------------------------------------------------#
-##'
-##'
-#--------------------------------------------------------------------------------------------------#
 isFALSE <- function(x) !isTRUE(x)
 #==================================================================================================#
 
@@ -710,6 +615,26 @@ temp.settings <- function(settings.txt){
   writeLines(settings.txt, con = temp)
   settings <- readLines(temp)
   return(settings)
+}
+
+
+##' Test if function gives an error
+##' 
+##' adaptation of try that returns a logical value (FALSE if error)
+##' @title tryl
+##' @param FUN function to be evaluated for error
+##' @return FALSE if function returns error; else TRUE
+##' @export
+##' @examples
+##' tryl(1+1)
+##' # TRUE
+##' tryl(sum("a"))
+##' # FALSE
+##' @author David LeBauer
+tryl <- function(FUN){
+  out <- tryCatch(FUN, error = function(e) e)
+  ans <- !any(class(out) == "error")
+  return(ans)
 }
 ####################################################################################################
 ### EOF.  End of R script file.              
