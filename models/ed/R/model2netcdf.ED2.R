@@ -18,10 +18,6 @@
 ##' @author Michael Dietze
 ## modified M. Dietze 07/08/12
 model2netcdf.ED2 <- function(outdir) {
-  
-  ## Load library requirements for function
-  require(ncdf)
-  require(hdf5)
 
   flist <- dir(outdir,"analysis-T-")
   if (length(flist) == 0) {
