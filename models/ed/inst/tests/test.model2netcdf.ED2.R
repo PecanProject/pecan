@@ -1,13 +1,27 @@
-extdata.dir <- system.file("extdata/", package = "PEcAn.ED")
+extdata.dir <- system.file("extdata", package = "PEcAn.ED")
 outdir <- "/tmp/out/"
  
 system("rm -rf /tmp/out/*")
-file.copy(dir(extdata, pattern = ".h5", full.names = TRUE), outdir)
+file.copy(dir(extdata.dir, pattern = ".h5", full.names = TRUE), outdir)
 
-model2netcdf.ED2("outdir")
+model2netcdf.ED2(outdir)
 
-### test attributes of .nc files here
-#test_that("valid .nc files are produced", {
+test_that("a valid .nc file is produced for each corresponding ED2 output", {
+  h5files <- dir(outdir, pattern = ".h5")
+  ncfiles <- dir(outdir, pattern = ".nc")
+
+  expect_equal(length(h5files), length(ncfiles))
+  h5years <- sapply(h5files, function(x) gsub("[A-Za-z.h5-]", "", x))
+  ncyears <- sapply(ncfiles, function(x) gsub(".nc", "", x))
+  expect_equal(as.numeric(ncyears), as.numeric(h5years))
+})
+
+test_that("nc files have correct attributes",{
+  tmp.nc <- open.ncdf(file.path(outdir, ncfiles[1]))
+  expect_equal(class(tmp.nc), "ncdf")
+  time <- get.var.ncdf(tmp.nc, "time")
+  gpp  <- get.var.ncdf(tmp.nc, "GPP")
   
-#})
-file.remove(dir(extdata), pattern = ".nc")
+  expect_equal(length(gpp), length(time))
+  
+})
