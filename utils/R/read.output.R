@@ -31,14 +31,12 @@
 ##' @export
 ##' @author Michael Dietze
 read.output <- function(run.id, outdir, start.year=NA,
-                        end.year=NA, variables = "GPP") {
+                        end.year=NA, variables = "GPP", model = settings$model$name) {
   ### Load requirements
   require(ncdf)
-  
-  model <- settings$model$name
   model2nc <- paste("model2netcdf", model, sep=".")
   if(!exists(model2nc)){
-    log.warn("File conversion function model2netcdf does not exist for",model)
+    log.warn("File conversion function model2netcdf does not exist for", model)
     return(NA)
   }
   
