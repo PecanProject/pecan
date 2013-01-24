@@ -3,7 +3,8 @@
 \title{Read output}
 \usage{
   read.output(run.id, outdir, start.year = NA,
-    end.year = NA, variables = "GPP")
+    end.year = NA, variables = "GPP",
+    model = settings$model$name)
 }
 \arguments{
   \item{run.id}{the id distiguishing the model run.}

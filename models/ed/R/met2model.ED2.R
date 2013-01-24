@@ -11,9 +11,6 @@
 
 met2model.ED2 <- function(fname,lst){
   
-require(ncdf)
-require(hdf5)
-
 ### FUNCTIONS
 dm <- c(0,32,60,91,121,152,182,213,244,274,305,335,366)
 dl <- c(0,32,61,92,122,153,183,214,245,275,306,336,367)
