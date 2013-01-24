@@ -17,6 +17,7 @@ test_that("a valid .nc file is produced for each corresponding ED2 output", {
 })
 
 test_that("nc files have correct attributes",{
+  ncfiles <- dir(outdir, pattern = ".nc")
   tmp.nc <- open.ncdf(file.path(outdir, ncfiles[1]))
   expect_equal(class(tmp.nc), "ncdf")
   time <- get.var.ncdf(tmp.nc, "time")
