@@ -2,7 +2,7 @@
 \alias{db.exists}
 \title{db.exists}
 \usage{
-  db.exists()
+  db.exists(...)
 }
 \value{
   TRUE if database connection works; else FALSE

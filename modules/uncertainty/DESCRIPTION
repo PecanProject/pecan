@@ -33,3 +33,4 @@ Collate:
     'flux_uncertainty.R'
     'read.ensemble.output.R'
     'read.sensitivity.output.R'
+    'variance.R'

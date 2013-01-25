@@ -23,8 +23,8 @@
   \link{get.sa.samples}}
 }
 \value{
-  nothing, writes sensitivity analysis configuration files
-  as a side effect
+  data frame of runids, writes sensitivity analysis
+  configuration files as a side effect
 }
 \description{
   Write sensitivity analysis config files

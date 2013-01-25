@@ -15,7 +15,7 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
 Depends:
     PEcAn.utils,
     coda,
-    hdf5, 
+    hdf5,
     ncdf
 Suggests:
     testthat

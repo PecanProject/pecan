@@ -8,30 +8,15 @@
 ## #-------------------------------------------------------------------------------
 ## require(XML)
 
-  settings.text <- "
-<pecan>
-  <nocheck>nope</nocheck>
-  <pfts>
-    <pft>
-      <name>ebifarm.pavi</name>
-      <outdir>test/</outdir>
-    </pft>
-  </pfts>
-  <outdir>test/</outdir>
-  <database>
-    <userid>bety</userid>
-    <passwd>bety</passwd>
-    <location>localhost</location>
-    <name>bety</name>
-  </database>
-</pecan>"
-
 test_that("read.settings works ",{
-## create settings file "tmp"
-  test.file <- tempfile()
-  writeLines(settings.text, con = test.file)
-  read.settings(test.file)
-  read.settings(settings.text)
+  ## create settings file "tmp"
+  test.output <- tempfile(tmpdir = "")
+  test.settings <- system.file("extdata/test.settings.xml", package = "PEcAn.utils")
+  test.settings <- system.file("extdata/test.settings.xml", package = "PEcAn.utils")
+  settings <- read.settings(test.settings, outputfile = test.output)
+  test.output.path <- file.path(settings$outdir, test.output)
+  read.settings(test.output.path)
+  expect_true(file.remove(test.output.path))
 })
 
 ## context("tests for read.settings and related functions")
