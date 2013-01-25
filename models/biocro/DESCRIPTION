@@ -10,6 +10,8 @@ Depends:
     PEcAn.utils,
     PEcAn.data.atmosphere,
     ncdf4,
+    EnCro,
+    RNCEP,
     lubridate,
     XML
 Suggests:

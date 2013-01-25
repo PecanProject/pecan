@@ -21,7 +21,8 @@ Depends:
     ggplot2,
     randtoolbox
 Suggests:
-    testthat
+    testthat,
+    ncdf
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
