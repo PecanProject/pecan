@@ -2,7 +2,7 @@
 \alias{get.results}
 \title{Generate model output for PEcAn analyses}
 \usage{
-  get.results(model)
+  get.results(model = settings$model$name)
 }
 \arguments{
   \item{model}{name of model being used}

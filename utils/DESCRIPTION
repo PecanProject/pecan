@@ -36,7 +36,6 @@ Collate:
     'run.write.configs.R'
     'timeutils.R'
     'utils.R'
-    'variance.R'
     'write.config.utils.R'
     'clear.scratch.R'
     'get.model.output.R'
