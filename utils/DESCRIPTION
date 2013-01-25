@@ -20,9 +20,6 @@ Depends:
     XML,
     ggplot2,
     randtoolbox
-Suggests:
-    testthat,
-    ncdf
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
