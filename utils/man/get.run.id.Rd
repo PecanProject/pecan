@@ -2,16 +2,24 @@
 \alias{get.run.id}
 \title{Get Run ID}
 \usage{
-  get.run.id(run.type, index, trait = "", pft.name = "")
+  get.run.id(run.type, index, trait = NULL,
+    pft.name = NULL)
 }
 \arguments{
-  \item{run.type}{}
+  \item{run.type}{character, can be any character;
+  currently "SA" is used for sensitivity analysis, "ENS"
+  for ensemble run.}
 
-  \item{index}{}
+  \item{index}{unique index for different runs, e.g.
+  integer counting members of an ensemble or a quantile
+  used to which a trait has been perturbed for sensitivity
+  analysis}
 
-  \item{trait}{}
+  \item{trait}{name of trait being sampled (for sensitivity
+  analysis)}
 
-  \item{pft.name}{}
+  \item{pft.name}{name of PFT (value from pfts.names field
+  in database)}
 }
 \value{
   id representing a model run
@@ -20,6 +28,14 @@
   returns an id representing a model run
 }
 \details{
-  for use in model input files and indices
+  Provides a consistent method of naming runs; for use in
+  model input files and indices
+}
+\examples{
+get.run.id("ENS", left.pad.zeros(1, 5))
+get.run.id("SA", round(qnorm(-3),3), trait = "Vcmax")
+}
+\author{
+  Carl Davidson, David LeBauer
 }
 
