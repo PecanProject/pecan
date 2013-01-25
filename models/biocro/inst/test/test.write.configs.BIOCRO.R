@@ -1,5 +1,6 @@
-settings <- PEcAn.utils::read.settings(system.file("pecan.biocro.xml",
-                                                   package = "PEcAn.BIOCRO"))
+settings.xml <- system.file("pecan.biocro.xml", package = "PEcAn.BIOCRO")
+settings <- read.settings(settings.xml)
+
 samples <- structure(list(
   biocro.saof = structure(list(
     Vcmax = c(31.9, 42.4, 57.0),
