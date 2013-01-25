@@ -19,10 +19,10 @@
   </pfts>
   <outdir>test/</outdir>
   <database>
-    <userid>ebi_analys_user</userid>
-    <passwd>b742xsAu</passwd>
+    <userid>bety</userid>
+    <passwd>bety</passwd>
     <location>localhost</location>
-    <name>ebi_analysis</name>
+    <name>bety</name>
   </database>
 </pecan>"
 
@@ -47,7 +47,7 @@ test_that("read.settings works ",{
 
 ## context("check that example settings file is valid")
 
-## ## settings.list <- read.settings(inputfile = system.file("tests/test.settings.xml",
+## ## settings.list <- read.settings(inputfile = system.file("extdata/test.settings.xml",
 ## ##                                  package = "PEcAn.utils"))
 
 ## ## test_that("test.settings.xml has an unique output directory for each PFT",{

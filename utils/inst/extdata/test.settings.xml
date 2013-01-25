@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <pecan>
   <pecanDir>$HOME/pecan/</pecanDir>
-  <outdir>$HOME/foo/</outdir>
+  <outdir>/tmp/out/</outdir>
   <pfts>
     <pft>
       <name>sipnet.temperate.coniferous</name>
-      <outdir>$HOME/foo/</outdir>
+      <outdir>/tmp/out/</outdir>
       <constants>
         <num>1</num>
       </constants>
@@ -35,7 +35,7 @@
     <id>11</id>
   </model>
   <run>
-    <folder>$HOME/foo/</folder>
+    <folder>/tmp/out/</folder>
     <site>
       <id>680</id>
       <name>Young Jack Pine (YJP)</name>
@@ -47,8 +47,8 @@
     <end.date>2006-01-01 05:59:00</end.date>
     <host>
       <name>localhost</name>
-      <rundir>$HOME/foo/</rundir>
-      <outdir>$HOME/foo/</outdir>
+      <rundir>/tmp/out/</rundir>
+      <outdir>/tmp/out/</outdir>
       <ed>
       </ed>
     </host>
