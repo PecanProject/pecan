@@ -5,7 +5,7 @@
 ##' @return TRUE if database connection works; else FALSE
 ##' @export
 ##' @author David LeBauer
-db.exists <- function(){
+db.exists <- function(...){
   if(!exists("settings")){
     settings <- list(database = 
                        list(userid = "bety", 
@@ -13,5 +13,6 @@ db.exists <- function(){
                             location = "localhost",
                             name = "bety"))
   }
-  tryCatch(query.base.con(), error = function(e)TRUE)
+  ans <- tryl(query.base.con(settings))
+  return(ans)
 }

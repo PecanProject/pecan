@@ -14,6 +14,6 @@ settings <- list(database =
                         passwd = "bety", 
                         location = "localhost",
                         name = "bety"))
-if(!grepl("Error", try(query.base.con(), silent = TRUE))){
+if(db.exists()){
   test_package("PEcAn.DB")
 }
