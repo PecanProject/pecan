@@ -11,14 +11,15 @@
 ##'
 ##' @title Read output
 ##' @name read.output
-##' @param run.id the id distiguishing the model run
+##' @param run.id the id distiguishing the model run. 
 ##' @param outdir the directory that the model's output was sent to
-##' @param start.year 
-##' @param end.year
-##' @param variables
-##' @param model
-##' @details Generic function to convert model output in from
-##' MsTMIP units (kg m-2 s-1) to kg ha-1 y-1. Currently this function converts
+##' @param start.year first year of output to read (should be greater than ) 
+##' @param end.year 
+##' @param variables variables to be read from model output
+##' @param model name of simulation model currently accepts ("ED", "SIPNET", "BIOCRO")
+##' @details Generic function to convert model output from model-specific format to 
+##' a common PEcAn format. This function uses MsTMIP variables except that units of
+##'  (kg m-2 s-1)  are converted to kg ha-1 y-1. Currently this function converts
 ##' Carbon fluxes: GPP, NPP, NEE, TotalResp, AutoResp, HeteroResp,
 ##' DOC_flux, Fire_flux, and Stem (Stem is specific to the BioCro model)
 ##' and Water fluxes: Evaporation (Evap), Transpiration(TVeg),
@@ -30,13 +31,19 @@
 ##' @export
 ##' @author Michael Dietze
 read.output <- function(run.id, outdir, start.year=NA,
+<<<<<<< HEAD
+                        end.year=NA, variables = "GPP", model = settings$model$name) {
+  ### Load requirements
+  require(ncdf)
+=======
                         end.year=NA, variables = "GPP", model=settings$model$name) {
   ### Load requirements
   require(ncdf)
   
+>>>>>>> 7a3e6003d1051f08625e4eab3236cce57b6dfb0e
   model2nc <- paste("model2netcdf", model, sep=".")
   if(!exists(model2nc)){
-    log.warn("File conversion function model2netcdf does not exist for",model)
+    log.warn("File conversion function model2netcdf does not exist for", model)
     return(NA)
   }
   
