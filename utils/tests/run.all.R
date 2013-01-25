@@ -6,6 +6,8 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
+install.packages('ncdf')
+
 library(testthat)
 library(PEcAn.utils)
 
