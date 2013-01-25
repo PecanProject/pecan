@@ -26,8 +26,6 @@ start.runs.BIOCRO <- function(runid) {
   setwd(rundir)
 
   # run model
-  require(EnCro)
-  require(XML)
 
   # compute/download weather
   lat <- as.numeric(settings$run$site$lat)
@@ -35,14 +33,18 @@ start.runs.BIOCRO <- function(runid) {
   start <- ymd_hms(settings$run$start.date)
   end <- ymd_hms(settings$run$end.date)
   weather <- InputForWeach(lat, lon, year(start), year(end))
+  weather2 <- weachNEW(weather, lati = lat, ts = 1, temp.units="Celsius", rh.units="fraction", ws.units="mph", pp.units="in")
 
   # run model
   config <- xmlToList(xmlParse("data.xml"))
   pp<-do.call(photoParms,list(unlist(config$parms)))
-  result<-BioGro(weather, photoControl=pp)
+  
+  BioGro_result<-BioGro(weather2, photoControl=pp)
 
   # save results
-  save(result, file=file.path(outdir, "result.Rdata"))
+  save(weather, file = file.path(outdir, "weather.Rdata"))
+  write.csv(with(BioGro_result, data.frame(DayofYear, Hour, ThermalT, Stem, Leaf, Root)), 
+            file=file.path(outdir, "result.csv"))
   file.copy(file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))
 }
 
