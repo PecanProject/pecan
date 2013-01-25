@@ -2,12 +2,10 @@
 \alias{model2netcdf.ED2}
 \title{Code to convert ED2's -T- HDF5 output into netCDF format}
 \usage{
-  model2netcdf.ED2(outdir, run.id)
+  model2netcdf.ED2(outdir)
 }
 \arguments{
-  \item{outdir}{Location of SIPNET model output}
-
-  \item{run.id}{Name of SIPNET model output file.}
+  \item{outdir}{Location of ED model output}
 }
 \description{
   Modified from Code to convert ED2.1's HDF5 output into
