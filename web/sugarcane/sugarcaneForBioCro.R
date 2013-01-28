@@ -1,4 +1,4 @@
-library(EnCro)
+library(BioCro)
 library(XML)
 #############Reading from the fXML file generated via web-interface######
 settings.xml<-xmlParse('./data.xml')
