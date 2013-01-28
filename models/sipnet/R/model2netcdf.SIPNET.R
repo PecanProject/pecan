@@ -7,15 +7,15 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------#
+##' Convert SIPNET output to netCDF
 ##'
+##' Converts all output contained in a folder to netCDF.
 ##' @name model2netcdf.SIPNET
 ##' @title Function to convert SIPNET model output to standard netCDF format
 ##' @param outdir Location of SIPNET model output
-##' 
 ##' @export
 ##' @author Shawn Serbin, Michael Dietze
 model2netcdf.SIPNET <- function(outdir) {
-  require(ncdf)
   
   ### Read in model output in SIPNET format
   sipnet.output <- read.table(file.path(outdir, "sipnet.out"), header=T, skip=1, sep='')
