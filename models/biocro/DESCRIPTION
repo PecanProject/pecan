@@ -10,13 +10,10 @@ Depends:
     PEcAn.utils,
     PEcAn.data.atmosphere,
     ncdf4,
-    EnCro,
+    BioCro,
     RNCEP,
     lubridate,
     XML
-Suggests:
-    testthat
-SystemRequirements: BioCro
 OS_type: unix
 License: FreeBSD + file LICENSE
 Copyright: Energy Biosciences Institute, Authors

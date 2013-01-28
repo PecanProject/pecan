@@ -12,7 +12,7 @@
 ALL="ggplot2 randtoolbox gridExtra testthat roxygen2"
 
 # packages that are not in cran
-SKIP="(time|EnCro)"
+SKIP="(time|BioCro)"
 
 # find all packages needed (require and library)
 for f in `find . -type d -name R`; do
