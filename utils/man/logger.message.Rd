@@ -1,8 +1,8 @@
-\name{log.message}
-\alias{log.message}
+\name{logger.message}
+\alias{logger.message}
 \title{Prints a message at a certain log level.}
 \usage{
-  log.message(level, msg, ...)
+  logger.message(level, msg, ...)
 }
 \arguments{
   \item{level}{the level of the message (DEBUG, INFO, WARN,
@@ -23,7 +23,7 @@
 }
 \examples{
 \dontrun{
-log.message("DEBUG", "variable", 5)
+logger.message("DEBUG", "variable", 5)
 }
 }
 \author{

@@ -1,8 +1,8 @@
-\name{log.warn}
-\alias{log.warn}
-\title{Prints a warning message.}
+\name{logger.error}
+\alias{logger.error}
+\title{Prints an error message.}
 \usage{
-  log.warn(msg, ...)
+  logger.error(msg, ...)
 }
 \arguments{
   \item{msg}{the message that should be printed.}
@@ -10,11 +10,11 @@
   \item{...}{any additional text that should be printed.}
 }
 \description{
-  This function will print a warning message.
+  This function will print an error message.
 }
 \examples{
 \dontrun{
-log.warn("detected NA values")
+logger.error("system did not converge")
 }
 }
 \author{

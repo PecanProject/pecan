@@ -35,7 +35,7 @@ read.output <- function(run.id, outdir, start.year=NA,
 
   model2nc <- paste("model2netcdf", model, sep=".")
   if(!exists(model2nc)){
-    log.warn("File conversion function model2netcdf does not exist for", model)
+    logger.warn("File conversion function model2netcdf does not exist for", model)
     return(NA)
   }
   
@@ -49,7 +49,7 @@ read.output <- function(run.id, outdir, start.year=NA,
   print(paste("Output from run", run.id, "has been converted to netCDF"))
   ncfiles <- list.files(path=outdir, pattern="\\.nc$", full.names=TRUE)
   if(length(ncfiles) == 0){
-    log.error("Conversion of model files to netCDF unsuccessful")
+    logger.error("Conversion of model files to netCDF unsuccessful")
     stop("Conversion of model files to netCDF unsuccessful")
   }
 

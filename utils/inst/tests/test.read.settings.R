@@ -103,27 +103,6 @@ test_that("read.settings works ",{
 ##   expect_equal(settings$c$g, "b")
 ## })
 
-## test_that("logger prints right messages",{
-##   ## log.debug("debug")
-##   ## log.enable("DEBUG", FALSE)
-##   ## log.debug("debug")
-
-##   ## log.info("info")
-##   ## log.enable("INFO", FALSE)
-##   ## log.info("info")
-
-##   ## log.warn("warn")
-##   ## log.enable("WARN", FALSE)
-##   ## log.warn("warn")
-
-##   ## log.error("error")
-##   ## log.enable("ERROR", FALSE)
-##   ## log.error("error")
-
-##   ## log.enable("ERROR", TRUE)
-##   ## log.output(console=FALSE)
-##   ## log.error("error")
-## })
 ## ## test_that("read.settings can set up directories on a remote server",{
 ## ## if(PEcAn.utils::test.remote("ebi-cluster.igb.illinois.edu")){
 ## ##   writeLines(con = "bug1322.xml", text = "<pecan><outdir>/tmp/</outdir>
