@@ -9,6 +9,7 @@
 #--------------------------------------------------------------------------------------------------#
 ##' Convert BioCro output to netCDF
 ##'
+##' Converts all output contained in a folder to netCDF.
 ##' Modified from on model2netcdf.sipnet and model2netcdf.ED2 by
 ##' Shawn Serbin and Mike Dietze
 ##' @name model2netcdf.BIOCRO
@@ -19,8 +20,6 @@
 ##' @author David LeBauer, Deepak Jaiswal
 model2netcdf.BIOCRO <- function(outdir) {
   
-  # TODO : this is not working, only saves 1 year
-
   ### Read in model output in biocro format
   outfile <- file.path(outdir, "result.csv")
   result <- read.csv(outfile)

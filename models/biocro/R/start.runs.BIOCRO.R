@@ -19,33 +19,47 @@ start.runs.BIOCRO <- function(runid) {
     stop("Only local runs are executed here")
   }
 
-  rundir <- file.path(settings$run$host$rundir, as.character(runid))
-  outdir <- file.path(settings$run$host$outdir, as.character(runid))
-
-  cwd <- getwd()
-  setwd(rundir)
+  rundir <- settings$run$host$rundir
+  outdir <- settings$run$host$outdir
 
   # run model
-
   # compute/download weather
   lat <- as.numeric(settings$run$site$lat)
   lon <- as.numeric(settings$run$site$lon)
-  start <- ymd_hms(settings$run$start.date)
-  end <- ymd_hms(settings$run$end.date)
-  weather <- InputForWeach(lat, lon, year(start), year(end))
-  weather2 <- weachNEW(weather, lati = lat, ts = 1, temp.units="Celsius", rh.units="fraction", ws.units="mph", pp.units="in")
+  start.date <- settings$run$start.date
+  end.date <- settings$run$end.date
+  site_id = settings$run$site$id
+  
+  
+  ### TODO the following code should be run during write_configs and the file name passed to the start.runs function
+  metfiles <- query.base(paste("select start_date, end_date, file_name, file_path ",
+                   "from inputs join dbfiles on dbfiles.file_id = inputs.file_id ",
+                   "where start_date <= '", start.date, 
+                   "' and end_date >= '", end.date, 
+                   "' and site_id =", site_id, ";", sep = ""))
+
+  if(nrow(metfiles == 1)){
+    weather <- read.csv(file.path(metfiles$file_path, metfiles$file_name), row.names = NULL)
+  } else {
+    weather <- InputForWeach(lat, lon, year(start.date), year(end.date))
+  }
+
+  weather2 <- weachNEW(weather, lati = lat, ts = 1, 
+                       temp.units="Celsius", rh.units="fraction", 
+                       ws.units="mph", pp.units="in")
 
   # run model
-  config <- xmlToList(xmlParse("data.xml"))
-  pp<-do.call(photoParms,list(unlist(config$parms)))
+  config <- xmlToList(xmlParse(file.path(settings$outdir, runid, "data.xml")))
+  pp <- do.call(photoParms, list(unlist(config$parms)))
   
-  BioGro_result<-BioGro(weather2, photoControl=pp)
+  BioGro_result <- BioGro(weather2, photoControl=pp)
 
   # save results
-  save(weather, file = file.path(outdir, "weather.Rdata"))
+  write.csv(weather, file = file.path(outdir, "weather.csv"))
   write.csv(with(BioGro_result, data.frame(DayofYear, Hour, ThermalT, Stem, Leaf, Root)), 
             file=file.path(outdir, "result.csv"))
   file.copy(file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))
+  setwd(cwd)
 }
 
 #==================================================================================================#

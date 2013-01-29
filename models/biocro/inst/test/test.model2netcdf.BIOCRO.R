@@ -7,13 +7,15 @@ file.copy(from = result.csv, to = settings$outdir)
 
 test_that("model2netcdf.BIOCRO reads a .csv and writes a netcdf file",{
   model2netcdf.BIOCRO(outdir = settings$outdir)
-  expect_true(file.exists(file.path(settings$outdir, "2004.nc")))
+  biocro.nc <- file.path(settings$outdir, "2004.nc")
+  expect_true(file.exists(biocro.nc))
 })
 
 
 test_that("model2netcdf.BIOCRO wrotes netCDF file in PEcAn format",{
+  biocro.nc <- nc_open(biocro.nc)
+  expect_true(all(c("Stem", "Leaf", "Root") %in% names(biocro.nc$var)))
   
-
 }
           
 test_that("read.ensemble.output works with BIOCRO output", {
