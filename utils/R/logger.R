@@ -91,7 +91,7 @@ logger.error <- function(msg, ...) {
 ##' logger.message("DEBUG", "variable", 5)
 ##' }
 logger.message <- function(level, msg, ...) {
-	if (logger.checkLevel(level)) {
+#	if (logger.checkLevel(level)) {
 		dump.frames(dumpto="dump.log")
 		calls <- names(dump.log)
 	    func <- sub("\\(.*\\)", "", tail(calls[-(which(substr(calls, 0, 3) == "log"))], 1))
@@ -105,7 +105,7 @@ logger.message <- function(level, msg, ...) {
 		if (!is.na(.local$filename)) {
 			cat(text, file=.local$filename, append=TRUE)
 		}
-	}
+#	}
 }
 
 ##' Configure logging level.
