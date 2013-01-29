@@ -1,8 +1,8 @@
-\name{log.enable}
-\alias{log.enable}
+\name{logger.enable}
+\alias{logger.enable}
 \title{Configure logging level.}
 \usage{
-  log.enable(level, enable = TRUE)
+  logger.enable(level, enable = TRUE)
 }
 \arguments{
   \item{level}{the level of the message (DEBUG, INFO, WARN,
@@ -17,7 +17,7 @@
 }
 \examples{
 \dontrun{
-log.enable("DEBUG", TRUE)
+logger.enable("DEBUG", TRUE)
 }
 }
 \author{

@@ -1,8 +1,8 @@
-\name{log.debug}
-\alias{log.debug}
+\name{logger.debug}
+\alias{logger.debug}
 \title{Prints a debug message.}
 \usage{
-  log.debug(msg, ...)
+  logger.debug(msg, ...)
 }
 \arguments{
   \item{msg}{the message that should be printed.}
@@ -14,7 +14,7 @@
 }
 \examples{
 \dontrun{
-log.debug("variable", 5)
+logger.debug("variable", 5)
 }
 }
 \author{

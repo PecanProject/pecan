@@ -6,7 +6,14 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-log.variables <- list("filename"="", "console"=TRUE, "DEBUG"=TRUE, "INFO"=TRUE, "WARN"=TRUE, "ERROR"=TRUE)
+
+.local <- new.env() 
+.local$filename <- NA
+.local$console  <- TRUE
+.local$DEBUG    <- TRUE
+.local$INFO     <- TRUE
+.local$WARN     <- TRUE
+.local$ERROR    <- TRUE
 
 ##' Prints a debug message.
 ##' 
@@ -18,10 +25,10 @@ log.variables <- list("filename"="", "console"=TRUE, "DEBUG"=TRUE, "INFO"=TRUE, 
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
-##' log.debug("variable", 5)
+##' logger.debug("variable", 5)
 ##' }
-log.debug <- function(msg, ...) {
-	log.message("DEBUG", msg, ...)
+logger.debug <- function(msg, ...) {
+	logger.message("DEBUG", msg, ...)
 }
 
 ##' Prints an informational message.
@@ -34,10 +41,10 @@ log.debug <- function(msg, ...) {
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
-##' log.info("PEcAn version 1.2")
+##' logger.info("PEcAn version 1.2")
 ##' }
-log.info <- function(msg, ...) {
-	log.message("INFO", msg, ...)
+logger.info <- function(msg, ...) {
+	logger.message("INFO", msg, ...)
 }
 
 ##' Prints a warning message.
@@ -50,10 +57,10 @@ log.info <- function(msg, ...) {
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
-##' log.warn("detected NA values")
+##' logger.warn("detected NA values")
 ##' }
-log.warn <- function(msg, ...) {
-	log.message("WARN", msg, ...)
+logger.warn <- function(msg, ...) {
+	logger.message("WARN", msg, ...)
 }
 
 ##' Prints an error message.
@@ -66,10 +73,10 @@ log.warn <- function(msg, ...) {
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
-##' log.error("system did not converge")
+##' logger.error("system did not converge")
 ##' }
-log.error <- function(msg, ...) {
-	log.message("ERROR", msg, ...)
+logger.error <- function(msg, ...) {
+	logger.message("ERROR", msg, ...)
 }
 
 ##' Prints a message at a certain log level.
@@ -84,19 +91,22 @@ log.error <- function(msg, ...) {
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
-##' log.message("DEBUG", "variable", 5)
+##' logger.message("DEBUG", "variable", 5)
 ##' }
-log.message <- function(level, msg, ...) {
-	if (log.variables[[level]]) {
+logger.message <- function(level, msg, ...) {
+	if (.local[[level]]) {
 		dump.frames(dumpto="dump.log")
 		calls <- names(dump.log)
 	    func <- sub("\\(.*\\)", "", tail(calls[-(which(substr(calls, 0, 3) == "log"))], 1))
+	    if (length(func) == 0) {
+	    	func <- "console"
+	    }
 		text <- sprintf("%s %-5s [%s] : %s\n", Sys.time(), level, func, paste(msg, ...))
-		if (log.variables$console) {
+		if (.local$console) {
 			cat(text)
 		}
-		if (log.variables$filename != "") {
-			cat(text, file=log.variables$filename, append=TRUE)
+		if (!is.na(.local$filename)) {
+			cat(text, file=.local$filename, append=TRUE)
 		}
 	}
 }
@@ -112,19 +122,19 @@ log.message <- function(level, msg, ...) {
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
-##' log.enable("DEBUG", TRUE)
+##' logger.enable("DEBUG", TRUE)
 ##' }
-log.enable <- function(level, enable=TRUE) {
-	if (level == "DEBUG") {
-		log.variables$DEBUG <<- enable
-	} else if (level == "INFO") {
-		log.variables$INFO <<- enable
-	} else if (level == "WARN") {
-		log.variables$WARN <<- enable
-	} else if (level == "ERROR") {
-		log.variables$ERROR <<- enable
+logger.enable <- function(level, enable=TRUE) {
+	if (toupper(level) == "DEBUG") {
+		.local$DEBUG = enable
+	} else if (toupper(level) == "INFO") {
+		.local$INFO = enable
+	} else if (toupper(level) == "WARN") {
+		.local$WARN = enable
+	} else if (toupper(level) == "ERROR") {
+		.local$ERROR = enable
 	} else {
-		log.warn("Could not set level", level)
+		logger.warn("Could not set level", level)
 	}
 }
 
@@ -132,15 +142,15 @@ log.enable <- function(level, enable=TRUE) {
 ##' 
 ##' This will configure the logger.
 ##'
-##' @param filename the file to send the log messages to.
+##' @param filename the file to send the log messages to (or NA to not write to file)
 ##' @param console set to true if the logger should write to the console
 ##' @export
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
-##' log.output(console=FALSE)
+##' logger.output(console=FALSE)
 ##' }
-log.output <- function(filename=log.variables$filename, console=log.variables$console) {
-	log.variables$console <<- console
-	log.variables$filename <<- filename
+logger.output <- function(filename=.local$filename, console=.local$console) {
+	.local$filename <- filename
+	.local$console  <- console
 }

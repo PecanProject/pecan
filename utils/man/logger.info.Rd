@@ -1,8 +1,8 @@
-\name{log.info}
-\alias{log.info}
+\name{logger.info}
+\alias{logger.info}
 \title{Prints an informational message.}
 \usage{
-  log.info(msg, ...)
+  logger.info(msg, ...)
 }
 \arguments{
   \item{msg}{the message that should be printed.}
@@ -14,7 +14,7 @@
 }
 \examples{
 \dontrun{
-log.info("PEcAn version 1.2")
+logger.info("PEcAn version 1.2")
 }
 }
 \author{

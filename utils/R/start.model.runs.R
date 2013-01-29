@@ -70,7 +70,7 @@ start.model.runs <- function(model=settings$model$name, write.to.db = TRUE){
         qsub <- gsub("@STDOUT@", file.path(settings$run$host$outdir, run, "stdout.log"), qsub)
         qsub <- gsub("@STDERR@", file.path(settings$run$host$outdir, run, "stderr.log"), qsub)
         out <- system2("ssh", c(settings$run$host$name, qsub, file.path(settings$run$host$rundir, run, "job.sh")), stdout=TRUE)
-        log.info("Job submitted :", out)
+        logger.info("Job submitted :", out)
         m <- regexec(settings$run$host$qsub.jobid, out)
         jobids[run] <- regmatches(out, m)[[1]][2]
       }
@@ -84,7 +84,7 @@ start.model.runs <- function(model=settings$model$name, write.to.db = TRUE){
           check <- gsub("@JOBID@", jobids[run], settings$run$host$qstat)
           out <- system2("ssh", c(settings$run$host$name, check), stdout=TRUE)
           if ((length(out) > 0) && (out == "DONE")) {
-            log.debug("Job", jobids[run], "for run", run, "finished")
+            logger.debug("Job", jobids[run], "for run", run, "finished")
             jobids[run] <- NULL
             # write finished time to database 
             if (!is.null(con)) {

@@ -88,7 +88,7 @@ xmlMergeNodes <- function(node1, node2) {
 ##' @author Rob Kooper
 check.settings <- function(settings) {
   if (!is.null(settings$nocheck)) {
-    log.info("Not doing sanity checks of pecan.xml")
+    logger.info("Not doing sanity checks of pecan.xml")
     return(0)
   }
 
@@ -107,7 +107,7 @@ check.settings <- function(settings) {
   }
   if (is.null(settings$database$name)) {
     settings$database$location = "localhost"
-    log.info("Setting localhost for database location.")
+    logger.info("Setting localhost for database location.")
   }
 
   # TODO do a quick connection
@@ -222,7 +222,7 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
   
   ## make sure something was loaded
   if (is.null(xml)) {
-    log.error("Did not find any settings file to load.")
+    logger.error("Did not find any settings file to load.")
     stop("Did not find any settings file to load.")
   }
   
@@ -235,12 +235,12 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
   ## crate the outputfolder
   if (is.null(settings$outdir)) {
     settings$outdir <- tempdir()
-    log.warn("No output folder specified, using", settings$outdir)
+    logger.warn("No output folder specified, using", settings$outdir)
   } else {
-    log.debug("output folder =", settings$outdir)
+    logger.debug("output folder =", settings$outdir)
   }
   if (!file.exists(settings$outdir) && !dir.create(settings$outdir, recursive=TRUE)) {
-    log.error("Could not create folder", settings$outdir)
+    logger.error("Could not create folder", settings$outdir)
     stop("Could not create out folder.")
   }
   
@@ -251,19 +251,19 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
         settings$rundir <- file.path(settings$outdir, "run")
       }
       settings$run$host$rundir <- settings$rundir
-      log.info("No output folder for model configuration using", settings$run$host$rundir)
+      logger.info("No output folder for model configuration using", settings$run$host$rundir)
     } else {
       if (is.null(settings$rundir)) {
         settings$rundir <- settings$run$host$rundir
       }
-      log.debug("model configuration folder =", settings$run$host$rundir)
+      logger.debug("model configuration folder =", settings$run$host$rundir)
     }
     if (settings$rundir != settings$run$host$rundir) {
       settings$rundir <- settings$run$host$rundir
-      log.warn("rundir does not match run$host$rundir, setting to", settings$rundir)
+      logger.warn("rundir does not match run$host$rundir, setting to", settings$rundir)
     }
     if (!file.exists(settings$run$host$rundir) && !dir.create(settings$run$host$rundir, recursive=TRUE)) {
-      log.error("Could not create folder", settings$run$host$rundir)
+      logger.error("Could not create folder", settings$run$host$rundir)
       stop("Could not create model configuration folder.")
     }
 
@@ -273,23 +273,23 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
         settings$modeloutdir <- file.path(settings$outdir, "out")
       }
       settings$run$host$outdir <- settings$modeloutdir
-      log.info("No output folder for model runs using", settings$run$host$outdir)
+      logger.info("No output folder for model runs using", settings$run$host$outdir)
     } else {
       if (is.null(settings$modeloutdir)) {
         settings$modeloutdir <- settings$run$host$outdir
       }
-      log.debug("model output folder =", settings$run$host$outdir)
+      logger.debug("model output folder =", settings$run$host$outdir)
     }
     if (settings$modeloutdir != settings$run$host$outdir) {
       settings$modeloutdir <- settings$run$host$outdir
-      log.warn("modeloutdir does not match run$host$outdir, setting to", settings$modeloutdir)
+      logger.warn("modeloutdir does not match run$host$outdir, setting to", settings$modeloutdir)
     }
     if (settings$modeloutdir != settings$run$host$outdir) {
       settings$modeloutdir <- settings$run$host$outdir
-      log.warn("modeloutdir does not match run$host$outdir, setting to", settings$modeloutdir)
+      logger.warn("modeloutdir does not match run$host$outdir, setting to", settings$modeloutdir)
     }
     if (!file.exists(settings$run$host$outdir) && !dir.create(settings$run$host$outdir, recursive=TRUE)) {
-      log.error("Could not create folder", settings$run$host$outdir)
+      logger.error("Could not create folder", settings$run$host$outdir)
       stop("Could not create model output folder.")
     }
 
@@ -297,24 +297,24 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
     ## create the run folder to store run configurations
     if (is.null(settings$rundir)) {
       settings$rundir <- file.path(settings$outdir, "run")
-      log.warn("No run folder specified, using", settings$rundir)
+      logger.warn("No run folder specified, using", settings$rundir)
     } else {
-      log.debug("run folder =", settings$rundir)
+      logger.debug("run folder =", settings$rundir)
     }
     if (!file.exists(settings$rundir) && !dir.create(settings$rundir, recursive=TRUE)) {
-      log.error("Could not create folder", settings$rundir)
+      logger.error("Could not create folder", settings$rundir)
       stop("Could not create run folder.")
     }
 
     ## create the model output folder to store run outputs
     if (is.null(settings$modeloutdir)) {
       settings$modeloutdir <- file.path(settings$outdir, "out")
-      log.warn("No modeloutdir folder specified, using", settings$modeloutdir)
+      logger.warn("No modeloutdir folder specified, using", settings$modeloutdir)
     } else {
-      log.debug("modeloutdir folder =", settings$modeloutdir)
+      logger.debug("modeloutdir folder =", settings$modeloutdir)
     }
     if (!file.exists(settings$modeloutdir) && !dir.create(settings$modeloutdir, recursive=TRUE)) {
-      log.error("Could not create folder", settings$modeloutdir)
+      logger.error("Could not create folder", settings$modeloutdir)
       stop("Could not create modeloutdir folder.")
     }
   }
@@ -323,12 +323,12 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
   for (i in 1:sum(names(unlist(settings$pfts)) == "pft.name")) {
     if (is.null(settings$pfts[i]$pft$outdir)) {
       settings$pfts[i]$pft$outdir <- file.path(settings$outdir, "pft", settings$pfts[i]$pft$name)
-      log.info("No output folder specified for", settings$pfts[i]$pft$name, "will use", settings$pfts[i]$pft$outdir);
+      logger.info("No output folder specified for", settings$pfts[i]$pft$name, "will use", settings$pfts[i]$pft$outdir);
     }
     out.dir <- settings$pfts[i]$pft$outdir
-    log.debug("Storing pft", settings$pfts[i]$pft$name, "in", out.dir)
+    logger.debug("Storing pft", settings$pfts[i]$pft$name, "in", out.dir)
     if (!file.exists(out.dir) && !dir.create(out.dir, recursive=TRUE)) {
-      log.error("Could not create folder", out.dir)
+      logger.error("Could not create folder", out.dir)
       stop("Could not create pft folders.")
     }
   }
@@ -351,7 +351,7 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
   }
   output <- file.path(settings$outdir, outputfile)
   if (file.exists(output)) {
-    log.warn(paste("File already exists [", output, "] file will be overwritten"))
+    logger.warn(paste("File already exists [", output, "] file will be overwritten"))
   } 
   saveXML(listToXml(settings, "pecan"), file=output)
   
