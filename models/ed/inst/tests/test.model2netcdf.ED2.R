@@ -1,3 +1,4 @@
+require(PEcAn.ED)
 extdata.dir <- system.file("extdata", package = "PEcAn.ED")
 outdir <- "/tmp/out/"
  
