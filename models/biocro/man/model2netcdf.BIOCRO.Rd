@@ -13,6 +13,7 @@
   Convert BioCro output to netCDF
 }
 \details{
+  Converts all output contained in a folder to netCDF.
   Modified from on model2netcdf.sipnet and model2netcdf.ED2
   by Shawn Serbin and Mike Dietze
 }

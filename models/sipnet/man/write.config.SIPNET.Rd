@@ -3,7 +3,7 @@
 \title{Writes a configuration files for SIPNET model}
 \usage{
   write.config.SIPNET(defaults, trait.values, settings,
-    outdir, run.id, inputs = NULL, IC = NULL)
+    run.id, inputs = NULL, IC = NULL)
 }
 \description{
   Writes a configuration files for your model
