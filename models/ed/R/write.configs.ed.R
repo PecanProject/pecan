@@ -148,7 +148,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
       ##TODO this should come from the database
       edpft <- pftmapping$ED[which(pftmapping==group)]
       if (is.null(edpft)) {
-        log.warn("No mapping found for", group, "using 1")
+        logger.warn("No mapping found for", group, "using 1")
         edpft <- 1
       }
       
@@ -159,7 +159,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
         traits <- names(vals)
         for(trait in traits) {
           if (! trait %in% edtraits) {
-            log.error(trait, "not found in ED history")
+            logger.error(trait, "not found in ED history")
           }
           pft.xml <- append.xmlNode(pft.xml, xmlNode(trait, vals[trait]))
         }
