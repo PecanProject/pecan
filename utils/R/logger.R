@@ -10,10 +10,7 @@
 .local <- new.env() 
 .local$filename <- NA
 .local$console  <- TRUE
-.local$DEBUG    <- TRUE
-.local$INFO     <- TRUE
-.local$WARN     <- TRUE
-.local$ERROR    <- TRUE
+.local$level    <- 0
 
 ##' Prints a debug message.
 ##' 
@@ -94,7 +91,7 @@ logger.error <- function(msg, ...) {
 ##' logger.message("DEBUG", "variable", 5)
 ##' }
 logger.message <- function(level, msg, ...) {
-	if (.local[[level]]) {
+	if (logger.checkLevel(level)) {
 		dump.frames(dumpto="dump.log")
 		calls <- names(dump.log)
 	    func <- sub("\\(.*\\)", "", tail(calls[-(which(substr(calls, 0, 3) == "log"))], 1))
@@ -116,41 +113,84 @@ logger.message <- function(level, msg, ...) {
 ##' This will configure the logger level. This allows to turn DEBUG, INFO,
 ##' WARN and ERROR messages on and off.
 ##'
-##' @param level the level of the message (DEBUG, INFO, WARN, ERROR)
-##' @param enable wheter or not the messages should be printed at this level.
+##' @param level the level of the message (ALL, DEBUG, INFO, WARN, ERROR, OFF)
 ##' @export
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
-##' logger.enable("DEBUG", TRUE)
+##' logger.setLevel("DEBUG")
 ##' }
-logger.enable <- function(level, enable=TRUE) {
-	if (toupper(level) == "DEBUG") {
-		.local$DEBUG = enable
+logger.setLevel <- function(level) {
+	if (toupper(level) == "ALL") {
+		.local$level = 0
+	} else if (toupper(level) == "DEBUG") {
+		.local$level = 10
 	} else if (toupper(level) == "INFO") {
-		.local$INFO = enable
+		.local$level = 20
 	} else if (toupper(level) == "WARN") {
-		.local$WARN = enable
+		.local$level = 30
 	} else if (toupper(level) == "ERROR") {
-		.local$ERROR = enable
+		.local$level = 40
+	} else if (toupper(level) == "OFF") {
+		.local$level = 99
 	} else {
 		logger.warn("Could not set level", level)
 	}
 }
 
-##' Configure logging output.
+##' Get configured logging level.
 ##' 
-##' This will configure the logger.
+##' This will return the current level configured of the logging messages
 ##'
-##' @param filename the file to send the log messages to (or NA to not write to file)
-##' @param console set to true if the logger should write to the console
+##' @return level the level of the message (ALL, DEBUG, INFO, WARN, ERROR, OFF)
 ##' @export
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
-##' logger.output(console=FALSE)
+##' logger.getLevel()
 ##' }
-logger.output <- function(filename=.local$filename, console=.local$console) {
+logger.getLevel <- function() {
+	if (.local$level < 10) {
+		return("ALL")
+	} else if (.local$level < 20) {
+		return("DEBUG")
+	} else if (.local$level < 30) {
+		return("INFO")
+	} else if (.local$level < 40) {
+		return("WARN")
+	} else if (.local$level < 50) {
+		return("ERROR")
+	} else {
+		return("OFF")
+	}
+}
+
+##' Configure logging to console.
+##' 
+##' Should the logging to be printed to the console or not.
+##'
+##' @param console set to true to print logging to console.
+##' @export
+##' @author Rob Kooper
+##' @examples
+##' \dontrun{
+##' logger.setUseConsole(TRUE)
+##' }
+logger.setUseConsole <- function(console) {
+	.local$console <- console
+}
+
+##' Configure logging output filename.
+##' 
+##' The name of the file where the logging information should be written to.
+##'
+##' @param filename the file to send the log messages to (or NA to not write to file)
+##' @export
+##' @author Rob Kooper
+##' @examples
+##' \dontrun{
+##' logger.setOutputFile("pecan.log")
+##' }
+logger.setOutputFile <- function(filename) {
 	.local$filename <- filename
-	.local$console  <- console
 }
