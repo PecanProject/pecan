@@ -111,6 +111,8 @@ if [ "$GIT" == "yes" ]; then
   if ! grep --quiet 'Already' changes.log; then
     FORCE="yes"
   fi
+else
+  FORCE="yes"
 fi
 
 if [ "$FORCE" == "yes" ]; then
