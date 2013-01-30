@@ -31,8 +31,8 @@
 ##' @export
 ##' @author Michael Dietze
 read.output <- function(run.id, outdir, start.year=NA,
-                        end.year=NA, variables = "GPP", model) {
-
+                        end.year=NA, variables = "GPP", model = NULL) {
+  if(is.null(model)) model <- settings$model$name
   model2nc <- paste("model2netcdf", model, sep=".")
   if(!exists(model2nc)){
     logger.warn("File conversion function model2netcdf does not exist for", model)
