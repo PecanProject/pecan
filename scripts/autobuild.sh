@@ -57,6 +57,11 @@ touch lastrun
 # pull any changes
 if [ "$PULL" == "yes" ]; then
   git pull > changes.log
+  if [ $? != 0 ]; then
+    echo Error pulling
+    rm running
+    exit
+  fi
   if ! grep --quiet 'Already' changes.log; then
     BUILD="yes"
   fi
