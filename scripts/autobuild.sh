@@ -11,7 +11,7 @@
 # To run this from cron add the following line to your crontab (crontab -e)
 #
 # # m h  dom mon dow   command
-# */15 * * * * cd ${HOME}/quickbuild/trunk && ./scripts/quickbuild.sh
+# */15 * * * * cd ${HOME}/autobuild/trunk && ./scripts/autobuild.sh
 
 # packages that are to be compiled
 PACKAGES="utils db"
@@ -20,6 +20,18 @@ PACKAGES="${PACKAGES} modules/data.land modules/data.atmosphere"
 PACKAGES="${PACKAGES} modules/assim.batch modules/assim.sequential modules/priors"
 PACKAGES="${PACKAGES} models/ed models/sipnet models/biocro"
 PACKAGES="${PACKAGES} all"
+
+# people to notify of the build, leave blank to not send email
+TO=""
+
+# Should a pull be done before building
+PULL="yes"
+
+# Should PEcAn be always build, or only if a change was made
+BUILD="no"
+
+# run check before install
+CHECK="yes"
 
 # location where to install packages
 if [ $UID -eq 0 ]; then
@@ -33,12 +45,48 @@ if [ ! -z $R_LIBS_USER ]; then
   R_LIB_INC="--library=${R_LIBS_USER}"
 fi
 
+# are we still running
+if [ -e running ]; then
+  exit
+fi
+
 # when did the job run the last time?
 touch running
 touch lastrun
 
+# pull any changes
+if [ "$PULL" == "yes" ]; then
+  git pull > changes.log
+  if ! grep --quiet 'Already' changes.log; then
+    BUILD="yes"
+  fi
+fi
+
+if [ "$BUILD" == "yes" ]; then
   START=`date +'%s.%N'`
   STATUS="OK"
+
+  # get changes
+  echo "----------------------------------------------------------------------" >> changes.log
+  echo "CHANGES" >> changes.log
+  echo "----------------------------------------------------------------------" >> changes.log
+  git log > newlog
+  diff git.log newlog | grep '^> ' | sed 's/^> //' > changes.log
+  mv newlog git.log
+
+  # get committer names and emails
+  # TODO all commiters are smushed together
+  #IFS_BAK=$IFS
+  #IFS=`echo -e '\n'`
+  #NAMES=""
+  #EMAILS=""
+  #for c in `grep 'committer: ' changes.log | sort -u`; do
+  #  EMAILS="${EMAILS},`echo $c | sed -e 's/.*<\(.*\)>/\1/'`"
+  #done
+  #IFS=$IFS_BAK
+  #NAMES=$( grep 'committer: ' changes.log | uniq | sed -e 's/committer: //' )
+  #EMAILS=$( grep 'committer: ' changes.log | uniq | sed -e 's/.*<\(.*\)>/\1/' )
+  #TO="${TO} ${EMAILS}"
 
   # get version number
   REVNO=$( git show -s --pretty=format:%T master )
@@ -46,6 +94,22 @@ touch lastrun
   # check/install packages
   for p in ${PACKAGES}; do
     PACKAGE="OK"
+
+    if [ "$CHECK" == "yes" ]; then
+	    R CMD check ${R_LIB_INC} $p &> out.log
+	    if [ $? -ne 0 ]; then
+	      STATUS="BROKEN"
+	      PACKAGE="BROKEN"
+	      echo "----------------------------------------------------------------------" >> changes.log
+	      echo "CHECK $p BROKEN" >> changes.log
+	      echo "----------------------------------------------------------------------" >> changes.log
+	      cat out.log >> changes.log
+	      if [ "$TO" == "" ]; then
+	        cat changes.log
+	        rm changes.log
+	      fi
+	    fi
+	  fi
 
     R CMD INSTALL --build ${R_LIB_INC} $p &> out.log
     if [ $? -ne 0 ]; then
@@ -91,3 +155,6 @@ touch lastrun
 
   # cleanup
   rm -rf changes.log out.log *.Rcheck PEcAn.*.tar.gz
+fi
+
+rm running
