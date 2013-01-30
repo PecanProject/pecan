@@ -31,7 +31,7 @@
 ##' @export
 ##' @author Michael Dietze
 read.output <- function(run.id, outdir, start.year=NA,
-                        end.year=NA, variables = "GPP", model = settings$model$name) {
+                        end.year=NA, variables = "GPP", model) {
 
   model2nc <- paste("model2netcdf", model, sep=".")
   if(!exists(model2nc)){

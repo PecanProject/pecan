@@ -71,6 +71,7 @@ rsync <- function(args, from, to, pattern='') {
 ##' @param host 
 ##' @param ... 
 ##' @param args 
+##' @export
 #--------------------------------------------------------------------------------------------------#
 ssh <- function(host, ..., args=''){
   if(host == 'localhost'){
@@ -86,7 +87,7 @@ ssh <- function(host, ..., args=''){
 #--------------------------------------------------------------------------------------------------#
 ##' Convert vector to comma delimited string
 ##'
-##' ## vecpaste, turns vector into comma delimited string fit for SQL statements.
+##' vecpaste, turns vector into comma delimited string fit for SQL statements.
 ##' @title vecpaste
 ##' @param x vector
 ##' @return comma delimited string
