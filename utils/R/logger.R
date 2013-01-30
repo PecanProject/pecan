@@ -91,7 +91,7 @@ logger.error <- function(msg, ...) {
 ##' logger.message("DEBUG", "variable", 5)
 ##' }
 logger.message <- function(level, msg, ...) {
-#	if (logger.checkLevel(level)) {
+	if (logger.getLevelNumber(level) >= .local$level) {
 		dump.frames(dumpto="dump.log")
 		calls <- names(dump.log)
 	    func <- sub("\\(.*\\)", "", tail(calls[-(which(substr(calls, 0, 3) == "log"))], 1))
@@ -105,7 +105,7 @@ logger.message <- function(level, msg, ...) {
 		if (!is.na(.local$filename)) {
 			cat(text, file=.local$filename, append=TRUE)
 		}
-#	}
+	}
 }
 
 ##' Configure logging level.
@@ -121,21 +121,38 @@ logger.message <- function(level, msg, ...) {
 ##' logger.setLevel("DEBUG")
 ##' }
 logger.setLevel <- function(level) {
+	.local$level = logger.getLevelNumber(level)
+}
+
+##' Returns numeric value for string
+##'
+##' Given the string representation this will return the numeric value
+##' ALL   =  0
+##' DEBUG = 10
+##' INFO  = 20
+##' WARN  = 30
+##' ERROR = 40
+##' ALL   = 99
+##'
+##' @return level the level of the message
+##' @author Rob Kooper
+logger.getLevelNumber <- function(level) {
 	if (toupper(level) == "ALL") {
-		.local$level = 0
+		return(0)
 	} else if (toupper(level) == "DEBUG") {
-		.local$level = 10
+		return(10)
 	} else if (toupper(level) == "INFO") {
-		.local$level = 20
+		return(20)
 	} else if (toupper(level) == "WARN") {
-		.local$level = 30
+		return(30)
 	} else if (toupper(level) == "ERROR") {
-		.local$level = 40
+		return(40)
 	} else if (toupper(level) == "OFF") {
-		.local$level = 99
+		return(50)
 	} else {
-		logger.warn("Could not set level", level)
-	}
+		logger.warn(level, " is not a valid value, setting level to INFO")
+		return(logger.getLevelNumber("INFO"))
+	}	
 }
 
 ##' Get configured logging level.

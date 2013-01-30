@@ -44,7 +44,7 @@ test_that("logger prints right messages",{
   expect_output(logger.error("message"), "ERROR \\[.*\\] : message")
 
   logger.setLevel("OFF")
-  expect_equal(logger.getLevel(), "ERROR")
+  expect_equal(logger.getLevel(), "OFF")
   expect_output(logger.debug("message"), "^$")
   expect_output(logger.info("message"),  "^$")
   expect_output(logger.warn("message"),  "^$")
@@ -52,7 +52,6 @@ test_that("logger prints right messages",{
 
   logger.setUseConsole(FALSE)
   logger.setLevel("DEBUG")
-  expect_equal(logger.getLevel(), "ERROR")
   expect_output(logger.debug("message"), "^$")
   expect_output(logger.info("message"),  "^$")
   expect_output(logger.warn("message"),  "^$")
