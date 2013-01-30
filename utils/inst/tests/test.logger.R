@@ -8,6 +8,7 @@
 #-------------------------------------------------------------------------------
 
 test_that("logger prints right messages",{
+  logger.setUseConsole(TRUE)
   logger.setLevel("ALL")
   expect_equal(logger.getLevel(), "ALL")
   expect_output(logger.debug("message"), "DEBUG \\[.*\\] : message")
