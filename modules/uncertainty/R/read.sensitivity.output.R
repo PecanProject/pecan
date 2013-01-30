@@ -1,12 +1,12 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
-#--------------------------------------------------------------------------------------------------#
+##-------------------------------------------------------------------------------
+## Copyright (c) 2012 University of Illinois, NCSA.
+## All rights reserved. This program and the accompanying materials
+## are made available under the terms of the 
+## University of Illinois/NCSA Open Source License
+## which accompanies this distribution, and is available at
+## http://opensource.ncsa.illinois.edu/license.html
+##-------------------------------------------------------------------------------
+##--------------------------------------------------------------------------------------------------#
 ##' Reads output of sensitivity analysis runs
 ##'
 ##' 
@@ -21,7 +21,7 @@
 ##' @param end.year last year to include in sensitivity analysis
 ##' @param read.output model specific read.output function
 ##' @export
-#--------------------------------------------------------------------------------------------------#
+                                        #--------------------------------------------------------------------------------------------------#
 read.sa.output <- function(traits, quantiles, outdir, pft.name='', 
                            start.year, end.year, variables, model){
   
@@ -44,4 +44,4 @@ read.sa.output <- function(traits, quantiles, outdir, pft.name='',
   sa.output <- as.data.frame(sa.output)
   return(sa.output)
 }
-#==================================================================================================#
+##==================================================================================================#
