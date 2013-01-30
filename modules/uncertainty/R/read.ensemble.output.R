@@ -1,4 +1,13 @@
-#--------------------------------------------------------------------------------------------------#
+#-------------------------------------------------------------------------------
+# Copyright (c) 2012 University of Illinois, NCSA.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the 
+# University of Illinois/NCSA Open Source License
+# which accompanies this distribution, and is available at
+# http://opensource.ncsa.illinois.edu/license.html
+#-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
+
 ##' Reads output from model ensemble
 ##'
 ##' Reads output for an ensemble of length specified by \code{ensemble.size} and bounded by \code{start.year} and \code{end.year}
@@ -14,12 +23,14 @@
 #--------------------------------------------------------------------------------------------------#
 read.ensemble.output <- function(ensemble.size, outdir, 
                                  start.year, end.year,variables, model){
-  
+  if (!exists('runs.samples')) {
+    load(file.path(settings$outdir, 'samples.Rdata'))    
+  }
+
   ensemble.output <- list()
-  for(ensemble.id in 1:ensemble.size) {
-    run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, 5))#log10(ensemble.size)+1))
-    print(run.id)
-    ensemble.output[[ensemble.id]] <- sapply(read.output(run.id, outdir, start.year, end.year,variables,model),mean,na.rm=TRUE)
+  for(row in rownames(runs.samples$ensemble)) {
+    run.id <- runs.samples$ensemble[row, 'id']
+    ensemble.output[[row]] <- sapply(read.output(run.id, file.path(outdir, run.id), start.year, end.year,variables,model),mean,na.rm=TRUE)
   }
   return(ensemble.output)
 }
