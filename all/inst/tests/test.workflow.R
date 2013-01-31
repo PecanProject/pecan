@@ -6,10 +6,13 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-context("tests of overall workflow")
 
-settings.file <- system.file("inst/extdata/test.settings.xml", package = "PEcAn.utils")
-settings <- read.settings(settings.file)
+# TODO This is an integration test (#1125)
+
+#context("tests of overall workflow")
+
+#settings.file <- system.file("inst/extdata/test.settings.xml", package = "PEcAn.utils")
+#settings <- read.settings(settings.file)
 
 # get.trait.data()
 # run.meta.analysis()     
