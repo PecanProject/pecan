@@ -30,23 +30,25 @@ start.runs.BIOCRO <- function(runid) {
   end.date <- settings$run$end.date
   site.id = settings$run$site$id
   
-  site.info <- query.base(paste0("select * from sites where id = ", site.id, ";"))
+  
+  con <- query.base.con(settings)
+  site.info <- query.base(paste0("select * from sites where id = ", site.id, ";"), con = con)
   site.exists <- nrow(site.info) == 1
   if(site.exists){
     if(abs(lat - site.info$lat) + abs(lon - site.info(lon)))
-    expect_equal(round(lon), round(site.info$lon))
   }
   if(!site.exists){
     query.base(paste0("insert into sites (sitename, lat, lon) values(",
-                      vecpaste(c(settings$run$site$name, lat, lon)), ");"))
+                      vecpaste(c(settings$run$site$name, lat, lon)), ");"), con = con)
   }
   
   ### TODO the following code should be run during write_configs and the file name passed to the start.runs function
+  ### the next set of code using queries will be passed to a new function called "query.met"
   metfiles <- query.base(paste("select start_date, end_date, file_name, file_path ",
                    "from inputs join dbfiles on dbfiles.file_id = inputs.file_id ",
                    "where start_date <= '", start.date, 
                    "' and end_date >= '", end.date, 
-                   "' and site_id =", site.id, ";", sep = ""))
+                   "' and site_id =", site.id, ";", sep = ""), con = con)
 
   if(nrow(metfiles == 1)){
     weather <- read.csv(file.path(metfiles$file_path, metfiles$file_name), row.names = NULL)
@@ -56,15 +58,15 @@ start.runs.BIOCRO <- function(runid) {
     file.id <- 1+ max(query.base(paste0("select max(inputs.file_id), max(dbfiles.file_id) ",
                                  " from inputs right join dbfiles on inputs.file_id = dbfiles.file_id;")))
     query.base(paste0("insert into dbfiles (file_name, file_path, created_at, file_id) ",
-                      "values('weather.csv', '", outdir, "', now(),", file.id,");"))
+                      "values('weather.csv', '", outdir, "', now(),", file.id,");"), con = con)
     query.base(paste0("insert into inputs ",
                       "(notes, created_at, site_id, file_id, start_date, ",
                       "end_date, access_level, format_id) ",
                       "values(,'downloaded from NCEP', now(),", 
-                      vecpaste(c(site.id, file.id, start.date, end.date, 4, 28)), ");"))
+                      vecpaste(c(site.id, file.id, start.date, end.date, 4, 28)), ");"), con = con)
 
   }
-
+  query.close(con)
   weather2 <- weachNEW(weather, lati = lat, ts = 1, 
                        temp.units="Celsius", rh.units="fraction", 
                        ws.units="mph", pp.units="in")

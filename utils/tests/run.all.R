@@ -10,4 +10,5 @@
 library('testthat')
 library('PEcAn.utils')
 
-test_package("PEcAn.utils")
+# TODO reenable tests (#1561)
+#test_package("PEcAn.utils")
