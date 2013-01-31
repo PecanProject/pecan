@@ -32,6 +32,10 @@ start.runs.BIOCRO <- function(runid) {
   
   site.info <- query.base(paste0("select * from sites where id = ", site.id, ";"))
   site.exists <- nrow(site.info) == 1
+  if(site.exists){
+    if(abs(lat - site.info$lat) + abs(lon - site.info(lon)))
+    expect_equal(round(lon), round(site.info$lon))
+  }
   if(!site.exists){
     query.base(paste0("insert into sites (sitename, lat, lon) values(",
                       vecpaste(c(settings$run$site$name, lat, lon)), ");"))
