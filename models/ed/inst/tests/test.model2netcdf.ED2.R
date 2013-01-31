@@ -1,6 +1,6 @@
 require(PEcAn.ED)
 extdata.dir <- system.file("extdata", package = "PEcAn.ED")
-outdir <- "/tmp/out/"
+outdir <- tempdir()
  
 system("rm -rf /tmp/out/*")
 file.copy(dir(extdata.dir, pattern = ".h5", full.names = TRUE), outdir)
