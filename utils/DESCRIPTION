@@ -43,3 +43,5 @@ Collate:
     'logger.R'
     'read.settings.R'
     'distn.stats.R'
+    'ensemble.R'
+    'sensitivity.R'

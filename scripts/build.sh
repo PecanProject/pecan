@@ -8,10 +8,67 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-# To run this from cron add the following line to your crontab (crontab -e)
-#
-# # m h  dom mon dow   command
-# */15 * * * * cd ${HOME}/autobuild/trunk && ./scripts/autobuild.sh
+# change to right folder
+cd $(dirname $0)/..
+
+# these variables are set using the command line arguments below
+EMAIL=""
+GIT="no"
+FORCE="no"
+CHECK="no"
+INSTALL="yes"
+
+# find all variables
+while true; do
+  if [ "$1" == "" ]; then
+    break
+  fi
+  case "$1" in
+    --help|-h)
+      echo "$0 <options>"
+      echo " -h, --help      : this help text"
+      echo " -f, --force     : force a build"
+      echo " -g, --git       : do a git pull"
+      echo " -i, --install   : install all R packages (default=yes)"
+      echo " -n, --noinstall : do not install all R packages"
+      echo " -c, --check     : check the R packages before install"
+      echo " -e, --email     : send email to following people on success"
+      echo ""
+      exit
+    ;;
+
+    --force|-f)
+      FORCE="yes"
+      ;;
+
+    --git|-g)
+      GIT="yes"
+      ;;
+
+    --noinstall|-n)
+      INSTALL="no"
+      ;;
+
+    --install|-i)
+      INSTALL="yes"
+      ;;
+
+    --check|-c)
+      CHECK="yes"
+      ;;
+
+    --email|-e)
+      EMAIL="$2"
+      shift
+      ;;
+
+    *)
+      echo "unknown argument $1"
+      exit
+      ;;
+  esac
+  shift
+done
 
 # packages that are to be compiled
 PACKAGES="utils db"
@@ -20,18 +77,6 @@ PACKAGES="${PACKAGES} modules/data.land modules/data.atmosphere"
 PACKAGES="${PACKAGES} modules/assim.batch modules/assim.sequential modules/priors"
 PACKAGES="${PACKAGES} models/ed models/sipnet models/biocro"
 PACKAGES="${PACKAGES} all"
-
-# people to notify of the build, leave blank to not send email
-TO=""
-
-# Should a pull be done before building
-PULL="yes"
-
-# Should PEcAn be always build, or only if a change was made
-BUILD="no"
-
-# run check before install
-CHECK="yes"
 
 # location where to install packages
 if [ $UID -eq 0 ]; then
@@ -46,7 +91,8 @@ if [ ! -z $R_LIBS_USER ]; then
 fi
 
 # are we still running
-if [ -e running ]; then
+if [ -e running -a "$FORCE" != "yes" ]; then
+  echo "Old build still running (file running exists). Use --force to build"
   exit
 fi
 
@@ -55,7 +101,7 @@ touch running
 touch lastrun
 
 # pull any changes
-if [ "$PULL" == "yes" ]; then
+if [ "$GIT" == "yes" ]; then
   git pull > changes.log
   if [ $? != 0 ]; then
     echo Error pulling
@@ -63,11 +109,13 @@ if [ "$PULL" == "yes" ]; then
     exit
   fi
   if ! grep --quiet 'Already' changes.log; then
-    BUILD="yes"
+    FORCE="yes"
   fi
+else
+  FORCE="yes"
 fi
 
-if [ "$BUILD" == "yes" ]; then
+if [ "$FORCE" == "yes" ]; then
   START=`date +'%s.%N'`
   STATUS="OK"
 
@@ -99,8 +147,10 @@ if [ "$BUILD" == "yes" ]; then
   # check/install packages
   for p in ${PACKAGES}; do
     PACKAGE="OK"
+    ACTION=""
 
     if [ "$CHECK" == "yes" ]; then
+      ACTION="CHECK"
 	    R CMD check ${R_LIB_INC} $p &> out.log
 	    if [ $? -ne 0 ]; then
 	      STATUS="BROKEN"
@@ -109,38 +159,39 @@ if [ "$BUILD" == "yes" ]; then
 	      echo "CHECK $p BROKEN" >> changes.log
 	      echo "----------------------------------------------------------------------" >> changes.log
 	      cat out.log >> changes.log
-	      if [ "$TO" == "" ]; then
-	        cat changes.log
-	        rm changes.log
-	      fi
 	    fi
 	  fi
 
-    R CMD INSTALL --build ${R_LIB_INC} $p &> out.log
-    if [ $? -ne 0 ]; then
-      STATUS="BROKEN"
-      PACKAGE="BROKEN"
-      echo "----------------------------------------------------------------------" >> changes.log
-      echo "INSTALL $p BROKEN" >> changes.log
-      echo "----------------------------------------------------------------------" >> changes.log
-      cat out.log >> changes.log
-      if [ "$TO" == "" ]; then
-        cat changes.log
-        rm changes.log
+    if [ "$PACKAGE" == "OK" -a "$INSTALL" == "yes" ]; then
+      if [ "$ACTION" == "" ]; then
+        ACTION="INSTALL"
+      else
+        ACTION="$ACTION/INSTALL"
+      fi
+      R CMD INSTALL --build ${R_LIB_INC} $p &> out.log
+      if [ $? -ne 0 ]; then
+        STATUS="BROKEN"
+        PACKAGE="BROKEN"
+        echo "----------------------------------------------------------------------" >> changes.log
+        echo "INSTALL $p BROKEN" >> changes.log
+        echo "----------------------------------------------------------------------" >> changes.log
+        cat out.log >> changes.log
       fi
     fi
     
     if [ "$PACKAGE" == "OK" ]; then
-      if [ "$CHECK" == "yes" ]; then
-        echo "----------------------------------------------------------------------" >> changes.log
-        echo "CHECK/INSTALL $p OK" >> changes.log
-        echo "----------------------------------------------------------------------" >> changes.log
-      else
-        echo "----------------------------------------------------------------------" >> changes.log
-        echo "INSTALL $p OK" >> changes.log
-        echo "----------------------------------------------------------------------" >> changes.log
+      if [ "$ACTION" == "" ]; then
+        ACTION="DID NOTHING"
       fi
-      if [ "$TO" == "" ]; then
+      echo "----------------------------------------------------------------------" >> changes.log
+      echo "$ACTION $p OK" >> changes.log
+      echo "----------------------------------------------------------------------" >> changes.log
+      if [ "$EMAIL" == "" ]; then
+        cat changes.log
+        rm changes.log
+      fi
+    else
+      if [ "$EMAIL" == "" ]; then
         cat changes.log
         rm changes.log
       fi
@@ -152,10 +203,10 @@ if [ "$BUILD" == "yes" ]; then
   echo "----------------------------------------------------------------------" >> changes.log
   echo "build took ${TIME} seconds." >> changes.log
   echo "----------------------------------------------------------------------" >> changes.log
-  if [ "$TO" == "" ]; then
+  if [ "$EMAIL" == "" ]; then
     cat changes.log
   else
-    cat changes.log | mail -s "PEcAn BUILD ${REVNO} is ${STATUS}" ${TO}
+    cat changes.log | mail -s "PEcAn BUILD ${REVNO} is ${STATUS}" ${EMAIL}
   fi
 
   # cleanup
