@@ -7,7 +7,7 @@
       <name>biocro.saof</name>
       <outdir>/tmp/out/saof/</outdir>
       <constants>
-  <canopyParms>
+	<canopyParms>
 	  <Sp>1.7</Sp>
 	  <SpD> 0.0 </SpD>
 	  <nlayers> 0.0 </nlayers>
@@ -109,17 +109,13 @@
     <random.effects>FALSE</random.effects>
   </meta.analysis>
   <ensemble>
-    <size>10</size>
+    <size>2</size>
   </ensemble>
   <sensitivity.analysis>
     <quantiles>
-      <sigma>3</sigma>
-      <sigma>2</sigma>
-      <sigma>1</sigma>
       <sigma>0</sigma>
-      <sigma>-1</sigma>
-      <sigma>-2</sigma>
-      <sigma>-3</sigma>
+<!--      <sigma>1</sigma>
+      <sigma>-1</sigma>-->
     </quantiles>
     <variable>Stem</variable>
     <start.year>2004</start.year>
