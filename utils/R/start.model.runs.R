@@ -31,17 +31,9 @@ start.model.runs <- function(model=settings$model$name, write.to.db = TRUE){
     print(" ")
     if(!write.to.db){
       warning("Run provenance not being logged by database")
-      con <- NULL
-    }
-    if(write.to.db){
-      ## write to the runs table
-      con <- try(query.base.con(settings), silent=TRUE)
-      if(is.character(con)) {
-        con <- NULL
-      }
     }
 
-    # TODO RK : create ssh connection to remote host and keep it open
+    # TODO RK : create ssh/mysql connections to remote host and keep it open
 
     # copy all run/out dirs to remote host
     if (settings$run$host$name != "localhost") {
@@ -53,8 +45,8 @@ start.model.runs <- function(model=settings$model$name, write.to.db = TRUE){
     jobids <- list()
     for (run in readLines(con=file.path(settings$rundir, "runs.txt"))) {
       # write start time to database
-      if (!is.null(con)) {
-        query.base(paste("UPDATE runs SET started_at =  NOW() WHERE id = ", run), con)
+      if (write.to.db) {
+        query.base(paste("UPDATE runs SET started_at =  NOW() WHERE id = ", run))
       }
 
       # start the actual model run
@@ -62,8 +54,8 @@ start.model.runs <- function(model=settings$model$name, write.to.db = TRUE){
         do.call(fcn.name, args=list(run))
 
         # write finished time to database
-        if (!is.null(con)) {
-          query.base(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", run), con)
+        if (write.to.db) {
+          query.base(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", run))
         }
       } else {
         qsub <- gsub("@NAME@", paste("PEcAn-", run, sep=""), settings$run$host$qsub)
@@ -87,20 +79,15 @@ start.model.runs <- function(model=settings$model$name, write.to.db = TRUE){
             logger.debug("Job", jobids[run], "for run", run, "finished")
             jobids[run] <- NULL
             # write finished time to database 
-            if (!is.null(con)) {
-              query.base(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", run), con)
+            if (write.to.db) {
+              query.base(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", run))
             }
           }
         }
       }
     }
 
-    # TODO RK : close connection to remote site
-
-    ## job is finished
-    if (!is.null(con)) {
-      query.close(con)
-    }
+    # TODO RK : close ssh/mysql connections to remote site
 
   } else {
     warning(paste(fcn.name, "does not exist"))
