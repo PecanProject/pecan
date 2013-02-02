@@ -59,8 +59,8 @@ write.config.BIOCRO <- function(defaults,
                                 trait.values,
                                 settings,
                                 run.id) {
-
-  biocro.trait.values  <- lapply(convert.samples.BIOCRO(trait.values),
+  print(trait.values)
+  biocro.trait.values  <- lapply(convert.samples.BIOCRO(trait.values[[1]]),
                                  as.character)
   biocro.traits <- names(biocro.trait.values)
   constants <- defaults$pft$constants
@@ -68,6 +68,9 @@ write.config.BIOCRO <- function(defaults,
     parm.names <- names(constants[[parm.type]])
     for(parm in parm.names) {
       if(parm %in% biocro.traits){
+        print(parm.type)
+        print(parm)
+        print(biocro.trait.values[[parm]])
         constants[[parm.type]][[parm]] <- biocro.trait.values[[parm]]
       }
     }

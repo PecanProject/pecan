@@ -140,7 +140,7 @@
     <folder>/tmp/out/run/</folder>
     <start.date>2004-01-01 06:00:00</start.date>
     <end.date>2005-12-31 05:59:00</end.date>
-    <host>
+    <host>R 
       <name>localhost</name>
       <rundir>/tmp/out/run/</rundir>
       <outdir>/tmp/out/run/</outdir>
