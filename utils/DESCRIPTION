@@ -19,7 +19,8 @@ Depends:
     plyr,
     XML,
     ggplot2,
-    randtoolbox
+    randtoolbox,
+    coda
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
