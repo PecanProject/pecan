@@ -22,9 +22,8 @@ PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
 ##' @return matrix or dataframe with values transformed
 ##' @author David LeBauer
 convert.samples.BIOCRO <- function(trait.samples){
-  if(is.list(trait.samples)){
-    trait.samples <- as.data.frame(trait.samples)
-  }
+
+  if(is.list(trait.samples)) trait.samples <- as.data.frame(trait.samples)
   ## first rename variables
   trait.names <- colnames(trait.samples)
   trait.names[trait.names == "Vcmax"] <- "vmax"
@@ -61,23 +60,22 @@ write.config.BIOCRO <- function(defaults,
                                 settings,
                                 run.id) {
 
-  biocro.trait.values  <- lapply(convert.samples.BIOCRO(trait.values),
-                                 as.character)
-  biocro.traits <- names(biocro.trait.values)
+  traits  <- lapply(convert.samples.BIOCRO(trait.values[[1]]),
+                    as.character)
   constants <- defaults$pft$constants
-  parms.xml <- listToXml(constants, "pft")
-  photoparm.names <- names(constants$photoParms)
+
+  ## update photosynthesis parameters:0
   for(parm.type in names(constants)){
-    parm.names <- names(constants[[parm.type]])
-    for(parm in parm.names) {
-      if(parm %in% biocro.traits){
-        xmlChildren(parms.xml[[parm.type]][[parm]]) <- biocro.trait.values[[parm]]
-      }
+    for(parm in names(constants[[parm.type]])){
+      if(!is.null(traits[[parm]])) constants[[parm.type]][[parm]] <- traits[[parm]]       
     }
   }
+  
+  parms.xml    <- listToXml(constants, "pft")
   location.xml <- listToXml(list(latitude = settings$run$site$lat,
                                   longitude = settings$run$site$lon),
                             "location")
+
   slashdate <- function(x) substr(gsub("-", "/", x), 1, 10)
   simulationPeriod.xml <- listToXml(
     list(dateofplanting = slashdate(settings$run$start.date),
@@ -91,7 +89,7 @@ write.config.BIOCRO <- function(defaults,
   
 
   saveXML(config.xml,
-          file = file.path(settings$rundir, run.id, "data.xml"),
+          file = file.path(settings$rundir, run.id, "config.xml"),
           indent=TRUE)
 }
 #==================================================================================================#

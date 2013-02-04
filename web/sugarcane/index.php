@@ -34,7 +34,7 @@ $runs = explode("\n", file_get_contents($runFolder . DIRECTORY_SEPARATOR . "runs
 $lastRun = $runs[count($runs)-2];
 
 #$dataXml="/home/pecan/pecan/web/sugarcane/default/default.xml";
-$dataXml=array_shift(glob($workflow["folder"] . "/run/" . $lastRun . "/data.xml"));
+$dataXml=array_shift(glob($workflow["folder"] . "/run/" . $lastRun . "/config.xml"));
 
 close_database($connection);
 
@@ -43,7 +43,7 @@ close_database($connection);
 if(isset($_POST["command"]) and strpos($_POST["command"],"continue")!==False){
 
     // prepare the datafile to be saved
-    $dataOrigXml=str_replace("data.xml", "data_orig.xml", $dataXml);
+    $dataOrigXml=str_replace("config.xml", "data_orig.xml", $dataXml);
 
     if (!copy($dataXml, $dataOrigXml)) {
         die("Failed to copy parameters to new file, $dataOrigXml");    
@@ -55,7 +55,7 @@ if(isset($_POST["command"]) and strpos($_POST["command"],"continue")!==False){
     $xpath = new DOMXPath($doc);
 
     // The name of most of the posted parameters will be an xpath to
-    // the same parameter in the data.xml file. Iterate through all the 
+    // the same parameter in the config.xml file. Iterate through all the 
     // posted parameters and set the value of the parameter to the posted value.
     foreach($_POST as $key=>$value) {
         // All xpaths for this document will start with /config
@@ -72,7 +72,7 @@ if(isset($_POST["command"]) and strpos($_POST["command"],"continue")!==False){
         die("$dataXml could not be saved");
     }
 
-    $dataDiff=str_replace("data.xml", "data.diff", $dataXml);
+    $dataDiff=str_replace("config.xml", "data.diff", $dataXml);
     exec("diff $dataOrigXml $dataXml > $dataDiff");
     // TODO do something more intelligent with the diff, like save in the database
 
