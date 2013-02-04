@@ -59,23 +59,19 @@ write.config.BIOCRO <- function(defaults,
                                 trait.values,
                                 settings,
                                 run.id) {
-  print(trait.values)
-  biocro.trait.values  <- lapply(convert.samples.BIOCRO(trait.values[[1]]),
-                                 as.character)
-  biocro.traits <- names(biocro.trait.values)
+
+  traits  <- lapply(convert.samples.BIOCRO(trait.values[[1]]),
+                    as.character)
   constants <- defaults$pft$constants
+
+  ## update photosynthesis parameters:0
   for(parm.type in names(constants)){
-    parm.names <- names(constants[[parm.type]])
-    for(parm in parm.names) {
-      if(parm %in% biocro.traits){
-        print(parm.type)
-        print(parm)
-        print(biocro.trait.values[[parm]])
-        constants[[parm.type]][[parm]] <- biocro.trait.values[[parm]]
-      }
+    for(parm in names(constants[[parm.type]])){
+      if(!is.null(traits[[parm]])) constants[[parm.type]][[parm]] <- traits[[parm]]       
     }
   }
-  parms.xml <- listToXml(constants, "pft")
+  
+  parms.xml    <- listToXml(constants, "pft")
   location.xml <- listToXml(list(latitude = settings$run$site$lat,
                                   longitude = settings$run$site$lon),
                             "location")
@@ -93,7 +89,7 @@ write.config.BIOCRO <- function(defaults,
   
 
   saveXML(config.xml,
-          file = file.path(settings$rundir, run.id, "data.xml"),
+          file = file.path(settings$rundir, run.id, "config.xml"),
           indent=TRUE)
 }
 #==================================================================================================#
