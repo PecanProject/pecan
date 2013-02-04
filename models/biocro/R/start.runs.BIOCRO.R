@@ -73,15 +73,14 @@ start.runs.BIOCRO <- function(runid) {
                        ws.units="mph", pp.units="in")
 
   # run model
-  config <- xmlToList(xmlParse(file.path(outdir, runid, "data.xml")))
+  config <- xmlToList(xmlParse(file.path(outdir, runid, "config.xml")))
   pp <- do.call(photoParms, list(unlist(config$parms)))
   
   BioGro_result <- BioGro(weather2, photoControl=pp)
 
   write.csv(with(BioGro_result, data.frame(DayofYear, Hour, ThermalT, Stem, Leaf, Root)), 
-            file=file.path(outdir, "result.csv"))
+            file=file.path(outdir, runid, "result.csv"))
   file.copy(file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))
-  setwd(cwd)
 }
 
 #==================================================================================================#
