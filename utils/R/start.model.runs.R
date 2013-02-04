@@ -43,7 +43,15 @@ start.model.runs <- function(model=settings$model$name, write.to.db = TRUE){
 
     # loop through runs and either call start run, or launch job on remote machine
     jobids <- list()
-    for (run in readLines(con=file.path(settings$rundir, "runs.txt"))) {
+    
+    ## setup progressbar
+    nruns <- length(readLines(con = file.path(settings$rundir, "runs.txt")))
+    pb <- txtProgressBar(min = 0, max = nruns, style = 3)
+    pbi <- 0
+
+    for (run in readLines(con = file.path(settings$rundir, "runs.txt"))) {
+      pbi <- pbi + 1
+      setTxtProgressBar(pb, pbi)
       # write start time to database
       if (write.to.db) {
         query.base(paste("UPDATE runs SET started_at =  NOW() WHERE id = ", run))
@@ -67,6 +75,7 @@ start.model.runs <- function(model=settings$model$name, write.to.db = TRUE){
         jobids[run] <- regmatches(out, m)[[1]][2]
       }
     }
+    close(pb)
 
     # check to see if all remote jobs are done
     if (settings$run$host$name != "localhost") {
