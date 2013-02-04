@@ -29,7 +29,7 @@ test_that("write.configs.BIOCRO produces expected output",{
                       trait.values = samples$biocro.saof["50", ],
                       settings = settings,
                       run.id = "")
-  config <- file.path(settings$outdir, "data.xml")
+  config <- file.path(settings$outdir, "config.xml")
   config.xml <- xmlParse(config)
   config.list <- xmlToList(config.xml)
   biocro.trait.values <- convert.samples.BIOCRO(trait.values)
