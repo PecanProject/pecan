@@ -73,7 +73,7 @@ start.runs.BIOCRO <- function(runid) {
                        ws.units="mph", pp.units="in")
 
   # run model
-  config <- xmlToList(xmlParse(file.path(outdir, runid, "data.xml")))
+  config <- xmlToList(xmlParse(file.path(outdir, runid, "config.xml")))
   pp <- do.call(photoParms, list(unlist(config$parms)))
   
   BioGro_result <- BioGro(weather2, photoControl=pp)
