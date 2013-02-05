@@ -16,6 +16,6 @@ new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"
 if(length(new.packages)) {
   print("installing : ")
   print(new.packages)
-  install.packages(new.packages, repos="http://cran.us.r-project.org")
+  install.packages(new.packages, repos="http://cran.rstudio.com/")
 }
 

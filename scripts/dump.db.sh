@@ -1,3 +1,6 @@
+#!/bin/bash
+
+cd $(dirname $0)/..
 set -x
 
 # copy database and load locally
