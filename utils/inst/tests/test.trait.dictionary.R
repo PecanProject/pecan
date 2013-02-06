@@ -16,3 +16,10 @@ test_that("trait dictionary loads and has expected columns",{
   expect_true(ncol(trait.dictionary) >= 4) # dim = 49 x 4 at time of writing
   expect_true(nrow(trait.dictionary) >=49)
 })
+
+
+test_that("trait dictionary can be loaded ",{
+  data("trait.dictionary", package = "PEcAn.utils")
+  td <- read.csv(system.file("data", "trait.dictionary.csv", package = "PEcAn.utils"), sep = ";")
+  expect_equal(trait.dictionary, td)
+})
