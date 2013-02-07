@@ -55,7 +55,6 @@ switch ($type) {
 			$mime = "application/pdf";					
 		} else {
 			$mime = "application/octet-stream";
-			header('Content-Disposition: attachment; filename='.basename($name));			
 		}
 		break;
 		
@@ -98,6 +97,7 @@ if (!file_exists($file)) {
 if ($mime != "") {
 	header("Content-type: $mime");
 }
+header('Content-Disposition: filename='.basename($name));
 readfile($file);
 
 if ($type == "plot") {
