@@ -79,9 +79,9 @@ switch ($type) {
 		$mime = "image/png";
 		$file = tempnam('','');
 		if (stripos($datafile, ".h5") !== FALSE) {
-			shell_exec("PECANSETTINGS=$folder/pecan.xml R CMD BATCH --vanilla '--args $year $var $width $height $file' plot.hdf5.R $folder/plot.out");
-		} else if (stripos($datafile, ".nc") !== FALSE) {
-			shell_exec("PECANSETTINGS=$folder/pecan.xml R CMD BATCH --vanilla '--args $datafile $year $var $width $height $file' plot.netcdf.R $folder/plot.out");
+                        shell_exec("R_LIBS_USER='${pecan_install}' PECANSETTINGS='$folder/pecan.xml' R CMD BATCH --vanilla '--args $year $var $width $height $file' plot.hdf5.R $folder/plot.out");
+                } else if (stripos($datafile, ".nc") !== FALSE) {
+                        shell_exec("R_LIBS_USER='${pecan_install}' PECANSETTINGS='$folder/pecan.xml' R CMD BATCH --vanilla '--args $datafile $year $var $width $height $file' plot.netcdf.R $folder/plot.out");
 		} else {
 			die("Can not plot $datafile");
 		}		
