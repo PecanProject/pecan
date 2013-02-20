@@ -1,8 +1,16 @@
-PEcAn Overview
-==============
+PEcAn Archive
+-------------
 
-#### Facilitating feedbacks between field measurements and ecosystem models
-Introduction
+Facilitating feedbacks between field measurements and ecosystem models
+======================================================================
+
+### _Note:_ 
+
+**This is an archive**, see www.pecanproject.org to keep up with ongoing research. 
+
+This IDEALS archive provides a repository for older versions of PEcAn. Information about ongoing research is available at our website, www.pecanproject.org, where more recent versions of the software and demonstrations of the web-interface can be found. Current stable versions of the code and virtual machines can be downloaded from [NCSA](http://isda.ncsa.illinois.edu/download/index.php?project=PEcAn&sort=category), and current development code is available from [GitHub](http://github.com/PecanProject/pecan).
+
+### Introduction
 
 The Predictive Ecosystem Analyzer (PEcAn) is an integrated ecological bioinformatics toolbox (LeBauer et al, 2013) which consists of: 1) a scientific workflow system to manage the immense amounts of publicly-available environmental data and 2) a Bayesian data assimilation system to synthesize this information within state-of-the-art ecosystems models. This project is motivated by the fact that many of the most pressing questions about global change are not necessarily limited by the need to collect new data as much as by our ability to synthesize existing data. This project seeks to improve this ability by developing a framework for integrating multiple data sources in a sensible manner.
 
@@ -11,7 +19,7 @@ The output of the data assimilation system will be a regional-scale high-resolut
 PEcAn is not itself an ecosystem model, and it can be used to with a variety of different ecosystem models; integrating a model involves writing a wrapper to convert inputs and outputs to and from the standards used by PEcAn. Currently, PEcAn supports the Ecosystem Demography model (ED2, Medvigy et al 2009), SIPNET (Sacks et al., 2005), and BioCro (Miguez et al, 2012).
 
 
-#### Demonstration
+### Demonstration
 
 This system allows you to experiment and create simulations using PEcAn, ED, SIPNET, BioCro and BETYdb. The first page will allow for selection of a site where the simulation will run at. The BETY database contains data for both the local system as well as data on the illinois ebi servers (ebi-cluster and ebi-forecast). Only those sites with data on the local system can be run. After selecting a site and entering the date range for the simulation, PEcAn will take over and set up and execute the selected model. Once the model is finished it will allow you to create graphs with the results of the simulation as well as download the results. It is also possible to see all past experiments and simulations.
 
@@ -19,13 +27,13 @@ This machine uses the BETY database (LeBauer et al, 2010) for the trait data and
 
 For any questions about the research behind this demonstration or about the system itself, please contact Michael Dietze at dietze(at)bu.edu or David LeBauer at dlebauer@illinois.edu
 
-#### Acknowledgements
+### Acknowledgements
 
 This material is based upon work supported by the Energy Biosciences Institute and the National Science Foundation under Grant No. 1062547 and 1062204. Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation. PEcAn is a collaboration among research groups at the Energy Biosciences Institute at the University of Illinois, the Department of Earth And Environment at Boston University, the Image Spatial Data Analysis group at NCSA, and the Department of Atmospheric & Oceanic Sciences at the University Wisconsin-Madison.
 
 BETY-db is a product of the Energy Biosciences Institute at the University of Illinois at Urbana-Champaign. We gratefully acknowledge the great effort of other researchers who generously made their own data available for further study.
 
-#### References
+### References
 
 *    LeBauer, D., Wang, D., Richter, K., Davidson, C., & Dietze, M. C. (2012). Facilitating feedbacks between field measurements and ecosystem models. Ecological Monographs.
 *    Medvigy, D., S. C. Wofsy, J. W. Munger, D. Y. Hollinger, and P. R. Moorcroft. 2009. "Mechanistic scaling of ecosystem function and dynamics in space and time: Ecosystem Demography model version 2". Journal of Geophysical Research 114:121.
