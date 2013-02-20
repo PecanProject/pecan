@@ -297,7 +297,9 @@ remove.config.ED2 <- function(main.outdir = settings$outdir, settings) {
                   pattern = c('/c.*', '/ED2INc.*'),
                   recursive=TRUE, full.names = TRUE)
   
-  if(length(todelete>0)) file.remove(todelete)
+  if(length(todelete>0)){
+    file.remove(todelete)
+  } 
   rm(todelete)
 
   ## Remove model run configs and model run log files on local/remote host
