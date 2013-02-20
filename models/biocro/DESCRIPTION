@@ -10,7 +10,7 @@ Depends:
     PEcAn.utils,
     PEcAn.data.atmosphere,
     ncdf4,
-    BioCro (== 0.5),
+    BioCro,
     RNCEP,
     lubridate,
     XML

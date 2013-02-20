@@ -51,7 +51,7 @@ start.runs.BIOCRO <- function(runid) {
                    "' and end_date >= '", end.date, 
                    "' and site_id =", site.id, ";", sep = ""), con = con)
 
-  if(nrow(metfiles == 1)){
+  if(nrow(metfiles) == 1){
     weather <- read.csv(file.path(metfiles$file_path, metfiles$file_name), row.names = NULL)
   } else {
     weather <- InputForWeach(lat, lon, year(start.date), year(end.date))
