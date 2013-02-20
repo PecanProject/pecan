@@ -11,3 +11,10 @@ test_that("spline.truncate truncates a vector at zero iff only values < min.quan
   x.tt <- spline.truncate(x, min.quantile =  sum(x<0)/length(x))
   expect_true(min(x.tt) < 0)
 })
+
+test_that("sensitivity and elasticity calculations are done at the median",{
+  expect_equal(get.elasticity(1, c(1, 10, 100), c(1, 0.1, 0.01)), 10/0.1)
+  testfun <- sa.splinefun(c(1,2,3), c(1, 4, 6)) ## y = x2; first derivative = 2
+  expect_equal(get.sensitivity(c(1,10, 100), testfun), 2)
+  expect_equal(signif(get.coef.var(c(1, 10, 100)), 4), 5.474)
+})
