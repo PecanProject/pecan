@@ -1,4 +1,4 @@
-settings.xml <- system.file("pecan.biocro.xml", package = "PEcAn.BIOCRO")
+settings.xml <- system.file("extdata/pecan.biocro.xml", package = "PEcAn.BIOCRO")
 settings <- read.settings(settings.xml)
 
 samples <- list(
