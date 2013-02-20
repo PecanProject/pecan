@@ -1,9 +1,9 @@
-settings.xml <- system.file("pecan.biocro.xml", package = "PEcAn.BIOCRO")
+settings.xml <- system.file("extdata/pecan.biocro.xml", package = "PEcAn.BIOCRO")
 settings <- read.settings(settings.xml)
 
 ## put test output in tempdir
 outdir <- tempdir()
-result.csv <- system.file("result.csv", package = "PEcAn.BIOCRO")
+result.csv <- system.file("extdata/result.csv", package = "PEcAn.BIOCRO")
 file.copy(from = result.csv, to = outdir)
 
 test_that("model2netcdf.BIOCRO reads a .csv and writes a netcdf file",{
