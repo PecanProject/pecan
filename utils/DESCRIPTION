@@ -20,6 +20,7 @@ Depends:
     XML,
     ggplot2,
     randtoolbox,
+    ncdf,
     coda
 License: FreeBSD + file LICENSE
 Copyright: Authors
