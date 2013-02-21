@@ -1,7 +1,7 @@
 settings.xml <- system.file("extdata/pecan.biocro.xml", package = "PEcAn.BIOCRO")
 settings <- read.settings(settings.xml)
 ## put test output in tempdir
-settings$outdir <- tempdir()
+settings$outdir <- settings$rundir <- tempdir()
 
 samples <- list(
   biocro.saof = (data.frame(

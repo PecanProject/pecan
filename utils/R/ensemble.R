@@ -23,17 +23,21 @@
 #--------------------------------------------------------------------------------------------------#
 read.ensemble.output <- function(ensemble.size, outdir, 
                                  start.year, end.year,variables, model){
-  if (!exists('runs.samples')) {
+  if (exists('runs.samples')) {
+    ensemble.runs <- runs.samples$ensemble
+  } else {
+    ensemble.runs <- list()
     samples.file <- file.path(outdir, 'samples.Rdata')
+    print(samples.file)
     if(file.exists(samples.file)){
       load(samples.file)
       ensemble.runs <- runs.samples$ensemble
     } else {
       stop(samples.file, "not found", 
-                   "required by read.ensemble.output")      
+           "required by read.ensemble.output")      
     }
   }
-  print(ensemble.runs)
+
   ensemble.output <- list()
   for(row in rownames(ensemble.runs)) {
     run.id <- ensemble.runs[row, 'id']
