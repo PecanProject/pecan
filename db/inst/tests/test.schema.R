@@ -14,7 +14,7 @@ settings <- list(database =
                         name = "bety"))
 
 ## check database connection as condition of running tests:
-if(!grepl("Error", try(query.base.con(), silent = TRUE))){
+if(db.exists()){
 
   test_that("expected tables exist",{
     tables <- query.base("show tables;")

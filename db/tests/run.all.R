@@ -9,11 +9,16 @@
 library(testthat)
 library(PEcAn.DB)
 
+
 settings <- list(database = 
                    list(userid = "bety", 
                         passwd = "bety", 
                         location = "localhost",
                         name = "bety"))
 if(db.exists()){
-  test_package("PEcAn.DB")
+  system("echo 'testing if bety exists on forecast'|mail -s 'sent from ebi forecast' dlebauer@gmail.com")
+} else {
+  system("echo 'bety does not exist on forecast'|mail -s 'sent from ebi forecast' dlebauer@gmail.com")
 }
+test_package("PEcAn.DB")
+
