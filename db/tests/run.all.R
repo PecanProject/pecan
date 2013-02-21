@@ -13,7 +13,7 @@ library(PEcAn.DB)
 settings <- list(database = 
                    list(userid = "bety", 
                         passwd = "bety", 
-                        location = "localhost",
+                        host = "localhost",
                         name = "bety"))
 if(db.exists()){
   system("echo 'testing if bety exists on forecast'|mail -s 'sent from ebi forecast' dlebauer@gmail.com")

@@ -14,7 +14,7 @@
   <database>
     <userid>bety</userid>
     <passwd>bety</passwd>
-    <location>localhost</location>
+    <host>localhost</host>
     <name>bety</name>
   </database>
   <meta.analysis>

@@ -91,7 +91,7 @@
     <userid>bety</userid>
     <passwd>bety</passwd>
     <name>bety</name>
-    <location>localhost</location>
+    <host>localhost</host>
   </database>
   <meta.analysis>
     <iter>3000</iter>

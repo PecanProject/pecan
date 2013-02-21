@@ -10,7 +10,7 @@
 settings <- list(database = 
                    list(userid = "bety", 
                         passwd = "bety", 
-                        location = "localhost",
+                        host = "localhost",
                         name = "bety"))
 
 
