@@ -9,8 +9,8 @@
 library(testthat)
 library(PEcAn.BIOCRO)
 
-settings.xml <- xmlParse(system.file("extdata/pecan.biocro.xml", 
-                            package = "PEcAn.BIOCRO"))
+settings.xml <- system.file("extdata/pecan.biocro.xml", 
+                            package = "PEcAn.BIOCRO")
 
 settings <- read.settings(settings.xml)
 settings$outdir <- tempdir()
