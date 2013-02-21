@@ -9,7 +9,7 @@
 settings <- list(database = 
                    list(userid = "bety", 
                         passwd = "bety", 
-                        location = "localhost",
+                        host = "localhost",
                         name = "bety"))
 if(db.exists()){
   test_that("query base can execute a trivial SQL statement and return results",{  

@@ -10,7 +10,7 @@ db.exists <- function(...){
     settings <- list(database = 
                        list(userid = "bety", 
                             passwd = "bety", 
-                            location = "localhost",
+                            host = "localhost",
                             name = "bety"))
   }
   ans <- tryl(query.base.con(settings))
