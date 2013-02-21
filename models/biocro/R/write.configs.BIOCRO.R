@@ -34,7 +34,7 @@ convert.samples.BIOCRO <- function(trait.samples){
 
   ## transform values with different units
   ## cuticular conductance - BETY default is umol; BioCro uses mol
-  if("b1" %in% trait.names){
+  if("b0" %in% trait.names){
     trait.samples[, trait.names == "b0"] <- trait.samples[, trait.names == "b0"]/1e6
   }
 
@@ -60,14 +60,17 @@ write.config.BIOCRO <- function(defaults,
                                 settings,
                                 run.id) {
 
-  traits  <- lapply(convert.samples.BIOCRO(trait.values[[1]]),
+  traits  <- lapply(convert.samples.BIOCRO(trait.values),
                     as.character)
   constants <- defaults$pft$constants
 
+  sugarRd <- constants
   ## update photosynthesis parameters:0
-  for(parm.type in names(constants)){
+  for(parm.type in names(constants)[!names(constants) == "SugarPhenoParms"]){
     for(parm in names(constants[[parm.type]])){
-      if(!is.null(traits[[parm]])) constants[[parm.type]][[parm]] <- traits[[parm]]       
+      if(!is.null(traits[[parm]])){
+        constants[[parm.type]][[parm]] <- traits[[parm]]
+      }        
     }
   }
   

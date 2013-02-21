@@ -24,12 +24,20 @@
 read.ensemble.output <- function(ensemble.size, outdir, 
                                  start.year, end.year,variables, model){
   if (!exists('runs.samples')) {
-    load(file.path(settings$outdir, 'samples.Rdata'))    
+    samples.file <- file.path(outdir, 'samples.Rdata')
+    if(file.exists(samples.file)){
+      load(samples.file)
+      ensemble.runs <- runs.samples$ensemble
+    } else {
+      stop(samples.file, "not found", 
+                   "required by read.ensemble.output")      
+    }
   }
-  
+  print(ensemble.runs)
   ensemble.output <- list()
-  for(row in rownames(runs.samples$ensemble)) {
-    run.id <- runs.samples$ensemble[row, 'id']
+  for(row in rownames(ensemble.runs)) {
+    run.id <- ensemble.runs[row, 'id']
+    print(run.id)
     ensemble.output[[row]] <- sapply(read.output(run.id, file.path(outdir, run.id), start.year, end.year,variables,model),mean,na.rm=TRUE)
   }
   return(ensemble.output)
