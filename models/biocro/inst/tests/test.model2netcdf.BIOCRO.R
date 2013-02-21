@@ -1,8 +1,6 @@
-settings.xml <- system.file("extdata/pecan.biocro.xml", package = "PEcAn.BIOCRO")
-settings <- read.settings(settings.xml)
 
-## put test output in tempdir
-settings$outdir <- tempdir()
+
+
 result.csv <- system.file("extdata/result.csv", package = "PEcAn.BIOCRO")
 runs.samples <- list(ensemble = data.frame(id = 1))
 runoutdir <- file.path(settings$outdir, "1")
