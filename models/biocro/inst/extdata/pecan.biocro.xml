@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <pecan>
-  <outdir>/tmp/out/run/</outdir>
-  <rundir>/tmp/out/run/</rundir>
+  <outdir>/tmp/</outdir>
+  <rundir>/tmp/</rundir>
   <pfts>
     <pft>
       <name>biocro.saof</name>
-      <outdir>/tmp/out/saof/</outdir>
+      <outdir>/tmp/</outdir>
       <constants>
 	<canopyParms>
 	  <Sp>1.3</Sp>
@@ -126,13 +126,13 @@
       <lon>-81.37</lon>
       <met>NULL</met>
     </site>
-    <folder>/tmp/out/run/</folder>
+    <folder>/tmp/</folder>
     <start.date>2004-01-01 06:00:00</start.date>
     <end.date>2005-12-31 05:59:00</end.date>
     <host>R 
       <name>localhost</name>
-      <rundir>/tmp/out/run/</rundir>
-      <outdir>/tmp/out/run/</outdir>
+      <rundir>/tmp/</rundir>
+      <outdir>/tmp/</outdir>
     </host>
   </run>
 </pecan>

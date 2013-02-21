@@ -26,7 +26,14 @@ read.sa.output <- function(traits, quantiles, outdir, pft.name='',
                            start.year, end.year, variables, model){
   
   if (!exists('runs.samples')) {
-    load(file.path(settings$outdir, 'samples.Rdata'))    
+    samples.file <- file.path(outdir, 'samples.Rdata')
+    if(file.exists(samples.file)){
+      load(samples.file)
+      sa.runs <- runs.samples$sa
+    } else {
+      logger.error(samples.file, "not found, ", 
+                   "this file is required by the read.sa.output function")      
+    }
   }
   
   sa.output <- matrix(nrow = length(quantiles),
@@ -34,7 +41,7 @@ read.sa.output <- function(traits, quantiles, outdir, pft.name='',
                       dimnames = list(quantiles, traits))
   for(trait in traits){
     for(quantile in quantiles){
-      run.id <- runs.samples$sa[[pft.name]][quantile, trait]
+      run.id <- sa.runs[[pft.name]][quantile, trait]
       sa.output[quantile, trait] <- sapply(read.output(run.id, file.path(outdir, run.id),
                                                        start.year, end.year,
                                                        variables, model),
