@@ -12,7 +12,8 @@ library(PEcAn.BIOCRO)
 settings.xml <- system.file("extdata/pecan.biocro.xml", 
                             package = "PEcAn.BIOCRO")
 
-settings <- read.settings(settings.xml)
+## assign settings to global env so that it is available for testing
+settings <<- read.settings(settings.xml) 
 settings$outdir <- tempdir()
 
 test_package("PEcAn.BIOCRO")
