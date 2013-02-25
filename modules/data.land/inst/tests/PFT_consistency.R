@@ -4,15 +4,16 @@
 # @author Anthony Cohen
 # ----------------------------------------------------------------------------------------------------------
 require(PEcAn.utils)
-#require(PEcAn.data.land)
-require(testthat)
+
+if(!db.exists())
+{
+	stop("bety database is not available. Stopping.")
+}
+
 context("PFTs")
 
-# Regex notes: 1) the timestamp that goes into the console is not read in the regex!	  
-#              2) [:digit:] does not work without changing locale. Neither does \d
-#              3) logger does not interpret whitespace requests like \n
 
-# Lines 92-103
+
 test_that("PFTs don't overlap species", {
 			
 			overlapping.pfts <- read.settings("modules/data.land/inst/Tests/dup_species.xml")		#settings list
@@ -25,13 +26,16 @@ test_that("PFTs don't overlap species", {
 test_that("User is warned if PFTs have extra species not suggested by FIA", {
 
 			extra.pft <- read.settings("modules/data.land/inst/Tests/wrong_pft.xml")  
-			expect_output(fia.to.psscss(extra.pft), ".*WARN  \\[.*\\] : The selected pfts contain .+ species for which the FIA database contains no data at this site.*These will be populated with zero values in the output.")  
+			expect_output(fia.to.psscss(extra.pft), ".*WARN  \\[.*\\] : The selected PFTs contain .+ species for which the FIA database contains no data at.*These will be populated with zero values in the output.")  
 })
 
 
 test_that("PFTs encompass all species suggested by FIA", {
 			
 			insufficient.pft <- read.settings("modules/data.land/inst/Tests/wrong_pft.xml")
-			expect_output(fia.to.psscss(insufficient.pft), ".*ERROR \\[.*\\] : The FIA database expects .+ species in this site.+ are not described by the selected pfts.*Please select additional pfts.")
+			expect_output(fia.to.psscss(insufficient.pft), ".*ERROR \\[.*\\] : The FIA database expects .+ species .+ are not described by the selected PFTs.*Please select additional pfts.")
 })
 
+# Regex notes: 1) the timestamp that goes into the console is not read in the regex!	  
+#              2) [:digit:] does not work without changing locale. Neither does \d
+#              3) logger does not interpret whitespace requests like \n
