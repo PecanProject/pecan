@@ -45,3 +45,6 @@ betydump.sql
 .buildpath
 all/inst/tests/$HOME
 .Rproj.user
+
+#backup files
+*~
