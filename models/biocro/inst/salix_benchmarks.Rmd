@@ -1,0 +1,104 @@
+BioCro fitting, parameterization, and testing 
+========================================================
+
+```{r}
+require(data.table)
+require(lubridate)
+require(ggplot2)
+require(PEcAn.DB)
+load(system.file("extdata", "salix.RData", package = "BioCro"))
+settings.xml <- system.file("extdata/pecan.biocro.xml", 
+                            package = "PEcAn.BIOCRO")
+
+settings <- read.settings(settings.xml)
+# settings$database <- list(userid = "ebi_pecan", passwd = "hu2WHh32VC", database = "ebi_production", host = "ebi-forecast.igb.illinois.edu")
+
+
+```
+
+```{r}
+testsites <- unique(salix.testyield[,list(site, lat, lon, city, country)])
+
+require(PEcAn.all)
+
+betysites <- query.base('select * from sites;')
+
+
+
+for(sitei in testsites$site){
+  site <- testsites[site == sitei,]
+  lat <- site$lat
+  lon <- site$lon
+  
+  outdir <- "/home/dlebauer/inputs"
+  dir.create(path = outdir, showWarnings = FALSE)
+  start.date <- salix.testyield[site == sitei, min(year(ymd(planting_date)))]
+  end.date <- start.date + salix.testyield[site == sitei, max(stand_age)]
+  
+  nearest.site <- betysites[which.min((lat - betysites$lat)^2 + (lon - betysites$lon)^2),]
+  dxdy <- sqrt((nearest.site$lat - lat)^2 + (nearest.site$lon - lon)^2)
+  site.exists <- dxdy < 0.25
+  
+  if(site.exists){
+    site.id <- nearest.site$id
+    } else if(!site.exists) {
+      query.base(paste0("insert into sites (city, country, lat, lon) values(",
+                        vecpaste(c(site$city, site$country, lat, lon)), ");"))
+      site.id <- query.base("select max(id) from sites;")
+      }
+  
+  metfiles <- query.base(paste("select start_date, end_date, file_name, file_path ",
+                   "from inputs join dbfiles on dbfiles.file_id = inputs.file_id ",
+                   "where start_date <= '", start.date, 
+                   "' and end_date >= '", end.date, 
+                   "' and site_id =", site.id, ";", sep = ""))
+
+  if(nrow(metfiles) == 1){
+    weather <- read.csv(file.path(metfiles$file_path, metfiles$file_name), row.names = NULL)
+  } else {
+    weather <- InputForWeach(lat, lon, start.date, end.date)
+    write.csv(weather, file = file.path(outdir, "weather.csv"))
+    file.id <- 1+ max(query.base(paste0("select max(inputs.file_id), max(dbfiles.file_id) ",
+                                 " from inputs right join dbfiles on inputs.file_id = dbfiles.file_id;")))
+    query.base(paste0("insert into dbfiles (file_name, file_path, created_at, file_id) ",
+                      "values('weather.csv', '", outdir, "', now(),", file.id,");"))
+    query.base(paste0("insert into inputs ",
+                      "(notes, created_at, site_id, file_id, start_date, ",
+                      "end_date, access_level, format_id) ",
+                      "values('downloaded from NCEP', now(),", 
+                      vecpaste(c(site.id, file.id, start.date, end.date, 4, 28)), ");"))
+
+}
+}
+
+```
+
+```{r fig.width=6, fig.height=6, echo=FALSE, results='hide'}
+
+
+
+sites <- salix.yields[!is.na(lat), 
+                      list(lat = unique(lat), lon = unique(lon), n = length(lat), city, sitename), by = site_id]
+
+worldmap <- map_data("world") 
+worldplot <- ggplot(worldmap) + 
+  geom_path(aes(long, lat, group = group)) + 
+  geom_point(data = sites, aes(lon, lat, size = 2*log(n)), color = "blue") + theme_bw() + ggtitle("Sites with Salix Yield Data") +
+  geom_text(data = sites, hjust = 1, aes(lon, lat, label = paste(site_id, ifelse(is.na(city), substr(sitename, 1, 10), city))))
+
+worldplot + xlim(-90, -60) + ylim(45,60)
+worldplot + xlim(0, 30) + ylim(40,60)
+sy <- salix.yields[site_id != 0 & !is.na(date),]
+ggplot(sy, aes(ymd(date), mean)) + 
+  geom_point(aes(color = as.factor(cultivar_id))) + facet_wrap(~city)
+
+```
+
+```{r fig.width=11, fig.height=3}
+trait.summary <-  salix.traits[sort(n), 
+                      list(n = length(site_id)), 
+                               by = list(trait)]
+trait.summary2 <- trait.summary[with(trait.summary, rank(n + rank(trait)/1000)),]
+ggplot(data = trait.summary, aes(x = trait, y = n, order = n + rank(trait)/100)) + geom_point() + geom_linerange(aes(ymin = 0, ymax = n)) #+ coord_flip() + theme_bw()
+
+```

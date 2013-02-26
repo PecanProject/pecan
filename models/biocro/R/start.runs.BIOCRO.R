@@ -63,7 +63,7 @@ start.runs.BIOCRO <- function(runid) {
     query.base(paste0("insert into inputs ",
                       "(notes, created_at, site_id, file_id, start_date, ",
                       "end_date, access_level, format_id) ",
-                      "values(,'downloaded from NCEP', now(),", 
+                      "values('downloaded from NCEP', now(),", 
                       vecpaste(c(site.id, file.id, start.date, end.date, 4, 28)), ");"), con = con)
 
   }
