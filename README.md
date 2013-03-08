@@ -1,14 +1,5 @@
-PEcAn Archive
--------------
-
 Facilitating feedbacks between field measurements and ecosystem models
 ======================================================================
-
-### _Note:_ 
-
-**This is an archive**, see www.pecanproject.org to keep up with ongoing research. 
-
-This IDEALS archive provides a repository for older versions of PEcAn. Information about ongoing research is available at our website, www.pecanproject.org, where more recent versions of the software and demonstrations of the web-interface can be found. Current stable versions of the code and virtual machines can be downloaded from [NCSA](http://isda.ncsa.illinois.edu/download/index.php?project=PEcAn&sort=category), and current development code is available from [GitHub](http://github.com/PecanProject/pecan).
 
 ### Introduction
 
