@@ -1,16 +1,11 @@
-PEcAn Archive
--------------
-
 Facilitating feedbacks between field measurements and ecosystem models
 ======================================================================
 
-### _Note:_ 
+### Development and Use
 
-**This is an archive**, see www.pecanproject.org to keep up with ongoing research. 
+See the [PEcAn wiki](https://github.com/PecanProject/pecan/wiki) for documentation.
 
-This IDEALS archive provides a repository for older versions of PEcAn. Information about ongoing research is available at our website, www.pecanproject.org, where more recent versions of the software and demonstrations of the web-interface can be found. Current stable versions of the code and virtual machines can be downloaded from [NCSA](http://isda.ncsa.illinois.edu/download/index.php?project=PEcAn&sort=category), and current development code is available from [GitHub](http://github.com/PecanProject/pecan).
-
-### Introduction
+### Project Overview
 
 The Predictive Ecosystem Analyzer (PEcAn) is an integrated ecological bioinformatics toolbox (LeBauer et al, 2013) which consists of: 1) a scientific workflow system to manage the immense amounts of publicly-available environmental data and 2) a Bayesian data assimilation system to synthesize this information within state-of-the-art ecosystems models. This project is motivated by the fact that many of the most pressing questions about global change are not necessarily limited by the need to collect new data as much as by our ability to synthesize existing data. This project seeks to improve this ability by developing a framework for integrating multiple data sources in a sensible manner.
 
