@@ -1,0 +1,51 @@
+Map
+========================================================
+
+```{r}
+require(raster)
+require(sp)
+require(ggplot2)
+require(RCurl)
+tmp <- getURL("https://gist.github.com/geophtwombly/4635980/raw/f657dcdfab7b951c7b8b921b3a109c7df1697eb8/test.csv")
+testdf <- read.csv(textConnection(tmp))
+spdf <- SpatialPointsDataFrame( data.frame( x = testdf$y , y = testdf$x ) , data = data.frame( z = testdf$z ) )
+
+# Plotting the points reveals the unevenly spaced nature of the points
+spplot(spdf)
+
+```
+
+
+```{r fig.width=7, fig.height=6}
+
+# Make an evenly spaced raster, the same extent as original data
+e <- extent( spdf )
+
+# Determine ratio between x and y dimensions
+ratio <- ( e@xmax - e@xmin ) / ( e@ymax - e@ymin )
+
+# Create template raster to sample to
+r <- raster( nrows = 56 , ncols = floor( 56 * ratio ) , ext = extent(spdf) )
+rf <- rasterize( spdf , r , field = "z" , fun = mean )
+
+# Attributes of our new raster (# cells quite close to original data)
+rf
+
+# We can then plot this using `geom_tile()` or `geom_raster()`
+rdf <- data.frame( rasterToPoints( rf ) )    
+ggplot( NULL ) + geom_raster( data = rdf , aes( x , y , fill = layer ) )
+
+
+```
+
+```{r}
+# from http://gis.stackexchange.com/a/20052/3218
+require(rgdal)
+proj4string(spdf) <- CRS("+init=epsg:4326")
+pts <- spTransform(spdf ,CRS("+proj=lcc +lat_1=53.83333333333334 +lat_2=51.83333333333334 +lat_0=51 +lon_0=-176 +x_0=1000000 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"))
+gridded(spdf) <- TRUE
+
+p2g <- points2grid(spdf, tolerance = 0.95)
+
+r <- raster(p2g)
+plot(p2g)
