@@ -7,6 +7,6 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 library(testthat)
-library(visualization)
+library(PEcAn.visualization)
 
-#test_package("foo")
+test_package("PEcAn.visualization")
