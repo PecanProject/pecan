@@ -33,6 +33,7 @@
 read.output <- function(run.id, outdir, start.year=NA,
                         end.year=NA, variables = "GPP", model = NULL) {
   if(is.null(model)) model <- settings$model$name
+  do.call(require, list(paste0("PEcAn.", model)))
   model2nc <- paste("model2netcdf", model, sep=".")
   if(!exists(model2nc)){
     logger.warn("File conversion function model2netcdf does not exist for", model)
@@ -45,7 +46,9 @@ read.output <- function(run.id, outdir, start.year=NA,
   
   ## Always call conversion to dangerous,
   ## should do check in conversion code since it knows what gets converted.
-  do.call(model2nc, list(outdir))
+  if(tryl(do.call(model2nc, list(outdir)))){
+    do.call(model2nc, list(outdir))    
+  }
   print(paste("Output from run", run.id, "has been converted to netCDF"))
   ncfiles <- list.files(path=outdir, pattern="\\.nc$", full.names=TRUE)
   if(length(ncfiles) == 0){
