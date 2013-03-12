@@ -13,4 +13,4 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Collate:
-    ''
+    'taylor.plot.R'
