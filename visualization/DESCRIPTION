@@ -18,7 +18,11 @@ Depends:
     scales,
     ggmap,
     RCurl,
-    maps
+    maps,
+    raster,
+    sp,
+    ggplot2,
+    scales
 Suggests:
     testthat
 License: FreeBSD + file LICENSE

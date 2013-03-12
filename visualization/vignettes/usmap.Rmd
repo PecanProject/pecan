@@ -26,7 +26,7 @@ ratio <- ( e@xmax - e@xmin ) / ( e@ymax - e@ymin )
 
 # Create template raster to sample to
 r <- raster( nrows = 56 , ncols = floor( 56 * ratio ) , ext = extent(spdf) )
-rf <- rasterize( spdf , r , field = "z" , fun = mean )
+rf <- rasterize( spdf , r , field = "" z, fun = mean )
 
 # Attributes of our new raster (# cells quite close to original data)
 rf
@@ -42,7 +42,7 @@ ggplot( NULL ) + geom_raster( data = rdf , aes( x , y , fill = layer ) )
 # from http://gis.stackexchange.com/a/20052/3218
 require(rgdal)
 proj4string(spdf) <- CRS("+init=epsg:4326")
-pts <- spTransform(spdf ,CRS("+proj=lcc +lat_1=53.83333333333334 +lat_2=51.83333333333334 +lat_0=51 +lon_0=-176 +x_0=1000000 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"))
+pts <- spTransform(spdf ,CRS("+proj=longlat +datum=WGS84"))
 gridded(spdf) <- TRUE
 
 p2g <- points2grid(spdf, tolerance = 0.95)
