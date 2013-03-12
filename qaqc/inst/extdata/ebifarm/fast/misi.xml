@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<pecan>
+  <pfts>
+    <pft>
+      <name>ebifarm.misp</name>
+      <outdir>~/out/</outdir>
+    </pft>
+  </pfts>
+  
+  <meta.analysis>
+    <iter>10000</iter>
+    <random.effects>TRUE</random.effects>
+  </meta.analysis>
+        
+  <pecanDir>~/pecan/</pecanDir>
+  <outdir>~/out/ebifarm/fast/</outdir>
+  <database>
+    <userid>ebi_analys_user</userid>
+    <passwd>b742xsAu</passwd>
+    <location>ebi-forecast</location>
+    <name>ebi_analysis</name>
+  </database>
+</pecan>
