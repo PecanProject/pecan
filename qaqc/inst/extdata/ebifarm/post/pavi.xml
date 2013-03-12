@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<pecan>
+  <pfts>
+    <pft>
+      <name>ebifarm.pavi</name>
+      <outdir>/home/dlebauer/out/ebifarm/post/</outdir>
+      <edin>/home/dlebauer/in/ebifarm/ed2in-template-pavi</edin>
+      <constants>
+        <num>15</num>
+        <phenology>2</phenology>
+        <max_dbh>0.78</max_dbh>
+        <hgt_min>2.0</hgt_min>
+        <dark_respiration_factor>0.015</dark_respiration_factor>
+        <qsw>0.0</qsw>
+        <mort1>1.0</mort1>
+        <plant_min_temp>-100</plant_min_temp>
+        <storage_turnover_rate>0</storage_turnover_rate>
+      </constants>
+    </pft>
+  </pfts>
+  
+  <config.header>
+    <radiation>
+      <lai_min>0.05</lai_min>
+    </radiation>
+    <ed_misc>
+      <output_month>12</output_month>      
+    </ed_misc> 
+  </config.header>
+  
+  <meta.analysis>
+    <iter>50000</iter>
+    <random.effects>TRUE</random.effects>
+  </meta.analysis>
+  
+  <ensemble>
+    <size>500</size>
+  </ensemble>
+  
+  <sensitivity.analysis>
+    <quantiles>
+      <quantile></quantile>
+      <sigma>-3</sigma>
+      <sigma>-2</sigma>
+      <sigma>-1</sigma>
+      <sigma>1</sigma>
+      <sigma>2</sigma>
+      <sigma>3</sigma>
+    </quantiles>
+    <start.year>2004</start.year>
+    <end.year>2006</end.year>
+  </sensitivity.analysis>
+      
+  <pecanDir>/home/dlebauer/pecan/</pecanDir>
+  <outdir>/home/dlebauer/out/ebifarm/post/</outdir>
+  <database>
+    <userid>ebi_analys_user</userid>
+    <passwd>b742xsAu</passwd>
+    <location>ebi-forecast.igb.uiuc.edu</location>
+    <name>ebi_analysis</name>
+  </database>
+  <run>
+    <site>
+      <name>EBI Energy Farm - Switchgrass</name>
+      <lat></lat>
+      <lon></lon>
+      <met.data.header></met.data.header>
+    </site>
+    <start.date>1996/01/01</start.date>
+    <end.date>2006/12/31</end.date>
+    <host>
+      <name>dlebauer@ebi-cluster.igb.uiuc.edu</name>
+      <rundir>/home/dlebauer/EDBRAMS/ED/run/</rundir>
+      <inputs>/home/scratch/dlebauer/edin/</inputs>
+      <outdir>/home/scratch/dlebauer/out/ebifarm/post/</outdir>
+    </host>
+    <priority>-1</priority>
+  </run>
+</pecan>
