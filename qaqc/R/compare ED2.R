@@ -1,8 +1,0 @@
-library(ncdf4)
-library(PEcAn.utils)
-ed2.2008 <- nc_open ('../output/PEcAn_9/out/9/2004.nc');
-xx <- nc_open ('../output/PEcAn_1/out/1/2004.nc')
-read.output(run.id=1, outdir='../output/PEcAn_1/out/1',
-            start.year=2004, end.year=2009,
-            variables="GPP",
-            model="SIPNET")
