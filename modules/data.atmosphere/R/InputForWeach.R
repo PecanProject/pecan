@@ -159,8 +159,7 @@ ncep.gather2 <- function (variable, level = "gaussian",
                                                0, 360 + lon.westeast[length(lon.westeast)], lon.westeast[length(lon.westeast)])
   if (lon.westeast[1] > lon.westeast[length(lon.westeast)]) {
     cross.prime <- TRUE
-  }
-  else {
+  }  else {
     cross.prime <- FALSE
   }
   tlength <- NULL
