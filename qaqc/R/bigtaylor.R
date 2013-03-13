@@ -31,6 +31,6 @@ new.taylor <- function(dataset,runid,siteid){
         text(sd.f * R, sd.f * sin(acos(R)), labels=lab,pos=3)
       }
     }
-    }
-
+  }
+  
 }
