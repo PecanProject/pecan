@@ -14,6 +14,7 @@
 # CREATE INDEX plot_cn on fia5data.PLOT (CN);
 
 library(XML)
+library(PEcAn.utils)
 library(PEcAn.DB)
 
 fia.database <- "fia5data"
@@ -83,21 +84,28 @@ fia.to.psscss <- function(settings) {
 		}
 	}
 	pfts <- query.base(query, con)
+	
 	for (pft in settings$pfts) {
 		pfts[pfts==pft$name] <- pft$constants$num
 	}
 	
-	### check for duplicate spcd
-	bad <- nrow(subset(pfts, spcd %in% c(NA, "0")))
-	if (bad > 0) {
-		print(sprintf("WARNING : There are %d entries with no SPCD (NA or 0)", bad))
-		pfts <- subset(pfts, !(spcd %in% c(NA, "0")))
+	
+	## Check for NA and duplicate spcds in PFTs
+	bad <- length(pfts$spcd %in% c(NA, "0"))		
+	if (bad > 0) {	
+		logger.warn(sprintf("There are %d entries with no SPCD (NA or 0). They have been removed.", bad))
+		pfts <- pfts[!pfts$spcd %in% c(NA, 0), ]	   
 	}
 	
 	bad <- pfts$spcd[duplicated(pfts$spcd)]
 	if (length(bad) > 0) {
-		print(sprintf("ERROR	 : There are %d spcd entries that are duplicated", nrows(bad)))
-		print(bad)
+		over.ten <- ifelse(length(bad) > 10, paste(", and ", length(bad) - 10, " more.", sep=""), ".")		# format the "and x more." bit if >10 bad species
+		
+		#Coerce spcds back into species names using data from FIA manual. Makes a more readable warning.
+		symbol.table <- query.base("SELECT spcd, symbol FROM bety.species where spcd IS NOT NULL", con)
+		name.list <- na.omit(symbol.table$symbol[symbol.table$spcd %in% bad]) 							# grab the names where we have bad spcds in the symbol.table, exclude NAs
+		logger.error(paste("\nThe following species are found in multiple PFTs: \n", paste(name.list[1:min(10,length(name.list))], collapse=", "), over.ten, "\n\tPlease remove overlapping PFTs.", sep=""))
+		stop("Execution stopped due to duplicate species.")												#Using stop naturally causes an error with the tests - comment stops out for testing.
 	}
 	
 	### select just most current
@@ -128,6 +136,7 @@ fia.to.psscss <- function(settings) {
 		lonmax = max(lon)
 	}
 	n.poi = length(latmin)
+	
 	
 	for(r in 1:n.poi) {
 		##################
@@ -184,7 +193,6 @@ fia.to.psscss <- function(settings) {
 		##     CSS      ##
 		##              ##
 		##################
-		## query to get CSS info
 		query <- paste("SELECT p.measyear as time,p.cycle,p.statecd,p.cn as patch, CONCAT(CAST(t.subp AS CHAR),CAST(t.tree AS CHAR)) as cohort,t.dia*2.54 as dbh, t.spcd as spcd, t.tpa_unadj*0.0002471 as n FROM ",
 				fia.database, ".PLOT as p LEFT JOIN ",fia.database, ".TREE as t on p.cn=t.plt_cn WHERE p.lon >= ",lonmin[r]," and p.lon < ",lonmax[r],
 				" and p.lat >= ",latmin[r]," and p.lat < ",latmax[r],sep='')
@@ -197,6 +205,42 @@ fia.to.psscss <- function(settings) {
 			css <- css[-notree,]
 		}
 		
+		
+		## Consistency tests between PFTs and FIA begin here - done inside loop in case of multiple areas
+		fia.species <-unique(css$spcd)
+		
+		## check for species in PFTs which the FIA db doesn't expect
+		pft.ind <- which(!pfts$spcd %in% fia.species)										#vect shows pft's spcds that are confirmed by fia
+		pft.only <- pfts$spcd[pft.ind]														#what were the spcds at those indices? 
+		
+		if(length(pft.only) > 0){								
+			over.ten <- ifelse(length(pft.only) > 10, paste(", and ", length(pft.only) - 10, " more.", sep=""), ".")
+			
+			if(!exists("symbol.table")){
+				symbol.table <- query.base("SELECT spcd, symbol FROM bety.species where spcd IS NOT NULL", con)
+			}
+			name.list <- na.omit(symbol.table$symbol[symbol.table$spcd %in% pft.only]) 
+			logger.warn(paste("\nThe selected PFTs contain the following species for which the FIA database contains no data at ", latmin[r], "N, ", latmax[r], "W: \n", paste(name.list[1:min(10,length(name.list))], collapse=", "), over.ten, "\n\tThese will be populated with zero values in the output.", sep=""))	
+		} 
+		
+		## check for species expected by FIA which the PFTs don't cover
+		fia.ind <- which(!fia.species %in% pfts$spcd)	
+		fia.only <- fia.species[fia.ind]						
+		
+		if(length(fia.only) > 0){									
+			over.ten <- ifelse(length(fia.only) > 10, paste(", and ", length(fia.only) - 10, " more.", sep=""), ".")
+			
+			if(!exists("symbol.table")){
+				symbol.table <- query.base("SELECT spcd, symbol FROM bety.species where spcd IS NOT NULL", con)
+			}
+			name.list <- na.omit(symbol.table$symbol[symbol.table$spcd %in% fia.only])  
+			logger.error(paste("\nThe FIA database expects the following species at ", latmin[r], "N, ", latmax[r], "W, but they are not described by the selected PFTs: \n", 
+							paste(name.list[1:min(10,length(name.list))], collapse=", "), over.ten, "\n\tPlease select additional pfts.", sep="")) 
+			stop("Execution stopped due to insufficient PFTs.")
+		}
+		
+		
+		# Continue work formatting css now that we've checked for species problems
 		if(nrow(css) > 0){
 			css$time[is.na(css$time)] <- 1
 			css$cohort[is.na(css$cohort)] <- 1:sum(is.na(css$cohort))
@@ -230,4 +274,3 @@ fia.to.psscss <- function(settings) {
 		}
 	}	## end loop over n.poi
 }
-
