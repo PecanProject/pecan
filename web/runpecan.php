@@ -39,8 +39,8 @@ if (!isset($_REQUEST['pft'])) {
 	die("Need a pft.");
 }
 $pft=$_REQUEST['pft'];
-$advanced_edit=(isset($_REQUEST['advanced_edit']) && ($_REQUEST['advanced_edit'] == 'on'));
 
+$advanced_edit=(isset($_REQUEST['advanced_edit']) && ($_REQUEST['advanced_edit'] != FALSE)); 
 
 # specific for each model type
 if ($modeltype == "ED2") {
@@ -56,6 +56,7 @@ if ($modeltype == "ED2") {
 		die("Need a weather file.");
 	}
 	$met=$_REQUEST['met'];	
+	$met_pass=$met; //met will be overwritten in a few lines but this version is needed to pass to datewarning
     $query="SELECT file_path, file_name, start_date, end_date FROM inputs, dbfiles, machines WHERE inputs.site_id=${siteid} AND inputs.file_id=${met} AND dbfiles.file_id=${met} AND machines.hostname='${hostname}' AND dbfiles.machine_id=machines.id;";
     $result = mysql_query($query);
     if (!$result) {
@@ -65,10 +66,28 @@ if ($modeltype == "ED2") {
     $met=$row['file_path'] . DIRECTORY_SEPARATOR . $row['file_name'];
     $metstart=$row['start_date'];
     $metend=$row['end_date'];
+
+
 	if (!isset($_REQUEST['psscss'])) {
 		die("Need a psscss.");
 	}
 	$psscss=$_REQUEST['psscss'];
+
+//Now that we've grabbed all options, detour to check input dates to make sure they agree with the dates from the weather data - jump to datewarning if not
+    if (!isset($_REQUEST['user_ok']) && ($startdate < $metstart || $enddate > $metend)) {  //if user_ok not set or doesn't exist, then we either came from selectdata or user elected to return from datewarning
+    	$redir_string = "Location: datewarning.php?start=$startdate&end=$enddate&siteid=$siteid&modelid=$modelid&modeltype=$modeltype&hostname=$hostname&advanced_edit=$advanced_edit&met=$met_pass&psscss=$psscss";
+
+    	if($offline) {
+  			$redir_string .= "offline=$offline";
+  		}
+
+  		foreach ($pft as $pft_elem) {
+  			$redir_string .= ("&pft[]=" . $pft_elem);
+  		}
+  		header($redir_string);
+  		exit();
+	}
+	
 	if($psscss != "FIA") {
 	    $query="SELECT file_path, file_name FROM inputs, dbfiles, machines WHERE inputs.site_id=${siteid} AND inputs.file_id=${psscss} AND dbfiles.file_id=${psscss} AND machines.hostname='${hostname}' AND dbfiles.machine_id=machines.id;";
 	    $result = mysql_query($query);
@@ -79,6 +98,7 @@ if ($modeltype == "ED2") {
 	    #$psscss=$row['file_path'] . DIRECTORY_SEPARATOR . $row['file_name'];
 	    $psscss=substr($row['file_path'], 0, strlen($row['file_path']) - 4);
 	}
+
 } else if ($modeltype == "SIPNET") {
     if (!isset($_REQUEST['met'])) {
         die("Need a weather file.");
@@ -128,7 +148,6 @@ if (mysql_query("INSERT INTO workflows (site_id, model_id, hostname, start_date,
 	die('Can\'t insert workflow : ' . mysql_error());
 }
 $workflowid=mysql_insert_id();
-
 # folders
 $folder = $output_folder . DIRECTORY_SEPARATOR . 'PEcAn_' . $workflowid;
 if (mysql_query("UPDATE workflows SET folder='${folder}' WHERE id=${workflowid}") === FALSE) {
