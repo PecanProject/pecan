@@ -8,28 +8,47 @@
 ##' @author David LeBauer
 ##' @export
 ##' @examples
-##' pecan.worldmap(infile = "https://www.betydb.org/miscanthusyield.csv",
+##' pecan.worldmap(infile = system.file("extdata/miscanthusyield.csv",
+##'                                      package = "PEcAn.visualization"),
 ##'                outfile = file.path(tempdir(), 'worldmap.png'))
 pecan.worldmap <- function(infile, outfile = "worldmap.png"){
-  require(RCurl)
-  require(ggmap)
+
   ### map of yields
-  library(scales)
   world <- map_data("world")
+  states <- map_data("state")
   if(grepl('https', infile)){
     file.url <- getURL(infile, ssl.verifypeer = FALSE)
     infile <- textConnection(file.url)
   }
-  df <- read.csv(infile)
-  var <-   colnames(df)[!colnames(df) %in% c("X", "lat", "lon")]
-  colnames(df)[!colnames(df) %in% c("X", "lat", "lon")] <- "var"
-  p <- ggplot(df) +
-    geom_point(aes(x = lon, y = lat, color = var), size = 2, shape = 15) + 
-    coord_equal(ratio=1/cos(mean(df$lat)*pi/180)) +
-    scale_colour_gradientn(colours = colorRampPalette(c("darkblue", "wheat", "darkred"))(20)) + 
-    geom_polygon(data=world[world$region != "USA",], aes(x=long, y=lat, group = group), 
+  rawdf <- read.csv(infile)
+  var <-   colnames(rawdf)[!colnames(df) %in% c("X", "lat", "lon")]
+  colnames(rawdf)[!colnames(rawdf) %in% c("X", "lat", "lon")] <- "var"
+  
+  ## from http://stackoverflow.com/a/15351169/513006
+  spdf <- SpatialPointsDataFrame(data.frame(x = rawdf$lon, y = rawdf$lat),
+                                 data = data.frame(z = rawdf$var))
+  
+  
+  e <- extent(spdf)  
+  # Determine ratio between x and y dimensions
+  ratio <- (e@xmax - e@xmin) / (e@ymax - e@ymin)
+  
+  # Create template raster to sample to
+  r <- raster( nrows = 56 , ncols = floor( 56 * ratio ) , ext = extent(spdf) )
+  rf <- rasterize( spdf , r , field = "z", fun = mean )
+  
+  # We can then plot this using `geom_tile()` or `geom_raster()`
+  rdf <- data.frame( rasterToPoints( rf ) )    
+  
+  p <-  ggplot() + 
+    geom_polygon(data = world, 
+                 aes(x=long, y=lat, group = group), 
                  colour="grey", fill="white") +
-                   xlab("Longitude") + ylab("Latitude") + ggtitle(var)
+    geom_raster(data = rdf, aes(x, y, fill = layer)) +
+    xlab("Longitude") + ylab("Latitude") + ggtitle(var) +
+    scale_fill_gradientn(colours = colorRampPalette(c("darkblue", "wheat", "darkred"))(20)) 
+  
+  
   ggsave(filename = outfile, plot = p, width = 44, height = 34, units="in", dpi = 100)
   
 }

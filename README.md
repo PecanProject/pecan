@@ -28,9 +28,14 @@ This material is based upon work supported by the Energy Biosciences Institute a
 
 BETY-db is a product of the Energy Biosciences Institute at the University of Illinois at Urbana-Champaign. We gratefully acknowledge the great effort of other researchers who generously made their own data available for further study.
 
+### PEcAn Publications
+
+* LeBauer, D.S., D. Wang, K. Richter, C. Davidson, & M.C. Dietze. (2013). Facilitating feedbacks between field measurements and ecosystem models. Ecological Monographs. [doi:10.1890/12-0137.1](http://dx.doi.org/10.1890/12-0137.1)
+* Wang, D, D.S. LeBauer, and M.C. Dietze(2013) Predicting yields of short-rotation hybrid poplar (Populus spp.) for the contiguous US through model-data synthesis. Ecological Applications [doi:10.1890/12-0854.1](http://dx.doi.org/10.1890/12-0854.1)
+* Dietze, M.C., D.S LeBauer, R. Kooper (2013) On improving the communication between models and data. Plant, Cell, & Environment [doi:10.1111/pce.12043](http://dx.doi.org/10.1111/pce.12043)
+
 ### References
 
-*    LeBauer, D., Wang, D., Richter, K., Davidson, C., & Dietze, M. C. (2012). Facilitating feedbacks between field measurements and ecosystem models. Ecological Monographs.
 *    Medvigy, D., S. C. Wofsy, J. W. Munger, D. Y. Hollinger, and P. R. Moorcroft. 2009. "Mechanistic scaling of ecosystem function and dynamics in space and time: Ecosystem Demography model version 2". Journal of Geophysical Research 114:121.
 *    LeBauer, D., D. Wang, M. Dietze, 2010. "Biofuel Ecophysiological Traits and Yields Database Version 1.0.", Energy Biosciences Institute, Urbana, IL
 *    Miguez, F. E., Maughan, M., Bollero, G. A., & Long, S. P. (2012). Modeling spatial and dynamic variation in growth, yield, and yield stability of the bioenergy crops Miscanthus x giganteus and Panicum virgatum across the conterminous United States. GCB Bioenergy.

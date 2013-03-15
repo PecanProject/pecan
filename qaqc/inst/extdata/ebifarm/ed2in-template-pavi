@@ -1,0 +1,493 @@
+&ED_NL
+!------------------------------------------------------------------------------------------!
+! ED2IN template for use with PECAn
+!------------------------------------------------------------------------------------------!
+
+   NL%EXPNME = 'ED 2.1 PECAn run PAVI2 Soy FACE ENSNAME'   ! Simulation name
+
+   NL%RUNTYPE  = 'INITIAL'   ! Runtype: either INITIAL or HISTORY
+                             ! 'INITIAL' - Starts a new run, that can be based on a previous
+                             !             run (restart/history), but then it will use.
+                             !             the information as a simple initial condition
+                             ! 'HISTORY' - Resumes a simulation from the last history.
+                             !             This is different from initial in the sense that
+                             !             exactly the same information written in the 
+                             !             history will be used here.
+
+!----- Start of simulation (RUNTYPE=initial only) -----------------------------------------!
+   NL%IMONTHA  = START_MONTH      ! Month
+   NL%IDATEA   = START_DAY        ! Day
+   NL%IYEARA   = START_YEAR       ! 
+   NL%ITIMEA   = 0000      ! UTC
+
+!----- End of simulation ------------------------------------------------------------------!
+
+   NL%IMONTHZ  = END_MONTH       ! Month
+   NL%IDATEZ   = END_DAY         ! Day
+   NL%IYEARZ   = END_YEAR        ! Year
+   NL%ITIMEZ   = 0000     ! UTC
+!------------------------------------------------------------------------------------------!
+
+
+
+!------------------------------------------------------------------------------------------!
+! Main time step parameters                                                                !
+!------------------------------------------------------------------------------------------!
+
+   NL%DTLSM  = 60.      ! Basic time step [s].  In the Euler scheme, this
+                         ! is the length of the Euler time step.  Recommended
+                         ! values are between 60-180.  In the Runge Kutta
+                         ! scheme, this is the time between photosynthesis
+                         ! updates.  Recommended value is 900.
+
+   NL%RADFRQ  = 60.     ! Frequency at which to update radiation. [s]
+!------------------------------------------------------------------------------------------!
+
+
+ 
+!------------------------------------------------------------------------------------------!
+! Specify the grid cells for which you want to run ED.                                     !
+!------------------------------------------------------------------------------------------!
+
+!---- ED Region dimensions ----------------------------------------------------------------!
+   NL%N_ED_REGION   =  0  ! number of regions for which you want to run ED. 
+                          ! This can be zero provided that N_SOI is not...
+                          
+   NL%GRID_TYPE     =  0  !  0 corresponds to a lat/lon grid.  
+                          !  1 corresponds to the polar-stereographic
+                          !    In the future, we will also have polygons.
+
+!----- For ED_regions using Lat/Lon grid only: --------------------------------------------!
+   NL%GRID_RES      =  1.0          ! This is the grid resolution scale in degrees. [\*/]
+                                    !
+   NL%ED_REG_LATMIN  =  -90 ! List of minimum latitudes;
+   NL%ED_REG_LATMAX  =  90 ! List of maximum latitudes;
+   NL%ED_REG_LONMIN  =  -180 ! List of minimum longitudes;
+   NL%ED_REG_LONMAX  =  180 ! List of maximum latitudes;
+
+!----- For Polar-stereographic, need to define the following variables instead: -----------!
+   NL%NNXP = 110                  ! Number of points in the X direction
+   NL%NNYP = 70                   ! Number of points in the Y direction
+                                  !
+   NL%DELTAX   = 60000.           ! X and Y grid spacing scale  [\*/]
+   NL%DELTAY   = 60000.           ! in metres (dimension 1)     [\*/]
+                                  !
+   NL%POLELAT  = -15.60            ! Latitude of pole point   (dimension 1)
+   NL%POLELON  = -56.10           ! Longitude of pole point  (dimension 1)
+                                  !
+   NL%CENTLAT  = -15.60          ! Latitude of central point  (n_ed_regions)
+   NL%CENTLON  = -56.10          ! Longitude of central point (n_ed_regions)
+
+!----- For both kinds of region
+   NL%NSTRATX = 1,4 ! Fraction of the sizes given above that I should use for these
+   NL%NSTRATY = 1,4 ! regions. The variables affected are denoted by [\*/]
+
+!----- You can pinpoint individual locations, known as SOI. -------------------------------!
+   NL%N_SOI    =    1   ! number of sites of interest (SOIs).  This could be zero.
+                
+   NL%SOI_LAT  =  40.06 ! list of the latitudes of the SOIs (degrees north)
+   NL%SOI_LON  = -88.20 ! list of the longitudes of the SOIs (degrees east)
+!------------------------------------------------------------------------------------------!
+
+!------------------------------------------------------------------------------------------!
+! Analysis/history file output                                                             !
+!------------------------------------------------------------------------------------------!
+ 
+   NL%IFOUTPUT  =  0            ! Instantaneous analysis (site average)
+   NL%IDOUTPUT  =  0            ! Daily means (site average)
+   NL%IMOUTPUT  =  0            ! Monthly means (site average)
+   NL%IYOUTPUT  =  3            ! Annual output
+   NL%ISOUTPUT  =  0            ! History files
+                                ! 0 - no file;
+                                ! 1 - save ascii (deprecated);
+                                ! 2 - save RAMS-vfm file (deprecated);
+                                ! 3 - save HDF5;
+				! Note: Performance gains may be significant when
+				! (IFOUTPUT and IDOUTPUT and IMOUTPUT) = 0
+   
+   NL%ITOUTPUT  =  0            ! Instantaneous fluxes (site average)
+                                ! single annual file, no patch/cohort, for optimization or 
+                                !     flux tower comparision 
+
+   NL%ATTACH_METADATA = 0       ! Flag for attaching metadata to HDF datasets
+	                        ! Attaching metadata will aid new users
+	                        ! in quickly identifying dataset descriptions
+	                        ! but will compromise I/O performance significantly
+        	                ! 0 = no metadata, 1 = yes metadata
+
+   NL%UNITFAST   = 0             ! Units for FRQFAST/OUTFAST
+   NL%UNITSTATE  = 3             ! Units for FRQSTATE/OUTSTATE
+                                 ! 0 - Seconds;
+                                 ! 1 - Days;
+                                 ! 2 - Calendar months (variable)
+                                 ! 3 - Calendar years  (variable)
+                                 ! PS: If OUTFAST/OUTSTATE are set to special flags
+                                 !     (-1 or -2) unitfast/unitstate will be ignored for
+                                 !     them
+
+   NL%OUTFAST    = 0		! Time interval between analysis files
+   NL%OUTSTATE   = 0		! Time interval between history files
+				! Values are in seconds and must be <= 1 month
+				! Values < FRQFAST/FRQSTATE are set to those values
+				! Special values: -1 = daily; -2 = monthly
+
+   NL%ICLOBBER  = 1             ! 0 = stop if files exist, 1 = overwite files
+   NL%FRQFAST   = 21600.        ! Time interval between analysis/history files
+   NL%FRQSTATE  = 1.            ! Time interval between history files
+!------------------------------------------------------------------------------------------!
+
+
+
+!------------------------------------------------------------------------------------------!
+! Analysis/history/restart file: path, prefix, settings                                    !
+!------------------------------------------------------------------------------------------!
+   NL%FFILOUT = '/scratch/OUTFILE'         ! Analysis output prefix
+   NL%SFILOUT   = 'OUTDIR/HISTFILE'           ! History output prefix
+
+   NL%IED_INIT_MODE   = 0
+   !---------------------------------------------------------------------------------------!
+   ! IED_INIT_MODE determines how the ecosystem should be initialized.                     !
+   ! 0 - Start from near-bare ground (only a few seedling from every PFT included in this  !
+   !     run).                                                                             !
+   ! 1 - This will use history files from ED-1.0 to initialise the ecosystem state (like   !
+   !     biomass, LAI, plant density, etc.), but starting the thermodynamic state as a     !
+   !     new simulation.                                                                   !
+   ! 2 - Same as 1, but using history files from ED-2.0 without multiple sites.            !
+   ! 3 - Same as 1, but using history files from ED-2.0 with multiple sites.               !
+   ! 4 - Same as 1, but using ED2.1 H5 history/state files that take the form:             !
+   !     'dir/prefix-gxx.h5'                                                               !
+   !     Initialization files MUST end with -gxx.h5 where xx is a two digit integer grid   !
+   !     number.  Each grid has its own initialization file.  As an example, if a user has !
+   !     two files to initialize their grids with:                                         !
+   !     example_file_init-g01.h5 and example_file_init-g02.h5                             !
+   !     NL%SFILIN = 'example_file_init'                                                   !
+   !                                                                                       !
+   ! 5 - This is similar to option 4, except that you may provide several files (including !
+   !     a mix of regional and POI runs, each file ending at a different date).  This will !
+   !     not check date nor grid structure, it will simply read all polygons and match the !
+   !     nearest neighbour to each polygon of your run.  SFILIN must have the directory    !
+   !     common to all history files that are sought to be used, up to the last character  !
+   !     the files have in common.  For example if your files are                          !
+   !     /mypath/P0001-S-2000-01-01-000000-g01.h5,                                         !
+   !     /mypath/P0002-S-1966-01-01-000000-g02.h5,                                         !
+   !     ...                                                                               !
+   !     /mypath/P1000-S-1687-01-01-000000-g01.h5:                                         !
+   !     NL%SFILIN = '/mypath/P'                                                           !
+   !                                                                                       !
+   ! -1 - use a mix of ED-1 and ED-2 files. This should                                    !
+   !      be avoided by all means, unless you are                                          !
+   !      absolute sure of what you're doing;                                              !
+   !---------------------------------------------------------------------------------------!
+                         
+   NL%EDRES  = 1.0                     ! ED2/ED1 restart grid resolution
+
+    NL%SFILIN   = '/home/scratch/dlebauer/pecan/edin/ebifarm/ebifarm.'
+
+!----- Time of the history start ----------------------------------------------------------!
+  !planting 2002
+   NL%ITIMEH   = 0000     ! UTC
+   NL%IDATEH   = 1       ! Day
+   NL%IMONTHH  = 01        ! Month
+   NL%IYEARH   = 2002     ! Year
+!------------------------------------------------------------------------------------------!
+
+
+
+!------------------------------------------------------------------------------------------!
+!  Soil/Surface water variables                                                            !
+!------------------------------------------------------------------------------------------!
+
+   NL%NZG = 9     ! Number of soil layers
+   NL%NZS = 4     ! Maximum number of snowcover layers
+
+   NL%ISOILFLG = 2      ! Options are: 1. Read from LAT/LON
+                        !              2. Constant default soil
+                        ! This variable must be defined for all grids. The order is
+                        ! all ED regions first followed by ED SOIs. 
+   
+   NL%NSLCON   = 2      ! Default soil type if ISOILFLG = 2 (choices below:)
+   !-----------------------------------------------------------------------!
+   ! ED Soil classes:                                                      !
+   !-----------------------------------------------------------------------!
+   !   1 -- sand            |  2 -- loamy sand    |  3 -- sandy loam       !
+   !   4 -- silt loam       |  5 -- loam          |  6 -- sandy clay loam  !
+   !   7 -- silty clay loam |  8 -- clay loam     |  9 -- sandy clay       !
+   !  10 -- silty clay      | 11 -- clay          | 12 -- peat             !
+   !-----------------------------------------------------------------------!
+
+   !---------------------------------------------------------------------------------------!
+   !    Prescribed fraction of clay and sand.  This is used only when ISOIFLG is set to 2, !
+   ! and slxclay and slxsand are defined between 0 and 1, with the sum of these variables  !
+   ! not exceeding 1.  Otherwise, the default ED parameters will be used.                  !
+   !---------------------------------------------------------------------------------------!
+   !NL%SLXCLAY = 0.170, 0.188, 0.298, 0.310, 0.310, 0.306, 0.300, 0.300, 0.300
+   !NL%SLXSAND = 0.560, 0.497, 0.121, 0.081, 0.081, 0.081, 0.081, 0.081, 0.081
+
+!----- Depth (m) of bottom of soil model grid levels --------------------------------------!
+   NL%SLZ     = -2.17, -1.50, -1.10, -0.80, -0.60, -0.45, -0.30, -0.20, -0.12, -0.06
+!----- Initial soil moisture (fraction of saturation) -------------------------------------!
+   NL%SLMSTR  =  0.60,  0.60,  0.60, 0.60,  0.60,  0.60,  0.60,  0.60,  0.60
+!----- Initial soil temperature offset (with respect to the atmospheric temperature) ------!
+   NL%STGOFF  =   0.0,   0.0,   0.0, 0.0,   0.0,   0.0,   0.0,   0.0,   0.0
+!------------------------------------------------------------------------------------------!
+
+
+
+!------------------------------------------------------------------------------------------!
+!  Input databases                                                                         !
+!------------------------------------------------------------------------------------------!
+
+   NL%VEG_DATABASE = '/home/mdietze/data/oge2OLD/OGE2_'
+   NL%SOIL_DATABASE = '/home/share/faoOLD/FAO_'
+   NL%ED_INPUTS_DIR   = '/home/share/dietze_lab/ed_db/ed_inputs/'
+                    ! Directory where chd, dgd and glu data are kept.
+
+!----- File containing information for meteorological drivers -----------------------------!
+   NL%ED_MET_DRIVER_DB   = '/home/scratch/dlebauer/pecan/edin/ebifarm/met/ED_MET_DRIVER_HEADER'
+
+
+   NL%SOILSTATE_DB=''
+   NL%SOILDEPTH_DB=''
+
+   NL%ISOILSTATEINIT = 0  ! 0 -- use slmstr
+                          ! 1 -- read from file
+
+   NL%ISOILDEPTHFLG  = 0  ! 0 -- use NZG, SLZ for each grid cell
+                          ! 1 -- read file to get soil depth for each grid cell
+
+   NL%ISOILBC        = 0  ! Soil boundary condition at lowest soil level
+                          ! 0 - Bedrock;
+                          ! 1 - Free drainage.
+                          ! 2 - Half drainage
+!------------------------------------------------------------------------------------------!
+
+
+
+!------------------------------------------------------------------------------------------!
+! ED model options                                                                         !
+!------------------------------------------------------------------------------------------!
+
+   NL%INTEGRATION_SCHEME = 1  ! This determines how the fast time step
+                              ! is integrated:
+                              !  0  --  Euler step
+                              !  1  --  Fourth-order Runge Kutta
+
+!   NL%RK4_TOLERANCE  = 0.01   ! This is the relative tolerance for the Runge-Kutta 
+                              !   integration.  Larger numbers will make runs go faster, 
+                              !   at the expense of being less accurate.  Currently the 
+                              !   valid range is between 1.e-7 and 1.e-1, but recommended
+                              !   values are between 1.e-4 and 1.e-2
+
+!   NL%IBRANCH_THERMO = 0      ! This determines whether branches should be included in
+                              !    the vegetation thermodynamics or not.  This is under
+                              !    development, not fully tested.
+                              !  0  --  No branches in energy/radiation;
+                              !  1  --  Use Conijn (1995) numbers;
+                              !  2  --  Use parameterization from Jarvela (2004);
+
+   NL%ISTOMA_SCHEME   = 0  ! This is the scheme used to compute stomatal 
+                         ! conductance and photosynthesis.  Set to 0 to do 
+                         ! the full, exact calculation each time.  Set to 1 
+                         ! to do the 'small perturbation' scheme.
+
+   NL%IPHEN_SCHEME    = 0  ! This specifies the phenology scheme:
+                           !  0 -- the cold-deciuous (Botta et al.)
+                           !       and old drought-deciduous (same with ED2.0);
+                           !  1 -- the Harvard Forest observations
+                           !  2 -- the cold-deciduous and new drought-deciduous;
+                           !  3 -- the cold-deciduous, new drought-deciduous 
+                           !       and light phenology (not fully tested);
+  
+   NL%REPRO_SCHEME    = 1  ! This specifies the reproduction scheme:
+                           !  0 -- reproduction off (useful for short runs)
+                           !  1 -- original ED1 default
+   NL%DECOMP_SCHEME   = 0  ! Specifies soil decomposition temperature dependence
+			   ! 0 -- original exponential
+			   ! 1 -- Lloyd and Taylor (1994) model
+
+   NL%LAPSE_SCHEME    = 0  ! This specifies the met lapse rate scheme:
+                           !  0 -- lapse rates off
+                           !  1 -- phenomenological, global
+                           !  2 -- phenomenological, local (not yet implemented)
+                           !  3 -- mechanistic(not yet implemented)
+  
+   NL%CROWN_MOD       = 0  ! Specifies how tree crowns are represent in the 
+                           ! canopy radiation model
+                           !  0  - ED1 default (continuous horizontal)
+                           !  1  - finite radius mixing model (Dietze)
+  
+   NL%N_PLANT_LIM     = 0  ! Determines whether (1) or not (0) plants can
+                           ! be limited by nitrogen
+
+   NL%N_DECOMP_LIM    = 0  ! Determines whether (1) or not (0) decomposition
+                           ! can be limited by nitrogen
+
+   NL%INCLUDE_FIRE    = 0  ! Determines how to apply fire in the model:
+                           ! 0. No fires;
+                           ! 1. Fire will be triggered with enough biomass and 
+                           !    ground water depth less than a threshold;
+                           ! 2. Fire will be triggered with enough biomass and 
+                           !    column-averaged soil moisture less than a threshold.
+
+   NL%IANTH_DISTURB   = 0  ! Flag specifying whether (1) or not (0) to include
+                           ! anthropogenic disturbances such as agriculture, 
+                           ! abandonment, and harvesting.
+! NL%ICANTURB        = 2     ! Canopy turbulence scheme
+                              ! -1. (very deprecated) This is the original ED-2.0 
+                              !     scheme, added here for backward compability.  
+                              !     THIS SHOULD BE AVOIDED, since it gives strange 
+                              !     results. 
+                              !  0. is the default scheme
+                              !  1. will rescale reference wind-speed if it
+                              !     the reference height is (inapropriately)
+                              !     below the canopy
+                              !  2. (recommended) uses the method of Massman 
+                              !     1997 and the bulk Richardson number of 
+                              !     instability.  This method will not work 
+                              !     when zref<h
+
+
+  NL%ISFCLYRM        = 3     ! Surface layer model (used to compute ustar, tstar,...)
+                              ! This variable controls the SLM for both LEAF and ED.
+                              !  1 - BRAMS default, based on Louis (1979)
+                              !      It uses empirical relations to estimate the flux
+                              !      based on the bulk Richardson number
+                              !  2 - Oncley and Dudhia (1995) model, based on MM5.
+                              !      It uses a empirical relation between bulk Richardson
+                              !      number and z/L, then computes the flux functions
+                              !  3 - (recommended) Beljaars and Holtslag (1991) model.  
+                              !      Similar to 2, but it finds z/L using a root-finding 
+                              !      method, and it has a different set of equations for 
+                              !      stable layers that works better during night time.
+                              !  4 - The parameterization of Beljaars and Holtslag, but 
+                              !      using z/L estimation as in Oncley and Dudhia. 
+
+
+   !--------------------------------------------------------------------!                             
+   ! PLANT FUNCTIONAL TYPES (PFTs):                                     !
+   !--------------------------------------------------------------------!
+   ! 1 - C4 grass                    |  7 - southern pines              ! 
+   ! 2 - early tropical              |  8 - late conifers               ! 
+   ! 3 - mid tropical                |  9 - early temperate deciduous   ! 
+   ! 4 - late tropical               | 10 - mid temperate deciduous     ! 
+   ! 5 - C3 grass                    | 11 - late temperate deciduous    ! 
+   ! 6 - northern pines              |                                  !
+   !--------------------------------------------------------------------!                             
+   NL%INCLUDE_THESE_PFT = 15       ! List of PFTs to be included 
+   NL%AGRI_STOCK        = 15       ! Agriculture PFT (used only if ianth_disturb=1)
+   NL%PLANTATION_STOCK  = 15       ! Plantation PFT  (used only if ianth_disturb=1)
+   NL%PFT_1ST_CHECK = 0 ! What should I do when I find a cohort with an unexpected PFT 
+                        !    in the history start?
+                        ! 0. Stop the run;
+                        ! 1. Add the PFT in the INCLUDE_THESE_PFT list;
+                        ! 2. Ignore the cohort.
+                        !
+                        ! This option is ignored in near bare ground runs.
+
+!----- Patch and cohort dimension settings ------------------------------------------------!
+   NL%MAXPATCH  =  1 ! If number of patches in a given site exceeds 
+                      ! NL%MAXPATCH, force patch fusion.
+   NL%MAXCOHORT =  1 ! If number of cohorts in a given patch exceeds
+                      ! NL%MAXCOHORT, force cohort fusion.
+!------------------------------------------------------------------------------------------!
+                                         
+                                         
+                                         
+!------------------------------------------------------------------------------------------!
+! Commonly changed parameters                                                              !
+!------------------------------------------------------------------------------------------!
+
+   NL%ZROUGH = 0.1                     ! Constant roughness if for all domain
+
+   NL%TREEFALL_DISTURBANCE_RATE  = 0.0 ! Treefall disturbance rate, 1/years
+
+   NL%RUNOFF_TIME    = 28800.0         ! the forest could get saturated and 
+                                       ! develop a sfcwater pool of meters or 
+                                       ! more.  In many cases, this is not realistic.
+                                       ! This is the time scale in seconds for 
+                                       ! this water to disappear.  If you want no runoff
+                                       ! set runoff_time = 0 (not recommended for long 
+                                       ! runs).
+!------------------------------------------------------------------------------------------!
+
+
+
+
+!-------------------------------------------------------------------------!
+! Control parameters for printing to standard output                      
+!         Any variable can be printed to standard output.
+!         Choose any variables that are defined in the variable table fill
+!         routines in ed_state_vars.f90.  Choose the start and end dimension
+!         in the vector that you wish to view.  It can be polygon,site,..whatever
+!         This 'should' work in parallel ...
+!         The output will be printed to the screen at frequency frqanl,
+!         the print call is synchronized with instantaneous file writes,
+!         so those variables will have been accumulated and normalized
+!         from their rk4state and be meaningful to view.
+!-------------------------------------------------------------------------!
+
+   NL%IPRINTPOLYS  =  0        ! 0 = do not print information to screen
+                               ! 1 = print polygon arrays to screen, use variables
+                               !     described below
+
+!----- Print these variables ------------------------------------------!
+
+   NL%PRINTVARS    = 'AVG_PCPG','AVG_CAN_TEMP','AVG_VAPOR_AC','AVG_CAN_SHV'
+
+!----- Use these format strings ---------------------------------------!
+! The format strings follow standard fortran format notation. ie 'f' is
+! for floating point.  First number is total digits, second number is 
+! the number of digits to the left of right of the decimal point.
+
+   NL%PFMTSTR      = 'f10.8','f5.1','f7.2','f9.5'
+
+   NL%IPMIN        = 1       ! The first polygon index to print
+   NL%IPMAX        = 60      ! The last polygon index to print
+!-------------------------------------------------------------------------!
+
+
+!------------------------------------------------------------------------------------------!
+! Met driver control                                                                       !
+!------------------------------------------------------------------------------------------!
+
+   NL%IMETTYPE  = 1          ! 0 = ASCII, 1 = HDF5
+   NL%METCYC1         = 2002 ! First year of met data
+   NL%METCYCF         = 2006 ! Last year of met data
+   NL%ISHUFFLE  = 0          ! How to choose an year outside the met data range:
+                             ! 0. Sequentially cycle over years
+                             ! 1. Randomly pick the years, using the same sequence
+                             ! 2. Randomly pick the years, choosing a different 
+                             !    sequence each time the model is run.
+
+   NL%INITIAL_CO2     = 370. ! Initial value for CO2 in case no CO2 is provided at the 
+                             ! meteorological driver dataset
+
+
+!----- For phenology prescribed from observations, we also need to recycle over years. ----!
+   NL%IPHENYS1 = 1992 ! initial year for spring
+   NL%IPHENYSF = 2003 ! final year for spring
+   NL%IPHENYF1 = 1992 ! initial year for fall
+   NL%IPHENYFF = 2003 ! final year for fall
+   !! path/prefix for where to find presecribed phenology driver
+   !NL%PHENPATH   = '/n/Moorcroft_Lab/Users/mlongo/EDBRAMS/ed-test/inputs' 
+!------------------------------------------------------------------------------------------!
+
+
+
+!------------------------------------------------------------------------------------------!
+! XML configuration file                                                                   !
+!------------------------------------------------------------------------------------------!
+  NL%IEDCNFGF   = 'CONFIGFILE'
+  ! NL%EVENT_FILE = '/home/scratch/dlebauer/pecan/edin/ebifarm'
+  ! NL%PHENPATH   = '/home/dlebauer/inputs/'
+!------------------------------------------------------------------------------------------!
+
+
+
+!-------------------------------------------------------------------------!
+! Optimization configuration. (Currently not used)                        !
+!-------------------------------------------------------------------------!
+  ! NL%IOPTINPT = ''   ! Directory for optimizer inputs
+!-------------------------------------------------------------------------!
+
+/ ! end of ED_NL
