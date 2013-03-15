@@ -336,6 +336,9 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
   ## create the workflow
   if (!'workflow' %in% names(settings)) {
     con <- try(query.base.con(settings), silent=TRUE)
+    if(is.null(settings$model$id)) {
+      settings$model$id <- -999
+    }
     if(!is.character(con)){
       query.base(paste("INSERT INTO workflows (site_id, model_id, hostname, start_date, end_date, started_at, created_at, folder) values ('",
                        settings$run$site$id, "','", settings$model$id, "', '", settings$run$host$name, "', '",
