@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<pecan>
+ <ensemble> 
+  <size>50</size>
+ </ensemble>
+ <pecanDir>/home/carya/pecan/</pecanDir>
+ <outdir>/home/carya/output//PEcAn_17/pecan/</outdir>
+ <database>
+  <userid>bety</userid>
+  <passwd>bety</passwd>
+  <location>localhost</location>
+  <name>bety</name>
+ </database>
+ <pfts>
+  <pft>
+   <name>sipnet.populus</name>
+   <outdir>/home/carya/output//PEcAn_17/pft/1/</outdir>
+   <constants>
+    <num>1</num>
+   </constants>
+  </pft>
+ </pfts>
+ <meta.analysis>
+  <iter>3000</iter>
+  <random.effects>FALSE</random.effects>
+ </meta.analysis>
+ <ensemble>
+  <size>1</size>
+ </ensemble>
+ <model>
+  <name>SIPNET</name>
+  <binary>/usr/local/bin/sipnet.runk</binary>
+  <id>9</id>
+ </model>
+ <workflow>
+  <id>1</id>
+ </workflow>
+ <run>
+  <folder>/home/carya/output//PEcAn_17</folder>
+  <site>
+   <id>772</id>
+   <name>Niwot Ridge Forest/LTER NWT1 (US-NR1)</name>
+   <lat>40.032900</lat>
+   <lon>-105.546000</lon>
+   <met>/home/carya/sites/niwot/niwot.clim</met>
+  </site>
+  <start.date>2002-01-01 00:00:00</start.date>
+  <end.date>2005-12-31 00:00:00</end.date>
+  <host>
+   <name>localhost</name>
+   <rundir>/home/carya/output//PEcAn_17/run/</rundir>
+   <outdir>/home/carya/output//PEcAn_17/out/</outdir>
+   <ed>
+      </ed>
+  </host>
+ </run>
+ <rundir>/home/carya/output//PEcAn_17/run/</rundir>
+ <modeloutdir>/home/carya/output//PEcAn_17/out/</modeloutdir>
+</pecan>

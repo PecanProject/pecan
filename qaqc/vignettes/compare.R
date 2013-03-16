@@ -28,3 +28,7 @@ compare.model <- function(var,modelid,runnum,yrid,siteid,){
 
 }
 
+SIPNET1 <- read.output(run.id=1, outdir='../output/PEcAn_16/out/317',
+                       start.year=2002, end.year=2002,
+                       variables=ABG,
+                       model="SIPNET")
