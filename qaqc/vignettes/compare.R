@@ -28,7 +28,16 @@ compare.model <- function(var,modelid,runnum,yrid,siteid,){
 
 }
 
-SIPNET1 <- read.output(run.id=1, outdir='../output/PEcAn_16/out/317',
-                       start.year=2002, end.year=2002,
-                       variables=ABG,
-                       model="SIPNET")
+samsize <- 50
+i <- 1
+sipnet <- NULL
+for (i in 1:samsize){
+  dir <- paste("/home/carya/output/PEcAn_16/out/3",16+i,sep="")
+  dir <- paste(dir,"/sipnet.out",sep="")
+  aa <- read.table(dir,head=TRUE,skip=1)
+  sipnet <- c(sipnet,median(aa$rAboveground[aa$year==2004][aa$day>=335]))
+
+
+}
+
+
