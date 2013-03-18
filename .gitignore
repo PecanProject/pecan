@@ -48,3 +48,6 @@ all/inst/tests/$HOME
 
 #backup files
 *~
+
+# system setup files
+web/system.php
