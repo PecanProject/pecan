@@ -23,12 +23,12 @@
 ##' }
 ##'
 ##' @author Michael Dietze, Shawn Serbin, David LeBauer
-get.model.output <- function(model){
+get.model.output <- function(model, settings){
   print(paste("---- Getting output for ",model," model",sep=""))
   my.fcn = paste("get.model.output",model,sep=".")
 
   if(exists(my.fcn)){
-    do.call(my.fcn, args=list())    
+    do.call(my.fcn, args=list(settings))    
   } else {
     print("-------------------------------------------------------------------")
     print(c(my.fcn,"could not be found"))

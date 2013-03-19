@@ -21,7 +21,7 @@
 
 ### *** THIS WHOLE FUNCTION SHOULD BE MADE INTO A GENERIC CASE IN UTILS THAT JUST HAS A FEW MODEL SPECIFIC PIECES OF INFO PASSED TO IT *** 
 
-get.model.output.SIPNET <- function(){
+get.model.output.SIPNET <- function(settings) {
 
   model="SIPNET"
   
@@ -30,7 +30,7 @@ get.model.output.SIPNET <- function(){
 
     olddir <- getwd()
     setwd(settings$outdir)
-    get.results(model)
+    get.results(settings$outdir, model)
     setwd(olddir) 
     
   } else {
