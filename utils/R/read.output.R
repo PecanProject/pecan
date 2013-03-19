@@ -13,10 +13,10 @@
 ##' @name read.output
 ##' @param run.id the id distiguishing the model run. 
 ##' @param outdir the directory that the model's output was sent to
+##' @param model name of simulation model currently accepts ("ED", "SIPNET", "BIOCRO")
 ##' @param start.year first year of output to read (should be greater than ) 
 ##' @param end.year 
 ##' @param variables variables to be read from model output
-##' @param model name of simulation model currently accepts ("ED", "SIPNET", "BIOCRO")
 ##' @details Generic function to convert model output from model-specific format to 
 ##' a common PEcAn format. This function uses MsTMIP variables except that units of
 ##'  (kg m-2 s-1)  are converted to kg ha-1 y-1. Currently this function converts
@@ -30,9 +30,8 @@
 ##' @return vector of output variable
 ##' @export
 ##' @author Michael Dietze
-read.output <- function(run.id, outdir, start.year=NA,
-                        end.year=NA, variables = "GPP", model = NULL) {
-  if(is.null(model)) model <- settings$model$name
+read.output <- function(run.id, outdir, model, start.year=NA,
+                        end.year=NA, variables = "GPP") {
   do.call(require, list(paste0("PEcAn.", model)))
   model2nc <- paste("model2netcdf", model, sep=".")
   if(!exists(model2nc)){
@@ -52,8 +51,7 @@ read.output <- function(run.id, outdir, start.year=NA,
   print(paste("Output from run", run.id, "has been converted to netCDF"))
   ncfiles <- list.files(path=outdir, pattern="\\.nc$", full.names=TRUE)
   if(length(ncfiles) == 0){
-    logger.error("Conversion of model files to netCDF unsuccessful")
-    stop("Conversion of model files to netCDF unsuccessful")
+    logger.stop("Conversion of model files to netCDF unsuccessful")
   }
 
   ## determine years to load
@@ -108,11 +106,13 @@ read.output <- function(run.id, outdir, start.year=NA,
 ##'
 ##' @title Read outputs
 ##' @name read.outputs
+##' @param model name of simulation model currently accepts ("ED", "SIPNET", "BIOCRO")
+##' @param settings settings loaded from pecan.xml
 ##' @export
 ##' @author Rob Kooper
-read.outputs <- function() {
-  for (run in readLines(con=file.path(settings$rundir, "runs.txt"))) {
-    read.output(run, file.path(settings$run$host$outdir, run))
+read.outputs <- function(model, settings) {
+  for (runid in readLines(con=file.path(settings$rundir, "runs.txt"))) {
+    read.output(runid, file.path(settings$run$host$outdir, runid), model)
   }
 }
 #==================================================================================================#

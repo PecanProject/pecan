@@ -15,6 +15,7 @@
 ##'  each cell is a list of AGB over time
 ##' @param traits model parameters included in the sensitivity analysis
 ##' @param quantiles quantiles selected for sensitivity analysis
+##' @param pecandir specifies where pecan writes its configuration files
 ##' @param outdir directory with model output to use in sensitivity analysis
 ##' @param pft.name name of PFT used in sensitivity analysis (Optional)
 ##' @param start.year first year to include in sensitivity analysis 
@@ -22,17 +23,16 @@
 ##' @param read.output model specific read.output function
 ##' @export
 #--------------------------------------------------------------------------------------------------#
-read.sa.output <- function(traits, quantiles, outdir, pft.name='', 
+read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name='', 
                            start.year, end.year, variables, model){
   
   if (!exists('runs.samples')) {
-    samples.file <- file.path(outdir, 'samples.Rdata')
+    samples.file <- file.path(pecandir, 'samples.Rdata')
     if(file.exists(samples.file)){
       load(samples.file)
       sa.runs <- runs.samples$sa
     } else {
-      logger.error(samples.file, "not found, ", 
-                   "this file is required by the read.sa.output function")      
+      logger.error(samples.file, "not found, this file is required by the read.sa.output function")      
     }
   }
   
@@ -42,9 +42,8 @@ read.sa.output <- function(traits, quantiles, outdir, pft.name='',
   for(trait in traits){
     for(quantile in quantiles){
       run.id <- sa.runs[[pft.name]][quantile, trait]
-      sa.output[quantile, trait] <- sapply(read.output(run.id, file.path(outdir, run.id),
-                                                       start.year, end.year,
-                                                       variables, model),
+      sa.output[quantile, trait] <- sapply(read.output(run.id, file.path(outdir, run.id), model,
+                                                       start.year, end.year, variables),
                                            mean, na.rm=TRUE)
     } ## end loop over quantiles
   } ## end loop over traits
