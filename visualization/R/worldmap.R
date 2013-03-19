@@ -40,15 +40,17 @@ pecan.worldmap <- function(infile, outfile = "worldmap.png"){
   # We can then plot this using `geom_tile()` or `geom_raster()`
   rdf <- data.frame( rasterToPoints( rf ) )    
   
-  p <-  ggplot() + 
+  p <-ggplot() + 
     geom_polygon(data = world, 
                  aes(x=long, y=lat, group = group), 
                  colour="grey", fill="white") +
     geom_raster(data = rdf, aes(x, y, fill = layer)) +
     xlab("Longitude") + ylab("Latitude") + ggtitle(var) +
+    theme_nothing() +
     scale_fill_gradientn(colours = colorRampPalette(c("darkblue", "wheat", "darkred"))(20)) 
   
   
   ggsave(filename = outfile, plot = p, width = 44, height = 34, units="in", dpi = 100)
   
 }
+
