@@ -34,8 +34,7 @@ check.settings <- function(settings) {
 
   # check database information
   if (is.null(settings$database)) {
-    logger.error("No database information specified.")
-    stop("No database information specified.")
+    logger.stop("No database information specified.")
   }
   if (is.null(settings$database$driver)) {
     settings$database$driver <- "MySQL"
@@ -58,17 +57,28 @@ check.settings <- function(settings) {
   }
   tryCatch(db.query("SELECT 1", params=settings$database), 
     error=function(e) {
-      logger.error("Could not connect to the database.")
-      stop("Could not connect to the database.")
+      logger.stop("Could not connect to the database.")
     }
   )
 
   # TODO check userid and userpassword
 
+  # should runs be written to database
+  if (is.null(settings$bety$write)) {
+    logger.info("Writing all runs/configurations to database.")
+    settings$bety$write <- TRUE
+  } else {
+    settings$bety$write <- as.logical(settings$bety$write)
+    if (settings$bety$write) {
+      logger.debug("Writing all runs/configurations to database.")
+    } else {
+      logger.warn("Will not write runs/configurations to database.")
+    }
+  }
+
   # make sure there are pfts defined
   if (is.null(settings$pfts) || (length(settings$pfts) == 0)) {
-    logger.error("No PFTS specified.")
-    stop("No PFTS specified.")
+    logger.stop("No PFTS specified.")
   }
 
   # check to make sure run information is filled out
@@ -78,23 +88,21 @@ check.settings <- function(settings) {
   }
   if (settings$run$host$name != "localhost") {
     if (is.null(settings$run$host$rundir)) {
-      stop("not rundir specified on remote machine.")
+      logger.stop("not rundir specified on remote machine.")
     }
     if (is.null(settings$run$host$outdir)) {
-      stop("not outdir specified on remote machine.")
+      logger.stop("not outdir specified on remote machine.")
     }
   }
 
   # check/crate the pecan folder
   if (is.null(settings$outdir)) {
-    settings$outdir <- tempdir()
-    logger.warn("No output folder specified, using", settings$outdir)
+    logger.stop("No output folder specified")
   } else {
     logger.debug("output folder =", settings$outdir)
   }
   if (!file.exists(settings$outdir) && !dir.create(settings$outdir, recursive=TRUE)) {
-    logger.error("Could not create folder", settings$outdir)
-    stop("Could not create out folder.")
+    logger.stop("Could not create folder", settings$outdir)
   }
 
   # check/create the run folder
@@ -109,8 +117,7 @@ check.settings <- function(settings) {
     }
   }
   if (!file.exists(settings$rundir) && !dir.create(settings$rundir, recursive=TRUE)) {
-    logger.error("Could not create folder", settings$rundir)
-    stop("Could not create out folder.")
+    logger.stop("Could not create folder", settings$rundir)
   }
 
   # check/create the out folder
@@ -125,21 +132,20 @@ check.settings <- function(settings) {
     }
   }
   if (!file.exists(settings$modeloutdir) && !dir.create(settings$modeloutdir, recursive=TRUE)) {
-    logger.error("Could not create folder", settings$modeloutdir)
-    stop("Could not create out folder.")
+    logger.stop("Could not create folder", settings$modeloutdir)
   }
 
   # check/create the pft folders
   for (i in 1:sum(names(unlist(settings$pfts)) == "pft.name")) {
     if (is.null(settings$pfts[i]$pft$outdir)) {
       settings$pfts[i]$pft$outdir <- file.path(settings$outdir, "pft", settings$pfts[i]$pft$name)
-      logger.info("No output folder specified for", settings$pfts[i]$pft$name, "will use", settings$pfts[i]$pft$outdir);
+      logger.info("Storing pft", settings$pfts[i]$pft$name, "in", settings$pfts[i]$pft$outdir)      
+    } else {
+      logger.debug("Storing pft", settings$pfts[i]$pft$name, "in", settings$pfts[i]$pft$outdir)      
     }
     out.dir <- settings$pfts[i]$pft$outdir
-    logger.debug("Storing pft", settings$pfts[i]$pft$name, "in", out.dir)
     if (!file.exists(out.dir) && !dir.create(out.dir, recursive=TRUE)) {
-      logger.error("Could not create folder", out.dir)
-      stop("Could not create pft folders.")
+      logger.stop("Could not create folder", out.dir)
     }
   }
 
@@ -160,15 +166,19 @@ check.settings <- function(settings) {
   }
 
   # check for workflow defaults
-  if (!'workflow' %in% names(settings)) {
-    con <- db.open(settings$database)
-    if(!is.character(con)){
-      query.base(paste("INSERT INTO workflows (site_id, model_id, hostname, start_date, end_date, started_at, created_at, folder) values ('",
-                       settings$run$site$id, "','", settings$model$id, "', '", settings$run$host$name, "', '",
-                       settings$run$start.date, "', '", settings$run$end.date, "', NOW(), NOW(), '", dirname(settings$outdir), "')", sep=''), con)
-      settings$workflow$id = query.base(paste("SELECT LAST_INSERT_ID() AS ID"), con)[['ID']]
-      db.close(con)
+  if (settings$bety$write) {
+    if (!'workflow' %in% names(settings)) {
+      con <- db.open(settings$database)
+      if(!is.character(con)){
+        query.base(paste("INSERT INTO workflows (site_id, model_id, hostname, start_date, end_date, started_at, created_at, folder) values ('",
+                         settings$run$site$id, "','", settings$model$id, "', '", settings$run$host$name, "', '",
+                         settings$run$start.date, "', '", settings$run$end.date, "', NOW(), NOW(), '", dirname(settings$outdir), "')", sep=''), con)
+        settings$workflow$id = query.base(paste("SELECT LAST_INSERT_ID() AS ID"), con)[['ID']]
+        db.close(con)
+      }
     }
+  } else {
+    settings$workflow$id = -999
   }
 
   # all done return cleaned up settings
@@ -202,6 +212,10 @@ check.settings <- function(settings) {
 ##' settings <- read.settings(test.settings.file)
 ##' }
 read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
+  if (is.null(outputfile)) {
+    outputfile="pecan.xml"
+  }
+
   loc <- which(commandArgs() == "--settings")
   if (length(loc) != 0) {
     # 1 filename is passed as argument to R
@@ -233,14 +247,19 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
     stop("Could not find a pecan.xml file")
   }
 
+  ## check to see if a saved version already exists.
+  settings <- xmlToList(xml)
+  output <- file.path(settings$outdir, outputfile)
+  if (file.exists(output)) {
+    logger.info("Loading saved settings file=", output)
+    xml <- xmlParse(output)
+    settings <- xmlToList(xml)
+  }
+
   ## convert the xml to a list for ease and return
-  settings <- check.settings(xmlToList(xml))
+  settings <- check.settings(settings)
   
   ## save the checked/fixed pecan.xml
-  if (is.null(outputfile)) {
-    outputfile="pecan.xml"
-  }
-  output <- file.path(settings$outdir, outputfile)
   if (file.exists(output)) {
     logger.warn(paste("File already exists [", output, "] file will be overwritten"))
   }
