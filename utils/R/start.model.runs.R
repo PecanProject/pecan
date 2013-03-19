@@ -20,7 +20,7 @@
 ##' }
 ##' @author Shawn Serbin
 ##'
-start.model.runs <- function(model=settings$model$name, write.to.db = TRUE){
+start.model.runs <- function(model, write.to.db = TRUE){
 
   fcn.name <- paste("start.runs.", model, sep="")
   if(exists(fcn.name)){
