@@ -29,9 +29,6 @@ start.model.runs <- function(model=settings$model$name, write.to.db = TRUE){
     print(paste(" Starting model runs", model))
     print("-------------------------------------------------------------------")
     print(" ")
-    if(!write.to.db){
-      warning("Run provenance not being logged by database")
-    }
 
     # TODO RK : create ssh/mysql connections to remote host and keep it open
 
@@ -49,12 +46,18 @@ start.model.runs <- function(model=settings$model$name, write.to.db = TRUE){
     pb <- txtProgressBar(min = 0, max = nruns, style = 3)
     pbi <- 0
 
+    if (write.to.db) {
+      dbcon <- db.open(settings$database)
+    } else {
+      logger.warn("Run provenance is not being logged by database.")
+      dbcon <- NULL
+    }
     for (run in readLines(con = file.path(settings$rundir, "runs.txt"))) {
       pbi <- pbi + 1
       setTxtProgressBar(pb, pbi)
       # write start time to database
-      if (write.to.db) {
-        query.base(paste("UPDATE runs SET started_at =  NOW() WHERE id = ", run))
+      if (!is.null(dbcon)) {
+        db.query(paste("UPDATE runs SET started_at =  NOW() WHERE id = ", run), con=dbcon)
       }
 
       # start the actual model run
@@ -62,8 +65,8 @@ start.model.runs <- function(model=settings$model$name, write.to.db = TRUE){
         do.call(fcn.name, args=list(run))
 
         # write finished time to database
-        if (write.to.db) {
-          query.base(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", run))
+        if (!is.null(dbcon)) {
+          db.query(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", run), con=dbcon)
         }
       } else {
         qsub <- gsub("@NAME@", paste("PEcAn-", run, sep=""), settings$run$host$qsub)
@@ -88,12 +91,17 @@ start.model.runs <- function(model=settings$model$name, write.to.db = TRUE){
             logger.debug("Job", jobids[run], "for run", run, "finished")
             jobids[run] <- NULL
             # write finished time to database 
-            if (write.to.db) {
-              query.base(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", run))
+            if (!is.null(dbcon)) {
+              db.query(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", run), con=dbcon)
             }
           }
         }
       }
+    }
+
+    # close database connection
+    if (!is.null(dbcon)) {
+      db.close(dbcon)
     }
 
     # TODO RK : close ssh/mysql connections to remote site
