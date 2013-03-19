@@ -167,7 +167,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings,
   
   # Open connection to database so we can store all run/ensemble information
   if(write.to.db){
-    con <- try(query.base.con(settings), silent=TRUE)
+    con <- try(db.open(settings$database), silent=TRUE)
     if(is.character(con)){
       con <- NULL
     }
@@ -235,7 +235,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings,
     cat(run.id, file=file.path(settings$rundir, "runs.txt"), sep="\n", append=TRUE)
   }
   if (!is.null(con)) {
-    dbDisconnect(con)
+    db.close(con)
   }
   
   invisible(runs)

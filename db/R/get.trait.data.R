@@ -35,24 +35,21 @@ get.trait.data <- function() {
   ##--------------------------------------------------------------------------------------------------#
 
 
-  ##---------------- Open database connection. -------------------------------------------------------#
-  
-  newconfn <- function() query.base.con(settings)
-
   ##--------------------------------------------------------------------------------------------------#
 
 
   ##---------------- Query trait data. ---------------------------------------------------------------#
 
   all.trait.data <- list()
+  dbcon <- db.open(settings$database)
   for(pft in settings$pfts){
-    
+ 
     ## 1. get species list based on pft
-    spstr <- query.pft_species(pft$name, con=newconfn())
+    spstr <- query.pft_species(pft$name, con=dbcon)
     
     ## 2. get priors available for pft  
     prior.distns <- query.priors(pft$name, vecpaste(trait.names),
-                                 out = pft$outdir, con = newconfn())
+                                 out = pft$outdir, con = dbcon)
     
     ### exclude any parameters for which a constant is provided 
     prior.distns <- prior.distns[which(!rownames(prior.distns) %in%
@@ -71,7 +68,7 @@ get.trait.data <- function() {
     print("-------------------------------------------------------------------")
     print(" ")
     
-    trait.data <- query.traits(spstr, traits, con = newconfn())
+    trait.data <- query.traits(spstr, traits, con = dbcon)
     traits <- names(trait.data)
     trait.data.file <- file.path(pft$outdir, "trait.data.Rdata")
     save(trait.data, file = trait.data.file)
@@ -86,7 +83,8 @@ get.trait.data <- function() {
       print(ldply(all.trait.data[[i]], nrow))
     }
     
-  }    
+  }
+  db.close(dbcon)
 }
 ##==================================================================================================#
 

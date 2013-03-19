@@ -90,7 +90,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
   }
   
   if(write.to.db){
-    con <- try(query.base.con(settings), silent=TRUE)
+    con <- try(db.open(settings$database), silent=TRUE)
     if(is.character(con)){
       con <- NULL
     }
@@ -236,7 +236,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
     }
   }
   if (!is.null(con)) {
-    dbDisconnect(con)
+    db.close(con)
   }
   
   invisible(runs)
