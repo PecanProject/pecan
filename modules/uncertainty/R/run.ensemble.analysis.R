@@ -42,7 +42,7 @@ run.ensemble.analysis <- function(plot.timeseries=NA){
   ### Check if ensemble was run and was larger than 0
   if ('ensemble' %in% names(settings) & settings$ensemble$size>0) {
     ### Load parsed model results
-    load(paste(settings$outdir, 'output.Rdata', sep=''))
+    load(file.path(settings$outdir, 'output.Rdata'))
   }
   
   ### ------------------- Start ensemble analysis -------------------
@@ -57,7 +57,7 @@ run.ensemble.analysis <- function(plot.timeseries=NA){
   #fig.out <- settings$pfts$pft$outdir
   fig.out <- settings$outdir # main output directory
   
-  pdf(file=paste(fig.out,"ensemble.analysis.pdf",sep=""),width=13,height=6)
+  pdf(file=file.path(fig.out,"ensemble.analysis.pdf"),width=13,height=6)
   par(mfrow=c(1,2),mar=c(4,4.8,1,2.0)) # B, L, T, R
   hist(unlist(ensemble.output),xlab=units,
        main="",cex.axis=1.1,cex.lab=1.4,col="grey85")
@@ -77,9 +77,7 @@ run.ensemble.analysis <- function(plot.timeseries=NA){
   
   ### Plot ensemble time-series
   if (!is.na(plot.timeseries)){
-    #fig.out <- settings$pfts$pft$outdir
-    fig.out <- settings$outdir # main output directory
-    pdf(paste(fig.out,"ensemble.ts.pdf",sep="/"),width=12,height=9)    
+    pdf(file.path(settings$outdir,"ensemble.ts.pdf"),width=12,height=9)    
     ensemble.ts(read.ensemble.ts(model))
     dev.off()
   }

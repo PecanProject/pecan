@@ -15,7 +15,7 @@ if (isset($_REQUEST['action'])) {
 }
 ?>
 
-<form method="post" action="<?= $_SERVER['SCRIPT_NAME'] ?>">
+<form method="post" action="<?php echo $_SERVER['SCRIPT_NAME'] ?>">
 	<div class="tbl" id="editor">
 		<div class="row">
 			<div class="key">Login</div>
