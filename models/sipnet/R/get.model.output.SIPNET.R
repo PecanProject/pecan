@@ -27,11 +27,7 @@ get.model.output.SIPNET <- function(settings) {
   
   ### Get model output on the localhost
   if(settings$run$host$name == 'localhost'){
-
-    olddir <- getwd()
-    setwd(settings$outdir)
     get.results(settings$outdir, model)
-    setwd(olddir) 
     
   } else {
 

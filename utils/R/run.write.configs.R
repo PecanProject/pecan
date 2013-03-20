@@ -58,8 +58,8 @@ run.write.configs <- function(model, write = TRUE) {
   
   ## Prepare for model output.  Cleanup any old config files (if exists)
   #remove.config(settings$rundir,settings,model)
-  do.call(paste("remove.config", model, sep="."),
-          args = list(settings$rundir, settings))
+  print(paste("remove.config", model, sep="."))
+  do.call(paste("remove.config", model, sep="."), args = list(settings$rundir, settings))
 
   ## Load PFT priors and posteriors
   for (i in seq(pft.names)){

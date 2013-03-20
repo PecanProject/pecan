@@ -94,7 +94,6 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
       con <- NULL
     }
   } else {
-    logger.warn("Run provenance not being logged by database")
     con <- NULL
   }
   
