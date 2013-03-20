@@ -8,8 +8,8 @@ if (isset($_REQUEST['id'])) {
 	die('need an id');
 }
 preg_match("/^(.*)\/([a-zA-Z]*)\/([a-z]+)_([a-z]+).php$/",  $_SERVER['SCRIPT_NAME'], $matches);
-$table = $matches[3];
 $section = $matches[2];
+$table = $matches[3];
 $edit = ($matches[4] == "edit");
 
 # Make sure we can get here.
@@ -24,7 +24,7 @@ print_menu($section);
 
 # handle any information send in inputs form
 $msg = "";
-if ($$edit && isset($_REQUEST['action'])) {
+if ($edit && isset($_REQUEST['action'])) {
 	if ($_REQUEST['action'] == "update") {
 		$msg = editor_update($id, $table);
 	}
