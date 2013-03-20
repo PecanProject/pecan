@@ -1,41 +1,15 @@
 <?php
 
-# Information to connect to the database
-$db_hostname="localhost";
-$db_username="bety";
-$db_password="bety";
-$db_database="bety";
+require("config.php");
 
 # Single share connection
 $db_connection=null;
-
-# Number of items to show on a page
-$pagesize = 30;
-
-# anonymous access level
-$anonymous_level = 4;
-$anonymous_page = 4;
-
-# Used for authentication, needs to be same as ruby
-$REST_AUTH_SITE_KEY          = "thisisnotasecret";
-$REST_AUTH_DIGEST_STRETCHES  = 10;
-
-# ----------------------------------------------------------------------
-# NOTHING LEFT TO CHANGE
-# ----------------------------------------------------------------------
 
 # sections to show in menu (subfolders)
 $sections=array("BETY", "PEcAn");
 
 # make sure we do a session start
 session_start();
-
-# ----------------------------------------------------------------------
-# COMMON FUNCTIONS
-# ----------------------------------------------------------------------
-function starts_with($haystack, $needle) {
-    return !strncmp($haystack, $needle, strlen($needle));
-}
 
 # ----------------------------------------------------------------------
 # DATABASE FUNCTIONS
@@ -138,23 +112,12 @@ function print_menu($active) {
 
 	if (check_login()) {
 		$menu[get_user_name()] = array(
-			"Edit" => "${folder}/BETY/users_edit.php?id=" . get_userid(),
+			"Edit" => "${folder}BETY/users_edit.php?id=" . get_userid(),
 			"Logout" => "${folder}logout.php",
 			);
 	} else {
 		$menu["Login"] = "${folder}login.php";
 	}
-
-	// if (get_page_acccess_level() <= 3) {
-	// 	$menu["BETY"]["Inputs"]["New Input"] = "inputs_edit.php?id=-1";
-	// 	$menu["BETY"]["Files"]["New File"] = "dbfiles_edit.php?id=-1";
-	// 	$menu["BETY"]["Formats"]["New Format"] = "formats_edit.php?id=-1";
-	// 	$menu["BETY"]["Sites"]["New Site"] = "sites_edit.php?id=-1";
-	// 	$menu["BETY"]["Traits"]["New Format"] = "traits_edit.php?id=-1";
-	// }
-	// if (get_page_acccess_level() == 1) {
-	// 	$menu["BETY"]["Users"]["New User"] = "users_edit.php?id=-1";
-	// }
 
 	print "<div id='cssmenu'>\n";
 	print_menu_entry($active, $menu);
@@ -186,8 +149,8 @@ function print_menu_entry($active, $menu) {
 			print "<li>";
 		}
 		if (is_array($val)) {
-			if (key($val) == "#") {
-				$url = reset($val);
+			if (array_key_exists("#", $val)) {
+				$url = $val['#'];
 			} else {
 				$url = "#";
 			}
@@ -501,6 +464,13 @@ function print_pages($current, $pagesize, $query, $table) {
 # EDIT PAGE FUNCTIONS
 # ----------------------------------------------------------------------
 
+function editor_log($status, $query) {
+	global $logfile;
+	if (is_writeable($logfile)) {
+		file_put_contents($logfile, date("c") . "\t${status}\t" . get_userid() . "\t" . get_user_name() . "\t${query}\n", FILE_APPEND);
+	}
+}
+
 function editor_update($id, $table) {
 	global $db_connection;
 
@@ -513,11 +483,23 @@ function editor_update($id, $table) {
 		return;
 	}
 
+	# get the row from the database (this can be empty)
+	$result = mysql_query("SELECT * FROM $table WHERE id=$id;", $db_connection);
+	if (!$result) {
+		die('Invalid query : [' . mysql_errno($db_connection) . ']'  . mysql_error($db_connection));
+	}
+	$row = mysql_fetch_assoc($result);
+	mysql_free_result($result);
+
 	$msg = "";
 	$set = "";
 	foreach($_REQUEST as $key => $val) {
 		$pre = substr($key, 0, 1);
 		$key = substr($key, 2);
+
+		if ($val == $row[$key]) {
+			continue;
+		}
 
 		if ($pre == 's') {
 			if ($set != "") {
@@ -564,16 +546,20 @@ function editor_update($id, $table) {
 			mysql_query($query, $db_connection);
 			$id = mysql_insert_id();
 			if (!mysql_query($query, $db_connection)) {
-				$msg = "Error updating database : [" . mysql_errno($db_connection) . "] " . mysql_error($db_connection) . "<br>$query";
+				$msg = "Error updating database : [" . mysql_errno($db_connection) . "] " . mysql_error($db_connection) . "<br>";
+				editor_log("FAIL", $query);
 			} else {
 				$msg .= "Added into $table table id=$id<br/>\n";
+				editor_log("OK", $query);
 			}
 		} else {
 			$query = "UPDATE $table SET $set WHERE id=$id;";
 			if (!mysql_query($query, $db_connection)) {
-				$msg = "Error updating database : [" . mysql_errno($db_connection) . "] " . mysql_error($db_connection) . "<br>$query";
+				$msg = "Error updating database : [" . mysql_errno($db_connection) . "] " . mysql_error($db_connection) . "<br>";
+				editor_log("FAIL", $query);
 			} else {
-				$msg .= "$query<br>\nUpdated $table table for id=$id<br/>\n";
+				$msg .= "Updated $table table for id=$id<br/>\n";
+				editor_log("OK", $query);
 			}
 		}
 	} else {
@@ -891,7 +877,16 @@ function print_citations_options($name, $myid, $readonly=false) {
 
 function print_species_options($name, $myid, $readonly=false) {
 	$query = "SELECT id, scientificname AS name FROM species";
-	print_select_options($name, $myid, $readonly, $query);
+	if ($readonly) {
+		print_select_options($name, $myid, $readonly, $query);
+	} else {
+		if ($myid == -1) {
+			$values = array();
+		} else {
+			$values = array($myid => "Current value " . $myid);
+		}
+		print_select_array_options($name, $myid, $readonly, $values);
+	}
 }
 
 function print_variables_options($name, $myid, $readonly=false) {
@@ -912,9 +907,16 @@ function print_cultivars_options($name, $myid, $readonly=false) {
 function print_select_options($name, $myid, $readonly, $query) {
 	global $db_connection;
 
+	if ($readonly) {
+		if ($myid == "") {
+			$query .= " WHERE id=-1";
+		} else {
+			$query .= " WHERE id=${myid}";	
+		}
+	}
 	$result = mysql_query($query . " ORDER BY name", $db_connection);
 	if (!$result) {
-		die('Invalid query : [' . mysql_errno($db_connection) . ']'  . mysql_error($db_connection));
+		die('Invalid query "' . $query . '" : [' . mysql_errno($db_connection) . ']'  . mysql_error($db_connection));
 	}
 
 	if ($readonly) {
@@ -976,4 +978,10 @@ function print_select_array_options($name, $myid, $readonly, $values) {
 	print "</select>\n";
 }
 
+# ----------------------------------------------------------------------
+# COMMON FUNCTIONS
+# ----------------------------------------------------------------------
+function starts_with($haystack, $needle) {
+    return !strncmp($haystack, $needle, strlen($needle));
+}
 ?>

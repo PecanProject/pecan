@@ -27,14 +27,26 @@ if (isset($_REQUEST['action'])) {
 
 	if ($_REQUEST['action'] == "add") {
 		$query = "UPDATE dbfiles, inputs SET dbfiles.container_id=inputs.file_id WHERE dbfiles.id={$_REQUEST['dbid']} AND inputs.id=${id};";
-		mysql_query($query, $db_connection);
-		$msg .= "Added dbfiles={$_REQUEST['dbid']} to inputs={$_REQUEST['id']}<br/>\n";
+#		$query = "UPDATE dbfiles, inputs SET dbfiles.file_id=inputs.file_id WHERE dbfiles.id={$_REQUEST['dbid']} AND inputs.id=${id};";
+		if (!mysql_query($query, $db_connection)) {
+			$msg = "Error updating database : [" . mysql_errno($db_connection) . "] " . mysql_error($db_connection) . "<br>";
+			editor_log("FAIL", $query);
+		} else {
+			$msg .= "Added dbfiles={$_REQUEST['dbid']} to inputs={$_REQUEST['id']}<br/>\n";
+			editor_log("OK", $query);
+		}
 	}
 
 	if ($_REQUEST['action'] == "del") {
 		$query = "UPDATE dbfiles SET container_id=NULL, container_type=NULL WHERE id={$_REQUEST['dbid']};";
-		mysql_query($query, $db_connection);
-		$msg .= "Removed dbfiles={$_REQUEST['dbid']} from inputs={$_REQUEST['id']}<br/>\n";
+#		$query = "UPDATE dbfiles SET file_id=NULL, container_type=NULL WHERE id={$_REQUEST['dbid']};";
+		if (!mysql_query($query, $db_connection)) {
+			$msg = "Error updating database : [" . mysql_errno($db_connection) . "] " . mysql_error($db_connection) . "<br>";
+			editor_log("FAIL", $query);
+		} else {
+			$msg .= "Removed dbfiles={$_REQUEST['dbid']} from inputs={$_REQUEST['id']}<br/>\n";
+			editor_log("OK", $query);
+		}
 	}
 }
 
@@ -47,12 +59,12 @@ if ($id != -1) {
 		function add_input(id) {
 			var e = document.getElementById(id);
 			var v = e.options[e.selectedIndex].value;
-			window.location.href = "inputs_edit.php?id=<?= $id ?>&action=add&dbid=" + v;
+			window.location.href = "inputs_edit.php?id=<?php echo $id ?>&action=add&dbid=" + v;
 		}
 		function del_input(id) {
 			var e = document.getElementById(id);
 			var v = e.options[e.selectedIndex].value;
-			window.location.href = "inputs_edit.php?id=<?= $id ?>&action=del&dbid=" + v;
+			window.location.href = "inputs_edit.php?id=<?php echo $id ?>&action=del&dbid=" + v;
 		}
 		function show_input(id) {
 			var e = document.getElementById(id);
@@ -70,7 +82,10 @@ if ($id != -1) {
 	Existing Files<br/>
 <?php
 	# get the input that we want to show
-	$query="SELECT dbfiles.id, concat(machines.hostname, ':', dbfiles.file_path, '/', dbfiles.file_name) as filename FROM dbfiles, machines, inputs WHERE inputs.id=$id AND dbfiles.container_id=inputs.file_id AND machines.id=dbfiles.machine_id;";
+	$query="SELECT dbfiles.id, concat(machines.hostname, ':', dbfiles.file_path, '/', dbfiles.file_name) as filename" .
+	       " FROM dbfiles, machines, inputs" .
+	       " WHERE inputs.id=$id AND dbfiles.container_id=inputs.file_id AND machines.id=dbfiles.machine_id;";
+#	       " WHERE inputs.id=$id AND dbfiles.file_id=inputs.file_id AND machines.id=dbfiles.machine_id;";
 	$result = mysql_query($query, $db_connection);
 	if (!$result) {
 		die("Invalid query [$query] " . mysql_error($db_connection));
@@ -106,7 +121,11 @@ if ($id != -1) {
 	<hr />
 	Add a Files<br/>
 <?php
-	$query="SELECT dbfiles.id, concat(machines.hostname, ':', dbfiles.file_path, '/', dbfiles.file_name) as filename FROM dbfiles, machines WHERE machines.id = dbfiles.machine_id AND NOT EXISTS ( SELECT 1 FROM inputs WHERE dbfiles.container_id=inputs.file_id ) ORDER BY filename;";
+	$query="SELECT dbfiles.id, concat(machines.hostname, ':', dbfiles.file_path, '/', dbfiles.file_name) as filename" .
+	       " FROM dbfiles, machines" .
+	       " WHERE machines.id = dbfiles.machine_id AND NOT EXISTS ( SELECT 1 FROM inputs WHERE dbfiles.container_id=inputs.file_id ) " .
+#	       " WHERE machines.id = dbfiles.machine_id AND NOT EXISTS ( SELECT 1 FROM inputs WHERE dbfiles.file_id=inputs.file_id ) " .
+	       " ORDER BY filename;";
 	$result = mysql_query($query, $db_connection);
 	if (!$result) {
 		die("Invalid query [$query] " . mysql_error());
