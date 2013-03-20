@@ -20,7 +20,7 @@
 ##' }
 ##' @author Shawn Serbin
 ##'
-start.model.runs <- function(model, write.to.db = TRUE){
+start.model.runs <- function(model, write = TRUE){
 
   fcn.name <- paste("start.runs.", model, sep="")
   if(exists(fcn.name)){
@@ -46,10 +46,9 @@ start.model.runs <- function(model, write.to.db = TRUE){
     pb <- txtProgressBar(min = 0, max = nruns, style = 3)
     pbi <- 0
 
-    if (write.to.db) {
+    if (write) {
       dbcon <- db.open(settings$database)
     } else {
-      logger.warn("Run provenance is not being logged by database.")
       dbcon <- NULL
     }
     for (run in readLines(con = file.path(settings$rundir, "runs.txt"))) {

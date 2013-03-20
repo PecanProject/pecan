@@ -174,7 +174,6 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings,
       con <- NULL
     }
   } else {
-    logger.warn("Run provenance not being logged by database")
     con <- NULL
   }
   
@@ -190,6 +189,8 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings,
     # write enseblem first
     query.base(paste("INSERT INTO ensembles (created_at, runtype, workflow_id) values (NOW(), 'ensemble', ", workflow.id, ")", sep=''), con)
     ensemble.id <- query.base(paste("SELECT LAST_INSERT_ID() AS ID"), con)[['ID']]
+  } else {
+    ensemble.id <- "NA"
   }
   
   # write configuration for each run of the ensemble
