@@ -51,3 +51,4 @@ all/inst/tests/$HOME
 
 # system setup files
 web/system.php
+web/db/config.php

@@ -14,6 +14,7 @@
 ##' @title Read ensemble output
 ##' @return a list of ensemble model output 
 ##' @param ensemble.size the number of ensemble members run
+##' @param pecandir specifies where pecan writes its configuration files
 ##' @param outdir directory with model output to use in ensemble analysis
 ##' @param start.year first year to include in ensemble analysis
 ##' @param end.year last year to include in ensemble analysis
@@ -21,20 +22,19 @@
 ##' @param model ecosystem model run
 ##' @export
 #--------------------------------------------------------------------------------------------------#
-read.ensemble.output <- function(ensemble.size, outdir, 
-                                 start.year, end.year,variables, model){
+read.ensemble.output <- function(ensemble.size, pecandir, outdir, 
+                                 start.year, end.year, variables, model){
   if (exists('runs.samples')) {
     ensemble.runs <- runs.samples$ensemble
   } else {
     ensemble.runs <- list()
-    samples.file <- file.path(outdir, 'samples.Rdata')
+    samples.file <- file.path(pecandir, 'samples.Rdata')
     print(samples.file)
     if(file.exists(samples.file)){
       load(samples.file)
       ensemble.runs <- runs.samples$ensemble
     } else {
-      stop(samples.file, "not found", 
-           "required by read.ensemble.output")      
+      stop(samples.file, "not found required by read.ensemble.output")      
     }
   }
 
@@ -42,7 +42,9 @@ read.ensemble.output <- function(ensemble.size, outdir,
   for(row in rownames(ensemble.runs)) {
     run.id <- ensemble.runs[row, 'id']
     print(run.id)
-    ensemble.output[[row]] <- sapply(read.output(run.id, file.path(outdir, run.id), start.year, end.year,variables,model),mean,na.rm=TRUE)
+    ensemble.output[[row]] <- sapply(read.output(run.id, file.path(outdir, run.id), model,
+                                                 start.year, end.year, variables),
+                                     mean,na.rm=TRUE)
   }
   return(ensemble.output)
 }
@@ -172,7 +174,6 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings,
       con <- NULL
     }
   } else {
-    logger.warn("Run provenance not being logged by database")
     con <- NULL
   }
   
@@ -188,6 +189,8 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings,
     # write enseblem first
     query.base(paste("INSERT INTO ensembles (created_at, runtype, workflow_id) values (NOW(), 'ensemble', ", workflow.id, ")", sep=''), con)
     ensemble.id <- query.base(paste("SELECT LAST_INSERT_ID() AS ID"), con)[['ID']]
+  } else {
+    ensemble.id <- "NA"
   }
   
   # write configuration for each run of the ensemble

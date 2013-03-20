@@ -18,10 +18,10 @@
 ##' @param settings list, read from settings file (xml) using \code{\link{read.settings}}
 ##' 
 ##' @author David LeBauer, Shawn Serbin, Mike Dietze
-get.results <- function(model=settings$model$name){  
+get.results <- function(pecandir, model) {
   
   ### Load PEcAn sa info
-  load(file.path(settings$outdir, 'samples.Rdata'))
+  load(file.path(pecandir, 'samples.Rdata'))
   
   sensitivity.output <- list()
   ensemble.output    <- list()
@@ -51,6 +51,7 @@ get.results <- function(model=settings$model$name){
       
       sensitivity.output[[pft.name]] <- read.sa.output(traits = traits,
                                                        quantiles = quantiles,
+                                                       pecandir = pecandir,
                                                        outdir = settings$run$host$outdir, 
                                                        pft.name=pft.name,
                                                        start.year=start.year,
@@ -62,6 +63,7 @@ get.results <- function(model=settings$model$name){
   
   if('ensemble' %in% names(settings)) {
     ensemble.output <- read.ensemble.output(settings$ensemble$size,
+                                            pecandir = pecandir,
                                             outdir = settings$run$host$outdir, 
                                             start.year=start.year,
                                             end.year=end.year,
@@ -69,7 +71,7 @@ get.results <- function(model=settings$model$name){
                                             model=model)
   }
   
-  save(ensemble.output, sensitivity.output, file = 'output.Rdata')
+  save(ensemble.output, sensitivity.output, file = file.path(pecandir, 'output.Rdata'))
 }
 #==================================================================================================#
 

@@ -76,6 +76,30 @@ logger.error <- function(msg, ...) {
 	logger.message("ERROR", msg, ...)
 }
 
+##' Prints an error message and stops execution
+##' 
+##' This function will print an error message and stop execution of the code. This
+##' should only be used if the application should terminate. If the session is
+##' non-interactive the error code can be specified which is returned to the shell.
+##'
+##' @param msg the message that should be printed.
+##' @param errorcode the error code to return when the session quits.
+##' @param ... any additional text that should be printed.
+##' @export
+##' @author Rob Kooper
+##' @examples
+##' \dontrun{
+##' logger.stop("missing parameters")
+##' }
+logger.stop <- function(msg, errorcode=1, ...) {
+	logger.message("ERROR", msg, ...)
+	if (!interactive()) {
+     	quit(save="no", status=errorcode)
+    } else {
+		stop(paste(msg, ...))
+    }
+}
+
 ##' Prints a message at a certain log level.
 ##' 
 ##' This function will print a message. This is the function that is responsible for

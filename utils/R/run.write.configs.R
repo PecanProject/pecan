@@ -13,10 +13,11 @@
 ##' @name run.write.configs
 ##' @title Run model specific write configuration functions
 ##' @param model the ecosystem model to generate the configuration files for
+##' @param write should the runs be written to the database
 ##' @export
 ##'
 ##' @author David LeBauer, Shawn Serbin
-run.write.configs <- function(model=settings$model$name){
+run.write.configs <- function(model, write = TRUE) {
   if (file.exists(file.path(settings$rundir, "runs.txt"))) {
     logger.warn("Existing runs.txt file will be removed.")
     unlink(file.path(settings$rundir, "runs.txt"))
@@ -57,8 +58,8 @@ run.write.configs <- function(model=settings$model$name){
   
   ## Prepare for model output.  Cleanup any old config files (if exists)
   #remove.config(settings$rundir,settings,model)
-  do.call(paste("remove.config", model, sep="."),
-          args = list(settings$rundir, settings))
+  print(paste("remove.config", model, sep="."))
+  do.call(paste("remove.config", model, sep="."), args = list(settings$rundir, settings))
 
   ## Load PFT priors and posteriors
   for (i in seq(pft.names)){
@@ -133,7 +134,8 @@ run.write.configs <- function(model=settings$model$name){
       runs.samples$sa <- write.sa.configs(defaults = settings$pfts,
                                           quantile.samples = sa.samples,
                                           settings = settings,
-                                          model = model)
+                                          model = model,
+                                          write.to.db = write)
     }
   } ### End of SA
   
@@ -152,7 +154,11 @@ run.write.configs <- function(model=settings$model$name){
     print(" ")
     print(" ")
     
-    runs.samples$ensemble <- write.ensemble.configs(settings$pfts, ensemble.samples, settings, model = model)
+    runs.samples$ensemble <- write.ensemble.configs(settings$pfts,
+                                                    ensemble.samples,
+                                                    settings,
+                                                    model = model,
+                                                    write.to.db = write)
     
   }else{
     print(paste('Ensemble analysis settings are NULL'))
@@ -161,39 +167,6 @@ run.write.configs <- function(model=settings$model$name){
   print("  ######################## Finish up runs ########################")
   ### Save output from SA/Ensemble runs
   save(ensemble.samples, trait.samples, sa.samples, runs.samples, file = file.path(settings$outdir, 'samples.Rdata'))
-
-  if (FALSE) {
-    # TODO RK : move this to run model, why copy before the model is executed.  
-    # copy all run files to remote host
-    if(settings$run$host$name == 'localhost'){
-  #    rsync('-outi', from = outdir, to = settings$rundir, 
-  #          pattern = paste('*', get.run.id('SA', ''), '*',sep='') )
-    } else {
-      # rsync(args, from, to, pattern).  pattern --> file patter for rsync
-      rsync('-outi', from = settings$rundir, to = paste(settings$run$host$name, ':', settings$run$host$rundir,  sep=''), 
-            pattern = paste('*', get.run.id('SA', ''), '*',sep='') )
-    }
-
-    
-    ### Make outdirectory, send samples to outdir
-    print(settings$run$host$name)
-    if(settings$run$host$name == 'localhost'){
-      print(c(settings$run$host$outdir,"move to",settings$outdir))
-      if(!(settings$run$host$outdir == settings$outdir)) {
-        dir.create(settings$run$host$outdir,showWarnings=FALSE)
-        file.copy(from = paste(settings$outdir, 'samples.Rdata', sep = ''),
-                  to   = paste(settings$run$host$outdir, 'samples.Rdata', sep = '/'),
-                  overwrite = TRUE)
-      }
-    } else {  
-      mkdir.cmd <- paste("'if ! ls ", settings$run$host$outdir, " > /dev/null ; then mkdir -p ", 
-                         settings$run$host$outdir," ; fi'",sep = '')
-      system(paste("ssh", settings$run$host$name, mkdir.cmd))
-      system(paste('rsync -routi ', paste(settings$rundir, 'samples.Rdata', sep=''),
-                   paste(settings$run$host$name, ':', settings$run$host$outdir, sep = '')))
-    }
-  }
-  
 }
 #==================================================================================================#
 
