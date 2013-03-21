@@ -34,7 +34,7 @@ check.settings <- function(settings) {
 
   # check database information
   if (is.null(settings$database)) {
-    logger.stop("No database information specified.")
+    logger.severe("No database information specified.")
   }
   if (is.null(settings$database$driver)) {
     settings$database$driver <- "MySQL"
@@ -57,7 +57,7 @@ check.settings <- function(settings) {
   }
   tryCatch(db.query("SELECT 1", params=settings$database), 
     error=function(e) {
-      logger.stop("Could not connect to the database.")
+      logger.severe("Could not connect to the database.")
     }
   )
 
@@ -78,7 +78,7 @@ check.settings <- function(settings) {
 
   # make sure there are pfts defined
   if (is.null(settings$pfts) || (length(settings$pfts) == 0)) {
-    logger.stop("No PFTS specified.")
+    logger.severe("No PFTS specified.")
   }
 
   # check to make sure run information is filled out
@@ -88,21 +88,99 @@ check.settings <- function(settings) {
   }
   if (settings$run$host$name != "localhost") {
     if (is.null(settings$run$host$rundir)) {
-      logger.stop("not rundir specified on remote machine.")
+      logger.severe("not rundir specified on remote machine.")
     }
     if (is.null(settings$run$host$outdir)) {
-      logger.stop("not outdir specified on remote machine.")
+      logger.severe("not outdir specified on remote machine.")
     }
   }
 
-  # check/crate the pecan folder
+  # check meta-analysis
+  if (is.null(settings$meta.analysis) || is.null(settings$meta.analysis$iter)) {
+    settings$meta.analysis$iter <- 3000
+    logger.info("Setting meta.analysis iterations to ", settings$meta.analysis$iter)
+  }
+  if (is.null(settings$meta.analysis$random.effects)) {
+    settings$meta.analysis$random.effects <- FALSE
+    logger.info("Setting meta.analysis random effects to ", settings$meta.analysis$random.effects)
+  }
+
+  # check modelid with values
+  if (is.null(settings$model$id)) {
+    settings$model$id <- "NA"
+  } else {
+    model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database);
+
+    if (is.null(settings$model$name)) {
+      if ((is.null(model$model_type) && model$model_type == "")) {
+        logger.severe("No model name specified.")
+      }
+      settings$model$name <- model$model_type
+      logger.info("Setting model name to ", settings$model$name)
+    } else if (model$binary != settings$model$binary) {
+      logger.warn("Specified model name [", settings$model$binary, "] does not match model_type in database [", model$binary, "]")
+    }
+
+    if (is.null(settings$model$binary)) {
+      if ((is.null(model$binary) && model$model_path == "")) {
+        logger.severe("No model binary specified.")
+      }
+      settings$model$binary <- model$model_path
+      logger.info("Setting model binary to ", settings$model$binary)
+    } else if (model$model_path != settings$model$binary) {
+      logger.warn("Specified binary [", settings$model$binary, "] does not match model_path in database [", model$model_path, "]")
+    }
+  }
+
+  # check siteid with values
+  if (is.null(settings$run$site$id)) {
+    settings$run$site$id <- "NA"
+  } else {
+    site <- db.query(paste("SELECT * FROM sites WHERE id =", settings$run$site$id), params=settings$database);
+
+    if (is.null(settings$run$site$name)) {
+      if ((is.null(site$sitename) && site$sitename == "")) {
+        logger.info("No site name specified.")
+        settings$run$site$name <- "NA"
+      } else {
+        settings$run$site$name <- site$sitename        
+        logger.info("Setting site name to ", settings$run$site$name)
+      }
+    } else if (site$sitename != settings$run$site$name) {
+      logger.warn("Specified site name [", settings$run$site$name, "] does not match sitename in database [", site$sitename, "]")
+    }
+
+    if (is.null(settings$run$site$lat)) {
+      if ((is.null(site$lat) && site$lat == "")) {
+        logger.severe("No lat specified for site.")
+      } else {
+        settings$run$site$lat <- as.numeric(site$lat)
+        logger.info("Setting site lat to ", settings$run$site$lat)
+      }
+    } else if (as.numeric(site$lat) != as.numeric(settings$run$site$lat)) {
+      logger.warn("Specified site lat [", settings$run$site$lat, "] does not match lat in database [", site$lat, "]")
+    }
+
+    if (is.null(settings$run$site$lon)) {
+      if ((is.null(site$lon) && site$lon == "")) {
+        logger.severe("No lon specified for site.")
+      } else {
+        settings$run$site$lon <- as.numeric(site$lon)
+        logger.info("Setting site lon to ", settings$run$site$lon)
+      }
+    } else if (as.numeric(site$lon) != as.numeric(settings$run$site$lon)) {
+      logger.warn("Specified site lon [", settings$run$site$lon, "] does not match lon in database [", site$lon, "]")
+    }
+  }
+
+  # check/create the pecan folder
   if (is.null(settings$outdir)) {
-    logger.stop("No output folder specified")
+    logger.severe("No output folder specified")
   } else {
     logger.debug("output folder =", settings$outdir)
   }
   if (!file.exists(settings$outdir) && !dir.create(settings$outdir, recursive=TRUE)) {
-    logger.stop("Could not create folder", settings$outdir)
+    logger.severe("Could not create folder", settings$outdir)
   }
 
   # check/create the run folder
@@ -117,7 +195,7 @@ check.settings <- function(settings) {
     }
   }
   if (!file.exists(settings$rundir) && !dir.create(settings$rundir, recursive=TRUE)) {
-    logger.stop("Could not create folder", settings$rundir)
+    logger.severe("Could not create folder", settings$rundir)
   }
 
   # check/create the out folder
@@ -132,7 +210,7 @@ check.settings <- function(settings) {
     }
   }
   if (!file.exists(settings$modeloutdir) && !dir.create(settings$modeloutdir, recursive=TRUE)) {
-    logger.stop("Could not create folder", settings$modeloutdir)
+    logger.severe("Could not create folder", settings$modeloutdir)
   }
 
   # check/create the pft folders
@@ -145,7 +223,7 @@ check.settings <- function(settings) {
     }
     out.dir <- settings$pfts[i]$pft$outdir
     if (!file.exists(out.dir) && !dir.create(out.dir, recursive=TRUE)) {
-      logger.stop("Could not create folder", out.dir)
+      logger.severe("Could not create folder", out.dir)
     }
   }
 
@@ -170,15 +248,15 @@ check.settings <- function(settings) {
     if (!'workflow' %in% names(settings)) {
       con <- db.open(settings$database)
       if(!is.character(con)){
-        query.base(paste("INSERT INTO workflows (site_id, model_id, hostname, start_date, end_date, started_at, created_at, folder) values ('",
+        db.query(paste("INSERT INTO workflows (site_id, model_id, hostname, start_date, end_date, started_at, created_at, folder) values ('",
                          settings$run$site$id, "','", settings$model$id, "', '", settings$run$host$name, "', '",
                          settings$run$start.date, "', '", settings$run$end.date, "', NOW(), NOW(), '", dirname(settings$outdir), "')", sep=''), con)
-        settings$workflow$id = query.base(paste("SELECT LAST_INSERT_ID() AS ID"), con)[['ID']]
+        settings$workflow$id = db.query(paste("SELECT LAST_INSERT_ID() AS ID"), con)[['ID']]
         db.close(con)
       }
     }
   } else {
-    settings$workflow$id = -999
+    settings$workflow$id = "NA"
   }
 
   # all done return cleaned up settings
