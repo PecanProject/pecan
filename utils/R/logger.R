@@ -76,9 +76,9 @@ logger.error <- function(msg, ...) {
 	logger.message("ERROR", msg, ...)
 }
 
-##' Prints an error message and stops execution
+##' Prints an severe message and stops execution.
 ##' 
-##' This function will print an error message and stop execution of the code. This
+##' This function will print a message and stop execution of the code. This
 ##' should only be used if the application should terminate. If the session is
 ##' non-interactive the error code can be specified which is returned to the shell.
 ##'
@@ -89,10 +89,10 @@ logger.error <- function(msg, ...) {
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
-##' logger.stop("missing parameters")
+##' logger.severe("missing parameters")
 ##' }
-logger.stop <- function(msg, errorcode=1, ...) {
-	logger.message("ERROR", msg, ...)
+logger.severe <- function(msg, errorcode=1, ...) {
+	logger.message("SEVERE", msg, ...)
 	if (!interactive()) {
      	quit(save="no", status=errorcode)
     } else {
@@ -122,7 +122,7 @@ logger.message <- function(level, msg, ...) {
 	    if (length(func) == 0) {
 	    	func <- "console"
 	    }
-		text <- sprintf("%s %-5s [%s] : %s\n", Sys.time(), level, func, paste(msg, ...))
+		text <- sprintf("%s %-6s [%s] : %s\n", Sys.time(), level, func, paste(msg, ...))
 		if (.local$console) {
 			cat(text)
 		}
@@ -171,8 +171,10 @@ logger.getLevelNumber <- function(level) {
 		return(30)
 	} else if (toupper(level) == "ERROR") {
 		return(40)
+	} else if (toupper(level) == "SEVERE") {
+		return(40)
 	} else if (toupper(level) == "OFF") {
-		return(50)
+		return(60)
 	} else {
 		logger.warn(level, " is not a valid value, setting level to INFO")
 		return(logger.getLevelNumber("INFO"))
@@ -201,6 +203,8 @@ logger.getLevel <- function() {
 		return("WARN")
 	} else if (.local$level < 50) {
 		return("ERROR")
+	} else if (.local$level < 60) {
+		return("SEVERE")
 	} else {
 		return("OFF")
 	}
