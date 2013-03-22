@@ -6,13 +6,8 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-settings <<- list(database = 
-                   list(userid = "bety", 
-                        passwd = "bety", 
-                        host = "localhost",
-                        name = "bety"))
 
-if(db.exists()){
+if(db.exists(settings$database)){
   test_that("query.covariates returns expected data.frame",{
     ids <- 1:10
     test.query <- query.covariates(ids)
