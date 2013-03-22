@@ -124,7 +124,7 @@ logger.message <- function(level, msg, ...) {
 	    }
 		text <- sprintf("%s %-6s [%s] : %s\n", Sys.time(), level, func, paste(msg, ...))
 		if (.local$console) {
-			cat(text)
+			cat(text, file=stderr())
 		}
 		if (!is.na(.local$filename)) {
 			cat(text, file=.local$filename, append=TRUE)
