@@ -36,20 +36,18 @@ query.allom.data <- function(pft_name,variable,con,nsim = 10000){
   ## define storage
   allomParms <- NULL
   
-  require(RMySQL)
-
   ## PFTs from trait database
   ##################################################################
   ## used to match species data to functional type
-  q <- dbSendQuery(con,paste("select s.spcd, p.id as pft,s.commonname as common,s.scientificname as scientific, s.Symbol as acronym, s.genus,s.Family,p.name from pfts as p join pfts_species on p.id = pfts_species.pft_id join species as s on pfts_species.specie_id = s.id where p.name like '%",pft_name,"%'",sep=""))
-  pft.data <- fetch(q,n=-1)
+  query <- paste("select s.spcd, p.id as pft,s.commonname as common,s.scientificname as scientific, s.Symbol as acronym, s.genus,s.Family,p.name from pfts as p join pfts_species on p.id = pfts_species.pft_id join species as s on pfts_species.specie_id = s.id where p.name like '%",pft_name,"%'",sep="")
+  pft.data <- db.query(query, con)
   if(length(pft.data) < 1){ print(c("QUERY.ALLOM.DATA: No species found for PFT - ",pft_name)); return(NULL)}
                             
   ## Field data from 'Raw' data table
   ####################################################################
   allomField <- NULL
-  q <- dbSendQuery(con,"select * from raws as r join formats as f on f.id = r.format_id where f.name like 'crownAllom'")
-  allom.files <- fetch(q,n=-1)
+  query <- "select * from raws as r join formats as f on f.id = r.format_id where f.name like 'crownAllom'"
+  allom.files <- db.query(query, con)
   if(length(allom.files)>0){
     for(f in allom.files$filepath){
 
@@ -95,8 +93,8 @@ query.allom.data <- function(pft_name,variable,con,nsim = 10000){
   ## a...e            = equation parameters
   ## Component.ID     = table 5. priorities: Foliar=18,stem=6,16, maybe 4, fine root=28,
   allom <- NULL
-  q <- dbSendQuery(con,"select * from raws as r join formats as f on f.id = r.format_id where f.name like 'allomTally'")
-  allom.files <- fetch(q,n=-1)
+  query <- "select * from raws as r join formats as f on f.id = r.format_id where f.name like 'allomTally'"
+  allom.files <- db.query(query, con)
   if(length(allom.files)>0){
     for(f in allom.files$filepath){
       if(file.exists(f)){
