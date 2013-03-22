@@ -6,19 +6,15 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-settings <- list(database = 
-                   list(userid = "bety", 
-                        passwd = "bety", 
-                        host = "localhost",
-                        name = "bety"))
-if(db.exists()){
+
+if(db.exists(settings$database)){
   test_that("query base can execute a trivial SQL statement and return results",{  
-    ans <- query.base("select count(*) from traits;")
+    ans <- db.query("select count(*) from traits;", params=settings$database)
     expect_is(ans, "data.frame")
     expect_is(ans[,1], "numeric")
     expect_true(length(ans) == 1)
     
-    tables <- query.base('show tables;')
+    tables <- db.query('show tables;', params=settings$database)
     expect_true(is.data.frame(tables))
     expect_true(is.character(tables[,1]))
     expect_true(ncol(tables) == 1)

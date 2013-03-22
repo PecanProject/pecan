@@ -1,0 +1,8 @@
+<pecan>
+  <database>
+    <driver>MySQL</driver>
+    <username>bety</username>
+    <password>bety</password>
+    <dbname>bety</dbname>
+  </database>
+</pecan>

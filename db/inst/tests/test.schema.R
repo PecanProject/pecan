@@ -7,17 +7,11 @@
 ## http://opensource.ncsa.illinois.edu/license.html
 ##-------------------------------------------------------------------------------
 
-settings <- list(database = 
-                   list(userid = "bety", 
-                        passwd = "bety", 
-                        host = "localhost",
-                        name = "bety"))
-
 ## check database connection as condition of running tests:
-if(db.exists()){
+if(db.exists(settings$database)){
 
   test_that("expected tables exist",{
-    tables <- query.base("show tables;")
+    tables <- db.query("show tables;", params=settings$database)
     ## make sure that all tables are present:
     expect_true(all(sapply(c("citations", "citations_sites", "citations_treatments", 
                              "coppice", "counties", "covariates", "cultivars", "dbfiles", 
