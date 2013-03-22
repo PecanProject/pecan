@@ -7,12 +7,10 @@
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
  */
-// offline mode?
-if (isset($_REQUEST['offline'])) {
-	$offline=true;
-} else {
-	$offline=false;
-}
+
+# boolean parameters
+$offline=isset($_REQUEST['offline']);
+
 if (!isset($_REQUEST['workflowid'])) {
 	die("Need a workflowid.");
 }

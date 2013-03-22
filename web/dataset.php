@@ -97,7 +97,9 @@ if (!file_exists($file)) {
 if ($mime != "") {
 	header("Content-type: $mime");
 }
-header('Content-Disposition: filename='.basename($name));
+if (isset($name)) {
+	header('Content-Disposition: filename='.basename($name));
+}
 readfile($file);
 
 if ($type == "plot") {

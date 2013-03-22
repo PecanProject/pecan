@@ -7,12 +7,9 @@
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
  */
-# offline mode?
-if (isset($_REQUEST['offline'])) {
-	$offline=true;
-} else {
-	$offline=false;
-}
+
+# boolean parameters
+$offline=isset($_REQUEST['offline']);
 
 // runid
 if (!isset($_REQUEST['workflowid'])) {
@@ -48,7 +45,7 @@ switch(checkStatus("MODEL")) {
 	case 1:
 		$nextenabled="disabled=\"disabled\"";
 		chdir($folder);
-		pclose(popen('R_LIBS_USER="' . ${pecan_install} . '" R CMD BATCH workflow_stage3.R &', 'r'));
+		pclose(popen('R_LIBS_USER="' . $pecan_install . '" R CMD BATCH workflow_stage3.R &', 'r'));
 		if ($offline) {
 			header( "Location: running_stage3.php?workflowid=$workflowid&offline=offline");
 		} else {
@@ -135,12 +132,6 @@ switch(checkStatus("MODEL")) {
 			<th>Start Time</th>
 			<th>End Time</th>
 			<th>Status</th>
-		</tr>
-		<tr>
-			<th>setup</th>
-			<td><?=startTime("SETUP");?></td>
-			<td><?=endTime("SETUP");?></td>
-			<td><?=status("SETUP");?></td>
 		</tr>
 		<tr>
 			<th>fia2ed</th>
