@@ -32,6 +32,19 @@ check.settings <- function(settings) {
     return(0)
   }
 
+  # should runs be written to database
+  if (is.null(settings$bety$write)) {
+    logger.info("Writing all runs/configurations to database.")
+    settings$bety$write <- TRUE
+  } else {
+    settings$bety$write <- as.logical(settings$bety$write)
+    if (settings$bety$write) {
+      logger.debug("Writing all runs/configurations to database.")
+    } else {
+      logger.warn("Will not write runs/configurations to database.")
+    }
+  }
+
   # check database information
   if (is.null(settings$database)) {
     logger.severe("No database information specified.")
@@ -55,26 +68,11 @@ check.settings <- function(settings) {
     settings$database$dbname <- settings$database$name
     settings$database$name <- NULL
   }
-  tryCatch(db.query("SELECT 1", params=settings$database), 
-    error=function(e) {
-      logger.severe("Could not connect to the database.")
-    }
-  )
+  if (!db.exists(params=settings$database, write=settings$bety$write)) {
+    logger.severe("Could not connect to the database.")
+  }
 
   # TODO check userid and userpassword
-
-  # should runs be written to database
-  if (is.null(settings$bety$write)) {
-    logger.info("Writing all runs/configurations to database.")
-    settings$bety$write <- TRUE
-  } else {
-    settings$bety$write <- as.logical(settings$bety$write)
-    if (settings$bety$write) {
-      logger.debug("Writing all runs/configurations to database.")
-    } else {
-      logger.warn("Will not write runs/configurations to database.")
-    }
-  }
 
   # make sure there are pfts defined
   if (is.null(settings$pfts) || (length(settings$pfts) == 0)) {
@@ -110,25 +108,26 @@ check.settings <- function(settings) {
     settings$model$id <- "NA"
   } else {
     model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database);
+    model$binary <- tail(strsplit(model$model_path, ":")[[1]], 1)
 
     if (is.null(settings$model$name)) {
       if ((is.null(model$model_type) && model$model_type == "")) {
-        logger.severe("No model name specified.")
+        logger.severe("No model type specified.")
       }
       settings$model$name <- model$model_type
-      logger.info("Setting model name to ", settings$model$name)
-    } else if (model$binary != settings$model$binary) {
-      logger.warn("Specified model name [", settings$model$binary, "] does not match model_type in database [", model$binary, "]")
+      logger.info("Setting model type to ", settings$model$name)
+    } else if (model$model_type != settings$model$name) {
+      logger.warn("Specified model type [", settings$model$name, "] does not match model_type in database [", model$model_type, "]")
     }
 
     if (is.null(settings$model$binary)) {
-      if ((is.null(model$binary) && model$model_path == "")) {
+      if ((is.null(model$binary) && model$binary == "")) {
         logger.severe("No model binary specified.")
       }
-      settings$model$binary <- model$model_path
+      settings$model$binary <- tail(strsplit(model$binary, ":")[[1]], 1)
       logger.info("Setting model binary to ", settings$model$binary)
-    } else if (model$model_path != settings$model$binary) {
-      logger.warn("Specified binary [", settings$model$binary, "] does not match model_path in database [", model$model_path, "]")
+    } else if (model$binary != settings$model$binary) {
+      logger.warn("Specified binary [", settings$model$binary, "] does not match model_path in database [", model$binary, "]")
     }
   }
 
