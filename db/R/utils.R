@@ -39,7 +39,7 @@ db.query <- function(query, con=NULL, params=NULL) {
     con <- db.open(params)
     iopened <- 1
   }
-  logger.debug(query)
+  #logger.debug(query)
   data <- dbGetQuery(con, query)
   .local$queries <- .local$queries+1
   if(iopened==1) {
@@ -75,6 +75,7 @@ db.open <- function(params) {
     id <- sample(1000, size=1)
   }
   attr(c, "pecanid") <- id
+  dump.log <- NULL
   dump.frames(dumpto="dump.log")
   .local$created <- .local$created+1
   .local$connections$id <- append(.local$connections$id, id)
