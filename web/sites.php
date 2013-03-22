@@ -20,11 +20,14 @@ if (isset($_REQUEST['model']) && ($_REQUEST['model'] != "")) {
 	$model = mysql_fetch_assoc($result);
 	$modeltype = $model["model_type"];
 	mysql_free_result($result);
+} else {
+	$model = "";
+	$modeltype = "";
 }
 
 $query = "SELECT sites.* FROM sites";
 if (isset($_REQUEST['host']) && ($_REQUEST['host'] != "")) {
-	$query  = "SELECT DISTINCT sites.* FROM sites, inputs, dbfiles, machines WHERE dbfiles.file_id = inputs.file_id AND inputs.site_id=sites.id";
+	$query  = "SELECT DISTINCT sites.* FROM sites, inputs, dbfiles, machines WHERE dbfiles.container_id = inputs.file_id AND inputs.site_id=sites.id";
 	$query .= " AND machines.hostname='{$_REQUEST['host']}' AND dbfiles.machine_id=machines.id";
 
 	if ($modeltype == "ED2") {

@@ -7,12 +7,9 @@
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
  */
-# offline mode?
-if (isset($_REQUEST['offline'])) {
-	$offline=true;
-} else {
-	$offline=false;
-}
+
+# boolean parameters
+$offline=isset($_REQUEST['offline']);
 
 // runid
 if (!isset($_REQUEST['workflowid'])) {
@@ -35,9 +32,10 @@ $folder = $workflow['folder'];
 $model_type = $workflow['model_type'];
 
 // check result
-$status=file($folder . DIRECTORY_SEPARATOR . "STATUS");
-if ($status === FALSE) {
-	$status = array();
+if (file_exists($folder . DIRECTORY_SEPARATOR . "STATUS")) {
+	$status=file($folder . DIRECTORY_SEPARATOR . "STATUS");
+} else {
+	$status=array();
 }
 
 // check the global status
@@ -63,7 +61,7 @@ switch(checkStatus("CONFIG")) {
 			}
 		} else {
 			chdir($folder);
-			pclose(popen('R_LIBS_USER="' . ${pecan_install} . '" R CMD BATCH workflow_stage2.R &', 'r'));
+			pclose(popen('R_LIBS_USER="' . $pecan_install . '" R CMD BATCH workflow_stage2.R &', 'r'));
 			if ($offline) {
 				header( "Location: running_stage2.php?workflowid=$workflowid&offline=offline");
 			} else {
@@ -152,12 +150,6 @@ switch(checkStatus("CONFIG")) {
 			<th>Start Time</th>
 			<th>End Time</th>
 			<th>Status</th>
-		</tr>
-		<tr>
-			<th>setup</th>
-			<td><?=startTime("SETUP");?></td>
-			<td><?=endTime("SETUP");?></td>
-			<td><?=status("SETUP");?></td>
 		</tr>
 		<tr>
 			<th>fia2ed</th>
