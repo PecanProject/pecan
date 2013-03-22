@@ -51,7 +51,7 @@ read.output <- function(run.id, outdir, model, start.year=NA,
   print(paste("Output from run", run.id, "has been converted to netCDF"))
   ncfiles <- list.files(path=outdir, pattern="\\.nc$", full.names=TRUE)
   if(length(ncfiles) == 0){
-    logger.stop("Conversion of model files to netCDF unsuccessful")
+    logger.severe("Conversion of model files to netCDF unsuccessful")
   }
 
   ## determine years to load
