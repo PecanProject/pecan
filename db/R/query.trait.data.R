@@ -19,8 +19,7 @@
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{transformstats}} performs transformation calculations
 ##' @author <unknown>
 fetch.stats2se <- function(connection, query){
-  query.result <- dbSendQuery(connection, query)
-  transformed <- transformstats(fetch(query.result, n = -1))
+  transformed <- transformstats(db.query(query, connection))
   return(transformed)
 }
 ##==================================================================================================#
@@ -142,8 +141,7 @@ query.covariates<-function(trait.ids, con = query.base.con(settings), ...){
   covariate.query <- paste("select covariates.trait_id, covariates.level,variables.name",
                            "from covariates left join variables on variables.id = covariates.variable_id",
                            "where trait_id in (",vecpaste(trait.ids),")")
-  q <- dbSendQuery(con, covariate.query)
-  covariates = fetch(q, n = -1)  
+  covariates <- db.query(covariate.query, con)
   return(covariates)
 }
 ##==================================================================================================#

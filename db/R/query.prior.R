@@ -40,8 +40,7 @@ query.priors <- function(pft, trstr, out=NULL, con=NULL,...){
       "join pfts on pfts.id = pfts_priors.pft_id",
       "where pfts.name in (", vecpaste(pft), ")",
       "and variables.name in (", trstr, ");")
-  query    <- dbSendQuery(con, query.text)
-  priors <- fetch ( query, n = -1 )
+  priors <- db.query(query.text, con)
   
   if(nrow(priors) <= 0){
     warning(paste("No priors found for pft(s): ", pft))

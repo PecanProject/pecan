@@ -28,9 +28,7 @@ query.pft_species <- function(pft,con=NULL,...){
   query <- paste("select id, genus, species.species from species 
                  where id in ( select specie_id from pfts_species 
                  where pft_id = (select id from pfts where name = '",pft,"'));", sep = "")
-  q    <- dbSendQuery(con, query)
-  species <- NA
-  species <- fetch ( q, n = -1 )
+  species <- db.query(query, con)
   print(" ")
   print("-------------------------------------------------------------------")
   print(paste("List of species included in PFT: ",pft,sep=""))
