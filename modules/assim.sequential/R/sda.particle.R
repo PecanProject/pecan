@@ -40,7 +40,7 @@ sda.particle <- function(model){
     ref <- sample(1:np,1)       ## choose an ensemble member
     y <- rnorm(nt,ensp[ref,],sd) ## add noise
   } else {
-    load(paste(settings$outdir,"plot2AGB.Rdata",sep="/"))
+    load(file.path(settings$outdir,"plot2AGB.Rdata"))
     mch = which(yrvec %in% time)
     y = mNPP[1,mch]   ## data mean
     sd = sNPP[1,mch]  ## data uncertainty 
@@ -88,7 +88,7 @@ Xbar = apply(ensp,2,mean)
 Xci = apply(ensp,2,quantile,c(0.025,0.975))
 
 ### Diagnostic graphs  
-pdf(paste(outfolder,"ParticleFilter.pdf",sep="/"))
+pdf(file.path(outfolder,"ParticleFilter.pdf"))
   
   ## plot ensemble, filter, and data mean's and CI's
   par(mfrow=c(1,1))

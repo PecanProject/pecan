@@ -28,7 +28,7 @@ approx.posterior <- function(trait.mcmc, priors, trait.data=NULL, outdir=NULL){
   posteriors <- priors
   do.plot <- exists("outdir")
   if(do.plot == TRUE){
-    pdf(paste(outdir,"posteriors.pdf",sep=""))
+    pdf(file.path(outdir,"posteriors.pdf"))
   }
   
   ##loop over traits
