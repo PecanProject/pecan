@@ -68,12 +68,12 @@ shp2kml <- function(dir,ext,kmz=FALSE,proj4=NULL,color=NULL,NameField=NULL,out.d
     print("")
     
     # Read in shapefile(s) & get coordinates/projection info
-    #shp.file <- readShapeSpatial(paste(dir,i,sep="/"),verbose=TRUE)
+    #shp.file <- readShapeSpatial(file.path(dir,i),verbose=TRUE)
     #coordinates(test) <- ~X+Y
     
-    layers <- ogrListLayers(paste(dir,i,sep="/"))
-    info <- ogrInfo(paste(dir,i,sep="/"),layers)
-    #shp.file <- readOGR(paste(dir,i,sep="/"),layer=layers) # no need to read in file
+    layers <- ogrListLayers(file.path(dir,i))
+    info <- ogrInfo(file.path(dir,i),layers)
+    #shp.file <- readOGR(file.path(dir,i),layer=layers) # no need to read in file
     
     # Display vector info to the console
     print("")
