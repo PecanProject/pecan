@@ -90,9 +90,7 @@ run.sensitivity.analysis <- function(plot=TRUE){
       }
     }  ## end if sensitivity analysis
 
-    save(sensitivity.results,
-         file = paste(settings$outdir,
-           "sensitivity.results.Rdata", sep = ""))
+    save(sensitivity.results, file = file.path(settings$outdir, "sensitivity.results.Rdata"))
   }
 }
 #==================================================================================================#
