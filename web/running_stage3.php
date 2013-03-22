@@ -7,12 +7,9 @@
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
  */
-# offline mode?
-if (isset($_REQUEST['offline'])) {
-	$offline=true;
-} else {
-	$offline=false;
-}
+
+# boolean parameters
+$offline=isset($_REQUEST['offline']);
 
 // runid
 if (!isset($_REQUEST['workflowid'])) {
@@ -125,12 +122,6 @@ switch(checkStatus("FINISHED")) {
 			<th>Start Time</th>
 			<th>End Time</th>
 			<th>Status</th>
-		</tr>
-		<tr>
-			<th>setup</th>
-			<td><?=startTime("SETUP");?></td>
-			<td><?=endTime("SETUP");?></td>
-			<td><?=status("SETUP");?></td>
 		</tr>
 		<tr>
 			<th>fia2ed</th>

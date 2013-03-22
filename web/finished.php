@@ -7,12 +7,9 @@
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
  */
-# offline mode?
-if (isset($_REQUEST['offline'])) {
-	$offline=true;
-} else {
-	$offline=false;
-}
+
+# boolean parameters
+$offline=isset($_REQUEST['offline']);
 
 // runid
 if (!isset($_REQUEST['workflowid'])) {
@@ -100,10 +97,16 @@ $vars = implode("\n", array_unique($vararr));
 
 # check the pft folder
 foreach(scandir("$folder/pft") as $pft) {
-	if ($file[0] == ".") {
+	if (($pft == ".") || ($pft == "..")) {
+		continue;
+	}
+	if (!is_dir("$folder/pft/$pft")) {
 		continue;
 	}
 	foreach(scandir("$folder/pft/${pft}") as $file) {
+		if (($file == ".") || ($file == "..")) {
+			continue;
+		}
 		if (preg_match("/^ma.summaryplots./", $file)) {
 			$logs .= "<option>pft/${pft}/${file}</option>\n";
 		}
