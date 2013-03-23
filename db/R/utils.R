@@ -33,7 +33,7 @@ db.query <- function(query, con=NULL, params=NULL) {
   iopened <- 0
   if(is.null(con)){
     if (is.null(params)) {
-      logger.error("Excpected value to connect to database.")
+      logger.error("No parameters or connection specified")
       stop()
     }
     con <- db.open(params)
@@ -98,6 +98,10 @@ db.open <- function(params) {
 ##' db.close(con)
 ##' }
 db.close <- function(con) {
+  if (is.null(con)) {
+    return
+  }
+
   id <- attr(con, "pecanid")
   if (is.null(id)) {
     logger.warn("Connection created outside of PEcAn.db package")
@@ -156,9 +160,9 @@ db.exists <- function(params, write=TRUE) {
 		logger.error("Could not connect to database.", e)
 		invisible(NULL)
 	})
-  if (is.null(con)) {
-    invisible(FALSE)
-  }
+	if (is.null(con)) {
+		return(invisible(FALSE))
+	}
 
 	# read a row from the database
 	res <- tryCatch({
@@ -169,7 +173,7 @@ db.exists <- function(params, write=TRUE) {
 		invisible(NULL)
 	})
 	if (is.null(res)) {
-	  invisible(FALSE)
+	  return(invisible(FALSE))
 	}
 	
 	# if requested write a row to the database
@@ -182,7 +186,7 @@ db.exists <- function(params, write=TRUE) {
 			invisible(NULL)
 		})
 		if (is.null(res)) {
-		  invisible(FALSE)
+		  return(invisible(FALSE))
 		}
 	}
 

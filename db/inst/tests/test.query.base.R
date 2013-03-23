@@ -7,8 +7,10 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-if(db.exists(settings$database)){
-  test_that("query base can execute a trivial SQL statement and return results",{  
+
+test_that("query base can execute a trivial SQL statement and return results",{  
+  settings <<- xmlToList(xmlParse("pecan.xml"))
+  if(db.exists(settings$database)){
     ans <- db.query("select count(*) from traits;", params=settings$database)
     expect_is(ans, "data.frame")
     expect_is(ans[,1], "numeric")
@@ -18,5 +20,5 @@ if(db.exists(settings$database)){
     expect_true(is.data.frame(tables))
     expect_true(is.character(tables[,1]))
     expect_true(ncol(tables) == 1)
-  })
-}
+  }
+})

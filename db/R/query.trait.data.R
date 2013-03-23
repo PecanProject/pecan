@@ -20,7 +20,6 @@
 ##' @author <unknown>
 fetch.stats2se <- function(connection, query){
   transformed <- transformstats(db.query(query, connection))
-print(transformed)
   return(transformed)
 }
 ##==================================================================================================#
