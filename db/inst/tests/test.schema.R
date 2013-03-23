@@ -8,9 +8,9 @@
 ##-------------------------------------------------------------------------------
 
 ## check database connection as condition of running tests:
-if(db.exists(settings$database)){
-
-  test_that("expected tables exist",{
+test_that("expected tables exist",{
+  settings <<- xmlToList(xmlParse("pecan.xml"))
+  if(db.exists(settings$database)){
     tables <- db.query("show tables;", params=settings$database)
     ## make sure that all tables are present:
     expect_true(all(sapply(c("citations", "citations_sites", "citations_treatments", 
@@ -24,5 +24,5 @@ if(db.exists(settings$database)){
                              "schema_migrations", "seeding", "sessions", "sites", "species", 
                              "traits", "treatments", "users", "variables", "workflows", 
                              "yields"), function(x) grepl(x, tables ))))
-  })
-}
+  }
+})

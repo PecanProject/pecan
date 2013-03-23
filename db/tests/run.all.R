@@ -9,13 +9,4 @@
 library(testthat)
 library(PEcAn.DB)
 
-settings <- list(database = 
-                   list(driver   = "MySQL",
-			username = "bety", 
-                        password = "bety", 
-                        dbname   = "bety"))
-
-
-
 test_package("PEcAn.DB")
-
