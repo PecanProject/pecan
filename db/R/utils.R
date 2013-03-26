@@ -7,10 +7,10 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-.local <- new.env() 
-.local$created <- 0
-.local$queries <- 0
-.local$connections <- list()
+.db.utils <- new.env() 
+.db.utils$created <- 0
+.db.utils$queries <- 0
+.db.utils$connections <- list()
 
 #---------------- Base database query function. ---------------------------------------------------#
 ##' Generic function to query database
@@ -41,7 +41,7 @@ db.query <- function(query, con=NULL, params=NULL) {
   }
   #logger.debug(query)
   data <- dbGetQuery(con, query)
-  .local$queries <- .local$queries+1
+  .db.utils$queries <- .db.utils$queries+1
   if(iopened==1) {
     db.close(con)
   }
@@ -71,16 +71,16 @@ db.open <- function(params) {
   }
   c <- do.call(dbConnect, as.list(args))
   id <- sample(1000, size=1)
-  while(length(which(.local$connections$id==id)) != 0) {
+  while(length(which(.db.utils$connections$id==id)) != 0) {
     id <- sample(1000, size=1)
   }
   attr(c, "pecanid") <- id
   dump.log <- NULL
   dump.frames(dumpto="dump.log")
-  .local$created <- .local$created+1
-  .local$connections$id <- append(.local$connections$id, id)
-  .local$connections$con <- append(.local$connections$con, c)
-  .local$connections$log <- append(.local$connections$log, list(dump.log))
+  .db.utils$created <- .db.utils$created+1
+  .db.utils$connections$id <- append(.db.utils$connections$id, id)
+  .db.utils$connections$con <- append(.db.utils$connections$con, c)
+  .db.utils$connections$log <- append(.db.utils$connections$log, list(dump.log))
   invisible(c)
 }
 
@@ -106,13 +106,13 @@ db.close <- function(con) {
   if (is.null(id)) {
     logger.warn("Connection created outside of PEcAn.db package")
   } else {
-    deleteme <- which(.local$connections$id==id)
+    deleteme <- which(.db.utils$connections$id==id)
     if (length(deleteme) == 0) {
       logger.warn("Connection might have been closed already.");
     } else {
-      .local$connections$id <- .local$connections$id[-deleteme]
-      .local$connections$con <- .local$connections$con[-deleteme]
-      .local$connections$log <- .local$connections$log[-deleteme]
+      .db.utils$connections$id <- .db.utils$connections$id[-deleteme]
+      .db.utils$connections$con <- .db.utils$connections$con[-deleteme]
+      .db.utils$connections$log <- .db.utils$connections$log[-deleteme]
     }
   }
   dbDisconnect(con)
@@ -131,15 +131,15 @@ db.close <- function(con) {
 ##' db.print.connections()
 ##' }
 db.print.connections <- function() {
-  logger.info("Created", .local$created, "connections and executed", .local$queries, "queries")
-  if (length(.local$connections$id) == 0) {
+  logger.info("Created", .db.utils$created, "connections and executed", .db.utils$queries, "queries")
+  if (length(.db.utils$connections$id) == 0) {
     logger.debug("No open database connections.\n")
   } else {
-    for(x in 1:length(.local$connections$id)) {
-      logger.info(paste("Connection", x, "with id", .local$connections$id[[x]], "was created at:\n"))
-      logger.info(paste("\t", names(.local$connections$log[[x]]), "\n"))
+    for(x in 1:length(.db.utils$connections$id)) {
+      logger.info(paste("Connection", x, "with id", .db.utils$connections$id[[x]], "was created at:\n"))
+      logger.info(paste("\t", names(.db.utils$connections$log[[x]]), "\n"))
 #      cat("\t database object : ")
-#      print(.local$connections$con[[x]])
+#      print(.db.utils$connections$con[[x]])
     }
   }
 }
@@ -157,7 +157,7 @@ db.exists <- function(params, write=TRUE) {
 	con <- tryCatch({
 		invisible(db.open(params))
 	}, error = function(e) {
-		logger.error("Could not connect to database.", e)
+		logger.error("Could not connect to database.\n\t", e)
 		invisible(NULL)
 	})
 	if (is.null(con)) {
@@ -165,37 +165,36 @@ db.exists <- function(params, write=TRUE) {
 	}
 
 	# read a row from the database
-	res <- tryCatch({
+	read.result <- tryCatch({
 		invisible(db.query("SELECT * FROM users LIMIT 1", con))
 	}, error = function(e) {
-		logger.error("Could not query database.", e)
+		logger.error("Could not query database.\n\t", e)
 		db.close(con)
 		invisible(NULL)
 	})
-	if (is.null(res)) {
+	if (is.null(read.result)) {
 	  return(invisible(FALSE))
 	}
 	
 	# if requested write a row to the database
 	if (write) {
-		res <- tryCatch({
-			invisible(db.query(paste("UPDATE users SET created_at='", res$created_at, "' WHERE id=", res$id, sep=""), con))
+		result <- tryCatch({
+			db.query(paste("UPDATE users SET created_at='", read.result$created_at, "' WHERE id=", read.result$id, sep=""), con)
+			invisible(TRUE)
 		}, error = function(e) {
-			logger.error("Could not write to database.", e)
-			db.close(con)
-			invisible(NULL)
+			logger.error("Could not write to database.\n\t", e)
+			invisible(FALSE)
 		})
-		if (is.null(res)) {
-		  return(invisible(FALSE))
-		}
-	}
+	} else {
+    result <- TRUE
+  }
 
 	# close database, all done
 	tryCatch({
 		db.close(con)
 	}, error = function(e) {
-		logger.warn("Could not close database.", e)
+		logger.warn("Could not close database.\n\t", e)
 	})
 
-	invisible(TRUE)
+	invisible(result)
 }
