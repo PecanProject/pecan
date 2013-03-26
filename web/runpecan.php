@@ -49,11 +49,10 @@ if (($modeltype == "ED2") || ($modeltype == "BIOCRO")) {
 		die("Need a end date.");
 	}
 	$enddate=$_REQUEST['end'];
-
-	if ($modeltype == "BIOCRO") {
-	    $metstart=$start;
-	    $metend=$end;
-	}
+}
+if ($modeltype == "BIOCRO") {
+    $metstart=$startdate;
+    $metend=$enddate;
 }
 
 if (($modeltype == "ED2") || ($modeltype == "SIPNET")) {
@@ -70,11 +69,10 @@ if (($modeltype == "ED2") || ($modeltype == "SIPNET")) {
     $metfile=$row['file_path'] . DIRECTORY_SEPARATOR . $row['file_name'];
     $metstart=$row['start_date'];
     $metend=$row['end_date'];
-
-	if ($modeltype == "SIPNET") {
-	    $start=$metstart;
-	    $end=$metend;
-	}
+}
+if ($modeltype == "SIPNET") {
+    $startdate=$metstart;
+    $enddate=$metend;
 }
 
 if ($modeltype == "ED2") {
