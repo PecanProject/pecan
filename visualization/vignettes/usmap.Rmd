@@ -8,6 +8,14 @@ require(ggplot2)
 require(RCurl)
 tmp <- getURL("https://gist.github.com/geophtwombly/4635980/raw/f657dcdfab7b951c7b8b921b3a109c7df1697eb8/test.csv")
 testdf <- read.csv(textConnection(tmp))
+
+mapin <- testdf
+colnames(mapin) <- c('lat', 'lon', 'yield')
+write.csv(mapin, file.path(tempdir(), "mapin.csv"))
+
+
+pecan.worldmap(file.path(tempdir(), "mapin.csv"))
+
 spdf <- SpatialPointsDataFrame( data.frame( x = testdf$y , y = testdf$x ) , data = data.frame( z = testdf$z ) )
 
 # Plotting the points reveals the unevenly spaced nature of the points
@@ -49,3 +57,4 @@ p2g <- points2grid(spdf, tolerance = 0.95)
 
 r <- raster(p2g)
 plot(p2g)
+```
