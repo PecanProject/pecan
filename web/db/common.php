@@ -861,17 +861,17 @@ function print_formats_options($name, $myid, $readonly=false) {
 }
 
 function print_sites_options($name, $myid, $readonly=false) {
-	$query = "SELECT id, CONCAT(sitename, ', ', city, ', ', state, ', ', country) AS name FROM sites";
+	$query = "SELECT id, CONCAT(coalesce(sitename, ''), ', ', coalesce(city, ''), ', ', coalesce(state, ''), ', ', coalesce(country, '')) AS name FROM sites";
 	print_select_options($name, $myid, $readonly, $query);
 }
 
 function print_models_options($name, $myid, $readonly=false) {
-	$query = "SELECT id, CONCAT(model_name, ' r', revision, ' (', model_path, ')') AS name FROM models";
+	$query = "SELECT id, CONCAT(coalesce(model_name, ''), ' r', coalesce(revision, ''), ' (', coalesce(model_path, ''), ')') AS name FROM models";
 	print_select_options($name, $myid, $readonly, $query);
 }
 
 function print_citations_options($name, $myid, $readonly=false) {
-	$query = "SELECT id, CONCAT(author, ' \"', title, '\" ') AS name FROM citations";
+	$query = "SELECT id, CONCAT(coalesce(author, ''), ' \"', coalesce(title, ''), '\" ') AS name FROM citations";
 	print_select_options($name, $myid, $readonly, $query);
 }
 

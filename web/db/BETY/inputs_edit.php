@@ -26,8 +26,8 @@ if (isset($_REQUEST['action'])) {
 	}
 
 	if ($_REQUEST['action'] == "add") {
-		$query = "UPDATE dbfiles, inputs SET dbfiles.container_id=inputs.file_id WHERE dbfiles.id={$_REQUEST['dbid']} AND inputs.id=${id};";
-#		$query = "UPDATE dbfiles, inputs SET dbfiles.file_id=inputs.file_id WHERE dbfiles.id={$_REQUEST['dbid']} AND inputs.id=${id};";
+		$query = "UPDATE dbfiles, inputs SET dbfiles.container_id=coalesce(inputs.file_id, dbfiles.id), inputs.file_id=coalesce(inputs.file_id, dbfiles.id) WHERE dbfiles.id={$_REQUEST['dbid']} AND inputs.id=${id};";
+#		$query = "UPDATE dbfiles, inputs SET dbfiles.file_id=coalesce(inputs.file_id, dbfiles.id), inputs.file_id=coalesce(inputs.file_id, dbfiles.id) WHERE dbfiles.id={$_REQUEST['dbid']} AND inputs.id=${id};";
 		if (!mysql_query($query, $db_connection)) {
 			$msg = "Error updating database : [" . mysql_errno($db_connection) . "] " . mysql_error($db_connection) . "<br>";
 			editor_log("FAIL", $query);
