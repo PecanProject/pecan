@@ -1,0 +1,178 @@
+Comparison of different empirical distributions
+========================================================
+To compare two different empirical distribution, calculating the overlap of the distribution funtion is one of the most direct moethods. The area function gives out the approximate overlap area of the two empirical distributions and an "Overlapping Rate" given as a measure of the "similarity".
+
+```r
+library(plotrix)
+load("/home/carya/pecan/qaqc/inst/Compare/prior/output.Rdata")
+priors <- ensemble.output
+load("/home/carya/pecan/qaqc/inst/Compare/post/output.Rdata")
+post <- ensemble.output
+prior <- as.vector(unlist(priors))
+post <- as.vector(unlist(post))
+# heaton data is heaton.sim
+heaton.data <- data.frame(mean = c(11.5, 10.6, 15.6), sd = c(1.8, 1.3, 2.6) * 
+    sqrt(4))
+heaton.sim <- c(rnorm(10000, 11.5, 1.8 * sqrt(3)), rnorm(10000, 10.6, 1.3 * 
+    sqrt(3)), rnorm(10000, 15.6, 2.6 * sqrt(3)))
+# wang's data is paviyield$yield
+paviyield <- read.csv("/home/carya/pecan/qaqc/inst/Compare/wang2010data.csv", 
+    sep = ";", header = F)
+```
+
+The area function is to calculate the overlapping area of empirical distributions from two samples. The input x and y are the two samples. The "iflog" takes "TRUE" or "FALSE" values indicating whether to do a log transformation on the data, default value being "TRUE". The "quantile" is to remove the tail of the data, so that we get a more sensitive result. The default is 0.05 and 0.95, which means that 90% of the data in the middle are kept. The output is a percent of the overlapping area. 
+
+```r
+# iflog is T or F, quantile is a 2 dimension vector like c(0.05,0.95)
+area <- function(x, y, iflog = T, quantile = c(0.05, 0.95)) {
+    area <- 0
+    area.x <- 0
+    area.y <- 0
+    x <- na.omit(x)
+    y <- na.omit(y)
+    qx <- quantile(x, quantile)
+    qy <- quantile(y, quantile)
+    x <- x[(x >= qx[1]) * (x <= qx[2]) * (1:length(x))]
+    y <- y[(y >= qy[1]) * (y <= qy[2]) * (1:length(y))]
+    if (iflog == T) {
+        x <- log(x + 1)
+        y <- log(y + 1)
+    }
+    int <- sort(c(x, y))
+    for (i in 2:length(int)) {
+        area <- area + min(sum(x < int[i])/length(x), sum(y < int[i])/length(y)) * 
+            (int[i] - int[i - 1])
+        area.x <- area.x + sum(x < int[i])/length(x) * (int[i] - int[i - 1])
+        area.y <- area.y + sum(y < int[i])/length(y) * (int[i] - int[i - 1])
+    }
+    n1 <- sum(x == max(int)) + sum(y == max(int))
+    area <- area + n1/(length(c(x, y)) - n1) * (max(int) - min(int))
+    area.x <- area.x + n1/(length(c(x, y)) - n1) * (max(int) - min(int))
+    area.y <- area.y + n1/(length(c(x, y)) - n1) * (max(int) - min(int))
+    ratio <- 2 * area/(area.x + area.y)
+    return(ratio)
+}
+```
+
+  Cross-Validation is used to estimate the uncertainty of the overlapping rate. The CV fold number can be set by users. 
+
+
+```r
+area.uncert <- function(x, y, iflog = T, quantile = c(0.05, 0.95), fold = 7) {
+    loc.x <- 1:length(x)
+    for (f in 1:(fold - 1)) {
+        assign(paste("idx", f, sep = ""), sample(loc.x, round(length(x)/fold, 
+            0)))
+        loc.x <- loc.x[-which(match(loc.x, get(paste("idx", f, sep = ""))) >= 
+            1)]
+    }
+    assign(paste("idx", fold, sep = ""), loc.x)
+    loc.y <- 1:length(y)
+    for (f in 1:(fold - 1)) {
+        assign(paste("idy", f, sep = ""), sample(loc.y, round(length(y)/fold, 
+            0)))
+        loc.y <- loc.y[-which(match(loc.y, get(paste("idy", f, sep = ""))) >= 
+            1)]
+    }
+    assign(paste("idy", fold, sep = ""), loc.y)
+    out <- vector()
+    for (t in 1:fold) {
+        out[t] <- area(x[-get(paste("idx", t, sep = ""))], y[-get(paste("idy", 
+            t, sep = ""))], iflog, quantile)
+    }
+    return(sd(out))
+}
+```
+
+  
+  The default CV fold number is 7. Why set that number? It is found that too small fold number will cause high variation of the value of uncertainty because of the information loss of small samples, while too large fold number will prolong the calculation time. 
+
+  Below is the mean and variation of the uncertainty when fold number is from 2 to 10. We can see that when we choose 7 fold, the variation is small enough, which means that the estimate of uncertainty is stable enough. 
+  
+  Besides, we can see that as the fold number gets larger, the uncertainty gets smaller. Thus, to make the uncertainty comparable when comparing many models, it might be neccesary to set the fold number fixed. 
+
+
+
+```r
+unnn <- matrix(nrow = 30, ncol = 9)
+for (t in 1:30) {
+    for (n in 2:10) {
+        unnn[t, n - 1] <- area.uncert(prior, post, fold = n)
+    }
+}
+plot(2:10, colMeans(unnn))
+```
+
+![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-41.png) 
+
+```r
+var <- vector()
+for (n in 1:9) {
+    var[n] <- var(unnn[, n])
+}
+plot(2:10, var)
+```
+
+![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-42.png) 
+
+  
+  By calculating different measures we can give out comparison of empirical distributions. The measures we use here is Correlation Coefficient(R), Root Mean Squared difference (E),Taylor Scale(S) Standard Deviation of reference and the model(sd.r,sd.f). Besides the Taylor diagram is given.
+  Since the Correlation and the RMS as well as Taylor Scale all require that the distribution we are comparing should be of the same length, quantile selection is used here before all measures are implemented.
+  In the measure function, the input "ref" and "model" are two samples. Users can set the output names of the two samples or they'll be names as "ref" and "model".
+
+
+```r
+## iflog, quantile and fold are for the area/area.uncert function since
+## both will be called within this function. rname and mname is the name
+## of the two distributions that will show in the plot.
+measure <- function(ref, model, rname = c("ref"), mname = c("model"), normalize = FALSE, 
+    iflog = T, quantile = c(0.05, 0.95), fold = c(7)) {
+    ref <- na.omit(ref)
+    model <- na.omit(model)
+    len <- min(length(ref), length(model))
+    quantil <- seq(1/(len + 1), 1 - 1/(len + 1), by = 1/(len + 1))
+    ref <- ref[round(quantil * length(ref), 0)]
+    model <- model[round(quantil * length(model), 0)]
+    if (is.list(ref)) 
+        ref <- unlist(ref)
+    if (is.list(model)) 
+        model <- unlist(model)
+    sd.r <- sd(na.omit(ref))
+    sd.f <- sd(na.omit(model))
+    if (normalize) {
+        sd.f <- sd.f/sd.r
+        sd.r <- 1
+    }
+    R <- sum((ref - mean(ref)) * (model - mean(model)))/len/sd.f/sd.r
+    E <- ((sum((model - ref)^2))/len)^(1/2)
+    S <- (2 * sqrt(1 + R))/(sd.f + (1/sd.f))^2
+    measures <- c(sd.f, sd.r, R, E, S, area(ref, model, iflog, quantile), area.uncert(ref, 
+        model, iflog, quantile, fold))
+    result <- as.data.frame(measures, row.names = c("sd.f", "sd.r", "R", "E", 
+        "S", "overlap", "sd.overlap"))
+    taylor.diagram(ref, model)
+    RR <- cor(ref, model, use = "pairwise")
+    sd.r <- sd(ref)
+    sd.f <- sd(model)
+    text(sd.r, 0, labels = rname, pos = 3)
+    text(sd.f * R, sd.f * sin(acos(R)), labels = mname, pos = 3)
+    return(result)
+}
+measure(prior, post)
+```
+
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5.png) 
+
+```
+##             measures
+## sd.f       12.976436
+## sd.r       19.359255
+## R           0.332774
+## E          19.397039
+## S           0.013550
+## overlap     0.893690
+## sd.overlap  0.004082
+```
+
+
+
