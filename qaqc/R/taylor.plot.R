@@ -13,6 +13,7 @@
 <<<<<<< HEAD
 new.taylor <- function(dataset,runid,siteid){
   attach(dataset)
+  require(plotrix)
   for(run in runid){
     for (si in siteid){
       if (run==runid[1]&&si==siteid[1]){

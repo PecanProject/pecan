@@ -19,8 +19,13 @@ for (yr in 2002:2005)
                      start.year=yr, end.year=yr,
                      variables=var,
                      model="SIPNET")
+<<<<<<< HEAD
    data2 <- list(data2=data1[[1]]+rnorm(length(data1[[1]]),0,sd(data1[[1]])/rnorm(1,5,1)))
    obst <- list(obs=data1[[1]]+rnorm(length(data1[[1]]),0,sd(data1[[1]])/rnorm(1,5,1)))
+=======
+   data2 <- list(data2=data1[[1]]+rnorm(length(data1[[1]]),0,sd(data1[[1]])/5))
+   obst <- list(obs=data1[[1]]+rnorm(length(data1[[1]]),0,sd(data1[[1]])/5))
+>>>>>>> f7aec7580bafa7debb42cddd175f24255e3ad8e4
    testdatat <- data.frame(site=rep(1,length(data1[[1]])),
                           date=rep(yr,length(data1[[1]])),
                           obs=obst[[1]],
