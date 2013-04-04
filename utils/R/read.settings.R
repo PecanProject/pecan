@@ -105,7 +105,7 @@ check.settings <- function(settings) {
 
   # check modelid with values
   if (is.null(settings$model$id)) {
-    settings$model$id <- "NA"
+    settings$model$id <- -1
   } else {
     model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database);
     model$binary <- tail(strsplit(model$model_path, ":")[[1]], 1)
@@ -133,7 +133,7 @@ check.settings <- function(settings) {
 
   # check siteid with values
   if (is.null(settings$run$site$id)) {
-    settings$run$site$id <- "NA"
+    settings$run$site$id <- -1
   } else {
     site <- db.query(paste("SELECT * FROM sites WHERE id =", settings$run$site$id), params=settings$database);
 
