@@ -2,7 +2,7 @@
 ##'
 ##' This is just a first draft
 ##' @title PEcAn worldmap
-##' @param infile csv file with columns lat, lon, and (variable) 
+##' @param df.in data.frame with columns lat, lon, and (variable) 
 ##' @param outfile png file  
 ##' @return NULL plot as side effect
 ##' @author David LeBauer
@@ -11,16 +11,12 @@
 ##' pecan.worldmap(infile = system.file("extdata/miscanthusyield.csv",
 ##'                                      package = "PEcAn.visualization"),
 ##'                outfile = file.path(tempdir(), 'worldmap.png'))
-pecan.worldmap <- function(infile, outfile = "worldmap.png"){
+pecan.worldmap <- function(df.in, outfile = "worldmap.png"){
 
   ### map of yields
   world <- map_data("world")
   states <- map_data("state")
-  if(grepl('https', infile)){
-    file.url <- getURL(infile, ssl.verifypeer = FALSE)
-    infile <- textConnection(file.url)
-  }
-  rawdf <- read.csv(infile)
+  rawdf <- df.in
   var <-   colnames(rawdf)[!colnames(df) %in% c("X", "lat", "lon")]
   colnames(rawdf)[!colnames(rawdf) %in% c("X", "lat", "lon")] <- "var"
   
@@ -41,16 +37,19 @@ pecan.worldmap <- function(infile, outfile = "worldmap.png"){
   rdf <- data.frame( rasterToPoints( rf ) )    
   
   p <-ggplot() + 
-    geom_polygon(data = world, 
-                 aes(x=long, y=lat, group = group), 
-                 colour="grey", fill="white") +
-    geom_raster(data = rdf, aes(x, y, fill = layer)) +
-    xlab("Longitude") + ylab("Latitude") + ggtitle(var) +
+#    geom_polygon(data = world, 
+#                 aes(x=long, y=lat, group = group), 
+#                 colour="grey", fill="white") +
+    geom_raster(data = rdf, aes(x, y, fill = layer)) + xlim(-180,180) + ylim(-90, 90) +
+#    geom_point(aes(x = c(-180, -180, 180, 180), y = c(-90, 90, -90, 90), size = 0.1)) +
+#    xlab("Longitude") + ylab("Latitude") + ggtitle(var) +
     theme_nothing() +
     scale_fill_gradientn(colours = colorRampPalette(c("darkblue", "wheat", "darkred"))(20)) 
   
   
-  ggsave(filename = outfile, plot = p, width = 44, height = 34, units="in", dpi = 100)
+  ggsave(filename = outfile, plot = p, 
+         width = 44, height = 34, 
+         units="in", dpi = 100, bg="transparent")
   
 }
 
