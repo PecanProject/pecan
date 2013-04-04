@@ -5,16 +5,10 @@ Map
 require(raster)
 require(sp)
 require(ggplot2)
-require(RCurl)
-tmp <- getURL("https://gist.github.com/geophtwombly/4635980/raw/f657dcdfab7b951c7b8b921b3a109c7df1697eb8/test.csv")
-testdf <- read.csv(textConnection(tmp))
+require(PEcAn.visualization)
+data(yielddf, package = "PEcAn.visualization")
 
-mapin <- testdf
-colnames(mapin) <- c('lat', 'lon', 'yield')
-write.csv(mapin, file.path(tempdir(), "mapin.csv"))
-
-
-pecan.worldmap(file.path(tempdir(), "mapin.csv"))
+pecan.worldmap()
 
 spdf <- SpatialPointsDataFrame( data.frame( x = testdf$y , y = testdf$x ) , data = data.frame( z = testdf$z ) )
 
