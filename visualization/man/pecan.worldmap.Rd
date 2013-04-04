@@ -2,10 +2,10 @@
 \alias{pecan.worldmap}
 \title{PEcAn worldmap}
 \usage{
-  pecan.worldmap(infile, outfile = "worldmap.png")
+  pecan.worldmap(df.in, outfile = "worldmap.png")
 }
 \arguments{
-  \item{infile}{csv file with columns lat, lon, and
+  \item{df.in}{data.frame with columns lat, lon, and
   (variable)}
 
   \item{outfile}{png file}
