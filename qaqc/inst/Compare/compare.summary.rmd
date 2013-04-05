@@ -3,9 +3,9 @@ Comparison of different empirical distributions
 To compare two different empirical distribution, calculating the overlap of the distribution funtion is one of the most direct moethods. The area function gives out the approximate overlap area of the two empirical distributions and an "Overlapping Rate" given as a measure of the "similarity".
 ```{r}
 library(plotrix)
-load("/home/carya/pecan/qaqc/inst/Compare/prior/output.Rdata")
+load("/home/carya/pecan/qaqc/inst/extdata/prior/output.Rdata")
 priors <- ensemble.output
-load("/home/carya/pecan/qaqc/inst/Compare/post/output.Rdata")
+load("/home/carya/pecan/qaqc/inst/extdata/post/output.Rdata")
 post <- ensemble.output
 prior <- as.vector(unlist(priors))
 post <- as.vector(unlist(post))
@@ -13,13 +13,13 @@ post <- as.vector(unlist(post))
 heaton.data <- data.frame(mean = c(11.5, 10.6, 15.6), sd = c(1.8, 1.3, 2.6) * sqrt(4))
 heaton.sim <- c(rnorm(10000, 11.5, 1.8*sqrt(3)), rnorm(10000, 10.6, 1.3 * sqrt(3)), rnorm(10000, 15.6, 2.6 * sqrt(3))) 
 # wang's data is paviyield$yield
-paviyield <- read.csv('/home/carya/pecan/qaqc/inst/Compare/wang2010data.csv', sep = ';', header = F)
+paviyield <- read.csv('/home/carya/pecan/qaqc/inst/extdata/wang2010data.csv', sep = ';', header = F)
 
 ```
 The area function is to calculate the overlapping area of empirical distributions from two samples. The input x and y are the two samples. The "iflog" takes "TRUE" or "FALSE" values indicating whether to do a log transformation on the data, default value being "TRUE". The "quantile" is to remove the tail of the data, so that we get a more sensitive result. The default is 0.05 and 0.95, which means that 90% of the data in the middle are kept. The output is a percent of the overlapping area. 
 ```{r}
 # iflog is T or F, quantile is a 2 dimension vector like c(0.05,0.95)
-area <- function(x,y,iflog=T,quantile=c(0.05,0.95)){
+overlap.cdf <- function(x,y,iflog=T,quantile=c(0.05,0.95)){
   area <- 0
   area.x <- 0
   area.y <- 0
@@ -50,7 +50,7 @@ area <- function(x,y,iflog=T,quantile=c(0.05,0.95)){
   Cross-Validation is used to estimate the uncertainty of the overlapping rate. The CV fold number can be set by users. 
 
 ```{r}
-area.uncert <- function(x,y,iflog=T,quantile=c(0.05,0.95),fold=7) {
+overlap.cdf.uncert <- function(x,y,iflog=T,quantile=c(0.05,0.95),fold=7) {
   loc.x <- 1:length(x)
   for (f in 1:(fold-1)) {
     assign(paste("idx",f,sep=""),sample(loc.x,round(length(x)/fold,0)))
@@ -65,7 +65,7 @@ area.uncert <- function(x,y,iflog=T,quantile=c(0.05,0.95),fold=7) {
   assign(paste("idy",fold,sep=""),loc.y)
   out <- vector()
   for (t in 1:fold) {
-    out[t] <- area(x[-get(paste("idx",t,sep=""))],y[-get(paste("idy",t,sep=""))],iflog,quantile)
+    out[t] <- overlap.cdf(x[-get(paste("idx",t,sep=""))],y[-get(paste("idy",t,sep=""))],iflog,quantile)
   }
   return(sd(out))
 }
@@ -82,7 +82,7 @@ area.uncert <- function(x,y,iflog=T,quantile=c(0.05,0.95),fold=7) {
 unnn <- matrix(nrow=30,ncol=9)
 for (t in 1:30) {
   for (n in 2:10) {
-    unnn[t,n-1] <- area.uncert(prior,post,fold=n)
+    unnn[t,n-1] <- overlap.cdf.uncert(prior,post,fold=n)
   }
 }
 plot(2:10,colMeans(unnn))
@@ -99,7 +99,8 @@ plot(2:10,var)
 
 ```{r fig.width=7, fig.height=6}
 ##iflog, quantile and fold are for the area/area.uncert function since both will be called within this function. rname and mname is the name of the two distributions that will show in the plot. 
-measure <- function(ref,model,rname=c("ref"),mname=c("model"),normalize=FALSE,iflog=T,quantile=c(0.05,0.95),fold=c(7)){
+compare.summary <- function(ref,model,rname=c("ref"),mname=c("model"),normalize=FALSE,iflog=T,quantile=c(0.05,0.95),fold=c(7)){
+  library(plotrix)
   ref <- na.omit(ref)
   model <- na.omit(model)
   len <- min(length(ref),length(model))
@@ -119,14 +120,14 @@ measure <- function(ref,model,rname=c("ref"),mname=c("model"),normalize=FALSE,if
   R <-sum((ref-mean(ref))*(model-mean(model)))/len/sd.f/sd.r
   E <-((sum((model-ref)^2))/len)^(1/2)
   S <- (2 * sqrt(1 + R))/(sd.f + (1/sd.f))^2
-  measures <-c(sd.f,sd.r,R,E,S,area(ref,model,iflog,quantile),area.uncert(ref,model,iflog,quantile,fold))
+  measures <-c(sd.f,sd.r,R,E,S,overlap.cdf(ref,model,iflog,quantile),overlap.cdf.uncert(ref,model,iflog,quantile,fold))
   result <-as.data.frame(measures,row.names=c("sd.f","sd.r","R","E","S","overlap","sd.overlap"))
-  taylor.diagram(ref,model)
+  taylor.diagram(ref,model,nomalize=nomalize)
   RR <- cor(ref, model, use = "pairwise")
   sd.r <- sd(ref)
   sd.f <- sd(model)
   text(sd.r, 0, labels=rname,pos=3)
-  text(sd.f * R, sd.f * sin(acos(R)), labels=mname,pos=3)
+  text(sd.f * RR, sd.f * sin(acos(RR)), labels=mname,pos=3)
   return(result)
 }
 measure(prior,post)
