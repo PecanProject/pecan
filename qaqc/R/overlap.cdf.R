@@ -1,6 +1,5 @@
 # iflog is T or F, quantile is a 2 dimension vector like c(0.05,0.95)
 overlap.cdf <- function(x,y,iflog=T,quantile=c(0.05,0.95)){
-  load(PEcAn.qaqc)
   area <- 0
   area.x <- 0
   area.y <- 0

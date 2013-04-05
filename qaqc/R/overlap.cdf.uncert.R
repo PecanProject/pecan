@@ -1,5 +1,4 @@
 overlap.cdf.uncert <- function(x,y,iflog=T,quantile=c(0.05,0.95),fold=7) {
-  load(PEcAn.qaqc)
   loc.x <- 1:length(x)
   for (f in 1:(fold-1)) {
     assign(paste("idx",f,sep=""),sample(loc.x,round(length(x)/fold,0)))

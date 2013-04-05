@@ -1,5 +1,4 @@
 compare.summary <- function(ref,model,rname=c("ref"),mname=c("model"),normalize=FALSE,iflog=T,quantile=c(0.05,0.95),fold=c(7)){
-  load(PEcAn.qaqc)
   ref <- na.omit(ref)
   model <- na.omit(model)
   len <- min(length(ref),length(model))
