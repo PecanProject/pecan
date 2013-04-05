@@ -106,7 +106,7 @@ check.settings <- function(settings) {
   # check modelid with values
   if (is.null(settings$model$id)) {
     settings$model$id <- -1
-  } else {
+  } else if (settings$model$id >= 0) {
     model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database);
     model$binary <- tail(strsplit(model$model_path, ":")[[1]], 1)
 
@@ -134,7 +134,7 @@ check.settings <- function(settings) {
   # check siteid with values
   if (is.null(settings$run$site$id)) {
     settings$run$site$id <- -1
-  } else {
+  } else if (settings$site$id >= 0) {
     site <- db.query(paste("SELECT * FROM sites WHERE id =", settings$run$site$id), params=settings$database);
 
     if (is.null(settings$run$site$name)) {
@@ -324,17 +324,8 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
     stop("Could not find a pecan.xml file")
   }
 
-  ## check to see if a saved version already exists.
-  settings <- xmlToList(xml)
-  output <- file.path(settings$outdir, outputfile)
-  if (file.exists(output)) {
-    logger.info("Loading saved settings file=", output)
-    xml <- xmlParse(output)
-    settings <- xmlToList(xml)
-  }
-
   ## convert the xml to a list for ease and return
-  settings <- check.settings(settings)
+  settings <- check.settings(xmlToList(xml))
   
   ## save the checked/fixed pecan.xml
   if (file.exists(output)) {
