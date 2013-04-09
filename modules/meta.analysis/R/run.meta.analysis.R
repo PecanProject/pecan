@@ -58,8 +58,8 @@ run.meta.analysis <- function() {
     
     ### Check that PFT(s) were specified in settings.xml file.  Otherwise stop and report error.
     if(length(settings$pfts) == 0){
-      stop("**** WARNING: No PFT(s) specified in the PEcAn XML settings file ****......Please check.")}
-    ###
+      stop("**** WARNING: No PFT(s) specified in the PEcAn XML settings file ****......Please check.")
+    }
     
     ## loop over pfts
     for(pft in settings$pfts){
