@@ -134,7 +134,7 @@ check.settings <- function(settings) {
   # check siteid with values
   if (is.null(settings$run$site$id)) {
     settings$run$site$id <- -1
-  } else if (settings$site$id >= 0) {
+  } else if (settings$run$site$id >= 0) {
     site <- db.query(paste("SELECT * FROM sites WHERE id =", settings$run$site$id), params=settings$database);
 
     if (is.null(settings$run$site$name)) {
