@@ -107,7 +107,10 @@ check.settings <- function(settings) {
   if (is.null(settings$model$id)) {
     settings$model$id <- -1
   } else if (settings$model$id >= 0) {
-    model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database);
+    model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database)
+    if(nrow(model) == 0) {
+      logger.error("There is no record of model_id = ", settings$model$id, "in database")
+    }
     model$binary <- tail(strsplit(model$model_path, ":")[[1]], 1)
 
     if (is.null(settings$model$name)) {
