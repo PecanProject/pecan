@@ -10,8 +10,9 @@ Open and read in settings file for PEcAn run.
 
 
 ```{r, echo=FALSE,warning=FALSE}
-settings <- read.settings(system.file("pecan.biocro.xml",
+settings <- read.settings(system.file("extdata/pecan.biocro.xml",
                                       package = "PEcAn.BIOCRO"))
+
 model <- settings$model$name
 
 
@@ -19,11 +20,13 @@ model <- settings$model$name
 ### Run PEcAn workflow
 
 ```{r, echo=FALSE,warning=FALSE,cache=TRUE}
-settings$pfts$pft$name <- "ebifarm.pavi"
+
 get.trait.data()        	# Query the trait database for data and priors
 
 run.meta.analysis()     	# Run the PEcAn meta.analysis
 ```
+
+
 
 ```{r, echo=FALSE,warning=FALSE,cache=TRUE}
 run.write.configs(model)        # Calls model specific write.configs e.g. write.config.ed.R
