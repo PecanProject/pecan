@@ -331,10 +331,10 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
   settings <- check.settings(xmlToList(xml))
   
   ## save the checked/fixed pecan.xml
-  if (file.exists(output)) {
-    logger.warn(paste("File already exists [", output, "] file will be overwritten"))
+  if (file.exists(outputfile)) {
+    logger.warn(paste("File already exists [", outputfile, "] file will be overwritten"))
   }
-  saveXML(listToXml(settings, "pecan"), file=output)
+  saveXML(listToXml(settings, "pecan"), file=outputfile)
 
   ## setup Rlib from settings
   if(!is.null(settings$Rlib)){

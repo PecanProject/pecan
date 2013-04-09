@@ -9,14 +9,10 @@
 ## require(XML)
 
 test_that("read.settings works ",{
-  ## create settings file "tmp"
-  test.output <- tempfile(tmpdir = "")
-  test.settings <- system.file("extdata/test.settings.xml", package = "PEcAn.utils")
+  test.output <- tempfile()
   test.settings <- system.file("extdata/test.settings.xml", package = "PEcAn.utils")
   settings <- read.settings(test.settings, outputfile = test.output)
-  test.output.path <- file.path(settings$outdir, test.output)
-  read.settings(test.output.path)
-  expect_true(file.remove(test.output.path))
+  expect_true(file.remove(test.output))
 })
 
 ## context("tests for read.settings and related functions")
