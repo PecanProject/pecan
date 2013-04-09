@@ -9,5 +9,4 @@
 library(testthat)
 library(PEcAn.DB)
 
-#test_package("foo")
-source("PFT_consistency.R")
+test_package("PEcAn.data.land")
