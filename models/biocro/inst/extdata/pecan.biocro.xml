@@ -88,9 +88,9 @@
     </pft>
   </pfts>
   <database>
-    <userid>bety</userid>
-    <passwd>bety</passwd>
-    <name>bety</name>
+    <username>bety</username>
+    <password>bety</password>
+    <dbname>bety</dbname>
     <host>localhost</host>
   </database>
   <meta.analysis>

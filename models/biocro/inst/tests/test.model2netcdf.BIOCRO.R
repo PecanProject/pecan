@@ -1,6 +1,4 @@
 
-
-
 result.csv <- system.file("extdata/result.csv", package = "PEcAn.BIOCRO")
 runs.samples <- list(ensemble = data.frame(id = 1))
 runoutdir <- file.path(settings$outdir, "1")
