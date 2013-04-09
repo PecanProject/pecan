@@ -32,7 +32,7 @@
   <model>
     <name>SIPNET</name>
     <binary>/usr/local/bin/sipnet.runk</binary>
-    <id>11</id>
+    <id>9</id>
   </model>
   <run>
     <folder>/tmp/out/</folder>
