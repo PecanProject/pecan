@@ -8,8 +8,9 @@
 ##' @author David LeBauer
 ##' @export
 ##' @examples
-##' pecan.worldmap(infile = system.file("extdata/miscanthusyield.csv",
-##'                                      package = "PEcAn.visualization"),
+##' miscanthusyield <- read.csv(system.file("extdata/miscanthusyield.csv",
+##'                                      package = "PEcAn.visualization"))
+##' pecan.worldmap(df.in = miscanthusyield,
 ##'                outfile = file.path(tempdir(), 'worldmap.png'))
 pecan.worldmap <- function(df.in, outfile = "worldmap.png"){
 
