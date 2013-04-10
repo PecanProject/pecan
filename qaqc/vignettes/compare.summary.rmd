@@ -3,9 +3,9 @@ Comparison of different empirical distributions
 To compare two different empirical distribution, calculating the overlap of the distribution funtion is one of the most direct moethods. The area function gives out the approximate overlap area of the two empirical distributions and an "Overlapping Rate" given as a measure of the "similarity".
 ```{r}
 library(plotrix)
-load("/home/carya/pecan/qaqc/inst/extdata/prior/output.Rdata")
+load(system.file("inst/extdata/prior","output.Rdata",package="PEcAn.qaqc"))
 priors <- ensemble.output
-load("/home/carya/pecan/qaqc/inst/extdata/post/output.Rdata")
+load(system.file("inst/extdata/post","output.Rdata",package="PEcAn.qaqc"))
 post <- ensemble.output
 prior <- as.vector(unlist(priors))
 post <- as.vector(unlist(post))
@@ -13,7 +13,7 @@ post <- as.vector(unlist(post))
 heaton.data <- data.frame(mean = c(11.5, 10.6, 15.6), sd = c(1.8, 1.3, 2.6) * sqrt(4))
 heaton.sim <- c(rnorm(10000, 11.5, 1.8*sqrt(3)), rnorm(10000, 10.6, 1.3 * sqrt(3)), rnorm(10000, 15.6, 2.6 * sqrt(3))) 
 # wang's data is paviyield$yield
-paviyield <- read.csv('/home/carya/pecan/qaqc/inst/extdata/wang2010data.csv', sep = ';', header = F)
+paviyield <- read.csv(system.file("inst/extdata","wang2010data.csv",package="PEcAn.qaqc"), sep = ';', header = F)
 
 ```
 The area function is to calculate the overlapping area of empirical distributions from two samples. The input x and y are the two samples. The "iflog" takes "TRUE" or "FALSE" values indicating whether to do a log transformation on the data, default value being "TRUE". The "quantile" is to remove the tail of the data, so that we get a more sensitive result. The default is 0.05 and 0.95, which means that 90% of the data in the middle are kept. The output is a percent of the overlapping area. 
@@ -130,7 +130,7 @@ compare.summary <- function(ref,model,rname=c("ref"),mname=c("model"),normalize=
   text(sd.f * RR, sd.f * sin(acos(RR)), labels=mname,pos=3)
   return(result)
 }
-measure(prior,post)
+compare.summary(prior,post)
 ```
 
 
