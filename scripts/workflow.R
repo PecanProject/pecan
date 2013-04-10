@@ -12,7 +12,7 @@ require(PEcAn.all)
 
 #---------------- Load PEcAn settings file. -------------------------------------------------------#
 # Open and read in settings file for PEcAn run.
-settings <- read.settings()
+settings <- read.settings("/home/carya/pecan/qaqc/vignettes/try.xml")
 #--------------------------------------------------------------------------------------------------#
 
 model <- ifelse("model" %in% names(settings), settings$model$name, "ED2")
@@ -32,7 +32,7 @@ get.model.output(model)         # Get results of model runs
 
 run.sensitivity.analysis()      # Run sensitivity analysis and variance decomposition on model output
 
-run.ensemble.analysis()		      # Run ensemble analysis on model output. 
+run.ensemble.analysis(TRUE)		      # Run ensemble analysis on model output. 
                                 # OPTIONAL: run.ensemble.analysis(plot.timeseries=TRUE) to get an esemble 
                                 # time-series output for the target variables set in the PEcAn.xml file
 
