@@ -8,7 +8,7 @@ require(ggplot2)
 require(PEcAn.visualization)
 data(yielddf, package = "PEcAn.visualization")
 
-pecan.worldmap(yielddf, outfile=file.path(tempdir())
+pecan.worldmap(yielddf, outfile=file.path(tempdir(), 'foo.png'))
 
 spdf <- SpatialPointsDataFrame( data.frame( x = testdf$y , y = testdf$x ) , data = data.frame( z = testdf$z ) )
 
@@ -17,6 +17,35 @@ spplot(spdf)
 
 ```
 
+
+### Plot all maps for BETYdb
+
+```{r}
+files <- dir("~/R-dev/bety/local/modelout/", pattern="grid.csv", full.names=TRUE)
+yieldfiles <- files[!grepl("evapotranspiration", files)]
+etfiles <- files[grepl("evapotranspiration", files)]
+for(file in yieldfiles){
+    df.in <- read.csv(file)
+
+  outfile <- gsub("csv", "png", file)
+  print(outfile)
+  print(dim(df.in))
+  pecan.worldmap(df.in, outfile=outfile)
+}
+
+
+for(file in etfiles){
+  df.in <- read.csv(file, skip = 1)
+
+  outfile <- gsub("csv", "png", file)
+  print(outfile)
+  print(dim(df.in))
+  pecan.worldmap(df.in, outfile=outfile)
+}
+
+```
+
+### Misc additional code
 
 ```{r fig.width=7, fig.height=6}
 
