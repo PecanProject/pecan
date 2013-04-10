@@ -77,8 +77,8 @@ run.meta.analysis <- function() {
       if(length(trait.data) == 0){
         logger.info("no trait data for PFT", pft$name, 
                     "\n so no meta-analysis will be performed")
-      } else if (length(trait.data > 0)) {
-         print("Trait data loaded for PFT: ", pft$name,sep="")
+      } else if (length(trait.data) > 0) {
+         logger.info("Trait data loaded for PFT: ", pft$name)
         
 
         ## Jagify trait data for meta.analysis

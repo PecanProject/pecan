@@ -4,7 +4,7 @@
   <rundir>/tmp/</rundir>
   <pfts>
     <pft>
-      <name>biocro.saof</name>
+      <name>biocro.salix</name>
       <outdir>/tmp/</outdir>
       <constants>
 	<canopyParms>
