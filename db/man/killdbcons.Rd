@@ -11,6 +11,8 @@
   Kill existing database connections
 }
 \details{
+  Deprecated, this should never be called
+
   resolves (provides workaround to) bug #769 caused by
   having too many open connections \code{Error during
   wrapup: RS-DBI driver: (cannot allocate a new connection

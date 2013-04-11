@@ -16,6 +16,8 @@
 }
 \details{
   Also removes any existing connections.
+
+  Deprecated, please use db.open
 }
 \examples{
 \dontrun{
