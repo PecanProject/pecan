@@ -2,11 +2,14 @@
 \alias{read.ensemble.output}
 \title{Read ensemble output}
 \usage{
-  read.ensemble.output(ensemble.size, outdir, start.year,
-    end.year, variables, model)
+  read.ensemble.output(ensemble.size, pecandir, outdir,
+    start.year, end.year, variables, model)
 }
 \arguments{
   \item{ensemble.size}{the number of ensemble members run}
+
+  \item{pecandir}{specifies where pecan writes its
+  configuration files}
 
   \item{outdir}{directory with model output to use in
   ensemble analysis}

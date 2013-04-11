@@ -2,7 +2,10 @@
 \alias{db.exists}
 \title{db.exists}
 \usage{
-  db.exists(...)
+  db.exists(params, write = TRUE)
+}
+\arguments{
+  \item{params}{database connection information}
 }
 \value{
   TRUE if database connection works; else FALSE
@@ -15,6 +18,6 @@
   connection exists
 }
 \author{
-  David LeBauer
+  David LeBauer, Rob Kooper
 }
 
