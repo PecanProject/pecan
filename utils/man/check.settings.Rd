@@ -8,16 +8,19 @@
   \item{settings}{settings file}
 }
 \value{
-  error if minimum fields are not provided
+  will return the updated settings values with defaults
+  set.
 }
 \description{
   Sanity checks. Checks the settings file to make sure
-  expected fields exist.
+  expected fields exist. It will try to use default values
+  for any missing values, or stop the exection if no
+  defaults are possible.
 }
 \details{
   Expected fields in settings file are: - pfts with at
   least one pft defined - database - model - run with the
-  following fields -- site with id -- host with name
+  following fields -- site with id
 }
 \author{
   Rob Kooper
