@@ -2,8 +2,8 @@
 \alias{read.sa.output}
 \title{Read Sensitivity Analysis output}
 \usage{
-  read.sa.output(traits, quantiles, outdir, pft.name = "",
-    start.year, end.year, variables, model)
+  read.sa.output(traits, quantiles, pecandir, outdir,
+    pft.name = "", start.year, end.year, variables, model)
 }
 \arguments{
   \item{traits}{model parameters included in the
@@ -11,6 +11,9 @@
 
   \item{quantiles}{quantiles selected for sensitivity
   analysis}
+
+  \item{pecandir}{specifies where pecan writes its
+  configuration files}
 
   \item{outdir}{directory with model output to use in
   sensitivity analysis}

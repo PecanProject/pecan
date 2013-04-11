@@ -14,6 +14,8 @@
   Close database connection
 }
 \details{
+  Deprecated, please use db.close
+
   Closes a database connection
 }
 \author{

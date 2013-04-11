@@ -1,0 +1,22 @@
+\name{db.print.connections}
+\alias{db.print.connections}
+\title{Debug leaked connections}
+\usage{
+  db.print.connections()
+}
+\description{
+  Debug method for db.open and db.close
+}
+\details{
+  Prints the number of connections opened as well as any
+  connections that have never been closes.
+}
+\examples{
+\dontrun{
+db.print.connections()
+}
+}
+\author{
+  Rob Kooper
+}
+
