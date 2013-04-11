@@ -5,8 +5,7 @@
   read.settings(inputfile = NULL, outputfile = "pecan.xml")
 }
 \arguments{
-  \item{inputfile}{the PEcAn settings file to be merged
-  with the others.}
+  \item{inputfile}{the PEcAn settings file to be used.}
 
   \item{outputfile}{the name of file to which the settings
   will be written inside the outputdir.}
@@ -15,18 +14,16 @@
   list of all settings as loaded from the XML file(s)
 }
 \description{
-  This will load the PEcAn settings file in the following
-  order, merging their values and overriding any values
-  that are specified in a file later in the order
+  This will try and find the PEcAn settings file in the
+  following order:
 }
 \details{
-  \enumerate{ \item {/etc/pecan.xml}{global file for all
-  users} \item {~/.pecan.xml}{settings for all projects for
-  the user} \item {PECAN_SETTINGS}{environment variable
-  PECAN_SETTINGS pointing to a specific file} \item
-  {inputfile}{passed as argument to function} \item
-  {--settings <file>}{passed as command line argument using
-  --settings} }
+  \enumerate{ \item {--settings <file>}{passed as command
+  line argument using --settings} \item {inputfile}{passed
+  as argument to function} \item
+  {PECAN_SETTINGS}{environment variable PECAN_SETTINGS
+  pointing to a specific file} \item
+  {./pecan.xml}{pecan.xml in the current folder} }
 }
 \examples{
 \dontrun{
