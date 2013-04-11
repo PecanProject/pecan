@@ -2,7 +2,8 @@
 \alias{pecan.worldmap}
 \title{PEcAn worldmap}
 \usage{
-  pecan.worldmap(df.in, outfile = "worldmap.png")
+  pecan.worldmap(df.in, outfile = "worldmap.png",
+    xlim = c(-130, -30), ylim = c(-40, 60))
 }
 \arguments{
   \item{df.in}{data.frame with columns lat, lon, and

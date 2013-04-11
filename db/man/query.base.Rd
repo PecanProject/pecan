@@ -21,6 +21,8 @@
 \details{
   Given a connection and a query, will return a query as a
   data frame
+
+  Deprecated, please use db.query
 }
 \examples{
 \dontrun{
