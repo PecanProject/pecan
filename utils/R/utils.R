@@ -260,6 +260,7 @@ summarize.result <- function(result) {
 ##' @param mcmc.summary 
 ##' @param sample.size 
 ##' @return list with summary statistics for parameters in an MCMC chain
+##' @export
 ##' @author David LeBauer
 get.stats.mcmc <- function(mcmc.summary, sample.size){
   a <- list(n = sample.size)

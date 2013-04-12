@@ -1,0 +1,29 @@
+library(devtools)
+document("modules/meta.analysis")
+test("modules/meta.analysis")
+#library(PEcAn.MA)
+
+#outdir <- '~/archives/manuscript/out/ebifarm/'
+
+iter <- 10000
+set.seed(0)
+
+## get Wang 2010 pavi yield data
+paviyield <- read.csv(system.file("inst/extdata","wang2010data.csv",package="PEcAn.MA"), sep = ';', header = F)
+
+colnames(paviyield) <- c('site', 'cultivar', 'ecotype', 'yield')
+
+## All traits considered
+traits <-  rownames(prior.distns) # c('mort2','growth_resp_factor','leaf_turnover_rate','leaf_width','nonlocal_dispersal','fineroot2leaf','root_turnover_rate','seedling_mortality','stomatal_slope','r_fract','root_respiration_rate','Vm_low_temp','SLA','Vcmax','quantum_efficiency')
+
+## Traits included in meta-analysis
+ma.traits <- names(trait.mcmc)  # c('SLA','leaf_width','seedling_mortality','Vcmax','fineroot2leaf','root_respiration_rate','root_turnover_rate')
+
+
+
+
+
+
+
+
+

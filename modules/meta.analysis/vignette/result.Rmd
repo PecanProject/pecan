@@ -1,0 +1,601 @@
+<<echo=false,results=hide>>=
+  #options(warn=-1)
+
+```{r}
+library(devtools)
+document("modules/meta.analysis")
+test("modules/meta.analysis")
+library(PEcAn.utils)
+#outdir <- '~/archives/manuscript/out/ebifarm/'
+#outdir <- 'F:/study/pecan/archives/manuscript/out/ebifarm/'
+
+iter <- 10000
+set.seed(0)
+######################################
+## Load results from prior runs
+######################################
+load(system.file("inst/extdata/prior","samples.Rdata",package="PEcAn.MA"))
+prior.trait.samples <- trait.samples[['ebifarm.pavi']]
+
+load(system.file("inst/extdata/prior","output.Rdata",package="PEcAn.MA"))
+#load(paste(outdir, 'prior/output.Rdata', sep = ''))
+prior.ensemble.output <- unlist(ensemble.output)[!is.na(unlist(ensemble.output))]
+
+load(system.file("inst/extdata/prior","sensitivity.results.Rdata",package="PEcAn.MA"))
+#load(paste(outdir, 'prior/sensitivity.results.Rdata', sep = ''))
+prior.sensitivity.results <- sensitivity.results[[1]]
+
+######################################
+## Remove raw results from prior runs
+######################################
+rm(list = c("sensitivity.results", "ensemble.output", "trait.samples"))
+
+####################################
+# Load Results from Posterior runs 
+####################################
+load(system.file("inst/extdata/post","prior.distns.Rdata",package="PEcAn.MA"))
+#load(paste(outdir, 'post/prior.distns.Rdata', sep = ''))
+load(system.file("inst/extdata/post","trait.data.Rdata",package="PEcAn.MA"))
+#load(paste(outdir, 'post/trait.data.Rdata', sep = ''))
+
+## MCMC chains have already been truncated and thinned
+load(system.file("inst/extdata/post","trait.mcmc.Rdata",package="PEcAn.MA"))
+#load(paste(outdir, 'post/trait.mcmc.Rdata', sep = ''))
+
+load(system.file("inst/extdata/post","samples.Rdata",package="PEcAn.MA"))
+#load(paste(outdir, 'post/samples.Rdata', sep = ''))
+post.ensemble.samples <- ensemble.samples[['ebifarm.pavi']]
+post.trait.samples <- trait.samples[['ebifarm.pavi']]
+
+### not sure why above does not have posteriors, but will create workaround
+### needs to be fixed in R/write.configs.utils.R 
+.tmp <- names(trait.mcmc)
+for (i in .tmp) {
+  post.trait.samples[[i]] <- as.matrix(trait.mcmc[[i]])[,'beta.o']
+}
+
+load(system.file("inst/extdata/post","output.Rdata",package="PEcAn.MA"))
+#load(paste(outdir, 'post/output.Rdata', sep = ''))
+post.ensemble.output  <- unlist(ensemble.output)[!is.na(unlist(ensemble.output))]
+
+load(system.file("inst/extdata/post","sensitivity.results.Rdata",package="PEcAn.MA"))
+#load(paste(outdir, 'post/sensitivity.results.Rdata', sep = ''))
+post.sensitivity.results  <- sensitivity.results[[1]]
+
+
+#########################################
+## Remove raw results from posterior runs
+#########################################
+rm(list = c("sensitivity.results", "ensemble.output", "trait.samples", "ensemble.samples"))
+
+
+## get Wang 2010 pavi yield data
+paviyield <- read.csv(system.file("inst/extdata","wang2010data.csv",package="PEcAn.MA"), sep = ';', header = F)
+colnames(paviyield) <- c('site', 'cultivar', 'ecotype', 'yield')
+
+## All traits considered
+traits <-  rownames(prior.distns) # c('mort2','growth_resp_factor','leaf_turnover_rate','leaf_width','nonlocal_dispersal','fineroot2leaf','root_turnover_rate','seedling_mortality','stomatal_slope','r_fract','root_respiration_rate','Vm_low_temp','SLA','Vcmax','quantum_efficiency')
+
+## Traits included in meta-analysis
+ma.traits <- names(trait.mcmc)  # c('SLA','leaf_width','seedling_mortality','Vcmax','fineroot2leaf','root_respiration_rate','root_turnover_rate')
+```
+
+```{r}
+
+#subsection*{Trait Meta-analysis}
+#<<trait.data,echo=FALSE,results=hide>>=
+  sample.size <- lapply(trait.data, nrow)
+```
+
+Switchgrass data were collected from the literature and field for seven of the model parameters: specific leaf area (SLA) ($n=\Sexpr{sample.size$SLA}$), leaf width ($\Sexpr{sample.size$leaf_width}$), V$_{\text{cmax}}$ ($\Sexpr{sample.size$Vcmax}$), fine root to leaf allocation ratio ($\Sexpr{sample.size$fineroot2leaf}$), stomatal slope ($\Sexpr{sample.size$stomatal_slope}$), root respiration rate ($\Sexpr{sample.size$root_respiration_rate}$), and root turnover rate ($\Sexpr{sample.size$root_turnover_rate}$).
+Table \ref{tab:maresults} summarizes the meta-analysis for each of these parameters, including the posterior mean and $95\%$ CI of the global mean, the fixed greenhouse effect, and each of the variance components (reported as standard deviations).
+<<maresults,echo=FALSE,results=hide>>=
+```{r}
+  sla.ghs.stats <- tabnum(summary(trait.mcmc$SLA)$statistics["beta.ghs[2]",][c('Mean', 'SD')], 2)
+######################
+## Meta Analysis Table 
+######################
+mcmc.summaries <- lapply(trait.mcmc, summary)
+
+## Make a table row
+
+#To load the function get.stats.mcmc
+#detach("package:PEcAn.utils", unload=TRUE)
+#add @export in the util.R file infront of the get.stats.mcmc function and save
+#document("utils")
+
+ma.results.list <- lapply(ma.traits, 
+                          function(x) get.stats.mcmc(mcmc.summaries[[x]], 
+                                                     sample.size[[x]]))
+ma.results <- t(as.data.frame(ma.results.list))
+
+rownames(ma.results) <- NULL
+#trait.dictionary <- read.csv(system.file("data","trait.dictionary.csv",package="PEcAn.utils"), sep = ';', header = F)
+#make some modification for the following code: 
+#ma.results <- data.frame(Variable = trait.dictionary(ma.traits)$figid, ma.results)
+ma.results <- data.frame(Variable = ma.traits, ma.results)
+colnames(ma.results) <- c("Variable", 'n', '$\\beta{_0}$',"$\\sigma_{Y}$", '$\\sigma_{\\text{site}}$', '$\\sigma_{\\text{treatment|site}}$', '$\\beta_{\\text{greenhouse}}$')
+
+```
+<<results=hide,echo=FALSE,label=matable>>=
+```{r}
+  print(xtable(ma.results, 
+               caption = "{\\bf Meta-analysis Results} Results of meta-analysis of Switchgrass data for six physiological traits.  The global mean parameter, $\\beta{_0}$, is used to parametrize the Ecosystem Demography model and is described in more detail by Figure~\\ref{fig:traitpdfs}. The variance components are transformed from precision to the standard deviation scale for ease of interpretation. Values are reported as the parameter median with the $95\\%$ CI in parentheses. Units are the same as in Table~\\ref{tab:priors}.",
+               caption.placement = 'top',
+               align = "lrllllll",
+               label = "tab:maresults"), 
+        file = 'maresultstab.tex',
+        floating.environment = "sidewaystable",
+        #      table.placement = "ht",
+        sanitize.colnames.function = identity,
+        sanitize.text.function = identity,
+        include.rownames = FALSE,)
+```
+@ 
+<<results=hide,echo=FALSE,label=mafig>>=
+  #######################
+## Meta Analysis Figure 
+#######################
+plot.trait.data <- trait.data[ma.traits]
+plot.trait.samples <- post.trait.samples[ma.traits]
+
+trait.plot.fn <- function(x, ...){
+  plot.trait(trait = x, 
+             prior = prior.distns[x, 1:3], 
+             posterior.sample = post.trait.samples[[x]],
+             trait.df = plot.trait.data[[x]], ...)
+}
+
+plot.args <- list('seedling_mortality' = 
+                    list(x.lim = c(0.1, 1), 
+                         y.lim = c(0,50)
+                    ),#,logx = TRUE),
+                  'fineroot2leaf' = list(x.lim = c(0,10)),
+                  'SLA' = list(x.lim = c(0,40)),
+                  'root_turnover_rate' = list(x.lim = c(0,2)))
+
+
+trait.plots <- list()
+
+pdf('traitpdfsi.pdf', width = 6, height = 3)
+for(x in rownames(prior.distns)[rownames(prior.distns) %in% ma.traits]){
+  if(x %in% ma.traits){
+    p <- do.call(trait.plot.fn, 
+                 append(list(x = x, 
+                             fontsize = list(title = 24, axis = 18)), 
+                        plot.args[[x]]))
+    trait.plots[[x]] <- p
+    print(p)
+  }
+}
+dev.off()
+system("pdflatex traitpdfs.tex", ignore.stdout = TRUE)
+
+@ 
+
+<<results=hide,echo=false>>=
+  sla.ghs <- as.matrix(trait.mcmc$SLA)[,"beta.ghs[2]"]
+p.slaghs <- 2*sum(sla.ghs < 0) / length(sla.ghs)
+lw.ghs <- as.matrix(trait.mcmc$leaf_width)[,"beta.ghs[2]"]
+p.lwghs <- 2*sum(lw.ghs < 0)/length(lw.ghs)
+
+sla.s <- paste("$",gsub("\\$","",
+                        paste(colnames(ma.results)[4],'_\\text{SLA}=', ma.results[1,4], ',' ,
+                              colnames(ma.results)[5],'_\\text{SLA}=',ma.results[1,5], 
+                              sep = "")),"$")
+lw.s  <- paste("$",gsub("\\$","",
+                        paste(colnames(ma.results)[4],'_\\text{lw}=', ma.results[2,4], ',' ,
+                              colnames(ma.results)[5],'_\\text{lw}=',ma.results[2,5], 
+                              sep = "")),"$")
+
+@ 
+
+SLA and leaf width data were from from multiple sites, but the meta-analysis provided no evidence for among site variability in excess of within site variability ($\sigma_Y$ and  $\sigma_{\text{site}}$, respectively, in Table \ref{tab:maresults}).  
+For the remaining traits, there was insufficient spatial sampling to assess site to site variability.
+Greenhouse growing conditions had a positive effect on both SLA ($P  = \Sexpr{tabnum(p.slaghs,2)}$), and leaf width ($P = \Sexpr{tabnum(p.lwghs,2)})$.
+
+Figure \ref{fig:traitpdfs} compares parameters before and after incorporating data in the meta-analysis.
+A reduction in parameter uncertainty is seen as the reduction in the spread of the posterior (black) compared to the prior (grey) parameter distributions.
+The influence of the prior information on the posterior distribution increased when the prior was more constrained or when less data were available for use in the meta-analysis.
+For example, data substantially constrained the uncertainty in the V$_{\text{cmax}}$ and SLA posteriors relative to the priors.
+By contrast, there was little effect of additional data on the parameter estimates for fine root to leaf allocation and root respiration rate; these parameters had relatively well constrained priors and limited species-specific data.
+% Burning treatment doubled leaf width, N fert had no effect on Vcmax. 
+% treatment effects on SLA were all in ghs, mostly w/ fertilization
+% select treatments.name, treatments.control, sites.greenhouse, sites.id, traits.mean from treatments join traits on traits.treatment_id = treatments.id join sites on traits.site_id = sites.id where traits.specie_id = 938 and variable_id in (select id from variables where name = "Vcmax") order by sites.id, treatments.id;
+
+
+\subsection*{Model Analysis}
+
+<<label=model.analysis,results=hide,echo=FALSE>>=
+  ## ## To look at the dead vs. live plants
+  ## hist(c(prior.ensemble.output, post.ensemble.output), breaks = 0:440/4, xlim = c(0,3))
+  ## hist(c(prior.ensemble.output, post.ensemble.output), breaks = 0:440/4)
+  
+  #### Comparison of percentage dead in prior vs posterior runs
+  #### Predict that more die in prior runs 
+  ####    because there are more unrealistic parameter combinations
+  prior.is.dead <- prior.ensemble.output < 2
+post.is.dead  <-  post.ensemble.output < 2
+
+## summarize p(dead) for posterior and prior
+prior.dead <- prior.ensemble.output[prior.is.dead]
+prior.live <- prior.ensemble.output[!prior.is.dead]
+post.dead  <- post.ensemble.output[post.is.dead]
+post.live  <- post.ensemble.output[!post.is.dead]
+
+#### Test to see if means are different
+## mu prior
+mu <- 0
+## sigma prior
+s  <- 100
+
+### Following Albert 2007 p56-57, evaluate posterior distribution of live and dead plants
+##    assume standard noninformative prior: g(mu, 1/sigma2) \propto 1/sigma2
+normal.posterior <- function(x, iter = 5000){
+  SS <- sum((x - mean(x))^2)
+  n  <- length(x)
+  sigma2 <- SS/rchisq(iter, n - 1)
+  mu <- rnorm(iter, mean = mean(x), sd = sqrt(sigma2)/sqrt(n))
+  return(list(mu = mu, sigma2 = sigma2))
+}
+
+prior.dead.posterior <- normal.posterior(prior.dead)
+post.dead.posterior <- normal.posterior(post.dead)
+prior.live.posterior <- normal.posterior(prior.live)
+post.live.posterior <- normal.posterior(post.live)
+
+#### test differences between post / prior for dead and live 
+dead.diff <- prior.dead.posterior$mu - post.dead.posterior$mu
+live.diff <- prior.live.posterior$mu - post.live.posterior$mu
+
+quantile(dead.diff, c(0.025, 0.5, 0.975))
+quantile(live.diff, c(0.025, 0.5, 0.975))
+
+#### Test to see if proportion of dead are different 
+## using ad-hoc simulation from beta-binomial posterior
+## beta priors (~beta(1,1))
+a1 <- a2 <- b1 <- b2 <- 1
+## binomial likelihood parameters
+prior.dead.n <- sum(prior.is.dead, na.rm = TRUE)
+prior.n = sum(!is.na(prior.is.dead))
+post.dead.n <- sum(post.is.dead, na.rm = TRUE)
+post.n = sum(!is.na(post.is.dead))
+
+## posteriors of beta-binomial
+prior.pdead.posterior <- rbeta(10000, prior.dead.n + a1, prior.n - prior.dead.n + b1)
+post.pdead.posterior  <- rbeta(10000, post.dead.n  + a2, post.n  - post.dead.n  + b2)
+
+## summary
+prior.pdead.summary <- quantile(prior.pdead.posterior, c(0.025, 0.5, 0.975)) 
+post.pdead.summary  <- quantile(post.pdead.posterior, c(0.025, 0.5, 0.975))
+## means comparison
+dead.diff     <- prior.pdead.posterior - post.pdead.posterior
+dead.diff.test <- quantile(dead.diff, c(.025, 0.5, .975))
+dead.alpha <- ecdf(dead.diff)(0)/2 ## significance level
+
+prior.stats <- tabnum(quantile(prior.live, c(0.1, 0.5, 0.9)))
+post.stats  <- tabnum(quantile(post.live, c(0.1, 0.5, 0.9)))
+prior.var   <- tabnum(var(prior.live))
+post.var    <- tabnum(var(post.live))
+
+#### calculate variance estimates for posterior runs
+
+############################
+### Ensemble Runs (n = 500)
+############################
+splinefuns <- post.sensitivity.results$sensitivity.output$sa.splines
+
+## Summary stats
+mean.f.Phi   <- mean(post.ensemble.output)
+median.f.Phi <- median(post.ensemble.output)
+## var(f(Phi)): total ensemble variance 
+var.f.Phi   <- variance.stats(post.ensemble.output)
+
+## spline estimate of ensemble
+## Sensitivity Analysis only conducted one run at median values
+##    so the median row of output is all from the same run, will take the first
+gi.phii.median    <- sensitivity.output[['ebifarm.pavi']]["50",1]
+
+## Calculate spline ensemble for 500 parameter sets used in model
+require(plyr)
+gi.phii.500 <- get.gi.phii(splinefuns, 
+                           post.ensemble.samples) 
+spline.ensemble.500 <- spline.ensemble(gi.phii.500, 
+                                       median = gi.phii.median)
+
+spline.var.500      <- variance.stats(spline.ensemble.500)
+############################
+### Ensemble Runs (n = 10000)
+############################
+
+gi.phii.10k <- get.gi.phii(splinefuns, 
+                           post.trait.samples, 
+                           maxn = 10000)
+
+spline.ensemble.10k <- spline.ensemble(gi.phii.10k, median = gi.phii.median)
+spline.var.10k      <- variance.stats(spline.ensemble.10k)
+spline.dead.logical <- spline.ensemble.10k < 2 
+spline.live <- spline.ensemble.10k[!spline.dead.logical]
+spline.dead <- spline.ensemble.10k[spline.dead.logical]
+spline.dead.n <- sum(spline.dead.logical)
+spline.n <- length(spline.ensemble.10k)
+
+@ 
+
+\subsubsection*{Ensemble}
+Within the model ensemble analysis (Figure \ref{fig:ensembledensity}), both the prior and posterior parameterizations produced yield estimates that were consistent with yields observed at the Urbana site for which the model was run \citep{heaton2008mub} and with $1902$ previously reported yields of switchgrass \citep{wang2010qrc}.
+In both the prior and posterior ensembles, the predicted aboveground biomass was clearly bimodal.
+These two modes had little overlap and a distinct break at two Mg/ha.
+We infered that the first peak represents non-viable plants generated by unrealistic parameter sets so plants with aboveground biomass less than two Mg/ha were considered ``non-viable''.
+When summarizing the model output, we consider viable and non-viable ensemble members separately;  all runs are considered in the senstivity analysis and variance decomposition.
+A greater percentage of runs in the prior ensemble fell below this threshold ($\Sexpr{tabnum(prior.pdead.summary[2]*100)}$ vs $\Sexpr{tabnum(post.pdead.summary[2]*100)}$, $P \simeq \Sexpr{signif(dead.alpha, 2)}$).
+
+Compared to the prior ensemble prediction, the data-constrained posterior runs had lower median yields and a more constrained $95\%$ credible interval ($\Sexpr{post.stats[2]} [\Sexpr{tabnum(post.stats[1],2)}, \Sexpr{tabnum(post.stats[3],2)}]$ Mg/ha vs $\Sexpr{prior.stats[2]} [\Sexpr{tabnum(prior.stats[1],2)}, \Sexpr{tabnum(prior.stats[3],2)}]$ Mg/ha).
+This reflects the substantial shrinkage of the posterior relative to the prior SD estimates of model output uncertainty (from $\sigma = \Sexpr{tabnum(sqrt(prior.var))}$ to $\sigma = \Sexpr{tabnum(sqrt(post.var))}$).
+In particular, the upper tail of the modeled yield was reduced toward the observed yields.
+Despite the reduction in ensemble uncertainty, the ensemble posterior yield was still relatively imprecise and had much greater uncertainty than the field trial \citep[][$\sigma = 4.1$]{heaton2008mub}  or the meta-analysis of all observations \citep[][$(\sigma = 5.4)$]{wang2010qrc}.
+The spline ensemble viable plants had a median $\Sexpr{tabnum(median(spline.live))}[\Sexpr{tabnum(quantile(spline.live, 0.025),2)},\Sexpr{tabnum(quantile(spline.live, 0.975),2)}]$ and $\sigma=\Sexpr{tabnum(sd(spline.live), 2)}$.
+
+\subsubsection*{Sensitivity Analysis}
+Sensitivity analysis demonstrated that traits varied in their effect on on aboveground biomass (Figure \ref{fig:agbsa}), and many of these relationships are clearly non-polynomial.
+For example, parameters associated with photosynthesis and carbon allocation - including V$_{\text{cmax}}$, SLA, growth respiration, and root allocation - were particularly sensitive.
+For particularly sensitive parameters, the sensitivity functions had coverage of unrealistic yields greater than 30 Mg/ha.
+Constraining SLA and V$_{\text{cmax}}$ parameters with data resulted in a more realistic range of yields.   
+On the other hand, aboveground biomass was largely insensitive to leaf width, seed dispersal, and mortality rate.
+
+<<results=hide,echo=FALSE,label=sensitivity.analysis>>=
+  sa.plots <- plot.sensitivities(post.sensitivity.results$sensitivity.output,
+                                 prior.sensitivity.results$sensitivity.output,
+                                 linesize = 1,
+                                 dotsize = 3,
+                                 fontsize = list(title = 24, axis = 18))
+pdf('sensitivityanalysis.pdf', width = 8, height = 4)
+for(x in rownames(prior.distns)){
+  print(sa.plots[[x]] + opts(panel.border = theme_border(c("bottom","left"))))
+}
+dev.off()
+system('pdflatex sensitivityanalysisplots.tex', ignore.stdout = TRUE)
+system('pdflatex sensitivityanalysisplotslabel.tex', ignore.stdout = TRUE)
+
+@ 
+\subsubsection*{Variance Decomposition}
+
+<<results=hide,echo=false,label=variance.decomposition>>=
+  
+  #############################
+## Variance Decomposition 
+## (sum of variances associated with each trait)
+#############################
+vd.var.500 <- vd.variance(gi.phii.500)
+vd.var.10k <- vd.variance(gi.phii.10k)
+
+##########################################################
+## variance decomposition plot (a.k.a. popsicle tryptich)
+##########################################################
+
+vd.plots <-  plot.variance.decomposition(post.sensitivity.results$variance.decomposition.output,
+                                         prior.sensitivity.results$variance.decomposition.output)
+
+pdf('variancedecomposition.pdf', width = 14, height = 8)
+do.call(grid.arrange, c(vd.plots, ncol = 4))
+dev.off() 
+
+@
+
+<<echo=FALSE,results=hide,label=ensemble.plots>>=
+  
+  font.adjust <-  1.5
+## plot parameters
+theme_set(theme_bw())
+opt <- opts(title = "Modeled and Observed Switchgrass Yield",
+            axis.text.y = theme_blank(),#theme_text(size = 14 * font.adjust),
+            axis.text.x = theme_text(size = 14 * font.adjust),
+            axis.title.x = theme_text(size = 14 * font.adjust), 
+            axis.title.y = theme_text(size = 14 * font.adjust, angle = 90),
+            plot.title = theme_text(size = 16 * font.adjust), 
+            panel.grid.major = theme_blank(),
+            panel.grid.minor = theme_blank(),
+            panel.border = theme_border(c("bottom","left")),
+            legend.position = "none",
+            axis.color = 'black',
+            plot.background = theme_blank()
+)
+
+xlim <- c(0,100)
+live.breaks <- seq(0, 100, by = 2)
+dead.breaks <- seq(0, 2,   by = 0.2)
+x.ticks <- pretty(xlim)
+y.ticks <- c(0:7)*20
+x.breaks  <- c(seq(0,1.75, by = 0.25), seq(2,100, by = 2.5))
+
+heaton.data <- data.frame(mean = c(11.5, 10.6, 15.6), sd = c(1.8, 1.3, 2.6) * sqrt(4))
+### there is a closed form solution to this called the 'normal-normal' model
+### Lynch, S. M. (2007). Introduction to Applied Bayesian Statistics and Estimation for Social Scientists. New York: Springer.
+heaton.sim <- c(rnorm(10000, 11.5, 1.8*sqrt(3)), rnorm(10000, 10.6, 1.3 * sqrt(3)), rnorm(10000, 15.6, 2.6 * sqrt(3))) 
+heaton.median <- median(heaton.sim)
+heaton.ci <- quantile(heaton.sim, pnorm(c(-1.96, -1, 1, 1.96)))
+
+wang.median <- median(paviyield$yield)
+wang.ci   <- quantile(paviyield$yield, pnorm(c(-1.96, -1, 1, 1.96)))
+
+post.live.median <- median(post.live)
+post.live.ci <- quantile(post.live, pnorm(c(-1.96, -1, 1, 1.96)))
+post.all.median <- median(post.ensemble.output)
+post.all.ci <- quantile(post.ensemble.output, pnorm(c(-1.96, -1, 1, 1.96)))
+
+
+prior.live.median <- median(prior.live)
+prior.live.ci <- quantile(prior.live, pnorm(c(-1.96, -1, 1, 1.96)))
+prior.all.median <- median(prior.ensemble.output)
+prior.all.ci <- quantile(prior.ensemble.output, pnorm(c(-1.96, -1, 1, 1.96)))
+
+
+## set height of Wang and Heaton data relative to y-axis
+wang.y <- 100
+heaton.y <- wang.y + 10## for density: wang.y - 0.01
+prior.live.y   <- wang.y - 20
+prior.all.y   <- wang.y - 22.5
+post.live.y   <- wang.y - 32.5
+post.all.y   <- wang.y - 35
+
+base.plot <- ggplot() + opt 
+
+ens.plot <-  base.plot +   
+  ## shaded area for non-viable plants
+  geom_rect(aes(xmin = 0, xmax = 2, ymin = 0, ymax = 150), 
+            fill = "grey95", linetype = 'dashed', color = 'grey60') + 
+  geom_text(aes(x = 1.5, y = 110, label = 'non-viable plants'), 
+            angle = 90, color = "grey60", size = 4 * font.adjust) +
+  ## Spline ensemble
+  geom_step(aes(x = spline.ensemble.500), 
+            stat = 'bin', size = 0.6, breaks = x.breaks - 0.1, 
+            color = 'grey50', linetype = 'dotted') + 
+  geom_text(aes(x = 35, y = 36), label = 'spline ensemble', 
+            hjust = 0, color = "grey50", size = 4 * font.adjust) +
+  geom_segment(aes(x = 35, y = 36, xend = 30.8, yend = 22), 
+               color = "grey45", linetype = 'dotted') +
+  ## ED2 Prior ensemble hist
+  geom_step(aes(x = prior.ensemble.output), 
+            stat = 'bin', size = 0.6, breaks = x.breaks + 0.1, 
+            limits = c(0,100), color = 'grey45') +   
+  geom_text(aes(x = 30, y = 44), label = 'ED2 prior ensemble', 
+            hjust = 0, color = "grey45", size = 4 * font.adjust) +
+  geom_segment(aes(x = 30, y = 44, xend = 20, yend = 17), 
+               color = "grey45") +
+  ## ED2 Ensemble hist
+  geom_step(aes(x = post.ensemble.output), 
+            stat = 'bin', size = 0.6, breaks = x.breaks) +   
+  geom_text(aes(x = 25, y = 52), label = 'ED2 ensemble', hjust = 0, size = 4 * font.adjust) +
+  geom_segment(aes(x = 25, y = 52, xend = 19, yend = 36)) +
+  ## Wang 2008 hist.
+  geom_step(data = paviyield, 
+            aes(x=yield, y = ..density.. * 500), 
+            stat = 'bin', breaks = seq(0, 40, by = 2.5), 
+            linetype = 'dashed') +  
+  geom_text(aes(x = 40, y = 28), label = 'Wang et al. 2010', hjust = 0, size = 4 * font.adjust) +
+  geom_segment(aes(x = 40, y = 28, xend = 32, yend = 0), 
+               linetype = 'dashed') + 
+  scale_x_continuous( "Aboveground Biomass, Mg/ha", expand = c(0, 0)) + 
+  scale_y_continuous("density", limits = c(0,150), expand = c(0,0)) +
+  ##Data from Wang et al 2010 as bar
+  geom_segment(aes(x = wang.ci[1], 
+                   xend = wang.ci[4], y = wang.y, yend = wang.y), 
+               size = 0.4) + # 95%CI range
+  geom_segment(aes(x= wang.ci[2], y = wang.y, xend = wang.ci[3],  yend = wang.y), size = 1) +
+  geom_point(aes(x = wang.median, y = wang.y), size = 4, fill = 'black', shape = 5) + 
+  geom_text(aes(x = 20, y = wang.y + 3), label = 'Wang et al. 2010, n = 1902', hjust = 0, size = 4 * font.adjust) +
+  ## Data from Heaton et al 2008
+  geom_segment(aes(x= heaton.ci[2], y = heaton.y, xend = heaton.ci[3],  yend = heaton.y), size = 1) + # mean +/- SD
+  geom_segment(aes(x= heaton.ci[1], y = heaton.y, xend = heaton.ci[4],  yend = heaton.y), size = 0.4) + # 95%CI
+  geom_point(aes(x = heaton.median, y = heaton.y), size = 4, fill = 'black', shape = 5) + 
+  geom_text(aes(x = 20, y = heaton.y + 3), label = 'Heaton et al. 2008, n = 4', hjust = 0, size = 4 * font.adjust) +
+  ## Model posterior live
+  geom_segment(aes(x = post.live.ci[2], y = post.live.y, xend = post.live.ci[3],  yend = post.live.y), size = 1) + # mean +/- SD
+  geom_segment(aes(x= post.live.ci[1], y = post.live.y, xend =post.live.ci[4],  yend = post.live.y), size = 0.4) + # 95%CI
+  geom_point(aes(x = post.live.median, y = post.live.y), size = 4, fill = 'black', shape = 5) + 
+  geom_text(aes(x = 20, y = post.live.y + 5), label = 'ED2 ensemble', hjust = 0, size = 4 * font.adjust) + 
+  ## Model posterior all
+  #  geom_segment(aes(x = post.all.ci[2], y = post.all.y, xend = post.all.ci[3],  yend = post.all.y), size = 1) + # mean +/- SD
+  #  geom_segment(aes(x= post.all.ci[1], y = post.all.y, xend =post.all.ci[4],  yend = post.all.y), size = 0.4) + # 95%CI
+  #  geom_point(aes(x = post.all.median, y = post.all.y), size = 4, fill = 'black', shape = 5) + 
+  #  geom_text(aes(x = 50, y = post.live.y + 0.6 ), label = 'viable plants', hjust = 0, vjust = 0, size = 4 * font.adjust) + 
+  #  geom_text(aes(x = 35, y = post.all.y - 2.1), label = 'all', hjust = 0, vjust = 0, size = 4 * font.adjust) +
+  ## Model prior live
+  geom_segment(aes(x = prior.live.ci[2], y = prior.live.y, xend = prior.live.ci[3],  yend = prior.live.y), size = 1, color = "grey45") + # mean +/- SD
+  geom_segment(aes(x= prior.live.ci[1], y = prior.live.y, xend =prior.live.ci[4],  yend = prior.live.y), size = 0.4, color = "grey45") + # 95%CI
+  geom_point(aes(x = prior.live.median, y = prior.live.y), size = 4, fill = 'black', shape = 5, color = "grey45") + 
+  geom_text(aes(x = 20, y = prior.live.y + 5), label = 'ED2 prior ensemble', hjust = 0, color = "grey45", size = 4 * font.adjust) + 
+  ## Model prior all
+  #  geom_segment(aes(x = prior.all.ci[2], y = prior.all.y, xend = prior.all.ci[3],  yend = prior.all.y), size = 1, color = "grey45") + # mean +/- SD
+  #  geom_segment(aes(x= prior.all.ci[1], y = prior.all.y, xend =prior.all.ci[4],  yend = prior.all.y), size = 0.4, color = "grey45") + # 95%CI
+  #  geom_point(aes(x = prior.all.median, y = prior.all.y), size = 4, fill = 'black', shape = 5, color = "grey45") +
+  #  geom_text(aes(x = 80, y = prior.live.y ), label = 'viable plants', hjust = 0, vjust = 0, size = 4 * font.adjust, color = "grey45") + 
+  #  geom_text(aes(x = 35, y = prior.all.y - 2.5), label = 'all', hjust = 0, vjust = 0, size = 4 * font.adjust, color = "grey45") +
+  ##  Fix Axis
+  geom_segment(aes(x = 0, y = 0, xend = 100, yend = 0), color = 'black') +
+  geom_segment(aes(x = 0, y = 0, xend = 0, yend = 150), color = 'black') 
+pdf('ensembledensity.pdf', height = 8, width = 16)
+ens.plot
+dev.off()
+
+@ 
+<<label=vartable,results=hide,echo=false>>=
+  
+  print.varsummary <- function(varest){
+    v <- tabnum(sqrt(varest$var),3)
+    s <- tabnum(sqrt(varest$sd), 2)
+    paste.sd.sd_sd <- paste(v, "(", s, ")", sep = '')
+    return(paste.sd.sd_sd)
+  }
+
+variancetab <- data.frame("model" = c("ensemble",
+                                      "$s_{f(\\vec{\\beta_0})}$",
+                                      print.varsummary(var.f.Phi),
+                                      "$^*$"),
+                          "spline" = c("ensemble", 
+                                       "$s_{\\vec{g}(\\vec{\\beta{_0}})}$", 
+                                       print.varsummary(spline.var.500), 
+                                       print.varsummary(spline.var.10k)),
+                          "variance" = c("decomposition", 
+                                         "$\\sum{s_{g_i(\\beta{_0}_i)}}$",
+                                         print.varsummary(vd.var.500),
+                                         print.varsummary(vd.var.10k)))
+rownames(variancetab) <- c("", "$n$", "500", "10000")
+
+
+print(xtable(x = variancetab, 
+             label = "tab:variance",  
+             align = "rccc"), 
+      file = "variancetab.tex",
+      floating = FALSE,
+      #      floating.environment= "table",
+      #      table.placement = "ht",
+      hline.after = c(-1, 2, 4),
+      include.rownames = TRUE, 
+      sanitize.text.function = function(x) gsub("%", "\\\\%", x),
+      sanitize.colnames.function = identity)
+
+@ 
+
+<<label=omegatable,results=hide,echo=false>>=
+  
+  ssgi <- sqrt(vd.var.10k$var)
+sg   <- sqrt(spline.var.10k$var)
+sf   <- sqrt(var.f.Phi$var)
+omega <- (ssgi-sf)
+
+omegatab <- data.frame(rbind(c("$\\sum{s_{g_i}} - s_f$", 
+                               tabnum(ssgi - sf,2)),
+                             c("$s_{\\vec{g}} - s_f$", 
+                               format(sg - sf, digits = 1, nsmall = 1 )),
+                             c("$\\sum{s_{g_i}} - s_{\\vec{g}}$", 
+                               tabnum(ssgi - sg, 2))))
+
+rownames(omegatab) <- c("$\\omega_{\\text{total}}$",
+                        "$\\omega_{\\text{covariance}}$",
+                        "$\\omega_{\\text{truncation}}$")
+colnames(omegatab) <- c("calculation", "Mg/ha")
+print(xtable(x =  omegatab, 
+             label = "tab:omega",  
+             align = "lrc"), 
+      file = "omegatab.tex",
+      floating = FALSE,
+      #      floating.environment= "table",
+      #      table.placement = "ht",
+      hline.after = c(-1, 0, 3),
+      include.rownames = TRUE, 
+      sanitize.text.function = function(x) gsub("%", "\\\\%", x),
+      sanitize.colnames.function = identity)
+
+@ 
+
+The variance decomposition showed that data-constrained parameters substantially reduced their contribution to overall model variance (Figure \ref{fig:vd}).
+Prior to including species-specific trait data, SLA contributed the most to model uncertainty, followed by growth respiration, fine root allocation, V$_{\text{cmax}}$, seedling mortality, and stomatal slope (right panel, grey bars Figure \ref{fig:vd}).
+Incorporating species level data substantially reduced the contributions of SLA, V$_{\text{cmax}}$, seedling mortality, and stomatal slope to model uncertainty.
+For example, SLA fell from first to fourth and stomatal slope fell from sixth to fourteenth in rank contribution to ensemble variance.
+Although the addition of data reduced parameter uncertainty for fine root to leaf allocation, aboveground biomass was more sensitive to this parameter at the posterior median. 
+These changes cancelled each other out, and as a result the contribution of the fine root allocation parameter to ensemble variance remained constant.
+
+The variance of the ensemble was less than the variance calculated in the variance decomposition, and this difference is the closure term, $\omega$. 
+The closure term accounted for approximately $\Sexpr{omega/ssgi*100}\%$ of the variance decomposition estimate (Table~\ref{tab:omega}).
+There was no effect of increasing the sample size from 500 to 10000 on the variance estimates (Table~\ref{tab:variance}).
