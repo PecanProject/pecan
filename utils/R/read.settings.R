@@ -295,7 +295,9 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
   if (is.null(outputfile)) {
     outputfile="pecan.xml"
   }
-
+  if(inputfile == ""){
+    logger.warn("settings files specified as empty string; \n\t\tthis may be caused by an incorrect argument to system.file.")
+  }
   loc <- which(commandArgs() == "--settings")
   if (length(loc) != 0) {
     # 1 filename is passed as argument to R
