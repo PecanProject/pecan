@@ -142,7 +142,7 @@ $pieces = explode(':', $model["model_path"], 2);
 $binary = $pieces[1];
 
 // create the workflow execution
-$params=mysql_real_escape_string(str_replace("\n", "", var_export($_REQUEST, true)));
+$params=str_replace(' ', '', mysql_real_escape_string(str_replace("\n", "", var_export($_REQUEST, true))));		#excess whitespace needs to be trimmed to avoid params being cut off
 if (mysql_query("INSERT INTO workflows (site_id, model_id, hostname, start_date, end_date, params, advanced_edit, started_at, created_at) values ('${siteid}', '${modelid}', '${hostname}', '${startdate}', '${enddate}', '${params}', '${advanced_edit}', NOW(), NOW())") === FALSE) {
 	die('Can\'t insert workflow : ' . mysql_error());
 }
