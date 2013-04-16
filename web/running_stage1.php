@@ -75,9 +75,9 @@ switch(checkStatus("CONFIG")) {
 	case 2:
 		$nextenabled="";
 		if ($offline) {
-			header( "Location: finished.php?workflowid=$workflowid&offline=offline");
+			header( "Location: failurealert.php?workflowid=$workflowid&offline=offline");
 		} else {
-			header( "Location: finished.php?workflowid=$workflowid");
+			header( "Location: failurealert.php?workflowid=$workflowid");
 		}
 		mysql_query("UPDATE workflows SET finished_at=NOW() WHERE id=${workflowid} AND finished_at IS NULL");
 		break;
