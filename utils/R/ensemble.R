@@ -42,7 +42,7 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir,
   for(row in rownames(ensemble.runs)) {
     run.id <- ensemble.runs[row, 'id']
     print(run.id)
-    ensemble.output[[row]] <- sapply(read.output(run.id, file.path(outdir, run.id), model,
+    ensemble.output[[row]] <- sapply(read.output.BIOCRO(run.id, file.path(outdir, run.id), model,
                                                  start.year, end.year, variables),
                                      mean,na.rm=TRUE)
   }
