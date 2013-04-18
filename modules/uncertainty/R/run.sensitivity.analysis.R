@@ -73,7 +73,7 @@ run.sensitivity.analysis <- function(plot=TRUE){
           sensitivity.plots <- plot.sensitivities(sensitivity.results[[pft$name]]$sensitivity.output,
                                                   linesize = 1,
                                                   dotsize = 3)
-          pdf(paste(pft$outdir, 'sensitivityanalysis.pdf', sep = ''), height = 12, width = 9)
+          pdf(file.path(pft$outdir, 'sensitivityanalysis.pdf'), height = 12, width = 9)
           ## arrange plots  http://stackoverflow.com/q/10706753/199217
           ncol <- floor(sqrt(length(sensitivity.plots)))
           print(do.call("grid.arrange", c(sensitivity.plots, ncol=ncol)))
@@ -83,7 +83,7 @@ run.sensitivity.analysis <- function(plot=TRUE){
           ### Generate VD diagnostic plots
           vd.plots <- plot.variance.decomposition(sensitivity.results[[pft$name]]$variance.decomposition.output)
           #variance.scale = log, variance.prefix='Log')
-          pdf(paste(pft$outdir, 'variancedecomposition.pdf', sep=''), width = 11, height = 8)
+          pdf(file.path(pft$outdir, 'variancedecomposition.pdf'), width = 11, height = 8)
           do.call(grid.arrange, c(vd.plots, ncol = 4))
           dev.off()
         }
