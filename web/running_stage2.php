@@ -176,6 +176,7 @@ switch(checkStatus("MODEL")) {
 			<td><?=status("FINISHED");?></td>
 		</tr>
 	</table>
+<!--
 	<hr/>
  	<h2>Output from PEcAn</h2>
  	<textarea id="log" cols="80" rows="10" readonly="readonly">
@@ -187,6 +188,7 @@ switch(checkStatus("MODEL")) {
 	}
 ?>
  	</textarea>
+-->
 	</div>
 </div>
 </body>
