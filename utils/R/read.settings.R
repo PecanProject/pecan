@@ -21,6 +21,7 @@ library(XML)
 ##' @export
 ##' @return xml object with 
 ##' @author Rob Kooper
+##' @name xmlMerge
 xmlMerge <- function(xml1, xml2) {
   if (is.null(xml2)) {
     return(xml1)

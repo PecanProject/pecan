@@ -20,8 +20,8 @@
 ##' @param num number to be padded (integer)
 ##' @param digits number of digits to add
 ##' @return num with zeros to the left
-##' @export
 ##' @author Carl Davidson
+##' @name left.pad.zeros
 left.pad.zeros <- function(num, digits = 5){
   format_string <- paste('%',sprintf('0%.0f.0f',digits),sep='')
   return(sprintf(format_string, num))

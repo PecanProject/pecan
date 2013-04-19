@@ -1,9 +1,6 @@
 \name{get.model.output}
 \alias{get.model.output}
 \title{Retrieve model output}
-\usage{
-  get.model.output(model)
-}
 \arguments{
   \item{model}{the ecosystem model run}
 }

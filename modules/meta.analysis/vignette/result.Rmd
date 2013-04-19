@@ -119,6 +119,8 @@ colnames(ma.results) <- c("Variable", 'n', '$\\beta{_0}$',"$\\sigma_{Y}$", '$\\s
 ```
 <<results=hide,echo=FALSE,label=matable>>=
 ```{r}
+#install the package of xtable in order to run the xtable function
+library(xtable)
   print(xtable(ma.results, 
                caption = "{\\bf Meta-analysis Results} Results of meta-analysis of Switchgrass data for six physiological traits.  The global mean parameter, $\\beta{_0}$, is used to parametrize the Ecosystem Demography model and is described in more detail by Figure~\\ref{fig:traitpdfs}. The variance components are transformed from precision to the standard deviation scale for ease of interpretation. Values are reported as the parameter median with the $95\\%$ CI in parentheses. Units are the same as in Table~\\ref{tab:priors}.",
                caption.placement = 'top',
@@ -133,7 +135,8 @@ colnames(ma.results) <- c("Variable", 'n', '$\\beta{_0}$',"$\\sigma_{Y}$", '$\\s
 ```
 @ 
 <<results=hide,echo=FALSE,label=mafig>>=
-  #######################
+```{r}
+#######################
 ## Meta Analysis Figure 
 #######################
 plot.trait.data <- trait.data[ma.traits]
@@ -170,10 +173,11 @@ for(x in rownames(prior.distns)[rownames(prior.distns) %in% ma.traits]){
 }
 dev.off()
 system("pdflatex traitpdfs.tex", ignore.stdout = TRUE)
-
+```
 @ 
 
 <<results=hide,echo=false>>=
+```{r}
   sla.ghs <- as.matrix(trait.mcmc$SLA)[,"beta.ghs[2]"]
 p.slaghs <- 2*sum(sla.ghs < 0) / length(sla.ghs)
 lw.ghs <- as.matrix(trait.mcmc$leaf_width)[,"beta.ghs[2]"]
@@ -187,8 +191,7 @@ lw.s  <- paste("$",gsub("\\$","",
                         paste(colnames(ma.results)[4],'_\\text{lw}=', ma.results[2,4], ',' ,
                               colnames(ma.results)[5],'_\\text{lw}=',ma.results[2,5], 
                               sep = "")),"$")
-
-@ 
+```
 
 SLA and leaf width data were from from multiple sites, but the meta-analysis provided no evidence for among site variability in excess of within site variability ($\sigma_Y$ and  $\sigma_{\text{site}}$, respectively, in Table \ref{tab:maresults}).  
 For the remaining traits, there was insufficient spatial sampling to assess site to site variability.
@@ -207,6 +210,7 @@ By contrast, there was little effect of additional data on the parameter estimat
 \subsection*{Model Analysis}
 
 <<label=model.analysis,results=hide,echo=FALSE>>=
+```{r}
   ## ## To look at the dead vs. live plants
   ## hist(c(prior.ensemble.output, post.ensemble.output), breaks = 0:440/4, xlim = c(0,3))
   ## hist(c(prior.ensemble.output, post.ensemble.output), breaks = 0:440/4)
@@ -289,6 +293,7 @@ splinefuns <- post.sensitivity.results$sensitivity.output$sa.splines
 mean.f.Phi   <- mean(post.ensemble.output)
 median.f.Phi <- median(post.ensemble.output)
 ## var(f(Phi)): total ensemble variance 
+## document the modules/uncertainty package again
 var.f.Phi   <- variance.stats(post.ensemble.output)
 
 ## spline estimate of ensemble
@@ -320,7 +325,7 @@ spline.dead <- spline.ensemble.10k[spline.dead.logical]
 spline.dead.n <- sum(spline.dead.logical)
 spline.n <- length(spline.ensemble.10k)
 
-@ 
+```
 
 \subsubsection*{Ensemble}
 Within the model ensemble analysis (Figure \ref{fig:ensembledensity}), both the prior and posterior parameterizations produced yield estimates that were consistent with yields observed at the Urbana site for which the model was run \citep{heaton2008mub} and with $1902$ previously reported yields of switchgrass \citep{wang2010qrc}.
@@ -344,6 +349,9 @@ Constraining SLA and V$_{\text{cmax}}$ parameters with data resulted in a more r
 On the other hand, aboveground biomass was largely insensitive to leaf width, seed dispersal, and mortality rate.
 
 <<results=hide,echo=FALSE,label=sensitivity.analysis>>=
+```{r}
+
+#modify the modules/uncertainty/R/plots.R file. change opt into theme and all theme_text into element_text
   sa.plots <- plot.sensitivities(post.sensitivity.results$sensitivity.output,
                                  prior.sensitivity.results$sensitivity.output,
                                  linesize = 1,
@@ -351,17 +359,18 @@ On the other hand, aboveground biomass was largely insensitive to leaf width, se
                                  fontsize = list(title = 24, axis = 18))
 pdf('sensitivityanalysis.pdf', width = 8, height = 4)
 for(x in rownames(prior.distns)){
-  print(sa.plots[[x]] + opts(panel.border = theme_border(c("bottom","left"))))
+  #print(sa.plots[[x]] + theme(panel.border = theme_border(c("bottom","left"))))
+  print(sa.plots[[x]] + theme(panel.border = theme_border(c("bottom","left"))))
 }
 dev.off()
 system('pdflatex sensitivityanalysisplots.tex', ignore.stdout = TRUE)
 system('pdflatex sensitivityanalysisplotslabel.tex', ignore.stdout = TRUE)
 
-@ 
+```
 \subsubsection*{Variance Decomposition}
 
 <<results=hide,echo=false,label=variance.decomposition>>=
-  
+```{r}
   #############################
 ## Variance Decomposition 
 ## (sum of variances associated with each trait)
@@ -379,26 +388,26 @@ vd.plots <-  plot.variance.decomposition(post.sensitivity.results$variance.decom
 pdf('variancedecomposition.pdf', width = 14, height = 8)
 do.call(grid.arrange, c(vd.plots, ncol = 4))
 dev.off() 
-
+```
 @
 
 <<echo=FALSE,results=hide,label=ensemble.plots>>=
-  
+```{r}  
   font.adjust <-  1.5
 ## plot parameters
 theme_set(theme_bw())
-opt <- opts(title = "Modeled and Observed Switchgrass Yield",
-            axis.text.y = theme_blank(),#theme_text(size = 14 * font.adjust),
-            axis.text.x = theme_text(size = 14 * font.adjust),
-            axis.title.x = theme_text(size = 14 * font.adjust), 
-            axis.title.y = theme_text(size = 14 * font.adjust, angle = 90),
-            plot.title = theme_text(size = 16 * font.adjust), 
-            panel.grid.major = theme_blank(),
-            panel.grid.minor = theme_blank(),
-            panel.border = theme_border(c("bottom","left")),
+opt <- theme(title = "Modeled and Observed Switchgrass Yield",
+            axis.text.y = element_blank(),#theme_text(size = 14 * font.adjust),
+            axis.text.x = element_text(size = 14 * font.adjust),
+            axis.title.x = element_text(size = 14 * font.adjust), 
+            axis.title.y = element_text(size = 14 * font.adjust, angle = 90),
+            plot.title = element_text(size = 16 * font.adjust), 
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.border = element_rect(c("bottom","left")),
             legend.position = "none",
             axis.color = 'black',
-            plot.background = theme_blank()
+            plot.background = element_blank()
 )
 
 xlim <- c(0,100)

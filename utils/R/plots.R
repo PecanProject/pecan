@@ -605,6 +605,7 @@ get.quantiles.from.density <- function(density.df, quantiles = c(0.025, 0.5, 0.9
 ##' @param size 
 ##' @param linetype 
 ##' @return adds borders to ggplot as a side effect
+##' @export
 ##' @author Rudolf Cardinal
 ##' @author \url{ggplot2 google group}{https://groups.google.com/forum/?fromgroups#!topic/ggplot2/-ZjRE2OL8lE}
 ##' @examples

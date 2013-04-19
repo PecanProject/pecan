@@ -20,6 +20,7 @@
 ##' @return vector of quantiles
 ##' @export
 ##' @author David LeBauer
+##' @name get.quantiles
 get.quantiles <- function(quantiles.tag) {
   quantiles<-vector()
   if (!is.null(quantiles.tag$quantile)) {
