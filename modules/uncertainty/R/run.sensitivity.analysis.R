@@ -36,17 +36,21 @@ run.sensitivity.analysis <- function(plot=TRUE){
     ### Load parsed model results
     load(file.path(settings$outdir, 'output.Rdata'))
     load(file.path(settings$outdir, 'samples.Rdata'))
-    
+
     ### Generate SA output and diagnostic plots
     sensitivity.results <- list()
     for(pft in settings$pfts){
-      print(pft$name)
       if('sensitivity.analysis' %in% names(settings)) {
         traits <- names(trait.samples[[pft$name]])
         quantiles.str <- rownames(sa.samples[[pft$name]])
         quantiles.str <- quantiles.str[which(quantiles.str != '50')]
         quantiles <- as.numeric(quantiles.str)/100
         ## ensemble.output <- read.ensemble.output(settings$ensemble$size, settings$outdir, pft.name=pft$name)
+
+        C.units <- grepl('^Celsius$', trait.lookup(traits)$units, ignore.case = TRUE)
+        if(any(C.units)){
+          for(x in which(C.units)) trait.samples[[pft$name]][[x]] <- trait.samples[[pft$name]][[x]] + 273.15
+        }
 
         ## only perform sensitivity analysis on traits where no more than 2 results are missing
         good.saruns <- sapply(sensitivity.output[[pft$name]], function(x) sum(is.na(x)) <=2)
