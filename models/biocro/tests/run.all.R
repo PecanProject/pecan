@@ -8,7 +8,7 @@
 #-------------------------------------------------------------------------------
 library(testthat)
 library(PEcAn.DB)
-library(PEcAn.util)
+library(PEcAn.utils)
 library(PEcAn.BIOCRO)
 
 settings.xml <- system.file("extdata/pecan.biocro.xml", 
