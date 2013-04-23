@@ -7,7 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 library(testthat)
-library(PEcAn.db)
+library(PEcAn.DB)
 library(PEcAn.util)
 library(PEcAn.BIOCRO)
 
