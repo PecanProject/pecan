@@ -78,7 +78,7 @@ run.ensemble.analysis <- function(plot.timeseries=NA){
   ### Plot ensemble time-series
   if (!is.na(plot.timeseries)){
     pdf(file.path(settings$outdir,"ensemble.ts.pdf"),width=12,height=9)    
-    ensemble.ts(read.ensemble.ts(model))
+    ensemble.ts(read.ensemble.ts(settings$model$name))
     dev.off()
   }
 
@@ -122,11 +122,25 @@ read.ensemble.ts <- function(model){
   print(paste("----- Variable: ",variables,sep=""))
   print("----- Reading ensemble output ------")
 
+  if (exists('runs.samples')) {
+    ensemble.runs <- runs.samples$ensemble
+  } else {
+    ensemble.runs <- list()
+    samples.file <- file.path(settings$outdir, 'samples.Rdata')
+    print(samples.file)
+    if(file.exists(samples.file)){
+      load(samples.file)
+      ensemble.runs <- runs.samples$ensemble
+    } else {
+      stop(samples.file, "not found required by read.ensemble.output")      
+    }
+  }
+
   ## read ensemble output
-  for(i in 1:ensemble.size){
-    run.id <- get.run.id('ENS', left.pad.zeros(i, 5))#log10(ensemble.size)+1))
+  for(row in rownames(ensemble.runs)) {
+    run.id <- ensemble.runs[row, 'id']
     print(run.id)
-    newrun <- read.output(run.id,outdir,start.year,end.year,variables,model)
+    newrun <- read.output(run.id, file.path(outdir, run.id), model, start.year, end.year, variables)
 
     for(j in 1:length(variables)){
       if(i == 1){
@@ -239,8 +253,8 @@ ensemble.ts <- function(ensemble.ts,observations=NULL,window=1){
   ensemble.analysis.results$CI <- CI
   
   save(ensemble.analysis.results,
-       file = paste(settings$outdir,
-                    "ensemble.ts.analysis.results.Rdata", sep = ""))
+       file = file.path(settings$outdir,
+                    "ensemble.ts.analysis.results.Rdata"))
   
 }
 #==================================================================================================#
