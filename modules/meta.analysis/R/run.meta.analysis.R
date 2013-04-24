@@ -81,7 +81,7 @@ run.meta.analysis <- function() {
          logger.info("Trait data loaded for PFT: ", pft$name)
         
 
-        ## Jagify trait data for meta.analysis
+        ## Convert data to format expected by pecan.ma
         
         jagged.data <- jagify(trait.data)
         ma.data = jagged.data

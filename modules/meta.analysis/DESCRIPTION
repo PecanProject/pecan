@@ -20,8 +20,7 @@ Depends:
     PEcAn.DB
 Suggests:
     testthat
-SystemRequirements: JAGS2.2.0
-OS_type: unix
+SystemRequirements: JAGS
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
