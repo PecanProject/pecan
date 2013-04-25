@@ -88,22 +88,6 @@ while ($row = @mysql_fetch_assoc($result)){
 		$("#formnext").submit();
 	}
 
-	function removeSiteOptions() {
-		if (markersArray) {
-			clearSites();	// clear sites from map
-			markersArray.length = 0;
-		}
-		$("#siteid").val("");
-		$("#sitename").val("");
-		validate();
-	}
-
-	function removeModelOptions() {
-		$('#modelid').find('option').remove();
-		$('#modelid').append('<option value="">All Models</option>');
-		validate();
-	}
-
 	function modelSelected() {
 		var curSite = $("#sitename").val();	//we'll clear this and replace it if it still exists in the new model
 
