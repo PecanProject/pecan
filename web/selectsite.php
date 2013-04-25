@@ -99,7 +99,7 @@ while ($row = @mysql_fetch_assoc($result)){
 	}
 
 	function removeModelOptions() {
-		$('#modelid').find('option').remove();	    
+		$('#modelid').find('option').remove();
 		$('#modelid').append('<option value="">All Models</option>');
 		validate();
 	}
@@ -112,7 +112,7 @@ while ($row = @mysql_fetch_assoc($result)){
 			clearSites();
 			markersArray.length = 0;
 		}
-		$("#siteid").val("");	
+		$("#siteid").val("");
 		$("#sitename").val("");
 		validate();
 
