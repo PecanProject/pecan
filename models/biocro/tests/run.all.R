@@ -7,6 +7,8 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 library(testthat)
+library(PEcAn.DB)
+library(PEcAn.utils)
 library(PEcAn.BIOCRO)
 
 settings.xml <- system.file("extdata/pecan.biocro.xml", 

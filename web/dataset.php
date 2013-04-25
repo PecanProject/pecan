@@ -59,6 +59,10 @@ switch ($type) {
 		break;
 		
 	case "plot":
+		if (!isset($_REQUEST['run']) || !is_numeric($_REQUEST['run'])) {
+			die("Need run.");
+		}
+		$run=$_REQUEST['run'];
 		if (!isset($_REQUEST['year']) || !is_numeric($_REQUEST['year'])) {
 			die("Need year.");
 		}
@@ -66,8 +70,8 @@ switch ($type) {
 		if (!isset($_REQUEST['var'])) {
 			die("Need var.");
 		}
-		list($datafile,$var)=explode("@", $_REQUEST['var']);
-        $datafile.=$year . ".nc";
+		$var=$_REQUEST['var'];
+        $datafile=$run . "/" . $year . ".nc";
 		$width=600;
 		if (isset($_REQUEST['width']) && ($_REQUEST['width'] > 600)) {
 			$width=$_REQUEST['width'];
@@ -78,13 +82,7 @@ switch ($type) {
 		}
 		$mime = "image/png";
 		$file = tempnam('','');
-		if (stripos($datafile, ".h5") !== FALSE) {
-                        shell_exec("R_LIBS_USER='${pecan_install}' PECANSETTINGS='$folder/pecan.xml' R CMD BATCH --vanilla '--args $year $var $width $height $file' plot.hdf5.R $folder/plot.out");
-                } else if (stripos($datafile, ".nc") !== FALSE) {
-                        shell_exec("R_LIBS_USER='${pecan_install}' PECANSETTINGS='$folder/pecan.xml' R CMD BATCH --vanilla '--args $datafile $year $var $width $height $file' plot.netcdf.R $folder/plot.out");
-		} else {
-			die("Can not plot $datafile");
-		}		
+		shell_exec("R_LIBS_USER='${pecan_install}' PECANSETTINGS='$folder/pecan.xml' R CMD BATCH --vanilla '--args $datafile $year $var $width $height $file' plot.netcdf.R $folder/plot.out");
 		break;
 		
 	default:
