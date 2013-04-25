@@ -90,6 +90,32 @@ check.settings <- function(settings) {
     logger.severe("No PFTS specified.")
   }
 
+  # check ensemble
+  if (!is.null(settings$ensemble)) {
+    if (is.null(settings$ensemble$size)) {
+      logger.info("Setting ensemble size to 1.")
+      settings$ensemble$size <- 1
+    }
+    if (is.null(settings$ensemble$variable)) {
+      if (is.null(settings$sensitivity.analysis$variable)) {
+        logger.severe("No variable specified to compute ensemble for.")
+      }
+      logger.info("Setting ensemble variable to the same as sensitivity analysis variable [", settings$sensitivity.analysis$variable, "]")
+      settings$ensemble$variable <- settings$sensitivity.analysis$variable
+    }
+  }
+
+  # check sensitivity analysis
+  if (!is.null(settings$sensitivity.analysis)) {
+    if (is.null(settings$sensitivity.analysis$variable)) {
+      if (is.null(settings$ensemble$variable)) {
+        logger.severe("No variable specified to compute sensitivity.analysis for.")
+      }
+      logger.info("Setting sensitivity.analysis variable to the same as ensemble variable [", settings$ensemble$variable, "]")
+      settings$sensitivity.analysis$variable <- settings$ensemble$variable
+    }
+  }
+
   # check to make sure run information is filled out
   if (is.null(settings$run$host$name)) {
     logger.info("Setting localhost for execution host.")
@@ -344,10 +370,11 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
   settings <- check.settings(xmlToList(xml))
   
   ## save the checked/fixed pecan.xml
-  if (file.exists(outputfile)) {
-    logger.warn(paste("File already exists [", outputfile, "] file will be overwritten"))
+  pecanfile <- file.path(settings$outdir, outputfile)
+  if (file.exists(pecanfile)) {
+    logger.warn(paste("File already exists [", pecanfile, "] file will be overwritten"))
   }
-  saveXML(listToXml(settings, "pecan"), file=outputfile)
+  saveXML(listToXml(settings, "pecan"), file=pecanfile)
 
   ## setup Rlib from settings
   if(!is.null(settings$Rlib)){
