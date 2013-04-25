@@ -92,16 +92,16 @@ check.settings <- function(settings) {
 
   # check ensemble
   if (!is.null(settings$ensemble)) {
-    if (is.null(settings$ensemble$size)) {
-      logger.info("Setting ensemble size to 1.")
-      settings$ensemble$size <- 1
-    }
-    if (is.null(settings$ensemble$variable)) {
+    if (is.character(settings$ensemble) || is.null(settings$ensemble$variable)) {
       if (is.null(settings$sensitivity.analysis$variable)) {
         logger.severe("No variable specified to compute ensemble for.")
       }
       logger.info("Setting ensemble variable to the same as sensitivity analysis variable [", settings$sensitivity.analysis$variable, "]")
       settings$ensemble$variable <- settings$sensitivity.analysis$variable
+    }
+    if (is.null(settings$ensemble$size)) {
+      logger.info("Setting ensemble size to 1.")
+      settings$ensemble$size <- 1
     }
   }
 
