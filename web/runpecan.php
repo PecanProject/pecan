@@ -201,6 +201,7 @@ fwrite($fh, "  </meta.analysis>" . PHP_EOL);
 
 fwrite($fh, "  <ensemble>" . PHP_EOL);
 fwrite($fh, "    <size>1</size>" . PHP_EOL);
+fwrite($fh, "    <variable>NPP</variable>" . PHP_EOL);
 fwrite($fh, "  </ensemble>" . PHP_EOL);
 
 fwrite($fh, "  <model>" . PHP_EOL);
