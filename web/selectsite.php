@@ -88,32 +88,61 @@ while ($row = @mysql_fetch_assoc($result)){
 		$("#formnext").submit();
 	}
 
-	function modelSelected() {
-		// remove everything
+	function removeSiteOptions() {
 		if (markersArray) {
-			clearSites();
+			clearSites();	// clear sites from map
 			markersArray.length = 0;
 		}
 		$("#siteid").val("");
 		$("#sitename").val("");
 		validate();
+	}
 
-        // get all sites
-        console.log($('#modelid option:selected'))
+	function removeModelOptions() {
+		$('#modelid').find('option').remove();	    
+		$('#modelid').append('<option value="">All Models</option>');
+		validate();
+	}
+
+	function modelSelected() {
+		var curSite = $("#sitename").val();	//we'll clear this and replace it if it still exists in the new model
+		
+		// remove everything
+		if (markersArray) {
+			clearSites();
+			markersArray.length = 0;
+		}
+		$("#siteid").val("");	
+		$("#sitename").val("");
+		validate();
+
+		// get all sites
+        //console.log($('#modelid option:selected'))
         var url="sites.php?host=" + $('#hostname')[0].value + "&model=" + $('#modelid option:selected')[0].value
         jQuery.get(url, {}, function(data) {
-        	jQuery(data).find("marker").each(function() {
+			jQuery(data).find("marker").each(function() {
 				var marker = jQuery(this);
 				if (marker.attr("lat") == "" || marker.attr("lon") == "") {
 					console.log("Bad marker (siteid=" + marker.attr("siteid") + " site=" + marker.attr("sitename") + " lat=" + marker.attr("lat") + " lon=" + marker.attr("lon") + ")");
 				} else {
-        			showSite(marker);
+					showSite(marker);
+					if (marker.attr("sitename") == curSite) {
+						<?php if(!$offline) { ?>
+							google.maps.event.trigger(markersArray[markersArray.length-1], 'click'); // if using gmaps, this gmarker is at end of array, click it
+						<?php } else { ?>
+							$('input:radio[name=site]:last').click(); // if offline, go to the site inputs and click this one
+							$('input:radio[name=site]:last').buttonset("refresh"); 
+						<?php } ?>
+					}
 				}
-        	});
-        });
-	}
+			});
+		});
+    }
 
 	function hostSelected() {
+		var curSite = $("#sitename").val();
+		var curModel = $("#modelid").val();
+		
 		// remove everything
 		if (markersArray) {
 			clearSites();
@@ -121,10 +150,24 @@ while ($row = @mysql_fetch_assoc($result)){
 		}
 		$("#siteid").val("");
 		$("#sitename").val("");
-		$('#modelid').find('option').remove();	    
+		$('#modelid').find('option').remove();
 		$('#modelid').append('<option value="">All Models</option>');
 		validate();
-		
+
+		// get all models
+		var url="models.php?host=" + $('#hostname')[0].value;
+		jQuery.get(url, {}, function(data) {
+			jQuery(data).find("model").each(function() {
+				var model = jQuery(this);
+				var name = model.attr("name") + " r" + model.attr("revision");
+				if(model.attr("id") == curModel) {
+					$('#modelid').append('<option value="' + model.attr("id") + '" selected>' +name + '</option>');	//reselect our curModel if still available
+				} else {
+					$('#modelid').append('<option value="' + model.attr("id") + '">' +name + '</option>');
+				}
+			});
+		});
+
 		// get all sites
 		var url="sites.php?host=" + $('#hostname')[0].value;
 		jQuery.get(url, {}, function(data) {
@@ -133,21 +176,20 @@ while ($row = @mysql_fetch_assoc($result)){
 				if (marker.attr("lat") == "" || marker.attr("lon") == "") {
 					console.log("Bad marker (siteid=" + marker.attr("siteid") + " site=" + marker.attr("sitename") + " lat=" + marker.attr("lat") + " lon=" + marker.attr("lon") + ")");
 				} else {
-        			showSite(marker);
+					showSite(marker);
+					if (marker.attr("sitename") == curSite) {
+						<?php if(!$offline) { ?>
+							google.maps.event.trigger(markersArray[markersArray.length-1], 'click');
+						<?php } else { ?>
+							$('input:radio[name=site]:last').click();
+							$('input:radio[name=site]:last').buttonset("refresh"); 
+
+						<?php } ?>
+					}
 				}
 			});
 		});
-
-		// get all models
-		var url="models.php?host=" + $('#hostname')[0].value;
-		jQuery.get(url, {}, function(data) {
-			jQuery(data).find("model").each(function() {
-				var model = jQuery(this);
-				var name = model.attr("name") + " r" + model.attr("revision");
-				$('#modelid').append('<option value="' + model.attr("id") + '">' +name + '</option>')
-			});
-		});
-    }
+	}
 
     function siteSelected(siteid, sitename) {
 		$("#siteid").val(siteid);
@@ -167,7 +209,7 @@ while ($row = @mysql_fetch_assoc($result)){
 	function showSite(marker) {
 		markersArray.push(marker);
 		var sites="<form>";
-		for (i in markersArray) {
+		for (var i in markersArray) {
 			var site = markersArray[i];
 			sites = sites + "<div><input type=\"radio\" name=\"site\" value=\"" + site.attr("siteid") + "\"" +
 			 			    " onClick=\"siteSelected(" + site.attr("siteid") + ",'" + site.attr("sitename") + "');\" >" +
@@ -184,7 +226,7 @@ while ($row = @mysql_fetch_assoc($result)){
     var infowindow = null;
 
     function clearSites() {
-		for (i in markersArray) {
+		for (var i in markersArray) {
 			markersArray[i].setMap(null);
 		}
 	}
