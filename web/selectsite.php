@@ -106,7 +106,7 @@ while ($row = @mysql_fetch_assoc($result)){
 
 	function modelSelected() {
 		var curSite = $("#sitename").val();	//we'll clear this and replace it if it still exists in the new model
-		
+
 		// remove everything
 		if (markersArray) {
 			clearSites();
@@ -117,9 +117,9 @@ while ($row = @mysql_fetch_assoc($result)){
 		validate();
 
 		// get all sites
-        //console.log($('#modelid option:selected'))
-        var url="sites.php?host=" + $('#hostname')[0].value + "&model=" + $('#modelid option:selected')[0].value
-        jQuery.get(url, {}, function(data) {
+		//console.log($('#modelid option:selected'))
+		var url="sites.php?host=" + $('#hostname')[0].value + "&model=" + $('#modelid option:selected')[0].value
+		jQuery.get(url, {}, function(data) {
 			jQuery(data).find("marker").each(function() {
 				var marker = jQuery(this);
 				if (marker.attr("lat") == "" || marker.attr("lon") == "") {
@@ -137,12 +137,12 @@ while ($row = @mysql_fetch_assoc($result)){
 				}
 			});
 		});
-    }
+	}
 
 	function hostSelected() {
 		var curSite = $("#sitename").val();
 		var curModel = $("#modelid").val();
-		
+
 		// remove everything
 		if (markersArray) {
 			clearSites();
@@ -183,7 +183,6 @@ while ($row = @mysql_fetch_assoc($result)){
 						<?php } else { ?>
 							$('input:radio[name=site]:last').click();
 							$('input:radio[name=site]:last').buttonset("refresh"); 
-
 						<?php } ?>
 					}
 				}
