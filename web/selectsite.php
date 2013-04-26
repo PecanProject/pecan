@@ -109,15 +109,7 @@ while ($row = @mysql_fetch_assoc($result)){
 				if (marker.attr("lat") == "" || marker.attr("lon") == "") {
 					console.log("Bad marker (siteid=" + marker.attr("siteid") + " site=" + marker.attr("sitename") + " lat=" + marker.attr("lat") + " lon=" + marker.attr("lon") + ")");
 				} else {
-					showSite(marker);
-					if (marker.attr("sitename") == curSite) {
-						<?php if(!$offline) { ?>
-							google.maps.event.trigger(markersArray[markersArray.length-1], 'click'); // if using gmaps, this gmarker is at end of array, click it
-						<?php } else { ?>
-							$('input:radio[name=site]:last').click(); // if offline, go to the site inputs and click this one
-							$('input:radio[name=site]:last').buttonset("refresh"); 
-						<?php } ?>
-					}
+					showSite(marker, curSite);
 				}
 			});
 		});
@@ -160,15 +152,7 @@ while ($row = @mysql_fetch_assoc($result)){
 				if (marker.attr("lat") == "" || marker.attr("lon") == "") {
 					console.log("Bad marker (siteid=" + marker.attr("siteid") + " site=" + marker.attr("sitename") + " lat=" + marker.attr("lat") + " lon=" + marker.attr("lon") + ")");
 				} else {
-					showSite(marker);
-					if (marker.attr("sitename") == curSite) {
-						<?php if(!$offline) { ?>
-							google.maps.event.trigger(markersArray[markersArray.length-1], 'click');
-						<?php } else { ?>
-							$('input:radio[name=site]:last').click();
-							$('input:radio[name=site]:last').buttonset("refresh"); 
-						<?php } ?>
-					}
+					showSite(marker, curSite);
 				}
 			});
 		});
@@ -189,14 +173,17 @@ while ($row = @mysql_fetch_assoc($result)){
 		$("#map_canvas").html("");
 	}
 	
-	function showSite(marker) {
+	function showSite(marker, selected) {
 		markersArray.push(marker);
 		var sites="<form>";
 		for (var i in markersArray) {
 			var site = markersArray[i];
-			sites = sites + "<div><input type=\"radio\" name=\"site\" value=\"" + site.attr("siteid") + "\"" +
-			 			    " onClick=\"siteSelected(" + site.attr("siteid") + ",'" + site.attr("sitename") + "');\" >" +
-			 				site.attr("sitename") + "</div>";
+			sites = sites + "<div><input type=\"radio\" name=\"site\" value=\"" + site.attr("siteid") + "\"" + " onClick=\"siteSelected(" + site.attr("siteid") + ",'" + site.attr("sitename") + "');\"";
+			if (selected == site.attr("sitename")) {
+				sites = sites + " checked";
+				siteSelected(site.attr("siteid"), site.attr("sitename"));
+			}
+			sites = sites + ">" + site.attr("sitename") + "</div>";
 		}
 		sites = sites + "</form>";
 		$("#map_canvas").html(sites);
@@ -227,7 +214,7 @@ while ($row = @mysql_fetch_assoc($result)){
 		hostSelected();
 	}
 
-	function showSite(marker) {
+	function showSite(marker, selected) {
 		var latlng;
 		latlng = new google.maps.LatLng(parseFloat(marker.attr("lat")), parseFloat(marker.attr("lon")));
 		var gmarker = new google.maps.Marker({position: latlng, map: map});
@@ -245,6 +232,12 @@ while ($row = @mysql_fetch_assoc($result)){
 			infowindow.setContent(this.html);
 			infowindow.open(map, this);
 		});
+
+		if (marker.attr("sitename") == selected) {
+			siteSelected(gmarker.siteid, gmarker.sitename);
+			infowindow.setContent(gmarker.html);
+			infowindow.open(map, gmarker);
+		}
 	}
 
     function goHome() {
