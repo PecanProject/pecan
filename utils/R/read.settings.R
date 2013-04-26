@@ -121,7 +121,7 @@ check.settings <- function(settings) {
     }
 
     if(is.null(settings$sensitivity.analysis$end.date)) {
-      settings$sensitivity.analysis$start.date <- settings$run$end.date 
+      settings$sensitivity.analysis$end.date <- settings$run$end.date 
       logger.info("No end date passed to sensitivity.analysis - using the run end date (", settings$run$end.date, ").")
     }
   }
