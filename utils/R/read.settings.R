@@ -114,6 +114,16 @@ check.settings <- function(settings) {
       logger.info("Setting sensitivity.analysis variable to the same as ensemble variable [", settings$ensemble$variable, "]")
       settings$sensitivity.analysis$variable <- settings$ensemble$variable
     }
+
+    if(is.null(settings$sensitivity.analysis$start.date)) {
+      settings$sensitivity.analysis$start.date <- settings$run$start.date 
+      logger.info("No start date passed to sensitivity.analysis - using the run date (", settings$run$start.date, ").")
+    }
+
+    if(is.null(settings$sensitivity.analysis$end.date)) {
+      settings$sensitivity.analysis$end.date <- settings$run$end.date 
+      logger.info("No end date passed to sensitivity.analysis - using the run end date (", settings$run$end.date, ").")
+    }
   }
 
   # check to make sure run information is filled out
