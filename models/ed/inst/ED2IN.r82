@@ -8,11 +8,8 @@
 $ED_NL
 
    !----- Simulation title (64 characters). -----------------------------------------------!
-   NL%EXPNME = '@ENSNAME@'
+   NL%EXPNME = 'ED 2.2 r82 PEcAn @ENSNAME@'
    !---------------------------------------------------------------------------------------!
-
-
-
 
    !---------------------------------------------------------------------------------------!
    !    Type of run:                                                                       !
@@ -161,9 +158,6 @@ $ED_NL
    NL%POI_LON  = @SITE_LON@ 		! list of the longitudes of the POIs (degrees east)
    NL%POI_RES  = 1.00
    !---------------------------------------------------------------------------------------!
-
-
-
    !---------------------------------------------------------------------------------------!
    !  LOADMETH -- Load balancing method.  This is used only in regional runs run in        !
    !              parallel.                                                                !
@@ -271,8 +265,8 @@ $ED_NL
    ! FFILOUT -- Path and prefix for analysis files (all but history/restart).              !
    ! SFILOUT -- Path and prefix for history files.                                         !
    !---------------------------------------------------------------------------------------!
-   NL%FFILOUT = '@SCRATCH@/@OUTFILE@'    	! Analysis output prefix;  
-   NL%SFILOUT = '@OUTDIR@/@HISTFILE@'      	! History output prefix
+   NL%FFILOUT = '@FFILOUT@'    	! Analysis output prefix;  
+   NL%SFILOUT = '@SFILOUT@'     ! History output prefix
    !---------------------------------------------------------------------------------------!
 
 
@@ -316,7 +310,7 @@ $ED_NL
    !    6 - Initialize with ED-2 style files without multiple sites, exactly like option   !
    !        2, except that the PFT types are preserved.                                    !
    !---------------------------------------------------------------------------------------!
-   NL%IED_INIT_MODE   = 3
+   NL%IED_INIT_MODE   = 0
    !---------------------------------------------------------------------------------------!
 
 
@@ -345,11 +339,6 @@ $ED_NL
    !---------------------------------------------------------------------------------------!
    NL%SFILIN   = '@SITE_PSSCSS@'
    !---------------------------------------------------------------------------------------!
-
-
-
-
-   !---------------------------------------------------------------------------------------!
    !     History file information.  These variables are used to continue a simulation from !
    ! a point other than the beginning.  Time must be in UTC.                               !
    !                                                                                       !
@@ -362,10 +351,6 @@ $ED_NL
    NL%IDATEH   = 01
    NL%IMONTHH  = 01
    NL%IYEARH   = 1500
-   !---------------------------------------------------------------------------------------!
-
-
-
    !---------------------------------------------------------------------------------------!
    !  NZG    - number of soil layers.  One value for all grids.                            !
    !  NZS    - maximum number of snow/water pounding layers.  This is used only for        !
@@ -390,11 +375,6 @@ $ED_NL
    !---------------------------------------------------------------------------------------!
    NL%ISOILFLG = 2
    !---------------------------------------------------------------------------------------!
-
-
-
-
-   !---------------------------------------------------------------------------------------!
    ! NSLCON -- ED-2 Soil classes that the model will use when ISOILFLG is set to 2.        !
    !           Possible values are:                                                        !
    !---------------------------------------------------------------------------------------!
@@ -406,10 +386,6 @@ $ED_NL
    !   6 -- sandy clay loam     |  12 -- peat                                              !
    !---------------------------------------------------------------------------------------!
    NL%NSLCON   =  3    !3 US-WCr, 2 US-Syv, 10 US-Los
-   !---------------------------------------------------------------------------------------!
-
-
-
    !---------------------------------------------------------------------------------------!
    ! ISOILCOL -- LEAF-3 and ED-2 soil colour classes that the model will use when ISOILFLG !
    !             is set to 2.  Soil classes are from 1 to 20 (1 = lightest; 20 = darkest). !
@@ -439,10 +415,6 @@ $ED_NL
    !---------------------------------------------------------------------------------------!
    NL%ISOILCOL  = 10			!21 12 for US-Los
    !---------------------------------------------------------------------------------------!
-
-
-
-   !---------------------------------------------------------------------------------------!
    !     These variables are used to define the soil properties when you don't want to use !
    ! the standard soil classes.                                                            !
    !                                                                                       !
@@ -454,10 +426,6 @@ $ED_NL
    !---------------------------------------------------------------------------------------!
    NL%SLXCLAY = 0.13			! 0.13 US-WCr, 0.06 US-Syv, 0.0663 US-PFa, 0.68 default
    NL%SLXSAND = 0.54			! 0.54 US-WCr, 0.57 US-Syv, 0.5931 US-PFa, 0.20 default
-   !---------------------------------------------------------------------------------------!
-
-
-
    !---------------------------------------------------------------------------------------!
    !    Soil grid and initial conditions if no file is provided:                           !
    !                                                                                       !
@@ -476,11 +444,6 @@ $ED_NL
    NL%SLZ     = -2.0,-1.5, -1.0, -0.80, -0.60, -0.40, -0.2, -0.10, -0.05
    NL%SLMSTR  =   0.65, 0.65, 0.65, 0.65, 0.65, 0.65, 0.65, 0.65, 0.65
    NL%STGOFF  =   0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
-   !---------------------------------------------------------------------------------------!
-
-
-
-
    !---------------------------------------------------------------------------------------!
    !  Input databases                                                                      !
    !  VEG_DATABASE     -- vegetation database, used only to determine the land/water mask. !
@@ -504,17 +467,12 @@ $ED_NL
    !---------------------------------------------------------------------------------------!
    NL%VEG_DATABASE      = '@ED_VEG@'
    NL%SOIL_DATABASE     = '@ED_SOIL@'
-   NL%LU_DATABASE       = '/home/mdietze/data/ed_inputs/glu/'
+   NL%LU_DATABASE       = '@ED_INPUTS@/glu/'
    NL%PLANTATION_FILE   = ''
    NL%THSUMS_DATABASE   = '@ED_INPUTS@'
-   NL%ED_MET_DRIVER_DB = '@SITE_MET@'
-   NL%SOILSTATE_DB=''
-   NL%SOILDEPTH_DB=''
-   !---------------------------------------------------------------------------------------!
-
-
-
-
+   NL%ED_MET_DRIVER_DB  = '@SITE_MET@'
+   NL%SOILSTATE_DB      = ''
+   NL%SOILDEPTH_DB      = ''
    !---------------------------------------------------------------------------------------!
    ! ISOILSTATEINIT -- Variable controlling how to initialise the soil temperature and     !
    !                   moisture                                                            !
@@ -526,11 +484,6 @@ $ED_NL
    !---------------------------------------------------------------------------------------!
    NL%ISOILSTATEINIT = 0
    NL%ISOILDEPTHFLG  = 0
-   !---------------------------------------------------------------------------------------!
-
-
-
-
    !---------------------------------------------------------------------------------------!
    ! ISOILBC -- This controls the soil moisture boundary condition at the bottom.  If      !
    !            unsure, use 0 for short-term simulations (couple of days), and 1 for long- !
@@ -547,11 +500,6 @@ $ED_NL
    !---------------------------------------------------------------------------------------!
    NL%ISOILBC        = 1
    !---------------------------------------------------------------------------------------!
-
-
-
-
-   !---------------------------------------------------------------------------------------!
    ! IVEGT_DYNAMICS -- The vegetation dynamics scheme.                                     !
    !                   0.  No vegetation dynamics, the initial state will be preserved,    !
    !                       even though the model will compute the potential values.  This  !
@@ -560,9 +508,6 @@ $ED_NL
    !                       The normal option for almost any simulation.                    !
    !---------------------------------------------------------------------------------------!
    NL%IVEGT_DYNAMICS = 1
-   !---------------------------------------------------------------------------------------!
-
-
    !---------------------------------------------------------------------------------------!
    ! IBIGLEAF -- Do you want to run ED as a 'big leaf' model?                              !
    !             0.  No, use the standard size- and age-structure (Moorcroft et al. 2001)  !
@@ -575,11 +520,6 @@ $ED_NL
    !---------------------------------------------------------------------------------------!
    NL%IBIGLEAF = 0           
    !---------------------------------------------------------------------------------------!
-
-
-
-
-   !---------------------------------------------------------------------------------------!
    ! INTEGRATION_SCHEME -- The biophysics integration scheme.                              !
    !                       0.  Euler step.  The fastest, but it doesn't estimate           !
    !                           errors.                                                     !
@@ -590,11 +530,6 @@ $ED_NL
    !---------------------------------------------------------------------------------------!
    NL%INTEGRATION_SCHEME = 1
    !---------------------------------------------------------------------------------------!
-
-
-
-
-   !---------------------------------------------------------------------------------------!
    ! RK4_TOLERANCE -- This is the relative tolerance for Runge-Kutta or Heun's             !
    !                  integration.  Larger numbers will make runs go faster, at the        !
    !                  expense of being less accurate.  Currently the valid range is        !
@@ -602,11 +537,6 @@ $ED_NL
    !                  and 1.e-2.                                                           !
    !---------------------------------------------------------------------------------------!
    NL%RK4_TOLERANCE  = 0.01
-   !---------------------------------------------------------------------------------------!
-
-
-
-
    !---------------------------------------------------------------------------------------!
    ! IBRANCH_THERMO -- This determines whether branches should be included in the          !
    !                   vegetation thermodynamics and radiation or not.                     !
@@ -618,8 +548,6 @@ $ED_NL
    !                       biophysics (thus doubling the number of prognostic variables).  !
    !---------------------------------------------------------------------------------------!
    NL%IBRANCH_THERMO = 0
-   !---------------------------------------------------------------------------------------!
-
    !---------------------------------------------------------------------------------------!
    ! IPHYSIOL --  This variable will determine the functional form that will control how   !
    !              the various parameters will vary with temperature, and how the CO2       !
@@ -639,10 +567,6 @@ $ED_NL
    !---------------------------------------------------------------------------------------!
    NL%IPHYSIOL = 2
    !---------------------------------------------------------------------------------------!
-
-
-
-   !---------------------------------------------------------------------------------------!
    ! IALLOM -- Which allometry to use (this mostly affects tropical PFTs.  Temperate PFTs  !
    !           will use the new root allometry and the maximum crown area if IALLOM is set !
    !           to 1 or 2).                                                                 !
@@ -661,11 +585,6 @@ $ED_NL
    !                  Cole and Ewel (2006), and Calvo Alvarado et al. (2008).              !
    !---------------------------------------------------------------------------------------!
    NL%IALLOM          = 2
-
-   !---------------------------------------------------------------------------------------!
-
-
-
    !---------------------------------------------------------------------------------------!
    ! IGRASS -- This controls the dynamics and growth calculation for grasses.  A new       !
    !           grass scheme is now available where bdead = 0, height is a function of bleaf!
@@ -675,9 +594,6 @@ $ED_NL
    ! 1: new grass scheme as described above                                                !
    !---------------------------------------------------------------------------------------!
    NL%IGRASS          = 0
-   !---------------------------------------------------------------------------------------!   
-
-
    !---------------------------------------------------------------------------------------!
    ! IPHEN_SCHEME -- It controls the phenology scheme.  Even within each scheme, the       !
    !                 actual phenology will be different depending on the PFT.              !
@@ -711,9 +627,6 @@ $ED_NL
    !---------------------------------------------------------------------------------------!
    NL%IPHEN_SCHEME    = @PHENOL_SCHEME@
    !---------------------------------------------------------------------------------------!
-
-
-   !---------------------------------------------------------------------------------------!
    !     Parameters that control the phenology response to radiation, used only when       !
    ! IPHEN_SCHEME = 3.                                                                     !
    !                                                                                       !
@@ -722,10 +635,6 @@ $ED_NL
    !---------------------------------------------------------------------------------------!
    NL%RADINT          = -11.3868
    NL%RADSLP          = 0.0824
-   !---------------------------------------------------------------------------------------!
-
-
-
    !---------------------------------------------------------------------------------------!
    ! REPRO_SCHEME -- This controls plant reproduction and dispersal.                       !
    !                 0.  Reproduction off.  Useful for very short runs only.               !
@@ -743,10 +652,6 @@ $ED_NL
    !---------------------------------------------------------------------------------------!
    NL%REPRO_SCHEME    = 0 
    !---------------------------------------------------------------------------------------!
-
-
-
-   !---------------------------------------------------------------------------------------!
    ! LAPSE_SCHEME -- This specifies the met lapse rate scheme:                             !
    !                 0.  No lapse rates                                                    !
    !                 1.  phenomenological, global                                          !
@@ -754,10 +659,6 @@ $ED_NL
    !                 3.  mechanistic(not yet implemented)                                  !
    !---------------------------------------------------------------------------------------!
    NL%LAPSE_SCHEME    = 0
-   !---------------------------------------------------------------------------------------!
-
-
-
    !---------------------------------------------------------------------------------------!
    ! CROWN_MOD -- Specifies how tree crowns are represent in the canopy radiation model,   !
    !              and in the turbulence scheme depending on ICANTURB.                      !
@@ -767,10 +668,6 @@ $ED_NL
    !                  stacked on the top of each other.                                    !
    !---------------------------------------------------------------------------------------!
    NL%CROWN_MOD       = 1
-   !---------------------------------------------------------------------------------------!
-
-
-
    !---------------------------------------------------------------------------------------!
    !      The following variables control the canopy radiation solver.                     !
    !                                                                                       !
@@ -811,21 +708,12 @@ $ED_NL
    NL%CLUMP_TREE     =  0.800
    NL%CLUMP_GRASS    =  1.000
    !---------------------------------------------------------------------------------------!
-
-
-
-
-   !---------------------------------------------------------------------------------------!
    ! DECOMP_SCHEME -- This specifies the dependence of soil decomposition on temperature.  !
    !                  0.  ED-2.0 default, the original exponential                         !
    !                  1.  Lloyd and Taylor (1994) model                                    !
    !                      [[option 1 requires parameters to be set in xml]]                !
    !---------------------------------------------------------------------------------------!
    NL%DECOMP_SCHEME   = 0
-   !---------------------------------------------------------------------------------------!
-
-
-
    !---------------------------------------------------------------------------------------!
    ! H2O_PLANT_LIM -- this determines whether plant photosynthesis can be limited by       !
    !                  soil moisture, the FSW, defined as FSW = Supply / (Demand + Supply). !
@@ -845,9 +733,6 @@ $ED_NL
    !                      matric potentials at wilting point and field capacity.           !
    !---------------------------------------------------------------------------------------!
    NL%H2O_PLANT_LIM   = 1
-   !---------------------------------------------------------------------------------------!
-
-
    !---------------------------------------------------------------------------------------!
    !     The following variables are factors that control photosynthesis and respiration.  !
    ! Notice that some of them are relative values whereas others are absolute.             !
@@ -914,11 +799,6 @@ $ED_NL
    NL%Q10_C3          = 2.4
    NL%Q10_C4          = 2.4
    !---------------------------------------------------------------------------------------!
-
-
-
-
-   !---------------------------------------------------------------------------------------!
    ! THETACRIT -- Leaf drought phenology threshold.  The sign matters here:                !
    !              >= 0. -- This is the relative soil moisture above the wilting point      !
    !                       below which the drought-deciduous plants will start shedding    !
@@ -930,10 +810,6 @@ $ED_NL
    !---------------------------------------------------------------------------------------!
    NL%THETACRIT       = -1.15
    !---------------------------------------------------------------------------------------!
-
-
-
-   !---------------------------------------------------------------------------------------!
    ! QUANTUM_EFFICIENCY_T -- Which quantum yield model should to use for C3 plants         !
    !                         0.  Original ED-2.1, quantum efficiency is constant.          !
    !                         1.  Quantum efficiency varies with temperature following      !
@@ -941,30 +817,17 @@ $ED_NL
    !---------------------------------------------------------------------------------------!
    NL%QUANTUM_EFFICIENCY_T = 0
    !---------------------------------------------------------------------------------------!
-
-
-
-   !---------------------------------------------------------------------------------------!
    ! N_PLANT_LIM -- This controls whether plant photosynthesis can be limited by nitrogen. !
    !                0.  No limitation                                                      !
    !                1.  ED-2.1 nitrogen limitation model.                                  !
    !---------------------------------------------------------------------------------------!
    NL%N_PLANT_LIM     = 0
    !---------------------------------------------------------------------------------------!
-
-
-
-   !---------------------------------------------------------------------------------------!
    ! N_DECOMP_LIM -- This controls whether decomposition can be limited by nitrogen.       !
    !                0.  No limitation                                                      !
    !                1.  ED-2.1 nitrogen limitation model.                                  !
    !---------------------------------------------------------------------------------------!
    NL%N_DECOMP_LIM    = 0
-   !---------------------------------------------------------------------------------------!
-
-
-
-
    !---------------------------------------------------------------------------------------!
    !      The following parameters adjust the fire disturbance in the model.               !
    ! INCLUDE_FIRE   -- Which threshold to use for fires.                                   !
@@ -991,20 +854,12 @@ $ED_NL
    NL%FIRE_PARAMETER  = 0.2
    NL%SM_FIRE         = -1.45
    !---------------------------------------------------------------------------------------!
-
-
-
-   !---------------------------------------------------------------------------------------!
    !  IANTH_DISTURB -- This flag controls whether to include anthropogenic disturbances    !
    !                   such as land clearing, abandonment, and logging.                    !
    !                   0.  no anthropogenic disturbance.                                   !
    !                   1.  use anthropogenic disturbance dataset.                          !
    !---------------------------------------------------------------------------------------!
    NL%IANTH_DISTURB   = 0
-   !---------------------------------------------------------------------------------------!
-
-
-
    !---------------------------------------------------------------------------------------!
    ! ICANTURB -- This flag controls the canopy roughness.                                  !
    !             0.  Based on Leuning et al. (1995), wind is computed using the similarity !
@@ -1022,10 +877,6 @@ $ED_NL
    !---------------------------------------------------------------------------------------!
    NL%ICANTURB        = 1
    !---------------------------------------------------------------------------------------!
-
-
-
-   !---------------------------------------------------------------------------------------!
    ! ISFCLYRM -- Similarity theory model.  The model that computes u*, T*, etc...          !
    ! 1.  BRAMS default, based on Louis (1979).  It uses empirical relations to             !
    !     estimate the flux based on the bulk Richardson number                             !
@@ -1041,10 +892,6 @@ $ED_NL
    !---------------------------------------------------------------------------------------!
    NL%ISFCLYRM        = 4    ! 3 set by default 
    !---------------------------------------------------------------------------------------!
-
-
-
-   !---------------------------------------------------------------------------------------!
    ! IED_GRNDVAP -- Methods to find the ground -> canopy conductance.                      !
    !    0.  Modified Lee Pielke (1992), adding field capacity, but using beta factor       !
    !        without the square, like in Noilhan and Planton (1989).  This is the closest   !
@@ -1058,11 +905,6 @@ $ED_NL
    ! to dry air soil.                                                                      !
    !---------------------------------------------------------------------------------------!
    NL%IED_GRNDVAP   = 0
-   !---------------------------------------------------------------------------------------!
-
-
-
-
    !---------------------------------------------------------------------------------------!
    !     The following variables are used to control the similarity theory model.  For the !
    ! meaning of these parameters, check Beljaars and Holtslag (1991).                      !
@@ -1081,11 +923,6 @@ $ED_NL
    NL%RIBMAX          = 0.50
    NL%LEAF_MAXWHC     = 0.11
    !---------------------------------------------------------------------------------------!
-
-
-
-
-   !---------------------------------------------------------------------------------------!
    ! IPERCOL -- This controls percolation and infiltration.                                !
    !            0.  Default method.  Assumes soil conductivity constant and for the        !
    !                temporary surface water, it sheds liquid in excess of a 1:9 liquid-    !
@@ -1099,10 +936,6 @@ $ED_NL
    !                , otherwise it is the same as 1.                                       !
    !---------------------------------------------------------------------------------------!
    NL%IPERCOL        = 1
-   !---------------------------------------------------------------------------------------!
-
-
-
    !---------------------------------------------------------------------------------------!
    !      The following variables control the plant functional types (PFTs) that will be   !
    ! used in this simulation.                                                              !
@@ -1128,11 +961,6 @@ $ED_NL
    NL%AGRI_STOCK        = 5                           ! Agriculture PFT (used only if ianth_disturb=1)
    NL%PLANTATION_STOCK  = 6                           ! Plantation PFT  (used only if ianth_disturb=1)
    !---------------------------------------------------------------------------------------!
-
-
-
-
-   !---------------------------------------------------------------------------------------!
    ! PFT_1ST_CHECK -- What to do if the initialisation file has a PFT that is not listed   !
    !                  in INCLUDE_THESE_PFT (ignored if IED_INIT_MODE is -1 or 0)           !
    !                  0.  Stop the run                                                     !
@@ -1140,10 +968,6 @@ $ED_NL
    !                  2.  Ignore the cohort                                                !
    !---------------------------------------------------------------------------------------!
    NL%PFT_1ST_CHECK = 0
-   !---------------------------------------------------------------------------------------!
-
-
-
    !---------------------------------------------------------------------------------------!
    ! The following variables control the size of sub-polygon structures in ED-2.           !
    ! MAXSITE        -- This is the strict maximum number of sites that each polygon can    !
@@ -1174,19 +998,9 @@ $ED_NL
    NL%MIN_SITE_AREA  = 0.005
    NL%MIN_PATCH_AREA = 0.005
    !---------------------------------------------------------------------------------------!
-
-
-
-
-   !---------------------------------------------------------------------------------------!
    !  ZROUGH -- constant roughness, in metres, if for all domain                           !
    !---------------------------------------------------------------------------------------!
    NL%ZROUGH = 0.1
-   !---------------------------------------------------------------------------------------!
-
-
-
-
    !---------------------------------------------------------------------------------------!
    !     Treefall disturbance parameters.                                                  !
    ! TREEFALL_DISTURBANCE_RATE -- Sign-dependent treefall disturbance rate:                !
@@ -1203,21 +1017,11 @@ $ED_NL
    NL%TREEFALL_DISTURBANCE_RATE  = 0.0               !0.014
    NL%TIME2CANOPY    =     0.0
    !---------------------------------------------------------------------------------------!
-
-
-
-
-   !---------------------------------------------------------------------------------------!
    ! RUNOFF_TIME -- In case a temporary surface water (TSW) is created, this is the "e-    !
    !                -folding lifetime" of the TSW in seconds due to runoff.  If you don't  !
    !                want runoff to happen, set this to 0.                                  !
    !---------------------------------------------------------------------------------------!
    NL%RUNOFF_TIME    = 86400.0
-   !---------------------------------------------------------------------------------------!
-
-
-
-
    !---------------------------------------------------------------------------------------!
    !     The following variables control the minimum values of various velocities in the   !
    ! canopy.  This is needed to avoid the air to be extremely still, or to avoid singular- !
@@ -1230,10 +1034,6 @@ $ED_NL
    NL%UBMIN          = 0.65
    NL%UGBMIN         = 0.25
    NL%USTMIN         = 0.05
-   !---------------------------------------------------------------------------------------!
-
-
-
    !---------------------------------------------------------------------------------------!
    !      Control parameters for printing to standard output.  Any variable can be printed !
    ! to standard output as long as it is one dimensional.  Polygon variables have been     !
@@ -1258,10 +1058,6 @@ $ED_NL
    NL%PFMTSTR      = 'f10.8','f5.1','f7.2','f9.5'
    NL%IPMIN        = 1
    NL%IPMAX        = 60
-   !---------------------------------------------------------------------------------------!
-
-
-
    !---------------------------------------------------------------------------------------!
    !      Variables that control the meteorological forcing.                               !
    !                                                                                       !
@@ -1307,10 +1103,6 @@ $ED_NL
    NL%INITIAL_CO2 = 370.0    ! Initial value for CO2 in case no CO2 is provided at the 
                              ! meteorological driver dataset
    !---------------------------------------------------------------------------------------!
-
-
-
-   !---------------------------------------------------------------------------------------!
    !     The following variables control the phenology prescribed from observations:       !
    !                                                                                       !
    ! IPHENYS1 -- First year for spring phenology                                           !
@@ -1327,10 +1119,6 @@ $ED_NL
    NL%IPHENYFF = @PHENOL_END@
    NL%PHENPATH   = '@PHENOL@'
    !---------------------------------------------------------------------------------------!
-
-
-
-   !---------------------------------------------------------------------------------------!
    !     These are some additional configuration files.                                    !
    ! IEDCNFGF   -- XML file containing additional parameter settings.  If you don't have   !
    !               one, leave it empty                                                     !
@@ -1340,10 +1128,6 @@ $ED_NL
    !---------------------------------------------------------------------------------------!
    NL%IEDCNFGF   = '@CONFIGFILE@' 
    NL%EVENT_FILE = 'myevents.xml'
-   !---------------------------------------------------------------------------------------!
-
-
-
    !---------------------------------------------------------------------------------------!
    !     The following variables are used to control the detailed output for debugging     !
    ! purposes.                                                                             !
