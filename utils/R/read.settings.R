@@ -99,9 +99,30 @@ check.settings <- function(settings) {
       logger.info("Setting ensemble variable to the same as sensitivity analysis variable [", settings$sensitivity.analysis$variable, "]")
       settings$ensemble$variable <- settings$sensitivity.analysis$variable
     }
+
     if (is.null(settings$ensemble$size)) {
       logger.info("Setting ensemble size to 1.")
       settings$ensemble$size <- 1
+    }
+
+    if(is.null(settings$ensemble$start.date)) {
+      if(is.null(settings$sensitivity.analysis$start.date)) {
+        settings$ensemble$start.date <- settings$run$start.date 
+        logger.info("No start date passed to ensemble - using the run date (", settings$ensemble$start.date, ").")
+      } else { 
+        settings$ensemble$start.date <- settings$sensitivity.analysis$start.date 
+        logger.info("No start date passed to ensemble - using the sensitivity.analysis date (", settings$ensemble$start.date, ").")
+      }
+    }
+
+    if(is.null(settings$ensemble$end.date)) {
+      if(is.null(settings$sensitivity.analysis$end.date)) {
+        settings$ensemble$end.date <- settings$run$end.date 
+        logger.info("No end date passed to ensemble - using the run date (", settings$ensemble$end.date, ").")
+      } else { 
+        settings$ensemble$end.date <- settings$sensitivity.analysis$end.date 
+        logger.info("No end date passed to ensemble - using the sensitivity.analysis date (", settings$ensemble$end.date, ").")
+      }
     }
   }
 
@@ -116,13 +137,23 @@ check.settings <- function(settings) {
     }
 
     if(is.null(settings$sensitivity.analysis$start.date)) {
-      settings$sensitivity.analysis$start.date <- settings$run$start.date 
-      logger.info("No start date passed to sensitivity.analysis - using the run date (", settings$run$start.date, ").")
+      if(is.null(settings$ensemble$start.date)) {
+        settings$sensitivity.analysis$start.date <- settings$run$start.date 
+        logger.info("No start date passed to sensitivity.analysis - using the run date (", settings$sensitivity.analysis$start.date, ").")
+      } else { 
+        settings$sensitivity.analysis$start.date <- settings$ensemble$start.date 
+        logger.info("No start date passed to sensitivity.analysis - using the ensemble date (", settings$sensitivity.analysis$start.date, ").")
+      }
     }
 
     if(is.null(settings$sensitivity.analysis$end.date)) {
-      settings$sensitivity.analysis$end.date <- settings$run$end.date 
-      logger.info("No end date passed to sensitivity.analysis - using the run end date (", settings$run$end.date, ").")
+      if(is.null(settings$ensemble$end.date)) {
+        settings$sensitivity.analysis$end.date <- settings$run$end.date 
+        logger.info("No end date passed to sensitivity.analysis - using the run date (", settings$sensitivity.analysis$end.date, ").")
+      } else { 
+        settings$sensitivity.analysis$end.date <- settings$ensemble$end.date 
+        logger.info("No end date passed to sensitivity.analysis - using the ensemble date (", settings$sensitivity.analysis$end.date, ").")
+      }
     }
   }
 

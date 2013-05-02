@@ -21,15 +21,14 @@ run.ensemble.analysis <- function(plot.timeseries=NA){
   if(!exists("settings")){ # temporary hack
                         # waiting on http://stackoverflow.com/q/11005478/199217
     settings <- list(outdir = "/tmp/",
-                     pfts = list(pft = list(name = "ebifarm.pavi",
-                                   outdir = "/tmp/")),
+                     pfts = list(pft = list(name = "ebifarm.pavi", outdir = "/tmp/")),
                      ensemble.analysis = NULL)
   }
 
-  cflux = c("GPP","NPP","NEE","TotalResp","AutoResp","HeteroResp","DOC_flux","Fire_flux") #converted to gC/m2/s
-  wflux = c("Evap","TVeg","Qs","Qsb","Rainf") #kgH20 m-2 s-1
+  cflux <- c("GPP","NPP","NEE","TotalResp","AutoResp","HeteroResp","DOC_flux","Fire_flux") #converted to gC/m2/s
+  wflux <- c("Evap","TVeg","Qs","Qsb","Rainf") #kgH20 m-2 s-1
 
-  variables = settings$sensitivity.analysis$variable #grab target variable(s) from pecan.xml
+  variables <- settings$ensemble$variable #grab target variable(s) from pecan.xml
   print(paste("----- Variable: ",variables,sep=""))
 
   ### Temp hack
@@ -105,19 +104,21 @@ read.ensemble.ts <- function(model){
   ensemble.size <- as.numeric(settings$ensemble$size)
   #outdir <- settings$outdir
   outdir <- settings$run$host$outdir
-  start.year <- ifelse(is.null(settings$sensitivity.analysis$start.year),
-                       NA, settings$sensitivity.analysis$start.year)
-  end.year   <- ifelse(is.null(settings$sensitivity.analysis$end.year),
-                       NA, settings$sensitivity.analysis$end.year)
+  start.year <- ifelse(is.null(settings$ensemble$start.year), NA, settings$ensemble$start.year)
+  end.year   <- ifelse(is.null(settings$ensemble$end.year), NA, settings$ensemble$end.year)
 
-  variables = "NPP"
-  if("sensitivity.analysis" %in% names(settings)){
-    if("variable" %in% names(settings$sensitivity.analysis)){
-      var = which(names(settings$sensitivity.analysis) == 'variable')
+  variables <- NULL
+  if("ensemble" %in% names(settings)){
+    if("variable" %in% names(settings$ensemble)){
+      var <- which(names(settings$ensemble) == 'variable')
+
       for(i in 1:length(var)){
-        variables[i] = settings$sensitivity.analysis[[var[i]]]
+        variables[i] = settings$ensemble[[var[i]]]
       }
     }
+  }
+  if (is.null(variables)) {
+    variables <- "NPP"
   }
   print(paste("----- Variable: ",variables,sep=""))
   print("----- Reading ensemble output ------")
