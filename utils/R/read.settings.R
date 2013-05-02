@@ -90,6 +90,11 @@ check.settings <- function(settings) {
     logger.severe("No PFTS specified.")
   }
 
+  # check if there is either ensemble or sensitivy.analysis
+  if (is.null(settings$ensemble) && is.null(settings$sensitivity.analysis)) {
+    logger.warn("No ensemble or sensitivity analysis specified, runs will fail!")
+  }
+
   # check ensemble
   if (!is.null(settings$ensemble)) {
     if (is.character(settings$ensemble) || is.null(settings$ensemble$variable)) {
@@ -381,7 +386,7 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
     # 1 filename is passed as argument to R
     for(idx in loc) {
       if (!is.null(commandArgs()[idx+1]) && file.exists(commandArgs()[idx+1])) {
-        logger.info("Loading --settings=", idx+1)
+        logger.info("Loading --settings=", commandArgs()[idx+1])
         xml <- xmlParse(commandArgs()[idx+1])
         break
       }
