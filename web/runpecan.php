@@ -217,7 +217,7 @@ if ($modeltype == "ED2") {
 	fwrite($fh, "        <output_month>12</output_month>      " . PHP_EOL);
 	fwrite($fh, "      </ed_misc> " . PHP_EOL);
 	fwrite($fh, "    </config.header>" . PHP_EOL);
-	fwrite($fh, "    <edin>${folder}/ED2IN.template</edin>" . PHP_EOL);
+	fwrite($fh, "    <edin>ED2IN.r{$model['revision']}</edin>" . PHP_EOL);
 	fwrite($fh, "    <veg>${ed_veg}</veg>" . PHP_EOL);
 	fwrite($fh, "    <soil>${ed_soil}</soil>" . PHP_EOL);
 	if ($psscss == "FIA") {
@@ -254,9 +254,9 @@ fwrite($fh, "</pecan>" . PHP_EOL);
 fclose($fh); 
 
 # copy ED template
-if ($modeltype == "ED2") {
-	copy("template/{$model['model_name']}_r{$model['revision']}", "${folder}/ED2IN.template");
-}
+#if ($modeltype == "ED2") {
+#	copy("template/{$model['model_name']}_r{$model['revision']}", "${folder}/ED2IN.template");
+#}
 
 # copy workflow
 copy("workflow_stage1.R", "${folder}/workflow_stage1.R");

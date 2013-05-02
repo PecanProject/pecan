@@ -180,13 +180,24 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   
   ##----------------------------------------------------------------------
   ## Edit ED2IN file for runs
-  ed2in.text <- readLines(con=settings$model$edin, n=-1)
+  if (file.exists(settings$model$edin)) {
+    ed2in.text <- readLines(con=settings$model$edin, n=-1)
+  } else {
+    filename <- system.file(settings$model$edin, package = "PEcAn.ED")
+    if (filename == "") {
+      logger.severe("Could not find ED template")
+    }
+    ed2in.text <- readLines(con=filename, n=-1)
+  }
   
+  metstart <- tryCatch(format(as.Date(settings$run$site$met.start), "%Y"), error=function(e) settings$run$site$met.start)
+  metend   <- tryCatch(format(as.Date(settings$run$site$met.end), "%Y"), error=function(e) settings$run$site$met.end)
+
   ed2in.text <- gsub('@SITE_LAT@', settings$run$site$lat, ed2in.text)
   ed2in.text <- gsub('@SITE_LON@', settings$run$site$lon, ed2in.text)
   ed2in.text <- gsub('@SITE_MET@', settings$run$site$met, ed2in.text)
-  ed2in.text <- gsub('@MET_START@', settings$run$site$met.start, ed2in.text)
-  ed2in.text <- gsub('@MET_END@', settings$run$site$met.end, ed2in.text)
+  ed2in.text <- gsub('@MET_START@', metstart, ed2in.text)
+  ed2in.text <- gsub('@MET_END@', metend, ed2in.text)
 
   if(is.null(settings$model$phenol.scheme)){
     print(paste("no phenology scheme set; \n",

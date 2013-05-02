@@ -91,13 +91,13 @@ read.output.ED2 <- function(run.id, outdir, start.year=NA, end.year=NA, variable
 ##'
 ##' @author Shawn Serbin
 ##' @author David LeBauer
-get.model.output.ED2 <- function(){
+get.model.output.ED2 <- function(settings){
   model <- settings$model$name
   
   ### Get ED2 model output on the localhost
   if(settings$run$host$name == 'localhost'){
-    setwd(settings$run$host$outdir)  # Host model output directory
-    get.results(model)
+    #setwd(settings$run$host$outdir)  # Host model output directory
+    get.results(settings$outdir, model)
     ### Move required functions to host
     ## TODO: take out functions read.output.file.ed & read.output.ed from write.configs.ed &
     ## put into a new file specific for reading ED output
