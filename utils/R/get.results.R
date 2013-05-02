@@ -23,26 +23,17 @@ get.results <- function(pecandir, model) {
   ### Load PEcAn sa info
   load(file.path(pecandir, 'samples.Rdata'))
   
-  sensitivity.output <- list()
-  ensemble.output    <- list()
-  
-  start.year <- ifelse(is.null(settings$sensitivity.analysis$start.year),
-                       NA, settings$sensitivity.analysis$start.year)
-  end.year   <- ifelse(is.null(settings$sensitivity.analysis$end.year),
-                       NA, settings$sensitivity.analysis$end.year)
-
-  variables <- NULL
-  if("sensitivity.analysis" %in% names(settings)){
+  sensitivity.output <- list()   
+  if('sensitivity.analysis' %in% names(settings)) {
+    start.year <- ifelse(is.null(settings$sensitivity.analysis$start.year), NA, settings$sensitivity.analysis$start.year)
+    end.year   <- ifelse(is.null(settings$sensitivity.analysis$end.year), NA, settings$sensitivity.analysis$end.year)
+    variables  <- NULL
     if("variable" %in% names(settings$sensitivity.analysis)){
       var <- which(names(settings$sensitivity.analysis) == 'variable')
       for(i in 1:length(var)){
         variables[i] = settings$sensitivity.analysis[[var[i]]]
       }
     }
-  }
-  print(variables)
-  
-  if('sensitivity.analysis' %in% names(settings)) {
     
     for(pft.name in names(trait.samples)){
       
@@ -61,7 +52,17 @@ get.results <- function(pecandir, model) {
     }
   }
   
+  ensemble.output    <- list()
   if('ensemble' %in% names(settings)) {
+    start.year <- ifelse(is.null(settings$ensemble$start.year), NA, settings$ensemble$start.year)
+    end.year   <- ifelse(is.null(settings$ensemble$end.year), NA, settings$ensemble$end.year)
+    variables  <- NULL
+    if("variable" %in% names(settings$ensemble)){
+      var <- which(names(settings$ensemble) == 'variable')
+      for(i in 1:length(var)){
+        variables[i] = settings$ensemble[[var[i]]]
+      }
+    }
     ensemble.output <- read.ensemble.output(settings$ensemble$size,
                                             pecandir = pecandir,
                                             outdir = settings$run$host$outdir, 
