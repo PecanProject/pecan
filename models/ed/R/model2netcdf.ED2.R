@@ -17,6 +17,7 @@
 ##'
 ##' @author Michael Dietze
 ## modified M. Dietze 07/08/12
+## modified S. Serbin 05/06/13
 model2netcdf.ED2 <- function(outdir) {
 
   flist <- dir(outdir,"-T-")
@@ -28,17 +29,17 @@ model2netcdf.ED2 <- function(outdir) {
   ## extract data info from file names?
   yr <- rep(NA,length(flist))
   for(i in 1:length(flist)){
-    ## tmp <- sub(run.id,"",flist[i])
-    ## tmp <- sub("-T-","",tmp)
+    ## tmp <- sub(run.id,"",flist[i])  # Edited by SPS
+    ## tmp <- sub("-T-","",tmp)        # Edited by SPS
     index <- gregexpr("-T-",flist[i])[[1]]
     index <- index[1]
     yr[i] <- as.numeric(substr(flist[i],index+3,index+6))
-    ## yr[i] <- as.numeric(substr(tmp,1,4))
+    ## yr[i] <- as.numeric(substr(tmp,1,4)) # Edited by SPS
   }
 
   ## set up storage
   ##block <- 24 # assumes hourly
-  block <- 48 # assumes half-hourly
+  block <- 48 # assumes half-hourly  # Needs to be generalized (SPS)
   
   add <- function(dat, col, row){
     
@@ -256,6 +257,7 @@ model2netcdf.ED2 <- function(outdir) {
     dz <- dz[dz != 0.0]
   
     out[[1]]  <- out[[1]]*0.1      ## tC/ha     -> kg/m2
+    out[[2]]  <- out[[2]]*1.2e-8   ## umol/m2/s -> kg/m2/s
     out[[6]]  <- out[[6]]*1.2e-8   ## umol/m2/s -> kg/m2/s
     out[[7]]  <- out[[7]]*1.2e-8   ## umol/m2/s -> kg/m2/s
     out[[8]]  <- out[[8]]*1.2e-8   ## umol/m2/s -> kg/m2/s
@@ -275,16 +277,16 @@ model2netcdf.ED2 <- function(outdir) {
     
     var <- list()
     var[[1]]  <- var.def.ncdf("AbvGrndWood","kg/m2",t,-999)
-    var[[2]]  <- var.def.ncdf("AutoResp","kg/m2/s2",t,-999)
+    var[[2]]  <- var.def.ncdf("AutoResp","kg/m2/s",t,-999) # edited from kg/m2/s2 (SPS)
     var[[3]]  <- var.def.ncdf("CarbPools","kg/m2",t,-999)
     var[[4]]  <- var.def.ncdf("CO2CAS","ppmv",t,-999)
     var[[5]]  <- var.def.ncdf("CropYield","kg/m2",t,-999)
-    var[[6]]  <- var.def.ncdf("GPP","kg/m2/s2",t,-999)
-    var[[7]]  <- var.def.ncdf("HeteroResp","kg/m2/s2",t,-999)
-    var[[8]]  <- var.def.ncdf("NEE","kg/m2/s2",t,-999)
-    var[[9]]  <- var.def.ncdf("NPP","kg/m2/s2",t,-999)
-    var[[10]] <- var.def.ncdf("TotalResp","kg/m2/s2",t,-999)
-    var[[11]] <- var.def.ncdf("TotLivBiom","kg/m2/s2",t,-999)
+    var[[6]]  <- var.def.ncdf("GPP","kg/m2/s",t,-999) # edited from kg/m2/s2 (SPS)
+    var[[7]]  <- var.def.ncdf("HeteroResp","kg/m2/s",t,-999) # edited from kg/m2/s2 (SPS)
+    var[[8]]  <- var.def.ncdf("NEE","kg/m2/s",t,-999) # edited from kg/m2/s2 (SPS)
+    var[[9]]  <- var.def.ncdf("NPP","kg/m2/s",t,-999) # edited from kg/m2/s2 (SPS)
+    var[[10]] <- var.def.ncdf("TotalResp","kg/m2/s",t,-999)
+    var[[11]] <- var.def.ncdf("TotLivBiom","kg/m2",t,-999) # edited from kg/m2/s2 (SPS)
     var[[12]] <- var.def.ncdf("TotSoilCarb","kg/m2",t,-999)
     var[[13]] <- var.def.ncdf("Fdepth","m",t,-999)
     var[[14]] <- var.def.ncdf("SnowDepth","m",t,-999)
