@@ -67,7 +67,10 @@ convert.samples.ED <- function(trait.samples){
     
     ##need to add back dark resp prior?? no?
     
-    ## Calculate dark_resp_factor
+    ## Output leaf_respiration_rate @ 15C as Rd0 -- New way to input leaf resp into ED2.  Dark Resp Factor is no longer used (see below)
+    trait.samples[['Rd0']] <- trait.samples[['leaf_respiration_rate_m2']] ## Added by SPS 05/06/2013
+    
+    ## Calculate dark_resp_factor -- Will be depreciated when moving from older versions of ED2
     trait.samples[['dark_respiration_factor']] <- trait.samples[['leaf_respiration_rate_m2']]/
       vcmax_15
     
