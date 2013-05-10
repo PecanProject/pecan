@@ -20,6 +20,7 @@
 ##' @param prior 
 ##' @param jag.model.file file to which model will be written 
 ##' @param overdispersed 
+##' @export
 ##' @return jags.out, an mcmc.object with results of meta-analysis
 ##' @author David LeBauer, Michael C. Dietze
 single.MA <- function(data, j.chains, j.iter, tauA, tauB, prior,
