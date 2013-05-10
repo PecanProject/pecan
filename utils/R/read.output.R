@@ -32,7 +32,11 @@
 ##' @author Michael Dietze
 read.output <- function(run.id, outdir, model, start.year=NA,
                         end.year=NA, variables = "GPP") {
-  do.call(require, list(paste0("PEcAn.", model)))
+  if (model == 'ED2') {
+    do.call(require, list("PEcAn.ED"))    
+  } else {
+    do.call(require, list(paste0("PEcAn.", model)))    
+  }
   model2nc <- paste("model2netcdf", model, sep=".")
   if(!exists(model2nc)){
     logger.warn("File conversion function model2netcdf does not exist for", model)
