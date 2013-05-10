@@ -232,19 +232,8 @@
 			}
 
 			// read the file line by line
-			$check = false;
 			while (($buffer = fgets($f, 4096)) !== false) {
-				if ($check && ($buffer[0]==" ")) {
-					print($buffer);
-				} else if (stristr($buffer, "error") !== false) {
-					print($buffer);
-					$check = true;
-				} else if (stristr($buffer, "warn") !== false) {
-					print($buffer);
-					$check = true;
-				} else {
-					$check = false;
-				}
+				print($buffer);
 			}
 
 			// Close file and return
