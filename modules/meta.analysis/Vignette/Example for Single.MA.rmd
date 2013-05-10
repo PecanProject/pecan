@@ -1,0 +1,71 @@
+Meta-analysis: Example of Single.MA
+========================================================
+Individual Meta-analysis
+
+Individual meta-analysis for a specific trait and PFT is run by the function
+single.MA. This will allow power analysis  to run repeated MA outside of the
+full loop over traits and PFTs. 
+
+The first step is to convert the R distribution to JAGS distribution. The prior transformed is then stored in jagsprior and the parameters are renamed as "distn", "a", "b" and "n".
+
+```{r}
+jagsprior <- r2bugs.distributions(prior)
+jagsprior <- jagsprior[, c('distn', 'parama', 'paramb', 'n')]
+colnames(jagsprior) <- c("distn", "a", "b", "n")
+colnames(prior)     <- c("distn", "a", "b", "n")
+```
+In order to determine how many levels of the factors to include in meta-analysis, the number of unique values of the greenhouse(ghs), site and trait (trt) variables are calculated. 
+If one of the factors has more than 1 level, it will be included in the model.
+
+```{r}
+ # determine what factors to include in meta-analysis
+    model.parms <- list(ghs  = length(unique(data$ghs)),
+                        site = length(unique(data$site)),
+                        trt  = length(unique(data$trt)))
+    # define regression model
+    reg.parms   <- list(ghs  = 'beta.ghs[ghs[k]]', #beta.o will be included by default
+                        site = 'beta.site[site[k]]',
+                        trt  = 'beta.trt[trt[k]]')
+    if(sum(model.parms>1)==0) {
+      reg.model <- ''
+    } 
+    else {
+      reg.model <- paste('+', reg.parms[model.parms > 1], collapse = " ")
+    }
+
+```
+After deciding the levels of the factors, list of parameters will be generated for jags to follow.
+The vairables "beta.o" and "sd.y" will always be considered. For greehouse (ghs) or trait (trt) factors, if there are p levels (p>1), (p-1) variables will be generated for it. For site (site),if there are p levels (p>1), p variables for each level will be generated. Only factors with more than one levels remain.
+```{r}
+vars <- c( 'beta.o', 'sd.y') 
+    for (x in c('ghs', 'site', 'trt')) {
+      if(model.parms[[x]] == 1) {
+        data <- data[, which(names(data) != x)]
+      } 
+      else {
+        data <- data
+        if(x!='ghs') {
+          vars <- c(vars, paste('sd.', x, sep = ''))
+        }
+        # m <- min(model.parms[[x]], 5)
+        m <- model.parms[[x]]
+        for (i in 1:m) {
+          if(i == 1 && x == 'site') {
+            vars <- c(vars, 'beta.site[1]')
+          }
+          if (i > 1) {
+            vars <- c(vars, paste('beta.', x, '[', i, ']', sep=''))
+          }
+        }
+      }
+    }
+
+```
+The default JAGS model file is imported and modified based on user settings and default bug file.
+kkkkk
+You can also embed plots, for example:
+
+```{r fig.width=7, fig.height=6}
+plot(cars)
+```
+
