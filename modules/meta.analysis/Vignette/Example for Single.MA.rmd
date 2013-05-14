@@ -111,8 +111,8 @@ Using the jags.model function, the Bayesian graphical model is generated based o
                                 n.iter = j.iter,
                                 thin = max(c(2,j.iter/(5000*2))))
 return(jags.out)
-
+ 
 ```
 
 
-
+ 

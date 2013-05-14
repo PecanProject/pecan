@@ -67,7 +67,7 @@ single.MA <- function(data, j.chains, j.iter, tauA, tauB, prior,
             vars <- c(vars, paste('beta.', x, '[', i, ']', sep=''))
           }
         }
-      }
+      } 
     }
 
     
