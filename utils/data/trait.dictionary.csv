@@ -48,4 +48,9 @@
 "b2Bl";"Leaf Allometry Exponent";;"b2Bl"
 "b1Bs";"Stem Allometry Intercept";"kg/plant/cm^b2bl";"b1Bs"
 "b2Bs";"Stem Allometry Exponent";;"b2Bs"
-"AET";"Annual Evapotranspiration";;"AET"
+"yield";"Yield";"Mg/ha";""
+"LAI";"Leaf Area Index";"leaves/m2";
+"leafN";"Leaf % N";"";""
+"rootN";"Root % N";"";""
+"stemN";"Stem % N";"";""
+"root2shoot";"Root to Shoot Ratio";"";""

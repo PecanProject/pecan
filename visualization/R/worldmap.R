@@ -65,7 +65,7 @@ pecan.worldmap <- function(df.in, outfile = "worldmap.png", xlim = c(-130,-30), 
     
   }
   
-  
+  if(!is.null(outfile)){
   ggsave(filename = outfile, plot = p, 
          width = 44*diff(xlim)/360, height = 34*diff(ylim)/180, 
          units="in", dpi = 100, bg="transparent")
@@ -88,6 +88,8 @@ pecan.worldmap <- function(df.in, outfile = "worldmap.png", xlim = c(-130,-30), 
   png(paste0(outfile, "-legend.png") ,units="px",bg = "transparent")
   grid.draw(l2)
   dev.off()
-  dev.off()
+  } else {
+    p + theme_bw()
+  }
 }
 
