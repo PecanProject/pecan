@@ -9,6 +9,9 @@ full loop over traits and PFTs.
 The first step is to convert the R distribution to JAGS distribution. The prior transformed is then stored in jagsprior and the parameters are renamed as "distn", "a", "b" and "n".
 
 ```{r}
+library(devtools)
+load_all("~/pecan1/modules/meta.analysis")
+load("~/pecan1/modules/meta.analysis/inst/extdata/singleMAvignetteinputs.RData")
 jagsprior <- r2bugs.distributions(prior)
 jagsprior <- jagsprior[, c('distn', 'parama', 'paramb', 'n')]
 colnames(jagsprior) <- c("distn", "a", "b", "n")
@@ -29,6 +32,7 @@ If one of the factors has more than 1 level, it will be included in the model.
     if(sum(model.parms>1)==0) {
       reg.model <- ''
     } 
+######################if(sum(model.parms>1)!=0)
     else {
       reg.model <- paste('+', reg.parms[model.parms > 1], collapse = " ")
     }
@@ -62,10 +66,53 @@ vars <- c( 'beta.o', 'sd.y')
 
 ```
 The default JAGS model file is imported and modified based on user settings and default bug file.
-kkkkk
-You can also embed plots, for example:
+```{r}
+  modelfile = system.file("inst/ma.model.template.bug", package="PEcAn.MA")
+    
+    write.ma.model (modelfile = modelfile,
+                    outfile = jag.model.file,
+                    reg.model = reg.model,
+                    jagsprior$distn, jagsprior$a, jagsprior$b,
+                    n     = length ( data$Y ),
+                    trt.n = model.parms[['trt']],
+                    site.n= model.parms[['site']],
+                    ghs.n = model.parms[['ghs']],
+                    tauA  = tauA,
+                    tauB  = tauB)
 
-```{r fig.width=7, fig.height=6}
-plot(cars)
 ```
+
+To overdisperse the n MCMC chains, intial values of beta.0 are set to the 1/(n+1),...,n/(n+1) quantiles of the prior on beta.o; for the default n=4 chains, this would be the {0.2, 0.4, 0.6, 0.8} quantiles
+```{r}
+ if(overdispersed == TRUE){
+      ## overdispersed chains
+      j.inits <- function(chain) list("beta.o" = do.call(paste('q',prior$dist,sep=''),
+                                        list(chain * 1/(j.chains + 1), prior$a, prior$b)),
+                                      .RNG.seed = chain,
+                                      .RNG.name = "base::Mersenne-Twister")
+    } else if (overdispersed == FALSE) {
+      ## chains fixed at data mean - used if above code does not converge,
+      ## invalidates assumptions about convergence, e.g. Gelman-Rubin diagnostic
+      j.inits <- function(chain) list("beta.o" = mean(data$Y))
+    }
+    
+```
+Using the jags.model function, the Bayesian graphical model is generated based on the initials. The posterior samples in mcmc.list format are then created.
+```{r}
+ j.model   <- jags.model (file = jag.model.file,
+                             data = data,
+#                             n.adapt = 100, #will burn in below
+                             inits = j.inits,
+                             n.chains = j.chains)
+
+
+    jags.out   <- coda.samples ( model = j.model,
+                                variable.names = vars,
+                                n.iter = j.iter,
+                                thin = max(c(2,j.iter/(5000*2))))
+return(jags.out)
+
+```
+
+
 

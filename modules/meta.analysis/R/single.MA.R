@@ -51,7 +51,8 @@ single.MA <- function(data, j.chains, j.iter, tauA, tauB, prior,
     for (x in c('ghs', 'site', 'trt')) {
       if(model.parms[[x]] == 1) {
         data <- data[, which(names(data) != x)]
-      } else {
+      } 
+      else {
         data <- data
         if(x!='ghs') {
           vars <- c(vars, paste('sd.', x, sep = ''))
@@ -71,7 +72,7 @@ single.MA <- function(data, j.chains, j.iter, tauA, tauB, prior,
 
     
     ### Import defaul JAGS model file
-    modelfile = system.file("ma.model.template.bug", package="PEcAn.MA")
+    modelfile = system.file("inst/ma.model.template.bug", package="PEcAn.MA")
     
     ### Write JAGS bug file based on user settings and default bug file
     #write.ma.model (modelfile = paste(settings$pecanDir,'rscripts/ma.model.template.bug',sep=""),
