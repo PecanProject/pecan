@@ -17,14 +17,15 @@
 ##' @author David LeBauer, Carl Davidson
 read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
   if(filename %in% dir(pattern = 'h5')){
-    require(hdf5)
     Carbon2Yield = 20
-    data <- hdf5load(filename, load = FALSE)[variables]
+    nc <- open.ncdf(filename)
     if(all(c("AGB_CO", "NPLANT") %in% variables)) {
-      return(sum(data$AGB_CO * data$NPLANT, na.rm =TRUE) * Carbon2Yield)
+      result <- (sum(get.var.ncdf(nc,'AGB_CO') * get.var.ncdf(nc,'NPLANT'), na.rm =TRUE) * Carbon2Yield)
     } else {
-      return(sum(data[[variables]]))
+      result <- sum(sapply(variables, function(x){sum(get.var.ncdf(nc, x))}))
     }
+    close.ncdf(nc)
+    return(result)
   } else {
     return(NA)
   }
