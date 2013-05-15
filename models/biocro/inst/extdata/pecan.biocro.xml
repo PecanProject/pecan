@@ -1,11 +1,9 @@
 <?xml version="1.0"?>
 <pecan>
-  <outdir>/tmp/</outdir>
-  <rundir>/tmp/</rundir>
+  <outdir>pecan</outdir>
   <pfts>
     <pft>
       <name>biocro.salix</name>
-      <outdir>/tmp/</outdir>
       <constants>
 	<canopyParms>
 	  <Sp>1.3</Sp>
@@ -128,10 +126,8 @@
     <folder>/tmp/</folder>
     <start.date>2004-01-01 06:00:00</start.date>
     <end.date>2005-12-31 05:59:00</end.date>
-    <host>R 
+    <host> 
       <name>localhost</name>
-      <rundir>/tmp/</rundir>
-      <outdir>/tmp/</outdir>
     </host>
   </run>
 </pecan>
