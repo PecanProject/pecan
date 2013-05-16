@@ -15,6 +15,8 @@ test_that("read.settings works ",{
   expect_true(file.remove(test.output))
 })
 
+
+
 ## context("tests for read.settings and related functions")
 ## test_that("read settings returns error if no settings file found (issue #1124)",{
 ##   default.settings.files <- c("/etc/pecan.xml", "~/.pecan.xml",

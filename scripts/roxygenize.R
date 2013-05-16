@@ -1,5 +1,6 @@
 #!/usr/bin/Rscript
 
+# must be run from home directory
 require(roxygen2)
 require(PEcAn.all)
 packages <- c("utils", "db", "visualization",
