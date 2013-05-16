@@ -144,13 +144,6 @@ sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
         var(spline.estimates[[trait]]))
   partial.variances <- variances #/ sum(variances)
 
-  ## change Vm_low_temp to Kelvin prior to calculation of coefficient of variance.
-  ## this conversion is only required at this point in the code, for calculating CV
-  C.units <- grepl('^Celsius$', trait.lookup(traits)$units, ignore.case = TRUE)
-  if(any(C.units)){
-    #trait.samples[[C.units]] <- trait.samples[[C.units]] + 273.15
-    trait.samples[[which(C.units)]] <- trait.samples[[which(C.units)]] + 273.15 # changed by SPS on 09/08/2012
-  }
   coef.vars <- sapply(trait.samples, get.coef.var)
   outlist <- list(sensitivity.output = list(
                     sa.samples    = sa.samples,
