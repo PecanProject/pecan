@@ -14,12 +14,11 @@
 ##' @title Generate model output for PEcAn analyses
 ##' @export
 ##' @author Shawn Serbin, David LeBauer, Mike Dietze
-##' @param pecandir output directory
 ##' @param model name of model being used
 ##' @param settings list, read from settings file (xml) using \code{\link{read.settings}}
 ##' 
 ##' @author David LeBauer, Shawn Serbin, Mike Dietze
-get.results <- function(pecandir, model, settings = settings) {
+get.results <- function(pecandir, model) {
   
   ### Load PEcAn sa info
   load(file.path(pecandir, 'samples.Rdata'))
