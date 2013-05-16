@@ -42,7 +42,7 @@ read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name='',
   for(trait in traits){
     for(quantile in quantiles){
       run.id <- sa.runs[[pft.name]][quantile, trait]
-      sa.output[quantile, trait] <- sapply(read.output(run.id, file.path(outdir, run.id), model,
+      sa.output[quantile, trait] <- sapply(read.output.BIOCRO(run.id, file.path(outdir, run.id), model,
                                                        start.year, end.year, variables),
                                            mean, na.rm=TRUE)
     } ## end loop over quantiles
