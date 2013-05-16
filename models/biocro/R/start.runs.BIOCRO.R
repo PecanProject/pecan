@@ -19,10 +19,9 @@ start.runs.BIOCRO <- function(runid) {
     stop("Only local runs are executed here")
   }
 
-  rundir <- file.path(settings$run$host$rundir, as.character(runid))
-  outdir <- file.path(settings$run$host$outdir, as.character(runid))
-  cwd <- getwd()
-  setwd(rundir)
+  rundir <- settings$run$host$rundir
+  outdir <- settings$run$host$outdir
+
   # run model
   # compute/download weather
   lat <- as.numeric(settings$run$site$lat)
@@ -31,8 +30,7 @@ start.runs.BIOCRO <- function(runid) {
   end.date <- settings$run$end.date
   site.id = settings$run$site$id
   
-  hostname <- system("hostname", intern = TRUE)
-  if(settings$run$host$name == "localhost")  settings$run$host$name <- "hostname"
+  
   con <- query.base.con(settings)
   site.info <- query.base(paste0("select * from sites where id = ", site.id, ";"), con = con)
   site.exists <- nrow(site.info) == 1
@@ -47,65 +45,44 @@ start.runs.BIOCRO <- function(runid) {
   
   ### TODO the following code should be run during write_configs and the file name passed to the start.runs function
   ### the next set of code using queries will be passed to a new function called "query.met"
-  metfiles <- db.query(paste("select start_date, end_date, hostname, file_name, file_path ",
-                   "from inputs join dbfiles on dbfiles.container_id = inputs.file_id ",
-                   "join machines on dbfiles.machine_id = machines.id ",
+  metfiles <- query.base(paste("select start_date, end_date, file_name, file_path ",
+                   "from inputs join dbfiles on dbfiles.file_id = inputs.file_id ",
                    "where start_date <= '", start.date, 
                    "' and end_date >= '", end.date, 
                    "' and site_id =", site.id, ";", sep = ""), con = con)
-  
-  nometfile <- FALSE
-  if(nrow(metfiles) == 0){
-    nometfile <- TRUE
-  } else if(nrow(metfiles) > 1){
-    metfiles <- metfiles[1,] # a hack that just uses the first record instead of choosing one 
-  }
-  metfile <- file.path(metfiles$file_path, metfiles$file_name)
-  if(!file.exists(metfile)) {
-    nometfile <- TRUE
-  } else if(file.exists(metfile)){
-    weather <- read.csv(metfile)[,-1]
-  }
-  if(nometfile & !exists("weather")){
+
+  if(nrow(metfiles) == 1){
+    weather <- read.csv(file.path(metfiles$file_path, metfiles$file_name), row.names = NULL)
+  } else {
     weather <- InputForWeach(lat, lon, year(start.date), year(end.date))
-    write.csv(weather, file = file.path(outdir, "weather.csv"), rownames = FALSE)
-    file.id <- 1+ max(db.query(paste0("select max(inputs.file_id), max(dbfiles.container_id) ",
-                                      " from inputs right join dbfiles on inputs.file_id = dbfiles.container_id;"), con = con))
-    machine.id <- db.query(paste0("select id from machines where hostname = '", hostname, "';"), con = con)
-    if(nrow(machine.id) == 0){
-      machine.id <- 1 + max(db.query("select id from machines;", con = con))
-      db.query(paste0("insert into machines (id, hostname, created_at) values(",
-                      vecpaste(c(machine.id, hostname, format(Sys.time()))), ");"), con = con)
-    } 
-    db.query(paste0("insert into dbfiles (file_name, file_path, created_at, machine_id, container_id) ",
-                    "values(", vecpaste(c('weather.csv', outdir, format(Sys.time()), machine.id, file.id)),");"), con = con)
-    db.query(paste0("insert into inputs ",
-                    "(notes, created_at, site_id, file_id, start_date, ",
-                    "end_date, access_level, format_id) ",
-                    "values('downloaded from NCEP', now(),",
-                    vecpaste(c(site.id, file.id, start.date, end.date, 4, 28)), ");"), con = con)
-    
+    write.csv(weather, file = file.path(outdir, "weather.csv"))
+    file.id <- 1+ max(query.base(paste0("select max(inputs.file_id), max(dbfiles.file_id) ",
+                                 " from inputs right join dbfiles on inputs.file_id = dbfiles.file_id;")))
+    query.base(paste0("insert into dbfiles (file_name, file_path, created_at, file_id) ",
+                      "values('weather.csv', '", outdir, "', now(),", file.id,");"), con = con)
+    query.base(paste0("insert into inputs ",
+                      "(notes, created_at, site_id, file_id, start_date, ",
+                      "end_date, access_level, format_id) ",
+                      "values('downloaded from NCEP', now(),", 
+                      vecpaste(c(site.id, file.id, start.date, end.date, 4, 28)), ");"), con = con)
+
   }
   query.close(con)
   weather2 <- weachNEW(weather, lati = lat, ts = 1, 
                        temp.units="Celsius", rh.units="fraction", 
                        ws.units="mph", pp.units="in")
-  colnames(weather2) <- c("year", "doy", "hour", "solarR", "DailyTemp.C", "RH", "WindSpeed", 
-                          "precip")
-  
-  # run model
-  config <- xmlToList(xmlParse("config.xml"))
-  pp.config <- config$pft$photoParms
-  pp <- photoParms(vmax=pp.config$vmax, b0=pp.config$b0, b1 = pp.config$b1,Rd=pp.config$Rd)
-  cc <- canopyParms(Sp = config$pft$canopyParms$Sp)
 
-  BioGro_result <- BioGro(weather2, photoControl=pp, canopyControl=cc)
+  # run model
+  config <- xmlToList(xmlParse(file.path(outdir, runid, "config.xml")))
+  pp <- do.call(photoParms, list(unlist(config$parms)))
   
+  BioGro_result <- BioGro(weather2, photoControl=pp)
+
   write.csv(with(BioGro_result, data.frame(DayofYear, Hour, ThermalT, Stem, Leaf, Root)), 
-            file=file.path(outdir, "result.csv"))
-  setwd(cwd)
+            file=file.path(outdir, runid, "result.csv"))
   file.copy(file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))
 }
+
 #==================================================================================================#
 
 
