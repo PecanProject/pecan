@@ -13,7 +13,7 @@
 ##' @name read.output
 ##' @param run.id the id distiguishing the model run. 
 ##' @param outdir the directory that the model's output was sent to
-##' @param model name of simulation model currently accepts ("ED", "SIPNET", "BIOCRO")
+##' @param model name of simulation model currently accepts ("ED2", "SIPNET", "BIOCRO")
 ##' @param start.year first year of output to read (should be greater than ) 
 ##' @param end.year 
 ##' @param variables variables to be read from model output
@@ -32,11 +32,9 @@
 ##' @author Michael Dietze
 read.output <- function(run.id, outdir, model, start.year=NA,
                         end.year=NA, variables = "GPP") {
-  if (model == 'ED2') {
-    do.call(require, list("PEcAn.ED"))    
-  } else {
-    do.call(require, list(paste0("PEcAn.", model)))    
-  }
+
+  do.call(require, list(paste0("PEcAn.", model)))    
+
   model2nc <- paste("model2netcdf", model, sep=".")
   if(!exists(model2nc)){
     logger.warn("File conversion function model2netcdf does not exist for", model)
