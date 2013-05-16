@@ -1,16 +1,16 @@
 extdata.dir <- system.file("extdata", package = "PEcAn.ED2")
 outdir <- tempdir()
  
-file.copy(dir(extdata.dir, pattern = ".h5", full.names = TRUE), outdir)
+file.copy(dir(extdata.dir, pattern = "*.h5$", full.names = TRUE), outdir)
 
 model2netcdf.ED2(outdir)
 
 test_that("a valid .nc file is produced for each corresponding ED2 output", {
-  h5files <- dir(outdir, pattern = ".h5")
-  ncfiles <- dir(outdir, pattern = ".nc")
+  h5_T_files <- dir(outdir, pattern = "-T-.*.h5")
+  nc_files <- dir(outdir, pattern = ".nc")
 
-  expect_equal(length(h5files), length(ncfiles))
-  h5years <- sapply(h5files, function(x) gsub("[A-Za-z.h5-]", "", x))
+  expect_equal(length(h5_T_files), length(nc_files))
+  h5years <- sapply(h5_T_files, function(x) gsub("[A-Za-z.h5-]", "", x)) 
   ncyears <- sapply(ncfiles, function(x) gsub(".nc", "", x))
   expect_equal(as.numeric(ncyears), as.numeric(h5years))
 })
