@@ -21,15 +21,14 @@ run.ensemble.analysis <- function(plot.timeseries=NA){
   if(!exists("settings")){ # temporary hack
                         # waiting on http://stackoverflow.com/q/11005478/199217
     settings <- list(outdir = "/tmp/",
-                     pfts = list(pft = list(name = "ebifarm.pavi",
-                                   outdir = "/tmp/")),
+                     pfts = list(pft = list(name = "ebifarm.pavi", outdir = "/tmp/")),
                      ensemble.analysis = NULL)
   }
 
-  cflux = c("GPP","NPP","NEE","TotalResp","AutoResp","HeteroResp","DOC_flux","Fire_flux") #converted to gC/m2/s
-  wflux = c("Evap","TVeg","Qs","Qsb","Rainf") #kgH20 m-2 s-1
+  cflux <- c("GPP","NPP","NEE","TotalResp","AutoResp","HeteroResp","DOC_flux","Fire_flux") #converted to gC/m2/s
+  wflux <- c("Evap","TVeg","Qs","Qsb","Rainf") #kgH20 m-2 s-1
 
-  variables = settings$sensitivity.analysis$variable #grab target variable(s) from pecan.xml
+  variables <- settings$ensemble$variable #grab target variable(s) from pecan.xml
   print(paste("----- Variable: ",variables,sep=""))
 
   ### Temp hack
@@ -78,7 +77,7 @@ run.ensemble.analysis <- function(plot.timeseries=NA){
   ### Plot ensemble time-series
   if (!is.na(plot.timeseries)){
     pdf(file.path(settings$outdir,"ensemble.ts.pdf"),width=12,height=9)    
-    ensemble.ts(read.ensemble.ts(model))
+    ensemble.ts(read.ensemble.ts(settings$model$name))
     dev.off()
   }
 
@@ -105,28 +104,44 @@ read.ensemble.ts <- function(model){
   ensemble.size <- as.numeric(settings$ensemble$size)
   #outdir <- settings$outdir
   outdir <- settings$run$host$outdir
-  start.year <- ifelse(is.null(settings$sensitivity.analysis$start.year),
-                       NA, settings$sensitivity.analysis$start.year)
-  end.year   <- ifelse(is.null(settings$sensitivity.analysis$end.year),
-                       NA, settings$sensitivity.analysis$end.year)
+  start.year <- ifelse(is.null(settings$ensemble$start.year), NA, settings$ensemble$start.year)
+  end.year   <- ifelse(is.null(settings$ensemble$end.year), NA, settings$ensemble$end.year)
 
-  variables = "NPP"
-  if("sensitivity.analysis" %in% names(settings)){
-    if("variable" %in% names(settings$sensitivity.analysis)){
-      var = which(names(settings$sensitivity.analysis) == 'variable')
+  variables <- NULL
+  if("ensemble" %in% names(settings)){
+    if("variable" %in% names(settings$ensemble)){
+      var <- which(names(settings$ensemble) == 'variable')
+
       for(i in 1:length(var)){
-        variables[i] = settings$sensitivity.analysis[[var[i]]]
+        variables[i] = settings$ensemble[[var[i]]]
       }
     }
+  }
+  if (is.null(variables)) {
+    variables <- "NPP"
   }
   print(paste("----- Variable: ",variables,sep=""))
   print("----- Reading ensemble output ------")
 
+  if (exists('runs.samples')) {
+    ensemble.runs <- runs.samples$ensemble
+  } else {
+    ensemble.runs <- list()
+    samples.file <- file.path(settings$outdir, 'samples.Rdata')
+    print(samples.file)
+    if(file.exists(samples.file)){
+      load(samples.file)
+      ensemble.runs <- runs.samples$ensemble
+    } else {
+      stop(samples.file, "not found required by read.ensemble.output")      
+    }
+  }
+
   ## read ensemble output
-  for(i in 1:ensemble.size){
-    run.id <- get.run.id('ENS', left.pad.zeros(i, 5))#log10(ensemble.size)+1))
+  for(row in rownames(ensemble.runs)) {
+    run.id <- ensemble.runs[row, 'id']
     print(run.id)
-    newrun <- read.output(run.id,outdir,start.year,end.year,variables,model)
+    newrun <- read.output(run.id, file.path(outdir, run.id), model, start.year, end.year, variables)
 
     for(j in 1:length(variables)){
       if(i == 1){
@@ -239,8 +254,8 @@ ensemble.ts <- function(ensemble.ts,observations=NULL,window=1){
   ensemble.analysis.results$CI <- CI
   
   save(ensemble.analysis.results,
-       file = paste(settings$outdir,
-                    "ensemble.ts.analysis.results.Rdata", sep = ""))
+       file = file.path(settings$outdir,
+                    "ensemble.ts.analysis.results.Rdata"))
   
 }
 #==================================================================================================#

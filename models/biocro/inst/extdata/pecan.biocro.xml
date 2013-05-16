@@ -99,6 +99,9 @@
   </meta.analysis>
   <ensemble>
     <size>10</size>
+    <variable>Stem</variable>
+    <start.year>2004</start.year>
+    <end.year>2004</end.year>
   </ensemble>
   <sensitivity.analysis>
     <quantiles>
@@ -110,9 +113,6 @@
       <sigma>-2</sigma>
       <sigma>-3</sigma>
     </quantiles>
-    <variable>Stem</variable>
-    <start.year>2004</start.year>
-    <end.year>2004</end.year>
   </sensitivity.analysis>
   <model>
     <name>BIOCRO</name>

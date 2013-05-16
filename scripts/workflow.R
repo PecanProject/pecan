@@ -15,26 +15,33 @@ require(PEcAn.all)
 settings <- read.settings()
 #--------------------------------------------------------------------------------------------------#
 
-model <- ifelse("model" %in% names(settings), settings$model$name, "ED2")
-
 #---------------- Run PEcAn workflow. -------------------------------------------------------------#
-get.trait.data()        	# Query the trait database for data and priors
+# Query the trait database for data and priors
+get.trait.data()
 
-run.meta.analysis()     	# Run the PEcAn meta.analysis
+# Run the PEcAn meta.analysis
+run.meta.analysis()
 
-run.write.configs(model)        # Calls model specific write.configs e.g. write.config.ed.R
+# Calls model specific write.configs e.g. write.config.ed.R
+run.write.configs(settings$model$name, settings$bety$write)
 
-clear.scratch(settings)         # Clear any old model output in ebi-cluster scratch/$USER on worker nodes
+# Clear any old model output in ebi-cluster scratch/$USER on worker nodes
+clear.scratch(settings)
 
-start.model.runs(model)         # Start ecosystem model runs
+# Start ecosystem model runs
+start.model.runs(settings$model$name, settings$bety$write)
 
-get.model.output(model)         # Get results of model runs
+# Get results of model runs
+get.model.output(settings$model$name, settings)
 
-run.sensitivity.analysis()      # Run sensitivity analysis and variance decomposition on model output
+# Run sensitivity analysis and variance decomposition on model output
+run.sensitivity.analysis()
 
-run.ensemble.analysis()		      # Run ensemble analysis on model output. 
-                                # OPTIONAL: run.ensemble.analysis(plot.timeseries=TRUE) to get an esemble 
-                                # time-series output for the target variables set in the PEcAn.xml file
+# Run ensemble analysis on model output. 
+run.ensemble.analysis()
+
+# OPTIONAL: to get an esemble time-series output for the target variables set in the PEcAn.xml file
+#run.ensemble.analysis(plot.timeseries=TRUE)
 
 ### PEcAn workflow run complete
 print("---------- PEcAn Workflow Complete ----------")
