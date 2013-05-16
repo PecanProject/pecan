@@ -30,7 +30,6 @@ convert.samples.BIOCRO <- function(trait.samples){
   trait.names[trait.names == "leaf_respiration_rate_m2"] <- "Rd"
   trait.names[trait.names == "cuticular_cond"] <- "b0"
   trait.names[trait.names == "stomatal_slope.BB"] <- "b1"
-  trait.names[trait.names == "SLA"] <- "Sp"
   colnames(trait.samples) <- trait.names
 
   ## transform values with different units
@@ -38,10 +37,6 @@ convert.samples.BIOCRO <- function(trait.samples){
   if("b0" %in% trait.names){
     trait.samples[, trait.names == "b0"] <- trait.samples[, trait.names == "b0"]/1e6
   }
-  if("Sp" %in% trait.names){ # convert to Mg-1, see ?BioGro
-    trait.samples[, trait.names == "Sp"] <- trait.samples[, trait.names == "Sp"]/10
-  }
-  
 
   return(trait.samples)
 }
@@ -64,24 +59,21 @@ write.config.BIOCRO <- function(defaults,
                                 trait.values,
                                 settings,
                                 run.id) {
-  
-  traits  <- lapply(convert.samples.BIOCRO(trait.values[[1]]),
+
+  traits  <- lapply(convert.samples.BIOCRO(trait.values),
                     as.character)
   constants <- defaults$pft$constants
 
-  for(pp.trait in c("vmax", "b0", "Rd", "b1")){
-    if(pp.trait %in% names(traits)) {
-      constants$photoParms[[pp.trait]] <- traits[[pp.trait]]  
-    }
-  }
-
-  for(cc.trait in c("Sp")){
-    if(cc.trait %in% names(traits)) {
-      constants$canopyParms[[cc.trait]] <- traits[[cc.trait]]  
+  sugarRd <- constants
+  ## update photosynthesis parameters:0
+  for(parm.type in names(constants)[!names(constants) == "SugarPhenoParms"]){
+    for(parm in names(constants[[parm.type]])){
+      if(!is.null(traits[[parm]])){
+        constants[[parm.type]][[parm]] <- traits[[parm]]
+      }        
     }
   }
   
-
   parms.xml    <- listToXml(constants, "pft")
   location.xml <- listToXml(list(latitude = settings$run$site$lat,
                                   longitude = settings$run$site$lon),
