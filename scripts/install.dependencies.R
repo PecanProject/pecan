@@ -8,7 +8,7 @@
 #-------------------------------------------------------------------------------
 list.of.packages <- c('abind', 'car', 'chron', 'coda', 'doSNOW', 'dplR', 'emulator',
                       'ggmap', 'ggplot2', 'gridExtra', 'Hmisc', 'kernlab',
-                      'lubridate', 'MASS', 'MCMCpack', 'mvtnorm', 'ncdf4',
+                      'knitr', 'lubridate', 'MASS', 'MCMCpack', 'mvtnorm', 'ncdf4',
                       'ncdf', 'plotrix', 'plyr', 'raster', 'randtoolbox', 'rjags',
                       'rgdal', 'Rmpi', 'RMySQL', 'roxygen2', 'stringr', 'testthat',
                       'XML', 'RNCEP', 'foreign', 'RCurl')
