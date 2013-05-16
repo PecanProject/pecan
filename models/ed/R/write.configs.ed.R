@@ -122,10 +122,10 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
 
   ## TODO this should come from the database
   histfile <- paste("data/history.", settings$model$revision, ".csv", sep='')
-  if (file.exists(system.file(histfile, package="PEcAn.ED"))) {
-    edhistory <- read.csv2(system.file(histfile, package="PEcAn.ED"), sep=";")
+  if (file.exists(system.file(histfile, package="PEcAn.ED2"))) {
+    edhistory <- read.csv2(system.file(histfile, package="PEcAn.ED2"), sep=";")
   } else {
-    edhistory <- read.csv2(system.file("data/history.csv",  package="PEcAn.ED"), sep=";")
+    edhistory <- read.csv2(system.file("data/history.csv",  package="PEcAn.ED2"), sep=";")
   }
   edtraits <- names(edhistory)
   edtraits <- edtraits[which(edtraits!="num")]
@@ -186,7 +186,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   if (file.exists(settings$model$edin)) {
     ed2in.text <- readLines(con=settings$model$edin, n=-1)
   } else {
-    filename <- system.file(settings$model$edin, package = "PEcAn.ED")
+    filename <- system.file(settings$model$edin, package = "PEcAn.ED2")
     if (filename == "") {
       logger.severe("Could not find ED template")
     }
@@ -274,7 +274,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
 ##-------------------------------------------------------------------------------------------------#
 write.run.ED <- function(settings){
   scratch = paste(Sys.getenv("USER"),"/",settings$run$scratch, sep='')
-  run.script.template = system.file("run.template.ED", package="PEcAn.ED")
+  run.script.template = system.file("run.template.ED2", package="PEcAn.ED2")
   run.text <- scan(file = run.script.template, 
                    what="character",sep='@', quote=NULL, quiet=TRUE)
   run.text <- gsub('TMP', paste("/scratch/",scratch,sep=""), run.text)

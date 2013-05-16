@@ -1,8 +1,6 @@
-require(PEcAn.ED)
-extdata.dir <- system.file("extdata", package = "PEcAn.ED")
+extdata.dir <- system.file("extdata", package = "PEcAn.ED2")
 outdir <- tempdir()
  
-system("rm -rf /tmp/out/*")
 file.copy(dir(extdata.dir, pattern = ".h5", full.names = TRUE), outdir)
 
 model2netcdf.ED2(outdir)
