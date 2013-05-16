@@ -7,112 +7,36 @@ single.MA. This will allow power analysis  to run repeated MA outside of the
 full loop over traits and PFTs. 
 
 The first step is to convert the R distribution to JAGS distribution. The prior transformed is then stored in jagsprior and the parameters are renamed as "distn", "a", "b" and "n".
+The input used here is a simple example with 4 observations.
+r2bugs.distributions function is to convert R parameterizations to BUGS paramaterizations or to convert from BUGS to R. It can work on the distributions including normal, weibull, gamma, chsq, binormial, negative binormial. 
+The input of this function are information of the prior distribution, including the name of the distribution and 2 parameters. It will convert the parameterization format from R to BUGS or from BUGS to R automaticaly. 
+
+jagify is to convert queried data to format required by JAGS meta-analysis model. 
+
+In the single.MA function, when input the trait data and prior, it will transfer the prior from R parameterization into BUGS parameterization by using the function r2bugs.distributions. 
+Using the jags.model function, the Bayesian graphical model is generated based on the initials. The posterior samples in mcmc.list format are then created as the output of the function. 
 
 ```{r}
-library(devtools)
-load_all("~/pecan1/modules/meta.analysis")
-load("~/pecan1/modules/meta.analysis/inst/extdata/singleMAvignetteinputs.RData")
-jagsprior <- r2bugs.distributions(prior)
-jagsprior <- jagsprior[, c('distn', 'parama', 'paramb', 'n')]
-colnames(jagsprior) <- c("distn", "a", "b", "n")
-colnames(prior)     <- c("distn", "a", "b", "n")
-```
-In order to determine how many levels of the factors to include in meta-analysis, the number of unique values of the greenhouse(ghs), site and trait (trt) variables are calculated. 
-If one of the factors has more than 1 level, it will be included in the model.
-
-```{r}
- # determine what factors to include in meta-analysis
-    model.parms <- list(ghs  = length(unique(data$ghs)),
-                        site = length(unique(data$site)),
-                        trt  = length(unique(data$trt)))
-    # define regression model
-    reg.parms   <- list(ghs  = 'beta.ghs[ghs[k]]', #beta.o will be included by default
-                        site = 'beta.site[site[k]]',
-                        trt  = 'beta.trt[trt[k]]')
-    if(sum(model.parms>1)==0) {
-      reg.model <- ''
-    } 
-######################if(sum(model.parms>1)!=0)
-    else {
-      reg.model <- paste('+', reg.parms[model.parms > 1], collapse = " ")
-    }
-
-```
-After deciding the levels of the factors, list of parameters will be generated for jags to follow.
-The vairables "beta.o" and "sd.y" will always be considered. For greehouse (ghs) or trait (trt) factors, if there are p levels (p>1), (p-1) variables will be generated for it. For site (site),if there are p levels (p>1), p variables for each level will be generated. Only factors with more than one levels remain.
-```{r}
-vars <- c( 'beta.o', 'sd.y') 
-    for (x in c('ghs', 'site', 'trt')) {
-      if(model.parms[[x]] == 1) {
-        data <- data[, which(names(data) != x)]
-      } 
-      else {
-        data <- data
-        if(x!='ghs') {
-          vars <- c(vars, paste('sd.', x, sep = ''))
-        }
-        # m <- min(model.parms[[x]], 5)
-        m <- model.parms[[x]]
-        for (i in 1:m) {
-          if(i == 1 && x == 'site') {
-            vars <- c(vars, 'beta.site[1]')
-          }
-          if (i > 1) {
-            vars <- c(vars, paste('beta.', x, '[', i, ']', sep=''))
-          }
-        }
-      }
-    }
-
-```
-The default JAGS model file is imported and modified based on user settings and default bug file.
-```{r}
-  modelfile = system.file("inst/ma.model.template.bug", package="PEcAn.MA")
-    
-    write.ma.model (modelfile = modelfile,
-                    outfile = jag.model.file,
-                    reg.model = reg.model,
-                    jagsprior$distn, jagsprior$a, jagsprior$b,
-                    n     = length ( data$Y ),
-                    trt.n = model.parms[['trt']],
-                    site.n= model.parms[['site']],
-                    ghs.n = model.parms[['ghs']],
-                    tauA  = tauA,
-                    tauB  = tauB)
-
-```
-
-To overdisperse the n MCMC chains, intial values of beta.0 are set to the 1/(n+1),...,n/(n+1) quantiles of the prior on beta.o; for the default n=4 chains, this would be the {0.2, 0.4, 0.6, 0.8} quantiles
-```{r}
- if(overdispersed == TRUE){
-      ## overdispersed chains
-      j.inits <- function(chain) list("beta.o" = do.call(paste('q',prior$dist,sep=''),
-                                        list(chain * 1/(j.chains + 1), prior$a, prior$b)),
-                                      .RNG.seed = chain,
-                                      .RNG.name = "base::Mersenne-Twister")
-    } else if (overdispersed == FALSE) {
-      ## chains fixed at data mean - used if above code does not converge,
-      ## invalidates assumptions about convergence, e.g. Gelman-Rubin diagnostic
-      j.inits <- function(chain) list("beta.o" = mean(data$Y))
-    }
-    
-```
-Using the jags.model function, the Bayesian graphical model is generated based on the initials. The posterior samples in mcmc.list format are then created.
-```{r}
- j.model   <- jags.model (file = jag.model.file,
-                             data = data,
-#                             n.adapt = 100, #will burn in below
-                             inits = j.inits,
-                             n.chains = j.chains)
-
-
-    jags.out   <- coda.samples ( model = j.model,
-                                variable.names = vars,
-                                n.iter = j.iter,
-                                thin = max(c(2,j.iter/(5000*2))))
-return(jags.out)
- 
+require(PEcAn.MA)
+##initializing
+data <- data.frame(t(data.frame(array(c(5.3,1.0976426,4,1,1,1,3.4,2.1821789,4,1,1,1,5.9,0.9622504,4,1,1,1,6.6,1.3245324,4,1,1,1),dim=c(6,4)),row.names=c("Y","obs.prec","n","ghs","trt","site"))))
+j.chains <- 4
+j.iter <- 1000
+jag.model.file <- "tesst.bug"
+tauA <- 0.001
+tauB <- 0.001
+prior <- data.frame(distn = "norm", parama = 0, paramb = 2, n = NA)
+##running single.MA
+output <- single.MA(data, j.chains, j.iter, tauA, tauB, prior,jag.model.file, overdispersed=TRUE)
 ```
 
 
- 
+```{r fig.width=7, fig.height=6}
+plot(output, trace = FALSE, density = TRUE)
+plot(output,density = FALSE)
+autocorr.plot(output, xlim = c(1, 50))
+
+```
+
+The meta-analysis outputs are summarized by the pecan.ma.summary function. It will create several log files for all the traits to record the R output of the convergency diagnosis, and several PDF file for all the traits to store the diagnosis plot of convergency. 
+G-R diagnostics is used to test convergence. The diagnose result is output into the log file. If the JAGS model failed to converge, a warning will also be generated. 
