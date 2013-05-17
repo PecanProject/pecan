@@ -80,7 +80,7 @@ plot.variance.decomposition <- function(plot.inputs,
         geom_pointrange(aes(x = points, y = elasticities, ymin = 0, ymax = elasticities),
                         size = 1.25) 
 
-  pv.plot <- base.plot + ggtitle("SD Explained (Mg/ha)") +
+  pv.plot <- base.plot + ggtitle("Variance") +
     theme(plot.title = element_text(size = fontsize$title)) +
              geom_pointrange(aes(x = points, sqrt(variances),
                                  ymin = 0, ymax = sqrt(variances)), size = 1.25) 
