@@ -41,15 +41,24 @@ switch(checkStatus("FINISHED")) {
 	case 0:
 		$nextenabled="disabled=\"disabled\"";
 		header( "refresh:5" );
-		break;		
+		break;	
+	//Successful completion	
 	case 1:
-	case 2:
-		$nextenabled="";
 		if ($offline) {
 			header( "Location: finished.php?workflowid=$workflowid&offline=offline");
 		} else {
 			header( "Location: finished.php?workflowid=$workflowid");
 		}
+		break;
+	//ERROR case
+	case 2:
+		$nextenabled="";
+		if ($offline) {
+			header( "Location: failurealert.php?workflowid=$workflowid&offline=offline");
+		} else {
+			header( "Location: failurealert.php?workflowid=$workflowid");
+		}
+		mysql_query("UPDATE workflows SET finished_at=NOW() WHERE id=${workflowid} AND finished_at IS NULL");
 		break;
 }
 
@@ -166,6 +175,7 @@ switch(checkStatus("FINISHED")) {
 			<td><?=status("FINISHED");?></td>
 		</tr>
 	</table>
+<!--
 	<hr/>
  	<h2>Output from PEcAn</h2>
  	<textarea id="log" cols="80" rows="10" readonly="readonly">
@@ -177,6 +187,7 @@ switch(checkStatus("FINISHED")) {
 	}
 ?>
  	</textarea>
+-->
 	</div>
 </div>
 </body>

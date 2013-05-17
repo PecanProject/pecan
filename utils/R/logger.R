@@ -93,6 +93,14 @@ logger.error <- function(msg, ...) {
 ##' }
 logger.severe <- function(msg, errorcode=1, ...) {
 	logger.message("SEVERE", msg, ...)
+
+	# run option
+	error <- getOption("error")
+	if (!is.null(error)) {
+		eval(error)
+	}
+
+	# quit if not interactive, otherwise use stop
 	if (!interactive()) {
      	quit(save="no", status=errorcode)
     } else {

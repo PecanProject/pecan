@@ -142,7 +142,7 @@ $pieces = explode(':', $model["model_path"], 2);
 $binary = $pieces[1];
 
 // create the workflow execution
-$params=mysql_real_escape_string(str_replace("\n", "", var_export($_REQUEST, true)));
+$params=str_replace(' ', '', mysql_real_escape_string(str_replace("\n", "", var_export($_REQUEST, true))));		#excess whitespace needs to be trimmed to avoid params being cut off
 if (mysql_query("INSERT INTO workflows (site_id, model_id, hostname, start_date, end_date, params, advanced_edit, started_at, created_at) values ('${siteid}', '${modelid}', '${hostname}', '${startdate}', '${enddate}', '${params}', '${advanced_edit}', NOW(), NOW())") === FALSE) {
 	die('Can\'t insert workflow : ' . mysql_error());
 }
@@ -201,6 +201,7 @@ fwrite($fh, "  </meta.analysis>" . PHP_EOL);
 
 fwrite($fh, "  <ensemble>" . PHP_EOL);
 fwrite($fh, "    <size>1</size>" . PHP_EOL);
+fwrite($fh, "    <variable>NPP</variable>" . PHP_EOL);
 fwrite($fh, "  </ensemble>" . PHP_EOL);
 
 fwrite($fh, "  <model>" . PHP_EOL);
@@ -216,7 +217,7 @@ if ($modeltype == "ED2") {
 	fwrite($fh, "        <output_month>12</output_month>      " . PHP_EOL);
 	fwrite($fh, "      </ed_misc> " . PHP_EOL);
 	fwrite($fh, "    </config.header>" . PHP_EOL);
-	fwrite($fh, "    <edin>${folder}/ED2IN.template</edin>" . PHP_EOL);
+	fwrite($fh, "    <edin>ED2IN.r{$model['revision']}</edin>" . PHP_EOL);
 	fwrite($fh, "    <veg>${ed_veg}</veg>" . PHP_EOL);
 	fwrite($fh, "    <soil>${ed_soil}</soil>" . PHP_EOL);
 	if ($psscss == "FIA") {
@@ -253,9 +254,9 @@ fwrite($fh, "</pecan>" . PHP_EOL);
 fclose($fh); 
 
 # copy ED template
-if ($modeltype == "ED2") {
-	copy("template/{$model['model_name']}_r{$model['revision']}", "${folder}/ED2IN.template");
-}
+#if ($modeltype == "ED2") {
+#	copy("template/{$model['model_name']}_r{$model['revision']}", "${folder}/ED2IN.template");
+#}
 
 # copy workflow
 copy("workflow_stage1.R", "${folder}/workflow_stage1.R");
