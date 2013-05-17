@@ -1,0 +1,72 @@
+Meta-analysis: Example of Single.MA
+========================================================
+
+Individual Meta-analysis
+
+The function `single.MA` runs a single meta-analysis for a specific trait and plant functional type (or species).
+
+The first step is to convert the R distribution to JAGS distribution. The prior transformed is then stored in jagsprior and the parameters are renamed as "distn", "a", "b" and "n".
+The input used here is a simple example with 4 observations.
+The `r2bugs.distributions` function converts R parameterizations to BUGS paramaterizations (and vice-versa, from BUGS to R, if `direction = "bugs2r"` is specified). It can work on the distributions including normal, weibull, gamma, chsq, binormial, negative binormial. 
+The input of this function are information of the prior distribution, including the name of the distribution and 2 parameters. It will convert the parameterization format from R to BUGS or from BUGS to R automaticaly. 
+
+The `jagify` function converts a data frame returned from the `get.trait.data` function (from the PEcAn.DB package) to the format required by JAGS meta-analysis model. 
+
+The `single.MA` returns posterior samples in mcmc.list format are then created as the output of the function. 
+
+This example assumes data come from a single site and treatment, and no greenhouse effect.
+
+```{r message=FALSE}
+require(knitr)
+opts_chunk$set(echo = TRUE, message = FALSE, results='markup', cache=TRUE)
+require(PEcAn.MA)
+```
+
+
+First, set the priors.
+
+The variance priors are weak $Gamma(0.001, 0.001)$
+
+```{r}
+tauA <- 0.001
+tauB <- 0.001
+```
+
+The prior on $\beta_0$ is an informative $N(\mu = 3, \sigma = 2)$:
+
+```{r}
+example.prior <- data.frame(distn = "norm", parama = 3, paramb = 2, n = NA)
+```
+
+Next we make some example data (this has already been "jaggified", but the use of `jagify` could be demonstrated here:
+
+```{r}
+set.seed(0)
+example.data <- data.frame(Y = c(5.3, 3.4, 5.9, 6.6), 
+                           obs.prec = c(1.1, 2.2, 0.9, 1.3), 
+                           n = c(4, 4, 4, 4), 
+                           ghs = c(0, 0, 0, 0), 
+                           trt = c(1, 1, 1, 1), 
+                           site = c(1, 1, 1, 1))
+```
+
+Finally, we run the meta-analysis using the `single.MA` function:
+
+```{r}
+
+output <- single.MA(data = example.data,
+                    prior = example.prior,
+                    tauA = tauA, tauB = tauB, 
+                    j.chains = 4, j.iter = 10000,  
+                    jag.model.file = "test.bug", overdispersed = TRUE)
+```
+
+
+```{r fig.width=7, fig.height=6}
+plot(output, trace = FALSE, density = TRUE)
+plot(output,density = FALSE)
+autocorr.plot(output, ask = FALSE)
+```
+
+The meta-analysis outputs are summarized by the pecan.ma.summary function. It will create several log files for all the traits to record the R output of the convergency diagnosis, and several PDF file for all the traits to store the diagnosis plot of convergency. 
+G-R diagnostics is used to test convergence. The diagnose result is output into the log file. If the JAGS model failed to converge, a warning will also be generated. 
