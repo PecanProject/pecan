@@ -1,7 +1,7 @@
 extdata.dir <- system.file("extdata", package = "PEcAn.ED")
 outdir <- tempdir()
  
-file.copy(dir(extdata.dir, pattern = "*\\.h5$", full.names = TRUE), outdir)
+file.copy(dir(extdata.dir, pattern = "*.h5$", full.names = TRUE), outdir)
 
 model2netcdf.ED2(outdir)
 
