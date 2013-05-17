@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<pecan>
+ <outdir>pecan</outdir>
+
+ <database>
+  <username>bety</username>
+  <password>bety</password>
+  <host>localhost</host>
+  <dbname>bety</dbname>
+ </database>
+
+ <bety>
+  <write>FALSE</write>
+ </bety>
+
+ <pfts>
+  <pft>
+   <name>ebifarm.c3grass</name>
+  </pft>
+ </pfts>
+
+ <ensemble>
+  <variable>NPP</variable>
+ </ensemble>
+
+ <model>
+  <id>8</id>
+  <config.header>
+   <radiation>
+    <lai_min>0.01</lai_min>
+   </radiation>
+   <ed_misc>
+    <output_month>12</output_month>
+   </ed_misc>
+  </config.header>
+  <edin>/home/carya/output/PEcAn_21/ED2IN.template</edin>
+  <veg>/home/carya/oge2OLD/OGE2_</veg>
+  <soil>/home/carya/faoOLD/FAO_</soil>
+  <psscss>/home/carya/sites/ebi</psscss>
+  <inputs>/home/carya/ed_inputs/</inputs>
+  <phenol.scheme>0</phenol.scheme>
+ </model>
+
+ <run>
+  <site>
+   <id>76</id>
+   <met>/home/carya/sites/ebifarm/ED_MET_DRIVER_HEADER</met>
+   <met.start>2004-01-01 00:00:00</met.start>
+   <met.end>2009-12-31 23:59:59</met.end>
+  </site>
+  <start.date>2010/01/01</start.date>
+  <end.date>2010/12/31</end.date>
+  <host>
+   <name>localhost</name>
+  </host>
+ </run>
+</pecan>

@@ -23,7 +23,7 @@
 ##' }
 ##'
 ##' @author Michael Dietze, Shawn Serbin, David LeBauer
-get.model.output <- function(model, settings = settings){
+get.model.output <- function(model, settings){
   print(paste("---- Getting output for ",model," model",sep=""))
   my.fcn = paste("get.model.output",model,sep=".")
 
