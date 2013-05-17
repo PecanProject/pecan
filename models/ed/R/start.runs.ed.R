@@ -24,11 +24,12 @@ start.runs.ED2 <- function(runid) {
   rundir <- file.path(settings$run$host$rundir, as.character(runid))
   outdir <- file.path(settings$run$host$outdir, as.character(runid))
 
-  # TODO RK : this does not work with relative paths
-  cwd <- getwd()
-  setwd(rundir)
-  system2(settings$model$binary, env=c("GFORTRAN_UNBUFFERED_PRECONNECTED=yes"))
-  setwd(cwd)
+  result <- system2(settings$model$binary, args=c("-f", file.path(rundir, "ED2IN")), env=c("GFORTRAN_UNBUFFERED_PRECONNECTED=yes"))
+
+  # check exitcode
+  if (result != 0) {
+    logger.severe("Error executing ED : exitcode=", result, errorcode=result)
+  }
 
   file.copy(file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))
 

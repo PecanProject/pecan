@@ -74,9 +74,92 @@ check.settings <- function(settings) {
 
   # TODO check userid and userpassword
 
+  # check database version
+  versions <- db.query("SELECT version FROM schema_migrations WHERE version >= 20130425152503;", params=settings$database)[['version']]
+  if (length(versions) == 0) {
+    logger.severe("Database is out of date, please update the database.")
+  }
+  if (length(versions) > 1) {
+    logger.warn("Database is more recent than PEcAn expects this could result in PEcAn not working as expected.")
+  } else {
+    logger.debug("Database is correct version", versions[1], ".")
+  }
+
   # make sure there are pfts defined
   if (is.null(settings$pfts) || (length(settings$pfts) == 0)) {
     logger.severe("No PFTS specified.")
+  }
+
+  # check if there is either ensemble or sensitivy.analysis
+  if (is.null(settings$ensemble) && is.null(settings$sensitivity.analysis)) {
+    logger.warn("No ensemble or sensitivity analysis specified, runs will fail!")
+  }
+
+  # check ensemble
+  if (!is.null(settings$ensemble)) {
+    if (is.character(settings$ensemble) || is.null(settings$ensemble$variable)) {
+      if (is.null(settings$sensitivity.analysis$variable)) {
+        logger.severe("No variable specified to compute ensemble for.")
+      }
+      logger.info("Setting ensemble variable to the same as sensitivity analysis variable [", settings$sensitivity.analysis$variable, "]")
+      settings$ensemble$variable <- settings$sensitivity.analysis$variable
+    }
+
+    if (is.null(settings$ensemble$size)) {
+      logger.info("Setting ensemble size to 1.")
+      settings$ensemble$size <- 1
+    }
+
+    if(is.null(settings$ensemble$start.date)) {
+      if(is.null(settings$sensitivity.analysis$start.date)) {
+        settings$ensemble$start.date <- settings$run$start.date 
+        logger.info("No start date passed to ensemble - using the run date (", settings$ensemble$start.date, ").")
+      } else { 
+        settings$ensemble$start.date <- settings$sensitivity.analysis$start.date 
+        logger.info("No start date passed to ensemble - using the sensitivity.analysis date (", settings$ensemble$start.date, ").")
+      }
+    }
+
+    if(is.null(settings$ensemble$end.date)) {
+      if(is.null(settings$sensitivity.analysis$end.date)) {
+        settings$ensemble$end.date <- settings$run$end.date 
+        logger.info("No end date passed to ensemble - using the run date (", settings$ensemble$end.date, ").")
+      } else { 
+        settings$ensemble$end.date <- settings$sensitivity.analysis$end.date 
+        logger.info("No end date passed to ensemble - using the sensitivity.analysis date (", settings$ensemble$end.date, ").")
+      }
+    }
+  }
+
+  # check sensitivity analysis
+  if (!is.null(settings$sensitivity.analysis)) {
+    if (is.null(settings$sensitivity.analysis$variable)) {
+      if (is.null(settings$ensemble$variable)) {
+        logger.severe("No variable specified to compute sensitivity.analysis for.")
+      }
+      logger.info("Setting sensitivity.analysis variable to the same as ensemble variable [", settings$ensemble$variable, "]")
+      settings$sensitivity.analysis$variable <- settings$ensemble$variable
+    }
+
+    if(is.null(settings$sensitivity.analysis$start.date)) {
+      if(is.null(settings$ensemble$start.date)) {
+        settings$sensitivity.analysis$start.date <- settings$run$start.date 
+        logger.info("No start date passed to sensitivity.analysis - using the run date (", settings$sensitivity.analysis$start.date, ").")
+      } else { 
+        settings$sensitivity.analysis$start.date <- settings$ensemble$start.date 
+        logger.info("No start date passed to sensitivity.analysis - using the ensemble date (", settings$sensitivity.analysis$start.date, ").")
+      }
+    }
+
+    if(is.null(settings$sensitivity.analysis$end.date)) {
+      if(is.null(settings$ensemble$end.date)) {
+        settings$sensitivity.analysis$end.date <- settings$run$end.date 
+        logger.info("No end date passed to sensitivity.analysis - using the run date (", settings$sensitivity.analysis$end.date, ").")
+      } else { 
+        settings$sensitivity.analysis$end.date <- settings$ensemble$end.date 
+        logger.info("No end date passed to sensitivity.analysis - using the ensemble date (", settings$sensitivity.analysis$end.date, ").")
+      }
+    }
   }
 
   # check to make sure run information is filled out
@@ -303,7 +386,7 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
     # 1 filename is passed as argument to R
     for(idx in loc) {
       if (!is.null(commandArgs()[idx+1]) && file.exists(commandArgs()[idx+1])) {
-        logger.info("Loading --settings=", idx+1)
+        logger.info("Loading --settings=", commandArgs()[idx+1])
         xml <- xmlParse(commandArgs()[idx+1])
         break
       }
@@ -333,10 +416,11 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
   settings <- check.settings(xmlToList(xml))
   
   ## save the checked/fixed pecan.xml
-  if (file.exists(outputfile)) {
-    logger.warn(paste("File already exists [", outputfile, "] file will be overwritten"))
+  pecanfile <- file.path(settings$outdir, outputfile)
+  if (file.exists(pecanfile)) {
+    logger.warn(paste("File already exists [", pecanfile, "] file will be overwritten"))
   }
-  saveXML(listToXml(settings, "pecan"), file=outputfile)
+  saveXML(listToXml(settings, "pecan"), file=pecanfile)
 
   ## setup Rlib from settings
   if(!is.null(settings$Rlib)){
