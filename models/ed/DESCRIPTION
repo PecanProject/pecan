@@ -1,4 +1,4 @@
-Package: PEcAn.ED
+Package: PEcAn.ED2
 Type: Package
 Title: PEcAn package for integration of ED2 model
 Version: 1.2.6
@@ -19,8 +19,6 @@ Depends:
     ncdf
 Suggests:
     testthat
-SystemRequirements: ED2.2 Model
-OS_type: unix
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
