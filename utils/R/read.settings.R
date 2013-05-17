@@ -11,6 +11,71 @@ library(XML)
 ##--------------------------------------------------------------------------------------------------#
 ## EXTERNAL FUNCTIONS
 ##--------------------------------------------------------------------------------------------------#
+<<<<<<< HEAD
+=======
+                                        #
+##'  merge 2 xml documents
+##'
+##' combines content from xml1 and xml2. In the case of a conflict (both xml1 and xml2 have the same node), node in xml2 replaces node in xml1 
+##' @title xmlMerge
+##' @param xml1 first xml list 
+##' @param xml2 second xml list
+##' @export
+##' @return xml object with 
+##' @author Rob Kooper
+##' @name xmlMerge
+xmlMerge <- function(xml1, xml2) {
+  if (is.null(xml2)) {
+    return(xml1)
+  }
+  
+  ## TODO no merging for now, it will simply return latest file
+  ## TODO see https://ebi-forecast.igb.illinois.edu/redmine/issues/1091
+  return(xml2)
+  
+  ##  if (is.null(xml1)) {
+  ##    return(xml2)
+  ##  }
+  ##   
+  ##  xmlMergeNodes(xmlRoot(xml1), xmlRoot(xml2))
+  ##  return(xml1)
+}
+
+
+##' merge 2 nodes, this is called recursively
+##'
+##' @title xmlMergeNodes
+##' @param node1 
+##' @param node2 
+##' @return merged nodes
+##' @author Rob Kooper
+xmlMergeNodes <- function(node1, node2) {
+  ## first replace all attributes from node2 to node1
+  if (!is.null(xmlAttrs(node2))) {
+    addAttributes(node=node1, .attrs=xmlAttrs(node2), append=TRUE)   
+  }
+  
+  ## add all nodes in node2 that are not in node1
+  kidsnames <- names(node2)[!(names(node2) %in% names(node1))]
+  if (length(kidsnames) > 0) {
+    addChildren(node1, kids=xmlChildren(node2)[kidsnames])
+  }
+  
+  ## loop through all nodes in common
+  for(name in names(node2)[names(node2) %in% names(node1)]) {
+    if ("XMLInternalCommentNode" %in% class(node1[[name]])) {
+      next
+    }
+    if ((length(names(xmlChildren(node1[[name]]))) == 1) &&( names(xmlChildren(node1[[name]])) == "text")) {
+      addAttributes(node=node1[[name]], .attrs=xmlAttrs(node2[[name]]), append=TRUE)
+      addAttributes(node=node2[[name]], .attrs=xmlAttrs(node1[[name]]), append=FALSE)
+      replaceNodes(node1[[name]], node2[[name]])
+    } else {
+      xmlMergeNodes(xmlChildren(node1)[[name]], xmlChildren(node2)[[name]])         
+    }
+  }
+}
+>>>>>>> ef9572c0bfd74f64f90e160d3d29f5e3f933b0b6
 
 ##' Sanity checks. Checks the settings file to make sure expected fields exist. It will try to use
 ##' default values for any missing values, or stop the exection if no defaults are possible.

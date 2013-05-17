@@ -8,6 +8,7 @@
 ##' @return vector with mean and standard deviation
 ##' @export
 ##' @author David LeBauer
+##' @name distn.stats
 ##' @examples
 ##' distn.stats("norm", 0, 1)
 distn.stats <- function(distn,a,b){

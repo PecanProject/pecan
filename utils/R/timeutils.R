@@ -70,6 +70,7 @@ daymax = function(month,year){
 ##' @param mmm three letter character string for month
 ##' @param lang currently english and portugese 
 ##' @return month as three letter 
+##' @name mmm2mon
 mmm2mon = function(mmm,lang="English"){
   lang = tolower(lang)
   if (lang == "english"){

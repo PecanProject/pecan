@@ -21,6 +21,7 @@
 ##' @param variables targe variables for ensemble analysis
 ##' @param model ecosystem model run
 ##' @export
+##' @name read.ensemble.output
 #--------------------------------------------------------------------------------------------------#
 read.ensemble.output <- function(ensemble.size, pecandir, outdir, 
                                  start.year, end.year, variables, model){

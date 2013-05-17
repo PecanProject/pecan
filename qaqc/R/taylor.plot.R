@@ -11,9 +11,14 @@
 ##' @title Taylor Diagram
 ##' @param dataset
 ##' @param runid a numeric vector with the id(s) of one or more runs (folder in runs) to plot
+<<<<<<< HEAD
 ##' @param siteid
 new.taylor <- function(dataset, runid, siteid){
+=======
+new.taylor <- function(dataset,runid,siteid){
+>>>>>>> ef9572c0bfd74f64f90e160d3d29f5e3f933b0b6
   attach(dataset)
+  require(plotrix)
   for(run in runid){
     for (si in siteid){
       if (run==runid[1]&&si==siteid[1]){
@@ -32,5 +37,4 @@ new.taylor <- function(dataset, runid, siteid){
       }
     }
     }
-
 }

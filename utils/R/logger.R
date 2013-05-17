@@ -24,6 +24,7 @@
 ##' \dontrun{
 ##' logger.debug("variable", 5)
 ##' }
+##' @name logger.debug
 logger.debug <- function(msg, ...) {
 	logger.message("DEBUG", msg, ...)
 }
