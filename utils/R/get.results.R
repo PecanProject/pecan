@@ -30,10 +30,8 @@ get.results <- function(pecandir, model, settings = settings) {
     end.year   <- ifelse(is.null(settings$sensitivity.analysis$end.year), NA, settings$sensitivity.analysis$end.year)
     variables  <- NULL
     if("variable" %in% names(settings$sensitivity.analysis)){
-      var <- which(names(settings$sensitivity.analysis) == 'variable')
-      for(i in 1:length(var)){
-        variables[i] = settings$sensitivity.analysis[[var[i]]]
-      }
+      variables = settings$sensitivity.analysis[
+                 names(settings$sensitivity.analysis) == "variable"]
     }
     
     for(pft.name in names(trait.samples)){
