@@ -21,8 +21,7 @@ start.runs.BIOCRO <- function(runid) {
 
   rundir <- file.path(settings$run$host$rundir, as.character(runid))
   outdir <- file.path(settings$run$host$outdir, as.character(runid))
-  cwd <- getwd()
-  setwd(rundir)
+
   # run model
   # compute/download weather
   lat <- as.numeric(settings$run$site$lat)
@@ -54,31 +53,45 @@ start.runs.BIOCRO <- function(runid) {
                    "' and end_date >= '", end.date, 
                    "' and site_id =", site.id, ";", sep = ""), con = con)
   
-  nometfile <- FALSE
+ 
   if(nrow(metfiles) == 0){
-    nometfile <- TRUE
-  } else if(nrow(metfiles) > 1){
-    metfiles <- metfiles[1,] # a hack that just uses the first record instead of choosing one 
+    metfile.exists <- FALSE
+  } else if(nrow(metfiles) >= 1){
+    metfile.exists <- TRUE
+    ## if > 1, use the first record
+    metfile <- file.path(metfiles$file_path[1],
+                         metfiles$file_name[1])
+
+    if(!file.exists(metfile)){
+      metfile.exists <- FALSE
+    }
   }
-  metfile <- file.path(metfiles$file_path, metfiles$file_name)
-  if(!file.exists(metfile)) {
-    nometfile <- TRUE
-  } else if(file.exists(metfile)){
-    weather <- read.csv(metfile)[,-1]
-  }
-  if(nometfile & !exists("weather")){
+
+  if(metfile.exists) {
+      weather <- read.csv(metfile)[,-1]
+  } else if(!metfile.exists){
     weather <- InputForWeach(lat, lon, year(start.date), year(end.date))
-    write.csv(weather, file = file.path(outdir, "weather.csv"), rownames = FALSE)
-    file.id <- 1+ max(db.query(paste0("select max(inputs.file_id), max(dbfiles.container_id) ",
-                                      " from inputs right join dbfiles on inputs.file_id = dbfiles.container_id;"), con = con))
+    weather.dir <- file.path("~/inputs/weather",
+                             paste0(abs(lat),
+                                    ifelse(lat>0,"N", "S"), "x",
+                                    abs(lon),
+                                    ifelse(lon>0, "E", "W")))
+    dir.create(weather.dir, recursive = TRUE, showWarnings = FALSE)
+    write.csv(weather,
+              file = file.path(weather.dir, "weather.csv"))
     machine.id <- db.query(paste0("select id from machines where hostname = '", hostname, "';"), con = con)
     if(nrow(machine.id) == 0){
-      machine.id <- 1 + max(db.query("select id from machines;", con = con))
+      machine.id <- db.query("select max(id) + 1 as id from machines;", con = con)
       db.query(paste0("insert into machines (id, hostname, created_at) values(",
                       vecpaste(c(machine.id, hostname, format(Sys.time()))), ");"), con = con)
-    } 
+    }
+    file.id <- 1 + db.query(paste0(
+      "select 1 + greatest(max(inputs.file_id), max(dbfiles.container_id)) as id ",
+      " from inputs right join dbfiles on inputs.file_id =",
+      "dbfiles.container_id;"), con = con)
+    
     db.query(paste0("insert into dbfiles (file_name, file_path, created_at, machine_id, container_id) ",
-                    "values(", vecpaste(c('weather.csv', outdir, format(Sys.time()), machine.id, file.id)),");"), con = con)
+                    "values(", vecpaste(c('weather.csv', weather.dir, format(Sys.time()), machine.id, file.id)),");"), con = con)
     db.query(paste0("insert into inputs ",
                     "(notes, created_at, site_id, file_id, start_date, ",
                     "end_date, access_level, format_id) ",
@@ -87,23 +100,24 @@ start.runs.BIOCRO <- function(runid) {
     
   }
   query.close(con)
+  
   weather2 <- weachNEW(weather, lati = lat, ts = 1, 
                        temp.units="Celsius", rh.units="fraction", 
                        ws.units="mph", pp.units="in")
-  colnames(weather2) <- c("year", "doy", "hour", "solarR", "DailyTemp.C", "RH", "WindSpeed", 
-                          "precip")
+  colnames(weather2) <- c("year", "doy", "hour", "solarR", "DailyTemp.C", "RH", "WindSpeed", "precip")
   
   # run model
-  config <- xmlToList(xmlParse("config.xml"))
+  config <- xmlToList(xmlParse(file.path(rundir, "config.xml")))
   pp.config <- config$pft$photoParms
   pp <- photoParms(vmax=pp.config$vmax, b0=pp.config$b0, b1 = pp.config$b1,Rd=pp.config$Rd)
   cc <- canopyParms(Sp = config$pft$canopyParms$Sp)
 
   BioGro_result <- BioGro(weather2, photoControl=pp, canopyControl=cc)
   
-  write.csv(with(BioGro_result, data.frame(DayofYear, Hour, ThermalT, Stem, Leaf, Root)), 
+  write.csv(with(BioGro_result,
+                 data.frame(DayofYear, Hour, ThermalT, Stem, Leaf, Root, Rhizome, Grain, LAI, SoilEvaporation, CanopyTrans)), 
             file=file.path(outdir, "result.csv"))
-  setwd(cwd)
+
   file.copy(file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))
 }
 #==================================================================================================#
