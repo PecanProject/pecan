@@ -11,13 +11,13 @@ test_that("a valid .nc file is produced for each corresponding ED2 output", {
 
   expect_equal(length(h5_T_files), length(nc_files))
   h5years <- sapply(h5_T_files, function(x) gsub("[A-Za-z.h5-]", "", x)) 
-  ncyears <- sapply(ncfiles, function(x) gsub(".nc", "", x))
+  ncyears <- sapply(nc_files, function(x) gsub(".nc", "", x))
   expect_equal(as.numeric(ncyears), as.numeric(h5years))
 })
 
 test_that("nc files have correct attributes",{
-  ncfiles <- dir(outdir, pattern = ".nc")
-  tmp.nc <- open.ncdf(file.path(outdir, ncfiles[1]))
+  nc_files <- dir(outdir, pattern = ".nc")
+  tmp.nc <- open.ncdf(file.path(outdir, nc_files[1]))
   expect_equal(class(tmp.nc), "ncdf")
   time <- get.var.ncdf(tmp.nc, "time")
   gpp  <- get.var.ncdf(tmp.nc, "GPP")
