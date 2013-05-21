@@ -5,12 +5,7 @@
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
-
-require(abind)
-
-#--------------------------------------------------------------------------------------------------#
-##' Modified from Code to convert ED2.1's HDF5 output into the NACP Intercomparison format (ALMA using netCDF)
+#---------------------------------------------------------------------##' Modified from Code to convert ED2.1's HDF5 output into the NACP Intercomparison format (ALMA using netCDF)
 ##' 
 ##' @name model2netcdf.ED2
 ##' @title Code to convert ED2's -T- HDF5 output into netCDF format
@@ -18,7 +13,7 @@ require(abind)
 ##' @param outdir Location of ED model output
 ##' @export
 ##'
-##' @author Michael Dietze
+##' @author Michael Dietze, Shawn Serbin, Rob Kooper
 ## modified M. Dietze 07/08/12
 ## modified S. Serbin 05/06/13
 model2netcdf.ED2 <- function(outdir) {
