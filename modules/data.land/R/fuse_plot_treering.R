@@ -8,7 +8,7 @@
 #-------------------------------------------------------------------------------
 fuse_plot_treering <- function(plot.data,inc.data,tuscon.data,inc.unit.conv = 0.1){
 
-  plot.data <- as.data.frame(plot.data)
+  #plot.data <- as.data.frame(plot.data)
   
   ## separate veg data to lists by plot
   plot.id <- unique(plot.data$plot)
@@ -134,3 +134,4 @@ fuse_plot_treering <- function(plot.data,inc.data,tuscon.data,inc.unit.conv = 0.
   return(list(diameters=diameters,increments=increments,
               survival=survival,species = spp,depth=depth))
 }
+fuse_plot_treering(plot.data,tuscon.data)

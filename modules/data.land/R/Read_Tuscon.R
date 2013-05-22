@@ -10,8 +10,13 @@ Read_Tuscon <- function(folder){
     filedata[[file]] <- read.tucson(file, header = FALSE)
   }
 
-  return(filedata)
+  tuscon.data<<-filedata
+  return(tuscon.data)
 
+
+if(FALSE){
+setwd("~/Desktop/")
+Read_Tuscon("~/Desktop/revised/")
 
   library(plyr)
   library(stringr)
@@ -76,4 +81,6 @@ Read_Tuscon <- function(folder){
   pairs(mydata[,c("dbh","rate","rgr","x","y","spp")], 
         lower.panel=panel.smooth, upper.panel=panel.cor)
   
-}
+}  
+
+} ## end FALSE
