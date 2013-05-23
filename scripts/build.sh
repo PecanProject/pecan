@@ -116,7 +116,7 @@ else
 fi
 
 if [ "$FORCE" == "yes" ]; then
-  START=`date +'%s.%N'`
+  START=`date +'%s'`
   STATUS="OK"
 
   # get changes
@@ -199,7 +199,7 @@ if [ "$FORCE" == "yes" ]; then
   done
 
   # all done
-  TIME=$(echo "`date +'%s.%N'` - $START" |bc -l)
+  TIME=$(echo "`date +'%s'` - $START" |bc -l)
   echo "----------------------------------------------------------------------" >> changes.log
   echo "build took ${TIME} seconds." >> changes.log
   echo "----------------------------------------------------------------------" >> changes.log
