@@ -50,6 +50,16 @@ options(error=quote({
 # convert output
 status.start("OUTPUT")
 read.outputs(settings$model$name, settings)
+# special for web, pritn all nc vars
+for (runid in readLines(con=file.path(settings$rundir, "runs.txt"))) {
+	for(file in list.files(path=file.path(settings$modeloutdir, runid), pattern="*.nc")) {
+		nc <- nc_open(file.path(settings$modeloutdir, runid, file))
+		for(v in sort(names(nc$var))) {
+			cat(v, file=file.path(settings$modeloutdir, runid, paste(file, "var", sep=".")), append=TRUE, sep="\n")
+		}
+		nc_close(nc)
+	}
+}
 status.end()
 
 # all done
