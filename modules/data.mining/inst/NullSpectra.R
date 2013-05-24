@@ -1,40 +1,29 @@
-
-### generate wavelet spectra of the flux data that incorporates
-### random and gap-filling uncertainty based on the Barr et al
-### NACP data product
-
+### generate wavelet spectra of eddy flux data that incorporates uncertainty 
+###
+### This code is computationally intensive so it is set up to be submitted to a cluster queue
+### assumes that it is passed an ID for which site is being analyzed and a number range of
+### Monte Carlo iterations to process
+###
+### Michael Dietze
+###
 ### inputs: annual NEE matrices of [time x ensemble member] 
 ### outputs: mean and quantile spectra
 
+source("ResidSpectra.R")
+
 ## Get site sel'n from cmd line
-sitenum <- as.numeric(system("echo $SITENUM",intern=TRUE))
-nstart <- as.numeric(system("echo $NSTART",intern=TRUE))
-n2proc <- 50
+sitenum <- as.numeric(system("echo $SITENUM",intern=TRUE)) ## site number
+nstart <- as.numeric(system("echo $NSTART",intern=TRUE))  ## first Monte Carlo to process
+n2proc <- 50   ## number of spectra to process
 
 ## Paths and prefixes
-.libPaths("/home/mdietze/lib/R")
-#library(R.matlab)
-library(dplR) ## Andy Bunn's Dendrochronology package
-WAVE <- function (crn.vec, yr.vec, p2=NULL, dj = 0.25, siglvl = 0.99, ...) 
-{
-  ## simple function based on Bunn's wavelet.plot fcn that returns wavelet info
-  if(is.null(p2)) p2 <- floor(log2(length(crn.vec)))
-    n <- length(crn.vec)
-    Dt <- 1
-    s0 <- 1
-    j1 <- p2/dj
-    mother <- "morlet"
-    crn.vec.ac <- acf(crn.vec, lag.max = 2, plot = FALSE)
-    lag1 <- (crn.vec.ac$acf[2] + sqrt(crn.vec.ac$acf[3]))/2
-    return(wavelet(y1 = crn.vec, Dt = Dt, s0 = s0, dj = dj, 
-        J = j1, mother = mother, siglvl = siglvl))
-}
-
-#path <- "/home/mcd/Desktop/NACP/Spectral/NEEbarr"
 path <- "/home/mdietze/stats/spectral/"
 model.dir <- "NEEm"
 site.files <- dir(model.dir,"txt")
 
+#####################################
+##   load up the model data        ##
+#####################################
 site.name <- site.files[sitenum]
 site.name <- sub("_NEE.txt","",site.name)
 site.name <- sub("-","",site.name)
@@ -45,10 +34,6 @@ dat <- read.table(paste(model.dir,site.files[sitenum],sep="/"),
                   na.string="-999.000"
                   )
 day <-  1/diff(dat$FDOY[1:2])       ## number of observations per day
-
-#day <- 48
-#sitenum <- 26
-
 
 #####################################
 ##   load up the "pseudo" data     ##
@@ -77,13 +62,10 @@ for(i in 1:length(yrs)){
 }
 save(dat,ylen,yrs,file=paste(prefix,"pseudo.Rdata",sep=""))
 
-#dat[is.na(dat)] <- 0
-
 #####################################
 ##     load up the "true" data     ##
 #####################################
 ffiles <- dir(paste(path,field,sep=""),"Moving")
-
 fdat <- NULL
 fylen <- rep(NA,length(yrs))
 for(i in 1:length(yrs)){
@@ -110,9 +92,8 @@ for (i in seq(nstart,length=n2proc,by=1)){
   
   print(i)
   
-### Calculate the error
-
-  ##  err <- dat[,i] - fdat[,5]
+  ### Calculate the error
+  
   
   ## option 3 - normalized residuals (pre)
   ## subscripts: t = tower, p = pseudodata
@@ -140,39 +121,26 @@ for (i in seq(nstart,length=n2proc,by=1)){
   
   y[is.na(y)] <- 0 ## need to fill in missing values
   
-  
-### first do overall power spectra
-  
-  s <- spectrum(y,plot=FALSE)
-  
-  pspec[1:length(s$spec),i] <- s$spec
-  ##    plot(1/s$freq,s$spec,log='xy')
-  period <- 1/s$freq/day
-  
-### Do the wavelet power spectrum (implement later)
-  
-  wv <- WAVE(y,p2=17)  ## Calculate wavelet spectrum *************************
-  Period <- wv$period/day  ## wavelet periods
-  Power <- (abs(wv$wave))^2 ## wavelet power
-  ## Crop out cone of influence
-  coi <- wv$coi  ## cone of influence (valid if below value)
-  for(t in 1:length(coi)){
-    sel <- which(Period>coi[t])
-    Power[t,sel] <- NA 
-  }
-
-  Pglobe <- apply(Power,2,sum,na.rm=TRUE)
+    
+  ### Do the wavelet power spectrum
+  wv <- ResidSpecta(data=fdat[,5],model=dat[,i],obsPerDay=day,case=3)
+  ##  wv <- WAVE(y,p2=17)  ## Calculate wavelet spectrum *************************
+  Pglobe <- apply(wv$Power,2,sum,na.rm=TRUE)
   Pspec[1:length(Pglobe),i] <- Pglobe
   
-  save(wv,Power,day,file=paste("NACPspecNORM3.pseudo.",sitenum,".",i,".Rdata",sep=""))
-
-
+  ### Also, do Fourier power spectra
+  s <- spectrum(wv$y,plot=FALSE)  
+  pspec[1:length(s$spec),i] <- s$spec
+  period <- 1/s$freq/day
+  
+  save(wv,Power,day,file=paste("pseudo.",sitenum,".",i,".Rdata",sep=""))
   save(i,Pspec,pspec,Period,period,file=paste(site.name,".",nstart,".specCI.Rdata",sep=""))
 }
 
 
 
 if(FALSE){
+  ## some diagnostics
 period <- 1/s$freq/48
 pspec <- pspec[1:length(period),]
 

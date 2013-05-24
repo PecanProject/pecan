@@ -1,79 +1,16 @@
-## Code to analyse the spectral signal of model error
-## between models and fluxtowers
+## Script to analyse the spectral signal of model error
 ##
 ## Michael Dietze, Boston University 
 ##
 
-#--------------------------------------------------------------------------------------------------#
-##' Calculate wavelet spectra of data-model residuals
-##'
-##' @title Wavelet spectra of data-model residuals  
-##' @param data       numeric vector
-##' @param model      numeric vector
-##' @param obsPerDay  used to scale time axis to days
-##' @param case       how residuals are normalized (1=none, 2=post, 3=pre)
-##' @return wavelet spectra
-##' @export
-##' @author Mike Dietze
-#--------------------------------------------------------------------------------------------------#
-
-ResidSpectra <- function(data,model=NULL,obsPerDay=1,case=3){
-  ##make sure everything's the right type
-  data <- as.vector(data)
-  if(is.null(model)) model = rep(0,length(data))
-  model <- as.vector(model)
-  y = NULL
-
-  ## option 1 - absolute residuals
-  if(case == 1){
-    y <- data - model ### Model error fcn
-  }
-  ## option 2 - normalized residuals (post)
-  if(case == 2){
-    y = scale(data - model)
-  }
-  ## option 3 - normalized residuals (pre)
-  if(case == 3){
-    ## normalize data
-    data.norm <- as.vector(scale(data))
-  
-    ## normalize model
-    model.norm <- as.vector(scale(model))  
-    y <- data.norm-model.norm  ## calc residuals of normalized          
-  }
-
-  y[is.na(y)] <- 0 ## need to fill in missing values
-
-  ## Calculate Morlet wavelet spectrum
-  wv <- morlet(y)                
-  period <- wv$period/day        ## wavelet periods
-  Power <- (abs(wv$wave))^2      ## wavelet power
-  for(t in 1:length(wv$Scale)){  ## bias correction
-    Power[,t] = Power[,t]/wv$Scale[t]
-  }
-
-  ## Crop out cone of influence
-  coi <- wv$coi                  ## cone of influence (valid if below value)
-  for(t in 1:length(coi)){
-    sel <- which(period>coi[t])
-    Power[t,sel] <- NA 
-  }
-  wv$Power <- Power
-  wv$period <- period
-
-  return(wv)
-}
-
-#####################################################################################
-
-
+## read functions
+source("ResidSpectra.R")
 
 ## directory to find model files
 model.dir <- "NEEm"
 
 ## set of models to analyze
 model.set <- c(sort(c("BEPS","CNCLASS","ISOLSM","TECO","ecosys","SiBCASA","SiB","DLEM","ED2","LoTEC_DA","AgroIBIS","DNDC","SiBcrop","can.ibis","EDCM","ORCHIDEE","LPJ","BIOME_BGC","SSiB2","TRIPLEX","EPIC")),"MEAN")
-
 Nmodel <- length(model.set)  ## number of models
 
 ## listing of available "site" files
@@ -85,7 +22,6 @@ yset = 1990:2010
 
 #########  LOOP OVER SITES ##########
 for(i in 1:length(site.files)){
-
   
   ## load site data table
   dat <- read.table(paste(model.dir,site.files[i],sep="/"),
