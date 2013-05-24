@@ -21,6 +21,7 @@
 ##' @param start.year first year to include in sensitivity analysis 
 ##' @param end.year last year to include in sensitivity analysis
 ##' @param read.output model specific read.output function
+##' @name read.sa.output
 ##' @export
 #--------------------------------------------------------------------------------------------------#
 read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name='', 

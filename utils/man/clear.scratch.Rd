@@ -1,9 +1,6 @@
 \name{clear.scratch}
 \alias{clear.scratch}
 \title{Clear EBI-CLUSTER worker node local scratch directories of old PEcAn output}
-\usage{
-  clear.scratch(settings)
-}
 \value{
   nothing
 }

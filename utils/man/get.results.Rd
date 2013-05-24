@@ -1,9 +1,12 @@
 \name{get.results}
 \alias{get.results}
 \title{Generate model output for PEcAn analyses}
+<<<<<<< HEAD
 \usage{
   get.results(pecandir, model, settings = settings)
 }
+=======
+>>>>>>> ef9572c0bfd74f64f90e160d3d29f5e3f933b0b6
 \arguments{
   \item{pecandir}{output directory}
 

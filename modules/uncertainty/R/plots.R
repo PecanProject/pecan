@@ -60,6 +60,7 @@ plot.variance.decomposition <- function(plot.inputs,
                                decreasing = FALSE), ]
   
   base.plot <- ggplot(plot.data) +
+<<<<<<< HEAD
     coord_flip() 
     
 
@@ -82,6 +83,40 @@ plot.variance.decomposition <- function(plot.inputs,
 
   pv.plot <- base.plot + ggtitle("Variance") +
     theme(plot.title = element_text(size = fontsize$title)) +
+=======
+    coord_flip() +
+      theme_bw() +
+        theme(axis.text.x = element_text(size=fontsize$axis, vjust = -1),
+             axis.text.y = element_blank(),
+             axis.title.x = element_blank(), 
+             axis.title.y = element_blank(),
+             panel.grid.minor = element_blank(),
+             panel.border = element_blank())
+
+  trait.plot <- base.plot + 
+    theme(title = 'Parameter',
+         plot.title = element_text(hjust = 0.96, size = fontsize$title),
+         axis.text.x = element_text(colour='white'),
+         axis.line.x = element_blank()) +
+           geom_text(aes(y = 1, x = points,
+                         label=trait.labels, hjust = 1),
+                     size = fontsize$axis/3) +
+                       scale_y_continuous( breaks = c(0,0), limits = c(0,1)) 
+
+  cv.plot <- base.plot +
+    theme(title = 'CV (%)', plot.title = element_text(size = fontsize$title)) +
+        geom_pointrange(aes(x = points, y = coef.vars, ymin = 0, ymax = coef.vars),
+                        size = 1.25) 
+
+  el.plot <- base.plot + 
+    theme(title = 'Elasticity', plot.title = element_text(size = fontsize$title)) +
+        geom_pointrange(aes(x = points, y = elasticities, ymin = 0, ymax = elasticities),
+                        size = 1.25) 
+
+  pv.plot <- base.plot+ 
+    theme(title = 'Root Variance (Mg/ha)',
+         plot.title = element_text(size = fontsize$title)) +
+>>>>>>> ef9572c0bfd74f64f90e160d3d29f5e3f933b0b6
              geom_pointrange(aes(x = points, sqrt(variances),
                                  ymin = 0, ymax = sqrt(variances)), size = 1.25) 
     
@@ -145,11 +180,20 @@ plot.sensitivity <- function(sa.sample, sa.spline, trait,
                                         #indicate median with larger point
         geom_point(aes(x,y), data = data.frame(x = sa.sample[median.i], y = sa.spline(sa.sample[median.i])), size = dotsize * 1.3) + 
           scale_y_continuous(limits = range(pretty(y.range)), breaks = pretty(y.range, n = 3)[1:3]) +
+<<<<<<< HEAD
             theme_bw() + ggtitle(trait.lookup(trait)$figid)
               theme(axis.text.x = element_text(size = fontsize$axis),
                    axis.text.y = element_text(size = fontsize$axis),
                    axis.title.x = element_text(size = fontsize$axis),
                    axis.title.y = element_blank(),
+=======
+            theme_bw() +
+              theme(title= element_text(size = fontsize$title), 
+                   axis.text.x = element_text(size = fontsize$axis),
+                   axis.text.y = element_text(size = fontsize$axis),
+                   axis.title.x = element_text(size = fontsize$axis),
+                   axis.title.y = element_text(size = fontsize$axis),
+>>>>>>> ef9572c0bfd74f64f90e160d3d29f5e3f933b0b6
                    plot.title = element_text(size = fontsize$title),
                    panel.border = element_blank())
   ## Following conditional can be removed to only plot posterior sa

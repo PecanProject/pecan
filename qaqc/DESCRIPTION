@@ -13,4 +13,10 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Collate:
+<<<<<<< HEAD
+=======
+    'compare.summary.R'
+    'overlap.cdf.R'
+    'overlap.cdf.uncert.R'
+>>>>>>> ef9572c0bfd74f64f90e160d3d29f5e3f933b0b6
     'taylor.plot.R'

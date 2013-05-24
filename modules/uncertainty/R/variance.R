@@ -11,8 +11,10 @@
 ##' calculates variance and sd of variance using the \code{var} from base R and \code{\link{sd.var}} from PEcAn.
 ##' @title variance statistics
 ##' @param x numeric vector
+##' @export
 ##' @return list with variance and sd of variance
 ##' @author David LeBauer
+##' @name variance.stats
 variance.stats <- function(x){
   list(var = var(x), sd = sd.var(x))
 }

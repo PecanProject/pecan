@@ -20,8 +20,8 @@
 ##' @param num number to be padded (integer)
 ##' @param digits number of digits to add
 ##' @return num with zeros to the left
-##' @export
 ##' @author Carl Davidson
+##' @name left.pad.zeros
 left.pad.zeros <- function(num, digits = 5){
   format_string <- paste('%',sprintf('0%.0f.0f',digits),sep='')
   return(sprintf(format_string, num))
@@ -260,6 +260,7 @@ summarize.result <- function(result) {
 ##' @param mcmc.summary 
 ##' @param sample.size 
 ##' @return list with summary statistics for parameters in an MCMC chain
+##' @export
 ##' @author David LeBauer
 get.stats.mcmc <- function(mcmc.summary, sample.size){
   a <- list(n = sample.size)
