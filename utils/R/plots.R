@@ -183,8 +183,8 @@ iqr <- function(x){
 ##' Creates empty ggplot object
 ##'
 ##' An empty base plot to which layers created by other functions
-##' (\code{\link{add.data}}, \code{\link{add.prior.density}},
-##' \code{\link{add.posterior.density}}) can be added.
+##' (\code{\link{plot.data}}, \code{\link{plot.prior.density}},
+##' \code{\link{plot.posterior.density}}) can be added.
 ##' @name create.base.plot
 ##' @title Create Base Plot
 ##' @return empty ggplot object
@@ -200,7 +200,7 @@ create.base.plot <- function() {
 ##--------------------------------------------------------------------------------------------------#
 ##' Plots a prior density from a parameterized probability distribution  
 ##'
-##' @name add.prior.density
+##' @name plot.prior.density
 ##' @title Add Prior Density
 ##' @param prior.density 
 ##' @param base.plot a ggplot object (grob), created by \code{\link{create.base.plot}} if none provided
@@ -210,8 +210,8 @@ create.base.plot <- function() {
 ##' @author David LeBauer
 ##' @export
 ##' @examples
-##' add.prior.density(pr.dens('norm', 0, 1))
-add.prior.density <- function(prior.density, base.plot = NULL, prior.color = 'black' ) {
+##' plot.prior.density(pr.dens('norm', 0, 1))
+plot.prior.density <- function(prior.density, base.plot = NULL, prior.color = 'black' ) {
   if(is.null(base.plot)) base.plot <- create.base.plot()
   new.plot <- base.plot +  geom_line(data = prior.density,
                                      aes(x = x, y = y),
@@ -272,14 +272,14 @@ create.density.df <- function(samps = NULL,
 ##--------------------------------------------------------------------------------------------------#
 ##'  Add posterior density to a plot
 ##'
-##' @name add.posterior.density
+##' @name plot.posterior.density
 ##' @title Add posterior density. 
 ##' @param posterior.density 
 ##' @param base.plot a ggplot object (grob), created by \code{\link{create.base.plot}} if none provided
 ##' @return plot with posterior density line added
 ##' @export
 ##' @author David LeBauer
-add.posterior.density <- function(posterior.density, base.plot = NULL) {
+plot.posterior.density <- function(posterior.density, base.plot = NULL) {
   if(is.null(base.plot)) base.plot <- create.base.plot()
   new.plot <- base.plot +  geom_line(data = posterior.density,
                                      aes(x = x, y = y))
@@ -294,7 +294,7 @@ add.posterior.density <- function(posterior.density, base.plot = NULL) {
 ##' Used to add raw data or summary statistics to the plot of a distribution.
 ##' The height of Y is arbitrary, and can be set to optimize visualization.
 ##' If SE estimates are available, tehse wil be plotted
-##' @name add.data
+##' @name plot.data
 ##' @title Add data to plot 
 ##' @param trait.data data to be plotted
 ##' @param base.plot a ggplot object (grob),
@@ -305,8 +305,8 @@ add.posterior.density <- function(posterior.density, base.plot = NULL) {
 ##' @author David LeBauer
 ##' @export
 ##' @examples
-##' \dontrun{add.data(data.frame(Y = c(1, 2), se = c(1,2)), base.plot = NULL, ymax = 10)}
-add.data <- function(trait.data, base.plot = NULL, ymax, color = 'black') {
+##' \dontrun{plot.data(data.frame(Y = c(1, 2), se = c(1,2)), base.plot = NULL, ymax = 10)}
+plot.data <- function(trait.data, base.plot = NULL, ymax, color = 'black') {
   if(is.null(base.plot)) base.plot <- create.base.plot()
   n.pts <- nrow(trait.data)
   if(n.pts == 1){
@@ -437,7 +437,7 @@ plot.trait <- function(trait,
              prior.density$y < y.lim[2])
     
     prior.density <- prior.density[keep,]
-    base.plot <- add.prior.density(prior.density,
+    base.plot <- plot.prior.density(prior.density,
                                    base.plot = base.plot,
                                    prior.color = prior.color)
   }
@@ -447,11 +447,11 @@ plot.trait <- function(trait,
              posterior.density$y > y.lim[1] &
              posterior.density$y < y.lim[2])
     posterior.density <- posterior.density[keep, ]
-    base.plot <- add.posterior.density(posterior.density,
+    base.plot <- plot.posterior.density(posterior.density,
                                        base.plot = base.plot)
   }
   if(plot.data){
-    base.plot <- add.data(trait.df,
+    base.plot <- plot.data(trait.df,
                           base.plot = base.plot,
                           ymax = y.lim[2])
   }

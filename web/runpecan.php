@@ -14,7 +14,11 @@ $connection=open_database();
 # boolean parameters
 $userok=isset($_REQUEST['userok']);
 $offline=isset($_REQUEST['offline']);
-$advanced_edit=isset($_REQUEST['advanced_edit']);
+if (isset($_REQUEST['advanced_edit'])) {
+	$advanced_edit=1;
+} else {
+	$advanced_edit=0;
+}
 
 # parameters
 if (!isset($_REQUEST['siteid'])) {
