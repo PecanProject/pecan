@@ -9,13 +9,13 @@
 #--------------------------------------------------------------------------------------------------#
 ##' Reads the output of a single model run
 ##'
-##' @title Read output
+##' @title Read model output
 ##' @name read.output
 ##' @param run.id the id distiguishing the model run. 
 ##' @param outdir the directory that the model's output was sent to
 ##' @param model name of simulation model currently accepts ("ED2", "SIPNET", "BIOCRO")
 ##' @param start.year first year of output to read (should be greater than ) 
-##' @param end.year 
+##' @param end.year last year of output to read
 ##' @param variables variables to be read from model output
 ##' @details Generic function to convert model output from model-specific format to 
 ##' a common PEcAn format. This function uses MsTMIP variables except that units of
