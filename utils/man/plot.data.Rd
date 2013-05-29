@@ -1,8 +1,8 @@
-\name{add.data}
-\alias{add.data}
+\name{plot.data}
+\alias{plot.data}
 \title{Add data to plot}
 \usage{
-  add.data(trait.data, base.plot = NULL, ymax,
+  plot.data(trait.data, base.plot = NULL, ymax,
     color = "black")
 }
 \arguments{
@@ -27,7 +27,7 @@
   available, tehse wil be plotted
 }
 \examples{
-\dontrun{add.data(data.frame(Y = c(1, 2), se = c(1,2)), base.plot = NULL, ymax = 10)}
+\dontrun{plot.data(data.frame(Y = c(1, 2), se = c(1,2)), base.plot = NULL, ymax = 10)}
 }
 \author{
   David LeBauer

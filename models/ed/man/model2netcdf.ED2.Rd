@@ -8,10 +8,11 @@
   \item{outdir}{Location of ED model output}
 }
 \description{
-  Modified from Code to convert ED2.1's HDF5 output into
-  the NACP Intercomparison format (ALMA using netCDF)
+  #---------------------------------------------------------------------Modified
+  from Code to convert ED2.1's HDF5 output into the NACP
+  Intercomparison format (ALMA using netCDF)
 }
 \author{
-  Michael Dietze
+  Michael Dietze, Shawn Serbin, Rob Kooper
 }
 
