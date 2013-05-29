@@ -98,8 +98,6 @@ switch(checkStatus("CONFIG")) {
     	$("#stylized").height($(window).height() - 5);
     	$("#output").height($(window).height() - 1);
     	$("#output").width($(window).width() - $('#stylized').width() - 5);
-
-    	$('#log').scrollTop($('#log')[0].scrollHeight);
 	}
 
 	function prevStep() {
@@ -194,19 +192,6 @@ switch(checkStatus("CONFIG")) {
 			<td><?=status("FINISHED");?></td>
 		</tr>
 	</table>
-<!--
-	<hr/>
- 	<h2>Output from PEcAn</h2>
- 	<textarea id="log" cols="80" rows="10" readonly="readonly">
-<?php
-  	foreach(scandir($folder . DIRECTORY_SEPARATOR) as $file) {
-  		if (preg_match("/^workflow_stage.*\.Rout$/", $file) === 1) {
-  			parselog($folder . DIRECTORY_SEPARATOR . $file);
-  		}
-	}
-?>
- 	</textarea>
- -->
 	</div>
 </div>
 </body>
@@ -270,33 +255,5 @@ function status($token) {
     }
   }
   return "Waiting";
-}
-
-function parselog($filename)
-{
-	// Open the file
-	$f = fopen($filename, "rb");
-	if ($f === false) {
-		return "file does not exist.";
-	}
-
-	// read the file line by line
-	$check = false;
-	while (($buffer = fgets($f, 4096)) !== false) {
-		if ($check && ($buffer[0]==" ")) {
-			print($buffer);
-		} else if (stristr($buffer, "error") !== false) {
-			print($buffer);
-			$check = true;
-		} else if (stristr($buffer, "warn") !== false) {
-			print($buffer);
-			$check = true;
-		} else {
-			$check = false;
-		}
-	}
-
-	// Close file and return
-	fclose($f);
 }
 ?>

@@ -2,9 +2,11 @@
 \alias{get.results}
 \title{Generate model output for PEcAn analyses}
 \usage{
-  get.results(pecandir, model)
+  get.results(pecandir, model, settings = settings)
 }
 \arguments{
+  \item{pecandir}{output directory}
+
   \item{model}{name of model being used}
 
   \item{settings}{list, read from settings file (xml) using
