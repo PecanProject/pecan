@@ -89,11 +89,15 @@ foreach(scandir("$folder/out") as $runid) {
 		if (is_dir("$folder/out/$runid/$file")) {
 			continue;
 		}
+		if (preg_match('/^\d\d\d\d.nc.var$/', $file)) {
+			continue;
+		}
+
 		$runfile[$runid][] = $file;
 
 		if (preg_match('/^\d\d\d\d.nc$/', $file)) {
 			$year = substr($file, 0, 4);
-			$vars = explode("\n", shell_exec("ncdump -x ${folder}/out/${runid}/${file} | grep '<variable' | sed 's/.*name=\"\\([^\"]*\\)\".*/\\1/' | sort -u"));
+			$vars = explode("\n", file_get_contents("${folder}/out/${runid}/${file}.var"));
 			$runplot[$runid][$year] = array_filter($vars);
 		}
 	}
