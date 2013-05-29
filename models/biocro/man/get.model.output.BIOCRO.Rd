@@ -2,7 +2,7 @@
 \alias{get.model.output.BIOCRO}
 \title{Retrieve model output from local server}
 \usage{
-  get.model.output.BIOCRO(settings)
+  get.model.output.BIOCRO()
 }
 \arguments{
   \item{settings}{list generated from
