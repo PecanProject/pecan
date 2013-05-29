@@ -9,13 +9,13 @@
 #--------------------------------------------------------------------------------------------------#
 ##' Reads the output of a single model run
 ##'
-##' @title Read output
+##' @title Read model output
 ##' @name read.output
 ##' @param run.id the id distiguishing the model run. 
 ##' @param outdir the directory that the model's output was sent to
-##' @param model name of simulation model currently accepts ("ED", "SIPNET", "BIOCRO")
+##' @param model name of simulation model currently accepts ("ED2", "SIPNET", "BIOCRO")
 ##' @param start.year first year of output to read (should be greater than ) 
-##' @param end.year 
+##' @param end.year last year of output to read
 ##' @param variables variables to be read from model output
 ##' @details Generic function to convert model output from model-specific format to 
 ##' a common PEcAn format. This function uses MsTMIP variables except that units of
@@ -32,11 +32,9 @@
 ##' @author Michael Dietze
 read.output <- function(run.id, outdir, model, start.year=NA,
                         end.year=NA, variables = "GPP") {
-  if (model == 'ED2') {
-    do.call(require, list("PEcAn.ED"))    
-  } else {
-    do.call(require, list(paste0("PEcAn.", model)))    
-  }
+
+  do.call(require, list(paste0("PEcAn.", model)))    
+
   model2nc <- paste("model2netcdf", model, sep=".")
   if(!exists(model2nc)){
     logger.warn("File conversion function model2netcdf does not exist for", model)

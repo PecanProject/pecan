@@ -16,7 +16,7 @@ Description: The Predictive Ecosystem Carbon Analyzer
     investigation.
 Depends:
     PEcAn.DB,
-    PEcAn.ED,
+    PEcAn.ED2,
     PEcAn.SIPNET,
     PEcAn.BIOCRO,
     PEcAn.MA,
