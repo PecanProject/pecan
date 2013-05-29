@@ -16,7 +16,7 @@ Depends:
     PEcAn.utils,
     abind,
     coda,
-    ncdf
+    ncdf4
 Suggests:
     testthat
 SystemRequirements: ED2.2 Model
