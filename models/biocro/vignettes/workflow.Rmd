@@ -1,6 +1,13 @@
 BioCro PEcAn workflow
 ======================
 
+
+```{r message=FALSE}
+library(knitr)
+opts_chunk$set(echo = FALSE, message = FALSE, results='hide', cache=TRUE, 
+               eval = FALSE ## just to allow .md to be compiled
+               )
+```
 ```{r, echo=FALSE,warning=FALSE}
 require(PEcAn.all)
 ```
