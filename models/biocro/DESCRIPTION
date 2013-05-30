@@ -9,6 +9,7 @@ Description: This module provides functions to link BioCro to PEcAn.
 Depends:
     PEcAn.utils,
     PEcAn.data.atmosphere,
+    udunits2,
     ncdf4,
     BioCro,
     RNCEP,
