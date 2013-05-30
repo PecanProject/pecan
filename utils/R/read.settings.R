@@ -68,7 +68,7 @@ check.settings <- function(settings) {
     settings$database$dbname <- settings$database$name
     settings$database$name <- NULL
   }
-  if (!db.exists(params=settings$database, write=settings$bety$write)) {
+  if (!PEcAn.DB::db.exists(params=settings$database, write=settings$bety$write)) {
     logger.severe("Could not connect to the database.")
   }
 
