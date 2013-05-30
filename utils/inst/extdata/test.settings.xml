@@ -12,10 +12,10 @@
     </pft>
   </pfts>
   <database>
-    <userid>bety</userid>
-    <passwd>bety</passwd>
+    <username>bety</username>
+    <password>bety</password>
     <host>localhost</host>
-    <name>bety</name>
+    <dbname>bety</dbname>
   </database>
   <meta.analysis>
     <iter>3000</iter>
