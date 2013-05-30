@@ -5,12 +5,7 @@
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
-
-require(abind)
-
-#--------------------------------------------------------------------------------------------------#
-##' Modified from Code to convert ED2.1's HDF5 output into the NACP Intercomparison format (ALMA using netCDF)
+#---------------------------------------------------------------------##' Modified from Code to convert ED2.1's HDF5 output into the NACP Intercomparison format (ALMA using netCDF)
 ##' 
 ##' @name model2netcdf.ED2
 ##' @title Code to convert ED2's -T- HDF5 output into netCDF format
@@ -18,7 +13,7 @@ require(abind)
 ##' @param outdir Location of ED model output
 ##' @export
 ##'
-##' @author Michael Dietze
+##' @author Michael Dietze, Shawn Serbin, Rob Kooper
 ## modified M. Dietze 07/08/12
 ## modified S. Serbin 05/06/13
 model2netcdf.ED2 <- function(outdir) {
@@ -77,54 +72,12 @@ model2netcdf.ED2 <- function(outdir) {
     out[[col]][is.null(out[[col]])] <- -999
     out[[col]][is.na(out[[col]])] <- -999
 
-    # ## first clone and fill data
-    # if(length(dat) < block) dat <- rep(dat,block)[1:block] 
-    # dat[is.null(dat)] <- -999
-    # dat[is.na(dat)] <- -999
-    
-    # dims <- dim(dat)
-    # print(dims)
-    # if(block == 1) dims = c(1,dim(dat))
-    
-    # ## Option 1 - add data anew
-    # if(length(out) < col){
-    #   bdim <- dims
-    #   bdim[1] <- 366*block
-    #   ##    if(length(dat) > 1){
-    #   ##      out[[col]] <- matrix(NA,366*block,length(dat))
-    #   ##    } else {
-    #   ##      out[[col]] <- rep(NA,366*block)
-    #   ##    }
-    #   ##array(NA,dim=dims) 
-    #   out[[col]] <- array(NA,dim=bdim)
-    # }
-    # ndim <-length(dim(dat))
-
-    # # ncdf returns different from hdf5load
-    # # - hdf returns 2 dimensional array nx1, ncdf returns n
-    # # - hdf returns 3 dimensional array nx1xm, ncdf returns mxn
-
-    # # ncdf returns one dim less, it drops the 1 dimension, on top the dimensions are bakwards
-    # if(ndim == 1){  #block must be 1
-    #   out[[col]][row] <- dat
-    # } else if(ndim == 2){
-    #   for(i in 1:dims[2]){
-    #     out[[col]][row+i-1,] <- dat[,i]
-    #   }
-    # } else if (ndim ==3){
-    #   for(i in 1:dims[1]){
-    #     for(j in 1:dims[2]){
-    #       out[[col]][row+i-1,j,] <- dat[i,j,]
-    #     }
-    #   }
-    # }
-    x<<-out
     return(out)
   }
   
   getHdf5Data <- function(nc, var) {
     if(var %in% names(nc$var)) {
-      return(get.var.ncdf(nc, var))
+      return(ncvar_get(nc, var))
     } else {
       logger.warn("Could not find", var, "in ed hdf5 output.")
       return(-999)
@@ -154,8 +107,18 @@ model2netcdf.ED2 <- function(outdir) {
     ## if(haveTime) prevTime <- progressBar()
     row <- 1
     for(i in ysel){
-      ncT <- open.ncdf(file.path(outdir, flist[i]))
-      ncY <- open.ncdf(file.path(outdir, sub('-T-', '-Y-', flist[i])))
+      ncT <- nc_open(file.path(outdir, flist[i]))
+      if (file.exists(file.path(outdir, sub('-T-', '-Y-', flist[i])))) {
+        ncY <- nc_open(file.path(outdir, sub('-T-', '-Y-', flist[i])))
+        slzdata <- getHdf5Data(ncY, 'SLZ')
+        nc_close(ncY)
+      } else {
+        slzdata <- array(c(-2.00, -1.50, -1.00, -0.80, -0.60, -0.40, -0.20, -0.10, -0.05))
+      }
+
+      ## store for later use, will only use last data
+      dz <- diff(slzdata)
+      dz <- dz[dz != 0.0]
 
       ## out <- add(getHdf5Data(ncT, 'TOTAL_AGB,1,row) ## AbvGrndWood
       out <- add(getHdf5Data(ncT, 'AVG_BDEAD')*0.7,1,row) ## AbvGrndWood
@@ -176,7 +139,6 @@ model2netcdf.ED2 <- function(outdir) {
       tdepth <- 0
       fdepth <- 0
       soiltemp <- getHdf5Data(ncT, 'AVG_SOIL_TEMP')
-      slzdata <- getHdf5Data(ncY, 'SLZ')
       if(length(dim(soiltemp)) == 3){
         fdepth <- array(0,dim=dim(soiltemp)[1:2])
         tdepth <- array(0,dim=dim(soiltemp)[1:2])
@@ -286,18 +248,11 @@ model2netcdf.ED2 <- function(outdir) {
       out <- add(getHdf5Data(ncT, 'AVG_RUNOFF'),45,row) ## Qs
       out <- add(getHdf5Data(ncT, 'BASEFLOW'),46,row) ## Qsb
       
-      close.ncdf(ncT)
-      close.ncdf(ncY)
+      nc_close(ncT)
       ## prevTime <- progressBar(i/n,prevTime)
       row <- row + block
     }  ## end file loop 
 
-    ## process for output (unit conversions)
-    z <- c(-9.00, -6.00, -4.00, -2.00, -1.40, -0.80, -0.54, -0.41, -0.32, -0.19, -0.13, -0.08) #getHdf5Data(nc, 'SLZ')
-    if(z[length(z)] < 0.0) z <- c(z,0.0)
-    dz <- diff(z)
-    dz <- dz[dz != 0.0]
-  
     #out[[10]] <- out[[10]]*1.2e-8  
     ## TODO see bug #1174
     ## for(t in 1:dim(out[[37]])[1]){
@@ -308,80 +263,80 @@ model2netcdf.ED2 <- function(outdir) {
   
     ## declare variables
     ## need to SHIFT for partial years **********************
-    t <- dim.def.ncdf("time","seconds",(1:dim(out[[1]])[1])*3600.0*24.0/block)
-    zg <- dim.def.ncdf("SoilLayerMidpoint","meters",z[1:length(dz)]+dz/2)
+    t <- ncdim_def("time","seconds",(1:dim(out[[1]])[1])*3600.0*24.0/block)
+    zg <- ncdim_def("SoilLayerMidpoint","meters",slzdata[1:length(dz)]+dz/2)
     
     var <- list()
     out <- conversion( 1, 0.1)     ## tC/ha     -> kg/m2
-    var[[1]]  <- var.def.ncdf("AbvGrndWood","kg/m2",t,-999)
+    var[[1]]  <- ncvar_def("AbvGrndWood","kg/m2",t,-999)
     out <- conversion( 2, 1.2e-8)  ## umol/m2/s -> kg/m2/s
-    var[[2]]  <- var.def.ncdf("AutoResp","kg/m2/s",t,-999)  # Edited by SPS.  Changed from kg/m2/s2 to kg/m2/s
-    var[[3]]  <- var.def.ncdf("CarbPools","kg/m2",t,-999)
-    var[[4]]  <- var.def.ncdf("CO2CAS","ppmv",t,-999)
-    var[[5]]  <- var.def.ncdf("CropYield","kg/m2",t,-999)
+    var[[2]]  <- ncvar_def("AutoResp","kg/m2/s",t,-999)  # Edited by SPS.  Changed from kg/m2/s2 to kg/m2/s
+    var[[3]]  <- ncvar_def("CarbPools","kg/m2",t,-999)
+    var[[4]]  <- ncvar_def("CO2CAS","ppmv",t,-999)
+    var[[5]]  <- ncvar_def("CropYield","kg/m2",t,-999)
     out <- conversion( 6, 1.2e-8)  ## umol/m2/s -> kg/m2/s
-    var[[6]]  <- var.def.ncdf("GPP","kg/m2/s2",t,-999)     # Edited by SPS.  Changed from kg/m2/s2 to kg/m2/s
+    var[[6]]  <- ncvar_def("GPP","kg/m2/s2",t,-999)     # Edited by SPS.  Changed from kg/m2/s2 to kg/m2/s
     out <- conversion( 7, 1.2e-8)  ## umol/m2/s -> kg/m2/s
-    var[[7]]  <- var.def.ncdf("HeteroResp","kg/m2/s",t,-999) # Edited by SPS.  Changed from kg/m2/s2 to kg/m2/s
+    var[[7]]  <- ncvar_def("HeteroResp","kg/m2/s",t,-999) # Edited by SPS.  Changed from kg/m2/s2 to kg/m2/s
     out <- conversion( 8, 1.2e-8)  ## umol/m2/s -> kg/m2/s
-    var[[8]]  <- var.def.ncdf("NEE","kg/m2/s",t,-999)     # Edited by SPS.  Changed from kg/m2/s2 to kg/m2/s
+    var[[8]]  <- ncvar_def("NEE","kg/m2/s",t,-999)     # Edited by SPS.  Changed from kg/m2/s2 to kg/m2/s
     out <- conversion( 9, 1.2e-8)  ## umol/m2/s -> kg/m2/s
-    var[[9]]  <- var.def.ncdf("NPP","kg/m2/s",t,-999)     # Edited by SPS.  Changed from kg/m2/s2 to kg/m2/s
+    var[[9]]  <- ncvar_def("NPP","kg/m2/s",t,-999)     # Edited by SPS.  Changed from kg/m2/s2 to kg/m2/s
     out <- conversion(10, 1.2e-8)  ## umol/m2/s -> kg/m2/s
-    var[[10]] <- var.def.ncdf("TotalResp","kg/m2/s",t,-999) # Edited by SPS.  Changed from kg/m2/s2 to kg/m2/s
-    var[[11]] <- var.def.ncdf("TotLivBiom","kg/m2",t,-999) # Edited by SPS.  Changed from kg/m2/s2 to kg/m2
-    var[[12]] <- var.def.ncdf("TotSoilCarb","kg/m2",t,-999)
-    var[[13]] <- var.def.ncdf("Fdepth","m",t,-999)
-    var[[14]] <- var.def.ncdf("SnowDepth","m",t,-999)
-    var[[15]] <- var.def.ncdf("SnowFrac","-",t,-999)
-    var[[16]] <- var.def.ncdf("Tdepth","m",t,-999)
-    var[[17]] <- var.def.ncdf("CO2air","ppmv",t,-999)
-    var[[18]] <- var.def.ncdf("Lwdown","W/m2",t,-999)
-    var[[19]] <- var.def.ncdf("Psurf","Pa",t,-999)
-    var[[20]] <- var.def.ncdf("Qair","kg/kg",t,-999)
-    var[[21]] <- var.def.ncdf("Rainf","kg/m2s",t,-999)
-    var[[22]] <- var.def.ncdf("Swdown","W/m2",t,-999)
+    var[[10]] <- ncvar_def("TotalResp","kg/m2/s",t,-999) # Edited by SPS.  Changed from kg/m2/s2 to kg/m2/s
+    var[[11]] <- ncvar_def("TotLivBiom","kg/m2",t,-999) # Edited by SPS.  Changed from kg/m2/s2 to kg/m2
+    var[[12]] <- ncvar_def("TotSoilCarb","kg/m2",t,-999)
+    var[[13]] <- ncvar_def("Fdepth","m",t,-999)
+    var[[14]] <- ncvar_def("SnowDepth","m",t,-999)
+    var[[15]] <- ncvar_def("SnowFrac","-",t,-999)
+    var[[16]] <- ncvar_def("Tdepth","m",t,-999)
+    var[[17]] <- ncvar_def("CO2air","ppmv",t,-999)
+    var[[18]] <- ncvar_def("Lwdown","W/m2",t,-999)
+    var[[19]] <- ncvar_def("Psurf","Pa",t,-999)
+    var[[20]] <- ncvar_def("Qair","kg/kg",t,-999)
+    var[[21]] <- ncvar_def("Rainf","kg/m2s",t,-999)
+    var[[22]] <- ncvar_def("Swdown","W/m2",t,-999)
     out <- checkTemp(23)
-    var[[23]] <- var.def.ncdf("Tair","K",t,-999)
-    var[[24]] <- var.def.ncdf("Wind","W/m2",t,-999)
-    var[[25]] <- var.def.ncdf("Lwnet","W/m2",t,-999)
-    var[[26]] <- var.def.ncdf("Qg","W/m2",t,-999)
-    var[[27]] <- var.def.ncdf("Qh","W/m2",t,-999)
-    var[[28]] <- var.def.ncdf("Qle","W/m2",t,-999)
-    var[[29]] <- var.def.ncdf("Swnet","W/m2",t,-999)
-    var[[30]] <- var.def.ncdf("RootMoist","kg/m2",t,-999)
-    var[[31]] <- var.def.ncdf("Tveg","kg/m2s",t,-999)
-    var[[32]] <- var.def.ncdf("WaterTableD","m",t,-999)
-    var[[33]] <- var.def.ncdf("fPAR","-",t,-999)
-    var[[34]] <- var.def.ncdf("LAI","m2/m2",t,-999)
-    ##var[[35]] <- var.def.ncdf("SMFrozFrac","-",list(t,zg),-999)
-    ##var[[36]] <- var.def.ncdf("SMLiqFrac","-",list(t,zg),-999)
-    var[[35]] <- var.def.ncdf("SMFrozFrac","-",list(t),-999)
-    var[[36]] <- var.def.ncdf("SMLiqFrac","-",list(t),-999)
-    var[[37]] <- var.def.ncdf("SoilMoist","kg/m2",list(t,zg),-999)
+    var[[23]] <- ncvar_def("Tair","K",t,-999)
+    var[[24]] <- ncvar_def("Wind","W/m2",t,-999)
+    var[[25]] <- ncvar_def("Lwnet","W/m2",t,-999)
+    var[[26]] <- ncvar_def("Qg","W/m2",t,-999)
+    var[[27]] <- ncvar_def("Qh","W/m2",t,-999)
+    var[[28]] <- ncvar_def("Qle","W/m2",t,-999)
+    var[[29]] <- ncvar_def("Swnet","W/m2",t,-999)
+    var[[30]] <- ncvar_def("RootMoist","kg/m2",t,-999)
+    var[[31]] <- ncvar_def("Tveg","kg/m2s",t,-999)
+    var[[32]] <- ncvar_def("WaterTableD","m",t,-999)
+    var[[33]] <- ncvar_def("fPAR","-",t,-999)
+    var[[34]] <- ncvar_def("LAI","m2/m2",t,-999)
+    ##var[[35]] <- ncvar_def("SMFrozFrac","-",list(t,zg),-999)
+    ##var[[36]] <- ncvar_def("SMLiqFrac","-",list(t,zg),-999)
+    var[[35]] <- ncvar_def("SMFrozFrac","-",list(t),-999)
+    var[[36]] <- ncvar_def("SMLiqFrac","-",list(t),-999)
+    var[[37]] <- ncvar_def("SoilMoist","kg/m2",list(t,zg),-999)
     out <- checkTemp(38)
-    var[[38]] <- var.def.ncdf("SoilTemp","K",list(t,zg),-999)
-    var[[39]] <- var.def.ncdf("SoilWet","-",list(t,zg),-999)
-    var[[40]] <- var.def.ncdf("Albedo","-",t,-999)
+    var[[38]] <- ncvar_def("SoilTemp","K",list(t,zg),-999)
+    var[[39]] <- ncvar_def("SoilWet","-",list(t,zg),-999)
+    var[[40]] <- ncvar_def("Albedo","-",t,-999)
     out <- checkTemp(41)
-    var[[41]] <- var.def.ncdf("SnowT","K",t,-999)
-    var[[42]] <- var.def.ncdf("SWE","kg/m2",t,-999)
+    var[[41]] <- ncvar_def("SnowT","K",t,-999)
+    var[[42]] <- ncvar_def("SWE","kg/m2",t,-999)
     out <- checkTemp(43)
-    var[[43]] <- var.def.ncdf("VegT","K",t,-999)
-    var[[44]] <- var.def.ncdf("Evap","kg/m2s",t,-999)
-    var[[45]] <- var.def.ncdf("Qs","kg/m2s",t,-999)
-    var[[46]] <- var.def.ncdf("Qsb","kg/m2s",t,-999)
+    var[[43]] <- ncvar_def("VegT","K",t,-999)
+    var[[44]] <- ncvar_def("Evap","kg/m2s",t,-999)
+    var[[45]] <- ncvar_def("Qs","kg/m2s",t,-999)
+    var[[46]] <- ncvar_def("Qsb","kg/m2s",t,-999)
 
 
     ## write ALMA
-    nc <- create.ncdf(file.path(outdir, paste(yrs[y], "nc", sep=".")), var)
+    nc <- nc_create(file.path(outdir, paste(yrs[y], "nc", sep=".")), var)
     for(i in 1:length(var)){
       ## TODO see bug #1174
       if (i != 37 && i != 38 && i != 39) {
-        put.var.ncdf(nc,var[[i]],out[[i]])  
+        ncvar_put(nc,var[[i]],out[[i]])  
       }
     }
-    close.ncdf(nc)
+    nc_close(nc)
     closeAllConnections()
   }  ## end year loop
   

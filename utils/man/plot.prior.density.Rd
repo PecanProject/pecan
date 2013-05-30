@@ -1,8 +1,8 @@
-\name{add.prior.density}
-\alias{add.prior.density}
+\name{plot.prior.density}
+\alias{plot.prior.density}
 \title{Add Prior Density}
 \usage{
-  add.prior.density(prior.density, base.plot = NULL,
+  plot.prior.density(prior.density, base.plot = NULL,
     prior.color = "black")
 }
 \arguments{
@@ -21,7 +21,7 @@
   distribution
 }
 \examples{
-add.prior.density(pr.dens('norm', 0, 1))
+plot.prior.density(pr.dens('norm', 0, 1))
 }
 \author{
   David LeBauer

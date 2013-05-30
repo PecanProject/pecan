@@ -79,15 +79,12 @@ PACKAGES="${PACKAGES} models/ed models/sipnet models/biocro"
 PACKAGES="${PACKAGES} all"
 
 # location where to install packages
-if [ $UID -eq 0 ]; then
-  unset R_LIBS_USER
-elif [ -z $R_LIBS_USER ]; then
-  export R_LIBS_USER="${HOME}/lib/R"
-fi
 if [ ! -z $R_LIBS_USER ]; then
   if [ ! -e ${R_LIBS_USER} ]; then mkdir -p ${R_LIBS_USER}; fi
   rm -rf ${R_LIBS_USER}/PEcAn.*
   R_LIB_INC="--library=${R_LIBS_USER}"
+else
+  echo "R_LIBS_USER not set, this could prevent the script from running correctly."
 fi
 
 # are we still running
@@ -116,7 +113,7 @@ else
 fi
 
 if [ "$FORCE" == "yes" ]; then
-  START=`date +'%s.%N'`
+  START=`date +'%s'`
   STATUS="OK"
 
   # get changes
@@ -199,7 +196,7 @@ if [ "$FORCE" == "yes" ]; then
   done
 
   # all done
-  TIME=$(echo "`date +'%s.%N'` - $START" |bc -l)
+  TIME=$(echo "`date +'%s'` - $START" |bc -l)
   echo "----------------------------------------------------------------------" >> changes.log
   echo "build took ${TIME} seconds." >> changes.log
   echo "----------------------------------------------------------------------" >> changes.log
