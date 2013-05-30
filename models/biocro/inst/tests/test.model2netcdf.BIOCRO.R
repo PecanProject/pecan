@@ -1,27 +1,28 @@
+outdir <- tempdir()
 
-result.csv <- system.file("extdata/result.csv", package = "PEcAn.BIOCRO")
-runs.samples <- list(ensemble = data.frame(id = 1))
-runoutdir <- file.path(settings$outdir, "1")
-dir.create(runoutdir, recursive = TRUE, showWarnings = FALSE)
+pkgext <- system.file("extdata", package = "PEcAn.BIOCRO")
+settings <- PEcAn.utils::read.settings(file.path(pkgext, "pecan.biocro.xml"))
+result.csv <- file.path(pkgext, "result.csv")
 
-file.copy(from = result.csv, to = runoutdir)
+file.copy(from = result.csv, to = outdir)
 
-save(runs.samples, 
-     file = file.path(settings$outdir, 'samples.Rdata'))
-     
 test_that("model2netcdf.BIOCRO reads a .csv and writes a netcdf file",{
-  model2netcdf.BIOCRO(outdir = runoutdir)
-  biocro.ncfile <- file.path(runoutdir, "2004.nc")
+  model2netcdf.BIOCRO(outdir = outdir)
+  biocro.ncfile <- file.path(outdir, "result.nc")
   expect_true(file.exists(biocro.ncfile))
- 
 })
-
-biocro.nc <- nc_open(file.path(runoutdir, "2004.nc"))
 
 test_that("model2netcdf.BIOCRO wrote netCDF file in PEcAn format",{
-  expect_true(all(c("Stem", "Leaf", "Root") %in% names(biocro.nc$var)))
+  biocro.nc <- nc_open(biocro.ncfile)
+
+  expect_true(
+    all(c("TotLivBiom", "RootBiom", "StemBiom", "Evap", "TVeg", "LAI")
+        %in% names(biocro.nc$var)))
+  x <- ncatt_get(biocro.nc, "RootBiom")
 })
-          
+
+
+ed.nc <- system.file("
 test_that("read.ensemble.output works with BIOCRO output", {
   ensemble.output <- read.ensemble.output(ensemble.size = 1, 
                                           outdir  = settings$outdir, 

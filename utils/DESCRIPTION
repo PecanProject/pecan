@@ -21,6 +21,8 @@ Depends:
     randtoolbox,
     ncdf,
     coda
+Suggests:
+    RMySQL
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
