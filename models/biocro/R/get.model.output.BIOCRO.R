@@ -14,7 +14,7 @@
 ##'
 ##' @name get.model.output.BIOCRO
 ##' @title Retrieve model output from local server
-##' 
+##' @settings list generated from \code{\link{read.settings}} function applied to settings file
 ##' @import PEcAn.utils
 ##' @export
 ##' @author Mike Dietze, David LeBauer
