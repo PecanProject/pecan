@@ -77,7 +77,7 @@ model2netcdf.BIOCRO <- function(outdir) {
     TVeg = ud.convert(CanopyTrans, "Mg/ha/h", "kg/m2/s"),
     LAI =  LAI))
   
-  nc <- nc_create(filename = file.path(outdir, "result2.nc"),
+  nc <- nc_create(filename = file.path(outdir, "result.nc"),
                   vars = vars)
    
   ## Output netCDF data
