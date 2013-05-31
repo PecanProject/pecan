@@ -1,13 +1,6 @@
 BioCro PEcAn workflow
 ======================
 
-
-```{r message=FALSE}
-library(knitr)
-opts_chunk$set(echo = FALSE, message = FALSE, results='hide', cache=TRUE, 
-               eval = FALSE ## just to allow .md to be compiled
-               )
-```
 ```{r, echo=FALSE,warning=FALSE}
 require(PEcAn.all)
 ```
@@ -20,6 +13,8 @@ Open and read in settings file for PEcAn run.
 settings <- read.settings(system.file("extdata/pecan.biocro.xml",
                                       package = "PEcAn.BIOCRO"))
 
+### limit scope for initial testing
+settings$sensitivity.analysis$quantiles <- list(sigma = 0.5)
 model <- settings$model$name
 
 
@@ -39,7 +34,8 @@ run.meta.analysis()     	# Run the PEcAn meta.analysis
 run.write.configs(model)        # Calls model specific write.configs e.g. write.config.ed.R
 ## load met data
 start.model.runs(model)         # Start ecosystem model runs
-
+read.outputs(settings$model$name, settings)
+#read.outputs(model, settings)#, variables = "StemBiom")
 get.model.output(model = model, settings = settings)         # Get results of model runs
 
 #run.sensitivity.analysis()      # Run sensitivity analysis and variance decomposition on model output
