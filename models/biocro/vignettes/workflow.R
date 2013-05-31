@@ -1,15 +1,9 @@
-BioCro PEcAn workflow
-======================
 
-```{r, echo=FALSE,warning=FALSE}
+## @knitr , echo=FALSE,warning=FALSE
 require(PEcAn.all)
-```
-### Load PEcAn settings file.
-
-Open and read in settings file for PEcAn run.
 
 
-```{r, echo=FALSE,warning=FALSE}
+## @knitr , echo=FALSE,warning=FALSE
 settings <- read.settings(system.file("extdata/pecan.biocro.xml",
                                       package = "PEcAn.BIOCRO"))
 
@@ -18,19 +12,16 @@ settings$sensitivity.analysis$quantiles <- list(sigma = 0.5)
 model <- settings$model$name
 
 
-```
-### Run PEcAn workflow
 
-```{r, echo=FALSE,warning=FALSE,cache=TRUE}
+
+## @knitr , echo=FALSE,warning=FALSE,cache=TRUE
 
 get.trait.data()        	# Query the trait database for data and priors
 
 run.meta.analysis()     	# Run the PEcAn meta.analysis
-```
 
 
-
-```{r, echo=FALSE,warning=FALSE,cache=TRUE}
+## @knitr , echo=FALSE,warning=FALSE,cache=TRUE
 run.write.configs(model)        # Calls model specific write.configs e.g. write.config.ed.R
 ## load met data
 start.model.runs(model)         # Start ecosystem model runs
@@ -48,4 +39,5 @@ get.model.output(model = model, settings = settings)         # Get results of mo
 ### PEcAn workflow run complete
 print("---------- PEcAn Workflow Complete ----------")
 #--------------------------------------------------------------------------------------------------#
-```
+
+
