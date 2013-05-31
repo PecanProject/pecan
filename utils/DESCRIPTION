@@ -21,7 +21,7 @@ Depends:
     randtoolbox,
     ncdf
 Suggests:
-    RMySQL
+    RMySQL,
     coda,
     MASS
 License: FreeBSD + file LICENSE
