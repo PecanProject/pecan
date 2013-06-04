@@ -19,7 +19,8 @@ Depends:
     XML,
     ggplot2,
     randtoolbox,
-    ncdf
+    ncdf4,
+    udunits2
 Suggests:
     RMySQL,
     coda,
