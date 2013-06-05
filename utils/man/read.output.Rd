@@ -1,6 +1,6 @@
 \name{read.output}
 \alias{read.output}
-\title{Read output}
+\title{Read model output}
 \usage{
   read.output(run.id, outdir, model, start.year = NA,
     end.year = NA, variables = "GPP")
@@ -12,12 +12,12 @@
   sent to}
 
   \item{model}{name of simulation model currently accepts
-  ("ED", "SIPNET", "BIOCRO")}
+  ("ED2", "SIPNET", "BIOCRO")}
 
   \item{start.year}{first year of output to read (should be
   greater than )}
 
-  \item{end.year}{}
+  \item{end.year}{last year of output to read}
 
   \item{variables}{variables to be read from model output}
 }
