@@ -68,13 +68,15 @@ check.settings <- function(settings) {
     settings$database$dbname <- settings$database$name
     settings$database$name <- NULL
   }
+  require(PEcAn.DB)
   if (!PEcAn.DB::db.exists(params=settings$database, write=settings$bety$write)) {
     logger.severe("Could not connect to the database.")
   }
 
   # TODO check userid and userpassword
-
+  
   # check database version
+
   versions <- db.query("SELECT version FROM schema_migrations WHERE version >= 20130425152503;", params=settings$database)[['version']]
   if (length(versions) == 0) {
     logger.severe("Database is out of date, please update the database.")
