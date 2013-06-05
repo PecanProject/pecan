@@ -1,23 +1,20 @@
 \name{read.output}
 \alias{read.output}
-\title{Read output}
+\title{Read model output}
 \usage{
-  read.output(run.id, outdir, model, start.year = NA,
+  read.output(runid, outdir, start.year = NA,
     end.year = NA, variables = "GPP")
 }
 \arguments{
-  \item{run.id}{the id distiguishing the model run.}
+  \item{runid}{the id distiguishing the model run.}
 
   \item{outdir}{the directory that the model's output was
   sent to}
 
-  \item{model}{name of simulation model currently accepts
-  ("ED", "SIPNET", "BIOCRO")}
-
   \item{start.year}{first year of output to read (should be
   greater than )}
 
-  \item{end.year}{}
+  \item{end.year}{last year of output to read}
 
   \item{variables}{variables to be read from model output}
 }
@@ -42,6 +39,6 @@
   variables} documentation
 }
 \author{
-  Michael Dietze
+  Michael Dietze, David LeBauer
 }
 

@@ -18,29 +18,30 @@ test_that("a valid .nc file is produced for each corresponding ED2 output", {
   expect_equal(as.numeric(ncyears), as.numeric(h5years))
 })
 
+nc_files <- dir(outdir, pattern = ".nc", full.names = TRUE)
+tmp.nc <- nc_open(nc_files[1])
+vars <- tmp.nc$var
+dims <- tmp.nc$dim
+
 test_that("nc files have correct attributes",{
-  nc_files <- dir(outdir, pattern = ".nc", full.names = TRUE)
-  tmp.nc <- nc_open(nc_files[1])
   expect_equal(class(tmp.nc), "ncdf4")
   time <- ncvar_get(tmp.nc, "time")
   gpp  <- ncvar_get(tmp.nc, "GPP")
-  
+  nee  <- ncvar_get(tmp.nc, "NEE")
   expect_equal(length(gpp), length(time))
-  
-  vars <- tmp.nc$var
-  dims <- tmp.nc$dim
-  
   
 })
 
-test_that("dimenstions have MsTMIP standard units"),{
+
+
+test_that("dimenstions have MsTMIP standard units",{
   
   expect_equal(dims$lat$units, "degrees_east")
   expect_equal(dims$lon$units, "degrees_north")
   expect_true(grepl("days since", dims$time$units))
-}
+})
 
-test_that("variables have MsTMIP standard units"),{
+test_that("variables have MsTMIP standard units",{
   data(mstmip_vars, package = "PEcAn.utils")
   
   
@@ -59,7 +60,7 @@ test_that("variables have MsTMIP standard units"),{
   ##     expect_true(
   ##       var$units == mstmip_vars[mstmip_vars$Variable.Name == var$name, "Units"]
   ##       )
-}
-
-
+  
+  
+  
 })
