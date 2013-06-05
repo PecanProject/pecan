@@ -20,18 +20,18 @@ Depends:
     ggplot2,
     randtoolbox,
     ncdf4,
-    udunits2
+    udunits2,
+    RMySQL
 Suggests:
-    RMySQL,
     coda,
-    MASS
+    MASS,
+    PEcAn.DB
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Require: hdf5, plyr
 Collate:
-    'approx.posterior.R'
     'plots.R'
     'r2bugs.distributions.R'
     'read.output.R'
