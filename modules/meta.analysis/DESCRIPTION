@@ -32,3 +32,4 @@ Collate:
     'meta.analysis.write.model.R'
     'run.meta.analysis.R'
     'single.MA.R'
+    'approx.posterior.R'
