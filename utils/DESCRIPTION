@@ -24,7 +24,6 @@ Depends:
 Suggests:
     coda,
     MASS,
-    PEcAn.DB,
     RMySQL
 License: FreeBSD + file LICENSE
 Copyright: Authors
