@@ -1,11 +1,11 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#---------------------------------------------------------------------##' Modified from Code to convert ED2.1's HDF5 output into the NACP Intercomparison format (ALMA using netCDF)
+                                        ##-------------------------------------------------------------------------------
+## Copyright (c) 2012 University of Illinois, NCSA.
+## All rights reserved. This program and the accompanying materials
+## are made available under the terms of the 
+## University of Illinois/NCSA Open Source License
+## which accompanies this distribution, and is available at
+## http://opensource.ncsa.illinois.edu/license.html
+                                        #---------------------------------------------------------------------##' Modified from Code to convert ED2.1's HDF5 output into the NACP Intercomparison format (ALMA using netCDF)
 ##' 
 ##' @name model2netcdf.ED2
 ##' @title Code to convert ED2's -T- HDF5 output into netCDF format
@@ -84,7 +84,7 @@ model2netcdf.ED2 <- function(outdir) {
     }
   }
   
-  # make sure only to convert those values that are not -999
+                                        # make sure only to convert those values that are not -999
   conversion <- function(col, mult) {
     out[[col]][out[[col]] != -999] <- out[[col]][out[[col]] != -999] * mult
     return(out)
@@ -169,7 +169,7 @@ model2netcdf.ED2 <- function(outdir) {
           }
         }
       } else {
-        # no polygons, just time vs depth?
+                                        # no polygons, just time vs depth?
         fdepth <- rep(0, ncol(soiltemp))
         tdepth <- rep(0, ncol(soiltemp))
         for(t in 1:ncol(soiltemp)){ #time
@@ -210,7 +210,7 @@ model2netcdf.ED2 <- function(outdir) {
       ##           getHdf5Data(ncT, 'AVG_PAR_BEAM')+
       ##           getHdf5Data(ncT, 'AVG_PAR_DIFFUSE'),22,row) ## Swdown
       out <- add(getHdf5Data(ncT, 'AVG_PAR_BEAM')+
-                   getHdf5Data(ncT, 'AVG_PAR_DIFFUSE'),22,row) ## Swdown
+                 getHdf5Data(ncT, 'AVG_PAR_DIFFUSE'),22,row) ## Swdown
       out <- add(getHdf5Data(ncT, 'AVG_ATM_TMP'),23,row) ## Tair
       out <- add(getHdf5Data(ncT, 'AVG_VELS'),24,row) ## Wind
       ##out <- add(getHdf5Data(ncT, 'AVG_RLONG')-getHdf5Data(ncT, 'AVG_RLONGUP'),25,row) ## Lwnet
@@ -253,7 +253,7 @@ model2netcdf.ED2 <- function(outdir) {
       row <- row + block
     }  ## end file loop 
     
-    #out[[10]] <- out[[10]]*1.2e-8  
+                                        #out[[10]] <- out[[10]]*1.2e-8  
     ## TODO see bug #1174
     ## for(t in 1:dim(out[[37]])[1]){
     ##  for(p in 1:dim(out[[37]])[2]){
@@ -264,97 +264,100 @@ model2netcdf.ED2 <- function(outdir) {
     ## declare variables
     ## need to SHIFT for partial years **********************
     t <- ncdim_def(name = "time",
-                   units = paste0("days since ",
-                                  year(settings$run$start.date), "-01-01 00:00:00"),
-                   vals = 1:dim(out[[1]])[1]) / block,
-    calendar = "standard", unlim = TRUE)
+                   units = paste0("days since ", settings$run$start.date),
+                   vals = 1:dim(out[[1]])[1] / block,
+                   calendar = "standard", unlim = TRUE)
+    
+    zg <- ncdim_def("SoilLayerMidpoint", "meters", slzdata[1:length(dz)] + dz / 2)
+    lat <- ncdim_def("lat", "degrees_east",
+                     vals =  as.numeric(settings$run$site$lat),
+                     longname = "station_latitude") 
+    lon <- ncdim_def("lon", "degrees_north",
+                     vals = as.numeric(settings$run$site$lon),
+                     longname = "station_longitude")
 
-zg <- ncdim_def("SoilLayerMidpoint","meters",slzdata[1:length(dz)]+dz/2)
-lat <- ncdim_def("lat", "degrees_east",
-                 vals =  as.numeric(settings$run$site$lat),
-                 longname = "station_latitude") 
-lon <- ncdim_def("lon", "degrees_north",
-                 vals = as.numeric(settings$run$site$lon),
-                 longname = "station_longitude")
+    ## Conversion factor for umol C -> kg C
+    Mc <- 12.017 #molar mass of C, g/mol
+    umol2kg_C <- Mc * ud.convert(1, "umol", "mol") * ud.convert(1, "g", "kg")
 
-var <- list()
-out <- conversion( 1, 0.1)     ## tC/ha     -> kg/m2
-var[[1]]  <- ncvar_def("AbvGrndWood","kg m-2", list(lat, lon, t),-999)
-out <- conversion( 2, 1.2e-8)  ## umol/m2 s-1 -> kg/m2 s-1
-var[[2]]  <- ncvar_def("AutoResp","kg m-2 s-1", list(lat, lon, t),-999)  # Edited by SPS.  Changed from kg/m2 s-12 to kg/m2 s-1
-var[[3]]  <- ncvar_def("CarbPools","kg m-2", list(lat, lon, t),-999)
-var[[4]]  <- ncvar_def("CO2CAS","ppmv", list(lat, lon, t),-999)
-var[[5]]  <- ncvar_def("CropYield","kg m-2", list(lat, lon, t),-999)
-out <- conversion( 6, 1.2e-8)  ## umol/m2 s-1 -> kg m-2 s-1
-var[[6]]  <- ncvar_def("GPP","kg m-2 s-12", list(lat, lon, t),-999)     # Edited by SPS.  Changed from kg m-2 s-12 to kg m-2 s-1
-out <- conversion( 7, 1.2e-8)  ## umol/m2 s-1 -> kg m-2 s-1
-var[[7]]  <- ncvar_def("HeteroResp","kg m-2 s-1", list(lat, lon, t),-999) # Edited by SPS.  Changed from kg m-2 s-12 to kg m-2 s-1
-out <- conversion( 8, 1.2e-8)  ## umol/m2 s-1 -> kg m-2 s-1
-var[[8]]  <- ncvar_def("NEE","kg m-2 s-1", list(lat, lon, t),-999)     # Edited by SPS.  Changed from kg m-2 s-12 to kg m-2 s-1
-out <- conversion( 9, 1.2e-8)  ## umol/m2 s-1 -> kg m-2 s-1
-var[[9]]  <- ncvar_def("NPP","kg m-2 s-1", list(lat, lon, t),-999)     # Edited by SPS.  Changed from kg m-2 s-12 to kg m-2 s-1
-out <- conversion(10, 1.2e-8)  ## umol/m2 s-1 -> kg m-2 s-1
-var[[10]] <- ncvar_def("TotalResp","kg m-2 s-1", list(lat, lon, t),-999) # Edited by SPS.  Changed from kg m-2 s-12 to kg m-2 s-1
-var[[11]] <- ncvar_def("TotLivBiom","kg m-2", list(lat, lon, t),-999) # Edited by SPS.  Changed from kg m-2 s-2 to kg m-2
-var[[12]] <- ncvar_def("TotSoilCarb","kg m-2", list(lat, lon, t),-999)
-var[[13]] <- ncvar_def("Fdepth","m", list(lat, lon, t),-999)
-var[[14]] <- ncvar_def("SnowDepth","m", list(lat, lon, t),-999)
-var[[15]] <- ncvar_def("SnowFrac","-", list(lat, lon, t),-999)
-var[[16]] <- ncvar_def("Tdepth","m", list(lat, lon, t),-999)
-var[[17]] <- ncvar_def("CO2air","ppmv", list(lat, lon, t),-999)
-var[[18]] <- ncvar_def("Lwdown","W m-2", list(lat, lon, t),-999)
-var[[19]] <- ncvar_def("Psurf","Pa", list(lat, lon, t),-999)
-var[[20]] <- ncvar_def("Qair","kg kg-1", list(lat, lon, t),-999)
-var[[21]] <- ncvar_def("Rainf","kg m-2 s-1", list(lat, lon, t),-999)
-var[[22]] <- ncvar_def("Swdown","W m-2", list(lat, lon, t),-999)
-out <- checkTemp(23)
-var[[23]] <- ncvar_def("Tair","K", list(lat, lon, t),-999)
-var[[24]] <- ncvar_def("Wind","W m-2", list(lat, lon, t),-999)
-var[[25]] <- ncvar_def("Lwnet","W m-2", list(lat, lon, t),-999)
-var[[26]] <- ncvar_def("Qg","W m-2", list(lat, lon, t),-999)
-var[[27]] <- ncvar_def("Qh","W m-2", list(lat, lon, t),-999)
-var[[28]] <- ncvar_def("Qle","W m-2", list(lat, lon, t),-999)
-var[[29]] <- ncvar_def("Swnet","W m-2", list(lat, lon, t),-999)
-var[[30]] <- ncvar_def("RootMoist","kg m-2", list(lat, lon, t),-999)
-var[[31]] <- ncvar_def("Tveg","kg m-2 s-1", list(lat, lon, t),-999)
-var[[32]] <- ncvar_def("WaterTableD","m", list(lat, lon, t),-999)
-var[[33]] <- ncvar_def("fPAR","-", list(lat, lon, t),-999)
-var[[34]] <- ncvar_def("LAI","m2 m-2", list(lat, lon, t),-999)
-##var[[35]] <- ncvar_def("SMFrozFrac","-",list(t,zg),-999)
-##var[[36]] <- ncvar_def("SMLiqFrac","-",list(t,zg),-999)
-var[[35]] <- ncvar_def("SMFrozFrac","-",list(t),-999)
-var[[36]] <- ncvar_def("SMLiqFrac","-",list(t),-999)
-var[[37]] <- ncvar_def("SoilMoist","kg m-2",list(t,zg),-999)
-out <- checkTemp(38)
-var[[38]] <- ncvar_def("SoilTemp","K",list(t,zg),-999)
-var[[39]] <- ncvar_def("SoilWet","-",list(t,zg),-999)
-var[[40]] <- ncvar_def("Albedo","-", list(lat, lon, t),-999)
-out <- checkTemp(41)
-var[[41]] <- ncvar_def("SnowT","K", list(lat, lon, t),-999)
-var[[42]] <- ncvar_def("SWE","kg m-2", list(lat, lon, t),-999)
-out <- checkTemp(43)
-var[[43]] <- ncvar_def("VegT","K", list(lat, lon, t),-999)
-var[[44]] <- ncvar_def("Evap","kg m-2 s-1", list(lat, lon, t),-999)
-var[[45]] <- ncvar_def("Qs","kg m-2 s-1", list(lat, lon, t),-999)
-var[[46]] <- ncvar_def("Qsb","kg m-2 s-1", list(lat, lon, t),-999)
+    var <- list()
+    out <- conversion( 1, ud.convert(1, "t ha-1", "kg m-2"))     ## tC/ha     -> kg/m2
+    var[[1]]  <- ncvar_def("AbvGrndWood","kg m-2", list(lat, lon, t),-999)
+    out <- conversion( 2, umol2kg_C)  ## umol/m2 s-1 -> kg/m2 s-1
+    var[[2]]  <- ncvar_def("AutoResp","kg m-2 s-1", list(lat, lon, t),-999)  # Edited by SPS.  Changed from kg/m2 s-12 to kg/m2 s-1
+    var[[3]]  <- ncvar_def("CarbPools","kg m-2", list(lat, lon, t),-999)
+    var[[4]]  <- ncvar_def("CO2CAS","ppmv", list(lat, lon, t),-999)
+    var[[5]]  <- ncvar_def("CropYield","kg m-2", list(lat, lon, t),-999)
+    out <- conversion( 6, umol2kg_C)  ## umol/m2 s-1 -> kg m-2 s-1
+    var[[6]]  <- ncvar_def("GPP","kg m-2 s-12", list(lat, lon, t),-999)     # Edited by SPS.  Changed from kg m-2 s-12 to kg m-2 s-1
+    out <- conversion( 7, umol2kg_C)  ## umol/m2 s-1 -> kg m-2 s-1
+    var[[7]]  <- ncvar_def("HeteroResp","kg m-2 s-1", list(lat, lon, t),-999) # Edited by SPS.  Changed from kg m-2 s-12 to kg m-2 s-1
+    out <- conversion( 8, umol2kg_C)  ## umol/m2 s-1 -> kg m-2 s-1
+    var[[8]]  <- ncvar_def("NEE","kg m-2 s-1", list(lat, lon, t),-999)     # Edited by SPS.  Changed from kg m-2 s-12 to kg m-2 s-1
+    out <- conversion( 9, umol2kg_C)  ## umol/m2 s-1 -> kg m-2 s-1
+    var[[9]]  <- ncvar_def("NPP","kg m-2 s-1", list(lat, lon, t),-999)     # Edited by SPS.  Changed from kg m-2 s-12 to kg m-2 s-1
+    out <- conversion(10, umol2kg_C)  ## umol/m2 s-1 -> kg m-2 s-1
+    var[[10]] <- ncvar_def("TotalResp","kg m-2 s-1", list(lat, lon, t),-999) # Edited by SPS.  Changed from kg m-2 s-12 to kg m-2 s-1
+    var[[11]] <- ncvar_def("TotLivBiom","kg m-2", list(lat, lon, t),-999) # Edited by SPS.  Changed from kg m-2 s-2 to kg m-2
+    var[[12]] <- ncvar_def("TotSoilCarb","kg m-2", list(lat, lon, t),-999)
+    var[[13]] <- ncvar_def("Fdepth","m", list(lat, lon, t),-999)
+    var[[14]] <- ncvar_def("SnowDepth","m", list(lat, lon, t),-999)
+    var[[15]] <- ncvar_def("SnowFrac","-", list(lat, lon, t),-999)
+    var[[16]] <- ncvar_def("Tdepth","m", list(lat, lon, t),-999)
+    var[[17]] <- ncvar_def("CO2air","ppmv", list(lat, lon, t),-999)
+    var[[18]] <- ncvar_def("Lwdown","W m-2", list(lat, lon, t),-999)
+    var[[19]] <- ncvar_def("Psurf","Pa", list(lat, lon, t),-999)
+    var[[20]] <- ncvar_def("Qair","kg kg-1", list(lat, lon, t),-999)
+    var[[21]] <- ncvar_def("Rainf","kg m-2 s-1", list(lat, lon, t),-999)
+    var[[22]] <- ncvar_def("Swdown","W m-2", list(lat, lon, t),-999)
+    out <- checkTemp(23)
+    var[[23]] <- ncvar_def("Tair","K", list(lat, lon, t),-999)
+    var[[24]] <- ncvar_def("Wind","W m-2", list(lat, lon, t),-999)
+    var[[25]] <- ncvar_def("Lwnet","W m-2", list(lat, lon, t),-999)
+    var[[26]] <- ncvar_def("Qg","W m-2", list(lat, lon, t),-999)
+    var[[27]] <- ncvar_def("Qh","W m-2", list(lat, lon, t),-999)
+    var[[28]] <- ncvar_def("Qle","W m-2", list(lat, lon, t),-999)
+    var[[29]] <- ncvar_def("Swnet","W m-2", list(lat, lon, t),-999)
+    var[[30]] <- ncvar_def("RootMoist","kg m-2", list(lat, lon, t),-999)
+    var[[31]] <- ncvar_def("Tveg","kg m-2 s-1", list(lat, lon, t),-999)
+    var[[32]] <- ncvar_def("WaterTableD","m", list(lat, lon, t),-999)
+    var[[33]] <- ncvar_def("fPAR","-", list(lat, lon, t),-999)
+    var[[34]] <- ncvar_def("LAI","m2 m-2", list(lat, lon, t),-999)
+    ##var[[35]] <- ncvar_def("SMFrozFrac","-",list(lat, lon, zg, t),-999)
+    ##var[[36]] <- ncvar_def("SMLiqFrac","-",list(lat, lon, zg, t),-999)
+    var[[35]] <- ncvar_def("SMFrozFrac","-",list(lat, lon, t),-999)
+    var[[36]] <- ncvar_def("SMLiqFrac","-",list(lat, lon, t),-999)
+    var[[37]] <- ncvar_def("SoilMoist","kg m-2",list(lat, lon, zg, t),-999)
+    out <- checkTemp(38)
+    var[[38]] <- ncvar_def("SoilTemp","K",list(lat, lon, zg, t),-999)
+    var[[39]] <- ncvar_def("SoilWet","-",list(lat, lon, zg, t),-999)
+    var[[40]] <- ncvar_def("Albedo","-", list(lat, lon, t),-999)
+    out <- checkTemp(41)
+    var[[41]] <- ncvar_def("SnowT","K", list(lat, lon, t),-999)
+    var[[42]] <- ncvar_def("SWE","kg m-2", list(lat, lon, t),-999)
+    out <- checkTemp(43)
+    var[[43]] <- ncvar_def("VegT","K", list(lat, lon, t),-999)
+    var[[44]] <- ncvar_def("Evap","kg m-2 s-1", list(lat, lon, t),-999)
+    var[[45]] <- ncvar_def("Qs","kg m-2 s-1", list(lat, lon, t),-999)
+    var[[46]] <- ncvar_def("Qsb","kg m-2 s-1", list(lat, lon, t),-999)
 
 
-## write ALMA
-nc <- nc_create(file.path(outdir, paste(yrs[y], "nc", sep=".")), var)
-for(i in 1:length(var)){
-  ## TODO see bug #1174
-  if (i != 37 && i != 38 && i != 39) {
-    ncvar_put(nc,var[[i]],out[[i]])  
-  }
-}
-nc_close(nc)
-closeAllConnections()
+    ## write ALMA
+    nc <- nc_create(file.path(outdir, paste(yrs[y], "nc", sep=".")), var)
+    for(i in 1:length(var)){
+      ## TODO see bug #1174
+      if (i != 37 && i != 38 && i != 39) {
+        ncvar_put(nc,var[[i]],out[[i]])  
+      }
+    }
+    nc_close(nc)
+    closeAllConnections()
   }  ## end year loop
 
-closeAllConnections() 
+  closeAllConnections() 
 
 }  ## end model2netcdf.ED2
-#==================================================================================================#
+                                        #==================================================================================================#
 
 ####################################################################################################
 ### EOF.  End of R script file.              
