@@ -82,7 +82,9 @@ check.settings <- function(settings) {
     logger.severe("Database is out of date, please update the database.")
   }
   if (length(versions) > 1) {
-    logger.warn("Database is more recent than PEcAn expects this could result in PEcAn not working as expected.")
+    logger.warn("Database is more recent than PEcAn expects this could result in PEcAn not working as expected.",
+                "If PEcAn fails, either revert database OR update PEcAn and edit expected database version in",
+                "utils/R/read.settings.R (Redmine #1673).")
   } else {
     logger.debug("Database is correct version", versions[1], ".")
   }
