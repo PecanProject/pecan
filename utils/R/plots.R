@@ -218,54 +218,7 @@ plot.prior.density <- function(prior.density, base.plot = NULL, prior.color = 'b
                                      color = prior.color)
   return(new.plot)
 }
-#==================================================================================================#
 
-
-##--------------------------------------------------------------------------------------------------#
-##' Returns a data frame from \link{stats::density} function 
-##'
-##' @name create.density.df
-##' @title Create Density Data Frame from Sample
-##' @param samps a vector of samples from a distribution
-##' @param zero.bounded 
-##' @param distribution list with elements distn, parama, paramb,
-##' e.g. \code{list('norm', 0, 1)}
-##' @author David LeBauer
-##' @export
-##' @return data frame with x and y = dens(x)
-##' @examples
-##' prior.df <- create.density.df(distribution = list('norm',0,1))
-##' plot(prior.df)
-##' samp.df <- create.density.df(samps = rnorm(100))
-##' lines(samp.df)
-create.density.df <- function(samps = NULL,
-                              zero.bounded = FALSE,
-                              distribution = NULL,
-                              n = 1000, ...) {
-  samp.exists <- !is.null(samps)
-  dist.exists <- !is.null(distribution)
-  if(identical(samp.exists, dist.exists)){
-    stop('create.density.df requires one and only one of:
-             samps: a vector of samples, e.g. MCMC chain,
-               OR
-             distribution: a named distribution supported by R')
-  }
-  if(samp.exists){
-    if(zero.bounded) {
-      new.density <- zero.bounded.density(samps, n = 1000, ...)
-    } else {    
-      new.density <- density(samps, n = 1000, ...)
-    }
-    density.df <- with(new.density,
-                       data.frame(x = x,
-                                  y = y))
-  }
-  
-  if(dist.exists) {
-    density.df <- do.call(pr.dens, c(distribution[1:3]))
-  }
-  return(density.df)
-}
 ##==================================================================================================#
 
 
