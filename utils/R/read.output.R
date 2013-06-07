@@ -110,15 +110,12 @@ read.output <- function(run.id, outdir, model, start.year=NA,
 ##' @name read.outputs
 ##' @param model name of simulation model currently accepts ("ED", "SIPNET", "BIOCRO")
 ##' @param settings settings loaded from pecan.xml
+##' @param ... arguments passed to \code{\link{read.output}}
 ##' @export
 ##' @author Rob Kooper
-read.outputs <- function(model, settings) {
+read.outputs <- function(model, settings, ...) {
   for (runid in readLines(con=file.path(settings$rundir, "runs.txt"))) {
-    read.output(runid, file.path(settings$run$host$outdir, runid), model)
+    read.output(runid, file.path(settings$run$host$outdir, runid), model, ...)
   }
 }
-#==================================================================================================#
-
-####################################################################################################
-### EOF.  End of R script file.            	
 ####################################################################################################

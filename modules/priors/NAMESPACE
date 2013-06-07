@@ -1,2 +1,6 @@
+export(create.density.df)
 export(fit.dist)
+export(get.sample)
+export(pr.dens)
+export(pr.samp)
 export(prior.fn)

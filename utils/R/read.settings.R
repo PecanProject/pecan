@@ -68,19 +68,23 @@ check.settings <- function(settings) {
     settings$database$dbname <- settings$database$name
     settings$database$name <- NULL
   }
+  require(PEcAn.DB)
   if (!PEcAn.DB::db.exists(params=settings$database, write=settings$bety$write)) {
     logger.severe("Could not connect to the database.")
   }
 
   # TODO check userid and userpassword
-
+  
   # check database version
+
   versions <- db.query("SELECT version FROM schema_migrations WHERE version >= 20130425152503;", params=settings$database)[['version']]
   if (length(versions) == 0) {
     logger.severe("Database is out of date, please update the database.")
   }
   if (length(versions) > 1) {
-    logger.warn("Database is more recent than PEcAn expects this could result in PEcAn not working as expected.")
+    logger.warn("Database is more recent than PEcAn expects this could result in PEcAn not working as expected.",
+                "If PEcAn fails, either revert database OR update PEcAn and edit expected database version in",
+                "utils/R/read.settings.R (Redmine #1673).")
   } else {
     logger.debug("Database is correct version", versions[1], ".")
   }
@@ -330,7 +334,7 @@ check.settings <- function(settings) {
 
   # check for workflow defaults
   if (settings$bety$write) {
-    if (!'workflow' %in% names(settings)) {
+    if ("model" %in% names(settings)  && !'workflow' %in% names(settings)) {
       con <- db.open(settings$database)
       if(!is.character(con)){
         db.query(paste("INSERT INTO workflows (site_id, model_id, hostname, start_date, end_date, started_at, created_at, folder) values ('",

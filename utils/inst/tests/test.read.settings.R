@@ -9,10 +9,9 @@
 ## require(XML)
 
 test_that("read.settings works ",{
-  test.output <- tempfile()
   test.settings <- system.file("extdata/test.settings.xml", package = "PEcAn.utils")
-  settings <- read.settings(test.settings, outputfile = test.output)
-  expect_true(file.remove(test.output))
+  settings <- read.settings(test.settings, outputfile = "pecan.xml")
+  expect_true(file.remove(file.path(settings$outdir, "pecan.xml")))
 })
 
 
