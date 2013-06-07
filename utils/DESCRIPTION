@@ -20,11 +20,11 @@ Depends:
     ggplot2,
     randtoolbox,
     ncdf4,
+    RMySQL, 
     udunits2
 Suggests:
     coda,
-    MASS,
-    RMySQL
+    MASS
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
