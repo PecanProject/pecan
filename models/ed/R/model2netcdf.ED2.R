@@ -84,8 +84,8 @@ model2netcdf.ED2 <- function(outdir) {
     }
   }
   
-                                        # make sure only to convert those values that are not -999
   conversion <- function(col, mult) {
+    ## make sure only to convert those values that are not -999
     out[[col]][out[[col]] != -999] <- out[[col]][out[[col]] != -999] * mult
     return(out)
   }
