@@ -17,10 +17,6 @@ library(XML)
 ##'
 ##' Expected fields in settings file are:
 ##' - pfts with at least one pft defined
-##' - database
-##' - model
-##' - run with the following fields
-##' -- site with id
 ##' @title Check Settings
 ##' @param settings settings file
 ##' @return will return the updated settings values with defaults set.
@@ -47,8 +43,11 @@ check.settings <- function(settings) {
 
   # check database information
   if (is.null(settings$database)) {
-    logger.severe("No database information specified.")
+    settings$database <- list(username = "bety", password = "bety", 
+                              host = "localhost", dbname = "bety", driver = "MySQL")
+    logger.info("No database information specified; using default bety bety bety.")
   }
+  
   if (is.null(settings$database$driver)) {
     settings$database$driver <- "MySQL"
     logger.info("Using", settings$database$driver, "as database driver.")
@@ -68,25 +67,35 @@ check.settings <- function(settings) {
     settings$database$dbname <- settings$database$name
     settings$database$name <- NULL
   }
-  require(PEcAn.DB)
-  if (!PEcAn.DB::db.exists(params=settings$database, write=settings$bety$write)) {
-    logger.severe("Could not connect to the database.")
+  if(paste0("R", settings$database$driver) %in% rownames(installed.packages())){
+    require(PEcAn.DB)
+    if (!db.exists(params=settings$database, write=settings$bety$write)) {
+      logger.warn("Could not connect to the database.")
+      database <- FALSE
+    } else {
+      logger.info("Successfully connected to database")
+      database <- TRUE
+    }
+  } else {
+    database <- FALSE
   }
 
   # TODO check userid and userpassword
   
   # check database version
-
-  versions <- db.query("SELECT version FROM schema_migrations WHERE version >= 20130425152503;", params=settings$database)[['version']]
-  if (length(versions) == 0) {
-    logger.severe("Database is out of date, please update the database.")
+  if(database){
+    versions <- db.query("SELECT version FROM schema_migrations WHERE version >= 20130425152503;", params=settings$database)[['version']]
+    if (length(versions) == 0) {
+      logger.severe("Database is out of date, please update the database.")
+    }
+    if (length(versions) > 1) {
+      logger.warn("Database is more recent than PEcAn expects this could result in PEcAn not working as expected.",
+                  "If PEcAn fails, either revert database OR update PEcAn and edit expected database version in",
+                  "utils/R/read.settings.R (Redmine #1673).")
+    } else {
+      logger.debug("Database is correct version", versions[1], ".")
+    }
   }
-  if (length(versions) > 1) {
-    logger.warn("Database is more recent than PEcAn expects this could result in PEcAn not working as expected.")
-  } else {
-    logger.debug("Database is correct version", versions[1], ".")
-  }
-
   # make sure there are pfts defined
   if (is.null(settings$pfts) || (length(settings$pfts) == 0)) {
     logger.severe("No PFTS specified.")
@@ -189,10 +198,13 @@ check.settings <- function(settings) {
   }
 
   # check modelid with values
+  if(!is.null(settings$model)){
   if (is.null(settings$model$id)) {
     settings$model$id <- -1
   } else if (settings$model$id >= 0) {
-    model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database)
+    if(database){
+      model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database)      
+    }
     if(nrow(model) == 0) {
       logger.error("There is no record of model_id = ", settings$model$id, "in database")
     }
@@ -218,8 +230,10 @@ check.settings <- function(settings) {
       logger.warn("Specified binary [", settings$model$binary, "] does not match model_path in database [", model$binary, "]")
     }
   }
+  }
 
   # check siteid with values
+  if(!is.null(settings$run$site)){
   if (is.null(settings$run$site$id)) {
     settings$run$site$id <- -1
   } else if (settings$run$site$id >= 0) {
@@ -259,10 +273,12 @@ check.settings <- function(settings) {
       logger.warn("Specified site lon [", settings$run$site$lon, "] does not match lon in database [", site$lon, "]")
     }
   }
+  }
 
   # check/create the pecan folder
   if (is.null(settings$outdir)) {
-    logger.severe("No output folder specified")
+    settings$outdir <- tempdir()
+    logger.info("No output folder specified, using", tempdir())
   } else {
     logger.debug("output folder =", settings$outdir)
   }
@@ -310,7 +326,11 @@ check.settings <- function(settings) {
     }
     out.dir <- settings$pfts[i]$pft$outdir
     if (!file.exists(out.dir) && !dir.create(out.dir, recursive=TRUE)) {
-      logger.severe("Could not create folder", out.dir)
+      if(identical(dir(out.dir), character(0))){
+        logger.warn(out.dir, "exists but is empty")
+      } else {
+        logger.severe("Could not create folder", out.dir)        
+      }
     }
   }
 
@@ -331,21 +351,22 @@ check.settings <- function(settings) {
   }
 
   # check for workflow defaults
-  if (settings$bety$write) {
-    if (!'workflow' %in% names(settings)) {
-      con <- db.open(settings$database)
-      if(!is.character(con)){
-        db.query(paste("INSERT INTO workflows (site_id, model_id, hostname, start_date, end_date, started_at, created_at, folder) values ('",
+  if(database){
+    if (settings$bety$write) {
+      if ("model" %in% names(settings) && !'workflow' %in% names(settings)) {
+        con <- db.open(settings$database)
+        if(!is.character(con)){
+          db.query(paste("INSERT INTO workflows (site_id, model_id, hostname, start_date, end_date, started_at, created_at, folder) values ('",
                          settings$run$site$id, "','", settings$model$id, "', '", settings$run$host$name, "', '",
                          settings$run$start.date, "', '", settings$run$end.date, "', NOW(), NOW(), '", dirname(settings$outdir), "')", sep=''), con)
-        settings$workflow$id = db.query(paste("SELECT LAST_INSERT_ID() AS ID"), con)[['ID']]
-        db.close(con)
+          settings$workflow$id = db.query(paste("SELECT LAST_INSERT_ID() AS ID"), con)[['ID']]
+          db.close(con)
+        }
       }
+    } else {
+      settings$workflow$id = "NA"
     }
-  } else {
-    settings$workflow$id = "NA"
   }
-
   # all done return cleaned up settings
   invisible(settings)
 }

@@ -10,6 +10,7 @@
 .utils.logger <- new.env() 
 .utils.logger$filename <- NA
 .utils.logger$console  <- TRUE
+.utils.logger$stderr   <- TRUE
 .utils.logger$level    <- 0
 
 ##' Prints a debug message.
@@ -132,7 +133,11 @@ logger.message <- function(level, msg, ...) {
 	    }
 		text <- sprintf("%s %-6s [%s] : %s\n", Sys.time(), level, func, paste(msg, ...))
 		if (.utils.logger$console) {
-			cat(text, file=stderr())
+			if (.utils.logger$stderr) {
+				cat(text, file=stderr())
+			} else {
+				cat(text, file=stdout())
+			}
 		}
 		if (!is.na(.utils.logger$filename)) {
 			cat(text, file=.utils.logger$filename, append=TRUE)
@@ -223,14 +228,16 @@ logger.getLevel <- function() {
 ##' Should the logging to be printed to the console or not.
 ##'
 ##' @param console set to true to print logging to console.
+##' @param stderr set to true (default) to use stderr instead of stdout for logging
 ##' @export
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
 ##' logger.setUseConsole(TRUE)
 ##' }
-logger.setUseConsole <- function(console) {
+logger.setUseConsole <- function(console, stderr=TRUE) {
 	.utils.logger$console <- console
+	.utils.logger$stderr <- stderr
 }
 
 ##' Configure logging output filename.
