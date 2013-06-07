@@ -4,6 +4,11 @@
 \usage{
   get.model.output.BIOCRO()
 }
+\arguments{
+  \item{settings}{list generated from
+  \code{\link{read.settings}} function applied to settings
+  file}
+}
 \description{
   Function to retrieve model output from local server
 }

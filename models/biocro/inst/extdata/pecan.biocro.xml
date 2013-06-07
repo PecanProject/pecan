@@ -108,7 +108,7 @@
       <sigma>-2</sigma>
       <sigma>-3</sigma>
     </quantiles>
-    <variable>Stem</variable>
+    <variable>StemBiom</variable>
     <start.year>2004</start.year>
     <end.year>2004</end.year>
   </sensitivity.analysis>

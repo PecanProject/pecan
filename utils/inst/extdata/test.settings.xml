@@ -22,6 +22,7 @@
     <random.effects>FALSE</random.effects>
   </meta.analysis>
   <sensitivity.analysis>
+    <variable>GPP</variable>
     <quantiles>
       <quantile/>
       <sigma>0</sigma>
