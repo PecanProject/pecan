@@ -28,6 +28,12 @@ check.settings <- function(settings) {
     return(0)
   }
 
+  ## allow PEcAn to run without database
+  if (is.null(settings$database)) {
+    database <- NULL
+    logger.warn("No database information specified; not using database.")
+    settings$bety$write <- FALSE
+  }
   # should runs be written to database
   if (is.null(settings$bety$write)) {
     logger.info("Writing all runs/configurations to database.")
@@ -41,12 +47,7 @@ check.settings <- function(settings) {
     }
   }
 
-  # check database information
-  if (is.null(settings$database)) {
-    settings$database <- list(username = "bety", password = "bety", 
-                              host = "localhost", dbname = "bety", driver = "MySQL")
-    logger.info("No database information specified; using default bety bety bety.")
-  }
+  ## check database settings
   
   if (is.null(settings$database$driver)) {
     settings$database$driver <- "MySQL"
