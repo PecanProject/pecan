@@ -334,7 +334,7 @@ check.settings <- function(settings) {
 
   # check for workflow defaults
   if (settings$bety$write) {
-    if (!'workflow' %in% names(settings)) {
+    if ("model" %in% names(settings)  && !'workflow' %in% names(settings)) {
       con <- db.open(settings$database)
       if(!is.character(con)){
         db.query(paste("INSERT INTO workflows (site_id, model_id, hostname, start_date, end_date, started_at, created_at, folder) values ('",
