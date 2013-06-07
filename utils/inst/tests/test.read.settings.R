@@ -8,7 +8,6 @@
 ## http://opensource.ncsa.illinois.edu/license.html
 ## #-------------------------------------------------------------------------------
 
-
 test.settings <- system.file("extdata/test.settings.xml", package = "PEcAn.utils")
 settings <- read.settings(test.settings)
 
@@ -33,31 +32,3 @@ context("check that example settings file is valid")
 
 settings.list <- read.settings(inputfile = system.file("extdata/test.settings.xml",
                                   package = "PEcAn.utils"))
-
-## test_that("test.settings.xml has an unique output directory for each PFT",{
-##   pfts <- unlist(settings.list$pfts)
-##   i.pfts   <- names(pfts) == "pft.name"
-##   i.outdir <- names(pfts) == "pft.outdir"
-##   expect_equal(sum(i.pfts), sum(i.outdir))
-##   expect_equal(sum(i.pfts), length(unique(pfts[i.pfts])))
-##   expect_equal(length(unique(pfts[i.pfts])), length(unique(pfts[i.outdir])))
-##   rm(i.pfts, i.outdir)      
-## })
-
-test_that("read.settings gives expected warnings",{
-  writeLines(con = "warning1144.xml",
-             text = "<pecan><pfts><pft>
-                      <name>testPFTname</name>
-                      <outdir>/tmp/</outdir></pft></pfts></pecan>") 
-  writeLines(con = "fixed1144.xml",
-             text = "<pecan> 
-                      <outdir>/tmp/</outdir>
-                      <pfts><pft>
-                        <name>testPFTname</name>
-                        <outdir>/tmp/</outdir>
-                      </pft></pfts></pecan>")
-  expect_output(read.settings("warning1144.xml"), "No output folder")
-  fixed1144 <- read.settings("fixed1144.xml")
-  expect_equal(fixed1144$pfts$pft$name, "testPFTname")
-  file.remove("bug1144.xml", "warning1144.xml", "fixed1144.xml")
-})
