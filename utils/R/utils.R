@@ -149,64 +149,6 @@ listToXml <- function(item, tag){
 #==================================================================================================#
 
 
-#--------------------------------------------------------------------------------------------------#
-##' Take n random samples from prior
-##'
-##' @title Sample from prior 
-##' @param distn 
-##' @param parama 
-##' @param paramb 
-##' @param n number of samples to return
-##' @return vector with n random samples from prior
-##' @export
-##' @seealso \{code{\link{get.sample}}
-#--------------------------------------------------------------------------------------------------#
-pr.samp <- function(distn, parama, paramb, n) {
-    do.call(paste('r', distn, sep=""), list(n, parama, paramb))
-}
-#==================================================================================================#
-
-
-#--------------------------------------------------------------------------------------------------#
-##' Take n random samples from prior
-##'
-##' Like pr.samp, with prior as a single input
-##' @title Get Samples
-##' @param prior data.frame with distn, parama, paramb
-##' @param n number of samples to return
-##' @return vector with n random samples from prior
-##' @seealso \link{pr.samp}
-##' @export
-#--------------------------------------------------------------------------------------------------#
-get.sample <- function(prior, n) {
-  do.call(paste('r', prior$distn, sep=""), list(n, prior$parama, prior$paramb))
-}
-#==================================================================================================#
-
-#--------------------------------------------------------------------------------------------------#
-##' Calculates density at n points across the range of a parameter
-##'
-##' For a distribution and parameters, return the density for values ranging from alpha to 1-alpha 
-##' @title Calculate densities
-##' @param distn distribution
-##' @param parama parameter
-##' @param paramb parameter
-##' @param n length of vector to be returned
-##' @param alpha sets range at which the distribution will be evaluated (e.g. from alpha to 1-alpha)
-##' @return dataframe with equally spaced x values and the corresponding densities
-##' @export
-##' @author David LeBauer
-pr.dens <- function(distn, parama, paramb, n = 1000, alpha = 0.001) {
-  alpha <- ifelse(alpha < 0.5, alpha, 1-alpha)
-  n <- ifelse(alpha == 0.5, 1, n)
-  range.x <- do.call(paste('q', distn, sep = ""), list(c(alpha, 1-alpha), parama, paramb))
-  seq.x   <- seq(from = range.x[1], to = range.x[2], length.out = n)
-  dens.df <- data.frame(x = seq.x,
-                        y = do.call(paste('d', distn, sep=""),
-                          list(seq.x, parama, paramb)))
-  return(dens.df)
-}
-#==================================================================================================#
 
 
 #--------------------------------------------------------------------------------------------------#

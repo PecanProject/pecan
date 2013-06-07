@@ -54,11 +54,12 @@ fit.dist <- function(trait.data, trait = colnames(trait.data),
                     b = as.numeric(parms[2]), 
                     n = ifelse(is.null(n), length(trait.data), n)))
 } 
-#==================================================================================================#
-#--------------------------------------------------------------------------------------------------#
 ##' Prior fitting function for optimization
 ##'
-##' This function is used within \cite{\link{DEoptim}} to parameterize a distribution to the central tendency and confidence interval of a parameter. This function is not very robust; currently it needs to be tweaked when distributions require starting values (e.g. beta, f, 
+##' This function is used within \code{\link{DEoptim}} to parameterize a distribution to the 
+##' central tendency and confidence interval of a parameter. 
+##' This function is not very robust; currently it needs to be tweaked when distributions
+##' require starting values (e.g. beta, f)
 ##' @title prior.fn 
 ##' @param parms target for optimization
 ##' @param x vector with c(lcl, ucl, ct) lcl / ucl = confidence limits, ct = entral tendency 
@@ -142,9 +143,110 @@ prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NU
   } 
   return(sum(abs(c(lcl, ucl, ct) - x)))
 }
+#--------------------------------------------------------------------------------------------------#
+##' Take n random samples from prior
+##'
+##' @title Sample from prior 
+##' @param distn 
+##' @param parama 
+##' @param paramb 
+##' @param n number of samples to return
+##' @return vector with n random samples from prior
+##' @export
+##' @seealso \{code{\link{get.sample}}
+#--------------------------------------------------------------------------------------------------#
+pr.samp <- function(distn, parama, paramb, n) {
+  do.call(paste('r', distn, sep=""), list(n, parama, paramb))
+}
 #==================================================================================================#
-                                       
-                                       
+
+
+#--------------------------------------------------------------------------------------------------#
+##' Take n random samples from prior
+##'
+##' Like pr.samp, with prior as a single input
+##' @title Get Samples
+##' @param prior data.frame with distn, parama, paramb
+##' @param n number of samples to return
+##' @return vector with n random samples from prior
+##' @seealso \link{pr.samp}
+##' @export
+#--------------------------------------------------------------------------------------------------#
+get.sample <- function(prior, n) {
+  do.call(paste('r', prior$distn, sep=""), list(n, prior$parama, prior$paramb))
+}
+#==================================================================================================#
+
+#--------------------------------------------------------------------------------------------------#
+##' Calculates density at n points across the range of a parameter
+##'
+##' For a distribution and parameters, return the density for values ranging from alpha to 1-alpha 
+##' @title Calculate densities
+##' @param distn distribution
+##' @param parama parameter
+##' @param paramb parameter
+##' @param n length of vector to be returned
+##' @param alpha sets range at which the distribution will be evaluated (e.g. from alpha to 1-alpha)
+##' @return dataframe with equally spaced x values and the corresponding densities
+##' @export
+##' @author David LeBauer
+pr.dens <- function(distn, parama, paramb, n = 1000, alpha = 0.001) {
+  alpha <- ifelse(alpha < 0.5, alpha, 1-alpha)
+  n <- ifelse(alpha == 0.5, 1, n)
+  range.x <- do.call(paste('q', distn, sep = ""), list(c(alpha, 1-alpha), parama, paramb))
+  seq.x   <- seq(from = range.x[1], to = range.x[2], length.out = n)
+  dens.df <- data.frame(x = seq.x,
+                        y = do.call(paste('d', distn, sep=""),
+                                    list(seq.x, parama, paramb)))
+  return(dens.df)
+}
+#==================================================================================================#
+##--------------------------------------------------------------------------------------------------#
+##' Returns a data frame from \link{stats::density} function 
+##'
+##' @name create.density.df
+##' @title Create Density Data Frame from Sample
+##' @param samps a vector of samples from a distribution
+##' @param zero.bounded 
+##' @param distribution list with elements distn, parama, paramb,
+##' e.g. \code{list('norm', 0, 1)}
+##' @author David LeBauer
+##' @export
+##' @return data frame with x and y = dens(x)
+##' @examples
+##' prior.df <- create.density.df(distribution = list('norm',0,1))
+##' plot(prior.df)
+##' samp.df <- create.density.df(samps = rnorm(100))
+##' lines(samp.df)
+create.density.df <- function(samps = NULL,
+                              zero.bounded = FALSE,
+                              distribution = NULL,
+                              n = 1000, ...) {
+  samp.exists <- !is.null(samps)
+  dist.exists <- !is.null(distribution)
+  if(identical(samp.exists, dist.exists)){
+    stop('create.density.df requires one and only one of:
+         samps: a vector of samples, e.g. MCMC chain,
+         OR
+         distribution: a named distribution supported by R')
+  }
+  if(samp.exists){
+    if(zero.bounded) {
+      new.density <- zero.bounded.density(samps, n = 1000, ...)
+    } else {    
+      new.density <- density(samps, n = 1000, ...)
+    }
+    density.df <- with(new.density,
+                       data.frame(x = x,
+                                  y = y))
+  }
+  
+  if(dist.exists) {
+    density.df <- do.call(pr.dens, c(distribution[1:3]))
+  }
+  return(density.df)
+}
+
 ####################################################################################################
 ### EOF.  End of R script file.          		
 ####################################################################################################
