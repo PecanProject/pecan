@@ -47,7 +47,9 @@ check.settings <- function(settings) {
 
   # check database information
   if (is.null(settings$database)) {
-    logger.severe("No database information specified.")
+    settings$database <- list(username = "bety", password = "bety", 
+                              host = "localhost", dbname = "bety", driver = "MySQL")
+    logger.info("No database information specified; using default bety bety bety.")
   }
   if (is.null(settings$database$driver)) {
     settings$database$driver <- "MySQL"
