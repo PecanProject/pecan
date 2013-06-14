@@ -207,7 +207,7 @@ if [ "$FORCE" == "yes" ]; then
   fi
 
   # cleanup
-  rm -rf changes.log out.log *.Rcheck PEcAn.*.tar.gz
+  rm -rf changes.log out.log *.Rcheck PEcAn.*.tar.gz PEcAn.*.tgz
 fi
 
 rm running
