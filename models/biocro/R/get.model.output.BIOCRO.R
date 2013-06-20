@@ -23,10 +23,7 @@ get.model.output.BIOCRO <- function(){
   ### Get model output on the localhost
   if(settings$run$host$name == 'localhost'){
 
-    olddir <- getwd()
-    setwd(settings$outdir)
-    get.results(settings$model$name)
-    setwd(olddir) 
+    get.results(settings)
     
   } else {
     print(paste("biocro model specific get.model.output not implemented for\n",
