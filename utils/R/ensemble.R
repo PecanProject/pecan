@@ -19,11 +19,10 @@
 ##' @param start.year first year to include in ensemble analysis
 ##' @param end.year last year to include in ensemble analysis
 ##' @param variables targe variables for ensemble analysis
-##' @param model ecosystem model run
 ##' @export
 #--------------------------------------------------------------------------------------------------#
 read.ensemble.output <- function(ensemble.size, pecandir, outdir, 
-                                 start.year, end.year, variables, model){
+                                 start.year, end.year, variables){
   if (exists('runs.samples')) {
     ensemble.runs <- runs.samples$ensemble
   } else {
@@ -42,7 +41,7 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir,
   for(row in rownames(ensemble.runs)) {
     run.id <- ensemble.runs[row, 'id']
     print(run.id)
-    ensemble.output[[row]] <- sapply(read.output(run.id, file.path(outdir, run.id), model,
+    ensemble.output[[row]] <- sapply(read.output(run.id, file.path(outdir, run.id),
                                                  start.year, end.year, variables),
                                      mean,na.rm=TRUE)
   }
