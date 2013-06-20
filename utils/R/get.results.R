@@ -13,15 +13,12 @@
 ##' @name get.results
 ##' @title Generate model output for PEcAn analyses
 ##' @export
-##' @author Shawn Serbin, David LeBauer, Mike Dietze
-##' @param model name of model being used
 ##' @param settings list, read from settings file (xml) using \code{\link{read.settings}}
-##' 
 ##' @author David LeBauer, Shawn Serbin, Mike Dietze
-get.results <- function(pecandir, model) {
-  
+get.results <- function(settings) {
+  outdir <- settings$outdir
   ### Load PEcAn sa info
-  load(file.path(pecandir, 'samples.Rdata'))
+  load(file.path(outdir, 'samples.Rdata'))
   
   sensitivity.output <- list()   
   if('sensitivity.analysis' %in% names(settings)) {
@@ -40,7 +37,7 @@ get.results <- function(pecandir, model) {
       
       sensitivity.output[[pft.name]] <- read.sa.output(traits = traits,
                                                        quantiles = quantiles,
-                                                       pecandir = pecandir,
+                                                       outdir = outdir,
                                                        outdir = settings$run$host$outdir, 
                                                        pft.name=pft.name,
                                                        start.year=start.year,
@@ -62,7 +59,7 @@ get.results <- function(pecandir, model) {
       }
     }
     ensemble.output <- read.ensemble.output(settings$ensemble$size,
-                                            pecandir = pecandir,
+                                            outdir = outdir,
                                             outdir = settings$run$host$outdir, 
                                             start.year=start.year,
                                             end.year=end.year,
@@ -70,7 +67,7 @@ get.results <- function(pecandir, model) {
                                             model=model)
   }
   
-  save(ensemble.output, sensitivity.output, file = file.path(pecandir, 'output.Rdata'))
+  save(ensemble.output, sensitivity.output, file = file.path(outdir, 'output.Rdata'))
 }
 #==================================================================================================#
 
