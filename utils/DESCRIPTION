@@ -44,7 +44,6 @@ Collate:
     'get.results.R'
     'help.R'
     'logger.R'
-    'read.settings.R'
     'distn.stats.R'
     'ensemble.R'
     'sensitivity.R'
