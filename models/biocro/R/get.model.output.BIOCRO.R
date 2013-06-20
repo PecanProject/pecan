@@ -23,9 +23,8 @@ get.model.output.BIOCRO <- function(settings){
   ### Get model output on the localhost
   if(settings$run$host$name == 'localhost'){
 
-    get.results(pecandir = settings$outdir, model = "BIOCRO")
-    file.copy(from = paste(settings$run$host$outdir, 'output.Rdata', sep=''),
-              to = settings$outdir, overwrite=TRUE)
+    get.results(settings = settings)
+
   } else {
     print(paste("biocro model specific get.model.output not implemented for\n",
                 "use on remote host; generic get.model.output under development"))
