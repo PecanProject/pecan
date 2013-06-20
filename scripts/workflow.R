@@ -31,11 +31,14 @@ clear.scratch(settings)
 # Start ecosystem model runs
 start.model.runs(settings$model$name, settings$bety$write)
 
+# Convert output
+convert.outputs(settings$model$name, settings)
+
 # Get results of model runs
 get.model.output(settings$model$name, settings)
 
 # Run sensitivity analysis and variance decomposition on model output
-run.sensitivity.analysis()
+run.sensitivity.analysis(settings)
 
 # Run ensemble analysis on model output. 
 run.ensemble.analysis()
