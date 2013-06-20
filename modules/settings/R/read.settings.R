@@ -366,7 +366,6 @@ check.settings <- function(settings) {
   } else {
     settings$workflow$id = "NA"
   }
-}
 # all done return cleaned up settings
 invisible(settings)
 }
