@@ -27,7 +27,13 @@ check.settings <- function(settings) {
     logger.info("Not doing sanity checks of pecan.xml")
     return(0)
   }
-  
+
+  ## allow PEcAn to run without database
+  if (is.null(settings$database)) {
+    database <- NULL
+    logger.warn("No database information specified; not using database.")
+    settings$bety$write <- FALSE
+  }
   # should runs be written to database
   if (is.null(settings$bety$write)) {
     logger.info("Writing all runs/configurations to database.")
@@ -40,13 +46,9 @@ check.settings <- function(settings) {
       logger.warn("Will not write runs/configurations to database.")
     }
   }
+
+  ## check database settings
   
-  # check database information
-  if (is.null(settings$database)) {
-    settings$database <- list(username = "bety", password = "bety", 
-                              host = "localhost", dbname = "bety", driver = "MySQL")
-    logger.info("No database information specified; using default bety bety bety.")
-  }
   if (is.null(settings$database$driver)) {
     settings$database$driver <- "MySQL"
     logger.info("Using", settings$database$driver, "as database driver.")
@@ -67,7 +69,8 @@ check.settings <- function(settings) {
     settings$database$name <- NULL
   }
   if(paste0("R", settings$database$driver) %in% rownames(installed.packages())){
-    if (!PEcAn.DB::db.exists(params=settings$database, write=settings$bety$write)) {
+    require(PEcAn.DB)
+    if (!db.exists(params=settings$database, write=settings$bety$write)) {
       logger.warn("Could not connect to the database.")
       database <- FALSE
     } else {
@@ -77,7 +80,7 @@ check.settings <- function(settings) {
   } else {
     database <- FALSE
   }
-  
+
   # TODO check userid and userpassword
   
   # check database version
@@ -98,12 +101,12 @@ check.settings <- function(settings) {
   if (is.null(settings$pfts) || (length(settings$pfts) == 0)) {
     logger.severe("No PFTS specified.")
   }
-  
+
   # check if there is either ensemble or sensitivy.analysis
   if (is.null(settings$ensemble) && is.null(settings$sensitivity.analysis)) {
     logger.warn("No ensemble or sensitivity analysis specified, runs will fail!")
   }
-  
+
   # check ensemble
   if (!is.null(settings$ensemble)) {
     if (is.character(settings$ensemble) || is.null(settings$ensemble$variable)) {
@@ -113,12 +116,12 @@ check.settings <- function(settings) {
       logger.info("Setting ensemble variable to the same as sensitivity analysis variable [", settings$sensitivity.analysis$variable, "]")
       settings$ensemble$variable <- settings$sensitivity.analysis$variable
     }
-    
+
     if (is.null(settings$ensemble$size)) {
       logger.info("Setting ensemble size to 1.")
       settings$ensemble$size <- 1
     }
-    
+
     if(is.null(settings$ensemble$start.date)) {
       if(is.null(settings$sensitivity.analysis$start.date)) {
         settings$ensemble$start.date <- settings$run$start.date 
@@ -128,7 +131,7 @@ check.settings <- function(settings) {
         logger.info("No start date passed to ensemble - using the sensitivity.analysis date (", settings$ensemble$start.date, ").")
       }
     }
-    
+
     if(is.null(settings$ensemble$end.date)) {
       if(is.null(settings$sensitivity.analysis$end.date)) {
         settings$ensemble$end.date <- settings$run$end.date 
@@ -139,7 +142,7 @@ check.settings <- function(settings) {
       }
     }
   }
-  
+
   # check sensitivity analysis
   if (!is.null(settings$sensitivity.analysis)) {
     if (is.null(settings$sensitivity.analysis$variable)) {
@@ -149,7 +152,7 @@ check.settings <- function(settings) {
       logger.info("Setting sensitivity.analysis variable to the same as ensemble variable [", settings$ensemble$variable, "]")
       settings$sensitivity.analysis$variable <- settings$ensemble$variable
     }
-    
+
     if(is.null(settings$sensitivity.analysis$start.date)) {
       if(is.null(settings$ensemble$start.date)) {
         settings$sensitivity.analysis$start.date <- settings$run$start.date 
@@ -159,7 +162,7 @@ check.settings <- function(settings) {
         logger.info("No start date passed to sensitivity.analysis - using the ensemble date (", settings$sensitivity.analysis$start.date, ").")
       }
     }
-    
+
     if(is.null(settings$sensitivity.analysis$end.date)) {
       if(is.null(settings$ensemble$end.date)) {
         settings$sensitivity.analysis$end.date <- settings$run$end.date 
@@ -170,7 +173,7 @@ check.settings <- function(settings) {
       }
     }
   }
-  
+
   # check to make sure run information is filled out
   if (is.null(settings$run$host$name)) {
     logger.info("Setting localhost for execution host.")
@@ -184,7 +187,7 @@ check.settings <- function(settings) {
       logger.severe("not outdir specified on remote machine.")
     }
   }
-  
+
   # check meta-analysis
   if (is.null(settings$meta.analysis) || is.null(settings$meta.analysis$iter)) {
     settings$meta.analysis$iter <- 3000
@@ -194,85 +197,85 @@ check.settings <- function(settings) {
     settings$meta.analysis$random.effects <- FALSE
     logger.info("Setting meta.analysis random effects to ", settings$meta.analysis$random.effects)
   }
-  
+
   # check modelid with values
   if(!is.null(settings$model)){
-    if (is.null(settings$model$id)) {
-      settings$model$id <- -1
-    } else if (settings$model$id >= 0) {
-      if(database){
-        model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database)      
+  if (is.null(settings$model$id)) {
+    settings$model$id <- -1
+  } else if (settings$model$id >= 0) {
+    if(database){
+      model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database)      
+    }
+    if(nrow(model) == 0) {
+      logger.error("There is no record of model_id = ", settings$model$id, "in database")
+    }
+    model$binary <- tail(strsplit(model$model_path, ":")[[1]], 1)
+
+    if (is.null(settings$model$name)) {
+      if ((is.null(model$model_type) && model$model_type == "")) {
+        logger.severe("No model type specified.")
       }
-      if(nrow(model) == 0) {
-        logger.error("There is no record of model_id = ", settings$model$id, "in database")
+      settings$model$name <- model$model_type
+      logger.info("Setting model type to ", settings$model$name)
+    } else if (model$model_type != settings$model$name) {
+      logger.warn("Specified model type [", settings$model$name, "] does not match model_type in database [", model$model_type, "]")
+    }
+
+    if (is.null(settings$model$binary)) {
+      if ((is.null(model$binary) && model$binary == "")) {
+        logger.severe("No model binary specified.")
       }
-      model$binary <- tail(strsplit(model$model_path, ":")[[1]], 1)
-      
-      if (is.null(settings$model$name)) {
-        if ((is.null(model$model_type) && model$model_type == "")) {
-          logger.severe("No model type specified.")
-        }
-        settings$model$name <- model$model_type
-        logger.info("Setting model type to ", settings$model$name)
-      } else if (model$model_type != settings$model$name) {
-        logger.warn("Specified model type [", settings$model$name, "] does not match model_type in database [", model$model_type, "]")
-      }
-      
-      if (is.null(settings$model$binary)) {
-        if ((is.null(model$binary) && model$binary == "")) {
-          logger.severe("No model binary specified.")
-        }
-        settings$model$binary <- tail(strsplit(model$binary, ":")[[1]], 1)
-        logger.info("Setting model binary to ", settings$model$binary)
-      } else if (model$binary != settings$model$binary) {
-        logger.warn("Specified binary [", settings$model$binary, "] does not match model_path in database [", model$binary, "]")
-      }
+      settings$model$binary <- tail(strsplit(model$binary, ":")[[1]], 1)
+      logger.info("Setting model binary to ", settings$model$binary)
+    } else if (model$binary != settings$model$binary) {
+      logger.warn("Specified binary [", settings$model$binary, "] does not match model_path in database [", model$binary, "]")
     }
   }
-  
+  }
+
   # check siteid with values
   if(!is.null(settings$run$site)){
-    if (is.null(settings$run$site$id)) {
-      settings$run$site$id <- -1
-    } else if (settings$run$site$id >= 0) {
-      site <- db.query(paste("SELECT * FROM sites WHERE id =", settings$run$site$id), params=settings$database);
-      
-      if (is.null(settings$run$site$name)) {
-        if ((is.null(site$sitename) && site$sitename == "")) {
-          logger.info("No site name specified.")
-          settings$run$site$name <- "NA"
-        } else {
-          settings$run$site$name <- site$sitename        
-          logger.info("Setting site name to ", settings$run$site$name)
-        }
-      } else if (site$sitename != settings$run$site$name) {
-        logger.warn("Specified site name [", settings$run$site$name, "] does not match sitename in database [", site$sitename, "]")
+  if (is.null(settings$run$site$id)) {
+    settings$run$site$id <- -1
+  } else if (settings$run$site$id >= 0) {
+    site <- db.query(paste("SELECT * FROM sites WHERE id =", settings$run$site$id), params=settings$database);
+
+    if (is.null(settings$run$site$name)) {
+      if ((is.null(site$sitename) && site$sitename == "")) {
+        logger.info("No site name specified.")
+        settings$run$site$name <- "NA"
+      } else {
+        settings$run$site$name <- site$sitename        
+        logger.info("Setting site name to ", settings$run$site$name)
       }
-      
-      if (is.null(settings$run$site$lat)) {
-        if ((is.null(site$lat) && site$lat == "")) {
-          logger.severe("No lat specified for site.")
-        } else {
-          settings$run$site$lat <- as.numeric(site$lat)
-          logger.info("Setting site lat to ", settings$run$site$lat)
-        }
-      } else if (as.numeric(site$lat) != as.numeric(settings$run$site$lat)) {
-        logger.warn("Specified site lat [", settings$run$site$lat, "] does not match lat in database [", site$lat, "]")
+    } else if (site$sitename != settings$run$site$name) {
+      logger.warn("Specified site name [", settings$run$site$name, "] does not match sitename in database [", site$sitename, "]")
+    }
+
+    if (is.null(settings$run$site$lat)) {
+      if ((is.null(site$lat) && site$lat == "")) {
+        logger.severe("No lat specified for site.")
+      } else {
+        settings$run$site$lat <- as.numeric(site$lat)
+        logger.info("Setting site lat to ", settings$run$site$lat)
       }
-      
-      if (is.null(settings$run$site$lon)) {
-        if ((is.null(site$lon) && site$lon == "")) {
-          logger.severe("No lon specified for site.")
-        } else {
-          settings$run$site$lon <- as.numeric(site$lon)
-          logger.info("Setting site lon to ", settings$run$site$lon)
-        }
-      } else if (as.numeric(site$lon) != as.numeric(settings$run$site$lon)) {
-        logger.warn("Specified site lon [", settings$run$site$lon, "] does not match lon in database [", site$lon, "]")
+    } else if (as.numeric(site$lat) != as.numeric(settings$run$site$lat)) {
+      logger.warn("Specified site lat [", settings$run$site$lat, "] does not match lat in database [", site$lat, "]")
+    }
+
+    if (is.null(settings$run$site$lon)) {
+      if ((is.null(site$lon) && site$lon == "")) {
+        logger.severe("No lon specified for site.")
+      } else {
+        settings$run$site$lon <- as.numeric(site$lon)
+        logger.info("Setting site lon to ", settings$run$site$lon)
       }
+    } else if (as.numeric(site$lon) != as.numeric(settings$run$site$lon)) {
+      logger.warn("Specified site lon [", settings$run$site$lon, "] does not match lon in database [", site$lon, "]")
     }
   }
-  
+  }
+
   # check/create the pecan folder
   if (is.null(settings$outdir)) {
     settings$outdir <- tempdir()
@@ -283,7 +286,7 @@ check.settings <- function(settings) {
   if (!file.exists(settings$outdir) && !dir.create(settings$outdir, recursive=TRUE)) {
     logger.severe("Could not create folder", settings$outdir)
   }
-  
+
   # check/create the run folder
   if (settings$run$host$name == "localhost") {
     if (is.null(settings$run$host$rundir)) {
@@ -298,7 +301,7 @@ check.settings <- function(settings) {
   if (!file.exists(settings$rundir) && !dir.create(settings$rundir, recursive=TRUE)) {
     logger.severe("Could not create folder", settings$rundir)
   }
-  
+
   # check/create the out folder
   if (settings$run$host$name == "localhost") {
     if (is.null(settings$run$host$outdir)) {
@@ -313,7 +316,7 @@ check.settings <- function(settings) {
   if (!file.exists(settings$modeloutdir) && !dir.create(settings$modeloutdir, recursive=TRUE)) {
     logger.severe("Could not create folder", settings$modeloutdir)
   }
-  
+
   # check/create the pft folders
   for (i in 1:sum(names(unlist(settings$pfts)) == "pft.name")) {
     if (is.null(settings$pfts[i]$pft$outdir)) {
@@ -331,7 +334,7 @@ check.settings <- function(settings) {
       }
     }
   }
-  
+
   # add defaults for qsub
   if (settings$run$host$name != "localhost") {
     if (is.null(settings$run$host$qsub)) {
@@ -347,27 +350,26 @@ check.settings <- function(settings) {
       logger.info("qstat not specified using default value :", settings$run$host$qstat)
     }
   }
-  
+
   # check for workflow defaults
   if(database){
     if (settings$bety$write) {
-      if("model" %in% names(settings))
-        if (!'workflow' %in% names(settings)) {
-          con <- db.open(settings$database)
-          if(!is.character(con)){
-            db.query(paste("INSERT INTO workflows (site_id, model_id, hostname, start_date, end_date, started_at, created_at, folder) values ('",
-                           settings$run$site$id, "','", settings$model$id, "', '", settings$run$host$name, "', '",
-                           settings$run$start.date, "', '", settings$run$end.date, "', NOW(), NOW(), '", dirname(settings$outdir), "')", sep=''), con)
-            settings$workflow$id = db.query(paste("SELECT LAST_INSERT_ID() AS ID"), con)[['ID']]
-            db.close(con)
-          }
+      if ("model" %in% names(settings) && !'workflow' %in% names(settings)) {
+        con <- db.open(settings$database)
+        if(!is.character(con)){
+          db.query(paste("INSERT INTO workflows (site_id, model_id, hostname, start_date, end_date, started_at, created_at, folder) values ('",
+                         settings$run$site$id, "','", settings$model$id, "', '", settings$run$host$name, "', '",
+                         settings$run$start.date, "', '", settings$run$end.date, "', NOW(), NOW(), '", dirname(settings$outdir), "')", sep=''), con)
+          settings$workflow$id = db.query(paste("SELECT LAST_INSERT_ID() AS ID"), con)[['ID']]
+          db.close(con)
         }
+      }
+    } else {
+      settings$workflow$id = "NA"
     }
-  } else {
-    settings$workflow$id = "NA"
   }
-# all done return cleaned up settings
-invisible(settings)
+  # all done return cleaned up settings
+  invisible(settings)
 }
 
 
@@ -413,27 +415,27 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
         break
       }
     }
-    
+
   } else if(!is.null(inputfile) && file.exists(inputfile)) {
     # 2 filename passed into function
     logger.info("Loading inpufile=", inputfile)
     xml <- xmlParse(inputfile)
-    
+
   } else if (file.exists(Sys.getenv("PECAN_SETTINGS"))) {
     # 3 load from PECAN_SETTINGS
     logger.info("Loading PECAN_SETTINGS=", Sys.getenv("PECAN_SETTINGS"))
     xml <- xmlParse(Sys.getenv("PECAN_SETTINGS"))
-    
+
   } else if (file.exists("pecan.xml")) {
     # 4 load ./pecan.xml
     logger.info("Loading ./pecan.xml")
     xml <- xmlParse("pecan.xml")
-    
+
   } else {
     # file not found
     stop("Could not find a pecan.xml file")
   }
-  
+
   ## convert the xml to a list for ease and return
   settings <- check.settings(xmlToList(xml))
   
@@ -443,12 +445,12 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
     logger.warn(paste("File already exists [", pecanfile, "] file will be overwritten"))
   }
   saveXML(listToXml(settings, "pecan"), file=pecanfile)
-  
+
   ## setup Rlib from settings
   if(!is.null(settings$Rlib)){
     .libPaths(settings$Rlib)
   }
-  
+
   ## Return settings file as a list
   invisible(settings)
 }

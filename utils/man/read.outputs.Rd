@@ -10,7 +10,9 @@
 
   \item{settings}{settings loaded from pecan.xml}
 
-  \item{...}{arguments passed to \code{\link{read.output}}}
+  \item{...}{arguments passed to \code{\link{read.output}},
+  e.g. \code{variables}, \code{start.year},
+  \code{end.year}}
 }
 \description{
   Reads the output of all model runs

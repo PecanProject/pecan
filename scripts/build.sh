@@ -72,9 +72,9 @@ done
 
 # packages that are to be compiled
 PACKAGES="utils db modules/settings visualization"
-PACKAGES="${PACKAGES} modules/meta.analysis modules/uncertainty"
+PACKAGES="${PACKAGES} modules/priors modules/meta.analysis modules/uncertainty"
 PACKAGES="${PACKAGES} modules/data.land modules/data.atmosphere"
-PACKAGES="${PACKAGES} modules/assim.batch modules/assim.sequential modules/priors"
+PACKAGES="${PACKAGES} modules/assim.batch modules/assim.sequential"
 PACKAGES="${PACKAGES} models/ed models/sipnet models/biocro"
 PACKAGES="${PACKAGES} all"
 
@@ -207,7 +207,7 @@ if [ "$FORCE" == "yes" ]; then
   fi
 
   # cleanup
-  rm -rf changes.log out.log *.Rcheck PEcAn.*.tar.gz
+  rm -rf changes.log out.log *.Rcheck PEcAn.*.tar.gz PEcAn.*.tgz
 fi
 
 rm running
