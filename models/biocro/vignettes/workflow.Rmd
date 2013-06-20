@@ -15,8 +15,8 @@ settings <- read.settings(system.file("extdata/pecan.biocro.xml",
 
 ### limit scope for initial testing
 settings$sensitivity.analysis$quantiles <- list(sigma = 0.5)
+settings$ensemble$size <- 1
 model <- settings$model$name
-
 
 ```
 ### Run PEcAn workflow
@@ -34,12 +34,11 @@ run.meta.analysis()     	# Run the PEcAn meta.analysis
 run.write.configs(model)        # Calls model specific write.configs e.g. write.config.ed.R
 ## load met data
 start.model.runs(model)         # Start ecosystem model runs
-read.outputs(settings$model$name, settings)
-#read.outputs(model, settings)#, variables = "StemBiom")
+read.outputs(model = settings$model$name, settings = settings)
 
-get.model.output(model = model, settings = settings)         # Get results of model runs
+get.model.output(settings = settings)         # Get results of model runs
 
-#run.sensitivity.analysis()      # Run sensitivity analysis and variance decomposition on model output
+run.sensitivity.analysis()      # Run sensitivity analysis and variance decomposition on model output
 
 #run.ensemble.analysis()		      # Run ensemble analysis on model output. 
                                 # OPTIONAL: run.ensemble.analysis(plot.timeseries=TRUE) to get an esemble 
