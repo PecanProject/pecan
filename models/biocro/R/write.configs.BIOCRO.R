@@ -60,6 +60,22 @@ write.config.BIOCRO <- function(defaults,
                                 settings,
                                 run.id) {
 
+
+  if(settings$run$host == "localhost"){
+    rundir <- file.path(settings$rundir, as.character(run.id))
+    outdir <- file.path(settings$outdir, as.character(run.id))
+  } else {
+    rundir <- file.path(settings$run$host$rundir, as.character(run.id))
+    outdir <- file.path(settings$run$host$outdir, as.character(run.id))
+  }
+ 
+  writeLines(c("#!/usr/bin/Rscript",
+               
+               paste("cp ", file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))),
+             con=file.path(settings$rundir, run.id, "job.sh"))
+  Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
+  
+  ##
   traits  <- lapply(convert.samples.BIOCRO(trait.values),
                     as.character)
   constants <- defaults$pft$constants
