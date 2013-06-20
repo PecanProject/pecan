@@ -19,8 +19,7 @@
 }
 \details{
   Expected fields in settings file are: - pfts with at
-  least one pft defined - database - model - run with the
-  following fields -- site with id
+  least one pft defined
 }
 \author{
   Rob Kooper
