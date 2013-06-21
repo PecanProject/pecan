@@ -3,7 +3,7 @@
 \title{Read ensemble output}
 \usage{
   read.ensemble.output(ensemble.size, pecandir, outdir,
-    start.year, end.year, variables, model)
+    start.year, end.year, variables)
 }
 \arguments{
   \item{ensemble.size}{the number of ensemble members run}
@@ -21,8 +21,6 @@
   analysis}
 
   \item{variables}{targe variables for ensemble analysis}
-
-  \item{model}{ecosystem model run}
 }
 \value{
   a list of ensemble model output
