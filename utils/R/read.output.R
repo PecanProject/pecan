@@ -46,7 +46,7 @@ model2netcdf <- function(runid, outdir, model){
 ##'
 ##' Generic function to convert model output from model-specific format to 
 ##' a common PEcAn format. This function uses MsTMIP variables except that units of
-##'  (kg m-2 s-1)  are converted to kg ha-1 y-1. Currently this function converts
+##'  (kg m-2 d-1)  are converted to kg ha-1 y-1. Currently this function converts
 ##' Carbon fluxes: GPP, NPP, NEE, TotalResp, AutoResp, HeteroResp,
 ##' DOC_flux, Fire_flux, and Stem (Stem is specific to the BioCro model)
 ##' and Water fluxes: Evaporation (Evap), Transpiration(TVeg),
@@ -105,21 +105,20 @@ read.output <- function(runid, outdir, start.year=NA,
   return(result)
 }
 
-                                        #--------------------------------------------------------------------------------------------------#
-##' Reads the output of all model runs
+##'--------------------------------------------------------------------------------------------------#
+##' Converts the output of all model runs
 ##'
-##' @title Read outputs
-##' @name read.outputs
+##' @title convert outputs from model specific code to 
+##' @name convert.outputs
 ##' @param model name of simulation model currently accepts ("ED", "SIPNET", "BIOCRO")
 ##' @param settings settings loaded from pecan.xml
 ##' @param ... arguments passed to \code{\link{read.output}}, e.g. \code{variables}, \code{start.year}, \code{end.year}
 ##' @export
 ##' @author Rob Kooper
-read.outputs <- function(model, settings, ...) {
+convert.outputs <- function(model, settings, ...) {
   for (runid in readLines(con=file.path(settings$rundir, "runs.txt"))) {
     outdir <- file.path(settings$run$host$outdir, runid)
     model2netcdf(runid, outdir, model) 
-    read.output(runid, file.path(settings$run$host$outdir, runid))
   }
 }
 ####################################################################################################

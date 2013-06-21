@@ -20,7 +20,7 @@ Depends:
     ggplot2,
     randtoolbox,
     ncdf4,
-    RMySQL, 
+    RMySQL,
     udunits2
 Suggests:
     coda,
@@ -35,7 +35,6 @@ Collate:
     'r2bugs.distributions.R'
     'read.output.R'
     'run.write.configs.R'
-    'timeutils.R'
     'utils.R'
     'write.config.utils.R'
     'clear.scratch.R'
@@ -45,7 +44,6 @@ Collate:
     'get.results.R'
     'help.R'
     'logger.R'
-    'read.settings.R'
     'distn.stats.R'
     'ensemble.R'
     'sensitivity.R'
