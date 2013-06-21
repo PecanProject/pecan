@@ -28,5 +28,4 @@ Collate:
     'query.prior.R'
     'query.trait.data.R'
     'query.traits.R'
-    'read.settings.R'
     'utils.R'
