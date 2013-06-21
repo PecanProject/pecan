@@ -3,7 +3,7 @@
 \title{Read Sensitivity Analysis output}
 \usage{
   read.sa.output(traits, quantiles, pecandir, outdir,
-    pft.name = "", start.year, end.year, variables, model)
+    pft.name = "", start.year, end.year, variables)
 }
 \arguments{
   \item{traits}{model parameters included in the
@@ -27,7 +27,7 @@
   \item{end.year}{last year to include in sensitivity
   analysis}
 
-  \item{read.output}{model specific read.output function}
+  \item{variables}{variables to be read from model output}
 }
 \value{
   dataframe with one col per quantile analysed and one row
