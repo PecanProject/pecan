@@ -1,8 +1,8 @@
-\name{read.outputs}
-\alias{read.outputs}
-\title{Read outputs}
+\name{convert.outputs}
+\alias{convert.outputs}
+\title{convert outputs from model specific code to}
 \usage{
-  read.outputs(model, settings, ...)
+  convert.outputs(model, settings, ...)
 }
 \arguments{
   \item{model}{name of simulation model currently accepts
@@ -15,7 +15,8 @@
   \code{end.year}}
 }
 \description{
-  Reads the output of all model runs
+  --------------------------------------------------------------------------------------------------#
+  Converts the output of all model runs
 }
 \author{
   Rob Kooper
