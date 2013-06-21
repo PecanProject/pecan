@@ -113,6 +113,7 @@ model2netcdf.ED2 <- function(outdir) {
         slzdata <- getHdf5Data(ncY, 'SLZ')
         nc_close(ncY)
       } else {
+        logger.warn("Could not find SLZ in Y file, making a crude assumpution.")
         slzdata <- array(c(-2.00, -1.50, -1.00, -0.80, -0.60, -0.40, -0.20, -0.10, -0.05))
       }
       
@@ -227,7 +228,7 @@ model2netcdf.ED2 <- function(outdir) {
       out <- add(-999,33,row) ## fPAR
       ##lai <- matrix(apply(getHdf5Data(ncT, 'LAI_PFT'),1,sum,na.rm=TRUE),nrow=block)
       ## out <- add(lai,34,row) ## LAI******************
-      out <- add(-999,34,row) ## LAI
+      out <- add(getHdf5Data(ncT, 'LAI'),34,row) ## LAI
       ##z <- getHdf5Data(ncT, 'SLZ')
       ##if(z[length(z)] < 0.0) z <- c(z,0.0)
       ##dz <- diff(z)
