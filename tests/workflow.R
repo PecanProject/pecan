@@ -38,6 +38,7 @@ require('PEcAn.all')
 
 # check settings
 settings <- read.settings('pecan.xml')
+stop()
 
 # some quick checks
 runtraits <- FALSE
@@ -59,6 +60,7 @@ if (runtraits) {
 } else {
     logger.info("Already executed get.trait.data()")
 }
+
 # run meta-analysis
 if (runmeta) {
     run.meta.analysis()
@@ -81,7 +83,7 @@ if (!file.exists(file.path(settings$rundir, "runs.txt"))) {
 }
 
 # get outputs
-read.outputs(settings$model$name, settings)
+convert.outputs(settings$model$name, settings)
 get.model.output(settings$model$name, settings)
 
 # ensemble analysis
