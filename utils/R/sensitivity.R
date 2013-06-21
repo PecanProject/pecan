@@ -20,11 +20,11 @@
 ##' @param pft.name name of PFT used in sensitivity analysis (Optional)
 ##' @param start.year first year to include in sensitivity analysis 
 ##' @param end.year last year to include in sensitivity analysis
-##' @param read.output model specific read.output function
+##' @param variables variables to be read from model output
 ##' @export
 #--------------------------------------------------------------------------------------------------#
 read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name='', 
-                           start.year, end.year, variables, model){
+                           start.year, end.year, variables){
   
   if (!exists('runs.samples')) {
     samples.file <- file.path(pecandir, 'samples.Rdata')
@@ -42,7 +42,7 @@ read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name='',
   for(trait in traits){
     for(quantile in quantiles){
       run.id <- sa.runs[[pft.name]][quantile, trait]
-      sa.output[quantile, trait] <- sapply(read.output(run.id, file.path(outdir, run.id), model,
+      sa.output[quantile, trait] <- sapply(read.output(run.id, file.path(outdir, run.id),
                                                        start.year, end.year, variables),
                                            mean, na.rm=TRUE)
     } ## end loop over quantiles
