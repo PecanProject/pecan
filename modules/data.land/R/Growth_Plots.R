@@ -2,11 +2,13 @@
 par(mfrow=c(1,4),oma=c(4,4,0,0),mar=c(1,1,1,1))
 
 #Bartlett Growth 2012-2002
-growth2012=na.exclude(cbind(spp,incrementMatch[,198:189]))
+growth2012=na.exclude(cbind(fd$species,fd$increments[,198:189]))
 mean2012=rowMeans(growth2012[2:6])
 growth2012=cbind(growth2012,mean2012)
-boxplot(growth2012[,2]~growth2012[,1],horizontal=TRUE,las=1,
-        xlab="2012-2002 Avg. Increment",ylim=c(0,4.3))
+boxplot(growth2012[,12] ~ growth2012[,1], data=growth2012, horizontal=TRUE, las=1,
+        xlab="2012-2002 Avg. Increment", yaxt='n', ylim=c(0,4.3))
+
+
 
 #Bartlett Growth 2002-1992
 growth2001=na.exclude(cbind(spp,incrementMatch[,189:180]))

@@ -1,5 +1,5 @@
 fuse_plot_treering <- function(plot.data,tuscon.data){
-  
+   
 #  plot.data <- as.data.frame(plot.data)
 
 ## prep veg data
