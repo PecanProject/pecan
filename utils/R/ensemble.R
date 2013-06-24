@@ -28,7 +28,6 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir,
   } else {
     ensemble.runs <- list()
     samples.file <- file.path(pecandir, 'samples.Rdata')
-    print(samples.file)
     if(file.exists(samples.file)){
       load(samples.file)
       ensemble.runs <- runs.samples$ensemble
