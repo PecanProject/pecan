@@ -37,13 +37,12 @@ get.results <- function(settings) {
       
       sensitivity.output[[pft.name]] <- read.sa.output(traits = traits,
                                                        quantiles = quantiles,
-                                                       outdir = outdir,
+                                                       pecandir = outdir,
                                                        outdir = settings$run$host$outdir, 
                                                        pft.name=pft.name,
                                                        start.year=start.year,
                                                        end.year=end.year,
-                                                       variables=variables,
-                                                       model=model)
+                                                       variables=variables)
     }
   }
   
@@ -59,12 +58,11 @@ get.results <- function(settings) {
       }
     }
     ensemble.output <- read.ensemble.output(settings$ensemble$size,
-                                            outdir = outdir,
+                                            pecandir = outdir,
                                             outdir = settings$run$host$outdir, 
                                             start.year=start.year,
                                             end.year=end.year,
-                                            variables=variables,
-                                            model=model)
+                                            variables=variables)
   }
   
   save(ensemble.output, sensitivity.output, file = file.path(outdir, 'output.Rdata'))
