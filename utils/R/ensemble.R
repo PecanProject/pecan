@@ -201,7 +201,6 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings,
       paramlist <- paste("ensemble=", counter, sep='')
       query.base(paste("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id, parameter_list) values ('", settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", settings$run$end.date, "', '",settings$run$outdir , "', '", now, "', ", ensemble.id, ", '", paramlist, "')", sep=''), con)
       run.id <- query.base(paste("SELECT id FROM runs WHERE created_at='", now, "' AND parameter_list='", paramlist, "'", sep=''), con)[['id']]
-      print(run.id)
     } else {
       run.id <- get.run.id('ENS', left.pad.zeros(counter, 5))
     }
