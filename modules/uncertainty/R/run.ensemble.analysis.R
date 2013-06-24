@@ -141,7 +141,7 @@ read.ensemble.ts <- function(model){
   for(row in rownames(ensemble.runs)) {
     run.id <- ensemble.runs[row, 'id']
     print(run.id)
-    newrun <- read.output(run.id, file.path(outdir, run.id), model, start.year, end.year, variables)
+    newrun <- read.output(run.id, file.path(outdir, run.id), start.year, end.year, variables)
 
     for(j in 1:length(variables)){
       if(i == 1){
