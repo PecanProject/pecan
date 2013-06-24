@@ -177,7 +177,7 @@ check.settings <- function(settings) {
   # check to make sure run information is filled out
   if (is.null(settings$run$host$name)) {
     logger.info("Setting localhost for execution host.")
-    settings$run$host$name = "localhost"
+    settings$run$host$name <- "localhost"
   }
   if (settings$run$host$name != "localhost") {
     if (is.null(settings$run$host$rundir)) {
@@ -338,15 +338,15 @@ check.settings <- function(settings) {
   # add defaults for qsub
   if (settings$run$host$name != "localhost") {
     if (is.null(settings$run$host$qsub)) {
-      settings$run$host$qsub = "qsub -N @NAME@ -o @STDOUT@ -e @STDERR@"
+      settings$run$host$qsub <- "qsub -N @NAME@ -o @STDOUT@ -e @STDERR@"
       logger.info("qsub not specified using default value :", settings$run$host$qsub)
     }
     if (is.null(settings$run$host$qsub.jobid)) {
-      settings$run$host$qsub.jobid = "Your job ([0-9]+) .*"
+      settings$run$host$qsub.jobid <- "Your job ([0-9]+) .*"
       logger.info("qsub.jobid not specified using default value :", settings$run$host$qsub.jobid)
     }
     if (is.null(settings$run$host$qstat)) {
-      settings$run$host$qstat = "qstat -j @JOBID@ 2>1 >/dev/null || echo DONE"
+      settings$run$host$qstat <- "qstat -j @JOBID@ 2>1 >/dev/null || echo DONE"
       logger.info("qstat not specified using default value :", settings$run$host$qstat)
     }
   }
@@ -357,15 +357,16 @@ check.settings <- function(settings) {
       if ("model" %in% names(settings) && !'workflow' %in% names(settings)) {
         con <- db.open(settings$database)
         if(!is.character(con)){
+          now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
           db.query(paste("INSERT INTO workflows (site_id, model_id, hostname, start_date, end_date, started_at, created_at, folder) values ('",
                          settings$run$site$id, "','", settings$model$id, "', '", settings$run$host$name, "', '",
-                         settings$run$start.date, "', '", settings$run$end.date, "', NOW(), NOW(), '", dirname(settings$outdir), "')", sep=''), con)
-          settings$workflow$id = db.query(paste("SELECT LAST_INSERT_ID() AS ID"), con)[['ID']]
+                         settings$run$start.date, "', '", settings$run$end.date, "', '", now, "', '", now, "', '", dirname(settings$outdir), "')", sep=''), con)
+          settings$workflow$id <- db.query(paste("SELECT id FROM workflows WHERE created_at='", now, "';", sep=''), con)[['id']]
           db.close(con)
         }
       }
     } else {
-      settings$workflow$id = "NA"
+      settings$workflow$id <- "NA"
     }
   }
   # all done return cleaned up settings
@@ -400,7 +401,7 @@ check.settings <- function(settings) {
 ##' }
 read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
   if (is.null(outputfile)) {
-    outputfile="pecan.xml"
+    outputfile <- "pecan.xml"
   }
   if(inputfile == ""){
     logger.warn("settings files specified as empty string; \n\t\tthis may be caused by an incorrect argument to system.file.")
