@@ -202,7 +202,8 @@ check.settings <- function(settings) {
   if(!is.null(settings$model)){
   if (is.null(settings$model$id)) {
     settings$model$id <- -1
-  } else if (settings$model$id >= 0) {
+  } else if (as.numeric(settings$model$id) >= 0) {
+print(settings$model$id)
     if(database){
       model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database)      
     }
