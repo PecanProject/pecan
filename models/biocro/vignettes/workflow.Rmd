@@ -13,9 +13,6 @@ Open and read in settings file for PEcAn run.
 settings <- read.settings(system.file("extdata/pecan.biocro.xml",
                                       package = "PEcAn.BIOCRO"))
 
-### limit scope for initial testing
-settings$sensitivity.analysis$quantiles <- list(sigma = 0.5)
-settings$ensemble$size <- 1
 model <- settings$model$name
 
 ```
