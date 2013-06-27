@@ -10,6 +10,116 @@
 # Small, miscellaneous functions for use throughout PECAn
 #--------------------------------------------------------------------------------------------------#
 
+#--------------------------------------------------------------------------------------------------#
+##' return MstMIP variable as ncvar
+##'
+##' returns a MstMIP variable as a ncvar based on name and other parameters
+##' passed in.
+##'
+##' @title MstMIP variable
+##' @export
+##' @param name name of variable
+##' @param lat latitude if dimension requests it
+##' @param lon longitude if dimension requests it
+##' @param time time if dimension requests it
+##' @param nsoil nsoil if dimension requests it
+##' @return ncvar based on MstMIP definition
+##' @author Rob Kooper
+mstmipvar <- function(name, lat, lon, time, nsoil) {
+  data(mstmip_vars, package="PEcAn.utils")
+  var <- mstmip_vars[mstmip_vars$Variable.Name==name,]
+  dims <- list()
+
+  if (nrow(var) == 0) {
+    # biocro specific variables
+    if (name == "RootBiom") {
+      return(ncvar_def(name, "kg C m-2", list(lon, lat, time), -999, "Total root biomass"))
+    }
+    if (name == "StemBiom") {
+      return(ncvar_def(name, "kg C m-2", list(lon, lat, time), -999, "Total stem biomass"))
+    }
+
+    # ED specific variables
+    if (name == "CO2CAS") {
+      return(ncvar_def(name, "ppmv", list(lon, lat, time), -999))
+    }
+    if (name == "CropYield") {
+      return(ncvar_def(name, "kg m-2", list(lon, lat, time), -999))
+    }
+    if (name == "SnowFrac") {
+      return(ncvar_def(name, "-", list(lon, lat, time), -999))
+    }
+    if (name == "Lwdown") {
+      return(ncvar_def(name, "W m-2", list(lon, lat, time), -999))
+    }
+    if (name == "Swdown") {
+      return(ncvar_def(name, "W m-2", list(lon, lat, time), -999))
+    }
+    if (name == "Qg") {
+      return(ncvar_def(name, "W m-2", list(lon, lat, time), -999))
+    }
+    if (name == "Swnet") {
+      return(ncvar_def(name, "W m-2", list(lon, lat, time), -999))
+    }
+    if (name == "RootMoist") {
+      return(ncvar_def(name, "kg m-2", list(lon, lat, time), -999))
+    }
+    if (name == "Tveg") {
+      return(ncvar_def(name, "kg m-2 s-1", list(lon, lat, time), -999))
+    }
+    if (name == "WaterTableD") {
+      return(ncvar_def(name, "m", list(lon, lat, time), -999))
+    }
+    if (name == "SMFrozFrac") {
+      return(ncvar_def(name, "-",list(lon, lat, time), -999))
+#      return(ncvar_def(name, "-",list(lon, lat, nsoil, time), -999))
+    }
+    if (name == "SMLiqFrac") {
+      return(ncvar_def(name, "-",list(lon, lat, time), -999))
+#      return(ncvar_def(name, "-",list(lon, lat, nsoil, time), -999))
+    }
+    if (name == "Albedo") {
+      return(ncvar_def(name, "-", list(lon, lat, time), -999))
+    }
+    if (name == "SnowT") {
+      return(ncvar_def(name, "K", list(lon, lat, time), -999))
+    }
+    if (name == "VegT") {
+      return(ncvar_def(name, "K", list(lon, lat, time), -999))
+    }
+
+    # SIPNET specific variables
+    if (name == "LeafC") {
+      return(ncvar_def(name, "kg C m-2", list(lon, lat, time), -999, "Leaf carbon"))
+    }
+
+    logger.info("Don't know about variable", name, " in mstmip_vars in PEcAn.utils")
+    return(ncvar_def(name, "", list(time), -999, "NOT FOUND IN mstmip_vars"))
+  }
+
+  for(i in 1:4) {
+    vd <- var[[paste0('dim', i)]]
+    if (vd == 'lon' && !is.null(lon)) {
+      dims[[length(dims)+1]] <- lon
+    } else if (vd == 'lat' && !is.null(lat)) {
+      dims[[length(dims)+1]] <- lat
+    } else if (vd == 'time' && !is.null(time)) {
+      dims[[length(dims)+1]] <- time
+    } else if (vd == 'nsoil' && !is.null(nsoil)) {
+      dims[[length(dims)+1]] <- nsoil
+    } else if (vd == 'na') {
+      # skip
+    } else {
+      logger.info("Don't know dimension for", vd, "for variable", name)
+    }
+  }
+  ncvar <- ncvar_def(name, as.character(var$Units), dims, -999)
+  if (var$Long.name != 'na') {
+    ncvar$longname <- as.character(var$Long.name)
+  }
+  return(ncvar)
+}
+
 
 #--------------------------------------------------------------------------------------------------#
 ##' left padded by zeros up to a given number of digits.
