@@ -71,32 +71,26 @@ read.output <- function(runid, outdir, start.year=NA,
   cflux = c("GPP", "NPP", "NEE", "TotalResp", "AutoResp", "HeteroResp",
     "DOC_flux", "Fire_flux") # kgC m-2 d-1
   wflux = c("Evap", "TVeg", "Qs", "Qsb", "Rainf") # kgH20 m-2 d-1
-
-  result <- list()
   
   ncfiles <- list.files(path = outdir, pattern="\\.nc$", full.names=TRUE)
   if(length(ncfiles) == 0) logger.error("no netCDF files of model output present")
-  if(length(ncfiles) == 1) ncfile <- ncfiles
-  if(length(ncfiles) > 1) {           ## concatenate multiple files into one
-    system("ncrcat *.nc result.nc")   ## this could be done more intelligently
-    ncfile <- file.path(outdir, "result.nc") 
-  }
   
-  nc <- nc_open(ncfile)
-  for(v in variables){
-    if(v %in% names(nc$var)){
-      newresult <- ncvar_get(nc, v)
-      logger.info(class(newresult))
-      logger.info(dim(newresult))
-      if(v %in% c(cflux, wflux)){
-        newresult <- ud.convert(newresult, "kg m-2 d-1", "kg ha-1 yr-1")
+  result <- list()
+  for(ncfile in ncfiles) {
+    nc <- nc_open(ncfile)
+    for(v in variables){
+      if(v %in% names(nc$var)){
+        newresult <- ncvar_get(nc, v)
+        if(v %in% c(cflux, wflux)){
+          newresult <- ud.convert(newresult, "kg m-2 d-1", "kg ha-1 yr-1")
+        }
+        result[[v]] <- abind(result[[v]], newresult)
+      } else if (!(v %in% names(nc$var))){
+        logger.warn(paste(v, "missing in", ncfile))
       }
-      result[[v]] <- newresult
-    } else if (!(v %in% names(nc$var))){
-      logger.warn(paste(v, "missing in", ncfile))
     }
+    nc_close(nc)
   }
-  nc_close(nc)
   
   print(paste("----- Mean ", variables, " : ",
               lapply(result, median, na.rm = TRUE)))

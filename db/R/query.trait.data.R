@@ -47,7 +47,7 @@ query.data <- function(trait, spstr, extra.columns='sites.lat, sites.lon, ', con
               traits.id, traits.citation_id, traits.site_id, traits.treatment_id,
               treatments.name, traits.date, traits.time, traits.cultivar_id, traits.specie_id,
               traits.mean, traits.statname, traits.stat, traits.n, variables.name as vname,
-              month(traits.date) as month,",
+              extract(month from traits.date) as month,",
             extra.columns,
             "treatments.control, sites.greenhouse
               from traits 

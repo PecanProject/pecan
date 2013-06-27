@@ -39,10 +39,10 @@ get.results <- function(settings) {
                                                        quantiles = quantiles,
                                                        pecandir = outdir,
                                                        outdir = settings$run$host$outdir, 
-                                                       pft.name = pft.name,
-                                                       start.year = start.year,
-                                                       end.year = end.year,
-                                                       variables = variables)
+                                                       pft.name=pft.name,
+                                                       start.year=start.year,
+                                                       end.year=end.year,
+                                                       variables=variables)
     }
   }
   
@@ -60,9 +60,9 @@ get.results <- function(settings) {
     ensemble.output <- read.ensemble.output(settings$ensemble$size,
                                             pecandir = outdir,
                                             outdir = settings$run$host$outdir, 
-                                            start.year = start.year,
-                                            end.year = end.year,
-                                            variables = variables)
+                                            start.year=start.year,
+                                            end.year=end.year,
+                                            variables=variables)
   }
   
   save(ensemble.output, sensitivity.output, file = file.path(outdir, 'output.Rdata'))
