@@ -104,9 +104,45 @@ check.settings <- function(settings) {
 
   # check if there is either ensemble or sensitivy.analysis
   if (is.null(settings$ensemble) && is.null(settings$sensitivity.analysis)) {
-    logger.warn("No ensemble or sensitivity analysis specified, runs will fail!")
+    logger.warn("No ensemble or sensitivity analysis specified, thus no model runs!")
   }
 
+  # check that there are run settings
+  if (is.null(settings[['run']])) { # use exists because is.null(run) matches is.null(rundir)
+    logger.severe("no run settings specified")
+  } else {   
+    if(is.null(settings$run$start.date)) {
+      if(!is.null(settings$run$start.year)) {
+        settings$run$start.date <- paste0(settings$run$start.year, "-01-01 00:00:00")
+      } else {
+        logger.severe("no run start date or year specified")
+      }
+    }
+    if(is.null(settings$run$end.date)) {
+      if(!is.null(settings$run$end.year)) {
+        settings$run$end.date <- paste0(settings$run$end.year, "-12-31 23:59:59")
+      } else {
+        logger.severe("no run end date or year specified")
+      }
+    }
+    if(ymd_hms(settings$run$start.date) >= ymd_hms(settings$run$end.date)){
+      logger.severe("error in settings: settings$run$start.date >= end.date")
+    }    
+  }
+  
+  # convert start / end year to date
+  ## Convert start / end year to start / end date
+  for(node in c("ensemble", "sensitivity.analysis")){
+    if(!is.null(settings[[node]])){
+      if(is.null(settings[[node]]$start.date) & !is.null(settings[[node]]$start.year)){
+        settings[[node]]$start.date <- paste0(settings[[node]]$start.year, "-01-01 00:00:00")
+      }
+      if(is.null(settings[[node]]$end.date) & !is.null(settings[[node]]$end.year)){
+        settings[[node]]$end.date <- paste0(settings[[node]]$end.year, "-12-31 23:59:59")
+      }
+    }
+  }
+  
   # check ensemble
   if (!is.null(settings$ensemble)) {
     if (is.character(settings$ensemble) || is.null(settings$ensemble$variable)) {
@@ -121,7 +157,8 @@ check.settings <- function(settings) {
       logger.info("Setting ensemble size to 1.")
       settings$ensemble$size <- 1
     }
-
+    
+    ## acept alternative start / end date
     if(is.null(settings$ensemble$start.date)) {
       if(is.null(settings$sensitivity.analysis$start.date)) {
         settings$ensemble$start.date <- settings$run$start.date 
@@ -132,6 +169,7 @@ check.settings <- function(settings) {
       }
     }
 
+ 
     if(is.null(settings$ensemble$end.date)) {
       if(is.null(settings$sensitivity.analysis$end.date)) {
         settings$ensemble$end.date <- settings$run$end.date 
@@ -145,6 +183,7 @@ check.settings <- function(settings) {
 
   # check sensitivity analysis
   if (!is.null(settings$sensitivity.analysis)) {
+    
     if (is.null(settings$sensitivity.analysis$variable)) {
       if (is.null(settings$ensemble$variable)) {
         logger.severe("No variable specified to compute sensitivity.analysis for.")
@@ -153,6 +192,7 @@ check.settings <- function(settings) {
       settings$sensitivity.analysis$variable <- settings$ensemble$variable
     }
 
+    ## acept alternative start / end date
     if(is.null(settings$sensitivity.analysis$start.date)) {
       if(is.null(settings$ensemble$start.date)) {
         settings$sensitivity.analysis$start.date <- settings$run$start.date 
@@ -174,6 +214,26 @@ check.settings <- function(settings) {
     }
   }
 
+  ## ensure that ensemble / sensitivity.analysis date ranges within time scale of run
+  for(node in c("ensemble", "sensitivity.analysis")){
+    if(!is.null(settings[[node]])){
+      if(!is.null(settings[[node]]$start.date)){
+        if(ymd_hms(settings[[node]]$start.date) < ymd_hms(settings$run$start.date)){
+          settings[[node]]$start.date <- settings$run$start.date
+          logger.info(node, "start date before run starts - using run start date")        
+        }
+      }
+      if(!is.null(settings[[node]]$end.date)){
+        if(ymd_hms(settings[[node]]$end.date) > ymd_hms(settings$run$end.date)){
+          settings[[node]]$end.date <- settings$run$end.date
+          logger.info(paste0(node, "end date after run ends - using run end date"))        
+        }   
+      }
+      if(ymd_hms(settings[[node]]$start.date) > ymd_hms(settings[[node]]$end.date)){
+        logger.severe(paste0(node, "start date before end date"))          
+      }
+    }
+  }
   # check to make sure run information is filled out
   if (is.null(settings$run$host$name)) {
     logger.info("Setting localhost for execution host.")
@@ -207,7 +267,7 @@ check.settings <- function(settings) {
       model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database)      
     }
     if(nrow(model) == 0) {
-      logger.error("There is no record of model_id = ", settings$model$id, "in database")
+      logger.severe("There is no record of model_id = ", settings$model$id, "in database")
     }
     model$binary <- tail(strsplit(model$model_path, ":")[[1]], 1)
 
