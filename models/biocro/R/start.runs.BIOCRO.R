@@ -71,12 +71,13 @@ start.runs.BIOCRO <- function(runid) {
       weather <- read.csv(metfile)[,-1]
   } else if(!metfile.exists){
     weather <- InputForWeach(lat, lon, year(start.date), year(end.date))
-    weather.dir <- file.path("~/inputs/weather",
+    weather.dir <- file.path(settings$outdir, "/met",
                              paste0(abs(lat),
                                     ifelse(lat>0,"N", "S"), "x",
                                     abs(lon),
                                     ifelse(lon>0, "E", "W")))
     dir.create(weather.dir, recursive = TRUE, showWarnings = FALSE)
+    weather.dir <- path.expand(weather.dir)
     write.csv(weather,
               file = file.path(weather.dir, "weather.csv"))
     machine.id <- db.query(paste0("select id from machines where hostname = '", hostname, "';"), con = con)
