@@ -28,7 +28,6 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir,
   } else {
     ensemble.runs <- list()
     samples.file <- file.path(pecandir, 'samples.Rdata')
-    print(samples.file)
     if(file.exists(samples.file)){
       load(samples.file)
       ensemble.runs <- runs.samples$ensemble
@@ -186,8 +185,9 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings,
   # create an ensemble id
   if (!is.null(con)) {
     # write enseblem first
-    query.base(paste("INSERT INTO ensembles (created_at, runtype, workflow_id) values (NOW(), 'ensemble', ", workflow.id, ")", sep=''), con)
-    ensemble.id <- query.base(paste("SELECT LAST_INSERT_ID() AS ID"), con)[['ID']]
+    now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+    query.base(paste("INSERT INTO ensembles (created_at, runtype, workflow_id) values ('", now, "', 'ensemble', ", workflow.id, ")", sep=''), con)
+    ensemble.id <- query.base(paste("SELECT id FROM ensembles WHERE created_at='", now, "'", sep=''), con)[['id']]
   } else {
     ensemble.id <- "NA"
   }
@@ -196,9 +196,10 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings,
   runs <- data.frame()
   for(counter in 1:settings$ensemble$size) {
     if (!is.null(con)) {
+      now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
       paramlist <- paste("ensemble=", counter, sep='')
-      query.base(paste("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id, parameter_list) values ('", settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", settings$run$end.date, "', '",settings$run$outdir , "', NOW(), ", ensemble.id, ", '", paramlist, "')", sep=''), con)
-      run.id <- query.base(paste("SELECT LAST_INSERT_ID() AS ID"), con)[['ID']]
+      query.base(paste("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id, parameter_list) values ('", settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", settings$run$end.date, "', '",settings$run$outdir , "', '", now, "', ", ensemble.id, ", '", paramlist, "')", sep=''), con)
+      run.id <- query.base(paste("SELECT id FROM runs WHERE created_at='", now, "' AND parameter_list='", paramlist, "'", sep=''), con)[['id']]
     } else {
       run.id <- get.run.id('ENS', left.pad.zeros(counter, 5))
     }

@@ -8,27 +8,17 @@
 ## http://opensource.ncsa.illinois.edu/license.html
 ## #-------------------------------------------------------------------------------
 
-test.settings <- system.file("extdata/test.settings.xml", package = "PEcAn.utils")
-settings <- read.settings(test.settings)
-
-test_that("read.settings works ",{
-  expect_true(file.remove(file.path(settings$outdir, "pecan.xml")))
-})
-
-
-
 context("tests for read.settings and related functions")
-test_that("read settings returns error if no settings file found (issue #1124)",{
-  default.settings.files <- c("/etc/pecan.xml", "~/.pecan.xml",
-                              "pecan.xml", Sys.getenv("PECAN_SETTINGS"))
-  ## need to be revised for use with log.* functions
-  ## if(!any(sapply(default.settings.files, file.exists))){
-  ##   print("the following error messages are expected results of log.error")
-  ##   expect_message(read.settings(), "Did not find any settings file to load.")
-  ## }
+
+settings <- read.settings(system.file("tests/pecan.sipnet.xml", package = "PEcAn.settings"))
+
+test_that("read.settings returned correctly", {
+	expect_true(file.exists(settings$outdir))
+	expect_true(file.info(settings$outdir)$isdir)
+	expect_true(file.exists(file.path(settings$outdir, "pecan.xml")))
 })
 
-context("check that example settings file is valid")
-
-settings.list <- read.settings(inputfile = system.file("extdata/test.settings.xml",
-                                  package = "PEcAn.utils"))
+test_that("read settings returns error if no settings file found (issue #1124)",{
+	## TODO RK : test does not work yet
+	## expect_message(read.settings("nofile.xml"), "Could not find a pecan.xml file")
+})
