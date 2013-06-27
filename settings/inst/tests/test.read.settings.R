@@ -10,6 +10,8 @@
 
 context("tests for read.settings and related functions")
 
+logger.setLevel(level="OFF")
+
 settings <- read.settings(system.file("tests/pecan.sipnet.xml", package = "PEcAn.settings"))
 
 test_that("read.settings returned correctly", {
@@ -21,4 +23,84 @@ test_that("read.settings returned correctly", {
 test_that("read settings returns error if no settings file found (issue #1124)",{
 	## TODO RK : test does not work yet
 	## expect_message(read.settings("nofile.xml"), "Could not find a pecan.xml file")
+})
+
+
+test_that("check.settings throws error if required content not there", {
+  for(node in c("pfts", "run")){
+    s <- settings
+    s[[node]] <- NULL
+    expect_error(check.settings(s))    
+  }
+  for(date in c("start.date", "end.date")){
+    s <- settings
+    s$run[[date]] <- NULL
+    expect_error(check.settings(s))
+  }
+})
+
+test_that("check.settings gives sensible defaults",{
+  ## This provides the minimum inputs 
+  s <- settings
+  s1 <- list(pfts = list(pft = list(name = "test", outdir = "testdir")), 
+             database = list(), 
+             run = list(start.date = now(), end.date = days(1) + now()))
+  s2 <- check.settings(s1)
+  expect_equal(s2$database$driver, "MySQL")
+
+
+  ## dir. paths, with default localhost
+  expect_equal(s2$run$host$name, "localhost")
+  
+  ## outdirs
+  expect_equal(s2$outdir, tempdir())
+  expect_equal(s2$run$host$outdir, file.path(tempdir(), "out"))  
+  
+  ## rundirs
+  expect_equal(s2$rundir, file.path(tempdir(), "run"))  
+  expect_equal(s2$run$host$rundir, file.path(tempdir(), "run"))
+  expect_equal(s2$run$host$rundir, s2$rundir)
+
+  
+  expect_true(s2$bety$write)
+  expect_true(s2$meta.analysis$iter > 1000)
+  expect_false(s2$meta.analysis$random.effects)
+})
+
+test_that("check.settings uses run dates if dates not given in ensemble or sensitivity analysis", {
+  s <- settings
+  
+  for(node in c("ensemble", "sensitivity.analysis")) {
+    s1 <- list(pfts = s$pfts, database = s$database, run = s$run)
+    s1[[node]] <- list(variable = "FOO")
+    s2 <- check.settings(s1)
+    expect_equivalent(s2[[node]]$start.year, year(s2$run$start.date))
+    expect_equivalent(s2[[node]]$end.year, year(s2$run$end.date))
+    
+    s1 <- list(pfts = s$pfts, database = s$database, run = NA)
+    s1[[node]] <- list(variable = "FOO", start.year = 1000, end.year = 1000)
+    expect_error(check.settings(s1))    
+  }
+  
+})
+
+test_that("sensitivity.analysis and ensemble use other's settings if null",{
+  s <- settings
+  s1 <- list(pfts = s$pfts, database = s$database, run = s$run)
+  nodes <- c("sensitivity.analysis", "ensemble")
+  for(node1 in nodes) {
+    node2 <- nodes[nodes != node1]
+    s1 <- list(pfts = s$pfts, database = s$database, run = s$run)
+    s1[[node1]] <- list(variable = "FOO", start.year = 2003, end.year = 2004)
+    s1[[node2]] <- list()
+    s2 <- check.settings(s1)
+    for(setting in c("variable", "start.year", "end.year")){
+      expect_equal(s2[[node1]][[setting]], s2[[node2]][[setting]])        
+    }
+    expect_equal(s2$ensemble$size, 1)
+  }
+  
+  s1[[node]] <- list(variable = "FOO")
+  
+  
 })
