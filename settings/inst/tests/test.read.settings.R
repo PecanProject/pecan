@@ -10,6 +10,8 @@
 
 context("tests for read.settings and related functions")
 
+logger.setLevel(level="OFF")
+
 settings <- read.settings(system.file("tests/pecan.sipnet.xml", package = "PEcAn.settings"))
 
 test_that("read.settings returned correctly", {
@@ -21,4 +23,18 @@ test_that("read.settings returned correctly", {
 test_that("read settings returns error if no settings file found (issue #1124)",{
 	## TODO RK : test does not work yet
 	## expect_message(read.settings("nofile.xml"), "Could not find a pecan.xml file")
+})
+
+
+test_that("check.settings throws error if required content not there", {
+  for(node in c("pfts", "run")){
+    s <- settings
+    s[[node]] <- NULL
+    expect_error(check.settings(s))    
+  }
+  for(date in c("start.date", "end.date")){
+    s <- settings
+    s$run[[date]] <- NULL
+    expect_error(check.settings(s))
+  }
 })
