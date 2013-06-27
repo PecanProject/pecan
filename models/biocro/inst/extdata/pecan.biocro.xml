@@ -110,7 +110,7 @@
     </quantiles>
     <variable>StemBiom</variable>
     <start.year>2004</start.year>
-    <end.year>2004</end.year>
+    <end.year>2005</end.year>
   </sensitivity.analysis>
   <model>
     <name>BIOCRO</name>
