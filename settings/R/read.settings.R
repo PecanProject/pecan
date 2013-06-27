@@ -102,6 +102,19 @@ check.settings <- function(settings) {
     logger.severe("No PFTS specified.")
   }
 
+  # check for a run settings
+  if (is.null(settings[['run']])) {
+    logger.severe("No Run Settings specified")
+    settings$run <- list()
+  }
+  for(date.limit in c("start.date", "end.date")){
+    if (is.null(settings[['run']][[date.limit]])){
+      logger.severe("No Start or Run Date set")
+      settings[['run']][[date.limit]] <- NA
+    }    
+  }
+
+  
   # check if there is either ensemble or sensitivy.analysis
   if (is.null(settings$ensemble) && is.null(settings$sensitivity.analysis)) {
     logger.warn("No ensemble or sensitivity analysis specified, runs will fail!")
@@ -172,6 +185,31 @@ check.settings <- function(settings) {
         logger.info("No end date passed to sensitivity.analysis - using the ensemble date (", settings$sensitivity.analysis$end.date, ").")
       }
     }
+    
+    ## Check that dates are logical
+    if(ymd_hms(settings$run$start.date) >= ymd_hms(settings$run$end.date)) {
+      logger.severe("run start date after end date")
+    }
+    ## ensure that ensemble / sensitivity.analysis date ranges within time scale of run
+    for(node in c("ensemble", "sensitivity.analysis")){ 
+      if(!is.null(settings[[node]])){
+        if(!is.null(settings[[node]]$start.year && !is.null(settings[[node]]$end.year))){
+          if(as.numeric(settings[[node]]$start.year > as.numeric(settings[[node]]$end.year))) {
+            logger.severe(node, "start year greater than end year; using run start and end")
+            settings[[node]]$start.year <- year(settings$run$start.date)
+            settings[[node]]$end.year <- year(settings$run$end.date)
+          }
+          if(as.numeric(settings[[node]]$start.year) < as.numeric(year(settings$run$start.date))) {
+            settings[[node]]$start.year <- year(settings$run$start.date)
+            logger.warn(paste(node, "start before run start; setting to run start"))
+          }
+          if(as.numeric(settings[[node]]$end.year) < as.numeric(year(settings$run$end.date))){
+            settings[[node]]$end.year <- year(settings$run$end.date)
+            logger.warn(paste(node, "end after run end; setting to run start"))
+          }
+        }
+      }
+    }
   }
 
   # check to make sure run information is filled out
@@ -203,7 +241,7 @@ check.settings <- function(settings) {
   if (is.null(settings$model$id)) {
     settings$model$id <- -1
   } else if (as.numeric(settings$model$id) >= 0) {
-print(settings$model$id)
+
     if(database){
       model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database)      
     }
