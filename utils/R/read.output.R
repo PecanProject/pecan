@@ -10,17 +10,22 @@
 
 ##' Convert output for a single model run to NetCDF
 ##'
+##' DEPRECATED this function will be removed in future versions, please update
+##' your workflow.
+##'
 ##' This function is a wrapper for model-specific conversion functions,
 ##' e.g. \code{model2netcdf.ED2}, \code{model2netcdf.BIOCRO}.
 ##' @title Convert model output to NetCDF 
 ##' @param runid 
 ##' @param outdir
 ##' @param model name of simulation model currently accepts ("ED2", "SIPNET", "BIOCRO")
-##' @export
+##' @param lat Latitude of the site
+##' @param lon Longitude of the site
+##' @param start_date Start time of the simulation
+##' @param end_date End time of the simulation
 ##' @return vector of filenames created, converts model output to netcdf as a side effect
 ##' @author Mike Dietze, David LeBauer
-model2netcdf <- function(runid, outdir, model){
-
+model2netcdfdep <- function(runid, outdir, model, lat, lon, start_date, end_date){
   ## load model-specific PEcAn module
   do.call(require, list(paste0("PEcAn.", model)))    
 
@@ -31,7 +36,7 @@ model2netcdf <- function(runid, outdir, model){
     return(NA)
   }
   
-  do.call(model2nc, list(outdir))    
+  do.call(model2nc, list(outdir, lat, lon, start_date, end_date))    
   
   print(paste("Output from run", runid, "has been converted to netCDF"))
   ncfiles <- list.files(path = outdir, pattern="\\.nc$", full.names=TRUE)
@@ -39,6 +44,29 @@ model2netcdf <- function(runid, outdir, model){
     logger.severe("Conversion of model files to netCDF unsuccessful")
   }
   return(ncfiles)
+}
+
+##' Convert output for a single model run to NetCDF
+##'
+##' DEPRECATED this function will be removed in future versions, please update
+##' your workflow.
+##'
+##' This function is a wrapper for model-specific conversion functions,
+##' e.g. \code{model2netcdf.ED2}, \code{model2netcdf.BIOCRO}.
+##' @title Convert model output to NetCDF 
+##' @param runid 
+##' @param outdir
+##' @param model name of simulation model currently accepts ("ED2", "SIPNET", "BIOCRO")
+##' @param lat Latitude of the site
+##' @param lon Longitude of the site
+##' @param start_date Start time of the simulation
+##' @param end_date End time of the simulation
+##' @export
+##' @return vector of filenames created, converts model output to netcdf as a side effect
+##' @author Mike Dietze, David LeBauer
+model2netcdf <- function(runid, outdir, model, lat, lon, start_date, end_date){
+  logger.info("model2netcdf will be removed in future versions, plase update your worklow")
+  model2netcdfdep(runid, outdir, model, lat, lon, start_date)
 }
 
 
@@ -112,7 +140,7 @@ read.output <- function(runid, outdir, start.year=NA,
 convert.outputs <- function(model, settings, ...) {
   for (runid in readLines(con=file.path(settings$rundir, "runs.txt"))) {
     outdir <- file.path(settings$run$host$outdir, runid)
-    model2netcdf(runid, outdir, model) 
+    model2netcdfdep(runid, outdir, model, settings$run$site$lat, settings$run$site$lon, settings$run$start.date, settings$run$end.date) 
   }
 }
 ####################################################################################################
