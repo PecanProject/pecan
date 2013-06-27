@@ -14,11 +14,15 @@
 ##' Shawn Serbin and Mike Dietze
 ##' @name model2netcdf.BIOCRO
 ##' @title Function to convert biocro model output to standard netCDF format
-##' @param outdir Location of biocro model output
-##' @param run.id Name of biocro model output file.
+##' @param outdir Location of ED model output
+##' @param sitelat Latitude of the site
+##' @param sitelon Longitude of the site
+##' @param start_date Start time of the simulation
+##' @param end_date End time of the simulation
 ##' @export
+##'
 ##' @author David LeBauer, Deepak Jaiswal
-model2netcdf.BIOCRO <- function(outdir) {
+model2netcdf.BIOCRO <- function(outdir, sitelat, sitelon, start_date, end_date) {
   
   ### Read in model output in biocro format
   outfile <- file.path(outdir, "result.csv")
@@ -27,46 +31,26 @@ model2netcdf.BIOCRO <- function(outdir) {
 
   ## longname prefix station_* used for a point http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.4/cf-conventions.html#scalar-coordinate-variables
   lat <- ncdim_def("lat", "degrees_east",
-                   vals =  as.numeric(settings$run$site$lat),
+                   vals =  as.numeric(sitelat),
                    longname = "station_latitude") 
   lon <- ncdim_def("lon", "degrees_north",
-                   vals = as.numeric(settings$run$site$lon),
+                   vals = as.numeric(sitelon),
                    longname = "station_longitude")
   t <- ncdim_def(name = "time",
-                 units = paste0("days since ",
-                   year(settings$run$start.date),
-                   "-01-01 00:00:00"),
+                 units = paste0("days since ", year(start_date), "-01-01 00:00:00"),
                  vals = with(result, DayofYear + Hour/24),
                  calendar = "standard", unlim = TRUE)
   ## seconds per day
   vars <- list()
-  ncvar_def.pecan <- function(name, units, longname,
-                              dim = list(lon, lat, t),
-                              missval = -999, prec = "float"){
-    ans <- ncvar_def(name = name, units = units, dim = dim,
-                     missval = missval, prec = "float")
-    return(ans)
-  }
+
   c2biomass <- 0.4
   vars <- list(
-    TotLivBiom  = ncvar_def.pecan(name = "TotLivBiom",
-      units = "kg C m-2",
-      longname = "Total living bioimass"),
-    RootBiom    =  ncvar_def.pecan(name = "RootBiom",
-      units    = "kg C m-2",
-      longname = "Total root biomass"),
-    StemBiom     = ncvar_def.pecan(name = "StemBiom",
-      units = "kg C m-2",
-      longname = "Total stem biomass"),
-    Evap = ncvar_def.pecan(name = "Evap",
-      units = "kg m-2 s-1",
-      longname = "Total Evaporation"),
-    TVeg = ncvar_def.pecan(name = "TVeg",
-      units = "kg m-2 s-1",
-      longname = "Transpiration"),
-    LAI = ncvar_def.pecan(name = "LAI",
-      units = "m2 m-2",
-      longname = "Leaf Area Index"))
+    TotLivBiom  = mstmipvar("TotLivBiom", lat, lon, t, NULL),
+    RootBiom    = mstmipvar("RootBiom", lat, lon, t, NULL),
+    StemBiom    = mstmipvar("StemBiom", lat, lon, t, NULL),
+    Evap        = mstmipvar("Evap", lat, lon, t, NULL),
+    TVeg        = mstmipvar("TVeg", lat, lon, t, NULL),
+    LAI         = mstmipvar("LAI", lat, lon, t, NULL))
   k <- ud.convert(1, "Mg/ha", "kg/m2") / c2biomass
 
   results <- with(result, list(
@@ -77,8 +61,7 @@ model2netcdf.BIOCRO <- function(outdir) {
     TVeg = ud.convert(CanopyTrans, "Mg/ha/h", "kg/m2/s"),
     LAI =  LAI))
   
-  nc <- nc_create(filename = file.path(outdir, "result.nc"),
-                  vars = vars)
+  nc <- nc_create(filename = file.path(outdir, "result.nc"), vars = vars)
    
   ## Output netCDF data
   for(.vname in names(vars)){
