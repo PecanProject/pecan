@@ -40,7 +40,7 @@ get.results(settings)
 
 run.sensitivity.analysis()      # Run sensitivity analysis and variance decomposition on model output
 
-#run.ensemble.analysis()		      # Run ensemble analysis on model output. 
+run.ensemble.analysis()		      # Run ensemble analysis on model output. 
                                 # OPTIONAL: run.ensemble.analysis(plot.timeseries=TRUE) to get an esemble 
                                 # time-series output for the target variables set in the PEcAn.xml file
 
