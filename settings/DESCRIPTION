@@ -13,6 +13,7 @@ Description: Contains functions to read PEcAn settings files
 Depends:
     PEcAn.utils,
     PEcAn.DB,
+    lubridate,
     XML
 Suggests:
     testthat
