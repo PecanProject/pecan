@@ -28,6 +28,7 @@ check.settings <- function(settings) {
     return(0)
   }
 
+  
   ## allow PEcAn to run without database
   if (is.null(settings$database)) {
     database <- NULL
@@ -102,6 +103,19 @@ check.settings <- function(settings) {
     logger.severe("No PFTS specified.")
   }
 
+  # check for a run settings
+  if (is.null(settings[['run']])) {
+    logger.severe("No Run Settings specified")
+    settings$run <- list()
+  }
+  for(date.limit in c("start.date", "end.date")){
+    if (is.null(settings[['run']][[date.limit]])){
+      logger.severe("No Start or Run Date set")
+      settings[['run']][[date.limit]] <- NA
+    }    
+  }
+
+  
   # check if there is either ensemble or sensitivy.analysis
   if (is.null(settings$ensemble) && is.null(settings$sensitivity.analysis)) {
     logger.warn("No ensemble or sensitivity analysis specified, runs will fail!")
@@ -132,12 +146,12 @@ check.settings <- function(settings) {
       }
     }
 
-    if(is.null(settings$ensemble$end.date)) {
-      if(is.null(settings$sensitivity.analysis$end.date)) {
-        settings$ensemble$end.date <- settings$run$end.date 
+    if(is.null(settings$ensemble$end.year)) {
+      if(is.null(settings$sensitivity.analysis$end.year)) {
+        settings$ensemble$end.year <- year(settings$run$end.date) 
         logger.info("No end date passed to ensemble - using the run date (", settings$ensemble$end.date, ").")
       } else { 
-        settings$ensemble$end.date <- settings$sensitivity.analysis$end.date 
+        settings$ensemble$end.year <- settings$sensitivity.analysis$end.year 
         logger.info("No end date passed to ensemble - using the sensitivity.analysis date (", settings$ensemble$end.date, ").")
       }
     }
@@ -163,13 +177,38 @@ check.settings <- function(settings) {
       }
     }
 
-    if(is.null(settings$sensitivity.analysis$end.date)) {
-      if(is.null(settings$ensemble$end.date)) {
-        settings$sensitivity.analysis$end.date <- settings$run$end.date 
+    if(is.null(settings$sensitivity.analysis$end.year)) {
+      if(is.null(settings$ensemble$end.year)) {
+        settings$sensitivity.analysis$end.year <- year(settings$run$end.date) 
         logger.info("No end date passed to sensitivity.analysis - using the run date (", settings$sensitivity.analysis$end.date, ").")
       } else { 
-        settings$sensitivity.analysis$end.date <- settings$ensemble$end.date 
+        settings$sensitivity.analysis$end.year <- settings$ensemble$end.year 
         logger.info("No end date passed to sensitivity.analysis - using the ensemble date (", settings$sensitivity.analysis$end.date, ").")
+      }
+    }
+    
+    ## Check that dates are logical
+    if(ymd_hms(settings$run$start.date) >= ymd_hms(settings$run$end.date)) {
+      logger.severe("run start date after end date")
+    }
+    ## ensure that ensemble / sensitivity.analysis date ranges within time scale of run
+    for(node in c("ensemble", "sensitivity.analysis")){ 
+      if(!is.null(settings[[node]])){
+        if(!is.null(settings[[node]]$start.year && !is.null(settings[[node]]$end.year))){
+          if(as.numeric(settings[[node]]$start.year) > as.numeric(settings[[node]]$end.year)) {
+            logger.severe(node, "start year greater than end year; using run start and end")
+            settings[[node]]$start.year <- year(settings$run$start.date)
+            settings[[node]]$end.year <- year(settings$run$end.date)
+          }
+          if(as.numeric(settings[[node]]$start.year) < as.numeric(year(settings$run$start.date))) {
+            settings[[node]]$start.year <- year(settings$run$start.date)
+            logger.severe(paste(node, "start before run start; setting to run start"))
+          }
+          if(as.numeric(settings[[node]]$end.year) > as.numeric(year(settings$run$end.date))){
+            settings[[node]]$end.year <- year(settings$run$end.date)
+            logger.severe(paste(node, "end after run end; setting to run start"))
+          }
+        }
       }
     }
   }
@@ -203,7 +242,7 @@ check.settings <- function(settings) {
   if (is.null(settings$model$id)) {
     settings$model$id <- -1
   } else if (as.numeric(settings$model$id) >= 0) {
-print(settings$model$id)
+
     if(database){
       model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database)      
     }
