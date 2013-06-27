@@ -61,7 +61,7 @@ write.config.BIOCRO <- function(defaults,
                                 run.id) {
 
 
-  if(settings$run$host == "localhost"){
+  if(settings$run$host$name == "localhost"){
     rundir <- file.path(settings$rundir, as.character(run.id))
     outdir <- file.path(settings$outdir, as.character(run.id))
   } else {
