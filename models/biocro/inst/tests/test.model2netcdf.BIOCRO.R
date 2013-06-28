@@ -4,13 +4,16 @@ outdir <- file.path(tempdir(), "biocro")
 dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 
 pkgext <- system.file("extdata", package = "PEcAn.BIOCRO")
-settings <<- PEcAn.utils::read.settings(file.path(pkgext, "pecan.biocro.xml"))
+settings <- read.settings(file.path(pkgext, "pecan.biocro.xml"))
 result.csv <- file.path(pkgext, "result.csv")
 
 file.copy(from = result.csv, to = outdir)
 
-model2netcdf.BIOCRO(outdir = outdir)
-biocro.ncfile <- file.path(outdir, "result.nc")
+start_date <- settings$run$start.date
+model2netcdf.BIOCRO(outdir = outdir, sitelat=1, sitelon=2, 
+                    start_date = settings$run$start.date, 
+                    end_date   = settings$run$end.date)
+biocro.ncfile <- file.path(outdir, paste0(year(settings$run$start.date), ".nc"))
 
 test_that("model2netcdf.BIOCRO reads a .csv and writes a netcdf file",{
   expect_true(file.exists(biocro.ncfile))
