@@ -69,28 +69,41 @@ write.config.BIOCRO <- function(defaults,
     outdir <- file.path(settings$run$host$outdir, as.character(run.id))
   }
  
-  writeLines(c("#!/usr/bin/Rscript",
-               
-               paste("cp ", file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))),
-             con=file.path(settings$rundir, run.id, "job.sh"))
-  Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
-  
+#   dir.create(rundir)
+#   writeLines(c("#!/usr/bin/Rscript",               
+#                paste("cp ", file.path(rundir, "README.txt"), 
+#                      file.path(outdir, "README.txt"))),
+#              con=file.path(settings$rundir, run.id, "job.sh"))
+#   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
+#   
   ##
   traits  <- lapply(convert.samples.BIOCRO(trait.values),
                     as.character)
-  constants <- defaults$pft$constants
+  
+  defaults.file <- defaults$pft$constants$file
+  if(is.null(defaults.file)){
+    defaults.xml <- system.file("extdata/defaults.xml", package = "PEcAn.BIOCRO")    
+    defaults <- xmlToList(xmlParse(defaults.xml))
+  } else if(grepl("xml", defaults.file)){
+    defaults.xml <- defaults.file      
+    defaults <- xmlToList(xmlParse(defaults.xml))
+  } else if(grepl("RData", defaults.file)){
+    load(defaults.file)
+  }
 
-  sugarRd <- constants
+  if(!exists("defaults")) logger.error("No defaults values set")
+
+  sugarRd <- defaults
   ## update photosynthesis parameters:0
-  for(parm.type in names(constants)[!names(constants) == "SugarPhenoParms"]){
-    for(parm in names(constants[[parm.type]])){
+  for(parm.type in names(defaults)[!names(defaults) == "SugarPhenoParms"]){
+    for(parm in names(defaults[[parm.type]])){
       if(!is.null(traits[[parm]])){
-        constants[[parm.type]][[parm]] <- traits[[parm]]
+        defaults[[parm.type]][[parm]] <- traits[[parm]]
       }        
     }
   }
   
-  parms.xml    <- listToXml(constants, "pft")
+  parms.xml    <- listToXml(defaults, "pft")
   location.xml <- listToXml(list(latitude = settings$run$site$lat,
                                   longitude = settings$run$site$lon),
                             "location")

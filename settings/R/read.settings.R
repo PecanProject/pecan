@@ -69,6 +69,8 @@ check.settings <- function(settings) {
     settings$database$dbname <- settings$database$name
     settings$database$name <- NULL
   }
+  if(is.null(settings$database$dbfiles)) settings$database$dbfiles <- "$HOME/.pecan/dbfiles"
+  dir.create(settings$database$dbfiles, showWarnings = FALSE, recursive = TRUE, )
   if(paste0("R", settings$database$driver) %in% rownames(installed.packages())){
     require(PEcAn.DB)
     if (!db.exists(params=settings$database, write=settings$bety$write)) {
@@ -194,7 +196,7 @@ check.settings <- function(settings) {
     ## ensure that ensemble / sensitivity.analysis date ranges within time scale of run
     for(node in c("ensemble", "sensitivity.analysis")){ 
       if(!is.null(settings[[node]])){
-        if(!is.null(settings[[node]]$start.year && !is.null(settings[[node]]$end.year))){
+        if(!is.null(settings[[node]]$start.year) && !is.null(settings[[node]]$end.year)){
           if(as.numeric(settings[[node]]$start.year) > as.numeric(settings[[node]]$end.year)) {
             logger.severe(node, "start year greater than end year; using run start and end")
             settings[[node]]$start.year <- year(settings$run$start.date)
