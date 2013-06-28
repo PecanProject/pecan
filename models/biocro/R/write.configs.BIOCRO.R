@@ -69,7 +69,7 @@ write.config.BIOCRO <- function(defaults,
     outdir <- file.path(settings$run$host$outdir, as.character(run.id))
   }
  
-#   dir.create(rundir)
+  dir.create(rundir, showWarnings = FALSE, recursive = TRUE)
 #   writeLines(c("#!/usr/bin/Rscript",               
 #                paste("cp ", file.path(rundir, "README.txt"), 
 #                      file.path(outdir, "README.txt"))),
@@ -77,7 +77,7 @@ write.config.BIOCRO <- function(defaults,
 #   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
 #   
   ##
-  traits  <- lapply(convert.samples.BIOCRO(trait.values),
+  traits  <- lapply(convert.samples.BIOCRO(trait.values[[1]]),
                     as.character)
   
   defaults.file <- defaults$pft$constants$file
@@ -93,7 +93,6 @@ write.config.BIOCRO <- function(defaults,
 
   if(!exists("defaults")) logger.error("No defaults values set")
 
-  sugarRd <- defaults
   ## update photosynthesis parameters:0
   for(parm.type in names(defaults)[!names(defaults) == "SugarPhenoParms"]){
     for(parm in names(defaults[[parm.type]])){
