@@ -9,4 +9,4 @@
 library(testthat)
 library(PEcAn.BIOCRO)
 
-# test_package("PEcAn.BIOCRO")
+test_package("PEcAn.BIOCRO")

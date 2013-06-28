@@ -67,6 +67,7 @@ db.query <- function(query, con=NULL, params=NULL) {
 ##' db.open(settings$database)
 ##' }
 db.open <- function(params) {
+  params$dbfiles <- NULL
   if (is.null(params$driver)) {
     args <- c(drv=dbDriver("MySQL"), params, recursive=TRUE)
   } else {

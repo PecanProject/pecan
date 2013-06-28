@@ -26,15 +26,21 @@ test_that("convert.samples.BIOCRO works", {
 })
 
 test_that("write.configs.BIOCRO produces expected output",{
+  testdir <- file.path(settings$outdir, "median")
+  dir.create(testdir, showWarnings = FALSE, recursive = TRUE)
+  config <- file.path(settings$outdir, "median/config.xml")
+  if(file.exists(config)) file.remove(config)
   trait.values = samples$biocro.saof["50", ]
   write.config.BIOCRO(defaults = settings$pfts,
                       trait.values = samples$biocro.saof["50", ],
                       settings = settings,
-                      run.id = "")
-  config <- file.path(settings$outdir, "config.xml")
+                      run.id = "median")
+
+  expect_true(file.exists(config))
+  
   config.xml <- xmlParse(config)
   config.list <- xmlToList(config.xml)
-  biocro.trait.values <- convert.samples.BIOCRO(trait.values)
+  biocro.trait.values <- convert.samples.BIOCRO(trait.values) 
   expect_equal(biocro.trait.values[["vmax"]], as.numeric(config.list$pft$photoParms[["vmax"]]))  
   expect_equal(biocro.trait.values[["b0"]], as.numeric(config.list$pft$photoParms[["b0"]]))  
   expect_equal(biocro.trait.values[["b1"]], as.numeric(config.list$pft$photoParms[["b1"]]))
