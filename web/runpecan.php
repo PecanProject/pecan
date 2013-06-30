@@ -187,11 +187,6 @@ foreach($pft as $p) {
 	fwrite($fh, "      <name>${p}</name> " . PHP_EOL);
 	fwrite($fh, "      <constants>" . PHP_EOL);
 	fwrite($fh, "        <num>${pft_id}</num>" . PHP_EOL);
-	if ($modeltype == "BIOCRO") {
-		$src = fopen("template/biocro.xml", 'r');
-		stream_copy_to_stream($src, $fh);
-		fclose($src);
-	}
 	fwrite($fh, "      </constants>" . PHP_EOL);
 	fwrite($fh, "    </pft>" . PHP_EOL);
 	$pft_id++;
