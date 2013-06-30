@@ -9,4 +9,5 @@
 library(testthat)
 library(PEcAn.visualization)
 
+logger.setQuitOnSevere(FALSE)
 test_package("PEcAn.visualization")

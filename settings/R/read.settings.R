@@ -138,7 +138,7 @@ check.settings <- function(settings) {
 
   # check ensemble
   if (!is.null(settings$ensemble)) {
-    if (is.character(settings$ensemble) || is.null(settings$ensemble$variable)) {
+    if (is.null(settings$ensemble$variable)) {
       if (is.null(settings$sensitivity.analysis$variable)) {
         logger.severe("No variable specified to compute ensemble for.")
       }
@@ -173,10 +173,10 @@ check.settings <- function(settings) {
 
     # check start and end dates
     if (year(startdate) > settings$ensemble$start.year) {
-      logger.severe("Start year of enseemble should come after the start.date of the run")
+      logger.severe("Start year of ensemble should come after the start.date of the run")
     }
     if (year(enddate) < settings$ensemble$end.year) {
-      logger.severe("End year of enseemble should come before the end.date of the run")
+      logger.severe("End year of ensemble should come before the end.date of the run")
     }
     if (settings$ensemble$start.year > settings$ensemble$end.year) {
       logger.severe("Start year of ensemble should come before the end year of the ensemble")
@@ -212,16 +212,16 @@ check.settings <- function(settings) {
         logger.info("No end date passed to sensitivity.analysis - using the ensemble date (", settings$sensitivity.analysis$end.date, ").")
       }
     }
-    
+
     # check start and end dates
     if (year(startdate) > settings$sensitivity.analysis$start.year) {
-      logger.severe("Start year of enseemble should come after the start.date of the run")
+      logger.severe("Start year of sensitivity.analysis should come after the start.date of the run")
     }
     if (year(enddate) < settings$sensitivity.analysis$end.year) {
-      logger.severe("End year of enseemble should come before the end.date of the run")
+      logger.severe("End year of sensitivity.analysis should come before the end.date of the run")
     }
-    if (settings$ensemble$start.year > settings$sensitivity.analysis$end.year) {
-      logger.severe("Start year of ensemble should come before the end year of the ensemble")
+    if (settings$sensitivity.analysis$start.year > settings$sensitivity.analysis$end.year) {
+      logger.severe("Start year of sensitivity.analysis should come before the end year of the ensemble")
     }
   }
 
@@ -253,18 +253,27 @@ check.settings <- function(settings) {
   if(!is.null(settings$model)){
     if (is.null(settings$model$id)) {
       settings$model$id <- -1
-    } else if (as.numeric(settings$model$id) >= 0) {
-
-      if(database){
-        model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database)      
+    } else {
+      if(database && as.numeric(settings$model$id) >= 0){
+        model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database)
+      } else {
+        model <- data.frame(id=settings$model$id)
+        if (!is.null(settings$model$name)) {
+          model$model_type=settings$model$name
+        }
+        if (!is.null(settings$model$name)) {
+          model$model_path=paste0("hostname:", settings$model$binary)
+        }
       }
       if(nrow(model) == 0) {
         logger.error("There is no record of model_id = ", settings$model$id, "in database")
       }
-      model$binary <- tail(strsplit(model$model_path, ":")[[1]], 1)
+      if (!is.null(model$model_path)) {
+        model$binary <- tail(strsplit(model$model_path, ":")[[1]], 1)        
+      }
 
       if (is.null(settings$model$name)) {
-        if ((is.null(model$model_type) && model$model_type == "")) {
+        if ((is.null(model$model_type) || model$model_type == "")) {
           logger.severe("No model type specified.")
         }
         settings$model$name <- model$model_type
@@ -274,7 +283,7 @@ check.settings <- function(settings) {
       }
 
       if (is.null(settings$model$binary)) {
-        if ((is.null(model$binary) && model$binary == "")) {
+        if ((is.null(model$binary) || model$binary == "")) {
           logger.severe("No model binary specified.")
         }
         settings$model$binary <- tail(strsplit(model$binary, ":")[[1]], 1)
@@ -290,10 +299,23 @@ check.settings <- function(settings) {
     if (is.null(settings$run$site$id)) {
       settings$run$site$id <- -1
     } else if (settings$run$site$id >= 0) {
-      site <- db.query(paste("SELECT * FROM sites WHERE id =", settings$run$site$id), params=settings$database);
+      if (database) {
+        site <- db.query(paste("SELECT * FROM sites WHERE id =", settings$run$site$id), params=settings$database);
+      } else {
+        site <- data.frame(id=settings$run$site$id)
+        if (!is.null(settings$run$site$name)) {
+          site$sitename=settings$run$site$name
+        }
+        if (!is.null(settings$run$site$lat)) {
+          site$lat=settings$run$site$lat
+        }
+        if (!is.null(settings$run$site$lon)) {
+          site$lon=settings$run$site$lon
+        }
+      }
 
       if (is.null(settings$run$site$name)) {
-        if ((is.null(site$sitename) && site$sitename == "")) {
+        if ((is.null(site$sitename) || site$sitename == "")) {
           logger.info("No site name specified.")
           settings$run$site$name <- "NA"
         } else {
@@ -305,7 +327,7 @@ check.settings <- function(settings) {
       }
 
       if (is.null(settings$run$site$lat)) {
-        if ((is.null(site$lat) && site$lat == "")) {
+        if ((is.null(site$lat) || site$lat == "")) {
           logger.severe("No lat specified for site.")
         } else {
           settings$run$site$lat <- as.numeric(site$lat)
@@ -316,7 +338,7 @@ check.settings <- function(settings) {
       }
 
       if (is.null(settings$run$site$lon)) {
-        if ((is.null(site$lon) && site$lon == "")) {
+        if ((is.null(site$lon) || site$lon == "")) {
           logger.severe("No lon specified for site.")
         } else {
           settings$run$site$lon <- as.numeric(site$lon)
