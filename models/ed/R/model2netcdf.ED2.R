@@ -280,10 +280,11 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
       fliq <- NA#getHdf5Data(ncT, 'AVG_SOIL_FRACLIQ')
       out <- add(1-fliq,35,row, yrs[y]) ## SMFrozFrac
       out <- add(fliq,36,row, yrs[y]) ## SMLiqFrac
+      ## This needs to be soil wetness, i.e. multilple levels deep
       out <- add(getHdf5Data(ncT, 'AVG_SOIL_WATER'),37,row, yrs[y]) ## SoilWater  **********
       ##out <- add(sum(soiltemp*dz)/-min(z),38) ## SoilTemp
       out <- add(soiltemp,38,row, yrs[y]) ## SoilTemp
-      out <- add(soiltemp*NA,39,row, yrs[y]) ## SoilWet
+      out <- add(getHdf5Data(ncT, 'AVG_SOIL_WATER'),39,row, yrs[y]) ## SoilWet
       out <- add(getHdf5Data(ncT, 'AVG_ALBEDO'),40,row, yrs[y]) ## Albedo
       out <- add(getHdf5Data(ncT, 'AVG_SNOWTEMP'),41,row, yrs[y]) ## SnowT
       out <- add(getHdf5Data(ncT, 'AVG_SNOWMASS'),42,row, yrs[y]) ## SWE
@@ -383,9 +384,9 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
     ##var[[36]] <- mstmipvar("SMLiqFrac", lat, lon, t, zg)
     var[[35]] <- mstmipvar("SMFrozFrac", lat, lon, t, zg)
     var[[36]] <- mstmipvar("SMLiqFrac", lat, lon, t, zg)
-    var[[37]] <- mstmipvar("SoilMoist", lat, lon, t, zg)
+    var[[37]] <- mstmipvar("SoilMoist", lat, lon, t, NA) # TODO this should be nsoil
     out <- checkTemp(38)
-    var[[38]] <- mstmipvar("SoilTemp", lat, lon, t, zg)
+    var[[38]] <- mstmipvar("SoilTemp", lat, lon, t, NA) # TODO this should be nsoil
     var[[39]] <- mstmipvar("SoilWet", lat, lon, t, zg)
     var[[40]] <- mstmipvar("Albedo", lat, lon, t, zg)
     out <- checkTemp(41)
@@ -400,8 +401,8 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
 
     ## write ALMA
     nc <- nc_create(file.path(outdir, paste(yrs[y], "nc", sep=".")), var)
-    for(i in 1:length(var)){
-      ncvar_put(nc,var[[i]],out[[i]])  
+    for(i in 1:length(var)) {
+      ncvar_put(nc,var[[i]],out[[i]])
     }
     nc_close(nc)
   }  ## end year loop
