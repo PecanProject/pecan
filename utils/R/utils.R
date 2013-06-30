@@ -25,7 +25,7 @@
 ##' @param nsoil nsoil if dimension requests it
 ##' @return ncvar based on MstMIP definition
 ##' @author Rob Kooper
-mstmipvar <- function(name, lat, lon, time, nsoil) {
+mstmipvar <- function(name, lat=NA, lon=NA, time=NA, nsoil=NA) {
   data(mstmip_vars, package="PEcAn.utils")
   var <- mstmip_vars[mstmip_vars$Variable.Name==name,]
   dims <- list()
@@ -99,13 +99,13 @@ mstmipvar <- function(name, lat, lon, time, nsoil) {
 
   for(i in 1:4) {
     vd <- var[[paste0('dim', i)]]
-    if (vd == 'lon' && !is.null(lon)) {
+    if (vd == 'lon' && !is.na(lon)) {
       dims[[length(dims)+1]] <- lon
-    } else if (vd == 'lat' && !is.null(lat)) {
+    } else if (vd == 'lat' && !is.na(lat)) {
       dims[[length(dims)+1]] <- lat
-    } else if (vd == 'time' && !is.null(time)) {
+    } else if (vd == 'time' && !is.na(time)) {
       dims[[length(dims)+1]] <- time
-    } else if (vd == 'nsoil' && !is.null(nsoil)) {
+    } else if (vd == 'nsoil' && !is.na(nsoil)) {
       dims[[length(dims)+1]] <- nsoil
     } else if (vd == 'na') {
       # skip
