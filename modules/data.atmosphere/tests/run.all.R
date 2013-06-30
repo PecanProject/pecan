@@ -8,4 +8,5 @@
 #-------------------------------------------------------------------------------
 library(testthat)
 
+logger.setQuitOnSevere(FALSE)
 test_package("PEcAn.data.atmosphere")
