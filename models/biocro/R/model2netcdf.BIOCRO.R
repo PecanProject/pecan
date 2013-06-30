@@ -45,12 +45,12 @@ model2netcdf.BIOCRO <- function(outdir, sitelat, sitelon, start_date, end_date) 
 
   c2biomass <- 0.4
   vars <- list(
-    TotLivBiom  = mstmipvar("TotLivBiom", lat, lon, t, NULL),
-    RootBiom    = mstmipvar("RootBiom", lat, lon, t, NULL),
-    StemBiom    = mstmipvar("StemBiom", lat, lon, t, NULL),
-    Evap        = mstmipvar("Evap", lat, lon, t, NULL),
-    TVeg        = mstmipvar("TVeg", lat, lon, t, NULL),
-    LAI         = mstmipvar("LAI", lat, lon, t, NULL))
+    TotLivBiom  = mstmipvar("TotLivBiom", lat, lon, t),
+    RootBiom    = mstmipvar("RootBiom", lat, lon, t),
+    StemBiom    = mstmipvar("StemBiom", lat, lon, t),
+    Evap        = mstmipvar("Evap", lat, lon, t),
+    TVeg        = mstmipvar("TVeg", lat, lon, t),
+    LAI         = mstmipvar("LAI", lat, lon, t))
   k <- ud.convert(1, "Mg/ha", "kg/m2") / c2biomass
 
   results <- with(result, list(
@@ -60,11 +60,23 @@ model2netcdf.BIOCRO <- function(outdir, sitelat, sitelon, start_date, end_date) 
     Evap = ud.convert(SoilEvaporation + CanopyTrans, "Mg/ha/h", "kg/m2/s"),
     TVeg = ud.convert(CanopyTrans, "Mg/ha/h", "kg/m2/s"),
     LAI =  LAI))
-  
+
   nc <- nc_create(filename = file.path(outdir, paste0(year(start_date), ".nc")), vars = vars)
    
   ## Output netCDF data
-  for(.vname in names(vars)){
+  for(.vname in names(vars)) {
+    # make sure only floats are in array
+    x <- which(results[[.vname]]< -1e100)
+    if (length(x) > 0) {
+      logger.debug(.vname, "found", length(x), "values < -1e100")
+      results[[.vname]][[x]] <- NA  
+    }
+    x <- which(results[[.vname]] > 1e100)
+    if (length(x) > 0) {
+      logger.debug(.vname, "found", length(x), "values > 1e100")
+      results[[.vname]][[x]] <- NA  
+    }
+    # write results
     ncvar_put(nc, varid = vars[[.vname]], vals = results[[.vname]])
   }
               
