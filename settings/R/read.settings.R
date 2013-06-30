@@ -68,16 +68,6 @@ check.settings <- function(settings) {
   # PostgreSQL specific checks
   # TODO IMPLEMENT
 
-  # check if we can connect to the database
-  require(PEcAn.DB)
-  if (!db.exists(params=settings$database, write=settings$bety$write)) {
-    logger.warn("Could not connect to the database.")
-    database <- FALSE
-  } else {
-    logger.info("Successfully connected to database")
-    database <- TRUE
-  }
-
   # should runs be written to database
   if (is.null(settings$bety$write)) {
     logger.info("Writing all runs/configurations to database.")
@@ -89,6 +79,16 @@ check.settings <- function(settings) {
     } else {
       logger.warn("Will not write runs/configurations to database.")
     }
+  }
+
+  # check if we can connect to the database
+  require(PEcAn.DB)
+  if (!db.exists(params=settings$database, write=settings$bety$write)) {
+    logger.warn("Could not connect to the database.")
+    database <- FALSE
+  } else {
+    logger.info("Successfully connected to database")
+    database <- TRUE
   }
 
   # TODO check userid and userpassword
