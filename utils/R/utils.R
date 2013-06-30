@@ -25,7 +25,7 @@
 ##' @param nsoil nsoil if dimension requests it
 ##' @return ncvar based on MstMIP definition
 ##' @author Rob Kooper
-mstmipvar <- function(name, lat=NA, lon=NA, time=NA, nsoil=NA) {
+mstmipvar <- function(name, lat=NA, lon=NA, time=NA, nsoil=NA, silent=FALSE) {
   data(mstmip_vars, package="PEcAn.utils")
   var <- mstmip_vars[mstmip_vars$Variable.Name==name,]
   dims <- list()
@@ -34,7 +34,9 @@ mstmipvar <- function(name, lat=NA, lon=NA, time=NA, nsoil=NA) {
     data(mstmip_local, package="PEcAn.utils")
     var <- mstmip_local[mstmip_local$Variable.Name==name,]
     if (nrow(var) == 0) {
-      logger.info("Don't know about variable", name, " in mstmip_vars in PEcAn.utils")
+      if (!silent) {
+        logger.info("Don't know about variable", name, " in mstmip_vars in PEcAn.utils")
+      }
       return(ncvar_def(name, "", list(time), -999, "NOT FOUND IN mstmip_vars or mstmip_local"))
     }
   }
@@ -52,7 +54,9 @@ mstmipvar <- function(name, lat=NA, lon=NA, time=NA, nsoil=NA) {
     } else if (vd == 'na') {
       # skip
     } else {
-      logger.info("Don't know dimension for", vd, "for variable", name)
+      if (!silent) {
+        logger.info("Don't know dimension for", vd, "for variable", name)
+      }
     }
   }
   ncvar <- ncvar_def(name, as.character(var$Units), dims, -999)
