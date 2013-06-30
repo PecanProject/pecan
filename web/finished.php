@@ -164,17 +164,12 @@ foreach(scandir("$folder/out") as $runid) {
 			if (count($y) == 0) {
 				continue;
 			}
-			print "	runplot['$key']['$x'] = Array(";
-			$first = true;
+			print "	runplot['$key']['$x'] = {};\n";
 			foreach($y as $s) {
-				if ($first) {
-					print "'$s'";
-				} else {
-					print ", '$s'";
-				}
-				$first = false;
+				$kv = explode(" ", $s, 2);
+				if ($kv[1] == '') $kv[1] = $kv[0];
+				print "	runplot['$key']['$x']['{$kv[0]}'] = '${kv[1]}';\n";
 			}
-			print ");\n";
 		}
 	}
 ?>
@@ -183,8 +178,8 @@ foreach(scandir("$folder/out") as $runid) {
 		if ($("#stylized").height() < $(window).height()) {
 	    	$("#stylized").height($(window).height() - 5);
 		}
-    	$("#output").height($(window).height() - 1);
-    	$("#output").width($(window).width() - $('#stylized').width() - 5);
+	    	$("#output").height($(window).height() - 1);
+    		$("#output").width($(window).width() - $('#stylized').width() - 5);
 	} 
 
 	function prevStep() {
@@ -265,10 +260,10 @@ foreach(scandir("$folder/out") as $runid) {
 	}
 
 	function updateOutputYear(run, year) {
-		$.each(runplot[run][year], function(key, value) {   
+		$.each(runplot[run][year], function(key, value) {
 		     $('#outvar')
 		         .append($("<option></option>")
-//		         .attr("value",key)
+		         .attr("value",key)
 		         .text(value)); 
 		});
 	}
@@ -314,7 +309,7 @@ foreach(scandir("$folder/out") as $runid) {
 			<input id="home" type="button" value="Show Run Output" onclick="showRunOutput($('#outrun')[0].value, $('#outfile')[0].value);" />
 
 			<label>Year</label>
-			<select id="outyear" onChange="updateOuputYear($('#outrun')[0].value, $('#outyear')[0].value);">>
+			<select id="outyear" onChange="updateOuputYear($('#outrun')[0].value, $('#outyear')[0].value);">
 			</select>
 			<div class="spacer"></div>
 			
