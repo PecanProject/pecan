@@ -9,4 +9,5 @@
 library(testthat)
 library(PEcAn.ED2)
 
+logger.setQuitOnSevere(FALSE)
 test_package("PEcAn.ED2")

@@ -10,9 +10,7 @@
 
 context("tests for read.settings and related functions")
 
-logger.setLevel(level="OFF")
-
-settings <- read.settings(system.file("tests/pecan.sipnet.xml", package = "PEcAn.settings"))
+settings <- read.settings(system.file("tests/testinput.xml", package = "PEcAn.settings"))
 
 test_that("read.settings returned correctly", {
 	expect_true(file.exists(settings$outdir))
@@ -21,22 +19,24 @@ test_that("read.settings returned correctly", {
 })
 
 test_that("read settings returns error if no settings file found (issue #1124)",{
-	## TODO RK : test does not work yet
-	## expect_message(read.settings("nofile.xml"), "Could not find a pecan.xml file")
+	expect_error(read.settings("nofile.xml"), "Could not find a pecan.xml file")
 })
 
-
 test_that("check.settings throws error if required content not there", {
-  for(node in c("pfts", "run")){
-    s <- settings
-    s[[node]] <- NULL
-    expect_error(check.settings(s))    
-  }
+  logger.setLevel(level="ALL")
+  s <- settings
+  s[['pfts']] <- NULL
+  expect_error(check.settings(s), "No PFTS specified.")  
+  s <- settings
+  s[['run']] <- NULL
+  expect_error(check.settings(s), "No Run Settings specified")  
+
   for(date in c("start.date", "end.date")){
     s <- settings
     s$run[[date]] <- NULL
     expect_error(check.settings(s))
   }
+  logger.setLevel(level="OFF")
 })
 
 test_that("check.settings gives sensible defaults",{
@@ -81,7 +81,6 @@ test_that("check.settings uses run dates if dates not given in ensemble or sensi
     s1[[node]] <- list(variable = "FOO", start.year = 1000, end.year = 1000)
     expect_error(check.settings(s1))    
   }
-  
 })
 
 test_that("sensitivity.analysis and ensemble use other's settings if null",{
@@ -99,8 +98,4 @@ test_that("sensitivity.analysis and ensemble use other's settings if null",{
     }
     expect_equal(s2$ensemble$size, 1)
   }
-  
-  s1[[node]] <- list(variable = "FOO")
-  
-  
 })
