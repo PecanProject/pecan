@@ -419,13 +419,16 @@ check.settings <- function(settings) {
 ##' Loads PEcAn settings file
 ##' 
 ##' This will try and find the PEcAn settings file in the following order:
-##' 
 ##' \enumerate{
 ##' \item {--settings <file>}{passed as command line argument using --settings}
 ##' \item {inputfile}{passed as argument to function}
 ##' \item {PECAN_SETTINGS}{environment variable PECAN_SETTINGS pointing to a specific file}
 ##' \item {./pecan.xml}{pecan.xml in the current folder}
 ##' }
+##' Once the function finds a valid file, it will not look further. 
+##' Thus, if \code{inputfile} is supplied, \code{PECAN_SETTINGS} will be ignored. 
+##' Even if a \code{file} argument is passed, it will be ignored if a file is passed through
+##' a higher priority method.  
 ##' @param inputfile the PEcAn settings file to be used.
 ##' @param outputfile the name of file to which the settings will be
 ##'        written inside the outputdir.
@@ -436,12 +439,17 @@ check.settings <- function(settings) {
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
+##' ## bash shell:
+##' R --vanilla -- --settings path/to/mypecan.xml < workflow.R 
+##' 
+##' ## R:
+##' 
 ##' settings <- read.settings()
 ##' settings <- read.settings(file="willowcreek.xml")
 ##' test.settings.file <- system.file("tests/test.xml", package = "PEcAn.all")
 ##' settings <- read.settings(test.settings.file)
 ##' }
-read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
+read.settings <- function(inputfile = NULL, outputfile = "pecan.xml"){
   if (is.null(outputfile)) {
     outputfile <- "pecan.xml"
   }
@@ -458,6 +466,9 @@ read.settings <- function(inputfile=NULL, outputfile="pecan.xml"){
         break
       }
     }
+    if (!is.null(inputfile)){
+      logger.info("input file ", inputfile, "not used, ", loc, "as environment variable")
+    } 
 
   } else if(!is.null(inputfile) && file.exists(inputfile)) {
     # 2 filename passed into function
