@@ -18,11 +18,28 @@
 ##'
 ##' @author David LeBauer, Shawn Serbin
 run.write.configs <- function(model, write = TRUE) {
+
+  ## remove previous runs.txt
   if (file.exists(file.path(settings$rundir, "runs.txt"))) {
     logger.warn("Existing runs.txt file will be removed.")
     unlink(file.path(settings$rundir, "runs.txt"))
   }
 
+  ## Check for model-specific write configs
+  pecan.modelpkg <- paste0("PEcAn.", model)
+  if(!pecan.modelpkg  %in% names(sessionInfo()$otherPkgs)){
+    if(pecan.modelpkg  %in% rownames(installed.packages())) {
+      require(pecan.modelpkg)
+    } else {
+      logger.error("I can't find a package for the ", model, "model; I expect it to be named ", pecan.modelpkg)
+    }
+  }
+  my.write.config <- paste("write.config.",model,sep="")
+  if(!exists(my.write.config)){
+    logger.error(my.write.config, "does not exist, please make sure that the package ", 
+                 pecan.pkg, "contains a function called",  my.write.config)
+  }
+  
   # TODO RK : need to write to runs_inputs table
   
   ### Identify PFTs in the input settings.xml file
@@ -41,12 +58,7 @@ run.write.configs <- function(model, write = TRUE) {
     
   } ### End of for loop to extract pft names
   
-  print(" ")
-  print("-------------------------------------------------------------------")
-  print("Selected PFT(s): ")
-  print(pft.names)
-  print("-------------------------------------------------------------------")
-  print(" ")
+  logger.info("Selected PFT(s): ", pft.names)
   
   ### Generate empty list arrays for output.
   trait.samples <- list()
@@ -57,8 +69,7 @@ run.write.configs <- function(model, write = TRUE) {
   ###
   
   ## Prepare for model output.  Cleanup any old config files (if exists)
-  #remove.config(settings$rundir,settings,model)
-  print(paste("remove.config", model, sep="."))
+
   do.call(paste("remove.config", model, sep="."), args = list(settings$rundir, settings))
 
   ## Load PFT priors and posteriors
@@ -77,18 +88,24 @@ run.write.configs <- function(model, write = TRUE) {
     
     ### When no ma for a trait, sample from  prior
     ### Trim all chains to shortest mcmc chain, else 20000 samples
-    if(exists('trait.mcmc')) {
-      print(names(trait.mcmc))
-      traits <- names(trait.mcmc)
-      samples.num <- min(sapply(trait.mcmc, function(x) nrow(as.matrix(x))))
-    } else {
-      traits <- NA
-      samples.num <- 20000
-    }
     priors <- rownames(prior.distns)
-    print(priors)
+    if(exists('trait.mcmc')) {
+      ma.traits <- names(trait.mcmc)
+      samples.num <- min(sapply(trait.mcmc, function(x) nrow(as.matrix(x))))
+      
+      logger.info("PFT",  pft.names[i], "has meta analysis results for", ma.traits)
+      logger.info("PFT", pft.names[i], "will use prior distributions for", priors[!ma.traits %in% priors] )
+    } else {
+      ma.traits <- NULL
+      samples.num <- 20000
+      logger.info("No meta analysis results for PFT",  pft.names[i])  
+      logger.info("PFT", pft.names[i], "will use prior distributions for", priors )
+    }
+
+
+    logger.info("using ", samples.num, "samples per trait")
     for (prior in priors) {
-      if (prior %in% traits) {
+      if (prior %in% ma.traits) {
         samples <- as.matrix(trait.mcmc[[prior]][,'beta.o'])
       } else {
         samples <- get.sample(prior.distns[prior,], samples.num)
@@ -106,7 +123,7 @@ run.write.configs <- function(model, write = TRUE) {
   if('sensitivity.analysis' %in% names(settings)) {
     
     if(is.null(settings$sensitivity.analysis)) {
-      print(paste('sensitivity analysis settings are NULL'))
+      logger.info('\n not writing config files for sensitivity analysis, settings are NULL')
     } else {      
       ### Get info on the quantiles to be run in the sensitivity analysis (if requested)
       quantiles <- get.quantiles(settings$sensitivity.analysis$quantiles)
@@ -114,19 +131,12 @@ run.write.configs <- function(model, write = TRUE) {
       sa.years <- data.frame(sa.start = settings$sensitivity.analysis$start.year, 
                             sa.end = settings$sensitivity.analysis$end.year)
       
-      print(" ")
-      print(" ")
-      print("-------------------------------------------------------------------")
-      print("Selected Quantiles: ")
-      print(round(quantiles, 3))
-      print("-------------------------------------------------------------------")
-      print(" ")
-      print(" ")
+      logger.info("\n Selected Quantiles: ", vecpaste(round(quantiles, 3)))
       
       ### Generate list of sample quantiles for SA run
-      sa.samples <-  get.sa.sample.list(trait.samples, 
-                                        env.samples,
-                                        quantiles)
+      sa.samples <-  get.sa.sample.list(pft       = trait.samples, 
+                                        env       = env.samples, 
+                                        quantiles = quantiles)
       ### Write out SA config files
       if(!exists("cnt")) {            
         cnt <- 0
@@ -142,30 +152,24 @@ run.write.configs <- function(model, write = TRUE) {
   
   ### Write ENSEMBLE
   if('ensemble' %in% names(settings) && settings$ensemble$size > 0) {
-    
+
     ## subset the trait.samples to ensemble size using Halton sequence 
     ensemble.samples <- get.ensemble.samples(settings$ensemble$size, 
                                              trait.samples, env.samples)
     
-    print(" ")
-    print(" ")
-    print("-------------------------------------------------------------------")
-    print(paste("Ensemble size: ",settings$ensemble$size))
-    print("-------------------------------------------------------------------")
-    print(" ")
-    print(" ")
-    
-    runs.samples$ensemble <- write.ensemble.configs(settings$pfts,
-                                                    ensemble.samples,
-                                                    settings,
+    logger.info("Ensemble size: ",settings$ensemble$size)
+ 
+    runs.samples$ensemble <- write.ensemble.configs(defaults = settings$pfts,
+                                                    ensemble.samples = ensemble.samples,
+                                                    settings = settings,
                                                     model = model,
                                                     write.to.db = write)
     
   }else{
-    print(paste('Ensemble analysis settings are NULL'))
+    logger.info('not writing config files for ensemble, settings are NULL')
   } ### End of Ensemble
 
-  print("  ######################## Finish up runs ########################")
+  logger.info("  ######################## Finished writing config files ########################")
   ### Save output from SA/Ensemble runs
   save(ensemble.samples, trait.samples, sa.samples, runs.samples, file = file.path(settings$outdir, 'samples.Rdata'))
 }

@@ -10,7 +10,8 @@
 
 ##' Reads output from model ensemble
 ##'
-##' Reads output for an ensemble of length specified by \code{ensemble.size} and bounded by \code{start.year} and \code{end.year}
+##' Reads output for an ensemble of length specified by \code{ensemble.size} and bounded by \code{start.year} 
+##' and \code{end.year}
 ##' @title Read ensemble output
 ##' @return a list of ensemble model output 
 ##' @param ensemble.size the number of ensemble members run
@@ -39,7 +40,7 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir,
   ensemble.output <- list()
   for(row in rownames(ensemble.runs)) {
     run.id <- ensemble.runs[row, 'id']
-    print(run.id)
+    logger.info("reading ensemble output from run id: ", run.id)
     ensemble.output[[row]] <- sapply(read.output(run.id, file.path(outdir, run.id),
                                                  start.year, end.year, variables),
                                      mean,na.rm=TRUE)
@@ -63,7 +64,8 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir,
 ##' @return matrix of quasi-random (overdispersed) samples from trait distributions
 ##' @export
 ##' @import randtoolbox
-##' @references Halton, J. (1964), Algorithm 247: Radical-inverse quasi-random point sequence, ACM, p. 701, doi:10.1145/355588.365104.
+##' @references Halton, J. (1964), Algorithm 247: Radical-inverse quasi-random point sequence, 
+##' ACM, p. 701, doi:10.1145/355588.365104.
 ##' @author David LeBauer
 get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="halton") {
   ##force as numeric for compatibility with Fortran code in halton()
@@ -142,27 +144,8 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
 write.ensemble.configs <- function(defaults, ensemble.samples, settings,
                                    model, clean=FALSE, write.to.db = TRUE){
   
-  my.write.config <- paste("write.config.",model,sep="")
-  if(!exists(my.write.config)){
-    print(paste(my.write.config,"does not exist"))
-    print(paste("please make sure that the PEcAn interface is loaded for",model))
-    stop()
-  }
-  
-  # TODO RK : fix this since names have changed
-  if(clean){
-    ## Remove old files
-    if(settings$run$host$name == 'localhost') {
-      if("ENS" %in% dir(settings$run$host$rundir)){
-        file.remove(paste(settings$run$host$rundir, '*',
-                          get.run.id('ENS', '', pft.name=pft.name), '*"', sep=''))
-      }
-    } else {
-      ssh(settings$run$host$name, 'rm -f ', settings$run$host$rundir, '*',
-          get.run.id('ENS', '', pft.name=pft.name, '*'))
-    }
-  }
-  
+  my.write.config <- paste("write.config.", model, sep="")
+
   if(is.null(ensemble.samples)) return(NULL)
   
   # Open connection to database so we can store all run/ensemble information
@@ -186,7 +169,8 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings,
   if (!is.null(con)) {
     # write enseblem first
     now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-    query.base(paste("INSERT INTO ensembles (created_at, runtype, workflow_id) values ('", now, "', 'ensemble', ", workflow.id, ")", sep=''), con)
+    query.base(paste("INSERT INTO ensembles (created_at, runtype, workflow_id) values ('", 
+                     now, "', 'ensemble', ", workflow.id, ")", sep=''), con)
     ensemble.id <- query.base(paste("SELECT id FROM ensembles WHERE created_at='", now, "'", sep=''), con)[['id']]
   } else {
     ensemble.id <- "NA"
@@ -198,8 +182,13 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings,
     if (!is.null(con)) {
       now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
       paramlist <- paste("ensemble=", counter, sep='')
-      query.base(paste("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id, parameter_list) values ('", settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", settings$run$end.date, "', '",settings$run$outdir , "', '", now, "', ", ensemble.id, ", '", paramlist, "')", sep=''), con)
-      run.id <- query.base(paste("SELECT id FROM runs WHERE created_at='", now, "' AND parameter_list='", paramlist, "'", sep=''), con)[['id']]
+      query.base(paste("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id,",
+                       " parameter_list) values ('", 
+                       settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", 
+                       settings$run$end.date, "', '", settings$run$outdir , "', '", now, "', ", ensemble.id, ", '", 
+                       paramlist, "')", sep=''), con)
+      run.id <- query.base(paste("SELECT id FROM runs WHERE created_at='", now, "' AND parameter_list='", paramlist, "'", 
+                                 sep=''), con)[['id']]
     } else {
       run.id <- get.run.id('ENS', left.pad.zeros(counter, 5))
     }

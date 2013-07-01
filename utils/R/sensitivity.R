@@ -46,6 +46,7 @@ read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name='',
                                                        start.year, end.year, variables),
                                            mean, na.rm=TRUE)
     } ## end loop over quantiles
+    logger.info("reading sensitivity analysis output for model run at ", quantiles, "quantiles of trait", trait)
   } ## end loop over traits
   sa.output <- as.data.frame(sa.output)
   return(sa.output)
@@ -68,25 +69,7 @@ read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name='',
 write.sa.configs <- function(defaults, quantile.samples, settings, model,
                              clean=FALSE, write.to.db = TRUE){
   
-  my.write.config <- paste("write.config.",model,sep="")
-  if(!exists(my.write.config)){
-    print(paste(my.write.config,"does not exist"))
-    print(paste("please make sure that the PEcAn interface is loaded for",model))
-    stop()
-  }
-  
-  ## clean out old files
-  if(clean){
-    if(settings$run$host$name == 'localhost'){
-      if("SA" %in% dir(settings$run$host$rundir)){
-        file.remove(paste(settings$run$host$rundir, '*',
-                          get.run.id('SA', ''), '*', sep=''))
-      }
-    } else {
-      ssh(settings$run$host$name, 'rm -f ', settings$run$host$rundir, '*',
-          get.run.id('SA', '', '*'))
-    }
-  }
+  my.write.config <- paste("write.config.", model,sep="")
   
   if(write.to.db){
     con <- try(db.open(settings$database), silent=TRUE)
