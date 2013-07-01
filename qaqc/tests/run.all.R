@@ -11,4 +11,5 @@ library('testthat')
 library('PEcAn.utils')
 
 # TODO reenable tests (#1561)
+logger.setQuitOnSevere(FALSE)
 #test_package("PEcAn.utils")
