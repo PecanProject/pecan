@@ -163,6 +163,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
         for(trait in traits) {
           if (! trait %in% edtraits) {
             logger.error(trait, "not found in ED history")
+            next
           }
           pft.xml <- append.xmlNode(pft.xml, xmlNode(trait, vals[trait]))
         }
@@ -183,13 +184,18 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   
   ##----------------------------------------------------------------------
   ## Edit ED2IN file for runs
-  if (file.exists(settings$model$edin)) {
+  if (!is.null(settings$model$edin) && file.exists(settings$model$edin)) {
     ed2in.text <- readLines(con=settings$model$edin, n=-1)
   } else {
     filename <- system.file(settings$model$edin, package = "PEcAn.ED2")
     if (filename == "") {
+      model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database)
+      filename <- system.file(paste0("ED2IN.r", model$revision), package = "PEcAn.ED2")
+    }
+    if (filename == "") {
       logger.severe("Could not find ED template")
     }
+    logger.info("Using", filename, "as template")
     ed2in.text <- readLines(con=filename, n=-1)
   }
   

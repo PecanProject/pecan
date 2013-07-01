@@ -84,7 +84,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
     } else if (length(dims) == 2) {
       dat <- t(dat)
       dims <- dim(dat)
-      dat <- dat[1:(end-start)]
+      dat <- dat[1:(end-start),]
       if (length(out) < col) {
         out[[col]] <- dat
       } else {
@@ -280,10 +280,11 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
       fliq <- NA#getHdf5Data(ncT, 'AVG_SOIL_FRACLIQ')
       out <- add(1-fliq,35,row, yrs[y]) ## SMFrozFrac
       out <- add(fliq,36,row, yrs[y]) ## SMLiqFrac
+      ## This needs to be soil wetness, i.e. multilple levels deep
       out <- add(getHdf5Data(ncT, 'AVG_SOIL_WATER'),37,row, yrs[y]) ## SoilWater  **********
       ##out <- add(sum(soiltemp*dz)/-min(z),38) ## SoilTemp
       out <- add(soiltemp,38,row, yrs[y]) ## SoilTemp
-      out <- add(soiltemp*NA,39,row, yrs[y]) ## SoilWet
+      out <- add(-999,39,row, yrs[y]) ## SoilWet
       out <- add(getHdf5Data(ncT, 'AVG_ALBEDO'),40,row, yrs[y]) ## Albedo
       out <- add(getHdf5Data(ncT, 'AVG_SNOWTEMP'),41,row, yrs[y]) ## SnowT
       out <- add(getHdf5Data(ncT, 'AVG_SNOWMASS'),42,row, yrs[y]) ## SWE
@@ -330,7 +331,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
                      vals = as.numeric(sitelon),
                      longname = "station_longitude")
 
-    zg <- ncdim_def("SoilLayerMidpoint", "meters", slzdata[1:length(dz)] + dz / 2)
+    zg <- ncdim_def("SoilLayerMidpoint", "meters", c(slzdata[1:length(dz)] + dz / 2, 0))
     
     ## Conversion factor for umol C -> kg C
     Mc <- 12.017 #molar mass of C, g/mol
@@ -400,8 +401,8 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
 
     ## write ALMA
     nc <- nc_create(file.path(outdir, paste(yrs[y], "nc", sep=".")), var)
-    for(i in 1:length(var)){
-      ncvar_put(nc,var[[i]],out[[i]])  
+    for(i in 1:length(var)) {
+      ncvar_put(nc,var[[i]],out[[i]])
     }
     nc_close(nc)
   }  ## end year loop
