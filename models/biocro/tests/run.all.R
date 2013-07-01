@@ -9,4 +9,5 @@
 library(testthat)
 library(PEcAn.BIOCRO)
 
+logger.setQuitOnSevere(FALSE)
 test_package("PEcAn.BIOCRO")

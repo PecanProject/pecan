@@ -6,7 +6,7 @@ outdir <- file.path(tempdir(), "ed")
 dir.create(outdir, showWarnings = FALSE, recursive = TRUE) 
 file.copy(dir(extdata.dir, pattern = "*.h5$", full.names = TRUE), outdir)
 
-model2netcdf.ED2(outdir)
+model2netcdf.ED2(outdir, 40, -88.5, "2010-01-01", "2010-12-31")
 
 test_that("a valid .nc file is produced for each corresponding ED2 output", {
   h5_T_files <- dir(outdir, pattern = "-T-.*.h5")

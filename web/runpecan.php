@@ -187,11 +187,6 @@ foreach($pft as $p) {
 	fwrite($fh, "      <name>${p}</name> " . PHP_EOL);
 	fwrite($fh, "      <constants>" . PHP_EOL);
 	fwrite($fh, "        <num>${pft_id}</num>" . PHP_EOL);
-	if ($modeltype == "BIOCRO") {
-		$src = fopen("template/biocro.xml", 'r');
-		stream_copy_to_stream($src, $fh);
-		fclose($src);
-	}
 	fwrite($fh, "      </constants>" . PHP_EOL);
 	fwrite($fh, "    </pft>" . PHP_EOL);
 	$pft_id++;
@@ -250,6 +245,7 @@ fwrite($fh, "      <met.end>${metend}</met.end>" . PHP_EOL);
 fwrite($fh, "    </site>" . PHP_EOL);
 fwrite($fh, "    <start.date>${startdate}</start.date>" . PHP_EOL);
 fwrite($fh, "    <end.date>${enddate}</end.date>" . PHP_EOL);
+fwrite($fh, "    <dbfiles>${output_folderi}</dbfiles>" . PHP_EOL);
 fwrite($fh, "    <host>" . PHP_EOL);
 fwrite($fh, "      <name>${hostname}</name>" . PHP_EOL);
 fwrite($fh, "    </host>" . PHP_EOL);

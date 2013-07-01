@@ -9,4 +9,5 @@
 library(testthat)
 library(PEcAn.uncertainty)
 
+logger.setQuitOnSevere(FALSE)
 test_package("PEcAn.uncertainty")
