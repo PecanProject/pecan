@@ -84,7 +84,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
     } else if (length(dims) == 2) {
       dat <- t(dat)
       dims <- dim(dat)
-      dat <- dat[1:(end-start)]
+      dat <- dat[1:(end-start),]
       if (length(out) < col) {
         out[[col]] <- dat
       } else {
@@ -284,7 +284,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
       out <- add(getHdf5Data(ncT, 'AVG_SOIL_WATER'),37,row, yrs[y]) ## SoilWater  **********
       ##out <- add(sum(soiltemp*dz)/-min(z),38) ## SoilTemp
       out <- add(soiltemp,38,row, yrs[y]) ## SoilTemp
-      out <- add(getHdf5Data(ncT, 'AVG_SOIL_WATER'),39,row, yrs[y]) ## SoilWet
+      out <- add(-999,39,row, yrs[y]) ## SoilWet
       out <- add(getHdf5Data(ncT, 'AVG_ALBEDO'),40,row, yrs[y]) ## Albedo
       out <- add(getHdf5Data(ncT, 'AVG_SNOWTEMP'),41,row, yrs[y]) ## SnowT
       out <- add(getHdf5Data(ncT, 'AVG_SNOWMASS'),42,row, yrs[y]) ## SWE
@@ -331,7 +331,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
                      vals = as.numeric(sitelon),
                      longname = "station_longitude")
 
-    zg <- ncdim_def("SoilLayerMidpoint", "meters", slzdata[1:length(dz)] + dz / 2)
+    zg <- ncdim_def("SoilLayerMidpoint", "meters", c(slzdata[1:length(dz)] + dz / 2, 0))
     
     ## Conversion factor for umol C -> kg C
     Mc <- 12.017 #molar mass of C, g/mol
@@ -384,9 +384,9 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
     ##var[[36]] <- mstmipvar("SMLiqFrac", lat, lon, t, zg)
     var[[35]] <- mstmipvar("SMFrozFrac", lat, lon, t, zg)
     var[[36]] <- mstmipvar("SMLiqFrac", lat, lon, t, zg)
-    var[[37]] <- mstmipvar("SoilMoist", lat, lon, t, NA) # TODO this should be nsoil
+    var[[37]] <- mstmipvar("SoilMoist", lat, lon, t, zg)
     out <- checkTemp(38)
-    var[[38]] <- mstmipvar("SoilTemp", lat, lon, t, NA) # TODO this should be nsoil
+    var[[38]] <- mstmipvar("SoilTemp", lat, lon, t, zg)
     var[[39]] <- mstmipvar("SoilWet", lat, lon, t, zg)
     var[[40]] <- mstmipvar("Albedo", lat, lon, t, zg)
     out <- checkTemp(41)
