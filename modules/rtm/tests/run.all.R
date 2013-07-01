@@ -9,4 +9,5 @@
 library(testthat)
 library(PEcAn.rtm)
 
+logger.setQuitOnSevere(FALSE)
 test_package("PEcAn.rtm")
