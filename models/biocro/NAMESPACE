@@ -1,4 +1,3 @@
-export(convert.samples.BIOCRO)
 export(get.model.output.BIOCRO)
 export(model2netcdf.BIOCRO)
 export(remove.config.BIOCRO)
