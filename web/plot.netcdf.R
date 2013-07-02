@@ -58,7 +58,7 @@ data.fetch <- function(var, nc, fun=mean) {
 	
 	# some precomputations
 	indices  <- 0:length(nc$dim[['time']]$vals)
-    aggrlist <- list(floor(nc$dim[['time']]$vals))
+	aggrlist <- list(floor(nc$dim[['time']]$vals))
 	
 	# aggregate the data
 	data <- ncvar_get(nc, var)
@@ -122,7 +122,7 @@ plot.netcdf <- function(datafile, year, yvar, xvar='time', width=800, height=600
 	title(xlab=attr(xval_mean, "lbl"))
 	title(ylab=attr(yval_mean, "lbl"))
 	if (xvar == "time") {
-		title(main=paste(yvar, "for", year))
+		title(main=paste(nc$var[[yvar]]$longname, "for", year))
 	} else {
 		title(main=paste(xvar, "VS", yvar, "for", year))
 	}

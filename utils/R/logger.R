@@ -11,6 +11,7 @@
 .utils.logger$filename <- NA
 .utils.logger$console  <- TRUE
 .utils.logger$stderr   <- TRUE
+.utils.logger$quit     <- !interactive()
 .utils.logger$level    <- 0
 
 ##' Prints a debug message.
@@ -102,7 +103,7 @@ logger.severe <- function(msg, errorcode=1, ...) {
 	}
 
 	# quit if not interactive, otherwise use stop
-	if (!interactive()) {
+	if (.utils.logger$quit) {
      	quit(save="no", status=errorcode)
     } else {
 		stop(paste(msg, ...))
@@ -253,4 +254,20 @@ logger.setUseConsole <- function(console, stderr=TRUE) {
 ##' }
 logger.setOutputFile <- function(filename) {
 	.utils.logger$filename <- filename
+}
+
+##' Configure wheter severe should quit.
+##' 
+##' The default is for a non-interactive session to quit. Setting this to false is
+##' especially useful for running tests.
+##'
+##' @param severeQuits should R quit on a severe error.
+##' @export
+##' @author Rob Kooper
+##' @examples
+##' \dontrun{
+##' logger.setQuitOnSevere(FALSE)
+##' }
+logger.setQuitOnSevere <- function(severeQuits) {
+	.utils.logger$quit = severeQuits
 }

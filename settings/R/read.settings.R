@@ -27,7 +27,6 @@ check.settings <- function(settings) {
     logger.info("Not doing sanity checks of pecan.xml")
     return(0)
   }
-
   
   ## allow PEcAn to run without database
   if (is.null(settings$database)) {
@@ -35,6 +34,40 @@ check.settings <- function(settings) {
     logger.warn("No database information specified; not using database.")
     settings$bety$write <- FALSE
   }
+
+  ## check database settings
+  if (is.null(settings$database$driver)) {
+    settings$database$driver <- "MySQL"
+    logger.info("Using", settings$database$driver, "as database driver.")
+  }
+
+  # Attempt to load the driver
+  if (!require(paste0("R", settings$database$driver), character.only=TRUE)) {
+    logger.warn("Could not load the database driver", paste0("R", settings$database$driver))
+  }
+
+  # MySQL specific checks
+  if (settings$database$driver == "MySQL") {
+    if (!is.null(settings$database$userid)) {
+      logger.info("userid in database section should be username for MySQL")
+      settings$database$username <- settings$database$userid
+      settings$database$userid <- NULL
+    }
+    if (!is.null(settings$database$passwd)) {
+      logger.info("passwd in database section should be password for MySQL")
+      settings$database$password <- settings$database$passwd
+      settings$database$passwd <- NULL
+    }
+    if (!is.null(settings$database$name)) {
+      logger.info("name in database section should be dbname for MySQL")
+      settings$database$dbname <- settings$database$name
+      settings$database$name <- NULL
+    }
+  }
+
+  # PostgreSQL specific checks
+  # TODO IMPLEMENT
+
   # should runs be written to database
   if (is.null(settings$bety$write)) {
     logger.info("Writing all runs/configurations to database.")
@@ -48,40 +81,14 @@ check.settings <- function(settings) {
     }
   }
 
-  ## check database settings
-  
-  if (is.null(settings$database$driver)) {
-    settings$database$driver <- "MySQL"
-    logger.info("Using", settings$database$driver, "as database driver.")
-  }
-  if (!is.null(settings$database$userid) && (settings$database$driver == "MySQL")) {
-    logger.info("userid in database section should be username for MySQL")
-    settings$database$username <- settings$database$userid
-    settings$database$userid <- NULL
-  }
-  if (!is.null(settings$database$passwd) && (settings$database$driver == "MySQL")) {
-    logger.info("passwd in database section should be password for MySQL")
-    settings$database$password <- settings$database$passwd
-    settings$database$passwd <- NULL
-  }
-  if (!is.null(settings$database$name) && (settings$database$driver == "MySQL")) {
-    logger.info("name in database section should be dbname for MySQL")
-    settings$database$dbname <- settings$database$name
-    settings$database$name <- NULL
-  }
-  if(is.null(settings$database$dbfiles)) settings$database$dbfiles <- "$HOME/.pecan/dbfiles"
-  dir.create(settings$database$dbfiles, showWarnings = FALSE, recursive = TRUE, )
-  if(paste0("R", settings$database$driver) %in% rownames(installed.packages())){
-    require(PEcAn.DB)
-    if (!db.exists(params=settings$database, write=settings$bety$write)) {
-      logger.warn("Could not connect to the database.")
-      database <- FALSE
-    } else {
-      logger.info("Successfully connected to database")
-      database <- TRUE
-    }
-  } else {
+  # check if we can connect to the database
+  require(PEcAn.DB)
+  if (!db.exists(params=settings$database, write=settings$bety$write)) {
+    logger.warn("Could not connect to the database.")
     database <- FALSE
+  } else {
+    logger.info("Successfully connected to database")
+    database <- TRUE
   }
 
   # TODO check userid and userpassword
@@ -100,6 +107,7 @@ check.settings <- function(settings) {
       logger.debug("Database is correct version", versions[1], ".")
     }
   }
+
   # make sure there are pfts defined
   if (is.null(settings$pfts) || (length(settings$pfts) == 0)) {
     logger.severe("No PFTS specified.")
@@ -108,24 +116,29 @@ check.settings <- function(settings) {
   # check for a run settings
   if (is.null(settings[['run']])) {
     logger.severe("No Run Settings specified")
-    settings$run <- list()
-  }
-  for(date.limit in c("start.date", "end.date")){
-    if (is.null(settings[['run']][[date.limit]])){
-      logger.severe("No Start or Run Date set")
-      settings[['run']][[date.limit]] <- NA
-    }    
   }
 
-  
+  # check start/end date are specified and correct
+  if (is.null(settings$run$start.date)) {
+    logger.severe("No start.date specified in run section.")
+  }
+  if (is.null(settings$run$end.date)) {
+    logger.severe("No end.date specified in run section.")
+  }
+  startdate <- parse_date_time(settings$run$start.date, "ymd_hms", truncated=3)
+  enddate <- parse_date_time(settings$run$end.date, "ymd_hms", truncated=3)
+  if (startdate >= enddate) {
+    logger.severe("Start date should come before the end date.")
+  }
+
   # check if there is either ensemble or sensitivy.analysis
   if (is.null(settings$ensemble) && is.null(settings$sensitivity.analysis)) {
-    logger.warn("No ensemble or sensitivity analysis specified, runs will fail!")
+    logger.warn("No ensemble or sensitivity analysis specified, no models will be executed!")
   }
 
   # check ensemble
   if (!is.null(settings$ensemble)) {
-    if (is.character(settings$ensemble) || is.null(settings$ensemble$variable)) {
+    if (is.null(settings$ensemble$variable)) {
       if (is.null(settings$sensitivity.analysis$variable)) {
         logger.severe("No variable specified to compute ensemble for.")
       }
@@ -156,6 +169,17 @@ check.settings <- function(settings) {
         settings$ensemble$end.year <- settings$sensitivity.analysis$end.year 
         logger.info("No end date passed to ensemble - using the sensitivity.analysis date (", settings$ensemble$end.date, ").")
       }
+    }
+
+    # check start and end dates
+    if (year(startdate) > settings$ensemble$start.year) {
+      logger.severe("Start year of ensemble should come after the start.date of the run")
+    }
+    if (year(enddate) < settings$ensemble$end.year) {
+      logger.severe("End year of ensemble should come before the end.date of the run")
+    }
+    if (settings$ensemble$start.year > settings$ensemble$end.year) {
+      logger.severe("Start year of ensemble should come before the end year of the ensemble")
     }
   }
 
@@ -188,30 +212,16 @@ check.settings <- function(settings) {
         logger.info("No end date passed to sensitivity.analysis - using the ensemble date (", settings$sensitivity.analysis$end.date, ").")
       }
     }
-    
-    ## Check that dates are logical
-    if(ymd_hms(settings$run$start.date) >= ymd_hms(settings$run$end.date)) {
-      logger.severe("run start date after end date")
+
+    # check start and end dates
+    if (year(startdate) > settings$sensitivity.analysis$start.year) {
+      logger.severe("Start year of sensitivity.analysis should come after the start.date of the run")
     }
-    ## ensure that ensemble / sensitivity.analysis date ranges within time scale of run
-    for(node in c("ensemble", "sensitivity.analysis")){ 
-      if(!is.null(settings[[node]])){
-        if(!is.null(settings[[node]]$start.year) && !is.null(settings[[node]]$end.year)){
-          if(as.numeric(settings[[node]]$start.year) > as.numeric(settings[[node]]$end.year)) {
-            logger.severe(node, "start year greater than end year; using run start and end")
-            settings[[node]]$start.year <- year(settings$run$start.date)
-            settings[[node]]$end.year <- year(settings$run$end.date)
-          }
-          if(as.numeric(settings[[node]]$start.year) < as.numeric(year(settings$run$start.date))) {
-            settings[[node]]$start.year <- year(settings$run$start.date)
-            logger.severe(paste(node, "start before run start; setting to run start"))
-          }
-          if(as.numeric(settings[[node]]$end.year) > as.numeric(year(settings$run$end.date))){
-            settings[[node]]$end.year <- year(settings$run$end.date)
-            logger.severe(paste(node, "end after run end; setting to run start"))
-          }
-        }
-      }
+    if (year(enddate) < settings$sensitivity.analysis$end.year) {
+      logger.severe("End year of sensitivity.analysis should come before the end.date of the run")
+    }
+    if (settings$sensitivity.analysis$start.year > settings$sensitivity.analysis$end.year) {
+      logger.severe("Start year of sensitivity.analysis should come before the end year of the ensemble")
     }
   }
 
@@ -241,82 +251,112 @@ check.settings <- function(settings) {
 
   # check modelid with values
   if(!is.null(settings$model)){
-  if (is.null(settings$model$id)) {
-    settings$model$id <- -1
-  } else if (as.numeric(settings$model$id) >= 0) {
-
-    if(database){
-      model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database)      
-    }
-    if(nrow(model) == 0) {
-      logger.error("There is no record of model_id = ", settings$model$id, "in database")
-    }
-    model$binary <- tail(strsplit(model$model_path, ":")[[1]], 1)
-
-    if (is.null(settings$model$name)) {
-      if ((is.null(model$model_type) && model$model_type == "")) {
-        logger.severe("No model type specified.")
+    if (is.null(settings$model$id)) {
+      settings$model$id <- -1
+    } else {
+      if(database && as.numeric(settings$model$id) >= 0){
+        model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database)
+      } else {
+        model <- data.frame(id=settings$model$id)
+        if (!is.null(settings$model$name)) {
+          model$model_type=settings$model$name
+        }
+        if (!is.null(settings$model$name)) {
+          model$model_path=paste0("hostname:", settings$model$binary)
+        }
       }
-      settings$model$name <- model$model_type
-      logger.info("Setting model type to ", settings$model$name)
-    } else if (model$model_type != settings$model$name) {
-      logger.warn("Specified model type [", settings$model$name, "] does not match model_type in database [", model$model_type, "]")
-    }
-
-    if (is.null(settings$model$binary)) {
-      if ((is.null(model$binary) && model$binary == "")) {
-        logger.severe("No model binary specified.")
+      if(nrow(model) == 0) {
+        logger.error("There is no record of model_id = ", settings$model$id, "in database")
       }
-      settings$model$binary <- tail(strsplit(model$binary, ":")[[1]], 1)
-      logger.info("Setting model binary to ", settings$model$binary)
-    } else if (model$binary != settings$model$binary) {
-      logger.warn("Specified binary [", settings$model$binary, "] does not match model_path in database [", model$binary, "]")
+      if (!is.null(model$model_path)) {
+        model$binary <- tail(strsplit(model$model_path, ":")[[1]], 1)        
+      }
+
+      if (is.null(settings$model$name)) {
+        if ((is.null(model$model_type) || model$model_type == "")) {
+          logger.severe("No model type specified.")
+        }
+        settings$model$name <- model$model_type
+        logger.info("Setting model type to ", settings$model$name)
+      } else if (model$model_type != settings$model$name) {
+        logger.warn("Specified model type [", settings$model$name, "] does not match model_type in database [", model$model_type, "]")
+      }
+
+      if (is.null(settings$model$binary)) {
+        if ((is.null(model$binary) || model$binary == "")) {
+          logger.severe("No model binary specified.")
+        }
+        settings$model$binary <- tail(strsplit(model$binary, ":")[[1]], 1)
+        logger.info("Setting model binary to ", settings$model$binary)
+      } else if (model$binary != settings$model$binary) {
+        logger.warn("Specified binary [", settings$model$binary, "] does not match model_path in database [", model$binary, "]")
+      }
     }
-  }
   }
 
   # check siteid with values
   if(!is.null(settings$run$site)){
-  if (is.null(settings$run$site$id)) {
-    settings$run$site$id <- -1
-  } else if (settings$run$site$id >= 0) {
-    site <- db.query(paste("SELECT * FROM sites WHERE id =", settings$run$site$id), params=settings$database);
-
-    if (is.null(settings$run$site$name)) {
-      if ((is.null(site$sitename) && site$sitename == "")) {
-        logger.info("No site name specified.")
-        settings$run$site$name <- "NA"
+    if (is.null(settings$run$site$id)) {
+      settings$run$site$id <- -1
+    } else if (settings$run$site$id >= 0) {
+      if (database) {
+        site <- db.query(paste("SELECT * FROM sites WHERE id =", settings$run$site$id), params=settings$database);
       } else {
-        settings$run$site$name <- site$sitename        
-        logger.info("Setting site name to ", settings$run$site$name)
+        site <- data.frame(id=settings$run$site$id)
+        if (!is.null(settings$run$site$name)) {
+          site$sitename=settings$run$site$name
+        }
+        if (!is.null(settings$run$site$lat)) {
+          site$lat=settings$run$site$lat
+        }
+        if (!is.null(settings$run$site$lon)) {
+          site$lon=settings$run$site$lon
+        }
       }
-    } else if (site$sitename != settings$run$site$name) {
-      logger.warn("Specified site name [", settings$run$site$name, "] does not match sitename in database [", site$sitename, "]")
-    }
 
-    if (is.null(settings$run$site$lat)) {
-      if ((is.null(site$lat) && site$lat == "")) {
-        logger.severe("No lat specified for site.")
-      } else {
-        settings$run$site$lat <- as.numeric(site$lat)
-        logger.info("Setting site lat to ", settings$run$site$lat)
+      if (is.null(settings$run$site$name)) {
+        if ((is.null(site$sitename) || site$sitename == "")) {
+          logger.info("No site name specified.")
+          settings$run$site$name <- "NA"
+        } else {
+          settings$run$site$name <- site$sitename        
+          logger.info("Setting site name to ", settings$run$site$name)
+        }
+      } else if (site$sitename != settings$run$site$name) {
+        logger.warn("Specified site name [", settings$run$site$name, "] does not match sitename in database [", site$sitename, "]")
       }
-    } else if (as.numeric(site$lat) != as.numeric(settings$run$site$lat)) {
-      logger.warn("Specified site lat [", settings$run$site$lat, "] does not match lat in database [", site$lat, "]")
-    }
 
-    if (is.null(settings$run$site$lon)) {
-      if ((is.null(site$lon) && site$lon == "")) {
-        logger.severe("No lon specified for site.")
-      } else {
-        settings$run$site$lon <- as.numeric(site$lon)
-        logger.info("Setting site lon to ", settings$run$site$lon)
+      if (is.null(settings$run$site$lat)) {
+        if ((is.null(site$lat) || site$lat == "")) {
+          logger.severe("No lat specified for site.")
+        } else {
+          settings$run$site$lat <- as.numeric(site$lat)
+          logger.info("Setting site lat to ", settings$run$site$lat)
+        }
+      } else if (as.numeric(site$lat) != as.numeric(settings$run$site$lat)) {
+        logger.warn("Specified site lat [", settings$run$site$lat, "] does not match lat in database [", site$lat, "]")
       }
-    } else if (as.numeric(site$lon) != as.numeric(settings$run$site$lon)) {
-      logger.warn("Specified site lon [", settings$run$site$lon, "] does not match lon in database [", site$lon, "]")
+
+      if (is.null(settings$run$site$lon)) {
+        if ((is.null(site$lon) || site$lon == "")) {
+          logger.severe("No lon specified for site.")
+        } else {
+          settings$run$site$lon <- as.numeric(site$lon)
+          logger.info("Setting site lon to ", settings$run$site$lon)
+        }
+      } else if (as.numeric(site$lon) != as.numeric(settings$run$site$lon)) {
+        logger.warn("Specified site lon [", settings$run$site$lon, "] does not match lon in database [", site$lon, "]")
+      }
     }
   }
+
+  # Check folder where outputs are written before adding to dbfiles
+  if(is.null(settings$run$dbfiles)) {
+    settings$run$dbfiles <- normalizePath("~/.pecan/dbfiles", mustWork=FALSE)
+  } else {
+    settings$run$dbfiles <- normalizePath(settings$run$dbfiles, mustWork=FALSE)
   }
+  dir.create(settings$run$dbfiles, showWarnings = FALSE, recursive = TRUE)
 
   # check/create the pecan folder
   if (is.null(settings$outdir)) {

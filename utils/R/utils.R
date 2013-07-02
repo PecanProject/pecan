@@ -25,92 +25,38 @@
 ##' @param nsoil nsoil if dimension requests it
 ##' @return ncvar based on MstMIP definition
 ##' @author Rob Kooper
-mstmipvar <- function(name, lat, lon, time, nsoil) {
+mstmipvar <- function(name, lat=NA, lon=NA, time=NA, nsoil=NA, silent=FALSE) {
   data(mstmip_vars, package="PEcAn.utils")
   var <- mstmip_vars[mstmip_vars$Variable.Name==name,]
   dims <- list()
 
   if (nrow(var) == 0) {
-    # biocro specific variables
-    if (name == "RootBiom") {
-      return(ncvar_def(name, "kg C m-2", list(lon, lat, time), -999, "Total root biomass"))
+    data(mstmip_local, package="PEcAn.utils")
+    var <- mstmip_local[mstmip_local$Variable.Name==name,]
+    if (nrow(var) == 0) {
+      if (!silent) {
+        logger.info("Don't know about variable", name, " in mstmip_vars in PEcAn.utils")
+      }
+      return(ncvar_def(name, "", list(time), -999, "NOT FOUND IN mstmip_vars or mstmip_local"))
     }
-    if (name == "StemBiom") {
-      return(ncvar_def(name, "kg C m-2", list(lon, lat, time), -999, "Total stem biomass"))
-    }
-
-    # ED specific variables
-    if (name == "CO2CAS") {
-      return(ncvar_def(name, "ppmv", list(lon, lat, time), -999))
-    }
-    if (name == "CropYield") {
-      return(ncvar_def(name, "kg m-2", list(lon, lat, time), -999))
-    }
-    if (name == "SnowFrac") {
-      return(ncvar_def(name, "-", list(lon, lat, time), -999))
-    }
-    if (name == "Lwdown") {
-      return(ncvar_def(name, "W m-2", list(lon, lat, time), -999))
-    }
-    if (name == "Swdown") {
-      return(ncvar_def(name, "W m-2", list(lon, lat, time), -999))
-    }
-    if (name == "Qg") {
-      return(ncvar_def(name, "W m-2", list(lon, lat, time), -999))
-    }
-    if (name == "Swnet") {
-      return(ncvar_def(name, "W m-2", list(lon, lat, time), -999))
-    }
-    if (name == "RootMoist") {
-      return(ncvar_def(name, "kg m-2", list(lon, lat, time), -999))
-    }
-    if (name == "Tveg") {
-      return(ncvar_def(name, "kg m-2 s-1", list(lon, lat, time), -999))
-    }
-    if (name == "WaterTableD") {
-      return(ncvar_def(name, "m", list(lon, lat, time), -999))
-    }
-    if (name == "SMFrozFrac") {
-      return(ncvar_def(name, "-",list(lon, lat, time), -999))
-#      return(ncvar_def(name, "-",list(lon, lat, nsoil, time), -999))
-    }
-    if (name == "SMLiqFrac") {
-      return(ncvar_def(name, "-",list(lon, lat, time), -999))
-#      return(ncvar_def(name, "-",list(lon, lat, nsoil, time), -999))
-    }
-    if (name == "Albedo") {
-      return(ncvar_def(name, "-", list(lon, lat, time), -999))
-    }
-    if (name == "SnowT") {
-      return(ncvar_def(name, "K", list(lon, lat, time), -999))
-    }
-    if (name == "VegT") {
-      return(ncvar_def(name, "K", list(lon, lat, time), -999))
-    }
-
-    # SIPNET specific variables
-    if (name == "LeafC") {
-      return(ncvar_def(name, "kg C m-2", list(lon, lat, time), -999, "Leaf carbon"))
-    }
-
-    logger.info("Don't know about variable", name, " in mstmip_vars in PEcAn.utils")
-    return(ncvar_def(name, "", list(time), -999, "NOT FOUND IN mstmip_vars"))
   }
 
   for(i in 1:4) {
     vd <- var[[paste0('dim', i)]]
-    if (vd == 'lon' && !is.null(lon)) {
+    if (vd == 'lon' && !is.na(lon)) {
       dims[[length(dims)+1]] <- lon
-    } else if (vd == 'lat' && !is.null(lat)) {
+    } else if (vd == 'lat' && !is.na(lat)) {
       dims[[length(dims)+1]] <- lat
-    } else if (vd == 'time' && !is.null(time)) {
+    } else if (vd == 'time' && !is.na(time)) {
       dims[[length(dims)+1]] <- time
-    } else if (vd == 'nsoil' && !is.null(nsoil)) {
+    } else if (vd == 'nsoil' && !is.na(nsoil)) {
       dims[[length(dims)+1]] <- nsoil
     } else if (vd == 'na') {
       # skip
     } else {
-      logger.info("Don't know dimension for", vd, "for variable", name)
+      if (!silent) {
+        logger.info("Don't know dimension for", vd, "for variable", name)
+      }
     }
   }
   ncvar <- ncvar_def(name, as.character(var$Units), dims, -999)

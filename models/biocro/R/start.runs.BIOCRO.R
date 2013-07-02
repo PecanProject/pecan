@@ -70,12 +70,11 @@ start.runs.BIOCRO <- function(runid) {
   if(metfile.exists) {
       weather <- read.csv(metfile)[,-1]
   } else if(!metfile.exists){
-    weather <- InputForWeach(lat, lon, year(start.date), year(end.date))
-    weather.dir <- file.path(settings$database$dbfiles, "/met",
-                             paste0(abs(lat),
+    weather.dir <- file.path(settings$run$dbfiles, "met", paste0(abs(lat),
                                     ifelse(lat>0,"N", "S"), "x",
                                     abs(lon),
                                     ifelse(lon>0, "E", "W")))
+    weather <- InputForWeach(lat, lon, year(start.date), year(end.date))
     dir.create(weather.dir, recursive = TRUE, showWarnings = FALSE)
     weather.dir <- path.expand(weather.dir)
     write.csv(weather,
@@ -113,9 +112,6 @@ start.runs.BIOCRO <- function(runid) {
   
   pp.config <- config$pft$photoParms
   pp <- photoParms(vmax=pp.config$vmax, b0=pp.config$b0, b1 = pp.config$b1,Rd=pp.config$Rd)
-  print(rundir)
-  print(dir(rundir))
-  print(pp)
   cc <- canopyParms(Sp = config$pft$canopyParms$Sp)
 
   BioGro_result <- BioGro(weather2, photoControl=pp, canopyControl=cc)
