@@ -18,7 +18,6 @@ PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "biocro.dtd">\n'
 ##' @name convert.samples.BIOCRO
 ##' @title Convert samples for biocro
 ##' @param trait.samples a matrix or dataframe of samples from the trait distribution
-##' @export
 ##' @return matrix or dataframe with values transformed
 ##' @author David LeBauer
 convert.samples.BIOCRO <- function(trait.samples){
@@ -70,14 +69,14 @@ write.config.BIOCRO <- function(defaults,
   }
  
   dir.create(rundir, showWarnings = FALSE, recursive = TRUE)
-#   writeLines(c("#!/usr/bin/Rscript",               
-#                paste("cp ", file.path(rundir, "README.txt"), 
-#                      file.path(outdir, "README.txt"))),
-#              con=file.path(settings$rundir, run.id, "job.sh"))
-#   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
-#   
+  ##   writeLines(c("#!/usr/bin/Rscript",               
+  ##                paste("cp ", file.path(rundir, "README.txt"), 
+  ##                      file.path(outdir, "README.txt"))),
+  ##              con=file.path(settings$rundir, run.id, "job.sh"))
+  ##   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
+  ##   
   ##
-  traits  <- lapply(convert.samples.BIOCRO(trait.values[[1]]),
+  traits  <- lapply(convert.samples.BIOCRO(trait.values),
                     as.character)
   
   defaults.file <- defaults$pft$constants$file
