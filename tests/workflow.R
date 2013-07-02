@@ -38,7 +38,6 @@ require('PEcAn.all')
 
 # check settings
 settings <- read.settings('pecan.xml')
-stop()
 
 # some quick checks
 runtraits <- FALSE

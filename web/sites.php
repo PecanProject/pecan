@@ -27,12 +27,13 @@ if (isset($_REQUEST['model']) && ($_REQUEST['model'] != "")) {
 
 $query = "SELECT sites.* FROM sites";
 if (isset($_REQUEST['host']) && ($_REQUEST['host'] != "")) {
-	$query  = "SELECT DISTINCT sites.* FROM sites, inputs, dbfiles, machines WHERE dbfiles.container_id = inputs.file_id AND inputs.site_id=sites.id";
-	$query .= " AND machines.hostname='{$_REQUEST['host']}' AND dbfiles.machine_id=machines.id";
-
 	if ($modeltype == "ED2") {
+		$query  = "SELECT DISTINCT sites.* FROM sites, inputs, dbfiles, machines WHERE dbfiles.container_id = inputs.file_id AND inputs.site_id=sites.id";
+		$query .= " AND machines.hostname='{$_REQUEST['host']}' AND dbfiles.machine_id=machines.id";
 		$query .= " AND inputs.format_id=12";
 	} else if ($modeltype == "SIPNET") {
+		$query  = "SELECT DISTINCT sites.* FROM sites, inputs, dbfiles, machines WHERE dbfiles.container_id = inputs.file_id AND inputs.site_id=sites.id";
+		$query .= " AND machines.hostname='{$_REQUEST['host']}' AND dbfiles.machine_id=machines.id";
 		$query .= " AND inputs.format_id=24";
 	}
 }
