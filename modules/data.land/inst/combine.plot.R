@@ -7,8 +7,8 @@ combine.plot <- function(folder){
   filelist <- dir(folder,pattern =  "*.csv",full.names=TRUE)
   plot.data <- list()
   for (file in filelist){
-     read.plot(file)               # read each file from folder
-     plot.data[[file]]<-plot.data  # place into single list
-  }
+     plot.data[[file]] <- read.plot(file) # read each file from folder and list 
+  }  
+  plot.data<<-plot.data
+  return(plot.data)
 }
-    
