@@ -6,7 +6,7 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-list.of.packages <- c('abind', 'car', 'chron', 'coda', 'doSNOW', 'dplR', 'emulator',
+list.of.packages <- c('abind', 'car', 'chron', 'coda', 'data.table', 'doSNOW', 'dplR', 'earth', 'emulator',
                       'ggmap', 'ggplot2', 'gridExtra', 'Hmisc', 'kernlab',
                       'knitr', 'lubridate', 'MASS', 'MCMCpack', 'mvtnorm', 'ncdf4',
                       'plotrix', 'plyr', 'raster', 'randtoolbox', 'rjags',
