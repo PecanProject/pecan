@@ -14,9 +14,7 @@
 ##' @export
 ##'
 get.trait.data <- function() {
-  ## Info:  lots of hacks for now.  Needs to be updated once full workflow is ready.
-  require(RMySQL)
-  require(PEcAn.utils)
+
   num <- sum(names(unlist(settings$pfts)) == "pft.name")
   for (i in 1:num){
     ## Remove old files.  Clean up.
@@ -25,64 +23,57 @@ get.trait.data <- function() {
     file.remove(old.files[which(file.info(list.files(path=settings$pfts[i]$pft$outdir,
                                                      full.names=TRUE))$isdir==FALSE)])
   }
-  ##--------------------------------------------------------------------------------------------------#
-
-
-  ##---------------- Load trait dictionary. ----------------------------------------------------------#
+  ##---------------- Load trait dictionary --------------#
 
   data(trait.dictionary, package = "PEcAn.utils")
   trait.names <- trait.dictionary$id
-  ##--------------------------------------------------------------------------------------------------#
-
-
-  ##--------------------------------------------------------------------------------------------------#
-
-
-  ##---------------- Query trait data. ---------------------------------------------------------------#
+  ##---------------- Query trait data --------------------#
 
   all.trait.data <- list()
   dbcon <- db.open(settings$database)
   for(pft in settings$pfts){
  
-    ## 1. get species list based on pft
-    spstr <- query.pft_species(pft$name, con=dbcon)
-    
-    ## 2. get priors available for pft  
-    prior.distns <- query.priors(pft$name, vecpaste(trait.names),
-                                 out = pft$outdir, con = dbcon)
-    
-    ### exclude any parameters for which a constant is provided 
-    prior.distns <- prior.distns[which(!rownames(prior.distns) %in%
-                                       names(pft$constants)),]
+      ## 1. get species list based on pft
+      species <- query.pft_species(pft$name, con=dbcon)
+      spstr <- vecpaste(species$id)
+      write.csv(species, file.path(pft$outdir, "species.csv"), row.names = FALSE)
+      ## 2. get priors available for pft  
+      prior.distns <- query.priors(pft$name, vecpaste(trait.names),
+                                   out = pft$outdir, con = dbcon)
+      
+      ## exclude any parameters for which a constant is provided 
+      prior.distns <- prior.distns[which(!rownames(prior.distns) %in%
+                                         names(pft$constants)),]
 
-    ### save priors
-    save(prior.distns, file = file.path(pft$outdir, "prior.distns.Rdata"))
+      ## save priors
+      save(prior.distns, file = file.path(pft$outdir, "prior.distns.Rdata"))
+      write.csv(prior.distns,
+                file = file.path(pft$outdir, "prior.distns.csv"), row.names = FALSE)
+    
+      ## 3. display info to the console
+      logger.info('Summary of Prior distributions for: ', pft$name)
+      logger.info(prior.distns)
 
-    
-    # 3. display info to the console
-    print(" ")
-    print("-------------------------------------------------------------------")
-    print(paste('Summary of Prior distributions for: ',pft$name,sep=""))
-    print(prior.distns)
-    traits <- rownames(prior.distns) # vector of variables with prior distributions for pft 
-    print("-------------------------------------------------------------------")
-    print(" ")
-    
-    trait.data <- query.traits(spstr, traits, con = dbcon)
-    traits <- names(trait.data)
-    trait.data.file <- file.path(pft$outdir, "trait.data.Rdata")
-    save(trait.data, file = trait.data.file)
-    if(!file.exists(trait.data.file)){
-      stop("trait.data not saved")
-    }
-    
-    all.trait.data[[pft$name]] <- trait.data
-    
-    for(i in 1:length(all.trait.data)){
-      print(paste("number of observations per trait for", pft$name))
-      print(ldply(all.trait.data[[i]], nrow))
-    }
-    
+      ## traits = variables with prior distributions for this pft 
+      traits <- rownames(prior.distns) 
+      
+      trait.data <- query.traits(spstr, traits, con = dbcon)
+      traits <- names(trait.data)
+      trait.data.file <- file.path(pft$outdir, "trait.data.Rdata")
+      save(trait.data, file = trait.data.file)
+      write.csv(ldply(trait.data),
+                file = file.path(pft$outdir, "trait.data.csv"), row.names = FALSE)
+      if(!file.exists(trait.data.file)){
+          logger.error("trait.data not saved")
+      }
+      
+      all.trait.data[[pft$name]] <- trait.data
+      
+      for(i in 1:length(all.trait.data)){
+          logger.info("number of observations per trait for", pft$name)
+          logger.info(ldply(all.trait.data[[i]], nrow))
+      }
+      
   }
   db.close(dbcon)
 }
