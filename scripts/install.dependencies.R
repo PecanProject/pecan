@@ -1,3 +1,4 @@
+#!/usr/bin/Rscript --vanilla
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
