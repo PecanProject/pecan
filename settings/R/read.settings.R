@@ -53,6 +53,11 @@ check.settings <- function(settings) {
       settings$database$username <- settings$database$userid
       settings$database$userid <- NULL
     }
+    if (!is.null(settings$database$user)) {
+      logger.info("user in database section should be username for MySQL")
+      settings$database$username <- settings$database$user
+      settings$database$user <- NULL
+    }
     if (!is.null(settings$database$passwd)) {
       logger.info("passwd in database section should be password for MySQL")
       settings$database$password <- settings$database$passwd
@@ -66,7 +71,28 @@ check.settings <- function(settings) {
   }
 
   # PostgreSQL specific checks
-  # TODO IMPLEMENT
+  if (settings$database$driver == "PostgreSQL") {
+    if (!is.null(settings$database$userid)) {
+      logger.info("userid in database section should be user for PostgreSQL")
+      settings$database$user <- settings$database$userid
+      settings$database$userid <- NULL
+    }
+    if (!is.null(settings$database$username)) {
+      logger.info("username in database section should be user for PostgreSQL")
+      settings$database$user <- settings$database$username
+      settings$database$username <- NULL
+    }
+    if (!is.null(settings$database$passwd)) {
+      logger.info("passwd in database section should be password for PostgreSQL")
+      settings$database$password <- settings$database$passwd
+      settings$database$passwd <- NULL
+    }
+    if (!is.null(settings$database$name)) {
+      logger.info("name in database section should be dbname for PostgreSQL")
+      settings$database$dbname <- settings$database$name
+      settings$database$name <- NULL
+    }
+  }
 
   # should runs be written to database
   if (is.null(settings$bety$write)) {
@@ -95,7 +121,7 @@ check.settings <- function(settings) {
   
   # check database version
   if(database){
-    versions <- db.query("SELECT version FROM schema_migrations WHERE version >= '20130425152503';", params=settings$database)[['version']]
+    versions <- db.query("SELECT version FROM schema_migrations WHERE version >= '20130629205658';", params=settings$database)[['version']]
     if (length(versions) == 0) {
       logger.severe("Database is out of date, please update the database.")
     }
@@ -247,6 +273,18 @@ check.settings <- function(settings) {
   if (is.null(settings$meta.analysis$random.effects)) {
     settings$meta.analysis$random.effects <- FALSE
     logger.info("Setting meta.analysis random effects to ", settings$meta.analysis$random.effects)
+  }
+  if (is.null(settings$meta.analysis$update)) {
+    settings$meta.analysis$update <- FALSE
+    logger.info("Setting meta.analysis update to only update if no previous meta analysis was found")
+  }
+  if (settings$meta.analysis$update == 'AUTO') {
+    logger.info("meta.analysis update AUTO is not implemented yet, defaulting to FALSE")
+    settings$meta.analysis$update <- FALSE
+  }
+  if ((settings$meta.analysis$update != 'AUTO') && is.na(as.logical(settings$meta.analysis$update))) {
+    logger.info("meta.analysis update can only be AUTO/TRUE/FALSE, defaulting to FALSE")
+    settings$meta.analysis$update <- FALSE
   }
 
   # check modelid with values
