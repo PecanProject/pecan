@@ -61,8 +61,27 @@ run.meta.analysis <- function() {
       stop("**** WARNING: No PFT(s) specified in the PEcAn XML settings file ****......Please check.")
     }
     
+    # create path where to store files
+    pathname <- file.path(settings$run$dbfiles, "inputs", pft$name, paste0(gsub("/", "-", settings$run$start.date), "-", gsub("/", "-", settings$run$end.date)))
+    dir.create(pathname, showWarnings = FALSE, recursive = TRUE)
+
     ## loop over pfts
-    for(pft in settings$pfts){
+    dbcon <- db.open(settings$database)
+    for(pft in settings$pfts) {
+      mcmcinfo <- dbfile.check(settings$run$site$id, settings$run$start.date, settings$run$end.date, 'application/x-RData', 'trait.mcmc', dbcon)
+      postinfo <- dbfile.check(settings$run$site$id, settings$run$start.date, settings$run$end.date, 'application/x-RData', 'post.distns', dbcon)
+      if ((nrow(mcmcinfo)>0) && (nrow(postinfo)>0)) {
+        if(nrow(mcmcinfo)>1) {
+          mcmcinfo <- mcmcinfo[0]
+        }
+        if(nrow(postinfo)>1) {
+          postinfo <- postinfo[0]
+        }
+        logger.info("Reusing existing trait.mcmc", mcmcinfo[['id']], "and post.distns", postinfo[['id']], "data")
+        file.symlink(file.path(mcmcinfo[['file_path']], mcmcinfo[['file_name']]), file.path(pft$outdir, 'trait.mcmc.Rdata'))
+        file.symlink(file.path(postinfo[['file_path']], postinfo[['file_name']]), file.path(pft$outdir, 'post.distns.Rdata'))
+        next
+      }
       
       print(" ")
       print("-------------------------------------------------------------------")
@@ -151,9 +170,16 @@ run.meta.analysis <- function() {
         
         post.distns <- approx.posterior(trait.mcmc, prior.distns, trait.data, pft$outdir)
         save(post.distns, file = file.path(pft$outdir, 'post.distns.Rdata'))
-        
+
+        ### save and store in database
+        save(trait.mcmc, file = file.path(pathname, 'trait.mcmc.Rdata'))
+        dbfile.insert('trait.mcmc.Rdata', pathname, settings$run$site$id, settings$run$start.date, settings$run$end.date, 'application/x-RData', 'trait.mcmc', dbcon)
+        save(post.distns, file = file.path(pathname, 'post.distns.Rdata'))
+        dbfile.insert('post.distns.Rdata', pathname, settings$run$site$id, settings$run$start.date, settings$run$end.date, 'application/x-RData', 'post.distns', dbcon)
+
       } ### End meta.analysis for loop
-    }  
+    }
+    db.close(dbcon)
   } else {
     
     print('PEcAn settings file does not call for a trait meta-analysis')
