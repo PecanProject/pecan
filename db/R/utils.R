@@ -10,6 +10,7 @@
 .db.utils <- new.env() 
 .db.utils$created <- 0
 .db.utils$queries <- 0
+.db.utils$showquery <- FALSE
 .db.utils$connections <- list()
 
 #---------------- Base database query function. ---------------------------------------------------#
@@ -39,7 +40,9 @@ db.query <- function(query, con=NULL, params=NULL) {
     con <- db.open(params)
     iopened <- 1
   }
-  #logger.debug(query)
+  if (.db.utils$showquery) {
+    logger.debug(query)
+  }
   data <- dbGetQuery(con, query)
   res <- dbGetException(con)
   if (res$errorNum != 0 || (res$errorMsg != 'OK' && res$errorMsg != '')) {
@@ -202,4 +205,25 @@ db.exists <- function(params, write=TRUE) {
 	})
 
 	invisible(result)
+}
+
+##' Sets if the queries should be shown that are being executed
+##' 
+##' Useful to print queries when debuging SQL statements
+##' @title db.showQueries
+##' @param show set to TRUE to show the queries, FALSE by default
+##' @export
+##' @author Rob Kooper
+db.showQueries <- function(show) {
+  .db.utils$showquery <- show
+}
+
+##' Returns if the queries should be shown that are being executed
+##' 
+##' @title db.getShowQueries
+##' @return will return TRUE if queries are shown
+##' @export
+##' @author Rob Kooper
+db.getShowQueries <- function() {
+  invisible(.db.utils$showquery)
 }
