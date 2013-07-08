@@ -37,19 +37,21 @@ get.trait.data <- function() {
   dbcon <- db.open(settings$database)
   for(pft in settings$pfts) {
     # check to see if already cached
-    traitinfo <- dbfile.check(settings$run$site$id, settings$run$start.date, settings$run$end.date, 'application/x-RData', 'trait.data', dbcon)
-    priorinfo <- dbfile.check(settings$run$site$id, settings$run$start.date, settings$run$end.date, 'application/x-RData', 'prior.distns', dbcon)
-    if ((nrow(traitinfo)>0) && (nrow(priorinfo)>0)) {
-      if(nrow(traitinfo)>1) {
-        traitinfo <- traitinfo[0]
+    if ((settings$meta.analysis$update == 'AUTO') || !as.logical(settings$meta.analysis$update)) {
+      traitinfo <- dbfile.check(settings$run$site$id, settings$run$start.date, settings$run$end.date, 'application/x-RData', 'trait.data', dbcon)
+      priorinfo <- dbfile.check(settings$run$site$id, settings$run$start.date, settings$run$end.date, 'application/x-RData', 'prior.distns', dbcon)
+      if ((nrow(traitinfo)>0) && (nrow(priorinfo)>0)) {
+        if(nrow(traitinfo)>1) {
+          traitinfo <- traitinfo[1,]
+        }
+        if(nrow(priorinfo)>1) {
+          priorinfo <- priorinfo[1,]
+        }
+        logger.info("Reusing existing trait.data", traitinfo[['id']], "and prior.distns", priorinfo[['id']], "data")
+        file.symlink(file.path(traitinfo[['file_path']], traitinfo[['file_name']]), file.path(pft$outdir, 'trait.data.Rdata'))
+        file.symlink(file.path(priorinfo[['file_path']], priorinfo[['file_name']]), file.path(pft$outdir, 'prior.distns.Rdata'))
+        next
       }
-      if(nrow(priorinfo)>1) {
-        priorinfo <- priorinfo[0]
-      }
-      logger.info("Reusing existing trait.data", traitinfo[['id']], "and prior.distns", priorinfo[['id']], "data")
-      file.symlink(file.path(traitinfo[['file_path']], traitinfo[['file_name']]), file.path(pft$outdir, 'trait.data.Rdata'))
-      file.symlink(file.path(priorinfo[['file_path']], priorinfo[['file_name']]), file.path(pft$outdir, 'prior.distns.Rdata'))
-      next
     }
 
     ## 1. get species list based on pft
@@ -94,10 +96,13 @@ get.trait.data <- function() {
     }
 
     # save files and insert file into dbfiles
-    save(trait.data, file=file.path(pathname, 'trait.data.Rdata'))
-    dbfile.insert('trait.data.Rdata', pathname, settings$run$site$id, settings$run$start.date, settings$run$end.date, 'application/x-RData', 'trait.data', dbcon)
-    save(prior.distns, file=file.path(pathname,'prior.distns.Rdata'))    
-    dbfile.insert('prior.distns.Rdata', pathname, settings$run$site$id, settings$run$start.date, settings$run$end.date, 'application/x-RData', 'prior.distns', dbcon)
+    filename <- tempfile(pattern="trait.data.", tmpdir=pathname, fileext=".Rdata")
+    save(trait.data, file=filename)
+    dbfile.insert(filename, settings$run$site$id, settings$run$start.date, settings$run$end.date, 'application/x-RData', 'trait.data', dbcon)
+
+    filename <- tempfile(pattern="prior.distns.", tmpdir=pathname, fileext=".Rdata")
+    save(prior.distns, file=filename)    
+    dbfile.insert(filename, settings$run$site$id, settings$run$start.date, settings$run$end.date, 'application/x-RData', 'prior.distns', dbcon)
   }
   db.close(dbcon)
 }
