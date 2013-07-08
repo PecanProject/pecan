@@ -13,8 +13,7 @@
 ##' data to store the file
 ##' @name dbfile.insert
 ##' @title Insert file into tables
-##' @param filename the name of the file to be inserted, this should not include the path to the file
-##' @param pathname the path where the file is stored
+##' @param filename the name of the file to be inserted
 ##' @param siteid the id of the site that this data is applicable to 
 ##' @param startdate the start date of the data stored in the file
 ##' @param enddate the end date of the data stored in the file
@@ -28,9 +27,9 @@
 ##' @export
 ##' @examples
 ##' \dontrun{
-##'   dbfile.insert('trait.data.Rdata', pathname, settings$run$site$id, settings$run$start.date, settings$run$end.date, 'application/x-RData', 'traits', dbcon)
+##'   dbfile.insert('trait.data.Rdata', settings$run$site$id, settings$run$start.date, settings$run$end.date, 'application/x-RData', 'traits', dbcon)
 ##' }
-dbfile.insert <- function(filename, pathname, siteid, startdate, enddate, mimetype, formatname, con, hostname=Sys.info()[['nodename']]) {
+dbfile.insert <- function(filename, siteid, startdate, enddate, mimetype, formatname, con, hostname=Sys.info()[['nodename']]) {
   # find appropriate format
   formatid <- db.query(paste0("SELECT id FROM formats WHERE mime_type='", mimetype, "' AND name='", formatname, "'"), con)[['id']]
   if (is.null(formatid)) {
@@ -57,9 +56,9 @@ dbfile.insert <- function(filename, pathname, siteid, startdate, enddate, mimety
   }
 
   db.query(paste0("INSERT INTO dbfiles (container_type, container_id, file_name, file_path, machine_id, created_at, updated_at) VALUES (",
-                  "'Inputs', ", inputid, ", '", filename, "', '", pathname, "', ", hostid, ", NOW(), NOW())"), con)
+                  "'Inputs', ", inputid, ", '", basename(filename), "', '", dirname(filename), "', ", hostid, ", NOW(), NOW())"), con)
 
-  invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='Inputs' AND container_id=", inputid, " AND file_name='", filename, "' AND file_path='", pathname, "' AND machine_id=", hostid, " ORDER BY id"), con)[['id']])
+  invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='Inputs' AND container_id=", inputid, " AND file_name='", basename(filename), "' AND file_path='", dirname(filename), "' AND machine_id=", hostid, " ORDER BY id DESC"), con)[['id']])
 }
 
 ##' Function to check to see if a file exists in the dbfiles table as an input
@@ -109,5 +108,5 @@ dbfile.check <- function(siteid, startdate, enddate, mimetype, formatname, con, 
     inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", settings$run$site$id, " AND format_id=", formatid, " AND start_date='", settings$run$start.date, "' AND end_date='", settings$run$end.date, "';"), con)[['id']]
   }
 
-  invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='Inputs' AND container_id=", inputid, " AND machine_id=", hostid, " ORDER BY id"), con))
+  invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='Inputs' AND container_id=", inputid, " AND machine_id=", hostid, " ORDER BY id DESC"), con))
 }
