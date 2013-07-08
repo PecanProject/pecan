@@ -68,19 +68,21 @@ run.meta.analysis <- function() {
     ## loop over pfts
     dbcon <- db.open(settings$database)
     for(pft in settings$pfts) {
-      mcmcinfo <- dbfile.check(settings$run$site$id, settings$run$start.date, settings$run$end.date, 'application/x-RData', 'trait.mcmc', dbcon)
-      postinfo <- dbfile.check(settings$run$site$id, settings$run$start.date, settings$run$end.date, 'application/x-RData', 'post.distns', dbcon)
-      if ((nrow(mcmcinfo)>0) && (nrow(postinfo)>0)) {
-        if(nrow(mcmcinfo)>1) {
-          mcmcinfo <- mcmcinfo[0]
+      if ((settings$meta.analysis$update == 'AUTO') || !as.logical(settings$meta.analysis$update)) {
+        mcmcinfo <- dbfile.check(settings$run$site$id, settings$run$start.date, settings$run$end.date, 'application/x-RData', 'trait.mcmc', dbcon)
+        postinfo <- dbfile.check(settings$run$site$id, settings$run$start.date, settings$run$end.date, 'application/x-RData', 'post.distns', dbcon)
+        if ((nrow(mcmcinfo)>0) && (nrow(postinfo)>0)) {
+          if(nrow(mcmcinfo)>1) {
+            mcmcinfo <- mcmcinfo[1,]
+          }
+          if(nrow(postinfo)>1) {
+            postinfo <- postinfo[1,]
+          }
+          logger.info("Reusing existing trait.mcmc", mcmcinfo[['id']], "and post.distns", postinfo[['id']], "data")
+          file.symlink(file.path(mcmcinfo[['file_path']], mcmcinfo[['file_name']]), file.path(pft$outdir, 'trait.mcmc.Rdata'))
+          file.symlink(file.path(postinfo[['file_path']], postinfo[['file_name']]), file.path(pft$outdir, 'post.distns.Rdata'))
+          next
         }
-        if(nrow(postinfo)>1) {
-          postinfo <- postinfo[0]
-        }
-        logger.info("Reusing existing trait.mcmc", mcmcinfo[['id']], "and post.distns", postinfo[['id']], "data")
-        file.symlink(file.path(mcmcinfo[['file_path']], mcmcinfo[['file_name']]), file.path(pft$outdir, 'trait.mcmc.Rdata'))
-        file.symlink(file.path(postinfo[['file_path']], postinfo[['file_name']]), file.path(pft$outdir, 'post.distns.Rdata'))
-        next
       }
       
       print(" ")
@@ -172,10 +174,13 @@ run.meta.analysis <- function() {
         save(post.distns, file = file.path(pft$outdir, 'post.distns.Rdata'))
 
         ### save and store in database
-        save(trait.mcmc, file = file.path(pathname, 'trait.mcmc.Rdata'))
-        dbfile.insert('trait.mcmc.Rdata', pathname, settings$run$site$id, settings$run$start.date, settings$run$end.date, 'application/x-RData', 'trait.mcmc', dbcon)
-        save(post.distns, file = file.path(pathname, 'post.distns.Rdata'))
-        dbfile.insert('post.distns.Rdata', pathname, settings$run$site$id, settings$run$start.date, settings$run$end.date, 'application/x-RData', 'post.distns', dbcon)
+        filename <- tempfile(pattern="trait.mcmc.", tmpdir=pathname, fileext=".Rdata")
+        save(trait.mcmc, file=filename)
+        dbfile.insert(filename, settings$run$site$id, settings$run$start.date, settings$run$end.date, 'application/x-RData', 'trait.mcmc', dbcon)
+
+        filename <- tempfile(pattern="post.distns.", tmpdir=pathname, fileext=".Rdata")
+        save(post.distns, file=filename)
+        dbfile.insert(filename, settings$run$site$id, settings$run$start.date, settings$run$end.date, 'application/x-RData', 'post.distns', dbcon)
 
       } ### End meta.analysis for loop
     }
