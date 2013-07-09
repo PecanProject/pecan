@@ -75,11 +75,13 @@ while ($row = @mysql_fetch_assoc($result)){
       var infowindow = null;
       var markersArray = [];
 
-      function resize(){
-		$("#stylized").height($(window).height() - 5);
-		$("#map_canvas").height($(window).height() - 1);
-		$("#map_canvas").width($(window).width() - $('#form').width() - 5);
-      } 
+        function resize() {
+                if ($("#stylized").height() < $(window).height()) {
+                        $("#stylized").height($(window).height() - 5);
+                }
+                $("#map_canvas").height($(window).height() - 1);
+                $("#map_canvas").width($(window).width() - $('#stylized').width() - 5);
+        }
 
       function mapsLoaded() {
 		var myLatlng = new google.maps.LatLng(40.11642, -88.243382);
