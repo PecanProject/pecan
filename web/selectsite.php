@@ -114,6 +114,7 @@ while ($row = @mysql_fetch_assoc($result)){
 					showSite(marker, curSite);
 				}
 			});
+			renderSites(curSite);
 		});
 	}
 
