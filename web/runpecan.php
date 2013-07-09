@@ -245,7 +245,7 @@ fwrite($fh, "      <met.end>${metend}</met.end>" . PHP_EOL);
 fwrite($fh, "    </site>" . PHP_EOL);
 fwrite($fh, "    <start.date>${startdate}</start.date>" . PHP_EOL);
 fwrite($fh, "    <end.date>${enddate}</end.date>" . PHP_EOL);
-fwrite($fh, "    <dbfiles>${output_folderi}</dbfiles>" . PHP_EOL);
+fwrite($fh, "    <dbfiles>${output_folder}</dbfiles>" . PHP_EOL);
 fwrite($fh, "    <host>" . PHP_EOL);
 fwrite($fh, "      <name>${hostname}</name>" . PHP_EOL);
 fwrite($fh, "    </host>" . PHP_EOL);
