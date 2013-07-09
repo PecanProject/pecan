@@ -29,13 +29,13 @@ get.trait.data <- function() {
   trait.names <- trait.dictionary$id
   ##---------------- Query trait data --------------------#
 
-  # create path where to store files
-  pathname <- file.path(settings$run$dbfiles, "inputs", pft$name, paste0(gsub("/", "-", settings$run$start.date), "-", gsub("/", "-", settings$run$end.date)))
-  dir.create(pathname, showWarnings = FALSE, recursive = TRUE)
-
   all.trait.data <- list()
   dbcon <- db.open(settings$database)
   for(pft in settings$pfts) {
+    # create path where to store files
+    pathname <- file.path(settings$run$dbfiles, "inputs", pft$name, paste0(gsub("/", "-", settings$run$start.date), "-", gsub("/", "-", settings$run$end.date)))
+    dir.create(pathname, showWarnings = FALSE, recursive = TRUE)
+
     # check to see if already cached
     if ((settings$meta.analysis$update == 'AUTO') || !as.logical(settings$meta.analysis$update)) {
       traitinfo <- dbfile.check(settings$run$site$id, settings$run$start.date, settings$run$end.date, 'application/x-RData', 'trait.data', dbcon)
