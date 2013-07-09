@@ -61,13 +61,13 @@ run.meta.analysis <- function() {
       stop("**** WARNING: No PFT(s) specified in the PEcAn XML settings file ****......Please check.")
     }
     
-    # create path where to store files
-    pathname <- file.path(settings$run$dbfiles, "inputs", pft$name, paste0(gsub("/", "-", settings$run$start.date), "-", gsub("/", "-", settings$run$end.date)))
-    dir.create(pathname, showWarnings = FALSE, recursive = TRUE)
-
     ## loop over pfts
     dbcon <- db.open(settings$database)
     for(pft in settings$pfts) {
+      # create path where to store files
+      pathname <- file.path(settings$run$dbfiles, "inputs", pft$name, paste0(gsub("/", "-", settings$run$start.date), "-", gsub("/", "-", settings$run$end.date)))
+      dir.create(pathname, showWarnings = FALSE, recursive = TRUE)
+
       if ((settings$meta.analysis$update == 'AUTO') || !as.logical(settings$meta.analysis$update)) {
         mcmcinfo <- dbfile.check(settings$run$site$id, settings$run$start.date, settings$run$end.date, 'application/x-RData', 'trait.mcmc', dbcon)
         postinfo <- dbfile.check(settings$run$site$id, settings$run$start.date, settings$run$end.date, 'application/x-RData', 'post.distns', dbcon)
