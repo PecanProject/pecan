@@ -37,7 +37,11 @@ mstmipvar <- function(name, lat=NA, lon=NA, time=NA, nsoil=NA, silent=FALSE) {
       if (!silent) {
         logger.info("Don't know about variable", name, " in mstmip_vars in PEcAn.utils")
       }
-      return(ncvar_def(name, "", list(time), -999, "NOT FOUND IN mstmip_vars or mstmip_local"))
+      if (is.na(time)) {
+        return(ncvar_def(name, "", list(1:17520), -999, "NOT FOUND IN mstmip_vars or mstmip_local"))
+      } else {
+        return(ncvar_def(name, "", list(time), -999, "NOT FOUND IN mstmip_vars or mstmip_local"))
+      }
     }
   }
 
