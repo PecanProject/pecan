@@ -38,10 +38,9 @@ mstmipvar <- function(name, lat=NA, lon=NA, time=NA, nsoil=NA, silent=FALSE) {
         logger.info("Don't know about variable", name, " in mstmip_vars in PEcAn.utils")
       }
       if (is.na(time)) {
-        return(ncvar_def(name, "", list(1:17520), -999, "NOT FOUND IN mstmip_vars or mstmip_local"))
-      } else {
-        return(ncvar_def(name, "", list(time), -999, "NOT FOUND IN mstmip_vars or mstmip_local"))
+        time <- ncdim_def(name="time", units="days since 1900-01-01 00:00:00", vals=1:365, calendar="standard", unlim=TRUE)
       }
+      return(ncvar_def(name, "", list(time), -999, name))
     }
   }
 
