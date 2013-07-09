@@ -8,13 +8,13 @@
 			window.onresize = resize;
 			window.onload = resize;
 			
-			function resize() {
-				$("#stylized").height($(window).height() - 5);
-				$("#output").height($(window).height() - 1);
-				$("#output").width($(window).width() - $('#stylized').width() - 40);
-				document.getElementById('output').style.paddingLeft = "10px";
-				document.getElementById('stylized').style.paddingRight = "3px";
-			}
+        function resize() {
+                if ($("#stylized").height() < $(window).height()) {
+                        $("#stylized").height($(window).height() - 5);
+                }
+                $("#output").height($(window).height() - 1);
+                $("#output").width($(window).width() - $('#stylized').width() - 5);
+        }
 
 			function prevStep() {
 				$("#formprev").submit();
@@ -80,6 +80,7 @@
 					<input type="hidden" name="pft[]" value="<?=$pft_iter?>" />
 					<?php } ?>
 					<input type="hidden" name="advanced_edit" value="<?=$workflow['advanced_edit']?>" /> 
+				</form>
 				
 				<form id="formnext" method="POST" action="finished.php">
 					<?php if ($offline) { ?>

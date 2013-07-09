@@ -53,10 +53,12 @@ while ($row = @mysql_fetch_assoc($result)){
     var markersArray = [];
     
 	function resize() {
-    	$("#stylized").height($(window).height() - 5);
-    	$("#map_canvas").height($(window).height() - 1);
-    	$("#map_canvas").width($(window).width() - $('#stylized').width() - 5);
-    }
+                if ($("#stylized").height() < $(window).height()) {
+                        $("#stylized").height($(window).height() - 5);
+                }
+                $("#map_canvas").height($(window).height() - 1);
+                $("#map_canvas").width($(window).width() - $('#stylized').width() - 5);
+	}
 
     function validate() {
     	if ($("#siteid").val() == "") {
