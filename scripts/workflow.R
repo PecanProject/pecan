@@ -38,7 +38,7 @@ convert.outputs(settings$model$name, settings)
 get.model.output(settings$model$name, settings)
 
 # Run sensitivity analysis and variance decomposition on model output
-run.sensitivity.analysis(settings)
+run.sensitivity.analysis()
 
 # Run ensemble analysis on model output. 
 run.ensemble.analysis()
