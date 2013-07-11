@@ -40,25 +40,34 @@ get.trait.data <- function() {
     if ((settings$meta.analysis$update == 'AUTO') || !as.logical(settings$meta.analysis$update)) {
       traitinfo <- dbfile.check(settings$run$site$id, settings$run$start.date, settings$run$end.date, 'application/x-RData', 'trait.data', dbcon)
       priorinfo <- dbfile.check(settings$run$site$id, settings$run$start.date, settings$run$end.date, 'application/x-RData', 'prior.distns', dbcon)
-      if ((nrow(traitinfo)>0) && (nrow(priorinfo)>0)) {
+      specsinfo <- dbfile.check(settings$run$site$id, settings$run$start.date, settings$run$end.date, 'text/csv', 'species', dbcon)
+      if ((nrow(traitinfo)>0) && (nrow(priorinfo)>0) && (nrow(specsinfo)>0)) {
         if(nrow(traitinfo)>1) {
           traitinfo <- traitinfo[1,]
         }
         if(nrow(priorinfo)>1) {
           priorinfo <- priorinfo[1,]
         }
-        logger.info("Reusing existing trait.data", traitinfo[['id']], "and prior.distns", priorinfo[['id']], "data")
-        file.symlink(file.path(traitinfo[['file_path']], traitinfo[['file_name']]), file.path(pft$outdir, 'trait.data.Rdata'))
-        file.symlink(file.path(priorinfo[['file_path']], priorinfo[['file_name']]), file.path(pft$outdir, 'prior.distns.Rdata'))
-        next
+        if(nrow(specsinfo)>1) {
+          specsinfo <- specsinfo[1,]
+        }
+        logger.info("Reusing existing trait.data", traitinfo[['id']], ", prior.distns", priorinfo[['id']], "and species", specsinfo[['id']], "data")
+        if (file.exists(file.path(traitinfo[['file_path']], traitinfo[['file_name']]) &&
+            file.exists(file.path(priorinfo[['file_path']], priorinfo[['file_name']]) &&
+            file.exists(file.path(specsinfo[['file_path']], specsinfo[['file_name']])) {
+          file.symlink(file.path(traitinfo[['file_path']], traitinfo[['file_name']]), file.path(pft$outdir, 'trait.data.Rdata'))
+          file.symlink(file.path(priorinfo[['file_path']], priorinfo[['file_name']]), file.path(pft$outdir, 'prior.distns.Rdata'))
+          file.symlink(file.path(specsinfo[['file_path']], specsinfo[['file_name']]), file.path(pft$outdir, 'species.csv'))
+          next
+        }
       }
     }
 
     ## 1. get species list based on pft
     species <- query.pft_species(pft$name, con=dbcon)
     spstr <- vecpaste(species$id)
-    save(species, file = file.path(pft$outdir, "species.RData"))
     write.csv(species, file.path(pft$outdir, "species.csv"), row.names = FALSE)
+
     ## 2. get priors available for pft  
     prior.distns <- query.priors(pft$name, vecpaste(trait.names),
                                  out = pft$outdir, con = dbcon)
@@ -68,7 +77,7 @@ get.trait.data <- function() {
                                        names(pft$constants)),]
 
     ## save priors
-    save(prior.distns, species, file = file.path(pft$outdir, "prior.distns.Rdata"))
+    save(prior.distns, file = file.path(pft$outdir, "prior.distns.Rdata"))
     write.csv(prior.distns,
               file = file.path(pft$outdir, "prior.distns.csv"), row.names = FALSE)
   
@@ -104,6 +113,10 @@ get.trait.data <- function() {
     filename <- tempfile(pattern="prior.distns.", tmpdir=pathname, fileext=".Rdata")
     save(prior.distns, file=filename)    
     dbfile.insert(filename, settings$run$site$id, settings$run$start.date, settings$run$end.date, 'application/x-RData', 'prior.distns', dbcon)
+
+    filename <- tempfile(pattern="species.", tmpdir=pathname, fileext=".csv")
+    write.csv(species, filename, row.names = FALSE)
+    dbfile.insert(filename, settings$run$site$id, settings$run$start.date, settings$run$end.date, 'text/csv', 'species', dbcon)
   }
   db.close(dbcon)
 }
