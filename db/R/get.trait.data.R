@@ -57,6 +57,7 @@ get.trait.data <- function() {
     ## 1. get species list based on pft
     species <- query.pft_species(pft$name, con=dbcon)
     spstr <- vecpaste(species$id)
+    save(species, file = file.path(pft$outdir, "species.RData"))
     write.csv(species, file.path(pft$outdir, "species.csv"), row.names = FALSE)
     ## 2. get priors available for pft  
     prior.distns <- query.priors(pft$name, vecpaste(trait.names),
@@ -67,7 +68,7 @@ get.trait.data <- function() {
                                        names(pft$constants)),]
 
     ## save priors
-    save(prior.distns, file = file.path(pft$outdir, "prior.distns.Rdata"))
+    save(prior.distns, species, file = file.path(pft$outdir, "prior.distns.Rdata"))
     write.csv(prior.distns,
               file = file.path(pft$outdir, "prior.distns.csv"), row.names = FALSE)
   
