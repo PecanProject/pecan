@@ -176,7 +176,7 @@ foreach(scandir("$folder/out") as $runid) {
 
 	function resize() {
 		if ($("#stylized").height() < $(window).height()) {
-	    	$("#stylized").height($(window).height() - 5);
+		    	$("#stylized").height($(window).height() - 5);
 		}
 	    	$("#output").height($(window).height() - 1);
     		$("#output").width($(window).width() - $('#stylized').width() - 5);

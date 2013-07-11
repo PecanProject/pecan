@@ -53,10 +53,12 @@ while ($row = @mysql_fetch_assoc($result)){
     var markersArray = [];
     
 	function resize() {
-    	$("#stylized").height($(window).height() - 5);
-    	$("#map_canvas").height($(window).height() - 1);
-    	$("#map_canvas").width($(window).width() - $('#stylized').width() - 5);
-    }
+                if ($("#stylized").height() < $(window).height()) {
+                        $("#stylized").height($(window).height() - 5);
+                }
+                $("#map_canvas").height($(window).height() - 1);
+                $("#map_canvas").width($(window).width() - $('#stylized').width() - 5);
+	}
 
     function validate() {
     	if ($("#siteid").val() == "") {
@@ -112,6 +114,7 @@ while ($row = @mysql_fetch_assoc($result)){
 					showSite(marker, curSite);
 				}
 			});
+			renderSites(curSite);
 		});
 	}
 
@@ -155,6 +158,7 @@ while ($row = @mysql_fetch_assoc($result)){
 					showSite(marker, curSite);
 				}
 			});
+			renderSites(curSite);
 		});
 	}
 
@@ -175,6 +179,9 @@ while ($row = @mysql_fetch_assoc($result)){
 	
 	function showSite(marker, selected) {
 		markersArray.push(marker);
+	}
+
+	function renderSites(selected) {
 		var sites="<form>";
 		for (var i in markersArray) {
 			var site = markersArray[i];
@@ -188,6 +195,7 @@ while ($row = @mysql_fetch_assoc($result)){
 		sites = sites + "</form>";
 		$("#map_canvas").html(sites);
 	}
+
 <?php } else { ?>
     google.load("maps", "3",  {other_params:"sensor=false"});
     google.setOnLoadCallback(mapsLoaded);
@@ -238,6 +246,9 @@ while ($row = @mysql_fetch_assoc($result)){
 			infowindow.setContent(gmarker.html);
 			infowindow.open(map, gmarker);
 		}
+	}
+
+	function renderSites(selected) {
 	}
 
     function goHome() {
