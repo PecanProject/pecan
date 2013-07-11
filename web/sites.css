@@ -111,4 +111,5 @@ th,td {
 
 #map_canvas {
     float: left;
+    overflow: auto;
 }

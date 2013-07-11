@@ -21,6 +21,7 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Collate:
+    'dbfiles.R'
     'get.trait.data.R'
     'query.allom.data.R'
     'query.base.R'
