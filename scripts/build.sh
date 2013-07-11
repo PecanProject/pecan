@@ -17,7 +17,6 @@ GIT="no"
 FORCE="no"
 CHECK="no"
 INSTALL="yes"
-VERBOSE="no"
 
 # find all variables
 while true; do
@@ -34,7 +33,6 @@ while true; do
       echo " -n, --noinstall : do not install all R packages"
       echo " -c, --check     : check the R packages before install"
       echo " -e, --email     : send email to following people on success"
-      echo " -v, --verbose   : print to console"
       echo ""
       exit
     ;;
@@ -61,11 +59,6 @@ while true; do
 
     --email|-e)
       EMAIL="$2"
-      shift
-      ;;
-
-    --verbose|-v)
-      VERBOSE="yes"
       shift
       ;;
 
@@ -148,7 +141,7 @@ if [ "$FORCE" == "yes" ]; then
 
   # get version number
   REVNO=$( git show -s --pretty=format:%T master )
-  
+
   # check/install packages
   for p in ${PACKAGES}; do
     PACKAGE="OK"
@@ -156,11 +149,7 @@ if [ "$FORCE" == "yes" ]; then
 
     if [ "$CHECK" == "yes" ]; then
       ACTION="CHECK"
-      if [ "VERBOSE" == "yes" ]; then
-	    R CMD check ${R_LIB_INC} $p 2>&1 | tee out.log
-      else
-	    R CMD check ${R_LIB_INC} $p $> out.log
-      fi
+	    R CMD check ${R_LIB_INC} $p &> out.log
 	    if [ $? -ne 0 ]; then
 	      STATUS="BROKEN"
 	      PACKAGE="BROKEN"
@@ -177,11 +166,7 @@ if [ "$FORCE" == "yes" ]; then
       else
         ACTION="$ACTION/INSTALL"
       fi
-      if [ "$VERBOSE" == "yes" ]; then
-	  R CMD INSTALL --build ${R_LIB_INC} $p 2>&1 | tee out.log
-      else
-	  R CMD INSTALL --build ${R_LIB_INC} $p $> out.log
-      fi
+      R CMD INSTALL --build ${R_LIB_INC} $p &> out.log
       if [ $? -ne 0 ]; then
         STATUS="BROKEN"
         PACKAGE="BROKEN"
