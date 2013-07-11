@@ -247,15 +247,15 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   ##----------------------------------------------------------------------
   ed2in.text <- gsub('@OUTDIR@', settings$run$host$outdir, ed2in.text)
   ed2in.text <- gsub('@ENSNAME@', run.id, ed2in.text)
-  ed2in.text <- gsub('@CONFIGFILE@', "config.xml", ed2in.text)
+  ed2in.text <- gsub('@CONFIGFILE@', file.path(settings$run$host$rundir, run.id, "config.xml"), ed2in.text)
   
   ## Generate a numbered suffix for scratch output folder.  Useful for cleanup.  TEMP CODE. NEED TO UPDATE.
   ## cnt = counter(cnt) # generate sequential scratch output directory names 
   ## print(cnt)
   ## scratch = paste(Sys.getenv("USER"),".",cnt,"/",sep="")
-  scratch = paste(Sys.getenv("USER"),"/",settings$run$scratch, sep='')
+  scratch <- file.path(Sys.getenv("USER"),settings$run$scratch)
   ## ed2in.text <- gsub('@SCRATCH@', paste('/scratch/', settings$run$scratch, sep=''), ed2in.text)
-  ed2in.text <- gsub('@SCRATCH@', paste('/scratch/', scratch, sep=''), ed2in.text)
+  ed2in.text <- gsub('@SCRATCH@', paste0('/scratch/', scratch), ed2in.text)
   ##
   
 #  ed2in.text <- gsub('@OUTFILE@', file.path(settings$run$host$outdir, run.id, "analysis"), ed2in.text)
