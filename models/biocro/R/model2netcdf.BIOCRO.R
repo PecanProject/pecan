@@ -29,7 +29,7 @@ model2netcdf.BIOCRO <- function(outdir, sitelat, sitelon, start_date, end_date) 
 
   ##result$s <- with(result, ((DayofYear -1) * 24 + Hour) * 3600)
 
-  if(genus == "Saccharum"){
+  if(genus == "Saccharum" && (as.numeric(sessionInfo()$otherPkgs$BioCro$Version) > 0.5)){
       for(variable in c("Leaf", "Root", "Stem", "LAI", "DayofYear")) {
           x <- result[[variable]]
           result[[variable]] <- c(x[1], rep(x[-1], 24, each = TRUE))
