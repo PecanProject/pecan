@@ -19,12 +19,14 @@
 <script type="text/javascript">
 	window.onresize = resize;
 	window.onload = resize;
-	
-	function resize() {
-    	$("#stylized").height($(window).height() - 5);
-    	$("#output").height($(window).height() - 1);
-    	$("#output").width($(window).width() - $('#stylized').width() - 5);
-		}
+
+        function resize() {
+                if ($("#stylized").height() < $(window).height()) {
+                        $("#stylized").height($(window).height() - 5);
+                }
+                $("#output").height($(window).height() - 1);
+                $("#output").width($(window).width() - $('#stylized').width() - 5);
+	}	
 
     function validate() {
         $("#error").html("");

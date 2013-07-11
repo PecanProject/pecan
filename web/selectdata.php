@@ -86,11 +86,13 @@ $model = mysql_fetch_assoc($result);
 	window.onresize = resize;
 	window.onload = resize;
 	
-	function resize() {
-		$("#stylized").height($(window).height() - 5);
-		$("#map_canvas").height($(window).height() - 1);
-		$("#map_canvas").width($(window).width() - $('#stylized').width() - 5);
-	}
+        function resize() {
+                if ($("#stylized").height() < $(window).height()) {
+                        $("#stylized").height($(window).height() - 5);
+                }
+                $("#map_canvas").height($(window).height() - 1);
+                $("#map_canvas").width($(window).width() - $('#stylized').width() - 5);
+        }
 	
 	function validate() {
 		// check PFTs
