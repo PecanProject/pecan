@@ -42,8 +42,6 @@ query.pft_species <- function(pft = NULL, con = NULL, settings = NULL){
                  "where id in (select specie_id from pfts_species ",
                  "where pft_id = (select id from pfts where name = '", pft,"'));")
   species <- db.query(query, con)
-  logger.info("Species associated with pft", pft, ":")
-  logger.info(cat(vecpaste(species$scientificname)))
   if(newcon) db.close(con)
   invisible(species)
 }
