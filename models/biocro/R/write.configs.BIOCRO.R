@@ -81,7 +81,7 @@ write.config.BIOCRO <- function(defaults,
   
   defaults.file <- defaults$pft$constants$file
   
-  species <- read.csv(file.path(pft$outdir, "species.csv"))
+  species <- read.csv(file.path(settings$pfts$pft$outdir, "species.csv"))
   genus <- unique(species$genus)
   if(length(genus) > 1) logger.severe("BioCro can not combine multiple genera")
   
