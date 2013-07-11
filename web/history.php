@@ -7,44 +7,92 @@
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
  */
+?>
+<!DOCTYPE html>
+<html>
+<head>
+<title>PEcAn History</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<link rel="stylesheet" type="text/css" href="sites.css" />
+<script type="text/javascript" src="jquery-1.7.2.min.js"></script>
+<script type="text/javascript">
+  window.onresize = resize;
+  window.onload = resize;
+  
+  function resize() {
+      $("#stylized").height($(window).height() - 5);
+      $("#output").height($(window).height() - 1);
+      $("#output").width($(window).width() - $('#stylized').width() - 5);
+  }
 
+  function prevStep() {
+    $("#formprev").submit();
+  }
+
+  function nextStep() {
+    $("#formnext").submit();
+  }
+</script>
+</head>
+<body>
+  <div id="wrap">
+    <div id="stylized">
+      <h1>Filters</h1>
+      <p>Filter executions showing on the right.</p>
+    </div>
+    <div id="output">
+      <h2>Execution Status</h2>
+      <table border=0>
+        <tr><th>ID</th><th>site id</th><th>model id</th><th>model type</th><th>start date</th><th>end date</th><th>started</th><th>finished</th></tr>
+<?php
 // database parameters
 require("dbinfo.php");
 $connection = open_database();
 
 // get run information
-$query = "SELECT * FROM workflows";
+$query = "SELECT workflows.id, workflows.folder, workflows.start_date, workflows.end_date, workflows.started_at, workflows.finished_at, " .
+         "CONCAT(coalesce(sites.sitename, ''), ', ', coalesce(sites.city, ''), ', ', coalesce(sites.state, ''), ', ', coalesce(sites.country, '')) AS sitename, " .
+         "CONCAT(coalesce(models.model_name, ''), ' r', coalesce(models.revision, '')) AS modelname, models.model_type " .
+         "FROM workflows " .
+         "LEFT OUTER JOIN sites on workflows.site_id=sites.id " .
+         "LEFT OUTER JOIN models on workflows.model_id=models.id";
 $result = mysql_query($query);
 if (!$result) {
-	die('Invalid query: ' . mysql_error());
+  die('Invalid query: ' . mysql_error());
 }
-
-echo "<h1>Executions</h1>";
-echo "<table border=1>";
-echo "<tr>";
-echo "<th>ID</th>";
-echo "<th>site id</th>";
-echo "<th>model id</th>";
-echo "<th>model type</th>";
-echo "<th>start date</th>";
-echo "<th>end date</th>";
-echo "<th>started</th>";
-echo "<th>finished</th>";
-echo "</tr>";
 while ($row = @mysql_fetch_assoc($result)) {
-  echo "<tr>";
-  echo "<td><a href=\"running_stage1.php?workflowid={$row['id']}\">{$row['id']}</a></td>";
-  echo "<td>{$row['site_id']}</td>";
-  echo "<td>{$row['model_id']}</td>";
-  echo "<td>{$row['model_type']}</td>";
-  echo "<td>{$row['start_date']}</td>";
-  echo "<td>{$row['end_date']}</td>";
-  echo "<td>{$row['started_at']}</td>";
-  echo "<td>{$row['finished_at']}</td>";
-  echo "</tr>";
-}
-echo "</table>";
+  // check result
+  $style="";
+  if (file_exists($row['folder'] . DIRECTORY_SEPARATOR . "STATUS")) {
+    $status=file($row['folder'] . DIRECTORY_SEPARATOR . "STATUS");
+    foreach ($status as $line) {
+      $data = explode("\t", $line);
+      if ((count($data) >= 4) && ($data[3] == 'ERROR')) {
+        $style="style='color: red;'";
+      }
+    }
+  }
+  if (($style == "") && ($row['finished_at'] == "")) {
+    $style="style='color: gray;'";
+  }
 
+?>        
+        <tr <?=$style?>>
+          <td><a href="running_stage1.php?workflowid=<?=$row['id']?>"><?=$row['id']?></a></td>
+          <td><?=$row['sitename']?></td>
+          <td><?=$row['modelname']?></td>
+          <td><?=$row['model_type']?></td>
+          <td><?=$row['start_date']?></td>
+          <td><?=$row['end_date']?></td>
+          <td><?=$row['started_at']?></td>
+          <td><?=$row['finished_at']?></td>
+        </tr>
+<?php
+}
 close_database($connection);
 ?>
-
+      </table>
+    </div>
+  </div>
+</body>  
