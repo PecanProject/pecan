@@ -117,7 +117,7 @@ start.runs.BIOCRO <- function(runid) {
   pp.config <- config$pft$photoParms
   pp <- photoParms(vmax=pp.config$vmax, b0=pp.config$b0, b1 = pp.config$b1,Rd=pp.config$Rd)
   cc <- canopyParms(Sp = config$pft$canopyParms$Sp)
-  
+  genus <- config$pft$genus
   if(as.numeric(sessionInfo()$otherPkgs$BioCro$Version) > 0.5){
       genus <- config$pft$genus
       if(genus == "Saccharum"){
