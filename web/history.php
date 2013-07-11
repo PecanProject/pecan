@@ -72,11 +72,12 @@ while ($row = @mysql_fetch_assoc($result)) {
         $style="style='color: red;'";
       }
     }
-  }
-  if (($style == "") && ($row['finished_at'] == "")) {
+  } else {
     $style="style='color: gray;'";
   }
-
+  if (($style == "") && ($row['finished_at'] == "")) {
+    $style="style='color: darkgreen;'";
+  }
 ?>        
         <tr <?=$style?>>
           <td><a href="running_stage1.php?workflowid=<?=$row['id']?>"><?=$row['id']?></a></td>
