@@ -957,7 +957,7 @@ $ED_NL
    ! 7 - southern pines                   | 17 - "Araucaria" (non-optimised                !
    ! 8 - late conifers                    |      Southern Pines).                          !
    !---------------------------------------------------------------------------------------!
-   NL%INCLUDE_THESE_PFT = 1,5,6,7,8,9,10,11,15        ! List of PFTs to be included 
+   NL%INCLUDE_THESE_PFT = 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17        ! List of PFTs to be included 
    NL%AGRI_STOCK        = 5                           ! Agriculture PFT (used only if ianth_disturb=1)
    NL%PLANTATION_STOCK  = 6                           ! Plantation PFT  (used only if ianth_disturb=1)
    !---------------------------------------------------------------------------------------!
