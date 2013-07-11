@@ -371,7 +371,7 @@
    ! 5 - C3 grass                    | 11 - late temperate deciduous    ! 
    ! 6 - northern pines              |                                  !
    !--------------------------------------------------------------------!                             
-   NL%INCLUDE_THESE_PFT = 15       ! List of PFTs to be included 
+   NL%INCLUDE_THESE_PFT = 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15    ! List of PFTs to be included 
    NL%AGRI_STOCK        = 15       ! Agriculture PFT (used only if ianth_disturb=1)
    NL%PLANTATION_STOCK  = 15       ! Plantation PFT  (used only if ianth_disturb=1)
    NL%PFT_1ST_CHECK = 0 ! What should I do when I find a cohort with an unexpected PFT 
