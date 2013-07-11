@@ -3,8 +3,8 @@
  <outdir>pecan</outdir>
 
  <database>
-  <username>pecan</username>
-  <password>pecan</password>
+  <username>bety</username>
+  <password>bety</password>
   <host>localhost</host>
   <dbname>bety</dbname>
  </database>
