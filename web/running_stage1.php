@@ -51,10 +51,10 @@ if (checkStatus("FINISHED") == 1) {
 if (checkStatus("MODEL") == 1) {
 	if ($offline) {
 		header( "Location: running_stage3.php?workflowid=$workflowid&offline=offline");
-		exit
+		exit;
 	} else {
 		header( "Location: running_stage3.php?workflowid=$workflowid");
-		exit
+		exit;
 	}
 }
 
