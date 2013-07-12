@@ -86,14 +86,16 @@ $model = mysql_fetch_assoc($result);
 	window.onresize = resize;
 	window.onload = resize;
 	
-        function resize() {
-                if ($("#stylized").height() < $(window).height()) {
-                        $("#stylized").height($(window).height() - 5);
-                }
-                $("#map_canvas").height($(window).height() - 1);
-                $("#map_canvas").width($(window).width() - $('#stylized').width() - 5);
+    function resize() {
+        if ($("#stylized").height() < $(window).height()) {
+            $("#stylized").height($(window).height() - 5);
+        } else {
+            $("#stylized").height(Math.max($("#stylized").height(), $("#output").height()));
         }
-	
+        $("#output").height($("#stylized").height());
+        $("#output").width($(window).width() - $('#stylized').width() - 5);
+    }
+
 	function validate() {
 		// check PFTs
 		if ($("#pft").val() == null) {
@@ -184,7 +186,7 @@ $model = mysql_fetch_assoc($result);
 			mapTypeId: google.maps.MapTypeId.ROADMAP
 		}
 
-		var map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+		var map = new google.maps.Map(document.getElementById("output"), myOptions);
 
 		// create a marker
 		var marker = new google.maps.Marker({position: latlng, map: map});
@@ -324,7 +326,7 @@ if ($model["model_type"] == "ED2") {
 			<div class="spacer"></div>
 		</form>
 	</div>
-	<div id="map_canvas">
+	<div id="output">
 		name : <b><?=$siteinfo["sitename"]?></b><br/>
 		address : <?=$siteinfo["city"]?>, <?=$siteinfo["country"]?><br/>
 		location : <?=$siteinfo["lat"]?>, <?=$siteinfo["lon"]?><br/>
