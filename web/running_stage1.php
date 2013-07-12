@@ -42,10 +42,10 @@ if (file_exists($folder . DIRECTORY_SEPARATOR . "STATUS")) {
 if (checkStatus("FINISHED") == 1) {
 	if ($offline) {
 		header( "Location: finished.php?workflowid=$workflowid&offline=offline");
-		exit
+		exit;
 	} else {
 		header( "Location: finished.php?workflowid=$workflowid");
-		exit
+		exit;
 	}
 }
 if (checkStatus("MODEL") == 1) {
