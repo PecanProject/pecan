@@ -52,13 +52,15 @@ while ($row = @mysql_fetch_assoc($result)){
 
     var markersArray = [];
     
-	function resize() {
-                if ($("#stylized").height() < $(window).height()) {
-                        $("#stylized").height($(window).height() - 5);
-                }
-                $("#map_canvas").height($(window).height() - 1);
-                $("#map_canvas").width($(window).width() - $('#stylized').width() - 5);
-	}
+    function resize() {
+        if ($("#stylized").height() < $(window).height()) {
+            $("#stylized").height($(window).height() - 5);
+        } else {
+            $("#stylized").height(Math.max($("#stylized").height(), $("#output").height()));
+        }
+        $("#output").height($("#stylized").height());
+        $("#output").width($(window).width() - $('#stylized').width() - 5);
+    }
 
     function validate() {
     	if ($("#siteid").val() == "") {
@@ -174,7 +176,7 @@ while ($row = @mysql_fetch_assoc($result)){
 	});
 
 	function clearSites() {
-		$("#map_canvas").html("");
+		$("#output").html("");
 	}
 	
 	function showSite(marker, selected) {
@@ -193,7 +195,7 @@ while ($row = @mysql_fetch_assoc($result)){
 			sites = sites + ">" + site.attr("sitename") + "</div>";
 		}
 		sites = sites + "</form>";
-		$("#map_canvas").html(sites);
+		$("#output").html(sites);
 	}
 
 <?php } else { ?>
@@ -217,7 +219,7 @@ while ($row = @mysql_fetch_assoc($result)){
 			mapTypeId: google.maps.MapTypeId.ROADMAP
 		}
 
-		map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+		map = new google.maps.Map(document.getElementById("output"), myOptions);
 		infowindow = new google.maps.InfoWindow({content: ""});
 		hostSelected();
 	}
@@ -309,7 +311,7 @@ while ($row = @mysql_fetch_assoc($result)){
 			<div class="spacer"></div>
 		</form>
 	</div>
-	<div id="map_canvas"></div>
+	<div id="output"></div>
 </div>
 </body>
 </html>
