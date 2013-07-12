@@ -73,11 +73,11 @@ switch ($type) {
 		$var=$_REQUEST['var'];
         $datafile=$run . "/" . $year . ".nc";
 		$width=600;
-		if (isset($_REQUEST['width']) && ($_REQUEST['width'] > 600)) {
+		if (isset($_REQUEST['width']) && ($_REQUEST['width'] > $width)) {
 			$width=$_REQUEST['width'];
 		}
-		$height=600;
-		if (isset($_REQUEST['height']) && ($_REQUEST['height'] > 600)) {
+		$height=400;
+		if (isset($_REQUEST['height']) && ($_REQUEST['height'] > $height)) {
 			$height=$_REQUEST['height'];
 		}
 		$mime = "image/png";
