@@ -2,13 +2,11 @@
 \alias{points2county}
 \title{Points To County}
 \usage{
-  points2county(griddata, counties)
+  points2county(griddata)
 }
 \arguments{
   \item{griddata}{a data frame with columns \code{lat, lon
   <some value>} or \code{. The function will assume}
-
-  \item{counties}{}
 }
 \value{
   a data.table with county-level information, including

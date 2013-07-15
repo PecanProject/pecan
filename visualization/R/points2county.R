@@ -8,6 +8,7 @@
 ##' @return a data.table with county-level information, including state and county name, state abbreviation,
 ##' lat, lon, county_fips, state_fips, fips, and interpolated output
 ##' @author David LeBauer
+##' @export
 ##' @examples
 ##' data(ozone)
 ##' colnames(ozone) <- c("lon", "lat", "ozone")
