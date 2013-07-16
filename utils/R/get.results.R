@@ -9,7 +9,7 @@
 #--------------------------------------------------------------------------------------------------#
 ##' Reads model output and runs sensitivity and ensemble analyses
 ##'
-##' Output is placed in model output directory (settings$run$host$outdir).
+##' Output is placed in model output directory (settings$modeloutdir).
 ##' @name get.results
 ##' @title Generate model output for PEcAn analyses
 ##' @export
@@ -38,7 +38,7 @@ get.results <- function(settings) {
       sensitivity.output[[pft.name]] <- read.sa.output(traits = traits,
                                                        quantiles = quantiles,
                                                        pecandir = outdir,
-                                                       outdir = settings$run$host$outdir, 
+                                                       outdir = settings$modeloutdir, 
                                                        pft.name=pft.name,
                                                        start.year=start.year,
                                                        end.year=end.year,
@@ -59,7 +59,7 @@ get.results <- function(settings) {
     }
     ensemble.output <- read.ensemble.output(settings$ensemble$size,
                                             pecandir = outdir,
-                                            outdir = settings$run$host$outdir, 
+                                            outdir = settings$modeloutdir, 
                                             start.year=start.year,
                                             end.year=end.year,
                                             variables=variables)
