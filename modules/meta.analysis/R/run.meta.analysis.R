@@ -79,8 +79,8 @@ run.meta.analysis <- function() {
             postinfo <- postinfo[1,]
           }
           logger.info("Reusing existing trait.mcmc", mcmcinfo[['id']], "and post.distns", postinfo[['id']], "data")
-          file.symlink(file.path(mcmcinfo[['file_path']], mcmcinfo[['file_name']]), file.path(pft$outdir, 'trait.mcmc.Rdata'))
-          file.symlink(file.path(postinfo[['file_path']], postinfo[['file_name']]), file.path(pft$outdir, 'post.distns.Rdata'))
+          file.copy(file.path(mcmcinfo[['file_path']], mcmcinfo[['file_name']]), file.path(pft$outdir, 'trait.mcmc.Rdata'))
+          file.copy(file.path(postinfo[['file_path']], postinfo[['file_name']]), file.path(pft$outdir, 'post.distns.Rdata'))
           next
         }
       }
