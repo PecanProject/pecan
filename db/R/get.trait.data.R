@@ -55,9 +55,9 @@ get.trait.data <- function() {
         if (file.exists(file.path(traitinfo[['file_path']], traitinfo[['file_name']])) &&
             file.exists(file.path(priorinfo[['file_path']], priorinfo[['file_name']])) &&
             file.exists(file.path(specsinfo[['file_path']], specsinfo[['file_name']]))) {
-          file.symlink(file.path(traitinfo[['file_path']], traitinfo[['file_name']]), file.path(pft$outdir, 'trait.data.Rdata'))
-          file.symlink(file.path(priorinfo[['file_path']], priorinfo[['file_name']]), file.path(pft$outdir, 'prior.distns.Rdata'))
-          file.symlink(file.path(specsinfo[['file_path']], specsinfo[['file_name']]), file.path(pft$outdir, 'species.csv'))
+          file.copy(file.path(traitinfo[['file_path']], traitinfo[['file_name']]), file.path(pft$outdir, 'trait.data.Rdata'))
+          file.copy(file.path(priorinfo[['file_path']], priorinfo[['file_name']]), file.path(pft$outdir, 'prior.distns.Rdata'))
+          file.copy(file.path(specsinfo[['file_path']], specsinfo[['file_name']]), file.path(pft$outdir, 'species.csv'))
           next
         }
       }
