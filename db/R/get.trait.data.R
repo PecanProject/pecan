@@ -33,14 +33,14 @@ get.trait.data <- function() {
   dbcon <- db.open(settings$database)
   for(pft in settings$pfts) {
     # create path where to store files
-    pathname <- file.path(settings$run$dbfiles, "inputs", pft$name, paste0(gsub("/", "-", settings$run$start.date), "-", gsub("/", "-", settings$run$end.date)))
+    pathname <- file.path(settings$run$dbfiles, "posterior", pft$name)
     dir.create(pathname, showWarnings = FALSE, recursive = TRUE)
 
     # check to see if already cached
     if ((settings$meta.analysis$update == 'AUTO') || !as.logical(settings$meta.analysis$update)) {
-      traitinfo <- dbfile.check(settings$run$site$id, settings$run$start.date, settings$run$end.date, 'application/x-RData', 'trait.data', dbcon)
-      priorinfo <- dbfile.check(settings$run$site$id, settings$run$start.date, settings$run$end.date, 'application/x-RData', 'prior.distns', dbcon)
-      specsinfo <- dbfile.check(settings$run$site$id, settings$run$start.date, settings$run$end.date, 'text/csv', 'species', dbcon)
+      traitinfo <- dbfile.posterior.check(pft$name, 'application/x-RData', 'trait.data', dbcon)
+      priorinfo <- dbfile.posterior.check(pft$name, 'application/x-RData', 'prior.distns', dbcon)
+      specsinfo <- dbfile.posterior.check(pft$name, 'text/csv', 'species', dbcon)
       if ((nrow(traitinfo)>0) && (nrow(priorinfo)>0) && (nrow(specsinfo)>0)) {
         if(nrow(traitinfo)>1) {
           traitinfo <- traitinfo[1,]
@@ -108,15 +108,15 @@ get.trait.data <- function() {
     # save files and insert file into dbfiles
     filename <- tempfile(pattern="trait.data.", tmpdir=pathname, fileext=".Rdata")
     save(trait.data, file=filename)
-    dbfile.insert(filename, settings$run$site$id, settings$run$start.date, settings$run$end.date, 'application/x-RData', 'trait.data', dbcon)
+    dbfile.posterior.insert(filename, pft$name, 'application/x-RData', 'trait.data', dbcon)
 
     filename <- tempfile(pattern="prior.distns.", tmpdir=pathname, fileext=".Rdata")
     save(prior.distns, file=filename)    
-    dbfile.insert(filename, settings$run$site$id, settings$run$start.date, settings$run$end.date, 'application/x-RData', 'prior.distns', dbcon)
+    dbfile.posterior.insert(filename, pft$name, 'application/x-RData', 'prior.distns', dbcon)
 
     filename <- tempfile(pattern="species.", tmpdir=pathname, fileext=".csv")
     write.csv(species, filename, row.names = FALSE)
-    dbfile.insert(filename, settings$run$site$id, settings$run$start.date, settings$run$end.date, 'text/csv', 'species', dbcon)
+    dbfile.posterior.insert(filename, pft$name, 'text/csv', 'species', dbcon)
   }
   db.close(dbcon)
 }
