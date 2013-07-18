@@ -50,7 +50,7 @@
       <h1>Legend</h1>
       <input type="text" readonly style="background: #BBFFBB; color: black;" value="Successful runs"/>
       <input type="text" readonly style="background: #FFBBBB; color: black;" value="Runs with errors"/>
-      <input type="text" readonly style="background: #BBFFFF; color: black;" value="Ongoning runs"/>
+      <input type="text" readonly style="background: #BBFFFF; color: black;" value="Ongoing runs"/>
       <input type="text" readonly style="background: #FFFFFF; color: black;" value="Runs in unknown state"/>
       <p></p>
       <input id="prev" type="button" value="Start Over" onclick="nextStep();"/>
