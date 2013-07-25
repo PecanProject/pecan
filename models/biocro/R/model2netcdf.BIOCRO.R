@@ -25,16 +25,9 @@
 model2netcdf.BIOCRO <- function(outdir, sitelat, sitelon, start_date, end_date) {
   
   ### Read in model output in biocro format
-  load(file.path(outdir, "result.RData"))
-
+  outfile <- file.path(outdir, "result.csv")
+  result <- read.csv(outfile)
   ##result$s <- with(result, ((DayofYear -1) * 24 + Hour) * 3600)
-
-  if(genus == "Saccharum"){
-      for(variable in c("Leaf", "Root", "Stem", "LAI", "DayofYear")) {
-          x <- result[[variable]]
-          result[[variable]] <- c(x[1], rep(x[-1], 24, each = TRUE))
-      }
-  }
 
   ## longname prefix station_* used for a point http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.4/cf-conventions.html#scalar-coordinate-variables
   lat <- ncdim_def("lat", "degrees_east",
@@ -47,12 +40,10 @@ model2netcdf.BIOCRO <- function(outdir, sitelat, sitelon, start_date, end_date) 
                  units = paste0("days since ", year(start_date), "-01-01 00:00:00"),
                  vals = with(result, DayofYear + Hour/24),
                  calendar = "standard", unlim = TRUE)
-
   ## seconds per day
   vars <- list()
 
   c2biomass <- 0.4
-
   vars <- list(
     TotLivBiom  = mstmipvar("TotLivBiom", lat, lon, t),
     RootBiom    = mstmipvar("RootBiom", lat, lon, t),
@@ -61,15 +52,14 @@ model2netcdf.BIOCRO <- function(outdir, sitelat, sitelon, start_date, end_date) 
     TVeg        = mstmipvar("TVeg", lat, lon, t),
     LAI         = mstmipvar("LAI", lat, lon, t))
   k <- ud.convert(1, "Mg/ha", "kg/m2") / c2biomass
-  
+
   results <- with(result, list(
-      ## multiply by 0.4 to get kg C / m2 (assumption use by BioCro)
-    TotLivBiom = ud.convert(Leaf + Root + Stem + Rhizome + Grain, "Mg/ha", "kg/m2") * c2biomass, 
-    RootBiom = ud.convert(Root + Rhizome,  "Mg/ha", "kg/m2") * c2biomass,
-    StemBiom = ud.convert(Stem, "Mg/ha", "kg/m2") * c2biomass,
+    TotLivBiom = ud.convert(Leaf + Root + Stem + Rhizome + Grain, "Mg/ha", "kg/m2") * 0.4, 
+    RootBiom = ud.convert(Root,  "Mg/ha", "kg/m2") * 0.4,
+    StemBiom = ud.convert(Stem, "Mg/ha", "kg/m2") * 0.4,
     Evap = ud.convert(SoilEvaporation + CanopyTrans, "Mg/ha/h", "kg/m2/s"),
     TVeg = ud.convert(CanopyTrans, "Mg/ha/h", "kg/m2/s"),
-    LAI =  LAI)) 
+    LAI =  LAI))
 
   nc <- nc_create(filename = file.path(outdir, paste0(year(start_date), ".nc")), vars = vars)
    

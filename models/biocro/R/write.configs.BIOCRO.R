@@ -78,11 +78,11 @@ write.config.BIOCRO <- function(defaults,
   ##
   traits  <- lapply(convert.samples.BIOCRO(trait.values),
                     as.character)
-  
+
   defaults.file <- defaults$pft$constants$file
   
-  species <- read.csv(file.path(pft$outdir, "species.csv"))
-  genus <- unique(species$genus)
+  species <- read.csv(file.path(settings$pfts$pft$outdir, "species.csv"))
+  genus <- unique(species$genus)  
   if(length(genus) > 1) logger.severe("BioCro can not combine multiple genera")
   
   if(!is.null(defaults.file)){
@@ -111,27 +111,21 @@ write.config.BIOCRO <- function(defaults,
     } else {
       logger.severe("no defaults file given and ", genus, "not supported in BioCro")
     }
+    defaults <- xmlToList(xmlParse(defaults.xml))
   }
-  
-  defaults <- xmlToList(xmlParse(defaults.xml))
-  
+
   if(!exists("defaults")) logger.error("No defaults values set")
 
-  parameters <- list()
-  for(parm.type in names(defaults)){
-    parameters[[parm.type]] <- list()
+  ## update photosynthesis parameters:0
+  for(parm.type in names(defaults)[!names(defaults) == "SugarPhenoParms"]){
     for(parm in names(defaults[[parm.type]])){
-      if(!is.null(traits[[parm]])){ 
-        parm.value <- traits[[parm]]
-      } else { 
-        parm.value <- defaults[[parm.type]][[parm]] 
-      }     
-      parameters[[parm.type]][[parm]] <- parm.value
+      if(!is.null(traits[[parm]])){
+        defaults[[parm.type]][[parm]] <- traits[[parm]]
+      }        
     }
   }
   
-  parameters <- append(parameters, list(genus = genus))
-  parms.xml    <- listToXml(parameters, "pft")
+  parms.xml    <- listToXml(defaults, "pft")
   location.xml <- listToXml(list(latitude = settings$run$site$lat,
                                   longitude = settings$run$site$lon),
                             "location")

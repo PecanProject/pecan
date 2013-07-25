@@ -38,6 +38,27 @@ if (file_exists($folder . DIRECTORY_SEPARATOR . "STATUS")) {
 	$status=array();
 }
 
+// jump to right place if need be
+if (checkStatus("FINISHED") == 1) {
+	if ($offline) {
+		header( "Location: finished.php?workflowid=$workflowid&offline=offline");
+		exit;
+	} else {
+		header( "Location: finished.php?workflowid=$workflowid");
+		exit;
+	}
+}
+if (checkStatus("MODEL") == 1) {
+	if ($offline) {
+		header( "Location: running_stage3.php?workflowid=$workflowid&offline=offline");
+		exit;
+	} else {
+		header( "Location: running_stage3.php?workflowid=$workflowid");
+		exit;
+	}
+}
+
+
 // check the global status
 switch(checkStatus("CONFIG")) {
 	// No ERROR, and no endtime yet
