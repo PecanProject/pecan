@@ -31,10 +31,9 @@ start.runs.BIOCRO <- function(runid) {
   site.id = settings$run$site$id
   
   hostname <- system("hostname", intern = TRUE)
-  if(settings$run$host$name == "localhost")  settings$run$host$name <- hostname
-  dbcon <- db.open(settings$database)
-  site.info <- query.base(paste0("select * from sites where id = ", site.id, ";"),
-                          con = dbcon)
+  if(settings$run$host$name == "localhost")  settings$run$host$name <- "hostname"
+  con <- query.base.con(settings)
+  site.info <- query.base(paste0("select * from sites where id = ", site.id, ";"), con = con)
   site.exists <- nrow(site.info) == 1
   # TODO code commented out below, code is not finished
   #if(site.exists){
@@ -42,18 +41,17 @@ start.runs.BIOCRO <- function(runid) {
   #}
   if(!site.exists){
     query.base(paste0("insert into sites (sitename, lat, lon) values(",
-                      vecpaste(c(settings$run$site$name, lat, lon)), ");"), con = dbcon)
+                      vecpaste(c(settings$run$site$name, lat, lon)), ");"), con = con)
   }
   
-  ## TODO the following code should be run during write_configs and the file name passed to 
-  ## the start.runs function
-  ## the next set of code using queries will be passed to a new function called "query.met"
+  ### TODO the following code should be run during write_configs and the file name passed to the start.runs function
+  ### the next set of code using queries will be passed to a new function called "query.met"
   metfiles <- db.query(paste("select start_date, end_date, hostname, file_name, file_path ",
                    "from inputs join dbfiles on dbfiles.container_id = inputs.file_id ",
                    "join machines on dbfiles.machine_id = machines.id ",
                    "where start_date <= '", start.date, 
                    "' and end_date >= '", end.date, 
-                   "' and site_id =", site.id, ";", sep = ""), con = dbcon)
+                   "' and site_id =", site.id, ";", sep = ""), con = con)
   
  
   if(nrow(metfiles) == 0){
@@ -81,29 +79,27 @@ start.runs.BIOCRO <- function(runid) {
     weather.dir <- path.expand(weather.dir)
     write.csv(weather,
               file = file.path(weather.dir, "weather.csv"), row.names = FALSE)
-    machine.id <- db.query(paste0("select id from machines where hostname = '",
-                                  hostname, "';"), con = dbcon)
+    machine.id <- db.query(paste0("select id from machines where hostname = '", hostname, "';"), con = con)
     if(nrow(machine.id) == 0){
       machine.id <- db.query("select max(id) + 1 as id from machines;", con = con)
       db.query(paste0("insert into machines (id, hostname, created_at) values(",
-                      vecpaste(c(machine.id, hostname, format(Sys.time()))), ");"),
-               con = dbcon)
+                      vecpaste(c(machine.id, hostname, format(Sys.time()))), ");"), con = con)
     }
     file.id <- 1 + db.query(paste0(
       "select 1 + greatest(max(inputs.file_id), max(dbfiles.container_id)) as id ",
       " from inputs right join dbfiles on inputs.file_id =",
-      "dbfiles.container_id;"), con = dbcon)
+      "dbfiles.container_id;"), con = con)
     
     db.query(paste0("insert into dbfiles (file_name, file_path, created_at, machine_id, container_id) ",
-                    "values(", vecpaste(c('weather.csv', weather.dir, format(Sys.time()), machine.id, file.id)),");"), con = dbcon)
+                    "values(", vecpaste(c('weather.csv', weather.dir, format(Sys.time()), machine.id, file.id)),");"), con = con)
     db.query(paste0("insert into inputs ",
                     "(notes, created_at, site_id, file_id, start_date, ",
                     "end_date, access_level, format_id) ",
                     "values('downloaded from NCEP', now(),",
-                    vecpaste(c(site.id, file.id, start.date, end.date, 4, 28)), ");"), con = dbcon)
+                    vecpaste(c(site.id, file.id, start.date, end.date, 4, 28)), ");"), con = con)
     
   }
-  query.close(dbcon)
+  query.close(con)
   
   weather2 <- weachNEW(weather, lati = lat, ts = 1, 
                        temp.units="Celsius", rh.units="fraction", 
@@ -117,25 +113,12 @@ start.runs.BIOCRO <- function(runid) {
   pp.config <- config$pft$photoParms
   pp <- photoParms(vmax=pp.config$vmax, b0=pp.config$b0, b1 = pp.config$b1,Rd=pp.config$Rd)
   cc <- canopyParms(Sp = config$pft$canopyParms$Sp)
+
+  BioGro_result <- BioGro(weather2, photoControl=pp, canopyControl=cc)
   
-  if(as.numeric(sessionInfo()$otherPkgs$BioCro$Version) > 0.5){
-      genus <- config$pft$genus
-      if(genus == "Saccharum"){
-          result <- caneGro(weather2, photoControl=pp, canopyControl=cc)
-          result[["Grain"]] <- result[["Rhizome"]] <- rep(0, length(result$Hour))          
-      } else if (genus == "Salix") {
-          result <- willowGro(weather2, photoControl=pp, canopyControl=cc)
-      } else if (genus == "Miscanthus") {
-          result <- BioGro(weather2, photoControl=pp, canopyControl=cc)
-      } else {
-          logger.error()
-      }
-  } else {
-      result <- BioGro(weather2, photoControl=pp, canopyControl=cc)
-  }
-  
-  
-  save(result, genus, file = file.path(outdir, "result.RData"))
+  write.csv(with(BioGro_result,
+                 data.frame(DayofYear, Hour, ThermalT, Stem, Leaf, Root, Rhizome, Grain, LAI, SoilEvaporation, CanopyTrans)), 
+            file=file.path(outdir, "result.csv"))
 
   file.copy(file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))
 }

@@ -36,6 +36,17 @@ if ($status === FALSE) {
 	$status = array();
 }
 
+// jump to right place if need be
+if (checkStatus("FINISHED") == 1) {
+	if ($offline) {
+		header( "Location: finished.php?workflowid=$workflowid&offline=offline");
+		exit;
+	} else {
+		header( "Location: finished.php?workflowid=$workflowid");
+		exit;
+	}
+}
+
 // check the global status
 switch(checkStatus("MODEL")) {
 	case 0:

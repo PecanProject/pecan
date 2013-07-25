@@ -138,8 +138,13 @@ read.output <- function(runid, outdir, start.year=NA,
 ##' @export
 ##' @author Rob Kooper
 convert.outputs <- function(model, settings, ...) {
+  # copy out folde back to local folder first
+  # TODO this should be done in run step (redmine #1560)
+  if (settings$run$host$name != "localhost") {
+    rsync("-a", paste(settings$run$host$name, settings$run$host$outdir, sep=":"), settings$modeloutdir, pattern="/*")
+  }
   for (runid in readLines(con=file.path(settings$rundir, "runs.txt"))) {
-    outdir <- file.path(settings$run$host$outdir, runid)
+    outdir <- file.path(settings$modeloutdir, runid)
     model2netcdfdep(runid, outdir, model, settings$run$site$lat, settings$run$site$lon, settings$run$start.date, settings$run$end.date) 
   }
 }

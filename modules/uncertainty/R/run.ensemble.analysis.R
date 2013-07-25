@@ -102,8 +102,8 @@ read.ensemble.ts <- function(model){
   ## SETTINGS  
   ensemble.ts <- list()
   ensemble.size <- as.numeric(settings$ensemble$size)
-  #outdir <- settings$outdir
-  outdir <- settings$run$host$outdir
+  outdir <- settings$modeloutdir
+  #outdir <- settings$run$host$outdir
   start.year <- ifelse(is.null(settings$ensemble$start.year), NA, settings$ensemble$start.year)
   end.year   <- ifelse(is.null(settings$ensemble$end.year), NA, settings$ensemble$end.year)
 
