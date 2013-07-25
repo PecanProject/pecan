@@ -117,8 +117,8 @@ zero.truncate <- function(y) {
 ##' @author Shawn Serbin
 #--------------------------------------------------------------------------------------------------#
 rsync <- function(args, from, to, pattern='') {
-  print(paste('rsync',' ', args,' ', from, pattern, ' ', to, sep = ''))
-  system(paste('rsync',' ', args,' ', from, pattern, ' ', to, sep = ''), intern=TRUE )
+  logger.debug(paste0('rsync',' ', args,' ', from, pattern, ' ', to))
+  system(paste0('rsync',' ', args,' ', from, pattern, ' ', to), intern=TRUE )
 }
 #==================================================================================================#
 

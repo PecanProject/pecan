@@ -173,14 +173,15 @@ foreach(scandir("$folder/out") as $runid) {
 		}
 	}
 ?>
-
-	function resize() {
-		if ($("#stylized").height() < $(window).height()) {
-		    	$("#stylized").height($(window).height() - 5);
-		}
-	    	$("#output").height($(window).height() - 1);
-    		$("#output").width($(window).width() - $('#stylized').width() - 5);
-	} 
+    function resize() {
+        if ($("#stylized").height() < $(window).height()) {
+            $("#stylized").height($(window).height() - 5);
+        } else {
+            $("#stylized").height(Math.max($("#stylized").height(), $("#output").height()));
+        }
+        $("#output").height($("#stylized").height());
+        $("#output").width($(window).width() - $('#stylized').width() - 5);
+    }
 
 	function prevStep() {
 		$("#formprev").submit();
@@ -199,7 +200,7 @@ foreach(scandir("$folder/out") as $runid) {
 	}
 
 	function showRunYearVarPlot(run, year, variable) {
-		var url="dataset.php?workflowid=<?=$workflowid?>&type=plot&run=" + run + "&year=" + year + "&var=" + variable + "&width=" + ($("#output").width()-10) + "&height=" + ($("#output").height() - 10);
+		var url="dataset.php?workflowid=<?=$workflowid?>&type=plot&run=" + run + "&year=" + year + "&var=" + variable + "&width=" + ($("#output").width()-10) + "&height=" + ($(window).height() - 10);
 		$("#output").html("<img src=\"" + url + "\">");		
 	}
 
