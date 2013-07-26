@@ -85,8 +85,6 @@ if [ ! -z $R_LIBS_USER ]; then
   R_LIB_INC="--library=${R_LIBS_USER}"
 else
   echo "R_LIBS_USER not set, this could prevent the script from running correctly."
-  echo "add the following line to your .bashrc:"
-  echo "export R_LIBS_USER=${HOME}/R/library"
   echo "see https://github.com/PecanProject/pecan/wiki/Installing-PEcAn#set_r_libs_user"
 fi
 
