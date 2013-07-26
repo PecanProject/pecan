@@ -15,8 +15,12 @@
 ##' @export
 ##' @author Rob Kooper, David LeBauer, Deepak Jaiswal
 start.runs.BIOCRO <- function(runid) {
-  if (settings$run$host$name != "localhost") {
-    stop("Only local runs are executed here")
+  hostname <- system("hostname", intern = TRUE)
+
+  if(settings$run$host$name == "localhost"){
+      settings$run$host$name <- hostname
+  } else {
+      stop("BioCro module only configured to run locally")
   }
 
   rundir <- file.path(settings$run$host$rundir, as.character(runid))
@@ -30,8 +34,6 @@ start.runs.BIOCRO <- function(runid) {
   end.date <- settings$run$end.date
   site.id = settings$run$site$id
   
-  hostname <- system("hostname", intern = TRUE)
-  if(settings$run$host$name == "localhost")  settings$run$host$name <- "hostname"
   con <- query.base.con(settings)
   site.info <- query.base(paste0("select * from sites where id = ", site.id, ";"), con = con)
   site.exists <- nrow(site.info) == 1
@@ -109,16 +111,20 @@ start.runs.BIOCRO <- function(runid) {
   # run model
   
   config <- xmlToList(xmlParse(file.path(rundir, "config.xml")))
-  
   pp.config <- config$pft$photoParms
-  pp <- photoParms(vmax=pp.config$vmax, b0=pp.config$b0, b1 = pp.config$b1,Rd=pp.config$Rd)
-  cc <- canopyParms(Sp = config$pft$canopyParms$Sp)
+  pp <- lapply(photoParms(vmax=pp.config$vmax, b0=pp.config$b0, b1 = pp.config$b1,Rd=pp.config$Rd), as.numeric)
+  cc <- canopyParms(Sp = as.numeric(config$pft$canopyControl$Sp))
+
+    
 
   BioGro_result <- BioGro(weather2, photoControl=pp, canopyControl=cc)
-  
-  write.csv(with(BioGro_result,
-                 data.frame(DayofYear, Hour, ThermalT, Stem, Leaf, Root, Rhizome, Grain, LAI, SoilEvaporation, CanopyTrans)), 
-            file=file.path(outdir, "result.csv"))
+
+  result <- with(BioGro_result,
+                 data.frame(DayofYear, Hour, ThermalT, Stem, Leaf, Root, Rhizome, Grain, LAI, SoilEvaporation, CanopyTrans))
+
+  write.csv(result, file=file.path(outdir, "result.csv"))
+
+  save(result, config, file = file.path(outdir, "result.RData"))
 
   file.copy(file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))
 }
