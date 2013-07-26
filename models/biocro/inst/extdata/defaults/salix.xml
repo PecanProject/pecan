@@ -8,6 +8,19 @@
     <heightFactor>3</heightFactor>
     <GrowthRespFraction>0.3</GrowthRespFraction>
   </canopyControl>
+  <photoParms>
+    <vmax>39</vmax>
+    <alpha>0.04</alpha>
+    <kparm>0.7</kparm>
+    <theta>0.83</theta>
+    <beta>0.93</beta>
+    <Rd>0.0</Rd>
+    <Catm>380</Catm>
+    <b0>0.03</b0>
+    <b1>6.1</b1>
+    <UPPERTEMP>42</UPPERTEMP>
+    <LOWERTEMP>15</LOWERTEMP>
+  </photoParms>
   <willowphenoControl>
     <tp1>250</tp1>
     <tp2>350</tp2>

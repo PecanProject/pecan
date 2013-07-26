@@ -1,12 +1,12 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
-#--------------------------------------------------------------------------------------------------#
+##-------------------------------------------------------------------------------
+## Copyright (c) 2012 University of Illinois, NCSA.
+## All rights reserved. This program and the accompanying materials
+## are made available under the terms of the 
+## University of Illinois/NCSA Open Source License
+## which accompanies this distribution, and is available at
+## http://opensource.ncsa.illinois.edu/license.html
+##-------------------------------------------------------------------------------
+##--------------------------------------------------------------------------------------------------#
 ##' Convert BioCro output to netCDF
 ##'
 ##' Converts all output contained in a folder to netCDF.
@@ -23,66 +23,76 @@
 ##'
 ##' @author David LeBauer, Deepak Jaiswal
 model2netcdf.BIOCRO <- function(outdir, sitelat, sitelon, start_date, end_date) {
-  
-  ### Read in model output in biocro format
-  outfile <- file.path(outdir, "result.csv")
-  result <- read.csv(outfile)
-  ##result$s <- with(result, ((DayofYear -1) * 24 + Hour) * 3600)
+    
+    ## Read in model output in biocro format
+    load(file.path(outdir, "result.RData")) ## contains genus and result
 
-  ## longname prefix station_* used for a point http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.4/cf-conventions.html#scalar-coordinate-variables
-  lat <- ncdim_def("lat", "degrees_east",
-                   vals =  as.numeric(sitelat),
-                   longname = "station_latitude") 
-  lon <- ncdim_def("lon", "degrees_north",
-                   vals = as.numeric(sitelon),
-                   longname = "station_longitude")
-  t <- ncdim_def(name = "time",
-                 units = paste0("days since ", year(start_date), "-01-01 00:00:00"),
-                 vals = with(result, DayofYear + Hour/24),
-                 calendar = "standard", unlim = TRUE)
-  ## seconds per day
-  vars <- list()
-
-  c2biomass <- 0.4
-  vars <- list(
-    TotLivBiom  = mstmipvar("TotLivBiom", lat, lon, t),
-    RootBiom    = mstmipvar("RootBiom", lat, lon, t),
-    StemBiom    = mstmipvar("StemBiom", lat, lon, t),
-    Evap        = mstmipvar("Evap", lat, lon, t),
-    TVeg        = mstmipvar("TVeg", lat, lon, t),
-    LAI         = mstmipvar("LAI", lat, lon, t))
-  k <- ud.convert(1, "Mg/ha", "kg/m2") / c2biomass
-
-  results <- with(result, list(
-    TotLivBiom = ud.convert(Leaf + Root + Stem + Rhizome + Grain, "Mg/ha", "kg/m2") * 0.4, 
-    RootBiom = ud.convert(Root,  "Mg/ha", "kg/m2") * 0.4,
-    StemBiom = ud.convert(Stem, "Mg/ha", "kg/m2") * 0.4,
-    Evap = ud.convert(SoilEvaporation + CanopyTrans, "Mg/ha/h", "kg/m2/s"),
-    TVeg = ud.convert(CanopyTrans, "Mg/ha/h", "kg/m2/s"),
-    LAI =  LAI))
-
-  nc <- nc_create(filename = file.path(outdir, paste0(year(start_date), ".nc")), vars = vars)
-   
-  ## Output netCDF data
-  for(.vname in names(vars)) {
-    # make sure only floats are in array
-    x <- which(results[[.vname]]< -1e100)
-    if (length(x) > 0) {
-      logger.debug(.vname, "found", length(x), "values < -1e100")
-      results[[.vname]][[x]] <- NA  
+    genus <- config$pft$genus
+    ##result$s <- with(result, ((DayofYear -1) * 24 + Hour) * 3600)
+    if(genus == "Saccharum"){
+        for(variable in c("Leaf", "Root", "Stem", "LAI", "DayofYear")) {
+            x <- result[[variable]]
+            result[[variable]] <- c(x[1], rep(x[-1], 24, each = TRUE))
+        }
     }
-    x <- which(results[[.vname]] > 1e100)
-    if (length(x) > 0) {
-      logger.debug(.vname, "found", length(x), "values > 1e100")
-      results[[.vname]][[x]] <- NA  
+    
+    ## longname prefix station_* used for a point
+    ## http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.4/cf-conventions.html#scalar-coordinate-variables
+    lat <- ncdim_def("lat", "degrees_east",
+                     vals =  as.numeric(sitelat),
+                     longname = "station_latitude") 
+    lon <- ncdim_def("lon", "degrees_north",
+                     vals = as.numeric(sitelon),
+                     longname = "station_longitude")
+    t <- ncdim_def(name = "time",
+                   units = paste0("days since ", year(start_date), "-01-01 00:00:00"),
+                   vals = with(result, DayofYear + Hour/24),
+                   calendar = "standard", unlim = TRUE)
+    ## seconds per day
+    vars <- list()
+
+    c2biomass <- 0.4
+    vars <- list(
+        TotLivBiom  = mstmipvar("TotLivBiom", lat, lon, t),
+        RootBiom    = mstmipvar("RootBiom", lat, lon, t),
+        StemBiom    = mstmipvar("StemBiom", lat, lon, t),
+        Evap        = mstmipvar("Evap", lat, lon, t),
+        TVeg        = mstmipvar("TVeg", lat, lon, t),
+        LAI         = mstmipvar("LAI", lat, lon, t))
+
+    k <- ud.convert(1, "Mg/ha", "kg/m2") / c2biomass
+
+    results <- with(result, list(
+        TotLivBiom = k * (Leaf + Root + Stem + Rhizome + Grain),
+        RootBiom = k * Root,
+        StemBiom = k * Stem,
+        Evap = ud.convert(SoilEvaporation + CanopyTrans, "Mg/ha/h", "kg/m2/s"),
+        TVeg = ud.convert(CanopyTrans, "Mg/ha/h", "kg/m2/s"),
+        LAI =  LAI))
+    
+    nc <- nc_create(filename = file.path(outdir, paste0(year(start_date), ".nc")),
+                    vars = vars)
+    
+    ## Output netCDF data
+    for(.vname in names(vars)) {
+                                        # make sure only floats are in array
+        x <- which(results[[.vname]]< -1e100)
+        if (length(x) > 0) {
+            logger.debug(.vname, "found", length(x), "values < -1e100")
+            results[[.vname]][[x]] <- NA  
+        }
+        x <- which(results[[.vname]] > 1e100)
+        if (length(x) > 0) {
+            logger.debug(.vname, "found", length(x), "values > 1e100")
+            results[[.vname]][[x]] <- NA  
+        }
+                                        # write results
+        ncvar_put(nc, varid = vars[[.vname]], vals = results[[.vname]])
     }
-    # write results
-    ncvar_put(nc, varid = vars[[.vname]], vals = results[[.vname]])
-  }
-              
-   ncatt_put(nc, 0, "description",
-             "This is an output from the BioCro Crop model generated by the model2netcdf.BIOCRO.R function in the PEcAn.BIOCRO package; see github.com:PecanProject/pecan/wiki for more information")
-  nc_close(nc) 
+    
+    ncatt_put(nc, 0, "description",
+              "This is an output from the BioCro Crop model generated by the model2netcdf.BIOCRO.R function in the PEcAn.BIOCRO package; see github.com:PecanProject/pecan/wiki for more information")
+    nc_close(nc) 
 }
 
 ####################################################################################################
