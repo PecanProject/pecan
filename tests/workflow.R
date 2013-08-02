@@ -1,3 +1,6 @@
+## See README in tests/ folder for details
+require("PEcAn.all")
+## debugonce(start.runs.BIOCRO)
 options(warn = 1, keep.source = TRUE, error =
   quote({
     db.print.connections()
@@ -33,8 +36,6 @@ options(warn = 1, keep.source = TRUE, error =
       q()
     }
   }))
-
-require('PEcAn.all')
 
 # check settings
 settings <- read.settings('pecan.xml')
