@@ -20,7 +20,7 @@ start.runs.BIOCRO <- function(runid) {
   if(settings$run$host$name == "localhost"){
       settings$run$host$name <- hostname
   } else {
-      stop("BioCro module only configured to run locally")
+      logger.error("BioCro module only configured to run locally")
   }
 
   rundir <- file.path(settings$run$host$rundir, as.character(runid))
@@ -103,11 +103,13 @@ start.runs.BIOCRO <- function(runid) {
   }
   query.close(con)
   
-  weather2 <- weachNEW(weather, lati = lat, ts = 1, 
-                       temp.units="Celsius", rh.units="fraction", 
-                       ws.units="mph", pp.units="in")
-  colnames(weather2) <- c("year", "doy", "hour", "solarR", "DailyTemp.C", "RH", "WindSpeed", "precip")
-  
+  W <- data.table(weachNEW(weather, lati = lat, ts = 1, 
+                                  temp.units="Celsius", rh.units="fraction", 
+                                  ws.units="mph", pp.units="in"))
+  setnames(W, old = c("Temp", "WS"), new = c("DailyTemp.C", "WindSpeed"))
+
+  years <- W[,unique(year)]
+
   # run model
   
   config <- xmlToList(xmlParse(file.path(rundir, "config.xml")))
@@ -115,13 +117,49 @@ start.runs.BIOCRO <- function(runid) {
   pp <- lapply(photoParms(vmax=pp.config$vmax, b0=pp.config$b0, b1 = pp.config$b1,Rd=pp.config$Rd), as.numeric)
   cc <- canopyParms(Sp = as.numeric(config$pft$canopyControl$Sp))
 
-    
+  genus <- config$pft$genus
 
-  BioGro_result <- BioGro(weather2, photoControl=pp, canopyControl=cc)
 
-  result <- with(BioGro_result,
-                 data.frame(DayofYear, Hour, ThermalT, Stem, Leaf, Root, Rhizome, Grain, LAI, SoilEvaporation, CanopyTrans))
+  if(!(genus %in% c("Saccharum", "Salix", "Miscanthus"))) {
+      logger.error("genus", genus, "not supported by PEcAn.BIOCRO module")
+  }
 
+  out <- NULL ## could be pre-allocated for speed
+  result <- NULL
+  for(year in years){
+      WetDat <- W[year == year,]
+      day1 <- WetDat[,min(doy)]
+      dayn <- WetDat[,max(doy)]
+      if(genus == "Saccharum"){
+          result <- caneGro(WetDat = WetDat, photoControl=pp, canopyControl=cc)
+          result[["Grain"]] <- result[["Rhizome"]] <- rep(0, length(result$Hour))
+      } else if (genus == "Salix") {
+          if(is.null(result)){
+              iplant <- iwillowParms(iRhizome=1.0, iStem=1.0, iLeaf=0.0,
+                                     iRoot=1.0, ifrRhizome=0.01, ifrStem=0.01,
+                                     ifrLeaf = 0.0, ifrRoot = 0.0)
+          } else if(!is.null(result)){
+              r <- last(result[, list(Rhizome, Stem, Root)])
+              iplant$iRhizome <- r$Rhizome
+              iplant$iStem <- r$Stem
+              iplant$iRoot <- r$Root
+          }
+          result <- willowGro(WetDat = WetDat, photoControl=pp, canopyControl=cc,
+                              day1 = day1, dayn = dayn)
+      } else if (genus == "Miscanthus") {
+          result <- BioGro(WetDat = WetDat, photoControl = pp, canopyControl = cc)
+      }
+      result <- with(result,
+                 data.table(DayofYear, Hour, ThermalT, Stem, Leaf, Root, Rhizome, Grain, LAI, SoilEvaporation, CanopyTrans))
+      if(is.null(out)) {
+          out <- result
+      } else {
+          out <- rbind(out, result)
+      }
+  }
+  result <- out
+  if(is.null(result)) logger.error("no output from BioCro")
+  
   write.csv(result, file=file.path(outdir, "result.csv"))
 
   save(result, config, file = file.path(outdir, "result.RData"))
