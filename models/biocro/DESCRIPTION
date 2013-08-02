@@ -15,6 +15,7 @@ Depends:
     BioCro,
     RNCEP,
     lubridate,
+    data.table,
     XML
 License: FreeBSD + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
