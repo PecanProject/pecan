@@ -106,7 +106,7 @@ start.runs.BIOCRO <- function(runid) {
   W <- data.table(weachNEW(weather, lati = lat, ts = 1, 
                                   temp.units="Celsius", rh.units="fraction", 
                                   ws.units="mph", pp.units="in"))
-  setnames(W, old = c("Temp", "WS"), new = c("DailyTemp.C", "WindSpeed"))
+  #setnames(W, old = c("Temp", "WS"), new = c("DailyTemp.C", "WindSpeed"))
 
   years <- W[,unique(year)]
 
