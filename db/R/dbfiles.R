@@ -207,3 +207,63 @@ dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname=Sys.
 
   invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='Posterior' AND container_id=", posteriorid, " AND machine_id=", hostid, " ORDER BY id DESC"), con))
 }
+
+##' Function to insert a file into the dbfiles table as a posterior
+##'
+##' This will write into the dbfiles, posteriors, machines and formats the required 
+##' data to store the file
+##' @name dbfile.posterior.insert
+##' @title Insert file into tables
+##' @param filename the name of the file to be inserted
+##' @param con database connection object
+##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
+##' @param params database connection information
+##' @return data.frame with the id, filename and pathname of the posterior that is requested
+##' @author Rob Kooper
+##' @export
+##' @examples
+##' \dontrun{
+##'   dbfile.posterior.insert('trait.data.Rdata', pft, 'application/x-RData', 'traits', dbcon)
+##' }
+dbfile.insert <- function(filename, type, id, con, hostname=Sys.info()[['nodename']]) {
+  now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+
+  # find appropriate host
+  hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", Sys.info()[['nodename']], "'"), con)[['id']]
+  if (is.null(hostid)) {
+    # insert host
+    db.query(paste0("INSERT INTO machines (hostname, created_at, updated_at) VALUES ('", Sys.info()[['nodename']], "', ", now, ", ", now, ")"), con)
+    hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", Sys.info()[['nodename']], "'"), con)[['id']]
+  }
+  
+  db.query(paste0("INSERT INTO dbfiles (container_type, container_id, file_name, file_path, machine_id, created_at, updated_at) VALUES (",
+                  "'", type, "', ", id, ", '", basename(filename), "', '", dirname(filename), "', ", hostid, ", '", now, "', '", now, "')"), con)
+
+  invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, "' AND container_id=", id, " AND created_at='", now, "' ORDER BY id DESC LIMIT 1"), con)[['id']])
+}
+
+##' Function to check to see if a file exists in the dbfiles table
+##'
+##' This will check the dbfiles and machines to see if the file exists 
+##' @name dbfile.check
+##' @title Check for a file in the dbfiles tables
+##' @param type the type of dbfile (Input, Posterior)
+##' @param id the id of container type
+##' @param con database connection object
+##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
+##' @return data.frame with the id, filename and pathname of all the files that are associated
+##' @author Rob Kooper
+##' @export
+##' @examples
+##' \dontrun{
+##'   dbfile.check('Input', 7, dbcon)
+##' }
+dbfile.check <- function(type, id, con, hostname=Sys.info()[['nodename']]) {
+  # find appropriate host
+  hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", Sys.info()[['nodename']], "'"), con)[['id']]
+  if (is.null(hostid)) {
+    return(invisible(data.frame()))
+  }
+
+  invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, "' AND container_id=", id, " AND machine_id=", hostid), con))  
+}
