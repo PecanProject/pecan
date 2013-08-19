@@ -132,7 +132,15 @@ run.meta.analysis.pft <- function(pft, iterations, dbfiles, dbcon) {
 ##' @name run.meta.analysis
 ##'
 ##' @title Invoke PEcAn meta.analysis
-##' @param posterior the posterior with which the results are associated.
+##' This will use the following items from setings:
+##' - settings$pfts
+##' - settings$database
+##' - settings$run$dbfiles
+##' - settings$meta.analysis$update
+##' @param pfts the list of pfts to get traits for
+##' @param iterations the number of iterations for the mcmc analysis
+##' @param dbfiles location where previous results are found
+##' @param database database connection parameters
 ##' @return nothing, as side effect saves \code{trait.mcmc} created by
 ##' \code{\link{pecan.ma}} and post.distns created by
 ##' \code{\link{approx.posterior(trait.mcmc, ...)}}  to trait.mcmc.Rdata \
