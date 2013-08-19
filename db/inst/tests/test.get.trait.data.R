@@ -28,6 +28,6 @@
 
 test_that("get.trait.data will return trait data even when there is no meta.analysis tag in the settings file", {
 #  settings <- read.settings(settings.text)
-#  get.trait.data()
+#  settings$pfts <- get.trait.data(settings$pfts, settings$run$dbfiles, settings$database, settings$meta.analysis$update)
 #  expect_true(file.exists('/tmp/test/trait.data.Rdata'))
 })

@@ -1,5 +1,7 @@
 ## See README in tests/ folder for details
 require("PEcAn.all")
+require(parallel)
+
 ## debugonce(start.runs.BIOCRO)
 options(warn = 1, keep.source = TRUE, error =
   quote({
@@ -34,39 +36,30 @@ options(warn = 1, keep.source = TRUE, error =
 
     if (!interactive()) {
       q()
-    }
+  }
   }))
 
 # check settings
 settings <- read.settings('pecan.xml')
 
 # some quick checks
-runtraits <- FALSE
 runmeta <- FALSE
 for(pft in settings$pfts) {
-    if(!file.exists(file.path(pft$outdir, "trait.data.Rdata"))) {
-        runtraits <- TRUE
-        runmeta <- TRUE
-        break
-    }
     if(!file.exists(file.path(pft$outdir, 'trait.mcmc.Rdata'))) {
         runmeta <- TRUE
     }
 }
 
 # get traits of pfts
-if (runtraits) {
-    get.trait.data()
-} else {
-    logger.info("Already executed get.trait.data()")
-}
+settings$pfts <- get.trait.data(settings$pfts, settings$run$dbfiles, settings$database, settings$meta.analysis$update)
+saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
 
 # run meta-analysis
-if (runmeta) {
-    run.meta.analysis()
-} else {
-    logger.info("Already executed run.meta.analysis()")
+if('meta.analysis' %in% names(settings)) {
+    run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database)
 }
+
+stop()
 
 # write configurations
 if (!file.exists(file.path(settings$rundir, "runs.txt"))) {
