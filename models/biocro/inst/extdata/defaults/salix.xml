@@ -3,60 +3,25 @@
     <Sp>1.1</Sp>
     <SpD>0</SpD>
     <nlayers>10</nlayers>
-    <kd>0.37</kd>
-    <mResp>0.020.03</mResp>
+    <kd>0.37</kd> <!--extinction coef. for diffuse light -->
+    <mResp>"c(0.02, 0.03)"</mResp>
     <heightFactor>3</heightFactor>
-    <GrowthRespFraction>0.3</GrowthRespFraction>
+    <GrowthRespFraction>0.4</GrowthRespFraction><!--beta(20, 30)-->
   </canopyControl>
   <photoParms>
-    <vmax>39</vmax>
-    <alpha>0.04</alpha>
-    <kparm>0.7</kparm>
-    <theta>0.83</theta>
-    <beta>0.93</beta>
-    <Rd>0.0</Rd>
+    <vmax>100</vmax>
+    <jmax>180</jmax>
+    <Rd>1.1</Rd>
+    <b0>0.08</b0>
+    <b1>5.0</b1>
     <Catm>380</Catm>
-    <b0>0.03</b0>
-    <b1>6.1</b1>
-    <UPPERTEMP>42</UPPERTEMP>
-    <LOWERTEMP>15</LOWERTEMP>
+    <O2>210</O2>
   </photoParms>
-  <willowphenoControl>
-    <tp1>250</tp1>
-    <tp2>350</tp2>
-    <tp3>900</tp3>
-    <tp4>1200</tp4>
-    <tp5>3939</tp5>
-    <tp6>7000</tp6>
-    <kStem1>0.01</kStem1>
-    <kLeaf1>0.98</kLeaf1>
-    <kRoot1>0.01</kRoot1>
-    <kRhizome1>-8e-04</kRhizome1>
-    <kStem2>0.01</kStem2>
-    <kLeaf2>0.98</kLeaf2>
-    <kRoot2>0.003</kRoot2>
-    <kRhizome2>0.007</kRhizome2>
-    <kStem3>0.7</kStem3>
-    <kLeaf3>0.15</kLeaf3>
-    <kRoot3>0.045</kRoot3>
-    <kRhizome3>0.105</kRhizome3>
-    <kStem4>0.7</kStem4>
-    <kLeaf4>0.15</kLeaf4>
-    <kRoot4>0.045</kRoot4>
-    <kRhizome4>0.105</kRhizome4>
-    <kStem5>0.7</kStem5>
-    <kLeaf5>1e-05</kLeaf5>
-    <kRoot5>0.15</kRoot5>
-    <kRhizome5>0.15</kRhizome5>
-    <kStem6>0.7</kStem6>
-    <kLeaf6>1e-06</kLeaf6>
-    <kRoot6>0.15</kRoot6>
-    <kRhizome6>0.15</kRhizome6>
-    <kGrain6>0</kGrain6>
+  <phenoControl>
     <Tbase>0</Tbase>
-  </willowphenoControl>
+  </phenoControl>
   <seneControl>
-    <senLeaf>1600</senLeaf>
+    <senLeaf>1000</senLeaf>
     <senStem>5500</senStem>
     <senRoot>5500</senRoot>
     <senRhizome>5500</senRhizome>
@@ -65,27 +30,21 @@
     <leafdeathrate>5</leafdeathrate>
   </seneControl>
   <iPlantControl>
-    <iRhizome>1</iRhizome>
-    <iStem>1</iStem>
+    <iRhizome>1</iRhizome> <!--median = 1, ucl = 5, lcl = 0.1 -->
+    <iStem>1</iStem> <!--median = 0.5, ucl = 2.5, lcl = 0.05 -->
     <iLeaf>0</iLeaf>
     <iRoot>1</iRoot>
-    <ifrRhizome>0.01</ifrRhizome>
-    <ifrStem>0.01</ifrStem>
-    <ifrLeaf>0</ifrLeaf>
-    <ifrRoot>0</ifrRoot>
+    <ifrRhizome>0.01</ifrRhizome> <!--beta(1,100)-->
+    <ifrStem>0.01</ifrStem> <!--beta(1,100)-->
   </iPlantControl>
   <soilControl>
-    <FieldC>-1</FieldC>
-    <WiltP>0.16</WiltP>
-    <phi1>0.01</phi1>
-    <phi2>2</phi2>
-    <soilDepth>1</soilDepth>
     <iWatCont>0.32</iWatCont>
+    <FieldC>0.5</FieldC>
+    <WiltP>0.16</WiltP>
+    <soilDepth>1</soilDepth>
     <soilType>6</soilType>
-    <soilLayers>1</soilLayers>
-    <soilDepths>01</soilDepths>
-    <wsFun>0</wsFun>
-    <scsf>1</scsf>
+    <wsFun>1</wsFun>
+    <scsf>1</scsf> <!--stomatal conductance sensitivity factor-->
     <transpRes>5e+06</transpRes>
     <leafPotTh>-800</leafPotTh>
     <hydrDist>0</hydrDist>

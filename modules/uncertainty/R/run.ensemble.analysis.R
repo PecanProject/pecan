@@ -203,7 +203,7 @@ ensemble.ts <- function(ensemble.ts,observations=NULL,window=1){
       myens <- ensemble.ts[[j]]
     }    
 
-    ens.mean = apply(myens,2,mean)
+    ens.mean = apply(myens,2,mean,na.rm=TRUE)
     CI = apply(myens,2,quantile,c(0.025,0.5,0.975),na.rm=TRUE)
     ylim = range(CI,na.rm=TRUE)
     
