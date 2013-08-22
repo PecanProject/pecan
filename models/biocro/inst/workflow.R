@@ -20,9 +20,11 @@ model <- settings$model$name
 settings$meta.analysis$update <- TRUE
 
 #---------------- Run PEcAn workflow. -------------------------------------------------------------#
-get.trait.data()        	# Query the trait database for data and priors
+# Query the trait database for data and priors
+settings$pfts <- get.trait.data(settings$pfts, settings$run$dbfiles, settings$database, settings$meta.analysis$update)
 
-run.meta.analysis()     	# Run the PEcAn meta.analysis
+# Run the PEcAn meta.analysis
+run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database)
 
 run.write.configs(model)        # Calls model specific write.configs e.g. write.config.ed.R
 ## load met data
