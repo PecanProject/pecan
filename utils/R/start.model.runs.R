@@ -22,6 +22,7 @@
 ##'
 start.model.runs <- function(model, write = TRUE){
 
+  load.modelpkg(model)
   fcn.name <- paste("start.runs.", model, sep="")
   if(exists(fcn.name)){
     print(" ")

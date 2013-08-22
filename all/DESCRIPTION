@@ -17,9 +17,6 @@ Description: The Predictive Ecosystem Carbon Analyzer
 Depends:
     PEcAn.DB,
     PEcAn.settings,
-    PEcAn.ED2,
-    PEcAn.SIPNET,
-    PEcAn.BIOCRO,
     PEcAn.MA,
     PEcAn.utils,
     PEcAn.uncertainty,
