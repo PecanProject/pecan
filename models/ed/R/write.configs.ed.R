@@ -67,7 +67,10 @@ convert.samples.ED <- function(trait.samples){
     
     ##need to add back dark resp prior?? no?
     
-    ## Calculate dark_resp_factor
+    ## Output leaf_respiration_rate @ 15C as Rd0 -- New way to input leaf resp into ED2.  Dark Resp Factor is no longer used (see below)
+    trait.samples[['Rd0']] <- trait.samples[['leaf_respiration_rate_m2']] ## Added by SPS 05/06/2013
+    
+    ## Calculate dark_resp_factor -- Will be depreciated when moving from older versions of ED2
     trait.samples[['dark_respiration_factor']] <- trait.samples[['leaf_respiration_rate_m2']]/
       vcmax_15
     
@@ -119,10 +122,10 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
 
   ## TODO this should come from the database
   histfile <- paste("data/history.", settings$model$revision, ".csv", sep='')
-  if (file.exists(system.file(histfile, package="PEcAn.ED"))) {
-    edhistory <- read.csv2(system.file(histfile, package="PEcAn.ED"), sep=";")
+  if (file.exists(system.file(histfile, package="PEcAn.ED2"))) {
+    edhistory <- read.csv2(system.file(histfile, package="PEcAn.ED2"), sep=";")
   } else {
-    edhistory <- read.csv2(system.file("data/history.csv",  package="PEcAn.ED"), sep=";")
+    edhistory <- read.csv2(system.file("data/history.csv",  package="PEcAn.ED2"), sep=";")
   }
   edtraits <- names(edhistory)
   edtraits <- edtraits[which(edtraits!="num")]
@@ -148,7 +151,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
       ##TODO this should come from the database
       edpft <- pftmapping$ED[which(pftmapping==group)]
       if (is.null(edpft)) {
-        log.warn("No mapping found for", group, "using 1")
+        logger.warn("No mapping found for", group, "using 1")
         edpft <- 1
       }
       
@@ -159,7 +162,8 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
         traits <- names(vals)
         for(trait in traits) {
           if (! trait %in% edtraits) {
-            log.error(trait, "not found in ED history")
+            logger.error(trait, "not found in ED history")
+            next
           }
           pft.xml <- append.xmlNode(pft.xml, xmlNode(trait, vals[trait]))
         }
@@ -180,13 +184,29 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   
   ##----------------------------------------------------------------------
   ## Edit ED2IN file for runs
-  ed2in.text <- readLines(con=settings$model$edin, n=-1)
+  if (!is.null(settings$model$edin) && file.exists(settings$model$edin)) {
+    ed2in.text <- readLines(con=settings$model$edin, n=-1)
+  } else {
+    filename <- system.file(settings$model$edin, package = "PEcAn.ED2")
+    if (filename == "") {
+      model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database)
+      filename <- system.file(paste0("ED2IN.r", model$revision), package = "PEcAn.ED2")
+    }
+    if (filename == "") {
+      logger.severe("Could not find ED template")
+    }
+    logger.info("Using", filename, "as template")
+    ed2in.text <- readLines(con=filename, n=-1)
+  }
   
+  metstart <- tryCatch(format(as.Date(settings$run$site$met.start), "%Y"), error=function(e) settings$run$site$met.start)
+  metend   <- tryCatch(format(as.Date(settings$run$site$met.end), "%Y"), error=function(e) settings$run$site$met.end)
+
   ed2in.text <- gsub('@SITE_LAT@', settings$run$site$lat, ed2in.text)
   ed2in.text <- gsub('@SITE_LON@', settings$run$site$lon, ed2in.text)
   ed2in.text <- gsub('@SITE_MET@', settings$run$site$met, ed2in.text)
-  ed2in.text <- gsub('@MET_START@', settings$run$site$met.start, ed2in.text)
-  ed2in.text <- gsub('@MET_END@', settings$run$site$met.end, ed2in.text)
+  ed2in.text <- gsub('@MET_START@', metstart, ed2in.text)
+  ed2in.text <- gsub('@MET_END@', metend, ed2in.text)
 
   if(is.null(settings$model$phenol.scheme)){
     print(paste("no phenology scheme set; \n",
@@ -227,15 +247,15 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   ##----------------------------------------------------------------------
   ed2in.text <- gsub('@OUTDIR@', settings$run$host$outdir, ed2in.text)
   ed2in.text <- gsub('@ENSNAME@', run.id, ed2in.text)
-  ed2in.text <- gsub('@CONFIGFILE@', "config.xml", ed2in.text)
+  ed2in.text <- gsub('@CONFIGFILE@', file.path(settings$run$host$rundir, run.id, "config.xml"), ed2in.text)
   
   ## Generate a numbered suffix for scratch output folder.  Useful for cleanup.  TEMP CODE. NEED TO UPDATE.
   ## cnt = counter(cnt) # generate sequential scratch output directory names 
   ## print(cnt)
   ## scratch = paste(Sys.getenv("USER"),".",cnt,"/",sep="")
-  scratch = paste(Sys.getenv("USER"),"/",settings$run$scratch, sep='')
+  scratch <- file.path(Sys.getenv("USER"),settings$run$scratch)
   ## ed2in.text <- gsub('@SCRATCH@', paste('/scratch/', settings$run$scratch, sep=''), ed2in.text)
-  ed2in.text <- gsub('@SCRATCH@', paste('/scratch/', scratch, sep=''), ed2in.text)
+  ed2in.text <- gsub('@SCRATCH@', paste0('/scratch/', scratch), ed2in.text)
   ##
   
 #  ed2in.text <- gsub('@OUTFILE@', file.path(settings$run$host$outdir, run.id, "analysis"), ed2in.text)
@@ -260,7 +280,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
 ##-------------------------------------------------------------------------------------------------#
 write.run.ED <- function(settings){
   scratch = paste(Sys.getenv("USER"),"/",settings$run$scratch, sep='')
-  run.script.template = system.file("run.template.ED", package="PEcAn.ED")
+  run.script.template = system.file("run.template.ED2", package="PEcAn.ED2")
   run.text <- scan(file = run.script.template, 
                    what="character",sep='@', quote=NULL, quiet=TRUE)
   run.text <- gsub('TMP', paste("/scratch/",scratch,sep=""), run.text)
@@ -297,7 +317,9 @@ remove.config.ED2 <- function(main.outdir = settings$outdir, settings) {
                   pattern = c('/c.*', '/ED2INc.*'),
                   recursive=TRUE, full.names = TRUE)
   
-  if(length(todelete>0)) file.remove(todelete)
+  if(length(todelete>0)){
+    file.remove(todelete)
+  } 
   rm(todelete)
 
   ## Remove model run configs and model run log files on local/remote host

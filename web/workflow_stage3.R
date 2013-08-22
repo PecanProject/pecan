@@ -22,16 +22,16 @@ library(PEcAn.all)
 # initialization
 # ----------------------------------------------------------------------
 # load the pecan settings
-settings <- read.settings("pecan.xml", outputfile="../pecan.xml")
+settings <- read.settings("pecan.xml")
 
 # ----------------------------------------------------------------------
 # status functions
 # ----------------------------------------------------------------------
 status.start <- function(name) {
-    cat(paste(name, format(Sys.time(), "%F %T"), sep="\t"), file=file.path(settings$outdir, "..", "STATUS"), append=TRUE)      
+    cat(paste(name, format(Sys.time(), "%F %T"), sep="\t"), file=file.path(settings$outdir, "STATUS"), append=TRUE)      
 }
 status.end <- function(status="DONE") {
-    cat(paste("", format(Sys.time(), "%F %T"), status, "\n", sep="\t"), file=file.path(settings$outdir, "..", "STATUS"), append=TRUE)      
+    cat(paste("", format(Sys.time(), "%F %T"), status, "\n", sep="\t"), file=file.path(settings$outdir, "STATUS"), append=TRUE)      
 }
 
 options(warn=1)
@@ -49,7 +49,19 @@ options(error=quote({
 # ----------------------------------------------------------------------
 # convert output
 status.start("OUTPUT")
-read.outputs()
+convert.outputs(settings$model$name, settings)
+# special for web, print all nc vars
+data(mstmip_vars, package="PEcAn.utils")
+for (runid in readLines(con=file.path(settings$rundir, "runs.txt"))) {
+	for(file in list.files(path=file.path(settings$modeloutdir, runid), pattern="*.nc")) {
+		nc <- nc_open(file.path(settings$modeloutdir, runid, file))
+		for(v in sort(names(nc$var))) {
+			name <- mstmipvar(v, silent=TRUE)['longname']
+			cat(paste(v, name), file=file.path(settings$modeloutdir, runid, paste(file, "var", sep=".")), append=TRUE, sep="\n")
+		}
+		nc_close(nc)
+	}
+}
 status.end()
 
 # all done

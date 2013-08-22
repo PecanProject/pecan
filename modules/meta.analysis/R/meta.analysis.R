@@ -51,7 +51,7 @@ pecan.ma <- function(trait.data, prior.distns, taupriors,
   j.chains <- 4
 
   ## log the mcmc chain parameters
-  sink(file = paste(outdir,'meta-analysis.log',sep=""), split = TRUE)
+  sink(file = file.path(outdir,'meta-analysis.log'), split = TRUE)
   cat(paste( 'Each meta-analysis will be run with: \n',
             j.iter, ' total iterations,\n',
             j.chains, ' chains, \n',
@@ -102,7 +102,7 @@ pecan.ma <- function(trait.data, prior.distns, taupriors,
         
 
     madata[[trait.name]] <- data
-    jag.model.file <-  paste(outdir, trait.name, ".model.bug",sep="")  # file to store model
+    jag.model.file <-  file.path(outdir, paste(trait.name, ".model.bug", sep=""))  # file to store model
 
     ## run the meta-analysis in JAGS
     jags.out <- single.MA(data, j.chains, j.iter,
@@ -115,7 +115,7 @@ pecan.ma <- function(trait.data, prior.distns, taupriors,
  
     mcmc.object[[trait.name]] <- jags.out.trunc
   }
-  save(madata, file = paste(outdir,'madata.Rdata',sep=""))
+  save(madata, file = file.path(outdir,'madata.Rdata'))
   sink()
   return(mcmc.object)
 }

@@ -22,7 +22,7 @@ library(PEcAn.all)
 # initialization
 # ----------------------------------------------------------------------
 # load the pecan settings
-settings <- read.settings("pecan.xml", outputfile="../pecan.xml")
+settings <- read.settings("pecan.xml")
 
 # remove existing STATUS file
 file.remove("STATUS")
@@ -31,10 +31,10 @@ file.remove("STATUS")
 # status functions
 # ----------------------------------------------------------------------
 status.start <- function(name) {
-    cat(paste(name, format(Sys.time(), "%F %T"), sep="\t"), file=file.path(settings$outdir, "..", "STATUS"), append=TRUE)      
+    cat(paste(name, format(Sys.time(), "%F %T"), sep="\t"), file=file.path(settings$outdir, "STATUS"), append=TRUE)      
 }
 status.end <- function(status="DONE") {
-    cat(paste("", format(Sys.time(), "%F %T"), status, "\n", sep="\t"), file=file.path(settings$outdir, "..", "STATUS"), append=TRUE)      
+    cat(paste("", format(Sys.time(), "%F %T"), status, "\n", sep="\t"), file=file.path(settings$outdir, "STATUS"), append=TRUE)      
 }
 
 options(warn=1)
@@ -50,43 +50,33 @@ options(error=quote({
 # ----------------------------------------------------------------------
 # run workflow
 # ----------------------------------------------------------------------
-status.start("SETUP")
-script <- c("#!/bin/bash",
-		paste("cd", settings$run$host$rundir),
-		"export GFORTRAN_UNBUFFERED_ALL=1",
-		"for f in ED2INc*[0-9n]; do",
-		"  LOG=\"$f.log\"",
-		"  date +%Y.%m.%d-%H.%M > $LOG",
-		paste(" ", settings$model$binary, '-f $f', ">> $LOG"),
-		"done")
-writeLines(script, con=paste(settings$outdir, 'launcher.sh', sep='/'))
-Sys.chmod(paste(settings$outdir, 'launcher.sh', sep=''), mode = "0755")
-status.end()
-
 # setup pss/css by running fia2ED
 status.start("FIA2ED")
 # TODO see if we need to call fia
 if (".attrs" %in% names(settings$model$psscss)) {
 	if (settings$model$psscss$.attrs[["generate"]] == "fia") {
 		fia.to.psscss(settings)
+		status.end()
 	} else {
 		stop("No information on how to generate psscss files.")
 	}
+} else {
+	status.end("SKIPPED")
 }
-status.end()
 
 # get data from pecan DB
 status.start("TRAIT")
-get.trait.data()
+settings$pfts <- get.trait.data(settings$pfts, settings$run$dbfiles, settings$database, settings$meta.analysis$update)
+saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
 status.end()
 
 # run meta-analysis
 status.start("META")
-run.meta.analysis()
+run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database)
 status.end()
 
 # write model specific configs
 status.start("CONFIG")
-run.write.configs(settings$model$name)
+run.write.configs(settings$model$name, settings$bety$write)
 status.end()
 

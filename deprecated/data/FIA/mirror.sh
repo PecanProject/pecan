@@ -13,6 +13,9 @@ export DB_USER="fia5data"
 export DB_PASS="fia5data"
 export VER=5_1
 
+# set this to yes to force a reload always
+reload="no"
+
 FILES="FIADB_REFERENCE AK AL AR AZ CA CO CT DE FL GA IA ID IL IN KS KY LA MA MD ME MI MN MO MS MT NC ND NE NH NJ NM NV NY OH OK OR PA PR RI SC SD TN TX UT VA VI VT WA WI WV WY"
 
 # mirror(filename, [extra path])
@@ -84,7 +87,6 @@ fi
 # ----------------------------------------------------------------------
 # FETCH DATA
 # ----------------------------------------------------------------------
-reload="no"
 echo "----------------------------------------------------------------------"
 echo "CHECKING FOR NEW DATA FILES"
 echo ""
@@ -94,7 +96,6 @@ for f in ${FILES}; do
     reload="yes"
   fi
 done
-reload="yes"
 
 # ----------------------------------------------------------------------
 # RELOAD DATABASE
@@ -118,7 +119,7 @@ if [ "${reload}" == "yes" ]; then
         table=${table:3}
       fi
       echo "LOADING ${g} INTO TABLE fiadb4.${table}" >> data/$f.log
-      mysql --user=${DB_USER}  --password=${DB_PASS} --database=${DB} --execute="load data local infile '${g}' INTO TABLE ${DB}.${table} FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' LINES TERMINATED BY '\r\n' IGNORE 1 LINES; SHOW WARNINGS" >> data/$f.log
+      mysql --local-infile=1 --user=${DB_USER}  --password=${DB_PASS} --database=${DB} --execute="load data local infile '${g}' INTO TABLE ${DB}.${table} FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' LINES TERMINATED BY '\r\n' IGNORE 1 LINES; SHOW WARNINGS" >> data/$f.log
     done
     rm -rf data/$f
   done

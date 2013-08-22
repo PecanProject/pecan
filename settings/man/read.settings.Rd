@@ -1,0 +1,46 @@
+\name{read.settings}
+\alias{read.settings}
+\title{Loads PEcAn settings file}
+\usage{
+  read.settings(inputfile = NULL, outputfile = "pecan.xml")
+}
+\arguments{
+  \item{inputfile}{the PEcAn settings file to be used.}
+
+  \item{outputfile}{the name of file to which the settings
+  will be written inside the outputdir.}
+}
+\value{
+  list of all settings as loaded from the XML file(s)
+}
+\description{
+  This will try and find the PEcAn settings file in the
+  following order: \enumerate{ \item {--settings
+  <file>}{passed as command line argument using --settings}
+  \item {inputfile}{passed as argument to function} \item
+  {PECAN_SETTINGS}{environment variable PECAN_SETTINGS
+  pointing to a specific file} \item
+  {./pecan.xml}{pecan.xml in the current folder} } Once the
+  function finds a valid file, it will not look further.
+  Thus, if \code{inputfile} is supplied,
+  \code{PECAN_SETTINGS} will be ignored
+}
+\examples{
+\dontrun{
+## bash shell:
+R --vanilla -- --settings path/to/mypecan.xml < workflow.R
+
+## R:
+
+settings <- read.settings()
+settings <- read.settings(file="willowcreek.xml")
+test.settings.file <- system.file("tests/test.xml", package = "PEcAn.all")
+settings <- read.settings(test.settings.file)
+}
+}
+\author{
+  Shawn Serbin
+
+  Rob Kooper
+}
+

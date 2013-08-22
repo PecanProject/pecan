@@ -7,6 +7,8 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 library(testthat)
-library(visualization)
+library(PEcAn.visualization)
+library(PEcAn.utils)
 
-#test_package("foo")
+logger.setQuitOnSevere(FALSE)
+test_package("PEcAn.visualization")

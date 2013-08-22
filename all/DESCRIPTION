@@ -2,8 +2,8 @@ Package: PEcAn.all
 Type: Package
 Title: PEcAn functions used for ecological forecasts and
     reanalysis
-Version: 1.2.6
-Date: 2012-08-01
+Version: 1.3.1
+Date: 2013-06-14
 Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang,
     Mike Dietze, Carl Davidson, Rob Kooper, Shawn Serbin
 Maintainer: David LeBauer <dlebauer@illinois.edu>
@@ -16,7 +16,8 @@ Description: The Predictive Ecosystem Carbon Analyzer
     investigation.
 Depends:
     PEcAn.DB,
-    PEcAn.ED,
+    PEcAn.settings,
+    PEcAn.ED2,
     PEcAn.SIPNET,
     PEcAn.BIOCRO,
     PEcAn.MA,

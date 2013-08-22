@@ -22,16 +22,16 @@ library(PEcAn.all)
 # initialization
 # ----------------------------------------------------------------------
 # load the pecan settings
-settings <- read.settings("pecan.xml", outputfile="../pecan.xml")
+settings <- read.settings("pecan.xml")
 
 # ----------------------------------------------------------------------
 # status functions
 # ----------------------------------------------------------------------
 status.start <- function(name) {
-    cat(paste(name, format(Sys.time(), "%F %T"), sep="\t"), file=file.path(settings$outdir, "..", "STATUS"), append=TRUE)      
+    cat(paste(name, format(Sys.time(), "%F %T"), sep="\t"), file=file.path(settings$outdir, "STATUS"), append=TRUE)      
 }
 status.end <- function(status="DONE") {
-    cat(paste("", format(Sys.time(), "%F %T"), status, "\n", sep="\t"), file=file.path(settings$outdir, "..", "STATUS"), append=TRUE)      
+    cat(paste("", format(Sys.time(), "%F %T"), status, "\n", sep="\t"), file=file.path(settings$outdir, "STATUS"), append=TRUE)      
 }
 
 options(warn=1)
@@ -49,5 +49,5 @@ options(error=quote({
 # ----------------------------------------------------------------------
 # run model
 status.start("MODEL")
-start.model.runs(settings$model$name)
+start.model.runs(settings$model$name, settings$bety$write)
 status.end()

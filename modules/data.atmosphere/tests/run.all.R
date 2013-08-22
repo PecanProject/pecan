@@ -7,6 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 library(testthat)
-library(PEcAn.DB)
+require(PEcAn.utils)
 
-#test_package("foo")
+logger.setQuitOnSevere(FALSE)
+test_package("PEcAn.data.atmosphere")

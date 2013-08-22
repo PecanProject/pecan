@@ -27,7 +27,7 @@
 set.seed(0)
 x <- c(rgamma(998,1,1), rnorm(10))
 min(x) # -0.5238
-min(spline.truncate(x))
+min(PEcAn.uncertainty::spline.truncate(x))
 }
 \author{
   David LeBauer

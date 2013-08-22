@@ -2,7 +2,7 @@
 \alias{get.model.output}
 \title{Retrieve model output}
 \usage{
-  get.model.output(model)
+  get.model.output(model, settings)
 }
 \arguments{
   \item{model}{the ecosystem model run}

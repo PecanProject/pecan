@@ -7,12 +7,9 @@
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
  */
-// offline mode?
-if (isset($_REQUEST['offline'])) {
-	$offline=true;
-} else {
-	$offline=false;
-}
+
+# boolean parameters
+$offline=isset($_REQUEST['offline']);
 
 // system parameters
 require("system.php");
@@ -55,10 +52,14 @@ while ($row = @mysql_fetch_assoc($result)){
 
     var markersArray = [];
     
-	function resize() {
-    	$("#stylized").height($(window).height() - 5);
-    	$("#map_canvas").height($(window).height() - 1);
-    	$("#map_canvas").width($(window).width() - $('#stylized').width() - 5);
+    function resize() {
+        if ($("#stylized").height() < $(window).height()) {
+            $("#stylized").height($(window).height() - 5);
+        } else {
+            $("#stylized").height(Math.max($("#stylized").height(), $("#output").height()));
+        }
+        $("#output").height($("#stylized").height());
+        $("#output").width($(window).width() - $('#stylized').width() - 5);
     }
 
     function validate() {
@@ -92,6 +93,8 @@ while ($row = @mysql_fetch_assoc($result)){
 	}
 
 	function modelSelected() {
+		var curSite = $("#sitename").val();	//we'll clear this and replace it if it still exists in the new model
+
 		// remove everything
 		if (markersArray) {
 			clearSites();
@@ -101,22 +104,26 @@ while ($row = @mysql_fetch_assoc($result)){
 		$("#sitename").val("");
 		validate();
 
-        // get all sites
-        console.log($('#modelid option:selected'))
-        var url="sites.php?host=" + $('#hostname')[0].value + "&model=" + $('#modelid option:selected')[0].value
-        jQuery.get(url, {}, function(data) {
-        	jQuery(data).find("marker").each(function() {
+		// get all sites
+		//console.log($('#modelid option:selected'))
+		var url="sites.php?host=" + $('#hostname')[0].value + "&model=" + $('#modelid option:selected')[0].value
+		jQuery.get(url, {}, function(data) {
+			jQuery(data).find("marker").each(function() {
 				var marker = jQuery(this);
 				if (marker.attr("lat") == "" || marker.attr("lon") == "") {
 					console.log("Bad marker (siteid=" + marker.attr("siteid") + " site=" + marker.attr("sitename") + " lat=" + marker.attr("lat") + " lon=" + marker.attr("lon") + ")");
 				} else {
-        			showSite(marker);
+					showSite(marker, curSite);
 				}
-        	});
-        });
+			});
+			renderSites(curSite);
+		});
 	}
 
 	function hostSelected() {
+		var curSite = $("#sitename").val();
+		var curModel = $("#modelid").val();
+
 		// remove everything
 		if (markersArray) {
 			clearSites();
@@ -124,10 +131,24 @@ while ($row = @mysql_fetch_assoc($result)){
 		}
 		$("#siteid").val("");
 		$("#sitename").val("");
-		$('#modelid').find('option').remove();	    
+		$('#modelid').find('option').remove();
 		$('#modelid').append('<option value="">All Models</option>');
 		validate();
-		
+
+		// get all models
+		var url="models.php?host=" + $('#hostname')[0].value;
+		jQuery.get(url, {}, function(data) {
+			jQuery(data).find("model").each(function() {
+				var model = jQuery(this);
+				var name = model.attr("name") + " r" + model.attr("revision");
+				if(model.attr("id") == curModel) {
+					$('#modelid').append('<option value="' + model.attr("id") + '" selected>' +name + '</option>');	//reselect our curModel if still available
+				} else {
+					$('#modelid').append('<option value="' + model.attr("id") + '">' +name + '</option>');
+				}
+			});
+		});
+
 		// get all sites
 		var url="sites.php?host=" + $('#hostname')[0].value;
 		jQuery.get(url, {}, function(data) {
@@ -136,21 +157,12 @@ while ($row = @mysql_fetch_assoc($result)){
 				if (marker.attr("lat") == "" || marker.attr("lon") == "") {
 					console.log("Bad marker (siteid=" + marker.attr("siteid") + " site=" + marker.attr("sitename") + " lat=" + marker.attr("lat") + " lon=" + marker.attr("lon") + ")");
 				} else {
-        			showSite(marker);
+					showSite(marker, curSite);
 				}
 			});
+			renderSites(curSite);
 		});
-
-		// get all models
-		var url="models.php?host=" + $('#hostname')[0].value;
-		jQuery.get(url, {}, function(data) {
-			jQuery(data).find("model").each(function() {
-				var model = jQuery(this);
-				var name = model.attr("name") + " r" + model.attr("revision");
-				$('#modelid').append('<option value="' + model.attr("id") + '">' +name + '</option>')
-			});
-		});
-    }
+	}
 
     function siteSelected(siteid, sitename) {
 		$("#siteid").val(siteid);
@@ -164,21 +176,28 @@ while ($row = @mysql_fetch_assoc($result)){
 	});
 
 	function clearSites() {
-		$("#map_canvas").html("");
+		$("#output").html("");
 	}
 	
-	function showSite(marker) {
+	function showSite(marker, selected) {
 		markersArray.push(marker);
+	}
+
+	function renderSites(selected) {
 		var sites="<form>";
-		for (i in markersArray) {
+		for (var i in markersArray) {
 			var site = markersArray[i];
-			sites = sites + "<div><input type=\"radio\" name=\"site\" value=\"" + site.attr("siteid") + "\"" +
-			 			    " onClick=\"siteSelected(" + site.attr("siteid") + ",'" + site.attr("sitename") + "');\" >" +
-			 				site.attr("sitename") + "</div>";
+			sites = sites + "<div><input type=\"radio\" name=\"site\" value=\"" + site.attr("siteid") + "\"" + " onClick=\"siteSelected(" + site.attr("siteid") + ",'" + site.attr("sitename") + "');\"";
+			if (selected == site.attr("sitename")) {
+				sites = sites + " checked";
+				siteSelected(site.attr("siteid"), site.attr("sitename"));
+			}
+			sites = sites + ">" + site.attr("sitename") + "</div>";
 		}
 		sites = sites + "</form>";
-		$("#map_canvas").html(sites);
+		$("#output").html(sites);
 	}
+
 <?php } else { ?>
     google.load("maps", "3",  {other_params:"sensor=false"});
     google.setOnLoadCallback(mapsLoaded);
@@ -187,7 +206,7 @@ while ($row = @mysql_fetch_assoc($result)){
     var infowindow = null;
 
     function clearSites() {
-		for (i in markersArray) {
+		for (var i in markersArray) {
 			markersArray[i].setMap(null);
 		}
 	}
@@ -200,12 +219,12 @@ while ($row = @mysql_fetch_assoc($result)){
 			mapTypeId: google.maps.MapTypeId.ROADMAP
 		}
 
-		map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+		map = new google.maps.Map(document.getElementById("output"), myOptions);
 		infowindow = new google.maps.InfoWindow({content: ""});
 		hostSelected();
 	}
 
-	function showSite(marker) {
+	function showSite(marker, selected) {
 		var latlng;
 		latlng = new google.maps.LatLng(parseFloat(marker.attr("lat")), parseFloat(marker.attr("lon")));
 		var gmarker = new google.maps.Marker({position: latlng, map: map});
@@ -223,6 +242,15 @@ while ($row = @mysql_fetch_assoc($result)){
 			infowindow.setContent(this.html);
 			infowindow.open(map, this);
 		});
+
+		if (marker.attr("sitename") == selected) {
+			siteSelected(gmarker.siteid, gmarker.sitename);
+			infowindow.setContent(gmarker.html);
+			infowindow.open(map, gmarker);
+		}
+	}
+
+	function renderSites(selected) {
 	}
 
     function goHome() {
@@ -283,7 +311,7 @@ while ($row = @mysql_fetch_assoc($result)){
 			<div class="spacer"></div>
 		</form>
 	</div>
-	<div id="map_canvas"></div>
+	<div id="output"></div>
 </div>
 </body>
 </html>

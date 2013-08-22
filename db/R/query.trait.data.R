@@ -19,8 +19,7 @@
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{transformstats}} performs transformation calculations
 ##' @author <unknown>
 fetch.stats2se <- function(connection, query){
-  query.result <- dbSendQuery(connection, query)
-  transformed <- transformstats(fetch(query.result, n = -1))
+  transformed <- transformstats(db.query(query, connection))
   return(transformed)
 }
 ##==================================================================================================#
@@ -39,12 +38,16 @@ fetch.stats2se <- function(connection, query){
 ##' @param ... extra arguments
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}}; \code{\link{transformstats}} performs transformation calculations
 ##' @author David LeBauer, Carl Davidson
-query.data <- function(trait, spstr, extra.columns='sites.lat, sites.lon, ', con=query.base.con(settings), ...){
+query.data <- function(trait, spstr, extra.columns='sites.lat, sites.lon, ', con=NULL, ...) {
+  if (is.null(con)) {
+    logger.error("No open database connection passed in.")
+    con <- db.open(settings$database)
+  }
   query <- paste("select 
               traits.id, traits.citation_id, traits.site_id, traits.treatment_id,
               treatments.name, traits.date, traits.time, traits.cultivar_id, traits.specie_id,
               traits.mean, traits.statname, traits.stat, traits.n, variables.name as vname,
-              month(traits.date) as month,",
+              extract(month from traits.date) as month,",
             extra.columns,
             "treatments.control, sites.greenhouse
               from traits 
@@ -142,8 +145,7 @@ query.covariates<-function(trait.ids, con = query.base.con(settings), ...){
   covariate.query <- paste("select covariates.trait_id, covariates.level,variables.name",
                            "from covariates left join variables on variables.id = covariates.variable_id",
                            "where trait_id in (",vecpaste(trait.ids),")")
-  q <- dbSendQuery(con, covariate.query)
-  covariates = fetch(q, n = -1)  
+  covariates <- db.query(covariate.query, con)
   return(covariates)
 }
 ##==================================================================================================#
@@ -433,7 +435,7 @@ derive.traits <- function(FUN, ..., input=list(...),
 ##' query.trait.data("Vcmax", "938", con = query.base.con(settings))
 ##' }
 ##' @author David LeBauer, Carl Davidson, Shawn Serbin
-query.trait.data <- function(trait, spstr,con=query.base.con(settings), ...){
+query.trait.data <- function(trait, spstr, con = query.base.con(settings), ...){
   
   if(is.list(con)){
     print("query.trait.data")

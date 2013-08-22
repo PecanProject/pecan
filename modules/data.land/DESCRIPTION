@@ -1,8 +1,8 @@
 Package: PEcAn.data.land
 Type: Package
 Title: PEcAn functions used for ecological forecasts and reanalysis
-Version: 1.2.6
-Date: 2012-08-01
+Version: 1.3.1
+Date: 2013-06-14
 Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Mike Dietze, Carl
     Davidson, Rob Kooper
 Maintainer: Mike Dietze <dietze@bu.edu>
@@ -13,7 +13,10 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     efficacy of scientific investigation.
 Depends:
     XML,
-    PEcAn.DB
+    PEcAn.DB,
+    PEcAn.utils,
+    fields,
+    rgdal
 Suggests:
     testthat
 License: FreeBSD + file LICENSE

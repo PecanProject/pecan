@@ -1,0 +1,27 @@
+\name{check.settings}
+\alias{check.settings}
+\title{Check Settings}
+\usage{
+  check.settings(settings)
+}
+\arguments{
+  \item{settings}{settings file}
+}
+\value{
+  will return the updated settings values with defaults
+  set.
+}
+\description{
+  Sanity checks. Checks the settings file to make sure
+  expected fields exist. It will try to use default values
+  for any missing values, or stop the exection if no
+  defaults are possible.
+}
+\details{
+  Expected fields in settings file are: - pfts with at
+  least one pft defined
+}
+\author{
+  Rob Kooper
+}
+

@@ -23,21 +23,9 @@
 ##' }
 ##'
 ##' @author Michael Dietze, Shawn Serbin, David LeBauer
-get.model.output <- function(model){
-  print(paste("---- Getting output for ",model," model",sep=""))
-  my.fcn = paste("get.model.output",model,sep=".")
-
-  if(exists(my.fcn)){
-    do.call(my.fcn, args=list())    
-  } else {
-    print("-------------------------------------------------------------------")
-    print(c(my.fcn,"could not be found"))
-    print(c("please make sure module for:",model,"is implemented and loaded"))
-    print("-------------------------------------------------------------------")
-    print(" ")
-
-  }
-
+get.model.output <- function(model, settings){
+  logger.info("Same as get.results(settings)")
+  get.results(settings)
   return()
 }
 ####################################################################################################

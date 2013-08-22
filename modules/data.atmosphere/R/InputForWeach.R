@@ -127,9 +127,6 @@ InputForWeach <- function(lat, lon, year1, year2){
 ##' @return data from NCEP
 ##' @author David LeBauer
 ##' @export
-##' @examples 
-##' Uwind <- ncep.gather2(variable = "uwnd.10m", inputs = list(lat = 40, lon = 40, start.year = 2000, end.year = 2001))
-
 ncep.gather2 <- function (variable, level = "gaussian",
                           months.minmax = c(1, 12),
                           inputs,
@@ -162,8 +159,7 @@ ncep.gather2 <- function (variable, level = "gaussian",
                                                0, 360 + lon.westeast[length(lon.westeast)], lon.westeast[length(lon.westeast)])
   if (lon.westeast[1] > lon.westeast[length(lon.westeast)]) {
     cross.prime <- TRUE
-  }
-  else {
+  }  else {
     cross.prime <- FALSE
   }
   tlength <- NULL
