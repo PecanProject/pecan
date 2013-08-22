@@ -7,27 +7,27 @@
 ## http://opensource.ncsa.illinois.edu/license.html
 ##-------------------------------------------------------------------------------
 
-read.settings <- PEcAn.utils::read.settings
-temp.settings <- PEcAn.utils::temp.settings
-  settings.text <- "
-<pecan>
-  <pfts>
-    <pft>
-      <name>ebifarm.pavi</name>
-      <outdir>/tmp/test/</outdir>
-    </pft>
-  </pfts>
-  <outdir>/tmp/test/</outdir>
-  <database>
-    <userid>ebi_analys_user</userid>
-    <passwd>b742xsAu</passwd>
-    <location>localhost</location>
-    <name>ebi_analysis</name>
-  </database>
-</pecan>"
+#read.settings <- PEcAn.utils::read.settings
+#temp.settings <- PEcAn.utils::temp.settings
+#  settings.text <- "
+#<pecan>
+#  <pfts>
+#    <pft>
+#      <name>ebifarm.pavi</name>
+#      <outdir>/tmp/test/</outdir>
+#    </pft>
+#  </pfts>
+#  <outdir>/tmp/test/</outdir>
+##  <database>
+#    <userid>bety</userid>
+#    <passwd>bety</passwd>
+#    <host>localhost</host>
+#    <name>bety</name>
+#  </database>
+#</pecan>"
 
 test_that("get.trait.data will return trait data even when there is no meta.analysis tag in the settings file", {
 #  settings <- read.settings(settings.text)
-#  get.trait.data()
+#  settings$pfts <- get.trait.data(settings$pfts, settings$run$dbfiles, settings$database, settings$meta.analysis$update)
 #  expect_true(file.exists('/tmp/test/trait.data.Rdata'))
 })

@@ -1,8 +1,0 @@
-<root>
-	<a var1="2" var2="2">b</a>
-	<c var2="2">
-		<d>b</d>
-		<e var1="2">b</e>
-		<g>b</g>
-	</c>
-</root>

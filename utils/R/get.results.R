@@ -9,40 +9,26 @@
 #--------------------------------------------------------------------------------------------------#
 ##' Reads model output and runs sensitivity and ensemble analyses
 ##'
-##' Output is placed in model output directory (settings$run$host$outdir).
+##' Output is placed in model output directory (settings$modeloutdir).
 ##' @name get.results
 ##' @title Generate model output for PEcAn analyses
 ##' @export
-##' @author Shawn Serbin, David LeBauer, Mike Dietze
-##' @param model name of model being used
 ##' @param settings list, read from settings file (xml) using \code{\link{read.settings}}
-##' 
 ##' @author David LeBauer, Shawn Serbin, Mike Dietze
-get.results <- function(model){  
-  
+get.results <- function(settings) {
+  outdir <- settings$outdir
   ### Load PEcAn sa info
-  load('samples.Rdata')
+  load(file.path(outdir, 'samples.Rdata'))
   
-  sensitivity.output <- list()
-  ensemble.output    <- list()
-  
-  start.year <- ifelse(is.null(settings$sensitivity.analysis$start.year),
-                       NA, settings$sensitivity.analysis$start.year)
-  end.year   <- ifelse(is.null(settings$sensitivity.analysis$end.year),
-                       NA, settings$sensitivity.analysis$end.year)
-
-  variables <- NULL
-  if("sensitivity.analysis" %in% names(settings)){
-    if("variable" %in% names(settings$sensitivity.analysis)){
-      var <- which(names(settings$sensitivity.analysis) == 'variable')
-      for(i in 1:length(var)){
-        variables[i] = settings$sensitivity.analysis[[var[i]]]
-      }
-    }
-  }
-  print(variables)
-  
+  sensitivity.output <- list()   
   if('sensitivity.analysis' %in% names(settings)) {
+    start.year <- ifelse(is.null(settings$sensitivity.analysis$start.year), NA, settings$sensitivity.analysis$start.year)
+    end.year   <- ifelse(is.null(settings$sensitivity.analysis$end.year), NA, settings$sensitivity.analysis$end.year)
+    variables  <- NULL
+    if("variable" %in% names(settings$sensitivity.analysis)){
+      variables = settings$sensitivity.analysis[
+                 names(settings$sensitivity.analysis) == "variable"]
+    }
     
     for(pft.name in names(trait.samples)){
       
@@ -51,29 +37,35 @@ get.results <- function(model){
       
       sensitivity.output[[pft.name]] <- read.sa.output(traits = traits,
                                                        quantiles = quantiles,
-                                                       outdir = settings$run$host$outdir, 
+                                                       pecandir = outdir,
+                                                       outdir = settings$modeloutdir, 
                                                        pft.name=pft.name,
                                                        start.year=start.year,
                                                        end.year=end.year,
-                                                       variables=variables,
-                                                       model=model)
-      save(sensitivity.output, file = 'output.Rdata')
+                                                       variables=variables)
     }
   }
   
+  ensemble.output    <- list()
   if('ensemble' %in% names(settings)) {
+    start.year <- ifelse(is.null(settings$ensemble$start.year), NA, settings$ensemble$start.year)
+    end.year   <- ifelse(is.null(settings$ensemble$end.year), NA, settings$ensemble$end.year)
+    variables  <- NULL
+    if("variable" %in% names(settings$ensemble)){
+      var <- which(names(settings$ensemble) == 'variable')
+      for(i in 1:length(var)){
+        variables[i] = settings$ensemble[[var[i]]]
+      }
+    }
     ensemble.output <- read.ensemble.output(settings$ensemble$size,
-                                            outdir = settings$run$host$outdir, 
+                                            pecandir = outdir,
+                                            outdir = settings$modeloutdir, 
                                             start.year=start.year,
                                             end.year=end.year,
-                                            variables=variables,
-                                            model=model)
-    save(ensemble.output, file = 'output.Rdata')
+                                            variables=variables)
   }
   
-  if(all(c('ensemble', 'sensitivity.analysis') %in% names(settings))) {
-    save(ensemble.output, sensitivity.output, file = 'output.Rdata')
-  }
+  save(ensemble.output, sensitivity.output, file = file.path(outdir, 'output.Rdata'))
 }
 #==================================================================================================#
 

@@ -19,7 +19,8 @@
 ##' @export
 ##' @examples
 ##' \dontrun{
-##' spstr <- query.pft_species('ebifarm.c4crop')
+##' species <- query.pft_species('ebifarm.c4crop')
+##' spstr <- vecpaste(species$id)
 ##' trvec <- c('leafN', 'SLA')
 ##' trait.data <- query.traits(spstr, trvec)
 ##' }
@@ -37,9 +38,7 @@ query.traits <- function(spstr, priors, con = NULL){
   
   query <- paste("select distinct variables.name from traits join variables 
                  on (traits.variable_id = variables.id) where specie_id in (", spstr,");", sep = "")
-  query.result <- dbSendQuery(con, query)
-  traits <- fetch(query.result, n = -1)$name
- 
+  traits <- db.query(query, con)$name
   traits <- unique(traits[traits %in% priors])
   
   ### Grab trait data

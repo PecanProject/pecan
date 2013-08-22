@@ -7,7 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 library(XML)
-library(ncdf)
+library(ncdf4)
 
 # ----------------------------------------------------------------------
 # COMMAND LINE ARGUMENTS
@@ -22,10 +22,6 @@ width    <- as.numeric(args[4])
 height   <- as.numeric(args[5])
 filename <- args[6]
 
-# time goes from 0 to 23
-starttime=0
-endtime=23
-
 # ----------------------------------------------------------------------
 # SETUP
 # ----------------------------------------------------------------------
@@ -33,69 +29,44 @@ settings.file <- Sys.getenv('PECANSETTINGS')
 settings.xml <- xmlParse(settings.file)
 settings <- xmlToList(settings.xml)
 
-#year=2006
-#yvar="AVG_PAR_BEAM"
-#width=800
-#height=600
-#filename="/tmp/plot.png"
-#settings <- xmlToList(xmlParse("/home/kooper/tmp/pecan/PEcAn_56/pecan.xml"))
-
-# ----------------------------------------------------------------------
-# CONSTANTS
-# ----------------------------------------------------------------------
-# This depends on NL%FRQFAST in template and should reflect the number of
-# data points written per day.
-values_day <- 24
+# year=2006
+# xvar='time'
+# yvar="GPP"
+# width=800
+# height=600
+# filename="plot.png"
 
 # ----------------------------------------------------------------------
 # PRIVATE FUNCTIONS
 # ----------------------------------------------------------------------
-data.fetch <- function(var, nc, start, end, values, fun=mean) {
+data.fetch <- function(var, nc, fun=mean) {
 	# get a specific set of values from the HDF data
 	#
 	# Args:
 	#   var:    the variable to extract from the hdf data
-	#   start:  the start time in the array
-	#   end:    the end time in the array
-	#   values: number of values per day
+	#   nc:
+	#   time:
 	#   fun:    the function to apply to the data at the same time
 	#
 	# Returns:
-	#   values extracted from the hdf data
-	
+	#   values extracted from the nc data
 	if (var == "time") {
-		val <- unique(floor(nc$dim[['time']]$vals / (24*3600)))
+		val <- unique(floor(nc$dim[['time']]$vals))
 		attr(val, "lbl") <- "Day of the year"
 		return(val)
 	}
 	
-	# find the variable in the data
-	if (is.null(nc$var[[var]])) {
-		useme <- sprintf("AVG_%s", var)
-		if (is.null(nc$var[[useme]])) {
-			stop(sprintf("Could not find the variable '%s' in the data.", var))
-		}
-	} else {
-		useme <- var
-	}
-	
 	# some precomputations
-#	lastval  <- (values_day*(1+end-start))
-#	indices <- c(lapply(start:(end),function(x) {seq(1+x*values_day+starttime, 1+x*values_day+endtime)}), recursive=TRUE)
-#	aggrlist <- list(rep(start:(end), each=(1 + endtime - starttime)))
-        indices  <- 0:length(nc$dim[['time']]$vals)
-        aggrlist <- list(floor(nc$dim[['time']]$vals / (24*3600)))
+	indices  <- 0:length(nc$dim[['time']]$vals)
+	aggrlist <- list(floor(nc$dim[['time']]$vals))
 	
 	# aggregate the data
-	data <- get.var.ncdf(nc, useme)
+	data <- ncvar_get(nc, var)
 	val <- aggregate(data[indices], by=aggrlist, FUN=fun)$x
-	if (length(grep("TE?MP$", useme)) != 0) {
-		val[val<200] <- NA
-	}
 	
 	# get the label
-	title <- nc$var[[useme]]$longname
-	units <- nc$var[[useme]]$units
+	title <- nc$var[[var]]$longname
+	units <- nc$var[[var]]$units
 	if ((title == "") && (units == "")) {
 		attr(val, "lbl") <- "Unknown"
 	} else if (title == "") {
@@ -130,36 +101,20 @@ data.fetch <- function(var, nc, start, end, values, fun=mean) {
 ##' @param the height of the image generated, default is 600 pixels.
 ##' @param filename is the name of the file name that is geneated.
 ##' @param settings the pecan.xml file loaded.
-plot.netcdf <- function(datafile, year, yvar, xvar='time', width=800, height=600, filename, settings) { 
-	# find out the first/last day of the plot
-	start_date <- as.Date(settings$run$start.date)
-	start_year <- format(start_date, "%Y")
-	end_date <- as.Date(settings$run$end.date)
-	end_year <- format(end_date, "%Y")
-#	if (year == start_year) {
-#		start_day <- as.numeric(format(start_date, "%j")) - 1
-#	} else {
-		start_day <- 0
-#	}
-	if (year == end_year) {
-		end_day <- as.numeric(format(end_date, "%j")) - 1
-	} else {
-		end_day <- as.numeric(format(as.Date(sprintf("%s-12-31", year)), "%j")) - 1
-	}
-	
+plot.netcdf <- function(datafile, year, yvar, xvar='time', width=800, height=600, filename, settings) {	
 	# open netcdf file
-	nc <- open.ncdf(paste(settings$run$host$outdir, datafile, sep="/"))
+	nc <- nc_open(file.path(settings$run$host$outdir, datafile))
 	
 	# compute variables
-	xval_mean <- data.fetch(xvar, nc, start_day, end_day, values_day, mean)
-	xval_max  <- data.fetch(xvar, nc, start_day, end_day, values_day, max)
-	xval_min  <- data.fetch(xvar, nc, start_day, end_day, values_day, min)
-	yval_mean <- data.fetch(yvar, nc, start_day, end_day, values_day, mean)
-	yval_max  <- data.fetch(yvar, nc, start_day, end_day, values_day, max)
-	yval_min  <- data.fetch(yvar, nc, start_day, end_day, values_day, min)
+	xval_mean <- data.fetch(xvar, nc, mean)
+	xval_max  <- data.fetch(xvar, nc, max)
+	xval_min  <- data.fetch(xvar, nc, min)
+	yval_mean <- data.fetch(yvar, nc, mean)
+	yval_max  <- data.fetch(yvar, nc, max)
+	yval_min  <- data.fetch(yvar, nc, min)
 	
 	# done with netcdf file
-	close.ncdf(nc)
+	nc_close(nc)
 	
 	# setup plot (needs to be done before removing of NA since that removes attr as well).
 	png(filename=filename, width=width, height=height)
@@ -167,7 +122,7 @@ plot.netcdf <- function(datafile, year, yvar, xvar='time', width=800, height=600
 	title(xlab=attr(xval_mean, "lbl"))
 	title(ylab=attr(yval_mean, "lbl"))
 	if (xvar == "time") {
-		title(main=paste(yvar, "for", year))
+		title(main=paste(nc$var[[yvar]]$longname, "for", year))
 	} else {
 		title(main=paste(xvar, "VS", yvar, "for", year))
 	}
@@ -200,3 +155,4 @@ plot.netcdf <- function(datafile, year, yvar, xvar='time', width=800, height=600
 }
 
 plot.netcdf(datafile, year, yvar, xvar, width, height, filename, settings);
+

@@ -7,12 +7,9 @@
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
  */
-# offline mode?
-if (isset($_REQUEST['offline'])) {
-	$offline=true;
-} else {
-	$offline=false;
-}
+
+# boolean parameters
+$offline=isset($_REQUEST['offline']);
 
 // runid
 if (!isset($_REQUEST['workflowid'])) {
@@ -35,10 +32,32 @@ $folder = $workflow['folder'];
 $model_type = $workflow['model_type'];
 
 // check result
-$status=file($folder . DIRECTORY_SEPARATOR . "STATUS");
-if ($status === FALSE) {
-	$status = array();
+if (file_exists($folder . DIRECTORY_SEPARATOR . "STATUS")) {
+	$status=file($folder . DIRECTORY_SEPARATOR . "STATUS");
+} else {
+	$status=array();
 }
+
+// jump to right place if need be
+if (checkStatus("FINISHED") == 1) {
+	if ($offline) {
+		header( "Location: finished.php?workflowid=$workflowid&offline=offline");
+		exit;
+	} else {
+		header( "Location: finished.php?workflowid=$workflowid");
+		exit;
+	}
+}
+if (checkStatus("MODEL") == 1) {
+	if ($offline) {
+		header( "Location: running_stage3.php?workflowid=$workflowid&offline=offline");
+		exit;
+	} else {
+		header( "Location: running_stage3.php?workflowid=$workflowid");
+		exit;
+	}
+}
+
 
 // check the global status
 switch(checkStatus("CONFIG")) {
@@ -63,7 +82,7 @@ switch(checkStatus("CONFIG")) {
 			}
 		} else {
 			chdir($folder);
-			pclose(popen('R_LIBS_USER="' . ${pecan_install} . '" R CMD BATCH workflow_stage2.R &', 'r'));
+			pclose(popen('R_LIBS_USER="' . $pecan_install . '" R CMD BATCH workflow_stage2.R &', 'r'));
 			if ($offline) {
 				header( "Location: running_stage2.php?workflowid=$workflowid&offline=offline");
 			} else {
@@ -75,9 +94,9 @@ switch(checkStatus("CONFIG")) {
 	case 2:
 		$nextenabled="";
 		if ($offline) {
-			header( "Location: finished.php?workflowid=$workflowid&offline=offline");
+			header( "Location: failurealert.php?workflowid=$workflowid&offline=offline");
 		} else {
-			header( "Location: finished.php?workflowid=$workflowid");
+			header( "Location: failurealert.php?workflowid=$workflowid");
 		}
 		mysql_query("UPDATE workflows SET finished_at=NOW() WHERE id=${workflowid} AND finished_at IS NULL");
 		break;
@@ -100,8 +119,6 @@ switch(checkStatus("CONFIG")) {
     	$("#stylized").height($(window).height() - 5);
     	$("#output").height($(window).height() - 1);
     	$("#output").width($(window).width() - $('#stylized').width() - 5);
-
-    	$('#log').scrollTop($('#log')[0].scrollHeight);
 	}
 
 	function prevStep() {
@@ -154,12 +171,6 @@ switch(checkStatus("CONFIG")) {
 			<th>Status</th>
 		</tr>
 		<tr>
-			<th>setup</th>
-			<td><?=startTime("SETUP");?></td>
-			<td><?=endTime("SETUP");?></td>
-			<td><?=status("SETUP");?></td>
-		</tr>
-		<tr>
 			<th>fia2ed</th>
 			<td><?=startTime("FIA2ED");?></td>
 			<td><?=endTime("FIA2ED");?></td>
@@ -202,17 +213,6 @@ switch(checkStatus("CONFIG")) {
 			<td><?=status("FINISHED");?></td>
 		</tr>
 	</table>
-	<hr/>
- 	<h2>Output from PEcAn</h2>
- 	<textarea id="log" cols="80" rows="10" readonly="readonly">
-<?php
-  	foreach(scandir($folder . DIRECTORY_SEPARATOR) as $file) {
-  		if (preg_match("/^workflow_stage.*\.Rout$/", $file) === 1) {
-  			parselog($folder . DIRECTORY_SEPARATOR . $file);
-  		}
-	}
-?>
- 	</textarea>
 	</div>
 </div>
 </body>
@@ -276,33 +276,5 @@ function status($token) {
     }
   }
   return "Waiting";
-}
-
-function parselog($filename)
-{
-	// Open the file
-	$f = fopen($filename, "rb");
-	if ($f === false) {
-		return "file does not exist.";
-	}
-
-	// read the file line by line
-	$check = false;
-	while (($buffer = fgets($f, 4096)) !== false) {
-		if ($check && ($buffer[0]==" ")) {
-			print($buffer);
-		} else if (stristr($buffer, "error") !== false) {
-			print($buffer);
-			$check = true;
-		} else if (stristr($buffer, "warn") !== false) {
-			print($buffer);
-			$check = true;
-		} else {
-			$check = false;
-		}
-	}
-
-	// Close file and return
-	fclose($f);
 }
 ?>

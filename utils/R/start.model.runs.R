@@ -20,7 +20,7 @@
 ##' }
 ##' @author Shawn Serbin
 ##'
-start.model.runs <- function(model=settings$model$name, write.to.db = TRUE){
+start.model.runs <- function(model, write = TRUE){
 
   fcn.name <- paste("start.runs.", model, sep="")
   if(exists(fcn.name)){
@@ -29,19 +29,8 @@ start.model.runs <- function(model=settings$model$name, write.to.db = TRUE){
     print(paste(" Starting model runs", model))
     print("-------------------------------------------------------------------")
     print(" ")
-    if(!write.to.db){
-      warning("Run provenance not being logged by database")
-      con <- NULL
-    }
-    if(write.to.db){
-      ## write to the runs table
-      con <- try(query.base.con(settings), silent=TRUE)
-      if(is.character(con)) {
-        con <- NULL
-      }
-    }
 
-    # TODO RK : create ssh connection to remote host and keep it open
+    # TODO RK : create ssh/mysql connections to remote host and keep it open
 
     # copy all run/out dirs to remote host
     if (settings$run$host$name != "localhost") {
@@ -51,10 +40,23 @@ start.model.runs <- function(model=settings$model$name, write.to.db = TRUE){
 
     # loop through runs and either call start run, or launch job on remote machine
     jobids <- list()
-    for (run in readLines(con=file.path(settings$rundir, "runs.txt"))) {
+    
+    ## setup progressbar
+    nruns <- length(readLines(con = file.path(settings$rundir, "runs.txt")))
+    pb <- txtProgressBar(min = 0, max = nruns, style = 3)
+    pbi <- 0
+
+    if (write) {
+      dbcon <- db.open(settings$database)
+    } else {
+      dbcon <- NULL
+    }
+    for (run in readLines(con = file.path(settings$rundir, "runs.txt"))) {
+      pbi <- pbi + 1
+      setTxtProgressBar(pb, pbi)
       # write start time to database
-      if (!is.null(con)) {
-        query.base(paste("UPDATE runs SET started_at =  NOW() WHERE id = ", run), con)
+      if (!is.null(dbcon)) {
+        db.query(paste("UPDATE runs SET started_at =  NOW() WHERE id = ", run), con=dbcon)
       }
 
       # start the actual model run
@@ -62,19 +64,20 @@ start.model.runs <- function(model=settings$model$name, write.to.db = TRUE){
         do.call(fcn.name, args=list(run))
 
         # write finished time to database
-        if (!is.null(con)) {
-          query.base(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", run), con)
+        if (!is.null(dbcon)) {
+          db.query(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", run), con=dbcon)
         }
       } else {
         qsub <- gsub("@NAME@", paste("PEcAn-", run, sep=""), settings$run$host$qsub)
         qsub <- gsub("@STDOUT@", file.path(settings$run$host$outdir, run, "stdout.log"), qsub)
         qsub <- gsub("@STDERR@", file.path(settings$run$host$outdir, run, "stderr.log"), qsub)
         out <- system2("ssh", c(settings$run$host$name, qsub, file.path(settings$run$host$rundir, run, "job.sh")), stdout=TRUE)
-        log.info("Job submitted :", out)
+        logger.info("Job submitted :", out)
         m <- regexec(settings$run$host$qsub.jobid, out)
         jobids[run] <- regmatches(out, m)[[1]][2]
       }
     }
+    close(pb)
 
     # check to see if all remote jobs are done
     if (settings$run$host$name != "localhost") {
@@ -84,23 +87,23 @@ start.model.runs <- function(model=settings$model$name, write.to.db = TRUE){
           check <- gsub("@JOBID@", jobids[run], settings$run$host$qstat)
           out <- system2("ssh", c(settings$run$host$name, check), stdout=TRUE)
           if ((length(out) > 0) && (out == "DONE")) {
-            log.debug("Job", jobids[run], "for run", run, "finished")
+            logger.debug("Job", jobids[run], "for run", run, "finished")
             jobids[run] <- NULL
             # write finished time to database 
-            if (!is.null(con)) {
-              query.base(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", run), con)
+            if (!is.null(dbcon)) {
+              db.query(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", run), con=dbcon)
             }
           }
         }
       }
     }
 
-    # TODO RK : close connection to remote site
-
-    ## job is finished
-    if (!is.null(con)) {
-      query.close(con)
+    # close database connection
+    if (!is.null(dbcon)) {
+      db.close(dbcon)
     }
+
+    # TODO RK : close ssh/mysql connections to remote site
 
   } else {
     warning(paste(fcn.name, "does not exist"))

@@ -2,7 +2,7 @@
 \alias{get.model.output.ED2}
 \title{Retrieve ED2 HDF model output from local or remote server}
 \usage{
-  get.model.output.ED2()
+  get.model.output.ED2(settings)
 }
 \description{
   Function to retrieve ED2 HDF model output from local or

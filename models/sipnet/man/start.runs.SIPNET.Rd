@@ -2,10 +2,13 @@
 \alias{start.runs.SIPNET}
 \title{Start SIPNET model runs}
 \usage{
-  start.run.SIPNET(run.id)
+  start.runs.SIPNET(runid)
+}
+\arguments{
+  \item{runid}{the id of the run that needs to be executed}
 }
 \description{
-  Start SIPNET model runs on local or remote server
+  Start SIPNET model runs on local server
 }
 \author{
   Michael Dietze, David LeBauer, Shawn Serbin, Carl

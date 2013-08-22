@@ -16,7 +16,7 @@ plot2AGB <- function(unit.conv=0.02){
   
   ## load data
   outfolder <- settings$outdir
-  load(paste(outfolder,"DBH_summary.Rdata",sep=""))
+  load(file.path(outfolder,"DBH_summary.Rdata"))
   nrep = length(full.dia)
   nt = ncol(full.dia[[1]])
   
@@ -50,7 +50,7 @@ plot2AGB <- function(unit.conv=0.02){
     sAGB[i,] <- apply(AGB[i,,],2,sd,na.rm=TRUE)
   }
 
-  pdf(paste(outfolder,"plot2AGB.pdf",sep="/"))
+  pdf(file.path(outfolder,"plot2AGB.pdf"))
   par(mfrow=c(2,1))
   for(i in 1:mplot){
     up = mNPP[i,]+sNPP[i,]*1.96
@@ -65,6 +65,6 @@ plot2AGB <- function(unit.conv=0.02){
     lines(yrvec,lowA)
   }
   dev.off()
-  save(mNPP,sNPP,mAGB,sAGB,yrvec,file=paste(outfolder,"plot2AGB.Rdata",sep="/"))
+  save(mNPP,sNPP,mAGB,sAGB,yrvec,file=file.path(outfolder,"plot2AGB.Rdata"))
   
 }

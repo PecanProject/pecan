@@ -1,0 +1,55 @@
+<constants>
+  <canopyControl>
+    <Sp>1.1</Sp>
+    <SpD>0</SpD>
+    <nlayers>10</nlayers>
+    <kd>0.37</kd> <!--extinction coef. for diffuse light -->
+    <mResp>"c(0.02, 0.03)"</mResp>
+    <heightFactor>3</heightFactor>
+    <GrowthRespFraction>0.4</GrowthRespFraction><!--beta(20, 30)-->
+  </canopyControl>
+  <photoParms>
+    <vmax>100</vmax>
+    <jmax>180</jmax>
+    <Rd>1.1</Rd>
+    <b0>0.08</b0>
+    <b1>5.0</b1>
+    <Catm>380</Catm>
+    <O2>210</O2>
+  </photoParms>
+  <phenoControl>
+    <Tbase>0</Tbase>
+  </phenoControl>
+  <seneControl>
+    <senLeaf>1000</senLeaf>
+    <senStem>5500</senStem>
+    <senRoot>5500</senRoot>
+    <senRhizome>5500</senRhizome>
+    <Tfrosthigh>5</Tfrosthigh>
+    <Tfrostlow>0</Tfrostlow>
+    <leafdeathrate>5</leafdeathrate>
+  </seneControl>
+  <iPlantControl>
+    <iRhizome>1</iRhizome> <!--median = 1, ucl = 5, lcl = 0.1 -->
+    <iStem>1</iStem> <!--median = 0.5, ucl = 2.5, lcl = 0.05 -->
+    <iLeaf>0</iLeaf>
+    <iRoot>1</iRoot>
+    <ifrRhizome>0.01</ifrRhizome> <!--beta(1,100)-->
+    <ifrStem>0.01</ifrStem> <!--beta(1,100)-->
+  </iPlantControl>
+  <soilControl>
+    <iWatCont>0.32</iWatCont>
+    <FieldC>0.5</FieldC>
+    <WiltP>0.16</WiltP>
+    <soilDepth>1</soilDepth>
+    <soilType>6</soilType>
+    <wsFun>1</wsFun>
+    <scsf>1</scsf> <!--stomatal conductance sensitivity factor-->
+    <transpRes>5e+06</transpRes>
+    <leafPotTh>-800</leafPotTh>
+    <hydrDist>0</hydrDist>
+    <rfl>0.2</rfl>
+    <rsec>0.2</rsec>
+    <rsdf>0.44</rsdf>
+  </soilControl>
+</constants>

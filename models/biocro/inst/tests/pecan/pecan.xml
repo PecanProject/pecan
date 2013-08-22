@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<pecan>
+ <outdir>pecan</outdir>
+ <pfts>
+  <pft>
+   <name>biocro.saof</name>
+   <outdir>pecan/pft/biocro.saof</outdir>
+  </pft>
+ </pfts>
+ <database>
+  <username>bety</username>
+  <password>bety</password>
+  <dbname>bety</dbname>
+  <host>localhost</host>
+  <dbfiles>$HOME/.pecan/dbfiles</dbfiles>
+  <driver>MySQL</driver>
+ </database>
+ <meta.analysis>
+  <iter>3000</iter>
+  <random.effects>FALSE</random.effects>
+ </meta.analysis>
+ <ensemble>
+  <size>1</size>
+  <variable>StemBiom</variable>
+  <start.year>2004</start.year>
+  <end.year>2005</end.year>
+ </ensemble>
+ <sensitivity.analysis></sensitivity.analysis>
+ <model>
+  <name>BIOCRO</name>
+  <id>-1</id>
+ </model>
+ <run>
+  <site>
+   <id>288</id>
+   <name>Sapelo Island</name>
+   <lat>31.40</lat>
+   <lon>-81.28</lon>
+   <met>NULL</met>
+  </site>
+  <start.date>2004-01-01 06:00:00</start.date>
+  <end.date>2005-12-31 05:59:00</end.date>
+  <host>
+   <name>localhost</name>
+   <rundir>pecan/run</rundir>
+   <outdir>pecan/out</outdir>
+  </host>
+ </run>
+ <bety>
+  <write>TRUE</write>
+ </bety>
+ <rundir>pecan/run</rundir>
+ <modeloutdir>pecan/out</modeloutdir>
+ <workflow>
+  <id>236</id>
+ </workflow>
+</pecan>

@@ -1,29 +1,28 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
-#--------------------------------------------------------------------------------------------------#
+## -------------------------------------------------------------------------------
+## Copyright (c) 2012 University of Illinois, NCSA.
+## All rights reserved. This program and the accompanying materials
+## are made available under the terms of the 
+## University of Illinois/NCSA Open Source License
+## which accompanies this distribution, and is available at
+## http://opensource.ncsa.illinois.edu/license.html
+## ---------------------------------------------------------------------
 ##' Modified from Code to convert ED2.1's HDF5 output into the NACP Intercomparison format (ALMA using netCDF)
 ##' 
 ##' @name model2netcdf.ED2
 ##' @title Code to convert ED2's -T- HDF5 output into netCDF format
 ##'
 ##' @param outdir Location of ED model output
+##' @param sitelat Latitude of the site
+##' @param sitelon Longitude of the site
+##' @param start_date Start time of the simulation
+##' @param end_date End time of the simulation
 ##' @export
 ##'
-##' @author Michael Dietze
+##' @author Michael Dietze, Shawn Serbin, Rob Kooper
 ## modified M. Dietze 07/08/12
-model2netcdf.ED2 <- function(outdir) {
-  
-  ## Load library requirements for function
-  require(ncdf)
-  require(hdf5)
-
-  flist <- dir(outdir,"analysis-T-")
+## modified S. Serbin 05/06/13
+model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
+  flist <- dir(outdir,"-T-")
   if (length(flist) == 0) {
     print(paste("*** WARNING: No tower output for :",outdir))
     break
@@ -32,54 +31,102 @@ model2netcdf.ED2 <- function(outdir) {
   ## extract data info from file names?
   yr <- rep(NA,length(flist))
   for(i in 1:length(flist)){
-    ## tmp <- sub(run.id,"",flist[i])
-    ## tmp <- sub("-T-","",tmp)
+    ## tmp <- sub(run.id,"",flist[i])  # Edited by SPS
+    ## tmp <- sub("-T-","",tmp)        # Edited by SPS
     index <- gregexpr("-T-",flist[i])[[1]]
     index <- index[1]
     yr[i] <- as.numeric(substr(flist[i],index+3,index+6))
-    ## yr[i] <- as.numeric(substr(tmp,1,4))
+    ## yr[i] <- as.numeric(substr(tmp,1,4)) # Edited by SPS
   }
-
-  ## set up storage
-  ##block <- 24 # assumes hourly
-  block <- 48 # assumes half-hourly
   
-  add <- function(dat, col, row){
-    
-    ## first clone and fill data
-    if(length(dat) < block) dat <- rep(dat,block)[1:block] 
-    dat[is.null(dat)] <- -999
-    dat[is.na(dat)] <- -999
-    
+  ## set up storage
+  ##block <- 24 # assumes hourly  
+  block <- 48 # assumes half-hourly  # Need to generalize (SPS)
+ 
+  add <- function(dat, col, row, year) {
+    ## data is always given for whole year, except it will start always at 0
+    ## the left over data is filled with 0's
+    if (year == strftime(start_date, "%Y")) {
+      start <- (as.numeric(strftime(start_date, "%j")) - 1) * block
+    } else {
+      start <- 0
+    }
+    if (year == strftime(end_date, "%Y")) {
+      end <- as.numeric(strftime(end_date, "%j")) * block
+    } else {
+      end <- as.numeric(strftime(paste0(year, "-12-31"), "%j")) * block
+    }
+
     dims <- dim(dat)
-    if(block == 1) dims = c(1,dim(dat))
-    
-    ## Option 1 - add data anew
-    if(length(out) < col){
-      bdim <- dims
-      bdim[1] <- 366*block
-      ##    if(length(dat) > 1){
-      ##      out[[col]] <- matrix(NA,366*block,length(dat))
-      ##    } else {
-      ##      out[[col]] <- rep(NA,366*block)
-      ##    }
-      ##array(NA,dim=dims) 
-      out[[col]] <- array(NA,dim=bdim)
-    }
-    ndim <-length(dim(dat))
-    if(ndim == 1){  #block must be 1
-      out[[col]][row] <- dat
-    } else if(ndim == 2){
-      for(i in 1:dims[1]){
-        out[[col]][row+i-1,] <- dat[i,]
-      }
-    } else if (ndim ==3){
-      for(i in 1:dims[1]){
-        for(j in 1:dims[2]){
-          out[[col]][row+i-1,j,] <- dat[i,j,]
+    if (is.null(dims)) {
+      if (length(dat) == 1) {
+        if (length(out) < col) {
+          out[[col]] <- array(dat, dim=(end-start))
+        } else {
+          if (start != 0) {
+            logger.warn("start date is not 0 this year, but data already exists in this col", col, "how is this possible?")
+          }
+          out[[col]] <- abind(out[[col]], array(dat, dim=(end-start)), along=1)
         }
+      } else {
+        logger.warn("expected a single value")
       }
+    } else if (length(dims) == 1) {
+      dat <- dat[1:(end-start)]
+      if (length(out) < col) {
+        out[[col]] <- dat
+      } else {
+        if (start != 0) {
+          logger.warn("start date is not 0 this year, but data already exists in this col", col, "how is this possible?")
+        }
+        out[[col]] <- abind(out[[col]], dat, along=1)
+      }
+    } else if (length(dims) == 2) {
+      dat <- t(dat)
+      dims <- dim(dat)
+      dat <- dat[1:(end-start),]
+      if (length(out) < col) {
+        out[[col]] <- dat
+      } else {
+        if (start != 0) {
+          logger.warn("start date is not 0 this year, but data already exists in this col", col, "how is this possible?")
+        }
+        out[[col]] <- abind(out[[col]], dat, along=1)
+      }
+    } else {
+      logger.debug("-------------------------------------------------------------")
+      logger.debug("col=", col)
+      logger.debug("length=", length(dat))
+      logger.debug("start=", start)
+      logger.debug("end=", end)
+      logger.debug("dims=", dims)
+      logger.warn("Don't know how to handle larger arrays yet.")
     }
+
+    ## finally make sure we use -999 for invalid values
+    out[[col]][is.null(out[[col]])] <- -999
+    out[[col]][is.na(out[[col]])] <- -999
+    
+    return(out)
+  }
+  
+  getHdf5Data <- function(nc, var) {
+    if(var %in% names(nc$var)) {
+      return(ncvar_get(nc, var))
+    } else {
+      logger.warn("Could not find", var, "in ed hdf5 output.")
+      return(-999)
+    }
+  }
+  
+  conversion <- function(col, mult) {
+    ## make sure only to convert those values that are not -999
+    out[[col]][out[[col]] != -999] <- out[[col]][out[[col]] != -999] * mult
+    return(out)
+  }
+  
+  checkTemp <- function(col) {
+    out[[col]][out[[col]] == 0] <- -999
     return(out)
   }
   
@@ -87,6 +134,14 @@ model2netcdf.ED2 <- function(outdir) {
   yrs <- sort(unique(yr))
   for(y in 1:length(yrs)){
     ysel <- which(yr == yrs[y])
+    if (yrs[y] < strftime(start_date, "%Y")) {
+      print(paste0(yrs[y], "<", strftime(start_date, "%Y")))
+      next
+    }
+    if (yrs[y] > strftime(end_date, "%Y")) {
+      print(paste0(yrs[y], ">", strftime(end_date, "%Y")))
+      next
+    }
     n <- length(ysel)
     out <- list()
     ## prevTime <- NULL
@@ -95,256 +150,264 @@ model2netcdf.ED2 <- function(outdir) {
     ## if(haveTime) prevTime <- progressBar()
     row <- 1
     for(i in ysel){
-      dat <- hdf5load(file.path(outdir, flist[i]), load=FALSE)
+      ncT <- nc_open(file.path(outdir, flist[i]))
+      if (file.exists(file.path(outdir, sub('-T-', '-Y-', flist[i])))) {
+        ncY <- nc_open(file.path(outdir, sub('-T-', '-Y-', flist[i])))
+        slzdata <- getHdf5Data(ncY, 'SLZ')
+        nc_close(ncY)
+      } else {
+        logger.warn("Could not find SLZ in Y file, making a crude assumpution.")
+        slzdata <- array(c(-2.00, -1.50, -1.00, -0.80, -0.60, -0.40, -0.20, -0.10, -0.05))
+      }
       
-      ## out <- add(dat$TOTAL_AGB,1,row) ## AbvGrndWood
-      out <- add(dat$AVG_BDEAD*0.7,1,row) ## AbvGrndWood
-      out <- add(dat$AVG_PLANT_RESP,2,row) ## AutoResp
-      out <- add(-999,3,row) ## CarbPools
-      out <- add(dat$AVG_CO2CAN,4,row) ## CO2CAS
-      out <- add(-999,5,row) ## CropYield
-      out <- add(dat$AVG_GPP,6,row) ## GPP
-      out <- add(dat$AVG_HTROPH_RESP,7,row) ## HeteroResp
-      out <- add(dat$AVG_GPP - dat$AVG_PLANT_RESP - dat$AVG_HTROPH_RESP,8,row) ## NEE
-      out <- add(dat$AVG_GPP - dat$AVG_PLANT_RESP,9,row) ## NPP
-      out <- add(dat$AVG_HTROPH_RESP + dat$AVG_PLANT_RESP,10,row) ## TotalResp
-      ## out <- add(dat$AVG_BDEAD + dat$AVG_BALIVE,11,row) ## TotLivBiom
-      out <- add(-999,11,row) ## TotLivBiom
-      out <- add(dat$AVG_FSC+dat$AVG_STSC+dat$AVG_SSC,12,row) ## TotSoilCarb
+      ## store for later use, will only use last data
+      dz <- diff(slzdata)
+      dz <- dz[dz != 0.0]
+      
+      ## out <- add(getHdf5Data(ncT, 'TOTAL_AGB,1,row, yrs[y]) ## AbvGrndWood
+      out <- add(getHdf5Data(ncT, 'AVG_BDEAD')*0.7,1,row, yrs[y]) ## AbvGrndWood
+      out <- add(getHdf5Data(ncT, 'AVG_PLANT_RESP'),2,row, yrs[y]) ## AutoResp
+      out <- add(-999,3,row, yrs[y]) ## CarbPools
+      out <- add(getHdf5Data(ncT, 'AVG_CO2CAN'),4,row, yrs[y]) ## CO2CAS
+      out <- add(-999,5,row, yrs[y]) ## CropYield
+      out <- add(getHdf5Data(ncT, 'AVG_GPP'),6,row, yrs[y]) ## GPP
+      out <- add(getHdf5Data(ncT, 'AVG_HTROPH_RESP'),7,row, yrs[y]) ## HeteroResp
+      out <- add(getHdf5Data(ncT, 'AVG_GPP') - getHdf5Data(ncT, 'AVG_PLANT_RESP') - getHdf5Data(ncT, 'AVG_HTROPH_RESP'),8,row, yrs[y]) ## NEE
+      out <- add(getHdf5Data(ncT, 'AVG_GPP') - getHdf5Data(ncT, 'AVG_PLANT_RESP'),9,row, yrs[y]) ## NPP
+      out <- add(getHdf5Data(ncT, 'AVG_HTROPH_RESP') + getHdf5Data(ncT, 'AVG_PLANT_RESP'),10,row, yrs[y]) ## TotalResp
+      ## out <- add(getHdf5Data(ncT, 'AVG_BDEAD + getHdf5Data(ncT, 'AVG_BALIVE,11,row, yrs[y]) ## TotLivBiom
+      out <- add(-999,11,row, yrs[y]) ## TotLivBiom
+      out <- add(getHdf5Data(ncT, 'AVG_FSC')+getHdf5Data(ncT, 'AVG_STSC')+getHdf5Data(ncT, 'AVG_SSC'),12,row, yrs[y]) ## TotSoilCarb
+      
       ## depth from surface to frozen layer
+      tdepth <- 0
       fdepth <- 0
-      if(length(dim(dat$AVG_SOIL_TEMP)) == 3){
-        fdepth <- array(0,dim=dim(dat$AVG_SOIL_TEMP)[1:2])
-        for(t in 1:dim(dat$AVG_SOIL_TEMP)[1]){ #time
-          for(p in 1:dim(dat$AVG_SOIL_TEMP)[2]){ #polygon
-            for(i in dim(dat$AVG_SOIL_TEMP)[3]:2){ #depth
-              if(dat$AVG_SOIL_TEMP[t,p,i] < 273.15 &
-                 dat$AVG_SOIL_TEMP[t, p, i-1] > 273.13){
+      soiltemp <- getHdf5Data(ncT, 'AVG_SOIL_TEMP')
+      if(length(dim(soiltemp)) == 3){
+        fdepth <- array(0,dim=dim(soiltemp)[1:2])
+        tdepth <- array(0,dim=dim(soiltemp)[1:2])
+        for(t in 1:dim(soiltemp)[1]){ #time
+          for(p in 1:dim(soiltemp)[2]){ #polygon
+            for(i in dim(soiltemp)[3]:2){ #depth
+              if(fdepth[t,p] == 0 & soiltemp[t,p,i] < 273.15 & soiltemp[t, p, i-1] > 273.13){
                 fdepth[t,p] <- i
-                break
+              }
+              if(tdepth[t,p] == 0 & soiltemp[t,p,i] > 273.15 & soiltemp[t, p, i-1] < 273.13){
+                tdepth[t,p] <- i
               }
             }
+            SLZ <- c(slzdata[t,],0.0)
+            z1 <- (SLZ[fdepth[t,p]+1]+SLZ[fdepth[t,p]])/2
+            z2 <- (SLZ[fdepth[t,p]]+SLZ[fdepth[t,p]-1])/2
             if(fdepth[t,p] > 0) {
-              SLZ <- c(dat$SLZ[t,],0.0)
-              z1 <- (SLZ[fdepth[t,p]+1]+SLZ[fdepth[t,p]])/2
-              z2 <- (SLZ[fdepth[t,p]]+SLZ[fdepth[t,p]-1])/2
-              fdepth[t,p] <- z1 + (z2-z1) *
-                (273.15 - dat$AVG_SOIL_TEMP[t, p, fdepth[t, p]]) /
-                  (dat$AVG_SOIL_TEMP[t, p, fdepth[t, p] - 1] -
-                   dat$AVG_SOIL_TEMP[t, p, fdepth[t, p]])
+              fdepth[t,p] <- z1 + (z2-z1) * (273.15 - soiltemp[t, p, fdepth[t, p]]) /
+                (soiltemp[t, p, fdepth[t, p] - 1] - soiltemp[t, p, fdepth[t, p]])
+            }
+            if(tdepth[t,p] > 0) {
+              SLZ <- c(slzdata[t,],0.0)
+              z1 <- (SLZ[tdepth[t,p]+1]+SLZ[tdepth[t,p]])/2
+              z2 <- (SLZ[tdepth[t,p]]+SLZ[tdepth[t,p]-1])/2
+              tdepth[t,p] <- z1 + (z2-z1) * (273.15 - soiltemp[t, p, tdepth[t, p]]) /
+                (soiltemp[t, p, tdepth[t, p] - 1] - soiltemp[t, p, tdepth[t, p]])
             }
           }
         }
       } else {
-        fdepth <- rep(0, nrow(dat$AVG_SOIL_TEMP))
-        for(p in 1:dim(dat$AVG_SOIL_TEMP)[1]){ #polygon
-          for(i in dim(dat$AVG_SOIL_TEMP)[2]:2){ #depth
-            if(dat$AVG_SOIL_TEMP[p,i] < 273.15 & dat$AVG_SOIL_TEMP[p,i-1]>273.13){
-              fdepth[p] <- i
-              break
+                                        # no polygons, just time vs depth?
+        fdepth <- array(0, ncol(soiltemp))
+        tdepth <- array(0, ncol(soiltemp))
+        for(t in 1:ncol(soiltemp)){ #time
+          for(d in 2:nrow(soiltemp)){ #depth
+            if(fdepth[t] == 0 & soiltemp[d,t] < 273.15 & soiltemp[d-1,t] > 273.13){
+              fdepth[t] <- d
+            }
+            if(tdepth[t] == 0 & soiltemp[d,t] > 273.15 & soiltemp[d-1,t] < 273.13){
+              tdepth[t] <- d
             }
           }
-          if(fdepth[p] > 0) {
-            SLZ <- c(dat$SLZ,0.0)
-            z1 <- (SLZ[fdepth[p]+1]+SLZ[fdepth[p]])/2
-            z2 <- (SLZ[fdepth[p]]+SLZ[fdepth[p]-1])/2
-            fdepth[p] <- z1 + (z2-z1) *
-              (273.15 - dat$AVG_SOIL_TEMP[p, fdepth[p]]) /
-                (dat$AVG_SOIL_TEMP[p, fdepth[p] - 1] -
-                 dat$AVG_SOIL_TEMP[p, fdepth[p]])
+          if(fdepth[t] > 0) {
+            SLZ <- c(slzdata,0.0)
+            z1 <- (SLZ[fdepth[t]+1]+SLZ[fdepth[t]])/2
+            z2 <- (SLZ[fdepth[t]]+SLZ[fdepth[t]-1])/2
+            fdepth[t] <- z1 + (z2-z1) * (273.15 - soiltemp[fdepth[t], t]) / (soiltemp[fdepth[t] - 1, t] - soiltemp[fdepth[t], t])
+          }
+          if(tdepth[t] > 0) {
+            SLZ <- c(slzdata,0.0)
+            z1 <- (SLZ[tdepth[t]+1]+SLZ[tdepth[t]])/2
+            z2 <- (SLZ[tdepth[t]]+SLZ[tdepth[t]-1])/2
+            tdepth[t] <- z1 + (z2-z1) * (273.15 - soiltemp[tdepth[t], t]) / (soiltemp[tdepth[t] - 1, t] - soiltemp[tdepth[t], t])
           }
         }
       }
-
-      out <- add(fdepth,13,row) ## Fdepth
-      out <- add(dat$AVG_SNOWDEPTH,14,row) ## SnowDepth
-      out <- add(1-dat$AVG_SNOWFRACLIQ,15,row) ## SnowFrac
-      fdepth <- 0
-      if(length(dim(dat$AVG_SOIL_TEMP)) == 3){
-        fdepth <- array(0,dim=dim(dat$AVG_SOIL_TEMP)[1:2])
-        for(t in 1:dim(dat$AVG_SOIL_TEMP)[1]){ #time
-          for(p in 1:dim(dat$AVG_SOIL_TEMP)[2]){ #polygon
-            for(i in dim(dat$AVG_SOIL_TEMP)[3]:2){ #depth
-              if(dat$AVG_SOIL_TEMP[t,p,i] > 273.15 &
-                 dat$AVG_SOIL_TEMP[t, p, i-1] < 273.13){
-                fdepth[t,p] <- i
-                break
-              }
-            }
-            if(fdepth[t,p] > 0) {
-              SLZ <- c(dat$SLZ,0.0)
-              z1 <- (SLZ[fdepth[t,p]+1]+SLZ[fdepth[t,p]])/2
-              z2 <- (SLZ[fdepth[t,p]]+SLZ[fdepth[t,p]-1])/2
-              fdepth[t,p] <- z1 + (z2-z1) *
-                (273.15 - dat$AVG_SOIL_TEMP[t, p, fdepth[t, p]]) /
-                  (dat$AVG_SOIL_TEMP[t, p, fdepth[t, p] - 1] -
-                   dat$AVG_SOIL_TEMP[t, p, fdepth[t, p]])
-            }
-          }
-        }
-      } else {
-        for(p in 1:dim(dat$AVG_SOIL_TEMP)[1]){ #polygon
-          for(i in dim(dat$AVG_SOIL_TEMP)[2]:2){ #depth
-            if(dat$AVG_SOIL_TEMP[p, i] > 273.15 &
-               dat$AVG_SOIL_TEMP[p, i-1] < 273.13){
-              fdepth[p] <- i
-              break
-            }
-          }
-          if(fdepth[p] > 0) {
-            SLZ <- c(dat$SLZ,0.0)
-            z1 <- (SLZ[fdepth[p]+1]+SLZ[fdepth[p]])/2
-            z2 <- (SLZ[fdepth[p]]+SLZ[fdepth[p]-1])/2
-            fdepth[p] <- z1 + (z2-z1) * (273.15 - dat$AVG_SOIL_TEMP[p, fdepth]) /
-              (dat$AVG_SOIL_TEMP[p, fdepth - 1] - dat$AVG_SOIL_TEMP[p, fdepth])
-          }
-        }
-      }
-      out <- add(fdepth,16,row) ## Tdepth
-      out <- add(dat$AVG_ATM_CO2,17,row) ## CO2air
-      out <- add(dat$AVG_RLONG,18,row) ## Lwdown
-      out <- add(dat$AVG_PRSS,19,row) ## Psurf
-      out <- add(dat$AVG_ATM_SHV,20,row) ## Qair
-      out <- add(dat$AVG_PCPG,21,row) ## Rainf
-      ##out <- add(dat$AVG_NIR_BEAM +
-      ##           dat$AVG_NIR_DIFFUSE+
-      ##           dat$AVG_PAR_BEAM+
-      ##           dat$AVG_PAR_DIFFUSE,22,row) ## Swdown
-      out <- add(dat$AVG_PAR_BEAM+
-                 dat$AVG_PAR_DIFFUSE,22,row) ## Swdown
-      out <- add(dat$AVG_ATM_TMP,23,row) ## Tair
-      out <- add(dat$AVG_VELS,24,row) ## Wind
-      ##out <- add(dat$AVG_RLONG-dat$AVG_RLONGUP,25,row) ## Lwnet
-      out <- add(-999,25,row) ## Lwnet
-      ##out <- add(dat$AVG_SENSIBLE_GC + dat$AVG_VAPOR_GC*2272000,26,row) ## Qg
-      out <- add(-999,26,row) ## Qg
-      ##out <- add(dat$AVG_SENSIBLE_TOT,27,row) ## Qh
-      out <- add(dat$AVG_SENSIBLE_AC,27,row) ## Qh
-      out <- add(dat$AVG_EVAP,28,row) ## Qle
-      out <- add(-999,29,row) ## Swnet
-      out <- add(-999,30,row) ## RootMoist
-      out <- add(dat$AVG_TRANSP,31,row) ## Tveg
-      out <- add(dat$ZBAR,32,row) ## WaterTableD
-      out <- add(-999,33,row) ## fPAR
-      ##lai <- matrix(apply(dat$LAI_PFT,1,sum,na.rm=TRUE),nrow=block)
-      ## out <- add(lai,34,row) ## LAI******************
-      out <- add(-999,34,row) ## LAI
-      ##z <- dat$SLZ
+      
+      out <- add(fdepth,13,row, yrs[y]) ## Fdepth
+      out <- add(getHdf5Data(ncT, 'AVG_SNOWDEPTH'),14,row, yrs[y]) ## SnowDepth
+      out <- add(1-getHdf5Data(ncT, 'AVG_SNOWFRACLIQ'),15,row, yrs[y]) ## SnowFrac
+      out <- add(tdepth,16,row, yrs[y]) ## Tdepth
+      out <- add(getHdf5Data(ncT, 'AVG_ATM_CO2'),17,row, yrs[y]) ## CO2air
+      out <- add(getHdf5Data(ncT, 'AVG_RLONG'),18,row, yrs[y]) ## Lwdown
+      out <- add(getHdf5Data(ncT, 'AVG_PRSS'),19,row, yrs[y]) ## Psurf
+      out <- add(getHdf5Data(ncT, 'AVG_ATM_SHV'),20,row, yrs[y]) ## Qair
+      out <- add(getHdf5Data(ncT, 'AVG_PCPG'),21,row, yrs[y]) ## Rainf
+      ##out <- add(getHdf5Data(ncT, 'AVG_NIR_BEAM') +
+      ##           getHdf5Data(ncT, 'AVG_NIR_DIFFUSE')+
+      ##           getHdf5Data(ncT, 'AVG_PAR_BEAM')+
+      ##           getHdf5Data(ncT, 'AVG_PAR_DIFFUSE'),22,row, yrs[y]) ## Swdown
+      out <- add(getHdf5Data(ncT, 'AVG_PAR_BEAM')+
+                 getHdf5Data(ncT, 'AVG_PAR_DIFFUSE'),22,row, yrs[y]) ## Swdown
+      out <- add(getHdf5Data(ncT, 'AVG_ATM_TMP'),23,row, yrs[y]) ## Tair
+      out <- add(getHdf5Data(ncT, 'AVG_VELS'),24,row, yrs[y]) ## Wind
+      ##out <- add(getHdf5Data(ncT, 'AVG_RLONG')-getHdf5Data(ncT, 'AVG_RLONGUP'),25,row, yrs[y]) ## Lwnet
+      out <- add(-999,25,row, yrs[y]) ## Lwnet
+      ##out <- add(getHdf5Data(ncT, 'AVG_SENSIBLE_GC') + getHdf5Data(ncT, 'AVG_VAPOR_GC')*2272000,26,row, yrs[y]) ## Qg
+      out <- add(-999,26,row, yrs[y]) ## Qg
+      ##out <- add(getHdf5Data(ncT, 'AVG_SENSIBLE_TOT'),27,row, yrs[y]) ## Qh
+      out <- add(getHdf5Data(ncT, 'AVG_SENSIBLE_AC'),27,row, yrs[y]) ## Qh
+      out <- add(getHdf5Data(ncT, 'AVG_EVAP'),28,row, yrs[y]) ## Qle
+      out <- add(-999,29,row, yrs[y]) ## Swnet
+      out <- add(-999,30,row, yrs[y]) ## RootMoist
+      out <- add(getHdf5Data(ncT, 'AVG_TRANSP'),31,row, yrs[y]) ## Tveg
+      out <- add(getHdf5Data(ncT, 'ZBAR'),32,row, yrs[y]) ## WaterTableD
+      out <- add(-999,33,row, yrs[y]) ## fPAR
+      ##lai <- matrix(apply(getHdf5Data(ncT, 'LAI_PFT'),1,sum,na.rm=TRUE),nrow=block)
+      ## out <- add(lai,34,row, yrs[y]) ## LAI******************
+      out <- add(getHdf5Data(ncT, 'LAI'),34,row, yrs[y]) ## LAI
+      ##z <- getHdf5Data(ncT, 'SLZ')
       ##if(z[length(z)] < 0.0) z <- c(z,0.0)
       ##dz <- diff(z)
       ##dz <- dz[dz != 0.0]
-      ##fliq <- sum(dat$AVG_SOIL_FRACLIQ*dz)/-min(z)
-      fliq <- NA#dat$AVG_SOIL_FRACLIQ
-      out <- add(1-fliq,35,row) ## SMFrozFrac
-      out <- add(fliq,36,row) ## SMLiqFrac
-      out <- add(dat$AVG_SOIL_WATER,37,row) ## SoilWater  **********
-      ##out <- add(sum(dat$AVG_SOIL_TEMP*dz)/-min(z),38) ## SoilTemp
-      out <- add(dat$AVG_SOIL_TEMP,38,row) ## SoilTemp
-      out <- add(dat$AVG_SOIL_TEMP*NA,39,row) ## SoilWet
-      out <- add(dat$AVG_ALBEDO,40,row) ## Albedo
-      out <- add(dat$AVG_SNOWTEMP,41,row) ## SnowT
-      out <- add(dat$AVG_SNOWMASS,42,row) ## SWE
-      out <- add(dat$AVG_VEG_TEMP,43,row) ## VegT
-      out <- add(dat$AVG_EVAP+dat$AVG_TRANSP,44,row) ## Evap
-      out <- add(dat$AVG_RUNOFF,45,row) ## Qs
-      out <- add(dat$BASEFLOW,46,row) ## Qsb
+      ##fliq <- sum(getHdf5Data(ncT, 'AVG_SOIL_FRACLIQ')*dz)/-min(z)
+      fliq <- NA#getHdf5Data(ncT, 'AVG_SOIL_FRACLIQ')
+      out <- add(1-fliq,35,row, yrs[y]) ## SMFrozFrac
+      out <- add(fliq,36,row, yrs[y]) ## SMLiqFrac
+      ## This needs to be soil wetness, i.e. multilple levels deep
+      out <- add(getHdf5Data(ncT, 'AVG_SOIL_WATER'),37,row, yrs[y]) ## SoilWater  **********
+      ##out <- add(sum(soiltemp*dz)/-min(z),38) ## SoilTemp
+      out <- add(soiltemp,38,row, yrs[y]) ## SoilTemp
+      out <- add(-999,39,row, yrs[y]) ## SoilWet
+      out <- add(getHdf5Data(ncT, 'AVG_ALBEDO'),40,row, yrs[y]) ## Albedo
+      out <- add(getHdf5Data(ncT, 'AVG_SNOWTEMP'),41,row, yrs[y]) ## SnowT
+      out <- add(getHdf5Data(ncT, 'AVG_SNOWMASS'),42,row, yrs[y]) ## SWE
+      out <- add(getHdf5Data(ncT, 'AVG_VEG_TEMP'),43,row, yrs[y]) ## VegT
+      out <- add(getHdf5Data(ncT, 'AVG_EVAP')+getHdf5Data(ncT, 'AVG_TRANSP'),44,row, yrs[y]) ## Evap
+      out <- add(getHdf5Data(ncT, 'AVG_RUNOFF'),45,row, yrs[y]) ## Qs
+      out <- add(getHdf5Data(ncT, 'BASEFLOW'),46,row, yrs[y]) ## Qsb
       
+      nc_close(ncT)
       ## prevTime <- progressBar(i/n,prevTime)
       row <- row + block
-    }  ## end file loop
-
-    ## process for output (unit conversions)
-    z <- c(-9.00, -6.00, -4.00, -2.00, -1.40, -0.80, -0.54, -0.41, -0.32, -0.19, -0.13, -0.08) #dat$SLZ
-    if(z[length(z)] < 0.0) z <- c(z,0.0)
-    dz <- diff(z)
-    dz <- dz[dz != 0.0]
-  
-    out[[1]]  <- out[[1]]*0.1      ## tC/ha     -> kg/m2
-    out[[6]]  <- out[[6]]*1.2e-8   ## umol/m2/s -> kg/m2/s
-    out[[7]]  <- out[[7]]*1.2e-8   ## umol/m2/s -> kg/m2/s
-    out[[8]]  <- out[[8]]*1.2e-8   ## umol/m2/s -> kg/m2/s
-    out[[9]]  <- out[[9]]*1.2e-8   ## umol/m2/s -> kg/m2/s
-    out[[10]] <- out[[10]]*1.2e-8  ## umol/m2/s -> kg/m2/s
+    }  ## end file loop 
+    
+                                        #out[[10]] <- out[[10]]*1.2e-8  
     ## TODO see bug #1174
     ## for(t in 1:dim(out[[37]])[1]){
     ##  for(p in 1:dim(out[[37]])[2]){
     ##    out[[37]][t,p,] <- out[[37]][t,p,]*1000*dz ## m/m -> kg/m2
     ##  }
     ##}
-  
-    ## declare variables
-    ## need to SHIFT for partial years **********************
-    t <- dim.def.ncdf("time","seconds",(1:dim(out[[1]])[1])*3600.0*24.0/block)
-    zg <- dim.def.ncdf("SoilLayerMidpoint","meters",z[1:length(dz)]+dz/2)
     
+    ## declare variables
+
+    ## figure out what start day is, if not same year as start_date then it is 1
+    if (yrs[y] == strftime(start_date, "%Y")) {
+      start <- (as.numeric(strftime(start_date, "%j")) - 1) * block
+    } else {
+      start <- 0
+    }
+    if (yrs[y] == strftime(end_date, "%Y")) {
+      end <- (as.numeric(strftime(end_date, "%j"))) * block - 1
+    } else {
+      end <- (as.numeric(strftime(paste0(yrs[y], "-12-31"), "%j"))) * block - 1
+    }
+
+    t <- ncdim_def(name = "time",
+                   units = paste0("days since ", yrs[y], "-01-01 00:00:00"),
+                   vals = start:end / block,
+                   calendar = "standard", unlim = TRUE)
+    lat <- ncdim_def("lat", "degrees_east",
+                     vals =  as.numeric(sitelat),
+                     longname = "station_latitude") 
+    lon <- ncdim_def("lon", "degrees_north",
+                     vals = as.numeric(sitelon),
+                     longname = "station_longitude")
+
+    zg <- ncdim_def("SoilLayerMidpoint", "meters", c(slzdata[1:length(dz)] + dz / 2, 0))
+    
+    ## Conversion factor for umol C -> kg C
+    Mc <- 12.017 #molar mass of C, g/mol
+    umol2kg_C <- Mc * ud.convert(1, "umol", "mol") * ud.convert(1, "g", "kg")
+
     var <- list()
-    var[[1]]  <- var.def.ncdf("AbvGrndWood","kg/m2",t,-999)
-    var[[2]]  <- var.def.ncdf("AutoResp","kg/m2/s2",t,-999)
-    var[[3]]  <- var.def.ncdf("CarbPools","kg/m2",t,-999)
-    var[[4]]  <- var.def.ncdf("CO2CAS","ppmv",t,-999)
-    var[[5]]  <- var.def.ncdf("CropYield","kg/m2",t,-999)
-    var[[6]]  <- var.def.ncdf("GPP","kg/m2/s2",t,-999)
-    var[[7]]  <- var.def.ncdf("HeteroResp","kg/m2/s2",t,-999)
-    var[[8]]  <- var.def.ncdf("NEE","kg/m2/s2",t,-999)
-    var[[9]]  <- var.def.ncdf("NPP","kg/m2/s2",t,-999)
-    var[[10]] <- var.def.ncdf("TotalResp","kg/m2/s2",t,-999)
-    var[[11]] <- var.def.ncdf("TotLivBiom","kg/m2/s2",t,-999)
-    var[[12]] <- var.def.ncdf("TotSoilCarb","kg/m2",t,-999)
-    var[[13]] <- var.def.ncdf("Fdepth","m",t,-999)
-    var[[14]] <- var.def.ncdf("SnowDepth","m",t,-999)
-    var[[15]] <- var.def.ncdf("SnowFrac","-",t,-999)
-    var[[16]] <- var.def.ncdf("Tdepth","m",t,-999)
-    var[[17]] <- var.def.ncdf("CO2air","ppmv",t,-999)
-    var[[18]] <- var.def.ncdf("Lwdown","W/m2",t,-999)
-    var[[19]] <- var.def.ncdf("Psurf","Pa",t,-999)
-    var[[20]] <- var.def.ncdf("Qair","kg/kg",t,-999)
-    var[[21]] <- var.def.ncdf("Rainf","kg/m2s",t,-999)
-    var[[22]] <- var.def.ncdf("Swdown","W/m2",t,-999)
-    var[[23]] <- var.def.ncdf("Tair","W/m2",t,-999)
-    var[[24]] <- var.def.ncdf("Wind","W/m2",t,-999)
-    var[[25]] <- var.def.ncdf("Lwnet","W/m2",t,-999)
-    var[[26]] <- var.def.ncdf("Qg","W/m2",t,-999)
-    var[[27]] <- var.def.ncdf("Qh","W/m2",t,-999)
-    var[[28]] <- var.def.ncdf("Qle","W/m2",t,-999)
-    var[[29]] <- var.def.ncdf("Swnet","W/m2",t,-999)
-    var[[30]] <- var.def.ncdf("RootMoist","kg/m2",t,-999)
-    var[[31]] <- var.def.ncdf("Tveg","kg/m2s",t,-999)
-    var[[32]] <- var.def.ncdf("WaterTableD","m",t,-999)
-    var[[33]] <- var.def.ncdf("fPAR","-",t,-999)
-    var[[34]] <- var.def.ncdf("LAI","m2/m2",t,-999)
-    ##var[[35]] <- var.def.ncdf("SMFrozFrac","-",list(t,zg),-999)
-    ##var[[36]] <- var.def.ncdf("SMLiqFrac","-",list(t,zg),-999)
-    var[[35]] <- var.def.ncdf("SMFrozFrac","-",list(t),-999)
-    var[[36]] <- var.def.ncdf("SMLiqFrac","-",list(t),-999)
-    var[[37]] <- var.def.ncdf("SoilMoist","kg/m2",list(t,zg),-999)
-    var[[38]] <- var.def.ncdf("SoilTemp","K",list(t,zg),-999)
-    var[[39]] <- var.def.ncdf("SoilWet","-",list(t,zg),-999)
-    var[[40]] <- var.def.ncdf("Albedo","-",t,-999)
-    var[[41]] <- var.def.ncdf("SnowT","K",t,-999)
-    var[[42]] <- var.def.ncdf("SWE","kg/m2",t,-999)
-    var[[43]] <- var.def.ncdf("VegT","K",t,-999)
-    var[[44]] <- var.def.ncdf("Evap","kg/m2s",t,-999)
-    var[[45]] <- var.def.ncdf("Qs","kg/m2s",t,-999)
-    var[[46]] <- var.def.ncdf("Qsb","kg/m2s",t,-999)
+    out <- conversion( 1, ud.convert(1, "t ha-1", "kg m-2"))     ## tC/ha     -> kg/m2
+    var[[1]]  <- mstmipvar("AbvGrndWood", lat, lon, t, zg)
+    out <- conversion( 2, umol2kg_C)  ## umol/m2 s-1 -> kg/m2 s-1
+    var[[2]]  <- mstmipvar("AutoResp", lat, lon, t, zg)
+    var[[3]]  <- mstmipvar("CarbPools", lat, lon, t, zg)
+    var[[4]]  <- mstmipvar("CO2CAS", lat, lon, t, zg)
+    var[[5]]  <- mstmipvar("CropYield", lat, lon, t, zg)
+    out <- conversion( 6, umol2kg_C)  ## umol/m2 s-1 -> kg m-2 s-1
+    var[[6]]  <- mstmipvar("GPP", lat, lon, t, zg)
+    out <- conversion( 7, umol2kg_C)  ## umol/m2 s-1 -> kg m-2 s-1
+    var[[7]]  <- mstmipvar("HeteroResp", lat, lon, t, zg)
+    out <- conversion( 8, umol2kg_C)  ## umol/m2 s-1 -> kg m-2 s-1
+    var[[8]]  <- mstmipvar("NEE", lat, lon, t, zg)
+    out <- conversion( 9, umol2kg_C)  ## umol/m2 s-1 -> kg m-2 s-1
+    var[[9]]  <- mstmipvar("NPP", lat, lon, t, zg)
+    out <- conversion(10, umol2kg_C)  ## umol/m2 s-1 -> kg m-2 s-1
+    var[[10]] <- mstmipvar("TotalResp", lat, lon, t, zg)
+    var[[11]] <- mstmipvar("TotLivBiom", lat, lon, t, zg)
+    var[[12]] <- mstmipvar("TotSoilCarb", lat, lon, t, zg)
+    var[[13]] <- mstmipvar("Fdepth", lat, lon, t, zg)
+    var[[14]] <- mstmipvar("SnowDepth", lat, lon, t, zg)
+    var[[15]] <- mstmipvar("SnowFrac", lat, lon, t, zg)
+    var[[16]] <- mstmipvar("Tdepth", lat, lon, t, zg)
+    var[[17]] <- mstmipvar("CO2air", lat, lon, t, zg)
+    var[[18]] <- mstmipvar("Lwdown", lat, lon, t, zg)
+    var[[19]] <- mstmipvar("Psurf", lat, lon, t, zg)
+    var[[20]] <- mstmipvar("Qair", lat, lon, t, zg)
+    var[[21]] <- mstmipvar("Rainf", lat, lon, t, zg)
+    var[[22]] <- mstmipvar("Swdown", lat, lon, t, zg)
+    out <- checkTemp(23)
+    var[[23]] <- mstmipvar("Tair", lat, lon, t, zg)
+    var[[24]] <- mstmipvar("Wind", lat, lon, t, zg)
+    var[[25]] <- mstmipvar("Lwnet", lat, lon, t, zg)
+    var[[26]] <- mstmipvar("Qg", lat, lon, t, zg)
+    var[[27]] <- mstmipvar("Qh", lat, lon, t, zg)
+    var[[28]] <- mstmipvar("Qle", lat, lon, t, zg)
+    var[[29]] <- mstmipvar("Swnet", lat, lon, t, zg)
+    var[[30]] <- mstmipvar("RootMoist", lat, lon, t, zg)
+    var[[31]] <- mstmipvar("Tveg", lat, lon, t, zg)
+    var[[32]] <- mstmipvar("WaterTableD", lat, lon, t, zg)
+    var[[33]] <- mstmipvar("fPAR", lat, lon, t, zg)
+    var[[34]] <- mstmipvar("LAI", lat, lon, t, zg)
+    ##var[[35]] <- mstmipvar("SMFrozFrac", lat, lon, t, zg)
+    ##var[[36]] <- mstmipvar("SMLiqFrac", lat, lon, t, zg)
+    var[[35]] <- mstmipvar("SMFrozFrac", lat, lon, t, zg)
+    var[[36]] <- mstmipvar("SMLiqFrac", lat, lon, t, zg)
+    var[[37]] <- mstmipvar("SoilMoist", lat, lon, t, zg)
+    out <- checkTemp(38)
+    var[[38]] <- mstmipvar("SoilTemp", lat, lon, t, zg)
+    var[[39]] <- mstmipvar("SoilWet", lat, lon, t, zg)
+    var[[40]] <- mstmipvar("Albedo", lat, lon, t, zg)
+    out <- checkTemp(41)
+    var[[41]] <- mstmipvar("SnowT", lat, lon, t, zg)
+    var[[42]] <- mstmipvar("SWE", lat, lon, t, zg)
+    out <- checkTemp(43)
+    var[[43]] <- mstmipvar("VegT", lat, lon, t, zg)
+    var[[44]] <- mstmipvar("Evap", lat, lon, t, zg)
+    var[[45]] <- mstmipvar("Qs", lat, lon, t, zg)
+    var[[46]] <- mstmipvar("Qsb", lat, lon, t, zg)
 
 
     ## write ALMA
-    nc <- create.ncdf(file.path(outdir, paste(yrs[y], "nc", sep=".")), var)
-    for(i in 1:length(var)){
-      ## TODO see bug #1174
-      if (i != 37 && i != 38 && i != 39) {
-        put.var.ncdf(nc,var[[i]],out[[i]])  
-      }
+    nc <- nc_create(file.path(outdir, paste(yrs[y], "nc", sep=".")), var)
+    for(i in 1:length(var)) {
+      ncvar_put(nc,var[[i]],out[[i]])
     }
-    close.ncdf(nc)
-    closeAllConnections()
+    nc_close(nc)
   }  ## end year loop
-  
-  closeAllConnections() 
-  
 }  ## end model2netcdf.ED2
-#==================================================================================================#
-
+##==================================================================================================#
 
 ####################################################################################################
 ### EOF.  End of R script file.              

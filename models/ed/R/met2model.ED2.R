@@ -11,9 +11,6 @@
 
 met2model.ED2 <- function(fname,lst){
   
-require(ncdf)
-require(hdf5)
-
 ### FUNCTIONS
 dm <- c(0,32,60,91,121,152,182,213,244,274,305,335,366)
 dl <- c(0,32,61,92,122,153,183,214,245,275,306,336,367)
@@ -35,23 +32,23 @@ for(i in 1:length(fname)){
   print(c(i,froot))
 
   ## open netcdf
-  nc <- open.ncdf(fname[i])
+  nc <- nc_open(fname[i])
 
   ## determine GMT adjustment
   ## lst <- site$LST_shift[which(site$acro == froot)]
   
   ## extract variables
-  lat  <- get.var.ncdf(nc,"lat")
-  lon  <- get.var.ncdf(nc,"lon")
+  lat  <- ncvar_get(nc,"lat")
+  lon  <- ncvar_get(nc,"lon")
   sec   <- nc$dim$t$vals
-  Tair <- get.var.ncdf(nc,"Tair")
-  Qair <- get.var.ncdf(nc,"Qair")  #humidity (kg/kg)
-  Wind <- get.var.ncdf(nc,"Wind")
-  Rain <- get.var.ncdf(nc,"Rainf")
-  pres <- get.var.ncdf(nc,"Psurf")
-  SW   <- get.var.ncdf(nc,"SWdown")
-  LW   <- get.var.ncdf(nc,"LWdown")
-  CO2  <- get.var.ncdf(nc,"CO2air")
+  Tair <- ncvar_get(nc,"Tair")
+  Qair <- ncvar_get(nc,"Qair")  #humidity (kg/kg)
+  Wind <- ncvar_get(nc,"Wind")
+  Rain <- ncvar_get(nc,"Rainf")
+  pres <- ncvar_get(nc,"Psurf")
+  SW   <- ncvar_get(nc,"SWdown")
+  LW   <- ncvar_get(nc,"LWdown")
+  CO2  <- ncvar_get(nc,"CO2air")
   
   dt <- sec[2]-sec[1]
   toff <- -lst*3600/dt

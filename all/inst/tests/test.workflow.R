@@ -6,13 +6,16 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-context("tests of overall workflow")
 
-settings <<- read.settings(system.file("tests/test.settings.xml",
-                                       package = "PEcAn.all"))
+# TODO This is an integration test (#1125)
 
-# get.trait.data()
-# run.meta.analysis()     
+#context("tests of overall workflow")
+
+#settings.file <- system.file("inst/extdata/test.settings.xml", package = "PEcAn.utils")
+#settings <- read.settings(settings.file)
+
+# settings$pfts <- get.trait.data(settings$pfts, settings$run$dbfiles, settings$database, settings$meta.analysis$update)
+# run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database)
 # run.write.configs("ED2")
 # clear.scratch(settings)
 # start.model.runs("ED2")

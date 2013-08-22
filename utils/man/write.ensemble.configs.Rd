@@ -19,8 +19,8 @@
   \item{clean}{remove old output first?}
 }
 \value{
-  nothing, writes ensemble configuration files as a side
-  effect
+  data frame of runids, writes ensemble configuration files
+  as a side effect
 }
 \description{
   Write ensemble config files
