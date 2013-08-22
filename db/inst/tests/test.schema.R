@@ -6,29 +6,23 @@
 ## which accompanies this distribution, and is available at
 ## http://opensource.ncsa.illinois.edu/license.html
 ##-------------------------------------------------------------------------------
-  settings.text <- "
-<pecan>
-  <nocheck>nope</nocheck>
-  <pfts>
-    <pft>
-      <name>ebifarm.pavi</name>
-      <outdir>test/</outdir>
-    </pft>
-  </pfts>
-  <outdir>test/</outdir>
-  <database>
-    <userid>bety</userid>
-    <passwd>bety</passwd>
-    <location>localhost</location>
-    <name>bety</name>
-  </database>
-</pecan>"
 
-settings <- read.settings(settings.text)
-
-
-## the following test should work after #1128 has been resolved
-# test_that("database has a managements table with appropriate columns",{
-#   workflows <- query.base("describe workflows;", con = query.base.con(settings))
-#   expect_true(all(c("site_id", "model_type", "model_id", "hostname", "start_date", "end_date", "params", "folder", "started_at", "finished_at", "created_at", "updated_at", "advanced_edit") %in% workflows$Field))
-# })
+## check database connection as condition of running tests:
+test_that("expected tables exist",{
+  settings <<- xmlToList(xmlParse("pecan.xml"))
+  if(db.exists(settings$database)){
+    tables <- db.query("show tables;", params=settings$database)
+    ## make sure that all tables are present:
+    expect_true(all(sapply(c("citations", "citations_sites", "citations_treatments", 
+                             "coppice", "counties", "covariates", "cultivars", "dbfiles", 
+                             "ensembles", "entities", "formats", "formats_variables", 
+                             "inputs", "inputs_runs", "inputs_variables", "likelihoods", 
+                             "location_yields", "machines", "managements", 
+                             "managements_treatments", "methods", "mimetypes", "models", 
+                             "pfts", "pfts_priors", "pfts_species", "planting", 
+                             "posteriors", "posteriors_runs", "priors", "runs", 
+                             "schema_migrations", "seeding", "sessions", "sites", "species", 
+                             "traits", "treatments", "users", "variables", "workflows", 
+                             "yields"), function(x) grepl(x, tables ))))
+  }
+})

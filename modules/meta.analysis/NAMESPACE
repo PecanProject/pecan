@@ -1,4 +1,6 @@
+export(approx.posterior)
 export(jagify)
-export(p.point.in.prior)
 export(pecan.ma.summary)
+export(p.point.in.prior)
 export(run.meta.analysis)
+export(single.MA)

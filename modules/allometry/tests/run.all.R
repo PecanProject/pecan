@@ -7,6 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 library(testthat)
-library(PEcAn.DB)
+library(PEcAn.qaqc)
 
-#test_package("foo")
+logger.setQuitOnSevere(FALSE)
+test_package("PEcAn.qaqc")

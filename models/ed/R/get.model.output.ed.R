@@ -17,14 +17,15 @@
 ##' @author David LeBauer, Carl Davidson
 read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")){
   if(filename %in% dir(pattern = 'h5')){
-    require(hdf5)
     Carbon2Yield = 20
-    data <- hdf5load(filename, load = FALSE)[variables]
+    nc <- nc_open(filename)
     if(all(c("AGB_CO", "NPLANT") %in% variables)) {
-      return(sum(data$AGB_CO * data$NPLANT, na.rm =TRUE) * Carbon2Yield)
+      result <- (sum(ncvar_get(nc,'AGB_CO') * ncvar_get(nc,'NPLANT'), na.rm =TRUE) * Carbon2Yield)
     } else {
-      return(sum(data[[variables]]))
+      result <- sum(sapply(variables, function(x){sum(ncvar_get(nc, x))}))
     }
+    nc_close(nc)
+    return(result)
   } else {
     return(NA)
   }
@@ -91,13 +92,13 @@ read.output.ED2 <- function(run.id, outdir, start.year=NA, end.year=NA, variable
 ##'
 ##' @author Shawn Serbin
 ##' @author David LeBauer
-get.model.output.ED2 <- function(){
+get.model.output.ED2 <- function(settings){
   model <- settings$model$name
   
   ### Get ED2 model output on the localhost
   if(settings$run$host$name == 'localhost'){
-    setwd(settings$run$host$outdir)  # Host model output directory
-    get.results(model)
+    #setwd(settings$run$host$outdir)  # Host model output directory
+    get.results(settings)
     ### Move required functions to host
     ## TODO: take out functions read.output.file.ed & read.output.ed from write.configs.ed &
     ## put into a new file specific for reading ED output
@@ -109,11 +110,7 @@ get.model.output.ED2 <- function(){
     #setwd(settings$outdir)
     #source('PEcAn.functions.R') # This won't work yet
     
-     ### Copy output to main output directory. May want to change how this is done.
-    file.copy(from = paste(settings$run$host$outdir, 'output.Rdata', sep=''), to = settings$outdir, overwrite=TRUE)
 
-    
-    ### If running on remote host
   } else {
     ### Make a copy of the settings object for use on the remote sever
     save(settings,file=paste(settings$outdir,"settings.Rdata",sep=""))
@@ -130,11 +127,9 @@ get.model.output.ED2 <- function(){
         append=TRUE)
     cat("\n",file=paste(settings$outdir,"PEcAn.functions.R",sep=""),
         append=TRUE)
-    cat(paste("get.results(",model,")",sep=""),file=paste(settings$outdir,"PEcAn.functions.R",sep=""),
+    cat("get.results(settings)",file=paste(settings$outdir,"PEcAn.functions.R",sep=""),
         append=TRUE)
-    #cat("get.results(model)",file=paste(settings$outdir,"PEcAn.functions.R",sep=""),
-    #    append=TRUE)
-    
+
     ### Copy required PEcAn.functions.R and settings object to remote host
     rsync('-outi',paste(settings$outdir,"settings.Rdata",sep=""),
           paste(settings$run$host$name, ':',settings$run$host$outdir, sep = '') )

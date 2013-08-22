@@ -15,4 +15,11 @@
 \description{
   Convert number to n significant digits
 }
+\examples{
+tabnum(1.2345)
+tabnum(1.2345, n = 4)
+}
+\author{
+  David LeBauer
+}
 

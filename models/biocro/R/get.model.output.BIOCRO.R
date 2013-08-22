@@ -14,20 +14,17 @@
 ##'
 ##' @name get.model.output.BIOCRO
 ##' @title Retrieve model output from local server
-##' 
+##' @param settings list generated from \code{\link{read.settings}} function applied to settings file
 ##' @import PEcAn.utils
 ##' @export
 ##' @author Mike Dietze, David LeBauer
-get.model.output.BIOCRO <- function(){
+get.model.output.BIOCRO <- function(settings){
 
   ### Get model output on the localhost
   if(settings$run$host$name == 'localhost'){
 
-    olddir <- getwd()
-    setwd(settings$outdir)
-    get.results(settings$model$name)
-    setwd(olddir) 
-    
+    get.results(settings = settings)
+
   } else {
     print(paste("biocro model specific get.model.output not implemented for\n",
                 "use on remote host; generic get.model.output under development"))

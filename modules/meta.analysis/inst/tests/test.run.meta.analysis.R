@@ -14,3 +14,9 @@ test_that("p.point.in.prior function is functional",{
                pnorm(-3))
 })
 
+
+test_that("singleMA gives expected result for example inputs",{
+  ## need to calculate x
+  ## x <- singleMA(....)
+  #expect_equal(round(summary(x)$statistics["beta.o", "Mean"]), 5)
+})

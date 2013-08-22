@@ -21,7 +21,7 @@ sda.enkf <- function(model,nens = 10){
     sd <- 0.3  ## pseudo data uncertainty
     y <- rnorm(nt,ytrue,sd) ## add noise
   } else {
-    load(paste(settings$outdir,"plot2AGB.Rdata",sep="/"))
+    load(file.path(settings$outdir,"plot2AGB.Rdata"))
     mch = which(yrvec %in% time)
     y = mNPP[1,mch]   ## data mean
     sd = sNPP[1,mch]  ## data uncertainty 
@@ -78,7 +78,7 @@ sda.enkf <- function(model,nens = 10){
 #### Post-processing
 
   ### Diagnostic graphs  
-  pdf(paste(outfolder,"EnKF.pdf",sep="/"))
+  pdf(file.path(outfolder,"EnKF.pdf"))
   
   ## plot ensemble, filter, and data mean's and CI's
   par(mfrow=c(1,1))
