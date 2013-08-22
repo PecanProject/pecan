@@ -2,10 +2,28 @@
 \alias{get.trait.data}
 \title{Gets trait data from the database}
 \usage{
-  get.trait.data()
+  get.trait.data(pfts, dbfiles, database, forceupdate)
+}
+\arguments{
+  \item{pfts}{the list of pfts to get traits for}
+
+  \item{dbfiles}{location where previous results are found}
+
+  \item{database}{database connection parameters}
+
+  \item{forceupdate}{set this to true to force an update,
+  auto will check to see if an update is needed.}
+}
+\value{
+  list of pfts with update posteriorids
 }
 \description{
-  Gets trait data from the database
+  Get trait data from the database.
+}
+\details{
+  This will use the following items from setings: -
+  settings$pfts - settings$database - settings$run$dbfiles
+  - settings$meta.analysis$update
 }
 \author{
   David LeBauer, Shawn Serbin
