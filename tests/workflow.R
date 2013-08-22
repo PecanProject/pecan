@@ -1,3 +1,4 @@
+## See README in tests/ folder for details
 options(warn = 1, keep.source = TRUE, error =
   quote({
     db.print.connections()
