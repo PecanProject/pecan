@@ -221,16 +221,15 @@ dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname=Sys.
 ##'   dbfile.insert('somefile.txt', 'Input', 7, dbcon)
 ##' }
 dbfile.insert <- function(filename, type, id, con, hostname=Sys.info()[['nodename']]) {
-  now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-
   # find appropriate host
   hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", Sys.info()[['nodename']], "'"), con)[['id']]
   if (is.null(hostid)) {
     # insert host
-    db.query(paste0("INSERT INTO machines (hostname, created_at, updated_at) VALUES ('", Sys.info()[['nodename']], "', ", now, ", ", now, ")"), con)
+    db.query(paste0("INSERT INTO machines (hostname, created_at, updated_at) VALUES ('", Sys.info()[['nodename']], "', NOW(), NOW())"), con)
     hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", Sys.info()[['nodename']], "'"), con)[['id']]
   }
   
+  now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
   db.query(paste0("INSERT INTO dbfiles (container_type, container_id, file_name, file_path, machine_id, created_at, updated_at) VALUES (",
                   "'", type, "', ", id, ", '", basename(filename), "', '", dirname(filename), "', ", hostid, ", '", now, "', '", now, "')"), con)
 
