@@ -88,7 +88,7 @@ write.config.BIOCRO <- function(defaults = NULL,
     ##   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
     ##   
     ##
-    traits  <- convert.samples.BIOCRO(trait.values[[settings$pfts$pft$name]])
+    traits  <- convert.samples.BIOCRO(trait.values)
 
     
     species <- read.csv(file.path(settings$pfts$pft$outdir, "species.csv"))
@@ -142,7 +142,7 @@ write.config.BIOCRO <- function(defaults = NULL,
     unused.traits <- !traits.used
     if(sum(unused.traits) > 0){
         logger.warn("the following traits parameters are not added to config file:",
-                    vecpaste(names(traits[unused.traits])))
+                    vecpaste(names(traits[unused.traits,])))
     }
     
     defaults$genus <- genus
@@ -172,9 +172,9 @@ write.config.BIOCRO <- function(defaults = NULL,
             file = file.path(settings$rundir, run.id, "config.xml"),
             indent=TRUE)
 }
-                                        #==================================================================================================#
+##==================================================================================================#
 
-                                        #--------------------------------------------------------------------------------------------------#
+##--------------------------------------------------------------------------------------------------#
 ##' Clear out previous config and parameter files.
 ##'
 ##' @name remove.config.BIOCRO
