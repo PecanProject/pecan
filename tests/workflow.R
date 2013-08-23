@@ -1,9 +1,8 @@
 ## See README in tests/ folder for details
-
 require("PEcAn.all")
 require(parallel)
 
-## debugonce(start.runs.BIOCRO)
+#debugonce(run.meta.analysis)
 options(warn = 1, keep.source = TRUE, error =
   quote({
     db.print.connections()
@@ -52,6 +51,7 @@ for(pft in settings$pfts) {
 }
 
 # get traits of pfts
+db.showQueries(TRUE)
 settings$pfts <- get.trait.data(settings$pfts, settings$run$dbfiles, settings$database, settings$meta.analysis$update)
 saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
 
@@ -60,7 +60,7 @@ if('meta.analysis' %in% names(settings)) {
     run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database)
 }
 
-stop()
+#stop()
 
 # write configurations
 if (!file.exists(file.path(settings$rundir, "runs.txt"))) {
