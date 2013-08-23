@@ -24,3 +24,12 @@ This folder provides some simple tests for each model. They can be run with the 
 * add `debugonce(somefunction)` to workflow.R after PEcAn.all is loaded
 * the run will stop when it gets to the specified function, at which point you can step through.
 * Do not commit changes to workflow.R used for debugging
+
+For example, you can add `debugonce(run.meta.analysis)` to `workflow.R` and then 
+
+```{bash}
+R --vanilla -- --settings <pecanfile>
+```
+```{r}
+ source "workflow.R"
+```
