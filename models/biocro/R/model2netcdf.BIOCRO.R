@@ -23,11 +23,10 @@
 ##'
 ##' @author David LeBauer, Deepak Jaiswal
 model2netcdf.BIOCRO <- function(outdir, sitelat, sitelon, start_date, end_date) {
-    
+      
     ## Read in model output in biocro format
     load(file.path(outdir, "result.RData")) ## contains genus and result
 
-    genus <- config$pft$genus
     ##result$s <- with(result, ((DayofYear -1) * 24 + Hour) * 3600)
     if(genus == "Saccharum"){
         for(variable in c("Leaf", "Root", "Stem", "LAI", "DayofYear")) {
