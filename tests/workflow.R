@@ -52,7 +52,7 @@ if('meta.analysis' %in% names(settings)) {
 }
 
 # write configurations
-if (!file.exists(file.path(settings$rundir, "runs.txt"))) {
+if (!file.exists(file.path(settings$rundir, "runs.txt")) | settings$meta.analysis$update == "TRUE") {
     run.write.configs(settings$model$name, settings$bety$write)
 } else {
     logger.info("Already wrote configuraiton files")    
