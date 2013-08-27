@@ -42,16 +42,7 @@ options(warn = 1, keep.source = TRUE, error =
 # check settings
 settings <- read.settings('pecan.xml')
 
-# some quick checks
-runmeta <- FALSE
-for(pft in settings$pfts) {
-    if(!file.exists(file.path(pft$outdir, 'trait.mcmc.Rdata'))) {
-        runmeta <- TRUE
-    }
-}
-
 # get traits of pfts
-db.showQueries(TRUE)
 settings$pfts <- get.trait.data(settings$pfts, settings$run$dbfiles, settings$database, settings$meta.analysis$update)
 saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
 
@@ -59,8 +50,6 @@ saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml
 if('meta.analysis' %in% names(settings)) {
     run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database)
 }
-
-#stop()
 
 # write configurations
 if (!file.exists(file.path(settings$rundir, "runs.txt"))) {
@@ -92,6 +81,13 @@ if (!file.exists(file.path(settings$outdir, "sensitivity.results.Rdata"))) {
     run.sensitivity.analysis()
 } else {
     logger.info("Already executed run.sensitivity.analysis()")    
+}
+
+# send email if configured
+if (!is.null(settings$email)) {
+    sendmail(settings$email$from, settings$email$to,
+             paste0("Workflow has finished executing at ", date()),
+             paste0("You can find the results on ", Sys.info()[['nodename']], " in ", normalizePath(settings$outdir)))
 }
 
 db.print.connections()
