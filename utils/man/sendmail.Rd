@@ -22,7 +22,8 @@
 }
 \examples{
 \dontrun{
-sendmail("bob
+sendmail("bob@example.com", "joe@example.com", "Hi", "This is R.")
+}
 }
 \author{
   Rob Kooper
