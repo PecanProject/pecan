@@ -1,10 +1,10 @@
 \docType{package}
 \name{PEcAn}
-\alias{PECAn,}
+\alias{package-pecan}
 \alias{PEcAn}
 \alias{PEcAn-package}
-\alias{package-pecan}
 \alias{pecan,}
+\alias{PECAn,}
 \title{R package to support PEcAn, the Predictive Ecosystem Analyzer}
 \description{
   Instructions for the use of this package are provided in
