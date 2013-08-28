@@ -9,30 +9,21 @@
     <host>localhost</host>
   </database>
 
-  <!--
-  <bety>
-    <write>FALSE</write>
-  </bety> 
-  -->
-
-
   <pfts>
     <pft>
       <name>biocro.salix</name>
     </pft>
   </pfts>
 
-
-   <!--
   <meta.analysis>
     <iter>4000</iter>
     <random.effects>FALSE</random.effects>
     <update>TRUE</update>
   </meta.analysis>
-  -->
+
 
   <ensemble>
-    <size>3</size>
+    <size>10</size>
     <variable>LAI</variable>
     <variable>StemBiom</variable>
   </ensemble>
@@ -51,6 +42,7 @@
     <name>BIOCRO</name>
   </model>
   <run>
+    <dbfiles>~/.pecan/dbfiles</dbfiles>
     <site>
       <id>76</id>
       <name>EBI Energy Farm</name>
