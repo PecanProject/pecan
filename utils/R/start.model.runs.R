@@ -18,7 +18,7 @@
 ##' start.model.runs("ED2")
 ##' start.model.runs("SIPNET")
 ##' }
-##' @author Shawn Serbin
+##' @author Shawn Serbin, Rob Kooper, ...
 ##'
 start.model.runs <- function(model, write = TRUE){
 
@@ -62,20 +62,35 @@ start.model.runs <- function(model, write = TRUE){
 
       # start the actual model run
       if (settings$run$host$name == "localhost") {
-        do.call(fcn.name, args=list(run))
-
+        
+        # if qsub is requested on localhost
+        if (!is.null(settings$run$host$qsub)){
+          qsub <- gsub("@NAME@", paste("PEcAn-", run, sep=""), settings$run$host$qsub)
+          qsub <- gsub("@STDOUT@", file.path(settings$run$host$outdir, run, "stdout.log"), qsub)
+          qsub <- gsub("@STDERR@", file.path(settings$run$host$outdir, run, "stderr.log"), qsub)
+          out <- system(paste(qsub, file.path(settings$run$host$rundir, run, "job.sh"),sep=" "),intern=TRUE)
+          logger.info("Job submitted :", out) # needs updating.  currently not working properly
+          m <- regexec(settings$run$host$qsub.jobid, out) # needs updating.  currently not working properly
+          jobids[run] <- regmatches(out, m)[[1]][2]
+          
+        # if qsub option is not invoked.  just start model runs in serial.
+        } else {
+          do.call(fcn.name, args=list(run))
+        }
+        
         # write finished time to database
         if (!is.null(dbcon)) {
           db.query(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", run), con=dbcon)
         }
+        
       } else {
         qsub <- gsub("@NAME@", paste("PEcAn-", run, sep=""), settings$run$host$qsub)
         qsub <- gsub("@STDOUT@", file.path(settings$run$host$outdir, run, "stdout.log"), qsub)
         qsub <- gsub("@STDERR@", file.path(settings$run$host$outdir, run, "stderr.log"), qsub)
         out <- system2("ssh", c(settings$run$host$name, qsub, file.path(settings$run$host$rundir, run, "job.sh")), stdout=TRUE)
         logger.info("Job submitted :", out)
-        m <- regexec(settings$run$host$qsub.jobid, out)
-        jobids[run] <- regmatches(out, m)[[1]][2]
+        m <- regexec(settings$run$host$qsub.jobid, out) # needs updating - does not work
+        jobids[run] <- regmatches(out, m)[[1]][2] # needs updating - does not work
       }
     }
     close(pb)
