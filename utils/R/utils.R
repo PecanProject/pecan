@@ -639,6 +639,25 @@ tryl <- function(FUN){
   ans <- !any(class(out) == "error")
   return(ans)
 }
+
+##' load model package
+##' @title Load model package
+##' @param model name of model
+##' @return FALSE if function returns error; else TRUE
+##' @export
+##' @examples
+##' \dontrun{require.modelpkg(BioCro)}
+##' @author David LeBauer
+load.modelpkg <- function(model){
+  pecan.modelpkg <- paste0("PEcAn.", model)
+  if(!pecan.modelpkg  %in% names(sessionInfo()$otherPkgs)){
+    if(pecan.modelpkg  %in% rownames(installed.packages())) {
+      do.call(require, args = list(pecan.modelpkg))
+    } else {
+      logger.error("I can't find a package for the ", model, "model; I expect it to be named ", pecan.modelpkg)
+    }
+  }
+}
 ####################################################################################################
 ### EOF.  End of R script file.              
 ####################################################################################################

@@ -49,7 +49,7 @@ pecan.ma <- function(trait.data, prior.distns, taupriors,
   
   ## Set inputs for jags.model()
   j.chains <- 4
-
+  j.iter <- as.numeric(j.iter)  # Added by SPS 08.27.2013. issue #1803
   ## log the mcmc chain parameters
   sink(file = file.path(outdir,'meta-analysis.log'), split = TRUE)
   cat(paste( 'Each meta-analysis will be run with: \n',
