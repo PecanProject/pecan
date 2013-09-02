@@ -2,8 +2,8 @@
 \alias{write.config.BIOCRO}
 \title{Write configuration files for the biocro model}
 \usage{
-  write.config.BIOCRO(defaults, trait.values, settings,
-    run.id)
+  write.config.BIOCRO(defaults = NULL, trait.values,
+    settings, run.id)
 }
 \arguments{
   \item{defaults}{named list with default model parameter

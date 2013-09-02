@@ -12,7 +12,6 @@ Depends:
     PEcAn.data.atmosphere,
     udunits2,
     ncdf4,
-    BioCro,
     RNCEP,
     lubridate,
     data.table,

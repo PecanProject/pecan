@@ -14,7 +14,7 @@
 }
 \details{
   Output is placed in model output directory
-  (settings$run$host$outdir).
+  (settings$modeloutdir).
 }
 \author{
   David LeBauer, Shawn Serbin, Mike Dietze
