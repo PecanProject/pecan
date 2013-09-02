@@ -204,7 +204,7 @@ if [ "$FORCE" == "yes" ]; then
   if [ "$EMAIL" == "" ]; then
     cat changes.log
   else
-    cat changes.log | mail -s "PEcAn BUILD ${REVNO} is ${STATUS}" ${EMAIL}
+    cat changes.log | mail -s "PEcAn BUILD ${STATUS} : ${REVNO}" ${EMAIL}
   fi
 
   # cleanup
