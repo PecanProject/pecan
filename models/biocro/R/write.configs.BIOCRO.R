@@ -31,14 +31,18 @@ convert.samples.BIOCRO <- function(trait.samples){
     trait.names[trait.names == "cuticular_cond"] <- "b0"
     trait.names[trait.names == "stomatal_slope.BB"] <- "b1"
     trait.names[trait.names == "SLA"] <- "Sp"
-
+    trait.names[trait.names == "growth_resp_factor"] <- "GrowthRespFraction"
+    trait.names[trait.names == "extinction_coefficient"] <- "kd"
+        
+    colnames(trait.samples) <- trait.names
+    
+    
     # iRhizome
     # iStem
     # ifrRhizome
     # ifrStem
     # growth Repiration factor
     # 
-    colnames(trait.samples) <- trait.names
 
     ## transform values with different units
     ## cuticular conductance - BETY default is umol; BioCro uses mol
@@ -46,7 +50,7 @@ convert.samples.BIOCRO <- function(trait.samples){
         trait.samples[, trait.names == "b0"] <- trait.samples[, trait.names == "b0"]/1e6
     }
     if("SLA" %in% trait.names){
-        trait.samples[, trait.names == "SLA"] <- trait.samples[, trait.names == "Sp"]/ 10
+        trait.samples[, trait.names == "Sp"] <- trait.samples[, trait.names == "Sp"]/ 10
     }
     
     return(trait.samples)
@@ -124,7 +128,10 @@ write.config.BIOCRO <- function(defaults = NULL,
             logger.severe("no defaults file given and ",
                           genus, "not supported in BioCro")
         }
-        defaults <- xmlToList(xmlParse(defaults.xml))
+        defaults <- xmlToList(xmlTreeParse(defaults.xml,
+                                           ## remove comments; see ?xmlParse
+                                           handlers = list("comment" = function(x,...){NULL}), 
+                                           asTree = TRUE))
     }
     
     if(is.null(defaults)) logger.error("No defaults values set")
@@ -140,9 +147,14 @@ write.config.BIOCRO <- function(defaults = NULL,
     }
     
     unused.traits <- !traits.used
-    if(sum(unused.traits) > 0){
-        logger.warn("the following traits parameters are not added to config file:",
-                    vecpaste(names(traits[unused.traits])))
+    ## a clunky way to only use logger for MEDIAN rather than all runs
+    if(any(grepl("MEDIAN",
+                 scan(file = file.path(rundir, "README.txt"), character(0),
+                      sep = ":", strip.white = TRUE)))){
+        if(sum(unused.traits) > 0){
+            logger.warn("the following traits parameters are not added to config file:",
+                        vecpaste(names(unused.traits)[unused.traits == TRUE]))
+        }
     }
     
     defaults$genus <- genus
@@ -172,9 +184,9 @@ write.config.BIOCRO <- function(defaults = NULL,
             file = file.path(settings$rundir, run.id, "config.xml"),
             indent=TRUE)
 }
-                                        #==================================================================================================#
+##==================================================================================================#
 
-                                        #--------------------------------------------------------------------------------------------------#
+##--------------------------------------------------------------------------------------------------#
 ##' Clear out previous config and parameter files.
 ##'
 ##' @name remove.config.BIOCRO

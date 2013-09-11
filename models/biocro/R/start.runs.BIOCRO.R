@@ -16,7 +16,8 @@
 ##' @author Rob Kooper, David LeBauer, Deepak Jaiswal
 start.runs.BIOCRO <- function(runid) {
   hostname <- system("hostname", intern = TRUE)
-
+  
+  require("BioCro")
   if(settings$run$host$name == "localhost"){
       settings$run$host$name <- hostname
   } else {
@@ -55,14 +56,13 @@ start.runs.BIOCRO <- function(runid) {
                    "' and end_date >= '", end.date, 
                    "' and site_id =", site.id, ";", sep = ""), con = con)
   
- 
   if(nrow(metfiles) == 0){
     metfile.exists <- FALSE
   } else if(nrow(metfiles) >= 1){
     metfile.exists <- TRUE
-    ## if > 1, use the first record
-    metfile <- file.path(metfiles$file_path[1],
-                         metfiles$file_name[1])
+    ## if > 1, use the last record
+    metfile <- with(tail(metfiles, 1),
+                    file.path(file_path, file_name))
 
     if(!file.exists(metfile)){
       metfile.exists <- FALSE
@@ -106,7 +106,6 @@ start.runs.BIOCRO <- function(runid) {
   W <- data.table(weachNEW(weather, lati = lat, ts = 1, 
                                   temp.units="Celsius", rh.units="fraction", 
                                   ws.units="mph", pp.units="in"))
-  #setnames(W, old = c("Temp", "WS"), new = c("DailyTemp.C", "WindSpeed"))
 
   years <- W[,unique(year)]
 
@@ -126,8 +125,9 @@ start.runs.BIOCRO <- function(runid) {
 
   out <- NULL ## could be pre-allocated for speed
   result <- NULL
-  for(year in years){
-      WetDat <- W[year == year,]
+
+  for(yeari in years){
+      WetDat <- W[year == yeari,]
       day1 <- WetDat[,min(doy)]
       dayn <- WetDat[,max(doy)]
       if(genus == "Saccharum"){
@@ -149,8 +149,10 @@ start.runs.BIOCRO <- function(runid) {
       } else if (genus == "Miscanthus") {
           result <- BioGro(WetDat = WetDat, photoControl = pp, canopyControl = cc)
       }
+  
       result <- with(result,
-                 data.table(DayofYear, Hour, ThermalT, Stem, Leaf, Root, Rhizome, Grain, LAI, SoilEvaporation, CanopyTrans))
+                 data.table(Year = yeari, DayofYear, Hour, ThermalT,
+                            Stem, Leaf, Root, Rhizome, Grain, LAI, SoilEvaporation, CanopyTrans))
       if(is.null(out)) {
           out <- result
       } else {
