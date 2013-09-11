@@ -3,7 +3,11 @@
     <Sp>1.1</Sp>
     <SpD>0</SpD>
     <nlayers>10</nlayers>
+<<<<<<< Updated upstream
     <kd>0.37</kd> <!--extinction coef. for diffuse light -->
+=======
+    <kd>0.37</kd>
+>>>>>>> Stashed changes
     <mResp>"c(0.02, 0.03)"</mResp>
     <heightFactor>3</heightFactor>
     <GrowthRespFraction>0.4</GrowthRespFraction><!--beta(20, 30)-->
