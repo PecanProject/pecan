@@ -29,7 +29,6 @@ get.results <- function(settings) {
       variables = settings$sensitivity.analysis[
                  names(settings$sensitivity.analysis) == "variable"]
     }
-    
     for(pft.name in names(trait.samples)){
       
       traits <- names(trait.samples[[pft.name]])
