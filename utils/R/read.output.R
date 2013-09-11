@@ -100,9 +100,16 @@ read.output <- function(runid, outdir, start.year=NA,
     "DOC_flux", "Fire_flux") # kgC m-2 d-1
   wflux = c("Evap", "TVeg", "Qs", "Qsb", "Rainf") # kgH20 m-2 d-1
   
+  # create list of *.nc years
+  nc.years <- as.vector(unlist(strsplit(list.files(path = outdir, pattern="\\.nc$", full.names=FALSE),".nc")))
+  # select only those *.nc years requested by user
+  keep <- which(nc.years >= as.numeric(start.year) & nc.years <= as.numeric(end.year))
   ncfiles <- list.files(path = outdir, pattern="\\.nc$", full.names=TRUE)
+  ncfiles <- ncfiles[keep]
+  # throw error if no *.nc files selected/availible
   if(length(ncfiles) == 0) logger.error("no netCDF files of model output present")
   
+  print(paste("Years: ",start.year," - ",end.year),sep="")
   result <- list()
   for(ncfile in ncfiles) {
     nc <- nc_open(ncfile)
