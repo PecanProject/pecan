@@ -31,10 +31,15 @@ start.model.runs <- function(model, write = TRUE){
     print("-------------------------------------------------------------------")
     print(" ")
 
-    # TODO RK : create ssh/mysql connections to remote host and keep it open
-
     # copy all run/out dirs to remote host
-    if (settings$run$host$name != "localhost") {
+    if (!is.null(settings$run$host$qsub) || (settings$run$host$name != "localhost")) {
+      if (settings$run$host$name == "localhost") {
+        dir.create(settings$run$host$rundir, recursive = TRUE)
+        dir.create(settings$run$host$outdir, recursive = TRUE)
+      } else {
+        system2("ssh", c(settings$run$host$name, "mkdir", "-p", settings$run$host$rundir), stdout=TRUE)
+        system2("ssh", c(settings$run$host$name, "mkdir", "-p", settings$run$host$outdir), stdout=TRUE)
+      }
       rsync("-a", settings$rundir, paste(settings$run$host$name, settings$run$host$rundir, sep=":"), pattern="/*")
       rsync("-a", settings$modeloutdir, paste(settings$run$host$name, settings$run$host$outdir, sep=":"), pattern="/*")
     }
@@ -60,37 +65,33 @@ start.model.runs <- function(model, write = TRUE){
         db.query(paste("UPDATE runs SET started_at =  NOW() WHERE id = ", run), con=dbcon)
       }
 
-      # start the actual model run
-      if (settings$run$host$name == "localhost") {
-        
-        # if qsub is requested on localhost
-        if (!is.null(settings$run$host$qsub)){
-          qsub <- gsub("@NAME@", paste("PEcAn-", run, sep=""), settings$run$host$qsub)
-          qsub <- gsub("@STDOUT@", file.path(settings$run$host$outdir, run, "stdout.log"), qsub)
-          qsub <- gsub("@STDERR@", file.path(settings$run$host$outdir, run, "stderr.log"), qsub)
-          out <- system(paste(qsub, file.path(settings$run$host$rundir, run, "job.sh"),sep=" "),intern=TRUE)
-          logger.info("Job submitted :", out) # needs updating.  currently not working properly
-          m <- regexec(settings$run$host$qsub.jobid, out) # needs updating.  currently not working properly
-          jobids[run] <- regmatches(out, m)[[1]][2]
-          
-        # if qsub option is not invoked.  just start model runs in serial.
+      # if qsub is requested on localhost
+      if (!is.null(settings$run$host$qsub)){
+        qsub <- gsub("@NAME@", paste("PEcAn-", run, sep=""), settings$run$host$qsub)
+        qsub <- gsub("@STDOUT@", file.path(settings$run$host$outdir, run, "stdout.log"), qsub)
+        qsub <- gsub("@STDERR@", file.path(settings$run$host$outdir, run, "stderr.log"), qsub)
+
+        # start the actual model run
+        if (settings$run$host$name == "localhost") {        
+          out <- system2(qsub, c(file.path(settings$run$host$rundir, run, "job.sh")), stdout=TRUE)
         } else {
-          do.call(fcn.name, args=list(run))
+          out <- system2("ssh", c(settings$run$host$name, qsub, file.path(settings$run$host$rundir, run, "job.sh")), stdout=TRUE)
         }
+        m <- regexec(settings$run$host$qsub.jobid, out) # needs updating.  currently not working properly
+        jobids[run] <- regmatches(out, m)[[1]][2]
         
+      # if qsub option is not invoked.  just start model runs in serial.
+      } else {
+        if (settings$run$host$name == "localhost") {        
+          out <- system2(file.path(settings$run$host$rundir, run, "job.sh"), stdout=TRUE)
+        } else {
+          out <- system2("ssh", c(settings$run$host$name, file.path(settings$run$host$rundir, run, "job.sh")), stdout=TRUE)
+        }
+
         # write finished time to database
         if (!is.null(dbcon)) {
           db.query(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", run), con=dbcon)
         }
-        
-      } else {
-        qsub <- gsub("@NAME@", paste("PEcAn-", run, sep=""), settings$run$host$qsub)
-        qsub <- gsub("@STDOUT@", file.path(settings$run$host$outdir, run, "stdout.log"), qsub)
-        qsub <- gsub("@STDERR@", file.path(settings$run$host$outdir, run, "stderr.log"), qsub)
-        out <- system2("ssh", c(settings$run$host$name, qsub, file.path(settings$run$host$rundir, run, "job.sh")), stdout=TRUE)
-        logger.info("Job submitted :", out)
-        m <- regexec(settings$run$host$qsub.jobid, out) # needs updating - does not work
-        jobids[run] <- regmatches(out, m)[[1]][2] # needs updating - does not work
       }
     }
     close(pb)
@@ -118,8 +119,6 @@ start.model.runs <- function(model, write = TRUE){
     if (!is.null(dbcon)) {
       db.close(dbcon)
     }
-
-    # TODO RK : close ssh/mysql connections to remote site
 
   } else {
     warning(paste(fcn.name, "does not exist"))
