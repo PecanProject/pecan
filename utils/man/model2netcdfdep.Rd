@@ -1,9 +1,9 @@
-\name{model2netcdf}
-\alias{model2netcdf}
+\name{model2netcdfdep}
+\alias{model2netcdfdep}
 \title{Convert model output to NetCDF}
 \usage{
-  model2netcdf(runid, outdir, model, lat, lon, start_date,
-    end_date)
+  model2netcdfdep(runid, outdir, model, lat, lon,
+    start_date, end_date)
 }
 \arguments{
   \item{runid}{}
