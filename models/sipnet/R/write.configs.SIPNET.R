@@ -28,23 +28,24 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     }
   }
 
-  if (settings$run$host$name == "localhost") {
-    # create symlink to datafile if running local
-    file.symlink(template.clim, file.path(settings$rundir, run.id, "sipnet.clim"))
-  } else {
-    # create launch script (which will create symlink)
-    rundir <- file.path(settings$run$host$rundir, as.character(run.id))
-    outdir <- file.path(settings$run$host$outdir, as.character(run.id))
-    writeLines(c("#!/bin/bash",
-               paste("mkdir -p", outdir),
-               paste("cd", rundir),
-               paste("ln -s", settings$run$site$met, "sipnet.clim"),
-               settings$model$binary,
-               paste("mv ", file.path(rundir, "sipnet.out"), file.path(outdir, "sipnet.out")),
-               paste("cp ", file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))),
-               con=file.path(settings$rundir, run.id, "job.sh"))
-    Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
+  # find out where to write run/ouput
+  rundir <- file.path(settings$run$host$rundir, as.character(run.id))
+  outdir <- file.path(settings$run$host$outdir, as.character(run.id))
+  if (is.null(settings$run$host$qsub) && (settings$run$host$name == "localhost")) {
+    rundir <- file.path(settings$rundir, as.character(run.id))
+    outdir <- file.path(settings$modeloutdir, as.character(run.id))
   }
+
+  # create launch script (which will create symlink)
+  writeLines(c("#!/bin/bash",
+             paste("mkdir -p", outdir),
+             paste("cd", rundir),
+             paste("ln -s", settings$run$site$met, "sipnet.clim"),
+             settings$model$binary,
+             paste("mv ", file.path(rundir, "sipnet.out"), file.path(outdir, "sipnet.out")),
+             paste("cp ", file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))),
+             con=file.path(settings$rundir, run.id, "job.sh"))
+  Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
   
   ### WRITE *.param-spatial
   template.paramSpatial <- system.file("template.param-spatial",package="PEcAn.SIPNET")

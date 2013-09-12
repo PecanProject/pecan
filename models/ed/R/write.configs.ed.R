@@ -103,32 +103,23 @@ convert.samples.ED <- function(trait.samples){
 ##-------------------------------------------------------------------------------------------------#
 write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   
-  # create launch script
-  if (settings$run$host$name != "localhost") {
-    rundir <- file.path(settings$run$host$rundir, as.character(run.id))
-    outdir <- file.path(settings$run$host$outdir, as.character(run.id))
-    writeLines(c("#!/bin/bash",
-               paste("mkdir -p", outdir),
-               paste("cd", rundir),
-               "export GFORTRAN_UNBUFFERED_PRECONNECTED=yes",
-               settings$model$binary,
-               paste("cp ", file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))),
-               con=file.path(settings$rundir, run.id, "job.sh"))
-    Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
-    
-  # If localhost and qsub requested
-  } else if (settings$run$host$name== "localhost" & !is.null(settings$run$host$qsub)){
-    rundir <- file.path(settings$run$host$rundir, as.character(run.id))
-    outdir <- file.path(settings$run$host$outdir, as.character(run.id))
-    writeLines(c("#!/bin/bash",
-                 paste("mkdir -p", outdir),
-                 paste("cd", rundir),
-                 "export GFORTRAN_UNBUFFERED_PRECONNECTED=yes",
-                 settings$model$binary,
-                 paste("cp ", file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))),
-                 con=file.path(settings$rundir, run.id, "job.sh"))
-    Sys.chmod(file.path(settings$rundir, run.id, "job.sh")) # supposed to have a permission level here?
+  # find out where to write run/ouput
+  rundir <- file.path(settings$run$host$rundir, as.character(run.id))
+  outdir <- file.path(settings$run$host$outdir, as.character(run.id))
+  if (is.null(settings$run$host$qsub) && (settings$run$host$name == "localhost")) {
+    rundir <- file.path(settings$rundir, as.character(run.id))
+    outdir <- file.path(settings$modeloutdir, as.character(run.id))
   }
+
+  # create launch script
+  writeLines(c("#!/bin/bash",
+             paste("mkdir -p", outdir),
+             paste("cd", rundir),
+             "export GFORTRAN_UNBUFFERED_PRECONNECTED=yes",
+             settings$model$binary,
+             paste("cp ", file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))),
+             con=file.path(settings$rundir, run.id, "job.sh"))
+  Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
 
   ## Get ED2 specific model settings and put into output config xml file
   xml <- listToXml(settings$model$config.header, 'config')
@@ -203,8 +194,12 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   } else {
     filename <- system.file(settings$model$edin, package = "PEcAn.ED2")
     if (filename == "") {
-      model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database)
-      filename <- system.file(paste0("ED2IN.r", model$revision), package = "PEcAn.ED2")
+      if (!is.null(settings$model$revision)) {
+        filename <- system.file(paste0("ED2IN.r", settings$model$revision), package = "PEcAn.ED2")
+      } else {
+        model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database)
+        filename <- system.file(paste0("ED2IN.r", model$revision), package = "PEcAn.ED2")
+      }
     }
     if (filename == "") {
       logger.severe("Could not find ED template")
