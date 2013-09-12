@@ -1,6 +1,8 @@
 ## See README in tests/ folder for details
 require("PEcAn.all")
-## debugonce(start.runs.BIOCRO)
+require(parallel)
+
+#debugonce(run.meta.analysis)
 options(warn = 1, keep.source = TRUE, error =
   quote({
     db.print.connections()
@@ -34,42 +36,23 @@ options(warn = 1, keep.source = TRUE, error =
 
     if (!interactive()) {
       q()
-    }
+  }
   }))
 
 # check settings
 settings <- read.settings('pecan.xml')
 
-# some quick checks
-runtraits <- FALSE
-runmeta <- FALSE
-for(pft in settings$pfts) {
-    if(!file.exists(file.path(pft$outdir, "trait.data.Rdata"))) {
-        runtraits <- TRUE
-        runmeta <- TRUE
-        break
-    }
-    if(!file.exists(file.path(pft$outdir, 'trait.mcmc.Rdata'))) {
-        runmeta <- TRUE
-    }
-}
-
 # get traits of pfts
-if (runtraits) {
-    get.trait.data()
-} else {
-    logger.info("Already executed get.trait.data()")
-}
+settings$pfts <- get.trait.data(settings$pfts, settings$run$dbfiles, settings$database, settings$meta.analysis$update)
+saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
 
 # run meta-analysis
-if (runmeta) {
-    run.meta.analysis()
-} else {
-    logger.info("Already executed run.meta.analysis()")
+if('meta.analysis' %in% names(settings)) {
+    run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database)
 }
 
 # write configurations
-if (!file.exists(file.path(settings$rundir, "runs.txt"))) {
+if (!file.exists(file.path(settings$rundir, "runs.txt")) | settings$meta.analysis$update == "TRUE") {
     run.write.configs(settings$model$name, settings$bety$write)
 } else {
     logger.info("Already wrote configuraiton files")    
@@ -98,6 +81,13 @@ if (!file.exists(file.path(settings$outdir, "sensitivity.results.Rdata"))) {
     run.sensitivity.analysis()
 } else {
     logger.info("Already executed run.sensitivity.analysis()")    
+}
+
+# send email if configured
+if (!is.null(settings$email)) {
+    sendmail(settings$email$from, settings$email$to,
+             paste0("Workflow has finished executing at ", date()),
+             paste0("You can find the results on ", Sys.info()[['nodename']], " in ", normalizePath(settings$outdir)))
 }
 
 db.print.connections()

@@ -121,7 +121,7 @@ check.settings <- function(settings) {
   
   # check database version
   if(database){
-    versions <- db.query("SELECT version FROM schema_migrations WHERE version >= '20130629205658';", params=settings$database)[['version']]
+    versions <- db.query("SELECT version FROM schema_migrations WHERE version >= '20130717162614';", params=settings$database)[['version']]
     if (length(versions) == 0) {
       logger.severe("Database is out of date, please update the database.")
     }

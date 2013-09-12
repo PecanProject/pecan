@@ -24,6 +24,7 @@
 ##'
 ##' @author Michael Dietze, Shawn Serbin, David LeBauer
 get.model.output <- function(model, settings){
+  load.modelpkg(model)
   logger.info("Same as get.results(settings)")
   get.results(settings)
   return()
