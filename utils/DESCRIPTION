@@ -15,6 +15,7 @@ Description: The Predictive Ecosystem Carbon Analyzer
     models, and to improve the efficacy of scientific
     investigation.
 Depends:
+    abind,
     plyr,
     XML,
     ggplot2,
@@ -46,4 +47,5 @@ Collate:
     'logger.R'
     'distn.stats.R'
     'ensemble.R'
+    'mail.R'
     'sensitivity.R'
