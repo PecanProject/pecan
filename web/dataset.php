@@ -71,7 +71,7 @@ switch ($type) {
 			die("Need var.");
 		}
 		$var=$_REQUEST['var'];
-        $datafile=$run . "/" . $year . ".nc";
+        $datafile=$folder . "/out/" . $run . "/" . $year . ".nc";
 		$width=600;
 		if (isset($_REQUEST['width']) && ($_REQUEST['width'] > $width)) {
 			$width=$_REQUEST['width'];

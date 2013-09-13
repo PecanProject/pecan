@@ -11,6 +11,19 @@
 # boolean parameters
 $offline=isset($_REQUEST['offline']);
 
+$hostname = gethostname();
+if (isset($_REQUEST['hostname'])) {
+	$hostname = $_REQUEST['hostname'];
+}
+$modelid = "";
+if (isset($_REQUEST['modelid'])) {
+	$modelid = $_REQUEST['modelid'];
+}
+$siteid = "";
+if (isset($_REQUEST['siteid'])) {
+	$siteid = $_REQUEST['siteid'];
+}
+
 // system parameters
 require("system.php");
 
@@ -25,7 +38,6 @@ if (!$result) {
 	die('Invalid query: ' . mysql_error());
 }
 $hosts = "";
-$hostname = gethostname();
 while ($row = @mysql_fetch_assoc($result)) {
 	if (in_array($row['hostname'], $hostlist)) {
 		if ($hostname == $row['hostname']) {
@@ -75,9 +87,9 @@ while ($row = @mysql_fetch_assoc($result)) {
             $("#error").html("Select a model to continue");
             return;
         }
-        if ($("#hostname").val() != "") {
+        if ($("#hostname").val() == "") {
             $("#next").attr("disabled", "disabled");
-            $("#error").html("Select <?=$hostname?> to continue");
+            $("#error").html("Select a host to continue");
             return;
         }
 
@@ -95,7 +107,7 @@ while ($row = @mysql_fetch_assoc($result)) {
 	}
 
 	function modelSelected() {
-		var curSite = $("#sitename").val();	//we'll clear this and replace it if it still exists in the new model
+		var curSite = $("#siteid").val();	//we'll clear this and replace it if it still exists in the new model
 
 		// remove everything
 		if (markersArray) {
@@ -123,7 +135,6 @@ while ($row = @mysql_fetch_assoc($result)) {
 	}
 
 	function hostSelected() {
-		var curSite = $("#sitename").val();
 		var curModel = $("#modelid").val();
 
 		// remove everything
@@ -131,8 +142,6 @@ while ($row = @mysql_fetch_assoc($result)) {
 			clearSites();
 			markersArray.length = 0;
 		}
-		$("#siteid").val("");
-		$("#sitename").val("");
 		$('#modelid').find('option').remove();
 		$('#modelid').append('<option value="">All Models</option>');
 		validate();
@@ -149,20 +158,7 @@ while ($row = @mysql_fetch_assoc($result)) {
 					$('#modelid').append('<option value="' + model.attr("id") + '">' +name + '</option>');
 				}
 			});
-		});
-
-		// get all sites
-		var url="sites.php?host=" + $('#hostname')[0].value;
-		jQuery.get(url, {}, function(data) {
-			jQuery(data).find("marker").each(function() {
-				var marker = jQuery(this);
-				if (marker.attr("lat") == "" || marker.attr("lon") == "") {
-					console.log("Bad marker (siteid=" + marker.attr("siteid") + " site=" + marker.attr("sitename") + " lat=" + marker.attr("lat") + " lon=" + marker.attr("lon") + ")");
-				} else {
-					showSite(marker, curSite);
-				}
-			});
-			renderSites(curSite);
+			modelSelected();
 		});
 	}
 
@@ -190,7 +186,7 @@ while ($row = @mysql_fetch_assoc($result)) {
 		for (var i in markersArray) {
 			var site = markersArray[i];
 			sites = sites + "<div><input type=\"radio\" name=\"site\" value=\"" + site.attr("siteid") + "\"" + " onClick=\"siteSelected(" + site.attr("siteid") + ",'" + site.attr("sitename") + "');\"";
-			if (selected == site.attr("sitename")) {
+			if (selected == site.attr("siteid")) {
 				sites = sites + " checked";
 				siteSelected(site.attr("siteid"), site.attr("sitename"));
 			}
@@ -245,7 +241,7 @@ while ($row = @mysql_fetch_assoc($result)) {
 			infowindow.open(map, this);
 		});
 
-		if (marker.attr("sitename") == selected) {
+		if (marker.attr("siteid") == selected) {
 			siteSelected(gmarker.siteid, gmarker.sitename);
 			infowindow.setContent(gmarker.html);
 			infowindow.open(map, gmarker);
@@ -278,7 +274,8 @@ while ($row = @mysql_fetch_assoc($result)) {
 <?php if ($offline) { ?>
 			<input name="offline" type="hidden" value="offline">
 <?php } ?>
-				</form>
+		</form>
+
 		<form id="formnext" method="POST" action="selectdata.php">
 <?php if ($offline) { ?>
 			<input name="offline" type="hidden" value="offline">
@@ -297,11 +294,12 @@ while ($row = @mysql_fetch_assoc($result)) {
 
 			<label>Model:</label>
 			<select name="modelid" id="modelid" onChange="modelSelected();">
+				<option selected value="<?= $modelid ?>"><?=$modelid?></option>
 			</select>
 			<div class="spacer"></div>
 
 			<label>Site:</label>
-			<input name="siteid" id="siteid" type="hidden"/>
+			<input name="siteid" id="siteid" type="hidden" value="<?=$siteid?>"/>
 			<input name="sitename" id="sitename" type="text" readonly value="No site selected" />
 			<div class="spacer"></div>
 
