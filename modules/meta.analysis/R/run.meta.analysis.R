@@ -63,7 +63,7 @@ run.meta.analysis.pft <- function(pft, iterations, dbfiles, dbcon) {
       if (p.data <= 0.975 & p.data >= 0.025) {
         logger.info("OK! ", trait, " data and prior are consistent:")
       } else {
-        logger.warning("CHECK THIS: ", trait, " data and prior are inconsistent:")
+        logger.warn("CHECK THIS: ", trait, " data and prior are inconsistent:")
       }
     } else if (p.data > 0.9995 | p.data < 0.0005) {
       logger.severe("NOT OK! ", trait," data and prior are probably not the same:")
@@ -97,7 +97,7 @@ run.meta.analysis.pft <- function(pft, iterations, dbfiles, dbcon) {
       if (p.ma.post <= 0.975 & p.ma.post >= 0.025) {
         logger.info("OK! ", trait, " posterior and prior are consistent:")
       } else {
-        logger.warning("CHECK THIS: ", trait, " posterior and prior are inconsistent:")
+        logger.warn("CHECK THIS: ", trait, " posterior and prior are inconsistent:")
       }
     } else if (p.ma.post > 0.9995 | p.ma.post < 0.0005) {
       logger.severe("NOT OK! ", trait," posterior and prior are probably not the same:")
