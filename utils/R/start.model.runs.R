@@ -73,7 +73,7 @@ start.model.runs <- function(model, write = TRUE){
 
         # start the actual model run
         if (settings$run$host$name == "localhost") {        
-          out <- system2(qsub, c(file.path(settings$run$host$rundir, run, "job.sh")), stdout=TRUE)
+          out <- system2(qsub, c(file.path(settings$rundir, run, "job.sh")), stdout=TRUE)
         } else {
           out <- system2("ssh", c(settings$run$host$name, qsub, file.path(settings$run$host$rundir, run, "job.sh")), stdout=TRUE)
         }
@@ -83,7 +83,7 @@ start.model.runs <- function(model, write = TRUE){
       # if qsub option is not invoked.  just start model runs in serial.
       } else {
         if (settings$run$host$name == "localhost") {        
-          out <- system2(file.path(settings$run$host$rundir, run, "job.sh"), stdout=TRUE)
+          out <- system2(file.path(settings$rundir, run, "job.sh"), stdout=TRUE)
         } else {
           out <- system2("ssh", c(settings$run$host$name, file.path(settings$run$host$rundir, run, "job.sh")), stdout=TRUE)
         }

@@ -81,6 +81,10 @@ th,td {
     margin: 2px 0 5px 5px;
 }
 
+#stylized input[type=checkbox] {
+    width: auto;
+}
+
 #stylized button {
     clear: both;
     margin-left: 35px;

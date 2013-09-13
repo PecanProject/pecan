@@ -22,18 +22,20 @@ require("dbinfo.php");
 $connection=open_database();
 
 // get run information
-$query = "SELECT site_id, model_id, model_type, hostname, folder FROM workflows, models WHERE workflows.id=$workflowid and model_id=models.id";
+$query = "SELECT folder, params FROM workflows WHERE workflows.id=$workflowid";
 $result = mysql_query($query);
 if (!$result) {
 	die('Invalid query: ' . mysql_error());
 }
 $workflow = mysql_fetch_assoc($result);
 $folder = $workflow['folder'];
+$params = eval("return ${workflow['params']};");
 
 // check result
-$status=file($folder . DIRECTORY_SEPARATOR . "STATUS");
-if ($status === FALSE) {
-	$status = array();
+if (file_exists($folder . DIRECTORY_SEPARATOR . "STATUS")) {
+	$status=file($folder . DIRECTORY_SEPARATOR . "STATUS");
+} else {
+	$status=array();
 }
 
 // jump to right place if need be
@@ -49,10 +51,12 @@ if (checkStatus("FINISHED") == 1) {
 
 // check the global status
 switch(checkStatus("MODEL")) {
+	// No ERROR, and no endtime yet
 	case 0:
 		$nextenabled="disabled=\"disabled\"";
 		header( "refresh:5" );
 		break;		
+	// MODEL is complete
 	case 1:
 		$nextenabled="disabled=\"disabled\"";
 		chdir($folder);
@@ -62,16 +66,28 @@ switch(checkStatus("MODEL")) {
 		} else {
 			header( "Location: running_stage3.php?workflowid=$workflowid");
 		}
-		break;
+		exit;
+    // ERROR occurred
 	case 2:
-		$nextenabled="";
-		if ($offline) {
-			header( "Location: failurealert.php?workflowid=$workflowid&offline=offline&failurestage=2");
-		} else {
-			header( "Location: failurealert.php?workflowid=$workflowid&failurestage=2");
+		if (isset($params['email'])) {
+			$url = ($_SERVER['HTTPS'] ? "https://" : "http://");
+			$url .= $_SERVER['HTTP_HOST'] . ':' . $_SERVER['SERVER_PORT'];
+			$url .= str_replace("running_stage1.php", "failurealert.php", $_SERVER["SCRIPT_NAME"]);
+			if ($offline) {
+				$url .= "?workflowid=${workflowid}&offline=offline";
+			} else {
+				$url .= "?workflowid=${workflowid}";
+			}
+			mail($params['email'], "Workflow has failed", "You can find the results on $url");
 		}
+		$nextenabled="";
 		mysql_query("UPDATE workflows SET finished_at=NOW() WHERE id=${workflowid} AND finished_at IS NULL");
-		break;
+		if ($offline) {
+			header( "Location: failurealert.php?workflowid=$workflowid&offline=offline");
+		} else {
+			header( "Location: failurealert.php?workflowid=$workflowid");
+		}
+		exit;
 }
 
 ?>
@@ -112,26 +128,28 @@ switch(checkStatus("MODEL")) {
 <?php if ($offline) { ?>
 			<input name="offline" type="hidden" value="offline">
 <?php } ?>
-				<input type="hidden" name="siteid" value="<?=$workflow['site_id']?>" />
-		<input type="hidden" name="modelid" value="<?=$workflow['model_id']?>" />
-		<input type="hidden" name="modeltype" value="<?=$workflow['model_type']?>" />
-		<input type="hidden" name="hostname" value="<?=$workflow['hostname']?>" />
-		</form>
-		
-		<form id="formemail" method="POST" action="sendemail.php">
-		<input type="hidden" name="workflowid" value="<?=$workflowid?>" />
+			<?php foreach ($params as $k => $v) {
+				if (is_array($v)) {
+					foreach($v as $x) {
+						echo "<input type=\"hidden\" name=\"${k}[]\" value=\"${x}\" />\n";
+					}
+				} else {
+					echo "<input type=\"hidden\" name=\"${k}\" value=\"${v}\" />\n";
+				}
+			} ?>
 		</form>
 		
 		<form id="formnext" method="POST" action="finished.php">
 <?php if ($offline) { ?>
 			<input name="offline" type="hidden" value="offline">
 <?php } ?>
-		<input type="hidden" name="workflowid" value="<?=$workflowid?>" />
+			<input type="hidden" name="workflowid" value="<?=$workflowid?>" />
+		</form>
+
 		<span id="error" class="small">&nbsp;</span>
 		<input id="prev" type="button" value="Prev" onclick="prevStep();" />
 		<input id="next" type="button" value="Next" onclick="nextStep();" <?=$nextenabled?>/>		
 		<div class="spacer"></div>
-		</form>
 	</div>
 	<div id="output">
 	<h2>Execution Status</h2>
