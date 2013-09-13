@@ -1,5 +1,6 @@
 \name{logger.warn}
 \alias{logger.warn}
+\alias{logger.warning}
 \title{Prints a warning message.}
 \usage{
   logger.warn(msg, ...)

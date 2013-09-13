@@ -53,6 +53,7 @@ logger.info <- function(msg, ...) {
 ##' @param msg the message that should be printed.
 ##' @param ... any additional text that should be printed.
 ##' @export
+##' @aliases logger.warning
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
