@@ -25,3 +25,4 @@ Collate:
     'model2netcdf.BIOCRO.R'
     'start.runs.BIOCRO.R'
     'write.configs.BIOCRO.R'
+    'get.met.R'
