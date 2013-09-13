@@ -31,19 +31,16 @@ convert.samples.BIOCRO <- function(trait.samples){
     trait.names[trait.names == "cuticular_cond"] <- "b0"
     trait.names[trait.names == "stomatal_slope.BB"] <- "b1"
     trait.names[trait.names == "SLA"] <- "Sp"
-    trait.names[trait.names == "growth_resp_factor"] <- "GrowthRespFraction"
-    trait.names[trait.names == "extinction_coefficient"] <- "kd"
+    trait.names[trait.names == "growth_respiration_coefficient"] <- "GrowthRespFraction"
+    trait.names[trait.names == "extinction_coefficient_diffuse"] <- "kd"
         
-    colnames(trait.samples) <- trait.names
-    
+    colnames(trait.samples) <- trait.names    
     
     # iRhizome
     # iStem
     # ifrRhizome
     # ifrStem
-    # growth Repiration factor
-    # 
-
+ 
     ## transform values with different units
     ## cuticular conductance - BETY default is umol; BioCro uses mol
     if("b0" %in% trait.names){
