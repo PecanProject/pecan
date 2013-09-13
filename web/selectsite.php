@@ -26,11 +26,13 @@ if (!$result) {
 }
 $hosts = "";
 $hostname = gethostname();
-while ($row = @mysql_fetch_assoc($result)){
-	if ($hostname == $row['hostname']) {
-		$hosts = "$hosts<option selected>{$row['hostname']}</option>\n";
-	} else {
-		$hosts = "$hosts<option>{$row['hostname']}</option>\n";
+while ($row = @mysql_fetch_assoc($result)) {
+	if (in_array($row['hostname'], $hostlist)) {
+		if ($hostname == $row['hostname']) {
+			$hosts = "$hosts<option selected>{$row['hostname']}</option>\n";
+		} else {
+			$hosts = "$hosts<option>{$row['hostname']}</option>\n";
+		}
 	}
 }
 
@@ -73,7 +75,7 @@ while ($row = @mysql_fetch_assoc($result)){
             $("#error").html("Select a model to continue");
             return;
         }
-        if ($("#hostname").val() != "<?=$hostname?>") {
+        if ($("#hostname").val() != "") {
             $("#next").attr("disabled", "disabled");
             $("#error").html("Select <?=$hostname?> to continue");
             return;
