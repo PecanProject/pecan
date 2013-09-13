@@ -22,7 +22,7 @@ start.runs.BIOCRO <- function(runid) {
   if(settings$run$host$name == "localhost"){
       settings$run$host$name <- hostname
   } else {
-      logger.error("BioCro module only configured to run locally")
+      #logger.error("BioCro module only configured to run locally")
   }
 
   rundir <- file.path(settings$run$host$rundir, as.character(runid))
@@ -68,10 +68,10 @@ start.runs.BIOCRO <- function(runid) {
                                      iRoot=1.0, ifrRhizome=0.01, ifrStem=0.01,
                                      ifrLeaf = 0.0, ifrRoot = 0.0)
           } else if(!is.null(result)){
-              r <- last(result[, c("Rhizome", "Stem", "Root")])
-              iplant$iRhizome <- r$Rhizome
-              iplant$iStem <- r$Stem
-              iplant$iRoot <- r$Root
+              r <- last(result)
+              iplant$iRhizome <- r[,Rhizome]
+              iplant$iStem <- r[,Stem]
+              iplant$iRoot <- r[,Root]
           }
           result <- willowGro(WetDat = WetDat, photoControl=pp, canopyControl=cc,
                               day1 = day1, dayn = dayn)
