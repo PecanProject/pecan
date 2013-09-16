@@ -31,12 +31,15 @@ get.ncepmet <- function(lat = as.numeric(settings$run$site$lat),
     
 ### TODO the following code should be run during write_configs and the file name passed to the start.runs function
 ### the next set of code using queries will be passed to a new function called "query.met"
-    metfiles <- db.query(paste("select start_date, end_date, hostname, file_name, file_path ",
-                               "from inputs join dbfiles on dbfiles.container_id = inputs.file_id ",
-                               "join machines on dbfiles.machine_id = machines.id ",
-                               "where start_date <= '", start.date, 
-                               "' and end_date >= '", end.date, 
-                               "' and site_id =", site.id, ";", sep = ""), con = con)
+    metfiles <- db.query(
+        paste("select start_date, end_date, hostname, file_name, file_path ",
+              "from inputs join dbfiles on dbfiles.container_id = inputs.file_id ",
+              "join machines on dbfiles.machine_id = machines.id ",
+              "join formats on inputs.format_id = formats.id ",
+              "where formats.name = 'biocromet' ",
+              " and start_date <= '", start.date, 
+              "' and end_date >= '", end.date, 
+              "' and site_id =", site.id, ";", sep = ""), con = con)
     
     if(nrow(metfiles) == 0){
         metfile.exists <- FALSE
