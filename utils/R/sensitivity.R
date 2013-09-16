@@ -42,9 +42,9 @@ read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name='',
   for(trait in traits){
     for(quantile in quantiles){
       run.id <- sa.runs[[pft.name]][quantile, trait]
-      sa.output[quantile, trait] <- sapply(read.output(run.id, file.path(outdir, run.id),
-                                                       start.year, end.year, variables),
-                                           mean, na.rm=TRUE)
+      out <- read.output(run.id, file.path(outdir, run.id),
+                         start.year, end.year, variables)
+      sa.output[quantile, trait] <- sapply(out, mean, na.rm=TRUE)
     } ## end loop over quantiles
     logger.info("reading sensitivity analysis output for model run at ", quantiles, "quantiles of trait", trait)
   } ## end loop over traits
