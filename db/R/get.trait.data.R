@@ -20,7 +20,9 @@
 ##' @author David LeBauer, Shawn Serbin, Rob Kooper
 ##' @export
 ##'
-get.trait.data.pft <- function(pft, dbfiles, dbcon, forceupdate, trait.names) {
+get.trait.data.pft <- function(pft, dbfiles, dbcon,
+                               forceupdate = TRUE,
+                               trait.names = traitdictionary$id) {
   ## Remove old files.  Clean up.
   old.files <- list.files(path=pft$outdir, full.names=TRUE, include.dirs=FALSE)
   file.remove(old.files)
@@ -45,7 +47,9 @@ get.trait.data.pft <- function(pft, dbfiles, dbcon, forceupdate, trait.names) {
         for(id in ids) {
           if (!file.exists(file.path(files$file_path[[id]], files$file_name[[id]]))) {
             foundallfiles <- FALSE
-            break
+            logger.severe("can not find posterior file: ",
+                          file.path(files$file_path[[id]],
+                                    files$file_name[[id]]))
           }    
         }
         if (foundallfiles) {
