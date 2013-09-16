@@ -22,15 +22,10 @@
 ##' @author David LeBauer, Shawn Serbin
 ##'
 run.sensitivity.analysis <- function(plot=TRUE){
-  if(!exists("settings")){ # temporary hack
-                        # waiting on http://stackoverflow.com/q/11005478/199217
-    settings <- list(outdir = "/tmp/",
-                     pfts = list(pft = list(name = "ebifarm.pavi",
-                                   outdir = "/tmp/")),
-                     sensitivity.analysis = NULL)
+  if(!exists("settings")){
+      logger.severe("no settings file found")
   }
   
-  ### !!! This with below seems repetitive.  Should only need one if sa.analysis check. SPS
   if ('sensitivity.analysis' %in% names(settings)) {
     
     ### Load parsed model results
@@ -40,7 +35,6 @@ run.sensitivity.analysis <- function(plot=TRUE){
     ### Generate SA output and diagnostic plots
     sensitivity.results <- list()
     for(pft in settings$pfts){
-      if('sensitivity.analysis' %in% names(settings)) {
         traits <- names(trait.samples[[pft$name]])
         quantiles.str <- rownames(sa.samples[[pft$name]])
         quantiles.str <- quantiles.str[which(quantiles.str != '50')]
@@ -91,7 +85,7 @@ run.sensitivity.analysis <- function(plot=TRUE){
           do.call(grid.arrange, c(vd.plots, ncol = 4))
           dev.off()
         }
-      }
+
     }  ## end if sensitivity analysis
 
     save(sensitivity.results, file = file.path(settings$outdir, "sensitivity.results.Rdata"))
