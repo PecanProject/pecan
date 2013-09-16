@@ -18,12 +18,14 @@ start.runs.BIOCRO <- function(runid) {
 
     hostname <- system("hostname", intern = TRUE)
   
-  require("BioCro")
-  if(settings$run$host$name == "localhost"){
-      settings$run$host$name <- hostname
-  } else {
-      #logger.error("BioCro module only configured to run locally")
-  }
+    require("BioCro")
+    if(!(settings$run$host$name == hostname)){
+        if(settings$run$host$name == "localhost"){
+            settings$run$host$name <- hostname
+        } else {
+            logger.error("BioCro module only configured to run locally")
+        }
+    }
 
   rundir <- file.path(settings$run$host$rundir, as.character(runid))
   outdir <- file.path(settings$run$host$outdir, as.character(runid))
@@ -49,53 +51,57 @@ start.runs.BIOCRO <- function(runid) {
 
 
   if(!(genus %in% c("Saccharum", "Salix", "Miscanthus"))) {
-      logger.error("genus", genus, "not supported by PEcAn.BIOCRO module")
+      logger.severe("genus", genus, "not supported by PEcAn.BIOCRO module")
   }
-
-  out <- NULL ## could be pre-allocated for speed
-  result <- NULL
-
+    
+    result <- list()
+    
   for(yeari in years){
+
+      yearchar <- as.character(yeari)
       WetDat <- W[W$year == yeari,]
       day1 <- min(WetDat$doy)
       dayn <- max(WetDat$doy)
+      
       if(genus == "Saccharum"){
-          result <- caneGro(WetDat = WetDat, photoControl=pp, canopyControl=cc)
-          result[["Grain"]] <- result[["Rhizome"]] <- rep(0, length(result$Hour))
+          result[[yearchar]] <- caneGro(WetDat = WetDat, photoControl=pp, canopyControl=cc)
+          result[[yearchar]][["Grain"]] <- result[[yearchar]][["Rhizome"]] <- rep(0, length(result$Hour))
       } else if (genus == "Salix") {
-          if(is.null(result)){
+          if(yeari == min(years)){
               iplant <- iwillowParms(iRhizome=1.0, iStem=1.0, iLeaf=0.0,
                                      iRoot=1.0, ifrRhizome=0.01, ifrStem=0.01,
                                      ifrLeaf = 0.0, ifrRoot = 0.0)
-          } else if(!is.null(result)){
-              r <- last(result)
-              iplant$iRhizome <- r[,Rhizome]
-              iplant$iStem <- r[,Stem]
-              iplant$iRoot <- r[,Root]
+          } else if(yeari > min(years)){
+              iplant$iRhizome <- last(result[[as.character(yeari-1)]]$Rhizome)
+              iplant$iStem <- last(result[[as.character(yeari-1)]]$Stem)
+              iplant$iRoot <- last(result[[as.character(yeari-1)]]$Root)
           }
-          result <- willowGro(WetDat = WetDat, photoControl=pp, canopyControl=cc,
-                              day1 = day1, dayn = dayn)
+          result[[yearchar]] <- willowGro(WetDat = WetDat, photoControl=pp,
+                                       canopyControl=cc, day1 = day1, dayn = dayn)
       } else if (genus == "Miscanthus") {
-          result <- BioGro(WetDat = WetDat, photoControl = pp, canopyControl = cc)
+          result[[yearchar]] <- BioGro(WetDat = WetDat, photoControl = pp, canopyControl = cc)
       }
-  
-      result <- with(result,
-                 data.table(Year = yeari, DayofYear, Hour, ThermalT,
-                            Stem, Leaf, Root, Rhizome, Grain, LAI, SoilEvaporation, CanopyTrans))
-      if(is.null(out)) {
-          out <- result
-      } else {
-          out <- rbind(out, result)
+
+      result.yeari <- with(result[[yearchar]],
+                           data.table(Year = yeari, DayofYear, Hour, ThermalT,
+                                      Stem, Leaf, Root, Rhizome, Grain, LAI,
+                                      SoilEvaporation, CanopyTrans))
+      if(yeari == min(years)){
+          resultDT <- result.yeari
+      } else if (yeari > min(years)){
+          resultDT <- rbind(resultDT, result.yeari)
       }
   }
-  result <- out
-  if(is.null(result)) logger.error("no output from BioCro")
-  
-  write.csv(result, file=file.path(outdir, "result.csv"))
-
-  save(result, config, file = file.path(outdir, "result.RData"))
-
-  file.copy(file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))
+    
+    write.csv(resultDT, file=file.path(outdir, "result.csv"))
+    
+#    pdf(file.path(outdir, "result.pdf"))
+#    lapply(result, plot)
+#    dev.off()
+    
+    save(resultDT, config, file = file.path(outdir, "result.RData"))
+    
+    file.copy(file.path(rundir, "README.txt"), file.path(outdir, "README.txt"), overwrite = TRUE)
 }
 #==================================================================================================#
 

@@ -46,7 +46,7 @@ convert.samples.BIOCRO <- function(trait.samples){
     if("b0" %in% trait.names){
         trait.samples[, trait.names == "b0"] <- trait.samples[, trait.names == "b0"]/1e6
     }
-    if("SLA" %in% trait.names){
+    if("Sp" %in% trait.names){
         trait.samples[, trait.names == "Sp"] <- trait.samples[, trait.names == "Sp"]/ 10
     }
     
