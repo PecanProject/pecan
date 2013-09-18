@@ -7,6 +7,7 @@ Author: David LeBauer, Deepak Jaiswal
 Maintainer: David LeBauer <dlebauer@illinois.edu>
 Description: This module provides functions to link BioCro to PEcAn.
 Depends:
+    BioCro,
     PEcAn.utils,
     PEcAn.settings,
     PEcAn.data.atmosphere,
