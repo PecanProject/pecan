@@ -21,7 +21,9 @@ Depends:
     raster,
     sp,
     ggplot2,
-    scales
+    scales,
+    data.table,
+    earth
 Suggests:
     testthat
 License: FreeBSD + file LICENSE
@@ -30,3 +32,4 @@ LazyLoad: yes
 LazyData: FALSE
 Collate:
     'worldmap.R'
+    'points2county.R'

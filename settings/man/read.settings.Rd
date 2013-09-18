@@ -15,18 +15,23 @@
 }
 \description{
   This will try and find the PEcAn settings file in the
-  following order:
-}
-\details{
-  \enumerate{ \item {--settings <file>}{passed as command
-  line argument using --settings} \item {inputfile}{passed
-  as argument to function} \item
+  following order: \enumerate{ \item {--settings
+  <file>}{passed as command line argument using --settings}
+  \item {inputfile}{passed as argument to function} \item
   {PECAN_SETTINGS}{environment variable PECAN_SETTINGS
   pointing to a specific file} \item
-  {./pecan.xml}{pecan.xml in the current folder} }
+  {./pecan.xml}{pecan.xml in the current folder} } Once the
+  function finds a valid file, it will not look further.
+  Thus, if \code{inputfile} is supplied,
+  \code{PECAN_SETTINGS} will be ignored
 }
 \examples{
 \dontrun{
+## bash shell:
+R --vanilla -- --settings path/to/mypecan.xml < workflow.R
+
+## R:
+
 settings <- read.settings()
 settings <- read.settings(file="willowcreek.xml")
 test.settings.file <- system.file("tests/test.xml", package = "PEcAn.all")

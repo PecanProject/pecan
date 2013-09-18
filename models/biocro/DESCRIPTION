@@ -7,14 +7,15 @@ Author: David LeBauer, Deepak Jaiswal
 Maintainer: David LeBauer <dlebauer@illinois.edu>
 Description: This module provides functions to link BioCro to PEcAn.
 Depends:
+    BioCro,
     PEcAn.utils,
     PEcAn.settings,
     PEcAn.data.atmosphere,
     udunits2,
     ncdf4,
-    BioCro,
     RNCEP,
     lubridate,
+    data.table,
     XML
 License: FreeBSD + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
@@ -25,3 +26,4 @@ Collate:
     'model2netcdf.BIOCRO.R'
     'start.runs.BIOCRO.R'
     'write.configs.BIOCRO.R'
+    'get.met.R'

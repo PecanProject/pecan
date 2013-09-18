@@ -27,7 +27,7 @@ print_editor($id, $table, true);
 # get the input that we want to show
 $query="SELECT dbfiles.id, concat(machines.hostname, ':', dbfiles.file_path, '/', dbfiles.file_name) as filename" .
        " FROM dbfiles, machines, inputs" .
-       " WHERE inputs.id=$id AND dbfiles.container_id=inputs.file_id AND machines.id=dbfiles.machine_id;";
+       " WHERE inputs.id=$id AND dbfiles.container_id=inputs.id AND dbfiles.container_type='Input' AND machines.id=dbfiles.machine_id;";
 $result = mysql_query($query, $db_connection);
 if (!$result) {
 	die("Invalid query [$query] " . mysql_error($db_connection));

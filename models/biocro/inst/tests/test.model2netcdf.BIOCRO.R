@@ -5,9 +5,9 @@ dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 
 pkgext <- system.file("extdata", package = "PEcAn.BIOCRO")
 settings <- read.settings(file.path(pkgext, "pecan.biocro.xml"))
-result.csv <- file.path(pkgext, "result.csv")
+result.file <- file.path(pkgext, "result.RData")
 
-file.copy(from = result.csv, to = outdir)
+file.copy(from = result.file, to = outdir)
 
 start_date <- settings$run$start.date
 model2netcdf.BIOCRO(outdir = outdir, sitelat=1, sitelon=2, 

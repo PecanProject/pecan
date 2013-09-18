@@ -435,7 +435,7 @@ derive.traits <- function(FUN, ..., input=list(...),
 ##' query.trait.data("Vcmax", "938", con = query.base.con(settings))
 ##' }
 ##' @author David LeBauer, Carl Davidson, Shawn Serbin
-query.trait.data <- function(trait, spstr,con=query.base.con(settings), ...){
+query.trait.data <- function(trait, spstr, con = query.base.con(settings), ...){
   
   if(is.list(con)){
     print("query.trait.data")

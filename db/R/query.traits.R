@@ -19,7 +19,8 @@
 ##' @export
 ##' @examples
 ##' \dontrun{
-##' spstr <- query.pft_species('ebifarm.c4crop')
+##' species <- query.pft_species('ebifarm.c4crop')
+##' spstr <- vecpaste(species$id)
 ##' trvec <- c('leafN', 'SLA')
 ##' trait.data <- query.traits(spstr, trvec)
 ##' }
