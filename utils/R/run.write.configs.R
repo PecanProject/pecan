@@ -25,15 +25,9 @@ run.write.configs <- function(model, write = TRUE) {
     unlink(file.path(settings$rundir, "runs.txt"))
   }
 
+  load.modelpkg(model)
   ## Check for model-specific write configs
-  pecan.modelpkg <- paste0("PEcAn.", model)
-  if(!pecan.modelpkg  %in% names(sessionInfo()$otherPkgs)){
-    if(pecan.modelpkg  %in% rownames(installed.packages())) {
-      require(pecan.modelpkg)
-    } else {
-      logger.error("I can't find a package for the ", model, "model; I expect it to be named ", pecan.modelpkg)
-    }
-  }
+
   my.write.config <- paste("write.config.",model,sep="")
   if(!exists(my.write.config)){
     logger.error(my.write.config, "does not exist, please make sure that the package ", 

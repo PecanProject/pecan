@@ -53,6 +53,11 @@ check.settings <- function(settings) {
       settings$database$username <- settings$database$userid
       settings$database$userid <- NULL
     }
+    if (!is.null(settings$database$user)) {
+      logger.info("user in database section should be username for MySQL")
+      settings$database$username <- settings$database$user
+      settings$database$user <- NULL
+    }
     if (!is.null(settings$database$passwd)) {
       logger.info("passwd in database section should be password for MySQL")
       settings$database$password <- settings$database$passwd
@@ -66,7 +71,28 @@ check.settings <- function(settings) {
   }
 
   # PostgreSQL specific checks
-  # TODO IMPLEMENT
+  if (settings$database$driver == "PostgreSQL") {
+    if (!is.null(settings$database$userid)) {
+      logger.info("userid in database section should be user for PostgreSQL")
+      settings$database$user <- settings$database$userid
+      settings$database$userid <- NULL
+    }
+    if (!is.null(settings$database$username)) {
+      logger.info("username in database section should be user for PostgreSQL")
+      settings$database$user <- settings$database$username
+      settings$database$username <- NULL
+    }
+    if (!is.null(settings$database$passwd)) {
+      logger.info("passwd in database section should be password for PostgreSQL")
+      settings$database$password <- settings$database$passwd
+      settings$database$passwd <- NULL
+    }
+    if (!is.null(settings$database$name)) {
+      logger.info("name in database section should be dbname for PostgreSQL")
+      settings$database$dbname <- settings$database$name
+      settings$database$name <- NULL
+    }
+  }
 
   # should runs be written to database
   if (is.null(settings$bety$write)) {
@@ -95,7 +121,7 @@ check.settings <- function(settings) {
   
   # check database version
   if(database){
-    versions <- db.query("SELECT version FROM schema_migrations WHERE version >= '20130425152503';", params=settings$database)[['version']]
+    versions <- db.query("SELECT version FROM schema_migrations WHERE version >= '20130717162614';", params=settings$database)[['version']]
     if (length(versions) == 0) {
       logger.severe("Database is out of date, please update the database.")
     }
@@ -225,20 +251,6 @@ check.settings <- function(settings) {
     }
   }
 
-  # check to make sure run information is filled out
-  if (is.null(settings$run$host$name)) {
-    logger.info("Setting localhost for execution host.")
-    settings$run$host$name <- "localhost"
-  }
-  if (settings$run$host$name != "localhost") {
-    if (is.null(settings$run$host$rundir)) {
-      logger.severe("not rundir specified on remote machine.")
-    }
-    if (is.null(settings$run$host$outdir)) {
-      logger.severe("not outdir specified on remote machine.")
-    }
-  }
-
   # check meta-analysis
   if (is.null(settings$meta.analysis) || is.null(settings$meta.analysis$iter)) {
     settings$meta.analysis$iter <- 3000
@@ -247,6 +259,18 @@ check.settings <- function(settings) {
   if (is.null(settings$meta.analysis$random.effects)) {
     settings$meta.analysis$random.effects <- FALSE
     logger.info("Setting meta.analysis random effects to ", settings$meta.analysis$random.effects)
+  }
+  if (is.null(settings$meta.analysis$update)) {
+    settings$meta.analysis$update <- FALSE
+    logger.info("Setting meta.analysis update to only update if no previous meta analysis was found")
+  }
+  if (settings$meta.analysis$update == 'AUTO') {
+    logger.info("meta.analysis update AUTO is not implemented yet, defaulting to FALSE")
+    settings$meta.analysis$update <- FALSE
+  }
+  if ((settings$meta.analysis$update != 'AUTO') && is.na(as.logical(settings$meta.analysis$update))) {
+    logger.info("meta.analysis update can only be AUTO/TRUE/FALSE, defaulting to FALSE")
+    settings$meta.analysis$update <- FALSE
   }
 
   # check modelid with values
@@ -350,6 +374,28 @@ check.settings <- function(settings) {
     }
   }
 
+  # check to make sure a host is given
+  if (is.null(settings$run$host$name)) {
+    logger.info("Setting localhost for execution host.")
+    settings$run$host$name <- "localhost"
+  }
+
+  # check if we need to use qsub
+  if ("qsub" %in% names(settings$run$host)) {
+    if (is.null(settings$run$host$qsub)) {
+      settings$run$host$qsub <- "qsub -N @NAME@ -o @STDOUT@ -e @STDERR@"
+      logger.info("qsub not specified using default value :", settings$run$host$qsub)
+    }
+    if (is.null(settings$run$host$qsub.jobid)) {
+      settings$run$host$qsub.jobid <- "Your job ([0-9]+) .*"
+      logger.info("qsub.jobid not specified using default value :", settings$run$host$qsub.jobid)
+    }
+    if (is.null(settings$run$host$qstat)) {
+      settings$run$host$qstat <- "qstat -j @JOBID@ 2>1 >/dev/null || echo DONE"
+      logger.info("qstat not specified using default value :", settings$run$host$qstat)
+    }
+  }
+
   # Check folder where outputs are written before adding to dbfiles
   if(is.null(settings$run$dbfiles)) {
     settings$run$dbfiles <- normalizePath("~/.pecan/dbfiles", mustWork=FALSE)
@@ -361,42 +407,42 @@ check.settings <- function(settings) {
   # check/create the pecan folder
   if (is.null(settings$outdir)) {
     settings$outdir <- tempdir()
-    logger.info("No output folder specified, using", tempdir())
-  } else {
-    logger.debug("output folder =", settings$outdir)
   }
+  if (substr(settings$outdir, 1, 1) != '/') {
+    settings$outdir <- file.path(getwd(), settings$outdir)
+  }
+  logger.debug("output folder =", settings$outdir)
   if (!file.exists(settings$outdir) && !dir.create(settings$outdir, recursive=TRUE)) {
     logger.severe("Could not create folder", settings$outdir)
   }
 
-  # check/create the run folder
-  if (settings$run$host$name == "localhost") {
-    if (is.null(settings$run$host$rundir)) {
-      settings$run$host$rundir <- file.path(settings$outdir, "run")
-    }
-    settings$rundir <- settings$run$host$rundir
-  } else {
-    if (is.null(settings$rundir)) {
-      settings$rundir <- file.path(settings$outdir, "run")
-    }
+  # check/create the local run folder
+  if (is.null(settings$rundir)) {
+    settings$rundir <- file.path(settings$outdir, "run")
   }
   if (!file.exists(settings$rundir) && !dir.create(settings$rundir, recursive=TRUE)) {
-    logger.severe("Could not create folder", settings$rundir)
+    logger.severe("Could not create run folder", settings$rundir)
   }
 
-  # check/create the out folder
-  if (settings$run$host$name == "localhost") {
-    if (is.null(settings$run$host$outdir)) {
-      settings$run$host$outdir <- file.path(settings$outdir, "out")
-    }
-    settings$modeloutdir <- settings$run$host$outdir
-  } else {
-    if (is.null(settings$modeloutdir)) {
-      settings$modeloutdir <- file.path(settings$outdir, "out")
-    }
+  # check/create the local model out folder
+  if (is.null(settings$modeloutdir)) {
+    settings$modeloutdir <- file.path(settings$outdir, "out")
   }
   if (!file.exists(settings$modeloutdir) && !dir.create(settings$modeloutdir, recursive=TRUE)) {
-    logger.severe("Could not create folder", settings$modeloutdir)
+    logger.severe("Could not create model out folder", settings$modeloutdir)
+  }
+  
+  # make sure remote folders are specified if need be
+  if (!is.null(settings$run$host$qsub) && (settings$run$host$name != "localhost")) {
+    if (is.null(settings$run$host$rundir)) {
+      logger.severe("Need to have specified a folder where PEcAn will write run information for job.")
+    }
+    if (is.null(settings$run$host$outdir)) {
+      logger.severe("Need to have specified a folder where PEcAn will write output of job.")
+    }
+  } else if (settings$run$host$name == "localhost") {
+    settings$run$host$rundir <- settings$rundir
+    settings$run$host$outdir <- settings$outdir
   }
 
   # check/create the pft folders
@@ -417,22 +463,6 @@ check.settings <- function(settings) {
     }
   }
 
-  # add defaults for qsub
-  if (settings$run$host$name != "localhost") {
-    if (is.null(settings$run$host$qsub)) {
-      settings$run$host$qsub <- "qsub -N @NAME@ -o @STDOUT@ -e @STDERR@"
-      logger.info("qsub not specified using default value :", settings$run$host$qsub)
-    }
-    if (is.null(settings$run$host$qsub.jobid)) {
-      settings$run$host$qsub.jobid <- "Your job ([0-9]+) .*"
-      logger.info("qsub.jobid not specified using default value :", settings$run$host$qsub.jobid)
-    }
-    if (is.null(settings$run$host$qstat)) {
-      settings$run$host$qstat <- "qstat -j @JOBID@ 2>1 >/dev/null || echo DONE"
-      logger.info("qstat not specified using default value :", settings$run$host$qstat)
-    }
-  }
-
   # check for workflow defaults
   if(database){
     if (settings$bety$write) {
@@ -450,7 +480,10 @@ check.settings <- function(settings) {
     } else {
       settings$workflow$id <- "NA"
     }
+  } else {
+    settings$workflow$id <- "NA"
   }
+
   # all done return cleaned up settings
   invisible(settings)
 }

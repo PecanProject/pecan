@@ -55,3 +55,5 @@
 "rootN";"Root % N";"";""
 "stemN";"Stem % N";"";""
 "root2shoot";"Root to Shoot Ratio";"";""
+"growth_respiration_coefficient";"growth respiration coefficient";"ratio";""
+"extinction_coefficient_diffuse";"extinction coefficient for diffuse light";"fraction";""

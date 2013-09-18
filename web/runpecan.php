@@ -14,11 +14,7 @@ $connection=open_database();
 # boolean parameters
 $userok=isset($_REQUEST['userok']);
 $offline=isset($_REQUEST['offline']);
-if (isset($_REQUEST['advanced_edit'])) {
-	$advanced_edit=1;
-} else {
-	$advanced_edit=0;
-}
+$advanced_edit=isset($_REQUEST['advanced_edit']);
 
 # parameters
 if (!isset($_REQUEST['siteid'])) {
@@ -42,6 +38,11 @@ if (!isset($_REQUEST['pft'])) {
 }
 $pft=$_REQUEST['pft'];
 
+# non required parameters
+$email = "";
+if (isset($_REQUEST['email'])) {
+	$email = $_REQUEST['email'];
+}
 
 # specific for each model type
 if (($modeltype == "ED2") || ($modeltype == "BIOCRO")) {
@@ -98,32 +99,18 @@ if ($modeltype == "ED2") {
 
 // check input dates to make sure they agree with the dates from the weather data
 if (!$userok && ($startdate < $metstart || $enddate > $metend)) {
-	$params = "siteid=$siteid&modelid=$modelid&modeltype=$modeltype&hostname=$hostname";
-	$params .= "&userok=on";
-
-	foreach ($pft as $pft_elem) {
-		$params .= ("&pft[]=" . $pft_elem);
+	$params = "userok=on";
+	foreach($_REQUEST as $k => $v) {
+		if (is_array($v)) {
+			foreach($v as $x) {
+				$params .= "&${k}[]=$x";
+			}
+		} else {
+			$params .= "&${k}=$v";
+		}
 	}
-
-	if (($modeltype == "ED2") || ($modeltype == "BIOCRO")) {
-		$params .= "&start=$startdate&end=$enddate";
-	}
-	if (($modeltype == "ED2") || ($modeltype == "SIPNET")) {
-		$params .= "&met=$met";
-	}
-	if ($modeltype == "ED2") {
-		$params .= "&psscss=$psscss";
-	}
-
-	if($offline) {
-		$params .= "&offline=on";
-	}
-	if($advanced_edit) {
-		$params .= "&advanced_edit=on";
-	}
-
 	$params .= "&msg=WARNING : Selected dates are not within the bounds of the weather data file you selected.";
-	header("Location: selectdata.php?{$params}");
+	header("Location: checkfailed.php?{$params}");
 	exit();
 }
 
@@ -245,11 +232,25 @@ fwrite($fh, "      <met.end>${metend}</met.end>" . PHP_EOL);
 fwrite($fh, "    </site>" . PHP_EOL);
 fwrite($fh, "    <start.date>${startdate}</start.date>" . PHP_EOL);
 fwrite($fh, "    <end.date>${enddate}</end.date>" . PHP_EOL);
-fwrite($fh, "    <dbfiles>${output_folderi}</dbfiles>" . PHP_EOL);
+fwrite($fh, "    <dbfiles>${output_folder}</dbfiles>" . PHP_EOL);
 fwrite($fh, "    <host>" . PHP_EOL);
 fwrite($fh, "      <name>${hostname}</name>" . PHP_EOL);
 fwrite($fh, "    </host>" . PHP_EOL);
 fwrite($fh, "  </run>" . PHP_EOL);
+if ($email != "") {
+	$url = ($_SERVER['HTTPS'] ? "https://" : "http://");
+	$url .= $_SERVER['HTTP_HOST'] . ':' . $_SERVER['SERVER_PORT'];
+	$url .= str_replace("runpecan.php", "finished.php", $_SERVER["SCRIPT_NAME"]);
+	if ($offline) {
+		$url .= "?workflowid=${workflowid}&offline=offline";
+	} else {
+		$url .= "?workflowid=${workflowid}";
+	}
+	fwrite($fh, "  <email>" . PHP_EOL);
+	fwrite($fh, "    <to>${email}</to>" . PHP_EOL);
+	fwrite($fh, "    <url>${url}</url>" . PHP_EOL);
+	fwrite($fh, "  </email>" . PHP_EOL);
+}
 fwrite($fh, "</pecan>" . PHP_EOL);
 fclose($fh); 
 

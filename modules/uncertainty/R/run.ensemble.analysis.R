@@ -102,8 +102,8 @@ read.ensemble.ts <- function(model){
   ## SETTINGS  
   ensemble.ts <- list()
   ensemble.size <- as.numeric(settings$ensemble$size)
-  #outdir <- settings$outdir
-  outdir <- settings$run$host$outdir
+  outdir <- settings$modeloutdir
+  #outdir <- settings$run$host$outdir
   start.year <- ifelse(is.null(settings$ensemble$start.year), NA, settings$ensemble$start.year)
   end.year   <- ifelse(is.null(settings$ensemble$end.year), NA, settings$ensemble$end.year)
 
@@ -203,7 +203,7 @@ ensemble.ts <- function(ensemble.ts,observations=NULL,window=1){
       myens <- ensemble.ts[[j]]
     }    
 
-    ens.mean = apply(myens,2,mean)
+    ens.mean = apply(myens,2,mean,na.rm=TRUE)
     CI = apply(myens,2,quantile,c(0.025,0.5,0.975),na.rm=TRUE)
     ylim = range(CI,na.rm=TRUE)
     

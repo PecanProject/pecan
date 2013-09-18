@@ -66,12 +66,13 @@ if (".attrs" %in% names(settings$model$psscss)) {
 
 # get data from pecan DB
 status.start("TRAIT")
-get.trait.data()
+settings$pfts <- get.trait.data(settings$pfts, settings$run$dbfiles, settings$database, settings$meta.analysis$update)
+saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
 status.end()
 
 # run meta-analysis
 status.start("META")
-run.meta.analysis()
+run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database)
 status.end()
 
 # write model specific configs

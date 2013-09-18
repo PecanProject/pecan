@@ -102,26 +102,48 @@ convert.samples.ED <- function(trait.samples){
 ##' @author David LeBauer, Shawn Serbin, Carl Davidson
 ##-------------------------------------------------------------------------------------------------#
 write.config.ED2 <- function(defaults, trait.values, settings, run.id){
-    # create launch script
-  if (settings$run$host$name != "localhost") {
-    rundir <- file.path(settings$run$host$rundir, as.character(run.id))
-    outdir <- file.path(settings$run$host$outdir, as.character(run.id))
-    writeLines(c("#!/bin/bash",
-               paste("mkdir -p", outdir),
-               paste("cd", rundir),
-               "export GFORTRAN_UNBUFFERED_PRECONNECTED=yes",
-               settings$model$binary,
-               paste("cp ", file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))),
-               con=file.path(settings$rundir, run.id, "job.sh"))
-    Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
+  
+  # find out where to write run/ouput
+  rundir <- file.path(settings$run$host$rundir, as.character(run.id))
+  outdir <- file.path(settings$run$host$outdir, as.character(run.id))
+  if (is.null(settings$run$host$qsub) && (settings$run$host$name == "localhost")) {
+    rundir <- file.path(settings$rundir, as.character(run.id))
+    outdir <- file.path(settings$modeloutdir, as.character(run.id))
   }
+
+  # command if scratch is used
+  if (is.null(settings$run$host$scratchdir)) {
+    modeloutdir <- outdir
+    copyscratch <- "# no need to copy from scratch"
+    clearscratch <- "# no need to clear scratch"
+  } else {
+    modeloutdir <- file.path(settings$run$host$scratchdir, as.character(run.id))
+    copyscratch <- paste("rsync", "-a", file.path(modeloutdir, "*"), outdir)
+    if (is.null(settings$run$host$clearscratch) || is.na(as.logical(settings$run$host$clearscratch)) || as.logical(settings$run$host$clearscratch)) {
+      clearscratch <- paste("rm", "-rf", modeloutdir)
+    } else {
+      clearscratch <- "# scratch is not cleared"
+    }
+  }
+
+  # create launch script
+  writeLines(c("#!/bin/bash",
+             paste("mkdir -p", modeloutdir),
+             paste("cd", rundir),
+             "export GFORTRAN_UNBUFFERED_PRECONNECTED=yes",
+             #settings$model$binary,
+             copyscratch,
+             clearscratch,
+             paste("cp ", file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))),
+             con=file.path(settings$rundir, run.id, "job.sh"))
+  Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
 
   ## Get ED2 specific model settings and put into output config xml file
   xml <- listToXml(settings$model$config.header, 'config')
   names(defaults) <- sapply(defaults, function(x) x$name)
 
   ## TODO this should come from the database
-  histfile <- paste("data/history.", settings$model$revision, ".csv", sep='')
+  histfile <- paste("data/history.r", settings$model$revision, ".csv", sep='')
   if (file.exists(system.file(histfile, package="PEcAn.ED2"))) {
     edhistory <- read.csv2(system.file(histfile, package="PEcAn.ED2"), sep=";")
   } else {
@@ -189,8 +211,12 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   } else {
     filename <- system.file(settings$model$edin, package = "PEcAn.ED2")
     if (filename == "") {
-      model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database)
-      filename <- system.file(paste0("ED2IN.r", model$revision), package = "PEcAn.ED2")
+      if (!is.null(settings$model$revision)) {
+        filename <- system.file(paste0("ED2IN.r", settings$model$revision), package = "PEcAn.ED2")
+      } else {
+        model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database)
+        filename <- system.file(paste0("ED2IN.r", model$revision), package = "PEcAn.ED2")
+      }
     }
     if (filename == "") {
       logger.severe("Could not find ED template")
@@ -245,24 +271,13 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   ed2in.text <- gsub('@END_YEAR@', format(enddate, "%Y"), ed2in.text)
 
   ##----------------------------------------------------------------------
-  ed2in.text <- gsub('@OUTDIR@', settings$run$host$outdir, ed2in.text)
+  ed2in.text <- gsub('@OUTDIR@', modeloutdir, ed2in.text)
   ed2in.text <- gsub('@ENSNAME@', run.id, ed2in.text)
-  ed2in.text <- gsub('@CONFIGFILE@', "config.xml", ed2in.text)
+  ed2in.text <- gsub('@CONFIGFILE@', file.path(settings$run$host$rundir, run.id, "config.xml"), ed2in.text)
   
-  ## Generate a numbered suffix for scratch output folder.  Useful for cleanup.  TEMP CODE. NEED TO UPDATE.
-  ## cnt = counter(cnt) # generate sequential scratch output directory names 
-  ## print(cnt)
-  ## scratch = paste(Sys.getenv("USER"),".",cnt,"/",sep="")
-  scratch = paste(Sys.getenv("USER"),"/",settings$run$scratch, sep='')
-  ## ed2in.text <- gsub('@SCRATCH@', paste('/scratch/', settings$run$scratch, sep=''), ed2in.text)
-  ed2in.text <- gsub('@SCRATCH@', paste('/scratch/', scratch, sep=''), ed2in.text)
-  ##
-  
-#  ed2in.text <- gsub('@OUTFILE@', file.path(settings$run$host$outdir, run.id, "analysis"), ed2in.text)
-#  ed2in.text <- gsub('@OUTFILE@', file.path(settings$run$host$outdir, run.id, "analysis"), ed2in.text)
-
-  ed2in.text <- gsub('@FFILOUT@', file.path(settings$run$host$outdir, run.id, "analysis"), ed2in.text)
-  ed2in.text <- gsub('@SFILOUT@', file.path(settings$run$host$outdir, run.id, "history"), ed2in.text)
+  ##----------------------------------------------------------------------
+  ed2in.text <- gsub('@FFILOUT@', file.path(modeloutdir, "analysis"), ed2in.text)
+  ed2in.text <- gsub('@SFILOUT@', file.path(modeloutdir, "history"), ed2in.text)
   
   ##----------------------------------------------------------------------
   writeLines(ed2in.text, con = file.path(settings$rundir, run.id, "ED2IN"))

@@ -26,7 +26,7 @@ if (isset($_REQUEST['action'])) {
 	}
 
 	if ($_REQUEST['action'] == "add") {
-		$query = "UPDATE dbfiles, inputs SET dbfiles.container_id=coalesce(inputs.file_id, inputs.id), inputs.file_id=coalesce(inputs.file_id, inputs.id) WHERE dbfiles.id={$_REQUEST['dbid']} AND inputs.id=${id};";
+		$query = "UPDATE dbfiles, inputs SET dbfiles.container_id=inputs.id, container_type='Input' WHERE dbfiles.id={$_REQUEST['dbid']} AND inputs.id=${id};";
 		if (!mysql_query($query, $db_connection)) {
 			$msg = "Error updating database : [" . mysql_errno($db_connection) . "] " . mysql_error($db_connection) . "<br>";
 			editor_log("FAIL", $query);
@@ -37,7 +37,7 @@ if (isset($_REQUEST['action'])) {
 	}
 
 	if ($_REQUEST['action'] == "del") {
-		$query = "UPDATE dbfiles SET container_id=NULL, container_type=NULL WHERE id={$_REQUEST['dbid']};";
+		$query = "UPDATE dbfiles SET container_id=NULL WHERE id={$_REQUEST['dbid']};";
 		if (!mysql_query($query, $db_connection)) {
 			$msg = "Error updating database : [" . mysql_errno($db_connection) . "] " . mysql_error($db_connection) . "<br>";
 			editor_log("FAIL", $query);
@@ -82,7 +82,7 @@ if ($id != -1) {
 	# get the input that we want to show
 	$query="SELECT dbfiles.id, concat(machines.hostname, ':', dbfiles.file_path, '/', dbfiles.file_name) as filename" .
 	       " FROM dbfiles, machines, inputs" .
-	       " WHERE inputs.id=$id AND dbfiles.container_id=inputs.file_id AND machines.id=dbfiles.machine_id;";
+	       " WHERE inputs.id=$id AND dbfiles.container_id=inputs.id AND dbfiles.container_type='Input' AND machines.id=dbfiles.machine_id;";
 	$result = mysql_query($query, $db_connection);
 	if (!$result) {
 		die("Invalid query [$query] " . mysql_error($db_connection));
@@ -120,7 +120,7 @@ if ($id != -1) {
 <?php
 	$query="SELECT dbfiles.id, concat(machines.hostname, ':', dbfiles.file_path, '/', dbfiles.file_name) as filename" .
 	       " FROM dbfiles, machines" .
-	       " WHERE machines.id = dbfiles.machine_id AND NOT EXISTS ( SELECT 1 FROM inputs WHERE dbfiles.container_id=inputs.file_id ) " .
+	       " WHERE machines.id = dbfiles.machine_id AND NOT EXISTS ( SELECT 1 FROM inputs WHERE dbfiles.container_id=inputs.id AND dbfiles.container_type='Input' ) " .
 	       " ORDER BY filename;";
 	$result = mysql_query($query, $db_connection);
 	if (!$result) {

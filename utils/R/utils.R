@@ -37,7 +37,10 @@ mstmipvar <- function(name, lat=NA, lon=NA, time=NA, nsoil=NA, silent=FALSE) {
       if (!silent) {
         logger.info("Don't know about variable", name, " in mstmip_vars in PEcAn.utils")
       }
-      return(ncvar_def(name, "", list(time), -999, "NOT FOUND IN mstmip_vars or mstmip_local"))
+      if (is.na(time)) {
+        time <- ncdim_def(name="time", units="days since 1900-01-01 00:00:00", vals=1:365, calendar="standard", unlim=TRUE)
+      }
+      return(ncvar_def(name, "", list(time), -999, name))
     }
   }
 
@@ -114,8 +117,8 @@ zero.truncate <- function(y) {
 ##' @author Shawn Serbin
 #--------------------------------------------------------------------------------------------------#
 rsync <- function(args, from, to, pattern='') {
-  print(paste('rsync',' ', args,' ', from, pattern, ' ', to, sep = ''))
-  system(paste('rsync',' ', args,' ', from, pattern, ' ', to, sep = ''), intern=TRUE )
+  logger.debug(paste0('rsync',' ', args,' ', from, pattern, ' ', to))
+  system(paste0('rsync',' ', args,' ', from, pattern, ' ', to), intern=TRUE )
 }
 #==================================================================================================#
 
@@ -635,6 +638,25 @@ tryl <- function(FUN){
   out <- tryCatch(FUN, error = function(e) e)
   ans <- !any(class(out) == "error")
   return(ans)
+}
+
+##' load model package
+##' @title Load model package
+##' @param model name of model
+##' @return FALSE if function returns error; else TRUE
+##' @export
+##' @examples
+##' \dontrun{require.modelpkg(BioCro)}
+##' @author David LeBauer
+load.modelpkg <- function(model){
+  pecan.modelpkg <- paste0("PEcAn.", model)
+  if(!pecan.modelpkg  %in% names(sessionInfo()$otherPkgs)){
+    if(pecan.modelpkg  %in% rownames(installed.packages())) {
+      do.call(require, args = list(pecan.modelpkg))
+    } else {
+      logger.error("I can't find a package for the ", model, "model; I expect it to be named ", pecan.modelpkg)
+    }
+  }
 }
 ####################################################################################################
 ### EOF.  End of R script file.              

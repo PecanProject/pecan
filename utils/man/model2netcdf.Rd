@@ -2,7 +2,8 @@
 \alias{model2netcdf}
 \title{Convert model output to NetCDF}
 \usage{
-  model2netcdf(runid, outdir, model)
+  model2netcdf(runid, outdir, model, lat, lon, start_date,
+    end_date)
 }
 \arguments{
   \item{runid}{}
@@ -11,6 +12,14 @@
 
   \item{model}{name of simulation model currently accepts
   ("ED2", "SIPNET", "BIOCRO")}
+
+  \item{lat}{Latitude of the site}
+
+  \item{lon}{Longitude of the site}
+
+  \item{start_date}{Start time of the simulation}
+
+  \item{end_date}{End time of the simulation}
 }
 \value{
   vector of filenames created, converts model output to
@@ -20,6 +29,9 @@
   Convert output for a single model run to NetCDF
 }
 \details{
+  DEPRECATED this function will be removed in future
+  versions, please update your workflow.
+
   This function is a wrapper for model-specific conversion
   functions, e.g. \code{model2netcdf.ED2},
   \code{model2netcdf.BIOCRO}.
