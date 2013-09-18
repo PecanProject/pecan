@@ -72,23 +72,41 @@ write.config.BIOCRO <- function(defaults = NULL,
                                 settings,
                                 run.id) {
 
+  # find out where to write run/ouput
+  rundir <- file.path(settings$run$host$rundir, as.character(run.id))
+  outdir <- file.path(settings$run$host$outdir, as.character(run.id))
+  if (is.null(settings$run$host$qsub) && (settings$run$host$name == "localhost")) {
+    rundir <- file.path(settings$rundir, as.character(run.id))
+    outdir <- file.path(settings$modeloutdir, as.character(run.id))
+  }
+
+  # create launch script (which will create symlink)
+  writeLines(c("#!/bin/bash",
+             paste("mkdir -p", outdir),
+             paste("cd", rundir),
+             paste(settings$model$binary, normalizePath(rundir, mustWork=FALSE), normalizePath(outdir, mustWork=FALSE)),
+#             "./convert.R",
+             paste("cp ", file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))),
+             con=file.path(settings$rundir, run.id, "job.sh"))
+  Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
     
-    if(settings$run$host$name == "localhost"){
-        rundir <- file.path(settings$rundir, as.character(run.id))
-        outdir <- file.path(settings$outdir, as.character(run.id))
-    } else {
-        rundir <- file.path(settings$run$host$rundir, as.character(run.id))
-        outdir <- file.path(settings$run$host$outdir, as.character(run.id))
-    }
-    
-    dir.create(rundir, showWarnings = FALSE, recursive = TRUE)
-    ##   writeLines(c("#!/usr/bin/Rscript",               
-    ##                paste("cp ", file.path(rundir, "README.txt"), 
-    ##                      file.path(outdir, "README.txt"))),
-    ##              con=file.path(settings$rundir, run.id, "job.sh"))
-    ##   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
-    ##   
-    ##
+    # todo check if file exists on remote host if needed and link in script
+
+    # Get the weather data generic
+    weather <- get.ncepmet(lat = as.numeric(settings$run$site$lat),
+                        lon = as.numeric(settings$run$site$lon),
+                        start.date = settings$run$start.date,
+                        end.date = settings$run$end.date,
+                        site.id = settings$run$site$id,
+                        con = query.base.con(settings))
+    # convert to biocro specific format
+    W <- weachNEW(weather, lati = as.numeric(settings$run$site$lat), ts = 1, 
+                                temp.units="Celsius", rh.units="fraction", 
+                                ws.units="mph", pp.units="in")
+    # copy/hard link file to run folder
+    write.csv(W, file = file.path(settings$rundir, run.id, "weather.csv"), row.names = FALSE)
+
+    # write configuraiton file
     traits  <- convert.samples.BIOCRO(trait.values[[settings$pfts$pft$name]])
 
     
@@ -146,7 +164,7 @@ write.config.BIOCRO <- function(defaults = NULL,
     unused.traits <- !traits.used
     ## a clunky way to only use logger for MEDIAN rather than all runs
     if(any(grepl("MEDIAN",
-                 scan(file = file.path(rundir, "README.txt"), character(0),
+                 scan(file = file.path(settings$rundir, run.id, "README.txt"), character(0),
                       sep = ":", strip.white = TRUE)))){
         if(sum(unused.traits) > 0){
             logger.warn("the following traits parameters are not added to config file:",

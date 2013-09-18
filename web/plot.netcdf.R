@@ -22,13 +22,7 @@ width    <- as.numeric(args[4])
 height   <- as.numeric(args[5])
 filename <- args[6]
 
-# ----------------------------------------------------------------------
-# SETUP
-# ----------------------------------------------------------------------
-settings.file <- Sys.getenv('PECANSETTINGS')
-settings.xml <- xmlParse(settings.file)
-settings <- xmlToList(settings.xml)
-
+# datafile="../../output/PEcAn_14/out/23/2006.nc"
 # year=2006
 # xvar='time'
 # yvar="GPP"
@@ -100,10 +94,9 @@ data.fetch <- function(var, nc, fun=mean) {
 ##' @param the width of the image generated, default is 800 pixels.
 ##' @param the height of the image generated, default is 600 pixels.
 ##' @param filename is the name of the file name that is geneated.
-##' @param settings the pecan.xml file loaded.
-plot.netcdf <- function(datafile, year, yvar, xvar='time', width=800, height=600, filename, settings) {	
+plot.netcdf <- function(datafile, year, yvar, xvar='time', width=800, height=600, filename) {	
 	# open netcdf file
-	nc <- nc_open(file.path(settings$run$host$outdir, datafile))
+	nc <- nc_open(datafile)
 	
 	# compute variables
 	xval_mean <- data.fetch(xvar, nc, mean)
@@ -154,5 +147,5 @@ plot.netcdf <- function(datafile, year, yvar, xvar='time', width=800, height=600
 	dev.off()
 }
 
-plot.netcdf(datafile, year, yvar, xvar, width, height, filename, settings);
+plot.netcdf(datafile, year, yvar, xvar, width, height, filename);
 

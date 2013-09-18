@@ -369,12 +369,13 @@ foreach(scandir("$folder/out") as $runid) {
 <?php if ($offline) { ?>
 			<input name="offline" type="hidden" value="offline">
 <?php } ?>
+		</form>
+
 		<p></p>
 		<span id="error" class="small">&nbsp;</span>
 		<input id="prev" type="button" value="History" onclick="prevStep();" />
 		<input id="next" type="button" value="Start Over" onclick="nextStep();"/>		
 		<div class="spacer"></div>
-		</form>
 	</div>
 	<div id="output">Please select an option on the left.</div>
 </div>

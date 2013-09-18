@@ -69,3 +69,9 @@ status.start("FINISHED")
 query.base(paste("UPDATE workflows SET finished_at=NOW() WHERE id=", settings$workflow$id, "AND finished_at IS NULL"))
 status.end()
 
+# send email if configured
+if (!is.null(settings$email)) {
+    sendmail(settings$email$from, settings$email$to,
+             paste0("Workflow has finished executing at ", date()),
+             paste0("You can find the results on ", settings$email$url))
+}
