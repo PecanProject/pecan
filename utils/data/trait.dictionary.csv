@@ -3,7 +3,7 @@
 "GDD";"Growing Degree Days";"degree C days";"GDD"
 "leafC";"Leaf C conc.";"percent";"leafC"
 "c2n_leaf";"Leaf C:N";"ratio";"c2n_leaf"
-"leaf_respiration_rate_m2";"Leaf Respiration Rate";"umol CO2 m-2 s-1";"leaf_respiration_rate"
+"leaf_respiration_rate_m2";"Leaf Respiration Rate";"umol CO2 m-2 s-1";"Rd0"
 "dark_respiration_factor";"Dark Respiration Factor";"fraction";"dark_respiration_factor"
 "f_labile";"Litter% Labile C";"fraction";"f_labile"
 "growth_resp_factor";"Growth Respiration";"fraction";"growth_resp_factor"
