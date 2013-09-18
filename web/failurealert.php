@@ -1,3 +1,27 @@
+<?php
+	$workflowid = $_REQUEST['workflowid'];
+	$offline = isset($_REQUEST['offline']);
+
+	require("dbinfo.php");
+	$connection=open_database();
+	
+	// get run information
+	$query = "SELECT params, folder FROM workflows WHERE workflows.id=$workflowid";
+	$result = mysql_query($query);
+	if (!$result) {
+		die('Invalid query: ' . mysql_error());
+	}
+	$workflow = mysql_fetch_assoc($result);
+	$folder = $workflow['folder'];
+	$params = eval("return ${workflow['params']};");	#reassemble the array since it was stored in php code
+
+	// check result
+	$status=file($folder . DIRECTORY_SEPARATOR . "STATUS");
+	if ($status === FALSE) {
+		$status = array();
+	}
+	open_database($connection);
+?>
 <!DOCTYPE html>
 <html>
 	<head>
@@ -8,13 +32,13 @@
 			window.onresize = resize;
 			window.onload = resize;
 			
-        function resize() {
-                if ($("#stylized").height() < $(window).height()) {
-                        $("#stylized").height($(window).height() - 5);
-                }
-                $("#output").height($(window).height() - 1);
-                $("#output").width($(window).width() - $('#stylized').width() - 5);
-        }
+	        function resize() {
+	                if ($("#stylized").height() < $(window).height()) {
+	                        $("#stylized").height($(window).height() - 5);
+	                }
+	                $("#output").height($(window).height() - 1);
+	                $("#output").width($(window).width() - $('#stylized').width() - 5);
+	        }
 
 			function prevStep() {
 				$("#formprev").submit();
@@ -26,39 +50,6 @@
 		</script>
 	</head>
 	<body>
-		<?php
-			$workflowid=$_REQUEST['workflowid'];
-			if (isset($_REQUEST['offline'])) {
-				$offline=true;
-			} else {
-				$offline=false;
-			}
-
-			require("dbinfo.php");
-			$connection=open_database();
-			
-			// get run information
-			$query = "SELECT params, site_id, model_id, model_type, hostname, folder, advanced_edit FROM workflows, models WHERE workflows.id=$workflowid and model_id=models.id";
-			$result = mysql_query($query);
-			if (!$result) {
-				die('Invalid query: ' . mysql_error());
-			}
-			$workflow = mysql_fetch_assoc($result);
-			$pars = $workflow['params'];
-			$run_options = eval("return $pars;");	#reassemble the array since it was stored in php code
-			$run_pfts = $run_options['pft'];
-			//$run_pfts = eval("return $p;");    //For some reason this is not necessary
-			
-			$folder = $workflow['folder'];
-			$model_type = $workflow['model_type'];
-			
-			// check result
-			$status=file($folder . DIRECTORY_SEPARATOR . "STATUS");
-			if ($status === FALSE) {
-				$status = array();
-			}
-		?>
-
 		<div id="wrap">
 			<div id="stylized">
 				<h1>There was an error executing the job.</h1>
@@ -66,31 +57,30 @@
 
 				<form id="formprev" method="POST" action="selectdata.php">
 					<?php if ($offline) { ?>
-						<input name="offline" type="hidden" value="offline">
+						<input name="offline" type="hidden" value="on">
 					<?php } ?>
-					<input type="hidden" name="siteid" value="<?=$workflow['site_id']?>" />
-					<input type="hidden" name="modelid" value="<?=$workflow['model_id']?>" />
-					<input type="hidden" name="modeltype" value="<?=$workflow['model_type']?>" />
-					<input type="hidden" name="hostname" value="<?=$workflow['hostname']?>" />
-					<input type="hidden" name="psscss" value="<?=$run_options['psscss']?>" />
-					<input type="hidden" name="start" value="<?=$run_options['start']?>" />
-					<input type="hidden" name="end" value="<?=$run_options['end']?>" />
-					<input type="hidden" name="met" value="<?=$run_options['met']?>" />
-					<?php foreach ($run_pfts as $pft_iter) { ?>
-					<input type="hidden" name="pft[]" value="<?=$pft_iter?>" />
-					<?php } ?>
-					<input type="hidden" name="advanced_edit" value="<?=$workflow['advanced_edit']?>" /> 
+					<?php foreach ($params as $k => $v) {
+						if (is_array($v)) {
+							foreach($v as $x) {
+								echo "<input type=\"hidden\" name=\"${k}[]\" value=\"${x}\" />\n";
+							}
+						} else {
+							echo "<input type=\"hidden\" name=\"${k}\" value=\"${v}\" />\n";
+						}
+					} ?>
 				</form>
 				
 				<form id="formnext" method="POST" action="finished.php">
 					<?php if ($offline) { ?>
-						<input name="offline" type="hidden" value="offline">
+						<input name="offline" type="hidden" value="on">
 					<?php } ?>
 					<input type="hidden" name="workflowid" value="<?=$workflowid?>" />
-					<span id="error" class="small">&nbsp;</span>
-					<input id="prev" type="button" value="Back" onclick="prevStep();" />
-					<input id="next" type="button" value="Continue" onclick="nextStep();"
 				</form>
+
+				<span id="error" class="small">&nbsp;</span>
+				<input id="prev" type="button" value="Back" onclick="prevStep();" />
+				<input id="next" type="button" value="Continue" onclick="nextStep();" />
+				<div class="spacer"></div>
 			</div>
 			<div id="output">
 				<p>The partial progress of the job is shown below, along with the logfile of the last stage to execute.</p>
@@ -102,12 +92,6 @@
 						<th>Start Time</th>
 						<th>End Time</th>
 						<th>Status</th>
-					</tr>
-					<tr>
-						<th>setup</th>
-						<td><?=startTime("SETUP");?></td>
-						<td><?=endTime("SETUP");?></td>
-						<td><?=status("SETUP");?></td>
 					</tr>
 					<tr>
 						<th>fia2ed</th>

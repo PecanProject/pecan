@@ -251,20 +251,6 @@ check.settings <- function(settings) {
     }
   }
 
-  # check to make sure run information is filled out
-  if (is.null(settings$run$host$name)) {
-    logger.info("Setting localhost for execution host.")
-    settings$run$host$name <- "localhost"
-  }
-  if (settings$run$host$name != "localhost") {
-    if (is.null(settings$run$host$rundir)) {
-      logger.severe("not rundir specified on remote machine.")
-    }
-    if (is.null(settings$run$host$outdir)) {
-      logger.severe("not outdir specified on remote machine.")
-    }
-  }
-
   # check meta-analysis
   if (is.null(settings$meta.analysis) || is.null(settings$meta.analysis$iter)) {
     settings$meta.analysis$iter <- 3000
@@ -388,6 +374,28 @@ check.settings <- function(settings) {
     }
   }
 
+  # check to make sure a host is given
+  if (is.null(settings$run$host$name)) {
+    logger.info("Setting localhost for execution host.")
+    settings$run$host$name <- "localhost"
+  }
+
+  # check if we need to use qsub
+  if ("qsub" %in% names(settings$run$host)) {
+    if (is.null(settings$run$host$qsub)) {
+      settings$run$host$qsub <- "qsub -N @NAME@ -o @STDOUT@ -e @STDERR@"
+      logger.info("qsub not specified using default value :", settings$run$host$qsub)
+    }
+    if (is.null(settings$run$host$qsub.jobid)) {
+      settings$run$host$qsub.jobid <- "Your job ([0-9]+) .*"
+      logger.info("qsub.jobid not specified using default value :", settings$run$host$qsub.jobid)
+    }
+    if (is.null(settings$run$host$qstat)) {
+      settings$run$host$qstat <- "qstat -j @JOBID@ 2>1 >/dev/null || echo DONE"
+      logger.info("qstat not specified using default value :", settings$run$host$qstat)
+    }
+  }
+
   # Check folder where outputs are written before adding to dbfiles
   if(is.null(settings$run$dbfiles)) {
     settings$run$dbfiles <- normalizePath("~/.pecan/dbfiles", mustWork=FALSE)
@@ -399,42 +407,39 @@ check.settings <- function(settings) {
   # check/create the pecan folder
   if (is.null(settings$outdir)) {
     settings$outdir <- tempdir()
-    logger.info("No output folder specified, using", tempdir())
-  } else {
-    logger.debug("output folder =", settings$outdir)
   }
+  if (substr(settings$outdir, 1, 1) != '/') {
+    settings$outdir <- file.path(getwd(), settings$outdir)
+  }
+  logger.debug("output folder =", settings$outdir)
   if (!file.exists(settings$outdir) && !dir.create(settings$outdir, recursive=TRUE)) {
     logger.severe("Could not create folder", settings$outdir)
   }
 
-  # check/create the run folder
-  if (settings$run$host$name == "localhost") {
+  # make sure remote folders are specified if need be
+  if (!is.null(settings$run$host$qsub) && (settings$run$host$name != "localhost")) {
     if (is.null(settings$run$host$rundir)) {
-      settings$run$host$rundir <- file.path(settings$outdir, "run")
+      logger.severe("Need to have specified a folder where PEcAn will write run information for job.")
     }
-    settings$rundir <- settings$run$host$rundir
-  } else {
-    if (is.null(settings$rundir)) {
-      settings$rundir <- file.path(settings$outdir, "run")
+    if (is.null(settings$run$host$outdir)) {
+      logger.severe("Need to have specified a folder where PEcAn will write output of job.")
     }
-  }
-  if (!file.exists(settings$rundir) && !dir.create(settings$rundir, recursive=TRUE)) {
-    logger.severe("Could not create folder", settings$rundir)
   }
 
-  # check/create the out folder
-  if (settings$run$host$name == "localhost") {
-    if (is.null(settings$run$host$outdir)) {
-      settings$run$host$outdir <- file.path(settings$outdir, "out")
-    }
-    settings$modeloutdir <- settings$run$host$outdir
-  } else {
-    if (is.null(settings$modeloutdir)) {
-      settings$modeloutdir <- file.path(settings$outdir, "out")
-    }
+  # check/create the local run folder
+  if (is.null(settings$rundir)) {
+    settings$rundir <- file.path(settings$outdir, "run")
+  }
+  if (!file.exists(settings$rundir) && !dir.create(settings$rundir, recursive=TRUE)) {
+    logger.severe("Could not create run folder", settings$rundir)
+  }
+
+  # check/create the local model out folder
+  if (is.null(settings$modeloutdir)) {
+    settings$modeloutdir <- file.path(settings$outdir, "out")
   }
   if (!file.exists(settings$modeloutdir) && !dir.create(settings$modeloutdir, recursive=TRUE)) {
-    logger.severe("Could not create folder", settings$modeloutdir)
+    logger.severe("Could not create model out folder", settings$modeloutdir)
   }
 
   # check/create the pft folders
@@ -455,22 +460,6 @@ check.settings <- function(settings) {
     }
   }
 
-  # add defaults for qsub
-  if (settings$run$host$name != "localhost") {
-    if (is.null(settings$run$host$qsub)) {
-      settings$run$host$qsub <- "qsub -N @NAME@ -o @STDOUT@ -e @STDERR@"
-      logger.info("qsub not specified using default value :", settings$run$host$qsub)
-    }
-    if (is.null(settings$run$host$qsub.jobid)) {
-      settings$run$host$qsub.jobid <- "Your job ([0-9]+) .*"
-      logger.info("qsub.jobid not specified using default value :", settings$run$host$qsub.jobid)
-    }
-    if (is.null(settings$run$host$qstat)) {
-      settings$run$host$qstat <- "qstat -j @JOBID@ 2>1 >/dev/null || echo DONE"
-      logger.info("qstat not specified using default value :", settings$run$host$qstat)
-    }
-  }
-
   # check for workflow defaults
   if(database){
     if (settings$bety$write) {
@@ -488,7 +477,10 @@ check.settings <- function(settings) {
     } else {
       settings$workflow$id <- "NA"
     }
+  } else {
+    settings$workflow$id <- "NA"
   }
+
   # all done return cleaned up settings
   invisible(settings)
 }
