@@ -84,7 +84,7 @@ write.config.BIOCRO <- function(defaults = NULL,
   writeLines(c("#!/bin/bash",
              paste("mkdir -p", outdir),
              paste("cd", rundir),
-             paste(settings$model$binary, normalizePath(rundir, mustWork=FALSE), normalizePath(outdir, mustWork=FALSE)),
+             paste("cp", settings$model$binary, normalizePath(rundir, mustWork=FALSE), normalizePath(outdir, mustWork=FALSE)),
 #             "./convert.R",
              paste("cp ", file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))),
              con=file.path(settings$rundir, run.id, "job.sh"))
