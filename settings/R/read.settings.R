@@ -433,7 +433,7 @@ check.settings <- function(settings) {
   }
   
   # make sure remote folders are specified if need be
-  if (!is.null(settings$run$host$qsub) || (settings$run$host$name != "localhost")) {
+  if (!is.null(settings$run$host$qsub) && (settings$run$host$name != "localhost")) {
     if (is.null(settings$run$host$rundir)) {
       logger.severe("Need to have specified a folder where PEcAn will write run information for job.")
     }
