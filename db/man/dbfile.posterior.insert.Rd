@@ -1,0 +1,47 @@
+\name{dbfile.posterior.insert}
+\alias{dbfile.posterior.insert}
+\title{Insert file into tables}
+\usage{
+  dbfile.posterior.insert(filename, pft, mimetype,
+    formatname, con, hostname = Sys.info()[["nodename"]])
+}
+\arguments{
+  \item{filename}{the name of the file to be inserted}
+
+  \item{pft}{the name of the pft that this data is
+  applicable to}
+
+  \item{mimetype}{the mime-type of the file}
+
+  \item{formatname}{the name of the format to distinguish
+  between simmilair mime-types}
+
+  \item{con}{database connection object}
+
+  \item{hostname}{the name of the host where the file is
+  stored, this will default to the name of the current
+  machine}
+
+  \item{params}{database connection information}
+}
+\value{
+  data.frame with the id, filename and pathname of the
+  posterior that is requested
+}
+\description{
+  Function to insert a file into the dbfiles table as a
+  posterior
+}
+\details{
+  This will write into the dbfiles, posteriors, machines
+  and formats the required data to store the file
+}
+\examples{
+\dontrun{
+  dbfile.posterior.insert('trait.data.Rdata', pft, 'application/x-RData', 'traits', dbcon)
+}
+}
+\author{
+  Rob Kooper
+}
+

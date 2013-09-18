@@ -11,6 +11,19 @@
 # boolean parameters
 $offline=isset($_REQUEST['offline']);
 
+$hostname = gethostname();
+if (isset($_REQUEST['hostname'])) {
+	$hostname = $_REQUEST['hostname'];
+}
+$modelid = "";
+if (isset($_REQUEST['modelid'])) {
+	$modelid = $_REQUEST['modelid'];
+}
+$siteid = "";
+if (isset($_REQUEST['siteid'])) {
+	$siteid = $_REQUEST['siteid'];
+}
+
 // system parameters
 require("system.php");
 
@@ -25,12 +38,13 @@ if (!$result) {
 	die('Invalid query: ' . mysql_error());
 }
 $hosts = "";
-$hostname = gethostname();
-while ($row = @mysql_fetch_assoc($result)){
-	if ($hostname == $row['hostname']) {
-		$hosts = "$hosts<option selected>{$row['hostname']}</option>\n";
-	} else {
-		$hosts = "$hosts<option>{$row['hostname']}</option>\n";
+while ($row = @mysql_fetch_assoc($result)) {
+	if (in_array($row['hostname'], $hostlist)) {
+		if ($hostname == $row['hostname']) {
+			$hosts = "$hosts<option selected>{$row['hostname']}</option>\n";
+		} else {
+			$hosts = "$hosts<option>{$row['hostname']}</option>\n";
+		}
 	}
 }
 
@@ -52,10 +66,14 @@ while ($row = @mysql_fetch_assoc($result)){
 
     var markersArray = [];
     
-	function resize() {
-    	$("#stylized").height($(window).height() - 5);
-    	$("#map_canvas").height($(window).height() - 1);
-    	$("#map_canvas").width($(window).width() - $('#stylized').width() - 5);
+    function resize() {
+        if ($("#stylized").height() < $(window).height()) {
+            $("#stylized").height($(window).height() - 5);
+        } else {
+            $("#stylized").height(Math.max($("#stylized").height(), $("#output").height()));
+        }
+        $("#output").height($("#stylized").height());
+        $("#output").width($(window).width() - $('#stylized').width() - 5);
     }
 
     function validate() {
@@ -69,9 +87,9 @@ while ($row = @mysql_fetch_assoc($result)){
             $("#error").html("Select a model to continue");
             return;
         }
-        if ($("#hostname").val() != "<?=$hostname?>") {
+        if ($("#hostname").val() == "") {
             $("#next").attr("disabled", "disabled");
-            $("#error").html("Select <?=$hostname?> to continue");
+            $("#error").html("Select a host to continue");
             return;
         }
 
@@ -89,7 +107,7 @@ while ($row = @mysql_fetch_assoc($result)){
 	}
 
 	function modelSelected() {
-		var curSite = $("#sitename").val();	//we'll clear this and replace it if it still exists in the new model
+		var curSite = $("#siteid").val();	//we'll clear this and replace it if it still exists in the new model
 
 		// remove everything
 		if (markersArray) {
@@ -112,11 +130,11 @@ while ($row = @mysql_fetch_assoc($result)){
 					showSite(marker, curSite);
 				}
 			});
+			renderSites(curSite);
 		});
 	}
 
 	function hostSelected() {
-		var curSite = $("#sitename").val();
 		var curModel = $("#modelid").val();
 
 		// remove everything
@@ -124,8 +142,6 @@ while ($row = @mysql_fetch_assoc($result)){
 			clearSites();
 			markersArray.length = 0;
 		}
-		$("#siteid").val("");
-		$("#sitename").val("");
 		$('#modelid').find('option').remove();
 		$('#modelid').append('<option value="">All Models</option>');
 		validate();
@@ -142,19 +158,7 @@ while ($row = @mysql_fetch_assoc($result)){
 					$('#modelid').append('<option value="' + model.attr("id") + '">' +name + '</option>');
 				}
 			});
-		});
-
-		// get all sites
-		var url="sites.php?host=" + $('#hostname')[0].value;
-		jQuery.get(url, {}, function(data) {
-			jQuery(data).find("marker").each(function() {
-				var marker = jQuery(this);
-				if (marker.attr("lat") == "" || marker.attr("lon") == "") {
-					console.log("Bad marker (siteid=" + marker.attr("siteid") + " site=" + marker.attr("sitename") + " lat=" + marker.attr("lat") + " lon=" + marker.attr("lon") + ")");
-				} else {
-					showSite(marker, curSite);
-				}
-			});
+			modelSelected();
 		});
 	}
 
@@ -170,24 +174,28 @@ while ($row = @mysql_fetch_assoc($result)){
 	});
 
 	function clearSites() {
-		$("#map_canvas").html("");
+		$("#output").html("");
 	}
 	
 	function showSite(marker, selected) {
 		markersArray.push(marker);
+	}
+
+	function renderSites(selected) {
 		var sites="<form>";
 		for (var i in markersArray) {
 			var site = markersArray[i];
 			sites = sites + "<div><input type=\"radio\" name=\"site\" value=\"" + site.attr("siteid") + "\"" + " onClick=\"siteSelected(" + site.attr("siteid") + ",'" + site.attr("sitename") + "');\"";
-			if (selected == site.attr("sitename")) {
+			if (selected == site.attr("siteid")) {
 				sites = sites + " checked";
 				siteSelected(site.attr("siteid"), site.attr("sitename"));
 			}
 			sites = sites + ">" + site.attr("sitename") + "</div>";
 		}
 		sites = sites + "</form>";
-		$("#map_canvas").html(sites);
+		$("#output").html(sites);
 	}
+
 <?php } else { ?>
     google.load("maps", "3",  {other_params:"sensor=false"});
     google.setOnLoadCallback(mapsLoaded);
@@ -209,7 +217,7 @@ while ($row = @mysql_fetch_assoc($result)){
 			mapTypeId: google.maps.MapTypeId.ROADMAP
 		}
 
-		map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+		map = new google.maps.Map(document.getElementById("output"), myOptions);
 		infowindow = new google.maps.InfoWindow({content: ""});
 		hostSelected();
 	}
@@ -233,11 +241,14 @@ while ($row = @mysql_fetch_assoc($result)){
 			infowindow.open(map, this);
 		});
 
-		if (marker.attr("sitename") == selected) {
+		if (marker.attr("siteid") == selected) {
 			siteSelected(gmarker.siteid, gmarker.sitename);
 			infowindow.setContent(gmarker.html);
 			infowindow.open(map, gmarker);
 		}
+	}
+
+	function renderSites(selected) {
 	}
 
     function goHome() {
@@ -263,7 +274,8 @@ while ($row = @mysql_fetch_assoc($result)){
 <?php if ($offline) { ?>
 			<input name="offline" type="hidden" value="offline">
 <?php } ?>
-				</form>
+		</form>
+
 		<form id="formnext" method="POST" action="selectdata.php">
 <?php if ($offline) { ?>
 			<input name="offline" type="hidden" value="offline">
@@ -282,11 +294,12 @@ while ($row = @mysql_fetch_assoc($result)){
 
 			<label>Model:</label>
 			<select name="modelid" id="modelid" onChange="modelSelected();">
+				<option selected value="<?= $modelid ?>"><?=$modelid?></option>
 			</select>
 			<div class="spacer"></div>
 
 			<label>Site:</label>
-			<input name="siteid" id="siteid" type="hidden"/>
+			<input name="siteid" id="siteid" type="hidden" value="<?=$siteid?>"/>
 			<input name="sitename" id="sitename" type="text" readonly value="No site selected" />
 			<div class="spacer"></div>
 
@@ -298,7 +311,7 @@ while ($row = @mysql_fetch_assoc($result)){
 			<div class="spacer"></div>
 		</form>
 	</div>
-	<div id="map_canvas"></div>
+	<div id="output"></div>
 </div>
 </body>
 </html>

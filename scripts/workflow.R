@@ -17,10 +17,10 @@ settings <- read.settings()
 
 #---------------- Run PEcAn workflow. -------------------------------------------------------------#
 # Query the trait database for data and priors
-get.trait.data()
+settings$pfts <- get.trait.data(settings$pfts, settings$run$dbfiles, settings$database, settings$meta.analysis$update)
 
 # Run the PEcAn meta.analysis
-run.meta.analysis()
+run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database)
 
 # Calls model specific write.configs e.g. write.config.ed.R
 run.write.configs(settings$model$name, settings$bety$write)
@@ -38,7 +38,7 @@ convert.outputs(settings$model$name, settings)
 get.model.output(settings$model$name, settings)
 
 # Run sensitivity analysis and variance decomposition on model output
-run.sensitivity.analysis(settings)
+run.sensitivity.analysis()
 
 # Run ensemble analysis on model output. 
 run.ensemble.analysis()

@@ -14,6 +14,6 @@ start.model.runs("SIPNET")
 }
 }
 \author{
-  Shawn Serbin
+  Shawn Serbin, Rob Kooper, ...
 }
 

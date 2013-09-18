@@ -1,0 +1,33 @@
+\name{points2county}
+\alias{points2county}
+\title{Points To County}
+\usage{
+  points2county(griddata)
+}
+\arguments{
+  \item{griddata}{a data frame with columns \code{lat, lon
+  <some value>} or \code{. The function will assume}
+}
+\value{
+  a data.table with county-level information, including
+  state and county name, state abbreviation, lat, lon,
+  county_fips, state_fips, fips, and interpolated output
+}
+\description{
+  convert a lat, lon, <value> dataset to county-level
+  values
+}
+\details{
+  Uses the \code{earth} function to fit a multivariate
+  spline, and then reproject to the (approximate) centroids
+  of US counties, for counties that fall within the lat /
+  lon range of the data set
+}
+\examples{
+data(ozone)
+colnames(ozone) <- c("lon", "lat", "ozone")
+}
+\author{
+  David LeBauer
+}
+

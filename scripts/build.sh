@@ -85,6 +85,7 @@ if [ ! -z $R_LIBS_USER ]; then
   R_LIB_INC="--library=${R_LIBS_USER}"
 else
   echo "R_LIBS_USER not set, this could prevent the script from running correctly."
+  echo "see https://github.com/PecanProject/pecan/wiki/Installing-PEcAn#set_r_libs_user"
 fi
 
 # are we still running
@@ -203,7 +204,7 @@ if [ "$FORCE" == "yes" ]; then
   if [ "$EMAIL" == "" ]; then
     cat changes.log
   else
-    cat changes.log | mail -s "PEcAn BUILD ${REVNO} is ${STATUS}" ${EMAIL}
+    cat changes.log | mail -s "PEcAn BUILD ${STATUS} : ${REVNO}" ${EMAIL}
   fi
 
   # cleanup

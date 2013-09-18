@@ -3,8 +3,8 @@
  <outdir>pecan</outdir>
 
  <database>
-  <username>pecan</username>
-  <password>pecan</password>
+  <username>bety</username>
+  <password>bety</password>
   <host>localhost</host>
   <dbname>bety</dbname>
  </database>
@@ -33,18 +33,18 @@
     <output_month>12</output_month>
    </ed_misc>
   </config.header>
-  <edin>/home/kooper/projects/EBI/output/PEcAn_21/ED2IN.template</edin>
-  <veg>/home/kooper/projects/EBI/oge2OLD/OGE2_</veg>
-  <soil>/home/kooper/projects/EBI/faoOLD/FAO_</soil>
-  <psscss>/home/kooper/projects/EBI/sites/ebi</psscss>
-  <inputs>/home/kooper/projects/EBI/ed_inputs/</inputs>
+  <edin>/home/carya/output/PEcAn_21/ED2IN.template</edin>
+  <veg>/home/carya/oge2OLD/OGE2_</veg>
+  <soil>/home/carya/faoOLD/FAO_</soil>
+  <psscss>/home/carya/sites/ebi</psscss>
+  <inputs>/home/carya/ed_inputs/</inputs>
   <phenol.scheme>0</phenol.scheme>
  </model>
 
  <run>
   <site>
    <id>76</id>
-   <met>/home/kooper/projects/EBI/sites/ebifarm/ED_MET_DRIVER_HEADER</met>
+   <met>/home/carya/sites/ebifarm/ED_MET_DRIVER_HEADER</met>
    <met.start>2004-01-01 00:00:00</met.start>
    <met.end>2009-12-31 23:59:59</met.end>
   </site>
