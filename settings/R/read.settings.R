@@ -416,16 +416,6 @@ check.settings <- function(settings) {
     logger.severe("Could not create folder", settings$outdir)
   }
 
-  # make sure remote folders are specified if need be
-  if (!is.null(settings$run$host$qsub) || (settings$run$host$name != "localhost")) {
-    if (is.null(settings$run$host$rundir)) {
-      logger.severe("Need to have specified a folder where PEcAn will write run information for job.")
-    }
-    if (is.null(settings$run$host$outdir)) {
-      logger.severe("Need to have specified a folder where PEcAn will write output of job.")
-    }
-  }
-
   # check/create the local run folder
   if (is.null(settings$rundir)) {
     settings$rundir <- file.path(settings$outdir, "run")
@@ -440,6 +430,19 @@ check.settings <- function(settings) {
   }
   if (!file.exists(settings$modeloutdir) && !dir.create(settings$modeloutdir, recursive=TRUE)) {
     logger.severe("Could not create model out folder", settings$modeloutdir)
+  }
+  
+  # make sure remote folders are specified if need be
+  if (!is.null(settings$run$host$qsub) || (settings$run$host$name != "localhost")) {
+    if (is.null(settings$run$host$rundir)) {
+      logger.severe("Need to have specified a folder where PEcAn will write run information for job.")
+    }
+    if (is.null(settings$run$host$outdir)) {
+      logger.severe("Need to have specified a folder where PEcAn will write output of job.")
+    }
+  } else if (settings$run$host$name == "localhost") {
+    settings$run$host$rundir <- settings$rundir
+    settings$run$host$outdir <- settings$outdir
   }
 
   # check/create the pft folders
