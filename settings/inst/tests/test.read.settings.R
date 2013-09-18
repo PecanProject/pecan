@@ -96,3 +96,8 @@ test_that("sensitivity.analysis and ensemble use other's settings if null",{
     expect_equal(s2$ensemble$size, 1)
   }
 })
+
+test_that("check settings sets default run$host$(rundir/outdir)",{
+  expect_equal(s2$rundir, s2$run$host$rundir)
+  expect_equal(s2$outdir, s2$run$host$outdir)
+})
