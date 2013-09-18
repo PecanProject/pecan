@@ -136,6 +136,8 @@ run.write.configs <- function(model, write = TRUE) {
         cnt <- 0
         assign("cnt", cnt, .GlobalEnv)
       }
+      print(" ")
+      logger.info("\n ----- Writing model run config files ----")
       runs.samples$sa <- write.sa.configs(defaults = settings$pfts,
                                           quantile.samples = sa.samples,
                                           settings = settings,
@@ -167,12 +169,11 @@ run.write.configs <- function(model, write = TRUE) {
   } else {
       logger.info('not writing config files for ensemble, settings are NULL')
   } ### End of Ensemble
-  
-  logger.info("  ######################## Finished writing config files ########################")
-  ## Save output from SA/Ensemble runs
+  logger.info("\n  ######################## Finished writing model run config files ########################")
+  ### Save output from SA/Ensemble runs
   save(ensemble.samples, trait.samples, sa.samples, runs.samples, file = file.path(settings$outdir, 'samples.Rdata'))
 }
-                                        #==================================================================================================#
+#==================================================================================================#
 
 
 ####################################################################################################
