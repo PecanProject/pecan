@@ -88,12 +88,14 @@ if (!$result) {
 while ($row = @mysql_fetch_assoc($result)) {
   // check result
   $style="";
+  $url="running_stage1.php";
   if (file_exists($row['folder'] . DIRECTORY_SEPARATOR . "STATUS")) {
     $status=file($row['folder'] . DIRECTORY_SEPARATOR . "STATUS");
     foreach ($status as $line) {
       $data = explode("\t", $line);
       if ((count($data) >= 4) && ($data[3] == 'ERROR')) {
         $style="style='background: #FFBBBB; color: black;'";
+        $url="failurealert.php";
       }
     }
   } else {
@@ -104,11 +106,11 @@ while ($row = @mysql_fetch_assoc($result)) {
   }
   if ($style == "") {
     $style="style='background: #BBFFBB; color: black'";
+    $url="finished.php";
   }
-
 ?>        
         <div id="row" <?=$style?>>
-          <div id="cell"><a href="running_stage1.php?workflowid=<?=$row['id']?>"><?=$row['id']?></a></div>
+          <div id="cell"><a href="<?=$url?>?workflowid=<?=$row['id']?>"><?=$row['id']?></a></div>
           <div id="cell"><?=$row['sitename']?></div>
           <div id="cell"><?=$row['modelname']?></div>
           <div id="cell"><?=$row['model_type']?></div>
