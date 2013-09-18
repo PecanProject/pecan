@@ -122,7 +122,7 @@ run.write.configs <- function(model, write = TRUE) {
       ### Get info on the quantiles to be run in the sensitivity analysis (if requested)
       quantiles <- get.quantiles(settings$sensitivity.analysis$quantiles)
       ### Get info on the years to run the sensitivity analysis (if requested)
-      sa.years <- data.frame(sa.start = settings$sensitivity.analysis$start.year, 
+      sa.years <- data.frame(sa.start = settings$sensitivity.analysis$start.year,
                             sa.end = settings$sensitivity.analysis$end.year)
       
       logger.info("\n Selected Quantiles: ", vecpaste(round(quantiles, 3)))
@@ -147,24 +147,28 @@ run.write.configs <- function(model, write = TRUE) {
   } ### End of SA
   
   ### Write ENSEMBLE
-  if('ensemble' %in% names(settings) && settings$ensemble$size > 0) {
-
-    ## subset the trait.samples to ensemble size using Halton sequence 
-    ensemble.samples <- get.ensemble.samples(settings$ensemble$size, 
-                                             trait.samples, env.samples)
-    
-    logger.info("Ensemble size: ",settings$ensemble$size)
- 
-    runs.samples$ensemble <- write.ensemble.configs(defaults = settings$pfts,
-                                                    ensemble.samples = ensemble.samples,
-                                                    settings = settings,
-                                                    model = model,
-                                                    write.to.db = write)
-    
-  }else{
-    logger.info('not writing config files for ensemble, settings are NULL')
+  if('ensemble' %in% names(settings)){
+      if(settings$ensemble$size == 1) {
+          ## run at median if only one run in ensemble
+          ensemble.samples <- get.sa.sample.list(pft = trait.samples,
+                                                 env = env.samples,
+                                                 quantiles = 0.5)
+      } else if (settings$ensemble$size > 1) {
+          
+          ## subset the trait.samples to ensemble size using Halton sequence 
+          ensemble.samples <- get.ensemble.samples(settings$ensemble$size, 
+                                                   trait.samples, env.samples)
+      }
+          logger.info("Ensemble size: ",settings$ensemble$size)
+          
+          runs.samples$ensemble <- write.ensemble.configs(defaults = settings$pfts,
+                                                          ensemble.samples = ensemble.samples,
+                                                          settings = settings,
+                                                          model = model,
+                                                          write.to.db = write)
+  } else {
+      logger.info('not writing config files for ensemble, settings are NULL')
   } ### End of Ensemble
-
   logger.info("\n  ######################## Finished writing model run config files ########################")
   ### Save output from SA/Ensemble runs
   save(ensemble.samples, trait.samples, sa.samples, runs.samples, file = file.path(settings$outdir, 'samples.Rdata'))
