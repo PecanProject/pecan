@@ -143,7 +143,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   names(defaults) <- sapply(defaults, function(x) x$name)
 
   ## TODO this should come from the database
-  histfile <- paste("data/history.", settings$model$revision, ".csv", sep='')
+  histfile <- paste("data/history.r", settings$model$revision, ".csv", sep='')
   if (file.exists(system.file(histfile, package="PEcAn.ED2"))) {
     edhistory <- read.csv2(system.file(histfile, package="PEcAn.ED2"), sep=";")
   } else {
