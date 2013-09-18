@@ -408,6 +408,9 @@ check.settings <- function(settings) {
   if (is.null(settings$outdir)) {
     settings$outdir <- tempdir()
   }
+  if (substr(settings$outdir, 1, 1) != '/') {
+    settings$outdir <- file.path(getwd(), settings$outdir)
+  }
   logger.debug("output folder =", settings$outdir)
   if (!file.exists(settings$outdir) && !dir.create(settings$outdir, recursive=TRUE)) {
     logger.severe("Could not create folder", settings$outdir)
