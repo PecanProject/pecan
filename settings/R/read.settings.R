@@ -442,7 +442,7 @@ check.settings <- function(settings) {
     }
   } else if (settings$run$host$name == "localhost") {
     settings$run$host$rundir <- settings$rundir
-    settings$run$host$outdir <- settings$outdir
+    settings$run$host$outdir <- settings$modeloutdir
   }
 
   # check/create the pft folders
