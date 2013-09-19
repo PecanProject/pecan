@@ -93,7 +93,7 @@ write.config.BIOCRO <- function(defaults = NULL,
     # todo check if file exists on remote host if needed and link in script
 
     # Get the weather data generic
-    weather <- get.ncepmet(lat = as.numeric(settings$run$site$lat),
+    weather <- get.rncepmet(lat = as.numeric(settings$run$site$lat),
                         lon = as.numeric(settings$run$site$lon),
                         start.date = settings$run$start.date,
                         end.date = settings$run$end.date,
