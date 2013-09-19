@@ -34,14 +34,14 @@ start.model.runs <- function(model, write = TRUE){
     # copy all run/out dirs to remote host
     if (!is.null(settings$run$host$qsub) || (settings$run$host$name != "localhost")) {
       if (settings$run$host$name == "localhost") {
-        dir.create(settings$run$host$rundir, recursive = TRUE)
-        dir.create(settings$run$host$outdir, recursive = TRUE)
+        dir.create(settings$run$host$rundir, recursive = TRUE, showWarnings = FALSE)
+        dir.create(settings$run$host$outdir, recursive = TRUE, showWarnings = FALSE)
       } else {
         system2("ssh", c(settings$run$host$name, "mkdir", "-p", settings$run$host$rundir), stdout=TRUE)
         system2("ssh", c(settings$run$host$name, "mkdir", "-p", settings$run$host$outdir), stdout=TRUE)
+        rsync("-a", settings$rundir, paste(settings$run$host$name, settings$run$host$rundir, sep=":"), pattern="/*")
+        rsync("-a", settings$modeloutdir, paste(settings$run$host$name, settings$run$host$outdir, sep=":"), pattern="/*")
       }
-      rsync("-a", settings$rundir, paste(settings$run$host$name, settings$run$host$rundir, sep=":"), pattern="/*")
-      rsync("-a", settings$modeloutdir, paste(settings$run$host$name, settings$run$host$outdir, sep=":"), pattern="/*")
     }
 
     # loop through runs and either call start run, or launch job on remote machine
