@@ -132,7 +132,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
              paste("mkdir -p", modeloutdir),
              paste("cd", rundir),
              "export GFORTRAN_UNBUFFERED_PRECONNECTED=yes",
-             #settings$model$binary,
+             settings$model$binary,
              copyscratch,
              clearscratch,
              paste("cp ", file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))),
