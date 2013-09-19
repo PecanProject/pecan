@@ -105,12 +105,8 @@ convert.samples.ED <- function(trait.samples){
 write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   
   # find out where to write run/ouput
-  rundir <- file.path(settings$run$host$rundir, as.character(run.id))
-  outdir <- file.path(settings$run$host$outdir, as.character(run.id))
-  if (is.null(settings$run$host$qsub) && (settings$run$host$name == "localhost")) {
-    rundir <- file.path(settings$rundir, as.character(run.id))
-    outdir <- file.path(settings$modeloutdir, as.character(run.id))
-  }
+  rundir <- file.path(settings$run$host$rundir, run.id)
+  outdir <- file.path(settings$run$host$outdir, run.id)
 
   # command if scratch is used
   if (is.null(settings$run$host$scratchdir)) {
@@ -118,7 +114,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
     copyscratch <- "# no need to copy from scratch"
     clearscratch <- "# no need to clear scratch"
   } else {
-    modeloutdir <- file.path(settings$run$host$scratchdir, as.character(run.id))
+    modeloutdir <- file.path(settings$run$host$scratchdir, run.id)
     copyscratch <- paste("rsync", "-a", file.path(modeloutdir, "*"), outdir)
     if (is.null(settings$run$host$clearscratch) || is.na(as.logical(settings$run$host$clearscratch)) || as.logical(settings$run$host$clearscratch)) {
       clearscratch <- paste("rm", "-rf", modeloutdir)
