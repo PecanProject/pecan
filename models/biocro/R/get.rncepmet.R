@@ -1,7 +1,7 @@
 ##' Get Met data from NCEP
 ##'
-##' Retrieves NCEP met data for specified lat x lon and time span
-##' @title get NCEP met
+##' Retrieves NCEP met data for specified lat x lon and time span, using RNCEP
+##' @title get RNCEP met
 ##' @param lat 
 ##' @param lon 
 ##' @param start.date 
@@ -11,7 +11,7 @@
 ##' @export
 ##' @return weather data frame with weather formatted for BioCro model
 ##' @author David LeBauer
-get.ncepmet <- function(lat = as.numeric(settings$run$site$lat),
+get.rncepmet <- function(lat = as.numeric(settings$run$site$lat),
                         lon = as.numeric(settings$run$site$lon),
                         start.date = settings$run$start.date,
                         end.date = settings$run$end.date,
