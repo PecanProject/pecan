@@ -73,7 +73,8 @@ start.model.runs <- function(model, write = TRUE){
 
         # start the actual model run
         if (settings$run$host$name == "localhost") {        
-          out <- system2(qsub, c(file.path(settings$rundir, run, "job.sh")), stdout=TRUE)
+          #out <- system2(qsub, c(file.path(settings$rundir, run, "job.sh")), stdout=TRUE)
+          out <- system(qsub, c(file.path(settings$rundir, run, "job.sh")), intern=TRUE,ignore.stdout = FALSE, ignore.stderr = FALSE, wait=TRUE)
         } else {
           out <- system2("ssh", c(settings$run$host$name, qsub, file.path(settings$run$host$rundir, run, "job.sh")), stdout=TRUE)
         }
