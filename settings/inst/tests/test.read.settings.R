@@ -55,9 +55,11 @@ test_that("check.settings gives sensible defaults",{
   ## outdirs
   expect_equal(s2$outdir, tempdir())
   expect_equal(s2$modeloutdir, file.path(tempdir(), "out"))  
-  
+  expect_equal(s2$outdir, s2$run$host$outdir)
+
   ## rundir
   expect_equal(s2$rundir, file.path(tempdir(), "run"))  
+  expect_equal(s2$rundir, s2$run$host$rundir)
   
   expect_true(s2$bety$write)
   expect_true(s2$meta.analysis$iter > 1000)
@@ -95,9 +97,4 @@ test_that("sensitivity.analysis and ensemble use other's settings if null",{
     }
     expect_equal(s2$ensemble$size, 1)
   }
-})
-
-test_that("check settings sets default run$host$(rundir/outdir)",{
-  expect_equal(s2$rundir, s2$run$host$rundir)
-  expect_equal(s2$outdir, s2$run$host$outdir)
 })
