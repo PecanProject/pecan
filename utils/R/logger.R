@@ -132,7 +132,7 @@ logger.message <- function(level, msg, ...) {
 	    if (length(func) == 0) {
 	    	func <- "console"
 	    }
-		text <- sprintf("%s %-6s [%s] : %s\n", Sys.time(), level, func, paste(msg, ...))
+		text <- sprintf("%s %-6s [%s] : %s\n", Sys.time(), level, func, paste(c(msg, ...), collapse=" "))
 		if (.utils.logger$console) {
 			if (.utils.logger$stderr) {
 				cat(text, file=stderr())
