@@ -1,5 +1,6 @@
 export(get.model.output.BIOCRO)
 export(get.ncepmet)
+export(get.rncepmet)
 export(model2netcdf.BIOCRO)
 export(remove.config.BIOCRO)
 export(start.runs.BIOCRO)
