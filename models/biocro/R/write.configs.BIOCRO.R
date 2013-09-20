@@ -93,12 +93,22 @@ write.config.BIOCRO <- function(defaults = NULL,
     # todo check if file exists on remote host if needed and link in script
 
     # Get the weather data generic
-    weather <- get.rncepmet(lat = as.numeric(settings$run$site$lat),
+
+	if(!is.null(settings$run$site$met)){
+            if(file.exists(settings$run$site$met)){
+                weather <- read.csv(settings$run$site$met)
+            } else {
+                settings$site$met <- NULL
+            }
+        } else if (is.null(settings$run$site$met)){
+	    weather <- get.ncepmet(lat = as.numeric(settings$run$site$lat),
+
                         lon = as.numeric(settings$run$site$lon),
                         start.date = settings$run$start.date,
                         end.date = settings$run$end.date,
                         site.id = settings$run$site$id,
                         con = query.base.con(settings))
+        }
     # convert to biocro specific format
     W <- weachNEW(weather, lati = as.numeric(settings$run$site$lat), ts = 1, 
                                 temp.units="Celsius", rh.units="fraction", 
