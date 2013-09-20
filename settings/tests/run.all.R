@@ -11,4 +11,5 @@ library(testthat)
 library(PEcAn.settings)
 
 logger.setQuitOnSevere(FALSE)
-test_package("PEcAn.settings")
+
+#test_package("PEcAn.settings")

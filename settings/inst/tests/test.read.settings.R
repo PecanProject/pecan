@@ -10,7 +10,8 @@
 
 context("tests for read.settings and related functions")
 
-settings <- read.settings(system.file("tests/testinput.xml", package = "PEcAn.settings"))
+settings <- read.settings(system.file("tests/testinput.xml",
+                                      package = "PEcAn.settings"))    
 
 test_that("read.settings returned correctly", {
 	expect_true(file.exists(settings$outdir))
@@ -55,7 +56,7 @@ test_that("check.settings gives sensible defaults",{
   ## outdirs
   expect_equal(s2$outdir, tempdir())
   expect_equal(s2$modeloutdir, file.path(tempdir(), "out"))  
-  expect_equal(s2$outdir, s2$run$host$outdir)
+  expect_equal(s2$outdir, file.path(s2$run$host$outdir, "out"))
 
   ## rundir
   expect_equal(s2$rundir, file.path(tempdir(), "run"))  
@@ -78,6 +79,7 @@ test_that("check.settings uses run dates if dates not given in ensemble or sensi
     
     s1 <- list(pfts = s$pfts, database = s$database, run = NA)
     s1[[node]] <- list(variable = "FOO", start.year = 1000, end.year = 1000)
+
     expect_error(check.settings(s1))    
   }
 })
