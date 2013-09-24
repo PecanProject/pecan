@@ -57,3 +57,8 @@
 "root2shoot";"Root to Shoot Ratio";"";""
 "growth_respiration_coefficient";"growth respiration coefficient";"ratio";""
 "extinction_coefficient_diffuse";"extinction coefficient for diffuse light";"fraction";""
+"clumping";"Radiative transfer clumping factor (canopy clumping)";"0-1","clumping"
+"leaf_reflect_vis";"leaf VIS reflectance";"0-1";"leaf_reflect_vis"
+"leaf_reflect_nir";"leaf NIR reflectance";"0-1";"leaf_reflect_nir"
+"leaf_trans_vis";"leaf VIS transmittance";"0-1";"leaf_trans_vis"
+"leaf_trans_nir";"leaf NIR transmittance";"0-1";"leaf_trans_nir"
