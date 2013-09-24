@@ -273,6 +273,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   ed2in.text <- gsub('@OUTDIR@', modeloutdir, ed2in.text)
   ed2in.text <- gsub('@ENSNAME@', run.id, ed2in.text)
   ed2in.text <- gsub('@CONFIGFILE@', file.path(settings$run$host$rundir, run.id, "config.xml"), ed2in.text)
+  #ed2in.text <- gsub('@CONFIGFILE@',"config.xml", ed2in.text) # for ED2.r81 on Kang.  Temporary hack
   
   ##----------------------------------------------------------------------
   ed2in.text <- gsub('@FFILOUT@', file.path(modeloutdir, "analysis"), ed2in.text)
