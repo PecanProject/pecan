@@ -167,6 +167,7 @@ for(i in 1:length(plot.id)){ ## loop over plots
   diameters <- dtmp
 #}
 
-return(list(diameters=diameters, increments = increments, survival = survival,
-            species = spp,depth=depth)) # before species was "survival = survival"
+dat<<-list(diameters=diameters, increments = increments, survival = survival,
+            species = spp,depth=depth) # before species was "survival = survival"
+  #return(dat)
 }

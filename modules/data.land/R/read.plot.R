@@ -7,7 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 read.plot <- function(file){
-  dat <- read.csv(file, na.strings = "", sep = "\t")
+  dat <- read.csv(file, na.strings = "") #, sep = "\t")
   site <- dat[,which(toupper(names(dat)) == "SITE")]
   plot <- dat[,which(toupper(names(dat)) == "PLOT")]
   subplot <- dat[,which(toupper(names(dat)) == "SUBPLOT")]

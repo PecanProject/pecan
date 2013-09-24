@@ -8,7 +8,7 @@ combine.plot <- function(folder){
   plot.data <- list()
   for (file in filelist){
      plot.data[[file]] <- read.plot(file) # read each file from folder and list 
-  }  
+  }
   plot.data<<-plot.data
   return(plot.data)
 }
