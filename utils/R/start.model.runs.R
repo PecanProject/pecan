@@ -101,9 +101,10 @@ start.model.runs <- function(model, write = TRUE){
       check <- gsub("@JOBID@", jobids[run], settings$run$host$qstat)
       args <- strsplit(check, " (?=([^\"']*\"[^\"']*\")*[^\"']*$)", perl=TRUE)
       if (settings$run$host$name == "localhost") {
-        cmd <- args[[1]]
-        args <- args[-1]
-        out <- system2(cmd, args, stdout=TRUE)
+        #cmd <- args[[1]]
+        #args <- args[-1]
+        #out <- system2(cmd, args, stdout=TRUE)
+        out <- system(check, intern=TRUE, ignore.stdout = FALSE, ignore.stderr = FALSE, wait=TRUE) 
       } else {
         out <- system2("ssh", c(settings$run$host$name, args, recursive=TRUE), stdout=TRUE)
       }
