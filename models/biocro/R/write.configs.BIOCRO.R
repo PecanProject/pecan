@@ -75,7 +75,7 @@ write.config.BIOCRO <- function(defaults = NULL,
                                 settings,
                                 run.id) {
 
-  # find out where to write run/ouput
+  ## find out where to write run/ouput
   rundir <- file.path(settings$run$host$rundir, as.character(run.id))
   outdir <- file.path(settings$run$host$outdir, as.character(run.id))
   if (is.null(settings$run$host$qsub) && (settings$run$host$name == "localhost")) {
@@ -83,7 +83,7 @@ write.config.BIOCRO <- function(defaults = NULL,
     outdir <- file.path(settings$modeloutdir, as.character(run.id))
   }
 
-  # create launch script (which will create symlink)
+  ## create launch script (which will create symlink)
   writeLines(c("#!/bin/bash",
              paste("mkdir -p", outdir),
              paste("cd", rundir),
@@ -94,9 +94,9 @@ write.config.BIOCRO <- function(defaults = NULL,
              con=file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
     
-    # todo check if file exists on remote host if needed and link in script
-
-    # Get the weather data generic
+  ## todo check if file exists on remote host if needed and link in script
+  
+  ## Get the weather data generic
 
   if(!is.null(settings$run$site$met)){
       if(file.exists(settings$run$site$met)){
@@ -106,7 +106,7 @@ write.config.BIOCRO <- function(defaults = NULL,
       }
   }
   if (is.null(settings$run$site$met)){
-      weather <- get.ncepmet(lat = as.numeric(settings$run$site$lat),
+      weather <- get.rncepmet(lat = as.numeric(settings$run$site$lat),
                              lon = as.numeric(settings$run$site$lon),
                              start.date = settings$run$start.date,
                              end.date = settings$run$end.date,
@@ -117,7 +117,7 @@ write.config.BIOCRO <- function(defaults = NULL,
   W <- weachNEW(weather, lati = as.numeric(settings$run$site$lat), ts = 1, 
                                 temp.units="Celsius", rh.units="fraction", 
                                 ws.units="mph", pp.units="in")
-    # copy/hard link file to run folder
+    ## copy/hard link file to run folder
     write.csv(W, file = file.path(settings$rundir, run.id, "weather.csv"), row.names = FALSE)
 
     # write configuraiton file
