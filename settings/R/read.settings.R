@@ -383,7 +383,7 @@ check.settings <- function(settings) {
   # check if we need to use qsub
   if ("qsub" %in% names(settings$run$host)) {
     if (is.null(settings$run$host$qsub)) {
-      settings$run$host$qsub <- "qsub -N @NAME@ -o @STDOUT@ -e @STDERR@"
+      settings$run$host$qsub <- "qsub -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash"
       logger.info("qsub not specified using default value :", settings$run$host$qsub)
     }
     if (is.null(settings$run$host$qsub.jobid)) {
@@ -391,7 +391,7 @@ check.settings <- function(settings) {
       logger.info("qsub.jobid not specified using default value :", settings$run$host$qsub.jobid)
     }
     if (is.null(settings$run$host$qstat)) {
-      settings$run$host$qstat <- "qstat -j @JOBID@ 2>1 >/dev/null || echo DONE"
+      settings$run$host$qstat <- "qstat -j @JOBID@ &> /dev/null || echo DONE"
       logger.info("qstat not specified using default value :", settings$run$host$qstat)
     }
   }
