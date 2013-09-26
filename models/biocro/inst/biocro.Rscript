@@ -9,6 +9,7 @@ outdir <- args[2]
 # set the libpath here to point to the right version of BioCro
 require(XML)
 require(BioCro)
+require(data.table)
 require(PEcAn.utils)
 
 # load the weather data
