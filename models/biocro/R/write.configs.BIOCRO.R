@@ -35,11 +35,14 @@ convert.samples.BIOCRO <- function(trait.samples){
     trait.names[trait.names == "extinction_coefficient_diffuse"] <- "kd"
         
     colnames(trait.samples) <- trait.names    
-    
-    # iRhizome
-    # iStem
-    # ifrRhizome
-    # ifrStem
+    ## Partitioning coefficients: especially leaf
+    ## phenology
+
+    ## iRhizome
+    ## iStem
+    ## ifrRhizome
+    ## ifrStem
+    ## 
  
     ## transform values with different units
     ## cuticular conductance - BETY default is umol; BioCro uses mol
@@ -84,7 +87,8 @@ write.config.BIOCRO <- function(defaults = NULL,
   writeLines(c("#!/bin/bash",
              paste("mkdir -p", outdir),
              paste("cd", rundir),
-             paste("cp", settings$model$binary, normalizePath(rundir, mustWork=FALSE), normalizePath(outdir, mustWork=FALSE)),
+               ## model binary takes rundir, outdir as arguments
+             paste(settings$model$binary, normalizePath(rundir, mustWork=FALSE), normalizePath(outdir, mustWork=FALSE)),
 #             "./convert.R",
              paste("cp ", file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))),
              con=file.path(settings$rundir, run.id, "job.sh"))
@@ -94,23 +98,23 @@ write.config.BIOCRO <- function(defaults = NULL,
 
     # Get the weather data generic
 
-	if(!is.null(settings$run$site$met)){
-            if(file.exists(settings$run$site$met)){
-                weather <- read.csv(settings$run$site$met)
-            } else {
-                settings$site$met <- NULL
-            }
-        } else if (is.null(settings$run$site$met)){
-	    weather <- get.ncepmet(lat = as.numeric(settings$run$site$lat),
-
-                        lon = as.numeric(settings$run$site$lon),
-                        start.date = settings$run$start.date,
-                        end.date = settings$run$end.date,
-                        site.id = settings$run$site$id,
-                        con = query.base.con(settings))
-        }
-    # convert to biocro specific format
-    W <- weachNEW(weather, lati = as.numeric(settings$run$site$lat), ts = 1, 
+  if(!is.null(settings$run$site$met)){
+      if(file.exists(settings$run$site$met)){
+          weather <- read.csv(settings$run$site$met)
+      } else {
+          settings$site$met <- NULL
+      }
+  }
+  if (is.null(settings$run$site$met)){
+      weather <- get.ncepmet(lat = as.numeric(settings$run$site$lat),
+                             lon = as.numeric(settings$run$site$lon),
+                             start.date = settings$run$start.date,
+                             end.date = settings$run$end.date,
+                             site.id = settings$run$site$id,
+                             con = query.base.con(settings))
+  }
+  ## convert to biocro specific format
+  W <- weachNEW(weather, lati = as.numeric(settings$run$site$lat), ts = 1, 
                                 temp.units="Celsius", rh.units="fraction", 
                                 ws.units="mph", pp.units="in")
     # copy/hard link file to run folder
