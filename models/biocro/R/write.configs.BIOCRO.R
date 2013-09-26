@@ -19,6 +19,7 @@ PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "biocro.dtd">\n'
 ##' @title Convert samples for biocro
 ##' @param trait.samples a matrix or dataframe of samples from the trait distribution
 ##' @return matrix or dataframe with values transformed
+##' @export
 ##' @author David LeBauer
 convert.samples.BIOCRO <- function(trait.samples){
 
@@ -117,8 +118,8 @@ write.config.BIOCRO <- function(defaults = NULL,
   W <- weachNEW(weather, lati = as.numeric(settings$run$site$lat), ts = 1, 
                                 temp.units="Celsius", rh.units="fraction", 
                                 ws.units="mph", pp.units="in")
-    ## copy/hard link file to run folder
-    write.csv(W, file = file.path(settings$rundir, run.id, "weather.csv"), row.names = FALSE)
+  ## copy/hard link file to run folder
+  write.csv(W, file = file.path(settings$rundir, run.id, "weather.csv"), row.names = FALSE)
 
     # write configuraiton file
     traits  <- convert.samples.BIOCRO(trait.values[[settings$pfts$pft$name]])
@@ -141,28 +142,19 @@ write.config.BIOCRO <- function(defaults = NULL,
             defaults.file <- NULL
         }
     }
-    if(is.null(defaults.file)){
-        defaults.dir <- system.file("extdata/defaults/", package = "PEcAn.BIOCRO")
-        if(genus == "Saccharum") {
-            defaults.xml <- file.path(defaults.dir, "saccharum.xml")
-        } else if (genus == "Salix") {
-            defaults.xml <- file.path(defaults.dir, "salix.xml")
-        } else if (genus == "Miscanthus") {
-            defaults.xml <- file.path(defaults.dir, "miscanthus.xml")
-        } else if (genus == "Panicum") {
-            defaults.xml <- file.path(defaults.dir, "panicum.xml")
-            ##     } else if (genus == "Populus") {
-            ##       defaults.xml <- file.path(defaults.dir, "populus.xml")
-        } else {
-            logger.severe("no defaults file given and ",
-                          genus, "not supported in BioCro")
-        }
-        defaults <- xmlToList(xmlTreeParse(defaults.xml,
-                                           ## remove comments; see ?xmlParse
-                                           handlers = list("comment" = function(x,...){NULL}), 
-                                           asTree = TRUE))
-    }
-    
+  if(is.null(defaults.file)){
+    defaults.file <- system.file(file.path("extdata/defaults", paste0(tolower(genus), ".xml")), package = "PEcAn.BIOCRO")
+  }
+  if(file.exists(defaults.file)) {
+    defaults <- xmlToList(xmlTreeParse(defaults.file,
+                                       ## remove comments; see ?xmlParse
+                                       handlers = list("comment" = function(x,...){NULL}), 
+                                       asTree = TRUE))    
+  } else {
+    logger.severe("no defaults file given and ",
+                  genus, "not supported in BioCro")
+  }
+  
     if(is.null(defaults)) logger.error("No defaults values set")
     
     traits.used <- sapply(defaults, is.null)
