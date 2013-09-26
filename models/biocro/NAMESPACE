@@ -1,3 +1,4 @@
+export(convert.samples.BIOCRO)
 export(get.model.output.BIOCRO)
 export(get.ncepmet)
 export(get.rncepmet)

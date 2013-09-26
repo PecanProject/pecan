@@ -7,7 +7,8 @@
 ## which accompanies this distribution, and is available at
 ## http://opensource.ncsa.illinois.edu/license.html
 ## #-------------------------------------------------------------------------------
-
+logger.setQuitOnSevere(FALSE)
+logger.setLevel("OFF")
 context("tests for read.settings and related functions")
 
 settings <- read.settings(system.file("tests/testinput.xml",
@@ -24,7 +25,7 @@ test_that("read settings returns error if no settings file found (issue #1124)",
 })
 
 test_that("check.settings throws error if required content not there", {
-  logger.setLevel(level="ALL")
+
   s <- settings
   s[['pfts']] <- NULL
   expect_error(check.settings(s), "No PFTS specified.")  
@@ -37,7 +38,7 @@ test_that("check.settings throws error if required content not there", {
     s$run[[date]] <- NULL
     expect_error(check.settings(s))
   }
-  logger.setLevel(level="OFF")
+
 })
 
 test_that("check.settings gives sensible defaults",{
@@ -56,7 +57,7 @@ test_that("check.settings gives sensible defaults",{
   ## outdirs
   expect_equal(s2$outdir, tempdir())
   expect_equal(s2$modeloutdir, file.path(tempdir(), "out"))  
-  expect_equal(s2$outdir, file.path(s2$run$host$outdir, "out"))
+  expect_equal(s2$run$host$outdir, file.path(s2$outdir, "out"))
 
   ## rundir
   expect_equal(s2$rundir, file.path(tempdir(), "run"))  
