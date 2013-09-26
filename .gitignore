@@ -5,6 +5,9 @@
 # CMD check generated folders
 *.Rcheck
 
+# build.sh generated files
+changes.log
+
 # Package files
 PEcAn.*.tar.gz
 PEcAn.*.tgz
