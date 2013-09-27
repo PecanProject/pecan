@@ -1,4 +1,6 @@
 <constants>
+  <C3/>
+  <genus>Salix</genus>
   <canopyControl>
     <Sp>1.1</Sp>
     <SpD>0</SpD>
