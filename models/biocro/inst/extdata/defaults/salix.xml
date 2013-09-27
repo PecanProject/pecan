@@ -1,6 +1,8 @@
 <constants>
-  <C3/>
-  <genus>Salix</genus>
+  <type>
+    <photosynthesis>C3</photosynthesis>
+    <genus>Salix</genus>    
+  </type>
   <canopyControl>
     <Sp>1.1</Sp>
     <SpD>0</SpD>

@@ -21,8 +21,8 @@ years <- unique(weather$year)
 # run model
 config <- xmlToList(xmlParse(file.path(rundir, "config.xml")))
 
-ppfn <- ifelse()
-pp <- do.call("c3photoParms", config$pft$photoParms)
+ppfun <-  ifelse(config$pft$type$photosynthesis == "C3", "c3photoParms", "photoParms")
+pp <- do.call(ppfun, config$pft$photoParms)  
 
 cc <- canopyParms(Sp = as.numeric(config$pft$canopyControl$Sp))
 
@@ -32,7 +32,7 @@ if(!(genus %in% c("Saccharum", "Salix", "Miscanthus"))) {
 }
 
 result <- list()
-debugonce(willowGro)
+
 for(yeari in years){
     yearchar <- as.character(yeari)
     WetDat <- weather[weather$year == yeari,]
