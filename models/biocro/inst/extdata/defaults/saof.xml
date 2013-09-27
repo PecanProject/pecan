@@ -1,4 +1,8 @@
-      <constants>
+<constants>
+  <type>
+    <photosynthesis>C4</photosynthesis>
+    <genus>Saccharum</genus>
+  </type>
   <canopyParms>
 	  <Sp>1.3</Sp>
 	  <SpD>0.001</SpD>
