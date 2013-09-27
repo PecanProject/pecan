@@ -337,7 +337,7 @@ check.settings <- function(settings) {
           site$lon=settings$run$site$lon
         }
       }
-
+      if(settings$run$site$met == "NULL") settings$run$site$met <- NULL
       if (is.null(settings$run$site$name)) {
         if ((is.null(site$sitename) || site$sitename == "")) {
           logger.info("No site name specified.")
