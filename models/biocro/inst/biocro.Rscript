@@ -71,4 +71,4 @@ for(yeari in years){
 }
 
 write.csv(resultDT, file=file.path(outdir, "result.csv"))
-save(resultDT, config, file = file.path(outdir, "result.RData"))
+save(resultDT, config, genus, file = file.path(outdir, "result.RData"))
