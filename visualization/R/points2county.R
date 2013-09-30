@@ -15,9 +15,10 @@
 points2county <- function(griddata){
   data(counties)
   X <- data.table(griddata)
-  setnames(X, c("lat", "lon", "" X)[colnames(X) %in% "x"] <- "lon"
-  colnames(X)[colnames(X) %in% "y"] <- "lat"
-  
+#   setnames(X, c("lat", "lon", "" X)[colnames(X) %in% "x"] <- "lon"
+#   colnames(X)[colnames(X) %in% "y"] <- "lat"
+
+  stop(  "points2county not currently working")
   var <- colnames(X)[!colnames(X) %in% c("lat", "lon")]
 #  if((length(var) > 1)) logger.error("too many columns")
 #  if((length(var) < 1)) logger.error("no data in griddata, only ", colnames(griddata), "provided" )
