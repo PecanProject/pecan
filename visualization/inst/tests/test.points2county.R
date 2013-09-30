@@ -1,5 +1,5 @@
 context("testing points2county()")
-
+print("points2county not currently working; tests commented out")
 test_that("points2county returns county data",{
 #    data(ozone, package = "maps")
 #    colnames(ozone) <- c("lat", "lon", "ozone")
