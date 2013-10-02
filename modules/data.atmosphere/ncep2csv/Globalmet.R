@@ -19,9 +19,8 @@ library(ncdf)
 
 args <- commandArgs(TRUE)
 lati <- as.numeric(args[1])
-loni <- as.numeric(args[2])
 print(lati)
-print(loni)
+
 
 start.year <- 1948
 end.year <- 2012
@@ -51,65 +50,67 @@ load("/home/dlebauer/met/ncep/latlon.RData")
 ## close.ncdf(tmp0)
 ## save(soilm.0.10, soilm.10.200, file = paste0("/home/dlebauer/met/ncep/soil.init.RData"))
 ## rm(soilm.0.10, soilm.10.200)
-result <- list()
 
-currentlat <- round(Lat[lati], 2)
-currentlon <- round(Lon[loni], 2)
-print(currentlat)
-print(currentlon)
-for (i in seq(years)){
-    year <- years[i]
-    ndays <- ifelse(isleapyear(year), 366, 365)
-    days <- 1:ndays
-    
-    shum.nc <- open.ncdf(paste("/home/djaiswal/database/NCEP/SpecificHumidity/shum.2m.gauss.",year,".nc",sep=""))
-    shum <- get.var.ncdf(shum.nc, start = c(loni, lati, 1), count = c(1, 1, ndays))
-    close.ncdf(shum.nc)
+for(loni in 1:192){
+    result <- list()
 
-    rh.nc <- open.ncdf(paste("/home/djaiswal/database/NCEP/RelativeHumidity/rhum.sig995.",year,".nc",sep=""))
-    rh <- get.var.ncdf(rh.nc, start = c(loni, lati, 1), count = c(1, 1, ndays))
-    close.ncdf(rh.nc)
+    currentlat <- round(Lat[lati], 2)
+    currentlon <- round(Lon[loni], 2)
+    print(currentlat)
+    print(currentlon)
+    for (i in seq(years)){
+        year <- years[i]
+        ndays <- ifelse(isleapyear(year), 366, 365)
+        days <- 1:ndays
+        
+        shum.nc <- open.ncdf(paste("/home/djaiswal/database/NCEP/SpecificHumidity/shum.2m.gauss.",year,".nc",sep=""))
+        shum <- get.var.ncdf(shum.nc, start = c(loni, lati, 1), count = c(1, 1, ndays))
+        close.ncdf(shum.nc)
 
-    
-    tair.nc <- open.ncdf(paste("/home/djaiswal/database/NCEP/Temperature/air.2m.gauss.",year,".nc",sep=""))
-    temp <- get.var.ncdf(tair.nc, start = c(loni, lati, 1), count = c(1, 1, ndays))
-    close.ncdf(tair.nc)
-    
-    tmin.nc <- open.ncdf(paste("/home/djaiswal/database/NCEP/MinTemperature/tmin.2m.gauss.",year,".nc",sep=""))
-    tempmin <- get.var.ncdf(tmin.nc, start = c(loni, lati, 1), count = c(1, 1, ndays))
-    close.ncdf(tmin.nc)
-    
-    tmax.nc <- open.ncdf(paste("/home/djaiswal/database/NCEP/MaxTemperature/tmax.2m.gauss.",year,".nc",sep=""))
-    tempmax <- get.var.ncdf(tmax.nc, start = c(loni, lati, 1), count = c(1, 1, ndays))
-    close.ncdf(tmax.nc)
-    
-    uwind.nc <- open.ncdf(paste("/home/djaiswal/database/NCEP/WindspeedU/uwnd.10m.gauss.",year,".nc",sep=""))
-    vwind.nc <- open.ncdf(paste("/home/djaiswal/database/NCEP/WindspeedV/vwnd.10m.gauss.",year,".nc",sep=""))
-#   need to combine these / calculate hyp. 
-    vwind <- get.var.ncdf(uwind.nc, start = c(loni, lati, 1), count = c(1, 1, ndays))
-    uwind <- get.var.ncdf(vwind.nc, start = c(loni, lati, 1), count = c(1, 1, ndays))
-    close.ncdf(vwind.nc)
-    close.ncdf(uwind.nc)
+        rh.nc <- open.ncdf(paste("/home/djaiswal/database/NCEP/RelativeHumidity/rhum.sig995.",year,".nc",sep=""))
+        rh <- get.var.ncdf(rh.nc, start = c(loni, lati, 1), count = c(1, 1, ndays))
+        close.ncdf(rh.nc)
 
-    
-    solar.nc <- open.ncdf(paste("/home/djaiswal/database/NCEP/SolarRadiation/dswrf.sfc.gauss.",year,".nc",sep=""))
-    solar <- get.var.ncdf(solar.nc, start = c(loni, lati, 1), count = c(1, 1, ndays))
-    close.ncdf(solar.nc)
-    
-    prate.nc <- open.ncdf(paste("/home/djaiswal/database/NCEP/Precipitation/prate.sfc.gauss.",year,".nc",sep=""))
-    precip <- get.var.ncdf(prate.nc, start = c(loni, lati, 1), count = c(1, 1, ndays))
-    close.ncdf(prate.nc)
+        
+        tair.nc <- open.ncdf(paste("/home/djaiswal/database/NCEP/Temperature/air.2m.gauss.",year,".nc",sep=""))
+        temp <- get.var.ncdf(tair.nc, start = c(loni, lati, 1), count = c(1, 1, ndays))
+        close.ncdf(tair.nc)
+        
+        tmin.nc <- open.ncdf(paste("/home/djaiswal/database/NCEP/MinTemperature/tmin.2m.gauss.",year,".nc",sep=""))
+        tempmin <- get.var.ncdf(tmin.nc, start = c(loni, lati, 1), count = c(1, 1, ndays))
+        close.ncdf(tmin.nc)
+        
+        tmax.nc <- open.ncdf(paste("/home/djaiswal/database/NCEP/MaxTemperature/tmax.2m.gauss.",year,".nc",sep=""))
+        tempmax <- get.var.ncdf(tmax.nc, start = c(loni, lati, 1), count = c(1, 1, ndays))
+        close.ncdf(tmax.nc)
+        
+        uwind.nc <- open.ncdf(paste("/home/djaiswal/database/NCEP/WindspeedU/uwnd.10m.gauss.",year,".nc",sep=""))
+        vwind.nc <- open.ncdf(paste("/home/djaiswal/database/NCEP/WindspeedV/vwnd.10m.gauss.",year,".nc",sep=""))
+                                        #   need to combine these / calculate hyp. 
+        vwind <- get.var.ncdf(uwind.nc, start = c(loni, lati, 1), count = c(1, 1, ndays))
+        uwind <- get.var.ncdf(vwind.nc, start = c(loni, lati, 1), count = c(1, 1, ndays))
+        close.ncdf(vwind.nc)
+        close.ncdf(uwind.nc)
+
+        
+        solar.nc <- open.ncdf(paste("/home/djaiswal/database/NCEP/SolarRadiation/dswrf.sfc.gauss.",year,".nc",sep=""))
+        solar <- get.var.ncdf(solar.nc, start = c(loni, lati, 1), count = c(1, 1, ndays))
+        close.ncdf(solar.nc)
+        
+        prate.nc <- open.ncdf(paste("/home/djaiswal/database/NCEP/Precipitation/prate.sfc.gauss.",year,".nc",sep=""))
+        precip <- get.var.ncdf(prate.nc, start = c(loni, lati, 1), count = c(1, 1, ndays))
+        close.ncdf(prate.nc)
 
 
-    result[[as.character(year)]] <- data.frame(year = rep(year,ndays), day = 1:ndays, shum, rh, temp, tempmin, tempmax, uwind, vwind, solar, precip) 
-}
-weather.dir <- file.path("/home/dlebauer/met/ncep/",
-                         paste0(abs(currentlat),
-                                ifelse(currentlat>0,"N", "S"), "x",
-                                abs(currentlon),
-                                ifelse(currentlon>0, "E", "W")))
-dir.create(weather.dir, recursive = TRUE, showWarnings = FALSE)
-save(result,  file =  file.path(weather.dir, "rawweather.RData"))
-newresult <- do.call(rbind, result)
-write.csv(newresult, file =  file.path(weather.dir, "rawweather.csv"), row.names = FALSE)
+        result[[as.character(year)]] <- data.frame(year = rep(year,ndays), day = 1:ndays, shum, rh, temp, tempmin, tempmax, uwind, vwind, solar, precip) 
+    }
+    weather.dir <- file.path("/home/dlebauer/met/ncep/",
+                             paste0(abs(currentlat),
+                                    ifelse(currentlat>0,"N", "S"), "x",
+                                    abs(currentlon),
+                                    ifelse(currentlon>0, "E", "W")))
+    dir.create(weather.dir, recursive = TRUE, showWarnings = FALSE)
+    save(result,  file =  file.path(weather.dir, "rawweather.RData"))
+    newresult <- do.call(rbind, result)
+    write.csv(newresult, file =  file.path(weather.dir, "rawweather.csv"), row.names = FALSE)
 
