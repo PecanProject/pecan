@@ -6,3 +6,4 @@ module load R/3.0.1
 
 R CMD BATCH --no-save "--args $1 $2" /home/dlebauer/met/ncep/Globalmet.R $1$2.log
 
+rsync -routi ./tmpmet/* /home/dlebauer/met/ncep/
