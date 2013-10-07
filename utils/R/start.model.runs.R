@@ -190,6 +190,7 @@ start.model.runs <- function(model, write = TRUE){
             # write finished time to database 
             if (!is.null(dbcon)) {
               db.query(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", run), con=dbcon)
+            }
           } # end modellauncher if
         } # end writing to database          
       } # end job done if loop
