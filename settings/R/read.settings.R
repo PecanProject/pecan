@@ -109,7 +109,6 @@ check.settings <- function(settings) {
     }  
   }
   
-
   # should runs be written to database
   if (is.null(settings$bety$write)) {
     logger.info("Writing all runs/configurations to database.")
@@ -415,6 +414,21 @@ check.settings <- function(settings) {
     if (is.null(settings$run$host$qstat)) {
       settings$run$host$qstat <- "qstat -j @JOBID@ &> /dev/null || echo DONE"
       logger.info("qstat not specified using default value :", settings$run$host$qstat)
+    }
+  }
+
+  # modellauncher to launch on multiple nodes/cores
+  if ("modellauncher" %in% names(settings$run$host)) {
+    if (is.null(settings$run$host$modellauncher$binary)) {
+      settings$run$host$modellauncher$binary <- "modellauncher"
+      logger.info("binary not specified using default value :", settings$run$host$modellauncher$binary)
+    }
+    if (is.null(settings$run$host$modellauncher$qsub.extra)) {
+      logger.severe("qsub.extra not specified, can not launch in parallel environment.")
+    }
+    if (is.null(settings$run$host$modellauncher$mpirun)) {
+      settings$run$host$modellauncher$mpirun <- "mpirun"
+      logger.info("mpirun not specified using default value :", settings$run$host$modellauncher$mpirun)
     }
   }
 
