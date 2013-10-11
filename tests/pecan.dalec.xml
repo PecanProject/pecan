@@ -15,7 +15,7 @@
 
   <pfts>
     <pft>
-      <name>dalec.coniferous</name> 
+      <name>dalec.evergreen</name> 
     </pft>
   </pfts>
 
@@ -24,13 +24,13 @@
   </ensemble>
 
   <model>
-    <id>9</id>
+    <id>8</id>
   </model>
 
   <run>
     <site>
-      <id>772</id>
-      <met>/home/carya/sites/niwot/niwot.clim</met>
+      <id>766</id>
+      <met>/Users/mdietze/git/pecan/models/dalec/dalec_drivers.OREGON.no_obs.dat</met>
     </site>
     <start.date>2002-01-01 00:00:00</start.date>
     <end.date>2005-12-31 00:00:00</end.date>

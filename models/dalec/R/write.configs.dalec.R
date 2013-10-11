@@ -11,53 +11,41 @@
 #--------------------------------------------------------------------------------------------------#
 PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
 
+convert.samples.dalec <- function(trait.samples){
+  DEFAULT.LEAF.C <- 0.48
+  ## convert SLA from m2 / kg leaf to m2 / kg C 
+  
+  if('SLA' %in% names(trait.samples)){
+    trait.samples[['SLA']] <- trait.samples[['SLA']] / DEFAULT.LEAF.C / 1000
+  }
+  
+  if('leaf_turnover_rate' %in% names(trait.samples)){
+    trait.samples[['leaf_turnover_rate']] <- trait.samples[['leaf_turnover_rate']]/365
+    names(trait.samples)[which(names(trait.samples)=="leaf_turnover_rate")] <- "t5"
+  }
+  
+  if('root_turnover_rate' %in% names(trait.samples)){
+    trait.samples[['root_turnover_rate']] <- trait.samples[['root_turnover_rate']]/365
+    names(trait.samples)[which(names(trait.samples)=="root_turnover_rate")] <- "t7"
+  }
+  
+  return(trait.samples)
+}
 
 #--------------------------------------------------------------------------------------------------#
 ##' Writes a configuration files for your model
 #--------------------------------------------------------------------------------------------------#
 write.config.dalec <- function(defaults, trait.values, settings, run.id){
-  
-  startdate <- as.Date(settings$run$start.date)
-  enddate <- as.Date(settings$run$end.date)
-  
-  #-----------------------------------------------------------------------
-  ### Edit a templated config file for runs
-  config.text <- readLines(con=settings$run$config.template, n=-1)
-  
-  config.text <- gsub('@SITE_LAT@', settings$run$site$lat, config.text)
-  config.text <- gsub('@SITE_LON@', settings$run$site$lon, config.text)
-  config.text <- gsub('@SITE_MET@', settings$run$site$met, config.text)
-  config.text <- gsub('@MET_START@', settings$run$site$met.start, config.text)
-  config.text <- gsub('@MET_END@', settings$run$site$met.end, config.text)
-
-    #-----------------------------------------------------------------------
-    config.text <- gsub('@START_MONTH@', format(startdate, "%m"), config.text)
-    config.text <- gsub('@START_DAY@', format(startdate, "%d"), config.text)
-    config.text <- gsub('@START_YEAR@', format(startdate, "%Y"), config.text)
-    config.text <- gsub('@END_MONTH@', format(enddate, "%m"), config.text)
-    config.text <- gsub('@END_DAY@', format(enddate, "%d"), config.text)
-    config.text <- gsub('@END_YEAR@', format(enddate, "%Y"), config.text)
-
-    #-----------------------------------------------------------------------
-    config.text <- gsub('@OUTDIR@', settings$run$host$outdir, config.text)
-    config.text <- gsub('@ENSNAME@', run.id, config.text)
-
-  
-    ### Generate a numbered suffix for scratch output folder.  Useful for cleanup.  TEMP CODE. NEED TO UPDATE.
-    #cnt = counter(cnt) # generate sequential scratch output directory names 
-    #print(cnt)
-    #scratch = paste(Sys.getenv("USER"),".",cnt,"/",sep="")
-    scratch = Sys.getenv("USER")
-    #config.text <- gsub('@SCRATCH@', paste('/scratch/', settings$run$scratch, sep=''), config.text)
-    config.text <- gsub('@SCRATCH@', paste('/scratch/', scratch, sep=''), config.text)
-    ###
-  
-    config.text <- gsub('@OUTFILE@', paste('out', run.id, sep=''), config.text)
- 
-    #-----------------------------------------------------------------------
-    config.file.name <- paste('CONFIG.',run.id, sep='')
-    writeLines(config.text, con = paste(outdir, config.file.name, sep=''))
-    
+   
+  ### PARAMETERS
+  cmdFlags = ""
+  params <- convert.samples.dalec(trait.values)
+  for(i in 1:length(params)){
+    cmdFlags <- paste(cmdFlags," -",names(params)[i]," ",params[[i]],sep="")
+  }
+  config.file.name <- paste('CONFIG.',run.id, sep='')
+  writeLines(cmdFlags, con = paste(outdir, config.file.name, sep=''))
+      
     ### Display info to the console.
     print(run.id)
 }
