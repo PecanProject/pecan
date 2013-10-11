@@ -1,0 +1,1 @@
+-gortt_covar VAR_COVAR_LAI.dat -gortt_beta 0.0 -gortt -gortt_h1 2.66898 -gortt_h2 3.56946 -gortt_b 1.33449 -gortt_r 1.0 -gortt_lambda 0.200474 -prospect_cab 60.4895 -prospect_cw 0.01 -prospect_cdm 0.0111 -prospect_vai 2 -price_rs1 0.282265 -price_rs2 0.0420029 -price_rs3 0 -price_rs4 0
