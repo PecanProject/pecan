@@ -19,7 +19,7 @@
 
 ### *** THIS WHOLE FUNCTION SHOULD BE MADE INTO A GENERIC CASE IN UTILS THAT JUST HAS A FEW MODEL SPECIFIC PIECES OF INFO PASSED TO IT *** 
 
-get.model.output.generic <- function(){
+get.model.output.dalec <- function(){
   
   ### Get model output on the localhost
   if(settings$run$host$name != 'localhost'){
