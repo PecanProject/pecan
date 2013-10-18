@@ -46,3 +46,8 @@ temperate.Late_Conifer.doe_vd;8
 temperate.Early_Hardwood.doe_vd;9
 temperate.North_Mid_Hardwood.doe_vd;10
 temperate.Northern_Pine.doe_vd;6
+temperate.Late_Hardwood.optics;11
+temperate.Late_Conifer.optics;8
+temperate.Early_Hardwood.optics;9
+temperate.North_Mid_Hardwood.optics;10
+temperate.Northern_Pine.optics;6
