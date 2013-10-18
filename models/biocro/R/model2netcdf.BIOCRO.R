@@ -29,7 +29,7 @@ model2netcdf.BIOCRO <- function(outdir, sitelat, sitelon, start_date, end_date) 
     for(yeari in unique(resultDT$Year)) {
         result <- resultDT[resultDT$Year == yeari,]
         ##result$s <- with(result, ((DayofYear -1) * 24 + Hour) * 3600)
-        if(config$pft$genus == "Saccharum"){
+        if(genus == "Saccharum"){
             for(variable in c("Leaf", "Root", "Stem", "LAI", "DayofYear")) {
                 x <- result[[variable]]
                 result[[variable]] <- c(x[1], rep(x[-1], 24, each = TRUE))

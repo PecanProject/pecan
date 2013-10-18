@@ -1,15 +1,18 @@
-#!/usr/bin/Rscript --vanilla
+#!/usr/bin/env Rscript
 
 ## To place on global PATH:
-## sudo ln <path/to>/biocro.Rscript /usr/local/bin/biocro
+## sudo ln -s <path/to>/biocro.Rscript /usr/local/bin/biocro
 args   <- commandArgs(trailingOnly = TRUE)
 rundir <- args[1]
 outdir <- args[2]
-
+if(interactive()) {
+  runid <- tail(readLines("salixtest/run/runs.txt"), n=1)
+  rundir <- file.path("salixtest/run", runid)
+  outdir <- file.path("salixtest/out", runid)
+}
 # set the libpath here to point to the right version of BioCro
-require(XML)
 require(BioCro)
-require(PEcAn.utils)
+require(XML)
 
 # load the weather data
 weather <- read.csv(file.path(rundir, "weather.csv"))
@@ -17,8 +20,10 @@ years <- unique(weather$year)
 
 # run model
 config <- xmlToList(xmlParse(file.path(rundir, "config.xml")))
-pp.config <- config$pft$photoParms
-pp <- lapply(photoParms(vmax=pp.config$vmax, b0=pp.config$b0, b1 = pp.config$b1,Rd=pp.config$Rd), as.numeric)
+
+ppfun <-  ifelse(config$pft$type$photosynthesis == "C3", "c3photoParms", "photoParms")
+pp <- do.call(ppfun, config$pft$photoParms)  
+
 cc <- canopyParms(Sp = as.numeric(config$pft$canopyControl$Sp))
 
 genus <- config$pft$genus
@@ -27,6 +32,7 @@ if(!(genus %in% c("Saccharum", "Salix", "Miscanthus"))) {
 }
 
 result <- list()
+
 for(yeari in years){
     yearchar <- as.character(yeari)
     WetDat <- weather[weather$year == yeari,]
@@ -42,9 +48,10 @@ for(yeari in years){
                                     iRoot=1.0, ifrRhizome=0.01, ifrStem=0.01,
                                     ifrLeaf = 0.0, ifrRoot = 0.0)
         } else if(yeari > min(years)){
-            iplant$iRhizome <- last(result[[as.character(yeari-1)]]$Rhizome)
-            iplant$iStem <- last(result[[as.character(yeari-1)]]$Stem)
-            iplant$iRoot <- last(result[[as.character(yeari-1)]]$Root)
+            N <- length(result[[as.character(yeari-1)]]$Rhizome)
+            iplant$iRhizome <- result[[as.character(yeari-1)]]$Rhizome[N]
+            iplant$iStem <- result[[as.character(yeari-1)]]$Stem[N]
+            iplant$iRoot <- result[[as.character(yeari-1)]]$Root[N]
         }
         result[[yearchar]] <- willowGro(WetDat = WetDat, photoControl=pp,
                                         canopyControl=cc, day1 = day1, dayn = dayn)
@@ -53,7 +60,7 @@ for(yeari in years){
     }
 
     result.yeari <- with(result[[yearchar]],
-    data.table(Year = yeari, DayofYear, Hour, ThermalT,
+    data.frame(Year = yeari, DayofYear, Hour, ThermalT,
                 Stem, Leaf, Root, Rhizome, Grain, LAI,
                 SoilEvaporation, CanopyTrans))
     if(yeari == min(years)){
@@ -64,4 +71,4 @@ for(yeari in years){
 }
 
 write.csv(resultDT, file=file.path(outdir, "result.csv"))
-save(resultDT, config, file = file.path(outdir, "result.RData"))
+save(resultDT, config, genus, file = file.path(outdir, "result.RData"))

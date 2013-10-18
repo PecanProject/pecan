@@ -48,7 +48,6 @@
       <name>EBI Energy Farm</name>
       <lat>40.08</lat>
       <lon>-88.23</lon>
-      <met>NULL</met>
     </site>
     <start.date>2004-01-01 06:00:00</start.date>
     <end.date>2005-12-31 05:59:00</end.date>

@@ -28,72 +28,86 @@ check.settings <- function(settings) {
     return(0)
   }
   
+
   ## allow PEcAn to run without database
   if (is.null(settings$database)) {
-    database <- NULL
+    database <- FALSE
     logger.warn("No database information specified; not using database.")
     settings$bety$write <- FALSE
-  }
+  } else {    
+    ## check database settings
+    if (is.null(settings$database$driver)) {
+      settings$database$driver <- "MySQL"
+      logger.info("Using", settings$database$driver, "as database driver.")
+    }
+        
+    # Attempt to load the driver
+    if (!require(paste0("R", settings$database$driver), character.only=TRUE)) {
+      logger.warn("Could not load the database driver", paste0("R", settings$database$driver))
+    }
+    
+    # MySQL specific checks
+    if (settings$database$driver == "MySQL") {
+      if (!is.null(settings$database$userid)) {
+        logger.info("userid in database section should be username for MySQL")
+        settings$database$username <- settings$database$userid
+        settings$database$userid <- NULL
+      }
+      if (!is.null(settings$database$user)) {
+        logger.info("user in database section should be username for MySQL")
+        settings$database$username <- settings$database$user
+        settings$database$user <- NULL
+      }
+      if (!is.null(settings$database$passwd)) {
+        logger.info("passwd in database section should be password for MySQL")
+        settings$database$password <- settings$database$passwd
+        settings$database$passwd <- NULL
+      }
+      if (!is.null(settings$database$name)) {
+        logger.info("name in database section should be dbname for MySQL")
+        settings$database$dbname <- settings$database$name
+        settings$database$name <- NULL
+      }
+    }
+    
+    # PostgreSQL specific checks
+    if (settings$database$driver == "PostgreSQL") {
+      if (!is.null(settings$database$userid)) {
+        logger.info("userid in database section should be user for PostgreSQL")
+        settings$database$user <- settings$database$userid
+        settings$database$userid <- NULL
+      }
+      if (!is.null(settings$database$username)) {
+        logger.info("username in database section should be user for PostgreSQL")
+        settings$database$user <- settings$database$username
+        settings$database$username <- NULL
+      }
+      if (!is.null(settings$database$passwd)) {
+        logger.info("passwd in database section should be password for PostgreSQL")
+        settings$database$password <- settings$database$passwd
+        settings$database$passwd <- NULL
+      }
+      if (!is.null(settings$database$name)) {
+        logger.info("name in database section should be dbname for PostgreSQL")
+        settings$database$dbname <- settings$database$name
+        settings$database$name <- NULL
+      }
+    }
 
-  ## check database settings
-  if (is.null(settings$database$driver)) {
-    settings$database$driver <- "MySQL"
-    logger.info("Using", settings$database$driver, "as database driver.")
-  }
+# not sure what this does.
+#    if(!is.null(settings$database$host)){
+#      if(any(settings$database$host %in% c(Sys.info()['nodename'], gsub("illinois", "uiuc", Sys.info()['nodename'])))){
+#        settings$database$host <- "localhost"
+#      }
+#    }
 
-  # Attempt to load the driver
-  if (!require(paste0("R", settings$database$driver), character.only=TRUE)) {
-    logger.warn("Could not load the database driver", paste0("R", settings$database$driver))
+    # finally we can check to see if we can connect to the database
+    if(!db.exists(settings$database)){
+      logger.severe("Invalid Database Settings : ", unlist(settings$database))
+    }
+    logger.info("Database settings:", unlist(settings$database))
   }
-
-  # MySQL specific checks
-  if (settings$database$driver == "MySQL") {
-    if (!is.null(settings$database$userid)) {
-      logger.info("userid in database section should be username for MySQL")
-      settings$database$username <- settings$database$userid
-      settings$database$userid <- NULL
-    }
-    if (!is.null(settings$database$user)) {
-      logger.info("user in database section should be username for MySQL")
-      settings$database$username <- settings$database$user
-      settings$database$user <- NULL
-    }
-    if (!is.null(settings$database$passwd)) {
-      logger.info("passwd in database section should be password for MySQL")
-      settings$database$password <- settings$database$passwd
-      settings$database$passwd <- NULL
-    }
-    if (!is.null(settings$database$name)) {
-      logger.info("name in database section should be dbname for MySQL")
-      settings$database$dbname <- settings$database$name
-      settings$database$name <- NULL
-    }
-  }
-
-  # PostgreSQL specific checks
-  if (settings$database$driver == "PostgreSQL") {
-    if (!is.null(settings$database$userid)) {
-      logger.info("userid in database section should be user for PostgreSQL")
-      settings$database$user <- settings$database$userid
-      settings$database$userid <- NULL
-    }
-    if (!is.null(settings$database$username)) {
-      logger.info("username in database section should be user for PostgreSQL")
-      settings$database$user <- settings$database$username
-      settings$database$username <- NULL
-    }
-    if (!is.null(settings$database$passwd)) {
-      logger.info("passwd in database section should be password for PostgreSQL")
-      settings$database$password <- settings$database$passwd
-      settings$database$passwd <- NULL
-    }
-    if (!is.null(settings$database$name)) {
-      logger.info("name in database section should be dbname for PostgreSQL")
-      settings$database$dbname <- settings$database$name
-      settings$database$name <- NULL
-    }
-  }
-
+  
   # should runs be written to database
   if (is.null(settings$bety$write)) {
     logger.info("Writing all runs/configurations to database.")
@@ -108,32 +122,34 @@ check.settings <- function(settings) {
   }
 
   # check if we can connect to the database
-  require(PEcAn.DB)
-  if (!db.exists(params=settings$database, write=settings$bety$write)) {
-    logger.warn("Could not connect to the database.")
-    database <- FALSE
-  } else {
-    logger.info("Successfully connected to database")
-    database <- TRUE
-  }
-
-  # TODO check userid and userpassword
-  
-  # check database version
-  if(database){
-    versions <- db.query("SELECT version FROM schema_migrations WHERE version >= '20130717162614';", params=settings$database)[['version']]
-    if (length(versions) == 0) {
-      logger.severe("Database is out of date, please update the database.")
-    }
-    if (length(versions) > 1) {
-      logger.warn("Database is more recent than PEcAn expects this could result in PEcAn not working as expected.",
-                  "If PEcAn fails, either revert database OR update PEcAn and edit expected database version in",
-                  "utils/R/read.settings.R (Redmine #1673).")
+  if(!is.null(settings$database)){
+    require(PEcAn.DB)
+    if (!db.exists(params=settings$database, write=settings$bety$write)) {
+      logger.info("Could not connect to the database")
+      database <- FALSE
     } else {
-      logger.debug("Database is correct version", versions[1], ".")
+      logger.info("Successfully connected to database")
+      database <- TRUE
+    }    
+    
+    # TODO check userid and userpassword
+    
+    # check database version
+    if(database){
+      versions <- db.query("SELECT version FROM schema_migrations WHERE version >= '20130717162614';", params=settings$database)[['version']]
+      if (length(versions) == 0) {
+        logger.severe("Database is out of date, please update the database.")
+      }
+      if (length(versions) > 1) {
+        logger.warn("Database is more recent than PEcAn expects this could result in PEcAn not working as expected.",
+                    "If PEcAn fails, either revert database OR update PEcAn and edit expected database version in",
+                    "utils/R/read.settings.R (Redmine #1673).")
+      } else {
+        logger.debug("Database is correct version", versions[1], ".")
+      }
     }
   }
-
+  
   # make sure there are pfts defined
   if (is.null(settings$pfts) || (length(settings$pfts) == 0)) {
     logger.severe("No PFTS specified.")
@@ -337,7 +353,7 @@ check.settings <- function(settings) {
           site$lon=settings$run$site$lon
         }
       }
-
+      if((!is.null(settings$run$site$met)) && settings$run$site$met == "NULL") settings$run$site$met <- NULL
       if (is.null(settings$run$site$name)) {
         if ((is.null(site$sitename) || site$sitename == "")) {
           logger.info("No site name specified.")
@@ -379,6 +395,10 @@ check.settings <- function(settings) {
     logger.info("Setting localhost for execution host.")
     settings$run$host$name <- "localhost"
   }
+  ## if run$host is localhost, set to "localhost
+  if (any(settings$run$host %in% c(Sys.info()['nodename'], gsub("illinois", "uiuc", Sys.info()['nodename'])))){
+    settings$run$host <- "localhost"
+  }
 
   # check if we need to use qsub
   if ("qsub" %in% names(settings$run$host)) {
@@ -393,6 +413,21 @@ check.settings <- function(settings) {
     if (is.null(settings$run$host$qstat)) {
       settings$run$host$qstat <- "qstat -j @JOBID@ &> /dev/null || echo DONE"
       logger.info("qstat not specified using default value :", settings$run$host$qstat)
+    }
+  }
+
+  # modellauncher to launch on multiple nodes/cores
+  if ("modellauncher" %in% names(settings$run$host)) {
+    if (is.null(settings$run$host$modellauncher$binary)) {
+      settings$run$host$modellauncher$binary <- "modellauncher"
+      logger.info("binary not specified using default value :", settings$run$host$modellauncher$binary)
+    }
+    if (is.null(settings$run$host$modellauncher$qsub.extra)) {
+      logger.severe("qsub.extra not specified, can not launch in parallel environment.")
+    }
+    if (is.null(settings$run$host$modellauncher$mpirun)) {
+      settings$run$host$modellauncher$mpirun <- "mpirun"
+      logger.info("mpirun not specified using default value :", settings$run$host$modellauncher$mpirun)
     }
   }
 
