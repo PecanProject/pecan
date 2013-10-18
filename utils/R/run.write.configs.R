@@ -45,7 +45,6 @@ run.write.configs <- function(model, write = TRUE) {
     
     ### If no PFT(s) are specified insert NULL to warn user 
     if(length(pft.names)==0) pft.names[1] <- "NULL" 
-    ###
     
     ### Get output directory info
     outdirs[i.pft] <- settings$pfts[i.pft]$pft$outdir
@@ -54,16 +53,10 @@ run.write.configs <- function(model, write = TRUE) {
   
   logger.info("Selected PFT(s): ", pft.names)
   
-  ### Generate empty list arrays for output.
-  trait.samples <- list()
-  sa.samples <- list()
-  ensemble.samples <- list()
-  env.samples <- list()
-  runs.samples <- list()
-  ###
+  ## Generate empty list arrays for output.
+  trait.samples <- sa.samples <- ensemble.samples <- env.samples <- runs.samples <- list()
   
   ## Prepare for model output.  Cleanup any old config files (if exists)
-
   do.call(paste("remove.config", model, sep="."), args = list(settings$rundir, settings))
 
   ## Load PFT priors and posteriors
@@ -87,8 +80,13 @@ run.write.configs <- function(model, write = TRUE) {
       ma.traits <- names(trait.mcmc)
       samples.num <- min(sapply(trait.mcmc, function(x) nrow(as.matrix(x))))
       
-      logger.info("PFT",  pft.names[i], "has meta analysis results for", ma.traits)
-      logger.info("PFT", pft.names[i], "will use prior distributions for", priors[!ma.traits %in% priors] )
+      ## report which traits use MA results, which use priors 
+      if(length(ma.traits) > 0){
+        logger.info("PFT",  pft.names[i], "has meta analysis results for:\n", paste0(ma.traits, collapse = "\n "))        
+      }
+      if(!all(priors %in% ma.traits)){
+        logger.info("PFT", pft.names[i], "will use prior distributions for:\n", paste0(priors[!priors %in% ma.traits], collapse = "\n "))        
+      }
     } else {
       ma.traits <- NULL
       samples.num <- 20000
@@ -111,14 +109,10 @@ run.write.configs <- function(model, write = TRUE) {
   
   ### NEED TO IMPLEMENT: 
   ## Load Environmental Priors and Posteriors
-  ###
   
   ### Sensitivity Analysis
   if('sensitivity.analysis' %in% names(settings)) {
     
-    if(is.null(settings$sensitivity.analysis)) {
-      logger.info('\n not writing config files for sensitivity analysis, settings are NULL')
-    } else {      
       ### Get info on the quantiles to be run in the sensitivity analysis (if requested)
       quantiles <- get.quantiles(settings$sensitivity.analysis$quantiles)
       ### Get info on the years to run the sensitivity analysis (if requested)
@@ -136,14 +130,12 @@ run.write.configs <- function(model, write = TRUE) {
         cnt <- 0
         assign("cnt", cnt, .GlobalEnv)
       }
-      print(" ")
       logger.info("\n ----- Writing model run config files ----")
       runs.samples$sa <- write.sa.configs(defaults = settings$pfts,
                                           quantile.samples = sa.samples,
                                           settings = settings,
                                           model = model,
                                           write.to.db = write)
-    }
   } ### End of SA
   
   ### Write ENSEMBLE
