@@ -19,3 +19,4 @@ LazyLoad: yes
 LazyData: FALSE
 Collate:
     'InputForWeach.R'
+    'metutils.R'
