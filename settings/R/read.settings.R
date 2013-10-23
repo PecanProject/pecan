@@ -34,27 +34,13 @@ check.settings <- function(settings) {
     database <- FALSE
     logger.warn("No database information specified; not using database.")
     settings$bety$write <- FALSE
-  } else {
-    if(all(c("dbname", "username", "host", "password") %in% names(settings$database))){
-      if(!db.exists(settings$database)){
-        logger.info("Database settings:")
-        print(settings$database)
-        logger.severe("Invalid Database Settings")
-      }
-    }
-    
+  } else {    
     ## check database settings
     if (is.null(settings$database$driver)) {
       settings$database$driver <- "MySQL"
       logger.info("Using", settings$database$driver, "as database driver.")
     }
-    
-    if(!is.null(settings$database$host)){
-      if(any(settings$database$host %in% c(Sys.info()['nodename'], gsub("illinois", "uiuc", Sys.info()['nodename'])))){
-        settings$database$host <- "localhost"
-      }
-    }
-    
+        
     # Attempt to load the driver
     if (!require(paste0("R", settings$database$driver), character.only=TRUE)) {
       logger.warn("Could not load the database driver", paste0("R", settings$database$driver))
@@ -106,7 +92,20 @@ check.settings <- function(settings) {
         settings$database$dbname <- settings$database$name
         settings$database$name <- NULL
       }
-    }  
+    }
+
+# not sure what this does.
+#    if(!is.null(settings$database$host)){
+#      if(any(settings$database$host %in% c(Sys.info()['nodename'], gsub("illinois", "uiuc", Sys.info()['nodename'])))){
+#        settings$database$host <- "localhost"
+#      }
+#    }
+
+    # finally we can check to see if we can connect to the database
+    if(!db.exists(settings$database)){
+      logger.severe("Invalid Database Settings : ", unlist(settings$database))
+    }
+    logger.info("Database settings:", unlist(settings$database))
   }
   
   # should runs be written to database
