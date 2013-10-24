@@ -116,7 +116,8 @@ model{
   
   ## run MCMC
   jags.out   <- coda.samples (model = j.model,
-                              variable.names = c("x","tau_add","tau_dbh","tau_inc","mu","tau_ind","tau_yr"),
+                              variable.names = c("x","tau_add","tau_dbh","tau_inc","mu",
+                                                 "tau_ind","tau_yr","ind","year"),
                               n.iter = n.iter)
   
   return(jags.out)
