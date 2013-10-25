@@ -33,3 +33,4 @@ LazyData: FALSE
 Collate:
     'worldmap.R'
     'points2county.R'
+    'ciEnvelope.R'
