@@ -92,7 +92,7 @@ model{
 }
     
   ## state variable initial condition
-  z0 = t(apply(data$y,1,function(y){-rev(cumsum(rev(y)))})) + data$z[,ncol(z)] 
+  z0 = t(apply(data$y,1,function(y){-rev(cumsum(rev(y)))})) + data$z[,ncol(data$z)] 
   
   ## JAGS initial conditions
   nchain = 3
