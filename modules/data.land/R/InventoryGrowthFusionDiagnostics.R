@@ -1,4 +1,4 @@
-InventoryGrowthFusionDiagnostics <- function(jags.out){
+InventoryGrowthFusionDiagnostics <- function(jags.out,combined){
   
   #### Diagnostic plots
   
@@ -13,10 +13,10 @@ InventoryGrowthFusionDiagnostics <- function(jags.out){
   smp = sample.int(data$ni,4)
   for(i in smp){
     sel = which(ci.names$row == i)
-    plot(time,ci[2,sel],type='n',ylim=range(ci[,sel],na.rm=TRUE),ylab="DBH (cm)",main=tree.ID[i])
-    ciEnvelope(time,ci[1,sel],ci[3,sel],col="lightBlue")
-    points(time,data$z[i,],pch="+",cex=1.5)
-    lines(time,z0[i,],lty=2)
+    plot(data$time,ci[2,sel],type='n',ylim=range(ci[,sel],na.rm=TRUE),ylab="DBH (cm)",main=i)
+    ciEnvelope(data$time,ci[1,sel],ci[3,sel],col="lightBlue")
+    points(data$time,data$z[i,],pch="+",cex=1.5)
+ #   lines(data$time,z0[i,],lty=2)
   }
   
   ## growth
@@ -26,9 +26,9 @@ InventoryGrowthFusionDiagnostics <- function(jags.out){
     inc.ci = apply(inc.mcmc,1,quantile,c(0.025,0.5,0.975))*5
     #inc.names = parse.MatrixNames(colnames(ci),numeric=TRUE)
     
-    plot(time[-1],inc.ci[2,],type='n',ylim=range(inc.ci,na.rm=TRUE),ylab="Ring Increment (mm)")
-    ciEnvelope(time[-1],inc.ci[1,],inc.ci[3,],col="lightBlue")
-    points(time,data$y[i,]*5,pch="+",cex=1.5,type='b',lty=2)
+    plot(data$time[-1],inc.ci[2,],type='n',ylim=range(inc.ci,na.rm=TRUE),ylab="Ring Increment (mm)")
+    ciEnvelope(data$time[-1],inc.ci[1,],inc.ci[3,],col="lightBlue")
+    points(data$time,data$y[i,]*5,pch="+",cex=1.5,type='b',lty=2)
   }
   
   if(FALSE){
@@ -40,7 +40,8 @@ InventoryGrowthFusionDiagnostics <- function(jags.out){
   }
   
   ## process model
-  vars = (1:ncol(out))[-c(which(substr(colnames(out),1,1)=="x"),grep("tau",colnames(out)))]
+  vars = (1:ncol(out))[-c(which(substr(colnames(out),1,1)=="x"),grep("tau",colnames(out)),
+                          grep("year",colnames(out)),grep("ind",colnames(out)))]
   par(mfrow=c(1,1))
   for(i in vars){
     hist(out[,i],main=colnames(out)[i])
@@ -63,14 +64,14 @@ InventoryGrowthFusionDiagnostics <- function(jags.out){
   year.cols = grep("year",colnames(out))
   if(length(year.cols>0)){
     ci.yr <- apply(out[,year.cols],2,quantile,c(0.025,0.5,0.975))
-    plot(time,ci.yr[2,],type='n',ylim=range(ci.yr,na.rm=TRUE),ylab="Year Effect")
-    ciEnvelope(time,ci.yr[1,],ci.yr[3,],col="lightBlue")
-    lines(time,ci.yr[2,],lty=1,lwd=2)
+    plot(data$time,ci.yr[2,],type='n',ylim=range(ci.yr,na.rm=TRUE),ylab="Year Effect")
+    ciEnvelope(data$time,ci.yr[1,],ci.yr[3,],col="lightBlue")
+    lines(data$time,ci.yr[2,],lty=1,lwd=2)
     abline(h=0,lty=2)
   }
   
   ### INDIV
-  ind.cols= grep("ind",colnames(out))
+  ind.cols= which(substr(colnames(out),1,3)=="ind")
   if(length(ind.cols)>0){
     boxplot(out[,ind.cols],horizontal=TRUE,outline=FALSE,col=combined$PLOT)
     abline(v=0,lty=2)

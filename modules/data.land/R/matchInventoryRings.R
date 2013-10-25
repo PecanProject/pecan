@@ -1,4 +1,4 @@
-matchInventoryRings <- function(trees,rings,extractor=from.TreeCode){
+matchInventoryRings <- function(trees,rings,extractor=from.TreeCode,nyears=30,coredOnly=TRUE){
 
   ## build tree codes
   names(trees) = toupper(names(trees))
@@ -20,7 +20,9 @@ matchInventoryRings <- function(trees,rings,extractor=from.TreeCode){
   mch[duplicated(mch)] <- NA  ## if there's multiple stems, match the first
 
   ## combine data into one table
-  combined = cbind(trees,t(as.matrix(rings))[mch,-30:0 + nrow(rings)])
-  combined = combined[!is.na(combined$"2000"),]
+  combined = cbind(trees,t(as.matrix(rings))[mch,-(nyears-1):0 + nrow(rings)])
+  if(coredOnly==TRUE){
+    combined = combined[!is.na(combined$"2000"),]
+  }
   return(combined)
 }
