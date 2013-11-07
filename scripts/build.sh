@@ -218,4 +218,5 @@ rm running
 
 if [ "$STATUS" == "BROKEN" ]; then 
     echo "ERROR PEcAn BUILD BROKEN" >&2
+    exit 1
 fi
