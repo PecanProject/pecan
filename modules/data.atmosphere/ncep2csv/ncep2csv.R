@@ -21,13 +21,14 @@ library(ncdf4)
 library(lubridate)
 library(data.table)
 library(udunits2)
+library(rhwsd)
 load("/home/dlebauer/dev/pecan/modules/data.atmosphere/data/ncep_landmask.RData")
-source("/home/dlebauer/dev/rhwsd/inst/extdata/hwsd.r")
+
 
 ncep.nc <-  nc_open("/home/dlebauer/met/ncep/allncep.nc")
 time.idx <- ncvar_get(ncep.nc, "time")
 date <- ymd("1948-01-01") + hours(time.idx - min(time.idx))
-date <- date[date < ymd("2012-05-06")] ## valid range for temp; data goes above 200C after this date
+date <- date[date < ymd("2012-05-06") & date >= ymd("1948-01-01")] ## valid range for temp; data goes above 200C after 2012-05-06; some NA's during 1948
 time_steps <- length(date)
 doy <- yday(date)
 year <- year(date)
@@ -72,7 +73,9 @@ qcshum     <- function(x){
     x <- ifelse(x > 100 | x < 0, mean(x[x < 0.6553 & x > 0]), x)
     x[is.na(x)] <- mean(x, na.rm = TRUE)
 }
-ncep_dt2weather <- function(weather = result){
+ncep_dt2weather <- function(weather = result, lati = lati){
+
+    currentlat <- round(Lat[lati], 2)
 
     x <- weather[year < 2012 & year > 1948,
                  list(year, day = doy,
@@ -84,8 +87,7 @@ ncep_dt2weather <- function(weather = result){
                       precip.day = ud.convert(qcprecip(prate), "mm s-1", "mm day-1"),
                       shum = qcshum(shum),
                       rhum = qcrh(rhum))]
-    
-    
+        
     x$rhmax <- x[, qair2rh(shum, tmin)]
     x$rhmin <- x[, qair2rh(shum, tmax)]
     x$rhavg <- x[, (rhmax + rhmin) / 2]
@@ -95,26 +97,35 @@ ncep_dt2weather <- function(weather = result){
                         rhmax, rhmin, rhavg,
                         wnd, precip.day)]
  
-    dat <- weachNEW(as.data.frame(forweach),
-                    lat = currentlat,
-                    ts = 1,
-                    temp.units = "Celsius",
-                    rh.units = "fraction",
-                    ws.units = "mps",
-                    pp.units = "mm")
-    dat <- data.table(dat)
+    dat <- weachDT(forweach, lati = lati)
     return(dat)
 }
+
+get.latlonbox <- function(lati, loni, Lat = Lat, Lon = Lon){
+    lat <- c(mean(Lat[lati:(lati-1)]), mean(Lat[lati:(lati+1)]))
+    lon <- c(mean(Lon[loni:(loni-1)]), mean(Lon[loni:(loni+1)]))
+    return(c(sort(lat), sort(lon)))
+}
+
+run.biocro <- function(weather, lati, loni, ...){
+    ## get soil data
+    abox <- get.latlonbox(lati = lati, loni = loni, Lat = Lat, Lon = Lon)
+    soil <- get.hwsd.box(abox, con = con)
+    
+    
+}
+
+con <- get.hwsdcon()
 
 for(lati in seq(Lat)){
     for(loni in seq(Lon)){
         here <- landmask[lat == Lat[lati] & lon == Lon[loni] - 180,]
         if(here$land){
-            system.time(result <- ncep_nc2dt(lati, loni))
-            system.time(weather <- ncep_dt2weather(result))
-            ## get soil data
+            result <- ncep_nc2dt(lati, loni)
+            weather <- ncep_dt2weather(result)
+            run.biocro(weather, lati, loni)
+
             ## here we run the model
         }
     }
 }
-     
