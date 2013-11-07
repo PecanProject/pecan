@@ -15,7 +15,7 @@
 }
 \examples{
 temp <- -30:30
-plot(temp, get.es(0, temp))
+plot(temp, get.es(temp))
 }
 \author{
   David LeBauer
