@@ -23,7 +23,9 @@
   {./pecan.xml}{pecan.xml in the current folder} } Once the
   function finds a valid file, it will not look further.
   Thus, if \code{inputfile} is supplied,
-  \code{PECAN_SETTINGS} will be ignored
+  \code{PECAN_SETTINGS} will be ignored. Even if a
+  \code{file} argument is passed, it will be ignored if a
+  file is passed through a higher priority method.
 }
 \examples{
 \dontrun{
