@@ -32,3 +32,4 @@ Collate:
     'fuse_plot_treering.R'
     'plot2AGB.R'
     'gis.functions.R'
+    'find.land.R'
