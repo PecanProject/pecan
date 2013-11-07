@@ -37,7 +37,7 @@ check.settings <- function(settings) {
   } else {    
     ## check database settings
     if (is.null(settings$database$driver)) {
-      settings$database$driver <- "MySQL"
+        settings$database$driver <- "MySQL"
       logger.info("Using", settings$database$driver, "as database driver.")
     }
         
@@ -94,16 +94,30 @@ check.settings <- function(settings) {
       }
     }
 
-# not sure what this does.
-#    if(!is.null(settings$database$host)){
-#      if(any(settings$database$host %in% c(Sys.info()['nodename'], gsub("illinois", "uiuc", Sys.info()['nodename'])))){
-#        settings$database$host <- "localhost"
-#      }
-#    }
-
-    # finally we can check to see if we can connect to the database
+    ## The following hack handles *.illinois.* to *.uiuc.* aliases of ebi-forecast
+    if(!is.null(settings$database$host)){
+        forcastnames <- c("ebi-forecast.igb.uiuc.edu",
+                          "ebi-forecast.igb.illinois.edu") 
+        if((settings$database$host %in% forcastnames) &
+           (Sys.info()['nodename'] %in% forcastnames)){
+            settings$database$host <- "localhost"
+        }
+    } else if(is.null(settings$database$host)){
+        settings$database$host <- "localhost"
+    }
+    ## finally we can check to see if we can connect to the database
+    ## but only if 
+    if(is.null(settings$database$user)) {
+        settings$database$user <- "bety"
+    }
+    if(is.null(settings$database$password)) {
+        settings$database$password <- "bety"
+    }
+    if(is.null(settings$database$dbname)) {
+        settings$database$dbname <- "bety"
+    }
     if(!db.exists(settings$database)){
-      logger.severe("Invalid Database Settings : ", unlist(settings$database))
+        logger.severe("Invalid Database Settings : ", unlist(settings$database))
     }
     logger.info("Database settings:", unlist(settings$database))
   }
