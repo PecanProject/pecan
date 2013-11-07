@@ -215,3 +215,7 @@ if [ "$FORCE" == "yes" ]; then
 fi
 
 rm running
+
+if [ "$STATUS" == "BROKEN" ]; then 
+    echo "ERROR PEcAn BUILD BROKEN" >&2
+fi
