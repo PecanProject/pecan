@@ -1,18 +1,25 @@
 ## Outputs the following data as .csv 
 ## shum:long_name = "mean Daily Specific Humidity at 2 m" ;
 ## shum:units = "kg/kg" ;
+## shum CF: surface_specific_humidity
 ## rhum:long_name = "mean Daily relative humidity at sigma level 995" ;
 ## rhum:units = "%" ;
+## CF: relative_humidity
 ## prate:long_name = "mean Daily Precipitation Rate at surface" ;
 ## prate:units = "Kg/m^2/s" ;
+## precipitation_flux
 ## uwnd:long_name = "mean Daily u-wind at 10 m" ;
 ## uwnd:units = "m/s" ;
+## CF: x_wind
 ## vwnd:long_name = "mean Daily v-wind at 10 m" ;
 ## vwnd:units = "m/s" ;
+## CF: y_wind
 ## air:long_name = "mean Daily Air temperature at 2 m" ;
 ## air:units = "degK" ;
+## air_temperature
 ## dswrf:long_name = "mean Daily Downward Solar Radiation Flux at surface" ;
 ## dswrf:units = "W/m^2" ;
+## CF: surface_net_downward_shortwave_flux
 
 
 library(ncdf)
