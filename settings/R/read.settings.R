@@ -34,27 +34,13 @@ check.settings <- function(settings) {
     database <- FALSE
     logger.warn("No database information specified; not using database.")
     settings$bety$write <- FALSE
-  } else {
-    if(all(c("dbname", "username", "host", "password") %in% names(settings$database))){
-      if(!db.exists(settings$database)){
-        logger.info("Database settings:")
-        print(settings$database)
-        logger.severe("Invalid Database Settings")
-      }
-    }
-    
+  } else {    
     ## check database settings
     if (is.null(settings$database$driver)) {
-      settings$database$driver <- "MySQL"
+        settings$database$driver <- "MySQL"
       logger.info("Using", settings$database$driver, "as database driver.")
     }
-    
-    if(!is.null(settings$database$host)){
-      if(any(settings$database$host %in% c(Sys.info()['nodename'], gsub("illinois", "uiuc", Sys.info()['nodename'])))){
-        settings$database$host <- "localhost"
-      }
-    }
-    
+        
     # Attempt to load the driver
     if (!require(paste0("R", settings$database$driver), character.only=TRUE)) {
       logger.warn("Could not load the database driver", paste0("R", settings$database$driver))
@@ -106,10 +92,36 @@ check.settings <- function(settings) {
         settings$database$dbname <- settings$database$name
         settings$database$name <- NULL
       }
-    }  
+    }
+
+    ## The following hack handles *.illinois.* to *.uiuc.* aliases of ebi-forecast
+    if(!is.null(settings$database$host)){
+        forcastnames <- c("ebi-forecast.igb.uiuc.edu",
+                          "ebi-forecast.igb.illinois.edu") 
+        if((settings$database$host %in% forcastnames) &
+           (Sys.info()['nodename'] %in% forcastnames)){
+            settings$database$host <- "localhost"
+        }
+    } else if(is.null(settings$database$host)){
+        settings$database$host <- "localhost"
+    }
+    ## finally we can check to see if we can connect to the database
+    ## but only if 
+    if(is.null(settings$database$user)) {
+        settings$database$user <- "bety"
+    }
+    if(is.null(settings$database$password)) {
+        settings$database$password <- "bety"
+    }
+    if(is.null(settings$database$dbname)) {
+        settings$database$dbname <- "bety"
+    }
+    if(!db.exists(settings$database)){
+        logger.severe("Invalid Database Settings : ", unlist(settings$database))
+    }
+    logger.info("Database settings:", unlist(settings$database))
   }
   
-
   # should runs be written to database
   if (is.null(settings$bety$write)) {
     logger.info("Writing all runs/configurations to database.")
@@ -415,6 +427,21 @@ check.settings <- function(settings) {
     if (is.null(settings$run$host$qstat)) {
       settings$run$host$qstat <- "qstat -j @JOBID@ &> /dev/null || echo DONE"
       logger.info("qstat not specified using default value :", settings$run$host$qstat)
+    }
+  }
+
+  # modellauncher to launch on multiple nodes/cores
+  if ("modellauncher" %in% names(settings$run$host)) {
+    if (is.null(settings$run$host$modellauncher$binary)) {
+      settings$run$host$modellauncher$binary <- "modellauncher"
+      logger.info("binary not specified using default value :", settings$run$host$modellauncher$binary)
+    }
+    if (is.null(settings$run$host$modellauncher$qsub.extra)) {
+      logger.severe("qsub.extra not specified, can not launch in parallel environment.")
+    }
+    if (is.null(settings$run$host$modellauncher$mpirun)) {
+      settings$run$host$modellauncher$mpirun <- "mpirun"
+      logger.info("mpirun not specified using default value :", settings$run$host$modellauncher$mpirun)
     }
   }
 

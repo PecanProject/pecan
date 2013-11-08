@@ -50,4 +50,10 @@ fi
 
 # show key
 echo "Please add ~/.ssh/${SERVER}.pub to your ~/.ssh/authorized_keys on $SERVER" 
+echo "paste the following lines to the commandline:"
+echo ""
+echo " (the first only if there is no .ssh directory on the server)"
+echo ""
+echo "echo ssh ${USERNAME}@${SERVER} \"mkdir ~/.ssh\"" 
+echo ""
 echo "cat ~/.ssh/${SERVER}.pub | ssh ${USERNAME}@${SERVER} \"cat >> ~/.ssh/authorized_keys\"" 
