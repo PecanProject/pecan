@@ -1,3 +1,39 @@
+
+get.latlonbox <- function(lati, loni, Lat = Lat, Lon = Lon){
+    lat <- c(mean(Lat[lati:(lati-1)]), mean(Lat[lati:(lati+1)]))
+    lon <- c(mean(Lon[loni:(loni-1)]), mean(Lon[loni:(loni+1)]))
+    return(c(sort(lat), sort(lon)))
+}
+ 
+
+ncep_dt2weather <- function(weather = result, lati = lati){
+
+    currentlat <- round(Lat[lati], 2)
+
+    x <- weather[year < 2012 & year > 1948,
+                 list(year, day = doy,
+                      tavg = ud.convert(qctemp(air), "Kelvin", "Celsius"),
+                      tmax = ud.convert(qctemp(tmax), "Kelvin", "Celsius"),
+                      tmin = ud.convert(qctemp(tmin), "Kelvin", "Celsius"),
+                      dswrf.MJ   = ud.convert(qcsolar(dswrf), "watt day", "megajoule"), 
+                      wnd  = sqrt(qcwind(uwnd)^2 + qcwind(vwnd)^2),
+                      precip.day = ud.convert(qcprecip(prate), "mm s-1", "mm day-1"),
+                      shum = qcshum(shum),
+                      rhum = qcrh(rhum))]
+        
+    x$rhmax <- x[, qair2rh(shum, tmin)]
+    x$rhmin <- x[, qair2rh(shum, tmax)]
+    x$rhavg <- x[, (rhmax + rhmin) / 2]
+
+    forweach <- x[,list(year, day, dswrf.MJ,
+                        tmax, tmin, tavg,
+                        rhmax, rhmin, rhavg,
+                        wnd, precip.day)]
+ 
+    dat <- weachDT(forweach, lati = lati)
+    return(dat)
+}
+
 datetoDMY<-function(date){
   day   <- as.numeric(substr(date,start=4,stop=5))
   month <- as.numeric(substr(date,start=1,stop=2))
