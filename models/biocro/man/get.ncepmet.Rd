@@ -2,12 +2,7 @@
 \alias{get.ncepmet}
 \title{get NCEP met}
 \usage{
-  get.ncepmet(lat = as.numeric(settings$run$site$lat),
-    lon = as.numeric(settings$run$site$lon),
-    start.date = settings$run$start.date,
-    end.date = settings$run$end.date,
-    site.id = settings$run$site$id,
-    con = query.base.con(settings))
+  get.ncepmet()
 }
 \arguments{
   \item{lat}{}
@@ -34,6 +29,6 @@
   span
 }
 \author{
-  David LeBauer
+  Deepak Jaiswal, David LeBauer
 }
 

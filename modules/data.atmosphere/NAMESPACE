@@ -1,2 +1,7 @@
 export(InputForWeach)
+export(get.es)
+export(get.rh)
+export(get.vpd)
 export(ncep.gather2)
+export(qair2rh)
+export(wide2long)

@@ -65,22 +65,23 @@ convert.samples.ED <- function(trait.samples){
       arrhenius.scaling(leaf_resp, old.temp = 25, new.temp = 15)
     vcmax_15 <- arrhenius.scaling(vcmax, old.temp = 25, new.temp = 15)
     
-    ##need to add back dark resp prior?? no?
-    
     ## Output leaf_respiration_rate @ 15C as Rd0 -- New way to input leaf resp into ED2.  Dark Resp Factor is no longer used (see below)
-    trait.samples[['Rd0']] <- trait.samples[['leaf_respiration_rate_m2']] ## Added by SPS 05/06/2013
+    #trait.samples[['Rd0']] <- trait.samples[['leaf_respiration_rate_m2']] ## Added by SPS 05/06/2013 -- NO LONGER NEEDED
     
     ## Calculate dark_resp_factor -- Will be depreciated when moving from older versions of ED2
     trait.samples[['dark_respiration_factor']] <- trait.samples[['leaf_respiration_rate_m2']]/
       vcmax_15
     
-    ## Remove leaf_respiration_rate from trait samples
-    remove <- which(names(trait.samples)=='leaf_respiration_rate_m2')
-    trait.samples = trait.samples[-remove]
+    ## Remove leaf_respiration_rate from trait samples -- NO LONGER NEEDED
+    #remove <- which(names(trait.samples)=='leaf_respiration_rate_m2')
+    #trait.samples = trait.samples[-remove]
     
   } ## End dark_respiration_factor loop
   
-  
+  # for debugging conversions
+  #save(trait.samples, file = file.path(settings$outdir, 'trait.samples.Rdata'))
+
+  # return converted samples
   return(trait.samples)
 }
 #==================================================================================================#
@@ -104,12 +105,8 @@ convert.samples.ED <- function(trait.samples){
 write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   
   # find out where to write run/ouput
-  rundir <- file.path(settings$run$host$rundir, as.character(run.id))
-  outdir <- file.path(settings$run$host$outdir, as.character(run.id))
-  if (is.null(settings$run$host$qsub) && (settings$run$host$name == "localhost")) {
-    rundir <- file.path(settings$rundir, as.character(run.id))
-    outdir <- file.path(settings$modeloutdir, as.character(run.id))
-  }
+  rundir <- file.path(settings$run$host$rundir, run.id)
+  outdir <- file.path(settings$run$host$outdir, run.id)
 
   # command if scratch is used
   if (is.null(settings$run$host$scratchdir)) {
@@ -117,7 +114,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
     copyscratch <- "# no need to copy from scratch"
     clearscratch <- "# no need to clear scratch"
   } else {
-    modeloutdir <- file.path(settings$run$host$scratchdir, as.character(run.id))
+    modeloutdir <- file.path(settings$run$host$scratchdir, run.id)
     copyscratch <- paste("rsync", "-a", file.path(modeloutdir, "*"), outdir)
     if (is.null(settings$run$host$clearscratch) || is.na(as.logical(settings$run$host$clearscratch)) || as.logical(settings$run$host$clearscratch)) {
       clearscratch <- paste("rm", "-rf", modeloutdir)
@@ -131,7 +128,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
              paste("mkdir -p", modeloutdir),
              paste("cd", rundir),
              "export GFORTRAN_UNBUFFERED_PRECONNECTED=yes",
-             #settings$model$binary,
+             settings$model$binary,
              copyscratch,
              clearscratch,
              paste("cp ", file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))),
@@ -145,8 +142,10 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   ## TODO this should come from the database
   histfile <- paste("data/history.r", settings$model$revision, ".csv", sep='')
   if (file.exists(system.file(histfile, package="PEcAn.ED2"))) {
+    #print(paste("--- Using ED2 History File: ","data/history.r", settings$model$revision, ".csv", sep=''))
     edhistory <- read.csv2(system.file(histfile, package="PEcAn.ED2"), sep=";")
   } else {
+    #print("--- Using Generic ED2 History File: data/history.csv")
     edhistory <- read.csv2(system.file("data/history.csv",  package="PEcAn.ED2"), sep=";")
   }
   edtraits <- names(edhistory)
@@ -274,6 +273,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   ed2in.text <- gsub('@OUTDIR@', modeloutdir, ed2in.text)
   ed2in.text <- gsub('@ENSNAME@', run.id, ed2in.text)
   ed2in.text <- gsub('@CONFIGFILE@', file.path(settings$run$host$rundir, run.id, "config.xml"), ed2in.text)
+  #ed2in.text <- gsub('@CONFIGFILE@',"config.xml", ed2in.text) # for ED2.r81 on Kang.  Temporary hack
   
   ##----------------------------------------------------------------------
   ed2in.text <- gsub('@FFILOUT@', file.path(modeloutdir, "analysis"), ed2in.text)

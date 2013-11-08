@@ -19,6 +19,7 @@ PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "biocro.dtd">\n'
 ##' @title Convert samples for biocro
 ##' @param trait.samples a matrix or dataframe of samples from the trait distribution
 ##' @return matrix or dataframe with values transformed
+##' @export
 ##' @author David LeBauer
 convert.samples.BIOCRO <- function(trait.samples){
 
@@ -35,11 +36,14 @@ convert.samples.BIOCRO <- function(trait.samples){
     trait.names[trait.names == "extinction_coefficient_diffuse"] <- "kd"
         
     colnames(trait.samples) <- trait.names    
-    
-    # iRhizome
-    # iStem
-    # ifrRhizome
-    # ifrStem
+    ## Partitioning coefficients: especially leaf
+    ## phenology
+
+    ## iRhizome
+    ## iStem
+    ## ifrRhizome
+    ## ifrStem
+    ## 
  
     ## transform values with different units
     ## cuticular conductance - BETY default is umol; BioCro uses mol
@@ -72,7 +76,7 @@ write.config.BIOCRO <- function(defaults = NULL,
                                 settings,
                                 run.id) {
 
-  # find out where to write run/ouput
+  ## find out where to write run/ouput
   rundir <- file.path(settings$run$host$rundir, as.character(run.id))
   outdir <- file.path(settings$run$host$outdir, as.character(run.id))
   if (is.null(settings$run$host$qsub) && (settings$run$host$name == "localhost")) {
@@ -80,31 +84,42 @@ write.config.BIOCRO <- function(defaults = NULL,
     outdir <- file.path(settings$modeloutdir, as.character(run.id))
   }
 
-  # create launch script (which will create symlink)
+  ## create launch script (which will create symlink)
   writeLines(c("#!/bin/bash",
              paste("mkdir -p", outdir),
              paste("cd", rundir),
+               ## model binary takes rundir, outdir as arguments
              paste(settings$model$binary, normalizePath(rundir, mustWork=FALSE), normalizePath(outdir, mustWork=FALSE)),
 #             "./convert.R",
              paste("cp ", file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))),
              con=file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
     
-    # todo check if file exists on remote host if needed and link in script
+  ## todo check if file exists on remote host if needed and link in script
+  
+  ## Get the weather data generic
 
-    # Get the weather data generic
-    weather <- get.ncepmet(lat = as.numeric(settings$run$site$lat),
-                        lon = as.numeric(settings$run$site$lon),
-                        start.date = settings$run$start.date,
-                        end.date = settings$run$end.date,
-                        site.id = settings$run$site$id,
-                        con = query.base.con(settings))
-    # convert to biocro specific format
-    W <- weachNEW(weather, lati = as.numeric(settings$run$site$lat), ts = 1, 
+  if(!is.null(settings$run$site$met)){
+      if(file.exists(settings$run$site$met)){
+          weather <- read.csv(settings$run$site$met)
+      } else {
+          settings$site$met <- NULL
+      }
+  }
+  if (is.null(settings$run$site$met)){
+      weather <- get.rncepmet(lat = as.numeric(settings$run$site$lat),
+                             lon = as.numeric(settings$run$site$lon),
+                             start.date = settings$run$start.date,
+                             end.date = settings$run$end.date,
+                             site.id = settings$run$site$id,
+                             con = query.base.con(settings))
+  }
+  ## convert to biocro specific format
+  W <- weachNEW(weather, lati = as.numeric(settings$run$site$lat), ts = 1, 
                                 temp.units="Celsius", rh.units="fraction", 
                                 ws.units="mph", pp.units="in")
-    # copy/hard link file to run folder
-    write.csv(W, file = file.path(settings$rundir, run.id, "weather.csv"), row.names = FALSE)
+  ## copy/hard link file to run folder
+  write.csv(W, file = file.path(settings$rundir, run.id, "weather.csv"), row.names = FALSE)
 
     # write configuraiton file
     traits  <- convert.samples.BIOCRO(trait.values[[settings$pfts$pft$name]])
@@ -127,28 +142,19 @@ write.config.BIOCRO <- function(defaults = NULL,
             defaults.file <- NULL
         }
     }
-    if(is.null(defaults.file)){
-        defaults.dir <- system.file("extdata/defaults/", package = "PEcAn.BIOCRO")
-        if(genus == "Saccharum") {
-            defaults.xml <- file.path(defaults.dir, "saccharum.xml")
-        } else if (genus == "Salix") {
-            defaults.xml <- file.path(defaults.dir, "salix.xml")
-        } else if (genus == "Miscanthus") {
-            defaults.xml <- file.path(defaults.dir, "miscanthus.xml")
-        } else if (genus == "Panicum") {
-            defaults.xml <- file.path(defaults.dir, "panicum.xml")
-            ##     } else if (genus == "Populus") {
-            ##       defaults.xml <- file.path(defaults.dir, "populus.xml")
-        } else {
-            logger.severe("no defaults file given and ",
-                          genus, "not supported in BioCro")
-        }
-        defaults <- xmlToList(xmlTreeParse(defaults.xml,
-                                           ## remove comments; see ?xmlParse
-                                           handlers = list("comment" = function(x,...){NULL}), 
-                                           asTree = TRUE))
-    }
-    
+  if(is.null(defaults.file)){
+    defaults.file <- system.file(file.path("extdata/defaults", paste0(tolower(genus), ".xml")), package = "PEcAn.BIOCRO")
+  }
+  if(file.exists(defaults.file)) {
+    defaults <- xmlToList(xmlTreeParse(defaults.file,
+                                       ## remove comments; see ?xmlParse
+                                       handlers = list("comment" = function(x,...){NULL}), 
+                                       asTree = TRUE))    
+  } else {
+    logger.severe("no defaults file given and ",
+                  genus, "not supported in BioCro")
+  }
+  
     if(is.null(defaults)) logger.error("No defaults values set")
     
     traits.used <- sapply(defaults, is.null)

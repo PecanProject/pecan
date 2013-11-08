@@ -7,10 +7,12 @@
 ## which accompanies this distribution, and is available at
 ## http://opensource.ncsa.illinois.edu/license.html
 ## #-------------------------------------------------------------------------------
-
+logger.setQuitOnSevere(FALSE)
+logger.setLevel("OFF")
 context("tests for read.settings and related functions")
 
-settings <- read.settings(system.file("tests/testinput.xml", package = "PEcAn.settings"))
+settings <- read.settings(system.file("tests/testinput.xml",
+                                      package = "PEcAn.settings"))    
 
 test_that("read.settings returned correctly", {
 	expect_true(file.exists(settings$outdir))
@@ -23,7 +25,7 @@ test_that("read settings returns error if no settings file found (issue #1124)",
 })
 
 test_that("check.settings throws error if required content not there", {
-  logger.setLevel(level="ALL")
+
   s <- settings
   s[['pfts']] <- NULL
   expect_error(check.settings(s), "No PFTS specified.")  
@@ -36,18 +38,21 @@ test_that("check.settings throws error if required content not there", {
     s$run[[date]] <- NULL
     expect_error(check.settings(s))
   }
-  logger.setLevel(level="OFF")
+
 })
 
 test_that("check.settings gives sensible defaults",{
   ## This provides the minimum inputs 
   s <- settings
   s1 <- list(pfts = list(pft = list(name = "test", outdir = "testdir")), 
-             database = list(), 
+             database = NULL, 
              run = list(start.date = now(), end.date = days(1) + now()))
   s2 <- check.settings(s1)
+  expect_is(s2$database, "NULL")
+  
+  s1$database <- list()
+  s2 <- check.settings(s1)
   expect_equal(s2$database$driver, "MySQL")
-
 
   ## dir. paths, with default localhost
   expect_equal(s2$run$host$name, "localhost")
@@ -55,9 +60,11 @@ test_that("check.settings gives sensible defaults",{
   ## outdirs
   expect_equal(s2$outdir, tempdir())
   expect_equal(s2$modeloutdir, file.path(tempdir(), "out"))  
-  
+  expect_equal(s2$run$host$outdir, file.path(s2$outdir, "out"))
+
   ## rundir
   expect_equal(s2$rundir, file.path(tempdir(), "run"))  
+  expect_equal(s2$rundir, s2$run$host$rundir)
   
   expect_true(s2$bety$write)
   expect_true(s2$meta.analysis$iter > 1000)
@@ -76,6 +83,7 @@ test_that("check.settings uses run dates if dates not given in ensemble or sensi
     
     s1 <- list(pfts = s$pfts, database = s$database, run = NA)
     s1[[node]] <- list(variable = "FOO", start.year = 1000, end.year = 1000)
+
     expect_error(check.settings(s1))    
   }
 })
@@ -97,7 +105,22 @@ test_that("sensitivity.analysis and ensemble use other's settings if null",{
   }
 })
 
-test_that("check settings sets default run$host$(rundir/outdir)",{
-  expect_equal(s2$rundir, s2$run$host$rundir)
-  expect_equal(s2$outdir, s2$run$host$outdir)
+test_that("workflow id is numeric if settings$bety$write = TRUE", {
+  s <- settings
+  s1 <- check.settings(s)
+  expect_is(s1$workflow$id, "integer")
+  
+  s$workflow <- NULL
+  s1 <- check.settings(s)
+  expect_is(s1$workflow$id, "integer")
+})
+
+test_that("check.settings will fail if db does not exist",{
+
+  s <- settings
+  expect_true(db.exists(s$database))
+  s$database$dbname <- "cookiemonster"
+  expect_false(db.exists(s$database))
+  expect_error(check.settings(s$database))
+
 })
