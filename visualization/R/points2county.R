@@ -14,13 +14,14 @@
 ##' colnames(ozone) <- c("lon", "lat", "ozone")
 points2county <- function(griddata){
   data(counties)
-  X <- griddata
-  colnames(X)[colnames(X) %in% "x"] <- "lon"
-  colnames(X)[colnames(X) %in% "y"] <- "lat"
-  
+  X <- data.table(griddata)
+#   setnames(X, c("lat", "lon", "" X)[colnames(X) %in% "x"] <- "lon"
+#   colnames(X)[colnames(X) %in% "y"] <- "lat"
+
+  stop(  "points2county not currently working")
   var <- colnames(X)[!colnames(X) %in% c("lat", "lon")]
-  if((length(var) > 1)) logger.error("too many columns")
-  if((length(var) < 1)) logger.error("no data in griddata, only ", colnames(griddata), "provided" )
+#  if((length(var) > 1)) logger.error("too many columns")
+#  if((length(var) < 1)) logger.error("no data in griddata, only ", colnames(griddata), "provided" )
      
 #   if(X[,min(lat) < 19 | max(lat) > 68 | min(lon) < -174 | max(lon) > -67]) {
 #     logger.warn("griddata includes points outside continental US; these will be removed")

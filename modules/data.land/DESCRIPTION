@@ -1,10 +1,10 @@
 Package: PEcAn.data.land
 Type: Package
 Title: PEcAn functions used for ecological forecasts and reanalysis
-Version: 1.3.1
-Date: 2013-06-14
-Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Mike Dietze, Carl
-    Davidson, Rob Kooper
+Version: 1.3.3
+Date: 2013-10-08
+Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Mike Dietze, 
+	Carl Davidson, Rob Kooper
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     workflow management tool that is designed to simplify the management of
@@ -32,3 +32,10 @@ Collate:
     'fuse_plot_treering.R'
     'plot2AGB.R'
     'gis.functions.R'
+    'InventoryGrowthFusion.R'
+    'InventoryGrowthFusionDiagnostics.R'
+    'buildJAGSdata_InventoryRings.R'
+    'extract.stringCode.R'
+    'matchInventoryRings.R'
+    'parse.MatrixNames.R'
+    'find.land.R'

@@ -83,6 +83,8 @@ logger.error <- function(msg, ...) {
 ##' This function will print a message and stop execution of the code. This
 ##' should only be used if the application should terminate. If the session is
 ##' non-interactive the error code can be specified which is returned to the shell.
+##' 
+##' set \code{\link{logger.setQuitOnSevere(FALSE)}}. To avoid terminating the session. 
 ##'
 ##' @param msg the message that should be printed.
 ##' @param errorcode the error code to return when the session quits.
@@ -132,7 +134,7 @@ logger.message <- function(level, msg, ...) {
 	    if (length(func) == 0) {
 	    	func <- "console"
 	    }
-		text <- sprintf("%s %-6s [%s] : %s\n", Sys.time(), level, func, paste(msg, ...))
+		text <- sprintf("%s %-6s [%s] : %s\n", Sys.time(), level, func, paste(c(msg, ...), collapse=" "))
 		if (.utils.logger$console) {
 			if (.utils.logger$stderr) {
 				cat(text, file=stderr())
@@ -259,7 +261,8 @@ logger.setOutputFile <- function(filename) {
 ##' Configure wheter severe should quit.
 ##' 
 ##' The default is for a non-interactive session to quit. Setting this to false is
-##' especially useful for running tests.
+##' especially useful for running tests when placed in \codePinst/tests/test.<fn>.R}, 
+##' but is not passed from \code{tests/run.all.R}.
 ##'
 ##' @param severeQuits should R quit on a severe error.
 ##' @export
