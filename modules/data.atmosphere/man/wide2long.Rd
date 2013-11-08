@@ -1,0 +1,25 @@
+\name{wide2long}
+\alias{wide2long}
+\title{Wide to Long}
+\usage{
+  wide2long(data.wide, lat, lon, var)
+}
+\arguments{
+  \item{data.wide}{data}
+
+  \item{lat}{latitude for rows}
+
+  \item{lon}{longitude for columns}
+
+  \item{var}{variable being measured}
+}
+\value{
+  data.frame with colnames (lat, lon, var)
+}
+\description{
+  Convert raster to lat, lon, var
+}
+\author{
+  David LeBauer
+}
+
