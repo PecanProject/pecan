@@ -11,6 +11,9 @@
 # change to right folder
 cd $(dirname $0)/..
 
+# Don't fail on missing suggests
+export _R_CHECK_FORCE_SUGGESTS_="FALSE"
+
 # these variables are set using the command line arguments below
 EMAIL=""
 GIT="no"
@@ -212,3 +215,8 @@ if [ "$FORCE" == "yes" ]; then
 fi
 
 rm running
+
+if [ "$STATUS" == "BROKEN" ]; then 
+    echo "ERROR PEcAn BUILD BROKEN" >&2
+    exit 1
+fi
