@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# exports from betydb
+
 cd $(dirname $0)/..
 set -x
 

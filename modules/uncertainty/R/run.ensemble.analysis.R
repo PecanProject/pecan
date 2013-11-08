@@ -5,7 +5,6 @@
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------#
 ##' run ensemble.analysis
 ##' 
@@ -139,19 +138,23 @@ read.ensemble.ts <- function(model){
 
   ## read ensemble output
   for(row in rownames(ensemble.runs)) {
+    
+    #print(paste("The value for rownames(ensemble.runs) is:  ",rownames(ensemble.runs),sep=""))
     run.id <- ensemble.runs[row, 'id']
     print(run.id)
     newrun <- read.output(run.id, file.path(outdir, run.id), start.year, end.year, variables)
 
     for(j in 1:length(variables)){
-      if(i == 1){
+      if(as.numeric(row) == 1){
         ensemble.ts[[j]] <- matrix(NA,ensemble.size,length(newrun[[j]]))
       }
-      ensemble.ts[[j]][i,] <- newrun[[j]]
+      ensemble.ts[[j]][as.numeric(row),] <- newrun[[j]]
     }    
   }
+
   names(ensemble.ts) <- variables
-  #save(ensemble.ts, file = paste(settings$outdir,"ensemble.ts.Rdata", sep = ""))
+  # BMR 10/16/13 Save this variable now to operate later on
+  save(ensemble.ts, file = paste(settings$outdir,"ensemble.ts.Rdata", sep = ""))
   return(ensemble.ts)
 
 }

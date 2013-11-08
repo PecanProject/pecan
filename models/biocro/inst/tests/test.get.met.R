@@ -1,10 +1,10 @@
 
 start <- "2004-01-01 06:00:00"
 end <- "2004-01-02 06:00:00"
-x <- get.ncepmet(lat = 40, lon = -80, start.date = start, end.date = end)
+x <- get.rncepmet(lat = 40, lon = -80, start.date = start, end.date = end)
 
 
-test_that("get.ncepmet works",{
+test_that("get.rncepmet works",{
 
     expect_true(all(c("year", "day", "solarR", "Tmax", "Tmin", "Tavg", "RHmax", "RHmin", "RHavg", "WS", "precip") %in% colnames(x)))
 
