@@ -142,7 +142,7 @@ sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
             spline.estimates[[trait]]))
   variances <- sapply(traits, function(trait)
         var(spline.estimates[[trait]]))
-  partial.variances <- variances #/ sum(variances)
+  partial.variances <- variances / sum(variances)
 
   coef.vars <- sapply(trait.samples, get.coef.var)
   outlist <- list(sensitivity.output = list(
