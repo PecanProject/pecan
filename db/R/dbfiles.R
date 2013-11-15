@@ -23,6 +23,7 @@
 ##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
 ##' @param params database connection information
 ##' @return data.frame with the id, filename and pathname of the input that is requested
+##' @export
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
@@ -75,6 +76,7 @@ dbfile.input.insert <- function(filename, siteid, startdate, enddate, mimetype, 
 ##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
 ##' @param params database connection information
 ##' @return data.frame with the id, filename and pathname of the input that is requested
+##' @export
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
@@ -104,7 +106,7 @@ dbfile.input.check <- function(siteid, startdate, enddate, mimetype, formatname,
 
 ##' Function to insert a file into the dbfiles table as a posterior
 ##'
-##' This will write into the dbfiles, posteriors, machines and formats the required 
+##' This will write into the dbfiles, posteriors, machines and formats the require 
 ##' data to store the file
 ##' @name dbfile.posterior.insert
 ##' @title Insert file into tables
@@ -117,6 +119,7 @@ dbfile.input.check <- function(siteid, startdate, enddate, mimetype, formatname,
 ##' @param params database connection information
 ##' @return data.frame with the id, filename and pathname of the posterior that is requested
 ##' @author Rob Kooper
+##' @export
 ##' @examples
 ##' \dontrun{
 ##'   dbfile.posterior.insert('trait.data.Rdata', pft, 'application/x-RData', 'traits', dbcon)
@@ -172,6 +175,7 @@ dbfile.posterior.insert <- function(filename, pft, mimetype, formatname, con, ho
 ##' @param params database connection information
 ##' @return data.frame with the id, filename and pathname of the posterior that is requested
 ##' @author Rob Kooper
+##' @export
 ##' @examples
 ##' \dontrun{
 ##'   dbfile.posterior.check(pft, 'application/x-RData', 'traits', dbcon)

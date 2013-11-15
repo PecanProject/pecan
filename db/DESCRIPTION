@@ -16,7 +16,6 @@ Depends:
     PEcAn.utils
 Suggests:
     RMySQL,
-    RPostgreSQL,
     testthat
 License: FreeBSD + file LICENSE
 Copyright: Authors
