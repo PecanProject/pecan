@@ -2,8 +2,8 @@
 \alias{get.trait.data.pft}
 \title{Gets trait data from the database}
 \usage{
-  get.trait.data.pft(pft, dbfiles, dbcon, forceupdate,
-    trait.names)
+  get.trait.data.pft(pft, dbfiles, dbcon,
+    forceupdate = TRUE, trait.names = traitdictionary$id)
 }
 \arguments{
   \item{pft}{the pft whos traits to retrieve}
