@@ -8,6 +8,7 @@
 ##' @param lat vector of latitudes
 ##' @param lon vector of longitudes
 ##' @return data frame with numeric lat, lon and logical value "land"
+##' @export
 ##' @author David LeBauer
 find.land <- function(lat, lon, plot = FALSE){
     library(maptools)
