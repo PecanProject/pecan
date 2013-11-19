@@ -315,8 +315,8 @@ check.settings <- function(settings) {
             }
           }
         } else if (!is.null(settings$model$name)) {
-          model <- db.query(paste0("SELECT * FROM models WHERE model_name = '", settings$model$name,
-                                   "' or model_type = '", toupper(settings$model$name), "'",
+          model <- db.query(paste0("SELECT * FROM models WHERE (model_name = '", settings$model$name,
+                                   "' or model_type = '", toupper(settings$model$name), "')",
                                    " and model_path like '%", 
                                    ifelse(settings$run$host$name == "localhost", Sys.info()[['nodename']], 
                                           settings$run$host$name), "%' ",
