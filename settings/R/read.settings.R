@@ -305,63 +305,67 @@ check.settings <- function(settings) {
 
   # check modelid with values
   if(!is.null(settings$model)){
-    if (is.null(settings$model$id)) {
-      if(database){
-        if(!is.null(settings$model$id)){
-          if(as.numeric(settings$model$id) >= 0){
-            model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database)
-            if(nrow(model) == 0) {
-              logger.error("There is no record of model_id = ", settings$model$id, "in database")
-            }
+    if(database){
+      if(!is.null(settings$model$id)){
+        if(as.numeric(settings$model$id) >= 0){
+          model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database)
+          if(nrow(model) == 0) {
+            logger.error("There is no record of model_id = ", settings$model$id, "in database")
           }
-        } else if (!is.null(settings$model$name)) {
-          model <- db.query(paste0("SELECT * FROM models WHERE (model_name = '", settings$model$name,
-                                   "' or model_type = '", toupper(settings$model$name), "')",
-                                   " and model_path like '%", 
-                                   ifelse(settings$run$host$name == "localhost", Sys.info()[['nodename']], 
-                                          settings$run$host$name), "%' ",
-                                   ifelse(is.null(settings$model$revision), "", 
-                                          paste0(" and revision like '%", settings$model$revision, "%' "))), 
-                            params=settings$database)
-          if(nrow(model) > 1){
-            logger.warn("multiple records for", settings$model$name, "returned; using the most recent")
-            model <- model[which.max(ymd_hms(model$updated_at)), ]
-          } else if (nrow(model) == 0) {
-            logger.warn("Model", settings$model$name, "not in database")
-          }
-        } else if(database && is.null(settings$model$id) && is.null(settings$model$name)) {
-          logger.severe("no model settings given")
         }
-      }
-      if (!is.null(settings$model$name)) {
-        model$model_type=settings$model$name
-      }
-      if (!is.null(settings$model$name)) {
-        model$model_path=paste0("hostname:", settings$model$binary)
-      }
-      if (!is.null(model$model_path)) {
-        model$binary <- tail(strsplit(model$model_path, ":")[[1]], 1)        
-      }
-      
-      if (is.null(settings$model$name)) {
-        if ((is.null(model$model_type) || model$model_type == "")) {
-          logger.severe("No model type specified.")
+      } else if (!is.null(settings$model$name)) {
+        model <- db.query(paste0("SELECT * FROM models WHERE (model_name = '", settings$model$name,
+                                 "' or model_type = '", toupper(settings$model$name), "')",
+                                 " and model_path like '%", 
+                                 ifelse(settings$run$host$name == "localhost", Sys.info()[['nodename']], 
+                                        settings$run$host$name), "%' ",
+                                 ifelse(is.null(settings$model$revision), "", 
+                                        paste0(" and revision like '%", settings$model$revision, "%' "))), 
+                          params=settings$database)
+        if(nrow(model) > 1){
+          logger.warn("multiple records for", settings$model$name, "returned; using the most recent")
+          model <- model[which.max(ymd_hms(model$updated_at)), ]
+        } else if (nrow(model) == 0) {
+          logger.warn("Model", settings$model$name, "not in database")
         }
-        settings$model$name <- model$model_type
-        logger.info("Setting model type to ", settings$model$name)
-      } else if (model$model_type != settings$model$name) {
-        logger.warn("Specified model type [", settings$model$name, "] does not match model_type in database [", model$model_type, "]")
+      } else {
+        logger.severe("no model settings given")
       }
-      
-      if (is.null(settings$model$binary)) {
-        if ((is.null(model$binary) || model$binary == "")) {
-          logger.severe("No model binary specified.")
-        }
-        settings$model$binary <- tail(strsplit(model$binary, ":")[[1]], 1)
-        logger.info("Setting model binary to ", settings$model$binary)
-      } else if (model$binary != settings$model$binary) {
-        logger.warn("Specified binary [", settings$model$binary, "] does not match model_path in database [", model$binary, "]")
+    }
+    
+    if (!is.null(settings$model$name)) {
+      model$model_type=settings$model$name
+    }
+    if (!is.null(settings$model$name)) {
+      model$model_path=paste0("hostname:", settings$model$binary)
+    }
+    if (!is.null(model$model_path)) {
+      model$binary <- tail(strsplit(model$model_path, ":")[[1]], 1)        
+    }
+    
+    # copy data from database into missing fields
+    if (is.null(settings$model$name)) {
+      if ((is.null(model$model_type) || model$model_type == "")) {
+        logger.severe("No model type specified.")
       }
+      settings$model$name <- model$model_type
+      logger.info("Setting model type to ", settings$model$name)
+    } else if ((is.null(model$model_type) || model$model_type == "")) {
+      logger.warn("No model type sepcified in database for model ", settings$model$name)
+    } else if (model$model_type != settings$model$name) {
+      logger.warn("Specified model type [", settings$model$name, "] does not match model_type in database [", model$model_type, "]")
+    }
+    
+    if (is.null(settings$model$binary)) {
+      if ((is.null(model$binary) || model$binary == "")) {
+        logger.severe("No model binary specified.")
+      }
+      settings$model$binary <- model$binary
+      logger.info("Setting model binary to ", settings$model$binary)
+    } else if ((is.null(model$binary) || model$binary == "")) {
+      logger.warn("No model binary sepcified in database for model ", settings$model$name)
+    } else if (model$binary != settings$model$binary) {
+      logger.warn("Specified binary [", settings$model$binary, "] does not match model_path in database [", model$binary, "]")
     }
   }
   
