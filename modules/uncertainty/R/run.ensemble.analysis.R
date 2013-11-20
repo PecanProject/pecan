@@ -154,7 +154,7 @@ read.ensemble.ts <- function(model){
 
   names(ensemble.ts) <- variables
   # BMR 10/16/13 Save this variable now to operate later on
-  save(ensemble.ts, file = paste(settings$outdir,"ensemble.ts.Rdata", sep = ""))
+  save(ensemble.ts, file = file.path(settings$outdir,"ensemble.ts.Rdata"))
   return(ensemble.ts)
 
 }
