@@ -19,7 +19,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   template.in <- system.file("sipnet.in", package="PEcAn.SIPNET")
   config.text <- readLines(con=template.in, n=-1)
   writeLines(config.text, con = file.path(settings$rundir, run.id, "sipnet.in"))
-    
+  
   ### WRITE *.clim
   template.clim <- settings$run$site$met      ## read from settings
   if(!is.null(inputs)){                       ## override if specified in inputs
@@ -27,7 +27,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       template.clim <- inputs$met
     }
   }
-
+  
   # find out where to write run/ouput
   rundir <- file.path(settings$run$host$rundir, as.character(run.id))
   outdir <- file.path(settings$run$host$outdir, as.character(run.id))
@@ -35,16 +35,20 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     rundir <- file.path(settings$rundir, as.character(run.id))
     outdir <- file.path(settings$modeloutdir, as.character(run.id))
   }
-
+  
   # create launch script (which will create symlink)
-  writeLines(c("#!/bin/bash",
-             paste("mkdir -p", outdir),
-             paste("cd", rundir),
-             paste("ln -s", settings$run$site$met, "sipnet.clim"),
-             settings$model$binary,
-             paste("mv ", file.path(rundir, "sipnet.out"), file.path(outdir, "sipnet.out")),
-             paste("cp ", file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))),
-             con=file.path(settings$rundir, run.id, "job.sh"))
+  jobsh <- readLines(con=system.file("template.job", package = "PEcAn.SIPNET"), n=-1)
+  
+  jobsh <- gsub('@SITE_LAT@', settings$run$site$lat, jobsh)
+  jobsh <- gsub('@SITE_LON@', settings$run$site$lon, jobsh)
+  jobsh <- gsub('@SITE_MET@', settings$run$site$met, jobsh)
+  
+  jobsh <- gsub('@OUTDIR@', outdir, jobsh)
+  jobsh <- gsub('@RUNDIR@', rundir, jobsh)
+  
+  jobsh <- gsub('@BINARY@', settings$model$binary, jobsh)
+
+  writeLines(jobsh, con=file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
   
   ### WRITE *.param-spatial
@@ -54,9 +58,9 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   ### WRITE *.param
   template.param <- system.file("template.param",package="PEcAn.SIPNET")
   if("default.param" %in% names(settings$model)){template.param <- settings$model$default.param}
-
+  
   param <- read.table(template.param)
-
+  
   #### write INITAL CONDITIONS here ####
   if(!is.null(IC)){
     ic.names = names(IC)
@@ -98,8 +102,8 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   env.traits <- which(names(trait.values) %in% 'env')
   env.traits <- trait.values[[env.traits]]
   env.names <- names(env.traits)
-
-
+  
+  
   if("turn_over_time" %in% env.names){
     id = which(param[,1] == 'litterBreakdownRate')
     param[id,2] = env.traits[which(env.names == 'turn_over_time')]
@@ -109,7 +113,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   pft.traits <- which(!(names(trait.values) %in% 'env'))[1]
   pft.traits <- trait.values[[pft.traits]]
   pft.names  <- names(pft.traits)
-
+  
   # Leaf carbon concentration
   leafC = 0.48  #0.5
   if("leafC" %in% pft.names){
@@ -117,7 +121,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     id = which(param[,1] == 'cFracLeaf')
     param[id,2] = leafC*0.01 # convert to percentage from 0 to 1
   }
-
+  
   # Specific leaf area converted to SLW
   SLA = NA
   id = which(param[,1] == 'leafCSpWt')
@@ -127,7 +131,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   } else {
     SLA = 1000*leafC/param[id,2]
   }
-
+  
   # Maximum photosynthesis
   Amax = NA
   id = which(param[,1] == 'aMax')
@@ -137,24 +141,24 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   } else {
     Amax = param[id,2]*SLA
   }
- 
+  
   # Daily fraction of maximum photosynthesis
   if("AmaxFrac" %in% pft.names){
     param[which(param[,1] == 'aMaxFrac'),2] = pft.traits[which(pft.names == 'AmaxFrac')]
   }  
-   
+  
   ### Canopy extinction coefficiet (k)
   if("extinction_coefficient" %in% pft.names){
     param[which(param[,1] == 'attenuation'),2] = pft.traits[which(pft.names == 'extinction_coefficient')]
   }
-
+  
   # Leaf respiration rate converted to baseFolRespFrac
   if("leaf_respiration_rate_m2" %in% pft.names){
     Rd = pft.traits[which(pft.names == 'leaf_respiration_rate_m2')]
     id = which(param[,1] == 'baseFolRespFrac')
     param[id,2] = max(min(Rd/Amax,1),0)
   }
-
+  
   # Low temp threshold for photosynethsis
   if("Vm_low_temp" %in% pft.names){
     param[which(param[,1] == 'psnTMin'),2] = pft.traits[which(pft.names == 'Vm_low_temp')]
@@ -164,31 +168,31 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   if("psnTOpt" %in% pft.names){
     param[which(param[,1] == 'psnTOpt'),2] = pft.traits[which(pft.names == 'psnTOpt')]
   }
-
+  
   # Growth respiration factor (fraction of GPP)
   if("growth_resp_factor" %in% pft.names){
     param[which(param[,1] == 'growthRespFrac'),2] =
       pft.traits[which(pft.names == 'growth_resp_factor')]
   }
-
+  
   ### !!! NOT YET USED
   #Jmax = NA
   #if("Jmax" %in% pft.names){
   #  Jmax = pft.traits[which(pft.names == 'Jmax')]
-    ### Using Jmax scaled to 25 degC. Maybe not be the best approach
+  ### Using Jmax scaled to 25 degC. Maybe not be the best approach
   #}
-
+  
   #alpha = NA
   #if("quantum_efficiency" %in% pft.names){
   #  alpha = pft.traits[which(pft.names == 'quantum_efficiency')]
   #}
-
+  
   # Half saturation of PAR.  PAR at which photosynthesis occurs at 1/2 theoretical maximum (Einsteins * m^-2 ground area * day^-1).
   #if(!is.na(Jmax) & !is.na(alpha)){
-   # param[which(param[,1] == "halfSatPar"),2] = Jmax/(2*alpha)
-    ### WARNING: this is a very coarse linear approximation and needs improvement *****
-    ### Yes, we also need to work on doing a paired query where we have both data together.
-    ### Once halfSatPar is calculated, need to remove Jmax and quantum_efficiency from param list so they are not included in SA
+  # param[which(param[,1] == "halfSatPar"),2] = Jmax/(2*alpha)
+  ### WARNING: this is a very coarse linear approximation and needs improvement *****
+  ### Yes, we also need to work on doing a paired query where we have both data together.
+  ### Once halfSatPar is calculated, need to remove Jmax and quantum_efficiency from param list so they are not included in SA
   #}
   ### !!!
   
@@ -197,35 +201,35 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   if("half_saturation_PAR" %in% pft.names){ 
     param[which(param[,1] == 'halfSatPar'),2] = pft.traits[which(pft.names == 'half_saturation_PAR')]
   }
-
+  
   # Ball-berry slomatal slope parameter m
   if("stomatal_slope.BB" %in% pft.names){
     id = which(param[,1] == 'm_ballBerry')
     param[id,2] = pft.traits[which(pft.names == 'stomatal_slope.BB')]
   }
-
+  
   # Slope of VPD–photosynthesis relationship. dVpd = 1 - dVpdSlope * vpd^dVpdExp  
   if('dVPDSlope' %in% pft.names){
     param[which(param[,1] == 'dVpdSlope'),2] = pft.traits[which(pft.names == 'dVPDSlope')]
   }
-
+  
   # VPD–water use efficiency relationship.  dVpd = 1 - dVpdSlope * vpd^dVpdExp
   if('dVpdExp' %in% pft.names){
     param[which(param[,1] == 'dVpdExp'),2] = pft.traits[which(pft.names == 'dVpdExp')]
   }
-
+  
   # Leaf turnover rate average turnover rate of leaves, in fraction per day NOTE: read in as per-year rate!
   if("leaf_turnover_rate" %in% pft.names){
     param[which(param[,1] == 'leafTurnoverRate'),2] =
       pft.traits[which(pft.names == 'leaf_turnover_rate')]
   }
-
+  
   # vegetation respiration Q10.
   if('veg_respiration_Q10' %in% pft.names){
     param[which(param[,1] == 'vegRespQ10'),2] = 
       pft.traits[which(pft.names == 'veg_respiration_Q10')]
   }
-
+  
   # Base vegetation respiration. vegetation maintenance respiration at 0 degrees C (g C respired * g^-1 plant C * day^-1) 
   # NOTE: only counts plant wood C - leaves handled elsewhere (both above and below-ground: assumed for now to have same resp. rate)
   # NOTE: read in as per-year rate!
@@ -238,19 +242,19 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     #param[id,2] = pft.traits[which(pft.names=='stem_respiration_rate')]*vegRespQ10^(-25/10)
     param[id,2] = stem_resp_g*vegRespQ10^(-25/10)
   }
-
+  
   # turnover of fine roots (per year rate)
   if("root_turnover_rate" %in% pft.names){
     id = which(param[,1] == 'fineRootTurnoverRate')
     param[id,2] = pft.traits[which(pft.names == 'root_turnover_rate')]
   }
-
+  
   # fine root respiration Q10
   if('fine_root_respiration_Q10' %in% pft.names){
     param[which(param[,1] == 'fineRootQ10'),2] =
       pft.traits[which(pft.names == 'fine_root_respiration_Q10')]
   }
-
+  
   # base respiration rate of fine roots  (per year rate)
   if("root_respiration_rate" %in% pft.names){
     fineRootQ10 = param[which(param[,1] == "fineRootQ10"),2]
@@ -261,29 +265,29 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     #param[id,2] = pft.traits[which(pft.names=='root_respiration_rate')]*fineRootQ10^(-25/10)
     param[id,2] = root_resp_rate_g*fineRootQ10^(-25/10)
   }
-
+  
   # coarse root respiration Q10
   if('coarse_root_respiration_Q10' %in% pft.names){
     param[which(param[,1] == 'coarseRootQ10'),2] =
       pft.traits[which(pft.names == 'coarse_root_respiration_Q10')]
   } 
-
+  
   ### ----- Phenology parameters
   # GDD leaf on
   if("GDD" %in% pft.names){
     param[which(param[,1] == 'gddLeafOn'),2] = pft.traits[which(pft.names == 'GDD')]
   }
-
+  
   # Fraction of leaf fall per year (should be 1 for decid)
   if('fracLeafFall' %in% pft.names){
     param[which(param[,1] == 'fracLeafFall'),2] = pft.traits[which(pft.names == 'fracLeafFall')]
   }
-
+  
   # Leaf growth.  Amount of C added to the leaf during the greenup period
   if('leafGrowth' %in% pft.names){
     param[which(param[,1] == 'leafGrowth'),2] = pft.traits[which(pft.names == 'leafGrowth')]
   }
-
+  
   write.table(param,file.path(settings$rundir, run.id,"sipnet.param"),row.names=FALSE,col.names=FALSE,quote=FALSE)
 }
 #==================================================================================================#
@@ -308,8 +312,7 @@ write.run.generic <- function(settings){
   if(settings$run$host$name == 'localhost') {
     system(paste('cp ', runfile, settings$run$host$rundir))
   }else{
-    system(paste("rsync -outi ", runfile , ' ', settings$run$host$name, ":",
-                 settings$run$host$rundir, sep = ''))
+    system(paste("rsync -outi ", runfile , ' ', settings$run$host$name, ":", settings$run$host$rundir, sep = ''))
   }
 }
 #==================================================================================================#
@@ -340,7 +343,7 @@ remove.config.SIPNET <- function(main.outdir,settings) {
     files <- files[-grep(pft.dir,files)] # Keep pft folder
     #file.remove(files,recursive=TRUE)
     system(paste("rm -r ",files,sep="",collapse=" "),ignore.stderr = TRUE) # remove files/dirs
-
+    
     ### On remote host
   } else {
     print("*** WARNING: Removal of files on remote host not yet implemented ***")
