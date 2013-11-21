@@ -38,7 +38,7 @@ check.settings <- function(settings) {
     ## check database settings
     if (is.null(settings$database$driver)) {
         settings$database$driver <- "MySQL"
-      logger.info("Using", settings$database$driver, "as database driver.")
+      logger.severe("Please specify a database driver, for example MySQL in database$driver")
     }
         
     # Attempt to load the driver
@@ -312,6 +312,8 @@ check.settings <- function(settings) {
           if(nrow(model) == 0) {
             logger.error("There is no record of model_id = ", settings$model$id, "in database")
           }
+        } else {
+          model <- settings$model
         }
       } else if (!is.null(settings$model$name)) {
         model <- db.query(paste0("SELECT * FROM models WHERE (model_name = '", settings$model$name,
@@ -327,6 +329,7 @@ check.settings <- function(settings) {
           model <- model[which.max(ymd_hms(model$updated_at)), ]
         } else if (nrow(model) == 0) {
           logger.warn("Model", settings$model$name, "not in database")
+          model <- c(id=-1, name=settings$model$name)
         }
       } else {
         logger.severe("no model settings given")
@@ -336,7 +339,7 @@ check.settings <- function(settings) {
     if (!is.null(settings$model$name)) {
       model$model_type=settings$model$name
     }
-    if (!is.null(settings$model$name)) {
+    if (!is.null(settings$model$binary)) {
       model$model_path=paste0("hostname:", settings$model$binary)
     }
     if (!is.null(model$model_path)) {
