@@ -38,3 +38,4 @@ running
 .settings
 .buildpath
 all/inst/tests/$HOME
+.Rproj.user
