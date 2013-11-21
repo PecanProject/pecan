@@ -5,15 +5,8 @@
 ##       grid size specified in config file
 library(PEcAn.data.atmosphere)
 library(BioCro)
-
-arg   <- commandArgs(trailingOnly = TRUE)
-if(length(arg) == 0){
-    lat <- 40.08
-    lon <- -88.23
-} else {
-    lat <- arg[1]
-    lon <- arg[2]
-}
+library(ncdf4)
+library(data.table)
 outdir <- "/home/dlebauer/analysis/globaltest"    
 ## library(PEcAn.DB)
 
@@ -22,9 +15,9 @@ outdir <- "/home/dlebauer/analysis/globaltest"
 ## TODO allow specification of grid size
 ## 
 
-soil.nc <- nc_open("/home/scratch/pecan/soil/hwsd.nc")
+soil.nc <- nc_open("/home/dlebauer/.pecan/dbfiles/soil/hwsd.nc")
 
-cruncep.file <- "/home/scratch/pecan/met/cruncep/1990.nc"
+cruncep.file <- "/home/dlebauer/.pecan/dbfiles/met/cruncep/1901ts.nc"
 ## ncep.file <- "/home/scratch/pecan/met/ncep/all.nc"
 ## if(file.exists(cruncep.file)){
 system.time(met.nc <-  nc_open(cruncep.file, readunlim = TRUE))
@@ -32,7 +25,9 @@ system.time(met.nc <-  nc_open(cruncep.file, readunlim = TRUE))
 ##    met.nc <- nc_open(ncep.file)
 ## }
 
- 
+
+
+
 ## Time
 ## if ncep, time is in hours since; cruncep time is in days
 ## time.units <- ncatt_get(met.nc, 'time')$units
@@ -85,7 +80,7 @@ cruncep_nc2dt <- function(lat, lon, met.nc){
     
     result <- as.data.table(vars)
     result$wind <- result[,list(wind = sqrt(uwind^2 + vwind^2))]
-    if(!result[doy == max(doy)], hour < 23]
+  
     return(result)   
 }
 
@@ -120,7 +115,7 @@ par2ppfd <- function(watts){
 ##' There is no easy straight way to convert MJ/m2 to mu mol photons / m2 / s (PAR)
 ##' The above conversion is based on the following reasoning
 ##' 0.12 is about how much of the total radiation is expected to ocurr during the hour of maximum insolation (it is a guesstimate)
-##' 2.07 is a coefficient which converts from MJ to mol photons (it is approximate and it is taken from ...
+##' 2.07 is a coefficient which converts from MJ to mol photons (it is approximate and it is taken from ...)
 ##' Campbell and Norman (1998). Introduction to Environmental Biophysics. pg 151 'the energy content of solar radiation in the PAR waveband is 2.35 x 10^5 J/mol'
 ##' See also the chapter radiation basics (10)
 ##' Here the input is the total solar radiation so to obtain in the PAR spectrum need to multiply by 0.486
@@ -187,11 +182,15 @@ cruncep_hourly <- function(result, lat){
 
                                                             
     new.result <- cbind(new.date, as.data.table(hourly.result))#[date <= max(result$date),]
+    if(new.result[,list(h = length(unique(hour))), by = c("year", "doy")][,all(unique(h) != 24)]){
+        print(cruncep.file)
+        print(new.result[,unique(year)])
+        stop("some days don't have 24 hours")
+    }
+
     return(new.result)
 }
 
-new.result <- cruncep_hourly(result, lat = lat)
-save(new.result, file = file.path(outdir, "new.result.RData"))    
 qair2rh <- function(qair, temp, press = 1013.25){
     es <-  6.112 * exp((17.67 * temp)/(temp + 243.5))
     e <- qair * press / (0.378 * qair + 0.622)
@@ -201,7 +200,7 @@ qair2rh <- function(qair, temp, press = 1013.25){
 
     return(rh)
 }
-
+ 
 ## ## qc functions restricting to "valid range" given in .nc meta-data
 ## qctemp   <- function(x) ifelse(x > 400 | x < 100, mean(x[x < 400 & x > 100]), x)
 ## qcsolar  <- function(x) ifelse(x<0, 0, ifelse(abs(x) > 1300, mean(x[x < 1300]), x))
@@ -228,11 +227,6 @@ cruncep_dt2weather <- function(weather = result){
     return(x)
 }
 
-weather <- cruncep_dt2weather(new.result)
-## TODO dump as .RData file in BioCro format
-##      
-save(weather, file = file.path(outdir, "weather.RData"))
-
 get.soil <- function(lat, lon, soil.nc = soil.nc){
     
     ## Lat and Lon
@@ -249,36 +243,26 @@ get.soil <- function(lat, lon, soil.nc = soil.nc){
     return(usda_class)
 }
 
-is.land <- function(lat, lon){
-    Lat <- ncvar_get(nc = met.nc, varid = "lat")
-    Lon <- ncvar_get(nc = met.nc, varid = "lon")
-    lati <- which.min(abs(Lat-lat))
-    loni <- which.min(abs(Lon-lon))
-    mask <- ncvar_get(nc = met.nc, varid = "mask",
-                      start = c(loni, lati), count = c(1,1))
-    return(mask >= 0)
-}
-
 get.latlonbox <- function(lati, loni, Lat = Lat, Lon = Lon){
     lat <- c(mean(Lat[lati:(lati-1)]), mean(Lat[lati:(lati+1)]))
     lon <- c(mean(Lon[loni:(loni-1)]), mean(Lon[loni:(loni+1)]))
     return(c(sort(lat), sort(lon)))
 }
 
-get.cruncep <- function(lat, lon, start.date = NA, end.date = NA){
-    result <- cruncep_nc2dt(lat, lon)
-    new.result <- cruncep_hourly(result, lat = Lat[lati])
+get.cruncep <- function(lat, lon, met.nc = met.nc, start.date = NA, end.date = NA){
+    result <- cruncep_nc2dt(lat, lon, met.nc = met.nc)
+    new.result <- cruncep_hourly(result, lat = lat)
     weather <- cruncep_dt2weather(new.result)
     return(weather)
 }
 
-run.biocro <- function(lat, lon){
+run.biocro <- function(lat, lon, met.nc = met.nc){
     ## get soil data
     ## abox <- get.latlonbox(lati = lati, loni = loni, Lat = Lat, Lon = Lon)
     ## soil <- get.hwsd.box(abox, con = con)
-    if(is.land(lat, lon)){
+ 
         soil.type <- get.soil(lat, lon, soil.nc = soil.nc)
-        #weather <- get.weather(lat, lon)
+        weather <- get.cruncep(lat, lon, met.nc = met.nc)
         result <- list()
         years <- unique(weather$year)
         for(yeari in years){
@@ -309,15 +293,28 @@ run.biocro <- function(lat, lon){
         } else if (yeari > min(years)){
             resultDT <- rbind(resultDT, result.yeari)
         }
-        result <- resultDT
-    } else {
-        result <- NULL
-    }
-    return(result)
+   
+    return(resultDT)
 }
 
-out <- run.biocro(lat, lon)
-save(out, file = file.path(outdir, "output.RData"))
+load("~/dev/pecan/modules/data.atmosphere/data/cruncep_landmask.RData")
+points <- cruncep_landmask[land & lat > 42 & lat < 44,] 
+
+
+for(point in 1:nrow(points)){
+    lat <- points$lat[point]
+    lon <- points$lon[point]
+	system.time(
+            out <- cbind(lat, lon, run.biocro(lat, lon, met.nc = met.nc))
+            #out <- points[1, run.biocro(lat, lon, met.nc = met.nc)]            
+	)
+    if(point != 1 ){ #most common case first
+        allout <- rbind(allout, out)
+    } else {
+        allout <- out
+    }
+    save(allout, file = file.path(outdir, "allout.RData"))
+}
 ## con <- get.hwsdcon()
 
 ## for(lat in Lat){
