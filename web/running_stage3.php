@@ -7,12 +7,9 @@
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
  */
-# offline mode?
-if (isset($_REQUEST['offline'])) {
-	$offline=true;
-} else {
-	$offline=false;
-}
+
+# boolean parameters
+$offline=isset($_REQUEST['offline']);
 
 // runid
 if (!isset($_REQUEST['workflowid'])) {
@@ -25,33 +22,57 @@ require("dbinfo.php");
 $connection=open_database();
 
 // get run information
-$query = "SELECT site_id, model_id, model_type, hostname, folder FROM workflows, models WHERE workflows.id=$workflowid and model_id=models.id";
+$query = "SELECT folder, params FROM workflows WHERE workflows.id=$workflowid";
 $result = mysql_query($query);
 if (!$result) {
 	die('Invalid query: ' . mysql_error());
 }
 $workflow = mysql_fetch_assoc($result);
 $folder = $workflow['folder'];
+$params = eval("return ${workflow['params']};");
 
 // check result
-$status=file($folder . DIRECTORY_SEPARATOR . "STATUS");
-if ($status === FALSE) {
-	$status = array();
+if (file_exists($folder . DIRECTORY_SEPARATOR . "STATUS")) {
+	$status=file($folder . DIRECTORY_SEPARATOR . "STATUS");
+} else {
+	$status=array();
 }
 
 // check the global status
 switch(checkStatus("FINISHED")) {
+	// No ERROR, and no endtime yet
 	case 0:
 		$nextenabled="disabled=\"disabled\"";
 		header( "refresh:5" );
-		break;		
+		exit;	
+	// MODEL is complete
 	case 1:
-	case 2:
 		$nextenabled="";
 		if ($offline) {
 			header( "Location: finished.php?workflowid=$workflowid&offline=offline");
 		} else {
 			header( "Location: finished.php?workflowid=$workflowid");
+		}
+		exit;
+    // ERROR occurred
+	case 2:
+		if (isset($params['email'])) {
+			$url = ($_SERVER['HTTPS'] ? "https://" : "http://");
+			$url .= $_SERVER['HTTP_HOST'] . ':' . $_SERVER['SERVER_PORT'];
+			$url .= str_replace("running_stage1.php", "failurealert.php", $_SERVER["SCRIPT_NAME"]);
+			if ($offline) {
+				$url .= "?workflowid=${workflowid}&offline=offline";
+			} else {
+				$url .= "?workflowid=${workflowid}";
+			}
+			mail($params['email'], "Workflow has failed", "You can find the results on $url");
+		}
+		$nextenabled="";
+		mysql_query("UPDATE workflows SET finished_at=NOW() WHERE id=${workflowid} AND finished_at IS NULL");
+		if ($offline) {
+			header( "Location: failurealert.php?workflowid=$workflowid&offline=offline");
+		} else {
+			header( "Location: failurealert.php?workflowid=$workflowid");
 		}
 		break;
 }
@@ -73,8 +94,6 @@ switch(checkStatus("FINISHED")) {
     	$("#stylized").height($(window).height() - 5);
     	$("#output").height($(window).height() - 1);
     	$("#output").width($(window).width() - $('#stylized').width() - 5);
-
-    	$('#log').scrollTop($('#log')[0].scrollHeight);
 	}
 
 	function prevStep() {
@@ -96,26 +115,28 @@ switch(checkStatus("FINISHED")) {
 <?php if ($offline) { ?>
 			<input name="offline" type="hidden" value="offline">
 <?php } ?>
-				<input type="hidden" name="siteid" value="<?=$workflow['site_id']?>" />
-		<input type="hidden" name="modelid" value="<?=$workflow['model_id']?>" />
-		<input type="hidden" name="modeltype" value="<?=$workflow['model_type']?>" />
-		<input type="hidden" name="hostname" value="<?=$workflow['hostname']?>" />
-		</form>
-		
-		<form id="formemail" method="POST" action="sendemail.php">
-		<input type="hidden" name="workflowid" value="<?=$workflowid?>" />
+			<?php foreach ($params as $k => $v) {
+				if (is_array($v)) {
+					foreach($v as $x) {
+						echo "<input type=\"hidden\" name=\"${k}[]\" value=\"${x}\" />\n";
+					}
+				} else {
+					echo "<input type=\"hidden\" name=\"${k}\" value=\"${v}\" />\n";
+				}
+			} ?>
 		</form>
 		
 		<form id="formnext" method="POST" action="finished.php">
 <?php if ($offline) { ?>
 			<input name="offline" type="hidden" value="offline">
 <?php } ?>
-		<input type="hidden" name="workflowid" value="<?=$workflowid?>" />
+			<input type="hidden" name="workflowid" value="<?=$workflowid?>" />
+		</form>
+
 		<span id="error" class="small">&nbsp;</span>
 		<input id="prev" type="button" value="Prev" onclick="prevStep();" />
 		<input id="next" type="button" value="Next" onclick="nextStep();" <?=$nextenabled?>/>		
 		<div class="spacer"></div>
-		</form>
 	</div>
 	<div id="output">
 	<h2>Execution Status</h2>
@@ -125,12 +146,6 @@ switch(checkStatus("FINISHED")) {
 			<th>Start Time</th>
 			<th>End Time</th>
 			<th>Status</th>
-		</tr>
-		<tr>
-			<th>setup</th>
-			<td><?=startTime("SETUP");?></td>
-			<td><?=endTime("SETUP");?></td>
-			<td><?=status("SETUP");?></td>
 		</tr>
 		<tr>
 			<th>fia2ed</th>
@@ -175,17 +190,6 @@ switch(checkStatus("FINISHED")) {
 			<td><?=status("FINISHED");?></td>
 		</tr>
 	</table>
-	<hr/>
- 	<h2>Output from PEcAn</h2>
- 	<textarea id="log" cols="80" rows="10" readonly="readonly">
-<?php
-  	foreach(scandir($folder . DIRECTORY_SEPARATOR) as $file) {
-  		if (preg_match("/^workflow_stage.*\.Rout$/", $file) === 1) {
-  			parselog($folder . DIRECTORY_SEPARATOR . $file);
-  		}
-	}
-?>
- 	</textarea>
 	</div>
 </div>
 </body>
@@ -249,33 +253,5 @@ function status($token) {
     }
   }
   return "Waiting";
-}
-
-function parselog($filename)
-{
-	// Open the file
-	$f = fopen($filename, "rb");
-	if ($f === false) {
-		return "file does not exist.";
-	}
-
-	// read the file line by line
-	$check = false;
-	while (($buffer = fgets($f, 4096)) !== false) {
-		if ($check && ($buffer[0]==" ")) {
-			print($buffer);
-		} else if (stristr($buffer, "error") !== false) {
-			print($buffer);
-			$check = true;
-		} else if (stristr($buffer, "warn") !== false) {
-			print($buffer);
-			$check = true;
-		} else {
-			$check = false;
-		}
-	}
-
-	// Close file and return
-	fclose($f);
 }
 ?>

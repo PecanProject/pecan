@@ -22,31 +22,29 @@
 ##' @author David LeBauer, Shawn Serbin
 ##'
 run.sensitivity.analysis <- function(plot=TRUE){
-  if(!exists("settings")){ # temporary hack
-                        # waiting on http://stackoverflow.com/q/11005478/199217
-    settings <- list(outdir = "/tmp/",
-                     pfts = list(pft = list(name = "ebifarm.pavi",
-                                   outdir = "/tmp/")),
-                     sensitivity.analysis = NULL)
+  if(!exists("settings")){
+      logger.severe("no settings file found")
   }
   
-  ### !!! This with below seems repetitive.  Should only need one if sa.analysis check. SPS
   if ('sensitivity.analysis' %in% names(settings)) {
     
     ### Load parsed model results
-    load(paste(settings$outdir, 'output.Rdata', sep=''))
-    load(paste(settings$outdir, 'samples.Rdata', sep=''))
-    
+    load(file.path(settings$outdir, 'output.Rdata'))
+    load(file.path(settings$outdir, 'samples.Rdata'))
+
     ### Generate SA output and diagnostic plots
     sensitivity.results <- list()
     for(pft in settings$pfts){
-      print(pft$name)
-      if('sensitivity.analysis' %in% names(settings)) {
         traits <- names(trait.samples[[pft$name]])
         quantiles.str <- rownames(sa.samples[[pft$name]])
         quantiles.str <- quantiles.str[which(quantiles.str != '50')]
         quantiles <- as.numeric(quantiles.str)/100
         ## ensemble.output <- read.ensemble.output(settings$ensemble$size, settings$outdir, pft.name=pft$name)
+
+        C.units <- grepl('^Celsius$', trait.lookup(traits)$units, ignore.case = TRUE)
+        if(any(C.units)){
+          for(x in which(C.units)) trait.samples[[pft$name]][[x]] <- trait.samples[[pft$name]][[x]] + 273.15
+        }
 
         ## only perform sensitivity analysis on traits where no more than 2 results are missing
         good.saruns <- sapply(sensitivity.output[[pft$name]], function(x) sum(is.na(x)) <=2)
@@ -73,7 +71,7 @@ run.sensitivity.analysis <- function(plot=TRUE){
           sensitivity.plots <- plot.sensitivities(sensitivity.results[[pft$name]]$sensitivity.output,
                                                   linesize = 1,
                                                   dotsize = 3)
-          pdf(paste(pft$outdir, 'sensitivityanalysis.pdf', sep = ''), height = 12, width = 9)
+          pdf(file.path(pft$outdir, 'sensitivityanalysis.pdf'), height = 12, width = 9)
           ## arrange plots  http://stackoverflow.com/q/10706753/199217
           ncol <- floor(sqrt(length(sensitivity.plots)))
           print(do.call("grid.arrange", c(sensitivity.plots, ncol=ncol)))
@@ -83,16 +81,14 @@ run.sensitivity.analysis <- function(plot=TRUE){
           ### Generate VD diagnostic plots
           vd.plots <- plot.variance.decomposition(sensitivity.results[[pft$name]]$variance.decomposition.output)
           #variance.scale = log, variance.prefix='Log')
-          pdf(paste(pft$outdir, 'variancedecomposition.pdf', sep=''), width = 11, height = 8)
+          pdf(file.path(pft$outdir, 'variancedecomposition.pdf'), width = 11, height = 8)
           do.call(grid.arrange, c(vd.plots, ncol = 4))
           dev.off()
         }
-      }
+
     }  ## end if sensitivity analysis
 
-    save(sensitivity.results,
-         file = paste(settings$outdir,
-           "sensitivity.results.Rdata", sep = ""))
+    save(sensitivity.results, file = file.path(settings$outdir, "sensitivity.results.Rdata"))
   }
 }
 #==================================================================================================#

@@ -9,4 +9,5 @@
 library(testthat)
 library(PEcAn.SIPNET)
 
+logger.setQuitOnSevere(FALSE)
 test_package("PEcAn.SIPNET")

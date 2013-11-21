@@ -6,7 +6,10 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-library(testthat)
-library(foo)
 
-test_package("foo")
+library('testthat')
+library('PEcAn.utils')
+
+# TODO reenable tests (#1561)
+logger.setQuitOnSevere(FALSE)
+#test_package("PEcAn.utils")

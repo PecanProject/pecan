@@ -1,27 +1,28 @@
 <?xml version="1.0"?>
 <pecan>
   <pecanDir>$HOME/pecan/</pecanDir>
-  <outdir>$HOME/foo/</outdir>
+  <outdir>/tmp/out/</outdir>
   <pfts>
     <pft>
       <name>sipnet.temperate.coniferous</name>
-      <outdir>$HOME/foo/</outdir>
+      <outdir>/tmp/out/</outdir>
       <constants>
         <num>1</num>
       </constants>
     </pft>
   </pfts>
   <database>
-    <userid>bety</userid>
-    <passwd>bety</passwd>
-    <location>localhost</location>
-    <name>bety</name>
+    <username>bety</username>
+    <password>bety</password>
+    <host>localhost</host>
+    <dbname>bety</dbname>
   </database>
   <meta.analysis>
     <iter>3000</iter>
     <random.effects>FALSE</random.effects>
   </meta.analysis>
   <sensitivity.analysis>
+    <variable>GPP</variable>
     <quantiles>
       <quantile/>
       <sigma>0</sigma>
@@ -32,10 +33,10 @@
   <model>
     <name>SIPNET</name>
     <binary>/usr/local/bin/sipnet.runk</binary>
-    <id>11</id>
+    <id>9</id>
   </model>
   <run>
-    <folder>$HOME/foo/</folder>
+    <folder>/tmp/out/</folder>
     <site>
       <id>680</id>
       <name>Young Jack Pine (YJP)</name>
@@ -47,8 +48,8 @@
     <end.date>2006-01-01 05:59:00</end.date>
     <host>
       <name>localhost</name>
-      <rundir>$HOME/foo/</rundir>
-      <outdir>$HOME/foo/</outdir>
+      <rundir>/tmp/out/</rundir>
+      <outdir>/tmp/out/</outdir>
       <ed>
       </ed>
     </host>

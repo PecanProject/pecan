@@ -1,0 +1,83 @@
+Map
+========================================================
+
+```{r}
+require(raster)
+require(sp)
+require(ggplot2)
+require(PEcAn.visualization)
+data(yielddf, package = "PEcAn.visualization")
+
+pecan.worldmap(yielddf, outfile=file.path(tempdir(), 'foo.png'))
+
+spdf <- SpatialPointsDataFrame( data.frame( x = testdf$y , y = testdf$x ) , data = data.frame( z = testdf$z ) )
+
+# Plotting the points reveals the unevenly spaced nature of the points
+spplot(spdf)
+
+```
+
+
+### Plot all maps for BETYdb
+
+```{r}
+files <- dir("~/R-dev/bety/local/modelout/", pattern="grid.csv", full.names=TRUE)
+yieldfiles <- files[!grepl("evapotranspiration", files)]
+etfiles <- files[grepl("evapotranspiration", files)]
+for(file in yieldfiles){
+    df.in <- read.csv(file)
+
+  outfile <- gsub("csv", "png", file)
+  print(outfile)
+  print(dim(df.in))
+  pecan.worldmap(df.in, outfile=outfile)
+}
+
+
+for(file in etfiles){
+  df.in <- read.csv(file, skip = 1)
+
+  outfile <- gsub("csv", "png", file)
+  print(outfile)
+  print(dim(df.in))
+  pecan.worldmap(df.in, outfile=outfile)
+}
+
+```
+
+### Misc additional code
+
+```{r fig.width=7, fig.height=6}
+
+# Make an evenly spaced raster, the same extent as original data
+e <- extent( spdf )
+
+# Determine ratio between x and y dimensions
+ratio <- ( e@xmax - e@xmin ) / ( e@ymax - e@ymin )
+
+# Create template raster to sample to
+r <- raster( nrows = 56 , ncols = floor( 56 * ratio ) , ext = extent(spdf) )
+rf <- rasterize( spdf , r , field = "" z, fun = mean )
+
+# Attributes of our new raster (# cells quite close to original data)
+rf
+
+# We can then plot this using `geom_tile()` or `geom_raster()`
+rdf <- data.frame( rasterToPoints( rf ) )    
+ggplot( NULL ) + geom_raster( data = rdf , aes( x , y , fill = layer ) )
+
+
+```
+
+```{r}
+# from http://gis.stackexchange.com/a/20052/3218
+require(rgdal)
+proj4string(spdf) <- CRS("+init=epsg:4326")
+pts <- spTransform(spdf ,CRS("+proj=longlat +datum=WGS84"))
+gridded(spdf) <- TRUE
+
+p2g <- points2grid(spdf, tolerance = 0.95)
+
+r <- raster(p2g)
+plot(p2g)
+```

@@ -1,4 +1,0 @@
-modules/	Contains the modules that make up PEcAn
-web/		The PEcAn web app to start a run and view outputs.
-models/		Code to create the model specific configurations.
-documentation/	Documentation about what PEcAn is and how to use it.

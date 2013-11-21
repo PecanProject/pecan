@@ -14,7 +14,7 @@
   Convert vector to comma delimited string
 }
 \details{
-  ## vecpaste, turns vector into comma delimited string fit
+  vecpaste, turns vector into comma delimited string fit
   for SQL statements.
 }
 

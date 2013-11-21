@@ -6,7 +6,8 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-library(testthat)
-library(PEcAn.BIOCRO)
+# library(testthat)
+# library(PEcAn.BIOCRO)
 
-test_package("PEcAn.BIOCRO")
+# logger.setQuitOnSevere(FALSE)
+# test_package("PEcAn.BIOCRO")

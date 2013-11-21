@@ -1,0 +1,35 @@
+<!--
+#-------------------------------------------------------------------------------
+# Copyright (c) 2012 University of Illinois, NCSA.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the 
+# University of Illinois/NCSA Open Source License
+# which accompanies this distribution, and is available at
+# http://opensource.ncsa.illinois.edu/license.html
+#-------------------------------------------------------------------------------
+-->
+
+Package Interdependencies
+=========================
+
+This some code helps to visualize the interdependence of functions within PEcAn
+
+
+```{r}
+library(mvbutils)
+library(PEcAn.utils)
+library(PEcAn.ED2)
+library(PEcAn.BIOCRO)
+library(PEcAn.SIPNET)
+```
+### Reading model output
+
+```{r fig.height=4, fig.width=6}
+foodweb(where = list("package:PEcAn.utils", "package:PEcAn.BIOCRO"), prune = c("output", "read", "results", "model2netcdf"), desc = FALSE)
+foodweb(where = list("package:PEcAn.utils", "package:PEcAn.ED2"), prune = c("output", "read", "results", "model2netcdf"), desc = FALSE)
+foodweb(where = list("package:PEcAn.utils", "package:PEcAn.SIPNET"), prune = c("output", "read", "results", "model2netcdf"), desc = FALSE)
+
+```
+
+
+

@@ -14,6 +14,7 @@
 ##' @title Sensitivity spline function 
 ##' @param quantiles.input 
 ##' @param quantiles.output 
+##' @export
 ##' @return function   
 sa.splinefun <- function(quantiles.input, quantiles.output){
   return(splinefun(quantiles.input, quantiles.output, method = "monoH.FC"))
@@ -63,14 +64,15 @@ kurtosis <- function(x) {
 ##'
 ##' This function evaluates the sensitivity of a model to a parameter.
 ##' This is done by evaluating the first derivative of the univariate spline estimate
-##' of the model response at the parameter mean.
+##' of the model response at the parameter median.
 ##' @name get.sensitivity
 ##' @title Calculate Sensitivity
 ##' @param trait.samples 
 ##' @param sa.splinefun 
+##' @export
 ##' @return numeric estimate of model sensitivity to parameter
 get.sensitivity <- function(trait.samples, sa.splinefun){
-  sensitivity <- sa.splinefun(mean(trait.samples), 1)
+  sensitivity <- sa.splinefun(median(trait.samples), 1)
 }
 #==================================================================================================#
 
@@ -81,9 +83,10 @@ get.sensitivity <- function(trait.samples, sa.splinefun){
 ##' @name get.coef.var
 ##' @title Get coefficient of variance 
 ##' @param set numeric vector of trait values
+##' @export
 ##' @return coeficient of variance
 get.coef.var <- function(set){
-  sqrt(var(set)) / mean(set)
+  sqrt(var(set)) / median(set)
 }
 #==================================================================================================#
 
@@ -97,9 +100,10 @@ get.coef.var <- function(set){
 ##' @param sensitivity univariate sensitivity of model to a parameter, can be calculated by \code{\link{get.sensitivity}}
 ##' @param samples samples from trait distribution
 ##' @param outputs model output from ensemble runs
+##' @export
 ##' @return elasticity = normalized sensitivity 
 get.elasticity <- function(sensitivity, samples, outputs){
-  return(sensitivity / (mean(outputs) / mean(samples)))
+  return(sensitivity / (median(outputs) / median(samples)))
 }
 #==================================================================================================#
 
@@ -138,15 +142,8 @@ sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir){
             spline.estimates[[trait]]))
   variances <- sapply(traits, function(trait)
         var(spline.estimates[[trait]]))
-  partial.variances <- variances #/ sum(variances)
+  partial.variances <- variances / sum(variances)
 
-  ## change Vm_low_temp to Kelvin prior to calculation of coefficient of variance.
-  ## this conversion is only required at this point in the code, for calculating CV
-  C.units <- grepl('^Celsius$', trait.lookup(traits)$units, ignore.case = TRUE)
-  if(any(C.units)){
-    #trait.samples[[C.units]] <- trait.samples[[C.units]] + 273.15
-    trait.samples[[which(C.units)]] <- trait.samples[[which(C.units)]] + 273.15 # changed by SPS on 09/08/2012
-  }
   coef.vars <- sapply(trait.samples, get.coef.var)
   outlist <- list(sensitivity.output = list(
                     sa.samples    = sa.samples,

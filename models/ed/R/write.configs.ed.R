@@ -65,19 +65,23 @@ convert.samples.ED <- function(trait.samples){
       arrhenius.scaling(leaf_resp, old.temp = 25, new.temp = 15)
     vcmax_15 <- arrhenius.scaling(vcmax, old.temp = 25, new.temp = 15)
     
-    ##need to add back dark resp prior?? no?
+    ## Output leaf_respiration_rate @ 15C as Rd0 -- New way to input leaf resp into ED2.  Dark Resp Factor is no longer used (see below)
+    #trait.samples[['Rd0']] <- trait.samples[['leaf_respiration_rate_m2']] ## Added by SPS 05/06/2013 -- NO LONGER NEEDED
     
-    ## Calculate dark_resp_factor
+    ## Calculate dark_resp_factor -- Will be depreciated when moving from older versions of ED2
     trait.samples[['dark_respiration_factor']] <- trait.samples[['leaf_respiration_rate_m2']]/
       vcmax_15
     
-    ## Remove leaf_respiration_rate from trait samples
-    remove <- which(names(trait.samples)=='leaf_respiration_rate_m2')
-    trait.samples = trait.samples[-remove]
+    ## Remove leaf_respiration_rate from trait samples -- NO LONGER NEEDED
+    #remove <- which(names(trait.samples)=='leaf_respiration_rate_m2')
+    #trait.samples = trait.samples[-remove]
     
   } ## End dark_respiration_factor loop
   
-  
+  # for debugging conversions
+  #save(trait.samples, file = file.path(settings$outdir, 'trait.samples.Rdata'))
+
+  # return converted samples
   return(trait.samples)
 }
 #==================================================================================================#
@@ -99,30 +103,56 @@ convert.samples.ED <- function(trait.samples){
 ##' @author David LeBauer, Shawn Serbin, Carl Davidson
 ##-------------------------------------------------------------------------------------------------#
 write.config.ED2 <- function(defaults, trait.values, settings, run.id){
-    # create launch script
-  if (settings$run$host$name != "localhost") {
-    rundir <- file.path(settings$run$host$rundir, as.character(run.id))
-    outdir <- file.path(settings$run$host$outdir, as.character(run.id))
-    writeLines(c("#!/bin/bash",
-               paste("mkdir -p", outdir),
-               paste("cd", rundir),
-               "export GFORTRAN_UNBUFFERED_PRECONNECTED=yes",
-               settings$model$binary,
-               paste("cp ", file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))),
-               con=file.path(settings$rundir, run.id, "job.sh"))
-    Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
+  
+  # find out where to write run/ouput
+  rundir <- file.path(settings$run$host$rundir, run.id)
+  outdir <- file.path(settings$run$host$outdir, run.id)
+
+  # command if scratch is used
+  if (is.null(settings$run$host$scratchdir)) {
+    modeloutdir <- outdir
+    copyscratch <- "# no need to copy from scratch"
+    clearscratch <- "# no need to clear scratch"
+  } else {
+    modeloutdir <- file.path(settings$run$host$scratchdir, run.id)
+    copyscratch <- paste("rsync", "-a", file.path(modeloutdir, "*"), outdir)
+    if (is.null(settings$run$host$clearscratch) || is.na(as.logical(settings$run$host$clearscratch)) || as.logical(settings$run$host$clearscratch)) {
+      clearscratch <- paste("rm", "-rf", modeloutdir)
+    } else {
+      clearscratch <- "# scratch is not cleared"
+    }
   }
 
+  # create launch script (which will create symlink)
+  jobsh <- readLines(con=system.file("template.job", package = "PEcAn.ED2"), n=-1)
+  
+  jobsh <- gsub('@SITE_LAT@', settings$run$site$lat, jobsh)
+  jobsh <- gsub('@SITE_LON@', settings$run$site$lon, jobsh)
+  jobsh <- gsub('@SITE_MET@', settings$run$site$met, jobsh)
+  
+  jobsh <- gsub('@SCRATCH_COPY@', copyscratch, jobsh)
+  jobsh <- gsub('@SCRATCH_CLEAR@', clearscratch, jobsh)
+  
+  jobsh <- gsub('@OUTDIR@', outdir, jobsh)
+  jobsh <- gsub('@RUNDIR@', rundir, jobsh)
+  
+  jobsh <- gsub('@BINARY@', settings$model$binary, jobsh)
+  
+  writeLines(jobsh, con=file.path(settings$rundir, run.id, "job.sh"))
+  Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
+  
   ## Get ED2 specific model settings and put into output config xml file
   xml <- listToXml(settings$model$config.header, 'config')
   names(defaults) <- sapply(defaults, function(x) x$name)
 
   ## TODO this should come from the database
-  histfile <- paste("data/history.", settings$model$revision, ".csv", sep='')
-  if (file.exists(system.file(histfile, package="PEcAn.ED"))) {
-    edhistory <- read.csv2(system.file(histfile, package="PEcAn.ED"), sep=";")
+  histfile <- paste("data/history.r", settings$model$revision, ".csv", sep='')
+  if (file.exists(system.file(histfile, package="PEcAn.ED2"))) {
+    #print(paste("--- Using ED2 History File: ","data/history.r", settings$model$revision, ".csv", sep=''))
+    edhistory <- read.csv2(system.file(histfile, package="PEcAn.ED2"), sep=";")
   } else {
-    edhistory <- read.csv2(system.file("data/history.csv",  package="PEcAn.ED"), sep=";")
+    #print("--- Using Generic ED2 History File: data/history.csv")
+    edhistory <- read.csv2(system.file("data/history.csv",  package="PEcAn.ED2"), sep=";")
   }
   edtraits <- names(edhistory)
   edtraits <- edtraits[which(edtraits!="num")]
@@ -148,7 +178,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
       ##TODO this should come from the database
       edpft <- pftmapping$ED[which(pftmapping==group)]
       if (is.null(edpft)) {
-        log.warn("No mapping found for", group, "using 1")
+        logger.warn("No mapping found for", group, "using 1")
         edpft <- 1
       }
       
@@ -159,7 +189,8 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
         traits <- names(vals)
         for(trait in traits) {
           if (! trait %in% edtraits) {
-            log.error(trait, "not found in ED history")
+            logger.error(trait, "not found in ED history")
+            next
           }
           pft.xml <- append.xmlNode(pft.xml, xmlNode(trait, vals[trait]))
         }
@@ -180,13 +211,33 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   
   ##----------------------------------------------------------------------
   ## Edit ED2IN file for runs
-  ed2in.text <- readLines(con=settings$model$edin, n=-1)
+  if (!is.null(settings$model$edin) && file.exists(settings$model$edin)) {
+    ed2in.text <- readLines(con=settings$model$edin, n=-1)
+  } else {
+    filename <- system.file(settings$model$edin, package = "PEcAn.ED2")
+    if (filename == "") {
+      if (!is.null(settings$model$revision)) {
+        filename <- system.file(paste0("ED2IN.r", settings$model$revision), package = "PEcAn.ED2")
+      } else {
+        model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database)
+        filename <- system.file(paste0("ED2IN.r", model$revision), package = "PEcAn.ED2")
+      }
+    }
+    if (filename == "") {
+      logger.severe("Could not find ED template")
+    }
+    logger.info("Using", filename, "as template")
+    ed2in.text <- readLines(con=filename, n=-1)
+  }
   
+  metstart <- tryCatch(format(as.Date(settings$run$site$met.start), "%Y"), error=function(e) settings$run$site$met.start)
+  metend   <- tryCatch(format(as.Date(settings$run$site$met.end), "%Y"), error=function(e) settings$run$site$met.end)
+
   ed2in.text <- gsub('@SITE_LAT@', settings$run$site$lat, ed2in.text)
   ed2in.text <- gsub('@SITE_LON@', settings$run$site$lon, ed2in.text)
   ed2in.text <- gsub('@SITE_MET@', settings$run$site$met, ed2in.text)
-  ed2in.text <- gsub('@MET_START@', settings$run$site$met.start, ed2in.text)
-  ed2in.text <- gsub('@MET_END@', settings$run$site$met.end, ed2in.text)
+  ed2in.text <- gsub('@MET_START@', metstart, ed2in.text)
+  ed2in.text <- gsub('@MET_END@', metend, ed2in.text)
 
   if(is.null(settings$model$phenol.scheme)){
     print(paste("no phenology scheme set; \n",
@@ -225,24 +276,14 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   ed2in.text <- gsub('@END_YEAR@', format(enddate, "%Y"), ed2in.text)
 
   ##----------------------------------------------------------------------
-  ed2in.text <- gsub('@OUTDIR@', settings$run$host$outdir, ed2in.text)
+  ed2in.text <- gsub('@OUTDIR@', modeloutdir, ed2in.text)
   ed2in.text <- gsub('@ENSNAME@', run.id, ed2in.text)
-  ed2in.text <- gsub('@CONFIGFILE@', "config.xml", ed2in.text)
+  ed2in.text <- gsub('@CONFIGFILE@', file.path(settings$run$host$rundir, run.id, "config.xml"), ed2in.text)
+  #ed2in.text <- gsub('@CONFIGFILE@',"config.xml", ed2in.text) # for ED2.r81 on Kang.  Temporary hack
   
-  ## Generate a numbered suffix for scratch output folder.  Useful for cleanup.  TEMP CODE. NEED TO UPDATE.
-  ## cnt = counter(cnt) # generate sequential scratch output directory names 
-  ## print(cnt)
-  ## scratch = paste(Sys.getenv("USER"),".",cnt,"/",sep="")
-  scratch = paste(Sys.getenv("USER"),"/",settings$run$scratch, sep='')
-  ## ed2in.text <- gsub('@SCRATCH@', paste('/scratch/', settings$run$scratch, sep=''), ed2in.text)
-  ed2in.text <- gsub('@SCRATCH@', paste('/scratch/', scratch, sep=''), ed2in.text)
-  ##
-  
-#  ed2in.text <- gsub('@OUTFILE@', file.path(settings$run$host$outdir, run.id, "analysis"), ed2in.text)
-#  ed2in.text <- gsub('@OUTFILE@', file.path(settings$run$host$outdir, run.id, "analysis"), ed2in.text)
-
-  ed2in.text <- gsub('@FFILOUT@', file.path(settings$run$host$outdir, run.id, "analysis"), ed2in.text)
-  ed2in.text <- gsub('@SFILOUT@', file.path(settings$run$host$outdir, run.id, "history"), ed2in.text)
+  ##----------------------------------------------------------------------
+  ed2in.text <- gsub('@FFILOUT@', file.path(modeloutdir, "analysis"), ed2in.text)
+  ed2in.text <- gsub('@SFILOUT@', file.path(modeloutdir, "history"), ed2in.text)
   
   ##----------------------------------------------------------------------
   writeLines(ed2in.text, con = file.path(settings$rundir, run.id, "ED2IN"))
@@ -260,7 +301,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
 ##-------------------------------------------------------------------------------------------------#
 write.run.ED <- function(settings){
   scratch = paste(Sys.getenv("USER"),"/",settings$run$scratch, sep='')
-  run.script.template = system.file("run.template.ED", package="PEcAn.ED")
+  run.script.template = system.file("run.template.ED2", package="PEcAn.ED2")
   run.text <- scan(file = run.script.template, 
                    what="character",sep='@', quote=NULL, quiet=TRUE)
   run.text <- gsub('TMP', paste("/scratch/",scratch,sep=""), run.text)
@@ -297,7 +338,9 @@ remove.config.ED2 <- function(main.outdir = settings$outdir, settings) {
                   pattern = c('/c.*', '/ED2INc.*'),
                   recursive=TRUE, full.names = TRUE)
   
-  if(length(todelete>0)) file.remove(todelete)
+  if(length(todelete>0)){
+    file.remove(todelete)
+  } 
   rm(todelete)
 
   ## Remove model run configs and model run log files on local/remote host
