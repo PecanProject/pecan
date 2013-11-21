@@ -108,11 +108,11 @@ test_that("sensitivity.analysis and ensemble use other's settings if null",{
 test_that("workflow id is numeric if settings$bety$write = TRUE", {
   s <- settings
   s1 <- check.settings(s)
-  expect_is(s1$workflow$id, "numeric")
+  expect_is(s1$workflow$id, c("integer", "numeric"))
   
   s$workflow <- NULL
   s1 <- check.settings(s)
-  expect_is(s1$workflow$id, "numeric")
+  expect_is(s1$workflow$id, c("integer", "numeric"))
 })
 
 test_that("check.settings will fail if db does not exist",{
