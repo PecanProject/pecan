@@ -30,7 +30,7 @@ if (!$result) {
 	die('Invalid query: ' . mysql_error());
 }
 $run = mysql_fetch_assoc($result);
-$folder = $run['folder'];
+$folder = str_replace("//", "/", $run['folder']);
 
 // return dataset
 switch ($type) {
@@ -55,11 +55,14 @@ switch ($type) {
 			$mime = "application/pdf";					
 		} else {
 			$mime = "application/octet-stream";
-			header('Content-Disposition: attachment; filename='.basename($name));			
 		}
 		break;
 		
 	case "plot":
+		if (!isset($_REQUEST['run']) || !is_numeric($_REQUEST['run'])) {
+			die("Need run.");
+		}
+		$run=$_REQUEST['run'];
 		if (!isset($_REQUEST['year']) || !is_numeric($_REQUEST['year'])) {
 			die("Need year.");
 		}
@@ -67,25 +70,19 @@ switch ($type) {
 		if (!isset($_REQUEST['var'])) {
 			die("Need var.");
 		}
-		list($datafile,$var)=explode("@", $_REQUEST['var']);
-        $datafile.=$year . ".nc";
+		$var=$_REQUEST['var'];
+        $datafile=$folder . "/out/" . $run . "/" . $year . ".nc";
 		$width=600;
-		if (isset($_REQUEST['width']) && ($_REQUEST['width'] > 600)) {
+		if (isset($_REQUEST['width']) && ($_REQUEST['width'] > $width)) {
 			$width=$_REQUEST['width'];
 		}
-		$height=600;
-		if (isset($_REQUEST['height']) && ($_REQUEST['height'] > 600)) {
+		$height=400;
+		if (isset($_REQUEST['height']) && ($_REQUEST['height'] > $height)) {
 			$height=$_REQUEST['height'];
 		}
 		$mime = "image/png";
 		$file = tempnam('','');
-		if (stripos($datafile, ".h5") !== FALSE) {
-			shell_exec("PECANSETTINGS=$folder/pecan.xml R CMD BATCH --vanilla '--args $year $var $width $height $file' plot.hdf5.R $folder/plot.out");
-		} else if (stripos($datafile, ".nc") !== FALSE) {
-			shell_exec("PECANSETTINGS=$folder/pecan.xml R CMD BATCH --vanilla '--args $datafile $year $var $width $height $file' plot.netcdf.R $folder/plot.out");
-		} else {
-			die("Can not plot $datafile");
-		}		
+		shell_exec("R_LIBS_USER='${pecan_install}' PECANSETTINGS='$folder/pecan.xml' R CMD BATCH --vanilla '--args $datafile $year $var $width $height $file' plot.netcdf.R $folder/plot.out");
 		break;
 		
 	default:
@@ -97,6 +94,9 @@ if (!file_exists($file)) {
 }
 if ($mime != "") {
 	header("Content-type: $mime");
+}
+if (isset($name)) {
+	header('Content-Disposition: filename='.basename($name));
 }
 readfile($file);
 

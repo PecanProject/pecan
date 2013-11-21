@@ -2,11 +2,9 @@
 \alias{get.results}
 \title{Generate model output for PEcAn analyses}
 \usage{
-  get.results(model)
+  get.results(settings)
 }
 \arguments{
-  \item{model}{name of model being used}
-
   \item{settings}{list, read from settings file (xml) using
   \code{\link{read.settings}}}
 }
@@ -16,11 +14,9 @@
 }
 \details{
   Output is placed in model output directory
-  (settings$run$host$outdir).
+  (settings$modeloutdir).
 }
 \author{
-  Shawn Serbin, David LeBauer, Mike Dietze
-
   David LeBauer, Shawn Serbin, Mike Dietze
 }
 

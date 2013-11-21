@@ -1,0 +1,330 @@
+#!/usr/bin/env Rscript
+
+## TODO: modify write.configs to enable regional runs
+##       bounding box comes from from sites geom
+##       grid size specified in config file
+library(PEcAn.data.atmosphere)
+library(BioCro)
+
+arg   <- commandArgs(trailingOnly = TRUE)
+if(length(arg) == 0){
+    lat <- 40.08
+    lon <- -88.23
+} else {
+    lat <- arg[1]
+    lon <- arg[2]
+}
+outdir <- "/home/dlebauer/analysis/globaltest"    
+## library(PEcAn.DB)
+
+## todo replace following with database queries
+## waiting for regions
+## TODO allow specification of grid size
+## 
+
+soil.nc <- nc_open("/home/scratch/pecan/soil/hwsd.nc")
+
+cruncep.file <- "/home/scratch/pecan/met/cruncep/1990.nc"
+## ncep.file <- "/home/scratch/pecan/met/ncep/all.nc"
+## if(file.exists(cruncep.file)){
+system.time(met.nc <-  nc_open(cruncep.file, readunlim = TRUE))
+## } else if (file.exists(ncep.file)){
+##    met.nc <- nc_open(ncep.file)
+## }
+
+ 
+## Time
+## if ncep, time is in hours since; cruncep time is in days
+## time.units <- ncatt_get(met.nc, 'time')$units
+## time.atts <- ncatt_get(met.nc, 'time')
+## time.units <- time.atts$units
+
+cruncep_nc2dt <- function(lat, lon, met.nc){
+
+
+    ## Lat and Lon
+    Lat <- ncvar_get(met.nc, "lat")
+    Lon <- ncvar_get(met.nc, "lon")
+
+    lati <- which.min(abs(Lat - lat))
+    loni <- which.min(abs(Lon - lon))
+
+    time.idx <- ncvar_get(met.nc, "time")
+
+    date <- ymd("1700-01-01") + days(floor(time.idx)) + hours(24*(time.idx - floor(time.idx)))
+    time_steps <- length(date)
+    doy <- yday(date)
+    year <- year(date)
+    month <- month(date)
+    day <- day(date)
+    hour <- hour(date) ## redundant, but clear
+
+    currentlat <- round(lat, 2)
+    currentlon <- round(lon, 2)
+    result <- list()
+    
+    vars <- list(date = date, year = year, month = month, day = day,
+                 doy = doy, hour = hour)
+
+    mask <- ncvar_get(nc = met.nc, varid = "mask",
+                      start = c(loni, lati),
+                      count = c(1,1)) 
+
+    variables <- c("lwdown", "press", "qair", "rain", "swdown", "tair", "uwind", "vwind")
+    if(mask == -1) {
+        stop(paste("chosen lat:", lat, "and  lon:", lon, " is in the ocean"))
+    } else if (mask > 0){
+        for(var in variables){
+            print(var)
+            vars[[var]] <- as.numeric(ncvar_get(nc = met.nc,
+                                                varid = var,
+                                                start = c(loni, lati, 1),
+                                                count = c(1, 1, length(time.idx))))
+        }
+    }
+    
+    result <- as.data.table(vars)
+    result$wind <- result[,list(wind = sqrt(uwind^2 + vwind^2))]
+    if(!result[doy == max(doy)], hour < 23]
+    return(result)   
+}
+
+if(!file.exists(file.path(outdir, "result.RData"))){
+    system.time(result <- cruncep_nc2dt(lat = 40, lon = -88, met.nc = met.nc))
+    save(result, file = file.path(outdir, "result.RData"))
+} else {
+    load(file.path(outdir, "result.RData"))
+}
+##' convert PAR to PPFD
+##'
+##' Converts photosynthetically active radiation (PAR, units of Watts / m2) to
+##' photosynthetic photon flux density (PPFD) in units of mol / m2 / s 
+##' From Campbell and Norman p151
+##' PPFD = PAR * (J/m2/s) * (1 mol / 2.35e5 J)
+##' 2.35e5 J / mol is the energy content of solar radiation in the PAR waveband
+##' 0.486 is based on the approximation that PAR is 0.45-0.50 of the total radiation
+##' @title 
+##' @param PAR (W / m2) 
+##' @author David LeBauer
+##' @export
+##' @return PPFD (mol / m2 / s) 
+##' @author David LeBauer
+par2ppfd <- function(watts){
+    ppfd <- watts / (2.35 * 10^5)
+    ud.convert(ppfd, "mol ", "umol")
+}
+
+
+##' Solar Radiation to PPFD
+##' 
+##' There is no easy straight way to convert MJ/m2 to mu mol photons / m2 / s (PAR)
+##' The above conversion is based on the following reasoning
+##' 0.12 is about how much of the total radiation is expected to ocurr during the hour of maximum insolation (it is a guesstimate)
+##' 2.07 is a coefficient which converts from MJ to mol photons (it is approximate and it is taken from ...
+##' Campbell and Norman (1998). Introduction to Environmental Biophysics. pg 151 'the energy content of solar radiation in the PAR waveband is 2.35 x 10^5 J/mol'
+##' See also the chapter radiation basics (10)
+##' Here the input is the total solar radiation so to obtain in the PAR spectrum need to multiply by 0.486
+##' This last value 0.486 is based on the approximation that PAR is 0.45-0.50 of the total radiation
+##' This means that 1e6 / (2.35e6) * 0.486 = 2.07
+##' 1e6 converts from mol to mu mol
+##' 1/3600 divides the values in hours to seconds
+##' 
+##' @title MJ to PPFD
+##' @author Fernando Miguez
+##' @author David LeBauer
+##' @param solarMJ MJ per day
+##' @return PPFD umol /m2 / s
+solarMJ2ppfd <- function(solarMJ){
+  solarR <- (0.12 * solarMJ) * 2.07 * 1e6 / 3600
+  return(solarR)
+}
+
+
+cruncep_hourly <- function(result, lat){
+    
+    new.date <- result[,list(hour = c(0:23)),
+                       by = c("year", "month", "day", "doy")]
+
+    new.date$date <- new.date[,list(date = ymd(paste(year, month, day)) + hours(hour))]
+    
+    ## tests
+    ## min(result$date) == min(new.date$date)
+    ## max(result$date) == max(new.date$date)
+
+    ## converting swdown from W/m2 avg to PPFD
+    result$ppfd <- ud.convert(par2ppfd(result$swdown), "mol", "micromol")
+        
+    
+    dailySW <- result[, list(PAR = sum(swdown)*6), by = c("year", "doy")]$PAR
+    dailyMJ <- ud.convert(dailySW, "W h", "MJ")
+    dailyPPFD <- solarMJ2ppfd(dailyMJ)
+    
+    dailySWmax <- result[, list(PAR = max(swdown)), by = c("year", "doy")]$PAR
+    
+    light <- new.date[, lightME(DOY = doy, t.d = 0:23, lat = lat),
+                      by = c('year', 'doy')]
+    light$Itot <- light[,list(I.dir + I.diff)]
+    ## calculating % of daily total sun arriving each hour
+    
+    resC2 <- light[, list(resC2 = (Itot - min(Itot)) / max(Itot)),
+                   by = c("year", "doy")]$resC2
+
+    swdown <- resC2 * rep(dailySWmax, each = 24)
+    ppfd <- resC2 * rep(dailyPPFD, each = 24)
+
+    hourly.result <- list()
+    hourly.result[["swdown"]] <- swdown
+    hourly.result[["ppfd"]] <- ppfd
+    for(var in c("press", "qair", "rain", "tair", "wind")){
+        
+        ## convert units from 6 hourly to hourly
+        hrscale <- ifelse(var %in% c("swdown", "rain"), 6, 1)
+        
+        f <- approxfun(as.numeric(result$date), (result[[var]] / hrscale), rule = 2)
+        
+        hourly.result[[var]] <- f(as.numeric(new.date$date))
+    }
+
+                                                            
+    new.result <- cbind(new.date, as.data.table(hourly.result))#[date <= max(result$date),]
+    return(new.result)
+}
+
+new.result <- cruncep_hourly(result, lat = lat)
+save(new.result, file = file.path(outdir, "new.result.RData"))    
+qair2rh <- function(qair, temp, press = 1013.25){
+    es <-  6.112 * exp((17.67 * temp)/(temp + 243.5))
+    e <- qair * press / (0.378 * qair + 0.622)
+    rh <- e / es
+    rh[rh > 1] <- 1
+    rh[rh < 0] <- 0
+
+    return(rh)
+}
+
+## ## qc functions restricting to "valid range" given in .nc meta-data
+## qctemp   <- function(x) ifelse(x > 400 | x < 100, mean(x[x < 400 & x > 100]), x)
+## qcsolar  <- function(x) ifelse(x<0, 0, ifelse(abs(x) > 1300, mean(x[x < 1300]), x))
+## qcwind   <- function(x) ifelse(abs(x) > 102, mean(abs(x[x < 102])), x)
+## qcprecip <- function(x) ifelse(x > 0.005 | x < 0 , mean(x[x < 0.005 & x >0]), x)
+## qcrh     <- function(x) {
+##     ifelse(x > 100 | x < 0, mean(x[x < 100 & x>0]), x) ## using logical range (0-100) rather than "valid range (-25-125)"
+## }
+## qcshum     <- function(x){
+##     x <- ifelse(x > 100 | x < 0, mean(x[x < 0.6553 & x > 0]), x)
+##     x[is.na(x)] <- mean(x, na.rm = TRUE)
+## }
+
+
+
+cruncep_dt2weather <- function(weather = result){
+
+    x <- weather[,list(year, doy = doy, hour = hour,
+                       solarR   = ppfd, 
+                       DailyTemp.C = ud.convert(tair, "Kelvin", "Celsius"),
+                       RH = qair2rh(qair = qair, temp = ud.convert(tair, "Kelvin", "Celsius"), press = ud.convert(press, "Pa", "mbar")),
+                       WindSpeed  = wind,                       
+                       precip = rain)]
+    return(x)
+}
+
+weather <- cruncep_dt2weather(new.result)
+## TODO dump as .RData file in BioCro format
+##      
+save(weather, file = file.path(outdir, "weather.RData"))
+
+get.soil <- function(lat, lon, soil.nc = soil.nc){
+    
+    ## Lat and Lon
+    Lat <- ncvar_get(soil.nc, "lat")
+    Lon <- ncvar_get(soil.nc, "lon")
+
+    lati <- which.min(abs(Lat - lat))
+    loni <- which.min(abs(Lon - lon))
+
+    ## topsoil
+    usda_class <- ncvar_get(soil.nc, "t_usda_tex",
+                            start = c(loni, lati),
+                            count = c(1,1))
+    return(usda_class)
+}
+
+is.land <- function(lat, lon){
+    Lat <- ncvar_get(nc = met.nc, varid = "lat")
+    Lon <- ncvar_get(nc = met.nc, varid = "lon")
+    lati <- which.min(abs(Lat-lat))
+    loni <- which.min(abs(Lon-lon))
+    mask <- ncvar_get(nc = met.nc, varid = "mask",
+                      start = c(loni, lati), count = c(1,1))
+    return(mask >= 0)
+}
+
+get.latlonbox <- function(lati, loni, Lat = Lat, Lon = Lon){
+    lat <- c(mean(Lat[lati:(lati-1)]), mean(Lat[lati:(lati+1)]))
+    lon <- c(mean(Lon[loni:(loni-1)]), mean(Lon[loni:(loni+1)]))
+    return(c(sort(lat), sort(lon)))
+}
+
+get.cruncep <- function(lat, lon, start.date = NA, end.date = NA){
+    result <- cruncep_nc2dt(lat, lon)
+    new.result <- cruncep_hourly(result, lat = Lat[lati])
+    weather <- cruncep_dt2weather(new.result)
+    return(weather)
+}
+
+run.biocro <- function(lat, lon){
+    ## get soil data
+    ## abox <- get.latlonbox(lati = lati, loni = loni, Lat = Lat, Lon = Lon)
+    ## soil <- get.hwsd.box(abox, con = con)
+    if(is.land(lat, lon)){
+        soil.type <- get.soil(lat, lon, soil.nc = soil.nc)
+        #weather <- get.weather(lat, lon)
+        result <- list()
+        years <- unique(weather$year)
+        for(yeari in years){
+            WetDat <- as.data.frame(weather[year == yeari, ])
+            day1 <- min(WetDat$doy)
+            dayn <- max(WetDat$doy)
+            yearchar <- as.character(yeari)
+            if(yeari == min(years)){
+                iplant <- iwillowParms(iRhizome=1.0, iStem=1.0, iLeaf=0.0,
+                                       iRoot=1.0, ifrRhizome=0.01, ifrStem=0.01,
+                                       ifrLeaf = 0.0, ifrRoot = 0.0)
+            } else {
+                N <- length(result[[as.character(yeari-1)]]$Rhizome)
+                iplant$iRhizome <- result[[as.character(yeari-1)]]$Rhizome[N]
+                iplant$iStem <- result[[as.character(yeari-1)]]$Stem[N]
+                iplant$iRoot <- result[[as.character(yeari-1)]]$Root[N]
+            }
+            result[[yearchar]] <- willowGro(WetDat = WetDat,
+                                            day1 = day1, dayn = dayn,
+                                            soilControl = soilParms(soilType = soil.type))
+        }
+        result.yeari <- with(result[[yearchar]],
+                             data.frame(Year = yeari, DayofYear, Hour, ThermalT,
+                                        Stem, Leaf, Root, Rhizome, Grain, LAI,
+                                        SoilEvaporation, CanopyTrans))
+        if(yeari == min(years)){
+            resultDT <- result.yeari
+        } else if (yeari > min(years)){
+            resultDT <- rbind(resultDT, result.yeari)
+        }
+        result <- resultDT
+    } else {
+        result <- NULL
+    }
+    return(result)
+}
+
+out <- run.biocro(lat, lon)
+save(out, file = file.path(outdir, "output.RData"))
+## con <- get.hwsdcon()
+
+## for(lat in Lat){
+##     for(lon in Lon){
+##         here <- landmask[lat == Lat[lati] & lon == Lon[loni] - 180,]
+##         if(here$land){
+##             run.biocro(lat, lon)
+##         }
+##     }
+## }

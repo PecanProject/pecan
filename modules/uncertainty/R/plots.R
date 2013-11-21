@@ -36,6 +36,15 @@
 ##' do.call(grid.arrange, c(plot.variance.decomposition(x), ncol = 4))
 plot.variance.decomposition <- function(plot.inputs,
                                         fontsize = list(title = 18, axis = 14)){
+  require(ggmap)
+  theme_set(theme_classic() +
+    theme(axis.text.x = element_text(size=fontsize$axis, vjust = -1),
+          axis.text.y = element_blank(), axis.ticks = element_blank(), axis.line = element_blank(),
+          axis.title.x = element_blank(), 
+          axis.title.y = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.border = element_blank()))
+  
   traits       <- names(plot.inputs$variances)
   units        <- as.character(trait.lookup(traits)$units)
   trait.labels <- as.character(trait.lookup(traits)$figid)
@@ -51,38 +60,28 @@ plot.variance.decomposition <- function(plot.inputs,
                                decreasing = FALSE), ]
   
   base.plot <- ggplot(plot.data) +
-    coord_flip() +
-      theme_bw() +
-        opts(axis.text.x = theme_text(size=fontsize$axis, vjust = -1),
-             axis.text.y = theme_blank(),
-             axis.title.x = theme_blank(), 
-             axis.title.y = theme_blank(),
-             panel.grid.minor = theme_blank(),
-             panel.border = theme_blank())
+    coord_flip() 
+    
 
-  trait.plot <- base.plot + 
-    opts(title = 'Parameter',
-         plot.title = theme_text(hjust = 0.96, size = fontsize$title),
-         axis.text.x = theme_text(colour='white'),
-         axis.line.x = theme_blank()) +
-           geom_text(aes(y = 1, x = points,
-                         label=trait.labels, hjust = 1),
-                     size = fontsize$axis/3) +
-                       scale_y_continuous( breaks = c(0,0), limits = c(0,1)) 
+  trait.plot <- base.plot + ggtitle("Parameter") +
+    geom_text(aes(y = 1, x = points,
+                  label=trait.labels, hjust = 1),
+              size = fontsize$axis/3) + 
+    scale_y_continuous( breaks = c(0,0), limits = c(0,1)) +
+    theme(axis.text.x = element_blank())
+  cv.plot <- base.plot + ggtitle("CV (%)") +
+    geom_pointrange(aes(x = points, y = coef.vars, ymin = 0, ymax = coef.vars),
+                    size = 1.25) +
+    theme(plot.title = element_text(size = fontsize$title)) 
 
-  cv.plot <- base.plot +
-    opts(title = 'CV (%)', plot.title = theme_text(size = fontsize$title)) +
-        geom_pointrange(aes(x = points, y = coef.vars, ymin = 0, ymax = coef.vars),
-                        size = 1.25) 
 
-  el.plot <- base.plot + 
-    opts(title = 'Elasticity', plot.title = theme_text(size = fontsize$title)) +
+  el.plot <- base.plot + ggtitle("Elasticity") +
+    theme(plot.title = element_text(size = fontsize$title)) +
         geom_pointrange(aes(x = points, y = elasticities, ymin = 0, ymax = elasticities),
                         size = 1.25) 
 
-  pv.plot <- base.plot+ 
-    opts(title = 'Root Variance (Mg/ha)',
-         plot.title = theme_text(size = fontsize$title)) +
+  pv.plot <- base.plot + ggtitle("Variance") +
+    theme(plot.title = element_text(size = fontsize$title)) +
              geom_pointrange(aes(x = points, sqrt(variances),
                                  ymin = 0, ymax = sqrt(variances)), size = 1.25) 
     
@@ -146,14 +145,13 @@ plot.sensitivity <- function(sa.sample, sa.spline, trait,
                                         #indicate median with larger point
         geom_point(aes(x,y), data = data.frame(x = sa.sample[median.i], y = sa.spline(sa.sample[median.i])), size = dotsize * 1.3) + 
           scale_y_continuous(limits = range(pretty(y.range)), breaks = pretty(y.range, n = 3)[1:3]) +
-            theme_bw() +
-              opts(title= trait.lookup(trait)$figid, 
-                   axis.text.x = theme_text(size = fontsize$axis),
-                   axis.text.y = theme_text(size = fontsize$axis),
-                   axis.title.x = theme_text(size = fontsize$axis),
-                   axis.title.y = theme_blank(),
-                   plot.title = theme_text(size = fontsize$title),
-                   panel.border = theme_blank())
+            theme_bw() + ggtitle(trait.lookup(trait)$figid)
+              theme(axis.text.x = element_text(size = fontsize$axis),
+                   axis.text.y = element_text(size = fontsize$axis),
+                   axis.title.x = element_text(size = fontsize$axis),
+                   axis.title.y = element_blank(),
+                   plot.title = element_text(size = fontsize$title),
+                   panel.border = element_blank())
   ## Following conditional can be removed to only plot posterior sa
   prior.x <- post.x
   if(!is.null(prior.sa.sample) & !is.null(prior.sa.spline)){

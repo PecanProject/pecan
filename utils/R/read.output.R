@@ -1,24 +1,80 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
-#--------------------------------------------------------------------------------------------------#
+##-------------------------------------------------------------------------------
+## Copyright (c) 2012 University of Illinois, NCSA.
+## All rights reserved. This program and the accompanying materials
+## are made available under the terms of the 
+## University of Illinois/NCSA Open Source License
+## which accompanies this distribution, and is available at
+## http://opensource.ncsa.illinois.edu/license.html
+
+##---------------------------------------------------------------------------------
+
+##' Convert output for a single model run to NetCDF
+##'
+##' DEPRECATED this function will be removed in future versions, please update
+##' your workflow.
+##'
+##' This function is a wrapper for model-specific conversion functions,
+##' e.g. \code{model2netcdf.ED2}, \code{model2netcdf.BIOCRO}.
+##' @title Convert model output to NetCDF 
+##' @param runid 
+##' @param outdir
+##' @param model name of simulation model currently accepts ("ED2", "SIPNET", "BIOCRO")
+##' @param lat Latitude of the site
+##' @param lon Longitude of the site
+##' @param start_date Start time of the simulation
+##' @param end_date End time of the simulation
+##' @return vector of filenames created, converts model output to netcdf as a side effect
+##' @author Mike Dietze, David LeBauer
+model2netcdfdep <- function(runid, outdir, model, lat, lon, start_date, end_date){
+  ## load model-specific PEcAn module
+  do.call(require, list(paste0("PEcAn.", model)))    
+
+
+  model2nc <- paste("model2netcdf", model, sep=".")
+  if(!exists(model2nc)){
+    logger.warn("File conversion function model2netcdf does not exist for", model)
+    return(NA)
+  }
+  
+  do.call(model2nc, list(outdir, lat, lon, start_date, end_date))    
+  
+  print(paste("Output from run", runid, "has been converted to netCDF"))
+  ncfiles <- list.files(path = outdir, pattern="\\.nc$", full.names=TRUE)
+  if(length(ncfiles) == 0){
+    logger.severe("Conversion of model files to netCDF unsuccessful")
+  }
+  return(ncfiles)
+}
+
+##' Convert output for a single model run to NetCDF
+##'
+##' DEPRECATED this function will be removed in future versions, please update
+##' your workflow.
+##'
+##' This function is a wrapper for model-specific conversion functions,
+##' e.g. \code{model2netcdf.ED2}, \code{model2netcdf.BIOCRO}.
+##' @title Convert model output to NetCDF 
+##' @param runid 
+##' @param outdir
+##' @param model name of simulation model currently accepts ("ED2", "SIPNET", "BIOCRO")
+##' @param lat Latitude of the site
+##' @param lon Longitude of the site
+##' @param start_date Start time of the simulation
+##' @param end_date End time of the simulation
+##' @export
+##' @return vector of filenames created, converts model output to netcdf as a side effect
+##' @author Mike Dietze, David LeBauer
+model2netcdf <- function(runid, outdir, model, lat, lon, start_date, end_date){
+  logger.info("model2netcdf will be removed in future versions, plase update your worklow")
+  model2netcdfdep(runid, outdir, model, lat, lon, start_date)
+}
+
+
 ##' Reads the output of a single model run
 ##'
-##' @title Read output
-##' @name read.output
-##' @param run.id the id distiguishing the model run
-##' @param outdir the directory that the model's output was sent to
-##' @param start.year 
-##' @param end.year
-##' @param variables
-##' @param model
-##' @details Generic function to convert model output in from
-##' MsTMIP units (kg m-2 s-1) to kg ha-1 y-1. Currently this function converts
+##' Generic function to convert model output from model-specific format to 
+##' a common PEcAn format. This function uses MsTMIP variables except that units of
+##'  (kg m-2 d-1)  are converted to kg ha-1 y-1. Currently this function converts
 ##' Carbon fluxes: GPP, NPP, NEE, TotalResp, AutoResp, HeteroResp,
 ##' DOC_flux, Fire_flux, and Stem (Stem is specific to the BioCro model)
 ##' and Water fluxes: Evaporation (Evap), Transpiration(TVeg),
@@ -26,96 +82,77 @@
 ##' For more details, see the
 ##' \href{http://nacp.ornl.gov/MsTMIP_variables.shtml}{MsTMIP variables}
 ##' documentation 
+##' @title Read model output
+##' @name read.output
+##' @param runid the id distiguishing the model run. 
+##' @param outdir the directory that the model's output was sent to
+##' @param start.year first year of output to read (should be greater than ) 
+##' @param end.year last year of output to read
+##' @param variables variables to be read from model output
 ##' @return vector of output variable
 ##' @export
-##' @author Michael Dietze
-read.output <- function(run.id, outdir, start.year=NA,
+##' @author Michael Dietze, David LeBauer
+read.output <- function(runid, outdir, start.year=NA,
                         end.year=NA, variables = "GPP") {
-  ### Load requirements
-  require(ncdf)
-  
-  model <- settings$model$name
-  model2nc <- paste("model2netcdf", model, sep=".")
-  if(!exists(model2nc)){
-    log.warn("File conversion function model2netcdf does not exist for",model)
-    return(NA)
-  }
-  
+
+  ## vars in units d-1 to be converted to y-1
   cflux = c("GPP", "NPP", "NEE", "TotalResp", "AutoResp", "HeteroResp",
-    "DOC_flux", "Fire_flux", "Stem") #kgC m-2 s-1
-  wflux = c("Evap", "TVeg", "Qs", "Qsb", "Rainf") #kgH20 m-2 s-1
+    "DOC_flux", "Fire_flux") # kgC m-2 d-1
+  wflux = c("Evap", "TVeg", "Qs", "Qsb", "Rainf") # kgH20 m-2 d-1
   
-  ## Always call conversion to dangerous,
-  ## should do check in conversion code since it knows what gets converted.
-  do.call(model2nc, list(outdir))
-  print(paste("Output from run", run.id, "has been converted to netCDF"))
-  ncfiles <- list.files(path=outdir, pattern="\\.nc$", full.names=TRUE)
-  if(length(ncfiles) == 0){
-    log.error("Conversion of model files to netCDF unsuccessful")
-    stop("Conversion of model files to netCDF unsuccessful")
-  }
-
-  ## determine years to load
-  nc.years = as.numeric(sub(paste(run.id,".",sep=""),"",
-    sub(".nc","",basename(ncfiles), fixed = TRUE), fixed = TRUE))
-  first <- max(1, which(nc.years == start.year), na.rm = TRUE)
-  last <- min(length(nc.years),which(nc.years == end.year),na.rm=TRUE)
-
-  if (model == "BIOCRO") {
-    nc.years <- list(last)
-    yrs <- last
-  }
+  # create list of *.nc years
+  nc.years <- as.vector(unlist(strsplit(list.files(path = outdir, pattern="\\.nc$", full.names=FALSE),".nc")))
+  # select only those *.nc years requested by user
+  keep <- which(nc.years >= as.numeric(start.year) & nc.years <= as.numeric(end.year))
+  ncfiles <- list.files(path = outdir, pattern="\\.nc$", full.names=TRUE)
+  ncfiles <- ncfiles[keep]
+  # throw error if no *.nc files selected/availible
+  if(length(ncfiles) == 0) logger.error("no netCDF files of model output present")
   
-  ## load files
-  yrs <- first:max(first,last)
-
-  data <- list()
-  
-  for(i in 1:length(yrs)){
-    print(paste("----- Processing year: ", nc.years[yrs[i]]))
-    nc <- open.ncdf(ncfiles[yrs[i]], verbose=FALSE)
-    for(j in 1:length(variables)){
-      if(variables[j] %in% names(nc$var)){
-        newdata <- get.var.ncdf(nc, varid=variables[j], verbose=FALSE)
-        if(variables[j] %in% c(cflux, wflux)){
-          ## Convert output to annual values.
-          ## Multiply by seconds in a 365d year and convert per ha
-          newdata <- newdata * 31536000 * 10000 # kgC or kgH2O / ha
+  print(paste("Years: ",start.year," - ",end.year),sep="")
+  result <- list()
+  for(ncfile in ncfiles) {
+    nc <- nc_open(ncfile)
+    for(v in variables){
+      if(v %in% names(nc$var)){
+        newresult <- ncvar_get(nc, v)
+        if(v %in% c(cflux, wflux)){
+          newresult <- ud.convert(newresult, "kg m-2 d-1", "kg ha-1 yr-1")
         }
-        if(i == 1) {
-          data[[j]] <- newdata
-        } else {
-          data[[j]] <- c(data[[j]], newdata)
-        }
-      } else {
-        warning(paste(variables[j], "missing in", ncfiles[yrs[i]]))
+        result[[v]] <- abind(result[[v]], newresult)
+      } else if (!(v %in% names(nc$var))){
+        logger.warn(paste(v, "missing in", ncfile))
       }
     }
-    close.ncdf(nc)
-    showConnections(all = TRUE)
+    nc_close(nc)
   }
-  names(data) <- variables
+  
   print(paste("----- Mean ", variables, " : ",
-              sapply(data, median, na.rm = TRUE)))
+              lapply(result, median, na.rm = TRUE)))
   print(paste("----- Median ", variables, ": ",
-              sapply(data, median, na.rm = TRUE)))
-  return(data)   
+              lapply(result, median, na.rm = TRUE)))
+  return(result)
 }
 
-#--------------------------------------------------------------------------------------------------#
-##' Reads the output of all model runs
+##'--------------------------------------------------------------------------------------------------#
+##' Converts the output of all model runs
 ##'
-##' @title Read outputs
-##' @name read.outputs
+##' @title convert outputs from model specific code to 
+##' @name convert.outputs
+##' @param model name of simulation model currently accepts ("ED", "SIPNET", "BIOCRO")
+##' @param settings settings loaded from pecan.xml
+##' @param ... arguments passed to \code{\link{read.output}}, e.g. \code{variables}, \code{start.year}, \code{end.year}
 ##' @export
 ##' @author Rob Kooper
-read.outputs <- function() {
-  for (run in readLines(con=file.path(settings$rundir, "runs.txt"))) {
-    read.output(run, file.path(settings$run$host$outdir, run))
+convert.outputs <- function(model, settings, ...) {
+  # copy out folde back to local folder first
+  # TODO this should be done in run step (redmine #1560)
+  if (settings$run$host$name != "localhost") {
+    rsync("-a", paste(settings$run$host$name, settings$run$host$outdir, sep=":"), settings$modeloutdir, pattern="/*")
+  }
+  for (runid in readLines(con=file.path(settings$rundir, "runs.txt"))) {
+    outdir <- file.path(settings$modeloutdir, runid)
+    model2netcdfdep(runid, outdir, model, settings$run$site$lat, settings$run$site$lon, settings$run$start.date, settings$run$end.date) 
   }
 }
-#==================================================================================================#
-
-####################################################################################################
-### EOF.  End of R script file.            	
 ####################################################################################################

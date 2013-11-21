@@ -6,7 +6,13 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-log.variables <- list("filename"="", "console"=TRUE, "DEBUG"=TRUE, "INFO"=TRUE, "WARN"=TRUE, "ERROR"=TRUE)
+
+.utils.logger <- new.env() 
+.utils.logger$filename <- NA
+.utils.logger$console  <- TRUE
+.utils.logger$stderr   <- TRUE
+.utils.logger$quit     <- !interactive()
+.utils.logger$level    <- 0
 
 ##' Prints a debug message.
 ##' 
@@ -18,10 +24,10 @@ log.variables <- list("filename"="", "console"=TRUE, "DEBUG"=TRUE, "INFO"=TRUE, 
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
-##' log.debug("variable", 5)
+##' logger.debug("variable", 5)
 ##' }
-log.debug <- function(msg, ...) {
-	log.message("DEBUG", msg, ...)
+logger.debug <- function(msg, ...) {
+	logger.message("DEBUG", msg, ...)
 }
 
 ##' Prints an informational message.
@@ -34,10 +40,10 @@ log.debug <- function(msg, ...) {
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
-##' log.info("PEcAn version 1.2")
+##' logger.info("PEcAn version 1.2")
 ##' }
-log.info <- function(msg, ...) {
-	log.message("INFO", msg, ...)
+logger.info <- function(msg, ...) {
+	logger.message("INFO", msg, ...)
 }
 
 ##' Prints a warning message.
@@ -50,10 +56,10 @@ log.info <- function(msg, ...) {
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
-##' log.warn("detected NA values")
+##' logger.warn("detected NA values")
 ##' }
-log.warn <- function(msg, ...) {
-	log.message("WARN", msg, ...)
+logger.warn <- function(msg, ...) {
+	logger.message("WARN", msg, ...)
 }
 
 ##' Prints an error message.
@@ -66,10 +72,44 @@ log.warn <- function(msg, ...) {
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
-##' log.error("system did not converge")
+##' logger.error("system did not converge")
 ##' }
-log.error <- function(msg, ...) {
-	log.message("ERROR", msg, ...)
+logger.error <- function(msg, ...) {
+	logger.message("ERROR", msg, ...)
+}
+
+##' Prints an severe message and stops execution.
+##' 
+##' This function will print a message and stop execution of the code. This
+##' should only be used if the application should terminate. If the session is
+##' non-interactive the error code can be specified which is returned to the shell.
+##' 
+##' set \code{\link{logger.setQuitOnSevere(FALSE)}}. To avoid terminating the session. 
+##'
+##' @param msg the message that should be printed.
+##' @param errorcode the error code to return when the session quits.
+##' @param ... any additional text that should be printed.
+##' @export
+##' @author Rob Kooper
+##' @examples
+##' \dontrun{
+##' logger.severe("missing parameters")
+##' }
+logger.severe <- function(msg, errorcode=1, ...) {
+	logger.message("SEVERE", msg, ...)
+
+	# run option
+	error <- getOption("error")
+	if (!is.null(error)) {
+		eval(error)
+	}
+
+	# quit if not interactive, otherwise use stop
+	if (.utils.logger$quit) {
+     	quit(save="no", status=errorcode)
+    } else {
+		stop(paste(msg, ...))
+    }
 }
 
 ##' Prints a message at a certain log level.
@@ -84,19 +124,26 @@ log.error <- function(msg, ...) {
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
-##' log.message("DEBUG", "variable", 5)
+##' logger.message("DEBUG", "variable", 5)
 ##' }
-log.message <- function(level, msg, ...) {
-	if (log.variables[[level]]) {
+logger.message <- function(level, msg, ...) {
+	if (logger.getLevelNumber(level) >= .utils.logger$level) {
 		dump.frames(dumpto="dump.log")
 		calls <- names(dump.log)
-	    func <- sub("\\(.*\\)", "", tail(calls[-(which(substr(calls, 0, 3) == "log"))], 1))
-		text <- sprintf("%s %-5s [%s] : %s\n", Sys.time(), level, func, paste(msg, ...))
-		if (log.variables$console) {
-			cat(text)
+	    func <- sub("\\(.*", "", tail(calls[-(which(substr(calls, 0, 3) == "log"))], 1))
+	    if (length(func) == 0) {
+	    	func <- "console"
+	    }
+		text <- sprintf("%s %-6s [%s] : %s\n", Sys.time(), level, func, paste(c(msg, ...), collapse=" "))
+		if (.utils.logger$console) {
+			if (.utils.logger$stderr) {
+				cat(text, file=stderr())
+			} else {
+				cat(text, file=stdout())
+			}
 		}
-		if (log.variables$filename != "") {
-			cat(text, file=log.variables$filename, append=TRUE)
+		if (!is.na(.utils.logger$filename)) {
+			cat(text, file=.utils.logger$filename, append=TRUE)
 		}
 	}
 }
@@ -106,41 +153,124 @@ log.message <- function(level, msg, ...) {
 ##' This will configure the logger level. This allows to turn DEBUG, INFO,
 ##' WARN and ERROR messages on and off.
 ##'
-##' @param level the level of the message (DEBUG, INFO, WARN, ERROR)
-##' @param enable wheter or not the messages should be printed at this level.
+##' @param level the level of the message (ALL, DEBUG, INFO, WARN, ERROR, OFF)
 ##' @export
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
-##' log.enable("DEBUG", TRUE)
+##' logger.setLevel("DEBUG")
 ##' }
-log.enable <- function(level, enable=TRUE) {
-	if (level == "DEBUG") {
-		log.variables$DEBUG <<- enable
-	} else if (level == "INFO") {
-		log.variables$INFO <<- enable
-	} else if (level == "WARN") {
-		log.variables$WARN <<- enable
-	} else if (level == "ERROR") {
-		log.variables$ERROR <<- enable
+logger.setLevel <- function(level) {
+	.utils.logger$level = logger.getLevelNumber(level)
+}
+
+##' Returns numeric value for string
+##'
+##' Given the string representation this will return the numeric value
+##' ALL   =  0
+##' DEBUG = 10
+##' INFO  = 20
+##' WARN  = 30
+##' ERROR = 40
+##' ALL   = 99
+##'
+##' @return level the level of the message
+##' @author Rob Kooper
+logger.getLevelNumber <- function(level) {
+	if (toupper(level) == "ALL") {
+		return(0)
+	} else if (toupper(level) == "DEBUG") {
+		return(10)
+	} else if (toupper(level) == "INFO") {
+		return(20)
+	} else if (toupper(level) == "WARN") {
+		return(30)
+	} else if (toupper(level) == "ERROR") {
+		return(40)
+	} else if (toupper(level) == "SEVERE") {
+		return(40)
+	} else if (toupper(level) == "OFF") {
+		return(60)
 	} else {
-		log.warn("Could not set level", level)
+		logger.warn(level, " is not a valid value, setting level to INFO")
+		return(logger.getLevelNumber("INFO"))
+	}	
+}
+
+##' Get configured logging level.
+##' 
+##' This will return the current level configured of the logging messages
+##'
+##' @return level the level of the message (ALL, DEBUG, INFO, WARN, ERROR, OFF)
+##' @export
+##' @author Rob Kooper
+##' @examples
+##' \dontrun{
+##' logger.getLevel()
+##' }
+logger.getLevel <- function() {
+	if (.utils.logger$level < 10) {
+		return("ALL")
+	} else if (.utils.logger$level < 20) {
+		return("DEBUG")
+	} else if (.utils.logger$level < 30) {
+		return("INFO")
+	} else if (.utils.logger$level < 40) {
+		return("WARN")
+	} else if (.utils.logger$level < 50) {
+		return("ERROR")
+	} else if (.utils.logger$level < 60) {
+		return("SEVERE")
+	} else {
+		return("OFF")
 	}
 }
 
-##' Configure logging output.
+##' Configure logging to console.
 ##' 
-##' This will configure the logger.
+##' Should the logging to be printed to the console or not.
 ##'
-##' @param filename the file to send the log messages to.
-##' @param console set to true if the logger should write to the console
+##' @param console set to true to print logging to console.
+##' @param stderr set to true (default) to use stderr instead of stdout for logging
 ##' @export
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
-##' log.output(console=FALSE)
+##' logger.setUseConsole(TRUE)
 ##' }
-log.output <- function(filename=log.variables$filename, console=log.variables$console) {
-	log.variables$console <<- console
-	log.variables$filename <<- filename
+logger.setUseConsole <- function(console, stderr=TRUE) {
+	.utils.logger$console <- console
+	.utils.logger$stderr <- stderr
+}
+
+##' Configure logging output filename.
+##' 
+##' The name of the file where the logging information should be written to.
+##'
+##' @param filename the file to send the log messages to (or NA to not write to file)
+##' @export
+##' @author Rob Kooper
+##' @examples
+##' \dontrun{
+##' logger.setOutputFile("pecan.log")
+##' }
+logger.setOutputFile <- function(filename) {
+	.utils.logger$filename <- filename
+}
+
+##' Configure wheter severe should quit.
+##' 
+##' The default is for a non-interactive session to quit. Setting this to false is
+##' especially useful for running tests when placed in \codePinst/tests/test.<fn>.R}, 
+##' but is not passed from \code{tests/run.all.R}.
+##'
+##' @param severeQuits should R quit on a severe error.
+##' @export
+##' @author Rob Kooper
+##' @examples
+##' \dontrun{
+##' logger.setQuitOnSevere(FALSE)
+##' }
+logger.setQuitOnSevere <- function(severeQuits) {
+	.utils.logger$quit = severeQuits
 }

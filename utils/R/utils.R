@@ -10,6 +10,65 @@
 # Small, miscellaneous functions for use throughout PECAn
 #--------------------------------------------------------------------------------------------------#
 
+#--------------------------------------------------------------------------------------------------#
+##' return MstMIP variable as ncvar
+##'
+##' returns a MstMIP variable as a ncvar based on name and other parameters
+##' passed in.
+##'
+##' @title MstMIP variable
+##' @export
+##' @param name name of variable
+##' @param lat latitude if dimension requests it
+##' @param lon longitude if dimension requests it
+##' @param time time if dimension requests it
+##' @param nsoil nsoil if dimension requests it
+##' @return ncvar based on MstMIP definition
+##' @author Rob Kooper
+mstmipvar <- function(name, lat=NA, lon=NA, time=NA, nsoil=NA, silent=FALSE) {
+  data(mstmip_vars, package="PEcAn.utils")
+  var <- mstmip_vars[mstmip_vars$Variable.Name==name,]
+  dims <- list()
+
+  if (nrow(var) == 0) {
+    data(mstmip_local, package="PEcAn.utils")
+    var <- mstmip_local[mstmip_local$Variable.Name==name,]
+    if (nrow(var) == 0) {
+      if (!silent) {
+        logger.info("Don't know about variable", name, " in mstmip_vars in PEcAn.utils")
+      }
+      if (is.na(time)) {
+        time <- ncdim_def(name="time", units="days since 1900-01-01 00:00:00", vals=1:365, calendar="standard", unlim=TRUE)
+      }
+      return(ncvar_def(name, "", list(time), -999, name))
+    }
+  }
+
+  for(i in 1:4) {
+    vd <- var[[paste0('dim', i)]]
+    if (vd == 'lon' && !is.na(lon)) {
+      dims[[length(dims)+1]] <- lon
+    } else if (vd == 'lat' && !is.na(lat)) {
+      dims[[length(dims)+1]] <- lat
+    } else if (vd == 'time' && !is.na(time)) {
+      dims[[length(dims)+1]] <- time
+    } else if (vd == 'nsoil' && !is.na(nsoil)) {
+      dims[[length(dims)+1]] <- nsoil
+    } else if (vd == 'na') {
+      # skip
+    } else {
+      if (!silent) {
+        logger.info("Don't know dimension for", vd, "for variable", name)
+      }
+    }
+  }
+  ncvar <- ncvar_def(name, as.character(var$Units), dims, -999)
+  if (var$Long.name != 'na') {
+    ncvar$longname <- as.character(var$Long.name)
+  }
+  return(ncvar)
+}
+
 
 #--------------------------------------------------------------------------------------------------#
 ##' left padded by zeros up to a given number of digits.
@@ -58,8 +117,7 @@ zero.truncate <- function(y) {
 ##' @author Shawn Serbin
 #--------------------------------------------------------------------------------------------------#
 rsync <- function(args, from, to, pattern='') {
-  print(paste('rsync',' ', args,' ', from, pattern, ' ', to, sep = ''))
-  system(paste('rsync',' ', args,' ', from, pattern, ' ', to, sep = ''), intern=TRUE )
+  system(paste0('rsync',' ', args,' ', from, pattern, ' ', to), intern=TRUE )
 }
 #==================================================================================================#
 
@@ -71,6 +129,7 @@ rsync <- function(args, from, to, pattern='') {
 ##' @param host 
 ##' @param ... 
 ##' @param args 
+##' @export
 #--------------------------------------------------------------------------------------------------#
 ssh <- function(host, ..., args=''){
   if(host == 'localhost'){
@@ -86,7 +145,7 @@ ssh <- function(host, ..., args=''){
 #--------------------------------------------------------------------------------------------------#
 ##' Convert vector to comma delimited string
 ##'
-##' ## vecpaste, turns vector into comma delimited string fit for SQL statements.
+##' vecpaste, turns vector into comma delimited string fit for SQL statements.
 ##' @title vecpaste
 ##' @param x vector
 ##' @return comma delimited string
@@ -98,38 +157,22 @@ vecpaste <- function(x) paste(paste("'", x, "'", sep=''), collapse=',')
 #--------------------------------------------------------------------------------------------------#
 ##' returns an id representing a model run
 ##'
-##' for use in model input files and indices
+##' Provides a consistent method of naming runs; for use in model input files and indices
 ##' @title Get Run ID
-##' @param run.type 
-##' @param index 
-##' @param trait 
-##' @param pft.name 
+##' @param run.type character, can be any character; currently "SA" is used for sensitivity analysis, "ENS" for ensemble run.
+##' @param index unique index for different runs, e.g. integer counting members of an 
+##' ensemble or a quantile used to which a trait has been perturbed for sensitivity analysis   
+##' @param trait name of trait being sampled (for sensitivity analysis)
+##' @param pft.name name of PFT (value from pfts.names field in database)
 ##' @return id representing a model run
 ##' @export
+##' @examples
+##' get.run.id("ENS", left.pad.zeros(1, 5))
+##' get.run.id("SA", round(qnorm(-3),3), trait = "Vcmax")
+##' @author Carl Davidson, David LeBauer
 #--------------------------------------------------------------------------------------------------#
-get.run.id <- function(run.type, index, trait='', pft.name=''){
-  result <- run.type
-  if (pft.name != "") {
-    if (result != "") {
-      result <- paste(result, pft.name, sep='-')
-    } else {
-      result <- pft.name
-    }
-  }
-  if (trait != "") {
-    if (result != "") {
-      result <- paste(result, trait, sep='-')
-    } else {
-      result <- trait
-    }
-  }
-  if (index != "") {
-    if (result != "") {
-      result <- paste(result, index, sep='-')
-    } else {
-      result <- index
-    }
-  }
+get.run.id <- function(run.type, index, trait = NULL, pft.name = NULL){
+  result <- paste(c(run.type, pft.name, trait, index), collapse = "-")
   return(result)
 }
 #==================================================================================================#
@@ -164,64 +207,6 @@ listToXml <- function(item, tag){
 #==================================================================================================#
 
 
-#--------------------------------------------------------------------------------------------------#
-##' Take n random samples from prior
-##'
-##' @title Sample from prior 
-##' @param distn 
-##' @param parama 
-##' @param paramb 
-##' @param n number of samples to return
-##' @return vector with n random samples from prior
-##' @export
-##' @seealso \{code{\link{get.sample}}
-#--------------------------------------------------------------------------------------------------#
-pr.samp <- function(distn, parama, paramb, n) {
-    do.call(paste('r', distn, sep=""), list(n, parama, paramb))
-}
-#==================================================================================================#
-
-
-#--------------------------------------------------------------------------------------------------#
-##' Take n random samples from prior
-##'
-##' Like pr.samp, with prior as a single input
-##' @title Get Samples
-##' @param prior data.frame with distn, parama, paramb
-##' @param n number of samples to return
-##' @return vector with n random samples from prior
-##' @seealso \link{pr.samp}
-##' @export
-#--------------------------------------------------------------------------------------------------#
-get.sample <- function(prior, n) {
-  do.call(paste('r', prior$distn, sep=""), list(n, prior$parama, prior$paramb))
-}
-#==================================================================================================#
-
-#--------------------------------------------------------------------------------------------------#
-##' Calculates density at n points across the range of a parameter
-##'
-##' For a distribution and parameters, return the density for values ranging from alpha to 1-alpha 
-##' @title Calculate densities
-##' @param distn distribution
-##' @param parama parameter
-##' @param paramb parameter
-##' @param n length of vector to be returned
-##' @param alpha sets range at which the distribution will be evaluated (e.g. from alpha to 1-alpha)
-##' @return dataframe with equally spaced x values and the corresponding densities
-##' @export
-##' @author David LeBauer
-pr.dens <- function(distn, parama, paramb, n = 1000, alpha = 0.001) {
-  alpha <- ifelse(alpha < 0.5, alpha, 1-alpha)
-  n <- ifelse(alpha == 0.5, 1, n)
-  range.x <- do.call(paste('q', distn, sep = ""), list(c(alpha, 1-alpha), parama, paramb))
-  seq.x   <- seq(from = range.x[1], to = range.x[2], length.out = n)
-  dens.df <- data.frame(x = seq.x,
-                        y = do.call(paste('d', distn, sep=""),
-                          list(seq.x, parama, paramb)))
-  return(dens.df)
-}
-#==================================================================================================#
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -459,85 +444,7 @@ capitalize <- function(x) {
 #==================================================================================================#
 
 #--------------------------------------------------------------------------------------------------#
-##' Reads output from model ensemble
-##'
-##' Reads output for an ensemble of length specified by \code{ensemble.size} and bounded by \code{start.year} and \code{end.year}
-##' @title Read ensemble output
-##' @return a list of ensemble model output 
-##' @param ensemble.size the number of ensemble members run
-##' @param outdir directory with model output to use in ensemble analysis
-##' @param start.year first year to include in ensemble analysis
-##' @param end.year last year to include in ensemble analysis
-##' @param variables targe variables for ensemble analysis
-##' @param model ecosystem model run
-##' @export
-#--------------------------------------------------------------------------------------------------#
-read.ensemble.output <- function(ensemble.size, outdir, 
-                                 start.year, end.year,variables, model){
 
-  ensemble.output <- list()
-  for(ensemble.id in 1:ensemble.size) {
-    run.id <- get.run.id('ENS', left.pad.zeros(ensemble.id, 5))#log10(ensemble.size)+1))
-    print(run.id)
-      ensemble.output[[ensemble.id]] <- sapply(read.output(run.id, outdir, start.year, end.year,variables,model),mean,na.rm=TRUE)
-  }
-  return(ensemble.output)
-}
-#==================================================================================================#
-
-
-#--------------------------------------------------------------------------------------------------#
-##' Reads output of sensitivity analysis runs
-##'
-##' 
-##' @title Read Sensitivity Analysis output 
-##' @return dataframe with one col per quantile analysed and one row per trait,
-##'  each cell is a list of AGB over time
-##' @param traits model parameters included in the sensitivity analysis
-##' @param quantiles quantiles selected for sensitivity analysis
-##' @param outdir directory with model output to use in sensitivity analysis
-##' @param pft.name name of PFT used in sensitivity analysis (Optional)
-##' @param start.year first year to include in sensitivity analysis 
-##' @param end.year last year to include in sensitivity analysis
-##' @param read.output model specific read.output function
-##' @export
-#--------------------------------------------------------------------------------------------------#
-read.sa.output <- function(traits, quantiles, outdir, pft.name='', 
-                           start.year, end.year, variables, model){
-  
-  sa.output <- matrix(nrow = length(quantiles),
-                      ncol = length(traits),
-                      dimnames = list(quantiles, traits))
-  for(trait in traits){
-    for(quantile in quantiles){
-      if(!quantile == "50"){
-        run.id <- get.run.id('SA', round(as.numeric(quantile)/100, 3),
-                             trait = trait, pft.name = pft.name)
-        print(run.id)
-        sa.output[quantile, trait] <-
-          sapply(read.output(run.id, outdir,
-                             start.year, end.year,
-                             variables, model),
-                 mean, na.rm=TRUE)
-      } else if (quantile == "50") {
-        sa.output[quantile, trait] <- sapply(read.output(get.run.id('SA', 'median'),
-                                                         outdir,
-                                                         start.year, end.year,
-                                                         variables, model),
-                                             mean,na.rm=TRUE)
-      } ## end loop over quantiles
-    }
-  } ## end loop over traits
-  sa.output <- as.data.frame(sa.output)
-  return(sa.output)
-}
-#==================================================================================================#
-
-
-#--------------------------------------------------------------------------------------------------#
-##'
-##'
-#--------------------------------------------------------------------------------------------------#
 isFALSE <- function(x) !isTRUE(x)
 #==================================================================================================#
 
@@ -710,6 +617,45 @@ temp.settings <- function(settings.txt){
   writeLines(settings.txt, con = temp)
   settings <- readLines(temp)
   return(settings)
+}
+
+
+##' Test if function gives an error
+##' 
+##' adaptation of try that returns a logical value (FALSE if error)
+##' @title tryl
+##' @param FUN function to be evaluated for error
+##' @return FALSE if function returns error; else TRUE
+##' @export
+##' @examples
+##' tryl(1+1)
+##' # TRUE
+##' tryl(sum("a"))
+##' # FALSE
+##' @author David LeBauer
+tryl <- function(FUN){
+  out <- tryCatch(FUN, error = function(e) e)
+  ans <- !any(class(out) == "error")
+  return(ans)
+}
+
+##' load model package
+##' @title Load model package
+##' @param model name of model
+##' @return FALSE if function returns error; else TRUE
+##' @export
+##' @examples
+##' \dontrun{require.modelpkg(BioCro)}
+##' @author David LeBauer
+load.modelpkg <- function(model){
+  pecan.modelpkg <- paste0("PEcAn.", model)
+  if(!pecan.modelpkg  %in% names(sessionInfo()$otherPkgs)){
+    if(pecan.modelpkg  %in% rownames(installed.packages())) {
+      do.call(require, args = list(pecan.modelpkg))
+    } else {
+      logger.error("I can't find a package for the ", model, "model; I expect it to be named ", pecan.modelpkg)
+    }
+  }
 }
 ####################################################################################################
 ### EOF.  End of R script file.              

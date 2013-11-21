@@ -1,3 +1,4 @@
+#!/usr/bin/env Rscript
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
@@ -6,16 +7,24 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-list.of.packages <- c('car', 'chron', 'coda', 'doSNOW', 'dplR', 'emulator',
-                      'ggplot2', 'gridExtra', 'hdf5', 'Hmisc', 'kernlab',
-                      'lubridate', 'MASS', 'MCMCpack', 'mvtnorm', 'ncdf',
-                      'ncdf4', 'plotrix', 'plyr', 'randtoolbox', 'rjags',
-                      'Rmpi', 'RMySQL', 'roxygen2', 'stringr', 'testthat',
-                      'XML', 'RNCEP')
+list.of.packages <- c('abind', 'car', 'chron', 'coda', 'data.table', 'doSNOW', 'dplR', 'earth', 'emulator',
+                      'ggmap', 'ggplot2', 'gridExtra', 'Hmisc', 'kernlab',
+                      'knitr', 'lubridate', 'MASS', 'MCMCpack', 'mvtnorm', 'ncdf4',
+                      'plotrix', 'plyr', 'raster', 'randtoolbox', 'rjags',
+                      'rgdal', 'tgp', 'DBI', 'roxygen2', 'stringr', 'testthat',
+                      'XML', 'RNCEP', 'foreign', 'RCurl', 'udunits2')
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) {
   print("installing : ")
   print(new.packages)
-  install.packages(new.packages, repos="http://cran.us.r-project.org")
+  install.packages(new.packages, repos="http://cran.rstudio.com/")
 }
 
+# check for databases
+if (!any(c('RMySQL', 'RPostgreSQL') %in% installed.packages()[,"Package"])) {
+  print("No database drivers installed, please select appropriate driver")
+  print("RMySQL      : for MySQL database")
+  print("RPostgreSQL : for PostgreSQL database")
+  print("You can install the driver using the following command in R.")
+  print("install.packages('DRIVER', repos='http://cran.rstudio.com/')")
+}
