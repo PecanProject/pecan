@@ -12,7 +12,7 @@ p,h1,form,button {
 }
 
 th,td {
-    padding: 5px 10px 5px 10px;
+    padding: 0px 5px 0px 5px;
 }
 
 .spacer {
@@ -22,6 +22,7 @@ th,td {
 
 .wrap {
     width: 100%;
+    overflow: hidden;
 }
 
 .myform {
@@ -80,6 +81,10 @@ th,td {
     margin: 2px 0 5px 5px;
 }
 
+#stylized input[type=checkbox] {
+    width: auto;
+}
+
 #stylized button {
     clear: both;
     margin-left: 35px;
@@ -106,9 +111,23 @@ th,td {
 }
 
 #output {
+    float: left;
     overflow: auto;
 }
 
-#map_canvas {
-    float: left;
+#table {
+    display: table;
+}
+
+#row {
+    display: table-row;
+}
+
+#cell, #header {
+    display: table-cell;
+    padding: 0px 5px 0px 5px;
+}
+
+#header {
+    font-weight: bold;
 }

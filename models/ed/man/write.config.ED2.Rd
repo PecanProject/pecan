@@ -3,18 +3,15 @@
 \title{Write ED configuration files}
 \usage{
   write.config.ED2(defaults, trait.values, settings,
-    outdir, run.id)
+    run.id)
 }
 \arguments{
-  \item{pft}{}
+  \item{defaults}{list of defaults to process}
 
   \item{trait.samples}{vector of samples for a given trait}
 
   \item{settings}{list of settings from pecan settings
   file}
-
-  \item{outdir}{directory for config files to be written
-  to}
 
   \item{run.id}{id of run}
 }

@@ -7,13 +7,11 @@
 ## http://opensource.ncsa.illinois.edu/license.html
 ##-------------------------------------------------------------------------------
 
-data(settings, package = "PEcAn.DB")
-
 ## check database connection as condition of running tests:
-if(!grepl("Error", try(query.base.con(), silent = TRUE))){
-
-  test_that("expected tables exist",{
-    tables <- query.base("show tables;")
+test_that("expected tables exist",{
+  settings <<- xmlToList(xmlParse("pecan.xml"))
+  if(db.exists(settings$database)){
+    tables <- db.query("show tables;", params=settings$database)
     ## make sure that all tables are present:
     expect_true(all(sapply(c("citations", "citations_sites", "citations_treatments", 
                              "coppice", "counties", "covariates", "cultivars", "dbfiles", 
@@ -26,5 +24,5 @@ if(!grepl("Error", try(query.base.con(), silent = TRUE))){
                              "schema_migrations", "seeding", "sessions", "sites", "species", 
                              "traits", "treatments", "users", "variables", "workflows", 
                              "yields"), function(x) grepl(x, tables ))))
-  })
-}
+  }
+})

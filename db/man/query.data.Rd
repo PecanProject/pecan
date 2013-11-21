@@ -3,8 +3,8 @@
 \title{Query data and transform stats to SE by calling \code{\link{fetch.stats2se}};}
 \usage{
   query.data(trait, spstr,
-    extra.columns = "sites.lat, sites.lon, ",
-    con = query.base.con(settings), ...)
+    extra.columns = "sites.lat, sites.lon, ", con = NULL,
+    ...)
 }
 \arguments{
   \item{trait}{trait to query from the database}

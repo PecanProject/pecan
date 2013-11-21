@@ -1,7 +1,7 @@
-library(EnCro)
+library(BioCro)
 library(XML)
 #############Reading from the fXML file generated via web-interface######
-settings.xml<-xmlParse('./data.xml')
+settings.xml<-xmlParse('./config.xml')
 settings <- xmlToList(settings.xml)
 
 ################ Read  Year and Location Details and derive model input############
@@ -202,7 +202,3 @@ toprint<-data.frame(DAP=DAP,Leaf=Leaf,Stem=Stem,Root=Root,Sugar=Sugar,LAI=LAI,Th
 
 round(toprint,digit=2)
 write.table(toprint, file="./ooutput",append=FALSE,sep='\t')
-
-
-
-

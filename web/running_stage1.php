@@ -7,12 +7,9 @@
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
  */
-# offline mode?
-if (isset($_REQUEST['offline'])) {
-	$offline=true;
-} else {
-	$offline=false;
-}
+
+# boolean parameters
+$offline=isset($_REQUEST['offline']);
 
 // runid
 if (!isset($_REQUEST['workflowid'])) {
@@ -25,62 +22,92 @@ require("dbinfo.php");
 $connection=open_database();
 
 // get run information
-$query = "SELECT site_id, model_id, model_type, hostname, folder, advanced_edit FROM workflows, models WHERE workflows.id=$workflowid and model_id=models.id";
+$query = "SELECT folder, params FROM workflows WHERE workflows.id=$workflowid";
 $result = mysql_query($query);
 if (!$result) {
 	die('Invalid query: ' . mysql_error());
 }
 $workflow = mysql_fetch_assoc($result);
 $folder = $workflow['folder'];
-$model_type = $workflow['model_type'];
+$params = eval("return ${workflow['params']};");
 
 // check result
-$status=file($folder . DIRECTORY_SEPARATOR . "STATUS");
-if ($status === FALSE) {
-	$status = array();
+if (file_exists($folder . DIRECTORY_SEPARATOR . "STATUS")) {
+	$status=file($folder . DIRECTORY_SEPARATOR . "STATUS");
+} else {
+	$status=array();
 }
+
+// jump to right place if need be
+if (checkStatus("FINISHED") == 1) {
+	if ($offline) {
+		header( "Location: finished.php?workflowid=$workflowid&offline=offline");
+		exit;
+	} else {
+		header( "Location: finished.php?workflowid=$workflowid");
+		exit;
+	}
+}
+if (checkStatus("MODEL") == 1) {
+	if ($offline) {
+		header( "Location: running_stage3.php?workflowid=$workflowid&offline=offline");
+		exit;
+	} else {
+		header( "Location: running_stage3.php?workflowid=$workflowid");
+		exit;
+	}
+}
+
 
 // check the global status
 switch(checkStatus("CONFIG")) {
 	// No ERROR, and no endtime yet
 	case 0:
-		$nextenabled="disabled=\"disabled\"";header( "refresh:5" );
-		break;		
+		$nextenabled="disabled=\"disabled\"";
+		header( "refresh:5" );
+		break;
 	// CONFIG is complete
 	case 1:
 		$nextenabled="disabled=\"disabled\"";
-		if ($workflow['advanced_edit'] && $model_type == 'BIOCRO') {
-			if ($offline) {
-				header( "Location: sugarcane/index.php?workflowid=$workflowid&offline=offline");
+		$location = "Location: ";
+		if (isset($params['advanced_edit'])) {
+			if ($params['modeltype'] == 'BIOCRO') {
+				$location .= "sugarcane/index.php";
 			} else {
-				header( "Location: sugarcane/index.php?workflowid=$workflowid");
-			}
-		} elseif ($workflow['advanced_edit'] ) {
-			if ($offline) {
-				header( "Location: advanced_edit.php?workflowid=$workflowid&offline=offline");
-			} else {
-				header( "Location: advanced_edit.php?workflowid=$workflowid");
+				$location .= "advanced_edit.php";
 			}
 		} else {
 			chdir($folder);
-			pclose(popen('R_LIBS_USER="' . ${pecan_install} . '" R CMD BATCH workflow_stage2.R &', 'r'));
-			if ($offline) {
-				header( "Location: running_stage2.php?workflowid=$workflowid&offline=offline");
-			} else {
-				header( "Location: running_stage2.php?workflowid=$workflowid");
-			}			
+			pclose(popen('R_LIBS_USER="' . $pecan_install . '" R CMD BATCH workflow_stage2.R &', 'r'));
+			$location .= "running_stage2.php";
 		}
-		break;
+		$location .= "?workflowid=$workflowid";
+		if ($offline) {
+			$location .= "&offline=offline";	
+		}
+		header($location);
+		exit;
     // ERROR occurred
 	case 2:
-		$nextenabled="";
-		if ($offline) {
-			header( "Location: finished.php?workflowid=$workflowid&offline=offline");
-		} else {
-			header( "Location: finished.php?workflowid=$workflowid");
+		if (isset($params['email'])) {
+			$url = ($_SERVER['HTTPS'] ? "https://" : "http://");
+			$url .= $_SERVER['HTTP_HOST'] . ':' . $_SERVER['SERVER_PORT'];
+			$url .= str_replace("running_stage1.php", "failurealert.php", $_SERVER["SCRIPT_NAME"]);
+			if ($offline) {
+				$url .= "?workflowid=${workflowid}&offline=offline";
+			} else {
+				$url .= "?workflowid=${workflowid}";
+			}
+			mail($params['email'], "Workflow has failed", "You can find the results on $url");
 		}
+		$nextenabled="";
 		mysql_query("UPDATE workflows SET finished_at=NOW() WHERE id=${workflowid} AND finished_at IS NULL");
-		break;
+		if ($offline) {
+			header( "Location: failurealert.php?workflowid=$workflowid&offline=offline");
+		} else {
+			header( "Location: failurealert.php?workflowid=$workflowid");
+		}
+		exit;
 }
 
 ?>
@@ -100,8 +127,6 @@ switch(checkStatus("CONFIG")) {
     	$("#stylized").height($(window).height() - 5);
     	$("#output").height($(window).height() - 1);
     	$("#output").width($(window).width() - $('#stylized').width() - 5);
-
-    	$('#log').scrollTop($('#log')[0].scrollHeight);
 	}
 
 	function prevStep() {
@@ -123,26 +148,28 @@ switch(checkStatus("CONFIG")) {
 <?php if ($offline) { ?>
 			<input name="offline" type="hidden" value="offline">
 <?php } ?>
-			<input type="hidden" name="siteid" value="<?=$workflow['site_id']?>" />
-			<input type="hidden" name="modelid" value="<?=$workflow['model_id']?>" />
-			<input type="hidden" name="modeltype" value="<?=$workflow['model_type']?>" />
-			<input type="hidden" name="hostname" value="<?=$workflow['hostname']?>" />
-		</form>
-		
-		<form id="formemail" method="POST" action="sendemail.php">
-		<input type="hidden" name="workflowid" value="<?=$workflowid?>" />
+			<?php foreach ($params as $k => $v) {
+				if (is_array($v)) {
+					foreach($v as $x) {
+						echo "<input type=\"hidden\" name=\"${k}[]\" value=\"${x}\" />\n";
+					}
+				} else {
+					echo "<input type=\"hidden\" name=\"${k}\" value=\"${v}\" />\n";
+				}
+			} ?>
 		</form>
 		
 		<form id="formnext" method="POST" action="finished.php">
 <?php if ($offline) { ?>
 			<input name="offline" type="hidden" value="offline">
 <?php } ?>
-		<input type="hidden" name="workflowid" value="<?=$workflowid?>" />
+			<input type="hidden" name="workflowid" value="<?=$workflowid?>" />
+		</form>
+
 		<span id="error" class="small">&nbsp;</span>
 		<input id="prev" type="button" value="Prev" onclick="prevStep();" />
 		<input id="next" type="button" value="Next" onclick="nextStep();" <?=$nextenabled?>/>		
 		<div class="spacer"></div>
-		</form>
 	</div>
 	<div id="output">
 	<h2>Execution Status</h2>
@@ -152,12 +179,6 @@ switch(checkStatus("CONFIG")) {
 			<th>Start Time</th>
 			<th>End Time</th>
 			<th>Status</th>
-		</tr>
-		<tr>
-			<th>setup</th>
-			<td><?=startTime("SETUP");?></td>
-			<td><?=endTime("SETUP");?></td>
-			<td><?=status("SETUP");?></td>
 		</tr>
 		<tr>
 			<th>fia2ed</th>
@@ -202,17 +223,6 @@ switch(checkStatus("CONFIG")) {
 			<td><?=status("FINISHED");?></td>
 		</tr>
 	</table>
-	<hr/>
- 	<h2>Output from PEcAn</h2>
- 	<textarea id="log" cols="80" rows="10" readonly="readonly">
-<?php
-  	foreach(scandir($folder . DIRECTORY_SEPARATOR) as $file) {
-  		if (preg_match("/^workflow_stage.*\.Rout$/", $file) === 1) {
-  			parselog($folder . DIRECTORY_SEPARATOR . $file);
-  		}
-	}
-?>
- 	</textarea>
 	</div>
 </div>
 </body>
@@ -276,33 +286,5 @@ function status($token) {
     }
   }
   return "Waiting";
-}
-
-function parselog($filename)
-{
-	// Open the file
-	$f = fopen($filename, "rb");
-	if ($f === false) {
-		return "file does not exist.";
-	}
-
-	// read the file line by line
-	$check = false;
-	while (($buffer = fgets($f, 4096)) !== false) {
-		if ($check && ($buffer[0]==" ")) {
-			print($buffer);
-		} else if (stristr($buffer, "error") !== false) {
-			print($buffer);
-			$check = true;
-		} else if (stristr($buffer, "warn") !== false) {
-			print($buffer);
-			$check = true;
-		} else {
-			$check = false;
-		}
-	}
-
-	// Close file and return
-	fclose($f);
 }
 ?>

@@ -55,7 +55,7 @@ pda.mcmc <- function(model,chain=1,vars=NULL,jvar=NULL,params=NULL){
 
   
   ## set up priors
-  load(paste(settings$pfts$pft$outdir,"post.distns.Rdata",sep="/"))
+  load(file.path(settings$pfts$pft$outdir,"post.distns.Rdata"))
   nvar <- nrow(post.distns)
   dprior <- rprior <-list()
   for(i in 1:nvar){

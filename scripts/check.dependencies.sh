@@ -12,7 +12,7 @@
 ALL="ggplot2 randtoolbox gridExtra testthat roxygen2"
 
 # packages that are not in cran
-SKIP="(time|EnCro)"
+SKIP="(time)"
 
 # find all packages needed (require and library)
 for f in `find . -type d -name R`; do
@@ -47,10 +47,19 @@ if [ ! -z "$ALL" ]; then
   cat << EOF
 echo "list.of.packages <- c($ALL)
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]
+if('BioCro' %in% new.packages){
+  biocro <- TRUE
+  new.packages <- new.packages[!new.packages %in% "BioCro"]
+} else {
+  biocro <- FALSE
+}
 if(length(new.packages)) {
   print('installing : ')
   print(new.packages)
   install.packages(new.packages, repos='http://cran.us.r-project.org')
-} " | R --vanilla
+} 
+if(biocro){
+   devtools::install_github('BioCro', 'dlebauer')
+} | R --vanilla "
 EOF
 fi

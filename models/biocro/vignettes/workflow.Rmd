@@ -1,0 +1,45 @@
+BioCro PEcAn workflow
+======================
+
+```{r, echo=FALSE,warning=FALSE}
+require(PEcAn.all)
+```
+### Load PEcAn settings file.
+
+Open and read in settings file for PEcAn run.
+
+
+```{r, echo=FALSE,warning=FALSE}
+settings <- read.settings(system.file("extdata/pecan.biocro.xml",
+                                      package = "PEcAn.BIOCRO"))
+settings$sensitivity.analysis <- settings$ensemble
+model <- settings$model$name
+
+```
+### Run PEcAn workflow
+
+```{r, echo=FALSE,warning=FALSE,cache=TRUE}
+
+get.trait.data()        	# Query the trait database for data and priors
+
+run.meta.analysis()     	# Run the PEcAn meta.analysis
+```
+
+
+
+```{r, echo=FALSE,warning=FALSE,cache=TRUE}
+run.write.configs(model)        # Calls model specific write.configs e.g. write.config.ed.R
+## load met data
+start.model.runs(model)         # Start ecosystem model runs
+convert.outputs(model = settings$model$name, settings = settings)
+
+run.sensitivity.analysis()      # Run sensitivity analysis and variance decomposition on model output
+
+run.ensemble.analysis()		      # Run ensemble analysis on model output. 
+                                # OPTIONAL: run.ensemble.analysis(plot.timeseries=TRUE) to get an esemble 
+                                # time-series output for the target variables set in the PEcAn.xml file
+
+### PEcAn workflow run complete
+print("---------- PEcAn Workflow Complete ----------")
+#--------------------------------------------------------------------------------------------------#
+```

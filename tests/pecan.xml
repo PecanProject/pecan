@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<pecan>
+  <outdir>pecan</outdir>
+
+  <database>
+    <username>bety</username>
+    <password>bety</password>
+    <dbname>bety</dbname>
+    <host>localhost</host>
+  </database>
+
+  <pfts>
+    <pft>
+      <name>biocro.salix</name>
+    </pft>
+  </pfts>
+
+  <meta.analysis>
+    <iter>4000</iter>
+    <random.effects>FALSE</random.effects>
+    <update>TRUE</update>
+  </meta.analysis>
+
+
+  <ensemble>
+    <size>10</size>
+    <variable>LAI</variable>
+    <variable>StemBiom</variable>
+  </ensemble>
+
+  <sensitivity.analysis>
+    <quantiles>
+      <sigma>1</sigma>
+      <sigma>0</sigma>
+      <sigma>-1</sigma>
+    </quantiles>
+    <start.year>2004</start.year>
+    <end.year>2004</end.year>
+  </sensitivity.analysis>
+
+  <model>
+    <name>BIOCRO</name>
+  </model>
+  <run>
+    <dbfiles>~/.pecan/dbfiles</dbfiles>
+    <site>
+      <id>76</id>
+      <name>EBI Energy Farm</name>
+      <lat>40.08</lat>
+      <lon>-88.23</lon>
+      <met>NULL</met>
+    </site>
+    <start.date>2004-01-01 06:00:00</start.date>
+    <end.date>2005-12-31 05:59:00</end.date>
+    <host> 
+      <name>localhost</name>
+    </host>
+  </run>
+</pecan>

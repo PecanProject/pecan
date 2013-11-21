@@ -9,7 +9,7 @@
 #-------------------------------------------------------------------------------
 
 # version of pecan
-VERSION="1.2.6"
+VERSION="1.3.3"
 DATE=`date +"%Y-%m-%d"`
 
 # if no arguments passed in update all DESCRIPTION files
@@ -23,9 +23,19 @@ echo "Version   : $VERSION"
 echo "Date      : $DATE"
 
 for d in $FILES; do
+  DIR=$( dirname $d )
+
   # update DESCRIPTION file version/date/license
   echo "Modifying : $d"
   sed -i.bak -e "s/^Version: .*$/Version: $VERSION/" \
              -e "s/^Date: .*$/Date: $DATE/" \
              -e "s/^License: .*/License: FreeBSD + file LICENSE/" $d
+  if [ ! -e "${DIR}/LICENSE" ]; then
+  	if [ -e LICENSE ]; then
+  		echo "Copied LICENSE file to ${DIR}"
+  		cp LICENSE ${DIR}
+  	else
+  		echo "Missing LICENSE file in ${DIR}"
+  	fi
+  fi
 done

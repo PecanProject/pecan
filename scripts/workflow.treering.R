@@ -7,7 +7,6 @@ require(PEcAn.all)
 # Open and read in settings file for PEcAn run.
 settings <- read.settings("~/inputs/sylvania.SIPNET.xml")
 #--------------------------------------------------------------------------------------------------#
-model = ifelse("model" %in% names(settings),settings$model$name,"ED2")
 
 plot.data <- read.plot("~/inputs/plot/Sylvania_Plot_Sam.csv")
 inc.dataV <- read.velmex("~/inputs/plot/velmex/")
@@ -20,14 +19,23 @@ diametergrow(fd$diameters,fd$increments,fd$survival)
 plot2AGB(unit.conv=0.02)
 
 ## run ensemble
-#get.trait.data()          # Query the trait database for data and priors
-#run.meta.analysis()     	# Run the PEcAn meta.analysis
-run.write.configs(model)        # Calls model specific write.configs e.g. write.config.ed.R
-start.model.runs(model)         # Start ecosystem model runs
-#get.model.output(model)         # Get results of model runs
+# Query the trait database for data and priors
+#settings$pfts <- get.trait.data(settings$pfts, settings$run$dbfiles, settings$database, settings$meta.analysis$update)
 
-sda.particle(model)
+# Run the PEcAn meta.analysis
+#run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database)
 
-sda.enkf(model)
+# Calls model specific write.configs e.g. write.config.ed.R
+run.write.configs(settings$model$name, settings$bety$write)
+
+# Start ecosystem model runs
+start.model.runs(settings$model$name, settings$bety$write)
+
+# Get results of model runs
+get.model.output(settings$model$name, settings)
+
+sda.particle(settings$model$name)
+
+sda.enkf(settings$model$name)
 
 #--------------------------------------------------------------------------------------------------#

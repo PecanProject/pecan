@@ -26,7 +26,7 @@ pecan.ma.summary <- function(mcmc.object, pft,outdir, threshold=1.1){
     threshold = settings$meta.analysis$threshold
   }
   fail = FALSE
-  sink(file = paste(outdir,'meta-analysis.log',sep=""), append = TRUE, split = TRUE)
+  sink(file = file.path(outdir,'meta-analysis.log'), append = TRUE, split = TRUE)
   for (trait in names(mcmc.object)){
     ## reordering maparms so that beta.o etc not sent to end
     .maparms <- names(mcmc.object[[trait]][1,][1][[1]])
@@ -34,7 +34,7 @@ pecan.ma.summary <- function(mcmc.object, pft,outdir, threshold=1.1){
     maparms <- .maparms[ c(which(.maparms %in% .parms), which(!.maparms %in% .parms))]
 
     ## plots for mcmc diagnosis
-    pdf(paste(outdir, 'ma.summaryplots.', pft, '.', trait, '.pdf', sep = ''))
+    pdf(file.path(outdir, paste('ma.summaryplots.', trait, '.pdf', sep = '')))
     for (i in maparms) {
       plot(mcmc.object[[trait]][,i], trace = FALSE, density = TRUE,
            main = paste('summary plots of',i ,'for', pft, trait))

@@ -7,11 +7,14 @@
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
  */
-// offline mode?
-if (isset($_REQUEST['offline'])) {
-	$offline=true;
+
+# boolean parameters
+$userok=isset($_REQUEST['userok']);
+$offline=isset($_REQUEST['offline']);
+if (isset($_REQUEST['advanced_edit'])) {
+	$advanced_edit = "checked";
 } else {
-	$offline=false;
+	$advanced_edit = "";
 }
 
 if (!isset($_REQUEST['siteid'])) {
@@ -26,6 +29,29 @@ if (!isset($_REQUEST['hostname'])) {
 	die("Need a hostname.");
 }
 $hostname=$_REQUEST['hostname'];
+if (isset($_REQUEST['psscss'])) {
+	$psscss = $_REQUEST['psscss'];
+} else {
+	$psscss = "";
+}
+
+# parse original form data
+$selected_pfts = array();
+if (isset($_REQUEST['pft'])) {
+	$selected_pfts = $_REQUEST['pft'];
+}
+$startdate = "2006/01/01";
+if (isset($_REQUEST['start'])) { 
+	$startdate=$_REQUEST['start'];
+}
+$enddate = "2006/12/31";
+if (isset($_REQUEST['end'])) { 
+	$enddate=$_REQUEST['end'];
+}
+$email="";
+if (isset($_REQUEST['email'])) {
+	$email=$_REQUEST['email'];
+}
 
 // system parameters
 require("system.php");
@@ -64,12 +90,16 @@ $model = mysql_fetch_assoc($result);
 	window.onresize = resize;
 	window.onload = resize;
 	
-	function resize() {
-		$("#stylized").height($(window).height() - 5);
-		$("#map_canvas").height($(window).height() - 1);
-		$("#map_canvas").width($(window).width() - $('#stylized').width() - 5);
-	}
-	
+    function resize() {
+        if ($("#stylized").height() < $(window).height()) {
+            $("#stylized").height($(window).height() - 5);
+        } else {
+            $("#stylized").height(Math.max($("#stylized").height(), $("#output").height()));
+        }
+        $("#output").height($("#stylized").height());
+        $("#output").width($(window).width() - $('#stylized').width() - 5);
+    }
+
 	function validate() {
 		// check PFTs
 		if ($("#pft").val() == null) {
@@ -78,9 +108,7 @@ $model = mysql_fetch_assoc($result);
 			return;
 		}
 
-<?php
-if ($model["model_type"] == "ED2") {
-?>
+<?php if (($model["model_type"] == "ED2") || ($model["model_type"] == "BIOCRO")) { ?>
 		// check dates
 		var start = checkDate($("#start").val(), "Start");
 		if (!start) {
@@ -95,32 +123,26 @@ if ($model["model_type"] == "ED2") {
 			$("#error").html("End date should be after start date.");
 			return;
 		}
+<?php } ?>
 
+<?php if (($model["model_type"] == "ED2") || ($model["model_type"] == "SIPNET")) { ?>
 		// check MET
 		if ($("#met").val() == null) {
 			$("#next").attr("disabled", "disabled");
 			$("#error").html("Select a weather file to continue");
 			return;
 		}
+<?php } ?>
 
+<?php if ($model["model_type"] == "ED2") { ?>
 		// check psscss
 		if ($("#psscss").val() == null) {
 			$("#next").attr("disabled", "disabled");
 			$("#error").html("Select site files to continue");
 			return;
 		}
-<?php
-} else if ($model["model_type"] == "SIPNET") {
-?>
-		// check MET
-		if ($("#met").val() == null) {
-			$("#next").attr("disabled", "disabled");
-			$("#error").html("Select a weather file to continue");
-			return;
-		}
-<?php
-}
-?>
+<?php } ?>
+
 		// all is OK
 		$("#next").removeAttr("disabled");       
 		$("#error").html("&nbsp;");
@@ -160,8 +182,7 @@ if ($model["model_type"] == "ED2") {
 	$(document).ready(function () {
 		validate();
 	});
-	
-<?php } else {?>
+<?php } else { ?>
     google.load("maps", "3",  {other_params:"sensor=false"});
 	google.setOnLoadCallback(mapsLoaded);
     
@@ -173,7 +194,7 @@ if ($model["model_type"] == "ED2") {
 			mapTypeId: google.maps.MapTypeId.ROADMAP
 		}
 
-		var map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+		var map = new google.maps.Map(document.getElementById("output"), myOptions);
 
 		// create a marker
 		var marker = new google.maps.Marker({position: latlng, map: map});
@@ -191,21 +212,30 @@ if ($model["model_type"] == "ED2") {
 <body>
 <div id="wrap">
 	<div id="stylized">
+		<h1>Selected Site</h1>
+		<p>Set parameters for the run.</p>
+
 		<form id="formprev" method="POST" action="selectsite.php">
 <?php if ($offline) { ?>
 			<input name="offline" type="hidden" value="offline">
 <?php } ?>
+			<input type="hidden" name="hostname" value="<?=$hostname?>" />
+			<input type="hidden" name="modelid" value="<?=$modelid?>" />
+			<input type="hidden" name="modeltype" value="<?=$model["model_type"]?>" />
+			<input type="hidden" name="siteid" value="<?=$siteid?>" />
 		</form>
+
 		<form id="formnext" method="POST" action="runpecan.php">
 <?php if ($offline) { ?>
-			<input name="offline" type="hidden" value="offline">
+			<input name="offline" type="hidden" value="on">
+<?php } ?>
+<?php if ($userok) { ?>
+			<input name="userok" type="hidden" value="on">
 <?php } ?>
 			<input type="hidden" name="siteid" value="<?=$siteid?>" />
 			<input type="hidden" name="modelid" value="<?=$modelid?>" />
 			<input type="hidden" name="modeltype" value="<?=$model["model_type"]?>" />
 			<input type="hidden" name="hostname" value="<?=$hostname?>" />
-			<h1>Selected Site</h1>
-			<p>Set parameters for the run.</p>
 
 			<label>PFT</label>
 			<select id="pft" name="pft[]" multiple size=5 onChange="validate();">
@@ -222,104 +252,99 @@ if (!$result) {
 $pfts = "";
 while ($row = @mysql_fetch_assoc($result)){
 	$name=str_replace(strtolower($model["model_type"]) . ".", "", $row['name']);
-	print "<option value='{$row['name']}'>$name</option>\n";
+	if (in_array($row['name'], $selected_pfts)) {
+		print "				<option value='{$row['name']}' selected>$name</option>\n";
+	} else {
+		print "				<option value='{$row['name']}'>$name</option>\n";
+	}
 }
+print "			</select>\n";
+print "			<div class=\"spacer\"></div>\n";
+
+if (($model["model_type"] == "ED2") || ($model["model_type"] == "BIOCRO")) {
 ?>
-			</select>
+			<label>Start Date</label>
+			<input type="text" name="start" id="start" value="<?= $startdate ?>" onChange="validate();"/>
 			<div class="spacer"></div>
-			
+			<label>End Date</label>
+			<input type="text" name="end" id="end" value="<?= $enddate ?>" onChange="validate();"/>
+			<div class="spacer"></div>
 <?php
-if ($model["model_type"] == "ED2") {
-?>
-            <label>Start Date</label>
-            <input type="text" name="start" id="start" value="2006/01/01" onChange="validate();"/>
-            <div class="spacer"></div>
+}
 
-            <label>End Date</label>
-            <input type="text" name="end" id="end" value="2006/12/31" onChange="validate();"/>
-            <div class="spacer"></div>
+# query to get a file for a host
+$query="SELECT inputs.file_id, name, start_date, end_date" .
+       " FROM inputs, dbfiles, machines" .
+       " WHERE inputs.site_id=$siteid" .
+       " AND inputs.file_id=dbfiles.container_id" .
+       " AND machines.hostname='${_REQUEST['hostname']}'" .
+       " AND dbfiles.machine_id=machines.id";
 
-			<label>Weather Data file</label>
-			<select id="met" name="met" onChange="validate();">
-<?php
-        // setup default part of query
-	$query="SELECT dbfiles.file_id, name, start_date, end_date FROM inputs, dbfiles, machines WHERE inputs.site_id=$siteid AND inputs.file_id=dbfiles.file_id AND machines.hostname='${_REQUEST['hostname']}' AND dbfiles.machine_id=machines.id";
+if (($model["model_type"] == "ED2") || ($model["model_type"] == "SIPNET")) {
+	print "			<label>Weather Data file</label>\n";
+	print "			<select id=\"met\" name=\"met\" onChange=\"validate();\">\n";
 
 	// get met data
-	$result = mysql_query($query . " AND inputs.format_id=12");
+	
+	if ($model["model_type"] == "ED2") {
+		$result = mysql_query($query . " AND inputs.format_id=12");
+	} else if ($model["model_type"] == "SIPNET") {
+		$result = mysql_query($query . " AND inputs.format_id=24");
+	}
+	
 	if (!$result) {
 		die('Invalid query: ' . mysql_error());
 	}
 	while ($row = @mysql_fetch_assoc($result)){
 		$row['name']="Weather " . substr($row['start_date'], 0, 4) . "-" . substr($row['end_date'], 0, 4);
-		print "<option value='{$row['file_id']}'>{$row['name']}</option>\n";
+		print "				<option value='{$row['file_id']}'>{$row['name']}</option>\n";
 	}
-?>
-			</select>
-			<div class="spacer"></div>
+	print "			</select>\n";
+	print "			<div class=\"spacer\"></div>\n";
+}
 
-            <label>Site files (Site/PSS/CSS)</label>
-            <select id="psscss" name="psscss" onChange="validate();">
-<?php 
+if ($model["model_type"] == "ED2") {
+	print "			<label>Site files (Site/PSS/CSS)</label>\n";
+	print "			<select id=\"psscss\" name=\"psscss\" onChange=\"validate();\">\n";
+
 	// get psscss data
 	$result = mysql_query($query . " AND inputs.format_id=10");
 	if (!$result) {
 		die('Invalid query: ' . mysql_error());
 	}
 	while ($row = @mysql_fetch_assoc($result)){
-		print "<option value='{$row['file_id']}'>{$row['name']}</option>\n";
+		if ($psscss == $row['file_id']) {
+			print "			<option value='{$row['file_id']}' selected>{$row['name']}</option>\n";
+		} else {
+			print "			<option value='{$row['file_id']}'>{$row['name']}</option>\n";
+		}
 	}
-	print "<option value='FIA'>Use FIA</option>\n";
-?>
-            </select>
-            <div class="spacer"></div>
-
-<?php
-} else if ($model["model_type"] == "SIPNET") {
-        // setup default part of query
-        $query="SELECT dbfiles.file_id, name, start_date, end_date FROM inputs, dbfiles, machines WHERE inputs.site_id=$siteid AND inputs.file_id=dbfiles.file_id AND machines.hostname='${_REQUEST['hostname']}' AND dbfiles.machine_id=machines.id";
-?>
-
-			<label>Weather Data file</label>
-			<select id="met" name="met" onChange="validate();">
-<?php
-        // get met data
-        $result = mysql_query($query . " AND inputs.format_id=24");
-        if (!$result) {
-                die('Invalid query: ' . mysql_error());
-        }
-        while ($row = @mysql_fetch_assoc($result)){
-                $row['name']="Weather " . substr($row['start_date'], 0, 4) . "-" . substr($row['end_date'], 0, 4);
-                print "<option value='{$row['file_id']}'>{$row['name']}</option>\n";
-        }
-?>
-                        </select>
-                        <div class="spacer"></div>
-<?php
-} else if ($model["model_type"] == "BIOCRO") {
-?>
-            <label>Start Date</label>
-            <input type="text" name="start" id="start" value="2006/01/01" onChange="validate();"/>
-            <div class="spacer"></div>
-
-            <label>End Date</label>
-            <input type="text" name="end" id="end" value="2006/12/31" onChange="validate();"/>
-            <div class="spacer"></div>
-<?php
+	if ($psscss == "FIA") {
+		print "			<option value='FIA' selected>Use FIA</option>\n";
+	} else {
+		print "			<option value='FIA'>Use FIA</option>\n";
+	}
+	print "			</select>\n";
+	print "			<div class=\"spacer\"></div>\n";
 }
-?>			
-			<label>Advanced edit</label>
-			<input id="advanced_edit" name="advanced_edit" type="checkbox" />	
-            <div class="spacer"></div>
+?>
+
+			<label title="Used to send email when the run is finished.">Email</label>
+			<input id="email" name="email" type="text" value="<?= $email ?>"/>	
+			<div class="spacer"></div>
+
+			<label title="Allows to edit files generated by PEcAn before model executions.">Advanced edit</label>
+			<input id="advanced_edit" name="advanced_edit" type="checkbox" <?= $advanced_edit ?>/>	
+			<div class="spacer"></div>
 
 			<p></p>
-			<span id="error" class="small"></span>
+			<span id="error" class="small">&nbsp;</span>
 			<input id="prev" type="button" value="Prev" onclick="prevStep();" />
-			<input id="next" type="button" value="Next" onclick="nextStep();" />		
+			<input id="next" type="button" value="Next" onclick="nextStep();" <?php if (!$userok) echo "disabled" ?>/>		
 			<div class="spacer"></div>
 		</form>
 	</div>
-	<div id="map_canvas">
+	<div id="output">
 		name : <b><?=$siteinfo["sitename"]?></b><br/>
 		address : <?=$siteinfo["city"]?>, <?=$siteinfo["country"]?><br/>
 		location : <?=$siteinfo["lat"]?>, <?=$siteinfo["lon"]?><br/>

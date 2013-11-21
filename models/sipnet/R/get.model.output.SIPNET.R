@@ -17,21 +17,13 @@
 ##' 
 ##' @import PEcAn.utils
 ##' @export
-##'
-
-### *** THIS WHOLE FUNCTION SHOULD BE MADE INTO A GENERIC CASE IN UTILS THAT JUST HAS A FEW MODEL SPECIFIC PIECES OF INFO PASSED TO IT *** 
-
-get.model.output.SIPNET <- function(){
+get.model.output.SIPNET <- function(settings) {
 
   model="SIPNET"
   
   ### Get model output on the localhost
   if(settings$run$host$name == 'localhost'){
-
-    olddir <- getwd()
-    setwd(settings$outdir)
-    get.results(model)
-    setwd(olddir) 
+    get.results(settings)
     
   } else {
 

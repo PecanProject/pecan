@@ -1,23 +1,22 @@
 \name{read.output}
 \alias{read.output}
-\title{Read output}
+\title{Read model output}
 \usage{
-  read.output(run.id, outdir, start.year = NA,
+  read.output(runid, outdir, start.year = NA,
     end.year = NA, variables = "GPP")
 }
 \arguments{
-  \item{run.id}{the id distiguishing the model run}
+  \item{runid}{the id distiguishing the model run.}
 
   \item{outdir}{the directory that the model's output was
   sent to}
 
-  \item{start.year}{}
+  \item{start.year}{first year of output to read (should be
+  greater than )}
 
-  \item{end.year}{}
+  \item{end.year}{last year of output to read}
 
-  \item{variables}{}
-
-  \item{model}{}
+  \item{variables}{variables to be read from model output}
 }
 \value{
   vector of output variable
@@ -26,8 +25,10 @@
   Reads the output of a single model run
 }
 \details{
-  Generic function to convert model output in from MsTMIP
-  units (kg m-2 s-1) to kg ha-1 y-1. Currently this
+  Generic function to convert model output from
+  model-specific format to a common PEcAn format. This
+  function uses MsTMIP variables except that units of (kg
+  m-2 d-1) are converted to kg ha-1 y-1. Currently this
   function converts Carbon fluxes: GPP, NPP, NEE,
   TotalResp, AutoResp, HeteroResp, DOC_flux, Fire_flux, and
   Stem (Stem is specific to the BioCro model) and Water
@@ -38,6 +39,6 @@
   variables} documentation
 }
 \author{
-  Michael Dietze
+  Michael Dietze, David LeBauer
 }
 

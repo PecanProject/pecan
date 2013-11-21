@@ -30,9 +30,6 @@ test_that('arrhenius scaling works', {
 })
 
 
-test_that('utility functions work as expected',{
-
-})
 test_that("vecpaste works",{
 
   ## vecpaste()
@@ -47,6 +44,14 @@ test_that("left.pad.zeros works",{
               equals("01"))
   expect_that(left.pad.zeros(100,2),
               equals("100"))
+})
+
+test_that("get.run.id works",{
+  expect_equal(get.run.id("a", "b", "c", "d"), "a-d-c-b")
+  expect_equal(get.run.id("a", "b", "c"), "a-c-b")
+  expect_equal(get.run.id("a", "b"), "a-b")
+  expect_equal(get.run.id("ENS", left.pad.zeros(1, 5)), "ENS-00001")
+  expect_equal(get.run.id("SA", round(pnorm(-3),3), trait = "Vcmax"), "SA-Vcmax-0.001")
 })
 
 test_that("summarize.result works appropriately", {
@@ -80,4 +85,9 @@ test_that("as.sequence works",{
   expect_equal(as.sequence(c("a", NA), na.rm = FALSE),
                c(1,NA))
   expect_equal(as.sequence(c(NA,NA)), c(1,1))
+})
+
+test_that("tryl returns FALSE if error, else true ", {
+  expect_true(tryl(1+1))
+  expect_true(!tryl(log("a")))
 })

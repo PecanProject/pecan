@@ -9,4 +9,5 @@
 library(testthat)
 library(PEcAn.priors)
 
+logger.setQuitOnSevere(FALSE)
 test_package("PEcAn.priors")
