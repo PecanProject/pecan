@@ -514,9 +514,8 @@ check.settings <- function(settings) {
   # check/create the pft folders
   for (i in 1:length(settings$pfts)) {
     #if name tag specified not within pft, add it within a pft tag and warn the user
-    if (names(setings$pfts[i]$name)) {
-      logger.severe("Name pft tag found")
-    }
+  
+    logger.warn("Database is working 111111111111111111111111111")
     #check if name tag within pft
     if (!"name" %in% names(settings$pfts[i]$pft)) {
       logger.severe(cat("No name specified for pft of index: ", i, ", please specify name"))
