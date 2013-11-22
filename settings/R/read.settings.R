@@ -519,7 +519,13 @@ check.settings <- function(settings) {
   }
 
   # check/create the pft folders
-  for (i in 1:sum(names(unlist(settings$pfts)) == "pft.name")) {
+  for (i in 1:length(settings$pfts)) {
+    #if name tag specified not within pft, add it within a pft tag and warn the user
+  
+    #check if name tag within pft
+    if (!"name" %in% names(settings$pfts[i]$pft)) {
+      logger.severe(cat("No name specified for pft of index: ", i, ", please specify name"))
+    }
     if (is.null(settings$pfts[i]$pft$outdir)) {
       settings$pfts[i]$pft$outdir <- file.path(settings$outdir, "pft", settings$pfts[i]$pft$name)
       logger.info("Storing pft", settings$pfts[i]$pft$name, "in", settings$pfts[i]$pft$outdir)      
@@ -535,9 +541,9 @@ check.settings <- function(settings) {
       }
     }
   }
-
   # check for workflow defaults
   if(database){
+    
     if (settings$bety$write) {
       if ("model" %in% names(settings) && !'workflow' %in% names(settings)) {
         con <- db.open(settings$database)
@@ -547,6 +553,16 @@ check.settings <- function(settings) {
                          settings$run$site$id, "','", settings$model$id, "', '", settings$run$host$name, "', '",
                          settings$run$start.date, "', '", settings$run$end.date, "', '", now, "', '", now, "', '", dirname(settings$outdir), "')", sep=''), con)
           settings$workflow$id <- db.query(paste("SELECT id FROM workflows WHERE created_at='", now, "';", sep=''), con)[['id']]
+          #check to see if name of each pft in xml file is actually a name of a pft already in database
+          for (i in 1:length(settings$pfts)) {
+            nameExists = db.query( paste( "SELECT COUNT(*) FROM pfts WHERE name = '", 
+                                   settings$pfts[i]$pft$name, "';", sep=''), con)
+        
+            if(!nameExists)
+              #name not in database, throw error
+              logger.severe(cat("Pft name: ", settings$pfts[i]$pft$name, " not found in database"))
+          }
+        
           db.close(con)
         }
       }
