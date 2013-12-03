@@ -123,18 +123,24 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
     }
   }
 
-  # create launch script
-  writeLines(c("#!/bin/bash",
-             paste("mkdir -p", modeloutdir),
-             paste("cd", rundir),
-             "export GFORTRAN_UNBUFFERED_PRECONNECTED=yes",
-             settings$model$binary,
-             copyscratch,
-             clearscratch,
-             paste("cp ", file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))),
-             con=file.path(settings$rundir, run.id, "job.sh"))
+  # create launch script (which will create symlink)
+  jobsh <- readLines(con=system.file("template.job", package = "PEcAn.ED2"), n=-1)
+  
+  jobsh <- gsub('@SITE_LAT@', settings$run$site$lat, jobsh)
+  jobsh <- gsub('@SITE_LON@', settings$run$site$lon, jobsh)
+  jobsh <- gsub('@SITE_MET@', settings$run$site$met, jobsh)
+  
+  jobsh <- gsub('@SCRATCH_COPY@', copyscratch, jobsh)
+  jobsh <- gsub('@SCRATCH_CLEAR@', clearscratch, jobsh)
+  
+  jobsh <- gsub('@OUTDIR@', outdir, jobsh)
+  jobsh <- gsub('@RUNDIR@', rundir, jobsh)
+  
+  jobsh <- gsub('@BINARY@', settings$model$binary, jobsh)
+  
+  writeLines(jobsh, con=file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
-
+  
   ## Get ED2 specific model settings and put into output config xml file
   xml <- listToXml(settings$model$config.header, 'config')
   names(defaults) <- sapply(defaults, function(x) x$name)
