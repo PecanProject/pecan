@@ -7,7 +7,8 @@ library(PEcAn.data.atmosphere)
 library(BioCro)
 
 arg   <- commandArgs(trailingOnly = TRUE)
-
+rundir <- arg[1]
+outdir <- arg[2]
 if(length(arg) == 0){
     lat <- 40.08
     lon <- -88.23
