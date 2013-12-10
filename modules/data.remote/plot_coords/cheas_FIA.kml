@@ -9,27 +9,6 @@
 </Schema>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.7477129944891</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.2552667174254</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.2552667174254,45.747712994489099</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.6914759551529</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.2251759467375</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.225175946737494,45.691475955152903</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.4774634959417</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.2250001666553</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.225000166655306,45.477463495941699</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.4299195371984</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-88.4820140253253</SimpleData>
 	</SchemaData></ExtendedData>
@@ -62,13 +41,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-88.5503740152593</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-88.550374015259294,45.815555969142402</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.5237856903919</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.2292077928572</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.229207792857196,45.523785690391897</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -261,20 +233,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2753449256398</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.0946378709092</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.094637870909196,45.2753449256398</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2594332070558</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.3108951267505</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.310895126750495,45.2594332070558</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.1060503312019</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-89.0934925303859</SimpleData>
 	</SchemaData></ExtendedData>
@@ -303,24 +261,10 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2821960998807</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.4136501448972</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.413650144897204,45.2821960998807</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.4987726545628</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-89.3601368115835</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-89.360136811583502,45.498772654562799</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2726005619693</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.5737017332222</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.573701733222194,45.272600561969298</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -436,13 +380,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.270596960563</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.6896375178077</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.689637517807697,45.270596960562997</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.3315135008652</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-89.800892708254</SimpleData>
 	</SchemaData></ExtendedData>
@@ -538,13 +475,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-90.1531934564062</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-90.1531934564062,45.448980464325501</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1969693256022</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.1081738659145</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.108173865914495,45.196969325602197</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -954,6 +884,13 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="calib_infile.FUZZED_LAT">45.2953821209797</SimpleData>
+		<SimpleData name="calib_infile.FUZZED_LON">-91.1519778424171</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-91.151977842417097,45.295382120979703</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.3038305603301</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-91.086869622275</SimpleData>
 	</SchemaData></ExtendedData>
@@ -989,13 +926,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.3921762584517</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.3356561523561</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.335656152356094,46.392176258451698</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.3139630843536</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-91.2295651348194</SimpleData>
 	</SchemaData></ExtendedData>
@@ -1021,13 +951,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-91.3194728632423</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-91.319472863242297,46.706938115388901</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.6260642167198</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.3556736106631</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.355673610663104,46.626064216719797</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -1084,13 +1007,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-90.9589110297864</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-90.958911029786407,45.3742532360722</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1888544721025</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.8806864285024</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.880686428502401,45.188854472102499</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -1185,13 +1101,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2254641145496</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.9748990947368</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.974899094736799,45.225464114549602</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.5268745863882</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-90.0448375325989</SimpleData>
 	</SchemaData></ExtendedData>
@@ -1224,13 +1133,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-89.19592680031</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-89.195926800310005,45.9550927759567</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2570732688424</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.8614455260371</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.861445526037102,45.257073268842397</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -1269,13 +1171,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.3305598592328</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.3464800793527</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.346480079352702,46.3305598592328</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.4525104225003</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-88.3870316528672</SimpleData>
 	</SchemaData></ExtendedData>
@@ -1287,13 +1182,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-89.1323543408844</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-89.132354340884405,45.799232144652102</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2239946478871</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.7393465995163</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.739346599516296,45.223994647887103</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -1367,13 +1255,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1679113434048</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.5990132236966</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.599013223696602,45.167911343404803</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.6679381371653</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-90.9536202855395</SimpleData>
 	</SchemaData></ExtendedData>
@@ -1392,27 +1273,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-90.4243343148897</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-90.424334314889705,46.283926828667703</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.505204360885</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.1340889732239</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.134088973223896,45.505204360885003</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.4998122000909</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.1492417261155</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.149241726115505,45.499812200090901</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.7494933834073</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.1957458457883</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.195745845788295,45.749493383407298</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -1668,13 +1528,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2849230471177</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.3395071178427</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.3395071178427,45.284923047117701</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.6637109032791</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-89.593291739559</SimpleData>
 	</SchemaData></ExtendedData>
@@ -1780,13 +1633,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2336821258036</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.7218633662275</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.721863366227495,45.233682125803597</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.3265738673624</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-89.9425392658194</SimpleData>
 	</SchemaData></ExtendedData>
@@ -1812,13 +1658,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-89.9549940326935</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-89.954994032693506,45.302852271720703</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2024173032349</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.190983453105</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.190983453105005,45.202417303234903</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -1983,13 +1822,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1802620647378</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.4244693647663</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.424469364766296,45.180262064737803</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.2508722333355</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-90.540487178812</SimpleData>
 	</SchemaData></ExtendedData>
@@ -2116,13 +1948,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1728906508446</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.89051062375</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.890510623750004,45.1728906508446</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.2892682545141</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-90.5772696875419</SimpleData>
 	</SchemaData></ExtendedData>
@@ -2130,24 +1955,10 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1984799329029</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.6062406305539</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.606240630553899,45.198479932902899</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.384221285346</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-90.8877688400674</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-90.887768840067395,45.384221285346001</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1619812165444</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.7941184846193</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.794118484619304,45.161981216544397</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -2368,31 +2179,10 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.4839050779928</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.3912388653178</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.391238865317803,46.483905077992802</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.4273626146806</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.3138407923203</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.313840792320306,46.427362614680597</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.6360410465463</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-91.2416170564905</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-91.241617056490497,46.636041046546303</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.5699199102875</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.4137324619808</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.4137324619808,46.569919910287503</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -2529,10 +2319,10 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.7337828574159</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.1338721578818</SimpleData>
+		<SimpleData name="calib_infile.FUZZED_LAT">45.2635626472473</SimpleData>
+		<SimpleData name="calib_infile.FUZZED_LON">-91.1526715933578</SimpleData>
 	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.133872157881797,45.733782857415903</coordinates></Point>
+      <Point><coordinates>-91.152671593357795,45.263562647247298</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -2697,13 +2487,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.8013494076195</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.165189890819</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.165189890818993,45.801349407619497</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.0314948011101</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-88.5217080541703</SimpleData>
 	</SchemaData></ExtendedData>
@@ -2725,24 +2508,10 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1532806673978</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.3846161230544</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.3846161230544,45.153280667397802</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.4010205223962</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-90.0660827051651</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-90.066082705165101,46.401020522396202</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2076698019037</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.949110380917</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.949110380917006,45.207669801903698</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -2802,31 +2571,10 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.7964454521256</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.2340522319254</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.234052231925403,45.796445452125603</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.7842834488786</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.1953416087188</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.195341608718806,45.784283448878597</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.414289810857</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-88.253711269114</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-88.253711269114007,45.414289810856999</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.4445440336062</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.1077868222296</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.107786822229599,45.444544033606199</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -3040,13 +2788,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2845765990783</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.9338658858274</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.933865885827402,45.284576599078299</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.4596958775258</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-89.2507092524719</SimpleData>
 	</SchemaData></ExtendedData>
@@ -3159,13 +2900,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2858692537848</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.3646787530557</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.364678753055699,45.285869253784803</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.1196777286275</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-89.1767248000168</SimpleData>
 	</SchemaData></ExtendedData>
@@ -3275,20 +3009,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-89.8198907474191</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-89.819890747419095,45.324440943646799</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.237026108871</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.1057676245073</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.105767624507294,45.237026108871</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2247127521881</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.2156315270506</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.215631527050604,45.224712752188097</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -3425,13 +3145,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2194206676791</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.3701500016765</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.370150001676507,45.219420667679103</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.2147619596556</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-89.935576318579</SimpleData>
 	</SchemaData></ExtendedData>
@@ -3558,34 +3271,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1892427468251</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.3058108623023</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.305810862302295,45.189242746825101</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2508186340207</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.3585106036894</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.358510603689396,45.250818634020703</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1472458573971</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.415136521732</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.415136521731995,45.147245857397102</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1058326573469</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.5341892304119</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.534189230411897,45.105832657346902</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.340807412922</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-90.1975952027169</SimpleData>
 	</SchemaData></ExtendedData>
@@ -3653,13 +3338,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-90.7783464566033</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-90.778346456603302,45.255181387479396</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1755624610722</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.9144199140194</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.914419914019405,45.175562461072197</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -3747,10 +3425,17 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2056227636301</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.0814477183326</SimpleData>
+		<SimpleData name="calib_infile.FUZZED_LAT">45.2927135925865</SimpleData>
+		<SimpleData name="calib_infile.FUZZED_LON">-91.1844181647879</SimpleData>
 	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.081447718332598,45.205622763630103</coordinates></Point>
+      <Point><coordinates>-91.1844181647879,45.292713592586502</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="calib_infile.FUZZED_LAT">45.307828060735</SimpleData>
+		<SimpleData name="calib_infile.FUZZED_LON">-91.1373351292102</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-91.1373351292102,45.307828060734998</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -3831,17 +3516,10 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.2980805930343</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.3173898785538</SimpleData>
+		<SimpleData name="calib_infile.FUZZED_LAT">45.3532984204958</SimpleData>
+		<SimpleData name="calib_infile.FUZZED_LON">-91.1758351585253</SimpleData>
 	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.317389878553797,46.2980805930343</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.3032678973267</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.3036171301036</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.303617130103603,46.303267897326698</coordinates></Point>
+      <Point><coordinates>-91.175835158525302,45.353298420495797</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -3849,13 +3527,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-91.1680311707004</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-91.168031170700402,46.669017491224999</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.7266323715328</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.345931875829</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.345931875828995,46.726632371532801</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -3936,27 +3607,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.6019739964731</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.218710685896</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.218710685895999,45.601973996473099</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2791622177048</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.5747588469262</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.574758846926201,45.279162217704801</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2049917040781</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.9794025085803</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.979402508580307,45.204991704078097</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.4811220867052</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-90.579324761506</SimpleData>
 	</SchemaData></ExtendedData>
@@ -3978,20 +3628,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.4064489641474</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.3264239948359</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.326423994835906,46.406448964147401</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.4491654591757</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.1564035666023</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.156403566602293,45.449165459175703</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.473544955862</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-89.3585172839128</SimpleData>
 	</SchemaData></ExtendedData>
@@ -4006,13 +3642,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2024644742058</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.4259683236783</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.425968323678305,45.202464474205797</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.420899492823</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-90.6864288855999</SimpleData>
 	</SchemaData></ExtendedData>
@@ -4020,17 +3649,17 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="calib_infile.FUZZED_LAT">45.426535805592</SimpleData>
+		<SimpleData name="calib_infile.FUZZED_LON">-91.154181460413</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-91.154181460413,45.426535805592003</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.675054835311</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-90.8081592630777</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-90.808159263077698,46.675054835311002</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.4057443443128</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.3713903646452</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.371390364645194,46.405744344312801</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -4052,13 +3681,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-90.6854154158004</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-90.685415415800406,45.771426422027602</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.5013075198514</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.3190348163192</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.319034816319203,46.501307519851402</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -4108,13 +3730,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-91.1051012327778</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-91.105101232777798,45.797927560695697</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.5195140187725</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.3693340633777</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.369334063377707,46.519514018772497</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -4195,45 +3810,10 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.7023571965957</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.1435878552633</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.143587855263306,45.702357196595699</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.60094915521</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.1405441835644</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.140544183564401,45.600949155210003</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.4669862917789</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.0979468991499</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.097946899149903,45.466986291778902</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.3817467888451</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.2024653771751</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.202465377175102,45.381746788845099</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.3762195583833</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-88.4479409133163</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-88.447940913316302,45.376219558383298</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.823215537878</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.1848729297291</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.184872929729096,45.823215537877999</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -4248,13 +3828,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-88.3077928815107</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-88.307792881510693,45.946290435319803</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.6663054334707</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.2415172166213</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.241517216621304,45.666305433470697</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -4391,20 +3964,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2870543705981</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.7441345971625</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.7441345971625,45.287054370598099</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2870742016636</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.763410273152</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.763410273152004,45.2870742016636</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.108415257885</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-88.8676788102676</SimpleData>
 	</SchemaData></ExtendedData>
@@ -4465,13 +4024,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-89.2867804774329</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-89.286780477432899,45.3016812055983</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2943738733769</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.0099509820702</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.009950982070194,45.294373873376898</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -4594,13 +4146,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1925947912159</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.8421948210121</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.8421948210121,45.192594791215903</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.648727531032</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-89.7038634750497</SimpleData>
 	</SchemaData></ExtendedData>
@@ -4713,13 +4258,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2692210068166</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.818961311372</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.818961311371993,45.269221006816601</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.4183417610119</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-90.0849881584296</SimpleData>
 	</SchemaData></ExtendedData>
@@ -4731,13 +4269,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-90.1939991334882</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-90.193999133488205,45.447518567882902</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1581886502807</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.1270155716881</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.127015571688105,45.1581886502807</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -4958,20 +4489,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1637304757286</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.7995898851366</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.799589885136598,45.163730475728599</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1969187460672</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.7430898061832</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.743089806183207,45.196918746067198</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.3991212773568</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-90.7090645664082</SimpleData>
 	</SchemaData></ExtendedData>
@@ -5084,27 +4601,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1093746739787</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.7997159062122</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.799715906212199,45.109374673978699</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1513256102797</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.9947183771377</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.994718377137701,45.151325610279699</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.0892640686487</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.8610465995638</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.861046599563807,45.089264068648703</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.5375494548951</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-90.9426680735909</SimpleData>
 	</SchemaData></ExtendedData>
@@ -5154,24 +4650,10 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.6903093499584</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.3371433654322</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.337143365432198,46.690309349958397</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.5982152137726</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-91.02449284011</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-91.02449284011,46.598215213772598</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.4983258491659</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.3350068156437</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.335006815643695,46.498325849165902</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -5193,20 +4675,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-91.1471167925085</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-91.147116792508498,46.288486194527501</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.626859800122</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.3437923572217</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.343792357221702,46.626859800121998</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.6200895693184</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.1964670412363</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.196467041236303,45.620089569318402</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -5504,20 +4972,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.3729255247578</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.1502799941526</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.150279994152598,45.372925524757797</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.8684597396179</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.2031285989549</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.203128598954905,45.868459739617897</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.8641692463528</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-88.423431647753</SimpleData>
 	</SchemaData></ExtendedData>
@@ -5602,24 +5056,10 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.5954158467776</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.4073709425918</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.407370942591797,46.595415846777598</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.6587730958926</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-90.2606241004169</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-90.260624100416905,45.658773095892599</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.697965003583</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.3682538932169</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.368253893216902,46.697965003583001</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -5634,13 +5074,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-89.7041568957934</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-89.704156895793403,46.011021117917501</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.346218165213</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.069726704262</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.069726704261996,45.346218165213003</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -5669,13 +5102,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-88.4312529015167</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-88.4312529015167,45.588092051686402</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.622892609888</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.18252545893</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.182525458930002,45.622892609887998</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -5924,13 +5350,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.291251894635</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.2037007720845</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.203700772084503,45.291251894635003</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.017882812556</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-88.8889665542521</SimpleData>
 	</SchemaData></ExtendedData>
@@ -6015,24 +5434,10 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2592895094981</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.3810775769266</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.3810775769266,45.259289509498103</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.3182718388442</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-89.7907424882138</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-89.790742488213795,45.318271838844197</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2057341777847</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.4158068173385</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.415806817338506,45.205734177784699</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -6173,13 +5578,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-89.8203200417261</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-89.820320041726106,45.592632729737097</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2151066389267</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.8595128118834</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.859512811883405,45.215106638926699</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -6327,13 +5725,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-90.3477061167442</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-90.347706116744206,45.396184575114802</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2003552965451</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.616092971137</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.616092971136993,45.200355296545098</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -6631,6 +6022,13 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="calib_infile.FUZZED_LAT">45.3059717216803</SimpleData>
+		<SimpleData name="calib_infile.FUZZED_LON">-91.1403695159953</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-91.140369515995303,45.305971721680301</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.446308734638</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-90.7154997632998</SimpleData>
 	</SchemaData></ExtendedData>
@@ -6743,13 +6141,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.0145299832982</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.2871150031028</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.287115003102798,46.014529983298203</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.0600439418894</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-91.2560269686239</SimpleData>
 	</SchemaData></ExtendedData>
@@ -6764,38 +6155,10 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.6640404092073</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.390079828099</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.390079828099005,46.664040409207303</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.6670253341492</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.3410417863992</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.341041786399202,46.667025334149201</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.4968061932603</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-91.3095652929144</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-91.309565292914399,46.496806193260298</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.4211962388266</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.3532325447922</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.353232544792206,46.421196238826603</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.6286987412913</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.168203352405</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.168203352405001,45.628698741291302</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -6887,20 +6250,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-90.1720611695438</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-90.172061169543795,46.088913320139802</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.227952895329</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.9509863783395</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.950986378339493,45.227952895328997</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.0897565548442</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.6965242813613</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.696524281361306,45.0897565548442</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -7002,13 +6351,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2910069260841</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.5835662316706</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.583566231670602,45.291006926084101</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.3264771657562</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-88.658589769757</SimpleData>
 	</SchemaData></ExtendedData>
@@ -7107,13 +6449,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2246162200749</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.2514928233933</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.251492823393306,45.2246162200749</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.2394528728066</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-90.0588239699094</SimpleData>
 	</SchemaData></ExtendedData>
@@ -7139,13 +6474,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-90.518777119012</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-90.518777119012,46.682539925390898</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.4806744212556</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.0808043481067</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.080804348106696,45.4806744212556</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -7205,38 +6533,10 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.3981754333617</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.1339942587446</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.133994258744593,45.3981754333617</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.4720849088105</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.1306148809379</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.130614880937898,45.472084908810501</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.7197244613632</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.2033359952452</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.203335995245197,45.719724461363199</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.336479158363</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-88.2379652150747</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-88.237965215074695,45.336479158362998</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.3693924453009</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.0930117811889</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.093011781188906,45.369392445300903</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -7261,24 +6561,10 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.7450951391958</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.2541089505284</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.254108950528405,45.745095139195797</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.9071578356408</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-88.3259940822994</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-88.325994082299403,45.907157835640803</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.6489013676943</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.2440235645103</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.2440235645103,45.6489013676943</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -7310,13 +6596,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.3249798525255</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.2638033733455</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.263803373345496,45.324979852525502</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.5742564650207</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-88.6039955104266</SimpleData>
 	</SchemaData></ExtendedData>
@@ -7342,13 +6621,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-88.7949151675153</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-88.794915167515299,45.362963549418701</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2949799992411</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.6071950903484</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.607195090348398,45.2949799992411</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -7384,13 +6656,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-88.8115915285614</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-88.811591528561394,45.390024380590297</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2658264685808</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.9039610535263</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.903961053526302,45.265826468580798</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -7506,13 +6771,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2191832484861</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.2849900016918</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.284990001691796,45.219183248486097</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.0986239132371</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-89.0093395862814</SimpleData>
 	</SchemaData></ExtendedData>
@@ -7608,13 +6866,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-89.6148203232014</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-89.6148203232014,45.323228989489401</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2472180193761</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.5555560477952</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.555556047795207,45.247218019376099</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -7727,34 +6978,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-89.7905641384836</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-89.790564138483603,45.572099241579402</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2032853350961</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.606847506781</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.606847506780994,45.203285335096098</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2639029718129</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.9452880100355</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.945288010035497,45.263902971812897</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2639358522422</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.8620927409914</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.8620927409914,45.263935852242199</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.213463896824</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.001043756125</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.001043756125,45.213463896824003</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -7895,13 +7118,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-90.1502549385769</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-90.150254938576893,45.343518407762197</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2394451655909</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.1856003156229</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.185600315622906,45.239445165590901</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -8066,27 +7282,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1859530015549</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.5374627352803</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.5374627352803,45.1859530015549</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.217653474326</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.8886302407764</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.888630240776394,45.217653474325999</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1156828541335</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.9453189965823</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.945318996582301,45.115682854133503</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.5057097074268</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-90.6240516264415</SimpleData>
 	</SchemaData></ExtendedData>
@@ -8199,13 +7394,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2047400021075</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.7503027073944</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.750302707394397,45.204740002107499</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.6655822251756</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-90.5342371739331</SimpleData>
 	</SchemaData></ExtendedData>
@@ -8304,13 +7492,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.6977872947505</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.363260515507</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.363260515506994,46.697787294750498</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.663127777606</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-91.2814001217148</SimpleData>
 	</SchemaData></ExtendedData>
@@ -8336,13 +7517,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-91.2128078606033</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-91.212807860603306,46.321806824567403</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.3732872438297</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.3584020288237</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.358402028823704,46.373287243829701</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -8584,20 +7758,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.6031541650996</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.1117418305395</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.111741830539501,45.603154165099603</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.466573000423</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.1290960245462</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.1290960245462,45.466573000422997</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.3659550876128</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-88.5514965491136</SimpleData>
 	</SchemaData></ExtendedData>
@@ -8731,13 +7891,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2145967002842</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.409476267484</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.409476267483996,45.214596700284197</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.4802646561802</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-90.4584290417403</SimpleData>
 	</SchemaData></ExtendedData>
@@ -8791,13 +7944,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-88.3395130469386</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-88.339513046938606,45.595547827741399</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.6360977101973</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.2229064572693</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.222906457269303,45.636097710197298</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -8899,24 +8045,10 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.3045659132715</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.746788434514</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.746788434514002,45.304565913271503</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.5496608694447</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-89.1198287118376</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-89.119828711837599,45.5496608694447</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.291348722389</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.7439547179966</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.743954717996601,45.291348722389003</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -9025,13 +8157,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2903591647087</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.1090229913731</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.109022991373095,45.290359164708697</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.4544055640623</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-89.0551291277735</SimpleData>
 	</SchemaData></ExtendedData>
@@ -9092,20 +8217,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-89.3728134407418</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-89.372813440741794,45.533697467606601</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.228985613058</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.2924288683695</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.292428868369498,45.228985613058001</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2572259798991</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.2731121488934</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.273112148893404,45.257225979899097</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -9214,31 +8325,10 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2484982659176</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.7600381204222</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.760038120422195,45.248498265917597</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.2958115517874</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-89.7430751103761</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-89.743075110376097,45.295811551787402</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2226951151247</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.9871022809452</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.987102280945194,45.222695115124701</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2273903384177</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.0677569542251</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.067756954225104,45.227390338417699</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -9260,13 +8350,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-90.2899961970503</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-90.2899961970503,45.542288588438701</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2134609344342</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.2546031179158</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.254603117915806,45.213460934434202</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -9613,20 +8696,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1814457534902</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.8745139775</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.874513977500001,45.181445753490202</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2056919496328</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.014676649225</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.014676649224995,45.205691949632801</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.7297246969957</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-90.7673392276394</SimpleData>
 	</SchemaData></ExtendedData>
@@ -9718,10 +8787,10 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.5679961748995</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.3268318501074</SimpleData>
+		<SimpleData name="calib_infile.FUZZED_LAT">45.605610164853</SimpleData>
+		<SimpleData name="calib_infile.FUZZED_LON">-91.2220934093641</SimpleData>
 	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.326831850107396,46.567996174899498</coordinates></Point>
+      <Point><coordinates>-91.222093409364106,45.605610164852997</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -9739,31 +8808,10 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.698331177048</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.3767204649859</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.376720464985894,46.698331177047997</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.6726687326903</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-91.2119760291767</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-91.211976029176697,46.672668732690298</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.6646479289817</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.3752929963982</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.375292996398201,46.664647928981701</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.3448369214626</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.1860236581129</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.186023658112902,45.344836921462601</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -9823,13 +8871,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1195736416985</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.5691376866672</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.569137686667204,45.119573641698501</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.0931564372567</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-90.6160130098225</SimpleData>
 	</SchemaData></ExtendedData>
@@ -9851,31 +8892,10 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1985155293167</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.9347058891545</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.9347058891545,45.198515529316701</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.3687213799518</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.0728045427479</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.072804542747903,45.368721379951801</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.5698631765588</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-88.2744912976475</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-88.274491297647501,45.569863176558798</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2285263854745</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.209208563687</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.209208563687,45.228526385474503</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -9900,13 +8920,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2439629417394</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.5230649163019</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.523064916301905,45.243962941739397</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.1139991261082</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-90.2766054044956</SimpleData>
 	</SchemaData></ExtendedData>
@@ -9925,13 +8938,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-91.093649855807</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-91.093649855807001,45.324138095879697</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.6905993075155</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.2488987846808</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.248898784680804,45.690599307515498</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -10145,24 +9151,10 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.5995020309823</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.1111963834805</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.111196383480504,45.5995020309823</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.9336141572068</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-88.5390943676487</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-88.539094367648701,45.933614157206797</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.5263235367568</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.1100571940031</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.110057194003105,45.526323536756799</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -10177,13 +9169,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-88.3017881537004</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-88.3017881537004,45.365869211939</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.5288744113155</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.0866039857275</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.086603985727507,45.528874411315499</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -10355,20 +9340,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2983987075207</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.0397869244771</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.039786924477099,45.298398707520697</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2570480828517</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.9363935254175</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.9363935254175,45.257048082851703</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.112226762822</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-88.9836892479596</SimpleData>
 	</SchemaData></ExtendedData>
@@ -10415,13 +9386,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-88.9424457380597</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-88.942445738059703,45.373494504723098</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2177357890625</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.2682116603809</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.268211660380899,45.217735789062502</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -10530,13 +9494,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1866267974958</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.5716484890038</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.571648489003806,45.186626797495798</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.1893777259892</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-89.2458292387127</SimpleData>
 	</SchemaData></ExtendedData>
@@ -10635,24 +9592,10 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1860743031829</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.845170623039</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.845170623038996,45.186074303182899</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.3110797801318</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-89.8244897093484</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-89.824489709348398,45.311079780131799</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1798992542117</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.0001864938832</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.000186493883206,45.179899254211698</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -10775,20 +9718,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1450219121536</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.1718443241862</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.171844324186196,45.145021912153602</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1675871927913</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.1955684298854</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.195568429885398,45.167587192791302</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.0770871069911</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-89.9129919810162</SimpleData>
 	</SchemaData></ExtendedData>
@@ -10898,34 +9827,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-90.3094782167182</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-90.309478216718205,45.339931683797303</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.170918043156</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.3463677740239</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.346367774023904,45.170918043156</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1910843429254</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.4364893397241</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.436489339724105,45.1910843429254</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1985428822578</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.3407767952223</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.340776795222297,45.198542882257797</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.0952958350122</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.6479117303563</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.647911730356299,45.095295835012202</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -11104,10 +10005,10 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.766791206068</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.4298314384909</SimpleData>
+		<SimpleData name="calib_infile.FUZZED_LAT">45.386436072374</SimpleData>
+		<SimpleData name="calib_infile.FUZZED_LON">-91.1716317173768</SimpleData>
 	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.429831438490893,46.766791206068</coordinates></Point>
+      <Point><coordinates>-91.171631717376798,45.386436072374003</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -11181,6 +10082,20 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="calib_infile.FUZZED_LAT">45.6875567081439</SimpleData>
+		<SimpleData name="calib_infile.FUZZED_LON">-91.2155771572125</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-91.215577157212493,45.687556708143902</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="calib_infile.FUZZED_LAT">45.4968953621196</SimpleData>
+		<SimpleData name="calib_infile.FUZZED_LON">-91.2276255708788</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-91.2276255708788,45.496895362119602</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.4847708596303</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-91.0431136537879</SimpleData>
 	</SchemaData></ExtendedData>
@@ -11202,34 +10117,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.4752722514786</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.3590317218233</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.3590317218233,46.4752722514786</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.9793569663062</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.2755017649945</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.275501764994502,45.979356966306199</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.6945788362091</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.4108441719629</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.410844171962907,46.694578836209097</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.3417808917974</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.0853150894478</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.085315089447803,45.341780891797399</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.7210180387615</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-88.3843599865108</SimpleData>
 	</SchemaData></ExtendedData>
@@ -11241,13 +10128,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-88.6152941163627</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-88.615294116362705,45.435868052193101</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2407826116469</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.4125837008684</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.412583700868396,45.2407826116469</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -11293,13 +10173,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.7452623579554</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.0494895847294</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.0494895847294,46.745262357955397</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.4683954419977</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-91.2577910028099</SimpleData>
 	</SchemaData></ExtendedData>
@@ -11311,13 +10184,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-91.1925447594065</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-91.192544759406502,46.231633197535899</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.7309810022498</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.1336587744053</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.133658774405305,45.730981002249798</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -11398,6 +10264,13 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="calib_infile.FUZZED_LAT">45.5041692687179</SimpleData>
+		<SimpleData name="calib_infile.FUZZED_LON">-91.1956378393256</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-91.195637839325599,45.504169268717902</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.5774661858009</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-91.1942207354622</SimpleData>
 	</SchemaData></ExtendedData>
@@ -11416,13 +10289,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-90.7491058629559</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-90.749105862955901,46.329010974668698</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.7419808984659</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.1891394998452</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.189139499845197,46.741980898465897</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -11465,13 +10331,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-91.2816397576353</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-91.281639757635304,46.508701635986498</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.6064247420977</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.3276621368929</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.327662136892897,46.606424742097701</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -11528,13 +10387,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-90.1874004063545</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-90.187400406354499,46.485254025899202</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.0947300710971</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.8604289650912</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.860428965091202,45.094730071097104</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -11629,13 +10481,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.4655289906236</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.1557613636815</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.155761363681506,45.465528990623604</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.2414985573822</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-90.0891120804884</SimpleData>
 	</SchemaData></ExtendedData>
@@ -11692,13 +10537,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.3168690918095</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.4457646164493</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.445764616449296,45.316869091809501</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.8080616253142</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-88.574308037587</SimpleData>
 	</SchemaData></ExtendedData>
@@ -11724,13 +10562,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-90.583894843754</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-90.583894843753995,45.874701086982199</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1847110297918</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.8017990677487</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.801799067748703,45.184711029791799</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -11766,13 +10597,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-88.8511344838712</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-88.851134483871206,45.416678236030499</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2105197068268</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.4102706894859</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.410270689485898,45.210519706826801</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -11839,13 +10663,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.3819628668699</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.2193115882049</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.219311588204903,45.381962866869898</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.6936429483419</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-88.4734081881898</SimpleData>
 	</SchemaData></ExtendedData>
@@ -11853,24 +10670,10 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.6297935098334</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.4117750462983</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.411775046298303,46.629793509833398</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.0964477873944</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-91.2469021672154</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-91.246902167215396,46.096447787394403</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.1644308116739</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.3156907372239</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.315690737223903,46.164430811673903</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -11885,13 +10688,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-91.2254144541275</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-91.225414454127502,45.995079666905603</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.6935388239643</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.387828010054</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.387828010053994,46.693538823964303</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -12133,17 +10929,10 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1141587246437</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.8162372498712</SimpleData>
+		<SimpleData name="calib_infile.FUZZED_LAT">45.2809936248538</SimpleData>
+		<SimpleData name="calib_infile.FUZZED_LON">-91.1522785591283</SimpleData>
 	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.816237249871193,45.114158724643701</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1307303316848</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.0390176429156</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.039017642915596,45.130730331684802</coordinates></Point>
+      <Point><coordinates>-91.152278559128305,45.280993624853799</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -12280,13 +11069,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.0834741611653</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.8924914713946</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.892491471394607,45.083474161165299</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.5082111529227</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-90.2713869497884</SimpleData>
 	</SchemaData></ExtendedData>
@@ -12389,13 +11171,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-90.1874990434674</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-90.187499043467398,45.453219058855403</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2203114014533</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.3106365444745</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.310636544474505,45.220311401453301</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -12504,20 +11279,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2180680513205</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.9186621406036</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.918662140603601,45.2180680513205</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.181216122586</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.9021028589678</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.902102858967794,45.181216122586001</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.9612148381437</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-89.2778959857678</SimpleData>
 	</SchemaData></ExtendedData>
@@ -12602,13 +11363,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2369774545093</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.6246111918133</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.624611191813301,45.236977454509301</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.0734220374214</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-89.0627416820225</SimpleData>
 	</SchemaData></ExtendedData>
@@ -12676,27 +11430,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-89.0547040616787</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-89.054704061678706,45.353097459096197</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2594111204445</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.5020847804919</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.502084780491899,45.259411120444497</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2247649341389</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.3353371626398</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.335337162639803,45.224764934138904</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2099508698864</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.4410271341686</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.441027134168607,45.209950869886399</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -12854,13 +11587,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.9953985125992</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.2318633310119</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.231863331011894,45.995398512599202</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.7425004593221</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-88.3629693114653</SimpleData>
 	</SchemaData></ExtendedData>
@@ -12882,31 +11608,10 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.6594426189827</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.1155280808601</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.115528080860102,45.659442618982702</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.7728995342818</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.1394895863317</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.139489586331706,45.772899534281798</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.4255138735241</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-88.3397217415385</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-88.339721741538497,45.425513873524103</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.7510862586189</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.2021111463391</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.202111146339107,45.751086258618898</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -12945,31 +11650,10 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2574250791051</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.6937666755819</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.693766675581898,45.257425079105097</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1770381185726</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.9312188832677</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.931218883267704,45.177038118572597</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.3557767668564</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-90.6985024284567</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-90.698502428456706,45.355776766856401</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1883480332216</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.4359129825903</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.435912982590295,45.188348033221601</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -13005,20 +11689,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-90.0463637645083</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-90.0463637645083,46.074715271293698</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2048670252278</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.0700119838498</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.070011983849795,45.204867025227799</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2377913700414</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.8866863886627</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.886686388662696,45.2377913700414</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -13064,13 +11734,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1717633875048</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.9863027476997</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.986302747699696,45.171763387504797</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.2722210152641</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-90.1519605923017</SimpleData>
 	</SchemaData></ExtendedData>
@@ -13103,13 +11766,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-90.0574615921058</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-90.057461592105795,46.029957219784599</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2215800868174</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-89.790081952313</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-89.790081952313002,45.221580086817397</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -13477,13 +12133,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.7724196016582</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.2363439125096</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.236343912509597,45.7724196016582</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.5875376812113</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-88.3303743422347</SimpleData>
 	</SchemaData></ExtendedData>
@@ -13498,24 +12147,10 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.6307304151785</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.2364145545948</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.236414554594802,45.630730415178498</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.3859853558387</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-88.3549805119042</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-88.354980511904202,45.385985355838699</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.5171495773387</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.1218837859358</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.121883785935793,45.517149577338699</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -13736,20 +12371,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.0895365222927</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.8852046207541</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.885204620754095,45.089536522292697</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.0445065672428</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.0440045005922</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.044004500592195,45.044506567242799</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.5371030754964</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-90.5799990412817</SimpleData>
 	</SchemaData></ExtendedData>
@@ -13824,13 +12445,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-91.0367555264573</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-91.036755526457299,45.3419905366992</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.7526539233931</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.7475777439986</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.747577743998605,46.752653923393098</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -13918,13 +12532,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.7420593023</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.2064033714069</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.206403371406907,46.7420593023</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.2246208454809</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-91.2527751304035</SimpleData>
 	</SchemaData></ExtendedData>
@@ -13939,17 +12546,10 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.5299884538191</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.4074636626945</SimpleData>
+		<SimpleData name="calib_infile.FUZZED_LAT">45.7379080261703</SimpleData>
+		<SimpleData name="calib_infile.FUZZED_LON">-91.2480788017772</SimpleData>
 	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.407463662694497,46.529988453819101</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.746948519521</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.1720890714773</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.172089071477302,45.746948519520998</coordinates></Point>
+      <Point><coordinates>-91.248078801777197,45.737908026170302</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -13988,20 +12588,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1667198953062</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.352460697072</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.352460697072004,45.166719895306201</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1737419541953</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.273355592036</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.273355592035998,45.1737419541953</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.1327787302063</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-90.4833923902934</SimpleData>
 	</SchemaData></ExtendedData>
@@ -14013,13 +12599,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-90.424764843932</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-90.424764843931996,45.619702652866003</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.2079445639942</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.8867518393861</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.886751839386093,45.207944563994197</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -14079,13 +12658,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.5443033195957</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-88.1960408382534</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-88.196040838253396,45.544303319595699</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">45.3081113331504</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-89.2007280448184</SimpleData>
 	</SchemaData></ExtendedData>
@@ -14128,13 +12700,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1927630972759</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.2263992916488</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.226399291648804,45.1927630972759</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.092836151715</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-90.5173423619079</SimpleData>
 	</SchemaData></ExtendedData>
@@ -14160,13 +12725,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-89.8253943657869</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-89.825394365786906,45.3293053059964</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.1382952917897</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.9318588605419</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.931858860541894,45.138295291789703</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
@@ -14275,13 +12833,6 @@
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">46.481225276871</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-91.3645096906891</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-91.364509690689104,46.481225276871001</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
 		<SimpleData name="calib_infile.FUZZED_LAT">46.2092346204136</SimpleData>
 		<SimpleData name="calib_infile.FUZZED_LON">-90.1680771492604</SimpleData>
 	</SchemaData></ExtendedData>
@@ -14300,13 +12851,6 @@
 		<SimpleData name="calib_infile.FUZZED_LON">-90.1217774499505</SimpleData>
 	</SchemaData></ExtendedData>
       <Point><coordinates>-90.1217774499505,46.031800873232598</coordinates></Point>
-  </Placemark>
-  <Placemark>
-	<ExtendedData><SchemaData schemaUrl="#1">
-		<SimpleData name="calib_infile.FUZZED_LAT">45.195262045069</SimpleData>
-		<SimpleData name="calib_infile.FUZZED_LON">-90.2868612373669</SimpleData>
-	</SchemaData></ExtendedData>
-      <Point><coordinates>-90.286861237366907,45.195262045069001</coordinates></Point>
   </Placemark>
   <Placemark>
 	<ExtendedData><SchemaData schemaUrl="#1">
