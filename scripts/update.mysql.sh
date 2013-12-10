@@ -9,7 +9,7 @@ curl -o betydump.gz https://ebi-forecast.igb.illinois.edu/pecan/dump/betydump.my
 
 echo "drop database if exists bety; create database bety;" | mysql -u bety -pbety
 
-gunzip -c betydump.gz | mysql -u bety -pbety bety
+gunzip -c betydump.gz | grep -v 'DEFINER' | mysql -u bety -pbety bety
 rm betydump.gz
 
 # remove old runs
