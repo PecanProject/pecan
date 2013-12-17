@@ -47,9 +47,7 @@ get.trait.data.pft <- function(pft, dbfiles, dbcon,
         for(id in ids) {
           if (!file.exists(file.path(files$file_path[[id]], files$file_name[[id]]))) {
             foundallfiles <- FALSE
-            logger.severe("can not find posterior file: ",
-                          file.path(files$file_path[[id]],
-                                    files$file_name[[id]]))
+            logger.error("can not find posterior file: ", file.path(files$file_path[[id]], files$file_name[[id]]))
           }    
         }
         if (foundallfiles) {
