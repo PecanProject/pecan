@@ -39,7 +39,7 @@ query.priors <- function(pft, trstr=NULL, out=NULL, con=NULL,...){
       "join pfts_priors on pfts_priors.prior_id = priors.id",
       "join pfts on pfts.id = pfts_priors.pft_id",
       "where pfts.name in (", vecpaste(pft), ")")
-  if(is.null(trstr)){
+  if(is.null(trstr) || trstr == "''"){
     query.text = paste(query.text,";",sep="")
   } else {
     query.text = paste(query.text,"and variables.name in (", trstr, ");")
