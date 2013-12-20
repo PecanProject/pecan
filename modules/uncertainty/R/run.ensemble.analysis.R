@@ -30,13 +30,12 @@ run.ensemble.analysis <- function(plot.timeseries=NA){
   variables <- settings$ensemble$variable #grab target variable(s) from pecan.xml
   print(paste("----- Variable: ",variables,sep=""))
 
-  ### Temp hack
-  if (variables %in% cflux){
-    units <- paste(variables[1],"(kgC/ha/year)")
-  } else{
-    units <- paste(variables[1],"(kgH2O/ha/year)")
+  if (length(variables) != 1) {
+    logger.error("Only computing first variable for now.")
   }
-  
+  #units <- lapply(variables, function(x) { paste0(x, " (", mstmipvar(x, silent=TRUE)$units, ")") })
+  units <- paste0(variables[1], " (", mstmipvar(variables[1], silent=TRUE)$units, ")")
+
   ### Check if ensemble was run and was larger than 0
   if ('ensemble' %in% names(settings) & settings$ensemble$size>0) {
     ### Load parsed model results
