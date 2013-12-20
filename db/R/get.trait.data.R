@@ -47,9 +47,7 @@ get.trait.data.pft <- function(pft, dbfiles, dbcon,
         for(id in ids) {
           if (!file.exists(file.path(files$file_path[[id]], files$file_name[[id]]))) {
             foundallfiles <- FALSE
-            logger.severe("can not find posterior file: ",
-                          file.path(files$file_path[[id]],
-                                    files$file_name[[id]]))
+            logger.error("can not find posterior file: ", file.path(files$file_path[[id]], files$file_name[[id]]))
           }    
         }
         if (foundallfiles) {
@@ -137,14 +135,19 @@ get.trait.data.pft <- function(pft, dbfiles, dbcon,
 ##' @param dbfiles location where previous results are found
 ##' @param database database connection parameters
 ##' @param forceupdate set this to true to force an update, auto will check to see if an update is needed.
+##' @param trait.names list of traits to query. If TRUE, uses trait.dictionary
 ##' @return list of pfts with update posteriorids
 ##' @author David LeBauer, Shawn Serbin
 ##' @export
 ##'
-get.trait.data <- function(pfts, dbfiles, database, forceupdate) {
+get.trait.data <- function(pfts, dbfiles, database, forceupdate,trait.names=NULL) {
   ##---------------- Load trait dictionary --------------#
-  data(trait.dictionary, package = "PEcAn.utils")
-  trait.names <- trait.dictionary$id
+  if(is.logical(trait.names)){
+    if(trait.names){
+      data(trait.dictionary, package = "PEcAn.utils")
+      trait.names <- trait.dictionary$id
+    }
+  }
 
   # process all pfts
   dbcon <- db.open(database)

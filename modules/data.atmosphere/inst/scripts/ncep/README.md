@@ -1,5 +1,6 @@
 # Extract global NCEP data to one file per grid point
 
+NOTE: This "works" but at the global scale creates a lot of files an I have been working on just creating a single netCDF file and extracting data directly. But this is useful for smaller regions.
 
 
 ## extract ncep data to csv:

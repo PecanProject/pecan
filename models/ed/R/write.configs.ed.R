@@ -124,7 +124,11 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   }
 
   # create launch script (which will create symlink)
-  jobsh <- readLines(con=system.file("template.job", package = "PEcAn.ED2"), n=-1)
+  if (!is.null(settings$run$jobtemplate) && file.exists(settings$run$jobtemplate)) {
+    jobsh <- readLines(con=settings$run$jobtemplate, n=-1)
+  } else {
+    jobsh <- readLines(con=system.file("template.job", package = "PEcAn.ED2"), n=-1)
+  }
   
   jobsh <- gsub('@SITE_LAT@', settings$run$site$lat, jobsh)
   jobsh <- gsub('@SITE_LON@', settings$run$site$lon, jobsh)
@@ -132,6 +136,9 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   
   jobsh <- gsub('@SCRATCH_COPY@', copyscratch, jobsh)
   jobsh <- gsub('@SCRATCH_CLEAR@', clearscratch, jobsh)
+  
+  jobsh <- gsub('@START_DATE@', settings$run$start.date, jobsh)
+  jobsh <- gsub('@END_DATE@', settings$run$end.date, jobsh)
   
   jobsh <- gsub('@OUTDIR@', outdir, jobsh)
   jobsh <- gsub('@RUNDIR@', rundir, jobsh)

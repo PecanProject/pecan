@@ -165,6 +165,7 @@ fwrite($fh, "    <username>${db_username}</username>" . PHP_EOL);
 fwrite($fh, "    <password>${db_password}</password>" . PHP_EOL);
 fwrite($fh, "    <host>${db_hostname}</host>" . PHP_EOL);
 fwrite($fh, "    <dbname>${db_database}</dbname>" . PHP_EOL);
+fwrite($fh, "    <driver>MySQL</driver>" . PHP_EOL);
 fwrite($fh, "  </database>" . PHP_EOL);
 
 $pft_id=1;
