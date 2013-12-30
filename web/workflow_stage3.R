@@ -70,7 +70,7 @@ query.base(paste("UPDATE workflows SET finished_at=NOW() WHERE id=", settings$wo
 status.end()
 
 # send email if configured
-if (!is.null(settings$email)) {
+if (!is.null(settings$email) && !is.null(settings$email$to) && (settings$email$to != "")) {
     sendmail(settings$email$from, settings$email$to,
              paste0("Workflow has finished executing at ", date()),
              paste0("You can find the results on ", settings$email$url))
