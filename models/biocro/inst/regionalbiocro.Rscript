@@ -1,0 +1,91 @@
+#!/usr/bin/env Rscript
+
+## To place on global PATH:
+## sudo ln -s <path/to>/biocro.Rscript /usr/local/bin/biocro
+args   <- commandArgs(trailingOnly = TRUE)
+rundir <- args[1]
+outdir <- args[2]
+if(interactive()) {
+    runid <- tail(readLines("salixtest/run/runs.txt"), n=1)
+    rundir <- file.path("salixtest/run", runid)
+    outdir <- file.path("salixtest/out", runid)
+}
+## set the libpath here to point to the right version of BioCro
+require(BioCro)
+require(XML)
+
+## run model
+config <- xmlToList(xmlParse(file.path(rundir, "config.xml")))
+
+if(all( c("lat", "lon") %in% names(config$site))){
+    points <- data.frame(lat = as.numeric(config$site$lat), lon = as.numeric(config$site$lon))
+} else if ("region" %in% names(config$site)){
+    region <- lapply(config$site$region, as.numeric)
+    ## config$site$region <- list(latmin = 42, latmax = 44, lonmin = -88, lonmax = -86, resolution = 0.5)
+    points <- expand.grid(lat = seq(region$latmin, region$latmax, by = region$resolution),
+                          lon = seq(region$lonmin, region$lonmax, by = region$resolution))
+} else if (config$site$name = "Earth Land Surface"){
+    ## this is a way of using global 0.5 degree met products
+    data(cruncep_landmask, package = "PEcAn.data.atmosphere")
+    points <- cruncep_landmask[land, list(lat, lon)]
+}
+
+
+ppfun <-  ifelse(config$pft$type$photosynthesis == "C3", "c3photoParms", "photoParms")
+pp <- do.call(ppfun, config$pft$photoParms)  
+
+cc <- canopyParms(Sp = as.numeric(config$pft$canopyControl$Sp))
+
+genus <- config$pft$genus
+if(!(genus %in% c("Saccharum", "Salix", "Miscanthus"))) {
+    logger.severe("genus", genus, "not supported by PEcAn.BIOCRO module")
+}
+
+
+# load the weather data
+met.nc <- file.path(rundir, "weather.nc")
+
+years <- unique(weather$year)
+
+
+   result <- list()
+
+for(yeari in years){
+    yearchar <- as.character(yeari)
+    WetDat <- weather[weather$year == yeari,]
+    day1 <- min(WetDat$doy)
+    dayn <- max(WetDat$doy)
+
+    if(genus == "Saccharum"){
+        result[[yearchar]] <- caneGro(WetDat = WetDat, photoControl=pp, canopyControl=cc)
+        result[[yearchar]][["Grain"]] <- result[[yearchar]][["Rhizome"]] <- rep(0, length(result$Hour))
+    } else if (genus == "Salix") {
+        if(yeari == min(years)){
+            iplant <- iwillowParms(iRhizome=1.0, iStem=1.0, iLeaf=0.0,
+                                    iRoot=1.0, ifrRhizome=0.01, ifrStem=0.01,
+                                    ifrLeaf = 0.0, ifrRoot = 0.0)
+        } else if(yeari > min(years)){
+            N <- length(result[[as.character(yeari-1)]]$Rhizome)
+            iplant$iRhizome <- result[[as.character(yeari-1)]]$Rhizome[N]
+            iplant$iStem <- result[[as.character(yeari-1)]]$Stem[N]
+            iplant$iRoot <- result[[as.character(yeari-1)]]$Root[N]
+        }
+        result[[yearchar]] <- willowGro(WetDat = WetDat, photoControl=pp,
+                                        canopyControl=cc, day1 = day1, dayn = dayn)
+    } else if (genus == "Miscanthus") {
+        result[[yearchar]] <- BioGro(WetDat = WetDat, photoControl = pp, canopyControl = cc)
+    }
+
+    result.yeari <- with(result[[yearchar]],
+    data.frame(Year = yeari, DayofYear, Hour, ThermalT,
+                Stem, Leaf, Root, Rhizome, Grain, LAI,
+                SoilEvaporation, CanopyTrans))
+    if(yeari == min(years)){
+        resultDT <- result.yeari
+    } else if (yeari > min(years)){
+        resultDT <- rbind(resultDT, result.yeari)
+    }
+}
+
+write.csv(resultDT, file=file.path(outdir, "result.csv"))
+save(resultDT, config, genus, file = file.path(outdir, "result.RData"))
