@@ -25,3 +25,9 @@ con <- query.base.con(dbname   = settings$database$name,
 
 ## mcmc settings
 ngibbs = nu(settings$meta.analysis$iter)
+
+
+pfts = list(FAGR = data.frame(spcd=531,name="FAgr"))
+outdir = "~/Downloads/"
+components = 6
+allom.stats = AllomAve(pfts,components,outdir,parm="~/git/pecan/modules/allometry/data/Table3_GTR-NE-319.v2.csv",ngibbs=500,nchain=3)
