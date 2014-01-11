@@ -8,24 +8,35 @@
 #-------------------------------------------------------------------------------
 ## overall script for allom
 
-#'
-#' 
-#'   
-
-AllomAve <- function(pfts,components=c(6,18,43),con=NULL,field=NULL,parm=NULL,ngibbs=5000,nchain=3){
+#' @param pfts        pft list from PEcAn settings (if con) OR list of pft spcd's
+#' @param components  IDs for allometry components from Jenkins et al 2004 Table 5
+#' @param outdir      output directory files are written to
+#' @param con         database connection
+#' @param field       path(s) to raw data files
+#' @param parm        path to allometry equation file (default is Jenkins Table 3)
+#' @param ngibbs      number of MCMC iterations (per chain) to run
+#' @param nchain      number of MCMC chains
+#' @return none
+AllomAve <- function(pfts,components=c(6,18,43),outdir,con=NULL,field=NULL,
+                     parm=system.file("data/Table3_GTR-NE-319.v2.csv", package = "PEcAn.allometry"),
+                     ngibbs=5000,nchain=3){
   ## components:
   ## 6=stem (Bs), 18 = leaf (Bl), 
   ## 40 = height (Ht)
   ## 41 = rooting depth (Rd)
   ## 42 = Rooting volume (Vol)
   ## 43 = Canopy Area
+  require(coda)
   
   sel    =  floor(seq(ngibbs*0.25,ngibbs,length=min(ngibbs*0.75,5000)))  
+
+  allom.stats = list()
   
   ########## BAYESIAN VERSION ###############
   for(pft in pfts){  ## loop over PFTs
+    allom.stats[[pft$name]] = list()
     
-    for(component in components{ 
+    for(component in components){ 
       print(c(pft,component))
       
       ## load data
@@ -33,19 +44,7 @@ AllomAve <- function(pfts,components=c(6,18,43),con=NULL,field=NULL,parm=NULL,ng
         ### If running within PEcAn, grab the data from the database
         allom <- query.allom.data(pft$name,component,con)
       } else {
-        ### Otherwise, read csv files directly
-        allom <- list(parm=NULL,field=NULL)
-        if(!is.null(field)){
-          allom$field = list()        
-          for(i in 1:length(field)){
-            allom$field[[i]] = read.csv(field[i])
-          }
-        }
-        if(!is.null(parm)){
-          allom$parm = read.csv(parm)
-          }
-        }
-        ### Need to add code that does the PFT selection
+        allom <- read.allom.data(pft,component,field,parm)        
       }
       
       if(is.null(allom) | (is.null(allom$parm) & is.null(allom$field))){
@@ -73,7 +72,7 @@ AllomAve <- function(pfts,components=c(6,18,43),con=NULL,field=NULL,parm=NULL,ng
       
       ## Save MCMC objects (Pass to MCMC diagnostics module)
       save(mc,DIC,DICg,pD,pDg,
-           file=paste(pft$outdir,paste("Allom",pft$name,component,"Rdata",sep="."),sep=""))
+           file=paste(outdir,paste("Allom",pft$name,component,"Rdata",sep="."),sep=""))
       
       
       ## Save Posterior information (Pass to update.posterior module)
@@ -82,13 +81,15 @@ AllomAve <- function(pfts,components=c(6,18,43),con=NULL,field=NULL,parm=NULL,ng
       }
       
       ## Analysis/visualization
-      pdf(paste(pft$outdir,paste("Allom",pft$name,component,"MCMC","pdf",sep="."),sep=""))
+      pdf(paste(outdir,paste("Allom",pft$name,component,"MCMC","pdf",sep="."),sep=""))
       plot(mc)
-      summary(mc)
       print(c("DIC",DIC,"pD",pD))
       print(c("DICg",DICg,"pDg",pDg))    
       dev.off()
+
+      allom.stats[[pft$name]][[component]] = summary(mc)      
       
     } ## end component loop
   } ## end PFT loop
+  return(allom.stats)
 } ## End AllomAvg
