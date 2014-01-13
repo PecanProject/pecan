@@ -6,7 +6,7 @@ require(roxygen2)
 require(methods)
 packages <- c("utils", "db", "visualization",
               "modules/meta.analysis", "modules/uncertainty",
-              "modules/data.land", "modules/data.atmosphere",
+              "modules/data.land", "modules/data.atmosphere","modules/allometry",
               "modules/assim.batch", "modules/assim.sequential", "modules/priors",
               "models/ed", "models/sipnet", "models/biocro")
 
