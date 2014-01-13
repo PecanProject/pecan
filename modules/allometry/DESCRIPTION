@@ -6,15 +6,20 @@ Date: 2014-01-10
 Author: Mike Dietze <dietze@bu.edu>
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: Synthesize allometric equations or fit allometries to data
-Depends: 
-Suggests: testthat,
-          RMySQL
+Depends:
+    coda,
+    MCMCpack,
+    mvtnorm,
+    PEcAn.DB
+Suggests:
+    testthat,
+    RMySQL
 License: file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Collate:
-  'AllomAve.R'
-  'allom.BayesFit.R'
-  'query.allom.data.R'
-  'read.allom.data.R'
+    'AllomAve.R'
+    'allom.BayesFit.R'
+    'query.allom.data.R'
+    'read.allom.data.R'
