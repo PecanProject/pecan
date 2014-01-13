@@ -9,8 +9,9 @@
 #' @param component  allometry ID, Jenkins table 5
 #' @param field      raw field data
 #' @param parm       allometry equation file, Jenkins table 3
-#' @return \item{name field}
-#'         \item{name parm}
+#' @param nsim       number of Monte Carlo draws in numerical transforms
+#' @return \item{field}
+#'         \item{parm}
 read.allom.data <- function(pft.data, component, field, parm,nsim=10000) {
 
   allom <- list(parm=NULL,field=NULL)

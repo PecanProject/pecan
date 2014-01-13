@@ -56,7 +56,7 @@ AllomAve <- function(pfts,components=c(6,18,43),outdir,con=NULL,field=NULL,
       mc <- list()
       for(i in 1:nchain){
         if(component == 40){
-          mc[[i]] <- as.mcmc(allom.BayesFit(allom,ngibbs)[sel,],"exp")
+          mc[[i]] <- as.mcmc(allom.BayesFit(allom,ngibbs,"exp")[sel,])
         } else {
           mc[[i]] <- as.mcmc(allom.BayesFit(allom,ngibbs)[sel,])
         }

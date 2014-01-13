@@ -31,6 +31,8 @@
 #'                   Xtype - type of measurement on the X
 #' @param nrep - number of MCMC replicates
 #'
+#' @param form   functional form of the allometry: "power" vs "exp"
+#'
 #' dependencies: requires MCMCpack and mvtnorm
 #'
 #' note: runs 1 chain, but multiple chains can be simulated by
@@ -40,7 +42,6 @@
 #' @author Michael Dietze
 #' 
 #' 
-
 allom.BayesFit <- function(allom,nrep=10000,form="power") {
 
   ## check for valid inputs
