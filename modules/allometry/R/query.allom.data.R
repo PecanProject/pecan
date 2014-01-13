@@ -66,7 +66,7 @@ query.allom.data <- function(pft_name,variable,con,nsim = 10000){
 
 #' @title nu
 #' @name  nu
-#' @param x
+#' @param x  data
 #' @description  converts factors to numeric
 nu <- function(x){as.numeric(as.character(x))}
 
