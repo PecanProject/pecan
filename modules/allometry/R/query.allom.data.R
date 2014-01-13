@@ -6,13 +6,16 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-## Module to grab allometric information from the raw data table
-## Will grab both original field data and tallied equations
-##
-## Tallied equation format based on Jenkins et al 2004 USFS
-## General Technical Report NE-319
-##        
-#' @author Michael Dietze <dietze@bu.edu>
+#' @title query.allom.data
+#' @name  query.allom.data
+#' @description
+#' Module to grab allometric information from the raw data table
+#' Will grab both original field data and tallied equations
+#'
+#' Tallied equation format based on Jenkins et al 2004 USFS
+#' General Technical Report NE-319
+#'        
+#' @author Michael Dietze
 #' 
 #' @param pft_name   name of Plant Functional Type to be queried
 #' @param variable   name of response variable
@@ -21,6 +24,8 @@
 #' 
 #' database is assumed to conform to the PEcAn Schema
 query.allom.data <- function(pft_name,variable,con,nsim = 10000){
+  
+  require(PEcAn.DB)
   
   ## check validity of inputs
   if(is.null(pft_name) | is.na(pft_name)){print(c("invalide PFT_NAME in QUERY.ALLOM.DATA",pft_name)); return(NULL)}
@@ -54,7 +59,7 @@ query.allom.data <- function(pft_name,variable,con,nsim = 10000){
   query <- "select * from raws as r join formats as f on f.id = r.format_id where f.name like 'allomTally'"
   allomTally.files <- db.query(query, con)
   
-  allom <- read.allom.data(pft.data,variable,allomField.files$filepath,allomTally.files$filepath)
+  allom <- read.allom.data(pft.data,variable,allomField.files$filepath,allomTally.files$filepath,nsim=nsim)
   
   return(allom)
 }
