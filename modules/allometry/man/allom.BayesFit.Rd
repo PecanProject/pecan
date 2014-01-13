@@ -20,7 +20,10 @@ of the allometric data}
   units correction on X Ycor - units correction on Y Xtype
   - type of measurement on the X}
 
-  \item{nrep}{- number of MCMC replicates
+  \item{nrep}{- number of MCMC replicates}
+
+  \item{form}{functional form of the allometry: "power" vs
+  "exp"
 
   dependencies: requires MCMCpack and mvtnorm
 
