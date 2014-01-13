@@ -5,7 +5,7 @@
   nu(x)
 }
 \arguments{
-  \item{x}{}
+  \item{x}{data}
 }
 \description{
   converts factors to numeric
