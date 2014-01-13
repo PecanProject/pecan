@@ -64,11 +64,20 @@ query.allom.data <- function(pft_name,variable,con,nsim = 10000){
   return(allom)
 }
 
+#' @title nu
+#' @name  nu
+#' @param x
+#' @description  converts factors to numeric
 nu <- function(x){as.numeric(as.character(x))}
 
+#' @title AllomUnitCoef
+#' @name  AllomUnitCoef
+#' @param x   units: mm, cm, cm2, m, in, g, kg, lb, Mg
+#' @param tp  diameter type, leave NULL if DBH. Options: 'd.b.h.^2','cbh','crc'
+#' @description
+#'  converts length units FROM cm TO specified units
+#'  converts mass units TO kg FROM specificed units
 AllomUnitCoef <- function(x,tp=NULL){
-  ## converts length units FROM cm
-  ## converts mass units TO kg
 
   y = rep(1,length(x))
 
