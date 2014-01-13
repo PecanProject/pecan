@@ -1,3 +1,6 @@
+#' @title read.allom.data
+#' @name  read.allom.data
+#' 
 #' @param pft.data   PFT dataframe
 #' \itemize{
 #'   \item{acronym}{USDA species acronym, used with FIELD data}
@@ -8,7 +11,7 @@
 #' @param parm       allometry equation file, Jenkins table 3
 #' @return \item{name field}
 #'         \item{name parm}
-read.allom.data <- function(pft.data, component, field, parm) {
+read.allom.data <- function(pft.data, component, field, parm,nsim=10000) {
 
   allom <- list(parm=NULL,field=NULL)
  
@@ -86,9 +89,9 @@ read.allom.data <- function(pft.data, component, field, parm) {
     
     ## check and make sure we have data and can continue
     if(sum(!is.na(allompft)) == 0 | length(sel) == 0){      
-      print(c("QUERY.ALLOM.DATA: ** Warning no match of PFT to tally data **",pft_name))
+      print(c("READ.ALLOM.DATA: ** Warning no match of PFT to tally data **",pft.data))
       if(is.null(allom$field)){
-        print(c("QUERY.ALLOM.DATA: ** No allometric data available **"))
+        print(c("READ.ALLOM.DATA: ** No allometric data available **",field))
         return(NULL)
       }
     }

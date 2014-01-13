@@ -8,6 +8,8 @@
 #-------------------------------------------------------------------------------
 ## overall script for allom
 
+#' @title AllomAve
+#' @name  AllomAve
 #' @param pfts        pft list from PEcAn settings (if con) OR list of pft spcd's
 #' @param components  IDs for allometry components from Jenkins et al 2004 Table 5
 #' @param outdir      output directory files are written to
