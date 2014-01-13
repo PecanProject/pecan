@@ -26,7 +26,8 @@ Depends:
 Suggests:
     PEcAn.ed,
     PEcAn.sipnet,
-    PEcAn.biocro
+    PEcAn.biocro,
+    PEcAn.allometry
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
