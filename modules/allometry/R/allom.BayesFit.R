@@ -37,7 +37,7 @@
 #'       multiple function calls
 #'
 #'
-#' @author Michael Dietze <dietze@bu.edu>
+#' @author Michael Dietze
 #' 
 #' 
 
