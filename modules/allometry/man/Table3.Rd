@@ -1,10 +1,13 @@
 \name{Table3_GTR-NE-319.v2}
 \docType{data}
-\title{Jenkins et al. 2004 Allometry Table}
+\title{Table3_GTR-NE-319.v2}
 \description{
 Jenkins et al. 2004 Allometry Table 3
 }
-\usage{data(Table3_GTR-NE-319.v2)}
+\usage{
+%%data(Table3_GTR-NE-319.v2)
+%%system.file("data/Table3_GTR-NE-319.v2.csv", package = "PEcAn.allometry")
+}
 \format{
   A data frame with 260 observations on the following 28 variables.
   \describe{
@@ -43,13 +46,13 @@ Jenkins et al. 2004 Allometry Table 3
 %%  ~~ If necessary, more details than the __description__ above ~~
 }
 \source{
+Jenkins JC, Chojnacky DC, Heath LS, Birdsey RA. 2004. Comprehensive database of diameter-based biomass regressions for north american tree species.  US Forest Service General Technical Report NE-319
 %%  ~~ reference to a publication or URL from which the data were obtained ~~
 }
 \references{
-Jenkins JC, Chojnacky DC, Heath LS, Birdsey RA. 2004. Comprehensive database of diameter-based biomass regressions for north american tree species.  US Forest Service General Technical Report NE-319
 %%  ~~ possibly secondary sources and usages ~~
 }
 \examples{
-data(Table3_GTR-NE-319.v2)
+%%data(Table3_GTR-NE-319.v2)
 }
 \keyword{datasets}

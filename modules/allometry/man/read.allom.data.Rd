@@ -16,9 +16,12 @@
   \item{field}{raw field data}
 
   \item{parm}{allometry equation file, Jenkins table 3}
+
+  \item{nsim}{number of Monte Carlo draws in numerical
+  transforms}
 }
 \value{
-  \item{name field} \item{name parm}
+  \item{field} \item{parm}
 }
 \description{
   read.allom.data
