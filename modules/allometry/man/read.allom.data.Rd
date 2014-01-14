@@ -21,7 +21,8 @@
   transforms}
 }
 \value{
-  \item{field} \item{parm}
+  \item{field}{Field Data}
+  \item{parm}{Compiled Equations}
 }
 \description{
   read.allom.data
