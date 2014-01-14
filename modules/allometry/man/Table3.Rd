@@ -1,6 +1,7 @@
 \name{Table3_GTR-NE-319.v2}
 \docType{data}
 \title{Table3_GTR-NE-319.v2}
+\alias{Table3_GTR-NE-319.v2}
 \description{
 Jenkins et al. 2004 Allometry Table 3
 }
