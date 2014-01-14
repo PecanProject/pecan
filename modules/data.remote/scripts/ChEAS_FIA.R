@@ -17,29 +17,39 @@ require(spatsta)
 ################################
 ## Options
 ################################
-
-#generate and save kml files?
-
+kml=0 #1 = generate and save kml files of extraction coordinates; 0 = do not generate new kml
+fia=0 #1 = use FIA coordinates, 0 = use WLEF/Park Falls Tower coordinates
 
 ################################
-## Read in FIA data for calibrationof PALSAR backscatter returns
+## Read in coordinate data for calibration of PALSAR backscatter returns
 ##    Uses PALSAR metadata file to determine geographic extent of available PALSAR data and crops FIA data 
 ##      to match PALSAR extent.
-##    Creates and saves KML file to show FIA points in Google Earth.
 ################################
-calib_inpath <-"/home/bhardima/git/pecan/modules/data.remote/biometry/Link_to_Forest_Biomass_Calibration_Coords"
+if(fia==1){ #EXTRACTS FROM FIA COORDINATES
+  calib_inpath <-"/home/bhardima/git/pecan/modules/data.remote/biometry/Link_to_Forest_Biomass_Calibration_Coords"
+  calib_infile <-read.csv(file.path(calib_inpath,"wi-biomass-fuzzed.csv"), sep=",", header=T) #Wisconsin FIA plots
+  coords<-data.frame(calib_infile$FUZZED_LON,calib_infile$FUZZED_LAT) #lat and lon (ChEAS: UTM Zone 15N NAD83)
+  Sr1<- SpatialPoints(coords,proj4string=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"))
+#   wi.fia<-data.frame(calib_infile$FUZZED_LAT,calib_infile$FUZZED_LON)
+  latlon<-data.frame(calib_infile$FUZZED_LAT,calib_infile$FUZZED_LON)
+#   FIA.points <- SpatialPointsDataFrame(Sr1, wi.fia) #convert to class="SpatialPointsDataFrame" for export as kml
+  spdf.latlon <- SpatialPointsDataFrame(Sr1, latlon) #convert to class="SpatialPointsDataFrame" for export as kml
+  if(kml==1){writeOGR(spdf.latlon, layer=1, "WI_FIA.kml", driver="KML") #export as kml (this puts in in the Home folder) 
+  }
+}
 
-calib_infile <-read.csv(file.path(calib_inpath,"wi-biomass-fuzzed.csv"), sep=",", header=T) #Wisconsin FIA plots
-
-coords<-data.frame(calib_infile$FUZZED_LON,calib_infile$FUZZED_LAT) #lat and lon (ChEAS: UTM Zone 15N NAD83)
-
-Sr1<- SpatialPoints(coords,proj4string=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"))
-
-wi.fia<-data.frame(calib_infile$FUZZED_LAT,calib_infile$FUZZED_LON)
-
-FIA.points <- SpatialPointsDataFrame(Sr1, wi.fia) #convert to class="SpatialPointsDataFrame" for export as kml
-
-# writeOGR(FIA.points, layer=1, "WI_FIA.kml", driver="KML") #export as kml (this puts in in the Home folder) 
+if(fia==0){#EXTRACTS FROM WLEF COORDINATES
+  calib_inpath <-"/home/bhardima/git/pecan/modules/data.remote/biometry/Link_to_Forest_Biomass_Calibration_Coords"
+  calib_infile <-read.csv(file.path(calib_inpath,"biometry_trimmed.csv"), sep="\t", header=T) #WLEF plots
+  coords<-data.frame(calib_infile$easting,calib_infile$northing) #eastings and northings (ChEAS: UTM Zone 15N NAD83)
+  Sr1<- SpatialPoints(coords,proj4string=CRS("+proj=utm +zone=15 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+  wlef<-data.frame(paste(calib_infile$plot,calib_infile$subplot,sep="_"))
+  epsg4326String <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
+  Sr1_4google <- spTransform(Sr1,epsg4326String) #class=SpatialPoints
+  Sr1_4google <- SpatialPointsDataFrame(Sr1_4google, wlef) #convert to class="SpatialPointsDataFrame" for export as kml
+  if(kml==1){writeOGR(Sr1_4google, layer=1, "WLEF.kml", driver="KML") #export as kml (this puts in in the Home folder)
+  }
+}
 
 metadata<- read.csv("~/git/pecan/modules/data.remote/output/metadata/output_metadata.csv", sep="\t", header=T)
 
@@ -54,14 +64,25 @@ ChEAS_PLASAR_extent<- Polygon(ChEAS_PLASAR_extent) #spatial polygon from cheas-p
 Srs1<- Polygons(list(ChEAS_PLASAR_extent),"ChEAS_PLASAR_extent") #spatial polygons (plural)
 ChEAS_PLASAR_extent<-SpatialPolygons(list(Srs1),proj4string=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")) 
 
-FIA.in.cheas<-as.vector(over(FIA.points,ChEAS_PLASAR_extent)) #subset of FIA plots that falls within Cheas-PALSAR extent
+Sr1<-spTransform(Sr1,CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"))
+# FIA.in.cheas<-as.vector(over(FIA.points,ChEAS_PLASAR_extent)) #subset of FIA plots that falls within Cheas-PALSAR extent
+coords.in.cheas<-as.vector(over(Sr1,ChEAS_PLASAR_extent)) #subset of plots that falls within Cheas-PALSAR extent
 
-FIA.in.cheas[is.na(FIA.in.cheas)]<-0 #replace na's with 0's for indexing
+# FIA.in.cheas[is.na(FIA.in.cheas)]<-0 #replace na's with 0's for indexing
+coords.in.cheas[is.na(coords.in.cheas)]<-0 #replace na's with 0's for indexing
 
-biomass<-calib_infile[as.logical(FIA.in.cheas),4]
+# biomass<-calib_infile[as.logical(FIA.in.cheas),4]
+if(fia==1){
+  biomass<-calib_infile[as.logical(coords.in.cheas),4] #for FIA
+} else{
+  biomass<-calib_infile[as.logical(coords.in.cheas),8] #for WLEF
+}
 
-cheasFIA<-Sr1@coords[FIA.in.cheas==1,] 
-spcheasFIA <- SpatialPoints(cheasFIA,proj4string=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"))
+
+# cheasFIA<-Sr1@coords[FIA.in.cheas==1,] 
+cheas.coords<-Sr1@coords[coords.in.cheas==1,] ##subset of plots that falls within Cheas-PALSAR extent
+# spcheasFIA <- SpatialPoints(cheasFIA,proj4string=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"))
+spcheascoords <- SpatialPoints(cheas.coords,proj4string=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"))
 
 # writeOGR(cheasFIA, layer=1, "cheas_FIA.kml", driver="KML") #export as kml (this puts in in the Home folder) 
 
@@ -76,7 +97,7 @@ palsar_inpath <- file.path("/home/bhardima/git/pecan/modules/data.remote/palsar_
 # col_names<-c(rbind(paste(date, "HH",sep="_"),paste(date, "HV",sep="_")))
 
 pol_bands<-c("HH", "HV")
-numfiles<-length(date.time)
+numfiles<-length(list.files(file.path(palsar_inpath, pol_bands[1]), pattern=".tif" ,recursive=F))
 
 # lake_extracted<-matrix(NA, nrow(lake_coords),length(pol_bands)*numfiles)
 # disturbance_extracted_40m<-matrix(NA, nrow(disturbance_coords),length(pol_bands)*numfiles)
@@ -87,8 +108,10 @@ numfiles<-length(date.time)
 
 # extracted_48m<-matrix(NA, nrow=length(spcheasFIA)*numfiles, ncol=length(pol_bands)) #df to store extracted palsar values. nrow=number of coordinates being extracted. ncol=# of pol_bands
 # extracted_60m<-matrix(NA, nrow=length(spcheasFIA)*numfiles, ncol=length(pol_bands)) #df to store extracted palsar values. nrow=number of coordinates being extracted. ncol=# of pol_bands
-extracted_48m<-matrix(NA, nrow=numfiles*nrow(spcheasFIA@coords),ncol=7) #matrix to store extracted palsar values. 
-extracted_60m<-matrix(NA, nrow=numfiles*nrow(spcheasFIA@coords),ncol=7) #matrix to store extracted palsar values. 
+# extracted_48m<-matrix(NA, nrow=numfiles*nrow(spcheasFIA@coords),ncol=7) #matrix to store extracted palsar values. 
+# extracted_60m<-matrix(NA, nrow=numfiles*nrow(spcheasFIA@coords),ncol=7) #matrix to store extracted palsar values. 
+extracted_48m<-matrix(NA, nrow=numfiles*nrow(spcheascoords@coords),ncol=7) #matrix to store extracted palsar values. 
+extracted_60m<-matrix(NA, nrow=numfiles*nrow(spcheascoords@coords),ncol=7) #matrix to store extracted palsar values. 
 
 # colnames(extracted_48m)<-pol_bands
 # colnames(extracted_60m)<-pol_bands
@@ -105,7 +128,8 @@ for(i in 1:numfiles){
         ################################################
         ##Check each FIA coordinate to see if it falls inside the bbox of this palsar scene. Only extract it if it does.
         ################################################
-         spcheasFIA<-spTransform(spcheasFIA,HH_rast@crs) #Convert coords being extracted to CRS of PALSAR raster files
+#         spcheasFIA<-spTransform(spcheasFIA,HH_rast@crs) #Convert coords being extracted to CRS of PALSAR raster files
+        spcheascoords<-spTransform(spcheascoords,HH_rast@crs) #Convert coords being extracted to CRS of PALSAR raster files
         rast_box<-bbox(HH_rast@extent) #bounding box of single palsar scene
         rast_Poly<-Polygon(rbind(
           c(rast_box[1,1],rast_box[2,2]),
@@ -116,41 +140,58 @@ for(i in 1:numfiles){
         Srs1<- Polygons(list(rast_Poly),"PALSAR_extent") #spatial polygon
         pals_ext<-SpatialPolygons(list(Srs1),proj4string=HH_rast@crs) 
         
-        fia.in.rast<-over(spcheasFIA,pals_ext) #FIA coords (alread filtered to fall within the ChEAS domain) that fall within this palsar scene
-        fia.in.rast[is.na(fia.in.rast)]<-0 #replace na's with 0's for indexing
-        fia.in.rast<-as.logical(fia.in.rast)
+#         fia.in.rast<-over(spcheasFIA,pals_ext) #FIA coords (already filtered to fall within the ChEAS domain) that fall within this palsar scene
+#         fia.in.rast[is.na(fia.in.rast)]<-0 #replace na's with 0's for indexing
+#         fia.in.rast<-as.logical(fia.in.rast)
+        coords.in.rast<-over(spcheascoords,pals_ext) #extraction coords (already filtered to fall within the ChEAS domain) that fall within this palsar scene
+        coords.in.rast[is.na(coords.in.rast)]<-0 #replace na's with 0's for indexing
+        if(max(coords.in.rast)!=1){
+          next
+        }
+        coords.in.rast<-as.logical(coords.in.rast)
+        
         
         ################################
         ##calibration data from FIA plots 48m BUFFER MEAN
         ################################
-        HH_data_48m<-extract(HH_rast, spcheasFIA[fia.in.rast], method="simple",buffer=48, small=T, fun=mean) #this step is very slow
-        HV_data_48m<-extract(HV_rast, spcheasFIA[fia.in.rast], method="simple",buffer=48, small=T, fun=mean) #this step is very slow
+#         HH_data_48m<-extract(HH_rast, spcheasFIA[fia.in.rast], method="simple",buffer=48, small=T, fun=mean) #this step is very slow
+#         HV_data_48m<-extract(HV_rast, spcheasFIA[fia.in.rast], method="simple",buffer=48, small=T, fun=mean) #this step is very slow
+        HH_data_48m<-extract(HH_rast, spcheascoords[coords.in.rast], method="simple",buffer=48, small=T, fun=mean) #this step is very slow
+        HV_data_48m<-extract(HV_rast, spcheascoords[coords.in.rast], method="simple",buffer=48, small=T, fun=mean) #this step is very slow
         
         filename<-matrix(substr(as.character(HV_filelist[i]),1,15),nrow=length(HH_data_48m),ncol=1)
         palsar_date<-matrix(as.character(as.Date(substr(as.character(metadata$scndate[metadata$scnid==filename[1]]),1,8),"%Y%m%d")),nrow=length(HH_data_48m),ncol=1)
         
-        all_48<-cbind(filename,palsar_date,spcheasFIA[fia.in.rast]@coords,biomass[fia.in.rast],HH_data_48m,HV_data_48m)
+#         all_48<-cbind(filename,palsar_date,spcheasFIA[fia.in.rast]@coords,biomass[fia.in.rast],HH_data_48m,HV_data_48m)
+        all_48<-cbind(filename,palsar_date,spcheascoords[coords.in.rast]@coords,biomass[coords.in.rast],HH_data_48m,HV_data_48m)
         if(i==1){
-          extracted_48m[i : nrow(spcheasFIA[fia.in.rast]@coords),]<-all_48
+#           extracted_48m[i : nrow(spcheasFIA[fia.in.rast]@coords),]<-all_48
+          extracted_48m[i : nrow(spcheascoords[coords.in.rast]@coords),]<-all_48
         }else if(i>1){
-          extracted_48m[((i-1)*nrow(spcheasFIA[fia.in.rast]@coords)+1) : ((i-1)*nrow(spcheasFIA[fia.in.rast]@coords)+nrow(spcheasFIA[fia.in.rast]@coords)),1:7]<-all_48
+#           extracted_48m[((i-1)*nrow(spcheasFIA[fia.in.rast]@coords)+1) : ((i-1)*nrow(spcheasFIA[fia.in.rast]@coords)+nrow(spcheasFIA[fia.in.rast]@coords)),1:7]<-all_48
+          extracted_48m[((i-1)*nrow(spcheascoords[coords.in.rast]@coords)+1) : ((i-1)*nrow(spcheascoords[coords.in.rast]@coords)+nrow(spcheascoords[coords.in.rast]@coords)),1:7]<-all_48
         }
         ###############################
         #calibration data from FIA plots 60m BUFFER MEAN
         ###############################
-        HH_data_60m<-extract(HH_rast, spcheasFIA[fia.in.rast], method="simple",buffer=60, small=T, fun=mean) #this step is very slow
-        HV_data_60m<-extract(HV_rast, spcheasFIA[fia.in.rast], method="simple",buffer=60, small=T, fun=mean) #this step is very slow
+#         HH_data_60m<-extract(HH_rast, spcheasFIA[fia.in.rast], method="simple",buffer=60, small=T, fun=mean) #this step is very slow
+#         HV_data_60m<-extract(HV_rast, spcheasFIA[fia.in.rast], method="simple",buffer=60, small=T, fun=mean) #this step is very slow
+        HH_data_60m<-extract(HH_rast, spcheascoords[coords.in.rast], method="simple",buffer=60, small=T, fun=mean) #this step is very slow
+        HV_data_60m<-extract(HV_rast, spcheascoords[coords.in.rast], method="simple",buffer=60, small=T, fun=mean) #this step is very slow
         
         filename<-matrix(substr(as.character(HV_filelist[i]),1,15),nrow=length(HH_data_60m),ncol=1)
         colnames(filename)<-"scnid"
         palsar_date<-matrix(as.character(as.Date(substr(as.character(metadata$scndate[metadata$scnid==filename[1]]),1,8),"%Y%m%d")),nrow=length(HH_data_60m),ncol=1)
         colnames(palsar_date)<-"scndate"
         
-        all_60<-cbind(filename,palsar_date,spcheasFIA[fia.in.rast]@coords,biomass[fia.in.rast],HH_data_60m,HV_data_60m)
+#         all_60<-cbind(filename,palsar_date,spcheasFIA[fia.in.rast]@coords,biomass[fia.in.rast],HH_data_60m,HV_data_60m)
+        all_60<-cbind(filename,palsar_date,spcheascoords[coords.in.rast]@coords,biomass[coords.in.rast],HH_data_60m,HV_data_60m)
         if(i==1){
-          extracted_60m[i : nrow(spcheasFIA[fia.in.rast]@coords),]<-all_60
+#           extracted_60m[i : nrow(spcheasFIA[fia.in.rast]@coords),]<-all_60
+          extracted_60m[i : nrow(spcheascoords[coords.in.rast]@coords),]<-all_60
         }else if(i>1){
-          extracted_60m[((i-1)*nrow(spcheasFIA[fia.in.rast]@coords)+1) : ((i-1)*nrow(spcheasFIA[fia.in.rast]@coords)+nrow(spcheasFIA[fia.in.rast]@coords)),1:7]<-all_60
+#           extracted_60m[((i-1)*nrow(spcheasFIA[fia.in.rast]@coords)+1) : ((i-1)*nrow(spcheasFIA[fia.in.rast]@coords)+nrow(spcheasFIA[fia.in.rast]@coords)),1:7]<-all_60
+          extracted_60m[((i-1)*nrow(spcheascoords[coords.in.rast]@coords)+1) : ((i-1)*nrow(spcheascoords[coords.in.rast]@coords)+nrow(spcheascoords[coords.in.rast]@coords)),1:7]<-all_60
         }
       
     print(paste("i=",i,sep=""))
@@ -160,22 +201,25 @@ for(i in 1:numfiles){
 }
 # extracted_48m<-na.omit(extracted_48m)
 # extracted_60m<-na.omit(extracted_60m)
-dat48<-extracted_48m #Create working copy of data (so that I don't need to re-extract if I screw up the data)
-dat60<-extracted_60m #Create working copy of data (so that I don't need to re-extract if I screw up the data)
+# colnames(extracted_48m)<-c("scnid","scndate", "UTM.lat", "UTM.lon", "biomass","HH.sigma.48", "HV.sigma.48")
+# colnames(extracted_60m)<-c("scnid","scndate", "UTM.lat", "UTM.lon", "biomass","HH.sigma.60", "HV.sigma.60")
+
+dat48<-as.data.frame(extracted_48m) #Create working copy of data (so that I don't need to re-extract if I screw up the data)
+dat60<-as.data.frame(extracted_60m) #Create working copy of data (so that I don't need to re-extract if I screw up the data)
 
 colnames(dat48)<-c("scnid","scndate", "UTM.lat", "UTM.lon", "biomass","HH.sigma.48", "HV.sigma.48")
 colnames(dat60)<-c("scnid","scndate", "UTM.lat", "UTM.lon", "biomass","HH.sigma.60", "HV.sigma.60")
 
-extracted_48m[,1]<-as.character(extracted_48m[,1])
-extracted_48m[,2]<-as.Date(extracted_48m[,2],"%Y-%M-%d")
-extracted_48m[,3:7]<- as.numeric(as.character(extracted_48m[,3:7]))
+# dat48$scnid<-as.character(dat48$scnid)
+# dat48$scndate<-as.Date(dat48$scndate,"%Y-%M-%d")
+# dat48[,3:7]<- as.numeric(as.character(dat48[,3:7]))
 
 
-HH_48<-as.numeric(dat48[,6])
-HV_48<-as.numeric(dat48[,7])
-
-HH_60<-as.numeric(dat60[,6])
-HV_60<-as.numeric(dat60[,7])
+# HH_48<-as.numeric(dat48[,6])
+# HV_48<-as.numeric(dat48[,7])
+# 
+# HH_60<-as.numeric(dat60[,6])
+# HV_60<-as.numeric(dat60[,7])
 
 ##QC plots
 par(mfrow=c(1,2)) #checking coordinate alignment of different extraction buffer sizes
@@ -187,6 +231,18 @@ plot(HH_48,HH_60,xlab="48m",ylab="60m",main="HH")
 plot(HV_48,HV_60,xlab="48m",ylab="60m",main="HV")
 
 ##Data Exploration
+par(mfrow=c(2,2))
+plot(dat48$biomass,dat48$HH.sigma.48,xlab="biomass",ylab="HH",main="48m")
+plot(dat48$biomass,dat48$HV.sigma.48,xlab="biomass",ylab="HV",main="48m")
+plot(dat60$biomass,dat60$HH.sigma.60,xlab="biomass",ylab="HH",main="60m")
+plot(dat60$biomass,dat60$HV.sigma.60,xlab="biomass",ylab="HV",main="60m")
+
+par(mfrow=c(2,2))
+scatter.smooth(dat48[dat48[,5]>0 & dat48[,6]>0,5],dat48[dat48[,5]>0 & dat48[,6]>0,6],xlab="biomass>0",ylab="HH>0",main="48m",col="gray")
+scatter.smooth(dat48[dat48[,5]>0 & dat48[,7]>0,5],dat48[dat48[,5]>0 & dat48[,7]>0,7],xlab="biomass>0",ylab="HV>0",main="48m",col="gray")
+scatter.smooth(dat60[dat60[,5]>0 & dat60[,6]>0,5],dat60[dat60[,5]>0 & dat60[,6]>0,6],xlab="biomass>0",ylab="HH>0",main="60m",col="gray")
+scatter.smooth(dat60[dat60[,5]>0 & dat60[,7]>0,5],dat60[dat60[,5]>0 & dat60[,7]>0,7],xlab="biomass>0",ylab="HV>0",main="60m",col="gray")
+
 par(mfrow=c(2,2))
 plot(dat48[,5],HH_48/HV_48,xlab="biomass",ylab="HH/HV",main="48m")
 plot(dat60[,5],HH_60/HV_60,xlab="biomass",ylab="HH/HV",main="60m")
@@ -201,22 +257,30 @@ plot(dat60[,5],(HH_60-HV_60)/(HH_60+HV_60),xlab="biomass",ylab="(HH-HV)/(HH+HV)"
 ########################################################
 ########################################################
 ## Curve fitting
+##Brady S. Hardiman
+##1/10/2014
+
+spp<-c("ACRU","PIST","QURU")
+trt<-c("0", "1")
+###############################################################################################
+##Funtion to estimate likelihood with rectangular hyperbola 1
+###############################################################################################
 param_est<-matrix(NA,nrow=length(spp)*length(trt),ncol=length(trt)+4) #columns for spp, trt, and 3 params,+ AIC
 param_est[,1]<-spp
 param_est[,2]<-trt
 
-colnames(param_est)<-c("spp","trt","Pmax","ki","sd","AIC")
+# colnames(param_est)<-c("spp","trt","Pmax","ki","sd","AIC")
 
 par(mfrow=c(length(spp),length(trt)))
-for(j in 1:length(trt)){
-  for(i in 1:length(spp)){
+for(i in 1:length(spp)){
+  for(j in 1:length(trt)){
     
-    y<-data_pts$photo[data_pts$TRT== trt[j] & data_pts$spp== spp[i]]
-    x<-data_pts$par  [data_pts$TRT== trt[j] & data_pts$spp== spp[i]]
+    y<-data_pts$Photo[data_pts$TRT== trt[j] & data_pts$Spp== spp[i]]
+    x<-data_pts$PARi [data_pts$TRT== trt[j] & data_pts$Spp== spp[i]]
     
-    Pmax<-mean(data_pts$photo[data_pts$spp==spp[i] & data_pts$TRT==trt[j] & data_pts$par>1500])
-    ki<- round(mean(data_pts$par[data_pts$photo > (Pmax/2)-0.5 & data_pts$photo < (Pmax/2)+0.5]))
-    sd<-sd(data_pts$photo[data_pts$spp==spp[i] & data_pts$TRT==trt[j]])
+    Pmax<-mean(data_pts$Photo[data_pts$Spp==spp[i] & data_pts$TRT==trt[j] & data_pts$PARi>1500]) #Amax
+    ki<- round(mean(data_pts$PARi[data_pts$Photo > (Pmax/2)-0.5 & data_pts$Photo < (Pmax/2)+0.5])) #PAR value at half of Amax
+    sd<-sd(data_pts$Photo[data_pts$Spp==spp[i] & data_pts$TRT==trt[j]])
     
     params<-c(Pmax,ki,sd)
     
@@ -239,17 +303,63 @@ for(j in 1:length(trt)){
     xseq = seq(0,max(x),length=1000)
     
     plot(x,y,xlab="Q (PAR)",ylab="A",main=paste(spp[i], "treatment=",trt[j]),
-         xlim=c(min(data_pts$par),max(data_pts$par)), 
-         ylim=c(min(data_pts$photo),max(data_pts$photo)),
+         xlim=c(min(data_pts$PARi),max(data_pts$PARi)), 
+         ylim=c(min(data_pts$Photo),max(data_pts$Photo)),
          pch=16,col="#CCCCCC")
     abline(a=0,b=0)
     lines(cbind(xseq,(params[1]*xseq)/(params[2]+xseq)),lwd=3) #closed circles and solid line for CTRL
   }#for j looping over trt
 }#for i looping over spp
+colnames(param_est)<-c("spp","trt","Pmax","ki","sd","AIC")
 param_est
-
-
-#diagnotics?
-
+##################################
+##################################
+##MODIFIED FROM SUSAN CHENG
+##NOTE: The form of this equation (GPP=((alpha*beta*dirPAR)/(beta + alpha*dirPAR))) is different than above
+mod.params<-matrix(NA,nrow=1,ncol=13)
+colnames(mod.params)<-c("spp", 
+                        "trt",
+                        "lgt_R2", 
+                        "mod.alpha", 
+                        "pval.alpha", 
+                        "alpha.ci.lower", 
+                        "alpha.ci.upper",
+                        "mod.beta", 
+                        "pval.b", 
+                        "beta.ci.upper",
+                        "beta.ci.upper",
+                        "num.iters", 
+                        "convergence")
+par(mfrow=c(length(spp),length(trt)))
+for(i in 1:length(spp)){
+  for(j in 1:length(trt)){
+    
+    y<-data_pts$Photo[data_pts$TRT== trt[j] & data_pts$Spp== spp[i]]
+    x<-data_pts$PARi [data_pts$TRT== trt[j] & data_pts$Spp== spp[i]]
+    
+    # Plot GPP v direct PAR
+    plot(x, y,
+         xlab="Q (PAR)",
+         ylab="A",
+         main=paste(spp[i], "treatment=",trt[j]),
+         col=51,pch=19, cex=0.6,
+         xlim=c(min(data_pts$PARi),max(data_pts$PARi)), 
+         ylim=c(min(data_pts$Photo),max(data_pts$Photo)),
+         las=1, cex.axis=1.2)
+    mod.params<-mod.params[2:7,]
+    
+    xs<-seq(from =1, to=6,by=1)
+    ys<-as.numeric(mod.params[,4])
+    upper<-as.numeric(mod.params[,7])
+    lower<-as.numeric(mod.params[,6])
+    par(mfrow=c(1,1))
+    plot(xs,ys,ylim=c(0,.12),ylab="Quantum Efficiency (Alpha estimate)",xlab="Species/Treatment")
+    segments(xs,lower,xs,upper,col="black",lwd=2)
+    legend("topright",legend=c("1=ACRU-CTRL", "2=ACRU-TRT","3=PIST-CTRL", "4=PIST-TRT", "5=QURU-CTRL", "6=QURU-TRT"))
+    
+    
+#################
+##diagnotics?
+#################
 
 
