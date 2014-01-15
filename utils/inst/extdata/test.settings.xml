@@ -12,7 +12,7 @@
     </pft>
   </pfts>
   <database>
-    <username>bety</username>
+    <user>bety</user>
     <password>bety</password>
     <host>localhost</host>
     <dbname>bety</dbname>
