@@ -37,8 +37,8 @@ check.settings <- function(settings) {
   } else {    
     ## check database settings
     if (is.null(settings$database$driver)) {
-      settings$database$driver <- "PostgreSQL"
-      logger.warn("Please specify a database driver; using default 'PostgreSQL'")
+      settings$database$driver <- "MySQL"
+      logger.warn("Please specify a database driver; using default 'MySQL'")
     }
         
     # Attempt to load the driver
@@ -86,20 +86,21 @@ check.settings <- function(settings) {
         settings$database$host <- "localhost"
     }
     ## finally we can check to see if we can connect to the database
-    if(is.null(settings$database$user)){
+    if(is.null(settings$database[["user"]])){
       if (!is.null(settings$database$userid)) {
         logger.info("'userid' in database section should be 'user'")
         settings$database$user <- settings$database$userid
-        settings$database$userid <- NULL
+        
       } else if (!is.null(settings$database$username)) {
         logger.info("'username' in database section should be 'user'")
         settings$database$user <- settings$database$username
-        settings$database$username <- NULL
+    
       } else {
         logger.info("no database user specified, using 'bety'")
         settings$database$user <- "bety"
       }
-    }
+    } 
+    settings$database$userid <- settings$database$username <- NULL
     if(is.null(settings$database$password)) {
         settings$database$password <- "bety"
     }
@@ -159,20 +160,20 @@ check.settings <- function(settings) {
   
   # make sure there are pfts defined
   if (is.null(settings$pfts) || (length(settings$pfts) == 0)) {
-    logger.severe("No PFTS specified.")
+    logger.warn("No PFTS specified.")
   }
 
   # check for a run settings
   if (is.null(settings[['run']])) {
-    logger.severe("No Run Settings specified")
+    logger.warn("No Run Settings specified")
   }
 
   # check start/end date are specified and correct
   if (is.null(settings$run$start.date)) {
-    logger.severe("No start.date specified in run section.")
+    logger.warn("No start.date specified in run section.")
   }
   if (is.null(settings$run$end.date)) {
-    logger.severe("No end.date specified in run section.")
+    logger.warn("No end.date specified in run section.")
   }
   startdate <- parse_date_time(settings$run$start.date, "ymd_hms", truncated=3)
   enddate <- parse_date_time(settings$run$end.date, "ymd_hms", truncated=3)
