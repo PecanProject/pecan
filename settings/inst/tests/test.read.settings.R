@@ -124,3 +124,51 @@ test_that("check.settings will fail if db does not exist",{
   expect_error(check.settings(s$database))
 
 })
+
+
+
+test_that("check.settings handles userid and username properly", {
+  testsettings.xml <- 
+    "<pecan>
+  <outdir>/tmp/test/</outdir>
+  <database>
+   <userid>bety</userid>
+   <user>bety</user>
+   <passwd>bety</passwd>
+   <host>localhost</host>
+   <name>bety</name>
+ </database>
+</pecan>"
+  writeLines(testsettings.xml, "testsettings.xml")
+  testsettings <- read.settings("testsettings.xml")
+  expect_true("user" %in% names(testsettings$database))  
+  expect_true(!"userid" %in% names(testsettings2$database))
+  
+  testsettings2.xml <- gsub("userid", "username", testsettings.xml)
+  writeLines(testsettings2.xml, "testsettings2.xml")
+  
+  testsettings2 <- read.settings("testsettings2.xml")
+  expect_true("user" %in% names(testsettings2$database))  
+  expect_true(!"username" %in% names(testsettings2$database))
+  
+  testsettings3.xml <- "<pecan>
+   <outdir>/tmp/test/</outdir>
+   <database>
+    <userid>bety</userid>
+    <passwd>bety</passwd>
+    <host>localhost</host>
+    <name>bety</name>
+  </database>
+ </pecan>"
+  writeLines(testsettings3.xml, "testsettings3.xml")  
+  testsettings3 <- read.settings("testsettings3.xml")
+  expect_true("user" %in% names(testsettings3$database))  
+  expect_true(!"userid" %in% names(testsettings3$database))
+  
+  testsettings4.xml <- gsub("userid", "username", testsettings3.xml)
+  writeLines(testsettings4.xml, "testsettings4.xml")
+  testsettings4 <- read.settings(testsettings4.xml)
+  expect_true("user" %in% names(testsettings4$database))  
+  expect_true(!"username" %in% names(testsettings4$database))
+  
+})
