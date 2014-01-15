@@ -2,8 +2,7 @@
 \alias{dbfile.insert}
 \title{Insert file into tables}
 \usage{
-  dbfile.insert(filename, type, id, con,
-    hostname = Sys.info()[["nodename"]])
+dbfile.insert(filename, type, id, con, hostname = Sys.info()[["nodename"]])
 }
 \arguments{
   \item{filename}{the name of the file to be inserted}
@@ -17,15 +16,15 @@
   \item{params}{database connection information}
 }
 \value{
-  data.frame with the id, filename and pathname of the file
-  that is written
+data.frame with the id, filename and pathname of the file
+that is written
 }
 \description{
-  Function to insert a file into the dbfiles table
+Function to insert a file into the dbfiles table
 }
 \details{
-  This will write into the dbfiles and machines the
-  required data to store the file
+This will write into the dbfiles and machines the required
+data to store the file
 }
 \examples{
 \dontrun{
@@ -33,6 +32,6 @@
 }
 }
 \author{
-  Rob Kooper
+Rob Kooper
 }
 
