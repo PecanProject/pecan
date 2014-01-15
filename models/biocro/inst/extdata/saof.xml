@@ -85,12 +85,6 @@
       </constants>
     </pft>
   </pfts>
-  <database>
-    <username>bety</username>
-    <password>bety</password>
-    <dbname>bety</dbname>
-    <host>localhost</host>
-  </database>
   <meta.analysis>
     <iter>3000</iter>
     <random.effects>FALSE</random.effects>

@@ -8,6 +8,9 @@
 #-------------------------------------------------------------------------------
 library(testthat)
 library(PEcAn.DB)
-
-logger.setQuitOnSevere(FALSE)
-test_package("PEcAn.DB")
+dbparms <- list(driver = "MySQL", user = "bety", dbname = "bety", password = "bety")
+if(db.exists(dbparms)){
+  con <- db.open(con)
+  logger.setQuitOnSevere(FALSE)
+  test_package("PEcAn.DB")  
+}
