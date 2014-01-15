@@ -25,17 +25,17 @@ test_that("query.data works",{
 
 
 test_that("expected tables exist",{
-  tables <- db.query("show tables;", con = con)
+  tables <- db.query("show tables;", con = con)[,1]
   ## make sure that all tables are present:
-  expect_true(all(sapply(c("citations", "citations_sites", "citations_treatments", 
-                           "covariates", "cultivars", "dbfiles", "ensembles", "entities",
-                           "formats", "formats_variables", "inputs", "inputs_runs", "inputs_variables",
-                           "likelihoods", "location_yields", "machines", "managements", "managements_treatments",
-                           "methods", "mimetypes", "models", "pfts", "pfts_priors", "pfts_species", 
-                           "posteriors", "posteriors_runs", "priors", "runs", "schema_migrations", 
-                           "sessions", "sites", "species", "traits", "treatments", "users", 
-                           "variables", "workflows", "yields"), 
-                         function(x) grepl(x, tables ))))
+  expected_tables <- c("citations", "citations_sites", "citations_treatments", 
+    "covariates", "cultivars", "dbfiles", "ensembles", "entities",
+    "formats", "formats_variables", "inputs", "inputs_runs", "inputs_variables",
+    "likelihoods", "location_yields", "machines", "managements", "managements_treatments",
+    "methods", "mimetypes", "models", "pfts", "pfts_priors", "pfts_species", 
+    "posteriors", "posteriors_runs", "priors", "runs", "schema_migrations", 
+    "sessions", "sites", "species", "traits", "treatments", "users", 
+    "variables", "workflows", "yields")
+  expect_true(all(expected_tables %in% tables))
 })
 
 ## the following suite could be more comprehensive, and only focus on fields used by PEcAn
