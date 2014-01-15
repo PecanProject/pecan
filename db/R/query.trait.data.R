@@ -119,13 +119,13 @@ append.covariate<-function(data, column.name, ..., covariates.data=list(...)){
   for(covariate.data in covariates.data){
     if(length(covariate.data)>1){
                                         #conditional added to prevent crash when trying to transform an empty data frame
-      transformed <- transform(covariate.data, id = trait_id, level = level)
+      transformed <- transform(covariates.data, id = trait_id, level = level)
       selected <- transformed[!transformed$id %in% merged$id, c('id', 'level')]
       merged <- rbind(merged, selected)
     }
   }
   colnames(merged) <- c('id', column.name)
-  merged <- merge(merged, data, all = TRUE)
+  merged <- merge(merged, data, all = TRUE, by = "id")
   return(merged)
 }
 ##==================================================================================================#
