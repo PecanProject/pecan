@@ -2,8 +2,7 @@
 \alias{arrhenius.scaling.traits}
 \title{Function to apply Arrhenius scaling to 25 degC for temperature-dependent traits}
 \usage{
-  arrhenius.scaling.traits(data, covariates,
-    temp.covariates, new.temp = 25)
+arrhenius.scaling.traits(data, covariates, temp.covariates, new.temp = 25)
 }
 \arguments{
   \item{data}{the data to scale}
@@ -16,10 +15,9 @@
   traits. Curerntly 25 degC}
 }
 \description{
-  Function to apply Arrhenius scaling to 25 degC for
-  temperature-dependent traits
+
 }
 \author{
-  Carl Davidson, David LeBauer
+Carl Davidson, David LeBauer
 }
 
