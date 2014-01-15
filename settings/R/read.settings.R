@@ -37,8 +37,8 @@ check.settings <- function(settings) {
   } else {    
     ## check database settings
     if (is.null(settings$database$driver)) {
-      settings$database$driver <- "PostgreSQL"
-      logger.warn("Please specify a database driver; using default 'PostgreSQL'")
+      settings$database$driver <- "MySQL"
+      logger.warn("Please specify a database driver; using default 'MySQL'")
     }
         
     # Attempt to load the driver
