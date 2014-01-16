@@ -112,7 +112,7 @@ AllomAve <- function(pfts,components=6,outdir=NULL,con=NULL,field=NULL,
       ## Save MCMC objects (Pass to MCMC diagnostics module)
       outfile = paste(outdir,paste("/Allom",pft$name,component,"Rdata",sep="."),sep="")
       print(c("saving MCMC output to",outfile))
-      save(mc,DIC,DICg,pD,pDg,obs,file=outfile)
+      save(mc,DIC,DICg,pD,pDg,obs,allom,file=outfile)
 
       allom.stats[[pft$name]][[component]] = summary(mc)      
       
