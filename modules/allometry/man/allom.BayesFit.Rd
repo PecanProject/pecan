@@ -17,7 +17,8 @@
   {sample size} \item{Xmin} {smallest tree sampled (cm)}
   \item{Xmax} {largest tree sampled (cm)} \item{Xcor}
   {units correction on X} \item{Ycor} {units correction on
-  Y} \item{Xtype} {type of measurement on the X} }}
+  Y} \item{Xtype} {type of measurement on the X} \item{spp}
+  { - USFS species code} }}
 
   \item{nrep}{- number of MCMC replicates}
 
