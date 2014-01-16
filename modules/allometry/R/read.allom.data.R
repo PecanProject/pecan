@@ -7,7 +7,6 @@
 #' \itemize{
 #'   \item{acronym}{USDA species acronyms, used with FIELD data (vector)}
 #'   \item{spcd}{USFS species codes, use with TALLY data (vector)}
-#'   \item{name}{name used to identify output files (single)}
 #' }
 #' @param component  allometry ID, Jenkins table 5
 #' @param field      raw field data
