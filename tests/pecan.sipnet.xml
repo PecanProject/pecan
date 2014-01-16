@@ -2,14 +2,6 @@
 <pecan>
   <outdir>pecan</outdir>
 
-  <database>
-    <username>bety</username>
-    <password>bety</password>
-    <host>localhost</host>
-    <dbname>bety</dbname>
-    <driver>MySQL</driver>
-  </database>
-
   <bety>
    <write>FALSE</write>
   </bety>

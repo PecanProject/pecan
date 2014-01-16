@@ -2,9 +2,8 @@
 \alias{dbfile.input.insert}
 \title{Insert file into tables}
 \usage{
-  dbfile.input.insert(filename, siteid, startdate, enddate,
-    mimetype, formatname, con,
-    hostname = Sys.info()[["nodename"]])
+dbfile.input.insert(filename, siteid, startdate, enddate, mimetype, formatname,
+  con, hostname = Sys.info()[["nodename"]])
 }
 \arguments{
   \item{filename}{the name of the file to be inserted}
@@ -32,16 +31,16 @@
   \item{params}{database connection information}
 }
 \value{
-  data.frame with the id, filename and pathname of the
-  input that is requested
+data.frame with the id, filename and pathname of the input
+that is requested
 }
 \description{
-  Function to insert a file into the dbfiles table as an
-  input
+Function to insert a file into the dbfiles table as an
+input
 }
 \details{
-  This will write into the dbfiles, inputs, machines and
-  formats the required data to store the file
+This will write into the dbfiles, inputs, machines and
+formats the required data to store the file
 }
 \examples{
 \dontrun{
@@ -49,6 +48,6 @@
 }
 }
 \author{
-  Rob Kooper
+Rob Kooper
 }
 

@@ -6,13 +6,6 @@
    <name>biocro.salix</name>
   </pft>
  </pfts>
- <database>
-  <username>bety</username>
-  <password>bety</password>
-  <dbname>bety</dbname>
-  <host>localhost</host>
-  <driver>MySQL</driver>
- </database>
  <meta.analysis>
   <iter>3000</iter>
  </meta.analysis>

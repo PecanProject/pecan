@@ -7,8 +7,7 @@ For Vcmax and SLA data, only data collected between  April and July are queried,
 For Vcmax and root_respiration_rate, data are scaled
 converted from measurement temperature to \eqn{25^oC} via the arrhenius equation.}
 \usage{
-  query.trait.data(trait, spstr,
-    con = query.base.con(settings), ...)
+query.trait.data(trait, spstr, con = query.base.con(settings), ...)
 }
 \arguments{
   \item{trait}{is the trait name used in the database,
@@ -18,10 +17,10 @@ converted from measurement temperature to \eqn{25^oC} via the arrhenius equation
   integers associated with the species}
 }
 \value{
-  dataframe ready for use in meta-analysis
+dataframe ready for use in meta-analysis
 }
 \description{
-  Extract trait data from database
+Extract trait data from database
 }
 \examples{
 \dontrun{
@@ -30,6 +29,6 @@ query.trait.data("Vcmax", "938", con = query.base.con(settings))
 }
 }
 \author{
-  David LeBauer, Carl Davidson, Shawn Serbin
+David LeBauer, Carl Davidson, Shawn Serbin
 }
 
