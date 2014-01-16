@@ -1,17 +1,22 @@
 #' @title read.allom.data
 #' @name  read.allom.data
 #' 
+#' @description Extracts PFT- and component-specific data and allometeric equations from the specified files.
+#' 
 #' @param pft.data   PFT dataframe
 #' \itemize{
-#'   \item{acronym}{USDA species acronym, used with FIELD data}
-#'   \item{spcd}{USFS species code, use with TALLY data}
+#'   \item{acronym}{USDA species acronyms, used with FIELD data (vector)}
+#'   \item{spcd}{USFS species codes, use with TALLY data (vector)}
+#'   \item{name}{name used to identify output files (single)}
 #' }
 #' @param component  allometry ID, Jenkins table 5
 #' @param field      raw field data
 #' @param parm       allometry equation file, Jenkins table 3
 #' @param nsim       number of Monte Carlo draws in numerical transforms
-#' @return \item{field}{Field Data}
-#'         \item{parm}{Compiled Allometries}
+#' @return \item{field}{PFT-filtered field Data}
+#'         \item{parm}{Component- and PFT-filtered Allometric Equations}
+#' @details This code also estimates the standard error from R-squared, 
+#' which is required to simulate pseudodata from the allometric eqns.
 read.allom.data <- function(pft.data, component, field, parm,nsim=10000) {
 
   allom <- list(parm=NULL,field=NULL)

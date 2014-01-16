@@ -1,9 +1,6 @@
 \name{allom.BayesFit}
 \alias{allom.BayesFit}
-\title{Module to fit a common power-law allometric model
-to a mixture of raw data and allometric equations
-in a Heirarchical Bayes framework with multiple imputation
-of the allometric data}
+\title{allom.BayesFit}
 \usage{
   allom.BayesFit(allom, nrep = 10000, form = "power")
 }
@@ -12,29 +9,36 @@ of the allometric data}
   query.allom.data) which needs to be a list with two
   entries: 'field' - contains a list, each entry for which
   is a data frame with 'x' and 'y'. Can be NULL 'parm' - a
-  single data frame with the following components: n -
-  sample size a - eqn coefficient b - eqn coefficient c -
-  eqn coefficient d - eqn coefficient e - eqn coefficient
-  se - standard error eqn - sample size Xmin - smallest
-  tree sampled (cm) Xmax - largest tree sampled (cm) Xcor -
-  units correction on X Ycor - units correction on Y Xtype
-  - type of measurement on the X}
+  single data frame with the following components:
+  \itemize{ \item{n} {sample size} \item{a} {eqn
+  coefficient} \item{b} {eqn coefficient} \item{c} {eqn
+  coefficient} \item{d} {eqn coefficient} \item{e} {eqn
+  coefficient} \item{se} {standard error} \item{eqn}
+  {sample size} \item{Xmin} {smallest tree sampled (cm)}
+  \item{Xmax} {largest tree sampled (cm)} \item{Xcor}
+  {units correction on X} \item{Ycor} {units correction on
+  Y} \item{Xtype} {type of measurement on the X} }}
 
   \item{nrep}{- number of MCMC replicates}
 
   \item{form}{functional form of the allometry: "power" vs
-  "exp"
-
-  dependencies: requires MCMCpack and mvtnorm
-
-  note: runs 1 chain, but multiple chains can be simulated
-  by multiple function calls}
+  "exp"}
+}
+\value{
+  returns MCMC chain and ONE instance of 'data' note: in
+  many cases the estimates are multiply imputed
 }
 \description{
   Module to fit a common power-law allometric model to a
   mixture of raw data and allometric equations in a
   Heirarchical Bayes framework with multiple imputation of
   the allometric data
+}
+\details{
+  dependencies: requires MCMCpack and mvtnorm
+
+  note: runs 1 chain, but multiple chains can be simulated
+  by multiple function calls
 }
 \author{
   Michael Dietze
