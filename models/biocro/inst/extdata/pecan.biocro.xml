@@ -7,7 +7,7 @@
     </pft>
   </pfts>
   <database>
-    <username>bety</username>
+    <user>bety</user>
     <password>bety</password>
     <dbname>bety</dbname>
     <host>localhost</host>

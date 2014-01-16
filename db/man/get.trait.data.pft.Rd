@@ -2,8 +2,8 @@
 \alias{get.trait.data.pft}
 \title{Gets trait data from the database}
 \usage{
-  get.trait.data.pft(pft, dbfiles, dbcon,
-    forceupdate = TRUE, trait.names = traitdictionary$id)
+get.trait.data.pft(pft, dbfiles, dbcon, forceupdate = TRUE,
+  trait.names = traitdictionary$id)
 }
 \arguments{
   \item{pft}{the pft whos traits to retrieve}
@@ -16,12 +16,12 @@
   auto will check to see if an update is needed.}
 }
 \value{
-  updated pft with posteriorid
+updated pft with posteriorid
 }
 \description{
-  Get trait data from the database for a single pft
+Get trait data from the database for a single pft
 }
 \author{
-  David LeBauer, Shawn Serbin, Rob Kooper
+David LeBauer, Shawn Serbin, Rob Kooper
 }
 

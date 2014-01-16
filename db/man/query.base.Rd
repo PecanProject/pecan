@@ -2,7 +2,7 @@
 \alias{query.base}
 \title{Query database}
 \usage{
-  query.base(query, con = NULL, ...)
+query.base(query, con = NULL, ...)
 }
 \arguments{
   \item{query}{SQL query string}
@@ -13,16 +13,16 @@
   (e.g. password, user name, database)}
 }
 \value{
-  data frame with query results
+data frame with query results
 }
 \description{
-  Generic function to query trait database
+Generic function to query trait database
 }
 \details{
-  Given a connection and a query, will return a query as a
-  data frame
+Given a connection and a query, will return a query as a
+data frame
 
-  Deprecated, please use db.query
+Deprecated, please use db.query
 }
 \examples{
 \dontrun{
