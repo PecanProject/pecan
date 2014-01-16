@@ -9,11 +9,11 @@
 }
 \arguments{
   \item{pfts}{pft list from PEcAn settings (if con) OR list
-  of pft spcd's \itemize{ \item{"acronym"}{ - USDA species
-  acronyms (see plants.usda.gov), used with FIELD data
-  (vector)} \item{"spcd"}{ - USFS species codes, use with
-  PARM data (vector)} \item{"name"}{ - name used to
-  identify output files (single)} }}
+  of pft spcd's If the latter, the names within the list
+  are used to identify PFTs \itemize{ \item{"acronym"}{ -
+  USDA species acronyms (see plants.usda.gov), used with
+  FIELD data (vector)} \item{"spcd"}{ - USFS species codes,
+  use with PARM data (vector)} }}
 
   \item{components}{IDs for allometry components from
   Jenkins et al 2004 Table 5. Default is stem biomass (6).
@@ -53,8 +53,12 @@
   to the allometry table and field data (optional)
 }
 \examples{
-pfts = list(FAGR = data.frame(spcd=531,name="FAgr",acronym="FAGR"))
+pfts = list(FAGR = data.frame(spcd=531,acronym="FAGR"))
 allom.stats = AllomAve(pfts,ngibbs=500)
+
+## example of a PFT with multiple species (late hardwood)
+## note that if you're just using Jenkins the acronym column is optional
+pfts = list(LH = data.frame(spcd = c(531,318),acronym=c("FAGR","ACSA3")))
 }
 \author{
   Michael Dietze
