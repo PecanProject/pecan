@@ -6,7 +6,11 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-#' Module to fit a common power-law allometric model
+#' @title allom.BayesFit
+#' @name  allom.BayesFit
+#' @aliases allom.BayesFit
+#' 
+#' @description Module to fit a common power-law allometric model
 #' to a mixture of raw data and allometric equations
 #' in a Heirarchical Bayes framework with multiple imputation
 #' of the allometric data
@@ -16,28 +20,32 @@
 #'            'field' - contains a list, each entry for which is
 #'                      a data frame with 'x' and 'y'. Can be NULL
 #'            'parm' -  a single data frame with the following components:
-#'                   n  - sample size
-#'                   a  - eqn coefficient
-#'                   b  - eqn coefficient
-#'                   c  - eqn coefficient
-#'                   d  - eqn coefficient
-#'                   e  - eqn coefficient
-#'                   se - standard error
-#'                   eqn - sample size
-#'                   Xmin - smallest tree sampled (cm)
-#'                   Xmax - largest tree sampled (cm)
-#'                   Xcor - units correction on X
-#'                   Ycor - units correction on Y
-#'                   Xtype - type of measurement on the X
+#'            \itemize{         
+#'                   \item{n}     {sample size}
+#'                   \item{a}     {eqn coefficient}
+#'                   \item{b}     {eqn coefficient}
+#'                   \item{c}     {eqn coefficient}
+#'                   \item{d}     {eqn coefficient}
+#'                   \item{e}     {eqn coefficient}
+#'                   \item{se}    {standard error}
+#'                   \item{eqn}   {sample size}
+#'                   \item{Xmin}  {smallest tree sampled (cm)}
+#'                   \item{Xmax}  {largest tree sampled (cm)}
+#'                   \item{Xcor}  {units correction on X}
+#'                   \item{Ycor}  {units correction on Y}
+#'                   \item{Xtype} {type of measurement on the X}
+#'          }
 #' @param nrep - number of MCMC replicates
 #'
 #' @param form   functional form of the allometry: "power" vs "exp"
 #'
-#' dependencies: requires MCMCpack and mvtnorm
+#' @details  dependencies: requires MCMCpack and mvtnorm
 #'
 #' note: runs 1 chain, but multiple chains can be simulated by
 #'       multiple function calls
-#'
+#'       
+#' @return returns MCMC chain and ONE instance of 'data'
+#' note: in many cases the estimates are multiply imputed 
 #'
 #' @author Michael Dietze
 #' 
@@ -278,6 +286,6 @@ allom.BayesFit <- function(allom,nrep=10000,form="power") {
                   paste("sig",1:nsite,sep="."),
                   "tau11","tau12","tau22","D",
                   "Bg0","Bg1","Sg","Dg")
-  return(as.mcmc(out))
+  return(list(mc=as.mcmc(out),obs=data))
   
 } ## END allom.BayesFit
