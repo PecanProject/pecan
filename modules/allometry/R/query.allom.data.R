@@ -22,7 +22,7 @@
 #' @param con        open database connection
 #' @param nsim       number of pseudo-data simulations for estimating SE
 #' 
-#' database is assumed to conform to the PEcAn Schema
+#' @details database is assumed to conform to the PEcAn Schema
 query.allom.data <- function(pft_name,variable,con,nsim = 10000){
   
   require(PEcAn.DB)
