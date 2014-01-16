@@ -11,10 +11,10 @@
 #' @name  AllomAve
 #' @aliases AllomAve
 #' @param pfts        pft list from PEcAn settings (if con) OR list of pft spcd's
+#' If the latter, the names within the list are used to identify PFTs
 #' \itemize{
 #'   \item{"acronym"}{ - USDA species acronyms (see plants.usda.gov), used with FIELD data (vector)}
 #'   \item{"spcd"}{ - USFS species codes, use with PARM data (vector)}
-#'   \item{"name"}{ - name used to identify output files (single)}
 #' }
 #' @param components  IDs for allometry components from Jenkins et al 2004 Table 5. Default is stem biomass (6). See data(allom.components)
 #' @param outdir      output directory files are written to. Default is getwd()
@@ -35,8 +35,11 @@
 #' Wheb running "stand alone" pass the pft list mapping species to species codes and the file paths to the allometry table and field data (optional)
 #' 
 #' @examples 
-#' pfts = list(FAGR = data.frame(spcd=531,name="FAgr",acronym="FAGR"))
+#' pfts = list(FAGR = data.frame(spcd=531,acronym="FAGR"))
 #' allom.stats = AllomAve(pfts,ngibbs=500)
+#' 
+#' ## example of a PFT with multiple species (late hardwood)
+#' pfts = list(LH = data.frame(spcd = c(531,318),acronym=c("FAGR","ACSA3")))
 #' 
 #' @author Michael Dietze
 #' 
@@ -69,8 +72,10 @@ AllomAve <- function(pfts,components=6,outdir=NULL,con=NULL,field=NULL,
   allom.stats = list()
   
   ########## BAYESIAN VERSION ###############
-  for(pft in pfts){  ## loop over PFTs
-    allom.stats[[pft$name]] = list()
+  for(ipft in 1:length(pfts)){  ## loop over PFTs
+    pft = pfts[[ipft]]
+    pft.name = names(pfts)[ipft]
+    allom.stats[[pft.name]] = list()
     
     for(component in components){ 
       print(c(pft,component))
@@ -78,7 +83,8 @@ AllomAve <- function(pfts,components=6,outdir=NULL,con=NULL,field=NULL,
       ## load data
       if(!is.null(con)){
         ### If running within PEcAn, grab the data from the database
-        allom <- query.allom.data(pft$name,component,con)
+        pft.name = pft$name
+        allom <- query.allom.data(pft.name,component,con)
       } else {
         allom <- read.allom.data(pft,component,field,parm)        
       }
@@ -110,11 +116,11 @@ AllomAve <- function(pfts,components=6,outdir=NULL,con=NULL,field=NULL,
       DICg = mean(Dg) + pDg
       
       ## Save MCMC objects (Pass to MCMC diagnostics module)
-      outfile = paste(outdir,paste("/Allom",pft$name,component,"Rdata",sep="."),sep="")
+      outfile = paste(outdir,paste("/Allom",pft.name,component,"Rdata",sep="."),sep="")
       print(c("saving MCMC output to",outfile))
       save(mc,DIC,DICg,pD,pDg,obs,allom,file=outfile)
 
-      allom.stats[[pft$name]][[component]] = summary(mc)      
+      allom.stats[[pft.name]][[component]] = summary(mc)      
       
       ## Save Posterior information (Pass to update.posterior module)
       if(FALSE){
@@ -122,7 +128,7 @@ AllomAve <- function(pfts,components=6,outdir=NULL,con=NULL,field=NULL,
       }
       
       ## Analysis/visualization
-      pdffile = paste(outdir,paste("/Allom",pft$name,component,"MCMC","pdf",sep="."),sep="")
+      pdffile = paste(outdir,paste("/Allom",pft.name,component,"MCMC","pdf",sep="."),sep="")
       print(c("saving diagnostic graphs to",pdffile))
       pdf(pdffile)
         ### scatter plot  
@@ -137,7 +143,7 @@ AllomAve <- function(pfts,components=6,outdir=NULL,con=NULL,field=NULL,
         }      
         #naive prediction
         dseq = seq(0.1,1000,length=10)  ## diameter sequence
-        beta = allom.stats[[pft$name]][[component]]$statistics[,"Mean"]
+        beta = allom.stats[[pft.name]][[component]]$statistics[,"Mean"]
         y.0  = exp(beta['mu0'] + beta['mu1']*log(dseq))
         y.g  = exp(beta['Bg0'] + beta['Bg1']*log(dseq))      
         lines(dseq,y.0,lwd=2,col=1)
