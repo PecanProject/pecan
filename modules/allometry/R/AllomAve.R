@@ -39,9 +39,12 @@
 #' allom.stats = AllomAve(pfts,ngibbs=500)
 #' 
 #' ## example of a PFT with multiple species (late hardwood)
+#' ## note that if you're just using Jenkins the acronym column is optional
 #' pfts = list(LH = data.frame(spcd = c(531,318),acronym=c("FAGR","ACSA3")))
 #' 
 #' @author Michael Dietze
+#' 
+#' @export
 #' 
 AllomAve <- function(pfts,components=6,outdir=NULL,con=NULL,field=NULL,
                      parm=system.file("data/Table3_GTR-NE-319.v2.csv", package = "PEcAn.allometry"),
