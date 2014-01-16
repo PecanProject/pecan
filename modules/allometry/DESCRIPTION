@@ -18,8 +18,3 @@ License: file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
-Collate:
-    'AllomAve.R'
-    'allom.BayesFit.R'
-    'query.allom.data.R'
-    'read.allom.data.R'

@@ -13,9 +13,7 @@
   \item{con}{open database connection}
 
   \item{nsim}{number of pseudo-data simulations for
-  estimating SE
-
-  database is assumed to conform to the PEcAn Schema}
+  estimating SE}
 }
 \description{
   Module to grab allometric information from the raw data
@@ -24,6 +22,9 @@
 
   Tallied equation format based on Jenkins et al 2004 USFS
   General Technical Report NE-319
+}
+\details{
+  database is assumed to conform to the PEcAn Schema
 }
 \author{
   Michael Dietze
