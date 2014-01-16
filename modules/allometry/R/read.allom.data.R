@@ -7,7 +7,6 @@
 #' \itemize{
 #'   \item{acronym}{USDA species acronyms, used with FIELD data (vector)}
 #'   \item{spcd}{USFS species codes, use with TALLY data (vector)}
-#'   \item{name}{name used to identify output files (single)}
 #' }
 #' @param component  allometry ID, Jenkins table 5
 #' @param field      raw field data
@@ -92,6 +91,7 @@ read.allom.data <- function(pft.data, component, field, parm,nsim=10000) {
     R2 = apply(rbind(nu(allom$parm$R2[sel]),nu(allom$parm$r[sel])^2),2,max)
     R2[R2 == 0] <- NA
     sel <- sel[!is.na(R2)]
+    spp = allompft[sel]
     
     ## check and make sure we have data and can continue
     if(sum(!is.na(allompft)) == 0 | length(sel) == 0){      
@@ -200,7 +200,7 @@ read.allom.data <- function(pft.data, component, field, parm,nsim=10000) {
     Xmin = rng[1,]
     Xmax = rng[2,]
     
-    allomParms <- as.data.frame(cbind(a,b,c,d,e,se,R2,Rratio,cf,eqn,n,Xmin,Xmax,Xcor,Ycor,Xtype,cite))
+    allomParms <- as.data.frame(cbind(a,b,c,d,e,se,R2,Rratio,cf,eqn,n,Xmin,Xmax,Xcor,Ycor,Xtype,cite,spp))
     
     ## screen TALLY data for nonsensible allometric coefficients
     drop <- NULL
