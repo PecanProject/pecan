@@ -28,10 +28,10 @@ test_that("check.settings throws error if required content not there", {
 
   s <- settings
   s[['pfts']] <- NULL
-  expect_error(check.settings(s), "No PFTS specified.")  
+  expect_error(check.settings(s))  
   s <- settings
   s[['run']] <- NULL
-  expect_error(check.settings(s), "No Run Settings specified")  
+  expect_error(check.settings(s))  
 
   for(date in c("start.date", "end.date")){
     s <- settings
@@ -121,6 +121,7 @@ test_that("check.settings will fail if db does not exist",{
   expect_true(db.exists(s$database))
   s$database$dbname <- "blabla"
   expect_false(db.exists(s$database))
+
   expect_error(check.settings(s$database))
 
 })
@@ -128,47 +129,31 @@ test_that("check.settings will fail if db does not exist",{
 
 
 test_that("check.settings handles userid and username properly", {
-  testsettings.xml <- 
-    "<pecan>
-  <outdir>/tmp/test/</outdir>
-  <database>
-   <userid>bety</userid>
-   <user>bety</user>
-   <passwd>bety</passwd>
-   <host>localhost</host>
-   <name>bety</name>
- </database>
-</pecan>"
-  writeLines(testsettings.xml, "testsettings.xml")
-  testsettings <- read.settings("testsettings.xml")
-  expect_true("user" %in% names(testsettings$database))  
-  expect_true(!"userid" %in% names(testsettings2$database))
+
+  s1 <- settings
+  s1$database[["userid"]] <- "bety"
+  s1$database[["user"]] <- NULL
+  s2 <- check.settings(s1)
+  expect_true("user" %in% names(s2$database))  
+  expect_true(!"userid" %in% names(s2$database))
   
-  testsettings2.xml <- gsub("userid", "username", testsettings.xml)
-  writeLines(testsettings2.xml, "testsettings2.xml")
+  s1 <- settings
+  s1$database[["username"]] <- "bety"
+  s1$database[["user"]] <- NULL
+  s2 <- check.settings(s1)
+  expect_true("user" %in% names(s2$database))  
+  expect_true(!"username" %in% names(s2$database))
   
-  testsettings2 <- read.settings("testsettings2.xml")
-  expect_true("user" %in% names(testsettings2$database))  
-  expect_true(!"username" %in% names(testsettings2$database))
+  s1 <- settings
+  s1$database[["userid"]] <- "bety"
+  s2 <- check.settings(s1)
+  expect_true("user" %in% names(s2$database))  
+  expect_true(!"userid" %in% names(s2$database))
   
-  testsettings3.xml <- "<pecan>
-   <outdir>/tmp/test/</outdir>
-   <database>
-    <userid>bety</userid>
-    <passwd>bety</passwd>
-    <host>localhost</host>
-    <name>bety</name>
-  </database>
- </pecan>"
-  writeLines(testsettings3.xml, "testsettings3.xml")  
-  testsettings3 <- read.settings("testsettings3.xml")
-  expect_true("user" %in% names(testsettings3$database))  
-  expect_true(!"userid" %in% names(testsettings3$database))
-  
-  testsettings4.xml <- gsub("userid", "username", testsettings3.xml)
-  writeLines(testsettings4.xml, "testsettings4.xml")
-  testsettings4 <- read.settings(testsettings4.xml)
-  expect_true("user" %in% names(testsettings4$database))  
-  expect_true(!"username" %in% names(testsettings4$database))
+  s1 <- settings
+  s1$database[["username"]] <- "bety"
+  s2 <- check.settings(s1)
+  expect_true("user" %in% names(s2$database))  
+  expect_true(!"username" %in% names(s2$database))
   
 })
