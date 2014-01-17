@@ -7,9 +7,9 @@
 }
 \arguments{
   \item{pft.data}{PFT dataframe \itemize{
-  \item{acronym}{USDA species acronym, used with FIELD
-  data} \item{spcd}{USFS species code, use with TALLY data}
-  }}
+  \item{acronym}{USDA species acronyms, used with FIELD
+  data (vector)} \item{spcd}{USFS species codes, use with
+  TALLY data (vector)} }}
 
   \item{component}{allometry ID, Jenkins table 5}
 
@@ -21,10 +21,17 @@
   transforms}
 }
 \value{
-  \item{field}{Field Data}
-  \item{parm}{Compiled Equations}
+  \item{field}{PFT-filtered field Data}
+  \item{parm}{Component- and PFT-filtered Allometric
+  Equations}
 }
 \description{
-  read.allom.data
+  Extracts PFT- and component-specific data and allometeric
+  equations from the specified files.
+}
+\details{
+  This code also estimates the standard error from
+  R-squared, which is required to simulate pseudodata from
+  the allometric eqns.
 }
 
