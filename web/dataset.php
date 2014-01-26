@@ -20,16 +20,15 @@ $type=$_REQUEST['type'];
 
 // database parameters
 require("system.php");
-require("dbinfo.php");
-$connection=open_database();
+$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", ${db_username}, ${db_password});
 
 // get run information
 $query = "SELECT folder FROM workflows WHERE workflows.id=${workflowid}";
-$result = mysql_query($query);
+$result = $pdo->query($query);
 if (!$result) {
-	die('Invalid query: ' . mysql_error());
+	die('Invalid query: ' . $pdo->errorInfo());
 }
-$run = mysql_fetch_assoc($result);
+$run = $result->fetch(PDO::FETCH_ASSOC);
 $folder = str_replace("//", "/", $run['folder']);
 
 // return dataset
