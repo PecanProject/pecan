@@ -2,16 +2,16 @@
 	$workflowid = $_REQUEST['workflowid'];
 	$offline = isset($_REQUEST['offline']);
 
-	require("dbinfo.php");
-	$connection=open_database();
+	require("system.php");
+	$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", ${db_username}, ${db_password});
 	
 	// get run information
 	$query = "SELECT params, folder FROM workflows WHERE workflows.id=$workflowid";
-	$result = mysql_query($query);
+	$result = $pdo->query($query);
 	if (!$result) {
-		die('Invalid query: ' . mysql_error());
+		die('Invalid query: ' . $pdo->errorInfo());
 	}
-	$workflow = mysql_fetch_assoc($result);
+	$workflow = $result->fetch(PDO::FETCH_ASSOC);
 	$folder = $workflow['folder'];
 	$params = eval("return ${workflow['params']};");	#reassemble the array since it was stored in php code
 
@@ -20,7 +20,7 @@
 	if ($status === FALSE) {
 		$status = array();
 	}
-	open_database($connection);
+	$pdo = null;
 ?>
 <!DOCTYPE html>
 <html>

@@ -18,16 +18,16 @@ if (!isset($_REQUEST['workflowid'])) {
 $workflowid=$_REQUEST['workflowid'];
 
 // database parameters
-require("dbinfo.php");
-$connection=open_database();
+require("system.php");
+$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", ${db_username}, ${db_password});
 
 // get run information
 $query = "SELECT * FROM workflows WHERE workflows.id=$workflowid";
-$result = mysql_query($query);
+$result = $pdo->query($query);
 if (!$result) {
-	die('Invalid query: ' . mysql_error());
+	die('Invalid query: ' . $pdo->errorInfo());
 }
-$workflow = mysql_fetch_assoc($result);
+$workflow = $result->fetch(PDO::FETCH_ASSOC);
 $start = substr($workflow['start_date'], 0, 4);
 $end = substr($workflow['end_date'], 0, 4);
 $folder = $workflow['folder'];
@@ -388,5 +388,5 @@ foreach(scandir("$folder/out") as $runid) {
 </html>
 
 <?php 
-close_database($connection);
+$pdo = null;
 ?>
