@@ -8,7 +8,7 @@ $db_password="bety";
 $db_database="bety";
 
 # List of allowed hosts
-$hostlist=array(gethostname())
+$hostlist=array(gethostname());
 
 # Folder where PEcAn is installed
 $pecan_install="/home/carya/R/library";
