@@ -5,7 +5,7 @@ cd $(dirname $0)/../..
 set -x
 
 # command to connect to database
-export CMD="sudo -u postgres psql"
+export CMD="sudo -u postgres psql -U bety"
 
 # load latest dump of the database
 curl -o betydump.gz http://isda.ncsa.illinois.edu/~kooper/EBI/betydump.psql.gz
