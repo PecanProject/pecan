@@ -78,7 +78,7 @@ cruncep_nc2dt <- function(lat, lon, met.nc){
         stop(paste("chosen lat:", lat, "and  lon:", lon, " is in the ocean"))
     } else if (mask > 0){
         for(var in variables){
-            print(var)
+            ## TODO check if vars can be sent as vector
             vars[[var]] <- as.numeric(ncvar_get(nc = met.nc,
                                                 varid = var,
                                                 start = c(loni, lati, 1),
