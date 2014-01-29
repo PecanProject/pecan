@@ -22,8 +22,12 @@ _note_ these are i/o and memory-intensive (need at least 16GB RAM; works better 
 
 ### concatenate
 
+1. For each year, combine variables into one file per year
+2. combine all years into a single file
+
 * [`weather.sh`](https://github.com/PecanProject/pecan/blob/master/modules/data.atmosphere/inst/scripts/cruncep/weather.sh)
 
 ### rechunk
 
+* this "probably" should be done before concatenating, so rechunking can be performed on smaller files (although we do have access to a 1TB large memory node if necessary) 
 * [`permute_all.sh`](https://github.com/PecanProject/pecan/blob/master/modules/data.atmosphere/inst/scripts/cruncep/permute_all.sh) attempts to chunk for fast reading of time series (`permute.sh` does this for 1975-2010)
