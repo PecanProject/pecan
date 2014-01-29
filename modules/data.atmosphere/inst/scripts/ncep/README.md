@@ -18,26 +18,26 @@ To submit each gridpoint as a separate job:
 Outputs:
 
 * Specific Humidity (provides daily mean, min, max)
-** shum:long_name = "mean Daily Specific Humidity at 2 m" ;
-** shum:units = "kg/kg" ;
+ * shum:long_name = "mean Daily Specific Humidity at 2 m" ;
+ * shum:units = "kg/kg" ;
 * Relative Humidity
-** rhum:long_name = "mean Daily relative humidity at sigma level 995" ;
-** rhum:units = "%" ;
+ * rhum:long_name = "mean Daily relative humidity at sigma level 995" ;
+ * rhum:units = "%" ;
 * Precipitation
-** prate:long_name = "mean Daily Precipitation Rate at surface" ;
-** prate:units = "Kg/m^2/s" ;
+ * prate:long_name = "mean Daily Precipitation Rate at surface" ;
+ * prate:units = "Kg/m^2/s" ;
 * Wind
-** uwnd:long_name = "mean Daily u-wind at 10 m" ;
-** uwnd:units = "m/s" ;
-** vwnd:long_name = "mean Daily v-wind at 10 m" ;
-** vwnd:units = "m/s" ;
-** wind = sqrt(vwnd^2 + uwnd^2)
+ * uwnd:long_name = "mean Daily u-wind at 10 m" ;
+ * uwnd:units = "m/s" ;
+ * vwnd:long_name = "mean Daily v-wind at 10 m" ;
+ * vwnd:units = "m/s" ;
+ * wind = sqrt(vwnd^2 + uwnd^2)
 * Temperature
-** air:long_name = "mean Daily Air temperature at 2 m" ;
-** air:units = "degK" ;
+ * air:long_name = "mean Daily Air temperature at 2 m" ;
+ * air:units = "degK" ;
 * Solar Radiation
-** dswrf:long_name = "mean Daily Downward Solar Radiation Flux at surface" ;
-** dswrf:units = "W/m^2" ;
+ * dswrf:long_name = "mean Daily Downward Solar Radiation Flux at surface" ;
+ * dswrf:units = "W/m^2" ;
 
 
 ## convert ncep csv daily to hourly inputs:
