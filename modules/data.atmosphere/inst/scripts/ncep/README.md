@@ -2,10 +2,14 @@
 
 ## _New method_ 
 
+one big netCDF file to take advantage of parallel IO
+
 [concatenate inputs across variables and years `concatenate_ncep.sh`](https://github.com/PecanProject/pecan/blob/master/modules/data.atmosphere/inst/scripts/ncep/concatenate_ncep.sh)
 
 
-## _Old method_ Extract global NCEP data to one file per grid point
+## _Old method_ 
+
+Extract global NCEP data to one file per grid point. Many small files = slow server
 
 This method is inefficient and does not scale. New approach is to take advantage of netcdf concatenation and parallel IO. Retained for posterity.
 
