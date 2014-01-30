@@ -7,7 +7,7 @@
   <password>bety</password>
   <host>localhost</host>
   <dbname>bety</dbname>
-  <driver>MySQL</driver>
+  <driver>PostgreSQL</driver>
  </database>
 
  <bety>
