@@ -38,7 +38,7 @@ options(warn = 1, keep.source = TRUE, error =
           }))
 
 # remove previous runs
-#unlink("pecan", recursive=TRUE)
+unlink("pecan", recursive=TRUE)
 
 # show all queries to the database
 #db.showQueries(TRUE)

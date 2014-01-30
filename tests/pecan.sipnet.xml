@@ -2,8 +2,15 @@
 <pecan>
   <outdir>pecan</outdir>
 
+  <database>
+    <user>bety</user>
+    <password>bety</password>
+    <host>localhost</host>
+    <dbname>bety</dbname>
+  </database>
+
   <bety>
-   <write>FALSE</write>
+    <write>FALSE</write>
   </bety>
 
   <pfts>
