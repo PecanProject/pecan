@@ -1,0 +1,786 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head><title>R: Object oriented implementation of probability models</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="R.css">
+</head><body>
+<h1> Object oriented implementation of probability models
+<img class="toplogo" src="../../../doc/html/logo.jpg" alt="[R logo]">
+</h1>
+<hr>
+<div align="center">
+<a href="../../../doc/html/packages.html"><img src="../../../doc/html/left.jpg" alt="[Up]" width="30" height="30" border="0"></a>
+<a href="../../../doc/html/index.html"><img src="../../../doc/html/up.jpg" alt="[Top]" width="30" height="30" border="0"></a>
+</div><h2>Documentation for package &lsquo;distrMod&rsquo; version 2.4</h2>
+
+<ul><li><a href="../DESCRIPTION">DESCRIPTION file</a>.</li>
+<li><a href="../doc/index.html">Overview of user guides and package vignettes</a>; browse <a href="../doc">directory</a>.</li>
+<li><a href="../demo">Code demos</a>.  Use <a href="../../utils/help/demo">demo()</a> to run them.</li>
+<li><a href="../NEWS">Package NEWS</a>.</li>
+</ul>
+
+<h2>Help Pages</h2>
+
+
+<p align="center">
+<a href="# "> </a>
+<a href="#A">A</a>
+<a href="#B">B</a>
+<a href="#C">C</a>
+<a href="#D">D</a>
+<a href="#E">E</a>
+<a href="#F">F</a>
+<a href="#G">G</a>
+<a href="#I">I</a>
+<a href="#L">L</a>
+<a href="#M">M</a>
+<a href="#N">N</a>
+<a href="#O">O</a>
+<a href="#P">P</a>
+<a href="#Q">Q</a>
+<a href="#R">R</a>
+<a href="#S">S</a>
+<a href="#T">T</a>
+<a href="#U">U</a>
+<a href="#V">V</a>
+<a href="#W">W</a>
+</p>
+
+<table width="100%">
+<tr><td width="25%"><a href="0distrMod-package.html">distrMod-package</a></td>
+<td>distrMod - probability models</td></tr>
+</table>
+
+<h2><a name="A">-- A --</a></h2>
+
+<table width="100%">
+<tr><td width="25%"><a href="addAlphTrsp2col.html">addAlphTrsp2col</a></td>
+<td>"addAlphTrsp2col"</td></tr>
+<tr><td width="25%"><a href="Estimate-class.html">addInfo&lt;-</a></td>
+<td>Estimate-class.</td></tr>
+<tr><td width="25%"><a href="Estimate-class.html">addInfo&lt;--method</a></td>
+<td>Estimate-class.</td></tr>
+<tr><td width="25%"><a href="ProbFamily-class.html">addProp&lt;-</a></td>
+<td>Family of probability measures</td></tr>
+<tr><td width="25%"><a href="ProbFamily-class.html">addProp&lt;--method</a></td>
+<td>Family of probability measures</td></tr>
+<tr><td width="25%"><a href="asBias.html">asBias</a></td>
+<td>Generating function for asBias-class</td></tr>
+<tr><td width="25%"><a href="asBias-class.html">asBias-class</a></td>
+<td>Standardized Asymptotic Bias</td></tr>
+<tr><td width="25%"><a href="asCov.html">asCov</a></td>
+<td>Generating function for asCov-class</td></tr>
+<tr><td width="25%"><a href="asCov-class.html">asCov-class</a></td>
+<td>Asymptotic covariance</td></tr>
+<tr><td width="25%"><a href="asGRisk-class.html">asGRisk-class</a></td>
+<td>Convex asymptotic risk</td></tr>
+<tr><td width="25%"><a href="asHampel.html">asHampel</a></td>
+<td>Generating function for asHampel-class</td></tr>
+<tr><td width="25%"><a href="asHampel-class.html">asHampel-class</a></td>
+<td>Asymptotic Hampel risk</td></tr>
+<tr><td width="25%"><a href="asMSE.html">asMSE</a></td>
+<td>Generating function for asMSE-class</td></tr>
+<tr><td width="25%"><a href="asMSE-class.html">asMSE-class</a></td>
+<td>Asymptotic mean square error</td></tr>
+<tr><td width="25%"><a href="asRisk-class.html">asRisk-class</a></td>
+<td>Aymptotic risk</td></tr>
+<tr><td width="25%"><a href="asRiskwithBias-class.html">asRiskwithBias-class</a></td>
+<td>Aymptotic risk</td></tr>
+<tr><td width="25%"><a href="asSemivar.html">asSemivar</a></td>
+<td>Generating function for asSemivar-class</td></tr>
+<tr><td width="25%"><a href="asSemivar-class.html">asSemivar-class</a></td>
+<td>Semivariance Risk Type</td></tr>
+<tr><td width="25%"><a href="asUnOvShoot.html">asUnOvShoot</a></td>
+<td>Generating function for asUnOvShoot-class</td></tr>
+<tr><td width="25%"><a href="asUnOvShoot-class.html">asUnOvShoot-class</a></td>
+<td>Asymptotic under-/overshoot probability</td></tr>
+<tr><td width="25%"><a href="Estimate-class.html">asvar</a></td>
+<td>Estimate-class.</td></tr>
+<tr><td width="25%"><a href="Estimate-class.html">asvar-method</a></td>
+<td>Estimate-class.</td></tr>
+<tr><td width="25%"><a href="Estimate-class.html">asvar&lt;-</a></td>
+<td>Estimate-class.</td></tr>
+<tr><td width="25%"><a href="Estimate-class.html">asvar&lt;--method</a></td>
+<td>Estimate-class.</td></tr>
+<tr><td width="25%"><a href="asymmetricBias.html">asymmetricBias</a></td>
+<td>Generating function for asymmetricBias-class</td></tr>
+<tr><td width="25%"><a href="asymmetricBias-class.html">asymmetricBias-class</a></td>
+<td>asymmetric Bias Type</td></tr>
+</table>
+
+<h2><a name="B">-- B --</a></h2>
+
+<table width="100%">
+<tr><td width="25%"><a href="BetaFamily.html">BetaFamily</a></td>
+<td>Generating function for Beta families</td></tr>
+<tr><td width="25%"><a href="asRiskwithBias-class.html">biastype</a></td>
+<td>Aymptotic risk</td></tr>
+<tr><td width="25%"><a href="BiasType-class.html">BiasType-class</a></td>
+<td>Bias Type</td></tr>
+<tr><td width="25%"><a href="asRiskwithBias-class.html">biastype-method</a></td>
+<td>Aymptotic risk</td></tr>
+<tr><td width="25%"><a href="asRiskwithBias-class.html">biastype&lt;-</a></td>
+<td>Aymptotic risk</td></tr>
+<tr><td width="25%"><a href="asRiskwithBias-class.html">biastype&lt;--method</a></td>
+<td>Aymptotic risk</td></tr>
+<tr><td width="25%"><a href="BinomFamily.html">BinomFamily</a></td>
+<td>Generating function for Binomial families</td></tr>
+<tr><td width="25%"><a href="asHampel-class.html">bound</a></td>
+<td>Asymptotic Hampel risk</td></tr>
+<tr><td width="25%"><a href="asHampel-class.html">bound-method</a></td>
+<td>Asymptotic Hampel risk</td></tr>
+<tr><td width="25%"><a href="fiHampel-class.html">bound-method</a></td>
+<td>Finite-sample Hampel risk</td></tr>
+</table>
+
+<h2><a name="C">-- C --</a></h2>
+
+<table width="100%">
+<tr><td width="25%"><a href="Confint-class.html">call.estimate</a></td>
+<td>Confint-class</td></tr>
+<tr><td width="25%"><a href="Confint-class.html">call.estimate-method</a></td>
+<td>Confint-class</td></tr>
+<tr><td width="25%"><a href="CauchyLocationScaleFamily.html">CauchyLocationScaleFamily</a></td>
+<td>Generating function for Cauchy location and scale families</td></tr>
+<tr><td width="25%"><a href="checkL2deriv.html">checkL2deriv</a></td>
+<td>Generic function for checking L2-derivatives</td></tr>
+<tr><td width="25%"><a href="L2ParamFamily-class.html">checkL2deriv-method</a></td>
+<td>L2 differentiable parametric family</td></tr>
+<tr><td width="25%"><a href="MCEstimate-class.html">coerce-method</a></td>
+<td>MCEstimate-class.</td></tr>
+<tr><td width="25%"><a href="Estimate-class.html">completecases</a></td>
+<td>Estimate-class.</td></tr>
+<tr><td width="25%"><a href="Estimate-class.html">completecases-method</a></td>
+<td>Estimate-class.</td></tr>
+<tr><td width="25%"><a href="Confint-class.html">completecases.estimate</a></td>
+<td>Confint-class</td></tr>
+<tr><td width="25%"><a href="Confint-class.html">completecases.estimate-method</a></td>
+<td>Confint-class</td></tr>
+<tr><td width="25%"><a href="confint-methods.html">confint</a></td>
+<td>Methods for function confint in Package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="Confint-class.html">Confint-class</a></td>
+<td>Confint-class</td></tr>
+<tr><td width="25%"><a href="Confint-class.html">confint-method</a></td>
+<td>Confint-class</td></tr>
+<tr><td width="25%"><a href="confint-methods.html">confint-method</a></td>
+<td>Methods for function confint in Package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="confint-methods.html">confint-methods</a></td>
+<td>Methods for function confint in Package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="MCEstimate-class.html">criterion</a></td>
+<td>MCEstimate-class.</td></tr>
+<tr><td width="25%"><a href="MCEstimate-class.html">criterion-method</a></td>
+<td>MCEstimate-class.</td></tr>
+<tr><td width="25%"><a href="MCEstimate-class.html">criterion.fct</a></td>
+<td>MCEstimate-class.</td></tr>
+<tr><td width="25%"><a href="MCEstimate-class.html">criterion.fct-method</a></td>
+<td>MCEstimate-class.</td></tr>
+<tr><td width="25%"><a href="MCEstimate-class.html">criterion&lt;-</a></td>
+<td>MCEstimate-class.</td></tr>
+<tr><td width="25%"><a href="MCEstimate-class.html">criterion&lt;--method</a></td>
+<td>MCEstimate-class.</td></tr>
+</table>
+
+<h2><a name="D">-- D --</a></h2>
+
+<table width="100%">
+<tr><td width="25%"><a href="ProbFamily-class.html">d-method</a></td>
+<td>Family of probability measures</td></tr>
+<tr><td width="25%"><a href="ParamFamParameter-class.html">dimension-method</a></td>
+<td>Parameter of a parametric family of probability measures</td></tr>
+<tr><td width="25%"><a href="ProbFamily-class.html">distribution</a></td>
+<td>Family of probability measures</td></tr>
+<tr><td width="25%"><a href="ProbFamily-class.html">distribution-method</a></td>
+<td>Family of probability measures</td></tr>
+<tr><td width="25%"><a href="0distrMod-package.html">distrMod</a></td>
+<td>distrMod - probability models</td></tr>
+<tr><td width="25%"><a href="distrModMASK.html">distrModMASK</a></td>
+<td>Masking of/by other functions in package "distrMod"</td></tr>
+<tr><td width="25%"><a href="distrModOptions.html">distrModOptions</a></td>
+<td>Function to change the global variables of the package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="distrModOptions.html">distrModoptions</a></td>
+<td>Function to change the global variables of the package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="ProbFamily-class.html">distrSymm</a></td>
+<td>Family of probability measures</td></tr>
+<tr><td width="25%"><a href="ProbFamily-class.html">distrSymm-method</a></td>
+<td>Family of probability measures</td></tr>
+</table>
+
+<h2><a name="E">-- E --</a></h2>
+
+<table width="100%">
+<tr><td width="25%"><a href="L2ParamFamily-class.html">E-method</a></td>
+<td>L2 differentiable parametric family</td></tr>
+<tr><td width="25%"><a href="Estimate-class.html">estimate</a></td>
+<td>Estimate-class.</td></tr>
+<tr><td width="25%"><a href="Estimate-class.html">Estimate-class</a></td>
+<td>Estimate-class.</td></tr>
+<tr><td width="25%"><a href="Estimate-class.html">estimate-method</a></td>
+<td>Estimate-class.</td></tr>
+<tr><td width="25%"><a href="Estimate-class.html">estimate.call</a></td>
+<td>Estimate-class.</td></tr>
+<tr><td width="25%"><a href="Estimate-class.html">estimate.call-method</a></td>
+<td>Estimate-class.</td></tr>
+<tr><td width="25%"><a href="Estimator.html">Estimator</a></td>
+<td>Function to compute estimates</td></tr>
+<tr><td width="25%"><a href="norms.html">EuclideanNorm</a></td>
+<td>Norm functions</td></tr>
+<tr><td width="25%"><a href="EvenSymmetric.html">EvenSymmetric</a></td>
+<td>Generating function for EvenSymmetric-class</td></tr>
+<tr><td width="25%"><a href="EvenSymmetric-class.html">EvenSymmetric-class</a></td>
+<td>Class for Even Functions</td></tr>
+<tr><td width="25%"><a href="existsPIC.html">existsPIC</a></td>
+<td>Methods for Function existsPIC in Package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="existsPIC.html">existsPIC-method</a></td>
+<td>Methods for Function existsPIC in Package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="existsPIC.html">existsPIC-methods</a></td>
+<td>Methods for Function existsPIC in Package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="ExpScaleFamily.html">ExpScaleFamily</a></td>
+<td>Generating function for exponential scale families</td></tr>
+</table>
+
+<h2><a name="F">-- F --</a></h2>
+
+<table width="100%">
+<tr><td width="25%"><a href="ParamFamily-class.html">fam.call</a></td>
+<td>Parametric family of probability measures.</td></tr>
+<tr><td width="25%"><a href="ParamFamily-class.html">fam.call-method</a></td>
+<td>Parametric family of probability measures.</td></tr>
+<tr><td width="25%"><a href="NormType-class.html">fct</a></td>
+<td>Norm Type</td></tr>
+<tr><td width="25%"><a href="NormType-class.html">fct-method</a></td>
+<td>Norm Type</td></tr>
+<tr><td width="25%"><a href="NormType-class.html">fct&lt;-</a></td>
+<td>Norm Type</td></tr>
+<tr><td width="25%"><a href="NormType-class.html">fct&lt;--method</a></td>
+<td>Norm Type</td></tr>
+<tr><td width="25%"><a href="fiBias.html">fiBias</a></td>
+<td>Generating function for fiBias-class</td></tr>
+<tr><td width="25%"><a href="fiBias-class.html">fiBias-class</a></td>
+<td>Finite-sample Bias</td></tr>
+<tr><td width="25%"><a href="fiCov.html">fiCov</a></td>
+<td>Generating function for fiCov-class</td></tr>
+<tr><td width="25%"><a href="fiCov-class.html">fiCov-class</a></td>
+<td>Finite-sample covariance</td></tr>
+<tr><td width="25%"><a href="fiHampel.html">fiHampel</a></td>
+<td>Generating function for fiHampel-class</td></tr>
+<tr><td width="25%"><a href="fiHampel-class.html">fiHampel-class</a></td>
+<td>Finite-sample Hampel risk</td></tr>
+<tr><td width="25%"><a href="fiMSE.html">fiMSE</a></td>
+<td>Generating function for fiMSE-class</td></tr>
+<tr><td width="25%"><a href="fiMSE-class.html">fiMSE-class</a></td>
+<td>Finite-sample mean square error</td></tr>
+<tr><td width="25%"><a href="fiRisk-class.html">fiRisk-class</a></td>
+<td>Finite-sample risk</td></tr>
+<tr><td width="25%"><a href="L2ParamFamily-class.html">FisherInfo</a></td>
+<td>L2 differentiable parametric family</td></tr>
+<tr><td width="25%"><a href="L2ParamFamily-class.html">FisherInfo-method</a></td>
+<td>L2 differentiable parametric family</td></tr>
+<tr><td width="25%"><a href="fiUnOvShoot.html">fiUnOvShoot</a></td>
+<td>Generating function for fiUnOvShoot-class</td></tr>
+<tr><td width="25%"><a href="fiUnOvShoot-class.html">fiUnOvShoot-class</a></td>
+<td>Finite-sample under-/overshoot probability</td></tr>
+<tr><td width="25%"><a href="ParamFamParameter-class.html">fixed</a></td>
+<td>Parameter of a parametric family of probability measures</td></tr>
+<tr><td width="25%"><a href="Estimate-class.html">fixed-method</a></td>
+<td>Estimate-class.</td></tr>
+<tr><td width="25%"><a href="ParamFamParameter-class.html">fixed-method</a></td>
+<td>Parameter of a parametric family of probability measures</td></tr>
+<tr><td width="25%"><a href="ParamFamily-class.html">fixed-method</a></td>
+<td>Parametric family of probability measures.</td></tr>
+<tr><td width="25%"><a href="Confint-class.html">fixed.estimate</a></td>
+<td>Confint-class</td></tr>
+<tr><td width="25%"><a href="Confint-class.html">fixed.estimate-method</a></td>
+<td>Confint-class</td></tr>
+<tr><td width="25%"><a href="ParamFamParameter-class.html">fixed&lt;-</a></td>
+<td>Parameter of a parametric family of probability measures</td></tr>
+<tr><td width="25%"><a href="ParamFamParameter-class.html">fixed&lt;--method</a></td>
+<td>Parameter of a parametric family of probability measures</td></tr>
+<tr><td width="25%"><a href="FunctionSymmetry-class.html">FunctionSymmetry-class</a></td>
+<td>Class of Symmetries for Functions</td></tr>
+<tr><td width="25%"><a href="FunSymmList.html">FunSymmList</a></td>
+<td>Generating function for FunSymmList-class</td></tr>
+<tr><td width="25%"><a href="FunSymmList-class.html">FunSymmList-class</a></td>
+<td>List of Symmetries for a List of Functions</td></tr>
+</table>
+
+<h2><a name="G">-- G --</a></h2>
+
+<table width="100%">
+<tr><td width="25%"><a href="GammaFamily.html">GammaFamily</a></td>
+<td>Generating function for Gamma families</td></tr>
+<tr><td width="25%"><a href="meRes.html">get.criterion.fct</a></td>
+<td>helper functions for mceCalc and mleCalc</td></tr>
+<tr><td width="25%"><a href="distrModOptions.html">getdistrModOption</a></td>
+<td>Function to change the global variables of the package 'distrMod'</td></tr>
+</table>
+
+<h2><a name="I">-- I --</a></h2>
+
+<table width="100%">
+<tr><td width="25%"><a href="InfoNorm.html">InfoNorm</a></td>
+<td>Generating function for InfoNorm-class</td></tr>
+<tr><td width="25%"><a href="QFnorm-class.html">InfoNorm-class</a></td>
+<td>Norm classes for norms based on quadratic forms</td></tr>
+<tr><td width="25%"><a href="Estimate-class.html">Infos</a></td>
+<td>Estimate-class.</td></tr>
+<tr><td width="25%"><a href="Estimate-class.html">Infos-method</a></td>
+<td>Estimate-class.</td></tr>
+<tr><td width="25%"><a href="Estimate-class.html">Infos&lt;-</a></td>
+<td>Estimate-class.</td></tr>
+<tr><td width="25%"><a href="Estimate-class.html">Infos&lt;--method</a></td>
+<td>Estimate-class.</td></tr>
+<tr><td width="25%"><a href="isKerAinKerB.html">isKerAinKerB</a></td>
+<td>isKerAinKerB</td></tr>
+</table>
+
+<h2><a name="L">-- L --</a></h2>
+
+<table width="100%">
+<tr><td width="25%"><a href="L2ParamFamily-class.html">L2deriv</a></td>
+<td>L2 differentiable parametric family</td></tr>
+<tr><td width="25%"><a href="L2ParamFamily-class.html">L2deriv-method</a></td>
+<td>L2 differentiable parametric family</td></tr>
+<tr><td width="25%"><a href="L2ParamFamily-class.html">L2derivDistr</a></td>
+<td>L2 differentiable parametric family</td></tr>
+<tr><td width="25%"><a href="L2ParamFamily-class.html">L2derivDistr-method</a></td>
+<td>L2 differentiable parametric family</td></tr>
+<tr><td width="25%"><a href="L2ParamFamily-class.html">L2derivDistrSymm</a></td>
+<td>L2 differentiable parametric family</td></tr>
+<tr><td width="25%"><a href="L2ParamFamily-class.html">L2derivDistrSymm-method</a></td>
+<td>L2 differentiable parametric family</td></tr>
+<tr><td width="25%"><a href="L2ParamFamily-class.html">L2derivSymm</a></td>
+<td>L2 differentiable parametric family</td></tr>
+<tr><td width="25%"><a href="L2ParamFamily-class.html">L2derivSymm-method</a></td>
+<td>L2 differentiable parametric family</td></tr>
+<tr><td width="25%"><a href="L2GroupFamily-class.html">L2GroupParamFamily-class</a></td>
+<td>L2 differentiable parametric group family</td></tr>
+<tr><td width="25%"><a href="L2LocationFamily.html">L2LocationFamily</a></td>
+<td>Generating function for L2LocationFamily-class</td></tr>
+<tr><td width="25%"><a href="L2LocationFamily-class.html">L2LocationFamily-class</a></td>
+<td>L2 differentiable parametric group family</td></tr>
+<tr><td width="25%"><a href="L2LocationScaleFamily.html">L2LocationScaleFamily</a></td>
+<td>Generating function for L2LocationScaleFamily-class</td></tr>
+<tr><td width="25%"><a href="L2LocationScaleFamily-class.html">L2LocationScaleFamily-class</a></td>
+<td>L2 differentiable parametric group family</td></tr>
+<tr><td width="25%"><a href="L2LocationUnknownScaleFamily.html">L2LocationUnknownScaleFamily</a></td>
+<td>Generating function for L2LocationScaleFamily-class in nuisance situation</td></tr>
+<tr><td width="25%"><a href="L2ParamFamily.html">L2ParamFamily</a></td>
+<td>Generating function for L2ParamFamily-class</td></tr>
+<tr><td width="25%"><a href="L2ParamFamily-class.html">L2ParamFamily-class</a></td>
+<td>L2 differentiable parametric family</td></tr>
+<tr><td width="25%"><a href="L2ScaleFamily.html">L2ScaleFamily</a></td>
+<td>Generating function for L2ScaleFamily-class</td></tr>
+<tr><td width="25%"><a href="L2ScaleFamily-class.html">L2ScaleFamily-class</a></td>
+<td>L2 differentiable parametric group family</td></tr>
+<tr><td width="25%"><a href="L2ScaleUnknownLocationFamily.html">L2ScaleUnknownLocationFamily</a></td>
+<td>Generating function for L2LocationScaleFamily-class in nuisance situation</td></tr>
+<tr><td width="25%"><a href="ParamFamParameter-class.html">length-method</a></td>
+<td>Parameter of a parametric family of probability measures</td></tr>
+<tr><td width="25%"><a href="LnormScaleFamily.html">LnormScaleFamily</a></td>
+<td>Generating function for lognormal scale families</td></tr>
+<tr><td width="25%"><a href="L2GroupFamily-class.html">LogDeriv</a></td>
+<td>L2 differentiable parametric group family</td></tr>
+<tr><td width="25%"><a href="L2GroupFamily-class.html">LogDeriv-method</a></td>
+<td>L2 differentiable parametric group family</td></tr>
+<tr><td width="25%"><a href="L2GroupFamily-class.html">LogDeriv&lt;-</a></td>
+<td>L2 differentiable parametric group family</td></tr>
+<tr><td width="25%"><a href="L2GroupFamily-class.html">LogDeriv&lt;--method</a></td>
+<td>L2 differentiable parametric group family</td></tr>
+</table>
+
+<h2><a name="M">-- M --</a></h2>
+
+<table width="100%">
+<tr><td width="25%"><a href="ParamFamParameter-class.html">main</a></td>
+<td>Parameter of a parametric family of probability measures</td></tr>
+<tr><td width="25%"><a href="Estimate-class.html">main-method</a></td>
+<td>Estimate-class.</td></tr>
+<tr><td width="25%"><a href="ParamFamParameter-class.html">main-method</a></td>
+<td>Parameter of a parametric family of probability measures</td></tr>
+<tr><td width="25%"><a href="ParamFamily-class.html">main-method</a></td>
+<td>Parametric family of probability measures.</td></tr>
+<tr><td width="25%"><a href="ParamFamParameter-class.html">main&lt;-</a></td>
+<td>Parameter of a parametric family of probability measures</td></tr>
+<tr><td width="25%"><a href="ParamFamParameter-class.html">main&lt;--method</a></td>
+<td>Parameter of a parametric family of probability measures</td></tr>
+<tr><td width="25%"><a href="ParamFamily-class.html">makeOKPar</a></td>
+<td>Parametric family of probability measures.</td></tr>
+<tr><td width="25%"><a href="ParamFamily-class.html">makeOKPar-method</a></td>
+<td>Parametric family of probability measures.</td></tr>
+<tr><td width="25%"><a href="distrModMASK.html">MASKING</a></td>
+<td>Masking of/by other functions in package "distrMod"</td></tr>
+<tr><td width="25%"><a href="mleCalc-methods.html">mceCalc</a></td>
+<td>Methods for functions mceCalc and mleCalc in Package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="mleCalc-methods.html">mceCalc-method</a></td>
+<td>Methods for functions mceCalc and mleCalc in Package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="mleCalc-methods.html">mceCalc-methods</a></td>
+<td>Methods for functions mceCalc and mleCalc in Package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="MCEstimate-class.html">MCEstimate-class</a></td>
+<td>MCEstimate-class.</td></tr>
+<tr><td width="25%"><a href="MCEstimator.html">MCEstimator</a></td>
+<td>Function to compute minimum criterion estimates</td></tr>
+<tr><td width="25%"><a href="MDEstimator.html">MDEstimator</a></td>
+<td>Function to compute minimum distance estimates</td></tr>
+<tr><td width="25%"><a href="meRes.html">meRes</a></td>
+<td>helper functions for mceCalc and mleCalc</td></tr>
+<tr><td width="25%"><a href="MCEstimate-class.html">method</a></td>
+<td>MCEstimate-class.</td></tr>
+<tr><td width="25%"><a href="MCEstimate-class.html">method-method</a></td>
+<td>MCEstimate-class.</td></tr>
+<tr><td width="25%"><a href="mleCalc-methods.html">mleCalc</a></td>
+<td>Methods for functions mceCalc and mleCalc in Package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="mleCalc-methods.html">mleCalc-method</a></td>
+<td>Methods for functions mceCalc and mleCalc in Package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="mleCalc-methods.html">mleCalc-methods</a></td>
+<td>Methods for functions mceCalc and mleCalc in Package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="MLEstimator.html">MLEstimator</a></td>
+<td>Function to compute maximum likelihood estimates</td></tr>
+<tr><td width="25%"><a href="modifyModel-methods.html">modifyModel</a></td>
+<td>Methods for function modifyModel in Package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="modifyModel-methods.html">modifyModel-method</a></td>
+<td>Methods for function modifyModel in Package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="modifyModel-methods.html">modifyModel-methods</a></td>
+<td>Methods for function modifyModel in Package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="ParamFamily-class.html">modifyParam</a></td>
+<td>Parametric family of probability measures.</td></tr>
+<tr><td width="25%"><a href="ParamFamily-class.html">modifyParam-method</a></td>
+<td>Parametric family of probability measures.</td></tr>
+</table>
+
+<h2><a name="N">-- N --</a></h2>
+
+<table width="100%">
+<tr><td width="25%"><a href="BiasType-class.html">name-method</a></td>
+<td>Bias Type</td></tr>
+<tr><td width="25%"><a href="Estimate-class.html">name-method</a></td>
+<td>Estimate-class.</td></tr>
+<tr><td width="25%"><a href="NormType-class.html">name-method</a></td>
+<td>Norm Type</td></tr>
+<tr><td width="25%"><a href="ProbFamily-class.html">name-method</a></td>
+<td>Family of probability measures</td></tr>
+<tr><td width="25%"><a href="Confint-class.html">name.estimate</a></td>
+<td>Confint-class</td></tr>
+<tr><td width="25%"><a href="Confint-class.html">name.estimate-method</a></td>
+<td>Confint-class</td></tr>
+<tr><td width="25%"><a href="BiasType-class.html">name&lt;--method</a></td>
+<td>Bias Type</td></tr>
+<tr><td width="25%"><a href="Estimate-class.html">name&lt;--method</a></td>
+<td>Estimate-class.</td></tr>
+<tr><td width="25%"><a href="NormType-class.html">name&lt;--method</a></td>
+<td>Norm Type</td></tr>
+<tr><td width="25%"><a href="ProbFamily-class.html">name&lt;--method</a></td>
+<td>Family of probability measures</td></tr>
+<tr><td width="25%"><a href="NBinomFamily.html">NbinomFamily</a></td>
+<td>Generating function for Nbinomial families</td></tr>
+<tr><td width="25%"><a href="NBinomFamily.html">NbinomMeanSizeFamily</a></td>
+<td>Generating function for Nbinomial families</td></tr>
+<tr><td width="25%"><a href="NBinomFamily.html">NbinomwithSizeFamily</a></td>
+<td>Generating function for Nbinomial families</td></tr>
+<tr><td width="25%"><a href="negativeBias.html">negativeBias</a></td>
+<td>Generating function for onesidedBias-class</td></tr>
+<tr><td width="25%"><a href="NonSymmetric.html">NonSymmetric</a></td>
+<td>Generating function for NonSymmetric-class</td></tr>
+<tr><td width="25%"><a href="NonSymmetric-class.html">NonSymmetric-class</a></td>
+<td>Class for Non-symmetric Functions</td></tr>
+<tr><td width="25%"><a href="asRiskwithBias-class.html">norm</a></td>
+<td>Aymptotic risk</td></tr>
+<tr><td width="25%"><a href="asRiskwithBias-class.html">norm-method</a></td>
+<td>Aymptotic risk</td></tr>
+<tr><td width="25%"><a href="NormLocationFamily.html">NormLocationFamily</a></td>
+<td>Generating function for normal location families</td></tr>
+<tr><td width="25%"><a href="NormLocationScaleFamily.html">NormLocationScaleFamily</a></td>
+<td>Generating function for normal location and scale families</td></tr>
+<tr><td width="25%"><a href="NormLocationUnknownScaleFamily.html">NormLocationUnknownScaleFamily</a></td>
+<td>Generating function for normal location families with unknown scale as nuisance</td></tr>
+<tr><td width="25%"><a href="NormScaleFamily.html">NormScaleFamily</a></td>
+<td>Generating function for normal scale families</td></tr>
+<tr><td width="25%"><a href="NormScaleUnknownLocationFamily.html">NormScaleUnknownLocationFamily</a></td>
+<td>Generating function for normal scale families with unknown location as nuisance</td></tr>
+<tr><td width="25%"><a href="NormType.html">NormType</a></td>
+<td>Generating function for NormType-class</td></tr>
+<tr><td width="25%"><a href="asRiskwithBias-class.html">normtype</a></td>
+<td>Aymptotic risk</td></tr>
+<tr><td width="25%"><a href="NormType-class.html">NormType-class</a></td>
+<td>Norm Type</td></tr>
+<tr><td width="25%"><a href="asRiskwithBias-class.html">normtype-method</a></td>
+<td>Aymptotic risk</td></tr>
+<tr><td width="25%"><a href="asRiskwithBias-class.html">normtype&lt;-</a></td>
+<td>Aymptotic risk</td></tr>
+<tr><td width="25%"><a href="asRiskwithBias-class.html">normtype&lt;--method</a></td>
+<td>Aymptotic risk</td></tr>
+<tr><td width="25%"><a href="asymmetricBias-class.html">nu</a></td>
+<td>asymmetric Bias Type</td></tr>
+<tr><td width="25%"><a href="asymmetricBias-class.html">nu-method</a></td>
+<td>asymmetric Bias Type</td></tr>
+<tr><td width="25%"><a href="asymmetricBias-class.html">nu&lt;-</a></td>
+<td>asymmetric Bias Type</td></tr>
+<tr><td width="25%"><a href="asymmetricBias-class.html">nu&lt;--method</a></td>
+<td>asymmetric Bias Type</td></tr>
+<tr><td width="25%"><a href="ParamFamParameter-class.html">nuisance</a></td>
+<td>Parameter of a parametric family of probability measures</td></tr>
+<tr><td width="25%"><a href="Estimate-class.html">nuisance-method</a></td>
+<td>Estimate-class.</td></tr>
+<tr><td width="25%"><a href="ParamFamParameter-class.html">nuisance-method</a></td>
+<td>Parameter of a parametric family of probability measures</td></tr>
+<tr><td width="25%"><a href="ParamFamily-class.html">nuisance-method</a></td>
+<td>Parametric family of probability measures.</td></tr>
+<tr><td width="25%"><a href="Confint-class.html">nuisance.estimate</a></td>
+<td>Confint-class</td></tr>
+<tr><td width="25%"><a href="Confint-class.html">nuisance.estimate-method</a></td>
+<td>Confint-class</td></tr>
+<tr><td width="25%"><a href="ParamFamParameter-class.html">nuisance&lt;-</a></td>
+<td>Parameter of a parametric family of probability measures</td></tr>
+<tr><td width="25%"><a href="ParamFamParameter-class.html">nuisance&lt;--method</a></td>
+<td>Parameter of a parametric family of probability measures</td></tr>
+</table>
+
+<h2><a name="O">-- O --</a></h2>
+
+<table width="100%">
+<tr><td width="25%"><a href="OddSymmetric.html">OddSymmetric</a></td>
+<td>Generating function for OddSymmetric-class</td></tr>
+<tr><td width="25%"><a href="OddSymmetric-class.html">OddSymmetric-class</a></td>
+<td>Class for Odd Functions</td></tr>
+<tr><td width="25%"><a href="onesidedBias-class.html">onesidedBias-class</a></td>
+<td>onesided Bias Type</td></tr>
+<tr><td width="25%"><a href="MCEstimate-class.html">optimwarn</a></td>
+<td>MCEstimate-class.</td></tr>
+<tr><td width="25%"><a href="MCEstimate-class.html">optimwarn-method</a></td>
+<td>MCEstimate-class.</td></tr>
+</table>
+
+<h2><a name="P">-- P --</a></h2>
+
+<table width="100%">
+<tr><td width="25%"><a href="ProbFamily-class.html">p-method</a></td>
+<td>Family of probability measures</td></tr>
+<tr><td width="25%"><a href="ParamFamily-class.html">param-method</a></td>
+<td>Parametric family of probability measures.</td></tr>
+<tr><td width="25%"><a href="ParamFamily.html">ParamFamily</a></td>
+<td>Generating function for ParamFamily-class</td></tr>
+<tr><td width="25%"><a href="ParamFamily-class.html">ParamFamily-class</a></td>
+<td>Parametric family of probability measures.</td></tr>
+<tr><td width="25%"><a href="ParamFamParameter.html">ParamFamParameter</a></td>
+<td>Generating function for ParamFamParameter-class</td></tr>
+<tr><td width="25%"><a href="ParamFamParameter-class.html">ParamFamParameter-class</a></td>
+<td>Parameter of a parametric family of probability measures</td></tr>
+<tr><td width="25%"><a href="ParamFamParameter-class.html">ParamWithScaleAndShapeFamParameter-class</a></td>
+<td>Parameter of a parametric family of probability measures</td></tr>
+<tr><td width="25%"><a href="ParamFamParameter-class.html">ParamWithScaleFamParameter-class</a></td>
+<td>Parameter of a parametric family of probability measures</td></tr>
+<tr><td width="25%"><a href="ParamFamParameter-class.html">ParamWithShapeFamParameter-class</a></td>
+<td>Parameter of a parametric family of probability measures</td></tr>
+<tr><td width="25%"><a href="L2ParamFamily-class.html">plot</a></td>
+<td>L2 differentiable parametric family</td></tr>
+<tr><td width="25%"><a href="L2ParamFamily-class.html">plot-method</a></td>
+<td>L2 differentiable parametric family</td></tr>
+<tr><td width="25%"><a href="ParamFamily-class.html">plot-method</a></td>
+<td>Parametric family of probability measures.</td></tr>
+<tr><td width="25%"><a href="L2ParamFamily-class.html">plot-methods</a></td>
+<td>L2 differentiable parametric family</td></tr>
+<tr><td width="25%"><a href="PoisFamily.html">PoisFamily</a></td>
+<td>Generating function for Poisson families</td></tr>
+<tr><td width="25%"><a href="positiveBias.html">positiveBias</a></td>
+<td>Generating function for onesidedBias-class</td></tr>
+<tr><td width="25%"><a href="Confint-class.html">print-method</a></td>
+<td>Confint-class</td></tr>
+<tr><td width="25%"><a href="Estimate-class.html">print-method</a></td>
+<td>Estimate-class.</td></tr>
+<tr><td width="25%"><a href="print-methods.html">print-method</a></td>
+<td>Common 'print' Methods for S4 classes in Package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="print-methods.html">print-methods</a></td>
+<td>Common 'print' Methods for S4 classes in Package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="ProbFamily-class.html">ProbFamily-class</a></td>
+<td>Family of probability measures</td></tr>
+<tr><td width="25%"><a href="MCEstimate-class.html">profile-method</a></td>
+<td>MCEstimate-class.</td></tr>
+<tr><td width="25%"><a href="ProbFamily-class.html">props</a></td>
+<td>Family of probability measures</td></tr>
+<tr><td width="25%"><a href="ProbFamily-class.html">props-method</a></td>
+<td>Family of probability measures</td></tr>
+<tr><td width="25%"><a href="ProbFamily-class.html">props&lt;-</a></td>
+<td>Family of probability measures</td></tr>
+<tr><td width="25%"><a href="ProbFamily-class.html">props&lt;--method</a></td>
+<td>Family of probability measures</td></tr>
+</table>
+
+<h2><a name="Q">-- Q --</a></h2>
+
+<table width="100%">
+<tr><td width="25%"><a href="ProbFamily-class.html">q-method</a></td>
+<td>Family of probability measures</td></tr>
+<tr><td width="25%"><a href="QFNorm.html">QFNorm</a></td>
+<td>Generating function for QFNorm-class</td></tr>
+<tr><td width="25%"><a href="QFnorm-class.html">QFNorm-class</a></td>
+<td>Norm classes for norms based on quadratic forms</td></tr>
+<tr><td width="25%"><a href="qqplot.html">qqplot</a></td>
+<td>Methods for Function qqplot in Package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="qqplot.html">qqplot-method</a></td>
+<td>Methods for Function qqplot in Package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="qqplot.html">qqplot-methods</a></td>
+<td>Methods for Function qqplot in Package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="QFnorm-class.html">QuadForm</a></td>
+<td>Norm classes for norms based on quadratic forms</td></tr>
+<tr><td width="25%"><a href="QFnorm-class.html">QuadForm-method</a></td>
+<td>Norm classes for norms based on quadratic forms</td></tr>
+<tr><td width="25%"><a href="QFnorm-class.html">QuadForm&lt;-</a></td>
+<td>Norm classes for norms based on quadratic forms</td></tr>
+<tr><td width="25%"><a href="QFnorm-class.html">QuadForm&lt;--method</a></td>
+<td>Norm classes for norms based on quadratic forms</td></tr>
+<tr><td width="25%"><a href="norms.html">QuadFormNorm</a></td>
+<td>Norm functions</td></tr>
+</table>
+
+<h2><a name="R">-- R --</a></h2>
+
+<table width="100%">
+<tr><td width="25%"><a href="ProbFamily-class.html">r-method</a></td>
+<td>Family of probability measures</td></tr>
+<tr><td width="25%"><a href="RiskType-class.html">RiskType-class</a></td>
+<td>Risk</td></tr>
+</table>
+
+<h2><a name="S">-- S --</a></h2>
+
+<table width="100%">
+<tr><td width="25%"><a href="Estimate-class.html">samplesize</a></td>
+<td>Estimate-class.</td></tr>
+<tr><td width="25%"><a href="Estimate-class.html">samplesize-method</a></td>
+<td>Estimate-class.</td></tr>
+<tr><td width="25%"><a href="meRes.html">samplesize-method</a></td>
+<td>helper functions for mceCalc and mleCalc</td></tr>
+<tr><td width="25%"><a href="Confint-class.html">samplesize.estimate</a></td>
+<td>Confint-class</td></tr>
+<tr><td width="25%"><a href="Confint-class.html">samplesize.estimate-method</a></td>
+<td>Confint-class</td></tr>
+<tr><td width="25%"><a href="SelfNorm.html">SelfNorm</a></td>
+<td>Generating function for SelfNorm-class</td></tr>
+<tr><td width="25%"><a href="QFnorm-class.html">SelfNorm-class</a></td>
+<td>Norm classes for norms based on quadratic forms</td></tr>
+<tr><td width="25%"><a href="Confint-class.html">show-method</a></td>
+<td>Confint-class</td></tr>
+<tr><td width="25%"><a href="Estimate-class.html">show-method</a></td>
+<td>Estimate-class.</td></tr>
+<tr><td width="25%"><a href="MCEstimate-class.html">show-method</a></td>
+<td>MCEstimate-class.</td></tr>
+<tr><td width="25%"><a href="ParamFamParameter-class.html">show-method</a></td>
+<td>Parameter of a parametric family of probability measures</td></tr>
+<tr><td width="25%"><a href="ParamFamily-class.html">show-method</a></td>
+<td>Parametric family of probability measures.</td></tr>
+<tr><td width="25%"><a href="RiskType-class.html">show-method</a></td>
+<td>Risk</td></tr>
+<tr><td width="25%"><a href="asHampel-class.html">show-method</a></td>
+<td>Asymptotic Hampel risk</td></tr>
+<tr><td width="25%"><a href="asUnOvShoot-class.html">show-method</a></td>
+<td>Asymptotic under-/overshoot probability</td></tr>
+<tr><td width="25%"><a href="fiHampel-class.html">show-method</a></td>
+<td>Finite-sample Hampel risk</td></tr>
+<tr><td width="25%"><a href="fiUnOvShoot-class.html">show-method</a></td>
+<td>Finite-sample under-/overshoot probability</td></tr>
+<tr><td width="25%"><a href="distrModOptions.html">show.details</a></td>
+<td>Function to change the global variables of the package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="onesidedBias-class.html">sign</a></td>
+<td>onesided Bias Type</td></tr>
+<tr><td width="25%"><a href="asSemivar-class.html">sign-method</a></td>
+<td>Semivariance Risk Type</td></tr>
+<tr><td width="25%"><a href="onesidedBias-class.html">sign-method</a></td>
+<td>onesided Bias Type</td></tr>
+<tr><td width="25%"><a href="onesidedBias-class.html">sign&lt;-</a></td>
+<td>onesided Bias Type</td></tr>
+<tr><td width="25%"><a href="asSemivar-class.html">sign&lt;--method</a></td>
+<td>Semivariance Risk Type</td></tr>
+<tr><td width="25%"><a href="onesidedBias-class.html">sign&lt;--method</a></td>
+<td>onesided Bias Type</td></tr>
+<tr><td width="25%"><a href="ParamFamily-class.html">startPar</a></td>
+<td>Parametric family of probability measures.</td></tr>
+<tr><td width="25%"><a href="MCEstimate-class.html">startPar-method</a></td>
+<td>MCEstimate-class.</td></tr>
+<tr><td width="25%"><a href="ParamFamily-class.html">startPar-method</a></td>
+<td>Parametric family of probability measures.</td></tr>
+<tr><td width="25%"><a href="symmetricBias.html">symmetricBias</a></td>
+<td>Generating function for symmetricBias-class</td></tr>
+<tr><td width="25%"><a href="symmetricBias-class.html">symmetricBias-class</a></td>
+<td>symmetric Bias Type</td></tr>
+</table>
+
+<h2><a name="T">-- T --</a></h2>
+
+<table width="100%">
+<tr><td width="25%"><a href="trafo-methods.html">trafo</a></td>
+<td>Methods for function trafo in Package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="trafo-methods.html">trafo-method</a></td>
+<td>Methods for function trafo in Package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="trafo-methods.html">trafo-methods</a></td>
+<td>Methods for function trafo in Package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="Confint-class.html">trafo.estimate</a></td>
+<td>Confint-class</td></tr>
+<tr><td width="25%"><a href="Confint-class.html">trafo.estimate-method</a></td>
+<td>Confint-class</td></tr>
+<tr><td width="25%"><a href="trafo-methods.html">trafo.fct</a></td>
+<td>Methods for function trafo in Package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="trafo-methods.html">trafo.fct-method</a></td>
+<td>Methods for function trafo in Package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="trafo-methods.html">trafo.fct-methods</a></td>
+<td>Methods for function trafo in Package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="trafo-methods.html">trafo&lt;-</a></td>
+<td>Methods for function trafo in Package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="trafo-methods.html">trafo&lt;--method</a></td>
+<td>Methods for function trafo in Package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="trafoEst.html">trafoEst</a></td>
+<td>Function trafoEst in Package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="trAsCov.html">trAsCov</a></td>
+<td>Generating function for trAsCov-class</td></tr>
+<tr><td width="25%"><a href="trAsCov-class.html">trAsCov-class</a></td>
+<td>Trace of asymptotic covariance</td></tr>
+<tr><td width="25%"><a href="trFiCov.html">trFiCov</a></td>
+<td>Generating function for trFiCov-class</td></tr>
+<tr><td width="25%"><a href="trFiCov-class.html">trFiCov-class</a></td>
+<td>Trace of finite-sample covariance</td></tr>
+<tr><td width="25%"><a href="Confint-class.html">type-method</a></td>
+<td>Confint-class</td></tr>
+<tr><td width="25%"><a href="RiskType-class.html">type-method</a></td>
+<td>Risk</td></tr>
+</table>
+
+<h2><a name="U">-- U --</a></h2>
+
+<table width="100%">
+<tr><td width="25%"><a href="Estimate-class.html">untransformed.asvar</a></td>
+<td>Estimate-class.</td></tr>
+<tr><td width="25%"><a href="Estimate-class.html">untransformed.asvar-method</a></td>
+<td>Estimate-class.</td></tr>
+<tr><td width="25%"><a href="Estimate-class.html">untransformed.estimate</a></td>
+<td>Estimate-class.</td></tr>
+<tr><td width="25%"><a href="Estimate-class.html">untransformed.estimate-method</a></td>
+<td>Estimate-class.</td></tr>
+</table>
+
+<h2><a name="V">-- V --</a></h2>
+
+<table width="100%">
+<tr><td width="25%"><a href="validParameter-methods.html">validParameter</a></td>
+<td>Methods for function validParameter in Package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="validParameter-methods.html">validParameter-method</a></td>
+<td>Methods for function validParameter in Package 'distrMod'</td></tr>
+<tr><td width="25%"><a href="validParameter-methods.html">validParameter-methods</a></td>
+<td>Methods for function validParameter in Package 'distrMod'</td></tr>
+</table>
+
+<h2><a name="W">-- W --</a></h2>
+
+<table width="100%">
+<tr><td width="25%"><a href="asUnOvShoot-class.html">width</a></td>
+<td>Asymptotic under-/overshoot probability</td></tr>
+<tr><td width="25%"><a href="asUnOvShoot-class.html">width-method</a></td>
+<td>Asymptotic under-/overshoot probability</td></tr>
+<tr><td width="25%"><a href="fiUnOvShoot-class.html">width-method</a></td>
+<td>Finite-sample under-/overshoot probability</td></tr>
+<tr><td width="25%"><a href="ParamFamParameter-class.html">withPosRestr</a></td>
+<td>Parameter of a parametric family of probability measures</td></tr>
+<tr><td width="25%"><a href="ParamFamParameter-class.html">withPosRestr-method</a></td>
+<td>Parameter of a parametric family of probability measures</td></tr>
+<tr><td width="25%"><a href="ParamFamParameter-class.html">withPosRestr&lt;-</a></td>
+<td>Parameter of a parametric family of probability measures</td></tr>
+<tr><td width="25%"><a href="ParamFamParameter-class.html">withPosRestr&lt;--method</a></td>
+<td>Parameter of a parametric family of probability measures</td></tr>
+</table>
+</body></html>

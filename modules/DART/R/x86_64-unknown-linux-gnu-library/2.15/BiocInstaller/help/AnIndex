@@ -1,0 +1,8 @@
+all_group	packageGroups
+biocases_group	packageGroups
+biocinstallRepos	biocinstallRepos
+biocLite	biocLite
+BiocUpgrade	BiocUpgrade
+monograph_group	packageGroups
+RBioinf_group	packageGroups
+useDevel	useDevel

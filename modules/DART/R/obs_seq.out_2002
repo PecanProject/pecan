@@ -1,0 +1,618 @@
+obs_sequence
+obs_kind_definitions
+		1
+		1 LAI
+num_copies:		 1 num_qc:	 0
+num_obs:		 61 max_num_obs:	 61
+observations
+  first:	1	last:	 61
+ OBS	 1
+0.2
+-1		2		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 101
+0.66
+ OBS	 2
+0.01404206
+1		3		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 101
+0.8
+ OBS	 3
+0.8
+2		4		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 109
+0.66
+ OBS	 4
+0.2299831
+3		5		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 109
+0.8
+ OBS	 5
+0.9
+4		6		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 117
+0.66
+ OBS	 6
+0.2425343
+5		7		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 117
+0.8
+ OBS	 7
+1
+6		8		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 125
+0.66
+ OBS	 8
+0.02021357
+7		9		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 125
+0.8
+ OBS	 9
+1.2
+8		10		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 133
+0.66
+ OBS	 10
+0.05291431
+9		11		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 133
+0.8
+ OBS	 11
+1.5
+10		12		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 141
+0.66
+ OBS	 12
+0.282099
+11		13		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 141
+0.8
+ OBS	 13
+5.6
+12		14		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 149
+0.66
+ OBS	 14
+2.965464
+13		15		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 149
+0.8
+ OBS	 15
+6.1
+14		16		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 157
+0.66
+ OBS	 16
+5.016193
+15		17		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 157
+0.8
+ OBS	 17
+6.2
+16		18		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 165
+0.66
+ OBS	 18
+5.78801
+17		19		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 165
+0.8
+ OBS	 19
+5.9
+18		20		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 173
+0.66
+ OBS	 20
+6
+19		21		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 181
+0.66
+ OBS	 21
+6.129786
+20		22		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 181
+0.8
+ OBS	 22
+4.4
+21		23		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 189
+0.66
+ OBS	 23
+6.460084
+22		24		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 189
+0.8
+ OBS	 24
+6.6
+23		25		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 197
+0.66
+ OBS	 25
+6.449134
+24		26		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 197
+0.8
+ OBS	 26
+6.2
+25		27		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 205
+0.66
+ OBS	 27
+6.6474
+26		28		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 205
+0.8
+ OBS	 28
+6.3
+27		29		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 213
+0.66
+ OBS	 29
+6.516525
+28		30		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 213
+0.8
+ OBS	 30
+6.4
+29		31		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 221
+0.66
+ OBS	 31
+6.512446
+30		32		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 221
+0.8
+ OBS	 32
+6.2
+31		33		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 229
+0.66
+ OBS	 33
+6.61076
+32		34		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 229
+0.8
+ OBS	 34
+5.5
+33		35		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 237
+0.66
+ OBS	 35
+6.549461
+34		36		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 237
+0.8
+ OBS	 36
+5.9
+35		37		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 245
+0.66
+ OBS	 37
+6.955334
+36		38		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 245
+0.8
+ OBS	 38
+5.6
+37		39		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 253
+0.66
+ OBS	 39
+6.68896
+38		40		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 253
+0.8
+ OBS	 40
+4.4
+39		41		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 261
+0.66
+ OBS	 41
+6.30889
+40		42		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 261
+0.8
+ OBS	 42
+4.9
+41		43		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 269
+0.66
+ OBS	 43
+6.069348
+42		44		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 269
+0.8
+ OBS	 44
+2.7
+43		45		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 277
+0.66
+ OBS	 45
+3.068676
+44		46		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 277
+0.8
+ OBS	 46
+0.8092775
+45		47		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 285
+0.8
+ OBS	 47
+2.2
+46		48		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 293
+0.66
+ OBS	 48
+0.8589092
+47		49		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 293
+0.8
+ OBS	 49
+1.5
+48		50		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 301
+0.66
+ OBS	 50
+0.4528883
+49		51		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 301
+0.8
+ OBS	 51
+1.8
+50		52		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 309
+0.66
+ OBS	 52
+0.1286825
+51		53		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 309
+0.8
+ OBS	 53
+0.5604223
+52		54		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 317
+0.8
+ OBS	 54
+1.7
+53		55		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 325
+0.66
+ OBS	 55
+0.0893478
+54		56		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 325
+0.8
+ OBS	 56
+1.4
+55		57		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 333
+0.66
+ OBS	 57
+0.7224463
+56		58		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 333
+0.8
+ OBS	 58
+0.2
+57		59		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 341
+0.66
+ OBS	 59
+0.7111022
+58		60		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 341
+0.8
+ OBS	 60
+0.5550441
+59		61		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 357
+0.8
+ OBS	 61
+0.2
+60		-1		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 365
+0.66

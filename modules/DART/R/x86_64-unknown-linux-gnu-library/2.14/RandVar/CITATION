@@ -1,0 +1,20 @@
+if(!exists("meta") || is.null(meta)) meta <- packageDescription("RandVar")
+year <- sub("-.*", "", meta$Date)
+note <- sprintf("R package version %s", meta$Version)
+
+citHeader("To cite package RandVar in publications use:")
+
+citEntry(entry="Manual",
+         title = "RandVar: Implementation of random variables",
+         author = personList(as.person("M. Kohl"),
+                             as.person("P. Ruckdeschel")),
+         language = "English",
+         year = year,
+         note = note,
+         type = "R package",
+         url = "http://robast.r-forge.r-project.org/",
+         textVersion = paste("Kohl, M., and Ruckdeschel, P.",
+                             sprintf("(%s).", year),
+                             "RandVar: Implementation of random variables.",
+                             paste(note, ".", sep = ""),
+                             "URL http://robast.r-forge.r-project.org/"))

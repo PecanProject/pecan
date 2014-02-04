@@ -1,0 +1,143 @@
+BetaFamily              Generating function for Beta families
+BiasType-class          Bias Type
+BinomFamily             Generating function for Binomial families
+CauchyLocationScaleFamily
+                        Generating function for Cauchy location and
+                        scale families
+Confint-class           Confint-class
+Estimate-class          Estimate-class.
+Estimator               Function to compute estimates
+EuclideanNorm           Norm functions
+EvenSymmetric           Generating function for EvenSymmetric-class
+EvenSymmetric-class     Class for Even Functions
+ExpScaleFamily          Generating function for exponential scale
+                        families
+FunSymmList             Generating function for FunSymmList-class
+FunSymmList-class       List of Symmetries for a List of Functions
+FunctionSymmetry-class
+                        Class of Symmetries for Functions
+GammaFamily             Generating function for Gamma families
+InfoNorm                Generating function for InfoNorm-class
+L2GroupParamFamily-class
+                        L2 differentiable parametric group family
+L2LocationFamily        Generating function for L2LocationFamily-class
+L2LocationFamily-class
+                        L2 differentiable parametric group family
+L2LocationScaleFamily   Generating function for
+                        L2LocationScaleFamily-class
+L2LocationScaleFamily-class
+                        L2 differentiable parametric group family
+L2LocationUnknownScaleFamily
+                        Generating function for
+                        L2LocationScaleFamily-class in nuisance
+                        situation
+L2ParamFamily           Generating function for L2ParamFamily-class
+L2ParamFamily-class     L2 differentiable parametric family
+L2ScaleFamily           Generating function for L2ScaleFamily-class
+L2ScaleFamily-class     L2 differentiable parametric group family
+L2ScaleUnknownLocationFamily
+                        Generating function for
+                        L2LocationScaleFamily-class in nuisance
+                        situation
+LnormScaleFamily        Generating function for lognormal scale
+                        families
+MCEstimate-class        MCEstimate-class.
+MCEstimator             Function to compute minimum criterion estimates
+MDEstimator             Function to compute minimum distance estimates
+MLEstimator             Function to compute maximum likelihood
+                        estimates
+NbinomFamily            Generating function for Nbinomial families
+NonSymmetric            Generating function for NonSymmetric-class
+NonSymmetric-class      Class for Non-symmetric Functions
+NormLocationFamily      Generating function for normal location
+                        families
+NormLocationScaleFamily
+                        Generating function for normal location and
+                        scale families
+NormLocationUnknownScaleFamily
+                        Generating function for normal location
+                        families with unknown scale as nuisance
+NormScaleFamily         Generating function for normal scale families
+NormScaleUnknownLocationFamily
+                        Generating function for normal scale families
+                        with unknown location as nuisance
+NormType                Generating function for NormType-class
+NormType-class          Norm Type
+OddSymmetric            Generating function for OddSymmetric-class
+OddSymmetric-class      Class for Odd Functions
+ParamFamParameter       Generating function for ParamFamParameter-class
+ParamFamParameter-class
+                        Parameter of a parametric family of probability
+                        measures
+ParamFamily             Generating function for ParamFamily-class
+ParamFamily-class       Parametric family of probability measures.
+PoisFamily              Generating function for Poisson families
+ProbFamily-class        Family of probability measures
+QFNorm                  Generating function for QFNorm-class
+QFNorm-class            Norm classes for norms based on quadratic forms
+RiskType-class          Risk
+SelfNorm                Generating function for SelfNorm-class
+addAlphTrsp2col         "addAlphTrsp2col"
+asBias                  Generating function for asBias-class
+asBias-class            Standardized Asymptotic Bias
+asCov                   Generating function for asCov-class
+asCov-class             Asymptotic covariance
+asGRisk-class           Convex asymptotic risk
+asHampel                Generating function for asHampel-class
+asHampel-class          Asymptotic Hampel risk
+asMSE                   Generating function for asMSE-class
+asMSE-class             Asymptotic mean square error
+asRisk-class            Aymptotic risk
+asRiskwithBias-class    Aymptotic risk
+asSemivar               Generating function for asSemivar-class
+asSemivar-class         Semivariance Risk Type
+asUnOvShoot             Generating function for asUnOvShoot-class
+asUnOvShoot-class       Asymptotic under-/overshoot probability
+asymmetricBias          Generating function for asymmetricBias-class
+asymmetricBias-class    asymmetric Bias Type
+checkL2deriv            Generic function for checking L2-derivatives
+confint-methods         Methods for function confint in Package
+                        'distrMod'
+distrMod-package        distrMod - probability models
+distrModMASK            Masking of/by other functions in package
+                        "distrMod"
+distrModOptions         Function to change the global variables of the
+                        package 'distrMod'
+existsPIC-methods       Methods for Function existsPIC in Package
+                        'distrMod'
+fiBias                  Generating function for fiBias-class
+fiBias-class            Finite-sample Bias
+fiCov                   Generating function for fiCov-class
+fiCov-class             Finite-sample covariance
+fiHampel                Generating function for fiHampel-class
+fiHampel-class          Finite-sample Hampel risk
+fiMSE                   Generating function for fiMSE-class
+fiMSE-class             Finite-sample mean square error
+fiRisk-class            Finite-sample risk
+fiUnOvShoot             Generating function for fiUnOvShoot-class
+fiUnOvShoot-class       Finite-sample under-/overshoot probability
+isKerAinKerB            isKerAinKerB
+mceCalc-methods         Methods for functions mceCalc and mleCalc in
+                        Package 'distrMod'
+meRes                   helper functions for mceCalc and mleCalc
+modifyModel-methods     Methods for function modifyModel in Package
+                        'distrMod'
+negativeBias            Generating function for onesidedBias-class
+onesidedBias-class      onesided Bias Type
+positiveBias            Generating function for onesidedBias-class
+print-methods           Common 'print' Methods for S4 classes in
+                        Package 'distrMod'
+qqplot                  Methods for Function qqplot in Package
+                        'distrMod'
+symmetricBias           Generating function for symmetricBias-class
+symmetricBias-class     symmetric Bias Type
+trAsCov                 Generating function for trAsCov-class
+trAsCov-class           Trace of asymptotic covariance
+trFiCov                 Generating function for trFiCov-class
+trFiCov-class           Trace of finite-sample covariance
+trafo-methods           Methods for function trafo in Package
+                        'distrMod'
+trafoEst                Function trafoEst in Package 'distrMod'
+validParameter-methods
+                        Methods for function validParameter in Package
+                        'distrMod'

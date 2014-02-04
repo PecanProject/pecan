@@ -1,0 +1,68 @@
+AbscontCondDistribution-class
+                        Absolutely continuous conditional distribution
+AsymTotalVarDist        Generic function for the computation of
+                        asymmetric total variation distance of two
+                        distributions
+Condition-class         Conditions
+ContaminationSize       Generic Function for the Computation of the
+                        Convex Contamination (Pseudo-)Distance of Two
+                        Distributions
+ConvexContamination     Generic Function for Generating Convex
+                        Contaminations
+CvMDist                 Generic function for the computation of the
+                        Cramer - von Mises distance of two
+                        distributions
+DiscreteCondDistribution-class
+                        Discrete conditional distribution
+DiscreteMVDistribution
+                        Generating function for
+                        DiscreteMVDistribution-class
+DiscreteMVDistribution-class
+                        Discrete Multivariate Distributions
+E                       Generic Function for the Computation of
+                        (Conditional) Expectations
+EuclCondition           Generating function for EuclCondition-class
+EuclCondition-class     Conditioning by an Euclidean space.
+GLIntegrate             Gauss-Legendre Quadrature
+HellingerDist           Generic function for the computation of the
+                        Hellinger distance of two distributions
+KolmogorovDist          Generic function for the computation of the
+                        Kolmogorov distance of two distributions
+LMCondDistribution      Generating function for the conditional
+                        distribution of a linear regression model.
+LMParameter             Generating function for LMParameter-class
+LMParameter-class       Parameter of a linear regression model
+MultivariateDistribution-class
+                        Multivariate Distributions
+OAsymTotalVarDist       Generic function for the computation of
+                        (minimal) asymmetric total variation distance
+                        of two distributions
+PrognCondDistribution   Generating function for
+                        PrognCondDistribution-class
+PrognCondDistribution-class
+                        Posterior distribution in convolution
+PrognCondition-class    Conditions of class 'PrognCondition'
+TotalVarDist            Generic function for the computation of the
+                        total variation distance of two distributions
+UnivariateCondDistribution-class
+                        Univariate conditional distribution
+dim-methods             Methods for Function dim in Package 'distrEx'
+distrEx-package         distrEx - Extensions of package distr
+distrExIntegrate        Integration of One-Dimensional Functions
+distrExMASK             Masking of/by other functions in package
+                        "distrEx"
+distrExMOVED            Moved functionality from package "distrEx"
+distrExOptions          Function to change the global variables of the
+                        package 'distrEx'
+liesInSupport,DiscreteMVDistribution,numeric-method
+                        Generic Function for Testing the Support of a
+                        Distribution
+m1df                    Generic Function for the Computation of Clipped
+                        First Moments
+m2df                    Generic function for the computation of clipped
+                        second moments
+make01                  Centering and Standardization of Univariate
+                        Distributions
+plot-methods            Methods for Function plot in Package 'distrEx'
+var                     Generic Functions for the Computation of
+                        Functionals

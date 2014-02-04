@@ -1,0 +1,107 @@
+\documentclass{article}
+%\usepackage{alltt,listings,relsize}
+%\lstloadlanguages{R}
+\usepackage{alltt,relsize}
+\RequirePackage{listings}
+\usepackage{Sweave}
+% -------------------------------------------------------------------------------
+\SweaveOpts{keep.source=TRUE}
+% -------------------------------------------------------------------------------
+<<SweaveListingsPreparations, results=tex, echo=FALSE>>=
+require(SweaveListingUtils)
+SweaveListingoptions(intermediate = FALSE)
+setToBeDefinedPkgs(pkgs = c("SweaveListingUtils","distr"),
+                   keywordstyles = c("\\bf\\color{blue}","\\bf\\color{red}"))
+SweaveListingPreparations()
+
+lstsetR(c("escapeinside"="{{(*}{*)}}"))
+@
+
+\def\doit{1}
+\renewcommand{\b}{$\backslash$\-}
+\newcommand{\f}{/\-}
+\newcommand{\p}{.\-}
+\newcommand{\co}[1]{{\tt #1}}
+\newenvironment{nenv}{\begin{alltt}}{\end{alltt}}
+\newcommand{\bex}{\begin{nenv}}
+\newcommand{\eex}{\end{nenv}}
+\newcommand{\lil}[1]{\lstinline|#1|}
+
+\begin{document}
+\author{John Q. \textbf{Public}}
+\title{This is \textit{IT}}
+\date{\today}
+\maketitle
+
+This is ~regular text and \textsf{this is sf text TEXT text} and
+{\fontfamily{phv}\selectfont THIS is helvetica FONT and MORE
+  and more}.
+
+This
+{\smaller
+\begin{verbatim}
+this
+\end{verbatim}
+}
+\begin{verbatim}
+this2
+\end{verbatim}
+
+{\hangafter=1\hangindent=.5in\noindent This is sdlkj sdflkjs dflkjs dflkjs dflkjs
+dflkjs dflkjs dflkjs dflkjs dflkjs dflkj sdflkjs dflkjs dflkjs dflkj
+sdflkj sdflkj sdf.
+
+A second paragraph sdlfkj sdflkj sdflkjs dflkj sdflkj sdflkj sdflkjs
+dflkj sdflkj sdflkj sdflkj sdflkjs dflkjs dflkj sdf.
+
+A third sdlfkj sdflkj sdflkj sdflkj sdflkj sdflkj sdflkj sdflkj sdflkj
+sdflkj sdflkj sdflkj sdflkj sdflkj sdflkj sdf.
+
+}
+
+This is another.
+
+\begingroup 
+\hangafter = 1\hangindent = .5in
+\noindent A novice was trying to fix a broken Lisp machine by turning the 
+power off and on.  Knight, seeing what the student was doing spoke sternly: 
+``You can not fix a machine by just power-cycling it with no 
+understanding of what is going wrong.''  Knight turned the machine off 
+and on.  The machine worked.  % must be followed by a line with just wh sp
+
+\noindent A second para sdlkj sdflkj sdflkj sdflkj sdflkj sdflkj sdflkj sdflkj
+sdflkj sdflkj sdflkj sdflkj sdflkj sdflkj .
+
+\endgroup
+
+\ifnum\doit=1 \textit{This }is \else That was \fi
+a very \textbf{long} sentence involving
+\co{this\p is\p hippopotamus\p giraffe\p possum\b dog\b cat\b apple\b
+  pie\b andallthat\b and\b thisthat}.
+\section{One}
+one
+\section{Two}
+two
+\bex
+This & that a$bcat is there.
+\eex
+%\lstloadlanguages{R}
+%\lstset{language=R,basicstyle=\smaller,commentstyle=\rmfamily\smaller,
+% showstringspaces=false,%
+% xleftmargin=4ex,literate={<-}{{$\leftarrow$}}1 {~}{{$\sim$}}1}
+%\lstset{escapeinside={(*}{*)}}   % for (*\ref{ }*) inside lstlistings (S code)
+%\begin{lstlisting}
+<<exam1, eval = FALSE>>=
+a <- b   # this is a test line
+if(i==3) {  # another line, for y^2 (*\ref{this}*) '\ref{this}
+ y <- 3^3
+ z <- 'this string'
+ qqcat <- y ~ pol(x,2)
+} else y <- 4
+@
+%\end{lstlisting}
+That was \lstinline|x <- 22| \lil{q <- 'cat'}.
+\subsection{This}
+Hello
+\label{this}
+\end{document}

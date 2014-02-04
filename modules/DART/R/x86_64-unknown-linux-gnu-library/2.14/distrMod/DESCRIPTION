@@ -1,0 +1,22 @@
+Package: distrMod
+Version: 2.4
+Date: 2013-02-05
+Title: Object oriented implementation of probability models
+Description: Object oriented implementation of probability models based
+        on packages 'distr' and 'distrEx'
+Author: Matthias Kohl, Peter Ruckdeschel
+Maintainer: Peter Ruckdeschel <Peter.Ruckdeschel@itwm.fraunhofer.de>
+Depends: R(>= 2.6.0), methods, startupmsg, distr(>= 2.2), distrEx(>=
+        2.4), RandVar(>= 0.6.3), MASS, stats4
+ByteCompile: yes
+License: LGPL-3
+Encoding: latin1
+URL: http://distr.r-forge.r-project.org/
+LastChangedDate: {$LastChangedDate: 2013-02-05 01:01:14 +0100 (Di, 05
+        Feb 2013) $}
+LastChangedRevision: {$LastChangedRevision: 875 $}
+SVNRevision: 834
+Packaged: 2013-02-05 17:15:21 UTC; ruckdesc
+Repository: CRAN
+Date/Publication: 2013-02-07 19:32:24
+Built: R 2.14.0; ; 2013-03-29 17:01:37 UTC; unix

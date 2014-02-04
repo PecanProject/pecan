@@ -1,0 +1,41 @@
+######################################################################
+#  On masking of and by other functions in package "distrEx"       
+######################################################################
+
+Attention:
+
+*** intentional masking: ***
+
+To be able to use the same symbol for (theoretical) distributional
+arguments as for (empirical) data arguments, we intentionally mask
+the following functions --- however all these functions may still
+be used in exactly the same way as before masking:
+
++var()    (package "stats")
++sd()     (package "stats")
++median() (package "stats")
++mad()    (package "stats")
++IQR()    (package "stats")
+
++skewness() (package "e1071")
++kurtosis() (package "e1071")
+
+In the last cases, code was simply inserted from package "e1071"
+in order to avoid a corresponding "Depends" entry in the "DESCRIPTION" 
+file of package "distrEx" with the entailed necessity to install 
+package "e1071".
+
+*** non-intentional masking: ***
+
+However, if any of the packages "e1071", "moments", or "fBasics" is to 
+be used together with package "distrEx", the latter must be attached 
+/after/ any of the first mentioned. 
+
+Otherwise kurtosis() and skewness(), defined as methods in package 
+"distrEx", will get masked.
+
+To re-mask, you may use 
+
+  kurtosis <- distrEx::kurtosis
+  skewness <- distrEx::skewness
+ 

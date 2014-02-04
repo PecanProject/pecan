@@ -1,0 +1,20 @@
+SweaveListingMASK       Masking of/by other functions in package
+                        "SweaveListingUtils"
+SweaveListingOptions    Function to change the global options of the
+                        package 'SweaveListingUtils'
+SweaveListingPreparations
+                        SweaveListingPreparations
+SweaveListingUtils-package
+                        Package SweaveListingUtils
+changeKeywordstyles     changeKeywordstyles
+copySourceFromRForge    copySourceFromRForge
+library                 Loading Packages with registering symbols for
+                        TeX package 'listing'
+lstinputSourceFromRForge
+                        lstinputSourceFromRForge
+lstset                  lstset and friends
+lstsetLanguage          lstsetLanguage
+readPkgVersion          readPkgVersion
+readSourceFromRForge    readSourceFromRForge
+setToBeDefinedPkgs      setToBeDefinedPkgs
+taglist                 S3 class taglist

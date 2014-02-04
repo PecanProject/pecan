@@ -1,0 +1,14 @@
+Package: RColorBrewer
+Version: 1.0-5
+Date: 2011-06-16
+Title: ColorBrewer palettes
+Author: Erich Neuwirth <erich.neuwirth@univie.ac.at>
+Maintainer: Erich Neuwirth <erich.neuwirth@univie.ac.at>
+Depends: R (>= 2.0.0)
+Description: The packages provides palettes for drawing nice maps
+        shaded according to a variable.
+License: Apache License 2.0
+Packaged: 2011-06-16 19:49:58 UTC; neuwirth
+Repository: CRAN
+Date/Publication: 2011-06-17 08:34:00
+Built: R 2.14.0; ; 2013-03-29 16:58:29 UTC; unix

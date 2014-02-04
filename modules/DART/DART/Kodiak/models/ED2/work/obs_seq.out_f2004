@@ -1,0 +1,788 @@
+obs_sequence
+obs_kind_definitions
+		1
+		1 LAI
+num_copies:		 1 num_qc:	 0
+num_obs:		 78 max_num_obs:	 78
+observations
+  first:	1	last:	 78
+ OBS	 1
+0.7
+-1		2		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 101
+0.66
+ OBS	 2
+0.7
+1		3		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 109
+0.66
+ OBS	 3
+0.8
+2		4		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 117
+0.66
+ OBS	 4
+1.3
+3		5		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 125
+0.66
+ OBS	 5
+0.02920691
+4		6		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 129
+0.95
+ OBS	 6
+1.8
+5		7		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 133
+0.66
+ OBS	 7
+0.4244806
+6		8		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 141
+0.95
+ OBS	 8
+0.9117531
+7		9		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 145
+0.95
+ OBS	 9
+4
+8		10		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 149
+0.66
+ OBS	 10
+1.603816
+9		11		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 149
+0.95
+ OBS	 11
+2.373988
+10		12		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 153
+0.95
+ OBS	 12
+6.1
+11		13		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 157
+0.66
+ OBS	 13
+3.697618
+12		14		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 157
+0.95
+ OBS	 14
+3.953274
+13		15		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 161
+0.95
+ OBS	 15
+6.5
+14		16		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 165
+0.66
+ OBS	 16
+4.411969
+15		17		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 165
+0.95
+ OBS	 17
+4.903948
+16		18		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 169
+0.95
+ OBS	 18
+6.5
+17		19		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 173
+0.66
+ OBS	 19
+5.15751
+18		20		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 173
+0.95
+ OBS	 20
+5.20736
+19		21		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 177
+0.95
+ OBS	 21
+6.6
+20		22		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 181
+0.66
+ OBS	 22
+4.93498
+21		23		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 181
+0.95
+ OBS	 23
+5.297045
+22		24		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 185
+0.95
+ OBS	 24
+4.651664
+23		25		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 189
+0.95
+ OBS	 25
+5.136457
+24		26		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 193
+0.95
+ OBS	 26
+6
+25		27		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 197
+0.66
+ OBS	 27
+5.251257
+26		28		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 197
+0.95
+ OBS	 28
+5.146132
+27		29		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 201
+0.95
+ OBS	 29
+6.6
+28		30		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 205
+0.66
+ OBS	 30
+5.453144
+29		31		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 205
+0.95
+ OBS	 31
+5.867371
+30		32		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 209
+0.95
+ OBS	 32
+6.5
+31		33		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 213
+0.66
+ OBS	 33
+5.4027
+32		34		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 213
+0.95
+ OBS	 34
+5.075709
+33		35		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 217
+0.95
+ OBS	 35
+4.4
+34		36		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 221
+0.66
+ OBS	 36
+5.698669
+35		37		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 221
+0.95
+ OBS	 37
+4.63009
+36		38		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 225
+0.95
+ OBS	 38
+5.2
+37		39		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 229
+0.66
+ OBS	 39
+5.950456
+38		40		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 229
+0.95
+ OBS	 40
+5.363086
+39		41		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 233
+0.95
+ OBS	 41
+5.7
+40		42		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 237
+0.66
+ OBS	 42
+5.70338
+41		43		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 237
+0.95
+ OBS	 43
+5.165509
+42		44		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 241
+0.95
+ OBS	 44
+3.2
+43		45		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 245
+0.66
+ OBS	 45
+5.179945
+44		46		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 245
+0.95
+ OBS	 46
+5.677297
+45		47		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 249
+0.95
+ OBS	 47
+4.8
+46		48		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 253
+0.66
+ OBS	 48
+4.721454
+47		49		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 253
+0.95
+ OBS	 49
+5.4
+48		50		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 261
+0.66
+ OBS	 50
+4.2
+49		51		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 269
+0.66
+ OBS	 51
+3.838394
+50		52		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 269
+0.95
+ OBS	 52
+5.344981
+51		53		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 273
+0.95
+ OBS	 53
+3.4
+52		54		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 277
+0.66
+ OBS	 54
+4.744193
+53		55		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 277
+0.95
+ OBS	 55
+4.094198
+54		56		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 281
+0.95
+ OBS	 56
+2.9
+55		57		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 285
+0.66
+ OBS	 57
+3.316709
+56		58		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 285
+0.95
+ OBS	 58
+2.408249
+57		59		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 289
+0.95
+ OBS	 59
+1.7
+58		60		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 293
+0.66
+ OBS	 60
+0.1202447
+59		61		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 293
+0.95
+ OBS	 61
+0.2262448
+60		62		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 297
+0.95
+ OBS	 62
+2.2
+61		63		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 301
+0.66
+ OBS	 63
+1.8
+62		64		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 309
+0.66
+ OBS	 64
+0.1289516
+63		65		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 309
+0.95
+ OBS	 65
+0.3067664
+64		66		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 313
+0.95
+ OBS	 66
+1.7
+65		67		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 317
+0.66
+ OBS	 67
+0.567034
+66		68		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 317
+0.95
+ OBS	 68
+0.4944463
+67		69		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 321
+0.95
+ OBS	 69
+2.1
+68		70		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 325
+0.66
+ OBS	 70
+0.432133
+69		71		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 329
+0.95
+ OBS	 71
+1.4
+70		72		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 333
+0.66
+ OBS	 72
+0.1411793
+71		73		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 333
+0.95
+ OBS	 73
+1.193936
+72		74		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 337
+0.95
+ OBS	 74
+0.2944655
+73		75		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 341
+0.95
+ OBS	 75
+0.8164665
+74		76		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 349
+0.95
+ OBS	 76
+1.060949
+75		77		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 353
+0.95
+ OBS	 77
+0.340959
+76		78		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 357
+0.95
+ OBS	 78
+1.873297
+77		-1		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 361
+0.95

@@ -1,0 +1,90 @@
+###############################################################################
+##  News: to package RandVar
+###############################################################################
+
+(first two numbers of package versions do not necessarily reflect 
+ package-individual development, but rather are chosen for the 
+ RobAStXXX family as a whole in order to ease updating "depends" 
+ information)
+
+#######################################
+version 0.9
+#######################################
++ introduced folder vignettes
+
+
+#######################################
+version 0.8
+#######################################
+
+UNDER THE HOOD:
++ implemented Nataliyas quantile trick for RandVar (util).
++ changed some formatting errors in .Rd files and a 
+  little error in util.R
+
+
++ DESCRIPTION files and package-help files gain a tag SVNRevision 
+  to be filled by get[All]RevNr.R from utils in distr
+
+
+#######################################
+version 0.7
+#######################################
+
+user-visible CHANGES:
+
++ added svn-revision version tags to Vignette RandVar
++ expectation gains ... argument to pass on accuracy arguments
+
+
+GENERAL ENHANCEMENTS:
+
++ added TOBEDONE (sic!) files; in English (for possible collaborators) 
++ added keyword robust and made some minor corrections ...
++ added/updated NEWS files, updated CITATION files using code by A. Zeileis
+
++ Rd-parsing:
+  * patch for Brian Ripley's
+    Re: [Rd] Warning: missing text for item ... in \describe?
+  * fixed errors / warnings in .Rd files detected by parser 2 
+    (c.f. [Rd] More intensive checking of R help files, Prof Brian Ripley, 09.01.2009 10:25)
+
++ svn-revision-tags 
+  * added in all DESCRIPTION files
+  * added field "Encoding: latin1" to all DESCRIPTION files because
+    substituting $LastChangedDate by svn would cause problems for
+    packages built under Windows (German) local when checking under Linux.
+
++ removed pdf-file from version control - Rnw-file is sufficient
+
+
+INTERNALLY:
++ Introduced .Rout.save files for tests.R and examples - minor problem 
+  due to system.time: may slightly vary from run to run.
+
+BUGFIXES:
++ fixed "NOTE" in R CMD check for RandVar
++ fixed a bug introduced in the last version:
+    function(x); is incorrect R-code ! ...
+ ->  when imageDistribution is automatically produced with
+    .getImageDistr() by default, automatically, an AbscontDistribution was produced;
+     this fails if result has non-trivial discrete part --- in extremo: if it is a DiracDistribution.
+     now it checks if some values are repeatedly produced in simulations; in this case it
+     will produce a UnivarLebDecDistribution  --- else still an AbscontDistribution.
++ fixed documentation error in EuclRandVarList-class.Rd,  EuclRandVariable-class.Rd
++ nasty little bug in matrix multiplication - wrong order of maps generated
++ fixed a warning issue in .Rd files of RandVar
++ inlcuded the svn-multi.sty svnkw.sty to RandVar/inst/doc acc. to indication by Kurt Hornik
++ Missing links in Rd files corrected. Links were indeed missing (cf. current version on CRAN) - 
+   name of html-file has to be specified; e.g. 0distr-package instead of distr-package.
+
+#######################################
+version 0.6.6
+#######################################
++ quicker way to compute image distributions of objects of class 
+  DiscreteDistribution
++ use of new option "newDevice"
++ use of on.exit() to restore old settings for options() and par() at the end 
+  of functions
++ introduction of NEWS-file
++ update of CITATION-file (based on code provided by A. Zeileis on R help)

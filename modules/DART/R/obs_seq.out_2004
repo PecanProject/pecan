@@ -1,0 +1,548 @@
+obs_sequence
+obs_kind_definitions
+		1
+		1 LAI
+num_copies:		 1 num_qc:	 0
+num_obs:		 54 max_num_obs:	 54
+observations
+  first:	1	last:	 54
+ OBS	 1
+0.7
+-1		2		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 105
+0.66
+ OBS	 2
+0.8
+1		3		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 113
+0.66
+ OBS	 3
+1.3
+2		4		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 121
+0.66
+ OBS	 4
+0.0114011
+3		5		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 121
+0.8
+ OBS	 5
+1.8
+4		6		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 129
+0.66
+ OBS	 6
+0.625677
+5		7		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 137
+0.8
+ OBS	 7
+4
+6		8		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 145
+0.66
+ OBS	 8
+1.956812
+7		9		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 145
+0.8
+ OBS	 9
+6.1
+8		10		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 153
+0.66
+ OBS	 10
+3.824114
+9		11		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 153
+0.8
+ OBS	 11
+6.5
+10		12		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 161
+0.66
+ OBS	 12
+4.675433
+11		13		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 161
+0.8
+ OBS	 13
+6.5
+12		14		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 169
+0.66
+ OBS	 14
+5.182316
+13		15		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 169
+0.8
+ OBS	 15
+6.6
+14		16		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 177
+0.66
+ OBS	 16
+5.115138
+15		17		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 177
+0.8
+ OBS	 17
+4.917146
+16		18		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 185
+0.8
+ OBS	 18
+6
+17		19		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 193
+0.66
+ OBS	 19
+5.195667
+18		20		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 193
+0.8
+ OBS	 20
+6.6
+19		21		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 201
+0.66
+ OBS	 21
+5.665568
+20		22		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 201
+0.8
+ OBS	 22
+6.5
+21		23		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 209
+0.66
+ OBS	 23
+5.24809
+22		24		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 209
+0.8
+ OBS	 24
+4.4
+23		25		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 217
+0.66
+ OBS	 25
+5.243416
+24		26		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 217
+0.8
+ OBS	 26
+5.2
+25		27		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 225
+0.66
+ OBS	 27
+5.684978
+26		28		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 225
+0.8
+ OBS	 28
+5.7
+27		29		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 233
+0.66
+ OBS	 29
+5.455132
+28		30		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 233
+0.8
+ OBS	 30
+3.2
+29		31		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 241
+0.66
+ OBS	 31
+5.43011
+30		32		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 241
+0.8
+ OBS	 32
+4.8
+31		33		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 249
+0.66
+ OBS	 33
+4.721454
+32		34		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 249
+0.8
+ OBS	 34
+5.4
+33		35		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 257
+0.66
+ OBS	 35
+4.2
+34		36		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 265
+0.66
+ OBS	 36
+5.139537
+35		37		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 265
+0.8
+ OBS	 37
+3.4
+36		38		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 273
+0.66
+ OBS	 38
+4.396308
+37		39		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 273
+0.8
+ OBS	 39
+2.9
+38		40		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 281
+0.66
+ OBS	 40
+2.869805
+39		41		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 281
+0.8
+ OBS	 41
+1.7
+40		42		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 289
+0.66
+ OBS	 42
+0.1774289
+41		43		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 289
+0.8
+ OBS	 43
+2.2
+42		44		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 297
+0.66
+ OBS	 44
+1.8
+43		45		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 305
+0.66
+ OBS	 45
+0.2386671
+44		46		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 305
+0.8
+ OBS	 46
+1.7
+45		47		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 313
+0.66
+ OBS	 47
+0.5260687
+46		48		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 313
+0.8
+ OBS	 48
+2.1
+47		49		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 321
+0.66
+ OBS	 49
+0.1008066
+48		50		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 321
+0.8
+ OBS	 50
+1.4
+49		51		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 329
+0.66
+ OBS	 51
+0.7700986
+50		52		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 329
+0.8
+ OBS	 52
+0.02349985
+51		53		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 337
+0.8
+ OBS	 53
+0.9916179
+52		54		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 345
+0.8
+ OBS	 54
+1.435486
+53		-1		-1
+obdef
+loc1d
+0
+kind
+-1
+   0		 353
+0.8

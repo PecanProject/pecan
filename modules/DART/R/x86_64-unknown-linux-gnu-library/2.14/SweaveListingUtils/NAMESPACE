@@ -1,0 +1,12 @@
+import("startupmsg")
+export("taglist", "lstset", "lstsetR", "lstsetRd",
+       "lstsetRin", "lstsetRout", "lstsetRcode", 
+       "lstdefRstyle", "lstsetRall",
+       "SweaveListingPreparations", "readSourceFromRForge",
+       "copySourceFromRForge", "lstinputSourceFromRForge", 
+       "readPkgVersion",  "SweaveListingOptions",
+       "SweaveListingoptions", "getSweaveListingOption",
+       "SweaveListingMASK", "setToBeDefinedPkgs","lstsetLanguage",
+       "changeKeywordstyles", "library", "require", 
+       "isBaseOrRecommended", "setBaseOrRecommended")
+S3method(print, taglist)

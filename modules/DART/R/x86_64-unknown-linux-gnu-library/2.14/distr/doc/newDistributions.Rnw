@@ -1,0 +1,412 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Vignette  "How to generate new distributions in packages distr, distrEx"
+%
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%\VignetteIndexEntry{newDistributions}
+%\VignetteDepends{startupmsg}
+%\VignetteKeywords{probability distribution,estimation}
+%\VignettePackage{distr}                     
+%
+%
+%
+\documentclass[10pt]{article}
+%
+%use svn-multi to fill in revision information
+%
+\usepackage{svn-multi}
+% Version control information:
+\svnidlong
+{$HeadURL: svn+ssh://ruckdeschel@svn.r-forge.r-project.org/svnroot/distr/pkg/distr/vignettes/newDistributions.Rnw $}
+{$LastChangedDate: 2011-11-18 12:48:06 +0100 (Fr, 18 Nov 2011) $}
+{$LastChangedRevision: 753 $}
+{$LastChangedBy: ruckdeschel $}
+%\svnid{$Id: example_main.tex 146 2008-12-03 13:29:19Z martin $}
+% Don't forget to set the svn property 'svn:keywords' to
+% 'HeadURL LastChangedDate LastChangedRevision LastChangedBy' or
+% 'Id' or both depending if you use \svnidlong and/or \svnid
+%
+\newcommand{\svnfooter}{Last Changed Rev: \svnkw{LastChangedRevision}}
+\svnRegisterAuthor{ruckdeschel}{Peter Ruckdeschel}
+\svnRegisterAuthor{stamats}{Matthias Kohl}
+\svnRegisterAuthor{florian}{Florian Camphausen}
+\svnRegisterAuthor{stabla}{Thomas Stabla}
+\svnRegisterAuthor{anhuel}{Anja H{\"u}ller}
+\svnRegisterAuthor{ifrin}{Eleonara Feist}
+\svnRegisterAuthor{jdospina}{Juan David Ospina}
+\svnRegisterAuthor{kowzar}{Kouros Owzar}
+%
+\usepackage{geometry}
+%
+\usepackage{color}
+\definecolor{darkblue}{rgb}{0.0,0.0,0.75}
+\definecolor{distrCol}{rgb}{0.0,0.4,0.4}
+%
+\usepackage{ifpdf}
+%
+\usepackage{url}
+\usepackage{amssymb}
+\usepackage[%
+baseurl={r-forge.r-project.org},%
+pdftitle={How to generate new distributions in packages distr, distrEx},%
+pdfauthor={Peter Ruckdeschel, Matthias Kohl},%
+pdfsubject={distr},%
+pdfkeywords={probability distribution,simulation,estimation},%
+pagebackref,bookmarks,colorlinks,linkcolor=darkblue,citecolor=darkblue,%
+pagecolor=darkblue,raiselinks,plainpages,pdftex]{hyperref}
+%
+\markboth{\sl How to generate new distributions in packages ``{\tt distr}'', ``{\tt distrEx}''}%
+{\sl How to generate new distributions in packages ``{\tt distr}'', ``{\tt distrEx}''}
+%
+% -------------------------------------------------------------------------------
+\newcommand{\Reals}{\mathbb{R}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+%
+% -------------------------------------------------------------------------------
+\RequirePackage{fancyvrb}
+\RequirePackage{listings}
+%\usepackage{Sweave} no longer needed
+% -------------------------------------------------------------------------------
+\SweaveOpts{keep.source=TRUE}
+% -------------------------------------------------------------------------------
+<<SweaveListingsPreparations, results=tex, echo=FALSE>>=
+require(SweaveListingUtils)
+SweaveListingPreparations()
+setToBeDefinedPkgs(pkgs = c("distr","distrEx"),
+                   keywordstyles = "\\bf\\color{distrCol}")
+@
+% -------------------------------------------------------------------------------
+%
+% -------------------------------------------------------------------------------
+\begin{document}
+% -------------------------------------------------------------------------------
+\title{How to generate new distributions in packages \pkg{distr}, \pkg{distrEx}}
+%,version \pkgExversion}
+\author{\small Peter Ruckdeschel\thanks{Fraunhofer ITWM, Kaiserslautern}
+\\[-.5ex]
+\small Matthias Kohl\thanks{FH Furtwangen}
+\smallskip\\
+\small Fraunhofer ITWM\\[-.5ex]
+\small Fraunhofer Platz 1\\[-.5ex]
+\small 67663 Kaiserslautern\\[-.5ex]
+\small Germany\\
+\small e-Mail: {\small \tt Peter.Ruckdeschel@itwm.fraunhofer.de}\medskip\\
+\parbox[t]{5cm}{
+\footnotesize\sffamily
+ Version control information:
+\begin{tabbing}
+\footnotesize\sffamily
+ Last changes revision: \= \kill
+ Head URL: \> \parbox[t]{6cm}{\url{\svnkw{HeadURL}}}\\[1.2ex]
+ Last changed date: \> \svndate\\
+ Last changes revision: \> \svnrev\\
+ Version: \> \svnFullRevision*{\svnrev}\\
+ Last changed by: \> \svnFullAuthor*{\svnauthor}\\
+\end{tabbing}
+}}
+
+\maketitle
+% -------------------------------------------------------------------------------
+\begin{abstract}
+% -------------------------------------------------------------------------------
+In this vignette, we give short examples how to produce new
+distributions in packages \pkg{distr} and \pkg{distrEx}.
+This vignette refers to package version~\pkgversion.
+% -------------------------------------------------------------------------------
+\end{abstract}
+% -------------------------------------------------------------------------------
+Basically there are three ways to produce new
+distributions in packages \pkg{distr} and \pkg{distrEx}:
+\begin{enumerate}
+\item automatic generation of single distribution objects by arithmetics and the like
+\item using generating functions to produce single distribution objects
+\item defining new distribution classes / doing it from scratch
+\end{enumerate}
+We will give short examples of all three of them.
+% -------------------------------------------------------------------------------
+\section{Automatic generation by arithmetics and the like}
+% -------------------------------------------------------------------------------
+We have made available quite general arithmetical operations to our distribution 
+objects, generating new image distribution objects automatically. As an example, try
+<<Prepa, echo=false, results=tex>>=
+## preparation: set option withSweave to true
+require(distr)
+distroptions(withSweave = TRUE)
+options(width=70)
+@
+%
+<<exam1, eval = TRUE, fig = TRUE>>=
+require(distr)
+N <- Norm(mean = 2, sd = 1.3)
+P <- Pois(lambda = 1.2)
+Z <- 2*N + 3 + P
+Z
+plot(Z, panel.first = grid(), lwd=2)
+p(Z)(0.4)
+q(Z)(0.3)
+Zs <- r(Z)(50)
+Zs
+@
+\par
+\noindent{\bf Comment:}\\
+Let \code{N} an object of class \code{"Norm"} with parameters  \code{mean=2},
+\code{sd=1.3} and let \code{P}  an object of class \code{"Pois"} with parameter 
+\code{lambda=1.2}. Assigning to \code{Z} the expression \code{2*N+3+P}, a 
+new distribution object is generated ---of class \code{"AbscontDistribution"} in 
+our case--- so that identifying \code{N}, \code{P}, \code{Z} with random 
+variables distributed according to {\tt N}, {\tt P}, {\tt Z}, 
+${\cal L}({\tt Z})={\cal L}(2*{\tt N}+3+{\tt P})$,  and writing \code{p(Z)(0.4)}  
+we get $P(Z\leq 0.4)$, \code{ q(Z)(0.3)}  the $30\%$-quantile of {\tt Z},
+and with \code{r(Z)(50)} we generate $50$ pseudo random numbers distributed 
+according to {\tt Z}, while the \code{plot} command generates the above figure.\\
+
+There a caveats to take care about; for details refer to the (larger) vignette
+{\tt distr} in package \pkg{distrDoc}.
+% -------------------------------------------------------------------------------
+\section{Using generating functions}
+% -------------------------------------------------------------------------------
+If you want to generate a single distribution object (without any particular parameter)
+generating functions are the method of choice:\\
+
+
+Objects of classes \code{LatticeDistribution} resp.\ 
+\code{DiscreteDistribution}, 
+\code{AbscontDistribution},  may be generated using the generating functions
+\code{LatticeDistribution()} resp.\ \code{DiscreteDistribution()}
+resp.\ \code{AbscontDistribution()}; see also
+the corresponding help.\\
+
+E.g., to produce a discrete distribution with
+support $(1,5,7,21)$ with corresponding probabilities $(0.1,0.1,0.6,0.2)$
+we may write
+<<DiscrDist, eval = TRUE, fig = TRUE>>=
+D <- DiscreteDistribution(supp = c(1,5,7,21), prob = c(0.1,0.1,0.6,0.2))
+D
+plot(D, panel.first = grid(), lwd = 2)
+@
+%
+\newline
+and to generate an absolutely continuos distribution with density proportional
+to $e^{-|x|^3}$, we write
+<<AbscDist, eval = TRUE, fig = TRUE>>=
+AC <- AbscontDistribution(d = function(x) exp(-abs(x)^3), withStand = TRUE)
+AC
+plot(AC, panel.first = grid(), lwd = 2)
+@
+%
+% -------------------------------------------------------------------------------
+\section{Doing it from scratch}
+% -------------------------------------------------------------------------------
+If you would like to create new parametric distributions, using already 
+implemented {\tt r}, {\tt d}, {\tt p}, and {\tt q} functions
+(e.g.\ implementing additional distributions realized in another 
+\href{http://cran.r-project.org}{\tt CRAN} package), 
+you should probably envisage introducing new distribution {\tt S4} (sub-)classes
+and hence better look at the implementation of some discrete and 
+continuous parametric distribution classes in package \pkg{distr}.
+
+\noindent{\small Hint: download the {\tt .tar.gz} file; extract it to some {\tt temp} 
+folder; look at subdirectories {\tt R} and {\tt man}}\smallskip\\
+
+The general procedure is as follows
+
+\begin{enumerate}
+\item introduce a  new subclass of  class \code{Parameter}
+\item introduce a new subclass of  \code{LatticeDistribution}/%
+\code{DiscreteDistribution} (if discrete)
+ or of class \code{AbscontDistribution} (if continuous).
+\item define accessor and replacement functions for the ``slots'' of the
+parameter (e.g.\ \code{"size"} and \code{"prob"} in the binomial case), 
+possibly with new generics
+\item (possibly) define a validity function
+\item define a generating function
+\item if existing, define particular convolution methods or similar particular
+methods for this new distribution class
+\item create {\tt .Rd} files for the
+\begin{itemize}
+      \item parameter class
+      \item distribution class
+\end{itemize}
+\item if analytic expressions are available, define particular \code{E}-, \code{var}-, 
+\code{skewness}-, and \code{kurtosis}-methods
+     and if so, also document\footnote{%
+%
+this is new, because so far, all \code{E}-, \code{var}-, 
+\code{skewness}-, and \code{kurtosis}-methods for ``basic'' 
+distributions are documented in the \pkg{distrEx} documentation to 
+\code{E}, \code{var}, \ldots, but this would not be operational
+any longer for new derived classes, possibly defined in other, new packages
+%
+     } the corresponding methods in
+     the distribution class {\tt .Rd} file\\
+\end{enumerate}
+    
+Let's go through the steps in the example case of the Binomial implementation
+in packages \pkg{distr} and \pkg{distrEx}:
+
+\begin{enumerate}
+%
+\item in \pkg{distr}, see source in \file{R/AllClasses.R},  
+%
+<<AllClass1, results=tex, echo=FALSE>>=
+lstinputSourceFromRForge("distr","R","AllClasses.R","distr",
+                     "## Class: BinomParameter", "#-")
+@
+%
+\item in \pkg{distr}, see source in \file{R/AllClasses.R},  
+%
+<<AllClass2, results=tex, echo=FALSE>>=
+lstinputSourceFromRForge("distr","R","AllClasses.R","distr",
+                     from = "## Class: binomial distribution",
+                     to = "contains = \"LatticeDistribution\"", 
+                     offset.after = 1)
+@
+%
+\item in \pkg{distr}, see source in \file{R/BinomialDistribution.R},  
+%
+<<BinomDist1, results=tex, echo=FALSE>>=
+lstinputSourceFromRForge("distr","R","BinomialDistribution.R","distr",
+                     from = c("## Access Methods", "## wrapped access methods"),
+                     to = c("setReplaceMethod\\(\"prob\", \"BinomParameter\"",
+                            "size = value\\)\\)") ,
+                     offset.after = c(1,1))
+@
+%
+and \file{R/AllGenerics}, 
+<<AllGenerics, results=tex, echo=FALSE>>=
+lstinputSourceFromRForge("distr","R","AllGenerics.R","distr",
+                     from = "if\\(!isGeneric\\(\"size\"",
+                     to = "setGeneric\\(\"prob\"") 
+@
+%
+\item in \pkg{distr}, see source in \file{R/BinomialDistribution.R},  
+%
+<<BinomDist2, results=tex, echo=FALSE>>=
+lstinputSourceFromRForge("distr","R","BinomialDistribution.R","distr",
+                     from = "setValidity\\(\"Binom",
+                     to = "else return\\(TRUE\\)",
+                     offset.after = 1)
+@
+%
+\item in \pkg{distr}, see source in \file{R/BinomialDistribution.R},  
+%
+<<BinomDist3, results=tex, echo=FALSE>>=
+lstinputSourceFromRForge("distr","R","BinomialDistribution.R","distr",
+                     from = "Binom <- function",
+                     to = "Binom <- function")
+@
+%
+\item in \pkg{distr}, see source in \file{R/BinomialDistribution.R},  
+%
+<<BinomDist4, results=tex, echo=FALSE>>=
+lstinputSourceFromRForge("distr","R","BinomialDistribution.R","distr",
+                     from = "## Convolution for",
+                     to = "\\}\\)")
+@
+%
+\item in \pkg{distr}, see sources in
+%
+\begin{itemize}
+%
+\item\file{man/BinomParameter-class.Rd}
+%
+<<BinomParam, results=tex, echo=FALSE>>=
+lstinputSourceFromRForge("distr","man","BinomParameter-class.Rd","distr")
+@
+%
+\item\file{man/Binom-class.Rd}
+<<Binomclass, results=tex, echo=FALSE>>=
+lstinputSourceFromRForge("distr","man","Binom-class.Rd","distr")
+@
+%
+\item {\footnotesize you could have: \file{man/Binom.Rd}
+      for the generating function; in the Binomial case, documentation is in
+      \file{Binom-class.Rd}; but in case of the Gumbel distribution,
+      in package \pkg{distrEx}, there is such an extra {\tt .Rd} file}
+%
+\end{itemize}
+%
+\item in \pkg{distrEx}, see sources in
+%
+<<Prepa2, echo=false, results=tex>>=
+## preparation: set option withSweave to true
+require(distrEx)
+@
+%
+\begin{itemize}
+%
+\item\file{Expectation.R}, 
+<<Expect, results=tex, echo=FALSE>>=
+lstinputSourceFromRForge("distrEx","R","Expectation.R","distr",
+                     from = "\"E\", signature\\(object = \"Binom\"",
+                     to = "\\}\\)")
+@
+%
+\item\file{Functionals.R}, 
+<<var, results=tex, echo=FALSE>>=
+lstinputSourceFromRForge("distrEx","R","Functionals.R","distr",
+                     from = "\"var\", signature\\(x = \"Binom\"",
+                     to = "\\}\\)")
+@
+%
+\item\file{skewness.R}, 
+<<skew, results=tex, echo=FALSE>>=
+lstinputSourceFromRForge("distrEx","R","Skewness.R","distr",
+                     from = "\"skewness\", signature\\(x = \"Binom\"",
+                     to = "\\}\\)")
+@
+%
+\item\file{kurtosis.R}, 
+<<kurt, results=tex, echo=FALSE>>=
+lstinputSourceFromRForge("distrEx","R","Kurtosis.R","distr",
+                     from = "\"kurtosis\", signature\\(x = \"Binom\"",
+                     to = "\\}\\)")
+@
+%
+\end{itemize}
+\end{enumerate}
+The procedure will be similar for \textit{any} new class of distributions.\medskip
+\begin{itemize}
+  \item[Comment] In the classes in package \pkg{distr} (historically the ``oldest''
+  in the development of this project), we still use \code{initialize} methods;
+  this is no longer needed, if you provide generating functions; for this ``more
+  recent'' approach, confer the realization of class \code{Gumbel} in package \pkg{distrEx}.
+\end{itemize}
+
+% -------------------------------------------------------------------------------
+\section{Help needed  / collaboration welcome}
+% -------------------------------------------------------------------------------
+You are --- as announced on  
+\href{http://distr.r-forge.r-project.org}{\tt http://distr.r-forge.r-project.org} ---
+         very welcome to collaborate in this project!
+See in particular
+\href{http://distr.r-forge.r-project.org/HOWTO-collaborate.txt}%
+{\tt http://distr.r-forge.r-project.org/HOWTO-collaborate.txt}
+
+With this you should be able to start working.
+\begin{thebibliography}{2}
+
+\bibitem{K:R:S:04}
+Kohl M., Ruckdeschel P. and Stabla T.
+\newblock {General Purpose Convolution Algorithm for Distributions in S4-Classes 
+by means of FFT}.
+\newblock unpublished manual
+
+
+\bibitem{R:K:S:C:04}
+Ruckdeschel P., Kohl M., Stabla T., and Camphausen F. 
+\newblock {S4 Classes for Distributions.} 
+\newblock {\em R-News\/}, {\bf 6}(2): 10--13.
+\newblock http://CRAN.R-project.org/doc/Rnews/Rnews\_2006-2.pdf
+%\newblock See also {http://www.uni-bayreuth.de/departments/math/org/mathe7/RUCKDESCHEL/pubs/distr.pdf}
+
+\end{thebibliography}
+<<cleanup, echo=FALSE>>=
+#unloadNamespace("SweaveListingUtils")
+@
+% -------------------------------------------------------------------------------
+\end{document}
+% -------------------------------------------------------------------------------

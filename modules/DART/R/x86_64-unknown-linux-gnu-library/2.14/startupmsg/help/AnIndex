@@ -1,0 +1,17 @@
+buildStartupMessage	myStartupUtilities
+infoShow	StartupUtilities
+mySMHandler	myStartupUtilities
+mystartupMessage	myStartupUtilities
+NEWS	StartupUtilities
+onlytypeStartupMessages	StartupUtilities
+pointertoNEWS	StartupUtilities
+readURLInformation	StartupUtilities
+readVersionInformation	StartupUtilities
+startupEndline	StartupUtilities
+StartupMessage	StartupUtilities
+startupMessage	StartupUtilities
+startupmsg	StartupUtilities
+startupPackage	StartupUtilities
+startupType	StartupUtilities
+suppressStartupMessages	StartupUtilities
+TOBEDONE	StartupUtilities

@@ -1,0 +1,51 @@
+%%
+%% This is file `lastpage.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% lastpage.dtx (with options: `package')
+%% 
+%% IMPORTANT NOTICE:
+%% This is part of a set of tools (or better yet, experiments)
+%% written by Jeff Goldberg (J.Goldberg@Cranfield.ac.uk)
+%% The usual disclaimers apply:
+%% If it doesn't work right that's your problem.
+%% It is released under the terms of the
+%% General Public License Agreement (version 2)
+\def\filename{lastpage}
+\def\fileversion{v0.1b}
+\def\filedate{1994/06/25}
+\def\docdate {1994/07/20}
+
+%% \CharacterTable
+%% {Upper-case \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%% Lower-case \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%% Digits \0\1\2\3\4\5\6\7\8\9
+%% Exclamation \! Double quote \" Hash (number) \#
+%% Dollar \$ Percent \% Ampersand \&
+%% Acute accent \' Left paren \( Right paren \)
+%% Asterisk \* Plus \+ Comma \,
+%% Minus \- Point \. Solidus \/
+%% Colon \: Semicolon \; Less than \<
+%% Equals \= Greater than \> Question mark \?
+%% Commercial at \@ Left bracket \[ Backslash \\
+%% Right bracket \] Circumflex \^ Underscore \_
+%% Grave accent \` Left brace \{ Vertical bar \|
+%% Right brace \} Tilde \~}
+%%
+%% Allow for things like |page \thepage\ of \pageref{LastPage}| to
+%% get `page 5 of 23'
+\NeedsTeXFormat{LaTeX2e}[1994/06/01]
+\ProvidesPackage{lastpage}[\filedate\space\fileversion\space
+LaTeX2e package for refs to last page number (JPG)]
+\def\lastpage@putlabel{\addtocounter{page}{-1}%
+\immediate\write\@auxout{\string
+\newlabel{LastPage}{{}{\thepage}}}%
+\addtocounter{page}{1}}
+\AtEndDocument{%
+\message{AED: lastpage setting LastPage}%
+\clearpage\lastpage@putlabel}%
+\endinput
+%%
+%% End of file `lastpage.sty'.

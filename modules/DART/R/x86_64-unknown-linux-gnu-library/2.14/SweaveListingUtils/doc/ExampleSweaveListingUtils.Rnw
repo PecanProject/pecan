@@ -1,0 +1,528 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Vignette  "How to work with SweaveListingUtils"
+%
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%\VignetteIndexEntry{ExampleSweaveListingUtils}
+%\VignetteDepends{startupmsg}
+%\VignetteKeywords{Sweave,TeX package listings, listings, R-forge}
+%\VignettePackage{SweaveListingUtils}
+%
+\documentclass[10pt]{article}
+%
+%use svn-multi to fill in revision information
+%
+\usepackage{svn-multi}
+% Version control information:
+\svnidlong
+{$HeadURL: svn+ssh://ruckdeschel@svn.r-forge.r-project.org/svnroot/distr/pkg/SweaveListingUtils/vignettes/ExampleSweaveListingUtils.Rnw $}
+{$LastChangedDate: 2011-11-18 13:52:03 +0100 (Fr, 18 Nov 2011) $}
+{$LastChangedRevision: 770 $}
+{$LastChangedBy: ruckdeschel $}
+%\svnid{$Id: example_main.tex 146 2008-12-03 13:29:19Z martin $}
+% Don't forget to set the svn property 'svn:keywords' to
+% 'HeadURL LastChangedDate LastChangedRevision LastChangedBy' or
+% 'Id' or both depending if you use \svnidlong and/or \svnid
+%
+\newcommand{\svnfooter}{Last Changed Rev: \svnkw{LastChangedRevision}}
+\svnRegisterAuthor{ruckdeschel}{Peter Ruckdeschel}
+\svnRegisterAuthor{stamats}{Matthias Kohl}
+\svnRegisterAuthor{florian}{Florian Camphausen}
+\svnRegisterAuthor{stabla}{Thomas Stabla}
+\svnRegisterAuthor{anhuel}{Anja H{\"u}ller}
+\svnRegisterAuthor{ifrin}{Eleonara Feist}
+\svnRegisterAuthor{jdospina}{Juan David Ospina}
+\svnRegisterAuthor{kowzar}{Kouros Owzar}
+%
+\usepackage{geometry}
+%
+\usepackage{color}
+\definecolor{darkblue}{rgb}{0.0,0.0,0.75}
+\definecolor{distrCol}{rgb}{0.0,0.4,0.4}
+%
+\usepackage{ifpdf}
+%
+\usepackage{amssymb}
+\usepackage{url}  
+%
+\usepackage[authoryear,round,longnamesfirst]{natbib}
+%
+\usepackage[%
+baseurl={r-forge.r-project.org},%
+pdftitle={How to work with SweaveListingUtils},%
+pdfauthor={Peter Ruckdeschel},%
+pdfsubject={SweaveListingUtils},%
+pdfkeywords={Sweave,TeX package listings, listings, R-forge},%
+pagebackref,bookmarks,colorlinks,linkcolor=darkblue,citecolor=darkblue,%
+pagecolor=darkblue,raiselinks,plainpages,pdftex]{hyperref}
+%
+\markboth{\sl How to work with SweaveListingUtils}%
+{\sl How to work with SweaveListingUtils}
+%
+% -------------------------------------------------------------------------------
+\newcommand{\Reals}{\mathbb{R}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\hreft}[1]{\href{#1}{\tt\small\url{#1}}}
+\definecolor{gray90}{rgb}{0.900,0.900,0.900}
+\definecolor{gray95}{rgb}{0.950,0.950,0.950}
+%
+% -------------------------------------------------------------------------------
+\RequirePackage{fancyvrb}
+\RequirePackage{listings}
+%\usepackage{Sweave}
+\SweaveOpts{keep.source=TRUE}
+% -------------------------------------------------------------------------------
+<<SweaveListingsPreparations, results=tex, echo=FALSE, strip.white=false>>=
+require(SweaveListingUtils)
+SweaveListingoptions(intermediate = FALSE)
+SweaveListingPreparations()
+setToBeDefinedPkgs(pkgs = c("SweaveListingUtils","distr"),
+                   keywordstyles = c("\\bf\\color{blue}","\\bf\\color{red}"))
+@
+% -------------------------------------------------------------------------------
+\lstdefinestyle{TeXstyle}{fancyvrb=true,escapechar=`,language=[LaTeX]TeX,%
+                        basicstyle={\color{black}\small},%
+                        keywordstyle={\bf\color{black}},%
+                        commentstyle={\color{Rcommentcolor}\ttfamily\itshape},%
+                        literate={<-}{<-}2{<<-}{<<-}2}
+%
+% -------------------------------------------------------------------------------
+\begin{document}
+% -------------------------------------------------------------------------------
+\title{How to work with SweaveListingUtils}
+%,version \pkgExversion}
+\author{\small Peter Ruckdeschel\thanks{Fraunhofer ITWM, Kaiserslautern}
+\smallskip\\
+\small Fraunhofer ITWM\\[-.5ex]
+\small Fraunhofer Platz 1\\[-.5ex]
+\small 67663 Kaiserslautern\\[-.5ex]
+\small Germany\\
+\small e-Mail: \href{mailto:Peter.Ruckdeschel@itwm.fraunhofer.de}%
+{\small \tt {Peter.Ruckdeschel@itwm.fraunhofer.de}}\medskip\\
+\parbox[t]{5cm}{
+\footnotesize\sffamily
+ Version control information:
+\begin{tabbing}
+\footnotesize\sffamily
+ Last changes revision: \= \kill
+ Head URL: \> \parbox[t]{6cm}{\url{\svnkw{HeadURL}}}\\[1.2ex]
+ Last changed date: \> \svndate\\
+ Last changes revision: \> \svnrev\\
+ Version: \> \svnFullRevision*{\svnrev}\\
+ Last changed by: \> \svnFullAuthor*{\svnauthor}\\
+\end{tabbing}
+}}
+\maketitle
+% -------------------------------------------------------------------------------
+\begin{abstract}
+% -------------------------------------------------------------------------------
+In this vignette, we give short examples how to use package
+\pkg{SweaveListingUtils}.
+% -------------------------------------------------------------------------------
+\end{abstract}
+%
+% -------------------------------------------------------------------------------
+\section[What package SweaveListingUtils is for]{What package {\tt SweaveListingUtils} is for}
+% -------------------------------------------------------------------------------
+Package \pkg{SweaveListingUtils}
+provides utilities for combining {\tt Sweave}, confer \citet{Lei:02a,Lei:02b,Lei:03},
+with functionality of \TeX-package-\file{listings}, confer \citet{H:M:07}.
+In particular, we define {\sf R} / {\tt Rd} as \TeX-package-\file{listings}
+"language" and functionality to include {\sf R} / {\tt Rd} source file
+(sniplets) copied from an url, by default from the {\tt svn} server at
+\href{http://r-forge.r-project.org/}{R-forge}, confer \citet{RForge} in
+its most recent version, thereby avoiding inconsistencies between vignette and
+documented source code.
+In this respect it supports (and to some extent enhances) {\tt Sweave}.
+%
+% -------------------------------------------------------------------------------
+\section{Preparations: Preamble}\label{PrepSec}
+% -------------------------------------------------------------------------------
+You should include into the preamble of your \file{.Rnw} file something like
+%
+%------------
+% use \lstinputlisting{....} 
+% to avoid that Sweave interprets the chunks in preamble.tex
+%------------
+\lstinputlisting[style=TeXstyle]{preamble.tex}
+Actually, after \code{Sweave}-ing the \file{.Rnw} file
+to a corresponding \file{.tex} file,  will expand to a rather long form
+(depending on which packages you have attached), but you should not worry
+about your document getting very long, as the inserted \TeX commands 
+(or more precisely {\tt listings}-package commands) only declare
+the list(s) of registered keywords (for later markup).\\
+In our case this should expand to something like\newline
+%
+\begin{footnotesize}
+%
+%------------
+% use \lstinputlisting{....} 
+% to avoid that Sweave interprets the chunks in preambleExp.tex
+%------------
+\lstinputlisting[style=TeXstyle,basicstyle=\footnotesize]{preambleExp.tex}
+%
+\end{footnotesize}
+Finally to clean up things (in particular unmask the base functions
+\code{require} and \code{library} again) at the end of your document
+you should append something like
+%------------
+% use \lstinputlisting{....}
+% to avoid that Sweave interprets the chunks in cleanup.tex
+%------------
+\lstinputlisting[style=TeXstyle]{cleanup.tex}
+%
+
+%
+\paragraph{Remark:} As suggested by \href{mailto:ellis@finance.ch}{Andrew Ellis},
+ETH Z{\"u}rich, \code{SweaveListingPreparations} from version {\tt 0.3}
+has two more options: First, by setting argument \code{withOwnFileSection}
+(default \code{FALSE}), one can have one's own definition of \LaTeX\
+environments for \texttt{Sinput}, \texttt{Soutput}, \texttt{Scode}, be it in
+an extra file or in a section in one's \file{.Rnw} file. Second,
+and this is Andrew's suggestion, by
+means of argument \code{withVerbatim} (default \code{FALSE}), you may
+from now on use \LaTeX\
+environments for \texttt{Sinput}, \texttt{Soutput}, \texttt{Scode} using
+{\tt listings}-command \lstinline[style=TeXstyle,basicstyle=\tt]|\lstnewenvironment|
+instead of the original {\tt fancyvrb} definitions provided in the original
+\file{Sweave.sty} file by Fritz Leisch. This way we also solve the
+escaping problem (as noted by Frank E. Harrell): the escaping mechanisms
+provided by {\tt listings}  command {\tt lstset} (as e.g. {\tt escapechar},
+{\tt escapeinline}) as described in detail in \cite[section~4.14]{H:M:07}
+are now available; in particular one can place \LaTeX\ references
+\lstinline[style=TeXstyle,basicstyle=\tt]|\ref{...}|,
+\lstinline[style=TeXstyle,basicstyle=\tt]|\label{...}| within comments.\newline
+Just to show some little example:
+%------------
+% use \lstinputlisting{....}
+% to avoid that Sweave interprets the chunks in exam1.tex
+%------------
+\lstinputlisting[style=TeXstyle]{exam00.tex}
+becomes
+\lstdefinestyle{Rinstyle}{style=RinstyleO,frame=trBL,backgroundcolor=\color{gray90},%
+        numbers=left,numberstyle=\tiny,stepnumber=1,numbersep=7pt}
+\lstdefinestyle{Routstyle}{style=RoutstyleO,frame=trBL,frameround=fttt,%
+        backgroundcolor=\color{gray95},numbers=left,numberstyle=\tiny,%
+        stepnumber=3,numbersep=5pt}
+\begin{quotation}
+<<exam00, eval = TRUE>>=
+x <- rnorm(3) # define random numbers -> insert a label <here> (*\label{comment}*)
+print(round(x,2))
+f <- function(x) sin(x) ## here is a ref: section(*~\ref{PrepSec}*)
+a <- 2; b <- 3
+# compute (*$\int_a^b f(x)\,dx$*)
+integrate(f, lower=a, upper=b)$value
+@
+Note that line~\ref{comment} contains a comment.
+\end{quotation}
+\lstdefinestyle{Rinstyle}{style=RinstyleO,frame=none,backgroundcolor=\color{white},%
+        numbers=none}
+\lstdefinestyle{Routstyle}{style=RoutstyleO,frame=none,backgroundcolor=\color{white},%
+        numbers=none}
+Note that for easier reference later on, we produce copies of the original
+{\tt listings} styles {\tt Rinstyle}, {\tt Routstyle}, {\tt Rcodestyle}, named
+                      {\tt RinstyleO}, {\tt RoutstyleO}, {\tt RcodestyleO},
+                      respectively.
+If you really want to have background colors, frames and the like, however,
+you might wish to specify the corresponding options in the preparational
+chunk to have something like.
+%------------
+% use \lstinputlisting{....}
+% to avoid that Sweave interprets the chunks in preamble2.tex
+%------------
+\lstinputlisting[style=TeXstyle]{preamble2.tex}
+
+% -------------------------------------------------------------------------------
+\section{Listings markup}
+% -------------------------------------------------------------------------------
+\subsection{Example of code coloring}
+% -------------------------------------------------------------------------------
+Any keyword of some new {\sf R} package ``loaded in'' by \code{require} 
+or \code{library} which is on the \code{search} list item of this package
+afterwords when used in \lstinline[style=TeXstyle,basicstyle=\tt]`\lstinline{ .... }` or
+\lstinline[style=TeXstyle,basicstyle=\tt]`\begin{lstlisting} .... \end{lstlisting}`
+or in some Sweave chunk is typeset in style \code{keywordstyle}.
+More specifically, with argument \code{keywordstyles} of functions
+\code{setToBeDefinedPkgs} or \code{lstsetLanguage} 
+all packages may obtain their own style; in the preamble, for instance,
+package \pkg{SweaveListingUtils} is colored blue, and package
+\pkg{distr} (to be attached just now) will be colored red.
+Also, comments are set in a different style (by default using color 
+\code{Rcommentcolor}). Of course, instead of colors, you may use any other markup,
+like different font shapes, fonts, font sizes or whatever comes into your
+mind. For this purpose, commands \code{setToBeDefinedPkgs} and 
+\code{changeKeywordstyles} are helpful. 
+
+Note that in order to define these new keywords correctly,
+they must not be included into a 
+\lstinline[style=TeXstyle,basicstyle=\tt]`\begin{Schunk} .... \end{Schunk}`
+environment, so  we use
+%------------
+% use \lstinputlisting{....} 
+% to avoid that Sweave interprets the chunks in reqdistr.tex
+%------------
+\lstinputlisting[style=TeXstyle]{reqdistr.tex}
+
+<<Prepa, echo=FALSE, results=tex, strip.white=false>>=
+require(distr)
+@
+
+The next example takes up package \pkg{distr}, confer \citet{R:K:S:C:04},
+to illustrate particular markup for a particular package.
+
+%
+Example (note the different colorings):
+%------------
+% use \lstinputlisting{....} 
+% to avoid that Sweave interprets the chunks in exam1.tex
+%------------
+\lstinputlisting[style=TeXstyle]{exam1.tex}
+%
+which gives
+<<exam1, eval = TRUE>>=
+require(distr)
+N <- Norm(mean = 2, sd = 1.3)
+P <- Pois(lambda = 1.2)
+Z <- 2*N + 3 + P
+Z
+p(Z)(0.4)
+q(Z)(0.3)
+@
+
+{\bf Remark: }{\tt .Rd} keywords will be taken from file \file{Rdlistings.sty} 
+in the \file{TeX} subfolder of this package,
+which is according to \citet{Murd:08}.
+% -------------------------------------------------------------------------------
+\subsection{Changing the markup}
+% -------------------------------------------------------------------------------
+%
+Triggered by an e-mail by David Carslaw, this subsection lists some possibilities 
+howto change the (default) markup of code.
+
+\paragraph{Changing the global settings: }
+%
+The default markup for {\sf R} code is set in a global option 
+\code{Rset} to be inspected by
+<<LookAtRset>>=
+getSweaveListingOption("Rset")
+@
+
+Similarly, default markup for {\tt Rd} code is set in a global option 
+\code{Rset} to be inspected by
+<<LookAtRdset>>=
+getSweaveListingOption("Rdset")
+@ 
+
+The inspection / modification mechanism for these global options
+is the same as for the {\sf R} global options, i.e., instead of
+the functions \code{options}, \code{getOption}, we have functions
+\code{SweaveListingoptions}, \code{getSweaveListingOption}; see also
+\code{?getSweaveListingOption}.\medskip\\
+
+\noindent Some comments are due: 
+
+The items of this list are just the tagged 
+{\tt name = value} list items to be passed as arguments to 
+(\TeX-){\tt listings} command {\tt lstset}, and you may include any 
+{\tt name = value} pair allowed for \lstset{}. For details confer the
+documentation of the {\tt listings} package, \citet{H:M:07}. 
+
+As usual in {\sf R}, backslashes have to be escaped,
+giving the double appearance in the examples listed above.
+ 
+For cooperation of  {\tt listings}
+with {\tt Sweave}, it is necessary, however, to use the tagged pair 
+{\tt "fancyvrb" = "true"}. 
+
+The colors used in the default setting
+are also set as global ({\tt SweaveListing}-)options ---
+i.e.; \code{Rcolor}, \code{Rcommentcolor}, \code{Rdcolor}.
+
+Item {\tt "literate"} will be discussed in the next subsection.
+
+Using the escape character defined as item {\tt "escapechar"},
+you may force \TeX to typeset (parts of) your comments in \TeX style,
+which is handy for mathematical formula.
+
+In an e-mail, Frank Harrell suggested to use {\sf R} color names
+to assign markup colors as \code{Rcolor}.
+As in \TeX we are just using the command \lstinline[language=tex]{\color}
+which expects a comma-separated list of the three rgb coordinates (scaled to be
+in $[0,1]$), a good way to do this is, as Frank suggested,
+to use \code{col2rgb(...)/255} to transform them to \TeX-digestible format.
+
+\paragraph{Changing the markup settings without changing defaults at startup: }
+%
+Alternatively, you may change global markup without modifying 
+({\tt SweaveListing}-)option  \code{"Rset"}. To this end you may build 
+up your own (local) \code{"Rset"}-list,
+say \code{Rset0}. This is most easily done by first copying the global default 
+list and then by modifying some items by simple {\sf R} list operations.
+This might give the following alternative preparatory chunk to
+be inserted at the beginning of your {\tt .Rnw} file.
+%------------
+% use \lstinputlisting{....} 
+% to avoid that Sweave interprets the chunks in altPrep.tex
+%------------
+\lstinputlisting[style=TeXstyle]{altPrep.tex}
+
+\paragraph{Changing the markup locally: }
+If you want to change the markup style within some {\tt .Rnw} file, use
+something like:
+
+%------------
+% use \lstinputlisting{....} 
+% to avoid that Sweave interprets the chunks in locChange.tex
+%------------
+\lstinputlisting[style=TeXstyle]{locChange.tex}
+
+This will add/replace item \code{"basicstyle"} to/in the existing items.
+For {\tt Rd}-style you may use a respective call to \code{lstsetRd()},
+and if you only want to modify the {\tt Sinput}, {\tt Soutput}, or {\tt Scode}
+environments, you may use respective calls to \code{lstsetRin}, \code{lstsetRout},
+\code{lstsetRcode}, respectively.
+
+%
+% -------------------------------------------------------------------------------
+\subsection{Using literate programming}
+% -------------------------------------------------------------------------------
+%
+This is ---to some degree--- a matter of taste: {\sf R} has two assignment
+operators, which when typed look like {\color{Rcolor}\tt <-} and 
+{\color{Rcolor}\verb|<<-|}; now literally these are interpreted as one token;
+the same goes for comparison operators like {\color{Rcolor} \tt <=}.
+One idea of literate programming is to replace these tokens by special
+symbols like $\leftarrow$, $\twoheadleftarrow$, $\le$ for printing to enhance
+readability --- think of easy confusions arising between {\color{Rcolor}\tt <-}
+and {\color{Rcolor}\tt < -}.
+
+\TeX-package {\tt listings}, confer \citet{H:M:07}, to this end has the directive 
+{\tt literate}, and in
+our default setting for {\sf R} markup, we use it at least for the replacement 
+of the assignments. 
+
+Note that the {\tt .Rnw} file still contains valid {\sf R} code
+in the chunks; \code{stangle} will work just fine --- the chunks are just output 
+by \TeX\ in a somewhat transformed way.
+
+A considerable part of {\sf R} users would rather prefer to see the code output
+``as you type it''; if you tend to think you like this, you are free of course
+to change the default markup as described in the previous section. 
+%
+%
+%
+% -------------------------------------------------------------------------------
+\section{Including Code Sniplets from R Forge}
+% -------------------------------------------------------------------------------
+When documenting code, which is not necessarily of the same package, and be it 
+{\sf R} code or {\tt .Rd}-code, we provide helper functions to integrate code 
+sniplets from an url (by default, we use the svn server at R-forge in its 
+most recent version). This can be useful to stay consistent with the current 
+version of the code without having to update vignettes all the time. 
+To this end, besides referencing by line numbers, 
+\code{lstinputSourceFromRForge} also offers
+referencing by matching regular expressions.
+
+
+For instance, to refer to some code of file \file{R/AllClasses.R}
+in package \pkg{distr}, we would use:  
+%
+%------------
+% use \lstinputlisting{....} 
+% to avoid that Sweave interprets the chunks in AllClass.tex
+%------------
+\lstinputlisting[style=TeXstyle]{AllClass.tex}
+
+% -------------------------------------------------------------------------------
+which returns
+
+<<AllClass1, echo=FALSE, results=tex, strip.white=false>>=
+lstinputSourceFromRForge("distr","R","AllClasses.R","distr",
+                     "## Class: BinomParameter", "#-")
+@
+
+%
+Note the referencing with regular expressions instead of line numbers,
+which helps if you later on add/delete (other) code in this file.
+
+To refer to a whole \file{.Rd} file, use something like the following
+chunk:
+%
+%------------
+% use \lstinputlisting{....} 
+% to avoid that Sweave interprets the chunks in BinomParam.tex
+%------------
+\lstinputlisting[style=TeXstyle]{BinomParam.tex}
+
+giving 
+<<BinomParam, results=tex, echo=FALSE, strip.white=false>>=
+lstinputSourceFromRForge("distr","man","BinomParameter-class.Rd","distr")
+@
+
+
+%
+
+\begin{thebibliography}{7}
+%
+\bibitem[Heinz and Moses (2007)]{H:M:07}
+Heinz, C and Moses, B (2007)
+\newblock {{The {\sf Listings} package.} Manual for \TeX\ package {\tt listings}
+version 1.4.}
+\newblock \hreft{http://www.ctan.org/get/macros/latex/contrib/listings/listings.pdf}.
+%
+
+\bibitem[Leisch (2002a)]{Lei:02a}
+Leisch, F  (2002a)
+\newblock {Sweave: Dynamic generation of statistical reports.}
+\newblock  In: H{\"a}rdle, W and R{\"o}nz, B (eds): 
+           {\emph{Compstat 2002 - Proceedings in Computational Statistics.\/}}
+           pp.~575--580. Physika Verlag, Heidelberg.
+\newblock \hreft{http://www.statistik.lmu.de/~leisch/Sweave/}.
+%
+
+\bibitem[Leisch (2002b)]{Lei:02b}
+Leisch, F  (2002b)
+\newblock {Sweave, Part I: Mixing R and \LaTeX.}
+\newblock \emph{R-News\/}, {\bf 2}(3): 28--31.
+\newblock \hreft{http://cran.r-project.org/doc/Rnews/Rnews_2002-3.pdf}.
+%
+
+\bibitem[Leisch (2003)]{Lei:03}
+Leisch, F  (2003)
+\newblock {Sweave, Part II: Package Vignettes.}
+\newblock \emph{R-News\/}, {\bf 3}(2): 21--24.
+\newblock \hreft{http://cran.r-project.org/doc/Rnews/Rnews_2003-2.pdf}.
+%
+
+\bibitem[{Murdoch (2010)}]{Murd:08}
+Murdoch, D (2010)
+\newblock {Parsing Rd Files. Technical Report on {\tt developer.r-project.org}} as of Jan. 1 2010.
+\newblock \hreft{http://developer.r-project.org/parseRd.pdf}.
+%
+
+\bibitem[{{R-Forge Administration and Development Team}(2008)}]{RForge}
+{R-Forge Administration and Development Team} (2008).
+\newblock \emph{R-Forge User's Manual}.
+\newblock \hreft{http://download.R-Forge.R-project.org/R-Forge.pdf}.
+%
+
+\bibitem[{Ruckdeschel et al.\ (2006)}]{R:K:S:C:04}
+Ruckdeschel P, Kohl M, Stabla T, and Camphausen F (2006)
+\newblock {S4 Classes for Distributions.}
+\newblock \emph{R-News\/}, {\bf 6}(2): 10--13.
+\newblock \hreft{http://cran.r-project.org/doc/Rnews/Rnews_2006-2.pdf}.
+%\newblock See also {http://www.uni-bayreuth.de/departments/math/org/mathe7/RUCKDESCHEL/pubs/distr.pdf}
+
+%
+
+\end{thebibliography}
+%problem!
+%<<cleanup, echo=FALSE>>=
+%unloadNamespace("SweaveListingUtils")
+%@
+% -------------------------------------------------------------------------------
+\end{document}
+% -------------------------------------------------------------------------------

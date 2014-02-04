@@ -1,0 +1,333 @@
+######################################################################
+#  News: to package distrEx
+######################################################################
+
+(first two numbers of package versions do not necessarily reflect 
+ package-individual development, but rather are chosen for the 
+ distrXXX family as a whole in order to ease updating "depends" 
+ information)
+ 
+##############
+v 2.4
+##############
+
+user-visible CHANGES:
++ moved functionality for extreme value distribution to package RobExtremes
+-> concerns distributions Gumbel, GEVD, GPareto, and Pareto
++ moved functional and estimator kMAD to package RobExtremes
+
+under the hood:
++ added DESCRIPTION tag "ByteCompile" to all our packages
++ updating maintainer email address and URL.
++ added argument no.readonly = TRUE to assignments of form opar <- par()
++ deleted no longer needed chm folders
+
+
+
+BUGFIXES:
+
++ corrected bug in var() (with argument fun in case of symmetry)
+
+##############
+v 2.3
+##############
+
+user-visible CHANGES:
+
++ new default method for CvMDist (i.e. for mu=e2) instead of numerical 
+  integration uses explicit terms => by factor 30 faster!
+
++ Nataliya produced a C-version of kMad; integrated to distrEx now
+
++ Generalized Extreme Value Distribution is ported to distrEx
+
++ Gumbel  in distrEx has different parametrization as GEV with shape = 0
+
+under the hood:
+
++ DESCRIPTION files and package-help files gain a tag 
+  SVNRevision to be filled by get[All]RevNr.R from utils in distr
+
+
+BUGFIXES:
+
++ found a bug in setMethod("var", signature(x = "UnivariateDistribution")) 
+  for spherical symmetric distributions
+
++ Small bug in Expectation.R was found 
+
++ Gumbel  in distrEx has different parametrization 
+  as GEV with shape = 0
+
++ fixed several buglets in GEV
+   * small error for xi = 0 in Functionals.R and Expecation.R
+   * completed unfinished documentation
+
+
+##############
+v 2.2
+##############
+
+user-visible CHANGES:
+
++ enhanced E() methods
+  * expectation gains ... argument to pass on accuracy arguments
+
++ enhanced m1df(),m2df() methods
+  * m1df, m2df gain ... argument to be able to pass on accuracy arguments to E();
+  * m1df, m2df can now digest cond, fun arguments...
+  * particular m1df versions (for Binom, Norm, Chisq, Exp, Pois) 
+    are used in E(object, [fun, cond, ] low=.., upp=.., ...) calls
++ GPareto 
+  * implemented GPareto class (Nataliya) [including functionals)
+  * allow for negative shape parameter in generalized Pareto ...
+
+GENERAL ENHANCEMENTS:
+
++ added tests/Examples folder with file distrEx-Ex.Rout.save to have
+  some automatic testing
++ added field "Encoding: latin1" to all DESCRIPTION files in order to avoid problems 
+  with e.g. Windows locale when svn replaces $LastChangedDate
++ added TOBEDONE (sic!) files for each package (by accident also in trunc; these are empty so far)
+
+INTERNALLY:
+
++ introduced helper function .getIntbounds
++ reorganized help for PrognCondDistribution   
++ functionals in distrEx now make use of this symmetry slot ...
++ catch errors thrown by qgumbel and qpareto1 when args are not in (0,1)
+  --> corresp. q-methods now consistently return NaN.
++ m1df,m2df:
+  *particular methods for m2df for AbscontDistribution, DiscreteDistribution are no longer necessary.
+  *new/revised methods for m1df, m2df for AfflinDistribution  
++ enhanced/corrected methods for Kolmogorov distance
+  * when one operand is DiscreteDistribution
+  * yet another (speed) improvement --- important for MDE with KolmogorovDist:
+    Kolmogorov-dist e1 (discrete) : e2 (ac) is         
+        x <- support(e1)
+        res <- max(p(e1)(x)-p(e2)(x),p(e2)(x)-p.l(e1)(x))
++ merged Expectation_LebDec.R into Expectation.R 
+  according to proposal by Kurt Hornik (different Collation order caused
+  problem in English locale)
++ new expectation methods for UnivarMixingDistribution
++ included new methods for E():
+  * for GPareto as well as for Gammad 
+    -> increase the precision for the numerical calculation of certain integrals; 
+       in particular, integrals involving "log" as integrand.
+  * Expectation for GPareto now has IQR.fac accuracy set to 
+    max(1e4,getdistrExOption("IQR.fac") to enhance accuracy for integration;
+
+BUGFIXES:
+
++ forgot to commit branches/distr-2.2/pkg/distrEx/man/distrExConstants.Rd
++ forgot some source files (GPD)
++ fixed a buglet in m2df method for LatticeDistribution (a catch for existing fun argument was missing).
++ forgot to set corresponding distrExoptions()-default values for accuracy  
+  for m1df, m2df
++ fixed a bug in E-method for AbscontDistribution, function, cond 
++ fix for the bug in distrEx: m2df now only uses mc <- match.call() 
+  instead of mc <- match.call(call = sys.call(sys.parent(1)))
+ (do not completely understand why: 
+  there is method dispatch, though, as in plot(), where sys.call(sys.parent(1)) 
+  is needed, but here match.call() does it... )
++ fixed some --hard-to-detect/localize--  bug induced with lazy evaluation:
+  Data-Examples in scripts to ROptEst threw errors: reason --- need an
+  explicit assignment im ClippedMomemts.R (distrEx) mc$object <- object
+  to force evaluation of object (otherwise only transmitted as name...)
++ R CMD check threw an error for distrEx .Rd file distrExConstants.Rd :
+  probably because of a multi-line \deqn{}{} expression modified 
++ corrected some bug with match.call() in Var()...
++ forgot to write the expectations of different components into different coordinates 
++ Definition for KolmogorovDist for numeric, UnivariateDistribution 
+  by means of ks.test was only oK for AbscontDistributions; changed to
+  KolmogorovDist(DiscreteDistribution(e1),e2)
++ fixed errors in expectation methods (with upper & lower bounds) 
+  as well as in m1df, m2df methods
+
+
+
+##############
+v 2.1
+##############
+
+* Rd-style:
+  + several buglets detected with the fuzzier checking mechanism
+    cf [Rd] More intensive checking of R help files, Prof Brian Ripley, 09.01.2009 10:25) 
+       [Rd] Warning: missing text for item ... in \describe? , Prof Brian Ripley,
+
+* FUNCTIONALS
+--Expectation
+  +expectation gains (optional) low and upp arguments; 
+   these can be passed through to var, skewness, kurtosis
+  +expectation gains explicit arguments to set accuracy locally;
+  +also both quantile and scale based methods is used to determine
+   a sensible integration range in expectation
+--Quantiles:
+  -median and IQR are now defined for UnivariateCondDistribution
+--general bug fixes:
+  -checked and fixed functionals (stirred up by mail by Jay Kerns, gkerns@ysu.edu)
+  -bug corrected in E for Hyper (thanks to Jay G. Kerns!) ...
+  -corrected small bug in mad, added new implementation for skewness and
+   kurtosis for signature "ANY".
+  -corrected small bug in skewness for AffLinDistribution.
+
+* DISTRIBUTIONS
+  + gains distribution Pareto; ported from pkg actuar by Nataliya Horbenko
+   +new slots d,p,q for Gumbel distribution catching errors, vectorization
+      and lower.tail, log[.p] argument ...
+  + new methods for Gumbel distribution ...
+
+* DISTANCES
+  + introduced distance OAsymTotalVarDist (minimal
+         asymmetric total variation distance) 
+  + introduced new asymmetric total variation distance AsymTotalVarDist
+  + TotalVarDist and HellingerDist gain extra arguments
+    to better control the integration range and exactness
+
+* NEW FUNCTIONALS
+  + m1df for AffLinDistribution
+  + Expectation, var, IQR, median, skewness, kurtosis available for Pareto
+
++... and: had forgotten to document the plot-methods in distrExsome typo's in integration range selection
+
+##############
+v 2.0.3
+##############
+  
+  * under the hood: 
+     + enhanced plotting (correct dispatch; opening of new device is controlled
+       by option("newDevice") )
+     + after JMC's changes: 
+       +gone through setIs relations to ensure 
+        "correct" inheritance in Expectation, all the distance functionals 
+        (ContaminationSize, HellingerDist,...), m1df,m2df
+     + buglet for AffLinDistribution in Skewness
+     + corrected small bug in mad, added new implementation for 
+       skewness and kurtosis for signature "ANY"
+ 
+  * moved license to LGPL-3
+  * new methods for Gumbel distribution ...
+
+
+##############
+v 2.0 
+##############
+
+* moved teaching illustrations to new package 'distrTeach'
+
+* E methods for class[es] '[AffLin]UnivarLebDecDistribution'
+
+* distance methods for class '[AffLin]UnivarLebDecDistribution'
+
+* CvM distance is implemented
+
+##############
+v 1.9 
+##############
+
+* 'distrEx' now behaves exactly the same as the other members
+  of the distrXXX family as to 'distrExOptions()', 'getdistrExOption()'
+
+* substantial contributions by Jay Kerns, gkerns@ysu.edu:
+  + skewness & kurtosis are now available as functionals
+  + E(), var() return NA in case of T-distribution if not defined
+
+* disclaimer for possible collisions with other definitions of
+  kurtosis and skewness
+
+* added note on masking on startup as well as disrExMASK()
+
+* enhanced 'illustrateCLT'
+  + plot includes a title
+  + for 'DiscreteDistributions' in the "d"-panel, the support is thinned
+    out if length too long
+  + Komogoroff-distance is printed out
+  + 'illustrateCLT' no longer is a generic function but a regular function
+  + the plotting feature of 'illustrateCLT' is extracted and has become 
+    a generic function 'plotCLT' (now with title and the summands mentioned
+    in the header) 
+  + there is a TclTk-based demo now (therefore TclTk is a suggested package now)
+    replaced recursive summation in illustrate-CLT method by 'convpow'
+
+* new demo 'illustLLN' and function 'illustrateLLN'
+  + preset strings similar to those of plot-methods from package 'distr'
+
+* moved some parts from package 'distrEx' to package 'distr' 
+   + generating function 'DiscreteDistribution' 
+   + univariate methods of 'liesInSupport()' 
+   + classes 'DistrList' and 'UnivariateDistrList'
+   + generating functions EuclideanSpace() ,Reals(), Naturals() 
+
+* mentioned in package-help: startup messages may now also be suppressed by
+  suppressPackageStartupMessages() (from package 'base')
+
+* adapted demo() to comply with change in return value of require()
+  from R-2.5.0patched on
+
+* formals for slots p,q,d as in package stats to enhance accuracy
+
+    + p(X)(q, [cond,] lower.tail = TRUE, log.p = FALSE)
+    + q(X)(p, [cond,] lower.tail = TRUE, log.p = FALSE)
+    + d(X)(x, [cond,] log = FALSE)
+    
+    used wherever possible;
+    but backwards compatibility: 
+        always checked whether lowert.tail / log / log.p are formals
+
+ * some exact formulas for mad, median, and IQR  
+ * new method for IQR for DiscreteDistributions taking care that between upper and lower
+   quartile there is 50% probability 
+ * E-, var-, IQR-, mad-, median-, kurtosis-, skewness- methods 
+   for new class union AffLinDistribution
+
+##############
+v 1.8 
+##############
+
+* changed to version counting of the remaining distrXXX packages
+* corrected minor error in E() and var() method for Nbinom 
+  (thanks to Spencer Graves for drawing our attention to this)
+* fixed error in definition of  Hellinger distance (HellingerDist)
+
+##############
+v 0.4-4 
+##############
+
+* dim() method for DiscreteMVDistribution 
+* var() + E() overloaded for DExp-Class 
+* sd()-method  overwritten for Norm-Class to allow function / condition argument
+
+##############
+v 0.4-3 
+##############
+
+*  Implementation of functionals:
+   o evaluation of exact expressions of E (expectation functional) for most specific distributions from stats package
+   o var, sd methods for UnivariateDistributions; these include calls like
+
+     N <- Norm()
+
+     var(N,function(t)abs(t)^(1/2))   # calculates Var[|N|^(1/2)] 
+
+     also (factorized) conditional variance is available
+   o evaluation of exact expressions of var for most specific distributions from stats package
+   o median, IQR, mad methods for UnivariateDistributions
+   o for var, sd, median, IQR, mad: all functionality/arguments of stats methods is/are preserved and
+            only if first argument / argument x is of class UnivariateDistribution (or descendant) a 
+            different method is applied
+* Internationalization: use of gettext, gettextf in output
+* C-interface .GLaw() to replace respective R-Code in distrExintegrate.R
+* PrognCondDistribution, PrognCondition are included as classes and generating functions (incl. show-method); 
+* Inclusion of demos (see above)
+  + PrognCondDistribution, PrognCondition are included as classes and generating functions (incl. show-method); 
+  + illustrateCLT is included and rd-file is done
+
+
+##############
+v 0.4-2 
+##############
+
+* ContaminationSize, HellingerDist, KolmogorovDist, TotalVarDist now return a list which consists of the corresponding distributions and their distance
+* minor changes in m1df and m2df to increase speed of computation
+* minor changes in DiscreteMVDistribution to increase speed of computation
+* introduction of a new parameter useApply in methods for function E with default value TRUE

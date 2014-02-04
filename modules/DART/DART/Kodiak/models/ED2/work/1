@@ -1,0 +1,15 @@
+ls: model_mod.f90: No such file or directory
+ls: 2: No such file or directory
+../:
+#model_mod.f90#
+fort.10
+model_mod.f90
+model_mod.f90~
+model_mod.nml
+random.dat
+random.exe
+random.f90
+random.f90~
+shell_scripts
+utils
+work

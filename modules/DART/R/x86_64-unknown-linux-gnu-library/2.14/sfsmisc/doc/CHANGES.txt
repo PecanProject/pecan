@@ -1,0 +1,114 @@
+
+		CHANGES in sfsmisc VERSION 0.95-6  [2006-06-26]
+
+   o
+		CHANGES in sfsmisc VERSION 0.95-5  [2006-06-22]
+
+   o
+
+
+
+		CHANGES in sfsmisc VERSION 0.95-4  [2006-02-26]
+
+   o
+
+
+
+		CHANGES in sfsmisc VERSION 0.95-3  [2006-01-25]
+
+   o
+
+
+
+		CHANGES in sfsmisc VERSION 0.95-2  [2005-11-03]
+
+   o
+
+
+
+		CHANGES in sfsmisc VERSION 0.95-1  [2005-04-25]
+
+   o    New:  rnls() for robust nonlinear regression;
+	      lseq() {seq() on log scale} utility
+
+   o    sfsmisc now has a NAMESPACE
+
+
+
+		CHANGES in sfsmisc VERSION 0.9-8  [2004-12-14]
+
+   o	TA.plot() now also works for lme() results.
+
+
+		CHANGES in sfsmisc VERSION 0.9-7  [2004-11-04]
+
+   o	Depends on R 1.9.0 (was effectively the case earlier):
+	Removing old package names "modreg", "stepfun", etc
+
+
+
+		CHANGES in sfsmisc VERSION 0.9-6  [2004-09-27]
+
+   o	bug fix in p.ts() {case of start(.) of length 2}
+
+
+
+		CHANGES in sfsmisc VERSION 0.9-5  [2004-08-12]
+
+
+    o	New function posdefify()
+
+    o	New functions QUnif() and sHalton()
+
+    o	mult.fig()'s global assignment to 'old.par' is now deprecated.
+		     do work with op <- mult.fig(...)$old.par instead !!
+
+    o	fixed labeling bug in compresid2way().
+
+    o	plotCI() is now deprecated -- use the one from package "gregmisc"!
+
+
+
+		CHANGES in sfsmisc VERSION 0.9-4  [2004-05-26]
+
+
+    o	p.ts() allows date-time objects for x-axis labeling, with new
+	      arguments 'date.x', 'do.x.axis', 'do.x.rug', 'ax.format' and 'xlab'
+
+    o	strcodes() had a bug (offset by 1) which also lead to one in AsciiToInt()
+
+    o	p.res.2x() has new arguments 'xlim', 'ylim', 'main' and a new default
+		   for 'scol' (= 2:3).
+
+
+
+		CHANGES in sfsmisc VERSION 0.9-3  [2004-02-23]
+
+
+    o	p.res.2x() allows 'scol' of length 2.
+
+    o	n.plot()  fixed the "log = .." (non-default) option.
+
+
+
+		CHANGES in sfsmisc VERSION 0.9-2  [2004-02-07]
+
+
+    o	put Sys.*() functions into unix-only directory
+
+    o	ps.end() tries behaves better for non-unix finding the file
+
+    o	u.date() becomes OS-independent.
+
+
+
+		CHANGES in sfsmisc VERSION 0.9-1  [2004-02-04 -- 1st CRAN ver.!]
+
+
+    o	new function compresid2way() from Werner Stahel.
+
+    o	f.robftest() now returns an object of class "htest"
+
+
+
+   ----- for more, see the ../../ChangeLog file (source package only) -----

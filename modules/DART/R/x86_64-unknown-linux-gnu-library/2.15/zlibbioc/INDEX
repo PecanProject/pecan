@@ -1,0 +1,3 @@
+pkgconfig               Retrieve configuration values for PKG_CFLAGS
+                        and PKG_LIBS.
+zlibbioc-package        An R packaged zlib-1.2.5

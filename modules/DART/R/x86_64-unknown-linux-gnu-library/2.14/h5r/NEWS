@@ -1,0 +1,83 @@
+        **************************************************
+        *                                                *
+        *              1.4 SERIES NEWS                   *
+        *                                                *
+        **************************************************
+
+
+                CHANGES IN h5r VERSION 1.4
+
+NEW FEATURES
+    o Added real Windows support thanks to Mengjuei Hsieh
+    o Added support to read fixed length character strings
+    o Large cleanup of the C interface file
+
+
+        **************************************************
+        *                                                *
+        *              1.3 SERIES NEWS                   *
+        *                                                *
+        **************************************************
+
+
+                CHANGES IN h5r VERSION 1.3
+
+NEW FEATURES
+    o Added Windows support thanks to the rhdf5 package.
+   
+
+        **************************************************
+        *                                                *
+        *              1.2 SERIES NEWS                   *
+        *                                                *
+        **************************************************
+
+
+                CHANGES IN h5r VERSION 1.2
+
+NEW FEATURES
+    o Added 'ls' function
+    o Added 'H5DataFrame' class - this is still a prototype
+
+BUG FIXES
+    o Cleaned up some memory that I was leaving behind. Unfortunately,
+    there are still some small allocations that I probably need to
+    deal with.
+
+
+
+        **************************************************
+        *                                                *
+        *              1.1 SERIES NEWS                   *
+        *                                                *
+        **************************************************
+
+
+                CHANGES IN h5r VERSION 1.1
+
+NEW FEATURES
+    o Added native ability to read sets of 1-D slabs.
+    o Added basic writing capabilities
+
+BUG FIXES
+    o 
+
+
+        **************************************************
+        *                                                *
+        *              1.0 SERIES NEWS                   *
+        *                                                *
+        **************************************************
+
+
+                CHANGES IN h5r VERSION 1.0
+
+NEW FEATURES
+    o Added a way to inspect whats in the h5 file: listH5Contents.
+    o Added proper test harness.
+    o Added support for hyperslab selection.
+    o Added support for string attributes and multi-dim string datasets.
+    o Added support for 1-d attributes of type: String, Float, and Integer.
+
+BUG FIXES
+    o Allowed fixed-length strings.

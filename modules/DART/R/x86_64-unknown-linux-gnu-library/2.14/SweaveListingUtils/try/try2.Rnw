@@ -1,0 +1,122 @@
+\documentclass[12pt]{article}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{amsmath}
+\usepackage[pdftex]{graphicx}
+\usepackage{color}
+\usepackage{xspace}
+\usepackage{fancyvrb}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{listings}
+\usepackage{algorithm2e}
+\usepackage[
+         colorlinks=true,
+         linkcolor=blue,
+         citecolor=blue,
+         urlcolor=blue]
+         {hyperref}
+\usepackage{lscape}
+%%\usepackage{Sweave}
+
+         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\SweaveOpts{keep.source=TRUE}
+
+<<SweaveListingsPreparations, results=tex, echo=FALSE>>=
+library(SweaveListingUtils)
+setToBeDefinedPkgs(pkgs = c("caret"),
+                    keywordstyles = c("\\sffamily\\bf\\color{red}\\LARGE") )
+#changeKeywordstyles(pkgs = c("caret"),
+#                    keywordstyles = c("\\sffamily\\bf\\color{red}\\LARGE") )
+RsetValues <- getSweaveListingOption("Rset")
+RsetValues$literate <- paste("{<-}{{$\\leftarrow$}}2",
+                           "{<<-}{{$\\twoheadleftarrow$}}2",#"%\n",
+                           "{~}{{$\\sim$}}1", "{<=}{{$\\leq$}}2",#"%\n",
+                           "{>=}{{$\\geq$}}2", "{^}{{$\\scriptstyle\\wedge$}}1", sep="")
+RsetValues$keywordstyle <-  "{\\ttfamily\\bf\\color{darkgreen}}"
+RsetValues$basicstyle <-     "{\\ttfamily\\color{Rcolor}\\small}"
+RsetValues$commentstyle <-   "{\\ttfamily\\color{grey}\\small}"
+SweaveListingPreparations(Rset = RsetValues,
+                          Routcolor = c(0.6,0.0,0),
+                          Rcolor = c(0,0.0,0.6),
+                          Rcommentcolor = c(.5, .5, .5),
+                          Rbcolor = c(0, .6, 0))
+@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% define new colors for use
+\definecolor{darkgreen}{rgb}{0,0.6,0}
+\definecolor{darkred}{rgb}{0.6,0.0,0}
+\definecolor{lightbrown}{rgb}{1,0.9,0.8}
+\definecolor{brown}{rgb}{0.6,0.3,0.3}
+\definecolor{darkblue}{rgb}{0,0,0.8}
+\definecolor{darkmagenta}{rgb}{0.5,0,0.5}
+\definecolor{lightgrey}{rgb}{0.95,0.95,0.95}
+\definecolor{grey}{rgb}{0.5,0.5,0.5}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\affy}{{\tt affy}\xspace}
+
+\newcommand{\bld}[1]{\mbox{\boldmath $#1$}}
+\newcommand{\shell}[1]{\mbox{$#1$}}
+\renewcommand{\vec}[1]{\mbox{\bf {#1}}}
+
+\newcommand{\ReallySmallSpacing}{\renewcommand{\baselinestretch}{.6}\Large\normalsize}
+\newcommand{\SmallSpacing}{\renewcommand{\baselinestretch}{1.1}\Large\normalsize}
+\newcommand{\halfs}{\frac{1}{2}}
+
+\setlength{\oddsidemargin}{-.25 truein}
+\setlength{\evensidemargin}{0truein}
+\setlength{\topmargin}{-0.2truein}
+\setlength{\textwidth}{7 truein}
+\setlength{\textheight}{8.5 truein}
+\setlength{\parindent}{0.20truein}
+\setlength{\parskip}{0.10truein}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\rfoot{\thepage\ of \pageref{LastPage}}
+\renewcommand{\headrulewidth}{1pt}
+\renewcommand{\footrulewidth}{1pt}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{A Test}
+\author{Max Kuhn \\ max.kuhn@pfizer.com}
+
+
+\begin{document}
+
+\maketitle
+<<startup, results=tex, echo=FALSE>>=
+library(caret)
+options(useFancyQuotes = FALSE, width = 65)
+@
+
+
+<<example1>>=
+## from ?confusionMatrix
+lvs <- c("normal", "abnormal")
+truth <- factor(rep(lvs, times = c(86, 258)),
+                levels = rev(lvs))
+pred <- factor(
+               c(
+                 rep(lvs, times = c(54, 32)),
+                 rep(lvs, times = c(27, 231))),
+               levels = rev(lvs))
+
+xtab <- table(pred, truth)
+
+confusionMatrix(xtab)
+?NEWS
+as.matrix(rnorm(3))
+@
+
+<<cleanup, echo=FALSE>>=
+unloadNamespace("SweaveListingUtils")
+@
+\end{document}

@@ -1,0 +1,55 @@
+useDynLib(h5r)
+
+import(methods)
+
+exportClasses(H5Obj,
+              H5File,
+              H5Group,
+              H5Dataset,
+              H5Attribute,
+              H5DataContainer,
+              H5Container,
+              H5DataFrame,
+              hSlab)
+
+export(H5File,
+       read1DSlabs,
+       readSlab,
+       readPoints,
+       listH5Attributes,
+       listH5Contents,
+       h5ObjectExists,
+       h5GroupExists,
+       h5DatasetExists,
+       h5AttributeExists,
+       H5DataFrame,
+       writeH5DataFrame,
+       hSlab)
+
+exportMethods(getH5Group,
+              getH5Dim,
+              getH5Type,
+              getH5Dataset,
+              getH5Attribute,
+              writeH5Data,
+              createH5Dataset,
+              createH5Group,
+              createH5Attribute,
+              deleteH5Obj,
+              deleteH5Attribute,
+              "[",
+              readH5Data,
+              show,
+              dim,
+              length,
+              nrow,
+              ncol,
+              ls,
+              colnames,
+              "$",
+              "[[",
+              as.data.frame)
+              
+              
+            
+

@@ -1,0 +1,23 @@
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+to be done in package distrMod
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
++ improve Routines for asymptotic covariance / IC for MDE
+
++ model diagnostics:
+   *several distances fitted-distribution
+   *fitted density vs histogram
+   *fitted cdf vs ecdf
+
++ generic treatment of data import by some generic 
+  "prepare" function which does
+   * cleaning from missings
+   * coerce to standard data format
+
++ control class for controlling the optimizer
+
++ model classes for multivariate location and scale based on distrEllipse
+
++ integration of GParetoFamily (not so soon)
+
++ generic functions to quantify model fit quality like AIC, BIC

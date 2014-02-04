@@ -1,0 +1,748 @@
+######################################################################
+#  News: to package distr 
+######################################################################
+
+(first two numbers of package versions do not necessarily reflect 
+ package-individual development, but rather are chosen for the 
+ distrXXX family as a whole in order to ease updating "depends" 
+ information)
+ 
+##############
+v 2.4
+##############
+
+user-visible CHANGES:
+
+
+GENERAL ENHANCEMENTS:
+
+LatticeDistribution:::
++ revised initialize and convolution methods, and generating function
+-> new routine to determine the smallest common grid for convolution
++ Taking up proposal by Baoyue Li, b.li@erasmusmc.nl,  
+   plot methods for distribution objects gain functionality to modify xlab and ylab
+
+
+under the hood:
++ introduce .Rbuildignore files 
++ require no longer called in .onAttach
++ created folder vignettes and moved content of inst/doc/ to it
++ removed lazyload tag in DESCRIPTION
++ updated affiliation info in newDistributions.Rnw
++ deleted inst/doc folder
++ added DESCRIPTION tag "ByteCompile" to all our packages
++ updating maintainer email address and URL.
++ added argument no.readonly = TRUE to assignments of form opar <- par()
++ unified dots-manipulations
++ put some examples in "\dontrun" to reduce check time on CRAN
++ introduced new option warn.makeDNew to suppress annoying warnings when dealing with GEVD
++ deleted no longer needed chm folders
+
+BUGFIXES:
+
++ fixed an error in show method for UnivarLebDecDistribution: 
+  match.call() threw an error
++ fixed problems with .makeDNew - as .makeDNew is not exported
++ error in definition of Beta() --- d slot was wrong
++ corrected typo (inifinite...)
++ typo in Beta-class.Rd (only in TeX mode) discovered by Thomas Kirschenmann, thk3421@gmail.com
++ fixed some issue with X^a, X distribution, a a number ...
++ tried to fix gaps issue as mentioned by Dirk Surmann, surmann@statistik.uni-dortmund.de
++ corrected a bug noticed by frank1828@gmail.com
++ fixed a bug within internals-qqplot : withConf.sim, withConf.pw had not been removed from call with 
+  .deleteItemsMCL; 
++ fixed request by B.Ripley as to installed.packages in branch 2.4
++ fixed gaps issue with .multm
++ fixed issue with gaps (in case length(gaps)==0)
+  
+  and: BDR has changed calls to .C in 2.16.0 to calls to .Call; we used this in qqbounds, 
+  respectively in .q2kolmogorov; now have branching functions .pk2 and .pks2 between ante 2.16. and from 2.16 on
+
+
+##############
+v 2.3
+##############
+
+user-visible CHANGES:
+
+- parameter size in NegbinomDistribution can now be real-valued
+- introduced igamma, the inverse of digamma and corresponding transformations;
+  distr: drastically reduced memory needed by smaller grid for igamma 
++ distr: implemented Nataliya's quantile trick to avoid simulated grid points
+
+GENERAL ENHANCEMENTS:
+
++ [qqplot] 
+    - had forgot to delete some legend arguments from call mcl ...
+    - gains arguments legend.pref and legend.postf to pre/ap-pend text before/after legend text
+    - CIs in qqplot may now comprise +-Inf values  
+    - gains argument legend.alpha to be able to distinguish nominal and actual confidence level
+
+under the hood:
++ DESCRIPTION files and package-help files gain a tag 
+  SVNRevision to be filled by get[All]RevNr.R from utils in distr
+
+BUGFIXES:
+
++ old version of AllClasses.R for package "distr" was fetched 
+  from R-Forge - warning after merging branch 2.2 into trunk
+
++ got strange unreproducible error reports in the example to 
+  simplifyD; set seed now to avoid this.
+
++ (hopefully) fixed http://n4.nabble.com/R-devel-f909078.html
+
++ fixed an error with qqplot in distr: mfColRow did not work as it should
+  ... now can be used in multipanel plots
++ fixed minor error in internals-qqplot.R 
+
++ for restoring old par() values, not all attributes may be set; 
+  hence deleted them from stored value in plot functions by something like
+  opar$cin <- opar$cra <- opar$csi <- opar$cxy <-  opar$din <- NULL
+
++ Typos in plot functions... 
+
++ implemented Matthias' proposals, ie
+  (1)
+  [old]
+            newd <- (abs(newd) >= .Machine$double.eps)*newd
+  [new]
+            newd <- (newd >= .Machine$double.eps)*newd
+
+  (2)
+  [old]
+            rsum.u <- min( sum( rev(cumsum(rev(newd))) <= ep/2)+1, length(supp1))
+  [new]
+            rsum.u <- min( sum( !(cumsum(rev(newd)) <= ep/2))+1, length(supp1))
+
+
++ a renaming schedule : enforcing ending .R in convpow.R
+
++ fixed typo in corrected version of Convpow.R
+
++ tentative fix for Uwe Ligges' bug report obsevered in 
+   http://cran.r-project.org/bin/windows/contrib/2.12/check/distr-check.log  15-06-2010
+
+
++ unnecessary Rplots.pdf deleted from inst folders of 
+  distr and distrMod (are created anyway during vignette build)
+
++ changed mail address:
+  triggered by mail by Sven Sewitz sas69@cam.ac.uk, replaced all dead links 
+  to distr.pdf in www files by url to vignette of distrDoc on CRAN;
+  also replaced uni-bayreuth.de mail address by itwm.fraunhofer.de one
+
+----------------
+Changes after changes in R , R-forge
+----------------
+
++ cleanup issues:
+
+   -Package: distr Version: 2.2 Flavor: r-devel-linux-ix86
+    Check: package vignettes ... WARNING
+    *** Weave Errors ***
+    File /home/hornik/tmp/R.check/r-devel/Work/PKGS/distr.Rcheck/inst/doc/newDistributions.Rnw :
+    chunk 20 (label=cleanup) 
+    Error : package ‘SweaveListingUtils’ is required by ‘distr’ so will not be detached
+
+
+  => removed tag in distr.Rnw in distrDoc
+     <<cleanup, echo=FALSE>>=
+       unloadNamespace("SweaveListingUtils")
+     @
+     similarly in newDistributions.Rnw 
+
+  => small changes in SweaveListingUtils in order to pass R CMD check again...
+
+
+
+  
+##############
+v 2.2
+##############
+
+user-visible CHANGES:
+
++ moved Distribution symmetry classes and corresponding methods/functions from distrMod to distr 
+  * introduced new slot "Symmetry" (of Class "DistributionSymmetry") in class Distribution 
+  * adapted all algorithms in distr (arithmetics; generators) to take care about this new slot
+
+
++ (sort of) version management
+  * enhanced conv2NewVersion --- did not work before as intended in cases where
+    there is a particular initialized method with less arguments...
+  * correspondingly .lowerExact, .logExact Symmetry methods now are exported 
+  * .lowerExact, .logExact methods now issue a warning before coercing to new version and 
+    return corresponding slot of converted object
+  * corrected some small bug in demo ConvolutionNormalDistr.R
+  * method for UnivarMixingDistribution 
+
++ enhanced abs() 
+  * for ContDistribution / DiscreteDistribution
+  * for ContDistribution now forces argument x --- caused errors in mad() for instance
+
++ in distr generating functions [Univar]DistrList() gain Dlist argument
+
++ plotting:
+  * new diagnostic function qqplot to check the compatibility of two distributions
+    + special method for first argument "UnivariateDistribution" (to be checked
+      for compatibility) and for second argument of class "UnivariateDistribution"
+      (H_0 distribution)
+    + comes with corresponding (pointwise/simultaneous) confidence intervals
+
+
+GENERAL ENHANCEMENTS:
+
++ added tests/Examples folder with file distr-Ex.Rout.save to have
+  some automatic testing
++ added field "Encoding: latin1" to all DESCRIPTION files in order to avoid problems 
+  with e.g. Windows locale when svn replaces $LastChangedDate
++ added TOBEDONE (sic!) files for each package (by accident also in trunc; these are empty so far)
++ vignette: 
+  * included svn-multi style files to /inst/doc folders for upload on CRAN
+
+BUGFIXES:
+
++ fixed an inconsistency of Truncate for DiscreteDistributions; to better match Huberize and Min/Max
+  Truncation should be done for m<=object<=M instead of m<object<=M --- also the reason why 
+  demo censoredPois of distrMod threw errors.
++ changed initialize methods for AbscontDistribution and DiscreteDistribution in distr;
++ RtoDPQ.LC now correctly sets .withArith, .withSim slots in discretePart and .logExact, 
+  .lowerExact in both discretePart and acPart
++ fixed a minor error in manual to plot-methods
++ fixed issue in .presubs after change of for() etc semantics
++ fixed buglet in .qmixfun
++ internal helper function .trunc.low wrongly used p.l and q.r ...
+
+##############
+v 2.1
+##############
+
+* DISTRIBUTIONS
+->DISCRETE DISTRIBUTIONS
+   --collapsing discrete distributions:
+    +getdistrOption(".DistrCollapse.Unique.Warn")
+    +implemented proposal by jacob van etten
+     (collapsing support)
+   --enhance accuracy
+     + yet another improvement of .multm (now sets density for discrete distributions 
+       for non-support arguments actively to 0)
+     + We are a bit more careful about hitting support points in .multm for 
+       DiscreteDistribution (i.e., for D * e2, e2 numeric, D DiscreteDistribution)
+->CONTINUOUS DISTRIBUTIONS
+  --gaps/support :
+    +gaps matrix could falsely have 0 rows (instead of being set to NULL)
+    +class UnivarMixingDistribution gains overall slots gaps support
+    +added corresponding accessors
+    +correspondingly, for UnivarLebDecDistribution as daughter class,
+     accessors gaps(), support() refer to "overall" slots, not to slots of acPart, discretePart
+    +deleted special support, gaps method for UnivarLebDecDistribution;
+     now inherits from UnivarMixingDistribution
+    +new utility function .consolidategaps to "merge" adjacent gaps
+    +setgaps method for UnivarMixingDistribution
+    +correspondingly,
+     * method "*", c("AffLinUnivarLebDecDistribution","numeric"),
+     * method "+", c("AffLinUnivarLebDecDistribution","numeric"),
+     * method "*", c("UnivarLebDecDistribution","numeric"),
+     * method "+", c("UnivarLebDecDistribution","numeric"),
+     * generating function "UnivarLebDecDistribtion"
+       had to be modified
+    +utility 'mergegaps' catches situation where support has length 0
+    +abs - and Truncate - methods for AbscontDistribution use '.consolidategaps'
+->COMPOUND DISTRIBUTIONS
+  + Compound Distributions are now implemented;
+    see ?CompoundDistribution, class?CompoundDistribution
+->UNIVARIATE MIXING DISTRIBUTIONS
+  + fixed some errors / made some enhancements acc. to
+    mail by Krunoslav Sever <sever@hsuhh.de>
+
+* ENHANCED ACCURACY BY LOG SCALE
++ enhanced accuracy for Truncation with Peter Dalgaard's trick
++ passed over to log-scale for getUp, getLow (again to enhance accuracy
+  for distributions with unbounded support)
++ introduced new slots .lowerExact and .logExact for objects of class
+  "Distribution" (or inheriting) to control whether the argument parts
+   log[.p], lower.tail are implemented carefully in order to preserve
+   accuracy.
+
+* ARITHMETICS
+-- enhanced "+" method
+ +for DiscreteDistribution,DiscreteDistribution ---
+  catches addition with Dirac-Distribution
+ +  we enforce to use FFT-based algorithm for LatticeDistributions
+    if the supports of both summands may be arranged on a common lattice
+    whenever the length of convolutional grid (= unique(sort(outer(support1, support2, "+"))) )
+    is smaller than the length of the product grid ( = length(support1) * length(support2) )
+     --- covers in particular m1*Binom(p,size) + m2*Binom(p',size) when m1, m2 are naturals > 1 ...
+-- convpow:
+  + some minor enhancements in convpow and "+", "LatticeDistribution","LatticeDistribution"
+    and correction of a buglet there (e.g., lattice width oould get too small)
+  +method for AcDcLcDistribution gains argument 'ep' to control
+          when to ignore discrete parts (or a.c. parts)
+          which summands in binomial expansion of (acPart+discretePart)^\ast n to ignore
+  +minor fix in method for DiscreteDistribution
+-- automatic image distribution generation
++ slot r is now /much/ faster / slimmer for results of *,/,^
+  (no split in pos/neg part necessary for this!)
++ slot d for results of *,/, exp() now is correct at 0 by extrapolation
+ (and deletion wir .del0dmixfun of half of the part to avoid double counting in *,/)
+-- affine linear trafos return slot X0 of AffLin-Construction if resulting a=1 and b=0
+-- sqrt now dispatches correctly for Abscont and DiscreteDistribution.
+
+* PLOTTING
+  + enhanced automatic plotting range selection
+  + plot-methods in branches/distr-2.1 now accept to.draw.arg no matter whether mfColRow==TRUE or FALSE
+  + fixed xlim and ylim args for plots; ylim can now be matrix-valued...
+  + realized suggestions by A. Unwin, Augsburg;
+    plot for L2paramFamilies may be restricted to selected subplots;
+  + also named parameters are used in axis annotation if available.
+  + changed devNew to only open a device if length(dev.list())>0
+  + plot (for distribution objects) now is conformal
+    to the (automatic) generic, i.e. it dispatches on signature (x,y)
+    and has methods for signature(x=<distributionclass>,y="missing")
+
+
+* NEW / ENHANCED METHODS
+--getLow/getUp:
+  +now available for UnivarLebDecDistribution, UnivarMixingDistribution
+--q.r, p.l (methods for right continuous quantile function
+  and left continuous cdf)
+  + for class AbscontDistribution (q.r with 'modifyqgaps')
+  + for class UnivarLebDecDistribution
+  + for class UnivarMixingDistribution
+--prob methods:
+   +prob() for DiscreteDistribution-class
+    returns vector of probabilities for the support points
+     (named by values of support points)    )
+   + method for UnivarLebDecDistribution: returns a
+     two-row matrix with
+     * column names values of support points
+     * first row named "cond" the probabilities of discrete part
+     * second row named "abd" the probabilities of discrete part
+       multiplied with discreteWeight; hence the absolute probabilities
+       of the support points
+--methods p.ac, d.ac, p.discrete, d.discrete:
+     * they all have an extra argument 'CondOrAbs' with default value
+       "cond" which if it does not partially match "abs", returns exactly
+        slot p (resp. d) the respective acPart/discretePart of the object
+        else return value is weighted by acWeight/discreteWeight
+--new function 'makeAbscontDistribution'
+  +to convert arbitrary univariate distributions to AbscontDistribution:
+   takes slot p and uses AbscontDistribution(); in order to smear out
+   mass points on the border, makeAbscontDistribution() enlarges upper and
+   lower bounds
+--flat.LCD:
+  +setgaps is called only if slot gaps is not yet filled
+--general technique: more freguent use of .isEqual
+--new / enhanced utilities (non-exported)
+  +'modifyqgaps' in order to achieve correct values for slot q
+  in case slot p hast constancy regions (gaps)
+  +.qmixfun can cope with gaps and may return both left and right continuous versions
+  +.pmixfun may return both left and right continuous versions
+  in case slot p hast constancy regions (gaps)
+
+
+* DOCUMENTATION
+-new section "Extension packages" in package-help file 0distr-package.Rd
+-mention of CompoundDistribution-class in package-help file 0distr-package.Rd of devel version
+-new vignette "How to generate new distributions in packages distr, distrEx"
+ in package distr ...
+
+* Rd-style:
+  + several buglets detected with the fuzzier checking mechanism
+    cf [Rd] More intensive checking of R help files, Prof Brian Ripley, 09.01.2009 10:25) 
+       [Rd] Warning: missing text for item ... in \describe? , Prof Brian Ripley,
+
+* S4 ISSUES:
+  + fixed setGenerics- error reported by Kurt Hornik...
+    "log", "log10", "gamma", "lgamma" are no longer redefined as generics.
+  +explicit method "+" for Dirac,DiscreteDistribution
+  +some changes to the connections between LatticeDistribution and DiscreteDistribution
+   resp. between AffLinLatticeDistribution and AffLinDiscreteDistribution.
+  key issues:
+  +JMC has changed the way non-simple inheritance [i.e. in the presence of setIs relations]
+   is treated (see distr; in particular show, and operator methods for LatticeDistribution)
+   works now and could be released as 2.0.1
+  ->some explicit methods for LatticeDistribution, as due to setIs Relation
+    it may no longer be inherited automatically from DiscreteDistribution
+    since JMC's changes in S4 inheritance mechanism Sep/Oct 08
+
+* BUGFIXES
+  +fixed a buglet in initialize for Cauchy Distribution
+  +fixed bug in "+",LatticeDistribution,LatticeDistribution
+    +it may be that even if both lattices of e1, e2 have same width,
+    the convoluted support has another width!
+    example: c(-1.5,1.5), c(-3,0,3)
+  +matrix-valued ylim argument has not yet been dealt with correctly
+  +fixed bug in plot-methods for argument "inner" under use of to.draw.arg argument
+  +fixed a bug in convpow-method for AbscontDistribution
+  +small buglets in plot-methods.R and plot-methods_LebDec.R (moved setting of owarn/oldPar outside)
+  +fixed a bug in UnivarMixingDistribution.R (with new argument Dlist)
+  +fixed a bug discovered by Prof. Unwin  ---
+    "+" trapped in a dead-lock coercing between DiscreteDistribution
+    and LatticeDistribution
+  +fixed a small buglet in convpow().
+  +fixed buglet in devel version of distr: getLow.R (wrong place of ")" )
+  +fixed some errors in plotting LCD and CompoundDistribution(and enhanced automatic axis labels by some tricky castings...)
+  +UnivarMixingDistribution was too strict with sum mixCoeff == 1
+  +deleted some erroneous prints left over from debugging in ExtraConvolutionMethods.R
+  +fixed some buglets in plot for distr (only in branch)
+  +fixed redundant code in bAcDcLcDistribution.R
+  +Patch to bug with AffLinAbscontDistribution
+
+##############
+v 2.0.3
+##############
+  
+  * under the hood: 
+     + enhanced plotting (correct dispatch; opening of new device is controlled
+       by option("newDevice") )
+     + after JMC's changes: gone through setIs relations to ensure 
+       "correct" inheritance
+  * new plot function for 'UnivarLebDecDistribution' : now plots 3 lines
+    +first line common cdf and quantile function 
+    +second line abscont part
+    +third line discrete part
+  * new vignette "How to generate new distributions in packages distr, distrEx"
+  * moved license to LGPL-3
+  * enhancements for arithmetics:
+     + fixed bug with AffLinAbscontDistribution for a*X+b, distribution X >=0
+     + slot r is now /much/ faster and slimmer for results of *,/,^ 
+       (hint: no split in pos/neg part necessary for this!)
+     + slot d for results of *,/, exp() now is correct at 0 by extrapolation 
+       (and deletion with .del0dmixfun of half of the part to avoid double 
+        counting in *,/)
+     + affine linear trafos return slot X0 of AffLin-Construction 
+       if resulting a=1 and b=0
+     + method sqrt() for distributions
+  * correction of small buglet in validity to Norm-class
+    
+
+##############
+v 2.0
+##############
+
+ * made calls to 'uniroot()', 'integrate()', 'optim(ize)()' compliant to 
+   https://stat.ethz.ch/pipermail/r-devel/2007-May/045791.html
+
+ * new generating function 'AbscontDistribution'
+ 
+ * new class 'UnivarMixingDistribution' for mixing distributions with
+   methods / functions:
+    +'UnivarMixingDistribution' (generating function)
+    +flat.mix to make out of it a distribution of class
+     'UnivarLebDecDistribution'
+
+ * new class 'UnivarLebDecDistribution' for a distribution with a 
+   discrete and a.c. part; corresponding methods / functions:
+    +'UnivarLebDecDistribution' (generating function)
+    +'acPart', 'discretePart' return corresponding parts
+    +'acWeight', 'discreteWeight' return corresponding weights
+    +special 'plot' functions (only for cdf and quantile function)
+     [plotting jumps in both cdf and quantile function]
+    
+ * new class 'AffLinUnivarLebDecDistribution' for affine linear transformations
+   of 'UnivarLebDecDistribution' (in particular for use with E())
+
+ * new class union 'AcDcLcDistribution' as common mother class
+   for 'UnivarLebDecDistribution', 'AbscontDistribution',
+  'DiscreteDistribution';  corresponding methods / functions:
+
+ *  enhanced arithmetic: (for 'AcDcLcDistribution')
+
+    *  convolution for 'UnivarLebDecDistribution'
+    *  affine linear trafos for 'UnivarLebDecDistribution'
+    * 'numeric' / 'AcDcLcDistribution'
+    * 'AcDcLcDistribution'^'numeric'
+    * 'numeric'^'AcDcLcDistribution'
+    *  binary operations for independent distributions:
+          o 'AcDcLcDistribution' * 'AcDcLcDistribution'
+          o 'AcDcLcDistribution' / 'AcDcLcDistribution'
+          o 'AcDcLcDistribution' ^ 'AcDcLcDistribution'
+    * (better) exact transformations for exp() and log()
+    *  Minimum Maximum Truncation Huberization
+    *  convpow for 'UnivarLebDecDistribution'
+
+ * 'decomposePM' decomposes distributions in positive / negative part
+   (and in Dirac(0) if discrete) 
+
+ * 'simplifyD' tries to cast to simpler classes (e.g. if a weight is 0)
+
+##############
+v 1.9
+##############
+
+ * made calls to 'uniroot()', 'integrate()', 'optim(ize)()' compliant to 
+   https://stat.ethz.ch/pipermail/r-devel/2007-May/045791.html
+
+ * new methods 'shape()' and 'scale()' for class Chisq with ncp=0
+
+ * methods getLow, getUp for upper and lower endpoint of support of 
+   DiscreteDistribution or AbscontDistribution
+   (truncated to lower/upper TruncQuantile if infinite)
+
+ * added S4-method 'convpow' for convolutional powers from the examples 
+   of package 'distr' with methods for
+    + 'LatticeDistribution' and 'AbscontDistribution'
+    + and particular methods for
+          o Norm, Cauchy, Pois, Nbinom, Binom, Dirac,
+            and ExpOrGammaOrChisq (if summand 'is' of class Gammad)
+
+
+ * moved some parts from package 'distrEx' to package 'distr' 
+   + generating function 'DiscreteDistribution' 
+   + univariate methods of 'liesInSupport()' 
+   + classes 'DistrList' and 'UnivariateDistrList'
+   + generating functions EuclideanSpace() ,Reals(), Naturals() 
+
+ * 'LatticeDistribution'
+   + new class 'Lattice' to formalize an affine linearly generated grid
+     of (support) points  pivot + (0:(Length-1)) * width
+   + usual accessor/replacement functions to handle slots
+   + new class 'LatticeDistribution' as intermediate class between
+     'DiscreteDistribution' and all specific discrete distributions from 'stats' 
+      package with a particular convolution method using FFT (also for 'convpow')
+   + usual accessor function 'lattice' for slot 'lattice'
+
+ * cleaning up the sources
+   + adapted the naming of the .R files to the use of the (later written)
+     extension packages 
+     (and according to http://tolstoy.newcastle.edu.au/R/help/06/03/22558.html)
+   + checked all source file to adhere to the 80char's-per-line rule
+
+ * revised generating functions/initialize methods according to
+       http://tolstoy.newcastle.edu.au/R/e2/devel/07/01/1976.html
+   + in particular all Parameter(-sub-)classes gain a valid prototype
+
+ * new exact arithmetic formulae:
+    +   'Cauchy' + 'Cauchy'
+       : gives 'Cauchy'
+    +   'Weibull' * 'numeric' 
+       : gives 'Weibull' resp. 'Dirac' resp 'AbscontDistribution' 
+       : acc. to 'numeric' >, =, < 0 
+   +   'Logis' * 'numeric'   
+       : gives 'Logis' resp. 'Dirac' resp 'AbscontDistribution'
+       : acc. to 'numeric' >, =, < 0 
+   +   'Logis' + 'numeric'   
+       : gives 'Logis'
+   +   'Lnorm' * 'numeric'   
+       : gives 'Lnorm' resp. 'Dirac' resp 'AbscontDistribution' 
+       : acc. to 'numeric' >, =, < 0 
+   +   'numeric' / 'Dirac'   
+       : gives 'Dirac' resp. error acc. to 'location(Dirac)' ==, != 0
+   +   'DiscreteDistribution' * 1 returns the original distribution
+   +   'AbscontDistribution' * 1 returns the original distribution
+   +   'DiscreteDistribution' + 0 returns the original distribution
+   +   'AbscontDistribution' + 0 returns the original distribution
+
+ * enhanced Information:
+  + command 'distrARITH()' gains an argument 'library'
+  + new file MASKING and corresponding command 'distrMASK()' to describe the 
+   intended maskings
+
+ * mentioned in package-help: startup messages may now also be suppressed by
+   suppressPackageStartupMessages() (from package 'base')
+ 
+ * formals for slots p,q,d as in package stats to enhance accuracy
+
+    + p(X)(q, lower.tail = TRUE, log.p = FALSE)
+    + q(X)(p, lower.tail = TRUE, log.p = FALSE)
+    + d(X)(x, log = FALSE)
+    
+    used wherever possible;
+    but backwards compatibility: 
+        always checked whether lowert.tail / log / log.p are formals
+
+ * cleaning up of environment of r,d,p,q-slot  - removed no longer needed objects 
+ 
+ * enhanced plot methods 
+   + for both AbscontDistributions & DiscreteDistributions :
+     o optional width and height argument for the display (default 16in : 9in)
+       -opens a new window for each plot
+       -does not work with /Sweave/;
+        workaround: argument withSweave=TRUE
+        in .Rnw-file: use width and height argument like in 
+            <<plotex1,eval=TRUE,fig=TRUE, width=8,height=4.5>>=
+             ....
+            @   
+     o optional main, inner titles and subtitles with main / sub / inner
+        - preset strings substituted in both expression and character vectors 
+             (x : argument with which plot() was called)
+           ~ %A deparsed argument x
+           ~ %C class of argument x
+           ~ %P comma-separated list of parameter values of slot param of argument x 
+           ~ %N comma-separated <name>=<value> - list of parameter values of slot param of argument x
+           ~ %D time/date at which plot is/was generated
+           ~ %Q comma-separated list of parameter values of slot param of argument x in parenthesis or "" if empty
+        - title sizes with cex.main, cex.inner, cex.sub
+        - bottom / top margin with bmar, tmar
+        - setting of colors with col / col.main / col.inner / col.sub
+     o can cope with log-arguments
+     o setting of plot symbols with pch / pch.a / pch.u (see ?"plot-methods") 
+     o different symbols for unattained / attained one-sided limits   
+     o do.points argument as in plot.stepfun()
+     o verticals argument as in plot.stepfun()
+     o setting of colors with col / col.points / col.vert / col.hor 
+     o setting of symbol size with with cex / cex.points 
+       (see ?"plot-methods") 
+
+   + for AbscontDistributions 
+     o (panel "q"): takes care of finite left/right endpoints of support
+     o (panel "q"): optionally takes care of constancy regions (with do.points/verticals)
+     o ngrid argument to set the number of grid points 
+   + for DiscreteDistributions :
+     o using stepfun()
+
+ * left-continuous c.d.f. method (p.l) and 
+   right-continuous quantile function (q.r) for DiscreteDistributions
+
+ * new slot 'gaps' (a n x 2 matrix or NULL) for AbscontDistribution
+   to cope with intervals where d-slot is 0.
+   + new class OptionalMatrix (matrix or NULL)
+   + accessor/replacement function gaps()
+   + setgaps() to automatically fill gaps-slot
+
+ * Version-management for changed class definitions to AbscontDistribution
+   and to (changed by inheriting from LatticeDistribution!) subclasses of
+   LatticeDistribution (Geom, Binom, Nbinom, Dirac, Pois, Hyper):
+   + moved generics to isOldVersion(), conv2NewVersion() from distrSim to distr
+   + moved (slightly generalized version of) isOldVersion() (now for signature "ANY") 
+     from distrSim to distr
+   + new methods for conv2NewVersion for signature 
+     o "ANY" (fills missing slots with corresponding entries from prototype)   
+     o "LatticeDistribution": generates a new instance (with slot lattice(!))
+        by new(class(object), <list of parameters>)
+ * new (internally used) classes AffLinAbscontDistribution, AffLinLatticeDistribution
+       and AffLinLatticeDistribution to capture the results of transformations 
+                 Y <- a * X0 + b       for a, b numeric and X0 Abscont/Discrete/LatticeDistribution 
+   and a class union AffLinDistribution of  AffLinAbscontDistribution and AffLinLatticeDistribution
+   to use this for more exact evaluations of functionals in distrEx
+ * analytically exact slots d,p (and higher accuracy for q) for distribution objects 
+   generated by functions abs, exp, log for classes AbscontDistribution and DiscreteDistribution
+
+
+
+DEPRECATED:
+*  class GeomParameter --- no longer needed as this the parameter
+   of a NBinom with size 1
+
+##############
+v 1.8
+##############
+
+
+* Class DExp() introduced (with documentation)
+* show() for UnivariateDistribution now is the same as print()
+* dim() method for UnivariateDistribution 
+* distr (together with distrEx, distrSim, distrTEst) now includes a vignette --- try 
+  vignette("distr")
+
+##############
+v 1.7
+##############
+
+
+* standardMethods() is again included (with documentation)
+* distroptions() / getdistrOption() now behave exactly like options()  / getOption() options --- also compare mail
+  "Re: [Rd] How to implement package-specific options?" by Brian Ripley on
+  r-devel, Fri 09 Dec 2005 - 11:52:46, see http://tolstoy.newcastle.edu.au/R/devel/05/12/3408.html
+* suggested by M. Maechler: on attaching the package there is a (sort of) 
+  warning as to the interpretation of 
+    +arithmetics for distributions
+  as well as to the
+    +accuracy of slots p,d,q filled by means of simulations; 
+  these warnings are issued at two places:
+      (1) on attaching the package 
+      (2) at every show/print of a distribution
+      o (2) can be cancelled by switching off a corresponding global option in distroptions() -- see ?distroptions . 
+* all specific distributions (those realized as [r|d|p|q]<name> like rnorm in package stats)
+  now have valid prototypes
+* fixed arguments xlim and ylim for plot(signature("AbscontDistribution" or "DiscreteDistribution"))
+  thus: plot(Cauchy(),xlim=c(-4,4)) gives reasonable result (and plot(Cauchy()) does not)
+* Internationalization: use of gettext, gettextf for output
+* explicitly implemented is() relations:  R "knows" that
+      o an Exponential(lambda) distribution also is a Weibull(shape = 1, scale = 1/lambda) distribution, as well as a Gamma(shape = 1, scale = 1/lambda) distribution
+      o a Uniform(0,1) distribution also is a Beta(1,1) distribution
+      o a Cauchy(0,1) distribution also is a T(df=1, ncp=0)  distribution
+      o a Chisq(df=n, ncp=0) distribution also is a Gamma(shape=n/2, scale=2) distribution
+* noncentrality parameter included for Beta, T, F distribution 
+* exact +,* for Cauchy and Dirac, for latter also -,/
+
+
+* "simplifyr": changed default values (using option RtoDPQ.e) 
+* masking of function sd from stats to have an additional ... argument 
+* masking of function df from stats to have an additional ... argument 
+
+* Internationalization: use of gettext, gettextf in output
+
+* updated citation file
+
+* noncentrality parameter included for Beta, Td, F (for new d,p,q,r, but compatible with 2.2.x)
+  also in the documentation
+
+* Geom is now subclass of Nbinom
+* virtual superclass ExpOrGammaOrChisq for Chisq,Exp,Gammad
+* NEWS file
+* commented ARITHMETICS file
+* revised help for operators
+* new package documentation distr-package.Rd
+
+##############
+v 1.6 
+##############
+
+Our package is reorganized:
+  * distr from now on only comprises distribution classes and methods
+  * simulation classes and methods have been moved to the new package distrSim
+  * evalation classes and methods have been moved to the new package distrTEst
+  * a new class distrEx has been added by Matthias Kohl, providing additional features 
+    like distances between distributions, expectation operators etc
+  * a new class RandVar has been added by Matthias Kohl, providing conceptual treatment 
+    of random variables as measurable mappings
+
+##############
+v 1.5 
+##############
+
+* package is now using lazy loading
+* minor changes in the help pages
+* minor enhancements in plot for distributions (Gamma, discrete distributions)
+* package now includes a demo - folder; try demo("distr")
+* class Gamma has been renamed Gammad to avoid name collisions
+* we have a CITATION file now; consider citation("distr")
+* enhanced demos:
+      + convolution of uniform variables now includes exact expressions
+      + min/ max of two variables now available for discrete distributions
+* rd-Files have now a keyword entry for distribution and thus may be found by the search engine
+* exact formula for "Unif" o "numeric" where o \in { +,-,*,/ }
+
+##############
+v 1.4 
+##############
+
+* to avoid name collisions with short forms for TRUE and FALSE: classes T and F (T- and F-distributions) renamed to Td and Fd
+* package is now loaded as a binary => considerable speed gain
+* using subsititute the bodies of the r,d,p,q-function-slots distributions show the parameter values with which they were generated
+* convolutions and applications of the math group may now be traced in r-slot of a distribution object, compare
+       r(sin(Norm()) + cos(Unif() * 3 + 2))
+* parameters of a distribution (mean, sd, etc) are now tested on length 1
+    + we see the objects as implementations of univaritate distributions, so vectors make no sense here; 
+      rather one could gather several objects with possibly different parameters to a vector of distributions. 
+      Of course, the original functions rnorm etc remain unchanged and still allow for vector-valued parameters.
+* Classes "Parameter", "Distribution" , "UnivariateDistribution" are no longer VIRTUAL
+* "AbscontParameter" and "DiscreteParameter" are replaced by "Parameter"
+* type of slots d, p, q and param changed to "OptionalFunction" and "OptionalParameter", respectively
+ 
+##############
+v 1.3 
+##############
+
+* changes in the Help-File to pass Rcmd check
+
+##############
+v 1.1 
+##############
+
+* implementation of further exact convolution formulae for distributions Nbinom, Gamma, Exp, Chisq
+* exact formulae for scale transformations for the distributions Gamma, Exp
+* slot "seed" in simulation classes is now controlled and set via the setRNG package by Paul Gilbert

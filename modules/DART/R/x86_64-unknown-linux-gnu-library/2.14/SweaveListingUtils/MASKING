@@ -1,0 +1,29 @@
+######################################################################
+#  On masking of and by other functions in package "SweaveListingUtils"       
+######################################################################
+
+Attention:
+
+*** intentional masking: ***
+
+To be able to use the usual calls to 'library' resp. 'require'
+but at the same time register the new symbols for "nice" printing
+with TeX package 'listings' with the possibility to "tune" the
+corresponding keywordstyle for both the package required/"library"-ed
+and respective intermediate packages loaded/attached automatically,
+we intentionally mask base functions 'library' and 'require' --- 
+however all these functions may still be used in exactly the same 
+way as before masking.
+
+Still, for completely returning to the usual behaviour (i.e.; stop
+issuing TeX code for registering new keywords) and unmasking 
+the original versions of 'library' and 'require', at the end of 
+your .Rnw file, you should include an Sweave chunk like
+
+<<cleanup, echo=FALSE>>=
+unloadNamespace("SweaveListingUtils")
+@
+
+*** non-intentional masking: ***
+
+... nothing discovered so far ...
