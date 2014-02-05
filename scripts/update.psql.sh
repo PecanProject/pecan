@@ -5,13 +5,16 @@ cd $(dirname $0)/../..
 set -x
 
 # command to connect to database
-export CMD="sudo -u postgres psql -U bety"
+if [ "`uname -s`" != "Darwin" ];
+  export POSTGRES="sudo -u postgres"
+fi
+export CMD="${POSTGRES} psql -U bety"
 
 # load latest dump of the database
 curl -o betydump.gz http://isda.ncsa.illinois.edu/~kooper/EBI/betydump.psql.gz
 
-sudo -u postgres dropdb bety
-sudo -u postgres createdb -O bety bety
+${POSTGRES} dropdb bety
+${POSTGRES} createdb -O bety bety
 
 gunzip -c betydump.gz | ${CMD} bety
 rm betydump.gz
