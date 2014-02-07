@@ -28,13 +28,13 @@ if (isset($_REQUEST['siteid'])) {
 require("system.php");
 
 // database parameters
-$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", ${db_username}, ${db_password});
+$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
 
 // get hosts
 $query = "SELECT hostname FROM machines ORDER BY hostname";
 $result = $pdo->query($query);
 if (!$result) {
-	die('Invalid query: ' . $pdo->errorInfo());
+	die('Invalid query: ' . error_database());
 }
 $hosts = "";
 while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {

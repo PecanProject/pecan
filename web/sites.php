@@ -8,7 +8,7 @@
  * http://opensource.ncsa.illinois.edu/license.html
  */
 require("system.php");
-$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", ${db_username}, ${db_password});
+$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
 
 // Start XML file, create parent node
 $dom = new DOMDocument("1.0");
@@ -41,7 +41,7 @@ if (isset($_REQUEST['host']) && ($_REQUEST['host'] != "")) {
 // Select all the rows in the markers table
 $result = $pdo->query($query);
 if (!$result) {
-	die('Invalid query: ' . $pdo->errorInfo());
+	die('Invalid query: ' . error_database());
 } 
 
 // Iterate through the rows, adding XML nodes for each
