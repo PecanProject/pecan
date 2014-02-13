@@ -18,13 +18,13 @@ $workflowid=$_REQUEST['workflowid'];
 
 // connect to database
 require("system.php");
-$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", ${db_username}, ${db_password});
+$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
 
 // get run information
 $query = "SELECT site_id, model_id, model_type, hostname, folder, advanced_edit FROM workflows, models WHERE workflows.id=$workflowid and model_id=models.id";
 $result = $pdo->query($query);
 if (!$result) {
-	die('Invalid query: ' . $pdo->errorInfo());
+	die('Invalid query: ' . error_database());
 }
 $workflow = $result->fetch(PDO::FETCH_ASSOC);
 $folder = $workflow['folder'];
