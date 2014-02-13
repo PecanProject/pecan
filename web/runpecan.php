@@ -8,7 +8,7 @@
  * http://opensource.ncsa.illinois.edu/license.html
  */
 require("system.php");
-$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", ${db_username}, ${db_password});
+$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
 
 # boolean parameters
 $userok=isset($_REQUEST['userok']);
@@ -67,7 +67,8 @@ if (($modeltype == "ED2") || ($modeltype == "SIPNET")) {
     $query="SELECT file_path, file_name, start_date, end_date FROM inputs, dbfiles, machines WHERE inputs.site_id=${siteid} AND inputs.file_id=${met} AND dbfiles.container_id=inputs.file_id AND machines.hostname='${hostname}' AND dbfiles.machine_id=machines.id;";
     $result = $pdo->query($query);
     if (!$result) {
-      die('Invalid query: ' . $pdo->errorInfo());
+      print_r(error_database());
+      die('Invalid query: ' . (error_database()));
     }
     $row = $result->fetch(PDO::FETCH_ASSOC);
     $metfile=$row['file_path'] . DIRECTORY_SEPARATOR . $row['file_name'];
@@ -88,7 +89,8 @@ if ($modeltype == "ED2") {
 	    $query="SELECT file_path, file_name FROM inputs, dbfiles, machines WHERE inputs.site_id=${siteid} AND inputs.file_id=${psscss} AND dbfiles.container_id=inputs.file_id AND machines.hostname='${hostname}' AND dbfiles.machine_id=machines.id;";
 	    $result = $pdo->query($query);
 	    if (!$result) {
-	      die('Invalid query: ' . $pdo->errorInfo());
+	      print_r(error_database());
+	      die('Invalid query: ' . (error_database()));
 	    }
 	    $row = $result->fetch(PDO::FETCH_ASSOC);
 	    #$psscss=$row['file_path'] . DIRECTORY_SEPARATOR . $row['file_name'];
@@ -117,7 +119,8 @@ if (!$userok && ($startdate < $metstart || $enddate > $metend)) {
 $query = "SELECT * FROM sites WHERE sites.id=$siteid";
 $result = $pdo->query($query);
 if (!$result) {
-  die('Invalid query: ' . $pdo->errorInfo());
+  print_r(error_database());
+  die('Invalid query: ' . (error_database()));
 }
 $siteinfo = $result->fetch(PDO::FETCH_ASSOC);
 
@@ -125,23 +128,37 @@ $siteinfo = $result->fetch(PDO::FETCH_ASSOC);
 $query = "SELECT * FROM models WHERE models.id=$modelid";
 $result = $pdo->query($query);
 if (!$result) {
-  die('Invalid query: ' . $pdo->errorInfo());
+  print_r(error_database());
+  die('Invalid query: ' . (error_database()));
 }
 $model = $result->fetch(PDO::FETCH_ASSOC);
 $pieces = explode(':', $model["model_path"], 2);
 $binary = $pieces[1];
 
 // create the workflow execution
-$params=str_replace(' ', '', $pdo->quote(str_replace("\n", "", var_export($_REQUEST, true))));		#excess whitespace needs to be trimmed to avoid params being cut off
-if ($pdo->query("INSERT INTO workflows (site_id, model_id, hostname, start_date, end_date, params, advanced_edit, started_at, created_at) values ('${siteid}', '${modelid}', '${hostname}', '${startdate}', '${enddate}', '${params}', '${advanced_edit}', NOW(), NOW())") === FALSE) {
-	die('Can\'t insert workflow : ' . $pdo->errorInfo());
+$params=str_replace(' ', '', str_replace("\n", "", var_export($_REQUEST, true)));
+
+$q=$pdo->prepare("INSERT INTO workflows (site_id, model_id, hostname, start_date, end_date, params, advanced_edit, started_at, created_at) values (:siteid, :modelid, :hostname, :startdate, :enddate, :params, :advanced_edit, NOW(), NOW())");
+$q->bindParam(':siteid', $siteid, PDO::PARAM_INT);
+$q->bindParam(':modelid', $modelid, PDO::PARAM_INT);
+$q->bindParam(':hostname', $hostname, PDO::PARAM_STR);
+$q->bindParam(':startdate', $startdate, PDO::PARAM_STR);
+$q->bindParam(':enddate', $enddate, PDO::PARAM_STR);
+$q->bindParam(':params', $params, PDO::PARAM_STR);
+$q->bindParam(':advanced_edit', $advanced_edit, PDO::PARAM_INT);
+if ($q->execute() === FALSE) {
+  die('Can\'t insert workflow : ' . (error_database()));
 }
-$workflowid=$pdo->lastInsertId();
+if ($db_type == 'pgsql') {
+  $workflowid=$pdo->lastInsertId('workflows_id_seq');
+} else {
+  $workflowid=$pdo->lastInsertId();
+}
 
 # folders
 $folder = $output_folder . DIRECTORY_SEPARATOR . 'PEcAn_' . $workflowid;
 if ($pdo->query("UPDATE workflows SET folder='${folder}' WHERE id=${workflowid}") === FALSE) {
-	die('Can\'t update workflow : ' . $pdo->errorInfo());
+  die('Can\'t update workflow : ' . (error_database()));
 }
 
 # if on localhost replace with localhost
@@ -160,13 +177,13 @@ fwrite($fh, "<pecan>" . PHP_EOL);
 fwrite($fh, "  <outdir>${folder}</outdir>" . PHP_EOL);
 
 fwrite($fh, "  <database>" . PHP_EOL);
-fwrite($fh, "    <user>${db_username}</user>" . PHP_EOL);
-fwrite($fh, "    <password>${db_password}</password>" . PHP_EOL);
+fwrite($fh, "    <user>$db_username</user>" . PHP_EOL);
+fwrite($fh, "    <password>$db_password</password>" . PHP_EOL);
 fwrite($fh, "    <host>${db_hostname}</host>" . PHP_EOL);
 fwrite($fh, "    <dbname>${db_database}</dbname>" . PHP_EOL);
 if ($db_type == "mysql") {
 	fwrite($fh, "    <driver>MySQL</driver>" . PHP_EOL);	
-} else if ($db_type = "psql") {
+} else if ($db_type = "pgsql") {
 	fwrite($fh, "    <driver>PostgreSQL</driver>" . PHP_EOL);	
 }
 fwrite($fh, "  </database>" . PHP_EOL);

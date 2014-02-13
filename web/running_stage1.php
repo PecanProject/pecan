@@ -19,13 +19,13 @@ $workflowid=$_REQUEST['workflowid'];
 
 // database parameters
 require("system.php");
-$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", ${db_username}, ${db_password});
+$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
 
 // get run information
 $query = "SELECT folder, params FROM workflows WHERE workflows.id=$workflowid";
 $result = $pdo->query($query);
 if (!$result) {
-	die('Invalid query: ' . $pdo->errorInfo());
+	die('Invalid query: ' . error_database());
 }
 $workflow = $result->fetch(PDO::FETCH_ASSOC);
 $folder = $workflow['folder'];

@@ -20,13 +20,13 @@ $type=$_REQUEST['type'];
 
 // database parameters
 require("system.php");
-$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", ${db_username}, ${db_password});
+$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
 
 // get run information
 $query = "SELECT folder FROM workflows WHERE workflows.id=${workflowid}";
 $result = $pdo->query($query);
 if (!$result) {
-	die('Invalid query: ' . $pdo->errorInfo());
+	die('Invalid query: ' . error_database());
 }
 $run = $result->fetch(PDO::FETCH_ASSOC);
 $folder = str_replace("//", "/", $run['folder']);
@@ -81,7 +81,7 @@ switch ($type) {
 		}
 		$mime = "image/png";
 		$file = tempnam('','');
-		shell_exec("R_LIBS_USER='${pecan_install}' PECANSETTINGS='$folder/pecan.xml' R CMD BATCH --vanilla '--args $datafile $year $var $width $height $file' plot.netcdf.R $folder/plot.out");
+		shell_exec("R_LIBS_USER='${pecan_install}' PECANSETTINGS='$folder/pecan.xml' R CMD BATCH --vanilla '--args $datafile $year $var $width $height $file' plot.netcdf.R /dev/null");
 		break;
 		
 	default:
