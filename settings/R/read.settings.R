@@ -545,7 +545,7 @@ check.settings <- function(settings) {
           now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
           db.query(paste("INSERT INTO workflows (site_id, model_id, hostname, start_date, end_date, started_at, created_at, folder) values ('",
                          settings$run$site$id, "','", settings$model$id, "', '", settings$run$host$name, "', '",
-                         settings$run$start.date, "', '", settings$run$end.date, "', '", now, "', '", now, "', '", dirname(settings$outdir), "')", sep=''), con)
+                         settings$run$start.date, "', '", settings$run$end.date, "', '", now, "', '", now, "', '", normalizePath(settings$outdir), "')", sep=''), con)
           settings$workflow$id <- db.query(paste("SELECT id FROM workflows WHERE created_at='", now, "';", sep=''), con)[['id']]
           #check to see if name of each pft in xml file is actually a name of a pft already in database
           for (i in 1:length(settings$pfts)) {

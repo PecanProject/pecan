@@ -57,19 +57,19 @@ if (isset($_REQUEST['email'])) {
 require("system.php");
 
 // database parameters
-$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", ${db_username}, ${db_password});
+$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
 
 // get site information
 $result = $pdo->query("SELECT * FROM sites WHERE sites.id=$siteid");
 if (!$result) {
-	die('Invalid query: ' . $pdo->errorInfo());
+	die('Invalid query: ' . error_database());
 }
 $siteinfo = $result->fetch(PDO::FETCH_ASSOC);
 
 // get model info
 $result = $pdo->query("SELECT * FROM models WHERE models.id=$modelid");
 if (!$result) {
-	die('Invalid query: ' . $pdo->errorInfo());
+	die('Invalid query: ' . error_database());
 }
 $model = $result->fetch(PDO::FETCH_ASSOC);
 
@@ -246,7 +246,7 @@ if ($model["model_type"] == "ED2") {
 	$result = $pdo->query("SELECT * FROM pfts WHERE name LIKE '" . strtolower($model["model_type"]) . "%' ORDER BY name");
 }
 if (!$result) {
-	die('Invalid query: ' . $pdo->errorInfo());
+	die('Invalid query: ' . error_database());
 }
 $pfts = "";
 while ($row = @$result->fetch(PDO::FETCH_ASSOC)){
@@ -292,7 +292,7 @@ if (($model["model_type"] == "ED2") || ($model["model_type"] == "SIPNET")) {
 	}
 	
 	if (!$result) {
-		die('Invalid query: ' . $pdo->errorInfo());
+		die('Invalid query: ' . error_database());
 	}
 	while ($row = @$result->fetch(PDO::FETCH_ASSOC)){
 		$row['name']="Weather " . substr($row['start_date'], 0, 4) . "-" . substr($row['end_date'], 0, 4);
@@ -309,7 +309,7 @@ if ($model["model_type"] == "ED2") {
 	// get psscss data
 	$result = $pdo->query($query . " AND inputs.format_id=10");
 	if (!$result) {
-		die('Invalid query: ' . $pdo->errorInfo());
+		die('Invalid query: ' . error_database());
 	}
 	while ($row = @$result->fetch(PDO::FETCH_ASSOC)){
 		if ($psscss == $row['file_id']) {

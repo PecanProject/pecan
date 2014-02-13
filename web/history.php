@@ -72,7 +72,7 @@
 <?php
 // database parameters
 require("system.php");
-$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", ${db_username}, ${db_password});
+$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
 
 // get run information
 $query = "SELECT workflows.id, workflows.folder, workflows.start_date, workflows.end_date, workflows.started_at, workflows.finished_at, " .
@@ -83,7 +83,7 @@ $query = "SELECT workflows.id, workflows.folder, workflows.start_date, workflows
          "LEFT OUTER JOIN models on workflows.model_id=models.id";
 $result = $pdo->query($query);
 if (!$result) {
-  die('Invalid query: ' . $pdo->errorInfo());
+  die('Invalid query: ' . error_database());
 }
 while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
   // check result
