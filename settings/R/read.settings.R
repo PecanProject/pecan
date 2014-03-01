@@ -587,7 +587,7 @@ check.settings <- function(settings) {
 ##' a higher priority method.  
 ##' @param inputfile the PEcAn settings file to be used.
 ##' @param outputfile the name of file to which the settings will be
-##'        written inside the outputdir.
+##'        written inside the outputdir. If set to null nothing is saved.
 ##' @return list of all settings as loaded from the XML file(s)
 ##' @export
 ##' @import XML
@@ -605,10 +605,7 @@ check.settings <- function(settings) {
 ##' test.settings.file <- system.file("tests/test.xml", package = "PEcAn.all")
 ##' settings <- read.settings(test.settings.file)
 ##' }
-read.settings <- function(inputfile = NULL, outputfile = "pecan.xml"){
-  if (is.null(outputfile)) {
-    outputfile <- "pecan.xml"
-  }
+read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml"){
   if(inputfile == ""){
     logger.warn("settings files specified as empty string; \n\t\tthis may be caused by an incorrect argument to system.file.")
   }
@@ -650,11 +647,13 @@ read.settings <- function(inputfile = NULL, outputfile = "pecan.xml"){
   settings <- check.settings(xmlToList(xml))
   
   ## save the checked/fixed pecan.xml
-  pecanfile <- file.path(settings$outdir, outputfile)
-  if (file.exists(pecanfile)) {
-    logger.warn(paste("File already exists [", pecanfile, "] file will be overwritten"))
+  if (!is.null(outputfile)) {
+    pecanfile <- file.path(settings$outdir, outputfile)
+    if (file.exists(pecanfile)) {
+      logger.warn(paste("File already exists [", pecanfile, "] file will be overwritten"))
+    }
+    saveXML(listToXml(settings, "pecan"), file=pecanfile)
   }
-  saveXML(listToXml(settings, "pecan"), file=pecanfile)
 
   ## setup Rlib from settings
   if(!is.null(settings$Rlib)){
