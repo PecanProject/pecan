@@ -7,6 +7,8 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
+library(PEcAn.visualization)
+
 # ----------------------------------------------------------------------
 # COMMAND LINE ARGUMENTS
 # ----------------------------------------------------------------------
@@ -27,7 +29,6 @@ filename <- args[6]
 # width=800
 # height=600
 # filename="plot.png"
-
 
 plot.netcdf(datafile, yvar, xvar, width, height, filename, year);
 
