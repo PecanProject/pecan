@@ -25,7 +25,8 @@ Depends:
     data.table,
     earth,
     XML,
-    ncdf4
+    ncdf4,
+    stringr
 Suggests:
     testthat
 License: FreeBSD + file LICENSE
