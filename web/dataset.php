@@ -70,7 +70,7 @@ switch ($type) {
 			die("Need var.");
 		}
 		$var=$_REQUEST['var'];
-        $datafile=$folder . "/out/" . $run . "/" . $year . ".nc";
+		$datafile=$folder . "/out/" . $run . "/" . $year . ".nc";
 		$width=600;
 		if (isset($_REQUEST['width']) && ($_REQUEST['width'] > $width)) {
 			$width=$_REQUEST['width'];
@@ -80,7 +80,7 @@ switch ($type) {
 			$height=$_REQUEST['height'];
 		}
 		$mime = "image/png";
-		$file = tempnam('','');
+		$file = tempnam(sys_get_temp_dir(),'plot') . ".png";
 		shell_exec("R_LIBS_USER='${pecan_install}' PECANSETTINGS='$folder/pecan.xml' R CMD BATCH --vanilla '--args $datafile $year $var $width $height $file' plot.netcdf.R /dev/null");
 		break;
 		
