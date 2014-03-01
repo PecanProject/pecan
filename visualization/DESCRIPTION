@@ -23,7 +23,9 @@ Depends:
     ggplot2,
     scales,
     data.table,
-    earth
+    earth,
+    XML,
+    ncdf4
 Suggests:
     testthat
 License: FreeBSD + file LICENSE
@@ -34,3 +36,4 @@ Collate:
     'worldmap.R'
     'points2county.R'
     'ciEnvelope.R'
+    'plot.netcdf.R'
