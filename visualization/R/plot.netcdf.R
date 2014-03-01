@@ -69,7 +69,9 @@ data.fetch <- function(var, nc, fun=mean) {
 ##' used.
 ##' @param the width of the image generated, default is 800 pixels.
 ##' @param the height of the image generated, default is 600 pixels.
-##' @param filename is the name of the file name that is geneated.
+##' @param filename is the name of the file name that is geneated, this
+##'        can be null to use existing device, otherwise it will try and
+#@'        create an image based on filename, or display if x11.
 ##' @param year the year this data is for (only used in the title).
 ##' @export
 ##' @author Rob Kooper
@@ -88,12 +90,22 @@ plot.netcdf <- function(datafile, yvar, xvar='time', width=800, height=600, file
 	# done with netcdf file
 	nc_close(nc)
 	
-	# setup plot (needs to be done before removing of NA since that removes attr as well).
-	if (is.null(filename)) {
-		x11(width=width/96, height=height/96)
-	} else {
-		png(filename=filename, width=width, height=height)
+	# setup output
+	if (!is.null(filename)) {
+		if (tolower(filename) == 'x11') {
+			x11(width=width/96, height=height/96)
+		} else if (tolower(str_sub(filename, -4)) == ".png") {
+			png(filename=filename, width=width, height=height)
+		} else if (tolower(str_sub(filename, -4)) == ".pdf") {
+			pdf(filename=filename, width=width, height=height)
+		} else if (tolower(str_sub(filename, -4)) == ".jpg") {
+			jpg(filename=filename, width=width, height=height)
+		} else if (tolower(str_sub(filename, -5)) == ".tiff") {
+			tiff(filename=filename, width=width, height=height)
+		}
 	}
+
+	# setup plot (needs to be done before removing of NA since that removes attr as well).
 	plot.new()
 	title(xlab=attr(xval_mean, "lbl"))
 	title(ylab=attr(yval_mean, "lbl"))
@@ -135,7 +147,7 @@ plot.netcdf <- function(datafile, yvar, xvar='time', width=800, height=600, file
 	axis(1)
 	axis(2)
 	box()
-	if (!is.null(filename)) {
+	if (!is.null(filename) && (tolower(filename) != 'x11') {
 		dev.off()
 	}
 }
