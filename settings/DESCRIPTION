@@ -20,3 +20,4 @@ Suggests:
 Collate:
     'settings-package.r'
     'read.settings.R'
+    'clean.settings.R'
