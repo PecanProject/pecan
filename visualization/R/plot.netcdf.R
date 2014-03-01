@@ -147,7 +147,7 @@ plot.netcdf <- function(datafile, yvar, xvar='time', width=800, height=600, file
 	axis(1)
 	axis(2)
 	box()
-	if (!is.null(filename) && (tolower(filename) != 'x11') {
+	if (!is.null(filename) && (tolower(filename) != 'x11')) {
 		dev.off()
 	}
 }
