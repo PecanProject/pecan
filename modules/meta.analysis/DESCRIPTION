@@ -25,11 +25,3 @@ License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
-Collate:
-    'jagify.R'
-    'meta.analysis.R'
-    'meta.analysis.summary.R'
-    'meta.analysis.write.model.R'
-    'run.meta.analysis.R'
-    'single.MA.R'
-    'approx.posterior.R'
