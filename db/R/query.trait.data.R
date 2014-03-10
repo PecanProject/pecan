@@ -365,7 +365,7 @@ derive.trait <- function(FUN, ..., input=list(...), var.name=NA, sample.size=100
 ##'
 ##' @name derive.traits
 ##' @title Performs an arithmetic function, FUN, over a series of traits and returns the result as a derived trait.
-##' 
+##' @export
 ##' @param FUN arithmetic function 
 ##' @param ... trait datasets that will be supplied to FUN as input
 ##' @param sample.size where traits are normally distributed with a given  
