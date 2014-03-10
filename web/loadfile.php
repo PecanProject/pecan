@@ -19,16 +19,15 @@ $name = $_REQUEST['name'];
 
 // database parameters
 require("system.php");
-require("dbinfo.php");
-$connection=open_database();
+$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
 
 // get run information
 $query = "SELECT folder FROM workflows WHERE workflows.id=${workflowid}";
-$result = mysql_query($query);
+$result = $pdo->query($query);
 if (!$result) {
-	die('Invalid query: ' . mysql_error());
+	die('Invalid query: ' . error_database());
 }
-$run = mysql_fetch_assoc($result);
+$run = $result->fetch(PDO::FETCH_ASSOC);
 $folder = str_replace("//", "/", $run['folder']);
 
 $file = realpath("$folder/$name");
@@ -39,5 +38,5 @@ if (substr($file, 0, strlen($folder)) != $folder) {
 if (file_exists($file)) {
 	readfile($file);
 }
-close_database($connection);
+$pdo = null;
 ?>

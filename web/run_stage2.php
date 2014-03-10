@@ -18,16 +18,16 @@ if (!isset($_REQUEST['workflowid'])) {
 $workflowid=$_REQUEST['workflowid'];
 
 // database parameters
-require("dbinfo.php");
-$connection=open_database();
+require("system.php");
+$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
 
 // get run information
 $query = "SELECT site_id, model_id, model_type, hostname, folder, advanced_edit FROM workflows, models WHERE workflows.id=$workflowid and model_id=models.id";
-$result = mysql_query($query);
+$result = $pdo->query($query);
 if (!$result) {
-	die('Invalid query: ' . mysql_error());
+	die('Invalid query: ' . error_database());
 }
-$workflow = mysql_fetch_assoc($result);
+$workflow = $result->fetch(PDO::FETCH_ASSOC);
 $folder = $workflow['folder'];
 
 chdir($folder);
@@ -38,4 +38,4 @@ if ($offline) {
 	header( "Location: running_stage2.php?workflowid=$workflowid");
 }			
 
-close_database($connection);
+$pdo = null;

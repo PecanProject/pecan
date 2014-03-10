@@ -57,22 +57,21 @@ if (isset($_REQUEST['email'])) {
 require("system.php");
 
 // database parameters
-require("dbinfo.php");
-$connection = open_database();
+$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
 
 // get site information
-$result = mysql_query("SELECT * FROM sites WHERE sites.id=$siteid");
+$result = $pdo->query("SELECT * FROM sites WHERE sites.id=$siteid");
 if (!$result) {
-	die('Invalid query: ' . mysql_error());
+	die('Invalid query: ' . error_database());
 }
-$siteinfo = mysql_fetch_assoc($result);
+$siteinfo = $result->fetch(PDO::FETCH_ASSOC);
 
 // get model info
-$result = mysql_query("SELECT * FROM models WHERE models.id=$modelid");
+$result = $pdo->query("SELECT * FROM models WHERE models.id=$modelid");
 if (!$result) {
-	die('Invalid query: ' . mysql_error());
+	die('Invalid query: ' . error_database());
 }
-$model = mysql_fetch_assoc($result);
+$model = $result->fetch(PDO::FETCH_ASSOC);
 
 ?>
 <!DOCTYPE html>
@@ -242,15 +241,15 @@ $model = mysql_fetch_assoc($result);
 <?php 
 // show list of PFTs
 if ($model["model_type"] == "ED2") {
-	$result = mysql_query("SELECT * FROM pfts WHERE name NOT LIKE 'sipnet%' AND name NOT LIKE 'biocro%' ORDER BY name;");
+	$result = $pdo->query("SELECT * FROM pfts WHERE name NOT LIKE 'sipnet%' AND name NOT LIKE 'biocro%' ORDER BY name;");
 } else  {
-	$result = mysql_query("SELECT * FROM pfts WHERE name LIKE '" . strtolower($model["model_type"]) . "%' ORDER BY name");
+	$result = $pdo->query("SELECT * FROM pfts WHERE name LIKE '" . strtolower($model["model_type"]) . "%' ORDER BY name");
 }
 if (!$result) {
-	die('Invalid query: ' . mysql_error());
+	die('Invalid query: ' . error_database());
 }
 $pfts = "";
-while ($row = @mysql_fetch_assoc($result)){
+while ($row = @$result->fetch(PDO::FETCH_ASSOC)){
 	$name=str_replace(strtolower($model["model_type"]) . ".", "", $row['name']);
 	if (in_array($row['name'], $selected_pfts)) {
 		print "				<option value='{$row['name']}' selected>$name</option>\n";
@@ -287,15 +286,15 @@ if (($model["model_type"] == "ED2") || ($model["model_type"] == "SIPNET")) {
 	// get met data
 	
 	if ($model["model_type"] == "ED2") {
-		$result = mysql_query($query . " AND inputs.format_id=12");
+		$result = $pdo->query($query . " AND inputs.format_id=12");
 	} else if ($model["model_type"] == "SIPNET") {
-		$result = mysql_query($query . " AND inputs.format_id=24");
+		$result = $pdo->query($query . " AND inputs.format_id=24");
 	}
 	
 	if (!$result) {
-		die('Invalid query: ' . mysql_error());
+		die('Invalid query: ' . error_database());
 	}
-	while ($row = @mysql_fetch_assoc($result)){
+	while ($row = @$result->fetch(PDO::FETCH_ASSOC)){
 		$row['name']="Weather " . substr($row['start_date'], 0, 4) . "-" . substr($row['end_date'], 0, 4);
 		print "				<option value='{$row['file_id']}'>{$row['name']}</option>\n";
 	}
@@ -308,11 +307,11 @@ if ($model["model_type"] == "ED2") {
 	print "			<select id=\"psscss\" name=\"psscss\" onChange=\"validate();\">\n";
 
 	// get psscss data
-	$result = mysql_query($query . " AND inputs.format_id=10");
+	$result = $pdo->query($query . " AND inputs.format_id=10");
 	if (!$result) {
-		die('Invalid query: ' . mysql_error());
+		die('Invalid query: ' . error_database());
 	}
-	while ($row = @mysql_fetch_assoc($result)){
+	while ($row = @$result->fetch(PDO::FETCH_ASSOC)){
 		if ($psscss == $row['file_id']) {
 			print "			<option value='{$row['file_id']}' selected>{$row['name']}</option>\n";
 		} else {
@@ -354,5 +353,5 @@ if ($model["model_type"] == "ED2") {
 </html>
 
 <?php 
-close_database($connection);
+$pdo = null;
 ?>

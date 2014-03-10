@@ -28,11 +28,11 @@ print_editor($id, $table, true);
 $query="SELECT dbfiles.id, concat(machines.hostname, ':', dbfiles.file_path, '/', dbfiles.file_name) as filename" .
        " FROM dbfiles, machines, inputs" .
        " WHERE inputs.id=$id AND dbfiles.container_id=inputs.id AND dbfiles.container_type='Input' AND machines.id=dbfiles.machine_id;";
-$result = mysql_query($query, $db_connection);
+$result = $pdo->query($query, $pdo);
 if (!$result) {
-	die("Invalid query [$query] " . mysql_error($db_connection));
+	die("Invalid query [$query] " . $pdo->errorInfo($pdo));
 }
-if (mysql_num_rows($result) > 0) {
+if ($result->fetchColumn() > 0) {
 ?>
 	<script type="text/javascript">
 		function show_input(id) {
@@ -49,10 +49,10 @@ if (mysql_num_rows($result) > 0) {
 			<div class="val">
 				<select id="file">
 <?php
-	while($dbfilerow = @mysql_fetch_assoc($result)) {
+	while($dbfilerow = @$result->fetch(PDO::FETCH_ASSOC)) {
 		print "<option value=\"{$dbfilerow['id']}\">{$dbfilerow['filename']}</option>\n";
 	}
-	mysql_free_result($result);
+	$result->closeCursor();
 ?>
 				</select>
 			</div>

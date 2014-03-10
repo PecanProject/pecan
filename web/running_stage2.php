@@ -18,16 +18,16 @@ if (!isset($_REQUEST['workflowid'])) {
 $workflowid=$_REQUEST['workflowid'];
 
 // database parameters
-require("dbinfo.php");
-$connection=open_database();
+require("system.php");
+$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
 
 // get run information
 $query = "SELECT folder, params FROM workflows WHERE workflows.id=$workflowid";
-$result = mysql_query($query);
+$result = $pdo->query($query);
 if (!$result) {
-	die('Invalid query: ' . mysql_error());
+	die('Invalid query: ' . error_database());
 }
-$workflow = mysql_fetch_assoc($result);
+$workflow = $result->fetch(PDO::FETCH_ASSOC);
 $folder = $workflow['folder'];
 $params = eval("return ${workflow['params']};");
 
@@ -81,7 +81,7 @@ switch(checkStatus("MODEL")) {
 			mail($params['email'], "Workflow has failed", "You can find the results on $url");
 		}
 		$nextenabled="";
-		mysql_query("UPDATE workflows SET finished_at=NOW() WHERE id=${workflowid} AND finished_at IS NULL");
+		$pdo->query("UPDATE workflows SET finished_at=NOW() WHERE id=${workflowid} AND finished_at IS NULL");
 		if ($offline) {
 			header( "Location: failurealert.php?workflowid=$workflowid&offline=offline");
 		} else {
@@ -209,7 +209,7 @@ switch(checkStatus("MODEL")) {
 </html>
 
 <?php 
-close_database($connection);
+$pdo = null;
 
 function checkStatus($token) {
   	global $status;
