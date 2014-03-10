@@ -1,4 +1,3 @@
-S3method(transform,nas)
 export(assign.treatments)
 export(db.close)
 export(db.exists)

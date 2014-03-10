@@ -117,9 +117,9 @@ query.yields <- function(trait = 'yield', spstr, extra.columns='', con=query.bas
 append.covariate<-function(data, column.name, ..., covariates.data=list(...)){
   merged <- data.frame()
   for(covariate.data in covariates.data){
-    if(length(covariate.data)>1){
-                                        #conditional added to prevent crash when trying to transform an empty data frame
-      transformed <- transform(covariates.data, id = trait_id, level = level)
+    if(length(covariate.data)>=1){
+      ## conditional added to prevent crash when trying to transform an empty data frame
+      transformed <- transform(covariate.data, id = trait_id, level = level)
       selected <- transformed[!transformed$id %in% merged$id, c('id', 'level')]
       merged <- rbind(merged, selected)
     }
@@ -157,14 +157,16 @@ query.covariates<-function(trait.ids, con = query.base.con(settings), ...){
 ##' @title Function to apply Arrhenius scaling to 25 degC for temperature-dependent traits
 ##' @param data the data to scale
 ##' @param covariates the relevant covariates
-##' @param temp.covariates
+##' @param temp.covariates names of covariates used to adjust for temperature; 
+##' if length > 1, order matters (first will be used preferentially)
 ##' @param new.temp the reference temperature for the scaled traits. Curerntly 25 degC
 ##' @author Carl Davidson, David LeBauer
 arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp=25){
   if(length(covariates)>0) {
+    .covs <- lapply(temp.covariates, function(temp.covariate){covariates[covariates$name == temp.covariate,]})
+#    .covs <- .covs[!duplicated(.covs$trait_id),]
     data <- append.covariate(data, 'temp', 
-                             covariates.data = lapply(temp.covariates, 
-                               function(temp.covariate){covariates[covariates$name == temp.covariate,]}))
+                             covariates.data = .covs)
     
     data$temp[is.na(data$temp)] <-  new.temp
     
@@ -230,33 +232,6 @@ rename.jags.columns <- function(data) {
 ##==================================================================================================#
 
 
-##--------------------------------------------------------------------------------------------------#
-##' 
-##' @name transform.nas
-##' @title Function to remove NA values from database queries
-##'
-##' @param data input data
-##' @export
-##'
-transform.nas <- function(data){
-  #control defaults to 1
-  data$control[is.na(data$control)] <- 1
-  
-  #site defaults to 0
-  #TODO assign different site for each citation - dsl
-  data$site_id[is.na(data$site_id)] <- 0
-
-  #greenhouse defaults to false (0)
-  data$greenhouse[is.na(data$greenhouse)] <- 1
-  
-  #number of observations defaults to 2 for statistics, 1 otherwise
-  data$n[is.na(data$n)] <- 1
-  data$n[data$n ==1 & !is.na(data$stat)] <- 2
-
-  return(data)
-}
-##==================================================================================================#
-
 
 ##--------------------------------------------------------------------------------------------------#
 ##' Change treatments to sequential integers
@@ -279,12 +254,11 @@ assign.treatments <- function(data){
     #if only one treatment, it's control
     if(length(unique(data$trt[site.i])) == 1) data$trt_id[site.i] <- 'control'
     if(!'control' %in% data$trt_id[site.i]){
-      if(interactive()) browser()
-      stop(  paste('No control treatment set for site_id:',
+      logger.severe('No control treatment set for site_id:',
                    unique(data$site_id[site.i]),
                    'and citation id',
                    unique(data$citation_id[site.i]),
-                   '\nplease set control treatment for this site / citation in database\n'))
+                   '\nplease set control treatment for this site / citation in database\n')
     }
   }
   return(data)
