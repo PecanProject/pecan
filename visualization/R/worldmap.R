@@ -12,7 +12,9 @@
 ##'                                      package = "PEcAn.visualization"))
 ##' pecan.worldmap(df.in = miscanthusyield,
 ##'                outfile = file.path(tempdir(), 'worldmap.png'))
-pecan.worldmap <- function(df.in, outfile = "worldmap.png", xlim = c(-130,-30), ylim = c(-40,60)){
+pecan.worldmap <- function(df.in, outfile = NULL, 
+                           xlim = c(-130,-30), ylim = c(-40,60), 
+                           range = NULL, legend.title = NULL, fig.title = NULL){
 
   ### map of yields
   world <- map_data("world")
@@ -50,7 +52,9 @@ pecan.worldmap <- function(df.in, outfile = "worldmap.png", xlim = c(-130,-30), 
       #    geom_point(aes(x = c(-180, -180, 180, 180), y = c(-90, 90, -90, 90), size = 0.1)) +
       #    xlab("Longitude") + ylab("Latitude") + ggtitle(var) +
       theme_nothing() +
-      scale_fill_gradientn(colours = colorRampPalette(c("darkblue", "wheat", "darkred"))(20))     
+      scale_fill_gradientn(colours = colorRampPalette(c("darkblue", "wheat", "darkred"))(20),
+                           name = legend.title, limits = range, trans = "sqrt")
+      ggtitle(fig.title)      
   } else {
     p <-ggplot() + 
       #    geom_polygon(data = world, 
@@ -64,7 +68,7 @@ pecan.worldmap <- function(df.in, outfile = "worldmap.png", xlim = c(-130,-30), 
     
     
   }
-  
+
   if(!is.null(outfile)){
   ggsave(filename = outfile, plot = p, 
          width = 44*diff(xlim)/360, height = 34*diff(ylim)/180, 
@@ -93,3 +97,9 @@ pecan.worldmap <- function(df.in, outfile = "worldmap.png", xlim = c(-130,-30), 
   }
 }
 
+## see ?toupper
+.simpleCap <- function(x) {
+  s <- strsplit(x, " ")[[1]]
+  paste(toupper(substring(s, 1, 1)), substring(s, 2),
+        sep = "", collapse = " ")
+}
