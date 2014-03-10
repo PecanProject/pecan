@@ -32,9 +32,11 @@ pecan.ma.summary <- function(mcmc.object, pft, outdir, threshold = 1.2){
     
     ## new diagnostic plots. If preferred we can replace use of base below
     if("ggmcmc" %in% rownames(installed.packages())){
-      require(ggmcmc)
-      theme_set(theme_bw())
-      ggmcmc(ggs(trait.mcmc[[trait]]), file.path(outdir, paste0("gg.ma.summaryplots.", trait, ".pdf")))
+      if(is.mcmc.list(trait.mcmc[[trait]])){
+        require(ggmcmc)
+        theme_set(theme_bw())
+        ggmcmc(ggs(trait.mcmc[[trait]]), file.path(outdir, paste0("gg.ma.summaryplots.", trait, ".pdf")))        
+      }
     }
     
     ## reordering maparms so that beta.o etc not sent to end
