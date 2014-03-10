@@ -3,7 +3,7 @@
 require("config.php");
 
 # Single share connection
-$db_connection=null;
+$pdo=null;
 
 # sections to show in menu (subfolders)
 $sections=array("BETY", "PEcAn");
@@ -19,23 +19,21 @@ function open_database() {
 	global $db_username;
 	global $db_password;
 	global $db_database;
-	global $db_connection;
+	global $db_type;
+	global $pdo;
 
-	$db_connection=mysql_connect ($db_hostname, $db_username, $db_password);
-	if (!$db_connection) {
-		die('Not connected : [' . mysql_errno($db_connection) . ']'  . mysql_error($db_connection));
-	}
-
-	// Set the active MySQL database
-	$db_selected = mysql_select_db($db_database, $db_connection);
-	if (!$db_selected) {
-		die('Can\'t use db : [' . mysql_errno($db_connection) . ']'  . mysql_error($db_connection));
-	}
+	$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
 }
 
 function close_database() {
-	global $db_connection;
-	mysql_close($db_connection);
+	global $pdo;
+	$pdo = null;
+}
+
+function error_database() {
+	global $pdo;
+	$tmp = $pdo->errorInfo();
+	return $tmp[2];
 }
 
 # ----------------------------------------------------------------------
@@ -174,18 +172,18 @@ function print_menu_entry($active, $menu) {
 # ----------------------------------------------------------------------
 
 function login($username, $password) {
-	global $db_connection;
+	global $pdo;
 
 	if (isset($_SESSION['userid'])) {
 		return TRUE;
 	}
 
-	$result = mysql_query("SELECT * FROM users WHERE login='" . mysql_escape_string($username) . "'", $db_connection);
+	$result = $pdo->query("SELECT * FROM users WHERE login='" . $pdo->quote($username) . "'", $pdo);
 	if (!$result) {
-		die('Invalid query : [' . mysql_errno($db_connection) . ']'  . mysql_error($db_connection));
+		die('Invalid query : [' . error_database() . ']'  . $pdo->errorInfo($pdo));
 	}
-	$row = @mysql_fetch_array($result);
-	mysql_free_result($result);
+	$row = $result->fetch(PDO::FETCH_ASSOC);
+	$result->closeCursor();
 
 	if (!isset($row['salt'])) {
 		return FALSE;
@@ -266,17 +264,17 @@ function get_page_acccess_level() {
 
 function print_list($table, $query, $idkey) {
 	global $pagesize;
-	global $db_connection;
+	global $pdo;
 
 	# handle any information send in inputs form
 	$msg = "";
 	if (isset($_REQUEST['action'])) {
 		if ($_REQUEST['action'] == "delete") {
 			if (($table != "users") || ((get_page_acccess_level() == 1) && ($_REQUEST['kill'] != get_userid()))) {
-				if (mysql_query("DELETE FROM $table WHERE ${idkey}={$_REQUEST['kill']};", $db_connection)) {
+				if ($pdo->query("DELETE FROM $table WHERE ${idkey}={$_REQUEST['kill']};", $pdo)) {
 					$msg = "Removed {$_REQUEST['kill']} from {$table}";
 				} else {
-					$msg = "Error updating database : [" . mysql_errno($db_connection) . "] " . mysql_error($db_connection) . "<br>$query";
+					$msg = "Error updating database : [" . error_database() . "] " . $pdo->errorInfo($pdo) . "<br>$query";
 				}
 			}
 		}
@@ -288,11 +286,11 @@ function print_list($table, $query, $idkey) {
 
 	# fix access_level
 	if (($table != "users") && (get_page_acccess_level() > 1)) {
-		$result = mysql_query("SHOW COLUMNS FROM $table LIKE 'access_level';", $db_connection);
+		$result = $pdo->query("SHOW COLUMNS FROM $table LIKE 'access_level';", $pdo);
 		if (!$result) {
-			die('Invalid query : [' . mysql_errno($db_connection) . ']'  . mysql_error($db_connection));
+			die('Invalid query : [' . error_database() . ']'  . $pdo->errorInfo($pdo));
 		}
-		if (mysql_num_rows($result) > 0) {
+		if ($result->fetchColumn() > 0) {
 			$pos = stripos($query, "WHERE");
 			if ($pos !== false) {
 				$head = substr($query, 0, $pos + 5);
@@ -317,13 +315,13 @@ function print_list($table, $query, $idkey) {
 	} else {
 		$current = 1;
 	}
-	$result = mysql_query($query . " ORDER BY $idkey LIMIT $pagesize OFFSET " . (($current - 1) * $pagesize), $db_connection);
+	$result = $pdo->query($query . " ORDER BY $idkey LIMIT $pagesize OFFSET " . (($current - 1) * $pagesize), $pdo);
 	if (!$result) {
-		die("Invalid query : $query [" . mysql_errno($db_connection) . ']'  . mysql_error($db_connection));
+		die("Invalid query : $query [" . error_database() . ']'  . $pdo->errorInfo($pdo));
 	}
 
 	$header = false;
-	while($row = @mysql_fetch_assoc($result)) {
+	while($row = @$result->fetch(PDO::FETCH_ASSOC)) {
 		if (!$header) {
 			print "<div class=\"tbl\" id=\"list\">\n";
 			print "    <div class=\"row\">\n";
@@ -366,7 +364,7 @@ function print_list($table, $query, $idkey) {
 	if ($header) {
 		print "</div>\n";
 	}
-	mysql_free_result($result);
+	$result->closeCursor();
 
 	print_pages($current, $pagesize, $query, $table);
 
@@ -374,15 +372,15 @@ function print_list($table, $query, $idkey) {
 }
 
 function print_pages($current, $pagesize, $query, $table) { 
-	global $db_connection;
+	global $pdo;
 
 	# count items
-	$result = mysql_query("$query", $db_connection);
+	$result = $pdo->query("$query", $pdo);
 	if (!$result) {
-		die('Invalid query : [' . mysql_errno($db_connection) . ']'  . mysql_error($db_connection));
+		die('Invalid query : [' . error_database() . ']'  . $pdo->errorInfo($pdo));
 	}
-	$count = mysql_num_rows($result);
-	mysql_free_result($result);
+	$count = $result->fetchColumn();
+	$result->closeCursor();
 
 	if ($count <= $pagesize) {
 		return;
@@ -472,7 +470,7 @@ function editor_log($status, $query) {
 }
 
 function editor_update($id, $table) {
-	global $db_connection;
+	global $pdo;
 
 	if (($table == "users") && (($id != get_userid()) || (get_page_acccess_level() != 1))) {
 		header("Location: ../index.php");
@@ -484,12 +482,12 @@ function editor_update($id, $table) {
 	}
 
 	# get the row from the database (this can be empty)
-	$result = mysql_query("SELECT * FROM $table WHERE id=$id;", $db_connection);
+	$result = $pdo->query("SELECT * FROM $table WHERE id=$id;", $pdo);
 	if (!$result) {
-		die('Invalid query : [' . mysql_errno($db_connection) . ']'  . mysql_error($db_connection));
+		die('Invalid query : [' . error_database() . ']'  . $pdo->errorInfo($pdo));
 	}
-	$row = mysql_fetch_assoc($result);
-	mysql_free_result($result);
+	$row = $result->fetch(PDO::FETCH_ASSOC);
+	$result->closeCursor();
 
 	$msg = "";
 	$set = "";
@@ -508,13 +506,13 @@ function editor_update($id, $table) {
 			if ($val == "") {
 				$set .= " $key=NULL";
 			} else {
-				$set .= " $key='" . mysql_escape_string($val) . "'";
+				$set .= " $key='" . $pdo->quote($val) . "'";
 			}
 		} else if ($pre == 'n') {
 			if ($set != "") {
 				$set .= ", ";
 			}
-			$set .= " $key=" . mysql_escape_string($val);
+			$set .= " $key=" . $pdo->quote($val);
 		} else if ($pre == 'b') {
 			if ($set != "") {
 				$set .= ", ";
@@ -536,17 +534,17 @@ function editor_update($id, $table) {
 				if ($set != "") {
 					$set .= ", ";
 				}
-				$set .= " $key='" . mysql_escape_string($val) . "'";
+				$set .= " $key='" . $pdo->quote($val) . "'";
 			}
 		}
 	}
 	if ($set != "") {
 		if ($id == "-1") {
 			$query = "INSERT INTO $table SET $set;";
-			mysql_query($query, $db_connection);
-			$id = mysql_insert_id();
-			if (!mysql_query($query, $db_connection)) {
-				$msg = "Error updating database : [" . mysql_errno($db_connection) . "] " . mysql_error($db_connection) . "<br>";
+			$pdo->query($query, $pdo);
+			$id = $pdo->lastInsertId();
+			if (!$pdo->query($query, $pdo)) {
+				$msg = "Error updating database : [" . error_database() . "] " . $pdo->errorInfo($pdo) . "<br>";
 				editor_log("FAIL", $query);
 			} else {
 				$msg .= "Added into $table table id=$id<br/>\n";
@@ -554,8 +552,8 @@ function editor_update($id, $table) {
 			}
 		} else {
 			$query = "UPDATE $table SET $set WHERE id=$id;";
-			if (!mysql_query($query, $db_connection)) {
-				$msg = "Error updating database : [" . mysql_errno($db_connection) . "] " . mysql_error($db_connection) . "<br>";
+			if (!$pdo->query($query, $pdo)) {
+				$msg = "Error updating database : [" . error_database() . "] " . $pdo->errorInfo($pdo) . "<br>";
 				editor_log("FAIL", $query);
 			} else {
 				$msg .= "Updated $table table for id=$id<br/>\n";
@@ -564,13 +562,13 @@ function editor_update($id, $table) {
 		}
 	} else {
 		if ($id == "-1") {
-			$result = mysql_query("SELECT id FROM $table ORDER BY id ASC LIMIT 1;", $db_connection);
+			$result = $pdo->query("SELECT id FROM $table ORDER BY id ASC LIMIT 1;", $pdo);
 			if (!$result) {
-				die('Invalid query : [' . mysql_errno($db_connection) . ']'  . mysql_error($db_connection));
+				die('Invalid query : [' . error_database() . ']'  . $pdo->errorInfo($pdo));
 			}
-			$row = mysql_fetch_row($result);
+			$row = $result->fetch(PDO::FETCH_ASSOC);
 			$id = $row[0];
-			mysql_free_result($result);
+			$result->closeCursor();
 			$msg .= "No data entered showing first $table.<br/>\n";
 		} else {
 			$msg .= "Nothing changed.<br/>\n";
@@ -581,7 +579,7 @@ function editor_update($id, $table) {
 }
 
 function print_editor($id, $table, $readonly=false) {
-	global $db_connection;
+	global $pdo;
 
 	if (($table == "users") && ($id != get_userid()) && (get_page_acccess_level() != 1)) {
 		header("Location: ../index.php");
@@ -603,12 +601,12 @@ function print_editor($id, $table, $readonly=false) {
 	}
 
 	# get the row from the database (this can be empty)
-	$result = mysql_query("SELECT * FROM $table WHERE id=$id;", $db_connection);
+	$result = $pdo->query("SELECT * FROM $table WHERE id=$id;", $pdo);
 	if (!$result) {
-		die('Invalid query : [' . mysql_errno($db_connection) . ']'  . mysql_error($db_connection));
+		die('Invalid query : [' . error_database() . ']'  . $pdo->errorInfo($pdo));
 	}
-	$row = mysql_fetch_assoc($result);
-	mysql_free_result($result);
+	$row = $result->fetch(PDO::FETCH_ASSOC);
+	$result->closeCursor();
 
 	# check access_level
 	if (is_array($row) && array_key_exists('access_level', $row) && ($row['access_level'] != "") && ($row['access_level'] != "-1")) {
@@ -619,9 +617,9 @@ function print_editor($id, $table, $readonly=false) {
 	}
 
 	# get table structure
-	$result = mysql_query("SHOW COLUMNS FROM $table;", $db_connection);
+	$result = $pdo->query("SHOW COLUMNS FROM $table;", $pdo);
 	if (!$result) {
-		die('Invalid query : [' . mysql_errno($db_connection) . ']'  . mysql_error($db_connection));
+		die('Invalid query : [' . error_database() . ']'  . $pdo->errorInfo($pdo));
 	}
 
 	if (!$readonly) {
@@ -630,7 +628,7 @@ function print_editor($id, $table, $readonly=false) {
 	}
 	print "<div class=\"tbl\" id=\"editor\">\n";
 
-	while($fields = mysql_fetch_assoc($result)) {
+	while($fields = $result->fetch(PDO::FETCH_ASSOC)) {
 		$key = $fields['Field'];
 		if ($key == "id") {
 			$fancykey = $key;
@@ -788,56 +786,56 @@ function print_editor($id, $table, $readonly=false) {
 }
 
 function print_prev_next($id, $table) {
-	global $db_connection;
+	global $pdo;
 
 	$and = "";
 	$where = "";
 	if (get_page_acccess_level() > 1) {
-		$result = mysql_query("SHOW COLUMNS FROM $table LIKE 'access_level';", $db_connection);
+		$result = $pdo->query("SHOW COLUMNS FROM $table LIKE 'access_level';", $pdo);
 		if (!$result) {
-			die('Invalid query : [' . mysql_errno($db_connection) . ']'  . mysql_error($db_connection));
+			die('Invalid query : [' . error_database() . ']'  . $pdo->errorInfo($pdo));
 		}
-		if (mysql_num_rows($result) > 0) {
+		if ($result->fetchColumn() > 0) {
 			$and   = " AND (access_level >= " . get_acccess_level() . " OR access_level IS NULL)";
 			$where = " WHERE (access_level >= " . get_acccess_level() . " OR access_level IS NULL)";
 		}
 	}
 
-	$result = mysql_query("SELECT id FROM {$table} WHERE id < ${id} ${and} ORDER BY id DESC LIMIT 1;", $db_connection);
+	$result = $pdo->query("SELECT id FROM {$table} WHERE id < ${id} ${and} ORDER BY id DESC LIMIT 1;", $pdo);
 	if (!$result) {
-		die('Invalid query : [' . mysql_errno($db_connection) . ']'  . mysql_error($db_connection));
+		die('Invalid query : [' . error_database() . ']'  . $pdo->errorInfo($pdo));
 	}
-	$row = mysql_fetch_row($result);
+	$row = $result->fetch(PDO::FETCH_NUM);
 	$prev = $row[0];
-	mysql_free_result($result);
+	$result->closeCursor();
 	if ($prev == "") {
-		$result = mysql_query("SELECT id FROM {$table} ${where} ORDER BY id DESC LIMIT 1;", $db_connection);
+		$result = $pdo->query("SELECT id FROM {$table} ${where} ORDER BY id DESC LIMIT 1;", $pdo);
 		if (!$result) {
-			die('Invalid query : [' . mysql_errno($db_connection) . ']'  . mysql_error($db_connection));
+			die('Invalid query : [' . error_database() . ']'  . $pdo->errorInfo($pdo));
 		}
-		$row = mysql_fetch_row($result);
+		$row = $result->fetch(PDO::FETCH_NUM);
 		$prev = $row[0];
-		mysql_free_result($result);
+		$result->closeCursor();
 	}
 	print "<div style=\"float: left\">";
 	print "<a href=\"{$_SERVER['SCRIPT_NAME']}?id={$prev}\">&lt;Prev {$table} [{$prev}]&gt;</a>";
 	print "</div>\n";
 
-	$result = mysql_query("SELECT id FROM $table WHERE id > ${id} ${and} ORDER BY id ASC LIMIT 1;", $db_connection);
+	$result = $pdo->query("SELECT id FROM $table WHERE id > ${id} ${and} ORDER BY id ASC LIMIT 1;", $pdo);
 	if (!$result) {
-		die('Invalid query : [' . mysql_errno($db_connection) . ']'  . mysql_error($db_connection));
+		die('Invalid query : [' . error_database() . ']'  . $pdo->errorInfo($pdo));
 	}
-	$row = mysql_fetch_row($result);
+	$row = $result->fetch(PDO::FETCH_NUM);
 	$next = $row[0];
-	mysql_free_result($result);
+	$result->closeCursor();
 	if ($next == "") {
-		$result = mysql_query("SELECT id FROM $table ${where} ORDER BY id ASC LIMIT 1;", $db_connection);
+		$result = $pdo->query("SELECT id FROM $table ${where} ORDER BY id ASC LIMIT 1;", $pdo);
 		if (!$result) {
-			die('Invalid query : [' . mysql_errno($db_connection) . ']'  . mysql_error($db_connection));
+			die('Invalid query : [' . error_database() . ']'  . $pdo->errorInfo($pdo));
 		}
-		$row = mysql_fetch_row($result);
+		$row = $result->fetch(PDO::FETCH_NUM);
 		$next = $row[0];
-		mysql_free_result($result);
+		$result->closeCursor();
 	}
 	print "<div style=\"float: right\">";
 	print "<a href=\"{$_SERVER['SCRIPT_NAME']}?id={$next}\">&lt;Next {$table} [{$next}]&gt;</a>";
@@ -905,7 +903,7 @@ function print_cultivars_options($name, $myid, $readonly=false) {
 }
 
 function print_select_options($name, $myid, $readonly, $query) {
-	global $db_connection;
+	global $pdo;
 
 	if ($readonly) {
 		if ($myid == "") {
@@ -914,9 +912,9 @@ function print_select_options($name, $myid, $readonly, $query) {
 			$query .= " WHERE id=${myid}";	
 		}
 	}
-	$result = mysql_query($query . " ORDER BY name", $db_connection);
+	$result = $pdo->query($query . " ORDER BY name", $pdo);
 	if (!$result) {
-		die('Invalid query "' . $query . '" : [' . mysql_errno($db_connection) . ']'  . mysql_error($db_connection));
+		die('Invalid query "' . $query . '" : [' . error_database() . ']'  . $pdo->errorInfo($pdo));
 	}
 
 	if ($readonly) {
@@ -926,7 +924,7 @@ function print_select_options($name, $myid, $readonly, $query) {
 	}
 	$html = "";
 	$foundit = false;
-	while($row = @mysql_fetch_assoc($result)) {
+	while($row = @$result->fetch(PDO::FETCH_ASSOC)) {
 		$name = $row['name'];
 		if ($name == "") {
 			$name = "NO NAME {$row['id']}";
@@ -948,7 +946,7 @@ function print_select_options($name, $myid, $readonly, $query) {
 	print $html;
 	print "</select>\n";
 
-	mysql_free_result($result);
+	$result->closeCursor();
 }
 
 function print_select_array_options($name, $myid, $readonly, $values) {	

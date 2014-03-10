@@ -20,16 +20,15 @@ $type=$_REQUEST['type'];
 
 // database parameters
 require("system.php");
-require("dbinfo.php");
-$connection=open_database();
+$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
 
 // get run information
 $query = "SELECT folder FROM workflows WHERE workflows.id=${workflowid}";
-$result = mysql_query($query);
+$result = $pdo->query($query);
 if (!$result) {
-	die('Invalid query: ' . mysql_error());
+	die('Invalid query: ' . error_database());
 }
-$run = mysql_fetch_assoc($result);
+$run = $result->fetch(PDO::FETCH_ASSOC);
 $folder = str_replace("//", "/", $run['folder']);
 
 // return dataset
@@ -71,7 +70,7 @@ switch ($type) {
 			die("Need var.");
 		}
 		$var=$_REQUEST['var'];
-        $datafile=$folder . "/out/" . $run . "/" . $year . ".nc";
+		$datafile=$folder . "/out/" . $run . "/" . $year . ".nc";
 		$width=600;
 		if (isset($_REQUEST['width']) && ($_REQUEST['width'] > $width)) {
 			$width=$_REQUEST['width'];
@@ -81,8 +80,8 @@ switch ($type) {
 			$height=$_REQUEST['height'];
 		}
 		$mime = "image/png";
-		$file = tempnam('','');
-		shell_exec("R_LIBS_USER='${pecan_install}' PECANSETTINGS='$folder/pecan.xml' R CMD BATCH --vanilla '--args $datafile $year $var $width $height $file' plot.netcdf.R $folder/plot.out");
+		$file = tempnam(sys_get_temp_dir(),'plot') . ".png";
+		shell_exec("R_LIBS_USER='${pecan_install}' PECANSETTINGS='$folder/pecan.xml' R CMD BATCH --vanilla '--args $datafile $year $var $width $height $file' plot.netcdf.R /dev/null");
 		break;
 		
 	default:

@@ -7,8 +7,8 @@
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
  */
-require("dbinfo.php");
-$connection = open_database();
+require("system.php");
+$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
 
 // Start XML file, create parent node
 $dom = new DOMDocument("1.0");
@@ -21,13 +21,13 @@ if (isset($_REQUEST['host']) && ($_REQUEST['host'] != "")) {
 	$query = "SELECT models.* FROM models WHERE models.model_path LIKE '{$_REQUEST['host']}:%' ORDER BY models.model_name DESC, models.revision DESC";
 	
 	// Select all the rows in the models table
-	$result = mysql_query($query);
+	$result = $pdo->query($query);
 	if (!$result) {
-		die('Invalid query: ' . mysql_error());
+		die('Invalid query: ' . error_database());
 	} 
 	
 	// Iterate through the rows, adding XML nodes for each
-	while ($row = @mysql_fetch_assoc($result)){ 
+	while ($row = @$result->fetch(PDO::FETCH_ASSOC)){ 
 		$node = $dom->createElement("model");
 		$newnode = $parnode->appendChild($node);	 
 		$newnode->setAttribute("id",$row['id']);
@@ -38,5 +38,5 @@ if (isset($_REQUEST['host']) && ($_REQUEST['host'] != "")) {
 
 echo $dom->saveXML();
 
-close_database($connection);
+$pdo = null;
 ?>

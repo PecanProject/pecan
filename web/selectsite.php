@@ -28,17 +28,16 @@ if (isset($_REQUEST['siteid'])) {
 require("system.php");
 
 // database parameters
-require("dbinfo.php");
-$connection = open_database();
+$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
 
 // get hosts
 $query = "SELECT hostname FROM machines ORDER BY hostname";
-$result = mysql_query($query);
+$result = $pdo->query($query);
 if (!$result) {
-	die('Invalid query: ' . mysql_error());
+	die('Invalid query: ' . error_database());
 }
 $hosts = "";
-while ($row = @mysql_fetch_assoc($result)) {
+while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
 	if (in_array($row['hostname'], $hostlist)) {
 		if ($hostname == $row['hostname']) {
 			$hosts = "$hosts<option selected>{$row['hostname']}</option>\n";
@@ -317,5 +316,5 @@ while ($row = @mysql_fetch_assoc($result)) {
 </html>
 
 <?php 
-close_database($connection);
+$pdo = null;
 ?>

@@ -7,8 +7,8 @@
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
  */
-require("dbinfo.php");
-$connection = open_database();
+require("system.php");
+$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
 
 // Start XML file, create parent node
 $dom = new DOMDocument("1.0");
@@ -16,10 +16,10 @@ $node = $dom->createElement("markers");
 $parnode = $dom->appendChild($node); 
 
 if (isset($_REQUEST['model']) && ($_REQUEST['model'] != "")) {
-	$result = mysql_query("SELECT * FROM models WHERE id='" . $_REQUEST['model'] . "'");
-	$model = mysql_fetch_assoc($result);
+	$result = $pdo->query("SELECT * FROM models WHERE id='" . $_REQUEST['model'] . "'");
+	$model = $result->fetch(PDO::FETCH_ASSOC);
 	$modeltype = $model["model_type"];
-	mysql_free_result($result);
+	$result->closeCursor();
 } else {
 	$model = "";
 	$modeltype = "";
@@ -39,13 +39,13 @@ if (isset($_REQUEST['host']) && ($_REQUEST['host'] != "")) {
 }
 
 // Select all the rows in the markers table
-$result = mysql_query($query);
+$result = $pdo->query($query);
 if (!$result) {
-	die('Invalid query: ' . mysql_error());
+	die('Invalid query: ' . error_database());
 } 
 
 // Iterate through the rows, adding XML nodes for each
-while ($row = @mysql_fetch_assoc($result)){ 
+while ($row = @$result->fetch(PDO::FETCH_ASSOC)){ 
 	$node = $dom->createElement("marker");
 	$newnode = $parnode->appendChild($node);	 
 	$newnode->setAttribute("siteid",$row['id']);
@@ -62,5 +62,5 @@ while ($row = @mysql_fetch_assoc($result)){
 
 echo $dom->saveXML();
 
-close_database($connection);
+$pdo = null;
 ?>
