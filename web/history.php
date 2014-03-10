@@ -71,8 +71,8 @@
         </div>
 <?php
 // database parameters
-require("dbinfo.php");
-$connection = open_database();
+require("system.php");
+$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
 
 // get run information
 $query = "SELECT workflows.id, workflows.folder, workflows.start_date, workflows.end_date, workflows.started_at, workflows.finished_at, " .
@@ -81,11 +81,11 @@ $query = "SELECT workflows.id, workflows.folder, workflows.start_date, workflows
          "FROM workflows " .
          "LEFT OUTER JOIN sites on workflows.site_id=sites.id " .
          "LEFT OUTER JOIN models on workflows.model_id=models.id";
-$result = mysql_query($query);
+$result = $pdo->query($query);
 if (!$result) {
-  die('Invalid query: ' . mysql_error());
+  die('Invalid query: ' . error_database());
 }
-while ($row = @mysql_fetch_assoc($result)) {
+while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
   // check result
   $style="";
   $url="running_stage1.php";
@@ -121,7 +121,7 @@ while ($row = @mysql_fetch_assoc($result)) {
         </div>
 <?php
 }
-close_database($connection);
+$pdo = null;
 ?>
       </div>
     </div>
