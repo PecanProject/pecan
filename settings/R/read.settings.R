@@ -323,10 +323,16 @@ check.settings <- function(settings) {
           model <- model[which.max(ymd_hms(model$updated_at)), ]
         } else if (nrow(model) == 0) {
           logger.warn("Model", settings$model$name, "not in database")
-          model <- c(id=-1, name=settings$model$name)
+          model <- list(id=-1, name=settings$model$name)
         }
       } else {
-        logger.severe("no model settings given")
+        logger.warn("no model settings given")
+      }
+    } else {
+      if(!is.null(settings$model$name)){
+        model <- list(id=-1, name=settings$model$name)        
+      } else {
+        model <- list()
       }
     }
     
@@ -343,7 +349,7 @@ check.settings <- function(settings) {
     # copy data from database into missing fields
     if (is.null(settings$model$name)) {
       if ((is.null(model$model_type) || model$model_type == "")) {
-        logger.severe("No model type specified.")
+        logger.warn("No model type specified.")
       }
       settings$model$name <- model$model_type
       logger.info("Setting model type to ", settings$model$name)
@@ -355,7 +361,7 @@ check.settings <- function(settings) {
     
     if (is.null(settings$model$binary)) {
       if ((is.null(model$binary) || model$binary == "")) {
-        logger.severe("No model binary specified.")
+        logger.warn("No model binary specified.")
       }
       settings$model$binary <- model$binary
       logger.info("Setting model binary to ", settings$model$binary)
