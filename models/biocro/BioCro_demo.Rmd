@@ -7,11 +7,6 @@ logger.setQuitOnSevere(FALSE)
 settings <- read.settings("models/biocro/inst/extdata/misp.xml")
 settings$database <- list(driver = "PostgreSQL", dbname = "ebi_production", user = "bety", host = "ebi-forecast.igb.illinois.edu", password = "bety")
 model <- settings$model$name
-settings$model$binary <- "/home/dlebauer/dev/pecan/models/biocro/inst/biocro.Rscript"
-settings$sensitivity.analysis <- NULL
-settings$ensemble$size <- 4
-#settings$run$site$met <- 
-#settings$meta.analysis$update <- TRUE
 
 #---------------- Run PEcAn workflow. -------------------------------------------------------------#
 # Query the trait database for data and priors
