@@ -1,9 +1,12 @@
 <?xml version="1.0"?>
 <pecan>
-  <outdir>pecan</outdir>
+  <outdir>/home/dlebauer/.pecan/demo</outdir>
   <pfts>
     <pft>
       <name>biocro.misp</name>
+      <constants>
+        
+      </constants>
     </pft>
   </pfts>
   <meta.analysis>
@@ -12,6 +15,7 @@
   </meta.analysis>
   <ensemble>
     <size>10</size>
+    <variable>StemBiom</variable>
   </ensemble>
   <sensitivity.analysis>
     <quantiles>
@@ -28,7 +32,8 @@
     <end.year>2004</end.year>
   </sensitivity.analysis>
   <model>
-    <name>BioCro</name>
+    <name>BIOCRO</name>
+    <id>7</id>
   </model>
   <run>
     <site>
@@ -48,6 +53,7 @@
     <dbname>bety</dbname>
   </database>
   <bety>
-    <write>FALSE</write>
+    <write>TRUE</write>
   </bety>
+  <workflow><id>1</id></workflow>
 </pecan>

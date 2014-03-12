@@ -75,7 +75,7 @@ write.config.BIOCRO <- function(defaults = NULL,
                                 trait.values,
                                 settings,
                                 run.id) {
-
+  
   ## find out where to write run/ouput
   rundir <- file.path(settings$run$host$rundir, as.character(run.id))
   outdir <- file.path(settings$run$host$outdir, as.character(run.id))
@@ -105,8 +105,7 @@ write.config.BIOCRO <- function(defaults = NULL,
       } else {
           settings$site$met <- NULL
       }
-  }
-  if (is.null(settings$run$site$met)){
+  } else if (is.null(settings$run$site$met)){
       weather <- get.rncepmet(lat = as.numeric(settings$run$site$lat),
                              lon = as.numeric(settings$run$site$lon),
                              start.date = settings$run$start.date,
@@ -115,7 +114,7 @@ write.config.BIOCRO <- function(defaults = NULL,
                              con = query.base.con(settings))
   }
   ## convert to biocro specific format
-  W <- weachNEW(weather, lati = as.numeric(settings$run$site$lat), ts = 1, 
+  W <- BioCro::weachNEW(weather, lati = as.numeric(settings$run$site$lat), ts = 1, 
                                 temp.units="Celsius", rh.units="fraction", 
                                 ws.units="mph", pp.units="in")
   ## copy/hard link file to run folder
@@ -146,10 +145,7 @@ write.config.BIOCRO <- function(defaults = NULL,
     defaults.file <- system.file(file.path("extdata/defaults", paste0(tolower(genus), ".xml")), package = "PEcAn.BIOCRO")
   }
   if(file.exists(defaults.file)) {
-    defaults <- xmlToList(xmlTreeParse(defaults.file,
-                                       ## remove comments; see ?xmlParse
-                                       handlers = list("comment" = function(x,...){NULL}), 
-                                       asTree = TRUE))    
+    defaults <- xmlToList(xmlParse(defaults.file))
   } else {
     logger.severe("no defaults file given and ",
                   genus, "not supported in BioCro")
@@ -178,7 +174,6 @@ write.config.BIOCRO <- function(defaults = NULL,
         }
     }
     
-    defaults$genus <- genus
     
     ## this is where soil parms can be set
     ## defaults$soilControl$FieldC <- 
