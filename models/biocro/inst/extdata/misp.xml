@@ -3,7 +3,7 @@
   <outdir>pecan</outdir>
   <pfts>
     <pft>
-      <name>biocro.saof</name>
+      <name>biocro.misp</name>
     </pft>
   </pfts>
   <meta.analysis>
@@ -28,21 +28,26 @@
     <end.year>2004</end.year>
   </sensitivity.analysis>
   <model>
-    <name>BIOCRO</name>
+    <name>BioCro</name>
   </model>
   <run>
     <site>
-      <id>288</id>
-      <name>Sapelo Island</name>
-      <lat>31.40</lat>
-      <lon>-81.37</lon>
-      <met>NULL</met>
+      <id>76</id>
+      <name>EBI Energy farm</name>
     </site>
-    <folder>/tmp/</folder>
     <start.date>2004-01-01 06:00:00</start.date>
     <end.date>2005-12-31 05:59:00</end.date>
     <host> 
       <name>localhost</name>
     </host>
   </run>
+  <database>
+    <user>bety</user>
+    <password>bety</password>
+    <host>localhost</host>
+    <dbname>bety</dbname>
+  </database>
+  <bety>
+    <write>FALSE</write>
+  </bety>
 </pecan>
