@@ -34,6 +34,7 @@
   <model>
     <name>BIOCRO</name>
     <id>7</id>
+    <binary>/home/dlebauer/dev/pecan/models/biocro/inst/biocro.Rscript</binary>
   </model>
   <run>
     <site>
