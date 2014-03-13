@@ -3,7 +3,7 @@
 ## TODO: modify write.configs to enable regional runs
 ##       bounding box comes from from sites geom
 ##       grid size specified in config file
-.libPaths("/home/dlebauer/library/R")
+.libPaths(c("/home/dlebauer/lib/R", "/usr/local/R-2.15/lib64/R/library"))
 library(PEcAn.data.atmosphere)
 library(BioCro)
 
@@ -17,7 +17,7 @@ library(BioCro)
 ##     lon <- arg[2]
 ## }
 
-outdir <- "/home/dlebauer/analysis/globaltest"
+outdir <- "/home/dlebauer/.pecan/demo/"
 ## library(PEcAn.DB)
 
 ## todo replace following with database queries
@@ -25,10 +25,10 @@ outdir <- "/home/dlebauer/analysis/globaltest"
 ## TODO allow specification of grid size
 ## 
 
-soil.nc <- nc_open("/home/scratch/pecan/soil/hwsd.nc")
+soil.nc <- nc_open("/home/dlebauer/.pecan/dbfiles/soil/hwsd.nc")
 
-cruncep.file <- "/home/scratch/pecan/met/cruncep/out/1940ts.nc"
-## ncep.file <- "/home/scratch/pecan/met/ncep/all.nc"
+cruncep.file <- "/home/dlebauer/.pecan/dbfiles/met/cruncep/1901ts.nc"
+## ncep.file <- "/home/dlebauer/.pecan/dbfiles/met/ncep/all.nc"
 ## if(file.exists(cruncep.file)){
 system.time(met.nc <-  nc_open(cruncep.file, readunlim = TRUE))
 ## } else if (file.exists(ncep.file)){
