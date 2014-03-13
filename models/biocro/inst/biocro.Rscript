@@ -11,8 +11,8 @@ if(interactive()) {
   outdir <- file.path("salixtest/out", runid)
 }
 # set the libpath here to point to the right version of BioCro
-require(BioCro)
-require(XML)
+require(BioCro, quietly = TRUE)
+require(XML, quietly = TRUE)
 browser()
 # load the weather data
 weather <- read.csv(file.path(rundir, "weather.csv"))
@@ -67,9 +67,9 @@ for(yeari in years){
     }
 
     result.yeari <- with(result[[yearchar]],
-    data.frame(Year = yeari, DayofYear, Hour, ThermalT,
-                Stem, Leaf, Root, Rhizome, Grain, LAI,
-                SoilEvaporation, CanopyTrans))
+                         data.table(Year = yeari, DayofYear, Hour, ThermalT,
+                                    Stem, Leaf, Root, Rhizome, Grain, LAI,
+                                    SoilEvaporation, CanopyTrans))
     if(yeari == min(years)){
         resultDT <- result.yeari
     } else if (yeari > min(years)){
@@ -77,5 +77,11 @@ for(yeari in years){
     }
 }
 
+
+## Three ways of saving the data ... redundant, but useful for development
 write.csv(resultDT, file=file.path(outdir, "result.csv"))
 save(resultDT, config, genus, file = file.path(outdir, "result.RData"))
+#debugonce(model2netcdf.BIOCRO)
+## this is the format that will be read by PEcAn: 
+require(PEcAn.BIOCRO, quietly = TRUE)
+model2netcdf.BIOCRO(resultDT=resultDT, outdir=outdir, sitelat = config$location$latitude, sitelon = config$location$longitude)
