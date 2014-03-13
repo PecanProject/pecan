@@ -1,11 +1,9 @@
 
 library(PEcAn.all)
 logger.setQuitOnSevere(FALSE)
-#settings <- read.settings(system.file("extdata/misp.xml",
-#                                      package = "PEcAn.BIOCRO"))
 
 settings <- read.settings("models/biocro/inst/extdata/misp.xml")
-settings$database <- list(driver = "PostgreSQL", dbname = "ebi_production", user = "bety", host = "ebi-forecast.igb.illinois.edu", password = "bety")
+
 model <- settings$model$name
 
 #---------------- Run PEcAn workflow. -------------------------------------------------------------#
@@ -21,9 +19,9 @@ start.model.runs(model)         # Start ecosystem model runs
 
 get.results(settings)         # Get results of model runs
 
-#run.sensitivity.analysis()      # Run sensitivity analysis and variance decomposition on model output
+run.sensitivity.analysis()      # Run sensitivity analysis and variance decomposition on model output
 
-#run.ensemble.analysis()		      # Run ensemble analysis on model output. 
+run.ensemble.analysis()		      # Run ensemble analysis on model output. 
                                 # OPTIONAL: run.ensemble.analysis(plot.timeseries=TRUE) to get an esemble 
                                 # time-series output for the target variables set in the PEcAn.xml file
 

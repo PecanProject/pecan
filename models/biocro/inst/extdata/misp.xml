@@ -4,9 +4,6 @@
   <pfts>
     <pft>
       <name>biocro.misp</name>
-      <constants>
-        
-      </constants>
     </pft>
   </pfts>
   <meta.analysis>
@@ -14,18 +11,14 @@
     <random.effects>FALSE</random.effects>
   </meta.analysis>
   <ensemble>
-    <size>10</size>
+    <size>5</size>
     <variable>StemBiom</variable>
   </ensemble>
   <sensitivity.analysis>
     <quantiles>
-      <sigma>3</sigma>
-      <sigma>2</sigma>
       <sigma>1</sigma>
       <sigma>0</sigma>
       <sigma>-1</sigma>
-      <sigma>-2</sigma>
-      <sigma>-3</sigma>
     </quantiles>
     <variable>StemBiom</variable>
     <start.year>2004</start.year>
@@ -33,8 +26,7 @@
   </sensitivity.analysis>
   <model>
     <name>BIOCRO</name>
-    <id>7</id>
-    <binary>/home/dlebauer/dev/pecan/models/biocro/inst/biocro.Rscript</binary>
+    <id>9</id>
   </model>
   <run>
     <site>
@@ -48,10 +40,11 @@
     </host>
   </run>
   <database>
+    <driver>PostgreSQL</driver>
     <user>bety</user>
     <password>bety</password>
-    <host>localhost</host>
-    <dbname>bety</dbname>
+    <host>ebi-forecast.igb.illinois.edu</host>
+    <dbname>ebi_production</dbname>
   </database>
   <bety>
     <write>TRUE</write>
