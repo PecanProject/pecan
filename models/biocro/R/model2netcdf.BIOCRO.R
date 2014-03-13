@@ -9,21 +9,22 @@
 ##--------------------------------------------------------------------------------------------------#
 ##' Convert BioCro output to netCDF
 ##'
-##' Converts all output contained in a folder to netCDF.
+##' Converts BioCro output to netCDF.
 ##' Modified from on model2netcdf.sipnet and model2netcdf.ED2 by
 ##' Shawn Serbin and Mike Dietze
 ##' @name model2netcdf.BIOCRO
 ##' @title Function to convert biocro model output to standard netCDF format
-##' @param outdir Location of ED model output
-##' @param sitelat Latitude of the site
-##' @param sitelon Longitude of the site
-##' @param start_date Start time of the simulation
-##' @param end_date End time of the simulation
+##' @param outdir Location of model output
+##' @param lat Latitude of the site
+##' @param lon Longitude of the site
 ##' @export
 ##'
 ##' @author David LeBauer, Deepak Jaiswal
-model2netcdf.BIOCRO <- function(outdir, sitelat, sitelon, start_date, end_date) {
+model2netcdf.BIOCRO <- function(resultDT, outdir, sitelat, sitelon) {
       
+  require(lubridate, quietly = TRUE)
+  require(data.table, quietly = TRUE)
+  start.date <- resultDT[1, ymd_hms(paste0(Year, "-01-01 ", Hour, ":00:00")) + days(DayofYear - 1)]
     ## Read in model output in biocro format
     load(file.path(outdir, "result.RData")) ## contains genus and result
     for(yeari in unique(resultDT$Year)) {
@@ -45,7 +46,7 @@ model2netcdf.BIOCRO <- function(outdir, sitelat, sitelon, start_date, end_date) 
                          vals = as.numeric(sitelon),
                          longname = "station_longitude")
         t <- ncdim_def(name = "time",
-                       units = paste0("days since ", year(start_date), "-01-01 00:00:00"),
+                       units = paste0("days since ", start.date),
                        vals = with(result, DayofYear + Hour/24),
                        calendar = "standard", unlim = TRUE)
         ## seconds per day
