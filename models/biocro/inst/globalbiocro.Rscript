@@ -25,17 +25,16 @@ outdir <- "/home/dlebauer/.pecan/demo/"
 ## TODO allow specification of grid size
 ## 
 
-soil.nc <- nc_open("/home/dlebauer/.pecan/dbfiles/soil/hwsd.nc")
+inputdir <- "/home/groups/ebimodeling/" ## biocluster
+#inputdir <- "/home/dlebauer/.pecan/dbfiles/" ## ebi-forecast
 
-cruncep.file <- "/home/dlebauer/.pecan/dbfiles/met/cruncep/1901ts.nc"
-## ncep.file <- "/home/dlebauer/.pecan/dbfiles/met/ncep/all.nc"
-## if(file.exists(cruncep.file)){
-system.time(met.nc <-  nc_open(cruncep.file, readunlim = TRUE))
-## } else if (file.exists(ncep.file)){
-##    met.nc <- nc_open(ncep.file)
-## }
+soil.nc <- nc_open(file.path(inputdir, "soil/global/soil_global_hd_filled.nc"))
+# atmco2.nc <- nc_open(file.path(inputdir, "co2/CO2_Global_HD_v1.nc"))
 
- 
+## met.file <- "/home/dlebauer/.pecan/dbfiles/met/ncep/all.nc"
+met.file <- "/home/dlebauer/.pecan/dbfiles/met/cruncep/1901ts.nc"
+met.nc <-  nc_open(met.file, readunlim = FALSE)
+
 ## Time
 ## if ncep, time is in hours since; cruncep time is in days
 ## time.units <- ncatt_get(met.nc, 'time')$units
