@@ -2,7 +2,7 @@
 
 ## code to run an arbitrary R function
 ## intended to be used to run commands on a remote server
-## e.g.  ssh <machine> -p <package> <function> <args>
+## e.g.  ssh <machine> <package> <function> <args>
 
 args <- commandArgs(trailingOnly = TRUE)
 
