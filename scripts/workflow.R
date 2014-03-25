@@ -1,3 +1,5 @@
+#!/usr/bin/Rscript
+
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
@@ -83,10 +85,7 @@ status.end()
 
 # Run ensemble analysis on model output. 
 status.start("ENSEMBLE`")
-run.ensemble.analysis()
-
-# OPTIONAL: to get an esemble time-series output for the target variables set in the PEcAn.xml file
-#run.ensemble.analysis(plot.timeseries=TRUE)
+run.ensemble.analysis(TRUE)
 status.end()
 
 ### PEcAn workflow run complete
