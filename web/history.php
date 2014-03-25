@@ -80,7 +80,8 @@ $query = "SELECT workflows.id, workflows.folder, workflows.start_date, workflows
          "CONCAT(coalesce(models.model_name, ''), ' r', coalesce(models.revision, '')) AS modelname, models.model_type " .
          "FROM workflows " .
          "LEFT OUTER JOIN sites on workflows.site_id=sites.id " .
-         "LEFT OUTER JOIN models on workflows.model_id=models.id";
+         "LEFT OUTER JOIN models on workflows.model_id=models.id " .
+         "ORDER BY workflows.id DESC";
 $result = $pdo->query($query);
 if (!$result) {
   die('Invalid query: ' . error_database());
