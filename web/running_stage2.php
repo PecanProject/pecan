@@ -72,7 +72,7 @@ switch(checkStatus("MODEL")) {
 		if (isset($params['email'])) {
 			$url = ($_SERVER['HTTPS'] ? "https://" : "http://");
 			$url .= $_SERVER['HTTP_HOST'] . ':' . $_SERVER['SERVER_PORT'];
-			$url .= str_replace("running_stage1.php", "failurealert.php", $_SERVER["SCRIPT_NAME"]);
+			$url .= str_replace("running_stage2.php", "failurealert.php", $_SERVER["SCRIPT_NAME"]);
 			if ($offline) {
 				$url .= "?workflowid=${workflowid}&offline=offline";
 			} else {
