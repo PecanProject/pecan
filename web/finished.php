@@ -237,6 +237,7 @@ foreach(scandir("$folder/out") as $runid) {
 	}
 
 	function updatePFToutput(pft) {
+		$('#pftOutput').empty();
 		$.each(pfts[pft], function(key, value) {   
 		     $('#pftOutput')
 		         .append($("<option></option>")
@@ -246,21 +247,32 @@ foreach(scandir("$folder/out") as $runid) {
 	}
 
 	function updateOutputRun(run) {
+		$('#outfile').empty();
 		$.each(runfile[run], function(key, value) {   
 		     $('#outfile')
 		         .append($("<option></option>")
 //		         .attr("value",key)
 		         .text(value)); 
 		});
+		$('#outyear').empty();
 		$.each(Object.keys(runplot[run]), function(key, value) {
 		     $('#outyear')
 		         .append($("<option></option>")
 //		         .attr("value",key)
 		         .text(value)); 
 		});
+		year = $('#outyear')[0].value;
+		$('#outvar').empty();
+		$.each(runplot[run][year], function(key, value) {
+		     $('#outvar')
+		         .append($("<option></option>")
+		         .attr("value",key)
+		         .text(value)); 
+		});
 	}
 
 	function updateOutputYear(run, year) {
+		$('#outvar').empty();
 		$.each(runplot[run][year], function(key, value) {
 		     $('#outvar')
 		         .append($("<option></option>")
