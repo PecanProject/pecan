@@ -44,8 +44,8 @@ switch(checkStatus("FINISHED")) {
 	case 0:
 		$nextenabled="disabled=\"disabled\"";
 		header( "refresh:5" );
-		exit;	
-	// MODEL is complete
+		break;	
+	// FINISHED is complete
 	case 1:
 		$nextenabled="";
 		if ($offline) {
@@ -59,7 +59,7 @@ switch(checkStatus("FINISHED")) {
 		if (isset($params['email'])) {
 			$url = ($_SERVER['HTTPS'] ? "https://" : "http://");
 			$url .= $_SERVER['HTTP_HOST'] . ':' . $_SERVER['SERVER_PORT'];
-			$url .= str_replace("running_stage1.php", "failurealert.php", $_SERVER["SCRIPT_NAME"]);
+			$url .= str_replace("running_stage3.php", "failurealert.php", $_SERVER["SCRIPT_NAME"]);
 			if ($offline) {
 				$url .= "?workflowid=${workflowid}&offline=offline";
 			} else {
