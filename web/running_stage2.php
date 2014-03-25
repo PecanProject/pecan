@@ -260,7 +260,15 @@ function status($token) {
         return $data[3];
       }
       if ($token == "MODEL") {
-        return exec("awk '/Simulating/ { print $3 }' $folder/workflow_stage2.Rout | tail -1");
+		foreach(scandir("$folder/out") as $runid) {
+			if (!is_dir("$folder/out/$runid") || ($runid == ".") || ($runid == "..")) {
+				continue;
+			}
+			if (file_exists("$folder/out/$runid/logfile.txt")) {
+				$running = "$runid - " . exec("awk '/Simulating/ { print $3 }' $folder/out/$runid/logfile.txt | tail -1");
+			}
+		}
+		return $running;
       }
       return "Running";
     }
