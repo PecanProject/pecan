@@ -8,6 +8,17 @@
  * http://opensource.ncsa.illinois.edu/license.html
  */
 
+// Check login
+require("common.php");
+open_database();
+if ($authentication) {
+	if (!check_login()) {
+		header( "Location: index.php");
+		close_database();
+		exit;
+	}
+}
+
 # boolean parameters
 $userok=isset($_REQUEST['userok']);
 $offline=isset($_REQUEST['offline']);
@@ -53,25 +64,21 @@ if (isset($_REQUEST['email'])) {
 	$email=$_REQUEST['email'];
 }
 
-// system parameters
-require("system.php");
-
-// database parameters
-$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
-
 // get site information
-$result = $pdo->query("SELECT * FROM sites WHERE sites.id=$siteid");
-if (!$result) {
+$stmt = $pdo->prepare("SELECT * FROM sites WHERE sites.id=?");
+if (!$stmt->execute(array($siteid))) {
 	die('Invalid query: ' . error_database());
 }
-$siteinfo = $result->fetch(PDO::FETCH_ASSOC);
+$siteinfo = $stmt->fetch(PDO::FETCH_ASSOC);
+$stmt->closeCursor();
 
 // get model info
-$result = $pdo->query("SELECT * FROM models WHERE models.id=$modelid");
-if (!$result) {
+$stmt = $pdo->prepare("SELECT * FROM models WHERE models.id=?");
+if (!$stmt->execute(array($modelid))) {
 	die('Invalid query: ' . error_database());
 }
-$model = $result->fetch(PDO::FETCH_ASSOC);
+$model = $stmt->fetch(PDO::FETCH_ASSOC);
+$stmt->closeCursor();
 
 ?>
 <!DOCTYPE html>
@@ -86,19 +93,6 @@ $model = $result->fetch(PDO::FETCH_ASSOC);
 <script type="text/javascript" src="http://www.google.com/jsapi"></script>
 <?php }?>
 <script type="text/javascript">
-	window.onresize = resize;
-	window.onload = resize;
-	
-    function resize() {
-        if ($("#stylized").height() < $(window).height()) {
-            $("#stylized").height($(window).height() - 5);
-        } else {
-            $("#stylized").height(Math.max($("#stylized").height(), $("#output").height()));
-        }
-        $("#output").height($("#stylized").height());
-        $("#output").width($(window).width() - $('#stylized').width() - 5);
-    }
-
 	function validate() {
 		// check PFTs
 		if ($("#pft").val() == null) {
@@ -214,7 +208,7 @@ $model = $result->fetch(PDO::FETCH_ASSOC);
 		<h1>Selected Site</h1>
 		<p>Set parameters for the run.</p>
 
-		<form id="formprev" method="POST" action="selectsite.php">
+		<form id="formprev" method="POST" action="02-modelsite.php">
 <?php if ($offline) { ?>
 			<input name="offline" type="hidden" value="offline">
 <?php } ?>
@@ -224,7 +218,7 @@ $model = $result->fetch(PDO::FETCH_ASSOC);
 			<input type="hidden" name="siteid" value="<?=$siteid?>" />
 		</form>
 
-		<form id="formnext" method="POST" action="runpecan.php">
+		<form id="formnext" method="POST" action="04-runpecan.php">
 <?php if ($offline) { ?>
 			<input name="offline" type="hidden" value="on">
 <?php } ?>
@@ -318,11 +312,11 @@ if ($model["model_type"] == "ED2") {
 			print "			<option value='{$row['file_id']}'>{$row['name']}</option>\n";
 		}
 	}
-	if ($psscss == "FIA") {
-		print "			<option value='FIA' selected>Use FIA</option>\n";
-	} else {
-		print "			<option value='FIA'>Use FIA</option>\n";
-	}
+	// if ($psscss == "FIA") {
+	// 	print "			<option value='FIA' selected>Use FIA</option>\n";
+	// } else {
+	// 	print "			<option value='FIA'>Use FIA</option>\n";
+	// }
 	print "			</select>\n";
 	print "			<div class=\"spacer\"></div>\n";
 }
@@ -342,16 +336,28 @@ if ($model["model_type"] == "ED2") {
 			<input id="next" type="button" value="Next" onclick="nextStep();" <?php if (!$userok) echo "disabled" ?>/>		
 			<div class="spacer"></div>
 		</form>
+<?php
+	if (check_login()) {
+		echo "<p></p>";
+		echo "Logged in as " . get_user_name();
+		echo "<a href=\"index.php?logout\" id=\"logout\">logout</a>";
+	}
+?>		
 	</div>
 	<div id="output">
 		name : <b><?=$siteinfo["sitename"]?></b><br/>
 		address : <?=$siteinfo["city"]?>, <?=$siteinfo["country"]?><br/>
 		location : <?=$siteinfo["lat"]?>, <?=$siteinfo["lon"]?><br/>
 	</div>
+	<div id="footer">
+		The <a href="http://pecanproject.org">PEcAn project</a> is supported by the National Science Foundation
+		(ABI #1062547, ARC #1023477) and the <a href="http://www.energybiosciencesinstitute.org/">Energy
+		Biosciences Institute</a>.
+	</div>
 </div>
 </body>
 </html>
 
 <?php 
-$pdo = null;
+close_database();
 ?>
