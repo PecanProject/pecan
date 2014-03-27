@@ -80,7 +80,7 @@ $files = array_unique($files);
 
 	function saveFile() {
 		var name="run/" + $('#run')[0].value + "/" + $('#file')[0].value;
-		jQuery.post("savefile.php", {"name":name, "workflowid":<?=$workflowid?>, "data":$('#editor').val()}, function(data) {
+		jQuery.post("savefile.php", {"name":name, "workflowid":<?php echo $workflowid; ?>, "data":$('#editor').val()}, function(data) {
 			console.log(data);
 			$("#save").attr("disabled", "disabled");
 			modified=false;
@@ -94,7 +94,7 @@ $files = array_unique($files);
 		$("#save").attr("disabled", "disabled");
 		modified=false;      
 		var name="run/" + $('#run')[0].value + "/" + $('#file')[0].value;
-		jQuery.post("loadfile.php", {"name":name, "workflowid":<?=$workflowid?>}, function(data) {
+		jQuery.post("loadfile.php", {"name":name, "workflowid":<?php echo $workflowid; ?>}, function(data) {
 			$("#editor").val(data);
 		});
 	}
@@ -121,7 +121,7 @@ $files = array_unique($files);
 <?php if ($offline) { ?>
 			<input name="offline" type="hidden" value="offline">
 <?php } ?>
-			<input type="hidden" name="workflowid" value="<?=$workflowid?>" />
+			<input type="hidden" name="workflowid" value="<?php echo $workflowid; ?>" />
 			<h1>Advanced Edit</h1>
 			<p>Select a file to edit.</p>
 

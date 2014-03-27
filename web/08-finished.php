@@ -201,7 +201,7 @@ foreach(scandir("$folder/out") as $runid) {
 	}
 
 	function showRunYearVarPlot(run, year, variable) {
-		var url="dataset.php?workflowid=<?=$workflowid?>&type=plot&run=" + run + "&year=" + year + "&var=" + variable + "&width=" + ($("#output").width()-10) + "&height=" + ($("#output").height() - 10);
+		var url="dataset.php?workflowid=<?php echo $workflowid; ?>&type=plot&run=" + run + "&year=" + year + "&var=" + variable + "&width=" + ($("#output").width()-10) + "&height=" + ($("#output").height() - 10);
 		$("#output").html("<img src=\"" + url + "\">");		
 	}
 
@@ -210,7 +210,7 @@ foreach(scandir("$folder/out") as $runid) {
 	}
 
 	function show(name) {
-		var url="dataset.php?workflowid=<?=$workflowid?>&type=file&name=" + name;
+		var url="dataset.php?workflowid=<?php echo $workflowid; ?>&type=file&name=" + name;
 		if (endsWith(url, ".xml")) {
 			jQuery.get(url, {}, function(data) {
 				setOuput((new XMLSerializer()).serializeToString(data));
@@ -361,7 +361,7 @@ foreach(scandir("$folder/out") as $runid) {
 
 			<h2>PEcAn Files</h2>
 			<select id="log">
-				<?=$logs?>
+				<?php echo $logs; ?>
 			</select>
 			<div class="spacer"></div>
 			<input id="home" type="button" value="Show File" onclick="showPEcAnOutput($('#log')[0].value);" />

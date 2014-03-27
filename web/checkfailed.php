@@ -78,7 +78,7 @@ if ($authentication) {
 	}
 ?>		
 			</div>
-			<div id="output"><?= $_REQUEST['msg'] ?></div>
+			<div id="output"><?php echo $_REQUEST['msg']; ?></div>
 			<div id="footer">
 				The <a href="http://pecanproject.org">PEcAn project</a> is supported by the National Science Foundation
 				(ABI #1062547, ARC #1023477) and the <a href="http://www.energybiosciencesinstitute.org/">Energy

@@ -111,15 +111,15 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
     $url="08-finished.php";
   }
 ?>        
-        <div id="row" <?=$style?>>
-          <div id="cell"><a href="<?=$url?>?workflowid=<?=$row['id']?>"><?=$row['id']?></a></div>
-          <div id="cell"><?=$row['sitename']?></div>
-          <div id="cell"><?=$row['modelname']?></div>
-          <div id="cell"><?=$row['model_type']?></div>
-          <div id="cell"><?=$row['start_date']?></div>
-          <div id="cell"><?=$row['end_date']?></div>
-          <div id="cell"><?=$row['started_at']?></div>
-          <div id="cell"><?=$row['finished_at']?></div>
+        <div id="row" <?php echo $style; ?>>
+          <div id="cell"><a href="<?php echo $url; ?>?workflowid=<?php echo $row['id']; ?>"><?php echo $row['id']; ?></a></div>
+          <div id="cell"><?php echo $row['sitename']; ?></div>
+          <div id="cell"><?php echo $row['modelname']; ?></div>
+          <div id="cell"><?php echo $row['model_type']; ?></div>
+          <div id="cell"><?php echo $row['start_date']; ?></div>
+          <div id="cell"><?php echo $row['end_date']; ?></div>
+          <div id="cell"><?php echo $row['started_at']; ?></div>
+          <div id="cell"><?php echo $row['finished_at']; ?></div>
         </div>
 <?php
 }
