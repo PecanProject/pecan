@@ -57,24 +57,8 @@ status.start("MODEL")
 start.model.runs(settings$model$name, settings$bety$write)
 status.end()
 
-# Convert output
-status.start("OUTPUT")
-convert.outputs(settings$model$name, settings)
-
-# special for web, print all nc vars
-data(mstmip_vars, package="PEcAn.utils")
-for (runid in readLines(con=file.path(settings$rundir, "runs.txt"))) {
-  for(file in list.files(path=file.path(settings$modeloutdir, runid), pattern="*.nc")) {
-    nc <- nc_open(file.path(settings$modeloutdir, runid, file))
-    for(v in sort(names(nc$var))) {
-      name <- mstmipvar(v, silent=TRUE)['longname']
-      cat(paste(v, name), file=file.path(settings$modeloutdir, runid, paste(file, "var", sep=".")), append=TRUE, sep="\n")
-    }
-    nc_close(nc)
-  }
-}
-
 # Get results of model runs
+status.start("OUTPUT")
 get.model.output(settings$model$name, settings)
 status.end()
 
@@ -84,7 +68,7 @@ run.sensitivity.analysis()
 status.end()
 
 # Run ensemble analysis on model output. 
-status.start("ENSEMBLE`")
+status.start("ENSEMBLE")
 run.ensemble.analysis(TRUE)
 status.end()
 
