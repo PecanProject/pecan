@@ -81,7 +81,7 @@ close_database();
 					<?php if ($offline) { ?>
 						<input name="offline" type="hidden" value="on">
 					<?php } ?>
-					<input type="hidden" name="workflowid" value="<?=$workflowid?>" />
+					<input type="hidden" name="workflowid" value="<?php echo $workflowid; ?>" />
 				</form>
 
 				<span id="error" class="small">&nbsp;</span>
@@ -110,63 +110,63 @@ close_database();
 					</tr>
 					<tr>
 						<th>fia2ed</th>
-						<td><?=startTime("FIA2ED");?></td>
-						<td><?=endTime("FIA2ED");?></td>
-						<td><?=status("FIA2ED");?></td>
+						<td><?php echo startTime("FIA2ED");; ?></td>
+						<td><?php echo endTime("FIA2ED");; ?></td>
+						<td><?php echo status("FIA2ED");; ?></td>
 					</tr>
 					<tr>
 						<th>query.trait</th>
-						<td><?=startTime("TRAIT");?></td>
-						<td><?=endTime("TRAIT");?></td>
-						<td><?=status("TRAIT");?></td>
+						<td><?php echo startTime("TRAIT");; ?></td>
+						<td><?php echo endTime("TRAIT");; ?></td>
+						<td><?php echo status("TRAIT");; ?></td>
 					</tr>
 					<tr>
 						<th>meta.analysis</th>
-						<td><?=startTime("META");?></td>
-						<td><?=endTime("META");?></td>
-						<td><?=status("META");?></td>
+						<td><?php echo startTime("META");; ?></td>
+						<td><?php echo endTime("META");; ?></td>
+						<td><?php echo status("META");; ?></td>
 					</tr>
 					<tr>
 						<th>write.config</th>
-						<td><?=startTime("CONFIG");?></td>
-						<td><?=endTime("CONFIG");?></td>
-						<td><?=status("CONFIG");?></td>
+						<td><?php echo startTime("CONFIG");; ?></td>
+						<td><?php echo endTime("CONFIG");; ?></td>
+						<td><?php echo status("CONFIG");; ?></td>
 					</tr>
 					<tr>
 						<th>advanced.edit</th>
-						<td><?=startTime("EDIT");?></td>
-						<td><?=endTime("EDIT");?></td>
-						<td><?=status("EDIT");?></td>
+						<td><?php echo startTime("EDIT");; ?></td>
+						<td><?php echo endTime("EDIT");; ?></td>
+						<td><?php echo status("EDIT");; ?></td>
 					</tr>
 					<tr>
 						<th>model</th>
-						<td><?=startTime("MODEL");?></td>
-						<td><?=endTime("MODEL");?></td>
-						<td><?=status("MODEL");?></td>
+						<td><?php echo startTime("MODEL");; ?></td>
+						<td><?php echo endTime("MODEL");; ?></td>
+						<td><?php echo status("MODEL");; ?></td>
 					</tr>
 					<tr>
 						<th>output.conversion</th>
-						<td><?=startTime("OUTPUT");?></td>
-						<td><?=endTime("OUTPUT");?></td>
-						<td><?=status("OUTPUT");?></td>
+						<td><?php echo startTime("OUTPUT");; ?></td>
+						<td><?php echo endTime("OUTPUT");; ?></td>
+						<td><?php echo status("OUTPUT");; ?></td>
 					</tr>
 					<tr>
 						<th>ensemble.analysis</th>
-						<td><?=startTime("ENSEMBLE");?></td>
-						<td><?=endTime("ENSEMBLE");?></td>
-						<td><?=status("ENSEMBLE");?></td>
+						<td><?php echo startTime("ENSEMBLE");; ?></td>
+						<td><?php echo endTime("ENSEMBLE");; ?></td>
+						<td><?php echo status("ENSEMBLE");; ?></td>
 					</tr>
 					<tr>
 						<th>sensitivity.analysis</th>
-						<td><?=startTime("SENSITIVITY");?></td>
-						<td><?=endTime("SENSITIVITY");?></td>
-						<td><?=status("SENSITIVITY");?></td>
+						<td><?php echo startTime("SENSITIVITY");; ?></td>
+						<td><?php echo endTime("SENSITIVITY");; ?></td>
+						<td><?php echo status("SENSITIVITY");; ?></td>
 					</tr>
 					<tr>
 						<th>finished</th>
-						<td><?=startTime("FINISHED");?></td>
-						<td><?=endTime("FINISHED");?></td>
-						<td><?=status("FINISHED");?></td>
+						<td><?php echo startTime("FINISHED");; ?></td>
+						<td><?php echo endTime("FINISHED");; ?></td>
+						<td><?php echo status("FINISHED");; ?></td>
 					</tr>
 				</table>
 				<hr/>

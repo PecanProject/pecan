@@ -274,23 +274,23 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
 			<h1>Select host</h1>
 			<p>Based on the host selected certain sites and models
 			will be available. In the current version you can only
-			pick as host <b><?=$hostname?></b></p>
+			pick as host <b><?php echo $hostname; ?></b></p>
 
 			<label>Host:</label>
 			<select name="hostname" id="hostname" onChange="hostSelected();">
 				<option value="">All Sites</option>
-				<?=$hosts?>
+				<?php echo $hosts; ?>
 			</select>
 			<div class="spacer"></div>
 
 			<label>Model:</label>
 			<select name="modelid" id="modelid" onChange="modelSelected();">
-				<option selected value="<?= $modelid ?>"><?=$modelid?></option>
+				<option selected value="<?php echo $modelid; ?>"><?php echo $modelid; ?></option>
 			</select>
 			<div class="spacer"></div>
 
 			<label>Site:</label>
-			<input name="siteid" id="siteid" type="hidden" value="<?=$siteid?>"/>
+			<input name="siteid" id="siteid" type="hidden" value="<?php echo $siteid; ?>"/>
 			<input name="sitename" id="sitename" type="text" readonly value="No site selected" />
 			<div class="spacer"></div>
 

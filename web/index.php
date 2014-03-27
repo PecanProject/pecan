@@ -69,7 +69,7 @@ if ($authentication) {
 			<div class="spacer"></div>
 
 			<p></p>
-			<span id="error" class="small"><?= $error ?></span>
+			<span id="error" class="small"><?php echo $error; ?></span>
 			<input id="next" type="button" value="Login" onclick="login();" />
 			
 			<div class="spacer"></div>
