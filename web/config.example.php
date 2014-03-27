@@ -7,6 +7,13 @@ $db_username="bety";
 $db_password="bety";
 $db_database="bety";
 
+# Require username/password
+$authentication=true;
+
+# Used for authentication, needs to be same as ruby
+$REST_AUTH_SITE_KEY="thisisnotasecret";
+$REST_AUTH_DIGEST_STRETCHES =10;
+
 # List of allowed hosts
 $hostlist=array(gethostname());
 
@@ -23,10 +30,4 @@ $output_folder="/home/carya/output/";
 $ed_veg="/home/carya/oge2OLD/OGE2_";
 $ed_soil="/home/carya/faoOLD/FAO_";
 $ed_inputs="/home/carya/ed_inputs/";
-
-function error_database() {
-	global $pdo;
-	$tmp = $pdo->errorInfo();
-	return $tmp[2];
-}
 ?>

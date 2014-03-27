@@ -8,8 +8,23 @@
  * http://opensource.ncsa.illinois.edu/license.html
  */
 
+// Check login
+require("common.php");
+open_database();
+if ($authentication) {
+	if (!check_login()) {
+		header( "Location: index.php");
+		close_database();
+		exit;
+	}
+}
+
 # boolean parameters
-$offline=isset($_REQUEST['offline']);
+if (isset($_REQUEST['offline'])) {
+	$offline="&offline=offline";
+} else {
+	$offline="";
+}
 
 // runid
 if (!isset($_REQUEST['workflowid'])) {
@@ -17,17 +32,14 @@ if (!isset($_REQUEST['workflowid'])) {
 }
 $workflowid=$_REQUEST['workflowid'];
 
-// database parameters
-require("system.php");
-$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
-
 // get run information
-$query = "SELECT folder, params FROM workflows WHERE workflows.id=$workflowid";
-$result = $pdo->query($query);
-if (!$result) {
+$stmt = $pdo->prepare("SELECT folder, params FROM workflows WHERE workflows.id=?");
+if (!$stmt->execute(array($workflowid))) {
 	die('Invalid query: ' . error_database());
 }
-$workflow = $result->fetch(PDO::FETCH_ASSOC);
+$workflow = $stmt->fetch(PDO::FETCH_ASSOC);
+$stmt->closeCursor();
+
 $folder = $workflow['folder'];
 $params = eval("return ${workflow['params']};");
 
@@ -38,61 +50,14 @@ if (file_exists($folder . DIRECTORY_SEPARATOR . "STATUS")) {
 	$status=array();
 }
 
-// jump to right place if need be
-if (checkStatus("FINISHED") == 1) {
-	if ($offline) {
-		header( "Location: finished.php?workflowid=$workflowid&offline=offline");
-		exit;
-	} else {
-		header( "Location: finished.php?workflowid=$workflowid");
-		exit;
-	}
-}
-if (checkStatus("MODEL") == 1) {
-	if ($offline) {
-		header( "Location: running_stage3.php?workflowid=$workflowid&offline=offline");
-		exit;
-	} else {
-		header( "Location: running_stage3.php?workflowid=$workflowid");
-		exit;
-	}
-}
-
-
-// check the global status
-switch(checkStatus("CONFIG")) {
-	// No ERROR, and no endtime yet
-	case 0:
-		$nextenabled="disabled=\"disabled\"";
-		header( "refresh:5" );
-		break;
-	// CONFIG is complete
-	case 1:
-		$nextenabled="disabled=\"disabled\"";
-		$location = "Location: ";
-		if (isset($params['advanced_edit'])) {
-			if ($params['modeltype'] == 'BIOCRO') {
-				$location .= "sugarcane/index.php";
-			} else {
-				$location .= "advanced_edit.php";
-			}
-		} else {
-			chdir($folder);
-			pclose(popen('R_LIBS_USER="' . $pecan_install . '" R CMD BATCH workflow_stage2.R &', 'r'));
-			$location .= "running_stage2.php";
-		}
-		$location .= "?workflowid=$workflowid";
-		if ($offline) {
-			$location .= "&offline=offline";	
-		}
-		header($location);
-		exit;
-    // ERROR occurred
-	case 2:
+// quick checks for error and finished
+foreach ($status as $line) {
+	$data = explode("\t", $line);
+	if ((count($data) >= 4) && ($data[3] == 'ERROR')) {
 		if (isset($params['email'])) {
-			$url = ($_SERVER['HTTPS'] ? "https://" : "http://");
+			$url = (isset($_SERVER['HTTPS']) ? "https://" : "http://");
 			$url .= $_SERVER['HTTP_HOST'] . ':' . $_SERVER['SERVER_PORT'];
-			$url .= str_replace("running_stage1.php", "failurealert.php", $_SERVER["SCRIPT_NAME"]);
+			$url .= str_replace("05-running.php", "failurealert.php", $_SERVER["SCRIPT_NAME"]);
 			if ($offline) {
 				$url .= "?workflowid=${workflowid}&offline=offline";
 			} else {
@@ -100,15 +65,26 @@ switch(checkStatus("CONFIG")) {
 			}
 			mail($params['email'], "Workflow has failed", "You can find the results on $url");
 		}
-		$nextenabled="";
 		$pdo->query("UPDATE workflows SET finished_at=NOW() WHERE id=${workflowid} AND finished_at IS NULL");
-		if ($offline) {
-			header( "Location: failurealert.php?workflowid=$workflowid&offline=offline");
-		} else {
-			header( "Location: failurealert.php?workflowid=$workflowid");
-		}
+		close_database();
+		header( "Location: failurealert.php?workflowid=${workflowid}${offline}");
 		exit;
+	}
+   	if ($data[0] == "EDIT" && count($data) < 3) {
+		header( "Location: 06-edit.php?workflowid=${workflowid}${offline}");
+		close_database();
+		exit;
+    }
+   	if ($data[0] == "FINISHED" && count($data) >= 3) {
+		header( "Location: 08-finished.php?workflowid=${workflowid}${offline}");
+		close_database();
+		exit;
+    }
 }
+close_database();
+
+# get read for refresh
+header( "refresh:5" );
 
 ?>
 <!DOCTYPE html>
@@ -120,15 +96,6 @@ switch(checkStatus("CONFIG")) {
 <link rel="stylesheet" type="text/css" href="sites.css" />
 <script type="text/javascript" src="jquery-1.7.2.min.js"></script>
 <script type="text/javascript">
-	window.onresize = resize;
-	window.onload = resize;
-	
-	function resize() {
-    	$("#stylized").height($(window).height() - 5);
-    	$("#output").height($(window).height() - 1);
-    	$("#output").width($(window).width() - $('#stylized').width() - 5);
-	}
-
 	function prevStep() {
 		$("#formprev").submit();
 	}
@@ -144,32 +111,30 @@ switch(checkStatus("CONFIG")) {
 		<h1>Job is running</h1>
 		<p>Job is currently executing, please wait.</p>
 		
-		<form id="formprev" method="POST" action="selectdata.php">
-<?php if ($offline) { ?>
+		<form id="formprev" method="POST" action="02-modelsite.php">
+<?php if ($offline != "") { ?>
 			<input name="offline" type="hidden" value="offline">
 <?php } ?>
-			<?php foreach ($params as $k => $v) {
-				if (is_array($v)) {
-					foreach($v as $x) {
-						echo "<input type=\"hidden\" name=\"${k}[]\" value=\"${x}\" />\n";
-					}
-				} else {
-					echo "<input type=\"hidden\" name=\"${k}\" value=\"${v}\" />\n";
-				}
-			} ?>
 		</form>
 		
-		<form id="formnext" method="POST" action="finished.php">
-<?php if ($offline) { ?>
+		<form id="formnext" method="POST" action="07-finished.php">
+<?php if ($offline != "") { ?>
 			<input name="offline" type="hidden" value="offline">
 <?php } ?>
 			<input type="hidden" name="workflowid" value="<?=$workflowid?>" />
 		</form>
 
 		<span id="error" class="small">&nbsp;</span>
-		<input id="prev" type="button" value="Prev" onclick="prevStep();" />
-		<input id="next" type="button" value="Next" onclick="nextStep();" <?=$nextenabled?>/>		
+		<input id="prev" type="button" value="Start Over" onclick="prevStep();" />
+		<input id="next" type="button" value="Results" onclick="nextStep();" />
 		<div class="spacer"></div>
+<?php
+	if (check_login()) {
+		echo "<p></p>";
+		echo "Logged in as " . get_user_name();
+		echo "<a href=\"index.php?logout\" id=\"logout\">logout</a>";
+	}
+?>		
 	</div>
 	<div id="output">
 	<h2>Execution Status</h2>
@@ -205,18 +170,36 @@ switch(checkStatus("CONFIG")) {
 			<td><?=status("CONFIG");?></td>
 		</tr>
 		<tr>
+			<th>advanced.edit</th>
+			<td><?=startTime("EDIT");?></td>
+			<td><?=endTime("EDIT");?></td>
+			<td><?=status("EDIT");?></td>
+		</tr>
+		<tr>
 			<th>model</th>
 			<td><?=startTime("MODEL");?></td>
 			<td><?=endTime("MODEL");?></td>
 			<td><?=status("MODEL");?></td>
 		</tr>
-				<tr>
+		<tr>
 			<th>output.conversion</th>
 			<td><?=startTime("OUTPUT");?></td>
 			<td><?=endTime("OUTPUT");?></td>
 			<td><?=status("OUTPUT");?></td>
 		</tr>
-				<tr>
+		<tr>
+			<th>ensemble.analysis</th>
+			<td><?=startTime("ENSEMBLE");?></td>
+			<td><?=endTime("ENSEMBLE");?></td>
+			<td><?=status("ENSEMBLE");?></td>
+		</tr>
+		<tr>
+			<th>sensitivity.analysis</th>
+			<td><?=startTime("SENSITIVITY");?></td>
+			<td><?=endTime("SENSITIVITY");?></td>
+			<td><?=status("SENSITIVITY");?></td>
+		</tr>
+		<tr>
 			<th>finished</th>
 			<td><?=startTime("FINISHED");?></td>
 			<td><?=endTime("FINISHED");?></td>
@@ -224,29 +207,16 @@ switch(checkStatus("CONFIG")) {
 		</tr>
 	</table>
 	</div>
+	<div id="footer">
+		The <a href="http://pecanproject.org">PEcAn project</a> is supported by the National Science Foundation
+		(ABI #1062547, ARC #1023477) and the <a href="http://www.energybiosciencesinstitute.org/">Energy
+		Biosciences Institute</a>.
+	</div>
 </div>
 </body>
 </html>
 
 <?php 
-$pdo = null;
-
-function checkStatus($token) {
-  	global $status;
-	foreach ($status as $line) {
-		$data = explode("\t", $line);
-		if ((count($data) >= 4) && ($data[3] == 'ERROR')) {
-			return 2;
-		}
-	}
-	
-	if (endTime($token) != "") {
-		return 1;
-	}
-		
-	return 0;
-}
-
 function startTime($token) {
   global $status;
   foreach ($status as $line) {
@@ -280,11 +250,19 @@ function status($token) {
         return $data[3];
       }
       if ($token == "MODEL") {
-        return exec("awk '/Simulating/ { print $3 }' $folder/workflow_stage2.Rout | tail -1");
+		foreach(scandir("$folder/out") as $runid) {
+			if (!is_dir("$folder/out/$runid") || ($runid == ".") || ($runid == "..")) {
+				continue;
+			}
+			if (file_exists("$folder/out/$runid/logfile.txt")) {
+				$running = "$runid - " . exec("awk '/Simulating/ { print $3 }' $folder/out/$runid/logfile.txt | tail -1");
+			}
+		}
+		return $running;
       }
       return "Running";
     }
   }
-  return "Waiting";
+  return "";
 }
 ?>
