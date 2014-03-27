@@ -293,9 +293,9 @@ copy("workflow.R", "${folder}/workflow.R");
 # start the actual workflow
 chdir($folder);
 if ($advanced_edit) {
-	pclose(popen('R_LIBS_USER="' . $pecan_install . '" R CMD BATCH --advanced  workflow.R &', 'r'));	
+	pclose(popen('R_LIBS_USER="' . $pecan_install . '" ' . $Rbinary . ' CMD BATCH --advanced  workflow.R &', 'r'));	
 } else {
-	pclose(popen('R_LIBS_USER="' . $pecan_install . '" R CMD BATCH workflow.R &', 'r'));	
+	pclose(popen('R_LIBS_USER="' . $pecan_install . '" ' . $Rbinary . ' CMD BATCH workflow.R &', 'r'));	
 }
 
 #done

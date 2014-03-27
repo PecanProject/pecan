@@ -7,6 +7,9 @@ $db_username="bety";
 $db_password="bety";
 $db_database="bety";
 
+# R binary
+$Rbinary="/usr/bin/R";
+
 # Require username/password
 $authentication=true;
 

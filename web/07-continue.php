@@ -42,7 +42,7 @@ fclose($fh);
 
 # start the workflow again
 chdir($folder);
-pclose(popen('R_LIBS_USER="' . $pecan_install . '" R CMD BATCH --continue workflow.R &', 'r'));
+pclose(popen('R_LIBS_USER="' . $pecan_install . '" ' . $Rbinary . ' CMD BATCH --continue workflow.R &', 'r'));
 
 #done
 header("Location: 05-running.php?workflowid=${workflowid}${offline}");
