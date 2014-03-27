@@ -271,6 +271,7 @@ $query="SELECT inputs.file_id, name, start_date, end_date" .
        " WHERE inputs.site_id=$siteid" .
        " AND inputs.file_id=dbfiles.container_id" .
        " AND machines.hostname='${_REQUEST['hostname']}'" .
+       " AND dbfiles.container_type='Input'" .
        " AND dbfiles.machine_id=machines.id";
 
 if (($model["model_type"] == "ED2") || ($model["model_type"] == "SIPNET")) {
