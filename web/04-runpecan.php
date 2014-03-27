@@ -7,8 +7,15 @@
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
  */
-require("system.php");
-$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
+require("common.php");
+open_database();
+if ($authentication) {
+	if (!check_login()) {
+		header( "Location: index.php");
+		close_database();
+		exit;
+	}
+}
 
 # boolean parameters
 $userok=isset($_REQUEST['userok']);
@@ -281,20 +288,23 @@ fclose($fh);
 #}
 
 # copy workflow
-copy("workflow_stage1.R", "${folder}/workflow_stage1.R");
-copy("workflow_stage2.R", "${folder}/workflow_stage2.R");
-copy("workflow_stage3.R", "${folder}/workflow_stage3.R");
+copy("workflow.R", "${folder}/workflow.R");
 
 # start the actual workflow
 chdir($folder);
-pclose(popen('R_LIBS_USER="' . $pecan_install . '" R CMD BATCH workflow_stage1.R &', 'r'));
+if ($advanced_edit) {
+	pclose(popen('R_LIBS_USER="' . $pecan_install . '" R CMD BATCH --advanced  workflow.R &', 'r'));	
+} else {
+	pclose(popen('R_LIBS_USER="' . $pecan_install . '" R CMD BATCH workflow.R &', 'r'));	
+}
 
 #done
 if ($offline) {
-	header("Location: running_stage1.php?workflowid=$workflowid&offline=offline");
+	header("Location: 05-running.php?workflowid=$workflowid&offline=offline");
 } else {
-	header("Location: running_stage1.php?workflowid=$workflowid");
+	header("Location: 05-running.php?workflowid=$workflowid");
 }
-$pdo = null;
+
+close_database();
 ?>
 
