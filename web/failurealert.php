@@ -1,26 +1,44 @@
 <?php
-	$workflowid = $_REQUEST['workflowid'];
-	$offline = isset($_REQUEST['offline']);
+/**
+ * Copyright (c) 2012 University of Illinois, NCSA.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the 
+ * University of Illinois/NCSA Open Source License
+ * which accompanies this distribution, and is available at
+ * http://opensource.ncsa.illinois.edu/license.html
+ */
 
-	require("system.php");
-	$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
-	
-	// get run information
-	$query = "SELECT params, folder FROM workflows WHERE workflows.id=$workflowid";
-	$result = $pdo->query($query);
-	if (!$result) {
-		die('Invalid query: ' . error_database());
+// Check login
+require("common.php");
+open_database();
+if ($authentication) {
+	if (!check_login()) {
+		header( "Location: index.php");
+		close_database();
+		exit;
 	}
-	$workflow = $result->fetch(PDO::FETCH_ASSOC);
-	$folder = $workflow['folder'];
-	$params = eval("return ${workflow['params']};");	#reassemble the array since it was stored in php code
+}
 
-	// check result
-	$status=file($folder . DIRECTORY_SEPARATOR . "STATUS");
-	if ($status === FALSE) {
-		$status = array();
-	}
-	$pdo = null;
+$workflowid = $_REQUEST['workflowid'];
+$offline = isset($_REQUEST['offline']);
+
+// get run information
+$query = "SELECT params, folder FROM workflows WHERE workflows.id=$workflowid";
+$result = $pdo->query($query);
+if (!$result) {
+	die('Invalid query: ' . error_database());
+}
+$workflow = $result->fetch(PDO::FETCH_ASSOC);
+$folder = $workflow['folder'];
+$params = eval("return ${workflow['params']};");	#reassemble the array since it was stored in php code
+
+// check result
+$status=file($folder . DIRECTORY_SEPARATOR . "STATUS");
+if ($status === FALSE) {
+	$status = array();
+}
+close_database();
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -29,17 +47,6 @@
 		<link rel="stylesheet" type="text/css" href="sites.css" />
 		<script type="text/javascript" src="jquery-1.7.2.min.js"></script>
 		<script type="text/javascript">
-			window.onresize = resize;
-			window.onload = resize;
-			
-	        function resize() {
-	                if ($("#stylized").height() < $(window).height()) {
-	                        $("#stylized").height($(window).height() - 5);
-	                }
-	                $("#output").height($(window).height() - 1);
-	                $("#output").width($(window).width() - $('#stylized').width() - 5);
-	        }
-
 			function prevStep() {
 				$("#formprev").submit();
 			}
@@ -53,9 +60,9 @@
 		<div id="wrap">
 			<div id="stylized">
 				<h1>There was an error executing the job.</h1>
-				<p>Click "Continue" if you wish to proceed to the results page regardless or "Back" to change parameters and re-run.</p>
+				<p>Click "Finished" if you wish to proceed to the results page regardless or "Back" to change parameters and re-run.</p>
 
-				<form id="formprev" method="POST" action="selectdata.php">
+				<form id="formprev" method="POST" action="03-inputs.php">
 					<?php if ($offline) { ?>
 						<input name="offline" type="hidden" value="on">
 					<?php } ?>
@@ -70,7 +77,7 @@
 					} ?>
 				</form>
 				
-				<form id="formnext" method="POST" action="finished.php">
+				<form id="formnext" method="POST" action="08-finished.php">
 					<?php if ($offline) { ?>
 						<input name="offline" type="hidden" value="on">
 					<?php } ?>
@@ -79,13 +86,21 @@
 
 				<span id="error" class="small">&nbsp;</span>
 				<input id="prev" type="button" value="Back" onclick="prevStep();" />
-				<input id="next" type="button" value="Continue" onclick="nextStep();" />
+				<input id="next" type="button" value="Finished" onclick="nextStep();" />
 				<div class="spacer"></div>
+<?php
+	if (check_login()) {
+		echo "<p></p>";
+		echo "Logged in as " . get_user_name();
+		echo "<a href=\"index.php?logout\" id=\"logout\">logout</a>";
+	}
+?>		
 			</div>
 			<div id="output">
 				<p>The partial progress of the job is shown below, along with the logfile of the last stage to execute.</p>
 				<br>
 
+				<h2>Execution Status</h2>
 				<table border=1>
 					<tr>
 						<th>Stage Name</th>
@@ -118,18 +133,36 @@
 						<td><?=status("CONFIG");?></td>
 					</tr>
 					<tr>
+						<th>advanced.edit</th>
+						<td><?=startTime("EDIT");?></td>
+						<td><?=endTime("EDIT");?></td>
+						<td><?=status("EDIT");?></td>
+					</tr>
+					<tr>
 						<th>model</th>
 						<td><?=startTime("MODEL");?></td>
 						<td><?=endTime("MODEL");?></td>
 						<td><?=status("MODEL");?></td>
 					</tr>
-							<tr>
+					<tr>
 						<th>output.conversion</th>
 						<td><?=startTime("OUTPUT");?></td>
 						<td><?=endTime("OUTPUT");?></td>
 						<td><?=status("OUTPUT");?></td>
 					</tr>
-							<tr>
+					<tr>
+						<th>ensemble.analysis</th>
+						<td><?=startTime("ENSEMBLE");?></td>
+						<td><?=endTime("ENSEMBLE");?></td>
+						<td><?=status("ENSEMBLE");?></td>
+					</tr>
+					<tr>
+						<th>sensitivity.analysis</th>
+						<td><?=startTime("SENSITIVITY");?></td>
+						<td><?=endTime("SENSITIVITY");?></td>
+						<td><?=status("SENSITIVITY");?></td>
+					</tr>
+					<tr>
 						<th>finished</th>
 						<td><?=startTime("FINISHED");?></td>
 						<td><?=endTime("FINISHED");?></td>
@@ -140,91 +173,16 @@
 			 	<h2>Output from PEcAn</h2>
 			 	<textarea id="log" cols="80" rows="10" readonly="readonly">
 					<?php
-				  	foreach(scandir($folder . DIRECTORY_SEPARATOR) as $file) {
-				  		if (preg_match("/^workflow_stage.*\.Rout$/", $file) === 1) {
-				  			parselog($folder . DIRECTORY_SEPARATOR . $file);
-				  		}
-					}
+		  			parselog($folder . DIRECTORY_SEPARATOR . "workflow.Rout");
 					?>
 			 	</textarea>
 			</div>
+			<div id="footer">
+				The <a href="http://pecanproject.org">PEcAn project</a> is supported by the National Science Foundation
+				(ABI #1062547, ARC #1023477) and the <a href="http://www.energybiosciencesinstitute.org/">Energy
+				Biosciences Institute</a>.
+			</div>
 		</div>
-
-		<?php 
-		function checkStatus($token) {
-		  	global $status;
-			foreach ($status as $line) {
-				$data = explode("\t", $line);
-				if ((count($data) >= 4) && ($data[3] == 'ERROR')) {
-					return 2;
-				}
-			}
-			
-			if (endTime($token) != "") {
-				return 1;
-			}
-				
-			return 0;
-		}
-
-		function startTime($token) {
-		  global $status;
-		  foreach ($status as $line) {
-		    $data = explode("\t", $line);
-		    if ($data[0] == $token) {
-		      return $data[1];
-		    }
-		  }
-		  return "";
-		}
-
-		function endTime($token) {
-		  global $status;
-		  foreach ($status as $line) {
-		    $data = explode("\t", $line);
-		    if ($data[0] == $token && count($data) >= 3) {
-		      return $data[2];
-		    }
-		  }
-		  return "";
-		}
-
-		function status($token) {
-		  global $folder;
-		  global $status;
-
-		  foreach ($status as $line) {
-		    $data = explode("\t", $line);
-		    if ($data[0] == $token) {
-		      if (count($data) >= 4) {
-		        return $data[3];
-		      }
-		      if ($token == "MODEL") {
-		        return exec("awk '/Simulating/ { print $3 }' $folder/workflow_stage2.Rout | tail -1");
-		      }
-		      return "Running";
-		    }
-		  }
-		  return "Waiting";
-		}
-
-		function parselog($filename)
-		{
-			// Open the file
-			$f = fopen($filename, "rb");
-			if ($f === false) {
-				return "file does not exist.";
-			}
-
-			// read the file line by line
-			while (($buffer = fgets($f, 4096)) !== false) {
-				print($buffer);
-			}
-
-			// Close file and return
-			fclose($f);
-		}
-		?>
 
 		<script>
 			var logtext = document.getElementById('log'); 
@@ -232,3 +190,71 @@
 		</script>
 	<body>
 <html>
+
+<?php 
+function startTime($token) {
+  global $status;
+  foreach ($status as $line) {
+    $data = explode("\t", $line);
+    if ($data[0] == $token) {
+      return $data[1];
+    }
+  }
+  return "";
+}
+
+function endTime($token) {
+  global $status;
+  foreach ($status as $line) {
+    $data = explode("\t", $line);
+    if ($data[0] == $token && count($data) >= 3) {
+      return $data[2];
+    }
+  }
+  return "";
+}
+
+function status($token) {
+  global $folder;
+  global $status;
+
+  foreach ($status as $line) {
+    $data = explode("\t", $line);
+    if ($data[0] == $token) {
+      if (count($data) >= 4) {
+        return $data[3];
+      }
+      if ($token == "MODEL") {
+		foreach(scandir("$folder/out") as $runid) {
+			if (!is_dir("$folder/out/$runid") || ($runid == ".") || ($runid == "..")) {
+				continue;
+			}
+			if (file_exists("$folder/out/$runid/logfile.txt")) {
+				$running = "$runid - " . exec("awk '/Simulating/ { print $3 }' $folder/out/$runid/logfile.txt | tail -1");
+			}
+		}
+		return $running;
+      }
+      return "Running";
+    }
+  }
+  return "";
+}
+
+function parselog($filename)
+{
+	// Open the file
+	$f = fopen($filename, "rb");
+	if ($f === false) {
+		return "file does not exist.";
+	}
+
+	// read the file line by line
+	while (($buffer = fgets($f, 4096)) !== false) {
+		print($buffer);
+	}
+
+	// Close file and return
+	fclose($f);
+}
+?>

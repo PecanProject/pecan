@@ -7,6 +7,17 @@
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
  */
+// Check login
+require("common.php");
+open_database();
+if ($authentication) {
+  if (!check_login()) {
+    header( "Location: index.php");
+    close_database();
+    exit;
+  }
+}
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -17,19 +28,6 @@
 <link rel="stylesheet" type="text/css" href="sites.css" />
 <script type="text/javascript" src="jquery-1.7.2.min.js"></script>
 <script type="text/javascript">
-  window.onresize = resize;
-  window.onload = resize;
-  
-  function resize() {
-      if ($("#stylized").height() < $(window).height()) {
-         $("#stylized").height($(window).height()-5);
-      } else {
-        $("#stylized").height(Math.max($("#stylized").height(), $("#output").height()));
-      }
-      $("#output").height($("#stylized").height());
-      $("#output").width($(window).width() - $('#stylized').width() - 5);
-  }
-
   function prevStep() {
     $("#formprev").submit();
   }
@@ -42,7 +40,7 @@
 <body>
   <div id="wrap">
     <div id="stylized">
-      <form id="formnext" method="POST" action="index.php" />
+      <form id="formnext" method="POST" action="01-introduction.php" />
 <!--
       <h1>Filters</h1>
       <p>Filter executions showing on the right.</p>
@@ -55,6 +53,13 @@
       <p></p>
       <input id="prev" type="button" value="Start Over" onclick="nextStep();"/>
       <div class="spacer"></div>
+<?php
+  if (check_login()) {
+    echo "<p></p>";
+    echo "Logged in as " . get_user_name();
+    echo "<a href=\"index.php?logout\" style=\"float: right;\">logout</a>";
+  }
+?>    
     </div>
     <div id="output">
       <h2>Execution Status</h2>
@@ -70,10 +75,6 @@
           <div id="header">Finished</div>
         </div>
 <?php
-// database parameters
-require("system.php");
-$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
-
 // get run information
 $query = "SELECT workflows.id, workflows.folder, workflows.start_date, workflows.end_date, workflows.started_at, workflows.finished_at, " .
          "CONCAT(coalesce(sites.sitename, ''), ', ', coalesce(sites.city, ''), ', ', coalesce(sites.state, ''), ', ', coalesce(sites.country, '')) AS sitename, " .
@@ -89,7 +90,7 @@ if (!$result) {
 while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
   // check result
   $style="";
-  $url="running_stage1.php";
+  $url="05-running.php";
   if (file_exists($row['folder'] . DIRECTORY_SEPARATOR . "STATUS")) {
     $status=file($row['folder'] . DIRECTORY_SEPARATOR . "STATUS");
     foreach ($status as $line) {
@@ -107,7 +108,7 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
   }
   if ($style == "") {
     $style="style='background: #BBFFBB; color: black'";
-    $url="finished.php";
+    $url="08-finished.php";
   }
 ?>        
         <div id="row" <?=$style?>>
@@ -122,9 +123,14 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
         </div>
 <?php
 }
-$pdo = null;
+close_database();
 ?>
       </div>
+    </div>
+    <div id="footer">
+      The <a href="http://pecanproject.org">PEcAn project</a> is supported by the National Science Foundation
+      (ABI #1062547, ARC #1023477) and the <a href="http://www.energybiosciencesinstitute.org/">Energy
+      Biosciences Institute</a>.
     </div>
   </div>
 </body>  
