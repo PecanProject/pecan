@@ -90,7 +90,7 @@ $stmt->closeCursor();
 <link rel="stylesheet" type="text/css" href="sites.css" />
 <script type="text/javascript" src="jquery-1.7.2.min.js"></script>
 <?php if (!$offline) {?>
-<script type="text/javascript" src="http://www.google.com/jsapi"></script>
+<script type="text/javascript" src="//www.google.com/jsapi"></script>
 <?php }?>
 <script type="text/javascript">
 	function validate() {
