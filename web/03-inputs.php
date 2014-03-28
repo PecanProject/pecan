@@ -266,10 +266,10 @@ if (($model["model_type"] == "ED2") || ($model["model_type"] == "BIOCRO")) {
 }
 
 # query to get a file for a host
-$query="SELECT inputs.file_id, name, start_date, end_date" .
+$query="SELECT inputs.id, name, start_date, end_date" .
        " FROM inputs, dbfiles, machines" .
        " WHERE inputs.site_id=$siteid" .
-       " AND inputs.file_id=dbfiles.container_id" .
+       " AND inputs.id=dbfiles.container_id" .
        " AND machines.hostname='${_REQUEST['hostname']}'" .
        " AND dbfiles.container_type='Input'" .
        " AND dbfiles.machine_id=machines.id";
