@@ -274,7 +274,7 @@ fwrite($fh, "  </run>" . PHP_EOL);
 if ($email != "") {
 	$url = ($_SERVER['HTTPS'] ? "https://" : "http://");
 	$url .= $_SERVER['HTTP_HOST'] . ':' . $_SERVER['SERVER_PORT'];
-	$url .= str_replace("runpecan.php", "finished.php", $_SERVER["SCRIPT_NAME"]);
+	$url .= str_replace("04-runpecan.php", "08-finished.php", $_SERVER["SCRIPT_NAME"]);
 	if ($offline) {
 		$url .= "?workflowid=${workflowid}&offline=offline";
 	} else {
