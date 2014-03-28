@@ -269,10 +269,8 @@ if (($model["model_type"] == "ED2") || ($model["model_type"] == "BIOCRO")) {
 $query="SELECT inputs.id, name, start_date, end_date" .
        " FROM inputs, dbfiles, machines" .
        " WHERE inputs.site_id=$siteid" .
-       " AND inputs.id=dbfiles.container_id" .
-       " AND machines.hostname='${_REQUEST['hostname']}'" .
-       " AND dbfiles.container_type='Input'" .
-       " AND dbfiles.machine_id=machines.id";
+       " AND dbfiles.container_type='Input' AND dbfiles.container_id=inputs.id" .
+       " AND machines.hostname='${_REQUEST['hostname']}' AND machines.id=dbfiles.machine_id";
 
 if (($model["model_type"] == "ED2") || ($model["model_type"] == "SIPNET")) {
 	print "			<label>Weather Data file</label>\n";
@@ -291,7 +289,7 @@ if (($model["model_type"] == "ED2") || ($model["model_type"] == "SIPNET")) {
 	}
 	while ($row = @$result->fetch(PDO::FETCH_ASSOC)){
 		$row['name']="Weather " . substr($row['start_date'], 0, 4) . "-" . substr($row['end_date'], 0, 4);
-		print "				<option value='{$row['file_id']}'>{$row['name']}</option>\n";
+		print "				<option value='{$row['id']}'>{$row['name']}</option>\n";
 	}
 	print "			</select>\n";
 	print "			<div class=\"spacer\"></div>\n";
@@ -307,10 +305,10 @@ if ($model["model_type"] == "ED2") {
 		die('Invalid query: ' . error_database());
 	}
 	while ($row = @$result->fetch(PDO::FETCH_ASSOC)){
-		if ($psscss == $row['file_id']) {
-			print "			<option value='{$row['file_id']}' selected>{$row['name']}</option>\n";
+		if ($psscss == $row['id']) {
+			print "			<option value='{$row['id']}' selected>{$row['name']}</option>\n";
 		} else {
-			print "			<option value='{$row['file_id']}'>{$row['name']}</option>\n";
+			print "			<option value='{$row['id']}'>{$row['name']}</option>\n";
 		}
 	}
 	// if ($psscss == "FIA") {

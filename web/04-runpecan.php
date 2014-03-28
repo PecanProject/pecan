@@ -71,7 +71,10 @@ if (($modeltype == "ED2") || ($modeltype == "SIPNET")) {
 		die("Need a weather file.");
 	}
 	$met=$_REQUEST['met'];	
-    $query="SELECT file_path, file_name, start_date, end_date FROM inputs, dbfiles, machines WHERE inputs.site_id=${siteid} AND inputs.file_id=${met} AND dbfiles.container_id=inputs.file_id AND machines.hostname='${hostname}' AND dbfiles.machine_id=machines.id;";
+    $query="SELECT file_path, file_name, start_date, end_date FROM inputs, dbfiles, machines WHERE " .
+           " inputs.site_id=${siteid} AND inputs.id=${met}" .
+           " AND dbfiles.container_id=inputs.id AND dbfiles.container_type='Input'" .
+           " AND machines.hostname='${hostname}' AND machines.id=dbfiles.machine_id";
     $result = $pdo->query($query);
     if (!$result) {
       print_r(error_database());
@@ -93,7 +96,10 @@ if ($modeltype == "ED2") {
 	}
 	$psscss=$_REQUEST['psscss'];
 	if($psscss != "FIA") {
-	    $query="SELECT file_path, file_name FROM inputs, dbfiles, machines WHERE inputs.site_id=${siteid} AND inputs.file_id=${psscss} AND dbfiles.container_id=inputs.file_id AND machines.hostname='${hostname}' AND dbfiles.machine_id=machines.id;";
+ 	    $query="SELECT file_path, file_name FROM inputs, dbfiles, machines WHERE" .
+                   " inputs.site_id=${siteid} AND inputs.id=${psscss}" .
+                   " AND dbfiles.container_id=inputs.id AND dbfiles.container_type='Input'" .
+                   " AND machines.hostname='${hostname}' AND machines.id=dbfiles.machine_id";
 	    $result = $pdo->query($query);
 	    if (!$result) {
 	      print_r(error_database());
