@@ -28,10 +28,6 @@ if (!isset($_REQUEST['workflowid'])) {
 }
 $workflowid=$_REQUEST['workflowid'];
 
-// database parameters
-require("system.php");
-$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
-
 // get run information
 $query = "SELECT * FROM workflows WHERE workflows.id=$workflowid";
 $result = $pdo->query($query);
