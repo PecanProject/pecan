@@ -1,3 +1,4 @@
 export(check.settings)
+export(clean.settings)
 export(read.settings)
 import(XML)

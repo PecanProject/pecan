@@ -1,8 +1,22 @@
-# Extract global NCEP data to one file per grid point
+# Combining NCEP files
+
+## _New method_ 
+
+one big netCDF file to take advantage of parallel IO
+
+[concatenate inputs across variables and years `concatenate_ncep.sh`](https://github.com/PecanProject/pecan/blob/master/modules/data.atmosphere/inst/scripts/ncep/concatenate_ncep.sh)
 
 
+## _Old method_ 
 
-## extract ncep data to csv:
+Extract global NCEP data to one file per grid point. Many small files = slow server
+
+This method is inefficient and does not scale. New approach is to take advantage of netcdf concatenation and parallel IO. Retained for posterity.
+
+NOTE: This "works" but at the global scale creates a lot of files an I have been working on just creating a single netCDF file and extracting data directly. But this is useful for smaller regions.
+
+
+### extract ncep data to csv:
 
 `Globalmet.R` takes global yearly met data and output one file (1948-2012) per lat x lon grid point.
 
@@ -14,32 +28,8 @@ To submit each gridpoint as a separate job:
 ./qsubncep.sh
 ```
 
-Outputs:
 
-* Specific Humidity (provides daily mean, min, max)
-** shum:long_name = "mean Daily Specific Humidity at 2 m" ;
-** shum:units = "kg/kg" ;
-* Relative Humidity
-** rhum:long_name = "mean Daily relative humidity at sigma level 995" ;
-** rhum:units = "%" ;
-* Precipitation
-** prate:long_name = "mean Daily Precipitation Rate at surface" ;
-** prate:units = "Kg/m^2/s" ;
-* Wind
-** uwnd:long_name = "mean Daily u-wind at 10 m" ;
-** uwnd:units = "m/s" ;
-** vwnd:long_name = "mean Daily v-wind at 10 m" ;
-** vwnd:units = "m/s" ;
-** wind = sqrt(vwnd^2 + uwnd^2)
-* Temperature
-** air:long_name = "mean Daily Air temperature at 2 m" ;
-** air:units = "degK" ;
-* Solar Radiation
-** dswrf:long_name = "mean Daily Downward Solar Radiation Flux at surface" ;
-** dswrf:units = "W/m^2" ;
-
-
-## convert ncep csv daily to hourly inputs:
+### convert ncep csv daily to hourly inputs:
 
 `met2csv.R` converts daily to hourly, uwind and vwind to wind, and converts some units. 
 To submit each gridpoint as a separate job:

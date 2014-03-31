@@ -2,7 +2,7 @@
 \alias{query.traits}
 \title{Query trait data}
 \usage{
-  query.traits(spstr, priors, con = NULL)
+query.traits(spstr, priors, con = NULL)
 }
 \arguments{
   \item{spstr}{string of species id's from trait database}
@@ -13,11 +13,11 @@
   \item{con}{}
 }
 \value{
-  dataframe with trait data
+dataframe with trait data
 }
 \description{
-  Query available trait data associated with a given pft
-  and a list of traits
+Query available trait data associated with a given pft and
+a list of traits
 }
 \examples{
 \dontrun{
@@ -28,9 +28,9 @@ trait.data <- query.traits(spstr, trvec)
 }
 }
 \author{
-  David LeBauer, Carl Davidson, Shawn Serbin
+David LeBauer, Carl Davidson, Shawn Serbin
 }
 \seealso{
-  \code{\link{query.trait.data}}
+\code{\link{query.trait.data}}
 }
 

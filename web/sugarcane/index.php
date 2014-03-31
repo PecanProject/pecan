@@ -16,16 +16,16 @@ if (!isset($_REQUEST['workflowid'])) {
 $workflowid=$_REQUEST['workflowid'];
 
 // database parameters
-require("../dbinfo.php");
-$connection=open_database();
+require("../system.php");
+$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
 
 // get run information
 $query = "SELECT folder FROM workflows WHERE workflows.id=$workflowid";
-$result = mysql_query($query);
+$result = $pdo->query($query);
 if (!$result) {
-    die('Invalid query: ' . mysql_error());
+    die('Invalid query: ' . error_database());
 }
-$workflow = mysql_fetch_assoc($result);
+$workflow = $result->fetch(PDO::FETCH_ASSOC);
 $folder = $workflow['folder'];
  
 $runFolder = $folder . DIRECTORY_SEPARATOR . "run";
@@ -36,7 +36,7 @@ $lastRun = $runs[count($runs)-2];
 #$dataXml="/home/pecan/pecan/web/sugarcane/default/default.xml";
 $dataXml=array_shift(glob($workflow["folder"] . "/run/" . $lastRun . "/config.xml"));
 
-close_database($connection);
+$pdo = null;
 
 // END PEcAn additions
 

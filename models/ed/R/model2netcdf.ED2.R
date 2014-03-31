@@ -165,7 +165,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
       dz <- dz[dz != 0.0]
       
       ## out <- add(getHdf5Data(ncT, 'TOTAL_AGB,1,row, yrs[y]) ## AbvGrndWood
-      out <- add(getHdf5Data(ncT, 'AVG_BDEAD')*0.7,1,row, yrs[y]) ## AbvGrndWood
+      out <- add(getHdf5Data(ncT, 'AVG_BDEAD'),1,row, yrs[y]) ## AbvGrndWood
       out <- add(getHdf5Data(ncT, 'AVG_PLANT_RESP'),2,row, yrs[y]) ## AutoResp
       out <- add(-999,3,row, yrs[y]) ## CarbPools
       out <- add(getHdf5Data(ncT, 'AVG_CO2CAN'),4,row, yrs[y]) ## CO2CAS
@@ -401,9 +401,12 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
 
     ## write ALMA
     nc <- nc_create(file.path(outdir, paste(yrs[y], "nc", sep=".")), var)
+    varfile <- file(file.path(outdir, paste(yrs[y], "nc", "var", sep=".")), "w")
     for(i in 1:length(var)) {
       ncvar_put(nc,var[[i]],out[[i]])
+      cat(paste(var[[i]]$name, var[[i]]$longname), file=varfile, sep="\n")
     }
+    close(varfile)
     nc_close(nc)
   }  ## end year loop
 }  ## end model2netcdf.ED2

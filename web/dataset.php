@@ -7,6 +7,18 @@
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
  */
+
+// Check login
+require("common.php");
+open_database();
+if ($authentication) {
+	if (!check_login()) {
+		close_database();
+		header('HTTP/1.1 403 Unauthorized');
+		exit;
+	}
+}
+
 // runid
 if (!isset($_REQUEST['workflowid'])) {
   die("Need a workflowid.");
@@ -18,18 +30,13 @@ if (!isset($_REQUEST['type'])) {
 }
 $type=$_REQUEST['type'];
 
-// database parameters
-require("system.php");
-require("dbinfo.php");
-$connection=open_database();
-
 // get run information
 $query = "SELECT folder FROM workflows WHERE workflows.id=${workflowid}";
-$result = mysql_query($query);
+$result = $pdo->query($query);
 if (!$result) {
-	die('Invalid query: ' . mysql_error());
+	die('Invalid query: ' . error_database());
 }
-$run = mysql_fetch_assoc($result);
+$run = $result->fetch(PDO::FETCH_ASSOC);
 $folder = str_replace("//", "/", $run['folder']);
 
 // return dataset
@@ -71,7 +78,7 @@ switch ($type) {
 			die("Need var.");
 		}
 		$var=$_REQUEST['var'];
-        $datafile=$folder . "/out/" . $run . "/" . $year . ".nc";
+		$datafile=$folder . "/out/" . $run . "/" . $year . ".nc";
 		$width=600;
 		if (isset($_REQUEST['width']) && ($_REQUEST['width'] > $width)) {
 			$width=$_REQUEST['width'];
@@ -81,8 +88,8 @@ switch ($type) {
 			$height=$_REQUEST['height'];
 		}
 		$mime = "image/png";
-		$file = tempnam('','');
-		shell_exec("R_LIBS_USER='${pecan_install}' PECANSETTINGS='$folder/pecan.xml' R CMD BATCH --vanilla '--args $datafile $year $var $width $height $file' plot.netcdf.R $folder/plot.out");
+		$file = tempnam(sys_get_temp_dir(),'plot') . ".png";
+		shell_exec("R_LIBS_USER='${pecan_install}' PECANSETTINGS='$folder/pecan.xml' ${Rbinary} CMD BATCH --vanilla '--args $datafile $year $var $width $height $file' plot.netcdf.R /tmp/plot.out");
 		break;
 		
 	default:
@@ -90,7 +97,7 @@ switch ($type) {
 }
 
 if (!file_exists($file)) {
-	die("Invalid file name specified.");			
+	die("Invalid file name specified ${file}.");			
 }
 if ($mime != "") {
 	header("Content-type: $mime");

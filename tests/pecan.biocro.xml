@@ -2,13 +2,6 @@
 <pecan>
   <outdir>pecan</outdir>
 
-  <database>
-    <username>bety</username>
-    <password>bety</password>
-    <dbname>bety</dbname>
-    <host>localhost</host>
-  </database>
-
   <pfts>
     <pft>
       <name>biocro.salix</name>

@@ -3,18 +3,21 @@
 ## TODO: modify write.configs to enable regional runs
 ##       bounding box comes from from sites geom
 ##       grid size specified in config file
+.libPaths(c("/home/dlebauer/lib/R", "/usr/local/R-2.15/lib64/R/library"))
 library(PEcAn.data.atmosphere)
 library(BioCro)
 
-arg   <- commandArgs(trailingOnly = TRUE)
-if(length(arg) == 0){
-    lat <- 40.08
-    lon <- -88.23
-} else {
-    lat <- arg[1]
-    lon <- arg[2]
-}
-outdir <- "/home/dlebauer/analysis/globaltest"    
+## arg   <- commandArgs(trailingOnly = TRUE)
+
+## if(length(arg) == 0){
+##     lat <- 40.08
+##     lon <- -88.23
+## } else {
+##     lat <- arg[1]
+##     lon <- arg[2]
+## }
+
+outdir <- "/home/dlebauer/.pecan/demo/"
 ## library(PEcAn.DB)
 
 ## todo replace following with database queries
@@ -22,10 +25,10 @@ outdir <- "/home/dlebauer/analysis/globaltest"
 ## TODO allow specification of grid size
 ## 
 
-soil.nc <- nc_open("/home/scratch/pecan/soil/hwsd.nc")
+soil.nc <- nc_open("/home/dlebauer/.pecan/dbfiles/soil/hwsd.nc")
 
-cruncep.file <- "/home/scratch/pecan/met/cruncep/1990.nc"
-## ncep.file <- "/home/scratch/pecan/met/ncep/all.nc"
+cruncep.file <- "/home/dlebauer/.pecan/dbfiles/met/cruncep/1901ts.nc"
+## ncep.file <- "/home/dlebauer/.pecan/dbfiles/met/ncep/all.nc"
 ## if(file.exists(cruncep.file)){
 system.time(met.nc <-  nc_open(cruncep.file, readunlim = TRUE))
 ## } else if (file.exists(ncep.file)){
@@ -75,7 +78,7 @@ cruncep_nc2dt <- function(lat, lon, met.nc){
         stop(paste("chosen lat:", lat, "and  lon:", lon, " is in the ocean"))
     } else if (mask > 0){
         for(var in variables){
-            print(var)
+            ## TODO check if vars can be sent as vector
             vars[[var]] <- as.numeric(ncvar_get(nc = met.nc,
                                                 varid = var,
                                                 start = c(loni, lati, 1),
@@ -85,16 +88,15 @@ cruncep_nc2dt <- function(lat, lon, met.nc){
     
     result <- as.data.table(vars)
     result$wind <- result[,list(wind = sqrt(uwind^2 + vwind^2))]
-    if(!result[doy == max(doy)], hour < 23]
     return(result)   
 }
 
-if(!file.exists(file.path(outdir, "result.RData"))){
-    system.time(result <- cruncep_nc2dt(lat = 40, lon = -88, met.nc = met.nc))
-    save(result, file = file.path(outdir, "result.RData"))
-} else {
-    load(file.path(outdir, "result.RData"))
-}
+#if(!file.exists(file.path(outdir, "result.RData"))){
+#system.time(result <- cruncep_nc2dt(lat = 40, lon = -88, met.nc = met.nc))
+#    save(result, file = file.path(outdir, "result.RData"))
+#} else {
+#    load(file.path(outdir, "result.RData"))
+#}
 ##' convert PAR to PPFD
 ##'
 ##' Converts photosynthetically active radiation (PAR, units of Watts / m2) to
@@ -187,11 +189,15 @@ cruncep_hourly <- function(result, lat){
 
                                                             
     new.result <- cbind(new.date, as.data.table(hourly.result))#[date <= max(result$date),]
+    
+    if(new.result[,list(h = length(unique(hour))), by = c("year", "doy")][,all(unique(h) != 24)]){
+        print(cruncep.file)
+        print(new.result[,unique(year)])
+        stop("some days don't have 24 hours")
+    }
     return(new.result)
 }
 
-new.result <- cruncep_hourly(result, lat = lat)
-save(new.result, file = file.path(outdir, "new.result.RData"))    
 qair2rh <- function(qair, temp, press = 1013.25){
     es <-  6.112 * exp((17.67 * temp)/(temp + 243.5))
     e <- qair * press / (0.378 * qair + 0.622)
@@ -228,10 +234,13 @@ cruncep_dt2weather <- function(weather = result){
     return(x)
 }
 
-weather <- cruncep_dt2weather(new.result)
-## TODO dump as .RData file in BioCro format
-##      
-save(weather, file = file.path(outdir, "weather.RData"))
+get.weather <- function(lat, lon, met.nc = met.nc){
+    if(!is.land(lat, lon)) stop("point is in ocean")
+    result <- cruncep_nc2dt(lat = lat, lon = lon, met.nc = met.nc)
+    new.result <- cruncep_hourly(result, lat = lat)
+    save(new.result, file = file.path(outdir, "new.result.RData"))    
+    weather <- cruncep_dt2weather(new.result)
+}
 
 get.soil <- function(lat, lon, soil.nc = soil.nc){
     
@@ -272,13 +281,13 @@ get.cruncep <- function(lat, lon, start.date = NA, end.date = NA){
     return(weather)
 }
 
-run.biocro <- function(lat, lon){
+run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = soil.nc){
     ## get soil data
     ## abox <- get.latlonbox(lati = lati, loni = loni, Lat = Lat, Lon = Lon)
     ## soil <- get.hwsd.box(abox, con = con)
     if(is.land(lat, lon)){
-        soil.type <- get.soil(lat, lon, soil.nc = soil.nc)
-        #weather <- get.weather(lat, lon)
+        soil.type <- 6# get.soil(lat, lon, soil.nc = soil.nc)
+        weather <- get.weather(lat, lon, met.nc = met.nc)
         result <- list()
         years <- unique(weather$year)
         for(yeari in years){
@@ -309,22 +318,34 @@ run.biocro <- function(lat, lon){
         } else if (yeari > min(years)){
             resultDT <- rbind(resultDT, result.yeari)
         }
-        result <- resultDT
+        result <- data.table(cbind(lat = lat, lon = lon, resultDT))
     } else {
         result <- NULL
     }
     return(result)
 }
 
-out <- run.biocro(lat, lon)
-save(out, file = file.path(outdir, "output.RData"))
+## out <- run.biocro(lat, lon)
+## save(out, file = file.path(outdir, "output.RData"))
 ## con <- get.hwsdcon()
 
-## for(lat in Lat){
-##     for(lon in Lon){
-##         here <- landmask[lat == Lat[lati] & lon == Lon[loni] - 180,]
-##         if(here$land){
-##             run.biocro(lat, lon)
-##         }
-##     }
-## }
+Lat <- ncvar_get(nc = met.nc, varid = "lat")
+Lon <- ncvar_get(nc = met.nc, varid = "lon")
+
+## for US
+Lat <- Lat[Lat > 32 & Lat < 49]
+Lon <- Lon[Lon < -67 & Lon > -125]
+
+tmp <- data.table(lat = logical(0), lon = logical(0), yield = logical(0))
+for(lat in Lat){
+    for(lon in Lon){
+        land <- is.land(lat, lon)
+        if(land){
+            out <- run.biocro(lat, lon, met.nc = met.nc, soil.nc = soil.nc)
+            save(out, file = file.path(outdir,
+                          paste0(lat, "N", lon, "Woutput.RData")))
+            tmp <- rbind(tmp, last(out)[,list(lat = lat, lon = lon, yield = Stem)])
+        }
+    }
+}
+save(tmp, file = file.path(outdir, "allyields.RData"))
