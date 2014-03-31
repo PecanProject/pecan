@@ -67,6 +67,6 @@ all/inst/tests/$HOME
 *~
 
 # system setup files
-web/system.php
+web/config.php
 web/db/config.php
 >>>>>>> b19ba6aebde1f53fa93b14e8a27e00b60310582e

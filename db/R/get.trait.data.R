@@ -47,9 +47,7 @@ get.trait.data.pft <- function(pft, dbfiles, dbcon,
         for(id in ids) {
           if (!file.exists(file.path(files$file_path[[id]], files$file_name[[id]]))) {
             foundallfiles <- FALSE
-            logger.severe("can not find posterior file: ",
-                          file.path(files$file_path[[id]],
-                                    files$file_name[[id]]))
+            logger.error("can not find posterior file: ", file.path(files$file_path[[id]], files$file_name[[id]]))
           }    
         }
         if (foundallfiles) {
@@ -95,7 +93,8 @@ get.trait.data.pft <- function(pft, dbfiles, dbcon,
 
   ## 3. display info to the console
   logger.info('Summary of Prior distributions for: ', pft$name)
-  logger.info(prior.distns)
+  logger.info(colnames(prior.distns))
+  apply(cbind(rownames(prior.distns), prior.distns), MARGIN=1, logger.info)
 
   ## traits = variables with prior distributions for this pft 
   traits <- rownames(prior.distns) 
@@ -108,7 +107,10 @@ get.trait.data.pft <- function(pft, dbfiles, dbcon,
             file = file.path(pft$outdir, "trait.data.csv"), row.names = FALSE)
   
   logger.info("number of observations per trait for", pft$name)
-  logger.info(ldply(trait.data, nrow))
+  for(t in names(trait.data)){
+    logger.info(nrow(trait.data[[t]]), "observations of", t)
+  }
+    
 
   ### save and store in database all results except those that were there already
   for(file in list.files(path=pft$outdir)) {
@@ -137,14 +139,19 @@ get.trait.data.pft <- function(pft, dbfiles, dbcon,
 ##' @param dbfiles location where previous results are found
 ##' @param database database connection parameters
 ##' @param forceupdate set this to true to force an update, auto will check to see if an update is needed.
+##' @param trait.names list of traits to query. If TRUE, uses trait.dictionary
 ##' @return list of pfts with update posteriorids
 ##' @author David LeBauer, Shawn Serbin
 ##' @export
 ##'
-get.trait.data <- function(pfts, dbfiles, database, forceupdate) {
+get.trait.data <- function(pfts, dbfiles, database, forceupdate,trait.names=NULL) {
   ##---------------- Load trait dictionary --------------#
-  data(trait.dictionary, package = "PEcAn.utils")
-  trait.names <- trait.dictionary$id
+  if(is.logical(trait.names)){
+    if(trait.names){
+      data(trait.dictionary, package = "PEcAn.utils")
+      trait.names <- trait.dictionary$id
+    }
+  }
 
   # process all pfts
   dbcon <- db.open(database)

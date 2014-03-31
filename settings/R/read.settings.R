@@ -37,8 +37,8 @@ check.settings <- function(settings) {
   } else {    
     ## check database settings
     if (is.null(settings$database$driver)) {
-        settings$database$driver <- "MySQL"
-      logger.info("Using", settings$database$driver, "as database driver.")
+      settings$database$driver <- "PostgreSQL"
+      logger.warn("Please specify a database driver; using default 'PostgreSQL'")
     }
         
     # Attempt to load the driver
@@ -48,16 +48,6 @@ check.settings <- function(settings) {
     
     # MySQL specific checks
     if (settings$database$driver == "MySQL") {
-      if (!is.null(settings$database$userid)) {
-        logger.info("userid in database section should be username for MySQL")
-        settings$database$username <- settings$database$userid
-        settings$database$userid <- NULL
-      }
-      if (!is.null(settings$database$user)) {
-        logger.info("user in database section should be username for MySQL")
-        settings$database$username <- settings$database$user
-        settings$database$user <- NULL
-      }
       if (!is.null(settings$database$passwd)) {
         logger.info("passwd in database section should be password for MySQL")
         settings$database$password <- settings$database$passwd
@@ -72,16 +62,6 @@ check.settings <- function(settings) {
     
     # PostgreSQL specific checks
     if (settings$database$driver == "PostgreSQL") {
-      if (!is.null(settings$database$userid)) {
-        logger.info("userid in database section should be user for PostgreSQL")
-        settings$database$user <- settings$database$userid
-        settings$database$userid <- NULL
-      }
-      if (!is.null(settings$database$username)) {
-        logger.info("username in database section should be user for PostgreSQL")
-        settings$database$user <- settings$database$username
-        settings$database$username <- NULL
-      }
       if (!is.null(settings$database$passwd)) {
         logger.info("passwd in database section should be password for PostgreSQL")
         settings$database$password <- settings$database$passwd
@@ -105,21 +85,31 @@ check.settings <- function(settings) {
     } else if(is.null(settings$database$host)){
         settings$database$host <- "localhost"
     }
-    ## finally we can check to see if we can connect to the database
-    ## but only if 
-    if(is.null(settings$database$user)) {
+
+    ## convert strings around from old format to new format
+    if(is.null(settings$database[["user"]])){
+      if (!is.null(settings$database$userid)) {
+        logger.info("'userid' in database section should be 'user'")
+        settings$database$user <- settings$database$userid
+        
+      } else if (!is.null(settings$database$username)) {
+        logger.info("'username' in database section should be 'user'")
+        settings$database$user <- settings$database$username
+    
+      } else {
+        logger.info("no database user specified, using 'bety'")
         settings$database$user <- "bety"
-    }
+      }
+    } 
+    settings$database$userid <- settings$database$username <- NULL
+
+    # fill in defaults for the database
     if(is.null(settings$database$password)) {
         settings$database$password <- "bety"
     }
     if(is.null(settings$database$dbname)) {
         settings$database$dbname <- "bety"
     }
-    if(!db.exists(settings$database)){
-        logger.severe("Invalid Database Settings : ", unlist(settings$database))
-    }
-    logger.info("Database settings:", unlist(settings$database))
   }
   
   # should runs be written to database
@@ -139,10 +129,10 @@ check.settings <- function(settings) {
   if(!is.null(settings$database)){
     require(PEcAn.DB)
     if (!db.exists(params=settings$database, write=settings$bety$write)) {
-      logger.info("Could not connect to the database")
+      logger.severe("Invalid Database Settings : ", unlist(settings$database))
       database <- FALSE
     } else {
-      logger.info("Successfully connected to database")
+      logger.info("Successfully connected to database : ", unlist(settings$database))
       database <- TRUE
     }    
     
@@ -152,7 +142,10 @@ check.settings <- function(settings) {
     if(database){
       versions <- db.query("SELECT version FROM schema_migrations WHERE version >= '20130717162614';", params=settings$database)[['version']]
       if (length(versions) == 0) {
-        logger.severe("Database is out of date, please update the database.")
+        logger.severe("Database is out of date, please update the database;\n",
+                      "\t scripts/update.(psql/mysql).sh scripts will install a new, updated (mysql or psql) database",
+                      "\t but any changes to your current database will be lost",
+                      "otherwise, use Ruby migrations")
       }
       if (length(versions) > 1) {
         logger.warn("Database is more recent than PEcAn expects this could result in PEcAn not working as expected.",
@@ -166,20 +159,20 @@ check.settings <- function(settings) {
   
   # make sure there are pfts defined
   if (is.null(settings$pfts) || (length(settings$pfts) == 0)) {
-    logger.severe("No PFTS specified.")
+    logger.warn("No PFTS specified.")
   }
 
   # check for a run settings
   if (is.null(settings[['run']])) {
-    logger.severe("No Run Settings specified")
+    logger.warn("No Run Settings specified")
   }
 
   # check start/end date are specified and correct
   if (is.null(settings$run$start.date)) {
-    logger.severe("No start.date specified in run section.")
+    logger.warn("No start.date specified in run section.")
   }
   if (is.null(settings$run$end.date)) {
-    logger.severe("No end.date specified in run section.")
+    logger.warn("No end.date specified in run section.")
   }
   startdate <- parse_date_time(settings$run$start.date, "ymd_hms", truncated=3)
   enddate <- parse_date_time(settings$run$end.date, "ymd_hms", truncated=3)
@@ -312,6 +305,8 @@ check.settings <- function(settings) {
           if(nrow(model) == 0) {
             logger.error("There is no record of model_id = ", settings$model$id, "in database")
           }
+        } else {
+          model <- settings$model
         }
       } else if (!is.null(settings$model$name)) {
         model <- db.query(paste0("SELECT * FROM models WHERE (model_name = '", settings$model$name,
@@ -327,16 +322,23 @@ check.settings <- function(settings) {
           model <- model[which.max(ymd_hms(model$updated_at)), ]
         } else if (nrow(model) == 0) {
           logger.warn("Model", settings$model$name, "not in database")
+          model <- list(id=-1, name=settings$model$name)
         }
       } else {
-        logger.severe("no model settings given")
+        logger.warn("no model settings given")
+      }
+    } else {
+      if(!is.null(settings$model$name)){
+        model <- list(id=-1, name=settings$model$name)        
+      } else {
+        model <- list()
       }
     }
     
     if (!is.null(settings$model$name)) {
       model$model_type=settings$model$name
     }
-    if (!is.null(settings$model$name)) {
+    if (!is.null(settings$model$binary)) {
       model$model_path=paste0("hostname:", settings$model$binary)
     }
     if (!is.null(model$model_path)) {
@@ -344,9 +346,19 @@ check.settings <- function(settings) {
     }
     
     # copy data from database into missing fields
+    if (is.null(settings$model$id)) {
+      if ((is.null(model$id) || model$id == "")) {
+        logger.warn("No model id specified.")
+        settings$model$id <- -1
+      } else {
+        settings$model$id <- model$id
+      }
+      logger.info("Setting model id to ", settings$model$id)
+    }
+
     if (is.null(settings$model$name)) {
       if ((is.null(model$model_type) || model$model_type == "")) {
-        logger.severe("No model type specified.")
+        logger.warn("No model type specified.")
       }
       settings$model$name <- model$model_type
       logger.info("Setting model type to ", settings$model$name)
@@ -358,7 +370,7 @@ check.settings <- function(settings) {
     
     if (is.null(settings$model$binary)) {
       if ((is.null(model$binary) || model$binary == "")) {
-        logger.severe("No model binary specified.")
+        logger.warn("No model binary specified.")
       }
       settings$model$binary <- model$binary
       logger.info("Setting model binary to ", settings$model$binary)
@@ -516,7 +528,13 @@ check.settings <- function(settings) {
   }
 
   # check/create the pft folders
-  for (i in 1:sum(names(unlist(settings$pfts)) == "pft.name")) {
+  for (i in 1:length(settings$pfts)) {
+    #if name tag specified not within pft, add it within a pft tag and warn the user
+  
+    #check if name tag within pft
+    if (!"name" %in% names(settings$pfts[i]$pft)) {
+      logger.severe(cat("No name specified for pft of index: ", i, ", please specify name"))
+    }
     if (is.null(settings$pfts[i]$pft$outdir)) {
       settings$pfts[i]$pft$outdir <- file.path(settings$outdir, "pft", settings$pfts[i]$pft$name)
       logger.info("Storing pft", settings$pfts[i]$pft$name, "in", settings$pfts[i]$pft$outdir)      
@@ -532,9 +550,9 @@ check.settings <- function(settings) {
       }
     }
   }
-
   # check for workflow defaults
   if(database){
+    
     if (settings$bety$write) {
       if ("model" %in% names(settings) && !'workflow' %in% names(settings)) {
         con <- db.open(settings$database)
@@ -542,8 +560,18 @@ check.settings <- function(settings) {
           now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
           db.query(paste("INSERT INTO workflows (site_id, model_id, hostname, start_date, end_date, started_at, created_at, folder) values ('",
                          settings$run$site$id, "','", settings$model$id, "', '", settings$run$host$name, "', '",
-                         settings$run$start.date, "', '", settings$run$end.date, "', '", now, "', '", now, "', '", dirname(settings$outdir), "')", sep=''), con)
+                         settings$run$start.date, "', '", settings$run$end.date, "', '", now, "', '", now, "', '", normalizePath(settings$outdir), "')", sep=''), con)
           settings$workflow$id <- db.query(paste("SELECT id FROM workflows WHERE created_at='", now, "';", sep=''), con)[['id']]
+          #check to see if name of each pft in xml file is actually a name of a pft already in database
+          for (i in 1:length(settings$pfts)) {
+            nameExists = db.query( paste( "SELECT COUNT(*) FROM pfts WHERE name = '", 
+                                   settings$pfts[i]$pft$name, "';", sep=''), con)
+        
+            if(!nameExists)
+              #name not in database, throw error
+              logger.severe(cat("Pft name: ", settings$pfts[i]$pft$name, " not found in database"))
+          }
+        
           db.close(con)
         }
       }
@@ -574,7 +602,7 @@ check.settings <- function(settings) {
 ##' a higher priority method.  
 ##' @param inputfile the PEcAn settings file to be used.
 ##' @param outputfile the name of file to which the settings will be
-##'        written inside the outputdir.
+##'        written inside the outputdir. If set to null nothing is saved.
 ##' @return list of all settings as loaded from the XML file(s)
 ##' @export
 ##' @import XML
@@ -592,10 +620,7 @@ check.settings <- function(settings) {
 ##' test.settings.file <- system.file("tests/test.xml", package = "PEcAn.all")
 ##' settings <- read.settings(test.settings.file)
 ##' }
-read.settings <- function(inputfile = NULL, outputfile = "pecan.xml"){
-  if (is.null(outputfile)) {
-    outputfile <- "pecan.xml"
-  }
+read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml"){
   if(inputfile == ""){
     logger.warn("settings files specified as empty string; \n\t\tthis may be caused by an incorrect argument to system.file.")
   }
@@ -637,11 +662,13 @@ read.settings <- function(inputfile = NULL, outputfile = "pecan.xml"){
   settings <- check.settings(xmlToList(xml))
   
   ## save the checked/fixed pecan.xml
-  pecanfile <- file.path(settings$outdir, outputfile)
-  if (file.exists(pecanfile)) {
-    logger.warn(paste("File already exists [", pecanfile, "] file will be overwritten"))
+  if (!is.null(outputfile)) {
+    pecanfile <- file.path(settings$outdir, outputfile)
+    if (file.exists(pecanfile)) {
+      logger.warn(paste("File already exists [", pecanfile, "] file will be overwritten"))
+    }
+    saveXML(listToXml(settings, "pecan"), file=pecanfile)
   }
-  saveXML(listToXml(settings, "pecan"), file=pecanfile)
 
   ## setup Rlib from settings
   if(!is.null(settings$Rlib)){

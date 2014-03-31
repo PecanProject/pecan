@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<pecan>
+  <outdir>pecan</outdir>
+  <pfts>
+    <pft>
+      <name>biocro.misp</name>
+    </pft>
+  </pfts>
+  <meta.analysis>
+    <iter>3000</iter>
+    <random.effects>FALSE</random.effects>
+  </meta.analysis>
+  <ensemble>
+    <size>10</size>
+  </ensemble>
+  <sensitivity.analysis>
+    <quantiles>
+      <sigma>3</sigma>
+      <sigma>2</sigma>
+      <sigma>1</sigma>
+      <sigma>0</sigma>
+      <sigma>-1</sigma>
+      <sigma>-2</sigma>
+      <sigma>-3</sigma>
+    </quantiles>
+    <variable>StemBiom</variable>
+    <start.year>2004</start.year>
+    <end.year>2004</end.year>
+  </sensitivity.analysis>
+  <model>
+    <name>BioCro</name>
+  </model>
+  <run>
+    <site>
+      <id>76</id>
+      <name>EBI Energy farm</name>
+    </site>
+    <start.date>2004-01-01 06:00:00</start.date>
+    <end.date>2005-12-31 05:59:00</end.date>
+    <host> 
+      <name>localhost</name>
+    </host>
+  </run>
+  <database>
+    <user>bety</user>
+    <password>bety</password>
+    <host>localhost</host>
+    <dbname>bety</dbname>
+  </database>
+  <bety>
+    <write>FALSE</write>
+  </bety>
+</pecan>

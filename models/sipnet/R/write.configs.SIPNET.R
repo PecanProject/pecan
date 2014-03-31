@@ -37,7 +37,11 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   }
   
   # create launch script (which will create symlink)
-  jobsh <- readLines(con=system.file("template.job", package = "PEcAn.SIPNET"), n=-1)
+  if (!is.null(settings$run$jobtemplate) && file.exists(settings$run$jobtemplate)) {
+    jobsh <- readLines(con=settings$run$jobtemplate, n=-1)
+  } else {
+    jobsh <- readLines(con=system.file("template.job", package = "PEcAn.SIPNET"), n=-1)
+  }
   
   jobsh <- gsub('@SITE_LAT@', settings$run$site$lat, jobsh)
   jobsh <- gsub('@SITE_LON@', settings$run$site$lon, jobsh)
@@ -45,6 +49,9 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   
   jobsh <- gsub('@OUTDIR@', outdir, jobsh)
   jobsh <- gsub('@RUNDIR@', rundir, jobsh)
+  
+  jobsh <- gsub('@START_DATE@', settings$run$start.date, jobsh)
+  jobsh <- gsub('@END_DATE@', settings$run$end.date, jobsh)
   
   jobsh <- gsub('@BINARY@', settings$model$binary, jobsh)
 

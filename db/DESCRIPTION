@@ -3,7 +3,7 @@ Type: Package
 Title: PEcAn functions used for ecological forecasts and reanalysis
 Version: 1.3.3
 Date: 2013-10-08
-Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Mike Dietze, Carl
+Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Carl
     Davidson, Rob Kooper, Shawn Serbin
 Maintainer: David LeBauer <dlebauer@illinois.edu>
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
@@ -15,19 +15,11 @@ Depends:
     DBI,
     PEcAn.utils
 Suggests:
+    RPostgreSQL,
     RMySQL,
+    RPostgreSQL,
     testthat
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
-Collate:
-    'dbfiles.R'
-    'get.trait.data.R'
-    'query.allom.data.R'
-    'query.base.R'
-    'query.pft.R'
-    'query.prior.R'
-    'query.trait.data.R'
-    'query.traits.R'
-    'utils.R'

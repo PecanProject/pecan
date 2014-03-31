@@ -28,10 +28,10 @@ test_that("check.settings throws error if required content not there", {
 
   s <- settings
   s[['pfts']] <- NULL
-  expect_error(check.settings(s), "No PFTS specified.")  
+  expect_error(check.settings(s))  
   s <- settings
   s[['run']] <- NULL
-  expect_error(check.settings(s), "No Run Settings specified")  
+  expect_error(check.settings(s))  
 
   for(date in c("start.date", "end.date")){
     s <- settings
@@ -50,9 +50,9 @@ test_that("check.settings gives sensible defaults",{
   s2 <- check.settings(s1)
   expect_is(s2$database, "NULL")
   
-  s1$database <- list()
+  s1$database <- settings$database
   s2 <- check.settings(s1)
-  expect_equal(s2$database$driver, "MySQL")
+  #expect_equal(s2$database$driver, "MySQL")
 
   ## dir. paths, with default localhost
   expect_equal(s2$run$host$name, "localhost")
@@ -108,19 +108,62 @@ test_that("sensitivity.analysis and ensemble use other's settings if null",{
 test_that("workflow id is numeric if settings$bety$write = TRUE", {
   s <- settings
   s1 <- check.settings(s)
-  expect_is(s1$workflow$id, "integer")
+  expect_is(s1$workflow$id, c("integer", "numeric"))
   
   s$workflow <- NULL
   s1 <- check.settings(s)
-  expect_is(s1$workflow$id, "integer")
+  expect_is(s1$workflow$id, c("integer", "numeric"))
 })
 
 test_that("check.settings will fail if db does not exist",{
 
   s <- settings
   expect_true(db.exists(s$database))
-  s$database$dbname <- "cookiemonster"
+  s$database$dbname <- "blabla"
   expect_false(db.exists(s$database))
+
   expect_error(check.settings(s$database))
 
+})
+
+
+
+test_that("check.settings handles userid and username properly", {
+
+  s1 <- settings
+  s1$database[["userid"]] <- "bety"
+  s1$database[["user"]] <- NULL
+  s2 <- check.settings(s1)
+  expect_true("user" %in% names(s2$database))  
+  expect_true(!"userid" %in% names(s2$database))
+  
+  s1 <- settings
+  s1$database[["username"]] <- "bety"
+  s1$database[["user"]] <- NULL
+  s2 <- check.settings(s1)
+  expect_true("user" %in% names(s2$database))  
+  expect_true(!"username" %in% names(s2$database))
+  
+  s1 <- settings
+  s1$database[["userid"]] <- "bety"
+  s2 <- check.settings(s1)
+  expect_true("user" %in% names(s2$database))  
+  expect_true(!"userid" %in% names(s2$database))
+  
+  s1 <- settings
+  s1$database[["username"]] <- "bety"
+  s2 <- check.settings(s1)
+  expect_true("user" %in% names(s2$database))  
+  expect_true(!"username" %in% names(s2$database))
+  
+})
+
+test_that("check settings runs with only model$name and no database", {
+  s <- settings
+  s$model <- list(name = "foo")
+  s$database <- NULL
+  s1 <- check.settings(s)
+  expect_identical(s$model$name, s1$model$name)
+  s1$model$name <- NULL
+  s2 <- check.settings(s1)
 })
