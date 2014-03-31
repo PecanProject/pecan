@@ -14,12 +14,12 @@ require(spatsta)
 ##reading points corresponding to centroids of WLEF/Park Falls Ameriflux tower biometry plots
 
 #####################################################################
-# calib_inpath <-"/Users/hardimanb/Desktop/data.remote/biometry" ##For Mac
-calib_inpath <-"/home/bhardima/git/pecan/modules/data.remote/biometry/Link_to_Forest_Biomass_Calibration_Coords"
+calib_inpath <-"/Users/hardimanb/Desktop/data.remote/biometry" ##For Mac
+# calib_inpath <-"/home/bhardima/pecan/modules/data.remote/biometry"
 
-calib_infile <-read.csv(file.path(calib_inpath,"biometry_trimmed.csv"), sep="\t", header=T) #WLEF plots
+calib_infile <-read.csv(file.path(calib_inpath,"biometry_trimmed.csv"), sep=",", header=T) #WLEF plots
 
-coords<-data.frame(calib_infile$easting,calib_infile$northing) #eastings and northings (ChEAS: UTM Zone 15N NAD83)
+coords<-data.frame(calib_infile$easting,calib_infile$northing) #eastings and northings (UTM Zone 15N NAD83)
 
 ##Convert to class=SpatialPoints for palsar extraction (this is used for creating kml files and will be used later on)
 # Sr1<- SpatialPoints(coords,proj4string=CRS("+proj=utm +zone=15 +a=6378137 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"))
