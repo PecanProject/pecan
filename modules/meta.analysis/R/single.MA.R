@@ -19,12 +19,12 @@
 ##' @param tauB  prior on variance parameters
 ##' @param prior 
 ##' @param jag.model.file file to which model will be written 
-##' @param overdispersed 
+##' @param overdispersed if TRUE (default), chains start at overdispersed locations in parameter space (recommended)
 ##' @export
 ##' @return jags.out, an mcmc.object with results of meta-analysis
 ##' @author David LeBauer, Michael C. Dietze
 single.MA <- function(data, j.chains, j.iter, tauA, tauB, prior,
-                      jag.model.file, overdispersed=TRUE){
+                      jag.model.file, overdispersed = TRUE){
   ## Convert R distributions to JAGS distributions
   jagsprior <- r2bugs.distributions(prior)
   jagsprior <- jagsprior[, c('distn', 'parama', 'paramb', 'n')]

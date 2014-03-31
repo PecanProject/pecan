@@ -23,7 +23,7 @@
 ##' \dontrun{
 ##' query.priors('ebifarm.pavi', vecpaste('SLA', 'Vcmax', 'leaf_width'))
 ##' }
-query.priors <- function(pft, trstr, out=NULL, con=NULL,...){
+query.priors <- function(pft, trstr=NULL, out=NULL, con=NULL,...){
   if(is.null(con)){
     con <- query.base.con(settings)
   }
@@ -38,8 +38,13 @@ query.priors <- function(pft, trstr, out=NULL, con=NULL,...){
       "join variables on priors.variable_id = variables.id",
       "join pfts_priors on pfts_priors.prior_id = priors.id",
       "join pfts on pfts.id = pfts_priors.pft_id",
-      "where pfts.name in (", vecpaste(pft), ")",
-      "and variables.name in (", trstr, ");")
+      "where pfts.name in (", vecpaste(pft), ")")
+  if(is.null(trstr) || trstr == "''"){
+    query.text = paste(query.text,";",sep="")
+  } else {
+    query.text = paste(query.text,"and variables.name in (", trstr, ");")
+  }
+  
   priors <- db.query(query.text, con)
   
   if(nrow(priors) <= 0){

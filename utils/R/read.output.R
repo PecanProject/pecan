@@ -95,7 +95,7 @@ model2netcdf <- function(runid, outdir, model, lat, lon, start_date, end_date){
 read.output <- function(runid, outdir, start.year=NA,
                         end.year=NA, variables = "GPP") {
 
-  ## vars in units d-1 to be converted to y-1
+  ## vars in units s-1 to be converted to y-1
   cflux = c("GPP", "NPP", "NEE", "TotalResp", "AutoResp", "HeteroResp",
     "DOC_flux", "Fire_flux") # kgC m-2 d-1
   wflux = c("Evap", "TVeg", "Qs", "Qsb", "Rainf") # kgH20 m-2 d-1
@@ -117,7 +117,7 @@ read.output <- function(runid, outdir, start.year=NA,
       if(v %in% names(nc$var)){
         newresult <- ncvar_get(nc, v)
         if(v %in% c(cflux, wflux)){
-          newresult <- ud.convert(newresult, "kg m-2 d-1", "kg ha-1 yr-1")
+          newresult <- ud.convert(newresult, "kg m-2 s-1", "kg ha-1 yr-1")
         }
         result[[v]] <- abind(result[[v]], newresult)
       } else if (!(v %in% names(nc$var))){

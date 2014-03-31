@@ -7,8 +7,17 @@
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
  */
-require("dbinfo.php");
-$connection = open_database();
+
+// Check login
+require("common.php");
+open_database();
+if ($authentication) {
+	if (!check_login()) {
+		close_database();
+		header('HTTP/1.1 403 Unauthorized');
+		exit;
+	}
+}
 
 // Start XML file, create parent node
 $dom = new DOMDocument("1.0");
@@ -16,10 +25,10 @@ $node = $dom->createElement("markers");
 $parnode = $dom->appendChild($node); 
 
 if (isset($_REQUEST['model']) && ($_REQUEST['model'] != "")) {
-	$result = mysql_query("SELECT * FROM models WHERE id='" . $_REQUEST['model'] . "'");
-	$model = mysql_fetch_assoc($result);
+	$result = $pdo->query("SELECT * FROM models WHERE id='" . $_REQUEST['model'] . "'");
+	$model = $result->fetch(PDO::FETCH_ASSOC);
 	$modeltype = $model["model_type"];
-	mysql_free_result($result);
+	$result->closeCursor();
 } else {
 	$model = "";
 	$modeltype = "";
@@ -28,24 +37,26 @@ if (isset($_REQUEST['model']) && ($_REQUEST['model'] != "")) {
 $query = "SELECT sites.* FROM sites";
 if (isset($_REQUEST['host']) && ($_REQUEST['host'] != "")) {
 	if ($modeltype == "ED2") {
-		$query  = "SELECT DISTINCT sites.* FROM sites, inputs, dbfiles, machines WHERE dbfiles.container_id = inputs.file_id AND inputs.site_id=sites.id";
-		$query .= " AND machines.hostname='{$_REQUEST['host']}' AND dbfiles.machine_id=machines.id";
+		$query  = "SELECT DISTINCT sites.* FROM sites, inputs, dbfiles, machines WHERE inputs.site_id=sites.id";
+		$query .= " AND machines.hostname='{$_REQUEST['host']}'";
+		$query .= " AND dbfiles.container_id = inputs.id AND dbfiles.machine_id=machines.id AND dbfiles.container_type='Input'";
 		$query .= " AND inputs.format_id=12";
 	} else if ($modeltype == "SIPNET") {
-		$query  = "SELECT DISTINCT sites.* FROM sites, inputs, dbfiles, machines WHERE dbfiles.container_id = inputs.file_id AND inputs.site_id=sites.id";
-		$query .= " AND machines.hostname='{$_REQUEST['host']}' AND dbfiles.machine_id=machines.id";
+		$query  = "SELECT DISTINCT sites.* FROM sites, inputs, dbfiles, machines WHERE inputs.site_id=sites.id";
+		$query .= " AND machines.hostname='{$_REQUEST['host']}'";
+		$query .= " AND dbfiles.container_id = inputs.id AND dbfiles.machine_id=machines.id AND dbfiles.container_type='Input'";
 		$query .= " AND inputs.format_id=24";
 	}
 }
 
 // Select all the rows in the markers table
-$result = mysql_query($query);
+$result = $pdo->query($query);
 if (!$result) {
-	die('Invalid query: ' . mysql_error());
+	die('Invalid query: ' . error_database());
 } 
 
 // Iterate through the rows, adding XML nodes for each
-while ($row = @mysql_fetch_assoc($result)){ 
+while ($row = @$result->fetch(PDO::FETCH_ASSOC)){ 
 	$node = $dom->createElement("marker");
 	$newnode = $parnode->appendChild($node);	 
 	$newnode->setAttribute("siteid",$row['id']);
@@ -62,5 +73,5 @@ while ($row = @mysql_fetch_assoc($result)){
 
 echo $dom->saveXML();
 
-close_database($connection);
+close_database();
 ?>

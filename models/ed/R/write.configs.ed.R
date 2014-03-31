@@ -58,15 +58,10 @@ convert.samples.ED <- function(trait.samples){
   ## Convert leaf_respiration_rate_m2 to dark_resp_factor
   if('leaf_respiration_rate_m2' %in% names(trait.samples)) {
     leaf_resp = trait.samples[['leaf_respiration_rate_m2']]
-    vcmax <- trait.samples[['Vcmax']]
     
     ## First scale variables to 15 degC
     trait.samples[['leaf_respiration_rate_m2']] <- 
-      arrhenius.scaling(leaf_resp, old.temp = 25, new.temp = 15)
-    vcmax_15 <- arrhenius.scaling(vcmax, old.temp = 25, new.temp = 15)
-    
-    ## Output leaf_respiration_rate @ 15C as Rd0 -- New way to input leaf resp into ED2.  Dark Resp Factor is no longer used (see below)
-    #trait.samples[['Rd0']] <- trait.samples[['leaf_respiration_rate_m2']] ## Added by SPS 05/06/2013 -- NO LONGER NEEDED
+    arrhenius.scaling(leaf_resp, old.temp = 25, new.temp = 15)
     
     ## Calculate dark_resp_factor -- Will be depreciated when moving from older versions of ED2
     trait.samples[['dark_respiration_factor']] <- trait.samples[['leaf_respiration_rate_m2']]/
@@ -124,7 +119,11 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   }
 
   # create launch script (which will create symlink)
-  jobsh <- readLines(con=system.file("template.job", package = "PEcAn.ED2"), n=-1)
+  if (!is.null(settings$run$jobtemplate) && file.exists(settings$run$jobtemplate)) {
+    jobsh <- readLines(con=settings$run$jobtemplate, n=-1)
+  } else {
+    jobsh <- readLines(con=system.file("template.job", package = "PEcAn.ED2"), n=-1)
+  }
   
   jobsh <- gsub('@SITE_LAT@', settings$run$site$lat, jobsh)
   jobsh <- gsub('@SITE_LON@', settings$run$site$lon, jobsh)
@@ -132,6 +131,9 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   
   jobsh <- gsub('@SCRATCH_COPY@', copyscratch, jobsh)
   jobsh <- gsub('@SCRATCH_CLEAR@', clearscratch, jobsh)
+  
+  jobsh <- gsub('@START_DATE@', settings$run$start.date, jobsh)
+  jobsh <- gsub('@END_DATE@', settings$run$end.date, jobsh)
   
   jobsh <- gsub('@OUTDIR@', outdir, jobsh)
   jobsh <- gsub('@RUNDIR@', rundir, jobsh)

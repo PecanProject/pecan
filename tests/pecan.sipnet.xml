@@ -3,14 +3,14 @@
   <outdir>pecan</outdir>
 
   <database>
-    <username>bety</username>
+    <user>bety</user>
     <password>bety</password>
     <host>localhost</host>
     <dbname>bety</dbname>
   </database>
 
   <bety>
-   <write>FALSE</write>
+    <write>FALSE</write>
   </bety>
 
   <pfts>
@@ -24,7 +24,7 @@
   </ensemble>
 
   <model>
-    <id>9</id>
+    <id>11</id>
   </model>
 
   <run>
