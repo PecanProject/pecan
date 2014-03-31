@@ -308,12 +308,6 @@ foreach(scandir("$folder/out") as $runid) {
 ?>
 			</select>
 			<div class="spacer"></div>
-			<label>File</label>
-			<select id="outfile">
-			</select>
-			<div class="spacer"></div>
-
-			<input id="home" type="button" value="Show Run Output" onclick="showRunOutput($('#outrun')[0].value, $('#outfile')[0].value);" />
 
 			<label>Year</label>
 			<select id="outyear" onChange="updateOuputYear($('#outrun')[0].value, $('#outyear')[0].value);">
@@ -328,6 +322,12 @@ foreach(scandir("$folder/out") as $runid) {
 			<input id="home" type="button" value="Plot run/year/variable" onclick="showRunYearVarPlot($('#outrun')[0].value, $('#outyear')[0].value, $('#outvar')[0].value);" />
 			<div class="spacer"></div>
 
+			<label>File</label>
+			<select id="outfile">
+			</select>
+			<div class="spacer"></div>
+
+			<input id="home" type="button" value="Show Run File" onclick="showRunOutput($('#outrun')[0].value, $('#outfile')[0].value);" />
 			<p></p>
 
 			<h2>PFTs</h2>
