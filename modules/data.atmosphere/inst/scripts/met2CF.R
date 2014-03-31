@@ -1,3 +1,28 @@
+met2CF <- function(...dbfiles, dbcon){
+  #---------------- Load libraries. -----------------------------------------------------------------#
+  require(PEcAn.all)
+  require(RPostgreSQL)
+  require(ncdf4)
+  
+  #--------------------------------------------------------------------------------------------------#
+
+  
+  dbConnect("PostgreSQL",dbname="bety",user="bety")
+  
+  query.inputs <-function(){
+    
+  }
+  
+  #generic function to query database from query.base.R
+  query.base()  
+
+#query database
+db.query(dbfiles,dbcon)
+
+#open database connection
+query.base.con <- function(settings,...){
+  invisible(db.open(settings$database))
+}
 # met2CF converts met data to standard netcdf CF format
 # requires an open database connection dbcon
 # required steps:
@@ -25,6 +50,6 @@ dbfile.input.check(siteid, startdate, enddate, mimetype, formatname, con, hostna
 #   a) generate file name, hardcoded: assign mime type, formate name, 
 #      connection, hostname is localhost
 
-  # inster into db as input
+  # insert into db as input
 dbfile.input.insert <- function(filename, siteid, startdate, enddate, mimetype, formatname, con, hostname=Sys.info()[['nodename']]) {
     
