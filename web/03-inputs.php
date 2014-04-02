@@ -8,6 +8,17 @@
  * http://opensource.ncsa.illinois.edu/license.html
  */
 
+// Check login
+require("common.php");
+open_database();
+if ($authentication) {
+	if (!check_login()) {
+		header( "Location: index.php");
+		close_database();
+		exit;
+	}
+}
+
 # boolean parameters
 $userok=isset($_REQUEST['userok']);
 $offline=isset($_REQUEST['offline']);
@@ -53,25 +64,21 @@ if (isset($_REQUEST['email'])) {
 	$email=$_REQUEST['email'];
 }
 
-// system parameters
-require("system.php");
-
-// database parameters
-$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
-
 // get site information
-$result = $pdo->query("SELECT * FROM sites WHERE sites.id=$siteid");
-if (!$result) {
+$stmt = $pdo->prepare("SELECT * FROM sites WHERE sites.id=?");
+if (!$stmt->execute(array($siteid))) {
 	die('Invalid query: ' . error_database());
 }
-$siteinfo = $result->fetch(PDO::FETCH_ASSOC);
+$siteinfo = $stmt->fetch(PDO::FETCH_ASSOC);
+$stmt->closeCursor();
 
 // get model info
-$result = $pdo->query("SELECT * FROM models WHERE models.id=$modelid");
-if (!$result) {
+$stmt = $pdo->prepare("SELECT * FROM models WHERE models.id=?");
+if (!$stmt->execute(array($modelid))) {
 	die('Invalid query: ' . error_database());
 }
-$model = $result->fetch(PDO::FETCH_ASSOC);
+$model = $stmt->fetch(PDO::FETCH_ASSOC);
+$stmt->closeCursor();
 
 ?>
 <!DOCTYPE html>
@@ -83,22 +90,9 @@ $model = $result->fetch(PDO::FETCH_ASSOC);
 <link rel="stylesheet" type="text/css" href="sites.css" />
 <script type="text/javascript" src="jquery-1.7.2.min.js"></script>
 <?php if (!$offline) {?>
-<script type="text/javascript" src="http://www.google.com/jsapi"></script>
+<script type="text/javascript" src="//www.google.com/jsapi"></script>
 <?php }?>
 <script type="text/javascript">
-	window.onresize = resize;
-	window.onload = resize;
-	
-    function resize() {
-        if ($("#stylized").height() < $(window).height()) {
-            $("#stylized").height($(window).height() - 5);
-        } else {
-            $("#stylized").height(Math.max($("#stylized").height(), $("#output").height()));
-        }
-        $("#output").height($("#stylized").height());
-        $("#output").width($(window).width() - $('#stylized').width() - 5);
-    }
-
 	function validate() {
 		// check PFTs
 		if ($("#pft").val() == null) {
@@ -186,7 +180,7 @@ $model = $result->fetch(PDO::FETCH_ASSOC);
 	google.setOnLoadCallback(mapsLoaded);
     
     function mapsLoaded() {
-		var latlng = new google.maps.LatLng(<?=$siteinfo['lat']?>, <?=$siteinfo['lon']?>);
+		var latlng = new google.maps.LatLng(<?php echo $siteinfo['lat']; ?>, <?php echo $siteinfo['lon']; ?>);
 		var myOptions = {
 			zoom: 10,
 			center: latlng,
@@ -199,8 +193,8 @@ $model = $result->fetch(PDO::FETCH_ASSOC);
 		var marker = new google.maps.Marker({position: latlng, map: map});
 
 		// create the tooltip and its text
-		var info="<b><?=$siteinfo['sitename']?></b><br />";
-		info+="<?=$siteinfo['city']?>, <?=$siteinfo['state']?>, <?=$siteinfo['country']?>";
+		var info="<b><?php echo $siteinfo['sitename']; ?></b><br />";
+		info+="<?php echo $siteinfo['city']; ?>, <?php echo $siteinfo['state']; ?>, <?php echo $siteinfo['country']; ?>";
 		var infowindow = new google.maps.InfoWindow({content: info});
 		infowindow.open(map, marker);
 		validate();
@@ -214,27 +208,27 @@ $model = $result->fetch(PDO::FETCH_ASSOC);
 		<h1>Selected Site</h1>
 		<p>Set parameters for the run.</p>
 
-		<form id="formprev" method="POST" action="selectsite.php">
+		<form id="formprev" method="POST" action="02-modelsite.php">
 <?php if ($offline) { ?>
 			<input name="offline" type="hidden" value="offline">
 <?php } ?>
-			<input type="hidden" name="hostname" value="<?=$hostname?>" />
-			<input type="hidden" name="modelid" value="<?=$modelid?>" />
-			<input type="hidden" name="modeltype" value="<?=$model["model_type"]?>" />
-			<input type="hidden" name="siteid" value="<?=$siteid?>" />
+			<input type="hidden" name="hostname" value="<?php echo $hostname; ?>" />
+			<input type="hidden" name="modelid" value="<?php echo $modelid; ?>" />
+			<input type="hidden" name="modeltype" value="<?php echo $model["model_type"]; ?>" />
+			<input type="hidden" name="siteid" value="<?php echo $siteid; ?>" />
 		</form>
 
-		<form id="formnext" method="POST" action="runpecan.php">
+		<form id="formnext" method="POST" action="04-runpecan.php">
 <?php if ($offline) { ?>
 			<input name="offline" type="hidden" value="on">
 <?php } ?>
 <?php if ($userok) { ?>
 			<input name="userok" type="hidden" value="on">
 <?php } ?>
-			<input type="hidden" name="siteid" value="<?=$siteid?>" />
-			<input type="hidden" name="modelid" value="<?=$modelid?>" />
-			<input type="hidden" name="modeltype" value="<?=$model["model_type"]?>" />
-			<input type="hidden" name="hostname" value="<?=$hostname?>" />
+			<input type="hidden" name="siteid" value="<?php echo $siteid; ?>" />
+			<input type="hidden" name="modelid" value="<?php echo $modelid; ?>" />
+			<input type="hidden" name="modeltype" value="<?php echo $model["model_type"]; ?>" />
+			<input type="hidden" name="hostname" value="<?php echo $hostname; ?>" />
 
 			<label>PFT</label>
 			<select id="pft" name="pft[]" multiple size=5 onChange="validate();">
@@ -263,21 +257,20 @@ print "			<div class=\"spacer\"></div>\n";
 if (($model["model_type"] == "ED2") || ($model["model_type"] == "BIOCRO")) {
 ?>
 			<label>Start Date</label>
-			<input type="text" name="start" id="start" value="<?= $startdate ?>" onChange="validate();"/>
+			<input type="text" name="start" id="start" value="<?php echo $startdate; ?>" onChange="validate();"/>
 			<div class="spacer"></div>
 			<label>End Date</label>
-			<input type="text" name="end" id="end" value="<?= $enddate ?>" onChange="validate();"/>
+			<input type="text" name="end" id="end" value="<?php echo $enddate; ?>" onChange="validate();"/>
 			<div class="spacer"></div>
 <?php
 }
 
 # query to get a file for a host
-$query="SELECT inputs.file_id, name, start_date, end_date" .
+$query="SELECT inputs.id, name, start_date, end_date" .
        " FROM inputs, dbfiles, machines" .
        " WHERE inputs.site_id=$siteid" .
-       " AND inputs.file_id=dbfiles.container_id" .
-       " AND machines.hostname='${_REQUEST['hostname']}'" .
-       " AND dbfiles.machine_id=machines.id";
+       " AND dbfiles.container_type='Input' AND dbfiles.container_id=inputs.id" .
+       " AND machines.hostname='${_REQUEST['hostname']}' AND machines.id=dbfiles.machine_id";
 
 if (($model["model_type"] == "ED2") || ($model["model_type"] == "SIPNET")) {
 	print "			<label>Weather Data file</label>\n";
@@ -296,7 +289,7 @@ if (($model["model_type"] == "ED2") || ($model["model_type"] == "SIPNET")) {
 	}
 	while ($row = @$result->fetch(PDO::FETCH_ASSOC)){
 		$row['name']="Weather " . substr($row['start_date'], 0, 4) . "-" . substr($row['end_date'], 0, 4);
-		print "				<option value='{$row['file_id']}'>{$row['name']}</option>\n";
+		print "				<option value='{$row['id']}'>{$row['name']}</option>\n";
 	}
 	print "			</select>\n";
 	print "			<div class=\"spacer\"></div>\n";
@@ -312,28 +305,28 @@ if ($model["model_type"] == "ED2") {
 		die('Invalid query: ' . error_database());
 	}
 	while ($row = @$result->fetch(PDO::FETCH_ASSOC)){
-		if ($psscss == $row['file_id']) {
-			print "			<option value='{$row['file_id']}' selected>{$row['name']}</option>\n";
+		if ($psscss == $row['id']) {
+			print "			<option value='{$row['id']}' selected>{$row['name']}</option>\n";
 		} else {
-			print "			<option value='{$row['file_id']}'>{$row['name']}</option>\n";
+			print "			<option value='{$row['id']}'>{$row['name']}</option>\n";
 		}
 	}
-	if ($psscss == "FIA") {
-		print "			<option value='FIA' selected>Use FIA</option>\n";
-	} else {
-		print "			<option value='FIA'>Use FIA</option>\n";
-	}
+	// if ($psscss == "FIA") {
+	// 	print "			<option value='FIA' selected>Use FIA</option>\n";
+	// } else {
+	// 	print "			<option value='FIA'>Use FIA</option>\n";
+	// }
 	print "			</select>\n";
 	print "			<div class=\"spacer\"></div>\n";
 }
 ?>
 
 			<label title="Used to send email when the run is finished.">Email</label>
-			<input id="email" name="email" type="text" value="<?= $email ?>"/>	
+			<input id="email" name="email" type="text" value="<?php echo $email; ?>"/>	
 			<div class="spacer"></div>
 
 			<label title="Allows to edit files generated by PEcAn before model executions.">Advanced edit</label>
-			<input id="advanced_edit" name="advanced_edit" type="checkbox" <?= $advanced_edit ?>/>	
+			<input id="advanced_edit" name="advanced_edit" type="checkbox" <?php echo $advanced_edit; ?>/>	
 			<div class="spacer"></div>
 
 			<p></p>
@@ -342,16 +335,28 @@ if ($model["model_type"] == "ED2") {
 			<input id="next" type="button" value="Next" onclick="nextStep();" <?php if (!$userok) echo "disabled" ?>/>		
 			<div class="spacer"></div>
 		</form>
+<?php
+	if (check_login()) {
+		echo "<p></p>";
+		echo "Logged in as " . get_user_name();
+		echo "<a href=\"index.php?logout\" id=\"logout\">logout</a>";
+	}
+?>		
 	</div>
 	<div id="output">
-		name : <b><?=$siteinfo["sitename"]?></b><br/>
-		address : <?=$siteinfo["city"]?>, <?=$siteinfo["country"]?><br/>
-		location : <?=$siteinfo["lat"]?>, <?=$siteinfo["lon"]?><br/>
+		name : <b><?php echo $siteinfo["sitename"]; ?></b><br/>
+		address : <?php echo $siteinfo["city"]; ?>, <?php echo $siteinfo["country"]; ?><br/>
+		location : <?php echo $siteinfo["lat"]; ?>, <?php echo $siteinfo["lon"]; ?><br/>
+	</div>
+	<div id="footer">
+		The <a href="http://pecanproject.org">PEcAn project</a> is supported by the National Science Foundation
+		(ABI #1062547, ARC #1023477) and the <a href="http://www.energybiosciencesinstitute.org/">Energy
+		Biosciences Institute</a>.
 	</div>
 </div>
 </body>
 </html>
 
 <?php 
-$pdo = null;
+close_database();
 ?>
