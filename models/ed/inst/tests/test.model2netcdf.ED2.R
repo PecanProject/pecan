@@ -10,15 +10,21 @@ model2netcdf.ED2(outdir, 40, -88.5, "2010-01-01", "2010-12-31")
 
 test_that("a valid .nc file is produced for each corresponding ED2 output", {
   h5_T_files <- dir(outdir, pattern = "-T-.*.h5")
-  nc_files <- dir(outdir, pattern = ".nc")
+  nc_files <- dir(outdir, pattern = ".nc$")
+  nc_var_files <- dir(outdir, pattern = ".nc.var$")
   
   expect_equal(length(h5_T_files), length(nc_files))
+  expect_equal(length(h5_T_files), length(nc_var_files))
+
   h5years <- sapply(h5_T_files, function(x) gsub("[A-Za-z.h5-]", "", x)) 
   ncyears <- sapply(nc_files, function(x) gsub(".nc", "", x))
   expect_equal(as.numeric(ncyears), as.numeric(h5years))
+
+  ncvaryears <- sapply(nc_var_files, function(x) gsub(".nc.var", "", x))
+  expect_equal(as.numeric(ncvaryears), as.numeric(h5years))
 })
 
-nc_files <- dir(outdir, pattern = ".nc", full.names = TRUE)
+nc_files <- dir(outdir, pattern = ".nc$", full.names = TRUE)
 tmp.nc <- nc_open(nc_files[1])
 vars <- tmp.nc$var
 dims <- tmp.nc$dim

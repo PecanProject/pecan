@@ -7,8 +7,17 @@
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
  */
-require("system.php");
-$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
+
+// Check login
+require("common.php");
+open_database();
+if ($authentication) {
+	if (!check_login()) {
+		close_database();
+		header('HTTP/1.1 403 Unauthorized');
+		exit;
+	}
+}
 
 // Start XML file, create parent node
 $dom = new DOMDocument("1.0");
@@ -38,5 +47,5 @@ if (isset($_REQUEST['host']) && ($_REQUEST['host'] != "")) {
 
 echo $dom->saveXML();
 
-$pdo = null;
+close_database();
 ?>

@@ -8,6 +8,17 @@
  * http://opensource.ncsa.illinois.edu/license.html
  */
 
+// Check login
+require("common.php");
+open_database();
+if ($authentication) {
+	if (!check_login()) {
+		header( "Location: index.php");
+		close_database();
+		exit;
+	}
+}
+
 # boolean parameters
 $offline=isset($_REQUEST['offline']);
 
@@ -23,12 +34,6 @@ $siteid = "";
 if (isset($_REQUEST['siteid'])) {
 	$siteid = $_REQUEST['siteid'];
 }
-
-// system parameters
-require("system.php");
-
-// database parameters
-$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
 
 // get hosts
 $query = "SELECT hostname FROM machines ORDER BY hostname";
@@ -57,24 +62,11 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
 <link rel="stylesheet" type="text/css" href="sites.css" />
 <script type="text/javascript" src="jquery-1.7.2.min.js"></script>
 <?php if (!$offline) {?>
-<script type="text/javascript" src="http://www.google.com/jsapi"></script>
+<script type="text/javascript" src="//www.google.com/jsapi"></script>
 <?php }?>
 <script type="text/javascript">
-    window.onresize = resize;
-    window.onload = resize;
-
     var markersArray = [];
     
-    function resize() {
-        if ($("#stylized").height() < $(window).height()) {
-            $("#stylized").height($(window).height() - 5);
-        } else {
-            $("#stylized").height(Math.max($("#stylized").height(), $("#output").height()));
-        }
-        $("#output").height($("#stylized").height());
-        $("#output").width($(window).width() - $('#stylized').width() - 5);
-    }
-
     function validate() {
     	if ($("#siteid").val() == "") {
             $("#next").attr("disabled", "disabled");
@@ -269,36 +261,36 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
 <body>
 <div id="wrap">
 	<div id="stylized">
-		<form id="formprev" method="POST" action="index.php">
+		<form id="formprev" method="POST" action="01-introduction.php">
 <?php if ($offline) { ?>
 			<input name="offline" type="hidden" value="offline">
 <?php } ?>
 		</form>
 
-		<form id="formnext" method="POST" action="selectdata.php">
+		<form id="formnext" method="POST" action="03-inputs.php">
 <?php if ($offline) { ?>
 			<input name="offline" type="hidden" value="offline">
 <?php } ?>
 			<h1>Select host</h1>
 			<p>Based on the host selected certain sites and models
 			will be available. In the current version you can only
-			pick as host <b><?=$hostname?></b></p>
+			pick as host <b><?php echo $hostname; ?></b></p>
 
 			<label>Host:</label>
 			<select name="hostname" id="hostname" onChange="hostSelected();">
 				<option value="">All Sites</option>
-				<?=$hosts?>
+				<?php echo $hosts; ?>
 			</select>
 			<div class="spacer"></div>
 
 			<label>Model:</label>
 			<select name="modelid" id="modelid" onChange="modelSelected();">
-				<option selected value="<?= $modelid ?>"><?=$modelid?></option>
+				<option selected value="<?php echo $modelid; ?>"><?php echo $modelid; ?></option>
 			</select>
 			<div class="spacer"></div>
 
 			<label>Site:</label>
-			<input name="siteid" id="siteid" type="hidden" value="<?=$siteid?>"/>
+			<input name="siteid" id="siteid" type="hidden" value="<?php echo $siteid; ?>"/>
 			<input name="sitename" id="sitename" type="text" readonly value="No site selected" />
 			<div class="spacer"></div>
 
@@ -309,12 +301,24 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
 			<input id="next" type="button" value="Next" onclick="nextStep();" />		
 			<div class="spacer"></div>
 		</form>
+<?php
+	if (check_login()) {
+		echo "<p></p>";
+		echo "Logged in as " . get_user_name();
+		echo "<a href=\"index.php?logout\" id=\"logout\">logout</a>";
+	}
+?>		
 	</div>
 	<div id="output"></div>
+	<div id="footer">
+		The <a href="http://pecanproject.org">PEcAn project</a> is supported by the National Science Foundation
+		(ABI #1062547, ARC #1023477) and the <a href="http://www.energybiosciencesinstitute.org/">Energy
+		Biosciences Institute</a>.
+	</div>
 </div>
 </body>
 </html>
 
-<?php 
-$pdo = null;
+<?php
+close_database();
 ?>

@@ -1,18 +1,18 @@
-#-------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
 # are made available under the terms of the 
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------
 
 library(PEcAn.visualization)
 
 # ----------------------------------------------------------------------
 # COMMAND LINE ARGUMENTS
 # ----------------------------------------------------------------------
-# arguments are --args year variable
+# arguments are-args year variable
 args     <- commandArgs(trailingOnly = TRUE)
 datafile <- args[1]
 year     <- args[2]
@@ -29,6 +29,6 @@ filename <- args[6]
 # width=800
 # height=600
 # filename="plot.png"
-
+ 
 plot.netcdf(datafile, yvar, xvar, width, height, filename, year);
-
+ 

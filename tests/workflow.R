@@ -1,50 +1,15 @@
+#!/usr/bin/Rscript
+
 ## See README in tests/ folder for details
 require("PEcAn.all")
 
-# ----------------------------------------------------------------------
-# debug options
-# ----------------------------------------------------------------------
-options(warn = 1, keep.source = TRUE, error =
-          quote({
+#--------------------------------------------------------------------------------#
+# functions used to write STATUS used by history
+#--------------------------------------------------------------------------------#
+options(warn = 1, keep.source = TRUE, error = quote({
             status.end("ERROR")
+         }))
 
-            db.print.connections()
-            cat("Environment:\n", file=stderr());
-            
-            # TODO: setup option for dumping to a file (?)
-            # Set `to.file` argument to write this to a file for post-mortem debugging
-            dump.frames();  # writes to last.dump
-            
-            #
-            # Debugging in R
-            #   http://www.stats.uwo.ca/faculty/murdoch/software/debuggingR/index.shtml
-            #
-            # Post-mortem debugging
-            #   http://www.stats.uwo.ca/faculty/murdoch/software/debuggingR/pmd.shtml
-            #
-            # Relation functions:
-            #   dump.frames
-            #   recover
-            # >>limitedLabels  (formatting of the dump with source/line numbers)
-            #   sys.frame (and associated)
-            #   traceback
-            #   geterrmessage
-            #
-            # Output based on the debugger function definition.
-            
-            n <- length(last.dump)
-            calls <- names(last.dump)
-            cat(paste("  ", 1L:n, ": ", calls, sep = ""), sep = "\n", file=stderr())
-            cat("\n", file=stderr())
-            
-            if (!interactive()) {
-              q()
-            }
-          }))
-
-# ----------------------------------------------------------------------
-# status functions
-# ----------------------------------------------------------------------
 status.start <- function(name) {
   print("----------------------------------------------------------------------")
   print(paste("STARTING", name))
@@ -107,28 +72,19 @@ status.end()
 # get results
 status.start("OUTPUT")
 get.results(settings)
-
-# special for web, print all nc vars
-data(mstmip_vars, package="PEcAn.utils")
-for (runid in readLines(con=file.path(settings$rundir, "runs.txt"))) {
-  for(file in list.files(path=file.path(settings$modeloutdir, runid), pattern="*.nc")) {
-    nc <- nc_open(file.path(settings$modeloutdir, runid, file))
-    for(v in sort(names(nc$var))) {
-      name <- mstmipvar(v, silent=TRUE)['longname']
-      cat(paste(v, name), file=file.path(settings$modeloutdir, runid, paste(file, "var", sep=".")), append=TRUE, sep="\n")
-    }
-    nc_close(nc)
-  }
-}
+status.end()
 
 # ensemble analysis
+status.start("ENSEMBLE")
 if (!file.exists(file.path(settings$outdir,"ensemble.ts.pdf"))) {
   run.ensemble.analysis(TRUE)    
 } else {
   logger.info("Already executed run.ensemble.analysis()")
 }
+status.end()
 
 # sensitivity analysis
+status.start("SENSITIVITY")
 if (!file.exists(file.path(settings$outdir, "sensitivity.results.Rdata"))) {
   run.sensitivity.analysis()
 } else {
