@@ -38,6 +38,8 @@
 ##' Visually weighted regression / Watercolor plots
 ##' 
 ##' Idea: Solomon Hsiang, with additional ideas from many blog commenters
+##' Details: \url{http://www.nicebread.de/visually-weighted-regression-in-r-a-la-solomon-hsiang/}
+##' \url{http://www.nicebread.de/visually-weighted-watercolor-plots-new-variants-please-vote/}
 ##' 
 ##' @title PEcAn worldmap
 ##' @param B = number bootstrapped smoothers
