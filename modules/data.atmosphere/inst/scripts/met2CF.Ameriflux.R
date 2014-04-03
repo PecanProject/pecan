@@ -78,11 +78,11 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
     
     #convert precipitation to CF standard
     dtime <- ncvar_get(nc=nc,varid="DTIME")
-    sec <- 0.02083/30 #0.02083 DTIME = 30 minutes
-    timestep <- round(x=mean(diff(dtime))/sec,digits=1) #round to nearest 0.1 second
+    min <- 0.02083/30 #0.02083 DTIME = 30 minutes
+    timestep <- round(x=mean(diff(dtime))/min,digits=1) #round to nearest 0.1 minute
     prec <- ncvar_get(nc=nc,varid="PREC")
     prec.sub <- which(prec > -6999)
-    prec.new <- prec[prec.sub]/timestep #mm/s = kg/m2/s
+    prec.new <- prec[prec.sub]/timestep/60 #mm/s = kg/m2/s
     prec <- replace(x=prec,list=prec.sub,values=prec.new)
     ncvar_put(nc=nc, varid='PREC',vals=prec)
     ncatt_put(nc=nc,varid='PREC',attname='units',attval='Kg m-2 s-1') 
