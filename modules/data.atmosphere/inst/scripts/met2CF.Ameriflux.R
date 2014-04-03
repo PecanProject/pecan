@@ -97,12 +97,15 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
     ta.rh <- ta[rh.sub] # use T coincident with RH
     sh.miss <- rh2rv(rh=rh.sh[rh.sub],T=ta.rh) #conversion, doesn't include missvals
     sh <- replace(x=rh,list=rh.sub,values=sh.miss) #insert Kelvin values into vector
-#     sh.dim <- ncdim_def(name='specific_humidity',units='ratio',vals=sh,
+#    sh.dim <- ncdim_def(name='specific_humidity',units='ratio',vals=sh,
 #                         create_dimvar=TRUE,longname='specific humidity') #define netCDF dimension
-#     sh.var <- ncvar_def(name='specific_humidity',units='ratio',dim=sh.dim) #define netCDF variable, doesn't include longname and comments
-#     ncvar_add(nc=nc,v=sh.var,indefine=TRUE,verbose=TRUE) #add variable to existing netCDF file
+    tdim = nc$dim[["DTIME"]]
+    sh.var <- ncvar_def(name='specific_humidity',units='ratio',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
+    nc = ncvar_add(nc=nc,v=sh.var,verbose=TRUE) #add variable to existing netCDF file
+    ncvar_put(nc,varid='specific_humidity',vals=sh)
 #     this doesn't work yet
 
+    nc_close(nc)
   
   }  ## end loop over files
  
