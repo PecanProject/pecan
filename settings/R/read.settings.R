@@ -326,6 +326,7 @@ check.settings <- function(settings) {
         }
       } else {
         logger.warn("no model settings given")
+        model <- list()
       }
     } else {
       if(!is.null(settings$model$name)){
