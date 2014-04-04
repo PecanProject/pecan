@@ -61,6 +61,17 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
     v <- ws[ws.sub]*sin(wd.sub*(pi/180))
     nc <- ncvar_rename(nc=nc,'WS','wind_speed') #CF name
     
+    #TO FIX: u and v vectors are not the correct length
+    #create u and v variables and insert into file
+    tdim = nc$dim[["DTIME"]]
+    u.var <- ncvar_def(name='u',units='radians',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
+    nc = ncvar_add(nc=nc,v=u.var,verbose=TRUE) #add variable to existing netCDF file
+    ncvar_put(nc,varid='u',vals=u)
+    
+    v.var <- ncvar_def(name='v',units='radians',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
+    nc = ncvar_add(nc=nc,v=v.var,verbose=TRUE) #add variable to existing netCDF file
+    ncvar_put(nc,varid='v',vals=v)
+    
     #create new netCDF variables u and v
 
     
@@ -103,7 +114,6 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
     sh.var <- ncvar_def(name='specific_humidity',units='ratio',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
     nc = ncvar_add(nc=nc,v=sh.var,verbose=TRUE) #add variable to existing netCDF file
     ncvar_put(nc,varid='specific_humidity',vals=sh)
-#     this doesn't work yet
 
     nc_close(nc)
   
