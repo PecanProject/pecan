@@ -72,7 +72,9 @@ Visually weighted regression / Watercolor plots
 }
 \details{
 Idea: Solomon Hsiang, with additional ideas from many blog
-commenters
+commenters Details:
+\url{http://www.nicebread.de/visually-weighted-regression-in-r-a-la-solomon-hsiang/}
+\url{http://www.nicebread.de/visually-weighted-watercolor-plots-new-variants-please-vote/}
 }
 \examples{
 # build a demo data set

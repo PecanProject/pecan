@@ -2,10 +2,10 @@
 \alias{start.model.runs}
 \title{Start ecosystem model runs}
 \usage{
-  start.model.runs(model, write = TRUE)
+\method{start}{model.runs}(model, write = TRUE)
 }
 \description{
-  Start selected ecosystem model runs within PEcAn workflow
+Start selected ecosystem model runs within PEcAn workflow
 }
 \examples{
 \dontrun {
@@ -14,6 +14,6 @@ start.model.runs("SIPNET")
 }
 }
 \author{
-  Shawn Serbin, Rob Kooper, ...
+Shawn Serbin, Rob Kooper, ...
 }
 
