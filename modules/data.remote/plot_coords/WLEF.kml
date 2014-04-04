@@ -1,0 +1,3663 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document><Folder><name>1</name>
+<Schema name="1" id="1">
+	<SimpleField name="Name" type="string"></SimpleField>
+	<SimpleField name="Description" type="string"></SimpleField>
+	<SimpleField name="paste.calib_infile.plot..calib_infile.subplot..sep...._.." type="string"></SimpleField>
+</Schema>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P1_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.274559571447227,45.940429835629473</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P1_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.274580596905395,45.940790367941844</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P1_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.273956473227472,45.940100413354891</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P1_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.2750549711931,45.94032464819545</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P10_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.275197513460668,45.938359546400442</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P10_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.275275830727651,45.938187736347174</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P10_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.274825718420431,45.93815899402766</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P10_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.275681559066271,45.938332427980733</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P11_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.273374671858576,45.93821737029868</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P11_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.273360491500995,45.938574056081677</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P11_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.272901271391405,45.937942037381575</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P11_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.27396723811961,45.938039495221219</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P12_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.269553866377947,45.940661753899242</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P12_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.269562243360454,45.941048518991202</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P12_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.269056073921931,45.94084739906144</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P12_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.269907800672883,45.940579740453195</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P13_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.269759189296551,45.944744701014017</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P13_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.269751864667171,45.945067392101912</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P13_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.269243373445633,45.944650199445853</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P13_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.27015076123071,45.944563885275244</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P14_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.281434394908601,45.936265618514831</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P14_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.281402270850776,45.936632607049354</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P14_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.281144737491786,45.936095430501716</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P14_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.282262088145117,45.935933012022993</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P15_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.279864176865118,45.934608808120188</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P15_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.279491418418942,45.935083971602516</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P15_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.279113547633287,45.93463393106795</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P15_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.279947098636924,45.934734795906358</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P16_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.277316850420107,45.933068815837942</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P16_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.277229152301587,45.933337909072769</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P16_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.276951744143162,45.932944261189725</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P16_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.277715002173466,45.932899453847163</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P17_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.279639504416039,45.932850844213931</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P17_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.279240887032529,45.933349855046608</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P17_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.2787990477091,45.932889288447697</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P17_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.27961384145749,45.932845696469784</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P18_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.275717463909686,45.935325930280193</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P18_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.27565162230465,45.935784496789331</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P18_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.275344812303814,45.935201127529446</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P18_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.276185411302478,45.935158175718449</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P19_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.269422914229736,45.934858591178973</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P19_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.269475604054023,45.935195948861207</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P19_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.26906004439347,45.934726972153804</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P19_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.26982553838495,45.934637267202852</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P2_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.273186440554824,45.941333134570954</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P2_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.272976385437801,45.941670147484388</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P2_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.272729593862678,45.941178212544884</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P2_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.273425008276206,45.941203819581148</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P20_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.267652753873179,45.935954243946192</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P20_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.267673858265013,45.936421960873162</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P20_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.26725160752035,45.935826806762194</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P20_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.26813131602178,45.935775849455169</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P21_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.269225032407959,45.931589098892921</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P21_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.269395495410876,45.931836745142732</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P21_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.26865168008446,45.931485927739431</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P21_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.269737020115528,45.931448877165188</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P22_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.266911302275773,45.929880167761496</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P22_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.266920033701666,45.930238391662485</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P22_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.266977547647258,45.929330689635862</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P22_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.267358818792914,45.929708846061004</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P23_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.271380790516574,45.93275901292175</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P23_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.271386257213607,45.933063432675134</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P23_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.271073328562977,45.932605916240625</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P23_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.271968073583778,45.932510284860889</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P24_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.265802644997521,45.93605345089675</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P24_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.26585485748798,45.93642342659016</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P24_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.265457511861399,45.93584686365314</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P24_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.266254165168206,45.935910941916006</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P25_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.272178043514515,45.927327289309893</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P25_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.272017851333246,45.927552046322951</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P25_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.271721890736018,45.92727495223793</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P25_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.272515248732319,45.927140891122832</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P26_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.262815383808757,45.932034371592181</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P26_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.262831022510341,45.932336641471252</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P26_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.262355547203057,45.931776196085401</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P26_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.263304090063343,45.93189794104169</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P27_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.268836593710873,45.92871034354151</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P27_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.268761122040175,45.928995330245684</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P27_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.268198155328534,45.928639834285157</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P27_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.269309206318212,45.92860340292706</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P28_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.26404045603752,45.935012716483207</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P28_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.26404764254292,45.93539905777925</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P28_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.26354990077941,45.9347660779991</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P28_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.263445938752653,45.934781588209567</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P29_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.264641658320642,45.938581847166112</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P29_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.26474106353767,45.938871964780091</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P29_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.264156680032258,45.938425928780539</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P29_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.265094165865875,45.93825036832316</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P30_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.263539257884219,45.938715684888457</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P30_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.263583182978422,45.939069243530092</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P30_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.263117875117942,45.93856305018312</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P30_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.264073172404139,45.938549938823229</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P31_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.261672883730782,45.935196692604336</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P31_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.261612866836842,45.935331696098245</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P31_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.261252939288156,45.93504404037359</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P31_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.262194405625209,45.935048614665853</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P32_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.261306784197814,45.933849146970189</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P32_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.261297669799831,45.934136035065841</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P32_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.260906627948785,45.933694618798548</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P32_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.261849399580456,45.93367222496142</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P33_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.260086257842019,45.932838351869982</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P33_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.260175728694804,45.933344055963644</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P33_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.259610083679476,45.93278143569384</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P33_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.2608127369881,45.93272028292607</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P34_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.259134091141718,45.935522403585004</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P34_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.259093317531153,45.935937305611361</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P34_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.25867072027981,45.935351111998507</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P34_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.259415817579409,45.935414000388683</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P35_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.261142083495017,45.936587471171784</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P35_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.261631805742567,45.937042296787133</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P35_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.261051010038415,45.936524324563173</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P35_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.261890306865965,45.936508449174646</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P36_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.264345840383129,45.940049095425074</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P36_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.264464105001352,45.940305453111165</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P36_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.264812410623605,45.940043773360316</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P37_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.289026260262659,45.939230361647141</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P37_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.288949941499354,45.939521272563894</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P37_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.288556447044485,45.939124897403183</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P37_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.289454342454576,45.938966198265476</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P38_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.293832789146549,45.940530756695132</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P38_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.293708913487848,45.940876258403733</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P38_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.293385059833753,45.940373541322565</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P38_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.294246687856102,45.94042996306446</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P39_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.290560408157347,45.942962285075239</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P39_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.290380566538715,45.943254538855562</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P39_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.290042090383992,45.94278746848272</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P39_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.290918390816785,45.9428082604677</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P4_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.280706353540523,45.941825363880739</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P4_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.280609083868413,45.941771158200744</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P4_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.280235248858119,45.941501233186962</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P4_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.280817202959582,45.941209066193544</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P40_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.280328396502597,45.9468547076264</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P40_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.279914742948634,45.946732039890129</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P40_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.280658702901221,45.946821764280692</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P41_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.283022245765864,45.94797732074845</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P41_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.282858788250465,45.948269250304548</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P41_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.282557692351503,45.947830049650932</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P41_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.283320713116822,45.94779419968517</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P42_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.281460441334417,45.948575505255</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P42_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.281562783671546,45.948913462558167</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P42_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.281059886055843,45.948379446386504</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P42_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.281882517378051,45.948444033577864</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P43_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.28137257976114,45.951379298245733</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P43_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.281342807405679,45.951563446818589</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P43_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.280959975924318,45.951212303734643</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P43_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.281709715345201,45.951185149008666</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P44_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.277252297194963,45.950608219770977</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P44_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.277283090742813,45.95093568117862</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P44_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.277022013080469,45.950470417901762</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P44_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.277794877319863,45.950497844827638</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P45_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.277660150841086,45.949057771300772</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P45_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.277628631094018,45.949413791670636</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P45_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.277144054814869,45.949033207766945</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P45_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.278053266655917,45.948910871160948</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P46_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.27093129655762,45.949917586243437</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P46_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.270956454546351,45.950226616238957</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P46_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.270595419450643,45.949695944022366</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P46_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.271380272975478,45.949741702510288</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P47_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.267554541120745,45.949143320680257</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P47_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.26746663127291,45.949297092205484</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P47_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.267067921538285,45.949008527551179</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P47_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.268009185155805,45.949022049371308</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P48_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.268750634844722,45.946887587777383</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P48_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.26852817535989,45.947126304401159</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P48_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.268332067449848,45.946653574112375</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P48_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.269011492001908,45.946480808801724</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P49_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.27456843292623,45.952135583915059</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P49_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.274550447129513,45.952454627221179</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P49_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.274147169030044,45.951994964277667</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P49_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.274971607106252,45.952023641357208</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P5_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.268362756351877,45.9451911180549</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P5_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.280609083868413,45.941771158200744</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P5_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.280250334799732,45.941456588685185</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P5_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.280727569770448,45.941458953118499</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P50_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.258133346317464,45.948195974570652</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P50_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.258069048686124,45.948594793411232</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P50_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.25770104987447,45.948207924962944</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P50_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.25880268502938,45.947847342094285</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P51_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.261102616178079,45.944138626463115</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P51_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.261321911993349,45.944379489908187</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P51_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.260693523331582,45.944040390311606</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P51_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.261522704923294,45.94397027025736</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P52_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.26251004413561,45.94507790491982</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P52_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.262545897990591,45.945461926759307</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P52_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.261282404493485,45.944657565999691</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P52_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.262793317529798,45.944891808975861</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P53_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.256172196924595,45.943123042543704</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P53_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.256220949678195,45.943951015096857</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P53_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.25591072576573,45.942917473723242</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P53_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.256684799312765,45.942918070698539</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P54_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.286721862664692,45.951315615274851</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P54_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.286771165746032,45.951647546117691</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P54_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.279750647355513,45.95113849917032</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P54_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.286967692854276,45.951058166022477</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P55_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.28564652418244,45.949432000062693</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P55_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.285623439558904,45.949784118701821</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P55_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.285248498234296,45.949271164008437</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P55_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.286124897356359,45.949291995006966</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P56_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.284238750379302,45.95412418271539</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P56_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.284210972752874,45.954394921541656</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P56_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.283679146536812,45.953923234669062</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P56_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.284446351517104,45.95406749148011</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P57_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.278520702516403,45.956284379926473</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P57_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.278629187873193,45.95664723795047</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P57_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.277576840743862,45.956001103870939</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P57_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.278523073925754,45.955915649010208</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P58_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.273998396980744,45.956811249415267</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P58_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.274492732888888,45.95731365217032</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P58_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.274186267798896,45.956721289152945</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P58_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.274185332087626,45.957792355157046</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P59_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.287858961527988,45.955710012539598</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P59_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.28796096454542,45.955294107580528</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P59_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.287419599832404,45.955281249575613</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P59_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.288224462289534,45.955183355372753</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P6_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.277116719414991,45.940578334053505</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P6_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.277072583657869,45.941011829439816</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P6_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.276750643818801,45.94047310748779</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P6_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.277524249681449,45.940482552655979</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P60_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.290504889857786,45.958109728383803</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P60_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.290807297152995,45.958583933233662</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P60_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.290457593574644,45.958080595912463</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P60_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.291302655702964,45.958217652932554</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P61_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.277639941466106,45.960119915898318</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P61_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.277121410906986,45.960553620990318</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P61_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.276719377686632,45.960066995239849</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P61_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.277706228602213,45.960207534157675</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P62_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.270917368057269,45.959810513439372</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P62_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.270776459543356,45.960195140804423</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P62_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.270694016914618,45.959509114212878</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P62_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.271061214365574,45.95965290075344</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P63_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.264114374690649,45.953517621318234</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P63_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.264298882869866,45.953883637695547</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P63_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.263708103299322,45.953302436068377</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P63_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.264468992516129,45.953311664813576</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P64_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.262772398069345,45.951434947364639</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P64_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.262879843809856,45.951779461331334</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P64_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.262443318851695,45.9512109508767</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P64_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.263161085256158,45.95130916214395</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P65_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.257665098367809,45.951228228241753</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P65_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.257695090632097,45.951466055341591</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P65_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.257210637591854,45.951085389615564</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P65_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.258041258945624,45.950988327097534</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P66_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.253744565422423,45.954198641404105</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P66_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.253633483770642,45.954536711394354</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P66_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.253324146491693,45.954007227906963</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P66_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.254099706756364,45.9539808757009</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P67_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.254369545174526,45.952024650766056</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P67_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.25433434703335,45.952366382153336</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P67_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.253856130937407,45.951859841603692</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P67_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.254840541892804,45.951784502110769</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P68_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.253795020475621,45.950738768134386</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P68_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.25340369832503,45.950570853445633</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P68_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.25340369832503,45.950570853445633</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P68_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.254215209461918,45.950599369730249</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P69_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.260173103917097,45.958688466722606</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P69_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.260243935818835,45.959177871422021</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P69_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.259922921539101,45.958360102334311</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P69_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.260603910551424,45.958682465609044</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P7_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.280201794110539,45.939605308088332</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P7_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.280247801437142,45.939926398948522</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P7_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.280274194609234,45.93938698180078</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P7_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.280791828632701,45.939354305103258</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P70_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.264479708186911,45.959203395779568</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P70_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.264448822874755,45.95922467174794</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P70_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.264173993002771,45.958516029978583</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P70_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.26454327702227,45.958092840719914</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P71_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.262317826020208,45.961355311978778</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P71_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.262379654943473,45.961668291825305</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P71_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.261795908069288,45.960943237742484</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P71_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.262937376048157,45.960826590317339</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P72_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.267844251561172,45.96273907400704</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P72_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.267313200226454,45.963172569950849</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P72_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.267137083927281,45.962817326683407</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P72_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.267749160475816,45.962705962395219</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P73_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.270805925373097,45.963327759691289</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P73_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.270646817321094,45.963621323371868</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P73_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.270396865106733,45.963192314581761</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P73_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.271163274999182,45.963354642902374</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P74_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.280351258930366,45.961548346580301</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P74_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.280167210783091,45.961607283450768</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P74_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.280014913187813,45.961027608996197</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P74_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.28073636293459,45.961053791107588</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P75_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.278380775243761,45.959641444609971</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P75_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.278625871361456,45.960139445980595</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P75_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.278558541368113,45.959669803080175</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P75_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.279212316962997,45.959496365859337</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P76_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.273764618080918,45.966480155857958</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P76_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.274327852969179,45.96698550843908</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P76_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.273655508248069,45.966483419516564</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P76_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.274465503664615,45.966547757992004</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P77_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.265385674449277,45.967237001401095</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P77_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.265516878446078,45.967413920317128</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P77_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.265009108540397,45.966978726116842</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P77_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.265804435601538,45.96707877774017</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P78_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.272473916296249,45.955136577666401</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P78_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.272405616768879,45.95513964473168</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P78_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.271764063466321,45.954539270847327</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P78_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.272525325059405,45.954278432315078</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P79_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.292576813473943,45.962508149390864</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P79_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.292446238185136,45.962556123784211</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P79_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.292271456821823,45.962434970221217</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P79_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.292661082077586,45.962120181505028</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P8_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.279017321984767,45.940202464048973</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P8_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.278876850814569,45.940523792353268</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P8_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.278541448585528,45.939732733296047</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P8_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.279618273973227,45.940136422914804</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P80_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.297807529430145,45.963905300477194</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P80_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.298253211192318,45.964430795020867</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P80_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.297741061121002,45.963815628547778</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P80_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.298448794128973,45.963859375404049</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P81_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.303284609829817,45.961552475306547</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P81_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.303189365190349,45.9619192560641</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P81_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.302954675890717,45.961436674960275</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P81_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.303625019837568,45.961452504531273</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P82_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.304293620368981,45.95857905417985</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P82_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.304606484162179,45.958514433155308</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P82_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.303152470566801,45.958426100914117</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P82_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.304522793986564,45.958377446813429</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P83_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.301146715027372,45.967568460540406</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P83_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.301075481827908,45.967971809610198</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P83_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.300880339679821,45.9674721578263</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P83_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.301541794499613,45.967406782917344</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P84_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.309152911118559,45.966695302436264</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P84_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.309009609533206,45.966988949624273</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P84_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.312902119368232,45.876604798799832</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P84_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.308575106060928,45.966366661138544</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P85_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.312498111794085,45.962381721470862</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P85_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.312648183717286,45.962214239255715</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P85_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.312137470156429,45.961833190180748</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P85_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.317543959856138,45.871997500232119</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P9_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.278281820015835,45.937732597320924</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P9_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.278161196958521,45.938013525435991</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P9_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.277954790869799,45.937486561131188</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P9_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.278551040839332,45.937428766267175</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P91_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.323911853031689,45.948086568213341</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P91_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.323844712688711,45.948409021539028</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P91_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.323506354285726,45.947933053304702</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">P91_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.324280952005282,45.947924202865956</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W1_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.315552077369219,45.949957607158375</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W1_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.315610894122514,45.950282593385914</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W1_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.315890967485061,45.949756791721057</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W10_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.254984554769905,45.907977879981111</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W10_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.254584757257774,45.907840267923262</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W10_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.255353716510811,45.907797142787992</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W11_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.24108340026072,45.974816225696586</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W11_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.240666660958524,45.974668310659233</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W11_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.241492337832526,45.974685252173472</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W12_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.235754861591587,45.965567794753831</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W12_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.23578825746354,45.965905815921609</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W12_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.236121375681066,45.96540219572281</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W13_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.268693562674031,45.938192233988367</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W13_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.268727055362817,45.938526414471227</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W13_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.268256011234854,45.938094343246199</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W14_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.268158756039838,45.940474105340371</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W14_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.267739690010302,45.940327618729214</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W14_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.268546422953477,45.940306864784446</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W15_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.273130032695917,45.947649887861601</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W15_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.272704576081523,45.947543662526478</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W15_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.273538415910963,45.947533988391505</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W16_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.325894170866079,45.976964300396666</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W16_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.325917848564316,45.977293110531924</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W16_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.325475366587753,45.976857456550867</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W17_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.326251199840826,45.976099321336264</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W17_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.326296008680345,45.976432496459402</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W17_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.325883169024635,45.975929330628311</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W18_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.23762342070772,45.918337329886235</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W18_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.237651581711148,45.91866980757117</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W18_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.237219298564128,45.918197635388992</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W19_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.313400421076594,45.927829892039085</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W19_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.313446329561359,45.928149122271371</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W19_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.31300166733034,45.927665318820878</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W2_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.254364478325058,45.936967962882179</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W2_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.254741331140863,45.936783371671304</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W20_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.326309536297117,45.931494291978623</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W20_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.326362337318173,45.931821454771459</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W20_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.325849543822045,45.931348653776062</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W21_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.31662726523173,45.923506698727913</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W21_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.31667792863864,45.923815121621331</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W21_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.317036694186996,45.923364034774508</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W22_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.227631920984024,45.961878076752662</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W22_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.227681243296416,45.962202410028702</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W22_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.227186525642267,45.961765455275497</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W23_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.225893572968744,45.955108175781469</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W23_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.225901701048542,45.955412634819794</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W23_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.225447095617938,45.954992784801767</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W24_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.24718835851327,45.962941154927954</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W24_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.246761823010232,45.962783493880863</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W24_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.247613169798583,45.962802648403077</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W25_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.248832292810874,45.967143676716688</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W25_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.248850575506168,45.967462185195387</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W25_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.248406079097663,45.966993113299417</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W26_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.295428225346569,45.961839581280003</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W26_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.295478292376259,45.962159410896859</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W26_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.295056851784238,45.961679258104283</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W27_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.302815631945592,45.963159829919896</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W27_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.302451266887758,45.96297470140496</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W27_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.303252513832106,45.963000609737634</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W28_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.230013487650623,45.930009690957625</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W28_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.229633204009843,45.929826210281078</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W28_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.230422653214163,45.929823398502435</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W29_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.320565332375452,45.970016824040208</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W29_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.32012689269996,45.969901687040604</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W29_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.32093964144282,45.969824403605806</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W3_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.25443249025065,45.93473259092962</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W3_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.253957713905223,45.934675630782813</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W3_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.254801925216682,45.934510071885164</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W30_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.308064199572698,45.966491331129951</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W30_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.308104804001488,45.966797313736571</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W30_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.307642513700358,45.966372229570574</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W31_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.238157274870474,45.906042289009342</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W31_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.238163916645263,45.906351402573073</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W31_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.238571301432998,45.905878307593305</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W32_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.237081743329085,45.904418895441005</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W32_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.237104318132481,45.904741967894957</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W32_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.236679287877806,45.904265323682829</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W33_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.301703831035979,45.921284127333472</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W33_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.301285243500899,45.920802486772502</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W34_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.306590649824415,45.923632893150256</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W34_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.306619210753439,45.92395873781598</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W34_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.306999459683098,45.923454292496267</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W35_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.308749347925087,45.921116748809538</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W35_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.308750116780701,45.921444701285587</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W35_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.308333398323811,45.920984714614377</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W36_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.282726445040609,45.970443594878375</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W36_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.282723364182658,45.970763722323127</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W36_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.282301715448298,45.970320456907366</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W37_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.284094937913167,45.9709349606823</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W37_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.284072313966675,45.97124363346942</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W37_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.284491805883164,45.970774392705565</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W38_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.285565932643024,45.969475598466708</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W38_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.285607252660981,45.969817771063298</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W38_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.28513429823937,45.969364871916845</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W39_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.272183882773689,45.914328545551079</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W39_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.272200166549169,45.914653404208785</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W39_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.272604522948455,45.914204067272962</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W4_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.312327150931409,45.974460839589895</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W4_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.311903438975577,45.974402956184392</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W40_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.276578669735017,45.91653271785664</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W40_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.276637563510334,45.916843821673972</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W40_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.276176453435227,45.916375547422405</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W41_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.273702938494154,45.930907410660197</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W41_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.273731153655305,45.931251139800153</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W41_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.27327435427118,45.930779411480309</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W42_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.27489281576365,45.929839058731766</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W42_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.274942686101227,45.930157967208224</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W42_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.275297414779487,45.929678094699142</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W43_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.284631024714457,45.965109108420769</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W43_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.284642145938591,45.965459762271244</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W43_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.284990263239479,45.964925322091645</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W44_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.270683315350809,45.954858750429828</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W44_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.270353331842188,45.954643180038836</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W44_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.270285647068079,45.954706232502062</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W45_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.268176714147273,45.958856106988534</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W45_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.267782139812368,45.958725526263351</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W45_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.268583783681606,45.958702696781657</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W46_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.272800301685351,45.963502955115182</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W46_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.272842888755136,45.963832120937433</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W46_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.273190223726971,45.963305195433207</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W47_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.321822861421339,45.961897978946226</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W47_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.32186252270192,45.9622127373284</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W47_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.321408618916806,45.961752559626007</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W48_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.310112326354741,45.967191576620074</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W48_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.309693070581403,45.967065276325691</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W48_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.310472597319759,45.96699806772088</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W49_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.307241306260082,45.915560784373525</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W49_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.307258659481221,45.915883502703117</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W49_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.306824150389104,45.915426618879543</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W5_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.314266014448862,45.968264142266392</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W5_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.31427160878242,45.968604302983636</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W5_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.314616346015299,45.968118270390086</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W50_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.306244759312364,45.914634663755713</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W50_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.305822773943447,45.914537841918808</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W50_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.306646085110089,45.914519253237621</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W51_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.320254989334444,45.959743967174276</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W51_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.320244273799318,45.960051153589802</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W51_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.319796741757429,45.959590875784649</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W51_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.322400942378778,45.959323717533479</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W52_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.322011199599075,45.959500587779921</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W52_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.322091456461465,45.959811176731449</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W53_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.257655137820493,45.953202817167174</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W53_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.257702310546946,45.953536239721963</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W53_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.257199452091243,45.95310250469629</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W54_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.261823559141718,45.949347643082895</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W54_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.261423571639355,45.949192671229113</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W54_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.262213498118996,45.949185195012312</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W55_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.2790250227077,45.934006241287712</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W55_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.27909989594049,45.934315869639775</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W55_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.278637185665616,45.933848576655386</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W56_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.317133546893842,45.973911320861831</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W56_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.317181915403168,45.974210011646647</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W56_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.316668730675545,45.97377948474535</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W57_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.326276923596808,45.968200422420161</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W57_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.325864754486275,45.968058722334369</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W57_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.326647426054393,45.968025805555769</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W58_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.235072356310468,45.939596065685357</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W58_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.23462168011001,45.939498970138764</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W58_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.23544699198429,45.939399351458299</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W59_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.273025021952066,45.934325342586696</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W59_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.273016887171678,45.934651084227397</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W59_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.272610612894837,45.93416269351858</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W6_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.320670908855064,45.949024427527874</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W6_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.320738706627154,45.949362321867284</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W6_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.321036660854276,45.948826900261324</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W60_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.266257762135083,45.9607770274039</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W60_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.266332591698017,45.961119991757037</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W60_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.265852914372701,45.960632639001432</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W61_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.258107976607945,45.959311391428884</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W61_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.258144282058126,45.959641033293536</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W61_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.25768368096864,45.959181484229987</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W62_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.288347833268872,45.908538002858286</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W62_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.287946394778885,45.908400279925786</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W62_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.288692800772836,45.908314738642098</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W63_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.287866362722269,45.906010061709338</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W63_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.287881651259084,45.906330763361311</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W63_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.287500641173949,45.905826642291906</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W64_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.314560049959454,45.964891907244933</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W64_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.314142752427827,45.964734868831663</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W64_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.314957965011317,45.964710943299536</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W65_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.297551629720502,45.969433322841084</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W65_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.297597394312874,45.969748017949463</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W65_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.297919460803115,45.969259141006305</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W66_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.304958793763319,45.912125917876693</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W66_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.30457882896971,45.911947338820646</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W66_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.305336741847142,45.911948412805053</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W67_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.279702030684035,45.931773528240896</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W67_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.2792879165644,45.931637786716735</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W67_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.280083121664518,45.931596343919622</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W68_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.273694783454872,45.932515330206726</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W68_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.273742139599776,45.932836213248059</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W68_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.274060317772665,45.932345751270212</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W69_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.297778153378545,45.973109149436972</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W69_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.297807269015237,45.97345010146816</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W69_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.298147793886699,45.972917116306199</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W7_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.320090744595703,45.939322364787365</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W7_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.319642587132037,45.939171354041207</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W7_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.32043348308197,45.939095388792325</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W70_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.268817050295468,45.921954122605129</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W70_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.26883072782249,45.922285696689464</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W70_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.26918986591933,45.921813193758375</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W71_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.266273386915557,45.920638851986638</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W71_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.266270831542514,45.920970037843972</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W71_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.266667474495875,45.920464165608159</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W72_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.227802004986629,45.974602439457037</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W72_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.227802411730536,45.974930364022889</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W72_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.227379871812502,45.974482877181231</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W73_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.225606290011982,45.973812900694746</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W73_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.225166176003626,45.973675188902874</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W73_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.226005542654462,45.973613080749416</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W74_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.226674832152398,45.971015109103753</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W74_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.227050007557381,45.970856221130305</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W75_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.28682552817024,45.910561666535507</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W75_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.286884429848456,45.910875537672858</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W75_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.28720524278863,45.910385658550986</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W76_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.286997713069056,45.909837674049577</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W76_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.286578147714522,45.90969476324296</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W76_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.287377216062438,45.909665098759668</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W77_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.238244593217317,45.957065885738338</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W77_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.237817316463293,45.956944518107392</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W77_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.238619806723321,45.956902847174305</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W78_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.288554082394754,45.954141614668416</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W78_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.288138699065129,45.953980214728375</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W78_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.288955671674231,45.953971431289922</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W79_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.258262183658431,45.938271855964771</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W79_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.257815204289074,45.938179504267239</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W79_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.258606095406364,45.938072392906626</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W8_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.254520786407255,45.973739143830571</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W8_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.254101633778433,45.973621714359631</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W8_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.254853653777033,45.973566078322833</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W80_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.243976974842539,45.958228563777347</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W80_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.244001902976592,45.958552238264701</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W80_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.243555674883154,45.958099711310808</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W81_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.312947786899699,45.917167076122979</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W81_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.312946321448848,45.917504976006782</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W81_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.312556321094078,45.917022465205548</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W82_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.308856568378616,45.915784359310308</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W82_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.308948004399539,45.916097176202115</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W82_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.308420932381708,45.915682085973756</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W83_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.258936459643607,45.966458696013163</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W83_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.258981830089581,45.966789193914799</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W83_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.258533389507377,45.96632988670909</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W84_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.253863582029695,45.967120135292227</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W84_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.253428910537622,45.966977460941415</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W84_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.254231263876861,45.966926639958935</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W85_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.326177441315096,45.907092082718762</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W85_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.326210501151209,45.907415958225513</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W85_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.32657247811764,45.906892468442607</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W86_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.229883336449845,45.936989727580389</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W86_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.229470088249386,45.93685147690347</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W86_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.230267484567079,45.93678567340374</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W87_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.239310691529923,45.960369304842558</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W87_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.239327083784104,45.960677481672725</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W87_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.239682158021495,45.960173508528712</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W88_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.227839474626947,45.971328566699448</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W88_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.227871883706186,45.971645090281143</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W88_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.227414684512027,45.971178949506097</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W89_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.308119271580111,45.973554241807754</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W89_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.307704171802399,45.973460344904176</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W89_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.308492171874747,45.973369911654679</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W9_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.253931221007917,45.909476615226026</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W9_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.254052675063704,45.909777750641247</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W9_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.254341618167686,45.909299798233647</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W90_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.306896797354128,45.912236112756169</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W90_2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.306929102516378,45.912544521625769</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W90_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.307290649505362,45.912056258059771</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W91_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.24950228560904,45.936000235845398</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W91_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.249072607653659,45.935889463911963</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W91_4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.249908909859968,45.935827088577732</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W92_1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.24937854342086,45.969239515523824</coordinates></Point>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#1">
+		<SimpleData name="paste.calib_infile.plot..calib_infile.subplot..sep...._..">W92_3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>-90.248979805782042,45.969082964582284</coordinates></Point>
+  </Placemark>
+</Folder></Document></kml>
