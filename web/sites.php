@@ -7,8 +7,17 @@
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
  */
-require("system.php");
-$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
+
+// Check login
+require("common.php");
+open_database();
+if ($authentication) {
+	if (!check_login()) {
+		close_database();
+		header('HTTP/1.1 403 Unauthorized');
+		exit;
+	}
+}
 
 // Start XML file, create parent node
 $dom = new DOMDocument("1.0");
@@ -28,12 +37,14 @@ if (isset($_REQUEST['model']) && ($_REQUEST['model'] != "")) {
 $query = "SELECT sites.* FROM sites";
 if (isset($_REQUEST['host']) && ($_REQUEST['host'] != "")) {
 	if ($modeltype == "ED2") {
-		$query  = "SELECT DISTINCT sites.* FROM sites, inputs, dbfiles, machines WHERE dbfiles.container_id = inputs.file_id AND inputs.site_id=sites.id";
-		$query .= " AND machines.hostname='{$_REQUEST['host']}' AND dbfiles.machine_id=machines.id";
+		$query  = "SELECT DISTINCT sites.* FROM sites, inputs, dbfiles, machines WHERE inputs.site_id=sites.id";
+		$query .= " AND machines.hostname='{$_REQUEST['host']}'";
+		$query .= " AND dbfiles.container_id = inputs.id AND dbfiles.machine_id=machines.id AND dbfiles.container_type='Input'";
 		$query .= " AND inputs.format_id=12";
 	} else if ($modeltype == "SIPNET") {
-		$query  = "SELECT DISTINCT sites.* FROM sites, inputs, dbfiles, machines WHERE dbfiles.container_id = inputs.file_id AND inputs.site_id=sites.id";
-		$query .= " AND machines.hostname='{$_REQUEST['host']}' AND dbfiles.machine_id=machines.id";
+		$query  = "SELECT DISTINCT sites.* FROM sites, inputs, dbfiles, machines WHERE inputs.site_id=sites.id";
+		$query .= " AND machines.hostname='{$_REQUEST['host']}'";
+		$query .= " AND dbfiles.container_id = inputs.id AND dbfiles.machine_id=machines.id AND dbfiles.container_type='Input'";
 		$query .= " AND inputs.format_id=24";
 	}
 }
@@ -62,5 +73,5 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)){
 
 echo $dom->saveXML();
 
-$pdo = null;
+close_database();
 ?>
