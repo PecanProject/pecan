@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <pecan>
-  <outdir>pecan folder</outdir>
+  <outdir>pecan</outdir>
 
   <database>
     <user>bety</user>
@@ -39,7 +39,7 @@
   <run>
     <site>
       <id>772</id>
-      <met>/Users/kooper/Projects/EBI/sites/niwot/niwot.clim</met>
+      <met>/home/carya/sites/niwot/niwot.clim</met>
     </site>
     <start.date>2002-01-01 00:00:00</start.date>
     <end.date>2005-12-31 00:00:00</end.date>
