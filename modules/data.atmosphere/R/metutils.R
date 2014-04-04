@@ -1,3 +1,16 @@
+## qc functions restricting to "valid range" given in .nc meta-data
+qctemp   <- function(x) ifelse(x > 400 | x < 100, mean(x[x < 400 & x > 100]), x)
+qcsolar  <- function(x) ifelse(x<0, 0, ifelse(abs(x) > 1300, mean(x[x < 1300]), x))
+qcwind   <- function(x) ifelse(abs(x) > 102, mean(abs(x[x < 102])), x)
+qcprecip <- function(x) ifelse(x > 0.005 | x < 0 , mean(x[x < 0.005 & x >0]), x)
+qcrh     <- function(x) {
+    ifelse(x > 100 | x < 0, mean(x[x < 100 & x>0]), x)  using logical range (0-100) rather than "valid range (-25-125)"
+}
+qcshum     <- function(x){
+    x <- ifelse(x > 100 | x < 0, mean(x[x < 0.6553 & x > 0]), x)
+    x[is.na(x)] <- mean(x, na.rm = TRUE)
+}
+
 ##' Convert specific humidity to relative humidity
 ##'
 ##' converting specific humidity into relative humidity
@@ -18,6 +31,18 @@ qair2rh <- function(qair, temp, press = 1013.25){
     rh[rh > 1] <- 1
     rh[rh < 0] <- 0
     return(rh)
+}
+
+##' converts relative humidity to specific humidity
+##' @title RH to SH
+##' @param rh relative humidity (proportion, not %)
+##' @param T absolute temperature (Kelvin)
+##' @export
+##' @author Mike Dietze
+##' @aliases rh2rv
+rh2qair <- function(rh, T){
+  qair <- rh * 2.541e6 * exp(-5415.0 / T) * 18/29
+  return(qair)
 }
  
 ##' Calculate VPD
@@ -53,6 +78,14 @@ get.es <- function(temp){
   es <- 6.11 * exp((2.5e6 / 461) * (1 / 273 - 1 / (273 + temp)))
   return(es)
 }
+## TODO: merge SatVapPress with get.es; add option to choose method
+SatVapPres <- function(T){
+  #/estimates saturation vapor pressure (kPa)  Goff-Gratch 1946
+  #/input: T = absolute temperature
+  0.1*exp( -7.90298*(T_st/T-1) + 5.02808*log(T_st/T) - 1.3816e-7*(10^(11.344*(1-T/T_st))-1) + 8.1328e-3*(10^(-3.49149*(T_st/T-1))-1) + log(e_st))  
+}
+
+
 ##' Calculate RH from temperature and dewpoint
 ##'
 ##' Based on equation 12 ( in Lawrence 2005, The Relationship between
@@ -134,17 +167,22 @@ solarMJ2ppfd <- function(solarMJ){
 }
 
 
-## ## qc functions restricting to "valid range" given in .nc meta-data
-## qctemp   <- function(x) ifelse(x > 400 | x < 100, mean(x[x < 400 & x > 100]), x)
-## qcsolar  <- function(x) ifelse(x<0, 0, ifelse(abs(x) > 1300, mean(x[x < 1300]), x))
-## qcwind   <- function(x) ifelse(abs(x) > 102, mean(abs(x[x < 102])), x)
-## qcprecip <- function(x) ifelse(x > 0.005 | x < 0 , mean(x[x < 0.005 & x >0]), x)
-## qcrh     <- function(x) {
-##     ifelse(x > 100 | x < 0, mean(x[x < 100 & x>0]), x) ## using logical range (0-100) rather than "valid range (-25-125)"
-## }
-## qcshum     <- function(x){
-##     x <- ifelse(x > 100 | x < 0, mean(x[x < 0.6553 & x > 0]), x)
-##     x[is.na(x)] <- mean(x, na.rm = TRUE)
-## }
+##' estimated exner function
+##' @title Exner function
+##' @param pres  air pressure (Bar)
+##' @export
+##' @author Mike Dietze
+exner <- function(pres){
+  1004.0*pres^(287.0/1004.0)
+}
 
-
+##' estimate air density from pressure, temperature, and humidity
+##' @title Air Density
+##' @param pres  air pressure (pascals)
+##' @param T    air temperature (Kelvin)
+##' @param rv   humidity
+##' @export
+##' @author Mike Dietze
+AirDens <- function(pres, T, rv){
+  pres/(287.0*T*(1.0+0.61*rv))
+}
