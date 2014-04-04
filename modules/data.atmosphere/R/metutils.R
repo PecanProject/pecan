@@ -53,6 +53,13 @@ get.es <- function(temp){
   es <- 6.11 * exp((2.5e6 / 461) * (1 / 273 - 1 / (273 + temp)))
   return(es)
 }
+SatVapPres <- function(T){
+  #/estimates saturation vapor pressure (kPa)  Goff-Gratch 1946
+  #/input: T = absolute temperature
+  0.1*exp( -7.90298*(T_st/T-1) + 5.02808*log(T_st/T) - 1.3816e-7*(10^(11.344*(1-T/T_st))-1) + 8.1328e-3*(10^(-3.49149*(T_st/T-1))-1) + log(e_st))  
+}
+
+
 ##' Calculate RH from temperature and dewpoint
 ##'
 ##' Based on equation 12 ( in Lawrence 2005, The Relationship between
@@ -88,3 +95,33 @@ wide2long <- function(data.wide, lat, lon, var){
   return(data.long)
 }
 
+
+##' converts relative humidity to specific humidity
+##' @title RH to SH
+##' @param rh relative humidity (proportion, not %)
+##' @param T absolute temperature (Kelvin)
+##' @export
+##' @author Mike Dietze
+rh2rv <- function(rh, T){
+  rh*2.541e6*exp(-5415.0/T)*18/29
+}
+
+##' estimated exner function
+##' @title Exner function
+##' @param pres  air pressure (Bar)
+##' @export
+##' @author Mike Dietze
+exner <- function(pres){
+  1004.0*pres^(287.0/1004.0)
+}
+
+##' estimate air density from pressure, temperature, and humidity
+##' @title Air Density
+##' @param pres  air pressure (pascals)
+##' @param T    air temperature (Kelvin)
+##' @param rv   humidity
+##' @export
+##' @author Mike Dietze
+AirDens <- function(pres, T, rv){
+  pres/(287.0*T*(1.0+0.61*rv))
+}
