@@ -7,7 +7,7 @@ This will use the following items from setings:
 - settings$run$dbfiles
 - settings$meta.analysis$update}
 \usage{
-  run.meta.analysis(pfts, iterations, dbfiles, database)
+run.meta.analysis(pfts, iterations, dbfiles, database)
 }
 \arguments{
   \item{pfts}{the list of pfts to get traits for}
@@ -20,15 +20,15 @@ This will use the following items from setings:
   \item{database}{database connection parameters}
 }
 \value{
-  nothing, as side effect saves \code{trait.mcmc} created
-  by \code{\link{pecan.ma}} and post.distns created by
-  \code{\link{approx.posterior(trait.mcmc, ...)}} to
-  trait.mcmc.Rdata \ and post.distns.Rdata, respectively
+nothing, as side effect saves \code{trait.mcmc} created by
+\code{\link{pecan.ma}} and post.distns created by
+\code{\link{approx.posterior(trait.mcmc, ...)}} to
+trait.mcmc.Rdata \ and post.distns.Rdata, respectively
 }
 \description{
-  Run meta analysis
+Run meta analysis
 }
 \author{
-  Shawn Serbin, David LeBauer
+Shawn Serbin, David LeBauer
 }
 

@@ -28,12 +28,10 @@ run.meta.analysis.pft <- function(pft, iterations, dbfiles, dbcon) {
   # get list of existing files so they get ignored saving
   old.files <- list.files(path=pft$outdir)
 
-  logger.info(" ")
   logger.info("-------------------------------------------------------------------")
   logger.info(" Running meta.analysis for PFT:", pft$name)
   logger.info("-------------------------------------------------------------------")
-  logger.info(" ")
-
+  
   ## Load trait data for PFT
   load(file.path(pft$outdir, 'trait.data.Rdata'))
   load(file.path(pft$outdir, 'prior.distns.Rdata'))
@@ -49,11 +47,7 @@ run.meta.analysis.pft <- function(pft, iterations, dbfiles, dbcon) {
 
   ## Convert data to format expected by pecan.ma
   jagged.data <- jagify(trait.data)
-  ma.data = jagged.data
-  for (i in 1:length(jagged.data)){
-    ma.data[[i]] <- rename.jags.columns(jagged.data[[i]])
-  }
-  trait.data <- ma.data
+  trait.data  <- lapply(jagged.data, rename.jags.columns)
   ## Check that data is consistent with prior
   for(trait in names(trait.data)){
     data.median    <- median(trait.data[[trait]]$Y)
@@ -66,7 +60,7 @@ run.meta.analysis.pft <- function(pft, iterations, dbfiles, dbcon) {
         logger.warn("CHECK THIS: ", trait, " data and prior are inconsistent:")
       }
     } else if (p.data > 0.9995 | p.data < 0.0005) {
-      logger.severe("NOT OK! ", trait," data and prior are probably not the same:")
+      logger.debug("NOT OK! ", trait," data and prior are probably not the same:")
       return(NA)
     }
     logger.info(trait, "P[X<x] =", p.data)

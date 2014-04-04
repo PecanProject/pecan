@@ -23,11 +23,9 @@
 ##' @author Shawn Serbin, Rob Kooper, ...
 ##'
 start.model.runs <- function(model, write = TRUE){
-  print(" ")
   print("-------------------------------------------------------------------")
   print(paste(" Starting model runs", model))
   print("-------------------------------------------------------------------")
-  print(" ")
 
   # loop through runs and either call start run, or launch job on remote machine
   jobids <- list()
@@ -178,7 +176,7 @@ start.model.runs <- function(model, write = TRUE){
       } else {
         out <- system2("ssh", c(settings$run$host$name, args, recursive=TRUE), stdout=TRUE)
       }
-      if ((length(out) > 0) && (out == "DONE")) {
+      if ((nchar(out) > 0) && (substring(out, nchar(out)-3) == "DONE")) {
         logger.debug("Job", jobids[run], "for run", run, "finished")
         jobids[run] <- NULL
         if (!is.null(dbcon)) {
@@ -199,7 +197,7 @@ start.model.runs <- function(model, write = TRUE){
 
   if (settings$run$host$name != 'localhost') {
     for (run in readLines(con = file.path(settings$rundir, "runs.txt"))) {
-      rsync("-a --delete", paste(settings$run$host$name, file.path(settings$run$host$outdir, run), sep=":"), file.path(settings$outdir, run), pattern="/")
+      rsync("-a --delete", paste(settings$run$host$name, file.path(settings$run$host$outdir, run), sep=":"), file.path(settings$modeloutdir, run), pattern="/")
     }
   }
 

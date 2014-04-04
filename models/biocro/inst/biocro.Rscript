@@ -11,9 +11,9 @@ if(interactive()) {
   outdir <- file.path("salixtest/out", runid)
 }
 # set the libpath here to point to the right version of BioCro
-require(BioCro)
-require(XML)
-
+require(BioCro, quietly = TRUE)
+require(XML, quietly = TRUE)
+browser()
 # load the weather data
 weather <- read.csv(file.path(rundir, "weather.csv"))
 years <- unique(weather$year)
@@ -21,14 +21,20 @@ years <- unique(weather$year)
 # run model
 config <- xmlToList(xmlParse(file.path(rundir, "config.xml")))
 
-ppfun <-  ifelse(config$pft$type$photosynthesis == "C3", "c3photoParms", "photoParms")
-pp <- do.call(ppfun, config$pft$photoParms)  
+if(config$pft$type$photosynthesis == "C3"){
+  pp <- c3photoParms(config$pft$photoParms)
+} else if (config$pft$type$photosynthesis == "C4") {
+  pp <- photoParms(config$pft$photoParms)
+}
 
-cc <- canopyParms(Sp = as.numeric(config$pft$canopyControl$Sp))
+cc <- canopyParms()
 
-genus <- config$pft$genus
+if(!is.null(config$pft$canopyControl$Sp)){
+  cc$Sp <- as.numeric(config$pft$canopyControl$Sp)
+}
+genus <- config$pft$type$genus
 if(!(genus %in% c("Saccharum", "Salix", "Miscanthus"))) {
-    logger.severe("genus", genus, "not supported by PEcAn.BIOCRO module")
+    stop("genus", genus, "not supported by PEcAn.BIOCRO module")
 }
 
 result <- list()
@@ -36,6 +42,7 @@ result <- list()
 for(yeari in years){
     yearchar <- as.character(yeari)
     WetDat <- weather[weather$year == yeari,]
+    print(str(WetDat))
     day1 <- min(WetDat$doy)
     dayn <- max(WetDat$doy)
 
@@ -60,9 +67,9 @@ for(yeari in years){
     }
 
     result.yeari <- with(result[[yearchar]],
-    data.frame(Year = yeari, DayofYear, Hour, ThermalT,
-                Stem, Leaf, Root, Rhizome, Grain, LAI,
-                SoilEvaporation, CanopyTrans))
+                         data.table(Year = yeari, DayofYear, Hour, ThermalT,
+                                    Stem, Leaf, Root, Rhizome, Grain, LAI,
+                                    SoilEvaporation, CanopyTrans))
     if(yeari == min(years)){
         resultDT <- result.yeari
     } else if (yeari > min(years)){
@@ -70,5 +77,11 @@ for(yeari in years){
     }
 }
 
+
+## Three ways of saving the data ... redundant, but useful for development
 write.csv(resultDT, file=file.path(outdir, "result.csv"))
 save(resultDT, config, genus, file = file.path(outdir, "result.RData"))
+#debugonce(model2netcdf.BIOCRO)
+## this is the format that will be read by PEcAn: 
+require(PEcAn.BIOCRO, quietly = TRUE)
+model2netcdf.BIOCRO(resultDT=resultDT, outdir=outdir, sitelat = config$location$latitude, sitelon = config$location$longitude)

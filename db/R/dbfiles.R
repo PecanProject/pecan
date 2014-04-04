@@ -19,6 +19,7 @@
 ##' @param enddate the end date of the data stored in the file
 ##' @param mimetype the mime-type of the file
 ##' @param formatname the name of the format to distinguish between simmilair mime-types
+##' @param parent the id of the parent of the input
 ##' @param con database connection object
 ##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
 ##' @param params database connection information
@@ -29,7 +30,7 @@
 ##' \dontrun{
 ##'   dbfile.input.insert('trait.data.Rdata', siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
 ##' }
-dbfile.input.insert <- function(filename, siteid, startdate, enddate, mimetype, formatname, con, hostname=Sys.info()[['nodename']]) {
+dbfile.input.insert <- function(filename, siteid, startdate, enddate, mimetype, formatname, parentid=NA, con, hostname=Sys.info()[['nodename']]) {
   # find appropriate format
   formatid <- db.query(paste0("SELECT id FROM formats WHERE mime_type='", mimetype, "' AND name='", formatname, "'"), con)[['id']]
   if (is.null(formatid)) {
@@ -38,13 +39,20 @@ dbfile.input.insert <- function(filename, siteid, startdate, enddate, mimetype, 
     formatid <- db.query(paste0("SELECT id FROM formats WHERE mime_type='", mimetype, "' AND name='", formatname, "'"), con)[['id']]
   }
 
+  # setup parent part of query if specified
+  if (is.na(parentid)) {
+    parent <- ""
+  } else {
+    parent <- paste0(" AND parent_id=", parentid)
+  }
+
   # find appropriate input
-  inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, " AND start_date='", startdate, "' AND end_date='", enddate, "';"), con)[['id']]
+  inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, " AND start_date='", startdate, "' AND end_date='", enddate, "'" , parent, ";"), con)[['id']]
   if (is.null(inputid)) {
     # insert input
     db.query(paste0("INSERT INTO inputs (site_id, format_id, created_at, updated_at, start_date, end_date) VALUES (",
                     siteid, ", ", formatid, ", NOW(), NOW(), '", startdate, "', '", enddate, "')"), con)
-    inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, " AND start_date='", startdate, "' AND end_date='", enddate, "';"), con)[['id']]
+    inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, " AND start_date='", startdate, "' AND end_date='", enddate, "'" , parent, ";"), con)[['id']]
   }
 
   invisible(dbfile.insert(filename, 'Input', inputid, con, hostname))
@@ -61,6 +69,7 @@ dbfile.input.insert <- function(filename, siteid, startdate, enddate, mimetype, 
 ##' @param enddate the end date of the data stored in the file
 ##' @param mimetype the mime-type of the file
 ##' @param formatname the name of the format to distinguish between simmilair mime-types
+##' @param parent the id of the parent of the input
 ##' @param con database connection object
 ##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
 ##' @param params database connection information
@@ -71,15 +80,22 @@ dbfile.input.insert <- function(filename, siteid, startdate, enddate, mimetype, 
 ##' \dontrun{
 ##'   dbfile.input.check(siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
 ##' }
-dbfile.input.check <- function(siteid, startdate, enddate, mimetype, formatname, con, hostname=Sys.info()[['nodename']]) {
+dbfile.input.check <- function(siteid, startdate, enddate, mimetype, formatname, parentid=NA, con, hostname=Sys.info()[['nodename']]) {
   # find appropriate format
   formatid <- db.query(paste0("SELECT id FROM formats WHERE mime_type='", mimetype, "' AND name='", formatname, "'"), con)[['id']]
   if (is.null(formatid)) {
     return(invisible(data.frame()))
   }
   
+  # setup parent part of query if specified
+  if (is.na(parentid)) {
+    parent <- ""
+  } else {
+    parent <- paste0(" AND parent_id=", parentid)
+  }
+
   # find appropriate input
-  inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, " AND start_date>='", startdate, "' AND end_date<='", enddate, "';"), con)[['id']]
+  inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, " AND start_date>='", startdate, "' AND end_date<='", enddate, "'" , parent, ";"), con)[['id']]
   if (is.null(inputid)) {
     return(invisible(data.frame()))
   }
