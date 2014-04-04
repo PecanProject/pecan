@@ -67,13 +67,13 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
     
     #create u and v variables and insert into file
     tdim = nc$dim[["DTIME"]]
-    u.var <- ncvar_def(name='u',units='radians',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
+    u.var <- ncvar_def(name='x_wind',units='m/s',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
     nc = ncvar_add(nc=nc,v=u.var,verbose=TRUE) #add variable to existing netCDF file
-    ncvar_put(nc,varid='u',vals=u)
+    ncvar_put(nc,varid='x_wind',vals=u)
     
-    v.var <- ncvar_def(name='v',units='radians',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
+    v.var <- ncvar_def(name='y_wind',units='m/s',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
     nc = ncvar_add(nc=nc,v=v.var,verbose=TRUE) #add variable to existing netCDF file
-    ncvar_put(nc,varid='v',vals=v)
+    ncvar_put(nc,varid='y_wind',vals=v)
    
     #convert air pressure to CF standard
     press <- ncvar_get(nc=nc,varid="PRESS")
@@ -96,7 +96,7 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
     prec.new <- prec[prec.sub]/timestep/60 #mm/s = kg/m2/s
     prec <- replace(x=prec,list=prec.sub,values=prec.new)
     ncvar_put(nc=nc, varid='PREC',vals=prec)
-    ncatt_put(nc=nc,varid='PREC',attname='units',attval='Kg m-2 s-1') 
+    ncatt_put(nc=nc,varid='PREC',attname='units',attval='Kg/m^2/s') 
     nc <- ncvar_rename(nc=nc,'PREC','precipitation_flux')
     
     
@@ -108,9 +108,11 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
     ta.rh <- ta[rh.sub] # use T coincident with RH
     sh.miss <- rh2rv(rh=rh.sh[rh.sub],T=ta.rh) #conversion, doesn't include missvals
     sh <- replace(x=rh,list=rh.sub,values=sh.miss) #insert Kelvin values into vector
-    sh.var <- ncvar_def(name='specific_humidity',units='ratio',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
+    sh.var <- ncvar_def(name='surface_specific_humidity',units='kg/kg',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
     nc = ncvar_add(nc=nc,v=sh.var,verbose=TRUE) #add variable to existing netCDF file
-    ncvar_put(nc,varid='specific_humidity',vals=sh)
+    ncvar_put(nc,varid='surface_specific_humidity',vals=sh)
+    nc <- ncvar_rename(nc=nc,'RH','relative_humidity')
+    
 
     nc_close(nc)
   

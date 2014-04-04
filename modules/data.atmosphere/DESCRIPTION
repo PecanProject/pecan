@@ -26,4 +26,5 @@ Collate:
     'InputForWeach.R'
     'nceputils.R'
     'metutils.R'
+    'met2CF.Ameriflux.R'
 
