@@ -137,20 +137,6 @@ if [ "$FORCE" == "yes" ]; then
   diff git.log newlog | grep '^> ' | sed 's/^> //' > changes.log
   mv newlog git.log
 
-  # get committer names and emails
-  # TODO all commiters are smushed together
-  #IFS_BAK=$IFS
-  #IFS=`echo -e '\n'`
-  #NAMES=""
-  #EMAILS=""
-  #for c in `grep 'committer: ' changes.log | sort -u`; do
-  #  EMAILS="${EMAILS},`echo $c | sed -e 's/.*<\(.*\)>/\1/'`"
-  #done
-  #IFS=$IFS_BAK
-  #NAMES=$( grep 'committer: ' changes.log | uniq | sed -e 's/committer: //' )
-  #EMAILS=$( grep 'committer: ' changes.log | uniq | sed -e 's/.*<\(.*\)>/\1/' )
-  #TO="${TO} ${EMAILS}"
-
   # get version number
   REVNO=$( git show -s --pretty=format:%T master )
 
@@ -229,7 +215,7 @@ if [ "$TEST" == "yes" ]; then
   cd tests
   for f in ${HOSTNAME}.*.xml; do
     rm -rf pecan
-    ./workflow.R ${R_LIB_INC} --settings $f &> output.log
+    Rscript --vanilla workflow.R --settings $f &> output.log
     if [ $? -ne 0 ]; then
       STATUS="BROKEN"
       echo "----------------------------------------------------------------------" >> changes.log
