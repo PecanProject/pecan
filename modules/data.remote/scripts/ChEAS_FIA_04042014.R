@@ -8,7 +8,7 @@
 require(sp)
 require(rgdal)
 require(raster)
-
+require(chron)
 require(RgoogleMaps)
 require(maptools)
 require(ggplot2)
@@ -25,7 +25,11 @@ fia=0 #1 = use FIA coordinates, 0 = use WLEF/Park Falls Tower coordinates
 leaf.off=0 #1=include PALSAR scenes acquired duing leaf off period of the year, 0=exclude leaf off scene dates
 # buff=c(48) #vector of buffer sizes (in meters) to extract
 coord.set<-c("WLEF", "FIA")
+
+#Brady's Linux paths
 # metadata<- read.csv("~/data.remote/output/metadata/output_metadata.csv", sep="\t", header=T) ##for Brady's Linux
+
+#Brady's Mac paths
 metadata<- read.csv("/Users/hardimanb/Desktop/data.remote(Andys_Copy)/output/metadata/output_metadata.csv", sep="\t", header=T) ##location of PALSAR metadata table
 palsar_inpath <- file.path("/Users/hardimanb/Desktop/data.remote(Andys_Copy)/palsar_scenes/geo_corrected_single_sigma") ##location of PALSAR raw files
 calib_inpath <-"/Users/hardimanb/Desktop/data.remote(Andys_Copy)/biometry" ##location of file containing (FIA) plot coords and biomass values for calibrating PALSAR backscatter 
@@ -276,6 +280,15 @@ if(fia==1){ #FIA data does not contain a plot-id, so here I add a dummy plot-id
 #   colnames(dat60)<-c("scnid","scndate", "plot", "UTM.lat", "UTM.lon", "biomass","HH.sigma.60", "HV.sigma.60")
 }
 
+# dat60$scnid<-as.character(dat60$scnid)
+# dat60$scndate<-as.Date(dat60$scndate,"%Y-%M-%d")
+# dat60$UTM.lat<- as.numeric(as.character(dat60$UTM.lat))
+# dat60$UTM.lon<- as.numeric(as.character(dat60$UTM.lon))
+# dat60$biomass<- as.numeric(as.character(dat60$biomass))
+# dat60$HH.sigma.60<- as.numeric(as.character(dat60$HH.sigma.60))
+# dat60$HV.sigma.60<- as.numeric(as.character(dat60$HV.sigma.60))
+# write.csv(dat60,file=paste(outpath,"/dat60.csv",sep=""),quote=FALSE,row.names=F)
+
 ## NOTE: Converting to dataframe changes all values to factor, so here I reformat the data and save it
 dat48$scnid<-as.character(dat48$scnid)
 dat48$scndate<-as.Date(dat48$scndate,"%Y-%m-%d")
@@ -285,6 +298,8 @@ dat48$UTM.lon<- as.numeric(as.character(dat48$UTM.lon))
 dat48$biomass<- as.numeric(as.character(dat48$biomass))
 dat48$HH.sigma.48<- as.numeric(as.character(dat48$HH.sigma.48))
 dat48$HV.sigma.48<- as.numeric(as.character(dat48$HV.sigma.48))
+dat48$year<-as.numeric(format(dat48$scndate,"%Y"))
+dat48$month<-as.numeric(format(dat48$scndate,"%m"))
 
 #This will exclude scenes from the leaf off period (Nov-April)
 if(leaf.off==1){ #include leaf off data
@@ -292,6 +307,31 @@ if(leaf.off==1){ #include leaf off data
 }else{ #exclude leaf off data
   dat48<-dat48[as.numeric(format(dat48$scndate,"%m"))>=05 & as.numeric(format(dat48$scndate,"%m"))<=10,]
 }
+
+#Generate column of DOYs
+dats<-as.character(dat48$scndate) #reformat as character
+data.doy.07<-chron(dates = as.character(dat48$scndate[grep("2007",dats)]), format = (dates = "Y-m-d"), origin = c(day = 1, month = 0, year = 2007))
+data.doy.07<-as.numeric(data.doy.07)
+data.year.07<-substr(dat48$scndate[grep("2007",dates)],1,4)
+data.dates.07<-cbind(data.year.07,data.doy.07)
+
+data.doy.08<-chron(dates = as.character(dat48$scndate[grep("2008",dats)]), format = (dates = "Y-m-d"), origin = c(day = 1, month = 0, year = 2008))
+data.doy.08<-as.numeric(data.doy.08)
+data.year.08<-substr(dat48$scndate[grep("2008",dates)],1,4)
+data.dates.08<-cbind(data.year.08,data.doy.08)
+
+data.doy.09<-chron(dates = as.character(dat48$scndate[grep("2009",dats)]), format = (dates = "Y-m-d"), origin = c(day = 1, month = 0, year = 2009))
+data.doy.09<-as.numeric(data.doy.09)
+data.year.09<-substr(dat48$scndate[grep("2009",dates)],1,4)
+data.dates.09<-cbind(data.year.09,data.doy.09)
+
+data.doy.10<-chron(dates = as.character(dat48$scndate[grep("2010",dats)]), format = (dates = "Y-m-d"), origin = c(day = 1, month = 0, year = 2010))
+data.doy.10<-as.numeric(data.doy.10)
+data.year.10<-substr(dat48$scndate[grep("2010",dates)],1,4)
+data.dates.10<-cbind(data.year.10,data.doy.10)
+
+dat48$doy<-c(data.dates.07,data.dates.08,data.dates.09,data.dates.10)
+
 #Save extracted data
 write.table(dat48,file=paste(outpath,"/",coord.set[fia+1],"_dat48.csv",sep=""),sep=",",quote=FALSE,col.names = TRUE, row.names=F)
 
@@ -309,29 +349,40 @@ dat48$HH.sigma.48<- as.numeric(as.character(dat48$HH.sigma.48))
 dat48$HV.sigma.48<- as.numeric(as.character(dat48$HV.sigma.48))
 dat48$year<-as.numeric(format(dat48$scndate,"%Y"))
 dat48$month<-as.numeric(format(dat48$scndate,"%m"))
-dat48$doy<-
+dat48$doy<-as.numeric(dat48$doy)
 
   
+#Generate PDF of raw data exploration
+#NOTE: Some of these figures will not be relevant for the FIA dataset
+pdf(paste(outpath,"/",coord.set[fia+1], "_ExtractionQCplots.pdf",sep=""),width = 6, height = 6, paper='special')
 
-dates<-as.character(dat48$scndate) #reformat as character
-data.doy.07<-chron(dates = dat48$scndate[grep("2007",dates)], format = (dates = "Y-m-d"), origin = c(day = 1, month = 0, year = 2007))
-data.doy.07<-as.numeric(data.doy.07)
-data.year.07<-substr(dat48$scndate[grep("2007",dates)],1,4)
-data.dates.07<-cbind(data.year.07,data.doy.07)
-  
-  
-
+#Plot HH values for each year-month combo
+par(mfrow=c(3,6))
 for(y in unique(dat48$year)){
   for(m in unique(dat48$month)){
-    if(length(dat48$biomass[dat48$month==m  & dat48$year==y])<1){
+    if(length(dat48$biomass[dat48$month==m  & dat48$year==y])<1){ #Skips Year-month combos with no data
       next
-    }else{
+    }else{ 
       plot(dat48$biomass[dat48$month==m  & dat48$year==y],dat48$HH.sigma.48[dat48$month==m & dat48$year==y],
            xlab="biomass",ylab='HH',main=paste(month.abb[m],y,sep=" ") )
     }#if
   }#for m
 }#for y
 
+#Plot HV values for each year-month combo
+par(mfrow=c(3,6))
+for(y in unique(dat48$year)){
+  for(m in unique(dat48$month)){
+    if(length(dat48$biomass[dat48$month==m  & dat48$year==y])<1){ #Skips Year-month combos with no data
+      next
+    }else{ 
+      plot(dat48$biomass[dat48$month==m  & dat48$year==y],dat48$HV.sigma.48[dat48$month==m & dat48$year==y],
+           xlab="biomass",ylab='HV',main=paste(month.abb[m],y,sep=" ") )
+    }#if
+  }#for m
+}#for y
+
+#Plot comparing HH values of May, June, August 2007
 par(mfrow=c(1,3))
 plot(dat48$HH.sigma.48[dat48$month==5  & dat48$year==2007],dat48$HH.sigma.48[dat48$month==6 & dat48$year==2007],
      xlab="05 HH",ylab='06 HH',main="may 2007 vs jun 2007")
@@ -349,30 +400,32 @@ plot(dat48$HH.sigma.48[dat48$month==6  & dat48$year==2007],dat48$HH.sigma.48[dat
     abline(0,1,lwd=2,lty=2,col="grey")
     abline(fit1,lwd=2,lty=1,col="red")
 
-# dat60$scnid<-as.character(dat60$scnid)
-# dat60$scndate<-as.Date(dat60$scndate,"%Y-%M-%d")
-# dat60$UTM.lat<- as.numeric(as.character(dat60$UTM.lat))
-# dat60$UTM.lon<- as.numeric(as.character(dat60$UTM.lon))
-# dat60$biomass<- as.numeric(as.character(dat60$biomass))
-# dat60$HH.sigma.60<- as.numeric(as.character(dat60$HH.sigma.60))
-# dat60$HV.sigma.60<- as.numeric(as.character(dat60$HV.sigma.60))
-# write.csv(dat60,file=paste(outpath,"/dat60.csv",sep=""),quote=FALSE,row.names=F)
+#Plot comparing HV values of May, June, August 2007
+par(mfrow=c(1,3))
+plot(dat48$HV.sigma.48[dat48$month==5  & dat48$year==2007],dat48$HV.sigma.48[dat48$month==6 & dat48$year==2007],
+     xlab="05 HV",ylab='06 HV',main="may 2007 vs jun 2007")
+fit1<-lm(dat48$HV.sigma.48[dat48$month==6 & dat48$year==2007] ~ dat48$HV.sigma.48[dat48$month==5  & dat48$year==2007])
+abline(0,1,lwd=2,lty=2,col="grey")
+abline(fit1,lwd=2,lty=1,col="red")
+plot(dat48$HV.sigma.48[dat48$month==5  & dat48$year==2007],dat48$HV.sigma.48[dat48$month==8 & dat48$year==2007],
+     xlab="05 HV",ylab='08 HV',main="may 2007 vs aug 2007")
+fit2<-lm(dat48$HV.sigma.48[dat48$month==5  & dat48$year==2007] ~ dat48$HV.sigma.48[dat48$month==8 & dat48$year==2007])
+abline(0,1,lwd=2,lty=2,col="grey")
+abline(fit1,lwd=2,lty=1,col="red")
+plot(dat48$HV.sigma.48[dat48$month==6  & dat48$year==2007],dat48$HV.sigma.48[dat48$month==8 & dat48$year==2007],
+     xlab="06 HV",ylab='08 HV',main="jun 2007 vs aug 2007")
+fit3<-lm(dat48$HV.sigma.48[dat48$month==6  & dat48$year==2007] ~ dat48$HV.sigma.48[dat48$month==8 & dat48$year==2007])
+abline(0,1,lwd=2,lty=2,col="grey")
+abline(fit1,lwd=2,lty=1,col="red")
 
-
-#Generate PDF of raw data exploration
-#NOTE: Some of these figures will not be relevant for the FIA dataset
-pdf(paste(outpath,"/",coord.set[fia+1], "_ExtractionQCplots.pdf",sep=""),width = 6, height = 6, paper='special')
-
+#Plot scene frequency by year, month
 par(mfrow=c(1,2))
-years<-as.numeric(format(dat48$scndate,"%Y"))
-hist(years,freq=TRUE,main="By year")
-months<-as.numeric(format(dat48$scndate,"%m"))
-hist(months,freq=TRUE,main="By month")
+hist(dat48$year,freq=TRUE,main="By year")
+hist(dat48$month,freq=TRUE,main="By month")
 
 # par(mfrow=c(1,1))
 # hist(dat48$scndate,freq=T,100,xaxt="n")
 # axis(1, dat48$scndate, format(dat48$scndate, "%b %Y"), cex.axis = .7)
-
 
 par(mfrow=c(1,3))
 hist(dat48$biomass,main=paste(coord.set[fia+1],"biomass",sep=" "))
