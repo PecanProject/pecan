@@ -3,7 +3,7 @@
 ## TODO: modify write.configs to enable regional runs
 ##       bounding box comes from from sites geom
 ##       grid size specified in config file
-.libPaths("/home/dlebauer/library/R")
+.libPaths("/home/a-m/dlebauer/library/R")
 library(PEcAn.data.atmosphere)
 library(BioCro)
 library(ncdf4)
@@ -11,20 +11,21 @@ library(lubridate)
 arg   <- commandArgs(trailingOnly = TRUE)
 
 ## TODO: Pass lat, lon, start/end date, outdir, met.file, soil parameters in config.xml
-if(length(arg) == 0){
-     lat <- 40.08
-     lon <- -88.23
+#if(length(arg) == 0){
+#     lat <- 40.08
+#     lon <- -88.23
      start.date <- "1990-01-01"
-     end.date <- "1995-01-01"
-     outdir <- "/home/dlebauer/.pecan/demo/"
+     end.date <- "2000-12-31"
+     outdir <- "/home/a-m/dlebauer/.pecan/demo/"
+     inputdir <- "/home/groups/ebimodeling/"
      met.file <- file.path(inputdir, "met/cruncep/all.nc")
-} else {
+#} else {
 #     configs <- readXML(args[1])
 # lat <- config$lat
 # lon <- config$lon
-     lat <- arg[1]
-     lon <- arg[2]
-}
+#     lat <- arg[1]
+#     lon <- arg[2]
+#}
 
 ## library(PEcAn.DB)
 ## todo find soil.nc with spatial queries
@@ -36,7 +37,7 @@ soil.nc <- nc_open(file.path(inputdir, "soil/global/soil_global_hd_filled.nc"))
 
 met.nc <-  nc_open(met.file, readunlim = FALSE)
 
-cruncep_nc2dt <- function(lat, lon, met.nc, start.date = "1990-01-01", end.date = "1992-12-31"){
+cruncep_nc2dt <- function(lat, lon, met.nc, start.date, end.date){
 
 
     ## Lat and Lon
@@ -48,21 +49,21 @@ cruncep_nc2dt <- function(lat, lon, met.nc, start.date = "1990-01-01", end.date 
 
     time.idx <- ncvar_get(met.nc, "time")
 
-    date <- ymd("1700-01-01") + days(floor(time.idx)) + hours(24*(time.idx - floor(time.idx)))
-    time_steps <- length(date)
-    doy <- yday(date)
-    year <- year(date)
-    month <- month(date)
-    day <- day(date)
-    hour <- hour(date) ## redundant, but clear
+    all.dates <- data.table(index = seq(time.idx),
+                            date = ymd("1700-01-01") +
+                            days(floor(time.idx)) +
+                            hours(24*(time.idx - floor(time.idx))))
+    run.dates <- all.dates[date > ymd(start.date) & date < ymd(end.date),
+                           list(index, date, doy = yday(date),
+                                year = year(date), month = month(date),
+                                day  = day(date), hour = hour(date))]
     
     currentlat <- round(lat, 2)
     currentlon <- round(lon, 2)
-    result <- list()
-    
-    vars <- list(date = date, year = year, month = month, day = day,
-                 doy = doy, hour = hour)
-
+    results <- list()
+     
+    vars <- list()
+ 
     mask <- ncvar_get(nc = met.nc, varid = "mask",
                       start = c(loni, lati),
                       count = c(1,1)) 
@@ -71,70 +72,23 @@ cruncep_nc2dt <- function(lat, lon, met.nc, start.date = "1990-01-01", end.date 
     if(mask == -1) {
         stop(paste("chosen lat:", lat, "and  lon:", lon, " is in the ocean"))
     } else if (mask > 0){
-        for(var in variables){
-            ## TODO check if vars can be sent as vector
-            vars[[var]] <- as.numeric(ncvar_get(nc = met.nc,
-                                                varid = var,
-                                                start = c(loni, lati, which.min(abs(date - ymd(start.date)))),
-                                                count = c(1, 1, which.max(abs(ymd(end.date) - date)))))
+        get.ncvar <- function(var, lati = lati, loni = loni, run.dates = run.dates){
+            ans <- as.numeric(ncvar_get(nc = met.nc,
+                                        varid = var,
+                                        start = c(loni, lati, run.dates$index[1]),
+                                        count = c(1, 1, nrow(run.dates))))
+            return(ans)
         }
+        vars <- parallel::mclapply(variables, function(x) get.ncvar(x, lati = lati, loni = loni, run.dates = run.dates ))
+        names(vars) <- variables
+        # if the above throws an error ... 
+        #vars <- lapply(variables, function(x) get.ncvar(x, lati = lati, loni = loni, run.dates = run.dates ))
     }
     
-    result <- as.data.table(vars)
+    result <- cbind(run.dates, as.data.table(vars))
     result$wind <- result[,list(wind = sqrt(uwind^2 + vwind^2))]
     return(result)   
 }
-
-#if(!file.exists(file.path(outdir, "result.RData"))){
-#system.time(result <- cruncep_nc2dt(lat = 40, lon = -88, met.nc = met.nc))
-#    save(result, file = file.path(outdir, "result.RData"))
-#} else {
-#    load(file.path(outdir, "result.RData"))
-#}
-##' convert PAR to PPFD
-##'
-##' Converts photosynthetically active radiation (PAR, units of Watts / m2) to
-##' photosynthetic photon flux density (PPFD) in units of mol / m2 / s 
-##' From Campbell and Norman p151
-##' PPFD = PAR * (J/m2/s) * (1 mol / 2.35e5 J)
-##' 2.35e5 J / mol is the energy content of solar radiation in the PAR waveband
-##' 0.486 is based on the approximation that PAR is 0.45-0.50 of the total radiation
-##' @title 
-##' @param PAR (W / m2) 
-##' @author David LeBauer
-##' @export
-##' @return PPFD (mol / m2 / s) 
-##' @author David LeBauer
-par2ppfd <- function(watts){
-    ppfd <- watts / (2.35 * 10^5)
-    ud.convert(ppfd, "mol ", "umol")
-}
-
-
-##' Solar Radiation to PPFD
-##' 
-##' There is no easy straight way to convert MJ/m2 to mu mol photons / m2 / s (PAR)
-##' The above conversion is based on the following reasoning
-##' 0.12 is about how much of the total radiation is expected to ocurr during the hour of maximum insolation (it is a guesstimate)
-##' 2.07 is a coefficient which converts from MJ to mol photons (it is approximate and it is taken from ...
-##' Campbell and Norman (1998). Introduction to Environmental Biophysics. pg 151 'the energy content of solar radiation in the PAR waveband is 2.35 x 10^5 J/mol'
-##' See also the chapter radiation basics (10)
-##' Here the input is the total solar radiation so to obtain in the PAR spectrum need to multiply by 0.486
-##' This last value 0.486 is based on the approximation that PAR is 0.45-0.50 of the total radiation
-##' This means that 1e6 / (2.35e6) * 0.486 = 2.07
-##' 1e6 converts from mol to mu mol
-##' 1/3600 divides the values in hours to seconds
-##' 
-##' @title MJ to PPFD
-##' @author Fernando Miguez
-##' @author David LeBauer
-##' @param solarMJ MJ per day
-##' @return PPFD umol /m2 / s
-solarMJ2ppfd <- function(solarMJ){
-  solarR <- (0.12 * solarMJ) * 2.07 * 1e6 / 3600
-  return(solarR)
-}
-
 
 cruncep_hourly <- function(result, lat){
     
@@ -202,21 +156,6 @@ qair2rh <- function(qair, temp, press = 1013.25){
     return(rh)
 }
 
-## ## qc functions restricting to "valid range" given in .nc meta-data
-## qctemp   <- function(x) ifelse(x > 400 | x < 100, mean(x[x < 400 & x > 100]), x)
-## qcsolar  <- function(x) ifelse(x<0, 0, ifelse(abs(x) > 1300, mean(x[x < 1300]), x))
-## qcwind   <- function(x) ifelse(abs(x) > 102, mean(abs(x[x < 102])), x)
-## qcprecip <- function(x) ifelse(x > 0.005 | x < 0 , mean(x[x < 0.005 & x >0]), x)
-## qcrh     <- function(x) {
-##     ifelse(x > 100 | x < 0, mean(x[x < 100 & x>0]), x) ## using logical range (0-100) rather than "valid range (-25-125)"
-## }
-## qcshum     <- function(x){
-##     x <- ifelse(x > 100 | x < 0, mean(x[x < 0.6553 & x > 0]), x)
-##     x[is.na(x)] <- mean(x, na.rm = TRUE)
-## }
-
-
-
 cruncep_dt2weather <- function(weather = result){
 
     x <- weather[,list(year, doy = doy, hour = hour,
@@ -268,14 +207,14 @@ get.latlonbox <- function(lati, loni, Lat = Lat, Lon = Lon){
     return(c(sort(lat), sort(lon)))
 }
 
-get.cruncep <- function(lat, lon, start.date = NA, end.date = NA){
+get.cruncep <- function(lat, lon, start.date, end.date){
     result <- cruncep_nc2dt(lat, lon)
     new.result <- cruncep_hourly(result, lat = Lat[lati])
     weather <- cruncep_dt2weather(new.result)
     return(weather)
 }
 
-run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = soil.nc, start.date, end.date){
+run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = soil.nc, start.date = start.date, end.date = end.date){
     ## get soil data
     ## abox <- get.latlonbox(lati = lati, loni = loni, Lat = Lat, Lon = Lon)
     ## soil <- get.hwsd.box(abox, con = con)
@@ -307,7 +246,7 @@ run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = soil.nc, start.date,
                              data.frame(Year = yeari, DayofYear, Hour, ThermalT,
                                         Stem, Leaf, Root, Rhizome, Grain, LAI,
                                         SoilEvaporation, CanopyTrans))
-        if(yeari == min(years)){
+        if(yeari == min(years) | !exists("resultDT")){
             resultDT <- result.yeari
         } else if (yeari > min(years)){
             resultDT <- rbind(resultDT, result.yeari)
@@ -327,25 +266,28 @@ Lat <- ncvar_get(nc = met.nc, varid = "lat")
 Lon <- ncvar_get(nc = met.nc, varid = "lon")
 
 ## for US
-Lat <- Lat[Lat > 32 & Lat < 49]
-Lon <- Lon[Lon < -67 & Lon > -125]
+#Lat <- Lat[Lat > 32 & Lat < 49]
+#Lon <- Lon[Lon < -67 & Lon > -125]
 
 subsample <- "TRUE"
 if(subsample){
-   Lat <- Lat[1:5*5]
-   Lon <- Lon[1:5*20]
+   Lat <- Lat[1:18*20]
+   Lon <- Lon[1:36*20]
 }
-   
-tmp <- data.table(lat = logical(0), lon = logical(0), yield = logical(0))
+#Lat <- Lat[1]
+#Lon <- Lon[1]
+tmp <- NULL
 for(lat in Lat){
     for(lon in Lon){
         land <- is.land(lat, lon)
         if(land){
-            out <- run.biocro(lat, lon, met.nc = met.nc, soil.nc = soil.nc)
-            save(out, file = file.path(outdir,
-                          paste0(lat, "N", lon, "Woutput.RData")))
-            tmp <- rbind(tmp, last(out)[,list(lat = lat, lon = lon, yield = Stem)])
+            out <- run.biocro(lat, lon, met.nc = met.nc, soil.nc = soil.nc, start.date = start.date, end.date = end.date)
+#            save(out, file = file.path(outdir,
+#                          paste0(lat, "N", lon, "Woutput.RData")))
+            tmp <- rbind(tmp, last(out[,list(lat, lon, Year, DayofYear, Hour,
+                                            ThermalT, Stem, Leaf, Root, Rhizome,
+                                            Grain, LAI, SoilEvaporation, CanopyTrans)]))
         }
     }
 }
-save(tmp, file = file.path(outdir, "allyields.RData"))
+save(tmp, file = file.path(outdir, "biocro_output.RData"))
