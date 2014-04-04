@@ -7,22 +7,10 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-#-------------------------------------------------------------------------------
-# STAGE 1 - run all steps until model
-# STAGE 2 - run the model
-# STAGE 3 - run everything after the model
-#-------------------------------------------------------------------------------
-
 # ----------------------------------------------------------------------
 # Load required libraries
 # ----------------------------------------------------------------------
 library(PEcAn.all)
-
-# ----------------------------------------------------------------------
-# initialization
-# ----------------------------------------------------------------------
-# load the pecan settings
-settings <- read.settings("pecan.xml")
 
 # ----------------------------------------------------------------------
 # status functions
@@ -44,24 +32,74 @@ options(error=quote({
 
 #options(warning.expression=status.end("ERROR"))
 
+
 # ----------------------------------------------------------------------
-# run workflow
+# initialization
 # ----------------------------------------------------------------------
+# load the pecan settings
+settings <- read.settings("pecan.xml")
+
+# remove existing STATUS file
+if (length(which(commandArgs() == "--continue")) == 0) {
+	file.remove("STATUS")
+
+	# setup pss/css by running fia2ED
+	status.start("FIA2ED")
+	# # TODO see if we need to call fia
+	# if (".attrs" %in% names(settings$model$psscss)) {
+	# 	if (settings$model$psscss$.attrs[["generate"]] == "fia") {
+	# 		fia.to.psscss(settings)
+	# 		status.end()
+	# 	} else {
+	# 		stop("No information on how to generate psscss files.")
+	# 	}
+	# } else {
+	# 	status.end("SKIPPED")
+	# }
+	status.end("SKIPPED")
+
+	# get data from pecan DB
+	status.start("TRAIT")
+	settings$pfts <- get.trait.data(settings$pfts, settings$run$dbfiles, settings$database, settings$meta.analysis$update)
+	saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
+	status.end()
+
+	# run meta-analysis
+	status.start("META")
+	run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database)
+	status.end()
+
+	# write model specific configs
+	status.start("CONFIG")
+	run.write.configs(settings$model$name, settings$bety$write)
+	status.end()
+}
+
+status.start("EDIT")
+if (length(which(commandArgs() == "--advanced")) != 0) {
+	q();
+} else {
+	status.end("SKIPPED")
+}
+
+# run model
+status.start("MODEL")
+start.model.runs(settings$model$name, settings$bety$write)
+status.end()
+
 # convert output
 status.start("OUTPUT")
-convert.outputs(settings$model$name, settings)
-# special for web, print all nc vars
-data(mstmip_vars, package="PEcAn.utils")
-for (runid in readLines(con=file.path(settings$rundir, "runs.txt"))) {
-	for(file in list.files(path=file.path(settings$modeloutdir, runid), pattern="*.nc")) {
-		nc <- nc_open(file.path(settings$modeloutdir, runid, file))
-		for(v in sort(names(nc$var))) {
-			name <- mstmipvar(v, silent=TRUE)['longname']
-			cat(paste(v, name), file=file.path(settings$modeloutdir, runid, paste(file, "var", sep=".")), append=TRUE, sep="\n")
-		}
-		nc_close(nc)
-	}
-}
+get.results(settings)
+status.end()
+
+# ensemble analysis
+status.start("ENSEMBLE")
+run.ensemble.analysis(TRUE)    
+status.end()
+
+# sensitivity analysis
+status.start("SENSITIVITY")
+run.sensitivity.analysis()
 status.end()
 
 # all done

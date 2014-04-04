@@ -8,6 +8,17 @@
  * http://opensource.ncsa.illinois.edu/license.html
  */
 
+// Check login
+require("common.php");
+open_database();
+if ($authentication) {
+	if (!check_login()) {
+		header( "Location: index.php");
+		close_database();
+		exit;
+	}
+}
+
 # boolean parameters
 $offline=isset($_REQUEST['offline']);
 
@@ -16,10 +27,6 @@ if (!isset($_REQUEST['workflowid'])) {
   die("Need a workflowid.");
 }
 $workflowid=$_REQUEST['workflowid'];
-
-// database parameters
-require("system.php");
-$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
 
 // get run information
 $query = "SELECT * FROM workflows WHERE workflows.id=$workflowid";
@@ -173,16 +180,6 @@ foreach(scandir("$folder/out") as $runid) {
 		}
 	}
 ?>
-    function resize() {
-        if ($("#stylized").height() < $(window).height()) {
-            $("#stylized").height($(window).height() - 5);
-        } else {
-            $("#stylized").height(Math.max($("#stylized").height(), $("#output").height()));
-        }
-        $("#output").height($("#stylized").height());
-        $("#output").width($(window).width() - $('#stylized').width() - 5);
-    }
-
 	function prevStep() {
 		$("#formprev").submit();
 	}
@@ -200,7 +197,7 @@ foreach(scandir("$folder/out") as $runid) {
 	}
 
 	function showRunYearVarPlot(run, year, variable) {
-		var url="dataset.php?workflowid=<?=$workflowid?>&type=plot&run=" + run + "&year=" + year + "&var=" + variable + "&width=" + ($("#output").width()-10) + "&height=" + ($(window).height() - 10);
+		var url="dataset.php?workflowid=<?php echo $workflowid; ?>&type=plot&run=" + run + "&year=" + year + "&var=" + variable + "&width=" + ($("#output").width()-10) + "&height=" + ($("#output").height() - 10);
 		$("#output").html("<img src=\"" + url + "\">");		
 	}
 
@@ -209,7 +206,7 @@ foreach(scandir("$folder/out") as $runid) {
 	}
 
 	function show(name) {
-		var url="dataset.php?workflowid=<?=$workflowid?>&type=file&name=" + name;
+		var url="dataset.php?workflowid=<?php echo $workflowid; ?>&type=file&name=" + name;
 		if (endsWith(url, ".xml")) {
 			jQuery.get(url, {}, function(data) {
 				setOuput((new XMLSerializer()).serializeToString(data));
@@ -237,6 +234,7 @@ foreach(scandir("$folder/out") as $runid) {
 	}
 
 	function updatePFToutput(pft) {
+		$('#pftOutput').empty();
 		$.each(pfts[pft], function(key, value) {   
 		     $('#pftOutput')
 		         .append($("<option></option>")
@@ -246,21 +244,32 @@ foreach(scandir("$folder/out") as $runid) {
 	}
 
 	function updateOutputRun(run) {
+		$('#outfile').empty();
 		$.each(runfile[run], function(key, value) {   
 		     $('#outfile')
 		         .append($("<option></option>")
 //		         .attr("value",key)
 		         .text(value)); 
 		});
+		$('#outyear').empty();
 		$.each(Object.keys(runplot[run]), function(key, value) {
 		     $('#outyear')
 		         .append($("<option></option>")
 //		         .attr("value",key)
 		         .text(value)); 
 		});
+		year = $('#outyear')[0].value;
+		$('#outvar').empty();
+		$.each(runplot[run][year], function(key, value) {
+		     $('#outvar')
+		         .append($("<option></option>")
+		         .attr("value",key)
+		         .text(value)); 
+		});
 	}
 
 	function updateOutputYear(run, year) {
+		$('#outvar').empty();
 		$.each(runplot[run][year], function(key, value) {
 		     $('#outvar')
 		         .append($("<option></option>")
@@ -276,9 +285,6 @@ foreach(scandir("$folder/out") as $runid) {
 	function startsWith(haystack, needle) {
 		return (haystack.substr(0, needle.length) === needle);
 	}
-	
-    window.onresize = resize;
-    window.onload = resize;
 </script>
 </head>
 <body>
@@ -302,12 +308,6 @@ foreach(scandir("$folder/out") as $runid) {
 ?>
 			</select>
 			<div class="spacer"></div>
-			<label>File</label>
-			<select id="outfile">
-			</select>
-			<div class="spacer"></div>
-
-			<input id="home" type="button" value="Show Run Output" onclick="showRunOutput($('#outrun')[0].value, $('#outfile')[0].value);" />
 
 			<label>Year</label>
 			<select id="outyear" onChange="updateOuputYear($('#outrun')[0].value, $('#outyear')[0].value);">
@@ -322,6 +322,12 @@ foreach(scandir("$folder/out") as $runid) {
 			<input id="home" type="button" value="Plot run/year/variable" onclick="showRunYearVarPlot($('#outrun')[0].value, $('#outyear')[0].value, $('#outvar')[0].value);" />
 			<div class="spacer"></div>
 
+			<label>File</label>
+			<select id="outfile">
+			</select>
+			<div class="spacer"></div>
+
+			<input id="home" type="button" value="Show Run File" onclick="showRunOutput($('#outrun')[0].value, $('#outfile')[0].value);" />
 			<p></p>
 
 			<h2>PFTs</h2>
@@ -351,7 +357,7 @@ foreach(scandir("$folder/out") as $runid) {
 
 			<h2>PEcAn Files</h2>
 			<select id="log">
-				<?=$logs?>
+				<?php echo $logs; ?>
 			</select>
 			<div class="spacer"></div>
 			<input id="home" type="button" value="Show File" onclick="showPEcAnOutput($('#log')[0].value);" />
@@ -365,7 +371,7 @@ foreach(scandir("$folder/out") as $runid) {
 <?php } ?>
 		</form>
 		
-		<form id="formnext" method="POST" action="selectsite.php">
+		<form id="formnext" method="POST" action="02-modelsite.php">
 <?php if ($offline) { ?>
 			<input name="offline" type="hidden" value="offline">
 <?php } ?>
@@ -376,8 +382,20 @@ foreach(scandir("$folder/out") as $runid) {
 		<input id="prev" type="button" value="History" onclick="prevStep();" />
 		<input id="next" type="button" value="Start Over" onclick="nextStep();"/>		
 		<div class="spacer"></div>
+<?php
+	if (check_login()) {
+		echo "<p></p>";
+		echo "Logged in as " . get_user_name();
+		echo "<a href=\"index.php?logout\" id=\"logout\">logout</a>";
+	}
+?>		
 	</div>
 	<div id="output">Please select an option on the left.</div>
+	<div id="footer">
+		The <a href="http://pecanproject.org">PEcAn project</a> is supported by the National Science Foundation
+		(ABI #1062547, ARC #1023477) and the <a href="http://www.energybiosciencesinstitute.org/">Energy
+		Biosciences Institute</a>.
+	</div>
 </div>
 </body>
 	<script type="text/javascript">

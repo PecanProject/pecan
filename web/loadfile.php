@@ -7,6 +7,18 @@
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
  */
+
+// Check login
+require("common.php");
+open_database();
+if ($authentication) {
+	if (!check_login()) {
+		close_database();
+		header('HTTP/1.1 403 Unauthorized');
+		exit;
+	}
+}
+
 // runid
 if (!isset($_REQUEST['workflowid'])) {
   die("Need a workflowid.");
@@ -16,10 +28,6 @@ if (!isset($_REQUEST['name'])) {
 	die("Need name.");
 }
 $name = $_REQUEST['name'];
-
-// database parameters
-require("system.php");
-$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
 
 // get run information
 $query = "SELECT folder FROM workflows WHERE workflows.id=${workflowid}";
@@ -38,5 +46,6 @@ if (substr($file, 0, strlen($folder)) != $folder) {
 if (file_exists($file)) {
 	readfile($file);
 }
-$pdo = null;
+
+close_database();
 ?>
