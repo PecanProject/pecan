@@ -52,16 +52,19 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
     nc <- ncvar_rename(nc=nc,'TA','air_temperature')
     
     #convert wind speed and wind direction to U and V
-    #assumes we have both wind speed and direction at the same time 
     ws <- ncvar_get(nc=nc,varid='WD') #wind direction
     wd <- ncvar_get(nc=nc,varid='WS') #wind speed
-    ws.sub <- which(ws > -6999)
-    wd.sub <- wd[ws.sub] #use wind direction coincident with windspeed
-    u <- ws[ws.sub]*cos(wd.sub*(pi/180))
-    v <- ws[ws.sub]*sin(wd.sub*(pi/180))
+    sub <- which(ws > -6999 & wd > -6999)
+    w.miss <- pmin(ws[-sub],wd[-sub])
+    wd.sub <- wd[sub] #use wind direction coincident with windspeed
+    u = v = rep(NA,length(ws))
+    u[sub] <- ws[sub]*cos(wd.sub*(pi/180))
+    v[sub] <- ws[sub]*sin(wd.sub*(pi/180))
+    u[-sub] = w.miss
+    v[-sub] = w.miss
     nc <- ncvar_rename(nc=nc,'WS','wind_speed') #CF name
+    nc <- ncvar_rename(nc=nc,'WD','wind_direction') #CF name
     
-    #TO FIX: u and v vectors are not the correct length
     #create u and v variables and insert into file
     tdim = nc$dim[["DTIME"]]
     u.var <- ncvar_def(name='u',units='radians',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
@@ -71,10 +74,7 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
     v.var <- ncvar_def(name='v',units='radians',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
     nc = ncvar_add(nc=nc,v=v.var,verbose=TRUE) #add variable to existing netCDF file
     ncvar_put(nc,varid='v',vals=v)
-    
-    #create new netCDF variables u and v
-
-    
+   
     #convert air pressure to CF standard
     press <- ncvar_get(nc=nc,varid="PRESS")
     press.pa <- which(press > -6999)
@@ -108,9 +108,6 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
     ta.rh <- ta[rh.sub] # use T coincident with RH
     sh.miss <- rh2rv(rh=rh.sh[rh.sub],T=ta.rh) #conversion, doesn't include missvals
     sh <- replace(x=rh,list=rh.sub,values=sh.miss) #insert Kelvin values into vector
-#    sh.dim <- ncdim_def(name='specific_humidity',units='ratio',vals=sh,
-#                         create_dimvar=TRUE,longname='specific humidity') #define netCDF dimension
-    tdim = nc$dim[["DTIME"]]
     sh.var <- ncvar_def(name='specific_humidity',units='ratio',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
     nc = ncvar_add(nc=nc,v=sh.var,verbose=TRUE) #add variable to existing netCDF file
     ncvar_put(nc,varid='specific_humidity',vals=sh)
