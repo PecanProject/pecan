@@ -2,7 +2,7 @@
 \alias{distn.stats}
 \title{Distribution Stats}
 \usage{
-  distn.stats(distn, a, b)
+distn.stats(distn, a, b)
 }
 \arguments{
   \item{distn}{named distribution, one of "beta", "exp",
@@ -13,17 +13,16 @@
   \item{b}{numeric; second parameter of \code{distn}}
 }
 \value{
-  vector with mean and standard deviation
+vector with mean and standard deviation
 }
 \description{
-  Implementation of standard equations used to calculate
-  mean and sd for a variety of named distributions
-  different
+Implementation of standard equations used to calculate mean
+and sd for a variety of named distributions different
 }
 \examples{
 distn.stats("norm", 0, 1)
 }
 \author{
-  David LeBauer
+David LeBauer
 }
 
