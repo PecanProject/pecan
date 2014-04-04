@@ -3,11 +3,13 @@
 This folder provides some simple tests for each model. They can be run with the following syntax:
 
 ```
-  R --vanilla -- --settings <pecanfile> < workflow.R 
+./workflow.R --settings <pecanfile>
 
 # for example to run the ed workflow:
-  R --vanilla -- --settings pecan.ed.xml < workflow.R 
+./workflow.R --settings pecan.ed.xml
 ```
+
+Since workflow.R is a simple rscript you can pass in standard R flags, such as --vanilla, etc.
 
 ## Files:
 
@@ -31,5 +33,6 @@ For example, you can add `debugonce(run.meta.analysis)` to `workflow.R` and then
 R --vanilla -- --settings <pecanfile>
 ```
 ```{r}
- source "workflow.R"
+debugonce(run.meta.analysis)
+source "workflow.R"
 ```

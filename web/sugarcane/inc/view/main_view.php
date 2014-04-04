@@ -21,7 +21,7 @@
 
 					<ul class="nav nav-tabs fixed">
 						<? foreach ($tabs as $key=>$tab) { ?>
-						<li<? if($key==0) echo ' class="active"';?>><a href="#<?=$tab[0]?>"><?=$tab[0]?></a></li>
+						<li<? if($key==0) echo ' class="active"';?>><a href="#<?php echo $tab[0]; ?>"><?php echo $tab[0]; ?></a></li>
 						<? } ?>
 						<div class="buttons">
 							<input type="hidden" name="command" value="continue"/>
@@ -31,16 +31,16 @@
 
 					<div class="tab-content">
 						<? foreach ($tabs as $key=>$tab) { ?>
-						<div class="tab-pane<? if($key==0) echo " active";?>" id="<?=$tab[0]?>">
+						<div class="tab-pane<? if($key==0) echo " active";?>" id="<?php echo $tab[0]; ?>">
 							<div class="form-horizontal">
 								<fieldset>
-									<legend><?=$tab[0]?></legend>
+									<legend><?php echo $tab[0]; ?></legend>
 									<? foreach ($tab[1] as $param) { 
 									$param_name=$tab[0].'_'.$param->nodeName; ?>
 									<div class="control-group">
-										<label class="control-label" for="<?=$param_name?>"><?=$param->nodeName?></label>
+										<label class="control-label" for="<?php echo $param_name; ?>"><?php echo $param->nodeName; ?></label>
 										<div class="controls">
-											<input type="text" name="<?=$param->getNodePath()?>" value="<?=$param->nodeValue?>"/>
+											<input type="text" name="<?php echo $param->getNodePath(); ?>" value="<?php echo $param->nodeValue; ?>"/>
 										</div>
 									</div>
 									<? } ?>
