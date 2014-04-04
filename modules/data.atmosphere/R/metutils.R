@@ -88,3 +88,63 @@ wide2long <- function(data.wide, lat, lon, var){
   return(data.long)
 }
 
+
+##' convert PAR to PPFD
+##'
+##' Converts photosynthetically active radiation (PAR, units of Watts / m2) to
+##' photosynthetic photon flux density (PPFD) in units of mol / m2 / s 
+##' From Campbell and Norman p151
+##' PPFD = PAR * (J/m2/s) * (1 mol / 2.35e5 J)
+##' 2.35e5 J / mol is the energy content of solar radiation in the PAR waveband
+##' 0.486 is based on the approximation that PAR is 0.45-0.50 of the total radiation
+##' @title 
+##' @param PAR (W / m2) 
+##' @author David LeBauer
+##' @export
+##' @return PPFD (mol / m2 / s) 
+##' @author David LeBauer
+par2ppfd <- function(watts){
+    ppfd <- watts / (2.35 * 10^5)
+    ud.convert(ppfd, "mol ", "umol")
+}
+
+
+##' Solar Radiation to PPFD
+##' 
+##' There is no easy straight way to convert MJ/m2 to mu mol photons / m2 / s (PAR)
+##' The above conversion is based on the following reasoning
+##' 0.12 is about how much of the total radiation is expected to ocurr during the hour of maximum insolation (it is a guesstimate)
+##' 2.07 is a coefficient which converts from MJ to mol photons (it is approximate and it is taken from ...
+##' Campbell and Norman (1998). Introduction to Environmental Biophysics. pg 151 'the energy content of solar radiation in the PAR waveband is 2.35 x 10^5 J/mol'
+##' See also the chapter radiation basics (10)
+##' Here the input is the total solar radiation so to obtain in the PAR spectrum need to multiply by 0.486
+##' This last value 0.486 is based on the approximation that PAR is 0.45-0.50 of the total radiation
+##' This means that 1e6 / (2.35e6) * 0.486 = 2.07
+##' 1e6 converts from mol to mu mol
+##' 1/3600 divides the values in hours to seconds
+##' 
+##' @title MJ to PPFD
+##' @author Fernando Miguez
+##' @author David LeBauer
+##' @param solarMJ MJ per day
+##' @return PPFD umol /m2 / s
+solarMJ2ppfd <- function(solarMJ){
+  solarR <- (0.12 * solarMJ) * 2.07 * 1e6 / 3600
+  return(solarR)
+}
+
+
+## ## qc functions restricting to "valid range" given in .nc meta-data
+## qctemp   <- function(x) ifelse(x > 400 | x < 100, mean(x[x < 400 & x > 100]), x)
+## qcsolar  <- function(x) ifelse(x<0, 0, ifelse(abs(x) > 1300, mean(x[x < 1300]), x))
+## qcwind   <- function(x) ifelse(abs(x) > 102, mean(abs(x[x < 102])), x)
+## qcprecip <- function(x) ifelse(x > 0.005 | x < 0 , mean(x[x < 0.005 & x >0]), x)
+## qcrh     <- function(x) {
+##     ifelse(x > 100 | x < 0, mean(x[x < 100 & x>0]), x) ## using logical range (0-100) rather than "valid range (-25-125)"
+## }
+## qcshum     <- function(x){
+##     x <- ifelse(x > 100 | x < 0, mean(x[x < 0.6553 & x > 0]), x)
+##     x[is.na(x)] <- mean(x, na.rm = TRUE)
+## }
+
+
