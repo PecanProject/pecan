@@ -7,6 +7,18 @@
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
  */
+
+// Check login
+require("common.php");
+open_database();
+if ($authentication) {
+	if (!check_login()) {
+		close_database();
+		header('HTTP/1.1 403 Unauthorized');
+		exit;
+	}
+}
+
 // runid
 if (!isset($_REQUEST['workflowid'])) {
   die("Need a workflowid.");
@@ -17,10 +29,6 @@ if (!isset($_REQUEST['type'])) {
   die("Need type.");
 }
 $type=$_REQUEST['type'];
-
-// database parameters
-require("system.php");
-$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
 
 // get run information
 $query = "SELECT folder FROM workflows WHERE workflows.id=${workflowid}";
@@ -70,7 +78,7 @@ switch ($type) {
 			die("Need var.");
 		}
 		$var=$_REQUEST['var'];
-        $datafile=$folder . "/out/" . $run . "/" . $year . ".nc";
+		$datafile=$folder . "/out/" . $run . "/" . $year . ".nc";
 		$width=600;
 		if (isset($_REQUEST['width']) && ($_REQUEST['width'] > $width)) {
 			$width=$_REQUEST['width'];
@@ -80,8 +88,8 @@ switch ($type) {
 			$height=$_REQUEST['height'];
 		}
 		$mime = "image/png";
-		$file = tempnam('','');
-		shell_exec("R_LIBS_USER='${pecan_install}' PECANSETTINGS='$folder/pecan.xml' R CMD BATCH --vanilla '--args $datafile $year $var $width $height $file' plot.netcdf.R /dev/null");
+		$file = tempnam(sys_get_temp_dir(),'plot') . ".png";
+		shell_exec("R_LIBS_USER='${pecan_install}' PECANSETTINGS='$folder/pecan.xml' ${Rbinary} CMD BATCH --vanilla '--args $datafile $year $var $width $height $file' plot.netcdf.R /tmp/plot.out");
 		break;
 		
 	default:
@@ -89,7 +97,7 @@ switch ($type) {
 }
 
 if (!file_exists($file)) {
-	die("Invalid file name specified.");			
+	die("Invalid file name specified ${file}.");			
 }
 if ($mime != "") {
 	header("Content-type: $mime");

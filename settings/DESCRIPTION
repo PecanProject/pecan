@@ -17,6 +17,3 @@ Depends:
     XML
 Suggests:
     testthat
-Collate:
-    'settings-package.r'
-    'read.settings.R'
