@@ -7,7 +7,10 @@
 \arguments{
   \item{data}{input data}
 }
+\value{
+A data frame NAs sensibly replaced
+}
 \description{
-
+Transform NA values in data exported from BETYdb
 }
 

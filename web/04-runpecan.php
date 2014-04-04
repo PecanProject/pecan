@@ -7,8 +7,15 @@
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
  */
-require("system.php");
-$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
+require("common.php");
+open_database();
+if ($authentication) {
+	if (!check_login()) {
+		header( "Location: index.php");
+		close_database();
+		exit;
+	}
+}
 
 # boolean parameters
 $userok=isset($_REQUEST['userok']);
@@ -64,7 +71,10 @@ if (($modeltype == "ED2") || ($modeltype == "SIPNET")) {
 		die("Need a weather file.");
 	}
 	$met=$_REQUEST['met'];	
-    $query="SELECT file_path, file_name, start_date, end_date FROM inputs, dbfiles, machines WHERE inputs.site_id=${siteid} AND inputs.file_id=${met} AND dbfiles.container_id=inputs.file_id AND machines.hostname='${hostname}' AND dbfiles.machine_id=machines.id;";
+    $query="SELECT file_path, file_name, start_date, end_date FROM inputs, dbfiles, machines WHERE " .
+           " inputs.site_id=${siteid} AND inputs.id=${met}" .
+           " AND dbfiles.container_id=inputs.id AND dbfiles.container_type='Input'" .
+           " AND machines.hostname='${hostname}' AND machines.id=dbfiles.machine_id";
     $result = $pdo->query($query);
     if (!$result) {
       print_r(error_database());
@@ -86,7 +96,10 @@ if ($modeltype == "ED2") {
 	}
 	$psscss=$_REQUEST['psscss'];
 	if($psscss != "FIA") {
-	    $query="SELECT file_path, file_name FROM inputs, dbfiles, machines WHERE inputs.site_id=${siteid} AND inputs.file_id=${psscss} AND dbfiles.container_id=inputs.file_id AND machines.hostname='${hostname}' AND dbfiles.machine_id=machines.id;";
+ 	    $query="SELECT file_path, file_name FROM inputs, dbfiles, machines WHERE" .
+                   " inputs.site_id=${siteid} AND inputs.id=${psscss}" .
+                   " AND dbfiles.container_id=inputs.id AND dbfiles.container_type='Input'" .
+                   " AND machines.hostname='${hostname}' AND machines.id=dbfiles.machine_id";
 	    $result = $pdo->query($query);
 	    if (!$result) {
 	      print_r(error_database());
@@ -261,7 +274,7 @@ fwrite($fh, "  </run>" . PHP_EOL);
 if ($email != "") {
 	$url = ($_SERVER['HTTPS'] ? "https://" : "http://");
 	$url .= $_SERVER['HTTP_HOST'] . ':' . $_SERVER['SERVER_PORT'];
-	$url .= str_replace("runpecan.php", "finished.php", $_SERVER["SCRIPT_NAME"]);
+	$url .= str_replace("04-runpecan.php", "08-finished.php", $_SERVER["SCRIPT_NAME"]);
 	if ($offline) {
 		$url .= "?workflowid=${workflowid}&offline=offline";
 	} else {
@@ -281,20 +294,23 @@ fclose($fh);
 #}
 
 # copy workflow
-copy("workflow_stage1.R", "${folder}/workflow_stage1.R");
-copy("workflow_stage2.R", "${folder}/workflow_stage2.R");
-copy("workflow_stage3.R", "${folder}/workflow_stage3.R");
+copy("workflow.R", "${folder}/workflow.R");
 
 # start the actual workflow
 chdir($folder);
-pclose(popen('R_LIBS_USER="' . $pecan_install . '" R CMD BATCH workflow_stage1.R &', 'r'));
+if ($advanced_edit) {
+	pclose(popen('R_LIBS_USER="' . $pecan_install . '" ' . $Rbinary . ' CMD BATCH --advanced  workflow.R &', 'r'));	
+} else {
+	pclose(popen('R_LIBS_USER="' . $pecan_install . '" ' . $Rbinary . ' CMD BATCH workflow.R &', 'r'));	
+}
 
 #done
 if ($offline) {
-	header("Location: running_stage1.php?workflowid=$workflowid&offline=offline");
+	header("Location: 05-running.php?workflowid=$workflowid&offline=offline");
 } else {
-	header("Location: running_stage1.php?workflowid=$workflowid");
+	header("Location: 05-running.php?workflowid=$workflowid");
 }
-$pdo = null;
+
+close_database();
 ?>
 

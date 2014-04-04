@@ -30,7 +30,7 @@
 ##' @param overdispersed TRUE by default, if set to FALSE, data mean will be used as starting point for MCMC chains (use with caution)
 ##' @return four chains with 5000 total samples from posterior 
 ##' @author David LeBauer, Michael C. Dietze
-##'
+##' @export
 ##' @examples
 ##' \dontrun{
 ##' prior.distns <- query.priors('ebifarm.c4crop', c('SLA', 'c2n_leaf'))

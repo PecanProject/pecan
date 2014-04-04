@@ -110,9 +110,9 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
     clearscratch <- "# no need to clear scratch"
   } else {
     modeloutdir <- file.path(settings$run$host$scratchdir, run.id)
-    copyscratch <- paste("rsync", "-a", file.path(modeloutdir, "*"), outdir)
+    copyscratch <- paste("rsync", "-a", paste0('"', file.path(modeloutdir, "*"), '"'), paste0('"', outdir, '"'))
     if (is.null(settings$run$host$clearscratch) || is.na(as.logical(settings$run$host$clearscratch)) || as.logical(settings$run$host$clearscratch)) {
-      clearscratch <- paste("rm", "-rf", modeloutdir)
+      clearscratch <- paste("rm", "-rf", paste0('"', modeloutdir, '"'))
     } else {
       clearscratch <- "# scratch is not cleared"
     }
