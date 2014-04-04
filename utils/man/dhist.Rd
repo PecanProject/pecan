@@ -2,9 +2,8 @@
 \alias{dhist}
 \title{Diagonally Cut Histogram}
 \usage{
-  dhist(x, a = 5 * iqr(x), nbins = nclass.Sturges(x),
-    rx = range(x, na.rm = TRUE), eps = 0.15, xlab = "x",
-    plot = TRUE, lab.spikes = TRUE)
+dhist(x, a = 5 * iqr(x), nbins = nclass.Sturges(x), rx = range(x, na.rm =
+  TRUE), eps = 0.15, xlab = "x", plot = TRUE, lab.spikes = TRUE)
 }
 \arguments{
   \item{x}{is a numeric vector (the data)}
@@ -30,32 +29,32 @@
   spikes}
 }
 \value{
-  list with two elements, heights of length n and breaks of
-  length n+1 indicating the heights and break points of the
-  histogram bars.
+list with two elements, heights of length n and breaks of
+length n+1 indicating the heights and break points of the
+histogram bars.
 }
 \description{
-  Variable-width (dagonally cut) histogram
+Variable-width (dagonally cut) histogram
 }
 \details{
-  When constructing a histogram, it is common to make all
-  bars the same width. One could also choose to make them
-  all have the same area. These two options have
-  complementary strengths and weaknesses; the equal-width
-  histogram oversmooths in regions of high density, and is
-  poor at identifying sharp peaks; the equal-area histogram
-  oversmooths in regions of low density, and so does not
-  identify outliers. We describe a compromise approach
-  which avoids both of these defects. We regard the
-  histogram as an exploratory device, rather than as an
-  estimate of a density.
+When constructing a histogram, it is common to make all
+bars the same width. One could also choose to make them all
+have the same area. These two options have complementary
+strengths and weaknesses; the equal-width histogram
+oversmooths in regions of high density, and is poor at
+identifying sharp peaks; the equal-area histogram
+oversmooths in regions of low density, and so does not
+identify outliers. We describe a compromise approach which
+avoids both of these defects. We regard the histogram as an
+exploratory device, rather than as an estimate of a
+density.
 }
 \author{
-  Lorraine Denby, Colin Mallows
+Lorraine Denby, Colin Mallows
 }
 \references{
-  Lorraine Denby, Colin Mallows. Journal of Computational
-  and Graphical Statistics. March 1, 2009, 18(1): 21-31.
-  doi:10.1198/jcgs.2009.0002.
+Lorraine Denby, Colin Mallows. Journal of Computational and
+Graphical Statistics. March 1, 2009, 18(1): 21-31.
+doi:10.1198/jcgs.2009.0002.
 }
 
