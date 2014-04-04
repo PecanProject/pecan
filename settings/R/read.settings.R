@@ -319,7 +319,9 @@ check.settings <- function(settings) {
                           params=settings$database)
         if(nrow(model) > 1){
           logger.warn("multiple records for", settings$model$name, "returned; using the most recent")
-          model <- model[which.max(ymd_hms(model$updated_at)), ]
+          row <- which.max(ymd_hms(model$updated_at))
+          if (length(row) == 0) row <- nrow(model)
+          model <- model[row, ]
         } else if (nrow(model) == 0) {
           logger.warn("Model", settings$model$name, "not in database")
           model <- list(id=-1, name=settings$model$name)

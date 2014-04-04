@@ -1,14 +1,14 @@
 #!/bin/bash
 
 # create output folder
-mkdir -p @OUTDIR@
+mkdir -p "@OUTDIR@"
 
 # see if application needs running
-if [ ! -e @OUTDIR@/sipnet.out ]; then
-  cd @RUNDIR@
-  ln -s @SITE_MET@ sipnet.clim
-  @BINARY@ &> @OUTDIR@/logfile.txt
-  mv @RUNDIR@/sipnet.out @OUTDIR@
+if [ ! -e "@OUTDIR@/sipnet.out" ]; then
+  cd "@RUNDIR@"
+  ln -s "@SITE_MET@" sipnet.clim
+  @BINARY@ &> "@OUTDIR@/logfile.txt"
+  mv "@RUNDIR@/sipnet.out" "@OUTDIR@"
 
   # convert to MsTMIP
   echo "require (PEcAn.SIPNET)
@@ -17,6 +17,6 @@ model2netcdf.SIPNET('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DA
 fi
 
 # copy readme with specs to output
-cp  @RUNDIR@/README.txt @OUTDIR@/README.txt
+cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
 
 # run getdata to extract right variables
