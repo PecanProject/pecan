@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <pecan>
-  <outdir>pecan folder</outdir>
+  <outdir>pecan</outdir>
 
   <database>
     <user>bety</user>
@@ -15,7 +15,7 @@
 
   <pfts>
     <pft>
-      <name>sipnet.temperate.coniferous</name> 
+      <name>ebifarm.c4grass.doe_vd</name> 
     </pft>
   </pfts>
 
@@ -23,6 +23,7 @@
     <variable>NPP</variable>
   </ensemble>
 
+<!--
   <sensitivity.analysis>
     <quantiles>
       <sigma>-1</sigma>
@@ -30,10 +31,12 @@
     </quantiles>
     <variable>NPP</variable>
   </sensitivity.analysis>
+-->
 
   <model>
-    <binary>/usr/local/bin/ed.r82</binary>
+    <binary>/usr/local/bin/ed2.r82</binary>
     <name>ED2</name>
+    <revision>82</revision>
     <config.header>
       <radiation>
         <lai_min>0.01</lai_min>
