@@ -41,24 +41,16 @@ outpath <- file.path("/Users/hardimanb/Desktop/data.remote(Andys_Copy)/output/da
 ##      to match PALSAR extent. Reprojects extraction coords to match PALSAR geotiffs.
 ################################
 if(fia==1){ #EXTRACTS FROM FIA COORDINATES
-#   calib_inpath <-"~/data.remote/biometry/Link_to_Forest_Biomass_Calibration_Coords" ##for Brady's Linux
   calib_infile <-read.csv(file.path(calib_inpath,"wi-biomass-fuzzed.csv"), sep=",", header=T) #Wisconsin FIA plots
   coords<-data.frame(calib_infile$FUZZED_LON,calib_infile$FUZZED_LAT) #lon and lat (ChEAS: UTM Zone 15N NAD83)
   Sr1<- SpatialPoints(coords,proj4string=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"))
   
-#   Sr1<-spTransform(Sr1,CRS(raster))
-
-#   wi.fia<-data.frame(calib_infile$FUZZED_LAT,calib_infile$FUZZED_LON)
   latlon<-data.frame(calib_infile$FUZZED_LAT,calib_infile$FUZZED_LON)
-#   FIA.points <- SpatialPointsDataFrame(Sr1, wi.fia) #convert to class="SpatialPointsDataFrame" for export as kml
   spdf.latlon <- SpatialPointsDataFrame(Sr1, latlon) #convert to class="SpatialPointsDataFrame" for export as kml
   if(kml==1){writeOGR(spdf.latlon, layer=1, "WI_FIA.kml", driver="KML") #export as kml (this puts in in the Home folder) 
   }
 }else{#EXTRACTS FROM WLEF COORDINATES
-  #   calib_inpath <-"~/data.remote/biometry/Link_to_Forest_Biomass_Calibration_Coords" ##for Brady's Linux
   calib_infile <-read.csv(file.path(calib_inpath,"biometry_trimmed.csv"), sep=",", header=T) #WLEF plots
-#   upid<-paste(calib_infile$plot,calib_infile$subplot,sep='.') #create unique plot identifier
-#   calib_infile<-cbind(calib_infile[,1:2],upid,calib_infile[,3:8])
   calib_infile<-aggregate(calib_infile, list(calib_infile[,1]), mean) ##This will give errors, but these can be safely ignored
   calib_infile$plot<-calib_infile$Group.1
   calib_infile<-cbind(calib_infile[,2],calib_infile[,5:9])
@@ -86,7 +78,6 @@ Srs1<- Polygons(list(ChEAS_PLASAR_extent),"ChEAS_PLASAR_extent") #spatial polygo
 ChEAS_PLASAR_extent<-SpatialPolygons(list(Srs1),proj4string=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")) 
 
 Sr1<-spTransform(Sr1,CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"))
-# FIA.in.cheas<-as.vector(over(FIA.points,ChEAS_PLASAR_extent)) #subset of FIA plots that falls within Cheas-PALSAR extent
 coords.in.cheas<-as.vector(over(Sr1,ChEAS_PLASAR_extent)) #subset of plots that falls within Cheas-PALSAR extent
 
 # FIA.in.cheas[is.na(FIA.in.cheas)]<-0 #replace na's with 0's for indexing
@@ -100,9 +91,7 @@ if(fia==1){
 }
 
 ## Subset extraction coords that fall within PALSAR observation area
-# cheasFIA<-Sr1@coords[FIA.in.cheas==1,] 
 cheas.coords<-Sr1@coords[coords.in.cheas==1,] ##subset of coords that falls within Cheas-PALSAR extent
-# spcheasFIA <- SpatialPoints(cheasFIA,proj4string=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"))
 spcheascoords <- SpatialPoints(cheas.coords,proj4string=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"))
 
 ##Plot-IDs; will be used later on for generating time series of backscatter values
@@ -117,12 +106,6 @@ if(fia==1){
 ################################
 ## Begin extracting PALSAR values at FIA plot coordinates
 ################################
-# palsar_inpath <- file.path("/home/bhardima/git/pecan/modules/data.remote/palsar_scenes/Link_to_cheas/geo_corrected_single_sigma") ##For Brady's Linux
-# file.info<-read.table(file="/home/bhardima/git/pecan/modules/data.remote/output/metadata/output_metadata.csv",header=T,sep="\t")
-
-# date<-as.Date(metadata$scndate, format='%Y%m%d')
-# col_names<-c(rbind(paste(date, "HH",sep="_"),paste(date, "HV",sep="_")))
-
 pol_bands<-c("HH", "HV")
 numfiles<-length(list.files(file.path(palsar_inpath, pol_bands[1]), pattern=".tif" ,recursive=F))
 
@@ -133,20 +116,7 @@ numfiles<-length(list.files(file.path(palsar_inpath, pol_bands[1]), pattern=".ti
 # colnames(disturbance_extracted)<-col_names
 # colnames(disturbance_extracted_40m)<-col_names
 
-if( fia==1){
-#   extracted_48m<-matrix(NA, nrow=numfiles*nrow(spcheascoords@coords),ncol=7) #matrix to store extracted palsar values. 
-#   extracted_60m<-matrix(NA, nrow=numfiles*nrow(spcheascoords@coords),ncol=7) #matrix to store extracted palsar values.
-  extracted_48m<-matrix(nrow=0, ncol=10) #matrix to store extracted palsar values. nrow=number of coordinates being extracted. ncol=# of pol_bands
-#   extracted_60m<-matrix(nrow=0, ncol=7) #matrix to store extracted palsar values. nrow=number of coordinates being extracted. ncol=# of pol_bands
-} else{
-#   extracted_48m<-matrix(NA, nrow=numfiles*nrow(spcheascoords@coords),ncol=8) #matrix to store extracted palsar values. 
-#   extracted_60m<-matrix(NA, nrow=numfiles*nrow(spcheascoords@coords),ncol=8) #matrix to store extracted palsar values. 
-  extracted_48m<-matrix(nrow=0, ncol=10) #matrix to store extracted palsar values. nrow=number of coordinates being extracted. ncol=# of pol_bands
-#   extracted_60m<-matrix(nrow=0, ncol=8) #matrix to store extracted palsar values. nrow=number of coordinates being extracted. ncol=# of pol_bands
-}
-
-# colnames(extracted_48m)<-pol_bands
-# colnames(extracted_60m)<-pol_bands
+extracted_48m<-matrix(nrow=0, ncol=10) #matrix to store extracted palsar values. nrow=number of coordinates being extracted. ncol=# of pol_bands
 
 for(i in 1:numfiles){ 
         HH_filelist<-as.vector(list.files(file.path(palsar_inpath, pol_bands[1]), pattern=".tif" ,recursive=F))
@@ -164,43 +134,24 @@ for(i in 1:numfiles){
         ##        This means that the extraction loop will some number of palsar scenes that have all zeros for the backscatter values.
         ##        These zeros are truncated in post processing, prior to curve fitting.
         ################################################
-#         rast_box<-bbox(HH_rast@extent) #bounding box of single palsar scene
         scnid<-substr(as.character(HV_filelist[i]),1,15)
         
         ##create data.frame from raster corner coords by querying metadata
         ##NOTE: I multiply the lon coord by -1 to make it work with the 'longlat' projection
-#         pals.ext<-Polygon(rbind(
-#         c(metadata$scn_nwlon[metadata$scnid==scnid[1]],metadata$scn_nwlat[metadata$scnid==scnid[1]]),
-#         c(metadata$scn_nelon[metadata$scnid==scnid[1]],metadata$scn_nelat[metadata$scnid==scnid[1]]),
-#         c(metadata$scn_selon[metadata$scnid==scnid[1]],metadata$scn_selat[metadata$scnid==scnid[1]]),
-#         c(metadata$scn_swlon[metadata$scnid==scnid[1]],metadata$scn_swlat[metadata$scnid==scnid[1]]),
-#         c(metadata$scn_nwlon[metadata$scnid==scnid[1]],metadata$scn_nwlat[metadata$scnid==scnid[1]])))
-
-pals.ext<-Polygon(rbind(
-  c(xmin(HH_rast),ymin(HH_rast)),
-  c(xmin(HH_rast),ymax(HH_rast)),
-  c(xmax(HH_rast),ymax(HH_rast)),
-  c(xmax(HH_rast),ymin(HH_rast)),
-  c(xmin(HH_rast),ymin(HH_rast))))
+        pals.ext<-Polygon(rbind(
+          c(xmin(HH_rast),ymin(HH_rast)),
+          c(xmin(HH_rast),ymax(HH_rast)),
+          c(xmax(HH_rast),ymax(HH_rast)),
+          c(xmax(HH_rast),ymin(HH_rast)),
+          c(xmin(HH_rast),ymin(HH_rast))))
 
 
         ##make spatial polygon from raster extent
         pals.ext.poly<- Polygons(list(pals.ext),"pals.ext") #spatial polygons (plural)
-#         scn.extent<-SpatialPolygons(list(pals.ext.poly),proj4string=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")) 
-scn.extent<-SpatialPolygons(list(pals.ext.poly),proj4string=CRS(CRSargs(HH_rast@crs))) 
+        scn.extent<-SpatialPolygons(list(pals.ext.poly),proj4string=CRS(CRSargs(HH_rast@crs))) 
         
-#         rast_Poly<-Polygon(rbind( #polygon from bbox NOTE: bbox is not same as true raster extent
-#           c(rast_box[1,1],rast_box[2,2]),
-#           c(rast_box[1,2],rast_box[2,2]),
-#           c(rast_box[1,2],rast_box[2,1]),
-#           c(rast_box[1,1],rast_box[2,1]),
-#           c(rast_box[1,1],rast_box[2,2])))
-#         Srs1<- Polygons(list(rast_Poly),"PALSAR_extent") #spatial polygon
-#         pals_ext<-SpatialPolygons(list(Srs1),proj4string=HH_rast@crs) 
         scn.extent<- spTransform(scn.extent,HH_rast@crs)
-#         if(i == 1){
-          spcheascoords<-spTransform(spcheascoords,HH_rast@crs) #Convert coords being extracted to CRS of PALSAR raster files
-#         }      
+          spcheascoords<-spTransform(spcheascoords,HH_rast@crs) #Convert coords being extracted to CRS of PALSAR raster files    
                     
         coords.in.rast<-over(spcheascoords,scn.extent) #extraction coords (already filtered to fall within the ChEAS domain) that fall within this palsar scene
         coords.in.rast[is.na(coords.in.rast)]<-0 #replace na's with 0's for indexing
@@ -233,70 +184,24 @@ scn.extent<-SpatialPolygons(list(pals.ext.poly),proj4string=CRS(CRSargs(HH_rast@
         } else{
           all_48<- cbind(scnid,palsar_date,as.character(calib_infile$plot[coords.in.rast]),spcheascoords[coords.in.rast]@coords,biomass[coords.in.rast],HH_data_48m,HV_data_48m,HHse_data_48m,HVse_data_48m) #for WLEF
         }
-        ##rbind to previous loop output
-#         if(i==1){
-#           extracted_48m[i : nrow(spcheascoords[coords.in.rast]@coords),]<-all_48
-#         }else if(i>1){
-#           extracted_48m[((i-1)*nrow(spcheascoords[coords.in.rast]@coords)+1) : ((i-1)*nrow(spcheascoords[coords.in.rast]@coords)+nrow(spcheascoords[coords.in.rast]@coords)),]<-all_48
-#         }
+
         extracted_48m<-rbind(extracted_48m,all_48)
-  ###############################
-  #calibration PASLAR data from extraction coords (mean of pixles w/in 60m buffer radius)
-  ###############################
-#         HH_data_60m<-extract(HH_rast, spcheascoords[coords.in.rast], method="simple",buffer=60, small=T, fun=mean) #Extract backscatter values from all coords in this scn. This step is very slow
-#         HV_data_60m<-extract(HV_rast, spcheascoords[coords.in.rast], method="simple",buffer=60, small=T, fun=mean) #Extract backscatter values from all coords in this scn. This step is very slow
-#               
-#         ##cbind for output
-#         if(fia==1){ 
-#           all_60<-cbind(scnid,palsar_date,spcheascoords[coords.in.rast]@coords,biomass[coords.in.rast],HH_data_60m,HV_data_60m) #for FIA (no plot identifiers)
-#         } else{
-#           all_60<- cbind(scnid,palsar_date,calib_infile$plot[coords.in.rast],spcheascoords[coords.in.rast]@coords,biomass[coords.in.rast],HH_data_60m,HV_data_60m) #for WLEF
-#         }
-#         
-# #         ##rbind to previous loop output
-# #         if(i==1){
-# #           extracted_60m[i : nrow(spcheascoords[coords.in.rast]@coords),]<-all_60
-# #         }else if(i>1){
-# #           extracted_60m[((i-1)*nrow(spcheascoords[coords.in.rast]@coords)+1) : ((i-1)*nrow(spcheascoords[coords.in.rast]@coords)+nrow(spcheascoords[coords.in.rast]@coords)),]<-all_60
-# #         }
-#         extracted_60m<-rbind(extracted_60m,all_60)
-        
+
     print(paste("i=",i,sep=""))
     print(scnid[1])
     print(palsar_date[1])
-#         print(length(HH_data_48m) == length(HH_data_60m))
 }
-
-# write.csv(extracted_48m,file=paste(outpath,"/extracted_48m.csv",sep=""),quote=FALSE,row.names=F)
-# write.csv(extracted_60m,file=paste(outpath,"/extracted_60m.csv",sep=""),quote=FALSE,row.names=F)
 
 ## Create working copy of data (so that I don't need to re-extract if I screw up the data)
 ## NOTE: Here I remove the NAs from coords that don't fall with in the scene and 
 ##       the zeros that are an artifact of the mismatch between palsar bbox dim and palsar raster dim (due to tilted orbital path)
-# dat48<-data.frame(extracted_48m[as.numeric(extracted_48m[,ncol(extracted_48m)])!=0,]) #& extracted_48m[,ncol(extracted_48m)]>0,])
 dat48<-data.frame(na.exclude(extracted_48m))
-# dat60<-data.frame(extracted_60m[as.numeric(extracted_60m[,ncol(extracted_60m)])!=0,]) #& extracted_60m[,ncol(extracted_60m)]>0,])
-
-# dat60<-data.frame(extracted_60m)
 
 if(fia==1){ #FIA data does not contain a plot-id, so here I add a dummy plot-id
-#   plot<-seq(1,nrow(dat48),1)
-#   dat48<-cbind(dat48[,1:2],plot,dat48[,3:7])
   colnames(dat48)<-c("scnid","scndate", "plot", "UTM.lat", "UTM.lon", "biomass","HH.sigma.48", "HV.sigma.48","HHse_data_48m","HVse_data_48m")
-#   colnames(dat60)<-c("scnid","scndate", "UTM.lat", "UTM.lon", "biomass","HH.sigma.60", "HV.sigma.60")
 }else{
   colnames(dat48)<-c("scnid","scndate", "plot", "UTM.lat", "UTM.lon", "biomass","HH.sigma.48", "HV.sigma.48","HHse_data_48m","HVse_data_48m")
-#   colnames(dat60)<-c("scnid","scndate", "plot", "UTM.lat", "UTM.lon", "biomass","HH.sigma.60", "HV.sigma.60")
 }
-
-# dat60$scnid<-as.character(dat60$scnid)
-# dat60$scndate<-as.Date(dat60$scndate,"%Y-%M-%d")
-# dat60$UTM.lat<- as.numeric(as.character(dat60$UTM.lat))
-# dat60$UTM.lon<- as.numeric(as.character(dat60$UTM.lon))
-# dat60$biomass<- as.numeric(as.character(dat60$biomass))
-# dat60$HH.sigma.60<- as.numeric(as.character(dat60$HH.sigma.60))
-# dat60$HV.sigma.60<- as.numeric(as.character(dat60$HV.sigma.60))
-# write.csv(dat60,file=paste(outpath,"/dat60.csv",sep=""),quote=FALSE,row.names=F)
 
 ## NOTE: Converting to dataframe changes all values to factor, so here I reformat the data and save it
 dat48$scnid<-as.character(dat48$scnid)
@@ -309,6 +214,8 @@ dat48$HH.sigma.48<- as.numeric(as.character(dat48$HH.sigma.48))
 dat48$HV.sigma.48<- as.numeric(as.character(dat48$HV.sigma.48))
 dat48$year<-as.numeric(format(dat48$scndate,"%Y"))
 dat48$month<-as.numeric(format(dat48$scndate,"%m"))
+dat48$HHse_data_48m<- as.numeric(as.character(dat48$HHse_data_48m))
+dat48$HVse_data_48m<- as.numeric(as.character(dat48$HVse_data_48m))
 
 #This will exclude scenes from the leaf off period (Nov-April)
 if(leaf.off==1){ #include leaf off data
