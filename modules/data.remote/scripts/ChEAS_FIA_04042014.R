@@ -136,12 +136,12 @@ numfiles<-length(list.files(file.path(palsar_inpath, pol_bands[1]), pattern=".ti
 if( fia==1){
 #   extracted_48m<-matrix(NA, nrow=numfiles*nrow(spcheascoords@coords),ncol=7) #matrix to store extracted palsar values. 
 #   extracted_60m<-matrix(NA, nrow=numfiles*nrow(spcheascoords@coords),ncol=7) #matrix to store extracted palsar values.
-  extracted_48m<-matrix(nrow=0, ncol=8) #matrix to store extracted palsar values. nrow=number of coordinates being extracted. ncol=# of pol_bands
+  extracted_48m<-matrix(nrow=0, ncol=10) #matrix to store extracted palsar values. nrow=number of coordinates being extracted. ncol=# of pol_bands
 #   extracted_60m<-matrix(nrow=0, ncol=7) #matrix to store extracted palsar values. nrow=number of coordinates being extracted. ncol=# of pol_bands
 } else{
 #   extracted_48m<-matrix(NA, nrow=numfiles*nrow(spcheascoords@coords),ncol=8) #matrix to store extracted palsar values. 
 #   extracted_60m<-matrix(NA, nrow=numfiles*nrow(spcheascoords@coords),ncol=8) #matrix to store extracted palsar values. 
-  extracted_48m<-matrix(nrow=0, ncol=8) #matrix to store extracted palsar values. nrow=number of coordinates being extracted. ncol=# of pol_bands
+  extracted_48m<-matrix(nrow=0, ncol=10) #matrix to store extracted palsar values. nrow=number of coordinates being extracted. ncol=# of pol_bands
 #   extracted_60m<-matrix(nrow=0, ncol=8) #matrix to store extracted palsar values. nrow=number of coordinates being extracted. ncol=# of pol_bands
 }
 
@@ -214,15 +214,24 @@ scn.extent<-SpatialPolygons(list(pals.ext.poly),proj4string=CRS(CRSargs(HH_rast@
   ################################
         HH_data_48m<-extract(HH_rast, spcheascoords[coords.in.rast], method="simple",buffer=48, small=T, fun=mean) #Extract backscatter values from all coords in this scn. This step is very slow
         HV_data_48m<-extract(HV_rast, spcheascoords[coords.in.rast], method="simple",buffer=48, small=T, fun=mean) #Extract backscatter values from all coords in this scn. This step is very slow
-    #extract SE's also?
+    
+    #extract SE's also
+        #Get cell numbers of pixels within buffer of each set of coords
+        buff.dim.list<-extract(HH_rast, spcheascoords[coords.in.rast], method="simple",buffer=48, small=T, cellnumbers=TRUE)
+        #number of pixles in each buffer
+        ncells<-matrix(unlist(lapply(buff.dim.list,dim)),nrow=2)[1,]   
+        #Extract stdev of cell values in buffer, divide by sqrt(n)  
+        HHse_data_48m<-extract(HH_rast, spcheascoords[coords.in.rast], method="simple",buffer=48, small=T, fun=sd)/sqrt(ncells)  
+        HVse_data_48m<-extract(HV_rast, spcheascoords[coords.in.rast], method="simple",buffer=48, small=T, fun=sd)/sqrt(ncells)
+        
         scnid<-matrix(substr(as.character(HV_filelist[i]),1,15),nrow=length(HH_data_48m),ncol=1) #vector of this scnid. length = number of coords in this scene
         palsar_date<-matrix(as.character(as.Date(substr(as.character(metadata$scndate[metadata$scnid==scnid[1]]),1,8),"%Y%m%d")),nrow=length(HH_data_48m),ncol=1) # same as above for scn date
         
         ##cbind for output
         if(fia==1){
-          all_48<-cbind(scnid,palsar_date,plot,spcheascoords[coords.in.rast]@coords,biomass[coords.in.rast],HH_data_48m,HV_data_48m) #for FIA (no plot identifiers)
+          all_48<- cbind(scnid,palsar_date,plot,spcheascoords[coords.in.rast]@coords,biomass[coords.in.rast],HH_data_48m,HV_data_48m,HHse_data_48m,HVse_data_48m) #for FIA (no plot identifiers)
         } else{
-          all_48<- cbind(scnid,palsar_date,as.character(calib_infile$plot[coords.in.rast]),spcheascoords[coords.in.rast]@coords,biomass[coords.in.rast],HH_data_48m,HV_data_48m) #for WLEF
+          all_48<- cbind(scnid,palsar_date,as.character(calib_infile$plot[coords.in.rast]),spcheascoords[coords.in.rast]@coords,biomass[coords.in.rast],HH_data_48m,HV_data_48m,HHse_data_48m,HVse_data_48m) #for WLEF
         }
         ##rbind to previous loop output
 #         if(i==1){
@@ -273,10 +282,10 @@ dat48<-data.frame(na.exclude(extracted_48m))
 if(fia==1){ #FIA data does not contain a plot-id, so here I add a dummy plot-id
 #   plot<-seq(1,nrow(dat48),1)
 #   dat48<-cbind(dat48[,1:2],plot,dat48[,3:7])
-  colnames(dat48)<-c("scnid","scndate", "plot", "UTM.lat", "UTM.lon", "biomass","HH.sigma.48", "HV.sigma.48")
+  colnames(dat48)<-c("scnid","scndate", "plot", "UTM.lat", "UTM.lon", "biomass","HH.sigma.48", "HV.sigma.48","HHse_data_48m","HVse_data_48m")
 #   colnames(dat60)<-c("scnid","scndate", "UTM.lat", "UTM.lon", "biomass","HH.sigma.60", "HV.sigma.60")
 }else{
-  colnames(dat48)<-c("scnid","scndate", "plot", "UTM.lat", "UTM.lon", "biomass","HH.sigma.48", "HV.sigma.48")
+  colnames(dat48)<-c("scnid","scndate", "plot", "UTM.lat", "UTM.lon", "biomass","HH.sigma.48", "HV.sigma.48","HHse_data_48m","HVse_data_48m")
 #   colnames(dat60)<-c("scnid","scndate", "plot", "UTM.lat", "UTM.lon", "biomass","HH.sigma.60", "HV.sigma.60")
 }
 
