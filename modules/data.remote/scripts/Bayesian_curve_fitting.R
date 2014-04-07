@@ -200,11 +200,24 @@ H3.yint.init = list(a=0.1,b=100,      yint=0.1, tau = 2/var(y)) #for H3.yint
 Ri.yint.init = list(a=1,  b=1.5,      yint=0.1, tau = 2/var(y)) #for Ri.yint
 Log.yint.init= list(a=0.6,b=1,        yint=0.1, tau = 2/var(y)) #for Log.yint
 
+MM.init      = list(b1=4, b0=0.1,     tau = 2/var(y)) #for MM
+H4.init      = list(a=0.1,b=50,  c=2, tau = 2/var(y)) #for H4
+H3.init      = list(a=0.1,b=100,      tau = 2/var(y)) #for H3
+Ri.init      = list(a=0.5,b=0.5,      tau = 2/var(y)) #for Ri
+Log.init     = list(a=0.6,b=1,        tau = 2/var(y)) #for Log
+
+MM.yint.init = list(b1=4, b0=0.1,     yint=0.1, tau = 2/var(y)) #for MM.yint
+H4.yint.init = list(a=0.1,b=50,  c=2, yint=0.1, tau = 2/var(y)) #for H4.yint
+H3.yint.init = list(a=0.1,b=100,      yint=0.1, tau = 2/var(y)) #for H3.yint
+Ri.yint.init = list(a=1,  b=1.5,      yint=0.1, tau = 2/var(y)) #for Ri.yint
+Log.yint.init= list(a=0.6,b=1,        yint=0.1, tau = 2/var(y)) #for Log.yint
+
 MM.var.names<-c("b0","b1","sd") #for MM
 H4.var.names<-c("a","b","c","sd") #for H4
 H3.var.names<-c("a","b","sd") #for H3
 Ri.var.names <-c("a","b","sd") #for Ri
 Log.var.names<-c("a","b","sd") #for Log
+
 MM.yint.var.names<-c("b0","b1","yint","sd") #for MM.yint
 H4.yint.var.names<-c("a","b","c","yint","sd") #for H4.yint
 H3.yint.var.names<-c("a","b","yint","sd") #for H3.yint
@@ -232,9 +245,6 @@ H4.yint.mod.eqn<-"((out[k,1]*xseq^2)/(out[k,2]+out[k,3]*xseq+xseq^2))+out[k,5]"
 H3.yint.mod.eqn<-"((out[k,1]*xseq^2)/(out[k,2]^2+xseq^2))+out[k,4]"
 Ri.yint.mod.eqn<-"(out[k,1]*xseq*exp(-out[k,2]*xseq))+out[k,4]"
 Log.yint.mod.eqn<-"(out[k,1]/(1+exp(out[k,1]-out[k,2]*xseq)))+out[k,4]"
-
-
-
 
 ################
 ##Compiled model inputs
