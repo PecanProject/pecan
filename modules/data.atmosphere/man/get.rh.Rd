@@ -2,7 +2,7 @@
 \alias{get.rh}
 \title{get RH}
 \usage{
-  get.rh(T, Td)
+get.rh(T, Td)
 }
 \arguments{
   \item{temp}{T in original equation}
@@ -10,17 +10,17 @@
   \item{dewpoint}{Td in original}
 }
 \value{
-  numeric vector
+numeric vector
 }
 \description{
-  Calculate RH from temperature and dewpoint
+Calculate RH from temperature and dewpoint
 }
 \details{
-  Based on equation 12 ( in Lawrence 2005, The Relationship
-  between Relative Humidity and the Dewpoint Temperature in
-  Moist Air A Simple Conversion and Applications.)
+Based on equation 12 ( in Lawrence 2005, The Relationship
+between Relative Humidity and the Dewpoint Temperature in
+Moist Air A Simple Conversion and Applications.)
 }
 \author{
-  David LeBauer
+David LeBauer
 }
 

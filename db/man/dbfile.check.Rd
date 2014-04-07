@@ -2,8 +2,8 @@
 \alias{dbfile.check}
 \title{Check for a file in the input/dbfiles tables}
 \usage{
-dbfile.input.check(siteid, startdate, enddate, mimetype, formatname, con,
-  hostname = Sys.info()[["nodename"]])
+dbfile.input.check(siteid, startdate, enddate, mimetype, formatname,
+  parentid = NA, con, hostname = Sys.info()[["nodename"]])
 
 dbfile.posterior.check(pft, mimetype, formatname, con,
   hostname = Sys.info()[["nodename"]])
@@ -24,6 +24,8 @@ dbfile.check(type, id, con, hostname = Sys.info()[["nodename"]])
 
   \item{formatname}{the name of the format to distinguish
   between simmilair mime-types}
+
+  \item{parent}{the id of the parent of the input}
 
   \item{con}{database connection object}
 

@@ -2,18 +2,18 @@
 \alias{table.expand}
 \title{table.expand}
 \usage{
-  table.expand(x)
+table.expand(x)
 }
 \arguments{
   \item{x}{first xml list}
 }
 \value{
-  table
+table
 }
 \description{
-  convert x into a table
+convert x into a table
 }
 \author{
-  Mike Dietze
+Mike Dietze
 }
 
