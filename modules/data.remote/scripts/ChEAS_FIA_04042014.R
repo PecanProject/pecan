@@ -257,7 +257,7 @@ dat48<-read.csv(paste(outpath,"/",coord.set[fia+1],"_dat48.csv",sep=""),header =
 #Correctly format data (again...sigh...)
 dat48$scnid<-as.character(dat48$scnid)
 dat48$scndate<-as.Date(dat48$scndate,"%Y-%m-%d")
-dat48$plot<-as.character(dat48$plot)
+dat48$plot<-as.numeric(dat48$plot)
 dat48$UTM.lat<- as.numeric(as.character(dat48$UTM.lat))
 dat48$UTM.lon<- as.numeric(as.character(dat48$UTM.lon))
 dat48$biomass<- as.numeric(as.character(dat48$biomass))
@@ -265,7 +265,8 @@ dat48$HH.sigma.48<- as.numeric(as.character(dat48$HH.sigma.48))
 dat48$HV.sigma.48<- as.numeric(as.character(dat48$HV.sigma.48))
 dat48$year<-as.numeric(format(dat48$scndate,"%Y"))
 dat48$month<-as.numeric(format(dat48$scndate,"%m"))
-dat48$doy<-as.numeric(dat48$doy)
+dat48$HHse_data_48m<- as.numeric(as.character(dat48$HHse_data_48m))
+dat48$HVse_data_48m<- as.numeric(as.character(dat48$HVse_data_48m))
 
   
 #Generate PDF of raw data exploration
@@ -297,6 +298,20 @@ for(y in unique(dat48$year)){
     }#if
   }#for m
 }#for y
+
+#Plot boxplots of each scndate by year (HH)
+par(mfrow=c(2,2))
+boxplot(dat48$HH.sigma.48[dat48$year==2007] ~ dat48$month[dat48$year==2007],xlab="month",main="2007 HH")
+boxplot(dat48$HH.sigma.48[dat48$year==2008] ~ dat48$month[dat48$year==2008],xlab="month",main="2008 HH")
+boxplot(dat48$HH.sigma.48[dat48$year==2009] ~ dat48$month[dat48$year==2009],xlab="month",main="2009 HH")
+boxplot(dat48$HH.sigma.48[dat48$year==2010] ~ dat48$month[dat48$year==2010],xlab="month",main="2010 HH")
+
+#Plot boxplots of each scndate by year (HV)
+par(mfrow=c(2,2))
+boxplot(dat48$HV.sigma.48[dat48$year==2007] ~ dat48$month[dat48$year==2007],xlab="month",main="2007 HV")
+boxplot(dat48$HV.sigma.48[dat48$year==2008] ~ dat48$month[dat48$year==2008],xlab="month",main="2008 HV")
+boxplot(dat48$HV.sigma.48[dat48$year==2009] ~ dat48$month[dat48$year==2009],xlab="month",main="2009 HV")
+boxplot(dat48$HV.sigma.48[dat48$year==2010] ~ dat48$month[dat48$year==2010],xlab="month",main="2010 HV")
 
 #Plot comparing HH values of May, June, August 2007
 par(mfrow=c(1,3))
