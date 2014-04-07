@@ -8,6 +8,7 @@ require("PEcAn.all")
 #--------------------------------------------------------------------------------#
 options(warn = 1, keep.source = TRUE, error = quote({
             status.end("ERROR")
+            quit(status=1)
          }))
 
 status.start <- function(name) {
@@ -20,7 +21,7 @@ status.end <- function(status="DONE") {
   print("----------------------------------------------------------------------")
   print(paste("DONE"))
   print("----------------------------------------------------------------------")
-  cat(paste("", format(Sys.time(), "%F %T"), status, "\n", sep="\t"), file=file.path(settings$outdir, "STATUS"), append=TRUE)      
+  cat(paste("", format(Sys.time(), "%F %T"), status, "\n", sep="\t"), file=file.path(settings$outdir, "STATUS"), append=TRUE)
 }
 
 # ----------------------------------------------------------------------

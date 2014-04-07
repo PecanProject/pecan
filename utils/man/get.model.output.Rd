@@ -2,13 +2,13 @@
 \alias{get.model.output}
 \title{Retrieve model output}
 \usage{
-  get.model.output(model, settings)
+get.model.output(model, settings)
 }
 \arguments{
   \item{model}{the ecosystem model run}
 }
 \description{
-  This function retrieves model output for further analyses
+This function retrieves model output for further analyses
 }
 \examples{
 \dontrun{
@@ -17,6 +17,6 @@ get.model.output("ED2")
 }
 }
 \author{
-  Michael Dietze, Shawn Serbin, David LeBauer
+Michael Dietze, Shawn Serbin, David LeBauer
 }
 

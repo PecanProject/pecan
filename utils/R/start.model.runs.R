@@ -23,11 +23,9 @@
 ##' @author Shawn Serbin, Rob Kooper, ...
 ##'
 start.model.runs <- function(model, write = TRUE){
-  print(" ")
   print("-------------------------------------------------------------------")
   print(paste(" Starting model runs", model))
   print("-------------------------------------------------------------------")
-  print(" ")
 
   # loop through runs and either call start run, or launch job on remote machine
   jobids <- list()

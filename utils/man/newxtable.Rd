@@ -2,9 +2,8 @@
 \alias{newxtable}
 \title{newxtable}
 \usage{
-  newxtable(x, environment = "table",
-    table.placement = "ht", label = NULL, caption = NULL,
-    caption.placement = NULL, align = NULL)
+newxtable(x, environment = "table", table.placement = "ht", label = NULL,
+  caption = NULL, caption.placement = NULL, align = NULL)
 }
 \arguments{
   \item{x}{data.frame to be converted to latex table}
@@ -23,16 +22,15 @@
   \item{align}{}
 }
 \value{
-  Latex version of table, with percentages properly
-  formatted
+Latex version of table, with percentages properly formatted
 }
 \description{
-  New xtable
+New xtable
 }
 \details{
-  utility to properly escape the "%" sign for latex
+utility to properly escape the "%" sign for latex
 }
 \author{
-  David LeBauer
+David LeBauer
 }
 

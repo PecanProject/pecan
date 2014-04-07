@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <pecan>
-  <outdir>pecan</outdir>
+  <outdir>/home/dlebauer/.pecan/demo</outdir>
   <pfts>
     <pft>
       <name>biocro.misp</name>
@@ -11,24 +11,22 @@
     <random.effects>FALSE</random.effects>
   </meta.analysis>
   <ensemble>
-    <size>10</size>
+    <size>5</size>
+    <variable>StemBiom</variable>
   </ensemble>
   <sensitivity.analysis>
     <quantiles>
-      <sigma>3</sigma>
-      <sigma>2</sigma>
       <sigma>1</sigma>
       <sigma>0</sigma>
       <sigma>-1</sigma>
-      <sigma>-2</sigma>
-      <sigma>-3</sigma>
     </quantiles>
     <variable>StemBiom</variable>
     <start.year>2004</start.year>
     <end.year>2004</end.year>
   </sensitivity.analysis>
   <model>
-    <name>BioCro</name>
+    <name>BIOCRO</name>
+    <id>9</id>
   </model>
   <run>
     <site>
@@ -42,12 +40,14 @@
     </host>
   </run>
   <database>
+    <driver>PostgreSQL</driver>
     <user>bety</user>
     <password>bety</password>
-    <host>localhost</host>
-    <dbname>bety</dbname>
+    <host>ebi-forecast.igb.illinois.edu</host>
+    <dbname>ebi_production</dbname>
   </database>
   <bety>
-    <write>FALSE</write>
+    <write>TRUE</write>
   </bety>
+  <workflow><id>1</id></workflow>
 </pecan>
