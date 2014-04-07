@@ -3,46 +3,40 @@
 ## TODO: modify write.configs to enable regional runs
 ##       bounding box comes from from sites geom
 ##       grid size specified in config file
-.libPaths(c("/home/dlebauer/lib/R", "/usr/local/R-2.15/lib64/R/library"))
+.libPaths("/home/dlebauer/library/R")
 library(PEcAn.data.atmosphere)
 library(BioCro)
+library(ncdf4)
+library(lubridate)
+arg   <- commandArgs(trailingOnly = TRUE)
 
-## arg   <- commandArgs(trailingOnly = TRUE)
+## TODO: Pass lat, lon, start/end date, outdir, met.file, soil parameters in config.xml
+if(length(arg) == 0){
+     lat <- 40.08
+     lon <- -88.23
+     start.date <- "1990-01-01"
+     end.date <- "1995-01-01"
+     outdir <- "/home/dlebauer/.pecan/demo/"
+     met.file <- file.path(inputdir, "met/cruncep/all.nc")
+} else {
+#     configs <- readXML(args[1])
+# lat <- config$lat
+# lon <- config$lon
+     lat <- arg[1]
+     lon <- arg[2]
+}
 
-## if(length(arg) == 0){
-##     lat <- 40.08
-##     lon <- -88.23
-## } else {
-##     lat <- arg[1]
-##     lon <- arg[2]
-## }
-
-outdir <- "/home/dlebauer/.pecan/demo/"
 ## library(PEcAn.DB)
-
-## todo replace following with database queries
+## todo find soil.nc with spatial queries
 ## waiting for regions
 ## TODO allow specification of grid size
-## 
 
-soil.nc <- nc_open("/home/dlebauer/.pecan/dbfiles/soil/hwsd.nc")
+soil.nc <- nc_open(file.path(inputdir, "soil/global/soil_global_hd_filled.nc"))
+# atmco2.nc <- nc_open(file.path(inputdir, "co2/CO2_Global_HD_v1.nc"))
 
-cruncep.file <- "/home/dlebauer/.pecan/dbfiles/met/cruncep/1901ts.nc"
-## ncep.file <- "/home/dlebauer/.pecan/dbfiles/met/ncep/all.nc"
-## if(file.exists(cruncep.file)){
-system.time(met.nc <-  nc_open(cruncep.file, readunlim = TRUE))
-## } else if (file.exists(ncep.file)){
-##    met.nc <- nc_open(ncep.file)
-## }
+met.nc <-  nc_open(met.file, readunlim = FALSE)
 
- 
-## Time
-## if ncep, time is in hours since; cruncep time is in days
-## time.units <- ncatt_get(met.nc, 'time')$units
-## time.atts <- ncatt_get(met.nc, 'time')
-## time.units <- time.atts$units
-
-cruncep_nc2dt <- function(lat, lon, met.nc){
+cruncep_nc2dt <- function(lat, lon, met.nc, start.date = "1990-01-01", end.date = "1992-12-31"){
 
 
     ## Lat and Lon
@@ -61,7 +55,7 @@ cruncep_nc2dt <- function(lat, lon, met.nc){
     month <- month(date)
     day <- day(date)
     hour <- hour(date) ## redundant, but clear
-
+    
     currentlat <- round(lat, 2)
     currentlon <- round(lon, 2)
     result <- list()
@@ -81,8 +75,8 @@ cruncep_nc2dt <- function(lat, lon, met.nc){
             ## TODO check if vars can be sent as vector
             vars[[var]] <- as.numeric(ncvar_get(nc = met.nc,
                                                 varid = var,
-                                                start = c(loni, lati, 1),
-                                                count = c(1, 1, length(time.idx))))
+                                                start = c(loni, lati, which.min(abs(date - ymd(start.date)))),
+                                                count = c(1, 1, which.max(abs(ymd(end.date) - date)))))
         }
     }
     
@@ -234,9 +228,9 @@ cruncep_dt2weather <- function(weather = result){
     return(x)
 }
 
-get.weather <- function(lat, lon, met.nc = met.nc){
+get.weather <- function(lat, lon, met.nc = met.nc, start.date, end.date){
     if(!is.land(lat, lon)) stop("point is in ocean")
-    result <- cruncep_nc2dt(lat = lat, lon = lon, met.nc = met.nc)
+    result <- cruncep_nc2dt(lat = lat, lon = lon, met.nc = met.nc, start.date, end.date)
     new.result <- cruncep_hourly(result, lat = lat)
     save(new.result, file = file.path(outdir, "new.result.RData"))    
     weather <- cruncep_dt2weather(new.result)
@@ -281,13 +275,13 @@ get.cruncep <- function(lat, lon, start.date = NA, end.date = NA){
     return(weather)
 }
 
-run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = soil.nc){
+run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = soil.nc, start.date, end.date){
     ## get soil data
     ## abox <- get.latlonbox(lati = lati, loni = loni, Lat = Lat, Lon = Lon)
     ## soil <- get.hwsd.box(abox, con = con)
     if(is.land(lat, lon)){
         soil.type <- 6# get.soil(lat, lon, soil.nc = soil.nc)
-        weather <- get.weather(lat, lon, met.nc = met.nc)
+        weather <- get.weather(lat, lon, met.nc = met.nc, start.date, end.date)
         result <- list()
         years <- unique(weather$year)
         for(yeari in years){
@@ -336,6 +330,12 @@ Lon <- ncvar_get(nc = met.nc, varid = "lon")
 Lat <- Lat[Lat > 32 & Lat < 49]
 Lon <- Lon[Lon < -67 & Lon > -125]
 
+subsample <- "TRUE"
+if(subsample){
+   Lat <- Lat[1:5*5]
+   Lon <- Lon[1:5*20]
+}
+   
 tmp <- data.table(lat = logical(0), lon = logical(0), yield = logical(0))
 for(lat in Lat){
     for(lon in Lon){

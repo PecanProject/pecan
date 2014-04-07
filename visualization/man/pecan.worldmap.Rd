@@ -2,8 +2,8 @@
 \alias{pecan.worldmap}
 \title{PEcAn worldmap}
 \usage{
-  pecan.worldmap(df.in, outfile = "worldmap.png",
-    xlim = c(-130, -30), ylim = c(-40, 60))
+pecan.worldmap(df.in, outfile = NULL, xlim = c(-130, -30), ylim = c(-40,
+  60), range = NULL, legend.title = NULL, fig.title = NULL)
 }
 \arguments{
   \item{df.in}{data.frame with columns lat, lon, and
@@ -12,13 +12,13 @@
   \item{outfile}{png file}
 }
 \value{
-  NULL plot as side effect
+NULL plot as side effect
 }
 \description{
-  Plot map of world with model output
+Plot map of world with model output
 }
 \details{
-  This is just a first draft
+This is just a first draft
 }
 \examples{
 miscanthusyield <- read.csv(system.file("extdata/miscanthusyield.csv",
@@ -27,6 +27,6 @@ pecan.worldmap(df.in = miscanthusyield,
                outfile = file.path(tempdir(), 'worldmap.png'))
 }
 \author{
-  David LeBauer
+David LeBauer
 }
 
