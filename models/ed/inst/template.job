@@ -1,15 +1,15 @@
 #!/bin/bash
 
 # create output folder
-mkdir -p @OUTDIR@
+mkdir -p "@OUTDIR@"
 
 # flag needed for ubuntu
 export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
 
 # see if application needs running
-if [ ! -e @OUTDIR@/sipnet.out ]; then
-  cd @RUNDIR@
-  @BINARY@ &> @OUTDIR@/logfile.txt
+if [ ! -e "@OUTDIR@/history.xml" ]; then
+  cd "@RUNDIR@"
+  "@BINARY@" &> "@OUTDIR@/logfile.txt"
   @SCRATCH_COPY@
   @SCRATCH_CLEAR@
 
@@ -20,6 +20,6 @@ model2netcdf.ED2('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@
 fi
 
 # copy readme with specs to output
-cp  @RUNDIR@/README.txt @OUTDIR@/README.txt
+cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
 
 # run getdata to extract right variables

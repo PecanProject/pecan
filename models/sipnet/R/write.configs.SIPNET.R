@@ -60,7 +60,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   
   ### WRITE *.param-spatial
   template.paramSpatial <- system.file("template.param-spatial",package="PEcAn.SIPNET")
-  system(paste("cp ",template.paramSpatial," ",file.path(settings$rundir, run.id, "sipnet.param-spatial"),sep=""))
+  file.copy(template.paramSpatial, file.path(settings$rundir, run.id, "sipnet.param-spatial"))
   
   ### WRITE *.param
   template.param <- system.file("template.param",package="PEcAn.SIPNET")

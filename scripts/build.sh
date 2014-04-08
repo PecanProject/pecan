@@ -20,6 +20,7 @@ GIT="no"
 FORCE="no"
 CHECK="no"
 INSTALL="yes"
+TEST="no"
 
 # find all variables
 while true; do
@@ -36,6 +37,7 @@ while true; do
       echo " -n, --noinstall : do not install all R packages"
       echo " -c, --check     : check the R packages before install"
       echo " -e, --email     : send email to following people on success"
+      echo " -t, --test      : run tests"
       echo ""
       exit
     ;;
@@ -54,6 +56,10 @@ while true; do
 
     --install|-i)
       INSTALL="yes"
+      ;;
+
+    --test|-t)
+      TEST="yes"
       ;;
 
     --check|-c)
@@ -83,11 +89,7 @@ PACKAGES="${PACKAGES} models/ed models/sipnet models/biocro"
 PACKAGES="${PACKAGES} all"
 
 # location where to install packages
-if [ ! -z $R_LIBS_USER ]; then
-  if [ ! -e ${R_LIBS_USER} ]; then mkdir -p ${R_LIBS_USER}; fi
-  rm -rf ${R_LIBS_USER}/PEcAn.*
-  R_LIB_INC="--library=${R_LIBS_USER}"
-else
+if [ -z $R_LIBS_USER ]; then
   echo "R_LIBS_USER not set, this could prevent the script from running correctly."
   echo "see https://github.com/PecanProject/pecan/wiki/Installing-PEcAn#set_r_libs_user"
 fi
@@ -113,13 +115,19 @@ if [ "$GIT" == "yes" ]; then
   if ! grep --quiet 'Already' changes.log; then
     FORCE="yes"
   fi
-else
-  FORCE="yes"
 fi
 
+STATUS="OK"
 if [ "$FORCE" == "yes" ]; then
+  if [ ! -z  $R_LIBS_USER ]; then
+    if [ ! -e ${R_LIBS_USER} ]; then
+      mkdir -p ${R_LIBS_USER};
+    fi
+    rm -rf ${R_LIBS_USER}/PEcAn.*
+    R_LIB_INC="--library=${R_LIBS_USER}"
+  fi
+
   START=`date +'%s'`
-  STATUS="OK"
 
   # get changes
   echo "----------------------------------------------------------------------" >> changes.log
@@ -128,20 +136,6 @@ if [ "$FORCE" == "yes" ]; then
   git log > newlog
   diff git.log newlog | grep '^> ' | sed 's/^> //' > changes.log
   mv newlog git.log
-
-  # get committer names and emails
-  # TODO all commiters are smushed together
-  #IFS_BAK=$IFS
-  #IFS=`echo -e '\n'`
-  #NAMES=""
-  #EMAILS=""
-  #for c in `grep 'committer: ' changes.log | sort -u`; do
-  #  EMAILS="${EMAILS},`echo $c | sed -e 's/.*<\(.*\)>/\1/'`"
-  #done
-  #IFS=$IFS_BAK
-  #NAMES=$( grep 'committer: ' changes.log | uniq | sed -e 's/committer: //' )
-  #EMAILS=$( grep 'committer: ' changes.log | uniq | sed -e 's/.*<\(.*\)>/\1/' )
-  #TO="${TO} ${EMAILS}"
 
   # get version number
   REVNO=$( git show -s --pretty=format:%T master )
@@ -205,19 +199,72 @@ if [ "$FORCE" == "yes" ]; then
   echo "----------------------------------------------------------------------" >> changes.log
   echo "build took ${TIME} seconds." >> changes.log
   echo "----------------------------------------------------------------------" >> changes.log
+
+  if [ "$EMAIL" == "" ]; then
+    cat changes.log
+    rm changes.log
+  fi
+
+  # cleanup
+  rm -rf out.log *.Rcheck PEcAn.*.tar.gz PEcAn.*.tgz
+fi
+
+# run tests
+if [ "$TEST" == "yes" ]; then
+  START=`date +'%s'`
+  cd tests
+  for f in ${HOSTNAME}.*.xml; do
+    rm -rf pecan
+    Rscript --vanilla workflow.R --settings $f &> output.log
+    if [ $? -ne 0 ]; then
+      STATUS="BROKEN"
+      echo "----------------------------------------------------------------------" >> changes.log
+      echo "TEST $f FAILED (RETURN CODE != 0)" >> changes.log
+      echo "----------------------------------------------------------------------" >> changes.log
+      cat output.log >> changes.log
+    elif [ $(grep -v DONE pecan/STATUS | wc -l) -ne 0 ]; then
+      STATUS="BROKEN"
+      echo "----------------------------------------------------------------------" >> changes.log
+      echo "TEST $f FAILED (ERROR IN STATUS)" >> changes.log
+      echo "----------------------------------------------------------------------" >> changes.log
+      cat pecan/STATUS >> changes.log
+      cat output.log >> changes.log
+    else
+      echo "----------------------------------------------------------------------" >> changes.log
+      echo "TEST $f OK" >> changes.log
+      echo "----------------------------------------------------------------------" >> changes.log
+    fi
+    rm -rf output.log pecan
+
+    if [ "$EMAIL" == "" ]; then
+      cat changes.log
+      rm changes.log
+    fi
+  done
+  cd ..
+
+  # all done
+  TIME=$(echo "`date +'%s'` - $START" |bc -l)
+  echo "----------------------------------------------------------------------" >> changes.log
+  echo "tests took ${TIME} seconds." >> changes.log
+  echo "----------------------------------------------------------------------" >> changes.log
+fi
+
+# send email with report
+if [ -e changes.log ]; then
   if [ "$EMAIL" == "" ]; then
     cat changes.log
   else
     cat changes.log | mail -s "PEcAn BUILD ${STATUS} : ${REVNO}" ${EMAIL}
   fi
-
-  # cleanup
-  rm -rf changes.log out.log *.Rcheck PEcAn.*.tar.gz PEcAn.*.tgz
+  rm changes.log
 fi
 
+# remove running marker
 rm running
 
-if [ "$STATUS" == "BROKEN" ]; then 
+# exit with right status
+if [ "$STATUS" != "OK" ]; then 
     echo "ERROR PEcAn BUILD BROKEN" >&2
     exit 1
 fi

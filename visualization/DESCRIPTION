@@ -23,14 +23,13 @@ Depends:
     ggplot2,
     scales,
     data.table,
-    earth
+    earth,
+    XML,
+    ncdf4,
+    stringr
 Suggests:
     testthat
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
-Collate:
-    'worldmap.R'
-    'points2county.R'
-    'ciEnvelope.R'
