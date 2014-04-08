@@ -157,3 +157,13 @@ test_that("check.settings handles userid and username properly", {
   expect_true(!"username" %in% names(s2$database))
   
 })
+
+test_that("check settings runs with only model$name and no database", {
+  s <- settings
+  s$model <- list(name = "foo")
+  s$database <- NULL
+  s1 <- check.settings(s)
+  expect_identical(s$model$name, s1$model$name)
+  s1$model$name <- NULL
+  s2 <- check.settings(s1)
+})

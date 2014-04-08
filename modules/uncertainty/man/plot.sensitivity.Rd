@@ -2,11 +2,9 @@
 \alias{plot.sensitivity}
 \title{Sensitivity plot}
 \usage{
-  plot.sensitivity(sa.sample, sa.spline, trait,
-    y.range = c(0, 50), median.i = 4,
-    prior.sa.sample = NULL, prior.sa.spline = NULL,
-    fontsize = list(title = 12, axis = 8), linesize = 1,
-    dotsize = 2)
+plot.sensitivity(sa.sample, sa.spline, trait, y.range = c(0, 50),
+  median.i = 4, prior.sa.sample = NULL, prior.sa.spline = NULL,
+  fontsize = list(title = 12, axis = 8), linesize = 1, dotsize = 2)
 }
 \arguments{
   \item{sa.sample}{trait quantiles used in sensitivity
@@ -35,15 +33,15 @@
   labels, and axis title in the sensitivity plots}
 }
 \value{
-  object of class ggplot
+object of class ggplot
 }
 \description{
-  Plot univariate response of model output to a trait
-  parameter.
+Plot univariate response of model output to a trait
+parameter.
 }
 \details{
-  Plots for a single trait; called by
-  \code{\link{plot.sensitivities}} to plot sensitivity
-  plots for multiple traits.
+Plots for a single trait; called by
+\code{\link{plot.sensitivities}} to plot sensitivity plots
+for multiple traits.
 }
 

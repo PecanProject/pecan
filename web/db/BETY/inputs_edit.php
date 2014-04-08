@@ -27,8 +27,8 @@ if (isset($_REQUEST['action'])) {
 
 	if ($_REQUEST['action'] == "add") {
 		$query = "UPDATE dbfiles, inputs SET dbfiles.container_id=inputs.id, container_type='Input' WHERE dbfiles.id={$_REQUEST['dbid']} AND inputs.id=${id};";
-		if (!$pdo->query($query, $db_connection)) {
-			$msg = "Error updating database : [" . $db_connection->errorInfo() . "] " . $pdo->errorInfo($db_connection) . "<br>";
+		if (!$pdo->query($query, $pdo)) {
+			$msg = "Error updating database : [" . error_database() . "] " . $pdo->errorInfo($pdo) . "<br>";
 			editor_log("FAIL", $query);
 		} else {
 			$msg .= "Added dbfiles={$_REQUEST['dbid']} to inputs={$_REQUEST['id']}<br/>\n";
@@ -38,8 +38,8 @@ if (isset($_REQUEST['action'])) {
 
 	if ($_REQUEST['action'] == "del") {
 		$query = "UPDATE dbfiles SET container_id=NULL WHERE id={$_REQUEST['dbid']};";
-		if (!$pdo->query($query, $db_connection)) {
-			$msg = "Error updating database : [" . $db_connection->errorInfo() . "] " . $pdo->errorInfo($db_connection) . "<br>";
+		if (!$pdo->query($query, $pdo)) {
+			$msg = "Error updating database : [" . error_database() . "] " . $pdo->errorInfo($pdo) . "<br>";
 			editor_log("FAIL", $query);
 		} else {
 			$msg .= "Removed dbfiles={$_REQUEST['dbid']} from inputs={$_REQUEST['id']}<br/>\n";
@@ -83,9 +83,9 @@ if ($id != -1) {
 	$query="SELECT dbfiles.id, concat(machines.hostname, ':', dbfiles.file_path, '/', dbfiles.file_name) as filename" .
 	       " FROM dbfiles, machines, inputs" .
 	       " WHERE inputs.id=$id AND dbfiles.container_id=inputs.id AND dbfiles.container_type='Input' AND machines.id=dbfiles.machine_id;";
-	$result = $pdo->query($query, $db_connection);
+	$result = $pdo->query($query, $pdo);
 	if (!$result) {
-		die("Invalid query [$query] " . $pdo->errorInfo($db_connection));
+		die("Invalid query [$query] " . $pdo->errorInfo($pdo));
 	}
 	if ($result->fetchColumn() > 0) {
 ?>
@@ -122,9 +122,9 @@ if ($id != -1) {
 	       " FROM dbfiles, machines" .
 	       " WHERE machines.id = dbfiles.machine_id AND NOT EXISTS ( SELECT 1 FROM inputs WHERE dbfiles.container_id=inputs.id AND dbfiles.container_type='Input' ) " .
 	       " ORDER BY filename;";
-	$result = $pdo->query($query, $db_connection);
+	$result = $pdo->query($query, $pdo);
 	if (!$result) {
-		die("Invalid query [$query] " . $pdo->errorInfo());
+		die("Invalid query [$query] " . error_database());
 	}
 	if ($result->fetchColumn() > 0) {
 ?>

@@ -2,8 +2,8 @@
 \alias{read.ensemble.output}
 \title{Read ensemble output}
 \usage{
-  read.ensemble.output(ensemble.size, pecandir, outdir,
-    start.year, end.year, variables)
+read.ensemble.output(ensemble.size, pecandir, outdir, start.year, end.year,
+  variables)
 }
 \arguments{
   \item{ensemble.size}{the number of ensemble members run}
@@ -23,14 +23,14 @@
   \item{variables}{targe variables for ensemble analysis}
 }
 \value{
-  a list of ensemble model output
+a list of ensemble model output
 }
 \description{
-  Reads output from model ensemble
+Reads output from model ensemble
 }
 \details{
-  Reads output for an ensemble of length specified by
-  \code{ensemble.size} and bounded by \code{start.year} and
-  \code{end.year}
+Reads output for an ensemble of length specified by
+\code{ensemble.size} and bounded by \code{start.year} and
+\code{end.year}
 }
 

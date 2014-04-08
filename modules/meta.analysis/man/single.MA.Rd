@@ -2,8 +2,8 @@
 \alias{single.MA}
 \title{Single MA}
 \usage{
-  single.MA(data, j.chains, j.iter, tauA, tauB, prior,
-    jag.model.file, overdispersed = TRUE)
+single.MA(data, j.chains, j.iter, tauA, tauB, prior, jag.model.file,
+  overdispersed = TRUE)
 }
 \arguments{
   \item{data}{}
@@ -21,21 +21,22 @@
   \item{jag.model.file}{file to which model will be
   written}
 
-  \item{overdispersed}{}
+  \item{overdispersed}{if TRUE (default), chains start at
+  overdispersed locations in parameter space (recommended)}
 }
 \value{
-  jags.out, an mcmc.object with results of meta-analysis
+jags.out, an mcmc.object with results of meta-analysis
 }
 \description{
-  Individual Meta-analysis
+Individual Meta-analysis
 }
 \details{
-  Individual meta-analysis for a specific trait and PFT is
-  run by the function single.MA. This will allow power
-  analysis to run repeated MA outside of the full loop over
-  traits and PFTs.
+Individual meta-analysis for a specific trait and PFT is
+run by the function single.MA. This will allow power
+analysis to run repeated MA outside of the full loop over
+traits and PFTs.
 }
 \author{
-  David LeBauer, Michael C. Dietze
+David LeBauer, Michael C. Dietze
 }
 

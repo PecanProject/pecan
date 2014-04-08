@@ -15,7 +15,9 @@ Depends:
     DBI,
     PEcAn.utils
 Suggests:
+    RPostgreSQL,
     RMySQL,
+    RPostgreSQL,
     testthat
 License: FreeBSD + file LICENSE
 Copyright: Authors

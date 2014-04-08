@@ -2,8 +2,7 @@
 \alias{approx.posterior}
 \title{Approximate posterior}
 \usage{
-  approx.posterior(trait.mcmc, priors, trait.data = NULL,
-    outdir = NULL)
+approx.posterior(trait.mcmc, priors, trait.data = NULL, outdir = NULL)
 }
 \arguments{
   \item{trait.mcmc}{meta analysis outputs}
@@ -16,14 +15,14 @@
   \item{outdir}{directory in which to plot results}
 }
 \value{
-  posteriors data frame, similar to priors, but with closed
-  form pdfs fit to meta-analysis results
+posteriors data frame, similar to priors, but with closed
+form pdfs fit to meta-analysis results
 }
 \description{
-  Approximate the posterior MCMC with a closed form pdf
+Approximate the posterior MCMC with a closed form pdf
 }
 \details{
-  returns priors where posterior MCMC are missing
+returns priors where posterior MCMC are missing
 }
 \examples{
 \dontrun{data("trait.mcmc", package = "PEcAn.utils")
@@ -31,6 +30,6 @@ data("prior.distns", package = "PEcAn.utils")
 approx.posterior(trait.mcmc, priors = prior.distns)}
 }
 \author{
-  David LeBauer, Carl Davidson, Mike Dietze
+David LeBauer, Carl Davidson, Mike Dietze
 }
 
