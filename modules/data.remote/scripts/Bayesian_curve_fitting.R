@@ -188,36 +188,35 @@ sd<-1/sqrt(tau)
 
 mod.names<-c("MM","H3","H4","Ri","Log","MM.yint","H3.yint","H4.yint","Ri.yint","Log.yint")
 
-MM.init      = list(b1=4, b0=0.1,     tau = 2/var(y)) #for MM
-H4.init      = list(a=0.1,b=50,  c=2, tau = 2/var(y)) #for H4
-H3.init      = list(a=0.1,b=100,      tau = 2/var(y)) #for H3
-Ri.init      = list(a=0.5,b=0.5,      tau = 2/var(y)) #for Ri
-Log.init     = list(a=0.6,b=1,        tau = 2/var(y)) #for Log
+#Initial conditions for HH pol band
+MM.HH.init      = list(b1=4, b0=0.1,     tau = 2/var(y)) #for MM
+H4.HH.init      = list(a=0.1,b=50,  c=2, tau = 2/var(y)) #for H4
+H3.HH.init      = list(a=0.1,b=100,      tau = 2/var(y)) #for H3
+Ri.HH.init      = list(a=0.5,b=0.5,      tau = 2/var(y)) #for Ri
+Log.HH.init     = list(a=0.6,b=1,        tau = 2/var(y)) #for Log
+MM.yint.HH.init = list(b1=4, b0=0.1,     yint=0.1, tau = 2/var(y)) #for MM.yint
+H4.yint.HH.init = list(a=0.1,b=50,  c=2, yint=0.1, tau = 2/var(y)) #for H4.yint
+H3.yint.HH.init = list(a=0.1,b=100,      yint=0.1, tau = 2/var(y)) #for H3.yint
+Ri.yint.HH.init = list(a=1,  b=1.5,      yint=0.1, tau = 2/var(y)) #for Ri.yint
+Log.yint.HH.init= list(a=0.6,b=1,        yint=0.1, tau = 2/var(y)) #for Log.yint
 
-MM.yint.init = list(b1=4, b0=0.1,     yint=0.1, tau = 2/var(y)) #for MM.yint
-H4.yint.init = list(a=0.1,b=50,  c=2, yint=0.1, tau = 2/var(y)) #for H4.yint
-H3.yint.init = list(a=0.1,b=100,      yint=0.1, tau = 2/var(y)) #for H3.yint
-Ri.yint.init = list(a=1,  b=1.5,      yint=0.1, tau = 2/var(y)) #for Ri.yint
-Log.yint.init= list(a=0.6,b=1,        yint=0.1, tau = 2/var(y)) #for Log.yint
-
-MM.init      = list(b1=4, b0=0.1,     tau = 2/var(y)) #for MM
-H4.init      = list(a=0.1,b=50,  c=2, tau = 2/var(y)) #for H4
-H3.init      = list(a=0.1,b=100,      tau = 2/var(y)) #for H3
-Ri.init      = list(a=0.5,b=0.5,      tau = 2/var(y)) #for Ri
-Log.init     = list(a=0.6,b=1,        tau = 2/var(y)) #for Log
-
-MM.yint.init = list(b1=4, b0=0.1,     yint=0.1, tau = 2/var(y)) #for MM.yint
-H4.yint.init = list(a=0.1,b=50,  c=2, yint=0.1, tau = 2/var(y)) #for H4.yint
-H3.yint.init = list(a=0.1,b=100,      yint=0.1, tau = 2/var(y)) #for H3.yint
-Ri.yint.init = list(a=1,  b=1.5,      yint=0.1, tau = 2/var(y)) #for Ri.yint
-Log.yint.init= list(a=0.6,b=1,        yint=0.1, tau = 2/var(y)) #for Log.yint
+#Initial conditions for HV pol band
+MM.HV.init      = list(b1=4, b0=0.1,     tau = 2/var(y)) #for MM
+H4.HV.init      = list(a=0.1,b=50,  c=2, tau = 2/var(y)) #for H4
+H3.HV.init      = list(a=0.1,b=100,      tau = 2/var(y)) #for H3
+Ri.HV.init      = list(a=0.5,b=0.5,      tau = 2/var(y)) #for Ri
+Log.HV.init     = list(a=0.6,b=1,        tau = 2/var(y)) #for Log
+MM.yint.HV.init = list(b1=4, b0=0.1,     yint=0.1, tau = 2/var(y)) #for MM.yint
+H4.yint.HV.init = list(a=0.1,b=50,  c=2, yint=0.1, tau = 2/var(y)) #for H4.yint
+H3.yint.HV.init = list(a=0.1,b=100,      yint=0.1, tau = 2/var(y)) #for H3.yint
+Ri.yint.HV.init = list(a=1,  b=1.5,      yint=0.1, tau = 2/var(y)) #for Ri.yint
+Log.yint.HV.init= list(a=0.6,b=1,        yint=0.1, tau = 2/var(y)) #for Log.yint
 
 MM.var.names<-c("b0","b1","sd") #for MM
 H4.var.names<-c("a","b","c","sd") #for H4
 H3.var.names<-c("a","b","sd") #for H3
 Ri.var.names <-c("a","b","sd") #for Ri
 Log.var.names<-c("a","b","sd") #for Log
-
 MM.yint.var.names<-c("b0","b1","yint","sd") #for MM.yint
 H4.yint.var.names<-c("a","b","c","yint","sd") #for H4.yint
 H3.yint.var.names<-c("a","b","yint","sd") #for H3.yint
@@ -260,16 +259,30 @@ models<-c(MM,
           H4.yint,
           Ri.yint,
           Log.yint)
-init <-list(MM.init,
-            H3.init,
-            H4.init,
-            Ri.init,
-            Log.init,
-            MM.yint.init,
-            H3.yint.init,
-            H4.yint.init,
-            Ri.yint.init,
-            Log.yint.init) 
+HH.init <-list(MM.HH.init,
+               H3.HH.init,
+               H4.HH.init,
+               Ri.HH.init,
+               Log.HH.init,
+               MM.yint.HH.init,
+               H3.yint.HH.init,
+               H4.yint.HH.init,
+               Ri.yint.HH.init,
+               Log.yint.HH.init)
+
+HV.init <-list(MM.HV.init,
+               H3.HV.init,
+               H4.HV.init,
+               Ri.HV.init,
+               Log.HV.init,
+               MM.yint.HV.init,
+               H3.yint.HV.init,
+               H4.yint.HV.init,
+               Ri.yint.HV.init,
+               Log.yint.HV.init) 
+
+init<-c("HH.init","HV.init")
+
 var.names<-list(MM.var.names,
                 H3.var.names,
                 H4.var.names,
@@ -301,7 +314,6 @@ mod.eqns <-list(MM.mod.eqn,
                 Ri.yint.mod.eqn,
                 Log.yint.mod.eqn)
 
-
 ################
 ##Loop over all models and backscatter polarization bands
 ################
@@ -318,7 +330,7 @@ for(i in 1:length(yvars)){ #loop over HH and HV (pol bands)
   for(j in 1:length(models)){#looping over models
     j1 = jags.model(file=textConnection(models[j]),
                     data = data,
-                    inits = init[j][[1]],
+                    inits = unlist(eval(parse(text=init[i]))[j],recursive=FALSE),
                     n.chains=n.chain,
                     n.adapt=min(0.1*n.reps,1000))
     
@@ -368,7 +380,7 @@ for(i in 1:length(yvars)){ #loop over HH and HV (pol bands)
 
     HTML(list(paste("n.reps=",n.reps,sep=" "),
               paste("n.chain=",n.chain,sep=" "),
-              cbind(var.names[j][[1]],unlist(init[j][[1]])),
+              cbind(var.names[j][[1]],unlist(eval(parse(text=init[i]))[j])),
               summary(jags.out)),
          file=target)
     

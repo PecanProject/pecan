@@ -26,21 +26,22 @@ kml=0 #1 = generate and save kml files of extraction coordinates; 0 = do not gen
 fia=0 #1 = use FIA coordinates, 0 = use WLEF/Park Falls Tower coordinates
 leaf.off=0 #1=include PALSAR scenes acquired duing leaf off period of the year, 0=exclude leaf off scene dates
 plot_ext=1 #Generate figures showing palsar scn extent with overlay of plot coords? (1=yes, 0=no)
-
+machine=1 #1=Brady's Mac; 1=Brady's Linux
 # buff=c(48) #vector of buffer sizes (in meters) to extract
 coord.set<-c("WLEF", "FIA")
 
-#Brady's Linux paths
+if(machine==2){ #Brady's Linux paths
 metadata<- read.csv("/home/bhardima/pecan/modules/data.remote/output/metadata/output_metadata.csv", sep="\t", header=T) ##for Brady's Linux
 palsar_inpath <- file.path("/home/bhardima/Desktop/cheas/geo_corrected_single_sigma") ##location of PALSAR raw files
 calib_inpath <-"/home/bhardima/pecan/modules/data.remote/biometry/Link_to_Forest_Biomass_Calibration_Coords" ##location of file containing (FIA) plot coords and biomass values for calibrating PALSAR backscatter 
 outpath <- file.path("/home/bhardima/pecan/modules/data.remote/output/data") ##For saving
-
-#Brady's Mac paths
-# metadata<- read.csv("/Users/hardimanb/Desktop/data.remote(Andys_Copy)/output/metadata/output_metadata.csv", sep="\t", header=T) ##location of PALSAR metadata table
-# palsar_inpath <- file.path("/Users/hardimanb/Desktop/data.remote(Andys_Copy)/palsar_scenes/geo_corrected_single_sigma") ##location of PALSAR raw files
-# calib_inpath <-"/Users/hardimanb/Desktop/data.remote(Andys_Copy)/biometry" ##location of file containing (FIA) plot coords and biomass values for calibrating PALSAR backscatter 
-# outpath <- file.path("/Users/hardimanb/Desktop/data.remote(Andys_Copy)/output/data") ##For saving
+} 
+if(machine==1){ #Brady's Mac paths
+  metadata<- read.csv("/Users/hardimanb/Desktop/data.remote(Andys_Copy)/output/metadata/output_metadata.csv", sep="\t", header=T) ##location of PALSAR metadata table
+  palsar_inpath <- file.path("/Users/hardimanb/Desktop/data.remote(Andys_Copy)/palsar_scenes/geo_corrected_single_sigma") ##location of PALSAR raw files
+  calib_inpath <-"/Users/hardimanb/Desktop/data.remote(Andys_Copy)/biometry" ##location of file containing (FIA) plot coords and biomass values for calibrating PALSAR backscatter 
+  outpath <- file.path("/Users/hardimanb/Dropbox/PALSAR_Biomass_Study/data") ##For saving  
+}
 
 ################################
 ## Read in coordinate data for calibration of PALSAR backscatter returns
@@ -57,7 +58,7 @@ if(fia==1){ #EXTRACTS FROM FIA COORDINATES
   if(kml==1){writeOGR(spdf.latlon, layer=1, "WI_FIA.kml", driver="KML") #export as kml (this puts in in the Home folder) 
   }
 }else{#EXTRACTS FROM WLEF COORDINATES
-  calib_infile <-read.csv(file.path(calib_inpath,"biometry_trimmed.csv"), sep="\t", header=T) #WLEF plots
+  calib_infile <-read.csv(file.path(calib_inpath,"biometry_trimmed.csv"), sep=",", header=T) #WLEF plots
   calib_infile<-aggregate(calib_infile, list(calib_infile[,1]), mean) ##This will give errors, but these can be safely ignored
   calib_infile$plot<-calib_infile$Group.1
   calib_infile<-cbind(calib_infile[,2],calib_infile[,5:9])
@@ -243,7 +244,8 @@ if(leaf.off==1){ #include leaf off data
 }
 
 #This will exclude plots which returned zeros for both HH and HV
-#NOTE: this circumstance corresponds to a subset of the plots falling outside of the palsar scene
+#NOTE: this circumstance corresponds to a subset of the plots falling outside of the palsar scene 
+#Not sure why these show up as zeros rather than NAs, but they definitely corresponds to non-overlapping scenes/plots
 #      This can be verified by examining WLEF_SceneExtent_with_plot_overlay.pdf in data.remote/output/data
 dat48<-dat48[dat48$HH.sigma.48 !=0 & dat48$HV.sigma.48 !=0,]
 
@@ -293,14 +295,13 @@ dat48$HHse_data_48m<- as.numeric(as.character(dat48$HHse_data_48m))
 dat48$HVse_data_48m<- as.numeric(as.character(dat48$HVse_data_48m))
 
 #This generates a figure showing the HH values for 2 WLEF plots which are anomalously high
-#NOTE: These points are removed below
 if(fia==0){
   plot(dat48$biomass, dat48$HH.sigma.48,xlab="Biomass",ylab="HH (sigma)",main="Anomalous Plots")
   points(dat48$biomass[dat48$plot=="W47"],dat48$HH.sigma.48[dat48$plot=="W47"],pch=19,col="red")
   points(dat48$biomass[dat48$plot=="W52"],dat48$HH.sigma.48[dat48$plot=="W52"],pch=19,col="blue")
   legend("topright",legend=c("W47","W52"),pch=19,col=c("red","blue"),bty="n")
   
-  dat48<-dat48[dat48$plot !="W47" & dat48$plot !="W52",]
+  dat48<-dat48[dat48$plot !="W47" & dat48$plot !="W52",] #Excludes returns from WLEF plots W47 and W52
 }
 
   
@@ -520,7 +521,11 @@ bplot.xy(dat48$biomass,dat48$HV.sigma.48,N=15,xlab="biomass",ylab="HV (simga nau
 
 dev.off()
 
-#Run curve fitting function
+
+#########################################################
+## Run curve fitting function
+#########################################################
+
 n.reps<- 1000 #sets value for n.adapt and n.iter
 n.chain<-3 #number of MCMC chains to run
 bayes.curve.fit(outpath,coord.set,fia,n.reps,n.chain)
