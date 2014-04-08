@@ -1,3 +1,5 @@
+if(FALSE){
+
 in.path = "/Users/josh/Downloads/"
 in.prefix = "AMF_USDk2"
 
@@ -15,33 +17,4 @@ rh2rv <- function(rh, T){
 
 met2CF.Ameriflux(in.path,in.prefix,outfolder)
 
-# SH still hasn't been calculated
-# cannot delete variables using ncdf4
-# can build new files, but need to recreate the dimensions, variables and then create file
-# can we just delete what we don't need using nco?
-# can use nco to do the conversion. do this conversion before
-# importing ncdf to R
-#     nc.new <- nc_create(filename=paste(in.prefix,02004,sep="."),
-#               vars=c(ncvar_get(nc=nc,varid='air_temperature'),
-#                      ncvar_get(nc=nc,varid='wind_speed'),
-#                      ncvar_get(nc=nc,varid='air_pressure'),
-#                      ncvar_get(nc=nc,varid='surface_downwelling_shortwave_flux'),
-#                      ncvar_get(nc=nc,varid='surface_downwelling_longwave_flux'),
-#                      ncvar_get(nc=nc,varid='precipitation_flux'),
-#                      ncvar_get(nc=nc,varid='YEAR'),
-#                      ncvar_get(nc=nc,varid='GAP'),
-#                      ncvar_get(nc=nc,varid='DTIME'),
-#                      ncvar_get(nc=nc,varid='DOY'),
-#                      ncvar_get(nc=nc,varid='HRMIN'),
-#                      ncvar_get(nc=nc,varid='UST'),
-#                      ncvar_get(nc=nc,varid='WD'),
-#                      ncvar_get(nc=nc,varid='TS1'),
-#                      ncvar_get(nc=nc,varid='TSdepth1'),
-#                      ncvar_get(nc=nc,varid='TS2'),
-#                      ncvar_get(nc=nc,varid='TSdepth2'),
-#                      ncvar_get(nc=nc,varid='RH'),
-#                      ncvar_get(nc=nc,varid='VPD'),
-#                      ncvar_get(nc=nc,varid='SWC1'),
-#                      ncvar_get(nc=nc,varid='SWC2'),
-#                      ncvar_get(nc=nc,varid='PAR')
-#                      ))
+}
