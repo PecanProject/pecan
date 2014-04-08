@@ -25,10 +25,3 @@ License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
-Collate:
-    'sensitivity.analysis.R'
-    'run.sensitivity.analysis.R'
-    'plots.R'
-    'run.ensemble.analysis.R'
-    'flux_uncertainty.R'
-    'variance.R'

@@ -1,4 +1,5 @@
 export(fia.to.psscss)
+export(find.land)
 export(get.attributes)
 export(shp2kml)
 export(subset.layer)
