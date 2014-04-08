@@ -16,6 +16,8 @@ require(car)
 require(spatstat)
 require(fields)
 require(reshape)
+require(rjags)
+require(R2HTML)
 
 ################################
 ## OPTIONS
@@ -23,17 +25,22 @@ require(reshape)
 kml=0 #1 = generate and save kml files of extraction coordinates; 0 = do not generate new kml
 fia=0 #1 = use FIA coordinates, 0 = use WLEF/Park Falls Tower coordinates
 leaf.off=0 #1=include PALSAR scenes acquired duing leaf off period of the year, 0=exclude leaf off scene dates
+plot_ext=1 #Generate figures showing palsar scn extent with overlay of plot coords? (1=yes, 0=no)
+
 # buff=c(48) #vector of buffer sizes (in meters) to extract
 coord.set<-c("WLEF", "FIA")
 
 #Brady's Linux paths
-# metadata<- read.csv("~/data.remote/output/metadata/output_metadata.csv", sep="\t", header=T) ##for Brady's Linux
+metadata<- read.csv("/home/bhardima/pecan/modules/data.remote/output/metadata/output_metadata.csv", sep="\t", header=T) ##for Brady's Linux
+palsar_inpath <- file.path("/home/bhardima/Desktop/cheas/geo_corrected_single_sigma") ##location of PALSAR raw files
+calib_inpath <-"/home/bhardima/pecan/modules/data.remote/biometry/Link_to_Forest_Biomass_Calibration_Coords" ##location of file containing (FIA) plot coords and biomass values for calibrating PALSAR backscatter 
+outpath <- file.path("/home/bhardima/pecan/modules/data.remote/output/data") ##For saving
 
 #Brady's Mac paths
-metadata<- read.csv("/Users/hardimanb/Desktop/data.remote(Andys_Copy)/output/metadata/output_metadata.csv", sep="\t", header=T) ##location of PALSAR metadata table
-palsar_inpath <- file.path("/Users/hardimanb/Desktop/data.remote(Andys_Copy)/palsar_scenes/geo_corrected_single_sigma") ##location of PALSAR raw files
-calib_inpath <-"/Users/hardimanb/Desktop/data.remote(Andys_Copy)/biometry" ##location of file containing (FIA) plot coords and biomass values for calibrating PALSAR backscatter 
-outpath <- file.path("/Users/hardimanb/Desktop/data.remote(Andys_Copy)/output/data") ##For saving
+# metadata<- read.csv("/Users/hardimanb/Desktop/data.remote(Andys_Copy)/output/metadata/output_metadata.csv", sep="\t", header=T) ##location of PALSAR metadata table
+# palsar_inpath <- file.path("/Users/hardimanb/Desktop/data.remote(Andys_Copy)/palsar_scenes/geo_corrected_single_sigma") ##location of PALSAR raw files
+# calib_inpath <-"/Users/hardimanb/Desktop/data.remote(Andys_Copy)/biometry" ##location of file containing (FIA) plot coords and biomass values for calibrating PALSAR backscatter 
+# outpath <- file.path("/Users/hardimanb/Desktop/data.remote(Andys_Copy)/output/data") ##For saving
 
 ################################
 ## Read in coordinate data for calibration of PALSAR backscatter returns
@@ -50,7 +57,7 @@ if(fia==1){ #EXTRACTS FROM FIA COORDINATES
   if(kml==1){writeOGR(spdf.latlon, layer=1, "WI_FIA.kml", driver="KML") #export as kml (this puts in in the Home folder) 
   }
 }else{#EXTRACTS FROM WLEF COORDINATES
-  calib_infile <-read.csv(file.path(calib_inpath,"biometry_trimmed.csv"), sep=",", header=T) #WLEF plots
+  calib_infile <-read.csv(file.path(calib_inpath,"biometry_trimmed.csv"), sep="\t", header=T) #WLEF plots
   calib_infile<-aggregate(calib_infile, list(calib_infile[,1]), mean) ##This will give errors, but these can be safely ignored
   calib_infile$plot<-calib_infile$Group.1
   calib_infile<-cbind(calib_infile[,2],calib_infile[,5:9])
@@ -117,6 +124,9 @@ numfiles<-length(list.files(file.path(palsar_inpath, pol_bands[1]), pattern=".ti
 # colnames(disturbance_extracted_40m)<-col_names
 
 extracted_48m<-matrix(nrow=0, ncol=10) #matrix to store extracted palsar values. nrow=number of coordinates being extracted. ncol=# of pol_bands
+
+#Start file of scene extent figures
+pdf(paste(outpath,"/",coord.set[fia+1], "_SceneExtent_with_plot_overlay.pdf",sep=""),width = 6, height = 6, paper='special')
 
 for(i in 1:numfiles){ 
         HH_filelist<-as.vector(list.files(file.path(palsar_inpath, pol_bands[1]), pattern=".tif" ,recursive=F))
@@ -186,27 +196,35 @@ for(i in 1:numfiles){
         }
 
         extracted_48m<-rbind(extracted_48m,all_48)
+  
+  #Create figure showing palsar scn extent and overlay with plot coordinates
+  #NOTE:This was created to verify that zeros int he output of palsar data actually come from plots
+  #     that fall outside of a particular scene
+  if(plot_ext==1){
+  plot(extent(HV_rast))
+  points(spcheascoords,pch=19,col="red")
+  points(spcheascoords[coords.in.rast],pch=19)
+  legend("top",legend=c("Inside","Outside"),pch=19,col=c("black", "red"),bty="n")
+  mtext(paste(unique(scnid), unique(palsar_date),sep=" "))
+  }
 
     print(paste("i=",i,sep=""))
     print(scnid[1])
     print(palsar_date[1])
 }
+dev.off()
 
 ## Create working copy of data (so that I don't need to re-extract if I screw up the data)
 ## NOTE: Here I remove the NAs from coords that don't fall with in the scene and 
 ##       the zeros that are an artifact of the mismatch between palsar bbox dim and palsar raster dim (due to tilted orbital path)
 dat48<-data.frame(na.exclude(extracted_48m))
+colnames(dat48)<-c("scnid","scndate", "plot", "UTM.lat", "UTM.lon", "biomass","HH.sigma.48", "HV.sigma.48","HHse_data_48m","HVse_data_48m")
 
-if(fia==1){ #FIA data does not contain a plot-id, so here I add a dummy plot-id
-  colnames(dat48)<-c("scnid","scndate", "plot", "UTM.lat", "UTM.lon", "biomass","HH.sigma.48", "HV.sigma.48","HHse_data_48m","HVse_data_48m")
-}else{
-  colnames(dat48)<-c("scnid","scndate", "plot", "UTM.lat", "UTM.lon", "biomass","HH.sigma.48", "HV.sigma.48","HHse_data_48m","HVse_data_48m")
-}
 
 ## NOTE: Converting to dataframe changes all values to factor, so here I reformat the data and save it
 dat48$scnid<-as.character(dat48$scnid)
 dat48$scndate<-as.Date(dat48$scndate,"%Y-%m-%d")
-dat48$plot<-as.numeric(dat48$plot)
+dat48$plot<-as.character(dat48$plot)
 dat48$UTM.lat<- as.numeric(as.character(dat48$UTM.lat))
 dat48$UTM.lon<- as.numeric(as.character(dat48$UTM.lon))
 dat48$biomass<- as.numeric(as.character(dat48$biomass))
@@ -223,6 +241,12 @@ if(leaf.off==1){ #include leaf off data
 }else{ #exclude leaf off data
   dat48<-dat48[as.numeric(format(dat48$scndate,"%m"))>=05 & as.numeric(format(dat48$scndate,"%m"))<=10,]
 }
+
+#This will exclude plots which returned zeros for both HH and HV
+#NOTE: this circumstance corresponds to a subset of the plots falling outside of the palsar scene
+#      This can be verified by examining WLEF_SceneExtent_with_plot_overlay.pdf in data.remote/output/data
+dat48<-dat48[dat48$HH.sigma.48 !=0 & dat48$HV.sigma.48 !=0,]
+
 
 #Generate column of DOYs
 dats<-as.character(dat48$scndate) #reformat as character
@@ -268,6 +292,17 @@ dat48$month<-as.numeric(format(dat48$scndate,"%m"))
 dat48$HHse_data_48m<- as.numeric(as.character(dat48$HHse_data_48m))
 dat48$HVse_data_48m<- as.numeric(as.character(dat48$HVse_data_48m))
 
+#This generates a figure showing the HH values for 2 WLEF plots which are anomalously high
+#NOTE: These points are removed below
+if(fia==0){
+  plot(dat48$biomass, dat48$HH.sigma.48,xlab="Biomass",ylab="HH (sigma)",main="Anomalous Plots")
+  points(dat48$biomass[dat48$plot=="W47"],dat48$HH.sigma.48[dat48$plot=="W47"],pch=19,col="red")
+  points(dat48$biomass[dat48$plot=="W52"],dat48$HH.sigma.48[dat48$plot=="W52"],pch=19,col="blue")
+  legend("topright",legend=c("W47","W52"),pch=19,col=c("red","blue"),bty="n")
+  
+  dat48<-dat48[dat48$plot !="W47" & dat48$plot !="W52",]
+}
+
   
 #Generate PDF of raw data exploration
 #NOTE: Some of these figures will not be relevant for the FIA dataset
@@ -281,6 +316,7 @@ for(y in unique(dat48$year)){
       next
     }else{ 
       plot(dat48$biomass[dat48$month==m  & dat48$year==y],dat48$HH.sigma.48[dat48$month==m & dat48$year==y],
+           xlim=c(min(dat48$biomass),max(dat48$biomass)),ylim=c(min(dat48$HH.sigma.48),max(dat48$HH.sigma.48)),
            xlab="biomass",ylab='HH',main=paste(month.abb[m],y,sep=" ") )
     }#if
   }#for m
@@ -294,6 +330,7 @@ for(y in unique(dat48$year)){
       next
     }else{ 
       plot(dat48$biomass[dat48$month==m  & dat48$year==y],dat48$HV.sigma.48[dat48$month==m & dat48$year==y],
+           xlim=c(min(dat48$biomass),max(dat48$biomass)),ylim=c(min(dat48$HV.sigma.48),max(dat48$HV.sigma.48)),
            xlab="biomass",ylab='HV',main=paste(month.abb[m],y,sep=" ") )
     }#if
   }#for m
@@ -424,7 +461,8 @@ plot(dat48$scndate[format(dat48$scndate,"%Y")==2010],dat48$HH.sigma.48[format(da
 plot(dat48$scndate[format(dat48$scndate,"%Y")==2010],dat48$HV.sigma.48[format(dat48$scndate,"%Y")==2010],xlab="2010",ylab="HV")
 mtext("2010 only", side=3, line=-3, outer=TRUE, cex=1, font=2)
 
-if(leaf.off==1){
+#Plots demonstrating the effects of including DEC palsar scndate
+if(leaf.off==1){ #Only plots if leaf off period is included
 par(mfrow=c(2,2))
 scatter.smooth(dat48$biomass[format(dat48$scndate,"%Y")==2010],dat48$HH.sigma.48[format(dat48$scndate,"%Y")==2010],col="grey",xlab="biomass",ylab="HH",main="2010 only")
 points(dat48$biomass[format(dat48$scndate,"%Y")==2010 & format(dat48$scndate,"%m")>10],dat48$HH.sigma.48[format(dat48$scndate,"%Y")==2010 & format(dat48$scndate,"%m")>10])
