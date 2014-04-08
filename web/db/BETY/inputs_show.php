@@ -28,9 +28,9 @@ print_editor($id, $table, true);
 $query="SELECT dbfiles.id, concat(machines.hostname, ':', dbfiles.file_path, '/', dbfiles.file_name) as filename" .
        " FROM dbfiles, machines, inputs" .
        " WHERE inputs.id=$id AND dbfiles.container_id=inputs.id AND dbfiles.container_type='Input' AND machines.id=dbfiles.machine_id;";
-$result = $pdo->query($query, $db_connection);
+$result = $pdo->query($query, $pdo);
 if (!$result) {
-	die("Invalid query [$query] " . $pdo->errorInfo($db_connection));
+	die("Invalid query [$query] " . $pdo->errorInfo($pdo));
 }
 if ($result->fetchColumn() > 0) {
 ?>

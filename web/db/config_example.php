@@ -1,5 +1,6 @@
 <?php
 # Information to connect to the database
+$db_type="pgsql";
 $db_hostname="localhost";
 $db_username="bety";
 $db_password="bety";

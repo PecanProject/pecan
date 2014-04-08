@@ -2,22 +2,22 @@
 \alias{get.es}
 \title{get es}
 \usage{
-  get.es(temp)
+get.es(temp)
 }
 \arguments{
   \item{temp}{temperature in degrees C}
 }
 \value{
-  saturation vapor pressure in mb
+saturation vapor pressure in mb
 }
 \description{
-  Calculate saturation vapor pressure
+Calculate saturation vapor pressure
 }
 \examples{
 temp <- -30:30
 plot(temp, get.es(temp))
 }
 \author{
-  David LeBauer
+David LeBauer
 }
 
