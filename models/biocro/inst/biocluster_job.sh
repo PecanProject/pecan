@@ -1,12 +1,19 @@
 #!/bin/bash
-#PBS -N narr-threehourly32km-ncks
-#PBS -j oe
+# ----------------QSUB Parameters----------------- #
 #PBS -S /bin/bash
-#PBS -d /home/a-m/dlebauer/.pecan/
+#PBS -q default
+#PBS -l nodes=1:ppn=8,mem=24000mb
+#PBS -M dlebauer+biocluster@gmail.com
 #PBS -m abe
-#PBS -e dlebauer+biocluster@gmail.com
-
-module load gsl hdf5 netcdf nco R/3.0.2
-
+#PBS -N biocro-ustest
+#PBS -d /home/a-m/dlebauer/.pecan/
+#PBS -oe /home/a-m/dlebauer/.pecan/
+# ----------------Load Modules-------------------- #
+module load R/3.0.2
+module load nco/4.4.2
+module load netcdf/4.3.1.1
+module load parallel-netcdf/1.4.1
+module load udunits/2.1.24
+# ----------------Your Commands------------------- #
 export R_LIBS_USER="/home/a-m/dlebauer/library/R"
 /home/a-m/dlebauer/dev/pecan/models/biocro/inst/globalbiocro.Rscript
