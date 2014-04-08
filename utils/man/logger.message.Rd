@@ -2,7 +2,7 @@
 \alias{logger.message}
 \title{Prints a message at a certain log level.}
 \usage{
-  logger.message(level, msg, ...)
+logger.message(level, msg, ...)
 }
 \arguments{
   \item{level}{the level of the message (DEBUG, INFO, WARN,
@@ -13,13 +13,12 @@
   \item{...}{any additional text that should be printed.}
 }
 \description{
-  This function will print a message. This is the function
-  that is responsible for the actual printing of the
-  message.
+This function will print a message. This is the function
+that is responsible for the actual printing of the message.
 }
 \details{
-  This is a place holder and will be later filled in with a
-  more complex logging set
+This is a place holder and will be later filled in with a
+more complex logging set
 }
 \examples{
 \dontrun{
@@ -27,6 +26,6 @@ logger.message("DEBUG", "variable", 5)
 }
 }
 \author{
-  Rob Kooper
+Rob Kooper
 }
 
