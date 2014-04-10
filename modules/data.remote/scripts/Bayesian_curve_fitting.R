@@ -5,6 +5,7 @@ library(rjags)
 require(R2HTML)
 
 dat48<-read.csv(file=paste(outpath,"/",coord.set[fia+1],"_dat48.csv",sep=""),header=T,sep=",")
+outpath<-file.path(outpath,"model_output")
 # outpath <- file.path("/Users/hardimanb/Desktop/data.remote(Andys_Copy)/output/data") ##For saving
 
 x<-dat48$biomass
@@ -68,7 +69,7 @@ sd<-1/sqrt(tau)
 Ri = "model{
 for(i in 1:n){
 y[i]~dnorm(mu[i],tau)
-mu[i]<-a*x[i]*exp(-b*x[i])
+mu[i]<- a*x[i]*exp(-b*x[i])
 #    x[i]~dnorm(xt[i],tau.x)
 }#for
 
@@ -125,8 +126,8 @@ mu[i]<-((a*x[i]^2)/(b+(c*x[i])+x[i]^2))+yint
 }#for
 
 a~dnorm(0,1)
-b~dunif(0.001,100)
-c~dunif(0.001,100)
+b~dunif(0,100)
+c~dnorm(0,1)
 yint~dunif(0,1)
 tau~dgamma(3,2)
 sd<-1/sqrt(tau)
@@ -173,7 +174,7 @@ mu[i]<-(a/(1+exp(a-b*x[i])))+yint
 #    x[i]~dnorm(xt[i],tau.x)
 }#for
 
-a~dnorm(0,1)
+a~dunif(0,1)
 b~dnorm(0,1)
 yint~dunif(0,1)
 tau~dgamma(3,2)
@@ -195,53 +196,53 @@ H3.HH.init      = list(a=0.1,b=100,      tau = 2/var(y)) #for H3
 Ri.HH.init      = list(a=0.5,b=0.5,      tau = 2/var(y)) #for Ri
 Log.HH.init     = list(a=0.6,b=1,        tau = 2/var(y)) #for Log
 MM.yint.HH.init = list(b1=4, b0=0.1,     yint=0.1, tau = 2/var(y)) #for MM.yint
-H4.yint.HH.init = list(a=0.1,b=50,  c=2, yint=0.1, tau = 2/var(y)) #for H4.yint
 H3.yint.HH.init = list(a=0.1,b=100,      yint=0.1, tau = 2/var(y)) #for H3.yint
-Ri.yint.HH.init = list(a=1,  b=1.5,      yint=0.1, tau = 2/var(y)) #for Ri.yint
+H4.yint.HH.init = list(a=0.1,b=50,  c=2, yint=0.1, tau = 2/var(y)) #for H4.yint
+Ri.yint.HH.init = list(a=0.5,  b=0.5,   yint=0.1, tau = 2/var(y)) #for Ri.yint
 Log.yint.HH.init= list(a=0.6,b=1,        yint=0.1, tau = 2/var(y)) #for Log.yint
 
 #Initial conditions for HV pol band
-MM.HV.init      = list(b1=4, b0=0.1,     tau = 2/var(y)) #for MM
-H4.HV.init      = list(a=0.1,b=50,  c=2, tau = 2/var(y)) #for H4
-H3.HV.init      = list(a=0.1,b=100,      tau = 2/var(y)) #for H3
-Ri.HV.init      = list(a=0.5,b=0.5,      tau = 2/var(y)) #for Ri
-Log.HV.init     = list(a=0.6,b=1,        tau = 2/var(y)) #for Log
-MM.yint.HV.init = list(b1=4, b0=0.1,     yint=0.1, tau = 2/var(y)) #for MM.yint
-H4.yint.HV.init = list(a=0.1,b=50,  c=2, yint=0.1, tau = 2/var(y)) #for H4.yint
-H3.yint.HV.init = list(a=0.1,b=100,      yint=0.1, tau = 2/var(y)) #for H3.yint
-Ri.yint.HV.init = list(a=1,  b=1.5,      yint=0.1, tau = 2/var(y)) #for Ri.yint
-Log.yint.HV.init= list(a=0.6,b=1,        yint=0.1, tau = 2/var(y)) #for Log.yint
+MM.HV.init      = list(b1=8,   b0=0.04,     tau = 2/var(y)) #for MM
+H3.HV.init      = list(a=0.02, b=100,       tau = 2/var(y)) #for H3
+H4.HV.init      = list(a=0.03, b=0.01, c=2, tau = 2/var(y)) #for H4
+Ri.HV.init      = list(a=0,    b=0,         tau = 2/var(y)) #for Ri
+Log.HV.init     = list(a=0.6,  b=1,         tau = 2/var(y)) #for Log
+MM.yint.HV.init = list(b1=8,   b0=0.04,      yint=0.04,tau = 2/var(y)) #for MM.yint
+H3.yint.HV.init = list(a=0.02, b=100,        yint=0.04, tau = 2/var(y)) #for H3.yint
+H4.yint.HV.init = list(a=0.03, b=0.01, c=2,  yint=0.04, tau = 2/var(y)) #for H4.yint
+Ri.yint.HV.init = list(a=0.5,  b=0.5,        yint=0.04, tau = 2/var(y)) #for Ri.yint
+Log.yint.HV.init= list(a=0.6,  b=1,          yint=0.04, tau = 2/var(y)) #for Log.yint
 
 MM.var.names<-c("b0","b1","sd") #for MM
-H4.var.names<-c("a","b","c","sd") #for H4
 H3.var.names<-c("a","b","sd") #for H3
+H4.var.names<-c("a","b","c","sd") #for H4
 Ri.var.names <-c("a","b","sd") #for Ri
 Log.var.names<-c("a","b","sd") #for Log
 MM.yint.var.names<-c("b0","b1","yint","sd") #for MM.yint
-H4.yint.var.names<-c("a","b","c","yint","sd") #for H4.yint
 H3.yint.var.names<-c("a","b","yint","sd") #for H3.yint
+H4.yint.var.names<-c("a","b","c","yint","sd") #for H4.yint
 Ri.yint.var.names <-c("a","b","yint","sd") #for Ri.yint
 Log.yint.var.names<-c("a","b","yint","sd") #for Log.yint
 
 MM.lines<-"lines(xseq,(parm[1]*xseq)/(parm[2]+xseq),col=2,lwd=3)"  #For MM
-H4.lines<-"lines(xseq,(parm[1]*xseq^2)/(parm[2]+parm[3]*xseq+xseq^2),col=2,lwd=3)"  #For H4
 H3.lines<-"lines(xseq,(parm[1]*xseq^2)/(parm[2]^2+xseq^2),col=2,lwd=3)" #For H3
+H4.lines<-"lines(xseq,(parm[1]*xseq^2)/(parm[2]+parm[3]*xseq+xseq^2),col=2,lwd=3)"  #For H4
 Ri.lines<-"lines(xseq,(parm[1]*xseq*exp(-parm[2]*xseq)),col=2,lwd=3)"  #For Ri  a*x[i]*exp(-b*x[i])
 Log.lines<-"lines(xseq,parm[1]/(1+exp(parm[1]-parm[2]*xseq)),col=2,lwd=3)"  #For Log exp(a+b*x[i])/(1+exp(a+b*x[i]))
 MM.yint.lines<-"lines(xseq,((parm[1]*xseq)/(parm[2]+xseq))+parm[4],col=2,lwd=3)"  #For MM.yint
-H4.yint.lines<-"lines(xseq,((parm[1]*xseq^2)/(parm[2]+parm[3]*xseq+xseq^2))+parm[5],col=2,lwd=3)"  #For H4.yint
 H3.yint.lines<-"lines(xseq,((parm[1]*xseq^2)/(parm[2]^2+xseq^2))+parm[4],col=2,lwd=3)" #For H3.yint
-Ri.yint.lines<-"lines(xseq,((parm[1]*xseq*exp(-parm[2]*xseq)))+parm[4],col=2,lwd=3)"  #For Ri.yint
+H4.yint.lines<-"lines(xseq,((parm[1]*xseq^2)/(parm[2]+parm[3]*xseq+xseq^2))+parm[5],col=2,lwd=3)"  #For H4.yint
+Ri.yint.lines<-"lines(xseq,(parm[1]*xseq*exp(-parm[2]*xseq))+parm[4],col=2,lwd=3)"  #For Ri.yint
 Log.yint.lines<-"lines(xseq,(parm[1]/(1+exp(parm[1]-parm[2]*xseq)))+parm[4],col=2,lwd=3)"  #For Log.yint
 
 MM.mod.eqn<-"(out[k,1]*xseq)/(out[k,2]+xseq)"
-H4.mod.eqn<-"(out[k,1]*xseq^2)/(out[k,2]+out[k,3]*xseq+xseq^2)"
 H3.mod.eqn<-"(out[k,1]*xseq^2)/(out[k,2]^2+xseq^2)"
+H4.mod.eqn<-"(out[k,1]*xseq^2)/(out[k,2]+out[k,3]*xseq+xseq^2)"
 Ri.mod.eqn<-"out[k,1]*xseq*exp(-out[k,2]*xseq)"                               
 Log.mod.eqn<-"out[k,1]/(1+exp(out[k,1]-out[k,2]*xseq))"    
 MM.yint.mod.eqn<-"((out[k,1]*xseq)/(out[k,2]+xseq))+out[k,4]"
-H4.yint.mod.eqn<-"((out[k,1]*xseq^2)/(out[k,2]+out[k,3]*xseq+xseq^2))+out[k,5]"
 H3.yint.mod.eqn<-"((out[k,1]*xseq^2)/(out[k,2]^2+xseq^2))+out[k,4]"
+H4.yint.mod.eqn<-"((out[k,1]*xseq^2)/(out[k,2]+out[k,3]*xseq+xseq^2))+out[k,5]"
 Ri.yint.mod.eqn<-"(out[k,1]*xseq*exp(-out[k,2]*xseq))+out[k,4]"
 Log.yint.mod.eqn<-"(out[k,1]/(1+exp(out[k,1]-out[k,2]*xseq)))+out[k,4]"
 
@@ -384,6 +385,8 @@ for(i in 1:length(yvars)){ #loop over HH and HV (pol bands)
               summary(jags.out)),
          file=target)
     
+    print(yvars[i])
+    print(mod.names[j])
   }#looping over models
 }#looping over HH & HV
 }#function
