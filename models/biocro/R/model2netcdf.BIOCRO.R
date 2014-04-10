@@ -14,14 +14,17 @@
 ##' Shawn Serbin and Mike Dietze
 ##' @name model2netcdf.BIOCRO
 ##' @title Function to convert biocro model output to standard netCDF format
+##' @param resultDT output from BioCro model
 ##' @param outdir Location of model output
 ##' @param lat Latitude of the site
 ##' @param lon Longitude of the site
 ##' @export
 ##'
 ##' @author David LeBauer, Deepak Jaiswal
-model2netcdf.BIOCRO <- function(resultDT, outdir, sitelat, sitelon) {
-      
+model2netcdf.BIOCRO <- function(resultDT, outdir, lat = NULL, lon = NULL) {
+
+    if(is.null(lat)) lat <- resultDT$lat
+    if(is.null(lat)) lon <- resultDT$lon
   require(lubridate, quietly = TRUE)
   require(data.table, quietly = TRUE)
   start.date <- resultDT[1, ymd_hms(paste0(Year, "-01-01 ", Hour, ":00:00")) + days(DayofYear - 1)]
@@ -30,20 +33,22 @@ model2netcdf.BIOCRO <- function(resultDT, outdir, sitelat, sitelon) {
     for(yeari in unique(resultDT$Year)) {
         result <- resultDT[resultDT$Year == yeari,]
         ##result$s <- with(result, ((DayofYear -1) * 24 + Hour) * 3600)
-        if(genus == "Saccharum"){
-            for(variable in c("Leaf", "Root", "Stem", "LAI", "DayofYear")) {
-                x <- result[[variable]]
-                result[[variable]] <- c(x[1], rep(x[-1], 24, each = TRUE))
+        if(exists('genus')){
+            if(genus == "Saccharum"){
+                for(variable in c("Leaf", "Root", "Stem", "LAI", "DayofYear")) {
+                    x <- result[[variable]]
+                    result[[variable]] <- c(x[1], rep(x[-1], 24, each = TRUE))
+                }
             }
         }
-    
+        
         ## longname prefix station_* used for a point
         ## http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.4/cf-conventions.html#scalar-coordinate-variables
         lat <- ncdim_def("lat", "degrees_east",
-                         vals =  as.numeric(sitelat),
+                         vals =  as.numeric(lat),
                          longname = "station_latitude") 
         lon <- ncdim_def("lon", "degrees_north",
-                         vals = as.numeric(sitelon),
+                         vals = as.numeric(lon),
                          longname = "station_longitude")
         t <- ncdim_def(name = "time",
                        units = paste0("days since ", start.date),
