@@ -5,6 +5,7 @@ library(rjags)
 require(R2HTML)
 
 dat48<-read.csv(file=paste(outpath,"/",coord.set[fia+1],"_dat48.csv",sep=""),header=T,sep=",")
+dir.create(file.path(outpath,"model_output"))
 outpath<-file.path(outpath,"model_output")
 # outpath <- file.path("/Users/hardimanb/Desktop/data.remote(Andys_Copy)/output/data") ##For saving
 
