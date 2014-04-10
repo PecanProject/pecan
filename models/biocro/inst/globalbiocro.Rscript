@@ -14,13 +14,11 @@ arg   <- commandArgs(trailingOnly = TRUE)
 
 ## TODO: Pass lat, lon, start/end date, outdir, met.file, soil parameters in config.xml
 #if(length(arg) == 0){
-#     lat <- 40.08
-#     lon <- -88.23
-     start.date <- "1990-01-01"
-     end.date <- "2000-12-31"
-     outdir <- "/home/a-m/dlebauer/.pecan/demo/"
-     inputdir <- "/home/groups/ebimodeling/"
-     met.file <- file.path(inputdir, "met/cruncep/vars2/all.nc")
+start.date <- "1979-01-01"
+end.date <- "2011-12-31"
+outdir <- "/home/a-m/dlebauer/.pecan/demo/"
+inputdir <- "/home/groups/ebimodeling/"
+met.file <- file.path(inputdir, "met/cruncep/vars2/all.nc")
 #} else {
 #     configs <- readXML(args[1])
 # lat <- config$lat
@@ -199,7 +197,10 @@ get.soil <- function(lat, lon, soil.nc = soil.nc){
     usda_class <- ncvar_get(soil.nc, "t_usda_tex",
                             start = c(loni, lati),
                             count = c(1,1))
-    return(usda_class)
+    ref_depth <- ud.convert(ncvar_get(soil.nc, "ref_depth",
+                           start = c(loni, lati),
+                           count = c(1, 1)), "cm", "m")
+    return(list(usda_class = usda_class, ref_depth = ref_depth))
 }
 
 is.land <- function(lat, lon){
@@ -225,65 +226,85 @@ get.cruncep <- function(lat, lon, start.date, end.date){
     return(weather)
 }
 
-run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = soil.nc, start.date = start.date, end.date = end.date){
-    ## get soil data
-    ## abox <- get.latlonbox(lati = lati, loni = loni, Lat = Lat, Lon = Lon)
-    ## soil <- get.hwsd.box(abox, con = con)
-    if(is.land(lat, lon)){
-        soil.type <- 6# get.soil(lat, lon, soil.nc = soil.nc)
-        weather <- get.weather(lat, lon, met.nc = met.nc, start.date, end.date)
-        result <- list()
-        years <- unique(weather$year)
-        for(yeari in years){
-            WetDat <- as.data.frame(weather[year == yeari, ])
-            day1 <- min(WetDat$doy)
-            dayn <- max(WetDat$doy)
-            yearchar <- as.character(yeari)
-            if(yeari == min(years)){
-                iplant <- iwillowParms(iRhizome=1.0, iStem=1.0, iLeaf=0.0,
-                                       iRoot=1.0, ifrRhizome=0.01, ifrStem=0.01,
-                                       ifrLeaf = 0.0, ifrRoot = 0.0)
-            } else {
-                N <- length(result[[as.character(yeari-1)]]$Rhizome)
-                iplant$iRhizome <- result[[as.character(yeari-1)]]$Rhizome[N]
-                iplant$iStem <- result[[as.character(yeari-1)]]$Stem[N]
-                iplant$iRoot <- result[[as.character(yeari-1)]]$Root[N]
-            }
-            result[[yearchar]] <- willowGro(WetDat = WetDat,
-                                            day1 = day1, dayn = dayn,
-                                            soilControl = soilParms(soilType = soil.type))
+
+## placeholder for PEcAn config file
+# config <- XML::xmlToList(system.file("extdata/defaults/salix.xml", package = "PEcAn.BIOCRO"))
+load("/home/a-m/dlebauer/dev/pecan/models/biocro/inst/extdata/defaults/salix.RData")
+constants$canopyControl$mResp <- canopyParms()$mResp
+constants$phenoParms <- lapply(constants$phenoParms, as.numeric)
+
+run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = soil.nc, start.date = start.date, end.date = end.date, coppice.interval = 4){
+    soil <- get.soil(lat, lon, soil.nc = soil.nc)
+    soil.type <- ifelse(soil$usda_class %in% 1:10, soil$usda_class, 10)
+    weather <- get.weather(lat, lon, met.nc = met.nc, start.date, end.date)
+    years <- unique(weather$year)
+    for(yeari in years){
+        WetDat <- as.data.frame(weather[year == yeari, ])
+        day1 <- min(WetDat$doy)
+        dayn <- max(WetDat$doy)
+        yearchar <- as.character(yeari)
+        ## start of a distinct function called 'getinitialcondition'
+        HarvestedYield <- 0
+        if(yeari == min(years)){
+            iplant <- iwillowParms(iRhizome=1.0, iStem=1.0, iLeaf=0.0,
+                                   iRoot=1.0, ifrRhizome=0.01, ifrStem=0.01,
+                                   ifrLeaf = 0.0, ifrRoot = 0.0)
+        } else {
+            iplant[c("iRhizome", "iRoot", "iStem")] <- last(result.yeari[,list(Rhizome, Root, Stem)])
+            if ((yeari - min(years))  %% coppice.interval == 0) { # coppice when remainder = 0
+                HarvestedYield  <- round(last(result.yeari$Stem) * 0.95, 2)                
+            } else if ((yeari - min(years))  %% coppice.interval == 1) { # year after coppice
+                iplant$iStem <- iplant$iStem * 0.05
+            } # else { # do nothing if neither coppice year nor year following
         }
-        result.yeari <- with(result[[yearchar]],
-                             data.frame(Year = yeari, DayofYear, Hour, ThermalT,
+        ## run BioCro
+        tmp.result <- willowGro(WetDat = WetDat,
+                                day1 = day1, dayn = dayn,
+                                soilControl = soilParms(soilType = soil.type),
+                                canopyControl = constants$canopyControl,
+                                willowphenoControl = constants$phenoParms,
+                                seneControl = constants$seneControl,
+                                iPlantControl = iplant,
+                                photoControl=constants$photoParms)
+        result.yeari <- with(tmp.result,
+                             data.table(year = yeari, doy = DayofYear, hour = Hour, ThermalT,
                                         Stem, Leaf, Root, Rhizome, Grain, LAI,
-                                        SoilEvaporation, CanopyTrans))
-        if(yeari == min(years) | !exists("resultDT")){
-            resultDT <- result.yeari
+                                        SoilEvaporation, CanopyTrans, key = c("year", "doy", "hour")))
+        yield.yeari <- data.table(lat = lat, lon = lon, year = yeari, yield = HarvestedYield, runtime = now(),
+                                  key = "year")
+        if(yeari == min(years) | !exists("all.results")){
+            all.results <- result.yeari
+            yield.annually <- yield.yeari
         } else if (yeari > min(years)){
-            resultDT <- rbind(resultDT, result.yeari)
+            all.results <- rbind(all.results, result.yeari)
+            yield.annually <- rbind(yield.annually, yield.yeari)
         }
-        result <- data.table(cbind(lat = lat, lon = lon, resultDT,
-                                   weather[,list(mat = mean(DailyTemp.C), map = sum(precip), meansolar = mean(solarR), rh = mean(RH)), by = "year"]))
-    } else {
-        result <- NULL
     }
-    return(result)
+    
+    setkeyv(weather, c("year", "doy", "hour"))
+    setkey(yield.annually, "year")
+    result.hourly <- round(weather[all.results], 2) ## right join
+    
+    result.annually <- round(result.hourly[ ,list(Stem = max(Stem), Leaf = max(Leaf), Root = max(Root), Rhizome = max(Rhizome),
+                                            Grain = max(Grain), mat = mean(DailyTemp.C), map = sum(precip)),
+                                     by = "year"], 2)[yield.annually]
+    return(data.table(lat = lat, lon = lon, result.annually))
 }
 
 
 
-make.stem.map <- function(){
+make.stem.map <- function(input){
     
     require(ggplot2)
     if(any(tmp$lat <0) | any(tmp$lon > 0)){
         world <- data.table(map_data("world"))
     } else {
-        world <- data.table(map_data("USA"))
+        world <- data.table(map_data("usa"))
     }
-    stem_map <- ggplot(world) +
-        geom_polygon(aes(x=long, y = lat, group = group),
+    stem_map <- ggplot() +
+        geom_polygon(data = world, aes(x=long, y = lat, group = group),
                      fill = "white", color = "darkgrey") +
-                         geom_point(data = tmp[Stem < 200 & !is.na(Stem) & !is.nan(Stem)],
+                         geom_point(data = tmp,
                                     aes(x = lon, y = lat, color = Stem), size = 5) +
                                         scale_color_gradientn(colours = c("red","orange", "yellow", "green", "blue", "violet")) +
     theme_bw() + xlim(range(pretty(tmp$lon))) + ylim(range(pretty(tmp$lat)))
@@ -291,47 +312,48 @@ make.stem.map <- function(){
 
 }
 
-## out <- run.biocro(lat, lon)
-## save(out, file = file.path(outdir, "output.RData"))
-## con <- get.hwsdcon()
-
 Lat <- ncvar_get(nc = met.nc, varid = "lat")
 Lon <- ncvar_get(nc = met.nc, varid = "lon")
 
-## for US
-Lat <- Lat[Lat > 32 & Lat < 49]
-Lon <- Lon[Lon < -67 & Lon > -125]
+site <- "usa"
+if(site == "usa"){
+    ## for US
+    Lat <- Lat[Lat > 25 & Lat < 49]
+    Lon <- Lon[Lon < -67 & Lon > -125]
+}
 
-#subsample <- "TRUE"
-#if(subsample){
-#   Lat <- Lat[1:18*20]
-#   Lon <- Lon[1:36*20]
-#    Lat <- Lat[1:9*40]
-#    Lon <- Lon[1:9*80]
+# determine if point is in polygon http://stackoverflow.com/q/21971447/199217
+#library(sp)
+#point.in.polygon(lon, lat, usa$long[usa$group == "main"], usa$lat[usa$group == "main"])
+#
+#testrun <- "TRUE"
+## if(testrun){
+##     ## US test subset
+##     ## for test subset
+    
+Lat <- Lat[! 1:length(Lat) %% 2]
+Lon <- Lon[Lon > -100 & ! 1:length(Lon) %% 2]
+## }
+#Lat <- 44.25
+#Lon <- -88.25
 
-#}
-#Lat <- Lat[1]
-#Lon <- Lon[1]
-tmp <- NULL
+
+allout <- NULL
 for(lat in Lat){
     for(lon in Lon){
         if(is.land(lat, lon)){
             out <- run.biocro(lat, lon, met.nc = met.nc, soil.nc = soil.nc,
-                              start.date = start.date, end.date = end.date)
-#            save(out, file = file.path(outdir,
-#                          paste0(lat, "N", lon, "Woutput.RData")))
-            tmp <- rbind(tmp, last(out[,list(lat, lon, Year, DayofYear, Hour,
-                                            ThermalT, Stem, Leaf, Root, Rhizome,
-                                            Grain, LAI, SoilEvaporation, CanopyTrans)]))
-
+                              start.date = start.date, end.date = end.date,
+                              coppice.interval = 4)#, hourly = FALSE)
+            allout <- rbind(allout, out)
         }
+        biocro_result <- allout
+        save(biocro_result, file = file.path(outdir, 'incomplete_USresults.RData'))
+        tmp <- biocro_result[,list(lat, lon, Stem = mean(yield), runtime = round(diff(range(runtime)))), by = c("lat", "lon")]
+        stem_map <- make.stem.map(input = tmp) 
+        ggsave(plot = stem_map, filename = file.path(outdir, "global_stem.pdf"))
+     
     }
-    save(tmp, file = file.path(outdir, 'incomplete_USresults.RData'))
-    stem_map <- make.stem.map()
-    ggsave(plot = stem_map, filename = file.path(outdir, "global_stem.pdf"))
-    
 }
 
-
-biocro_output <- tmp
-save(tmp, file = file.path(outdir, "biocro_output.RData"))
+save(biocro_result, file = file.path(outdir, "biocro_output.RData"))
