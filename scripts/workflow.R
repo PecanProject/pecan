@@ -62,14 +62,14 @@ status.start("OUTPUT")
 get.model.output(settings$model$name, settings)
 status.end()
 
-# Run sensitivity analysis and variance decomposition on model output
-status.start("SENSITIVITY")
-run.sensitivity.analysis()
-status.end()
-
 # Run ensemble analysis on model output. 
 status.start("ENSEMBLE")
 run.ensemble.analysis(TRUE)
+status.end()
+
+# Run sensitivity analysis and variance decomposition on model output
+status.start("SENSITIVITY")
+run.sensitivity.analysis()
 status.end()
 
 ### PEcAn workflow run complete
