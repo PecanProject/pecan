@@ -8,7 +8,7 @@
 #-------------------------------------------------------------------------------
 ## R Code to convert from NACP intercomparison NETCDF met files
 ## into ED2 ascii met files
-
+fname = "/projectnb/cheas/afshin/NARR/rani/2012_sub.nc"
 met2model.ED2 <- function(fname,lst){
   
 ### FUNCTIONS
@@ -24,6 +24,7 @@ day2mo <- function(year,day){
   return(mo)
 }
 
+#infile <-/projectnb/cheas/afshin/NARR/rani
 ## loop over files
 for(i in 1:length(fname)){
 
@@ -37,17 +38,19 @@ for(i in 1:length(fname)){
   ## determine GMT adjustment
   ## lst <- site$LST_shift[which(site$acro == froot)]
   
+  
   ## extract variables
   lat  <- ncvar_get(nc,"lat")
   lon  <- ncvar_get(nc,"lon")
   sec   <- nc$dim$t$vals
-  Tair <- ncvar_get(nc,"Tair")
-  Qair <- ncvar_get(nc,"Qair")  #humidity (kg/kg)
-  Wind <- ncvar_get(nc,"Wind")
-  Rain <- ncvar_get(nc,"Rainf")
-  pres <- ncvar_get(nc,"Psurf")
-  SW   <- ncvar_get(nc,"SWdown")
-  LW   <- ncvar_get(nc,"LWdown")
+  Tair <- ncvar_get(nc,"air_temperature")
+  Qair <- ncvar_get(nc,"specific_humidity")  #humidity (kg/kg)
+  U <- ncvar_get(nc,"eastward_wind")
+  V <- ncvar_get(nc,"northward_wind")
+  Rain <- ncvar_get(nc,"precipitation_flux")
+  pres <- ncvar_get(nc,"air_pressure")
+  SW   <- ncvar_get(nc,"surface_downwelling_shortwave_flux")
+  LW   <- ncvar_get(nc,"surface_downwelling_longwave_flux")
   CO2  <- ncvar_get(nc,"CO2air")
   
   dt <- sec[2]-sec[1]
@@ -57,7 +60,8 @@ for(i in 1:length(fname)){
   slen <- length(SW)
   Tair <- c(rep(Tair[1],toff),Tair)[1:slen]
   Qair <- c(rep(Qair[1],toff),Qair)[1:slen]
-  Wind <- c(rep(Wind[1],toff),Wind)[1:slen]
+  U <- c(rep(U[1],toff),U)[1:slen]
+  V <- c(rep(V[1],toff),V)[1:slen]
   Rain <- c(rep(Rain[1],toff),Rain)[1:slen]
   pres <- c(rep(pres[1],toff),pres)[1:slen]
   SW <- c(rep(SW[1],toff),SW)[1:slen]
@@ -143,8 +147,8 @@ for(i in 1:length(fname)){
   dlwrfA <- LW                # downward long wave radiation [W/m2]
   presA  <- pres              # pressure [Pa]
   hgtA   <- rep(50,n)         # geopotential height [m]
-  ugrdA  <- Wind              # zonal wind [m/s]
-  vgrdA  <- rep(0,n)          # meridional wind [m/s]
+  ugrdA  <- U                 # zonal wind [m/s]
+  vgrdA  <- V                 # meridional wind [m/s]
   shA    <- Qair              # specific humidity [kg_H2O/kg_air]
   tmpA   <- Tair              # temperature [K]
   co2A   <- CO2               # surface co2 concentration [ppm]
