@@ -29,7 +29,7 @@ run.sensitivity.analysis <- function(plot=TRUE){
   if ('sensitivity.analysis' %in% names(settings)) {
     
     ### Load parsed model results
-    load(file.path(settings$outdir, 'output.Rdata'))
+    load(file.path(settings$outdir, 'sensitivity.Rdata'))
     load(file.path(settings$outdir, 'samples.Rdata'))
 
     ### Generate SA output and diagnostic plots
