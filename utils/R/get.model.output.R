@@ -22,12 +22,10 @@
 ##' get.model.output("ED2")
 ##' }
 ##'
+##' @deprecated
 ##' @author Michael Dietze, Shawn Serbin, David LeBauer
 get.model.output <- function(model, settings){
-  load.modelpkg(model)
-  logger.info("Same as get.results(settings)")
-  get.results(settings)
-  return()
+  logger.severe("Same as get.results(settings), please update your workflow")
 }
 ####################################################################################################
 ### EOF.  End of R script file.            	

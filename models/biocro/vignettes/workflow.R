@@ -27,9 +27,9 @@ run.write.configs(model)        # Calls model specific write.configs e.g. write.
 ## load met data
 start.model.runs(model)         # Start ecosystem model runs
 read.outputs(settings$model$name, settings)
-#read.outputs(model, settings)#, variables = "StemBiom")
+#read.outputs(model, settings)  #, variables = "StemBiom")
 
-get.model.output(model = model, settings = settings)         # Get results of model runs
+get.results(settings)           # Get results of model runs
 
 #run.sensitivity.analysis()      # Run sensitivity analysis and variance decomposition on model output
 
