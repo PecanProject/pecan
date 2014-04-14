@@ -59,7 +59,7 @@ status.end()
 
 # Get results of model runs
 status.start("OUTPUT")
-get.model.output(settings$model$name, settings)
+get.results(settings)
 status.end()
 
 # Run ensemble analysis on model output. 
