@@ -22,6 +22,11 @@ CHECK="no"
 INSTALL="yes"
 TEST="no"
 
+# no arguments means build
+if [ $# == 0 ]; then
+  FORCE="yes"
+fi
+
 # find all variables
 while true; do
   if [ "$1" == "" ]; then
