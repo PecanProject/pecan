@@ -32,7 +32,7 @@ run.write.configs(settings$model$name, settings$bety$write)
 start.model.runs(settings$model$name, settings$bety$write)
 
 # Get results of model runs
-get.model.output(settings$model$name, settings)
+get.results(settings)
 
 sda.particle(settings$model$name)
 
