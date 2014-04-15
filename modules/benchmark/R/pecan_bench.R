@@ -25,7 +25,7 @@ pecan_bench <- function(comp_run,bench_id,imp_limit,high_limit){
   
      	    logic_check <- validation_check(comp_run)
 
-	    if(isFALSE(logic_check){
+	    if(isFALSE(logic_check)){
 	     print('The results were found to be invalid')
 	     stop()
 	    }
@@ -121,7 +121,7 @@ pecan_bench <- function(comp_run,bench_id,imp_limit,high_limit){
 	    print(bench_print)
 
 	    if(bench_ratio_high > 0){
-	     print(paste('Warning:', N, 'variables showed a larger than suggested increase in value')
+	     print(paste('Warning:', N, 'variables showed a larger than suggested increase in value'))
 	    }
 
 ## MCD: the specific stats involved could vary, but they definitely need to written to database not screen
@@ -139,7 +139,7 @@ pecan_bench <- function(comp_run,bench_id,imp_limit,high_limit){
 
 #	    If the current runs performed better, it is stored as the new bench mark. Additionally, we calculate the 
 
-	    if(bench_ratio_mean < imp_limit .and. bench_ratio_count > 0.8){
+	    if(bench_ratio_mean < imp_limit & bench_ratio_count > 0.8){
 	     Set_Bench(...)	#Subroutine which sets the current run to be the new benchmark comparison run as well as saves the previous benchmark comparison run a database
 	     Compare_Bench(...) #Subroutine which calculates a new vector of values which are essentially the benchmark ratios between old runs and the current comparison run.
 }
