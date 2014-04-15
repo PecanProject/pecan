@@ -4,7 +4,7 @@ Title: PEcAn functions used for benchmarking
 Version: 1.3.3
 Date: 2013-10-08
 Author: Michael Dietze, David LeBauer, Rob Kooper, Toni Viskari
-Maintainer:
+Maintainer: Mike Dietze <dietze@bu.edu>
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     workflow management tool that is designed to simplify the management of
     model parameterization, execution, and analysis. The goal of PECAn is to
