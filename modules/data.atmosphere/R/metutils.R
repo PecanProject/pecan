@@ -1,3 +1,4 @@
+
 ##' Convert specific humidity to relative humidity
 ##'
 ##' converting specific humidity into relative humidity
@@ -18,6 +19,18 @@ qair2rh <- function(qair, temp, press = 1013.25){
     rh[rh > 1] <- 1
     rh[rh < 0] <- 0
     return(rh)
+}
+
+##' converts relative humidity to specific humidity
+##' @title RH to SH
+##' @param rh relative humidity (proportion, not %)
+##' @param T absolute temperature (Kelvin)
+##' @export
+##' @author Mike Dietze
+##' @aliases rh2rv
+rh2qair <- function(rh, T){
+  qair <- rh * 2.541e6 * exp(-5415.0 / T) * 18/29
+  return(qair)
 }
  
 ##' Calculate VPD
@@ -53,6 +66,14 @@ get.es <- function(temp){
   es <- 6.11 * exp((2.5e6 / 461) * (1 / 273 - 1 / (273 + temp)))
   return(es)
 }
+## TODO: merge SatVapPress with get.es; add option to choose method
+SatVapPres <- function(T){
+  #/estimates saturation vapor pressure (kPa)  Goff-Gratch 1946
+  #/input: T = absolute temperature
+  0.1*exp( -7.90298*(T_st/T-1) + 5.02808*log(T_st/T) - 1.3816e-7*(10^(11.344*(1-T/T_st))-1) + 8.1328e-3*(10^(-3.49149*(T_st/T-1))-1) + log(e_st))  
+}
+
+
 ##' Calculate RH from temperature and dewpoint
 ##'
 ##' Based on equation 12 ( in Lawrence 2005, The Relationship between
@@ -88,3 +109,68 @@ wide2long <- function(data.wide, lat, lon, var){
   return(data.long)
 }
 
+
+##' convert PAR to PPFD
+##'
+##' Converts photosynthetically active radiation (PAR, units of Watts / m2) to
+##' photosynthetic photon flux density (PPFD) in units of mol / m2 / s 
+##' From Campbell and Norman p151
+##' PPFD = PAR * (J/m2/s) * (1 mol / 2.35e5 J)
+##' 2.35e5 J / mol is the energy content of solar radiation in the PAR waveband
+##' 0.486 is based on the approximation that PAR is 0.45-0.50 of the total radiation
+##' @title par2ppfd
+##' @param PAR (W / m2) 
+##' @author David LeBauer
+##' @export
+##' @return PPFD (mol / m2 / s) 
+##' @author David LeBauer
+par2ppfd <- function(watts){
+    ppfd <- watts / (2.35 * 10^5)
+    ud.convert(ppfd, "mol ", "umol")
+}
+
+
+##' Solar Radiation to PPFD
+##' 
+##' There is no easy straight way to convert MJ/m2 to mu mol photons / m2 / s (PAR)
+##' The above conversion is based on the following reasoning
+##' 0.12 is about how much of the total radiation is expected to ocurr during the hour of maximum insolation (it is a guesstimate)
+##' 2.07 is a coefficient which converts from MJ to mol photons (it is approximate and it is taken from ...
+##' Campbell and Norman (1998). Introduction to Environmental Biophysics. pg 151 'the energy content of solar radiation in the PAR waveband is 2.35 x 10^5 J/mol'
+##' See also the chapter radiation basics (10)
+##' Here the input is the total solar radiation so to obtain in the PAR spectrum need to multiply by 0.486
+##' This last value 0.486 is based on the approximation that PAR is 0.45-0.50 of the total radiation
+##' This means that 1e6 / (2.35e6) * 0.486 = 2.07
+##' 1e6 converts from mol to mu mol
+##' 1/3600 divides the values in hours to seconds
+##' 
+##' @title MJ to PPFD
+##' @author Fernando Miguez
+##' @author David LeBauer
+##' @param solarMJ MJ per day
+##' @return PPFD umol /m2 / s
+solarMJ2ppfd <- function(solarMJ){
+  solarR <- (0.12 * solarMJ) * 2.07 * 1e6 / 3600
+  return(solarR)
+}
+
+
+##' estimated exner function
+##' @title Exner function
+##' @param pres  air pressure (Bar)
+##' @export
+##' @author Mike Dietze
+exner <- function(pres){
+  1004.0*pres^(287.0/1004.0)
+}
+
+##' estimate air density from pressure, temperature, and humidity
+##' @title Air Density
+##' @param pres  air pressure (pascals)
+##' @param T    air temperature (Kelvin)
+##' @param rv   humidity
+##' @export
+##' @author Mike Dietze
+AirDens <- function(pres, T, rv){
+  pres/(287.0*T*(1.0+0.61*rv))
+}

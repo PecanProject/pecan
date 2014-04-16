@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<pecan>
+  <outdir>pecan</outdir>
+
+  <database>
+    <user>bety</user>
+    <password>bety</password>
+    <host>localhost</host>
+    <dbname>bety</dbname>
+  </database>
+
+  <bety>
+    <write>FALSE</write>
+  </bety>
+
+  <pfts>
+    <pft>
+      <name>sipnet.temperate.coniferous</name> 
+    </pft>
+  </pfts>
+
+  <ensemble>
+    <variable>NPP</variable>
+  </ensemble>
+
+  <sensitivity.analysis>
+    <quantiles>
+      <sigma>-1</sigma>
+      <sigma>1</sigma>
+    </quantiles>
+    <variable>NPP</variable>
+  </sensitivity.analysis>
+
+  <model>
+    <binary>/usr/local/bin/sipnet.runk</binary>
+    <name>SIPNET</name>
+  </model>
+
+  <run>
+    <site>
+      <name>Niwot Ridge Forest/LTER NWT1 (US-NR1)</name>
+      <lat>40.0329</lat>
+      <lon>-105.546</lon>
+      <met>/Users/kooper/Projects/EBI/sites/niwot/niwot.clim</met>
+    </site>
+    <start.date>2002-01-01 00:00:00</start.date>
+    <end.date>2005-12-31 00:00:00</end.date>
+    <host>
+      <name>localhost</name>
+    </host>
+    <dbfiles>pecan/dbfiles</dbfiles>
+  </run>
+</pecan>

@@ -2,15 +2,15 @@
 \alias{counter}
 \title{counter}
 \usage{
-  counter(cnt)
+counter(cnt)
 }
 \arguments{
   \item{cnt}{}
 }
 \value{
-  updated value of cnt to global environment
+updated value of cnt to global environment
 }
 \description{
-  Counter function for writing configs
+Counter function for writing configs
 }
 

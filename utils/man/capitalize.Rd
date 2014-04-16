@@ -2,18 +2,18 @@
 \alias{capitalize}
 \title{Capitalize a string}
 \usage{
-  capitalize(x)
+capitalize(x)
 }
 \arguments{
   \item{x}{string}
 }
 \value{
-  x, capitalized
+x, capitalized
 }
 \description{
-  Capitalize a string
+Capitalize a string
 }
 \author{
-  David LeBauer
+David LeBauer
 }
 

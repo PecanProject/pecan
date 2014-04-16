@@ -2,8 +2,8 @@
 \alias{plot.variance.decomposition}
 \title{Variance Decomposition Plots}
 \usage{
-  plot.variance.decomposition(plot.inputs,
-    fontsize = list(title = 18, axis = 14))
+plot.variance.decomposition(plot.inputs, fontsize = list(title = 18, axis =
+  14))
 }
 \arguments{
   \item{...}{Output from any number of sensitivity
@@ -44,10 +44,10 @@
   titles and axes of the graph}
 }
 \description{
-  Plot results of variance decomposition
+Plot results of variance decomposition
 }
 \details{
-  Plots variance decomposition tryptich
+Plots variance decomposition tryptich
 }
 \examples{
 x <- list(trait.labels = c("a", "b", "c"),
@@ -57,6 +57,6 @@ x <- list(trait.labels = c("a", "b", "c"),
 do.call(grid.arrange, c(plot.variance.decomposition(x), ncol = 4))
 }
 \author{
-  David LeBauer, Carl Davidson
+David LeBauer, Carl Davidson
 }
 

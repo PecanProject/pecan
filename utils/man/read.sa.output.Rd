@@ -2,8 +2,8 @@
 \alias{read.sa.output}
 \title{Read Sensitivity Analysis output}
 \usage{
-  read.sa.output(traits, quantiles, pecandir, outdir,
-    pft.name = "", start.year, end.year, variables)
+read.sa.output(traits, quantiles, pecandir, outdir, pft.name = "", start.year,
+  end.year, variables)
 }
 \arguments{
   \item{traits}{model parameters included in the
@@ -30,10 +30,10 @@
   \item{variables}{variables to be read from model output}
 }
 \value{
-  dataframe with one col per quantile analysed and one row
-  per trait, each cell is a list of AGB over time
+dataframe with one col per quantile analysed and one row
+per trait, each cell is a list of AGB over time
 }
 \description{
-  Reads output of sensitivity analysis runs
+Reads output of sensitivity analysis runs
 }
 
