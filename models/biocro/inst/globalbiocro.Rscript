@@ -3,46 +3,41 @@
 ## TODO: modify write.configs to enable regional runs
 ##       bounding box comes from from sites geom
 ##       grid size specified in config file
-.libPaths("/home/dlebauer/library/R")
+.libPaths("/home/a-m/dlebauer/library/R")
 library(PEcAn.data.atmosphere)
+source("~/dev/pecan/modules/data.atmosphere/R/metutils.R")
+
 library(BioCro)
+library(ncdf4)
+library(lubridate)
+arg   <- commandArgs(trailingOnly = TRUE)
 
-## arg   <- commandArgs(trailingOnly = TRUE)
+## TODO: Pass lat, lon, start/end date, outdir, met.file, soil parameters in config.xml
+#if(length(arg) == 0){
+start.date <- "1979-01-01"
+end.date <- "2011-12-31"
+outdir <- "/home/a-m/dlebauer/.pecan/demo/"
+inputdir <- "/home/groups/ebimodeling/"
+met.file <- file.path(inputdir, "met/cruncep/vars2/all.nc")
+#} else {
+#     configs <- readXML(args[1])
+# lat <- config$lat
+# lon <- config$lon
+#     lat <- arg[1]
+#     lon <- arg[2]
+#}
 
-## if(length(arg) == 0){
-##     lat <- 40.08
-##     lon <- -88.23
-## } else {
-##     lat <- arg[1]
-##     lon <- arg[2]
-## }
-
-outdir <- "/home/dlebauer/analysis/globaltest"
 ## library(PEcAn.DB)
-
-## todo replace following with database queries
+## todo find soil.nc with spatial queries
 ## waiting for regions
 ## TODO allow specification of grid size
-## 
 
-soil.nc <- nc_open("/home/scratch/pecan/soil/hwsd.nc")
+soil.nc <- nc_open(file.path(inputdir, "soil/global/soil_global_hd_filled.nc"))
+# atmco2.nc <- nc_open(file.path(inputdir, "co2/CO2_Global_HD_v1.nc"))
 
-cruncep.file <- "/home/scratch/pecan/met/cruncep/out/1940ts.nc"
-## ncep.file <- "/home/scratch/pecan/met/ncep/all.nc"
-## if(file.exists(cruncep.file)){
-system.time(met.nc <-  nc_open(cruncep.file, readunlim = TRUE))
-## } else if (file.exists(ncep.file)){
-##    met.nc <- nc_open(ncep.file)
-## }
+met.nc <-  nc_open(met.file, readunlim = FALSE)
 
- 
-## Time
-## if ncep, time is in hours since; cruncep time is in days
-## time.units <- ncatt_get(met.nc, 'time')$units
-## time.atts <- ncatt_get(met.nc, 'time')
-## time.units <- time.atts$units
-
-cruncep_nc2dt <- function(lat, lon, met.nc){
+cruncep_nc2dt <- function(lat, lon, met.nc, start.date, end.date){
 
 
     ## Lat and Lon
@@ -54,93 +49,55 @@ cruncep_nc2dt <- function(lat, lon, met.nc){
 
     time.idx <- ncvar_get(met.nc, "time")
 
-    date <- ymd("1700-01-01") + days(floor(time.idx)) + hours(24*(time.idx - floor(time.idx)))
-    time_steps <- length(date)
-    doy <- yday(date)
-    year <- year(date)
-    month <- month(date)
-    day <- day(date)
-    hour <- hour(date) ## redundant, but clear
-
+    all.dates <- data.table(index = seq(time.idx),
+                            date = ymd("1700-01-01") +
+                            days(floor(time.idx)) +
+                            hours(24*(time.idx - floor(time.idx))))
+    run.dates <- all.dates[date > ymd(start.date) & date < ymd(end.date),
+                           list(index, date, doy = yday(date),
+                                year = year(date), month = month(date),
+                                day  = day(date), hour = hour(date))]
+    
     currentlat <- round(lat, 2)
     currentlon <- round(lon, 2)
-    result <- list()
-    
-    vars <- list(date = date, year = year, month = month, day = day,
-                 doy = doy, hour = hour)
-
+    results <- list()
+     
+    vars <- list()
+ 
     mask <- ncvar_get(nc = met.nc, varid = "mask",
                       start = c(loni, lati),
                       count = c(1,1)) 
-
+    
     variables <- c("lwdown", "press", "qair", "rain", "swdown", "tair", "uwind", "vwind")
     if(mask == -1) {
         stop(paste("chosen lat:", lat, "and  lon:", lon, " is in the ocean"))
     } else if (mask > 0){
-        for(var in variables){
-            ## TODO check if vars can be sent as vector
-            vars[[var]] <- as.numeric(ncvar_get(nc = met.nc,
-                                                varid = var,
-                                                start = c(loni, lati, 1),
-                                                count = c(1, 1, length(time.idx))))
+        ## modification of ncvar_get to function independent of dimension order
+        ## see http://stackoverflow.com/a/22944715/199217
+        ## should be generalized, perhaps to pass arguments "start" and "count" directly
+        get.ncvar <- function(var, lati = lati, loni = loni,
+                              run.dates = run.dates){
+            start.idx = c(lat = lati, lon = loni, time = run.dates$index[1])
+            count.idx = c(lat = 1, lon = 1, time = nrow(run.dates))
+            dim.order <- sapply(met.nc$var$lwdown$dim, function(x) x$name) 
+            ans <- as.numeric(ncvar_get(nc = met.nc,
+                                        varid = var,
+                                        start = start.idx[dim.order],
+                                        count = count.idx[dim.order]))
+            
+            return(ans)
         }
+        
+        ## if the above throws an error ... 
+        ## vars <- parallel::mclapply(variables, function(x) get.ncvar(x, lati = lati, loni = loni, run.dates = run.dates), mc.allow.recursive = TRUE)
+        vars <- lapply(variables, function(x) get.ncvar(x, lati = lati, loni = loni, run.dates = run.dates))
+        names(vars) <- variables
     }
     
-    result <- as.data.table(vars)
+    result <- cbind(run.dates, as.data.table(vars))
     result$wind <- result[,list(wind = sqrt(uwind^2 + vwind^2))]
     return(result)   
 }
-
-#if(!file.exists(file.path(outdir, "result.RData"))){
-#system.time(result <- cruncep_nc2dt(lat = 40, lon = -88, met.nc = met.nc))
-#    save(result, file = file.path(outdir, "result.RData"))
-#} else {
-#    load(file.path(outdir, "result.RData"))
-#}
-##' convert PAR to PPFD
-##'
-##' Converts photosynthetically active radiation (PAR, units of Watts / m2) to
-##' photosynthetic photon flux density (PPFD) in units of mol / m2 / s 
-##' From Campbell and Norman p151
-##' PPFD = PAR * (J/m2/s) * (1 mol / 2.35e5 J)
-##' 2.35e5 J / mol is the energy content of solar radiation in the PAR waveband
-##' 0.486 is based on the approximation that PAR is 0.45-0.50 of the total radiation
-##' @title 
-##' @param PAR (W / m2) 
-##' @author David LeBauer
-##' @export
-##' @return PPFD (mol / m2 / s) 
-##' @author David LeBauer
-par2ppfd <- function(watts){
-    ppfd <- watts / (2.35 * 10^5)
-    ud.convert(ppfd, "mol ", "umol")
-}
-
-
-##' Solar Radiation to PPFD
-##' 
-##' There is no easy straight way to convert MJ/m2 to mu mol photons / m2 / s (PAR)
-##' The above conversion is based on the following reasoning
-##' 0.12 is about how much of the total radiation is expected to ocurr during the hour of maximum insolation (it is a guesstimate)
-##' 2.07 is a coefficient which converts from MJ to mol photons (it is approximate and it is taken from ...
-##' Campbell and Norman (1998). Introduction to Environmental Biophysics. pg 151 'the energy content of solar radiation in the PAR waveband is 2.35 x 10^5 J/mol'
-##' See also the chapter radiation basics (10)
-##' Here the input is the total solar radiation so to obtain in the PAR spectrum need to multiply by 0.486
-##' This last value 0.486 is based on the approximation that PAR is 0.45-0.50 of the total radiation
-##' This means that 1e6 / (2.35e6) * 0.486 = 2.07
-##' 1e6 converts from mol to mu mol
-##' 1/3600 divides the values in hours to seconds
-##' 
-##' @title MJ to PPFD
-##' @author Fernando Miguez
-##' @author David LeBauer
-##' @param solarMJ MJ per day
-##' @return PPFD umol /m2 / s
-solarMJ2ppfd <- function(solarMJ){
-  solarR <- (0.12 * solarMJ) * 2.07 * 1e6 / 3600
-  return(solarR)
-}
-
 
 cruncep_hourly <- function(result, lat){
     
@@ -208,21 +165,6 @@ qair2rh <- function(qair, temp, press = 1013.25){
     return(rh)
 }
 
-## ## qc functions restricting to "valid range" given in .nc meta-data
-## qctemp   <- function(x) ifelse(x > 400 | x < 100, mean(x[x < 400 & x > 100]), x)
-## qcsolar  <- function(x) ifelse(x<0, 0, ifelse(abs(x) > 1300, mean(x[x < 1300]), x))
-## qcwind   <- function(x) ifelse(abs(x) > 102, mean(abs(x[x < 102])), x)
-## qcprecip <- function(x) ifelse(x > 0.005 | x < 0 , mean(x[x < 0.005 & x >0]), x)
-## qcrh     <- function(x) {
-##     ifelse(x > 100 | x < 0, mean(x[x < 100 & x>0]), x) ## using logical range (0-100) rather than "valid range (-25-125)"
-## }
-## qcshum     <- function(x){
-##     x <- ifelse(x > 100 | x < 0, mean(x[x < 0.6553 & x > 0]), x)
-##     x[is.na(x)] <- mean(x, na.rm = TRUE)
-## }
-
-
-
 cruncep_dt2weather <- function(weather = result){
 
     x <- weather[,list(year, doy = doy, hour = hour,
@@ -234,11 +176,11 @@ cruncep_dt2weather <- function(weather = result){
     return(x)
 }
 
-get.weather <- function(lat, lon, met.nc = met.nc){
+get.weather <- function(lat, lon, met.nc = met.nc, start.date, end.date){
     if(!is.land(lat, lon)) stop("point is in ocean")
-    result <- cruncep_nc2dt(lat = lat, lon = lon, met.nc = met.nc)
+    result <- cruncep_nc2dt(lat = lat, lon = lon, met.nc = met.nc, start.date, end.date)
     new.result <- cruncep_hourly(result, lat = lat)
-    save(new.result, file = file.path(outdir, "new.result.RData"))    
+    #save(new.result, file = file.path(outdir, "new.result.RData"))    
     weather <- cruncep_dt2weather(new.result)
 }
 
@@ -255,7 +197,10 @@ get.soil <- function(lat, lon, soil.nc = soil.nc){
     usda_class <- ncvar_get(soil.nc, "t_usda_tex",
                             start = c(loni, lati),
                             count = c(1,1))
-    return(usda_class)
+    ref_depth <- ud.convert(ncvar_get(soil.nc, "ref_depth",
+                           start = c(loni, lati),
+                           count = c(1, 1)), "cm", "m")
+    return(list(usda_class = usda_class, ref_depth = ref_depth))
 }
 
 is.land <- function(lat, lon){
@@ -274,78 +219,141 @@ get.latlonbox <- function(lati, loni, Lat = Lat, Lon = Lon){
     return(c(sort(lat), sort(lon)))
 }
 
-get.cruncep <- function(lat, lon, start.date = NA, end.date = NA){
+get.cruncep <- function(lat, lon, start.date, end.date){
     result <- cruncep_nc2dt(lat, lon)
     new.result <- cruncep_hourly(result, lat = Lat[lati])
     weather <- cruncep_dt2weather(new.result)
     return(weather)
 }
 
-run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = soil.nc){
-    ## get soil data
-    ## abox <- get.latlonbox(lati = lati, loni = loni, Lat = Lat, Lon = Lon)
-    ## soil <- get.hwsd.box(abox, con = con)
-    if(is.land(lat, lon)){
-        soil.type <- 6# get.soil(lat, lon, soil.nc = soil.nc)
-        weather <- get.weather(lat, lon, met.nc = met.nc)
-        result <- list()
-        years <- unique(weather$year)
-        for(yeari in years){
-            WetDat <- as.data.frame(weather[year == yeari, ])
-            day1 <- min(WetDat$doy)
-            dayn <- max(WetDat$doy)
-            yearchar <- as.character(yeari)
-            if(yeari == min(years)){
-                iplant <- iwillowParms(iRhizome=1.0, iStem=1.0, iLeaf=0.0,
-                                       iRoot=1.0, ifrRhizome=0.01, ifrStem=0.01,
-                                       ifrLeaf = 0.0, ifrRoot = 0.0)
-            } else {
-                N <- length(result[[as.character(yeari-1)]]$Rhizome)
-                iplant$iRhizome <- result[[as.character(yeari-1)]]$Rhizome[N]
-                iplant$iStem <- result[[as.character(yeari-1)]]$Stem[N]
-                iplant$iRoot <- result[[as.character(yeari-1)]]$Root[N]
-            }
-            result[[yearchar]] <- willowGro(WetDat = WetDat,
-                                            day1 = day1, dayn = dayn,
-                                            soilControl = soilParms(soilType = soil.type))
-        }
-        result.yeari <- with(result[[yearchar]],
-                             data.frame(Year = yeari, DayofYear, Hour, ThermalT,
-                                        Stem, Leaf, Root, Rhizome, Grain, LAI,
-                                        SoilEvaporation, CanopyTrans))
+
+## placeholder for PEcAn config file
+# config <- XML::xmlToList(system.file("extdata/defaults/salix.xml", package = "PEcAn.BIOCRO"))
+load("/home/a-m/dlebauer/dev/pecan/models/biocro/inst/extdata/defaults/salix.RData")
+constants$canopyControl$mResp <- canopyParms()$mResp
+constants$phenoParms <- lapply(constants$phenoParms, as.numeric)
+
+run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = soil.nc, start.date = start.date, end.date = end.date, coppice.interval = 4){
+    soil <- get.soil(lat, lon, soil.nc = soil.nc)
+    soil.type <- ifelse(soil$usda_class %in% 1:10, soil$usda_class, 10)
+    weather <- get.weather(lat, lon, met.nc = met.nc, start.date, end.date)
+    years <- unique(weather$year)
+    for(yeari in years){
+        WetDat <- as.data.frame(weather[year == yeari, ])
+        day1 <- min(WetDat$doy)
+        dayn <- max(WetDat$doy)
+        yearchar <- as.character(yeari)
+        ## start of a distinct function called 'getinitialcondition'
+        HarvestedYield <- 0
         if(yeari == min(years)){
-            resultDT <- result.yeari
-        } else if (yeari > min(years)){
-            resultDT <- rbind(resultDT, result.yeari)
+            iplant <- iwillowParms(iRhizome=1.0, iStem=1.0, iLeaf=0.0,
+                                   iRoot=1.0, ifrRhizome=0.01, ifrStem=0.01,
+                                   ifrLeaf = 0.0, ifrRoot = 0.0)
+        } else {
+            iplant[c("iRhizome", "iRoot", "iStem")] <- last(result.yeari[,list(Rhizome, Root, Stem)])
+            if ((yeari - min(years))  %% coppice.interval == 0) { # coppice when remainder = 0
+                HarvestedYield  <- round(last(result.yeari$Stem) * 0.95, 2)                
+            } else if ((yeari - min(years))  %% coppice.interval == 1) { # year after coppice
+                iplant$iStem <- iplant$iStem * 0.05
+            } # else { # do nothing if neither coppice year nor year following
         }
-        result <- data.table(cbind(lat = lat, lon = lon, resultDT))
-    } else {
-        result <- NULL
+        ## run BioCro
+        tmp.result <- willowGro(WetDat = WetDat,
+                                day1 = day1, dayn = dayn,
+                                soilControl = soilParms(soilType = soil.type),
+                                canopyControl = constants$canopyControl,
+                                willowphenoControl = constants$phenoParms,
+                                seneControl = constants$seneControl,
+                                iPlantControl = iplant,
+                                photoControl=constants$photoParms)
+        result.yeari <- with(tmp.result,
+                             data.table(year = yeari, doy = DayofYear, hour = Hour, ThermalT,
+                                        Stem, Leaf, Root, Rhizome, Grain, LAI,
+                                        SoilEvaporation, CanopyTrans, key = c("year", "doy", "hour")))
+        yield.yeari <- data.table(lat = lat, lon = lon, year = yeari, yield = HarvestedYield, runtime = now(),
+                                  key = "year")
+        if(yeari == min(years) | !exists("all.results")){
+            all.results <- result.yeari
+            yield.annually <- yield.yeari
+        } else if (yeari > min(years)){
+            all.results <- rbind(all.results, result.yeari)
+            yield.annually <- rbind(yield.annually, yield.yeari)
+        }
     }
-    return(result)
+    
+    setkeyv(weather, c("year", "doy", "hour"))
+    setkey(yield.annually, "year")
+    result.hourly <- round(weather[all.results], 2) ## right join
+    
+    result.annually <- round(result.hourly[ ,list(Stem = max(Stem), Leaf = max(Leaf), Root = max(Root), Rhizome = max(Rhizome),
+                                            Grain = max(Grain), mat = mean(DailyTemp.C), map = sum(precip)),
+                                     by = "year"], 2)[yield.annually]
+    return(data.table(lat = lat, lon = lon, result.annually))
 }
 
-## out <- run.biocro(lat, lon)
-## save(out, file = file.path(outdir, "output.RData"))
-## con <- get.hwsdcon()
+
+
+make.stem.map <- function(input){
+    
+    require(ggplot2)
+    if(any(tmp$lat <0) | any(tmp$lon > 0)){
+        world <- data.table(map_data("world"))
+    } else {
+        world <- data.table(map_data("usa"))
+    }
+    stem_map <- ggplot() +
+        geom_polygon(data = world, aes(x=long, y = lat, group = group),
+                     fill = "white", color = "darkgrey") +
+                         geom_point(data = tmp,
+                                    aes(x = lon, y = lat, color = Stem), size = 5) +
+                                        scale_color_gradientn(colours = c("red","orange", "yellow", "green", "blue", "violet")) +
+    theme_bw() + xlim(range(pretty(tmp$lon))) + ylim(range(pretty(tmp$lat)))
+    return(stem_map)
+
+}
 
 Lat <- ncvar_get(nc = met.nc, varid = "lat")
 Lon <- ncvar_get(nc = met.nc, varid = "lon")
 
-## for US
-Lat <- Lat[Lat > 32 & Lat < 49]
-Lon <- Lon[Lon < -67 & Lon > -125]
+site <- "usa"
+if(site == "usa"){
+    ## for US
+    Lat <- Lat[Lat > 25 & Lat < 49]
+    Lon <- Lon[Lon < -67 & Lon > -125]
+}
 
-tmp <- data.table(lat = logical(0), lon = logical(0), yield = logical(0))
+# determine if point is in polygon http://stackoverflow.com/q/21971447/199217
+#library(sp)
+#point.in.polygon(lon, lat, usa$long[usa$group == "main"], usa$lat[usa$group == "main"])
+#
+#testrun <- "TRUE"
+## if(testrun){
+##     ## US test subset
+##     ## for test subset
+    
+Lat <- Lat[! 1:length(Lat) %% 2]
+Lon <- Lon[Lon > -100 & ! 1:length(Lon) %% 2]
+## }
+#Lat <- 44.25
+#Lon <- -88.25
+
+
+allout <- NULL
 for(lat in Lat){
     for(lon in Lon){
-        land <- is.land(lat, lon)
-        if(land){
-            out <- run.biocro(lat, lon, met.nc = met.nc, soil.nc = soil.nc)
-            save(out, file = file.path(outdir,
-                          paste0(lat, "N", lon, "Woutput.RData")))
-            tmp <- rbind(tmp, last(out)[,list(lat = lat, lon = lon, yield = Stem)])
+        if(is.land(lat, lon)){
+            out <- run.biocro(lat, lon, met.nc = met.nc, soil.nc = soil.nc,
+                              start.date = start.date, end.date = end.date,
+                              coppice.interval = 4)#, hourly = FALSE)
+            allout <- rbind(allout, out)
         }
+        biocro_result <- allout
+        save(biocro_result, file = file.path(outdir, 'incomplete_USresults.RData'))
+        tmp <- biocro_result[,list(lat, lon, Stem = mean(yield), runtime = round(diff(range(runtime)))), by = c("lat", "lon")]
+        stem_map <- make.stem.map(input = tmp) 
+        ggsave(plot = stem_map, filename = file.path(outdir, "global_stem.pdf"))
+     
     }
 }
-save(tmp, file = file.path(outdir, "allyields.RData"))
+
+save(biocro_result, file = file.path(outdir, "biocro_output.RData"))

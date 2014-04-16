@@ -55,7 +55,9 @@ get.model.output.ed <- function(){
     system(paste("ssh -T", settings$run$host$name, "'",
                  "cd", settings$run$host$outdir, "; R --vanilla < read.output.R'"))
     
-    rsync(from = paste(settings$run$host$name, ':', settings$run$host$outdir, 'output.Rdata', sep=''),
+    rsync(from = paste(settings$run$host$name, ':', settings$run$host$outdir, 'ensemble.Rdata', sep=''),
+          to = settings$outdir)
+    rsync(from = paste(settings$run$host$name, ':', settings$run$host$outdir, 'sensitivity.Rdata', sep=''),
           to = settings$outdir)
     }
 }

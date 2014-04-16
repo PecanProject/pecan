@@ -42,7 +42,9 @@ get.model.output.dalec <- function(){
              "cd", settings$run$host$outdir, "; R --vanilla < PEcAn.functions.R'"))
     
     ### Get PEcAn output from remote host
-    rsync('-outi', from = paste(settings$run$host$name, ':', settings$run$host$outdir, 'output.Rdata', sep=''),
+    rsync('-outi', from = paste(settings$run$host$name, ':', settings$run$host$outdir, 'ensemble.Rdata', sep=''),
+      to = settings$outdir)
+    rsync('-outi', from = paste(settings$run$host$name, ':', settings$run$host$outdir, 'sensitivity.Rdata', sep=''),
       to = settings$outdir)
 
   } ### End of if/else

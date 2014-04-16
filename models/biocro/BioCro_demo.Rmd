@@ -1,0 +1,30 @@
+
+library(PEcAn.all)
+logger.setQuitOnSevere(FALSE)
+
+settings <- read.settings("models/biocro/inst/extdata/misp.xml")
+
+model <- settings$model$name
+
+#---------------- Run PEcAn workflow. -------------------------------------------------------------#
+# Query the trait database for data and priors
+settings$pfts <- get.trait.data(settings$pfts, settings$run$dbfiles, settings$database, settings$meta.analysis$update)
+
+# Run the PEcAn meta.analysis
+run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database)
+
+run.write.configs(model)        # Calls model specific write.configs e.g. write.config.ed.R
+## load met data
+start.model.runs(model)         # Start ecosystem model runs
+
+get.results(settings)         # Get results of model runs
+
+run.sensitivity.analysis()      # Run sensitivity analysis and variance decomposition on model output
+
+run.ensemble.analysis()		      # Run ensemble analysis on model output. 
+                                # OPTIONAL: run.ensemble.analysis(plot.timeseries=TRUE) to get an esemble 
+                                # time-series output for the target variables set in the PEcAn.xml file
+
+### PEcAn workflow run complete
+print("---------- PEcAn Workflow Complete ----------")
+#--------------------------------------------------------------------------------------------------#

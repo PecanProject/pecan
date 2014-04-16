@@ -2,7 +2,7 @@
 \alias{transformstats}
 \title{Transform Stats}
 \usage{
-  transformstats(data)
+transformstats(data)
 }
 \arguments{
   \item{data}{data frame with mean, statistic, n, and
@@ -11,14 +11,14 @@
   statname=c('SD', 'MSE', 'LSD', 'HSD', 'MSD'))}}
 }
 \value{
-  dataframe with statistics transformed to SE
+dataframe with statistics transformed to SE
 }
 \description{
-  Transform misc. statistics to SE
+Transform misc. statistics to SE
 }
 \details{
-  Automates transformations of SD, MSE, LSD, 95\%CI, HSD,
-  and MSD to conservative estimates of SE.
+Automates transformations of SD, MSE, LSD, 95\%CI, HSD, and
+MSD to conservative estimates of SE.
 }
 \examples{
 statdf <- data.frame(Y=rep(1,5),
@@ -28,6 +28,6 @@ statdf <- data.frame(Y=rep(1,5),
 transformstats(statdf)
 }
 \author{
-  David LeBauer
+David LeBauer
 }
 

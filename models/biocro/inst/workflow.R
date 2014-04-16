@@ -30,11 +30,11 @@ run.write.configs(model)        # Calls model specific write.configs e.g. write.
 ## load met data
 start.model.runs(model)         # Start ecosystem model runs
 
-get.model.output(model)         # Get results of model runs
+get.results(settings)           # Get results of model runs
 
-#run.sensitivity.analysis()      # Run sensitivity analysis and variance decomposition on model output
+#run.sensitivity.analysis()     # Run sensitivity analysis and variance decomposition on model output
 
-#run.ensemble.analysis()		      # Run ensemble analysis on model output. 
+#run.ensemble.analysis()        # Run ensemble analysis on model output. 
                                 # OPTIONAL: run.ensemble.analysis(plot.timeseries=TRUE) to get an esemble 
                                 # time-series output for the target variables set in the PEcAn.xml file
 

@@ -401,9 +401,12 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
 
     ## write ALMA
     nc <- nc_create(file.path(outdir, paste(yrs[y], "nc", sep=".")), var)
+    varfile <- file(file.path(outdir, paste(yrs[y], "nc", "var", sep=".")), "w")
     for(i in 1:length(var)) {
       ncvar_put(nc,var[[i]],out[[i]])
+      cat(paste(var[[i]]$name, var[[i]]$longname), file=varfile, sep="\n")
     }
+    close(varfile)
     nc_close(nc)
   }  ## end year loop
 }  ## end model2netcdf.ED2
