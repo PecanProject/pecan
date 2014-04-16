@@ -2,9 +2,8 @@
 \alias{ncep.gather2}
 \title{ncep.gather2}
 \usage{
-  ncep.gather2(variable, level = "gaussian",
-    months.minmax = c(1, 12), inputs, reanalysis2 = TRUE,
-    return.units = FALSE)
+ncep.gather2(variable, level = "gaussian", months.minmax = c(1, 12), inputs,
+  reanalysis2 = TRUE, return.units = FALSE)
 }
 \arguments{
   \item{variable}{variable to be extracted from NCEP data
@@ -16,13 +15,13 @@
   \item{inputs}{list of parameters passed to InputForWeach}
 }
 \value{
-  data from NCEP
+data from NCEP
 }
 \description{
-  Wrapper for \code{\link{RNCEP::NCEP.gather}} function to
-  specify custom defaults
+Wrapper for \code{\link{RNCEP::NCEP.gather}} function to
+specify custom defaults
 }
 \author{
-  David LeBauer
+David LeBauer
 }
 

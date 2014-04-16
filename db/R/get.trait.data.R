@@ -93,7 +93,8 @@ get.trait.data.pft <- function(pft, dbfiles, dbcon,
 
   ## 3. display info to the console
   logger.info('Summary of Prior distributions for: ', pft$name)
-  logger.info(prior.distns)
+  logger.info(colnames(prior.distns))
+  apply(cbind(rownames(prior.distns), prior.distns), MARGIN=1, logger.info)
 
   ## traits = variables with prior distributions for this pft 
   traits <- rownames(prior.distns) 
@@ -106,7 +107,10 @@ get.trait.data.pft <- function(pft, dbfiles, dbcon,
             file = file.path(pft$outdir, "trait.data.csv"), row.names = FALSE)
   
   logger.info("number of observations per trait for", pft$name)
-  logger.info(ldply(trait.data, nrow))
+  for(t in names(trait.data)){
+    logger.info(nrow(trait.data[[t]]), "observations of", t)
+  }
+    
 
   ### save and store in database all results except those that were there already
   for(file in list.files(path=pft$outdir)) {

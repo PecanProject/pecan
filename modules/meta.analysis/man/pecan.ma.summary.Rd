@@ -2,8 +2,7 @@
 \alias{pecan.ma.summary}
 \title{Generate summary statitics and diagnostics for PEcAn meta.analysis}
 \usage{
-  pecan.ma.summary(mcmc.object, pft, outdir,
-    threshold = 1.1)
+pecan.ma.summary(mcmc.object, pft, outdir, threshold = 1.2, ggmcmc = FALSE)
 }
 \arguments{
   \item{mcmc.object}{JAGS mcmc output from
@@ -14,11 +13,14 @@
   \item{outdir}{output directory}
 
   \item{threshold}{Gelman-Rubin convergence threshold;
-  default = 1.1}
+  default = 1.2 following Bolker 2008 Ecological Models and
+  Data in R}
+
+  \item{ggmcmc}{plot ggmcmc plots (this is slow)? default
+  is FALSE}
 }
 \description{
-  Generate summary statitics and diagnostics for PEcAn
-  meta.analysis
+
 }
 \examples{
 \dontrun{
@@ -26,6 +28,6 @@ summary <- pecan.ma.summary(trait.mcmc,settings$pfts$pft,settings$outdir,setting
 }
 }
 \author{
-  David LeBauer, Shawn Serbin
+David LeBauer, Shawn Serbin
 }
 

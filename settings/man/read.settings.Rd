@@ -2,30 +2,30 @@
 \alias{read.settings}
 \title{Loads PEcAn settings file}
 \usage{
-  read.settings(inputfile = NULL, outputfile = "pecan.xml")
+read.settings(inputfile = "pecan.xml", outputfile = "pecan.xml")
 }
 \arguments{
   \item{inputfile}{the PEcAn settings file to be used.}
 
   \item{outputfile}{the name of file to which the settings
-  will be written inside the outputdir.}
+  will be written inside the outputdir. If set to null
+  nothing is saved.}
 }
 \value{
-  list of all settings as loaded from the XML file(s)
+list of all settings as loaded from the XML file(s)
 }
 \description{
-  This will try and find the PEcAn settings file in the
-  following order: \enumerate{ \item {--settings
-  <file>}{passed as command line argument using --settings}
-  \item {inputfile}{passed as argument to function} \item
-  {PECAN_SETTINGS}{environment variable PECAN_SETTINGS
-  pointing to a specific file} \item
-  {./pecan.xml}{pecan.xml in the current folder} } Once the
-  function finds a valid file, it will not look further.
-  Thus, if \code{inputfile} is supplied,
-  \code{PECAN_SETTINGS} will be ignored. Even if a
-  \code{file} argument is passed, it will be ignored if a
-  file is passed through a higher priority method.
+This will try and find the PEcAn settings file in the
+following order: \enumerate{ \item {--settings
+<file>}{passed as command line argument using --settings}
+\item {inputfile}{passed as argument to function} \item
+{PECAN_SETTINGS}{environment variable PECAN_SETTINGS
+pointing to a specific file} \item {./pecan.xml}{pecan.xml
+in the current folder} } Once the function finds a valid
+file, it will not look further. Thus, if \code{inputfile}
+is supplied, \code{PECAN_SETTINGS} will be ignored. Even if
+a \code{file} argument is passed, it will be ignored if a
+file is passed through a higher priority method.
 }
 \examples{
 \dontrun{
@@ -41,8 +41,8 @@ settings <- read.settings(test.settings.file)
 }
 }
 \author{
-  Shawn Serbin
+Shawn Serbin
 
-  Rob Kooper
+Rob Kooper
 }
 

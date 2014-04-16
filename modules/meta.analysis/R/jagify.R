@@ -79,7 +79,31 @@ jagify <- function(result){
 } ### End of function
 #==================================================================================================#
 
-
+##' Function to remove NA values from database queries
+##' 
+##' Transform NA values in data exported from BETYdb
+##' 
+##' @name transform.nas
+##' @param data input data
+##' 
+##' @return A data frame NAs sensibly replaced 
+transform.nas <- function(data){
+  #control defaults to 1
+  data$control[is.na(data$control)] <- 1
+  
+  #site defaults to 0
+  #TODO assign different site for each citation - dsl
+  data$site_id[is.na(data$site_id)] <- 0
+  
+  #greenhouse defaults to false (0)
+  data$greenhouse[is.na(data$greenhouse)] <- 1
+  
+  #number of observations defaults to 2 for statistics, 1 otherwise
+  data$n[is.na(data$n)] <- 1
+  data$n[data$n ==1 & !is.na(data$stat)] <- 2
+  
+  return(data)
+}
 ####################################################################################################
 ### EOF.  End of R script file.      				
 ####################################################################################################

@@ -37,10 +37,9 @@ read.output.ed <- function(){
                                                        outdir = getwd(), 
                                                        pft.name=pft.name,
                                                        start.year,
-                                                       end.year)
-      save(sensitivity.output, file = 'output.Rdata')
-      
+                                                       end.year)      
     }
+    save(sensitivity.output, file = file.path(outdir, 'sensitivity.Rdata'))
   }
   
   if('ensemble' %in% names(settings)) {
@@ -48,11 +47,7 @@ read.output.ed <- function(){
                                             outdir = getwd(), 
                                             start.year,
                                             end.year)
-    save(ensemble.output, file = 'output.Rdata')
-  }
-  
-  if(all(c('ensemble', 'sensitivity.analysis') %in% names(settings))) {
-    save(ensemble.output, sensitivity.output, file = 'output.Rdata')
+    save(ensemble.output, file = file.path(outdir, 'ensemble.Rdata'))
   }
 }
 #==================================================================================================#

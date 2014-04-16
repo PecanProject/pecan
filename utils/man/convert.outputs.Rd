@@ -2,7 +2,7 @@
 \alias{convert.outputs}
 \title{convert outputs from model specific code to}
 \usage{
-  convert.outputs(model, settings, ...)
+convert.outputs(model, settings, ...)
 }
 \arguments{
   \item{model}{name of simulation model currently accepts
@@ -15,10 +15,10 @@
   \code{end.year}}
 }
 \description{
-  --------------------------------------------------------------------------------------------------#
-  Converts the output of all model runs
+--------------------------------------------------------------------------------------------------#
+Converts the output of all model runs
 }
 \author{
-  Rob Kooper
+Rob Kooper
 }
 

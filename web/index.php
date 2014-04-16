@@ -7,6 +7,34 @@
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
  */
+
+// Check login
+require("common.php");
+if (isset($_REQUEST['logout'])) {
+	logout();
+}
+$error = "";
+if ($authentication) {
+	open_database();
+	if (check_login()) {
+		header( "Location: 01-introduction.php");
+		close_database();
+		exit;
+	}
+	if (isset($_REQUEST['username']) && isset($_REQUEST['password'])) {
+		if (login($_REQUEST['username'], $_REQUEST['password'])) {
+			header( "Location: 01-introduction.php");
+			close_database();
+			exit;
+		}
+		$error = "Invalid username/password";
+	}
+	close_database();
+} else {
+	header( "Location: 01-introduction.php");
+	exit;	
+}
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -17,78 +45,44 @@
 <link rel="stylesheet" type="text/css" href="sites.css" />
 <script type="text/javascript" src="jquery-1.7.2.min.js"></script>
 <script type="text/javascript">
-	window.onresize = resize;
-	window.onload = resize;
-
-        function resize() {
-                if ($("#stylized").height() < $(window).height()) {
-                        $("#stylized").height($(window).height() - 5);
-                }
-                $("#output").height($(window).height() - 1);
-                $("#output").width($(window).width() - $('#stylized').width() - 5);
-	}	
-
-    function validate() {
-        $("#error").html("");
-    }
-        
-	function prevStep() {
-		$("#formprev").submit();
+	function login() {
+		if (($("#username")[0].value == "") || ($("#password")[0].value == "")) {
+			$("#error").text("Please specify a username and password.");
+		} else {
+			$("#formnext").submit();
 		}
-
-	function nextStep() {
-		console.log($("#formnext"));
-		$("#formnext").submit();
 	}
 </script>
 </head>
 <body>
 <div id="wrap">
 	<div id="stylized">
-		<form id="formprev" method="POST" action="history.php">
-		</form>
-		<form id="formnext" method="POST" action="selectsite.php">
-			<h1>Introduction</h1>
-			<p>Below you will find the buttons to step through the
-			workflow creation process.</p>
+		<form id="formnext" method="POST" action="index.php">
+			<h1>Login</h1>
 
-			<label>Offline mode:</label>
-			<span id="error" class="small">This will disable Google Maps</span>
-			<input name="offline" id="offline" style="align: left" type="checkbox" value="offline">
+			<label>Username:</label>
+			<input name="username" id="username" style="align: left" type="text">
+			<div class="spacer"></div>
+
+			<label>Password:</label>
+			<input name="password" id="password" style="align: left" type="password">
 			<div class="spacer"></div>
 
 			<p></p>
-			<label>Workflow</label>
-			<span id="error" class="small">&nbsp;</span>
-			<input id="prev" type="button" value="History" onclick="prevStep();" />
-			<input id="next" type="button" value="Next" onclick="nextStep();" />
+			<span id="error" class="small"><?php echo $error; ?></span>
+			<input id="next" type="button" value="Login" onclick="login();" />
 			
 			<div class="spacer"></div>
-			</form>
+		</form>
 	</div>
 	<div id="output">
-		<h1>Introduction</h1>
-		<p>The following pages will guide you through setting up a
-		PEcAn worklflow. You will be able to always go back to a
-		previous step to change inputs. However once the model is
-		runningn it will continue to run until it finishes. You will
-		be able to use the history button to jump to existing 
-		executions of PEcAn.</p>
-		<p>The following webpages will help to setup the PEcAn
-		workflow. You will be asked the following questions:</p>
-		<ol>
-		<li><b>Host and Model</b> You will first select the host to
-		run the workflow on as well as the model to be exectuted.</li>
-		<li><b>Site</b> The next step is to select the site where
-		the model should be run for.</li>
-		<li><b>Model Parameters</b> Based on the site some final
-		parameters for the model will need to be selected.</li>
-		<li><b>Model Execution</b> Once all variables are selected
-		PEcAn will execute the workflow.</li>
-		<li><b>Results</b> After execution of the PEcAn workflow you
-		will be presented with a page showing the results of the
-		PEcAn workflow.</li> 
-		</ol>
+		<h1>Login</h1>
+		<p>This installation of PEcAn requires a username and password. You can use the same username/password as used for BETY.</p>
+	</div>
+	<div id="footer">
+		The <a href="http://pecanproject.org">PEcAn project</a> is supported by the National Science Foundation
+		(ABI #1062547, ARC #1023477) and the <a href="http://www.energybiosciencesinstitute.org/">Energy
+		Biosciences Institute</a>.
 	</div>
 </div>
 </body>

@@ -173,7 +173,13 @@ pr.samp <- function(distn, parama, paramb, n) {
 ##' @export
 #--------------------------------------------------------------------------------------------------#
 get.sample <- function(prior, n) {
-  do.call(paste('r', prior$distn, sep=""), list(n, prior$parama, prior$paramb))
+  if(is.na(prior$paramb)){  
+    ## one parameter distributions
+    do.call(paste('r', prior$distn, sep=""), list(n, prior$parama))
+  } else {
+    ## two parameter distributions
+    do.call(paste('r', prior$distn, sep=""), list(n, prior$parama, prior$paramb))
+  }
 }
 #==================================================================================================#
 
