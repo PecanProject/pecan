@@ -8,7 +8,7 @@ packages <- c("utils", "db", "visualization",
               "modules/meta.analysis", "modules/uncertainty",
               "modules/data.land", "modules/data.atmosphere","modules/allometry",
               "modules/assim.batch", "modules/assim.sequential", "modules/priors",
-              "models/ed", "models/sipnet", "models/biocro")
+              "modules/benchmark","models/ed", "models/sipnet", "models/biocro")
 
 pkgdocfiles <- function(x) {
   docfiles <- dir(path = file.path(x, "man"), pattern = "*.Rd", full.names = TRUE)

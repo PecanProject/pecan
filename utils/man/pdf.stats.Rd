@@ -2,7 +2,7 @@
 \alias{pdf.stats}
 \title{Probability Distirbution Function Statistics}
 \usage{
-  pdf.stats(distn, A, B)
+pdf.stats(distn, A, B)
 }
 \arguments{
   \item{distn}{name of distribution used by R (beta, f,
@@ -13,13 +13,13 @@
   \item{B}{second parameter}
 }
 \value{
-  list with mean, variance, and 95 CI
+list with mean, variance, and 95 CI
 }
 \description{
-  Calculate mean, variance statistics, and CI from a known
-  distribution
+Calculate mean, variance statistics, and CI from a known
+distribution
 }
 \author{
-  David LeBauer
+David LeBauer
 }
 

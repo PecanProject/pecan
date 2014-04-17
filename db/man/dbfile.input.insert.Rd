@@ -3,7 +3,7 @@
 \title{Insert file into tables}
 \usage{
 dbfile.input.insert(filename, siteid, startdate, enddate, mimetype, formatname,
-  con, hostname = Sys.info()[["nodename"]])
+  parentid = NA, con, hostname = Sys.info()[["nodename"]])
 }
 \arguments{
   \item{filename}{the name of the file to be inserted}
@@ -21,6 +21,8 @@ dbfile.input.insert(filename, siteid, startdate, enddate, mimetype, formatname,
 
   \item{formatname}{the name of the format to distinguish
   between simmilair mime-types}
+
+  \item{parent}{the id of the parent of the input}
 
   \item{con}{database connection object}
 
