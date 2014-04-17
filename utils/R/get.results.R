@@ -43,6 +43,7 @@ get.results <- function(settings) {
                                                        end.year=end.year,
                                                        variables=variables)
     }
+    save(sensitivity.output, file = file.path(outdir, 'sensitivity.Rdata'))
   }
   
   ensemble.output    <- list()
@@ -62,9 +63,8 @@ get.results <- function(settings) {
                                             start.year=start.year,
                                             end.year=end.year,
                                             variables=variables)
+    save(ensemble.output, file = file.path(outdir, 'ensemble.Rdata'))
   }
-  
-  save(ensemble.output, sensitivity.output, file = file.path(outdir, 'output.Rdata'))
 }
 #==================================================================================================#
 

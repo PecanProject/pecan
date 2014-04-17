@@ -39,7 +39,7 @@ run.ensemble.analysis <- function(plot.timeseries=NA){
   ### Check if ensemble was run and was larger than 0
   if ('ensemble' %in% names(settings) & settings$ensemble$size>0) {
     ### Load parsed model results
-    load(file.path(settings$outdir, 'output.Rdata'))
+    load(file.path(settings$outdir, 'ensemble.Rdata'))
   }
   
   ### ------------------- Start ensemble analysis -------------------

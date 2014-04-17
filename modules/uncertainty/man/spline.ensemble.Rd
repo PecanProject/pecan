@@ -2,7 +2,7 @@
 \alias{spline.ensemble}
 \title{Spline Ensemble}
 \usage{
-  spline.ensemble(gi.phii, median)
+spline.ensemble(gi.phii, median)
 }
 \arguments{
   \item{gi.phii}{matrix given as output from
@@ -12,17 +12,17 @@
   calculated}
 }
 \description{
-  Estimate model output based on univariate splines
+Estimate model output based on univariate splines
 }
 \details{
-  Accepts output from get.gi.phii (the matrix $g(\phi_i)$)
-  and produces spline estimate of $f(phi)$ for use in
-  estimating closure term associated with spline
-  approximation
+Accepts output from get.gi.phii (the matrix $g(\phi_i)$)
+and produces spline estimate of $f(phi)$ for use in
+estimating closure term associated with spline
+approximation
 }
 \author{
-  David LeBauer
+David LeBauer
 
-  David LeBauer
+David LeBauer
 }
 
