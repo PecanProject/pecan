@@ -85,7 +85,8 @@ check.settings <- function(settings) {
     } else if(is.null(settings$database$host)){
         settings$database$host <- "localhost"
     }
-    ## finally we can check to see if we can connect to the database
+
+    ## convert strings around from old format to new format
     if(is.null(settings$database[["user"]])){
       if (!is.null(settings$database$userid)) {
         logger.info("'userid' in database section should be 'user'")
@@ -101,16 +102,14 @@ check.settings <- function(settings) {
       }
     } 
     settings$database$userid <- settings$database$username <- NULL
+
+    # fill in defaults for the database
     if(is.null(settings$database$password)) {
         settings$database$password <- "bety"
     }
     if(is.null(settings$database$dbname)) {
         settings$database$dbname <- "bety"
     }
-    if(!db.exists(settings$database)){
-        logger.severe("Invalid Database Settings : ", unlist(settings$database))
-    }
-    logger.info("Database settings:", unlist(settings$database))
   }
   
   # should runs be written to database
@@ -130,10 +129,10 @@ check.settings <- function(settings) {
   if(!is.null(settings$database)){
     require(PEcAn.DB)
     if (!db.exists(params=settings$database, write=settings$bety$write)) {
-      logger.info("Could not connect to the database")
+      logger.severe("Invalid Database Settings : ", unlist(settings$database))
       database <- FALSE
     } else {
-      logger.info("Successfully connected to database")
+      logger.info("Successfully connected to database : ", unlist(settings$database))
       database <- TRUE
     }    
     
@@ -320,13 +319,16 @@ check.settings <- function(settings) {
                           params=settings$database)
         if(nrow(model) > 1){
           logger.warn("multiple records for", settings$model$name, "returned; using the most recent")
-          model <- model[which.max(ymd_hms(model$updated_at)), ]
+          row <- which.max(ymd_hms(model$updated_at))
+          if (length(row) == 0) row <- nrow(model)
+          model <- model[row, ]
         } else if (nrow(model) == 0) {
           logger.warn("Model", settings$model$name, "not in database")
           model <- list(id=-1, name=settings$model$name)
         }
       } else {
         logger.warn("no model settings given")
+        model <- list()
       }
     } else {
       if(!is.null(settings$model$name)){
@@ -347,6 +349,16 @@ check.settings <- function(settings) {
     }
     
     # copy data from database into missing fields
+    if (is.null(settings$model$id)) {
+      if ((is.null(model$id) || model$id == "")) {
+        logger.warn("No model id specified.")
+        settings$model$id <- -1
+      } else {
+        settings$model$id <- model$id
+      }
+      logger.info("Setting model id to ", settings$model$id)
+    }
+
     if (is.null(settings$model$name)) {
       if ((is.null(model$model_type) || model$model_type == "")) {
         logger.warn("No model type specified.")

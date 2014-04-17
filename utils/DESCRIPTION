@@ -30,21 +30,3 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Require: hdf5, plyr
-Collate:
-    'plots.R'
-    'r2bugs.distributions.R'
-    'read.output.R'
-    'run.write.configs.R'
-    'utils.R'
-    'write.config.utils.R'
-    'clear.scratch.R'
-    'get.model.output.R'
-    'start.model.runs.R'
-    'remove.config.R'
-    'get.results.R'
-    'help.R'
-    'logger.R'
-    'distn.stats.R'
-    'ensemble.R'
-    'mail.R'
-    'sensitivity.R'

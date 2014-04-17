@@ -2,8 +2,8 @@
 \alias{get.ensemble.samples}
 \title{Get Ensemble Samples}
 \usage{
-  get.ensemble.samples(ensemble.size, pft.samples,
-    env.samples, method = "halton")
+get.ensemble.samples(ensemble.size, pft.samples, env.samples,
+  method = "halton")
 }
 \arguments{
   \item{ensemble.size}{number of runs in model ensemble}
@@ -17,25 +17,25 @@
   samples.  default = halton}
 }
 \value{
-  matrix of quasi-random (overdispersed) samples from trait
-  distributions
+matrix of quasi-random (overdispersed) samples from trait
+distributions
 }
 \description{
-  Get parameter values used in ensemble
+Get parameter values used in ensemble
 }
 \details{
-  Returns a matrix of trait values sampled quasi-randomly
-  based on the Halton sequence to be assigned to traits
-  over several model runs. given the number of model runs
-  and a list of sample distributions for traits The model
-  run is indexed first by model run, then by trait
+Returns a matrix of trait values sampled quasi-randomly
+based on the Halton sequence to be assigned to traits over
+several model runs. given the number of model runs and a
+list of sample distributions for traits The model run is
+indexed first by model run, then by trait
 }
 \author{
-  David LeBauer
+David LeBauer
 }
 \references{
-  Halton, J. (1964), Algorithm 247: Radical-inverse
-  quasi-random point sequence, ACM, p. 701,
-  doi:10.1145/355588.365104.
+Halton, J. (1964), Algorithm 247: Radical-inverse
+quasi-random point sequence, ACM, p. 701,
+doi:10.1145/355588.365104.
 }
 

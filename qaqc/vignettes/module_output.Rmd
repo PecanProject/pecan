@@ -23,19 +23,19 @@ To create this I used the trace functionality in R to capture the files
 saved/loaded
 
 ```{r}
-trace(nc_open, quote(cat(c("LOAD : ", filename, "\n"), file="files.txt",
-append=TRUE)))
-trace(nc_create, quote(cat(c("SAVE : ", filename, "\n"), file="files.txt",
-append=TRUE)))
-trace(save, quote(cat(c("SAVE : ", file, "\n"), file="files.txt",
-append=TRUE)))
-trace(load, quote(cat(c("LOAD : ", file, "\n"), file="files.txt",
-append=TRUE)))
-trace(cat, quote(if ((trim(file) != "") && (file != "files.txt") && (file
-!= stdout()) && (file != stderr())) { cat(c("CAT  : ", file, "\n"),
-file="files.txt", append=TRUE)}))
+trace(nc_open, quote(cat(c("LOAD : ", filename, "\n"), file="files.txt", append=TRUE)))
+trace(nc_create, quote(cat(c("SAVE : ", filename, "\n"), file="files.txt", append=TRUE)))
+trace(save, quote(cat(c("SAVE : ", file, "\n"), file="files.txt", append=TRUE)))
+trace(load, quote(cat(c("LOAD : ", file, "\n"), file="files.txt", append=TRUE)))
+trace(cat, quote(if ((raster::trim(file) != "") && (file != "files.txt") && (file != stdout()) && (file != stderr())) { 
+  cat(c("CAT  : ", file, "\n"), file="files.txt", append=TRUE)}))
 trace(writeLines, quote(if ((con != stdout()) && (con != stderr()))
-{cat(c("WRIT : ", con, "\n"), file="files.txt", append=TRUE)}))
+  {cat(c("WRIT : ", con, "\n"), file="files.txt", append=TRUE)}))
 ```
 
 Once these traces are set, you can run a PEcAn workflow.R and get a list of the files output at each stage
+
+
+```{r}
+
+```

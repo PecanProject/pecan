@@ -1,3 +1,4 @@
 export(pecan.worldmap)
-export(points2county)
 export(plot.netcdf)
+export(points2county)
+export(vwReg)
