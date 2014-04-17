@@ -27,7 +27,8 @@ Suggests:
     PEcAn.ed,
     PEcAn.sipnet,
     PEcAn.biocro,
-    PEcAn.allometry
+    PEcAn.allometry,
+    PEcAn.benchmark
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes

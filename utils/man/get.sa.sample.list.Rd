@@ -2,7 +2,7 @@
 \alias{get.sa.sample.list}
 \title{get.sa.sample.list}
 \usage{
-  get.sa.sample.list(pft, env, quantiles)
+get.sa.sample.list(pft, env, quantiles)
 }
 \arguments{
   \item{pft}{Plant Functional Type}
@@ -13,9 +13,9 @@
   from parameter for sensitivity analysis}
 }
 \value{
-  sa.sample.list
+sa.sample.list
 }
 \description{
-  get sensitivity samples as a list
+get sensitivity samples as a list
 }
 

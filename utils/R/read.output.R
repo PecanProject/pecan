@@ -62,11 +62,11 @@ model2netcdfdep <- function(runid, outdir, model, lat, lon, start_date, end_date
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
 ##' @export
+##' @deprecated
 ##' @return vector of filenames created, converts model output to netcdf as a side effect
 ##' @author Mike Dietze, David LeBauer
 model2netcdf <- function(runid, outdir, model, lat, lon, start_date, end_date){
-  logger.info("model2netcdf will be removed in future versions, plase update your worklow")
-  model2netcdfdep(runid, outdir, model, lat, lon, start_date)
+  logger.severe("model2netcdf will be removed in future versions, plase update your worklow")
 }
 
 
@@ -143,16 +143,9 @@ read.output <- function(runid, outdir, start.year=NA,
 ##' @param settings settings loaded from pecan.xml
 ##' @param ... arguments passed to \code{\link{read.output}}, e.g. \code{variables}, \code{start.year}, \code{end.year}
 ##' @export
+##' @deprecated
 ##' @author Rob Kooper
 convert.outputs <- function(model, settings, ...) {
-  # copy out folde back to local folder first
-  # TODO this should be done in run step (redmine #1560)
-  if (settings$run$host$name != "localhost") {
-    rsync("-a", paste(settings$run$host$name, settings$run$host$outdir, sep=":"), settings$modeloutdir, pattern="/*")
-  }
-  for (runid in readLines(con=file.path(settings$rundir, "runs.txt"))) {
-    outdir <- file.path(settings$modeloutdir, runid)
-    model2netcdfdep(runid, outdir, model, settings$run$site$lat, settings$run$site$lon, settings$run$start.date, settings$run$end.date) 
-  }
+  logger.severe("This function is not longer used and will be removed in the future.")
 }
 ####################################################################################################
