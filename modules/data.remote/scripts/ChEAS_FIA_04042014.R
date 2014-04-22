@@ -307,38 +307,41 @@ if(fia==0){
   dat48<-dat48[dat48$plot !="W47" & dat48$plot !="W52",] #Excludes returns from WLEF plots W47 and W52
 }
 
-  
+#Plot HH values for each year-month combo  
+png(file=file.path(outpath,"All_HH_by_scndate.png"),bg="transparent")
+par(mfrow=c(3,6),mar=c(3,4,1,0.5))
+for(y in unique(dat48$year)){
+  for(m in unique(dat48$month)){
+    if(length(dat48$biomass[dat48$month==m  & dat48$year==y])<1){ #Skips Year-month combos with no data
+      next
+    }else{ 
+      scatter.smooth(dat48$biomass[dat48$month==m  & dat48$year==y],dat48$HH.sigma.48[dat48$month==m & dat48$year==y],
+           xlim=c(min(dat48$biomass),max(dat48$biomass)),ylim=c(min(dat48$HH.sigma.48),max(dat48$HH.sigma.48)),
+           xlab="biomass",ylab='HH',main=paste(month.abb[m],y,sep=" "),pch="." )
+    }#if
+  }#for m
+}#for y
+dev.off()
+
+#Plot HV values for each year-month combo
+png(file=file.path(outpath,"All_HV_by_scndate.png"),bg="transparent")
+par(mfrow=c(3,6),mar=c(3,4,1,0.5))
+for(y in unique(dat48$year)){
+  for(m in unique(dat48$month)){
+    if(length(dat48$biomass[dat48$month==m  & dat48$year==y])<1){ #Skips Year-month combos with no data
+      next
+    }else{ 
+      scatter.smooth(dat48$biomass[dat48$month==m  & dat48$year==y],dat48$HV.sigma.48[dat48$month==m & dat48$year==y],
+                     xlim=c(min(dat48$biomass),max(dat48$biomass)),ylim=c(min(dat48$HV.sigma.48),max(dat48$HV.sigma.48)),
+                     xlab="biomass",ylab='HV',main=paste(month.abb[m],y,sep=" "),pch="." )
+    }#if
+  }#for m
+}#for y
+dev.off()
+
 #Generate PDF of raw data exploration
 #NOTE: Some of these figures will not be relevant for the FIA dataset
 pdf(paste(outpath,"/",coord.set[fia+1], "_ExtractionQCplots.pdf",sep=""),width = 6, height = 6, paper='special')
-
-#Plot HH values for each year-month combo
-par(mfrow=c(3,6))
-for(y in unique(dat48$year)){
-  for(m in unique(dat48$month)){
-    if(length(dat48$biomass[dat48$month==m  & dat48$year==y])<1){ #Skips Year-month combos with no data
-      next
-    }else{ 
-      plot(dat48$biomass[dat48$month==m  & dat48$year==y],dat48$HH.sigma.48[dat48$month==m & dat48$year==y],
-           xlim=c(min(dat48$biomass),max(dat48$biomass)),ylim=c(min(dat48$HH.sigma.48),max(dat48$HH.sigma.48)),
-           xlab="biomass",ylab='HH',main=paste(month.abb[m],y,sep=" ") )
-    }#if
-  }#for m
-}#for y
-
-#Plot HV values for each year-month combo
-par(mfrow=c(3,6))
-for(y in unique(dat48$year)){
-  for(m in unique(dat48$month)){
-    if(length(dat48$biomass[dat48$month==m  & dat48$year==y])<1){ #Skips Year-month combos with no data
-      next
-    }else{ 
-      plot(dat48$biomass[dat48$month==m  & dat48$year==y],dat48$HV.sigma.48[dat48$month==m & dat48$year==y],
-           xlim=c(min(dat48$biomass),max(dat48$biomass)),ylim=c(min(dat48$HV.sigma.48),max(dat48$HV.sigma.48)),
-           xlab="biomass",ylab='HV',main=paste(month.abb[m],y,sep=" ") )
-    }#if
-  }#for m
-}#for y
 
 #Plot boxplots of each scndate by year (HH)
 par(mfrow=c(2,2))
@@ -404,12 +407,14 @@ hist(dat48$biomass,main=paste(coord.set[fia+1],"biomass",sep=" "))
 hist(dat48$HH.sigma.48,main=paste(coord.set[fia+1],"HH",sep=" "))
 hist(dat48$HV.sigma.48,main=paste(coord.set[fia+1],"HV",sep=" "))
 
+#Figure showing color-coded density plots of the data
 Lab.palette <- colorRampPalette(c("white","violet","blue","green","yellow","orange", "red"), space = "Lab")
 par(mfrow=c(1,3))
 smoothScatter(dat48$HV.sigma.48,dat48$HH.sigma.48,nbin=256,colramp = Lab.palette,xlab="HV",ylab="HH")
 smoothScatter(dat48$biomass,dat48$HH.sigma.48,nbin=256,colramp = Lab.palette,xlab="biomass",ylab="HH",main="Density")
 smoothScatter(dat48$biomass,dat48$HV.sigma.48,nbin=256,colramp = Lab.palette,ylim=c(0,max(dat48$HH.sigma.48)),xlab="biomass",ylab="HV")
 
+#Figure of biomass vs backscatter color-coded by year of scndate
 par(mfrow=c(1,2))
 scatter.smooth(dat48$biomass,dat48$HH.sigma.48,cex=0,xlab="biomass",ylab="HH",main="48m",col="grey")
   points(dat48$biomass[format(dat48$scndate,"%Y")==2007],dat48$HH.sigma.48[format(dat48$scndate,"%Y")==2007],col=1,cex=0.5)
@@ -426,6 +431,7 @@ scatter.smooth(dat48$biomass,dat48$HV.sigma.48,cex=0,xlab="biomass",ylab="HV",ma
 # scatter.smooth(dat60$biomass,dat60$HV.sigma.60,xlab="biomass",ylab="HV",main="60m",col="grey")
 # scatter.smooth(dat60$biomass,dat60$HV.sigma.60,xlab="biomass",ylab="HV",main="60m",col="grey")
 
+#Figure showing ratio and product of backscatter bands vs biomass
 par(mfrow=c(1,2))
 scatter.smooth(dat48$biomass,dat48$HV.sigma.48/dat48$HH.sigma.48,xlab="biomass",ylab="HV/HH",main="48m",col="grey")
 # scatter.smooth(dat60$biomass,dat60$HV.sigma.60/dat60$HV.sigma.60,xlab="biomass",ylab="HV/HV",main="60m",col="grey")
@@ -437,19 +443,21 @@ par(mfrow=c(1,1))
 scatter.smooth(dat48$biomass,(dat48$HH.sigma.48-dat48$HV.sigma.48)/(dat48$HH.sigma.48+dat48$HV.sigma.48),xlab="biomass",ylab="(HH-HV)/(HH+HV)",main="48m", col="gray")
 # scatter.smooth(dat60$biomass,(dat60$HV.sigma.60-dat60$HV.sigma.60)/(dat60$HV.sigma.60+dat60$HV.sigma.60),xlab="biomass",ylab="(HV-HV)/(HV+HV)",main="60m", col="gray")
 
-par(mfrow=c(4,2),mar=c(4,4,2,2))
-scatter.smooth(dat48$biomass[format(dat48$scndate,"%Y")==2007],dat48$HH.sigma.48[format(dat48$scndate,"%Y")==2007],col="grey",xlab="biomass",ylab="HH",main="2007")
-scatter.smooth(dat48$biomass[format(dat48$scndate,"%Y")==2007],dat48$HV.sigma.48[format(dat48$scndate,"%Y")==2007],col="grey",xlab="biomass",ylab="HV",main="2007")
-scatter.smooth(dat48$biomass[format(dat48$scndate,"%Y")==2008],dat48$HH.sigma.48[format(dat48$scndate,"%Y")==2008],col="grey",xlab="biomass",ylab="HH",main="2008")
-scatter.smooth(dat48$biomass[format(dat48$scndate,"%Y")==2008],dat48$HV.sigma.48[format(dat48$scndate,"%Y")==2008],col="grey",xlab="biomass",ylab="HV",main="2008")
-scatter.smooth(dat48$biomass[format(dat48$scndate,"%Y")==2009],dat48$HH.sigma.48[format(dat48$scndate,"%Y")==2009],col="grey",xlab="biomass",ylab="HH",main="2009")
-scatter.smooth(dat48$biomass[format(dat48$scndate,"%Y")==2009],dat48$HV.sigma.48[format(dat48$scndate,"%Y")==2009],col="grey",xlab="biomass",ylab="HV",main="2009")
-scatter.smooth(dat48$biomass[format(dat48$scndate,"%Y")==2010],dat48$HH.sigma.48[format(dat48$scndate,"%Y")==2010],col="grey",xlab="biomass",ylab="HH",main="2010")
-  points(dat48$biomass[format(dat48$scndate,"%m")>10],dat48$HH.sigma.48[format(dat48$scndate,"%m")>10],col="red",xlab="biomass",ylab="HV",main="2010")
-  legend("topright",pch=1,legend=c("!Dec","Dec"), cex=0.7,pt.cex=0.5,col=c("grey","red"),bty="n",xjust=1)
-scatter.smooth(dat48$biomass[format(dat48$scndate,"%Y")==2010],dat48$HV.sigma.48[format(dat48$scndate,"%Y")==2010],col="grey",xlab="biomass",ylab="HV",main="2010")
-  points(dat48$biomass[format(dat48$scndate,"%m")>10],dat48$HV.sigma.48[format(dat48$scndate,"%m")>10],col="red",xlab="biomass",ylab="HV",main="2010")
-  legend("topright",pch=1,legend=c("!Dec","Dec"), cex=0.7,pt.cex=0.5,col=c("grey","red"),bty="n",xjust=1)
+#Figure illustrating the effect of seasonality on backscatter values (non-growing season values tend to be much higher)
+#     NOTE: Due to significant effect of season, and poor replication in non-growing season scndates, we restrict analysis to growing season only
+# par(mfrow=c(4,2),mar=c(4,4,2,2))
+# scatter.smooth(dat48$biomass[format(dat48$scndate,"%Y")==2007],dat48$HH.sigma.48[format(dat48$scndate,"%Y")==2007],col="grey",xlab="biomass",ylab="HH",main="2007")
+# scatter.smooth(dat48$biomass[format(dat48$scndate,"%Y")==2007],dat48$HV.sigma.48[format(dat48$scndate,"%Y")==2007],col="grey",xlab="biomass",ylab="HV",main="2007")
+# scatter.smooth(dat48$biomass[format(dat48$scndate,"%Y")==2008],dat48$HH.sigma.48[format(dat48$scndate,"%Y")==2008],col="grey",xlab="biomass",ylab="HH",main="2008")
+# scatter.smooth(dat48$biomass[format(dat48$scndate,"%Y")==2008],dat48$HV.sigma.48[format(dat48$scndate,"%Y")==2008],col="grey",xlab="biomass",ylab="HV",main="2008")
+# scatter.smooth(dat48$biomass[format(dat48$scndate,"%Y")==2009],dat48$HH.sigma.48[format(dat48$scndate,"%Y")==2009],col="grey",xlab="biomass",ylab="HH",main="2009")
+# scatter.smooth(dat48$biomass[format(dat48$scndate,"%Y")==2009],dat48$HV.sigma.48[format(dat48$scndate,"%Y")==2009],col="grey",xlab="biomass",ylab="HV",main="2009")
+# scatter.smooth(dat48$biomass[format(dat48$scndate,"%Y")==2010],dat48$HH.sigma.48[format(dat48$scndate,"%Y")==2010],col="grey",xlab="biomass",ylab="HH",main="2010")
+#   points(dat48$biomass[format(dat48$scndate,"%m")>10],dat48$HH.sigma.48[format(dat48$scndate,"%m")>10],col="red",xlab="biomass",ylab="HV",main="2010")
+#   legend("topright",pch=1,legend=c("!Dec","Dec"), cex=0.7,pt.cex=0.5,col=c("grey","red"),bty="n",xjust=1)
+# scatter.smooth(dat48$biomass[format(dat48$scndate,"%Y")==2010],dat48$HV.sigma.48[format(dat48$scndate,"%Y")==2010],col="grey",xlab="biomass",ylab="HV",main="2010")
+#   points(dat48$biomass[format(dat48$scndate,"%m")>10],dat48$HV.sigma.48[format(dat48$scndate,"%m")>10],col="red",xlab="biomass",ylab="HV",main="2010")
+#   legend("topright",pch=1,legend=c("!Dec","Dec"), cex=0.7,pt.cex=0.5,col=c("grey","red"),bty="n",xjust=1)
 
 par(mfrow=c(1,2))
 plot(dat48$scndate,dat48$HH.sigma.48,ylim=c(0,max(dat48$HH.sigma.48)),xlab="Date",ylab="HH")
@@ -524,6 +532,89 @@ for(i in 1:nrow(cuts)){
 }
 legend("bottomleft",lty=c(1,NA),pch=c(NA,1),legend=c("Loess Curve","Bin Mean"),bty="n")
 mtext("Bins each contain 5% of the data", side=3, line=-3, outer=TRUE, cex=1, font=2)
+
+#Figure showing within-plot variation in backscatter values for each scn date
+colors=rainbow(length(unique(dat48$scndate)))
+par(mfrow=c(1,3))
+plot(dat48$biomass,dat48$HH.sigma.48,type="n",xlab="Biomass",ylab="HH")
+for(d in as.character(unique(dat48$scndate))){
+  for(p in unique(dat48$plot)){
+    #   lines(dat48$biomass[dat48$plot==p],dat48$HH.sigma.48[dat48$plot==p],col="grey")
+    x<-dat48$biomass[dat48$plot==p & dat48$scndate==d]
+    y<-dat48$HH.sigma.48[dat48$plot==p & dat48$scndate==d]
+    points(x,y,pch=19,cex=0.5,col=colors[as.character(unique(dat48$scndate))==d])
+    se<-dat48$HHse_data_48m[dat48$plot==p & dat48$scndate==d]
+    arrows(x, y-se, x, y+se, length=0.05, angle=90, code=3,col=colors[as.character(unique(dat48$scndate))==d])
+  }
+}
+
+plot(dat48$biomass,dat48$HV.sigma.48,type="n",xlab="Biomass",ylab="HV")
+for(d in as.character(unique(dat48$scndate))){
+  for(p in unique(dat48$plot)){
+    #   lines(dat48$biomass[dat48$plot==p],dat48$HV.sigma.48[dat48$plot==p],col="grey")
+    x<-dat48$biomass[dat48$plot==p & dat48$scndate==d]
+    y<-dat48$HV.sigma.48[dat48$plot==p & dat48$scndate==d]
+    points(x,y,pch=19,cex=0.5,col=colors[as.character(unique(dat48$scndate))==d])
+    se<-dat48$HVse_data_48m[dat48$plot==p & dat48$scndate==d]
+    arrows(x, y-se, x, y+se, length=0.05, angle=90, code=3,col=colors[as.character(unique(dat48$scndate))==d])
+  }
+}
+plot(dat48$biomass,dat48$HV.sigma.48,type="n",xaxt="n",yaxt="n",xlab="",ylab="",bty="n")
+legend("center",pch=19,col=colors,legend=unique(dat48$scndate),bty="n")
+mtext("Between-scene, within-plot variation", side=3, line=-2, outer=TRUE, cex=1, font=2)
+
+#Figure showing time-series for each plot in biomass-vs-backscatter space
+par(mfrow=c(1,2))
+plot(dat48$biomass,dat48$HH.sigma.48,pch="",xlab="Biomass",ylab="HH")
+for(p in unique(dat48$plot)){
+  lines(dat48$biomass[dat48$plot==p],dat48$HH.sigma.48[dat48$plot==p],col="grey")
+  x<-mean(dat48$biomass[dat48$plot==p])
+  y<-mean(dat48$HH.sigma.48[dat48$plot==p])
+  points(x,y)
+  se<-sd(dat48$HH.sigma.48[dat48$plot==p])/sqrt(length(dat48$HH.sigma.48[dat48$plot==p]))
+  arrows(x, y-se, x, y+se, length=0.05, angle=90, code=3)
+}
+legend("topright",lty=c(1,1,NA),pch=c(NA,NA,1),col=c("grey","black","black"),legend=c("Range","SE","Mean"),bty="n")
+
+plot(dat48$biomass,dat48$HV.sigma.48,pch="",xlab="Biomass",ylab="HV")
+for(p in unique(dat48$plot)){
+  lines(dat48$biomass[dat48$plot==p],dat48$HV.sigma.48[dat48$plot==p],col="grey")
+  x<-mean(dat48$biomass[dat48$plot==p])
+  y<-mean(dat48$HV.sigma.48[dat48$plot==p])
+  points(x,y)
+  se<-sd(dat48$HV.sigma.48[dat48$plot==p])/sqrt(length(dat48$HV.sigma.48[dat48$plot==p]))
+  arrows(x, y-se, x, y+se, length=0.05, angle=90, code=3)
+}
+legend("topright",lty=c(1,1,NA),pch=c(NA,NA,1),col=c("grey","black","black"),legend=c("Range","SE","Mean"),bty="n")
+mtext("Between-scene variation", side=3, line=-2, outer=TRUE, cex=1, font=2)
+
+#Figure comparing within-plot variation (averaged over all scndates) to between-scene variation of plot means
+par(mfrow=c(1,2))
+plot(dat48$HHse_data_48m,dat48$HHse_data_48m,type="n",ylab="Btwn scene SE of within-plot mean",xlab="Btwn scene mean of within-plot SE",main="HH")
+abline(0,1,lwd=2,lty=2,col="grey")
+for(p in unique(dat48$plot)){
+  y<-mean(dat48$HHse_data_48m[dat48$plot==p])
+  se<-sd(dat48$HHse_data_48m[dat48$plot==p])/sqrt(length(dat48$HHse_data_48m[dat48$plot==p]))
+  
+  x<-sd(dat48$HH.sigma.48[dat48$plot==p])/sqrt(length(dat48$HH.sigma.48[dat48$plot==p]))
+  #   yse<-sd(dat48$HH.sigma.48[dat48$plot==p])/sqrt(length(dat48$HH.sigma.48[dat48$plot==p]))
+  
+  points(x,y,pch=19,cex=0.5)
+  arrows(x, y-se, x, y+se, length=0.05, angle=90, code=3)
+}
+plot(dat48$HVse_data_48m,dat48$HVse_data_48m,type="n",ylab="Btwn scene SE of within-plot mean",xlab="Btwn scene mean of within-plot SE",main="HV")
+abline(0,1,lwd=2,lty=2,col="grey")
+for(p in unique(dat48$plot)){
+  y<-mean(dat48$HVse_data_48m[dat48$plot==p])
+  se<-sd(dat48$HVse_data_48m[dat48$plot==p])/sqrt(length(dat48$HVse_data_48m[dat48$plot==p]))
+  
+  x<-sd(dat48$HV.sigma.48[dat48$plot==p])/sqrt(length(dat48$HV.sigma.48[dat48$plot==p]))
+#   yse<-sd(dat48$HV.sigma.48[dat48$plot==p])/sqrt(length(dat48$HV.sigma.48[dat48$plot==p]))
+  
+  points(x,y,pch=19,cex=0.5)
+  arrows(x, y-se, x, y+se, length=0.05, angle=90, code=3)
+}
+
 
 
 # par(new=FALSE, mfrow=c(1,2))
