@@ -2,6 +2,9 @@
 
 ##Read in fuzzed FIA coordinates supplied by Andy Finley (MSU), extract palsar backscatter values, fit curves, save figures and extracted values (with coordinates)
 
+
+## To work from stored, previously extracted values, run everything up to line 48, then skip to line ~284
+
 ################################
 ## Load Required Packages
 ################################
@@ -494,27 +497,53 @@ scatter.smooth(dat48$biomass[format(dat48$scndate,"%Y")==2010 & format(dat48$scn
 #   par(new=T)
 # }
 
-#breaks data into quantiles each containing ~5% of the data
-bind.bio<-tapply(dat48$biomass,cut(dat48$biomass,breaks=round(quantile(dat48$biomass,probs = seq(0, 1, 0.05))) ),mean)
-bind.HH<-tapply(dat48$HH.sigma.48,cut(dat48$HH.sigma.48,breaks=quantile(dat48$HH.sigma.48,probs = seq(0, 1, 0.05)) ),mean)
-bind.HV<-tapply(dat48$HV.sigma.48,cut(dat48$HV.sigma.48,breaks=quantile(dat48$HV.sigma.48,probs = seq(0, 1, 0.05)) ),mean)
-par(new=FALSE, mfrow=c(1,2))
-plot(dat48$biomass,dat48$HH.sigma.48,col="grey",pch=".",xlab="Binned Biomass",ylab="Binned HH")
-  points(bind.bio,bind.HH)
-plot(dat48$biomass,dat48$HV.sigma.48,col="grey",,pch=".",xlab="Binned Biomass",ylab="Binned HV")
-  points(bind.bio,bind.HV)
-mtext("Bins each contain 5% of the data points", side=3, line=-3, outer=TRUE, cex=1, font=2)
+#breaks biomass data into quantiles each containing ~5% of the data
+bind.bio<-tapply(dat48$biomass,   cut(dat48$biomass,    breaks=                  round(quantile(dat48$biomass,probs = seq(0, 1, 0.05))) ),mean)
+# bind.HH<-tapply(dat48$HH.sigma.48,cut(dat48$HH.sigma.48,breaks=dat48$HH.sigma.48[round(quantile(dat48$biomass,probs = seq(0, 1, 0.05)))] ),mean)
+# bind.HV<-tapply(dat48$HV.sigma.48,cut(dat48$HV.sigma.48,breaks=dat48$HV.sigma.48[round(quantile(dat48$biomass,probs = seq(0, 1, 0.05)))] ),mean)
 
-#breaks data into even-length bins
-bind.bio<-tapply(dat48$biomass,   cut(dat48$biomass,    breaks=seq(0, max(dat48$biomass),     0.05*max(dat48$biomass))),mean)
-bind.HH<-tapply(dat48$HH.sigma.48,cut(dat48$HH.sigma.48,breaks=seq(0, max(dat48$HH.sigma.48), 0.05*max(dat48$HH.sigma.48))),mean)
-bind.HV<-tapply(dat48$HV.sigma.48,cut(dat48$HV.sigma.48,breaks=seq(0, max(dat48$HV.sigma.48), 0.05*max(dat48$HV.sigma.48))),mean)
+cuts<-matrix(unlist(strsplit(names(bind.bio),",")),ncol=2,byrow=T)
+for(i in 1:nrow(cuts)){
+  for(j in 1:ncol(cuts)){
+    cuts[i,j]<-strsplit(gsub("[^[:alnum:] ]", "", cuts[i,j]), " +")[[1]]
+  }
+}
+cuts<-cbind(as.numeric(cuts[,1]),as.numeric(cuts[,2]))
 par(mfrow=c(1,2))
-plot(dat48$biomass,dat48$HH.sigma.48,col="grey",pch=".",xlab="Binned Biomass",ylab="Binned HH")
-  points(bind.bio,bind.HH)
-plot(dat48$biomass,dat48$HV.sigma.48,col="grey",,pch=".",xlab="Binned Biomass",ylab="Binned HV")
-  points(bind.bio,bind.HV)
-mtext("Bins each contain 5% of data range", side=3, line=-3, outer=TRUE, cex=1, font=2)
+scatter.smooth(dat48$biomass,dat48$HH.sigma.48,col="grey",pch=".",xlab="Biomass",ylab="HH",main="")
+for(i in 1:nrow(cuts)){
+  points(mean(dat48$biomass[dat48$biomass>=cuts[i,1] & dat48$biomass<cuts[i,2]]), 
+         mean(dat48$HH.sigma.48[dat48$biomass>=cuts[i,1] & dat48$biomass<cuts[i,2]]))
+}
+legend("bottomleft",lty=c(1,NA),pch=c(NA,1),legend=c("Loess Curve","Bin Mean"),bty="n")
+
+scatter.smooth(dat48$biomass,dat48$HV.sigma.48,col="grey",pch=".",xlab="Biomass",ylab="HV",main="")
+for(i in 1:nrow(cuts)){
+  points(mean(dat48$biomass[dat48$biomass>=cuts[i,1] & dat48$biomass<cuts[i,2]]), 
+         mean(dat48$HV.sigma.48[dat48$biomass>=cuts[i,1] & dat48$biomass<cuts[i,2]]))
+}
+legend("bottomleft",lty=c(1,NA),pch=c(NA,1),legend=c("Loess Curve","Bin Mean"),bty="n")
+mtext("Bins each contain 5% of the data", side=3, line=-3, outer=TRUE, cex=1, font=2)
+
+
+# par(new=FALSE, mfrow=c(1,2))
+# plot(dat48$biomass,dat48$HH.sigma.48,col="grey",pch=".",xlab="Binned Biomass",ylab="Binned HH")
+#   points(bind.bio,bind.HH)
+# plot(dat48$biomass,dat48$HV.sigma.48,col="grey",,pch=".",xlab="Binned Biomass",ylab="Binned HV")
+#   points(bind.bio,bind.HV)
+# points(dat48$biomass[dat48$biomass>=1 & dat48$biomass<=48],dat48$HV.sigma.48[dat48$biomass>=1 &dat48$biomass<=48],pch=".",col="red")
+# mtext("Bins each contain 5% of the data points", side=3, line=-3, outer=TRUE, cex=1, font=2)
+
+# #breaks data into even-length bins
+# bind.bio<-tapply(dat48$biomass,   cut(dat48$biomass,    breaks=seq(0, max(dat48$biomass),     0.05*max(dat48$biomass))),mean)
+# bind.HH<-tapply(dat48$HH.sigma.48,cut(dat48$HH.sigma.48,breaks=seq(0, max(dat48$HH.sigma.48), 0.05*max(dat48$HH.sigma.48))),mean)
+# bind.HV<-tapply(dat48$HV.sigma.48,cut(dat48$HV.sigma.48,breaks=seq(0, max(dat48$HV.sigma.48), 0.05*max(dat48$HV.sigma.48))),mean)
+# par(mfrow=c(1,2))
+# plot(dat48$biomass,dat48$HH.sigma.48,col="grey",pch=".",xlab="Binned Biomass",ylab="Binned HH")
+#   points(bind.bio,bind.HH)
+# plot(dat48$biomass,dat48$HV.sigma.48,col="grey",,pch=".",xlab="Binned Biomass",ylab="Binned HV")
+#   points(bind.bio,bind.HV)
+# mtext("Bins each contain 5% of data range", side=3, line=-3, outer=TRUE, cex=1, font=2)
 
 par(mfrow=c(1,2))
 bplot.xy(dat48$biomass,dat48$HH.sigma.48,N=15,xlab="biomass",ylab="HH (simga naught)")
