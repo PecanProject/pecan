@@ -429,6 +429,7 @@ scatter.smooth(dat48$biomass,dat48$HV.sigma.48/dat48$HH.sigma.48,xlab="biomass",
 scatter.smooth(dat48$biomass,dat48$HH.sigma.48*dat48$HV.sigma.48,xlab="biomass",ylab="HHxHV",main="48m",col="grey")
 # scatter.smooth(dat60$biomass,dat60$HV.sigma.60*dat60$HV.sigma.60,xlab="biomass",ylab="HVxHV",main="60m",col="grey")
 
+#Plot NDVI-style ratio of the two backscatter bands
 par(mfrow=c(1,1))
 scatter.smooth(dat48$biomass,(dat48$HH.sigma.48-dat48$HV.sigma.48)/(dat48$HH.sigma.48+dat48$HV.sigma.48),xlab="biomass",ylab="(HH-HV)/(HH+HV)",main="48m", col="gray")
 # scatter.smooth(dat60$biomass,(dat60$HV.sigma.60-dat60$HV.sigma.60)/(dat60$HV.sigma.60+dat60$HV.sigma.60),xlab="biomass",ylab="(HV-HV)/(HV+HV)",main="60m", col="gray")
