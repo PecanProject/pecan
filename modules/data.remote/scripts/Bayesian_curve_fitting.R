@@ -319,7 +319,7 @@ mod.eqns <-list(MM.mod.eqn,
 ################
 ##Loop over all models and backscatter polarization bands
 ################
-for(i in 1:length(yvars)){ #loop over HH and HV (pol bands)
+for(i in 1:length(yvars)){ #loop over HH and HV pol bands
   y<-eval(parse(text=yvars[i]))
   
   if(length(y[is.na(y)]>0)){ #to get rid of NAs
@@ -330,6 +330,15 @@ for(i in 1:length(yvars)){ #loop over HH and HV (pol bands)
   }
   
   for(j in 1:length(models)){#looping over models
+    ##Create dir for output from each model x polband x site combination
+    dir.create(file.path(outpath,coord.set[fia+1]))
+          outpath<-file.path(outpath,coord.set[fia+1])
+    dir.create(file.path(outpath,substr(yvars[i],7,8)))
+          outpath<-file.path(outpath,substr(yvars[i],7,8))
+    dir.create(file.path(outpath,mod.names[j]))       
+          outpath<-file.path(outpath,mod.names[j])   
+               
+    ##Do JAGS stuff
     j1 = jags.model(file=textConnection(models[j]),
                     data = data,
                     inits = unlist(eval(parse(text=init[i]))[j],recursive=FALSE),
@@ -341,8 +350,23 @@ for(i in 1:length(yvars)){ #loop over HH and HV (pol bands)
                             n.iter = n.reps) 
     out <- as.matrix(jags.out)
     
+    #Save MCMC output
+    write.csv(out,file.path(outpath,
+                            paste("MCMC_out",coord.set[fia+1],substr(yvars[i],7,8),mod.names[j],".csv",sep="_")),
+              row.names=FALSE)
+    
+    #Save xy pairs
+    write.csv(cbind(x,y),file.path(outpath,
+                                   paste("xy_pairs",coord.set[fia+1],substr(yvars[i],7,8),mod.names[j],".csv",sep="_")),
+              row.names=FALSE)
+    
     gelman.diag(jags.out)
     summary(jags.out)
+    ##Save model output summary
+    saveRDS(summary(jags.out),file=file.path(outpath,
+                                             paste("Jags_Out",coord.set[fia+1],substr(yvars[i],7,8),mod.names[j],".Rdata",sep="_")))
+    saveRDS(gelman.diag(jags.out),file=file.path(outpath,
+                                                 paste("Gelman_Diag",coord.set[fia+1],substr(yvars[i],7,8),mod.names[j],".Rdata",sep="_")))
     
     
     #Generate pdf of curve fits
@@ -358,7 +382,8 @@ for(i in 1:length(yvars)){ #loop over HH and HV (pol bands)
     #plot data
     par(mfrow=c(1,1))
     parm = apply(out,2,mean)
-    scatter.smooth(x,y,pch=".",xlab="Biomass",ylab=yvars[i],main=paste(mod.names[j],"fit of",yvars[i],sep=" ")) #plot data
+    plot(x,y,pch=".",xlab="Biomass",ylab=yvars[i],main=paste(mod.names[j],"fit of",yvars[i],sep=" ")) #plot data
+    lines(loess.smooth(x,y), col="grey", lty=1, lwd=1)
     xseq = seq(0,300,length=3000)
     eval(parse(text=model.fits[j])) #plot fitted curve line
     
@@ -375,16 +400,6 @@ for(i in 1:length(yvars)){ #loop over HH and HV (pol bands)
     lines(xseq,yci[3,],col=3)
     
     dev.off()
-
-##Save model output as HTML
-    target <- HTMLInitFile(outdir=outpath,
-                           filename=paste("model_output",coord.set[fia+1],substr(yvars[i],7,8),mod.names[j],sep="_"))
-
-    HTML(list(paste("n.reps=",n.reps,sep=" "),
-              paste("n.chain=",n.chain,sep=" "),
-              cbind(var.names[j][[1]],unlist(eval(parse(text=init[i]))[j])),
-              summary(jags.out)),
-         file=target)
     
     print(yvars[i])
     print(mod.names[j])
