@@ -6,7 +6,7 @@ require(R2HTML)
 
 dat48<-read.csv(file=paste(outpath,"/",coord.set[fia+1],"_dat48.csv",sep=""),header=T,sep=",")
 dir.create(file.path(outpath,"model_output"))
-outpath<-file.path(outpath,"model_output")
+outpath1<-file.path(outpath,"model_output")
 # outpath <- file.path("/Users/hardimanb/Desktop/data.remote(Andys_Copy)/output/data") ##For saving
 
 x<-dat48$biomass
@@ -331,12 +331,12 @@ for(i in 1:length(yvars)){ #loop over HH and HV pol bands
   
   for(j in 1:length(models)){#looping over models
     ##Create dir for output from each model x polband x site combination
-    dir.create(file.path(outpath,coord.set[fia+1]))
-          outpath<-file.path(outpath,coord.set[fia+1])
-    dir.create(file.path(outpath,substr(yvars[i],7,8)))
-          outpath<-file.path(outpath,substr(yvars[i],7,8))
-    dir.create(file.path(outpath,mod.names[j]))       
-          outpath<-file.path(outpath,mod.names[j])   
+    dir.create(file.path(outpath1,coord.set[fia+1]))
+          outpath2<-file.path(outpath1,coord.set[fia+1])
+    dir.create(file.path(outpath2,substr(yvars[i],7,8)))
+          outpath3<-file.path(outpath2,substr(yvars[i],7,8))
+    dir.create(file.path(outpath3,mod.names[j]))       
+          outpath4<-file.path(outpath3,mod.names[j])   
                
     ##Do JAGS stuff
     j1 = jags.model(file=textConnection(models[j]),
@@ -351,26 +351,26 @@ for(i in 1:length(yvars)){ #loop over HH and HV pol bands
     out <- as.matrix(jags.out)
     
     #Save MCMC output
-    write.csv(out,file.path(outpath,
+    write.csv(out,file.path(outpath4,
                             paste("MCMC_out",coord.set[fia+1],substr(yvars[i],7,8),mod.names[j],".csv",sep="_")),
               row.names=FALSE)
     
     #Save xy pairs
-    write.csv(cbind(x,y),file.path(outpath,
+    write.csv(cbind(x,y),file.path(outpath4,
                                    paste("xy_pairs",coord.set[fia+1],substr(yvars[i],7,8),mod.names[j],".csv",sep="_")),
               row.names=FALSE)
     
     gelman.diag(jags.out)
     summary(jags.out)
     ##Save model output summary
-    saveRDS(summary(jags.out),file=file.path(outpath,
+    saveRDS(summary(jags.out),file=file.path(outpath4,
                                              paste("Jags_Out",coord.set[fia+1],substr(yvars[i],7,8),mod.names[j],".Rdata",sep="_")))
-    saveRDS(gelman.diag(jags.out),file=file.path(outpath,
+    saveRDS(gelman.diag(jags.out),file=file.path(outpath4,
                                                  paste("Gelman_Diag",coord.set[fia+1],substr(yvars[i],7,8),mod.names[j],".Rdata",sep="_")))
     
     
     #Generate pdf of curve fits
-    pdf(paste(paste(outpath,"/","curve_fit_",coord.set[fia+1],sep=""),substr(yvars[i],7,8),mod.names[j],".pdf",sep="_"),width = 6, height = 6, paper='special')
+    pdf(paste(paste(outpath4,"/","curve_fit_",coord.set[fia+1],sep=""),substr(yvars[i],7,8),mod.names[j],".pdf",sep="_"),width = 6, height = 6, paper='special')
     
     par(mar = rep(2, 4))    
     plot(jags.out)
