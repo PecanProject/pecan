@@ -303,14 +303,14 @@ dat48$HVse_data_48m<- as.numeric(as.character(dat48$HVse_data_48m))
 palsar.plotter(outpath,coord.set,fia)
 
 #This generates a figure showing the HH values for 2 WLEF plots which are anomalously high
-if(fia==0){
-  plot(dat48$biomass, dat48$HH.sigma.48,xlab="Biomass",ylab="HH (sigma)",main="Anomalous Plots")
-  points(dat48$biomass[dat48$plot=="W47"],dat48$HH.sigma.48[dat48$plot=="W47"],pch=19,col="red")
-  points(dat48$biomass[dat48$plot=="W52"],dat48$HH.sigma.48[dat48$plot=="W52"],pch=19,col="blue")
-  legend("topright",legend=c("W47","W52"),pch=19,col=c("red","blue"),bty="n")
-  
-  dat48<-dat48[dat48$plot !="W47" & dat48$plot !="W52",] #Excludes returns from WLEF plots W47 and W52
-}
+# if(fia==0){
+#   plot(dat48$biomass, dat48$HH.sigma.48,xlab="Biomass",ylab="HH (sigma)",main="Anomalous Plots")
+#   points(dat48$biomass[dat48$plot=="W47"],dat48$HH.sigma.48[dat48$plot=="W47"],pch=19,col="red")
+#   points(dat48$biomass[dat48$plot=="W52"],dat48$HH.sigma.48[dat48$plot=="W52"],pch=19,col="blue")
+#   legend("topright",legend=c("W47","W52"),pch=19,col=c("red","blue"),bty="n")
+#   
+#   dat48<-dat48[dat48$plot !="W47" & dat48$plot !="W52",] #Excludes returns from WLEF plots W47 and W52
+# }
 
 #Plot HH values for each year-month combo  
 png(file=file.path(outpath,"All_HH_by_scndate.png"),bg="transparent")
@@ -351,7 +351,7 @@ dev.off()
 ## Run curve fitting function
 #########################################################
 
-n.reps<- 1000 #sets value for n.adapt and n.iter
+n.reps<- 10000 #sets value for n.adapt and n.iter
 n.chain<-3 #number of MCMC chains to run
 bayes.curve.fit(outpath,coord.set,fia,n.reps,n.chain)
 
