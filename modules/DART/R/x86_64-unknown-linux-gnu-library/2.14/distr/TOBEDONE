@@ -1,6 +1,0 @@
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-to be done in package distr
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-+ modularizing plot commands
-+ optional accuracy arguments for math ops when 
-  called as functions not as operators

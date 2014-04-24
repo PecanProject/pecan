@@ -1,4 +1,0 @@
-import("utils")
-
-export(biocLite, biocinstallRepos, useDevel,
-    monograph_group, RBioinf_group, biocases_group, all_group)

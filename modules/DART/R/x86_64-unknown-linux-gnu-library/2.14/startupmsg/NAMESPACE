@@ -1,7 +1,0 @@
-export("readVersionInformation", "readURLInformation",
-       "pointertoNEWS", "infoShow", "NEWS", "TOBEDONE",
-       "StartupMessage", "startupPackage", "startupType", 
-       "startupMessage", "suppressStartupMessages",
-       "startupEndline", "onlytypeStartupMessages", 
-       "buildStartupMessage", "mySMHandler", 
-       "mystartupMessage")

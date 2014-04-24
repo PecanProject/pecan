@@ -1,9 +1,0 @@
-Support for unreferenced logarithmic units
-
-Fortran 2003 API
-
-Investigate name collisions in the scanner and parser [UDUNITS !IEB-391154].
-
-Create default names for common units for ontologies.
-
-Add ability to get version identifier to API and udunits(2).
