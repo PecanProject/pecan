@@ -22,6 +22,11 @@ CHECK="no"
 INSTALL="yes"
 TEST="no"
 
+# no arguments means build
+if [ $# == 0 ]; then
+  FORCE="yes"
+fi
+
 # find all variables
 while true; do
   if [ "$1" == "" ]; then
@@ -84,7 +89,7 @@ PACKAGES="utils db settings visualization"
 PACKAGES="${PACKAGES} modules/priors modules/meta.analysis modules/uncertainty"
 PACKAGES="${PACKAGES} modules/data.land modules/data.atmosphere"
 PACKAGES="${PACKAGES} modules/assim.batch modules/assim.sequential"
-PACKAGES="${PACKAGES} modules/allometry"
+PACKAGES="${PACKAGES} modules/allometry modules/benchmark"
 PACKAGES="${PACKAGES} models/ed models/sipnet models/biocro"
 PACKAGES="${PACKAGES} all"
 
