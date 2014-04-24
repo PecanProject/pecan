@@ -2,10 +2,14 @@
 ##'
 ##' @name met2CF.Ameriflux
 <<<<<<< HEAD
+<<<<<<< HEAD
 ##' @title met2CF
 =======
 ##' @title 
 >>>>>>> fe95300c67e65ee009f6cbb87485d8e24ffe9431
+=======
+##' @title met2CF
+>>>>>>> d4a680c86b674047e958d780b7047b61a5f31152
 ##' @export
 ##' @param in.path
 ##' @param in.prefix
@@ -71,13 +75,13 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
     
     #create u and v variables and insert into file
     tdim = nc$dim[["DTIME"]]
-    u.var <- ncvar_def(name='x_wind',units='m/s',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
+    u.var <- ncvar_def(name='eastward_wind',units='m/s',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
     nc = ncvar_add(nc=nc,v=u.var,verbose=TRUE) #add variable to existing netCDF file
-    ncvar_put(nc,varid='x_wind',vals=u)
+    ncvar_put(nc,varid='eastward_wind',vals=u)
     
-    v.var <- ncvar_def(name='y_wind',units='m/s',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
+    v.var <- ncvar_def(name='northward_wind',units='m/s',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
     nc = ncvar_add(nc=nc,v=v.var,verbose=TRUE) #add variable to existing netCDF file
-    ncvar_put(nc,varid='y_wind',vals=v)
+    ncvar_put(nc,varid='northward_wind',vals=v)
    
     #convert air pressure to CF standard
     press <- ncvar_get(nc=nc,varid="PRESS")
@@ -114,7 +118,7 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
     sh <- replace(x=rh,list=rh.sub,values=sh.miss) #insert Kelvin values into vector
     sh.var <- ncvar_def(name='surface_specific_humidity',units='kg/kg',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
     nc = ncvar_add(nc=nc,v=sh.var,verbose=TRUE) #add variable to existing netCDF file
-    ncvar_put(nc,varid='surface_specific_humidity',vals=sh)
+    ncvar_put(nc,varid='specific_humidity',vals=sh)
     nc <- ncvar_rename(nc=nc,'RH','relative_humidity')
     
 
@@ -126,7 +130,11 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
 }   ## end netCDF CF conversion ##
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   
 =======
   
 >>>>>>> fe95300c67e65ee009f6cbb87485d8e24ffe9431
+=======
+  
+>>>>>>> d4a680c86b674047e958d780b7047b61a5f31152

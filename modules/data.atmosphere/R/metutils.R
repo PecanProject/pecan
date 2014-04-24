@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 ## qc functions restricting to "valid range" given in .nc meta-data
 qctemp   <- function(x) ifelse(x > 400 | x < 100, mean(x[x < 400 & x > 100]), x)
@@ -13,6 +14,8 @@ qcshum     <- function(x){
     x[is.na(x)] <- mean(x, na.rm = TRUE)
 }
 >>>>>>> fe95300c67e65ee009f6cbb87485d8e24ffe9431
+=======
+>>>>>>> d4a680c86b674047e958d780b7047b61a5f31152
 
 ##' Convert specific humidity to relative humidity
 ##'
@@ -134,10 +137,14 @@ wide2long <- function(data.wide, lat, lon, var){
 ##' 2.35e5 J / mol is the energy content of solar radiation in the PAR waveband
 ##' 0.486 is based on the approximation that PAR is 0.45-0.50 of the total radiation
 <<<<<<< HEAD
+<<<<<<< HEAD
 ##' @title par2ppfd
 =======
 ##' @title 
 >>>>>>> fe95300c67e65ee009f6cbb87485d8e24ffe9431
+=======
+##' @title par2ppfd
+>>>>>>> d4a680c86b674047e958d780b7047b61a5f31152
 ##' @param PAR (W / m2) 
 ##' @author David LeBauer
 ##' @export
