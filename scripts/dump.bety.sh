@@ -27,6 +27,10 @@ MYSITE=0
 # 4 - public
 LEVEL=4
 
+# dump unchecked traits and yields
+# set this to "YES" to dump all unchecked traits/yields as well
+UNCHECKED="NO"
+
 # anonymous users
 # set this to NO to dump all user information
 ANONYMOUS="YES"
@@ -90,9 +94,22 @@ for T in citations counties covariates cultivars dbfiles ensembles entities form
 done
 
 # restricted tables
-for T in inputs traits yields; do
+for T in inputs; do
 	printf "Dumping %-25s : " "${T}"
 	psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY (SELECT * FROM ${T} WHERE (id >= ${START_ID} AND id <= ${LAST_ID}) AND access_level >= ${LEVEL}) TO '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV);"
+	ADD=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM ${T} WHERE (id >= ${START_ID} AND id <= ${LAST_ID})" | tr -d ' ' )
+	echo "DUMPED ${ADD}"
+done
+
+# restricted and unchecked tables
+for T in traits yields; do
+	printf "Dumping %-25s : " "${T}"
+	if [ "${UNCHECKED}" == "YES" ]; then
+		UNCHECKED_QUERY=""
+	else
+		UNCHECKED_QUERY="AND checked != -1"
+	fi
+	psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY (SELECT * FROM ${T} WHERE (id >= ${START_ID} AND id <= ${LAST_ID}) AND access_level >= ${LEVEL} ${UNCHECKED_QUERY}) TO '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV);"
 	ADD=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM ${T} WHERE (id >= ${START_ID} AND id <= ${LAST_ID})" | tr -d ' ' )
 	echo "DUMPED ${ADD}"
 done
