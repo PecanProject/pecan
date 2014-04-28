@@ -398,6 +398,7 @@ for(i in 1:length(yvars)){ #loop over HH and HV pol bands
     yci = apply(ypred,2,quantile,c(0.025,0.5,0.975))
     lines(xseq,yci[1,],col=3)
     lines(xseq,yci[3,],col=3)
+    legend("topright",lty=c(1,1,1),col=c("grey",2,3),legend=c("Loess","Curve Fit","95% C.I."),bty="n")
     
     dev.off()
     
