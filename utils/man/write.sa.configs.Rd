@@ -2,8 +2,8 @@
 \alias{write.sa.configs}
 \title{Write sensitivity analysis configs}
 \usage{
-write.sa.configs(defaults, quantile.samples, settings, model, clean = FALSE,
-  write.to.db = TRUE)
+  write.sa.configs(defaults, quantile.samples, settings,
+    model, clean = FALSE, write.to.db = TRUE)
 }
 \arguments{
   \item{pft}{pft id used to query PEcAn database}
@@ -23,16 +23,16 @@ write.sa.configs(defaults, quantile.samples, settings, model, clean = FALSE,
   \link{get.sa.samples}}
 }
 \value{
-data frame of runids, writes sensitivity analysis
-configuration files as a side effect
+  data frame of runids, writes sensitivity analysis
+  configuration files as a side effect
 }
 \description{
-Write sensitivity analysis config files
+  Write sensitivity analysis config files
 }
 \details{
-Writes config files for use in sensitivity analysis.
+  Writes config files for use in sensitivity analysis.
 }
 \author{
-David LeBauer, Carl Davidson
+  David LeBauer, Carl Davidson
 }
 

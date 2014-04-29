@@ -20,6 +20,7 @@ GIT="no"
 FORCE="no"
 CHECK="no"
 INSTALL="yes"
+DOCUMENTATION="no"
 TEST="no"
 
 # no arguments means build
@@ -35,17 +36,31 @@ while true; do
   case "$1" in
     --help|-h)
       echo "$0 <options>"
-      echo " -h, --help      : this help text"
-      echo " -f, --force     : force a build"
-      echo " -g, --git       : do a git pull"
-      echo " -i, --install   : install all R packages (default=yes)"
-      echo " -n, --noinstall : do not install all R packages"
-      echo " -c, --check     : check the R packages before install"
-      echo " -e, --email     : send email to following people on success"
-      echo " -t, --test      : run tests"
+      echo " -c, --check         : check the R packages before install"
+      echo " -d, --documentation : (re)generates all Rd files"
+      echo " -e, --email         : send email to following people on success"
+      echo " -f, --force         : force a build"
+      echo " -g, --git           : do a git pull"
+      echo " -h, --help          : this help text"
+      echo " -i, --install       : install all R packages (default=yes)"
+      echo " -n, --noinstall     : do not install all R packages"
+      echo " -t, --test          : run tests"
       echo ""
       exit
     ;;
+
+    --check|-c)
+      CHECK="yes"
+      ;;
+
+    --documentation|-d)
+      DOCUMENTATION="yes"
+      ;;
+
+    --email|-e)
+      EMAIL="$2"
+      shift
+      ;;
 
     --force|-f)
       FORCE="yes"
@@ -55,25 +70,16 @@ while true; do
       GIT="yes"
       ;;
 
-    --noinstall|-n)
-      INSTALL="no"
-      ;;
-
     --install|-i)
       INSTALL="yes"
       ;;
 
+    --noinstall|-n)
+      INSTALL="no"
+      ;;
+
     --test|-t)
       TEST="yes"
-      ;;
-
-    --check|-c)
-      CHECK="yes"
-      ;;
-
-    --email|-e)
-      EMAIL="$2"
-      shift
       ;;
 
     *)
@@ -122,7 +128,38 @@ if [ "$GIT" == "yes" ]; then
   fi
 fi
 
+# list any changes to the code
+if [ "$FORCE" == "yes" ]; then
+  # get changes
+  echo "----------------------------------------------------------------------" >> changes.log
+  echo "CHANGES" >> changes.log
+  echo "----------------------------------------------------------------------" >> changes.log
+  git log > newlog
+  diff git.log newlog | grep '^> ' | sed 's/^> //' > changes.log
+  mv newlog git.log
+  if [ "$EMAIL" == "" ]; then
+    cat changes.log
+    rm changes.log
+  fi
+fi
+
 STATUS="OK"
+
+# generate documentation
+if [ "$DOCUMENTATION" == "yes" ]; then
+  for p in ${PACKAGES}; do
+    echo "----------------------------------------------------------------------" >> changes.log
+    echo "DOCUMENTATION $p" >> changes.log
+    echo "----------------------------------------------------------------------" >> changes.log
+    echo "if (require(roxygen2)) roxygenise('$p', roclets=c('rd'))" | R --vanilla >> changes.log 2>&1
+    if [ "$EMAIL" == "" ]; then
+      cat changes.log
+      rm changes.log
+    fi
+  done
+fi
+
+# build PEcAn
 if [ "$FORCE" == "yes" ]; then
   if [ ! -z  $R_LIBS_USER ]; then
     if [ ! -e ${R_LIBS_USER} ]; then
@@ -133,14 +170,6 @@ if [ "$FORCE" == "yes" ]; then
   fi
 
   START=`date +'%s'`
-
-  # get changes
-  echo "----------------------------------------------------------------------" >> changes.log
-  echo "CHANGES" >> changes.log
-  echo "----------------------------------------------------------------------" >> changes.log
-  git log > newlog
-  diff git.log newlog | grep '^> ' | sed 's/^> //' > changes.log
-  mv newlog git.log
 
   # get version number
   REVNO=$( git show -s --pretty=format:%T master )

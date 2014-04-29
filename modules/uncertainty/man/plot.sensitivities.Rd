@@ -2,8 +2,8 @@
 \alias{plot.sensitivities}
 \title{Plot Sensitivities}
 \usage{
-plot.sensitivities(sensitivity.plot.inputs,
-  prior.sensitivity.plot.inputs = NULL, ...)
+  plot.sensitivities(sensitivity.plot.inputs,
+    prior.sensitivity.plot.inputs = NULL, ...)
 }
 \arguments{
   \item{sensitivity.plot.inputs}{inputs}
@@ -17,13 +17,13 @@ plot.sensitivities(sensitivity.plot.inputs,
   sa.splines}
 }
 \value{
-list of plots, one per trait
+  list of plots, one per trait
 }
 \description{
-Plot functions and quantiles used in sensitivity analysis
+  Plot functions and quantiles used in sensitivity analysis
 }
 \details{
-Generates a plot using \code{\link{plot.sensitivity}} for
-multiple traits.
+  Generates a plot using \code{\link{plot.sensitivity}} for
+  multiple traits.
 }
 

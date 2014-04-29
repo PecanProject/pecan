@@ -2,8 +2,8 @@
 \alias{read.output}
 \title{Read model output}
 \usage{
-read.output(runid, outdir, start.year = NA, end.year = NA,
-  variables = "GPP")
+  read.output(runid, outdir, start.year = NA,
+    end.year = NA, variables = "GPP")
 }
 \arguments{
   \item{runid}{the id distiguishing the model run.}
@@ -19,25 +19,26 @@ read.output(runid, outdir, start.year = NA, end.year = NA,
   \item{variables}{variables to be read from model output}
 }
 \value{
-vector of output variable
+  vector of output variable
 }
 \description{
-Reads the output of a single model run
+  Reads the output of a single model run
 }
 \details{
-Generic function to convert model output from
-model-specific format to a common PEcAn format. This
-function uses MsTMIP variables except that units of (kg m-2
-d-1) are converted to kg ha-1 y-1. Currently this function
-converts Carbon fluxes: GPP, NPP, NEE, TotalResp, AutoResp,
-HeteroResp, DOC_flux, Fire_flux, and Stem (Stem is specific
-to the BioCro model) and Water fluxes: Evaporation (Evap),
-Transpiration(TVeg), surface runoff (Qs), subsurface runoff
-(Qsb), and rainfall (Rainf). For more details, see the
-\href{http://nacp.ornl.gov/MsTMIP_variables.shtml}{MsTMIP
-variables} documentation
+  Generic function to convert model output from
+  model-specific format to a common PEcAn format. This
+  function uses MsTMIP variables except that units of (kg
+  m-2 d-1) are converted to kg ha-1 y-1. Currently this
+  function converts Carbon fluxes: GPP, NPP, NEE,
+  TotalResp, AutoResp, HeteroResp, DOC_flux, Fire_flux, and
+  Stem (Stem is specific to the BioCro model) and Water
+  fluxes: Evaporation (Evap), Transpiration(TVeg), surface
+  runoff (Qs), subsurface runoff (Qsb), and rainfall
+  (Rainf). For more details, see the
+  \href{http://nacp.ornl.gov/MsTMIP_variables.shtml}{MsTMIP
+  variables} documentation
 }
 \author{
-Michael Dietze, David LeBauer
+  Michael Dietze, David LeBauer
 }
 

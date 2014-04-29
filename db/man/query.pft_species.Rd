@@ -2,7 +2,8 @@
 \alias{query.pft_species}
 \title{Query species given pft name}
 \usage{
-query.pft_species(pft = NULL, con = NULL, settings = NULL)
+  query.pft_species(pft = NULL, con = NULL,
+    settings = NULL)
 }
 \arguments{
   \item{pft}{string pft name}
@@ -13,10 +14,10 @@ query.pft_species(pft = NULL, con = NULL, settings = NULL)
   name and database settings, if pft and / or con are null}
 }
 \value{
-string of species.id for species associated with pft
+  string of species.id for species associated with pft
 }
 \description{
-select plant id's associated with pft
+  select plant id's associated with pft
 }
 \examples{
 \dontrun{
@@ -25,6 +26,6 @@ query.pft_species(settings = read.settings("pecan.xml"))
 }
 }
 \author{
-David LeBauer
+  David LeBauer
 }
 

@@ -2,7 +2,7 @@
 \alias{InputForWeach}
 \title{InputForWeach}
 \usage{
-InputForWeach(lat, lon, year1, year2)
+  InputForWeach(lat, lon, year1, year2)
 }
 \arguments{
   \item{lat}{numeric latitude}
@@ -14,13 +14,13 @@ InputForWeach(lat, lon, year1, year2)
   \item{year2}{integer}
 }
 \value{
-climate data to be parsed by the \code{\link{weachNEW}}
-function in BioCro
+  climate data to be parsed by the \code{\link{weachNEW}}
+  function in BioCro
 }
 \description{
-Download Met Drivers for BioCro from NCEP
+  Download Met Drivers for BioCro from NCEP
 }
 \author{
-Deepak Jaiswal, David LeBauer
+  Deepak Jaiswal, David LeBauer
 }
 

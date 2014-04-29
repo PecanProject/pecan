@@ -2,7 +2,8 @@
 \alias{pecan.ma.summary}
 \title{Generate summary statitics and diagnostics for PEcAn meta.analysis}
 \usage{
-pecan.ma.summary(mcmc.object, pft, outdir, threshold = 1.2, ggmcmc = FALSE)
+  pecan.ma.summary(mcmc.object, pft, outdir,
+    threshold = 1.2, ggmcmc = FALSE)
 }
 \arguments{
   \item{mcmc.object}{JAGS mcmc output from
@@ -20,7 +21,8 @@ pecan.ma.summary(mcmc.object, pft, outdir, threshold = 1.2, ggmcmc = FALSE)
   is FALSE}
 }
 \description{
-
+  Generate summary statitics and diagnostics for PEcAn
+  meta.analysis
 }
 \examples{
 \dontrun{
@@ -28,6 +30,6 @@ summary <- pecan.ma.summary(trait.mcmc,settings$pfts$pft,settings$outdir,setting
 }
 }
 \author{
-David LeBauer, Shawn Serbin
+  David LeBauer, Shawn Serbin
 }
 

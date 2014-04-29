@@ -2,7 +2,7 @@
 \alias{logger.debug}
 \title{Prints a debug message.}
 \usage{
-logger.debug(msg, ...)
+  logger.debug(msg, ...)
 }
 \arguments{
   \item{msg}{the message that should be printed.}
@@ -10,7 +10,7 @@ logger.debug(msg, ...)
   \item{...}{any additional text that should be printed.}
 }
 \description{
-This function will print a debug message.
+  This function will print a debug message.
 }
 \examples{
 \dontrun{
@@ -18,6 +18,6 @@ logger.debug("variable", 5)
 }
 }
 \author{
-Rob Kooper
+  Rob Kooper
 }
 
