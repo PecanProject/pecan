@@ -2,7 +2,7 @@
 \alias{wide2long}
 \title{Wide to Long}
 \usage{
-wide2long(data.wide, lat, lon, var)
+  wide2long(data.wide, lat, lon, var)
 }
 \arguments{
   \item{data.wide}{data}
@@ -14,12 +14,12 @@ wide2long(data.wide, lat, lon, var)
   \item{var}{variable being measured}
 }
 \value{
-data.frame with colnames (lat, lon, var)
+  data.frame with colnames (lat, lon, var)
 }
 \description{
-Convert raster to lat, lon, var
+  Convert raster to lat, lon, var
 }
 \author{
-David LeBauer
+  David LeBauer
 }
 

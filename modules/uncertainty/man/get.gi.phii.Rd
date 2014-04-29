@@ -2,7 +2,7 @@
 \alias{get.gi.phii}
 \title{Get g_i(phi_i)}
 \usage{
-get.gi.phii(splinefuns, trait.samples, maxn = NULL)
+  get.gi.phii(splinefuns, trait.samples, maxn = NULL)
 }
 \arguments{
   \item{splinefuns}{univariate spline functions created for
@@ -16,21 +16,21 @@ get.gi.phii(splinefuns, trait.samples, maxn = NULL)
   \item{maxn}{maximum number of parameter sets to evaluate}
 }
 \value{
-matrix of spline estimates of model output for each of n
-parameter sets
+  matrix of spline estimates of model output for each of n
+  parameter sets
 }
 \description{
-Calculate distribution of function of a variable
+  Calculate distribution of function of a variable
 }
 \details{
-Transform trait parameter through trait-specific univariate
-model emulator spline function Given a matrix of parameter
-sets, calculates a matrix of model output by applying
-appropriate spline function to each parameter. Output is
-use with \code{\link{variance.decomposition}} and
-\code{\link{spline.ensemble}}
+  Transform trait parameter through trait-specific
+  univariate model emulator spline function Given a matrix
+  of parameter sets, calculates a matrix of model output by
+  applying appropriate spline function to each parameter.
+  Output is use with \code{\link{variance.decomposition}}
+  and \code{\link{spline.ensemble}}
 }
 \author{
-David LeBauer
+  David LeBauer
 }
 

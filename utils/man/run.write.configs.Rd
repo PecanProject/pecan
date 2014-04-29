@@ -2,7 +2,7 @@
 \alias{run.write.configs}
 \title{Run model specific write configuration functions}
 \usage{
-run.write.configs(model, write = TRUE)
+  run.write.configs(model, write = TRUE)
 }
 \arguments{
   \item{model}{the ecosystem model to generate the
@@ -11,10 +11,10 @@ run.write.configs(model, write = TRUE)
   \item{write}{should the runs be written to the database}
 }
 \description{
-Main driver function to call the ecosystem model specific
-(e.g. ED, SiPNET) run and configuration file scripts
+  Main driver function to call the ecosystem model specific
+  (e.g. ED, SiPNET) run and configuration file scripts
 }
 \author{
-David LeBauer, Shawn Serbin
+  David LeBauer, Shawn Serbin
 }
 
