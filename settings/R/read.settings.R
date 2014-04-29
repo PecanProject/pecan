@@ -312,7 +312,7 @@ check.settings <- function(settings) {
         model <- db.query(paste0("SELECT * FROM models WHERE (model_name = '", settings$model$name,
                                  "' or model_type = '", toupper(settings$model$name), "')",
                                  " and model_path like '%", 
-                                 ifelse(settings$run$host$name == "localhost", Sys.info()[['nodename']], 
+                                 ifelse(settings$run$host$name == "localhost", fqdn(), 
                                         settings$run$host$name), "%' ",
                                  ifelse(is.null(settings$model$revision), "", 
                                         paste0(" and revision like '%", settings$model$revision, "%' "))), 
