@@ -2,7 +2,7 @@
 \alias{sa.splinefun}
 \title{Sensitivity spline function}
 \usage{
-sa.splinefun(quantiles.input, quantiles.output)
+  sa.splinefun(quantiles.input, quantiles.output)
 }
 \arguments{
   \item{quantiles.input}{}
@@ -10,15 +10,15 @@ sa.splinefun(quantiles.input, quantiles.output)
   \item{quantiles.output}{}
 }
 \value{
-function
+  function
 }
 \description{
-Spline estimate of univariate relationship between
-parameter value and model output
+  Spline estimate of univariate relationship between
+  parameter value and model output
 }
 \details{
-Creates a spline function using the splinefun function that
-estimates univariate response of parameter input to model
-output
+  Creates a spline function using the splinefun function
+  that estimates univariate response of parameter input to
+  model output
 }
 

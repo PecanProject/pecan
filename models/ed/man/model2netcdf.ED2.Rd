@@ -1,0 +1,26 @@
+\name{model2netcdf.ED2}
+\alias{model2netcdf.ED2}
+\title{Code to convert ED2's -T- HDF5 output into netCDF format}
+\usage{
+  model2netcdf.ED2(outdir, sitelat, sitelon, start_date,
+    end_date)
+}
+\arguments{
+  \item{outdir}{Location of ED model output}
+
+  \item{sitelat}{Latitude of the site}
+
+  \item{sitelon}{Longitude of the site}
+
+  \item{start_date}{Start time of the simulation}
+
+  \item{end_date}{End time of the simulation}
+}
+\description{
+  Modified from Code to convert ED2.1's HDF5 output into
+  the NACP Intercomparison format (ALMA using netCDF)
+}
+\author{
+  Michael Dietze, Shawn Serbin, Rob Kooper
+}
+
