@@ -2,14 +2,14 @@
 \alias{db.print.connections}
 \title{Debug leaked connections}
 \usage{
-db.print.connections()
+  db.print.connections()
 }
 \description{
-Debug method for db.open and db.close
+  Debug method for db.open and db.close
 }
 \details{
-Prints the number of connections opened as well as any
-connections that have never been closes.
+  Prints the number of connections opened as well as any
+  connections that have never been closes.
 }
 \examples{
 \dontrun{
@@ -17,6 +17,6 @@ db.print.connections()
 }
 }
 \author{
-Rob Kooper
+  Rob Kooper
 }
 

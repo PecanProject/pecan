@@ -1,0 +1,98 @@
++--- Parallel info: -------------------------------------+
++  - Machnum  =      0
++  - Machsize =      1
++--------------------------------------------------------+
+Reading namelist information
+Copying namelist
++------------------------------------------------------------+
+|           Ecosystem Demography Model, version 2.2           
++------------------------------------------------------------+
+|  Input namelist filename is ED2IN
+|
+|  Single process execution on HISTORY run.
++------------------------------------------------------------+
+  => Generating the land/sea mask.
+/projectnb/cheas/EDI/oge2OLD/OGE2_HEADER
+ -> Getting file: /projectnb/cheas/EDI/oge2OLD/OGE2_30N120W.h5...
+ -> Getting file: /projectnb/cheas/EDI/oge2OLD/OGE2_30N090W.h5...
+-------------------------------------------------------------
+    === Reading past work from history (restart) file ===    
+-------------------------------------------------------------
+-------------------------------------------------------------
+ 
+ + Work allocation, node     1;
+ + Polygon array allocation, node     1;
+ + Memory successfully allocated on none     1;
+ [+] Load_Ed_Ecosystem_Params...
+----------------------------------------
+  Treefall disturbance parameters:
+  - LAMBDA_REF  =  0.00000E+00
+  - LAMBDA_EFF  =  0.00000E+00
+  - TIME2CANOPY =  3.40282E+38
+----------------------------------------
+ [+] Checking for XML config...
+*********************************************
+**               WARNING!                  **
+**                                         **
+**    XML file wasn't found. Using default **
+** parameters in ED.                       **
+** (You provided config.xml).
+**                                         **
+*********************************************
+ [+] Alloc_Soilgrid...
+ [+] Set_Polygon_Coordinates...
+ [+] Sfcdata_ED...
+ [+] Init_Full_History_Restart...
+-----------------------------------------------------
+  Loading Full State (HISTORY)
+ File_ID =      16777216
+ Dset_ID =      83886080
+----------------------------------------------------------
+   WARNING! WARNING! WARNING! WARNING! WARNING! WARNING!  
+                                                          
+ + Variable WALLTIME_PY not found in your history.
+ + Initializing this variable with zero. 
+ + his may cause some of your diagnostic output related
+   to this variable to be incorrect the current period.
+
+   This variable has been specified as:
+   NOT ABSOUTELY NECESSARY TO RESTART THE PROGNOSTIC STATE
+----------------------------------------------------------
+
+ File_ID =      16777216
+ Dset_ID =      83886080
+----------------------------------------------------------
+   WARNING! WARNING! WARNING! WARNING! WARNING! WARNING!  
+                                                          
+ + Variable MMSQU_NEP not found in your history.
+ + Initializing this variable with zero. 
+ + his may cause some of your diagnostic output related
+   to this variable to be incorrect the current period.
+
+   This variable has been specified as:
+   NOT ABSOUTELY NECESSARY TO RESTART THE PROGNOSTIC STATE
+----------------------------------------------------------
+
+ File_ID =      16777216
+ Dset_ID =      83886080
+----------------------------------------------------------
+   WARNING! WARNING! WARNING! WARNING! WARNING! WARNING!  
+                                                          
+ + Variable TODAY_GPP_MAX not found in your history.
+ + Initializing this variable with zero. 
+ + his may cause some of your diagnostic output related
+   to this variable to be incorrect the current period.
+
+   This variable has been specified as:
+   NOT ABSOUTELY NECESSARY TO RESTART THE PROGNOSTIC STATE
+----------------------------------------------------------
+
+ File_ID =      16777216
+ Dset_ID =      83886080
+----------------------------------------------------------
+   WARNING! WARNING! WARNING! WARNING! WARNING! WARNING!  
+                                                          
+ + Variable CB_MAX not found in your history.
+ + Initializing this variable with zero. 
+ + his may cause some of your diagnostic output related
+   to 

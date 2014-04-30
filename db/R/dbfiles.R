@@ -30,7 +30,7 @@
 ##' \dontrun{
 ##'   dbfile.input.insert('trait.data.Rdata', siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
 ##' }
-dbfile.input.insert <- function(filename, siteid, startdate, enddate, mimetype, formatname, parentid=NA, con, hostname=Sys.info()[['nodename']]) {
+dbfile.input.insert <- function(filename, siteid, startdate, enddate, mimetype, formatname, parentid=NA, con, hostname=fqdn()) {
   # find appropriate format
   formatid <- db.query(paste0("SELECT id FROM formats WHERE mime_type='", mimetype, "' AND name='", formatname, "'"), con)[['id']]
   if (is.null(formatid)) {
@@ -80,7 +80,7 @@ dbfile.input.insert <- function(filename, siteid, startdate, enddate, mimetype, 
 ##' \dontrun{
 ##'   dbfile.input.check(siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
 ##' }
-dbfile.input.check <- function(siteid, startdate, enddate, mimetype, formatname, parentid=NA, con, hostname=Sys.info()[['nodename']]) {
+dbfile.input.check <- function(siteid, startdate, enddate, mimetype, formatname, parentid=NA, con, hostname=fqdn()) {
   # find appropriate format
   formatid <- db.query(paste0("SELECT id FROM formats WHERE mime_type='", mimetype, "' AND name='", formatname, "'"), con)[['id']]
   if (is.null(formatid)) {
@@ -123,7 +123,7 @@ dbfile.input.check <- function(siteid, startdate, enddate, mimetype, formatname,
 ##' \dontrun{
 ##'   dbfile.posterior.insert('trait.data.Rdata', pft, 'application/x-RData', 'traits', dbcon)
 ##' }
-dbfile.posterior.insert <- function(filename, pft, mimetype, formatname, con, hostname=Sys.info()[['nodename']]) {
+dbfile.posterior.insert <- function(filename, pft, mimetype, formatname, con, hostname=fqdn()) {
   # find appropriate pft
   pftid <- db.query(paste0("SELECT id FROM pfts WHERE name='", pft, "'"), con)[['id']]
   if (is.null(pftid)) {
@@ -168,7 +168,7 @@ dbfile.posterior.insert <- function(filename, pft, mimetype, formatname, con, ho
 ##' \dontrun{
 ##'   dbfile.posterior.check(pft, 'application/x-RData', 'traits', dbcon)
 ##' }
-dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname=Sys.info()[['nodename']]) {
+dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname=fqdn()) {
   # find appropriate pft
   pftid <- db.query(paste0("SELECT id FROM pfts WHERE name='", pft, "'"), con)[['id']]
   if (is.null(pftid)) {
@@ -206,13 +206,13 @@ dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname=Sys.
 ##' \dontrun{
 ##'   dbfile.insert('somefile.txt', 'Input', 7, dbcon)
 ##' }
-dbfile.insert <- function(filename, type, id, con, hostname=Sys.info()[['nodename']]) {
+dbfile.insert <- function(filename, type, id, con, hostname=fqdn()) {
   # find appropriate host
-  hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", Sys.info()[['nodename']], "'"), con)[['id']]
+  hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", hostname, "'"), con)[['id']]
   if (is.null(hostid)) {
     # insert host
-    db.query(paste0("INSERT INTO machines (hostname, created_at, updated_at) VALUES ('", Sys.info()[['nodename']], "', NOW(), NOW())"), con)
-    hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", Sys.info()[['nodename']], "'"), con)[['id']]
+    db.query(paste0("INSERT INTO machines (hostname, created_at, updated_at) VALUES ('", hostname, "', NOW(), NOW())"), con)
+    hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", hostname, "'"), con)[['id']]
   }
   
   now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
@@ -238,9 +238,9 @@ dbfile.insert <- function(filename, type, id, con, hostname=Sys.info()[['nodenam
 ##' \dontrun{
 ##'   dbfile.check('Input', 7, dbcon)
 ##' }
-dbfile.check <- function(type, id, con, hostname=Sys.info()[['nodename']]) {
+dbfile.check <- function(type, id, con, hostname=fqdn()) {
   # find appropriate host
-  hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", Sys.info()[['nodename']], "'"), con)[['id']]
+  hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", hostname, "'"), con)[['id']]
   if (is.null(hostid)) {
     return(invisible(data.frame()))
   }
