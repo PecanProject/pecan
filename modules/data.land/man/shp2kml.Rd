@@ -2,8 +2,8 @@
 \alias{shp2kml}
 \title{Convert shapefile to KML}
 \usage{
-shp2kml(dir, ext, kmz = FALSE, proj4 = NULL, color = NULL,
-  NameField = NULL, out.dir = NULL)
+  shp2kml(dir, ext, kmz = FALSE, proj4 = NULL,
+    color = NULL, NameField = NULL, out.dir = NULL)
 }
 \arguments{
   \item{dir}{Directory of GIS shapefiles to convert to
@@ -31,8 +31,8 @@ shp2kml(dir, ext, kmz = FALSE, proj4 = NULL, color = NULL,
   files}
 }
 \description{
-Convert ESRI shapefile (*.shp) to keyhole markup language
-(KML) file format
+  Convert ESRI shapefile (*.shp) to keyhole markup language
+  (KML) file format
 }
 \examples{
 \dontrun{
@@ -43,6 +43,6 @@ system(paste("rm -r ",out.dir))
 }
 }
 \author{
-Shawn P. Serbin
+  Shawn P. Serbin
 }
 

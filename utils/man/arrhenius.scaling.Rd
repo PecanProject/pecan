@@ -2,7 +2,8 @@
 \alias{arrhenius.scaling}
 \title{Arrhenius scaling}
 \usage{
-arrhenius.scaling(observed.value, old.temp, new.temp = 25)
+  arrhenius.scaling(observed.value, old.temp,
+    new.temp = 25)
 }
 \arguments{
   \item{observed.value}{observed value of temperature
@@ -15,13 +16,13 @@ arrhenius.scaling(observed.value, old.temp, new.temp = 25)
   C}
 }
 \value{
-numeric value at reference temperature
+  numeric value at reference temperature
 }
 \description{
-Scale temperature dependent trait from measurement
-temperature to reference temperature
+  Scale temperature dependent trait from measurement
+  temperature to reference temperature
 }
 \author{
-unknown
+  unknown
 }
 

@@ -2,7 +2,7 @@
 \alias{find.land}
 \title{find.land}
 \usage{
-find.land(lat, lon, plot = FALSE)
+  find.land(lat, lon, plot = FALSE)
 }
 \arguments{
   \item{lat}{vector of latitudes}
@@ -10,15 +10,15 @@ find.land(lat, lon, plot = FALSE)
   \item{lon}{vector of longitudes}
 }
 \value{
-data frame with numeric lat, lon and logical value "land"
+  data frame with numeric lat, lon and logical value "land"
 }
 \description{
-find land
+  find land
 }
 \details{
-extract terrestrial lat and lon coordinates from a grid
+  extract terrestrial lat and lon coordinates from a grid
 }
 \author{
-David LeBauer
+  David LeBauer
 }
 

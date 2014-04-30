@@ -2,23 +2,23 @@
 \alias{query.close}
 \title{Close existing database connections}
 \usage{
-query.close(con)
+  query.close(con)
 }
 \arguments{
   \item{con}{database connection object}
 }
 \value{
-nothing, as a side effect closes all open connections
+  nothing, as a side effect closes all open connections
 }
 \description{
-Close database connection
+  Close database connection
 }
 \details{
-Deprecated, please use db.close
+  Deprecated, please use db.close
 
-Closes a database connection
+  Closes a database connection
 }
 \author{
-Rob Kooper
+  Rob Kooper
 }
 

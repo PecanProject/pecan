@@ -1,0 +1,18 @@
+\name{get.model.output.BIOCRO}
+\alias{get.model.output.BIOCRO}
+\title{Retrieve model output from local server}
+\usage{
+  get.model.output.BIOCRO(settings)
+}
+\arguments{
+  \item{settings}{list generated from
+  \code{\link{read.settings}} function applied to settings
+  file}
+}
+\description{
+  Function to retrieve model output from local server
+}
+\author{
+  Mike Dietze, David LeBauer
+}
+

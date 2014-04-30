@@ -2,7 +2,7 @@
 \alias{r2bugs.distributions}
 \title{convert R parameterizations to BUGS paramaterizations}
 \usage{
-r2bugs.distributions(priors, direction = "r2bugs")
+  r2bugs.distributions(priors, direction = "r2bugs")
 }
 \arguments{
   \item{priors}{data.frame with columns distn =
@@ -10,17 +10,17 @@ r2bugs.distributions(priors, direction = "r2bugs")
   parameterizations}
 }
 \value{
-priors dataframe using JAGS default parameterizations
+  priors dataframe using JAGS default parameterizations
 }
 \description{
-convert R parameterizations to BUGS paramaterizations
+  convert R parameterizations to BUGS paramaterizations
 }
 \details{
-R and BUGS have different parameterizations for some
-distributions. This function transforms the distributions
-from R defaults to BUGS defaults. BUGS is an implementation
-of the BUGS language, and these transformations are
-expected to work for bugs.
+  R and BUGS have different parameterizations for some
+  distributions. This function transforms the distributions
+  from R defaults to BUGS defaults. BUGS is an
+  implementation of the BUGS language, and these
+  transformations are expected to work for bugs.
 }
 \examples{
 priors <- data.frame(distn = c('weibull', 'lnorm', 'norm', 'gamma'),
@@ -29,6 +29,6 @@ priors <- data.frame(distn = c('weibull', 'lnorm', 'norm', 'gamma'),
 r2bugs.distributions(priors)
 }
 \author{
-David LeBauer, Ben Bolker
+  David LeBauer, Ben Bolker
 }
 

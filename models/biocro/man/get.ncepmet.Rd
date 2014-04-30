@@ -1,0 +1,34 @@
+\name{get.ncepmet}
+\alias{get.ncepmet}
+\title{get NCEP met}
+\usage{
+  get.ncepmet()
+}
+\arguments{
+  \item{lat}{}
+
+  \item{lon}{}
+
+  \item{start.date}{}
+
+  \item{end.date}{}
+
+  \item{site.id}{}
+
+  \item{con}{}
+}
+\value{
+  weather data frame with weather formatted for BioCro
+  model
+}
+\description{
+  Get Met data from NCEP
+}
+\details{
+  Retrieves NCEP met data for specified lat x lon and time
+  span
+}
+\author{
+  Deepak Jaiswal, David LeBauer
+}
+
