@@ -2,19 +2,19 @@
 \alias{fia.to.psscss}
 \title{fia.to.psscss}
 \usage{
-fia.to.psscss(settings)
+  fia.to.psscss(settings)
 }
 \arguments{
   \item{create}{pss/css files based on data in the fia
   database}
 }
 \value{
-nothing
+  nothing
 }
 \description{
-convert x into a table
+  convert x into a table
 }
 \author{
-Mike Dietze, Rob Kooper
+  Mike Dietze, Rob Kooper
 }
 

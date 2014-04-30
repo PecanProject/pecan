@@ -2,8 +2,8 @@
 \alias{query.yields}
 \title{Query yield data and transform stats to SE by calling \code{\link{fetch.stats2se}};}
 \usage{
-query.yields(trait = "yield", spstr, extra.columns = "",
-  con = query.base.con(settings), ...)
+  query.yields(trait = "yield", spstr, extra.columns = "",
+    con = query.base.con(settings), ...)
 }
 \arguments{
   \item{trait}{yield trait to query}
@@ -17,15 +17,16 @@ query.yields(trait = "yield", spstr, extra.columns = "",
   \item{...}{extra arguments}
 }
 \description{
-Function to query yields data from database for specific
-species and convert stat to SE
+  Function to query yields data from database for specific
+  species and convert stat to SE
 }
 \author{
-<unknown>
+  <unknown>
 }
 \seealso{
-used in \code{\link{query.trait.data}};
-\code{\link{fetch.stats2se}}; \code{\link{transformstats}}
-performs transformation calculations
+  used in \code{\link{query.trait.data}};
+  \code{\link{fetch.stats2se}};
+  \code{\link{transformstats}} performs transformation
+  calculations
 }
 

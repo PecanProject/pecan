@@ -4,6 +4,6 @@
 \alias{settings-package}
 \title{settings}
 \description{
-settings
+  settings
 }
 

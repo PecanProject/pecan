@@ -2,15 +2,16 @@
 \alias{rename.jags.columns}
 \title{\code{rename.jags.columns} renames the variables within output data frame trait.data}
 \usage{
-rename.jags.columns(data)
+  rename.jags.columns(data)
 }
 \arguments{
   \item{data}{data frame to with variables to rename}
 }
 \description{
-
+  \code{rename.jags.columns} renames the variables within
+  output data frame trait.data
 }
 \seealso{
-used with \code{\link{jagify}};
+  used with \code{\link{jagify}};
 }
 
