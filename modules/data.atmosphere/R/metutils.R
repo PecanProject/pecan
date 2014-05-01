@@ -1,3 +1,21 @@
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+## qc functions restricting to "valid range" given in .nc meta-data
+qctemp   <- function(x) ifelse(x > 400 | x < 100, mean(x[x < 400 & x > 100]), x)
+qcsolar  <- function(x) ifelse(x<0, 0, ifelse(abs(x) > 1300, mean(x[x < 1300]), x))
+qcwind   <- function(x) ifelse(abs(x) > 102, mean(abs(x[x < 102])), x)
+qcprecip <- function(x) ifelse(x > 0.005 | x < 0 , mean(x[x < 0.005 & x >0]), x)
+qcrh     <- function(x) {
+    ifelse(x > 100 | x < 0, mean(x[x < 100 & x>0]), x)  using logical range (0-100) rather than "valid range (-25-125)"
+}
+qcshum     <- function(x){
+    x <- ifelse(x > 100 | x < 0, mean(x[x < 0.6553 & x > 0]), x)
+    x[is.na(x)] <- mean(x, na.rm = TRUE)
+}
+>>>>>>> fe95300c67e65ee009f6cbb87485d8e24ffe9431
+=======
+>>>>>>> d4a680c86b674047e958d780b7047b61a5f31152
 
 ##' Convert specific humidity to relative humidity
 ##'
@@ -118,7 +136,15 @@ wide2long <- function(data.wide, lat, lon, var){
 ##' PPFD = PAR * (J/m2/s) * (1 mol / 2.35e5 J)
 ##' 2.35e5 J / mol is the energy content of solar radiation in the PAR waveband
 ##' 0.486 is based on the approximation that PAR is 0.45-0.50 of the total radiation
+<<<<<<< HEAD
+<<<<<<< HEAD
 ##' @title par2ppfd
+=======
+##' @title 
+>>>>>>> fe95300c67e65ee009f6cbb87485d8e24ffe9431
+=======
+##' @title par2ppfd
+>>>>>>> d4a680c86b674047e958d780b7047b61a5f31152
 ##' @param PAR (W / m2) 
 ##' @author David LeBauer
 ##' @export

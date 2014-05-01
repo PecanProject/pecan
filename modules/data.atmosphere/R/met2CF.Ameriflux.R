@@ -1,7 +1,15 @@
 ##' Get meteorology variables from Ameriflux L2 netCDF files and convert to netCDF CF format
 ##'
 ##' @name met2CF.Ameriflux
+<<<<<<< HEAD
+<<<<<<< HEAD
 ##' @title met2CF
+=======
+##' @title 
+>>>>>>> fe95300c67e65ee009f6cbb87485d8e24ffe9431
+=======
+##' @title met2CF
+>>>>>>> d4a680c86b674047e958d780b7047b61a5f31152
 ##' @export
 ##' @param in.path
 ##' @param in.prefix
@@ -121,4 +129,12 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
  
 }   ## end netCDF CF conversion ##
 
+<<<<<<< HEAD
+<<<<<<< HEAD
   
+=======
+  
+>>>>>>> fe95300c67e65ee009f6cbb87485d8e24ffe9431
+=======
+  
+>>>>>>> d4a680c86b674047e958d780b7047b61a5f31152
