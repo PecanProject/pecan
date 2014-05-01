@@ -1,7 +1,7 @@
 ##' Convert input by applying fcn and insert new record into database
 ##'
 ##'
-convert.input <- function(input.id,outfolder,pkg,fcn,...){
+convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   
   if(FALSE){
     ## test during development
@@ -40,7 +40,7 @@ convert.input <- function(input.id,outfolder,pkg,fcn,...){
     system(paste(Rfcn,cmdArgs))
   } else {
     ## if the machine is remote, run conversion remotely
-    system2("ssh",paste0("jam2767@",paste(machine$hostname,Rfcn,cmdArgs)))
+    system2("ssh",paste0(username,"@",paste(machine$hostname,Rfcn,cmdArgs)))
   }
 
 ### NOTE: We will eventually insert Brown Dog REST API calls here
@@ -48,9 +48,10 @@ convert.input <- function(input.id,outfolder,pkg,fcn,...){
   ## Add a check to insert only if the conversion was successful
   
   ## insert new record into database
-  #formatname <- 'CF Meteorology'
-  #mimetype <- 'application/x-netcdf'
-  #dbfile.input.insert(outfolder, site$id, input$start_date, input$end_date, 
-  #                   mimetype, formatname,input$id,con=con,machine$hostname) 
-  
+  if(write=TRUE){
+  formatname <- 'CF Meteorology'
+  mimetype <- 'application/x-netcdf'
+  dbfile.input.insert(outfolder, site$id, input$start_date, input$end_date, 
+                     mimetype, formatname,input$id,con=con,machine$hostname) 
+  }
 }
