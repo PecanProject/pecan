@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# redirect output
+exec 3>&1
+exec &> "@OUTDIR@/logfile.txt"
+
 # create output folder
 mkdir -p "@OUTDIR@"
 
@@ -7,8 +11,18 @@ mkdir -p "@OUTDIR@"
 if [ ! -e "@OUTDIR@/sipnet.out" ]; then
   cd "@RUNDIR@"
   ln -s "@SITE_MET@" sipnet.clim
-  @BINARY@ &> "@OUTDIR@/logfile.txt"
+
+  "@BINARY@"
+  STATUS=$?
+  
+  # copy output
   mv "@RUNDIR@/sipnet.out" "@OUTDIR@"
+
+  # check the status
+  if [ $STATUS -ne 0 ]; then
+  	echo -e "ERROR IN MODEL RUN\nLogile is located at '@OUTDIR@/logfile.txt'" >&3
+  	exit $STATUS
+  fi
 
   # convert to MsTMIP
   echo "require (PEcAn.SIPNET)
