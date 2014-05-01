@@ -34,3 +34,6 @@ fi
 cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
 
 # run getdata to extract right variables
+
+# all done
+echo -e "MODEL FINISHED\nLogile is located at '@OUTDIR@/logfile.txt'" >&3
