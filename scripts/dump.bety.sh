@@ -10,7 +10,7 @@ DATABASE=${DATABASE:-"bety"}
 
 # psql options
 # this allows you to add the user to use as well as any other options
-PG_OPT=${PG_OPT:-"-U bety"}
+PG_OPT=${PG_OPT-"-U bety"}
 
 # ID's used in database
 # These ID's need to be unique for the sharing to work. If you want
@@ -43,7 +43,7 @@ OUTPUT=${OUTPUT:-"${PWD}/${DATABASE}.${MYSITE}.tar.gz"}
 # ----------------------------------------------------------------------
 
 # be quiet if not interactive
-if [ -z $PS1 ]; then
+if ! tty -s ; then
 	exec 1>/dev/null
 fi
 
