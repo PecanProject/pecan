@@ -2,8 +2,8 @@
 \alias{derive.trait}
 \title{Performs an arithmetic function, FUN, over a series of traits and returns the result as a derived trait.}
 \usage{
-derive.trait(FUN, ..., input = list(...), var.name = NA,
-  sample.size = 1e+05)
+  derive.trait(FUN, ..., input = list(...), var.name = NA,
+    sample.size = 1e+05)
 }
 \arguments{
   \item{FUN}{arithmetic function}
@@ -14,19 +14,19 @@ derive.trait(FUN, ..., input = list(...), var.name = NA,
   rnorm for normally distributed trait input}
 }
 \value{
-a copy of the first input trait with mean, stat, and n
-reflecting the derived trait
+  a copy of the first input trait with mean, stat, and n
+  reflecting the derived trait
 }
 \description{
-Performs an arithmetic function, FUN, over a series of
-traits and returns the result as a derived trait. Traits
-must be specified as either lists or single row data
-frames, and must be either single data points or normally
-distributed. In the event one or more input traits are
-normally distributed, the resulting distribution is
-approximated by numerical simulation. The output trait is
-effectively a copy of the first input trait with modified
-mean, stat, and n.
+  Performs an arithmetic function, FUN, over a series of
+  traits and returns the result as a derived trait. Traits
+  must be specified as either lists or single row data
+  frames, and must be either single data points or normally
+  distributed. In the event one or more input traits are
+  normally distributed, the resulting distribution is
+  approximated by numerical simulation. The output trait is
+  effectively a copy of the first input trait with modified
+  mean, stat, and n.
 }
 \examples{
 input <- list(x = data.frame(mean = 1, stat = 1, n = 1))

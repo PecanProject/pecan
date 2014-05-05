@@ -2,8 +2,8 @@
 \alias{bugs.rdist}
 \title{bugs.rdist}
 \usage{
-bugs.rdist(prior = data.frame(distn = "norm", parama = 0, paramb = 1),
-  n.iter = 1e+05, n = NULL)
+  bugs.rdist(prior = data.frame(distn = "norm", parama = 0, paramb = 1),
+    n.iter = 1e+05, n = NULL)
 }
 \arguments{
   \item{prior}{dataframe with distribution name and
@@ -15,17 +15,17 @@ bugs.rdist(prior = data.frame(distn = "norm", parama = 0, paramb = 1),
   \item{n}{}
 }
 \value{
-vector of samples
+  vector of samples
 }
 \description{
-Sample from an R distribution using JAGS
+  Sample from an R distribution using JAGS
 }
 \details{
-Takes a distribution with R parameterization, converts it
-to a BUGS parameterization, and then samples from the
-distribution using JAGS
+  Takes a distribution with R parameterization, converts it
+  to a BUGS parameterization, and then samples from the
+  distribution using JAGS
 }
 \author{
-David LeBauer
+  David LeBauer
 }
 

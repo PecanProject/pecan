@@ -2,10 +2,10 @@
 \alias{convert.input}
 \title{Convert input by applying fcn and insert new record into database}
 \usage{
-convert.input(input.id, outfolder, pkg, fcn, ...)
+  convert.input(input.id, outfolder, pkg, fcn, ...)
 }
 \description{
-Convert input by applying fcn and insert new record into
-database
+  Convert input by applying fcn and insert new record into
+  database
 }
 

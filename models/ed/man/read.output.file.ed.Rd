@@ -1,0 +1,24 @@
+\name{read.output.file.ed}
+\alias{read.output.file.ed}
+\title{read output - ED}
+\usage{
+  read.output.file.ed(filename,
+    variables = c("AGB_CO", "NPLANT"))
+}
+\arguments{
+  \item{filename}{string, name of file with data}
+
+  \item{variables}{variables to extract from file}
+}
+\value{
+  single value of output variable from filename. In the
+  case of AGB, it is summed across all plants
+}
+\description{
+  Extract ED output for specific variables from an hdf5
+  file
+}
+\author{
+  David LeBauer, Carl Davidson
+}
+
