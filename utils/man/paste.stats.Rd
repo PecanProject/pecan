@@ -2,7 +2,7 @@
 \alias{paste.stats}
 \title{Paste Stats}
 \usage{
-paste.stats(mcmc.summary, median, lcl, ucl, n = 2)
+  paste.stats(mcmc.summary, median, lcl, ucl, n = 2)
 }
 \arguments{
   \item{mcmc.summary}{}
@@ -16,12 +16,12 @@ paste.stats(mcmc.summary, median, lcl, ucl, n = 2)
   \item{n}{}
 }
 \description{
-A helper function for building a LaTex table.
+  A helper function for building a LaTex table.
 }
 \details{
-Used by \code{\link{get.parameter.stat}}.
+  Used by \code{\link{get.parameter.stat}}.
 }
 \author{
-David LeBauer
+  David LeBauer
 }
 

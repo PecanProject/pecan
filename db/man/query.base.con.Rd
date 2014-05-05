@@ -2,22 +2,22 @@
 \alias{query.base.con}
 \title{Query database connection}
 \usage{
-query.base.con(settings, ...)
+  query.base.con(settings, ...)
 }
 \arguments{
   \item{...}{optional arguments for connecting to database
   (e.g. password, user name, database)}
 }
 \value{
-database connection object
+  database connection object
 }
 \description{
-Creates database connection object.
+  Creates database connection object.
 }
 \details{
-Also removes any existing connections.
+  Also removes any existing connections.
 
-Deprecated, please use db.open
+  Deprecated, please use db.open
 }
 \examples{
 \dontrun{
