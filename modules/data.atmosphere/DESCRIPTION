@@ -22,3 +22,8 @@ License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
+Collate:
+    'InputForWeach.R'
+    'nceputils.R'
+    'metutils.R'
+    'met2CF.Ameriflux.R'

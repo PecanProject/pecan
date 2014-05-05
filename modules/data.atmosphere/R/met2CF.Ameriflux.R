@@ -121,4 +121,3 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
  
 }   ## end netCDF CF conversion ##
 
-  
