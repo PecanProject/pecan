@@ -2,13 +2,13 @@
 \alias{dbfile.check}
 \title{Check for a file in the input/dbfiles tables}
 \usage{
-dbfile.input.check(siteid, startdate, enddate, mimetype, formatname,
-  parentid = NA, con, hostname = Sys.info()[["nodename"]])
+  dbfile.input.check(siteid, startdate, enddate, mimetype,
+    formatname, parentid = NA, con, hostname = fqdn())
 
-dbfile.posterior.check(pft, mimetype, formatname, con,
-  hostname = Sys.info()[["nodename"]])
+  dbfile.posterior.check(pft, mimetype, formatname, con,
+    hostname = fqdn())
 
-dbfile.check(type, id, con, hostname = Sys.info()[["nodename"]])
+  dbfile.check(type, id, con, hostname = fqdn())
 }
 \arguments{
   \item{siteid}{the id of the site that this data is
@@ -62,34 +62,34 @@ dbfile.check(type, id, con, hostname = Sys.info()[["nodename"]])
   machine}
 }
 \value{
-data.frame with the id, filename and pathname of the input
-that is requested
+  data.frame with the id, filename and pathname of the
+  input that is requested
 
-data.frame with the id, filename and pathname of the
-posterior that is requested
+  data.frame with the id, filename and pathname of the
+  posterior that is requested
 
-data.frame with the id, filename and pathname of all the
-files that are associated
+  data.frame with the id, filename and pathname of all the
+  files that are associated
 }
 \description{
-Function to check to see if a file exists in the dbfiles
-table as an input
+  Function to check to see if a file exists in the dbfiles
+  table as an input
 
-Function to check to see if a file exists in the dbfiles
-table as an input
+  Function to check to see if a file exists in the dbfiles
+  table as an input
 
-Function to check to see if a file exists in the dbfiles
-table
+  Function to check to see if a file exists in the dbfiles
+  table
 }
 \details{
-This will check the dbfiles, inputs, machines and formats
-tables to see if the file exists
+  This will check the dbfiles, inputs, machines and formats
+  tables to see if the file exists
 
-This will check the dbfiles, inputs, machines and formats
-tables to see if the file exists
+  This will check the dbfiles, inputs, machines and formats
+  tables to see if the file exists
 
-This will check the dbfiles and machines to see if the file
-exists
+  This will check the dbfiles and machines to see if the
+  file exists
 }
 \examples{
 \dontrun{
@@ -103,10 +103,10 @@ exists
 }
 }
 \author{
-Rob Kooper
+  Rob Kooper
 
-Rob Kooper
+  Rob Kooper
 
-Rob Kooper
+  Rob Kooper
 }
 

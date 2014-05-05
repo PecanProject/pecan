@@ -2,13 +2,14 @@
 \alias{vwReg}
 \title{PEcAn worldmap}
 \usage{
-vwReg(formula, data, title = "", B = 1000, shade = TRUE,
-  shade.alpha = 0.1, spag = FALSE, spag.color = "darkblue",
-  mweight = TRUE, show.lm = FALSE, show.median = TRUE,
-  median.col = "white", shape = 21, show.CI = FALSE, method = loess,
-  bw = FALSE, slices = 200, palette = colorRampPalette(c("#FFEDA0",
-  "#DD0000"), bias = 2)(20), ylim = NULL, quantize = "continuous",
-  add = FALSE, ...)
+  vwReg(formula, data, title = "", B = 1000, shade = TRUE,
+    shade.alpha = 0.1, spag = FALSE,
+    spag.color = "darkblue", mweight = TRUE,
+    show.lm = FALSE, show.median = TRUE,
+    median.col = "white", shape = 21, show.CI = FALSE,
+    method = loess, bw = FALSE, slices = 200,
+    palette = colorRampPalette(c("#FFEDA0", "#DD0000"), bias = 2)(20),
+    ylim = NULL, quantize = "continuous", add = FALSE, ...)
 }
 \arguments{
   \item{B}{= number bootstrapped smoothers}
@@ -65,16 +66,16 @@ vwReg(formula, data, title = "", B = 1000, shade = TRUE,
   or "family = 'symmetric'"}
 }
 \value{
-NULL plot as side effect
+  NULL plot as side effect
 }
 \description{
-Visually weighted regression / Watercolor plots
+  Visually weighted regression / Watercolor plots
 }
 \details{
-Idea: Solomon Hsiang, with additional ideas from many blog
-commenters Details:
-\url{http://www.nicebread.de/visually-weighted-regression-in-r-a-la-solomon-hsiang/}
-\url{http://www.nicebread.de/visually-weighted-watercolor-plots-new-variants-please-vote/}
+  Idea: Solomon Hsiang, with additional ideas from many
+  blog commenters Details:
+  \url{http://www.nicebread.de/visually-weighted-regression-in-r-a-la-solomon-hsiang/}
+  \url{http://www.nicebread.de/visually-weighted-watercolor-plots-new-variants-please-vote/}
 }
 \examples{
 # build a demo data set
@@ -95,6 +96,6 @@ vwReg(y ~ x, df, method=lm)
 vwReg(y ~ x + I(x^2), df, method=lm)
 }
 \author{
-Felix Schönbrodt
+  Felix Schönbrodt
 }
 

@@ -6,11 +6,11 @@
 
 # name of the dabase to dump
 # this script assumes the user running it has access to the database
-DATABASE=bety
+DATABASE=${DATABASE:-"bety"}
 
 # psql options
 # this allows you to add the user to use as well as any other options
-PG_OPT="-U bety"
+PG_OPT=${PG_OPT-"-U bety"}
 
 # ID's used in database
 # These ID's need to be unique for the sharing to work. If you want
@@ -20,23 +20,32 @@ PG_OPT="-U bety"
 #  0 - EBI master database
 #  1 - BU
 # 99 - VM
-MYSITE=0
+MYSITE=${MYSITE:-0}
 
 # access level requirement
 # 0 - private
 # 4 - public
-LEVEL=4
+LEVEL=${LEVEL:-3}
+
+# dump unchecked traits and yields
+# set this to "YES" to dump all unchecked traits/yields as well
+UNCHECKED=${UNCHECKED:-"NO"}
 
 # anonymous users
 # set this to NO to dump all user information
-ANONYMOUS="YES"
+ANONYMOUS=${ANONYMOUS:-"YES"}
 
 # location where to write the results, this will be a tar file
-OUTPUT="${PWD}/${DATABASE}.${MYSITE}.tar.gz"
+OUTPUT=${OUTPUT:-"${PWD}/${DATABASE}.${MYSITE}.tar.gz"}
 
 # ----------------------------------------------------------------------
 # END CONFIGURATION SECTION
 # ----------------------------------------------------------------------
+
+# be quiet if not interactive
+if ! tty -s ; then
+	exec 1>/dev/null
+fi
 
 # this value should be constant, do not change
 ID_RANGE=1000000000
@@ -90,9 +99,22 @@ for T in citations counties covariates cultivars dbfiles ensembles entities form
 done
 
 # restricted tables
-for T in inputs traits yields; do
+for T in inputs; do
 	printf "Dumping %-25s : " "${T}"
 	psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY (SELECT * FROM ${T} WHERE (id >= ${START_ID} AND id <= ${LAST_ID}) AND access_level >= ${LEVEL}) TO '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV);"
+	ADD=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM ${T} WHERE (id >= ${START_ID} AND id <= ${LAST_ID})" | tr -d ' ' )
+	echo "DUMPED ${ADD}"
+done
+
+# restricted and unchecked tables
+for T in traits yields; do
+	printf "Dumping %-25s : " "${T}"
+	if [ "${UNCHECKED}" == "YES" ]; then
+		UNCHECKED_QUERY=""
+	else
+		UNCHECKED_QUERY="AND checked != -1"
+	fi
+	psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY (SELECT * FROM ${T} WHERE (id >= ${START_ID} AND id <= ${LAST_ID}) AND access_level >= ${LEVEL} ${UNCHECKED_QUERY}) TO '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV);"
 	ADD=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM ${T} WHERE (id >= ${START_ID} AND id <= ${LAST_ID})" | tr -d ' ' )
 	echo "DUMPED ${ADD}"
 done

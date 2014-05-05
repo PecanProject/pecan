@@ -2,7 +2,7 @@
 \alias{ssh}
 \title{SSH}
 \usage{
-ssh(host, ..., args = "")
+  ssh(host, ..., args = "")
 }
 \arguments{
   \item{host}{}
@@ -12,6 +12,6 @@ ssh(host, ..., args = "")
   \item{args}{}
 }
 \description{
-R implementation of SSH
+  R implementation of SSH
 }
 

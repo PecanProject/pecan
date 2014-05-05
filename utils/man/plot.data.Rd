@@ -2,7 +2,8 @@
 \alias{plot.data}
 \title{Add data to plot}
 \usage{
-\method{plot}{data}(trait.data, base.plot = NULL, ymax, color = "black")
+  plot.data(trait.data, base.plot = NULL, ymax,
+    color = "black")
 }
 \arguments{
   \item{trait.data}{data to be plotted}
@@ -13,25 +14,25 @@
   \item{ymax}{maximum height of y}
 }
 \value{
-updated plot object
+  updated plot object
 }
 \description{
-Add data to an existing plot or create a new one from
-\code{\link{create.base.plot}}
+  Add data to an existing plot or create a new one from
+  \code{\link{create.base.plot}}
 }
 \details{
-Used to add raw data or summary statistics to the plot of a
-distribution. The height of Y is arbitrary, and can be set
-to optimize visualization. If SE estimates are available,
-tehse wil be plotted
+  Used to add raw data or summary statistics to the plot of
+  a distribution. The height of Y is arbitrary, and can be
+  set to optimize visualization. If SE estimates are
+  available, tehse wil be plotted
 }
 \examples{
 \dontrun{plot.data(data.frame(Y = c(1, 2), se = c(1,2)), base.plot = NULL, ymax = 10)}
 }
 \author{
-David LeBauer
+  David LeBauer
 }
 \seealso{
-\code{\link{create.base.plot}}
+  \code{\link{create.base.plot}}
 }
 

@@ -2,7 +2,7 @@
 \alias{db.query}
 \title{Query database}
 \usage{
-db.query(query, con = NULL, params = NULL)
+  db.query(query, con = NULL, params = NULL)
 }
 \arguments{
   \item{query}{SQL query string}
@@ -12,15 +12,15 @@ db.query(query, con = NULL, params = NULL)
   \item{params}{database connection information}
 }
 \value{
-data frame with query results
+  data frame with query results
 }
 \description{
-Generic function to query database
+  Generic function to query database
 }
 \details{
-Given a connection and a query, will return a query as a
-data frame. Either con or params need to be specified. If
-both are specified it will use con.
+  Given a connection and a query, will return a query as a
+  data frame. Either con or params need to be specified. If
+  both are specified it will use con.
 }
 \examples{
 \dontrun{
@@ -28,6 +28,6 @@ db.query('select count(id) from traits;', params=settings$database)
 }
 }
 \author{
-Rob Kooper
+  Rob Kooper
 }
 

@@ -2,7 +2,7 @@
 \alias{bibtexify}
 \title{bibtexify}
 \usage{
-bibtexify(author, year, title)
+  bibtexify(author, year, title)
 }
 \arguments{
   \item{author}{name of first author}
@@ -12,12 +12,12 @@ bibtexify(author, year, title)
   \item{title}{manuscript title}
 }
 \value{
-bibtex citation
+  bibtex citation
 }
 \description{
-Convert author, year, title to bibtex citation format
+  Convert author, year, title to bibtex citation format
 }
 \details{
-Converts author year title to author1999abc format
+  Converts author year title to author1999abc format
 }
 

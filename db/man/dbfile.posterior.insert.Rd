@@ -2,8 +2,8 @@
 \alias{dbfile.posterior.insert}
 \title{Insert file into tables}
 \usage{
-dbfile.posterior.insert(filename, pft, mimetype, formatname, con,
-  hostname = Sys.info()[["nodename"]])
+  dbfile.posterior.insert(filename, pft, mimetype,
+    formatname, con, hostname = fqdn())
 }
 \arguments{
   \item{filename}{the name of the file to be inserted}
@@ -25,16 +25,16 @@ dbfile.posterior.insert(filename, pft, mimetype, formatname, con,
   \item{params}{database connection information}
 }
 \value{
-data.frame with the id, filename and pathname of the
-posterior that is requested
+  data.frame with the id, filename and pathname of the
+  posterior that is requested
 }
 \description{
-Function to insert a file into the dbfiles table as a
-posterior
+  Function to insert a file into the dbfiles table as a
+  posterior
 }
 \details{
-This will write into the dbfiles, posteriors, machines and
-formats the require data to store the file
+  This will write into the dbfiles, posteriors, machines
+  and formats the require data to store the file
 }
 \examples{
 \dontrun{
@@ -42,6 +42,6 @@ formats the require data to store the file
 }
 }
 \author{
-Rob Kooper
+  Rob Kooper
 }
 
