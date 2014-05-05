@@ -8,19 +8,19 @@
 ################################
 ## Load Required Packages
 ################################
-require(sp)
-require(rgdal)
-require(raster)
-require(chron)
-require(RgoogleMaps)
-require(maptools)
-require(ggplot2)
-require(car)
-require(spatstat)
-require(fields)
-require(reshape)
-require(rjags)
-require(R2HTML)
+# require(sp)
+# require(rgdal)
+# require(raster)
+# require(chron)
+# require(RgoogleMaps)
+# require(maptools)
+# require(ggplot2)
+# require(car)
+# require(spatstat)
+# require(fields)
+# require(reshape)
+# require(rjags)
+# require(R2HTML)
 
 ################################
 ## OPTIONS
@@ -31,6 +31,21 @@ leaf.off=0 #1=include PALSAR scenes acquired duing leaf off period of the year, 
 plot_ext=1 #Generate figures showing palsar scn extent with overlay of plot coords? (1=yes, 0=no)
 machine=1 #1=Brady's Mac; 1=Brady's Linux
 # buff=c(48) #vector of buffer sizes (in meters) to extract
+
+coord.set<-c("WLEF", "FIA")
+
+if(machine==2){ #Brady's Linux paths
+  metadata<- read.csv("/home/bhardima/pecan/modules/data.remote/output/metadata/output_metadata.csv", sep="\t", header=T) ##for Brady's Linux
+  palsar_inpath <- file.path("/home/bhardima/Desktop/cheas/geo_corrected_single_sigma") ##location of PALSAR raw files
+  calib_inpath <-"/home/bhardima/pecan/modules/data.remote/biometry/Link_to_Forest_Biomass_Calibration_Coords" ##location of file containing (FIA) plot coords and biomass values for calibrating PALSAR backscatter 
+  outpath <- file.path("/home/bhardima/pecan/modules/data.remote/output/data") ##For saving
+} 
+if(machine==1){ #Brady's Mac paths
+  metadata<- read.csv("/Users/hardimanb/Desktop/data.remote(Andys_Copy)/output/metadata/output_metadata.csv", sep="\t", header=T) ##location of PALSAR metadata table
+  palsar_inpath <- file.path("/Users/hardimanb/Desktop/data.remote(Andys_Copy)/palsar_scenes/geo_corrected_single_sigma") ##location of PALSAR raw files
+  calib_inpath <-"/Users/hardimanb/Desktop/data.remote(Andys_Copy)/biometry" ##location of file containing (FIA) plot coords and biomass values for calibrating PALSAR backscatter 
+  outpath <- file.path("/Users/hardimanb/Dropbox/PALSAR_Biomass_Study/data") ##For saving  
+}
 
 #Extract palsar data from calibration coordinates
 palsar.extractor(kml,fia,leaf.off,plot_ext)

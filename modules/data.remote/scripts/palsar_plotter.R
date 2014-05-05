@@ -69,6 +69,11 @@ palsar.plotter<-function(outpath,coord.set,fia){
   abline(0,1,lwd=2,lty=2,col="grey")
   abline(fit1,lwd=2,lty=1,col="red")
   
+  #######################################
+  ####                                ### 
+  #######################################
+  
+  
   #Plot scene frequency by year, month
   par(mfrow=c(1,2))
   hist(dat48$year,freq=TRUE,main="By year")
@@ -209,6 +214,36 @@ palsar.plotter<-function(outpath,coord.set,fia){
   legend("bottomleft",lty=c(1,NA),pch=c(NA,1),legend=c("Loess Curve","Bin Mean"),bty="n")
   mtext("Bins each contain 5% of the data", side=3, line=-3, outer=TRUE, cex=1, font=2)
   
+  #Figures showing example of variation in backscatter on a single scndate (1st scndate)
+  par(mfrow=c(2,2))
+  scatter.smooth(dat48$biomass[dat48$scndate==unique(dat48$scndate)[1]], dat48$HH.sigma.48[dat48$scndate==unique(dat48$scndate)[1]],col="grey",pch=19,cex=0.5,xlab="Biomass (Mg/ha)",ylab="HH (sigma naught)")
+  bplot.xy(dat48$biomass[dat48$scndate==unique(dat48$scndate)[1]], dat48$HH.sigma.48[dat48$scndate==unique(dat48$scndate)[1]],N=15,xlab="Biomass (Mg/ha)",ylab="HH (sigma naught)")
+    
+  scatter.smooth(dat48$biomass[dat48$scndate==unique(dat48$scndate)[1]], dat48$HV.sigma.48[dat48$scndate==unique(dat48$scndate)[1]],col="grey",pch=19,cex=0.5,xlab="Biomass (Mg/ha)",ylab="HV (sigma naught)")
+  bplot.xy(dat48$biomass[dat48$scndate==unique(dat48$scndate)[1]], dat48$HV.sigma.48[dat48$scndate==unique(dat48$scndate)[1]],N=15,xlab="Biomass (Mg/ha)",ylab="HV (sigma naught)")
+  mtext(unique(dat48$scndate)[1], side=3, line=-3, outer=TRUE, cex=1, font=2)
+  
+  #Figures showing example of variation in backscatter for a each plot 
+  par(new=T, mfrow=c(1,1))
+  plot(dat48$scndate, dat48$HH.sigma.48,ylim=c(min(dat48$HH.sigma.48),max(dat48$HH.sigma.48)),xaxt="n",type="n",col=i,ylab="HH (sigma naught)",xlab="")
+  for(i in unique(dat48$plot)){
+  lines(dat48$scndate[dat48$plot==unique(dat48$plot)[i]], dat48$HH.sigma.48[dat48$plot==unique(dat48$plot)[i]],ylim=c(min(dat48$HH.sigma.48),max(dat48$HH.sigma.48)),xaxt="n",type="b",col=i,ylab="HH (sigma naught)",xlab="")
+
+  par(new=F)
+  }    
+  lines(tapply(dat48$HH.sigma.48,dat48$scndate,mean),col="black",lwd=3,type="b")
+  axis.Date(side = 1, dat48$scndate[dat48$plot==unique(dat48$plot)[i]], format = "%Y-%m",las=2)
+
+  par(mfrow=c(1,1))
+  plot(dat48$scndate, dat48$HV.sigma.48,ylim=c(min(dat48$HV.sigma.48),max(dat48$HV.sigma.48)),xaxt="n",type="n",col=i,ylab="HV (sigma naught)",xlab="")
+  for(i in unique(dat48$plot)){
+    lines(dat48$scndate[dat48$plot==unique(dat48$plot)[i]], dat48$HV.sigma.48[dat48$plot==unique(dat48$plot)[i]],ylim=c(min(dat48$HV.sigma.48),max(dat48$HV.sigma.48)),xaxt="n",type="b",col=i,ylab="HV (sigma naught)",xlab="")
+    par(new=F)
+  }
+  axis.Date(side = 1, dat48$scndate[dat48$plot==unique(dat48$plot)[i]], format = "%Y-%m",las=2)
+#   mtext(paste("Plot",unique(dat48$plot)[1],sep=" "), side=3, line=-3, outer=TRUE, cex=1, font=2)
+
+  
   #Figure showing within-plot variation in backscatter values for each scn date
   colors=rainbow(length(unique(dat48$scndate)))
   par(mfrow=c(1,3))
@@ -240,7 +275,7 @@ palsar.plotter<-function(outpath,coord.set,fia){
   mtext("Between-scene, within-plot variation", side=3, line=-2, outer=TRUE, cex=1, font=2)
   
   #Figure showing temporal variability for each plot in biomass-vs-backscatter space
-  par(mfrow=c(1,2))
+  par(mfrow=c(1,1))
   plot(dat48$biomass,dat48$HH.sigma.48,pch="",xlab="Biomass",ylab="HH")
   for(p in unique(dat48$plot)){
     lines(dat48$biomass[dat48$plot==p],dat48$HH.sigma.48[dat48$plot==p],col="grey")
@@ -358,8 +393,8 @@ palsar.plotter<-function(outpath,coord.set,fia){
   # mtext("Bins each contain 5% of data range", side=3, line=-3, outer=TRUE, cex=1, font=2)
   
   par(mfrow=c(1,2))
-  bplot.xy(dat48$biomass,dat48$HH.sigma.48,N=15,xlab="biomass",ylab="HH (simga naught)")
-  bplot.xy(dat48$biomass,dat48$HV.sigma.48,N=15,xlab="biomass",ylab="HV (simga naught)")
+  bplot.xy(dat48$biomass,dat48$HH.sigma.48,N=15,xlab="biomass",ylab="HH (sigma naught)")
+  bplot.xy(dat48$biomass,dat48$HV.sigma.48,N=15,xlab="biomass",ylab="HV (sigma naught)")
   
   dev.off()
   

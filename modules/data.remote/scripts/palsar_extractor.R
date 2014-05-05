@@ -200,5 +200,5 @@ palsar.extractor<-function(kml,fia,leaf.off,plot_ext){
     print(palsar_date[1])
   }
   dev.off()
-  return(outpath,coord.set,dat48)
+  return(extracted_48m)
 }#function
