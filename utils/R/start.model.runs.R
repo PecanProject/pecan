@@ -112,6 +112,11 @@ start.model.runs <- function(model, write = TRUE){
         if (!is.null(dbcon)) {
           db.query(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", run), con=dbcon)
         }
+
+        # check output to see if an error occurred during the model run
+        if (out[1] == "ERROR IN MODEL RUN") {
+          logger.severe("Model run aborted, with error.\n", out)
+        }
       }      
     }
   }
