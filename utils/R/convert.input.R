@@ -48,7 +48,7 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   ## Add a check to insert only if the conversion was successful
   
   ## insert new record into database
-  if(write=TRUE){
+  if(write==TRUE){
   formatname <- 'CF Meteorology'
   mimetype <- 'application/x-netcdf'
   dbfile.input.insert(outfolder, site$id, input$start_date, input$end_date, 
