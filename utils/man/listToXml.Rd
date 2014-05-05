@@ -2,7 +2,7 @@
 \alias{listToXml}
 \title{List to XML}
 \usage{
-listToXml(item, tag)
+  listToXml(item, tag)
 }
 \arguments{
   \item{item}{}
@@ -10,16 +10,16 @@ listToXml(item, tag)
   \item{tag}{xml tag}
 }
 \value{
-xmlNode
+  xmlNode
 }
 \description{
-Convert List to XML
+  Convert List to XML
 }
 \details{
-Can convert list or other object to an xml object using
-xmlNode
+  Can convert list or other object to an xml object using
+  xmlNode
 }
 \author{
-unknown
+  unknown
 }
 

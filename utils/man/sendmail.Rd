@@ -2,7 +2,7 @@
 \alias{sendmail}
 \title{Clear EBI-CLUSTER worker node local scratch directories of old PEcAn output}
 \usage{
-sendmail(from, to, subject, body)
+  sendmail(from, to, subject, body)
 }
 \arguments{
   \item{from}{the sender of the mail message}
@@ -14,11 +14,11 @@ sendmail(from, to, subject, body)
   \item{body}{the body of the mail message}
 }
 \value{
-nothing
+  nothing
 }
 \description{
-Sends email. This assumes the program sendmail is
-installed.
+  Sends email. This assumes the program sendmail is
+  installed.
 }
 \examples{
 \dontrun{
@@ -26,6 +26,6 @@ sendmail("bob@example.com", "joe@example.com", "Hi", "This is R.")
 }
 }
 \author{
-Rob Kooper
+  Rob Kooper
 }
 

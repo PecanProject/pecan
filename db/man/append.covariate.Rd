@@ -6,7 +6,8 @@ as a single column in a given table of trait data.
 In the event a trait has several covariates across several given tables,
 the first table given will take precedence}
 \usage{
-append.covariate(data, column.name, ..., covariates.data = list(...))
+  append.covariate(data, column.name, ...,
+    covariates.data = list(...))
 }
 \arguments{
   \item{data}{trait dataframe that will be appended to.}
@@ -21,6 +22,11 @@ append.covariate(data, column.name, ..., covariates.data = list(...))
   minimum.}
 }
 \description{
-
+  Append covariate data as a column within a table
+  \code{append.covariate} appends one or more tables of
+  covariate data as a single column in a given table of
+  trait data. In the event a trait has several covariates
+  across several given tables, the first table given will
+  take precedence
 }
 

@@ -2,7 +2,7 @@
 \alias{run.sensitivity.analysis}
 \title{run sensitivity.analysis}
 \usage{
-run.sensitivity.analysis(plot = TRUE)
+  run.sensitivity.analysis(plot = TRUE)
 }
 \arguments{
   \item{plot}{logical. Option to generate sensitivity
@@ -10,16 +10,16 @@ run.sensitivity.analysis(plot = TRUE)
   to turn these plots off (plot=FALSE).}
 }
 \value{
-nothing, saves \code{sensitivity.results} as
-sensitivity.results.Rdata, sensitivity plots as
-sensitivityanalysis.pdf, and variance decomposition
-'popsicle plot' as variancedecomposition.pdf a side effect
-(OPTIONAL)
+  nothing, saves \code{sensitivity.results} as
+  sensitivity.results.Rdata, sensitivity plots as
+  sensitivityanalysis.pdf, and variance decomposition
+  'popsicle plot' as variancedecomposition.pdf a side
+  effect (OPTIONAL)
 }
 \description{
-run sensitivity.analysis
+  run sensitivity.analysis
 }
 \author{
-David LeBauer, Shawn Serbin
+  David LeBauer, Shawn Serbin
 }
 
