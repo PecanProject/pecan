@@ -2,8 +2,8 @@
 \alias{pecan.ma}
 \title{Trait Meta-analysis}
 \usage{
-pecan.ma(trait.data, prior.distns, taupriors, j.iter, settings, outdir,
-  overdispersed = TRUE)
+  pecan.ma(trait.data, prior.distns, taupriors, j.iter,
+    settings, outdir, overdispersed = TRUE)
 }
 \arguments{
   \item{trait.data}{list of dataframes, one per trait for
@@ -27,24 +27,25 @@ pecan.ma(trait.data, prior.distns, taupriors, j.iter, settings, outdir,
   (use with caution)}
 }
 \value{
-four chains with 5000 total samples from posterior
+  four chains with 5000 total samples from posterior
 }
 \description{
-Runs heirarchical meta-analysis of plant trait data
+  Runs heirarchical meta-analysis of plant trait data
 }
 \details{
-\code{pecan.ma} runs a heirarchical Bayes meta-analytical
-model. This model combines prior information with data from
-studies on the particular species or group of interest.
-Data that is incorporated into the meta-analysis include
-the mean (Y), sample size (n), and precision (obs.prec).
-Where a set of data includes more than one level of
-treatment, comes from more than one site, or comes from
-both field and greenhouse studies, these variables are
-included as random (treatment, site) or fixed (greenhouse)
-effects. The pecan.ma function writes a model for each
-specific data set and prior using the write.ma.model()
-function to modify the ma.model.template.bug generic model.
+  \code{pecan.ma} runs a heirarchical Bayes meta-analytical
+  model. This model combines prior information with data
+  from studies on the particular species or group of
+  interest. Data that is incorporated into the
+  meta-analysis include the mean (Y), sample size (n), and
+  precision (obs.prec). Where a set of data includes more
+  than one level of treatment, comes from more than one
+  site, or comes from both field and greenhouse studies,
+  these variables are included as random (treatment, site)
+  or fixed (greenhouse) effects. The pecan.ma function
+  writes a model for each specific data set and prior using
+  the write.ma.model() function to modify the
+  ma.model.template.bug generic model.
 }
 \examples{
 \dontrun{
@@ -54,6 +55,6 @@ pecan.ma(prior.distns, trait.data, 25000)
 }
 }
 \author{
-David LeBauer, Michael C. Dietze
+  David LeBauer, Michael C. Dietze
 }
 

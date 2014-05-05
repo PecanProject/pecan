@@ -2,19 +2,19 @@
 \alias{db.close}
 \title{Close database connection}
 \usage{
-db.close(con)
+  db.close(con)
 }
 \arguments{
   \item{con}{database connection to be closed}
 }
 \value{
-connection to database
+  connection to database
 }
 \description{
-Generic function to close a database connection
+  Generic function to close a database connection
 }
 \details{
-Close a previously opened connection to a database.
+  Close a previously opened connection to a database.
 }
 \examples{
 \dontrun{
@@ -22,6 +22,6 @@ db.close(con)
 }
 }
 \author{
-Rob Kooper
+  Rob Kooper
 }
 

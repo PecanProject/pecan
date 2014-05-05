@@ -2,7 +2,7 @@
 \alias{spline.truncate}
 \title{Truncate spline}
 \usage{
-spline.truncate(x, min.quantile = pnorm(-3))
+  spline.truncate(x, min.quantile = pnorm(-3))
 }
 \arguments{
   \item{x}{vector}
@@ -11,17 +11,17 @@ spline.truncate(x, min.quantile = pnorm(-3))
   bound on variable}
 }
 \value{
-either x or a vector with values < 0 converted to zero
+  either x or a vector with values < 0 converted to zero
 }
 \description{
-Truncate spline at zero if..
+  Truncate spline at zero if..
 }
 \details{
-Truncate spline at zero if P[x<0] < pnorm(-3) pnorm(-3)
-chosen as default value for min quantile because this is
-the default low end of range for the sensitivity analysis.
-This parameter could be determined based on minimum value
-in settings$sensitivity.analysis$quantiles
+  Truncate spline at zero if P[x<0] < pnorm(-3) pnorm(-3)
+  chosen as default value for min quantile because this is
+  the default low end of range for the sensitivity
+  analysis. This parameter could be determined based on
+  minimum value in settings$sensitivity.analysis$quantiles
 }
 \examples{
 set.seed(0)
@@ -30,6 +30,6 @@ min(x) # -0.5238
 min(PEcAn.uncertainty::spline.truncate(x))
 }
 \author{
-David LeBauer
+  David LeBauer
 }
 

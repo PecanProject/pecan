@@ -28,7 +28,7 @@ query.base.con <- function(settings,...){
 # required steps:
 # 1) query database using dbfile.input.check
 # check to see if file exists as an input in dbfile
-dbfile.input.check(siteid, startdate, enddate, mimetype, formatname, con, hostname=Sys.info()[['nodename']])
+dbfile.input.check(siteid, startdate, enddate, mimetype, formatname, con, hostname=fqdn())
 #   a) query input table select * where input.id = id
 #     i) check to make sure there is only 1 match
 #   b) query dbfiles table to get all rows that match the id
@@ -51,5 +51,5 @@ dbfile.input.check(siteid, startdate, enddate, mimetype, formatname, con, hostna
 #      connection, hostname is localhost
 
   # insert into db as input
-dbfile.input.insert <- function(filename, siteid, startdate, enddate, mimetype, formatname, con, hostname=Sys.info()[['nodename']]) {
+dbfile.input.insert <- function(filename, siteid, startdate, enddate, mimetype, formatname, con, hostname=fqdn()) {
     

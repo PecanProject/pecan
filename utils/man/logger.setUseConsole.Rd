@@ -2,7 +2,7 @@
 \alias{logger.setUseConsole}
 \title{Configure logging to console.}
 \usage{
-logger.setUseConsole(console, stderr = TRUE)
+  logger.setUseConsole(console, stderr = TRUE)
 }
 \arguments{
   \item{console}{set to true to print logging to console.}
@@ -11,7 +11,7 @@ logger.setUseConsole(console, stderr = TRUE)
   of stdout for logging}
 }
 \description{
-Should the logging to be printed to the console or not.
+  Should the logging to be printed to the console or not.
 }
 \examples{
 \dontrun{
@@ -19,6 +19,6 @@ logger.setUseConsole(TRUE)
 }
 }
 \author{
-Rob Kooper
+  Rob Kooper
 }
 

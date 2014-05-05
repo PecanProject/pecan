@@ -2,7 +2,7 @@
 \alias{rsync}
 \title{rsync}
 \usage{
-rsync(args, from, to, pattern = "")
+  rsync(args, from, to, pattern = "")
 }
 \arguments{
   \item{args}{rsync arguments (see man rsync)}
@@ -14,17 +14,17 @@ rsync(args, from, to, pattern = "")
   \item{pattern}{file pattern to be matched}
 }
 \value{
-nothing, transfers files as a side effect
+  nothing, transfers files as a side effect
 }
 \description{
-R implementation of rsync
+  R implementation of rsync
 }
 \details{
-rsync is a file copying tool in bash
+  rsync is a file copying tool in bash
 }
 \author{
-David LeBauer
+  David LeBauer
 
-Shawn Serbin
+  Shawn Serbin
 }
 

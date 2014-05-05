@@ -2,7 +2,8 @@
 \alias{get.run.id}
 \title{Get Run ID}
 \usage{
-get.run.id(run.type, index, trait = NULL, pft.name = NULL)
+  get.run.id(run.type, index, trait = NULL,
+    pft.name = NULL)
 }
 \arguments{
   \item{run.type}{character, can be any character;
@@ -21,20 +22,20 @@ get.run.id(run.type, index, trait = NULL, pft.name = NULL)
   in database)}
 }
 \value{
-id representing a model run
+  id representing a model run
 }
 \description{
-returns an id representing a model run
+  returns an id representing a model run
 }
 \details{
-Provides a consistent method of naming runs; for use in
-model input files and indices
+  Provides a consistent method of naming runs; for use in
+  model input files and indices
 }
 \examples{
 get.run.id("ENS", left.pad.zeros(1, 5))
 get.run.id("SA", round(qnorm(-3),3), trait = "Vcmax")
 }
 \author{
-Carl Davidson, David LeBauer
+  Carl Davidson, David LeBauer
 }
 
