@@ -2,8 +2,8 @@
 \alias{mstmipvar}
 \title{MstMIP variable}
 \usage{
-mstmipvar(name, lat = NA, lon = NA, time = NA, nsoil = NA,
-  silent = FALSE)
+  mstmipvar(name, lat = NA, lon = NA, time = NA,
+    nsoil = NA, silent = FALSE)
 }
 \arguments{
   \item{name}{name of variable}
@@ -17,16 +17,16 @@ mstmipvar(name, lat = NA, lon = NA, time = NA, nsoil = NA,
   \item{nsoil}{nsoil if dimension requests it}
 }
 \value{
-ncvar based on MstMIP definition
+  ncvar based on MstMIP definition
 }
 \description{
-return MstMIP variable as ncvar
+  return MstMIP variable as ncvar
 }
 \details{
-returns a MstMIP variable as a ncvar based on name and
-other parameters passed in.
+  returns a MstMIP variable as a ncvar based on name and
+  other parameters passed in.
 }
 \author{
-Rob Kooper
+  Rob Kooper
 }
 

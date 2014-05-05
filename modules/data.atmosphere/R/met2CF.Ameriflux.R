@@ -114,7 +114,7 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
     rh.sh <- as.vector(rh.sub/100) #percent to proportion: needed for conversion
     rh.sh <- replace(x=rh,list=rh.sub,values=rh.sh) #insert proportion values into RH vector
     ta.rh <- ta[rh.sub] # use T coincident with RH
-    sh.miss <- rh2rv(rh=rh.sh[rh.sub],T=ta.rh) #conversion, doesn't include missvals
+    sh.miss <- rh2qair(rh=rh.sh[rh.sub],T=ta.rh) #conversion, doesn't include missvals. was rh2rv
     sh <- replace(x=rh,list=rh.sub,values=sh.miss) #insert Kelvin values into vector
     sh.var <- ncvar_def(name='surface_specific_humidity',units='kg/kg',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
     nc = ncvar_add(nc=nc,v=sh.var,verbose=TRUE) #add variable to existing netCDF file

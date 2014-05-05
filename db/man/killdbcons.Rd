@@ -2,23 +2,23 @@
 \alias{killdbcons}
 \title{Kill existing database connections}
 \usage{
-killdbcons()
+  killdbcons()
 }
 \value{
-nothing, as a side effect closes all open connections
+  nothing, as a side effect closes all open connections
 }
 \description{
-Kill existing database connections
+  Kill existing database connections
 }
 \details{
-Deprecated, this should never be called
+  Deprecated, this should never be called
 
-resolves (provides workaround to) bug #769 caused by having
-too many open connections \code{Error during wrapup: RS-DBI
-driver: (cannot allocate a new connection -- maximum of 16
-connections already opened)}
+  resolves (provides workaround to) bug #769 caused by
+  having too many open connections \code{Error during
+  wrapup: RS-DBI driver: (cannot allocate a new connection
+  -- maximum of 16 connections already opened)}
 }
 \author{
-David LeBauer
+  David LeBauer
 }
 
