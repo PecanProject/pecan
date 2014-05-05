@@ -27,3 +27,4 @@ Collate:
     'nceputils.R'
     'metutils.R'
     'met2CF.Ameriflux.R'
+    'call_MODIS.R'
