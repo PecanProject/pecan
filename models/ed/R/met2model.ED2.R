@@ -8,8 +8,12 @@
 #-------------------------------------------------------------------------------
 ## R Code to convert from NACP intercomparison NETCDF met files
 ## into ED2 ascii met files
-fname = "/projectnb/cheas/afshin/NARR/rani/2012_sub.nc"
-met2model.ED2 <- function(fname,lst){
+
+#met2model.ED2 <- function(fname,lst){
+met2model.ED2 <- function(in.path,in.prefix,outfolder,lst){
+  
+  #require(hdf5)
+  require(ncdf4)
   
 ### FUNCTIONS
 dm <- c(0,32,60,91,121,152,182,213,244,274,305,335,366)
@@ -24,7 +28,7 @@ day2mo <- function(year,day){
   return(mo)
 }
 
-#infile <-/projectnb/cheas/afshin/NARR/rani
+
 ## loop over files
 for(i in 1:length(fname)){
 
@@ -51,7 +55,10 @@ for(i in 1:length(fname)){
   pres <- ncvar_get(nc,"air_pressure")
   SW   <- ncvar_get(nc,"surface_downwelling_shortwave_flux")
   LW   <- ncvar_get(nc,"surface_downwelling_longwave_flux")
-  CO2  <- ncvar_get(nc,"CO2air")
+  CO2  <- try(ncvar_get(nc,"CO2air"))
+  useCO2 = is.numeric(CO2)  
+  
+  nc_close(nc)
   
   dt <- sec[2]-sec[1]
   toff <- -lst*3600/dt
@@ -66,7 +73,8 @@ for(i in 1:length(fname)){
   pres <- c(rep(pres[1],toff),pres)[1:slen]
   SW <- c(rep(SW[1],toff),SW)[1:slen]
   LW <- c(rep(LW[1],toff),LW)[1:slen]
-  CO2 <- c(rep(CO2[1],toff),CO2)[1:slen]
+  if(useCO2)  CO2 <- c(rep(CO2[1],toff),CO2)[1:slen]
+ 
   
   ## determine starting year
   base.time <- as.numeric(substr(nc$dim$t$units,15,18))
@@ -151,8 +159,10 @@ for(i in 1:length(fname)){
   vgrdA  <- V                 # meridional wind [m/s]
   shA    <- Qair              # specific humidity [kg_H2O/kg_air]
   tmpA   <- Tair              # temperature [K]
-  co2A   <- CO2               # surface co2 concentration [ppm]
-
+  if(useCO2){
+    co2A   <- CO2               # surface co2 concentration [ppm]
+  }
+  
   ## create directory
   if(system(paste("ls",froot),ignore.stderr=TRUE)>0) system(paste("mkdir",froot))
   
@@ -175,7 +185,9 @@ for(i in 1:length(fname)){
       vgrd  <- array(vgrdA[selm],dim=dims)
       sh    <- array(shA[selm],dim=dims)
       tmp   <- array(tmpA[selm],dim=dims)
-      co2   <- array(co2A[selm],dim=dims)
+      if(useCO2){
+        co2   <- array(co2A[selm],dim=dims)
+      }
       hdf5save(mout,"nbdsf","nddsf","vbdsf","vddsf","prate","dlwrf","pres","hgt","ugrd","vgrd","sh","tmp","co2")
     }
   }
