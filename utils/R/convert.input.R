@@ -1,11 +1,12 @@
 ##' Convert input by applying fcn and insert new record into database
 ##'
 ##'
-convert.input <- function(input.id,outfolder,pkg,fcn,...){
+convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   
   if(FALSE){
     ## test during development
-    input.id = 292;
+    input.id = 286;
+    #input.id = 292;
     outfolder = "/tmp/";
     pkg = "PEcAn.data.atmosphere"
     fcn = "met2CF.Ameriflux"
@@ -31,7 +32,7 @@ convert.input <- function(input.id,outfolder,pkg,fcn,...){
   args = c(pkg,fcn,dbfile$file_path,dbfile$file_name,outfolder)#,...)  
   cmdArgs = paste(args,collapse=" ")
 #  Rfcn = system.file("scripts/Rfcn.R", package = "PEcAn.all")
-  Rfcn = "~/pecan/scripts/Rfcn.R"
+  Rfcn = "pecan/scripts/Rfcn.R"
 
 
   if(machine$hostname %in% c("localhost",host)){
@@ -39,17 +40,18 @@ convert.input <- function(input.id,outfolder,pkg,fcn,...){
     system(paste(Rfcn,cmdArgs))
   } else {
     ## if the machine is remote, run conversion remotely
-    system2("ssh",paste(machine$hostname,Rfcn,cmdArgs))
+    system2("ssh",paste0(username,"@",paste(machine$hostname,Rfcn,cmdArgs)))
   }
 
 ### NOTE: We will eventually insert Brown Dog REST API calls here
 
   ## Add a check to insert only if the conversion was successful
-
+  
   ## insert new record into database
+  if(write=TRUE){
   formatname <- 'CF Meteorology'
   mimetype <- 'application/x-netcdf'
   dbfile.input.insert(outfolder, site$id, input$start_date, input$end_date, 
-                      mimetype, formatname,input$id,con=con,machine$hostname) 
-  
+                     mimetype, formatname,input$id,con=con,machine$hostname) 
+  }
 }
