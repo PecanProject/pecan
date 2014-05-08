@@ -114,7 +114,7 @@ start.model.runs <- function(model, write = TRUE){
         }
 
         # check output to see if an error occurred during the model run
-        if (out[1] == "ERROR IN MODEL RUN") {
+        if ("ERROR IN MODEL RUN" %in% out) {
           logger.severe("Model run aborted, with error.\n", out)
         }
       }      
@@ -154,6 +154,10 @@ start.model.runs <- function(model, write = TRUE){
       } else {
         out <- system2("ssh", c(settings$run$host$name, file.path(settings$run$host$rundir, firstrun, "launcher.sh")), stdout=TRUE)
       }
+      # check output to see if an error occurred during the model run
+      if ("ERROR IN MODEL RUN" %in% out) {
+        logger.severe("Model run aborted, with error.\n", out)
+      }
       # write finished time to database
       if (!is.null(dbcon)) {
         for (run in readLines(con = file.path(settings$rundir, "runs.txt"))) {
@@ -187,12 +191,26 @@ start.model.runs <- function(model, write = TRUE){
         if (!is.null(dbcon)) {
           if (!is.null(settings$run$host$modellauncher)) {
             for (run in readLines(con = file.path(settings$rundir, "runs.txt"))) {
-              db.query(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", run), con=dbcon)
+              if (!is.null(dbcon)) {
+                db.query(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", run), con=dbcon)
+              }
+              outfile <- file.path(settings$run$host$outdir, run, "stdout.log")
+              out <- system2("ssh", c(settings$run$host$name, "cat", outfile), stdout=TRUE)
+              # check output to see if an error occurred during the model run
+              if ("ERROR IN MODEL RUN" %in% out) {
+                logger.severe("Model run aborted, with error.\n", out)
+              }
             }
           } else {
             # write finished time to database 
             if (!is.null(dbcon)) {
               db.query(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", run), con=dbcon)
+            }
+            outfile <- file.path(settings$run$host$outdir, run, "stdout.log")
+            out <- system2("ssh", c(settings$run$host$name, "cat", outfile), stdout=TRUE)
+            # check output to see if an error occurred during the model run
+            if ("ERROR IN MODEL RUN" %in% out) {
+              logger.severe("Model run aborted, with error.\n", out)
             }
           } # end modellauncher if
         } # end writing to database          
