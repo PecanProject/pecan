@@ -284,12 +284,8 @@ check.settings <- function(settings) {
     logger.info("Setting meta.analysis random effects to ", settings$meta.analysis$random.effects)
   }
   if (is.null(settings$meta.analysis$update)) {
-    settings$meta.analysis$update <- FALSE
+    settings$meta.analysis$update <- 'AUTO'
     logger.info("Setting meta.analysis update to only update if no previous meta analysis was found")
-  }
-  if (settings$meta.analysis$update == 'AUTO') {
-    logger.info("meta.analysis update AUTO is not implemented yet, defaulting to FALSE")
-    settings$meta.analysis$update <- FALSE
   }
   if ((settings$meta.analysis$update != 'AUTO') && is.na(as.logical(settings$meta.analysis$update))) {
     logger.info("meta.analysis update can only be AUTO/TRUE/FALSE, defaulting to FALSE")

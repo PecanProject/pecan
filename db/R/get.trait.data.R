@@ -8,6 +8,36 @@
 #-------------------------------------------------------------------------------
 
 ##--------------------------------------------------------------------------------------------------#
+##' Check two species. Identical does not work since one can be loaded
+##' from the database and the other from a CSV file.
+##'
+##' @name check.species
+##' @title Compares two lists of species
+##' @param x first list of species
+##' @param y second list of species
+##' @return true if two list of species are the same
+##' @author Rob Kooper
+##'
+check.species <- function(x, y) {
+  if (nrow(x) != nrow(y)) {
+    return(FALSE)
+  }
+  if (!identical(as.character(x$id), as.character(y$id))) {
+    return(FALSE)
+  }
+  if (!identical(as.character(x$genus), as.character(y$genus))) {
+    return(FALSE)
+  }
+  if (!identical(as.character(x$species), as.character(y$species))) {
+    return(FALSE)
+  }
+  if (!identical(as.character(x$scientificname), as.character(y$scientificname))) {
+    return(FALSE)
+  }
+  return(TRUE)
+}
+
+##--------------------------------------------------------------------------------------------------#
 ##' Get trait data from the database for a single pft
 ##'
 ##' @name get.trait.data.pft
@@ -34,12 +64,16 @@ get.trait.data.pft <- function(pft, dbfiles, dbcon,
     return(NA)
   }
 
+  # get the species, we need to check if anything changed
+  species <- query.pft_species(pft$name, con=dbcon)
+
   # check to see if we need to update
   if ((forceupdate == 'AUTO') || !as.logical(forceupdate)) {
     if (is.null(pft$posteriorid)) {
       pft$posteriorid <- db.query(paste0("SELECT id FROM posteriors WHERE pft_id=", pftid, " ORDER BY created_at DESC LIMIT 1"), dbcon)[['id']]  
     }
     if (!is.null(pft$posteriorid)) {
+      db.query(paste0("SELECT id FROM posteriors WHERE pft_id=", pftid, " ORDER BY created_at DESC LIMIT 1"), dbcon)[['id']]   
       files <- dbfile.check('Posterior', pft$posteriorid, dbcon)
       ids <- match(c('trait.data.Rdata', 'prior.distns.Rdata', 'species.csv'), files$file_name)
       if (!any(is.na(ids))) {
@@ -48,7 +82,13 @@ get.trait.data.pft <- function(pft, dbfiles, dbcon,
           if (!file.exists(file.path(files$file_path[[id]], files$file_name[[id]]))) {
             foundallfiles <- FALSE
             logger.error("can not find posterior file: ", file.path(files$file_path[[id]], files$file_name[[id]]))
-          }    
+          } else if ((forceupdate == 'AUTO') && (files$file_name[[id]] == "species.csv")) {
+            testme <- read.csv(file.path(files$file_path[[id]], files$file_name[[id]]))
+            if (!check.species(species, testme)) {
+              foundallfiles <- FALSE
+              logger.error("species have changed: ", file.path(files$file_path[[id]], files$file_name[[id]]))
+            }
+          }
         }
         if (foundallfiles) {
           logger.info("Reusing existing files from posterior", pft$posteriorid, "for", pft$name)
@@ -74,7 +114,6 @@ get.trait.data.pft <- function(pft, dbfiles, dbcon,
   dir.create(pathname, showWarnings = FALSE, recursive = TRUE)
 
   ## 1. get species list based on pft
-  species <- query.pft_species(pft$name, con=dbcon)
   spstr <- vecpaste(species$id)
   write.csv(species, file.path(pft$outdir, "species.csv"), row.names = FALSE)
 
