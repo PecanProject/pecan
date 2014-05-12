@@ -1,22 +1,32 @@
 # Auto detect text files and perform LF normalization
-* text=auto
+*            text=auto
 
-# Custom for Visual Studio
-*.cs     diff=csharp
-*.sln    merge=union
-*.csproj merge=union
-*.vbproj merge=union
-*.fsproj merge=union
-*.dbproj merge=union
+# Make sure it knows about R files
+*.R          text diff=R
+*.Rd         text diff=R
+*.RData      binary
+CITATION     text diff=txt
+DESCRIPTION  text diff=txt
+LICENSE      text diff=txt
+NAMESPACE    text diff=txt
 
-# Standard to msysgit
-*.doc	 diff=astextplain
-*.DOC	 diff=astextplain
-*.docx diff=astextplain
-*.DOCX diff=astextplain
-*.dot  diff=astextplain
-*.DOT  diff=astextplain
-*.pdf  diff=astextplain
-*.PDF	 diff=astextplain
-*.rtf	 diff=astextplain
-*.RTF	 diff=astextplain
+# some other file types
+*.csv        text diff=csv
+*.xml        text diff=xml
+*.php        text diff=php
+*.css        text diff=css
+*.js         text diff=js
+*.F90        text diff=fortran
+*.f90        text diff=fortran
+Makefile     text diff=txt
+README       text diff=txt
+*.md         text diff=md
+
+# unix scripts always should have lf
+*.sh         text diff=sh eol=lf
+*.job        text diff=sh eol=lf
+
+# binary formats
+*.nc         binary
+*.h5         binary
+
