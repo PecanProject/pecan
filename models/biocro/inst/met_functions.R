@@ -13,7 +13,7 @@ cruncep_nc2dt <- function(lat, lon, met.nc, start.date, end.date){
     all.dates <- data.table(index = seq(time.idx),
                             date = ymd("1700-01-01") +
                             days(floor(time.idx)) +
-                            hours(24*(time.idx - floor(time.idx))))
+                            minutes(ud.convert(time.idx - floor(time.idx), "days", "minutes")))
     run.dates <- all.dates[date > ymd(start.date) & date < ymd(end.date),
                            list(index, date, doy = yday(date),
                                 year = year(date), month = month(date),
@@ -24,39 +24,47 @@ cruncep_nc2dt <- function(lat, lon, met.nc, start.date, end.date){
     results <- list()
      
     vars <- list()
- 
-    mask <- ncvar_get(nc = met.nc, varid = "mask",
-                      start = c(loni, lati),
-                      count = c(1,1)) 
+     
+#    variables <- c("lwdown", "press", "qair", "rain", "swdown", "tair", "uwind", "vwind")
+    variables <- c("surface_downwelling_longwave_flux_in_air",
+                   "surface_downwelling_longwave_flux_in_air",
+                   "precipitation_flux",
+                   "specific_humidity",
+                   "surface_pressure",
+                   "wind",
+                   "air_temperature")
     
-    variables <- c("lwdown", "press", "qair", "rain", "swdown", "tair", "uwind", "vwind")
-    if(mask == -1) {
-        stop(paste("chosen lat:", lat, "and  lon:", lon, " is in the ocean"))
-    } else if (mask > 0){
-        ## modification of ncvar_get to function independent of dimension order
-        ## see http://stackoverflow.com/a/22944715/199217
-        ## should be generalized, perhaps to pass arguments "start" and "count" directly
-        get.ncvar <- function(var, lati = lati, loni = loni,
-                              run.dates = run.dates){
+    ## modification of ncvar_get to function independent of dimension order
+    ## see http://stackoverflow.com/a/22944715/199217
+    ## should be generalized, perhaps to pass arguments "start" and "count" directly
+    get.ncvar <- function(var, lati = lati, loni = loni,
+                          run.dates = run.dates, met.nc){
+        if(var %in% attributes(met.nc$var)$names){
             start.idx = c(lat = lati, lon = loni, time = run.dates$index[1])
             count.idx = c(lat = 1, lon = 1, time = nrow(run.dates))
-            dim.order <- sapply(met.nc$var$lwdown$dim, function(x) x$name) 
+            dim.order <- sapply(met.nc$var[[var]]$dim, function(x) x$name)
             ans <- as.numeric(ncvar_get(nc = met.nc,
                                         varid = var,
                                         start = start.idx[dim.order],
                                         count = count.idx[dim.order]))
-            
-            return(ans)
+        } else {
+            ans <- NULL
         }
-        
-        ## if the above throws an error ... 
-        ## vars <- parallel::mclapply(variables, function(x) get.ncvar(x, lati = lati, loni = loni, run.dates = run.dates), mc.allow.recursive = TRUE)
-        vars <- lapply(variables, function(x) get.ncvar(x, lati = lati, loni = loni, run.dates = run.dates))
-        names(vars) <- variables
+        return(ans)
     }
     
-    result <- cbind(run.dates, as.data.table(vars))
-    result$wind <- result[,list(wind = sqrt(uwind^2 + vwind^2))]
+    ## if the above throws an error ... 
+    ## vars <- parallel::mclapply(variables, function(x) get.ncvar(x, lati = lati, loni = loni, run.dates = run.dates), mc.allow.recursive = TRUE)
+    vars <- lapply(variables, function(x) get.ncvar(x, lati = lati, loni = loni, run.dates = run.dates, met.nc = met.nc))
+
+    names(vars) <- variables
+    
+    result <- cbind(run.dates, as.data.table(vars[!sapply(vars, is.null)]))
+    if(!"wind" %in% variables){
+        if(all(c("northward_wind", "eastward_wind") %in% variables)){
+            result$wind <- result[,list(wind = sqrt(northward_wind^2 + eastward_wind^2))]
+        }
+    }
     return(result)   
 }
  
@@ -71,23 +79,23 @@ cruncep_hourly <- function(result, lat){
     ## min(result$date) == min(new.date$date)
     ## max(result$date) == max(new.date$date)
 
-    ## converting swdown from W/m2 avg to PPFD
+    ## converting surface_downwelling_shortwave_flux_in_air from W/m2 avg to PPFD
 
-    solarMJ <- ud.convert(result$swdown, "W 6h", "MJ")
+    solarMJ <- ud.convert(result$surface_downwelling_shortwave_flux_in_air, "W 6h", "MJ")
     PAR <- 0.486 * solarMJ ## Cambell and Norman 1998 p 151, ch 10
     result$ppfd <- ud.convert(PAR, "mol s", "micromol h")
 
     hourly.result <- list()
-    hourly.result[["swdown"]] <- result$swdown 
+    hourly.result[["surface_downwelling_shortwave_flux_in_air"]] <- result$surface_downwelling_shortwave_flux_in_air 
     hourly.result[["ppfd"]] <- result$ppfd
-    for(var in c("press", "qair", "rain", "tair", "wind", "swdown", "ppfd")){
+    for(var in c("surface_pressure", "specific_humidity", "precipitation_flux", "air_temperature", "wind", "surface_downwelling_shortwave_flux_in_air", "ppfd")){
         
         ## convert units from 6 hourly to hourly
-        hrscale <- ifelse(var %in% c("swdown", "rain"), 6, 1)
+        hrscale <- ifelse(var %in% c("surface_downwelling_shortwave_flux_in_air", "precipitation_flux"), 6, 1)
         
         #f <- approxfun(as.numeric(result$date), (result[[var]] / hrscale), rule = 2)
         f <- splinefun(as.numeric(result$date), (result[[var]] / hrscale), method = "monoH.FC")
-        if(var == "tair"){
+        if(var == "air_temperature"){
             hourly.result[[var]] <- f(as.numeric(new.date$date))
         } else {
             hourly.result[[var]] <- f(as.numeric(new.date$date))
@@ -107,9 +115,9 @@ cruncep_hourly <- function(result, lat){
     return(new.result)
 }
 
-qair2rh <- function(qair, temp, press = 1013.25){
+specific_humidity2rh <- function(specific_humidity, temp, surface_pressure = 1013.25){
     es <-  6.112 * exp((17.67 * temp)/(temp + 243.5))
-    e <- qair * press / (0.378 * qair + 0.622)
+    e <- specific_humidity * surface_pressure / (0.378 * specific_humidity + 0.622)
     rh <- e / es
     rh[rh > 1] <- 1
     rh[rh < 0] <- 0
@@ -121,15 +129,15 @@ cruncep_dt2weather <- function(weather = result, adjust=TRUE){
 
     x <- weather[,list(year, doy = doy, hour = hour,
                        solarR   = ppfd, 
-                       DailyTemp.C = ud.convert(tair, "Kelvin", "Celsius"),
-                       RH = qair2rh(qair = qair, temp = ud.convert(tair, "Kelvin", "Celsius"), press = ud.convert(press, "Pa", "mbar")),
+                       DailyTemp.C = ud.convert(air_temperature, "Kelvin", "Celsius"),
+                       RH = specific_humidity2rh(specific_humidity = specific_humidity, temp = ud.convert(air_temperature, "Kelvin", "Celsius"), surface_pressure = ud.convert(surface_pressure, "Pa", "mbar")),
                        WindSpeed  = wind,                       
-                       precip = rain)]
+                       precip = precipitation_flux)]
     return(x)
 }
 
 get.weather <- function(lat, lon, met.nc = met.nc, start.date, end.date){
-    if(!is.land(lat, lon)) stop("point is in ocean")
+#    if(!is.land(lat, lon)) stop("point is in ocean")
     result <- cruncep_nc2dt(lat = lat, lon = lon, met.nc = met.nc, start.date, end.date)
     new.result <- cruncep_hourly(result, lat = lat)
     weather <- cruncep_dt2weather(new.result)
