@@ -6,11 +6,15 @@
 
 # name of the dabase to load
 # this script assumes the user running it has access to the database
-DATABASE=bety
+DATABASE=${DATABASE:-"bety"}
+
+# owner of the database
+# also use to connect to the database
+OWNER="bety"
 
 # psql options
 # this allows you to add the user to use as well as any other options
-PG_OPT="-U bety"
+PG_OPT=${PG_OPT-"-U $OWNER"}
 
 # ID's used in database
 # These ID's need to be unique for the sharing to work. If you want
@@ -19,18 +23,18 @@ PG_OPT="-U bety"
 #
 #  0 - EBI master database
 #  1 - BU
+#  2 - Brookhaven
 # 99 - VM
-MYSITE=99
-REMOTESITE=0
+MYSITE=${MYSITE:-99}
+REMOTESITE=${REMOTESITE:-0}
 
 # url to get data from
-DUMPURL="https://ebi-forecast.igb.illinois.edu/pecan/pecanweb.0.tar.gz"
-DUMPURL="file:///home/carya/bety.0.tar.gz"
+DUMPURL=${DUMPURL:-"https://ebi-forecast.igb.illinois.edu/pecan/dump/bety.tar.gz"}
 
 # Create the database from scratch
 # Set this to YES to create the database, this will remove all existing
 # data!
-CREATE="YES"
+CREATE=${CREATE:-"NO"}
 
 # ----------------------------------------------------------------------
 # END CONFIGURATION SECTION
@@ -50,8 +54,8 @@ tar zxf "${DUMPDIR}/dump.tar.gz" -C "${DUMPDIR}"
 # create database if need be, otherwise check version of schema
 if [ "${CREATE}" == "YES" ]; then
 	printf "Loading %-25s : " "schema"
-	sudo -u postgres dropdb "${DATABASE}"
-	sudo -u postgres createdb "${DATABASE}" -O bety
+	psql -q -d postgres -c "DROP DATABASE ${DATABASE}"
+	psql -q -d postgres -c "CREATE DATABASE ${DATABASE} OWNER=${OWNER}"
 	psql ${PG_OPT} -q -d "${DATABASE}" < "${DUMPDIR}"/*.schema
 	echo "CREATED SCHEMA"
 
