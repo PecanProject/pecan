@@ -15,7 +15,7 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   l <- list(...)
   
   ## Query inputs, site, dbfiles, machine
-  dbparms <- list(driver="PostgreSQL" , user = "bety", dbname = "bety", password = "bety")
+  dbparms <- list(driver="PostgreSQL" , user = "bety", dbname = "bety", password = "bety", host = "psql-pecan.bu.edu")
   con     <- db.open(dbparms)
   
   input = db.query(paste("SELECT * from inputs where id =",input.id),con)
