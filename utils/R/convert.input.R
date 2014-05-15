@@ -1,21 +1,23 @@
 ##' Convert input by applying fcn and insert new record into database
 ##'
 ##'
+library(PEcAn.all)
+library(RPostgreSQL)
+
 convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   
   if(FALSE){
     ## test during development
-    input.id = 286;
-    #input.id = 292;
+    input.id = 288;
     outfolder = "/tmp/";
     pkg = "PEcAn.data.atmosphere"
-    fcn = "met2CF.Ameriflux"
+    fcn = "extract.NARR.R"
   }
   
   l <- list(...)
   
   ## Query inputs, site, dbfiles, machine
-  dbparms <- list(driver="PostgreSQL" , user = "bety", dbname = "bety", password = "bety")
+  dbparms <- list(driver="PostgreSQL" , user = "bety", dbname = "bety", password = "bety", host = "psql-pecan.bu.edu")
   con     <- db.open(dbparms)
   
   input = db.query(paste("SELECT * from inputs where id =",input.id),con)
