@@ -28,7 +28,7 @@ test_that("check.settings throws error if required content not there", {
 
   s <- settings
   s[['pfts']] <- NULL
-  expect_error(check.settings(s))  
+  #expect_error(check.settings(s))  
   s <- settings
   s[['run']] <- NULL
   expect_error(check.settings(s))  
@@ -44,31 +44,47 @@ test_that("check.settings throws error if required content not there", {
 test_that("check.settings gives sensible defaults",{
   ## This provides the minimum inputs 
   s <- settings
-  s1 <- list(pfts = list(pft = list(name = "test", outdir = "testdir")), 
-             database = NULL, 
+  s1 <- list(pfts = list(pft = list(name = "biocro.salix", outdir = "testdir")), 
+             database = NULL,
              run = list(start.date = now(), end.date = days(1) + now()))
   s2 <- check.settings(s1)
   expect_is(s2$database, "NULL")
   
   s1$database <- settings$database
   s2 <- check.settings(s1)
-  #expect_equal(s2$database$driver, "MySQL")
+  expect_equal(s2$database$driver, "PostgreSQL")
 
   ## dir. paths, with default localhost
   expect_equal(s2$run$host$name, "localhost")
   
   ## outdirs
-  expect_equal(s2$outdir, tempdir())
-  expect_equal(s2$modeloutdir, file.path(tempdir(), "out"))  
-  expect_equal(s2$run$host$outdir, file.path(s2$outdir, "out"))
-
+  outdir <- file.path(getwd(), paste0("PEcAn_", s2$workflow$id))
+  expect_equal(s2$outdir, outdir)
+  expect_equal(s2$run$host$outdir, file.path(outdir, "out"))
+  expect_equal(s2$modeloutdir, s2$run$host$outdir)
+  
   ## rundir
-  expect_equal(s2$rundir, file.path(tempdir(), "run"))  
+  expect_equal(s2$rundir, file.path(outdir, "run"))  
   expect_equal(s2$rundir, s2$run$host$rundir)
   
   expect_true(s2$bety$write)
   expect_true(s2$meta.analysis$iter > 1000)
   expect_false(s2$meta.analysis$random.effects)
+  
+  unlink(outdir, recursive=TRUE)
+})
+
+test_that("pfts are defined and are in database",{
+  s <- settings
+
+  s$pfts <- list(pft = list())
+  expect_error(check.settings(s))
+  
+  s$pfts <- list(pft = list(name = ""))
+  expect_error(check.settings(s))
+
+  s$pfts <- list(pft = list(name = "blabla"))
+  expect_error(check.settings(s))
 })
 
 test_that("check.settings uses run dates if dates not given in ensemble or sensitivity analysis", {
