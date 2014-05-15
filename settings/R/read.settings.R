@@ -7,6 +7,9 @@
 ## http://opensource.ncsa.illinois.edu/license.html
 ##-------------------------------------------------------------------------------
 library(XML)
+library(lubridate)
+library(PEcAn.DB)
+library(PEcAn.utils)
 
 ##--------------------------------------------------------------------------------------------------#
 ## EXTERNAL FUNCTIONS
@@ -124,7 +127,6 @@ check.settings <- function(settings) {
     }
 
     # check if we can connect to the database
-    require(PEcAn.DB)
     if (!db.exists(params=settings$database, write=settings$bety$write)) {
       logger.severe("Invalid Database Settings : ", unlist(settings$database))
       dbcon <- "NONE"
@@ -563,35 +565,44 @@ check.settings <- function(settings) {
   }
 
   # check/create the pft folders
-  for (i in 1:length(settings$pfts)) {
-    #check if name tag within pft
-    if (!"name" %in% names(settings$pfts[i]$pft)) {
-      logger.severe(cat("No name specified for pft of index: ", i, ", please specify name"))
-    }
-
-    #check to see if name of each pft in xml file is actually a name of a pft already in database
-    if (!is.character(dbcon)) {
-      if (!db.query(paste0("SELECT COUNT(*) FROM pfts WHERE name = '",  settings$pfts[i]$pft$name, "';"), con=dbcon)) {
-        logger.severe(cat("Pft name: ", settings$pfts[i]$pft$name, " not found in database"))        
+  if (!is.null(settings$pfts) && (length(settings$pfts) > 0)) {
+    for (i in 1:length(settings$pfts)) {
+      #check if name tag within pft
+      if (!"name" %in% names(settings$pfts[i]$pft)) {
+        logger.severe("No name specified for pft of index: ", i, ", please specify name")
       }
-    }
-
-    if (is.null(settings$pfts[i]$pft$outdir)) {
-      settings$pfts[i]$pft$outdir <- file.path(settings$outdir, "pft", settings$pfts[i]$pft$name)
-      logger.info("Storing pft", settings$pfts[i]$pft$name, "in", settings$pfts[i]$pft$outdir)      
-    } else {
-      logger.debug("Storing pft", settings$pfts[i]$pft$name, "in", settings$pfts[i]$pft$outdir)      
-    }
-    out.dir <- settings$pfts[i]$pft$outdir
-    if (!file.exists(out.dir) && !dir.create(out.dir, recursive=TRUE)) {
-      if(identical(dir(out.dir), character(0))){
-        logger.warn(out.dir, "exists but is empty")
+      if (settings$pfts[i]$pft$name == "") {
+        logger.severe("Name specified for pft of index: ", i, " can not be empty.")
+      }
+      
+      #check to see if name of each pft in xml file is actually a name of a pft already in database
+      if (!is.character(dbcon)) {
+        x <- db.query(paste0("SELECT COUNT(*) FROM pfts WHERE name = '",  settings$pfts[i]$pft$name, "';"), con=dbcon)
+        if (x$count == 0) {
+          logger.severe("Did not find a pft with name ", settings$pfts[i]$pft$name)
+        }
+        if (x$count > 1) {
+          logger.warn("Found multiple entries for pft with name ", settings$pfts[i]$pft$name)
+        }
+      }
+  
+      if (is.null(settings$pfts[i]$pft$outdir)) {
+        settings$pfts[i]$pft$outdir <- file.path(settings$outdir, "pft", settings$pfts[i]$pft$name)
+        logger.info("Storing pft", settings$pfts[i]$pft$name, "in", settings$pfts[i]$pft$outdir)      
       } else {
-        logger.severe("Could not create folder", out.dir)        
+        logger.debug("Storing pft", settings$pfts[i]$pft$name, "in", settings$pfts[i]$pft$outdir)      
+      }
+      out.dir <- settings$pfts[i]$pft$outdir
+      if (!file.exists(out.dir) && !dir.create(out.dir, recursive=TRUE)) {
+        if(identical(dir(out.dir), character(0))){
+          logger.warn(out.dir, "exists but is empty")
+        } else {
+          logger.severe("Could not create folder", out.dir)        
+        }
       }
     }
   }
-
+  
   if (!is.character(dbcon)) {
     db.close(dbcon)
   }
