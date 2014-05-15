@@ -22,7 +22,7 @@ extract.NARR <- function(in.path,in.prefix,outfolder){
 
   # Find closest coordinates to site
   close <- closest_xy(slat, slon,infolder,infile)
-  x <- close$x678
+  x <- close$x
   y <- close$y
   
   for (year in seq(end_year,start_year,by=-1)){
