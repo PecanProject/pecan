@@ -27,11 +27,10 @@ check.settings <- function(settings) {
     logger.info("Not doing sanity checks of pecan.xml")
     return(0)
   }
-  
 
   ## allow PEcAn to run without database
   if (is.null(settings$database)) {
-    database <- FALSE
+    dbcon <- "NONE"
     logger.warn("No database information specified; not using database.")
     settings$bety$write <- FALSE
   } else {    
@@ -105,57 +104,58 @@ check.settings <- function(settings) {
 
     # fill in defaults for the database
     if(is.null(settings$database$password)) {
-        settings$database$password <- "bety"
+      settings$database$password <- "bety"
     }
     if(is.null(settings$database$dbname)) {
-        settings$database$dbname <- "bety"
+      settings$database$dbname <- "bety"
     }
-  }
   
-  # should runs be written to database
-  if (is.null(settings$bety$write)) {
-    logger.info("Writing all runs/configurations to database.")
-    settings$bety$write <- TRUE
-  } else {
-    settings$bety$write <- as.logical(settings$bety$write)
-    if (settings$bety$write) {
-      logger.debug("Writing all runs/configurations to database.")
+    # should runs be written to database
+    if (is.null(settings$bety$write)) {
+      logger.info("Writing all runs/configurations to database.")
+      settings$bety$write <- TRUE
     } else {
-      logger.warn("Will not write runs/configurations to database.")
+      settings$bety$write <- as.logical(settings$bety$write)
+      if (settings$bety$write) {
+        logger.debug("Writing all runs/configurations to database.")
+      } else {
+        logger.warn("Will not write runs/configurations to database.")
+      }
     }
-  }
 
-  # check if we can connect to the database
-  if(!is.null(settings$database)){
+    # check if we can connect to the database
     require(PEcAn.DB)
     if (!db.exists(params=settings$database, write=settings$bety$write)) {
       logger.severe("Invalid Database Settings : ", unlist(settings$database))
-      database <- FALSE
+      dbcon <- "NONE"
     } else {
       logger.info("Successfully connected to database : ", unlist(settings$database))
-      database <- TRUE
-    }    
-    
-    # TODO check userid and userpassword
-    
-    # check database version
-    if(database){
-      versions <- db.query("SELECT version FROM schema_migrations WHERE version >= '20130717162614';", params=settings$database)[['version']]
-      if (length(versions) == 0) {
-        logger.severe("Database is out of date, please update the database;\n",
-                      "\t scripts/update.(psql/mysql).sh scripts will install a new, updated (mysql or psql) database",
-                      "\t but any changes to your current database will be lost",
-                      "otherwise, use Ruby migrations")
-      }
-      if (length(versions) > 1) {
-        logger.warn("Database is more recent than PEcAn expects this could result in PEcAn not working as expected.",
-                    "If PEcAn fails, either revert database OR update PEcAn and edit expected database version in",
-                    "utils/R/read.settings.R (Redmine #1673).")
-      } else {
-        logger.debug("Database is correct version", versions[1], ".")
+
+      # create connection we'll use
+      dbcon <- db.open(settings$database)
+
+      # check database version
+      if(!is.character(dbcon)) {
+        versions <- db.query("SELECT version FROM schema_migrations WHERE version >= '20130717162614';", con=dbcon)[['version']]
+        if (length(versions) == 0) {
+          logger.severe("Database is out of date, please update the database;\n",
+                        "\t scripts/update.(psql/mysql).sh scripts will install a new, updated (mysql or psql) database",
+                        "\t but any changes to your current database will be lost",
+                        "otherwise, use Ruby migrations")
+        }
+        if (length(versions) > 1) {
+          logger.warn("Database is more recent than PEcAn expects this could result in PEcAn not working as expected.",
+                      "If PEcAn fails, either revert database OR update PEcAn and edit expected database version in",
+                      "utils/R/read.settings.R (Redmine #1673).")
+        } else {
+          logger.debug("Database is correct version", versions[1], ".")
+        }
+
+        # TODO check userid and userpassword
       }
     }
-  }
+  } 
+  # done with database checks  
   
   # make sure there are pfts defined
   if (is.null(settings$pfts) || (length(settings$pfts) == 0)) {
@@ -294,10 +294,10 @@ check.settings <- function(settings) {
 
   # check modelid with values
   if(!is.null(settings$model)){
-    if(database){
+    if(!is.character(dbcon)){
       if(!is.null(settings$model$id)){
         if(as.numeric(settings$model$id) >= 0){
-          model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database)
+          model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), con=dbcon)
           if(nrow(model) == 0) {
             logger.error("There is no record of model_id = ", settings$model$id, "in database")
           }
@@ -312,7 +312,7 @@ check.settings <- function(settings) {
                                         settings$run$host$name), "%' ",
                                  ifelse(is.null(settings$model$revision), "", 
                                         paste0(" and revision like '%", settings$model$revision, "%' "))), 
-                          params=settings$database)
+                          con=dbcon)
         if(nrow(model) > 1){
           logger.warn("multiple records for", settings$model$name, "returned; using the most recent")
           row <- which.max(ymd_hms(model$updated_at))
@@ -379,14 +379,15 @@ check.settings <- function(settings) {
       logger.warn("Specified binary [", settings$model$binary, "] does not match model_path in database [", model$binary, "]")
     }
   }
+  # end model check
   
   # check siteid with values
   if(!is.null(settings$run$site)){
     if (is.null(settings$run$site$id)) {
       settings$run$site$id <- -1
     } else if (settings$run$site$id >= 0) {
-      if (database) {
-        site <- db.query(paste("SELECT * FROM sites WHERE id =", settings$run$site$id), params=settings$database);
+      if (!is.character(dbcon)) {
+        site <- db.query(paste("SELECT * FROM sites WHERE id =", settings$run$site$id), con=dbcon)
       } else {
         site <- data.frame(id=settings$run$site$id)
         if (!is.null(settings$run$site$name)) {
@@ -435,6 +436,7 @@ check.settings <- function(settings) {
       }
     }
   }
+  # end site check code
 
   # check to make sure a host is given
   if (is.null(settings$run$host$name)) {
@@ -485,16 +487,39 @@ check.settings <- function(settings) {
   }
   dir.create(settings$run$dbfiles, showWarnings = FALSE, recursive = TRUE)
 
+  # check for workflow defaults
+  fixoutdir <- FALSE
+  if(!is.character(dbcon) && settings$bety$write && ("model" %in% names(settings))) {
+    if (!'workflow' %in% names(settings)) {
+      now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+      db.query(paste0("INSERT INTO workflows (site_id, model_id, hostname, start_date, end_date, started_at, created_at) values ('",
+                      settings$run$site$id, "','", settings$model$id, "', '", settings$run$host$name, "', '",
+                      settings$run$start.date, "', '", settings$run$end.date, "', '", now, "', '", now, "')"), con=dbcon)
+      settings$workflow$id <- db.query(paste0("SELECT id FROM workflows WHERE created_at='", now, "';"), con=dbcon)[['id']]
+      fixoutdir <- TRUE
+    }
+  } else {
+    settings$workflow$id <- format(Sys.time(), "%Y-%m-%d-%H-%M-%S")
+  }
+
   # check/create the pecan folder
   if (is.null(settings$outdir)) {
-    settings$outdir <- tempdir()
+    settings$outdir <- "PEcAn_@WORKFLOW@"
   }
+  # replace @WORKFLOW@ with the id of the workflow
+  settings$outdir <- gsub("@WORKFLOW@", settings$workflow$id, settings$outdir)
+  # create fully qualified pathname
   if (substr(settings$outdir, 1, 1) != '/') {
     settings$outdir <- file.path(getwd(), settings$outdir)
   }
-  logger.debug("output folder =", settings$outdir)
+  logger.info("output folder =", settings$outdir)
   if (!file.exists(settings$outdir) && !dir.create(settings$outdir, recursive=TRUE)) {
     logger.severe("Could not create folder", settings$outdir)
+  }
+
+  #update workflow
+  if (fixoutdir) {
+      db.query(paste0("UPDATE workflows SET folder='", normalizePath(settings$outdir), "' WHERE id=", settings$workflow$id), con=dbcon)
   }
 
   # check/create the local run folder
@@ -514,13 +539,24 @@ check.settings <- function(settings) {
   }
   
   # make sure remote folders are specified if need be
-  if (!is.null(settings$run$host$qsub) && (settings$run$host$name != "localhost")) {
+  if (!is.null(settings$run$host$qsub) || (settings$run$host$name != "localhost")) {
+    homedir <- NA
     if (is.null(settings$run$host$rundir)) {
-      logger.severe("Need to have specified a folder where PEcAn will write run information for job.")
+      if (is.na(homedir)) {
+        homedir <- system2("ssh", c(settings$run$host$name, "pwd"), stdout=TRUE)
+      }
+      settings$run$host$rundir <- paste0(homedir, "/pecan_remote/@WORKFLOW@/run")
     }
+    settings$run$host$rundir <- gsub("@WORKFLOW@", settings$workflow$id, settings$run$host$rundir)
+    logger.info("Using ", settings$run$host$rundir, "to store runs on remote machine")
     if (is.null(settings$run$host$outdir)) {
-      logger.severe("Need to have specified a folder where PEcAn will write output of job.")
+      if (is.na(homedir)) {
+        homedir <- system2("ssh", c(settings$run$host$name, "pwd"), stdout=TRUE)
+      }
+      settings$run$host$outdir <- paste0(homedir, "/pecan_remote/@WORKFLOW@/out")
     }
+    settings$run$host$outdir <- gsub("@WORKFLOW@", settings$workflow$id, settings$run$host$outdir)
+    logger.info("Using ", settings$run$host$outdir, "to store output on remote machine")
   } else if (settings$run$host$name == "localhost") {
     settings$run$host$rundir <- settings$rundir
     settings$run$host$outdir <- settings$modeloutdir
@@ -528,12 +564,18 @@ check.settings <- function(settings) {
 
   # check/create the pft folders
   for (i in 1:length(settings$pfts)) {
-    #if name tag specified not within pft, add it within a pft tag and warn the user
-  
     #check if name tag within pft
     if (!"name" %in% names(settings$pfts[i]$pft)) {
       logger.severe(cat("No name specified for pft of index: ", i, ", please specify name"))
     }
+
+    #check to see if name of each pft in xml file is actually a name of a pft already in database
+    if (!is.character(dbcon)) {
+      if (!db.query(paste0("SELECT COUNT(*) FROM pfts WHERE name = '",  settings$pfts[i]$pft$name, "';"), con=dbcon)) {
+        logger.severe(cat("Pft name: ", settings$pfts[i]$pft$name, " not found in database"))        
+      }
+    }
+
     if (is.null(settings$pfts[i]$pft$outdir)) {
       settings$pfts[i]$pft$outdir <- file.path(settings$outdir, "pft", settings$pfts[i]$pft$name)
       logger.info("Storing pft", settings$pfts[i]$pft$name, "in", settings$pfts[i]$pft$outdir)      
@@ -549,36 +591,9 @@ check.settings <- function(settings) {
       }
     }
   }
-  # check for workflow defaults
-  if(database){
-    
-    if (settings$bety$write) {
-      if ("model" %in% names(settings) && !'workflow' %in% names(settings)) {
-        con <- db.open(settings$database)
-        if(!is.character(con)){
-          now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-          db.query(paste("INSERT INTO workflows (site_id, model_id, hostname, start_date, end_date, started_at, created_at, folder) values ('",
-                         settings$run$site$id, "','", settings$model$id, "', '", settings$run$host$name, "', '",
-                         settings$run$start.date, "', '", settings$run$end.date, "', '", now, "', '", now, "', '", normalizePath(settings$outdir), "')", sep=''), con)
-          settings$workflow$id <- db.query(paste("SELECT id FROM workflows WHERE created_at='", now, "';", sep=''), con)[['id']]
-          #check to see if name of each pft in xml file is actually a name of a pft already in database
-          for (i in 1:length(settings$pfts)) {
-            nameExists = db.query( paste( "SELECT COUNT(*) FROM pfts WHERE name = '", 
-                                   settings$pfts[i]$pft$name, "';", sep=''), con)
-        
-            if(!nameExists)
-              #name not in database, throw error
-              logger.severe(cat("Pft name: ", settings$pfts[i]$pft$name, " not found in database"))
-          }
-        
-          db.close(con)
-        }
-      }
-    } else {
-      settings$workflow$id <- "NA"
-    }
-  } else {
-    settings$workflow$id <- "NA"
+
+  if (!is.character(dbcon)) {
+    db.close(dbcon)
   }
 
   # all done return cleaned up settings
