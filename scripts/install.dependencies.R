@@ -20,11 +20,13 @@ if(length(new.packages)) {
   install.packages(new.packages, repos="http://cran.rstudio.com/")
 }
 
-# check for databases
+
+# Check for R database drivers.
 if (!any(c('RMySQL', 'RPostgreSQL') %in% installed.packages()[,"Package"])) {
   print("No database drivers installed, please select appropriate driver")
   print("RMySQL      : for MySQL database")
   print("RPostgreSQL : for PostgreSQL database")
+  print("For PEcAn, PostgreSQL is recommended")
   print("You can install the driver using the following command in R.")
   print("install.packages('DRIVER', repos='http://cran.rstudio.com/')")
 }
