@@ -65,7 +65,7 @@ for i in {1979..2013}
                         ncks -A $file $year$suffix
 
                     fi
-                    # rm $file
+                    mv $file variables/$file
                 fi
 
         done
