@@ -9,13 +9,20 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   if(FALSE){
     ## test during development
     input.id = 288;
+<<<<<<< HEAD
     newsite = 768
     year = TRUE
+=======
+    l <- list(newsite = 768, year = TRUE)
+>>>>>>> d378b53becae32a6b49343172d5e5613edd45333
     outfolder = "/projectnb/cheas/pecan.data/input/NARR_CF_768";
     pkg = "PEcAn.data.atmosphere"
     fcn = "extract.NARR.R"
     username = "ecowdery"
+<<<<<<< HEAD
     write = TRUE
+=======
+>>>>>>> d378b53becae32a6b49343172d5e5613edd45333
   }
   
   l <- list(...)
