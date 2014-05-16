@@ -87,9 +87,9 @@ fi
 
 # compute range based on {MY,REMOTE}SITE
 MY_START_ID=$(( MYSITE * ID_RANGE + 1 ))
-MY_LAST_ID=$(( START_ID + ID_RANGE - 1 ))
+MY_LAST_ID=$(( MY_START_ID + ID_RANGE - 1 ))
 REM_START_ID=$(( REMOTESITE * ID_RANGE + 1 ))
-REM_LAST_ID=$(( START_ID + ID_RANGE - 1 ))
+REM_LAST_ID=$(( REM_START_ID + ID_RANGE - 1 ))
 
 # clean tables
 for T in users citations counties covariates cultivars dbfiles ensembles entities formats likelihoods location_yields machines managements methods mimetypes models pfts posteriors priors sessions sites species treatments variables inputs traits yields; do
