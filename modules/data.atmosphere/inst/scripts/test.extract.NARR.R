@@ -1,5 +1,5 @@
-source("closest_xy.R")
-source("extract.NARR.R")
+# source("closest_xy.R")
+# source("extract.NARR.R")
 
 in.path <- "/projectnb/cheas/pecan.data/input/NARR_CF"
 in.prefix <- ""
