@@ -33,7 +33,7 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   args = c(pkg,fcn,dbfile$file_path,dbfile$file_name,outfolder)
   
   # Use existing site, unless otherwise specified (ex: subsetting case)
-  if (exists('newsite')){
+  if(exists('newsite')){
     site = db.query(paste("SELECT * from sites where id =",newsite),con)
     args = c(args, site$lat, site$lon)
   } else {
@@ -41,7 +41,7 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   }      
   if(nrow(site)==0){print(c("site not found",input$site_id));return(NULL)} 
   
-  if exists('l$year') && l$year == TRUE {
+  if(exists('l$year') && l$year == TRUE) {
     args = c(args, input$start_date,  input$end_date)
   }
   
