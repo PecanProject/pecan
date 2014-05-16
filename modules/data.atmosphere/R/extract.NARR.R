@@ -18,13 +18,13 @@ extract.NARR <- function(in.path,in.prefix,outfolder,slat,slon,start_year,end_ye
   }
   
   # Find closest coordinates to site
-  close <- closest_xy(slat, slon,infolder,infile)
+  close <- closest_xy(slat, slon,in.path,in.prefix)
   x <- close$x
   y <- close$y
   
   for (year in seq(end_year,start_year,by=-1)){
     
-    next.file = paste0(infolder,"/",year, ".nc")
+    next.file = paste0(in.path,"/",year, ".nc")
     if(file.exists(next.file)){
       system(paste("ncks -d x,",x,",",x, " -d y,",y,",",y," ",next.file," ",outfolder,"/",year,"_sub.nc"))
       # } else { print(paste(next.file,"DOES NOT EXIST"))
