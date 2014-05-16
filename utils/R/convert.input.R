@@ -9,9 +9,11 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   if(FALSE){
     ## test during development
     input.id = 288;
-    outfolder = "/tmp/";
+    l <- list(newsite = 768, year = TRUE)
+    outfolder = "/projectnb/cheas/pecan.data/input/NARR_CF_768";
     pkg = "PEcAn.data.atmosphere"
     fcn = "extract.NARR.R"
+    username = "ecowdery"
   }
   
   l <- list(...)
