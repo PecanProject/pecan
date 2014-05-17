@@ -1,4 +1,4 @@
-#met2cf.NARR(outfolder,start_year,end_year){
+met2cf.NARR <- function(outfolder,start_year,end_year){
 
 # Defaults
 start_year <- 1979 
@@ -19,6 +19,6 @@ for (v in vlist){
 
 # system(paste("cd ", outfolder))
 # system(paste("/projectnb/cheas/gapmacro/NARR/NewNARR/nc_formatting.sh"))
+}
 
-#}
 
