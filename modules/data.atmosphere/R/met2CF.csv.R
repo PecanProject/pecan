@@ -18,7 +18,7 @@ if(FALSE){
   lon = -80
 }
 
-met2CF.csv(in.path,in.file,outfolder,format,lat=NULL,lon=NULL){
+met2CF.csv <- function(in.path,in.file,outfolder,format,lat=NULL,lon=NULL){
   debug=TRUE
   require(ncdf4)
   require(udunits2)
