@@ -6,6 +6,8 @@
 
 args <- commandArgs(trailingOnly = TRUE)
 
+print(args)
+
 ## check args
 if(length(args)<2){
   print(c("Insufficient args",args))
