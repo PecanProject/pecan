@@ -1,8 +1,6 @@
 ##' Convert input by applying fcn and insert new record into database
 ##'
 ##'
-library(PEcAn.all)
-library(RPostgreSQL)
 
 convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   
