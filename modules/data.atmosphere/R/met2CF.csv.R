@@ -1,29 +1,109 @@
-met2CF.csv(in.path,in.file,outfolder){
+##' @name met2CF.csv
+##' @title met2CF.csv
+##' @export
+##' 
+##' @param in.path
+##' @param in.prefix
+##' @param outfolder
+##' @param format data frame or list with elements orig, bety, units for the original variable name, bety variable name, and original units
+##' @author Mike Dietze
+##' 
 
-  files = dir(in.path,in.file)
+if(FALSE){
+  in.path = "~/Downloads/"
+  in.file = "WR_E"
+  outfolder = "/tmp/"
+  format = data.frame(orig="TA",units="celsius",bety="airT")  
+  lat = 40
+  lon = -80
+}
+
+met2CF.csv(in.path,in.file,outfolder,format,lat=NULL,lon=NULL){
+  require(ncdf4)
+  require(udunits2)
+  require(PEcAn.utils)
+
+  files = dir(in.path,in.file,full.names=TRUE)
   files = files[grep("*.csv",files)]
-  
   if(length(files)==0) return(NULL)
   
+  if(!file.exists(outfolder)){
+    dir.create(outfolder)
+  }
+  
+  
   for(i in 1:length(files)){
+    
+    new.file =file.path(outfolder,sub(".csv","_CF.nc",basename(files[i])))
   
     ### if reading ameriflux .csv file ###
-    dat <- read.csv("AMF_USMOz_2004_L2_WG_V004.csv",skip=17,na.strings=c(-9999,-6999)) #example file
+#    dat <- read.csv(files[i],skip=17,na.strings=c(-9999,-6999)) #example file
+    dat <- read.csv(files[i],skip=7,na.strings=c(-9999,-6999,9999),as.is=TRUE) #example file
     units <- dat[1,]
-    dat <- dat[-1:-2,]
-    dat$TA <- as.numeric(dat$TA)+273.15
+    dat <- dat[-1,]
+    
+    ### Variable defintions
+#    vars <- c("WS","TA","PRESS","Rg","Rgl","PREC")
+#    new.vars <- c("wind_speed","air_temperature","air_pressure",
+#              "surface_downwelling_shortwave_flux",
+#              "surface_downwelling_longwave_flux","precipitation_flux") #netCDF CF long variable names
 
-    vars <- c("WS","TA","PRESS","Rg","Rgl","PREC")
-    new.vars <- c("wind_speed","air_temperature","air_pressure",
-              "surface_downwelling_shortwave_flux",
-              "surface_downwelling_longwave_flux","precipitation_flux") #netCDF CF long variable names
+ #   names(dat)[names(dat) %in% vars] <- new.vars #replace column names with netCDF CF names
 
-    names(dat)[names(dat) %in% vars] <- new.vars #replace column names with netCDF CF names
+    ### time 
+## HACK!!!
+    tdim = ncdim_def("time","day of year",seq(0,365,length=nrow(dat))) #define netCDF dimensions for variables
 
-    ncdim_def() #define netCDF dimensions for variables
-    ncvar_def(name="wind_speed",units="m s-1",dim) #define netCDF variables
-    nc_create("AMF_USMOz_L2_WG_02004.nc", vars=dat[new.vars]) #create netCDF file
 
+    ## create new netCDF file
+    x = ncdim_def("Lon","degreesE",lon) #define netCDF dimensions for variables
+    y = ncdim_def("Lat","degreesN",lat)
+    co2.var = ncvar_def(name="CO2",units="ppm",dim=list(x,y))
+    nc_create(new.file, vars=co2.var) #create netCDF file
+
+    ## air_temperature
+    if("airT" %in% format$bety){
+      k = which(format$bety=="airT")
+      airT.var = ncvar_def(name="air_temperature",units="K",dim=tdim)
+      nc = ncvar_add(nc=nc,v=airT.var,verbose=TRUE) #add variable to existing netCDF file
+      ncvar_put(nc,varid='specific_humidity',
+                vals=met.conv(dat[,as.character(format$orig[k])],format$units[k],"celsius","K"))
+      
+    }
+
+    uwind  = ncvar_def(name="eastward_wind",units="m s-1",dim) #define netCDF variables
+    sh.var <- ncvar_def(name='surface_specific_humidity',units='kg/kg',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
+    
+
+### conversions
+dat$TA <- as.numeric(dat$TA)+273.15
+
+
+
+
+
+
+    ## add variables to file
+#    nc = ncvar_add(nc=nc,v=sh.var,verbose=TRUE) #add variable to existing netCDF file
+    ncvar_put(nc,varid='specific_humidity',vals=sh)
+    
+    nc_close(nc)
+    
   } ## end loop over files
     
+}
+
+met.conv <- function(x,orig,bety,CF){
+  orig = as.character(orig)
+  bety = as.character(bety)
+  CF   = as.character(CF)
+  if(ud.is.parseable(orig)){
+    if(ud.are.convertible(orig,bety)){
+      return(ud.convert(ud.convert(x,orig,bety),bety,CF))
+    } else {
+      logger.error(paste("met.conv could not convert",orig,bety,CF))
+    }
+  } else {
+    logger.error(paste("met.conv could not parse units:",orig),"Please check if these units conform to udunits")
+  }
 }
