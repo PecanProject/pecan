@@ -15,7 +15,8 @@ Depends:
     ncdf4,
     lubridate,
     data.table,
-    udunits2
+    udunits2,
+    RPostgreSQL
 Suggests:
     RNCEP
 License: FreeBSD + file LICENSE
@@ -28,3 +29,6 @@ Collate:
     'metutils.R'
     'met2CF.Ameriflux.R'
     'call_MODIS.R'
+    'closest_xy.R'
+    'extract.NARR.R'
+    'met2cf.NARR.R'
