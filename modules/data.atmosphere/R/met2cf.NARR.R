@@ -8,7 +8,7 @@ outfolder <- "/projectnb/cheas/pecan.data/input/NARR/"
 
 vlist <- c("pres.sfc", "dswrf", "dlwrf", "air.2m", "shum.2m", "prate","vwnd.10m","uwnd.10m")
 
-system(paste("module load netcdf"))
+# system(paste("module load netcdf"))
 
 # Get original Data
 for (v in vlist){
