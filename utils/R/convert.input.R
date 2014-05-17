@@ -32,11 +32,14 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   if(nrow(machine)==0){print(c("machine not found",dbfile$machine_id));return(NULL)}
   
   host = system("hostname",intern=TRUE)
+  
+  if(dbfile$file_name == ""){dbfile$file_name = "''"} 
+  
   args = c(pkg,fcn,dbfile$file_path,dbfile$file_name,outfolder)
   
   # Use existing site, unless otherwise specified (ex: subsetting case)
   if("newsite" %in% names(l) && is.null(l[["newsite"]])==FALSE){
-    site = db.query(paste("SELECT * from sites where id =",newsite),con)
+    site = db.query(paste("SELECT * from sites where id =",l$newsite),con)
     args = c(args, site$lat, site$lon)
   } else {
     site  = db.query(paste("SELECT * from sites where id =",input$site_id),con)  
@@ -44,6 +47,8 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   if(nrow(site)==0){print(c("site not found",input$site_id));return(NULL)} 
   
   if("year" %in% names(l) && l$year == TRUE) {
+    if(is.na(input$start_date)==TRUE){input$start_date = 1979}
+    if(is.na(input$end_date)==TRUE){input$end_date = 2013}
     args = c(args, input$start_date,  input$end_date)
   }
   
