@@ -43,7 +43,7 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   }      
   if(nrow(site)==0){print(c("site not found",input$site_id));return(NULL)} 
   
-  if(exists('l$year') && l$year == TRUE) {
+  if("year" %in% names(l) && l$year == TRUE) {
     args = c(args, input$start_date,  input$end_date)
   }
   
