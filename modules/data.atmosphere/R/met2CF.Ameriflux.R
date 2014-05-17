@@ -1,7 +1,7 @@
 ##' Get meteorology variables from Ameriflux L2 netCDF files and convert to netCDF CF format
 ##'
 ##' @name met2CF.Ameriflux
-##' @title met2CF
+##' @title met2CF.Ameriflux
 ##' @export
 ##' @param in.path
 ##' @param in.prefix
