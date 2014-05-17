@@ -15,8 +15,7 @@ Depends:
     ncdf4,
     lubridate,
     data.table,
-    udunits2,
-    RPostgreSQL
+    udunits2
 Suggests:
     RNCEP
 License: FreeBSD + file LICENSE
