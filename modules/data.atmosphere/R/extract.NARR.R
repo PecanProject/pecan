@@ -12,6 +12,17 @@ extract.NARR <- function(in.path,in.prefix,outfolder,slat,slon,start_year,end_ye
   start_year <- as.numeric(start_year)
   end_year <- as.numeric(end_year)
   
+  print(in.path)
+  print(in.prefix)
+  print(outfolder)
+  
+  print(slat)
+  print(slon)
+  print(start_year)
+  print(end_year)
+  
+  
+  
   ## get file names
   files = dir(in.path,in.prefix)
   files = files[grep(pattern="*.nc",files)]
@@ -33,9 +44,9 @@ extract.NARR <- function(in.path,in.prefix,outfolder,slat,slon,start_year,end_ye
   
   for (year in seq(end_year,start_year,by=-1)){
     
-    next.file = paste0(in.path,"/",in.prefix,year, ".nc")
+    next.file = paste0(in.path,in.prefix,year,".nc")
     if(file.exists(next.file)){
-      system(paste0("ncks -d x,",x,",",x, " -d y,",y,",",y," ",next.file," ",outfolder,"/",next.file))
+      system(paste0("ncks -d x,",x,",",x, " -d y,",y,",",y," ",next.file," ",outfolder,in.prefix,year,".nc"))
       # } else { print(paste(next.file,"DOES NOT EXIST"))
     }
     
