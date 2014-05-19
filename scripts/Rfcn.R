@@ -32,7 +32,7 @@ if(is.null(args[2])==FALSE){
       fcn.args[[i]] = args[i+2]
     }
   }
-
+  print(fcn.args)
   ## call function
   do.call(args[2], fcn.args) 
 }
