@@ -33,6 +33,7 @@ if(is.null(args[2])==FALSE){
     }
   }
   print(fcn.args)
+  
   ## call function
   do.call(args[2], fcn.args) 
 }
