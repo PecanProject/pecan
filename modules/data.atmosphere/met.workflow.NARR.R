@@ -4,14 +4,37 @@ require(RPostgreSQL)
 require(ncdf4)
 #--------------------------------------------------------------------------------------------------#
 
-met2cf.NARR(infolder,infile,outfolder,1979,2013)
+# Update NARR from the internet
+outfolder <- "/projectnb/cheas/pecan.data/input/NARR/"
+start_year <- 1979
+end_year   <- 2013
+met2cf.NARR(outfolder,start_year,end_year) 
+
+# Update NARR_CF
+system(paste("pecan/modules/data.atmosphere/inst/scripts/nc_formatting.sh")) ## How to have it find the path?
+
+# Extract for location
+
+input.id = 288
+
+newsite = 768
+year = TRUE
+
+outfolder = paste0("/projectnb/cheas/pecan.data/input/NARR_CF_site_",newsite,"/")
+pkg = "PEcAn.data.atmosphere"
+fcn = "extract.NARR"
+write = FALSE
+username = "ecowdery"
+
+convert.input (input.id,outfolder,pkg,fcn,write,username,...)
 
 
-input.id <- 286 # Raw Data
-outfolder <- 
-pkg <- "PEcAn.data.atmosphere"
-point <- TRUE  
-newsite <- 
+
+
+
+
+
+
 
 if point == TRUE{
 	# one coordinate
