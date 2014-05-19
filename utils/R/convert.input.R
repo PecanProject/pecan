@@ -28,6 +28,8 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   dbfile = db.query(paste("SELECT * from dbfiles where container_id =",input.id," and container_type = 'Input'"),con)
   if(nrow(dbfile)==0){print(c("dbfile not found",input.id));return(NULL)}
   
+  dbfile$file_name = "NARR."
+  
   machine = db.query(paste("SELECT * from machines where id = ",dbfile$machine_id),con)
   if(nrow(machine)==0){print(c("machine not found",dbfile$machine_id));return(NULL)}
   
