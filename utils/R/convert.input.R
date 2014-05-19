@@ -1,8 +1,6 @@
 ##' Convert input by applying fcn and insert new record into database
 ##'
 ##'
-library(PEcAn.all)
-library(RPostgreSQL)
 
 convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   
@@ -11,12 +9,12 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
     input.id = 288;
     newsite = 768
     year = TRUE
-    l <- list(newsite = 768, year = TRUE)
-    outfolder = "/projectnb/cheas/pecan.data/input/NARR_CF_768";
+    #l <- list(newsite = 768, year = TRUE)
+    outfolder = "/projectnb/cheas/pecan.data/input/NARR_CF_site_768/";
     pkg = "PEcAn.data.atmosphere"
-    fcn = "extract.NARR.R"
+    fcn = "extract.NARR"
     username = "ecowdery"
-    write = TRUE
+    write = FALSE
   }
   
   l <- list(...)
@@ -31,22 +29,29 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   dbfile = db.query(paste("SELECT * from dbfiles where container_id =",input.id," and container_type = 'Input'"),con)
   if(nrow(dbfile)==0){print(c("dbfile not found",input.id));return(NULL)}
   
+  dbfile$file_name = "NARR."
+  
   machine = db.query(paste("SELECT * from machines where id = ",dbfile$machine_id),con)
   if(nrow(machine)==0){print(c("machine not found",dbfile$machine_id));return(NULL)}
   
   host = system("hostname",intern=TRUE)
+  
+  if(dbfile$file_name == ""){dbfile$file_name = "''"} 
+  
   args = c(pkg,fcn,dbfile$file_path,dbfile$file_name,outfolder)
   
   # Use existing site, unless otherwise specified (ex: subsetting case)
-  if(exists('newsite')){
-    site = db.query(paste("SELECT * from sites where id =",newsite),con)
+  if("newsite" %in% names(l) && is.null(l[["newsite"]])==FALSE){
+    site = db.query(paste("SELECT * from sites where id =",l$newsite),con)
     args = c(args, site$lat, site$lon)
   } else {
     site  = db.query(paste("SELECT * from sites where id =",input$site_id),con)  
   }      
   if(nrow(site)==0){print(c("site not found",input$site_id));return(NULL)} 
   
-  if(exists('l$year') && l$year == TRUE) {
+  if("year" %in% names(l) && l$year == TRUE) {
+    if(is.na(input$start_date)==TRUE){input$start_date = 1979}
+    if(is.na(input$end_date)==TRUE){input$end_date = 2013}
     args = c(args, input$start_date,  input$end_date)
   }
   

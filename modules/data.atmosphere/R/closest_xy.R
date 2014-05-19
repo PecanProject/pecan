@@ -1,5 +1,5 @@
 closest_xy = function(slat, slon,infolder,infile){
-  require(ncdf4)
+#  require(ncdf4)
   
   test.file = dir(infolder,infile,full.names=TRUE)
   test.file = test.file[grep("*.nc",test.file)]
