@@ -3,6 +3,11 @@
 
 extract.NARR <- function(in.path,in.prefix,outfolder,slat,slon,start_year,end_year){
   
+  slat <- as.numeric(slat)
+  slon <- as.numeric(slon)
+  start_year <- as.numeric(start_year)
+  end_year <- as.numeric(end_year)
+  
   ## get file names
   files = dir(in.path,in.prefix)
   files = files[grep(pattern="*.nc",files)]
