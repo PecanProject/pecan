@@ -10,3 +10,7 @@ export(par2ppfd)
 export(qair2rh)
 export(rh2qair)
 export(wide2long)
+
+export(closest_xy)
+export(met2cf.NARR)
+export(extract.NARR)
