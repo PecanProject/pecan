@@ -23,7 +23,7 @@ if(args[1] != "NULL"){
 }
 
 ## check that function exists
-if(is.null(args[2])){
+if(is.null(args[2])==FALSE){
   
   ## put function arguments into a list
   fcn.args = list()
