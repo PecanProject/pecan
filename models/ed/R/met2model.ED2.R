@@ -11,9 +11,12 @@
 
 #met2model.ED2 <- function(fname,lst){
 met2model.ED2 <- function(in.path,in.prefix,outfolder,lst){
+  files = dir(in.path,in.prefix,full.names=TRUE)
+  filescount = files[grep(pattern="*.nc",files)]
   
-  #require(hdf5)
+  require(h5r)
   require(ncdf4)
+  require(ncdf)
   
 ### FUNCTIONS
 dm <- c(0,32,60,91,121,152,182,213,244,274,305,335,366)
@@ -30,14 +33,14 @@ day2mo <- function(year,day){
 
 
 ## loop over files
-for(i in 1:length(fname)){
+for(i in 1:length(filescount)){
 
   ## extract file root name
-  froot <- substr(fname[i],1,6)
+  froot <- substr(files[i],1,29)
   print(c(i,froot))
 
   ## open netcdf
-  nc <- nc_open(fname[i])
+  nc <- nc_open(files[i])
 
   ## determine GMT adjustment
   ## lst <- site$LST_shift[which(site$acro == froot)]
@@ -77,7 +80,7 @@ for(i in 1:length(fname)){
  
   
   ## determine starting year
-  base.time <- as.numeric(substr(nc$dim$t$units,15,18))
+  base.time <- as.numeric(substr(nc$dim$t$units,12,15))
   if(is.na(base.time)){
     print(c("did not extract base time correctly",froot,i,nc$dim$t$units))
     break
