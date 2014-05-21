@@ -27,4 +27,8 @@ Collate:
     'nceputils.R'
     'metutils.R'
     'met2CF.Ameriflux.R'
+    'met2CF.csv.R'
     'call_MODIS.R'
+    'closest_xy.R'
+    'extract.NARR.R'
+    'met2cf.NARR.R'

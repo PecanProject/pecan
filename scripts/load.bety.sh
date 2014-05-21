@@ -29,7 +29,14 @@ MYSITE=${MYSITE:-99}
 REMOTESITE=${REMOTESITE:-0}
 
 # url to get data from
-DUMPURL=${DUMPURL:-"https://ebi-forecast.igb.illinois.edu/pecan/dump/bety.tar.gz"}
+if [ -z "$DUMPURL" ]; then
+	if [ "$REMOTESITE" == "0" ]; then
+		DUMPURL="https://ebi-forecast.igb.illinois.edu/pecan/dump/bety.tar.gz"
+	else
+		echo "Don't know where to get data for site ${REMOTESITE}"
+		exit
+	fi
+fi
 
 # Create the database from scratch
 # Set this to YES to create the database, this will remove all existing
@@ -80,9 +87,9 @@ fi
 
 # compute range based on {MY,REMOTE}SITE
 MY_START_ID=$(( MYSITE * ID_RANGE + 1 ))
-MY_LAST_ID=$(( START_ID + ID_RANGE - 1 ))
+MY_LAST_ID=$(( MY_START_ID + ID_RANGE - 1 ))
 REM_START_ID=$(( REMOTESITE * ID_RANGE + 1 ))
-REM_LAST_ID=$(( START_ID + ID_RANGE - 1 ))
+REM_LAST_ID=$(( REM_START_ID + ID_RANGE - 1 ))
 
 # clean tables
 for T in users citations counties covariates cultivars dbfiles ensembles entities formats likelihoods location_yields machines managements methods mimetypes models pfts posteriors priors sessions sites species treatments variables inputs traits yields; do
