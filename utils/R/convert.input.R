@@ -7,6 +7,8 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   if(FALSE){
     ## test during development
     input.id = 288;
+    newsite = 768
+    year = TRUE
     #l <- list(newsite = 768, year = TRUE)
     outfolder = "/projectnb/cheas/pecan.data/input/NARR_CF_site_768/";
     pkg = "PEcAn.data.atmosphere"
