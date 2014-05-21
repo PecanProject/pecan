@@ -94,6 +94,35 @@ met2CF.csv <- function(in.path,in.file,outfolder,format,lat=NULL,lon=NULL){
 
     }
 
+    ## relative_humidity / RH
+    if("relative_humidity" %in% format$bety){
+      k = which(format$bety=="relative_humidity")
+      RH.var = ncvar_def(name="relative_humidity",units="%",dim=tdim,verbose=debug)
+      nc = ncvar_add(nc=nc,v=RH.var,verbose=debug) #add variable to existing netCDF file
+      ncvar_put(nc,varid='relative_humidity',
+            vals=met.conv(dat[,as.character(format$orig[k])],format$units[k],"%","%"))
+    }
+
+    ## specific_humidity / qair
+    if("specific_humidity" %in% format$bety){
+      k = which(format$bety=="specific_humidity")
+      qair.var = ncvar_def(name="specific_humidity",units="%",dim=tdim,verbose=debug)
+      nc = ncvar_add(nc=nc,v=qair.var,verbose=debug) #add variable to existing netCDF file
+      ncvar_put(nc,varid='specific_humidity',
+            vals=met.conv(dat[,as.character(format$orig[k])],format$units[k],"1","1"))
+    } else {
+      if("relative_humidity" %in% names(nc$var) & "air_temperature" %in% names(nc$var)){
+        ## Convert RH to SH
+        qair = rh2qair(rh=ncvar_get(nc,"relative_humidity")/100,T=ncvar_get(nc,"air_temperature"))
+      }
+      k = which(format$bety=="specific_humidity")
+      qair.var = ncvar_def(name="specific_humidity",units="%",dim=tdim,verbose=debug)
+      nc = ncvar_add(nc=nc,v=qair.var,verbose=debug) #add variable to existing netCDF file
+      ncvar_put(nc,varid='specific_humidity',vals=qair)
+    }
+
+
+
     uwind  = ncvar_def(name="eastward_wind",units="m s-1",dim) #define netCDF variables
     sh.var <- ncvar_def(name='surface_specific_humidity',units='kg/kg',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
     
