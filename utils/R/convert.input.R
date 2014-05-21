@@ -2,7 +2,7 @@
 ##'
 ##'
 
-convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
+convert.input <- function(input.id,outfolder,pkg,fcn,write,username=NULL,...){
   
   if(FALSE){
     ## test during development
@@ -66,7 +66,8 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
     system(paste(Rfcn,cmdArgs))
   } else {
     ## if the machine is remote, run conversion remotely
-    system2("ssh",paste0(username,"@",paste(machine$hostname,Rfcn,cmdArgs)))
+    usr = ifelse(username==NULL | username=="","",paste0(username,"@"))
+    system2("ssh",paste0(usr,paste(machine$hostname,Rfcn,cmdArgs)))
   }
   
   ### NOTE: We will eventually insert Brown Dog REST API calls here
