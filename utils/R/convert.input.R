@@ -14,6 +14,7 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
     username = "ecowdery"
     write = FALSE
   }
+ 
   
   l <- list(...)
   
