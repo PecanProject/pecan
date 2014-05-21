@@ -11,7 +11,7 @@
 .utils.logger$filename <- NA
 .utils.logger$console  <- TRUE
 .utils.logger$stderr   <- TRUE
-.utils.logger$quit     <- !interactive()
+.utils.logger$quit     <- FALSE
 .utils.logger$level    <- 0
 
 ##' Prints a debug message.
@@ -81,13 +81,13 @@ logger.error <- function(msg, ...) {
 ##' Prints an severe message and stops execution.
 ##' 
 ##' This function will print a message and stop execution of the code. This
-##' should only be used if the application should terminate. If the session is
-##' non-interactive the error code can be specified which is returned to the shell.
+##' should only be used if the application should terminate. 
 ##' 
-##' set \code{\link{logger.setQuitOnSevere(FALSE)}}. To avoid terminating the session. 
+##' set \code{\link{logger.setQuitOnSevere(FALSE)}}. To avoid terminating
+##' the session. This is set by default to TRUE if interactive or running
+##' inside Rstudio.
 ##'
 ##' @param msg the message that should be printed.
-##' @param errorcode the error code to return when the session quits.
 ##' @param ... any additional text that should be printed.
 ##' @export
 ##' @author Rob Kooper
@@ -95,7 +95,7 @@ logger.error <- function(msg, ...) {
 ##' \dontrun{
 ##' logger.severe("missing parameters")
 ##' }
-logger.severe <- function(msg, errorcode=1, ...) {
+logger.severe <- function(msg, ...) {
 	logger.message("SEVERE", msg, ...)
 
 	# run option
@@ -106,7 +106,7 @@ logger.severe <- function(msg, errorcode=1, ...) {
 
 	# quit if not interactive, otherwise use stop
 	if (.utils.logger$quit) {
-     	quit(save="no", status=errorcode)
+     	quit(save="no", status=1)
     } else {
 		stop(paste(msg, ...))
     }

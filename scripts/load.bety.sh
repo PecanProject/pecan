@@ -6,11 +6,15 @@
 
 # name of the dabase to load
 # this script assumes the user running it has access to the database
-DATABASE=bety
+DATABASE=${DATABASE:-"bety"}
+
+# owner of the database
+# also use to connect to the database
+OWNER="bety"
 
 # psql options
 # this allows you to add the user to use as well as any other options
-PG_OPT="-U bety"
+PG_OPT=${PG_OPT-"-U $OWNER"}
 
 # ID's used in database
 # These ID's need to be unique for the sharing to work. If you want
@@ -19,18 +23,25 @@ PG_OPT="-U bety"
 #
 #  0 - EBI master database
 #  1 - BU
+#  2 - Brookhaven
 # 99 - VM
-MYSITE=99
-REMOTESITE=0
+MYSITE=${MYSITE:-99}
+REMOTESITE=${REMOTESITE:-0}
 
 # url to get data from
-DUMPURL="https://ebi-forecast.igb.illinois.edu/pecan/pecanweb.0.tar.gz"
-DUMPURL="file:///home/carya/bety.0.tar.gz"
+if [ -z "$DUMPURL" ]; then
+	if [ "$REMOTESITE" == "0" ]; then
+		DUMPURL="https://ebi-forecast.igb.illinois.edu/pecan/dump/bety.tar.gz"
+	else
+		echo "Don't know where to get data for site ${REMOTESITE}"
+		exit
+	fi
+fi
 
 # Create the database from scratch
 # Set this to YES to create the database, this will remove all existing
 # data!
-CREATE="YES"
+CREATE=${CREATE:-"NO"}
 
 # ----------------------------------------------------------------------
 # END CONFIGURATION SECTION
@@ -50,8 +61,8 @@ tar zxf "${DUMPDIR}/dump.tar.gz" -C "${DUMPDIR}"
 # create database if need be, otherwise check version of schema
 if [ "${CREATE}" == "YES" ]; then
 	printf "Loading %-25s : " "schema"
-	sudo -u postgres dropdb "${DATABASE}"
-	sudo -u postgres createdb "${DATABASE}" -O bety
+	psql -q -d postgres -c "DROP DATABASE ${DATABASE}"
+	psql -q -d postgres -c "CREATE DATABASE ${DATABASE} OWNER=${OWNER}"
 	psql ${PG_OPT} -q -d "${DATABASE}" < "${DUMPDIR}"/*.schema
 	echo "CREATED SCHEMA"
 
@@ -76,9 +87,9 @@ fi
 
 # compute range based on {MY,REMOTE}SITE
 MY_START_ID=$(( MYSITE * ID_RANGE + 1 ))
-MY_LAST_ID=$(( START_ID + ID_RANGE - 1 ))
+MY_LAST_ID=$(( MY_START_ID + ID_RANGE - 1 ))
 REM_START_ID=$(( REMOTESITE * ID_RANGE + 1 ))
-REM_LAST_ID=$(( START_ID + ID_RANGE - 1 ))
+REM_LAST_ID=$(( REM_START_ID + ID_RANGE - 1 ))
 
 # clean tables
 for T in users citations counties covariates cultivars dbfiles ensembles entities formats likelihoods location_yields machines managements methods mimetypes models pfts posteriors priors sessions sites species treatments variables inputs traits yields; do

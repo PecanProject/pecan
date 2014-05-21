@@ -11,7 +11,7 @@ $db_database="bety";
 $Rbinary="/usr/bin/R";
 
 # Require username/password
-$authentication=true;
+$authentication=false;
 
 # Used for authentication, needs to be same as ruby
 $REST_AUTH_SITE_KEY="thisisnotasecret";

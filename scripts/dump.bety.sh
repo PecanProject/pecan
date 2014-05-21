@@ -19,6 +19,7 @@ PG_OPT=${PG_OPT-"-U bety"}
 #
 #  0 - EBI master database
 #  1 - BU
+#  2 - Brookhaven
 # 99 - VM
 MYSITE=${MYSITE:-0}
 
@@ -36,7 +37,7 @@ UNCHECKED=${UNCHECKED:-"NO"}
 ANONYMOUS=${ANONYMOUS:-"YES"}
 
 # location where to write the results, this will be a tar file
-OUTPUT=${OUTPUT:-"${PWD}/${DATABASE}.${MYSITE}.tar.gz"}
+OUTPUT=${OUTPUT:-"$PWD/$DATABASE.tar.gz"}
 
 # ----------------------------------------------------------------------
 # END CONFIGURATION SECTION
