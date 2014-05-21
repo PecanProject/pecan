@@ -45,12 +45,13 @@ met2CF.csv <- function(in.path,in.file,outfolder,format,lat=NULL,lon=NULL){
     
     ### time 
 ## HACK!!!
-    tdim = ncdim_def("time","day of year",seq(0,365,length=nrow(dat)),verbose=debug) #define netCDF dimensions for variables
+    tdim = ncdim_def("time","day of year",seq(0,365,length=nrow(dat))) #define netCDF dimensions for variables
+    timestep = round(diff(tdim$vals)[1]*86400)
 
 
     ## create new netCDF file
-    x = ncdim_def("Lon","degreesE",lon,verbose=debug) #define netCDF dimensions for variables
-    y = ncdim_def("Lat","degreesN",lat,verbose=debug)
+    x = ncdim_def("Lon","degreesE",lon) #define netCDF dimensions for variables
+    y = ncdim_def("Lat","degreesN",lat)
     co2.var = ncvar_def(name="CO2",units="ppm",dim=list(x,y),verbose=debug)
     nc = nc_create(new.file, vars=co2.var,verbose=debug) #create netCDF file
 
@@ -75,28 +76,27 @@ met2CF.csv <- function(in.path,in.file,outfolder,format,lat=NULL,lon=NULL){
 
     ## precipitation_flux / rain
     if("precipitation_flux" %in% format$bety){
+      ## units preprocessing
+      rain = dat[,as.character(format$orig[k])]
+      rain.units = as.character(format$units[k])
+      rain.units = switch(rain.units,
+             mm = {rain=rain/timestep;"kg/m2/s"},
+             m  = {rain=rain/timestep;"Mg/m2/s"},
+             'in' = {rain=ud.convert(rain/timestep,"in","mm");"kg/m2/s"}
+      )        
+         
+      ## insert
       k = which(format$bety=="precipitation_flux")
-      rain.var = ncvar_def(name="precipitation_flux",units="Kg/m2/s",dim=tdim,verbose=debug)
+      rain.var = ncvar_def(name="precipitation_flux",units="kg/m2/s",dim=tdim,verbose=debug)
       nc = ncvar_add(nc=nc,v=rain.var,verbose=debug) #add variable to existing netCDF file
       ncvar_put(nc,varid='precipitation_flux',
-            vals=met.conv(dat[,as.character(format$orig[k])],format$units[k],"Kg/m2/s","Kg/m2/s"))  
+            vals=met.conv(rain,rain.units,"kg/m2/s","kg/m2/s"))  
+
     }
 
     uwind  = ncvar_def(name="eastward_wind",units="m s-1",dim) #define netCDF variables
     sh.var <- ncvar_def(name='surface_specific_humidity',units='kg/kg',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
     
-
-### conversions
-dat$TA <- as.numeric(dat$TA)+273.15
-
-
-
-
-
-
-    ## add variables to file
-#    nc = ncvar_add(nc=nc,v=sh.var,verbose=TRUE) #add variable to existing netCDF file
-    ncvar_put(nc,varid='specific_humidity',vals=sh)
     
     nc_close(nc)
     
