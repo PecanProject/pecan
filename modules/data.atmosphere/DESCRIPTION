@@ -31,3 +31,4 @@ Collate:
     'closest_xy.R'
     'extract.NARR.R'
     'met2cf.NARR.R'
+    'download.NARR'
