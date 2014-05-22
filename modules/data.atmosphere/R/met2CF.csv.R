@@ -13,7 +13,12 @@ if(FALSE){
   in.path = "~/Downloads/"
   in.file = "WR_E"
   outfolder = "/tmp/"
-  format = data.frame(orig=c("TA","PRECIP"),units=c("celsius","mm"),bety=c("airT","precipitation_flux"))  
+  format = list(orig=c("TA","PRECIP","RH"),
+                units=c("celsius","mm","%"),
+                bety=c("airT","precipitation_flux","relative_humidity"),
+                skip=7,
+                unit.row=TRUE,
+                na.strings=c("-9999","-6999","9999"))  
   lat = 40
   lon = -80
 }
@@ -38,10 +43,16 @@ met2CF.csv <- function(in.path,in.file,outfolder,format,lat=NULL,lon=NULL){
     new.file =file.path(outfolder,sub(".csv","_CF.nc",basename(files[i])))
   
     ### if reading ameriflux .csv file ###
-#    dat <- read.csv(files[i],skip=17,na.strings=c(-9999,-6999)) #example file
-    dat <- read.csv(files[i],skip=7,na.strings=c(-9999,-6999,9999),as.is=TRUE) #example file
-    units <- dat[1,]
-    dat <- as.data.frame(sapply(dat[-1,],as.numeric))
+    dat <- read.csv(files[i],skip=format$skip,na.strings=format$na.strings,as.is=TRUE) #example file
+
+    ## some files have a line under the header that lists variable units
+    if(format$unit.row){  
+      units <- dat[1,]
+      dat <- dat[-1,]
+    }
+    
+    ## convert data to numeric
+    dat <- as.data.frame(sapply(dat,as.numeric))
     
     ### time 
 ## HACK!!!
@@ -77,6 +88,7 @@ met2CF.csv <- function(in.path,in.file,outfolder,format,lat=NULL,lon=NULL){
     ## precipitation_flux / rain
     if("precipitation_flux" %in% format$bety){
       ## units preprocessing
+      k = which(format$bety=="precipitation_flux")
       rain = dat[,as.character(format$orig[k])]
       rain.units = as.character(format$units[k])
       rain.units = switch(rain.units,
@@ -86,7 +98,6 @@ met2CF.csv <- function(in.path,in.file,outfolder,format,lat=NULL,lon=NULL){
       )        
          
       ## insert
-      k = which(format$bety=="precipitation_flux")
       rain.var = ncvar_def(name="precipitation_flux",units="kg/m2/s",dim=tdim,verbose=debug)
       nc = ncvar_add(nc=nc,v=rain.var,verbose=debug) #add variable to existing netCDF file
       ncvar_put(nc,varid='precipitation_flux',
@@ -111,14 +122,16 @@ met2CF.csv <- function(in.path,in.file,outfolder,format,lat=NULL,lon=NULL){
       ncvar_put(nc,varid='specific_humidity',
             vals=met.conv(dat[,as.character(format$orig[k])],format$units[k],"1","1"))
     } else {
+      ## file needs to be closed and re-opened to access added variables
+      nc_close(nc)
+      nc = nc_open(new.file,write=TRUE,readunlim=FALSE)
       if("relative_humidity" %in% names(nc$var) & "air_temperature" %in% names(nc$var)){
         ## Convert RH to SH
         qair = rh2qair(rh=ncvar_get(nc,"relative_humidity")/100,T=ncvar_get(nc,"air_temperature"))
+        qair.var = ncvar_def(name="specific_humidity",units="%",dim=tdim,verbose=debug)
+        nc = ncvar_add(nc=nc,v=qair.var,verbose=debug) #add variable to existing netCDF file
+        ncvar_put(nc,varid='specific_humidity',vals=qair)
       }
-      k = which(format$bety=="specific_humidity")
-      qair.var = ncvar_def(name="specific_humidity",units="%",dim=tdim,verbose=debug)
-      nc = ncvar_add(nc=nc,v=qair.var,verbose=debug) #add variable to existing netCDF file
-      ncvar_put(nc,varid='specific_humidity',vals=qair)
     }
 
 
