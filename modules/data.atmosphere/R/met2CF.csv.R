@@ -13,9 +13,9 @@ if(FALSE){
   in.path = "~/Downloads/"
   in.file = "WR_E"
   outfolder = "/tmp/"
-  format = list(orig=c("TA","PRECIP","RH"),
-                units=c("celsius","mm","%"),
-                bety=c("airT","precipitation_flux","relative_humidity"),
+  format = list(orig=c("TA","PRECIP","RH","WS","WD"),
+                units=c("celsius","mm","%","m/s","degrees"),
+                bety=c("airT","precipitation_flux","relative_humidity","Wspd","wind_direction"),
                 skip=7,
                 unit.row=TRUE,
                 na.strings=c("-9999","-6999","9999"))  
@@ -134,7 +134,58 @@ met2CF.csv <- function(in.path,in.file,outfolder,format,lat=NULL,lon=NULL){
       }
     }
 
-
+    ## wind_speed
+    if("eastward_wind" %in% format$bety & "northward_wind" %in% format$bety){
+      
+      k = which(format$bety=="eastward_wind")
+      uwind.var = ncvar_def(name="eastward_wind",units="m/s",dim=tdim,verbose=debug)
+      nc = ncvar_add(nc=nc,v=uwind.var,verbose=debug) #add variable to existing netCDF file
+      ncvar_put(nc,varid='eastward_wind',
+                vals=met.conv(dat[,as.character(format$orig[k])],format$units[k],"m/s","m/s"))
+ 
+      k = which(format$bety=="northward_wind")
+      uwind.var = ncvar_def(name="northward_wind",units="m/s",dim=tdim,verbose=debug)
+      nc = ncvar_add(nc=nc,v=uwind.var,verbose=debug) #add variable to existing netCDF file
+      ncvar_put(nc,varid='northward_wind',
+                vals=met.conv(dat[,as.character(format$orig[k])],format$units[k],"m/s","m/s"))
+      
+      
+    } else{
+      if("Wspd" %in% format$bety){
+        
+        ## extract & convert wind_speed
+        k = which(format$bety=="Wspd")
+        wind = met.conv(dat[,as.character(format$orig[k])],format$units[k],"m/s","m/s")
+        
+        if("wind_direction" %in% format$bety){
+          
+          k = which(format$bety=="wind_direction")
+          wind_direction = met.conv(dat[,as.character(format$orig[k])],format$units[k],"degrees","radians")
+          
+          ## Convert wind_speed and wind_direction into eastward_wind and northward_wind
+          uwind <- wind*cos(wind_direction)
+          vwind <- wind*sin(wind_direction)
+          
+          u.var <- ncvar_def(name='eastward_wind',units='m/s',dim=list(tdim),verbose=debug) #define netCDF variable, doesn't include longname and comments
+          nc = ncvar_add(nc=nc,v=u.var,verbose=debug) #add variable to existing netCDF file
+          ncvar_put(nc,varid='eastward_wind',vals=uwind)
+          
+          v.var <- ncvar_def(name='northward_wind',units='m/s',dim=list(tdim),verbose=debug) #define netCDF variable, doesn't include longname and comments
+          nc = ncvar_add(nc=nc,v=v.var,verbose=debug) #add variable to existing netCDF file
+          ncvar_put(nc,varid='northward_wind',vals=vwind)
+          
+          
+        } else {
+         
+          ## if no direction information is available, just insert wind_speed
+          wind.var = ncvar_def(name="wind_speed",units="m/s",dim=tdim,verbose=debug)
+          nc = ncvar_add(nc=nc,v=wind.var,verbose=debug) #add variable to existing netCDF file
+          ncvar_put(nc,varid='wind_speed',vals=wind)
+        }
+        
+      }
+    }  ## end wind
+    
 
     uwind  = ncvar_def(name="eastward_wind",units="m s-1",dim) #define netCDF variables
     sh.var <- ncvar_def(name='surface_specific_humidity',units='kg/kg',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
