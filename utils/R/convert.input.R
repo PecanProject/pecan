@@ -10,13 +10,20 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
     newsite = 768
     #l <- list(newsite = 768, year = TRUE)
     outfolder = "/projectnb/cheas/pecan.data/input/NARR_CF_site_768/";
-    outname = tail(unlist(strsplit(outfolder,'/')),n=1)
     pkg = "PEcAn.data.atmosphere"
     fcn = "extract.NARR"
     username = "ecowdery"
     write = FALSE
   }
   
+  outname = tail(unlist(strsplit(outfolder,'/')),n=1)
+
+# Check to see if input is already in dbfiles table 
+check <- input.name.check(outname)
+if(length(check)!=0){
+  return(check$container_id)
+  stop('Input is already in the database.')
+}
   l <- list(...)
   
   ## Query inputs, site, dbfiles, machine
@@ -26,10 +33,9 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   input = db.query(paste("SELECT * from inputs where id =",input.id),con)
   if(nrow(input)==0){print(c("input not found",input.id));return(NULL)}
   
+  # dbfile may return more than one row -> may need to loop over machine ids
   dbfile = db.query(paste("SELECT * from dbfiles where container_id =",input.id," and container_type = 'Input'"),con)
   if(nrow(dbfile)==0){print(c("dbfile not found",input.id));return(NULL)}
-  
-  dbfile$file_name = "NARR."  ## Hack - just until bety is updated on psql-pecan
   
   machine = db.query(paste("SELECT * from machines where id = ",dbfile$machine_id),con)
   if(nrow(machine)==0){print(c("machine not found",dbfile$machine_id));return(NULL)}
@@ -51,11 +57,11 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   # Check to see if input is already in dbfiles table 
   # Currently does not deal with situation in which input exists but record needs updating
   
-  formatname <- 'CF Meteorology'
-  mimetype <- 'application/x-netcdf'
-  df <- dbfile.input.check(site$id, input$start_date, input$end_date, 
-                           mimetype, formatname, input$id, con, machine$hostname)
- if(length(df)==0){stop('This input is already in the database.')}
+#   formatname <- 'CF Meteorology'
+#   mimetype <- 'application/x-netcdf'
+#   df <- dbfile.input.check(site$id, input$start_date, input$end_date, 
+#                            mimetype, formatname, input$id, con, machine$hostname)
+#  if(length(df)==0){stop('This input is already in the database.')}
   
  
   cmdArgs = paste(args,collapse=" ")
