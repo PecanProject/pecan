@@ -50,6 +50,14 @@ for(i in 1:length(filescount)){
 
   ## open netcdf
   nc <- nc_open(files[i])
+  
+  ## determine starting year
+  base.time <- unlist(strsplit(files[i],'[.]'))
+  base.time <- as.numeric(base.time[length(base.time)-1])
+  if(is.na(base.time)){
+      print(c("did not extract base time correctly",i))
+      break
+    }
 
   ## determine GMT adjustment
   ## lst <- site$LST_shift[which(site$acro == froot)]
@@ -87,13 +95,6 @@ for(i in 1:length(filescount)){
   LW <- c(rep(LW[1],toff),LW)[1:slen]
   if(useCO2)  CO2 <- c(rep(CO2[1],toff),CO2)[1:slen]
  
-  
-  ## determine starting year
-  base.time <- as.numeric(substr(nc$dim$t$units,12,16))
-  if(is.na(base.time)){
-    print(c("did not extract base time correctly",i,nc$dim$t$units))
-    break
-  }
   
   ##build time variables (year, month, day of year)
   nyr <- floor(length(sec)/86400/365*dt)
