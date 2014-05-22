@@ -2,21 +2,20 @@
 ##'
 ##'
 
-convert.input <- function(input.id,outfolder,pkg,fcn,write,username=NULL,...){
+convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   
   if(FALSE){
     ## test during development
     input.id = 288;
     newsite = 768
-    year = TRUE
     #l <- list(newsite = 768, year = TRUE)
     outfolder = "/projectnb/cheas/pecan.data/input/NARR_CF_site_768/";
+    outname = tail(unlist(strsplit(outfolder,'/')),n=1)
     pkg = "PEcAn.data.atmosphere"
     fcn = "extract.NARR"
     username = "ecowdery"
     write = FALSE
   }
- 
   
   l <- list(...)
   
@@ -30,7 +29,7 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username=NULL,...){
   dbfile = db.query(paste("SELECT * from dbfiles where container_id =",input.id," and container_type = 'Input'"),con)
   if(nrow(dbfile)==0){print(c("dbfile not found",input.id));return(NULL)}
   
-  dbfile$file_name = "NARR."
+  dbfile$file_name = "NARR."  ## Hack - just until bety is updated on psql-pecan
   
   machine = db.query(paste("SELECT * from machines where id = ",dbfile$machine_id),con)
   if(nrow(machine)==0){print(c("machine not found",dbfile$machine_id));return(NULL)}
@@ -50,11 +49,15 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username=NULL,...){
   }      
   if(nrow(site)==0){print(c("site not found",input$site_id));return(NULL)} 
   
-  if("year" %in% names(l) && l$year == TRUE) {
-    if(is.na(input$start_date)==TRUE){input$start_date = 1979}
-    if(is.na(input$end_date)==TRUE){input$end_date = 2013}
-    args = c(args, input$start_date,  input$end_date)
-  }
+  
+  # ---------------------------------------------------------------------------#
+  # Check to see if input is already in dbfiles table
+  formatname <- 'CF Meteorology'
+  mimetype <- 'application/x-netcdf'
+  df <- dbfile.input.check(site$id, input$start_date, input$end_date, mimetype, formatname, input$id, con, machine$hostname)
+
+  
+  
   
   cmdArgs = paste(args,collapse=" ")
   #  Rfcn = system.file("scripts/Rfcn.R", package = "PEcAn.all")
