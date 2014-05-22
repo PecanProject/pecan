@@ -13,14 +13,15 @@ if(FALSE){
   in.path = "~/Downloads/"
   in.file = "WR_E"
   outfolder = "/tmp/"
-  format = list(orig=c("TA","PRECIP","RH","WS","WD"),
-                units=c("celsius","mm","%","m/s","degrees"),
-                bety=c("airT","precipitation_flux","relative_humidity","Wspd","wind_direction"),
+  format = list(orig=c("TA","PRECIP","RH","WS","WD","SW","PAR_in"),
+                units=c("celsius","mm","%","m/s","degrees","W m-2","umol m-2 s-1"),
+                bety=c("airT","precipitation_flux","relative_humidity","Wspd","wind_direction","solar_radiation","PAR"),
                 skip=7,
                 unit.row=TRUE,
                 na.strings=c("-9999","-6999","9999"))  
   lat = 40
   lon = -80
+  met2CF.csv(in.path,in.file,out.folder,format,lat,lon)
 }
 
 met2CF.csv <- function(in.path,in.file,outfolder,format,lat=NULL,lon=NULL){
@@ -186,11 +187,36 @@ met2CF.csv <- function(in.path,in.file,outfolder,format,lat=NULL,lon=NULL){
       }
     }  ## end wind
     
+    ## surface_downwelling_longwave_flux_in_air / lwdown / dlwrf 
+    if("surface_downwelling_longwave_flux_in_air" %in% format$bety){
+      k = which(format$bety=="surface_downwelling_longwave_flux_in_air")
+      lwdown.var = ncvar_def(name="surface_downwelling_longwave_flux_in_air",units="W m-2",dim=tdim,verbose=debug)
+      nc = ncvar_add(nc=nc,v=lwdown.var,verbose=debug) #add variable to existing netCDF file
+      ncvar_put(nc,varid='surface_downwelling_longwave_flux_in_air',
+            vals=met.conv(dat[,as.character(format$orig[k])],format$units[k],"W m-2","W m-2"))
+    }
+    
+    ## surface_downwelling_shortwave_flux_in_air / swdown / dswrf / solar radiation
+    swdown = NULL
+    if("solar_radiation" %in% format$bety){
+      k = which(format$bety=="solar_radiation")
+      swdown = met.conv(dat[,as.character(format$orig[k])],format$units[k],"W m-2","W m-2")
+      swdown.var = ncvar_def(name="surface_downwelling_shortwave_flux_in_air",units="W m-2",dim=tdim,verbose=debug)
+      nc = ncvar_add(nc=nc,v=swdown.var,verbose=debug) #add variable to existing netCDF file
+      ncvar_put(nc,varid='surface_downwelling_shortwave_flux_in_air',
+            vals=swdown)
+    }
 
-    uwind  = ncvar_def(name="eastward_wind",units="m s-1",dim) #define netCDF variables
-    sh.var <- ncvar_def(name='surface_specific_humidity',units='kg/kg',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
-    
-    
+    ## PAR (only add if SWdown in absent)
+    if(sum(!is.na(swdown))==0 & "PAR" %in% format$bety){
+      k = which(format$bety=="PAR")
+      PAR = met.conv(dat[,as.character(format$orig[k])],format$units[k],"umol m-2 s-1","mol m-2 s-1")
+      PAR.var = ncvar_def(name="surface_downwelling_photosynthetic_photon_flux_in_air",units="mol m-2 s-1",dim=tdim,verbose=debug)
+      nc = ncvar_add(nc=nc,v=PAR.var,verbose=debug) #add variable to existing netCDF file
+      ncvar_put(nc,varid='surface_downwelling_photosynthetic_photon_flux_in_air', vals=PAR)
+    }
+
+
     nc_close(nc)
     
   } ## end loop over files
