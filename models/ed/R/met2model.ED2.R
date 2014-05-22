@@ -9,11 +9,18 @@
 ## R Code to convert from NACP intercomparison NETCDF met files
 ## into ED2 ascii met files
 
+## It requires the rhdf5 library, which is not available on CRAN, but by can be installed locally:
+# >source("http://bioconductor.org/biocLite.R")
+# >biocLite("rhdf5")
+
 #met2model.ED2 <- function(fname,lst){
 met2model.ED2 <- function(in.path,in.prefix,outfolder,lst){
+  files = dir(in.path,in.prefix,full.names=TRUE)
+  filescount = files[grep(pattern="*.nc",files)]
   
-  #require(hdf5)
+  require(rhdf5)
   require(ncdf4)
+  require(ncdf)
   
 ### FUNCTIONS
 dm <- c(0,32,60,91,121,152,182,213,244,274,305,335,366)
@@ -30,14 +37,27 @@ day2mo <- function(year,day){
 
 
 ## loop over files
-for(i in 1:length(fname)){
+for(i in 1:length(filescount)){
 
   ## extract file root name
-  froot <- substr(fname[i],1,6)
-  print(c(i,froot))
+  #froot <- substr(files[i],1,28)
+  #print(c(i,froot))
+  
+  ## check to see if the outfolder is defined, if not create directory for output
+  if(!file.exists(outfolder)){
+    dir.create(outfolder)
+  }
 
   ## open netcdf
-  nc <- nc_open(fname[i])
+  nc <- nc_open(files[i])
+  
+  ## determine starting year
+  base.time <- unlist(strsplit(files[i],'[.]'))
+  base.time <- as.numeric(base.time[length(base.time)-1])
+  if(is.na(base.time)){
+      print(c("did not extract base time correctly",i))
+      break
+    }
 
   ## determine GMT adjustment
   ## lst <- site$LST_shift[which(site$acro == froot)]
@@ -75,13 +95,6 @@ for(i in 1:length(fname)){
   LW <- c(rep(LW[1],toff),LW)[1:slen]
   if(useCO2)  CO2 <- c(rep(CO2[1],toff),CO2)[1:slen]
  
-  
-  ## determine starting year
-  base.time <- as.numeric(substr(nc$dim$t$units,15,18))
-  if(is.na(base.time)){
-    print(c("did not extract base time correctly",froot,i,nc$dim$t$units))
-    break
-  }
   
   ##build time variables (year, month, day of year)
   nyr <- floor(length(sec)/86400/365*dt)
@@ -164,14 +177,15 @@ for(i in 1:length(fname)){
   }
   
   ## create directory
-  if(system(paste("ls",froot),ignore.stderr=TRUE)>0) system(paste("mkdir",froot))
+  #if(system(paste("ls",froot),ignore.stderr=TRUE)>0) system(paste("mkdir",froot))
   
   ## write by year and month
   for(y in base.time+1:nyr-1){
     sely <- which(yr == y)
     for(m in unique(mo[sely])){
       selm <- sely[which(mo[sely] == m)]
-      mout <- paste(froot,"/",froot,"_",y,month[m],".h5",sep="")
+      mout <- paste(outfolder,"/",y,month[m],".h5",sep="")
+      h5createFile(mout)
       dims <- c(1,1,length(selm))
       nbdsf <- array(nbdsfA[selm],dim=dims)
       nddsf <- array(nddsfA[selm],dim=dims)
@@ -188,14 +202,30 @@ for(i in 1:length(fname)){
       if(useCO2){
         co2   <- array(co2A[selm],dim=dims)
       }
-      hdf5save(mout,"nbdsf","nddsf","vbdsf","vddsf","prate","dlwrf","pres","hgt","ugrd","vgrd","sh","tmp","co2")
+      h5write(nbdsf,mout,"nbdsf")
+      h5write(nddsf,mout,"nddsf")
+      h5write(vbdsf,mout,"vbdsf")
+      h5write(vddsf,mout,"vddsf")
+      h5write(prate,mout,"prate")
+      h5write(dlwrf,mout,"dlwrf")
+      h5write(pres,mout,"pres")
+      h5write(hgt,mout,"hgt")
+      h5write(ugrd,mout,"ugrd")
+      h5write(vgrd,mout,"vgrd")
+      h5write(sh,mout,"sh")
+      h5write(tmp,mout,"tmp")
+      if(useCO2){
+          h5write(co2,mout,"co2")
+      }
+     #h5write(nbdsf,mout,"nbdsf","nddsf","vbdsf","vddsf","prate","dlwrf","pres","hgt","ugrd","vgrd","sh","tmp","co2")
+      
     }
   }
 
   ## write DRIVER file
   sites <- 1
-  metfile <- paste(froot,"/ED_MET_DRIVER_HEADER",sep="")
-  metpath <- paste(getwd(),"/",froot,"/",froot,"_",sep="")
+  metfile <- paste(outfolder,"/ED_MET_DRIVER_HEADER",sep="")
+  metpath <- paste(getwd(),"/",outfolder,"/",outfolder,"_",sep="")
   metgrid <- c(1,1,1,1,floor(lon),floor(lat))
   metvar <- c("nbdsf","nddsf","vbdsf","vddsf","prate","dlwrf","pres","hgt","ugrd","vgrd","sh","tmp","co2")
   nmet <- length(metvar)
