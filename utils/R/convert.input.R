@@ -36,8 +36,6 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   
   host = system("hostname",intern=TRUE)
   
-  if(dbfile$file_name == ""){dbfile$file_name = "''"} 
-  
   args = c(pkg,fcn,dbfile$file_path,dbfile$file_name,outfolder)
   
   # Use existing site, unless otherwise specified (ex: subsetting case)
@@ -50,15 +48,16 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   if(nrow(site)==0){print(c("site not found",input$site_id));return(NULL)} 
   
   
-  # ---------------------------------------------------------------------------#
-  # Check to see if input is already in dbfiles table
+  # Check to see if input is already in dbfiles table 
+  # Currently does not deal with situation in which input exists but record needs updating
+  
   formatname <- 'CF Meteorology'
   mimetype <- 'application/x-netcdf'
-  df <- dbfile.input.check(site$id, input$start_date, input$end_date, mimetype, formatname, input$id, con, machine$hostname)
-
+  df <- dbfile.input.check(site$id, input$start_date, input$end_date, 
+                           mimetype, formatname, input$id, con, machine$hostname)
+ if(length(df)==0){stop('This input is already in the database.')}
   
-  
-  
+ 
   cmdArgs = paste(args,collapse=" ")
   #  Rfcn = system.file("scripts/Rfcn.R", package = "PEcAn.all")
   Rfcn = "pecan/scripts/Rfcn.R"
