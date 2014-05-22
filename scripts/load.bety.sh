@@ -61,8 +61,8 @@ tar zxf "${DUMPDIR}/dump.tar.gz" -C "${DUMPDIR}"
 # create database if need be, otherwise check version of schema
 if [ "${CREATE}" == "YES" ]; then
 	printf "Loading %-25s : " "schema"
-	psql -q -d postgres -c "DROP DATABASE ${DATABASE}"
-	psql -q -d postgres -c "CREATE DATABASE ${DATABASE} OWNER=${OWNER}"
+	psql ${PG_OPT} -q -d "${DATABASE}" -c "DROP SCHEMA public CASCADE"
+	psql ${PG_OPT} -q -d "${DATABASE}" -c "CREATE SCHEMA public"
 	psql ${PG_OPT} -q -d "${DATABASE}" < "${DUMPDIR}"/*.schema
 	echo "CREATED SCHEMA"
 
