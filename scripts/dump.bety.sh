@@ -72,7 +72,7 @@ echo "DUMPED version ${VERSION}"
 # dump ruby special table
 printf "Dumping %-25s : " "schema_migrations"
 ADD=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM schema_migrations;" | tr -d ' ' )
-psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY schema_migrations TO '${DUMPDIR}/schema_migrations.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV)"
+psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY schema_migrations TO '${DUMPDIR}/schema_migrations.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')"
 echo "DUMPED ${ADD}"
 
 # skip following tables
@@ -84,9 +84,9 @@ echo "DUMPED ${ADD}"
 # dump users
 printf "Dumping %-25s : " "users"
 if [ "${ANONYMOUS}" == "NO" ]; then
-	psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY (SELECT * FROM users WHERE (id >= ${START_ID} AND id <= ${LAST_ID}))  TO '${DUMPDIR}/users.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV)"
+	psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY (SELECT * FROM users WHERE (id >= ${START_ID} AND id <= ${LAST_ID}))  TO '${DUMPDIR}/users.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')"
 else
-	psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY (SELECT id, CASE WHEN id=1 THEN 'carya' ELSE CONCAT('user', id) END AS login, CONCAT('user' , id) AS name, CONCAT('betydb+1@gmail.com') as email, 'Urbana' AS city,  'USA' AS country, NULL AS area, 'df8428063fb28d75841d719e3447c3f416860bb7' AS crypted_password, 'carya' AS salt, NOW() AS created_at, NOW() AS updated_at, NULL as remember_token, NULL AS remember_token_expires_at, 1 AS access_level, 1 AS page_access_level, NULL AS apikey,   'IL' AS state_prov, '61801' AS postal_code FROM users WHERE (id >= ${START_ID} AND id <= ${LAST_ID})) TO '${DUMPDIR}/users.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV)"
+	psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY (SELECT id, CASE WHEN id=1 THEN 'carya' ELSE CONCAT('user', id) END AS login, CONCAT('user' , id) AS name, CONCAT('betydb+1@gmail.com') as email, 'Urbana' AS city,  'USA' AS country, NULL AS area, 'df8428063fb28d75841d719e3447c3f416860bb7' AS crypted_password, 'carya' AS salt, NOW() AS created_at, NOW() AS updated_at, NULL as remember_token, NULL AS remember_token_expires_at, 1 AS access_level, 1 AS page_access_level, NULL AS apikey,   'IL' AS state_prov, '61801' AS postal_code FROM users WHERE (id >= ${START_ID} AND id <= ${LAST_ID})) TO '${DUMPDIR}/users.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')"
 fi
 ADD=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM USERS WHERE (id >= ${START_ID} AND id <= ${LAST_ID});" | tr -d ' ' )
 echo "DUMPED ${ADD}"
@@ -94,7 +94,7 @@ echo "DUMPED ${ADD}"
 # unrestricted tables
 for T in citations counties covariates cultivars dbfiles ensembles entities formats likelihoods location_yields machines managements methods mimetypes models pfts posteriors priors sessions sites species treatments variables; do
 	printf "Dumping %-25s : " "${T}"
-	psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY (SELECT * FROM ${T} WHERE (id >= ${START_ID} AND id <= ${LAST_ID})) TO '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV)"
+	psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY (SELECT * FROM ${T} WHERE (id >= ${START_ID} AND id <= ${LAST_ID})) TO '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')"
 	ADD=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM ${T} WHERE (id >= ${START_ID} AND id <= ${LAST_ID})" | tr -d ' ' )
 	echo "DUMPED ${ADD}"
 done
@@ -102,7 +102,7 @@ done
 # restricted tables
 for T in inputs; do
 	printf "Dumping %-25s : " "${T}"
-	psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY (SELECT * FROM ${T} WHERE (id >= ${START_ID} AND id <= ${LAST_ID}) AND access_level >= ${LEVEL}) TO '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV);"
+	psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY (SELECT * FROM ${T} WHERE (id >= ${START_ID} AND id <= ${LAST_ID}) AND access_level >= ${LEVEL}) TO '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8');"
 	ADD=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM ${T} WHERE (id >= ${START_ID} AND id <= ${LAST_ID})" | tr -d ' ' )
 	echo "DUMPED ${ADD}"
 done
@@ -115,7 +115,7 @@ for T in traits yields; do
 	else
 		UNCHECKED_QUERY="AND checked != -1"
 	fi
-	psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY (SELECT * FROM ${T} WHERE (id >= ${START_ID} AND id <= ${LAST_ID}) AND access_level >= ${LEVEL} ${UNCHECKED_QUERY}) TO '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV);"
+	psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY (SELECT * FROM ${T} WHERE (id >= ${START_ID} AND id <= ${LAST_ID}) AND access_level >= ${LEVEL} ${UNCHECKED_QUERY}) TO '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8');"
 	ADD=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM ${T} WHERE (id >= ${START_ID} AND id <= ${LAST_ID})" | tr -d ' ' )
 	echo "DUMPED ${ADD}"
 done
@@ -128,7 +128,7 @@ for T in citations_sites citations_treatments formats_variables inputs_variables
 	Y=${Z[1]}
 	Y=${Y%s}
 	printf "Dumping %-25s : " "${T}"
-	psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY (SELECT * FROM ${T} WHERE (${X}_id >= ${START_ID} AND ${X}_id <= ${LAST_ID} AND ${Y}_id >= ${START_ID} AND ${Y}_id <= ${LAST_ID})) TO '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV);"
+	psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY (SELECT * FROM ${T} WHERE (${X}_id >= ${START_ID} AND ${X}_id <= ${LAST_ID} AND ${Y}_id >= ${START_ID} AND ${Y}_id <= ${LAST_ID})) TO '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8');"
 	ADD=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM ${T} WHERE (${X}_id >= ${START_ID} AND ${X}_id <= ${LAST_ID} AND ${Y}_id >= ${START_ID} AND ${Y}_id <= ${LAST_ID})" | tr -d ' ' )
 	echo "DUMPED ${ADD}"
 done
