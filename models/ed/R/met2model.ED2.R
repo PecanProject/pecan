@@ -188,6 +188,12 @@ for(i in 1:length(filescount)){
     for(m in unique(mo[sely])){
       selm <- sely[which(mo[sely] == m)]
       mout <- paste(outfolder,"/",y,month[m],".h5",sep="")
+      
+      ##If files already exist in "Outfolder", the default function is NOT to overwrite them and 
+      ##only gives user the notice that file already exists. If user wants to overwrite the existing files, just activate 
+      ##overwrite statement below.
+      #overwrite = TRUE
+      
       h5createFile(mout)
       dims <- c(1,1,length(selm))
       nbdsf <- array(nbdsfA[selm],dim=dims)
