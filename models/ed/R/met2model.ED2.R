@@ -13,8 +13,12 @@
 # >source("http://bioconductor.org/biocLite.R")
 # >biocLite("rhdf5")
 
+##If files already exist in "Outfolder", the default function is NOT to overwrite them and 
+##only gives user the notice that file already exists. If user wants to overwrite the existing files, just change 
+##overwrite statement below to TRUE.
+
 #met2model.ED2 <- function(fname,lst){
-met2model.ED2 <- function(in.path,in.prefix,outfolder,lst){
+met2model.ED2 <- function(in.path,in.prefix,outfolder,lst,overwrite=FALSE){
   files = dir(in.path,in.prefix,full.names=TRUE)
   filescount = files[grep(pattern="*.nc",files)]
   
@@ -187,13 +191,8 @@ for(i in 1:length(filescount)){
     sely <- which(yr == y)
     for(m in unique(mo[sely])){
       selm <- sely[which(mo[sely] == m)]
-      mout <- paste(outfolder,"/",y,month[m],".h5",sep="")
-      
-      ##If files already exist in "Outfolder", the default function is NOT to overwrite them and 
-      ##only gives user the notice that file already exists. If user wants to overwrite the existing files, just activate 
-      ##overwrite statement below.
-      #overwrite = TRUE
-      
+      mout <- paste(outfolder,"/",y,month[m],".h5",sep="")      
+      if(overwrite & file.exists(mout)) file.remove(mout)
       h5createFile(mout)
       dims <- c(1,1,length(selm))
       nbdsf <- array(nbdsfA[selm],dim=dims)
