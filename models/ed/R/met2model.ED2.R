@@ -77,6 +77,9 @@ for(i in 1:length(filescount)){
   LW   <- ncvar_get(nc,"surface_downwelling_longwave_flux")
   CO2  <- try(ncvar_get(nc,"CO2air"))
   useCO2 = is.numeric(CO2)  
+
+  ## convert time to seconds
+  sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$t$units," "))[1],"seconds")
   
   nc_close(nc)
   
