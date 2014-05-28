@@ -21,4 +21,4 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Collate:
-
+    fitA.R
