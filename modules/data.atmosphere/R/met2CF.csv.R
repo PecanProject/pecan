@@ -21,7 +21,7 @@ if(FALSE){
                 na.strings=c("-9999","-6999","9999"))  
   lat = 40
   lon = -80
-  met2CF.csv(in.path,in.file,out.folder,format,lat,lon)
+  met2CF.csv(in.path,in.file,outfolder,format,lat,lon)
 }
 
 met2CF.csv <- function(in.path,in.file,outfolder,format,lat=NULL,lon=NULL){
