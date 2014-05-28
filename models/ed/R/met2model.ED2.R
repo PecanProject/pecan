@@ -194,7 +194,7 @@ for(i in 1:length(filescount)){
       mout <- paste(outfolder,"/",y,month[m],".h5",sep="")      
       if(overwrite & file.exists(mout)) file.remove(mout)
       h5createFile(mout)
-      dims <- c(1,1,length(selm))
+      dims <- c(length(selm),1,1)
       nbdsf <- array(nbdsfA[selm],dim=dims)
       nddsf <- array(nddsfA[selm],dim=dims)
       vbdsf <- array(vbdsfA[selm],dim=dims)
@@ -233,12 +233,16 @@ for(i in 1:length(filescount)){
   ## write DRIVER file
   sites <- 1
   metfile <- paste(outfolder,"/ED_MET_DRIVER_HEADER",sep="")
-  metpath <- paste(getwd(),"/",outfolder,"/",outfolder,"_",sep="")
+  metpath <- paste(outfolder,"/",sep="")
   metgrid <- c(1,1,1,1,floor(lon),floor(lat))
   metvar <- c("nbdsf","nddsf","vbdsf","vddsf","prate","dlwrf","pres","hgt","ugrd","vgrd","sh","tmp","co2")
   nmet <- length(metvar)
   metfrq <- rep(dt,nmet)
   metflag <- rep(1,nmet)
+  if(!useCO2){
+    metflag[metvar=="co2"] = 4
+    metfrq[metvar=="co2"] = 380
+  }
   write.table("#header",metfile,row.names=FALSE,col.names=FALSE)
   write.table(sites,metfile,row.names=FALSE,col.names=FALSE,append=TRUE)
   write.table(metpath,metfile,row.names=FALSE,col.names=FALSE,append=TRUE,quote=FALSE)
