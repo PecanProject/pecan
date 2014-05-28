@@ -1,10 +1,20 @@
-
-
+##' @name fitA
+##' @title fitA
+##' @author Mike Dietze
+##' @author Xiaohui Feng
+##' @export
+##' 
+##' @param flux.data  data.frame of Licor data, concatenated by rows, and with a leading column "fname" that is used to count the number of curves and match to covariates
+##' @param cov.data   data.frame of covariate data. Column names used in formulas
+##' @param model      list including 5 components: the fixed effects model for alpha (a.fixed) and Vcmax (V.fixed), the random effects for these (a.random, V.random), and the number of MCMC interations (n.iter). 
+##' 
+##' Right now the fixed effects are specified as a string using the standard R lm formula syntax, but without the LHS variable (e.g. "~ SLA + chl + SLA:chl"). The tilde is optional. For random effects, the two options right now are just "leaf" for leaf-level random effects and NULL. "model" has a default that sets all effects to NULL (fit one curve to all data) and n.iter=1000.
+##' 
 fitA <- function(flux.data,cov.data=NULL,model=NULL){
 
 library(rjags)
 
-if(is.null(model)) model = list(a.fixed=NULL,a.random=NULL,V.fixed=NULL,V.random=NULL,n.iter=1000)
+if(is.null(model)) model = list(a.fixed=NULL,a.random=NULL,V.fixed=NULL,V.random=NULL,n.iter=5000)
 
 a.fixed  = model$a.fixed
 a.random = model$a.random
@@ -156,7 +166,7 @@ return(mc3.out)
 }  ## end photosynthesis fitting code
 
 
-read.Licor <- function(filename){
+read.Licor <- function(filename,sep="\t",...){
   fbase = sub(".txt","",tail(unlist(strsplit(filename,"/")),n=1))
   print(fbase)
   full = readLines(filename)
@@ -167,7 +177,7 @@ read.Licor <- function(filename){
     full = full[-(start[i]:(skip[i]+1*(i>1)))] # +1 is to deal with second header
   }
   full = full[grep("\t",full)]  ## skip timestamp lines
-  dat = read.table(textConnection(full),sep = "\t",header = TRUE,blank.lines.skip=TRUE)
+  dat = read.table(textConnection(full),sep = "\t",header = TRUE,blank.lines.skip=TRUE,sep=sep,...)
   fname=rep(fbase,nrow(dat))
   dat = as.data.frame(cbind(fname,dat))
   return(dat)

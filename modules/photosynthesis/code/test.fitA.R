@@ -2,8 +2,6 @@
 
 
   setwd("~/Dropbox/Dietze_Lab_Undergrads/JAM - Xsite/UROP/")
-  #setwd("/Users/josh/Dropbox/Dietze_Lab_Undergrads/JAM - Xsite/UROP")
-  #in.folder = "/Users/josh/Dropbox/Dietze_Lab_Undergrads/JAM - Xsite/UROP/raw_plus_species"
   in.folder = "raw" 
   pattern = "JAM_B"
   cov.file = NULL#'c3covariates.txt'
