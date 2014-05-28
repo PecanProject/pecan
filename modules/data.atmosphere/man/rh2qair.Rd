@@ -3,7 +3,7 @@
 \alias{rh2rv}
 \title{RH to SH}
 \usage{
-  rh2qair(rh, T)
+rh2qair(rh, T)
 }
 \arguments{
   \item{rh}{relative humidity (proportion, not %)}
@@ -11,9 +11,9 @@
   \item{T}{absolute temperature (Kelvin)}
 }
 \description{
-  converts relative humidity to specific humidity
+converts relative humidity to specific humidity
 }
 \author{
-  Mike Dietze
+Mike Dietze
 }
 
