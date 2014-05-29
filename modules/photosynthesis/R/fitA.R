@@ -6,7 +6,7 @@
 ##' 
 ##' @param flux.data  data.frame of Licor data, concatenated by rows, and with a leading column "fname" that is used to count the number of curves and match to covariates
 ##' @param cov.data   data.frame of covariate data. Column names used in formulas
-##' @param model      list including 5 components: the fixed effects model for alpha (a.fixed) and Vcmax (V.fixed), the random effects for these (a.random, V.random), and the number of MCMC interations (n.iter). 
+##' @param model      list including 6 components: the fixed effects model for alpha (a.fixed) and Vcmax (V.fixed), the random effects for these (a.random, V.random), the variable used to match the gas-exchange and covariate data (match), and the number of MCMC interations (n.iter). 
 ##' 
 ##' Right now the fixed effects are specified as a string using the standard R lm formula syntax, but without the LHS variable (e.g. "~ SLA + chl + SLA:chl"). The tilde is optional. For random effects, the two options right now are just "leaf" for leaf-level random effects and NULL. "model" has a default that sets all effects to NULL (fit one curve to all data) and n.iter=1000.
 ##' 
@@ -14,7 +14,7 @@ fitA <- function(flux.data,cov.data=NULL,model=NULL){
 
 library(rjags)
 
-if(is.null(model)) model = list(a.fixed=NULL,a.random=NULL,V.fixed=NULL,V.random=NULL,n.iter=5000)
+if(is.null(model)) model = list(a.fixed=NULL,a.random=NULL,V.fixed=NULL,V.random=NULL,n.iter=5000,match="fname")
 
 a.fixed  = model$a.fixed
 a.random = model$a.random
@@ -23,10 +23,14 @@ V.random = model$V.random
 
 dat = flux.data
 
-## need some code to match between data and covariates **********************************************
+id = dat[,model$match]
+n.curves = length(unique(id))
+curve.id = as.numeric(as.factor(id))
+curve.code = tapply(as.character(id),curve.id,unique)
 
-n.curves = length(unique(dat$fname))
-curve.id = as.numeric(as.factor(dat$fname))
+##match between gas exchange data and covariates
+ord = match(curve.code,as.character(cov.dat[,model$match]))
+cov.dat = cov.dat[ord,]
 
 ## Vcmax design matrix
 if(is.null(V.fixed)){
