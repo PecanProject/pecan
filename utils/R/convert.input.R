@@ -17,6 +17,7 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   check <- input.name.check(outname, con, dbparams)
   if(is.null(check)==FALSE){
     logger.error('Input is already in the database.')
+    db.close(con)
     return(check) 
   }
   
@@ -54,8 +55,10 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   } else {
     ## if the machine is remote, run conversion remotely
     usr = ifelse(username==NULL | username=="","",paste0(username,"@"))
-    system2("ssh",paste0(usr,paste(machine$hostname,Rfcn,cmdArgs)))
+    test = system2("ssh",paste0(usr,paste(machine$hostname,Rfcn,cmdArgs)))
   }
+  
+  print(test)
   
   ### NOTE: We will eventually insert Brown Dog REST API calls here
   
@@ -70,6 +73,6 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
     return(newinput$container_id)
   }else{
     logger.warn('New input was not added to the database')
-    return(NULL)
   }
+  db.close(con)
 }
