@@ -191,9 +191,20 @@ for(i in 1:length(filescount)){
     sely <- which(yr == y)
     for(m in unique(mo[sely])){
       selm <- sely[which(mo[sely] == m)]
-      mout <- paste(outfolder,"/",y,month[m],".h5",sep="")      
-      if(overwrite & file.exists(mout)) file.remove(mout)
-      h5createFile(mout)
+      mout <- paste(outfolder,"/",y,month[m],".h5",sep="")     
+      if(file.exists(mout)){
+        if(overwrite==TRUE){
+          file.remove(mout)
+          h5createFile(mout)
+        }
+        if(overwrite==FALSE){
+          logger.setLevel("Warning! The file already exists! Moving to next month!")
+          next
+        }        
+      }
+      else h5createFile(mout)
+     # if(overwrite & file.exists(mout)) file.remove(mout)
+     # h5createFile(mout)
       dims <- c(length(selm),1,1)
       nbdsf <- array(nbdsfA[selm],dim=dims)
       nddsf <- array(nddsfA[selm],dim=dims)
