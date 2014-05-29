@@ -61,6 +61,7 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
     success <- system2("ssh",paste0(usr,paste(machine$hostname,Rfcn,chkArgs)))
   }
 
+  ## Check if the conversion was successful, currently not very robust
   if(success==TRUE){
     logger.info("Conversion was successful")
   }else{
@@ -69,7 +70,8 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   
   ### NOTE: We will eventually insert Brown Dog REST API calls here
   
-  ## Add a check to insert only if the conversion was successful
+
+
   
   ## insert new record into database
   if(write==TRUE){
