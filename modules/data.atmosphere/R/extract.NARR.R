@@ -31,5 +31,4 @@ extract.NARR <- function(in.path,in.prefix,outfolder,slat,slon){
       system(paste0("ncks -d x,",x,",",x, " -d y,",y,",",y," ",infile," ",outfile))
     }
   }
-  return(10)
 }

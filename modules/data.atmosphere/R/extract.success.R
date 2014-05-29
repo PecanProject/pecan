@@ -5,10 +5,10 @@ extract.success <- function(in.path,in.prefix,outfolder){
   outfolder <- as.character(outfolder)
   
   infiles = dir(in.path,in.prefix)
-  infiles = files[grep(pattern="*.nc",infiles)]
+  infiles = infiles[grep(pattern="*.nc",infiles)]
   
   outfiles = dir(in.path,in.prefix)
-  outfiles = files[grep(pattern="*.nc",outfiles)]
+  outfiles = outfiles[grep(pattern="*.nc",outfiles)]
   
   
   if( length(outfiles) != length(infiles) || length(outfiles) == 0){
