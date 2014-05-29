@@ -32,3 +32,4 @@ Collate:
     'extract.NARR.R'
     'met2cf.NARR.R'
     'download.NARR.R'
+    'extract.success.R'
