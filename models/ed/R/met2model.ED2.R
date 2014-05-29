@@ -17,7 +17,7 @@
 ##only gives user the notice that file already exists. If user wants to overwrite the existing files, just change 
 ##overwrite statement below to TRUE.
 
-#met2model.ED2 <- function(fname,lst){
+
 met2model.ED2 <- function(in.path,in.prefix,outfolder,lst,overwrite=FALSE){
   files = dir(in.path,in.prefix,full.names=TRUE)
   filescount = files[grep(pattern="*.nc",files)]
@@ -203,8 +203,6 @@ for(i in 1:length(filescount)){
         }        
       }
       else h5createFile(mout)
-     # if(overwrite & file.exists(mout)) file.remove(mout)
-     # h5createFile(mout)
       dims <- c(length(selm),1,1)
       nbdsf <- array(nbdsfA[selm],dim=dims)
       nddsf <- array(nddsfA[selm],dim=dims)
@@ -236,7 +234,7 @@ for(i in 1:length(filescount)){
       if(useCO2){
           h5write(co2,mout,"co2")
       }
-     #h5write(nbdsf,mout,"nbdsf","nddsf","vbdsf","vddsf","prate","dlwrf","pres","hgt","ugrd","vgrd","sh","tmp","co2")
+     
       
     }
   }
