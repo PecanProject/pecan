@@ -9,7 +9,18 @@
   
   ## Read Photosynthetic gas exchange data
   filenames <- list.files(in.folder,pattern=pattern, full.names=TRUE)
-  dat<-do.call("rbind", lapply(filenames, read.Licor))
+  master = lapply(filenames, read.Licor)
+  save(master,file="master.R")
+
+  ## run QA/QC checks
+  for(i in 1:length(master)){
+    master[[i]] = Licor.QC(master[[i]])
+    save(master,file="master.R")
+  }
+  
+  ## Merge licor data
+  dat<-do.call("rbind", master)
+  dat = dat[-which(dat$QC < 0),]
   
   
   ## Read Covariate Data

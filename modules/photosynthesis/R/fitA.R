@@ -177,7 +177,7 @@ read.Licor <- function(filename,sep="\t",...){
     full = full[-(start[i]:(skip[i]+1*(i>1)))] # +1 is to deal with second header
   }
   full = full[grep("\t",full)]  ## skip timestamp lines
-  dat = read.table(textConnection(full),sep = "\t",header = TRUE,blank.lines.skip=TRUE,sep=sep,...)
+  dat = read.table(textConnection(full),header = TRUE,blank.lines.skip=TRUE,sep=sep,...)
   fname=rep(fbase,nrow(dat))
   dat = as.data.frame(cbind(fname,dat))
   return(dat)
