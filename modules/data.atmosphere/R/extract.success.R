@@ -14,7 +14,9 @@ extract.success <- function(in.path,in.prefix,outfolder){
   
   
   if( length(outfiles) != length(infiles) || length(outfiles) == 0){
-    logger.error("Conversion was not successful") 
-    return("FALSE")
-  }else{return("TRUE")}
+    s = FALSE
+  }else{
+    s = TRUE
+  }
+  system2("echo",paste(s))
 }
