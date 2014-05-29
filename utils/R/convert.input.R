@@ -4,31 +4,21 @@
 
 convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   
-  if(FALSE){
-    ## test during development
-    input.id = 288;
-    newsite = 768
-    #l <- list(newsite = 768, year = TRUE)
-    outfolder = "/projectnb/cheas/pecan.data/input/NARR_CF_site_768/";
-    pkg = "PEcAn.data.atmosphere"
-    fcn = "extract.NARR"
-    username = "ecowdery"
-    write = FALSE
-  }
-  
   outname = tail(unlist(strsplit(outfolder,'/')),n=1)
-
-# Check to see if input is already in dbfiles table 
-check <- input.name.check(outname)
-if(length(check)!=0){
-  return(check$container_id)
-  stop('Input is already in the database.')
-}
   l <- list(...)
+  
+  print(l)
   
   ## Query inputs, site, dbfiles, machine
   dbparms <- list(driver="PostgreSQL" , user = "bety", dbname = "bety", password = "bety", host = "psql-pecan.bu.edu")
   con     <- db.open(dbparms)
+  
+  # Check to see if input is already in dbfiles table 
+  check <- input.name.check(outname, con, dbparams)
+  if(is.null(check)==FALSE){
+    logger.error('Input is already in the database.')
+    return(check) 
+  }
   
   input = db.query(paste("SELECT * from inputs where id =",input.id),con)
   if(nrow(input)==0){print(c("input not found",input.id));return(NULL)}
@@ -51,18 +41,7 @@ if(length(check)!=0){
   } else {
     site  = db.query(paste("SELECT * from sites where id =",input$site_id),con)  
   }      
-  if(nrow(site)==0){print(c("site not found",input$site_id));return(NULL)} 
-  
-  
-  # Check to see if input is already in dbfiles table 
-  # Currently does not deal with situation in which input exists but record needs updating
-  
-#   formatname <- 'CF Meteorology'
-#   mimetype <- 'application/x-netcdf'
-#   df <- dbfile.input.check(site$id, input$start_date, input$end_date, 
-#                            mimetype, formatname, input$id, con, machine$hostname)
-#  if(length(df)==0){stop('This input is already in the database.')}
-  
+  if(nrow(site)==0){print(c("site not found",input$site_id));return(NULL)}   
  
   cmdArgs = paste(args,collapse=" ")
   #  Rfcn = system.file("scripts/Rfcn.R", package = "PEcAn.all")
@@ -86,7 +65,11 @@ if(length(check)!=0){
   if(write==TRUE){
     formatname <- 'CF Meteorology'
     mimetype <- 'application/x-netcdf'
-    dbfile.input.insert(outfolder, site$id, input$start_date, input$end_date, 
+    newinput <- dbfile.input.insert(outfolder, site$id, input$start_date, input$end_date, 
                         mimetype, formatname,input$id,con=con,machine$hostname) 
+    return(newinput$container_id)
+  }else{
+    logger.warn('New input was not added to the database')
+    return(NULL)
   }
 }

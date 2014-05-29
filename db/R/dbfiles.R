@@ -30,8 +30,11 @@
 ##' \dontrun{
 ##'   dbfile.input.insert('trait.data.Rdata', siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
 ##' }
-dbfile.input.insert <- function(filename, name, siteid, startdate, enddate, mimetype, formatname, parentid=NA, con, hostname=fqdn()) {
-  # find appropriate format
+dbfile.input.insert <- function(filename, siteid, startdate, enddate, mimetype, formatname, parentid=NA, con, hostname=fqdn(), name = NULL) {
+  
+  if(is.null(name)) name <- filename
+  
+# find appropriate format
   formatid <- db.query(paste0("SELECT id FROM formats WHERE mime_type='", mimetype, "' AND name='", formatname, "'"), con)[['id']]
   if (is.null(formatid)) {
     # insert format
