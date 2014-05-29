@@ -6,9 +6,7 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   
   outname = tail(unlist(strsplit(outfolder,'/')),n=1)
   l <- list(...)
-  
-  print(l)
-  
+
   ## Query inputs, site, dbfiles, machine
   dbparms <- list(driver="PostgreSQL" , user = "bety", dbname = "bety", password = "bety", host = "psql-pecan.bu.edu")
   con     <- db.open(dbparms)
@@ -38,16 +36,20 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   # Use existing site, unless otherwise specified (ex: subsetting case)
   if("newsite" %in% names(l) && is.null(l[["newsite"]])==FALSE){
     site = db.query(paste("SELECT * from sites where id =",l$newsite),con)
-    args = c(args, site$lat, site$lon)
-  } else {
-    site  = db.query(paste("SELECT * from sites where id =",input$site_id),con)  
+    if(nrow(site)==0){logger.error("Site not found"); return(NULL)} 
+    if(!(is.na(site$lat)) && !(is.na(site$lon))){
+      args = c(args, site$lat, site$lon)
+    }else{logger.error("No lat and lon for extraction site"); return(NULL)}
+  }else{
+    site  = db.query(paste("SELECT * from sites where id =",input$site_id),con) 
+    if(nrow(site)==0){logger.error("Site not found");return(NULL)} 
   }      
-  if(nrow(site)==0){print(c("site not found",input$site_id));return(NULL)}   
- 
+    
   cmdArgs = paste(args,collapse=" ")
   #  Rfcn = system.file("scripts/Rfcn.R", package = "PEcAn.all")
   Rfcn = "pecan/scripts/Rfcn.R"
   
+  chkArgs = paste(c(args[1],"extract.success",args[3:5]),collapse=" ")
   
   if(machine$hostname %in% c("localhost",host)){
     ## if the machine is local, run conversion function
@@ -55,10 +57,11 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   } else {
     ## if the machine is remote, run conversion remotely
     usr = ifelse(username==NULL | username=="","",paste0(username,"@"))
-    test = system2("ssh",paste0(usr,paste(machine$hostname,Rfcn,cmdArgs)))
+    system2("ssh",paste0(usr,paste(machine$hostname,Rfcn,cmdArgs)))
+    success <- system2("ssh",paste0(usr,paste(machine$hostname,Rfcn,chkArgs)))
   }
-  
-  print(test)
+
+  print(success)
   
   ### NOTE: We will eventually insert Brown Dog REST API calls here
   
@@ -73,6 +76,8 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
     return(newinput$container_id)
   }else{
     logger.warn('New input was not added to the database')
+    db.close(con)
+    return(NULL)
   }
   db.close(con)
 }
