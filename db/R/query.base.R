@@ -83,7 +83,7 @@ query.close <- function(con) {
 ##' @return nothing, as a side effect closes all open connections
 ##' @author David LeBauer
 killdbcons <- function(){
-  for (i in dbListConnections(MySQL())) db.close(i)
+  for (i in dbListConnections(PostgreSQL())) db.close(i)
 }
 #==================================================================================================#
 
