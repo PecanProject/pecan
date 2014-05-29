@@ -1,5 +1,7 @@
 extract.NARR <- function(in.path,in.prefix,outfolder,slat,slon){
   
+  require("PEcAn.utils")
+  
   in.path <- as.character(in.path)
   in.prefix <- as.character(in.prefix)
   outfolder <- as.character(outfolder)
