@@ -22,3 +22,4 @@ LazyLoad: yes
 LazyData: FALSE
 Collate:
     fitA.R
+    Licor.QC.R

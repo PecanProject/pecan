@@ -3,13 +3,24 @@
 
   setwd("~/Dropbox/Dietze_Lab_Undergrads/JAM - Xsite/UROP/")
   in.folder = "raw" 
-  pattern = "JAM_B"
+  pattern = "JAM_"
   cov.file = NULL#'c3covariates.txt'
 
   
   ## Read Photosynthetic gas exchange data
   filenames <- list.files(in.folder,pattern=pattern, full.names=TRUE)
-  dat<-do.call("rbind", lapply(filenames, read.Licor))
+  master = lapply(filenames, read.Licor)
+  save(master,file="master.RData")
+
+  ## run QA/QC checks
+  for(i in 1:length(master)){
+    master[[i]] = Licor.QC(master[[i]])
+    save(master,file="master.RData")
+  }
+  
+  ## Merge licor data
+  dat<-do.call("rbind", master)
+  dat = dat[-which(dat$QC < 1),]  ## remove both unchecked points and those that fail QC
   
   
   ## Read Covariate Data
