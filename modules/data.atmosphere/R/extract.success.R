@@ -7,12 +7,12 @@ extract.success <- function(in.path,in.prefix,outfolder){
   infiles = dir(in.path,in.prefix)
   infiles = infiles[grep(pattern="*.nc",infiles)]
   
-  outfiles = dir(in.path,in.prefix)
+  outfiles = dir(outfolder,in.prefix)
   outfiles = outfiles[grep(pattern="*.nc",outfiles)]
   
   
   if( length(outfiles) != length(infiles) || length(outfiles) == 0){
     logger.error("Conversion was not successful") 
-    return(FALSE)
-  }else{return(TRUE)}
+    return("FALSE")
+  }else{return("TRUE")}
 }
