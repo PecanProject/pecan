@@ -3,7 +3,7 @@
 
   setwd("~/Dropbox/Dietze_Lab_Undergrads/JAM - Xsite/UROP/")
   in.folder = "raw" 
-  pattern = "JAM_"
+  pattern = "JAM_B"
   cov.file = NULL#'c3covariates.txt'
 
   
@@ -35,15 +35,19 @@
   
 fit = fitA(dat)
   
-A.model = list(a.fixed=NULL,a.random=NULL,V.fixed=NULL,V.random=NULL,n.iter=5000)
+A.model = list(a.fixed=NULL,a.random=NULL,V.fixed=NULL,V.random=NULL,n.iter=5000,match="fname")
   
 fit = fitA(dat,cov.data,A.model)
     
-plot(fit)
+plot(fit$params)    ## MCMC diagnostic plots
+summary(fit$params) ## parameter estimates  
   
-  mstats = summary(fit)
-  prean = mstats$statistics[grep("prean",rownames(mstats$statistics)),1]
-  plot(prean,dat$Photo,pch="+")
+  ## predicted vs observed plot
+  mstats = summary(fit$predict)
+  pmean = mstats$statistics[grep("pmean",rownames(mstats$statistics)),1]
+  plot(pmean,dat$Photo,pch="+")
   abline(0,1,col=2,lwd=2)
-
+  
+  
+plot.photo(dat,fit)
   
