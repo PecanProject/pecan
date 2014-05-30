@@ -28,7 +28,7 @@ NARR_cf.id <- convert.input(input.id,outfolder,pkg,fcn,write,username) # doesn't
 #--------------------------------------------------------------------------------------------------#
 # Extract for location
 input.id <-  NARR_cf.id
-ns       <-  768
+ns       <-  1161
 
 outfolder <-  paste0("/projectnb/cheas/pecan.data/input/NARR_CF_site_",ns,"/")
 pkg       <- "PEcAn.data.atmosphere"

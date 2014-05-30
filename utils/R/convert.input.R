@@ -50,6 +50,7 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   Rfcn = "pecan/scripts/Rfcn.R"
   
   chkArgs = paste(c(args[1],"extract.success",args[3:5]),collapse=" ")
+  chkArgs = paste(c(args[1],"paste",args[3:5]),collapse=" ")
   
   if(machine$hostname %in% c("localhost",host)){
     ## if the machine is local, run conversion function
