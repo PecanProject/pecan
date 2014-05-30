@@ -4,8 +4,8 @@
 
 convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   
-  outname = tail(unlist(strsplit(outfolder,'/')),n=1)
   l <- list(...)
+  outname = tail(unlist(strsplit(outfolder,'/')),n=1)
 
   ## Query inputs, site, dbfiles, machine
   dbparms <- list(driver="PostgreSQL" , user = "bety", dbname = "bety", password = "bety", host = "psql-pecan.bu.edu")

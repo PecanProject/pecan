@@ -32,5 +32,5 @@ if(exists(args[2])){
   }
 
   ## call function
-  output <- do.call(args[2], fcn.args) 
+  do.call(args[2], fcn.args) 
 }
