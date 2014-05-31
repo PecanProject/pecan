@@ -5,14 +5,13 @@ require(ncdf4)
 #--------------------------------------------------------------------------------------------------#
 
 # For initial NARR setup, run precan/modules/data.atmosphere/download.NARR.R on geo
-outfolder <- "/projectnb/cheas/pecan.data/input/NARR/"
+outfolder  <- "/projectnb/cheas/pecan.data/input/NARR/"
 start_year <- 1979
 end_year   <- 2013
-
-download.NARR(outfolder,start_year,end_year) 
+pkg        <- "PEcAn.data.atmosphere"
 
 # We already know that the input id for raw NARR is 285
-NARR_raw.id <- 285
+NARR_raw.id <- Raw.NARR(outfolder,start_year,end_year,pkg) 
 
 #--------------------------------------------------------------------------------------------------#
 # Update NARR_CF
