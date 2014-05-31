@@ -5,6 +5,9 @@
 convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   
   l <- list(...)
+  n <- nchar(outfolder)
+  if(substr(outfolder,n,n) != "/"){outfolder = paste0(outfolder,"/")}
+  
   outname = tail(unlist(strsplit(outfolder,'/')),n=1)
 
   ## Query inputs, site, dbfiles, machine
