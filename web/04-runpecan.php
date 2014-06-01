@@ -175,7 +175,7 @@ if ($pdo->query("UPDATE workflows SET folder='${folder}' WHERE id=${workflowid}"
 }
 
 # if on localhost replace with localhost
-if ($hostname == gethostname()) {
+if ($hostname == $fqdn) {
 	$hostname="localhost";
 }
 
