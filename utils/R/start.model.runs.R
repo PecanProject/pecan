@@ -22,7 +22,8 @@
 ##' }
 ##' @author Shawn Serbin, Rob Kooper, ...
 ##'
-start.model.runs <- function(model, write = TRUE){
+start.model.runs <- function(settings, write = TRUE){
+  model = settings$model$name
   print("-------------------------------------------------------------------")
   print(paste(" Starting model runs", model))
   print("-------------------------------------------------------------------")

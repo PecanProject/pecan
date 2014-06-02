@@ -17,8 +17,11 @@
 ##' @export
 ##'
 ##' @author David LeBauer, Shawn Serbin
-run.write.configs <- function(model, write = TRUE) {
-
+run.write.configs <- function(settings, write = TRUE) {
+  model = settings$model$name
+  scipen = getOption("scipen")
+  options(scipen=12)
+  
   ## remove previous runs.txt
   if (file.exists(file.path(settings$rundir, "runs.txt"))) {
     logger.warn("Existing runs.txt file will be removed.")
@@ -164,6 +167,7 @@ run.write.configs <- function(model, write = TRUE) {
   logger.info("\n  ######################## Finished writing model run config files ########################")
   ### Save output from SA/Ensemble runs
   save(ensemble.samples, trait.samples, sa.samples, runs.samples, file = file.path(settings$outdir, 'samples.Rdata'))
+  options(scipen=scipen)
 }
 #==================================================================================================#
 
