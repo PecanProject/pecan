@@ -92,13 +92,16 @@ REM_START_ID=$(( REMOTESITE * ID_RANGE + 1 ))
 REM_LAST_ID=$(( REM_START_ID + ID_RANGE - 1 ))
 
 # clean tables
-for T in users citations counties covariates cultivars dbfiles ensembles entities formats likelihoods location_yields machines managements methods mimetypes models pfts posteriors priors sessions sites species treatments variables inputs traits yields; do
+for T in users citations counties covariates cultivars dbfiles ensembles entities formats likelihoods location_yields machines managements methods mimetypes models pfts posteriors priors runs sessions sites species treatments variables inputs traits yields workflows; do
 	printf "Cleaning %-25s : " "${T}"
 	DEL=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM ${T} WHERE (id >= ${REM_START_ID} AND id <= ${REM_LAST_ID})" | tr -d ' ' )
 	psql ${PG_OPT} -t -q -d "${DATABASE}" -c "DELETE FROM ${T} WHERE (id >= ${REM_START_ID} AND id <= ${REM_LAST_ID})"
 	echo "DEL ${DEL}"
 	printf "Loading  %-25s : " "${T}"
+echo "${DUMPDIR}/${T}.csv"
+	if [ -f "${DUMPDIR}/${T}.csv" ]; then
 	psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY ${T} FROM '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')"
+	fi
 	ADD=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "SELECT COUNT(*) FROM ${T} WHERE (id >= ${REM_START_ID} AND id <= ${REM_LAST_ID});" | tr -d ' ' )
 	echo "ADD ${ADD}"
 	printf "Fixing   %-25s : " "${T}"
@@ -107,7 +110,7 @@ for T in users citations counties covariates cultivars dbfiles ensembles entitie
 done
 
 # hasmany relation ships
-for T in citations_sites citations_treatments formats_variables inputs_variables managements_treatments pfts_priors pfts_species; do
+for T in citations_sites citations_treatments formats_variables inputs_variables managements_treatments pfts_priors pfts_species inputs_runs posteriors_runs; do
 	Z=(${T//_/ })
 	X=${Z[0]}
 	X=${X%s}
@@ -118,7 +121,9 @@ for T in citations_sites citations_treatments formats_variables inputs_variables
 	psql ${PG_OPT} -t -q -d "${DATABASE}" -c "DELETE FROM ${T} WHERE (${X}_id >= ${REM_START_ID} AND ${X}_id <= ${REM_LAST_ID} AND ${Y}_id >= ${REM_START_ID} AND ${Y}_id <= ${REM_LAST_ID})"
 	echo "DEL ${DEL}"
 	printf "Loading  %-25s : " "${T}"
+	if [ -f "${DUMPDIR}/${T}.csv" ]; then
 	psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY ${T} FROM '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')"
+	fi
 	ADD=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "SELECT COUNT(*) FROM ${T} WHERE (${X}_id >= ${REM_START_ID} AND ${X}_id <= ${REM_LAST_ID} AND ${Y}_id >= ${REM_START_ID} AND ${Y}_id <= ${REM_LAST_ID})" | tr -d ' ' )
 	echo "ADD ${ADD}"
 done
