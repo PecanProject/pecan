@@ -16,10 +16,10 @@ db.query(paste("UPDATE inputs SET name = 'NARR_CF' where id =",input.id),con)
 
 
 # Get input
-input = db.query(paste("SELECT * from inputs where id =",input.id),con)
+input_test = db.query(paste("SELECT * from inputs where id =",288),con)
 
 # Get db file 
-dbfile = db.query(paste("SELECT * from dbfiles where container_id =",input.id," and container_type = 'Input'"),con)
+dbfile_x = db.query(paste("SELECT * from dbfiles where container_id =",input.id," and container_type = 'Input'"),con)
 
 
 # Check if files is in dbfiles
@@ -37,3 +37,17 @@ file_test = db.query(paste0("SELECT * from dbfiles where file_path = '", outfold
 
 db.query(paste0("DELETE from dbfiles where file_path = '", outfolder, "'"),con)
 
+y <- db.query(paste0("DELETE from dbfiles where file_path = '", outfolder, "'"),con)
+db.query(paste0("DELETE FROM inputs WHERE name = '", outname, "'"), con, dbparams)
+
+for (i in dbListConnections(PostgreSQL())) db.close(i)
+
+x <- db.query(paste0("SELECT FROM inputs WHERE site_id=", 1161), con)
+
+now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+
+
+recent_input <- db.query(paste("SELECT * FROM inputs ORDER BY created_at DESC LIMIT 10"),con)
+recent_dbfile <- db.query(paste("SELECT * FROM dbfiles ORDER BY created_at DESC LIMIT 400"),con)
+
+recent_dbfile <- db.query(paste0("SELECT * FROM dbfiles WHERE created_at LIKE '","2014-06-02%","'"),con)

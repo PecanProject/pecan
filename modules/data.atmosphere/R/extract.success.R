@@ -18,5 +18,5 @@ extract.success <- function(in.path,in.prefix,outfolder){
   }else{
     s = TRUE
   }
-  system2("echo",paste(s))
+  return(s)
 }

@@ -50,12 +50,12 @@ dbfile.input.insert <- function(filename, siteid, startdate, enddate, mimetype, 
   }
 
   # find appropriate input
-  inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, " AND start_date='", startdate, "' AND end_date='", enddate, "'" , parent, ";"), con)[['id']]
+inputid <- db.query(paste0("SELECT * FROM inputs WHERE name='", name,"'"), con)[['id']]
   if (is.null(inputid)) {
     # insert input
     db.query(paste0("INSERT INTO inputs (site_id, format_id, created_at, updated_at, start_date, end_date, name) VALUES (",
                     siteid, ", ", formatid, ", NOW(), NOW(), '", startdate, "', '", enddate,"','", name, "')"), con)
-    inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, " AND start_date='", startdate, "' AND end_date='", enddate, "'" , parent, ";"), con)[['id']]
+    inputid <- db.query(paste0("SELECT * FROM inputs WHERE name='", name,"'"), con)[['id']]
   }
 
   invisible(dbfile.insert(filename, 'Input', inputid, con, hostname))

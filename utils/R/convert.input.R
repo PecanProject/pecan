@@ -53,36 +53,35 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   Rfcn = "pecan/scripts/Rfcn.R"
   
   chkArgs = paste(c(args[1],"extract.success",args[3:5]),collapse=" ")
-  chkArgs = paste(c(args[1],"paste",args[3:5]),collapse=" ")
   
   if(machine$hostname %in% c("localhost",host)){
     ## if the machine is local, run conversion function
     system(paste(Rfcn,cmdArgs))
+    success <- system(paste(Rfcn,chkArgs),intern=TRUE)
   } else {
     ## if the machine is remote, run conversion remotely
     usr = ifelse(username==NULL | username=="","",paste0(username,"@"))
     system2("ssh",paste0(usr,paste(machine$hostname,Rfcn,cmdArgs)))
-    success <- system2("ssh",paste0(usr,paste(machine$hostname,Rfcn,chkArgs)))
+    success <- system(paste0("ssh ",usr,paste(machine$hostname,Rfcn,chkArgs)),intern=TRUE)
   }
 
   ## Check if the conversion was successful, currently not very robust
-  if(success==TRUE){
+  if(unlist(strsplit(success,' '))[2] == TRUE){
     logger.info("Conversion was successful")
   }else{
     logger.error("Conversion was not successful"); write==FALSE
   }
   
   ### NOTE: We will eventually insert Brown Dog REST API calls here
-  
 
-
-  
   ## insert new record into database
   if(write==TRUE){
     formatname <- 'CF Meteorology'
     mimetype <- 'application/x-netcdf'
-    newinput <- dbfile.input.insert(outfolder, site$id, input$start_date, input$end_date, 
-                        mimetype, formatname,input$id,con=con,machine$hostname) 
+    filename <- paste0(outfolder,"NARR.")
+      
+    newinput <- dbfile.input.insert(filename, site$id, paste(input$start_date), paste(input$end_date), 
+                        mimetype, formatname,input$id,con=con,machine$hostname,outname) 
     return(newinput$container_id)
   }else{
     logger.warn('Input was not added to the database')
