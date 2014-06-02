@@ -1,10 +1,10 @@
 raw.NARR <- function(outfolder,start_year,end_year,pkg,NARR.host){
   
   # Check database for file, and instert if not already there.
-  args    <- c(pkg,"download.NARR",outfolder,start_year,end_year)  
-  cmdArgs <- paste(args,collapse=" ")
-  Rfcn    <- "pecan/scripts/Rfcn.R"
-  host    <- system("hostname",intern=TRUE)
+  args     <- c(pkg,"download.NARR",outfolder,start_year,end_year)  
+  cmdArgs  <- paste(args,collapse=" ")
+  Rfcn     <- "pecan/scripts/Rfcn.R"
+  host     <- system("hostname",intern=TRUE)
   username <- ""
   
   if(NARR.host %in% c("localhost",host)){
