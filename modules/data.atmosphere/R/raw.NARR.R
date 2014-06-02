@@ -1,21 +1,24 @@
-raw.NARR <- function(outfolder,start_year,end_year,pkg){
+raw.NARR <- function(outfolder,start_year,end_year,pkg,NARR.host){
   
   # Check database for file, and instert if not already there.
   args    <- c(pkg,"download.NARR",outfolder,start_year,end_year)  
   cmdArgs <- paste(args,collapse=" ")
   Rfcn    <- "pecan/scripts/Rfcn.R"
+  host    <- system("hostname",intern=TRUE)
+  username <- ""
   
-  if(machine$hostname %in% c("localhost",host)){
+  if(NARR.host %in% c("localhost",host)){
+    ## if the machine is local, run conversion function
     system(paste(Rfcn,cmdArgs))
   } else {
+    ## if the machine is remote, run conversion remotely
     usr = ifelse(username==NULL | username=="","",paste0(username,"@"))
-    system2("ssh",paste0(usr,paste(machine$hostname,Rfcn,cmdArgs)))
-    success <- system2("ssh",paste0(usr,paste(machine$hostname,Rfcn,chkArgs)))
+    system2("ssh",paste0(usr,paste(NARR.host,Rfcn,cmdArgs)))
+    success <- system2("ssh",paste0(usr,paste(NARR.host,Rfcn,chkArgs)))
   }
   
   dbparms  <- list(driver="PostgreSQL" , user = "bety", dbname = "bety", password = "bety", host = "psql-pecan.bu.edu")
   con      <- db.open(dbparms)
-  host     <- system("hostname",intern=TRUE)
   input.id <- db.query(paste0("SELECT id FROM inputs WHERE name = '","NARR", "'"), con, dbparams)[['id']]
   
   n <- nchar(outfolder); if(substr(outfolder,n,n) != "/"){outfolder = paste0(outfolder,"/")}
@@ -33,5 +36,5 @@ raw.NARR <- function(outfolder,start_year,end_year,pkg){
       print("Updated db file!")   
     }else{print("Didn't need to add/update db file!")}
   }
-  invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, "' AND container_id=", id, " AND created_at='", now, "' ORDER BY id DESC LIMIT 1"), con)[['id']]) 
+  invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, "' AND container_id=", input.id, "' ORDER BY id DESC LIMIT 1"), con)[['id']]) 
 }
