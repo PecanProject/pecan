@@ -5,7 +5,7 @@ raw.NARR <- function(outfolder,start_year,end_year,pkg,NARR.host){
   cmdArgs  <- paste(args,collapse=" ")
   Rfcn     <- "pecan/scripts/Rfcn.R"
   host     <- system("hostname",intern=TRUE)
-  username <- ""
+  username <- NULL
   
   if(NARR.host %in% c("localhost",host)){
     ## if the machine is local, run conversion function

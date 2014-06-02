@@ -1,5 +1,8 @@
 download.NARR <- function(outfolder,start_year,end_year){
   
+  start_year <- as.numeric(start_year)
+  end_year   <- as.numeric(end_year)
+  
   # Download Raw NARR from the internet
   
   vlist <- c("pres.sfc", "dswrf", "dlwrf", "air.2m", "shum.2m", "prate","vwnd.10m","uwnd.10m")
