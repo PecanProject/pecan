@@ -9,9 +9,10 @@ outfolder  <- "/projectnb/cheas/pecan.data/input/NARR/"
 start_year <- 1979
 end_year   <- 2013
 pkg        <- "PEcAn.data.atmosphere"
+NARR.host  <- "geo.bu.edu"
 
-# We already know that the input id for raw NARR is 285
-NARR_raw.id <- Raw.NARR(outfolder,start_year,end_year,pkg) 
+NARR_raw.id <- raw.NARR(outfolder,start_year,end_year,pkg,NARR.host) 
+# NARR_raw.id should be 285
 
 #--------------------------------------------------------------------------------------------------#
 # Update NARR_CF
@@ -23,6 +24,7 @@ write     <-  FALSE
 username  <- ""
 
 NARR_cf.id <- convert.input(input.id,outfolder,pkg,fcn,write,username) # doesn't update existing record
+# NARR_cf.id should be 288
 
 #--------------------------------------------------------------------------------------------------#
 # Extract for location

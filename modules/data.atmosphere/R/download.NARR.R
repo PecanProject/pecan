@@ -9,6 +9,6 @@ download.NARR <- function(outfolder,start_year,end_year){
       system(paste("wget -c -P ", outfolder ," ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/",v,".", year,".nc",sep=""))
     }    
   }
-  
+} 
   
   
