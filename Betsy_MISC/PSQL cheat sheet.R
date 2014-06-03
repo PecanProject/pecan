@@ -16,7 +16,7 @@ db.query(paste("UPDATE inputs SET name = 'NARR_CF' where id =",input.id),con)
 
 
 # Get input
-input_test = db.query(paste("SELECT * from inputs where id =",288),con)
+input_test = db.query(paste("SELECT * from inputs where id =",NARR_extract.id),con)
 
 # Get db file 
 dbfile_x = db.query(paste("SELECT * from dbfiles where container_id =",input.id," and container_type = 'Input'"),con)
@@ -35,14 +35,14 @@ if(all(dim(file) == c(0, 0))){
 file = db.query(paste0("SELECT * from dbfiles where file_path = '", outfolder, "'"),con)
 file_test = db.query(paste0("SELECT * from dbfiles where file_path = '", outfolder_test, "'"),con)
 
-db.query(paste0("DELETE from dbfiles where file_path = '", outfolder, "'"),con)
+db.query(paste0("DELETE from dbfiles where file_name = '", "NARR_CF_site_1161", "'"),con)
 
 y <- db.query(paste0("DELETE from dbfiles where file_path = '", outfolder, "'"),con)
-db.query(paste0("DELETE FROM inputs WHERE name = '", outname, "'"), con, dbparams)
+db.query(paste0("DELETE FROM inputs WHERE name = '", in.name, "'"), con, dbparams)
 
 for (i in dbListConnections(PostgreSQL())) db.close(i)
 
-x <- db.query(paste0("SELECT FROM inputs WHERE site_id=", 1161), con)
+x <- db.query(paste0("SELECT * FROM dbfiles WHERE id=", 1000000107), con)
 
 now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
 

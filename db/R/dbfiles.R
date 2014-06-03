@@ -57,8 +57,9 @@ inputid <- db.query(paste0("SELECT * FROM inputs WHERE name='", name,"'"), con)[
                     siteid, ", ", formatid, ", NOW(), NOW(), '", startdate, "', '", enddate,"','", name, "')"), con)
     inputid <- db.query(paste0("SELECT * FROM inputs WHERE name='", name,"'"), con)[['id']]
   }
+  dbfileid <- dbfile.insert(filename, 'Input', inputid, con, hostname)
 
-  invisible(dbfile.insert(filename, 'Input', inputid, con, hostname))
+  invisible(list(input.id = inputid, dfbile.id = dbfileid))
 }
 
 ##' Function to check to see if a file exists in the dbfiles table as an input

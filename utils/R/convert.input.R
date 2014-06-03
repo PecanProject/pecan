@@ -82,7 +82,7 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
       
     newinput <- dbfile.input.insert(filename, site$id, paste(input$start_date), paste(input$end_date), 
                         mimetype, formatname,input$id,con=con,machine$hostname,outname) 
-    return(newinput$container_id)
+    return(newinput$input.id)
   }else{
     logger.warn('Input was not added to the database')
     db.close(con)
