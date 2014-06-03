@@ -30,7 +30,9 @@ check.settings <- function(settings) {
     logger.info("Not doing sanity checks of pecan.xml")
     return(0)
   }
-
+  scipen = getOption("scipen")
+  options(scipen=12)
+  
   ## allow PEcAn to run without database
   if (is.null(settings$database)) {
     dbcon <- "NONE"
@@ -447,7 +449,7 @@ check.settings <- function(settings) {
   }
   ## if run$host is localhost, set to "localhost
   if (any(settings$run$host %in% c(Sys.info()['nodename'], gsub("illinois", "uiuc", Sys.info()['nodename'])))){
-    settings$run$host <- "localhost"
+    settings$run$host$name <- "localhost"
   }
 
   # check if we need to use qsub
@@ -509,7 +511,7 @@ check.settings <- function(settings) {
     settings$outdir <- "PEcAn_@WORKFLOW@"
   }
   # replace @WORKFLOW@ with the id of the workflow
-  settings$outdir <- gsub("@WORKFLOW@", settings$workflow$id, settings$outdir)
+  settings$outdir <- gsub("@WORKFLOW@", format(settings$workflow$id,scientific=FALSE), settings$outdir)
   # create fully qualified pathname
   if (substr(settings$outdir, 1, 1) != '/') {
     settings$outdir <- file.path(getwd(), settings$outdir)
@@ -606,7 +608,8 @@ check.settings <- function(settings) {
   if (!is.character(dbcon)) {
     db.close(dbcon)
   }
-
+  options(scipen=scipen)
+  
   # all done return cleaned up settings
   invisible(settings)
 }
