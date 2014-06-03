@@ -30,5 +30,6 @@ filename <- args[6]
 # height=600
 # filename="plot.png"
  
-plot.netcdf(datafile, yvar, xvar, width, height, filename, year);
+#error_reporting(E_ALL | E_STRICT);
+PEcAn.visualization::plot.netcdf(datafile, yvar, xvar, width, height, filename, year);
  
