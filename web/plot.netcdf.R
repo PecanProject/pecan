@@ -7,7 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 # --------------------------------------------------------------------------------
 
-library(PEcAn.visualization)
+#library(PEcAn.visualization)
 
 # ----------------------------------------------------------------------
 # COMMAND LINE ARGUMENTS
