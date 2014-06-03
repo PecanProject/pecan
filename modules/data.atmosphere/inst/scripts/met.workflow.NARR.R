@@ -5,7 +5,7 @@ require(RPostgreSQL)
 
 # Dowload 
 outfolder  <- "/projectnb/cheas/pecan.data/input/NARR/"
-start_year <- 1979
+start_year <- 2012
 end_year   <- 2013
 pkg        <- "PEcAn.data.atmosphere"
 NARR.host  <- "geo.bu.edu"
@@ -27,17 +27,17 @@ NARR_cf.id <- convert.input(input.id,outfolder,pkg,fcn,write,username) # doesn't
 
 #--------------------------------------------------------------------------------------------------#
 # Extract for location
-input.id <-  NARR_cf.id
-ns       <-  1161
+input.id <- NARR_cf.id
+newsite  <- 766
+str_ns   <- paste0(newsite %/% 1000000000, "-", newsite %% 1000000000)
 
-outfolder <-  paste0("/projectnb/cheas/pecan.data/input/NARR_CF_site_",ns,"/")
+outfolder <- paste0("/projectnb/cheas/pecan.data/input/NARR_CF_site_",str_ns,"/")
 pkg       <- "PEcAn.data.atmosphere"
 fcn       <- "extract.NARR"
-write     <-  TRUE
+write     <- TRUE
 username  <- ""
-in.name   <- paste0("NARR_CF_site_",ns)
 
-NARR_extract.id <- convert.input (input.id,outfolder,pkg,fcn,write,username,newsite = ns)
+NARR_extract.id <- convert.input (input.id,outfolder,pkg,fcn,write,username,newsite = newsite)
 
 #  input.id <- 288
 #  l <- list(newsite=ns)
