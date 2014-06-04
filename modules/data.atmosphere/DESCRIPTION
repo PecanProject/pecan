@@ -34,3 +34,5 @@ Collate:
     'download.NARR.R'
     'extract.success.R'
     'raw.NARR.R'
+    'met2CF.csv.R'
+    'met_functions.R'
