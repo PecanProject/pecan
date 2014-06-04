@@ -28,7 +28,7 @@ start.runs.ED2 <- function(runid) {
 
   # check exitcode
   if (result != 0) {
-    logger.severe("Error executing ED : exitcode=", result, errorcode=result)
+    logger.severe("Error executing ED : exitcode=", result)
   }
 
   file.copy(file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))

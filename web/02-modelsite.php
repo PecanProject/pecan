@@ -22,7 +22,7 @@ if ($authentication) {
 # boolean parameters
 $offline=isset($_REQUEST['offline']);
 
-$hostname = gethostname();
+$hostname = $fqdn;
 if (isset($_REQUEST['hostname'])) {
 	$hostname = $_REQUEST['hostname'];
 }

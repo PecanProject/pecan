@@ -2,15 +2,15 @@
 \alias{exner}
 \title{Exner function}
 \usage{
-  exner(pres)
+exner(pres)
 }
 \arguments{
   \item{pres}{air pressure (Bar)}
 }
 \description{
-  estimated exner function
+estimated exner function
 }
 \author{
-  Mike Dietze
+Mike Dietze
 }
 

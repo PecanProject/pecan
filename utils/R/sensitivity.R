@@ -68,6 +68,8 @@ read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name='',
 ##' @author David LeBauer, Carl Davidson
 write.sa.configs <- function(defaults, quantile.samples, settings, model,
                              clean=FALSE, write.to.db = TRUE){
+  scipen = getOption("scipen")
+  options(scipen=12)
   
   my.write.config <- paste("write.config.", model,sep="")
   
@@ -99,7 +101,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
   
   if (!is.null(con)) {
     now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-    query.base(paste("INSERT INTO ensembles (created_at, runtype, workflow_id) values ('", now, "', 'sensitivity analysis', ", workflow.id, ")", sep=''), con)
+    query.base(paste("INSERT INTO ensembles (created_at, runtype, workflow_id) values ('", now, "', 'sensitivity analysis', ", format(workflow.id,scientific=FALSE), ")", sep=''), con)
     ensemble.id <- query.base(paste("SELECT id FROM ensembles WHERE created_at='", now, "'", sep=''), con)[['id']]
     paramlist <- paste("quantile=MEDIAN,trait=all,pft=", paste(lapply(settings$pfts, function(x) x[['name']]), sep=','), sep='')
     query.base(paste("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id, parameter_list) values ('", settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", settings$run$end.date, "', '",settings$run$outdir , "', '", now, "', ", ensemble.id, ", '", paramlist, "')", sep=''), con)
@@ -221,7 +223,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
   if (!is.null(con)) {
     db.close(con)
   }
-  
+  options(scipen=scipen)
   invisible(runs)
 }
 #==================================================================================================#

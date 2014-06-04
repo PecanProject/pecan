@@ -24,7 +24,8 @@
   </ensemble>
 
   <model>
-    <id>12</id>
+    <binary>/usr/local/bin/sipnet.runk</binary>
+    <name>SIPNET</name>
   </model>
 
   <run>

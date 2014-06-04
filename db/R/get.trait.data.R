@@ -8,17 +8,17 @@
 #-------------------------------------------------------------------------------
 
 ##--------------------------------------------------------------------------------------------------#
-##' Check two species. Identical does not work since one can be loaded
+##' Check two lists. Identical does not work since one can be loaded
 ##' from the database and the other from a CSV file.
 ##'
-##' @name check.species
-##' @title Compares two lists of species
-##' @param x first list of species
-##' @param y second list of species
-##' @return true if two list of species are the same
+##' @name check.lists
+##' @title Compares two lists
+##' @param x first list
+##' @param y second list
+##' @return true if two list are the same
 ##' @author Rob Kooper
 ##'
-check.species <- function(x, y) {
+check.lists <- function(x, y) {
   if (nrow(x) != nrow(y)) {
     return(FALSE)
   }
@@ -66,6 +66,16 @@ get.trait.data.pft <- function(pft, dbfiles, dbcon,
 
   # get the species, we need to check if anything changed
   species <- query.pft_species(pft$name, con=dbcon)
+  spstr <- vecpaste(species$id)
+
+  # get the priors
+  prior.distns <- query.priors(pft$name, vecpaste(trait.names), out = pft$outdir, con = dbcon)
+  prior.distns <- prior.distns[which(!rownames(prior.distns) %in% names(pft$constants)),]
+  traits <- rownames(prior.distns) 
+
+  # get the trait data
+  trait.data <- query.traits(spstr, traits, con = dbcon)
+  traits <- names(trait.data)
 
   # check to see if we need to update
   if ((forceupdate == 'AUTO') || !as.logical(forceupdate)) {
@@ -79,15 +89,43 @@ get.trait.data.pft <- function(pft, dbfiles, dbcon,
       if (!any(is.na(ids))) {
         foundallfiles <- TRUE
         for(id in ids) {
+          logger.info(files$file_path[[id]], files$file_name[[id]])
           if (!file.exists(file.path(files$file_path[[id]], files$file_name[[id]]))) {
             foundallfiles <- FALSE
             logger.error("can not find posterior file: ", file.path(files$file_path[[id]], files$file_name[[id]]))
           } else if ((forceupdate == 'AUTO') && (files$file_name[[id]] == "species.csv")) {
+            logger.debug("Checking if species have changed")
             testme <- read.csv(file.path(files$file_path[[id]], files$file_name[[id]]))
-            if (!check.species(species, testme)) {
+            if (!check.lists(species, testme)) {
+              remove(testme)
               foundallfiles <- FALSE
               logger.error("species have changed: ", file.path(files$file_path[[id]], files$file_name[[id]]))
             }
+            remove(testme)
+          } else if ((forceupdate == 'AUTO') && (files$file_name[[id]] == "prior.distns.Rdata")) {
+            logger.debug("Checking if priors have changed")
+            prior.distns.tmp <- prior.distns
+            load(file.path(files$file_path[[id]], files$file_name[[id]]))
+            testme <- prior.distns
+            prior.distns <- prior.distns.tmp
+            if (!identical(prior.distns, testme)) {
+              remove(testme)
+              foundallfiles <- FALSE
+              logger.error("priors have changed: ", file.path(files$file_path[[id]], files$file_name[[id]]))
+            }
+            remove(testme)
+          } else if ((forceupdate == 'AUTO') && (files$file_name[[id]] == "trait.data.Rdata")) {
+            logger.debug("Checking if trait data has changed")
+            trait.data.tmp <- trait.data
+            load(file.path(files$file_path[[id]], files$file_name[[id]]))
+            testme <- trait.data
+            trait.data <- trait.data.tmp
+            if (!identical(trait.data, testme)) {
+              remove(testme)
+              foundallfiles <- FALSE
+              logger.error("trait data has changed: ", file.path(files$file_path[[id]], files$file_name[[id]]))
+            }
+            remove(testme)
           }
         }
         if (foundallfiles) {
@@ -114,16 +152,7 @@ get.trait.data.pft <- function(pft, dbfiles, dbcon,
   dir.create(pathname, showWarnings = FALSE, recursive = TRUE)
 
   ## 1. get species list based on pft
-  spstr <- vecpaste(species$id)
   write.csv(species, file.path(pft$outdir, "species.csv"), row.names = FALSE)
-
-  ## 2. get priors available for pft  
-  prior.distns <- query.priors(pft$name, vecpaste(trait.names),
-                               out = pft$outdir, con = dbcon)
-  
-  ## exclude any parameters for which a constant is provided 
-  prior.distns <- prior.distns[which(!rownames(prior.distns) %in%
-                                     names(pft$constants)),]
 
   ## save priors
   save(prior.distns, file = file.path(pft$outdir, "prior.distns.Rdata"))
@@ -136,10 +165,6 @@ get.trait.data.pft <- function(pft, dbfiles, dbcon,
   apply(cbind(rownames(prior.distns), prior.distns), MARGIN=1, logger.info)
 
   ## traits = variables with prior distributions for this pft 
-  traits <- rownames(prior.distns) 
-  
-  trait.data <- query.traits(spstr, traits, con = dbcon)
-  traits <- names(trait.data)
   trait.data.file <- file.path(pft$outdir, "trait.data.Rdata")
   save(trait.data, file = trait.data.file)
   write.csv(ldply(trait.data),

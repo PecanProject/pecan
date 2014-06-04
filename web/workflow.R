@@ -71,7 +71,7 @@ if (length(which(commandArgs() == "--continue")) == 0) {
 
 	# write model specific configs
 	status.start("CONFIG")
-	run.write.configs(settings$model$name, settings$bety$write)
+	run.write.configs(settings, settings$bety$write)
 	status.end()
 }
 
@@ -84,7 +84,7 @@ if (length(which(commandArgs() == "--advanced")) != 0) {
 
 # run model
 status.start("MODEL")
-start.model.runs(settings$model$name, settings$bety$write)
+start.model.runs(settings, settings$bety$write)
 status.end()
 
 # convert output
