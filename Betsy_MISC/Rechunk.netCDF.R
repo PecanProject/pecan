@@ -1,5 +1,5 @@
-Rechunk.netCDF 
-  
+#!/usr/bin/env Rscript
+
   # Rechunk dimensions and convert the  time dimension from unlimited to fixed.
   
   in.path <- "/projectnb/cheas/pecan.data/input/NARR_CF/"
@@ -7,6 +7,7 @@ Rechunk.netCDF
   out.path <- "/projectnb/cheas/pecan.data/input/NARR_CF_Rechunk/"
   
   ## get file names
+
   files = dir(in.path,prefix)
   files = files[grep(pattern="*.nc",files)]
   
@@ -24,7 +25,7 @@ Rechunk.netCDF
     infile = file.path(in.path,files[i])
     outfile = file.path(out.path,files[i])
     if(file.exists(infile)==TRUE && file.exists(outfile)==FALSE){
-      system(paste0("nccopy -k 3 -u -c time/160708,lat/360,lon/720 ",infile," ",outfile))
+      system(paste0("nccopy -k 3 -u -c time/8,y/277,x/349 ",infile," ",outfile))
     }
   }
 
