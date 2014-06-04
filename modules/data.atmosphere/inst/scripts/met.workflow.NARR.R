@@ -28,7 +28,11 @@ NARR_cf.id <- convert.input(input.id,outfolder,pkg,fcn,write,username) # doesn't
 #--------------------------------------------------------------------------------------------------#
 # Extract for location
 input.id <- NARR_cf.id
+<<<<<<< HEAD
 newsite  <- 1161
+=======
+newsite  <- 766
+>>>>>>> e1f11a40d8526ef1c88994436155acc65258a29e
 str_ns   <- paste0(newsite %/% 1000000000, "-", newsite %% 1000000000)
 
 outfolder <- paste0("/projectnb/cheas/pecan.data/input/NARR_CF_site_",str_ns,"/")
