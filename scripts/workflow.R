@@ -49,12 +49,12 @@ status.end()
 
 # Calls model specific write.configs e.g. write.config.ed.R
 status.start("CONFIG")
-run.write.configs(settings$model$name, settings$bety$write)
+run.write.configs(settings, settings$bety$write)
 status.end()
 
 # Start ecosystem model runs
 status.start("MODEL")
-start.model.runs(settings$model$name, settings$bety$write)
+start.model.runs(settings, settings$bety$write)
 status.end()
 
 # Get results of model runs
