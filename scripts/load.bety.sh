@@ -32,6 +32,8 @@ REMOTESITE=${REMOTESITE:-0}
 if [ -z "${DUMPURL}" ]; then
 	if [ "${REMOTESITE}" == "0" ]; then
 		DUMPURL="https://ebi-forecast.igb.illinois.edu/pecan/dump/bety.tar.gz"
+	else if [ "${REMOTESITE}" == "1" ]; then
+		DUMPURL="http://psql-pecan.bu.edu/sync/bety.tar.gz"
 	else
 		echo "Don't know where to get data for site ${REMOTESITE}"
 		exit

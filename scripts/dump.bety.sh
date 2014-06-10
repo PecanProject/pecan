@@ -21,7 +21,7 @@ PG_OPT=${PG_OPT-"-U bety"}
 #  1 - BU
 #  2 - Brookhaven
 # 99 - VM
-MYSITE=${MYSITE:-0}
+MYSITE=${MYSITE:-99}
 
 # access level requirement
 # 0 - private
