@@ -29,8 +29,8 @@ MYSITE=${MYSITE:-99}
 REMOTESITE=${REMOTESITE:-0}
 
 # url to get data from
-if [ -z "$DUMPURL" ]; then
-	if [ "$REMOTESITE" == "0" ]; then
+if [ -z "${DUMPURL}" ]; then
+	if [ "${REMOTESITE}" == "0" ]; then
 		DUMPURL="https://ebi-forecast.igb.illinois.edu/pecan/dump/bety.tar.gz"
 	else
 		echo "Don't know where to get data for site ${REMOTESITE}"
@@ -42,6 +42,17 @@ fi
 # Set this to YES to create the database, this will remove all existing
 # data!
 CREATE=${CREATE:-"NO"}
+
+# Convert user account 1 to carya for use on VM
+# Set this to YES to conver user 1 to carya with password. This will
+# give this user admin priviliges
+if [ -z "${ADMIN}" ]; then
+	if [ "${MYSITE}" -eq "99" ]; then
+		ADMIN="YES"
+	else
+		ADMIN="NO"
+	fi
+fi
 
 # ----------------------------------------------------------------------
 # END CONFIGURATION SECTION
@@ -123,8 +134,11 @@ for T in citations_sites citations_treatments formats_variables inputs_variables
 	echo "ADD ${ADD}"
 done
 
-# all done, cleanup
-if [ "${CREATE}" == "YES" ]; then
-	echo "Don't forget to run rake db:migrate"
+# convert user 1 if needed
+if [ "${ADMIN}" == "YES" ]; then
+	psql ${PG_OPT} -t -q -d "${DATABASE}" -c "UPDATE users SET login='carya', crypted_password='df8428063fb28d75841d719e3447c3f416860bb7', salt='carya', access_level=1, page_access_level=1 WHERE id=1;"
+	echo "User 1 now has admin priviliges"
 fi
+
+# all done, cleanup
 rm -rf "${DUMPDIR}"
