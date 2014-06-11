@@ -102,7 +102,8 @@ fia.to.psscss <- function(settings) {
 		over.ten <- ifelse(length(bad) > 10, paste(", and ", length(bad) - 10, " more.", sep=""), ".")		# format the "and x more." bit if >10 bad species
 		
 		#Coerce spcds back into species names using data from FIA manual. Makes a more readable warning.
-		symbol.table <- query.base("SELECT spcd, symbol FROM species where spcd IS NOT NULL", con)
+		symbol.table <- query.base('SELECT spcd, "Symbol" FROM species where spcd IS NOT NULL', con)
+		names(symbol.table) = tolower(names(symbol.table))
 		name.list <- na.omit(symbol.table$symbol[symbol.table$spcd %in% bad]) 							# grab the names where we have bad spcds in the symbol.table, exclude NAs
 		logger.error(paste("\nThe following species are found in multiple PFTs: \n", paste(name.list[1:min(10,length(name.list))], collapse=", "), over.ten, "\n\tPlease remove overlapping PFTs.", sep=""))
 		stop("Execution stopped due to duplicate species.")												#Using stop naturally causes an error with the tests - comment stops out for testing.
@@ -191,8 +192,16 @@ fia.to.psscss <- function(settings) {
 				y <- floor((i-1)/nx)
 				x <- i-1-y*nx
 				fname <- paste(path,"lat",(x+0.5)*gridres+latmin[r],"lon",(y+0.5)*gridres+lonmin[r],".pss",sep="") #filename
-				water = rep(0,length(sel))			
-				write.table(cbind(pss[sel,2+1:4],area[sel],water,matrix(soil,length(sel),7,byrow=TRUE)),file=fname,quote=FALSE,row.names=FALSE)
+				water = rep(0,length(sel))
+				fsc = rep(0,length(sel))
+				stsc = rep(0,length(sel))
+				stsl = rep(0,length(sel))
+				ssc = rep(0,length(sel))
+				psc = rep(0,length(sel))
+				msn = rep(0,length(sel))
+				fsn = rep(0,length(sel))
+				##write.table(cbind(pss[sel,2+1:4],area[sel],water,matrix(soil,length(sel),7,byrow=TRUE)),file=fname,quote=FALSE,row.names=FALSE)
+				write.table(cbind(pss[sel,2+1:4],area[sel],water,fsc,stsc,stsl,ssc,psc,msn,fsn),file=fname,quote=FALSE,row.names=FALSE)
 			}
 		}
 		
@@ -229,7 +238,7 @@ fia.to.psscss <- function(settings) {
 			over.ten <- ifelse(length(pft.only) > 10, paste(", and ", length(pft.only) - 10, " more.", sep=""), ".")
 			
 			if(!exists("symbol.table")){
-				symbol.table <- query.base("SELECT spcd, symbol FROM bety.species where spcd IS NOT NULL", con)
+				symbol.table <- query.base('SELECT spcd, "Symbol" FROM species where spcd IS NOT NULL', con)
 				names(symbol.table) = tolower(names(symbol.table))
 			}
 			name.list <- na.omit(symbol.table$symbol[symbol.table$spcd %in% pft.only]) 
