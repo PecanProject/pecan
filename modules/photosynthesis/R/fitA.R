@@ -12,16 +12,25 @@
 ##' 
 fitA <- function(flux.data,cov.data=NULL,model=NULL){
 
+##  TO-DO: 
+##  Random effects using design matrix
+##  Model selection
+##  output variable selection: Pred Loss, WAIC?
+##  function to do: multiple response curves
+##  specify priors in model object
+##  integrate with meta-analysis
+  
 library(rjags)
 
 if(is.null(model)) model = list(a.fixed=NULL,a.random=NULL,V.fixed=NULL,V.random=NULL,n.iter=5000,match="fname")
+out.variables = c("r","vmax0","alpha0","Jmax", "cp","tau", "pmean", "pA")
 
 a.fixed  = model$a.fixed
 a.random = model$a.random
 V.fixed  = model$V.fixed
 V.random = model$V.random
 
-dat = flux.data
+dat = as.data.frame(flux.data)
 
 id = dat[,model$match]
 n.curves = length(unique(id))
@@ -100,9 +109,9 @@ model{
 
 #    ap[i]<-3*tpu                         ## phosphate limited
 
-     prean[i]<-min(al[i], ae[i]) - r      ## predicted net photosynthesis
-     an[i]~dnorm(prean[i],tau)            ## likelihood
-     pA[i] ~ dnorm(prean[i],tau)          ## prediction
+     pmean[i]<-min(al[i], ae[i]) - r      ## predicted net photosynthesis
+     an[i]~dnorm(pmean[i],tau)            ## likelihood
+     pA[i] ~ dnorm(pmean[i],tau)          ## prediction
      }
 
      foo <- rep[1] + nrep                 ## prevent warnings
@@ -125,13 +134,16 @@ Vformula = NULL
 if("leaf" %in% V.random){
   Vformula = " + Vleaf[rep[i]]"
   my.model = gsub(pattern="#RLEAF.V"," ",my.model)
+  out.variables = c(out.variables,"tau.Vleaf")  
 }
 
 if(!is.null(XV)){
-  Vformula = paste(Vformula,paste0("+ betaV",1:ncol(XV),"*XV[rep[i],",1:ncol(XV),"]",collapse=" "))
-  Vpriors = paste0("     betaV",1:ncol(XV),"~dnorm(0,0.1)",collapse="\n")
-  my.model = sub(pattern="## Vcmax BETAs")  
+  Vnames = gsub(" ","_",colnames(XV))
+  Vformula = paste(Vformula,paste0("+ betaV",Vnames,"*XV[rep[i],",1:ncol(XV),"]",collapse=" "))
+  Vpriors = paste0("     betaV",Vnames,"~dnorm(0,0.1)",collapse="\n")
+  my.model = sub(pattern="## Vcmax BETAs",Vpriors,my.model)  
   mydat[["XV"]] = XV
+  out.variables = c(out.variables,paste0("betaV",Vnames))  
 }
 if(!is.null(Vformula)) my.model = sub(pattern="#VFORMULA",Vformula,my.model)
 
@@ -140,13 +152,16 @@ Aformula = NULL
 if("leaf" %in% a.random){
   Aformula = " + Aleaf[rep[i]]"
   my.model = gsub(pattern="#RLEAF.A","",my.model)
+  out.variables = c(out.variables,"tau.Aleaf")  
 }
 
 if(!is.null(Xa)){
-  Aformula = paste(Aformula,paste0("+ betaA",1:ncol(Xa),"*Xa[rep[i],",1:ncol(Xa),"]",collapse=" "))
-  apriors = paste0("betaA",1:ncol(Xa),"~dnorm(0,0.1)",collapse="\n")
-  my.model = sub(pattern="## alpha BETAs")  
+  Anames = gsub(" ","_",colnames(Xa))
+  Aformula = paste(Aformula,paste0("+ betaA",Anames,"*Xa[rep[i],",1:ncol(Xa),"]",collapse=" "))
+  apriors = paste0("betaA",Anames,"~dnorm(0,0.1)",collapse="\n")
+  my.model = sub(pattern="## alpha BETAs",apriors,my.model)  
   mydat[["Xa"]] = Xa
+  out.variables = c(out.variables,paste0("betaA",Anames))  
 }
 if(!is.null(Aformula)) my.model = sub(pattern="#AFORMULA",Aformula,my.model)
 
@@ -160,12 +175,16 @@ mc3 <- jags.model(file=textConnection(my.model),data=mydat,
  inits=init,
  n.chains=3)
 
-mc3.out <- coda.samples(model=mc3, 
-            variable.names=c("r","vmax0","alpha0","Jmax", "cp","tau", "prean", "pA"), 
-            ##"beta1","beta2","beta5","Vmon","Vleaf","Aleaf","tau.Vmon","tau.Vleaf","tau.Aleaf",
-            n.iter=model$n.iter)                              
+mc3.out <- coda.samples(model=mc3, variable.names=out.variables, n.iter=model$n.iter)                              
 
-return(mc3.out)
+## split output
+out = list(params=NULL,predict=NULL)
+mfit = as.matrix(mc3.out,chains=TRUE)
+pred.cols = union(grep("pA",colnames(mfit)),grep("pmean",colnames(mfit)))
+chain.col = which(colnames(mfit)=="CHAIN")
+out$predict = mat2mcmc.list(mfit[,c(chain.col,pred.cols)])
+out$params   = mat2mcmc.list(mfit[,-pred.cols])
+return(out)
 
 }  ## end photosynthesis fitting code
 
@@ -185,4 +204,13 @@ read.Licor <- function(filename,sep="\t",...){
   fname=rep(fbase,nrow(dat))
   dat = as.data.frame(cbind(fname,dat))
   return(dat)
+}
+
+mat2mcmc.list <- function(w){
+  temp <- list()
+  chain.col = which(colnames(w)=="CHAIN")
+  for(i in unique(w[,"CHAIN"])){
+    temp[[i]] <- as.mcmc(w[w[,"CHAIN"]==i,-chain.col])
+  }
+  return(as.mcmc.list(temp))
 }
