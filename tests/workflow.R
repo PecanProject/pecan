@@ -55,7 +55,7 @@ status.end()
 # write configurations
 status.start("CONFIG")
 if (!file.exists(file.path(settings$rundir, "runs.txt")) | settings$meta.analysis$update == "TRUE") {
-  run.write.configs(settings$model$name, settings$bety$write)
+  run.write.configs(settings, settings$bety$write)
 } else {
   logger.info("Already wrote configuraiton files")    
 }
@@ -66,7 +66,7 @@ status.start("MODEL")
 if (!file.exists(file.path(settings$rundir, "runs.txt"))) {
   logger.severe("No ensemble or sensitivity analysis specified in pecan.xml, work is done.")
 } else {
-  start.model.runs(settings$model$name, settings$bety$write)
+  start.model.runs(settings, settings$bety$write)
 }
 status.end()
 
