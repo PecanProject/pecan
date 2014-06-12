@@ -89,7 +89,7 @@ fia.to.psscss <- function(settings) {
 		pfts[pfts==pft$name] <- pft$constants$num
 	}
 	
-	
+  	
 	## Check for NA and duplicate spcds in PFTs
 	bad <- length(pfts$spcd %in% c(NA, "0"))		
 	if (bad > 0) {	
@@ -145,7 +145,7 @@ fia.to.psscss <- function(settings) {
 	}
 	n.poi = length(latmin)
 	
-	
+		
 	for(r in 1:n.poi) {
 		##################
 		##              ##
@@ -193,15 +193,7 @@ fia.to.psscss <- function(settings) {
 				x <- i-1-y*nx
 				fname <- paste(path,"lat",(x+0.5)*gridres+latmin[r],"lon",(y+0.5)*gridres+lonmin[r],".pss",sep="") #filename
 				water = rep(0,length(sel))
-				fsc = rep(0,length(sel))
-				stsc = rep(0,length(sel))
-				stsl = rep(0,length(sel))
-				ssc = rep(0,length(sel))
-				psc = rep(0,length(sel))
-				msn = rep(0,length(sel))
-				fsn = rep(0,length(sel))
-				##write.table(cbind(pss[sel,2+1:4],area[sel],water,matrix(soil,length(sel),7,byrow=TRUE)),file=fname,quote=FALSE,row.names=FALSE)
-				write.table(cbind(pss[sel,2+1:4],area[sel],water,fsc,stsc,stsl,ssc,psc,msn,fsn),file=fname,quote=FALSE,row.names=FALSE)
+				write.table(cbind(pss[sel,2+1:4],area[sel],water,matrix(soil,length(sel),7,byrow=TRUE)),file=fname,quote=FALSE,row.names=FALSE)
 			}
 		}
 		
@@ -296,4 +288,8 @@ fia.to.psscss <- function(settings) {
 			}
 		}
 	}	## end loop over n.poi
+  
+	## closing the connections to database
+	db.close(con)
+	db.close(fia.con)
 }
