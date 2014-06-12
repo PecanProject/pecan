@@ -28,18 +28,6 @@ PG_OPT=${PG_OPT-"-U $OWNER"}
 MYSITE=${MYSITE:-99}
 REMOTESITE=${REMOTESITE:-0}
 
-# url to get data from
-if [ -z "${DUMPURL}" ]; then
-	if [ "${REMOTESITE}" == "0" ]; then
-		DUMPURL="https://ebi-forecast.igb.illinois.edu/pecan/dump/bety.tar.gz"
-	else if [ "${REMOTESITE}" == "1" ]; then
-		DUMPURL="http://psql-pecan.bu.edu/sync/bety.tar.gz"
-	else
-		echo "Don't know where to get data for site ${REMOTESITE}"
-		exit
-	fi
-fi
-
 # Create the database from scratch
 # Set this to YES to create the database, this will remove all existing
 # data!
@@ -59,6 +47,37 @@ fi
 # ----------------------------------------------------------------------
 # END CONFIGURATION SECTION
 # ----------------------------------------------------------------------
+
+# list of all tables, schema_migrations is ignored since that
+# will be imported during creaton
+CLEAN_TABLES="citations counties covariates cultivars dbfiles"
+CLEAN_TABLES="${CLEAN_TABLES} ensembles entities formats inputs"
+CLEAN_TABLES="${CLEAN_TABLES} likelihoods location_yields"
+CLEAN_TABLES="${CLEAN_TABLES} machines managements methods"
+CLEAN_TABLES="${CLEAN_TABLES} mimetypes models pfts posteriors"
+CLEAN_TABLES="${CLEAN_TABLES} priors runs sessions sites"
+CLEAN_TABLES="${CLEAN_TABLES} species traits treatments users"
+CLEAN_TABLES="${CLEAN_TABLES} variables workflows yields"
+
+MANY_TABLES="${MANY_TABLES} citations_sites citations_treatments"
+MANY_TABLES="${MANY_TABLES} formats_variables inputs_runs"
+MANY_TABLES="${MANY_TABLES} inputs_variables"
+MANY_TABLES="${MANY_TABLES} managements_treatments pfts_priors"
+MANY_TABLES="${MANY_TABLES} pfts_species posteriors_runs"
+
+# list where to download data from. This data should come
+# from the database. Same as mysite which should come from
+# the database as well.
+if [ -z "${DUMPURL}" ]; then
+	if [ "${REMOTESITE}" == "0" ]; then
+		DUMPURL="https://ebi-forecast.igb.illinois.edu/pecan/dump/bety.tar.gz"
+	elif [ "${REMOTESITE}" == "1" ]; then
+		DUMPURL="http://psql-pecan.bu.edu/sync/bety.tar.gz"
+	else
+		echo "Don't know where to get data for site ${REMOTESITE}"
+		exit
+	fi
+fi
 
 # this value should be constant, do not change
 ID_RANGE=1000000000
@@ -105,7 +124,7 @@ REM_START_ID=$(( REMOTESITE * ID_RANGE + 1 ))
 REM_LAST_ID=$(( REM_START_ID + ID_RANGE - 1 ))
 
 # clean tables
-for T in users citations counties covariates cultivars dbfiles ensembles entities formats likelihoods location_yields machines managements methods mimetypes models pfts posteriors priors runs sessions sites species treatments variables inputs traits yields workflows; do
+for T in ${CLEAN_TABLES}; do
 	printf "Cleaning %-25s : " "${T}"
 	DEL=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM ${T} WHERE (id >= ${REM_START_ID} AND id <= ${REM_LAST_ID})" | tr -d ' ' )
 	psql ${PG_OPT} -t -q -d "${DATABASE}" -c "DELETE FROM ${T} WHERE (id >= ${REM_START_ID} AND id <= ${REM_LAST_ID})"
@@ -122,7 +141,7 @@ for T in users citations counties covariates cultivars dbfiles ensembles entitie
 done
 
 # hasmany relation ships
-for T in citations_sites citations_treatments formats_variables inputs_variables managements_treatments pfts_priors pfts_species inputs_runs posteriors_runs; do
+for T in ${MANY_TABLES}; do
 	Z=(${T//_/ })
 	X=${Z[0]}
 	X=${X%s}
