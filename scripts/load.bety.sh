@@ -28,24 +28,56 @@ PG_OPT=${PG_OPT-"-U $OWNER"}
 MYSITE=${MYSITE:-99}
 REMOTESITE=${REMOTESITE:-0}
 
-# url to get data from
-if [ -z "$DUMPURL" ]; then
-	if [ "$REMOTESITE" == "0" ]; then
-		DUMPURL="https://ebi-forecast.igb.illinois.edu/pecan/dump/bety.tar.gz"
-	else
-		echo "Don't know where to get data for site ${REMOTESITE}"
-		exit
-	fi
-fi
-
 # Create the database from scratch
 # Set this to YES to create the database, this will remove all existing
 # data!
 CREATE=${CREATE:-"NO"}
 
+# Convert user account 1 to carya for use on VM
+# Set this to YES to conver user 1 to carya with password. This will
+# give this user admin priviliges
+if [ -z "${ADMIN}" ]; then
+	if [ "${MYSITE}" -eq "99" ]; then
+		ADMIN="YES"
+	else
+		ADMIN="NO"
+	fi
+fi
+
 # ----------------------------------------------------------------------
 # END CONFIGURATION SECTION
 # ----------------------------------------------------------------------
+
+# list of all tables, schema_migrations is ignored since that
+# will be imported during creaton
+CLEAN_TABLES="citations counties covariates cultivars dbfiles"
+CLEAN_TABLES="${CLEAN_TABLES} ensembles entities formats inputs"
+CLEAN_TABLES="${CLEAN_TABLES} likelihoods location_yields"
+CLEAN_TABLES="${CLEAN_TABLES} machines managements methods"
+CLEAN_TABLES="${CLEAN_TABLES} mimetypes models pfts posteriors"
+CLEAN_TABLES="${CLEAN_TABLES} priors runs sessions sites"
+CLEAN_TABLES="${CLEAN_TABLES} species traits treatments users"
+CLEAN_TABLES="${CLEAN_TABLES} variables workflows yields"
+
+MANY_TABLES="${MANY_TABLES} citations_sites citations_treatments"
+MANY_TABLES="${MANY_TABLES} formats_variables inputs_runs"
+MANY_TABLES="${MANY_TABLES} inputs_variables"
+MANY_TABLES="${MANY_TABLES} managements_treatments pfts_priors"
+MANY_TABLES="${MANY_TABLES} pfts_species posteriors_runs"
+
+# list where to download data from. This data should come
+# from the database. Same as mysite which should come from
+# the database as well.
+if [ -z "${DUMPURL}" ]; then
+	if [ "${REMOTESITE}" == "0" ]; then
+		DUMPURL="https://ebi-forecast.igb.illinois.edu/pecan/dump/bety.tar.gz"
+	elif [ "${REMOTESITE}" == "1" ]; then
+		DUMPURL="http://psql-pecan.bu.edu/sync/bety.tar.gz"
+	else
+		echo "Don't know where to get data for site ${REMOTESITE}"
+		exit
+	fi
+fi
 
 # this value should be constant, do not change
 ID_RANGE=1000000000
@@ -92,15 +124,14 @@ REM_START_ID=$(( REMOTESITE * ID_RANGE + 1 ))
 REM_LAST_ID=$(( REM_START_ID + ID_RANGE - 1 ))
 
 # clean tables
-for T in users citations counties covariates cultivars dbfiles ensembles entities formats likelihoods location_yields machines managements methods mimetypes models pfts posteriors priors runs sessions sites species treatments variables inputs traits yields workflows; do
+for T in ${CLEAN_TABLES}; do
 	printf "Cleaning %-25s : " "${T}"
 	DEL=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM ${T} WHERE (id >= ${REM_START_ID} AND id <= ${REM_LAST_ID})" | tr -d ' ' )
 	psql ${PG_OPT} -t -q -d "${DATABASE}" -c "DELETE FROM ${T} WHERE (id >= ${REM_START_ID} AND id <= ${REM_LAST_ID})"
 	echo "DEL ${DEL}"
 	printf "Loading  %-25s : " "${T}"
-echo "${DUMPDIR}/${T}.csv"
 	if [ -f "${DUMPDIR}/${T}.csv" ]; then
-	psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY ${T} FROM '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')"
+		psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY ${T} FROM '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')"
 	fi
 	ADD=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "SELECT COUNT(*) FROM ${T} WHERE (id >= ${REM_START_ID} AND id <= ${REM_LAST_ID});" | tr -d ' ' )
 	echo "ADD ${ADD}"
@@ -110,7 +141,7 @@ echo "${DUMPDIR}/${T}.csv"
 done
 
 # hasmany relation ships
-for T in citations_sites citations_treatments formats_variables inputs_variables managements_treatments pfts_priors pfts_species inputs_runs posteriors_runs; do
+for T in ${MANY_TABLES}; do
 	Z=(${T//_/ })
 	X=${Z[0]}
 	X=${X%s}
@@ -122,14 +153,17 @@ for T in citations_sites citations_treatments formats_variables inputs_variables
 	echo "DEL ${DEL}"
 	printf "Loading  %-25s : " "${T}"
 	if [ -f "${DUMPDIR}/${T}.csv" ]; then
-	psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY ${T} FROM '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')"
+		psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY ${T} FROM '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')"
 	fi
 	ADD=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "SELECT COUNT(*) FROM ${T} WHERE (${X}_id >= ${REM_START_ID} AND ${X}_id <= ${REM_LAST_ID} AND ${Y}_id >= ${REM_START_ID} AND ${Y}_id <= ${REM_LAST_ID})" | tr -d ' ' )
 	echo "ADD ${ADD}"
 done
 
-# all done, cleanup
-if [ "${CREATE}" == "YES" ]; then
-	echo "Don't forget to run rake db:migrate"
+# convert user 1 if needed
+if [ "${ADMIN}" == "YES" ]; then
+	psql ${PG_OPT} -t -q -d "${DATABASE}" -c "UPDATE users SET login='carya', crypted_password='df8428063fb28d75841d719e3447c3f416860bb7', salt='carya', access_level=1, page_access_level=1 WHERE id=1;"
+	echo "User 1 now has admin priviliges"
 fi
+
+# all done, cleanup
 rm -rf "${DUMPDIR}"
