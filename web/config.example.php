@@ -18,7 +18,8 @@ $REST_AUTH_SITE_KEY="thisisnotasecret";
 $REST_AUTH_DIGEST_STRETCHES =10;
 
 # List of allowed hosts
-$hostlist=array(exec('hostname -f'));
+$fqdn=exec('hostname -f');
+$hostlist=array($fqdn);
 
 # Folder where PEcAn is installed
 $pecan_install="/home/carya/R/library";

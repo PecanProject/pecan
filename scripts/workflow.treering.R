@@ -26,10 +26,10 @@ plot2AGB(unit.conv=0.02)
 #run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database)
 
 # Calls model specific write.configs e.g. write.config.ed.R
-run.write.configs(settings$model$name, settings$bety$write)
+run.write.configs(settings, settings$bety$write)
 
 # Start ecosystem model runs
-start.model.runs(settings$model$name, settings$bety$write)
+start.model.runs(settings, settings$bety$write)
 
 # Get results of model runs
 get.results(settings)
