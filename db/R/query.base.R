@@ -26,6 +26,7 @@
 ##' query.base('select count(id) from traits;')
 ##' }
 query.base <- function(query, con=NULL, ...){
+  .Deprecated("db.query")
   if(is.null(con)){
     invisible(db.query(query, params=settings$database))
   } else {
@@ -51,6 +52,7 @@ query.base <- function(query, con=NULL, ...){
 ##' con <- query.base.con(settings)
 ##' }
 query.base.con <- function(settings,...){
+  .Deprecated("db.open")
   invisible(db.open(settings$database))
 }
 #==================================================================================================#
@@ -68,6 +70,7 @@ query.base.con <- function(settings,...){
 ##' @author Rob Kooper
 ##' @export
 query.close <- function(con) {
+  .Deprecated("db.close")
   invisible(db.close(con))
 }
 #==================================================================================================#
@@ -83,6 +86,7 @@ query.close <- function(con) {
 ##' @return nothing, as a side effect closes all open connections
 ##' @author David LeBauer
 killdbcons <- function(){
+  .Deprecated("NeverCallThisFunction")
   for (i in dbListConnections(MySQL())) db.close(i)
 }
 #==================================================================================================#
