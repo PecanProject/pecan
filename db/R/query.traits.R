@@ -28,7 +28,7 @@
 query.traits <- function(spstr, priors, con = NULL){
 
   if(is.null(con)){
-    con <- query.base.con(settings)
+    con <- db.open(settings$database)
   }
   if(is.list(con)){
     print("query.traits")
