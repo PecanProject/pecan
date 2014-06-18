@@ -301,9 +301,7 @@ check.settings <- function(settings) {
     if(!is.character(dbcon)){
       if(!is.null(settings$model$id)){
         if(as.numeric(settings$model$id) >= 0){
-          model <- db.query(paste("SELECT models.*, CONCAT(dbfiles.file_path, '/', dbfiles.file_name) AS binary".
-                                  "FROM models LEFT JOIN dbfiles ON dbfiles.container_type='Model' AND",
-                                  "dbfiles.container_id=models.id WHERE models.id=", settings$model$id), con=dbcon)
+          model <- db.query(paste0("SELECT * FROM models WHERE models.id=", settings$model$id), con=dbcon)
           if(nrow(model) == 0) {
             logger.error("There is no record of model_id = ", settings$model$id, "in database")
           }
@@ -311,14 +309,10 @@ check.settings <- function(settings) {
           model <- settings$model
         }
       } else if (!is.null(settings$model$name)) {
-        model <- db.query(paste0("SELECT * FROM models WHERE (model_name = '", settings$model$name,
-                                 "' or model_type = '", toupper(settings$model$name), "')",
-                                 " and model_path like '%", 
-                                 ifelse(settings$run$host$name == "localhost", fqdn(), 
-                                        settings$run$host$name), "%' ",
+        model <- db.query(paste0("SELECT * FROM models ",
+                                 "WHERE (model_name = '", settings$model$name, "' or model_type = '", toupper(settings$model$name), "')",
                                  ifelse(is.null(settings$model$revision), "", 
-                                        paste0(" and revision like '%", settings$model$revision, "%' "))), 
-                          con=dbcon)
+                                        paste0(" and revision like '%", settings$model$revision, "%' "))), con=dbcon)
         if(nrow(model) > 1){
           logger.warn("multiple records for", settings$model$name, "returned; using the most recent")
           row <- which.max(ymd_hms(model$updated_at))
@@ -343,12 +337,6 @@ check.settings <- function(settings) {
     if (!is.null(settings$model$name)) {
       model$model_type=settings$model$name
     }
-    if (!is.null(settings$model$binary)) {
-      model$model_path=paste0("hostname:", settings$model$binary)
-    }
-    if (!is.null(model$model_path)) {
-      model$binary <- tail(strsplit(model$model_path, ":")[[1]], 1)        
-    }
     
     # copy data from database into missing fields
     if (is.null(settings$model$id)) {
@@ -372,7 +360,27 @@ check.settings <- function(settings) {
     } else if (model$model_type != settings$model$name) {
       logger.warn("Specified model type [", settings$model$name, "] does not match model_type in database [", model$model_type, "]")
     }
+
+    if (!is.null(model$id) && (model$id >= 0)) {
+      binary <- db.query(paste0("SELECT CONCAT(dbfiles.file_path, '/', dbfiles.file_name) AS binary FROM dbfiles",
+                                " WHERE dbfiles.container_type='Model' AND dbfiles.container_id=", model$id), con=dbcon)
+      if(nrow(binary) > 1){
+        logger.warn("multiple binaries for", model$id, "returned; using the first one found")
+        model$binary <- binary[1]
+      } else if (nrow(binary) == 1) {
+        model$binary <- binary[1]
+      } else {
+        logger.warn("no binary found for ", model$id, "in database")
+      }
+    }
     
+    if (!is.null(settings$model$binary)) {
+      model$model_path=paste0("hostname:", settings$model$binary)
+    }
+    if (!is.null(model$model_path)) {
+      model$binary <- tail(strsplit(model$model_path, ":")[[1]], 1)        
+    }
+
     if (is.null(settings$model$binary)) {
       if ((is.null(model$binary) || model$binary == "")) {
         logger.warn("No model binary specified.")
