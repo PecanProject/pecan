@@ -301,7 +301,9 @@ check.settings <- function(settings) {
     if(!is.character(dbcon)){
       if(!is.null(settings$model$id)){
         if(as.numeric(settings$model$id) >= 0){
-          model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), con=dbcon)
+          model <- db.query(paste("SELECT models.*, CONCAT(dbfiles.file_path, '/', dbfiles.file_name) AS binary".
+                                  "FROM models LEFT JOIN dbfiles ON dbfiles.container_type='Model' AND",
+                                  "dbfiles.container_id=models.id WHERE models.id=", settings$model$id), con=dbcon)
           if(nrow(model) == 0) {
             logger.error("There is no record of model_id = ", settings$model$id, "in database")
           }
