@@ -26,7 +26,7 @@
 }
 \details{
   This will use the following items from setings: -
-  settings$pfts - settings$database - settings$run$dbfiles
+  settings$pfts - settings$database$bety - settings$run$dbfiles
   - settings$meta.analysis$update
 }
 \author{

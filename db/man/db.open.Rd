@@ -21,7 +21,7 @@
 }
 \examples{
 \dontrun{
-db.open(settings$database)
+db.open(settings$database$bety)
 }
 }
 \author{

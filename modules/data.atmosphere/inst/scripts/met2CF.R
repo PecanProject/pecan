@@ -21,7 +21,7 @@ db.query(dbfiles,dbcon)
 
 #open database connection
 query.base.con <- function(settings,...){
-  invisible(db.open(settings$database))
+  invisible(db.open(settings$database$bety))
 }
 # met2CF converts met data to standard netcdf CF format
 # requires an open database connection dbcon

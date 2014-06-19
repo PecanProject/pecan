@@ -194,7 +194,7 @@ get.trait.data.pft <- function(pft, dbfiles, dbcon,
 ##'
 ##' This will use the following items from setings:
 ##' - settings$pfts
-##' - settings$database
+##' - settings$database$bety
 ##' - settings$run$dbfiles
 ##' - settings$meta.analysis$update
 ##' @name get.trait.data

@@ -128,7 +128,7 @@ run.meta.analysis.pft <- function(pft, iterations, dbfiles, dbcon) {
 ##' @title Invoke PEcAn meta.analysis
 ##' This will use the following items from setings:
 ##' - settings$pfts
-##' - settings$database
+##' - settings$database$bety
 ##' - settings$run$dbfiles
 ##' - settings$meta.analysis$update
 ##' @param pfts the list of pfts to get traits for

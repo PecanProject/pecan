@@ -191,15 +191,18 @@ fwrite($fh, "<pecan>" . PHP_EOL);
 fwrite($fh, "  <outdir>${folder}</outdir>" . PHP_EOL);
 
 fwrite($fh, "  <database>" . PHP_EOL);
-fwrite($fh, "    <user>$db_username</user>" . PHP_EOL);
-fwrite($fh, "    <password>$db_password</password>" . PHP_EOL);
-fwrite($fh, "    <host>${db_hostname}</host>" . PHP_EOL);
-fwrite($fh, "    <dbname>${db_database}</dbname>" . PHP_EOL);
+fwrite($fh, "    <bety>" . PHP_EOL);
+fwrite($fh, "      <user>$db_username</user>" . PHP_EOL);
+fwrite($fh, "      <password>$db_password</password>" . PHP_EOL);
+fwrite($fh, "      <host>${db_hostname}</host>" . PHP_EOL);
+fwrite($fh, "      <dbname>${db_database}</dbname>" . PHP_EOL);
 if ($db_type == "mysql") {
-	fwrite($fh, "    <driver>MySQL</driver>" . PHP_EOL);	
+	fwrite($fh, "      <driver>MySQL</driver>" . PHP_EOL);	
 } else if ($db_type = "pgsql") {
-	fwrite($fh, "    <driver>PostgreSQL</driver>" . PHP_EOL);	
+	fwrite($fh, "      <driver>PostgreSQL</driver>" . PHP_EOL);	
 }
+fwrite($fh, "      <write>true</write>" . PHP_EOL);
+fwrite($fh, "    </bety>" . PHP_EOL);
 fwrite($fh, "  </database>" . PHP_EOL);
 
 $pft_id=1;

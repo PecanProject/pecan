@@ -11,7 +11,7 @@ settings.xml <- system.file("extdata/pecan.biocro.xml",
                             package = "PEcAn.BIOCRO")
 
 settings <- read.settings(settings.xml)
-settings$database <- list(userid = "ebi_pecan", 
+settings$database$bety <- list(userid = "ebi_pecan", 
                           passwd = "hu2WHh32VC", 
                           name = "ebi_production", 
                           host = "ebi-forecast.igb.illinois.edu")

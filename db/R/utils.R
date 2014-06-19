@@ -10,6 +10,7 @@
 .db.utils <- new.env() 
 .db.utils$created <- 0
 .db.utils$queries <- 0
+.db.utils$deprecated <- 0
 .db.utils$showquery <- FALSE
 .db.utils$connections <- list()
 
@@ -28,7 +29,7 @@
 ##' @export
 ##' @examples
 ##' \dontrun{
-##' db.query('select count(id) from traits;', params=settings$database)
+##' db.query('select count(id) from traits;', params=settings$database$bety)
 ##' }
 db.query <- function(query, con=NULL, params=NULL) {
   iopened <- 0
@@ -67,10 +68,11 @@ db.query <- function(query, con=NULL, params=NULL) {
 ##' @export
 ##' @examples
 ##' \dontrun{
-##' db.open(settings$database)
+##' db.open(settings$database$bety)
 ##' }
 db.open <- function(params) {
   params$dbfiles <- NULL
+  params$write <- NULL
   if (is.null(params$driver)) {
     args <- c(drv=dbDriver("MySQL"), params, recursive=TRUE)
   } else {
@@ -139,6 +141,10 @@ db.close <- function(con) {
 ##' db.print.connections()
 ##' }
 db.print.connections <- function() {
+  logger.info("Created", .db.utils$created, "connections and executed", .db.utils$queries, "queries")
+  if (.db.utils$deprecated > 0) {
+    logger.info("Used", .db.utils$deprecated, "calls to deprecated functions")
+  }
   logger.info("Created", .db.utils$created, "connections and executed", .db.utils$queries, "queries")
   if (length(.db.utils$connections$id) == 0) {
     logger.debug("No open database connections.\n")
