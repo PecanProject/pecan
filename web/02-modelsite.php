@@ -142,7 +142,10 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
 		jQuery.get(url, {}, function(data) {
 			jQuery(data).find("model").each(function() {
 				var model = jQuery(this);
-				var name = model.attr("name") + " r" + model.attr("revision");
+				var name = model.attr("name");
+				if (model.attr("revision") != "") {
+					name += " (" + model.attr("revision") + ")";
+				}
 				if(model.attr("id") == curModel) {
 					$('#modelid').append('<option value="' + model.attr("id") + '" selected>' +name + '</option>');	//reselect our curModel if still available
 				} else {

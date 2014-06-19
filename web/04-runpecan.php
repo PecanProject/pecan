@@ -138,15 +138,16 @@ if (!$result) {
 $siteinfo = $result->fetch(PDO::FETCH_ASSOC);
 
 // get model information
-$query = "SELECT * FROM models WHERE models.id=$modelid";
+$query  = "SELECT models.*, dbfiles.file_path FROM models, machines, dbfiles WHERE";
+$query .= " machines.hostname='{$hostname}'";
+$query .= " AND dbfiles.container_id = models.id AND dbfiles.machine_id=machines.id AND dbfiles.container_type='Model'";
 $result = $pdo->query($query);
 if (!$result) {
   print_r(error_database());
   die('Invalid query: ' . (error_database()));
 }
 $model = $result->fetch(PDO::FETCH_ASSOC);
-$pieces = explode(':', $model["model_path"], 2);
-$binary = $pieces[1];
+$binary = $model['file_path'];
 
 // create the workflow execution
 $params=str_replace(' ', '', str_replace("\n", "", var_export($_REQUEST, true)));
