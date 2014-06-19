@@ -191,12 +191,10 @@ check.settings <- function(settings) {
 
   # check database version
   if(!is.character(dbcon)) {
-    versions <- db.query("SELECT version FROM schema_migrations WHERE version >= '20130717162614';", con=dbcon)[['version']]
+    versions <- db.query("SELECT version FROM schema_migrations WHERE version >= '20140617163304';", con=dbcon)[['version']]
     if (length(versions) == 0) {
-      logger.severe("Database is out of date, please update the database;\n",
-                    "\t scripts/update.(psql/mysql).sh scripts will install a new, updated (mysql or psql) database",
-                    "\t but any changes to your current database will be lost",
-                    "otherwise, use Ruby migrations")
+      logger.severe("Database is out of date, please update the database.",
+                    "Please migrate your current database using Ruby migrations part of BETY")
     }
     if (length(versions) > 1) {
       logger.warn("Database is more recent than PEcAn expects this could result in PEcAn not working as expected.",

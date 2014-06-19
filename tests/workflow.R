@@ -105,7 +105,7 @@ if (!is.null(settings$email) && !is.null(settings$email$to) && (settings$email$t
 
 # write end time in database
 if (settings$workflow$id != 'NA') {
-  db.query(paste0("UPDATE workflows SET finished_at=NOW() WHERE id=", settings$workflow$id, " AND finished_at IS NULL"), params=settings$database)
+  db.query(paste0("UPDATE workflows SET finished_at=NOW() WHERE id=", settings$workflow$id, " AND finished_at IS NULL"), params=settings$database$bety)
 }
 status.end()
 
