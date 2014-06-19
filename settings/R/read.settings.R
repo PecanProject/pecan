@@ -12,6 +12,100 @@ library(PEcAn.DB)
 library(PEcAn.utils)
 
 ##--------------------------------------------------------------------------------------------------#
+## INTERNAL FUNCTIONS
+##--------------------------------------------------------------------------------------------------#
+
+check.database <- function(database) {
+  if (is.null(database)) return(NULL);
+
+  ## check database settings
+  if (is.null(database$driver)) {
+    database$driver <- "PostgreSQL"
+    logger.warn("Please specify a database driver; using default 'PostgreSQL'")
+  }
+      
+  # Attempt to load the driver
+  if (!require(paste0("R", database$driver), character.only=TRUE)) {
+    logger.warn("Could not load the database driver", paste0("R", database$driver))
+  }
+  
+  # MySQL specific checks
+  if (database$driver == "MySQL") {
+    if (!is.null(database$passwd)) {
+      logger.info("passwd in database section should be password for MySQL")
+      database$password <- database$passwd
+      database$passwd <- NULL
+    }
+    if (!is.null(database$name)) {
+      logger.info("name in database section should be dbname for MySQL")
+      database$dbname <- database$name
+      database$name <- NULL
+    }
+  }
+  
+  # PostgreSQL specific checks
+  if (database$driver == "PostgreSQL") {
+    if (!is.null(database$passwd)) {
+      logger.info("passwd in database section should be password for PostgreSQL")
+      database$password <- database$passwd
+      database$passwd <- NULL
+    }
+    if (!is.null(database$name)) {
+      logger.info("name in database section should be dbname for PostgreSQL")
+      database$dbname <- database$name
+      database$name <- NULL
+    }
+  }
+
+  ## The following hack handles *.illinois.* to *.uiuc.* aliases of ebi-forecast
+  if(!is.null(database$host)){
+      forcastnames <- c("ebi-forecast.igb.uiuc.edu",
+                        "ebi-forecast.igb.illinois.edu") 
+      if((database$host %in% forcastnames) &
+         (Sys.info()['nodename'] %in% forcastnames)){
+          database$host <- "localhost"
+      }
+  } else if(is.null(database$host)){
+      database$host <- "localhost"
+  }
+
+  ## convert strings around from old format to new format
+  if(is.null(database[["user"]])){
+    if (!is.null(database$userid)) {
+      logger.info("'userid' in database section should be 'user'")
+      database$user <- database$userid
+      
+    } else if (!is.null(database$username)) {
+      logger.info("'username' in database section should be 'user'")
+      database$user <- database$username
+  
+    } else {
+      logger.info("no database user specified, using 'bety'")
+      database$user <- "bety"
+    }
+  } 
+  database$userid <- database$username <- NULL
+
+  # fill in defaults for the database
+  if(is.null(database$password)) {
+    database$password <- "bety"
+  }
+  if(is.null(database$dbname)) {
+    database$dbname <- "bety"
+  }
+
+  if (!db.exists(params=database, FALSE)) {
+    logger.severe("Invalid Database Settings : ", unlist(database))
+  }
+
+  # connected
+  logger.info("Successfully connected to database : ", unlist(database))
+
+  # return fixed up database
+  return(database)
+} 
+
+##--------------------------------------------------------------------------------------------------#
 ## EXTERNAL FUNCTIONS
 ##--------------------------------------------------------------------------------------------------#
 
@@ -32,134 +126,86 @@ check.settings <- function(settings) {
   }
   scipen = getOption("scipen")
   options(scipen=12)
-  
-  ## allow PEcAn to run without database
-  if (is.null(settings$database)) {
-    dbcon <- "NONE"
-    logger.warn("No database information specified; not using database.")
-    settings$bety$write <- FALSE
-  } else {    
-    ## check database settings
-    if (is.null(settings$database$driver)) {
-      settings$database$driver <- "PostgreSQL"
-      logger.warn("Please specify a database driver; using default 'PostgreSQL'")
-    }
-        
-    # Attempt to load the driver
-    if (!require(paste0("R", settings$database$driver), character.only=TRUE)) {
-      logger.warn("Could not load the database driver", paste0("R", settings$database$driver))
-    }
-    
-    # MySQL specific checks
-    if (settings$database$driver == "MySQL") {
-      if (!is.null(settings$database$passwd)) {
-        logger.info("passwd in database section should be password for MySQL")
-        settings$database$password <- settings$database$passwd
-        settings$database$passwd <- NULL
-      }
-      if (!is.null(settings$database$name)) {
-        logger.info("name in database section should be dbname for MySQL")
-        settings$database$dbname <- settings$database$name
-        settings$database$name <- NULL
-      }
-    }
-    
-    # PostgreSQL specific checks
-    if (settings$database$driver == "PostgreSQL") {
-      if (!is.null(settings$database$passwd)) {
-        logger.info("passwd in database section should be password for PostgreSQL")
-        settings$database$password <- settings$database$passwd
-        settings$database$passwd <- NULL
-      }
-      if (!is.null(settings$database$name)) {
-        logger.info("name in database section should be dbname for PostgreSQL")
-        settings$database$dbname <- settings$database$name
-        settings$database$name <- NULL
-      }
+
+  # check database secions if exist
+  if (!is.null(settings$database)) {
+
+    # simple check to make sure the database tag is updated
+    if (!is.null(settings$database$dbname)) {
+      log.severe("Database tag has changed, please use <database><bety> to store",
+                 "information about accessing the BETY database. See also",
+                 "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#database-access.")
     }
 
-    ## The following hack handles *.illinois.* to *.uiuc.* aliases of ebi-forecast
-    if(!is.null(settings$database$host)){
-        forcastnames <- c("ebi-forecast.igb.uiuc.edu",
-                          "ebi-forecast.igb.illinois.edu") 
-        if((settings$database$host %in% forcastnames) &
-           (Sys.info()['nodename'] %in% forcastnames)){
-            settings$database$host <- "localhost"
+    # check bety database access
+    if (!is.null(settings$database$bety)) {
+      settings$database$bety <- check.database(settings$database$bety)
+
+      # warn user about change and update settings
+      if (!is.null(settings$bety$write)) {
+        logger.warn("<bety><write> is now part of the database settings. For more",
+                    "information about the database settings see",
+                    "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#database-access.")
+        if (is.null(settings$database$bety$write)) {
+          settings$database$bety$write <- settings$bety$write
+          settings$bety$write <- NULL
+          if (length(settings$bety) == 0) settings$bety <- NULL
         }
-    } else if(is.null(settings$database$host)){
-        settings$database$host <- "localhost"
-    }
-
-    ## convert strings around from old format to new format
-    if(is.null(settings$database[["user"]])){
-      if (!is.null(settings$database$userid)) {
-        logger.info("'userid' in database section should be 'user'")
-        settings$database$user <- settings$database$userid
-        
-      } else if (!is.null(settings$database$username)) {
-        logger.info("'username' in database section should be 'user'")
-        settings$database$user <- settings$database$username
+      }
     
+      # should runs be written to database
+      if (is.null(settings$database$bety$write)) {
+        logger.info("Writing all runs/configurations to database.")
+        settings$database$bety$write <- TRUE
       } else {
-        logger.info("no database user specified, using 'bety'")
-        settings$database$user <- "bety"
-      }
-    } 
-    settings$database$userid <- settings$database$username <- NULL
-
-    # fill in defaults for the database
-    if(is.null(settings$database$password)) {
-      settings$database$password <- "bety"
-    }
-    if(is.null(settings$database$dbname)) {
-      settings$database$dbname <- "bety"
-    }
-  
-    # should runs be written to database
-    if (is.null(settings$bety$write)) {
-      logger.info("Writing all runs/configurations to database.")
-      settings$bety$write <- TRUE
-    } else {
-      settings$bety$write <- as.logical(settings$bety$write)
-      if (settings$bety$write) {
-        logger.debug("Writing all runs/configurations to database.")
-      } else {
-        logger.warn("Will not write runs/configurations to database.")
-      }
-    }
-
-    # check if we can connect to the database
-    if (!db.exists(params=settings$database, write=settings$bety$write)) {
-      logger.severe("Invalid Database Settings : ", unlist(settings$database))
-      dbcon <- "NONE"
-    } else {
-      logger.info("Successfully connected to database : ", unlist(settings$database))
-
-      # create connection we'll use
-      dbcon <- db.open(settings$database)
-
-      # check database version
-      if(!is.character(dbcon)) {
-        versions <- db.query("SELECT version FROM schema_migrations WHERE version >= '20130717162614';", con=dbcon)[['version']]
-        if (length(versions) == 0) {
-          logger.severe("Database is out of date, please update the database;\n",
-                        "\t scripts/update.(psql/mysql).sh scripts will install a new, updated (mysql or psql) database",
-                        "\t but any changes to your current database will be lost",
-                        "otherwise, use Ruby migrations")
-        }
-        if (length(versions) > 1) {
-          logger.warn("Database is more recent than PEcAn expects this could result in PEcAn not working as expected.",
-                      "If PEcAn fails, either revert database OR update PEcAn and edit expected database version in",
-                      "utils/R/read.settings.R (Redmine #1673).")
+        settings$database$bety$write <- as.logical(settings$database$bety$write)
+        if (settings$database$bety$write) {
+          logger.debug("Writing all runs/configurations to database.")
         } else {
-          logger.debug("Database is correct version", versions[1], ".")
+          logger.warn("Will not write runs/configurations to database.")
         }
-
-        # TODO check userid and userpassword
       }
+
+      # check if we can connect to the database with write permissions
+      if (settings$database$bety$write && !db.exists(params=settings$database$bety, TRUE)) {
+        logger.severe("Invalid Database Settings : ", unlist(settings$database))
+      }
+
+      # TODO check userid and userpassword
     }
-  } 
-  # done with database checks  
+
+    # check fia database access
+    if (!is.null(settings$database$fia)) {
+      settings$database$fia = check.database(settings$database$fia)
+    }
+  }
+
+  ## allow PEcAn to run without database
+  if (is.null(settings$database) || is.null(settings$database$bety)) {
+    logger.warn("No database information specified; not using database.")
+    dbcon <- "NONE"
+  } else {
+    # create connection we'll use
+    dbcon <- db.open(settings$database$bety)
+  }
+
+  # check database version
+  if(!is.character(dbcon)) {
+    versions <- db.query("SELECT version FROM schema_migrations WHERE version >= '20130717162614';", con=dbcon)[['version']]
+    if (length(versions) == 0) {
+      logger.severe("Database is out of date, please update the database;\n",
+                    "\t scripts/update.(psql/mysql).sh scripts will install a new, updated (mysql or psql) database",
+                    "\t but any changes to your current database will be lost",
+                    "otherwise, use Ruby migrations")
+    }
+    if (length(versions) > 1) {
+      logger.warn("Database is more recent than PEcAn expects this could result in PEcAn not working as expected.",
+                  "If PEcAn fails, either revert database OR update PEcAn and edit expected database version in",
+                  "utils/R/read.settings.R (Redmine #1673).")
+    } else {
+      logger.debug("Database is correct version", versions[1], ".")
+    }
+  }
   
   # make sure there are pfts defined
   if (is.null(settings$pfts) || (length(settings$pfts) == 0)) {
@@ -493,13 +539,13 @@ check.settings <- function(settings) {
 
   # check for workflow defaults
   fixoutdir <- FALSE
-  if(!is.character(dbcon) && settings$bety$write && ("model" %in% names(settings))) {
+  if(!is.character(dbcon) && settings$database$bety$write && ("model" %in% names(settings))) {
     if (!'workflow' %in% names(settings)) {
       now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
       db.query(paste0("INSERT INTO workflows (site_id, model_id, hostname, start_date, end_date, started_at, created_at) values ('",
                       settings$run$site$id, "','", settings$model$id, "', '", settings$run$host$name, "', '",
                       settings$run$start.date, "', '", settings$run$end.date, "', '", now, "', '", now, "')"), con=dbcon)
-      settings$workflow$id <- db.query(paste0("SELECT id FROM workflows WHERE created_at='", now, "';"), con=dbcon)[['id']]
+      settings$workflow$id <- as.character(db.query(paste0("SELECT id FROM workflows WHERE created_at='", now, "';"), con=dbcon)[['id']])
       fixoutdir <- TRUE
     }
   } else {
@@ -688,7 +734,7 @@ read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml"){
 
   ## convert the xml to a list for ease and return
   settings <- check.settings(xmlToList(xml))
-  
+
   ## save the checked/fixed pecan.xml
   if (!is.null(outputfile)) {
     pecanfile <- file.path(settings$outdir, outputfile)

@@ -50,7 +50,7 @@ test_that("check.settings gives sensible defaults",{
   s2 <- check.settings(s1)
   expect_is(s2$database, "NULL")
   
-  s1$database <- settings$database
+  s1$database <- settings$database$bety
   s2 <- check.settings(s1)
   expect_equal(s2$database$driver, "PostgreSQL")
 
@@ -67,7 +67,7 @@ test_that("check.settings gives sensible defaults",{
   expect_equal(s2$rundir, file.path(outdir, "run"))  
   expect_equal(s2$rundir, s2$run$host$rundir)
   
-  expect_true(s2$bety$write)
+  expect_false(s2$database$bety$write)
   expect_true(s2$meta.analysis$iter > 1000)
   expect_false(s2$meta.analysis$random.effects)
   
@@ -121,7 +121,7 @@ test_that("sensitivity.analysis and ensemble use other's settings if null",{
   }
 })
 
-test_that("workflow id is numeric if settings$bety$write = TRUE", {
+test_that("workflow id is numeric if settings$database$bety$write = FALSE", {
   s <- settings
   s1 <- check.settings(s)
   expect_is(s1$workflow$id, c("integer", "numeric"))

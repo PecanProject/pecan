@@ -74,7 +74,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
   my.write.config <- paste("write.config.", model,sep="")
   
   if(write.to.db){
-    con <- try(db.open(settings$database), silent=TRUE)
+    con <- try(db.open(settings$database$bety), silent=TRUE)
     if(is.character(con)){
       con <- NULL
     }
