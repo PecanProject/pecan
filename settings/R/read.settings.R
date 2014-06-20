@@ -553,7 +553,7 @@ check.settings <- function(settings) {
       db.query(paste0("INSERT INTO workflows (site_id, model_id, hostname, start_date, end_date, started_at, created_at) values ('",
                       settings$run$site$id, "','", settings$model$id, "', '", settings$run$host$name, "', '",
                       settings$run$start.date, "', '", settings$run$end.date, "', '", now, "', '", now, "')"), con=dbcon)
-      settings$workflow$id <- as.character(db.query(paste0("SELECT id FROM workflows WHERE created_at='", now, "';"), con=dbcon)[['id']])
+      settings$workflow$id <- db.query(paste0("SELECT id FROM workflows WHERE created_at='", now, "';"), con=dbcon)[['id']]
       fixoutdir <- TRUE
     }
   } else {
