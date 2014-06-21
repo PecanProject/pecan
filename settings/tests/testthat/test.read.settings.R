@@ -11,8 +11,7 @@ logger.setQuitOnSevere(FALSE)
 logger.setLevel("OFF")
 context("tests for read.settings and related functions")
 
-settings <- read.settings(system.file("tests/testinput.xml",
-                                      package = "PEcAn.settings"))    
+settings <- read.settings("testinput.xml")
 
 test_that("read.settings returned correctly", {
 	expect_true(file.exists(settings$outdir))

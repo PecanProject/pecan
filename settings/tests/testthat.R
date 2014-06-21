@@ -8,6 +8,5 @@
 #-------------------------------------------------------------------------------
 
 library(testthat)
-library(PEcAn.settings)
 
-test_package("PEcAn.settings")
+test_check("PEcAn.settings")
