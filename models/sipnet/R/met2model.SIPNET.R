@@ -34,6 +34,11 @@ for(i in 1:length(filescount)){
   ## open netcdf
   nc <- nc_open(files[i])
   
+  ## convert time to seconds
+  sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$t$units," "))[1],"seconds")
+  dt <- sec[2]-sec[1]
+  tstep = 86400/dt
+  
   ## determine starting year
   base.time <- unlist(strsplit(files[i],'[.]'))
   base.time <- as.numeric(base.time[length(base.time)-1])
@@ -55,16 +60,27 @@ for(i in 1:length(filescount)){
   Rain <- ncvar_get(nc,"precipitation_flux")
   pres <- ncvar_get(nc,"air_pressure")
   SW   <- ncvar_get(nc,"surface_downwelling_shortwave_flux")
-  PAR  <- try(ncvar_get(nc,"surface_downwelling_photosynthetic_photon_flux_in_air"))
-  if(!is.numeric(PAR)) PAR = SW*0.43 
 
-  ## convert time to seconds
-  sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$t$units," "))[1],"seconds")
-  
+  PAR  <- try(ncvar_get(nc,"surface_downwelling_photosynthetic_photon_flux_in_air"))
+  if(!is.numeric(PAR)) PAR = SW*0.45 
+
+  soilT <- try(ncvar_get(nc,"soil_temperature"))
+  if(!is.numeric(soilT)){
+    #approximation borrowed from SIPNET CRUNCEPpreprocessing's tsoil.py
+    tau = 15.0*tstep
+    filt = exp(-(1:length(Tair))/tau)
+    filt = (filt/sum(filt))
+    soilT = convolve(Tair, filt) - 273.15
+  }
+
+  VPD <- try(nc_var_get(nc,"water_vapor_saturation_deficit"))
+  if(!is.numeric(VPD)){
+    VPD = SatVapPres(Tair)*1000*(1-qair2rh(Qair,Tair-273.15))
+  }
+  e_a = SatVapPres(Tair)*1000 - VPD
+  VPDsoil = SatVapPres(soilT)*1000*(1-qair2rh(Qair,soilT))
+
   nc_close(nc)
-  
-  dt <- sec[2]-sec[1]
-  toff <- -lst*3600/dt
    
   ##build time variables (year, month, day of year)
   nyr <- floor(length(sec)/86400/365*dt)
@@ -103,14 +119,27 @@ for(i in 1:length(filescount)){
   ## build data matrix
   n = length(Tair)
   tmp <- cbind(rep(0,n),yr,doy,hr,
-               Tair,
-               Tair, #this should be soil T
-               
+               Tair-273.15,
+               soilT, 
+               par2ppfd(PAR), #converts to mol/m2
+               Rain*dt, ## converts from mm/s to mm
+               VPD,
+               VPDsoil,
+               e_a,
+               sqrt(U^2+V^2), ## wind
+               rep(0.6,n) ## put soil water at a constant. Don't use, set SIPNET to MODEL_WATER = 1
                )
+
+  if(is.null(out)){
+    out = tmp
+  } else {
+    out = rbind(out,tmp)
+  }
 
 } ## end loop over years
 
 ## write output
-
+out.file = file.path(outfolder,"sipnet.clim")
+write.table(out,out.file,quote = FALSE,sep="\t",row.names=FALSE,col.names=FALSE)
 
 } ### end met2model.SIPNET
