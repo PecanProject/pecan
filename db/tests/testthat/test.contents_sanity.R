@@ -9,11 +9,11 @@
 
 
 test_that("append.covariates appends managements to yields",{
-      test.traits <- query.base("select * from traits where id in (select trait_id from covariates) limit 10;", con = con)
-      tmpcov <- query.covariates(test.traits$id, con = con)
-      covariates <- tmpcov[!duplicated(tmpcov$trait_id),]
-      append.test <- append.covariate(data = test.traits, column.name = "level", covariates.data = covariates)
-      expect_true(nrow(append.test) >= nrow(covariates))
+  test.traits <- query.base("select * from traits where id in (select trait_id from covariates) limit 10;", con = con)
+  tmpcov <- query.covariates(test.traits$id, con = con)
+  covariates <- tmpcov[!duplicated(tmpcov$trait_id),]
+  append.test <- append.covariate(data = test.traits, column.name = "level", covariates.data = covariates)
+  expect_true(nrow(append.test) >= nrow(covariates))
   #    expect_true(nrow(append.test) >= nrow(test.traits))
 })
 
@@ -44,6 +44,7 @@ test_that("database has a workflows table with appropriate columns",{
   workflows <- db.query("describe workflows;", con = con)
   expect_true(all(c("site_id", "model_id", "hostname", "start_date", "end_date", "params", "folder", "started_at", "finished_at", "created_at", "updated_at", "advanced_edit") %in% workflows$Field))
 })
+
 test_that("query.covariates returns expected data.frame",{
   ids <- 1:10
   test.query <- query.covariates(ids, con = con)
