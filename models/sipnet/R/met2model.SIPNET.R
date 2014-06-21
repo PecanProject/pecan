@@ -17,8 +17,14 @@
 met2model.SIPNET <- function(in.path,in.prefix,outfolder,overwrite=FALSE){
   files = dir(in.path,in.prefix,full.names=TRUE)
   filescount = files[grep(pattern="*.nc",files)]
+
+  if(length(filescount) == 0){
+    PEcAn.utils::logger.warn(paste("no files found in",in.path,in.prefix))
+    return(-1)
+  }
   
   require(ncdf4)
+  require(PEcAn.data.atmosphere)
 #  require(ncdf)
 
 ## check to see if the outfolder is defined, if not create directory for output
@@ -35,6 +41,7 @@ for(i in 1:length(filescount)){
   nc <- nc_open(files[i])
   
   ## convert time to seconds
+  sec   <- nc$dim$t$vals  
   sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$t$units," "))[1],"seconds")
   dt <- sec[2]-sec[1]
   tstep = 86400/dt
@@ -46,13 +53,10 @@ for(i in 1:length(filescount)){
       print(c("did not extract base time correctly",i))
       break
     }
-  
-##0 YEAR DAY HOUR TIMESTEP AirT SoilT PAR PRECIP VPD VPD_Soil AirVP(e_a) WIND SoilM
-  
+    
   ## extract variables
   lat  <- ncvar_get(nc,"lat")
   lon  <- ncvar_get(nc,"lon")
-  sec   <- nc$dim$t$vals
   Tair <- ncvar_get(nc,"air_temperature")
   Qair <- ncvar_get(nc,"specific_humidity")  #humidity (kg/kg)
   U <- ncvar_get(nc,"eastward_wind")
@@ -73,12 +77,13 @@ for(i in 1:length(filescount)){
     soilT = convolve(Tair, filt) - 273.15
   }
 
-  VPD <- try(nc_var_get(nc,"water_vapor_saturation_deficit"))
+  SVP = ud.convert(get.es(Tair-273.15),"millibar","Pa") ## Saturation vapor pressure
+  VPD <- try(ncvar_get(nc,"water_vapor_saturation_deficit"))
   if(!is.numeric(VPD)){
-    VPD = SatVapPres(Tair)*1000*(1-qair2rh(Qair,Tair-273.15))
+    VPD = SVP*(1-qair2rh(Qair,Tair-273.15))
   }
-  e_a = SatVapPres(Tair)*1000 - VPD
-  VPDsoil = SatVapPres(soilT)*1000*(1-qair2rh(Qair,soilT))
+  e_a = SVP - VPD
+  VPDsoil = ud.convert(get.es(soilT),"millibar","Pa")*(1-qair2rh(Qair,soilT))
 
   nc_close(nc)
    
@@ -118,7 +123,7 @@ for(i in 1:length(filescount)){
 ##0 YEAR DAY HOUR TIMESTEP AirT SoilT PAR PRECIP VPD VPD_Soil AirVP(e_a) WIND SoilM   
   ## build data matrix
   n = length(Tair)
-  tmp <- cbind(rep(0,n),yr,doy,hr,
+  tmp <- cbind(rep(0,n),yr,doy,hr,rep(dt/86400,n),
                Tair-273.15,
                soilT, 
                par2ppfd(PAR), #converts to mol/m2
@@ -141,5 +146,8 @@ for(i in 1:length(filescount)){
 ## write output
 out.file = file.path(outfolder,"sipnet.clim")
 write.table(out,out.file,quote = FALSE,sep="\t",row.names=FALSE,col.names=FALSE)
+
+return(0) ## success
+
 
 } ### end met2model.SIPNET
