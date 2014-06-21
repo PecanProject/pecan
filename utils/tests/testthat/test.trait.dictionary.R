@@ -6,7 +6,7 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-require(PEcAn.utils)
+
 test_that("trait dictionary loads and has expected columns",{
   rm(list = ls())
   data(trait.dictionary, package = "PEcAn.utils")
