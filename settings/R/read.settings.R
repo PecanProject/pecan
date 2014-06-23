@@ -191,7 +191,7 @@ check.settings <- function(settings) {
 
   # check database version
   if(!is.character(dbcon)) {
-    versions <- db.query("SELECT version FROM schema_migrations WHERE version >= '20140617163304';", con=dbcon)[['version']]
+    versions <- db.query("SELECT version FROM schema_migrations WHERE version >= '20140621060009';", con=dbcon)[['version']]
     if (length(versions) == 0) {
       logger.severe("Database is out of date, please update the database.",
                     "Please migrate your current database using Ruby migrations part of BETY")
@@ -393,16 +393,21 @@ check.settings <- function(settings) {
       logger.info("Setting model id to ", settings$model$id)
     }
 
+    # check on name
     if (is.null(settings$model$name)) {
       if ((is.null(model$model_type) || model$model_type == "")) {
-        logger.warn("No model type specified.")
+        logger.severe("No model_type or name specified.")
       }
       settings$model$name <- model$model_type
-      logger.info("Setting model type to ", settings$model$name)
-    } else if ((is.null(model$model_type) || model$model_type == "")) {
-      logger.warn("No model type sepcified in database for model ", settings$model$name)
-    } else if (model$model_type != settings$model$name) {
-      logger.warn("Specified model type [", settings$model$name, "] does not match model_type in database [", model$model_type, "]")
+      logger.info("Setting model name to ", settings$model$name)
+    } 
+
+    # make sure we have model type
+    if ((is.null(settings$model$model_type) || settings$model$model_type == "")) {
+      settings$model$model_type <- ifelse(is.null(model$model_type), settings$model$name, model$model_type)
+      logger.info("Setting model type to ", settings$model$model_type)
+    } else if (model$model_type != settings$model$model_type) {
+      logger.warn("Specified model type [", settings$model$model_type, "] does not match model_type in database [", model$model_type, "]")
     }
 
     if (!is.null(model$id) && (model$id >= 0)) {
@@ -418,13 +423,6 @@ check.settings <- function(settings) {
       }
     }
     
-    if (!is.null(settings$model$binary)) {
-      model$model_path=paste0("hostname:", settings$model$binary)
-    }
-    if (!is.null(model$model_path)) {
-      model$binary <- tail(strsplit(model$model_path, ":")[[1]], 1)        
-    }
-
     if (is.null(settings$model$binary)) {
       if ((is.null(model$binary) || model$binary == "")) {
         logger.warn("No model binary specified.")
@@ -434,7 +432,7 @@ check.settings <- function(settings) {
     } else if ((is.null(model$binary) || model$binary == "")) {
       logger.warn("No model binary sepcified in database for model ", settings$model$name)
     } else if (model$binary != settings$model$binary) {
-      logger.warn("Specified binary [", settings$model$binary, "] does not match model_path in database [", model$binary, "]")
+      logger.warn("Specified binary [", settings$model$binary, "] does not match path in database [", model$binary, "]")
     }
   }
   # end model check
@@ -633,12 +631,17 @@ check.settings <- function(settings) {
       
       #check to see if name of each pft in xml file is actually a name of a pft already in database
       if (!is.character(dbcon)) {
-        x <- db.query(paste0("SELECT COUNT(*) FROM pfts WHERE name = '",  settings$pfts[i]$pft$name, "';"), con=dbcon)
-        if (x$count == 0) {
+        x <- db.query(paste0("SELECT * FROM pfts WHERE name = '",  settings$pfts[i]$pft$name, "';"), con=dbcon)
+        if (nrow(x) == 0) {
           logger.severe("Did not find a pft with name ", settings$pfts[i]$pft$name)
         }
-        if (x$count > 1) {
+        if (nrow(x) > 1) {
           logger.warn("Found multiple entries for pft with name ", settings$pfts[i]$pft$name)
+        }
+        for (j in 1:nrow(x)) {
+          if (x[[j, 'model_type']] != settings$model$model_type) {
+            logger.severe(settings$pfts[i]$pft$name, "has different model type [", x[[j, 'model_type']], "] than selected model [", settings$model$model_type, "].")
+          }
         }
       }
   
