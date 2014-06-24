@@ -39,22 +39,22 @@ unlink(file.path(settings$outdir, "STATUS"))
 #---------------- Run PEcAn workflow. -------------------------------------------------------------#
 # Query the trait database for data and priors
 status.start("TRAIT")
-settings$pfts <- get.trait.data(settings$pfts, settings$run$dbfiles, settings$database, settings$meta.analysis$update)
+settings$pfts <- get.trait.data(settings$pfts, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)
 status.end()
 
 # Run the PEcAn meta.analysis
 status.start("META")
-run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database)
+run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database$bety)
 status.end()
 
 # Calls model specific write.configs e.g. write.config.ed.R
 status.start("CONFIG")
-run.write.configs(settings$model$name, settings$bety$write)
+run.write.configs(settings, settings$database$bety$write)
 status.end()
 
 # Start ecosystem model runs
 status.start("MODEL")
-start.model.runs(settings$model$name, settings$bety$write)
+start.model.runs(settings, settings$database$bety$write)
 status.end()
 
 # Get results of model runs

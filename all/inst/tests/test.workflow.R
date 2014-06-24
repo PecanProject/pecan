@@ -14,8 +14,8 @@
 #settings.file <- system.file("inst/extdata/test.settings.xml", package = "PEcAn.utils")
 #settings <- read.settings(settings.file)
 
-# settings$pfts <- get.trait.data(settings$pfts, settings$run$dbfiles, settings$database, settings$meta.analysis$update)
-# run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database)
+# settings$pfts <- get.trait.data(settings$pfts, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)
+# run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database$bety)
 # run.write.configs("ED2")
 # clear.scratch(settings)
 # start.model.runs("ED2")

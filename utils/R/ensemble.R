@@ -150,7 +150,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings,
   
   # Open connection to database so we can store all run/ensemble information
   if(write.to.db){
-    con <- try(db.open(settings$database), silent=TRUE)
+    con <- try(db.open(settings$database$bety), silent=TRUE)
     if(is.character(con)){
       con <- NULL
     }

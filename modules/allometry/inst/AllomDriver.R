@@ -18,10 +18,10 @@ library(MCMCpack)
 haveMPI <- require(Rmpi)
 library(RMySQL)
 dvr <- dbDriver("MySQL")
-con <- query.base.con(dbname   = settings$database$name,
-                      password = settings$database$passwd,
-                      username = settings$database$userid,
-                      host     = settings$database$host)
+con <- query.base.con(dbname   = settings$database$bety$name,
+                      password = settings$database$bety$passwd,
+                      username = settings$database$bety$userid,
+                      host     = settings$database$bety$host)
 
 ## mcmc settings
 ngibbs = nu(settings$meta.analysis$iter)

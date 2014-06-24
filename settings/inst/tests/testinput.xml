@@ -3,11 +3,13 @@
  <outdir>pecan</outdir>
  
  <database>
-  <user>bety</user>
-  <password>bety</password>
-  <host>localhost</host>
-  <dbname>bety</dbname>
-  <driver>PostgreSQL</driver>
+  <bety>
+    <user>bety</user>
+    <password>bety</password>
+    <host>localhost</host>
+    <dbname>bety</dbname>
+    <driver>PostgreSQL</driver>
+  </bety>
  </database>
 
  <bety>

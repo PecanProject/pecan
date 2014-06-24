@@ -64,10 +64,12 @@
   <outdir>/home/mdietze/output/pecan/</outdir>
   <Rlibdir>~/lib/R</Rlibdir>
   <database>
-    <location>localhost</location>
-    <name>ebi_production</name>
-    <userid>mdietze</userid>
-    <passwd>goillini</passwd>
+    <bety>
+      <location>localhost</location>
+      <name>ebi_production</name>
+      <userid>mdietze</userid>
+      <passwd>goillini</passwd>
+    </bety>
   </database>
   <pecanDir>~/pecan/</pecanDir>  
   <run>

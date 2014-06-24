@@ -3,10 +3,12 @@
   <outdir>pecan</outdir>
 
   <database>
-    <user>bety</user>
-    <password>bety</password>
-    <host>localhost</host>
-    <dbname>bety</dbname>
+    <bety>
+      <user>bety</user>
+      <password>bety</password>
+      <host>localhost</host>
+      <dbname>bety</dbname>
+    </bety>
   </database>
 
   <bety>
@@ -15,7 +17,7 @@
 
   <pfts>
     <pft>
-      <name>sipnet.temperate.coniferous</name> 
+      <name>temperate.coniferous</name> 
     </pft>
   </pfts>
 

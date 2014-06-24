@@ -76,6 +76,9 @@ data.fetch <- function(var, nc, fun=mean) {
 ##' @export
 ##' @author Rob Kooper
 plot.netcdf <- function(datafile, yvar, xvar='time', width=800, height=600, filename=NULL, year=NULL) {	
+	require(ncdf4)
+	require(stringr)
+
 	# open netcdf file
 	nc <- nc_open(datafile)
 	

@@ -20,16 +20,16 @@ plot2AGB(unit.conv=0.02)
 
 ## run ensemble
 # Query the trait database for data and priors
-#settings$pfts <- get.trait.data(settings$pfts, settings$run$dbfiles, settings$database, settings$meta.analysis$update)
+#settings$pfts <- get.trait.data(settings$pfts, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)
 
 # Run the PEcAn meta.analysis
-#run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database)
+#run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database$bety)
 
 # Calls model specific write.configs e.g. write.config.ed.R
-run.write.configs(settings$model$name, settings$bety$write)
+run.write.configs(settings, settings$database$bety$write)
 
 # Start ecosystem model runs
-start.model.runs(settings$model$name, settings$bety$write)
+start.model.runs(settings, settings$database$bety$write)
 
 # Get results of model runs
 get.results(settings)

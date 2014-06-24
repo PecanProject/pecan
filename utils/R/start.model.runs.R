@@ -22,7 +22,8 @@
 ##' }
 ##' @author Shawn Serbin, Rob Kooper, ...
 ##'
-start.model.runs <- function(model, write = TRUE){
+start.model.runs <- function(settings, write = TRUE){
+  model = settings$model$name
   print("-------------------------------------------------------------------")
   print(paste(" Starting model runs", model))
   print("-------------------------------------------------------------------")
@@ -37,7 +38,7 @@ start.model.runs <- function(model, write = TRUE){
 
   # create database connection
   if (write) {
-    dbcon <- db.open(settings$database)
+    dbcon <- db.open(settings$database$bety)
   } else {
     dbcon <- NULL
   }
@@ -54,14 +55,14 @@ start.model.runs <- function(model, write = TRUE){
 
     # write start time to database
     if (!is.null(dbcon)) {
-      db.query(paste("UPDATE runs SET started_at =  NOW() WHERE id = ", run), con=dbcon)
+      db.query(paste("UPDATE runs SET started_at =  NOW() WHERE id = ", format(run,scientific=FALSE)), con=dbcon)
     }
 
     # create folders and copy any data to remote host
     if (settings$run$host$name != "localhost") {
-      system2("ssh", c(settings$run$host$name, "mkdir", "-p", file.path(settings$run$host$rundir, run)), stdout=TRUE)
-      system2("ssh", c(settings$run$host$name, "mkdir", "-p", file.path(settings$run$host$outdir, run)), stdout=TRUE)
-      rsync("-a --delete", file.path(settings$rundir, run), paste(settings$run$host$name, file.path(settings$run$host$rundir, run), sep=":"), pattern='/')
+      system2("ssh", c(settings$run$host$name, "mkdir", "-p", file.path(settings$run$host$rundir, format(run,scientific=FALSE))), stdout=TRUE)
+      system2("ssh", c(settings$run$host$name, "mkdir", "-p", file.path(settings$run$host$outdir, format(run,scientific=FALSE))), stdout=TRUE)
+      rsync("-a --delete", file.path(settings$rundir, format(run,scientific=FALSE)), paste(settings$run$host$name, file.path(settings$run$host$rundir, format(run,scientific=FALSE)), sep=":"), pattern='/')
     }
 
     # check to see if we use the model launcer
@@ -69,33 +70,33 @@ start.model.runs <- function(model, write = TRUE){
       # set up launcher script if we use modellauncher 
       if (pbi == 1) {
         firstrun <- run
-        launcherfile <- file.path(settings$rundir, run, "launcher.sh")
-        unlink(file.path(settings$rundir, run, "joblist.txt"))
-        jobfile <- file(file.path(settings$rundir, run, "joblist.txt"), "w")
+        launcherfile <- file.path(settings$rundir, format(run,scientific=FALSE), "launcher.sh")
+        unlink(file.path(settings$rundir, format(run,scientific=FALSE), "joblist.txt"))
+        jobfile <- file(file.path(settings$rundir, format(run,scientific=FALSE), "joblist.txt"), "w")
 
         writeLines(c("#!/bin/bash",
                      paste(settings$run$host$modellauncher$mpirun,
                            settings$run$host$modellauncher$binary,
-                           file.path(settings$run$host$rundir, run, "joblist.txt"))), con=launcherfile)
+                           file.path(settings$run$host$rundir, format(run,scientific=FALSE), "joblist.txt"))), con=launcherfile)
         writeLines(c("./job.sh"), con=jobfile)
       }
-      writeLines(c(file.path(settings$run$host$rundir, run)), con=jobfile)
+      writeLines(c(file.path(settings$run$host$rundir, format(run,scientific=FALSE))), con=jobfile)
 
     } else {
       # if qsub is requested
       if (!is.null(settings$run$host$qsub)){
-        qsub <- gsub("@NAME@", paste("PEcAn-", run, sep=""), settings$run$host$qsub)
-        qsub <- gsub("@STDOUT@", file.path(settings$run$host$outdir, run, "stdout.log"), qsub)
-        qsub <- gsub("@STDERR@", file.path(settings$run$host$outdir, run, "stderr.log"), qsub)
+        qsub <- gsub("@NAME@", paste("PEcAn-", format(run,scientific=FALSE), sep=""), settings$run$host$qsub)
+        qsub <- gsub("@STDOUT@", file.path(settings$run$host$outdir, format(run,scientific=FALSE), "stdout.log"), qsub)
+        qsub <- gsub("@STDERR@", file.path(settings$run$host$outdir, format(run,scientific=FALSE), "stderr.log"), qsub)
         qsub <- strsplit(qsub, " (?=([^\"']*\"[^\"']*\")*[^\"']*$)", perl=TRUE)
 
         # start the actual model run
         if (settings$run$host$name == "localhost") {        
           cmd <- qsub[[1]]
           qsub <- qsub[-1]
-          out <- system2(cmd, c(qsub, file.path(settings$rundir, run, "job.sh"), recursive=TRUE), stdout=TRUE)
+          out <- system2(cmd, c(qsub, file.path(settings$rundir, format(run,scientific=FALSE), "job.sh"), recursive=TRUE), stdout=TRUE)
         } else {
-          out <- system2("ssh", c(settings$run$host$name, qsub, file.path(settings$run$host$rundir, run, "job.sh"), recursive=TRUE), stdout=TRUE)
+          out <- system2("ssh", c(settings$run$host$name, qsub, file.path(settings$run$host$rundir, format(run,scientific=FALSE), "job.sh"), recursive=TRUE), stdout=TRUE)
         }
         #print(out) # <-- for debugging
         jobids[run] <- sub(settings$run$host$qsub.jobid, "\\1", out)
@@ -103,14 +104,14 @@ start.model.runs <- function(model, write = TRUE){
       # if qsub option is not invoked.  just start model runs in serial.
       } else {
         if (settings$run$host$name == "localhost") {        
-          out <- system2(file.path(settings$rundir, run, "job.sh"), stdout=TRUE)
+          out <- system2(file.path(settings$rundir, format(run,scientific=FALSE), "job.sh"), stdout=TRUE)
         } else {
-          out <- system2("ssh", c(settings$run$host$name, file.path(settings$run$host$rundir, run, "job.sh")), stdout=TRUE)
+          out <- system2("ssh", c(settings$run$host$name, file.path(settings$run$host$rundir, format(run,scientific=FALSE), "job.sh")), stdout=TRUE)
         }
 
         # write finished time to database
         if (!is.null(dbcon)) {
-          db.query(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", run), con=dbcon)
+          db.query(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", format(run,scientific=FALSE)), con=dbcon)
         }
 
         # check output to see if an error occurred during the model run
@@ -128,31 +129,31 @@ start.model.runs <- function(model, write = TRUE){
 
     # copy launcer and joblist
     if (settings$run$host$name != "localhost") {
-      rsync("-a --delete", file.path(settings$rundir, firstrun), paste(settings$run$host$name, file.path(settings$run$host$rundir, firstrun), sep=":"), pattern='/')
+      rsync("-a --delete", file.path(settings$rundir, format(firstrun,scientific=FALSE)), paste(settings$run$hmst$name, file.path(settings$run$host$rundir, format(firstrun,scientific=FALSE)), sep=":"), pattern='/')
     }
 
     # if qsub is requested
     if (!is.null(settings$run$host$qsub)) {
       qsub <- gsub("@NAME@", "PEcAn-all", settings$run$host$qsub)
-      qsub <- gsub("@STDOUT@", file.path(settings$run$host$outdir, firstrun, "launcher.out.log"), qsub)
-      qsub <- gsub("@STDERR@", file.path(settings$run$host$outdir, firstrun, "launcher.err.log"), qsub)
+      qsub <- gsub("@STDOUT@", file.path(settings$run$host$outdir, format(firstrun,scientific=FALSE), "launcher.out.log"), qsub)
+      qsub <- gsub("@STDERR@", file.path(settings$run$host$outdir, format(firstrun,scientific=FALSE), "launcher.err.log"), qsub)
       qsub <- strsplit(paste(qsub, settings$run$host$modellauncher$qsub.extra), " (?=([^\"']*\"[^\"']*\")*[^\"']*$)", perl=TRUE)
 
       # start the actual model run
       if (settings$run$host$name == "localhost") {        
         cmd <- qsub[[1]]
         qsub <- qsub[-1]
-        out <- system2(cmd, c(qsub, file.path(settings$rundir, run, "launcher.sh"), recursive=TRUE), stdout=TRUE)
+        out <- system2(cmd, c(qsub, file.path(settings$rundir, format(run,scientific=FALSE), "launcher.sh"), recursive=TRUE), stdout=TRUE)
       } else {
-        out <- system2("ssh", c(settings$run$host$name, qsub, file.path(settings$run$host$rundir, firstrun, "launcher.sh"), recursive=TRUE), stdout=TRUE)
+        out <- system2("ssh", c(settings$run$host$name, qsub, file.path(settings$run$host$rundir, format(firstrun,scientific=FALSE), "launcher.sh"), recursive=TRUE), stdout=TRUE)
       }
       #print(out) # <-- for debugging
       jobids[run] <- sub(settings$run$host$qsub.jobid, "\\1", out)
     } else {
       if (settings$run$host$name == "localhost") {        
-        out <- system2(file.path(settings$rundir, firstrun, "launcher.sh"), stdout=TRUE)
+        out <- system2(file.path(settings$rundir, format(firstrun,scientific=FALSE), "launcher.sh"), stdout=TRUE)
       } else {
-        out <- system2("ssh", c(settings$run$host$name, file.path(settings$run$host$rundir, firstrun, "launcher.sh")), stdout=TRUE)
+        out <- system2("ssh", c(settings$run$host$name, file.path(settings$run$host$rundir, format(firstrun,scientific=FALSE), "launcher.sh")), stdout=TRUE)
       }
       # check output to see if an error occurred during the model run
       if ("ERROR IN MODEL RUN" %in% out) {
@@ -161,7 +162,7 @@ start.model.runs <- function(model, write = TRUE){
       # write finished time to database
       if (!is.null(dbcon)) {
         for (run in readLines(con = file.path(settings$rundir, "runs.txt"))) {
-          db.query(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", run), con=dbcon)
+          db.query(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", format(run,scientific=FALSE)), con=dbcon)
         }
       }
     }
@@ -186,15 +187,15 @@ start.model.runs <- function(model, write = TRUE){
         out <- system2("ssh", c(settings$run$host$name, args, recursive=TRUE), stdout=TRUE)
       }
       if ((nchar(out) > 0) && (substring(out, nchar(out)-3) == "DONE")) {
-        logger.debug("Job", jobids[run], "for run", run, "finished")
+        logger.debug("Job", jobids[run], "for run", format(run,scientific=FALSE), "finished")
         jobids[run] <- NULL
         if (!is.null(dbcon)) {
           if (!is.null(settings$run$host$modellauncher)) {
             for (run in readLines(con = file.path(settings$rundir, "runs.txt"))) {
               if (!is.null(dbcon)) {
-                db.query(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", run), con=dbcon)
+                db.query(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", format(run,scientific=FALSE)), con=dbcon)
               }
-              outfile <- file.path(settings$run$host$outdir, run, "stdout.log")
+              outfile <- file.path(settings$run$host$outdir, format(run,scientific=FALSE), "stdout.log")
               out <- system2("ssh", c(settings$run$host$name, "cat", outfile), stdout=TRUE)
               # check output to see if an error occurred during the model run
               if ("ERROR IN MODEL RUN" %in% out) {
@@ -204,9 +205,9 @@ start.model.runs <- function(model, write = TRUE){
           } else {
             # write finished time to database 
             if (!is.null(dbcon)) {
-              db.query(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", run), con=dbcon)
+              db.query(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", format(run,scientific=FALSE)), con=dbcon)
             }
-            outfile <- file.path(settings$run$host$outdir, run, "stdout.log")
+            outfile <- file.path(settings$run$host$outdir, format(run,scientific=FALSE), "stdout.log")
             out <- system2("ssh", c(settings$run$host$name, "cat", outfile), stdout=TRUE)
             # check output to see if an error occurred during the model run
             if ("ERROR IN MODEL RUN" %in% out) {
@@ -220,7 +221,7 @@ start.model.runs <- function(model, write = TRUE){
 
   if (settings$run$host$name != 'localhost') {
     for (run in readLines(con = file.path(settings$rundir, "runs.txt"))) {
-      rsync("-a --delete", paste(settings$run$host$name, file.path(settings$run$host$outdir, run), sep=":"), file.path(settings$modeloutdir, run), pattern="/")
+      rsync("-a --delete", paste(settings$run$host$name, file.path(settings$run$host$outdir, format(run,scientific=FALSE)), sep=":"), file.path(settings$modeloutdir, format(run,scientific=FALSE)), pattern="/")
     }
   }
 

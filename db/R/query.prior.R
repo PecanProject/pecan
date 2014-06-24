@@ -25,7 +25,7 @@
 ##' }
 query.priors <- function(pft, trstr=NULL, out=NULL, con=NULL,...){
   if(is.null(con)){
-    con <- query.base.con(settings)
+    con <- db.open(settings$database$bety)
   }
   if(is.list(con)){
     print("query.priors")

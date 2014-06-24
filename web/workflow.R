@@ -60,18 +60,18 @@ if (length(which(commandArgs() == "--continue")) == 0) {
 
 	# get data from pecan DB
 	status.start("TRAIT")
-	settings$pfts <- get.trait.data(settings$pfts, settings$run$dbfiles, settings$database, settings$meta.analysis$update)
+	settings$pfts <- get.trait.data(settings$pfts, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)
 	saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
 	status.end()
 
 	# run meta-analysis
 	status.start("META")
-	run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database)
+	run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database$bety)
 	status.end()
 
 	# write model specific configs
 	status.start("CONFIG")
-	run.write.configs(settings$model$name, settings$bety$write)
+	run.write.configs(settings, settings$database$bety$write)
 	status.end()
 }
 
@@ -84,7 +84,7 @@ if (length(which(commandArgs() == "--advanced")) != 0) {
 
 # run model
 status.start("MODEL")
-start.model.runs(settings$model$name, settings$bety$write)
+start.model.runs(settings, settings$database$bety$write)
 status.end()
 
 # convert output
@@ -104,7 +104,7 @@ status.end()
 
 # all done
 status.start("FINISHED")
-db.query(paste("UPDATE workflows SET finished_at=NOW() WHERE id=", settings$workflow$id, "AND finished_at IS NULL"), params=settings$database)
+db.query(paste("UPDATE workflows SET finished_at=NOW() WHERE id=", settings$workflow$id, "AND finished_at IS NULL"), params=settings$database$bety)
 status.end()
 
 # send email if configured
