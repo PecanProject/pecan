@@ -50,17 +50,20 @@ fi
 
 # list of all tables, schema_migrations is ignored since that
 # will be imported during creaton
-CLEAN_TABLES="citations counties covariates cultivars dbfiles"
-CLEAN_TABLES="${CLEAN_TABLES} ensembles entities formats inputs"
-CLEAN_TABLES="${CLEAN_TABLES} likelihoods location_yields"
+
+# order is important to check constraints in database
+CLEAN_TABLES="citations counties covariates cultivars"
+CLEAN_TABLES="${CLEAN_TABLES} dbfiles ensembles entities formats"
+CLEAN_TABLES="${CLEAN_TABLES} inputs likelihoods location_yields"
 CLEAN_TABLES="${CLEAN_TABLES} machines managements methods"
 CLEAN_TABLES="${CLEAN_TABLES} mimetypes models pfts "
 CLEAN_TABLES="${CLEAN_TABLES} posterior_samples posteriors"
 CLEAN_TABLES="${CLEAN_TABLES} priors runs sessions sites"
-CLEAN_TABLES="${CLEAN_TABLES} species treatments"
-CLEAN_TABLES="${CLEAN_TABLES} variables workflows"
+CLEAN_TABLES="${CLEAN_TABLES} species traits treatments"
+CLEAN_TABLES="${CLEAN_TABLES} workflows yields"
 
-CLEAN_TABLES="${CLEAN_TABLES} users traits yields"
+# eventually these 2 should be loaded first to check constraints
+CLEAN_TABLES="${CLEAN_TABLES} users variables"
 
 MANY_TABLES="${MANY_TABLES} citations_sites citations_treatments"
 MANY_TABLES="${MANY_TABLES} formats_variables inputs_runs"
