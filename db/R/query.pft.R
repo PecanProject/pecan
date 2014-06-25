@@ -27,7 +27,7 @@ query.pft_species <- function(pft = NULL, con = NULL, settings = NULL){
 
   if(exists("settings")){
     if(is.null(con)){
-      con <- db.open(settings$database) 
+      con <- db.open(settings$database$bety) 
       newcon <- TRUE
     } else { 
       newcon <- FALSE

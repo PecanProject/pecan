@@ -40,11 +40,13 @@
     </host>
   </run>
   <database>
-    <driver>PostgreSQL</driver>
-    <user>bety</user>
-    <password>bety</password>
-    <host>ebi-forecast.igb.illinois.edu</host>
-    <dbname>ebi_production</dbname>
+    <bety>
+      <driver>PostgreSQL</driver>
+      <user>bety</user>
+      <password>bety</password>
+      <host>ebi-forecast.igb.illinois.edu</host>
+      <dbname>ebi_production</dbname>
+    </bety>
   </database>
   <bety>
     <write>TRUE</write>

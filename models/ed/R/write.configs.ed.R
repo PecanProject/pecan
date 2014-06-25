@@ -221,7 +221,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
       if (!is.null(settings$model$revision)) {
         filename <- system.file(paste0("ED2IN.r", settings$model$revision), package = "PEcAn.ED2")
       } else {
-        model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database)
+        model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database$bety)
         filename <- system.file(paste0("ED2IN.r", model$revision), package = "PEcAn.ED2")
       }
     }

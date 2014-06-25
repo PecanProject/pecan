@@ -26,8 +26,10 @@
 ##' query.base('select count(id) from traits;')
 ##' }
 query.base <- function(query, con=NULL, ...){
+  .Deprecated("db.query")
+  .db.utils$deprecated <- .db.utils$deprecated+1
   if(is.null(con)){
-    invisible(db.query(query, params=settings$database))
+    invisible(db.query(query, params=settings$database$bety))
   } else {
     invisible(db.query(query, con))
   }
@@ -51,7 +53,9 @@ query.base <- function(query, con=NULL, ...){
 ##' con <- query.base.con(settings)
 ##' }
 query.base.con <- function(settings,...){
-  invisible(db.open(settings$database))
+  .Deprecated("db.open")
+  .db.utils$deprecated <- .db.utils$deprecated+1
+  invisible(db.open(settings$database$bety))
 }
 #==================================================================================================#
 
@@ -68,6 +72,8 @@ query.base.con <- function(settings,...){
 ##' @author Rob Kooper
 ##' @export
 query.close <- function(con) {
+  .Deprecated("db.close")
+  .db.utils$deprecated <- .db.utils$deprecated+1
   invisible(db.close(con))
 }
 #==================================================================================================#
@@ -83,7 +89,9 @@ query.close <- function(con) {
 ##' @return nothing, as a side effect closes all open connections
 ##' @author David LeBauer
 killdbcons <- function(){
-  for (i in dbListConnections(PostgreSQL())) db.close(i)
+  .Deprecated("NeverCallThisFunction")
+  .db.utils$deprecated <- .db.utils$deprecated+1
+  for (i in dbListConnections(MySQL())) db.close(i)
 }
 #==================================================================================================#
 

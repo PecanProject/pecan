@@ -82,6 +82,8 @@ get.es <- function(temp){
 SatVapPres <- function(T){
   #/estimates saturation vapor pressure (kPa)  Goff-Gratch 1946
   #/input: T = absolute temperature
+  T_st = 373.15 ##steam temperature (K)
+  e_st = 1013.25 ##/saturation vapor pressure at steam temp (hPa)
   0.1*exp( -7.90298*(T_st/T-1) + 5.02808*log(T_st/T) - 1.3816e-7*(10^(11.344*(1-T/T_st))-1) + 8.1328e-3*(10^(-3.49149*(T_st/T-1))-1) + log(e_st))  
 }
 

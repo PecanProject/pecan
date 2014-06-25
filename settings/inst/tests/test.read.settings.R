@@ -50,9 +50,9 @@ test_that("check.settings gives sensible defaults",{
   s2 <- check.settings(s1)
   expect_is(s2$database, "NULL")
   
-  s1$database <- settings$database
+  s1$database$bety <- settings$database$bety
   s2 <- check.settings(s1)
-  expect_equal(s2$database$driver, "PostgreSQL")
+  expect_equal(s2$database$bety$driver, "PostgreSQL")
 
   ## dir. paths, with default localhost
   expect_equal(s2$run$host$name, "localhost")
@@ -67,7 +67,7 @@ test_that("check.settings gives sensible defaults",{
   expect_equal(s2$rundir, file.path(outdir, "run"))  
   expect_equal(s2$rundir, s2$run$host$rundir)
   
-  expect_true(s2$bety$write)
+  expect_true(s2$database$bety$write)
   expect_true(s2$meta.analysis$iter > 1000)
   expect_false(s2$meta.analysis$random.effects)
   
@@ -91,13 +91,13 @@ test_that("check.settings uses run dates if dates not given in ensemble or sensi
   s <- settings
   
   for(node in c("ensemble", "sensitivity.analysis")) {
-    s1 <- list(pfts = s$pfts, database = s$database, run = s$run)
+    s1 <- list(pfts = s$pfts, database = list(bety = s$database$bety), run = s$run)
     s1[[node]] <- list(variable = "FOO")
     s2 <- check.settings(s1)
     expect_equivalent(s2[[node]]$start.year, year(s2$run$start.date))
     expect_equivalent(s2[[node]]$end.year, year(s2$run$end.date))
     
-    s1 <- list(pfts = s$pfts, database = s$database, run = NA)
+    s1 <- list(pfts = s$pfts, database = list(bety = s$database$bety), run = NA)
     s1[[node]] <- list(variable = "FOO", start.year = 1000, end.year = 1000)
 
     expect_error(check.settings(s1))    
@@ -106,11 +106,11 @@ test_that("check.settings uses run dates if dates not given in ensemble or sensi
 
 test_that("sensitivity.analysis and ensemble use other's settings if null",{
   s <- settings
-  s1 <- list(pfts = s$pfts, database = s$database, run = s$run)
+  s1 <- list(pfts = s$pfts, database = list(bety = s$database$bety), run = s$run)
   nodes <- c("sensitivity.analysis", "ensemble")
   for(node1 in nodes) {
     node2 <- nodes[nodes != node1]
-    s1 <- list(pfts = s$pfts, database = s$database, run = s$run)
+    s1 <- list(pfts = s$pfts, database = list(bety = s$database$bety), run = s$run)
     s1[[node1]] <- list(variable = "FOO", start.year = 2003, end.year = 2004)
     s1[[node2]] <- list()
     s2 <- check.settings(s1)
@@ -121,10 +121,10 @@ test_that("sensitivity.analysis and ensemble use other's settings if null",{
   }
 })
 
-test_that("workflow id is numeric if settings$bety$write = TRUE", {
+test_that("workflow id is numeric if settings$database$bety$write = FALSE", {
   s <- settings
   s1 <- check.settings(s)
-  expect_is(s1$workflow$id, c("integer", "numeric"))
+  expect_is(s1$workflow$id, c("character", "numeric"))
   
   s$workflow <- NULL
   s1 <- check.settings(s)
@@ -134,11 +134,11 @@ test_that("workflow id is numeric if settings$bety$write = TRUE", {
 test_that("check.settings will fail if db does not exist",{
 
   s <- settings
-  expect_true(db.exists(s$database))
-  s$database$dbname <- "blabla"
-  expect_false(db.exists(s$database))
+  expect_true(db.exists(s$database$bety))
+  s$database$bety$dbname <- "blabla"
+  expect_false(db.exists(s$database$bety))
 
-  expect_error(check.settings(s$database))
+  expect_error(check.settings(s))
 
 })
 
@@ -147,30 +147,30 @@ test_that("check.settings will fail if db does not exist",{
 test_that("check.settings handles userid and username properly", {
 
   s1 <- settings
-  s1$database[["userid"]] <- "bety"
-  s1$database[["user"]] <- NULL
+  s1$database$bety[["userid"]] <- "bety"
+  s1$database$bety[["user"]] <- NULL
   s2 <- check.settings(s1)
-  expect_true("user" %in% names(s2$database))  
-  expect_true(!"userid" %in% names(s2$database))
+  expect_true("user" %in% names(s2$database$bety))  
+  expect_true(!"userid" %in% names(s2$database$bety))
   
   s1 <- settings
-  s1$database[["username"]] <- "bety"
-  s1$database[["user"]] <- NULL
+  s1$database$bety[["username"]] <- "bety"
+  s1$database$bety[["user"]] <- NULL
   s2 <- check.settings(s1)
-  expect_true("user" %in% names(s2$database))  
-  expect_true(!"username" %in% names(s2$database))
+  expect_true("user" %in% names(s2$database$bety))  
+  expect_true(!"username" %in% names(s2$database$bety))
   
   s1 <- settings
-  s1$database[["userid"]] <- "bety"
+  s1$database$bety[["userid"]] <- "bety"
   s2 <- check.settings(s1)
-  expect_true("user" %in% names(s2$database))  
-  expect_true(!"userid" %in% names(s2$database))
+  expect_true("user" %in% names(s2$database$bety))  
+  expect_true(!"userid" %in% names(s2$database$bety))
   
   s1 <- settings
-  s1$database[["username"]] <- "bety"
+  s1$database$bety[["username"]] <- "bety"
   s2 <- check.settings(s1)
-  expect_true("user" %in% names(s2$database))  
-  expect_true(!"username" %in% names(s2$database))
+  expect_true("user" %in% names(s2$database$bety))  
+  expect_true(!"username" %in% names(s2$database$bety))
   
 })
 

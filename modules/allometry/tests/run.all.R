@@ -10,4 +10,4 @@ library(testthat)
 library(PEcAn.allometry)
 
 logger.setQuitOnSevere(FALSE)
-test_package("PEcAn.allometry")
+#test_package("PEcAn.allometry")
