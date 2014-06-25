@@ -131,14 +131,14 @@ session_start();
 # DATABASE FUNCTIONS
 # ----------------------------------------------------------------------
 function open_database() {
-	global $db_hostname;
-	global $db_username;
-	global $db_password;
-	global $db_database;
-	global $db_type;
+	global $db_bety_hostname;
+	global $db_bety_username;
+	global $db_bety_password;
+	global $db_bety_database;
+	global $db_bety_type;
 	global $pdo;
 
-	$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
+	$pdo = new PDO("${db_bety_type}:host=${db_bety_hostname};dbname=${db_bety_database}", $db_bety_username, $db_bety_password);
 }
 
 function close_database() {

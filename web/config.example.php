@@ -1,11 +1,19 @@
 <?php
 
-# Information to connect to the database
-$db_type="pgsql";
-$db_hostname="localhost";
-$db_username="bety";
-$db_password="bety";
-$db_database="bety";
+# Information to connect to the BETY database
+$db_bety_type="pgsql";
+$db_bety_hostname="localhost";
+$db_bety_username="bety";
+$db_bety_password="bety";
+$db_bety_database="bety";
+
+# Information to connect to the FIA database
+# leave this blank if you do not have the FIA database installed.
+$db_fia_type="pgsql";
+$db_fia_hostname="";
+$db_fia_username="";
+$db_fia_password="";
+$db_fia_database="";
 
 # R binary
 $Rbinary="/usr/bin/R";

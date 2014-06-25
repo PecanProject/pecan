@@ -304,11 +304,13 @@ if ($model["model_type"] == "ED2") {
 			print "			<option value='{$row['id']}'>{$row['name']}</option>\n";
 		}
 	}
-	// if ($psscss == "FIA") {
-	// 	print "			<option value='FIA' selected>Use FIA</option>\n";
-	// } else {
-	// 	print "			<option value='FIA'>Use FIA</option>\n";
-	// }
+	if (isset($db_fia_database) && ($db_fia_database != "")) {
+		if ($psscss == "FIA") {
+			print "			<option value='FIA' selected>Use FIA</option>\n";
+		} else {
+			print "			<option value='FIA'>Use FIA</option>\n";
+		}
+	}
 	print "			</select>\n";
 	print "			<div class=\"spacer\"></div>\n";
 }
