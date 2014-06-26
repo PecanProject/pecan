@@ -10,4 +10,4 @@ library(testthat)
 require(PEcAn.utils)
 
 logger.setQuitOnSevere(FALSE)
-test_package("PEcAn.data.atmosphere")
+#test_package("PEcAn.data.atmosphere")
