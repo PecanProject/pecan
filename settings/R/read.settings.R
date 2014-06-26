@@ -218,14 +218,14 @@ check.settings <- function(settings) {
   # check start/end date are specified and correct
   if (is.null(settings$run$start.date)) {
     logger.warn("No start.date specified in run section.")
-  }
-  if (is.null(settings$run$end.date)) {
+  } else if (is.null(settings$run$end.date)) {
     logger.warn("No end.date specified in run section.")
-  }
-  startdate <- parse_date_time(settings$run$start.date, "ymd_hms", truncated=3)
-  enddate <- parse_date_time(settings$run$end.date, "ymd_hms", truncated=3)
-  if (startdate >= enddate) {
-    logger.severe("Start date should come before the end date.")
+  } else {
+    startdate <- parse_date_time(settings$run$start.date, "ymd_hms", truncated=3)
+    enddate <- parse_date_time(settings$run$end.date, "ymd_hms", truncated=3)
+    if (startdate >= enddate) {
+      logger.severe("Start date should come before the end date.")
+    }
   }
 
   # check if there is either ensemble or sensitivy.analysis
@@ -372,16 +372,19 @@ check.settings <- function(settings) {
       }
     } else {
       if(!is.null(settings$model$name)){
-        model <- list(id=-1, name=settings$model$name)        
+        model <- list(id=-1, name=settings$model$name)
+        if (!is.null(settings$model$model_type)) {
+          model$model_type <- settings$model$model_type
+        } else {
+          model$model_type <- settings$model$name
+        }
       } else {
         model <- list()
       }
     }
-    
-    if (!is.null(settings$model$name)) {
-      model$model_type=settings$model$name
-    }
-    
+
+    # check on model_type
+
     # copy data from database into missing fields
     if (is.null(settings$model$id)) {
       if ((is.null(model$id) || model$id == "")) {
@@ -410,6 +413,7 @@ check.settings <- function(settings) {
       logger.warn("Specified model type [", settings$model$model_type, "] does not match model_type in database [", model$model_type, "]")
     }
 
+    # check on binary for given host
     if (!is.null(model$id) && (model$id >= 0)) {
       binary <- db.query(paste0("SELECT CONCAT(dbfiles.file_path, '/', dbfiles.file_name) AS binary FROM dbfiles",
                                 " WHERE dbfiles.container_type='Model' AND dbfiles.container_id=", model$id), con=dbcon)
@@ -638,9 +642,11 @@ check.settings <- function(settings) {
         if (nrow(x) > 1) {
           logger.warn("Found multiple entries for pft with name ", settings$pfts[i]$pft$name)
         }
-        for (j in 1:nrow(x)) {
-          if (x[[j, 'model_type']] != settings$model$model_type) {
-            logger.severe(settings$pfts[i]$pft$name, "has different model type [", x[[j, 'model_type']], "] than selected model [", settings$model$model_type, "].")
+        if (!is.null(settings[['model']]) && !is.null(settings$model$model_type)) {
+          for (j in 1:nrow(x)) {
+            if (x[[j, 'model_type']] != settings$model$model_type) {
+              logger.severe(settings$pfts[i]$pft$name, "has different model type [", x[[j, 'model_type']], "] than selected model [", settings$model$model_type, "].")
+            }
           }
         }
       }
