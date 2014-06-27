@@ -111,35 +111,20 @@ test_that("check.settings uses run dates if dates not given in ensemble or sensi
 })
 
 test_that("sensitivity.analysis and ensemble use other's settings if null",{
-  print(1)
   s <- settings
-  print(1)
   s1 <- list(pfts = s$pfts, database = list(bety = s$database$bety), run = s$run)
-  print(1)
   nodes <- c("sensitivity.analysis", "ensemble")
-  print(1)
   for(node1 in nodes) {
-  print(node1)
     node2 <- nodes[nodes != node1]
-  print(node1)
     s1 <- list(pfts = s$pfts, database = list(bety = s$database$bety), run = s$run)
-  print(node1)
     s1[[node1]] <- list(variable = "FOO", start.year = 2003, end.year = 2004)
-  print(node1)
     s1[[node2]] <- list()
-  print(node1)
-  print(s1)
     s2 <- check.settings(s1)
-  print(node1)
     for(setting in c("variable", "start.year", "end.year")){
-  print(setting)
       expect_equal(s2[[node1]][[setting]], s2[[node2]][[setting]])        
     }
-  print(node1)
     expect_equal(s2$ensemble$size, 1)
-  print(node1)
   }
-  print(1)
 })
 
 test_that("workflow id is numeric if settings$database$bety$write = FALSE", {

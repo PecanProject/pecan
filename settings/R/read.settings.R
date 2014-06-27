@@ -128,31 +128,45 @@ check.settings <- function(settings) {
   options(scipen=12)
 
   # check database secions if exist
+  dbcon <- "NONE"
   if (!is.null(settings$database)) {
 
     # simple check to make sure the database tag is updated
     if (!is.null(settings$database$dbname)) {
-      log.severe("Database tag has changed, please use <database><bety> to store",
+      if (!is.null(settings$database$bety)) {
+        logger.severe("Please remove dbname etc from database configuration.")
+      }
+
+      logger.info("Database tag has changed, please use <database><bety> to store",
                  "information about accessing the BETY database. See also",
                  "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#database-access.")
+
+      bety <- list()
+      for(name in names(settings$database)) {
+        bety[[name]] <- settings$database[[name]]
+      }
+      settings$database <- list(bety=bety)
     }
 
-    # check bety database access
-    if (!is.null(settings$database$bety)) {
-      settings$database$bety <- check.database(settings$database$bety)
-
-      # warn user about change and update settings
-      if (!is.null(settings$bety$write)) {
-        logger.warn("<bety><write> is now part of the database settings. For more",
-                    "information about the database settings see",
-                    "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#database-access.")
-        if (is.null(settings$database$bety$write)) {
-          settings$database$bety$write <- settings$bety$write
-          settings$bety$write <- NULL
-          if (length(settings$bety) == 0) settings$bety <- NULL
-        }
+    # warn user about change and update settings
+    if (!is.null(settings$bety$write)) {
+      logger.warn("<bety><write> is now part of the database settings. For more",
+                  "information about the database settings see",
+                  "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#database-access.")
+      if (is.null(settings$database$bety$write)) {
+        settings$database$bety$write <- settings$bety$write
+        settings$bety$write <- NULL
+        if (length(settings$bety) == 0) settings$bety <- NULL
       }
-    
+    }
+
+    # check all databases
+    for (name in names(settings$database)) {
+      settings$database[[name]] <- check.database(settings$database[[name]])
+    }
+
+    # check bety database
+    if (!is.null(settings$database$bety)) {
       # should runs be written to database
       if (is.null(settings$database$bety$write)) {
         logger.info("Writing all runs/configurations to database.")
@@ -172,37 +186,29 @@ check.settings <- function(settings) {
       }
 
       # TODO check userid and userpassword
-    }
 
-    # check fia database access
-    if (!is.null(settings$database$fia)) {
-      settings$database$fia = check.database(settings$database$fia)
-    }
-  }
+      # Connect to database
+      dbcon <- db.open(settings$database$bety)
 
-  ## allow PEcAn to run without database
-  if (is.null(settings$database) || is.null(settings$database$bety)) {
-    logger.warn("No database information specified; not using database.")
-    dbcon <- "NONE"
-  } else {
-    # create connection we'll use
-    dbcon <- db.open(settings$database$bety)
-  }
+      # check database version
+      versions <- db.query("SELECT version FROM schema_migrations WHERE version >= '20140621060009';", con=dbcon)[['version']]
+      if (length(versions) == 0) {
+        logger.severe("Database is out of date, please update the database.",
+                      "Please migrate your current database using Ruby migrations part of BETY")
+      }
+      if (length(versions) > 1) {
+        logger.warn("Database is more recent than PEcAn expects this could result in PEcAn not working as expected.",
+                    "If PEcAn fails, either revert database OR update PEcAn and edit expected database version in",
+                    "utils/R/read.settings.R (Redmine #1673).")
+      } else {
+        logger.debug("Database is correct version", versions[1], ".")
+      }
 
-  # check database version
-  if(!is.character(dbcon)) {
-    versions <- db.query("SELECT version FROM schema_migrations WHERE version >= '20140621060009';", con=dbcon)[['version']]
-    if (length(versions) == 0) {
-      logger.severe("Database is out of date, please update the database.",
-                    "Please migrate your current database using Ruby migrations part of BETY")
-    }
-    if (length(versions) > 1) {
-      logger.warn("Database is more recent than PEcAn expects this could result in PEcAn not working as expected.",
-                  "If PEcAn fails, either revert database OR update PEcAn and edit expected database version in",
-                  "utils/R/read.settings.R (Redmine #1673).")
     } else {
-      logger.debug("Database is correct version", versions[1], ".")
+      logger.warn("No BETY database information specified; not using database.")
     }
+  } else {
+    logger.warn("No BETY database information specified; not using database.")
   }
   
   # make sure there are pfts defined
