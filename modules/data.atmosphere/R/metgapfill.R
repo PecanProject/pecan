@@ -1,18 +1,21 @@
 ##' Take an Ameriflux NetCDF file
-##' Fill missing met values using MDS approach
-##' and also NARR (in future version)
+##' Fill missing met values using MDS approach using MPI-BGC REddyProc library
+##' Currently 
+##' Future version: Choose which variables to gap fill
+##' Future version will first downscale and fill with NARR
 ##
 ##' @param in.path
-##' @param in.file
+##' @param in.prefix
+##' 
 ##' @param outfolder
 ##' @author Ankur Desai
 ##'
 
-metgapfill <- function(in.path,in.file,outfolder){
+metgapfill <- function(in.path,in.prefix,outfolder){
   require(REddyProc)  
   require(ncdf4)
-  require(udunits2)
-  require(PEcAn.utils)
+##  require(udunits2)
+##  require(PEcAn.utils)
   
   #REddyProc installed to ~/R/library by install.packages("REddyProc", repos="http://R-Forge.R-project.org", type="source")
 
@@ -38,53 +41,104 @@ metgapfill <- function(in.path,in.file,outfolder){
     
     ## Let's start with reading a few variables
     nc <- nc_open(new.file,write=TRUE)
+    
     Tair <- ncvar_get(nc=nc,varid='air_temperature')
-    Rg <- ncvar_get(nc=nc,varid='surface_downwelling_shortwave_flux_in_air')
+    Rg <- ncvar_get(nc=nc,varid='surface_downwelling_shortwave_flux')
     rH <- ncvar_get(nc=nc,varid='relative_humidity')
+    PAR <- ncvar_get(nc=nc,varid='PAR')
+#    precip <- ncvar_get(nc=nc,varid='precipitation_flux')
+#    Rn <- ncvar_get(nc=nc,varid='Rn')
+#    sHum <- ncvar_get(nc=nc,varid='specific_humidity')
+#    Lw <- ncvar_get(nc=nc,varid='surface_downwelling_longwave_flux')
+#    Ts1 <-ncvar_get(nc=nc,varid='TS1')
+#    Ts2 <-ncvar_get(nc=nc,varid='TS2')
+#    VPD <-ncvar_get(nc=nc,varid='VPD')
+#    ws <-ncvar_get(nc=nc,varid='wind_speed')
+#    co2 <- ncvar_get(nc=nc,varid='CO2')
+#    press <- ncvar_get(nc=nc,varid='air_pressure')
     
-    ## May need to convert -9999 to NA here
-    
-    ## make a data frame
-    EddyData.F <- data.frame(Tair,Rh,rH)
-    EddyData.F <- cbind(EddyData.F,VPD=fCalcVPDfromRHandTair(EddyData.F$rH, EddyData.F$Tair))   
+    ## make a data frame, convert -9999 to NA
+    EddyData.F <- data.frame(Tair,Rg,rH,PAR) #,precip,Rn,sHum,Lw,Ts1,Ts2,VPD,ws,co2,press)
+    EddyData.F[EddyData.F <= -9999] = NA
+    EddyData.F['Tair'] = EddyData.F['Tair']-273.15
+##    EddyData.F <- cbind(EddyData.F,VPD=fCalcVPDfromRHandTair(EddyData.F$rH, EddyData.F$Tair))   
 
-    ## have to deal with time
-    ## time <- ncvar_get(nc=nc,varid='time') ## time is attr not var
-    ## TODO Extract Year,Day,Hour
-    ## HACK way here, assume file has 8760,8784,17520,or 17568 lines
-    nelem = length(rH)
-    if (nelem<=8784) nhrs <-24 else nhrs <- 48
-    Year <- rep(2000,nelem)
-    DoY <- floor(seq(1,nelem/nhrs,length=nelem))
-    Hour <- rep(0:(nhrs-1),nelem/nhrs)
+    n_Tair <- sum(is.na(EddyData.F['Tair']))
+    n_Rg <- sum(is.na(EddyData.F['Rg']))
+    n_rH <- sum(is.na(EddyData.F['rH']))
+    n_PAR <- sum(is.na(EddyData.F['PAR']))
+
+    ## read time, add to data frame
+    Year <- ncvar_get(nc=nc,varid='YEAR')
+    DoY <- ncvar_get(nc=nc,varid='DOY')
+    Dtime <- ncvar_get(nc=nc,varid='DTIME')
+    Hour <- ((round((Dtime-DoY)*48.0)/2.0)+0.5)
+
+
+    nelem = length(Year)
     EddyData.F <- cbind(EddyData.F,Year=Year,DoY=DoY,Hour=Hour)
-    
+        
     ## convert time to Posix
-    EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
+    EddyData.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
     
-    ## Create EddyProc object
-    EddyProc.C <- sEddyProc$new('Site', EddyDataWithPosix.F, c('Ta','Rg','rH','VPD'))
-    
+    ## Create EddyProc object 
+    EddyProc.C <- sEddyProc$new('Site', EddyData.F, c('Tair','Rg','rH','PAR')) #,'precip','Rn','sHum','Lw','Ts1','Ts2','VPD','ws','co2','press'))
+                                
     ## Gap fill with default (see below for examples of advanced options)
-    EddyProc.C$sMDSGapFill('Ta', FillAll.b=TRUE)
-    EddyProc.C$sMDSGapFill('Rg', FillAll.b=TRUE)
-    EddyProc.C$sMDSGapFill('rH', FillAll.b=TRUE)
-    EddyProc.C$sMDSGapFill('VPD', FillAll.b=TRUE)
-    
+    if(n_Tair>0&&n_Tair<nelem) EddyProc.C$sMDSGapFill('Tair', FillAll.b=TRUE)
+    if(n_Rg>0&&n_Rg<nelem) EddyProc.C$sMDSGapFill('Rg', FillAll.b=TRUE)
+    if(n_rH>0&&n_rH<nelem) EddyProc.C$sMDSGapFill('rH', FillAll.b=TRUE)
+    if(n_PAR>0&&n_PAR<nelem) EddyProc.C$sMDSGapFill('PAR', FillAll.b=TRUE)
+#    EddyProc.C$sMDSGapFill('precip', FillAll.b=TRUE)
+#    EddyProc.C$sMDSGapFill('Rn', FillAll.b=TRUE)
+#    EddyProc.C$sMDSGapFill('sHum', FillAll.b=TRUE)
+#    EddyProc.C$sMDSGapFill('Lw', FillAll.b=TRUE)
+#    EddyProc.C$sMDSGapFill('Ts1', FillAll.b=TRUE)
+#    EddyProc.C$sMDSGapFill('Ts2', FillAll.b=TRUE)
+#    EddyProc.C$sMDSGapFill('VPD', FillAll.b=TRUE)
+#    EddyProc.C$sMDSGapFill('ws', FillAll.b=TRUE)
+#    EddyProc.C$sMDSGapFill('co2', FillAll.b=TRUE)
+#    EddyProc.C$sMDSGapFill('press', FillAll.b=TRUE)
+
     ## Extract filled variables into data frame
+print('Extracting dataframe elements')
     Extracted <- EddyProc.C$sExportResults()
-    Tair_f <- Extracted['Tair_f']
-    Rg_f <- Extracted['Rg_f']
-    rH_f <- Extracted['rH_f']
-    
-    ## TODO: Put back in missing val? Plots? Convert VPD to RH?
-    
+    Extracted[is.na(Extracted)] = -9999.0
+    if(n_Tair>0&&n_Tair<nelem) Tair_f <- Extracted['Tair_f'] else Tair_f <- Tair
+    if(n_Rg>0&&n_Rg<nelem) Rg_f <- Extracted['Rg_f']
+    if(n_rH>0&&n_rH<nelem) rH_f <- Extracted['rH_f']
+    if(n_PAR>0&&n_PAR<nelem) PAR_f <- Extracted['PAR_f']
+ #   precip_f <- Extracted['precip_f']
+#    Rn_f <- Extracted['Rn_f']
+#    sHum_f <- Extracted['sHum_f']
+#    Lw_f <- Extracted['Lw_f']
+#    Ts1_f <- Extracted['Ts1_f']
+#    Ts2_f <- Extracted['Ts2_f']
+#    VPD_f <- Extracted['VPD_f']
+#    ws_f <- Extracted['ws_f']
+#    co2_f <- Extracted['co2_f']
+#    press_f <- Extracted['press_f']
+   
+    Tair_f = Tair_f + 273.15
     ## Debug: look at output
-    
+
+    print('Writing to file')
     ## Write to NC file
-    ncvar_put(nc,varid='air_temperature',vals=Tair_f)
-    ncvar_put(nc,varid='surface_downwelling_shortwave_flux_in_air',vals=Rg_f)
-    ncvar_put(nc,varid='relative_humidity',vals=rH_f)
+#    ncvar_put(nc,varid='air_temperature',vals=Tair_f)
+#    ncvar_put(nc,varid='surface_downwelling_shortwave_flux',vals=Rg_f)
+#    ncvar_put(nc,varid='relative_humidity',vals=rH_f)
+#    ncvar_put(nc,varid='PAR',vals=PAR_f)
+#    ncvar_put(nc,varid='precipitation_flux',vals=precip_f)
+#    ncvar_put(nc,varid='Rn',vals=Rn_f)
+#    ncvar_put(nc,varid='specific_humidity',vals=sHum_f)
+#    ncvar_put(nc,varid='surface_downwelling_longwave_flux',vals=Lw_f)
+#    ncvar_put(nc,varid='TS1',vals=Ts1_f)
+#    ncvar_put(nc,varid='TS2',vals=Ts2_f)
+#    ncvar_put(nc,varid='VPD',vals=VPD_f)
+#    ncvar_put(nc,varid='wind_speed',vals=ws_f)
+#    ncvar_put(nc,varid='CO2',vals=ws_f)
+#    ncvar_put(nc,varid='air_pressure',vals=press_f)
+
     nc_close(nc)
     
   } #end loop
