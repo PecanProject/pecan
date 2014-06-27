@@ -1,9 +1,12 @@
 #!/bin/bash
 
-# folder to sites, this is assumed to be installed at the same level
+# folder to data, this is assumed to be installed at the same level
 # as the pecan folder. The python code is to get the absolute path
 # since the MAC does not have the GNU readlink -f option.
 SITES=$( python -c 'import os,sys;print os.path.realpath(sys.argv[1])' "$( dirname $0 )/../../sites" )
+ED_INPUT=$( python -c 'import os,sys;print os.path.realpath(sys.argv[1])' "$( dirname $0 )/../../ed_inputs" )
+FAO_INPUT=$( python -c 'import os,sys;print os.path.realpath(sys.argv[1])' "$( dirname $0 )/../../faoOLD" )
+OGE2_INPUT=$( python -c 'import os,sys;print os.path.realpath(sys.argv[1])' "$( dirname $0 )/../../oge2OLD" )
 
 # fully qualified hostname
 FQDN=$( hostname -f )
@@ -57,6 +60,12 @@ addFile() {
 
     echo "File ${4}/${3} added to input ${2} on host ${1}."
 }
+
+# ED inputs
+addFile "${FQDN}" "294" "" "${ED_INPUT}/glu"
+addFile "${FQDN}" "295" "" "${ED_INPUT}"
+addFile "${FQDN}" "296" "FAO_" "${FAO_INPUT}"
+addFile "${FQDN}" "297" "OGE2_" "${OGE2_INPUT}"
 
 # [76] EBIFARM
 addFile "${FQDN}" "7" "ED_MET_DRIVER_HEADER" "${SITES}/ebifarm"
