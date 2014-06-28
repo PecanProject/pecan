@@ -39,6 +39,6 @@ addmodel() {
 # Add models
 addmodel "${FQDN}" "ED2.2" "ED2" "46" "ed2.r46" "/usr/local/bin"
 addmodel "${FQDN}" "ED2.2" "ED2" "82" "ed2.r82" "/usr/local/bin"
-addmodel "${FQDN}" "SIPNET" "SIPNET" "unk" "sipnet.unk" "/usr/local/bin"
+addmodel "${FQDN}" "SIPNET" "SIPNET" "unk" "sipnet.runk" "/usr/local/bin"
 addmodel "${FQDN}" "BioCro" "BIOCRO" "" "true" "/bin"
 
