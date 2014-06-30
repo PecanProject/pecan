@@ -18,6 +18,7 @@ export(extract.NARR)
 export(download.NARR)
 export(extract.success)
 export(raw.NARR)
+export(permute.nc)
 
 export(SatVapPres)
 
