@@ -27,9 +27,6 @@ test_that("read settings returns error if no settings file found (issue #1124)",
 test_that("check.settings throws error if required content not there", {
 
   s <- settings
-  s[['pfts']] <- NULL
-  #expect_error(check.settings(s))  
-  s <- settings
   s[['run']] <- NULL
   expect_error(check.settings(s))  
 
