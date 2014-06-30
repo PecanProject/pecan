@@ -2,21 +2,21 @@
 require(PEcAn.all)
 require(RPostgreSQL)
 #--------------------------------------------------------------------------------------------------#
+# Download raw NARR from the internet 
 
-# Dowload 
 outfolder  <- "/projectnb/cheas/pecan.data/input/NARR/"
-start_year <- 2012
+start_year <- 1979
 end_year   <- 2013
 pkg        <- "PEcAn.data.atmosphere"
 NARR.host  <- "geo.bu.edu"
 
 NARR_raw.id <- raw.NARR(outfolder,start_year,end_year,pkg,NARR.host) 
-# NARR_raw.id should be 285
+# NARR_raw.id should be 285 or 1000000202
 
 #--------------------------------------------------------------------------------------------------#
 # Update NARR_CF
 input.id  <-  NARR_raw.id
-outfolder <- "/projectnb/cheas/pecan.data/input/NARR_CF_Permute/"
+outfolder <- "/projectnb/cheas/pecan.data/input/NARR_CF/"
 pkg       <- "PEcAn.data.atmosphere"
 fcn       <- "met2cf.NARR"
 write     <-  TRUE
@@ -26,13 +26,18 @@ NARR_cf.id <- convert.input(input.id,outfolder,pkg,fcn,write,username) # doesn't
 # NARR_cf.id should be 288
 
 #--------------------------------------------------------------------------------------------------#
+# Rechunk and Permute
+input.id  <-  NARR_cf.id
+outfolder <- "/projectnb/cheas/pecan.data/input/NARR_CF_Permute/"
+write     <-  TRUE
+
+NARR_perm.id <- permute.nc(input.id,outfolder,write)
+#NARR_perm.id should be 1000000023
+
+#--------------------------------------------------------------------------------------------------#
 # Extract for location
-input.id <- NARR_cf.id
-<<<<<<< HEAD
+input.id <- NARR_perm.id
 newsite  <- 1161
-=======
-newsite  <- 766
->>>>>>> e1f11a40d8526ef1c88994436155acc65258a29e
 str_ns   <- paste0(newsite %/% 1000000000, "-", newsite %% 1000000000)
 
 outfolder <- paste0("/projectnb/cheas/pecan.data/input/NARR_CF_site_",str_ns,"/")
@@ -43,11 +48,26 @@ username  <- ""
 
 NARR_extract.id <- convert.input (input.id,outfolder,pkg,fcn,write,username,newsite = newsite)
 
-#  input.id <- 288
-#  l <- list(newsite=ns)
-#  filename<-outfolder; siteid<-site$id; startdate<-paste(input$start_date); enddate<-paste(input$end_date); mimetype; formatname; parentid<-input$id; con<-con; hostname<-machine$hostname; name<-outname
+#--------------------------------------------------------------------------------------------------#
+# Prepare for ED Model
 
+# Acquire lst (probably a better method, but this works for now)
+require(geonames)
+options(geonamesUsername="ecowdery")
 
+sc <- site.coords(newsite)
+lst <- GNtimezone(sc[[1]],sc[[2]], radius = 0)$dstOffset
 
+# Convert to ED format
+input.id <- NARR_extract.id
+
+outfolder <- paste0("/projectnb/cheas/pecan.data/input/NARR_ED_site_",str_ns,"/")
+pkg       <- "PEcAn.data.atmosphere"
+fcn       <- "met"
+write     <- TRUE
+overwrite <- FALSE
+username  <- ""
+
+NARR_ED.id <- convert.input (input.id,outfolder,pkg,fcn,write,username,lst=lst,overwrite=overwrite)
 
 

@@ -48,6 +48,11 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
     if(nrow(site)==0){logger.error("Site not found");return(NULL)} 
   }      
     
+  if("lst" %in% names(l) && is.null(l[["lst"]])==FALSE){
+    if("overwrite" %in% names(l) && is.logical(l[["overwrite"]])==TRUE){args = c(args, l$lst, l$overwrite)
+    }else{args = c(args, l$lst, FALSE)}
+  }else{logger.error("No lst for extraction site"); return(NULL)}
+  
   cmdArgs = paste(args,collapse=" ")
   #  Rfcn = system.file("scripts/Rfcn.R", package = "PEcAn.all")
   Rfcn = "pecan/scripts/Rfcn.R"
@@ -78,8 +83,10 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   if(write==TRUE){
     formatname <- 'CF Meteorology'
     mimetype <- 'application/x-netcdf'
-    filename <- paste0(outfolder,"NARR.")
-      
+    outlist <- unlist(strsplit(outname,"_"))
+    if("ED" %in% outlist){filename <- paste0(outfolder," ")
+    }else{filename <- paste0(outfolder,"NARR.")}
+    
     newinput <- dbfile.input.insert(filename, site$id, paste(input$start_date), paste(input$end_date), 
                         mimetype, formatname,input$id,con=con,machine$hostname,outname) 
     return(newinput$input.id)

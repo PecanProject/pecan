@@ -29,12 +29,12 @@ raw.NARR <- function(outfolder,start_year,end_year,pkg,NARR.host){
   
   if(all(dim(file) == c(0, 0))){
     file.id = dbfile.insert(filename, type, input.id, con, host)
-    print("Added db file!")
+    print("Added db file")
   }else{
     if(!(file$container_id == input.id && file$container_type == 'Input')){
       db.query(paste0("UPDATE dbfiles SET container_id = ",input.id,", container_type = 'Input' where file_path = '",outfolder,"'"),con)
-      print("Updated db file!")   
-    }else{print("Didn't need to add/update db file!")}
+      print("Updated db file")   
+    }else{print("Didn't need to add/update db file")}
   }
    return(invisible(db.query(paste0("SELECT * from dbfiles where file_path = '", outfolder, "'"), con)[['id']]))
 }

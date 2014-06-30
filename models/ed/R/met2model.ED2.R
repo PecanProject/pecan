@@ -19,7 +19,8 @@
 
 
 met2model.ED2 <- function(in.path,in.prefix,outfolder,lst,overwrite=FALSE){
-  files = dir(in.path,in.prefix,full.names=TRUE)
+  #files = dir(in.path,in.prefix,full.names=TRUE)
+  files = dir(in.path,in.prefix)
   filescount = files[grep(pattern="*.nc",files)]
   
   require(rhdf5)
@@ -53,7 +54,7 @@ for(i in 1:length(filescount)){
   }
 
   ## open netcdf
-  nc <- nc_open(files[i])
+  nc <- nc_open(paste0(in.path,files[i]))
   
   ## determine starting year
   base.time <- unlist(strsplit(files[i],'[.]'))
@@ -88,7 +89,7 @@ for(i in 1:length(filescount)){
   nc_close(nc)
   
   dt <- sec[2]-sec[1]
-  toff <- -lst*3600/dt
+  toff <- -(as.numeric(lst))*3600/dt
 
   ##buffer to get to GMT
   slen <- length(SW)
