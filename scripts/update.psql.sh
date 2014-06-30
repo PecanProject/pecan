@@ -33,12 +33,4 @@ if [ -e sites/addsites.sh ]; then
 fi
 
 # add models
-if [ -e addmodels.sh ]; then
-	./addmodels.sh
-else
-	echo "INSERT INTO models (model_name, model_type, model_path, revision, created_at, updated_at) VALUES
-	    ('ED2.2', 'ED2', '${FQDN}:/usr/local/bin/ed2.r46', '46', NOW(), NOW()),
-	    ('ED2.2', 'ED2', '${FQDN}:/usr/local/bin/ed2.r82', '82', NOW(), NOW()),
-	    ('SIPNET', 'SIPNET', '${FQDN}:/usr/local/bin/sipnet.runk', 'unk', NOW(), NOW()),
-	    ('BIOCRO', 'BIOCRO', '${FQDN}:/bin/true', '0.0.1', NOW(), NOW());" | ${CMD} bety
-fi
+$(dirname $0)/addmodels.sh

@@ -174,7 +174,7 @@
 	display: table-cell;
 }
 #list .id {
-	width: 5%;
+	width: 100px;
 }
 
 #editor {

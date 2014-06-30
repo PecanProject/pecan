@@ -41,7 +41,7 @@ fetch.stats2se <- function(connection, query){
 query.data <- function(trait, spstr, extra.columns='sites.lat, sites.lon, ', con=NULL, ...) {
   if (is.null(con)) {
     logger.error("No open database connection passed in.")
-    con <- db.open(settings$database)
+    con <- db.open(settings$database$bety)
   }
   query <- paste("select
               traits.id, traits.citation_id, traits.site_id, traits.treatment_id,

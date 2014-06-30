@@ -3,10 +3,12 @@
  <pecanDir>/home/cohen24/workspace/pecan_forked/pecan/</pecanDir>
  <outdir>/home/cohen24/output//PEcAn_10/pecan/</outdir>
  <database>
-  <userid>bety</userid>
-  <passwd>bety</passwd>
-  <location>localhost</location>
-  <name>bety</name>
+  <bety>
+    <userid>bety</userid>
+    <passwd>bety</passwd>
+    <location>localhost</location>
+    <name>bety</name>
+  </bety>
  </database>
  <pfts>
   <pft>

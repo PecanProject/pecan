@@ -7,11 +7,13 @@
     </pft>
   </pfts>
   <database>
-    <user>bety</user>
-    <password>bety</password>
-    <dbname>bety</dbname>
-    <host>localhost</host>
-    <dbfiles>$HOME/.pecan/dbfiles</dbfiles>
+    <bety>
+      <user>bety</user>
+      <password>bety</password>
+      <dbname>bety</dbname>
+      <host>localhost</host>
+      <dbfiles>$HOME/.pecan/dbfiles</dbfiles>
+    </bety>
   </database>
   <meta.analysis>
     <iter>3000</iter>

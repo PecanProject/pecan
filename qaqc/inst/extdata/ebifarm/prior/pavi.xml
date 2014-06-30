@@ -49,10 +49,12 @@
   <pecanDir>/home/dlebauer/pecan/</pecanDir>
   <outdir>/home/dlebauer/out/ebifarm/prior/</outdir>
   <database>
-    <userid>ebi_analys_user</userid>
-    <passwd>b742xsAu</passwd>
-    <location>forecast</location>
-    <name>ebi_analysis</name>
+    <bety>
+      <userid>ebi_analys_user</userid>
+      <passwd>b742xsAu</passwd>
+      <location>forecast</location>
+      <name>ebi_analysis</name>
+    </bety>
   </database>
   
   <run>
