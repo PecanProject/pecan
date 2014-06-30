@@ -13,11 +13,12 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     access diverse climate data sets.
 Depends:
     ncdf4,
-    lubridate,
-    data.table,
-    udunits2
+    udunits2,
+    ggplot2
 Suggests:
-    RNCEP
+    RNCEP,
+    lubridate,
+    data.table
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
