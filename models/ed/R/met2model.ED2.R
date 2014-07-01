@@ -19,6 +19,9 @@
 
 
 met2model.ED2 <- function(in.path,in.prefix,outfolder,lst,overwrite=FALSE){
+  overwrite = as.logical(overwrite)
+  lst = as.numeric(lst)
+  
   #files = dir(in.path,in.prefix,full.names=TRUE)
   files = dir(in.path,in.prefix)
   filescount = files[grep(pattern="*.nc",files)]
@@ -89,7 +92,7 @@ for(i in 1:length(filescount)){
   nc_close(nc)
   
   dt <- sec[2]-sec[1]
-  toff <- -(as.numeric(lst))*3600/dt
+  toff <- -lst*3600/dt
 
   ##buffer to get to GMT
   slen <- length(SW)
