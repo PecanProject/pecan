@@ -6,6 +6,9 @@ for (i in dbListConnections(PostgreSQL())) db.close(i)
 
 #--------------------------------------------------------------------------------------------------#
 # Download raw NARR from the internet 
+
+#### Don't use until psql-pecan NARR is fixed
+
 rm(list = setdiff(ls(), lsf.str()))
 outfolder  <- "/projectnb/cheas/pecan.data/input/NARR/"
 start_year <- 1979
@@ -14,7 +17,7 @@ pkg        <- "PEcAn.data.atmosphere"
 NARR.host  <- "geo.bu.edu"
 
 NARR_raw.id <- raw.NARR(outfolder,start_year,end_year,pkg,NARR.host) 
-# NARR_raw.id should be 285 or 1000000202
+# NARR_raw.id should be 285
 
 #--------------------------------------------------------------------------------------------------#
 # Update NARR_CF
@@ -41,7 +44,7 @@ NARR_perm.id <- permute.nc(input.id,outfolder,write)
 #--------------------------------------------------------------------------------------------------#
 # Extract for location
 input.id <- NARR_perm.id
-newsite  <- 766
+newsite  <- 763
 str_ns   <- paste0(newsite %/% 1000000000, "-", newsite %% 1000000000)
 
 outfolder <- paste0("/projectnb/cheas/pecan.data/input/NARR_CF_site_",str_ns,"/")
@@ -67,7 +70,7 @@ input.id <- NARR_extract.id
 
 outfolder <- paste0("/projectnb/cheas/pecan.data/input/NARR_ED_site_",str_ns,"/")
 pkg       <- "PEcAn.ED2"
-fcn       <- "met2model.ED"
+fcn       <- "met2model.ED2"
 write     <- TRUE
 overwrite <- FALSE
 username  <- ""
