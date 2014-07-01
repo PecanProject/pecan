@@ -5,6 +5,7 @@
 convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   
   l <- list(...)
+  print(l)
   n <- nchar(outfolder)
   if(substr(outfolder,n,n) != "/"){outfolder = paste0(outfolder,"/")}
   
@@ -23,14 +24,14 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   }
   
   input = db.query(paste("SELECT * from inputs where id =",input.id),con)
-  if(nrow(input)==0){print(c("input not found",input.id));return(NULL)}
+  if(nrow(input)==0){print(c("input not found",input.id));db.close(con);return(NULL)}
   
   # dbfile may return more than one row -> may need to loop over machine ids
   dbfile = db.query(paste("SELECT * from dbfiles where container_id =",input.id," and container_type = 'Input'"),con)
-  if(nrow(dbfile)==0){print(c("dbfile not found",input.id));return(NULL)}
+  if(nrow(dbfile)==0){print(c("dbfile not found",input.id));db.close(con);return(NULL)}
   
   machine = db.query(paste("SELECT * from machines where id = ",dbfile$machine_id),con)
-  if(nrow(machine)==0){print(c("machine not found",dbfile$machine_id));return(NULL)}
+  if(nrow(machine)==0){print(c("machine not found",dbfile$machine_id));db.close(con);return(NULL)}
   
   host = system("hostname",intern=TRUE)
   
@@ -39,25 +40,25 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   # Use existing site, unless otherwise specified (ex: subsetting case)
   if("newsite" %in% names(l) && is.null(l[["newsite"]])==FALSE){
     site = db.query(paste("SELECT * from sites where id =",l$newsite),con)
-    if(nrow(site)==0){logger.error("Site not found"); return(NULL)} 
+    if(nrow(site)==0){logger.error("Site not found"); db.close(con);return(NULL)} 
     if(!(is.na(site$lat)) && !(is.na(site$lon))){
       args = c(args, site$lat, site$lon)
-    }else{logger.error("No lat and lon for extraction site"); return(NULL)}
+    }else{logger.error("No lat and lon for extraction site"); db.close(con);return(NULL)}
   }else{
     site  = db.query(paste("SELECT * from sites where id =",input$site_id),con) 
-    if(nrow(site)==0){logger.error("Site not found");return(NULL)} 
+    if(nrow(site)==0){logger.error("Site not found");db.close(con);return(NULL)} 
   }      
     
   if("lst" %in% names(l) && is.null(l[["lst"]])==FALSE){
     if("overwrite" %in% names(l) && is.logical(l[["overwrite"]])==TRUE){args = c(args, l$lst, l$overwrite)
-    }else{args = c(args, l$lst, FALSE)}
-  }else{logger.error("No lst for extraction site"); return(NULL)}
+    }else{args = c(args, l$lst)}
+  }else if("lst" %in% names(l) && is.null(l[["lst"]])==TRUE){logger.error("No lst for extraction site"); db.close(con); return(NULL)}
   
   cmdArgs = paste(args,collapse=" ")
   #  Rfcn = system.file("scripts/Rfcn.R", package = "PEcAn.all")
   Rfcn = "pecan/scripts/Rfcn.R"
   
-  chkArgs = paste(c(args[1],"extract.success",args[3:5]),collapse=" ")
+  chkArgs = paste(c("PEcAn.data.atmosphere extract.success",args[3:5]),collapse=" ")
   
   if(machine$hostname %in% c("localhost",host)){
     ## if the machine is local, run conversion function
@@ -74,7 +75,9 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   if(unlist(strsplit(success,' '))[2] == TRUE){
     logger.info("Conversion was successful")
   }else{
-    logger.error("Conversion was not successful"); write==FALSE
+    logger.error("Conversion was not successful")
+    db.close(con)
+    return(NULL)
   }
   
   ### NOTE: We will eventually insert Brown Dog REST API calls here
