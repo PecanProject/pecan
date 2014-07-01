@@ -1,9 +1,10 @@
 context("testing functions used to load and downscaling PEcAn-CF met drivers")
-library(data.table)
+
+met.nc <- nc_open(system.file("extdata/urbana_daily_test.nc", package = "PEcAn.data.atmosphere"))
+a <- load.cfmet(met.nc = met.nc, lat = 39.75, lon = -87.25, start.date = "1951-01-01", end.date = "1951-06-01")
+
 test_that("load.cfmet works as expected", {
-  met.nc <- nc_open(system.file("extdata/urbana_daily_test.nc", package = "PEcAn.data.atmosphere"))
-  a <- load.cfmet(met.nc = met.nc, lat = 39.75, lon = -87.25, start.date = "1951-01-01", end.date = "1951-06-01")
-  
+   
   expect_is(a, "data.frame")
   expect_is(a, "data.table")
   
@@ -17,4 +18,8 @@ test_that("load.cfmet works as expected", {
                     "surface_downwelling_shortwave_flux_in_air", "precipitation_flux", 
                     "surface_pressure", "wind", "air_temperature") %in% 
                     colnames(a)))
+})
+
+test_that("cfmet.downscale.time works", {
+  b <- cfmet.downscale.time(cfmet=a, lat = 40)
 })

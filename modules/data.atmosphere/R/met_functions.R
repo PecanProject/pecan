@@ -1,41 +1,3 @@
-##' Get time series vector from netCDF file
-##'
-##' internal convenience function for
-##' streamlining extraction of data from netCDF files
-##' with CF-compliant variable names
-##' 
-##' @title Get time series vector from netCDF file
-##' @param var 
-##' @param lati 
-##' @param loni 
-##' @param run.dates 
-##' @param met.nc netcdf file with CF variable names
-##' @return numeric vector
-##' @author David Shaner LeBauer
-get.ncvector <- function(var, lati = lati, loni = loni,
-                      run.dates = run.dates, met.nc){
-    
-    start.idx = c(lat = lati, lon = loni, time = run.dates$index[1])
-    count.idx = c(lat = 1, lon = 1, time = nrow(run.dates))
-    dim.order <- sapply(met.nc$var$air_temperature$dim, function(x) x$name)
-    ncvar_get2 <- function(var){
-        ans <-  ncvar_get(nc = met.nc, varid = var,
-                          start = start.idx[dim.order],
-                          count = count.idx[dim.order])
-        return(as.numeric(ans))
-    }
-    
-    if(var %in% attributes(met.nc$var)$names){
-        ans <- ncvar_get2(var)
-    } else if (var == "surface_pressure"){
-        ans <- 1013.25
-    } else if (var == "wind"){
-        ans <- sqrt(ncvar_get2("northward_wind")^2 + ncvar_get2("eastward_wind")^2)
-    } else {
-        ans <- NULL
-    }
-    return(ans)
-}
 
 cruncep_dt2weather <- function(weather = result, adjust=TRUE){
 
@@ -55,6 +17,76 @@ get.weather <- function(lat, lon, met.nc = met.nc, start.date, end.date){
     result <- load.cfmet(lat = lat, lon = lon, met.nc = met.nc, start.date, end.date)
     hourly.result <- cruncep_hourly(result, lat = lat)
     weather <- cruncep_dt2weather(hourly.result)
+}
+
+
+##' Simple, Fast Daily to Hourly Climate Downscaling
+##'
+##' Based on weach family of functions but 5x faster than weachNEW,
+##' and requiring metric units (temperature in celsius, windspeed in kph,
+##' precip in mm, relative humidity as fraction)
+##' @title weachDT
+##' @param X data table with climate variables
+##' @param lat latitude (for calculating solar radiation)
+##' @param output.dt output timestep
+##' @export
+##' @return weather file for input to BioGro and related crop growth functions
+##' @author David LeBauer
+cfmet.downscale.daily <- weachDT <- function(dailymet, lat, output.dt = 1){
+  
+  tint <- 24 / output.dt
+  tseq <- 0:(23 * output.dt) / output.dt
+  ## Solar Radiation
+  #   setnames(cfmet, 
+  #            c("dswrf.MJ", "tmin", "tmax"),
+  #            c("surface_downwelling_shortwave_flux_in_air",
+  #              "air_temperature_min", "air_temperature_max"))
+#   setnames(dailymet, 
+#            c("air_temperature_min", "air_temperature_max"), 
+#            c("tmin", "tmax"))
+  setkeyv(dailymet, c("year", "doy"))
+  
+  
+  light <- dailymet[,lightME(DOY = doy, t.d = tseq, lat = lat),
+                    by = c("year", "doy")]
+  
+  light$Itot <- light[,list(I.dir + I.diff)]
+  resC2 <- light[, list(resC2 = (Itot - min(Itot)) / max(Itot)), by = c("year", "doy")]$resC2
+  solarR <- dailymet[,list(year, doy, 
+                           solarR = rep(surface_downwelling_shortwave_flux_in_air * 2.07 * 10^5 /36000, each = tint) * resC2)]
+                           
+  SolarR <- cbind(resC2, solarR)[,list(SolarR = solarR * resC2)]$SolarR
+  
+  ## Temperature
+  Temp <- dailymet[,list(Temp = tmin + (sin(2*pi*(tseq-10)/tint) + 1)/2 * (tmax - tmin), hour = tseq),
+            by = 'year,doy']$Temp
+
+  ## Relative Humidity
+  RH <-   dailymet[,list(RH = rep(relative_humidity, each = tint), hour = tseq), by = 'year,doy']
+  setkeyv(RH, c('year','doy','hour'))  
+  qair <- dailymet[,list(year, doy, tmin, tmax, surface_pressure, air_temperature,
+                         qmin = rh2qair(rh = relative_humidity/100, T = ud.convert(tmin, "celsius", "kelvin")),
+                         qmax = rh2qair(rh = relative_humidity/100, T = ud.convert(tmax, "celsius", "kelvin")))]
+  
+  
+  a <- qair[,list(year, doy, tmin, tmax, air_temperature, qmin, qmax, pressure = ud.convert(surface_pressure, "Pa", "millibar"))][
+    ,list(year, doy, rhmin = qair2rh(qmin, air_temperature, pressure),
+          rhmax = qair2rh(qmax, air_temperature, pressure))]
+  rhscale <- (cos(2 * pi * (tseq - 10)/tint) + 1)/2
+  RH <- a[, list(RH = rhmin + rhscale * (rhmax - rhmin)), by = c("year", 
+                                                                 "doy")][, list(RH)]
+  ## Wind Speed
+  WS <- rep(dailymet$wind, each = tint)
+  
+  ## Precipitation
+  precip <- rep(dailymet$precip/tint, each = tint)
+  
+  ## Hour
+  time <- dailymet[,list(hour = tseq), by = c("year", "doy")]
+  
+  ans <- data.table(time, downwelling_photosynthetic_photon_flux = SolarR, air_temperature = Temp, 
+                    relative_humidity = RH, wind = WS, precipitation_flux = precip)
+  return(ans)
 }
 
 get.soil <- function(lat, lon, soil.nc = soil.nc){

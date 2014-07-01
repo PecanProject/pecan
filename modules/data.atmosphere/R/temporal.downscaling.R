@@ -11,7 +11,7 @@
 ##' @return data.table of met data
 ##' @author David LeBauer
 load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date){
-  
+  lat <<- lat # send lat to global environment if daily
   ## Lat and Lon
   Lat <- ncvar_get(met.nc, "lat")
   Lon <- ncvar_get(met.nc, "lon")
@@ -77,55 +77,60 @@ load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date){
 ##' @param output.dt time step for output
 ##' @return downscaled result
 ##' @author David LeBauer
-cfmet.temporal.downscale <- cruncep_hourly <- function(cfmet, lat, output.dt = 1){
+cfmet.downscale.time <- cruncep_hourly <- function(cfmet, lat, output.dt = 1){
   ## rename function to temporal_downscale?
   ## time step
-  dt <- result[1:2,(as.duration(diff(date)))]
+  dt <- cfmet[1:2,(as.duration(diff(date)))]
   dt_hr <- ud.convert(as.numeric(as.duration(dt)), "seconds", "hours")
-  if(dt_hr >= 24){
-    stop("only sub-daily downscaling supported")
-  }
-  
-  new.date <- result[,list(hour = 0:(23 / output.dt) / output.dt),
+
+  new.date <- cfmet[,list(hour = 0:(23 / output.dt) / output.dt),
                      by = c("year", "month", "day", "doy")]
   
   new.date$date <- new.date[,list(date = ymd(paste(year, month, day)) + hours(hour))]
   
-  ## tests
-  ## min(result$date) == min(new.date$date)
-  ## max(result$date) == max(new.date$date)
   
-  ## converting surface_downwelling_shortwave_flux_in_air from W/m2 avg to PPFD
   
-  solarMJ <- ud.convert(result$surface_downwelling_shortwave_flux_in_air, paste0("W ", dt_hr, "h"), "MJ")
-  PAR <- 0.486 * solarMJ ## Cambell and Norman 1998 p 151, ch 10
-  result$ppfd <- ud.convert(PAR, "mol s", "micromol h")
-  
-  downscaled.result <- list()
-  downscaled.result[["surface_downwelling_shortwave_flux_in_air"]] <- result$surface_downwelling_shortwave_flux_in_air 
-  downscaled.result[["ppfd"]] <- result$ppfd
-  for(var in c("surface_pressure", "specific_humidity",
-               "precipitation_flux", "air_temperature", "wind", "surface_downwelling_shortwave_flux_in_air", "ppfd")){
-    if(var %in% colnames(result)){
-      ## convert units from 6 hourly to hourly
-      hrscale <- ifelse(var %in%
-                          c("surface_downwelling_shortwave_flux_in_air",
-                            "precipitation_flux"),
-                        dt_hr, 1)
-      
-      f <- splinefun(as.numeric(result$date), (result[[var]] / hrscale), method = "monoH.FC")
-      if(var == "air_temperature"){
-        downscaled.result[[var]] <- f(as.numeric(new.date$date))
-      } else {
-        downscaled.result[[var]] <- f(as.numeric(new.date$date))
-        downscaled.result[[var]][downscaled.result[[var]]<0] <- 0
+ 
+  if(dt_hr < 24) {
+    ## converting surface_downwelling_shortwave_flux_in_air from W/m2 avg to PPFD
+    
+    solarMJ <- ud.convert(cfmet$surface_downwelling_shortwave_flux_in_air, paste0("W ", dt_hr, "h"), "MJ")
+    PAR <- 0.486 * solarMJ ## Cambell and Norman 1998 p 151, ch 10
+    cfmet$ppfd <- ud.convert(PAR, "mol s", "micromol h")
+    
+    downscaled.result <- list()
+    downscaled.result[["surface_downwelling_shortwave_flux_in_air"]] <- cfmet$surface_downwelling_shortwave_flux_in_air 
+    downscaled.result[["ppfd"]] <- cfmet$ppfd
+    
+    for(var in c("surface_pressure", "specific_humidity",
+                 "precipitation_flux", "air_temperature", "wind", "surface_downwelling_shortwave_flux_in_air", "ppfd")){
+      if(var %in% colnames(cfmet)){
+        ## convert units from subdaily to hourly
+        hrscale <- ifelse(var %in%
+                            c("surface_downwelling_shortwave_flux_in_air",
+                              "precipitation_flux"),
+                          dt_hr, 1)
+        
+        f <- splinefun(as.numeric(cfmet$date), (cfmet[[var]] / hrscale), method = "monoH.FC")
+        if(var == "air_temperature"){
+          downscaled.result[[var]] <- f(as.numeric(new.date$date))
+        } else {
+          downscaled.result[[var]] <- f(as.numeric(new.date$date))
+          downscaled.result[[var]][downscaled.result[[var]]<0] <- 0
+        }
       }
+      
     }
-  }
+    
+    downscaled.result <- cbind(new.date, as.data.table(downscaled.result))#[date <= max(result$date),]
+    
+    
+  } else if (dt_hr == 24) {
+    downscaled.result <- cfmet.downscale.daily(cfmet, lat = lat)
+  } else if(dt_hr > 24){
+    stop("only daily and sub-daily downscaling supported")
+  } 
   
-  
-  
-  downscaled.result <- cbind(new.date, as.data.table(downscaled.result))#[date <= max(result$date),]
   
   if(downscaled.result[,list(h = length(unique(hour))), by = c("year", "doy")][,all(unique(h) != 24)]){
     print(cruncep.file)
