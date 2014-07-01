@@ -37,61 +37,6 @@ get.ncvector <- function(var, lati = lati, loni = loni,
     return(ans)
 }
 
-cruncep_nc2dt <- function(lat, lon, met.nc, start.date, end.date){
-
-
-    ## Lat and Lon
-    Lat <- ncvar_get(met.nc, "lat")
-    Lon <- ncvar_get(met.nc, "lon")
-
-    lati <- which.min(abs(Lat - lat))
-    loni <- which.min(abs(Lon - lon))
-
-    time.idx <- ncvar_get(met.nc, "time")
-
-    all.dates <- data.table(index = seq(time.idx),
-                            date = ymd("1700-01-01") +
-                            days(floor(time.idx)) +
-                            minutes(ud.convert(time.idx - floor(time.idx), "days", "minutes")))
-    run.dates <- all.dates[date > ymd(start.date) & date < ymd(end.date),
-                           list(index, date, doy = yday(date),
-                                year = year(date), month = month(date),
-                                day  = day(date), hour = hour(date))]
-    
-    currentlat <- round(lat, 2)
-    currentlon <- round(lon, 2)
-    results <- list()
-     
-    vars <- list()
-     
-#    variables <- c("lwdown", "press", "qair", "rain", "swdown", "tair", "northward_wind", "eastward_wind")
-    variables <- c("surface_downwelling_longwave_flux_in_air",
-                   "surface_downwelling_shortwave_flux_in_air",
-                   "precipitation_flux",
-                   "specific_humidity",
-                   "surface_pressure",
-                   "wind",
-                   "air_temperature")
-    
-    ## modification of ncvar_get to function independent of dimension order
-    ## see http://stackoverflow.com/a/22944715/199217
-    ## should be generalized, perhaps to pass arguments "start" and "count" directly
-    
-    ## if the above throws an error ... 
-    ## vars <- parallel::mclapply(variables, function(x) get.ncvector(x, lati = lati, loni = loni, run.dates = run.dates), mc.allow.recursive = TRUE)
-    vars <- lapply(variables, function(x) get.ncvector(x, lati = lati, loni = loni, run.dates = run.dates, met.nc = met.nc))
-
-    names(vars) <- variables
-    
-    result <- cbind(run.dates, as.data.table(vars[!sapply(vars, is.null)]))
-    if(!"wind" %in% variables){
-        if(all(c("northward_wind", "eastward_wind") %in% variables)){
-        result$wind <- result[,list(wind = sqrt(northward_wind^2 + eastward_wind^2))]
-        }
-    }
-    return(result)   
-}
- 
 cruncep_hourly <- function(result, lat){
     ## rename function to temporal_downscale?
     ## time step
@@ -165,7 +110,7 @@ cruncep_dt2weather <- function(weather = result, adjust=TRUE){
 
 get.weather <- function(lat, lon, met.nc = met.nc, start.date, end.date){
 #    if(!is.land(lat, lon)) stop("point is in ocean")
-    result <- cruncep_nc2dt(lat = lat, lon = lon, met.nc = met.nc, start.date, end.date)
+    result <- load.cfmet(lat = lat, lon = lon, met.nc = met.nc, start.date, end.date)
     hourly.result <- cruncep_hourly(result, lat = lat)
     weather <- cruncep_dt2weather(hourly.result)
 }
@@ -206,7 +151,7 @@ get.latlonbox <- function(lati, loni, Lat = Lat, Lon = Lon){
 }
 
 get.cruncep <- function(lat, lon, start.date, end.date){
-    result <- cruncep_nc2dt(lat, lon)
+    result <- load.cfmet(lat, lon)
     hourly.result <- cruncep_hourly(result, lat = Lat[lati])
     weather <- cruncep_dt2weather(hourly.result)
     return(weather)
