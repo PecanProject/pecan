@@ -75,8 +75,4 @@ write     <- TRUE
 overwrite <- FALSE
 username  <- ""
 
-rm(newsite)
-l <- list(lst=lst,overwrite=overwrite)
-  
-
 NARR_ED.id <- convert.input (input.id,outfolder,pkg,fcn,write,username,lst=lst,overwrite=overwrite)
