@@ -37,64 +37,6 @@ get.ncvector <- function(var, lati = lati, loni = loni,
     return(ans)
 }
 
-cruncep_hourly <- function(result, lat){
-    ## rename function to temporal_downscale?
-    ## time step
-    dt <- result[1:2,(as.duration(diff(date)))]
-    dt_hr <- ud.convert(as.numeric(as.duration(dt)), "seconds", "hours")
-    if(dt_hr >= 24){
-        stop("only sub-daily downscaling supported")
-    }
-
-    new.date <- result[,list(hour = c(0:23)),
-                       by = c("year", "month", "day", "doy")]
-
-    new.date$date <- new.date[,list(date = ymd(paste(year, month, day)) + hours(hour))]
-    
-    ## tests
-    ## min(result$date) == min(new.date$date)
-    ## max(result$date) == max(new.date$date)
-
-    ## converting surface_downwelling_shortwave_flux_in_air from W/m2 avg to PPFD
-
-    solarMJ <- ud.convert(result$surface_downwelling_shortwave_flux_in_air, paste0("W ", dt_hr, "h"), "MJ")
-    PAR <- 0.486 * solarMJ ## Cambell and Norman 1998 p 151, ch 10
-    result$ppfd <- ud.convert(PAR, "mol s", "micromol h")
-
-    hourly.result <- list()
-    hourly.result[["surface_downwelling_shortwave_flux_in_air"]] <- result$surface_downwelling_shortwave_flux_in_air 
-    hourly.result[["ppfd"]] <- result$ppfd
-    for(var in c("surface_pressure", "specific_humidity",
-                 "precipitation_flux", "air_temperature", "wind", "surface_downwelling_shortwave_flux_in_air", "ppfd")){
-        if(var %in% colnames(result)){
-            ## convert units from 6 hourly to hourly
-            hrscale <- ifelse(var %in%
-                              c("surface_downwelling_shortwave_flux_in_air",
-                                "precipitation_flux"),
-                              dt_hr, 1)
-            
-            f <- splinefun(as.numeric(result$date), (result[[var]] / hrscale), method = "monoH.FC")
-            if(var == "air_temperature"){
-                hourly.result[[var]] <- f(as.numeric(new.date$date))
-            } else {
-                hourly.result[[var]] <- f(as.numeric(new.date$date))
-                hourly.result[[var]][hourly.result[[var]]<0] <- 0
-            }
-        }
-    }
-
-
-                                                            
-    hourly.result <- cbind(new.date, as.data.table(hourly.result))#[date <= max(result$date),]
-    
-    if(hourly.result[,list(h = length(unique(hour))), by = c("year", "doy")][,all(unique(h) != 24)]){
-        print(cruncep.file)
-        print(hourly.result[,unique(year)])
-        stop("some days don't have 24 hours")
-    }
-    return(hourly.result)
-}
-
 cruncep_dt2weather <- function(weather = result, adjust=TRUE){
 
     x <- weather[,list(year, doy = doy, hour = hour,
