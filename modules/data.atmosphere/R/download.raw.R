@@ -1,28 +1,32 @@
-raw.NARR <- function(outfolder,start_year,end_year,pkg,NARR.host){
+download.raw <- function(data.set,outfolder,pkg,raw.host, ...){
+  
+  fcn <- paste0("download.",data.set)
+  l=list(...)
   
   # Check database for file, and instert if not already there.
-  args     <- c(pkg,"download.NARR",outfolder,start_year,end_year)  
+  
+  args     <- c(pkg,fcn,outfolder,l)  
   cmdArgs  <- paste(args,collapse=" ")
   Rfcn     <- "pecan/scripts/Rfcn.R"
   host     <- system("hostname",intern=TRUE)
   username <- NULL
   
-#   if(NARR.host %in% c("localhost",host)){
-#     ## if the machine is local, run conversion function
-#     system(paste(Rfcn,cmdArgs))
-#   }else{
-#     ## if the machine is remote, run conversion remotely
-#     usr = ifelse(username==NULL | username=="","",paste0(username,"@"))
-#     system2("ssh",paste0(usr,paste(NARR.host,Rfcn,cmdArgs)))
-#   }
+  if(raw.host %in% c("localhost",host)){
+    ## if the machine is local, run conversion function
+    system(paste(Rfcn,cmdArgs))
+  }else{
+    ## if the machine is remote, run conversion remotely
+    usr = ifelse(username==NULL | username=="","",paste0(username,"@"))
+    system2("ssh",paste0(usr,paste(raw.host,Rfcn,cmdArgs)))
+  }
   
   dbparms  <- list(driver="PostgreSQL" , user = "bety", dbname = "bety", password = "bety", host = "psql-pecan.bu.edu")
   con      <- db.open(dbparms)
-  input.id <- db.query(paste0("SELECT id FROM inputs WHERE name = '","NARR", "'"), con, dbparams)[['id']]
+  input.id <- db.query(paste0("SELECT id FROM inputs WHERE name = '",data.set, "'"), con, dbparams)[['id']]
   
   n <- nchar(outfolder)
   if(substr(outfolder,n,n) != "/") outfolder = paste0(outfolder,"/")
-  filename <- paste0(outfolder,"NARR.")
+  filename <- paste0(outfolder,data.set,".")
   type <- 'Input'
   
   file = db.query(paste0("SELECT * from dbfiles where file_path = '", outfolder, "'"),con)

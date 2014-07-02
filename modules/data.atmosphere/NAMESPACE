@@ -12,14 +12,17 @@ export(qair2rh)
 export(rh2qair)
 export(wide2long)
 
-export(closest_xy)
-export(met2cf.NARR)
-export(extract.nc)
-export(download.NARR)
-export(extract.success)
-export(raw.NARR)
-export(permute.nc)
-export(site.lst)
 
+export(met2cf.nc)
+export(permute.nc)
+export(extract.nc)
+export(closest_xy)
+export(extract.success)
+
+export(download.raw)
+export(download.NARR)
+export(download.FACE)
+
+export(site.lst)
 export(SatVapPres)
 

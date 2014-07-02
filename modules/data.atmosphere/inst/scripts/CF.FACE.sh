@@ -1,4 +1,3 @@
-
 vars=(
     "nav_lat"
     "nav_lon"
