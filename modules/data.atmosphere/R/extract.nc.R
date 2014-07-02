@@ -1,4 +1,4 @@
-extract.NARR <- function(in.path,in.prefix,outfolder,slat,slon){
+extract.nc <- function(in.path,in.prefix,outfolder,slat,slon){
   
   require("PEcAn.utils")
   

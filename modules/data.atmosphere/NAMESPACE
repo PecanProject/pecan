@@ -14,11 +14,12 @@ export(wide2long)
 
 export(closest_xy)
 export(met2cf.NARR)
-export(extract.NARR)
+export(extract.nc)
 export(download.NARR)
 export(extract.success)
 export(raw.NARR)
 export(permute.nc)
+export(site.lst)
 
 export(SatVapPres)
 

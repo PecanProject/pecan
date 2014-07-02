@@ -5,7 +5,6 @@
 convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   
   l <- list(...)
-  print(l)
   n <- nchar(outfolder)
   if(substr(outfolder,n,n) != "/"){outfolder = paste0(outfolder,"/")}
   
@@ -58,7 +57,7 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   #  Rfcn = system.file("scripts/Rfcn.R", package = "PEcAn.all")
   Rfcn = "pecan/scripts/Rfcn.R"
   
-  chkArgs = paste(c("PEcAn.data.atmosphere extract.success",args[3:5]),collapse=" ")
+  chkArgs = paste(c("PEcAn.data.atmosphere", "extract.success",args[3:5]),collapse=" ")
   
   if(machine$hostname %in% c("localhost",host)){
     ## if the machine is local, run conversion function
@@ -88,7 +87,7 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
     mimetype <- 'application/x-netcdf'
     outlist <- unlist(strsplit(outname,"_"))
     if("ED" %in% outlist){filename <- paste0(outfolder," ")
-    }else{filename <- paste0(outfolder,"NARR.")}
+    }else{filename <- paste0(outfolder,dbfile$file_name)}
     
     newinput <- dbfile.input.insert(filename, site$id, paste(input$start_date), paste(input$end_date), 
                                     mimetype, formatname,input$id,con=con,machine$hostname,outname) 

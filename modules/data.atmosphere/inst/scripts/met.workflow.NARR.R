@@ -1,13 +1,14 @@
 #---------------- Load libraries. -----------------------------------------------------------------#
 require(PEcAn.all)
+require(PEcAn.data.atmosphere)
 require(RPostgreSQL)
 
+#--------------------------------------------------------------------------------------------------#
+# Clear old database connections
 for (i in dbListConnections(PostgreSQL())) db.close(i)
 
 #--------------------------------------------------------------------------------------------------#
 # Download raw NARR from the internet 
-
-#### Don't use until psql-pecan NARR is fixed
 
 rm(list = setdiff(ls(), lsf.str()))
 outfolder  <- "/projectnb/cheas/pecan.data/input/NARR/"
@@ -29,7 +30,7 @@ fcn       <- "met2cf.NARR"
 write     <-  TRUE
 username  <- ""
 
-NARR_cf.id <- convert.input(input.id,outfolder,pkg,fcn,write,username) # doesn't update existing record
+NARR_cf.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,format) # doesn't update existing record
 # NARR_cf.id should be 288
 
 #--------------------------------------------------------------------------------------------------#
@@ -44,7 +45,7 @@ NARR_perm.id <- permute.nc(input.id,outfolder,write)
 #--------------------------------------------------------------------------------------------------#
 # Extract for location
 input.id <- NARR_perm.id
-newsite  <- 763
+newsite  <- 336
 str_ns   <- paste0(newsite %/% 1000000000, "-", newsite %% 1000000000)
 
 outfolder <- paste0("/projectnb/cheas/pecan.data/input/NARR_CF_site_",str_ns,"/")
@@ -53,17 +54,13 @@ fcn       <- "extract.NARR"
 write     <- TRUE
 username  <- ""
 
-NARR_extract.id <- convert.input (input.id,outfolder,pkg,fcn,write,username,newsite = newsite)
+NARR_extract.id <- convert.input (input.id,outfolder,pkg,fcn,write,username,format,newsite = newsite)
 
 #--------------------------------------------------------------------------------------------------#
 # Prepare for ED Model
 
 # Acquire lst (probably a better method, but this works for now)
-require(geonames)
-options(geonamesUsername="ecowdery")
-
-sc <- site.coords(newsite)
-lst <- GNtimezone(sc[[1]],sc[[2]], radius = 0)$dstOffset
+lst <- site.lst(newsite)
 
 # Convert to ED format
 input.id <- NARR_extract.id
@@ -72,7 +69,11 @@ outfolder <- paste0("/projectnb/cheas/pecan.data/input/NARR_ED_site_",str_ns,"/"
 pkg       <- "PEcAn.ED2"
 fcn       <- "met2model.ED2"
 write     <- TRUE
-overwrite <- FALSE
+overwrite <- ""
 username  <- ""
 
-NARR_ED.id <- convert.input (input.id,outfolder,pkg,fcn,write,username,lst=lst,overwrite=overwrite)
+NARR_ED.id <- convert.input (input.id,outfolder,pkg,fcn,write,username,format,lst=lst,overwrite=overwrite)
+
+#--------------------------------------------------------------------------------------------------#
+# Clear old database connections
+for (i in dbListConnections(PostgreSQL())) db.close(i)

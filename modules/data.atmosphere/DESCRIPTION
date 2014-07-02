@@ -29,7 +29,7 @@ Collate:
     'met2CF.Ameriflux.R'
     'call_MODIS.R'
     'closest_xy.R'
-    'extract.NARR.R'
+    'extract.nc.R'
     'met2cf.NARR.R'
     'download.NARR.R'
     'extract.success.R'
@@ -37,3 +37,4 @@ Collate:
     'permute.nc.R'
     'met2CF.csv.R'
     'met_functions.R'
+    'site.lst.R'
