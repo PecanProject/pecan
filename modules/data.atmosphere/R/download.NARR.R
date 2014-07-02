@@ -1,5 +1,7 @@
 download.NARR <- function(outfolder,start_year,end_year){
   
+  if(!file.exists(outfolder)) dir.create(outfolder)
+  
   start_year <- as.numeric(start_year)
   end_year   <- as.numeric(end_year)
   
