@@ -1,154 +1,3 @@
-##' Get time series vector from netCDF file
-##'
-##' internal convenience function for
-##' streamlining extraction of data from netCDF files
-##' with CF-compliant variable names
-##' 
-##' @title Get time series vector from netCDF file
-##' @param var 
-##' @param lati 
-##' @param loni 
-##' @param run.dates 
-##' @param met.nc netcdf file with CF variable names
-##' @return numeric vector
-##' @author David Shaner LeBauer
-get.ncvector <- function(var, lati = lati, loni = loni,
-                      run.dates = run.dates, met.nc){
-    
-    start.idx = c(lat = lati, lon = loni, time = run.dates$index[1])
-    count.idx = c(lat = 1, lon = 1, time = nrow(run.dates))
-    dim.order <- sapply(met.nc$var$air_temperature$dim, function(x) x$name)
-    ncvar_get2 <- function(var){
-        ans <-  ncvar_get(nc = met.nc, varid = var,
-                          start = start.idx[dim.order],
-                          count = count.idx[dim.order])
-        return(as.numeric(ans))
-    }
-    
-    if(var %in% attributes(met.nc$var)$names){
-        ans <- ncvar_get2(var)
-    } else if (var == "surface_pressure"){
-        ans <- 1013.25
-    } else if (var == "wind"){
-        ans <- sqrt(ncvar_get2("northward_wind")^2 + ncvar_get2("eastward_wind")^2)
-    } else {
-        ans <- NULL
-    }
-    return(ans)
-}
-
-cruncep_nc2dt <- function(lat, lon, met.nc, start.date, end.date){
-
-
-    ## Lat and Lon
-    Lat <- ncvar_get(met.nc, "lat")
-    Lon <- ncvar_get(met.nc, "lon")
-
-    lati <- which.min(abs(Lat - lat))
-    loni <- which.min(abs(Lon - lon))
-
-    time.idx <- ncvar_get(met.nc, "time")
-
-    all.dates <- data.table(index = seq(time.idx),
-                            date = ymd("1700-01-01") +
-                            days(floor(time.idx)) +
-                            minutes(ud.convert(time.idx - floor(time.idx), "days", "minutes")))
-    run.dates <- all.dates[date > ymd(start.date) & date < ymd(end.date),
-                           list(index, date, doy = yday(date),
-                                year = year(date), month = month(date),
-                                day  = day(date), hour = hour(date))]
-    
-    currentlat <- round(lat, 2)
-    currentlon <- round(lon, 2)
-    results <- list()
-     
-    vars <- list()
-     
-#    variables <- c("lwdown", "press", "qair", "rain", "swdown", "tair", "northward_wind", "eastward_wind")
-    variables <- c("surface_downwelling_longwave_flux_in_air",
-                   "surface_downwelling_shortwave_flux_in_air",
-                   "precipitation_flux",
-                   "specific_humidity",
-                   "surface_pressure",
-                   "wind",
-                   "air_temperature")
-    
-    ## modification of ncvar_get to function independent of dimension order
-    ## see http://stackoverflow.com/a/22944715/199217
-    ## should be generalized, perhaps to pass arguments "start" and "count" directly
-    
-    ## if the above throws an error ... 
-    ## vars <- parallel::mclapply(variables, function(x) get.ncvector(x, lati = lati, loni = loni, run.dates = run.dates), mc.allow.recursive = TRUE)
-    vars <- lapply(variables, function(x) get.ncvector(x, lati = lati, loni = loni, run.dates = run.dates, met.nc = met.nc))
-
-    names(vars) <- variables
-    
-    result <- cbind(run.dates, as.data.table(vars[!sapply(vars, is.null)]))
-    if(!"wind" %in% variables){
-        if(all(c("northward_wind", "eastward_wind") %in% variables)){
-        result$wind <- result[,list(wind = sqrt(northward_wind^2 + eastward_wind^2))]
-        }
-    }
-    return(result)   
-}
- 
-cruncep_hourly <- function(result, lat){
-    ## rename function to temporal_downscale?
-    ## time step
-    dt <- result[1:2,(as.duration(diff(date)))]
-    dt_hr <- ud.convert(as.numeric(as.duration(dt)), "seconds", "hours")
-    if(dt_hr >= 24){
-        stop("only sub-daily downscaling supported")
-    }
-
-    new.date <- result[,list(hour = c(0:23)),
-                       by = c("year", "month", "day", "doy")]
-
-    new.date$date <- new.date[,list(date = ymd(paste(year, month, day)) + hours(hour))]
-    
-    ## tests
-    ## min(result$date) == min(new.date$date)
-    ## max(result$date) == max(new.date$date)
-
-    ## converting surface_downwelling_shortwave_flux_in_air from W/m2 avg to PPFD
-
-    solarMJ <- ud.convert(result$surface_downwelling_shortwave_flux_in_air, paste0("W ", dt_hr, "h"), "MJ")
-    PAR <- 0.486 * solarMJ ## Cambell and Norman 1998 p 151, ch 10
-    result$ppfd <- ud.convert(PAR, "mol s", "micromol h")
-
-    hourly.result <- list()
-    hourly.result[["surface_downwelling_shortwave_flux_in_air"]] <- result$surface_downwelling_shortwave_flux_in_air 
-    hourly.result[["ppfd"]] <- result$ppfd
-    for(var in c("surface_pressure", "specific_humidity",
-                 "precipitation_flux", "air_temperature", "wind", "surface_downwelling_shortwave_flux_in_air", "ppfd")){
-        if(var %in% colnames(result)){
-            ## convert units from 6 hourly to hourly
-            hrscale <- ifelse(var %in%
-                              c("surface_downwelling_shortwave_flux_in_air",
-                                "precipitation_flux"),
-                              dt_hr, 1)
-            
-            f <- splinefun(as.numeric(result$date), (result[[var]] / hrscale), method = "monoH.FC")
-            if(var == "air_temperature"){
-                hourly.result[[var]] <- f(as.numeric(new.date$date))
-            } else {
-                hourly.result[[var]] <- f(as.numeric(new.date$date))
-                hourly.result[[var]][hourly.result[[var]]<0] <- 0
-            }
-        }
-    }
-
-
-                                                            
-    hourly.result <- cbind(new.date, as.data.table(hourly.result))#[date <= max(result$date),]
-    
-    if(hourly.result[,list(h = length(unique(hour))), by = c("year", "doy")][,all(unique(h) != 24)]){
-        print(cruncep.file)
-        print(hourly.result[,unique(year)])
-        stop("some days don't have 24 hours")
-    }
-    return(hourly.result)
-}
 
 cruncep_dt2weather <- function(weather = result, adjust=TRUE){
 
@@ -165,10 +14,12 @@ cruncep_dt2weather <- function(weather = result, adjust=TRUE){
 
 get.weather <- function(lat, lon, met.nc = met.nc, start.date, end.date){
 #    if(!is.land(lat, lon)) stop("point is in ocean")
-    result <- cruncep_nc2dt(lat = lat, lon = lon, met.nc = met.nc, start.date, end.date)
+    result <- load.cfmet(lat = lat, lon = lon, met.nc = met.nc, start.date, end.date)
     hourly.result <- cruncep_hourly(result, lat = lat)
     weather <- cruncep_dt2weather(hourly.result)
 }
+
+
 
 get.soil <- function(lat, lon, soil.nc = soil.nc){
     
@@ -206,7 +57,7 @@ get.latlonbox <- function(lati, loni, Lat = Lat, Lon = Lon){
 }
 
 get.cruncep <- function(lat, lon, start.date, end.date){
-    result <- cruncep_nc2dt(lat, lon)
+    result <- load.cfmet(lat, lon)
     hourly.result <- cruncep_hourly(result, lat = Lat[lati])
     weather <- cruncep_dt2weather(hourly.result)
     return(weather)
@@ -221,4 +72,80 @@ getNARRforBioCro<-function(lat,lon,year){
     filename <- paste("/home/groups/ebimodeling/met/NARR/ProcessedNARR/",year,formatC(i,width=3,flag=0),formatC(j,width=3,flag=0),".RData",sep="")
     load(filename)
     return(dat)
+}
+
+##' Simulates the light macro environment
+##'
+##' Simulates light macro environment based on latitude, day of the year.
+##' Other coefficients can be adjusted.
+##'
+##'
+##' @param lat the latitude, default is 40 (Urbana, IL, U.S.).
+##' @param DOY the day of the year (1--365), default 190.
+##' @param t.d time of the day in hours (0--23), default 12.
+##' @param t.sn time of solar noon, default 12.
+##' @param atm.P atmospheric pressure, default 1e5 (kPa).
+##' @param alpha atmospheric transmittance, default 0.85.
+##' @export
+##' @return a \code{\link{list}} structure with components:
+##' \itemize{
+##'  \item{"I.dir"}{Direct radiation (\eqn{\mu} mol \eqn{m^{-2}s^{-1}}}
+##'  \item{"I.diff"}{Indirect (diffuse) radiation (\eqn{\mu} mol\eqn{m^{-2}s^{-1}}}
+##'  \item{"cos.th"}{cosine of \eqn{\theta}, solar zenith angle.}
+##'  \item{"propIdir"}{proportion of direct radiation.}
+##'  \item{"propIdiff"}{proportion of indirect (diffuse) radiation.}
+##' }
+##' @keywords models
+##' @examples
+##'
+##' \dontrun{
+##' ## Direct and diffuse radiation for DOY 190 and hours 0 to 23
+##' require(lattice)
+##' res <- lightME(t.d=0:23)
+##'
+##' xyplot(I.dir + I.diff ~ 0:23 , data = res,
+##' type='o',xlab='hour',ylab='Irradiance')
+##'
+##' xyplot(propIdir + propIdiff ~ 0:23 , data = res,
+##' type='o',xlab='hour',ylab='Irradiance proportion')
+##'
+##' plot(acos(lightME(lat = 42, t.d = 0:23)$cos.th) * (1/dtr))
+##' }
+lightME <- function(lat=40,DOY=190,t.d=12,t.sn=12,atm.P=1e5,alpha=0.85) {
+  
+  ## The equations used here can be found in
+  ## http://www.life.illinois.edu/plantbio/wimovac/newpage9.htm
+  ## The original source is Monteith, 1991
+  Dtr <- (pi/180)
+  
+  omega <- lat * Dtr
+  
+  delta0 <- 360 * (DOY + 10)/365
+  delta <- -23.5 * cos(delta0*Dtr)
+  deltaR <- delta * Dtr
+  t.f <- (15*(t.d-t.sn))*Dtr
+  SSin <- sin(deltaR) * sin(omega)
+  CCos <- cos(deltaR) * cos(omega)
+  CosZenithAngle0 <- SSin + CCos * cos(t.f)
+  CosZenithAngle <- ifelse(CosZenithAngle0 <= 10 ^ -10, 1e-10, CosZenithAngle0)
+  
+  CosHour <-  -tan(omega) * tan(deltaR)
+  CosHourDeg <- (1/Dtr)*(CosHour)
+  CosHour <- ifelse(CosHourDeg < -57,-0.994,CosHour)
+  Daylength <- 2 * (1/Dtr)*(acos(CosHour)) / 15
+  SunUp <- 12 - Daylength / 2
+  SunDown <- 12 + Daylength / 2
+  SinSolarElevation <- CosZenithAngle
+  SolarElevation <- (1/Dtr)*(asin(SinSolarElevation))
+  
+  PP.o <- 10^5 / atm.P
+  Solar_Constant <- 2650
+  ## Notice the difference with the website for the eq below
+  I.dir <- Solar_Constant * (alpha ^ ((PP.o) / CosZenithAngle))
+  I.diff <- 0.3 * Solar_Constant * (1 - alpha ^ ((PP.o) / CosZenithAngle)) * CosZenithAngle
+  propIdir <- I.dir / (I.dir+I.diff)
+  propIdiff <- I.diff / (I.dir+I.diff)
+  
+  list(I.dir=I.dir,I.diff=I.diff,cos.th=CosZenithAngle,propIdir=propIdir,propIdiff=propIdiff)
+  
 }
