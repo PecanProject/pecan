@@ -1,3 +1,4 @@
+.datatable.aware=TRUE # ensures data.table objects treated as such http://stackoverflow.com/q/24501245/513006
 
 ##' Load met data from PEcAn formatted met driver
 ##'
@@ -33,28 +34,20 @@ load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date){
                             minutes(ud.convert(time.idx - floor(time.idx), "days", "minutes")))
   
   # below commented out because of error with data.table http://stackoverflow.com/q/24501245/513006
-  #   run.dates <- all.dates[date > ymd(start.date) & date < ymd(end.date),
-  #                          list(index, date, doy = yday(date),
-  #                               year = year(date), month = month(date),
-  #                               day  = day(date), hour = hour(date))]
-  run.dates <- with(all.dates[all.dates$date > ymd(start.date) & all.dates$date < ymd(end.date),],
-                    data.table(index, date, doy = yday(date),
-                               year = lubridate::year(date), month = lubridate::month(date),
-                               day  = lubridate::day(date), hour = lubridate::hour(date)))
+    run.dates <- all.dates[date > ymd(start.date) & date < ymd(end.date),
+                           list(index, date, doy = yday(date),
+                                year = year(date), month = month(date),
+                                day  = day(date), hour = hour(date))]
+#   run.dates <- with(all.dates[all.dates$date > ymd(start.date) & all.dates$date < ymd(end.date),],
+#                     data.table(index, date, doy = yday(date),
+#                                year = lubridate::year(date), month = lubridate::month(date),
+#                                day  = lubridate::day(date), hour = lubridate::hour(date)))
   
   currentlat <- round(lat, 2)
   currentlon <- round(lon, 2)
   results <- list()
-  
-
-  
-  #    variables <- c("lwdown", "press", "qair", "rain", "swdown", "tair", "northward_wind", "eastward_wind")
 
   variables <- attributes(met.nc$var)$names
-  
-  ## modification of ncvar_get to function independent of dimension order
-  ## see http://stackoverflow.com/a/22944715/199217
-  ## should be generalized, perhaps to pass arguments "start" and "count" directly
   
   vars <- lapply(variables, function(x) get.ncvector(x, lati = lati, loni = loni, run.dates = run.dates, met.nc = met.nc))
   
@@ -77,67 +70,135 @@ load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date){
 ##' @param output.dt time step for output
 ##' @return downscaled result
 ##' @author David LeBauer
-cfmet.downscale.time <- cruncep_hourly <- function(cfmet, lat, output.dt = 1){
+cfmet.downscale.time <- cruncep_hourly <- function(cfmet, output.dt = 1, ...){
   ## rename function to temporal_downscale?
   ## time step
-  dt <- cfmet[1:2,(as.duration(diff(date)))]
+  dt <- cfmet[1:2,diff(date)]
   dt_hr <- ud.convert(as.numeric(as.duration(dt)), "seconds", "hours")
+  
+  if(dt_hr < 6) {
+    downscaled.result <- cfmet.downscale.subdaily(subdailymet = cfmet, new.date, output.dt)
+  } else if(dt_hr >= 6 & dt_hr < 24){
+    cfmet <- cbind(cfmet, cfmet[,list(air_temperature_max = max(air_temperature),
+                                      air_temperature_min = min(air_temperature)), by = 'year,doy'])
+    logger.warn("timestep of input met data is between 6 and 24 hours.\n",
+                "PEcAn will automatically convert this to daily data\n",
+                "you should confirm validity of downscaling, in particular that min / max temperatures are realistic")
+  } else if (dt_hr == 24) {
+    downscaled.result <- cfmet.downscale.daily(dailymet = cfmet, output.dt, ...)
+  } else if(dt_hr > 24){
+    logger.error("only daily and sub-daily downscaling supported")
+  } 
+  return(downscaled.result)
+}
 
+
+##' Subdaily to hourly (or less) downscaling
+##'
+##' Uses simple spline to interpolate variables with diurnal variability, otherwise uses averaging or repeating
+##' for variables with no clear diurnal pattern. For all variables except temperature, negative values are set to zero.
+##' @title subdaily downscaling
+##' @param subdailymet data table with climate variables queried from \code{\link{load.cfmet}}
+##' @param output.dt output timestep. default is one hour
+##' @export
+##' @return weather file for input to BioGro and related crop growth functions
+##' @author David LeBauer
+cfmet.downscale.subdaily <- function(subdailymet){
+  ## converting surface_downwelling_shortwave_flux_in_air from W/m2 avg to PPFD
   new.date <- cfmet[,list(hour = 0:(23 / output.dt) / output.dt),
-                     by = c("year", "month", "day", "doy")]
+                    by = c("year", "month", "day", "doy")]
   
   new.date$date <- new.date[,list(date = ymd(paste(year, month, day)) + hours(hour))]
   
+  solarMJ <- ud.convert(cfmet$surface_downwelling_shortwave_flux_in_air, paste0("W ", dt_hr, "h"), "MJ")
+  PAR <- 0.486 * solarMJ ## Cambell and Norman 1998 p 151, ch 10
+  cfmet$ppfd <- ud.convert(PAR, "mol s", "micromol h")
   
+  downscaled.result <- list()
+  downscaled.result[["surface_downwelling_shortwave_flux_in_air"]] <- cfmet$surface_downwelling_shortwave_flux_in_air 
+  downscaled.result[["ppfd"]] <- cfmet$ppfd
   
- 
-  if(dt_hr < 24) {
-    ## converting surface_downwelling_shortwave_flux_in_air from W/m2 avg to PPFD
-    
-    solarMJ <- ud.convert(cfmet$surface_downwelling_shortwave_flux_in_air, paste0("W ", dt_hr, "h"), "MJ")
-    PAR <- 0.486 * solarMJ ## Cambell and Norman 1998 p 151, ch 10
-    cfmet$ppfd <- ud.convert(PAR, "mol s", "micromol h")
-    
-    downscaled.result <- list()
-    downscaled.result[["surface_downwelling_shortwave_flux_in_air"]] <- cfmet$surface_downwelling_shortwave_flux_in_air 
-    downscaled.result[["ppfd"]] <- cfmet$ppfd
-    
-    for(var in c("surface_pressure", "specific_humidity",
-                 "precipitation_flux", "air_temperature", "wind", "surface_downwelling_shortwave_flux_in_air", "ppfd")){
-      if(var %in% colnames(cfmet)){
-        ## convert units from subdaily to hourly
-        hrscale <- ifelse(var %in%
-                            c("surface_downwelling_shortwave_flux_in_air",
-                              "precipitation_flux"),
-                          dt_hr, 1)
-        
-        f <- splinefun(as.numeric(cfmet$date), (cfmet[[var]] / hrscale), method = "monoH.FC")
-        if(var == "air_temperature"){
-          downscaled.result[[var]] <- f(as.numeric(new.date$date))
-        } else {
-          downscaled.result[[var]] <- f(as.numeric(new.date$date))
-          downscaled.result[[var]][downscaled.result[[var]]<0] <- 0
-        }
-      }
+  for(var in c("surface_pressure", "specific_humidity",
+               "precipitation_flux", "air_temperature", "wind", "surface_downwelling_shortwave_flux_in_air", "ppfd")){
+    if(var %in% colnames(cfmet)){
+      ## convert units from subdaily to hourly
+      hrscale <- ifelse(var %in%
+                          c("surface_downwelling_shortwave_flux_in_air",
+                            "precipitation_flux"),
+                        dt_hr, 1)
       
+      f <- splinefun(as.numeric(cfmet$date), (cfmet[[var]] / hrscale), method = "monoH.FC")
+      downscaled.result[[var]] <- f(as.numeric(new.date$date))
+      if(!var == "air_temperature"){
+        downscaled.result[[var]][downscaled.result[[var]] < 0] <- 0
+      }
     }
     
-    downscaled.result <- cbind(new.date, as.data.table(downscaled.result))#[date <= max(result$date),]
-    
-    
-  } else if (dt_hr == 24) {
-    downscaled.result <- cfmet.downscale.daily(cfmet, lat = lat)
-  } else if(dt_hr > 24){
-    stop("only daily and sub-daily downscaling supported")
-  } 
-  
-  
-  if(downscaled.result[,list(h = length(unique(hour))), by = c("year", "doy")][,all(unique(h) != 24)]){
-    print(cruncep.file)
-    print(downscaled.result[,unique(year)])
-    stop("some days don't have 24 hours")
   }
-  return(downscaled.result)
+  
+  downscaled.result <- cbind(new.date, as.data.table(downscaled.result))#[date <= max(result$date),]
+  
+}
+
+##' Simple, Fast Daily to Hourly Climate Downscaling
+##'
+##' Based on weach family of functions but 5x faster than weachNEW,
+##' and requiring metric units (temperature in celsius, windspeed in kph,
+##' precip in mm, relative humidity as fraction). 
+##' Derived from the weachDT function in the BioCro package.
+##' @title daily to subdaily downscaling
+##' @param dailymet data table with climate variables
+##' @param lat latitude (for calculating solar radiation)
+##' @param output.dt output timestep
+##' @export
+##' @return weather file for input to BioGro and related crop growth functions
+##' @author David LeBauer
+cfmet.downscale.daily <- weachDT <- function(dailymet, output.dt = 1, lat = lat){
+  
+  tint <- 24 / output.dt
+  tseq <- 0:(23 * output.dt) / output.dt
+
+  setkeyv(dailymet, c("year", "doy"))
+  
+  setnames(dailymet, c("air_temperature_max", "air_temperature_min"), c("tmax", "tmin"))
+  light <- dailymet[,lightME(DOY = doy, t.d = tseq, lat = lat),
+                    by = c("year", "doy")]
+  
+  light$Itot <- light[,list(I.dir + I.diff)]
+  resC2 <- light[, list(resC2 = (Itot - min(Itot)) / max(Itot)), by = c("year", "doy")]$resC2
+  solarR <- dailymet[,list(year, doy, 
+                           solarR = rep(surface_downwelling_shortwave_flux_in_air * 2.07 * 10^5 /36000, each = tint) * resC2)]
+  
+  SolarR <- cbind(resC2, solarR)[,list(SolarR = solarR * resC2)]$SolarR
+  
+  ## Temperature
+  Temp <- dailymet[,list(Temp = tmin + (sin(2*pi*(tseq-10)/tint) + 1)/2 * (tmax - tmin), hour = tseq),
+                   by = 'year,doy']$Temp
+  
+  ## Relative Humidity
+  RH <-   dailymet[,list(RH = rep(relative_humidity, each = tint), hour = tseq), by = 'year,doy']
+  setkeyv(RH, c('year','doy','hour'))  
+  qair <- dailymet[,list(year, doy, tmin, tmax, surface_pressure, air_temperature,
+                         qmin = rh2qair(rh = relative_humidity/100, T = ud.convert(tmin, "celsius", "kelvin")),
+                         qmax = rh2qair(rh = relative_humidity/100, T = ud.convert(tmax, "celsius", "kelvin")))]
+  
+  a <- qair[,list(year, doy, tmin, tmax, air_temperature, qmin, qmax, pressure = ud.convert(surface_pressure, "Pa", "millibar"))][
+    ,list(year, doy, rhmin = qair2rh(qmin, air_temperature, pressure),
+          rhmax = qair2rh(qmax, air_temperature, pressure))]
+  rhscale <- (cos(2 * pi * (tseq - 10)/tint) + 1)/2
+  RH <- a[, list(RH = rhmin + rhscale * (rhmax - rhmin)), by = c("year", "doy")]$RH
+  ## Wind Speed
+  WS <- rep(dailymet$wind, each = tint)
+  
+  ## Precipitation
+  precip <- rep(dailymet$precip/tint, each = tint)
+  
+  ## Hour
+  time <- dailymet[,list(hour = tseq), by = c("year", "doy")]
+  
+  ans <- data.table(time, downwelling_photosynthetic_photon_flux = SolarR, air_temperature = Temp, 
+                    relative_humidity = RH, wind = WS, precipitation_flux = precip)
+  return(ans)
 }
 
 ##' Get time series vector from netCDF file
@@ -175,6 +236,15 @@ get.ncvector <- function(var, lati = lati, loni = loni,
     ans <- sqrt(ncvar_get2("northward_wind")^2 + ncvar_get2("eastward_wind")^2)
   } else {
     ans <- NULL
+  } 
+  
+  if (var == "precipitation_flux"){
+    precip_units <- met.nc$var[["precipitation_flux"]]$units
+    if(grepl("kg m-2", precip_units)){
+      precip_units <- gsub("kg m-2", "mm", precip_units)
+    }
+    ans <- ud.convert(ans, precip_units, "mm day-1")
+    
   }
   return(ans)
 }

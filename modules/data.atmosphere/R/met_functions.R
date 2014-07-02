@@ -20,74 +20,6 @@ get.weather <- function(lat, lon, met.nc = met.nc, start.date, end.date){
 }
 
 
-##' Simple, Fast Daily to Hourly Climate Downscaling
-##'
-##' Based on weach family of functions but 5x faster than weachNEW,
-##' and requiring metric units (temperature in celsius, windspeed in kph,
-##' precip in mm, relative humidity as fraction)
-##' @title weachDT
-##' @param X data table with climate variables
-##' @param lat latitude (for calculating solar radiation)
-##' @param output.dt output timestep
-##' @export
-##' @return weather file for input to BioGro and related crop growth functions
-##' @author David LeBauer
-cfmet.downscale.daily <- weachDT <- function(dailymet, lat, output.dt = 1){
-  
-  tint <- 24 / output.dt
-  tseq <- 0:(23 * output.dt) / output.dt
-  ## Solar Radiation
-  #   setnames(cfmet, 
-  #            c("dswrf.MJ", "tmin", "tmax"),
-  #            c("surface_downwelling_shortwave_flux_in_air",
-  #              "air_temperature_min", "air_temperature_max"))
-#   setnames(dailymet, 
-#            c("air_temperature_min", "air_temperature_max"), 
-#            c("tmin", "tmax"))
-  setkeyv(dailymet, c("year", "doy"))
-  
-  
-  light <- dailymet[,lightME(DOY = doy, t.d = tseq, lat = lat),
-                    by = c("year", "doy")]
-  
-  light$Itot <- light[,list(I.dir + I.diff)]
-  resC2 <- light[, list(resC2 = (Itot - min(Itot)) / max(Itot)), by = c("year", "doy")]$resC2
-  solarR <- dailymet[,list(year, doy, 
-                           solarR = rep(surface_downwelling_shortwave_flux_in_air * 2.07 * 10^5 /36000, each = tint) * resC2)]
-                           
-  SolarR <- cbind(resC2, solarR)[,list(SolarR = solarR * resC2)]$SolarR
-  
-  ## Temperature
-  Temp <- dailymet[,list(Temp = tmin + (sin(2*pi*(tseq-10)/tint) + 1)/2 * (tmax - tmin), hour = tseq),
-            by = 'year,doy']$Temp
-
-  ## Relative Humidity
-  RH <-   dailymet[,list(RH = rep(relative_humidity, each = tint), hour = tseq), by = 'year,doy']
-  setkeyv(RH, c('year','doy','hour'))  
-  qair <- dailymet[,list(year, doy, tmin, tmax, surface_pressure, air_temperature,
-                         qmin = rh2qair(rh = relative_humidity/100, T = ud.convert(tmin, "celsius", "kelvin")),
-                         qmax = rh2qair(rh = relative_humidity/100, T = ud.convert(tmax, "celsius", "kelvin")))]
-  
-  
-  a <- qair[,list(year, doy, tmin, tmax, air_temperature, qmin, qmax, pressure = ud.convert(surface_pressure, "Pa", "millibar"))][
-    ,list(year, doy, rhmin = qair2rh(qmin, air_temperature, pressure),
-          rhmax = qair2rh(qmax, air_temperature, pressure))]
-  rhscale <- (cos(2 * pi * (tseq - 10)/tint) + 1)/2
-  RH <- a[, list(RH = rhmin + rhscale * (rhmax - rhmin)), by = c("year", 
-                                                                 "doy")][, list(RH)]
-  ## Wind Speed
-  WS <- rep(dailymet$wind, each = tint)
-  
-  ## Precipitation
-  precip <- rep(dailymet$precip/tint, each = tint)
-  
-  ## Hour
-  time <- dailymet[,list(hour = tseq), by = c("year", "doy")]
-  
-  ans <- data.table(time, downwelling_photosynthetic_photon_flux = SolarR, air_temperature = Temp, 
-                    relative_humidity = RH, wind = WS, precipitation_flux = precip)
-  return(ans)
-}
 
 get.soil <- function(lat, lon, soil.nc = soil.nc){
     
@@ -140,4 +72,80 @@ getNARRforBioCro<-function(lat,lon,year){
     filename <- paste("/home/groups/ebimodeling/met/NARR/ProcessedNARR/",year,formatC(i,width=3,flag=0),formatC(j,width=3,flag=0),".RData",sep="")
     load(filename)
     return(dat)
+}
+
+##' Simulates the light macro environment
+##'
+##' Simulates light macro environment based on latitude, day of the year.
+##' Other coefficients can be adjusted.
+##'
+##'
+##' @param lat the latitude, default is 40 (Urbana, IL, U.S.).
+##' @param DOY the day of the year (1--365), default 190.
+##' @param t.d time of the day in hours (0--23), default 12.
+##' @param t.sn time of solar noon, default 12.
+##' @param atm.P atmospheric pressure, default 1e5 (kPa).
+##' @param alpha atmospheric transmittance, default 0.85.
+##' @export
+##' @return a \code{\link{list}} structure with components:
+##' \itemize{
+##'  \item{"I.dir"}{Direct radiation (\eqn{\mu} mol \eqn{m^{-2}s^{-1}}}
+##'  \item{"I.diff"}{Indirect (diffuse) radiation (\eqn{\mu} mol\eqn{m^{-2}s^{-1}}}
+##'  \item{"cos.th"}{cosine of \eqn{\theta}, solar zenith angle.}
+##'  \item{"propIdir"}{proportion of direct radiation.}
+##'  \item{"propIdiff"}{proportion of indirect (diffuse) radiation.}
+##' }
+##' @keywords models
+##' @examples
+##'
+##' \dontrun{
+##' ## Direct and diffuse radiation for DOY 190 and hours 0 to 23
+##' require(lattice)
+##' res <- lightME(t.d=0:23)
+##'
+##' xyplot(I.dir + I.diff ~ 0:23 , data = res,
+##' type='o',xlab='hour',ylab='Irradiance')
+##'
+##' xyplot(propIdir + propIdiff ~ 0:23 , data = res,
+##' type='o',xlab='hour',ylab='Irradiance proportion')
+##'
+##' plot(acos(lightME(lat = 42, t.d = 0:23)$cos.th) * (1/dtr))
+##' }
+lightME <- function(lat=40,DOY=190,t.d=12,t.sn=12,atm.P=1e5,alpha=0.85) {
+  
+  ## The equations used here can be found in
+  ## http://www.life.illinois.edu/plantbio/wimovac/newpage9.htm
+  ## The original source is Monteith, 1991
+  Dtr <- (pi/180)
+  
+  omega <- lat * Dtr
+  
+  delta0 <- 360 * (DOY + 10)/365
+  delta <- -23.5 * cos(delta0*Dtr)
+  deltaR <- delta * Dtr
+  t.f <- (15*(t.d-t.sn))*Dtr
+  SSin <- sin(deltaR) * sin(omega)
+  CCos <- cos(deltaR) * cos(omega)
+  CosZenithAngle0 <- SSin + CCos * cos(t.f)
+  CosZenithAngle <- ifelse(CosZenithAngle0 <= 10 ^ -10, 1e-10, CosZenithAngle0)
+  
+  CosHour <-  -tan(omega) * tan(deltaR)
+  CosHourDeg <- (1/Dtr)*(CosHour)
+  CosHour <- ifelse(CosHourDeg < -57,-0.994,CosHour)
+  Daylength <- 2 * (1/Dtr)*(acos(CosHour)) / 15
+  SunUp <- 12 - Daylength / 2
+  SunDown <- 12 + Daylength / 2
+  SinSolarElevation <- CosZenithAngle
+  SolarElevation <- (1/Dtr)*(asin(SinSolarElevation))
+  
+  PP.o <- 10^5 / atm.P
+  Solar_Constant <- 2650
+  ## Notice the difference with the website for the eq below
+  I.dir <- Solar_Constant * (alpha ^ ((PP.o) / CosZenithAngle))
+  I.diff <- 0.3 * Solar_Constant * (1 - alpha ^ ((PP.o) / CosZenithAngle)) * CosZenithAngle
+  propIdir <- I.dir / (I.dir+I.diff)
+  propIdiff <- I.diff / (I.dir+I.diff)
+  
+  list(I.dir=I.dir,I.diff=I.diff,cos.th=CosZenithAngle,propIdir=propIdir,propIdiff=propIdiff)
+  
 }
