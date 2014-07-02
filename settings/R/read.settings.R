@@ -15,6 +15,70 @@ library(PEcAn.utils)
 ## INTERNAL FUNCTIONS
 ##--------------------------------------------------------------------------------------------------#
 
+check.input <- function(dbcon, name, value, hostname) {
+  # check for missing inputs
+  if (is.null(value)) {
+    logger.severe("Missing input :", name)
+  }
+
+  # replace input with actual data if it is an id
+  if (suppressWarnings(!is.na(as.numeric(value)))) {
+    if(!is.character(dbcon)) {
+      file <- dbfile.file("Input", value, dbcon, hostname)
+      if (is.na(file)) {
+        logger.severe("No file found for", name, " and id", value, "on host", hostname)
+      }
+      logger.info("Replacing", name, "and id", value, "with", file)
+      return(invisible(file))
+    } else {
+      logger.severe("No database information, but input", name, "specified with id.")
+    }
+  }
+
+  invisible(value)
+}
+
+# check to see if inputs are specified
+# this should be part of the model code
+check.inputs <- function(settings) {
+  if (is.null(settings$model$model_type)) return(settings)
+
+  dbcon <- "NONE"
+  if (!is.null(settings$database$bety)) {
+    dbcon <- db.open(settings$database$bety)
+  }
+
+  # check SIPNET inputs
+  if (settings$model$model_type == "SIPNET") {
+    # Check for MET file
+    settings$run$site$met <- check.input(dbcon, "run$site$met", settings$run$site$met, settings$run$host$name)
+  }
+
+  # check ED2 inputs
+  if (settings$model$model_type == "ED2") {
+    # Check for MET file
+    settings$run$site$met <- check.input(dbcon, "run$site$met", settings$run$site$met, settings$run$host$name)
+
+    # Check for ED specific files
+    settings$model$veg <- check.input(dbcon, "model$veg", settings$model$veg, settings$run$host$name)
+    settings$model$soil <- check.input(dbcon, "model$soil", settings$model$soil, settings$run$host$name)
+    settings$model$psscss <- check.input(dbcon, "model$psscss", settings$model$psscss, settings$run$host$name)
+    settings$model$inputs <- check.input(dbcon, "model$inputs", settings$model$inputs, settings$run$host$name)
+  }
+
+  # check BIOCRO inputs
+  if (settings$model$model_type == "BIOCRO") {
+    
+  }
+
+  if(!is.character(dbcon)) {
+    db.close(dbcon)
+  }
+
+  return(settings)
+}
+
+# check database section
 check.database <- function(database) {
   if (is.null(database)) return(NULL);
 
@@ -122,37 +186,51 @@ check.database <- function(database) {
 check.settings <- function(settings) {
   if (!is.null(settings$nocheck)) {
     logger.info("Not doing sanity checks of pecan.xml")
-    return(0)
+    return(settings)
   }
   scipen = getOption("scipen")
   options(scipen=12)
 
   # check database secions if exist
+  dbcon <- "NONE"
   if (!is.null(settings$database)) {
 
     # simple check to make sure the database tag is updated
     if (!is.null(settings$database$dbname)) {
-      log.severe("Database tag has changed, please use <database><bety> to store",
+      if (!is.null(settings$database$bety)) {
+        logger.severe("Please remove dbname etc from database configuration.")
+      }
+
+      logger.info("Database tag has changed, please use <database><bety> to store",
                  "information about accessing the BETY database. See also",
                  "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#database-access.")
+
+      bety <- list()
+      for(name in names(settings$database)) {
+        bety[[name]] <- settings$database[[name]]
+      }
+      settings$database <- list(bety=bety)
     }
 
-    # check bety database access
-    if (!is.null(settings$database$bety)) {
-      settings$database$bety <- check.database(settings$database$bety)
-
-      # warn user about change and update settings
-      if (!is.null(settings$bety$write)) {
-        logger.warn("<bety><write> is now part of the database settings. For more",
-                    "information about the database settings see",
-                    "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#database-access.")
-        if (is.null(settings$database$bety$write)) {
-          settings$database$bety$write <- settings$bety$write
-          settings$bety$write <- NULL
-          if (length(settings$bety) == 0) settings$bety <- NULL
-        }
+    # warn user about change and update settings
+    if (!is.null(settings$bety$write)) {
+      logger.warn("<bety><write> is now part of the database settings. For more",
+                  "information about the database settings see",
+                  "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#database-access.")
+      if (is.null(settings$database$bety$write)) {
+        settings$database$bety$write <- settings$bety$write
+        settings$bety$write <- NULL
+        if (length(settings$bety) == 0) settings$bety <- NULL
       }
-    
+    }
+
+    # check all databases
+    for (name in names(settings$database)) {
+      settings$database[[name]] <- check.database(settings$database[[name]])
+    }
+
+    # check bety database
+    if (!is.null(settings$database$bety)) {
       # should runs be written to database
       if (is.null(settings$database$bety$write)) {
         logger.info("Writing all runs/configurations to database.")
@@ -172,37 +250,29 @@ check.settings <- function(settings) {
       }
 
       # TODO check userid and userpassword
-    }
 
-    # check fia database access
-    if (!is.null(settings$database$fia)) {
-      settings$database$fia = check.database(settings$database$fia)
-    }
-  }
+      # Connect to database
+      dbcon <- db.open(settings$database$bety)
 
-  ## allow PEcAn to run without database
-  if (is.null(settings$database) || is.null(settings$database$bety)) {
-    logger.warn("No database information specified; not using database.")
-    dbcon <- "NONE"
-  } else {
-    # create connection we'll use
-    dbcon <- db.open(settings$database$bety)
-  }
+      # check database version
+      versions <- db.query("SELECT version FROM schema_migrations WHERE version >= '20140621060009';", con=dbcon)[['version']]
+      if (length(versions) == 0) {
+        logger.severe("Database is out of date, please update the database.",
+                      "Please migrate your current database using Ruby migrations part of BETY")
+      }
+      if (length(versions) > 1) {
+        logger.warn("Database is more recent than PEcAn expects this could result in PEcAn not working as expected.",
+                    "If PEcAn fails, either revert database OR update PEcAn and edit expected database version in",
+                    "utils/R/read.settings.R (Redmine #1673).")
+      } else {
+        logger.debug("Database is correct version", versions[1], ".")
+      }
 
-  # check database version
-  if(!is.character(dbcon)) {
-    versions <- db.query("SELECT version FROM schema_migrations WHERE version >= '20140621060009';", con=dbcon)[['version']]
-    if (length(versions) == 0) {
-      logger.severe("Database is out of date, please update the database.",
-                    "Please migrate your current database using Ruby migrations part of BETY")
-    }
-    if (length(versions) > 1) {
-      logger.warn("Database is more recent than PEcAn expects this could result in PEcAn not working as expected.",
-                  "If PEcAn fails, either revert database OR update PEcAn and edit expected database version in",
-                  "utils/R/read.settings.R (Redmine #1673).")
     } else {
-      logger.debug("Database is correct version", versions[1], ".")
+      logger.warn("No BETY database information specified; not using database.")
     }
+  } else {
+    logger.warn("No BETY database information specified; not using database.")
   }
   
   # make sure there are pfts defined
@@ -415,15 +485,9 @@ check.settings <- function(settings) {
 
     # check on binary for given host
     if (!is.null(model$id) && (model$id >= 0)) {
-      binary <- db.query(paste0("SELECT CONCAT(dbfiles.file_path, '/', dbfiles.file_name) AS binary FROM dbfiles",
-                                " WHERE dbfiles.container_type='Model' AND dbfiles.container_id=", model$id), con=dbcon)
-      if(nrow(binary) > 1){
-        logger.warn("multiple binaries for", model$id, "returned; using the first one found")
-        model$binary <- binary[1]
-      } else if (nrow(binary) == 1) {
-        model$binary <- binary[1]
-      } else {
-        logger.warn("no binary found for ", model$id, "in database")
+      binary <- dbfile.file("Model", model$id, dbcon, settings$run$host$name)
+      if (!is.na(binary)) {
+        model$binary <- binary
       }
     }
     
@@ -547,6 +611,9 @@ check.settings <- function(settings) {
   }
   dir.create(settings$run$dbfiles, showWarnings = FALSE, recursive = TRUE)
 
+  # check all inputs exist
+  settings <- check.inputs(settings)
+
   # check for workflow defaults
   fixoutdir <- FALSE
   if(!is.character(dbcon) && settings$database$bety$write && ("model" %in% names(settings))) {
@@ -667,7 +734,7 @@ check.settings <- function(settings) {
       }
     }
   }
-  
+
   if (!is.character(dbcon)) {
     db.close(dbcon)
   }

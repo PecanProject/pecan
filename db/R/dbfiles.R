@@ -31,6 +31,8 @@
 ##'   dbfile.input.insert('trait.data.Rdata', siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
 ##' }
 dbfile.input.insert <- function(filename, siteid, startdate, enddate, mimetype, formatname, parentid=NA, con, hostname=fqdn()) {
+  if (hostname == "localhost") hostname=fqdn();
+
   # find appropriate format
   formatid <- db.query(paste0("SELECT id FROM formats WHERE mime_type='", mimetype, "' AND name='", formatname, "'"), con)[['id']]
   if (is.null(formatid)) {
@@ -81,6 +83,8 @@ dbfile.input.insert <- function(filename, siteid, startdate, enddate, mimetype, 
 ##'   dbfile.input.check(siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
 ##' }
 dbfile.input.check <- function(siteid, startdate, enddate, mimetype, formatname, parentid=NA, con, hostname=fqdn()) {
+  if (hostname == "localhost") hostname=fqdn();
+
   # find appropriate format
   formatid <- db.query(paste0("SELECT id FROM formats WHERE mime_type='", mimetype, "' AND name='", formatname, "'"), con)[['id']]
   if (is.null(formatid)) {
@@ -124,6 +128,8 @@ dbfile.input.check <- function(siteid, startdate, enddate, mimetype, formatname,
 ##'   dbfile.posterior.insert('trait.data.Rdata', pft, 'application/x-RData', 'traits', dbcon)
 ##' }
 dbfile.posterior.insert <- function(filename, pft, mimetype, formatname, con, hostname=fqdn()) {
+  if (hostname == "localhost") hostname=fqdn();
+
   # find appropriate pft
   pftid <- db.query(paste0("SELECT id FROM pfts WHERE name='", pft, "'"), con)[['id']]
   if (is.null(pftid)) {
@@ -169,6 +175,8 @@ dbfile.posterior.insert <- function(filename, pft, mimetype, formatname, con, ho
 ##'   dbfile.posterior.check(pft, 'application/x-RData', 'traits', dbcon)
 ##' }
 dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname=fqdn()) {
+  if (hostname == "localhost") hostname=fqdn();
+
   # find appropriate pft
   pftid <- db.query(paste0("SELECT id FROM pfts WHERE name='", pft, "'"), con)[['id']]
   if (is.null(pftid)) {
@@ -207,6 +215,8 @@ dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname=fqdn
 ##'   dbfile.insert('somefile.txt', 'Input', 7, dbcon)
 ##' }
 dbfile.insert <- function(filename, type, id, con, hostname=fqdn()) {
+  if (hostname == "localhost") hostname=fqdn();
+
   # find appropriate host
   hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", hostname, "'"), con)[['id']]
   if (is.null(hostid)) {
@@ -239,6 +249,8 @@ dbfile.insert <- function(filename, type, id, con, hostname=fqdn()) {
 ##'   dbfile.check('Input', 7, dbcon)
 ##' }
 dbfile.check <- function(type, id, con, hostname=fqdn()) {
+  if (hostname == "localhost") hostname=fqdn();
+
   # find appropriate host
   hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", hostname, "'"), con)[['id']]
   if (is.null(hostid)) {
@@ -246,4 +258,40 @@ dbfile.check <- function(type, id, con, hostname=fqdn()) {
   }
 
   invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, "' AND container_id=", id, " AND machine_id=", hostid), con))  
+}
+
+
+##' Function to return full path to a file using dbfiles table
+##'
+##' This will check the dbfiles and machines to see if the file exists,
+##' and return the full filename with path to the first one found. If 
+##' none is found it will return NA.
+##'
+##' @name dbfile.file
+##' @title Return file from the dbfiles tables
+##' @param type the type of dbfile (Input, Posterior)
+##' @param id the id of container type
+##' @param con database connection object
+##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
+##' @return filename on host, or NA if none found
+##' @author Rob Kooper
+##' @export
+##' @examples
+##' \dontrun{
+##'   dbfile.file('Input', 7, dbcon)
+##' }
+dbfile.file <- function(type, id, con, hostname=fqdn()) {
+  if (hostname == "localhost") hostname=fqdn();
+  
+  files <- dbfile.check(type, id, con, hostname)
+
+  if(nrow(files) > 1) {
+    logger.warn("multiple files found for", id, "returned; using the first one found")
+    invisible(file.path(files[1, 'file_path'], files[1, 'file_name']))
+  } else if (nrow(files) == 1) {
+    invisible(file.path(files[1, 'file_path'], files[1, 'file_name']))
+  } else {
+    logger.warn("no files found for ", id, "in database")
+    invisible(NA)
+  }
 }
