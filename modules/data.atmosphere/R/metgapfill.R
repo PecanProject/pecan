@@ -57,6 +57,9 @@ metgapfill <- function(in.path,in.prefix,outfolder){
 #    co2 <- ncvar_get(nc=nc,varid='CO2')
 #    press <- ncvar_get(nc=nc,varid='air_pressure')
     
+#eastward_wind
+#northward_wind
+
     ## make a data frame, convert -9999 to NA
     EddyData.F <- data.frame(Tair,Rg,rH,PAR) #,precip,Rn,sHum,Lw,Ts1,Ts2,VPD,ws,co2,press)
     EddyData.F[EddyData.F <= -9999] = NA
@@ -73,7 +76,6 @@ metgapfill <- function(in.path,in.prefix,outfolder){
     DoY <- ncvar_get(nc=nc,varid='DOY')
     Dtime <- ncvar_get(nc=nc,varid='DTIME')
     Hour <- ((round((Dtime-DoY)*48.0)/2.0)+0.5)
-
 
     nelem = length(Year)
     EddyData.F <- cbind(EddyData.F,Year=Year,DoY=DoY,Hour=Hour)
@@ -101,13 +103,30 @@ metgapfill <- function(in.path,in.prefix,outfolder){
 #    EddyProc.C$sMDSGapFill('press', FillAll.b=TRUE)
 
     ## Extract filled variables into data frame
-print('Extracting dataframe elements')
+print('Extracting dataframe elements and writing back to nc file')
     Extracted <- EddyProc.C$sExportResults()
     Extracted[is.na(Extracted)] = -9999.0
-    if(n_Tair>0&&n_Tair<nelem) Tair_f <- Extracted['Tair_f'] else Tair_f <- Tair
-    if(n_Rg>0&&n_Rg<nelem) Rg_f <- Extracted['Rg_f']
-    if(n_rH>0&&n_rH<nelem) rH_f <- Extracted['rH_f']
-    if(n_PAR>0&&n_PAR<nelem) PAR_f <- Extracted['PAR_f']
+
+    if(n_Tair>0&&n_Tair<nelem) {
+      Tair_f <- Extracted['Tair_f']
+      Tair_f <- Tair_f['Tair_f']
+      Tair_f = Tair_f + 273.15
+      ncvar_put(nc,varid='air_temperature',vals=Tair_f)
+    }
+    if(n_Rg>0&&n_Rg<nelem) {
+      Rg_f <- Extracted['Rg_f']
+      Rg_f <- Rg_f['Rg_f']
+      ncvar_put(nc,varid='surface_downwelling_shortwave_flux',vals=Rg_f)
+    }
+    if(n_rH>0&&n_rH<nelem) {
+      rH_f <- Extracted['rH_f']
+      rH_f <- rH_f['Rh_f']
+      ncvar_put(nc,varid='relative_humidity',vals=rH_f)
+    }
+    if(n_PAR>0&&n_PAR<nelem) {
+      PAR_f <- Extracted['PAR_f']
+      ncvar_put(nc,varid='PAR',vals=PAR_f)
+    }
  #   precip_f <- Extracted['precip_f']
 #    Rn_f <- Extracted['Rn_f']
 #    sHum_f <- Extracted['sHum_f']
@@ -119,15 +138,8 @@ print('Extracting dataframe elements')
 #    co2_f <- Extracted['co2_f']
 #    press_f <- Extracted['press_f']
    
-    Tair_f = Tair_f + 273.15
     ## Debug: look at output
-
-    print('Writing to file')
     ## Write to NC file
-#    ncvar_put(nc,varid='air_temperature',vals=Tair_f)
-#    ncvar_put(nc,varid='surface_downwelling_shortwave_flux',vals=Rg_f)
-#    ncvar_put(nc,varid='relative_humidity',vals=rH_f)
-#    ncvar_put(nc,varid='PAR',vals=PAR_f)
 #    ncvar_put(nc,varid='precipitation_flux',vals=precip_f)
 #    ncvar_put(nc,varid='Rn',vals=Rn_f)
 #    ncvar_put(nc,varid='specific_humidity',vals=sHum_f)
