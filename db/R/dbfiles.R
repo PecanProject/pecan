@@ -30,6 +30,7 @@
 ##' \dontrun{
 ##'   dbfile.input.insert('trait.data.Rdata', siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
 ##' }
+
 dbfile.input.insert <- function(filename, siteid, startdate, enddate, mimetype, formatname, parentid=NA, con, hostname=fqdn()) {
   if (hostname == "localhost") hostname=fqdn();
 
@@ -49,15 +50,16 @@ dbfile.input.insert <- function(filename, siteid, startdate, enddate, mimetype, 
   }
 
   # find appropriate input
-  inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, " AND start_date='", startdate, "' AND end_date='", enddate, "'" , parent, ";"), con)[['id']]
+inputid <- db.query(paste0("SELECT * FROM inputs WHERE name='", name,"'"), con)[['id']]
   if (is.null(inputid)) {
     # insert input
-    db.query(paste0("INSERT INTO inputs (site_id, format_id, created_at, updated_at, start_date, end_date) VALUES (",
-                    siteid, ", ", formatid, ", NOW(), NOW(), '", startdate, "', '", enddate, "')"), con)
-    inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, " AND start_date='", startdate, "' AND end_date='", enddate, "'" , parent, ";"), con)[['id']]
+    db.query(paste0("INSERT INTO inputs (site_id, format_id, created_at, updated_at, start_date, end_date, name) VALUES (",
+                    siteid, ", ", formatid, ", NOW(), NOW(), '", startdate, "', '", enddate,"','", name, "')"), con)
+    inputid <- db.query(paste0("SELECT * FROM inputs WHERE name='", name,"'"), con)[['id']]
   }
+  dbfileid <- dbfile.insert(filename, 'Input', inputid, con, hostname)
 
-  invisible(dbfile.insert(filename, 'Input', inputid, con, hostname))
+  invisible(list(input.id = inputid, dfbile.id = dbfileid))
 }
 
 ##' Function to check to see if a file exists in the dbfiles table as an input
@@ -227,7 +229,7 @@ dbfile.insert <- function(filename, type, id, con, hostname=fqdn()) {
   
   now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
   db.query(paste0("INSERT INTO dbfiles (container_type, container_id, file_name, file_path, machine_id, created_at, updated_at) VALUES (",
-                  "'", type, "', ", id, ", '", basename(filename), "', '", dirname(filename), "', ", hostid, ", '", now, "', '", now, "')"), con)
+                  "'", type, "', ", id, ", '", basename(filename), "', '", dirname(filename), "/', ", hostid, ", '", now, "', '", now, "')"), con)
 
   invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, "' AND container_id=", id, " AND created_at='", now, "' ORDER BY id DESC LIMIT 1"), con)[['id']])
 }
