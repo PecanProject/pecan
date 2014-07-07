@@ -19,3 +19,4 @@ if(length(new.packages)) {
   print(new.packages)
   install.packages(new.packages, repos="http://cran.rstudio.com/")
 }
+if(!("REddyProc" %in% installed.packages()[,"Package"])) install.packages("REddyProc", repos="http://R-Forge.R-project.org", type="source")

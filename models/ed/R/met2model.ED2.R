@@ -19,7 +19,11 @@
 
 
 met2model.ED2 <- function(in.path,in.prefix,outfolder,lst,overwrite=FALSE){
-  files = dir(in.path,in.prefix,full.names=TRUE)
+  overwrite = as.logical(overwrite)
+  lst = as.numeric(lst)
+  
+  #files = dir(in.path,in.prefix,full.names=TRUE)
+  files = dir(in.path,in.prefix)
   filescount = files[grep(pattern="*.nc",files)]
   
   require(rhdf5)
@@ -53,7 +57,7 @@ for(i in 1:length(filescount)){
   }
 
   ## open netcdf
-  nc <- nc_open(files[i])
+  nc <- nc_open(paste0(in.path,files[i]))
   
   ## determine starting year
   base.time <- unlist(strsplit(files[i],'[.]'))
