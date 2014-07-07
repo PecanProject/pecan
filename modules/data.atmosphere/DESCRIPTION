@@ -25,7 +25,6 @@ LazyLoad: yes
 LazyData: FALSE
 Collate:
     'InputForWeach.R'
-    'nceputils.R'
     'metutils.R'
     'met2CF.Ameriflux.R'
     'call_MODIS.R'
@@ -40,3 +39,5 @@ Collate:
     'met2CF.csv.R'
     'met_functions.R'
     'site.lst.R'
+    'metgapfill.R'
+    'temporal.downscaling.R'
