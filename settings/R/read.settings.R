@@ -429,7 +429,7 @@ check.settings <- function(settings) {
                                         paste0(" and revision like '%", settings$model$revision, "%' "))), con=dbcon)
         if(nrow(model) > 1){
           logger.warn("multiple records for", settings$model$name, "returned; using the most recent")
-          row <- which.max(ymd_hms(model$updated_at))
+          row <- which.max(model$updated_at)
           if (length(row) == 0) row <- nrow(model)
           model <- model[row, ]
         } else if (nrow(model) == 0) {
