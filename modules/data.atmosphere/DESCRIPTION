@@ -23,3 +23,14 @@ License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
+Collate:
+    'InputForWeach.R'
+    'call_MODIS.R'
+    'closest_xy.R'
+    'extract.NARR.R'
+    'met2CF.Ameriflux.R'
+    'met2CF.csv.R'
+    'met2cf.NARR.R'
+    'met_functions.R'
+    'metutils.R'
+    'temporal.downscaling.R'
