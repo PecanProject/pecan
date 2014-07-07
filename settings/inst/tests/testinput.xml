@@ -18,7 +18,7 @@
 
  <pfts>
   <pft>
-   <name>biocro.salix</name>
+   <name>salix</name>
   </pft>
  </pfts>
 
@@ -30,7 +30,7 @@
 
  <model>
   <id>-1</id>
-  <name>SIPNET</name>
+  <name>BIOCRO</name>
   <binary>/bin/true</binary>
  </model>
 

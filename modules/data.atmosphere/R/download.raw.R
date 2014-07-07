@@ -1,16 +1,36 @@
-download.raw <- function(data.set,outfolder,pkg,raw.host, ...){
+download.raw <- function(data.set,outfolder,pkg,raw.host,start_year,end_year){
   
-  fcn <- paste0("download.",data.set)
-  l=list(...)
+  ## PSQL connection
+  dbparms <- list(driver="PostgreSQL" , user = "bety", dbname = "bety", password = "bety", host = "psql-pecan.bu.edu")
+  con     <- db.open(dbparms)
   
-  # Check database for file, and instert if not already there.
+
+  # Check to see if input is already in dbfiles table 
+  n <- nchar(outfolder)
+  if(substr(outfolder,n,n) != "/"){outfolder = paste0(outfolder,"/")}
   
-  args     <- c(pkg,fcn,outfolder,l)  
+  check <- input.name.check(data.set, con, dbparams)
+  if(is.null(check)==FALSE){
+    print('Input is already in the database.')
+    file = db.query(paste0("SELECT * from dbfiles where file_path = '", outfolder, "'"),con)
+    if(is.na(file$container_id) || !(file$container_id == check && file$container_type == 'Input')){
+      db.query(paste0("UPDATE dbfiles SET container_id = ",check,", container_type = 'Input' where file_path = '",outfolder,"'"),con)
+      print("Updated db file")   
+    }else{print("Didn't need to add/update db file")}
+    db.close(con)
+    return(check) 
+  }
+  
+  # Download files
+  
+  fcn      <- paste0("download.",data.set)
+  args     <- c(pkg,fcn,outfolder,start_year,end_year)
   cmdArgs  <- paste(args,collapse=" ")
   Rfcn     <- "pecan/scripts/Rfcn.R"
   host     <- system("hostname",intern=TRUE)
-  username <- NULL
+  username <- NULL 
   
+
   if(raw.host %in% c("localhost",host)){
     ## if the machine is local, run conversion function
     system(paste(Rfcn,cmdArgs))
@@ -20,26 +40,22 @@ download.raw <- function(data.set,outfolder,pkg,raw.host, ...){
     system2("ssh",paste0(usr,paste(raw.host,Rfcn,cmdArgs)))
   }
   
-  dbparms  <- list(driver="PostgreSQL" , user = "bety", dbname = "bety", password = "bety", host = "psql-pecan.bu.edu")
-  con      <- db.open(dbparms)
-  input.id <- db.query(paste0("SELECT id FROM inputs WHERE name = '",data.set, "'"), con, dbparams)[['id']]
+  # Add new record
+
+  filename   <- paste0(outfolder,data.set,".")
+  formatname <- 'CF Meteorology'
+  mimetype   <- 'application/x-netcdf'
+  site.id    <- db.query(paste0("SELECT * from sites where sitename = '", data.set, " Domain'"),con)[["id"]] #Easy fix - Could be problematic... 
   
-  n <- nchar(outfolder)
-  if(substr(outfolder,n,n) != "/") outfolder = paste0(outfolder,"/")
-  filename <- paste0(outfolder,data.set,".")
-  type <- 'Input'
+  startdate <- paste0(start_year,"-01-01 00:00:00")
+  enddate <- paste0(end_year,"-12-31 23:59:00")
   
-  file = db.query(paste0("SELECT * from dbfiles where file_path = '", outfolder, "'"),con)
+  newinput <- dbfile.input.insert(filename, site.id, startdate, enddate, mimetype, formatname, parentid=NA, con, raw.host, name=data.set) 
   
-  if(all(dim(file) == c(0, 0))){
-    file.id = dbfile.insert(filename, type, input.id, con, host)
-    print("Added db file")
-  }else{
-    if(is.na(file$container_id) || !(file$container_id == input.id && file$container_type == 'Input')){
-      db.query(paste0("UPDATE dbfiles SET container_id = ",input.id,", container_type = 'Input' where file_path = '",outfolder,"'"),con)
-      print("Updated db file")   
-    }else{print("Didn't need to add/update db file")}
-  }
-   return(input.id)
+  return(newinput$input.id)
+  
+  
 }
+
+
 
