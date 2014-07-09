@@ -83,11 +83,16 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
   
   ## insert new record into database
   if(write==TRUE){
-    formatname <- 'CF Meteorology'
-    mimetype <- 'application/x-netcdf'
     outlist <- unlist(strsplit(outname,"_"))
-    if("ED" %in% outlist){filename <- paste0(outfolder," ")
-    }else{filename <- paste0(outfolder,dbfile$file_name)}
+    if("ED" %in% outlist){
+      filename <- paste0(outfolder," ")
+      formatname <- 'ed.met_driver_header files format'
+      mimetype <- 'text/plain'
+    }else{
+      filename <- paste0(outfolder,dbfile$file_name)
+      formatname <- 'CF Meteorology'
+      mimetype <- 'application/x-netcdf'
+    }
     
     newinput <- dbfile.input.insert(filename, site$id, paste(input$start_date), paste(input$end_date), 
                                     mimetype, formatname,input$id,con=con,machine$hostname,outname) 
