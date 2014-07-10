@@ -16,8 +16,8 @@ if (!isset($_REQUEST['workflowid'])) {
 $workflowid=$_REQUEST['workflowid'];
 
 // database parameters
-require("../system.php");
-$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
+require("../config.php");
+$pdo = new PDO("${db_bety_type}:host=${db_bety_hostname};dbname=${db_bety_database}", $db_bety_username, $db_bety_password);
 
 // get run information
 $query = "SELECT folder FROM workflows WHERE workflows.id=$workflowid";

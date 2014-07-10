@@ -81,8 +81,8 @@ save(prior.distns, file = paste(settings$pfts$pft$outdir, 'prior.distns.Rdata', 
 
 
 ## Re-run updated ensemble analysis, sensitivity analysis,  and variance decomp
-run.write.configs(model)        # Calls model specific write.configs e.g. write.config.ed.R
-start.model.runs(model)         # Start ecosystem model runs
+run.write.configs(settings, settings$database$bety$write)        # Calls model specific write.configs e.g. write.config.ed.R
+start.model.runs(settings, settings$database$bety$write)         # Start ecosystem model runs
 get.results(settings)           # Get results of model runs
 run.sensitivity.analysis()      # Run sensitivity analysis and variance decomposition on model output
 

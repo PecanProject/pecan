@@ -138,15 +138,16 @@ if (!$result) {
 $siteinfo = $result->fetch(PDO::FETCH_ASSOC);
 
 // get model information
-$query = "SELECT * FROM models WHERE models.id=$modelid";
+$query  = "SELECT CONCAT(dbfiles.file_path, '/', dbfiles.file_name) AS binary FROM machines, dbfiles WHERE";
+$query .= " machines.hostname='${hostname}'";
+$query .= " AND dbfiles.container_id=${modelid} AND dbfiles.machine_id=machines.id AND dbfiles.container_type='Model'";
 $result = $pdo->query($query);
 if (!$result) {
   print_r(error_database());
   die('Invalid query: ' . (error_database()));
 }
 $model = $result->fetch(PDO::FETCH_ASSOC);
-$pieces = explode(':', $model["model_path"], 2);
-$binary = $pieces[1];
+$binary = $model['binary'];
 
 // create the workflow execution
 $params=str_replace(' ', '', str_replace("\n", "", var_export($_REQUEST, true)));
@@ -162,7 +163,7 @@ $q->bindParam(':advanced_edit', $advanced_edit, PDO::PARAM_INT);
 if ($q->execute() === FALSE) {
   die('Can\'t insert workflow : ' . (error_database()));
 }
-if ($db_type == 'pgsql') {
+if ($db_bety_type == 'pgsql') {
   $workflowid=$pdo->lastInsertId('workflows_id_seq');
 } else {
   $workflowid=$pdo->lastInsertId();
@@ -190,15 +191,34 @@ fwrite($fh, "<pecan>" . PHP_EOL);
 fwrite($fh, "  <outdir>${folder}</outdir>" . PHP_EOL);
 
 fwrite($fh, "  <database>" . PHP_EOL);
-fwrite($fh, "    <user>$db_username</user>" . PHP_EOL);
-fwrite($fh, "    <password>$db_password</password>" . PHP_EOL);
-fwrite($fh, "    <host>${db_hostname}</host>" . PHP_EOL);
-fwrite($fh, "    <dbname>${db_database}</dbname>" . PHP_EOL);
-if ($db_type == "mysql") {
-	fwrite($fh, "    <driver>MySQL</driver>" . PHP_EOL);	
-} else if ($db_type = "pgsql") {
-	fwrite($fh, "    <driver>PostgreSQL</driver>" . PHP_EOL);	
+
+fwrite($fh, "    <bety>" . PHP_EOL);
+fwrite($fh, "      <user>${db_bety_username}</user>" . PHP_EOL);
+fwrite($fh, "      <password>${db_bety_password}</password>" . PHP_EOL);
+fwrite($fh, "      <host>${db_bety_hostname}</host>" . PHP_EOL);
+fwrite($fh, "      <dbname>${db_bety_database}</dbname>" . PHP_EOL);
+if ($db_bety_type == "mysql") {
+	fwrite($fh, "      <driver>MySQL</driver>" . PHP_EOL);	
+} else if ($db_bety_type = "pgsql") {
+	fwrite($fh, "      <driver>PostgreSQL</driver>" . PHP_EOL);	
 }
+fwrite($fh, "      <write>true</write>" . PHP_EOL);
+fwrite($fh, "    </bety>" . PHP_EOL);
+
+if (isset($db_fia_database) && ($db_fia_database != "")) {
+	fwrite($fh, "    <fia>" . PHP_EOL);
+	fwrite($fh, "      <user>${db_fia_username}</user>" . PHP_EOL);
+	fwrite($fh, "      <password>${db_fia_password}</password>" . PHP_EOL);
+	fwrite($fh, "      <host>${db_fia_hostname}</host>" . PHP_EOL);
+	fwrite($fh, "      <dbname>${db_fia_database}</dbname>" . PHP_EOL);
+	if ($db_fia_type == "mysql") {
+		fwrite($fh, "      <driver>MySQL</driver>" . PHP_EOL);	
+	} else if ($db_fia_type = "pgsql") {
+		fwrite($fh, "      <driver>PostgreSQL</driver>" . PHP_EOL);	
+	}
+	fwrite($fh, "    </fia>" . PHP_EOL);
+}
+
 fwrite($fh, "  </database>" . PHP_EOL);
 
 $pft_id=1;

@@ -3,11 +3,13 @@
  <outdir>pecan</outdir>
  
  <database>
-  <user>bety</user>
-  <password>bety</password>
-  <host>localhost</host>
-  <dbname>bety</dbname>
-  <driver>PostgreSQL</driver>
+  <bety>
+    <user>bety</user>
+    <password>bety</password>
+    <host>localhost</host>
+    <dbname>bety</dbname>
+    <driver>PostgreSQL</driver>
+  </bety>
  </database>
 
  <bety>
@@ -16,7 +18,7 @@
 
  <pfts>
   <pft>
-   <name>biocro.salix</name>
+   <name>salix</name>
   </pft>
  </pfts>
 
@@ -28,7 +30,7 @@
 
  <model>
   <id>-1</id>
-  <name>SIPNET</name>
+  <name>BIOCRO</name>
   <binary>/bin/true</binary>
  </model>
 

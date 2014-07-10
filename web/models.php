@@ -27,7 +27,10 @@ $parnode = $dom->appendChild($node);
 // only run this if we have a host
 if (isset($_REQUEST['host']) && ($_REQUEST['host'] != "")) {
 	// check for models
-	$query = "SELECT models.* FROM models WHERE models.model_path LIKE '{$_REQUEST['host']}:%' ORDER BY models.model_name DESC, models.revision DESC";
+	$query = "SELECT models.* FROM models, dbfiles, machines";
+	$query .= " WHERE machines.hostname='{$_REQUEST['host']}'";
+	$query .= "   AND dbfiles.container_id = models.id AND dbfiles.machine_id=machines.id AND dbfiles.container_type='Model'";
+	$query .= " ORDER BY models.model_name DESC, models.revision DESC";
 	
 	// Select all the rows in the models table
 	$result = $pdo->query($query);
