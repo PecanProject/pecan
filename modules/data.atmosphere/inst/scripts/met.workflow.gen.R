@@ -16,6 +16,7 @@ for (i in dbListConnections(PostgreSQL())) db.close(i)
 #--------------------------------------------------------------------------------------------------#
 # Download raw data from the internet 
 
+
 #data.set <- "NARR"
 data.set <- "FACE"
 
@@ -30,7 +31,6 @@ args       <- list(data.set,outfolder,pkg,raw.host) # start_year,end_year)
 
 raw.id <- do call(fcn,args)
 # NARR raw.id should be 285
-
 
 #--------------------------------------------------------------------------------------------------#
 # Change to CF Standards
