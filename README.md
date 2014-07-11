@@ -37,7 +37,7 @@ BETY-db is a product of the Energy Biosciences Institute at the University of Il
 ### References
 
 *    Medvigy, D., S. C. Wofsy, J. W. Munger, D. Y. Hollinger, and P. R. Moorcroft. 2009. "Mechanistic scaling of ecosystem function and dynamics in space and time: Ecosystem Demography model version 2". Journal of Geophysical Research 114:121.
-*    LeBauer, D., D. Wang, M. Dietze, 2010. "Biofuel Ecophysiological Traits and Yields Database Version 1.0.", Energy Biosciences Institute, Urbana, IL
+*    LeBauer, David; Dietze, Michael; Kooper, Rob; Long, Steven; Mulrooney, Patrick; Rohde, Gareth Scott; Wang, Dan; (2010): Biofuel Ecophysiological Traits and Yields Database (BETYdb); Energy Biosciences Institute, University of Illinois at Urbana-Champaign. [doi:10.13012/J8H41PB9](http://dx.doi.org/10.13012/J8H41PB9)
 *    Miguez, F. E., Maughan, M., Bollero, G. A., & Long, S. P. (2012). Modeling spatial and dynamic variation in growth, yield, and yield stability of the bioenergy crops Miscanthus x giganteus and Panicum virgatum across the conterminous United States. GCB Bioenergy.
 *    Sacks, W. J., Schimel, D. S., Monson, R. K., & Braswell, B. H. (2005). Modelâ€data synthesis of diurnal and seasonal CO2 fluxes at Niwot Ridge, Colorado. Global Change Biology, 12(2), 240-259.
 
