@@ -2,17 +2,13 @@
 ##'
 ##'
 
-convert.input <- function(input.id,outfolder,pkg,fcn,write,username,...){
+convert.input <- function(input.id,outfolder,pkg,fcn,write,username,dbparms,con,...){
   
   l <- list(...)
   n <- nchar(outfolder)
   if(substr(outfolder,n,n) != "/"){outfolder = paste0(outfolder,"/")}
   
   outname = tail(unlist(strsplit(outfolder,'/')),n=1)
-  
-  ## Query inputs, site, dbfiles, machine
-  dbparms <- list(driver="PostgreSQL" , user = "bety", dbname = "bety", password = "bety", host = "psql-pecan.bu.edu")
-  con     <- db.open(dbparms)
   
   # Check to see if input is already in dbfiles table 
   check <- input.name.check(outname, con, dbparams)

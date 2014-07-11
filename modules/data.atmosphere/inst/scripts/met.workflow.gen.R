@@ -10,12 +10,13 @@ require(PEcAn.data.atmosphere)
 require(RPostgreSQL)
 
 #--------------------------------------------------------------------------------------------------#
-# Clear old database connections
+# Setup database connection
 for (i in dbListConnections(PostgreSQL())) db.close(i)
+dbparms <- list(driver="PostgreSQL" , user = "bety", dbname = "bety", password = "bety", host = "psql-pecan.bu.edu")
+con     <- db.open(dbparms)
 
 #--------------------------------------------------------------------------------------------------#
 # Download raw data from the internet 
-
 
 #data.set <- "NARR"
 data.set <- "FACE"
@@ -24,12 +25,14 @@ outfolder  <- paste0("/projectnb/cheas/pecan.data/input/",data.set,"/")
 pkg        <- "PEcAn.data.atmosphere"
 raw.host   <- "geo.bu.edu"
 fcn        <- paste0("download.",data.set)
-args       <- list(data.set,outfolder,pkg,raw.host) # start_year,end_year)
 
+# Dates for NARR
 # start_year <- 1998 
 # end_year   <- 2008 
 
-raw.id <- do call(fcn,args)
+args <- list(data.set,outfolder,pkg,raw.host) # start_year,end_year)
+
+raw.id <- do.call(fcn,args)
 # NARR raw.id should be 285
 
 #--------------------------------------------------------------------------------------------------#
@@ -42,7 +45,7 @@ fcn       <-  paste0("met2CF.",data.set)
 write     <-  TRUE
 username  <- ""
 
-cf.id <- convert.input(input.id,outfolder,pkg,fcn,write,username) # doesn't update existing record
+cf.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,dbparms,con) # doesn't update existing record
 # NARR cf.id should be 288
 
 #--------------------------------------------------------------------------------------------------#
@@ -54,7 +57,7 @@ fct       <- "permute.nc"
 write     <-  TRUE
 username  <- ""
 
-perm.id <- convert.input(input.id,outfolder,pkg,fcn,write,username)
+perm.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,dbparms,con)
 #NARR_perm.id should be 1000000023
 
 #--------------------------------------------------------------------------------------------------#
@@ -69,7 +72,7 @@ fcn       <- "extract.nc"
 write     <- TRUE
 username  <- ""
 
-extract.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,newsite = newsite)
+extract.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,dbparms,con,newsite = newsite)
 
 #--------------------------------------------------------------------------------------------------#
 # Prepare for ED Model
@@ -87,7 +90,7 @@ write     <- TRUE
 overwrite <- ""
 username  <- ""
 
-ED.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,lst=lst,overwrite=overwrite)
+ED.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,dbparms,con,lst=lst,overwrite=overwrite)
 
 #--------------------------------------------------------------------------------------------------#
 # Clear old database connections
