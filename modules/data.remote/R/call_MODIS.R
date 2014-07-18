@@ -7,25 +7,26 @@
 ##' @param end    laste date in year and day-of-year. For example May 1 2010 would be 2010121
 ##' @param lat    Latitude of the pixel
 ##' @param lon    Longitude of the pixel
-call_MODIS <- function(start, end, lat, lon, product = 'MOD15A2', band = 'Lai_1km',qc_band="FparLai_QC",sd_band='LaiStdDev_1km')  {
+call_MODIS <- function(outfolder=".",start, end, lat, lon, size=0.0, product = 'MOD15A2', band = 'Lai_1km',qc_band="FparLai_QC",sd_band='LaiStdDev_1km')  {
 
 	   library(rPython)
 
 	   # The name of the netCDF file. I've here given a constant name, but it can easily be changed to be an input
-	   fname <- 'm_data.nc'
+	   fname <- paste0(outfolder,'/m_data.nc')
 
 	   # Distance of the are both east-west and north-south from the center of the pixel. Similarly to the file name, I've left it also easily inputtable.
-	   kmNS <- 0.
-	   kmWE <- 0.
+	   kmNS <- size
+	   kmWE <- size
 
 	   # Here it assigns the run directory and given variables values within python
 	   python.assign('cwd', getwd())
-	   python.assign('start', as.integer(start))
-	   python.get('start') == start     
+
+     python.assign('start', as.integer(start))
+	   if(python.get('start') != start)  stop("call_MODIS start date sent incorrectly")   
 	   
 	   python.assign('end', as.integer(end))
-	   python.get('end') == end
-	      
+	   if(python.get('end') != end)  stop("call_MODIS end date sent incorrectly")   
+	   
 	   python.assign('lat', lat)
 	   python.assign('lon', lon)
 	   python.assign('kmNS',kmNS)
@@ -37,6 +38,7 @@ call_MODIS <- function(start, end, lat, lon, product = 'MOD15A2', band = 'Lai_1k
 	   python.assign('sdband', sd_band)
      
 	   # Here we import the MODIS python script as a module for the python. That way we can run the routines within the script as independent commands.
+     script.path = system.file(package = "PEcAn.MODIS")
 	   python.exec('import sys; sys.path.append(cwd)')
 	   python.exec('import modisWSDL')
 	   # This is overkill if you are not editting modisWSDL, but 
