@@ -119,7 +119,7 @@ def __getDummyDateList( ):
 
 
 def __error( msg ):
-	raise Exception, msg
+	raise Exception(msg)
 		
 def latLonErr( ):
 	__error( 'Latitude and longitude must both be specified' )
@@ -148,7 +148,7 @@ def setClient( wsdlurl=defaultURL ):
 def printList( l ):
 
 	for i in xrange( l.__len__() ):
-		print l[ i ]
+		print(l[ i ])
 		
 		
 def printModisData( m ):
@@ -346,7 +346,8 @@ def m_data_to_netCDF(filename, m, k):
 	m_std = rootgrp.createVariable('LAIStd', 'f8', ('nrow', 'ncol'))
 	m_date = rootgrp.createVariable('Dates', 'i7', ('dates'))
 	m_data[:] = m.data
-	m_std[:] = 0.1*k.data
+	if k is not None:
+        	m_std[:] = 0.1*k.data
 	m_date[:] = m.dateInt
 	rootgrp.close()
 
@@ -377,20 +378,19 @@ def run_main(start_date=2004001, end_date=2004017, la=45.92, lo=-90.45, kmAB=0, 
 	if len(m.dateInt) == 0:
 		print "No data available for these dates"
 		return np.array([[]]), np.array([[]])
-
-#  print(m.dateStr)
-	k = modisClient( client, product=product, band=sdband, lat=la, lon=lo, startDate=start_date, endDate=end_date, kmAboveBelow=kmAB, kmLeftRight=kmLR)
 	date = m.dateInt
-#	data[:] = m.data
-
-
-#	print(m.dateStr)
-
-	modisGetQA(m, qcband, client=client )
-	modisGetQA(k, qcband, client=client )
-		
 	m.applyScale()
-	m.filterQA( range(0,2**16,2), fill=-1 )
+        if qcband is not None:
+        	modisGetQA(m, qcband, client=client )
+        	m.filterQA( range(0,2**16,2), fill=-1 )
+
+        if sdband is not None:
+        	k = modisClient( client, product=product, band=sdband, lat=la, lon=lo, startDate=start_date, endDate=end_date, kmAboveBelow=kmAB, kmLeftRight=kmLR)
+        	if qcband is not None:
+                        modisGetQA(k, qcband, client=client )
+        else:
+                k = None
+		
 
 	m_data_to_netCDF(fname, m, k)	
 
