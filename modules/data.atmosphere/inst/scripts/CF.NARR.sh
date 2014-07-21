@@ -1,11 +1,10 @@
-
 vars=("pres.sfc" "dswrf" "dlwrf" "air.2m" "shum.2m" "prate" "uwnd.10m" "vwnd.10m")
 svars=("pres" "dswrf" "dlwrf" "air" "shum" "prate" "uwnd" "vwnd")
 nvars=("air_pressure" "surface_downwelling_shortwave_flux" "surface_downwelling_longwave_flux" "air_temperature" "specific_humidity" "precipitation_flux" "eastward_wind" "northward_wind" )
 
-inpath  = $1
-prefix  = $2
-outpath = $3
+inpath=$1
+prefix=$2
+outpath=$3
 
 sep="."
 suffix=".nc"
@@ -22,9 +21,9 @@ do
     for (( k=0; k<=$(( $n -1 )); k++ )) # For each variable name
         do    
         
-            file = $inpath${vars[$k]}$sep$year$suffix
+            file=$inpath${vars[$k]}$sep$year$suffix
 
-            newfile = $outpath${nvars[$k]}$sep$year$suffix
+            newfile=$outpath${nvars[$k]}$sep$year$suffix
 
             if [ -f $file ] && [ ! -f $newfile ];
                 then
