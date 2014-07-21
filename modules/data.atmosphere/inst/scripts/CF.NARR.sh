@@ -1,3 +1,5 @@
+#!/bin/bash
+
 vars=("pres.sfc" "dswrf" "dlwrf" "air.2m" "shum.2m" "prate" "uwnd.10m" "vwnd.10m")
 svars=("pres" "dswrf" "dlwrf" "air" "shum" "prate" "uwnd" "vwnd")
 nvars=("air_pressure" "surface_downwelling_shortwave_flux" "surface_downwelling_longwave_flux" "air_temperature" "specific_humidity" "precipitation_flux" "eastward_wind" "northward_wind" )
@@ -36,7 +38,7 @@ done
 ######################
 # Merge files by year
 
-cd $outfolder
+cd $outpath
 
 for i in {1979..2013}
     do   
