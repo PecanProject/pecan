@@ -7,12 +7,12 @@
 ##' @param end    laste date in year and day-of-year. For example May 1 2010 would be 2010121
 ##' @param lat    Latitude of the pixel
 ##' @param lon    Longitude of the pixel
-call_MODIS <- function(outfolder=".",start, end, lat, lon, size=0.0, product = 'MOD15A2', band = 'Lai_1km',qc_band="FparLai_QC",sd_band='LaiStdDev_1km')  {
+call_MODIS <- function(outfolder=".",fname='m_data.nc',start, end, lat, lon, size=0.0, product = 'MOD15A2', band = 'Lai_1km',qc_band=NA,sd_band=NA)  {
 
 	   library(rPython)
 
 	   # The name of the netCDF file. I've here given a constant name, but it can easily be changed to be an input
-	   fname <- paste0(outfolder,'/m_data.nc')
+	   fname <- paste0(outfolder,'/',fname)
 
 	   # Distance of the are both east-west and north-south from the center of the pixel. Similarly to the file name, I've left it also easily inputtable.
 	   kmNS <- size
@@ -38,8 +38,8 @@ call_MODIS <- function(outfolder=".",start, end, lat, lon, size=0.0, product = '
 	   python.assign('sdband', sd_band)
      
 	   # Here we import the MODIS python script as a module for the python. That way we can run the routines within the script as independent commands.
-     script.path = system.file(package = "PEcAn.MODIS")
-	   python.exec('import sys; sys.path.append(cwd)')
+     script.path = dirname(system.file("modisWSDL.py",package = "PEcAn.data.remote"))
+	   python.exec(paste0('import sys; sys.path.append("',script.path,'")'))
 	   python.exec('import modisWSDL')
 	   # This is overkill if you are not editting modisWSDL, but 
 	   # if you are developing this will refresh the definition of
