@@ -134,13 +134,23 @@ logger.message <- function(level, msg, ...) {
 	    if (length(func) == 0) {
 	    	func <- "console"
 	    }
-		text <- sprintf("%s %-6s [%s] : %s\n", Sys.time(), level, func, paste(c(msg, ...), collapse=" "))
+                
+                stamp.text <- sprintf("%s %-6s [%s] :", Sys.time(), level, func)
+                long.msg <- paste(c(msg, ...), collapse=" ")
+                if(nchar(long.msg) > 20){
+                    new.msg <- paste("\n", strwrap(long.msg, width = 60), collapse = " ")
+                } else {
+                    new.msg <- long.msg
+                }
+                text <- paste(stamp.text, new.msg, "\n")
+
 		if (.utils.logger$console) {
 			if (.utils.logger$stderr) {
 				cat(text, file=stderr())
 			} else {
 				cat(text, file=stdout())
 			}
+
 		}
 		if (!is.na(.utils.logger$filename)) {
 			cat(text, file=.utils.logger$filename, append=TRUE)
