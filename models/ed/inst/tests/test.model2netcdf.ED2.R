@@ -24,6 +24,12 @@ test_that("a valid .nc file is produced for each corresponding ED2 output", {
   expect_equal(as.numeric(ncvaryears), as.numeric(h5years))
 })
 
+# test_that("read.output extracts data from nc file",{
+#   vars <- c("GPP", "NEE", "DOC_flux", "Evap", "TVeg", "Qsb", "Rainf")
+#   x <- read.output(runid = runid, outdir = ed.outdir, variables = vars)
+#   expect_true(all(names(x) %in% vars))
+# })
+
 nc_files <- dir(outdir, pattern = ".nc$", full.names = TRUE)
 tmp.nc <- nc_open(nc_files[1])
 vars <- tmp.nc$var

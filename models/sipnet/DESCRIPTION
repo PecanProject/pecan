@@ -13,7 +13,9 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
 Depends:
     PEcAn.utils,
     coda,
-    ncdf4
+    ncdf4,
+    PEcAn.data.atmosphere,
+    udunits2
 Suggests:
     testthat
 SystemRequirements: SIPNET ecosystem model
@@ -28,3 +30,4 @@ Collate:
     'get.model.output.SIPNET.R'
     'start.runs.SIPNET.R'
     'model2netcdf.SIPNET.R'
+    'met2model.SIPNET.R'

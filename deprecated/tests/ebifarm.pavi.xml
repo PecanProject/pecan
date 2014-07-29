@@ -74,10 +74,12 @@
   <Rlibdir>/home/dlebauer/lib/R/</Rlibdir>
   <outdir>/home/dlebauer/pecan/test/out/</outdir>
   <database>
-    <name>ebi_analysis</name>
-    <userid>ebi_analys_user</userid>
-    <passwd>b742xsAu</passwd>
-    <location>localhost</location>
+    <bety>
+      <name>ebi_analysis</name>
+      <userid>ebi_analys_user</userid>
+      <passwd>b742xsAu</passwd>
+      <location>localhost</location>
+    </bety>
   </database>
   
   <run>

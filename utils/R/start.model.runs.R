@@ -38,7 +38,7 @@ start.model.runs <- function(settings, write = TRUE){
 
   # create database connection
   if (write) {
-    dbcon <- db.open(settings$database)
+    dbcon <- db.open(settings$database$bety)
   } else {
     dbcon <- NULL
   }

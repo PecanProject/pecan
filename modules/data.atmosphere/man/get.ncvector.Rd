@@ -2,7 +2,8 @@
 \alias{get.ncvector}
 \title{Get time series vector from netCDF file}
 \usage{
-get.ncvector(var, lati = lati, loni = loni, run.dates = run.dates, met.nc)
+  get.ncvector(var, lati = lati, loni = loni,
+    run.dates = run.dates, met.nc)
 }
 \arguments{
   \item{var}{}
@@ -16,16 +17,17 @@ get.ncvector(var, lati = lati, loni = loni, run.dates = run.dates, met.nc)
   \item{met.nc}{netcdf file with CF variable names}
 }
 \value{
-numeric vector
+  numeric vector
 }
 \description{
-Get time series vector from netCDF file
+  Get time series vector from netCDF file
 }
 \details{
-internal convenience function for streamlining extraction
-of data from netCDF files with CF-compliant variable names
+  internal convenience function for streamlining extraction
+  of data from netCDF files with CF-compliant variable
+  names
 }
 \author{
-David Shaner LeBauer
+  David Shaner LeBauer
 }
 

@@ -72,7 +72,7 @@ fia.to.psscss <- function(settings) {
 	soil = c(1.0,5.0,5.0,0.01,0.0,1.0,1.0) #soil C & N pools (biogeochem) defaults (fsc,stsc,stsl,ssc,psc,msn,fsn)	
 	
 	## connect to database
-	con <-  db.open(settings$database)
+	con <-  db.open(settings$database$bety)
 	
 	### collect mapping from spcd to pftid
 	query <- NULL
@@ -110,7 +110,7 @@ fia.to.psscss <- function(settings) {
 	}
 
 	## connect to database
-  fia.db.settings <- settings$database
+  fia.db.settings <- settings$database$bety
   fia.db.settings$dbname = "fia5"
 	fia.con <-  db.open(fia.db.settings)
 	

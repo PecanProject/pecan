@@ -108,7 +108,7 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
     ta.rh <- ta[rh.sub] # use T coincident with RH
     sh.miss <- rh2qair(rh=rh.sh[rh.sub],T=ta.rh) #conversion, doesn't include missvals. was rh2rv
     sh <- replace(x=rh,list=rh.sub,values=sh.miss) #insert Kelvin values into vector
-    sh.var <- ncvar_def(name='surface_specific_humidity',units='kg/kg',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
+    sh.var <- ncvar_def(name='specific_humidity',units='kg/kg',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
     nc = ncvar_add(nc=nc,v=sh.var,verbose=TRUE) #add variable to existing netCDF file
     ncvar_put(nc,varid='specific_humidity',vals=sh)
     nc <- ncvar_rename(nc=nc,'RH','relative_humidity')
