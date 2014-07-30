@@ -10,16 +10,13 @@
 #--------------------------------------------------------------------------------------------------#
 ##' Function to retrieve model output from local or remote server
 ##'
-##' @name get.model.output.generic
+##' @name get.model.output.DALEC
 ##' @title Retrieve model output from local or remote server
 ##' 
 ##' @import PEcAn.utils
 ##' @export
 ##'
-
-### *** THIS WHOLE FUNCTION SHOULD BE MADE INTO A GENERIC CASE IN UTILS THAT JUST HAS A FEW MODEL SPECIFIC PIECES OF INFO PASSED TO IT *** 
-
-get.model.output.dalec <- function(){
+get.model.output.DALEC <- function(settings){
   
   ### Get model output on the localhost
   if(settings$run$host$name != 'localhost'){
