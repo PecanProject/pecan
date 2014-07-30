@@ -7,9 +7,10 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 library(testthat)
-library("PEcAn.DB")  
+library(PEcAn.DB)
 
 dbparms <- list(driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety")
+
 if(db.exists(dbparms)){
   con <- db.open(dbparms)
   logger.setQuitOnSevere(FALSE)

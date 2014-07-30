@@ -36,10 +36,10 @@ $sections=array(
 	),
 	"inputs" => array(
 		"section" => "BETY",
-		"list" => "SELECT inputs.id AS id, inputs.name AS name, sites.sitename AS sitename, count(dbfiles.id) AS files FROM inputs".
+		"list" => "SELECT inputs.id AS id, inputs.name AS name, CONCAT(sitename, ', ', city, ', ', state, ', ', country) as site, count(dbfiles.id) AS files FROM inputs".
 				  " LEFT JOIN sites ON sites.id = inputs.site_id" .
 				  " LEFT JOIN dbfiles ON dbfiles.container_id = inputs.id AND dbfiles.container_type='Input'" . 
-				  " GROUP BY inputs.id, sites.sitename",
+				  " GROUP BY inputs.id, site",
 		"files" => TRUE,
 		"level" => array(
 			"show" => 4,
@@ -66,7 +66,7 @@ $sections=array(
 	),
 	"traits" => array(
 		"section" => "BETY",
-		"list" => "SELECT traits.id AS id, sites.sitename AS sitename, species.commonname AS speciename, statname FROM traits".
+		"list" => "SELECT traits.id AS id, CONCAT(sitename, ', ', city, ', ', state, ', ', country) as site, species.commonname AS speciename, statname FROM traits".
 				  " LEFT JOIN sites ON sites.id = traits.site_id" .
 				  " LEFT JOIN species ON species.id = traits.specie_id",
 		"files" => FALSE,
@@ -131,14 +131,14 @@ session_start();
 # DATABASE FUNCTIONS
 # ----------------------------------------------------------------------
 function open_database() {
-	global $db_hostname;
-	global $db_username;
-	global $db_password;
-	global $db_database;
-	global $db_type;
+	global $db_bety_hostname;
+	global $db_bety_username;
+	global $db_bety_password;
+	global $db_bety_database;
+	global $db_bety_type;
 	global $pdo;
 
-	$pdo = new PDO("${db_type}:host=${db_hostname};dbname=${db_database}", $db_username, $db_password);
+	$pdo = new PDO("${db_bety_type}:host=${db_bety_hostname};dbname=${db_bety_database}", $db_bety_username, $db_bety_password);
 }
 
 function close_database() {

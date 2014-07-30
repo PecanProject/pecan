@@ -234,14 +234,7 @@ $stmt->closeCursor();
 			<select id="pft" name="pft[]" multiple size=5 onChange="validate();">
 <?php 
 // show list of PFTs
-if ($model["model_type"] == "ED2") {
-	$result = $pdo->query("SELECT * FROM pfts WHERE name NOT LIKE 'sipnet%' AND name NOT LIKE 'biocro%' ORDER BY name;");
-} else  {
-	$result = $pdo->query("SELECT * FROM pfts WHERE name LIKE '" . strtolower($model["model_type"]) . "%' ORDER BY name");
-}
-if (!$result) {
-	die('Invalid query: ' . error_database());
-}
+$result = $pdo->query("SELECT * FROM pfts WHERE model_type='" . $model["model_type"] . "' ORDER BY name");
 $pfts = "";
 while ($row = @$result->fetch(PDO::FETCH_ASSOC)){
 	$name=str_replace(strtolower($model["model_type"]) . ".", "", $row['name']);
@@ -311,11 +304,13 @@ if ($model["model_type"] == "ED2") {
 			print "			<option value='{$row['id']}'>{$row['name']}</option>\n";
 		}
 	}
-	// if ($psscss == "FIA") {
-	// 	print "			<option value='FIA' selected>Use FIA</option>\n";
-	// } else {
-	// 	print "			<option value='FIA'>Use FIA</option>\n";
-	// }
+	if (isset($db_fia_database) && ($db_fia_database != "")) {
+		if ($psscss == "FIA") {
+			print "			<option value='FIA' selected>Use FIA</option>\n";
+		} else {
+			print "			<option value='FIA'>Use FIA</option>\n";
+		}
+	}
 	print "			</select>\n";
 	print "			<div class=\"spacer\"></div>\n";
 }

@@ -2,7 +2,7 @@
 \alias{met2CF.Ameriflux}
 \title{met2CF.Ameriflux}
 \usage{
-met2CF.Ameriflux(in.path, in.prefix, outfolder)
+  met2CF.Ameriflux(in.path, in.prefix, outfolder)
 }
 \arguments{
   \item{in.path}{}
@@ -12,10 +12,10 @@ met2CF.Ameriflux(in.path, in.prefix, outfolder)
   \item{outfolder}{}
 }
 \description{
-Get meteorology variables from Ameriflux L2 netCDF files
-and convert to netCDF CF format
+  Get meteorology variables from Ameriflux L2 netCDF files
+  and convert to netCDF CF format
 }
 \author{
-Josh Mantooth, Mike Dietze
+  Josh Mantooth, Mike Dietze
 }
 

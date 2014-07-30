@@ -1,0 +1,30 @@
+\name{cfmet.downscale.subdaily}
+\alias{cfmet.downscale.subdaily}
+\title{subdaily downscaling}
+\usage{
+  cfmet.downscale.subdaily(subdailymet)
+}
+\arguments{
+  \item{subdailymet}{data table with climate variables
+  queried from \code{\link{load.cfmet}}}
+
+  \item{output.dt}{output timestep. default is one hour}
+}
+\value{
+  weather file for input to BioGro and related crop growth
+  functions
+}
+\description{
+  Subdaily to hourly (or less) downscaling
+}
+\details{
+  Uses simple spline to interpolate variables with diurnal
+  variability, otherwise uses averaging or repeating for
+  variables with no clear diurnal pattern. For all
+  variables except temperature, negative values are set to
+  zero.
+}
+\author{
+  David LeBauer
+}
+

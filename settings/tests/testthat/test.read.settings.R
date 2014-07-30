@@ -26,9 +26,6 @@ test_that("read settings returns error if no settings file found (issue #1124)",
 test_that("check.settings throws error if required content not there", {
 
   s <- settings
-  s[['pfts']] <- NULL
-  #expect_error(check.settings(s))  
-  s <- settings
   s[['run']] <- NULL
   expect_error(check.settings(s))  
 
@@ -40,16 +37,22 @@ test_that("check.settings throws error if required content not there", {
 
 })
 
+test_that("check.settings throws error if pft has different type than model", {
+  s <- settings
+  s$model$model_type <- 'SIPNET'
+  expect_error(check.settings(s))  
+})
+
 test_that("check.settings gives sensible defaults",{
   ## This provides the minimum inputs 
   s <- settings
-  s1 <- list(pfts = list(pft = list(name = "biocro.salix", outdir = "testdir")), 
+  s1 <- list(pfts = list(pft = list(name = "salix", outdir = "testdir")), 
              database = NULL,
              run = list(start.date = now(), end.date = days(1) + now()))
   s2 <- check.settings(s1)
   expect_is(s2$database, "NULL")
   
-  s1$database$bety <- settings$database$bety
+  s1$database <- settings$database
   s2 <- check.settings(s1)
   expect_equal(s2$database$bety$driver, "PostgreSQL")
 
@@ -179,6 +182,8 @@ test_that("check settings runs with only model$name and no database", {
   s$database <- NULL
   s1 <- check.settings(s)
   expect_identical(s$model$name, s1$model$name)
+
+  s <- settings
   s1$model$name <- NULL
-  s2 <- check.settings(s1)
+  expect_error(check.settings(s1))
 })

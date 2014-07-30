@@ -6,8 +6,6 @@
 
 args <- commandArgs(trailingOnly = TRUE)
 
-print(args)
-
 ## check args
 if(length(args)<2){
   print(c("Insufficient args",args))
@@ -32,8 +30,6 @@ if(exists(args[2])){
       fcn.args[[i]] = args[i+2]
     }
   }
-
-  print(fcn.args)
 
   ## call function
   do.call(args[2], fcn.args) 
