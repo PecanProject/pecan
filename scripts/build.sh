@@ -178,6 +178,7 @@ if [ "$FORCE" == "yes" ]; then
   for p in ${PACKAGES}; do
     PACKAGE="OK"
     ACTION=""
+    BASENAME=$(basename "$p")
 
     if [ "$CHECK" == "yes" ]; then
       ACTION="CHECK"
@@ -189,8 +190,9 @@ if [ "$FORCE" == "yes" ]; then
 	      echo "CHECK $p BROKEN" >> changes.log
 	      echo "----------------------------------------------------------------------" >> changes.log
 	      cat out.log >> changes.log
-        if [ -e "`basename \"$p\"`.Rcheck/00install.out" ]; then
-          cat "`basename \"$p\"`.Rcheck/00install.out"
+        if [ -e "${BASENAME}.Rcheck/00install.out" ]; then
+          echo "--- ${BASENAME}.Rcheck/00install.out" >> changes.log
+          cat "${BASENAME}.Rcheck/00install.out" >> changes.log
         fi
 	    fi
 	  fi
@@ -209,8 +211,9 @@ if [ "$FORCE" == "yes" ]; then
         echo "INSTALL $p BROKEN" >> changes.log
         echo "----------------------------------------------------------------------" >> changes.log
         cat out.log >> changes.log
-        if [ -e "`basename \"$p\"`.Rcheck/00install.out" ]; then
-          cat "`basename \"$p\"`.Rcheck/00install.out"
+        if [ -e "${BASENAME}.Rcheck/00install.out" ]; then
+          echo "--- ${BASENAME}.Rcheck/00install.out" >> changes.log
+          cat "${BASENAME}.Rcheck/00install.out" >> changes.log
         fi
       fi
     fi
