@@ -138,8 +138,8 @@ logger.message <- function(level, msg, ...) {
                 
                 stamp.text <- sprintf("%s %-6s [%s] :", Sys.time(), level, func)
                 long.msg <- paste(c(msg, ...), collapse=" ")
-                if(nchar(long.msg) > 40){
-                    new.msg <- paste("\n", strwrap(long.msg, width=.utils.logger$width), collapse=" ")
+                if(nchar(long.msg) > 20){
+                    new.msg <- paste("\n", strwrap(long.msg, width=.utils.logger$width), collapse = " ")
                 } else {
                     new.msg <- long.msg
                 }
