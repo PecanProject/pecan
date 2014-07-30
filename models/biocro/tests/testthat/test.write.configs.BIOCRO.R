@@ -1,6 +1,6 @@
 
-settings.xml <- file.path(data, )
-settings <- read.settings("data/pecan.biocro.xml")
+settings.xml <- file.path("data", "pecan.biocro.xml")
+settings <- read.settings(settings.xml)
 
 samples <- list(
   biocro.saof = (data.frame(
@@ -34,8 +34,8 @@ test_that("write.configs.BIOCRO produces expected output",{
     trait.values <- list()
     trait.values[[settings$pfts$pft$name]] <- samples$biocro.saof[q, ]
     
-    readme <- file.path(extdir, "README.txt")
-    species <- file.path(extdir, "species.csv")
+    readme <- file.path("data", "README.txt")
+    species <- file.path("data", "species.csv")
     
     expect_true(file.exists(readme))
     expect_true(file.exists(species))
