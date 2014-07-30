@@ -50,9 +50,9 @@ Num;Group;order;Saveit;Variable.Name;standard_name;Units;Long.name;Priority;Cate
 51;6;15;Yes;SnowDepth;;m;Total snow depth;1;Physical Variables;No;Yes;real;3;lon;lat;time;na;Total snow depth
 52;7;1;Yes;CO2air;;micromol mol-1;Near surface CO2 concentration;1;Driver;No;Yes;real;3;lon;lat;time;na;Near surface dry air CO2 mole fraction
 53;7;2;Yes;LWdown;surface_downwelling_longwave_flux_in_air;W/m2;Surface incident longwave radiation;1;Driver;No;Yes;real;3;lon;lat;time;na;Surface incident longwave radiation
-54;7;3;Yes;Psurf;air_pressure_at_sea_level;Pa;Surface pressure;1;Driver;No;Yes;real;3;lon;lat;time;na;Surface pressure
+54;7;3;Yes;Psurf;air_pressure;Pa;Surface pressure;1;Driver;No;Yes;real;3;lon;lat;time;na;Surface pressure
 55;7;4;Yes;Qair;specific_humidity;kg kg-1;Near surface specific humidity;1;Driver;No;Yes;real;3;lon;lat;time;na;Near surface specific humidity
-56;7;5;Yes;Rainf;precipitation_rate;kg m-2 s-1;Rainfall rate;1;Driver;No;Yes;real;3;lon;lat;time;na;Rainfall rate
+56;7;5;Yes;Rainf;precipitation_flux;kg m-2 s-1;Rainfall rate;1;Driver;No;Yes;real;3;lon;lat;time;na;Rainfall rate
 57;7;6;Yes;SWdown;surface_downwelling_shortwave_flux_in_air;W m-2;Surface incident shortwave radiation;1;Driver;No;Yes;real;3;lon;lat;time;na;Surface incident shortwave radiation
 58;7;7;Yes;Tair;air_temperature;K;Near surface air temperature;1;Driver;No;Yes;real;3;lon;lat;time;na;Near surface air temperature
 59;7;8;Yes;Wind;wind_speed;m s-1;Near surface module of the wind;1;Driver;No;Yes;real;3;lon;lat;time;na;Near surface wind magnitude

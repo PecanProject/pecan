@@ -51,8 +51,8 @@ load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date){
   
   results <- list()
 
-
   data(mstmip_vars, package = "PEcAn.utils")
+
   variables <- as.character(mstmip_vars$standard_name[mstmip_vars$standard_name %in% attributes(met.nc$var)$names])
   
   vars <- lapply(variables, function(x) get.ncvector(x, lati = lati, loni = loni, run.dates = run.dates, met.nc = met.nc))
@@ -120,7 +120,7 @@ cfmet.downscale.subdaily <- function(subdailymet){
   downscaled.result[["surface_downwelling_shortwave_flux_in_air"]] <- cfmet$surface_downwelling_shortwave_flux_in_air 
   downscaled.result[["ppfd"]] <- cfmet$ppfd
   
-  for(var in c("surface_pressure", "specific_humidity",
+  for(var in c("air_pressure", "specific_humidity",
                "precipitation_flux", "air_temperature", "northward_wind", "eastward_wind", "surface_downwelling_shortwave_flux_in_air", "ppfd")){
     if(var %in% colnames(cfmet)){
       ## convert units from subdaily to hourly
@@ -181,24 +181,26 @@ cfmet.downscale.daily <- weachDT <- function(dailymet, output.dt = 1, lat = lat)
   ## Relative Humidity
   RH <-   dailymet[,list(RH = rep(relative_humidity, each = tint), hour = tseq), by = 'year,doy']
   setkeyv(RH, c('year','doy','hour'))  
-  qair <- dailymet[,list(year, doy, tmin, tmax, surface_pressure,
+  
+ # if(!"air_pressure" %in% colnames(dailymet)) air_pressure <- 
+  qair <- dailymet[,list(year, doy, tmin, tmax, air_pressure,
                          air_temperature,
                          qmin = rh2qair(rh = relative_humidity/100, T = tmin),
                          qmax = rh2qair(rh = relative_humidity/100, T =tmax))]
   
-  a <- qair[,list(year, doy, tmin, tmax, air_temperature, qmin, qmax, pressure = ud.convert(surface_pressure, "Pa", "millibar"))][ ,list(year, doy, rhmin = qair2rh(qmin, air_temperature, pressure),       rhmax = qair2rh(qmax, air_temperature, pressure))]
+  a <- qair[,list(year, doy, tmin, tmax, air_temperature, qmin, qmax, pressure = ud.convert(air_pressure, "Pa", "millibar"))][ ,list(year, doy, rhmin = qair2rh(qmin, air_temperature, pressure),       rhmax = qair2rh(qmax, air_temperature, pressure))]
   rhscale <- (cos(2 * pi * (tseq - 10)/tint) + 1)/2
   RH <- a[, list(RH = rhmin + rhscale * (rhmax - rhmin)), by = c("year", "doy")]$RH
   ## Wind Speed
-  if('wind' %in% colnames(dailymet)){
-      wind <- rep(dailymet$wind, each = tint)
+  if('wind_speed' %in% colnames(dailymet)){
+      wind_speed <- rep(dailymet$wind_speed, each = tint)
   } else {
       northward_wind <- rep(dailymet$northward_wind, each = tint)
       eastward_wind <- rep(dailymet$eastward_wind, each = tint)
-      wind <- sqrt(northward_wind^2 + eastward_wind^2)
+      wind_speed <- sqrt(northward_wind^2 + eastward_wind^2)
   }
   ## Precipitation
-  precip <- rep(dailymet$precip/tint, each = tint)
+  precip <- rep(dailymet$precipitation_flux / tint, each = tint)
   
   ## Hour
   time <- dailymet[,list(hour = tseq), by = c("year", "doy")]
@@ -207,7 +209,7 @@ cfmet.downscale.daily <- weachDT <- function(dailymet, output.dt = 1, lat = lat)
                     downwelling_photosynthetic_photon_flux = SolarR,
                     air_temperature = ud.convert(Temp, "kelvin", "celsius"), 
                     relative_humidity = RH,
-                    wind = WS,
+                    wind = wind_speed,
                     precipitation_flux = precip)
   return(ans)
 }
@@ -247,7 +249,7 @@ get.ncvector <- function(var, lati = lati, loni = loni,
   
   if(var %in% attributes(met.nc$var)$names){
     ans <- ncvar_get2(var)
-  } else if (var == "surface_pressure"){
+  } else if (var == "air_pressure"){
     ans <- 1013.25
   } else if (var == "wind"){
     ans <- sqrt(ncvar_get2("northward_wind")^2 + ncvar_get2("eastward_wind")^2)

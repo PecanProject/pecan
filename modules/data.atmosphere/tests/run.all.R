@@ -8,4 +8,5 @@
 #-------------------------------------------------------------------------------
 library(testthat)
 library("PEcAn.data.atmosphere")
-#test_package("PEcAn.data.atmosphere")
+test_package("PEcAn.data.atmosphere")
+logger.setLevel("OFF")
