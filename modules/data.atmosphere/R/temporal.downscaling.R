@@ -12,6 +12,7 @@
 ##' @param start.date format is "YYYY-MM-DD"
 ##' @param end.date format is "YYYY-MM-DD"
 ##' @return data.table of met data
+##' @export
 ##' @author David LeBauer
 load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date){
   lat <<- lat # send lat to global environment if daily
@@ -19,14 +20,16 @@ load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date){
   Lat <- ncvar_get(met.nc, "lat")
   Lon <- ncvar_get(met.nc, "lon")
   
+  if(min(abs(Lat-lat)) > 2.5 | min(abs(Lon-lon)) > 2.5) logger.error("lat / lon (", lat, ",", lon, ") outside range of met file (", range(Lat), ",", range(Lon))
+  
   lati <- which.min(abs(Lat - lat))
   loni <- which.min(abs(Lon - lon))
 
-  time.idx <- ncvar <- get(met.nc, "time")
+  time.idx <- ncvar_get(met.nc, "time")
 
   ## confirm that time units are PEcAn standard
   time.units <- unlist(strsplit(met.nc$dim$time$units, " since "))
-  if(!grepl("days"), time.units[1]) {
+  if(!grepl("days", time.units[1])) {
       logger.error("time dimension does not have units of days")
   }
   if(!ymd_hms(time.units[2]) == ymd("1700-01-01")){
@@ -38,13 +41,14 @@ load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date){
                           minutes(ud.convert(time.idx - floor(time.idx), "days", "minutes")))
   
 
+  if(ymd(start.date) < min(all.dates$date)) logger.error("run start date", ymd(start.date), "before met data starts", min(all.dates$date))
+  if(ymd(end.date)   > max(all.dates$date)) logger.error("run end date",   ymd(start.date), "after met data ends", min(all.dates$date))
+
   run.dates <- all.dates[date > ymd(start.date) & date < ymd(end.date),
                            list(index, date, doy = yday(date),
                                 year = year(date), month = month(date),
                                 day  = day(date), hour = hour(date))]
   
-  currentlat <- round(lat, 2)
-  currentlon <- round(lon, 2)
   results <- list()
 
   variables <- attributes(met.nc$var)$names
@@ -184,7 +188,7 @@ cfmet.downscale.daily <- weachDT <- function(dailymet, output.dt = 1, lat = lat)
   rhscale <- (cos(2 * pi * (tseq - 10)/tint) + 1)/2
   RH <- a[, list(RH = rhmin + rhscale * (rhmax - rhmin)), by = c("year", "doy")]$RH
   ## Wind Speed
-  if('wind' in colnames(dailymet)){
+  if('wind' %in% colnames(dailymet)){
       wind <- rep(dailymet$wind, each = tint)
   } else {
       northward_wind <- rep(dailymet$northward_wind, each = tint)
@@ -207,8 +211,8 @@ cfmet.downscale.daily <- weachDT <- function(dailymet, output.dt = 1, lat = lat)
 }
 
 met2model.BIOCRO <- function(met){
-    met[ , `:=`wind =  sqrt(northward_wind^2 + eastward_wind^2),
-        air_temperature = ud.convert(air_temperature, "kelvin", "celsius")]
+    met[ , `:=` (wind =  sqrt(northward_wind^2 + eastward_wind^2),
+        air_temperature = ud.convert(air_temperature, "kelvin", "celsius"))]
     return(met)
 }
 

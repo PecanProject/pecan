@@ -1,0 +1,17 @@
+Met Downscaling
+===============
+
+## Subdaily Data
+
+examples:
+
+* NARR 3 hourly
+* CRU-NCEP 6 hourly
+
+```{r}
+library(PEcAn.data.atmosphere)
+subdaily.nc <- nc_open(system.file("extdata/urbana_subdaily_narr_test.nc", package = "PEcAn.data.atmosphere"))
+subdaily.cf <- load.cfmet(met.nc = subdaily.nc, lat = 39.75, lon = -87.25, start.date = "1979-01-01", end.date = "1979-06-30")
+```
+
+## Daily: what to do with ISIMIP - only daily average RH

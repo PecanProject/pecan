@@ -1,17 +1,16 @@
 context("testing functions used to load and downscaling PEcAn-CF met drivers")
 
 daily.nc <- nc_open(system.file("extdata/urbana_daily_test.nc", package = "PEcAn.data.atmosphere"))
-daily.cf <- load.cfmet(met.nc = daily.nc, lat = 39.75, lon = -87.25, start.date = "1951-01-01", end.date = "1951-06-01")
+daily.cf <- load.cfmet(met.nc = daily.nc, lat = 39.75, lon = -87.25, start.date = "1951-01-02", end.date = "1951-06-01")
 
-#subdaily.nc <- nc_open(system.file("extdata/urbana_subdaily_narr_test.nc", package = "PEcAn.data.atmosphere"))
-#subdaily.cf <- load.cfmet(met.nc = subdaily.nc, lat = 39.75, lon = -87.25, start.date = "1981-01-01", end.date = "1981-06-01")
+subdaily.nc <- nc_open(system.file("extdata/urbana_subdaily_test.nc", package = "PEcAn.data.atmosphere"))
+subdaily.cf <- load.cfmet(met.nc = subdaily.nc, lat = 39.75, lon = -87.25, start.date = "1979-01-02", end.date = "1979-06-01")
 
-
-test_that("load.cfmet works as expected", {
-
+test_that("data extracted from test pecan-cf met files is valid",{
+  
   expect_is(daily.cf, "data.frame")    
   expect_is(daily.cf, "data.table")
-    
+  
   expect_is(daily.cf$date, "POSIXct")
   expect_is(daily.cf$date, "POSIXt")
   
@@ -22,6 +21,12 @@ test_that("load.cfmet works as expected", {
                     "surface_downwelling_shortwave_flux_in_air", "precipitation_flux", 
                     "surface_pressure", "wind", "air_temperature") %in% 
                     colnames(daily.cf)))
+})
+
+
+test_that("load.cfmet throws error if start/end date out of range",{
+  expect_error(load.cfmet(met.nc = subdaily.nc, lat = 39, lon = -88, start.date = "9999-01-01", end.date = "9999-02-02"))
+  expect_error(load.cfmet(met.nc = subdaily.nc, lat = 39, lon = -88, start.date = "0000-01-01", end.date = "0000-02-02"))
 })
 
 test_that(
