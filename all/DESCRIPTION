@@ -28,6 +28,7 @@ Suggests:
     PEcAn.ed,
     PEcAn.sipnet,
     PEcAn.biocro,
+    PEcAn.DALEC,
     PEcAn.allometry,
     PEcAn.benchmark,
     PEcAn.photosythesis

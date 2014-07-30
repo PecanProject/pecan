@@ -11,7 +11,8 @@
 #--------------------------------------------------------------------------------------------------#
 PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
 
-convert.samples.dalec <- function(trait.samples){
+convert.samples.DALEC <- function(trait.samples){
+    
   DEFAULT.LEAF.C <- 0.48
   ## convert SLA from m2 / kg leaf to m2 / kg C 
   
@@ -35,32 +36,78 @@ convert.samples.dalec <- function(trait.samples){
 #--------------------------------------------------------------------------------------------------#
 ##' Writes a configuration files for your model
 #--------------------------------------------------------------------------------------------------#
-write.config.dalec <- function(defaults, trait.values, settings, run.id){
-   
-  ### PARAMETERS
+write.config.DALEC <- function(defaults, trait.values, settings, run.id){
+  
+  ### CONVERT PARAMETERS
   cmdFlags = ""
-  params <- convert.samples.dalec(trait.values)
-  for(i in 1:length(params)){
-    cmdFlags <- paste(cmdFlags," -",names(params)[i]," ",params[[i]],sep="")
-  }
-  config.file.name <- paste('CONFIG.',run.id, sep='')
-  writeLines(cmdFlags, con = paste(outdir, config.file.name, sep=''))
+  for(group in names(trait.values)){
+    if(group == "env"){
       
+      ## set defaults from config.header
+      
+      ##
+      
+    } else {
+      if(!is.null(trait.values[[group]])){
+        params <- convert.samples.DALEC(trait.values[[group]])
+        print(names(params))
+        for(i in 1:length(params)){
+          cmdFlags <- paste(cmdFlags," -",names(params)[i]," ",params[[i]],sep="")
+        }
+      }    
+    }
+  }
+  
+  # find out where to write run/ouput
+  rundir <- file.path(settings$run$host$rundir, as.character(run.id))
+  outdir <- file.path(settings$run$host$outdir, as.character(run.id))
+  if (is.null(settings$run$host$qsub) && (settings$run$host$name == "localhost")) {
+    rundir <- file.path(settings$rundir, as.character(run.id))
+    outdir <- file.path(settings$modeloutdir, as.character(run.id))
+  }
+  
+  
+  ### WRITE PARAMETERS
+  config.file.name <- paste('CONFIG.',run.id, sep='')
+  writeLines(cmdFlags, con = paste(rundir,"/", config.file.name, sep=''))
+        
+  ### WRITE JOB.SH
+  jobsh = paste0("#!/bin/bash\n",settings$model$binary,
+                 " $(cat ",rundir,"/",config.file.name,
+                 ") < ",settings$run$site$met,
+                 " > ",outdir,"/out.txt\n",
+                 'echo ".libPaths(',"'~/R/library');",
+                 ' require(PEcAn.DALEC); model2netcdf.DALEC(',
+                 "'",outdir,"',",
+                 settings$run$site$lat,",",
+                 settings$run$site$lon,", '",
+                 settings$run$start.date,"', '",
+                 settings$run$end.date,"') ",
+                 '" | R --vanilla'
+                 )
+  writeLines(jobsh, con=file.path(settings$rundir, run.id, "job.sh"))
+  Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
+  
+  
     ### Display info to the console.
     print(run.id)
 }
 #==================================================================================================#
 
+remove.config.DALEC <- function(outdir,settings){
+  
+}
+
 
 #--------------------------------------------------------------------------------------------------#
 ##'
-##' @name write.run.dalec
+##' @name write.run.DALEC
 ##' @title Function to generate generic model run script files
 ##' @author <unknown>
 ##' @import PEcAn.utils
 #--------------------------------------------------------------------------------------------------#
-write.run.dalec <- function(settings){
-  run.script.template = system.file("data", "run.template.MODEL", package="PEcAn.MODEL")
+write.run.DALEC <- function(settings){
+  run.script.template = system.file("data", "run.template.DALEC", package="PEcAn.DALEC")
   run.text <- scan(file = run.script.template, 
                    what="character",sep='@', quote=NULL, quiet=TRUE)
   run.text  <- gsub('TMP', paste("/scratch/",Sys.getenv("USER"),sep=""), run.text)

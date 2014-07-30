@@ -23,13 +23,13 @@
 ##' 5. postprocessing to constrain forecasts and model parameters with field, meterological, eddy flux, and spectral data, and
 ##' 6. provenance tracking
 ##' 
-##' PECAn integrates available data into ecological forecasts by running ensembles of a terrestrial ecosystem model that is parameterized by the posterior distribution from a meta-analysis of available plant trait data. These trait data are assembled from field research and primary literature, and are stored in a MySQL database. Current development focused on biofuel crops uses BETYdb. In addition to generating forecasts that reflect available data, PEcAn quantifies the contribution of each parameter to model uncertainty. This information informs targeted data collection and synthesis efforts that most efficiently reduce forecast uncertainty.
+##' PECAn integrates available data into ecological forecasts by running ensembles of a terrestrial ecosystem model that is parameterized by the posterior distribution from a meta-analysis of available plant trait data.
+##' These trait data are assembled from field research and primary literature, and are stored in a PostgreSQL database. Current development focused on biofuel crops uses BETYdb.
+##' In addition to generating forecasts that reflect available data, PEcAn quantifies the contribution of each parameter to model uncertainty.
+##' This information informs targeted data collection and synthesis efforts that most efficiently reduce forecast uncertainty.
 ##'
 ##' Current development is focused on developing PEcAn into a real-time data assimilation and forecasting system. This system will provide a detailed analysis of the past and present ecosystem functioning that seamlessly transitions into forecasts.
 ##'
-##' 
-##'
-##' 
 ##' @docType package
 ##' @name PEcAn
 ##' @aliases PECAn, pecan, package-pecan

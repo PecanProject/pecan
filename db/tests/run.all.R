@@ -8,7 +8,9 @@
 #-------------------------------------------------------------------------------
 library(testthat)
 library(PEcAn.DB)
-dbparms <- list(driver = "MySQL", user = "bety", dbname = "bety", password = "bety")
+
+dbparms <- list(driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety")
+
 if(db.exists(dbparms)){
   con <- db.open(dbparms)
   logger.setQuitOnSevere(FALSE)
