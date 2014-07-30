@@ -83,7 +83,7 @@ fia.to.psscss <- function(settings) {
 			query <- paste(query, " OR bp.name = '", pft$name, "'", sep='')
 		}
 	}
-	pfts <- query.base(query, con)
+	pfts <- db.query(query, con=con)
 	
 	for (pft in settings$pfts) {
 		pfts[pfts==pft$name] <- pft$constants$num
@@ -102,7 +102,7 @@ fia.to.psscss <- function(settings) {
 		over.ten <- ifelse(length(bad) > 10, paste(", and ", length(bad) - 10, " more.", sep=""), ".")		# format the "and x more." bit if >10 bad species
 		
 		#Coerce spcds back into species names using data from FIA manual. Makes a more readable warning.
-		symbol.table <- query.base('SELECT spcd, "Symbol" FROM species where spcd IS NOT NULL', con)
+		symbol.table <- db.query('SELECT spcd, "Symbol" FROM species where spcd IS NOT NULL', con=con)
 		names(symbol.table) = tolower(names(symbol.table))
 		name.list <- na.omit(symbol.table$symbol[symbol.table$spcd %in% bad]) 							# grab the names where we have bad spcds in the symbol.table, exclude NAs
 		logger.error(paste("\nThe following species are found in multiple PFTs: \n", paste(name.list[1:min(10,length(name.list))], collapse=", "), over.ten, "\n\tPlease remove overlapping PFTs.", sep=""))
@@ -110,14 +110,13 @@ fia.to.psscss <- function(settings) {
 	}
 
 	## connect to database
-  fia.db.settings <- settings$database$bety
-  fia.db.settings$dbname = "fia5"
-	fia.con <-  db.open(fia.db.settings)
+  fia.db.settings <- settings$database$fia
+	fia.con <- db.open(fia.db.settings)
 	
   
 	### select just most current
 	query <- paste('SELECT "INVYR", "STATECD", "STATEAB", "STATENM", "CYCLE", "SUBCYCLE" from "SURVEY"', sep="")
-	surv <- query.base(query, fia.con)
+	surv <- db.query(query, con=fia.con)
 	names(surv) = tolower(names(surv))
   
 	states <- sort(unique(surv$statecd))
@@ -156,7 +155,7 @@ fia.to.psscss <- function(settings) {
 		query <- paste('SELECT p."CYCLE",p."STATECD",p."MEASYEAR" as time,p."CN" as patch,MIN(2-c."STDORGCD") as trk,AVG(c."STDAGE") as age,p."LAT",p."LON" FROM "PLOT" as p LEFT JOIN "COND" as c on p."CN"=c."PLT_CN" WHERE 
              p."LON" >= ',lonmin[r],' and p."LON" < ',lonmax[r],
 			      	' and p."LAT" >= ',latmin[r],' and p."LAT" < ',latmax[r],' GROUP BY p."CN"')
-		pss <- query.base(query, fia.con)
+		pss <- db.query(query, con=fia.con)
     names(pss) = tolower(names(pss))
 		pss <- pss[pss$cycle == cycle[pss$statecd],]
 		if(length(pss) == 0) next
@@ -208,7 +207,7 @@ fia.to.psscss <- function(settings) {
              p."LON" >= ',lonmin[r],' and p."LON" < ',lonmax[r],
 				' and p."LAT" >= ',latmin[r],' and p."LAT" < ',latmax[r], sep='')
 
-		css <- query.base(query, fia.con)
+		css <- db.query(query, con=fia.con)
 		names(css) = tolower(names(css))
 		css <- css[css$cycle == cycle[css$statecd],]
 		
@@ -230,7 +229,7 @@ fia.to.psscss <- function(settings) {
 			over.ten <- ifelse(length(pft.only) > 10, paste(", and ", length(pft.only) - 10, " more.", sep=""), ".")
 			
 			if(!exists("symbol.table")){
-				symbol.table <- query.base('SELECT spcd, "Symbol" FROM species where spcd IS NOT NULL', con)
+				symbol.table <- db.query('SELECT spcd, "Symbol" FROM species where spcd IS NOT NULL', con=con)
 				names(symbol.table) = tolower(names(symbol.table))
 			}
 			name.list <- na.omit(symbol.table$symbol[symbol.table$spcd %in% pft.only]) 
@@ -245,7 +244,7 @@ fia.to.psscss <- function(settings) {
 			over.ten <- ifelse(length(fia.only) > 10, paste(", and ", length(fia.only) - 10, " more.", sep=""), ".")
 			
 			if(!exists("symbol.table")){
-				symbol.table <- query.base('SELECT spcd, "Symbol" FROM species where spcd IS NOT NULL', con)
+				symbol.table <- db.query('SELECT spcd, "Symbol" FROM species where spcd IS NOT NULL', con=con)
 				names(symbol.table) = tolower(names(symbol.table))
 			}
 			name.list <- na.omit(symbol.table$symbol[symbol.table$spcd %in% fia.only])  
