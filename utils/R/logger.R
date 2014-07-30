@@ -13,6 +13,7 @@
 .utils.logger$stderr   <- TRUE
 .utils.logger$quit     <- FALSE
 .utils.logger$level    <- 0
+.utils.logger$width    <- 60
 
 ##' Prints a debug message.
 ##' 
@@ -138,7 +139,7 @@ logger.message <- function(level, msg, ...) {
                 stamp.text <- sprintf("%s %-6s [%s] :", Sys.time(), level, func)
                 long.msg <- paste(c(msg, ...), collapse=" ")
                 if(nchar(long.msg) > 40){
-                    new.msg <- paste("\n", strwrap(long.msg, width = 60), collapse = " ")
+                    new.msg <- paste("\n", strwrap(long.msg, width=.utils.logger$width), collapse=" ")
                 } else {
                     new.msg <- long.msg
                 }
@@ -283,4 +284,20 @@ logger.setOutputFile <- function(filename) {
 ##' }
 logger.setQuitOnSevere <- function(severeQuits) {
 	.utils.logger$quit = severeQuits
+}
+
+##' Configure the number of chars per line
+##' 
+##' The default is for 60 chars per line. Setting this to any value will
+##' wrap the line when printing a message at that many chars.
+##'
+##' @param width number of chars to print before wrapping to next line.
+##' @export
+##' @author David LeBauer
+##' @examples
+##' \dontrun{
+##' logger.setWidth(70)
+##' }
+logger.setWidth <- function(width) {
+  .utils.logger$width = width
 }
