@@ -18,11 +18,7 @@ library(MCMCpack)
 haveMPI <- require(Rmpi)
 library(PostgreSQL)
 dvr <- dbDriver("PostgreSQL")
-con <- query.base.con(dbname   = settings$database$bety$name,
-                      password = settings$database$bety$passwd,
-                      username = settings$database$bety$userid,
-                      host     = settings$database$bety$host
-)
+con <- db.open(settings$database$bety)
 ## mcmc settings
 ngibbs = nu(settings$meta.analysis$iter)
 
