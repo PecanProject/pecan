@@ -15,35 +15,37 @@
 ##' }
 priordupe <- function(parent.pft.name = NULL,
                       new.pft.name   = NULL,
-                      new.pft.definition =  NULL){
+                      new.pft.definition =  NULL,
+                      settings = NULL){
                       
   require(PEcAn.DB)
-
-  parent.pft.id <- query.base(paste("select id from pfts where name = ",
-                                    parent.pft.name, ";"))
+  con <- db.open(settings$database$bety)
+  parent.pft.id <- db.query(paste("select id from pfts where name = ",
+                                    parent.pft.name, ";"), con=con)
 
   ## create new pft
-  query.base(paste("insert into pfts set definition = ",
+  db.query(paste("insert into pfts set definition = ",
                    newpftdefn, " name = ",
-                   new.pft.name, ";"))
-  new.pft.id <- query.base(paste("select id from pfts where name =",
-                                 new.pft.name,";"))
+                   new.pft.name, ";"), con=con)
+  new.pft.id <- db.query(paste("select id from pfts where name =",
+                                 new.pft.name,";"), con=con)
 
-  old.species.id <- query.base(paste("select specie_id from pfts_species where pft_id =",
-                                     parent.pft.id, ";"))
+  old.species.id <- db.query(paste("select specie_id from pfts_species where pft_id =",
+                                     parent.pft.id, ";"), con=con)
   new.pfts_species <- c(pft_id = new.pft.id, specie_id = unique(old.species.id))
   
-  query.base(paste("insert into pfts_species set pft_id = ",
+  db.query(paste("insert into pfts_species set pft_id = ",
                    new.pfts_species$pft_id,
                    "specie_id = ",
-                   new.pfts_species$specie_id, ";"))
+                   new.pfts_species$specie_id, ";"), con=con)
 
-  old.priors <-  query.base(paste("select prior_id from pfts_priors where pft_id =",
-                                  parent.pft.id, ";"))
+  old.priors <-  db.query(paste("select prior_id from pfts_priors where pft_id =",
+                                  parent.pft.id, ";"), con=con)
   new.pfts_priors <- c(pft_id = new.pft.id,
                        prior_id = unique(old.priors))
-  query.base(paste("insert into pfts_priors set pft_id = ",
+  db.query(paste("insert into pfts_priors set pft_id = ",
                    new.pfts_priors$pft_id,
                    "specie_id = ",
-                   new.pfts_priors$priors_id, ";"))
+                   new.pfts_priors$priors_id, ";"), con=con)
+  db.close(con)
 }
