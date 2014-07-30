@@ -21,6 +21,9 @@
 ##' @author Shawn Serbin, Michael Dietze
 model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
   
+require(PEcAn.utils)
+require(ncdf4)
+
   ### Read in model output in DALEC format
   DALEC.output <- read.table(file.path(outdir, "out.txt"), header=FALSE,sep='')
   DALEC.output.dims <- dim(DALEC.output)
