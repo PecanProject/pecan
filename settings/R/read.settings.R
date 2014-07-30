@@ -93,6 +93,20 @@ check.database <- function(database) {
     logger.warn("Could not load the database driver", paste0("R", database$driver))
   }
   
+  # MySQL specific checks
+  if (database$driver == "MySQL") {
+    if (!is.null(database$passwd)) {
+      logger.info("passwd in database section should be password for MySQL")
+      database$password <- database$passwd
+      database$passwd <- NULL
+    }
+    if (!is.null(database$name)) {
+      logger.info("name in database section should be dbname for MySQL")
+      database$dbname <- database$name
+      database$name <- NULL
+    }
+  }
+
   # PostgreSQL specific checks
   if (database$driver == "PostgreSQL") {
     if (!is.null(database$passwd)) {
