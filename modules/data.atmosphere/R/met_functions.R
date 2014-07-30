@@ -96,21 +96,8 @@ getNARRforBioCro<-function(lat,lon,year){
 ##'  \item{"propIdiff"}{proportion of indirect (diffuse) radiation.}
 ##' }
 ##' @keywords models
-##' @examples
-##'
-##' \dontrun{
-##' ## Direct and diffuse radiation for DOY 190 and hours 0 to 23
-##' require(lattice)
-##' res <- lightME(t.d=0:23)
-##'
-##' xyplot(I.dir + I.diff ~ 0:23 , data = res,
-##' type='o',xlab='hour',ylab='Irradiance')
-##'
-##' xyplot(propIdir + propIdiff ~ 0:23 , data = res,
-##' type='o',xlab='hour',ylab='Irradiance proportion')
-##'
-##' plot(acos(lightME(lat = 42, t.d = 0:23)$cos.th) * (1/dtr))
-##' }
+##' @example
+##' result <- lightME(lat = 40, t.d = 0:23)
 lightME <- function(lat=40,DOY=190,t.d=12,t.sn=12,atm.P=1e5,alpha=0.85) {
   
   ## The equations used here can be found in

@@ -1,4 +1,4 @@
-context("testing functions used to load and downscaling PEcAn-CF met drivers")
+context("loading data from PEcAn-CF met drivers")
 
 daily.nc <- nc_open(system.file("extdata/urbana_daily_test.nc", package = "PEcAn.data.atmosphere"))
 daily.cf <- load.cfmet(met.nc = daily.nc, lat = 39.75, lon = -87.25, start.date = "1951-01-02", end.date = "1951-06-01")
@@ -26,10 +26,12 @@ test_that("data extracted from test pecan-cf met files is valid",{
 
 
 test_that("load.cfmet throws error if start/end date out of range",{
-  logger.setLevel("OFF")
+  PEcAn.utils::logger.setLevel("OFF")
   expect_error(load.cfmet(met.nc = subdaily.nc, lat = 39, lon = -88, start.date = "9999-01-01", end.date = "9999-02-02"))
   expect_error(load.cfmet(met.nc = subdaily.nc, lat = 39, lon = -88, start.date = "0000-01-01", end.date = "0000-02-02"))
 })
+
+context("downscaling")
 
 test_that(
   paste("cfmet.downscale.time works\n",

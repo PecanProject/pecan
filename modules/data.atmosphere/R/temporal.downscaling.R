@@ -79,7 +79,7 @@ cfmet.downscale.time <- cruncep_hourly <- function(cfmet, output.dt = 1, ...){
   dt_hr <- ud.convert(as.numeric(as.duration(dt)), "seconds", "hours")
   
   if(dt_hr < 6) {
-    downscaled.result <- cfmet.downscale.subdaily(subdailymet = cfmet, new.date, output.dt)
+    downscaled.result <- cfmet.downscale.subdaily(subdailymet = cfmet)
   } else if(dt_hr >= 6 & dt_hr < 24){
     cfmet <- cbind(cfmet, cfmet[,list(air_temperature_max = max(air_temperature),
                                       air_temperature_min = min(air_temperature)), by = 'year,doy'])
@@ -105,31 +105,31 @@ cfmet.downscale.time <- cruncep_hourly <- function(cfmet, output.dt = 1, ...){
 ##' @export
 ##' @return weather file for input to BioGro and related crop growth functions
 ##' @author David LeBauer
-cfmet.downscale.subdaily <- function(subdailymet){
+cfmet.downscale.subdaily <- function(subdailymet, output.dt = 1){
   ## converting surface_downwelling_shortwave_flux_in_air from W/m2 avg to PPFD
-  new.date <- cfmet[,list(hour = 0:(23 / output.dt) / output.dt),
+  new.date <- subdailymet[,list(hour = 0:(23 / output.dt) / output.dt),
                     by = c("year", "month", "day", "doy")]
   
   new.date$date <- new.date[,list(date = ymd(paste(year, month, day)) + hours(hour))]
   
-  solarMJ <- ud.convert(cfmet$surface_downwelling_shortwave_flux_in_air, paste0("W ", dt_hr, "h"), "MJ")
+  solarMJ <- ud.convert(subdailymet$surface_downwelling_shortwave_flux_in_air, paste0("W ", output.dt, "h"), "MJ")
   PAR <- 0.486 * solarMJ ## Cambell and Norman 1998 p 151, ch 10
-  cfmet$ppfd <- ud.convert(PAR, "mol s", "micromol h")
+  subdailymet$ppfd <- ud.convert(PAR, "mol s", "micromol h")
   
   downscaled.result <- list()
-  downscaled.result[["surface_downwelling_shortwave_flux_in_air"]] <- cfmet$surface_downwelling_shortwave_flux_in_air 
-  downscaled.result[["ppfd"]] <- cfmet$ppfd
+  downscaled.result[["surface_downwelling_shortwave_flux_in_air"]] <- subdailymet$surface_downwelling_shortwave_flux_in_air 
+  downscaled.result[["ppfd"]] <- subdailymet$ppfd
   
   for(var in c("air_pressure", "specific_humidity",
                "precipitation_flux", "air_temperature", "northward_wind", "eastward_wind", "surface_downwelling_shortwave_flux_in_air", "ppfd")){
-    if(var %in% colnames(cfmet)){
+    if(var %in% colnames(subdailymet)){
       ## convert units from subdaily to hourly
       hrscale <- ifelse(var %in%
                           c("surface_downwelling_shortwave_flux_in_air",
                             "precipitation_flux"),
-                        dt_hr, 1)
+                        output.dt, 1)
       
-      f <- splinefun(as.numeric(cfmet$date), (cfmet[[var]] / hrscale), method = "monoH.FC")
+      f <- splinefun(as.numeric(subdailymet$date), (subdailymet[[var]] / hrscale), method = "monoH.FC")
       downscaled.result[[var]] <- f(as.numeric(new.date$date))
       if(!var == "air_temperature"){
         downscaled.result[[var]][downscaled.result[[var]] < 0] <- 0
@@ -233,6 +233,7 @@ met2model.BIOCRO <- function(met){
 ##' @param run.dates 
 ##' @param met.nc netcdf file with CF variable names
 ##' @return numeric vector
+##' @export
 ##' @author David Shaner LeBauer
 get.ncvector <- function(var, lati = lati, loni = loni,
                          run.dates = run.dates, met.nc){
