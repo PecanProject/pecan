@@ -6,7 +6,7 @@ Date: 2014-07-18
 Author: Mike Dietze
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: 
-Depends: 
+Suggests: 
 	rPython
 Suggests: testthat
 License: FreeBSD + file LICENSE
