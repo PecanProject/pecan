@@ -91,7 +91,7 @@ while true; do
 done
 
 # packages that are to be compiled
-PACKAGES="utils db settings visualization"
+PACKAGES="utils db settings visualization models/dalec"
 PACKAGES="${PACKAGES} modules/priors modules/meta.analysis modules/uncertainty"
 PACKAGES="${PACKAGES} modules/data.land modules/data.atmosphere modules/data.remote"
 PACKAGES="${PACKAGES} modules/assim.batch modules/assim.sequential"
