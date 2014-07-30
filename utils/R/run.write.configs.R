@@ -33,8 +33,7 @@ run.write.configs <- function(settings, write = TRUE) {
 
   my.write.config <- paste("write.config.",model,sep="")
   if(!exists(my.write.config)){
-    logger.error(my.write.config, "does not exist, please make sure that the package ", 
-                 pecan.pkg, "contains a function called",  my.write.config)
+    logger.error(my.write.config, "does not exist, please make sure that the model package contains a function called",  my.write.config)
   }
   
   # TODO RK : need to write to runs_inputs table

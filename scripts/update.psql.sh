@@ -33,4 +33,4 @@ if [ -e sites/addsites.sh ]; then
 fi
 
 # add models
-$(dirname $0)/addmodels.sh
+$(dirname $0)/add.models.sh
