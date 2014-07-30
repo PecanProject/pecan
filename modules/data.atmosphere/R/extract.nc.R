@@ -1,36 +1,40 @@
-extract.nc <- function(in.path,in.prefix,outfolder,slat,slon){
+##' extract point from nc file
+##'
+##' given a lat/lon, create a new file for a point
+##'
+##' Uses netcdf operators
+##' @title extract.nc 
+##' @param indir  character, location of file
+##' @param in.prefix character, file prefix
+##' @param outdir character, output directory
+##' @param lat numeric, latitude to extract
+##' @param lon numeric, longitude to extract
+##' @return nothing, creates new file as artifact
+##' @author Betsy Cowdery, David LeBauer
+extract.nc <- function(indir, in.prefix, outdir, lat, lon){
   
-  require("PEcAn.utils")
-  
-  in.path <- as.character(in.path)
-  in.prefix <- as.character(in.prefix)
-  outfolder <- as.character(outfolder)
-  slat <- as.numeric(slat)
-  slon <- as.numeric(slon)
-  
+  library("PEcAn.utils")
+
+  dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
+
   ## get file names
-  files = dir(in.path,in.prefix)
-  files = files[grep(pattern="*.nc",files)]
+  files = dir(path = indir, pattern = "in.prefix*.nc",
+      full.names = TRUE)
   
   if(length(files) == 0) {
     logger.error("No files in input location")
     return(NULL)
   }  
   
-  if(!file.exists(outfolder)){
-    dir.create(outfolder)
-  }
+  ## if lat, lon integer, make decimal; required by nco
+  if(lat %% 1 == 0) lat <- format(lat, nsmall = 1)
+  if(lon %% 1 == 0) lon <- format(lon, nsmall = 1)
   
-  # Find closest coordinates to site
-  close <- closest_xy(slat, slon,in.path,in.prefix)
-  x <- close$x
-  y <- close$y
-  
-  for(i in 1:length(files)){    
-    infile = file.path(in.path,files[i])
-    outfile = file.path(outfolder,files[i])
-    if(file.exists(infile)==TRUE && file.exists(outfile)==FALSE){
-      system(paste0("ncks -d x,",x,",",x, " -d y,",y,",",y," ",infile," ",outfile))
-    }
+  for(file in files){
+      outfile <- gsub(indir, oufolder, file)
+      if(!file.exists(outfile)){
+          nco.cmd <- paste0("ncks -d lat,",lat, " -d lon,",lon, infile, " ", outfile)
+          system(nco.cmd)
+      }
   }
 }
