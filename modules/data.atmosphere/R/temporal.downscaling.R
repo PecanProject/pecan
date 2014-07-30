@@ -51,7 +51,9 @@ load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date){
   
   results <- list()
 
-  variables <- attributes(met.nc$var)$names
+
+  data(mstmip_vars, package = "PEcAn.utils")
+  variables <- as.character(mstmip_vars$standard_name[mstmip_vars$standard_name %in% attributes(met.nc$var)$names])
   
   vars <- lapply(variables, function(x) get.ncvector(x, lati = lati, loni = loni, run.dates = run.dates, met.nc = met.nc))
   
