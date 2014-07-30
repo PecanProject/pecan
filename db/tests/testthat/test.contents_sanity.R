@@ -9,19 +9,18 @@
 
 
 test_that("append.covariates appends managements to yields",{
-    test.traits <- query.base("select * from traits where id in (select trait_id from covariates) limit 10;", con = con)
-    tmpcov <- query.covariates(test.traits$id, con = con)
-    covariates <- tmpcov[!duplicated(tmpcov$trait_id),]
-    append.test <- append.covariate(data = test.traits, column.name = "level", covariates.data = covariates)
-    expect_true(nrow(append.test) >= nrow(covariates))
-    
-    ##    expect_true(nrow(append.test) >= nrow(test.traits))
+  test.traits <- db.query("select * from traits where id in (select trait_id from covariates) limit 10;", con = con)
+  tmpcov <- query.covariates(test.traits$id, con = con)
+  covariates <- tmpcov[!duplicated(tmpcov$trait_id),]
+  append.test <- append.covariate(data = test.traits, column.name = "level", covariates.data = covariates)
+  expect_true(nrow(append.test) >= nrow(covariates))
+  # expect_true(nrow(append.test) >= nrow(test.traits))
 })
 
 test_that("query.data works",{
-    ##    expect_true(nrow(query.data("SLA", "938")) > 0)
-    expect_equal(nrow(query.data("xyz", "-1", con = con)), 0)
-    ##    expect_true(nrow(query.data("LMA", spstr = vecpaste(1:20000))) > 1000)
+  # expect_true(nrow(query.data("SLA", "938")) > 0)
+  expect_equal(nrow(query.data("xyz", "-1", con = con)), 0)
+  # expect_true(nrow(query.data("LMA", spstr = vecpaste(1:20000))) > 1000)
 })
 
 
