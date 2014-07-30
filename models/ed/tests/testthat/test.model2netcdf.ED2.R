@@ -1,10 +1,8 @@
-context("check output from model2netcdf.BIOCRO")
+context("check output from model2netcdf.ED2")
 
-
-extdata.dir <- system.file("extdata", package = "PEcAn.ED2")
 outdir <- file.path(tempdir(), "ed")
 dir.create(outdir, showWarnings = FALSE, recursive = TRUE) 
-file.copy(dir(extdata.dir, pattern = "*.h5$", full.names = TRUE), outdir)
+file.copy(dir("data", pattern = "*.h5$", full.names = TRUE), outdir)
 
 model2netcdf.ED2(outdir, 40, -88.5, "2010-01-01", "2010-12-31")
 

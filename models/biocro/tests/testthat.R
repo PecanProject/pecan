@@ -7,7 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 library(testthat)
-library(PEcAn.MA)
+library(PEcAn.utils)
 
 logger.setQuitOnSevere(FALSE)
-test_package("PEcAn.MA")
+# test_check("PEcAn.BIOCRO")

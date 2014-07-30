@@ -7,7 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 library(testthat)
-library(PEcAn.uncertainty)
+library(PEcAn.utils)
 
 logger.setQuitOnSevere(FALSE)
-test_package("PEcAn.uncertainty")
+test_check("PEcAn.data.atmosphere")

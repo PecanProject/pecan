@@ -3,12 +3,9 @@ context("check output from model2netcdf.BIOCRO")
 outdir <- file.path(tempdir(), "biocro")
 dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 
-settings.file <- system.file("extdata/pecan.biocro.xml", package = "PEcAn.BIOCRO")
-settings <- read.settings(settings.file)
+file.copy(from = "data/result.RData", to = outdir)
 
-result.file <- system.file("data/result.RData", package = "PEcAn.BIOCRO")
-
-file.copy(from = result.file, to = outdir)
+settings <- read.settings("data/pecan.biocro.xml")
 
 start_date <- settings$run$start.date
 model2netcdf.BIOCRO(outdir = outdir, sitelat=1, sitelon=2, 

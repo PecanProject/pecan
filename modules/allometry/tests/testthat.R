@@ -7,7 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 library(testthat)
-library(PEcAn.priors)
+library(PEcAn.utils)
 
 logger.setQuitOnSevere(FALSE)
-test_package("PEcAn.priors")
+test_check("PEcAn.allometry")

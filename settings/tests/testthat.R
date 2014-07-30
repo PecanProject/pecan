@@ -6,7 +6,8 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-
 library(testthat)
+library(PEcAn.utils)
 
+logger.setQuitOnSevere(FALSE)
 test_check("PEcAn.settings")

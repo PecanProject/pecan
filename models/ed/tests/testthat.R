@@ -10,4 +10,4 @@ library(testthat)
 library(PEcAn.utils)
 
 logger.setQuitOnSevere(FALSE)
-test_check("PEcAn.utils")
+test_check("PEcAn.ED2")

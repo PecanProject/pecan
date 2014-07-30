@@ -7,7 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 library(testthat)
-library(PEcAn.DB)
+library(PEcAn.utils)
 
 logger.setQuitOnSevere(FALSE)
-#test_package("foo")
+test_check("PEcAn.data.land")

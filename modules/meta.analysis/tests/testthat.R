@@ -7,7 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 library(testthat)
-library(PEcAn.rtm)
+library(PEcAn.utils)
 
 logger.setQuitOnSevere(FALSE)
-test_package("PEcAn.rtm")
+test_check("PEcAn.MA")

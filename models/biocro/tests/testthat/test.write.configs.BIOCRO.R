@@ -1,8 +1,6 @@
 
-extdir <-  system.file("extdata", package = "PEcAn.BIOCRO")
-settings.xml <- file.path(extdir, "pecan.biocro.xml")
-settings <- read.settings(settings.xml)
-settings$site$met <- file.path(extdir, "weather.csv")
+settings.xml <- file.path(data, )
+settings <- read.settings("data/pecan.biocro.xml")
 
 samples <- list(
   biocro.saof = (data.frame(
