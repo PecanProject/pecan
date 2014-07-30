@@ -189,6 +189,9 @@ if [ "$FORCE" == "yes" ]; then
 	      echo "CHECK $p BROKEN" >> changes.log
 	      echo "----------------------------------------------------------------------" >> changes.log
 	      cat out.log >> changes.log
+        if [ -e "`basename \"$p\"`.Rcheck/00install.out" ]; then
+          cat "`basename \"$p\"`.Rcheck/00install.out"
+        fi
 	    fi
 	  fi
 
@@ -206,6 +209,9 @@ if [ "$FORCE" == "yes" ]; then
         echo "INSTALL $p BROKEN" >> changes.log
         echo "----------------------------------------------------------------------" >> changes.log
         cat out.log >> changes.log
+        if [ -e "`basename \"$p\"`.Rcheck/00install.out" ]; then
+          cat "`basename \"$p\"`.Rcheck/00install.out"
+        fi
       fi
     fi
     
