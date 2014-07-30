@@ -6,9 +6,8 @@ Date: 2013-06-14
 Author: Mike Dietze, Tristain Quaife
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: This module provides functions to link DALEC to PEcAn.
-Depends:
 Suggests:
-    PEcAn.utils
+    PEcAn.utils,
     testthat
 SystemRequirements: dalec
 OS_type: unix
