@@ -14,7 +14,7 @@
 ##' @name fetch.stats2se
 ##' @title Fetch data and transform stats to SE
 ##' @param connection connection to trait database
-##' @param query MySQL query to traits table
+##' @param query to send to databse
 ##' @return dataframe with trait data
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{transformstats}} performs transformation calculations
 ##' @author <unknown>

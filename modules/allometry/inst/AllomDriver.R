@@ -16,13 +16,13 @@ if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)}
 library(mvtnorm)
 library(MCMCpack)
 haveMPI <- require(Rmpi)
-library(RMySQL)
-dvr <- dbDriver("MySQL")
+library(PostgreSQL)
+dvr <- dbDriver("PostgreSQL")
 con <- query.base.con(dbname   = settings$database$bety$name,
                       password = settings$database$bety$passwd,
                       username = settings$database$bety$userid,
-                      host     = settings$database$bety$host)
-
+                      host     = settings$database$bety$host
+)
 ## mcmc settings
 ngibbs = nu(settings$meta.analysis$iter)
 

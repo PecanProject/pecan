@@ -14,6 +14,7 @@ export(ncep.gather2)
 export(par2ppfd)
 export(qair2rh)
 export(rh2qair)
+export(weachDT)
 export(wide2long)
 
 
