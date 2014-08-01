@@ -21,6 +21,8 @@
 ##' @author Shawn Serbin, Michael Dietze
 model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date) {
   
+  require(ncdf4)
+  
   ### Read in model output in SIPNET format
   sipnet.output <- read.table(file.path(outdir, "sipnet.out"), header=T, skip=1, sep='')
   sipnet.output.dims <- dim(sipnet.output)
@@ -90,6 +92,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date) 
       if(length(output[[i]])==0) output[[i]] <- rep(-999,length(t$vals))
     }
     
+    mstmipvar <- PEcAn.utils::mstmipvar
     var <- list()
     var[[1]]  <- mstmipvar("Year", lat, lon, t, NA)
     var[[2]]  <- mstmipvar("FracJulianDay", lat, lon, t, NA)
