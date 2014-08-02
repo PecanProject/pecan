@@ -15,65 +15,86 @@ library(PEcAn.utils)
 ## INTERNAL FUNCTIONS
 ##--------------------------------------------------------------------------------------------------#
 
-check.input <- function(dbcon, name, value, hostname) {
-  # check for missing inputs
-  if (is.null(value)) {
-    logger.severe("Missing input :", name)
-  }
-
-  # replace input with actual data if it is an id
-  if (suppressWarnings(!is.na(as.numeric(value)))) {
-    if(!is.character(dbcon)) {
-      file <- dbfile.file("Input", value, dbcon, hostname)
-      if (is.na(file)) {
-        logger.severe("No file found for", name, " and id", value, "on host", hostname)
-      }
-      logger.info("Replacing", name, "and id", value, "with", file)
-      return(invisible(file))
-    } else {
-      logger.severe("No database information, but input", name, "specified with id.")
-    }
-  }
-
-  invisible(value)
-}
-
 # check to see if inputs are specified
 # this should be part of the model code
 check.inputs <- function(settings) {
   if (is.null(settings$model$model_type)) return(settings)
 
-  dbcon <- "NONE"
-  if (!is.null(settings$database$bety)) {
-    dbcon <- db.open(settings$database$bety)
+  # don't know how to check inputs
+  if (is.null(settings$database$bety)) {
+    logger.info("No databasse connection, can't check inputs.")
+    return (settings)
   }
 
-  # check SIPNET inputs
-  if (settings$model$model_type == "SIPNET") {
-    # Check for MET file
-    settings$run$site$met <- check.input(dbcon, "run$site$met", settings$run$site$met, settings$run$host$name)
-  }
+  # get list of inputs associated with model type
+  dbcon <- db.open(settings$database$bety)
+  inputs <- db.query(paste0("SELECT tag, format_id, required FROM modeltypes, modeltypes_formats WHERE modeltypes_formats.modeltype_id = modeltypes.id and modeltypes.model_type='", settings$model$model_type, "' AND modeltypes_formats.input;"), con=dbcon)
 
-  # check ED2 inputs
-  if (settings$model$model_type == "ED2") {
-    # Check for MET file
-    settings$run$site$met <- check.input(dbcon, "run$site$met", settings$run$site$met, settings$run$host$name)
+  # check list of inputs  
+  allinputs <- names(settings$run$inputs)
+  for(i in 1:nrow(inputs)) {
+    tag <- inputs$tag[i]
+    tagid <- paste0(tag, ".id")
+    hostname <- settings$run$host$name
+    allinputs <- allinputs[allinputs != tag]
 
-    # Check for ED specific files
-    settings$model$veg <- check.input(dbcon, "model$veg", settings$model$veg, settings$run$host$name)
-    settings$model$soil <- check.input(dbcon, "model$soil", settings$model$soil, settings$run$host$name)
-    settings$model$psscss <- check.input(dbcon, "model$psscss", settings$model$psscss, settings$run$host$name)
-    settings$model$inputs <- check.input(dbcon, "model$inputs", settings$model$inputs, settings$run$host$name)
-  }
-
-  # check BIOCRO inputs
-  if (settings$model$model_type == "BIOCRO") {
+    # check if <tag.id> exists
+    if (!is.null(settings$run$inputs[[tagid]])) {
+      id <- settings$run$inputs[[tagid]]
+      file <- dbfile.file("Input", id, dbcon, hostname)
+      if (is.na(file)) {
+        logger.error("No file found for", tag, " and id", id, "on host", hostname)
+      } else {
+        if (is.null(settings$run$inputs[[tag]])) {
+          settings$run$inputs[[tag]] <- file
+        } else if (file != settings$run$inputs[[tag]]) {
+          logger.warn("Input file and id do not match for ", tag)
+        }
+      }
+    }
     
-  }
+    # check if file exists
+    if (is.null(settings$run$inputs[[tag]])) {
+      if (inputs$required[i]) {
+        logger.severe("Missing required input :", tag)
+      } else {
+        logger.info("Missing optional input :", tag)
+      }
+      
+    } else {
+      # can we find the file so we can set the tag.id
+      if (is.null(settings$run$inputs[[tagid]])) {
+        id <- dbfile.id('Input', settings$run$inputs[[tag]], dbcon, hostname)
+        if (is.na(id)) {
+          logger.info("Could not find id for file ", settings$run$inputs[[tag]])
+        } else {
+          settings$run$inputs[[tagid]] <- id
+        }
+      }
+    }
 
-  if(!is.character(dbcon)) {
-    db.close(dbcon)
+    # check to see if format is right type
+    if (!is.null(settings$run$inputs[[tagid]])) {
+      formats <- db.query(paste0("SELECT format_id FROM inputs WHERE id=", settings$run$inputs[[tagid]]), con=dbcon)
+      if (nrow(formats) > 1) {
+        if (formats[1, 'format_id'] != inputs$format_id[i]) {
+          logger.error("Format of input", tag, "does not match specified input.")
+        }
+      } else if (nrow(formats) == 1) {
+        if (formats[1, 'format_id'] != inputs$format_id[i]) {
+          logger.error("Format of input", tag, "does not match specified input.")
+        }
+      } else {
+        logger.error("Could not check format of", tag, ".")
+      }
+    }
   }
+  
+  if (length(allinputs) > 0) {
+    logger.info("Unused inputs found :", paste(allinputs, collapse=" "))
+  }
+  
+  db.close(dbcon)
 
   return(settings)
 }
@@ -415,7 +436,7 @@ check.settings <- function(settings) {
     if(!is.character(dbcon)){
       if(!is.null(settings$model$id)){
         if(as.numeric(settings$model$id) >= 0){
-          model <- db.query(paste0("SELECT * FROM models WHERE models.id=", settings$model$id), con=dbcon)
+          model <- db.query(paste0("SELECT * FROM models, modeltypes WHERE models.id=", settings$model$id, " AND models.modeltype_id=modeltypes.id;"), con=dbcon)
           if(nrow(model) == 0) {
             logger.error("There is no record of model_id = ", settings$model$id, "in database")
           }
@@ -423,8 +444,9 @@ check.settings <- function(settings) {
           model <- settings$model
         }
       } else if (!is.null(settings$model$name)) {
-        model <- db.query(paste0("SELECT * FROM models ",
+        model <- db.query(paste0("SELECT * FROM models, modeltypes ",
                                  "WHERE (model_name = '", settings$model$name, "' or model_type = '", toupper(settings$model$name), "')",
+                                 "AND models.modeltype_id=modeltypes.id",
                                  ifelse(is.null(settings$model$revision), "", 
                                         paste0(" and revision like '%", settings$model$revision, "%' "))), con=dbcon)
         if(nrow(model) > 1){
@@ -452,8 +474,6 @@ check.settings <- function(settings) {
         model <- list()
       }
     }
-
-    # check on model_type
 
     # copy data from database into missing fields
     if (is.null(settings$model$id)) {
@@ -702,7 +722,7 @@ check.settings <- function(settings) {
       
       #check to see if name of each pft in xml file is actually a name of a pft already in database
       if (!is.character(dbcon)) {
-        x <- db.query(paste0("SELECT * FROM pfts WHERE name = '",  settings$pfts[i]$pft$name, "';"), con=dbcon)
+        x <- db.query(paste0("SELECT * FROM pfts, modeltypes WHERE name = '",  settings$pfts[i]$pft$name, "' AND modeltypes.id=pfts.modeltype_id;"), con=dbcon)
         if (nrow(x) == 0) {
           logger.severe("Did not find a pft with name ", settings$pfts[i]$pft$name)
         }
