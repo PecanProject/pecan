@@ -67,11 +67,18 @@ run.sensitivity.analysis <- function(plot=TRUE){
         
         ### Plotting - Optional
         if(plot){
+          start.year <- ifelse(is.null(settings$ensemble$start.year), NA, settings$ensemble$start.year)
+          end.year   <- ifelse(is.null(settings$ensemble$end.year), NA, settings$ensemble$end.year)
+          ftime = ifelse(is.na(start.year),"",
+                         ifelse(end.year==start.year,paste0(".",start.year),
+                                paste0(".",start.year,"-",end.year)))
+          fname = paste0("sensitivity.analysis.",variables[1],ftime,".pdf")
+          
           ### Generate SA diagnostic plots
           sensitivity.plots <- plot.sensitivities(sensitivity.results[[pft$name]]$sensitivity.output,
                                                   linesize = 1,
                                                   dotsize = 3)
-          pdf(file.path(pft$outdir, 'sensitivityanalysis.pdf'), height = 12, width = 9)
+          pdf(file.path(pft$outdir, fname), height = 12, width = 9)
           ## arrange plots  http://stackoverflow.com/q/10706753/199217
           ncol <- floor(sqrt(length(sensitivity.plots)))
           print(do.call("grid.arrange", c(sensitivity.plots, ncol=ncol)))
