@@ -6,11 +6,9 @@
 ## model = name of model (string)
 ## chain = ID number of mcmc chain
 ## params = previous output (used when updating MCMC)
-## vars = vector of indices of which parameters in the parameter vector to vary
+## var.names = vector of names of which parameters in the parameter vector to vary
 ## jvar = jump variance
-
-
-pda.mcmc <- function(model,chain=1,vars=NULL,jvar=NULL,params=NULL){
+pda.mcmc <- function(settings,prior,chain=1,var.names=NULL,jvar=NULL,params=NULL){
   
   ## this bit of code is useful for defining the variables passed to this function 
   ## if you are debugging
@@ -18,53 +16,72 @@ pda.mcmc <- function(model,chain=1,vars=NULL,jvar=NULL,params=NULL){
     model = "SIPNET"
     chain = 1
     params = NULL
-    vars = NULL
+    var.names = "Amax"
     jvar = NULL
+    var.id = 297 ## NEE, canonical units umolC/m2/s
   }
   
   ## settings
   weight <- 0.001
+  model = settings$model$model_type
+  write = settings$database$bety$write
   start <- 1
   finish <- as.numeric(settings$assim.batch$iter)
   defaults <- settings$pfts
-  outdir <- settings$outdir
+  outdir <- settings$run$host$outdir
   host <- settings$run$host
+  start.year = strftime(settings$run$start.date,"%Y")
+  end.year   = strftime(settings$run$end.date,"%Y")
+  
+  ## open database connection
+  if(write){
+    con <- try(db.open(settings$database$bety), silent=TRUE)
+    if(is.character(con)){
+      con <- NULL
+    }
+  } else {
+    con <- NULL
+  }
+  
+  # Get the workflow id
+  if ("workflow" %in% names(settings)) {
+    workflow.id <- settings$workflow$id
+  } else {
+    workflow.id <- -1
+  }
+  
+  # create an ensemble id
+  if (!is.null(con)) {
+    # write enseblem first
+    now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+    db.query(paste("INSERT INTO ensembles (created_at, runtype, workflow_id) values ('", 
+                     now, "', 'ensemble', ", workflow.id, ")", sep=''), con)
+    ensemble.id <- db.query(paste("SELECT id FROM ensembles WHERE created_at='", now, "'", sep=''), con)[['id']]
+  } else {
+    ensemble.id <- "NA"
+  }
 
   ## model-specific functions
+  do.call("require",list(paste0("PEcAn.",model)))
   my.write.config <- paste("write.config.",model,sep="")
   if(!exists(my.write.config)){
     print(paste(my.write.config,"does not exist"))
     print(paste("please make sure that the PEcAn interface is loaded for",model))
     stop()
   }
-  my.start.run <- paste("start.run.",model,sep="")
-  if(!exists(my.start.run)){
-    print(paste(my.start.run,"does not exist"))
-    print(paste("please make sure that the PEcAn interface is loaded for",model))
-    stop()
-  }
-  read.SIPNET.NEE <- function(run.id,outdir){
-    sipnet.output <- read.table(paste(outdir,"/",run.id,"/",run.id,".out",sep=""),header=T,skip=1,sep='')
-    sipnet.output.dims <- dim(sipnet.output)
-    ### Determine number of years and output timestep
-    num.years <- length(unique(sipnet.output$year))
-    years <- unique(sipnet.output$year)
-    timestep.s <- 86400/length(which(sipnet.output$year==years[1] & sipnet.output$day==1))
-    return((sipnet.output$nee/12*1e6)/timestep.s)     # NEE in gC/m2/timestep -> umolC/m2/s 
-  }
 
-  
-  ## set up priors
-  load(file.path(settings$pfts$pft$outdir,"post.distns.Rdata"))
-  nvar <- nrow(post.distns)
-  dprior <- rprior <-list()
+  ## set up prior density (d) and random (r) functions
+  nvar <- nrow(prior)
+  dprior <- rprior <- qprior <-list()
   for(i in 1:nvar){
-    if(post.distns$distn[i] == 'exp'){
-      dprior[[i]] <- parse(text=paste("dexp(x,",post.distns$parama[i],",log=TRUE)",sep=""))
-      rprior[[i]] <- parse(text=paste("rexp(n,",post.distns$parama[i],")",sep=""))
+    if(prior$distn[i] == 'exp'){
+      dprior[[i]] <- parse(text=paste("dexp(x,",prior$parama[i],",log=TRUE)",sep=""))
+      rprior[[i]] <- parse(text=paste("rexp(n,",prior$parama[i],")",sep=""))
+      qprior[[i]] <- parse(text=paste("qexp(p,",prior$parama[i],")",sep=""))
     }else{
-      dprior[[i]] <- parse(text=paste("d",post.distns$distn[i],"(x,",post.distns$parama[i],",",post.distns$paramb[i],",log=TRUE)",sep=""))
-      rprior[[i]] <- parse(text=paste("r",post.distns$distn[i],"(n,",post.distns$parama[i],",",post.distns$paramb[i],")",sep=""))
+      dprior[[i]] <- parse(text=paste("d",prior$distn[i],"(x,",prior$parama[i],",",prior$paramb[i],",log=TRUE)",sep=""))
+      rprior[[i]] <- parse(text=paste("r",prior$distn[i],"(n,",prior$parama[i],",",prior$paramb[i],")",sep=""))
+      qprior[[i]] <- parse(text=paste("q",prior$distn[i],"(p,",prior$parama[i],",",prior$paramb[i],")",sep=""))
     }
   }
   dmvprior <- function(x,log=TRUE){  #multivariate prior - density
@@ -84,36 +101,41 @@ pda.mcmc <- function(model,chain=1,vars=NULL,jvar=NULL,params=NULL){
     }
     return(p)
   }
-  pname =  rownames(post.distns)
-  if(is.null(vars)){
+  pname =  rownames(prior)  ## Parameter names
+  if(is.null(var.names)){
     vars = 1:nvar
+  } else {
+    vars = which(pname %in% var.names)
   }
-       
+  p.median <- sapply(qprior,eval,list(p=0.5))
+  
+  
   ## load data
+  input.id = settings$assim.batch$input.id
   data <- read.csv(settings$assim.batch$input)
-  NEEo <- data$Fc   #umolCO2 m-2 s-1
-  NEEq <- data$qf_Fc
+  NEEo <- data$NEE_or_fMDS #data$Fc   #umolCO2 m-2 s-1
+  NEEq <- data$NEE_or_fMDSqc #data$qf_Fc
   NEEo[NEEq > 0] <- NA
   
   ## calculate flux uncertainty parameters
-  dTa <- get.change(data$Ta)
+  dTa <- get.change(data$Ta_f)
   flags <- dTa < 3   ## filter data to temperature differences that are less thatn 3 degrees
-  NEE.params <- flux.uncertainty(NEEo,NEEq,flags,20)
+  NEE.params <- flux.uncertainty(NEEo,NEEq,flags,bin.num=20)
   b0 <- NEE.params$intercept
   bp <- NEE.params$slopeP
   bn <- NEE.params$slopeN
   
   ## set up storage
   if(is.null(params)){
-    params <- matrix(NA,finish,nvar)
+    params <- matrix(numeric(),finish,nvar)
   } else {
     start <- nrow(params)+1
-    params <- rbind(params,matrix(NA,finish-start+1,nvar))
+    params <- rbind(params,matrix(numeric(),finish-start+1,nvar))
   }
   
   ## set initial conditions
   if(start==1){
-    parm = as.vector(rmvprior(1))
+    parm = as.vector(p.median)
   } else{
     parm <- params[start-1,]
   }
@@ -129,6 +151,8 @@ pda.mcmc <- function(model,chain=1,vars=NULL,jvar=NULL,params=NULL){
   ## main MCMC loop
   for(i in start:finish){
 
+    print(paste(i,"of",finish))
+    
     for(j in vars){
       
       ## propose parameter values
@@ -140,25 +164,79 @@ pda.mcmc <- function(model,chain=1,vars=NULL,jvar=NULL,params=NULL){
       prior.star <- dmvprior(pstar)
       if(is.finite(prior.star)){
 
+        ## set RUN.ID
+        if (!is.null(con)) {
+          now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+          paramlist <- paste("MCMC: chain",chain,"iteration",i,"variable",j)
+          db.query(paste("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id,",
+                           " parameter_list) values ('", 
+                           settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", 
+                           settings$run$end.date, "', '", settings$run$outdir , "', '", now, "', ", ensemble.id, ", '", 
+                           paramlist, "')", sep=''), con)
+          run.id <- db.query(paste("SELECT id FROM runs WHERE created_at='", now, "' AND parameter_list='", paramlist, "'", 
+                                     sep=''), con)[['id']]
+        } else {
+          run.id = paste("MCMC",chain,i,j,sep=".")
+        }
+        dir.create(file.path(settings$rundir, run.id), recursive=TRUE)
+        dir.create(file.path(settings$modeloutdir, run.id), recursive=TRUE)
+        
         ## write config
-        run.id = paste(chain,i,j,sep=".")
         do.call(my.write.config,args=list(defaults,list(pft=pstar,env=NA),
-                 settings, outdir, run.id))        
+                 settings, run.id))
 
+        ## write a README for the run
+        cat("runtype     : pda.mcmc\n",
+            "workflow id : ", as.character(workflow.id), "\n",
+            "ensemble id : ", as.character(ensemble.id), "\n",
+            "chain       : ", chain, "\n",
+            "run         : ", i, "\n",
+            "variable    : ", pname[j], "\n",
+            "run id      : ", as.character(run.id), "\n",
+            "pft names   : ", as.character(lapply(settings$pfts, function(x) x[['name']])), "\n",
+            "model       : ", model, "\n",
+            "model id    : ", settings$model$id, "\n",
+            "site        : ", settings$run$site$name, "\n",
+            "site  id    : ", settings$run$site$id, "\n",
+            "met data    : ", settings$run$site$met, "\n",
+            "start date  : ", settings$run$start.date, "\n",
+            "end date    : ", settings$run$end.date, "\n",
+            "hostname    : ", settings$run$host$name, "\n",
+            "rundir      : ", file.path(settings$run$host$rundir, run.id), "\n",
+            "outdir      : ", file.path(settings$run$host$outdir, run.id), "\n",
+            file=file.path(settings$rundir, run.id, "README.txt"), sep='')
+        
+        ## add the job to the list of runs
+        cat(as.character(run.id),file=file.path(settings$rundir, "runs.txt"),sep="\n",append=FALSE)
+        
         ## start model run
-        do.call(my.start.run,args=list(run.id))
-
+        start.model.runs(settings,settings$database$bety$write)
+        
         ## read model output        
-#        NEEm <- read.output(run.id,outdir,variables="NEE",model=model)$NEE
-        NEEm <- read.SIPNET.NEE(run.id,outdir)
-        NEEm <- rep(NEEm,each=2)
-        set <- 1:length(NEEm)
+        NEEm <- read.output(run.id, outdir = file.path(outdir, run.id),
+                   start.year, end.year, variables="NEE")$NEE*0.0002640674
+          ## unit conversion kgC/ha/yr -> umolC/m2/sec
+
+
+        ## match model and observations
+        NEEm <- rep(NEEm,each=length(NEEo)/length(NEEm))
+        set <- 1:length(NEEm)  ## ***** need a more intellegent year matching!!!
         
         ## calculate likelihood
         fsel <- which(NEEm > 0)
         LL.star       <- dexp(abs(NEEm-NEEo[set]),1/(b0 + bn*NEEm),log=TRUE)
         LL.star[fsel] <- dexp(abs(NEEm-NEEo[set]),1/(b0 + bp*NEEm),log=TRUE)[fsel]
+        n.obs = sum(!is.na(LL.star))
         LL.star <- sum(LL.star,na.rm=TRUE)
+
+        ## insert Likelihood record in database
+        if (!is.null(con)) {
+          now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+          paramlist <- paste("MCMC: chain",chain,"iteration",i,"variable",j)
+          db.query(paste("INSERT INTO likelihoods (run_id, variable_id, input_id, loglikelihood, n_eff, weight,created_at) values ('", 
+                   run.id, "', '", var.id, "', '", input.id, "', '", LL.star, "', '",
+                   floor(n.obs*weight), "', '", weight , "', '", now,"')", sep=''), con)
+        }
                 
         ## accept or reject step
         a = (LL.star - LL.old)*weight + prior.star - prior.old
@@ -175,7 +253,11 @@ pda.mcmc <- function(model,chain=1,vars=NULL,jvar=NULL,params=NULL){
     params[i,] <- parm
       
   } ## end MCMC loop
+  
+  ## close database connection
+  if(!is.null(con)) db.close(con)
 
+  if(is.null(names(params))) names(params) = rownames(prior)
   return(params)
   
 } ## end pda.mcmc
