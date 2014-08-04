@@ -1,3 +1,4 @@
+
 ##-------------------------------------------------------------------------------
 ## Copyright (c) 2012 University of Illinois, NCSA.
 ## All rights reserved. This program and the accompanying materials
@@ -25,9 +26,9 @@ model2netcdf.BIOCRO <- function(resultDT, outdir, lat = NULL, lon = NULL) {
 
     if(is.null(lat)) lat <- resultDT$lat
     if(is.null(lat)) lon <- resultDT$lon
-  require(lubridate, quietly = TRUE)
-  require(data.table, quietly = TRUE)
-  start.date <- resultDT[1, ymd_hms(paste0(Year, "-01-01 ", Hour, ":00:00")) + days(DayofYear - 1)]
+    require(lubridate, quietly = TRUE)
+    require(data.table, quietly = TRUE)
+    start.date <- resultDT[1, ymd_hms(paste0(Year, "-01-01 ", Hour, ":00:00")) + days(DayofYear - 1)]
     ## Read in model output in biocro format
     load(file.path(outdir, "result.RData")) ## contains genus and result
     for(yeari in unique(resultDT$Year)) {

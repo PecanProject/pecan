@@ -10,6 +10,7 @@ Depends:
     PEcAn.utils,
     PEcAn.settings,
     PEcAn.data.atmosphere,
+    PEcAn.DB,
     udunits2,
     ncdf4,
     RNCEP,
