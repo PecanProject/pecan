@@ -98,9 +98,23 @@ dev.off()
 
 
 #---------------- Write final estimate to Posteriors table. ---------------------------------------#
+
+# create a new Posteriors DB entry
+now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+db.query(paste0("INSERT INTO posteriors (pft_id, created_at, updated_at) VALUES (", pftid, ", '", now, "', '", now, "')"), dbcon)
+posteriorid <- db.query(paste0("SELECT id FROM posteriors WHERE pft_id=", pftid, " AND created_at='", now, "'"), dbcon)[['id']]
+
+## Save raw MCMC
+filename = file.path(settings$outdir,"pda.mcmc.Rdata")
+save(params,file=filename)
+dbfile.insert(filename, 'Posterior', posteriorid, con)
+
+## save named distributions
+filename = file.path(settings$pfts$pft$outdir, 'post.distns.Rdata')
 post.distns <- approx.posterior(params.subset, prior, outdir=settings$pfts$pft$outdir)
-save(post.distns, file = file.path(settings$pfts$pft$outdir, 'post.distns.Rdata'))
-save(params,file=paste(settings$outdir,"/pda.mcmc.Rdata",sep=""))
+save(post.distns, file = filename)
+dbfile.insert(filename, 'Posterior', posteriorid, con)
+
 ## coerce parameter output into the same format as trait.mcmc
 pname <- rownames(post.distns)
 trait.mcmc <- list()
@@ -117,7 +131,9 @@ for(i in var.rows){
 }
 ## save updated parameter distributions as trait.mcmc
 ## so that they can be read by the ensemble code
-save(trait.mcmc,file=file.path(settings$pfts$pft$outdir, 'trait.mcmc.Rdata'))
+filename = file.path(settings$pfts$pft$outdir, 'trait.mcmc.Rdata')
+save(trait.mcmc,file=filename)
+dbfile.insert(filename, 'Posterior', pft$posteriorid, con)
 status.end()
 #--------------------------------------------------------------------------------------------------#
 
