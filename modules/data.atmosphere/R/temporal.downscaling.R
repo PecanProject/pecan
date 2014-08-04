@@ -41,8 +41,8 @@ load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date){
                           minutes(ud.convert(time.idx - floor(time.idx), "days", "minutes")))
   
 
-  if(ymd(start.date) < min(all.dates$date)) logger.error("run start date", ymd(start.date), "before met data starts", min(all.dates$date))
-  if(ymd(end.date)   > max(all.dates$date)) logger.error("run end date",   ymd(start.date), "after met data ends", min(all.dates$date))
+  if(ymd(start.date) + days(1) < min(all.dates$date)) logger.error("run start date", ymd(start.date), "before met data starts", min(all.dates$date))
+  if(ymd(end.date) > max(all.dates$date)) logger.error("run end date",   ymd(start.date), "after met data ends", min(all.dates$date))
 
   run.dates <- all.dates[date > ymd(start.date) & date < ymd(end.date),
                            list(index, date, doy = yday(date),
