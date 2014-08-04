@@ -3,7 +3,7 @@
 \alias{cfmet.downscale.subdaily}
 \title{subdaily downscaling}
 \usage{
-cfmet.downscale.subdaily(subdailymet)
+cfmet.downscale.subdaily(subdailymet, output.dt = 1)
 }
 \arguments{
 \item{subdailymet}{data table with climate variables queried from \code{\link{load.cfmet}}}

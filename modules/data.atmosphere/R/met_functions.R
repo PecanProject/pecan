@@ -96,8 +96,6 @@ getNARRforBioCro<-function(lat,lon,year){
 ##'  \item{"propIdiff"}{proportion of indirect (diffuse) radiation.}
 ##' }
 ##' @keywords models
-##' @example
-##' result <- lightME(lat = 40, t.d = 0:23)
 lightME <- function(lat=40,DOY=190,t.d=12,t.sn=12,atm.P=1e5,alpha=0.85) {
   
   ## The equations used here can be found in
