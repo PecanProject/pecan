@@ -4,7 +4,7 @@
 ##' reproject to the (approximate) centroids of US counties, for counties that fall within the
 ##' lat / lon range of the data set 
 ##' @title Points To County
-##' @param griddata a data frame with columns \code{lat, lon <some value>} or \code{. The function will assume 
+##' @param griddata a data frame with columns \code{lat, lon <some value>}.
 ##' @return a data.table with county-level information, including state and county name, state abbreviation,
 ##' lat, lon, county_fips, state_fips, fips, and interpolated output
 ##' @author David LeBauer
