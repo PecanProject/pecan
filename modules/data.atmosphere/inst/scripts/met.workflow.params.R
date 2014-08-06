@@ -20,8 +20,9 @@ source("utils/R/convert.input.R")
 data.set <- "FACE_RHIN"
 fcn.data <- unlist(strsplit(data.set,"_"))[[1]]
 
-# Select host and directory folder for data
+# Select username, host and directory folder for data
 
+username <- ""
 raw.host <- "geo.bu.edu"
 dir      <- "/projectnb/dietzelab/pecan.data/input/"
 
@@ -43,9 +44,6 @@ raw    <- TRUE
 
 site.id <- 1000000003
 
-# Set username (otherwise NULL or "")
-  
-username <- ""
 
 #######################################################
 # Change to CF standards? If not, specify cf.id
