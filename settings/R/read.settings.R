@@ -106,7 +106,7 @@ check.database <- function(database) {
       database$name <- NULL
     }
   }
-  
+
   # PostgreSQL specific checks
   if (database$driver == "PostgreSQL") {
     if (!is.null(database$passwd)) {

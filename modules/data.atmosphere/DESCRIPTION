@@ -43,3 +43,5 @@ Collate:
     'site.lst.R'
     'metgapfill.R'
     'temporal.downscaling.R'
+    'weachDT.R'
+
