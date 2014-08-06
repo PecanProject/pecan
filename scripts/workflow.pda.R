@@ -60,7 +60,8 @@ status.end()
 var.names = "Amax"           ## variables to be fit
 var.ids = db.query(paste0("SELECT id from variables where name = '",var.names,"'"),con)
 var.rows = which(row.names(prior) %in% var.names)
-jvar = rep(0.5,22)  ## jump variance
+np = nrow(prior)
+jvar = rep(0.5,np)  ## jump variance
 params = NULL       ## MCMC matrix
 
 
@@ -75,6 +76,7 @@ status.start("POSTERIOR")
 pdf(file.path(settings$pfts$pft$outdir,"mcmc.diagnostics.pdf"))
 sink(file.path(settings$pfts$pft$outdir,"mcmc.log"))
 ## Assess MCMC output
+library(coda)
 burnin = min(2000,0.2*nrow(params))
 params.subset = as.data.frame(params[burnin:nrow(params),var.rows])
 names(params.subset) <- rownames(prior)[var.rows]
