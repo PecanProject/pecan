@@ -35,16 +35,16 @@ pcon <- db.open(psqlparams)
 
   
 ```{r}
-mtables <- query.base(con = mcon, "show tables")
-ptables <- query.base(con = pcon, "SELECT tablename FROM pg_catalog.pg_tables where tableowner = 'bety'")
+mtables <- db.query("show tables", con = mcon)
+ptables <- db.query("SELECT tablename FROM pg_catalog.pg_tables where tableowner = 'bety'", con = pcon)
 
 expect_equivalent(mtables, ptables)
 
 for (t in mtables[,1]) {
   if(!grepl("_", t) ){
     print(paste("testing", t))
-    mtest <- query.base(paste("select * from", t, "order by id"), mcon)
-    ptest <- query.base(paste("select * from", t, "order by id"), pcon)
+    mtest <- db.query(paste("select * from", t, "order by id"), con=mcon)
+    ptest <- db.query(paste("select * from", t, "order by id"), con=pcon)
     expect_equal(colnames(mtest), colnames(ptest))
     
     ## test numeric cols only

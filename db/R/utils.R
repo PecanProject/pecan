@@ -59,7 +59,7 @@ db.query <- function(query, con=NULL, params=NULL) {
 ##' Generic function to open a database connection
 ##'
 ##' Create a connection to a database usign the specified parameters. If the paramters contain
-##' driver element it will be used as the database driver, otherwise it will use MySQL.
+##' driver element it will be used as the database driver, otherwise it will use PostgreSQL.
 ##' @name db.open
 ##' @title Open database connection
 ##' @param params database connection information
@@ -74,7 +74,7 @@ db.open <- function(params) {
   params$dbfiles <- NULL
   params$write <- NULL
   if (is.null(params$driver)) {
-    args <- c(drv=dbDriver("MySQL"), params, recursive=TRUE)
+    args <- c(drv=dbDriver("PostgreSQL"), params, recursive=TRUE)
   } else {
     args <- c(drv=dbDriver(params$driver), params, recursive=TRUE)
     args[['driver']] <- NULL

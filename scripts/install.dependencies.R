@@ -12,7 +12,8 @@ list.of.packages <- c('abind', 'car', 'chron', 'coda', 'data.table', 'doSNOW', '
                       'knitr', 'lubridate', 'MASS', 'MCMCpack', 'mvtnorm', 'ncdf4',
                       'plotrix', 'plyr', 'raster', 'randtoolbox', 'rjags',
                       'rgdal', 'tgp', 'DBI', 'roxygen2', 'stringr', 'testthat',
-                      'XML', 'RNCEP', 'foreign', 'RCurl', 'udunits2', 'RPostgreSQL')
+                      'XML', 'RNCEP', 'foreign', 'RCurl', 'udunits2', 'RPostgreSQL',
+                      'rPython')
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) {
   print("installing : ")

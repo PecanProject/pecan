@@ -75,7 +75,7 @@ status.end()
 ### PEcAn workflow run complete
 status.start("FINISHED")
 if (settings$workflow$id != 'NA') {
-  query.base(paste("UPDATE workflows SET finished_at=NOW() WHERE id=", settings$workflow$id, "AND finished_at IS NULL"))
+  db.query(paste("UPDATE workflows SET finished_at=NOW() WHERE id=", settings$workflow$id, "AND finished_at IS NULL"), params=settings$database$bety)
 }
 status.end()
 print("---------- PEcAn Workflow Complete ----------")
