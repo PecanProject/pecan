@@ -531,7 +531,7 @@ check.settings <- function(settings) {
       settings$run$site$id <- -1
     } else if (settings$run$site$id >= 0) {
       if (!is.character(dbcon)) {
-        site <- db.query(paste("SELECT * FROM sites WHERE id =", settings$run$site$id), con=dbcon)
+        site <- db.query(paste("SELECT sitename, ST_X(geometry) AS lon, ST_Y(geometry) AS lat FROM sites WHERE id =", settings$run$site$id), con=dbcon)
       } else {
         site <- data.frame(id=settings$run$site$id)
         if (!is.null(settings$run$site$name)) {
