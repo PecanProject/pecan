@@ -9,12 +9,12 @@
 DATABASE=${DATABASE:-"bety"}
 
 # owner of the database
-# also use to connect to the database
-OWNER="bety"
+# also used to connect to the database for most operations
+OWNER=${OWNER:-"bety"}
 
 # psql options
-# this allows you to add the user to use as well as any other options
-PG_OPT=${PG_OPT-"-U $OWNER"}
+# this allows you to add any other options
+PG_OPT=${PG_OPT:-""}
 
 # ID's used in database
 # These ID's need to be unique for the sharing to work. If you want
@@ -34,13 +34,14 @@ REMOTESITE=${REMOTESITE:-0}
 CREATE=${CREATE:-"NO"}
 
 # Convert user account 1 to carya for use on VM
-# Set this to YES to conver user 1 to carya with password. This will
-# give this user admin priviliges
-if [ -z "${ADMIN}" ]; then
+# Set this to YES to convert user 1 to carya with password. This will
+# give this user admin priviliges. It will also create 16 more users
+# that have specific abilities.
+if [ -z "${USERS}" ]; then
 	if [ "${MYSITE}" -eq "99" ]; then
-		ADMIN="YES"
+		USERS="YES"
 	else
-		ADMIN="NO"
+		USERS="NO"
 	fi
 fi
 
@@ -99,19 +100,26 @@ tar zxf "${DUMPDIR}/dump.tar.gz" -C "${DUMPDIR}"
 # create database if need be, otherwise check version of schema
 if [ "${CREATE}" == "YES" ]; then
 	printf "Loading %-25s : " "schema"
-	psql ${PG_OPT} -q -d "${DATABASE}" -c "DROP SCHEMA public CASCADE"
-	psql ${PG_OPT} -q -d "${DATABASE}" -c "CREATE SCHEMA public"
-	psql ${PG_OPT} -q -d "${DATABASE}" < "${DUMPDIR}"/*.schema
+  # create empty public schema
+	psql -q -d "${DATABASE}" -c "DROP SCHEMA public CASCADE"
+	psql -U ${OWNER} -q -d "${DATABASE}" -c "CREATE SCHEMA public"
+
+  # following commands require superuser abilities
+  psql -d "${DATABASE}" -c 'CREATE EXTENSION Postgis;'
+  psql -d "${DATABASE}" -c "GRANT ALL ON ALL TABLES IN SCHEMA public TO ${OWNER};"
+
+  # create rest of database
+	psql ${PG_OPT} -U ${OWNER} -q -d "${DATABASE}" < "${DUMPDIR}"/*.schema
 	echo "CREATED SCHEMA"
 
 	printf "Loading  %-25s : " "schema_migrations"
-	ADD=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY schema_migrations FROM '${DUMPDIR}/schema_migrations.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8'); SELECT COUNT(*) FROM schema_migrations;" | tr -d ' ' )
+	ADD=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "\COPY schema_migrations FROM '${DUMPDIR}/schema_migrations.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8'); SELECT COUNT(*) FROM schema_migrations;" | tr -d ' ' )
 	echo "ADDED ${ADD}"
 else
 	printf "Checking %-25s : " "schema"
 
 	# find current schema version
-	VERSION=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c 'SELECT version FROM schema_migrations ORDER BY version DESC limit 1' | tr -d ' ' )
+	VERSION=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c 'SELECT version FROM schema_migrations ORDER BY version DESC limit 1' | tr -d ' ' )
 
 	if [ ! -e "${DUMPDIR}/${VERSION}.schema" ]; then
 		echo "EXPECTED SCHEMA version ${VERSION}"
@@ -132,17 +140,17 @@ REM_LAST_ID=$(( REM_START_ID + ID_RANGE - 1 ))
 # clean tables
 for T in ${CLEAN_TABLES}; do
 	printf "Cleaning %-25s : " "${T}"
-	DEL=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM ${T} WHERE (id >= ${REM_START_ID} AND id <= ${REM_LAST_ID})" | tr -d ' ' )
-	psql ${PG_OPT} -t -q -d "${DATABASE}" -c "DELETE FROM ${T} WHERE (id >= ${REM_START_ID} AND id <= ${REM_LAST_ID})"
+	DEL=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM ${T} WHERE (id >= ${REM_START_ID} AND id <= ${REM_LAST_ID})" | tr -d ' ' )
+	psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "DELETE FROM ${T} WHERE (id >= ${REM_START_ID} AND id <= ${REM_LAST_ID})"
 	echo "DEL ${DEL}"
 	printf "Loading  %-25s : " "${T}"
 	if [ -f "${DUMPDIR}/${T}.csv" ]; then
-		psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY ${T} FROM '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')"
+		psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "\COPY ${T} FROM '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')"
 	fi
-	ADD=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "SELECT COUNT(*) FROM ${T} WHERE (id >= ${REM_START_ID} AND id <= ${REM_LAST_ID});" | tr -d ' ' )
+	ADD=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT COUNT(*) FROM ${T} WHERE (id >= ${REM_START_ID} AND id <= ${REM_LAST_ID});" | tr -d ' ' )
 	echo "ADD ${ADD}"
 	printf "Fixing   %-25s : " "${T}"
-	NEXT=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "SELECT setval('${T}_id_seq', ${MY_START_ID}, false); SELECT setval('${T}_id_seq', (SELECT MAX(id) FROM ${T} WHERE id >= ${MY_START_ID} AND id < ${MY_LAST_ID}), true); SELECT last_value from ${T}_id_seq;" | tr -d ' ' )
+	NEXT=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT setval('${T}_id_seq', ${MY_START_ID}, false); SELECT setval('${T}_id_seq', (SELECT MAX(id) FROM ${T} WHERE id >= ${MY_START_ID} AND id < ${MY_LAST_ID}), true); SELECT last_value from ${T}_id_seq;" | tr -d ' ' )
 	echo "SEQ ${NEXT}"
 done
 
@@ -154,21 +162,35 @@ for T in ${MANY_TABLES}; do
 	Y=${Z[1]}
 	Y=${Y%s}
 	printf "Cleaning %-25s : " "${T}"
-	DEL=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM ${T} WHERE (${X}_id >= ${REM_START_ID} AND ${X}_id <= ${REM_LAST_ID} AND ${Y}_id >= ${REM_START_ID} AND ${Y}_id <= ${REM_LAST_ID})" | tr -d ' ' )
-	psql ${PG_OPT} -t -q -d "${DATABASE}" -c "DELETE FROM ${T} WHERE (${X}_id >= ${REM_START_ID} AND ${X}_id <= ${REM_LAST_ID} AND ${Y}_id >= ${REM_START_ID} AND ${Y}_id <= ${REM_LAST_ID})"
+	DEL=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM ${T} WHERE (${X}_id >= ${REM_START_ID} AND ${X}_id <= ${REM_LAST_ID} AND ${Y}_id >= ${REM_START_ID} AND ${Y}_id <= ${REM_LAST_ID})" | tr -d ' ' )
+	psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "DELETE FROM ${T} WHERE (${X}_id >= ${REM_START_ID} AND ${X}_id <= ${REM_LAST_ID} AND ${Y}_id >= ${REM_START_ID} AND ${Y}_id <= ${REM_LAST_ID})"
 	echo "DEL ${DEL}"
 	printf "Loading  %-25s : " "${T}"
 	if [ -f "${DUMPDIR}/${T}.csv" ]; then
-		psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY ${T} FROM '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')"
+		psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "\COPY ${T} FROM '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')"
 	fi
-	ADD=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "SELECT COUNT(*) FROM ${T} WHERE (${X}_id >= ${REM_START_ID} AND ${X}_id <= ${REM_LAST_ID} AND ${Y}_id >= ${REM_START_ID} AND ${Y}_id <= ${REM_LAST_ID})" | tr -d ' ' )
+	ADD=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT COUNT(*) FROM ${T} WHERE (${X}_id >= ${REM_START_ID} AND ${X}_id <= ${REM_LAST_ID} AND ${Y}_id >= ${REM_START_ID} AND ${Y}_id <= ${REM_LAST_ID})" | tr -d ' ' )
 	echo "ADD ${ADD}"
 done
 
 # convert user 1 if needed
-if [ "${ADMIN}" == "YES" ]; then
-	psql ${PG_OPT} -t -q -d "${DATABASE}" -c "UPDATE users SET login='carya', crypted_password='df8428063fb28d75841d719e3447c3f416860bb7', salt='carya', access_level=1, page_access_level=1 WHERE id=1;"
-	echo "User 1 now has admin priviliges"
+if [ "${USERS}" == "YES" ]; then
+	psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "UPDATE users SET login='carya', crypted_password='df8428063fb28d75841d719e3447c3f416860bb7', salt='carya', access_level=1, page_access_level=1 WHERE id=1;"
+	echo "User 1 now has admin privileges"
+
+  # set all users
+  ID=2
+  for f in 1 2 3 4; do
+    for g in 1 2 3 4; do
+      RESULT='UPDATE 0'
+      while [ "${RESULT}" = "UPDATE 0" ]; do
+        RESULT=$( psql ${PG_OPT} -U ${OWNER} -t -d "${DATABASE}" -c "UPDATE users SET login='carya${f}${g}', crypted_password='df8428063fb28d75841d719e3447c3f416860bb7', salt='carya', access_level=${f}, page_access_level=${g} WHERE id=${ID};" )
+        ((ID++))
+      done
+    done
+  done
+  echo "Updated users to have login='caryaXY' with appropriate privileges"
+  echo "  (X=access_level, Y=page_access_level)."
 fi
 
 # all done, cleanup
