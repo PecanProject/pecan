@@ -34,13 +34,14 @@ REMOTESITE=${REMOTESITE:-0}
 CREATE=${CREATE:-"NO"}
 
 # Convert user account 1 to carya for use on VM
-# Set this to YES to conver user 1 to carya with password. This will
-# give this user admin priviliges
-if [ -z "${ADMIN}" ]; then
+# Set this to YES to convert user 1 to carya with password. This will
+# give this user admin priviliges. It will also create 16 more users
+# that have specific abilities.
+if [ -z "${USERS}" ]; then
 	if [ "${MYSITE}" -eq "99" ]; then
-		ADMIN="YES"
+		USERS="YES"
 	else
-		ADMIN="NO"
+		USERS="NO"
 	fi
 fi
 
@@ -173,9 +174,23 @@ for T in ${MANY_TABLES}; do
 done
 
 # convert user 1 if needed
-if [ "${ADMIN}" == "YES" ]; then
+if [ "${USERS}" == "YES" ]; then
 	psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "UPDATE users SET login='carya', crypted_password='df8428063fb28d75841d719e3447c3f416860bb7', salt='carya', access_level=1, page_access_level=1 WHERE id=1;"
-	echo "User 1 now has admin priviliges"
+	echo "User 1 now has admin privileges"
+
+  # set all users
+  ID=2
+  for f in 1 2 3 4; do
+    for g in 1 2 3 4; do
+      RESULT='UPDATE 0'
+      while [ "${RESULT}" = "UPDATE 0" ]; do
+        RESULT=$( psql ${PG_OPT} -U ${OWNER} -t -d "${DATABASE}" -c "UPDATE users SET login='carya${f}${g}', crypted_password='df8428063fb28d75841d719e3447c3f416860bb7', salt='carya', access_level=${f}, page_access_level=${g} WHERE id=${ID};" )
+        ((ID++))
+      done
+    done
+  done
+  echo "Updated users to have login='caryaXY' with appropriate privileges"
+  echo "  (X=access_level, Y=page_access_level)."
 fi
 
 # all done, cleanup
