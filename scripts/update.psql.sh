@@ -18,6 +18,8 @@ curl -o betydump.gz https://ebi-forecast.igb.illinois.edu/pecan/dump/betydump.ps
 
 ${POSTGRES} dropdb bety
 ${POSTGRES} createdb -O bety bety
+${POSTGRES} psql -d bety -c 'CREATE EXTENSION Postgis;'
+${POSTGRES} psql -d bety -c 'GRANT ALL ON ALL TABLES IN SCHEMA public TO bety;'
 
 gunzip -c betydump.gz | ${CMD} bety
 rm betydump.gz
