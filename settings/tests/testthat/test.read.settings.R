@@ -176,14 +176,26 @@ test_that("check.settings handles userid and username properly", {
   
 })
 
+test_that("check settings sets model$type based on model$name and model$model_type", {
+  s <- settings
+  s$model <- list(name = "foo")
+  s1 <- check.settings(s)
+  expect_identical(s$model$name, s1$model$type)
+
+  s <- settings
+  s$model <- list(model_type = "foo")
+  s1 <- check.settings(s)
+  expect_identical(s$model$name, s1$model$type)
+
+  s <- settings
+  s1$model$name <- NULL
+  expect_error(check.settings(s1))
+})
+
 test_that("check settings runs with only model$name and no database", {
   s <- settings
   s$model <- list(name = "foo")
   s$database <- NULL
   s1 <- check.settings(s)
-  expect_identical(s$model$name, s1$model$name)
-
-  s <- settings
-  s1$model$name <- NULL
-  expect_error(check.settings(s1))
+  expect_identical(s$model$name, s1$model$type)
 })

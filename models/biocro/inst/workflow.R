@@ -16,7 +16,7 @@ require(PEcAn.all)
 settings <- read.settings(system.file("extdata/pecan.biocro.xml",
                                       package = "PEcAn.BIOCRO"))
 #--------------------------------------------------------------------------------------------------#
-model <- settings$model$name
+model <- settings$model$type
 settings$meta.analysis$update <- TRUE
 
 #---------------- Run PEcAn workflow. -------------------------------------------------------------#
