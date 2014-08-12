@@ -4,14 +4,223 @@
 ###  Michael Dietze <dietze@bu.edu>
 ###
 
-sda.enkf <- function(model,nens = 10){
+sda.enkf <- function(settings,IC,prior,obs){
+  
+  ## settings
+  model = settings$model$model_type
+  write = settings$database$bety$write
+  defaults <- settings$pfts
+  outdir <- settings$run$host$outdir
+  host <- settings$run$host
+  start.year = strftime(settings$run$start.date,"%Y")
+  end.year   = strftime(settings$run$end.date,"%Y")
+  nens = nrow(IC)
+  
   sda.demo <- TRUE  ## debugging flag
   unit.conv <-  0.001*2#  kgC/ha/yr to Mg/ha/yr
     
+  ## open database connection
+  if(write){
+    con <- try(db.open(settings$database$bety), silent=TRUE)
+    if(is.character(con)){
+      con <- NULL
+    }
+  } else {
+    con <- NULL
+  }
+  
+  # Get the workflow id
+  if ("workflow" %in% names(settings)) {
+    workflow.id <- settings$workflow$id
+  } else {
+    workflow.id <- -1
+  }
+  
+  # create an ensemble id
+  if (!is.null(con)) {
+    # write enseblem first
+    now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+    db.query(paste("INSERT INTO ensembles (created_at, runtype, workflow_id) values ('", 
+                   now, "', 'EnKF', ", workflow.id, ")", sep=''), con)
+    ensemble.id <- db.query(paste("SELECT id FROM ensembles WHERE created_at='", now, "'", sep=''), con)[['id']]
+  } else {
+    ensemble.id <- -1
+  }
+  
+  ## model-specific functions
+  do.call("require",list(paste0("PEcAn.",model)))
+  my.write.config <- paste("write.config.",model,sep="")
+  if(!exists(my.write.config)){
+    print(paste(my.write.config,"does not exist"))
+    print(paste("please make sure that the PEcAn interface is loaded for",model))
+    stop()
+  }
+  
+  ## split clim file
+  full.met <- settings$run$site$met
+  new.met  <- file.path(settings$rundir,basename(full.met))
+  file.copy(full.met,new.met)
+  met <- split.met.SIPNET(new.met)
+  
+  
+  ###-------------------------------------------------------------------###
+  ### perform initial set of runs                                       ###
+  ###-------------------------------------------------------------------###  
+  run.id = list()
+  for(i in 1:nens){
+    
+    ## set RUN.ID
+    if (!is.null(con)) {
+      now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+      paramlist <- paste("EnKF:",i)
+      db.query(paste("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id,",
+                   " parameter_list) values ('", 
+                   settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", 
+                   settings$run$end.date, "', '", settings$run$outdir , "', '", now, "', ", ensemble.id, ", '", 
+                   paramlist, "')", sep=''), con)
+      run.id[[i]]<- db.query(paste("SELECT id FROM runs WHERE created_at='", now, "' AND parameter_list='", paramlist, "'", 
+                             sep=''), con)[['id']]
+    } else {
+      run.id[[i]] = paste("EnKF",i,sep=".")
+    }
+    dir.create(file.path(settings$rundir, run.id[[i]]), recursive=TRUE)
+    dir.create(file.path(settings$modeloutdir, run.id[[i]]), recursive=TRUE)
+    
+    ## write config
+    do.call(my.write.config,args=list(defaults,list(pft=prior[i,],env=NA),
+                                      settings, run.id[[i]],inputs = list(met=met[1]),IC=IC[i,]))
+    
+    ## write a README for the run
+    cat("runtype     : sda.enkf\n",
+        "workflow id : ", as.character(workflow.id), "\n",
+        "ensemble id : ", as.character(ensemble.id), "\n",
+        "ensemble    : ", i, "\n",
+        "run id      : ", as.character(run.id[[i]]), "\n",
+        "pft names   : ", as.character(lapply(settings$pfts, function(x) x[['name']])), "\n",
+        "model       : ", model, "\n",
+        "model id    : ", settings$model$id, "\n",
+        "site        : ", settings$run$site$name, "\n",
+        "site  id    : ", settings$run$site$id, "\n",
+        "met data    : ", new.met, "\n",
+        "start date  : ", settings$run$start.date, "\n",
+        "end date    : ", settings$run$end.date, "\n",
+        "hostname    : ", settings$run$host$name, "\n",
+        "rundir      : ", file.path(settings$run$host$rundir, run.id[[i]]), "\n",
+        "outdir      : ", file.path(settings$run$host$outdir, run.id[[i]]), "\n",
+        file=file.path(settings$rundir, run.id[[i]], "README.txt"), sep='')
+      
+  }
+  
+  ## add the jobs to the list of runs
+  cat(as.character(run.id),file=file.path(settings$rundir, "runs.txt"),sep="\n",append=FALSE)
+      
+  ## start model run
+  start.model.runs(settings,settings$database$bety$write)
+  
+
+  time = start.year:end.year
+  nt = length(time)
+  ens = list()
+  NPPm = rep(NA,nens)
+  FORECAST <- ANALYSIS <- list()
+  enkf.params <- list()
+  ### loop over time
+  for(t in 1:nt){
+
+    ### load output
+    forecast = IC
+    for(i in 1:nens){
+      ens[[i]] <- read.output(run.id[[i]],file.path(outdir, run.id[[i]]),
+                              start.year = time[t],end.year=time[t],
+                              variables=c("NPP","AbvGrndWood","TotSoilCarb","LeafC","SoilMoist","SWE")
+                              )
+      NPPm[i] <- mean(ens[[i]]$NPP)*unit.conv
+      last = length(ens[[i]]$NPP)
+      forecast$plantWood[i] = ens[[i]]$AbvGrndWood[last] #units? belowground fraction?
+      forecast$lai[i] = ens[[i]]$LeafC[last]*prior$SLA[i] ## check units
+      #forecast$litter[i] = NA
+      forecast$soil[i] = ens[[i]]$TotSoilCarb[last]
+      #forecast$litterWFrac[i] = NA
+      forecast$soilWFrac[i] = ens[[i]]$SoilMoist[last]
+      forecast$snow[i] = ens[[i]]$SWE[last]
+      #forecast$microbe[i] = NA
+   }
+   FORECAST[[t]] = forecast
+    
+ ### Analysis step
+ X    = cbind(NPPm,forecast)
+ X$snow = runif(nens,0,0.01)
+ mu.f = apply(X,2,mean,na.rm=TRUE)
+ Pf   = cov(X)
+ Y    = obs$mean[t]
+ R    = obs$sd[t]^2
+ H    = matrix(c(1,rep(0,ncol(forecast))),1,ncol(X))
+ if(!is.na(Y)){
+   K    = Pf%*%t(H)%*%solve(R+H%*%Pf%*%t(H))
+   mu.a = mu.f + K%*%(Y-H%*%mu.f)
+   Pa   = (diag(ncol(X)) - K%*%H)%*%Pf
+ } else {
+   mu.a = mu.f
+   Pa   = Pf
+ }
+ enkf.params[[t]] = list(mu.f = mu.f, Pf=Pf,mu.a=mu.a,Pa=Pa) 
+ 
+ ## update state matrix
+analysis = as.data.frame(rmvnorm(nens,mu.a,Pa))
+names(analysis) = names(X)
+ # EAKF
+ if(FALSE){
+   analysis = X
+   
+   ## Math from Anderson 2001. gives correct mean but incorrect var
+   A.svd = svd(Pf)
+   F = A.svd$v
+   G = diag(sqrt(A.svd$d))
+   B.svd = svd(t(G)%*%t(F)%*%t(H)%*%solve(R)%*%H%*%F%*%G)
+   U = B.svd$v
+   B = diag((1+B.svd$d)^(-0.5))
+   A = solve(t(F))%*%t(G)*solve(t(U))%*%t(B)%*%solve(t(G))%*%t(F)
+   for(i in 1:nens){
+     analysis[i,] = t(A)%*%matrix(as.numeric(X[i,])-mu.f)+mu.a
+   }
+   
+   ## HACK IGNORNING COVARIANCE
+   for(i in 1:nens){
+     analysis[i,] = mu.a + (matrix(as.numeric(X[i,]))-mu.f)*sqrt(diag(Pa)/diag(Pf))
+   }   
+   
+ }
+## analysis sanity check
+for(i in 2:ncol(analysis)){
+  analysis[analysis[,i]<0,i] = 0.0
+}
+
+ ANALYSIS[[t]] = analysis
+ 
+ ### Forecast step
+ if(t < nt){
+   for(i in 1:nens){   
+     file.rename(file.path(outdir,run.id[[i]],"sipnet.out"),file.path(outdir,run.id[[i]],paste0("sipnet.out",time[t])))
+     file.remove(file.path(settings$rundir,run.id[[i]],"sipnet.clim"))
+     do.call(my.write.config,args=list(defaults,list(pft=prior[i,],env=NA),
+                                     settings, run.id[[i]],inputs = list(met=met[t+1]),IC=analysis[i,-1]))   
+  }
+ }
+ ## start model run
+ start.model.runs(settings,settings$database$bety$write)
+ 
+}  ## end loop over time
+
+## save all outputs
+save(FORECAST,ANALYSIS,enkf.params,file=file.path(settings$outdir,"sda.ENKF.Rdata"))
+
   ## extract time from one ensemble member
   Year <- read.output("ENS00001",settings$outdir,variables="Year",model=model)$Year
   time <- as.numeric(names(table(Year)))
   nt   <- length(time)
+
+  
+  
   
   ### Load Data
   if(sda.demo){
@@ -27,9 +236,6 @@ sda.enkf <- function(model,nens = 10){
     sd = sNPP[1,mch]  ## data uncertainty 
   }
   
-  ## split clim file
-  full.met <- settings$run$site$met
-  met <- split.met.SIPNET(full.met)
   
   ## generate inital ensemble members
   base.outdir = settings$outdir
@@ -55,11 +261,8 @@ sda.enkf <- function(model,nens = 10){
   load(paste(settings$outdir,"samples.Rdata",sep=""))
   params <- ensemble.samples  ## have to be able to restart ensemble members with same parameters
   
-  ## loop over time steps
-  for(t in 1:nt){
     
     
-  }
   
   ## write configs
   
@@ -136,7 +339,6 @@ sda.enkf <- function(model,nens = 10){
   
   dev.off()
   
-  ## save all outputs
-  save.image(paste(settings$outdir,"sda.particle.Rdata"))
+
   
 }
