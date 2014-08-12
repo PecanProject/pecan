@@ -90,7 +90,7 @@ plot2AGB <- function(combined,out,outfolder,allom.stats,unit.conv=0.02){
     lines(yrvec,lowA)
   }
   dev.off()
-  save(mNPP,sNPP,mAGB,sAGB,yrvec,file=file.path(outfolder,"plot2AGB.Rdata"))
-  return(list(AGB,NPP))
+  save(AGB,NPP,mNPP,sNPP,mAGB,sAGB,yrvec,file=file.path(outfolder,"plot2AGB.Rdata"))
+  return(list(AGB=AGB,NPP=NPP))
   
 }
