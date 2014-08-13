@@ -175,22 +175,44 @@ done
 
 # convert user 1 if needed
 if [ "${USERS}" == "YES" ]; then
-	psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "UPDATE users SET login='carya', crypted_password='df8428063fb28d75841d719e3447c3f416860bb7', salt='carya', access_level=1, page_access_level=1 WHERE id=1;"
-	echo "User 1 now has admin privileges"
+  ID=2
+
+  RESULT=$( psql ${PG_OPT} -U ${OWNER} -t -d "${DATABASE}" -c "SELECT count(id) FROM users WHERE login='carya';" )
+  if [ ${RESULT} -eq 0 ]; then
+    RESULT='UPDATE 0'
+    while [ "${RESULT}" = "UPDATE 0" ]; do
+      RESULT=$( psql ${PG_OPT} -U ${OWNER} -t -d "${DATABASE}" -c "UPDATE users SET login='carya', name='carya', crypted_password='df8428063fb28d75841d719e3447c3f416860bb7', salt='carya', access_level=1, page_access_level=1 WHERE id=${ID};" )
+      ((ID++))
+    done
+  fi
+  echo "Added carya with admin privileges"
 
   # set all users
-  ID=2
   for f in 1 2 3 4; do
     for g in 1 2 3 4; do
-      RESULT='UPDATE 0'
-      while [ "${RESULT}" = "UPDATE 0" ]; do
-        RESULT=$( psql ${PG_OPT} -U ${OWNER} -t -d "${DATABASE}" -c "UPDATE users SET login='carya${f}${g}', crypted_password='df8428063fb28d75841d719e3447c3f416860bb7', salt='carya', access_level=${f}, page_access_level=${g} WHERE id=${ID};" )
-        ((ID++))
-      done
+      RESULT=$( psql ${PG_OPT} -U ${OWNER} -t -d "${DATABASE}" -c "SELECT count(id) FROM users WHERE login='carya${f}${g}';" )
+      if [ ${RESULT} -eq 0 ]; then
+        RESULT='UPDATE 0'
+        while [ "${RESULT}" = "UPDATE 0" ]; do
+          RESULT=$( psql ${PG_OPT} -U ${OWNER} -t -d "${DATABASE}" -c "UPDATE users SET login='carya${f}${g}', name='carya a-${f} p-${g}', crypted_password='df8428063fb28d75841d719e3447c3f416860bb7', salt='carya', access_level=${f}, page_access_level=${g} WHERE id=${ID};" )
+          ((ID++))
+        done
+      fi
     done
   done
   echo "Updated users to have login='caryaXY' with appropriate privileges"
   echo "  (X=access_level, Y=page_access_level)."
+
+  # add guest user
+  RESULT=$( psql ${PG_OPT} -U ${OWNER} -t -d "${DATABASE}" -c "SELECT count(id) FROM users WHERE login='guestuser';" )
+  if [ ${RESULT} -eq 0 ]; then
+    RESULT='UPDATE 0'
+    while [ "${RESULT}" = "UPDATE 0" ]; do
+      RESULT=$( psql ${PG_OPT} -U ${OWNER} -t -d "${DATABASE}" -c "UPDATE users SET login='guestuser', name='guestuser', crypted_password='994363a949b6486fc7ea54bf40335127f5413318', salt='bety', access_level=4, page_access_level=4 WHERE id=${ID};" )
+      ((ID++))
+    done
+  fi
+  echo "Added guestuser with access_level=4 and page_access_level=4"
 fi
 
 # all done, cleanup
