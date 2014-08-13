@@ -1,9 +1,16 @@
-###  State Variable Data Assimilation:
-###     Ensemble Kalman Filter
-###
-###  Michael Dietze <dietze@bu.edu>
-###
-
+##' @title sda.enkf
+##' @name  sda.enkf
+##' @author Michael Dietze \email{dietze@bu.edu}
+##' 
+##' @param settings    PEcAn settings object
+##' @param IC          data.frame of initial condition sample (nens X nstate)
+##' @param prior       data.frame of model parameter sample (nense X nstate)
+##' @param obs         data.frame of observations with columns: mean, sd
+##' 
+##' @description State Variable Data Assimilation: Ensemble Kalman Filter
+##' 
+##' @return NONE
+##' 
 sda.enkf <- function(settings,IC,prior,obs){
   
   ## settings
@@ -15,6 +22,12 @@ sda.enkf <- function(settings,IC,prior,obs){
   start.year = strftime(settings$run$start.date,"%Y")
   end.year   = strftime(settings$run$end.date,"%Y")
   nens = nrow(IC)
+  
+  if(nrow(prior) == 1 | is.null(nrow(prior))){
+    var.names = names(prior)
+    prior = as.data.frame(matrix(rep(prior,each=nens),nrow=nens))
+    names(prior) = var.names
+  }
   
   sda.demo <- TRUE  ## debugging flag
   unit.conv <-  0.001*2#  kgC/ha/yr to Mg/ha/yr
@@ -145,10 +158,10 @@ sda.enkf <- function(settings,IC,prior,obs){
       forecast$snow[i] = ens[[i]]$SWE[last]
       #forecast$microbe[i] = NA
    }
-   FORECAST[[t]] = forecast
+   X    = cbind(NPPm,forecast)
+   FORECAST[[t]] = X
     
  ### Analysis step
- X    = cbind(NPPm,forecast)
  X$snow = runif(nens,0,0.01)
  mu.f = apply(X,2,mean,na.rm=TRUE)
  Pf   = cov(X)
@@ -214,14 +227,7 @@ for(i in 2:ncol(analysis)){
 ## save all outputs
 save(FORECAST,ANALYSIS,enkf.params,file=file.path(settings$outdir,"sda.ENKF.Rdata"))
 
-  ## extract time from one ensemble member
-  Year <- read.output("ENS00001",settings$outdir,variables="Year",model=model)$Year
-  time <- as.numeric(names(table(Year)))
-  nt   <- length(time)
-
-  
-  
-  
+if(FALSE){
   ### Load Data
   if(sda.demo){
     ## use one of the ensemble members as the true data
@@ -235,49 +241,8 @@ save(FORECAST,ANALYSIS,enkf.params,file=file.path(settings$outdir,"sda.ENKF.Rdat
     y = mNPP[1,mch]   ## data mean
     sd = sNPP[1,mch]  ## data uncertainty 
   }
-  
-  
-  ## generate inital ensemble members
-  base.outdir = settings$outdir
-  settings$run$site$met.data.header <- met[1]
-  settings$ensemble$size = nens
-  settings$outdir = paste(base.outdir,".",time[1],"/",sep="")
-  dir.create(settings$outdir)
-  run.write.configs(model) 
-  start.model.runs(model)
-  ens <- list()
-  NPPm <- rep(NA,nens)
-  IC = matrix(0,nrow=nens,ncol=8)
-  colnames(IC) <- c("plantWood","lai","litter","soil","litterWFrac","soilWFrac","snow","microbe")
-  for(i in 1:nens){
-    ens[[i]] <- read.output("ENS00001",settings$outdir,
-                variables=c("NPP","AbvGrndWood","TotSoilCarb","LeafC","SoilMoist","SWE"),
-                model=model)
-    NPPm[i] <- mean(ens[[i]]$NPP)*unit.conv
-    last = length(ens[[i]]$NPP)
-    IC$plantWood[i] = ens[[i]]$AbvGrndWood[last] #units? belowground fraction?
-    ##### implemented to HERE
-  }
-  load(paste(settings$outdir,"samples.Rdata",sep=""))
-  params <- ensemble.samples  ## have to be able to restart ensemble members with same parameters
-  
-    
-    
-  
-  ## write configs
-  
-  ## run time step
-  
-  ## load output
-  
-  ## calculate ensemble mean and covariance matrix
-  
-  ## calculate likelihood
-  
-  ## calculate new initial conditions
-  
-  ## end loop over time
-  
+}  
+
 #### Post-processing
 
   ### Diagnostic graphs  
@@ -285,60 +250,47 @@ save(FORECAST,ANALYSIS,enkf.params,file=file.path(settings$outdir,"sda.ENKF.Rdat
   
   ## plot ensemble, filter, and data mean's and CI's
   par(mfrow=c(1,1))
-  plot(time,y,ylim=range(c(y+1.96*sd,y-1.96*sd)),type='b',xlab="time",ylab="Mg/ha/yr")
-  lines(time,y+1.96*sd,col=2)
-  lines(time,y-1.96*sd,col=2)
+  y = obs[1:length(time),]
+  plot(time,y$mean,ylim=range(c(y$mean+1.96*y$sd,y$mean-1.96*y$sd)),type='n',xlab="time",ylab="Mg/ha/yr")
+  ciEnvelope(time,y$mean-y$sd*1.96,y$mean+y$sd*1.96,col="lightblue")
+  lines(time,y$mean,type='b',col="darkblue")
   
-  plot(time,y,ylim=range(Xci),type='b',xlab="time",ylab="Mg/ha/yr")
-  lines(time,y+1.96*sd,col=2)
-  lines(time,y-1.96*sd,col=2)
+  Xbar = laply(FORECAST,function(x){return(mean(x$NPPm,na.rm=TRUE))})
+  Xci  = laply(FORECAST,function(x){return(quantile(x$NPPm,c(0.025,0.975)))})
+  plot(time,y$mean,ylim=range(c(y$mean+1.96*y$sd,y$mean-1.96*y$sd)),type='n',xlab="time",ylab="Mg/ha/yr")
+  ciEnvelope(time,y$mean-y$sd*1.96,y$mean+y$sd*1.96,col="lightblue")
+  lines(time,y$mean,type='b',col="darkblue")
   if(sda.demo) lines(time,ensp[ref,],col=2,lwd=2)
-  lines(time,Xbar[1:nt],col=6)
-  lines(time,Xci[1,1:nt],col=6,lty=2)
-  lines(time,Xci[2,1:nt],col=6,lty=2)
+  ciEnvelope(time,Xci[1:nt,1],Xci[1:nt,2],col="pink")
+  lines(time,Xbar[1:nt],col=6,type='b')
 
-  lines(time,Xap,col=3,type='b',lwd=2)
-  lines(time,XapCI[1,],col=3,lty=2,lwd=2)
-  lines(time,XapCI[2,],col=3,lty=2,lwd=2)
-  legend("topleft",c("True","Data","PF","ens","ensmean"),col=c(1:3,"grey",6),lty=c(1,0,1,3,1),pch=c(1,19,1,1,0),cex=1.5)
+  Xa = laply(ANALYSIS,function(x){return(mean(x$NPPm,na.rm=TRUE))})
+  XaCI  = laply(ANALYSIS,function(x){return(quantile(x$NPPm,c(0.025,0.975)))})
+  plot(time,y$mean,ylim=range(c(y$mean+1.96*y$sd,y$mean-1.96*y$sd)),type='n',xlab="time",ylab="Mg/ha/yr")
+  ciEnvelope(time,y$mean-y$sd*1.96,y$mean+y$sd*1.96,col="lightblue")
+  lines(time,y$mean,type='b',col="darkblue")
+  ciEnvelope(time,Xci[1:nt,1],Xci[1:nt,2],col="pink")
+  lines(time,Xbar[1:nt],col=2,type='b')
+  ciEnvelope(time,XaCI[1:nt,1],XaCI[1:nt,2],col="lightgreen")
+  lines(time,Xa[1:nt],col=3,type='b')
+  legend("topleft",c("Data","Forecast","Analysis"),col=c(4,2,3),lty=1,cex=1)
   
 ### Plots demonstrating how the constraint of your target variable 
 ### impacts the other model pools and fluxes
   
-  ## Calculate long-term means for all ensemble extracted variables
-  unit <- rep(unit.conv,5);unit[3] = 1
-  ensp.conv <- list()
-  for(i in 1:length(ensp.all)){
-    ensp.conv[[i]] <- t(apply(ensp.all[[i]],1,tapply,Year,mean))*unit[i]
-  }  
   ## plot scatter plots of outputs
-  par(mfrow=c(2,2))
-  for(i in 2:5){
-    plot(ensp.conv[[1]][,nt],ensp.conv[[i]][,nt],xlab=names(ensp.all)[1],ylab=names(ensp.all)[i])
-  }
-  
-  ##unweighted distributions
-  for(i in c(1,2,4,5)){
-    hist(ensp.conv[[i]][,nt],main=names(ensp.all)[i],probability=TRUE)
-  }  
-  
-  ## Weighted distributions
-  library(plotrix)
-  for(i in c(1,2,4,5)){
-    weighted.hist(ensp.conv[[i]][,nt],wc[,nt]/sum(wc[,nt]),main=names(ensp.all)[i])
-  }
-  
-  for(i in c(1,2,4,5)){
-    if(i == 5){
-      weighted.hist(ensp.conv[[i]][,nt],wc[,nt]/sum(wc[,nt]),main=names(ensp.all)[i],col=2)
-    }else{
-      weighted.hist(ensp.conv[[i]][,nt],wc[,nt]/sum(wc[,nt]),main=names(ensp.all)[i],xlim=range(ensp.conv[[i]][,nt])*c(0.9,1.1),col=2)
-    }
-    hist(ensp.conv[[i]][,nt],main=names(ensp.all)[i],probability=TRUE,add=TRUE)
+  pairs(FORECAST[[nt]])
+  pairs(ANALYSIS[[nt]])
+
+  ## time series of outputs
+  for(i in 1:ncol(X)){
+    Xa = laply(ANALYSIS,function(x){return(mean(x[,i],na.rm=TRUE))})
+    XaCI  = laply(ANALYSIS,function(x){return(quantile(x[,i],c(0.025,0.975)))})
+    plot(time,Xa,ylim=range(XaCI),type='n',xlab="time",ylab="Mg/ha/yr",main=names(X)[i])
+    ciEnvelope(time,XaCI[,1],XaCI[,2],col="lightblue")
+    lines(time,Xa,type='b',col="darkblue")
   }
   
   dev.off()
-  
-
   
 }
