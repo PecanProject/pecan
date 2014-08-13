@@ -1,3 +1,5 @@
 export(split.met.SIPNET)
 export(sda.enkf)
 export(sda.particle)
+export(sample.parameters)
+export(sample.IC.SIPNET)
