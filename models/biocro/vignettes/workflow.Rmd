@@ -13,7 +13,7 @@ Open and read in settings file for PEcAn run.
 settings <- read.settings(system.file("extdata/pecan.biocro.xml",
                                       package = "PEcAn.BIOCRO"))
 settings$sensitivity.analysis <- settings$ensemble
-model <- settings$model$name
+model <- settings$model$type
 
 ```
 ### Run PEcAn workflow
@@ -31,7 +31,7 @@ run.meta.analysis()     	# Run the PEcAn meta.analysis
 run.write.configs(model)        # Calls model specific write.configs e.g. write.config.ed.R
 ## load met data
 start.model.runs(model)         # Start ecosystem model runs
-convert.outputs(model = settings$model$name, settings = settings)
+convert.outputs(model = settings$model$type, settings = settings)
 
 run.sensitivity.analysis()      # Run sensitivity analysis and variance decomposition on model output
 

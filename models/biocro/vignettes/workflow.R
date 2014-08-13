@@ -9,7 +9,7 @@ settings <- read.settings(system.file("extdata/pecan.biocro.xml",
 
 ### limit scope for initial testing
 settings$sensitivity.analysis$quantiles <- list(sigma = 0.5)
-model <- settings$model$name
+model <- settings$model$type
 
 
 
@@ -26,7 +26,7 @@ run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfil
 run.write.configs(model)        # Calls model specific write.configs e.g. write.config.ed.R
 ## load met data
 start.model.runs(model)         # Start ecosystem model runs
-read.outputs(settings$model$name, settings)
+read.outputs(settings$model$type, settings)
 #read.outputs(model, settings)  #, variables = "StemBiom")
 
 get.results(settings)           # Get results of model runs
