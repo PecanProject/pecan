@@ -2,6 +2,7 @@ A generic template for adding a new model to PEcAn
 ==========================================================================
 
 Adding a new model to PEcAn in a few easy steps:
+
 1. add modeltype to BETY
 2. add a model and PFT to BETY for use with modeltype
 3. implement 3 functions as described below
