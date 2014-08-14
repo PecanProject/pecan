@@ -145,17 +145,17 @@ sda.enkf <- function(settings,IC,prior,obs){
     for(i in 1:nens){
       ens[[i]] <- read.output(run.id[[i]],file.path(outdir, run.id[[i]]),
                               start.year = time[t],end.year=time[t],
-                              variables=c("NPP","AbvGrndWood","TotSoilCarb","LeafC","SoilMoist","SWE")
+                              variables=c("NPP","AbvGrndWood","TotSoilCarb","LeafC","SoilMoistFrac","SWE","Litter")
                               )
-      NPPm[i] <- mean(ens[[i]]$NPP)*unit.conv
+      NPPm[i] <- mean(ens[[i]]$NPP)*unit.conv ## kg C m-2 s-1 -> Mg/ha/yr [Check]
       last = length(ens[[i]]$NPP)
-      forecast$plantWood[i] = ens[[i]]$AbvGrndWood[last] #units? belowground fraction?
-      forecast$lai[i] = ens[[i]]$LeafC[last]*prior$SLA[i] ## check units
-      #forecast$litter[i] = NA
-      forecast$soil[i] = ens[[i]]$TotSoilCarb[last]
-      #forecast$litterWFrac[i] = NA
-      forecast$soilWFrac[i] = ens[[i]]$SoilMoist[last]
-      forecast$snow[i] = ens[[i]]$SWE[last]
+      forecast$plantWood[i] = ens[[i]]$AbvGrndWood[last]*1000 ## kgC/m2 -> gC/m2
+      forecast$lai[i] = ens[[i]]$LeafC[last]*prior$SLA[i]*0.5 ## kgC/m2*m2/kg*0.5kgC/kg -> m2/m2
+      forecast$litter[i] = ens[[i]]$Litter*1000 ##kgC/m2 -> gC/m2
+      forecast$soil[i] = ens[[i]]$TotSoilCarb[last]*1000 ## kgC/m2 -> gC/m2
+      forecast$litterWFrac[i] = ens[[i]]$SoilMoistFrac[last] ## unitless
+      forecast$soilWFrac[i] = ens[[i]]$SoilMoistFrac[last] ## unitless
+      forecast$snow[i] = ens[[i]]$SWE[last]*0.1 ## kg/m2 -> cm
       #forecast$microbe[i] = NA
    }
    X    = cbind(NPPm,forecast)
