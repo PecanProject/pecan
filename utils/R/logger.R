@@ -13,7 +13,7 @@
 .utils.logger$stderr   <- TRUE
 .utils.logger$quit     <- FALSE
 .utils.logger$level    <- 0
-.utils.logger$width    <- 60
+.utils.logger$width    <- ifelse(getOption("width")<10, getOption("width"), getOption("width")-5)
 
 ##' Prints a debug message.
 ##' 
@@ -139,7 +139,7 @@ logger.message <- function(level, msg, ...) {
                 stamp.text <- sprintf("%s %-6s [%s] :", Sys.time(), level, func)
                 long.msg <- paste(c(msg, ...), collapse=" ")
                 if(nchar(long.msg) > 20){
-                    new.msg <- paste("\n", strwrap(long.msg, width=.utils.logger$width), collapse = " ")
+                    new.msg <- paste("\n", strwrap(long.msg, width=.utils.logger$width, indent=2, exdent=2), collapse = " ")
                 } else {
                     new.msg <- long.msg
                 }

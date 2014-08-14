@@ -8,6 +8,9 @@
  * http://opensource.ncsa.illinois.edu/license.html
  */
 
+// what site is earth
+$earth=1118;
+
 // Check login
 require("common.php");
 open_database();
@@ -72,13 +75,26 @@ if (!$stmt->execute(array($siteid))) {
 $siteinfo = $stmt->fetch(PDO::FETCH_ASSOC);
 $stmt->closeCursor();
 
-// get model info
-$stmt = $pdo->prepare("SELECT * FROM models WHERE models.id=?");
-if (!$stmt->execute(array($modelid))) {
+// get list of inputs
+$stmt = $pdo->prepare("SELECT tag, inputs.id, modeltypes_formats.required, formats.name, dbfiles.file_name, sites.sitename, inputs.start_date, inputs.end_date" .
+                      " FROM sites, inputs, dbfiles, machines, modeltypes_formats, models, formats" .
+                      " WHERE (inputs.site_id=${earth} OR inputs.site_id=?)" .
+                      " AND inputs.id=dbfiles.container_id AND dbfiles.container_type='Input'" .
+                      " AND dbfiles.machine_id=machines.id AND machines.hostname=?" .
+                      " AND inputs.format_id=modeltypes_formats.format_id AND inputs.site_id=sites.id" .
+                      " AND modeltypes_formats.modeltype_id=models.modeltype_id AND models.id=?" .
+                      " AND modeltypes_formats.input AND formats.id=inputs.format_id;");
+if (!$stmt->execute(array($siteid, $hostname, $modelid))) {
   die('Invalid query: ' . error_database());
 }
-$model = $stmt->fetch(PDO::FETCH_ASSOC);
+$inputs = $stmt->fetchall(PDO::FETCH_ASSOC);
 $stmt->closeCursor();
+
+// get list of tags
+$tags=[];
+foreach($inputs as $input) {
+  $tags[$input['tag']] = $input['required'];
+}
 
 ?>
 <!DOCTYPE html>
@@ -98,48 +114,45 @@ $stmt->closeCursor();
     if ($("#pft").val() == null) {
       $("#next").attr("disabled", "disabled");
       $("#error").html("Select a pft to continue");
-      $("#pftlabel").text("PFT");
+      $("#pftlabel").html("PFT<sup>*</sup>");
       return;
 <?php if ($betydb != "") { ?>
     } else {
-      $("#pftlabel").html("PFT (Show in <a href=\"<?php echo $betydb; ?>/pfts/" + $("#pft option:selected")[0].getAttribute("data-id") + "\" target=\"BETY\">BETY</a>)");
+      $("#pftlabel").html("PFT<sup>*</sup> (Show in <a href=\"<?php echo $betydb; ?>/pfts/" + $("#pft option:selected")[0].getAttribute("data-id") + "\" target=\"BETY\">BETY</a>)");
 <?php } ?>
     }
+
+    // check inputs
+<?php
+  foreach($tags as $tag => $required) {
+    if ($required) {
+?>
+    if ($("#<?php echo $tag; ?>").val() == null) {
+      $("#next").attr("disabled", "disabled");
+      $("#error").html("Missing value for <?php echo $tag; ?>");
+      return;
+    }
+<?php
+    }
+  }
+?>
   
-<?php if (($model["model_type"] == "ED2") || ($model["model_type"] == "BIOCRO")) { ?>
     // check dates
-    var start = checkDate($("#start").val(), "Start");
-    if (!start) {
-      return;
+    if ($("#start").length != 0) {
+      var start = checkDate($("#start").val(), "Start");
+      if (!start) {
+        return;
+      }
+      var end = checkDate($("#end").val(), "End");
+      if (!end) {
+        return;
+      }
+      if (start >= end) {
+        $("#next").attr("disabled", "disabled");
+        $("#error").html("End date should be after start date.");
+        return;
+      }
     }
-    var end = checkDate($("#end").val(), "End");
-    if (!end) {
-      return;
-    }
-    if (start >= end) {
-      $("#next").attr("disabled", "disabled");
-      $("#error").html("End date should be after start date.");
-      return;
-    }
-<?php } ?>
-
-<?php if (($model["model_type"] == "ED2") || ($model["model_type"] == "SIPNET")) { ?>
-    // check MET
-    if ($("#met").val() == null) {
-      $("#next").attr("disabled", "disabled");
-      $("#error").html("Select a weather file to continue");
-      return;
-    }
-<?php } ?>
-
-<?php if ($model["model_type"] == "ED2") { ?>
-    // check psscss
-    if ($("#psscss").val() == null) {
-      $("#next").attr("disabled", "disabled");
-      $("#error").html("Select site files to continue");
-      return;
-    }
-<?php } ?>
 
     // all is OK
     $("#next").removeAttr("disabled");       
@@ -217,10 +230,9 @@ $stmt->closeCursor();
 <?php if ($offline) { ?>
       <input name="offline" type="hidden" value="offline">
 <?php } ?>
-      <input type="hidden" name="hostname" value="<?php echo $hostname; ?>" />
-      <input type="hidden" name="modelid" value="<?php echo $modelid; ?>" />
-      <input type="hidden" name="modeltype" value="<?php echo $model["model_type"]; ?>" />
       <input type="hidden" name="siteid" value="<?php echo $siteid; ?>" />
+      <input type="hidden" name="modelid" value="<?php echo $modelid; ?>" />
+      <input type="hidden" name="hostname" value="<?php echo $hostname; ?>" />
     </form>
 
     <form id="formnext" method="POST" action="04-runpecan.php">
@@ -232,16 +244,18 @@ $stmt->closeCursor();
 <?php } ?>
       <input type="hidden" name="siteid" value="<?php echo $siteid; ?>" />
       <input type="hidden" name="modelid" value="<?php echo $modelid; ?>" />
-      <input type="hidden" name="modeltype" value="<?php echo $model["model_type"]; ?>" />
       <input type="hidden" name="hostname" value="<?php echo $hostname; ?>" />
 
-      <label id="pftlabel">PFT</label>
+      <label id="pftlabel">PFT<sup>*</sup></label>
       <select id="pft" name="pft[]" multiple size=5 onChange="validate();">
 <?php 
 // show list of PFTs
-$result = $pdo->query("SELECT id, name FROM pfts WHERE model_type='" . $model["model_type"] . "' ORDER BY name");
+$stmt = $pdo->prepare("SELECT pfts.id, name FROM pfts, models WHERE models.id=? AND pfts.modeltype_id=models.modeltype_id ORDER BY name");
+if (!$stmt->execute(array($modelid))) {
+  die('Invalid query: ' . error_database());
+}
 $pfts = "";
-while ($row = @$result->fetch(PDO::FETCH_ASSOC)){
+while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)){
   if (in_array($row['name'], $selected_pfts)) {
     print "        <option data-id='{$row['id']}' selected>${row['name']}</option>\n";
   } else {
@@ -249,78 +263,55 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)){
   }
 }
 print "      </select>\n";
-print 
 print "      <div class=\"spacer\"></div>\n";
+$stmt->closeCursor();
 
-if (($model["model_type"] == "ED2") || ($model["model_type"] == "BIOCRO")) {
 ?>
-      <label>Start Date</label>
+      <label>Start Date<sup>*</sup></label>
       <input type="text" name="start" id="start" value="<?php echo $startdate; ?>" onChange="validate();"/>
       <div class="spacer"></div>
-      <label>End Date</label>
+      <label>End Date<sup>*</sup></label>
       <input type="text" name="end" id="end" value="<?php echo $enddate; ?>" onChange="validate();"/>
       <div class="spacer"></div>
 <?php
-}
 
-# query to get a file for a host
-$query="SELECT inputs.id, name, start_date, end_date" .
-       " FROM inputs, dbfiles, machines" .
-       " WHERE inputs.site_id=$siteid" .
-       " AND dbfiles.container_type='Input' AND dbfiles.container_id=inputs.id" .
-       " AND machines.hostname='${_REQUEST['hostname']}' AND machines.id=dbfiles.machine_id";
-
-if (($model["model_type"] == "ED2") || ($model["model_type"] == "SIPNET")) {
-  print "      <label>Weather Data file</label>\n";
-  print "      <select id=\"met\" name=\"met\" onChange=\"validate();\">\n";
-
-  // get met data
-  
-  if ($model["model_type"] == "ED2") {
-    $result = $pdo->query($query . " AND inputs.format_id=12");
-  } else if ($model["model_type"] == "SIPNET") {
-    $result = $pdo->query($query . " AND inputs.format_id=24");
-  }
-  
-  if (!$result) {
-    die('Invalid query: ' . error_database());
-  }
-  while ($row = @$result->fetch(PDO::FETCH_ASSOC)){
-    $row['name']="Weather " . substr($row['start_date'], 0, 4) . "-" . substr($row['end_date'], 0, 4);
-    print "        <option value='{$row['id']}'>{$row['name']}</option>\n";
-  }
-  print "      </select>\n";
-  print "      <div class=\"spacer\"></div>\n";
-}
-
-if ($model["model_type"] == "ED2") {
-  print "      <label>Site files (Site/PSS/CSS)</label>\n";
-  print "      <select id=\"psscss\" name=\"psscss\" onChange=\"validate();\">\n";
-
-  // get psscss data
-  $result = $pdo->query($query . " AND inputs.format_id=10");
-  if (!$result) {
-    die('Invalid query: ' . error_database());
-  }
-  while ($row = @$result->fetch(PDO::FETCH_ASSOC)){
-    if ($psscss == $row['id']) {
-      print "      <option value='{$row['id']}' selected>{$row['name']}</option>\n";
-    } else {
-      print "      <option value='{$row['id']}'>{$row['name']}</option>\n";
+# show list of all inputs
+foreach($tags as $tag => $required) {
+  $name=$tag;
+  foreach($inputs as $input) {
+    if ($input['tag'] == $tag) {
+      $name=substr($input['name'], 0, 20);
+      break;
     }
   }
-  if (isset($db_fia_database) && ($db_fia_database != "")) {
-    if ($psscss == "FIA") {
-      print "      <option value='FIA' selected>Use FIA</option>\n";
-    } else {
-      print "      <option value='FIA'>Use FIA</option>\n";
+  if ($required) {
+    print "      <label>${name}<sup>*</sup></label>\n";
+  } else {
+    print "      <label>${name}</label>\n";
+  }
+  print "      <select id=\"${tag}\" name=\"input_${tag}\" onChange=\"validate();\">\n";
+  if (!$required) {
+    print "      <option value='-1'></option>\n";
+  }
+  if (isset($db_fia_database) && ($db_fia_database != "" && ($tag == "pss" || $tag="css" || $tag="site"))) {
+    print "      <option value='FIA'>Use FIA</option>\n";
+  }
+  foreach($inputs as $input) {
+    if ($input['tag'] == $tag) {
+      if ($tag == 'met') {
+        $name="Weather " . substr($input['start_date'], 0, 4) . "-" . substr($input['end_date'], 0, 4);
+      } else if ($input['file_name'] == '') {
+        $name=$input['sitename'];
+      } else {
+        $name=$input['file_name'];
+      }
+      print "        <option value='${input['id']}'>${name}</option>\n";
     }
   }
   print "      </select>\n";
   print "      <div class=\"spacer\"></div>\n";
 }
 ?>
-
       <label title="Used to send email when the run is finished.">Email</label>
       <input id="email" name="email" type="text" value="<?php echo $email; ?>"/>  
       <div class="spacer"></div>
@@ -329,6 +320,7 @@ if ($model["model_type"] == "ED2") {
       <input id="advanced_edit" name="advanced_edit" type="checkbox" <?php echo $advanced_edit; ?>/>  
       <div class="spacer"></div>
 
+      <span class="small"><sup>*</sup> are required fields.</span>
       <p></p>
       <span id="error" class="small">&nbsp;</span>
       <input id="prev" type="button" value="Prev" onclick="prevStep();" />

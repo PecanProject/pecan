@@ -15,65 +15,86 @@ library(PEcAn.utils)
 ## INTERNAL FUNCTIONS
 ##--------------------------------------------------------------------------------------------------#
 
-check.input <- function(dbcon, name, value, hostname) {
-  # check for missing inputs
-  if (is.null(value)) {
-    logger.severe("Missing input :", name)
-  }
-
-  # replace input with actual data if it is an id
-  if (suppressWarnings(!is.na(as.numeric(value)))) {
-    if(!is.character(dbcon)) {
-      file <- dbfile.file("Input", value, dbcon, hostname)
-      if (is.na(file)) {
-        logger.severe("No file found for", name, " and id", value, "on host", hostname)
-      }
-      logger.info("Replacing", name, "and id", value, "with", file)
-      return(invisible(file))
-    } else {
-      logger.severe("No database information, but input", name, "specified with id.")
-    }
-  }
-
-  invisible(value)
-}
-
 # check to see if inputs are specified
 # this should be part of the model code
 check.inputs <- function(settings) {
-  if (is.null(settings$model$model_type)) return(settings)
+  if (is.null(settings$model$type)) return(settings)
 
-  dbcon <- "NONE"
-  if (!is.null(settings$database$bety)) {
-    dbcon <- db.open(settings$database$bety)
+  # don't know how to check inputs
+  if (is.null(settings$database$bety)) {
+    logger.info("No databasse connection, can't check inputs.")
+    return (settings)
   }
 
-  # check SIPNET inputs
-  if (settings$model$model_type == "SIPNET") {
-    # Check for MET file
-    settings$run$site$met <- check.input(dbcon, "run$site$met", settings$run$site$met, settings$run$host$name)
-  }
+  # get list of inputs associated with model type
+  dbcon <- db.open(settings$database$bety)
+  inputs <- db.query(paste0("SELECT tag, format_id, required FROM modeltypes, modeltypes_formats WHERE modeltypes_formats.modeltype_id = modeltypes.id and modeltypes.name='", settings$model$type, "' AND modeltypes_formats.input;"), con=dbcon)
 
-  # check ED2 inputs
-  if (settings$model$model_type == "ED2") {
-    # Check for MET file
-    settings$run$site$met <- check.input(dbcon, "run$site$met", settings$run$site$met, settings$run$host$name)
+  # check list of inputs  
+  allinputs <- names(settings$run$inputs)
+  if (nrow(inputs) > 0) {
+    for(i in 1:nrow(inputs)) {
+      tag <- inputs$tag[i]
+      tagid <- paste0(tag, ".id")
+      hostname <- settings$run$host$name
+      allinputs <- allinputs[allinputs != tag]
 
-    # Check for ED specific files
-    settings$model$veg <- check.input(dbcon, "model$veg", settings$model$veg, settings$run$host$name)
-    settings$model$soil <- check.input(dbcon, "model$soil", settings$model$soil, settings$run$host$name)
-    settings$model$psscss <- check.input(dbcon, "model$psscss", settings$model$psscss, settings$run$host$name)
-    settings$model$inputs <- check.input(dbcon, "model$inputs", settings$model$inputs, settings$run$host$name)
-  }
+      # check if <tag.id> exists
+      if (!is.null(settings$run$inputs[[tagid]])) {
+        id <- settings$run$inputs[[tagid]]
+        file <- dbfile.file("Input", id, dbcon, hostname)
+        if (is.na(file)) {
+          logger.error("No file found for", tag, " and id", id, "on host", hostname)
+        } else {
+          if (is.null(settings$run$inputs[[tag]])) {
+            settings$run$inputs[[tag]] <- file
+          } else if (file != settings$run$inputs[[tag]]) {
+            logger.warn("Input file and id do not match for ", tag)
+          }
+        }
+      }
+      
+      # check if file exists
+      if (is.null(settings$run$inputs[[tag]])) {
+        if (inputs$required[i]) {
+          logger.severe("Missing required input :", tag)
+        } else {
+          logger.info("Missing optional input :", tag)
+        }
+        
+      } else {
+        # can we find the file so we can set the tag.id
+        if (is.null(settings$run$inputs[[tagid]])) {
+          id <- dbfile.id('Input', settings$run$inputs[[tag]], dbcon, hostname)
+          if (!is.na(id)) {
+            settings$run$inputs[[tagid]] <- id
+          }
+        }
+      }
 
-  # check BIOCRO inputs
-  if (settings$model$model_type == "BIOCRO") {
-    
+      # check to see if format is right type
+      if (!is.null(settings$run$inputs[[tagid]])) {
+        formats <- db.query(paste0("SELECT format_id FROM inputs WHERE id=", settings$run$inputs[[tagid]]), con=dbcon)
+        if (nrow(formats) > 1) {
+          if (formats[1, 'format_id'] != inputs$format_id[i]) {
+            logger.error("Format of input", tag, "does not match specified input.")
+          }
+        } else if (nrow(formats) == 1) {
+          if (formats[1, 'format_id'] != inputs$format_id[i]) {
+            logger.error("Format of input", tag, "does not match specified input.")
+          }
+        } else {
+          logger.error("Could not check format of", tag, ".")
+        }
+      }
+    }
   }
-
-  if(!is.character(dbcon)) {
-    db.close(dbcon)
+  
+  if (length(allinputs) > 0) {
+    logger.info("Unused inputs found :", paste(allinputs, collapse=" "))
   }
+  
+  db.close(dbcon)
 
   return(settings)
 }
@@ -169,10 +190,6 @@ check.database <- function(database) {
   return(database)
 } 
 
-##--------------------------------------------------------------------------------------------------#
-## EXTERNAL FUNCTIONS
-##--------------------------------------------------------------------------------------------------#
-
 ##' Sanity checks. Checks the settings file to make sure expected fields exist. It will try to use
 ##' default values for any missing values, or stop the exection if no defaults are possible.
 ##'
@@ -181,7 +198,6 @@ check.database <- function(database) {
 ##' @title Check Settings
 ##' @param settings settings file
 ##' @return will return the updated settings values with defaults set.
-##' @export
 ##' @author Rob Kooper
 check.settings <- function(settings) {
   if (!is.null(settings$nocheck)) {
@@ -194,36 +210,6 @@ check.settings <- function(settings) {
   # check database secions if exist
   dbcon <- "NONE"
   if (!is.null(settings$database)) {
-
-    # simple check to make sure the database tag is updated
-    if (!is.null(settings$database$dbname)) {
-      if (!is.null(settings$database$bety)) {
-        logger.severe("Please remove dbname etc from database configuration.")
-      }
-
-      logger.info("Database tag has changed, please use <database><bety> to store",
-                 "information about accessing the BETY database. See also",
-                 "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#database-access.")
-
-      bety <- list()
-      for(name in names(settings$database)) {
-        bety[[name]] <- settings$database[[name]]
-      }
-      settings$database <- list(bety=bety)
-    }
-
-    # warn user about change and update settings
-    if (!is.null(settings$bety$write)) {
-      logger.warn("<bety><write> is now part of the database settings. For more",
-                  "information about the database settings see",
-                  "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#database-access.")
-      if (is.null(settings$database$bety$write)) {
-        settings$database$bety$write <- settings$bety$write
-        settings$bety$write <- NULL
-        if (length(settings$bety) == 0) settings$bety <- NULL
-      }
-    }
-
     # check all databases
     for (name in names(settings$database)) {
       settings$database[[name]] <- check.database(settings$database[[name]])
@@ -415,92 +401,80 @@ check.settings <- function(settings) {
     if(!is.character(dbcon)){
       if(!is.null(settings$model$id)){
         if(as.numeric(settings$model$id) >= 0){
-          model <- db.query(paste0("SELECT * FROM models WHERE models.id=", settings$model$id), con=dbcon)
+          model <- db.query(paste0("SELECT models.id AS id, models.revision AS revision, modeltypes.name AS type FROM models, modeltypes WHERE models.id=", settings$model$id, " AND models.modeltype_id=modeltypes.id;"), con=dbcon)
           if(nrow(model) == 0) {
             logger.error("There is no record of model_id = ", settings$model$id, "in database")
           }
         } else {
-          model <- settings$model
+          model <- list()
         }
-      } else if (!is.null(settings$model$name)) {
-        model <- db.query(paste0("SELECT * FROM models ",
-                                 "WHERE (model_name = '", settings$model$name, "' or model_type = '", toupper(settings$model$name), "')",
+      } else if (!is.null(settings$model$type)) {
+        model <- db.query(paste0("SELECT models.id AS id, models.revision AS revision, modeltypes.name AS type FROM models, modeltypes ",
+                                 "WHERE modeltypes.name = '", toupper(settings$model$type), "' ",
+                                 "AND models.modeltype_id=modeltypes.id",
                                  ifelse(is.null(settings$model$revision), "", 
-                                        paste0(" and revision like '%", settings$model$revision, "%' "))), con=dbcon)
+                                        paste0(" AND revision like '%", settings$model$revision, "%' ")),
+                                 "ORDER BY models.updated_at"), con=dbcon)
         if(nrow(model) > 1){
-          logger.warn("multiple records for", settings$model$name, "returned; using the most recent")
+          logger.warn("multiple records for", settings$model$name, "returned; using the latest")
           row <- which.max(model$updated_at)
           if (length(row) == 0) row <- nrow(model)
           model <- model[row, ]
         } else if (nrow(model) == 0) {
-          logger.warn("Model", settings$model$name, "not in database")
-          model <- list(id=-1, name=settings$model$name)
+          logger.warn("Model type", settings$model$type, "not in database")
         }
       } else {
         logger.warn("no model settings given")
         model <- list()
       }
     } else {
-      if(!is.null(settings$model$name)){
-        model <- list(id=-1, name=settings$model$name)
-        if (!is.null(settings$model$model_type)) {
-          model$model_type <- settings$model$model_type
-        } else {
-          model$model_type <- settings$model$name
-        }
-      } else {
-        model <- list()
-      }
+      model <- list()
     }
-
-    # check on model_type
 
     # copy data from database into missing fields
-    if (is.null(settings$model$id)) {
-      if ((is.null(model$id) || model$id == "")) {
-        logger.warn("No model id specified.")
-        settings$model$id <- -1
-      } else {
+    if (!is.null(model$id)) {
+      if (is.null(settings$model$id) || (settings$model$id == "")) {
         settings$model$id <- model$id
+        logger.info("Setting model id to ", settings$model$id)
+      } else if (settings$model$id != model$id) {
+        logger.warn("Model id specified in settings file does not match database.")
       }
-      logger.info("Setting model id to ", settings$model$id)
+    }
+    if (!is.null(model$type)) {
+      if (is.null(settings$model$type) || (settings$model$type == "")) {
+        settings$model$type <- model$type
+        logger.info("Setting model type to ", settings$model$type)
+      } else if (settings$model$type != model$type) {
+        logger.warn("Model type specified in settings file does not match database.")
+      }
+    }
+    if (!is.null(model$revision)) {
+      if (is.null(settings$model$revision) || (settings$model$revision == "")) {
+        settings$model$revision <- model$revision
+        logger.info("Setting model revision to ", settings$model$revision)
+      } else if (settings$model$revision != model$revision) {
+        logger.warn("Model revision specified in settings file does not match database.")
+      }
     }
 
-    # check on name
-    if (is.null(settings$model$name)) {
-      if ((is.null(model$model_type) || model$model_type == "")) {
-        logger.severe("No model_type or name specified.")
-      }
-      settings$model$name <- model$model_type
-      logger.info("Setting model name to ", settings$model$name)
-    } 
-
     # make sure we have model type
-    if ((is.null(settings$model$model_type) || settings$model$model_type == "")) {
-      settings$model$model_type <- ifelse(is.null(model$model_type), settings$model$name, model$model_type)
-      logger.info("Setting model type to ", settings$model$model_type)
-    } else if (model$model_type != settings$model$model_type) {
-      logger.warn("Specified model type [", settings$model$model_type, "] does not match model_type in database [", model$model_type, "]")
+    if ((is.null(settings$model$type) || settings$model$type == "")) {
+      logger.severe("Need a model type.")
     }
 
     # check on binary for given host
-    if (!is.null(model$id) && (model$id >= 0)) {
-      binary <- dbfile.file("Model", model$id, dbcon, settings$run$host$name)
+    if (!is.null(settings$model$id) && (settings$model$id >= 0)) {
+      binary <- dbfile.file("Model", settings$model$id, dbcon, settings$run$host$name)
       if (!is.na(binary)) {
-        model$binary <- binary
+        if (is.null(settings$model$binary)) {
+          settings$model$binary <- binary
+          logger.info("Setting model binary to ", settings$model$binary)
+        } else if (binary != settings$model$binary) {
+          logger.warn("Specified binary [", settings$model$binary, "] does not match path in database [", binary, "]")
+        }
       }
-    }
-    
-    if (is.null(settings$model$binary)) {
-      if ((is.null(model$binary) || model$binary == "")) {
-        logger.warn("No model binary specified.")
-      }
-      settings$model$binary <- model$binary
-      logger.info("Setting model binary to ", settings$model$binary)
-    } else if ((is.null(model$binary) || model$binary == "")) {
-      logger.warn("No model binary sepcified in database for model ", settings$model$name)
-    } else if (model$binary != settings$model$binary) {
-      logger.warn("Specified binary [", settings$model$binary, "] does not match path in database [", model$binary, "]")
+    } else {
+      logger.warn("No model binary sepcified in database for model ", settings$model$type)      
     }
   }
   # end model check
@@ -702,17 +676,17 @@ check.settings <- function(settings) {
       
       #check to see if name of each pft in xml file is actually a name of a pft already in database
       if (!is.character(dbcon)) {
-        x <- db.query(paste0("SELECT * FROM pfts WHERE name = '",  settings$pfts[i]$pft$name, "';"), con=dbcon)
+        x <- db.query(paste0("SELECT modeltypes.name AS type FROM pfts, modeltypes WHERE pfts.name = '",  settings$pfts[i]$pft$name, "' AND modeltypes.id=pfts.modeltype_id;"), con=dbcon)
         if (nrow(x) == 0) {
           logger.severe("Did not find a pft with name ", settings$pfts[i]$pft$name)
         }
         if (nrow(x) > 1) {
           logger.warn("Found multiple entries for pft with name ", settings$pfts[i]$pft$name)
         }
-        if (!is.null(settings[['model']]) && !is.null(settings$model$model_type)) {
+        if (!is.null(settings$model$type)) {
           for (j in 1:nrow(x)) {
-            if (x[[j, 'model_type']] != settings$model$model_type) {
-              logger.severe(settings$pfts[i]$pft$name, "has different model type [", x[[j, 'model_type']], "] than selected model [", settings$model$model_type, "].")
+            if (x[[j, 'type']] != settings$model$type) {
+              logger.severe(settings$pfts[i]$pft$name, "has different model type [", x[[j, 'type']], "] than selected model [", settings$model$type, "].")
             }
           }
         }
@@ -744,6 +718,169 @@ check.settings <- function(settings) {
   invisible(settings)
 }
 
+##' Updates a pecan.xml file to match new layout. This will take care of the
+##' conversion to the latest pecan.xml file.
+##'
+##' @title Update Settings
+##' @param settings settings file
+##' @return will return the updated settings values
+##' @author Rob Kooper
+update.settings <- function(settings) {
+  # update database section, now have different database definitions
+  # under database section, e.g. fia and bety
+  if (!is.null(settings$database)) {
+    # simple check to make sure the database tag is updated
+    if (!is.null(settings$database$dbname)) {
+      if (!is.null(settings$database$bety)) {
+        logger.severe("Please remove dbname etc from database configuration.")
+      }
+
+      logger.info("Database tag has changed, please use <database><bety> to store",
+                 "information about accessing the BETY database. See also",
+                 "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#database-access.")
+
+      bety <- list()
+      for(name in names(settings$database)) {
+        bety[[name]] <- settings$database[[name]]
+      }
+      settings$database <- list(bety=bety)
+    }
+
+    # warn user about change and update settings
+    if (!is.null(settings$bety$write)) {
+      logger.warn("<bety><write> is now part of the database settings. For more",
+                  "information about the database settings see",
+                  "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#database-access.")
+      if (is.null(settings$database$bety$write)) {
+        settings$database$bety$write <- settings$bety$write
+        settings$bety$write <- NULL
+        if (length(settings$bety) == 0) settings$bety <- NULL
+      }
+    }
+  }
+
+  # model$model_type is now simply model$type and model$name is no longer used
+  if (!is.null(settings$model$model_type)) {
+    if (!is.null(settings$model$type)) {
+      if (settings$model$model_type != settings$model$type) {
+        logger.severe("Please remove model_type from model configuration.")
+      } else {
+        logger.info("Please remove model_type from model configuration.")
+      }
+    }
+
+    logger.info("Model tag has changed, please use <model><type> to specify",
+                 "type of model. See also",
+                 "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#model_setup.")
+    settings$model$type <- settings$model$model_type
+    settings$model$model_type <- NULL
+  }
+  if (!is.null(settings$model$name)) {
+    if (!is.null(settings$model$type)) {
+      if (settings$model$name != settings$model$type) {
+        logger.severe("Please remove name from model configuration.")
+      } else {
+        logger.info("Please remove name from model configuration.")
+      }
+    }
+
+    logger.info("Model tag has changed, please use <model><type> to specify",
+                 "type of model. See also",
+                 "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#model_setup.")
+    settings$model$type <- settings$model$name
+    settings$model$name <- NULL
+  }
+
+  # run$site$met is now run$inputs$met
+  if (!is.null(settings$run$site$met)) {
+    if (!is.null(settings$run$inputs$met)) {
+      if (settings$run$site$met != settings$run$inputs$met) {
+        logger.severe("Please remove met from model configuration.")
+      } else {
+        logger.info("Please remove met from model configuration.")
+      }
+    }
+    if (is.null(settings$run$inputs)) {
+      settings$run$inputs <- list()
+    }
+    logger.info("Model tag has changed, please use <inputs><met> to specify",
+                 "met file for a run. See also",
+                 "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup.")
+    settings$run$inputs$met <- settings$run$site$met
+    settings$run$site$met <- NULL
+  }
+
+  # some specific ED changes
+  if (!is.null(settings$model$veg)) {
+    if (!is.null(settings$run$inputs$veg)) {
+      if (settings$model$veg != settings$run$inputs$veg) {
+        logger.severe("Please remove veg from model configuration.")
+      } else {
+        logger.info("Please remove veg from model configuration.")
+      }
+    }
+    if (is.null(settings$run$inputs)) {
+      settings$run$inputs <- list()
+    }
+    logger.info("Model tag has changed, please use <inputs><veg> to specify",
+                 "veg file for a run. See also",
+                 "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup.")
+    settings$run$inputs$veg <- settings$model$veg
+    settings$model$veg <- NULL
+  }
+  if (!is.null(settings$model$soil)) {
+    if (!is.null(settings$run$inputs$soil)) {
+      if (settings$model$soil != settings$run$inputs$soil) {
+        logger.severe("Please remove soil from model configuration.")
+      } else {
+        logger.info("Please remove soil from model configuration.")
+      }
+    }
+    if (is.null(settings$run$inputs)) {
+      settings$run$inputs <- list()
+    }
+    logger.info("Model tag has changed, please use <inputs><soil> to specify",
+                 "soil file for a run. See also",
+                 "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup.")
+    settings$run$inputs$soil <- settings$model$soil
+    settings$model$soil <- NULL
+  }
+  if (!is.null(settings$model$psscss)) {
+    if (!is.null(settings$run$inputs$pss)) {
+      logger.info("Please remove psscss from model configuration.")
+    }
+    if (is.null(settings$run$inputs)) {
+      settings$run$inputs <- list()
+    }
+    logger.info("Model tag has changed, please use <inputs><pss/css/site> to specify",
+                 "pss/css/site file for a run. See also",
+                 "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup.")
+    settings$run$inputs$pss <- file.path(settings$model$psscss, "foo.pss")
+    settings$run$inputs$css <- file.path(settings$model$psscss, "foo.css")
+    settings$run$inputs$site <- file.path(settings$model$psscss, "foo.site")
+    settings$model$psscss <- NULL
+  }
+  if (!is.null(settings$model$inputs)) {
+    if (!is.null(settings$run$inputs$inputs)) {
+      logger.info("Please remove inputs from model configuration.")
+    }
+    if (is.null(settings$run$inputs)) {
+      settings$run$inputs <- list()
+    }
+    logger.info("Model tag has changed, please use <inputs><lu/thsums> to specify",
+                 "lu/thsums file for a run. See also",
+                 "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup.")
+    settings$run$inputs$lu <- file.path(settings$model$inputs, "glu")
+    settings$run$inputs$thsums <- settings$model$inputs
+    settings$model$soil <- NULL
+  }
+
+  invisible(settings)
+}
+
+##--------------------------------------------------------------------------------------------------#
+## EXTERNAL FUNCTIONS
+##--------------------------------------------------------------------------------------------------#
 
 ##' Loads PEcAn settings file
 ##' 
@@ -792,19 +929,16 @@ read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml"){
         break
       }
     }
-    if (!is.null(inputfile)){
-      logger.info("input file ", inputfile, "not used, ", loc, "as environment variable")
-    } 
-
-  } else if(!is.null(inputfile) && file.exists(inputfile)) {
-    # 2 filename passed into function
-    logger.info("Loading inpufile=", inputfile)
-    xml <- xmlParse(inputfile)
 
   } else if (file.exists(Sys.getenv("PECAN_SETTINGS"))) {
-    # 3 load from PECAN_SETTINGS
+    # 2 load from PECAN_SETTINGS
     logger.info("Loading PECAN_SETTINGS=", Sys.getenv("PECAN_SETTINGS"))
     xml <- xmlParse(Sys.getenv("PECAN_SETTINGS"))
+
+  } else if(!is.null(inputfile) && file.exists(inputfile)) {
+    # 3 filename passed into function
+    logger.info("Loading inpufile=", inputfile)
+    xml <- xmlParse(inputfile)
 
   } else if (file.exists("pecan.xml")) {
     # 4 load ./pecan.xml
@@ -813,11 +947,13 @@ read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml"){
 
   } else {
     # file not found
-    stop("Could not find a pecan.xml file")
+    logger.severe("Could not find a pecan.xml file")
   }
 
   ## convert the xml to a list for ease and return
-  settings <- check.settings(xmlToList(xml))
+  settings <- xmlToList(xml)
+  settings <- update.settings(settings)
+  settings <- check.settings(settings)
 
   ## save the checked/fixed pecan.xml
   if (!is.null(outputfile)) {
