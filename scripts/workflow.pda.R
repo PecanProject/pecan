@@ -103,8 +103,8 @@ dev.off()
 
 # create a new Posteriors DB entry
 now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-db.query(paste0("INSERT INTO posteriors (pft_id, created_at, updated_at) VALUES (", pftid, ", '", now, "', '", now, "')"), dbcon)
-posteriorid <- db.query(paste0("SELECT id FROM posteriors WHERE pft_id=", pftid, " AND created_at='", now, "'"), dbcon)[['id']]
+db.query(paste0("INSERT INTO posteriors (pft_id, created_at, updated_at) VALUES (", pft.id, ", '", now, "', '", now, "')"), con)
+posteriorid <- db.query(paste0("SELECT id FROM posteriors WHERE pft_id=", pft.id, " AND created_at='", now, "'"), con)[['id']]
 
 ## Save raw MCMC
 filename = file.path(settings$outdir,"pda.mcmc.Rdata")
@@ -135,7 +135,7 @@ for(i in var.rows){
 ## so that they can be read by the ensemble code
 filename = file.path(settings$pfts$pft$outdir, 'trait.mcmc.Rdata')
 save(trait.mcmc,file=filename)
-dbfile.insert(filename, 'Posterior', pft$posteriorid, con)
+dbfile.insert(filename, 'Posterior', posteriorid, con)
 status.end()
 #--------------------------------------------------------------------------------------------------#
 
