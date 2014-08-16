@@ -28,6 +28,8 @@ run.sensitivity.analysis <- function(plot=TRUE){
   
   if ('sensitivity.analysis' %in% names(settings)) {
     
+    variables = settings$sensitivity.analysis$variable
+    
     ### Load parsed model results
     load(file.path(settings$outdir, 'sensitivity.Rdata'))
     load(file.path(settings$outdir, 'samples.Rdata'))
