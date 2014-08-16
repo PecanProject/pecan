@@ -68,12 +68,13 @@ run.sensitivity.analysis <- function(plot=TRUE){
         print(sensitivity.output[[pft$name]])
         
         ### Plotting - Optional
+        start.year <- ifelse(is.null(settings$ensemble$start.year), NA, settings$ensemble$start.year)
+        end.year   <- ifelse(is.null(settings$ensemble$end.year), NA, settings$ensemble$end.year)
+        ftime = ifelse(is.na(start.year),"",
+                       ifelse(end.year==start.year,paste0(".",start.year),
+                              paste0(".",start.year,"-",end.year)))
         if(plot){
-          start.year <- ifelse(is.null(settings$ensemble$start.year), NA, settings$ensemble$start.year)
-          end.year   <- ifelse(is.null(settings$ensemble$end.year), NA, settings$ensemble$end.year)
-          ftime = ifelse(is.na(start.year),"",
-                         ifelse(end.year==start.year,paste0(".",start.year),
-                                paste0(".",start.year,"-",end.year)))
+
           fname = paste0("sensitivity.analysis.",variables[1],ftime,".pdf")
           
           ### Generate SA diagnostic plots
@@ -90,14 +91,16 @@ run.sensitivity.analysis <- function(plot=TRUE){
           ### Generate VD diagnostic plots
           vd.plots <- plot.variance.decomposition(sensitivity.results[[pft$name]]$variance.decomposition.output)
           #variance.scale = log, variance.prefix='Log')
-          pdf(file.path(pft$outdir, 'variancedecomposition.pdf'), width = 11, height = 8)
+          fname = paste0("variancedecomposition.",variables[1],ftime,".pdf")
+          pdf(file.path(pft$outdir,fname), width = 11, height = 8)
           do.call(grid.arrange, c(vd.plots, ncol = 4))
           dev.off()
         }
 
     }  ## end if sensitivity analysis
 
-    save(sensitivity.results, file = file.path(settings$outdir, "sensitivity.results.Rdata"))
+    fname = paste0("sensitivity.results.",variables[1],ftime,".Rdata")
+    save(sensitivity.results, file = file.path(settings$outdir,fname))
   }
 }
 #==================================================================================================#
