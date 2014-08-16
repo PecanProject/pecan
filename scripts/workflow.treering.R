@@ -15,6 +15,8 @@ status.end <- function(status="DONE") {
 
 #---------------- Load libraries. -----------------------------------------------------------------#
 require(PEcAn.all)
+library(PEcAn.assim.sequential)
+library(PEcAn.visualization)
 #--------------------------------------------------------------------------------------------------#
 #
 #  dir.create("~/demo.sda")
@@ -76,7 +78,7 @@ status.end()
 
 #---------------- Build Initial Conditions ----------------------------------------------------------------------#
 status.start("IC")
-ne = settings$assim.sequential$n.ensemble
+ne = as.numeric(settings$assim.sequential$n.ensemble)
 IC = sample.IC.SIPNET(ne,state)
 status.end()
 
