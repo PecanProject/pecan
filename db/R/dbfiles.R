@@ -300,3 +300,48 @@ dbfile.file <- function(type, id, con, hostname=fqdn()) {
     invisible(NA)
   }
 }
+
+##' Function to return id to containter type given a filename.
+##'
+##' This will check the dbfiles and machines to see if the file exists,
+##' and return the id of the container type of the first one found. If 
+##' none is found it will return NA.
+##'
+##' @name dbfile.file
+##' @title Return id from the dbfiles tables
+##' @param type the type of dbfile (Input, Posterior)
+##' @param file the full pathname to the file
+##' @param con database connection object
+##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
+##' @return filename on host, or NA if none found
+##' @author Rob Kooper
+##' @export
+##' @examples
+##' \dontrun{
+##'   dbfile.id('Model', '/usr/local/bin/sipnet', dbcon)
+##' }
+dbfile.id <- function(type, file, con, hostname=fqdn()) {
+  if (hostname == "localhost") hostname=fqdn();
+
+  # find appropriate host
+  hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", hostname, "'"), con)[['id']]
+  if (is.null(hostid)) {
+    return(invisible(NA))
+  }
+  
+  # find file
+  file_name <- basename(file)
+  file_path <- dirname(file)
+  ids <- db.query(paste0("SELECT container_id FROM dbfiles WHERE container_type='", type, "' AND file_path='", file_path, "' AND file_name='", file_name, "' AND machine_id=", hostid), con)
+  
+  if(nrow(ids) > 1) {
+    logger.warn("multiple ids found for", file, "returned; using the first one found")
+    invisible(ids[1, 'container_id'])
+  } else if (nrow(ids) == 1) {
+    invisible(ids[1, 'container_id'])
+  } else {
+    logger.warn("no id found for", file, "in database")
+    invisible(NA)
+  }
+}
+

@@ -75,7 +75,7 @@ run.ensemble.analysis <- function(plot.timeseries=NA){
   ### Plot ensemble time-series
   if (!is.na(plot.timeseries)){
     pdf(file.path(settings$outdir,"ensemble.ts.pdf"),width=12,height=9)    
-    ensemble.ts(read.ensemble.ts(settings$model$name))
+    ensemble.ts(read.ensemble.ts(settings$model$type))
     dev.off()
   }
 
