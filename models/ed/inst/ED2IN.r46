@@ -237,7 +237,7 @@
 !------------------------------------------------------------------------------------------!
    NL%VEG_DATABASE      = '@ED_VEG@'
    NL%SOIL_DATABASE     = '@ED_SOIL@'
-   NL%ED_INPUTS_DIR   = '/home/share/dietze_lab/ed_db/ed_inputs/'
+   NL%ED_INPUTS_DIR   = '@ED_THSUM@'
                     ! Directory where chd, dgd and glu data are kept.
 
 !----- File containing information for meteorological drivers -----------------------------!

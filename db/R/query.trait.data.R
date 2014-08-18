@@ -14,7 +14,7 @@
 ##' @name fetch.stats2se
 ##' @title Fetch data and transform stats to SE
 ##' @param connection connection to trait database
-##' @param query MySQL query to traits table
+##' @param query to send to databse
 ##' @return dataframe with trait data
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{transformstats}} performs transformation calculations
 ##' @author <unknown>
@@ -38,7 +38,7 @@ fetch.stats2se <- function(connection, query){
 ##' @param ... extra arguments
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}}; \code{\link{transformstats}} performs transformation calculations
 ##' @author David LeBauer, Carl Davidson
-query.data <- function(trait, spstr, extra.columns='sites.lat, sites.lon, ', con=NULL, ...) {
+query.data <- function(trait, spstr, extra.columns='ST_X(sites.geometry) AS lon, ST_Y(sites.geometry) AS lat, ', con=NULL, ...) {
   if (is.null(con)) {
     logger.error("No open database connection passed in.")
     con <- db.open(settings$database$bety)
@@ -74,7 +74,7 @@ query.data <- function(trait, spstr, extra.columns='sites.lat, sites.lon, ', con
 ##' @param ... extra arguments
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}}; \code{\link{transformstats}} performs transformation calculations
 ##' @author <unknown>
-query.yields <- function(trait = 'yield', spstr, extra.columns='', con=query.base.con(settings), ...){
+query.yields <- function(trait = 'yield', spstr, extra.columns='', con=NULL, ...){
   query <- paste("select
             yields.id, yields.citation_id, yields.site_id, treatments.name,
             yields.date, yields.time, yields.cultivar_id, yields.specie_id,
@@ -141,7 +141,7 @@ append.covariate<-function(data, column.name, ..., covariates.data=list(...)){
 ##' @param ... extra arguments
 ##'
 ##' @author <unknown>
-query.covariates<-function(trait.ids, con = query.base.con(settings), ...){
+query.covariates<-function(trait.ids, con = NULL, ...){
   covariate.query <- paste("select covariates.trait_id, covariates.level,variables.name",
                            "from covariates left join variables on variables.id = covariates.variable_id",
                            "where trait_id in (",vecpaste(trait.ids),")")
@@ -406,10 +406,10 @@ derive.traits <- function(FUN, ..., input=list(...),
 ##' @examples
 ##' \dontrun{
 ##' settings <- read.settings()
-##' query.trait.data("Vcmax", "938", con = query.base.con(settings))
+##' query.trait.data("Vcmax", "938", con = con)
 ##' }
 ##' @author David LeBauer, Carl Davidson, Shawn Serbin
-query.trait.data <- function(trait, spstr, con = query.base.con(settings), ...){
+query.trait.data <- function(trait, spstr, con = NULL, ...){
 
   if(is.list(con)){
     print("query.trait.data")

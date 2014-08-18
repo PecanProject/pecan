@@ -78,10 +78,11 @@ if ($authentication) {
 // get run information
 $query = "SELECT workflows.id, workflows.folder, workflows.start_date, workflows.end_date, workflows.started_at, workflows.finished_at, " .
          "CONCAT(coalesce(sites.sitename, ''), ', ', coalesce(sites.city, ''), ', ', coalesce(sites.state, ''), ', ', coalesce(sites.country, '')) AS sitename, " .
-         "CONCAT(coalesce(models.model_name, ''), ' r', coalesce(models.revision, '')) AS modelname, models.model_type " .
+         "CONCAT(coalesce(models.model_name, ''), ' ', coalesce(models.revision, '')) AS modelname, modeltypes.name " .
          "FROM workflows " .
          "LEFT OUTER JOIN sites on workflows.site_id=sites.id " .
          "LEFT OUTER JOIN models on workflows.model_id=models.id " .
+         "LEFT OUTER JOIN modeltypes on models.modeltype_id=modeltypes.id " .
          "ORDER BY workflows.id DESC";
 $result = $pdo->query($query);
 if (!$result) {
@@ -115,7 +116,7 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
           <div id="cell"><a href="<?php echo $url; ?>?workflowid=<?php echo $row['id']; ?>"><?php echo $row['id']; ?></a></div>
           <div id="cell"><?php echo $row['sitename']; ?></div>
           <div id="cell"><?php echo $row['modelname']; ?></div>
-          <div id="cell"><?php echo $row['model_type']; ?></div>
+          <div id="cell"><?php echo $row['name']; ?></div>
           <div id="cell"><?php echo $row['start_date']; ?></div>
           <div id="cell"><?php echo $row['end_date']; ?></div>
           <div id="cell"><?php echo $row['started_at']; ?></div>

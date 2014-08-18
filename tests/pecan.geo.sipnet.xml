@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<pecan>
+  
+  <database>
+    <bety>
+      <user>bety</user>
+      <password>bety</password>
+      <host>localhost</host>
+      <dbname>bety</dbname>
+    </bety>
+  </database>
+
+  <bety>
+    <write>TRUE</write>
+  </bety>
+
+  <pfts>
+    <pft>
+      <name>sipnet.temperate.coniferous</name> 
+    </pft>
+  </pfts>
+
+  <ensemble>
+    <variable>NPP</variable>
+  </ensemble>
+
+  <model>
+    <name>SIPNET</name>
+    <binary>/usr2/collab/kooper/sipnet_unk/sipnet</binary>
+  </model>
+
+  <run>
+    <site>
+      <id>772</id>
+      <met>/usr2/collab/kooper/sites/niwot/niwot.clim</met>
+    </site>
+    <start.date>2002-01-01 00:00:00</start.date>
+    <end.date>2005-12-31 00:00:00</end.date>
+    <host>
+      <name>geo.bu.edu</name>
+    </host>
+  </run>
+</pecan>

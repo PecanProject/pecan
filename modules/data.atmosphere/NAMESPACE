@@ -9,10 +9,12 @@ export(get.vpd)
 export(lightME)
 export(met2CF.Ameriflux)
 export(met2CF.csv)
+export(met2CF.NARR)
 export(ncep.gather2)
 export(par2ppfd)
 export(qair2rh)
 export(rh2qair)
+export(weachDT)
 export(wide2long)
 
 

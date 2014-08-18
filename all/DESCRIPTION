@@ -21,12 +21,14 @@ Depends:
     PEcAn.utils,
     PEcAn.uncertainty,
     PEcAn.data.land,
+    PEcAn.data.remote,
     PEcAn.assim.batch,
     PEcAn.priors
 Suggests:
     PEcAn.ed,
     PEcAn.sipnet,
     PEcAn.biocro,
+    PEcAn.DALEC,
     PEcAn.allometry,
     PEcAn.benchmark,
     PEcAn.photosythesis

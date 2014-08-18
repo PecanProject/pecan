@@ -13,6 +13,7 @@
 .utils.logger$stderr   <- TRUE
 .utils.logger$quit     <- FALSE
 .utils.logger$level    <- 0
+.utils.logger$width    <- ifelse(getOption("width")<10, getOption("width"), getOption("width")-5)
 
 ##' Prints a debug message.
 ##' 
@@ -134,13 +135,23 @@ logger.message <- function(level, msg, ...) {
 	    if (length(func) == 0) {
 	    	func <- "console"
 	    }
-		text <- sprintf("%s %-6s [%s] : %s\n", Sys.time(), level, func, paste(c(msg, ...), collapse=" "))
+                
+                stamp.text <- sprintf("%s %-6s [%s] :", Sys.time(), level, func)
+                long.msg <- paste(c(msg, ...), collapse=" ")
+                if(nchar(long.msg) > 20){
+                    new.msg <- paste("\n", strwrap(long.msg, width=.utils.logger$width, indent=2, exdent=2), collapse = " ")
+                } else {
+                    new.msg <- long.msg
+                }
+                text <- paste(stamp.text, new.msg, "\n")
+
 		if (.utils.logger$console) {
 			if (.utils.logger$stderr) {
 				cat(text, file=stderr())
 			} else {
 				cat(text, file=stdout())
 			}
+
 		}
 		if (!is.na(.utils.logger$filename)) {
 			cat(text, file=.utils.logger$filename, append=TRUE)
@@ -273,4 +284,20 @@ logger.setOutputFile <- function(filename) {
 ##' }
 logger.setQuitOnSevere <- function(severeQuits) {
 	.utils.logger$quit = severeQuits
+}
+
+##' Configure the number of chars per line
+##' 
+##' The default is for 60 chars per line. Setting this to any value will
+##' wrap the line when printing a message at that many chars.
+##'
+##' @param width number of chars to print before wrapping to next line.
+##' @export
+##' @author David LeBauer
+##' @examples
+##' \dontrun{
+##' logger.setWidth(70)
+##' }
+logger.setWidth <- function(width) {
+  .utils.logger$width = width
 }
