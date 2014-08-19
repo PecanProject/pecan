@@ -1,3 +1,3 @@
-export(get.model.output.DALEC)
-export(write.config.DALEC)
+export(get.model.output.generic)
 export(model2netcdf.DALEC)
+import(PEcAn.utils)
