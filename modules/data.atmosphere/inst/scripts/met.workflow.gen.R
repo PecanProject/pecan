@@ -94,7 +94,3 @@ model.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,dbparms,con,
 for (i in dbListConnections(PostgreSQL())) db.close(i)
 
 
-rsync -avzhe ssh /Users/elizabethcowdery/ED\ Files/NetCDF\ Scripts/met2cf.NARR/met2cf.NARR.R ecowdery@geo.bu.edu:/usr2/collab/ecowdery/scripts/
-
-
-

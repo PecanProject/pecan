@@ -35,6 +35,7 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,dbparms,con,
   # Use existing site, unless otherwise specified (ex: subsetting case)
   if("newsite" %in% names(l) && is.null(l[["newsite"]])==FALSE){
     site = db.query(paste("SELECT * from sites where id =",l$newsite),con)
+    #### UPDATE FOR GEOMETRY
     if(nrow(site)==0){logger.error("Site not found"); db.close(con);return(NULL)} 
     if(!(is.na(site$lat)) && !(is.na(site$lon))){
       args = c(args, site$lat, site$lon)
