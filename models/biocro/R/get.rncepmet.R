@@ -16,13 +16,13 @@ get.rncepmet <- function(lat = as.numeric(settings$run$site$lat),
                         start.date = settings$run$start.date,
                         end.date = settings$run$end.date,
                         site.id = settings$run$site$id,
-                        con = query.base.con(settings)){
+                        con = NULL){
   hostname <- system("hostname", intern = TRUE)
-  site.info <- query.base(paste0("select * from sites where id = ", site.id, ";"), con = con)
+  site.info <- db.query(paste0("select * from sites where id = ", site.id, ";"), con = con)
   site.exists <- nrow(site.info) == 1
   
   if(!site.exists){
-    query.base(paste0("insert into sites (sitename, lat, lon) values(",
+    db.query(paste0("insert into sites (sitename, lat, lon) values(",
                       vecpaste(c(settings$run$site$name, lat, lon)), ");"), con = con)
   }
   

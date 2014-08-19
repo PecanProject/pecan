@@ -88,7 +88,11 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
   } else {
     workflow.id <- -1
   }
-  
+
+  # find all inputs that have an id
+  inputs <- names(settings$run$inputs)
+  inputs <- inputs[grepl('.id$', inputs)]
+    
   runs <- data.frame()
   
   ##write median run
@@ -101,11 +105,19 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
   
   if (!is.null(con)) {
     now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-    query.base(paste("INSERT INTO ensembles (created_at, runtype, workflow_id) values ('", now, "', 'sensitivity analysis', ", format(workflow.id,scientific=FALSE), ")", sep=''), con)
-    ensemble.id <- query.base(paste("SELECT id FROM ensembles WHERE created_at='", now, "'", sep=''), con)[['id']]
-    paramlist <- paste("quantile=MEDIAN,trait=all,pft=", paste(lapply(settings$pfts, function(x) x[['name']]), sep=','), sep='')
-    query.base(paste("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id, parameter_list) values ('", settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", settings$run$end.date, "', '",settings$run$outdir , "', '", now, "', ", ensemble.id, ", '", paramlist, "')", sep=''), con)
-    run.id <- query.base(paste("SELECT id FROM runs WHERE created_at='", now, "' AND parameter_list='", paramlist, "'", sep=''), con)[['id']]
+    db.query(paste0("INSERT INTO ensembles (created_at, runtype, workflow_id) values ('", now, "', 'sensitivity analysis', ", format(workflow.id,scientific=FALSE), ")"), con=con)
+    ensemble.id <- db.query(paste0("SELECT id FROM ensembles WHERE created_at='", now, "'"), con=con)[['id']]
+    paramlist <- paste0("quantile=MEDIAN,trait=all,pft=", paste(lapply(settings$pfts, function(x) x[['name']]), sep=','))
+    db.query(paste0("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id, parameter_list) values ('", settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", settings$run$end.date, "', '",settings$run$outdir , "', '", now, "', ", ensemble.id, ", '", paramlist, "')"), con=con)
+    run.id <- db.query(paste0("SELECT id FROM runs WHERE created_at='", now, "' AND parameter_list='", paramlist, "'"), con=con)[['id']]
+
+    # associate inputs with runs
+    if (!is.null(inputs)) {
+      for(x in inputs) {
+        db.query(paste0("INSERT INTO inputs_runs (input_id, run_id, created_at) ",
+                        "values (", settings$run$inputs[[x]], ", ", run.id, ", NOW());"), con=con)
+      }
+    }
   } else {
     run.id <- get.run.id('SA', 'median')
     ensemble.id <- "NA"
@@ -171,9 +183,17 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
           
           if (!is.null(con)) {
             now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-            paramlist <- paste("quantile=", quantile.str, ",trait=", trait, ",pft=", pftname, sep='')
-            query.base(paste("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id, parameter_list) values ('", settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", settings$run$end.date, "', '",settings$run$outdir , "', '", now, "', ", ensemble.id, ", '", paramlist, "')", sep=''), con)
-            run.id <- query.base(paste("SELECT id FROM runs WHERE created_at='", now, "' AND parameter_list='", paramlist, "'", sep=''), con)[['id']]
+            paramlist <- paste0("quantile=", quantile.str, ",trait=", trait, ",pft=", pftname)
+            db.query(paste0("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id, parameter_list) values ('", settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", settings$run$end.date, "', '",settings$run$outdir , "', '", now, "', ", ensemble.id, ", '", paramlist, "')"), con=con)
+            run.id <- db.query(paste0("SELECT id FROM runs WHERE created_at='", now, "' AND parameter_list='", paramlist, "'"), con=con)[['id']]
+
+            # associate inputs with runs
+            if (!is.null(inputs)) {
+              for(x in inputs) {
+                db.query(paste0("INSERT INTO inputs_runs (input_id, run_id, created_at) ",
+                                "values (", settings$run$inputs[[x]], ", ", run.id, ", NOW());"), con=con)
+              }
+            }
           } else { 
             run.id <- get.run.id('SA', round(quantile,3), trait=trait, 
                                  pft.name=names(trait.samples)[i])

@@ -467,9 +467,9 @@ $ED_NL
    !---------------------------------------------------------------------------------------!
    NL%VEG_DATABASE      = '@ED_VEG@'
    NL%SOIL_DATABASE     = '@ED_SOIL@'
-   NL%LU_DATABASE       = '@ED_INPUTS@/glu/'
+   NL%LU_DATABASE       = '@ED_LU@'
    NL%PLANTATION_FILE   = ''
-   NL%THSUMS_DATABASE   = '@ED_INPUTS@'
+   NL%THSUMS_DATABASE   = '@ED_THSUM@'
    NL%ED_MET_DRIVER_DB  = '@SITE_MET@'
    NL%SOILSTATE_DB      = ''
    NL%SOILDEPTH_DB      = ''

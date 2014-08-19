@@ -13,7 +13,7 @@ Open and read in settings file for PEcAn run.
 settings <- read.settings(system.file("extdata/pecan.biocro.xml",
                                       package = "PEcAn.BIOCRO"))
 settings$sensitivity.analysis <- settings$ensemble
-model <- settings$model$name
+model <- settings$model$type
 
 ```
 ### Query database for trait data

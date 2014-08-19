@@ -106,12 +106,14 @@ write.config.BIOCRO <- function(defaults = NULL,
           settings$site$met <- NULL
       }
   } else if (is.null(settings$run$site$met)){
+      con <- db.open(settings$database$bety)
       weather <- get.rncepmet(lat = as.numeric(settings$run$site$lat),
                              lon = as.numeric(settings$run$site$lon),
                              start.date = settings$run$start.date,
                              end.date = settings$run$end.date,
                              site.id = settings$run$site$id,
-                             con = query.base.con(settings))
+                             con = con)
+      db.close(con)
   }
   ## convert to biocro specific format
   W <- BioCro::weachNEW(weather, lati = as.numeric(settings$run$site$lat), ts = 1, 

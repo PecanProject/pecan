@@ -18,7 +18,7 @@
 ##'
 ##' @author David LeBauer, Shawn Serbin
 run.write.configs <- function(settings, write = TRUE) {
-  model = settings$model$name
+  model = settings$model$type
   scipen = getOption("scipen")
   options(scipen=12)
   

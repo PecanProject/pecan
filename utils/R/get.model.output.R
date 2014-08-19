@@ -22,7 +22,6 @@
 ##' get.model.output("ED2")
 ##' }
 ##'
-##' @deprecated
 ##' @author Michael Dietze, Shawn Serbin, David LeBauer
 get.model.output <- function(model, settings){
   logger.severe("Same as get.results(settings), please update your workflow")

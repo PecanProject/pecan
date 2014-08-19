@@ -7,23 +7,21 @@
 ##' @param outfolder
 ##' @param format data frame or list with elements orig, bety, units for the original variable name, bety variable name, and original units
 ##' @author Mike Dietze
-##' 
-
-if(FALSE){
-  in.path = "~/Downloads/"
-  in.file = "WR_E"
-  outfolder = "/tmp/"
-  format = list(orig=c("TA","PRECIP","RH","WS","WD","SW","PAR_in"),
-                units=c("celsius","mm","%","m/s","degrees","W m-2","umol m-2 s-1"),
-                bety=c("airT","precipitation_flux","relative_humidity","Wspd","wind_direction","solar_radiation","PAR"),
-                skip=7,
-                unit.row=TRUE,
-                na.strings=c("-9999","-6999","9999"))  
-  lat = 40
-  lon = -80
-  met2CF.csv(in.path,in.file,outfolder,format,lat,lon)
-}
-
+##' @example
+##' \dontrun{
+##'   in.path = "~/Downloads/"
+##'   in.file = "WR_E"
+##'   outfolder = "/tmp/"
+##'   format = list(orig=c("TA","PRECIP","RH","WS","WD","SW","PAR_in"),
+##'   units=c("celsius","mm","%","m/s","degrees","W m-2","umol m-2 s-1"),
+##'   bety=c("airT","precipitation_flux","relative_humidity","Wspd","wind_direction","solar_radiation","PAR"),
+##'   skip=7,
+##'   unit.row=TRUE,
+##'   na.strings=c("-9999","-6999","9999"))  
+##'   lat = 40
+##'   lon = -80
+##'   met2CF.csv(in.path,in.file,outfolder,format,lat,lon)
+##' }
 met2CF.csv <- function(in.path,in.file,outfolder,format,lat=NULL,lon=NULL){
   debug=TRUE
   require(ncdf4)
@@ -41,7 +39,7 @@ met2CF.csv <- function(in.path,in.file,outfolder,format,lat=NULL,lon=NULL){
   
   for(i in 1:length(files)){
     
-    new.file =file.path(outfolder,sub(".csv","_CF.nc",basename(files[i])))
+    new.file <- file.path(outfolder,sub(".csv","_CF.nc",basename(files[i])))
   
     ### if reading ameriflux .csv file ###
     dat <- read.csv(files[i],skip=format$skip,na.strings=format$na.strings,as.is=TRUE) #example file

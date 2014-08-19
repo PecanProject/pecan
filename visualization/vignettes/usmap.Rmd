@@ -21,34 +21,40 @@ spplot(spdf)
 ### Plot all maps for BETYdb
 
 ```{r}
-files <- dir("~/R-dev/bety/local/modelout/", pattern="grid.csv", full.names=TRUE)
+files <- dir("~/dev/bety/local/modelout", pattern="grid.csv", full.names=TRUE)
 yieldfiles <- files[!grepl("evapotranspiration", files)]
 etfiles <- files[grepl("evapotranspiration", files)]
 for(file in yieldfiles){
     df.in <- read.csv(file)
 
-  outfile <- gsub("csv", "png", file)
-  print(outfile)
-  print(dim(df.in))
-  pecan.worldmap(df.in, outfile=outfile)
+    outfile <- gsub("csv", "png", file)
+    
+    pecan.worldmap(df.in, outfile=outfile)
 }
 
 
 for(file in etfiles){
   df.in <- read.csv(file, skip = 1)
-
   outfile <- gsub("csv", "png", file)
-  print(outfile)
-  print(dim(df.in))
   pecan.worldmap(df.in, outfile=outfile)
 }
 
 ```
 
-### Misc additional code
+### demo Regrid
 
 ```{r fig.width=7, fig.height=6}
+latlon.data <- read.csv("~/dev/bety/public/temp_models/willow_yield_grid.csv",
+                        skip = 1)
 
+regridded <- regrid(latlon.data)
+
+library(ggplot2)
+ggplot(data = regridded) + geom_tile(aes(lat, lon, fill = yield))
+```
+
+### Misc additional code
+```{r}
 # Make an evenly spaced raster, the same extent as original data
 e <- extent( spdf )
 
@@ -80,4 +86,40 @@ p2g <- points2grid(spdf, tolerance = 0.95)
 
 r <- raster(p2g)
 plot(p2g)
+```
+
+### Code used to extract and process old BioCro output
+
+this was run in data from Willow manuscript. See [redmine issue 2387](https://ebi-forecast.igb.illinois.edu/redmine/issues/2387)
+
+```{r}
+files <- dir(".", pattern = ".txt")
+library(data.table)
+lat <- fread(files[1])[,list(lat = V2)]$lat
+lon <- fread(files[1])[,list(lon = V3)]$lon
+
+
+system.time(a <- fread(files[1]))
+
+#yield <- data.table(date = vector(), lat = vector(), lon = vector(), yield = vector())
+yieldarray <- array(NA, dim = c(56, 135, 0), dimnames = c('lat', 'lon', 'year'))
+for(file in files){
+
+    newyield <-  fread(file)[,list(lat = V2, lon = V3, yield = V24)][!is.na(yield)]
+    newyield.regrid <- regrid(newyield)
+    
+    yieldarray <- abind(yieldarray, newyield.regrid)
+
+}
+
+
+y <- list()
+for(year in 1979:2010){
+    file <- files[grepl(year, files)]
+    y[[as.character(year)]] <- fread(file)[,list(yield = V24)]
+}
+a <- do.call("cbind", y)
+setnames(a,  as.character(1979:2010))
+b <- a[,list(yield = rowMeans(.SD))]$yield
+willow <- data.table(lat = lat, lon = lon, yield = b)[!is.na(yield)]
 ```
