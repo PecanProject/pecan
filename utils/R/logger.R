@@ -269,10 +269,10 @@ logger.setOutputFile <- function(filename) {
 	.utils.logger$filename <- filename
 }
 
-##' Configure wheter severe should quit.
+##' Configure whether severe should quit.
 ##' 
 ##' The default is for a non-interactive session to quit. Setting this to false is
-##' especially useful for running tests when placed in \codePinst/tests/test.<fn>.R}, 
+##' especially useful for running tests when placed in \code{inst/tests/test.<fn>.R}, 
 ##' but is not passed from \code{tests/run.all.R}.
 ##'
 ##' @param severeQuits should R quit on a severe error.

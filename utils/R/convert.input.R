@@ -35,9 +35,10 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,dbparms,con,
   # Use existing site, unless otherwise specified (ex: subsetting case)
   if("newsite" %in% names(l) && is.null(l[["newsite"]])==FALSE){
     site = db.query(paste("SELECT * from sites where id =",l$newsite),con)
-    #### UPDATE FOR GEOMETRY
     if(nrow(site)==0){logger.error("Site not found"); db.close(con);return(NULL)} 
-    if(!(is.na(site$lat)) && !(is.na(site$lon))){
+    if(!(is.na(site$geometry))){
+      site$lon <- db.query(paste("SELECT ST_X(geometry) AS lon FROM sites where id =",l$newsite),con)[[1]]
+      site$lat <- db.query(paste("SELECT ST_Y(geometry) AS lat FROM sites where id =",l$newsite),con)[[1]]
       args = c(args, site$lat, site$lon)
     }else{logger.error("No lat and lon for extraction site"); db.close(con);return(NULL)}
   }else{

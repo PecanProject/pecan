@@ -45,7 +45,8 @@ distn.stats <- function(distn,a,b){
 
 ##' a helper function for computing summary statistics of a parametric distribution
 ##' 
-##' @title return mean and standard deviation of a distribution for each distribution in a table with \code{colnames = c("distn", "a", "b"), e.g. in a table of priors
+##' @title return mean and standard deviation of a distribution for each distribution in a table with \code{colnames = c("distn", "a", "b")},
+##'  e.g. in a table of priors
 ##' @param distns table of distributions; see examples 
 ##' @return named vector of mean and SD
 ##' @export

@@ -55,7 +55,7 @@ perm.id <- 1000000023
 # Select extraction site
 
 extract <- TRUE
-newsite <- 1000000003
+newsite <- 771
 
 # Select model. Currently ED2 and SIPNET
 

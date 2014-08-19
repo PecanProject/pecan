@@ -32,6 +32,7 @@ raw.id <- do.call(fcn,args)
 # Change to CF Standards
 
 if (cf == TRUE){
+  con     <- db.open(dbparms)
 input.id  <-  raw.id
 outfolder <-  paste0(dir,data.set,"_CF/")
 pkg       <- "PEcAn.data.atmosphere"
@@ -45,10 +46,11 @@ cf.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,dbparms,con) # 
 # Rechunk and Permute
 
 if (perm == TRUE){
+  con     <- db.open(dbparms)
 input.id  <-  cf.id
 outfolder <-  paste0(dir,data.set,"_CF_Permute/")
 pkg       <- "PEcAn.data.atmosphere"
-fct       <- "permute.nc"
+fcn       <- "permute.nc"
 write     <-  TRUE
 
 perm.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,dbparms,con)
@@ -59,6 +61,7 @@ perm.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,dbparms,con)
 # Extract for location
 
 if (extract == TRUE){
+con     <- db.open(dbparms)
 input.id <- perm.id
 str_ns   <- paste0(newsite %/% 1000000000, "-", newsite %% 1000000000)
 outfolder <- paste0("/projectnb/dietzelab/pecan.data/input/",data.set,"_CF_site_",str_ns,"/")
@@ -73,14 +76,15 @@ extract.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,dbparms,co
 # Prepare for Model
 
 if(nchar(model) >2){
-  
+
+con     <- db.open(dbparms)
 # Acquire lst (probably a better method, but this works for now)
 lst <- site.lst(newsite)
 
 # Convert to ED format
 input.id  <- extract.id
 char
-outfolder <- paste0(dir,data.set,"_ED_site_",str_ns,"/")
+outfolder <- paste0(dir,data.set,"_",model,"_site_",str_ns,"/")
 pkg       <- paste0("PEcAn.",model)
 fcn       <- paste0("met2model.",model)
 write     <- TRUE
