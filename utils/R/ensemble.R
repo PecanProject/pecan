@@ -175,6 +175,10 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings,
   } else {
     ensemble.id <- "NA"
   }
+
+  # find all inputs that have an id
+  inputs <- names(settings$run$inputs)
+  inputs <- inputs[grepl('.id$', inputs)]
   
   # write configuration for each run of the ensemble
   runs <- data.frame()
@@ -188,6 +192,15 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings,
                        settings$run$end.date, "', '", settings$run$outdir , "', '", now, "', ", ensemble.id, ", '", 
                        paramlist, "')"), con=con)
       run.id <- db.query(paste0("SELECT id FROM runs WHERE created_at='", now, "' AND parameter_list='", paramlist, "'"), con=con)[['id']]
+
+      # associate inputs with runs
+      if (!is.null(inputs)) {
+        for(x in inputs) {
+          db.query(paste0("INSERT INTO inputs_runs (input_id, run_id, created_at) ",
+                          "values (", settings$run$inputs[[x]], ", ", run.id, ", NOW());"), con=con)
+        }
+      }
+
     } else {
       run.id <- get.run.id('ENS', left.pad.zeros(counter, 5))
     }

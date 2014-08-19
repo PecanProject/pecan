@@ -34,8 +34,8 @@ start.model.runs(settings, settings$database$bety$write)
 # Get results of model runs
 get.results(settings)
 
-sda.particle(settings$model$name)
+sda.particle(settings$model$type)
 
-sda.enkf(settings$model$name)
+sda.enkf(settings$model$type)
 
 #--------------------------------------------------------------------------------------------------#
