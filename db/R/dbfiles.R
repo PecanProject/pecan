@@ -33,7 +33,7 @@
 
 dbfile.input.insert <- function(filename, siteid, startdate, enddate, mimetype, formatname, parentid=NA, con, hostname=fqdn()) {
   
-  name <- basename(filename)
+  name <- tail(unlist(strsplit(filename,"/")),2)[[1]]
 
   if (hostname == "localhost") hostname=fqdn();
 

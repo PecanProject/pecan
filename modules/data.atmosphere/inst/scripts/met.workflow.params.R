@@ -32,7 +32,7 @@ end_year   <- 2013
 raw    <- FALSE
 raw.id <- 285
 
-# Set site id number when possible
+# Set site id number when possible (not possible for NARR)
 # RHIN: 1000000003
 # ORNL: 854
 
@@ -55,7 +55,7 @@ perm.id <- 1000000023
 # Select extraction site
 
 extract <- TRUE
-newsite <- 771
+newsite <- 776
 
 # Select model. Currently ED2 and SIPNET
 
@@ -63,4 +63,4 @@ model <- "SIPNET"
 
 # Run met workflow
 
-# source("/home/ecowdery/pecan/modules/data.atmosphere/inst/scripts/met.workflow.gen.R")
+source("~/pecan/modules/data.atmosphere/inst/scripts/met.workflow.gen.R")

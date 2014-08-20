@@ -82,7 +82,7 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,dbparms,con,
       formatname <- 'ed.met_driver_header files format'
       mimetype <- 'text/plain'
     }else if("SIPNET" %in% outlist){
-      filename <- paste0(outfolder," ")
+      filename <- paste0(outfolder,"sipnet.clim")
       formatname <- 'Sipnet.climna'
       mimetype <- 'text/csv'
     }else{
@@ -91,8 +91,15 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,dbparms,con,
       mimetype <- 'application/x-netcdf'
     }
     
-    newinput <- dbfile.input.insert(filename, site$id, paste(input$start_date), paste(input$end_date), 
-                                    mimetype, formatname,input$id,con=con,machine$hostname) 
+    newinput <- dbfile.input.insert(filename, 
+                                    siteid = site$id, 
+                                    startdate = paste(input$start_date), 
+                                    enddate = paste(input$end_date), 
+                                    mimetype, 
+                                    formatname,
+                                    parentid = input$id,
+                                    con = con,
+                                    hostname = machine$hostname) 
     return(newinput$input.id)
   }else{
     logger.warn('Input was not added to the database')

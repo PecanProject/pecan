@@ -1,6 +1,6 @@
 # 
-# Generalized workflow based on met.workflow.NARR.R
-#
+# Generalized met workflow 
+# Functional for downloading NARR, converting to CF, Rechunk/Permuting, extracting and prep for SIPNET
 #--------------------------------------------------------------------------------------------------#
 # Load libraries
 
@@ -13,12 +13,12 @@ require(RPostgreSQL)
 
 for (i in dbListConnections(PostgreSQL())) db.close(i)
 dbparms <- list(driver=driver, user=user, dbname=dbname, password=password, host=host)
-con     <- db.open(dbparms)
 
 #--------------------------------------------------------------------------------------------------#
 # Download raw data from the internet 
 
 if (raw == TRUE){
+con        <- db.open(dbparms)
 outfolder  <- paste0(dir,data.set,"/")
 pkg        <- "PEcAn.data.atmosphere"
 fcn        <- paste0("download.",fcn.data)
@@ -32,7 +32,7 @@ raw.id <- do.call(fcn,args)
 # Change to CF Standards
 
 if (cf == TRUE){
-  con     <- db.open(dbparms)
+con       <- db.open(dbparms)
 input.id  <-  raw.id
 outfolder <-  paste0(dir,data.set,"_CF/")
 pkg       <- "PEcAn.data.atmosphere"
@@ -46,7 +46,7 @@ cf.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,dbparms,con) # 
 # Rechunk and Permute
 
 if (perm == TRUE){
-  con     <- db.open(dbparms)
+con       <- db.open(dbparms)
 input.id  <-  cf.id
 outfolder <-  paste0(dir,data.set,"_CF_Permute/")
 pkg       <- "PEcAn.data.atmosphere"
@@ -61,9 +61,9 @@ perm.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,dbparms,con)
 # Extract for location
 
 if (extract == TRUE){
-con     <- db.open(dbparms)
-input.id <- perm.id
-str_ns   <- paste0(newsite %/% 1000000000, "-", newsite %% 1000000000)
+con       <- db.open(dbparms)
+input.id  <- perm.id
+str_ns    <- paste0(newsite %/% 1000000000, "-", newsite %% 1000000000)
 outfolder <- paste0("/projectnb/dietzelab/pecan.data/input/",data.set,"_CF_site_",str_ns,"/")
 pkg       <- "PEcAn.data.atmosphere"
 fcn       <- "extract.nc"
@@ -78,12 +78,12 @@ extract.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,dbparms,co
 if(nchar(model) >2){
 
 con     <- db.open(dbparms)
+
 # Acquire lst (probably a better method, but this works for now)
 lst <- site.lst(newsite)
 
-# Convert to ED format
+# Convert to model format
 input.id  <- extract.id
-char
 outfolder <- paste0(dir,data.set,"_",model,"_site_",str_ns,"/")
 pkg       <- paste0("PEcAn.",model)
 fcn       <- paste0("met2model.",model)
