@@ -30,20 +30,20 @@ settings <- read.settings("~/demo.sda/demo.xml")
 #---------------- Load plot and tree ring data. -------------------------------------------------------#
 status.start("LOAD DATA")
 ## Read tree data
-trees <- read.csv("/home/carya/Camp2014/PecanInputs/H 2012 Adult Field Data.csv")
+trees <- read.csv("/home/carya/Camp2014/ForestPlots/treecores2014.csv")
 
 ## Read tree ring data
-rings <- Read_Tuscon("/home/carya/Camp2014/PecanInputs/Revised 2/")
+rings <- Read_Tuscon("/home/carya/Camp2014/ForestPlots/Tucson/")
 
 ## Match observations & format for JAGS
-combined <- matchInventoryRings(trees,rings,nyears=30,coredOnly=FALSE)
+combined <- matchInventoryRings(trees,rings,extractor="Tag",nyears=36,coredOnly=FALSE)
 data <- buildJAGSdata_InventoryRings(combined)
 status.end()
 
 #---------------- Load plot and tree ring data. -------------------------------------------------------#
 status.start("TREE RING MODEL")
 ## Tree Ring model
-n.iter = 300
+n.iter = 3000
 jags.out = InventoryGrowthFusion(data,n.iter=n.iter)
 save(trees,rings,combined,data,jags.out,
      file=file.path(settings$outdir,"treering.Rdata"))
