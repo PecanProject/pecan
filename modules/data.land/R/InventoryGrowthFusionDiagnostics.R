@@ -56,7 +56,7 @@ InventoryGrowthFusionDiagnostics <- function(jags.out,combined){
     hist(1/sqrt(prec[,i]),main=colnames(prec)[i])
   }
   cor(prec)
-  pairs(prec)
+#  pairs(prec)
   
     
   par(mfrow=c(1,1))
@@ -79,7 +79,8 @@ InventoryGrowthFusionDiagnostics <- function(jags.out,combined){
     table(combined$PLOT)
     
     spp = combined$SPP
-    boxplot(out[order(spp),ind.cols],horizontal=TRUE,outline=FALSE,col=spp[order(spp)])
+#    boxplot(out[order(spp),ind.cols],horizontal=TRUE,outline=FALSE,col=spp[order(spp)])
+    boxplot(out[,ind.cols],horizontal=TRUE,outline=FALSE,col=spp)
     abline(v=0,lty=2)
     spp.code = levels(spp)[table(spp)>0]
     legend("bottomright",legend=rev(spp.code),col=rev(which(table(spp)>0)),lwd=4)
