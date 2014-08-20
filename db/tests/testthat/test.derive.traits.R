@@ -6,7 +6,7 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-
+con <- db.open(dbparms)
 test_that("take.samples works",{
   expect_equal(take.samples(summary = data.frame(mean = 1, stat = NA)), 1)
   set.seed(0)
