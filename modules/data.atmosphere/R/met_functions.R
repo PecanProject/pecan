@@ -1,5 +1,5 @@
 
-cruncep_dt2weather <- function(weather = result, adjust=TRUE){
+met2model.BIOCRO2 <- cruncep_dt2weather <- function(weather = result, adjust=TRUE){
 
     x <- weather[,list(year, doy = doy, hour = hour,
                        solarR   = ppfd, 
@@ -12,11 +12,11 @@ cruncep_dt2weather <- function(weather = result, adjust=TRUE){
     return(x)
 }
 
-get.weather <- function(lat, lon, met.nc = met.nc, start.date, end.date){
+get.weather <- function(lat, lon, met.nc = met.nc, start.date, end.date, output.dt = 1){
 #    if(!is.land(lat, lon)) stop("point is in ocean")
     result <- load.cfmet(lat = lat, lon = lon, met.nc = met.nc, start.date, end.date)
-    hourly.result <- cruncep_hourly(result, lat = lat)
-    weather <- cruncep_dt2weather(hourly.result)
+    downscaled.result <- cfmet.downscale.time(cfmet = result, output.dt = output.dt, lat  = lat)
+    weather <- cruncep_dt2weather(downscaled.result)
 }
 
 
