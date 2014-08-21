@@ -19,8 +19,8 @@ sda.enkf <- function(settings,IC,prior,obs){
   defaults <- settings$pfts
   outdir <- settings$run$host$outdir
   host <- settings$run$host
-  start.year = strftime(settings$run$start.date,"%Y")
-  end.year   = strftime(settings$run$end.date,"%Y")
+  start.year = strftime(settings$run$site$met.start,"%Y")
+  end.year   = strftime(settings$run$site$met.end,"%Y")
   nens = nrow(IC)
   
   if(nrow(prior) == 1 | is.null(nrow(prior))){
@@ -137,7 +137,9 @@ sda.enkf <- function(settings,IC,prior,obs){
   NPPm = rep(NA,nens)
   FORECAST <- ANALYSIS <- list()
   enkf.params <- list()
+  ###-------------------------------------------
   ### loop over time
+  ###-------------------------------------------
   for(t in 1:nt){
 
     ### load output
@@ -150,8 +152,8 @@ sda.enkf <- function(settings,IC,prior,obs){
       NPPm[i] <- mean(ens[[i]]$NPP)*unit.conv ## kg C m-2 s-1 -> Mg/ha/yr [Check]
       last = length(ens[[i]]$NPP)
       forecast$plantWood[i] = ens[[i]]$AbvGrndWood[last]*1000 ## kgC/m2 -> gC/m2
-      forecast$lai[i] = ens[[i]]$LeafC[last]*prior$SLA[i]*0.5 ## kgC/m2*m2/kg*0.5kgC/kg -> m2/m2
-      forecast$litter[i] = ens[[i]]$Litter*1000 ##kgC/m2 -> gC/m2
+      forecast$lai[i] = ens[[i]]$LeafC[last]*prior$SLA[i]*2 ## kgC/m2*m2/kg*2kg/kgC -> m2/m2
+      forecast$litter[i] = ens[[i]]$Litter[last]*1000 ##kgC/m2 -> gC/m2
       forecast$soil[i] = ens[[i]]$TotSoilCarb[last]*1000 ## kgC/m2 -> gC/m2
       forecast$litterWFrac[i] = ens[[i]]$SoilMoistFrac[last] ## unitless
       forecast$soilWFrac[i] = ens[[i]]$SoilMoistFrac[last] ## unitless
@@ -179,7 +181,7 @@ sda.enkf <- function(settings,IC,prior,obs){
  enkf.params[[t]] = list(mu.f = mu.f, Pf=Pf,mu.a=mu.a,Pa=Pa) 
  
  ## update state matrix
-analysis = as.data.frame(rmvnorm(nens,mu.a,Pa))
+analysis = as.data.frame(rmvnorm(nens,mu.a,Pa,method="svd"))
 names(analysis) = names(X)
  # EAKF
  if(FALSE){
@@ -223,6 +225,8 @@ for(i in 2:ncol(analysis)){
  start.model.runs(settings,settings$database$bety$write)
  
 }  ## end loop over time
+###-------------------------------------------
+
 
 ## save all outputs
 save(FORECAST,ANALYSIS,enkf.params,file=file.path(settings$outdir,"sda.ENKF.Rdata"))
@@ -255,24 +259,28 @@ if(FALSE){
   ciEnvelope(time,y$mean-y$sd*1.96,y$mean+y$sd*1.96,col="lightblue")
   lines(time,y$mean,type='b',col="darkblue")
   
+  pink = col2rgb("pink")
+  alphapink = rgb(pink[1],pink[2],pink[3],100,max=255)
   Xbar = laply(FORECAST,function(x){return(mean(x$NPPm,na.rm=TRUE))})
   Xci  = laply(FORECAST,function(x){return(quantile(x$NPPm,c(0.025,0.975)))})
   plot(time,y$mean,ylim=range(c(y$mean+1.96*y$sd,y$mean-1.96*y$sd)),type='n',xlab="time",ylab="Mg/ha/yr")
   ciEnvelope(time,y$mean-y$sd*1.96,y$mean+y$sd*1.96,col="lightblue")
   lines(time,y$mean,type='b',col="darkblue")
-  if(sda.demo) lines(time,ensp[ref,],col=2,lwd=2)
-  ciEnvelope(time,Xci[1:nt,1],Xci[1:nt,2],col="pink")
+  #if(sda.demo) lines(time,ensp[ref,],col=2,lwd=2)
+  ciEnvelope(time,Xci[1:nt,1],Xci[1:nt,2],col=alphapink)
   lines(time,Xbar[1:nt],col=6,type='b')
 
+  green = col2rgb("green")
+  alphagreen = rgb(green[1],green[2],green[3],100,max=255)
   Xa = laply(ANALYSIS,function(x){return(mean(x$NPPm,na.rm=TRUE))})
   XaCI  = laply(ANALYSIS,function(x){return(quantile(x$NPPm,c(0.025,0.975)))})
   plot(time,y$mean,ylim=range(c(y$mean+1.96*y$sd,y$mean-1.96*y$sd)),type='n',xlab="time",ylab="Mg/ha/yr")
   ciEnvelope(time,y$mean-y$sd*1.96,y$mean+y$sd*1.96,col="lightblue")
   lines(time,y$mean,type='b',col="darkblue")
-  ciEnvelope(time,Xci[1:nt,1],Xci[1:nt,2],col="pink")
+  ciEnvelope(time,Xci[1:nt,1],Xci[1:nt,2],col=alphapink)
   lines(time,Xbar[1:nt],col=2,type='b')
-  ciEnvelope(time,XaCI[1:nt,1],XaCI[1:nt,2],col="lightgreen")
-  lines(time,Xa[1:nt],col=3,type='b')
+  ciEnvelope(time,XaCI[1:nt,1],XaCI[1:nt,2],col=alphagreen)
+  lines(time,Xa[1:nt],col="darkgreen",type='b')
   legend("topleft",c("Data","Forecast","Analysis"),col=c(4,2,3),lty=1,cex=1)
   
 ### Plots demonstrating how the constraint of your target variable 
@@ -286,7 +294,7 @@ if(FALSE){
   for(i in 1:ncol(X)){
     Xa = laply(ANALYSIS,function(x){return(mean(x[,i],na.rm=TRUE))})
     XaCI  = laply(ANALYSIS,function(x){return(quantile(x[,i],c(0.025,0.975)))})
-    plot(time,Xa,ylim=range(XaCI),type='n',xlab="time",ylab="Mg/ha/yr",main=names(X)[i])
+    plot(time,Xa,ylim=range(XaCI),type='n',xlab="time",main=names(X)[i])
     ciEnvelope(time,XaCI[,1],XaCI[,2],col="lightblue")
     lines(time,Xa,type='b',col="darkblue")
   }
