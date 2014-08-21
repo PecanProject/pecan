@@ -250,7 +250,7 @@ if(FALSE){
 #### Post-processing
 
   ### Diagnostic graphs  
-  pdf(file.path(outfolder,"EnKF.pdf"))
+  pdf(file.path(settings$outdir,"EnKF.pdf"))
   
   ## plot ensemble, filter, and data mean's and CI's
   par(mfrow=c(1,1))
