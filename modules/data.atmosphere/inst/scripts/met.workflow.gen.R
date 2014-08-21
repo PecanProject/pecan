@@ -39,7 +39,7 @@ pkg       <- "PEcAn.data.atmosphere"
 fcn       <-  paste0("met2CF.",fcn.data)
 write     <-  TRUE
 
-cf.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,dbparms,con) # doesn't update existing record
+cf.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,con) # doesn't update existing record
 }
 
 #--------------------------------------------------------------------------------------------------#
@@ -53,7 +53,7 @@ pkg       <- "PEcAn.data.atmosphere"
 fcn       <- "permute.nc"
 write     <-  TRUE
 
-perm.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,dbparms,con)
+perm.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,con)
 }
 
 
@@ -69,7 +69,7 @@ pkg       <- "PEcAn.data.atmosphere"
 fcn       <- "extract.nc"
 write     <- TRUE
 
-extract.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,dbparms,con,newsite = newsite)
+extract.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,con,newsite = newsite)
 }
 
 #--------------------------------------------------------------------------------------------------#
@@ -80,7 +80,7 @@ if(nchar(model) >2){
 con     <- db.open(dbparms)
 
 # Acquire lst (probably a better method, but this works for now)
-lst <- site.lst(newsite)
+lst <- site.lst(newsite,con)
 
 # Convert to model format
 input.id  <- extract.id
@@ -90,7 +90,7 @@ fcn       <- paste0("met2model.",model)
 write     <- TRUE
 overwrite <- ""
 
-model.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,dbparms,con,lst=lst,overwrite=overwrite)
+model.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,con,lst=lst,overwrite=overwrite)
 }
 
 #--------------------------------------------------------------------------------------------------#

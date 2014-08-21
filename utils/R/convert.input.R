@@ -2,7 +2,7 @@
 ##'
 ##'
 
-convert.input <- function(input.id,outfolder,pkg,fcn,write,username,dbparms,con,...){
+convert.input <- function(input.id,outfolder,pkg,fcn,write,username,con,...){
   
   l <- list(...)
   n <- nchar(outfolder)
@@ -11,7 +11,7 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,dbparms,con,
   outname = tail(unlist(strsplit(outfolder,'/')),n=1)
   
   # Check to see if input is already in dbfiles table 
-  check <- input.name.check(outname, con, dbparams)
+  check <- input.name.check(outname, con)
   if(is.null(check)==FALSE){
     logger.error('Input is already in the database.')
     db.close(con)
@@ -34,15 +34,13 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,dbparms,con,
   
   # Use existing site, unless otherwise specified (ex: subsetting case)
   if("newsite" %in% names(l) && is.null(l[["newsite"]])==FALSE){
-    site = db.query(paste("SELECT * from sites where id =",l$newsite),con)
+    site <- db.query(paste("SELECT id, ST_X(geometry) AS lon, ST_Y(geometry) AS lat FROM sites WHERE id =",l$newsite),con)
     if(nrow(site)==0){logger.error("Site not found"); db.close(con);return(NULL)} 
-    if(!(is.na(site$geometry))){
-      site$lon <- db.query(paste("SELECT ST_X(geometry) AS lon FROM sites where id =",l$newsite),con)[[1]]
-      site$lat <- db.query(paste("SELECT ST_Y(geometry) AS lat FROM sites where id =",l$newsite),con)[[1]]
+    if(!(is.na(site$lat)) && !(is.na(site$lat))){
       args = c(args, site$lat, site$lon)
     }else{logger.error("No lat and lon for extraction site"); db.close(con);return(NULL)}
   }else{
-    site  = db.query(paste("SELECT * from sites where id =",input$site_id),con) 
+    site <- db.query(paste("SELECT id, ST_X(geometry) AS lon, ST_Y(geometry) AS lat FROM sites WHERE id =",input$site_id),con)
     if(nrow(site)==0){logger.error("Site not found");db.close(con);return(NULL)} 
   }      
   
