@@ -15,7 +15,7 @@
 ##'   in.file = "WR_E"
 ##'   outfolder = "/tmp/"
 ##'   format = list(orig=c("TA","PRECIP","RH","WS","WD","SW","PAR_in"),
-##'                 units=c("celsius","mm","%","m/s","degrees","W m-2","umol m-2 s-1"),
+##'                 units = c("celsius","mm","%","m/s","degrees","W m-2","umol m-2 s-1"),
 ##'                 bety=c("airT","precipitation_flux","relative_humidity","Wspd","wind_direction","solar_radiation","PAR"),
 ##'                 skip=7,
 ##'                 unit.row=TRUE,
@@ -60,18 +60,19 @@ met2CF.csv <- function(in.path, in.file, outfolder, format, lat=NULL, lon=NULL){
     
     ### create time dimension 
     days_since_1700 <- datetime - ymd("1700-01-01")
-    tdim <- ncdim_def("time", "days since 1700-01-01", as.numeric(days_since_1700)) #define netCDF dimensions for variables
+    t <- ncdim_def("time", "days since 1700-01-01", as.numeric(days_since_1700)) #define netCDF dimensions for variables
     timestep <- as.numeric(mean(ud.convert(diff(days_since_1700), "d", "s")))
 
 
     ## create lat lon dimensions
-    x <- ncdim_def("Lon", "degreesE", lon) #define netCDF dimensions for variables
-    y <- ncdim_def("Lat", "degreesN", lat)
+    x <- ncdim_def("lon", "degrees_east", lon) #define netCDF dimensions for variables
+    y <- ncdim_def("lat", "degrees_north", lat)
     
+    xytdim <- list(x,y,t)
     ## air_temperature / airT
     if("airT" %in% format$bety){
       k <- which(format$bety=="airT")
-      airT.var <- ncvar_def(name="air_temperature",units="K",dim=tdim)
+      airT.var <- ncvar_def(name="air_temperature",units = "K",dim = xytdim)
       nc <- nc_create(new.file, vars = airT.var) #create netCDF file
       ncvar_put(nc,varid='air_temperature',
                 vals=met.conv(dat[,as.character(format$orig[k])],format$units[k],"celsius","K"))  
@@ -80,7 +81,7 @@ met2CF.csv <- function(in.path, in.file, outfolder, format, lat=NULL, lon=NULL){
 
     if("CO2" %in% format$bety){
       k <- which(format$bety == "CO2")
-      co2.var <- ncvar_def(name = "CO2", units = "ppm", dim = list(x, y))      
+      co2.var <- ncvar_def(name = "CO2", units = "ppm", dim = xytdim)      
       nc <- ncvar_add(nc = nc, v = co2.var) #add variable to existing netCDF file
       ncvar_put(nc, varid = 'CO2',
                 vals = met.conv(dat[,as.character(format$orig[k])], format$units[k], "Pa", "Pa"))
@@ -89,7 +90,7 @@ met2CF.csv <- function(in.path, in.file, outfolder, format, lat=NULL, lon=NULL){
     ## air_pressure / Psurf
     if("air_pressure" %in% format$bety){
       k = which(format$bety=="air_pressure")
-      Psurf.var = ncvar_def(name="air_pressure",units="Pa",dim=tdim)
+      Psurf.var = ncvar_def(name="air_pressure",units = "Pa",dim = xytdim)
       nc = ncvar_add(nc=nc,v=Psurf.var) #add variable to existing netCDF file
       ncvar_put(nc,varid='air_pressure',
             vals=met.conv(dat[,as.character(format$orig[k])],format$units[k],"Pa","Pa"))
@@ -109,7 +110,7 @@ met2CF.csv <- function(in.path, in.file, outfolder, format, lat=NULL, lon=NULL){
       )        
          
       ## insert
-      rain.var = ncvar_def(name="precipitation_flux",units="kg/m2/s",dim=tdim)
+      rain.var = ncvar_def(name="precipitation_flux",units = "kg/m2/s",dim = xytdim)
       nc = ncvar_add(nc=nc,v=rain.var) #add variable to existing netCDF file
       ncvar_put(nc,varid='precipitation_flux',
             vals=met.conv(rain,rain.units,"kg/m2/s","kg/m2/s"))  
@@ -119,7 +120,7 @@ met2CF.csv <- function(in.path, in.file, outfolder, format, lat=NULL, lon=NULL){
     ## relative_humidity / RH
     if("relative_humidity" %in% format$bety){
       k = which(format$bety=="relative_humidity")
-      RH.var = ncvar_def(name="relative_humidity",units="%",dim=tdim)
+      RH.var = ncvar_def(name="relative_humidity",units = "%",dim = xytdim)
       nc = ncvar_add(nc=nc,v=RH.var) #add variable to existing netCDF file
       ncvar_put(nc,varid='relative_humidity', 
                 vals=met.conv(dat[,as.character(format$orig[k])],format$units[k],"%","%"))
@@ -128,7 +129,7 @@ met2CF.csv <- function(in.path, in.file, outfolder, format, lat=NULL, lon=NULL){
     ## specific_humidity / qair
     if("specific_humidity" %in% format$bety){
       k = which(format$bety=="specific_humidity")
-      qair.var = ncvar_def(name="specific_humidity",units="%",dim=tdim)
+      qair.var = ncvar_def(name="specific_humidity",units = "%",dim = xytdim)
       nc = ncvar_add(nc=nc,v=qair.var) #add variable to existing netCDF file
       ncvar_put(nc,varid='specific_humidity',
             vals=met.conv(dat[,as.character(format$orig[k])],format$units[k],"1","1"))
@@ -139,7 +140,7 @@ met2CF.csv <- function(in.path, in.file, outfolder, format, lat=NULL, lon=NULL){
       if("relative_humidity" %in% names(nc$var) & "air_temperature" %in% names(nc$var)){
         ## Convert RH to SH
         qair = rh2qair(rh=ncvar_get(nc,"relative_humidity")/100,T=ncvar_get(nc,"air_temperature"))
-        qair.var = ncvar_def(name="specific_humidity",units="%",dim=tdim)
+        qair.var = ncvar_def(name="specific_humidity",units = "%",dim = xytdim)
         nc = ncvar_add(nc=nc,v=qair.var) #add variable to existing netCDF file
         ncvar_put(nc,varid='specific_humidity',vals=qair)
       }
@@ -149,13 +150,13 @@ met2CF.csv <- function(in.path, in.file, outfolder, format, lat=NULL, lon=NULL){
     if("eastward_wind" %in% format$bety & "northward_wind" %in% format$bety){
       
       k = which(format$bety=="eastward_wind")
-      uwind.var = ncvar_def(name="eastward_wind",units="m/s",dim=tdim)
+      uwind.var = ncvar_def(name="eastward_wind",units = "m/s",dim = xytdim)
       nc = ncvar_add(nc=nc,v=uwind.var) #add variable to existing netCDF file
       ncvar_put(nc,varid='eastward_wind',
                 vals=met.conv(dat[,as.character(format$orig[k])],format$units[k],"m/s","m/s"))
  
       k = which(format$bety=="northward_wind")
-      uwind.var = ncvar_def(name="northward_wind",units="m/s",dim=tdim)
+      uwind.var = ncvar_def(name="northward_wind",units = "m/s",dim = xytdim)
       nc = ncvar_add(nc=nc,v=uwind.var) #add variable to existing netCDF file
       ncvar_put(nc,varid='northward_wind',
                 vals=met.conv(dat[,as.character(format$orig[k])],format$units[k],"m/s","m/s"))
@@ -177,11 +178,11 @@ met2CF.csv <- function(in.path, in.file, outfolder, format, lat=NULL, lon=NULL){
           uwind <- wind*cos(wind_direction)
           vwind <- wind*sin(wind_direction)
           
-          u.var <- ncvar_def(name='eastward_wind',units='m/s',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
+          u.var <- ncvar_def(name='eastward_wind',units = 'm/s',dim = xytdim) #define netCDF variable, doesn't include longname and comments
           nc = ncvar_add(nc=nc,v=u.var) #add variable to existing netCDF file
           ncvar_put(nc,varid='eastward_wind',vals=uwind)
           
-          v.var <- ncvar_def(name='northward_wind',units='m/s',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
+          v.var <- ncvar_def(name='northward_wind',units = 'm/s',dim = xytdim) #define netCDF variable, doesn't include longname and comments
           nc = ncvar_add(nc=nc,v=v.var) #add variable to existing netCDF file
           ncvar_put(nc,varid='northward_wind',vals=vwind)
           
@@ -189,7 +190,7 @@ met2CF.csv <- function(in.path, in.file, outfolder, format, lat=NULL, lon=NULL){
         } else {
          
           ## if no direction information is available, just insert wind_speed
-          wind.var = ncvar_def(name="wind_speed",units="m/s",dim=tdim)
+          wind.var = ncvar_def(name="wind_speed",units = "m/s",dim = xytdim)
           nc = ncvar_add(nc=nc,v=wind.var) #add variable to existing netCDF file
           ncvar_put(nc,varid='wind_speed',vals=wind)
         }
@@ -200,7 +201,7 @@ met2CF.csv <- function(in.path, in.file, outfolder, format, lat=NULL, lon=NULL){
     ## surface_downwelling_longwave_flux_in_air / lwdown / dlwrf 
     if("surface_downwelling_longwave_flux_in_air" %in% format$bety){
       k = which(format$bety=="surface_downwelling_longwave_flux_in_air")
-      lwdown.var = ncvar_def(name="surface_downwelling_longwave_flux_in_air",units="W m-2",dim=tdim)
+      lwdown.var = ncvar_def(name="surface_downwelling_longwave_flux_in_air",units = "W m-2",dim = xytdim)
       nc = ncvar_add(nc=nc,v=lwdown.var) #add variable to existing netCDF file
       ncvar_put(nc,varid='surface_downwelling_longwave_flux_in_air',
             vals=met.conv(dat[,as.character(format$orig[k])],format$units[k],"W m-2","W m-2"))
@@ -211,17 +212,17 @@ met2CF.csv <- function(in.path, in.file, outfolder, format, lat=NULL, lon=NULL){
     if("solar_radiation" %in% format$bety){
       k = which(format$bety=="solar_radiation")
       swdown = met.conv(dat[,as.character(format$orig[k])],format$units[k],"W m-2","W m-2")
-      swdown.var = ncvar_def(name="surface_downwelling_shortwave_flux_in_air",units="W m-2",dim=tdim)
+      swdown.var = ncvar_def(name="surface_downwelling_shortwave_flux_in_air",units = "W m-2",dim = xytdim)
       nc = ncvar_add(nc=nc,v=swdown.var) #add variable to existing netCDF file
       ncvar_put(nc,varid='surface_downwelling_shortwave_flux_in_air',
             vals=swdown)
     }
 
-    ## PAR (only add if SWdown in absent)
-    if(sum(!is.na(swdown))==0 & "PAR" %in% format$bety){
+    ## PAR 
+    if("PAR" %in% format$bety){
       k = which(format$bety=="PAR")
       PAR = met.conv(dat[,as.character(format$orig[k])],format$units[k],"umol m-2 s-1","mol m-2 s-1")
-      PAR.var = ncvar_def(name="surface_downwelling_photosynthetic_photon_flux_in_air",units="mol m-2 s-1",dim=tdim)
+      PAR.var = ncvar_def(name="surface_downwelling_photosynthetic_photon_flux_in_air",units = "mol m-2 s-1",dim = xytdim)
       nc = ncvar_add(nc=nc,v=PAR.var) #add variable to existing netCDF file
       ncvar_put(nc,varid='surface_downwelling_photosynthetic_photon_flux_in_air', vals=PAR)
     }
