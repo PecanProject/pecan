@@ -34,6 +34,7 @@ plot2AGB <- function(combined,out,outfolder,allom.stats,unit.conv=0.02){
   Bsd  = sqrt(allom.stats[[1]][[6]]$statistics["Sg","Mean"])
   
   ## prep data
+  out[out < 0.1] = 0.1
   nrep  = nrow(out)
   ntree = nrow(combined)
   nt = ncol(out)/ntree
@@ -46,6 +47,7 @@ plot2AGB <- function(combined,out,outfolder,allom.stats,unit.conv=0.02){
   AGB <- array(NA,c(mplot,nrep,nt))
   
   ## sample over tree chronologies
+  pb <- txtProgressBar(min = 0, max = nrep, style = 3)
   for(g in 1:nrep){
     
     ## Draw allometries
@@ -64,6 +66,7 @@ plot2AGB <- function(combined,out,outfolder,allom.stats,unit.conv=0.02){
       NPP[j,g,] <- diff(AGB[j,g,])
       
     }
+    setTxtProgressBar(pb, g)
   }
   
   mAGB <- sAGB <- matrix(NA,mplot,nt)
