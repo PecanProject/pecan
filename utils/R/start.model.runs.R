@@ -16,7 +16,7 @@
 ##' @title Start ecosystem model runs
 ##' @export 
 ##' @examples
-##' \dontrun {
+##' \dontrun{
 ##' start.model.runs("ED2")
 ##' start.model.runs("SIPNET")
 ##' }

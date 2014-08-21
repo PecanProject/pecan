@@ -62,7 +62,6 @@ model2netcdfdep <- function(runid, outdir, model, lat, lon, start_date, end_date
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
 ##' @export
-##' @deprecated
 ##' @return vector of filenames created, converts model output to netcdf as a side effect
 ##' @author Mike Dietze, David LeBauer
 model2netcdf <- function(runid, outdir, model, lat, lon, start_date, end_date){
@@ -143,7 +142,6 @@ read.output <- function(runid, outdir, start.year=NA,
 ##' @param settings settings loaded from pecan.xml
 ##' @param ... arguments passed to \code{\link{read.output}}, e.g. \code{variables}, \code{start.year}, \code{end.year}
 ##' @export
-##' @deprecated
 ##' @author Rob Kooper
 convert.outputs <- function(model, settings, ...) {
   logger.severe("This function is not longer used and will be removed in the future.")

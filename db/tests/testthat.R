@@ -8,12 +8,12 @@
 #-------------------------------------------------------------------------------
 library(testthat)
 library(PEcAn.DB)
-
+library(RPostgreSQL)
 dbparms <- list(driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety")
 
 if(db.exists(dbparms)){
   con <- db.open(dbparms)
   logger.setQuitOnSevere(FALSE)
-  test_check("PEcAn.DB")  
+  test_check("PEcAn.DB")
   db.close(con)
 }
