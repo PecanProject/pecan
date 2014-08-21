@@ -63,7 +63,7 @@ for(ipft in 1:length(settings$pfts)){  ## loop over PFTs
   query <- paste0("SELECT s.spcd,",'s."Symbol"'," as acronym from pfts as p join pfts_species on p.id = pfts_species.pft_id join species as s on pfts_species.specie_id = s.id where p.name like '%",pft_name,"%'")  
   pft.data[[pft_name]] <- db.query(query, con)
 }
-allom.stats = AllomAve(pft.data,outdir = settings$outdir,ngibbs=n.iter)
+allom.stats = AllomAve(pft.data,outdir = settings$outdir,ngibbs=n.iter/10)
 save(allom.stats,file=file.path(settings$outdir,"allom.stats.Rdata"))
 status.end()
 
@@ -71,7 +71,7 @@ status.end()
 status.start("PLOT2AGB")
 out = as.matrix(jags.out)
 sel = grep('x[',colnames(out),fixed=TRUE)
-state = plot2AGB(combined,out[,sel],settings$outdir,allom.stats,unit.conv=0.02)
+state = plot2AGB(combined,out[,sel],settings$outdir,allom.stats,unit.conv=0.01)
 obs = data.frame(mean = apply(state$NPP[1,,],2,mean,na.rm=TRUE),
                  sd = apply(state$NPP[1,,],2,sd,na.rm=TRUE))
 status.end()
