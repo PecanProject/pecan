@@ -190,6 +190,33 @@ check.database <- function(database) {
   return(database)
 } 
 
+# check to make sure BETY is up to date
+check.bety.version <- function(dbcon) {
+  versions <- db.query("SELECT version FROM schema_migrations;", con=dbcon)[['version']]
+  
+  # there should always be a versin 1
+  if (! ("1" %in% versions)) {
+    logger.severe("No version 1, how did this database get created?")
+  }
+  
+  # check for specific version
+  if (! ("20140617163304" %in% versions)) {
+    logger.severe("Missing migration 20140617163304, this associates files with models.")
+  }
+  if (! ("20140708232320" %in% versions)) {
+    logger.severe("Missing migration 20140708232320, this introduces geometry column in sites")
+  }
+  if (! ("20140729045640" %in% versions)) {
+    logger.severe("Missing migration 20140729045640, this introduces modeltypes table")
+  }
+  
+  # check if database is newer
+  if (tail(versions, n=1) > "20140729045640") {
+    logger.warn("Last migration", tail(versions, n=1), "is more recent than expected 20140729045640.",
+                "This could result in PEcAn not working as expected.")
+  }
+}
+
 ##' Sanity checks. Checks the settings file to make sure expected fields exist. It will try to use
 ##' default values for any missing values, or stop the exection if no defaults are possible.
 ##'
@@ -241,18 +268,7 @@ check.settings <- function(settings) {
       dbcon <- db.open(settings$database$bety)
 
       # check database version
-      versions <- db.query("SELECT version FROM schema_migrations WHERE version >= '20140621060009';", con=dbcon)[['version']]
-      if (length(versions) == 0) {
-        logger.severe("Database is out of date, please update the database.",
-                      "Please migrate your current database using Ruby migrations part of BETY")
-      }
-      if (length(versions) > 1) {
-        logger.warn("Database is more recent than PEcAn expects this could result in PEcAn not working as expected.",
-                    "If PEcAn fails, either revert database OR update PEcAn and edit expected database version in",
-                    "utils/R/read.settings.R (Redmine #1673).")
-      } else {
-        logger.debug("Database is correct version", versions[1], ".")
-      }
+      check.bety.version(dbcon)
 
     } else {
       logger.warn("No BETY database information specified; not using database.")
@@ -270,7 +286,12 @@ check.settings <- function(settings) {
   if (is.null(settings[['run']])) {
     logger.warn("No Run Settings specified")
   }
-
+  # check to make sure a host is given
+  if (is.null(settings$run$host$name)) {
+    logger.info("Setting localhost for execution host.")
+    settings$run$host$name <- "localhost"
+  }
+  
   # check start/end date are specified and correct
   if (is.null(settings$run$start.date)) {
     logger.warn("No start.date specified in run section.")
@@ -411,9 +432,9 @@ check.settings <- function(settings) {
       } else if (!is.null(settings$model$type)) {
         model <- db.query(paste0("SELECT models.id AS id, models.revision AS revision, modeltypes.name AS type FROM models, modeltypes ",
                                  "WHERE modeltypes.name = '", toupper(settings$model$type), "' ",
-                                 "AND models.modeltype_id=modeltypes.id",
+                                 "AND models.modeltype_id=modeltypes.id ",
                                  ifelse(is.null(settings$model$revision), "", 
-                                        paste0(" AND revision like '%", settings$model$revision, "%' ")),
+                                        paste0("AND revision like '%", settings$model$revision, "%' ")),
                                  "ORDER BY models.updated_at"), con=dbcon)
         if(nrow(model) > 1){
           logger.warn("multiple records for", settings$model$name, "returned; using the latest")
@@ -438,6 +459,11 @@ check.settings <- function(settings) {
         logger.info("Setting model id to ", settings$model$id)
       } else if (settings$model$id != model$id) {
         logger.warn("Model id specified in settings file does not match database.")
+      }
+    } else {
+      if (is.null(settings$model$id) || (settings$model$id == "")) {
+        settings$model$id <- -1
+        logger.info("Setting model id to ", settings$model$id)
       }
     }
     if (!is.null(model$type)) {
@@ -533,14 +559,11 @@ check.settings <- function(settings) {
         logger.warn("Specified site lon [", settings$run$site$lon, "] does not match lon in database [", site$lon, "]")
       }
     }
+  } else {
+    settings$run$site$id <- -1
   }
   # end site check code
 
-  # check to make sure a host is given
-  if (is.null(settings$run$host$name)) {
-    logger.info("Setting localhost for execution host.")
-    settings$run$host$name <- "localhost"
-  }
   ## if run$host is localhost, set to "localhost
   if (any(settings$run$host %in% c(Sys.info()['nodename'], gsub("illinois", "uiuc", Sys.info()['nodename'])))){
     settings$run$host$name <- "localhost"
@@ -596,7 +619,7 @@ check.settings <- function(settings) {
       db.query(paste0("INSERT INTO workflows (site_id, model_id, hostname, start_date, end_date, started_at, created_at) values ('",
                       settings$run$site$id, "','", settings$model$id, "', '", settings$run$host$name, "', '",
                       settings$run$start.date, "', '", settings$run$end.date, "', '", now, "', '", now, "')"), con=dbcon)
-      settings$workflow$id <- db.query(paste0("SELECT id FROM workflows WHERE created_at='", now, "';"), con=dbcon)[['id']]
+      settings$workflow$id <- db.query(paste0("SELECT id FROM workflows WHERE created_at='", now, "' ORDER BY id DESC LIMIT 1;"), con=dbcon)[['id']]
       fixoutdir <- TRUE
     }
   } else {

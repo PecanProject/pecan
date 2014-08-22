@@ -15,6 +15,7 @@ permute.nc <- function(in.path,prefix,out.path){
     tempfile = file.path(out.path,paste0(files[i],"_temp"))
     outfile = file.path(out.path,files[i])
     
+    
     if(file.exists(infile)==TRUE && file.exists(outfile)==FALSE){
       system(paste0("nccopy -k 3 -u -c time/8,y/277,x/349 ",infile," ",tempfile))
       system(paste0("ncpdq --no_tmp_fl -h -O -a y,x,time ",tempfile," ",outfile))
