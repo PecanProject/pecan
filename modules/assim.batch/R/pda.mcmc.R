@@ -55,12 +55,12 @@ pda.mcmc <- function(settings,prior,chain=1,var.names=NULL,jvar=NULL,params=NULL
     # write enseblem first
     now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
     db.query(paste("INSERT INTO ensembles (created_at, runtype, workflow_id) values ('", 
-                     now, "', 'MCMC', ", workflow.id, ")", sep=''), con)
+                   now, "', 'MCMC', ", workflow.id, ")", sep=''), con)
     ensemble.id <- db.query(paste("SELECT id FROM ensembles WHERE created_at='", now, "'", sep=''), con)[['id']]
   } else {
     ensemble.id <- "NA"
   }
-
+  
   ## model-specific functions
   do.call("require",list(paste0("PEcAn.",model)))
   my.write.config <- paste("write.config.",model,sep="")
@@ -69,7 +69,7 @@ pda.mcmc <- function(settings,prior,chain=1,var.names=NULL,jvar=NULL,params=NULL
     print(paste("please make sure that the PEcAn interface is loaded for",model))
     stop()
   }
-
+  
   ## set up prior density (d) and random (r) functions
   nvar <- nrow(prior)
   dprior <- rprior <- qprior <-list()
@@ -117,6 +117,13 @@ pda.mcmc <- function(settings,prior,chain=1,var.names=NULL,jvar=NULL,params=NULL
   NEEq <- data$NEE_or_fMDSqc #data$qf_Fc
   NEEo[NEEq > 0] <- NA
   
+  NPPo<- state$NPP[,,23]
+  AGBo<- state$AGB[,,24]
+  
+  #parameters for bivariate normal likelihood
+  mu = c(mean(NPPo),mean(AGBo))
+  sigma = cov(cbind(NPPo,AGBo))
+  
   ## calculate flux uncertainty parameters
   dTa <- get.change(data$Ta_f)
   flags <- dTa < 3   ## filter data to temperature differences that are less thatn 3 degrees
@@ -124,6 +131,7 @@ pda.mcmc <- function(settings,prior,chain=1,var.names=NULL,jvar=NULL,params=NULL
   b0 <- NEE.params$intercept
   bp <- NEE.params$slopeP
   bn <- NEE.params$slopeN
+  
   
   ## set up storage
   if(is.null(params)){
@@ -150,7 +158,7 @@ pda.mcmc <- function(settings,prior,chain=1,var.names=NULL,jvar=NULL,params=NULL
   
   ## main MCMC loop
   for(i in start:finish){
-
+    
     print(paste(i,"of",finish))
     
     for(j in vars){
@@ -159,22 +167,22 @@ pda.mcmc <- function(settings,prior,chain=1,var.names=NULL,jvar=NULL,params=NULL
       pnew = rnorm(1,parm[j],jvar[j])
       pstar = parm
       pstar[j] = pnew
-        
+      
       ## check that value falls within the prior
       prior.star <- dmvprior(pstar)
       if(is.finite(prior.star)){
-
+        
         ## set RUN.ID
         if (!is.null(con)) {
           now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
           paramlist <- paste("MCMC: chain",chain,"iteration",i,"variable",j)
           db.query(paste("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id,",
-                           " parameter_list) values ('", 
-                           settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", 
-                           settings$run$end.date, "', '", settings$run$outdir , "', '", now, "', ", ensemble.id, ", '", 
-                           paramlist, "')", sep=''), con)
+                         " parameter_list) values ('", 
+                         settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", 
+                         settings$run$end.date, "', '", settings$run$outdir , "', '", now, "', ", ensemble.id, ", '", 
+                         paramlist, "')", sep=''), con)
           run.id <- db.query(paste("SELECT id FROM runs WHERE created_at='", now, "' AND parameter_list='", paramlist, "'", 
-                                     sep=''), con)[['id']]
+                                   sep=''), con)[['id']]
         } else {
           run.id = paste("MCMC",chain,i,j,sep=".")
         }
@@ -183,8 +191,8 @@ pda.mcmc <- function(settings,prior,chain=1,var.names=NULL,jvar=NULL,params=NULL
         
         ## write config
         do.call(my.write.config,args=list(defaults,list(pft=pstar,env=NA),
-                 settings, run.id))
-
+                                          settings, run.id))
+        
         ## write a README for the run
         cat("runtype     : pda.mcmc\n",
             "workflow id : ", as.character(workflow.id), "\n",
@@ -214,13 +222,17 @@ pda.mcmc <- function(settings,prior,chain=1,var.names=NULL,jvar=NULL,params=NULL
         
         ## read model output        
         NEEm <- read.output(run.id, outdir = file.path(outdir, run.id),
-                   start.year, end.year, variables="NEE")$NEE*0.0002640674
-          ## unit conversion kgC/ha/yr -> umolC/m2/sec
-
-
+                            start.year, end.year, variables="NEE")$NEE*0.0002640674
+        ## unit conversion kgC/ha/yr -> umolC/m2/sec
+        NPPvecm <-read.output(run.id, outdir = file.path(outdir, run.id),
+                              start.year, end.year, variables="NPP")$NPP
+        NPPm<- sum(NPPvecm)
+        
         ## match model and observations
         NEEm <- rep(NEEm,each=length(NEEo)/length(NEEm))
         set <- 1:length(NEEm)  ## ***** need a more intellegent year matching!!!
+        NPPm <- rep(NPPm,each=length(NPPo)/length(NPPm))
+        set <- 1:length(NPPm) 
         
         ## calculate likelihood
         fsel <- which(NEEm > 0)
@@ -228,35 +240,39 @@ pda.mcmc <- function(settings,prior,chain=1,var.names=NULL,jvar=NULL,params=NULL
         LL.star[fsel] <- dexp(abs(NEEm-NEEo[set]),1/(b0 + bp*NEEm),log=TRUE)[fsel]
         n.obs = sum(!is.na(LL.star))
         LL.star <- sum(LL.star,na.rm=TRUE)
-
+        #loglikelihood for bivar normal distn of NPP and AGB
+        LL.star1 <-sum(dmvnorm(cbind(NPPo,AGBo), mu, sigma, log=TRUE), na.rm=TRUE)
+        
+        LL.total<-LL.star*weight+LL.star1
         ## insert Likelihood record in database
-        if (!is.null(con)) {
-          now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-          paramlist <- paste("MCMC: chain",chain,"iteration",i,"variable",j)
-          db.query(paste("INSERT INTO likelihoods (run_id, variable_id, input_id, loglikelihood, n_eff, weight,created_at) values ('", 
-                   run.id, "', '", var.id, "', '", input.id, "', '", LL.star, "', '",
-                   floor(n.obs*weight), "', '", weight , "', '", now,"')", sep=''), con)
-        }
-                
+        #if (!is.null(con)) {
+        #  now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+        #  paramlist <- paste("MCMC: chain",chain,"iteration",i,"variable",j)
+        #  db.query(paste("INSERT INTO likelihoods (run_id, variable_id, input_id, loglikelihood, n_eff, weight,created_at) values ('", 
+        #                 run.id, "', '", var.id, "', '", input.id, "', '", LL.total, "', '",
+        #                 floor(n.obs*weight), "', '", weight , "', '", now,"')", sep=''), con)
+        #}
+        
         ## accept or reject step
-        a = (LL.star - LL.old)*weight + prior.star - prior.old
+        a = LL.total-LL.old + prior.star - prior.old
         if(a > log(runif(1))){
-          LL.old <- LL.star
+          LL.old <- LL.total
           prior.old <- prior.star
           parm <- pstar 
+          
         }
       }
-
+      
     } ## end loop over variables
-  
+    
     ## save output
     params[i,] <- parm
-      
+    
   } ## end MCMC loop
   
   ## close database connection
   if(!is.null(con)) db.close(con)
-
+  
   if(is.null(names(params))) names(params) = rownames(prior)
   return(params)
   
