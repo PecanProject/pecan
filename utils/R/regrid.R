@@ -65,7 +65,7 @@ grid2netcdf <- function(gdata, date = '9999-09-09', outfile = "out.nc"){
 #    ncvar_put(nc, varid = yieldvar, vals = grid.data[order(order(ymd(date), lat, lon))]$yield)
     ncvar_put(nc, varid = yieldvar, vals = yieldarray)
         
-    ncatt_put(nc, 0, "description","put description here"
+    ncatt_put(nc, 0, "description","put description here")
     nc_close(nc)
 }
 
