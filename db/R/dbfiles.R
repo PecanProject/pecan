@@ -32,6 +32,9 @@
 ##' }
 
 dbfile.input.insert <- function(filename, siteid, startdate, enddate, mimetype, formatname, parentid=NA, con, hostname=fqdn()) {
+  
+  name <- tail(unlist(strsplit(filename,"/")),2)[[1]]
+
   if (hostname == "localhost") hostname=fqdn();
 
   # find appropriate format
@@ -48,7 +51,7 @@ dbfile.input.insert <- function(filename, siteid, startdate, enddate, mimetype, 
   } else {
     parent <- paste0(" AND parent_id=", parentid)
   }
-
+  
   # find appropriate input
 inputid <- db.query(paste0("SELECT * FROM inputs WHERE name='", name,"'"), con)[['id']]
   if (is.null(inputid)) {
