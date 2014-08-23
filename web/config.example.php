@@ -43,6 +43,11 @@ $ed_veg="/home/carya/oge2OLD/OGE2_";
 $ed_soil="/home/carya/faoOLD/FAO_";
 $ed_inputs="/home/carya/ed_inputs/";
 
+# location of BETY DB set to empty to not create links, can be both
+# relative or absolute paths or full URL's. Should point to the base
+# of BETYDB
+$betydb="/bety";
+
 # ----------------------------------------------------------------------
 # SIMPLE EDITING OF BETY DATABSE
 # ----------------------------------------------------------------------

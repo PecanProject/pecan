@@ -16,14 +16,14 @@
 ##' @title Start ecosystem model runs
 ##' @export 
 ##' @examples
-##' \dontrun {
+##' \dontrun{
 ##' start.model.runs("ED2")
 ##' start.model.runs("SIPNET")
 ##' }
 ##' @author Shawn Serbin, Rob Kooper, ...
 ##'
 start.model.runs <- function(settings, write = TRUE){
-  model = settings$model$name
+  model = settings$model$type
   print("-------------------------------------------------------------------")
   print(paste(" Starting model runs", model))
   print("-------------------------------------------------------------------")

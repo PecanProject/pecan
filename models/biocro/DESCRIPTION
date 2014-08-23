@@ -23,11 +23,3 @@ License: FreeBSD + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes
 LazyData: FALSE
-Collate:
-    'get.model.output.BIOCRO.R'
-    'model2netcdf.BIOCRO.R'
-    'start.runs.BIOCRO.R'
-    'write.configs.BIOCRO.R'
-    'get.met.utils.R'
-    'get.ncepmet.R'
-    'get.rncepmet.R'

@@ -38,7 +38,7 @@ fetch.stats2se <- function(connection, query){
 ##' @param ... extra arguments
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}}; \code{\link{transformstats}} performs transformation calculations
 ##' @author David LeBauer, Carl Davidson
-query.data <- function(trait, spstr, extra.columns='sites.lat, sites.lon, ', con=NULL, ...) {
+query.data <- function(trait, spstr, extra.columns='ST_X(sites.geometry) AS lon, ST_Y(sites.geometry) AS lat, ', con=NULL, ...) {
   if (is.null(con)) {
     logger.error("No open database connection passed in.")
     con <- db.open(settings$database$bety)
@@ -113,10 +113,12 @@ query.yields <- function(trait = 'yield', spstr, extra.columns='', con=NULL, ...
 ##' @param covariates.data one or more tables of covariate data, ordered by the precedence
 ##' they will assume in the event a trait has covariates across multiple tables.
 ##' All tables must contain an 'id' and 'level' column, at minimum.
+##' @export
 ##--------------------------------------------------------------------------------------------------#
 append.covariate<-function(data, column.name, ..., covariates.data=list(...)){
   merged <- data.frame()
-  for(covariate.data in covariates.data){
+  for(i in seq(covariates.data)){
+    covariate.data <- covariates.data[i,]
     if(length(covariate.data) >= 1){
       ## conditional added to prevent crash when trying to transform an empty data frame
       transformed <- transform(covariate.data, id = trait_id, level = level)

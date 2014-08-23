@@ -1,9 +1,9 @@
 ##' .. content for \description{} (no empty lines) ..
 ##'
 ##' .. content for \details{} ..
-##' @title 
+##' @title regrid
 ##' @param latlon.data dataframe with lat, lon, and some value to be regridded
-##' @return 
+##' @return dataframe with regridded data
 ##' @author David LeBauer
 regrid <- function(latlon.data){
 
@@ -31,9 +31,9 @@ regrid <- function(latlon.data){
 ##' .. content for \description{} (no empty lines) ..
 ##'
 ##' .. content for \details{} ..
-##' @title 
+##' @title grid2netcdf
 ##' @param grid.data 
-##' @return 
+##' @return nothing, writes netCDF file
 ##' @author David LeBauer
 grid2netcdf <- function(gdata, date = '9999-09-09', outfile = "out.nc"){
 

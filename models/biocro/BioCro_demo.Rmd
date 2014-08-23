@@ -4,7 +4,7 @@ logger.setQuitOnSevere(FALSE)
 
 settings <- read.settings("models/biocro/inst/extdata/misp.xml")
 
-model <- settings$model$name
+model <- settings$model$type
 
 #---------------- Run PEcAn workflow. -------------------------------------------------------------#
 # Query the trait database for data and priors

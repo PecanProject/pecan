@@ -16,7 +16,8 @@ Depends:
     PEcAn.utils,
     abind,
     coda,
-    ncdf4
+    ncdf4,
+    stringr
 Suggests:
     testthat
 License: FreeBSD + file LICENSE

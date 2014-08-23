@@ -18,9 +18,9 @@ Depends:
     data.table,
     lubridate
 Suggests:
-    RNCEP
+    RNCEP,
+    PEcAn.utils
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
-
