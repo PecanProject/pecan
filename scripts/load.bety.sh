@@ -33,6 +33,12 @@ REMOTESITE=${REMOTESITE:-0}
 # data!
 CREATE=${CREATE:-"NO"}
 
+# Keep the tmp folder even if the sync failed?
+# Set this to YES to keep the tmp folder, this is helpful for
+# debugging the script. The default value is NO and the tmp folder will
+# be removed
+KEEPTMP=${KEEPTMP:-"NO"}
+
 # Convert user account 1 to carya for use on VM
 # Set this to YES to convert user 1 to carya with password. This will
 # give this user admin priviliges. It will also create 16 more users
@@ -124,7 +130,11 @@ else
 	if [ ! -e "${DUMPDIR}/${VERSION}.schema" ]; then
 		echo "EXPECTED SCHEMA version ${VERSION}"
 		echo "Dump is from a different schema, please fix schema in database."
-		echo "Files are in ${DUMPDIR}"
+    if [ "$KEEPTMP" == "YES" ]; then
+		  echo "Files are in ${DUMPDIR}"
+    else 
+      rm -rf "${DUMPDIR}"
+    fi
 		exit
 	fi
 
