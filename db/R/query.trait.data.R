@@ -166,7 +166,7 @@ query.covariates<-function(trait.ids, con = NULL, ...){
 arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp=25){
   if(length(covariates)>0) {
     .covs <- lapply(temp.covariates, function(temp.covariate){covariates[covariates$name == temp.covariate,]})
-#    .covs <- .covs[!duplicated(.covs$trait_id),]
+    .covs <- .covs[sapply(.covs, function(x) nrow(x) != 0)][[1]]# remove empty records  
     data <- append.covariate(data, 'temp',
                              covariates.data = .covs)
 
@@ -428,14 +428,15 @@ query.trait.data <- function(trait, spstr, con = NULL, ...){
 
 ### Query associated covariates from database for trait X.
   covariates <- query.covariates(data$id, con=con)
-
+  canopy.layer.covs <- covariates[covariates$name == 'canopy_layer', ]
+  
   if(trait == 'Vcmax') {
 #########################   VCMAX   ############################
 ### Apply Arrhenius scaling to convert Vcmax at measurement temp to that at 25 degC (ref temp).
     data <- arrhenius.scaling.traits(data, covariates, c('leafT', 'airT'))
 
 ### Keep only top of canopy/sunlit leaf samples based on covariate.
-    data <- filter.sunleaf.traits(data, covariates)
+    if(nrow(canopy.layer.covs) > 0) data <- filter.sunleaf.traits(data, canopy.layer.covs)
 
     ## select only summer data for Panicum virgatum
     ##TODO fix following hack to select only summer data
@@ -451,8 +452,8 @@ query.trait.data <- function(trait, spstr, con = NULL, ...){
                   derive.traits(function(lma){1/lma},
                                 query.data('LMA', spstr, con=con)))
 
-### Keep only top of canopy/sunlit leaf samples based on covariate.
-    data <- filter.sunleaf.traits(data, covariates)
+    ### Keep only top of canopy/sunlit leaf samples based on covariate.
+    if(nrow(canopy.layer.covs) > 0) data <- filter.sunleaf.traits(data, canopy.layer.covs)
 
     ## select only summer data for Panicum virgatum
     ##TODO fix following hack to select only summer data
@@ -477,7 +478,7 @@ query.trait.data <- function(trait, spstr, con = NULL, ...){
 #########################  LEAF RESPIRATION   ############################
     ## Apply Arrhenius scaling to convert leaf respiration at measurement temp
     ## to that at 25 degC (ref temp).
-    data <- arrhenius.scaling.traits(data, covariates, c('leafT', 'airT'))
+  data <- arrhenius.scaling.traits(data, covariates, c('leafT', 'airT'))
 
   } else if (trait == 'stem_respiration_rate') {
 #########################  STEM RESPIRATION   ############################
