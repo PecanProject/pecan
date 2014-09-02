@@ -6,14 +6,13 @@ args   <- commandArgs(trailingOnly = TRUE)
 rundir <- args[1]
 outdir <- args[2]
 if(interactive()) {
-  runid <- tail(readLines("salixtest/run/runs.txt"), n=1)
-  rundir <- file.path("salixtest/run", runid)
-  outdir <- file.path("salixtest/out", runid)
+  runid <- tail(readLines(file.path(settings$rundir, "runs.txt"), n=1))
+  rundir <- file.path(settings$rundir, runid)
+  outdir <- file.path(settings$outdir, "out", runid)
 }
 # set the libpath here to point to the right version of BioCro
 require(BioCro, quietly = TRUE)
 require(XML, quietly = TRUE)
-browser()
 # load the weather data
 weather <- read.csv(file.path(rundir, "weather.csv"))
 years <- unique(weather$year)
@@ -84,4 +83,5 @@ save(resultDT, config, genus, file = file.path(outdir, "result.RData"))
 #debugonce(model2netcdf.BIOCRO)
 ## this is the format that will be read by PEcAn: 
 require(PEcAn.BIOCRO, quietly = TRUE)
-model2netcdf.BIOCRO(resultDT=resultDT, outdir=outdir, sitelat = config$location$latitude, sitelon = config$location$longitude)
+source('~/dev/pecan/models/biocro/inst/biocro.Rscript', echo=TRUE)
+model2netcdf.BIOCRO(resultDT = resultDT, genus = genus, outdir = outdir, lat = config$location$latitude, lon = config$location$longitude)

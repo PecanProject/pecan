@@ -17,8 +17,7 @@
 ##' @export 
 ##' @examples
 ##' \dontrun{
-##' start.model.runs("ED2")
-##' start.model.runs("SIPNET")
+##' start.model.runs(settings)
 ##' }
 ##' @author Shawn Serbin, Rob Kooper, ...
 ##'

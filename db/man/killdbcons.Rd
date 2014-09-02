@@ -2,9 +2,6 @@
 \name{killdbcons}
 \alias{killdbcons}
 \title{Kill existing database connections}
-\usage{
-killdbcons()
-}
 \value{
 nothing, as a side effect closes all open connections
 }

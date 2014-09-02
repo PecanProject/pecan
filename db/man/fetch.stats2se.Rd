@@ -2,9 +2,6 @@
 \name{fetch.stats2se}
 \alias{fetch.stats2se}
 \title{Fetch data and transform stats to SE}
-\usage{
-fetch.stats2se(connection, query)
-}
 \arguments{
 \item{connection}{connection to trait database}
 
