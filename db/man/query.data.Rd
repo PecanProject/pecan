@@ -2,11 +2,6 @@
 \name{query.data}
 \alias{query.data}
 \title{Query data and transform stats to SE by calling \code{\link{fetch.stats2se}};}
-\usage{
-query.data(trait, spstr,
-  extra.columns = "ST_X(sites.geometry) AS lon, ST_Y(sites.geometry) AS lat, ",
-  con = NULL, ...)
-}
 \arguments{
 \item{trait}{trait to query from the database}
 
