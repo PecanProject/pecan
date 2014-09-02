@@ -319,7 +319,7 @@ take.samples <- function(summary, sample.size = 10^6){
 ##' @examples
 ##' input <- list(x = data.frame(mean = 1, stat = 1, n = 1))
 ##' derive.trait(FUN = identity, input = input, var.name = 'x')
-derive.trait <- function(FUN, ..., input=list(...), var.name=NA, sample.size=100000){
+derive.trait <- function(FUN, ..., input=list(...), var.name=NA, sample.size=10000){
   if(any(lapply(input, nrow) > 1)){
     return(NULL)
   }
