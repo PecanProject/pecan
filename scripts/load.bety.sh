@@ -19,11 +19,13 @@ PG_OPT=${PG_OPT:-""}
 # ID's used in database
 # These ID's need to be unique for the sharing to work. If you want
 # to share your data, send email to kooper@illinois.edu to claim
-# your ID range.
+# your ID range. The master list is maintained at 
+# https://github.com/PecanProject/bety/wiki/Distributed-BETYdb
 #
 #  0 - EBI master database
 #  1 - BU
 #  2 - Brookhaven
+#  3 - Purdue
 # 99 - VM
 MYSITE=${MYSITE:-99}
 REMOTESITE=${REMOTESITE:-0}
@@ -32,6 +34,12 @@ REMOTESITE=${REMOTESITE:-0}
 # Set this to YES to create the database, this will remove all existing
 # data!
 CREATE=${CREATE:-"NO"}
+
+# Keep the tmp folder even if the sync failed?
+# Set this to YES to keep the tmp folder, this is helpful for
+# debugging the script. The default value is NO and the tmp folder will
+# be removed
+KEEPTMP=${KEEPTMP:-"NO"}
 
 # Convert user account 1 to carya for use on VM
 # Set this to YES to convert user 1 to carya with password. This will
@@ -124,7 +132,11 @@ else
 	if [ ! -e "${DUMPDIR}/${VERSION}.schema" ]; then
 		echo "EXPECTED SCHEMA version ${VERSION}"
 		echo "Dump is from a different schema, please fix schema in database."
-		echo "Files are in ${DUMPDIR}"
+    if [ "$KEEPTMP" == "YES" ]; then
+		  echo "Files are in ${DUMPDIR}"
+    else 
+      rm -rf "${DUMPDIR}"
+    fi
 		exit
 	fi
 
