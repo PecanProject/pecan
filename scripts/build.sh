@@ -194,6 +194,10 @@ if [ "$FORCE" == "yes" ]; then
           echo "--- ${BASENAME}.Rcheck/00install.out" >> changes.log
           cat "${BASENAME}.Rcheck/00install.out" >> changes.log
         fi
+        if [ -e "${BASENAME}.Rcheck/tests/testthat.Rout.fail" ]; then
+          echo "--- ${BASENAME}.Rcheck/tests/testthat.Rout.fail" >> changes.log
+          cat "${BASENAME}.Rcheck/00install.out" >> changes.log
+        fi
 	    fi
 	  fi
 
