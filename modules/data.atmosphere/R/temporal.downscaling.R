@@ -32,7 +32,7 @@ load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date){
   if(!grepl("days", time.units[1])) {
       logger.error("time dimension does not have units of days")
   }
-  if(!ymd(time.units[2]) == ymd("1700-01-01")){
+  if(!ymd_hms(time.units[2]) == ymd("1700-01-01")){
       logger.error("time dimension of met input does not start at 1700-01-01")
   }
   all.dates <- data.table(index = seq(time.idx),

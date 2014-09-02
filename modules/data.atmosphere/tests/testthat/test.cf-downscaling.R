@@ -1,9 +1,8 @@
 context("loading data from PEcAn-CF met drivers")
-
-daily.nc <- nc_open(system.file("extdata/urbana_daily_test.nc", package = "PEcAn.data.atmosphere"))
+daily.nc <- nc_open("data/urbana_daily_test.nc")
 daily.cf <- load.cfmet(met.nc = daily.nc, lat = 39.75, lon = -87.25, start.date = "1951-01-02", end.date = "1951-06-01")
 
-subdaily.nc <- nc_open(system.file("extdata/urbana_subdaily_test.nc", package = "PEcAn.data.atmosphere"))
+subdaily.nc <- nc_open("data/urbana_subdaily_test.nc")
 subdaily.cf <- load.cfmet(met.nc = subdaily.nc, lat = 39.75, lon = -87.25, start.date = "1979-01-02", end.date = "1979-06-01")
 
 test_that("data extracted from test pecan-cf met files is valid",{
