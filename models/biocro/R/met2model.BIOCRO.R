@@ -18,8 +18,19 @@
 ##' @param outfolder location where model specific output is written.
 ##' @return OK if everything was succesful.
 ##' @export
-##' @author Rob Kooper
+##' @author Rob Kooper, David LeBauer
 ##-------------------------------------------------------------------------------------------------#
 met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite=FALSE) {
-  logger.severe("NOT IMPLEMENTED")
+  ncfiles = dir(in.path, in.prefix, full.names = TRUE, pattern = "*.nc")
+  metdata <- list()
+  for(file in ncfiles){
+    metdata[[file]] <- load.cfmet()
+  }
+  tullymet <- met[,list(year = year, doy = doy, hour = hour, 
+                        #SolarR = surface_downwelling_shortwave_flux_in_air,
+                        SolarR = ud.convert(surface_downwelling_photosynthetic_photon_flux_in_air, "mol", "umol") ,
+                        Temp = ud.convert(air_temperature, "Kelvin", "Celsius"), 
+                        RH = relative_humidity / 100, 
+                        WS = wind_speed, 
+                        precip = precipitation_flux)]
 }
