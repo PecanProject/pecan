@@ -33,47 +33,48 @@ if(!is.null(config$pft$canopyControl$Sp)){
 }
 genus <- config$pft$type$genus
 if(!(genus %in% c("Saccharum", "Salix", "Miscanthus"))) {
-    stop("genus", genus, "not supported by PEcAn.BIOCRO module")
+  stop("genus", genus, "not supported by PEcAn.BIOCRO module")
 }
 
 result <- list()
 
 for(yeari in years){
-    yearchar <- as.character(yeari)
-    WetDat <- weather[weather$year == yeari,]
-    print(str(WetDat))
-    day1 <- min(WetDat$doy)
-    dayn <- max(WetDat$doy)
-
-    if(genus == "Saccharum"){
-        result[[yearchar]] <- caneGro(WetDat = WetDat, photoControl=pp, canopyControl=cc)
-        result[[yearchar]][["Grain"]] <- result[[yearchar]][["Rhizome"]] <- rep(0, length(result$Hour))
-    } else if (genus == "Salix") {
-        if(yeari == min(years)){
-            iplant <- iwillowParms(iRhizome=1.0, iStem=1.0, iLeaf=0.0,
-                                    iRoot=1.0, ifrRhizome=0.01, ifrStem=0.01,
-                                    ifrLeaf = 0.0, ifrRoot = 0.0)
-        } else if(yeari > min(years)){
-            N <- length(result[[as.character(yeari-1)]]$Rhizome)
-            iplant$iRhizome <- result[[as.character(yeari-1)]]$Rhizome[N]
-            iplant$iStem <- result[[as.character(yeari-1)]]$Stem[N]
-            iplant$iRoot <- result[[as.character(yeari-1)]]$Root[N]
-        }
-        result[[yearchar]] <- willowGro(WetDat = WetDat, photoControl=pp,
-                                        canopyControl=cc, day1 = day1, dayn = dayn)
-    } else if (genus == "Miscanthus") {
-        result[[yearchar]] <- BioGro(WetDat = WetDat, photoControl = pp, canopyControl = cc)
-    }
-
-    result.yeari <- with(result[[yearchar]],
-                         data.table(Year = yeari, DayofYear, Hour, ThermalT,
-                                    Stem, Leaf, Root, Rhizome, Grain, LAI,
-                                    SoilEvaporation, CanopyTrans))
+  yearchar <- as.character(yeari)
+  WetDat <- weather[weather$year == yeari,]
+  print(str(WetDat))
+  day1 <- min(WetDat$doy)
+  dayn <- max(WetDat$doy)
+  
+  if(genus == "Saccharum"){
+    result[[yearchar]] <- caneGro(WetDat = WetDat, photoControl=pp, canopyControl=cc)
+    result[[yearchar]][["Grain"]] <- result[[yearchar]][["Rhizome"]] <- rep(0, length(result$Hour))
+  } else if (genus == "Salix") {
     if(yeari == min(years)){
-        resultDT <- result.yeari
-    } else if (yeari > min(years)){
-        resultDT <- rbind(resultDT, result.yeari)
+      iplant <- iwillowParms(iRhizome=1.0, iStem=1.0, iLeaf=0.0,
+                             iRoot=1.0, ifrRhizome=0.01, ifrStem=0.01,
+                             ifrLeaf = 0.0, ifrRoot = 0.0)
+    } else if(yeari > min(years)){
+      N <- length(result[[as.character(yeari-1)]]$Rhizome)
+      iplant$iRhizome <- result[[as.character(yeari-1)]]$Rhizome[N]
+      iplant$iStem <- result[[as.character(yeari-1)]]$Stem[N]
+      iplant$iRoot <- result[[as.character(yeari-1)]]$Root[N]
     }
+    result[[yearchar]] <- willowGro(WetDat = WetDat, photoControl=pp,
+                                    canopyControl=cc, day1 = day1, dayn = dayn)
+  } else if (genus == "Miscanthus") {
+    result[[yearchar]] <- BioGro(WetDat = WetDat, photoControl = pp, canopyControl = cc)
+  }
+  
+  result.yeari <- with(result[[yearchar]],
+                       data.table(Year = yeari, DayofYear, Hour, ThermalT,
+                                  Stem, Leaf, Root, Rhizome, Grain, LAI,
+                                  SoilEvaporation, CanopyTrans))
+  if(yeari == min(years)){
+    resultDT <- result.yeari
+  } else if (yeari > min(years)){
+    resultDT <- rbind(resultDT, result.yeari)
+  }
+  
 }
 
 
@@ -83,5 +84,6 @@ save(resultDT, config, genus, file = file.path(outdir, "result.RData"))
 #debugonce(model2netcdf.BIOCRO)
 ## this is the format that will be read by PEcAn: 
 require(PEcAn.BIOCRO, quietly = TRUE)
-source('~/dev/pecan/models/biocro/inst/biocro.Rscript', echo=TRUE)
-model2netcdf.BIOCRO(resultDT = resultDT, genus = genus, outdir = outdir, lat = config$location$latitude, lon = config$location$longitude)
+require(PEcAn.utils)
+source("/home/dlebauer/dev/pecan/models/biocro/R/model2netcdf.BIOCRO.R")
+model2netcdf.BIOCRO(resultDT = resultDT, genus = "genus", outdir = outdir, lat = config$location$latitude, lon = config$location$longitude)
