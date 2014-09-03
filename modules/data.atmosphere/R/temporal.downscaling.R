@@ -261,10 +261,9 @@ get.ncvector <- function(var, lati = lati, loni = loni,
   
   if (var == "precipitation_flux"){
     precip_units <- met.nc$var[["precipitation_flux"]]$units
-    if(grepl("kg m-2", precip_units)){
-      precip_units <- gsub("kg m-2", "mm", precip_units)
-    }
-    ans <- ud.convert(ans, precip_units, "mm day-1")
+    precip_units <- gsub("kg m-2", "mm", precip_units)
+    precip_units <- gsub("kg/m2", "mm", precip_units)
+    ans <- ud.convert(ans, precip_units, "mm s-1")
     
   }
   return(ans)
