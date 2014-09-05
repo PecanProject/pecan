@@ -70,6 +70,7 @@ CLEAN_TABLES="${CLEAN_TABLES} posterior_samples posteriors"
 CLEAN_TABLES="${CLEAN_TABLES} priors runs sessions sites"
 CLEAN_TABLES="${CLEAN_TABLES} species traits treatments"
 CLEAN_TABLES="${CLEAN_TABLES} workflows yields"
+CLEAN_TABLES="${CLEAN_TABLES} modeltypes modeltypes_formats"
 
 # eventually these 2 should be loaded first to check constraints
 CLEAN_TABLES="${CLEAN_TABLES} users variables"
