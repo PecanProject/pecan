@@ -87,7 +87,7 @@ if [ -z "${DUMPURL}" ]; then
 	if [ "${REMOTESITE}" == "0" ]; then
 		DUMPURL="https://ebi-forecast.igb.illinois.edu/pecan/dump/bety.tar.gz"
 	elif [ "${REMOTESITE}" == "1" ]; then
-		DUMPURL="http://psql-pecan.bu.edu/sync/bety.tar.gz"
+		DUMPURL="http://psql-pecan.bu.edu/sync/dump/bety.tar.gz"
 	else
 		echo "Don't know where to get data for site ${REMOTESITE}"
 		exit
