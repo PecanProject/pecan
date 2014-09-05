@@ -34,13 +34,13 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,con,...){
   
   # Use existing site, unless otherwise specified (ex: subsetting case)
   if("newsite" %in% names(l) && is.null(l[["newsite"]])==FALSE){
-    site <- db.query(paste("SELECT id, ST_X(geometry) AS lon, ST_Y(geometry) AS lat FROM sites WHERE id =",l$newsite),con)
+    site <- db.query(paste("SELECT id, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =",l$newsite),con)
     if(nrow(site)==0){logger.error("Site not found"); db.close(con);return(NULL)} 
     if(!(is.na(site$lat)) && !(is.na(site$lat))){
       args = c(args, site$lat, site$lon)
     }else{logger.error("No lat and lon for extraction site"); db.close(con);return(NULL)}
   }else{
-    site <- db.query(paste("SELECT id, ST_X(geometry) AS lon, ST_Y(geometry) AS lat FROM sites WHERE id =",input$site_id),con)
+    site <- db.query(paste("SELECT id, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =",input$site_id),con)
     if(nrow(site)==0){logger.error("Site not found");db.close(con);return(NULL)} 
   }      
   

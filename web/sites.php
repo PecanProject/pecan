@@ -57,7 +57,7 @@ if (isset($_REQUEST['model']) && ($_REQUEST['model'] != "") && isset($_REQUEST['
     $stmt->closeCursor();
 
     // 3. Get list of all sites, formats
-    $stmt = $pdo->prepare("SELECT DISTINCT sites.id, sites.sitename, sites.city, sites.country, ST_X(sites.geometry) AS lon, ST_Y(sites.geometry) AS lat, format_id FROM sites, inputs, dbfiles, machines" .
+    $stmt = $pdo->prepare("SELECT DISTINCT sites.id, sites.sitename, sites.city, sites.country, ST_X(ST_CENTROID(sites.geometry)) AS lon, ST_Y(ST_CENTROID(sites.geometry)) AS lat, format_id FROM sites, inputs, dbfiles, machines" .
                           " WHERE sites.id=inputs.site_id AND inputs.id=dbfiles.container_id" .
                           " AND dbfiles.container_type='Input' and dbfiles.machine_id=machines.id" .
                           " AND machines.hostname=? GROUP BY sites.id, format_id;");
@@ -96,7 +96,7 @@ function allSites() {
   global $pdo;
 
   // Select all the rows in the markers table
-  $result = $pdo->query("SELECT id, sitename, city, country, ST_X(geometry) AS lon, ST_Y(geometry) AS lat FROM sites;");
+  $result = $pdo->query("SELECT id, sitename, city, country, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites;");
   if (!$result) {
     die('Invalid query: ' . error_database());
   } 
