@@ -54,6 +54,7 @@ CLEAN_TABLES="${CLEAN_TABLES} posterior_samples posteriors"
 CLEAN_TABLES="${CLEAN_TABLES} priors runs sessions sites"
 CLEAN_TABLES="${CLEAN_TABLES} species treatments"
 CLEAN_TABLES="${CLEAN_TABLES} variables workflows"
+CLEAN_TABLES="${CLEAN_TABLES} modeltypes modeltypes_formats"
 
 USER_TABLES="users"
 CHECK_TABLES="traits yields"
