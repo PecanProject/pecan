@@ -60,7 +60,7 @@ if (length(which(commandArgs() == "--continue")) == 0) {
 
 	# get data from pecan DB
 	status.start("TRAIT")
-	settings$pfts <- get.trait.data(settings$pfts, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)
+	settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)
 	saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
 	status.end()
 

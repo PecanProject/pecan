@@ -20,7 +20,7 @@ model <- settings$model$type
 
 ```{r, echo=FALSE,warning=FALSE,cache=TRUE}
 library(PEcAn.DB)
-settings$pfts <- get.trait.data(settings$pfts, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)# Query the trait database for data and priors
+settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)# Query the trait database for data and priors
 ```
 
 ### Run Meta-analysis
