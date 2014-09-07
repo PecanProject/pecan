@@ -703,7 +703,6 @@ check.settings <- function(settings) {
           x <- db.query(paste0("SELECT pfts.id FROM pfts",
                                " WHERE pfts.name = '",  settings$pfts[i]$pft$name, "'"), con=dbcon)
         } else {
-  print(settings)
           x <- db.query(paste0("SELECT pfts.id FROM pfts, modeltypes",
                                " WHERE pfts.name = '",  settings$pfts[i]$pft$name, "'",
                                " AND modeltypes.name='", settings$model$type, "'",

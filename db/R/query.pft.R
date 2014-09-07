@@ -39,7 +39,6 @@ query.pft_species <- function(pft, modeltype, con){
                     " and pfts.modeltype_id=modeltypes.id",
                     " and modeltypes.name='", modeltype, "'")
   }
-  print(query)
 
   species <- db.query(query, con)
   invisible(species)
