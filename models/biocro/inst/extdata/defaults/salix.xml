@@ -8,7 +8,7 @@
     <SpD>0</SpD>
     <nlayers>10</nlayers>
     <kd>0.37</kd> <!--canopy extinction coef. for diffuse light -->
-    <mResp>"c(0.02, 0.03)"</mResp>
+    <mResp>0.02, 0.03</mResp>
     <heightFactor>3</heightFactor>
     <GrowthRespFraction>0.3</GrowthRespFraction>
   </canopyControl>
