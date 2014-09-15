@@ -70,6 +70,7 @@ CLEAN_TABLES="${CLEAN_TABLES} posterior_samples posteriors"
 CLEAN_TABLES="${CLEAN_TABLES} priors runs sessions sites"
 CLEAN_TABLES="${CLEAN_TABLES} species traits treatments"
 CLEAN_TABLES="${CLEAN_TABLES} workflows yields"
+CLEAN_TABLES="${CLEAN_TABLES} modeltypes modeltypes_formats"
 
 # eventually these 2 should be loaded first to check constraints
 CLEAN_TABLES="${CLEAN_TABLES} users variables"
@@ -87,7 +88,7 @@ if [ -z "${DUMPURL}" ]; then
 	if [ "${REMOTESITE}" == "0" ]; then
 		DUMPURL="https://ebi-forecast.igb.illinois.edu/pecan/dump/bety.tar.gz"
 	elif [ "${REMOTESITE}" == "1" ]; then
-		DUMPURL="http://psql-pecan.bu.edu/sync/bety.tar.gz"
+		DUMPURL="http://psql-pecan.bu.edu/sync/dump/bety.tar.gz"
 	else
 		echo "Don't know where to get data for site ${REMOTESITE}"
 		exit
@@ -152,14 +153,17 @@ REM_LAST_ID=$(( REM_START_ID + ID_RANGE - 1 ))
 # clean tables
 for T in ${CLEAN_TABLES}; do
 	printf "Cleaning %-25s : " "${T}"
-	DEL=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM ${T} WHERE (id >= ${REM_START_ID} AND id <= ${REM_LAST_ID})" | tr -d ' ' )
-	psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "DELETE FROM ${T} WHERE (id >= ${REM_START_ID} AND id <= ${REM_LAST_ID})"
+  WHERE="WHERE (id >= ${REM_START_ID} AND id <= ${REM_LAST_ID})"
+	DEL=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM ${T} ${WHERE}" | tr -d ' ' )
+	psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "DELETE FROM ${T} ${WHERE}"
 	echo "DEL ${DEL}"
 	printf "Loading  %-25s : " "${T}"
+  START=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT COUNT(*) FROM ${T}" | tr -d ' ' )
 	if [ -f "${DUMPDIR}/${T}.csv" ]; then
 		psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "\COPY ${T} FROM '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')"
 	fi
-	ADD=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT COUNT(*) FROM ${T} WHERE (id >= ${REM_START_ID} AND id <= ${REM_LAST_ID});" | tr -d ' ' )
+  END=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT COUNT(*) FROM ${T}" | tr -d ' ' )
+  ADD=$(( END - START ))
 	echo "ADD ${ADD}"
 	printf "Fixing   %-25s : " "${T}"
 	NEXT=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT setval('${T}_id_seq', ${MY_START_ID}, false); SELECT setval('${T}_id_seq', (SELECT MAX(id) FROM ${T} WHERE id >= ${MY_START_ID} AND id < ${MY_LAST_ID}), true); SELECT last_value from ${T}_id_seq;" | tr -d ' ' )
@@ -174,14 +178,17 @@ for T in ${MANY_TABLES}; do
 	Y=${Z[1]}
 	Y=${Y%s}
 	printf "Cleaning %-25s : " "${T}"
-	DEL=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM ${T} WHERE (${X}_id >= ${REM_START_ID} AND ${X}_id <= ${REM_LAST_ID} AND ${Y}_id >= ${REM_START_ID} AND ${Y}_id <= ${REM_LAST_ID})" | tr -d ' ' )
-	psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "DELETE FROM ${T} WHERE (${X}_id >= ${REM_START_ID} AND ${X}_id <= ${REM_LAST_ID} AND ${Y}_id >= ${REM_START_ID} AND ${Y}_id <= ${REM_LAST_ID})"
+  WHERE="WHERE (${X}_id >= ${REM_START_ID} AND ${X}_id <= ${REM_LAST_ID} AND ${Y}_id >= ${REM_START_ID} AND ${Y}_id <= ${REM_LAST_ID})"
+	DEL=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM ${T} ${WHERE}" | tr -d ' ' )
+	psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "DELETE FROM ${T} ${WHERE}"
 	echo "DEL ${DEL}"
 	printf "Loading  %-25s : " "${T}"
+  START=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT COUNT(*) FROM ${T}" | tr -d ' ' )
 	if [ -f "${DUMPDIR}/${T}.csv" ]; then
 		psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "\COPY ${T} FROM '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')"
 	fi
-	ADD=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT COUNT(*) FROM ${T} WHERE (${X}_id >= ${REM_START_ID} AND ${X}_id <= ${REM_LAST_ID} AND ${Y}_id >= ${REM_START_ID} AND ${Y}_id <= ${REM_LAST_ID})" | tr -d ' ' )
+	END=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT COUNT(*) FROM ${T}" | tr -d ' ' )
+  ADD=$(( END - START ))
 	echo "ADD ${ADD}"
 done
 

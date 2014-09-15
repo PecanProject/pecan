@@ -59,7 +59,10 @@ run.write.configs <- function(settings, write = TRUE) {
   trait.samples <- sa.samples <- ensemble.samples <- env.samples <- runs.samples <- list()
   
   ## Prepare for model output.  Cleanup any old config files (if exists)
-  do.call(paste("remove.config", model, sep="."), args = list(settings$rundir, settings))
+  my.remove.config <- paste0("remove.config.",model)
+  if(exists(my.remove.config)) {
+    do.call(my.remove.config, args = list(settings$rundir, settings))
+  }
 
   ## Load PFT priors and posteriors
   for (i in seq(pft.names)){
