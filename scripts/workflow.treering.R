@@ -20,7 +20,7 @@ plot2AGB(unit.conv=0.02)
 
 ## run ensemble
 # Query the trait database for data and priors
-#settings$pfts <- get.trait.data(settings$pfts, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)
+#settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)
 
 # Run the PEcAn meta.analysis
 #run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database$bety)

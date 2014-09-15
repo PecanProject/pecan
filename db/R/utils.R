@@ -178,6 +178,7 @@ db.exists <- function(params, write=TRUE) {
 		return(invisible(FALSE))
 	}
 
+  if(FALSE){
 	# read a row from the database
 	read.result <- tryCatch({
 		invisible(db.query("SELECT * FROM users LIMIT 1", con))
@@ -202,6 +203,9 @@ db.exists <- function(params, write=TRUE) {
 	} else {
     result <- TRUE
   }
+
+  }
+  result <- TRUE
 
 	# close database, all done
 	tryCatch({
