@@ -2,6 +2,9 @@
 \name{check.lists}
 \alias{check.lists}
 \title{Compares two lists}
+\usage{
+check.lists(x, y)
+}
 \arguments{
 \item{x}{first list}
 

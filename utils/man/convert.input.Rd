@@ -3,7 +3,7 @@
 \alias{convert.input}
 \title{Convert input by applying fcn and insert new record into database}
 \usage{
-convert.input(input.id, outfolder, pkg, fcn, write, username, ...)
+convert.input(input.id, outfolder, pkg, fcn, write, username, con, ...)
 }
 \description{
 Convert input by applying fcn and insert new record into database

@@ -3,11 +3,10 @@
 \alias{model2netcdf.BIOCRO}
 \title{Function to convert biocro model output to standard netCDF format}
 \usage{
-model2netcdf.BIOCRO(resultDT, outdir, lat = NULL, lon = NULL)
+model2netcdf.BIOCRO(resultDT, genus = NULL, outdir, lat = -9999,
+  lon = -9999)
 }
 \arguments{
-\item{resultDT}{output from BioCro model}
-
 \item{outdir}{Location of model output}
 
 \item{lat}{Latitude of the site}
