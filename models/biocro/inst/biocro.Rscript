@@ -11,6 +11,7 @@ if(interactive()) {
   outdir <- file.path(settings$outdir, "out", runid)
 }
 # set the libpath here to point to the right version of BioCro
+require(data.table, quietly = TRUE)
 require(BioCro, quietly = TRUE)
 require(XML, quietly = TRUE)
 # load the weather data
