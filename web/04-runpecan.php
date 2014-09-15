@@ -17,9 +17,6 @@ if ($authentication) {
 	}
 }
 
-print_r($_REQUEST);
-
-
 # boolean parameters
 $userok=isset($_REQUEST['userok']);
 $offline=isset($_REQUEST['offline']);
@@ -91,13 +88,13 @@ if (!$userok && ($startdate < $metstart || $enddate > $metend)) {
 }
 
 // get model info
-$stmt = $pdo->prepare("SELECT model_type, revision FROM models, modeltypes WHERE models.id=? AND modeltypes.id=models.modeltype_id");
+$stmt = $pdo->prepare("SELECT name, revision FROM models, modeltypes WHERE models.id=? AND modeltypes.id=models.modeltype_id");
 if (!$stmt->execute(array($modelid))) {
   die('Invalid query: ' . (error_database()));
 }
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
 $revision=$row['revision'];
-$modeltype=$row['model_type'];
+$modeltype=$row['name'];
 $stmt->closeCursor();
 
 // create the workflow execution

@@ -43,6 +43,7 @@ check.lists <- function(x, y) {
 ##' @name get.trait.data.pft
 ##' @title Gets trait data from the database
 ##' @param pft the pft whos traits to retrieve
+##' @param modeltype type of model that is used, this is is used to distinguis between different pfts with the same name.
 ##' @param dbfiles location where previous results are found
 ##' @param dbcon database connection
 ##' @param forceupdate set this to true to force an update, auto will check to see if an update is needed.
@@ -50,7 +51,7 @@ check.lists <- function(x, y) {
 ##' @author David LeBauer, Shawn Serbin, Rob Kooper
 ##' @export
 ##'
-get.trait.data.pft <- function(pft, dbfiles, dbcon,
+get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
                                forceupdate = TRUE,
                                trait.names = traitdictionary$id) {
   ## Remove old files.  Clean up.
@@ -58,14 +59,18 @@ get.trait.data.pft <- function(pft, dbfiles, dbcon,
   file.remove(old.files)
 
   # find appropriate pft
-  pftid <- db.query(paste0("SELECT id FROM pfts WHERE name='", pft$name, "'"), dbcon)[['id']]
+  if (is.null(modeltype)) {
+    pftid <- db.query(paste0("SELECT id FROM pfts WHERE name='", pft$name, "'"), dbcon)[['id']]
+  } else {
+    pftid <- db.query(paste0("SELECT pfts.id FROM pfts, modeltypes WHERE pfts.name='", pft$name, "' and pfts.modeltype_id=modeltypes.id and modeltypes.name='", modeltype, "'"), dbcon)[['id']]
+  }
   if (is.null(pftid)) {
     logger.severe("Could not find pft, could not store file", filename)
     return(NA)
   }
 
   # get the species, we need to check if anything changed
-  species <- query.pft_species(pft$name, con=dbcon)
+  species <- query.pft_species(pft$name, modeltype, dbcon)
   spstr <- vecpaste(species$id)
 
   # get the priors
@@ -194,12 +199,14 @@ get.trait.data.pft <- function(pft, dbfiles, dbcon,
 ##'
 ##' This will use the following items from setings:
 ##' - settings$pfts
+##' - settings$model$type
 ##' - settings$database$bety
 ##' - settings$run$dbfiles
 ##' - settings$meta.analysis$update
 ##' @name get.trait.data
 ##' @title Gets trait data from the database
 ##' @param pfts the list of pfts to get traits for
+##' @param modeltype type of model that is used, this is is used to distinguis between different pfts with the same name.
 ##' @param dbfiles location where previous results are found
 ##' @param database database connection parameters
 ##' @param forceupdate set this to true to force an update, auto will check to see if an update is needed.
@@ -208,7 +215,7 @@ get.trait.data.pft <- function(pft, dbfiles, dbcon,
 ##' @author David LeBauer, Shawn Serbin
 ##' @export
 ##'
-get.trait.data <- function(pfts, dbfiles, database, forceupdate,trait.names=NULL) {
+get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate,trait.names=NULL) {
   ##---------------- Load trait dictionary --------------#
   if(is.logical(trait.names)){
     if(trait.names){
@@ -219,7 +226,7 @@ get.trait.data <- function(pfts, dbfiles, database, forceupdate,trait.names=NULL
 
   # process all pfts
   dbcon <- db.open(database)
-  result <- lapply(pfts, get.trait.data.pft, dbfiles, dbcon, forceupdate, trait.names)
+  result <- lapply(pfts, get.trait.data.pft, modeltype, dbfiles, dbcon, forceupdate, trait.names)
   db.close(dbcon)
 
   invisible(result)
