@@ -15,7 +15,3 @@ License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
-Collate:
-    'get.model.output.dalec.R'
-    'model2netcdf.DALEC.R'
-    'write.configs.dalec.R'
