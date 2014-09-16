@@ -99,9 +99,9 @@ write.config.BIOCRO <- function(defaults = NULL,
   
   ## Get the weather data generic
 
-  if(!is.null(settings$run$site$met)){
-      if(file.exists(settings$run$site$met)){
-          weather <- read.csv(settings$run$site$met)
+  if(!is.null(settings$run$inputs$met)){
+      if(file.exists(settings$run$inputs$met)){
+          W <- read.csv(settings$run$inputs$met)
       } else {
           settings$site$met <- NULL
       }
@@ -114,11 +114,12 @@ write.config.BIOCRO <- function(defaults = NULL,
                              site.id = settings$run$site$id,
                              con = con)
       db.close(con)
+      W <- BioCro::weachNEW(weather, lati = as.numeric(settings$run$site$lat), ts = 1, 
+                            temp.units="Celsius", rh.units="fraction", 
+                            ws.units="mph", pp.units="in")
   }
   ## convert to biocro specific format
-  W <- BioCro::weachNEW(weather, lati = as.numeric(settings$run$site$lat), ts = 1, 
-                                temp.units="Celsius", rh.units="fraction", 
-                                ws.units="mph", pp.units="in")
+
   ## copy/hard link file to run folder
   write.csv(W, file = file.path(settings$rundir, run.id, "weather.csv"), row.names = FALSE)
 
