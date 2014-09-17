@@ -17,7 +17,7 @@ library(XML)
 library(PEcAn.utils)
 library(PEcAn.DB)
 
-fia.database <- "fia5data"
+#fia.database <- "fia5data"
 
 #--------------------------------------------------------------------------------------------------#
 # INTERNAL FUNCTIONS DO NOT EXPORT
@@ -54,7 +54,7 @@ table.expand <- function(x){
 fia.to.psscss <- function(settings) {
 	## spatial info
 	POI	    <- TRUE	 ## point or region?
-	gridres	<- 0.1
+	gridres	<- 0.5
 	lat     <- as.numeric(settings$run$site$lat)
 	lon     <- as.numeric(settings$run$site$lon)
 	
@@ -110,8 +110,8 @@ fia.to.psscss <- function(settings) {
 	}
 
 	## connect to database
-  fia.db.settings <- settings$database$fia
-	fia.con <- db.open(fia.db.settings)
+  #fia.db.settings <- settings$database$fia
+	fia.con <- db.open(settings$database$fia)
 	
   
 	### select just most current
@@ -190,7 +190,7 @@ fia.to.psscss <- function(settings) {
 			if(length(sel) > 0){
 				y <- floor((i-1)/nx)
 				x <- i-1-y*nx
-				fname <- paste(path,"lat",(x+0.5)*gridres+latmin[r],"lon",(y+0.5)*gridres+lonmin[r],".pss",sep="") #filename
+				fname <- paste(path,"lat",(x)*gridres+latmin[r],"lon",(y)*gridres+lonmin[r],".pss",sep="") #filename
 				water = rep(0,length(sel))
 				write.table(cbind(pss[sel,2+1:4],area[sel],water,matrix(soil,length(sel),7,byrow=TRUE)),file=fname,quote=FALSE,row.names=FALSE)
 			}
@@ -233,7 +233,7 @@ fia.to.psscss <- function(settings) {
 				names(symbol.table) = tolower(names(symbol.table))
 			}
 			name.list <- na.omit(symbol.table$symbol[symbol.table$spcd %in% pft.only]) 
-			logger.warn(paste("\nThe selected PFTs contain the following species for which the FIA database contains no data at ", latmin[r], "N, ", latmax[r], "W: \n", paste(name.list[1:min(10,length(name.list))], collapse=", "), over.ten, "\n\tThese will be populated with zero values in the output.", sep=""))	
+			logger.warn(paste("\nThe selected PFTs contain the following species for which the FIA database contains no data at ", lat, " and ", lon, "\n", paste(name.list[1:min(10,length(name.list))], collapse=", "), over.ten, "\n\tThese will be populated with zero values in the output.", sep=""))	
 		} 
 		
 		## check for species expected by FIA which the PFTs don't cover
@@ -248,7 +248,7 @@ fia.to.psscss <- function(settings) {
 				names(symbol.table) = tolower(names(symbol.table))
 			}
 			name.list <- na.omit(symbol.table$symbol[symbol.table$spcd %in% fia.only])  
-			logger.error(paste("\nThe FIA database expects the following species at ", latmin[r], "N, ", latmax[r], "W, but they are not described by the selected PFTs: \n", 
+			logger.error(paste("\nThe FIA database expects the following species at ", lat," and ", lon, " but they are not described by the selected PFTs: \n", 
 							paste(name.list[1:min(10,length(name.list))], collapse=", "), over.ten, "\n\tPlease select additional pfts.", sep="")) 
 			stop("Execution stopped due to insufficient PFTs.")
 		}
@@ -274,7 +274,7 @@ fia.to.psscss <- function(settings) {
 			if(length(sel) > 0){
 				y <- floor((i-1)/nx)
 				x <- i-1-y*nx
-				cssfile <- file(paste(path,"lat",(y+0.5)*gridres+latmin[r],"lon",(x+0.5)*gridres+lonmin[r],".css",sep=""), "w")
+				cssfile <- file(paste(path,"lat",(y)*gridres+latmin[r],"lon",(x)*gridres+lonmin[r],".css",sep=""), "w")
 				writeLines("time patch cohort dbh hite pft n bdead balive lai",con=cssfile)
 				for(j in sel){
 					sel2 <- which(as.character(css$patch) == pss$patch[j])
