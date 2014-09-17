@@ -5,11 +5,13 @@
 ##       grid size specified in config file
 
 library(PEcAn.all)
-#source("~/dev/pecan/modules/data.atmosphere/R/metutils.R")
-
 library(BioCro)
-devtools::load_all("~/dev/pecan/models/biocro/")
-devtools::load_all("~/dev/pecan/modules/data.atmosphere/")
+
+### The following can help during development to load scripts that you are working on.
+### But clicking the "Source on Save" box above (in Rstudio) is more efficient 
+#devtools::load_all("~/dev/pecan/models/biocro/")
+#devtools::load_all("~/dev/pecan/modules/data.atmosphere/")
+
 
 
 ### loop around earth here
@@ -50,12 +52,6 @@ run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = soil.nc,
 
   ## This is in PEcAn.BIOCRO models/biocro/R/met2model.BIOCRO.R
   biocro.met <- cf2biocro(met.hr)
-
-  ggplot() + geom_histogram(data = biocro.met, aes(RH), color = "blue") + geom_histogram(data = weather05, aes(RH), color = "red")
-  ggplot() + geom_histogram(data = biocro.met, aes(SolarR), color = "blue") + geom_histogram(data = weather05, aes(solarR), color = "red")
-  ggplot() + geom_histogram(data = biocro.met, aes(precip+1), color = "blue") + geom_histogram(data = weather05, aes(precip+1), color = "red") + scale_y_log10()
-  ggplot() + geom_histogram(data = biocro.met, aes(WS), color = "blue") + geom_histogram(data = weather05, aes(WindSpeed), color = "red")
-  ggplot() + geom_histogram(data = biocro.met, aes(Temp), color = "blue") + geom_histogram(data = weather05, aes(DailyTemp.C), color = "red")
   
   ## In PEcAn.data.land (modules/data.land/R/land.utils.R)
   soil <- get.soil(lat, lon, soil.nc = soil.nc)
