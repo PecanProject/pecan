@@ -11,8 +11,20 @@ library(BioCro)
 devtools::load_all("~/dev/pecan/models/biocro/")
 devtools::load_all("~/dev/pecan/modules/data.atmosphere/")
 
+
+### loop around earth here
+# arg   <- commandArgs(trailingOnly = TRUE)
+# rundir <- args[1]
+# outdir <- args[2]
+# if(interactive()) {
+#   runid <- tail(readLines(file.path(settings$rundir, "runs.txt"), n=1))
+#   rundir <- file.path(settings$rundir, runid)
+#   outdir <- file.path(settings$outdir, "out", runid)
+# }
+
+rundir <- "~/dev/biocro_global/vignettes/"
 ## placeholder for PEcAn config file
-settings <- read.settings("/home/dlebauer/dev/biocro_global/vignettes/pecan.biocro.xml")
+settings <- read.settings(file.path(rundir, "settings.xml"))
 
 ## TODO: Pass lat, lon, start/end date, outdir, met.file, soil parameters in config.xml
 #if(length(arg) == 0){
@@ -23,18 +35,6 @@ outdir <- settings$outdir
 met.nc  <- nc_open(settings$run$inputs$met)
 soil.nc <- nc_open(settings$run$inputs$soil)
 # atmco2.nc <- nc_open(file.path(inputdir, "co2/CO2_Global_HD_v1.nc"))
-
-### loop around earth here
-# arg   <- commandArgs(trailingOnly = TRUE)
-# rundir <- args[1]
-# outdir <- args[2]
-# lat <- args[3]
-# lon <- args[4]
-# if(interactive()) {
-#   runid <- tail(readLines(file.path(settings$rundir, "runs.txt"), n=1))
-#   rundir <- file.path(settings$rundir, runid)
-#   outdir <- file.path(settings$outdir, "out", runid)
-# }
 
 lat <- settings$run$site$lat
 lon <- settings$run$site$lon
@@ -51,6 +51,12 @@ run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = soil.nc,
   ## This is in PEcAn.BIOCRO models/biocro/R/met2model.BIOCRO.R
   biocro.met <- cf2biocro(met.hr)
 
+  ggplot() + geom_histogram(data = biocro.met, aes(RH), color = "blue") + geom_histogram(data = weather05, aes(RH), color = "red")
+  ggplot() + geom_histogram(data = biocro.met, aes(SolarR), color = "blue") + geom_histogram(data = weather05, aes(solarR), color = "red")
+  ggplot() + geom_histogram(data = biocro.met, aes(precip+1), color = "blue") + geom_histogram(data = weather05, aes(precip+1), color = "red") + scale_y_log10()
+  ggplot() + geom_histogram(data = biocro.met, aes(WS), color = "blue") + geom_histogram(data = weather05, aes(WindSpeed), color = "red")
+  ggplot() + geom_histogram(data = biocro.met, aes(Temp), color = "blue") + geom_histogram(data = weather05, aes(DailyTemp.C), color = "red")
+  
   ## In PEcAn.data.land (modules/data.land/R/land.utils.R)
   soil <- get.soil(lat, lon, soil.nc = soil.nc)
   ## TODO: https://github.com/ebimodeling/biocro-dev/issues/2

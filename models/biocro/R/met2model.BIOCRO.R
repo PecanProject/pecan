@@ -43,17 +43,18 @@ cf2biocro <- function(met){
 #   rh    6
 #   windspeed  7
 #   precip 8
+  met <- data.table(met)
   if(!"relative_humidity" %in% colnames(met)){
     met <- met[, `:=` (relative_humidity = qair2rh(qair = specific_humidity, 
                                                    temp = ud.convert(air_temperature, "Kelvin", "Celsius"),
-                                                   pres = 1000))]
+                                                   pres = ud.convert(air_pressure, "Pa", "hPa")))]
   }
   
   newmet <- met[, list(year = year, doy = doy, hour = hour,
-                       SolarR = surface_downwelling_shortwave_flux_in_air * 0.5,
+                       SolarR = ppfd,
                        Temp = ud.convert(air_temperature, "Kelvin", "Celsius"), 
-                       RH = relative_humidity / 100, 
+                       RH = relative_humidity, 
                        WS = sqrt(northward_wind^2 + eastward_wind^2), 
-                       precip = precipitation_flux)] 
+                       precip = ud.convert(precipitation_flux, "s-1", "h-1"))] 
   return(newmet)
 }

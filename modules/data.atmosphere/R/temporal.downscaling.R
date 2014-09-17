@@ -52,11 +52,13 @@ load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date){
 
   data(mstmip_vars, package = "PEcAn.utils")
 
-  variables <- as.character(mstmip_vars$standard_name[mstmip_vars$standard_name %in% attributes(met.nc$var)$names])
+  ## pressure naming hack pending https://github.com/ebimodeling/model-drivers/issues/2
+  standard_names <- append(as.character(mstmip_vars$standard_name), "surface_pressure")
+  variables <- as.character(standard_names[standard_names %in% c("surface_pressure", attributes(met.nc$var)$names)])
   
   vars <- lapply(variables, function(x) get.ncvector(x, lati = lati, loni = loni, run.dates = run.dates, met.nc = met.nc))
   
-  names(vars) <- variables
+  names(vars) <- gsub("surface_pressure", "air_pressure", variables)
   
   result <- cbind(run.dates, as.data.table(vars[!sapply(vars, is.null)]))
   
@@ -81,7 +83,6 @@ cfmet.downscale.time <- cruncep_hourly <- function(cfmet, output.dt = 1, ...){
     downscaled.result <- cfmet
   }
   
-  if(!"air_pressure" %in% colnames(cfmet)) cfmet$air_pressure <- 1013.25
   if("specific_humidity" %in% colnames(cfmet) & (!"relative_humidity" %in% colnames(cfmet))){
     cfmet$relative_humidity <- cfmet[,list(qair2rh(qair = specific_humidity, 
                                                    temp = ud.convert(air_temperature, "Kelvin", "Celsius"), 
@@ -105,7 +106,7 @@ cfmet.downscale.time <- cruncep_hourly <- function(cfmet, output.dt = 1, ...){
   } else if(dt_hr > 24){
     logger.error("only daily and sub-daily downscaling supported")
   }
-  
+   
   return(downscaled.result)
 }
 
@@ -138,14 +139,13 @@ cfmet.downscale.subdaily <- function(subdailymet, output.dt = 1){
   }
   downscaled.result[["wind_speed"]] <- rep(subdailymet$wind_speed, each = tint)
   
-  
-  solarMJ <- ud.convert(subdailymet$surface_downwelling_shortwave_flux_in_air, paste0("W ", output.dt, "h"), "MJ")
+  solarMJ <- ud.convert(subdailymet$surface_downwelling_shortwave_flux_in_air, paste0("W ", tint, "h"), "MJ" )
   PAR <- 0.486 * solarMJ ## Cambell and Norman 1998 p 151, ch 10
   subdailymet$ppfd <- ud.convert(PAR, "mol s", "micromol h")
-  
+  downscaled.result[["ppfd"]] <- subdailymet$ppfd  
 
   downscaled.result[["surface_downwelling_shortwave_flux_in_air"]] <- subdailymet$surface_downwelling_shortwave_flux_in_air 
-  downscaled.result[["ppfd"]] <- subdailymet$ppfd
+
   
   for(var in c("air_pressure", "specific_humidity",
                "precipitation_flux", "air_temperature", "northward_wind", "eastward_wind", "surface_downwelling_shortwave_flux_in_air", "ppfd")){
