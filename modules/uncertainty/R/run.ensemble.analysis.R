@@ -53,8 +53,14 @@ run.ensemble.analysis <- function(plot.timeseries=NA){
   ## Generate ensemble figure
   #fig.out <- settings$pfts$pft$outdir
   fig.out <- settings$outdir # main output directory
+  start.year <- ifelse(is.null(settings$ensemble$start.year), NA, settings$ensemble$start.year)
+  end.year   <- ifelse(is.null(settings$ensemble$end.year), NA, settings$ensemble$end.year)
+  ftime = ifelse(is.na(start.year),"",
+                 ifelse(end.year==start.year,paste0(".",start.year),
+                        paste0(".",start.year,"-",end.year)))
+  fname = paste0("ensemble.analysis.",variables[1],ftime,".pdf")
   
-  pdf(file=file.path(fig.out,"ensemble.analysis.pdf"),width=13,height=6)
+  pdf(file=file.path(fig.out,fname),width=13,height=6)
   par(mfrow=c(1,2),mar=c(4,4.8,1,2.0)) # B, L, T, R
   hist(unlist(ensemble.output),xlab=units,
        main="",cex.axis=1.1,cex.lab=1.4,col="grey85")

@@ -18,3 +18,5 @@ Collate:
     'sda.particle.R'
     'sda.enkf.R'
     'split.met.SIPNET.R'
+    'sample.IC.SIPNET.R'
+    'sample.parameters.R'
