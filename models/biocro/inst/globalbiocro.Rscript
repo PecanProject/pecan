@@ -43,7 +43,7 @@ lon <- settings$run$site$lon
 config <- read.config.BIOCRO("~/dev/biocro_global/vignettes/config.xml")
 
 run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = soil.nc, 
-                       start.date = start.date, end.date = end.date, coppice.interval = 4){
+                       start.date = start.date, end.date = end.date, coppice.interval = 4, cropname="sugarcane"){
 
   ## These two fns load and downscale are in PEcAn.data.atmosphere 
   ## modules/data.atmosphere/R/temporal.downscaling.R
@@ -59,13 +59,28 @@ run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = soil.nc,
   soil.type <- ifelse(soil$usda_class %in% 1:10, soil$usda_class, 10)
 
     years <- unique(biocro.met$year)
+    # since biocro.met is not available because cf2biocro is giving error
+    # I am manually assigning years
+    years=2004
+  
     for(yeari in years){
-        WetDat <- as.data.frame(biocro.met[year == yeari, ])
-        day1 <- min(WetDat$doy)
-        dayn <- max(WetDat$doy)
+     # I am manually assignig WetDat because cf2biocro is giving error
+     #  WetDat <- as.data.frame(biocro.met[year == yeari, ])
+       data(weather05)
+       WetDat=weather05
+       
         yearchar <- as.character(yeari)
         ## TODO: start of a distinct function called 'getinitialcondition'
         HarvestedYield <- 0
+        if(cropname=="sugarcane")
+        {
+          soilP=soilParms(soilType=soil.type)
+          tmp.result<-caneGro(WetDat=WetDat, lat=lat, soilControl=soilP)
+          # Addin Rhizome an Grain to avoid error in subsequent script processing results
+          tmp.result$Rhizome=tmp.result$Stem
+          tmp.result$Grain=rep(NA, length(tmp.result$Stem))
+        } else
+        {
         if(yeari == min(years)){
             iplant <- iwillowParms(iRhizome=1.0, iStem=1.0, iLeaf=0.0,
                                    iRoot=1.0, ifrRhizome=0.01, ifrStem=0.01,
@@ -87,6 +102,7 @@ run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = soil.nc,
                                 seneControl = config$pft$seneControl,
                                 iPlantControl = iplant,
                                 photoControl=config$pft$photoParms)
+        }
         result.yeari <- with(tmp.result,
                              data.table(year = yeari, doy = DayofYear, hour = Hour, ThermalT,
                                         Stem, Leaf, Root, Rhizome, Grain, LAI,
