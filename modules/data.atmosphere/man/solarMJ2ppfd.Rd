@@ -15,7 +15,8 @@ PPFD umol /m2 / s
 Solar Radiation to PPFD
 }
 \details{
-There is no easy straight way to convert MJ/m2 to mu mol photons / m2 / s (PAR)
+There is no easy straight way to convert MJ/m2 to mu mol photons / m2 / s (PAR).
+Note: 1 Watt = 1J/s
 The above conversion is based on the following reasoning
 0.12 is about how much of the total radiation is expected to ocurr during the hour of maximum insolation (it is a guesstimate)
 2.07 is a coefficient which converts from MJ to mol photons (it is approximate and it is taken from ...

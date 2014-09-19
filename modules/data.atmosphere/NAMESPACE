@@ -3,6 +3,7 @@
 export(AirDens)
 export(cfmet.downscale.daily)
 export(cfmet.downscale.subdaily)
+export(cfmet.downscale.time)
 export(exner)
 export(get.es)
 export(get.ncvector)
