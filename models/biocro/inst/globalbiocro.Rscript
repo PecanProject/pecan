@@ -3,247 +3,68 @@
 ## TODO: modify write.configs to enable regional runs
 ##       bounding box comes from from sites geom
 ##       grid size specified in config file
-.libPaths("/home/a-m/dlebauer/library/R")
-library(PEcAn.data.atmosphere)
-source("~/dev/pecan/modules/data.atmosphere/R/metutils.R")
 
+library(PEcAn.all)
 library(BioCro)
-library(ncdf4)
-library(lubridate)
-arg   <- commandArgs(trailingOnly = TRUE)
+
+### The following can help during development to load scripts that you are working on.
+### But clicking the "Source on Save" box above (in Rstudio) is more efficient 
+#devtools::load_all("~/dev/pecan/models/biocro/")
+#devtools::load_all("~/dev/pecan/modules/data.atmosphere/")
+
+
+
+### loop around earth here
+# arg   <- commandArgs(trailingOnly = TRUE)
+# rundir <- args[1]
+# outdir <- args[2]
+# if(interactive()) {
+#   runid <- tail(readLines(file.path(settings$rundir, "runs.txt"), n=1))
+#   rundir <- file.path(settings$rundir, runid)
+#   outdir <- file.path(settings$outdir, "out", runid)
+# }
+
+rundir <- "~/dev/biocro_global/vignettes/"
+## placeholder for PEcAn config file
+settings <- read.settings(file.path(rundir, "settings.xml"))
 
 ## TODO: Pass lat, lon, start/end date, outdir, met.file, soil parameters in config.xml
 #if(length(arg) == 0){
-start.date <- "1979-01-01"
-end.date <- "2011-12-31"
-outdir <- "/home/a-m/dlebauer/.pecan/demo/"
-inputdir <- "/home/groups/ebimodeling/"
-met.file <- file.path(inputdir, "met/cruncep/vars2/all.nc")
-#} else {
-#     configs <- readXML(args[1])
-# lat <- config$lat
-# lon <- config$lon
-#     lat <- arg[1]
-#     lon <- arg[2]
-#}
+start.date <- ceiling_date(as.POSIXct(settings$run$start.date), "day")
+end.date <- floor_date(as.POSIXct(settings$run$end.date), "day")
+outdir <- settings$outdir
 
-## library(PEcAn.DB)
-## todo find soil.nc with spatial queries
-## waiting for regions
-## TODO allow specification of grid size
-
-soil.nc <- nc_open(file.path(inputdir, "soil/global/soil_global_hd_filled.nc"))
+met.nc  <- nc_open(settings$run$inputs$met)
+soil.nc <- nc_open(settings$run$inputs$soil)
 # atmco2.nc <- nc_open(file.path(inputdir, "co2/CO2_Global_HD_v1.nc"))
 
-met.nc <-  nc_open(met.file, readunlim = FALSE)
+lat <- settings$run$site$lat
+lon <- settings$run$site$lon
+config <- read.config.BIOCRO("~/dev/biocro_global/vignettes/config.xml")
 
-cruncep_nc2dt <- function(lat, lon, met.nc, start.date, end.date){
+run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = soil.nc, 
+                       start.date = start.date, end.date = end.date, coppice.interval = 4){
 
+  ## These two fns load and downscale are in PEcAn.data.atmosphere 
+  ## modules/data.atmosphere/R/temporal.downscaling.R
+  met <- load.cfmet(met.nc, lat = lat, lon = lon, start.date = start.date, end.date = end.date)
+  met.hr <- cfmet.downscale.time(cfmet = met, output.dt = 1)
 
-    ## Lat and Lon
-    Lat <- ncvar_get(met.nc, "lat")
-    Lon <- ncvar_get(met.nc, "lon")
+  ## This is in PEcAn.BIOCRO models/biocro/R/met2model.BIOCRO.R
+  biocro.met <- cf2biocro(met.hr)
+  
+  ## In PEcAn.data.land (modules/data.land/R/land.utils.R)
+  soil <- get.soil(lat, lon, soil.nc = soil.nc)
+  ## TODO: https://github.com/ebimodeling/biocro-dev/issues/2
+  soil.type <- ifelse(soil$usda_class %in% 1:10, soil$usda_class, 10)
 
-    lati <- which.min(abs(Lat - lat))
-    loni <- which.min(abs(Lon - lon))
-
-    time.idx <- ncvar_get(met.nc, "time")
-
-    all.dates <- data.table(index = seq(time.idx),
-                            date = ymd("1700-01-01") +
-                            days(floor(time.idx)) +
-                            hours(24*(time.idx - floor(time.idx))))
-    run.dates <- all.dates[date > ymd(start.date) & date < ymd(end.date),
-                           list(index, date, doy = yday(date),
-                                year = year(date), month = month(date),
-                                day  = day(date), hour = hour(date))]
-    
-    currentlat <- round(lat, 2)
-    currentlon <- round(lon, 2)
-    results <- list()
-     
-    vars <- list()
- 
-    mask <- ncvar_get(nc = met.nc, varid = "mask",
-                      start = c(loni, lati),
-                      count = c(1,1)) 
-    
-    variables <- c("lwdown", "press", "qair", "rain", "swdown", "tair", "uwind", "vwind")
-    if(mask == -1) {
-        stop(paste("chosen lat:", lat, "and  lon:", lon, " is in the ocean"))
-    } else if (mask > 0){
-        ## modification of ncvar_get to function independent of dimension order
-        ## see http://stackoverflow.com/a/22944715/199217
-        ## should be generalized, perhaps to pass arguments "start" and "count" directly
-        get.ncvar <- function(var, lati = lati, loni = loni,
-                              run.dates = run.dates){
-            start.idx = c(lat = lati, lon = loni, time = run.dates$index[1])
-            count.idx = c(lat = 1, lon = 1, time = nrow(run.dates))
-            dim.order <- sapply(met.nc$var$lwdown$dim, function(x) x$name) 
-            ans <- as.numeric(ncvar_get(nc = met.nc,
-                                        varid = var,
-                                        start = start.idx[dim.order],
-                                        count = count.idx[dim.order]))
-            
-            return(ans)
-        }
-        
-        ## if the above throws an error ... 
-        ## vars <- parallel::mclapply(variables, function(x) get.ncvar(x, lati = lati, loni = loni, run.dates = run.dates), mc.allow.recursive = TRUE)
-        vars <- lapply(variables, function(x) get.ncvar(x, lati = lati, loni = loni, run.dates = run.dates))
-        names(vars) <- variables
-    }
-    
-    result <- cbind(run.dates, as.data.table(vars))
-    result$wind <- result[,list(wind = sqrt(uwind^2 + vwind^2))]
-    return(result)   
-}
-
-cruncep_hourly <- function(result, lat){
-    
-    new.date <- result[,list(hour = c(0:23)),
-                       by = c("year", "month", "day", "doy")]
-
-    new.date$date <- new.date[,list(date = ymd(paste(year, month, day)) + hours(hour))]
-    
-    ## tests
-    ## min(result$date) == min(new.date$date)
-    ## max(result$date) == max(new.date$date)
-
-    ## converting swdown from W/m2 avg to PPFD
-    result$ppfd <- ud.convert(par2ppfd(result$swdown), "mol", "micromol")
-        
-    
-    dailySW <- result[, list(PAR = sum(swdown)*6), by = c("year", "doy")]$PAR
-    dailyMJ <- ud.convert(dailySW, "W h", "MJ")
-    dailyPPFD <- solarMJ2ppfd(dailyMJ)
-    
-    dailySWmax <- result[, list(PAR = max(swdown)), by = c("year", "doy")]$PAR
-    
-    light <- new.date[, lightME(DOY = doy, t.d = 0:23, lat = lat),
-                      by = c('year', 'doy')]
-    light$Itot <- light[,list(I.dir + I.diff)]
-    ## calculating % of daily total sun arriving each hour
-    
-    resC2 <- light[, list(resC2 = (Itot - min(Itot)) / max(Itot)),
-                   by = c("year", "doy")]$resC2
-
-    swdown <- resC2 * rep(dailySWmax, each = 24)
-    ppfd <- resC2 * rep(dailyPPFD, each = 24)
-
-    hourly.result <- list()
-    hourly.result[["swdown"]] <- swdown
-    hourly.result[["ppfd"]] <- ppfd
-    for(var in c("press", "qair", "rain", "tair", "wind")){
-        
-        ## convert units from 6 hourly to hourly
-        hrscale <- ifelse(var %in% c("swdown", "rain"), 6, 1)
-        
-        f <- approxfun(as.numeric(result$date), (result[[var]] / hrscale), rule = 2)
-        
-        hourly.result[[var]] <- f(as.numeric(new.date$date))
-    }
-
-                                                            
-    new.result <- cbind(new.date, as.data.table(hourly.result))#[date <= max(result$date),]
-    
-    if(new.result[,list(h = length(unique(hour))), by = c("year", "doy")][,all(unique(h) != 24)]){
-        print(cruncep.file)
-        print(new.result[,unique(year)])
-        stop("some days don't have 24 hours")
-    }
-    return(new.result)
-}
-
-qair2rh <- function(qair, temp, press = 1013.25){
-    es <-  6.112 * exp((17.67 * temp)/(temp + 243.5))
-    e <- qair * press / (0.378 * qair + 0.622)
-    rh <- e / es
-    rh[rh > 1] <- 1
-    rh[rh < 0] <- 0
-
-    return(rh)
-}
-
-cruncep_dt2weather <- function(weather = result){
-
-    x <- weather[,list(year, doy = doy, hour = hour,
-                       solarR   = ppfd, 
-                       DailyTemp.C = ud.convert(tair, "Kelvin", "Celsius"),
-                       RH = qair2rh(qair = qair, temp = ud.convert(tair, "Kelvin", "Celsius"), press = ud.convert(press, "Pa", "mbar")),
-                       WindSpeed  = wind,                       
-                       precip = rain)]
-    return(x)
-}
-
-get.weather <- function(lat, lon, met.nc = met.nc, start.date, end.date){
-    if(!is.land(lat, lon)) stop("point is in ocean")
-    result <- cruncep_nc2dt(lat = lat, lon = lon, met.nc = met.nc, start.date, end.date)
-    new.result <- cruncep_hourly(result, lat = lat)
-    #save(new.result, file = file.path(outdir, "new.result.RData"))    
-    weather <- cruncep_dt2weather(new.result)
-}
-
-get.soil <- function(lat, lon, soil.nc = soil.nc){
-    
-    ## Lat and Lon
-    Lat <- ncvar_get(soil.nc, "lat")
-    Lon <- ncvar_get(soil.nc, "lon")
-
-    lati <- which.min(abs(Lat - lat))
-    loni <- which.min(abs(Lon - lon))
-
-    ## topsoil
-    usda_class <- ncvar_get(soil.nc, "t_usda_tex",
-                            start = c(loni, lati),
-                            count = c(1,1))
-    ref_depth <- ud.convert(ncvar_get(soil.nc, "ref_depth",
-                           start = c(loni, lati),
-                           count = c(1, 1)), "cm", "m")
-    return(list(usda_class = usda_class, ref_depth = ref_depth))
-}
-
-is.land <- function(lat, lon){
-    Lat <- ncvar_get(nc = met.nc, varid = "lat")
-    Lon <- ncvar_get(nc = met.nc, varid = "lon")
-    lati <- which.min(abs(Lat-lat))
-    loni <- which.min(abs(Lon-lon))
-    mask <- ncvar_get(nc = met.nc, varid = "mask",
-                      start = c(loni, lati), count = c(1,1))
-    return(mask >= 0)
-}
-
-get.latlonbox <- function(lati, loni, Lat = Lat, Lon = Lon){
-    lat <- c(mean(Lat[lati:(lati-1)]), mean(Lat[lati:(lati+1)]))
-    lon <- c(mean(Lon[loni:(loni-1)]), mean(Lon[loni:(loni+1)]))
-    return(c(sort(lat), sort(lon)))
-}
-
-get.cruncep <- function(lat, lon, start.date, end.date){
-    result <- cruncep_nc2dt(lat, lon)
-    new.result <- cruncep_hourly(result, lat = Lat[lati])
-    weather <- cruncep_dt2weather(new.result)
-    return(weather)
-}
-
-
-## placeholder for PEcAn config file
-# config <- XML::xmlToList(system.file("extdata/defaults/salix.xml", package = "PEcAn.BIOCRO"))
-load("/home/a-m/dlebauer/dev/pecan/models/biocro/inst/extdata/defaults/salix.RData")
-constants$canopyControl$mResp <- canopyParms()$mResp
-constants$phenoParms <- lapply(constants$phenoParms, as.numeric)
-
-run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = soil.nc, start.date = start.date, end.date = end.date, coppice.interval = 4){
-    soil <- get.soil(lat, lon, soil.nc = soil.nc)
-    soil.type <- ifelse(soil$usda_class %in% 1:10, soil$usda_class, 10)
-    weather <- get.weather(lat, lon, met.nc = met.nc, start.date, end.date)
-    years <- unique(weather$year)
+    years <- unique(biocro.met$year)
     for(yeari in years){
-        WetDat <- as.data.frame(weather[year == yeari, ])
+        WetDat <- as.data.frame(biocro.met[year == yeari, ])
         day1 <- min(WetDat$doy)
         dayn <- max(WetDat$doy)
         yearchar <- as.character(yeari)
-        ## start of a distinct function called 'getinitialcondition'
+        ## TODO: start of a distinct function called 'getinitialcondition'
         HarvestedYield <- 0
         if(yeari == min(years)){
             iplant <- iwillowParms(iRhizome=1.0, iStem=1.0, iLeaf=0.0,
@@ -261,11 +82,11 @@ run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = soil.nc, start.date 
         tmp.result <- willowGro(WetDat = WetDat,
                                 day1 = day1, dayn = dayn,
                                 soilControl = soilParms(soilType = soil.type),
-                                canopyControl = constants$canopyControl,
-                                willowphenoControl = constants$phenoParms,
-                                seneControl = constants$seneControl,
+                                canopyControl = config$pft$canopyControl,
+                                willowphenoControl = config$pft$phenoParms,
+                                seneControl = config$pft$seneControl,
                                 iPlantControl = iplant,
-                                photoControl=constants$photoParms)
+                                photoControl=config$pft$photoParms)
         result.yeari <- with(tmp.result,
                              data.table(year = yeari, doy = DayofYear, hour = Hour, ThermalT,
                                         Stem, Leaf, Root, Rhizome, Grain, LAI,
@@ -281,9 +102,9 @@ run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = soil.nc, start.date 
         }
     }
     
-    setkeyv(weather, c("year", "doy", "hour"))
+    setkeyv(biocro.met, c("year", "doy", "hour"))
     setkey(yield.annually, "year")
-    result.hourly <- round(weather[all.results], 2) ## right join
+    result.hourly <- round(biocro.met[all.results], 2) ## right join
     
     result.annually <- round(result.hourly[ ,list(Stem = max(Stem), Leaf = max(Leaf), Root = max(Root), Rhizome = max(Rhizome),
                                             Grain = max(Grain), mat = mean(DailyTemp.C), map = sum(precip)),
@@ -336,7 +157,6 @@ Lon <- Lon[Lon > -100 & ! 1:length(Lon) %% 2]
 ## }
 #Lat <- 44.25
 #Lon <- -88.25
-
 
 allout <- NULL
 for(lat in Lat){
