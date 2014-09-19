@@ -72,8 +72,8 @@ run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = soil.nc,
           soilP=soilParms(soilType=soil.type)
           tmp.result<-caneGro(WetDat=WetDat, lat=lat, soilControl=soilP)
           # Addin Rhizome an Grain to avoid error in subsequent script processing results
-          tmp.result$Rhizome <- tmp.result$Stem
-          tmp.result$Grain <- rep(NA, length(tmp.result$Stem))
+          tmp.result$Rhizome <- rep(0,length(tmp.result$Stem))
+          tmp.result$Grain <- rep(0,length(tmp.result$Stem))
         } else {
           if(yeari == min(years)){
             iplant <- iwillowParms(iRhizome=1.0, iStem=1.0, iLeaf=0.0,
@@ -112,8 +112,7 @@ run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = soil.nc,
             all.results <- rbind(all.results, result.yeari)
             yield.annually <- rbind(yield.annually, yield.yeari)
         }
-    }
-    
+    }    
     setkeyv(biocro.met, c("year", "doy", "hour"))
     setkey(yield.annually, "year")
     result.hourly <- round(biocro.met[all.results], 2) ## right join
