@@ -3,15 +3,17 @@
 ## TODO: modify write.configs to enable regional runs
 ##       bounding box comes from from sites geom
 ##       grid size specified in config file
+.libPaths("~/R/library")
 
 library(PEcAn.all)
+library(PEcAn.BIOCRO)
 library(BioCro)
 
 ### The following can help during development to load scripts that you are working on.
 ### But clicking the "Source on Save" box above (in Rstudio) is more efficient 
-#devtools::load_all("~/dev/pecan/models/biocro/")
-#devtools::load_all("~/dev/pecan/modules/data.atmosphere/")
-
+devtools::load_all("~/dev/pecan/models/biocro/")
+devtools::load_all("~/dev/pecan/modules/data.atmosphere/")
+#devtools::load_all("~/dev/pecan/modules/data.land/")
 
 
 ### loop around earth here
@@ -59,54 +61,48 @@ run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = soil.nc,
   soil.type <- ifelse(soil$usda_class %in% 1:10, soil$usda_class, 10)
 
     years <- unique(biocro.met$year)
-    # since biocro.met is not available because cf2biocro is giving error
-    # I am manually assigning years
-    years=2004
-  
     for(yeari in years){
-     # I am manually assignig WetDat because cf2biocro is giving error
-     #  WetDat <- as.data.frame(biocro.met[year == yeari, ])
-       data(weather05)
-       WetDat=weather05
-       
         yearchar <- as.character(yeari)
+        WetDat <- as.data.frame(biocro.met[year == yeari, ])
+        # day1 <- min(WetDat$doy)
+        # dayn <- max(WetDat$doy)
         ## TODO: start of a distinct function called 'getinitialcondition'
         HarvestedYield <- 0
-        if(cropname=="sugarcane")
-        {
+        if(cropname=="sugarcane") {
           soilP=soilParms(soilType=soil.type)
           tmp.result<-caneGro(WetDat=WetDat, lat=lat, soilControl=soilP)
           # Addin Rhizome an Grain to avoid error in subsequent script processing results
-          tmp.result$Rhizome=tmp.result$Stem
-          tmp.result$Grain=rep(NA, length(tmp.result$Stem))
-        } else
-        {
-        if(yeari == min(years)){
+          tmp.result$Rhizome <- rep(0,length(tmp.result$Stem))
+          tmp.result$Grain <- rep(0,length(tmp.result$Stem))
+        } else {
+          if(yeari == min(years)){
             iplant <- iwillowParms(iRhizome=1.0, iStem=1.0, iLeaf=0.0,
                                    iRoot=1.0, ifrRhizome=0.01, ifrStem=0.01,
                                    ifrLeaf = 0.0, ifrRoot = 0.0)
-        } else {
+          } else {
             iplant[c("iRhizome", "iRoot", "iStem")] <- last(result.yeari[,list(Rhizome, Root, Stem)])
             if ((yeari - min(years))  %% coppice.interval == 0) { # coppice when remainder = 0
-                HarvestedYield  <- round(last(result.yeari$Stem) * 0.95, 2)                
+              HarvestedYield  <- round(last(result.yeari$Stem) * 0.95, 2)                
             } else if ((yeari - min(years))  %% coppice.interval == 1) { # year after coppice
-                iplant$iStem <- iplant$iStem * 0.05
+              iplant$iStem <- iplant$iStem * 0.05
             } # else { # do nothing if neither coppice year nor year following
-        }
-        ## run BioCro
-        tmp.result <- willowGro(WetDat = WetDat,
-                                day1 = day1, dayn = dayn,
-                                soilControl = soilParms(soilType = soil.type),
-                                canopyControl = config$pft$canopyControl,
-                                willowphenoControl = config$pft$phenoParms,
-                                seneControl = config$pft$seneControl,
-                                iPlantControl = iplant,
-                                photoControl=config$pft$photoParms)
+          }
+          ## run BioCro
+          tmp.result <- willowGro(WetDat = WetDat,
+                                  day1 = day1, dayn = dayn,
+                                  soilControl = soilParms(soilType = soil.type),
+                                  canopyControl = config$pft$canopyControl,
+                                  willowphenoControl = config$pft$phenoParms,
+                                  seneControl = config$pft$seneControl,
+                                  iPlantControl = iplant,
+                                  photoControl=config$pft$photoParms)
+          
         }
         result.yeari <- with(tmp.result,
                              data.table(year = yeari, doy = DayofYear, hour = Hour, ThermalT,
                                         Stem, Leaf, Root, Rhizome, Grain, LAI,
                                         SoilEvaporation, CanopyTrans, key = c("year", "doy", "hour")))
+        HarvestedYield <- max(result.yeari$Stem)*0.8
         yield.yeari <- data.table(lat = lat, lon = lon, year = yeari, yield = HarvestedYield, runtime = now(),
                                   key = "year")
         if(yeari == min(years) | !exists("all.results")){
@@ -116,8 +112,7 @@ run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = soil.nc,
             all.results <- rbind(all.results, result.yeari)
             yield.annually <- rbind(yield.annually, yield.yeari)
         }
-    }
-    
+    }    
     setkeyv(biocro.met, c("year", "doy", "hour"))
     setkey(yield.annually, "year")
     result.hourly <- round(biocro.met[all.results], 2) ## right join

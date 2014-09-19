@@ -6,6 +6,7 @@
 ##' @param config.file 
 ##' @return list of run configuration parameters for PEcAn
 ##' @author David LeBauer
+##' @export
 read.config.BIOCRO <- function(config.file = "config.xml"){
   config <- xmlToList(
     xmlTreeParse(
