@@ -54,7 +54,8 @@ query.data <- function(trait, spstr, extra.columns='ST_X(ST_CENTROID(sites.geome
               left join treatments on  (traits.treatment_id = treatments.id)
               left join sites on (traits.site_id = sites.id)
               left join variables on (traits.variable_id = variables.id)
-            where specie_id in (", spstr,")
+              left join cultivars on (traits.cultivar_id = cultivars.id)
+            where traits.specie_id in (", spstr,")
             and variables.name in ('", trait,"');", sep = "")
   return(fetch.stats2se(con, query))
 }
@@ -118,6 +119,7 @@ query.yields <- function(trait = 'yield', spstr, extra.columns='', con=NULL, ...
 append.covariate<-function(data, column.name, ..., covariates.data=list(...)){
   merged <- data.frame()
   for(i in seq(covariates.data)){
+    if(is.list(covariates.data)) covariates.data <- as.data.frame(covariates.data)
     covariate.data <- covariates.data[i,]
     if(length(covariate.data) >= 1){
       ## conditional added to prevent crash when trying to transform an empty data frame
