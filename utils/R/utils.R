@@ -247,7 +247,7 @@ summarize.result <- function(result) {
                 mean = mean(mean),
                 statname = ifelse(length(n)==1,'none','SE'),
                 stat = sd(mean)/sqrt(length(n)))
-  ans2 <- result[result$n!=1,which(colnames(result) %in% colnames(ans1))]
+  ans2 <- result[result$n!=1, colnames(ans1)]
   return(rbind(ans1, ans2))
 }
 #==================================================================================================#
