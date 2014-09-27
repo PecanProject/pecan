@@ -66,7 +66,6 @@ run.write.configs <- function(settings, write = TRUE) {
 
   ## Load PFT priors and posteriors
   for (i in seq(pft.names)){
-
     ## Load priors
     load(file.path(outdirs[i], 'prior.distns.Rdata'))
     
@@ -166,8 +165,10 @@ run.write.configs <- function(settings, write = TRUE) {
   } else {
       logger.info('not writing config files for ensemble, settings are NULL')
   } ### End of Ensemble
+
   logger.info("###### Finished writing model run config files #####")
   logger.info("config files samples in ", paste0(settings$outdir, "run"))
+  
   ### Save output from SA/Ensemble runs
   save(ensemble.samples, trait.samples, sa.samples, runs.samples, 
        file = file.path(settings$outdir, 'samples.Rdata'))
