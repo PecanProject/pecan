@@ -10,7 +10,7 @@ split.met.SIPNET <- function(met){
   names(files) <- years
   for(y in years){
     sel <- which(dat[,2] == y)
-    files[as.character(y)] <- paste(path,"/",prefix,y,".clim",sep="") 
+    files[as.character(y)] <- paste(path,"/",prefix,".",y,".clim",sep="") 
     write.table(dat[sel,],files[as.character(y)],row.names=FALSE,col.names=FALSE)
   }
   return(files)
