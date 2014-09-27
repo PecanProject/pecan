@@ -53,6 +53,7 @@ model2netcdf.BIOCRO <- function(resultDT, genus = NULL, outdir, lat = -9999, lon
       TotLivBiom  = mstmipvar("TotLivBiom", x, y, t),
       RootBiom    = mstmipvar("RootBiom", x, y, t),
       StemBiom    = mstmipvar("StemBiom", x, y, t),
+      Yield       = mstmipvar("Yield", x, y, t),
       Evap        = mstmipvar("Evap", x, y, t),
       TVeg        = mstmipvar("TVeg", x, y, t),
       LAI         = mstmipvar("LAI", x, y, t))
@@ -63,6 +64,7 @@ model2netcdf.BIOCRO <- function(resultDT, genus = NULL, outdir, lat = -9999, lon
       TotLivBiom = k * (Leaf + Root + Stem + Rhizome + Grain),
       RootBiom = k * Root,
       StemBiom = k * Stem,
+      Yield = Stem,
       Evap = ud.convert(SoilEvaporation + CanopyTrans, "Mg/ha/h", "kg/m2/s"),
       TVeg = ud.convert(CanopyTrans, "Mg/ha/h", "kg/m2/s"),
       LAI =  LAI))
