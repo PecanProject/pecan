@@ -6,7 +6,7 @@ args   <- commandArgs(trailingOnly = TRUE)
 rundir <- args[1]
 outdir <- args[2]
 if(interactive()) {
-  runid <- readLines(file.path(settings$rundir, "runs.txt"))[17]
+  runid <- readLines(file.path(settings$rundir, "runs.txt"))[1]
   rundir <- file.path(settings$rundir, runid)
   outdir <- file.path(settings$outdir, "out", runid)
 }

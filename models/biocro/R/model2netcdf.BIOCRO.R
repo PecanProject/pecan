@@ -11,16 +11,14 @@
 ##' Convert BioCro output to netCDF
 ##'
 ##' Converts BioCro output to netCDF.
-##' Modified from on model2netcdf.sipnet and model2netcdf.ED2 by
-##' Shawn Serbin and Mike Dietze
+##' Modified from on model2netcdf.SIPNET and model2netcdf.ED2 by
 ##' @name model2netcdf.BIOCRO
 ##' @title Function to convert biocro model output to standard netCDF format
 ##' @param outdir Location of model output
 ##' @param lat Latitude of the site
 ##' @param lon Longitude of the site
 ##' @export
-##'
-##' @author David LeBauer, Deepak Jaiswal
+##' @author David LeBauer, Deepak Jaiswal, Rob Kooper
 model2netcdf.BIOCRO <- function(resultDT, genus = NULL, outdir, lat = -9999, lon = -9999) {
   
   for(yeari in unique(resultDT$Year)){
