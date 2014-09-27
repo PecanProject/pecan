@@ -53,7 +53,7 @@ convert.samples.BIOCRO <- function(trait.samples){
       trait.samples <- transform(trait.samples, b0 = ud.convert(b0 , "umol", "mol"))
     }
     if("Sp" %in% trait.names){
-      trait.samples <- transform(trait.samples, Sp = ud.convert(Sp, "kg/m2", "g/cm2")
+      trait.samples <- transform(trait.samples, Sp = ud.convert(Sp, "kg/m2", "g/cm2"))
     }
     # kd = k*omega from $e^{-kL\omega}$,
     if(all(c("kd", "clumping") %in% trait.names)){
