@@ -105,12 +105,14 @@ pecan.ma <- function(trait.data, prior.distns, taupriors,
     jag.model.file <-  file.path(outdir, paste(trait.name, ".model.bug", sep=""))  # file to store model
 
     ## run the meta-analysis in JAGS
-    jags.out <- single.MA(data, j.chains, j.iter,
+ 
+    jags.out <- single.MA(data, j.chains, j.iter = j.iter,
                           taupriors$tauA, taupriors$tauB[trait.name],
                           prior, jag.model.file, overdispersed)
     
     print(summary(jags.out))
     
+
     jags.out.trunc <- window(jags.out, start = j.iter/2)
  
     mcmc.object[[trait.name]] <- jags.out.trunc

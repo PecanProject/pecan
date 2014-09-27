@@ -68,3 +68,5 @@ test_that("query.covariates returns expected data.frame",{
   expect_equal(colnames(test.query), c("trait_id", "level", "name"))
   expect_true(nrow(test.query) >= length(ids))
 })
+
+db.close(con = con)

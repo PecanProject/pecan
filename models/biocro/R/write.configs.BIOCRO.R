@@ -34,7 +34,9 @@ convert.samples.BIOCRO <- function(trait.samples){
     trait.names[trait.names == "SLA"] <- "Sp"
     trait.names[trait.names == "growth_respiration_coefficient"] <- "GrowthRespFraction"
     trait.names[trait.names == "extinction_coefficient_diffuse"] <- "kd"
-        
+    trait.names[trait.names == "chi_leaf"] <- "chi.l"
+  
+  
     colnames(trait.samples) <- trait.names    
     ## Partitioning coefficients: especially leaf
     ## phenology
@@ -48,12 +50,15 @@ convert.samples.BIOCRO <- function(trait.samples){
     ## transform values with different units
     ## cuticular conductance - BETY default is umol; BioCro uses mol
     if("b0" %in% trait.names){
-        trait.samples[, trait.names == "b0"] <- trait.samples[, trait.names == "b0"]/1e6
+      trait.samples <- transform(trait.samples, b0 = ud.convert(b0 , "umol", "mol"))
     }
     if("Sp" %in% trait.names){
-        trait.samples[, trait.names == "Sp"] <- trait.samples[, trait.names == "Sp"]/ 10
+      trait.samples <- transform(trait.samples, Sp = ud.convert(Sp, "kg/m2", "g/cm2"))
     }
-    
+    # kd = k*omega from $e^{-kL\omega}$,
+    #if(all(c("kd", "clumping") %in% trait.names)){
+    #  trait.samples <- transform(trait.samples, kd = clumping * kd, clumping = NULL)
+    #}
     return(trait.samples)
 }
 ##==================================================================================================#
@@ -101,7 +106,8 @@ write.config.BIOCRO <- function(defaults = NULL,
 
   if(!is.null(settings$run$inputs$met)){
       if(file.exists(settings$run$inputs$met)){
-          W <- read.csv(settings$run$inputs$met)
+          file.symlink(settings$run$inputs$met,
+                       file.path(settings$rundir, run.id, "weather.csv"))
       } else {
           settings$site$met <- NULL
       }
@@ -114,17 +120,19 @@ write.config.BIOCRO <- function(defaults = NULL,
                              site.id = settings$run$site$id,
                              con = con)
       db.close(con)
+      ## convert to biocro specific format
+      
       W <- BioCro::weachNEW(weather, lati = as.numeric(settings$run$site$lat), ts = 1, 
                             temp.units="Celsius", rh.units="fraction", 
                             ws.units="mph", pp.units="in")
+      write.csv(W, file = file.path(settings$rundir, run.id, "weather.csv"), row.names = FALSE)
+      settings$site$met <<- file.path(settings$rundir, run.id, "weather.csv")
   }
-  ## convert to biocro specific format
 
   ## copy/hard link file to run folder
-  write.csv(W, file = file.path(settings$rundir, run.id, "weather.csv"), row.names = FALSE)
 
-    # write configuraiton file
-    traits  <- convert.samples.BIOCRO(trait.values[[settings$pfts$pft$name]])
+  ## write configuraiton file
+  traits  <- convert.samples.BIOCRO(trait.values[[settings$pfts$pft$name]])
 
     
     species <- read.csv(file.path(settings$pfts$pft$outdir, "species.csv"))

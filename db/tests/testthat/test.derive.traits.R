@@ -25,3 +25,4 @@ test_that("derive.traits works",{
   expect_equal(test.derived,
                structure(list(mean = 0.0944129994366609, stat = 687.395104414576, n = 1, vname = "x"), .Names = c("mean", "stat", "n", "vname"), row.names = c(NA, -1L), class = "data.frame"))
 })
+db.close(con = con)

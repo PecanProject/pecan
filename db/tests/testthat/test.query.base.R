@@ -15,3 +15,5 @@ test_that("db.query can execute a trivial SQL statement and return results",{
     expect_is(ans[,1], "numeric")
     expect_true(length(ans) == 1)
 })
+
+db.close(con = con)

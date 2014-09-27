@@ -6,7 +6,7 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-
+.datatable.aware=TRUE
 ##-------------------------------------------------------------------------------------------------#
 ##' Converts a met CF file to a model specific met file. The input
 ##' files are calld <in.path>/<in.prefix>.YYYY.cf
@@ -43,11 +43,11 @@ cf2biocro <- function(met){
 #   rh    6
 #   windspeed  7
 #   precip 8
-  met <- data.table(met)
   if(!"relative_humidity" %in% colnames(met)){
-    met <- met[, `:=` (relative_humidity = qair2rh(qair = specific_humidity, 
-                                                   temp = ud.convert(air_temperature, "Kelvin", "Celsius"),
-                                                   pres = ud.convert(air_pressure, "Pa", "hPa")))]
+    rh <- qair2rh(qair = met$specific_humidity, 
+                  temp = ud.convert(met$air_temperature, "Kelvin", "Celsius"),
+                  pres = ud.convert(met$air_pressure, "Pa", "hPa"))
+    met <- cbind(met, relative_humidity = rh)
   }
   
   newmet <- met[, list(year = year, doy = doy, hour = hour,
