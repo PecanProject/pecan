@@ -10,6 +10,8 @@
 ##' Approximate the posterior MCMC with a closed form pdf
 ##'
 ##' returns priors where posterior MCMC are missing
+##' 
+##' NOTE: this function is similar to PEcAn.priors::fit.dist
 ##' @title Approximate posterior
 ##' @param trait.mcmc meta analysis outputs
 ##' @param priors dataframe of priors used in meta analysis
@@ -76,10 +78,13 @@ approx.posterior <- function(trait.mcmc, priors, trait.data=NULL, outdir=NULL){
       fit <- list()
       fit[[1]] <- suppressWarnings(fitdistr(dat,"exponential"))
       ## fit[[2]] <- fitdistr(dat,"f",list(df1=10,df2=2*mean(dat)/(max(mean(dat)-1,1))))
-      fit[[2]] <- suppressWarnings(fitdistr(dat, "gamma"))
-      fit[[3]] <- suppressWarnings(fitdistr(dat, "lognormal"))
-      fit[[4]] <- suppressWarnings(fitdistr(dat, "weibull"))
-      fit[[5]] <- suppressWarnings(fitdistr(dat, "normal"))
+      fit[[2]] <- suppressWarnings(fitdistr(dat, "lognormal"))
+      fit[[3]] <- suppressWarnings(fitdistr(dat, "weibull"))
+      fit[[4]] <- suppressWarnings(fitdistr(dat, "normal"))
+      if(!trait == 'cuticular_cond'){
+        fit[[5]] <- suppressWarnings(fitdistr(dat, "gamma"))
+      } 
+      
       fparm <- lapply(fit,function(x){as.numeric(x$estimate)})
       fAIC  <- lapply(fit,function(x){AIC(x)})
       
@@ -125,8 +130,7 @@ approx.posterior <- function(trait.mcmc, priors, trait.data=NULL, outdir=NULL){
       posteriors[trait,"parama"] <- mean(dat)
       posteriors[trait,"paramb"] <- sd(dat)
       if(do.plot){
-        rng <- range(dat)
-        if(!is.null(trait.data) && length(trait.data[[trait]]$Y)>1) rng = range(trait.data[[trait]]$Y)
+        rng <- quantile(dat, c(0.01, 0.99))
         x <- seq(rng[1], rng[2], length=1000)
         plot(density(dat), col=2, lwd=2, main = trait, xlim = rng)
         if(!is.null(trait.data)) {
