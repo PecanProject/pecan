@@ -4,7 +4,7 @@
 \title{Performs an arithmetic function, FUN, over a series of traits and returns the result as a derived trait.}
 \usage{
 derive.trait(FUN, ..., input = list(...), var.name = NA,
-  sample.size = 100000)
+  sample.size = 10000)
 }
 \arguments{
 \item{FUN}{arithmetic function}

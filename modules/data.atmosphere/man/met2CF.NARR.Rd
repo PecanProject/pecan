@@ -18,6 +18,6 @@ met2CF.NARR(in.path, in.prefix, outfolder)
 met2CF.NARR
 }
 \author{
-Elizabeth Crowley, Rob Kooper
+Elizabeth Cowdery, Rob Kooper
 }
 

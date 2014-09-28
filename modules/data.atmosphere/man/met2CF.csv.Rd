@@ -3,7 +3,8 @@
 \alias{met2CF.csv}
 \title{met2CF.csv}
 \usage{
-met2CF.csv(in.path, in.file, outfolder, format, lat = NULL, lon = NULL)
+met2CF.csv(in.path, in.file, outfolder, format, lat = NULL, lon = NULL,
+  nc_verbose = FALSE)
 }
 \arguments{
 \item{in.path}{}
@@ -27,7 +28,7 @@ met2CF.csv
   in.file = "WR_E"
   outfolder = "/tmp/"
   format = list(orig=c("TA","PRECIP","RH","WS","WD","SW","PAR_in"),
-                units=c("celsius","mm","\%","m/s","degrees","W m-2","umol m-2 s-1"),
+                units = c("celsius","mm","\%","m/s","degrees","W m-2","umol m-2 s-1"),
                 bety=c("airT","precipitation_flux","relative_humidity","Wspd","wind_direction","solar_radiation","PAR"),
                 skip=7,
                 unit.row=TRUE,

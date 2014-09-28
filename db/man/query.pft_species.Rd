@@ -3,15 +3,14 @@
 \alias{query.pft_species}
 \title{Query species given pft name}
 \usage{
-query.pft_species(pft = NULL, con = NULL, settings = NULL)
+query.pft_species(pft, modeltype, con)
 }
 \arguments{
+\item{modeltype}{type of model that is used, this is is used to distinguis between different pfts with the same name.}
+
 \item{pft}{string pft name}
 
 \item{con}{database connection}
-
-\item{settings}{list of settings that may provide pft name and database settings,
-if  pft and / or con are null}
 }
 \value{
 string of species.id for species associated with pft

@@ -21,3 +21,16 @@ to.TreeCode <- function(SITE,PLOT,SUBPLOT,TAG=NULL){
   }
   return(x)
 }
+
+from.Tag <- function(x){
+  miss = rep(NA,length(x))
+  return(data.frame(SITE=miss,PLOT=miss,SUBPLOT=miss,TAG=x))
+}
+
+to.Tag <- function(SITE,PLOT,SUBPLOT,TAG=NULL){
+  SITE = as.character(SITE)
+  PLOT = as.character(PLOT)
+  SUBPLOT = as.character(SUBPLOT)
+  TAG = as.character(TAG)
+  return(TAG)
+}

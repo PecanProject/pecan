@@ -1,8 +1,9 @@
-matchInventoryRings <- function(trees,rings,extractor=from.TreeCode,nyears=30,coredOnly=TRUE){
+matchInventoryRings <- function(trees,rings,extractor="TreeCode",nyears=30,coredOnly=TRUE){
 
   ## build tree codes
+  id.build = function(x){do.call(paste0("to.",extractor),x)}
   names(trees) = toupper(names(trees))
-  tree.ID = to.TreeCode(trees$SITE,trees$PLOT,trees$SUB,trees$TAG)
+  tree.ID = id.build(list(SITE=trees$SITE,PLOT=trees$PLOT,SUB=trees$SUB,TAG=trees$TAG))
 
   ## build tree ring codes
   if(is.list(rings)){
@@ -10,7 +11,8 @@ matchInventoryRings <- function(trees,rings,extractor=from.TreeCode,nyears=30,co
     rings <- combine.rwl(rings)
   }
   ring.ID <- names(rings)
-  ring.info <- extract.stringCode(ring.ID,extractor)
+  id.extract = function(x){do.call(paste0("from.",extractor),list(x=x))}
+  ring.info <- id.extract(ring.ID)
 
   ## matching up data sets by tree
   mch = match(tree.ID,ring.ID)
