@@ -441,13 +441,15 @@ function print_list($table, $query) {
 	print "	<div class=\"row\">\n";
 	print "	  <div class=\"hdr id\">Action</div>\n";
 	for ($i = 0; $i < $result->columnCount(); $i++) {
-		$key = $result->getColumnMeta($i)['name'];
+		$md = $result->getColumnMeta($i);
+		$key = $md['name'];
 		if ($key == $idkey) {
 			print "	  <div class=\"hdr id\">$key</div>\n";
 		}
 	}
 	for ($i = 0; $i < $result->columnCount(); $i++) {
-		$key = $result->getColumnMeta($i)['name'];
+		$md = $result->getColumnMeta($i);
+		$key = $md['name'];
 		if ($key != $idkey) {
 			print "	  <div class=\"hdr $key\">$key</div>\n";
 		}
@@ -509,7 +511,7 @@ function print_pages($current, $pagesize, $query, $table) {
 				if ($i == $current) { 
 					$pages .= " <b>$i</b> "; 
 				} else { 
-					$pages .= " <a href=\"{$table}_list.php?page=$i\">$i</a> "; 
+					$pages .= " <a href=\"list.php?table={$table}&page=$i\">$i</a> "; 
 				} 
 			}			
 		} else {
@@ -518,16 +520,16 @@ function print_pages($current, $pagesize, $query, $table) {
 					if ($i == $current) { 
 						$pages .= " <b>$i</b> "; 
 					} else { 
-						$pages .= " <a href=\"{$table}_list.php?page=$i\">$i</a> "; 
+						$pages .= " <a href=\"list.php?table={$table}&page=$i\">$i</a> "; 
 					} 
 				}
 				$pages .= "...";
 				for ($i=$numpages-2; $i<$numpages; $i++) {
-					$pages .= " <a href=\"{$table}_list.php?page=$i\">$i</a> ";
+					$pages .= " <a href=\"list.php?table={$table}&page=$i\">$i</a> ";
 				}				
 			} else {
 				for ($i=1; $i<3; $i++) {
-					$pages .= " <a href=\"{$table}_list.php?page=$i\">$i</a> ";
+					$pages .= " <a href=\"list.php?table={$table}&page=$i\">$i</a> ";
 				}
 				$pages .= "...";
 				if ($current > ($numpages - 7)) {
@@ -535,7 +537,7 @@ function print_pages($current, $pagesize, $query, $table) {
 						if ($i == $current) { 
 							$pages .= " <b>$i</b> "; 
 						} else {
-							$pages .= " <a href=\"{$table}_list.php?page=$i\">$i</a> "; 
+							$pages .= " <a href=\"list.php?table={$table}&page=$i\">$i</a> "; 
 						}
 					}			
 				} else {
@@ -543,12 +545,12 @@ function print_pages($current, $pagesize, $query, $table) {
 						if ($i == $current) { 
 							$pages .= " <b>$i</b> "; 
 						} else {
-							$pages .= " <a href=\"{$table}_list.php?page=$i\">$i</a> "; 
+							$pages .= " <a href=\"list.php?table={$table}&page=$i\">$i</a> "; 
 						} 
 					}
 					$pages .= "...";
 					for ($i=$numpages-2; $i<$numpages; $i++) {
-						$pages .= " <a href=\"{$table}_list.php?page=$i\">$i</a> ";
+						$pages .= " <a href=\"list.php?table={$table}&page=$i\">$i</a> ";
 					}				
 				}
 			}
@@ -558,12 +560,12 @@ function print_pages($current, $pagesize, $query, $table) {
 	print "<p>";
 	if ($pages != "") {
 		if ($current > 1) {
-			$pages = "<a href=\"{$table}_list.php?page=" . ($current-1) . "\">&lt;</a> $pages";
+			$pages = "<a href=\"list.php?table={$table}&page=" . ($current-1) . "\">&lt;</a> $pages";
 		} else {
 			$pages = "&lt; $pages";
 		}
 		if ($current < $numpages) {
-			$pages = "$pages <a href=\"{$table}_list.php?page=" . ($current+1) . "\">&gt;</a>";				
+			$pages = "$pages <a href=\"list.php?table={$table}&page=" . ($current+1) . "\">&gt;</a>";				
 		} else {
 			$pages = "&gt; $pages";
 		}
