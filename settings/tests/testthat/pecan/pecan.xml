@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<pecan>
+ <outdir>/Users/kooper/Work/EBI/pecan/settings/tests/testthat/pecan</outdir>
+ <database>
+  <bety>
+   <user>bety</user>
+   <password>bety</password>
+   <host>localhost</host>
+   <dbname>bety</dbname>
+   <driver>PostgreSQL</driver>
+   <write>TRUE</write>
+  </bety>
+ </database>
+ <pfts>
+  <pft>
+   <name>salix</name>
+   <outdir>/Users/kooper/Work/EBI/pecan/settings/tests/testthat/pecan/pft/salix</outdir>
+  </pft>
+ </pfts>
+ <meta.analysis>
+  <iter>3000</iter>
+  <random.effects>FALSE</random.effects>
+  <update>AUTO</update>
+ </meta.analysis>
+ <ensemble>
+  <variable>StemBiom</variable>
+  <size>1</size>
+  <start.year>2000</start.year>
+  <end.year>2009</end.year>
+ </ensemble>
+ <model>
+  <id>-1</id>
+  <binary>/bin/true</binary>
+  <type>BIOCRO</type>
+ </model>
+ <run>
+  <site>
+   <id>288</id>
+   <name>Sapelo Island</name>
+   <lat>31.40</lat>
+   <lon>-81.37</lon>
+  </site>
+  <start.date>2000-01-01 06:00:00</start.date>
+  <end.date>2009-12-31 05:59:00</end.date>
+  <host>
+   <name>localhost</name>
+   <rundir>/Users/kooper/Work/EBI/pecan/settings/tests/testthat/pecan/run</rundir>
+   <outdir>/Users/kooper/Work/EBI/pecan/settings/tests/testthat/pecan/out</outdir>
+  </host>
+  <dbfiles>/Users/kooper/.pecan/dbfiles</dbfiles>
+ </run>
+ <workflow>
+  <id>147</id>
+ </workflow>
+ <rundir>/Users/kooper/Work/EBI/pecan/settings/tests/testthat/pecan/run</rundir>
+ <modeloutdir>/Users/kooper/Work/EBI/pecan/settings/tests/testthat/pecan/out</modeloutdir>
+</pecan>
