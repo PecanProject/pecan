@@ -4,7 +4,7 @@
 \title{bugs.rdist}
 \usage{
 bugs.rdist(prior = data.frame(distn = "norm", parama = 0, paramb = 1),
-  n.iter = 1e+05, n = NULL)
+  n.iter = 100000, n = NULL)
 }
 \arguments{
 \item{prior}{dataframe with distribution name and parameters}
