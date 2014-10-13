@@ -52,6 +52,21 @@ gpm <- function(alpha, n, theta, N){
   t90 <- t.av(90, n)
   tav <- t.av(alpha, n)
   
+  ## Reflectance and transmittance at the interface
+  t12 <- tav
+  t21 <- t90/n^2
+  r12 <- 1 - t12
+  r21 <- 1 - t21
+  
+  ## "x" and "y" simplifications from original PROSPECT model (Jacquemoud & Baret 1990)
+  x <- tav / t90
+  y <- x * (t90 - 1) + 1 - tav
+  
+  ## Reflectance and transmittance of N layers
+  d90 <- sqrt((t90^2 - rho90^2 - 1)^2 - 4*rho90^2)
+  a90 <- (1 + rho90^2 - tao90^2 + d90) / (2*rho90)
+  b90 <- (1 - rho90^2 + tao90^2 + d90) / (2*tao90)  
+  
   ## Reflectance of a plane as a function of incident angle 'alpha'
   rho.a <- function(alpha){
     (1 - tav) + 
@@ -66,21 +81,13 @@ gpm <- function(alpha, n, theta, N){
       (n^4 - theta^2 * (n^2 - t90)^2)
   }
   tao90 <- tao.a(90)
-  
-  d90 <- sqrt((t90^2 - rho90^2 - 1)^2 - 4*rho90^2)
-  a90 <- (1 + rho90^2 - tao90^2 + d90) / (2*rho90)
-  b90 <- (1 - rho90^2 + tao90^2 + d90) / (2*tao90)
-  
-  x <- tav / t90
-  y <- x * (t90 - 1) + 1 - tav
-  
-  
+    
   ### TODO - Fix to make this work with multiple layers. Try to figure out what Shawn did.
-  R.N.90 <- b90^N - b90^(-N) / (a90*b90^N - a90^(-1)*b90^(-N))
-  R.N.a <- x * R.N.90 + y
+  R.N.90 <- b90^(1-N) - b90^(1-N) / (a90*b90^(N-1) - a90^(-1)*b90^(1-N))
+  R.N.a <- r12 + tav * t90 * R.N.90 / (1 - rho90 * R.N.90)
   
-  T.N.90 <- a90 - a90^(-1) / (a90*b90^N - a90^(-1)*b90^(-N))
-  T.N.a <- x * T.N.90
+  T.N.90 <- a90 - a90^(-1) / (a90*b90^(N-1) - a90^(-1)*b90^(1-N))
+  T.N.a <- tav * T.N.90 / (1 - rho90 * R.N.90)
   return(data.frame(R = R.N.a, Tr = T.N.a, t90, tav, rho90, tao90))
 }
 
