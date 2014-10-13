@@ -77,12 +77,13 @@ gpm <- function(alpha, n, theta, N){
   
   
   ### TODO - Fix to make this work with multiple layers. Try to figure out what Shawn did.
-  R.N.90 <- b90^(1-N) - b90^(1-N) / (a90*b90^(N-1) - a90^(-1)*b90^(1-N))
-  R.N.a <- rhoa + tav * t90 * R.N.90 / (1 - rho90 * R.N.90)
+  R.N.90 <- (b90^(1-N) - b90^(1-N)) / (a90*b90^(N-1) - a90^(-1)*b90^(1-N))
+  R.N.a <- rhoa + taoa * tao90 * R.N.90 / (1 - rho90 * R.N.90)
   
-  T.N.90 <- a90 - a90^(-1) / (a90*b90^(N-1) - a90^(-1)*b90^(1-N))
-  T.N.a <- tav * T.N.90 / (1 - rho90 * R.N.90)
-  return(data.frame(R = R.N.a, Tr = T.N.a, t90, tav, rho90, tao90))
+  T.N.90 <- (a90 - a90^(-1)) / (a90*b90^(N-1) - a90^(-1)*b90^(1-N))
+  T.N.a <- taoa * T.N.90 / (1 - rho90 * R.N.90)
+  return(data.frame(R = R.N.a, Tr = T.N.a, 
+                    t90, tav, rho90, rhoa, tao90, taoa, x, y, theta))
 }
 
 
@@ -101,7 +102,9 @@ prospect <- function(N, Cab, Cw, Cm,
   return(rt)
 }
 
+
 # Tests #####
+
 # Here are some examples observed during the LOPEX'93 experiment on
 # fresh (F) and dry (D) leaves :
 testdata <- data.frame(
@@ -128,31 +131,6 @@ for(i in 1:length(testdata$plant)){
 }
 
 shawn.prospect <- function(N,Cab,Cw,Cm){
-  
-  # Here are some examples observed during the LOPEX'93 experiment on
-  # fresh (F) and dry (D) leaves :
-  #
-  # ---------------------------------------------
-  #                N     Cab     Cw        Cm    
-  # ---------------------------------------------
-  # min          1.000    0.0  0.004000  0.001900
-  # max          3.000  100.0  0.040000  0.016500
-  # corn (F)     1.518   58.0  0.013100  0.003662
-  # rice (F)     2.275   23.7  0.007500  0.005811
-  # clover (F)   1.875   46.7  0.010000  0.003014
-  # laurel (F)   2.660   74.1  0.019900  0.013520
-  # ---------------------------------------------
-  # min          1.500    0.0  0.000063  0.0019
-  # max          3.600  100.0  0.000900  0.0165
-  # bamboo (D)   2.698   70.8  0.000117  0.009327
-  # lettuce (D)  2.107   35.2  0.000244  0.002250
-  # walnut (D)   2.656   62.8  0.000263  0.006573
-  # chestnut (D) 1.826   47.7  0.000307  0.004305
-  # ---------------------------------------------
-  
-  ### Load the spec. abs. features
-  data(dataSpec_p4)
-  
   l <- dataSpec_p4[,1]
   n <- dataSpec_p4[,2]
   
@@ -241,8 +219,16 @@ shawn.prospect <- function(N,Cab,Cw,Cm){
   RN <- ra+s1/s3
   TN <- s2/s3
   LRT <- data.frame(Wavelength=l,
-                    Reflectance=RN,
-                    Transmittance=TN) # Output: wavelength, reflectance, transmittance
+                    R=RN,
+                    Tr=TN,
+                    rhoa=ra,
+                    taoa=ta,
+                    rho90=r90,
+                    tao90=t90,
+                    x,
+                    y,
+                    theta=trans) 
+  # Output: wavelength, reflectance, transmittance
   
   return(LRT)
 }
@@ -255,5 +241,13 @@ for(i in 1:length(testdata$plant)){
                                           testdata[i, 5])
 }
 
+comp.plot <- function(x, var){
+  wl <- 400:2500
+  print(testdata[x,])
+  plot(wl, test.shawn[[x]][var][[1]], type="l")
+  lines(wl, test[[x]][var][[1]], col="2")
+}
 
-
+compstat <- function(x, var){
+  test.shawn[[x]][var][[1]] - test[[x]][var][[1]]
+}
