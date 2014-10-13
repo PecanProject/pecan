@@ -7,15 +7,12 @@
 ## N = number of effective layers
 
 # Auxiliary functions #####
-
 exp.t <- function(x) exp(-x) / x
 itg.k <- function(k) sapply(k, function(x) integrate(exp.t, x, Inf)$value)
 
 # Generalized Plate Model #####
-
 gpm <- function(alpha, n, theta, N){
-  ## Transmittance of isotropic light through medium as a 
-  ##  function of angle 'alpha' and refractive index 'n'
+  ## Transmittance of isotropic light through medium as a function of angle 'alpha' and refractive index 'n' 
   t.av <- function(alpha, n){
     alpha <- alpha * pi/180
     
@@ -51,22 +48,11 @@ gpm <- function(alpha, n, theta, N){
   }
   t90 <- t.av(90, n)
   tav <- t.av(alpha, n)
-  
-  ## Reflectance and transmittance at the interface
-  t12 <- tav
-  t21 <- t90/n^2
-  r12 <- 1 - t12
-  r21 <- 1 - t21
-  
-  ## "x" and "y" simplifications from original PROSPECT model (Jacquemoud & Baret 1990)
+    
+  ## "x" and "y" simplifications from original PROSPECT model (Jacquemoud & Baret 1990) 
   x <- tav / t90
   y <- x * (t90 - 1) + 1 - tav
-  
-  ## Reflectance and transmittance of N layers
-  d90 <- sqrt((t90^2 - rho90^2 - 1)^2 - 4*rho90^2)
-  a90 <- (1 + rho90^2 - tao90^2 + d90) / (2*rho90)
-  b90 <- (1 - rho90^2 + tao90^2 + d90) / (2*tao90)  
-  
+    
   ## Reflectance of a plane as a function of incident angle 'alpha'
   rho.a <- function(alpha){
     (1 - tav) + 
@@ -74,6 +60,7 @@ gpm <- function(alpha, n, theta, N){
       (n^4 - theta^2 * (n^2- t90)^2)  
   }
   rho90 <- rho.a(90)
+  rhoa <- x * rho90 + y
   
   ## Transmittance through a plane as a function of incident angle 'alpha'
   tao.a <- function(alpha){
@@ -81,15 +68,23 @@ gpm <- function(alpha, n, theta, N){
       (n^4 - theta^2 * (n^2 - t90)^2)
   }
   tao90 <- tao.a(90)
-    
+  taoa <- tao90 * x
+  
+  ## Reflectance and transmittance of N layers (Stokes coefficients)
+  d90 <- sqrt((tao90^2 - rho90^2 - 1)^2 - 4*rho90^2)
+  a90 <- (1 + rho90^2 - tao90^2 + d90) / (2*rho90)
+  b90 <- (1 - rho90^2 + tao90^2 + d90) / (2*tao90)  
+  
+  
   ### TODO - Fix to make this work with multiple layers. Try to figure out what Shawn did.
   R.N.90 <- b90^(1-N) - b90^(1-N) / (a90*b90^(N-1) - a90^(-1)*b90^(1-N))
-  R.N.a <- r12 + tav * t90 * R.N.90 / (1 - rho90 * R.N.90)
+  R.N.a <- rhoa + tav * t90 * R.N.90 / (1 - rho90 * R.N.90)
   
   T.N.90 <- a90 - a90^(-1) / (a90*b90^(N-1) - a90^(-1)*b90^(1-N))
   T.N.a <- tav * T.N.90 / (1 - rho90 * R.N.90)
   return(data.frame(R = R.N.a, Tr = T.N.a, t90, tav, rho90, tao90))
 }
+
 
 prospect <- function(N, Cab, Cw, Cm,
                      data=dataSpec_p4, alpha=40.0, wavelengths=400:2500){
@@ -106,6 +101,7 @@ prospect <- function(N, Cab, Cw, Cm,
   return(rt)
 }
 
+# Tests #####
 # Here are some examples observed during the LOPEX'93 experiment on
 # fresh (F) and dry (D) leaves :
 testdata <- data.frame(
@@ -118,7 +114,146 @@ testdata <- data.frame(
   Cw = c(0.004, 0.04, 0.0131, 0.0075, 0.01, 0.0199,
          0.000063, 0.000900, 0.000117, 0.000244, 0.000263, 0.000307), 
   Cm = c(0.0019, 0.0165, 0.003662, 0.005811, 0.003014, 0.013520, 
-         0.0019, 0.0165, 0.009327, 0.002250, 0.006573, 0.004305)
+         0.0019, 0.0165, 0.009327, 0.002250, 0.006573, 0.004305),
+  stringsAsFactors=FALSE
 )
 
 load("data/dataSpec_p4.RData")
+test <- list()
+for(i in 1:length(testdata$plant)){
+  test[[ testdata$plant[i] ]] <- prospect(testdata[i, 2],
+                                      testdata[i, 3],
+                                      testdata[i, 4],
+                                      testdata[i, 5])
+}
+
+shawn.prospect <- function(N,Cab,Cw,Cm){
+  
+  # Here are some examples observed during the LOPEX'93 experiment on
+  # fresh (F) and dry (D) leaves :
+  #
+  # ---------------------------------------------
+  #                N     Cab     Cw        Cm    
+  # ---------------------------------------------
+  # min          1.000    0.0  0.004000  0.001900
+  # max          3.000  100.0  0.040000  0.016500
+  # corn (F)     1.518   58.0  0.013100  0.003662
+  # rice (F)     2.275   23.7  0.007500  0.005811
+  # clover (F)   1.875   46.7  0.010000  0.003014
+  # laurel (F)   2.660   74.1  0.019900  0.013520
+  # ---------------------------------------------
+  # min          1.500    0.0  0.000063  0.0019
+  # max          3.600  100.0  0.000900  0.0165
+  # bamboo (D)   2.698   70.8  0.000117  0.009327
+  # lettuce (D)  2.107   35.2  0.000244  0.002250
+  # walnut (D)   2.656   62.8  0.000263  0.006573
+  # chestnut (D) 1.826   47.7  0.000307  0.004305
+  # ---------------------------------------------
+  
+  ### Load the spec. abs. features
+  data(dataSpec_p4)
+  
+  l <- dataSpec_p4[,1]
+  n <- dataSpec_p4[,2]
+  
+  ### Global absorption feature
+  k <- (Cab*dataSpec_p4[,3]+Cw*dataSpec_p4[,5]+Cm*dataSpec_p4[,6])/N
+  eps <- k[which(k==0)]
+  
+  exp.t <- function(x) exp(-x) / x
+  expint_E1 <- function(k) sapply(k, function(x) integrate(exp.t, x, Inf)$value)
+  
+  trans <- (1-k)*exp(-k)+k^2*expint_E1(k) ### global trans
+  tav <- function(alpha, n){
+    alpha <- alpha * pi/180
+    
+    np <- n^2 + 1
+    nm <- n^2 - 1
+    a <- ((n + 1)^2) / 2
+    k <- (-(n^2 - 1)^2) / 4
+    sa <- sin(alpha)
+    
+    if(alpha == 0) {
+      out <- 4 * n / (n+1)^2
+      return(out)
+    } else if(alpha == pi/2) {
+      b1 <- rep(0, length(n))
+    } else {
+      b1 <- sqrt((sa^2 - np/2)^2 + k)
+    }
+    
+    b2 <- sa^2 - np/2
+    b <- b1 - b2
+    
+    t.s <- (k^2/(6*b^3) + k/b - b/2) - (k^2/(6*a^3) + k/a - a/2)
+    t.p1 <- -2*n^2 * (b - a) / np^2
+    t.p2 <- -2*n^2 * np * log(b/a) / nm^2
+    t.p3 <- n^2 * (1/b - 1/a) / 2
+    t.p4 <- 16*n^4 * (n^4 + 1) * log((2*np*b - nm^2)/(2*np*a - nm^2)) / (np^3 * nm^2)
+    t.p5 <- 16*n^6 * (1/(2*np*b - nm^2) - 1/(2*np*a - nm^2)) / np^3
+    t.p <- t.p1 + t.p2 + t.p3 + t.p4 + t.p5
+    
+    out <- (t.s + t.p) / (2*sa^2)
+    
+    return(out)
+  }
+  
+  
+  ### reflectivity and transmissivity at the interface. Leaf surface at 90 and 40 deg ang
+  #-------------------------------------------------
+  alpha <- 40
+  t12 <- tav(alpha,n)       #trans
+  t21 <- (tav(90,n))/n^2    #trans
+  r12 <- 1-t12              #refl
+  r21 <- 1-t21              #refl
+  x <- (tav(alpha,n))/tav(90,n)
+  y <- x*(tav(90,n)-1)+1-tav(alpha,n)
+  
+  ### reflectance and transmittance of the elementary layer N = 1
+  #------------------------------------------------------------
+  ra <- r12+(t12*t21*r21*trans^2)/(1-r21^2*trans^2)
+  ta <- (t12*t21*trans)/(1-r21^2*trans^2)
+  r90 <- (ra-y)/x
+  t90 <- ta/x
+  
+  #***********************************************************************
+  # reflectance and transmittance of N layers
+  #***********************************************************************
+  delta <- sqrt((t90^2-r90^2-1)^2-4*r90^2)
+  beta <- (1+r90^2-t90^2-delta)/(2*r90)
+  va <- (1+r90^2-t90^2+delta)/(2*r90)
+  
+  if (any(va*(beta-r90)<=1e-14)) {
+    vb <- sqrt(beta*(va-r90)/(1e-14))
+  } else {
+    vb <- sqrt(beta*(va-r90)/(va*(beta-r90)))
+  }
+  
+  ### Calc over N layers
+  vbNN <- vb^(N-1)
+  vbNNinv <- 1/vbNN
+  vainv <- 1/va
+  s1 <- ta*t90*(vbNN-vbNNinv)
+  s2 <- ta*(va-vainv)
+  s3 <- va*vbNN-vainv*vbNNinv-r90*(vbNN-vbNNinv)
+  
+  ### Calculate output reflectance and transmittance of the modeled leaf
+  RN <- ra+s1/s3
+  TN <- s2/s3
+  LRT <- data.frame(Wavelength=l,
+                    Reflectance=RN,
+                    Transmittance=TN) # Output: wavelength, reflectance, transmittance
+  
+  return(LRT)
+}
+
+test.shawn <- list()
+for(i in 1:length(testdata$plant)){
+  test.shawn[[ testdata$plant[i] ]] <- shawn.prospect(testdata[i, 2],
+                                          testdata[i, 3],
+                                          testdata[i, 4],
+                                          testdata[i, 5])
+}
+
+
+
