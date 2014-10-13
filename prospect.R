@@ -53,22 +53,17 @@ gpm <- function(alpha, n, theta, N){
   x <- tav / t90
   y <- x * (t90 - 1) + 1 - tav
     
-  ## Reflectance of a plane as a function of incident angle 'alpha'
-  rho.a <- function(alpha){
-    (1 - tav) + 
-      t90 * tav * theta^2 * (n^2 - t90) / 
-      (n^4 - theta^2 * (n^2- t90)^2)  
-  }
-  rho90 <- rho.a(90)
-  rhoa <- x * rho90 + y
+  ## Reflectance and transmittance of first layer (N=1)
+  tao.1 <- tav
+  tao.2 <- t90 / n^2
+  rho.1 <- 1 - tao.1
+  rho.2 <- 1 - tao.2
   
-  ## Transmittance through a plane as a function of incident angle 'alpha'
-  tao.a <- function(alpha){
-    t90 * tav * theta * n^2 / 
-      (n^4 - theta^2 * (n^2 - t90)^2)
-  }
-  tao90 <- tao.a(90)
-  taoa <- tao90 * x
+  rhoa <- rho.1 + (tao.1 * tao.2 * rho.2 * theta^2) / (1 - rho.2^2 * theta^2)
+  taoa <- tao.1 * tao.2 * theta / (1 - rho.2^2 * theta^2)
+  
+  rho90 <- (rhoa - y) / x
+  tao90 <- taoa / x
   
   ## Reflectance and transmittance of N layers (Stokes coefficients)
   d90 <- sqrt((tao90^2 - rho90^2 - 1)^2 - 4*rho90^2)
