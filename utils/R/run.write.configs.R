@@ -17,8 +17,11 @@
 ##' @export
 ##'
 ##' @author David LeBauer, Shawn Serbin
-run.write.configs <- function(model, write = TRUE) {
-
+run.write.configs <- function(settings, write = TRUE) {
+  model = settings$model$type
+  scipen = getOption("scipen")
+  options(scipen=12)
+  
   ## remove previous runs.txt
   if (file.exists(file.path(settings$rundir, "runs.txt"))) {
     logger.warn("Existing runs.txt file will be removed.")
@@ -30,8 +33,7 @@ run.write.configs <- function(model, write = TRUE) {
 
   my.write.config <- paste("write.config.",model,sep="")
   if(!exists(my.write.config)){
-    logger.error(my.write.config, "does not exist, please make sure that the package ", 
-                 pecan.pkg, "contains a function called",  my.write.config)
+    logger.error(my.write.config, "does not exist, please make sure that the model package contains a function called",  my.write.config)
   }
   
   # TODO RK : need to write to runs_inputs table
@@ -57,14 +59,22 @@ run.write.configs <- function(model, write = TRUE) {
   trait.samples <- sa.samples <- ensemble.samples <- env.samples <- runs.samples <- list()
   
   ## Prepare for model output.  Cleanup any old config files (if exists)
-  do.call(paste("remove.config", model, sep="."), args = list(settings$rundir, settings))
+  my.remove.config <- paste0("remove.config.",model)
+  if(exists(my.remove.config)) {
+    do.call(my.remove.config, args = list(settings$rundir, settings))
+  }
 
   ## Load PFT priors and posteriors
   for (i in seq(pft.names)){
+    ## Load posteriors
+    fname = file.path(outdirs[i], 'post.distns.Rdata')
+    if(file.exists(fname)){
+      load(fname)
+      prior.distns = post.distns
+    } else {
+      load(file.path(outdirs[i], 'prior.distns.Rdata'))
+    }
 
-    ## Load priors
-    load(file.path(outdirs[i], 'prior.distns.Rdata'))
-    
     ### Load trait mcmc data (if exists)
     if("trait.mcmc.Rdata" %in% dir(unlist(outdirs))) {
       ma.results <- TRUE
@@ -82,7 +92,7 @@ run.write.configs <- function(model, write = TRUE) {
       
       ## report which traits use MA results, which use priors 
       if(length(ma.traits) > 0){
-        logger.info("PFT",  pft.names[i], "has meta analysis results for:\n", paste0(ma.traits, collapse = "\n "))        
+        logger.info("PFT",  pft.names[i], "has MCMC samples for:\n", paste0(ma.traits, collapse = "\n "))        
       }
       if(!all(priors %in% ma.traits)){
         logger.info("PFT", pft.names[i], "will use prior distributions for:\n", paste0(priors[!priors %in% ma.traits], collapse = "\n "))        
@@ -90,7 +100,7 @@ run.write.configs <- function(model, write = TRUE) {
     } else {
       ma.traits <- NULL
       samples.num <- 20000
-      logger.info("No meta analysis results for PFT",  pft.names[i])  
+      logger.info("No MCMC results for PFT",  pft.names[i])  
       logger.info("PFT", pft.names[i], "will use prior distributions for", priors )
     }
 
@@ -161,9 +171,15 @@ run.write.configs <- function(model, write = TRUE) {
   } else {
       logger.info('not writing config files for ensemble, settings are NULL')
   } ### End of Ensemble
-  logger.info("\n  ######################## Finished writing model run config files ########################")
+
+  logger.info("###### Finished writing model run config files #####")
+  logger.info("config files samples in ", paste0(settings$outdir, "run"))
+  
   ### Save output from SA/Ensemble runs
-  save(ensemble.samples, trait.samples, sa.samples, runs.samples, file = file.path(settings$outdir, 'samples.Rdata'))
+  save(ensemble.samples, trait.samples, sa.samples, runs.samples, 
+       file = file.path(settings$outdir, 'samples.Rdata'))
+  logger.info("parameter values for runs in ", paste0(settings$outdir, "samples.RData"))
+  options(scipen=scipen)
 }
 #==================================================================================================#
 

@@ -10,6 +10,7 @@
 .db.utils <- new.env() 
 .db.utils$created <- 0
 .db.utils$queries <- 0
+.db.utils$deprecated <- 0
 .db.utils$showquery <- FALSE
 .db.utils$connections <- list()
 
@@ -28,7 +29,7 @@
 ##' @export
 ##' @examples
 ##' \dontrun{
-##' db.query('select count(id) from traits;', params=settings$database)
+##' db.query('select count(id) from traits;', params=settings$database$bety)
 ##' }
 db.query <- function(query, con=NULL, params=NULL) {
   iopened <- 0
@@ -58,7 +59,7 @@ db.query <- function(query, con=NULL, params=NULL) {
 ##' Generic function to open a database connection
 ##'
 ##' Create a connection to a database usign the specified parameters. If the paramters contain
-##' driver element it will be used as the database driver, otherwise it will use MySQL.
+##' driver element it will be used as the database driver, otherwise it will use PostgreSQL.
 ##' @name db.open
 ##' @title Open database connection
 ##' @param params database connection information
@@ -67,12 +68,13 @@ db.query <- function(query, con=NULL, params=NULL) {
 ##' @export
 ##' @examples
 ##' \dontrun{
-##' db.open(settings$database)
+##' db.open(settings$database$bety)
 ##' }
 db.open <- function(params) {
   params$dbfiles <- NULL
+  params$write <- NULL
   if (is.null(params$driver)) {
-    args <- c(drv=dbDriver("MySQL"), params, recursive=TRUE)
+    args <- c(drv=dbDriver("PostgreSQL"), params, recursive=TRUE)
   } else {
     args <- c(drv=dbDriver(params$driver), params, recursive=TRUE)
     args[['driver']] <- NULL
@@ -140,6 +142,10 @@ db.close <- function(con) {
 ##' }
 db.print.connections <- function() {
   logger.info("Created", .db.utils$created, "connections and executed", .db.utils$queries, "queries")
+  if (.db.utils$deprecated > 0) {
+    logger.info("Used", .db.utils$deprecated, "calls to deprecated functions")
+  }
+  logger.info("Created", .db.utils$created, "connections and executed", .db.utils$queries, "queries")
   if (length(.db.utils$connections$id) == 0) {
     logger.debug("No open database connections.\n")
   } else {
@@ -172,6 +178,7 @@ db.exists <- function(params, write=TRUE) {
 		return(invisible(FALSE))
 	}
 
+  if(FALSE){
 	# read a row from the database
 	read.result <- tryCatch({
 		invisible(db.query("SELECT * FROM users LIMIT 1", con))
@@ -196,6 +203,9 @@ db.exists <- function(params, write=TRUE) {
 	} else {
     result <- TRUE
   }
+
+  }
+  result <- TRUE
 
 	# close database, all done
 	tryCatch({

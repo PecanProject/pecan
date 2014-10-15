@@ -1,0 +1,4 @@
+export(fitA)
+export(read.Licor)
+export(Licor.QC)
+export(plot.photo)

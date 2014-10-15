@@ -14,7 +14,7 @@
 ##' @name fetch.stats2se
 ##' @title Fetch data and transform stats to SE
 ##' @param connection connection to trait database
-##' @param query MySQL query to traits table
+##' @param query to send to databse
 ##' @return dataframe with trait data
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{transformstats}} performs transformation calculations
 ##' @author <unknown>
@@ -38,10 +38,10 @@ fetch.stats2se <- function(connection, query){
 ##' @param ... extra arguments
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}}; \code{\link{transformstats}} performs transformation calculations
 ##' @author David LeBauer, Carl Davidson
-query.data <- function(trait, spstr, extra.columns='sites.lat, sites.lon, ', con=NULL, ...) {
+query.data <- function(trait, spstr, extra.columns='ST_X(ST_CENTROID(sites.geometry)) AS lon, ST_Y(ST_CENTROID(sites.geometry)) AS lat, ', con=NULL, ...) {
   if (is.null(con)) {
     logger.error("No open database connection passed in.")
-    con <- db.open(settings$database)
+    con <- db.open(settings$database$bety)
   }
   query <- paste("select
               traits.id, traits.citation_id, traits.site_id, traits.treatment_id,
@@ -57,6 +57,7 @@ query.data <- function(trait, spstr, extra.columns='sites.lat, sites.lon, ', con
             where specie_id in (", spstr,")
             and variables.name in ('", trait,"');", sep = "")
   return(fetch.stats2se(con, query))
+  db.close(con)
 }
 ##==================================================================================================#
 
@@ -74,7 +75,7 @@ query.data <- function(trait, spstr, extra.columns='sites.lat, sites.lon, ', con
 ##' @param ... extra arguments
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}}; \code{\link{transformstats}} performs transformation calculations
 ##' @author <unknown>
-query.yields <- function(trait = 'yield', spstr, extra.columns='', con=query.base.con(settings), ...){
+query.yields <- function(trait = 'yield', spstr, extra.columns='', con=NULL, ...){
   query <- paste("select
             yields.id, yields.citation_id, yields.site_id, treatments.name,
             yields.date, yields.time, yields.cultivar_id, yields.specie_id,
@@ -113,10 +114,13 @@ query.yields <- function(trait = 'yield', spstr, extra.columns='', con=query.bas
 ##' @param covariates.data one or more tables of covariate data, ordered by the precedence
 ##' they will assume in the event a trait has covariates across multiple tables.
 ##' All tables must contain an 'id' and 'level' column, at minimum.
+##' @export
 ##--------------------------------------------------------------------------------------------------#
 append.covariate<-function(data, column.name, ..., covariates.data=list(...)){
   merged <- data.frame()
-  for(covariate.data in covariates.data){
+  for(i in seq(covariates.data)){
+    if(is.list(covariates.data)) covariates.data <- as.data.frame(covariates.data)
+    covariate.data <- covariates.data[i,]
     if(length(covariate.data) >= 1){
       ## conditional added to prevent crash when trying to transform an empty data frame
       transformed <- transform(covariate.data, id = trait_id, level = level)
@@ -141,7 +145,7 @@ append.covariate<-function(data, column.name, ..., covariates.data=list(...)){
 ##' @param ... extra arguments
 ##'
 ##' @author <unknown>
-query.covariates<-function(trait.ids, con = query.base.con(settings), ...){
+query.covariates<-function(trait.ids, con = NULL, ...){
   covariate.query <- paste("select covariates.trait_id, covariates.level,variables.name",
                            "from covariates left join variables on variables.id = covariates.variable_id",
                            "where trait_id in (",vecpaste(trait.ids),")")
@@ -164,7 +168,7 @@ query.covariates<-function(trait.ids, con = query.base.con(settings), ...){
 arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp=25){
   if(length(covariates)>0) {
     .covs <- lapply(temp.covariates, function(temp.covariate){covariates[covariates$name == temp.covariate,]})
-#    .covs <- .covs[!duplicated(.covs$trait_id),]
+    .covs <- .covs[sapply(.covs, function(x) nrow(x) != 0)][[1]]# remove empty records  
     data <- append.covariate(data, 'temp',
                              covariates.data = .covs)
 
@@ -250,9 +254,9 @@ assign.treatments <- function(data){
   data$trt_id[which(data$control == 1)] <- 'control'
   sites <- unique(data$site_id)
   for(ss in sites){
-    site.i <- data$site == ss
+    site.i <- data$site_id == ss
     #if only one treatment, it's control
-    if(length(unique(data$trt[site.i])) == 1) data$trt_id[site.i] <- 'control'
+    if(length(unique(data$trt_id[site.i])) == 1) data$trt_id[site.i] <- 'control'
     if(!'control' %in% data$trt_id[site.i]){
       logger.severe('No control treatment set for site_id:',
                    unique(data$site_id[site.i]),
@@ -317,7 +321,7 @@ take.samples <- function(summary, sample.size = 10^6){
 ##' @examples
 ##' input <- list(x = data.frame(mean = 1, stat = 1, n = 1))
 ##' derive.trait(FUN = identity, input = input, var.name = 'x')
-derive.trait <- function(FUN, ..., input=list(...), var.name=NA, sample.size=100000){
+derive.trait <- function(FUN, ..., input=list(...), var.name=NA, sample.size=10000){
   if(any(lapply(input, nrow) > 1)){
     return(NULL)
   }
@@ -348,7 +352,7 @@ derive.trait <- function(FUN, ..., input=list(...), var.name=NA, sample.size=100
 ##' @return a copy of the first input trait with modified mean, stat, and n
 derive.traits <- function(FUN, ..., input=list(...),
                           match.columns=c('citation_id', 'site_id', 'specie_id'),
-                          var.name=NA, sample.size=100000){
+                          var.name=NA, sample.size=10000){
   if(length(input) == 1){
     input<-input[[1]]
                                         #KLUDGE: modified to handle empty datasets
@@ -406,10 +410,10 @@ derive.traits <- function(FUN, ..., input=list(...),
 ##' @examples
 ##' \dontrun{
 ##' settings <- read.settings()
-##' query.trait.data("Vcmax", "938", con = query.base.con(settings))
+##' query.trait.data("Vcmax", "938", con = con)
 ##' }
 ##' @author David LeBauer, Carl Davidson, Shawn Serbin
-query.trait.data <- function(trait, spstr, con = query.base.con(settings), ...){
+query.trait.data <- function(trait, spstr, con = NULL, ...){
 
   if(is.list(con)){
     print("query.trait.data")
@@ -426,14 +430,15 @@ query.trait.data <- function(trait, spstr, con = query.base.con(settings), ...){
 
 ### Query associated covariates from database for trait X.
   covariates <- query.covariates(data$id, con=con)
-
+  canopy.layer.covs <- covariates[covariates$name == 'canopy_layer', ]
+  
   if(trait == 'Vcmax') {
 #########################   VCMAX   ############################
 ### Apply Arrhenius scaling to convert Vcmax at measurement temp to that at 25 degC (ref temp).
     data <- arrhenius.scaling.traits(data, covariates, c('leafT', 'airT'))
 
 ### Keep only top of canopy/sunlit leaf samples based on covariate.
-    data <- filter.sunleaf.traits(data, covariates)
+    if(nrow(canopy.layer.covs) > 0) data <- filter.sunleaf.traits(data, canopy.layer.covs)
 
     ## select only summer data for Panicum virgatum
     ##TODO fix following hack to select only summer data
@@ -449,8 +454,8 @@ query.trait.data <- function(trait, spstr, con = query.base.con(settings), ...){
                   derive.traits(function(lma){1/lma},
                                 query.data('LMA', spstr, con=con)))
 
-### Keep only top of canopy/sunlit leaf samples based on covariate.
-    data <- filter.sunleaf.traits(data, covariates)
+    ### Keep only top of canopy/sunlit leaf samples based on covariate.
+    if(nrow(canopy.layer.covs) > 0) data <- filter.sunleaf.traits(data, canopy.layer.covs)
 
     ## select only summer data for Panicum virgatum
     ##TODO fix following hack to select only summer data
@@ -475,7 +480,7 @@ query.trait.data <- function(trait, spstr, con = query.base.con(settings), ...){
 #########################  LEAF RESPIRATION   ############################
     ## Apply Arrhenius scaling to convert leaf respiration at measurement temp
     ## to that at 25 degC (ref temp).
-    data <- arrhenius.scaling.traits(data, covariates, c('leafT', 'airT'))
+  data <- arrhenius.scaling.traits(data, covariates, c('leafT', 'airT'))
 
   } else if (trait == 'stem_respiration_rate') {
 #########################  STEM RESPIRATION   ############################

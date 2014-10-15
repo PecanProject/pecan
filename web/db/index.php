@@ -1,9 +1,10 @@
 <?php
 require("common.php");
 
-print_header("Home");
-print_menu("Home");
+print_header("");
+print_menu("");
 ?>
+
 <h2>Welcome</h2>
 
 <p>Welcome to the EBI Biofuel Ecophysiological Traits and Yields Database,
@@ -14,6 +15,7 @@ sustainable way requires evaluating the growth and functionality of biofuel
 crops from the local scale to the regional scale. BETY-DB has been
 developed to support research, agriculture, and policy by synthesizing
 available information on potential biofuel crops.</p>
+
 <?php
 print_footer();
 ?>

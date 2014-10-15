@@ -2,7 +2,7 @@ BioCro PEcAn workflow
 ======================
 
 ```{r, echo=FALSE,warning=FALSE}
-require(PEcAn.all)
+library(PEcAn.all)
 ```
 ### Load PEcAn settings file.
 
@@ -10,27 +10,36 @@ Open and read in settings file for PEcAn run.
 
 
 ```{r, echo=FALSE,warning=FALSE}
-settings <- read.settings(system.file("extdata/pecan.biocro.xml",
-                                      package = "PEcAn.BIOCRO"))
+library(PEcAn.settings)
+settings <- read.settings("~/dev/willow_da/vignettes/pecan.biocro.xml")
 settings$sensitivity.analysis <- settings$ensemble
-model <- settings$model$name
+model <- settings$model$type
 
 ```
-### Run PEcAn workflow
+### Query database for trait data
 
 ```{r, echo=FALSE,warning=FALSE,cache=TRUE}
+library(PEcAn.DB)
+settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)# Query the trait database for data and priors
+```
 
-get.trait.data()        	# Query the trait database for data and priors
-
-run.meta.analysis()     	# Run the PEcAn meta.analysis
+### Run Meta-analysis
+```{r, echo=FALSE,warning=FALSE,cache=TRUE}
+run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database$bety)
 ```
 
 
 
 ```{r, echo=FALSE,warning=FALSE,cache=TRUE}
-run.write.configs(model)        # Calls model specific write.configs e.g. write.config.ed.R
+run.write.configs(settings, settings$database$bety$write)
+```
+
+```{r, echo=FALSE,warning=FALSE,cache=TRUE}
 ## load met data
-start.model.runs(model)         # Start ecosystem model runs
+start.model.runs(settings, settings$database$bety$write)         # Start ecosystem model runs
+```
+
+```{r, echo=FALSE,warning=FALSE,cache=TRUE}
 convert.outputs(model = settings$model$name, settings = settings)
 
 run.sensitivity.analysis()      # Run sensitivity analysis and variance decomposition on model output

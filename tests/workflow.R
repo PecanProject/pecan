@@ -41,21 +41,21 @@ unlink(file.path(settings$outdir, "STATUS"))
 
 # get traits of pfts
 status.start("TRAIT")
-settings$pfts <- get.trait.data(settings$pfts, settings$run$dbfiles, settings$database, settings$meta.analysis$update)
+settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)
 saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
 status.end()
 
 # run meta-analysis
 status.start("META")
 if('meta.analysis' %in% names(settings)) {
-  run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database)
+  run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database$bety)
 }
 status.end()
 
 # write configurations
 status.start("CONFIG")
 if (!file.exists(file.path(settings$rundir, "runs.txt")) | settings$meta.analysis$update == "TRUE") {
-  run.write.configs(settings$model$name, settings$bety$write)
+  run.write.configs(settings, settings$database$bety$write)
 } else {
   logger.info("Already wrote configuraiton files")    
 }
@@ -66,7 +66,7 @@ status.start("MODEL")
 if (!file.exists(file.path(settings$rundir, "runs.txt"))) {
   logger.severe("No ensemble or sensitivity analysis specified in pecan.xml, work is done.")
 } else {
-  start.model.runs(settings$model$name, settings$bety$write)
+  start.model.runs(settings, settings$database$bety$write)
 }
 status.end()
 
@@ -105,7 +105,7 @@ if (!is.null(settings$email) && !is.null(settings$email$to) && (settings$email$t
 
 # write end time in database
 if (settings$workflow$id != 'NA') {
-  query.base(paste("UPDATE workflows SET finished_at=NOW() WHERE id=", settings$workflow$id, "AND finished_at IS NULL"))
+  db.query(paste0("UPDATE workflows SET finished_at=NOW() WHERE id=", settings$workflow$id, " AND finished_at IS NULL"), params=settings$database$bety)
 }
 status.end()
 

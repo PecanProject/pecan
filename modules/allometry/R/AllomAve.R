@@ -123,7 +123,8 @@ AllomAve <- function(pfts,components=6,outdir=NULL,con=NULL,field=NULL,
       print(c("saving MCMC output to",outfile))
       save(mc,DIC,DICg,pD,pDg,obs,allom,file=outfile)
 
-      allom.stats[[pft.name]][[component]] = summary(mc)      
+      allom.stats[[pft.name]][[component]] = summary(mc)  
+      allom.stats[[pft.name]][[component]]$cov = cov(as.matrix(mc))
       
       ## Save Posterior information (Pass to update.posterior module)
       if(FALSE){

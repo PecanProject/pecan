@@ -31,10 +31,6 @@ if (!isset($_REQUEST['modelid'])) {
   die("Need a modelid.");
 }
 $modelid=$_REQUEST['modelid'];
-if (!isset($_REQUEST['modeltype'])) {
-  die("Need a modeltype.");
-}
-$modeltype=$_REQUEST['modeltype'];
 if (!isset($_REQUEST['hostname'])) {
   die("Need a hostname.");
 }
@@ -44,71 +40,34 @@ if (!isset($_REQUEST['pft'])) {
 }
 $pft=$_REQUEST['pft'];
 
+# dates
+if (!isset($_REQUEST['start'])) {
+  die("Need a start date.");
+}
+$startdate=$_REQUEST['start'];
+$metstart=$startdate;
+if (!isset($_REQUEST['end'])) {
+  die("Need a end date.");
+}
+$enddate=$_REQUEST['end'];
+$metend=$enddate;
+
 # non required parameters
 $email = "";
 if (isset($_REQUEST['email'])) {
 	$email = $_REQUEST['email'];
 }
 
-# specific for each model type
-if (($modeltype == "ED2") || ($modeltype == "BIOCRO")) {
-	if (!isset($_REQUEST['start'])) {
-		die("Need a start date.");
-	}
-	$startdate=$_REQUEST['start'];
-	if (!isset($_REQUEST['end'])) {
-		die("Need a end date.");
-	}
-	$enddate=$_REQUEST['end'];
-}
-if ($modeltype == "BIOCRO") {
-    $metstart=$startdate;
-    $metend=$enddate;
-}
-
-if (($modeltype == "ED2") || ($modeltype == "SIPNET")) {
-	if (!isset($_REQUEST['met'])) {
-		die("Need a weather file.");
-	}
-	$met=$_REQUEST['met'];	
-    $query="SELECT file_path, file_name, start_date, end_date FROM inputs, dbfiles, machines WHERE " .
-           " inputs.site_id=${siteid} AND inputs.id=${met}" .
-           " AND dbfiles.container_id=inputs.id AND dbfiles.container_type='Input'" .
-           " AND machines.hostname='${hostname}' AND machines.id=dbfiles.machine_id";
-    $result = $pdo->query($query);
-    if (!$result) {
-      print_r(error_database());
-      die('Invalid query: ' . (error_database()));
-    }
-    $row = $result->fetch(PDO::FETCH_ASSOC);
-    $metfile=$row['file_path'] . DIRECTORY_SEPARATOR . $row['file_name'];
-    $metstart=$row['start_date'];
-    $metend=$row['end_date'];
-}
-if ($modeltype == "SIPNET") {
-    $startdate=$metstart;
-    $enddate=$metend;
-}
-
-if ($modeltype == "ED2") {
-	if (!isset($_REQUEST['psscss'])) {
-		die("Need a psscss.");
-	}
-	$psscss=$_REQUEST['psscss'];
-	if($psscss != "FIA") {
- 	    $query="SELECT file_path, file_name FROM inputs, dbfiles, machines WHERE" .
-                   " inputs.site_id=${siteid} AND inputs.id=${psscss}" .
-                   " AND dbfiles.container_id=inputs.id AND dbfiles.container_type='Input'" .
-                   " AND machines.hostname='${hostname}' AND machines.id=dbfiles.machine_id";
-	    $result = $pdo->query($query);
-	    if (!$result) {
-	      print_r(error_database());
-	      die('Invalid query: ' . (error_database()));
-	    }
-	    $row = $result->fetch(PDO::FETCH_ASSOC);
-	    #$psscss=$row['file_path'] . DIRECTORY_SEPARATOR . $row['file_name'];
-	    $psscssfile=substr($row['file_path'], 0, strlen($row['file_path']) - 4);
-	}
+# check met info
+if (isset($_REQUEST['input_met'])) {
+  $stmt = $pdo->prepare("SELECT start_date, end_date FROM inputs WHERE inputs.id=?");
+  if (!$stmt->execute(array($_REQUEST['input_met']))) {
+    die('Invalid query: ' . (error_database()));
+  }
+  $row = $stmt->fetch(PDO::FETCH_ASSOC);
+  $metstart=$row['start_date'];
+  $metend=$row['end_date'];
+  $stmt->closeCursor();
 }
 
 // check input dates to make sure they agree with the dates from the weather data
@@ -124,29 +83,19 @@ if (!$userok && ($startdate < $metstart || $enddate > $metend)) {
 		}
 	}
 	$params .= "&msg=WARNING : Selected dates are not within the bounds of the weather data file you selected.";
-	header("Location: checkfailed.php?{$params}");
+	header("Location: checkfailed.php?${params}");
 	exit();
 }
 
-// get site information
-$query = "SELECT * FROM sites WHERE sites.id=$siteid";
-$result = $pdo->query($query);
-if (!$result) {
-  print_r(error_database());
+// get model info
+$stmt = $pdo->prepare("SELECT name, revision FROM models, modeltypes WHERE models.id=? AND modeltypes.id=models.modeltype_id");
+if (!$stmt->execute(array($modelid))) {
   die('Invalid query: ' . (error_database()));
 }
-$siteinfo = $result->fetch(PDO::FETCH_ASSOC);
-
-// get model information
-$query = "SELECT * FROM models WHERE models.id=$modelid";
-$result = $pdo->query($query);
-if (!$result) {
-  print_r(error_database());
-  die('Invalid query: ' . (error_database()));
-}
-$model = $result->fetch(PDO::FETCH_ASSOC);
-$pieces = explode(':', $model["model_path"], 2);
-$binary = $pieces[1];
+$row = $stmt->fetch(PDO::FETCH_ASSOC);
+$revision=$row['revision'];
+$modeltype=$row['name'];
+$stmt->closeCursor();
 
 // create the workflow execution
 $params=str_replace(' ', '', str_replace("\n", "", var_export($_REQUEST, true)));
@@ -162,7 +111,7 @@ $q->bindParam(':advanced_edit', $advanced_edit, PDO::PARAM_INT);
 if ($q->execute() === FALSE) {
   die('Can\'t insert workflow : ' . (error_database()));
 }
-if ($db_type == 'pgsql') {
+if ($db_bety_type == 'pgsql') {
   $workflowid=$pdo->lastInsertId('workflows_id_seq');
 } else {
   $workflowid=$pdo->lastInsertId();
@@ -175,7 +124,7 @@ if ($pdo->query("UPDATE workflows SET folder='${folder}' WHERE id=${workflowid}"
 }
 
 # if on localhost replace with localhost
-if ($hostname == gethostname()) {
+if ($hostname == $fqdn) {
 	$hostname="localhost";
 }
 
@@ -190,15 +139,34 @@ fwrite($fh, "<pecan>" . PHP_EOL);
 fwrite($fh, "  <outdir>${folder}</outdir>" . PHP_EOL);
 
 fwrite($fh, "  <database>" . PHP_EOL);
-fwrite($fh, "    <user>$db_username</user>" . PHP_EOL);
-fwrite($fh, "    <password>$db_password</password>" . PHP_EOL);
-fwrite($fh, "    <host>${db_hostname}</host>" . PHP_EOL);
-fwrite($fh, "    <dbname>${db_database}</dbname>" . PHP_EOL);
-if ($db_type == "mysql") {
-	fwrite($fh, "    <driver>MySQL</driver>" . PHP_EOL);	
-} else if ($db_type = "pgsql") {
-	fwrite($fh, "    <driver>PostgreSQL</driver>" . PHP_EOL);	
+
+fwrite($fh, "    <bety>" . PHP_EOL);
+fwrite($fh, "      <user>${db_bety_username}</user>" . PHP_EOL);
+fwrite($fh, "      <password>${db_bety_password}</password>" . PHP_EOL);
+fwrite($fh, "      <host>${db_bety_hostname}</host>" . PHP_EOL);
+fwrite($fh, "      <dbname>${db_bety_database}</dbname>" . PHP_EOL);
+if ($db_bety_type == "mysql") {
+	fwrite($fh, "      <driver>MySQL</driver>" . PHP_EOL);	
+} else if ($db_bety_type = "pgsql") {
+	fwrite($fh, "      <driver>PostgreSQL</driver>" . PHP_EOL);	
 }
+fwrite($fh, "      <write>true</write>" . PHP_EOL);
+fwrite($fh, "    </bety>" . PHP_EOL);
+
+if (isset($db_fia_database) && ($db_fia_database != "")) {
+	fwrite($fh, "    <fia>" . PHP_EOL);
+	fwrite($fh, "      <user>${db_fia_username}</user>" . PHP_EOL);
+	fwrite($fh, "      <password>${db_fia_password}</password>" . PHP_EOL);
+	fwrite($fh, "      <host>${db_fia_hostname}</host>" . PHP_EOL);
+	fwrite($fh, "      <dbname>${db_fia_database}</dbname>" . PHP_EOL);
+	if ($db_fia_type == "mysql") {
+		fwrite($fh, "      <driver>MySQL</driver>" . PHP_EOL);	
+	} else if ($db_fia_type = "pgsql") {
+		fwrite($fh, "      <driver>PostgreSQL</driver>" . PHP_EOL);	
+	}
+	fwrite($fh, "    </fia>" . PHP_EOL);
+}
+
 fwrite($fh, "  </database>" . PHP_EOL);
 
 $pft_id=1;
@@ -225,8 +193,6 @@ fwrite($fh, "    <variable>NPP</variable>" . PHP_EOL);
 fwrite($fh, "  </ensemble>" . PHP_EOL);
 
 fwrite($fh, "  <model>" . PHP_EOL);
-fwrite($fh, "    <name>$modeltype</name>" . PHP_EOL);
-fwrite($fh, "    <binary>${binary}</binary>" . PHP_EOL);
 fwrite($fh, "    <id>${modelid}</id>" . PHP_EOL);
 if ($modeltype == "ED2") {
 	fwrite($fh, "    <config.header>" . PHP_EOL);
@@ -237,15 +203,7 @@ if ($modeltype == "ED2") {
 	fwrite($fh, "        <output_month>12</output_month>      " . PHP_EOL);
 	fwrite($fh, "      </ed_misc> " . PHP_EOL);
 	fwrite($fh, "    </config.header>" . PHP_EOL);
-	fwrite($fh, "    <edin>ED2IN.r{$model['revision']}</edin>" . PHP_EOL);
-	fwrite($fh, "    <veg>${ed_veg}</veg>" . PHP_EOL);
-	fwrite($fh, "    <soil>${ed_soil}</soil>" . PHP_EOL);
-	if ($psscss == "FIA") {
-		fwrite($fh, "    <psscss generate=\"fia\">${folder}/fia.</psscss>" . PHP_EOL);
-	} else {
-		fwrite($fh, "    <psscss>$psscssfile</psscss>" . PHP_EOL);
-	}
-	fwrite($fh, "    <inputs>${ed_inputs}</inputs>" . PHP_EOL);
+	fwrite($fh, "    <edin>ED2IN.r${revision}</edin>" . PHP_EOL);
 	fwrite($fh, "    <phenol.scheme>0</phenol.scheme>" . PHP_EOL);
 }
 fwrite($fh, "  </model>" . PHP_EOL);
@@ -255,15 +213,16 @@ fwrite($fh, "  </workflow>" . PHP_EOL);
 fwrite($fh, "  <run>" . PHP_EOL);
 fwrite($fh, "    <site>" . PHP_EOL);
 fwrite($fh, "      <id>${siteid}</id>" . PHP_EOL);
-fwrite($fh, "      <name>{$siteinfo['sitename']}</name>" . PHP_EOL);
-fwrite($fh, "      <lat>{$siteinfo['lat']}</lat>" . PHP_EOL);
-fwrite($fh, "      <lon>{$siteinfo['lon']}</lon>" . PHP_EOL);
-if (($modeltype == "ED2") || ($modeltype == "SIPNET")) {
-	fwrite($fh, "      <met>$metfile</met>" . PHP_EOL);
-}
 fwrite($fh, "      <met.start>${metstart}</met.start>" . PHP_EOL);
 fwrite($fh, "      <met.end>${metend}</met.end>" . PHP_EOL);
 fwrite($fh, "    </site>" . PHP_EOL);
+fwrite($fh, "    <inputs>" . PHP_EOL);
+foreach($_REQUEST as $key => $val) {
+  if (substr($key, 0, 6) != "input_") continue;
+  $tag=substr($key, 6);
+  fwrite($fh, "      <${tag}.id>${val}</${tag}.id>" . PHP_EOL);
+}
+fwrite($fh, "    </inputs>" . PHP_EOL);
 fwrite($fh, "    <start.date>${startdate}</start.date>" . PHP_EOL);
 fwrite($fh, "    <end.date>${enddate}</end.date>" . PHP_EOL);
 fwrite($fh, "    <dbfiles>${output_folder}</dbfiles>" . PHP_EOL);
@@ -287,11 +246,6 @@ if ($email != "") {
 }
 fwrite($fh, "</pecan>" . PHP_EOL);
 fclose($fh); 
-
-# copy ED template
-#if ($modeltype == "ED2") {
-#	copy("template/{$model['model_name']}_r{$model['revision']}", "${folder}/ED2IN.template");
-#}
 
 # copy workflow
 copy("workflow.R", "${folder}/workflow.R");

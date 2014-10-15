@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<pecan>
+ <outdir>pecan</outdir>
+ 
+ <database>
+  <bety>
+    <user>bety</user>
+    <password>bety</password>
+    <host>localhost</host>
+    <dbname>bety</dbname>
+    <driver>PostgreSQL</driver>
+  </bety>
+ </database>
+
+ <bety>
+  <write>TRUE</write>
+ </bety>
+
+ <pfts>
+  <pft>
+   <name>salix</name>
+  </pft>
+ </pfts>
+
+ <meta.analysis />
+
+ <ensemble>
+  <variable>StemBiom</variable>
+ </ensemble>
+
+ <model>
+  <id>-1</id>
+  <name>BIOCRO</name>
+  <binary>/bin/true</binary>
+ </model>
+
+ <run>
+  <site>
+   <id>288</id>
+   <name>Sapelo Island</name>
+   <lat>31.40</lat>
+   <lon>-81.37</lon>
+  </site>
+  <start.date>2000-01-01 06:00:00</start.date>
+  <end.date>2009-12-31 05:59:00</end.date>
+  <host>
+   <name>localhost</name>
+  </host>
+ </run>
+</pecan>

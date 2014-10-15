@@ -46,11 +46,11 @@ run.meta.analysis.pft <- function(pft, iterations, dbfiles, dbcon) {
   dir.create(pathname, showWarnings = FALSE, recursive = TRUE)
 
   ## Convert data to format expected by pecan.ma
-  jagged.data <- jagify(trait.data)
-  trait.data  <- lapply(jagged.data, rename.jags.columns)
+  jagged.data <- lapply(trait.data, jagify)
+
   ## Check that data is consistent with prior
-  for(trait in names(trait.data)){
-    data.median    <- median(trait.data[[trait]]$Y)
+  for(trait in names(jagged.data)){
+    data.median    <- median(jagged.data[[trait]]$Y)
     prior          <- prior.distns[trait, ]
     p.data         <- p.point.in.prior(point = data.median, prior = prior)
     if(p.data <= 0.9995 & p.data >= 0.0005){
@@ -67,7 +67,7 @@ run.meta.analysis.pft <- function(pft, iterations, dbfiles, dbcon) {
   }
   
   ## Average trait data
-  trait.average <- sapply(trait.data,
+  trait.average <- sapply(jagged.data,
                           function(x){mean(x$Y, na.rm = TRUE)})
   
   ## Set gamma distribution prior
@@ -79,7 +79,7 @@ run.meta.analysis.pft <- function(pft, iterations, dbfiles, dbcon) {
                     tauB = apply(prior.variances, 1, function(x) min(0.01, x)))
   
   ### Run the meta-analysis
-  trait.mcmc  <- pecan.ma(trait.data, prior.distns, taupriors, j.iter = iterations, 
+  trait.mcmc  <- pecan.ma(jagged.data, prior.distns, taupriors, j.iter = iterations, 
                           settings, outdir = pft$outdir)
   ### Check that meta-analysis posteriors are consistent with priors
   for(trait in names(trait.mcmc)){
@@ -106,7 +106,7 @@ run.meta.analysis.pft <- function(pft, iterations, dbfiles, dbcon) {
   ### Save the meta.analysis output
   save(trait.mcmc, file = file.path(pft$outdir, 'trait.mcmc.Rdata'))
   
-  post.distns <- approx.posterior(trait.mcmc, prior.distns, trait.data, pft$outdir)
+  post.distns <- approx.posterior(trait.mcmc, prior.distns, jagged.data, pft$outdir)
   save(post.distns, file = file.path(pft$outdir, 'post.distns.Rdata'))
 
   ### save and store in database all results except those that were there already
@@ -128,7 +128,7 @@ run.meta.analysis.pft <- function(pft, iterations, dbfiles, dbcon) {
 ##' @title Invoke PEcAn meta.analysis
 ##' This will use the following items from setings:
 ##' - settings$pfts
-##' - settings$database
+##' - settings$database$bety
 ##' - settings$run$dbfiles
 ##' - settings$meta.analysis$update
 ##' @param pfts the list of pfts to get traits for

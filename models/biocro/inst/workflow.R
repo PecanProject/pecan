@@ -16,15 +16,15 @@ require(PEcAn.all)
 settings <- read.settings(system.file("extdata/pecan.biocro.xml",
                                       package = "PEcAn.BIOCRO"))
 #--------------------------------------------------------------------------------------------------#
-model <- settings$model$name
+model <- settings$model$type
 settings$meta.analysis$update <- TRUE
 
 #---------------- Run PEcAn workflow. -------------------------------------------------------------#
 # Query the trait database for data and priors
-settings$pfts <- get.trait.data(settings$pfts, settings$run$dbfiles, settings$database, settings$meta.analysis$update)
+settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)
 
 # Run the PEcAn meta.analysis
-run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database)
+run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database$bety)
 
 run.write.configs(model)        # Calls model specific write.configs e.g. write.config.ed.R
 ## load met data

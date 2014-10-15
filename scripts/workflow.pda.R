@@ -1,68 +1,126 @@
-##
-.libPaths("~/lib/R")
-library(coda)
-library(PEcAn.all)
+#    PEcAn Parameter Data Assimilation workflow via MCMC
+# 
+#
+#--------------------------------------------------------------------------------#
+# functions used to write STATUS used by history
+#--------------------------------------------------------------------------------#
+options(warn = 1, keep.source = TRUE, error = quote({
+  status.end("ERROR")
+}))
 
-settings <- read.settings("~/inputs/sylvania.SIPNET.xml")
+status.start <- function(name) {
+  cat(paste(name, format(Sys.time(), "%F %T"), sep="\t"), file=file.path(settings$outdir, "STATUS"), append=TRUE)      
+}
 
-## load L3 data
-data <- read.csv(settings$assim.batch$input)
-NEEo <- data$Fc   #umolCO2 m-2 s-1
-NEEq <- data$qf_Fc
-NEEo[NEEq > 0] <- NA
+status.end <- function(status="DONE") {
+  cat(paste("", format(Sys.time(), "%F %T"), status, "\n", sep="\t"), file=file.path(settings$outdir, "STATUS"), append=TRUE)      
+}
 
-## load data L4
-w = 48*4
-dataL4 <- read.csv("~/flux/USSyv2002_L4_h.txt")
-NEEfil <- dataL4$NEE_st_fMDS; NEEfil[NEEfil < -1000] <- NA
-pdf("SylvaniaFlux.pdf",width=11,height=8.5)
-  par(mfrow=c(1,2))
-  plot(dataL4$DoY,NEEfil,xlab="Day of year",ylab="umol/m2/s",type='l',lwd=1.5)
-  lines(dataL4$DoY,filter(NEEfil,rep(1/w,w)),lwd=1.5,col=2)
-  plot(sort(unique(dataL4$Hour)),tapply(NEEfil,dataL4$Hour,mean,na.rm=TRUE),type='l',xlab="hour",ylab="umol/m2/s",lwd=2)
-dev.off()
-NEEhr <- tapply(NEEfil,rep(1:(length(NEEfil)/2),each=2),mean,na.rm=TRUE)  ##use gapfilled for plotting
-NEEhr[is.nan(NEEhr)] <- NA
+#---------------- Load libraries. -----------------------------------------------------------------#
+require(PEcAn.all)
+#--------------------------------------------------------------------------------------------------#
+#
+# Code to copy an existing settings file:
+# clean.settings("~/demo/demo.xml","~/demo.pda/demo.xml" )
+#
+#---------------- Load PEcAn settings file. -------------------------------------------------------#
+# Open and read in settings file for PEcAn run.
+settings <- read.settings("~/demo.pda/demo.xml")
+#--------------------------------------------------------------------------------------------------#
 
-## pre-assimilation ensemble analysis
-ens <- read.ensemble.ts("SIPNET")
-ens$NEE <- ens$NEE*1000/12*1e6/10000/86400/365  #convert kgC/ha/yr -> umol/m2/s
-ensemble.ts(ens,observations=-NEEhr,window=24*3)  ## make ensemble plots
-  
-## Define vars
-vars = NA
-jvar = rep(0.5,22)
-params = NULL
+# start with a clean status
+unlink(file.path(settings$outdir, "STATUS"))
 
-## MCMC
-settings$assim.batch$iter=1500
+#---------------- Open Database Connection -------------------------------------------------------#
+if(settings$database$bety$write){
+  con <- try(db.open(settings$database$bety), silent=TRUE)
+  if(is.character(con)){
+    con <- NULL
+  }
+} else {
+  con <- NULL
+}
 
-params <- pda.mcmc("SIPNET",vars=vars,jvar=jvar,params=params)
+#---------------- Load Priors ----------------------------------------------------------------------#
+status.start("PRIORS")
+if(is.null(settings$assim.batch$prior)){
+  pft.id =  db.query(paste0("SELECT id from pfts where name = '",settings$pfts$pft$name,"'"),con)
+  priors =  db.query(paste0("SELECT * from posteriors where pft_id = ",pft.id),con)
+  ## by default, use the most recent posterior as the prior
+  settings$assim.batch$prior = priors$id[which.max(priors$updated_at)]
+}
+prior.db = db.query(paste0("SELECT * from dbfiles where container_type = 'Posterior' and container_id = ",
+                                 settings$assim.batch$prior),con)
+prior.db = prior.db[grep("post.distns.Rdata",prior.db$file_name),]
+load(file.path(prior.db$file_path,"post.distns.Rdata"))
+prior = post.distns
+status.end()
 
+#---------------- Define Variables -------------------------------------------------------#
+var.names = "Amax"           ## variables to be fit
+var.ids = db.query(paste0("SELECT id from variables where name = '",var.names,"'"),con)
+var.rows = which(row.names(prior) %in% var.names)
+np = nrow(prior)
+jvar = rep(0.5,np)  ## jump variance
+params = NULL       ## MCMC matrix
+
+
+#--------------- Assimilation -------------------------------------------------------#
+status.start("MCMC")
+params <- pda.mcmc(settings,prior,var.names=var.names,jvar=jvar,params=params)
+status.end()
+
+
+#--------------- MCMC Post Process -------------------------------------------------------#
+status.start("POSTERIOR")
+pdf(file.path(settings$pfts$pft$outdir,"mcmc.diagnostics.pdf"))
+sink(file.path(settings$pfts$pft$outdir,"mcmc.log"))
 ## Assess MCMC output
-burnin = 1
-dm <- as.mcmc(params[burnin:nrow(params),vars])
+library(coda)
+burnin = min(2000,0.2*nrow(params))
+params.subset = as.data.frame(params[burnin:nrow(params),var.rows])
+names(params.subset) <- rownames(prior)[var.rows]
+dm <- as.mcmc(params.subset)
+
 plot(dm)
 summary(dm)
-crosscorr(dm)
-pairs(params[,vars])
+if(length(var.rows)>1){
+  crosscorr(dm)
+  pairs(params.subset)
+}
 
 a = 1-rejectionRate(dm)
-a = 1-rejectionRate(as.mcmc(params[nrow(params)-49:0,vars]))
-
+print("Acceptance Rates")
+print(a)
+sink()
+dev.off()
 ## update jump variance
-jvar[vars] = jvar[vars]*(a/0.4)
+# a = 1-rejectionRate(as.mcmc(params[nrow(params)-49:0,var.rows]))
+# jvar[var.rows] = jvar[var.rows]*(a/0.4)
 
-save.image(paste(settings$outdir,"/pda.mcmc.Rdata",sep=""))
 
-############  POST MCMC ##################
+#---------------- Write final estimate to Posteriors table. ---------------------------------------#
 
-###*** CHANGE OUTDIRS BEFORE GOING TO THE NEXT STEPS ***
-### Also, revert met file back to 2002-2006
+# create a new Posteriors DB entry
+now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+db.query(paste0("INSERT INTO posteriors (pft_id, created_at, updated_at) VALUES (", pft.id, ", '", now, "', '", now, "')"), con)
+posteriorid <- db.query(paste0("SELECT id FROM posteriors WHERE pft_id=", pft.id, " AND created_at='", now, "'"), con)[['id']]
+
+## Save raw MCMC
+filename = file.path(settings$outdir,"pda.mcmc.Rdata")
+save(params,file=filename)
+dbfile.insert(filename, 'Posterior', posteriorid, con)
+
+## save named distributions
+filename = file.path(settings$pfts$pft$outdir, 'post.distns.Rdata')
+post.distns <- approx.posterior(params.subset, prior, outdir=settings$pfts$pft$outdir)
+save(post.distns, file = filename)
+dbfile.insert(filename, 'Posterior', posteriorid, con)
 
 ## coerce parameter output into the same format as trait.mcmc
 pname <- rownames(post.distns)
-for(i in vars){
+trait.mcmc <- list()
+for(i in var.rows){
   beta.o <- array(params[,i],c(nrow(params),1))
   colnames(beta.o) = "beta.o"
   if(pname[i] %in% names(trait.mcmc)){
@@ -73,20 +131,25 @@ for(i in vars){
     names(trait.mcmc)[k] <- pname[i]      
   }
 }
-## save updated parameter distributions as trait.mcmc and prior.distns
+## save updated parameter distributions as trait.mcmc
 ## so that they can be read by the ensemble code
-save(trait.mcmc,file=paste(settings$pfts$pft$outdir, 'trait.mcmc.Rdata', sep=''))
-prior.distns <- approx.posterior(trait.mcmc,post.distns,outdir=settings$pfts$pft$outdir)
-save(prior.distns, file = paste(settings$pfts$pft$outdir, 'prior.distns.Rdata', sep = ''))
+filename = file.path(settings$pfts$pft$outdir, 'trait.mcmc.Rdata')
+save(trait.mcmc,file=filename)
+dbfile.insert(filename, 'Posterior', posteriorid, con)
+status.end()
+#--------------------------------------------------------------------------------------------------#
 
 
-## Re-run updated ensemble analysis, sensitivity analysis,  and variance decomp
-run.write.configs(model)        # Calls model specific write.configs e.g. write.config.ed.R
-start.model.runs(model)         # Start ecosystem model runs
-get.results(settings)           # Get results of model runs
-run.sensitivity.analysis()      # Run sensitivity analysis and variance decomposition on model output
+#--------------------------------------------------------------------------------------------------#
+### PEcAn workflow run complete
+status.start("FINISHED")
+if (settings$workflow$id != 'NA') {
+  query.base(paste("UPDATE workflows SET finished_at=NOW() WHERE id=", settings$workflow$id, "AND finished_at IS NULL"),con)
+}
+status.end()
+db.close(con)
+##close any open database connections
+for(i in dbListConnections(PostgreSQL())) db.close(i)
+print("---------- PEcAn Workflow Complete ----------")
+#--------------------------------------------------------------------------------------------------#
 
-## plot
-ens.post <- read.ensemble.ts("SIPNET")
-ens.post$NEE <- ens$NEE*1000/12*1e6/10000/86400/365  #convert kgC/ha/yr -> umol/m2/s
-ensemble.ts(ens.post,observations=-NEEhr,window=24*3)

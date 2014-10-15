@@ -11,8 +11,9 @@
 .utils.logger$filename <- NA
 .utils.logger$console  <- TRUE
 .utils.logger$stderr   <- TRUE
-.utils.logger$quit     <- !interactive()
+.utils.logger$quit     <- FALSE
 .utils.logger$level    <- 0
+.utils.logger$width    <- ifelse(getOption("width")<10, getOption("width"), getOption("width")-5)
 
 ##' Prints a debug message.
 ##' 
@@ -81,13 +82,13 @@ logger.error <- function(msg, ...) {
 ##' Prints an severe message and stops execution.
 ##' 
 ##' This function will print a message and stop execution of the code. This
-##' should only be used if the application should terminate. If the session is
-##' non-interactive the error code can be specified which is returned to the shell.
+##' should only be used if the application should terminate. 
 ##' 
-##' set \code{\link{logger.setQuitOnSevere(FALSE)}}. To avoid terminating the session. 
+##' set \code{\link{logger.setQuitOnSevere(FALSE)}}. To avoid terminating
+##' the session. This is set by default to TRUE if interactive or running
+##' inside Rstudio.
 ##'
 ##' @param msg the message that should be printed.
-##' @param errorcode the error code to return when the session quits.
 ##' @param ... any additional text that should be printed.
 ##' @export
 ##' @author Rob Kooper
@@ -95,7 +96,7 @@ logger.error <- function(msg, ...) {
 ##' \dontrun{
 ##' logger.severe("missing parameters")
 ##' }
-logger.severe <- function(msg, errorcode=1, ...) {
+logger.severe <- function(msg, ...) {
 	logger.message("SEVERE", msg, ...)
 
 	# run option
@@ -106,7 +107,7 @@ logger.severe <- function(msg, errorcode=1, ...) {
 
 	# quit if not interactive, otherwise use stop
 	if (.utils.logger$quit) {
-     	quit(save="no", status=errorcode)
+     	quit(save="no", status=1)
     } else {
 		stop(paste(msg, ...))
     }
@@ -134,13 +135,23 @@ logger.message <- function(level, msg, ...) {
 	    if (length(func) == 0) {
 	    	func <- "console"
 	    }
-		text <- sprintf("%s %-6s [%s] : %s\n", Sys.time(), level, func, paste(c(msg, ...), collapse=" "))
+                
+                stamp.text <- sprintf("%s %-6s [%s] :", Sys.time(), level, func)
+                long.msg <- paste(c(msg, ...), collapse=" ")
+                if(nchar(long.msg) > 20){
+                    new.msg <- paste("\n", strwrap(long.msg, width=.utils.logger$width, indent=2, exdent=2), collapse = " ")
+                } else {
+                    new.msg <- long.msg
+                }
+                text <- paste(stamp.text, new.msg, "\n")
+
 		if (.utils.logger$console) {
 			if (.utils.logger$stderr) {
 				cat(text, file=stderr())
 			} else {
 				cat(text, file=stdout())
 			}
+
 		}
 		if (!is.na(.utils.logger$filename)) {
 			cat(text, file=.utils.logger$filename, append=TRUE)
@@ -258,10 +269,10 @@ logger.setOutputFile <- function(filename) {
 	.utils.logger$filename <- filename
 }
 
-##' Configure wheter severe should quit.
+##' Configure whether severe should quit.
 ##' 
 ##' The default is for a non-interactive session to quit. Setting this to false is
-##' especially useful for running tests when placed in \codePinst/tests/test.<fn>.R}, 
+##' especially useful for running tests when placed in \code{inst/tests/test.<fn>.R}, 
 ##' but is not passed from \code{tests/run.all.R}.
 ##'
 ##' @param severeQuits should R quit on a severe error.
@@ -273,4 +284,20 @@ logger.setOutputFile <- function(filename) {
 ##' }
 logger.setQuitOnSevere <- function(severeQuits) {
 	.utils.logger$quit = severeQuits
+}
+
+##' Configure the number of chars per line
+##' 
+##' The default is for 60 chars per line. Setting this to any value will
+##' wrap the line when printing a message at that many chars.
+##'
+##' @param width number of chars to print before wrapping to next line.
+##' @export
+##' @author David LeBauer
+##' @examples
+##' \dontrun{
+##' logger.setWidth(70)
+##' }
+logger.setWidth <- function(width) {
+  .utils.logger$width = width
 }

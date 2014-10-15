@@ -30,7 +30,13 @@
 ##' \dontrun{
 ##'   dbfile.input.insert('trait.data.Rdata', siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
 ##' }
+
 dbfile.input.insert <- function(filename, siteid, startdate, enddate, mimetype, formatname, parentid=NA, con, hostname=fqdn()) {
+  
+  name <- tail(unlist(strsplit(filename,"/")),2)[[1]]
+
+  if (hostname == "localhost") hostname=fqdn();
+
   # find appropriate format
   formatid <- db.query(paste0("SELECT id FROM formats WHERE mime_type='", mimetype, "' AND name='", formatname, "'"), con)[['id']]
   if (is.null(formatid)) {
@@ -45,17 +51,18 @@ dbfile.input.insert <- function(filename, siteid, startdate, enddate, mimetype, 
   } else {
     parent <- paste0(" AND parent_id=", parentid)
   }
-
+  
   # find appropriate input
-  inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, " AND start_date='", startdate, "' AND end_date='", enddate, "'" , parent, ";"), con)[['id']]
+inputid <- db.query(paste0("SELECT * FROM inputs WHERE name='", name,"'"), con)[['id']]
   if (is.null(inputid)) {
     # insert input
-    db.query(paste0("INSERT INTO inputs (site_id, format_id, created_at, updated_at, start_date, end_date) VALUES (",
-                    siteid, ", ", formatid, ", NOW(), NOW(), '", startdate, "', '", enddate, "')"), con)
-    inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, " AND start_date='", startdate, "' AND end_date='", enddate, "'" , parent, ";"), con)[['id']]
+    db.query(paste0("INSERT INTO inputs (site_id, format_id, created_at, updated_at, start_date, end_date, name) VALUES (",
+                    siteid, ", ", formatid, ", NOW(), NOW(), '", startdate, "', '", enddate,"','", name, "')"), con)
+    inputid <- db.query(paste0("SELECT * FROM inputs WHERE name='", name,"'"), con)[['id']]
   }
+  dbfileid <- dbfile.insert(filename, 'Input', inputid, con, hostname)
 
-  invisible(dbfile.insert(filename, 'Input', inputid, con, hostname))
+  invisible(list(input.id = inputid, dfbile.id = dbfileid))
 }
 
 ##' Function to check to see if a file exists in the dbfiles table as an input
@@ -81,6 +88,8 @@ dbfile.input.insert <- function(filename, siteid, startdate, enddate, mimetype, 
 ##'   dbfile.input.check(siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
 ##' }
 dbfile.input.check <- function(siteid, startdate, enddate, mimetype, formatname, parentid=NA, con, hostname=fqdn()) {
+  if (hostname == "localhost") hostname=fqdn();
+
   # find appropriate format
   formatid <- db.query(paste0("SELECT id FROM formats WHERE mime_type='", mimetype, "' AND name='", formatname, "'"), con)[['id']]
   if (is.null(formatid)) {
@@ -124,6 +133,8 @@ dbfile.input.check <- function(siteid, startdate, enddate, mimetype, formatname,
 ##'   dbfile.posterior.insert('trait.data.Rdata', pft, 'application/x-RData', 'traits', dbcon)
 ##' }
 dbfile.posterior.insert <- function(filename, pft, mimetype, formatname, con, hostname=fqdn()) {
+  if (hostname == "localhost") hostname=fqdn();
+
   # find appropriate pft
   pftid <- db.query(paste0("SELECT id FROM pfts WHERE name='", pft, "'"), con)[['id']]
   if (is.null(pftid)) {
@@ -169,6 +180,8 @@ dbfile.posterior.insert <- function(filename, pft, mimetype, formatname, con, ho
 ##'   dbfile.posterior.check(pft, 'application/x-RData', 'traits', dbcon)
 ##' }
 dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname=fqdn()) {
+  if (hostname == "localhost") hostname=fqdn();
+
   # find appropriate pft
   pftid <- db.query(paste0("SELECT id FROM pfts WHERE name='", pft, "'"), con)[['id']]
   if (is.null(pftid)) {
@@ -207,6 +220,8 @@ dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname=fqdn
 ##'   dbfile.insert('somefile.txt', 'Input', 7, dbcon)
 ##' }
 dbfile.insert <- function(filename, type, id, con, hostname=fqdn()) {
+  if (hostname == "localhost") hostname=fqdn();
+
   # find appropriate host
   hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", hostname, "'"), con)[['id']]
   if (is.null(hostid)) {
@@ -217,7 +232,7 @@ dbfile.insert <- function(filename, type, id, con, hostname=fqdn()) {
   
   now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
   db.query(paste0("INSERT INTO dbfiles (container_type, container_id, file_name, file_path, machine_id, created_at, updated_at) VALUES (",
-                  "'", type, "', ", id, ", '", basename(filename), "', '", dirname(filename), "', ", hostid, ", '", now, "', '", now, "')"), con)
+                  "'", type, "', ", id, ", '", basename(filename), "', '", dirname(filename), "/', ", hostid, ", '", now, "', '", now, "')"), con)
 
   invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, "' AND container_id=", id, " AND created_at='", now, "' ORDER BY id DESC LIMIT 1"), con)[['id']])
 }
@@ -239,6 +254,8 @@ dbfile.insert <- function(filename, type, id, con, hostname=fqdn()) {
 ##'   dbfile.check('Input', 7, dbcon)
 ##' }
 dbfile.check <- function(type, id, con, hostname=fqdn()) {
+  if (hostname == "localhost") hostname=fqdn();
+
   # find appropriate host
   hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", hostname, "'"), con)[['id']]
   if (is.null(hostid)) {
@@ -247,3 +264,84 @@ dbfile.check <- function(type, id, con, hostname=fqdn()) {
 
   invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, "' AND container_id=", id, " AND machine_id=", hostid), con))  
 }
+
+
+##' Function to return full path to a file using dbfiles table
+##'
+##' This will check the dbfiles and machines to see if the file exists,
+##' and return the full filename with path to the first one found. If 
+##' none is found it will return NA.
+##'
+##' @name dbfile.file
+##' @title Return file from the dbfiles tables
+##' @param type the type of dbfile (Input, Posterior)
+##' @param id the id of container type
+##' @param con database connection object
+##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
+##' @return filename on host, or NA if none found
+##' @author Rob Kooper
+##' @export
+##' @examples
+##' \dontrun{
+##'   dbfile.file('Input', 7, dbcon)
+##' }
+dbfile.file <- function(type, id, con, hostname=fqdn()) {
+  if (hostname == "localhost") hostname=fqdn();
+  
+  files <- dbfile.check(type, id, con, hostname)
+
+  if(nrow(files) > 1) {
+    logger.warn("multiple files found for", id, "returned; using the first one found")
+    invisible(file.path(files[1, 'file_path'], files[1, 'file_name']))
+  } else if (nrow(files) == 1) {
+    invisible(file.path(files[1, 'file_path'], files[1, 'file_name']))
+  } else {
+    logger.warn("no files found for ", id, "in database")
+    invisible(NA)
+  }
+}
+
+##' Function to return id to containter type given a filename.
+##'
+##' This will check the dbfiles and machines to see if the file exists,
+##' and return the id of the container type of the first one found. If 
+##' none is found it will return NA.
+##'
+##' @name dbfile.file
+##' @title Return id from the dbfiles tables
+##' @param type the type of dbfile (Input, Posterior)
+##' @param file the full pathname to the file
+##' @param con database connection object
+##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
+##' @return filename on host, or NA if none found
+##' @author Rob Kooper
+##' @export
+##' @examples
+##' \dontrun{
+##'   dbfile.id('Model', '/usr/local/bin/sipnet', dbcon)
+##' }
+dbfile.id <- function(type, file, con, hostname=fqdn()) {
+  if (hostname == "localhost") hostname=fqdn();
+
+  # find appropriate host
+  hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", hostname, "'"), con)[['id']]
+  if (is.null(hostid)) {
+    return(invisible(NA))
+  }
+  
+  # find file
+  file_name <- basename(file)
+  file_path <- dirname(file)
+  ids <- db.query(paste0("SELECT container_id FROM dbfiles WHERE container_type='", type, "' AND file_path='", file_path, "' AND file_name='", file_name, "' AND machine_id=", hostid), con)
+  
+  if(nrow(ids) > 1) {
+    logger.warn("multiple ids found for", file, "returned; using the first one found")
+    invisible(ids[1, 'container_id'])
+  } else if (nrow(ids) == 1) {
+    invisible(ids[1, 'container_id'])
+  } else {
+    logger.warn("no id found for", file, "in database")
+    invisible(NA)
+  }
+}
+

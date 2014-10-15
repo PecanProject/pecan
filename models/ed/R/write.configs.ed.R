@@ -127,7 +127,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   
   jobsh <- gsub('@SITE_LAT@', settings$run$site$lat, jobsh)
   jobsh <- gsub('@SITE_LON@', settings$run$site$lon, jobsh)
-  jobsh <- gsub('@SITE_MET@', settings$run$site$met, jobsh)
+  jobsh <- gsub('@SITE_MET@', settings$run$inputs$met, jobsh)
   
   jobsh <- gsub('@SCRATCH_COPY@', copyscratch, jobsh)
   jobsh <- gsub('@SCRATCH_CLEAR@', clearscratch, jobsh)
@@ -221,7 +221,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
       if (!is.null(settings$model$revision)) {
         filename <- system.file(paste0("ED2IN.r", settings$model$revision), package = "PEcAn.ED2")
       } else {
-        model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database)
+        model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database$bety)
         filename <- system.file(paste0("ED2IN.r", model$revision), package = "PEcAn.ED2")
       }
     }
@@ -237,7 +237,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
 
   ed2in.text <- gsub('@SITE_LAT@', settings$run$site$lat, ed2in.text)
   ed2in.text <- gsub('@SITE_LON@', settings$run$site$lon, ed2in.text)
-  ed2in.text <- gsub('@SITE_MET@', settings$run$site$met, ed2in.text)
+  ed2in.text <- gsub('@SITE_MET@', settings$run$inputs$met, ed2in.text)
   ed2in.text <- gsub('@MET_START@', metstart, ed2in.text)
   ed2in.text <- gsub('@MET_END@', metend, ed2in.text)
 
@@ -264,10 +264,13 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   }
   
   ##----------------------------------------------------------------------
-  ed2in.text <- gsub('@SITE_PSSCSS@', settings$model$psscss, ed2in.text)
-  ed2in.text <- gsub('@ED_VEG@', settings$model$veg, ed2in.text)
-  ed2in.text <- gsub('@ED_SOIL@', settings$model$soil, ed2in.text)
-  ed2in.text <- gsub('@ED_INPUTS@', settings$model$inputs, ed2in.text)
+  ed2in.text <- gsub('@SITE_PSSCSS@', dirname(settings$run$inputs$site), ed2in.text)
+  ed2in.text <- gsub('@ED_VEG@', settings$run$inputs$veg, ed2in.text)
+  ed2in.text <- gsub('@ED_SOIL@', settings$run$inputs$soil, ed2in.text)
+  ed2in.text <- gsub('@ED_LU@', settings$run$inputs$lu, ed2in.text)
+  ed2in.text <- gsub('@ED_THSUM@', ifelse(str_sub(settings$run$inputs$thsum, -1) == "/",
+                                   settings$run$inputs$thsum,
+                                   paste0(settings$run$inputs$thsum, "/")), ed2in.text)
   
   ##----------------------------------------------------------------------
   ed2in.text <- gsub('@START_MONTH@', format(startdate, "%m"), ed2in.text)

@@ -3,19 +3,19 @@
   <outdir>pecan</outdir>
 
   <database>
-    <user>bety</user>
-    <password>bety</password>
-    <host>localhost</host>
-    <dbname>bety</dbname>
+    <bety>
+      <driver>PostgreSQL</driver>
+      <user>bety</user>
+      <password>bety</password>
+      <host>localhost</host>
+      <dbname>bety</dbname>
+      <write>FALSE</write>
+    </bety>
   </database>
-
-  <bety>
-    <write>FALSE</write>
-  </bety>
 
   <pfts>
     <pft>
-      <name>sipnet.temperate.coniferous</name> 
+      <name>temperate.coniferous</name> 
     </pft>
   </pfts>
 
@@ -33,14 +33,16 @@
 
   <model>
     <binary>/usr/local/bin/sipnet.runk</binary>
-    <name>SIPNET</name>
+    <type>SIPNET</type>
   </model>
 
   <run>
     <site>
       <id>772</id>
-      <met>/home/carya/sites/niwot/niwot.clim</met>
     </site>
+    <inputs>
+      <met>/home/carya/sites/niwot/niwot.clim</met>
+    </inputs>
     <start.date>2002-01-01 00:00:00</start.date>
     <end.date>2005-12-31 00:00:00</end.date>
     <host>

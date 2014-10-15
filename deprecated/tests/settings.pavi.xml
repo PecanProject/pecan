@@ -49,10 +49,12 @@
   <pecanDir>~/pecan/</pecanDir>
   <outdir>~/out/ebifarm/fast/</outdir>
   <database>
-    <userid>ebi_analys_user</userid>
-    <passwd>b742xsAu</passwd>
-    <location>ebi-forecast</location>
-    <name>ebi_analysis</name>
+    <bety>
+      <userid>ebi_analys_user</userid>
+      <passwd>b742xsAu</passwd>
+      <location>ebi-forecast</location>
+      <name>ebi_analysis</name>
+    </bety>
   </database>
   <run>
     <site>

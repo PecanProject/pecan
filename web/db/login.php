@@ -1,7 +1,7 @@
 <?php
 require("common.php");
 
-print_header("Login");
+print_header("");
 print_menu("Login");
 
 $msg="";

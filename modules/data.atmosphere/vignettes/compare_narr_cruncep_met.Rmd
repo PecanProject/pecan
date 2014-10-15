@@ -1,0 +1,346 @@
+
+Comparing met data from various sources 
+========================================================
+
+## Sources:
+
+* `ebifarm` local met station *Data*
+  * point location (40.08$^o$ N, -88.2$^o$ W), energy farm, Urbana, IL
+* `narr` [NARR daily](http://www.esrl.noaa.gov/psd/data/gridded/data.narr.html] 
+  * 0.3$^o$ grid daily 1979-2013
+* `narr3h` NARR from MsTMIP
+  * 0.25$^o$ grid 3-hourly 1979-2010
+* `cruncep` CRU-NCEP from MsTMIP
+  * 0.5$^o$ grid 6 hourly 1901-2010
+  * input record in BETYdb: https://www.betydb.org/inputs/280
+  
+## Variables
+
+* RH / Relative Humidity (%)
+* PAR / Solar Radiation (umol/h/m2)
+* Temperature (C)
+* Wind Speed (m/s)
+* Precipitation (mm/h)
+
+
+_Note_ there is obviously an error in the downscaling method used to generate hourly NARR from daily. This is an obsolete method (since we now have sub-daily, and if we are going to correct this, it should be in the version of weachDT currently in PEcAn.data.atmosphere)
+  
+Comparing 'data' (ebifarm) with gridded products
+
+TODO: clean up figure titles, labels, write explanations
+
+
+```{r loading-libraries}
+library(PEcAn.data.atmosphere)
+theme_set(theme_bw())
+data(narr_cruncep_ebifarm)
+
+knitr::opts_chunk$set(echo=FALSE, cache = TRUE, comment=NA, tidy=TRUE, warning=FALSE, results = 'hide', 
+                      fig.width = 10, fig.height = 4)
+```
+
+### Extracting data
+
+These data are on biocluster.igb.illinois.edu, most 10-100s GB. 
+Scripts used to download and convert these data to PEcAn CF format, optimized for time series extraction, are on [GitHub ebimodeling/model-drivers](https://github.com/ebimodeling/model-drivers).
+
+```{r extract-data, eval=FALSE}
+
+Lat <- 40.08
+Lon <- -88.2
+ 
+narr <- data.table(getNARRforBioCro(lat = Lat, lon = Lon, year = 2010))
+
+## NARR 3 hourly
+met.nc <- nc_open("/home/groups/ebimodeling/met/narr/threehourly/all/all.nc")
+narr3h <- get.weather(lat = Lat, lon =Lon, met.nc = met.nc, start.date = "2010-01-01", end.date="2010-12-31")
+###HACK
+narr3h$RH <- narr3h[,qair2rh(qair = RH, temp = DailyTemp.C)]
+
+met.nc <- nc_open("/home/groups/ebimodeling/met/cruncep/vars2/all.nc")
+cruncep <- get.weather(lat = Lat, lon =Lon, met.nc = met.nc, start.date = "2010-01-01", end.date="2010-12-31")
+###HACK
+cruncep$RH <- cruncep[,qair2rh(qair = RH, temp = DailyTemp.C)]
+
+ebifarm <- data.table(read.csv("/home/groups/ebimodeling/ebifarm_met_2009_2011.csv"), key = "yeardoytime")
+ebifarm.sun <- data.table(read.csv("/home/groups/ebimodeling/ebifarm_flux_2010.csv"), key = "yeardoytime")
+ebifarm <- merge(ebifarm, ebifarm.sun[,list(yeardoytime, solar = PARDown_Avg)])
+
+time <- ebifarm[,list(year = substr(yeardoytime, 1, 4), doy = substr(yeardoytime, 5,7), hour = paste0(substr(yeardoytime, 8,9), ifelse(substr(yeardoytime, 10,10) == "0", ".0", ".5")))]
+time <- data.table(sapply(time, as.numeric))
+ebifarm <- cbind(time, ebifarm[,list(Temp = Tair_f, RH = RH_f, precip = rain, wind = ws, solar = solar)])
+ebifarm <- ebifarm[year == 2010 & !grepl(".5", hour)]
+
+getdate <- function(dataset, timezone = hours(0)){
+    date <- ymd_hms("2009-12-31 00:00:00") + days(dataset$doy) + hours(dataset$hour) + timezone
+    return(data.table(cbind(date, dataset)))
+}
+ebifarm <- getdate(ebifarm)
+narr <- getdate(narr)
+narr3h <- getdate(narr3h, timezone = hours(-6))
+cruncep <- getdate(cruncep, timezone = hours(-6))
+
+cruncep$source <- "cruncep"
+narr$source <- "narr"
+narr3h$source <- "narr3h"
+ebifarm$source <- "ebifarm"
+
+met <- rbind(cruncep[,list(source, date, temp = DailyTemp.C, RH, wind = WindSpeed, precip, solar = solarR)],
+             narr[,list(source, date, temp = Temp, RH, wind = WS, precip, solar = SolarR)],
+             narr3h[,list(source, date, temp = DailyTemp.C, RH, wind = WindSpeed, precip, solar = solarR)],
+             ebifarm[,list(source, date, temp = Temp, RH = RH/100, wind, precip, solar = solar)])
+
+```
+
+```{r reorder-met}
+met$source <- factor(met$source,
+         levels = c("ebifarm", "narr3h", "narr", "cruncep"))
+```
+
+### Solar Radiation (PAR) vs Temp
+
+
+```{r  solar-v-temp}
+
+ggplot() + geom_point(data = met, aes(solar, temp, color = month(date)), alpha = 0.1) + 
+  facet_wrap(~source, nrow=1) + 
+  scale_color_gradientn(colours = c("Red", "Orange", "Yellow", "Green", "Blue"))
+
+## ggplot() + geom_point(data = met, aes(solar, temp, color = hour(date)), alpha = 0.1) + facet_wrap(~source, nrow=1) + scale_color_gradientn(colours = c("Red", "Orange", "Yellow", "Green", "Blue"))
+
+```
+
+
+### RH vs Temp
+
+```{r  RH-v-Temp}
+
+ggplot() + geom_point(data = met, aes(RH, temp, color = month(date)), alpha = 0.1) + 
+  facet_wrap(~source, nrow=1) + 
+  scale_color_gradientn(colours = c("Red", "Orange", "Yellow", "Green", "Blue"))
+```
+
+
+### Solar Radiation and Precipitation: NARR daily vs 3 hourly
+
+```{r  par-v-precip}
+
+ggplot() + geom_point(data = met[solar > 1 & precip > 0.1], aes(solar, precip, color = month(date)), alpha = 0.1) + 
+  facet_wrap(~source, nrow=1) + 
+  scale_color_gradientn(colours = c("Red", "Orange", "Yellow", "Green", "Blue")) + 
+  scale_x_log10() + scale_y_log10()
+
+```
+
+### Precipitation v Temperature 
+
+```{r  precip-v-temp}
+
+ggplot() + geom_point(data = met, aes(precip, temp, color = month(date)), alpha = 0.1) + 
+  facet_wrap(~source, nrow=1) + 
+  scale_color_gradientn(colours = c("Red", "Orange", "Yellow", "Green", "Blue")) + 
+  scale_x_log10()
+
+```
+
+
+### Compare Solar Radiation
+
+```{r solar}
+s <- met[,list(date, day = yday(date), solar, source )]
+s <- s[,list(date = min(date), solar = max(solar)), by = 'day,source']
+
+
+allsolar <- merge(ebifarm[,list(obs = max(solar)),by=date],
+                  met[source == "narr",list(narr=max(solar)),by=date],
+                  by='date')
+allsolar <- merge(allsolar,    met[source == "cruncep",list(cruncep=max(solar), day = min(date)),key=date],by='date')
+allsolar <- merge(allsolar,    met[source == "narr3h",list(narr3h=max(solar), day = min(date)),key=date],by='date')
+allsolar$day <- yday(allsolar$date)
+
+ggplot() + geom_point(data = met[month(date) >5 & month(date)<9 & solar > 100], aes(date, solar, color = hour(date)), alpha = 0.1) + 
+  facet_wrap(~source, nrow=1) + 
+  scale_color_gradientn(colours = c("Red", "Orange", "Yellow", "Green", "Blue")) + 
+  scale_y_log10()
+
+
+```
+
+### Max Solar Radiation for June 1-Aug31 2010
+
+```{r  max-solar-plot}
+maxsolarplot <- ggplot() +
+    geom_line(data = s, aes(date, solar, color = source)) +
+    xlim(ymd("2010-06-01"), ymd("2010-08-31")) + ggtitle("Max Daily PAR")
+print(maxsolarplot)
+```
+
+### Max Solar Radiation (PAR) Model v OBS
+
+
+```{r create-plots, fig.height = 3, fig.width = 12}
+maxsolar <- allsolar[,list(obs=max(obs),cruncep=max(cruncep), narr = max(narr), narr3h=max(narr3h), date = min(date)), by = day]
+
+narrsolar <- ggplot() + geom_point(data = maxsolar, aes(obs, narr, color = month(date)), alpha = 0.3)+ scale_color_gradientn(colours = c("Red", "Orange", "Yellow", "Green", "Blue"))+ geom_line(aes(0:2000, 0:2000)) + xlim(c(0,2100)) + ylim(c(0,2100))
+
+cruncepsolar <- ggplot() + geom_point(data = maxsolar, aes(obs, cruncep, color = month(date)), alpha = 0.3) + geom_line(aes(0:2000, 0:2000)) +  scale_color_gradientn(colours = c("Red", "Orange", "Yellow", "Green", "Blue"))+ geom_line(aes(0:2000, 0:2000)) + xlim(c(0,2100)) + ylim(c(0,2100))
+
+narr3hsolar <- ggplot() + geom_point(data = maxsolar, aes(obs, narr3h, color = month(date)), alpha = 0.3)+ scale_color_gradientn(colours = c("Red", "Orange", "Yellow", "Green", "Blue"))+ geom_line(aes(0:2000, 0:2000))  +xlim(c(0,2100)) + ylim(c(0,2100))
+
+weachnarr_narr3h <- ggplot() +
+    geom_point(data = maxsolar, aes(narr, narr3h, color = month(date)))+
+    scale_color_gradientn(colours = c("Red", "Orange", "Yellow", "Green", "Blue"))+
+    geom_line(aes(0:2000, 0:2000)) + ggtitle("Weach NARR v. 3 hourly NARR") +xlim(c(0,2100)) + ylim(c(0,2100))
+gridExtra::grid.arrange(
+  narrsolar,
+  narr3hsolar, 
+  cruncepsolar,
+  ncol = 3)
+
+
+```
+
+
+
+### PAR residuals (model - obs)
+
+```{r solarresid-plot}
+
+solarresiduals <- ggplot(data=allsolar[narr+obs>100]) +
+    geom_point(aes(date, narr - obs), alpha = 0.1, color = "blue") +
+    geom_point(aes(date, narr3h - obs), alpha = 0.1, color = "red") +
+    geom_point(aes(date, cruncep - obs), alpha = 0.1, color = "green") +
+#    geom_hline(aes(0,1))+
+    geom_smooth(aes(date, narr - obs), alpha = 0.5, color = "blue") +
+    geom_smooth(aes(date, narr3h - obs), alpha = 0.5, color = "red") +
+    geom_smooth(aes(date, cruncep - obs), alpha = 0.5, color = "green") +
+    geom_hline(aes(date,  rep(0, length(date))))+
+    ggtitle("observed vs. modeled solar radiation:\n daily narr / weach (blue), cruncep 6 hourly (green), narr 3hourly (red)") +
+    ylab("Modeled - Observed Solar Radiation (umol / h )")
+
+print(solarresiduals)
+```
+
+### Correlations of daily max solar radiation
+
+```{r maxsolar-plot}
+library(GGally)
+ggpairs(maxsolar[,list(obs, narr3h, narr, cruncep)])
+```
+
+
+
+
+### Compare daily and 3hourly downscaled NARR
+
+```{r}
+weachnarr_narr3h
+```
+
+### Multiple variables
+
+```{r all-vars-plots, fig.height = 15, fig.width = 10}
+### Generate some plots to compare August 
+
+rh <- ggplot() +
+    geom_line(data = met, aes(date, RH, color = source)) +
+    xlim(ymd("2010-08-01"), ymd("2010-08-31")) + ggtitle("Relative Humidity (0-1)")
+
+precip <- ggplot() +
+    geom_line(data = met, aes(date, precip, color = source)) +
+    xlim(ymd("2010-08-01"), ymd("2010-08-31")) + ggtitle("Precipitation mm/d")
+
+temp <- ggplot() +
+    geom_line(data = met, aes(date, temp, color = source)) +
+    xlim(ymd("2010-08-01"), ymd("2010-08-31")) + ggtitle("Temperature C")
+wind <- ggplot() +
+    geom_line(data = met, aes(date, wind, color = source)) +
+    xlim(ymd("2010-08-01"), ymd("2010-08-31")) + ggtitle("Wind Speed m/s")
+
+solar <- ggplot() +
+    geom_line(data = met, aes(date, solar, color = source)) +
+    xlim(ymd("2010-08-01"), ymd("2010-08-31")) + ggtitle("PAR")
+
+print(gridExtra::grid.arrange(rh, precip, temp, wind, solar, ncol = 1))
+```
+
+
+### Some sanity checks on variables
+
+
+* Temperature:
+```{r results='markup'}
+kable(met[,list(min = min(temp), mean = mean(temp), max = max(temp)), by = source])
+```
+* RH
+
+```{r results='markup'} 
+kable(met[,list(min = min(RH*100), mean = mean(RH*100), max = max(RH*100)), by = source])
+```
+* Total Precip
+```{r results='markup'}
+kable(met[,list(total=sum(precip)), by = source])
+```
+
+
+### More diagnostic plots
+
+* need to print each one ...
+
+```{r more-plots, fig.height = 15, fig.width = 10}
+
+obs <- merge(met[!source == "ebifarm"], met[source == "ebifarm"], by = "date")
+obs$yday <- yday(obs$date)
+dailyprecip <- obs[,list(precip.x = mean(precip.x), precip.y = mean(precip.y)), by = 'source.x,yday']
+
+gridExtra::grid.arrange(
+ggplot(data = obs, aes(date, RH.x-RH.y, color = source.x)) +
+    geom_point(alpha = 0.1) +
+    geom_smooth() + geom_hline(aes(date,0)) + ggtitle("RH"),
+
+ggplot(data = obs, aes(date, temp.x-temp.y, color = source.x)) +
+    geom_point(alpha = 0.1) +
+    geom_smooth() + geom_hline(aes(date,0)) + ggtitle("Temperature C"),
+ 
+ggplot(data = obs, aes(date, solar.x-solar.y, color = source.x)) +
+    geom_point(alpha = 0.1) +
+    geom_smooth() + geom_hline(aes(date,0)) + ggtitle("Solar Radiation umol/h/m2"),
+
+ggplot(data = obs, aes(date, wind.x-wind.y, color = source.x)) +
+    geom_point(alpha = 0.1) +
+    geom_smooth() + geom_hline(aes(date,0)) + ggtitle("Wind m/s"),
+ggplot(data = dailyprecip, aes(yday, precip.x-precip.y, color = source.x))+ geom_point(alpha = 0.1) +
+    geom_smooth() + geom_hline(aes(yday,0)) +
+    ylim(c(-0.5,0.5))+ ggtitle("Precip (daily average)"),
+ncol = 1
+)
+ 
+met$yday <- yday(met$date)
+dailyprecip2 <- met[,list(precip = mean(precip)), by = 'source,yday']
+gridExtra::grid.arrange(
+ggplot(data = met, aes(date, RH, color = source)) +
+  geom_point(alpha = 0.1) +
+  geom_smooth() + geom_hline(aes(date,0)) + ggtitle("RH"),
+
+ggplot(data = met[precip > 0], aes(date, temp, color = source)) +
+  geom_point(alpha = 0.1) +
+  geom_smooth() + geom_hline(aes(date,0)) + ggtitle("Temperature C"),
+
+ggplot(data = met, aes(date, solar, color = source)) +
+  geom_point(alpha = 0.1) +
+  geom_smooth() + geom_hline(aes(date,0)) + ggtitle("Solar Radiation umol/h/m2"),
+
+ggplot(data = met, aes(date, wind, color = source)) +
+  geom_point(alpha = 0.1) +
+  geom_smooth() + ggtitle("Wind m/s"),
+
+
+ggplot(data = dailyprecip2, aes(yday, precip, color = source))+ geom_point(alpha = 0.1) +
+  geom_smooth()+
+  ylim(c(-0.5,0.5))+ ggtitle("Precip (daily average)"),
+ncol = 1
+)
+
+```
+
+

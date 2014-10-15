@@ -21,7 +21,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   writeLines(config.text, con = file.path(settings$rundir, run.id, "sipnet.in"))
   
   ### WRITE *.clim
-  template.clim <- settings$run$site$met      ## read from settings
+  template.clim <- settings$run$input$met      ## read from settings
   if(!is.null(inputs)){                       ## override if specified in inputs
     if('met' %in% names(inputs)){
       template.clim <- inputs$met
@@ -45,7 +45,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   
   jobsh <- gsub('@SITE_LAT@', settings$run$site$lat, jobsh)
   jobsh <- gsub('@SITE_LON@', settings$run$site$lon, jobsh)
-  jobsh <- gsub('@SITE_MET@', settings$run$site$met, jobsh)
+  jobsh <- gsub('@SITE_MET@', template.clim, jobsh)
   
   jobsh <- gsub('@OUTDIR@', outdir, jobsh)
   jobsh <- gsub('@RUNDIR@', rundir, jobsh)

@@ -93,7 +93,7 @@ read.output.ED2 <- function(run.id, outdir, start.year=NA, end.year=NA, variable
 ##' @author Shawn Serbin
 ##' @author David LeBauer
 get.model.output.ED2 <- function(settings){
-  model <- settings$model$name
+  model <- settings$model$type
   
   ### Get ED2 model output on the localhost
   if(settings$run$host$name == 'localhost'){
