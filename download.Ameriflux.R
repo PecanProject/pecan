@@ -1,3 +1,15 @@
+##' Download Ameriflux L2 netCDF files
+##'
+##' @name download.Ameriflux
+##' @title download.Ameriflux
+##' @export
+##' @param start_year
+##' @param end_year
+##' @param site_id
+##' @param in.prefix
+##' @param outfolder
+##' 
+##' @author Josh Mantooth
 download.Ameriflux <- function(start_year, end_year, site_id, in.prefix, outfolder){
   
   if(!file.exists(outfolder)){
