@@ -1,10 +1,6 @@
-### Prospect Model
-### Alexey Shiklomanov
-
-## alpha = maximum incidence angle defining the solid angle Omega
-## n = refractive index
-## theta = transmission coefficient of the plate
-## N = number of effective layers
+###'@title Prospect Model
+###'@author Alexey Shiklomanov
+###'@description Prospect 4, 5, and 5B models
 
 # Auxiliary functions #####
 exp.t <- function(x) exp(-x) / x
@@ -12,6 +8,12 @@ itg.k <- function(k) sapply(k, function(x) integrate(exp.t, x, Inf)$value)
 
 # Generalized Plate Model #####
 gpm <- function(alpha, n, theta, N){
+
+  ## alpha = maximum incidence angle defining the solid angle Omega
+  ## n = refractive index
+  ## theta = transmission coefficient of the plate
+  ## N = number of effective layers
+  
   ## Transmittance of isotropic light through medium as a function of angle 'alpha' and refractive index 'n' 
   t.av <- function(alpha, n){
     alpha <- alpha * pi/180
@@ -80,10 +82,12 @@ gpm <- function(alpha, n, theta, N){
                     t90, tav, rho90, rhoa, tao90, taoa, x, y, theta))
 }
 
-
+# PROSPECT Models #####
 prospect4 <- function(N, Cab, Cw, Cm,
                      data=dataSpec_p4, alpha=40.0, wavelengths=400:2500){
 
+  load("data/dataSpec_p4.RData")
+    
   n <- data$refractive_index                    # Column 2
   k.cab <- Cab * data$specific_abs_coeff_chl    # Column 3
   k.w <- Cw * data$specific_abs_coeff_cw        # Column 5
@@ -99,6 +103,8 @@ prospect4 <- function(N, Cab, Cw, Cm,
 prospect5 <- function(N, Cab, Car, Cw, Cm,
                       data=dataSpec_p5, alpha=40.0, wavelengths=400:2500){
 
+  load("data/dataSpec_p5.RData")
+  
   n <- data$refractive_index                    # Column 2
   k.cab <- Cab * data$specific_abs_coeff_chl    # Column 3
   k.car <- Car* data$specific_abs_coeff_car     # Column 4
@@ -115,6 +121,8 @@ prospect5 <- function(N, Cab, Car, Cw, Cm,
 prospect5B <- function(N, Cab, Car, brown, Cw, Cm,
                       data=dataSpec_p5, alpha=40.0, wavelengths=400:2500){
 
+  load("data/dataSpec_p5B.RData")
+  
   n <- data$refractive_index                    # Column 2
   k.cab <- Cab * data$specific_abs_coeff_chl    # Column 3
   k.car <- Car* data$specific_abs_coeff_car     # Column 4
@@ -147,7 +155,6 @@ testdata <- data.frame(
          0.0019, 0.0165, 0.009327, 0.002250, 0.006573, 0.004305)
 )
 
-load("data/dataSpec_p4.RData")
 test <- function(f){
   test <- list()
   for(i in 1:length(testdata$plant)){
