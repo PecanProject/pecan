@@ -81,13 +81,46 @@ gpm <- function(alpha, n, theta, N){
 }
 
 
-prospect <- function(N, Cab, Cw, Cm,
+prospect4 <- function(N, Cab, Cw, Cm,
                      data=dataSpec_p4, alpha=40.0, wavelengths=400:2500){
-  n <- data$refractive_index      # Column 2
-  
+
+  n <- data$refractive_index                    # Column 2
   k.cab <- Cab * data$specific_abs_coeff_chl    # Column 3
   k.w <- Cw * data$specific_abs_coeff_cw        # Column 5
   k.m <- Cm * data$specific_abs_coeff_cm        # Column 6
+  k <- (k.cab + k.w + k.m) / N
+  theta <- (1-k)*exp(-k) + k^2 * itg.k(k)
+  
+  rt <- gpm(alpha, n, theta, N)
+  rt$wavelength <- wavelengths
+  return(rt)
+}
+
+prospect5 <- function(N, Cab, Car, Cw, Cm,
+                      data=dataSpec_p5, alpha=40.0, wavelengths=400:2500){
+
+  n <- data$refractive_index                    # Column 2
+  k.cab <- Cab * data$specific_abs_coeff_chl    # Column 3
+  k.car <- Car* data$specific_abs_coeff_car     # Column 4
+  k.w <- Cw * data$specific_abs_coeff_cw        # Column 5
+  k.m <- Cm * data$specific_abs_coeff_cm        # Column 6
+  k <- (k.cab + k.w + k.m) / N
+  theta <- (1-k)*exp(-k) + k^2 * itg.k(k)
+  
+  rt <- gpm(alpha, n, theta, N)
+  rt$wavelength <- wavelengths
+  return(rt)
+}
+
+prospect5B <- function(N, Cab, Car, brown, Cw, Cm,
+                      data=dataSpec_p5, alpha=40.0, wavelengths=400:2500){
+
+  n <- data$refractive_index                    # Column 2
+  k.cab <- Cab * data$specific_abs_coeff_chl    # Column 3
+  k.car <- Car* data$specific_abs_coeff_car     # Column 4
+  k.brown <- brown * data$specific_abs_coeff_brown  # Column5
+  k.w <- Cw * data$specific_abs_coeff_cw        # Column 6
+  k.m <- Cm * data$specific_abs_coeff_cm        # Column 7
   k <- (k.cab + k.w + k.m) / N
   theta <- (1-k)*exp(-k) + k^2 * itg.k(k)
   
@@ -115,10 +148,13 @@ testdata <- data.frame(
 )
 
 load("data/dataSpec_p4.RData")
-test <- list()
-for(i in 1:length(testdata$plant)){
-  test[[ testdata$plant[i] ]] <- prospect(testdata[i, 2],
-                                      testdata[i, 3],
-                                      testdata[i, 4],
-                                      testdata[i, 5])
+test <- function(f){
+  test <- list()
+  for(i in 1:length(testdata$plant)){
+    test[[ testdata$plant[i] ]] <- f(testdata[i, 2],
+                                            testdata[i, 3],
+                                            testdata[i, 4],
+                                            testdata[i, 5])
+  }
+  return(test)
 }
