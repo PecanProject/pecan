@@ -78,8 +78,7 @@ gpm <- function(alpha, n, theta, N){
   
   R.N.a <- rhoa + nmR / dmRT 
   T.N.a <- nmT / dmRT
-  return(data.frame(R = R.N.a, Tr = T.N.a, 
-                    t90, tav, rho90, rhoa, tao90, taoa, x, y, theta))
+  return(data.frame(R = R.N.a, Tr = T.N.a))
 }
 
 # PROSPECT Models #####
@@ -93,6 +92,10 @@ prospect4 <- function(N, Cab, Cw, Cm,
   k.w <- Cw * data$specific_abs_coeff_cw        # Column 5
   k.m <- Cm * data$specific_abs_coeff_cm        # Column 6
   k <- (k.cab + k.w + k.m) / N
+  if(any(k < 0)){
+    out <- rep(0, length(wavelengths))
+    return(data.frame(R=out, Tr=out, wavelength=wavelengths))
+  }
   theta <- (1-k)*exp(-k) + k^2 * itg.k(k)
   
   rt <- gpm(alpha, n, theta, N)
