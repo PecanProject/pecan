@@ -8,7 +8,8 @@
     <SpD>0</SpD>
     <nlayers>10</nlayers>
     <kd>0.37</kd> <!--canopy extinction coef. for diffuse light -->
-    <mResp>"c(0.02, 0.03)"</mResp>
+    <chi.l></chi.l> <!--leaf angle distribution -->
+    <mResp>0.02, 0.03</mResp>
     <heightFactor>3</heightFactor>
     <GrowthRespFraction>0.3</GrowthRespFraction>
   </canopyControl>
@@ -18,7 +19,7 @@
     <Rd>1.1</Rd>
     <b0>0.08</b0>
     <b1>5.0</b1>
-    <Catm>380</Catm>
+    <Catm>400</Catm>
     <O2>210</O2>
   </photoParms>
   <phenoControl>

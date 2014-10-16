@@ -57,6 +57,7 @@ query.data <- function(trait, spstr, extra.columns='ST_X(ST_CENTROID(sites.geome
             where specie_id in (", spstr,")
             and variables.name in ('", trait,"');", sep = "")
   return(fetch.stats2se(con, query))
+  db.close(con)
 }
 ##==================================================================================================#
 
@@ -118,6 +119,7 @@ query.yields <- function(trait = 'yield', spstr, extra.columns='', con=NULL, ...
 append.covariate<-function(data, column.name, ..., covariates.data=list(...)){
   merged <- data.frame()
   for(i in seq(covariates.data)){
+    if(is.list(covariates.data)) covariates.data <- as.data.frame(covariates.data)
     covariate.data <- covariates.data[i,]
     if(length(covariate.data) >= 1){
       ## conditional added to prevent crash when trying to transform an empty data frame
@@ -252,9 +254,9 @@ assign.treatments <- function(data){
   data$trt_id[which(data$control == 1)] <- 'control'
   sites <- unique(data$site_id)
   for(ss in sites){
-    site.i <- data$site == ss
+    site.i <- data$site_id == ss
     #if only one treatment, it's control
-    if(length(unique(data$trt[site.i])) == 1) data$trt_id[site.i] <- 'control'
+    if(length(unique(data$trt_id[site.i])) == 1) data$trt_id[site.i] <- 'control'
     if(!'control' %in% data$trt_id[site.i]){
       logger.severe('No control treatment set for site_id:',
                    unique(data$site_id[site.i]),
@@ -350,7 +352,7 @@ derive.trait <- function(FUN, ..., input=list(...), var.name=NA, sample.size=100
 ##' @return a copy of the first input trait with modified mean, stat, and n
 derive.traits <- function(FUN, ..., input=list(...),
                           match.columns=c('citation_id', 'site_id', 'specie_id'),
-                          var.name=NA, sample.size=100000){
+                          var.name=NA, sample.size=10000){
   if(length(input) == 1){
     input<-input[[1]]
                                         #KLUDGE: modified to handle empty datasets

@@ -22,8 +22,10 @@ get.results <- function(settings) {
   
   sensitivity.output <- list()   
   if('sensitivity.analysis' %in% names(settings)) {
-    start.year <- ifelse(is.null(settings$sensitivity.analysis$start.year), NA, settings$sensitivity.analysis$start.year)
-    end.year   <- ifelse(is.null(settings$sensitivity.analysis$end.year), NA, settings$sensitivity.analysis$end.year)
+    start.year <- ifelse(is.null(settings$sensitivity.analysis$start.year), NA, 
+                         settings$sensitivity.analysis$start.year)
+    end.year   <- ifelse(is.null(settings$sensitivity.analysis$end.year), NA, 
+                         settings$sensitivity.analysis$end.year)
     variables  <- NULL
     if("variable" %in% names(settings$sensitivity.analysis)){
       variables = settings$sensitivity.analysis[
@@ -38,10 +40,10 @@ get.results <- function(settings) {
                                                        quantiles = quantiles,
                                                        pecandir = outdir,
                                                        outdir = settings$modeloutdir, 
-                                                       pft.name=pft.name,
-                                                       start.year=start.year,
-                                                       end.year=end.year,
-                                                       variables=variables)
+                                                       pft.name = pft.name,
+                                                       start.year = start.year,
+                                                       end.year = end.year,
+                                                       variables = variables)
     }
     save(sensitivity.output, file = file.path(outdir, 'sensitivity.Rdata'))
   }

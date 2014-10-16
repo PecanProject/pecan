@@ -6,65 +6,83 @@ args   <- commandArgs(trailingOnly = TRUE)
 rundir <- args[1]
 outdir <- args[2]
 if(interactive()) {
-  runid <- tail(readLines(file.path(settings$rundir, "runs.txt"), n=1))
+  runid <- readLines(file.path(settings$rundir, "runs.txt"))[1]
   rundir <- file.path(settings$rundir, runid)
   outdir <- file.path(settings$outdir, "out", runid)
 }
+
 # set the libpath here to point to the right version of BioCro
+require(data.table, quietly = TRUE)
 require(BioCro, quietly = TRUE)
 require(XML, quietly = TRUE)
 # load the weather data
-weather <- read.csv(file.path(rundir, "weather.csv"))
+weather <- fread(file.path(rundir, "weather.csv"))
+
 years <- unique(weather$year)
 
 # run model
-config <- xmlToList(xmlParse(file.path(rundir, "config.xml")))
+config <- xmlToList(
+  xmlTreeParse(
+    file = file.path(rundir, "config.xml"),
+    handlers = list("comment" = function(x){NULL}),
+    asTree = TRUE)
+  )
+config$pft$canopyControl$mResp <- ## hacky way of importing a vector from xml to a list
+  unlist(
+      strsplit(
+        config$pft$canopyControl$mResp, split = ","))
 
-if(config$pft$type$photosynthesis == "C3"){
-  pp <- c3photoParms(config$pft$photoParms)
-} else if (config$pft$type$photosynthesis == "C4") {
-  pp <- photoParms(config$pft$photoParms)
-}
-
-cc <- canopyParms()
-
-if(!is.null(config$pft$canopyControl$Sp)){
-  cc$Sp <- as.numeric(config$pft$canopyControl$Sp)
-}
 genus <- config$pft$type$genus
 if(!(genus %in% c("Saccharum", "Salix", "Miscanthus"))) {
   stop("genus", genus, "not supported by PEcAn.BIOCRO module")
 }
 
+pp <- do.call("willowphotoParms", lapply(config$pft$photoParms, as.numeric))
+
+config$pft$canopyControl$chi.l <- NULL
+cc <- do.call("willowcanopyParms", lapply(config$pft$canopyControl, as.numeric))
+
+## For willow, Root:Shoot ~ 1.8
+## http://www.esf.edu/outreach/pd/2010/srwc/documents/Pacaldo_AboveBelowppt.pdf
+iplant <- list(iStem = as.numeric(config$pft$iPlantControl$iStem), 
+               #iRhizome = 0.5 * as.numeric(config$pft$iPlantControl$iStem) / 1.8,
+               iRoot = as.numeric(config$pft$iPlantControl$iStem) / 1.8)
+
+### For Tully; need to add these to settings file
+soil <- willowsoilParms(wsFun = 'lwp',
+                        FieldC = 0.182,
+                        WiltP = 0.09,
+                        soilDepth = 200, # > 200
+                        soilLayers = 3, 
+                        iWatCont = 0.2, # just more than field capacity
+                        soilDepths = c(0, 0.2, 0.5, 0.8))
 result <- list()
 
 for(yeari in years){
   yearchar <- as.character(yeari)
-  WetDat <- weather[weather$year == yeari,]
-  print(str(WetDat))
+  WetDat <- as.data.frame(weather[year == yeari,])
+  
   day1 <- min(WetDat$doy)
   dayn <- max(WetDat$doy)
+
+  if(yeari > min(years)){
+    iplant$iRhizome <- result[[as.character(yeari-1)]]$Rhizome
+    iplant$iStem <- result[[as.character(yeari-1)]]$Stem
+    iplant$iRoot <- result[[as.character(yeari-1)]]$Root
+  }
   
   if(genus == "Saccharum"){
     result[[yearchar]] <- caneGro(WetDat = WetDat, photoControl=pp, canopyControl=cc)
     result[[yearchar]][["Grain"]] <- result[[yearchar]][["Rhizome"]] <- rep(0, length(result$Hour))
   } else if (genus == "Salix") {
-    if(yeari == min(years)){
-      iplant <- iwillowParms(iRhizome=1.0, iStem=1.0, iLeaf=0.0,
-                             iRoot=1.0, ifrRhizome=0.01, ifrStem=0.01,
-                             ifrLeaf = 0.0, ifrRoot = 0.0)
-    } else if(yeari > min(years)){
-      N <- length(result[[as.character(yeari-1)]]$Rhizome)
-      iplant$iRhizome <- result[[as.character(yeari-1)]]$Rhizome[N]
-      iplant$iStem <- result[[as.character(yeari-1)]]$Stem[N]
-      iplant$iRoot <- result[[as.character(yeari-1)]]$Root[N]
-    }
-    result[[yearchar]] <- willowGro(WetDat = WetDat, photoControl=pp,
-                                    canopyControl=cc, day1 = day1, dayn = dayn)
+
+    result[[yearchar]] <- willowGro(WetDat = WetDat, photoControl = pp, soilControl = soil,
+                                    iPlantControl = iplant,
+                                    canopyControl=cc, 
+                                    day1 = day1, dayn = dayn)
   } else if (genus == "Miscanthus") {
     result[[yearchar]] <- BioGro(WetDat = WetDat, photoControl = pp, canopyControl = cc)
   }
-  
   result.yeari <- with(result[[yearchar]],
                        data.table(Year = yeari, DayofYear, Hour, ThermalT,
                                   Stem, Leaf, Root, Rhizome, Grain, LAI,
@@ -74,7 +92,7 @@ for(yeari in years){
   } else if (yeari > min(years)){
     resultDT <- rbind(resultDT, result.yeari)
   }
-  
+  resultDT[,list(Stem, Leaf, Root, Rhizome)]
 }
 
 
@@ -83,7 +101,7 @@ write.csv(resultDT, file=file.path(outdir, "result.csv"))
 save(resultDT, config, genus, file = file.path(outdir, "result.RData"))
 #debugonce(model2netcdf.BIOCRO)
 ## this is the format that will be read by PEcAn: 
-require(PEcAn.BIOCRO, quietly = TRUE)
 require(PEcAn.utils)
+library(lubridate)
 source("/home/dlebauer/dev/pecan/models/biocro/R/model2netcdf.BIOCRO.R")
 model2netcdf.BIOCRO(resultDT = resultDT, genus = "genus", outdir = outdir, lat = config$location$latitude, lon = config$location$longitude)

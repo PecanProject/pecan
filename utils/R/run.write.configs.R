@@ -66,7 +66,6 @@ run.write.configs <- function(settings, write = TRUE) {
 
   ## Load PFT priors and posteriors
   for (i in seq(pft.names)){
-
     ## Load posteriors
     fname = file.path(outdirs[i], 'post.distns.Rdata')
     if(file.exists(fname)){
@@ -76,7 +75,6 @@ run.write.configs <- function(settings, write = TRUE) {
       load(file.path(outdirs[i], 'prior.distns.Rdata'))
     }
 
-    
     ### Load trait mcmc data (if exists)
     if("trait.mcmc.Rdata" %in% dir(unlist(outdirs))) {
       ma.results <- TRUE
@@ -173,8 +171,10 @@ run.write.configs <- function(settings, write = TRUE) {
   } else {
       logger.info('not writing config files for ensemble, settings are NULL')
   } ### End of Ensemble
+
   logger.info("###### Finished writing model run config files #####")
   logger.info("config files samples in ", paste0(settings$outdir, "run"))
+  
   ### Save output from SA/Ensemble runs
   save(ensemble.samples, trait.samples, sa.samples, runs.samples, 
        file = file.path(settings$outdir, 'samples.Rdata'))

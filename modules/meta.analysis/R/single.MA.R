@@ -17,7 +17,8 @@
 ##' @param j.iter  number of mcmc samples
 ##' @param tauA prior on variance parameters
 ##' @param tauB  prior on variance parameters
-##' @param prior 
+##' @param prior data.frame with columns named 'distn', 'parama', 'paramb'
+##' e.g. \code{prior <- data.frame(distn = "weibull", parama = 0.5, paramb = 10, n = 1)}
 ##' @param jag.model.file file to which model will be written 
 ##' @param overdispersed if TRUE (default), chains start at overdispersed locations in parameter space (recommended)
 ##' @export
@@ -100,15 +101,22 @@ single.MA <- function(data, j.chains, j.iter, tauA, tauB, prior,
     
     j.model   <- jags.model (file = jag.model.file,
                              data = data,
-#                             n.adapt = 100, #will burn in below
                              inits = j.inits,
                              n.chains = j.chains)
-
 
     jags.out   <- coda.samples ( model = j.model,
                                 variable.names = vars,
                                 n.iter = j.iter,
                                 thin = max(c(2,j.iter/(5000*2))))
-
+    ## I would have done a while loop, but it could take forever
+    ## So just give one chance to try again
+    if(gelman.diag(jags.out)$mpsrf > 1.5){
+      logger.warn("model did not converge; re-running with j.iter * 10")
+      jags.out   <- coda.samples ( model = j.model,
+                                   variable.names = vars,
+                                   n.iter = j.iter * 10,
+                                   thin = max(c(2,j.iter/(500*2))))
+    }
     return(jags.out)
   }
+

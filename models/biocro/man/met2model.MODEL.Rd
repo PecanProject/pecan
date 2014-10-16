@@ -4,7 +4,7 @@
 \alias{met2model.MODEL}
 \title{Write MODEL met files}
 \usage{
-met2model.BIOCRO(in.path, in.prefix, outfolder, overwrite = FALSE)
+met2model.BIOCRO(in.path, in.prefix, outfolder, overwrite = FALSE, ...)
 }
 \arguments{
 \item{in.path}{path on disk where CF file lives}
@@ -12,6 +12,8 @@ met2model.BIOCRO(in.path, in.prefix, outfolder, overwrite = FALSE)
 \item{in.prefix}{prefix for each file}
 
 \item{outfolder}{location where model specific output is written.}
+
+\item{...}{can pass lat, lon, start.date and end.date}
 }
 \value{
 OK if everything was succesful.
@@ -21,6 +23,6 @@ Converts a met CF file to a model specific met file. The input
 files are calld <in.path>/<in.prefix>.YYYY.cf
 }
 \author{
-Rob Kooper
+Rob Kooper, David LeBauer
 }
 
