@@ -91,8 +91,9 @@ prospect4 <- function(N, Cab, Cw, Cm,
   k.cab <- Cab * data$specific_abs_coeff_chl    # Column 3
   k.w <- Cw * data$specific_abs_coeff_cw        # Column 5
   k.m <- Cm * data$specific_abs_coeff_cm        # Column 6
+  k.all <- c(k.cab, k.w, k.m)
   k <- (k.cab + k.w + k.m) / N
-  if(any(k < 0)){
+  if(any(k.all < 0)){
     out <- rep(0, length(wavelengths))
     return(data.frame(R=out, Tr=out, wavelength=wavelengths))
   }
@@ -157,14 +158,3 @@ testdata <- data.frame(
   Cm = c(0.0019, 0.0165, 0.003662, 0.005811, 0.003014, 0.013520, 
          0.0019, 0.0165, 0.009327, 0.002250, 0.006573, 0.004305)
 )
-
-test <- function(f){
-  test <- list()
-  for(i in 1:length(testdata$plant)){
-    test[[ testdata$plant[i] ]] <- f(testdata[i, 2],
-                                            testdata[i, 3],
-                                            testdata[i, 4],
-                                            testdata[i, 5])
-  }
-  return(test)
-}
