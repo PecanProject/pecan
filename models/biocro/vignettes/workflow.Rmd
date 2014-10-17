@@ -2,7 +2,7 @@ BioCro PEcAn workflow
 ======================
 
 ```{r, echo=FALSE,warning=FALSE}
-require(PEcAn.all)
+library(PEcAn.all)
 ```
 ### Load PEcAn settings file.
 
@@ -10,8 +10,8 @@ Open and read in settings file for PEcAn run.
 
 
 ```{r, echo=FALSE,warning=FALSE}
-settings <- read.settings(system.file("extdata/pecan.biocro.xml",
-                                      package = "PEcAn.BIOCRO"))
+library(PEcAn.settings)
+settings <- read.settings("~/dev/willow_da/vignettes/pecan.biocro.xml")
 settings$sensitivity.analysis <- settings$ensemble
 model <- settings$model$type
 
@@ -19,8 +19,8 @@ model <- settings$model$type
 ### Query database for trait data
 
 ```{r, echo=FALSE,warning=FALSE,cache=TRUE}
-
-settings$pfts <- get.trait.data(settings$pfts, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)# Query the trait database for data and priors
+library(PEcAn.DB)
+settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)# Query the trait database for data and priors
 ```
 
 ### Run Meta-analysis

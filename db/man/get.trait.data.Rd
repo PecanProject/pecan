@@ -3,10 +3,13 @@
 \alias{get.trait.data}
 \title{Gets trait data from the database}
 \usage{
-get.trait.data(pfts, dbfiles, database, forceupdate, trait.names = NULL)
+get.trait.data(pfts, modeltype, dbfiles, database, forceupdate,
+  trait.names = NULL)
 }
 \arguments{
 \item{pfts}{the list of pfts to get traits for}
+
+\item{modeltype}{type of model that is used, this is is used to distinguis between different pfts with the same name.}
 
 \item{dbfiles}{location where previous results are found}
 
@@ -25,6 +28,7 @@ Get trait data from the database.
 \details{
 This will use the following items from setings:
 - settings$pfts
+- settings$model$type
 - settings$database$bety
 - settings$run$dbfiles
 - settings$meta.analysis$update

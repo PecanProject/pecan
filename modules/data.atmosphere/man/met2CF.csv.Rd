@@ -2,6 +2,10 @@
 \name{met2CF.csv}
 \alias{met2CF.csv}
 \title{met2CF.csv}
+\usage{
+met2CF.csv(in.path, in.file, outfolder, format, lat = NULL, lon = NULL,
+  nc_verbose = FALSE)
+}
 \arguments{
 \item{in.path}{}
 
@@ -9,12 +13,32 @@
 
 \item{outfolder}{}
 
-\item{format}{data frame or list with elements orig, bety, units for the original variable name, bety variable name, and original units}
+\item{format}{data frame or list with elements orig, bety, units for the original variable name, bety variable name,
+and original units. Columns with NA for bety variable name are dropped. Units for datetime field are the lubridate function
+that will be used to parse the date (e.g. \code{ymd_hms} or \code{mdy_hm}).}
+
+\item{nc_verbose}{logical: run ncvar_add in verbose mode?}
 }
 \description{
 met2CF.csv
 }
+\examples{
+\dontrun{
+  in.path = "~/Downloads/"
+  in.file = "WR_E"
+  outfolder = "/tmp/"
+  format = list(orig=c("TA","PRECIP","RH","WS","WD","SW","PAR_in"),
+                units = c("celsius","mm","\%","m/s","degrees","W m-2","umol m-2 s-1"),
+                bety=c("airT","precipitation_flux","relative_humidity","Wspd","wind_direction","solar_radiation","PAR"),
+                skip=7,
+                unit.row=TRUE,
+                na.strings=c("-9999","-6999","9999"))
+  lat = 40
+  lon = -80
+  met2CF.csv(in.path,in.file,outfolder,format,lat,lon)
+}
+}
 \author{
-Mike Dietze
+Mike Dietze, David LeBauer
 }
 

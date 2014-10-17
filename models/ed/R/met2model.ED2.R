@@ -83,7 +83,7 @@ for(i in 1:length(filescount)){
   pres <- ncvar_get(nc,"air_pressure")
   SW   <- ncvar_get(nc,"surface_downwelling_shortwave_flux")
   LW   <- ncvar_get(nc,"surface_downwelling_longwave_flux")
-  CO2  <- try(ncvar_get(nc,"CO2air"))
+  CO2  <- try(ncvar_get(nc,"mass_concentration_of_carbon_dioxide_in_air"))
   useCO2 = is.numeric(CO2)  
 
   ## convert time to seconds

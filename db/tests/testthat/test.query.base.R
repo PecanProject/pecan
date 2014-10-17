@@ -6,7 +6,8 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-con <- db.open(dbparms)
+
+con <- db.open(list(driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety"))
 
 test_that("db.query can execute a trivial SQL statement and return results",{  
     ans <- db.query("select count(*) from traits;", con = con)

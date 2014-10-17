@@ -57,7 +57,7 @@ if (isset($_REQUEST['model']) && ($_REQUEST['model'] != "") && isset($_REQUEST['
     $stmt->closeCursor();
 
     // 3. Get list of all sites, formats
-    $stmt = $pdo->prepare("SELECT DISTINCT sites.*, format_id FROM sites, inputs, dbfiles, machines" .
+    $stmt = $pdo->prepare("SELECT DISTINCT sites.id, sites.sitename, sites.city, sites.country, ST_X(ST_CENTROID(sites.geometry)) AS lon, ST_Y(ST_CENTROID(sites.geometry)) AS lat, format_id FROM sites, inputs, dbfiles, machines" .
                           " WHERE sites.id=inputs.site_id AND inputs.id=dbfiles.container_id" .
                           " AND dbfiles.container_type='Input' and dbfiles.machine_id=machines.id" .
                           " AND machines.hostname=? GROUP BY sites.id, format_id;");
@@ -66,13 +66,13 @@ if (isset($_REQUEST['model']) && ($_REQUEST['model'] != "") && isset($_REQUEST['
     }
 
     // 4. Loop over result, collecting formats used
-    $sites = [];
+    $sites = array();
     while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
       if (in_array($row['format_id'], $formats)) {
         if (array_key_exists($row['id'], $sites)) {
           $sites[$row['id']]['format_id'][] = $row['format_id'];
         } else {
-          $row['format_id'] = [$row['format_id']];
+          $row['format_id'] = array($row['format_id']);
           $sites[$row['id']] = $row;
         }
       }
@@ -96,7 +96,7 @@ function allSites() {
   global $pdo;
 
   // Select all the rows in the markers table
-  $result = $pdo->query("SELECT * FROM sites;");
+  $result = $pdo->query("SELECT id, sitename, city, country, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites;");
   if (!$result) {
     die('Invalid query: ' . error_database());
   } 

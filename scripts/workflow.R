@@ -39,7 +39,7 @@ unlink(file.path(settings$outdir, "STATUS"))
 #---------------- Run PEcAn workflow. -------------------------------------------------------------#
 # Query the trait database for data and priors
 status.start("TRAIT")
-settings$pfts <- get.trait.data(settings$pfts, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)
+settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)
 status.end()
 
 # Run the PEcAn meta.analysis

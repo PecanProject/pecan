@@ -38,9 +38,9 @@ load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date){
   all.dates <- data.table(index = seq(time.idx),
                           date = ymd("1700-01-01") +
                           days(floor(time.idx)) +
-                          minutes(ud.convert(time.idx - floor(time.idx), "days", "minutes")))
+                          minutes(as.integer(ud.convert(time.idx - floor(time.idx), "days", "minutes"))))
   
-
+ 
   if(ymd(start.date) + days(1) < min(all.dates$date)) logger.error("run start date", ymd(start.date), "before met data starts", min(all.dates$date))
   if(ymd(end.date) > max(all.dates$date)) logger.error("run end date",   ymd(start.date), "after met data ends", min(all.dates$date))
 
@@ -75,11 +75,10 @@ load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date){
 cfmet.downscale.time <- cruncep_hourly <- function(cfmet, output.dt = 1, ...){
 
   ## time step
-  dt <- cfmet[1:2,diff(date)]
-  dt_hr <- ud.convert(as.numeric(as.duration(dt)), "seconds", "hours")
+  dt_hr <- as.numeric(round(difftime(cfmet$date[2], cfmet$date[1],  units = "hours")))
   
-  if(dt_hr < 6) {
-    downscaled.result <- cfmet.downscale.subdaily(subdailymet = cfmet)
+  if(dt_hr > output.dt & dt_hr < 6) {
+    downscaled.result <- cfmet.downscale.subdaily(subdailymet = cfmet, output.dt = output.dt)
   } else if(dt_hr >= 6 & dt_hr < 24){
     cfmet <- cbind(cfmet, cfmet[,list(air_temperature_max = max(air_temperature),
                                       air_temperature_min = min(air_temperature)), by = 'year,doy'])
@@ -87,10 +86,12 @@ cfmet.downscale.time <- cruncep_hourly <- function(cfmet, output.dt = 1, ...){
                 "PEcAn will automatically convert this to daily data\n",
                 "you should confirm validity of downscaling, in particular that min / max temperatures are realistic")
   } else if (dt_hr == 24) {
-    downscaled.result <- cfmet.downscale.daily(dailymet = cfmet, output.dt, ...)
+    downscaled.result <- cfmet.downscale.daily(dailymet = cfmet, output.dt = output.dt, ...)
   } else if(dt_hr > 24){
     logger.error("only daily and sub-daily downscaling supported")
-  } 
+  } else if (dt_hr == output.dt) {
+    downscaled.result <- cfmet
+  }
   return(downscaled.result)
 }
 
