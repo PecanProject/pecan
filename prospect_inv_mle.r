@@ -12,10 +12,10 @@ poplar <- read.table("data/poplar.txt", header=TRUE, quote="\"")
 
 # Vector of initial conditions based on min/max Shawn's LOPEX 93 data
 
-ic1 <- unlist(testdata[1, 2:5])   # min f
-ic2 <- unlist(testdata[2, 2:5])   # max f
-ic3 <- unlist(testdata[7, 2:5])   # min d
-ic4 <- unlist(testdata[8, 2:5])   # max d
+ic1 <- unlist(testdata['min.f', ])   # min f
+ic2 <- unlist(testdata['max.f', ])   # max f
+ic3 <- unlist(testdata['min.d', ])   # min d
+ic4 <- unlist(testdata['max.d', ])   # max d
 
 # Minimum and maximum values from Shawn's LOPEX 93 data (for DEoptim)
 mins <- as.numeric(unlist(apply(testdata, 2, min)[2:5]))

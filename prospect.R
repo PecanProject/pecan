@@ -147,7 +147,7 @@ prospect5B <- function(N, Cab, Car, brown, Cw, Cm,
 # Here are some examples observed during the LOPEX'93 experiment on
 # fresh (F) and dry (D) leaves :
 testdata <- data.frame(
-  plant = c('min.f', 'max.f', 'corn.f', 'rice.f', 'clover.f', 'laurel.f', 
+  row.names = c('min.f', 'max.f', 'corn.f', 'rice.f', 'clover.f', 'laurel.f', 
             'min.d', 'max.d', 'bamboo.d', 'lettuce.d', 'walnut.d', 'chestnut.d'),
   N = c(1, 3, 1.518, 2.275, 1.875, 2.660,
         1.5, 3.6, 2.698, 2.107, 2.656, 1.826),
