@@ -1,7 +1,7 @@
 
 ## What is PEcAn
 
-The Predictive Ecosystem Analyzer (PEcAn) is an integrated ecological bioinformatics toolbox [2] which consists of: 1) a scientific workflow system to manage the immense amounts of publicly-available environmental data and 2) a Bayesian data assimilation system to synthesize this information within state-of-the-art ecosystems models. This project is motivated by the fact that many of the most pressing questions about global change are not necessarily limited by the need to collect new data as much as by our ability to synthesize existing data. This project seeks to improve this ability by developing a framework for integrating multiple data sources in a sensible manner.
+The Predictive Ecosystem Analyzer (PEcAn) (see [http://pecanproject.org](http://pecanproject.org)) is an integrated ecological bioinformatics toolbox [2] which consists of: 1) a scientific workflow system to manage the immense amounts of publicly-available environmental data and 2) a Bayesian data assimilation system to synthesize this information within state-of-the-art ecosystems models. This project is motivated by the fact that many of the most pressing questions about global change are not necessarily limited by the need to collect new data as much as by our ability to synthesize existing data. This project seeks to improve this ability by developing a framework for integrating multiple data sources in a sensible manner.
 
 The output of the data assimilation system will be a regional-scale high-resolution estimate of both the terrestrial carbon cycle and plant biodiversity based on the best available data and with a robust accounting of the uncertainties involved. The workflow system will allow ecosystem modeling to be more reproducible, automated, and transparent in terms of operations applied to data, and thus ultimately more comprehensible to both peers and the public. It will reduce the redundancy of effort among modeling groups, facilitate collaboration, and make models more accessible the rest of the research community.
 
@@ -15,7 +15,7 @@ Complete instructions on how to install PEcAn can be found in the [WIKI Installa
 
 We have a [demo instance](http://pecan.ncsa.illinois.edu/pecan) running the current version of PEcAn. At this instance you can perform a run using either ED or SIPNET at any of the predefined sites.
 
-The first step is to select a specific machine, model and site you want to run on. The demo instance only allows for runs at pecan.ncsa.illinois.edu. Once you have setup the run it will run our server, depending on the number of people executing a model and the model selected this can take between a few seconds and a few minutes to finish. Once finished you see the results of the execution and can plot the outputs of the model.
+The demo instance only allows for runs at pecan.ncsa.illinois.edu. Once you have setup the run it will run our server, depending on the number of people executing a model and the model selected this can take between a few seconds and a few minutes to finish. Once finished you see the results of the execution and can plot the outputs of the model. Complete examples of a few executions can be found in our online [tutorials](http://pecanproject.github.io/tutorials.html).
 
 ## Publications
 
