@@ -37,6 +37,7 @@ p.invert <- function(observed, func=prospect4, inits=ic1){
   lines(observed$Wavelength, observed$R, col=2)
   plot(p$wavelength, d, type='l')
   abline(h=0)
+  a1$residuals <- d
   return(a1)
 }
 
