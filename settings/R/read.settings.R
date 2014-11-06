@@ -511,7 +511,7 @@ check.settings <- function(settings) {
       settings$run$site$id <- -1
     } else if (settings$run$site$id >= 0) {
       if (!is.character(dbcon)) {
-        site <- db.query(paste("SELECT sitename, ST_X(geometry) AS lon, ST_Y(geometry) AS lat FROM sites WHERE id =", settings$run$site$id), con=dbcon)
+        site <- db.query(paste("SELECT sitename, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =", settings$run$site$id), con=dbcon)
       } else {
         site <- data.frame(id=settings$run$site$id)
         if (!is.null(settings$run$site$name)) {
@@ -699,19 +699,20 @@ check.settings <- function(settings) {
       
       #check to see if name of each pft in xml file is actually a name of a pft already in database
       if (!is.character(dbcon)) {
-        x <- db.query(paste0("SELECT modeltypes.name AS type FROM pfts, modeltypes WHERE pfts.name = '",  settings$pfts[i]$pft$name, "' AND modeltypes.id=pfts.modeltype_id;"), con=dbcon)
+        if (is.null(settings$model$type)) {
+          x <- db.query(paste0("SELECT pfts.id FROM pfts",
+                               " WHERE pfts.name = '",  settings$pfts[i]$pft$name, "'"), con=dbcon)
+        } else {
+          x <- db.query(paste0("SELECT pfts.id FROM pfts, modeltypes",
+                               " WHERE pfts.name = '",  settings$pfts[i]$pft$name, "'",
+                               " AND modeltypes.name='", settings$model$type, "'",
+                               " AND modeltypes.id=pfts.modeltype_id;"), con=dbcon)
+        }
         if (nrow(x) == 0) {
           logger.severe("Did not find a pft with name ", settings$pfts[i]$pft$name)
         }
         if (nrow(x) > 1) {
           logger.warn("Found multiple entries for pft with name ", settings$pfts[i]$pft$name)
-        }
-        if (!is.null(settings$model$type)) {
-          for (j in 1:nrow(x)) {
-            if (x[[j, 'type']] != settings$model$type) {
-              logger.severe(settings$pfts[i]$pft$name, "has different model type [", x[[j, 'type']], "] than selected model [", settings$model$type, "].")
-            }
-          }
         }
       }
   

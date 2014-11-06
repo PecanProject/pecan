@@ -37,36 +37,36 @@ regrid <- function(latlon.data){
 ##' @author David LeBauer
 grid2netcdf <- function(gdata, date = '9999-09-09', outfile = "out.nc"){
 
-  ## Fill in NA's
-  lats <-  unique(gdata$lat)
-  lons <- unique(gdata$lon)
-  dates <- unique(gdata$date)
-  latlons <- data.table(expand.grid(lat = lats,
-                                    lon = lons,
-                                    date = dates))
-  grid.data <- merge(latlons, gdata, by = c('lat','lon', 'date'),all.x = TRUE)
-  lat <- ncdim_def("lat", "degrees_east",
-                   vals =  lats,
-                   longname = "station_latitude") 
-  lon <- ncdim_def("lon", "degrees_north",
-                   vals = lons,
-                   longname = "station_longitude")
-  time <- ncdim_def(name = "time",
-                    units = paste0("days since 1700-01-01"),
-                    vals = as.numeric(ymd(paste0(years, "01-01")) - ymd("1700-01-01")),
-                    calendar = "standard", unlim = TRUE)    
-  
-  yieldvar <- mstmipvar("CropYield", lat, lon, time)
-  nc <- nc_create(filename = outfile,
-                  vars = list(CropYield = yieldvar))
-  
-  ## Output netCDF data
-  #    ncvar_put(nc, varid = yieldvar, vals = grid.data[order(lat, lon, order(ymd(date )))]$yield)
-  #    ncvar_put(nc, varid = yieldvar, vals = grid.data[order(order(ymd(date), lat, lon))]$yield)
-  ncvar_put(nc, varid = yieldvar, vals = yieldarray)
-  
-  ncatt_put(nc, 0, "description","put description here")
-  nc_close(nc)
+    ## Fill in NA's
+    lats <-  unique(gdata$lat)
+    lons <- unique(gdata$lon)
+    dates <- unique(gdata$date)
+    latlons <- data.table(expand.grid(lat = lats,
+                                      lon = lons,
+                                      date = dates))
+    grid.data <- merge(latlons, gdata, by = c('lat','lon', 'date'),all.x = TRUE)
+    lat <- ncdim_def("lat", "degrees_east",
+                     vals =  lats,
+                     longname = "station_latitude") 
+    lon <- ncdim_def("lon", "degrees_north",
+                     vals = lons,
+                     longname = "station_longitude")
+    time <- ncdim_def(name = "time",
+                   units = paste0("days since 1700-01-01"),
+                   vals = as.numeric(ymd(paste0(years, "01-01")) - ymd("1700-01-01")),
+                   calendar = "standard", unlim = TRUE)    
+    
+    yieldvar <- mstmipvar("CropYield", lat, lon, time)
+    nc <- nc_create(filename = outfile,
+                    vars = list(CropYield = yieldvar))
+    
+    ## Output netCDF data
+#    ncvar_put(nc, varid = yieldvar, vals = grid.data[order(lat, lon, order(ymd(date )))]$yield)
+#    ncvar_put(nc, varid = yieldvar, vals = grid.data[order(order(ymd(date), lat, lon))]$yield)
+    ncvar_put(nc, varid = yieldvar, vals = yieldarray)
+        
+    ncatt_put(nc, 0, "description","put description here")
+    nc_close(nc)
 }
 
 

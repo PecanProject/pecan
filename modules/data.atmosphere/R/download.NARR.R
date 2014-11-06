@@ -1,3 +1,13 @@
+##' Download NARR files
+##'
+##' @name download.NARR
+##' @title download.NARR
+##' @export
+##' @param outfolder
+##' @param start_year
+##' @param end_year
+##' 
+##' @author ??
 download.NARR <- function(outfolder,start_year,end_year){
   
   if(!file.exists(outfolder)) dir.create(outfolder)

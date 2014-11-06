@@ -100,7 +100,7 @@ model{
   for(i in 1:nchain){
     y.samp = sample(data$y,length(data$y),replace=TRUE)
     init[[i]] <- list(x = z0,tau_add=runif(1,1,5)/var(diff(y.samp),na.rm=TRUE),
-                      tau_dbh=1,tau_inc=500,tau_ind=50,tau_yr=100,ind=rep(0,data$ni),year=rep(0,data$nt))
+                      tau_dbh=1,tau_inc=1500,tau_ind=50,tau_yr=100,ind=rep(0,data$ni),year=rep(0,data$nt))
   }
   
   ## compile JAGS model

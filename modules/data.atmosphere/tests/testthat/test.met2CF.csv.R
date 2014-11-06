@@ -10,7 +10,7 @@ format <- list(orig  = c("Corrected.Date.Time", "Solar.Radiation..W.m2.", "Temp.
                skip  = 0,
                unit.row = TRUE,
                na.strings = NA) 
-met2CF.csv(in.path = "data", in.file = "met2CF.csv.csv", outfolder = "/tmp/", 
-           format = format,
-           lat = 42 + 47/60 + 30/6000,
-           lon = 76 + 7/60 + 20/6000)
+# met2CF.csv(in.path = "data", in.file = "met2CF.csv.csv", outfolder = tempdir(), 
+#            format = format,
+#            lat = 42 + 47/60 + 30/6000,
+#            lon = 76 + 7/60 + 20/6000)

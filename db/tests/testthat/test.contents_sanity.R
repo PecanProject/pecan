@@ -6,7 +6,7 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-con <- db.open(dbparms)
+con <- db.open(list(driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety"))
 
 test_that("append.covariates appends managements to yields",{
   test.traits <- db.query("select * from traits where id in (select trait_id from covariates) limit 10;", con = con)
@@ -68,3 +68,5 @@ test_that("query.covariates returns expected data.frame",{
   expect_equal(colnames(test.query), c("trait_id", "level", "name"))
   expect_true(nrow(test.query) >= length(ids))
 })
+
+db.close(con = con)

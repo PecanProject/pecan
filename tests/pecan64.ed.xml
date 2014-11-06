@@ -4,16 +4,14 @@
 
   <database>
     <bety>
+      <driver>PostgreSQL</driver>      
       <user>bety</user>
       <password>bety</password>
       <host>localhost</host>
       <dbname>bety</dbname>
+      <write>FALSE</write>
     </bety>
   </database>
-
-  <bety>
-    <write>FALSE</write>
-  </bety>
 
   <pfts>
     <pft>
@@ -37,7 +35,7 @@
 
   <model>
     <binary>/usr/local/bin/ed2.r82</binary>
-    <name>ED2</name>
+    <type>ED2</type>
     <revision>82</revision>
     <config.header>
       <radiation>
@@ -47,20 +45,25 @@
         <output_month>12</output_month>
       </ed_misc>
     </config.header>
-    <veg>/home/carya/oge2OLD/OGE2_</veg>
-    <soil>/home/carya/faoOLD/FAO_</soil>
-    <psscss>/home/carya/sites/ebi</psscss>
-    <inputs>/home/carya/ed_inputs/</inputs>
     <phenol.scheme>0</phenol.scheme>
   </model>
 
   <run>
     <site>
       <id>76</id>
-      <met>/home/carya/sites/ebifarm/ED_MET_DRIVER_HEADER</met>
       <met.start>2004-01-01 00:00:00</met.start>
       <met.end>2009-12-31 23:59:59</met.end>
     </site>
+    <inputs>
+      <met>/home/carya/sites/ebifarm/ED_MET_DRIVER_HEADER</met>
+      <veg>/home/carya/oge2OLD/OGE2_</veg>
+      <soil>/home/carya/faoOLD/FAO_</soil>
+      <pss>/home/carya/sites/ebifarm/ebifarm.lat40.0lon-88.0.pss</pss>
+      <css>/home/carya/sites/ebifarm/ebifarm.lat40.0lon-88.0.css</css>
+      <site>/home/carya/sites/ebifarm/ebifarm.lat40.0lon-88.0.site</site>
+      <lu>/home/carya/ed_inputs/glu</lu>
+      <thsum>/home/carya/ed_inputs</thsum>
+    </inputs>
     <start.date>2006/01/01</start.date>
     <end.date>2006/12/31</end.date>
     <host>

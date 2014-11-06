@@ -61,3 +61,4 @@ Num;Group;order;Saveit;Variable.Name;standard_name;Units;Long.name;Priority;Cate
 62;;;;Uwind;northward_wind;m s-1;Northward Component of Wind;1;Driver;No;Yes;real;3;lon;lat;time;na;Northward Component of Wind
 63;;;;Vwind;eastward_wind;m s-1;Eastward Component of Wind;1;Driver;No;Yes;real;3;lon;lat;time;na;Eastward Component of Wind
 64;;;;RH;relative_humidity;%;Relative Humidity;1;Driver;No;Yes;real;3;lon;lat;time;na;Relative Humidity
+65;;;;PAR;surface_downwelling_photosynthetic_photon_flux_in_air;mol m-2 s-1;Photosynthetically Active Radiation;1;Driver;No;Yes;real;3;lon;lat;time;na;Photosynthetically Active Radiation

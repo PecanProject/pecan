@@ -6,7 +6,8 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-con <- db.open(dbparms)
+
+con <- db.open(list(driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety"))
 test_that("take.samples works",{
   expect_equal(take.samples(summary = data.frame(mean = 1, stat = NA)), 1)
   set.seed(0)
@@ -24,3 +25,4 @@ test_that("derive.traits works",{
   expect_equal(test.derived,
                structure(list(mean = 0.0944129994366609, stat = 687.395104414576, n = 1, vname = "x"), .Names = c("mean", "stat", "n", "vname"), row.names = c(NA, -1L), class = "data.frame"))
 })
+db.close(con = con)
