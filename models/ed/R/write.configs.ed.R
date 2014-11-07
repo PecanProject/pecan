@@ -219,11 +219,12 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
     filename <- system.file(settings$model$edin, package = "PEcAn.ED2")
     if (filename == "") {
       if (!is.null(settings$model$revision)) {
-        filename <- system.file(paste0("ED2IN.r", settings$model$revision), package = "PEcAn.ED2")
+        rev <- gsub('^r', '', settings$model$revision)
       } else {
         model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database$bety)
-        filename <- system.file(paste0("ED2IN.r", model$revision), package = "PEcAn.ED2")
+        rev <- gsub('^r', '', model$revision)
       }
+      filename <- system.file(paste0("ED2IN.r", rev), package = "PEcAn.ED2")
     }
     if (filename == "") {
       logger.severe("Could not find ED template")
