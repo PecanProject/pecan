@@ -1,6 +1,6 @@
 ### Truncated Normal
-dtnorm <- function(x, mu, s, Min=0, Max=+Inf){
-  y <- dnorm(x, mu, s, log=TRUE) - log(pnorm(Max, mu, s) - pnorm(Min, mu, s))
+dtnorm <- function(x, mu, s, Min=0, Max=+Inf, log=TRUE){
+  y <- dnorm(x, mu, s, log=log) - log(pnorm(Max, mu, s) - pnorm(Min, mu, s))
   y[x < Min | x > Max] = -Inf
   return(y)
 }

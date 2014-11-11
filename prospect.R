@@ -78,7 +78,7 @@ gpm <- function(alpha, n, theta, N){
   
   R.N.a <- rhoa + nmR / dmRT 
   T.N.a <- nmT / dmRT
-  return(data.frame(R = R.N.a, Tr = T.N.a))
+  return(data.frame(Reflectance = R.N.a, Transmittance = T.N.a))
 }
 
 # PROSPECT Models #####
@@ -95,7 +95,7 @@ prospect4 <- function(N, Cab, Cw, Cm,
   k <- (k.cab + k.w + k.m) / N
   if(any(k.all < 0)){
     out <- rep(0, length(wavelengths))
-    return(data.frame(R=out, Tr=out, wavelength=wavelengths))
+    return(data.frame(Reflectance=out, Transmittance=out, Wavelength=wavelengths))
   }
   theta <- (1-k)*exp(-k) + k^2 * itg.k(k)
   
@@ -118,7 +118,7 @@ prospect5 <- function(N, Cab, Car, Cw, Cm,
   theta <- (1-k)*exp(-k) + k^2 * itg.k(k)
   
   rt <- gpm(alpha, n, theta, N)
-  rt$wavelength <- wavelengths
+  rt$Wavelength <- wavelengths
   return(rt)
 }
 
@@ -137,7 +137,7 @@ prospect5B <- function(N, Cab, Car, brown, Cw, Cm,
   theta <- (1-k)*exp(-k) + k^2 * itg.k(k)
   
   rt <- gpm(alpha, n, theta, N)
-  rt$wavelength <- wavelengths
+  rt$Wavelength <- wavelengths
   return(rt)
 }
 
