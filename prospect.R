@@ -100,7 +100,7 @@ prospect4 <- function(N, Cab, Cw, Cm,
   theta <- (1-k)*exp(-k) + k^2 * itg.k(k)
   
   rt <- gpm(alpha, n, theta, N)
-  rt$wavelength <- wavelengths
+  rt$Wavelength <- wavelengths
   return(rt)
 }
 
