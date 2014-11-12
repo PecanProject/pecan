@@ -38,7 +38,7 @@ echo "Task index number : $SGE_TASK_ID"
 echo "=========================================================="
 
 # Run an R script
-R --vanilla < testrun.R > output.Rout
+R --save < testrun.R > output.Rout
 
 echo "=========================================================="
 echo "Finished on : $(date)"
