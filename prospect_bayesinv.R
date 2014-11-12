@@ -5,7 +5,6 @@ source("prospect.R")
 source("timer.r")
 source("truncnorm.R")
 
-library(coda)
 library(mvtnorm)
 
 samp.inits <- list(N=1, 
