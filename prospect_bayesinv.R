@@ -5,8 +5,6 @@ source("prospect.R")
 source("timer.r")
 source("truncnorm.R")
 
-library(mvtnorm)
-
 samp.inits <- list(N=1, 
                    Cab=30,
                    Cw=0.0001,
