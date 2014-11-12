@@ -3,7 +3,7 @@ library(reshape2)
 melt.refdat <- function(datlist){
   mbound <- do.call(rbind, datlist)
   wlnames <- colnames(mbound[9:length(mbound)])
-  melted <- melt(mbound, measure.vars = wlnames, value.name = "Reflectance")
+  melted <- melt(mbound, measure.vars = wlnames, value.name = "Value")
   melted$Wavelength <- as.numeric(
     sapply(strsplit(as.character(melted$variable), "_"), "[[", 2)
     )
