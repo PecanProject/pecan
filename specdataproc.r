@@ -8,6 +8,7 @@ melt.refdat <- function(datlist){
     sapply(strsplit(as.character(melted$variable), "_"), "[[", 2)
     )
   melted$variable <- NULL
+  melted$Instrument <- substring(melted$Instrument, 1, 1)
   ### TODO: Pick out details in Spectra_name
   return(melted)
 }
@@ -20,3 +21,15 @@ load.all.spec <- function(path="data/NASA_HyspIRI_CVARS_Spectra/"){
   return(d.f)
 }
 
+specmatrix <- function(in.full, 
+                       conditions = expression(Species == "Grape" &
+                                                 Spectra_Type == "Refl" &
+                                                 Wavelength >= 400)){
+  in.dat <- subset(in.full, eval(conditions))
+  in.dat$ID <- paste(in.dat$Spectra_Name, in.dat$Sample_Date, in.dat$Instrument, sep="__")
+  in.dat$ID <- as.integer(factor(in.dat$ID))
+  out.cast <- dcast(in.dat[c("ID", "Wavelength", "Value")], 
+                    Wavelength ~ ID, value.var="Value")
+  out.dat <- data.matrix(out.cast)
+  return(out.dat)
+}
