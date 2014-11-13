@@ -16,7 +16,8 @@ samp.inits <- list(N=1,
 ## Columns 2-n : Reflectance observations
 pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
                       initc=samp.inits,
-                      JumpRSD=5e-4) {
+                      JumpRSD=5e-4,
+                      local.store=FALSE) {
   wl <- min(obs.spec[,1]):max(obs.spec[,1])
   nwl <- length(wl)
   nspec <- ncol(obs.spec)
@@ -52,11 +53,21 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
   prev.posterior <- pp1 + pp2 + pp3 + pp4 + pp5
   
   ### MCMC storage
-  N.store <- numeric(ngibbs)
-  Cab.store <- numeric(ngibbs)
-  Cw.store <- numeric(ngibbs)
-  Cm.store <- numeric(ngibbs)
-  pwl.store <- matrix(NA, nrow=ngibbs, ncol=nwl)
+  if (local.store){
+          N.store <- numeric(ngibbs)
+          Cab.store <- numeric(ngibbs)
+          Cw.store <- numeric(ngibbs)
+          Cm.store <- numeric(ngibbs)
+          pwl.store <- matrix(NA, nrow=ngibbs, ncol=nwl)
+  } else {
+          pvec <- paste("p", wl, sep='')
+          prefix <- deparse(substitute(obs.spec))
+          fname <- sprintf("%s_%g.dat", prefix, jrsd)
+          write(c("an", "N", "Cab", "Cw", "Cm", pvec),
+                file=fname, 
+                append=TRUE,
+                sep=" , ")
+  }
   
   ## MCMC loop
   tstart <- proc.time()
@@ -117,21 +128,26 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
       ar <- ar + 1
     }
 
-    # Store PROSPECT parameters
-    N.store[g] <- N.i
-    Cab.store[g] <- Cab.i
-    Cw.store[g] <- Cw.i
-    Cm.store[g] <- Cm.i
-    
-
     ### Sample error precision ### 
     u1 <- pwl.s[1] + nspec/2
     u2 <- pwl.s[2] + 0.5 * apply(prev.error^2, 1, sum)
     pwl.i <- rgamma(nwl, u1, u2)
      
-    # Store error value
-    pwl.store[g,] <- pwl.i  
+    # Store values 
+    if (local.store){
+            N.store[g] <- N.i
+            Cab.store[g] <- Cab.i
+            Cw.store[g] <- Cw.i
+            Cm.store[g] <- Cm.i
+            pwl.store[g,] <- pwl.i  
+    } else {
+            write(c(ar, N.i, Cab.i, Cw.i, Cm.i, pwl.i), 
+                  file=fname,
+                  append=TRUE)
+    }
   }
-  
-  return(list(N=N.store, Cab=Cab.store, Cw=Cw.store, Cm=Cm.store, pwl=pwl.store, arate=ar/ngibbs))
+
+  if (local.store){
+          return(list(N=N.store, Cab=Cab.store, Cw=Cw.store, Cm=Cm.store, pwl=pwl.store, arate=ar/ngibbs))
+  }
 }
