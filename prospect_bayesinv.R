@@ -18,6 +18,8 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
                       initc=samp.inits,
                       JumpRSD=5e-4) {
   wl <- min(obs.spec[,1]):max(obs.spec[,1])
+  nwl <- length(wl)
+  nspec <- ncol(obs.spec)
   JumpSD <- JumpRSD * unlist(initc)[-5]
   
   ### Initial values unpacked
@@ -54,7 +56,7 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
   Cab.store <- numeric(ngibbs)
   Cw.store <- numeric(ngibbs)
   Cm.store <- numeric(ngibbs)
-  pwl.store <- matrix(NA, nrow=ngibbs, ncol=nrow(obs.spec))
+  pwl.store <- matrix(NA, nrow=ngibbs, ncol=nwl)
   
   ## MCMC loop
   tstart <- proc.time()
@@ -123,9 +125,9 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
     
 
     ### Sample error precision ### 
-    u1 <- pwl.s[1] + ncol(prev.error)/2
+    u1 <- pwl.s[1] + nspec/2
     u2 <- pwl.s[2] + 0.5 * apply(prev.error^2, 1, sum)
-    pwl.i <- rgamma(nrow(prev.error), u1, u2)
+    pwl.i <- rgamma(nwl, u1, u2)
      
     # Store error value
     pwl.store[g,] <- pwl.i  
