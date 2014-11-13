@@ -14,10 +14,12 @@ samp.inits <- list(N=1,
 ## NOTE: obs.spec must be a matrix as follows:
 ## Column 1 : Wavelengths (400:2500)
 ## Columns 2-n : Reflectance observations
+## Use specdatproc script to generate correct matrices from data.
 pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
                       initc=samp.inits,
                       JumpRSD=5e-4,
-                      local.store=FALSE) {
+                      local.store=FALSE,
+                      sample.together=FALSE) {
   wl <- min(obs.spec[,1]):max(obs.spec[,1])
   nwl <- length(wl)
   nspec <- ncol(obs.spec)
@@ -62,10 +64,10 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
   } else {
           pvec <- paste("p", wl, sep='')
           prefix <- deparse(substitute(obs.spec))
-          fname <- sprintf("%s_%g.dat", prefix, jrsd)
+          fname <- sprintf("runs/%s_%g.dat", prefix, jrsd)
           write(c("an", "N", "Cab", "Cw", "Cm", pvec),
+                ncolumns=nwl,
                 file=fname, 
-                append=TRUE,
                 sep=" , ")
   }
   
@@ -142,6 +144,7 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
             pwl.store[g,] <- pwl.i  
     } else {
             write(c(ar, N.i, Cab.i, Cw.i, Cm.i, pwl.i), 
+                  ncolumns=nwl,
                   file=fname,
                   append=TRUE)
     }
@@ -151,3 +154,37 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
           return(list(N=N.store, Cab=Cab.store, Cw=Cw.store, Cm=Cm.store, pwl=pwl.store, arate=ar/ngibbs))
   }
 }
+
+prospect.sampler <- function(N, Cab, Cw, Cm, pwl){
+
+    ## Calculate modeled spectra and residuals
+    guess.spec <- prospect(N, Cab, Cw, Cm)
+    guess.error <- -apply(obs.spec[,-1], 2, "-", guess.spec$Reflectance)
+
+    ## Evaluate posterior | PROSPECT
+    gp1 <- sum(dnorm(guess.error, 0, 1/sqrt(pwl), log=TRUE))  # Likelihood
+    gp2 <- dlnorm(guess.N - 1, N.s[1], N.s[2], log=TRUE)    # N prior
+    gp3 <- dlnorm(guess.Cab, Cab.s[1], Cab.s[2], log=TRUE)    # Cab prior
+    gp4 <- dlnorm(guess.Cw, Cw.s[1], Cw.s[2], log=TRUE)     # Cw prior
+    gp5 <- dlnorm(guess.Cm, Cm.s[1], Cm.s[2], log=TRUE)     # Cm prior
+    guess.posterior <- gp1 + gp2 + gp3 + gp4 + gp5
+
+    ## Test acceptance w/ Jump Distribution
+    jn1 <- dtnorm(N, N.i, JumpSD[1], Min=1)
+    jn2 <- dtnorm(Cab, Cab.i, JumpSD[2])
+    jn3 <- dtnorm(Cw, Cw.i, JumpSD[3])
+    jn4 <- dtnorm(Cm, Cm.i, JumpSD[4])
+    jnum <-jn1 + jn2 + jn3 + jn4
+    
+  
+    jd1 <- dtnorm(N.i, N, JumpSD[1], Min=1)
+    jd2 <- dtnorm(Cab.i, Cab, JumpSD[2])
+    jd3 <- dtnorm(Cw.i, Cw, JumpSD[3])
+    jd4 <- dtnorm(Cm.i, Cm, JumpSD[4])
+    jden <- jd1 + jd2 + jd3 + jd4
+    
+    
+    a <- exp((guess.posterior - jnum) - (prev.posterior - jden))
+    return(a)
+}
+
