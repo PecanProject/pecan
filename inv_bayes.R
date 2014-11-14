@@ -47,7 +47,7 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
   
   # Precalculate first model and posterior
   prev.spec <- prospect(N.i, Cab.i, Cw.i, Cm.i)
-  prev.error <- -apply(obs.spec[,-1], 2, "-", prev.spec$Reflectance)
+  prev.error <- -apply(obs.spec[,-1], 2, "-", prev.spec[,"Reflectance"])
   
   pp1 <- sum(dnorm(prev.error, 0, 1/sqrt(pwl.i), log=TRUE))  # Likelihood
   pp2 <- dnorm(N.i - 1, N.s[1], N.s[2], log=TRUE) + log(2)    # N prior
@@ -71,11 +71,16 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
                 sep=",")
   }
   ### Define sampler functions
-  try.posterior <- function(N, Cab, Cw, Cm){
+  try.error <- function(N, Cab, Cw, Cm){
 
           ## Calculate modeled spectra and residuals
           guess.spec <- prospect(N, Cab, Cw, Cm)
-          guess.error <- -apply(obs.spec[,-1], 2, "-", guess.spec$Reflectance)
+          guess.error <- -apply(obs.spec[,-1], 2, "-",
+                                guess.spec[,"Reflectance"])
+          return(guess.error)
+  }
+
+  try.posterior <- function(N, Cab, Cw, Cm, guess.error){
 
           ## Evaluate posterior | PROSPECT
           gp1 <- sum(dnorm(guess.error, 0, 1/sqrt(pwl.i), log=TRUE))  # Likelihood
@@ -96,7 +101,8 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
           guess.Cw <- rtnorm(1, Cw.i, JumpSD[3])
           guess.Cm <- rtnorm(1, Cm.i, JumpSD[4])
 
-          guess.posterior <- try.posterior(guess.N, guess.Cab, guess.Cw, guess.Cm)
+          guess.error <- try.error(guess.N, guess.Cab, guess.Cw, guess.Cm)
+          guess.posterior <- try.posterior(guess.N, guess.Cab, guess.Cw, guess.Cm, guess.error)
 
           ## Test acceptance w/ Jump Distribution
           jn1 <- dtnorm(guess.N, N.i, JumpSD[1], Min=1)
@@ -119,10 +125,11 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
                   Cab.i <- guess.Cab
                   Cw.i <- guess.Cw
                   Cm.i <- guess.Cm
+                  prev.error <- guess.error
                   prev.posterior <- guess.posterior
                   A <- 1 
           }
-          return(c(N.i, Cab.i, Cw.i, Cm.i, prev.posterior, A))
+          return(list(N.i, Cab.i, Cw.i, Cm.i, prev.posterior, A, prev.error))
   }
 
   sample.N <- function(N.i, Cab.i, Cw.i, Cm.i, JumpSD){
@@ -130,7 +137,8 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
           A <- 0
           ## Draw PROSPECT parameters
           guess.N <- rtnorm(1, N.i, JumpSD, Min=1)
-          guess.posterior <- try.posterior(guess.N, Cab.i, Cw.i, Cm.i)
+          guess.error <- try.error(guess.N, Cab.i, Cw.i, Cm.i)
+          guess.posterior <- try.posterior(guess.N, Cab.i, Cw.i, Cm.i, guess.error)
 
           ## Test acceptance w/ Jump Distribution
           jnum <- dtnorm(guess.N, N.i, JumpSD, Min=1)
@@ -140,10 +148,11 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
           if(is.na(a)) a <- -1
           if(a > runif(1)){
                   N.i <- guess.N
+                  prev.error <- guess.error
                   prev.posterior <- guess.posterior
                   A <- 1
           }
-          return(c(N.i, prev.posterior, A))
+          return(list(N.i, prev.posterior, A, prev.error))
   }
 
   sample.Cab <- function(N.i, Cab.i, Cw.i, Cm.i, JumpSD){
@@ -151,7 +160,8 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
           A <- 0
           ## Draw PROSPECT parameters
           guess.Cab <- rtnorm(1, Cab.i, JumpSD)
-          guess.posterior <- try.posterior(N.i, guess.Cab, Cw.i, Cm.i)
+          guess.error <- try.error(N.i, guess.Cab, Cw.i, Cm.i)
+          guess.posterior <- try.posterior(N.i, guess.Cab, Cw.i, Cm.i, guess.error)
 
           ## Test acceptance w/ Jump Distribution
           jnum <- dtnorm(guess.Cab, Cab.i, JumpSD)
@@ -161,10 +171,11 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
           if(is.na(a)) a <- -1
           if(a > runif(1)){
                   Cab.i <- guess.Cab
+                  prev.error <- guess.error
                   prev.posterior <- guess.posterior
                   A <- 1
           }
-          return(c(Cab.i, prev.posterior, A))
+          return(list(Cab.i, prev.posterior, A, prev.error))
   }
 
   sample.Cw <- function(N.i, Cab.i, Cw.i, Cm.i, JumpSD){
@@ -172,7 +183,8 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
           A <- 0
           ## Draw PROSPECT parameters
           guess.Cw <- rtnorm(1, Cw.i, JumpSD)
-          guess.posterior <- try.posterior(N.i, Cab.i, guess.Cw, Cm.i)
+          guess.error <- try.error(N.i, Cab.i, guess.Cw, Cm.i)
+          guess.posterior <- try.posterior(N.i, Cab.i, guess.Cw, Cm.i, guess.error)
 
           ## Test acceptance w/ Jump Distribution
           jnum <- dtnorm(guess.Cw, Cw.i, JumpSD)
@@ -182,10 +194,11 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
           if(is.na(a)) a <- -1
           if(a > runif(1)){
                   Cw.i <- guess.Cw
+                  prev.error <- guess.error
                   prev.posterior <- guess.posterior
                   A <- 1
           }
-          return(c(Cw.i, prev.posterior, A))
+          return(list(Cw.i, prev.posterior, A, prev.error))
   }
 
   sample.Cm <- function(N.i, Cab.i, Cw.i, Cm.i, JumpSD){
@@ -193,8 +206,8 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
           A <- 0
           ## Draw PROSPECT parameters
           guess.Cm <- rtnorm(1, Cm.i, JumpSD)
-          guess.posterior <- try.posterior(N.i, Cab.i, Cw.i, guess.Cm,
-                                           prospect, obs.spec, pwl.i)
+          guess.error <- try.error(N.i, Cab.i, Cw.i, guess.Cm)
+          guess.posterior <- try.posterior(N.i, Cab.i, Cw.i, guess.Cm, guess.error)
 
           ## Test acceptance w/ Jump Distribution
           jnum <- dtnorm(guess.Cm, Cm.i, JumpSD)
@@ -204,10 +217,11 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
           if(is.na(a)) a <- -1
           if(a > runif(1)){
                   Cm.i <- guess.Cm
+                  prev.error <- guess.error
                   prev.posterior <- guess.posterior
                   A <- 1
           }
-          return(c(Cm.i, prev.posterior, A))
+          return(list(Cm.i, prev.posterior, A, prev.error))
   }
 
   
@@ -223,32 +237,37 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
   
   if(sample.together){
           prospect.i <- sample.all(N.i, Cab.i, Cw.i, Cm.i, JumpSD)
-          N.i <- prospect.i[1]
-          Cab.i <- prospect.i[2]
-          Cw.i <- prospect.i[3]
-          Cm.i <- prospect.i[4]
-          prev.posterior <- prospect.i[5]
-          ar <- ar + prospect.i[6]
+          N.i <- prospect.i[[1]]
+          Cab.i <- prospect.i[[2]]
+          Cw.i <- prospect.i[[3]]
+          Cm.i <- prospect.i[[4]]
+          prev.posterior <- prospect.i[[5]]
+          prev.error <- prospect.i[[7]]
+          ar <- ar + prospect.i[[6]]
   } else {
           N.sample <- sample.N(N.i, Cab.i, Cw.i, Cm.i, JumpSD[1])
-          N.i <- N.sample[1]
-          prev.posterior <- N.sample[2]
-          ar <- ar + N.sample[3]
+          N.i <- N.sample[[1]]
+          prev.posterior <- N.sample[[2]]
+          prev.error <- N.sample[[4]]
+          ar <- ar + N.sample[[3]]
 
           Cab.sample <- sample.Cab(N.i, Cab.i, Cw.i, Cm.i, JumpSD[2])
-          Cab.i <- Cab.sample[1]
-          prev.posterior <- Cab.sample[2]
-          ar <- ar + Cab.sample[3]
+          Cab.i <- Cab.sample[[1]]
+          prev.posterior <- Cab.sample[[2]]
+          prev.error <- Cab.sample[[4]]
+          ar <- ar + Cab.sample[[3]]
 
           Cw.sample <- sample.Cw(N.i, Cab.i, Cw.i, Cm.i, JumpSD[3])
-          Cw.i <- Cw.sample[1]
-          prev.posterior <- Cw.sample[2]
-          ar <- ar + Cw.sample[3]
+          Cw.i <- Cw.sample[[1]]
+          prev.posterior <- Cw.sample[[2]]
+          prev.error <- Cw.sample[[4]]
+          ar <- ar + Cw.sample[[3]]
 
-          Cab.sample <- sample.Cab(N.i, Cab.i, Cw.i, Cm.i, JumpSD[4])
-          Cab.i <- Cab.sample[1]
-          prev.posterior <- Cab.sample[2]
-          ar <- ar + Cab.sample[3]
+          Cm.sample <- sample.Cm(N.i, Cab.i, Cw.i, Cm.i, JumpSD[4])
+          Cm.i <- Cm.sample[[1]]
+          prev.posterior <- Cm.sample[[2]]
+          prev.error <- Cm.sample[[4]]
+          ar <- ar + Cm.sample[[3]]
   }
 
     ### Sample error precision ### 
