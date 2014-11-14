@@ -2,6 +2,9 @@
 ###'@author Alexey Shiklomanov
 ###'@description Prospect 4, 5, and 5B models
 
+load("data/dataSpec_p4.RData")    
+dataSpec_p4 <- as.matrix(dataSpec_p4)
+
 # Auxiliary functions #####
 exp.t <- function(x) exp(-x) / x
 itg.k <- function(k) sapply(k, function(x) integrate(exp.t, x, Inf)$value)
@@ -78,29 +81,23 @@ gpm <- function(alpha, n, theta, N){
   
   R.N.a <- rhoa + nmR / dmRT 
   T.N.a <- nmT / dmRT
-  return(data.frame(Reflectance = R.N.a, Transmittance = T.N.a))
+  return(cbind(Reflectance=R.N.a, Transmittance=T.N.a))
 }
 
 # PROSPECT Models #####
 prospect4 <- function(N, Cab, Cw, Cm,
                      data=dataSpec_p4, alpha=40.0, wavelengths=400:2500){
 
-  load("data/dataSpec_p4.RData")
-    
-  n <- data$refractive_index                    # Column 2
-  k.cab <- Cab * data$specific_abs_coeff_chl    # Column 3
-  k.w <- Cw * data$specific_abs_coeff_cw        # Column 5
-  k.m <- Cm * data$specific_abs_coeff_cm        # Column 6
+  n <- data[,"refractive_index"]                    # Column 2
+  k.cab <- Cab * data[,"specific_abs_coeff_chl"]    # Column 3
+  k.w <- Cw * data[,"specific_abs_coeff_cw"]        # Column 5
+  k.m <- Cm * data[,"specific_abs_coeff_cm"]        # Column 6
   k.all <- c(k.cab, k.w, k.m)
   k <- (k.cab + k.w + k.m) / N
-  if(any(k.all < 0)){
-    out <- rep(0, length(wavelengths))
-    return(data.frame(Reflectance=out, Transmittance=out, Wavelength=wavelengths))
-  }
   theta <- (1-k)*exp(-k) + k^2 * itg.k(k)
   
   rt <- gpm(alpha, n, theta, N)
-  rt$Wavelength <- wavelengths
+  rt <- cbind(Wavelength=wavelengths, rt)
   return(rt)
 }
 
@@ -109,16 +106,16 @@ prospect5 <- function(N, Cab, Car, Cw, Cm,
 
   load("data/dataSpec_p5.RData")
   
-  n <- data$refractive_index                    # Column 2
-  k.cab <- Cab * data$specific_abs_coeff_chl    # Column 3
-  k.car <- Car* data$specific_abs_coeff_car     # Column 4
-  k.w <- Cw * data$specific_abs_coeff_cw        # Column 5
-  k.m <- Cm * data$specific_abs_coeff_cm        # Column 6
-  k <- (k.cab + k.w + k.m) / N
+  n <- data[,"refractive_index"]                    # Column 2
+  k.cab <- Cab * data[,"specific_abs_coeff_chl"]    # Column 3
+  k.car <- Car * data[,"specific_abs_coeff_car"]    # Column 4
+  k.w <- Cw * data[,"specific_abs_coeff_cw"]        # Column 5
+  k.m <- Cm * data[,"specific_abs_coeff_cm"]        # Column 6
+  k <- (k.cab + k.w + k.m + k.car) / N
   theta <- (1-k)*exp(-k) + k^2 * itg.k(k)
   
   rt <- gpm(alpha, n, theta, N)
-  rt$Wavelength <- wavelengths
+  rt <- cbind(Wavelength=wavelengths, rt)
   return(rt)
 }
 
@@ -127,34 +124,36 @@ prospect5B <- function(N, Cab, Car, brown, Cw, Cm,
 
   load("data/dataSpec_p5B.RData")
   
-  n <- data$refractive_index                    # Column 2
-  k.cab <- Cab * data$specific_abs_coeff_chl    # Column 3
-  k.car <- Car* data$specific_abs_coeff_car     # Column 4
-  k.brown <- brown * data$specific_abs_coeff_brown  # Column5
-  k.w <- Cw * data$specific_abs_coeff_cw        # Column 6
-  k.m <- Cm * data$specific_abs_coeff_cm        # Column 7
-  k <- (k.cab + k.w + k.m) / N
+  n <- data[,"refractive_index"]                    # Column 2
+  k.cab <- Cab * data[,"specific_abs_coeff_chl"]    # Column 3
+  k.car <- Car * data[,"specific_abs_coeff_car"]    # Column 4
+  k.w <- Cw * data[,"specific_abs_coeff_cw"]        # Column 5
+  k.m <- Cm * data[,"specific_abs_coeff_cm"]        # Column 6
+  k.brown <- brown * data[,"specific_abs_coeff_brown"]  # Column5
+  k <- (k.cab + k.w + k.m + k.car + k.brown) / N
   theta <- (1-k)*exp(-k) + k^2 * itg.k(k)
   
   rt <- gpm(alpha, n, theta, N)
-  rt$Wavelength <- wavelengths
+  rt <- cbind(Wavelength=wavelengths, rt)
   return(rt)
 }
-
 
 # Tests #####
 
 # Here are some examples observed during the LOPEX'93 experiment on
 # fresh (F) and dry (D) leaves :
-testdata <- data.frame(
-  row.names = c('min.f', 'max.f', 'corn.f', 'rice.f', 'clover.f', 'laurel.f', 
-            'min.d', 'max.d', 'bamboo.d', 'lettuce.d', 'walnut.d', 'chestnut.d'),
-  N = c(1, 3, 1.518, 2.275, 1.875, 2.660,
-        1.5, 3.6, 2.698, 2.107, 2.656, 1.826),
-  Cab = c(0, 100, 58, 23.7, 46.7, 74.1,
-          0, 100, 70.8, 35.2, 62.8, 47.7),
-  Cw = c(0.004, 0.04, 0.0131, 0.0075, 0.01, 0.0199,
-         0.000063, 0.000900, 0.000117, 0.000244, 0.000263, 0.000307), 
-  Cm = c(0.0019, 0.0165, 0.003662, 0.005811, 0.003014, 0.013520, 
-         0.0019, 0.0165, 0.009327, 0.002250, 0.006573, 0.004305)
-)
+testdata <- function(){
+        out <- data.frame(
+                          row.names = c('min.f', 'max.f', 'corn.f', 'rice.f', 'clover.f', 'laurel.f', 
+                                        'min.d', 'max.d', 'bamboo.d', 'lettuce.d', 'walnut.d', 'chestnut.d'),
+                          N = c(1, 3, 1.518, 2.275, 1.875, 2.660,
+                                1.5, 3.6, 2.698, 2.107, 2.656, 1.826),
+                          Cab = c(0, 100, 58, 23.7, 46.7, 74.1,
+                                  0, 100, 70.8, 35.2, 62.8, 47.7),
+                          Cw = c(0.004, 0.04, 0.0131, 0.0075, 0.01, 0.0199,
+                                 0.000063, 0.000900, 0.000117, 0.000244, 0.000263, 0.000307), 
+                          Cm = c(0.0019, 0.0165, 0.003662, 0.005811, 0.003014, 0.013520, 
+                                 0.0019, 0.0165, 0.009327, 0.002250, 0.006573, 0.004305)
+                          )
+        return(out)
+}
