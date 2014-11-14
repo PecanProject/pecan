@@ -1,0 +1,63 @@
+#!/bin/bash
+#
+# Run this file using 'qsub multirun.qsub'
+#
+# All lines starting with "#$" are SGE qsub commands
+# 
+
+# Specify which shell to use
+#$ -S /bin/bash
+
+# Run on the current working directory
+#$ -cwd
+
+# Give this job a name
+#$ -N prospect_bayes_inversion
+
+# Join standard output and error to a single file
+#$ -j y
+
+# Name the file where to redirect standard output and error
+#$ -o prospbayes_log.qlog
+
+# Send an email when the job begins and when it ends running
+#$ -m be
+
+# Whom to send the email to
+#$ -M ashiklom@bu.edu
+
+# Now let's keep track of some information just in case anything goes wrong
+
+cd ..
+echo "=========================================================="
+echo "Starting on : $(date)"
+echo "Running on node : $(hostname)"
+echo "Current directory : $(pwd)"
+echo "Current job ID : $JOB_ID"
+echo "Current job name : $JOB_NAME"
+echo "Task index number : $SGE_TASK_ID"
+echo "=========================================================="
+
+# Run the R scripts
+# Arguments to runpi.R: JumpRSD Species sample_together(0,1) 
+
+Rscript scripts/runpi.R 0.5 Grape 0 &
+Rscript scripts/runpi.R 0.1 Grape 0 &
+Rscript scripts/runpi.R 0.05 Grape 0 &
+Rscript scripts/runpi.R 0.5 "CAAN-Red Pepper" 0 &
+Rscript scripts/runpi.R 0.1 "CAAN-Red Pepper" 0 &
+Rscript scripts/runpi.R 0.05 "CAAN-Red Pepper" 0 &
+Rscript scripts/runpi.R 0.5 LemonTree 0 &
+Rscript scripts/runpi.R 0.1 LemonTree 0 &
+Rscript scripts/runpi.R 0.05 LemonTree 0 &
+Rscript scripts/runpi.R 0.5 MandarinOrange 0 &
+Rscript scripts/runpi.R 0.1 MandarinOrange 0 &
+Rscript scripts/runpi.R 0.05 MandarinOrange 0 &
+Rscript scripts/runpi.R 0.5 ShortDatePalm 0 &
+Rscript scripts/runpi.R 0.1 ShortDatePalm 0 &
+Rscript scripts/runpi.R 0.05 ShortDatePalm 0 &
+wait
+
+echo "=========================================================="
+echo "Finished on : $(date)"
+echo "=========================================================="
