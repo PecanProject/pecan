@@ -94,7 +94,7 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
                 } else {
                   pvec <- paste("p", wl, sep='')
                 }
-                header <- c("an", "N", "Cab", "Cw", "Cm", pvec)
+                header <- c("N", "Cab", "Cw", "Cm", pvec)
                 write(header,
                       ncolumns=length(header),
                       file=fname, 
@@ -255,7 +255,7 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
                                 pwl.store[g,] <- pwl.i
                         }
                 } else {
-                        write(c(ar, N.i, Cab.i, Cw.i, Cm.i, pwl.i), 
+                        write(c(N.i, Cab.i, Cw.i, Cm.i, pwl.i), 
                               ncolumns=length(header),
                               sep=",",
                               file=fname,
