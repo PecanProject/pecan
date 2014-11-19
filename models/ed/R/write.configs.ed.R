@@ -53,26 +53,25 @@ convert.samples.ED <- function(trait.samples){
   if('Vcmax' %in% names(trait.samples)) {
     vcmax <- trait.samples[['Vcmax']]
     trait.samples[['Vcmax']] <- arrhenius.scaling(vcmax, old.temp = 25, new.temp = 15)
-  }
 
-  ## Convert leaf_respiration_rate_m2 to dark_resp_factor
-  if('leaf_respiration_rate_m2' %in% names(trait.samples)) {
-    leaf_resp = trait.samples[['leaf_respiration_rate_m2']]
+    ## Convert leaf_respiration_rate_m2 to dark_resp_factor; requires Vcmax
+    if('leaf_respiration_rate_m2' %in% names(trait.samples)) {
+      leaf_resp = trait.samples[['leaf_respiration_rate_m2']]
     
-    ## First scale variables to 15 degC
-    trait.samples[['leaf_respiration_rate_m2']] <- 
-    arrhenius.scaling(leaf_resp, old.temp = 25, new.temp = 15)
+      ## First scale variables to 15 degC
+      trait.samples[['leaf_respiration_rate_m2']] <- 
+      arrhenius.scaling(leaf_resp, old.temp = 25, new.temp = 15)
     
-    ## Calculate dark_resp_factor -- Will be depreciated when moving from older versions of ED2
-    trait.samples[['dark_respiration_factor']] <- trait.samples[['leaf_respiration_rate_m2']]/
-      vcmax_15
+      ## Calculate dark_resp_factor -- Will be depreciated when moving from older versions of ED2
+      trait.samples[['dark_respiration_factor']] <- trait.samples[['leaf_respiration_rate_m2']]/
+         trait.samples[['Vcmax']]
     
-    ## Remove leaf_respiration_rate from trait samples -- NO LONGER NEEDED
-    #remove <- which(names(trait.samples)=='leaf_respiration_rate_m2')
-    #trait.samples = trait.samples[-remove]
+      ## Remove leaf_respiration_rate from trait samples -- NO LONGER NEEDED
+      #remove <- which(names(trait.samples)=='leaf_respiration_rate_m2')
+      #trait.samples = trait.samples[-remove]
     
-  } ## End dark_respiration_factor loop
-  
+    } ## End dark_respiration_factor loop
+  } ## End Vcmax  
   # for debugging conversions
   #save(trait.samples, file = file.path(settings$outdir, 'trait.samples.Rdata'))
 
@@ -219,11 +218,12 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
     filename <- system.file(settings$model$edin, package = "PEcAn.ED2")
     if (filename == "") {
       if (!is.null(settings$model$revision)) {
-        filename <- system.file(paste0("ED2IN.r", settings$model$revision), package = "PEcAn.ED2")
+        rev <- gsub('^r', '', settings$model$revision)
       } else {
         model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database$bety)
-        filename <- system.file(paste0("ED2IN.r", model$revision), package = "PEcAn.ED2")
+        rev <- gsub('^r', '', model$revision)
       }
+      filename <- system.file(paste0("ED2IN.r", rev), package = "PEcAn.ED2")
     }
     if (filename == "") {
       logger.severe("Could not find ED template")
