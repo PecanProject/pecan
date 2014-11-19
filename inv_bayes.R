@@ -5,19 +5,21 @@ source("prospect.R")
 source("timer.R")
 source("truncnorm.R")
 
-samp.inits <- list(N=1, 
-                   Cab=30,
-                   Cw=0.01,
-                   Cm=0.005,
-                   pwl=rep(1, 2101)
-                   )
+inits <- list(N=1, 
+              Cab=30,
+              Cw=0.01,
+              Cm=0.005,
+              pwl=rep(1, 2101)
+              )
 
 ## NOTE: obs.spec must be a matrix as follows:
 ## Column 1 : Wavelengths (400:2500)
 ## Columns 2-n : Reflectance observations
 ## Use specdatproc script to generate correct matrices from data.
-pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
-                      initc=samp.inits,
+pinvbayes <- function(obs.spec,
+                      ngibbs=100,
+                      prospect=prospect4,                      
+                      initc=inits,
                       JumpRSD=0.1,
                       local.store=FALSE,
                       sample.together=FALSE, 
@@ -26,7 +28,8 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
                       ar.min=0.1,
                       ar.max=0.9,
                       ar.tweak=5,
-                      fname = sprintf("runs/%s_%g.dat", deparse(substitute(obs.spec)), JumpRSD))
+                      fname = "runs/test_run.dat"
+                      )
 {
         wl <- min(obs.spec[,1]):max(obs.spec[,1])
         nwl <- length(wl)
@@ -51,6 +54,8 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
         Cm.s <- c(log(0.006), 0.9)        # Lognormal
 
         pwl.s <- c(0.001, 0.001)          # Inverse gamma
+
+        re.inst.s <- 0.01               # Normal (sd only)
 
         ### Define sampler functions
         try.error <- function(N, Cab, Cw, Cm){
@@ -84,15 +89,15 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
                 Cw.store <- numeric(ngibbs)
                 Cm.store <- numeric(ngibbs)
                 if(single.precision){
-                  pwl.store <- numeric(ngibbs)
+                        pwl.store <- numeric(ngibbs)
                 } else {
-                  pwl.store <- matrix(NA, nrow=ngibbs, ncol=nwl)
+                        pwl.store <- matrix(NA, nrow=ngibbs, ncol=nwl)
                 }
         } else {
                 if(single.precision) {
-                  pvec <- "p"
+                        pvec <- "p"
                 } else {
-                  pvec <- paste("p", wl, sep='')
+                        pvec <- paste("p", wl, sep='')
                 }
                 header <- c("N", "Cab", "Cw", "Cm", pvec)
                 write(header,
@@ -113,12 +118,12 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
                         ## Tweak JumpRSD based on acceptance rate
                         arate <- (ar - arp)/100
                         if(arate < ar.min){
-                          JumpSD <- JumpSD/ar.tweak
-                          print(sprintf("   Iter %d, AR %.3f , JSD / %.1f", g, arate, ar.tweak))
+                                JumpSD <- JumpSD/ar.tweak
+                                print(sprintf("   Iter %d, AR %.3f , JSD / %.1f", g, arate, ar.tweak))
                         }
                         if(arate > ar.max){
-                          JumpSD <- JumpSD*ar.tweak
-                          cat(sprintf("   Iter %d, AR %.3f , JSD x %.1f \n", g, arate, ar.tweak))
+                                JumpSD <- JumpSD*ar.tweak
+                                cat(sprintf("   Iter %d, AR %.3f , JSD x %.1f \n", g, arate, ar.tweak))
                         }
                         arp <- ar
                 }

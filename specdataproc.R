@@ -27,9 +27,10 @@ specmatrix <- function(in.full,
                                                  Wavelength >= 400)){
   in.dat <- subset(in.full, eval(conditions))
   in.dat$ID <- paste(in.dat$Spectra_Name, in.dat$Sample_Date, in.dat$Instrument, sep="__")
-  in.dat$ID <- as.integer(factor(in.dat$ID))
+  ##TODO: Determine key ID variables and trim them
   out.cast <- dcast(in.dat[c("ID", "Wavelength", "Value")], 
                     Wavelength ~ ID, value.var="Value")
+  print(colnames(out.cast))
   out.dat <- data.matrix(out.cast)
   return(out.dat)
 }
