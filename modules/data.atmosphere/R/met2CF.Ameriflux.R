@@ -39,21 +39,23 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
     ### if reading ameriflux .nc file ###
     nc <- nc_open(new.file,write=TRUE)
     
+    #time dimension for adding new variables
+    tdim = nc$dim[["DTIME"]]
+    
     #renaming variables and performing unit conversions
     ta <- ncvar_get(nc=nc,varid='TA')
+    #ta <- ncvar_get(nc=nc,varid='air_temperature')
     ta.k <- which(ta > -6999) #select non-missing data
     ta.new <- ta[ta.k] + 273.15 #change units from Celsius to Kelvin
     ta <- replace(x=ta,list=ta.k,values=ta.new) #insert Kelvin values into vector
     
-    ncvar_put(nc=nc, varid='TA',vals=ta)
-    ncatt_put(nc=nc,varid='TA',attname='units',attval='degrees K') 
-    #can do the same for long_name but server that hosts netCDF 
-    #CF standard names is down
-    nc <- ncvar_rename(nc=nc,'TA','air_temperature')
+    ta.var <- ncvar_def(name='air_temperature',units='degrees K',dim=list(tdim),missval=-9999) #define netCDF variable, doesn't include longname and comments
+    nc = ncvar_add(nc=nc,v=ta.var,verbose=TRUE) #add variable to existing netCDF file
+    ncvar_put(nc,varid='air_temperature',vals=ta)
     
     #convert wind speed and wind direction to U and V
-    ws <- ncvar_get(nc=nc,varid='WD') #wind direction
-    wd <- ncvar_get(nc=nc,varid='WS') #wind speed
+    wd <- ncvar_get(nc=nc,varid='WD') #wind direction
+    ws <- ncvar_get(nc=nc,varid='WS') #wind speed
     sub <- which(ws > -6999 & wd > -6999)
     w.miss <- pmin(ws[-sub],wd[-sub])
     wd.sub <- wd[sub] #use wind direction coincident with windspeed
@@ -67,11 +69,11 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
     
     #create u and v variables and insert into file
     tdim = nc$dim[["DTIME"]]
-    u.var <- ncvar_def(name='eastward_wind',units='m/s',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
+    u.var <- ncvar_def(name='eastward_wind',units='m/s',dim=list(tdim),missval= -9999) #define netCDF variable, doesn't include longname and comments
     nc = ncvar_add(nc=nc,v=u.var,verbose=TRUE) #add variable to existing netCDF file
     ncvar_put(nc,varid='eastward_wind',vals=u)
     
-    v.var <- ncvar_def(name='northward_wind',units='m/s',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
+    v.var <- ncvar_def(name='northward_wind',units='m/s',dim=list(tdim),missval= -9999) #define netCDF variable, doesn't include longname and comments
     nc = ncvar_add(nc=nc,v=v.var,verbose=TRUE) #add variable to existing netCDF file
     ncvar_put(nc,varid='northward_wind',vals=v)
    
@@ -80,9 +82,10 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
     press.pa <- which(press > -6999)
     press.new <- press[press.pa] * 1000 #kilopascals to pascals
     press <- replace(x=press,list=press.pa,values=press.new)
-    ncvar_put(nc=nc, varid='PRESS',vals=press)
-    ncatt_put(nc=nc,varid='PRESS',attname='units',attval='Pa') 
-    nc <- ncvar_rename(nc=nc,'PRESS','air_pressure')
+
+    p.var <- ncvar_def(name='air_pressure',units='Pa',dim=list(tdim),missval= -9999)
+    nc = ncvar_add(nc=nc,v=p.var,verbose=TRUE) #add variable to existing netCDF file
+    ncvar_put(nc,varid='air_pressure',vals=press)
     
     nc <- ncvar_rename(nc=nc,'Rg','surface_downwelling_shortwave_flux')
     nc <- ncvar_rename(nc=nc,'Rgl','surface_downwelling_longwave_flux')
@@ -108,7 +111,7 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
     ta.rh <- ta[rh.sub] # use T coincident with RH
     sh.miss <- rh2qair(rh=rh.sh[rh.sub],T=ta.rh) #conversion, doesn't include missvals. was rh2rv
     sh <- replace(x=rh,list=rh.sub,values=sh.miss) #insert Kelvin values into vector
-    sh.var <- ncvar_def(name='specific_humidity',units='kg/kg',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
+    sh.var <- ncvar_def(name='specific_humidity',units='kg/kg',dim=list(tdim),missval= -9999) #define netCDF variable, doesn't include longname and comments
     nc = ncvar_add(nc=nc,v=sh.var,verbose=TRUE) #add variable to existing netCDF file
     ncvar_put(nc,varid='specific_humidity',vals=sh)
     ncatt_put(nc=nc,varid='RH',attname='units',attval='percent') 
