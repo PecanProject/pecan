@@ -22,6 +22,10 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
                       local.store=FALSE,
                       sample.together=FALSE, 
                       single.precision=TRUE,
+                      ar.step=100,
+                      ar.min=0.1,
+                      ar.max=0.9,
+                      ar.tweak=5,
                       fname = sprintf("runs/%s_%g.dat", deparse(substitute(obs.spec)), JumpRSD))
 {
         wl <- min(obs.spec[,1]):max(obs.spec[,1])
@@ -99,15 +103,24 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
 
         ## MCMC loop
         tstart <- proc.time()
-        ar <- 1
+        ar <- 0
+        arp <- 0
         for(g in 1:ngibbs){
-                if((g == 5) | (g %% (ngibbs/20) == 0)){
-                        laptime(tstart, g, ngibbs)
-                        cat(sprintf("  AN: %d, AR: %.1f percent      \n",
-                                    ar, (ar/(4 - 3*sample.together))/g * 100))
-                }
-                if(g %% 100 == 0){
-                        ## Tweak based on acceptance rate
+                arate <- (ar/(4 - 3*sample.together))/g
+                if((g == 5) | (g %% (ngibbs/20) == 0)) laptime(tstart, g, ngibbs)
+
+                if(g %% ar.step == 0){
+                        ## Tweak JumpRSD based on acceptance rate
+                        arate <- (ar - arp)/100
+                        if(arate < ar.min){
+                          JumpSD <- JumpSD/ar.tweak
+                          print(sprintf("   Iter %d, AR %.3f , JSD / %.1f", g, arate, ar.tweak))
+                        }
+                        if(arate > ar.max){
+                          JumpSD <- JumpSD*ar.tweak
+                          cat(sprintf("   Iter %d, AR %.3f , JSD x %.1f \n", g, arate, ar.tweak))
+                        }
+                        arp <- ar
                 }
 
                 if(sample.together){
