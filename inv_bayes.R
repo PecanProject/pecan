@@ -46,8 +46,8 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
   pwl.s <- c(0.001, 0.001)          # Inverse gamma
   
   # Precalculate first model and posterior
-  prev.spec <- prospect(N.i, Cab.i, Cw.i, Cm.i)
-  prev.error <- -apply(obs.spec[,-1], 2, "-", prev.spec[,"Reflectance"])
+  prev.spec <- prospect(N.i, Cab.i, Cw.i, Cm.i, n.a, cab.a, w.a, m.a)
+  prev.error <- -apply(obs.spec[,-1], 2, "-", prev.spec)
   
   pp1 <- sum(dnorm(prev.error, 0, 1/sqrt(pwl.i), log=TRUE))  # Likelihood
   pp2 <- dnorm(N.i - 1, N.s[1], N.s[2], log=TRUE) + log(2)    # N prior
@@ -74,9 +74,8 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
   try.error <- function(N, Cab, Cw, Cm){
 
           ## Calculate modeled spectra and residuals
-          guess.spec <- prospect(N, Cab, Cw, Cm)
-          guess.error <- -apply(obs.spec[,-1], 2, "-",
-                                guess.spec[,"Reflectance"])
+          guess.spec <- prospect(N, Cab, Cw, Cm, n.a, cab.a, w.a, m.a)
+          guess.error <- -apply(obs.spec[,-1], 2, "-", guess.spec)
           return(guess.error)
   }
 
