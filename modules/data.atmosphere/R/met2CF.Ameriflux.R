@@ -49,14 +49,6 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
     ta.new <- ta[ta.k] + 273.15 #change units from Celsius to Kelvin
     ta <- replace(x=ta,list=ta.k,values=ta.new) #insert Kelvin values into vector
     
-#     ncvar_put(nc=nc, varid='TA',vals=ta)
-#     #ncvar_put(nc=nc, varid='air_temperature',vals=ta)
-#     ncatt_put(nc=nc,varid='TA',attname='units',attval='degrees K') 
-#     ncatt_put(nc=nc,varid='air_temperature',attname='units',attval='degrees K')
-#     #can do the same for long_name but server that hosts netCDF 
-#     #CF standard names is down
-#     nc <- ncvar_rename(nc=nc,'TA','air_temperature')
-    
     ta.var <- ncvar_def(name='air_temperature',units='degrees K',dim=list(tdim),missval=-9999) #define netCDF variable, doesn't include longname and comments
     nc = ncvar_add(nc=nc,v=ta.var,verbose=TRUE) #add variable to existing netCDF file
     ncvar_put(nc,varid='air_temperature',vals=ta)
@@ -95,10 +87,6 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
     nc = ncvar_add(nc=nc,v=p.var,verbose=TRUE) #add variable to existing netCDF file
     ncvar_put(nc,varid='air_pressure',vals=press)
     
-#     ncvar_put(nc=nc, varid='PRESS',vals=press)
-#     ncatt_put(nc=nc,varid='PRESS',attname='units',attval='Pa') 
-#     nc <- ncvar_rename(nc=nc,'PRESS','air_pressure')
-#     
     nc <- ncvar_rename(nc=nc,'Rg','surface_downwelling_shortwave_flux')
     nc <- ncvar_rename(nc=nc,'Rgl','surface_downwelling_longwave_flux')
     
