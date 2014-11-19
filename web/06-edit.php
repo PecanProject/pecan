@@ -28,7 +28,9 @@ if (!isset($_REQUEST['workflowid'])) {
 $workflowid=$_REQUEST['workflowid'];
 
 // get run information
-$stmt = $pdo->prepare("SELECT site_id, model_id, model_type, hostname, folder, advanced_edit FROM workflows, models WHERE workflows.id=? and model_id=models.id");
+$stmt = $pdo->prepare("SELECT site_id, model_id, modeltypes.name as model_type, hostname, folder, advanced_edit " .
+                      "FROM workflows, models, modeltypes " .
+                      "WHERE workflows.id=? and model_id=models.id and modeltypes.id=models.modeltype_id");
 if (!$stmt->execute(array($workflowid))) {
 	die('Invalid query: ' . error_database());
 }
