@@ -91,12 +91,12 @@ while true; do
 done
 
 # packages that are to be compiled
-PACKAGES="utils db settings visualization models/dalec"
+PACKAGES="utils db settings visualization"
 PACKAGES="${PACKAGES} modules/priors modules/meta.analysis modules/uncertainty"
 PACKAGES="${PACKAGES} modules/data.land modules/data.atmosphere modules/data.remote"
 PACKAGES="${PACKAGES} modules/assim.batch modules/assim.sequential"
 PACKAGES="${PACKAGES} modules/allometry modules/benchmark modules/photosynthesis"
-PACKAGES="${PACKAGES} models/ed models/sipnet models/biocro"
+PACKAGES="${PACKAGES} models/ed models/sipnet models/biocro models/dalec"
 PACKAGES="${PACKAGES} all"
 
 # location where to install packages

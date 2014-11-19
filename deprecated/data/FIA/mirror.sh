@@ -8,10 +8,14 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-export DB="fia5data"
-export DB_USER="fia5data"
-export DB_PASS="fia5data"
-export VER=5_1
+SYSTEM="psql"
+DATABASE="fia5"
+USERNAME="bety"
+PASSWORD="bety"
+VERSION="5_1"
+
+# redownload
+download="yes"
 
 # set this to yes to force a reload always
 reload="no"
@@ -26,6 +30,10 @@ function mirror {
 
   echo "Checking ${filename}"
 
+  if [ -e data/${filename} -a "${download}" = "no" ]; then
+    return 1
+  fi
+
   # ONLY WORKS IF NOT ALL FILES ARE CHANGED! OTHERWISE NEED A CMP
   if [ -e data/${filename} ]; then
     if [ -e tmp/${filename} ]; then
@@ -36,7 +44,7 @@ function mirror {
   else
     before=""
   fi
-  wget -q -P tmp -N ${url}
+  curl -s -o tmp/${filename} ${url}
   after=$( cd tmp ; ls -l ${filename} )
 
   result=1
@@ -65,9 +73,9 @@ if [ ! -d tmp ]; then mkdir tmp; fi
 echo "----------------------------------------------------------------------"
 echo "CHECKING FOR SCHEMA FILE"
 echo ""
-if mirror "FIADB_version${VER}.accdb" "images" ; then
+if mirror "FIADB_version${VERSION}.accdb" "images" ; then
   echo "NEW SCHEMA DETECTED!"
-  echo "Please convert schema to fiadb${VER}.sql"
+  echo "Please convert schema to fiadb${VERSION}.{psql,mysql}"
   exit
 fi
 
@@ -87,15 +95,15 @@ fi
 # ----------------------------------------------------------------------
 # FETCH DATA
 # ----------------------------------------------------------------------
-echo "----------------------------------------------------------------------"
-echo "CHECKING FOR NEW DATA FILES"
-echo ""
-for f in ${FILES}; do
-  if mirror "$f.ZIP"; then
-    echo "FILE data/$f.ZIP CHANGED"
-    reload="yes"
-  fi
-done
+# echo "----------------------------------------------------------------------"
+# echo "CHECKING FOR NEW DATA FILES"
+# echo ""
+# for f in ${FILES}; do
+#   if mirror "$f.ZIP"; then
+#     echo "FILE data/$f.ZIP CHANGED"
+#     reload="yes"
+#   fi
+# done
 
 # ----------------------------------------------------------------------
 # RELOAD DATABASE
@@ -103,9 +111,20 @@ done
 if [ "${reload}" == "yes" ]; then
   echo "----------------------------------------------------------------------"
   echo "LOADING DATABASE"
-  mysql -u ${DB_USER} -p${DB_PASS} ${DB} < fiadb${VER}.sql
-  if [ -e fiadb${VER}_index.sql ]; then
-    mysql -u ${DB_USER} -p${DB_PASS} ${DB} < fiadb${VER}_index.sql
+
+  if [ "${SYSTEM}" == "mysql" ]; then
+    mysql -u ${USERNAME} -p${PASSWORD} -D ${DATABASE} < fiadb${VERSION}.mysql
+    if [ -e fiadb${VERSION}_extra.mysql ]; then
+      mysql -u ${USERNAME} -p${PASSWORD} -D ${DATABASE} < fiadb${VERSION}_extra.mysql
+    fi
+  elif [ "${SYSTEM}" == "psql" ]; then
+    psql -U ${USERNAME} -d ${DATABASE} < fiadb${VERSION}.psql
+    if [ -e fiadb${VERSION}_extra.psql ]; then
+      psql -U ${USERNAME} -d ${DATABASE} < fiadb${VERSION}_extra.psql
+    fi
+  else
+    echo "Unknown database type '${SYSTEM}'"
+    exit -1
   fi
 
   for f in ${FILES}; do
@@ -114,12 +133,16 @@ if [ "${reload}" == "yes" ]; then
       rm data/$f.log
     fi
     for g in data/$f/*.CSV; do
-      table=$(basename $g .CSV)
+      table=$(basename $g .CSV | sed "s/^${f}_//" | tr '[A-Z]' '[a-z]')
       if [[ "${table}" == ${f}_* ]]; then
         table=${table:3}
       fi
-      echo "LOADING ${g} INTO TABLE fiadb4.${table}" >> data/$f.log
-      mysql --local-infile=1 --user=${DB_USER}  --password=${DB_PASS} --database=${DB} --execute="load data local infile '${g}' INTO TABLE ${DB}.${table} FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' LINES TERMINATED BY '\r\n' IGNORE 1 LINES; SHOW WARNINGS" >> data/$f.log
+      echo "LOADING ${g} INTO TABLE ${DATABASE}.${table}" >> data/$f.log
+      if [ "${SYSTEM}" == "mysql" ]; then
+        mysql --local-infile=1 -U ${USERNAME} -p${PASSWORD} --database=${DATABASE} --execute="load data local infile '${g}' INTO TABLE ${DB}.${table} FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' LINES TERMINATED BY '\r\n' IGNORE 1 LINES; SHOW WARNINGS" >> data/$f.log
+      else
+        psql -U ${USERNAME} -d ${DATABASE} -c "\COPY ${table} FROM '${g}' WITH CSV HEADER DELIMITER AS ',' NULL AS '' ENCODING 'UTF-8'" >> data/$f.log
+      fi
     done
     rm -rf data/$f
   done
