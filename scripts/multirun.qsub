@@ -41,11 +41,11 @@ echo "=========================================================="
 # Run the R scripts
 # Arguments to runpi.R: JumpRSD Species sample_together(0,1) ngibbs
 
-Rscript scripts/runpi.R 0.1 Grape 0 5e4 &
-Rscript scripts/runpi.R 0.1 "CAAN-Red Pepper" 0 5e4 &
-Rscript scripts/runpi.R 0.1 LemonTree 0 5e4 &
-Rscript scripts/runpi.R 0.1 MandarinOrange 0 5e4 &
-Rscript scripts/runpi.R 0.1 ShortDatePalm 0 5e4 &
+Rscript scripts/runpi.R 0.1 Grape 1 1e4 &
+Rscript scripts/runpi.R 0.1 "CAAN-Red Pepper" 1 1e4 &
+Rscript scripts/runpi.R 0.1 LemonTree 1 1e4 &
+Rscript scripts/runpi.R 0.1 MandarinOrange 1 1e4 &
+Rscript scripts/runpi.R 0.1 ShortDatePalm 1 1e4 &
 wait
 
 echo "=========================================================="
