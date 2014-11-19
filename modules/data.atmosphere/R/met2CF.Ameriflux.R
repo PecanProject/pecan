@@ -99,7 +99,7 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
     prec.new <- prec[prec.sub]/timestep/60 #mm/s = kg/m2/s
     prec <- replace(x=prec,list=prec.sub,values=prec.new)
     ncvar_put(nc=nc, varid='PREC',vals=prec)
-    ncatt_put(nc=nc,varid='PREC',attname='units',attval='Kg/m^2/s') 
+    ncatt_put(nc=nc,varid='PREC',attname='units',attval='kg/m^2/s') 
     nc <- ncvar_rename(nc=nc,'PREC','precipitation_flux')
     
     
@@ -114,8 +114,13 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
     sh.var <- ncvar_def(name='specific_humidity',units='kg/kg',dim=list(tdim),missval= -9999) #define netCDF variable, doesn't include longname and comments
     nc = ncvar_add(nc=nc,v=sh.var,verbose=TRUE) #add variable to existing netCDF file
     ncvar_put(nc,varid='specific_humidity',vals=sh)
+    ncatt_put(nc=nc,varid='RH',attname='units',attval='percent') 
     nc <- ncvar_rename(nc=nc,'RH','relative_humidity')
     
+    # fixing APARpct
+    ncatt_put(nc=nc,varid='APARpct',attname='units',attval='percent') 
+    # fixing ZL
+    ncatt_put(nc=nc,varid='ZL',attname='units',attval='m/m') 
 
     nc_close(nc)
   
