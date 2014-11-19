@@ -83,6 +83,6 @@ met2CF.FACE <- function(in.path,in.prefix,outfolder){
       file.remove(paste0(outfolder,files[i]))
     } #end loop 
   }
-}
+
 
 
