@@ -79,11 +79,17 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
                 Cab.store <- numeric(ngibbs)
                 Cw.store <- numeric(ngibbs)
                 Cm.store <- numeric(ngibbs)
-                pwl.store <- numeric(ngibbs)
-                if(single.precision) pwl.store <- matrix(NA, nrow=ngibbs, ncol=nwl)
+                if(single.precision){
+                  pwl.store <- numeric(ngibbs)
+                } else {
+                  pwl.store <- matrix(NA, nrow=ngibbs, ncol=nwl)
+                }
         } else {
-                pvec <- "p"
-                if(single.precision) pvec <- paste("p", wl, sep='')
+                if(single.precision) {
+                  pvec <- "p"
+                } else {
+                  pvec <- paste("p", wl, sep='')
+                }
                 header <- c("an", "N", "Cab", "Cw", "Cm", pvec)
                 write(header,
                       ncolumns=length(header),
@@ -214,7 +220,7 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
                 if(single.precision){
                         nprec <- 1
                         u1p <- nspec*nwl/2
-                        u2p <- 0.5 * sum(prev.error[,-1]^2)
+                        u2p <- 0.5 * sum(prev.error^2)
                 } else {
                         nprec <- nwl
                         u1p <- nspec/2
