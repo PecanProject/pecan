@@ -59,7 +59,7 @@ pinvbayes <- function(obs.spec,
         
 
         ### Extract indices for random effects ###
-        plot.regxp <- ".*_(Plot[1-9a-zA-Z]+)_.*"
+        plot.regxp <- ".*_(L[1-9].*)_.*"
         plots <- unique(gsub(plot.regxp, "\\1", colnames(obs.spec)[-1]))
         plotlist <- lapply(plots, grep, colnames(obs.spec))
         print(plotlist)
@@ -81,7 +81,15 @@ pinvbayes <- function(obs.spec,
 
         ### Shortcut functions ###
         prospect <- function(N, Cab, Cw, Cm) prospect4(N, Cab, Cw, Cm, n.a, cab.a, w.a, m.a)
-        spec.error <- function(mod.spec, obs.spec) -apply(obs.spec, 2, "-", mod.spec)
+
+        spec.error <- function(mod.spec, obs.spec){
+                if(length(dim(obs.spec))){
+                        return(-apply(obs.spec, 2, "-", mod.spec))
+                } else {
+                        return(mod.spec - obs.spec)
+                }
+        }
+
         likelihood <- function(guess.error, pwl.i) sum(dnorm(guess.error, 0, 1/sqrt(pwl.i), log=TRUE))
         N.prior <- function(N) dnorm(N - 1, N.s[1], N.s[2], log=TRUE) + log(2)
         Cab.prior <- function(Cab) dlnorm(Cab, Cab.s[1], Cab.s[2], log=TRUE)
@@ -125,7 +133,7 @@ pinvbayes <- function(obs.spec,
                         pvec <- paste("p", wl, sep='')
                 }
                 header <- c("N", "Cab", "Cw", "Cm", 
-                            "pplotN", "pplotCab", "pplotCw", "pplotCm",
+                            "pleafN", "pleafCab", "pleafCw", "pleafCm",
                             pvec)
                 write(header,
                       ncolumns=length(header),

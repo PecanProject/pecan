@@ -5,7 +5,7 @@ jrsd <- as.numeric(args[1])
 species <- args[2]
 precision <- as.numeric(args[3])
 ngibbs <- as.numeric(args[4])
-filename <- sprintf("run_results/%s_%g_%s_PlotRE.dat", species, jrsd, as.character(precision>0))
+filename <- sprintf("run_results/%s_%g_%s_LeafRE.dat", species, jrsd, as.character(precision>0))
 
 source("inv_bayes.R")
 source("specdataproc.R")
