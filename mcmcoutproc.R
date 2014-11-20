@@ -1,5 +1,6 @@
 ## Process raw outputs from MCMC
 library(data.table)
+library(coda)
 
 diag <- function(fname, beg=1000, genplots=TRUE){
   dat <- fread(fname, header=TRUE, data.table=FALSE)
