@@ -10,6 +10,7 @@ melt.refdat <- function(datlist){
   melted$variable <- NULL
   melted$Instrument <- substring(melted$Instrument, 1, 1)
   ### TODO: Pick out details in Spectra_name
+  melted$
   return(melted)
 }
 
@@ -27,10 +28,9 @@ specmatrix <- function(in.full,
                                                  Wavelength >= 400)){
   in.dat <- subset(in.full, eval(conditions))
   in.dat$ID <- paste(in.dat$Spectra_Name, in.dat$Sample_Date, in.dat$Instrument, sep="__")
-  ##TODO: Determine key ID variables and trim them
+  ### TODO: Determine key ID variables and trim them
   out.cast <- dcast(in.dat[c("ID", "Wavelength", "Value")], 
                     Wavelength ~ ID, value.var="Value")
-  print(colnames(out.cast))
   out.dat <- data.matrix(out.cast)
   return(out.dat)
 }

@@ -45,7 +45,7 @@ pinvbayes <- function(obs.spec,
         if(single.precision) pwl.i <- pwl.i[1]
 
 
-        ### Priors
+        ### Priors ###
         N.s <- c(0, 1.5)                # Halfnormal (N = 1 + rlnorm)
 
         # Based on histograms in Feret et al. 2008
@@ -53,11 +53,25 @@ pinvbayes <- function(obs.spec,
         Cw.s <- c(log(0.017), 0.5)        # Lognormal
         Cm.s <- c(log(0.006), 0.9)        # Lognormal
 
+        # Error
         pwl.s <- c(0.001, 0.001)          # Inverse gamma
 
-        re.inst.s <- 0.01               # Normal (sd only)
+        # Random effects
+        re.leaf.s <- c(0.001, 0.001)              # Inverse gamma
+        
+        ### Pseudocode for sampling random effects:
+        # For each leaf:
+        #   draw alpha from Jump
+        #   Evaluate posterior
+        #   Test acceptance (a)
+        # Calculate tao2 from alpha vector
+        # Evaluate posterior (with tao)
+        # Repeat...(gibbs loop)
+        ### Extract indices for random effects ###
+        leaf.regxp <- ".*(L[1-9]).*"
+        leaf.list <- gsub(leaf.regxp, "\\1", colnames(obs.spec))
 
-        ### Define sampler functions
+        ### Define sampler functions ###
         try.error <- function(N, Cab, Cw, Cm){
 
                 ## Calculate modeled spectra and residuals
@@ -181,6 +195,17 @@ pinvbayes <- function(obs.spec,
                                 prev.posterior <- guess.posterior
                                 ar <- ar + 1
                         }
+                        ## Sample random effects on N
+                        guess.error.alpha <- matrix(NA, nrow=nwl, ncol=nspec)
+                        for (i in 1:nleaf){
+                                guess.alphaN <- rnorm(1, alphaN.i[i], JumpSD["alphaN"])
+                                guess.spec <- prospect(N.i + guess.alphaN,
+                                                       Cab.i, Cw.i, Cm.i)
+                                guess.error.alpha[,leaflist[i]] <- -apply(obs.spec[,leaflist[i]], 2, "-", guess.spec)
+                        }
+                        gp1 <- sum(dnorm(guess.error.alpha, 0, 1/sqrt(pwl.i), log=TRUE))  # Likelihood
+                        gp2 <- 
+                        guess.posterior <- gp1 + gp2 + gp3 + gp4 + gp5
 
                         ## Sample Cab
                         guess.Cab <- rtnorm(1, Cab.i, JumpSD["Cab"])
