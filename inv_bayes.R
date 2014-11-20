@@ -18,11 +18,9 @@ inits <- list(N=1,
 ## Use specdatproc script to generate correct matrices from data.
 pinvbayes <- function(obs.spec,
                       ngibbs=100,
-                      prospect=prospect4,                      
                       initc=inits,
                       JumpRSD=0.1,
                       local.store=FALSE,
-                      sample.together=FALSE, 
                       single.precision=TRUE,
                       ar.step=100,
                       ar.min=0.1,
@@ -59,42 +57,29 @@ pinvbayes <- function(obs.spec,
         # Random effects
         re.leaf.s <- c(0.001, 0.001)              # Inverse gamma
         
-        ### Pseudocode for sampling random effects:
-        # For each leaf:
-        #   draw alpha from Jump
-        #   Evaluate posterior
-        #   Test acceptance (a)
-        # Calculate tao2 from alpha vector
-        # Evaluate posterior (with tao)
-        # Repeat...(gibbs loop)
+
         ### Extract indices for random effects ###
         leaf.regxp <- ".*(L[1-9]).*"
         leaf.list <- gsub(leaf.regxp, "\\1", colnames(obs.spec))
 
-        ### Define sampler functions ###
-        try.error <- function(N, Cab, Cw, Cm){
-
-                ## Calculate modeled spectra and residuals
-                guess.spec <- prospect(N, Cab, Cw, Cm, n.a, cab.a, w.a, m.a)
-                guess.error <- -apply(obs.spec[,-1], 2, "-", guess.spec)
-                return(guess.error)
-        }
-
-        try.posterior <- function(N, Cab, Cw, Cm, pwl.i, guess.error){
-
-                ## Evaluate posterior | PROSPECT
-                gp1 <- sum(dnorm(guess.error, 0, 1/sqrt(pwl.i), log=TRUE))  # Likelihood
-                gp2 <- dlnorm(N - 1, N.s[1], N.s[2], log=TRUE) + log(2)    # N prior
-                gp3 <- dlnorm(Cab, Cab.s[1], Cab.s[2], log=TRUE)    # Cab prior
-                gp4 <- dlnorm(Cw, Cw.s[1], Cw.s[2], log=TRUE)     # Cw prior
-                gp5 <- dlnorm(Cm, Cm.s[1], Cm.s[2], log=TRUE)     # Cm prior
-                guess.posterior <- gp1 + gp2 + gp3 + gp4 + gp5
-                return(guess.posterior)
-        }
+        ### Shortcut functions ###
+        prospect <- function(N, Cab, Cw, Cm) prospect4(N, Cab, Cw, Cm, n.a, cab.a, w.a, m.a)
+        spec.error <- function(mod.spec, obs.spec) -apply(obs.spec, 2, "-", mod.spec)
+        likelihood <- function(guess.error, pwl.i) sum(dnorm(guess.error, 0, 1/sqrt(pwl.i), log=TRUE))
+        N.prior <- function(N) (N - 1, N.s[1], N.s[2], log=TRUE) + log(2)
+        Cab.prior <- function(Cab) dlnorm(Cab, Cab.s[1], Cab.s[2], log=TRUE)
+        Cw.prior <- function(Cw) dlnorm(Cw, Cw.s[1], Cw.s[2], log=TRUE)
+        Cm.prior <- function(Cm) dlnorm(Cm, Cm.s[1], Cm.s[2], log=TRUE)
 
         # Precalculate first model and posterior
-        prev.error <- try.error(N.i, Cab.i, Cw.i, Cm.i)
-        prev.posterior <- try.posterior(N.i, Cab.i, Cw.i, Cm.i, pwl.i, prev.error)
+        prev.spec <- prospect(N.i, Cab.i, Cw.i, Cm.i)
+        prev.error <- spec.error(prev.spec, obs.spec)
+        prev.posterior <- (likelihood(prev.error, pwl.i) + 
+                           N.prior(N.i) +
+                           Cab.prior(Cab.i) +
+                           Cw.prior(Cw.i) +
+                           Cm.prior (Cm.i)
+                           )
 
         ### MCMC storage
         if (local.store){
@@ -123,9 +108,10 @@ pinvbayes <- function(obs.spec,
         ## MCMC loop
         tstart <- proc.time()
         ar <- 0
+        ar.alpha <- 0
         arp <- 0
         for(g in 1:ngibbs){
-                arate <- (ar/(4 - 3*sample.together))/g
+                arate <- ar/(4*g)
                 if((g == 5) | (g %% (ngibbs/20) == 0)) laptime(tstart, g, ngibbs)
 
                 if(g %% ar.step == 0){
@@ -142,120 +128,146 @@ pinvbayes <- function(obs.spec,
                         arp <- ar
                 }
 
-                if(sample.together){
-                        ## Draw PROSPECT parameters
-                        guess.N <- rtnorm(1, N.i, JumpSD[1], Min=1)
-                        guess.Cab <- rtnorm(1, Cab.i, JumpSD[2])
-                        guess.Cw <- rtnorm(1, Cw.i, JumpSD[3])
-                        guess.Cm <- rtnorm(1, Cm.i, JumpSD[4])
+                ## Sample N
+                guess.N <- rtnorm(1, N.i, JumpSD["N"], Min=1)
+                for(i in 1:nleaf){
 
-                        guess.error <- try.error(guess.N, guess.Cab, guess.Cw, guess.Cm)
-                        guess.posterior <- try.posterior(guess.N, guess.Cab, guess.Cw, guess.Cm,
-                                                         pwl.i, guess.error)
+                }
+                guess.spec <- prospect(
+                guess.error <- try.error(guess.N, Cab.i, Cw.i, Cm.i)
+                guess.posterior <- try.posterior(guess.N, Cab.i, Cw.i, Cm.i, pwl.i, guess.error)
 
-                        ## Test acceptance w/ Jump Distribution
-                        jn1 <- dtnorm(guess.N, N.i, JumpSD[1], Min=1)
-                        jn2 <- dtnorm(guess.Cab, Cab.i, JumpSD[2])
-                        jn3 <- dtnorm(guess.Cw, Cw.i, JumpSD[3])
-                        jn4 <- dtnorm(guess.Cm, Cm.i, JumpSD[4])
-                        jnum <-jn1 + jn2 + jn3 + jn4
+                jnum <- dtnorm(guess.N, N.i, JumpSD["N"], Min=1)
+                jden <- dtnorm(N.i, guess.N, JumpSD["N"], Min=1)
+                a <- exp((guess.posterior - jnum) - (prev.posterior - jden))
 
-                        jd1 <- dtnorm(N.i, guess.N, JumpSD[1], Min=1)
-                        jd2 <- dtnorm(Cab.i, guess.Cab, JumpSD[2])
-                        jd3 <- dtnorm(Cw.i, guess.Cw, JumpSD[3])
-                        jd4 <- dtnorm(Cm.i, guess.Cm, JumpSD[4])
-                        jden <- jd1 + jd2 + jd3 + jd4
+                if(is.na(a)) a <- -1
+                if(a > runif(1)){
+                        N.i <- guess.N
+                        prev.error <- guess.error
+                        prev.posterior <- guess.posterior
+                        ar <- ar + 1
+                }
 
-                        a <- exp((guess.posterior - jnum) - (prev.posterior - jden))
-
+                ## Sample random effects on N
+                for (i in 1:nleaf){
+                        guess.alphaN <- rnorm(1, alphaN.i[i], JumpRSD * alphaN.i[i])
+                        guess.spec <- prospect(N.i + guess.alphaN,
+                                               Cab.i, Cw.i, Cm.i)
+                        guess.error.alpha <- -apply(obs.spec[,leaflist[i]], 2, "-", guess.spec)
+                        gp1 <- sum(dnorm(guess.error.alpha, 0, 1/sqrt(pwl.i), log=TRUE))    # Likelihood
+                        gp2 <- dnorm(guess.alphaN, 0, 1/sqrt(pleaf.i))
+                        guess.posterior <- gp1 + gp2
+                        a <- exp(guess.posterior - prev.posterior)
                         if(is.na(a)) a <- -1
                         if(a > runif(1)){
-                                N.i <- guess.N
-                                Cab.i <- guess.Cab
-                                Cw.i <- guess.Cw
-                                Cm.i <- guess.Cm
-                                prev.error <- guess.error
+                                alphaN.i[i] <- guess.alphaN
                                 prev.posterior <- guess.posterior
-                                ar <- ar + 1 
+                                ar.alpha <- ar.alpha + 1
                         }
-                } else {
-                        ## Sample N
-                        guess.N <- rtnorm(1, N.i, JumpSD["N"], Min=1)
-                        guess.error <- try.error(guess.N, Cab.i, Cw.i, Cm.i)
-                        guess.posterior <- try.posterior(guess.N, Cab.i, Cw.i, Cm.i, pwl.i, guess.error)
-
-                        jnum <- dtnorm(guess.N, N.i, JumpSD["N"], Min=1)
-                        jden <- dtnorm(N.i, guess.N, JumpSD["N"], Min=1)
-                        a <- exp((guess.posterior - jnum) - (prev.posterior - jden))
-
-                        if(is.na(a)) a <- -1
-                        if(a > runif(1)){
-                                N.i <- guess.N
-                                prev.error <- guess.error
-                                prev.posterior <- guess.posterior
-                                ar <- ar + 1
-                        }
-                        ## Sample random effects on N
-                        guess.error.alpha <- matrix(NA, nrow=nwl, ncol=nspec)
-                        for (i in 1:nleaf){
-                                guess.alphaN <- rnorm(1, alphaN.i[i], JumpSD["alphaN"])
-                                guess.spec <- prospect(N.i + guess.alphaN,
-                                                       Cab.i, Cw.i, Cm.i)
-                                guess.error.alpha[,leaflist[i]] <- -apply(obs.spec[,leaflist[i]], 2, "-", guess.spec)
-                        }
-                        gp1 <- sum(dnorm(guess.error.alpha, 0, 1/sqrt(pwl.i), log=TRUE))  # Likelihood
-                        gp2 <- 
+                }
+                gp1 <- sum(dnorm(guess.error.alpha, 0, 1/sqrt(pwl.i), log=TRUE))  # Likelihood
+                gp2 <- 
                         guess.posterior <- gp1 + gp2 + gp3 + gp4 + gp5
 
-                        ## Sample Cab
-                        guess.Cab <- rtnorm(1, Cab.i, JumpSD["Cab"])
-                        guess.error <- try.error(N.i, guess.Cab, Cw.i, Cm.i)
-                        guess.posterior <- try.posterior(N.i, guess.Cab, Cw.i, Cm.i, pwl.i, guess.error)
+                ## Sample Cab
+                guess.Cab <- rtnorm(1, Cab.i, JumpSD["Cab"])
+                guess.error <- try.error(N.i, guess.Cab, Cw.i, Cm.i)
+                guess.posterior <- try.posterior(N.i, guess.Cab, Cw.i, Cm.i, pwl.i, guess.error)
 
-                        jnum <- dtnorm(guess.Cab, Cab.i, JumpSD["Cab"])
-                        jden <- dtnorm(Cab.i, guess.Cab, JumpSD["Cab"])
-                        a <- exp((guess.posterior - jnum) - (prev.posterior - jden))
+                jnum <- dtnorm(guess.Cab, Cab.i, JumpSD["Cab"])
+                jden <- dtnorm(Cab.i, guess.Cab, JumpSD["Cab"])
+                a <- exp((guess.posterior - jnum) - (prev.posterior - jden))
 
+                if(is.na(a)) a <- -1
+                if(a > runif(1)){
+                        Cab.i <- guess.Cab
+                        prev.error <- guess.error
+                        prev.posterior <- guess.posterior
+                        ar <- ar + 1
+                }
+
+                ## Sample random effects on Cab
+                for (i in 1:nleaf){
+                        guess.alphaCab <- rnorm(1, alphaCab.i[i], JumpSD["alphaN"])
+                        guess.spec <- prospect(N.i, Cab.i + guess.alphaCab, Cw.i, Cm.i)
+                        guess.error.alpha <- -apply(obs.spec[,leaflist[i]], 2, "-", guess.spec)
+                        gp1 <- sum(dnorm(guess.error.alpha, 0, 1/sqrt(pwl.i), log=TRUE))    # Likelihood
+                        gp2 <- dnorm(guess.alphaCab, 0, 1/sqrt(pleaf.i))
+                        guess.posterior <- gp1 + gp2
+                        a <- exp(guess.posterior - prev.posterior)
                         if(is.na(a)) a <- -1
                         if(a > runif(1)){
-                                Cab.i <- guess.Cab
-                                prev.error <- guess.error
+                                alphaCab.i[i] <- guess.alphaCab
                                 prev.posterior <- guess.posterior
-                                ar <- ar + 1
+                                ar.alpha <- ar.alpha + 1
                         }
+                }
 
-                        ## Sample Cw
-                        guess.Cw <- rtnorm(1, Cw.i, JumpSD["Cw"])
-                        guess.error <- try.error(N.i, Cab.i, guess.Cw, Cm.i)
-                        guess.posterior <- try.posterior(N.i, Cab.i, guess.Cw, Cm.i, pwl.i, guess.error)
+                ## Sample Cw
+                guess.Cw <- rtnorm(1, Cw.i, JumpSD["Cw"])
+                guess.error <- try.error(N.i, Cab.i, guess.Cw, Cm.i)
+                guess.posterior <- try.posterior(N.i, Cab.i, guess.Cw, Cm.i, pwl.i, guess.error)
 
-                        jnum <- dtnorm(guess.Cw, Cw.i, JumpSD["Cw"])
-                        jden <- dtnorm(Cw.i, guess.Cw, JumpSD["Cw"])
-                        a <- exp((guess.posterior - jnum) - (prev.posterior - jden))
+                jnum <- dtnorm(guess.Cw, Cw.i, JumpSD["Cw"])
+                jden <- dtnorm(Cw.i, guess.Cw, JumpSD["Cw"])
+                a <- exp((guess.posterior - jnum) - (prev.posterior - jden))
 
+                if(is.na(a)) a <- -1
+                if(a > runif(1)){
+                        Cw.i <- guess.Cw
+                        prev.error <- guess.error
+                        prev.posterior <- guess.posterior
+                        ar <- ar + 1
+                }
+
+                ## Sample random effects on Cab
+                for (i in 1:nleaf){
+                        guess.alphaCw <- rnorm(1, alphaCw.i[i], JumpSD["alphaN"])
+                        guess.spec <- prospect(N.i, Cab.i, Cw.i + guess.alphaCw, Cm.i)
+                        guess.error.alpha <- -apply(obs.spec[,leaflist[i]], 2, "-", guess.spec)
+                        gp1 <- sum(dnorm(guess.error.alpha, 0, 1/sqrt(pwl.i), log=TRUE))    # Likelihood
+                        gp2 <- dnorm(guess.alphaCw, 0, 1/sqrt(pleaf.i))             # Alpha prior
+                        guess.posterior <- gp1 + gp2
+                        a <- exp(guess.posterior - prev.posterior)
                         if(is.na(a)) a <- -1
                         if(a > runif(1)){
-                                Cw.i <- guess.Cw
-                                prev.error <- guess.error
+                                alphaCw.i[i] <- guess.alphaCw
                                 prev.posterior <- guess.posterior
-                                ar <- ar + 1
+                                ar.alpha <- ar.alpha + 1
                         }
+                }
 
-                        ## Sample Cm
-                        guess.Cm <- rtnorm(1, Cm.i, JumpSD["Cm"])
-                        guess.error <- try.error(N.i, Cab.i, Cw.i, guess.Cm)
-                        guess.posterior <- try.posterior(N.i, Cab.i, Cw.i, guess.Cm, pwl.i, guess.error)
+                ## Sample Cm
+                guess.Cm <- rtnorm(1, Cm.i, JumpSD["Cm"])
+                guess.error <- try.error(N.i, Cab.i, Cw.i, guess.Cm)
+                guess.posterior <- try.posterior(N.i, Cab.i, Cw.i, guess.Cm, pwl.i, guess.error)
 
-                        jnum <- dtnorm(guess.Cm, Cm.i, JumpSD["Cm"])
-                        jden <- dtnorm(Cm.i, guess.Cm, JumpSD["Cm"])
-                        a <- exp((guess.posterior - jnum) - (prev.posterior - jden))
+                jnum <- dtnorm(guess.Cm, Cm.i, JumpSD["Cm"])
+                jden <- dtnorm(Cm.i, guess.Cm, JumpSD["Cm"])
+                a <- exp((guess.posterior - jnum) - (prev.posterior - jden))
 
+                if(is.na(a)) a <- -1
+                if(a > runif(1)){
+                        Cm.i <- guess.Cm
+                        prev.error <- guess.error
+                        prev.posterior <- guess.posterior
+                        ar <- ar + 1
+                }
+                ## Sample random effects on Cm
+                for (i in 1:nleaf){
+                        guess.alphaCm <- rnorm(1, alphaCm.i[i], JumpSD["alphaN"])
+                        guess.spec <- prospect(N.i, Cab.i, Cw.i Cm.i + guess.alphaCm)
+                        guess.error.alpha <- -apply(obs.spec[,leaflist[i]], 2, "-", guess.spec)
+                        gp1 <- sum(dnorm(guess.error.alpha, 0, 1/sqrt(pwl.i), log=TRUE))    # Likelihood
+                        gp2 <- dnorm(guess.alphaCm, 0, 1/sqrt(pleaf.i))             # Alpha prior
+                        guess.posterior <- gp1 + gp2
+                        a <- exp(guess.posterior - prev.posterior)
                         if(is.na(a)) a <- -1
                         if(a > runif(1)){
-                                Cm.i <- guess.Cm
-                                prev.error <- guess.error
+                                alphaCm.i[i] <- guess.alphaCm
                                 prev.posterior <- guess.posterior
-                                ar <- ar + 1
+                                ar.alpha <- ar.alpha + 1
                         }
                 }
 
