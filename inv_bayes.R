@@ -5,10 +5,10 @@ source("prospect.R")
 source("timer.R")
 source("truncnorm.R")
 
-inits <- list(N=1, 
+inits <- list(N=1.4, 
               Cab=30,
-              Cw=0.01,
-              Cm=0.005,
+              Cw=0.017,
+              Cm=0.006,
               pwl=rep(1, 2101)
               )
 
@@ -130,7 +130,8 @@ pinvbayes <- function(obs.spec,
                 write(header,
                       ncolumns=length(header),
                       file=fname, 
-                      sep=",")
+                      sep=",", 
+                      append=FALSE)
         }
 
         ## MCMC loop
