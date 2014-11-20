@@ -293,7 +293,7 @@ take.samples <- function(summary, sample.size = 10^6){
   if(is.na(summary$stat)){
     ans <- summary$mean
   } else {
-    set.seed(999)
+    set.seed(0)
     ans <- rnorm(sample.size, summary$mean, summary$stat)
   }
   return(ans)
