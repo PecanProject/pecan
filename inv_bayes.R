@@ -59,14 +59,31 @@ pinvbayes <- function(obs.spec,
         
 
         ### Extract indices for random effects ###
-        leaf.regxp <- ".*(L[1-9]).*"
-        leaf.list <- gsub(leaf.regxp, "\\1", colnames(obs.spec))
+        plot.regxp <- ".*_(Plot[1-9a-zA-Z]+)_.*"
+        plots <- unique(gsub(plot.regxp, "\\1", colnames(obs.spec)[-1]))
+        plotlist <- lapply(plots, grep, colnames(obs.spec))
+        print(plotlist)
+        nplot <- length(plotlist)
+
+        ### Random effects initial conditions
+        alphaN.i <- rep(0, nplot)
+        alphaCab.i <- rep(0, nplot)
+        alphaCw.i <- rep(0, nplot)
+        alphaCm.i <- rep(0, nplot)
+        
+        pplotN <- 1
+        pplotCab <- 1
+        pplotCw <- 1
+        pplotCm <- 1
+        
+#         leaf.regxp <- ".*_(L[1-9].*)_.*"
+#         leaf.list <- gsub(leaf.regxp, "\\1", colnames(obs.spec))
 
         ### Shortcut functions ###
         prospect <- function(N, Cab, Cw, Cm) prospect4(N, Cab, Cw, Cm, n.a, cab.a, w.a, m.a)
         spec.error <- function(mod.spec, obs.spec) -apply(obs.spec, 2, "-", mod.spec)
         likelihood <- function(guess.error, pwl.i) sum(dnorm(guess.error, 0, 1/sqrt(pwl.i), log=TRUE))
-        N.prior <- function(N) (N - 1, N.s[1], N.s[2], log=TRUE) + log(2)
+        N.prior <- function(N) dnorm(N - 1, N.s[1], N.s[2], log=TRUE) + log(2)
         Cab.prior <- function(Cab) dlnorm(Cab, Cab.s[1], Cab.s[2], log=TRUE)
         Cw.prior <- function(Cw) dlnorm(Cw, Cw.s[1], Cw.s[2], log=TRUE)
         Cm.prior <- function(Cm) dlnorm(Cm, Cm.s[1], Cm.s[2], log=TRUE)
@@ -92,13 +109,24 @@ pinvbayes <- function(obs.spec,
                 } else {
                         pwl.store <- matrix(NA, nrow=ngibbs, ncol=nwl)
                 }
+                pplotN.store <- numeric(ngibbs)
+                pplotCab.store <- numeric(ngibbs)
+                pplotCw.store <- numeric(ngibbs)
+                pplotCm.store <- numeric(ngibbs)
+                alphaN.store <- matrix(NA, nrow=ngibbs, ncol=nplot)
+                alphaCab.store <- matrix(NA, nrow=ngibbs, ncol=nplot)
+                alphaCw.store <- matrix(NA, nrow=ngibbs, ncol=nplot)
+                alphaCm.store <- matrix(NA, nrow=ngibbs, ncol=nplot)
+                
         } else {
                 if(single.precision) {
                         pvec <- "p"
                 } else {
                         pvec <- paste("p", wl, sep='')
                 }
-                header <- c("N", "Cab", "Cw", "Cm", pvec)
+                header <- c("N", "Cab", "Cw", "Cm", 
+                            "pplotN", "pplotCab", "pplotCw", "pplotCm",
+                            pvec)
                 write(header,
                       ncolumns=length(header),
                       file=fname, 
@@ -127,20 +155,26 @@ pinvbayes <- function(obs.spec,
                         }
                         arp <- ar
                 }
+                ### Sample core PROSPECT parameters ###
 
-                ## Sample N
+                # Sample N
                 guess.N <- rtnorm(1, N.i, JumpSD["N"], Min=1)
-                for(i in 1:nleaf){
-
-                }
-                guess.spec <- prospect(
-                guess.error <- try.error(guess.N, Cab.i, Cw.i, Cm.i)
-                guess.posterior <- try.posterior(guess.N, Cab.i, Cw.i, Cm.i, pwl.i, guess.error)
-
+                guess.error.alpha <- lapply(1:nplot,
+                                            function(i) {
+                                                    guess.spec <- prospect(guess.N + alphaN.i[i],
+                                                                           Cab.i + alphaCab.i[i],
+                                                                           Cw.i + alphaCw.i[i],
+                                                                           Cm.i + alphaCm.i[i]
+                                                                           )
+                                                    guess.error <- spec.error(guess.spec, obs.spec[, plotlist[[i]]])
+                                                    return(guess.error)
+                                            }
+                                            )
+                guess.error <- do.call(cbind, guess.error.alpha)
+                guess.posterior <- likelihood(guess.error, pwl.i) + N.prior(guess.N)
                 jnum <- dtnorm(guess.N, N.i, JumpSD["N"], Min=1)
                 jden <- dtnorm(N.i, guess.N, JumpSD["N"], Min=1)
                 a <- exp((guess.posterior - jnum) - (prev.posterior - jden))
-
                 if(is.na(a)) a <- -1
                 if(a > runif(1)){
                         N.i <- guess.N
@@ -149,36 +183,24 @@ pinvbayes <- function(obs.spec,
                         ar <- ar + 1
                 }
 
-                ## Sample random effects on N
-                for (i in 1:nleaf){
-                        guess.alphaN <- rnorm(1, alphaN.i[i], JumpRSD * alphaN.i[i])
-                        guess.spec <- prospect(N.i + guess.alphaN,
-                                               Cab.i, Cw.i, Cm.i)
-                        guess.error.alpha <- -apply(obs.spec[,leaflist[i]], 2, "-", guess.spec)
-                        gp1 <- sum(dnorm(guess.error.alpha, 0, 1/sqrt(pwl.i), log=TRUE))    # Likelihood
-                        gp2 <- dnorm(guess.alphaN, 0, 1/sqrt(pleaf.i))
-                        guess.posterior <- gp1 + gp2
-                        a <- exp(guess.posterior - prev.posterior)
-                        if(is.na(a)) a <- -1
-                        if(a > runif(1)){
-                                alphaN.i[i] <- guess.alphaN
-                                prev.posterior <- guess.posterior
-                                ar.alpha <- ar.alpha + 1
-                        }
-                }
-                gp1 <- sum(dnorm(guess.error.alpha, 0, 1/sqrt(pwl.i), log=TRUE))  # Likelihood
-                gp2 <- 
-                        guess.posterior <- gp1 + gp2 + gp3 + gp4 + gp5
-
-                ## Sample Cab
+                # Sample Cab
                 guess.Cab <- rtnorm(1, Cab.i, JumpSD["Cab"])
-                guess.error <- try.error(N.i, guess.Cab, Cw.i, Cm.i)
-                guess.posterior <- try.posterior(N.i, guess.Cab, Cw.i, Cm.i, pwl.i, guess.error)
-
-                jnum <- dtnorm(guess.Cab, Cab.i, JumpSD["Cab"])
-                jden <- dtnorm(Cab.i, guess.Cab, JumpSD["Cab"])
+                guess.error.alpha <- lapply(1:nplot,
+                                            function(i) {
+                                                    guess.spec <- prospect(N.i + alphaN.i[i],
+                                                                           guess.Cab + alphaCab.i[i],
+                                                                           Cw.i + alphaCw.i[i],
+                                                                           Cm.i + alphaCm.i[i]
+                                                                           )
+                                                    guess.error <- spec.error(guess.spec, obs.spec[, plotlist[[i]]])
+                                                    return(guess.error)
+                                            }
+                                            )
+                guess.error <- do.call(cbind, guess.error.alpha)
+                guess.posterior <- likelihood(guess.error, pwl.i) + Cab.prior(guess.Cab)
+                jnum <- dlnorm(guess.Cab, Cab.i, JumpSD["Cab"])
+                jden <- dlnorm(Cab.i, guess.Cab, JumpSD["Cab"])
                 a <- exp((guess.posterior - jnum) - (prev.posterior - jden))
-
                 if(is.na(a)) a <- -1
                 if(a > runif(1)){
                         Cab.i <- guess.Cab
@@ -187,32 +209,23 @@ pinvbayes <- function(obs.spec,
                         ar <- ar + 1
                 }
 
-                ## Sample random effects on Cab
-                for (i in 1:nleaf){
-                        guess.alphaCab <- rnorm(1, alphaCab.i[i], JumpSD["alphaN"])
-                        guess.spec <- prospect(N.i, Cab.i + guess.alphaCab, Cw.i, Cm.i)
-                        guess.error.alpha <- -apply(obs.spec[,leaflist[i]], 2, "-", guess.spec)
-                        gp1 <- sum(dnorm(guess.error.alpha, 0, 1/sqrt(pwl.i), log=TRUE))    # Likelihood
-                        gp2 <- dnorm(guess.alphaCab, 0, 1/sqrt(pleaf.i))
-                        guess.posterior <- gp1 + gp2
-                        a <- exp(guess.posterior - prev.posterior)
-                        if(is.na(a)) a <- -1
-                        if(a > runif(1)){
-                                alphaCab.i[i] <- guess.alphaCab
-                                prev.posterior <- guess.posterior
-                                ar.alpha <- ar.alpha + 1
-                        }
-                }
-
-                ## Sample Cw
                 guess.Cw <- rtnorm(1, Cw.i, JumpSD["Cw"])
-                guess.error <- try.error(N.i, Cab.i, guess.Cw, Cm.i)
-                guess.posterior <- try.posterior(N.i, Cab.i, guess.Cw, Cm.i, pwl.i, guess.error)
-
-                jnum <- dtnorm(guess.Cw, Cw.i, JumpSD["Cw"])
-                jden <- dtnorm(Cw.i, guess.Cw, JumpSD["Cw"])
+                guess.error.alpha <- lapply(1:nplot,
+                                            function(i) {
+                                                    guess.spec <- prospect(N.i + alphaN.i[i],
+                                                                           Cab.i + alphaCab.i[i],
+                                                                           guess.Cw + alphaCw.i[i],
+                                                                           Cm.i + alphaCm.i[i]
+                                                                           )
+                                                    guess.error <- spec.error(guess.spec, obs.spec[, plotlist[[i]]])
+                                                    return(guess.error)
+                                            }
+                                            )
+                guess.error <- do.call(cbind, guess.error.alpha)
+                guess.posterior <- likelihood(guess.error, pwl.i) + Cw.prior(guess.Cw)
+                jnum <- dlnorm(guess.Cw, Cw.i, JumpSD["Cw"])
+                jden <- dlnorm(Cw.i, guess.Cw, JumpSD["Cw"])
                 a <- exp((guess.posterior - jnum) - (prev.posterior - jden))
-
                 if(is.na(a)) a <- -1
                 if(a > runif(1)){
                         Cw.i <- guess.Cw
@@ -221,32 +234,24 @@ pinvbayes <- function(obs.spec,
                         ar <- ar + 1
                 }
 
-                ## Sample random effects on Cab
-                for (i in 1:nleaf){
-                        guess.alphaCw <- rnorm(1, alphaCw.i[i], JumpSD["alphaN"])
-                        guess.spec <- prospect(N.i, Cab.i, Cw.i + guess.alphaCw, Cm.i)
-                        guess.error.alpha <- -apply(obs.spec[,leaflist[i]], 2, "-", guess.spec)
-                        gp1 <- sum(dnorm(guess.error.alpha, 0, 1/sqrt(pwl.i), log=TRUE))    # Likelihood
-                        gp2 <- dnorm(guess.alphaCw, 0, 1/sqrt(pleaf.i))             # Alpha prior
-                        guess.posterior <- gp1 + gp2
-                        a <- exp(guess.posterior - prev.posterior)
-                        if(is.na(a)) a <- -1
-                        if(a > runif(1)){
-                                alphaCw.i[i] <- guess.alphaCw
-                                prev.posterior <- guess.posterior
-                                ar.alpha <- ar.alpha + 1
-                        }
-                }
-
-                ## Sample Cm
+                # Sample Cm
                 guess.Cm <- rtnorm(1, Cm.i, JumpSD["Cm"])
-                guess.error <- try.error(N.i, Cab.i, Cw.i, guess.Cm)
-                guess.posterior <- try.posterior(N.i, Cab.i, Cw.i, guess.Cm, pwl.i, guess.error)
-
-                jnum <- dtnorm(guess.Cm, Cm.i, JumpSD["Cm"])
-                jden <- dtnorm(Cm.i, guess.Cm, JumpSD["Cm"])
+                guess.error.alpha <- lapply(1:nplot,
+                                            function(i) {
+                                                    guess.spec <- prospect(N.i + alphaN.i[i],
+                                                                           Cab.i + alphaCab.i[i],
+                                                                           Cw.i + alphaCw.i[i],
+                                                                           guess.Cm + alphaCm.i[i]
+                                                                           )
+                                                    guess.error <- spec.error(guess.spec, obs.spec[, plotlist[[i]]])
+                                                    return(guess.error)
+                                            }
+                                            )
+                guess.error <- do.call(cbind, guess.error.alpha)
+                guess.posterior <- likelihood(guess.error, pwl.i) + Cm.prior(guess.Cm)
+                jnum <- dlnorm(guess.Cm, Cm.i, JumpSD["Cm"])
+                jden <- dlnorm(Cm.i, guess.Cm, JumpSD["Cm"])
                 a <- exp((guess.posterior - jnum) - (prev.posterior - jden))
-
                 if(is.na(a)) a <- -1
                 if(a > runif(1)){
                         Cm.i <- guess.Cm
@@ -254,18 +259,108 @@ pinvbayes <- function(obs.spec,
                         prev.posterior <- guess.posterior
                         ar <- ar + 1
                 }
-                ## Sample random effects on Cm
-                for (i in 1:nleaf){
-                        guess.alphaCm <- rnorm(1, alphaCm.i[i], JumpSD["alphaN"])
-                        guess.spec <- prospect(N.i, Cab.i, Cw.i Cm.i + guess.alphaCm)
-                        guess.error.alpha <- -apply(obs.spec[,leaflist[i]], 2, "-", guess.spec)
-                        gp1 <- sum(dnorm(guess.error.alpha, 0, 1/sqrt(pwl.i), log=TRUE))    # Likelihood
-                        gp2 <- dnorm(guess.alphaCm, 0, 1/sqrt(pleaf.i))             # Alpha prior
-                        guess.posterior <- gp1 + gp2
+
+                ### Sample random effects ###
+
+                ## Sample alphaN
+                for (i in 1:nplot){
+                        guess.alphaN <- alphaN.i
+                        guess.alphaN[i] <- rnorm(1, alphaN.i[i], JumpRSD * alphaN.i[i])
+                        guess.error.alpha <- lapply(1:nplot,
+                                                    function(i) {
+                                                            guess.spec <- prospect(N.i + guess.alphaN[i],
+                                                                                   Cab.i + alphaCab.i[i],
+                                                                                   Cw.i + alphaCw.i[i],
+                                                                                   Cm.i + alphaCm.i[i]
+                                                                                   )
+                                                            guess.error <- spec.error(guess.spec, obs.spec[, plotlist[[i]]])
+                                                            return(guess.error)
+                                                    }
+                                                    )
+                        guess.error <- do.call(cbind, guess.error.alpha)
+                        guess.posterior <- likelihood(guess.error, pwl.i) + dnorm(guess.alphaN[i], 1/sqrt(pplotN))
                         a <- exp(guess.posterior - prev.posterior)
                         if(is.na(a)) a <- -1
                         if(a > runif(1)){
-                                alphaCm.i[i] <- guess.alphaCm
+                                alphaN.i <- guess.alphaN
+                                prev.posterior <- guess.posterior
+                                ar.alpha <- ar.alpha + 1
+                        }
+                }
+                
+                ## Sample alphaCab
+                for (i in 1:nplot){
+                        guess.alphaCab <- alphaCab.i
+                        guess.alphaCab[i] <- rnorm(1, alphaCab.i[i], JumpRSD * alphaCab.i[i])
+                        guess.error.alpha <- lapply(1:nplot,
+                                                    function(i) {
+                                                            guess.spec <- prospect(N.i + alphaN.i[i],
+                                                                                   Cab.i + guess.alphaCab[i],
+                                                                                   Cw.i + alphaCw.i[i],
+                                                                                   Cm.i + alphaCm.i[i]
+                                                                                   )
+                                                            guess.error <- spec.error(guess.spec, obs.spec[, plotlist[[i]]])
+                                                            return(guess.error)
+                                                    }
+                                                    )
+                        guess.error <- do.call(cbind, guess.error.alpha)
+                        guess.posterior <- likelihood(guess.error, pwl.i) + dnorm(guess.alphaCab[i], 1/sqrt(pplotCab))
+                        a <- exp(guess.posterior - prev.posterior)
+                        if(is.na(a)) a <- -1
+                        if(a > runif(1)){
+                                alphaCab.i <- guess.alphaCab
+                                prev.posterior <- guess.posterior
+                                ar.alpha <- ar.alpha + 1
+                        }
+                }
+
+                ## Sample alphaCw
+                for (i in 1:nplot){
+                        guess.alphaCw <- alphaCw.i
+                        guess.alphaCw[i] <- rnorm(1, alphaCw.i[i], JumpRSD * alphaCw.i[i])
+                        guess.error.alpha <- lapply(1:nplot,
+                                                    function(i) {
+                                                            guess.spec <- prospect(N.i + alphaN.i[i],
+                                                                                   Cab.i + alphaCab.i[i],
+                                                                                   Cw.i + guess.alphaCw[i],
+                                                                                   Cm.i + alphaCm.i[i]
+                                                                                   )
+                                                            guess.error <- spec.error(guess.spec, obs.spec[, plotlist[[i]]])
+                                                            return(guess.error)
+                                                    }
+                                                    )
+                        guess.error <- do.call(cbind, guess.error.alpha)
+                        guess.posterior <- likelihood(guess.error, pwl.i) + dnorm(guess.alphaCw[i], 1/sqrt(pplotCw))
+                        a <- exp(guess.posterior - prev.posterior)
+                        if(is.na(a)) a <- -1
+                        if(a > runif(1)){
+                                alphaCw.i <- guess.alphaCw
+                                prev.posterior <- guess.posterior
+                                ar.alpha <- ar.alpha + 1
+                        }
+                }
+
+                ## Sample alphaCm
+                for (i in 1:nplot){
+                        guess.alphaCm <- alphaCm.i
+                        guess.alphaCm[i] <- rnorm(1, alphaCm.i[i], JumpRSD * alphaCm.i[i])
+                        guess.error.alpha <- lapply(1:nplot,
+                                                    function(i) {
+                                                            guess.spec <- prospect(N.i + alphaN.i[i],
+                                                                                   Cab.i + alphaCab.i[i],
+                                                                                   Cw.i + alphaCw.i[i],
+                                                                                   Cm.i + guess.alphaCm[i]
+                                                                                   )
+                                                            guess.error <- spec.error(guess.spec, obs.spec[, plotlist[[i]]])
+                                                            return(guess.error)
+                                                    }
+                                                    )
+                        guess.error <- do.call(cbind, guess.error.alpha)
+                        guess.posterior <- likelihood(guess.error, pwl.i) + dnorm(guess.alphaCm[i], 1/sqrt(pplotCm))
+                        a <- exp(guess.posterior - prev.posterior)
+                        if(is.na(a)) a <- -1
+                        if(a > runif(1)){
+                                alphaCm.i <- guess.alphaCm
                                 prev.posterior <- guess.posterior
                                 ar.alpha <- ar.alpha + 1
                         }
@@ -285,6 +380,21 @@ pinvbayes <- function(obs.spec,
                 u2 <- pwl.s[2] + u2p
                 pwl.i <- rgamma(nprec, u1, u2)
 
+                ### Sample alphaN precision ###
+                v1 <- re.leaf.s[1] + nplot/2
+
+                v2N <- re.leaf.s[2] + 0.5 * sum(alphaN.i^2)
+                pplotN <- rgamma(1, v1, v2N)
+
+                v2Cab <- re.leaf.s[2] + 0.5 * sum(alphaCab.i^2)
+                pplotCab <- rgamma(1, v1, v2Cab)
+
+                v2Cw <- re.leaf.s[2] + 0.5 * sum(alphaCw.i^2)
+                pplotCw <- rgamma(1, v1, v2Cw)
+
+                v2Cm <- re.leaf.s[2] + 0.5 * sum(alphaCm.i^2)
+                pplotCm <- rgamma(1, v1, v2Cm)
+
                 # Store values 
                 if (local.store){
                         N.store[g] <- N.i
@@ -296,8 +406,18 @@ pinvbayes <- function(obs.spec,
                         } else{
                                 pwl.store[g,] <- pwl.i
                         }
+                        pplotN.store[g] <- pplotN
+                        pplotCab.store[g] <- pplotCab
+                        pplotCw.store[g] <- pplotCw
+                        pplotCm.store[g] <- pplotCm
+                        alphaN.store[g,] <- alphaN.i
+                        alphaCab.store[g,] <- alphaCab.i
+                        alphaCw.store[g,] <- alphaCw.i
+                        alphaCm.store[g,] <- alphaCm.i
                 } else {
-                        write(c(N.i, Cab.i, Cw.i, Cm.i, pwl.i), 
+                        write(c(N.i, Cab.i, Cw.i, Cm.i,
+                                pplotN, pplotCab, pplotCw, pplotCm, 
+                                pwl.i), 
                               ncolumns=length(header),
                               sep=",",
                               file=fname,
@@ -306,7 +426,11 @@ pinvbayes <- function(obs.spec,
         }
 
         if (local.store){
-                return(list(N=N.store, Cab=Cab.store, Cw=Cw.store, Cm=Cm.store, pwl=pwl.store, arate=ar/ngibbs))
+                return(list(N=N.store, Cab=Cab.store, Cw=Cw.store, Cm=Cm.store, pwl=pwl.store,
+                            pplotN=pplotN.store,
+                            pplotCab=pplotCab.store,
+                            pplotCw=pplotCw.store,
+                            pplotCm=pplotCm.store))
         }
 }
 
