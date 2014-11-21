@@ -2,10 +2,12 @@
 
 laptime <- function(tstart, i, n){
   tlap <- proc.time()
-  tdif <- time.unit((tlap - tstart)[[3]])
-  tleft <- time.unit(tdif[[1]] * (n/i - 1))
-  cat(sprintf("\r%d of %d. Time elapsed: %.1f. %s Time remaining: %.1f %s",
-              i, n, tdif[[1]], tdif[[2]], tleft[[1]], tleft[[2]]))
+  tdif <- (tlap - tstart)[[3]]
+  tdif.s <- time.unit(tdif)
+  tleft <- tdif * (n/i - 1)
+  tleft.s <- time.unit(tleft)
+  cat(sprintf("\r%d of %d. Time elapsed: %s Time remaining: %s",
+              i, n, tdif.s, tleft.s))
 }
 
 time.unit <- function(x){
@@ -21,5 +23,5 @@ time.unit <- function(x){
     out <- x
     unit <- "sec"
   }
-  return(list(out, unit))
+  return(sprintf("%.1f %s", out, unit)
 }
