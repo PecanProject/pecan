@@ -23,7 +23,7 @@ pinvbayes <- function(obs.spec,
                       local.store=FALSE,
                       single.precision=TRUE,
                       random.effects='none',
-                      random.inits=FALSE
+                      random.inits=FALSE,
                       ar.step=100,
                       ar.min=0.1,
                       ar.max=0.9,
@@ -54,17 +54,15 @@ pinvbayes <- function(obs.spec,
                 Cw.i <- initc[["Cw"]]
                 Cm.i <- initc[["Cm"]]
         } else {
-                N.i <- rnorm(1, N.s[1], N.s[2])
-                Cab.i <- rnorm(1, Cab.s[1], Cab.s[2])
-                Cw.i <- rnorm(1, Cw.s[1], Cw.s[2])
-                Cm.i <- rnorm(1, Cm.s[1], Cm.s[2])
+                N.i <- abs(rnorm(1, N.s[1], N.s[2])) + 1
+                Cab.i <- rlnorm(1, Cab.s[1], Cab.s[2])
+                Cw.i <- rlnorm(1, Cw.s[1], Cw.s[2])
+                Cm.i <- rlnorm(1, Cm.s[1], Cm.s[2])
         }
 
         pwl.i <- rep(1, 2101)
         if(single.precision) pwl.i <- pwl.i[1]
 
-        # Random effects
-        re.leaf.s <- c(0.001, 0.001)              # Inverse gamma
         
 
         ### Extract indices for random effects ###
@@ -87,6 +85,9 @@ pinvbayes <- function(obs.spec,
                 pplotCab <- 1
                 pplotCw <- 1
                 pplotCm <- 1
+
+                # Random effects
+                randeff.s <- c(0.001, 0.001)              # Inverse gamma
         }
         
         ### Shortcut functions ###
@@ -115,6 +116,8 @@ pinvbayes <- function(obs.spec,
                            Cw.prior(Cw.i) +
                            Cm.prior (Cm.i)
                            )
+        # Random effects
+        re.leaf.s <- c(0.001, 0.001)              # Inverse gamma
 
         ### MCMC storage
         if (local.store){
@@ -127,14 +130,16 @@ pinvbayes <- function(obs.spec,
                 } else {
                         pwl.store <- matrix(NA, nrow=ngibbs, ncol=nwl)
                 }
-                pplotN.store <- numeric(ngibbs)
-                pplotCab.store <- numeric(ngibbs)
-                pplotCw.store <- numeric(ngibbs)
-                pplotCm.store <- numeric(ngibbs)
-                alphaN.store <- matrix(NA, nrow=ngibbs, ncol=nre)
-                alphaCab.store <- matrix(NA, nrow=ngibbs, ncol=nre)
-                alphaCw.store <- matrix(NA, nrow=ngibbs, ncol=nre)
-                alphaCm.store <- matrix(NA, nrow=ngibbs, ncol=nre)
+                if(random.effects != 'none'){
+                        pplotN.store <- numeric(ngibbs)
+                        pplotCab.store <- numeric(ngibbs)
+                        pplotCw.store <- numeric(ngibbs)
+                        pplotCm.store <- numeric(ngibbs)
+                        alphaN.store <- matrix(NA, nrow=ngibbs, ncol=nre)
+                        alphaCab.store <- matrix(NA, nrow=ngibbs, ncol=nre)
+                        alphaCw.store <- matrix(NA, nrow=ngibbs, ncol=nre)
+                        alphaCm.store <- matrix(NA, nrow=ngibbs, ncol=nre)
+                }
                 
         } else {
                 if(single.precision) {
@@ -412,18 +417,18 @@ pinvbayes <- function(obs.spec,
                         }
 
                         ### Sample alphaN precision ###
-                        v1 <- re.leaf.s[1] + nre/2
+                        v1 <- randeff.s[1] + nre/2
 
-                        v2N <- re.leaf.s[2] + 0.5 * sum(alphaN.i^2)
+                        v2N <- randeff.s[2] + 0.5 * sum(alphaN.i^2)
                         pplotN <- rgamma(1, v1, v2N)
 
-                        v2Cab <- re.leaf.s[2] + 0.5 * sum(alphaCab.i^2)
+                        v2Cab <- randeff.s[2] + 0.5 * sum(alphaCab.i^2)
                         pplotCab <- rgamma(1, v1, v2Cab)
 
-                        v2Cw <- re.leaf.s[2] + 0.5 * sum(alphaCw.i^2)
+                        v2Cw <- randeff.s[2] + 0.5 * sum(alphaCw.i^2)
                         pplotCw <- rgamma(1, v1, v2Cw)
 
-                        v2Cm <- re.leaf.s[2] + 0.5 * sum(alphaCm.i^2)
+                        v2Cm <- randeff.s[2] + 0.5 * sum(alphaCm.i^2)
                         pplotCm <- rgamma(1, v1, v2Cm)
                 }
 
