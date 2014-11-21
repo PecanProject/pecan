@@ -9,7 +9,6 @@ samp.inits <- list(N=1,
                    Cab=30,
                    Cw=0.01,
                    Cm=0.005,
-                   pwl=rep(1, 2101)
                    )
 
 ## NOTE: obs.spec must be a matrix as follows:
@@ -22,6 +21,8 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
                       local.store=FALSE,
                       sample.together=FALSE, 
                       single.precision=TRUE,
+                      random.effects='none',
+                      random.inits=FALSE
                       ar.step=100,
                       ar.min=0.1,
                       ar.max=0.9,
@@ -31,16 +32,7 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
         wl <- min(obs.spec[,1]):max(obs.spec[,1])
         nwl <- length(wl)
         nspec <- ncol(obs.spec)
-        JumpSD <- JumpRSD * unlist(initc)[-5]
-
-        ### Initial values unpacked
-        N.i <- initc[["N"]]
-        Cab.i <- initc[["Cab"]]
-        Cw.i <- initc[["Cw"]]
-        Cm.i <- initc[["Cm"]]
-        pwl.i <- initc[["pwl"]]
-        if(single.precision) pwl.i <- pwl.i[1]
-
+        JumpSD <- JumpRSD * unlist(initc)
 
         ### Priors
         N.s <- c(0, 1.5)                # Halfnormal (N = 1 + rlnorm)
@@ -51,6 +43,22 @@ pinvbayes <- function(obs.spec, prospect=prospect4, ngibbs=100,
         Cm.s <- c(log(0.006), 0.9)        # Lognormal
 
         pwl.s <- c(0.001, 0.001)          # Inverse gamma
+        
+        ### Initial conditions
+        if(!random.inits){
+        N.i <- initc[["N"]]
+        Cab.i <- initc[["Cab"]]
+        Cw.i <- initc[["Cw"]]
+        Cm.i <- initc[["Cm"]]
+        } else {
+        N.i <- rnorm(1, N.s[1], N.s[2])
+        Cab.i <- rnorm(1, Cab.s[1], Cab.s[2])
+        Cw.i <- rnorm(1, Cw.s[1], Cw.s[2])
+        Cm.i <- rnorm(1, Cm.s[1], Cm.s[2])
+        }
+
+        pwl.i <- rep(1, 2101)
+        if(single.precision) pwl.i <- pwl.i[1]
 
         ### Define sampler functions
         try.error <- function(N, Cab, Cw, Cm){
