@@ -26,6 +26,12 @@
 # Whom to send the email to
 #$ -M ashiklom@bu.edu
 
+# Set walltime limit
+#$ -l h_rt=36:00:00
+
+# Run in parallel
+#$ -pe mpi_8_tasks_per_node 8
+
 # Now let's keep track of some information just in case anything goes wrong
 
 cd ..
@@ -41,11 +47,15 @@ echo "=========================================================="
 # Run the R scripts
 # Arguments to runpi.R: JumpRSD Species single_precision random_effects sampled_inits ngibbs otherID
 
-Rscript scripts/runpi.R 0.05 Grape 1 none 1e4  &
-Rscript scripts/runpi.R 0.05 "CAAN-Red Pepper" 1 1e4 &
-Rscript scripts/runpi.R 0.05 LemonTree 1 1e4 &
-Rscript scripts/runpi.R 0.05 MandarinOrange 1 1e4 &
-Rscript scripts/runpi.R 0.05 ShortDatePalm 1 1e4 &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF $SI 1e4 run1  &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF $SI 1e4 run2  &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF $SI 1e4 run3  &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF $SI 1e4 run4  &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF $SI 1e4 run5  &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF $SI 1e4 run6  &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF $SI 1e4 run7  &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF $SI 1e4 run8  &
+
 wait
 
 echo "=========================================================="
