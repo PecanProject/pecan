@@ -42,6 +42,12 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
     #time dimension for adding new variables
     tdim = nc$dim[["DTIME"]]
     
+    #get site location attribute and put in new variable
+    loc <- ncatt_get(nc=nc,varid=0,attname='site_location')
+    lat <- substr(loc$value,20,28)
+    lon <- substr(loc$value,40,48)
+    
+    
     #renaming variables and performing unit conversions
     ta <- ncvar_get(nc=nc,varid='TA')
     #ta <- ncvar_get(nc=nc,varid='air_temperature')
