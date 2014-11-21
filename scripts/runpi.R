@@ -29,6 +29,6 @@ smat <- specmatrix(specdat, cond)
 
 pinvbayes(smat, ngibbs=ngibbs, JumpRSD=jrsd, fname=filename,
           local.store=FALSE, 
-          single.precision=precision, 
+          single.precision=precarg, 
           random.effects=rearg,
           random.inits=riarg)
