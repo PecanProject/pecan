@@ -39,9 +39,9 @@ echo "Task index number : $SGE_TASK_ID"
 echo "=========================================================="
 
 # Run the R scripts
-# Arguments to runpi.R: JumpRSD Species sample_together(0,1) ngibbs
+# Arguments to runpi.R: JumpRSD Species single_precision random_effects sampled_inits ngibbs otherID
 
-Rscript scripts/runpi.R 0.05 Grape 1 1e4 &
+Rscript scripts/runpi.R 0.05 Grape 1 none 1e4  &
 Rscript scripts/runpi.R 0.05 "CAAN-Red Pepper" 1 1e4 &
 Rscript scripts/runpi.R 0.05 LemonTree 1 1e4 &
 Rscript scripts/runpi.R 0.05 MandarinOrange 1 1e4 &

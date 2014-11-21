@@ -1,0 +1,77 @@
+---
+title: 'EE509: Preliminary Results'
+author: "Alexey Shiklomanov"
+date: "11/20/2014"
+output:
+  html_document:
+    fig_caption: yes
+---
+
+```{r, echo=FALSE, error=FALSE, message=FALSE, results='hide', fig.keep='none'}
+options(warn=0)
+library(ggplot2)
+library(gridExtra)
+pep1 <- read.csv("run_results/CAAN-Red Pepper_0.05_TRUE.dat", header=T)
+pep2 <- read.csv("run_results/CAAN-Red Pepper_0.1_TRUE.dat", header=T)
+pep <- rbind(pep1[-1000:0,], pep2[-1000:0])
+
+grape1 <- read.csv("run_results//Grape_0.05_TRUE.dat", header=T)
+grape2 <- read.csv("run_results/Grape_0.1_TRUE.dat", header=T)
+grape <- rbind(grape1[-1000:0,], grape2[-1000:0])
+
+fig1.1 <- ggplot(grape) + geom_density(aes(x=N))
+fig1.2 <- ggplot(grape) + geom_density(aes(x=Cab))
+fig1.3 <- ggplot(grape) + geom_density(aes(x=Cw))
+fig1.4 <- ggplot(grape) + geom_density(aes(x=Cm))
+fig1.5 <- ggplot(pep) + geom_density(aes(x=N))
+fig1.6 <- ggplot(pep) + geom_density(aes(x=Cab))
+fig1.7 <- ggplot(pep) + geom_density(aes(x=Cw))
+fig1.8 <- ggplot(pep) + geom_density(aes(x=Cm))
+
+fig2.1 <- ggplot(grape) + geom_density(aes(x=p))
+fig2.2 <- ggplot(pep) + geom_density(aes(x=p))
+
+grape.re <- read.csv("run_results/Grape_0.05_TRUE_LeafRE.dat", header=TRUE)[-1000:0,]
+
+fig3.5 <- ggplot(grape.re) + geom_density(aes(x=N))
+fig3.6 <- ggplot(grape.re) + geom_density(aes(x=Cab))
+fig3.7 <- ggplot(grape.re) + geom_density(aes(x=Cw))
+fig3.8 <- ggplot(grape.re) + geom_density(aes(x=Cm))
+
+bk <- grid.rect(gp=gpar(col="white"))
+fig4.0 <- ggplot(grape.re) + geom_density(aes(x=p))
+fig4.1 <- ggplot(grape.re) + geom_density(aes(x=pleafN))
+fig4.2 <- ggplot(grape.re) + geom_density(aes(x=pleafCab))
+fig4.3 <- ggplot(grape.re) + geom_density(aes(x=pleafCw))
+fig4.4 <- ggplot(grape.re) + geom_density(aes(x=pleafCm))
+```
+
+# Results
+The original PROSPECT model takes four leaf parameters--effective number of layers ($N$), chlorophyll concentration ($C_ab$), water content ($C_w$), and dry matter ($C_m$)--and generates a full reflectance and transmittance spectrum (400-2500 nm wavelength). This model is an inversion of PROSPECT--i.e., leaf reflectance spectra are taken as input and used to calculate the four parameters. Because there is no closed-form analytical solution for the PROSPECT parameters as a function of reflectance, this is accomplished by statistical inversion, wherein the error between the model and observations is minimized. 
+
+For each species, one Markov-Chain Monte Carlo chain was run for 10,000 iterations. The models that converged did so well within the first 1000 steps, so this value was used as the burn-in period. All parameters had substantial (> 0.5) autocorrelation even with a lag of at least 20, but as the computational intensity of the model prevented reasonable sampling beyond 10,000 iterations, this autocorrelation was ignored. Future runs of the model will include multiple chains running in parallel to increase the effective sample size and allow appropriate thinning.  
+
+Of the five crop species sampled, the inversion procedure failed to mix (i.e. converged to only a point estimate) for three crops--Lemon tree, Mandarin Orange, and Short Date Palm. Although the acceptance rate was still considerably lower than recommended (<20% for all parameters, <5% for some), the procedure successfuly produced posterior distributions for the remaining two crops, Grape and Red Pepper (Figure 1).
+
+```{r, echo=FALSE, fig.cap="Figure 1: Posterior distributions of PROSPECT parameters for Grape (left) and Red Pepper (right)", fig.height=9}
+
+grid.arrange(fig1.1, fig1.5, fig1.2, fig1.6, fig1.3, fig1.7, fig1.4, fig1.8, ncol=2)
+```
+
+The squared sum of the residual error was estimated in addition to the PROSPECT parameters. Conjugacy of the Inverse Gamma prior and Normal likelihood distributions allowed the error to be Gibbs-sampled, contributing to a substantially smoother posterior (Figure 2). 
+
+```{r, echo=FALSE, fig.cap="Figure 2: Posterior distributions of residual squared error for Grape (left) and Red Pepper (right)"}
+grid.arrange(fig2.1, fig2.2, ncol=2)
+```
+
+## Random effects
+Variability between plots and across individual leaves was investigated via heirarchical random effects modeling of each PROSPECT parameter. Thus far, this has only been successful for leaf random effects on Grape. Figure 3 compares PROSPECT parameter posterior distributions with and without individual leaf effects. Figure 4 shows the contribution to the overall precision from individual leaf effects.
+
+```{r, echo=FALSE, fig.cap="Figure 3: Posterior distributions of PROSPECT parameters without (top) and with (bottom) individual leaf random effects", fig.height=9, fig.width=7.5}
+grid.arrange(fig1.1, fig1.2, fig3.5, fig3.6, fig1.3, fig1.4, fig3.7, fig3.8,
+             ncol=2)
+```
+
+```{r, echo=FALSE, fig.cap="Figure 4: Contribution to precision from random effects", fig.height=9, fig.width=7.5}
+grid.arrange(fig2.1, fig4.1, fig4.0, fig4.2, bk, fig4.3, bk, fig4.4, ncol=2)
+```
