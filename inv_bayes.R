@@ -169,11 +169,11 @@ pinvbayes <- function(obs.spec,
         arp <- 0
         for(g in 1:ngibbs){
                 arate <- ar/(4*g)
-                if((g == 5) | (g %% (ngibbs/20) == 0)) laptime(tstart, g, ngibbs)
+                if((g == 5) | (g %% (ngibbs/20) == 0) & local.store) laptime(tstart, g, ngibbs)
 
                 if(g %% ar.step == 0){
                         ## Tweak JumpRSD based on acceptance rate
-                        arate <- (ar - arp)/100
+                        arate <- (ar - arp)/ar.step
                         if(arate < ar.min){
                                 JumpSD <- JumpSD/ar.tweak
                                 print(sprintf("   Iter %d, AR %.3f , JSD / %.1f", g, arate, ar.tweak))
