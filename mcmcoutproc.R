@@ -1,12 +1,11 @@
 ## Process raw outputs from MCMC
 library(data.table)
+library(coda)
 
-diag <- function(fname, beg=1000){
-  dat <- fread(fname, header=TRUE, data.table=FALSE)
-  par(mfrow=c(5,2))
-  for(cn in colnames(dat)[1:5]){
-    plot(dat[-beg:0,cn], type='l')
-    hist(dat[-beg:0,cn])
-    print(sprintf("%s AR %.2f", cn, length(unique(dat[,cn]))/length(dat[,cn])))
-  }  
+load <- function(fname, beg=1000, thin=1){
+  rawd <- read.csv(fname, header=TRUE)[-beg:0,]
+  rawd <- rawd[seq(1, length(rawd[,1]), by=thin), ]
+  dat <- mcmc(rawd)
+  return(dat)
 }
+
