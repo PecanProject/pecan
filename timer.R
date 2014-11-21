@@ -23,5 +23,5 @@ time.unit <- function(x){
     out <- x
     unit <- "sec"
   }
-  return(sprintf("%.1f %s", out, unit)
+  return(sprintf("%.1f %s", out, unit))
 }
