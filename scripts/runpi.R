@@ -10,7 +10,7 @@ if(precarg){
         precision <- "pwl"
 }
 rearg <- args[4]
-riarg <- args[5]
+riarg <- as.numeric(args[5])
 if(riarg){
         ri <- "randinit"
 } else {
