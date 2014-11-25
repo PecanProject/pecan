@@ -322,11 +322,11 @@ take.samples <- function(summary, sample.size = 10^6){
 ##' @examples
 ##' input <- list(x = data.frame(mean = 1, stat = 1, n = 1))
 ##' derive.trait(FUN = identity, input = input, var.name = 'x')
-derive.trait <- function(FUN, ..., input=list(...), var.name=NA, sample.size=10000){
+derive.trait <- function(FUN, ..., input=list(...), var.name=NA, sample.size=10^6){
   if(any(lapply(input, nrow) > 1)){
     return(NULL)
   }
-  input.samples <- lapply(input, take.samples)
+  input.samples <- lapply(input, take.samples, sample.size=sample.size)
   output.samples <- do.call(FUN, input.samples)
   output<-input[[1]]
   output$mean<-mean(output.samples)
@@ -353,7 +353,7 @@ derive.trait <- function(FUN, ..., input=list(...), var.name=NA, sample.size=100
 ##' @return a copy of the first input trait with modified mean, stat, and n
 derive.traits <- function(FUN, ..., input=list(...),
                           match.columns=c('citation_id', 'site_id', 'specie_id'),
-                          var.name=NA, sample.size=10000){
+                          var.name=NA, sample.size=10^6){
   if(length(input) == 1){
     input<-input[[1]]
                                         #KLUDGE: modified to handle empty datasets
