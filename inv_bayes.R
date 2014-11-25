@@ -101,7 +101,10 @@ pinvbayes <- function(obs.spec,
                 }
         }
 
-        likelihood <- function(guess.error, pwl.i) sum(dnorm(guess.error, 0, 1/sqrt(pwl.i), log=TRUE))
+        likelihood <- function(guess.error, pwl.i) sum(dgamma(colSums(guess.error^2),
+                                                              (nwl-1)/2,
+                                                              pwl.i,
+                                                              log=TRUE))
         N.prior <- function(N) dnorm(N - 1, N.s[1], N.s[2], log=TRUE) + log(2)
         Cab.prior <- function(Cab) dlnorm(Cab, Cab.s[1], Cab.s[2], log=TRUE)
         Cw.prior <- function(Cw) dlnorm(Cw, Cw.s[1], Cw.s[2], log=TRUE)
@@ -205,15 +208,13 @@ pinvbayes <- function(obs.spec,
                         guess.spec <- prospect(guess.N, Cab.i, Cw.i, Cm.i)
                         guess.error <- spec.error(guess.spec, obs.spec[, -1])
                 }
-                guess.posterior <- likelihood(guess.error, pwl.i) + N.prior(guess.N)              
+                gpn1 <- likelihood(guess.error, pwl.i)
+                gpn2 <- N.prior(guess.N)
+                guess.posterior <-  gpn1 + gpn2       
                 jnum <- dtnorm(guess.N, N.i, JumpSD["N"], Min=1)
                 jden <- dtnorm(N.i, guess.N, JumpSD["N"], Min=1)
                 a <- exp((guess.posterior ) - (prev.posterior ))
-                print(guess.N)
-                print(as.numeric(JumpSD["N"]))
-                print(guess.posterior)
-                print(prev.posterior)
-                print(a)
+                print(sprintf("%g", c(guess.N, as.numeric(JumpSD["N"]), gpn1, gpn2, prev.posterior, a)))
                 if(is.na(a)) a <- -1
                 if(a > runif(1)){
                         N.i <- guess.N
@@ -442,12 +443,12 @@ pinvbayes <- function(obs.spec,
                 ### Sample error precision ### 
                 if(single.precision){
                         nprec <- 1
-                        u1p <- nspec*nwl/2
-                        u2p <- 0.5 * sum(prev.error^2)
+                        u1p <- nspec
+                        u2p <- 0.5 * sum(colSums(prev.error^2))
                 } else {
                         nprec <- nwl
                         u1p <- nspec/2
-                        u2p <- 0.5 * apply(prev.error^2, 1, sum)
+                        u2p <- 0.5 * rowSums(prev.error^2)
                 }
                 u1 <- pwl.s[1] + u1p
                 u2 <- pwl.s[2] + u2p

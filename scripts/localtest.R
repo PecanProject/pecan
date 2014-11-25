@@ -3,7 +3,7 @@
 source("inv_bayes.R")
 g2 <- pinvbayes(grapedat,
                 local.store=TRUE,
-                ngibbs=200,
+                ngibbs=600,
                 random.effects='none',
                 random.inits=1,
                 ar.step=10,
