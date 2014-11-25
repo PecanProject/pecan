@@ -173,7 +173,7 @@ pinvbayes <- function(obs.spec,
 
                 if(g %% ar.step == 0){
                         ## Tweak JumpRSD based on acceptance rate
-                        arate <- (ar - arp)/ar.step
+                        arate <- (ar - arp)/(4*ar.step)
                         if(arate < ar.min){
                                 JumpSD <- JumpSD/ar.tweak
                                 print(sprintf("   Iter %d, AR %.3f , JSD / %.1f", g, arate, ar.tweak))
@@ -205,18 +205,24 @@ pinvbayes <- function(obs.spec,
                         guess.spec <- prospect(guess.N, Cab.i, Cw.i, Cm.i)
                         guess.error <- spec.error(guess.spec, obs.spec[, -1])
                 }
-                guess.posterior <- likelihood(guess.error, pwl.i) + N.prior(guess.N)
+                guess.posterior <- likelihood(guess.error, pwl.i) + N.prior(guess.N)              
                 jnum <- dtnorm(guess.N, N.i, JumpSD["N"], Min=1)
                 jden <- dtnorm(N.i, guess.N, JumpSD["N"], Min=1)
-                a <- exp((guess.posterior - jnum) - (prev.posterior - jden))
+                a <- exp((guess.posterior ) - (prev.posterior ))
+                print(guess.N)
+                print(as.numeric(JumpSD["N"]))
+                print(guess.posterior)
+                print(prev.posterior)
+                print(a)
                 if(is.na(a)) a <- -1
                 if(a > runif(1)){
                         N.i <- guess.N
                         prev.error <- guess.error
                         prev.posterior <- guess.posterior
                         ar <- ar + 1
+                        print("Accepted!")
                 }
-
+                print("----------")
                 # Sample Cab
                 guess.Cab <- rtnorm(1, Cab.i, JumpSD["Cab"])
                 if(random.effects != "none"){
@@ -248,6 +254,7 @@ pinvbayes <- function(obs.spec,
                         ar <- ar + 1
                 }
 
+                # Sample Cw
                 guess.Cw <- rtnorm(1, Cw.i, JumpSD["Cw"])
                 if(random.effects != "none"){
                         guess.error.alpha <- lapply(1:nre,
