@@ -25,7 +25,7 @@
 ##' trait.data <- query.traits(spstr, trvec)
 ##' }
 ##' @author David LeBauer, Carl Davidson, Shawn Serbin
-query.traits <- function(spstr, priors, con = NULL){
+query.traits <- function(spstr, priors, con = NULL, update.check.only=FALSE){
 
   if(is.null(con)){
     con <- db.open(settings$database$bety)
@@ -42,7 +42,7 @@ query.traits <- function(spstr, priors, con = NULL){
   traits <- unique(traits[traits %in% priors])
   
   ### Grab trait data
-  trait.data <- lapply(traits, function(trait) query.trait.data(trait, spstr, con=con))
+  trait.data <- lapply(traits, function(trait) query.trait.data(trait, spstr, con=con, update.check.only=update.check.only))
   names(trait.data) <- traits
   return(trait.data)
 }
