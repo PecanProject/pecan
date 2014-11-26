@@ -9,7 +9,7 @@
      <host>psql-pecan.bu.edu</host>
      <dbname>bety</dbname>
      <driver>PostgreSQL</driver>
-     <write>TRUE</write>
+     <write>FALSE</write>
     </bety>
   </database>
 
