@@ -31,10 +31,20 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
   
   for(i in 1:length(files)){
     
-    new.file =file.path(outfolder,files[i])
+    
+    name <- files[i]
+    name_list1 <- unlist(strsplit(name, "_"))[c(-3,-6)]
+    name_list2 <- unlist(strsplit(tail(unlist(strsplit(name, "_")),1),"[.]"))
+    date <- unlist(strsplit(name, "_"))[3]
+    
+    nn <- paste0(c(name_list1,name_list2[1]), collapse ="_")
+    new_name <- paste(c(nn,date,name_list2[2]), collapse=".")
+    
+    new.file =file.path(outfolder,new_name)
     
     ## copy old file to new directory
     system2("cp",paste(file.path(in.path,files[i]),new.file))
+    
     
     ### if reading ameriflux .nc file ###
     nc <- nc_open(new.file,write=TRUE)
