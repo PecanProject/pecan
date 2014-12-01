@@ -13,10 +13,10 @@ ssd <- function(P, ref.obs, func=prospect4){
 }
 
 p.invert <- function(observed, func=prospect4, inits=initv){
-  observed <- rowMeans(observed[,-1])
+  observed <- rowMeans(observed)
   a1 <- optim(inits, ssd, ref.obs=observed, func=func)
 return(a1$par)
 }
 
-initv <- unlist(inits)[1:4]
+initv <- unlist(guess.inits)[1:4]
 
