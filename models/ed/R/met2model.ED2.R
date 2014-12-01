@@ -73,8 +73,8 @@ for(i in 1:length(filescount)){
   
   
   ## extract variables
-  lat  <- ncvar_get(nc,"latitude",count=1)
-  lon  <- ncvar_get(nc,"longitude",count=1)
+  lat  <- ncvar_get(nc,"latitude")
+  lon  <- ncvar_get(nc,"longitude")
   sec   <- nc$dim$DTIME$vals
   Tair <- ncvar_get(nc,"air_temperature")
   Qair <- ncvar_get(nc,"specific_humidity")  #humidity (kg/kg)
