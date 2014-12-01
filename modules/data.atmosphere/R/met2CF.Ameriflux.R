@@ -42,11 +42,22 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
     #time dimension for adding new variables
     tdim = nc$dim[["DTIME"]]
     
-    #get site location attribute and put in new variable
+    #get site location attribute
     loc <- ncatt_get(nc=nc,varid=0,attname='site_location')
-    lat <- substr(loc$value,20,28)
-    lon <- substr(loc$value,40,48)
+    lat.value <- as.numeric(substr(loc$value,20,28))
+    lon.value <- as.numeric(substr(loc$value,40,48))
     
+    #create new coordinate dimensions based on site location lat/lon
+    lat <- ncdim_def(name="latitude",units="degree_north",vals=1)
+    lon <- ncdim_def(name="longitude",units="degree_east",vals=1)
+    
+    #create site location variables
+    lat.var <- ncvar_def(name='latitude',units="degree_north",dim=lat)
+    lon.var <- ncvar_def(name='longitude',units="degree_east",dim=lon)
+    nc = ncvar_add(nc=nc,v=lat.var,verbose=TRUE) #add latitude to existing netCDF file
+    ncvar_put(nc,varid='latitude',vals=lat.value)
+    nc = ncvar_add(nc=nc,v=lon.var,verbose=TRUE) #add longitude to existing netCDF file
+    ncvar_put(nc,varid='longitude',vals=lon.value)
     
     #renaming variables and performing unit conversions
     ta <- ncvar_get(nc=nc,varid='TA')
