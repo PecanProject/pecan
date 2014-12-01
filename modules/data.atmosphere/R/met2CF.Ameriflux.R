@@ -7,7 +7,7 @@
 ##' @param in.prefix
 ##' @param outfolder
 ##' 
-##' @author Josh Mantooth, Mike Dietze
+##' @author Josh Mantooth, Mike Dietze, Elizabeth Cowdery
 met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
   #---------------- Load libraries. -----------------------------------------------------------------#
 #  require(PEcAn.all)
@@ -30,6 +30,7 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
   }
   
   for(i in 1:length(files)){
+    
     
     new.file =file.path(outfolder,files[i])
     
@@ -141,9 +142,24 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
     lon.var <- ncvar_def(name='longitude',units='degree_east',dim=list(lon),missval=-9999) 
     nc <- ncvar_add(nc=nc,v=lon.var,verbose=TRUE) #add longitude to existing netCDF file
     ncvar_put(nc,varid='longitude',vals=lon.value)
+      
 
     nc_close(nc)
-  
+
+    #rename file to comply with met2model
+    name <- files[i]
+    name_list1 <- unlist(strsplit(name, "_"))[c(-3,-6)]
+    name_list2 <- unlist(strsplit(tail(unlist(strsplit(name, "_")),1),"[.]"))
+    date <- unlist(strsplit(name, "_"))[3]
+    
+    nn <- paste0(c(name_list1,name_list2[1]), collapse ="_")
+    new.files <- paste(c(nn,date,name_list2[2]), collapse=".")
+    
+    new.file.rename =file.path(outfolder,new.files)
+
+    system2("mv",paste(file.path(outfolder,files[i]),new.file.rename))
+
+
   }  ## end loop over files
  
  
