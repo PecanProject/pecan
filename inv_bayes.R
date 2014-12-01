@@ -5,12 +5,14 @@ source("prospect.R")
 source("timer.R")
 source("truncnorm.R")
 
-inits <- list(N=1.4, 
+guess.inits <- c(N=1.4, 
               Cab=30,
               Cw=0.017,
-              Cm=0.006,
-              pwl=rep(1, 2101)
+              Cm=0.006
               )
+
+source("mle_inversion.R")
+
 
 ## NOTE: obs.spec must be a matrix as follows:
 ## Column 1 : Wavelengths (400:2500)
@@ -18,23 +20,22 @@ inits <- list(N=1.4,
 ## Use specdatproc script to generate correct matrices from data.
 pinvbayes <- function(obs.spec,
                       ngibbs=100,
-                      initc=inits,
                       JumpRSD=0.1,
                       local.store=FALSE,
                       single.precision=TRUE,
                       random.effects='none',
-                      random.inits=FALSE,
+                      inits='mle',
                       ar.step=100,
                       ar.min=0.1,
                       ar.max=0.9,
-                      ar.tweak=5,
+                      ar.target=0.75,
                       fname = "runs/test_run.dat"
                       )
 {
         wl <- min(obs.spec[,1]):max(obs.spec[,1])
         nwl <- length(wl)
         nspec <- ncol(obs.spec)
-        JumpSD <- JumpRSD * unlist(initc)
+        JumpSD <- JumpRSD * unlist(guess.inits)
 
         ### Priors ###
         N.s <- c(0, 1.5)                # Halfnormal (N = 1 + rlnorm)
@@ -48,22 +49,26 @@ pinvbayes <- function(obs.spec,
         pwl.s <- c(0.001, 0.001)          # Inverse gamma
         
         ### Initial conditions
-        if(!random.inits){
-                N.i <- initc[["N"]]
-                Cab.i <- initc[["Cab"]]
-                Cw.i <- initc[["Cw"]]
-                Cm.i <- initc[["Cm"]]
-        } else {
-                N.i <- abs(rnorm(1, N.s[1], N.s[2])) + 1
-                Cab.i <- rlnorm(1, Cab.s[1], Cab.s[2])
-                Cw.i <- rlnorm(1, Cw.s[1], Cw.s[2])
-                Cm.i <- rlnorm(1, Cm.s[1], Cm.s[2])
-        }
 
+        if(inits == "guess"){
+                ic <- guess.inits
+        } else if(inits == "mle"){
+                ic <- p.invert(obs.spec[,-1])
+        } else {
+                ic <- c(abs(rnorm(1, N.s[1], N.s[2])) + 1,
+                        rlnorm(1, Cab.s[1], Cab.s[2]),
+                        rlnorm(1, Cw.s[1], Cw.s[2]),
+                        rlnorm(1, Cm.s[1], Cm.s[2])
+                        )
+        }
+        N.i <- ic[1]
+        Cab.i <- ic[2]
+        Cw.i <- ic[3]
+        Cm.i <- ic[4]
+        print(sprintf("Initial conditions: N %g, Cab %g, Cw %g, Cm %g",
+                      N.i, Cab.i, Cw.i, Cm.i))
         pwl.i <- rep(1, 2101)
         if(single.precision) pwl.i <- pwl.i[1]
-
-        
 
         ### Extract indices for random effects ###
         if(random.effects != 'none'){
@@ -175,12 +180,12 @@ pinvbayes <- function(obs.spec,
                         ## Tweak JumpRSD based on acceptance rate
                         arate <- (ar - arp)/(4*ar.step)
                         if(arate < ar.min){
-                                JumpSD <- JumpSD/ar.tweak
-                                print(sprintf("   Iter %d, AR %.3f , JSD / %.1f", g, arate, ar.tweak))
+                                JumpSD <- JumpSD * arate/ar.target
+                                cat(sprintf("   Iter %d, AR %.3f , JSD x %g \n", g, arate, arate/ar.target))
                         }
                         if(arate > ar.max){
-                                JumpSD <- JumpSD*ar.tweak
-                                cat(sprintf("   Iter %d, AR %.3f , JSD x %.1f \n", g, arate, ar.tweak))
+                                JumpSD <- JumpSD * ar.target/arate
+                                cat(sprintf("   Iter %d, AR %.3f , JSD x %g \n", g, arate, ar.target/arate))
                         }
                         arp <- ar
                 }
@@ -215,9 +220,7 @@ pinvbayes <- function(obs.spec,
                         prev.error <- guess.error
                         prev.posterior <- guess.posterior
                         ar <- ar + 1
-                        print("Accepted!")
                 }
-                print("----------")
                 # Sample Cab
                 guess.Cab <- rtnorm(1, Cab.i, JumpSD["Cab"])
                 if(random.effects != "none"){
