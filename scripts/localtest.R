@@ -1,19 +1,26 @@
 ## Test local run
-#source("specdataproc.R")
+if (!exists("ldd")) ldd <- 0
+ld <- function(ldd) {
+  if (ldd == 0) source("specdataproc.R")
+  ldd <- ldd + 1
+}
+ld(ldd)
+
 source("inv_bayes.R")
 g2 <- pinvbayes(grapedat,
                 local.store=TRUE,
-                ngibbs=20,
+                ngibbs=400,
                 random.effects='none',
-                random.inits=1,
+                inits='mle',
                 ar.step=100,
                 ar.min=0.4,
-                JumpRSD=1)
+                JumpRSD=0.1)
 
-plot(g2$N/max(g2$N), type='l')
-lines(g2$Cab/max(g2$Cab), col=2)
-lines(g2$Cw/max(g2$Cw), col=3)
-lines(g2$Cm/max(g2$Cm), col=4)
+par(mfrow = c(2,2))
+plot(g2$N, type='l', main='N', ylab="")
+plot(g2$Cab, type='l', main='Cab', ylab="")
+plot(g2$Cw, type='l', main='Cw', ylab="")
+plot(g2$Cm, type='l', main='Cm', ylab="")
 for(i in 1:4){
   print(length(unique(g2[[i]]))/length(g2[[i]]))
 }
