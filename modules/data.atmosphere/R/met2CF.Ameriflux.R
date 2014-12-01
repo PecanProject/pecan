@@ -42,23 +42,6 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
     #time dimension for adding new variables
     tdim = nc$dim[["DTIME"]]
     
-    #get site location attribute
-    loc <- ncatt_get(nc=nc,varid=0,attname='site_location')
-    lat.value <- as.numeric(substr(loc$value,20,28))
-    lon.value <- as.numeric(substr(loc$value,40,48))
-    
-    #create new coordinate dimensions based on site location lat/lon
-    lat <- ncdim_def(name="latitude",units="degree_north",vals=1)
-    lon <- ncdim_def(name="longitude",units="degree_east",vals=1)
-    
-    #create site location variables
-    lat.var <- ncvar_def(name='latitude',units="degree_north",dim=lat)
-    lon.var <- ncvar_def(name='longitude',units="degree_east",dim=lon)
-    nc = ncvar_add(nc=nc,v=lat.var,verbose=TRUE) #add latitude to existing netCDF file
-    ncvar_put(nc,varid='latitude',vals=lat.value)
-    nc = ncvar_add(nc=nc,v=lon.var,verbose=TRUE) #add longitude to existing netCDF file
-    ncvar_put(nc,varid='longitude',vals=lon.value)
-    
     #renaming variables and performing unit conversions
     ta <- ncvar_get(nc=nc,varid='TA')
     #ta <- ncvar_get(nc=nc,varid='air_temperature')
@@ -138,6 +121,25 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
     ncatt_put(nc=nc,varid='APARpct',attname='units',attval='percent') 
     # fixing ZL
     ncatt_put(nc=nc,varid='ZL',attname='units',attval='m/m') 
+    
+    #get site location attribute
+    loc <- ncatt_get(nc=nc,varid=0,attname='site_location')
+    lat.value <- rep(as.numeric(substr(loc$value,20,28)),tdim$len)
+    lon.value <- rep(as.numeric(substr(loc$value,40,48)),tdim$len)
+    
+    #create new coordinate dimensions based on site location lat/lon
+    #lat <- ncdim_def(name='latitude',units='',vals=1:1,create_dimvar=FALSE)
+    #lon <- ncdim_def(name='longitude',units='',vals=1:1,create_dimvar=FALSE)
+    #lon <- ncdim_def(name='longitude',units='degree_east',vals=lon.value)
+    
+    #create site location variables
+    lat.var <- ncvar_def(name='latitude',units='degree_north',dim=list(tdim),missval=-9999) #dim=list(lat,tdim)
+    nc <- ncvar_add(nc=nc,v=lat.var,verbose=TRUE) #add latitude to existing netCDF file
+    ncvar_put(nc,varid='latitude',vals=lat.value)
+    
+    lon.var <- ncvar_def(name='longitude',units='degree_east',dim=list(tdim),missval=-9999) #dim=list(lat,tdim)
+    nc <- ncvar_add(nc=nc,v=lon.var,verbose=TRUE) #add longitude to existing netCDF file
+    ncvar_put(nc,varid='longitude',vals=lon.value)
 
     nc_close(nc)
   
