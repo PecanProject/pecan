@@ -264,7 +264,22 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   }
   
   ##----------------------------------------------------------------------
-  ed2in.text <- gsub('@SITE_PSSCSS@', dirname(settings$run$inputs$site), ed2in.text)
+  # Get prefix of filename, append to dirname. 
+  # Assumes pattern 'DIR/PREFIX.lat<REMAINDER OF FILENAME>' 
+  # Slightly overcomplicated to avoid error if path name happened to contain '.lat'
+  prefix <- sub("\\.lat.*", "", basename(settings$run$inputs$site))
+  ed2in.text <- gsub('@SITE_PSSCSS@', 
+    file.path(dirname(settings$run$inputs$site),paste0(prefix, '.')), ed2in.text)
+  
+  # Warning if css/pss specified in settings 
+  if(!all(
+    identical(dirname(settings$run$inputs$site), dirname(settings$run$inputs$css)),
+    identical(dirname(settings$run$inputs$site), dirname(settings$run$inputs$pss)),
+    identical(prefix, sub("\\.lat.*", "", basename(settings$run$inputs$css))),
+    identical(prefix, sub("\\.lat.*", "", basename(settings$run$inputs$css))) ))
+    logger.warn("ED2 css/pss/site files have different path+prefix, but only site path+prefix will be used")
+  
+  ##----------------------------------------------------------------------
   ed2in.text <- gsub('@ED_VEG@', settings$run$inputs$veg, ed2in.text)
   ed2in.text <- gsub('@ED_SOIL@', settings$run$inputs$soil, ed2in.text)
   ed2in.text <- gsub('@ED_LU@', settings$run$inputs$lu, ed2in.text)
