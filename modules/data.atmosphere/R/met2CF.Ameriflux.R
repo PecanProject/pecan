@@ -124,20 +124,21 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
     
     #get site location attribute
     loc <- ncatt_get(nc=nc,varid=0,attname='site_location')
-    lat.value <- rep(as.numeric(substr(loc$value,20,28)),tdim$len)
-    lon.value <- rep(as.numeric(substr(loc$value,40,48)),tdim$len)
+   # lat.value <- rep(as.numeric(substr(loc$value,20,28)),tdim$len)
+   # lon.value <- rep(as.numeric(substr(loc$value,40,48)),tdim$len)
+    lat.value <- as.numeric(substr(loc$value,20,28))
+    lon.value <- as.numeric(substr(loc$value,40,48))
     
     #create new coordinate dimensions based on site location lat/lon
-    #lat <- ncdim_def(name='latitude',units='',vals=1:1,create_dimvar=FALSE)
-    #lon <- ncdim_def(name='longitude',units='',vals=1:1,create_dimvar=FALSE)
-    #lon <- ncdim_def(name='longitude',units='degree_east',vals=lon.value)
+    lat <- ncdim_def(name='latitude',units='',vals=1:1,create_dimvar=FALSE)
+    lon <- ncdim_def(name='longitude',units='',vals=1:1,create_dimvar=FALSE)
     
     #create site location variables
-    lat.var <- ncvar_def(name='latitude',units='degree_north',dim=list(tdim),missval=-9999) #dim=list(lat,tdim)
+    lat.var <- ncvar_def(name='latitude',units='degree_north',dim=list(lat),missval=-9999) 
     nc <- ncvar_add(nc=nc,v=lat.var,verbose=TRUE) #add latitude to existing netCDF file
     ncvar_put(nc,varid='latitude',vals=lat.value)
     
-    lon.var <- ncvar_def(name='longitude',units='degree_east',dim=list(tdim),missval=-9999) #dim=list(lat,tdim)
+    lon.var <- ncvar_def(name='longitude',units='degree_east',dim=list(lon),missval=-9999) 
     nc <- ncvar_add(nc=nc,v=lon.var,verbose=TRUE) #add longitude to existing netCDF file
     ncvar_put(nc,varid='longitude',vals=lon.value)
 
