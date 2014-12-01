@@ -23,7 +23,7 @@ outfolder  <- paste0(dir,data.set,"/")
 pkg        <- "PEcAn.data.atmosphere"
 fcn        <- paste0("download.",fcn.data)
 
-args <- list(data.set,outfolder,pkg,raw.host,start_year,end_year,site.id,dbparms,con)
+args <- list("ORNL",outfolder,pkg,raw.host,start_year,end_year,site.id,dbparms,con) #fix this later
 
 raw.id <- do.call(fcn,args)
 }

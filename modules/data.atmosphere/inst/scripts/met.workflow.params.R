@@ -3,7 +3,7 @@ driver   <- "PostgreSQL"
 user     <- "bety"
 dbname   <- "bety"
 password <- "bety"
-host     <-  "psql-pecan.bu.edu"
+host     <- "psql-pecan.bu.edu"
 
 #######################################################
 # Choose data set. 
@@ -12,31 +12,36 @@ host     <-  "psql-pecan.bu.edu"
 # Ameriflux
 # FACE_RHIN
 
-data.set <- "NARR"
-fcn.data <- "NARR"
+data.set <- "FACE_ORNL"
+fcn.data <- "FACE"
 
 # Select username, host and directory folder for data
 
 username <- ""
-raw.host <- "geo.bu.edu"
-dir      <- "/projectnb/dietzelab/pecan.data/input/"
+raw.host <- "pecan2.bu.edu"
+dir      <- "/home/ecowdery/input/"
 
 # Set start and end dates (when possible otherwise NA)
 
-start_year <- 1979 
-end_year   <- 2013
+start_year <- NA 
+end_year   <- NA
+
+# start_year <- 1979 
+# end_year   <- 2013
 
 # Download raw data? If not, specify raw.id
 # NARR raw.id on geo = 285
+# RHIN = 1000000059
+# ORNL = 1000000060
 
 raw    <- FALSE
-raw.id <- 285
+raw.id <- 1000000060
 
 # Set site id number when possible (not possible for NARR)
 # RHIN: 1000000003
 # ORNL: 854
 
-# site.id <- 1000000003
+site.id <- 854
 
 
 #######################################################
@@ -59,7 +64,7 @@ newsite <- 776
 
 # Select model. Currently ED2 and SIPNET
 
-model <- "SIPNET"
+model <- "ED2"
 
 # Run met workflow
 
