@@ -12,7 +12,7 @@
 ##' Start biocro model runs on local
 ##' @title Start run of biocro model
 ##' @param runid the id of the run (folder in runs) to execute
-##' @export
+##' @export start.runs.BIOCRO
 ##' @author Rob Kooper, David LeBauer, Deepak Jaiswal
 start.runs.BIOCRO <- function(runid) {
 

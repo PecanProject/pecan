@@ -22,10 +22,11 @@ PG_OPT=${PG_OPT:-""}
 # your ID range. The master list is maintained at 
 # https://github.com/PecanProject/bety/wiki/Distributed-BETYdb
 #
-#  0 - EBI master database
-#  1 - BU
-#  2 - Brookhaven
-#  3 - Purdue
+#  0 - EBI           - David LeBauer
+#  1 - BU            - Mike Dietze
+#  2 - Brookhaven    - Shawn Serbin
+#  3 - Purdue        - Jeanne Osnas
+#  4 - Virginia Tech - Quinn Thomas
 # 99 - VM
 MYSITE=${MYSITE:-99}
 REMOTESITE=${REMOTESITE:-0}
@@ -60,21 +61,21 @@ fi
 # list of all tables, schema_migrations is ignored since that
 # will be imported during creaton
 
-# order is important to check constraints in database
+# list of tables that are one to many relationships
 CLEAN_TABLES="citations counties covariates cultivars"
 CLEAN_TABLES="${CLEAN_TABLES} dbfiles ensembles entities formats"
 CLEAN_TABLES="${CLEAN_TABLES} inputs likelihoods location_yields"
 CLEAN_TABLES="${CLEAN_TABLES} machines managements methods"
-CLEAN_TABLES="${CLEAN_TABLES} mimetypes models pfts "
-CLEAN_TABLES="${CLEAN_TABLES} posterior_samples posteriors"
-CLEAN_TABLES="${CLEAN_TABLES} priors runs sessions sites"
-CLEAN_TABLES="${CLEAN_TABLES} species traits treatments"
-CLEAN_TABLES="${CLEAN_TABLES} workflows yields"
+CLEAN_TABLES="${CLEAN_TABLES} mimetypes models"
 CLEAN_TABLES="${CLEAN_TABLES} modeltypes modeltypes_formats"
+CLEAN_TABLES="${CLEAN_TABLES} pfts posterior_samples posteriors"
+CLEAN_TABLES="${CLEAN_TABLES} priors runs sessions sites"
+CLEAN_TABLES="${CLEAN_TABLES} species treatments"
+CLEAN_TABLES="${CLEAN_TABLES} variables workflows"
+CLEAN_TABLES="${CLEAN_TABLES} traits yields"
+CLEAN_TABLES="${CLEAN_TABLES} users"
 
-# eventually these 2 should be loaded first to check constraints
-CLEAN_TABLES="${CLEAN_TABLES} users variables"
-
+# list of tables that are many to many relationships
 MANY_TABLES="${MANY_TABLES} citations_sites citations_treatments"
 MANY_TABLES="${MANY_TABLES} formats_variables inputs_runs"
 MANY_TABLES="${MANY_TABLES} inputs_variables"
@@ -98,12 +99,21 @@ fi
 # this value should be constant, do not change
 ID_RANGE=1000000000
 
+# before anything is done, check to make sure database exists
+if ! psql -lqt | cut -d \| -f 1 | grep -w "${DATABASE}"; then
+  echo "Database ${DATABASE} does not exist, please create it:"
+  echo "(see https://github.com/PecanProject/pecan/wiki/Installing-PEcAn#installing-bety)"
+  echo "  sudo -u postgres createuser -d -l -P -R -S bety"
+  echo "  sudo -u postgres createdb -O bety ${DATABASE}"
+  exit
+fi
+
 # make output folder
 DUMPDIR="/tmp/$$"
 mkdir "${DUMPDIR}"
 
 # download dump file and unpack
-curl -o "${DUMPDIR}/dump.tar.gz" "${DUMPURL}"
+curl -L -o "${DUMPDIR}/dump.tar.gz" "${DUMPURL}"
 tar zxf "${DUMPDIR}/dump.tar.gz" -C "${DUMPDIR}"
 
 # create database if need be, otherwise check version of schema
@@ -150,9 +160,15 @@ MY_LAST_ID=$(( MY_START_ID + ID_RANGE - 1 ))
 REM_START_ID=$(( REMOTESITE * ID_RANGE + 1 ))
 REM_LAST_ID=$(( REM_START_ID + ID_RANGE - 1 ))
 
-# clean tables
+# tables that are one to many relation ships
+# 1) disable constraints on this table
+# 2) remove all rows that have id in range of remote site
+# 3) load new data
+# 4) set last inserted item in my range
+# 5) enable constraints on this table
 for T in ${CLEAN_TABLES}; do
 	printf "Cleaning %-25s : " "${T}"
+  psql -q -d "${DATABASE}" -c "ALTER TABLE ${T} DISABLE TRIGGER ALL;"
   WHERE="WHERE (id >= ${REM_START_ID} AND id <= ${REM_LAST_ID})"
 	DEL=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM ${T} ${WHERE}" | tr -d ' ' )
 	psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "DELETE FROM ${T} ${WHERE}"
@@ -168,9 +184,16 @@ for T in ${CLEAN_TABLES}; do
 	printf "Fixing   %-25s : " "${T}"
 	NEXT=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT setval('${T}_id_seq', ${MY_START_ID}, false); SELECT setval('${T}_id_seq', (SELECT MAX(id) FROM ${T} WHERE id >= ${MY_START_ID} AND id < ${MY_LAST_ID}), true); SELECT last_value from ${T}_id_seq;" | tr -d ' ' )
 	echo "SEQ ${NEXT}"
+  psql -q -d "${DATABASE}" -c "ALTER TABLE ${T} ENABLE TRIGGER ALL;"
 done
 
-# hasmany relation ships
+# tables that are many to many relation ships
+# 1) disable constraints on this table
+# 2) remove all rows that have both ids in range of remote site
+#    THIS IS BROKEN SINCE SOME SITES WILL ADD ITEMS FROM ONE SITE TO THEIR SITE
+#    REMOVE WITH OR IS BROKEN TOO, ONLY ADDING ID WILL FIX THIS!
+# 3) load new data
+# 4) enable constraints on this table
 for T in ${MANY_TABLES}; do
 	Z=(${T//_/ })
 	X=${Z[0]}
@@ -178,6 +201,7 @@ for T in ${MANY_TABLES}; do
 	Y=${Z[1]}
 	Y=${Y%s}
 	printf "Cleaning %-25s : " "${T}"
+  psql -q -d "${DATABASE}" -c "ALTER TABLE ${T} DISABLE TRIGGER ALL;"
   WHERE="WHERE (${X}_id >= ${REM_START_ID} AND ${X}_id <= ${REM_LAST_ID} AND ${Y}_id >= ${REM_START_ID} AND ${Y}_id <= ${REM_LAST_ID})"
 	DEL=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM ${T} ${WHERE}" | tr -d ' ' )
 	psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "DELETE FROM ${T} ${WHERE}"
@@ -190,10 +214,11 @@ for T in ${MANY_TABLES}; do
 	END=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT COUNT(*) FROM ${T}" | tr -d ' ' )
   ADD=$(( END - START ))
 	echo "ADD ${ADD}"
+  psql -q -d "${DATABASE}" -c "ALTER TABLE ${T} ENABLE TRIGGER ALL;"
 done
 
 # convert user 1 if needed
-if [ "${USERS}" == "YES" ]; then
+if [ "${USERS}" == "YES" -a "${REMOTESITE}" == "0" ]; then
   ID=2
 
   RESULT=$( psql ${PG_OPT} -U ${OWNER} -t -d "${DATABASE}" -c "SELECT count(id) FROM users WHERE login='carya';" )

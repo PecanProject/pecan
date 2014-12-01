@@ -179,7 +179,7 @@ check.database <- function(database) {
     database$dbname <- "bety"
   }
 
-  if (!db.exists(params=database, FALSE)) {
+  if (!db.exists(params=database, FALSE, table=NA)) {
     logger.severe("Invalid Database Settings : ", unlist(database))
   }
 
@@ -211,8 +211,8 @@ check.bety.version <- function(dbcon) {
   }
   
   # check if database is newer
-  if (tail(versions, n=1) > "20140729045640") {
-    logger.warn("Last migration", tail(versions, n=1), "is more recent than expected 20140729045640.",
+  if (tail(versions, n=1) > "20141009160121") {
+    logger.warn("Last migration", tail(versions, n=1), "is more recent than expected 20141009160121.",
                 "This could result in PEcAn not working as expected.")
   }
 }
@@ -258,7 +258,7 @@ check.settings <- function(settings) {
       }
 
       # check if we can connect to the database with write permissions
-      if (settings$database$bety$write && !db.exists(params=settings$database$bety, TRUE)) {
+      if (settings$database$bety$write && !db.exists(params=settings$database$bety, TRUE, table='users')) {
         logger.severe("Invalid Database Settings : ", unlist(settings$database))
       }
 
@@ -407,6 +407,12 @@ check.settings <- function(settings) {
   if (is.null(settings$meta.analysis$random.effects)) {
     settings$meta.analysis$random.effects <- FALSE
     logger.info("Setting meta.analysis random effects to ", settings$meta.analysis$random.effects)
+  } else {
+    settings$meta.analysis$random.effects <- as.logical(settings$meta.analysis$random.effects)
+  }
+  if (is.null(settings$meta.analysis$threshold)) {
+    settings$meta.analysis$threshold <- 1.2
+    logger.info("Setting meta.analysis threshold to ", settings$meta.analysis$threshold)
   }
   if (is.null(settings$meta.analysis$update)) {
     settings$meta.analysis$update <- 'AUTO'
@@ -902,6 +908,32 @@ update.settings <- function(settings) {
   invisible(settings)
 }
 
+##' Add users database parameters to section.
+##'
+##' Copies database section from ~/.pecan.xml to the settings. This allows
+##' a user to have their own unique database parameters, also when sharing
+##' the pecan.xml file we don't expose the database connection parameters.
+##'
+##' @title Add Users database
+##' @param settings settings file
+##' @return will return the updated settings values
+##' @author Rob Kooper
+addUsersDatabase <- function(settings) {
+  if (!file.exists("~/.pecan.xml")) {
+    return(settings)
+  }
+  pecan <- xmlToList(xmlParse("~/.pecan.xml"))
+  for(db in names(pecan$database)) {
+    if (db %in% names(settings$database)) {
+      logger.info("Already have a section for", db)
+    } else {
+      logger.info("Imported section for", db)
+      settings$database[db] <- pecan$database[db]
+    }
+  }
+  invisible(settings)
+}
+
 ##--------------------------------------------------------------------------------------------------#
 ## EXTERNAL FUNCTIONS
 ##--------------------------------------------------------------------------------------------------#
@@ -976,6 +1008,7 @@ read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml"){
 
   ## convert the xml to a list for ease and return
   settings <- xmlToList(xml)
+  settings <- addUsersDatabase(settings)
   settings <- update.settings(settings)
   settings <- check.settings(settings)
 

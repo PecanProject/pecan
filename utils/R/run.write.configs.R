@@ -173,12 +173,12 @@ run.write.configs <- function(settings, write = TRUE) {
   } ### End of Ensemble
 
   logger.info("###### Finished writing model run config files #####")
-  logger.info("config files samples in ", paste0(settings$outdir, "run"))
+  logger.info("config files samples in ", file.path(settings$outdir, "run"))
   
   ### Save output from SA/Ensemble runs
   save(ensemble.samples, trait.samples, sa.samples, runs.samples, 
        file = file.path(settings$outdir, 'samples.Rdata'))
-  logger.info("parameter values for runs in ", paste0(settings$outdir, "samples.RData"))
+  logger.info("parameter values for runs in ", file.path(settings$outdir, "samples.RData"))
   options(scipen=scipen)
 }
 #==================================================================================================#

@@ -1,5 +1,12 @@
+##' Given latitude and longitude coordinates, find NARR x and y indices
+##'
+##'
+##' @name closest_xy
+##' @title closest_xy
+##' @export
+##' @author Betsy Cowdery
 closest_xy = function(slat, slon,infolder,infile){
-#  require(ncdf4)
+  #  require(ncdf4)
   
   test.file = dir(infolder,infile,full.names=TRUE)
   test.file = test.file[grep("*.nc",test.file)]
@@ -7,8 +14,8 @@ closest_xy = function(slat, slon,infolder,infile){
   test.file = test.file[1]
   
   nc <- nc_open(test.file)
-  lat  <- ncvar_get(nc,"lat")
-  lon  <- ncvar_get(nc,"lon")
+  lat  <- ncvar_get(nc,"latitude")
+  lon  <- ncvar_get(nc,"longitude")
   
   if (all(dim(lat) == dim(lon))){
     rows <- nrow(lat)
@@ -38,4 +45,3 @@ closest_xy = function(slat, slon,infolder,infile){
   }
   return(list(x = as.numeric(xy[1,1]), y = as.numeric(xy[1,2])))
 }
-
