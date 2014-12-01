@@ -9,6 +9,9 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
+args <- commandArgs(trailingOnly = TRUE)
+settings.file = args[1]
+
 #--------------------------------------------------------------------------------#
 # functions used to write STATUS used by history
 #--------------------------------------------------------------------------------#
@@ -30,7 +33,7 @@ require(PEcAn.all)
 
 #---------------- Load PEcAn settings file. -------------------------------------------------------#
 # Open and read in settings file for PEcAn run.
-settings <- read.settings()
+settings <- read.settings(settings.file)
 #--------------------------------------------------------------------------------------------------#
 
 # start with a clean status
