@@ -18,6 +18,7 @@ metgapfill <- function(in.path,in.prefix,outfolder){
 ##  require(PEcAn.utils)
   
   #REddyProc installed to ~/R/library by install.packages("REddyProc", repos="http://R-Forge.R-project.org", type="source")
+  #dependency minpack.lm may not install automatically, so install it first
 
   ## Step 1. Read met variables from Ameriflux NetCDF CF in.file
   files = dir(in.path,in.prefix)
