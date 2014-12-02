@@ -33,9 +33,9 @@
 
 dbfile.input.insert <- function(filename, siteid, startdate, enddate, mimetype, formatname, parentid=NA, con, hostname=fqdn()) {
   
-  name <- tail(unlist(strsplit(filename,"/")),2)[[1]]
+  name <- basename(filename)
 
-  if (hostname == "localhost") hostname=fqdn();
+  if (hostname == "localhost") hostname <- fqdn();
 
   # find appropriate format
   formatid <- db.query(paste0("SELECT id FROM formats WHERE mime_type='", mimetype, "' AND name='", formatname, "'"), con)[['id']]
@@ -53,12 +53,12 @@ dbfile.input.insert <- function(filename, siteid, startdate, enddate, mimetype, 
   }
   
   # find appropriate input
-inputid <- db.query(paste0("SELECT * FROM inputs WHERE name='", name,"'"), con)[['id']]
+  inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, " AND start_date='", startdate, "' AND end_date='", enddate, "'" , parent, ";"), con)[['id']]
   if (is.null(inputid)) {
     # insert input
     db.query(paste0("INSERT INTO inputs (site_id, format_id, created_at, updated_at, start_date, end_date, name) VALUES (",
                     siteid, ", ", formatid, ", NOW(), NOW(), '", startdate, "', '", enddate,"','", name, "')"), con)
-    inputid <- db.query(paste0("SELECT * FROM inputs WHERE name='", name,"'"), con)[['id']]
+    inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, " AND start_date='", startdate, "' AND end_date='", enddate, "'" , parent, ";"), con)[['id']]
   }
   dbfileid <- dbfile.insert(filename, 'Input', inputid, con, hostname)
 
@@ -88,7 +88,7 @@ inputid <- db.query(paste0("SELECT * FROM inputs WHERE name='", name,"'"), con)[
 ##'   dbfile.input.check(siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
 ##' }
 dbfile.input.check <- function(siteid, startdate, enddate, mimetype, formatname, parentid=NA, con, hostname=fqdn()) {
-  if (hostname == "localhost") hostname=fqdn();
+  if (hostname == "localhost") hostname <- fqdn();
 
   # find appropriate format
   formatid <- db.query(paste0("SELECT id FROM formats WHERE mime_type='", mimetype, "' AND name='", formatname, "'"), con)[['id']]
@@ -133,7 +133,7 @@ dbfile.input.check <- function(siteid, startdate, enddate, mimetype, formatname,
 ##'   dbfile.posterior.insert('trait.data.Rdata', pft, 'application/x-RData', 'traits', dbcon)
 ##' }
 dbfile.posterior.insert <- function(filename, pft, mimetype, formatname, con, hostname=fqdn()) {
-  if (hostname == "localhost") hostname=fqdn();
+  if (hostname == "localhost") hostname <- fqdn();
 
   # find appropriate pft
   pftid <- db.query(paste0("SELECT id FROM pfts WHERE name='", pft, "'"), con)[['id']]
@@ -180,7 +180,7 @@ dbfile.posterior.insert <- function(filename, pft, mimetype, formatname, con, ho
 ##'   dbfile.posterior.check(pft, 'application/x-RData', 'traits', dbcon)
 ##' }
 dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname=fqdn()) {
-  if (hostname == "localhost") hostname=fqdn();
+  if (hostname == "localhost") hostname <- fqdn();
 
   # find appropriate pft
   pftid <- db.query(paste0("SELECT id FROM pfts WHERE name='", pft, "'"), con)[['id']]
@@ -220,7 +220,7 @@ dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname=fqdn
 ##'   dbfile.insert('somefile.txt', 'Input', 7, dbcon)
 ##' }
 dbfile.insert <- function(filename, type, id, con, hostname=fqdn()) {
-  if (hostname == "localhost") hostname=fqdn();
+  if (hostname == "localhost") hostname <- fqdn();
 
   # find appropriate host
   hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", hostname, "'"), con)[['id']]
@@ -232,7 +232,7 @@ dbfile.insert <- function(filename, type, id, con, hostname=fqdn()) {
   
   now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
   db.query(paste0("INSERT INTO dbfiles (container_type, container_id, file_name, file_path, machine_id, created_at, updated_at) VALUES (",
-                  "'", type, "', ", id, ", '", basename(filename), "', '", dirname(filename), "/', ", hostid, ", '", now, "', '", now, "')"), con)
+                  "'", type, "', ", id, ", '", basename(filename), "', '", dirname(filename), "', ", hostid, ", '", now, "', '", now, "')"), con)
 
   invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, "' AND container_id=", id, " AND created_at='", now, "' ORDER BY id DESC LIMIT 1"), con)[['id']])
 }
@@ -254,7 +254,7 @@ dbfile.insert <- function(filename, type, id, con, hostname=fqdn()) {
 ##'   dbfile.check('Input', 7, dbcon)
 ##' }
 dbfile.check <- function(type, id, con, hostname=fqdn()) {
-  if (hostname == "localhost") hostname=fqdn();
+  if (hostname == "localhost") hostname <- fqdn();
 
   # find appropriate host
   hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", hostname, "'"), con)[['id']]
@@ -286,7 +286,7 @@ dbfile.check <- function(type, id, con, hostname=fqdn()) {
 ##'   dbfile.file('Input', 7, dbcon)
 ##' }
 dbfile.file <- function(type, id, con, hostname=fqdn()) {
-  if (hostname == "localhost") hostname=fqdn();
+  if (hostname == "localhost") hostname <- fqdn();
   
   files <- dbfile.check(type, id, con, hostname)
 
@@ -321,7 +321,7 @@ dbfile.file <- function(type, id, con, hostname=fqdn()) {
 ##'   dbfile.id('Model', '/usr/local/bin/sipnet', dbcon)
 ##' }
 dbfile.id <- function(type, file, con, hostname=fqdn()) {
-  if (hostname == "localhost") hostname=fqdn();
+  if (hostname == "localhost") hostname <- fqdn();
 
   # find appropriate host
   hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", hostname, "'"), con)[['id']]
