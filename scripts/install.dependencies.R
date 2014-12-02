@@ -26,5 +26,8 @@ if(!("REddyProc" %in% installed.packages()[,"Package"])) {
 }
 
 # install rhdf5 from bioconductor for met2model.ED
-source("http://bioconductor.org/biocLite.R")
-biocLite("rhdf5")
+list.of.packages <- c('rhdf5')
+if(!("rhdf5" %in% installed.packages()[,"Package"])) {
+  source("http://bioconductor.org/biocLite.R")
+  biocLite('rhdf5')
+}
