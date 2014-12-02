@@ -7,14 +7,14 @@ ld <- function(ldd) {
 ld(ldd)
 
 source("inv_bayes.R")
-g2 <- pinvbayes(grapedat.mean,
+g2 <- pinvbayes(grapedat,
                 local.store=TRUE,
                 ngibbs=1000,
                 random.effects='none',
                 inits='mle',
                 ar.step=100,
                 ar.min=0.4,
-                JumpRSD=0.01)
+                JumpRSD=0.1)
 
 par(mfrow = c(2,2))
 plot(g2$N, type='l', main='N', ylab="")
