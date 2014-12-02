@@ -13,7 +13,7 @@ rearg <- args[4]
 initarg <- args[5]
 ngibbs <- as.numeric(args[6])
 runid <- args[7]
-filename <- sprintf("run_results/%s_%g_%s_%s_%s_%s.dat", species, jrsd, precision, rearg, ri, runid)
+filename <- sprintf("run_results/%s_%g_%s_%s_%s_%s.dat", species, jrsd, precision, rearg, initarg, runid)
 
 source("inv_bayes.R")
 source("specdataproc.R")

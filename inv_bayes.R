@@ -147,9 +147,9 @@ pinvbayes <- function(obs.spec,
                 
         } else {
                 if(single.precision) {
-                        pvec <- "sd"
+                        sdvec <- "sd"
                 } else {
-                        pvec <- paste("sd", wl, sep='')
+                        sdvec <- paste("sd", wl, sep='')
                 }
                 if(random.effects != "none"){
                         header <- c("N", "Cab", "Cw", "Cm", 
