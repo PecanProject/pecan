@@ -8,7 +8,7 @@
 ##' @param outfolder
 ##' 
 ##' @author Josh Mantooth, Mike Dietze, Elizabeth Cowdery
-met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
+met2CF.Ameriflux <- function(in.path,in.prefix,outfolder, overwrite=FALSE){
   #---------------- Load libraries. -----------------------------------------------------------------#
 #  require(PEcAn.all)
 #  require(RPostgreSQL)
@@ -30,12 +30,14 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
   }
   
   for(i in 1:length(files)){
-    
-    
-    new.file =file.path(outfolder,files[i])
+    new.file <- file.path(outfolder, files[i])
+    if (file.exists(new.file) && !overwrite) {
+      logger.debug("File '", new.file, "' already exists, skipping to next file.")
+      next
+    }
     
     ## copy old file to new directory
-    system2("cp",paste(file.path(in.path,files[i]),new.file))
+    file.copy(file.path(in.path,files[i]), new.file, overwrite=TRUE)
     
     ### if reading ameriflux .nc file ###
     nc <- nc_open(new.file,write=TRUE)
@@ -145,21 +147,6 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
       
 
     nc_close(nc)
-
-    #rename file to comply with met2model
-    name <- files[i]
-    name_list1 <- unlist(strsplit(name, "_"))[c(-3,-6)]
-    name_list2 <- unlist(strsplit(tail(unlist(strsplit(name, "_")),1),"[.]"))
-    date <- unlist(strsplit(name, "_"))[3]
-    
-    nn <- paste0(c(name_list1,name_list2[1]), collapse ="_")
-    new.files <- paste(c(nn,date,name_list2[2]), collapse=".")
-    
-    new.file.rename =file.path(outfolder,new.files)
-
-    system2("mv",paste(file.path(outfolder,files[i]),new.file.rename))
-
-
   }  ## end loop over files
  
  
