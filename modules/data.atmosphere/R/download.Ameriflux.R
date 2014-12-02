@@ -1,66 +1,3 @@
-##' Download Ameriflux L2 netCDF files
-##'
-##' @name download.Ameriflux
-##' @title download.Ameriflux
-##' @export
-##' @param start_year
-##' @param end_year
-##' @param site_id
-##' @param in.prefix
-##' @param outfolder
-##' @param con database connection
-##' 
-##' @author Josh Mantooth, Rob Kooper
-download.Ameriflux <- function(start_year, end_year, site_id, in.prefix, outfolder, con) {
-  site <- download.Ameriflux.site(site_id)
-  if (is.na(site)) {
-    return(invisible(NA))
-  }
-  
-  # make sure output folder exists
-  if(!file.exists(outfolder)){
-    dir.create(outfolder, showWarnings=FALSE, recursive=TRUE)
-  }
-  
-  # url where Ameriflux data is stored
-  baseurl <- paste0("http://cdiac.ornl.gov/ftp/ameriflux/data/Level2/Sites_ByID/", site, "/with_gaps/")
-  
-  # fetch all links
-  links <- xpathSApply(htmlParse(baseurl), "//a/@href")
-  
-  # find all links we need based on the years and download them
-  results <- list()
-  for(year in start_year:end_year) {
-    startdate <- paste0(year,"-01-01 00:00:00")
-    enddate <- paste0(year,"-12-31 23:59:59")
-    mimetype <- 'application/x-netcdf'
-    formatname <- 'Ameriflux'
-    
-    id <- dbfile.input.check(site_id, startdate, enddate, mimetype, formatname, con=con)
-    if (nrow(id) > 0) {
-      outputfile <- file.path(id$file_path, id$file_name)
-      if (file.exists(outputfile)) {
-        results[as.character(tail(id$id, n=1))] <- outputfile
-        next
-      }
-    }
-    
-    # file not found
-    outputfile <- file.path(outfolder, paste0(in.prefix, ".", year, ".nc"))
-    if (!file.exists(outputfile)) {
-      file <- tail(as.character(links[grep(paste0('_', year, '_.*.nc'), links)]), n=1)
-      download.file(paste0(baseurl, file), outputfile)
-    }
-    
-    # save result to database
-    id <- dbfile.input.insert(outputfile, site_id, startdate, enddate, mimetype, formatname, con=con)
-    results[as.character(id$dfbile.id)] <- outputfile
-  }
-  
-  # return list of files downloaded
-  invisible(results)
-}
-
 # lookup the site based on the site_id
 download.Ameriflux.site <- function(site_id) {
   sites <- c("622"="US-Syv", "676"="US-WCr", "678"="US-PFa", "679"="US-Los",
@@ -76,3 +13,58 @@ download.Ameriflux.site <- function(site_id) {
   sites[as.character(site_id)]
 }
 
+##' Download Ameriflux L2 netCDF files
+##'
+##' @name download.Ameriflux
+##' @title download.Ameriflux
+##' @export
+##' @param start_year
+##' @param end_year
+##' @param site
+##' @param in.prefix
+##' @param outfolder
+##' @param con database connection
+##' 
+##' @author Josh Mantooth, Rob Kooper
+download.Ameriflux <- function(start_year, end_year, site, in.prefix, outfolder) {
+  # make sure output folder exists
+  if(!file.exists(outfolder)){
+    dir.create(outfolder, showWarnings=FALSE, recursive=TRUE)
+  }
+  
+  # url where Ameriflux data is stored
+  baseurl <- paste0("http://cdiac.ornl.gov/ftp/ameriflux/data/Level2/Sites_ByID/", site, "/with_gaps/")
+  
+  # fetch all links
+  links <- xpathSApply(htmlParse(baseurl), "//a/@href")
+  
+  # find all links we need based on the years and download them
+  rows <- end_year - start_year + 1
+  results <- data.frame(file=character(rows), host=character(rows),
+                        mimetype=character(rows), formatname=character(rows),
+                        startdate=character(rows), enddate=character(rows),
+                        stringsAsFactors = FALSE)
+  for(year in start_year:end_year) {
+    # see if file exists, if not download
+    outputfile <- file.path(outfolder, paste0(in.prefix, ".", year, ".nc"))
+    if (!file.exists(outputfile)) {
+      file <- tail(as.character(links[grep(paste0('_', year, '_.*.nc'), links)]), n=1)
+      download.file(paste0(baseurl, file), outputfile)
+    }
+
+    # save results so it can be added to database later
+    row <- year - start_year + 1
+    results$file[row] <- outputfile
+    results$host[row] <- fqdn()
+    results$startdate[row] <- paste0(year,"-01-01 00:00:00")
+    results$enddate[row] <- paste0(year,"-12-31 23:59:59")
+    results$mimetype[row] <- 'application/x-netcdf'
+    results$formatname[row] <- 'Ameriflux'
+  }
+  
+  # return list of files downloaded
+  invisible(results)
+}
+
+#site <- download.Ameriflux.site(622)
+#print(download.Ameriflux(2001, 2005, site, site, "/tmp/met/ameriflux"))
