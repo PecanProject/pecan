@@ -58,7 +58,7 @@ for(i in 1:length(filescount)){
   }
 
   ## open netcdf
-  nc <- nc_open(paste0(in.path,files[i]))
+  nc <- nc_open(file.path(in.path,files[i]))
   
   ## determine starting year
   base.time <- unlist(strsplit(files[i],'[.]'))
@@ -209,7 +209,7 @@ for(i in 1:length(filescount)){
           h5createFile(mout)
         }
         if(overwrite==FALSE){
-          logger.setLevel("Warning! The file already exists! Moving to next month!")
+          logger.warn("The file already exists! Moving to next month!")
           next
         }        
       }
