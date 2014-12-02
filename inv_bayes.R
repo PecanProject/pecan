@@ -212,6 +212,7 @@ pinvbayes <- function(obs.spec,
                         guess.error <- spec.error(guess.spec, obs.spec[, -1])
                 }
                 guess.posterior <- likelihood(guess.error, sd.i) + N.prior(guess.N)              
+                prev.posterior <- likelihood(prev.error, sd.i) + N.prior(N.i)
                 jnum <- dtnorm(guess.N, N.i, JumpSD["N"], Min=1)
                 jden <- dtnorm(N.i, guess.N, JumpSD["N"], Min=1)
                 a <- exp((guess.posterior - jnum ) - (prev.posterior - jden ))
@@ -219,7 +220,6 @@ pinvbayes <- function(obs.spec,
                 if(a > runif(1)){
                         N.i <- guess.N
                         prev.error <- guess.error
-                        prev.posterior <- guess.posterior
                         ar <- ar + 1
                 }
                 # Sample Cab
@@ -242,6 +242,7 @@ pinvbayes <- function(obs.spec,
                         guess.error <- spec.error(guess.spec, obs.spec[, -1])
                 }
                 guess.posterior <- likelihood(guess.error, sd.i) + Cab.prior(guess.Cab)
+                prev.posterior <- likelihood(prev.error, sd.i) + Cab.prior(Cab.i)
                 jnum <- dlnorm(guess.Cab, Cab.i, JumpSD["Cab"])
                 jden <- dlnorm(Cab.i, guess.Cab, JumpSD["Cab"])
                 a <- exp((guess.posterior - jnum) - (prev.posterior - jden))
@@ -249,7 +250,6 @@ pinvbayes <- function(obs.spec,
                 if(a > runif(1)){
                         Cab.i <- guess.Cab
                         prev.error <- guess.error
-                        prev.posterior <- guess.posterior
                         ar <- ar + 1
                 }
 
@@ -273,6 +273,7 @@ pinvbayes <- function(obs.spec,
                         guess.error <- spec.error(guess.spec, obs.spec[, -1])
                 }
                 guess.posterior <- likelihood(guess.error, sd.i) + Cw.prior(guess.Cw)
+                prev.posterior <- likelihood(prev.error, sd.i) + Cw.prior(Cw.i)
                 jnum <- dlnorm(guess.Cw, Cw.i, JumpSD["Cw"])
                 jden <- dlnorm(Cw.i, guess.Cw, JumpSD["Cw"])
                 a <- exp((guess.posterior - jnum) - (prev.posterior - jden))
@@ -280,7 +281,6 @@ pinvbayes <- function(obs.spec,
                 if(a > runif(1)){
                         Cw.i <- guess.Cw
                         prev.error <- guess.error
-                        prev.posterior <- guess.posterior
                         ar <- ar + 1
                 }
 
@@ -304,6 +304,7 @@ pinvbayes <- function(obs.spec,
                         guess.error <- spec.error(guess.spec, obs.spec[, -1])
                 }
                 guess.posterior <- likelihood(guess.error, sd.i) + Cm.prior(guess.Cm)
+                prev.posterior <- likelihood(prev.error, sd.i) + Cm.prior(Cm.i)
                 jnum <- dlnorm(guess.Cm, Cm.i, JumpSD["Cm"])
                 jden <- dlnorm(Cm.i, guess.Cm, JumpSD["Cm"])
                 a <- exp((guess.posterior - jnum) - (prev.posterior - jden))
@@ -311,7 +312,6 @@ pinvbayes <- function(obs.spec,
                 if(a > runif(1)){
                         Cm.i <- guess.Cm
                         prev.error <- guess.error
-                        prev.posterior <- guess.posterior
                         ar <- ar + 1
                 }
 
@@ -335,11 +335,11 @@ pinvbayes <- function(obs.spec,
                                                             )
                                 guess.error <- do.call(cbind, guess.error.alpha)
                                 guess.posterior <- likelihood(guess.error, sd.i) + dnorm(guess.alphaN[i], 0, sdplotN)
+                                prev.posterior <- likelihood(prev.error, sd.i) + dnorm(alphaN.i[i], 0, sdplotN)
                                 a <- exp(guess.posterior - prev.posterior)
                                 if(is.na(a)) a <- -1
                                 if(a > runif(1)){
                                         alphaN.i <- guess.alphaN
-                                        prev.posterior <- guess.posterior
                                         ar.alpha <- ar.alpha + 1
                                 }
                         }
@@ -361,11 +361,11 @@ pinvbayes <- function(obs.spec,
                                                             )
                                 guess.error <- do.call(cbind, guess.error.alpha)
                                 guess.posterior <- likelihood(guess.error, sd.i) + dnorm(guess.alphaCab[i], 0, sdplotCab)
+                                prev.posterior <- likelihood(prev.error, sd.i) + dnorm(alphaCab.i[i], 0, sdplotCab)
                                 a <- exp(guess.posterior - prev.posterior)
                                 if(is.na(a)) a <- -1
                                 if(a > runif(1)){
                                         alphaCab.i <- guess.alphaCab
-                                        prev.posterior <- guess.posterior
                                         ar.alpha <- ar.alpha + 1
                                 }
                         }
@@ -387,11 +387,11 @@ pinvbayes <- function(obs.spec,
                                                             )
                                 guess.error <- do.call(cbind, guess.error.alpha)
                                 guess.posterior <- likelihood(guess.error, sd.i) + dnorm(guess.alphaCw[i], 0, sdplotCw)
+                                prev.posterior <- likelihood(guess.error, sd.i) + dnorm(alphaCw.i[i], 0, sdplotCw)
                                 a <- exp(guess.posterior - prev.posterior)
                                 if(is.na(a)) a <- -1
                                 if(a > runif(1)){
                                         alphaCw.i <- guess.alphaCw
-                                        prev.posterior <- guess.posterior
                                         ar.alpha <- ar.alpha + 1
                                 }
                         }
@@ -413,11 +413,11 @@ pinvbayes <- function(obs.spec,
                                                             )
                                 guess.error <- do.call(cbind, guess.error.alpha)
                                 guess.posterior <- likelihood(guess.error, sd.i) + dnorm(guess.alphaCm[i], 0, sdplotCm)
+                                prev.posterior <- likelihood(guess.error, sd.i) + dnorm(alphaCm.i[i], 0, sdplotCm)
                                 a <- exp(guess.posterior - prev.posterior)
                                 if(is.na(a)) a <- -1
                                 if(a > runif(1)){
                                         alphaCm.i <- guess.alphaCm
-                                        prev.posterior <- guess.posterior
                                         ar.alpha <- ar.alpha + 1
                                 }
                         }
@@ -456,7 +456,6 @@ pinvbayes <- function(obs.spec,
                 u2 <- pwl.s[2] + u2p
                 pwl.i <- rgamma(nprec, u1, u2)
                 sd.i <- 1/sqrt(pwl.i)
-                print(c(u1, u2, sd.i))
 
                 # Store values 
                 if (local.store){
