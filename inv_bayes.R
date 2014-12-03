@@ -38,15 +38,13 @@ pinvbayes <- function(obs.spec,
         JumpSD <- JumpRSD * unlist(guess.inits)
 
         ### Priors ###
-        N.s <- c(0, 1.5)                # Halfnormal (N = 1 + rlnorm)
-
-        # Based on histograms in Feret et al. 2008
-        Cab.s <- c(log(30), 0.9)          # Lognormal
-        Cw.s <- c(log(0.017), 0.5)        # Lognormal
-        Cm.s <- c(log(0.006), 0.9)        # Lognormal
+        N.prior <- function(N) dnorm(N - 1, 0, 1.5, log=TRUE) + log(2)
+        Cab.prior <- function(Cab) dlnorm(Cab, log(30), 0.9, log=TRUE)
+        Cw.prior <- function(Cw) dlnorm(Cw, log(0.017), 0.5, log=TRUE)
+        Cm.prior <- function(Cm) dlnorm(Cm, log(0.006), 0.9, log=TRUE)
 
         # Error
-        pwl.s <- c(0.001, 0.001)          # Inverse gamma
+        pwl.p <- c(0.001, 0.001)          # Inverse gamma
         
         ### Initial conditions
 
@@ -55,10 +53,10 @@ pinvbayes <- function(obs.spec,
         } else if(inits == "mle"){
                 ic <- p.invert(obs.spec[,-1])
         } else {
-                ic <- c(abs(rnorm(1, N.s[1], N.s[2])) + 1,
-                        rlnorm(1, Cab.s[1], Cab.s[2]),
-                        rlnorm(1, Cw.s[1], Cw.s[2]),
-                        rlnorm(1, Cm.s[1], Cm.s[2])
+                ic <- c(abs(rnorm(1, N.p[1], N.p[2])) + 1,
+                        rlnorm(1, Cab.p[1], Cab.p[2]),
+                        rlnorm(1, Cw.p[1], Cw.p[2]),
+                        rlnorm(1, Cm.p[1], Cm.p[2])
                         )
         }
         N.i <- ic[1]
@@ -107,10 +105,6 @@ pinvbayes <- function(obs.spec,
         }
 
         likelihood <- function(guess.error, pwl.i) sum(dnorm(guess.error, 0, 1/sqrt(pwl.i), log=TRUE))
-        N.prior <- function(N) dnorm(N - 1, N.s[1], N.s[2], log=TRUE) + log(2)
-        Cab.prior <- function(Cab) dlnorm(Cab, Cab.s[1], Cab.s[2], log=TRUE)
-        Cw.prior <- function(Cw) dlnorm(Cw, Cw.s[1], Cw.s[2], log=TRUE)
-        Cm.prior <- function(Cm) dlnorm(Cm, Cm.s[1], Cm.s[2], log=TRUE)
 
         # Precalculate first model and posterior
         prev.spec <- prospect(N.i, Cab.i, Cw.i, Cm.i)
@@ -447,8 +441,8 @@ pinvbayes <- function(obs.spec,
                         u1p <- nspec/2
                         u2p <- 0.5 * rowSums(prev.error^2)
                 }
-                u1 <- pwl.s[1] + u1p
-                u2 <- pwl.s[2] + u2p
+                u1 <- pwl.p[1] + u1p
+                u2 <- pwl.p[2] + u2p
                 pwl.i <- rgamma(nprec, u1, u2)
 
                 # Store values 
