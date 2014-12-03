@@ -29,8 +29,23 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder, overwrite=FALSE){
     dir.create(outfolder)
   }
   
+  rows <- length(files)
+  results <- data.frame(file=character(rows), host=character(rows),
+                        mimetype=character(rows), formatname=character(rows),
+                        startdate=character(rows), enddate=character(rows),
+                        stringsAsFactors = FALSE)
   for(i in 1:length(files)){
     new.file <- file.path(outfolder, files[i])
+    
+    # create array with results
+    year <- sub('^.*\\.(\\d*)\\.nc$', '\\1', files[i])
+    results$file[i] <- new.file
+    results$host[i] <- fqdn()
+    results$startdate[i] <- paste0(year,"-01-01 00:00:00")
+    results$enddate[i] <- paste0(year,"-12-31 23:59:59")
+    results$mimetype[i] <- 'application/x-netcdf'
+    results$formatname[i] <- 'CF'
+    
     if (file.exists(new.file) && !overwrite) {
       logger.debug("File '", new.file, "' already exists, skipping to next file.")
       next
@@ -148,7 +163,7 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder, overwrite=FALSE){
 
     nc_close(nc)
   }  ## end loop over files
- 
- 
+  
+  invisible(results)
 }   ## end netCDF CF conversion ##
 
