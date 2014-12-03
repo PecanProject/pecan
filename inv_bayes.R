@@ -71,8 +71,8 @@ pinvbayes <- function(obs.spec,
 
         ### Extract indices for random effects ###
         if(random.effects != 'none'){
-                regxp.list <- c(leaf = ".*_(L[1-9].*)_.*",
-                                plot = ".*_Plot[1-9a-zA-Z]+_.*")
+                regxp.list <- c(leaf = "(.*)",
+                                plot = ".*_(Plot[1-9a-zA-Z]+)_.*")
                 randeff.regxp <- regxp.list[random.effects]
                 randeffs <- unique(gsub(randeff.regxp, "\\1", colnames(obs.spec)[-1]))
                 randeff.list <- lapply(randeffs, grep, colnames(obs.spec))
