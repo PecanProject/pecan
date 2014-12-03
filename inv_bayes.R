@@ -13,7 +13,6 @@ guess.inits <- c(N=1.4,
 
 source("mle_inversion.R")
 
-
 ## NOTE: obs.spec must be a matrix as follows:
 ## Column 1 : Wavelengths (400:2500)
 ## Columns 2-n : Reflectance observations
@@ -37,6 +36,7 @@ pinvbayes <- function(obs.spec,
         nspec <- ncol(obs.spec)
         JumpSD <- JumpRSD * unlist(guess.inits)
 
+
         ### Priors ###
         N.prior <- function(N) dnorm(N - 1, 0, 1.5, log=TRUE) + log(2)
         Cab.prior <- function(Cab) dlnorm(Cab, log(30), 0.9, log=TRUE)
@@ -45,8 +45,9 @@ pinvbayes <- function(obs.spec,
 
         # Error
         pwl.p <- c(0.001, 0.001)          # Inverse gamma
-        
-        ### Initial conditions
+
+
+        ### Initial conditions ###
 
         if(inits == "guess"){
                 ic <- guess.inits
@@ -65,13 +66,13 @@ pinvbayes <- function(obs.spec,
         Cm.i <- ic[4]
         print(sprintf("Initial conditions: N %g, Cab %g, Cw %g, Cm %g",
                       N.i, Cab.i, Cw.i, Cm.i))
-        pwl.i <- rep(1, 2101)
-        if(single.precision) pwl.i <- pwl.i[1]
+        sd.i <- rep(1, 2101)
+        if(single.precision) sd.i <- sd.i[1]
 
         ### Extract indices for random effects ###
         if(random.effects != 'none'){
-                regxp.list <- c(leaf = ".*_(L[1-9].*)_.*",
-                                plot = ".*_Plot[1-9a-zA-Z]+_.*")
+                regxp.list <- c(leaf = "(.*)",
+                                plot = ".*_(Plot[1-9a-zA-Z]+)_.*")
                 randeff.regxp <- regxp.list[random.effects]
                 randeffs <- unique(gsub(randeff.regxp, "\\1", colnames(obs.spec)[-1]))
                 randeff.list <- lapply(randeffs, grep, colnames(obs.spec))
@@ -84,12 +85,12 @@ pinvbayes <- function(obs.spec,
                 alphaCw.i <- rep(0, nre)
                 alphaCm.i <- rep(0, nre)
 
-                pplotN <- 1
-                pplotCab <- 1
-                pplotCw <- 1
-                pplotCm <- 1
+                sdreN <- 1
+                sdreCab <- 1
+                sdreCw <- 1
+                sdreCm <- 1
 
-                # Random effects
+                # Random effects Prior
                 randeff.s <- c(0.001, 0.001)              # Inverse gamma
         }
         
@@ -104,19 +105,12 @@ pinvbayes <- function(obs.spec,
                 }
         }
 
-        likelihood <- function(guess.error, pwl.i) sum(dnorm(guess.error, 0, 1/sqrt(pwl.i), log=TRUE))
+        likelihood <- function(guess.error, sd.i) sum(dnorm(guess.error, 0, sd.i, log=TRUE))
 
-        # Precalculate first model and posterior
+        # Precalculate first model
         prev.spec <- prospect(N.i, Cab.i, Cw.i, Cm.i)
         prev.error <- spec.error(prev.spec, obs.spec)
-        prev.posterior <- (likelihood(prev.error, pwl.i) + 
-                           N.prior(N.i) +
-                           Cab.prior(Cab.i) +
-                           Cw.prior(Cw.i) +
-                           Cm.prior (Cm.i)
-                           )
-        # Random effects
-        re.leaf.s <- c(0.001, 0.001)              # Inverse gamma
+
 
         ### MCMC storage
         if (local.store){
@@ -125,15 +119,15 @@ pinvbayes <- function(obs.spec,
                 Cw.store <- numeric(ngibbs)
                 Cm.store <- numeric(ngibbs)
                 if(single.precision){
-                        pwl.store <- numeric(ngibbs)
+                        sd.store <- numeric(ngibbs)
                 } else {
-                        pwl.store <- matrix(NA, nrow=ngibbs, ncol=nwl)
+                        sd.store <- matrix(NA, nrow=ngibbs, ncol=nwl)
                 }
                 if(random.effects != 'none'){
-                        pplotN.store <- numeric(ngibbs)
-                        pplotCab.store <- numeric(ngibbs)
-                        pplotCw.store <- numeric(ngibbs)
-                        pplotCm.store <- numeric(ngibbs)
+                        sdplotN.store <- numeric(ngibbs)
+                        sdplotCab.store <- numeric(ngibbs)
+                        sdplotCw.store <- numeric(ngibbs)
+                        sdplotCm.store <- numeric(ngibbs)
                         alphaN.store <- matrix(NA, nrow=ngibbs, ncol=nre)
                         alphaCab.store <- matrix(NA, nrow=ngibbs, ncol=nre)
                         alphaCw.store <- matrix(NA, nrow=ngibbs, ncol=nre)
@@ -142,17 +136,17 @@ pinvbayes <- function(obs.spec,
                 
         } else {
                 if(single.precision) {
-                        pvec <- "p"
+                        sdvec <- "sd"
                 } else {
-                        pvec <- paste("p", wl, sep='')
+                        sdvec <- paste("sd", wl, sep='')
                 }
                 if(random.effects != "none"){
                         header <- c("N", "Cab", "Cw", "Cm", 
-                                    "pleafN", "pleafCab", "pleafCw", "pleafCm",
-                                    pvec)
+                                    "sdreN", "sdreCab", "sdreCw", "sdreCm",
+                                    sdvec)
                 } else {
                         header <- c("N", "Cab", "Cw", "Cm", 
-                                    pvec)
+                                    sdvec)
                 }
                 write(header,
                       ncolumns=length(header),
@@ -174,12 +168,14 @@ pinvbayes <- function(obs.spec,
                         ## Tweak JumpRSD based on acceptance rate
                         arate <- (ar - arp)/(4*ar.step)
                         if(arate < ar.min){
-                                JumpSD <- JumpSD * arate/ar.target
-                                cat(sprintf("   Iter %d, AR %.3f , JSD x %g \n", g, arate, arate/ar.target))
+                                tweak <- max(arate/ar.target, 0.001)
+                                JumpSD <- JumpSD * tweak
+                                cat(sprintf("   Iter %d, AR %.3f , JSD x %g \n", g, arate, tweak))
                         }
                         if(arate > ar.max){
-                                JumpSD <- JumpSD * ar.target/arate
-                                cat(sprintf("   Iter %d, AR %.3f , JSD x %g \n", g, arate, ar.target/arate))
+                                tweak <- min(ar.target/arate, 10000)
+                                JumpSD <- JumpSD * tweak
+                                cat(sprintf("   Iter %d, AR %.3f , JSD x %g \n", g, arate, tweak))
                         }
                         arp <- ar
                 }
@@ -204,15 +200,15 @@ pinvbayes <- function(obs.spec,
                         guess.spec <- prospect(guess.N, Cab.i, Cw.i, Cm.i)
                         guess.error <- spec.error(guess.spec, obs.spec[, -1])
                 }
-                guess.posterior <- likelihood(guess.error, pwl.i) + N.prior(guess.N)              
+                guess.posterior <- likelihood(guess.error, sd.i) + N.prior(guess.N)              
+                prev.posterior <- likelihood(prev.error, sd.i) + N.prior(N.i)
                 jnum <- dtnorm(guess.N, N.i, JumpSD["N"], Min=1)
                 jden <- dtnorm(N.i, guess.N, JumpSD["N"], Min=1)
-                a <- exp((guess.posterior ) - (prev.posterior ))
+                a <- exp((guess.posterior - jnum ) - (prev.posterior - jden ))
                 if(is.na(a)) a <- -1
                 if(a > runif(1)){
                         N.i <- guess.N
                         prev.error <- guess.error
-                        prev.posterior <- guess.posterior
                         ar <- ar + 1
                 }
                 # Sample Cab
@@ -234,7 +230,8 @@ pinvbayes <- function(obs.spec,
                         guess.spec <- prospect(N.i, guess.Cab, Cw.i, Cm.i)
                         guess.error <- spec.error(guess.spec, obs.spec[, -1])
                 }
-                guess.posterior <- likelihood(guess.error, pwl.i) + Cab.prior(guess.Cab)
+                guess.posterior <- likelihood(guess.error, sd.i) + Cab.prior(guess.Cab)
+                prev.posterior <- likelihood(prev.error, sd.i) + Cab.prior(Cab.i)
                 jnum <- dlnorm(guess.Cab, Cab.i, JumpSD["Cab"])
                 jden <- dlnorm(Cab.i, guess.Cab, JumpSD["Cab"])
                 a <- exp((guess.posterior - jnum) - (prev.posterior - jden))
@@ -242,7 +239,6 @@ pinvbayes <- function(obs.spec,
                 if(a > runif(1)){
                         Cab.i <- guess.Cab
                         prev.error <- guess.error
-                        prev.posterior <- guess.posterior
                         ar <- ar + 1
                 }
 
@@ -265,7 +261,8 @@ pinvbayes <- function(obs.spec,
                         guess.spec <- prospect(N.i, Cab.i, guess.Cw, Cm.i)
                         guess.error <- spec.error(guess.spec, obs.spec[, -1])
                 }
-                guess.posterior <- likelihood(guess.error, pwl.i) + Cw.prior(guess.Cw)
+                guess.posterior <- likelihood(guess.error, sd.i) + Cw.prior(guess.Cw)
+                prev.posterior <- likelihood(prev.error, sd.i) + Cw.prior(Cw.i)
                 jnum <- dlnorm(guess.Cw, Cw.i, JumpSD["Cw"])
                 jden <- dlnorm(Cw.i, guess.Cw, JumpSD["Cw"])
                 a <- exp((guess.posterior - jnum) - (prev.posterior - jden))
@@ -273,7 +270,6 @@ pinvbayes <- function(obs.spec,
                 if(a > runif(1)){
                         Cw.i <- guess.Cw
                         prev.error <- guess.error
-                        prev.posterior <- guess.posterior
                         ar <- ar + 1
                 }
 
@@ -296,7 +292,8 @@ pinvbayes <- function(obs.spec,
                         guess.spec <- prospect(N.i, Cab.i, Cw.i, guess.Cm)
                         guess.error <- spec.error(guess.spec, obs.spec[, -1])
                 }
-                guess.posterior <- likelihood(guess.error, pwl.i) + Cm.prior(guess.Cm)
+                guess.posterior <- likelihood(guess.error, sd.i) + Cm.prior(guess.Cm)
+                prev.posterior <- likelihood(prev.error, sd.i) + Cm.prior(Cm.i)
                 jnum <- dlnorm(guess.Cm, Cm.i, JumpSD["Cm"])
                 jden <- dlnorm(Cm.i, guess.Cm, JumpSD["Cm"])
                 a <- exp((guess.posterior - jnum) - (prev.posterior - jden))
@@ -304,7 +301,6 @@ pinvbayes <- function(obs.spec,
                 if(a > runif(1)){
                         Cm.i <- guess.Cm
                         prev.error <- guess.error
-                        prev.posterior <- guess.posterior
                         ar <- ar + 1
                 }
 
@@ -327,12 +323,12 @@ pinvbayes <- function(obs.spec,
                                                             }
                                                             )
                                 guess.error <- do.call(cbind, guess.error.alpha)
-                                guess.posterior <- likelihood(guess.error, pwl.i) + dnorm(guess.alphaN[i], 1/sqrt(pplotN))
+                                guess.posterior <- likelihood(guess.error, sd.i) + dnorm(guess.alphaN[i], 0, sdreN)
+                                prev.posterior <- likelihood(prev.error, sd.i) + dnorm(alphaN.i[i], 0, sdreN)
                                 a <- exp(guess.posterior - prev.posterior)
                                 if(is.na(a)) a <- -1
                                 if(a > runif(1)){
                                         alphaN.i <- guess.alphaN
-                                        prev.posterior <- guess.posterior
                                         ar.alpha <- ar.alpha + 1
                                 }
                         }
@@ -353,12 +349,12 @@ pinvbayes <- function(obs.spec,
                                                             }
                                                             )
                                 guess.error <- do.call(cbind, guess.error.alpha)
-                                guess.posterior <- likelihood(guess.error, pwl.i) + dnorm(guess.alphaCab[i], 1/sqrt(pplotCab))
+                                guess.posterior <- likelihood(guess.error, sd.i) + dnorm(guess.alphaCab[i], 0, sdreCab)
+                                prev.posterior <- likelihood(prev.error, sd.i) + dnorm(alphaCab.i[i], 0, sdreCab)
                                 a <- exp(guess.posterior - prev.posterior)
                                 if(is.na(a)) a <- -1
                                 if(a > runif(1)){
                                         alphaCab.i <- guess.alphaCab
-                                        prev.posterior <- guess.posterior
                                         ar.alpha <- ar.alpha + 1
                                 }
                         }
@@ -379,12 +375,12 @@ pinvbayes <- function(obs.spec,
                                                             }
                                                             )
                                 guess.error <- do.call(cbind, guess.error.alpha)
-                                guess.posterior <- likelihood(guess.error, pwl.i) + dnorm(guess.alphaCw[i], 1/sqrt(pplotCw))
+                                guess.posterior <- likelihood(guess.error, sd.i) + dnorm(guess.alphaCw[i], 0, sdreCw)
+                                prev.posterior <- likelihood(guess.error, sd.i) + dnorm(alphaCw.i[i], 0, sdreCw)
                                 a <- exp(guess.posterior - prev.posterior)
                                 if(is.na(a)) a <- -1
                                 if(a > runif(1)){
                                         alphaCw.i <- guess.alphaCw
-                                        prev.posterior <- guess.posterior
                                         ar.alpha <- ar.alpha + 1
                                 }
                         }
@@ -405,12 +401,12 @@ pinvbayes <- function(obs.spec,
                                                             }
                                                             )
                                 guess.error <- do.call(cbind, guess.error.alpha)
-                                guess.posterior <- likelihood(guess.error, pwl.i) + dnorm(guess.alphaCm[i], 1/sqrt(pplotCm))
+                                guess.posterior <- likelihood(guess.error, sd.i) + dnorm(guess.alphaCm[i], 0, sdreCm)
+                                prev.posterior <- likelihood(guess.error, sd.i) + dnorm(alphaCm.i[i], 0, sdreCm)
                                 a <- exp(guess.posterior - prev.posterior)
                                 if(is.na(a)) a <- -1
                                 if(a > runif(1)){
                                         alphaCm.i <- guess.alphaCm
-                                        prev.posterior <- guess.posterior
                                         ar.alpha <- ar.alpha + 1
                                 }
                         }
@@ -419,23 +415,27 @@ pinvbayes <- function(obs.spec,
                         v1 <- randeff.s[1] + nre/2
 
                         v2N <- randeff.s[2] + 0.5 * sum(alphaN.i^2)
-                        pplotN <- rgamma(1, v1, v2N)
+                        preN <- rgamma(1, v1, v2N)
+                        sdreN <- 1/sqrt(preN)
 
                         v2Cab <- randeff.s[2] + 0.5 * sum(alphaCab.i^2)
-                        pplotCab <- rgamma(1, v1, v2Cab)
+                        preCab <- rgamma(1, v1, v2Cab)
+                        sdreCab <- 1/sqrt(preCab)
 
                         v2Cw <- randeff.s[2] + 0.5 * sum(alphaCw.i^2)
-                        pplotCw <- rgamma(1, v1, v2Cw)
+                        preCw <- rgamma(1, v1, v2Cw)
+                        sdreCw <- 1/sqrt(preCw)
 
                         v2Cm <- randeff.s[2] + 0.5 * sum(alphaCm.i^2)
-                        pplotCm <- rgamma(1, v1, v2Cm)
+                        preCm <- rgamma(1, v1, v2Cm)
+                        sdreCm <- 1/sqrt(preCm)
                 }
 
                 ### Sample error precision ### 
                 if(single.precision){
                         nprec <- 1
                         u1p <- nspec*nwl/2
-                        u2p <- 0.5 * sum(prev.error^2)
+                        u2p <- (nspec*nwl - 1) * var(c(prev.error))
                 } else {
                         nprec <- nwl
                         u1p <- nspec/2
@@ -444,6 +444,7 @@ pinvbayes <- function(obs.spec,
                 u1 <- pwl.p[1] + u1p
                 u2 <- pwl.p[2] + u2p
                 pwl.i <- rgamma(nprec, u1, u2)
+                sd.i <- 1/sqrt(pwl.i)
 
                 # Store values 
                 if (local.store){
@@ -452,15 +453,15 @@ pinvbayes <- function(obs.spec,
                         Cw.store[g] <- Cw.i
                         Cm.store[g] <- Cm.i
                         if(single.precision){
-                                pwl.store[g] <- pwl.i  
+                                sd.store[g] <- sd.i
                         } else{
-                                pwl.store[g,] <- pwl.i
+                                sd.store[g,] <- sd.i
                         }
                         if(random.effects != "none"){
-                                pplotN.store[g] <- pplotN
-                                pplotCab.store[g] <- pplotCab
-                                pplotCw.store[g] <- pplotCw
-                                pplotCm.store[g] <- pplotCm
+                                sdplotN.store[g] <- sdreN
+                                sdplotCab.store[g] <- sdreCab
+                                sdplotCw.store[g] <- sdreCw
+                                sdplotCm.store[g] <- sdreCm
                                 alphaN.store[g,] <- alphaN.i
                                 alphaCab.store[g,] <- alphaCab.i
                                 alphaCw.store[g,] <- alphaCw.i
@@ -469,15 +470,15 @@ pinvbayes <- function(obs.spec,
                 } else {
                         if(random.effects != "none"){
                         write(c(N.i, Cab.i, Cw.i, Cm.i,
-                                pplotN, pplotCab, pplotCw, pplotCm, 
-                                pwl.i), 
+                                sdreN, sdreCab, sdreCw, sdreCm, 
+                                sd.i), 
                               ncolumns=length(header),
                               sep=",",
                               file=fname,
                               append=TRUE)
                         } else {
                         write(c(N.i, Cab.i, Cw.i, Cm.i,
-                                pwl.i), 
+                                sd.i), 
                               ncolumns=length(header),
                               sep=",",
                               file=fname,
@@ -489,13 +490,13 @@ pinvbayes <- function(obs.spec,
 
         if (local.store){
                 if(random.effects != "none"){
-                returnlist <- list(N=N.store, Cab=Cab.store, Cw=Cw.store, Cm=Cm.store, pwl=pwl.store,
-                            pplotN=pplotN.store,
-                            pplotCab=pplotCab.store,
-                            pplotCw=pplotCw.store,
-                            pplotCm=pplotCm.store)
+                returnlist <- list(N=N.store, Cab=Cab.store, Cw=Cw.store, Cm=Cm.store, sd=sd.store,
+                            sdplotN=sdplotN.store,
+                            sdplotCab=sdplotCab.store,
+                            sdplotCw=sdplotCw.store,
+                            sdplotCm=sdplotCm.store)
                 } else {
-                returnlist <- list(N=N.store, Cab=Cab.store, Cw=Cw.store, Cm=Cm.store, pwl=pwl.store)
+                returnlist <- list(N=N.store, Cab=Cab.store, Cw=Cw.store, Cm=Cm.store, sd=sd.store)
                 }
                 return(returnlist)
         }

@@ -10,15 +10,10 @@ if(precarg){
         precision <- "pwl"
 }
 rearg <- args[4]
-riarg <- as.numeric(args[5])
-if(riarg){
-        ri <- "randinit"
-} else {
-        ri <- "fixinit"
-}
+initarg <- args[5]
 ngibbs <- as.numeric(args[6])
 runid <- args[7]
-filename <- sprintf("run_results/%s_%g_%s_%s_%s_%s.dat", species, jrsd, precision, rearg, ri, runid)
+filename <- sprintf("run_results/%s_%g_%s_%s_%s_%s.dat", species, jrsd, precision, rearg, initarg, runid)
 
 source("inv_bayes.R")
 source("specdataproc.R")
@@ -31,4 +26,4 @@ pinvbayes(smat, ngibbs=ngibbs, JumpRSD=jrsd, fname=filename,
           local.store=FALSE, 
           single.precision=precarg, 
           random.effects=rearg,
-          random.inits=riarg)
+          inits=initarg)
