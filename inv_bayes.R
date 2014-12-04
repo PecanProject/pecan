@@ -175,12 +175,16 @@ pinvbayes <- function(obs.spec,
                         if(arate < ar.min){
                                 tweak <- max(arate/ar.target, 0.001)
                                 JumpSD <- JumpSD * tweak
-                                cat(sprintf("   Iter %d, AR %.3f , JSD x %g \n", g, arate, tweak))
+                                if(local.store){
+                                        cat(sprintf("   Iter %d, AR %.3f , JSD x %g \n", g, arate, tweak))
+                                }
                         }
                         if(arate > ar.max){
                                 tweak <- min(ar.target/arate, 10000)
                                 JumpSD <- JumpSD * tweak
-                                cat(sprintf("   Iter %d, AR %.3f , JSD x %g \n", g, arate, tweak))
+                                if(local.store){
+                                        cat(sprintf("   Iter %d, AR %.3f , JSD x %g \n", g, arate, tweak))
+                                }
                         }
                         arp <- ar
                 }
