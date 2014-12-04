@@ -1,5 +1,16 @@
-Grape
-CAAN-Red Pepper
-LemonTree
-MandarinOrange
+IC
+LC
+PICO
+PILA
+QUCH
+QUKE
+Peach
+Alfalfa
+Oats
+Pomegranate
+RedPepper
+Mandarin
 ShortDatePalm
+MANZ
+CADE
+PIPO
