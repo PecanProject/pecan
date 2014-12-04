@@ -3,48 +3,42 @@
 ##' @name met2CF.Ameriflux
 ##' @title met2CF.Ameriflux
 ##' @export
-##' @param in.path
-##' @param in.prefix
-##' @param outfolder
+##' @param start_year first year to be converted
+##' @param end_year last year to be converted
+##' @param in.path location on disk where inputs are stored
+##' @param in.prefix prefix of input and output files
+##' @param outfolder location on disk where outputs will be stored
+##' @param overwrite should existing files be overwritten
 ##' 
 ##' @author Josh Mantooth, Mike Dietze, Elizabeth Cowdery
-met2CF.Ameriflux <- function(in.path,in.prefix,outfolder, overwrite=FALSE){
+met2CF.Ameriflux <- function(start_year, end_year, in.path, in.prefix, outfolder, overwrite=FALSE){
   #---------------- Load libraries. -----------------------------------------------------------------#
 #  require(PEcAn.all)
 #  require(RPostgreSQL)
   require(ncdf4)
   #--------------------------------------------------------------------------------------------------#  
   
-  ## get file names
-  files = dir(in.path,in.prefix)
-  files = files[grep(pattern="*.nc",files)]
-  
-  if(length(files) == 0) {
-    ## send warning
-    
-    return(NULL)
-  }  
-  
   if(!file.exists(outfolder)){
     dir.create(outfolder)
   }
   
-  rows <- length(files)
+  rows <- end_year - start_year + 1
   results <- data.frame(file=character(rows), host=character(rows),
                         mimetype=character(rows), formatname=character(rows),
                         startdate=character(rows), enddate=character(rows),
                         stringsAsFactors = FALSE)
-  for(i in 1:length(files)){
-    new.file <- file.path(outfolder, files[i])
+  for(year in start_year:end_year){
+    old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep="."))
+    new.file <- file.path(outfolder, paste(in.prefix, year, "nc", sep="."))
     
     # create array with results
-    year <- sub('^.*\\.(\\d*)\\.nc$', '\\1', files[i])
-    results$file[i] <- new.file
-    results$host[i] <- fqdn()
-    results$startdate[i] <- paste0(year,"-01-01 00:00:00")
-    results$enddate[i] <- paste0(year,"-12-31 23:59:59")
-    results$mimetype[i] <- 'application/x-netcdf'
-    results$formatname[i] <- 'CF'
+    row <- year - start_year + 1
+    results$file[row] <- new.file
+    results$host[row] <- fqdn()
+    results$startdate[row] <- paste0(year,"-01-01 00:00:00")
+    results$enddate[row] <- paste0(year,"-12-31 23:59:59")
+    results$mimetype[row] <- 'application/x-netcdf'
+    results$formatname[row] <- 'CF'
     
     if (file.exists(new.file) && !overwrite) {
       logger.debug("File '", new.file, "' already exists, skipping to next file.")
@@ -52,7 +46,7 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder, overwrite=FALSE){
     }
     
     ## copy old file to new directory
-    file.copy(file.path(in.path,files[i]), new.file, overwrite=TRUE)
+    file.copy(old.file, new.file, overwrite=TRUE)
     
     ### rename time dimension
     system2("ncrename",paste("-d DTIME,time -v DTIME,time", new.file))
@@ -62,17 +56,27 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder, overwrite=FALSE){
     
     #time dimension for adding new variables
     tdim = nc$dim[["time"]]
-    #renaming variables and performing unit conversions
-    ta <- ncvar_get(nc=nc,varid='TA')
-    #ta <- ncvar_get(nc=nc,varid='air_temperature')
-    ta.k <- which(ta > -6999) #select non-missing data
-    ta.new <- ta[ta.k] + 273.15 #change units from Celsius to Kelvin
-    ta <- replace(x=ta,list=ta.k,values=ta.new) #insert Kelvin values into vector
     
-    ta.var <- ncvar_def(name='air_temperature',units='degrees K',dim=list(tdim),missval=-9999) #define netCDF variable, doesn't include longname and comments
-    nc = ncvar_add(nc=nc,v=ta.var,verbose=TRUE) #add variable to existing netCDF file
-    ncvar_put(nc,varid='air_temperature',vals=ta)
+    # convert TA to air_temperature
+    ta <- ncvar_get(nc, varid="TA")
+    ta[ta==-6999 || ta==-9999] <- NA
+    # unit conversion
+    ta <- ta + 273.15
+    ncatt_put(nc=nc,varid='TA',attname='units',attval='degrees K') 
+    #ncvar_change_missval(nc, 'TA', -9999)
+    ncvar_put(nc,varid='TA',vals=ta)
+    nc <- ncvar_rename(nc=nc,'TA','air_temperature')
     
+    # convert TS1 to soil_temperature
+    # TODO: leave TS1 for now
+    ts <- ncvar_get(nc=nc,varid='TS1')
+    ts[ts==-6999 || ts==-9999] <- NA
+    # unit conversion
+    ts <- ts + 273.15
+    ts.var <- ncvar_def(name='soil_temperature',units='degrees K',dim=list(tdim),missval=-9999) #define netCDF variable, doesn't include longname and comments
+    nc <- ncvar_add(nc,v=ts.var,verbose=TRUE) #add variable to existing netCDF file
+    ncvar_put(nc,varid='soil_temperature',vals=ts)
+        
     #convert wind speed and wind direction to U and V
     wd <- ncvar_get(nc=nc,varid='WD') #wind direction
     ws <- ncvar_get(nc=nc,varid='WS') #wind speed
@@ -90,24 +94,49 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder, overwrite=FALSE){
     #create u and v variables and insert into file
     tdim = nc$dim[["time"]]
     u.var <- ncvar_def(name='eastward_wind',units='m/s',dim=list(tdim),missval= -9999) #define netCDF variable, doesn't include longname and comments
-    nc = ncvar_add(nc=nc,v=u.var,verbose=TRUE) #add variable to existing netCDF file
+    nc <- ncvar_add(nc=nc,v=u.var,verbose=TRUE) #add variable to existing netCDF file
     ncvar_put(nc,varid='eastward_wind',vals=u)
     
     v.var <- ncvar_def(name='northward_wind',units='m/s',dim=list(tdim),missval= -9999) #define netCDF variable, doesn't include longname and comments
-    nc = ncvar_add(nc=nc,v=v.var,verbose=TRUE) #add variable to existing netCDF file
+    nc <- ncvar_add(nc=nc,v=v.var,verbose=TRUE) #add variable to existing netCDF file
     ncvar_put(nc,varid='northward_wind',vals=v)
    
-    #convert air pressure to CF standard
+    # convert PRESS to air_pressure
     press <- ncvar_get(nc=nc,varid="PRESS")
-    press.pa <- which(press > -6999)
-    press.new <- press[press.pa] * 1000 #kilopascals to pascals
-    press <- replace(x=press,list=press.pa,values=press.new)
-
-    p.var <- ncvar_def(name='air_pressure',units='Pa',dim=list(tdim),missval= -9999)
-    nc = ncvar_add(nc=nc,v=p.var,verbose=TRUE) #add variable to existing netCDF file
-    ncvar_put(nc,varid='air_pressure',vals=press)
+    press[press==-6999 || press==-9999] <- NA
+    # unit conversion
+    press <- press * 1000
+    ncatt_put(nc=nc,varid='PRESS',attname='units',attval='Pa') 
+    #ncvar_change_missval(nc, 'PRESS', -9999)
+    ncvar_put(nc,varid='PRESS',vals=press)
+    nc <- ncvar_rename(nc,'PRESS', 'air_pressure', verbose=TRUE)
     
+    # convert PAR to surface_downwelling_photosynthetic_photon_flux_in_air
+    par <- ncvar_get(nc, varid="PAR")
+    par[par==-6999 || par==-9999] <- NA
+    # unit conversion
+    par <- par / 1e6
+    ncatt_put(nc=nc,varid='PAR',attname='units',attval='mol m-2 s-1') 
+    #ncvar_change_missval(nc, 'PAR', -9999)
+    ncvar_put(nc,varid='PAR',vals=par)
+    nc <- ncvar_rename(nc,'PAR','surface_downwelling_photosynthetic_photon_flux_in_air', verbose=TRUE)
+    
+    # convert VPD to water_vapor_saturation_deficit
+    vpd <- ncvar_get(nc, varid="VPD")
+    vpd[vpd==-6999 || vpd==-9999] <- NA
+    # HACK This needs fixing
+    vpd[vpd<0] <- NA
+    # unit conversion
+    vpd <- vpd * 1000
+    ncatt_put(nc=nc,varid='VPD',attname='units',attval='Pa') 
+    #ncvar_change_missval(nc, 'VPD', -9999)
+    ncvar_put(nc,varid='VPD',vals=vpd)
+    nc <- ncvar_rename(nc,'VPD','water_vapor_saturation_deficit')
+    
+    # rename Rg to surface_downwelling_shortwave_flux
     nc <- ncvar_rename(nc=nc,'Rg','surface_downwelling_shortwave_flux')
+
+    # rename Rgl to surface_downwelling_longwave_flux
     nc <- ncvar_rename(nc=nc,'Rgl','surface_downwelling_longwave_flux')
     
     #convert precipitation to CF standard
@@ -118,10 +147,9 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder, overwrite=FALSE){
     prec.sub <- which(prec > -6999)
     prec.new <- prec[prec.sub]/timestep/60 #mm/s = kg/m2/s
     prec <- replace(x=prec,list=prec.sub,values=prec.new)
-    ncvar_put(nc=nc, varid='PREC',vals=prec)
     ncatt_put(nc=nc,varid='PREC',attname='units',attval='kg/m^2/s') 
+    ncvar_put(nc=nc, varid='PREC',vals=prec)
     nc <- ncvar_rename(nc=nc,'PREC','precipitation_flux')
-    
     
     # convert RH to SH
     rh <- ncvar_get(nc=nc,varid='RH')
@@ -132,7 +160,7 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder, overwrite=FALSE){
     sh.miss <- rh2qair(rh=rh.sh[rh.sub],T=ta.rh) #conversion, doesn't include missvals. was rh2rv
     sh <- replace(x=rh,list=rh.sub,values=sh.miss) #insert Kelvin values into vector
     sh.var <- ncvar_def(name='specific_humidity',units='kg/kg',dim=list(tdim),missval= -9999) #define netCDF variable, doesn't include longname and comments
-    nc = ncvar_add(nc=nc,v=sh.var,verbose=TRUE) #add variable to existing netCDF file
+    nc <- ncvar_add(nc=nc,v=sh.var,verbose=TRUE) #add variable to existing netCDF file
     ncvar_put(nc,varid='specific_humidity',vals=sh)
     ncatt_put(nc=nc,varid='RH',attname='units',attval='percent') 
     nc <- ncvar_rename(nc=nc,'RH','relative_humidity')
@@ -161,8 +189,7 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder, overwrite=FALSE){
     lon.var <- ncvar_def(name='longitude',units='degree_east',dim=list(lon),missval=-9999) 
     nc <- ncvar_add(nc=nc,v=lon.var,verbose=TRUE) #add longitude to existing netCDF file
     ncvar_put(nc,varid='longitude',vals=lon.value)
-      
-
+    
     nc_close(nc)
   }  ## end loop over files
   
