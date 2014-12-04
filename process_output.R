@@ -1,6 +1,6 @@
 library(coda)
 
-path <- "~/Dropbox/run_results/2014_12_2/"
+path <- "run_results/2014_12_2/"
 flist <- list.files(path)
 flist <- flist[which(nchar(flist) > 5)]
 species.list <- unique(gsub("(.*)_[0-9][.][0-9]+_.*", "\\1", flist))
