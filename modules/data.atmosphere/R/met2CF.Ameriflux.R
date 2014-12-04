@@ -54,12 +54,14 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder, overwrite=FALSE){
     ## copy old file to new directory
     file.copy(file.path(in.path,files[i]), new.file, overwrite=TRUE)
     
+    ### rename time dimension
+    system2("ncrename",paste("-d DTIME,time -v DTIME,time", new.file))
+    
     ### if reading ameriflux .nc file ###
     nc <- nc_open(new.file,write=TRUE)
     
     #time dimension for adding new variables
-    tdim = nc$dim[["DTIME"]]
-    
+    tdim = nc$dim[["time"]]
     #renaming variables and performing unit conversions
     ta <- ncvar_get(nc=nc,varid='TA')
     #ta <- ncvar_get(nc=nc,varid='air_temperature')
@@ -86,7 +88,7 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder, overwrite=FALSE){
     nc <- ncvar_rename(nc=nc,'WD','wind_direction') #CF name
     
     #create u and v variables and insert into file
-    tdim = nc$dim[["DTIME"]]
+    tdim = nc$dim[["time"]]
     u.var <- ncvar_def(name='eastward_wind',units='m/s',dim=list(tdim),missval= -9999) #define netCDF variable, doesn't include longname and comments
     nc = ncvar_add(nc=nc,v=u.var,verbose=TRUE) #add variable to existing netCDF file
     ncvar_put(nc,varid='eastward_wind',vals=u)
@@ -109,9 +111,9 @@ met2CF.Ameriflux <- function(in.path,in.prefix,outfolder, overwrite=FALSE){
     nc <- ncvar_rename(nc=nc,'Rgl','surface_downwelling_longwave_flux')
     
     #convert precipitation to CF standard
-    dtime <- ncvar_get(nc=nc,varid="DTIME")
-    min <- 0.02083/30 #0.02083 DTIME = 30 minutes
-    timestep <- round(x=mean(diff(dtime))/min,digits=1) #round to nearest 0.1 minute
+    time <- ncvar_get(nc=nc,varid="time")
+    min <- 0.02083/30 #0.02083 time = 30 minutes
+    timestep <- round(x=mean(diff(time))/min,digits=1) #round to nearest 0.1 minute
     prec <- ncvar_get(nc=nc,varid="PREC")
     prec.sub <- which(prec > -6999)
     prec.new <- prec[prec.sub]/timestep/60 #mm/s = kg/m2/s

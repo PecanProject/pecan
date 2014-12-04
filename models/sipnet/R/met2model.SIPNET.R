@@ -24,6 +24,7 @@ met2model.SIPNET <- function(in.path,in.prefix,outfolder,overwrite=FALSE){
   }
   
   require(ncdf4)
+  require(lubridate)
   require(PEcAn.data.atmosphere)
 #  require(ncdf)
 
@@ -41,9 +42,12 @@ for(i in 1:length(filescount)){
   nc <- nc_open(files[i])
   
   ## convert time to seconds
-  sec   <- nc$dim$t$vals  
-  sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$t$units," "))[1],"seconds")
-  dt <- sec[2]-sec[1]
+  sec   <- nc$dim$time$vals  
+  sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$time$units," "))[1],"seconds")
+  
+  ifelse(leap_year(base.time)==TRUE,
+         dt <- (366*24*60*60)/length(sec), #leap year
+         dt <- (365*24*60*60)/length(sec)) #non-leap year
   tstep = 86400/dt
   
   ## determine starting year
@@ -55,8 +59,8 @@ for(i in 1:length(filescount)){
     }
     
   ## extract variables
-  lat  <- ncvar_get(nc,"lat")
-  lon  <- ncvar_get(nc,"lon")
+  lat  <- ncvar_get(nc,"latitude")
+  lon  <- ncvar_get(nc,"longitude")
   Tair <- ncvar_get(nc,"air_temperature")
   Qair <- ncvar_get(nc,"specific_humidity")  #humidity (kg/kg)
   U <- ncvar_get(nc,"eastward_wind")
