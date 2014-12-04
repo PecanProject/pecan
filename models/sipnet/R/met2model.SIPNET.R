@@ -42,8 +42,8 @@ for(i in 1:length(filescount)){
   nc <- nc_open(files[i])
   
   ## convert time to seconds
-  sec   <- nc$dim$t$vals  
-  sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$t$units," "))[1],"seconds")
+  sec   <- nc$dim$time$vals  
+  sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$time$units," "))[1],"seconds")
   
   ifelse(leap_year(base.time)==TRUE,
          dt <- (366*24*60*60)/length(sec), #leap year
