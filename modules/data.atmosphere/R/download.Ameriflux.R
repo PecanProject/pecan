@@ -20,13 +20,12 @@ download.Ameriflux.site <- function(site_id) {
 ##' @export
 ##' @param start_year
 ##' @param end_year
-##' @param site
-##' @param in.prefix
+##' @param site 
 ##' @param outfolder
 ##' @param con database connection
 ##' 
 ##' @author Josh Mantooth, Rob Kooper
-download.Ameriflux <- function(start_year, end_year, site, in.prefix, outfolder) {
+download.Ameriflux <- function(start_year, end_year, site, outfolder, overwrite=FALSE) {
   # make sure output folder exists
   if(!file.exists(outfolder)){
     dir.create(outfolder, showWarnings=FALSE, recursive=TRUE)
@@ -45,14 +44,9 @@ download.Ameriflux <- function(start_year, end_year, site, in.prefix, outfolder)
                         startdate=character(rows), enddate=character(rows),
                         stringsAsFactors = FALSE)
   for(year in start_year:end_year) {
-    # see if file exists, if not download
-    outputfile <- file.path(outfolder, paste0(in.prefix, ".", year, ".nc"))
-    if (!file.exists(outputfile)) {
-      file <- tail(as.character(links[grep(paste0('_', year, '_.*.nc'), links)]), n=1)
-      download.file(paste0(baseurl, file), outputfile)
-    }
-
-    # save results so it can be added to database later
+    outputfile <- file.path(outfolder, paste(site, year, "nc", sep="."))
+    
+    # create array with results
     row <- year - start_year + 1
     results$file[row] <- outputfile
     results$host[row] <- fqdn()
@@ -60,6 +54,15 @@ download.Ameriflux <- function(start_year, end_year, site, in.prefix, outfolder)
     results$enddate[row] <- paste0(year,"-12-31 23:59:59")
     results$mimetype[row] <- 'application/x-netcdf'
     results$formatname[row] <- 'Ameriflux'
+    
+    # see if file exists
+    if (file.exists(outputfile) && !overwrite) {
+      logger.debug("File '", outputfile, "' already exists, skipping to next file.")
+      next
+    }
+    
+    file <- tail(as.character(links[grep(paste0('_', year, '_.*.nc'), links)]), n=1)
+    download.file(paste0(baseurl, file), outputfile)
   }
   
   # return list of files downloaded
@@ -67,4 +70,4 @@ download.Ameriflux <- function(start_year, end_year, site, in.prefix, outfolder)
 }
 
 #site <- download.Ameriflux.site(622)
-#print(download.Ameriflux(2001, 2005, site, site, "/tmp/met/ameriflux"))
+#print(download.Ameriflux(2001, 2005, site, "/tmp/met/ameriflux"))
