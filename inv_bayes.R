@@ -115,7 +115,6 @@ pinvbayes <- function(obs.spec,
         prev.spec <- prospect(N.i, Cab.i, Cw.i, Cm.i)
         prev.error <- spec.error(prev.spec, obs.spec)
 
-
         ### MCMC storage
         if (local.store){
                 N.store <- numeric(ngibbs)
@@ -315,18 +314,13 @@ pinvbayes <- function(obs.spec,
                         for (i in 1:nre){
                                 guess.alphaN <- alphaN.i
                                 guess.alphaN[i] <- rnorm(1, alphaN.i[i], JumpSD.alpha["N"])
-                                guess.error.alpha <- lapply(1:nre,
-                                                            function(i) {
-                                                                    guess.spec <- prospect(N.i + guess.alphaN[i],
-                                                                                           Cab.i + alphaCab.i[i],
-                                                                                           Cw.i + alphaCw.i[i],
-                                                                                           Cm.i + alphaCm.i[i]
-                                                                                           )
-                                                                    guess.error <- spec.error(guess.spec, obs.spec[, randeff.list[[i]]])
-                                                                    return(guess.error)
-                                                            }
-                                                            )
-                                guess.error <- do.call(cbind, guess.error.alpha)
+                                guess.spec <- prospect(N.i + guess.alphaN[i],
+                                                       Cab.i + alphaCab.i[i],
+                                                       Cw.i + alphaCw.i[i],
+                                                       Cm.i + alphaCm.i[i]
+                                                       )
+                                guess.error <- prev.error
+                                guess.error[,randeff.list[[i]]] <- spec.error(guess.spec, obs.spec[, randeff.list[[i]]])
                                 guess.posterior <- likelihood(guess.error, sd.i) + dnorm(guess.alphaN[i], 0, sdreN)
                                 prev.posterior <- likelihood(prev.error, sd.i) + dnorm(alphaN.i[i], 0, sdreN)
                                 a <- exp(guess.posterior - prev.posterior)
@@ -341,18 +335,13 @@ pinvbayes <- function(obs.spec,
                         for (i in 1:nre){
                                 guess.alphaCab <- alphaCab.i
                                 guess.alphaCab[i] <- rnorm(1, alphaCab.i[i], JumpSD.alpha["Cab"])
-                                guess.error.alpha <- lapply(1:nre,
-                                                            function(i) {
-                                                                    guess.spec <- prospect(N.i + alphaN.i[i],
-                                                                                           Cab.i + guess.alphaCab[i],
-                                                                                           Cw.i + alphaCw.i[i],
-                                                                                           Cm.i + alphaCm.i[i]
-                                                                                           )
-                                                                    guess.error <- spec.error(guess.spec, obs.spec[, randeff.list[[i]]])
-                                                                    return(guess.error)
-                                                            }
-                                                            )
-                                guess.error <- do.call(cbind, guess.error.alpha)
+                                guess.spec <- prospect(N.i + alphaN.i[i],
+                                                       Cab.i + guess.alphaCab[i],
+                                                       Cw.i + alphaCw.i[i],
+                                                       Cm.i + alphaCm.i[i]
+                                                       )
+                                guess.error <- prev.error
+                                guess.error[,randeff.list[[i]]] <- spec.error(guess.spec, obs.spec[, randeff.list[[i]]])
                                 guess.posterior <- likelihood(guess.error, sd.i) + dnorm(guess.alphaCab[i], 0, sdreCab)
                                 prev.posterior <- likelihood(prev.error, sd.i) + dnorm(alphaCab.i[i], 0, sdreCab)
                                 a <- exp(guess.posterior - prev.posterior)
@@ -367,18 +356,13 @@ pinvbayes <- function(obs.spec,
                         for (i in 1:nre){
                                 guess.alphaCw <- alphaCw.i
                                 guess.alphaCw[i] <- rnorm(1, alphaCw.i[i], JumpSD.alpha["Cm"])
-                                guess.error.alpha <- lapply(1:nre,
-                                                            function(i) {
-                                                                    guess.spec <- prospect(N.i + alphaN.i[i],
-                                                                                           Cab.i + alphaCab.i[i],
-                                                                                           Cw.i + guess.alphaCw[i],
-                                                                                           Cm.i + alphaCm.i[i]
-                                                                                           )
-                                                                    guess.error <- spec.error(guess.spec, obs.spec[, randeff.list[[i]]])
-                                                                    return(guess.error)
-                                                            }
-                                                            )
-                                guess.error <- do.call(cbind, guess.error.alpha)
+                                guess.spec <- prospect(N.i + alphaN.i[i],
+                                                       Cab.i + alphaCab.i[i],
+                                                       Cw.i + guess.alphaCw[i],
+                                                       Cm.i + alphaCm.i[i]
+                                                       )
+                                guess.error <- prev.error
+                                guess.error[,randeff.list[[i]]] <- spec.error(guess.spec, obs.spec[, randeff.list[[i]]])
                                 guess.posterior <- likelihood(guess.error, sd.i) + dnorm(guess.alphaCw[i], 0, sdreCw)
                                 prev.posterior <- likelihood(guess.error, sd.i) + dnorm(alphaCw.i[i], 0, sdreCw)
                                 a <- exp(guess.posterior - prev.posterior)
@@ -393,18 +377,13 @@ pinvbayes <- function(obs.spec,
                         for (i in 1:nre){
                                 guess.alphaCm <- alphaCm.i
                                 guess.alphaCm[i] <- rnorm(1, alphaCm.i[i], JumpSD.alpha["Cm"])
-                                guess.error.alpha <- lapply(1:nre,
-                                                            function(i) {
-                                                                    guess.spec <- prospect(N.i + alphaN.i[i],
-                                                                                           Cab.i + alphaCab.i[i],
-                                                                                           Cw.i + alphaCw.i[i],
-                                                                                           Cm.i + guess.alphaCm[i]
-                                                                                           )
-                                                                    guess.error <- spec.error(guess.spec, obs.spec[, randeff.list[[i]]])
-                                                                    return(guess.error)
-                                                            }
-                                                            )
-                                guess.error <- do.call(cbind, guess.error.alpha)
+                                guess.spec <- prospect(N.i + alphaN.i[i],
+                                                       Cab.i + alphaCab.i[i],
+                                                       Cw.i + alphaCw.i[i],
+                                                       Cm.i + guess.alphaCm[i]
+                                                       )
+                                guess.error <- prev.error
+                                guess.error[,randeff.list[[i]]] <- spec.error(guess.spec, obs.spec[, randeff.list[[i]]])
                                 guess.posterior <- likelihood(guess.error, sd.i) + dnorm(guess.alphaCm[i], 0, sdreCm)
                                 prev.posterior <- likelihood(guess.error, sd.i) + dnorm(alphaCm.i[i], 0, sdreCm)
                                 a <- exp(guess.posterior - prev.posterior)
