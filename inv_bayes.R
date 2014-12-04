@@ -54,10 +54,10 @@ pinvbayes <- function(obs.spec,
         } else if(inits == "mle"){
                 ic <- p.invert(obs.spec[,-1])
         } else {
-                ic <- c(abs(rnorm(1, N.p[1], N.p[2])) + 1,
-                        rlnorm(1, Cab.p[1], Cab.p[2]),
-                        rlnorm(1, Cw.p[1], Cw.p[2]),
-                        rlnorm(1, Cm.p[1], Cm.p[2])
+                ic <- c(abs(rnorm(1, 0, 1.5)) + 1,
+                        rlnorm(1, log(30), 0.9),
+                        rlnorm(1, log(0.017), 0.5),
+                        rlnorm(1, log(0.006), 0.9)
                         )
         }
         N.i <- ic[1]
