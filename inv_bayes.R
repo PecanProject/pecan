@@ -25,8 +25,6 @@ pinvbayes <- function(obs.spec,
                       random.effects='none',
                       inits='mle',
                       ar.step=100,
-                      ar.min=0.1,
-                      ar.max=0.9,
                       ar.target=0.75,
                       fname = "runs/test_run.dat"
                       )
@@ -35,6 +33,7 @@ pinvbayes <- function(obs.spec,
         nwl <- length(wl)
         nspec <- ncol(obs.spec)
         JumpSD <- JumpRSD * unlist(guess.inits)
+        JumpSD.alpha <- JumpSD
 
 
         ### Priors ###
@@ -72,7 +71,7 @@ pinvbayes <- function(obs.spec,
         ### Extract indices for random effects ###
         if(random.effects != 'none'){
                 regxp.list <- c(leaf = "(^.*)_[0-9]{5}.csv",
-                                plot = "^[0-9]{4}[A-Za-z]+[0-9]{2}__[A-Za-z]+_([A-Za-z0-9]+)_.*")
+                                plot = "^[0-9]{4}[A-Za-z]+[0-9]{2}__([A-Za-z]+_[A-Za-z0-9]+)_.*")
                 randeff.regxp <- regxp.list[random.effects]
                 randeffs <- unique(gsub(randeff.regxp, "\\1", colnames(obs.spec)))
                 if(length(randeffs) == 1) {
@@ -146,7 +145,12 @@ pinvbayes <- function(obs.spec,
                         sdvec <- paste("sd", wl, sep='')
                 }
                 if(random.effects != "none"){
+                        aNvec <- sprintf("aN_%s", randeffs)
+                        aCabvec <- sprintf("aCab_%s", randeffs)
+                        aCwvec <- sprintf("aCw_%s", randeffs)
+                        aCmvec <- sprintf("aCm_%s", randeffs)
                         header <- c("N", "Cab", "Cw", "Cm", 
+                                    aNvec, aCabvec, aCwvec, aCmvec,
                                     "sdreN", "sdreCab", "sdreCw", "sdreCm",
                                     sdvec)
                 } else {
@@ -165,6 +169,7 @@ pinvbayes <- function(obs.spec,
         ar <- 0
         ar.alpha <- 0
         arp <- 0
+        arp.alpha <- 0
         for(g in 1:ngibbs){
                 arate <- ar/(4*g)
                 if((g == 5) | (g %% (ngibbs/20) == 0) & local.store) laptime(tstart, g, ngibbs)
@@ -172,21 +177,11 @@ pinvbayes <- function(obs.spec,
                 if(g %% ar.step == 0){
                         ## Tweak JumpRSD based on acceptance rate
                         arate <- (ar - arp)/(4*ar.step)
-                        if(arate < ar.min){
-                                tweak <- max(arate/ar.target, 0.001)
-                                JumpSD <- JumpSD * tweak
-                                if(local.store){
-                                        cat(sprintf("   Iter %d, AR %.3f , JSD x %g \n", g, arate, tweak))
-                                }
-                        }
-                        if(arate > ar.max){
-                                tweak <- min(ar.target/arate, 10000)
-                                JumpSD <- JumpSD * tweak
-                                if(local.store){
-                                        cat(sprintf("   Iter %d, AR %.3f , JSD x %g \n", g, arate, tweak))
-                                }
-                        }
+                        arate.alpha <- (ar.alpha - arp.alpha)/(4*nre*ar.step)
+                        JumpSD <- JumpSD * max(arate/ar.target, 0.001)
+                        JumpSD.alpha <- JumpSD.alpha * max(arate.alpha/ar.target, 0.001)
                         arp <- ar
+                        arp.alpha <- ar.alpha
                 }
                 ### Sample core PROSPECT parameters ###
 
@@ -319,7 +314,7 @@ pinvbayes <- function(obs.spec,
                         ## Sample alphaN
                         for (i in 1:nre){
                                 guess.alphaN <- alphaN.i
-                                guess.alphaN[i] <- rnorm(1, alphaN.i[i], JumpRSD * alphaN.i[i])
+                                guess.alphaN[i] <- rnorm(1, alphaN.i[i], JumpSD.alpha["N"])
                                 guess.error.alpha <- lapply(1:nre,
                                                             function(i) {
                                                                     guess.spec <- prospect(N.i + guess.alphaN[i],
@@ -345,7 +340,7 @@ pinvbayes <- function(obs.spec,
                         ## Sample alphaCab
                         for (i in 1:nre){
                                 guess.alphaCab <- alphaCab.i
-                                guess.alphaCab[i] <- rnorm(1, alphaCab.i[i], JumpRSD * alphaCab.i[i])
+                                guess.alphaCab[i] <- rnorm(1, alphaCab.i[i], JumpSD.alpha["Cab"])
                                 guess.error.alpha <- lapply(1:nre,
                                                             function(i) {
                                                                     guess.spec <- prospect(N.i + alphaN.i[i],
@@ -371,7 +366,7 @@ pinvbayes <- function(obs.spec,
                         ## Sample alphaCw
                         for (i in 1:nre){
                                 guess.alphaCw <- alphaCw.i
-                                guess.alphaCw[i] <- rnorm(1, alphaCw.i[i], JumpRSD * alphaCw.i[i])
+                                guess.alphaCw[i] <- rnorm(1, alphaCw.i[i], JumpSD.alpha["Cm"])
                                 guess.error.alpha <- lapply(1:nre,
                                                             function(i) {
                                                                     guess.spec <- prospect(N.i + alphaN.i[i],
@@ -397,7 +392,7 @@ pinvbayes <- function(obs.spec,
                         ## Sample alphaCm
                         for (i in 1:nre){
                                 guess.alphaCm <- alphaCm.i
-                                guess.alphaCm[i] <- rnorm(1, alphaCm.i[i], JumpRSD * alphaCm.i[i])
+                                guess.alphaCm[i] <- rnorm(1, alphaCm.i[i], JumpSD.alpha["Cm"])
                                 guess.error.alpha <- lapply(1:nre,
                                                             function(i) {
                                                                     guess.spec <- prospect(N.i + alphaN.i[i],
@@ -479,6 +474,7 @@ pinvbayes <- function(obs.spec,
                 } else {
                         if(random.effects != "none"){
                         write(c(N.i, Cab.i, Cw.i, Cm.i,
+                                alphaN.i, alphaCab.i, alphaCw.i, alphaCm.i,
                                 sdreN, sdreCab, sdreCw, sdreCm, 
                                 sd.i), 
                               ncolumns=length(header),
