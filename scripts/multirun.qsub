@@ -12,7 +12,7 @@
 #$ -cwd
 
 # Give this job a name
-#$ -N pbi_$SPECIES_$REF_$FOLDER
+#$ -N "pbi_$SPECIES_$REF_$FOLDER"
 
 # Join standard output and error to a single file
 #$ -j y

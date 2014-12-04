@@ -69,6 +69,7 @@ pinvbayes <- function(obs.spec,
         if(single.precision) sd.i <- sd.i[1]
 
         ### Extract indices for random effects ###
+        nre <- 1
         if(random.effects != 'none'){
                 regxp.list <- c(leaf = "(^.*)_[0-9]{5}.csv",
                                 plot = "^[0-9]{4}[A-Za-z]+[0-9]{2}__([A-Za-z]+_[A-Za-z0-9]+)_.*")
