@@ -90,8 +90,8 @@ metgapfill <- function(in.path,in.prefix,outfolder){
     ## read time variables, add to data frame
     Year <- ncvar_get(nc=nc,varid='YEAR')
     DoY <- ncvar_get(nc=nc,varid='DOY')
-    Dtime <- ncvar_get(nc=nc,varid='DTIME')
-    Hour <- ((round((Dtime-DoY)*48.0)/2.0)+0.5)
+    time <- ncvar_get(nc=nc,varid='time')
+    Hour <- ((round((time-DoY)*48.0)/2.0)+0.5)
     
     nelem = length(Year)
     EddyData.F <- cbind(EddyData.F,Year=Year,DoY=DoY,Hour=Hour)
