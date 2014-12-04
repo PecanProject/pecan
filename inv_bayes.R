@@ -52,7 +52,7 @@ pinvbayes <- function(obs.spec,
         if(inits == "guess"){
                 ic <- guess.inits
         } else if(inits == "mle"){
-                ic <- p.invert(obs.spec[,-1])
+                ic <- p.invert(obs.spec)
         } else {
                 ic <- c(abs(rnorm(1, 0, 1.5)) + 1,
                         rlnorm(1, log(30), 0.9),
@@ -71,27 +71,32 @@ pinvbayes <- function(obs.spec,
 
         ### Extract indices for random effects ###
         if(random.effects != 'none'){
-                regxp.list <- c(leaf = "(.*)",
-                                plot = ".*_(Plot[1-9a-zA-Z]+)_.*")
+                regxp.list <- c(leaf = "(^.*)_[0-9]{5}.csv",
+                                plot = "^[0-9]{4}[A-Za-z]+[0-9]{2}__[A-Za-z]+_([A-Za-z0-9]+)_.*")
                 randeff.regxp <- regxp.list[random.effects]
-                randeffs <- unique(gsub(randeff.regxp, "\\1", colnames(obs.spec)[-1]))
-                randeff.list <- lapply(randeffs, grep, colnames(obs.spec))
-                print(randeff.list)
-                nre <- length(randeff.list)
-
-                ### Random effects initial conditions
-                alphaN.i <- rep(0, nre)
-                alphaCab.i <- rep(0, nre)
-                alphaCw.i <- rep(0, nre)
-                alphaCm.i <- rep(0, nre)
-
-                sdreN <- 1
-                sdreCab <- 1
-                sdreCw <- 1
-                sdreCm <- 1
-
-                # Random effects Prior
-                randeff.s <- c(0.001, 0.001)              # Inverse gamma
+                randeffs <- unique(gsub(randeff.regxp, "\\1", colnames(obs.spec)))
+                if(length(randeffs) == 1) {
+                        print("Random effect feature of size 1, so not estimated.")
+                        random.effects <- "none"
+                } else {
+                        randeff.list <- lapply(randeffs, grep, colnames(obs.spec))
+                        print(randeff.list)
+                        nre <- length(randeff.list)
+                        
+                        ### Random effects initial conditions
+                        alphaN.i <- rep(0, nre)
+                        alphaCab.i <- rep(0, nre)
+                        alphaCw.i <- rep(0, nre)
+                        alphaCm.i <- rep(0, nre)
+                        
+                        sdreN <- 1
+                        sdreCab <- 1
+                        sdreCw <- 1
+                        sdreCm <- 1
+                        
+                        # Random effects Prior
+                        randeff.s <- c(0.001, 0.001)              # Inverse gamma
+                }
         }
         
         ### Shortcut functions ###
@@ -198,7 +203,7 @@ pinvbayes <- function(obs.spec,
                         guess.error <- do.call(cbind, guess.error.alpha)
                 } else {
                         guess.spec <- prospect(guess.N, Cab.i, Cw.i, Cm.i)
-                        guess.error <- spec.error(guess.spec, obs.spec[, -1])
+                        guess.error <- spec.error(guess.spec, obs.spec)
                 }
                 guess.posterior <- likelihood(guess.error, sd.i) + N.prior(guess.N)              
                 prev.posterior <- likelihood(prev.error, sd.i) + N.prior(N.i)
@@ -228,7 +233,7 @@ pinvbayes <- function(obs.spec,
                         guess.error <- do.call(cbind, guess.error.alpha)
                 } else {
                         guess.spec <- prospect(N.i, guess.Cab, Cw.i, Cm.i)
-                        guess.error <- spec.error(guess.spec, obs.spec[, -1])
+                        guess.error <- spec.error(guess.spec, obs.spec)
                 }
                 guess.posterior <- likelihood(guess.error, sd.i) + Cab.prior(guess.Cab)
                 prev.posterior <- likelihood(prev.error, sd.i) + Cab.prior(Cab.i)
@@ -259,7 +264,7 @@ pinvbayes <- function(obs.spec,
                         guess.error <- do.call(cbind, guess.error.alpha)
                 } else {
                         guess.spec <- prospect(N.i, Cab.i, guess.Cw, Cm.i)
-                        guess.error <- spec.error(guess.spec, obs.spec[, -1])
+                        guess.error <- spec.error(guess.spec, obs.spec)
                 }
                 guess.posterior <- likelihood(guess.error, sd.i) + Cw.prior(guess.Cw)
                 prev.posterior <- likelihood(prev.error, sd.i) + Cw.prior(Cw.i)
@@ -290,7 +295,7 @@ pinvbayes <- function(obs.spec,
                         guess.error <- do.call(cbind, guess.error.alpha)
                 } else {
                         guess.spec <- prospect(N.i, Cab.i, Cw.i, guess.Cm)
-                        guess.error <- spec.error(guess.spec, obs.spec[, -1])
+                        guess.error <- spec.error(guess.spec, obs.spec)
                 }
                 guess.posterior <- likelihood(guess.error, sd.i) + Cm.prior(guess.Cm)
                 prev.posterior <- likelihood(prev.error, sd.i) + Cm.prior(Cm.i)
