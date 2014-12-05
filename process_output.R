@@ -37,7 +37,7 @@ chain.plots <- function(mcmclist){
                                 out <- c(out, i)
                         }
                 }
-                if(length(out) > 0 {
+                if(length(out) > 0) {
                         return(mcmclist[-out])
                 } else {
                         return(mcmclist)

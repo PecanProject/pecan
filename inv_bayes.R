@@ -328,6 +328,7 @@ pinvbayes <- function(obs.spec,
                                 if(is.na(a)) a <- -1
                                 if(a > runif(1)){
                                         alphaN.i <- guess.alphaN
+                                        prev.error <- guess.error
                                         ar.alpha <- ar.alpha + 1
                                 }
                         }
@@ -349,6 +350,7 @@ pinvbayes <- function(obs.spec,
                                 if(is.na(a)) a <- -1
                                 if(a > runif(1)){
                                         alphaCab.i <- guess.alphaCab
+                                        prev.error <- guess.error
                                         ar.alpha <- ar.alpha + 1
                                 }
                         }
@@ -370,6 +372,7 @@ pinvbayes <- function(obs.spec,
                                 if(is.na(a)) a <- -1
                                 if(a > runif(1)){
                                         alphaCw.i <- guess.alphaCw
+                                        prev.error <- guess.error
                                         ar.alpha <- ar.alpha + 1
                                 }
                         }
@@ -391,6 +394,7 @@ pinvbayes <- function(obs.spec,
                                 if(is.na(a)) a <- -1
                                 if(a > runif(1)){
                                         alphaCm.i <- guess.alphaCm
+                                        prev.error <- guess.error
                                         ar.alpha <- ar.alpha + 1
                                 }
                         }
