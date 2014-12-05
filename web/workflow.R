@@ -16,10 +16,25 @@ library(PEcAn.all)
 # status functions
 # ----------------------------------------------------------------------
 status.start <- function(name) {
-    cat(paste(name, format(Sys.time(), "%F %T"), sep="\t"), file=file.path(settings$outdir, "STATUS"), append=TRUE)      
+  cat(paste(name,
+            format(Sys.time(), "%F %T"), sep="\t"),
+      file=file.path(settings$outdir, "STATUS"), append=TRUE)
 }
 status.end <- function(status="DONE") {
-    cat(paste("", format(Sys.time(), "%F %T"), status, "\n", sep="\t"), file=file.path(settings$outdir, "STATUS"), append=TRUE)      
+  cat(paste("",
+            format(Sys.time(), "%F %T"),
+            status,
+            "\n", sep="\t"),
+      file=file.path(settings$outdir, "STATUS"), append=TRUE)
+}
+status.skip <- function(name) {
+  cat(paste(name,
+            format(Sys.time(), "%F %T"),
+            "",
+            format(Sys.time(), "%F %T"),
+            "SKIPPED",
+            "\n", sep="\t"),
+      file=file.path(settings$outdir, "STATUS"), append=TRUE)
 }
 
 options(warn=1)
@@ -41,46 +56,47 @@ settings <- read.settings("pecan.xml")
 
 # remove existing STATUS file
 if (length(which(commandArgs() == "--continue")) == 0) {
-	file.remove("STATUS")
+  file.remove("STATUS")
 
-	# setup pss/css by running fia2ED
-	status.start("FIA2ED")
-	# # TODO see if we need to call fia
-	# if (".attrs" %in% names(settings$model$psscss)) {
-	# 	if (settings$model$psscss$.attrs[["generate"]] == "fia") {
-	# 		fia.to.psscss(settings)
-	# 		status.end()
-	# 	} else {
-	# 		stop("No information on how to generate psscss files.")
-	# 	}
-	# } else {
-	# 	status.end("SKIPPED")
-	# }
-	status.end("SKIPPED")
+  # get data from pecan DB
+  status.start("TRAIT")
+  settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)
+  saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
+  status.end()
 
-	# get data from pecan DB
-	status.start("TRAIT")
-	settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)
-	saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
-	status.end()
+  # run meta-analysis
+  status.start("META")
+  run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database$bety)
+  status.end()
 
-	# run meta-analysis
-	status.start("META")
-	run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database$bety)
-	status.end()
+  # write model specific configs
+  status.start("CONFIG")
+  run.write.configs(settings, settings$database$bety$write)
+  status.end()
 
-	# write model specific configs
-	status.start("CONFIG")
-	run.write.configs(settings, settings$database$bety$write)
-	status.end()
+  if (length(which(commandArgs() == "--advanced")) != 0) {
+    status.start("ADVANCED")
+    q();
+  } else {
+    status.skip("ADVANCED")
+  }
 }
 
-status.start("EDIT")
-if (length(which(commandArgs() == "--advanced")) != 0) {
-	q();
-} else {
-	status.end("SKIPPED")
-}
+# do conversions
+status.start("CONVERSIONS")
+
+# 1) convert FIA to pss/css
+# # TODO see if we need to call fia
+# if (".attrs" %in% names(settings$model$psscss)) {
+#   if (settings$model$psscss$.attrs[["generate"]] == "fia") {
+#     fia.to.psscss(settings)
+#   } else {
+#     stop("No information on how to generate psscss files.")
+#   }
+# }
+
+# 2) convert met -> cf -> model
+status.end()
 
 # run model
 status.start("MODEL")
