@@ -1,6 +1,6 @@
 library(coda)
 
-get.results <- function(path, burnin=2000, thin=16){
+get.results <- function(path, burnin=0, thin=1){
         flist <- list.files(path)
         flist <- flist[which(nchar(flist) > 5)]
         species.list <- unique(gsub("(.*)_[0-9][.][0-9]+_.*", "\\1", flist))

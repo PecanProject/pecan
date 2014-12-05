@@ -24,7 +24,7 @@ pinvbayes <- function(obs.spec,
                       single.precision=TRUE,
                       random.effects='none',
                       inits='mle',
-                      ar.step=100,
+                      ar.step=10,
                       ar.target=0.75,
                       fname = "runs/test_run.dat"
                       )
@@ -71,8 +71,9 @@ pinvbayes <- function(obs.spec,
         ### Extract indices for random effects ###
         nre <- 1
         if(random.effects != 'none'){
-                regxp.list <- c(leaf = "(^.*)_[0-9]{5}.csv",
-                                plot = "^[0-9]{4}[A-Za-z]+[0-9]{2}__([A-Za-z]+_[A-Za-z0-9]+)_.*")
+                regxp.list <- c(leaf = "(^.*_)[0-9]{5}.csv",
+                                plot = "^[0-9]{4}[A-Za-z]+[0-9]{2}__([A-Za-z]+_[A-Za-z0-9]+_).*",
+                                species = )
                 randeff.regxp <- regxp.list[random.effects]
                 randeffs <- unique(gsub(randeff.regxp, "\\1", colnames(obs.spec)))
                 if(length(randeffs) == 1) {
@@ -204,6 +205,7 @@ pinvbayes <- function(obs.spec,
                         guess.spec <- prospect(guess.N, Cab.i, Cw.i, Cm.i)
                         guess.error <- spec.error(guess.spec, obs.spec)
                 }
+                stopifnot(dim(guess.error) == dim(prev.error)) ## Throw error in case of regular expression mismatch
                 guess.posterior <- likelihood(guess.error, sd.i) + N.prior(guess.N)              
                 prev.posterior <- likelihood(prev.error, sd.i) + N.prior(N.i)
                 jnum <- dtnorm(guess.N, N.i, JumpSD["N"], Min=1)
@@ -322,8 +324,8 @@ pinvbayes <- function(obs.spec,
                                                        )
                                 guess.error <- prev.error
                                 guess.error[,randeff.list[[i]]] <- spec.error(guess.spec, obs.spec[, randeff.list[[i]]])
-                                guess.posterior <- likelihood(guess.error, sd.i) + dnorm(guess.alphaN[i], 0, sdreN)
-                                prev.posterior <- likelihood(prev.error, sd.i) + dnorm(alphaN.i[i], 0, sdreN)
+                                guess.posterior <- likelihood(guess.error, sd.i) + dnorm(guess.alphaN[i], 0, sdreN, log=TRUE)
+                                prev.posterior <- likelihood(prev.error, sd.i) + dnorm(alphaN.i[i], 0, sdreN, log=TRUE)
                                 a <- exp(guess.posterior - prev.posterior)
                                 if(is.na(a)) a <- -1
                                 if(a > runif(1)){
@@ -344,8 +346,8 @@ pinvbayes <- function(obs.spec,
                                                        )
                                 guess.error <- prev.error
                                 guess.error[,randeff.list[[i]]] <- spec.error(guess.spec, obs.spec[, randeff.list[[i]]])
-                                guess.posterior <- likelihood(guess.error, sd.i) + dnorm(guess.alphaCab[i], 0, sdreCab)
-                                prev.posterior <- likelihood(prev.error, sd.i) + dnorm(alphaCab.i[i], 0, sdreCab)
+                                guess.posterior <- likelihood(guess.error, sd.i) + dnorm(guess.alphaCab[i], 0, sdreCab, log=TRUE)
+                                prev.posterior <- likelihood(prev.error, sd.i) + dnorm(alphaCab.i[i], 0, sdreCab, log=TRUE)
                                 a <- exp(guess.posterior - prev.posterior)
                                 if(is.na(a)) a <- -1
                                 if(a > runif(1)){
@@ -366,8 +368,8 @@ pinvbayes <- function(obs.spec,
                                                        )
                                 guess.error <- prev.error
                                 guess.error[,randeff.list[[i]]] <- spec.error(guess.spec, obs.spec[, randeff.list[[i]]])
-                                guess.posterior <- likelihood(guess.error, sd.i) + dnorm(guess.alphaCw[i], 0, sdreCw)
-                                prev.posterior <- likelihood(guess.error, sd.i) + dnorm(alphaCw.i[i], 0, sdreCw)
+                                guess.posterior <- likelihood(guess.error, sd.i) + dnorm(guess.alphaCw[i], 0, sdreCw, log=TRUE)
+                                prev.posterior <- likelihood(prev.error, sd.i) + dnorm(alphaCw.i[i], 0, sdreCw, log=TRUE)
                                 a <- exp(guess.posterior - prev.posterior)
                                 if(is.na(a)) a <- -1
                                 if(a > runif(1)){
@@ -388,8 +390,8 @@ pinvbayes <- function(obs.spec,
                                                        )
                                 guess.error <- prev.error
                                 guess.error[,randeff.list[[i]]] <- spec.error(guess.spec, obs.spec[, randeff.list[[i]]])
-                                guess.posterior <- likelihood(guess.error, sd.i) + dnorm(guess.alphaCm[i], 0, sdreCm)
-                                prev.posterior <- likelihood(guess.error, sd.i) + dnorm(alphaCm.i[i], 0, sdreCm)
+                                guess.posterior <- likelihood(guess.error, sd.i) + dnorm(guess.alphaCm[i], 0, sdreCm, log=TRUE)
+                                prev.posterior <- likelihood(prev.error, sd.i) + dnorm(alphaCm.i[i], 0, sdreCm, log=TRUE)
                                 a <- exp(guess.posterior - prev.posterior)
                                 if(is.na(a)) a <- -1
                                 if(a > runif(1)){

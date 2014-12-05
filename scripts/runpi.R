@@ -26,4 +26,5 @@ pinvbayes(smat, ngibbs=ngibbs, JumpRSD=jrsd, fname=filename,
           local.store=FALSE, 
           single.precision=precarg, 
           random.effects=rearg,
-          inits=initarg)
+          inits=initarg,
+          ar.step=100)
