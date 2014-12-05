@@ -41,16 +41,20 @@ $folder = $workflow['folder'];
 
 # check to make sure all is ok
 $error=false;
-$status=file($folder . DIRECTORY_SEPARATOR . "STATUS");
-if ($status === FALSE) {
-  $status = array();
-  $error = true;
-}
-foreach ($status as $line) {
-  $data = explode("\t", $line);
-  if ((count($data) >= 4) && ($data[3] == 'ERROR')) {
+if (file_exists($folder . DIRECTORY_SEPARATOR . "STATUS")) {
+  $status=file($folder . DIRECTORY_SEPARATOR . "STATUS");
+  if ($status === FALSE) {
+    $status = array();
     $error = true;
   }
+  foreach ($status as $line) {
+    $data = explode("\t", $line);
+    if ((count($data) >= 4) && ($data[3] == 'ERROR')) {
+      $error = true;
+    }
+  }
+} else {
+  $error=true;
 }
 
 # check the PEcAn folder
@@ -64,22 +68,24 @@ foreach(scandir("$folder") as $file) {
 
 # check the pft folder
 $pfts = array();
-foreach(scandir("$folder/pft") as $pft) {
-  if (!is_dir("$folder/pft/$pft") || ($pft == ".") || ($pft == "..")) {
-    continue;
-  }
-  $pfts[$pft] = array();
-  foreach(scandir("$folder/pft/${pft}") as $file) {
-    if (is_dir("$folder/pft/$pft/$file")) {
+if (is_dir("$folder/pft")) {
+  foreach(scandir("$folder/pft") as $pft) {
+    if (!is_dir("$folder/pft/$pft") || ($pft == ".") || ($pft == "..")) {
       continue;
     }
-    $pfts[$pft][] = $file;
-    // if (preg_match("/.pdf$/", $file)) {
-    //   $pfts[$pft][] = $file;
-    // }
-    // if (preg_match("/.log$/", $file)) {
-    //   $pfts[$pft][] = $file;
-    // }
+    $pfts[$pft] = array();
+    foreach(scandir("$folder/pft/${pft}") as $file) {
+      if (is_dir("$folder/pft/$pft/$file")) {
+        continue;
+      }
+      $pfts[$pft][] = $file;
+      // if (preg_match("/.pdf$/", $file)) {
+      //   $pfts[$pft][] = $file;
+      // }
+      // if (preg_match("/.log$/", $file)) {
+      //   $pfts[$pft][] = $file;
+      // }
+    }
   }
 }
 
@@ -87,35 +93,37 @@ foreach(scandir("$folder/pft") as $pft) {
 $inpfile = array();
 $outfile = array();
 $outplot = array();
-foreach(scandir("$folder/run") as $runid) {
-  if (!is_dir("$folder/run/$runid") || ($runid == ".") || ($runid == "..")) {
-    continue;
-  }
+if (is_dir("$folder/run")) {
+  foreach(scandir("$folder/run") as $runid) {
+    if (!is_dir("$folder/run/$runid") || ($runid == ".") || ($runid == "..")) {
+      continue;
+    }
 
-  # input files
-  $inpfile[$runid] = array();
-  foreach(scandir("$folder/run/$runid") as $file) {
-    if (is_dir("$folder/run/$runid/$file") || is_link("$folder/run/$runid/$file")) {
-      continue;
+    # input files
+    $inpfile[$runid] = array();
+    foreach(scandir("$folder/run/$runid") as $file) {
+      if (is_dir("$folder/run/$runid/$file") || is_link("$folder/run/$runid/$file")) {
+        continue;
+      }
+      $inpfile[$runid][] = $file;
     }
-    $inpfile[$runid][] = $file;
-  }
 
-  # output files
-  $outfile[$runid] = array();
-  $outplot[$runid] = array();
-  foreach(scandir("$folder/out/$runid") as $file) {
-    if (is_dir("$folder/out/$runid/$file") || is_link("$folder/out/$runid/$file")) {
-      continue;
-    }
-    if (preg_match('/^\d\d\d\d.nc.var$/', $file)) {
-      continue;
-    }
-    $outfile[$runid][] = $file;
-    if (preg_match('/^\d\d\d\d.nc$/', $file)) {
-      $year = substr($file, 0, 4);
-      $vars = explode("\n", file_get_contents("${folder}/out/${runid}/${file}.var"));
-      $outplot[$runid][$year] = array_filter($vars);
+    # output files
+    $outfile[$runid] = array();
+    $outplot[$runid] = array();
+    foreach(scandir("$folder/out/$runid") as $file) {
+      if (is_dir("$folder/out/$runid/$file") || is_link("$folder/out/$runid/$file")) {
+        continue;
+      }
+      if (preg_match('/^\d\d\d\d.nc.var$/', $file)) {
+        continue;
+      }
+      $outfile[$runid][] = $file;
+      if (preg_match('/^\d\d\d\d.nc$/', $file)) {
+        $year = substr($file, 0, 4);
+        $vars = explode("\n", file_get_contents("${folder}/out/${runid}/${file}.var"));
+        $outplot[$runid][$year] = array_filter($vars);
+      }
     }
   }
 }
