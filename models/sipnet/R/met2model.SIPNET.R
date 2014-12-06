@@ -13,17 +13,31 @@
 ##only gives user the notice that file already exists. If user wants to overwrite the existing files, just change 
 ##overwrite statement below to TRUE.
 
-
-met2model.SIPNET <- function(in.path,in.prefix,outfolder,overwrite=FALSE){
-  files = dir(in.path,in.prefix,full.names=TRUE)
-  filescount = files[grep(pattern="*.nc",files)]
-
-  if(length(filescount) == 0){
-    PEcAn.utils::logger.warn(paste("no files found in",in.path,in.prefix))
-    return(-1)
+##' @export
+##' @param start_year first year to be converted
+##' @param end_year last year to be converted
+##' @param in.path location on disk where inputs are stored
+##' @param in.prefix prefix of input and output files
+##' @param outfolder location on disk where outputs will be stored
+##' @param overwrite should existing files be overwritten
+met2model.SIPNET <- function(start_year, end_year, in.path, in.prefix, outfolder,overwrite=FALSE){
+  
+  out.file = file.path(outfolder, paste(in.prefix, start_year, end_year, "clim", sep="."))
+  results <- data.frame(file=c(out.file),
+                        host=c(fqdn()),
+                        mimetype=c('text/csv'),
+                        formatname=c('Sipnet.climna'),
+                        startdate=c(paste0(start_year,"-01-01 00:00:00")),
+                        enddate=c(paste0(end_year,"-12-31 23:59:59")))
+  
+  
+  if (file.exists(out.file) && !overwrite) {
+    logger.debug("File '", new.file, "' already exists, skipping to next file.")
+    return(invisible(results))
   }
   
   require(ncdf4)
+  require(lubridate)
   require(PEcAn.data.atmosphere)
 #  require(ncdf)
 
@@ -35,28 +49,24 @@ if(!file.exists(outfolder)){
 out <- NULL
 
 ## loop over files
-for(i in 1:length(filescount)){
+for(year in start_year:end_year) {
+  old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep="."))
   
   ## open netcdf
-  nc <- nc_open(files[i])
+  nc <- nc_open(old.file)
   
   ## convert time to seconds
-  sec   <- nc$dim$t$vals  
-  sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$t$units," "))[1],"seconds")
-  dt <- sec[2]-sec[1]
+  sec   <- nc$dim$time$vals  
+  sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$time$units," "))[1],"seconds")
+  
+  ifelse(leap_year(year)==TRUE,
+         dt <- (366*24*60*60)/length(sec), #leap year
+         dt <- (365*24*60*60)/length(sec)) #non-leap year
   tstep = 86400/dt
   
-  ## determine starting year
-  base.time <- unlist(strsplit(files[i],'[.]'))
-  base.time <- as.numeric(base.time[length(base.time)-1])
-  if(is.na(base.time)){
-      print(c("did not extract base time correctly",i))
-      break
-    }
-    
   ## extract variables
-  lat  <- ncvar_get(nc,"lat")
-  lon  <- ncvar_get(nc,"lon")
+  lat  <- ncvar_get(nc,"latitude")
+  lon  <- ncvar_get(nc,"longitude")
   Tair <- ncvar_get(nc,"air_temperature")
   Qair <- ncvar_get(nc,"specific_humidity")  #humidity (kg/kg)
   U <- ncvar_get(nc,"eastward_wind")
@@ -93,7 +103,7 @@ for(i in 1:length(filescount)){
   doy <- NULL
   hr <- NULL
   asec <- sec
-  for(y in base.time+1:nyr-1){
+  for(y in year+1:nyr-1){
     ytmp <- rep(y,365*86400/dt)
     dtmp <- rep(1:365,each=86400/dt)
     if(y %% 4 == 0){  ## is leap
@@ -144,10 +154,9 @@ for(i in 1:length(filescount)){
 } ## end loop over years
 
 ## write output
-out.file = file.path(outfolder,"sipnet.clim")
 write.table(out,out.file,quote = FALSE,sep="\t",row.names=FALSE,col.names=FALSE)
 
-return(0) ## success
+  invisible(results)
 
 
 } ### end met2model.SIPNET

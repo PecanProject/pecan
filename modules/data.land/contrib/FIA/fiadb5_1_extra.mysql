@@ -1,0 +1,4 @@
+CREATE INDEX tree_spcd on tree (spcd);
+CREATE INDEX tree_plt_cn on tree (plt_cn);
+CREATE INDEX plot_cn on plot (cn);
+ALTER TABLE pop_plot_stratum_assgn ADD FOREIGN KEY (plt_cn) REFERENCES `plot`(`cn`);

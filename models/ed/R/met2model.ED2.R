@@ -29,6 +29,7 @@ met2model.ED2 <- function(in.path,in.prefix,outfolder,lst,overwrite=FALSE){
   require(rhdf5)
   require(ncdf4)
   require(ncdf)
+  require(lubridate)
   
 ### FUNCTIONS
 dm <- c(0,32,60,91,121,152,182,213,244,274,305,335,366)
@@ -57,7 +58,7 @@ for(i in 1:length(filescount)){
   }
 
   ## open netcdf
-  nc <- nc_open(paste0(in.path,files[i]))
+  nc <- nc_open(file.path(in.path,files[i]))
   
   ## determine starting year
   base.time <- unlist(strsplit(files[i],'[.]'))
@@ -72,9 +73,9 @@ for(i in 1:length(filescount)){
   
   
   ## extract variables
-  lat  <- ncvar_get(nc,"lat")
-  lon  <- ncvar_get(nc,"lon")
-  sec   <- nc$dim$t$vals
+  lat  <- ncvar_get(nc,"latitude")
+  lon  <- ncvar_get(nc,"longitude")
+  sec   <- nc$dim$time$vals
   Tair <- ncvar_get(nc,"air_temperature")
   Qair <- ncvar_get(nc,"specific_humidity")  #humidity (kg/kg)
   U <- ncvar_get(nc,"eastward_wind")
@@ -83,15 +84,21 @@ for(i in 1:length(filescount)){
   pres <- ncvar_get(nc,"air_pressure")
   SW   <- ncvar_get(nc,"surface_downwelling_shortwave_flux")
   LW   <- ncvar_get(nc,"surface_downwelling_longwave_flux")
-  CO2  <- try(ncvar_get(nc,"CO2air"))
+  #CO2  <- try(ncvar_get(nc,"CO2air"))
+  CO2  <- try(ncvar_get(nc,"CO2"))
+  
   useCO2 = is.numeric(CO2)  
 
   ## convert time to seconds
-  sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$t$units," "))[1],"seconds")
+  #sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$t$units," "))[1],"seconds")
+  sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$DTIME$units," "))[1],"seconds")
   
   nc_close(nc)
   
-  dt <- sec[2]-sec[1]
+  ifelse(leap_year(base.time)==TRUE,
+         dt <- (366*24*60*60)/length(sec), #leap year
+         dt <- (365*24*60*60)/length(sec)) #non-leap year
+
   toff <- -lst*3600/dt
 
   ##buffer to get to GMT
@@ -202,7 +209,7 @@ for(i in 1:length(filescount)){
           h5createFile(mout)
         }
         if(overwrite==FALSE){
-          logger.setLevel("Warning! The file already exists! Moving to next month!")
+          logger.warn("The file already exists! Moving to next month!")
           next
         }        
       }
