@@ -10,6 +10,7 @@ user.id = 1000000001
 
 library("RCurl")
 library("XML")
+library(PEcAn.DB)
 
 nu <- function(x){as.numeric(as.character(x))}  ## simple function to convert data to numeric
 
@@ -44,7 +45,7 @@ site.map <- data.frame(FLUX.id=rep(NA,2000),site.id=rep(NA,2000))
 #AMERIFLUX_table = readHTMLTable(AMERIFLUX_html)[[1]]    ##grab first table on the webpage
 
 ## GET LIST OF AMERIFLUX SITES
-AMERIFLUX_html <- getURL("file:///Users/mdietze/Downloads/List of AmeriFlux Sites.html")
+AMERIFLUX_html <- getURL("file:///home/dietze/ListofAmeriFluxSites.html")
 AMERIFLUX_table = readHTMLTable(AMERIFLUX_html)[[1]]    ##grab first table on the webpage
 
 
@@ -54,9 +55,9 @@ driver   <- "PostgreSQL"
 user     <- "bety"
 dbname   <- "bety"
 password <- "bety"
-host     <- "localhost"
-port     <- "3232"
-dbparms  <- list(driver=driver, user=user, dbname=dbname, password=password, host=host,port=port)
+#host     <- "localhost"
+#port     <- "3232"
+dbparms  <- list(driver=driver, user=user, dbname=dbname, password=password)#, host=host,port=port)
 con      <- db.open(dbparms)
 
 ## GET LIST OF PEcAn site names
