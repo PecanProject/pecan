@@ -72,8 +72,7 @@ pinvbayes <- function(obs.spec,
         nre <- 1
         if(random.effects != 'none'){
                 regxp.list <- c(leaf = "(^.*_)[0-9]{5}.csv",
-                                plot = "^[0-9]{4}[A-Za-z]+[0-9]{2}__([A-Za-z]+_[A-Za-z0-9]+_).*",
-                                species = )
+                                plot = "^[0-9]{4}[A-Za-z]+[0-9]{2}__([A-Za-z]+_[A-Za-z0-9]+_).*")
                 randeff.regxp <- regxp.list[random.effects]
                 randeffs <- unique(gsub(randeff.regxp, "\\1", colnames(obs.spec)))
                 if(length(randeffs) == 1) {
