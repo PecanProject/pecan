@@ -11,9 +11,6 @@
 # Run on the current working directory
 #$ -cwd
 
-# Give this job a name
-#$ -N "pbi_$SPECIES_$REF_$FOLDER"
-
 # Join standard output and error to a single file
 #$ -j y
 
@@ -27,7 +24,7 @@
 #$ -M ashiklom@bu.edu
 
 # Set walltime limit
-#$ -l h_rt=48:00:00
+#$ -l h_rt=72:00:00
 
 # Run in parallel
 #$ -pe mpi_16_tasks_per_node 16
@@ -47,22 +44,22 @@ echo "=========================================================="
 # Run the R scripts
 # Arguments to runpi.R: JumpRSD Species single_precision random_effects sampled_inits ngibbs otherID folder
 
-Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e4 run01 $FOLDER &
-Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e4 run02 $FOLDER &
-Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e4 run03 $FOLDER &
-Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e4 run04 $FOLDER &
-Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e4 run05 $FOLDER &
-Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e4 run06 $FOLDER &
-Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e4 run07 $FOLDER &
-Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e4 run08 $FOLDER &
-Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e4 run09 $FOLDER &
-Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e4 run10 $FOLDER &
-Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e4 run11 $FOLDER &
-Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e4 run12 $FOLDER &
-Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF mle 1e4 run13 $FOLDER &
-Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF mle 1e4 run14 $FOLDER &
-Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF mle 1e4 run15 $FOLDER &
-Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF mle 1e4 run16 $FOLDER &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e5 run01 $FOLDER &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e5 run02 $FOLDER &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e5 run03 $FOLDER &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e5 run04 $FOLDER &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e5 run05 $FOLDER &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e5 run06 $FOLDER &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e5 run07 $FOLDER &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e5 run08 $FOLDER &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e5 run09 $FOLDER &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e5 run10 $FOLDER &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e5 run11 $FOLDER &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e5 run12 $FOLDER &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF mle 1e5 run13 $FOLDER &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF mle 1e5 run14 $FOLDER &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF mle 1e5 run15 $FOLDER &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF mle 1e5 run16 $FOLDER &
 
 wait
 
