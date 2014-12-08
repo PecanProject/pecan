@@ -14,25 +14,29 @@
 ##overwrite statement below to TRUE.
 
 ##' @export
-##' @param start_year first year to be converted
-##' @param end_year last year to be converted
 ##' @param in.path location on disk where inputs are stored
 ##' @param in.prefix prefix of input and output files
 ##' @param outfolder location on disk where outputs will be stored
+##' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
+##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
 ##' @param overwrite should existing files be overwritten
-met2model.SIPNET <- function(start_year, end_year, in.path, in.prefix, outfolder,overwrite=FALSE){
+##' @param verbose should the function be very verbose
+met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite=FALSE,verbose=FALSE){
+  out.file <- file.path(outfolder, paste(in.prefix,
+                                         strptime(start_date, "%Y-%m-%d"),
+                                         strptime(end_date, "%Y-%m-%d"),
+                                         "clim", sep="."))
   
-  out.file = file.path(outfolder, paste(in.prefix, start_year, end_year, "clim", sep="."))
   results <- data.frame(file=c(out.file),
                         host=c(fqdn()),
                         mimetype=c('text/csv'),
                         formatname=c('Sipnet.climna'),
-                        startdate=c(paste0(start_year,"-01-01 00:00:00")),
-                        enddate=c(paste0(end_year,"-12-31 23:59:59")))
+                        startdate=c(start_date),
+                        enddate=c(end_date))
   
   
   if (file.exists(out.file) && !overwrite) {
-    logger.debug("File '", new.file, "' already exists, skipping to next file.")
+    logger.debug("File '", out.file, "' already exists, skipping to next file.")
     return(invisible(results))
   }
   
@@ -48,7 +52,12 @@ if(!file.exists(outfolder)){
 
 out <- NULL
 
+# get start/end year since inputs are specified on year basis
+start_year <- year(start_date)
+end_year <- year(end_date)
+
 ## loop over files
+# TODO need to filter out the data that is not inside start_date, end_date
 for(year in start_year:end_year) {
   old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep="."))
   
@@ -73,7 +82,7 @@ for(year in start_year:end_year) {
   V <- ncvar_get(nc,"northward_wind")
   Rain <- ncvar_get(nc,"precipitation_flux")
   pres <- ncvar_get(nc,"air_pressure")
-  SW   <- ncvar_get(nc,"surface_downwelling_shortwave_flux")
+  SW   <- ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air")
 
   PAR  <- try(ncvar_get(nc,"surface_downwelling_photosynthetic_photon_flux_in_air"))
   if(!is.numeric(PAR)) PAR = SW*0.45 
