@@ -13,7 +13,7 @@
 ##' @param overwrite should existing files be overwritten
 ##' @author Ankur Desai
 ##'
-metgapfill <- function(start_year, end_year, in.path, in.prefix, outfolder, overwrite=FALSE){
+metgapfill <- function(start_year, end_year, in.path, in.prefix, outfolder, overwrite=FALSE, verbose=FALSE){
   require(REddyProc)  
   require(ncdf4)
 ##  require(udunits2)
@@ -63,13 +63,13 @@ metgapfill <- function(start_year, end_year, in.path, in.prefix, outfolder, over
 
     ## Should probably check for variable names (need to install ncdf4-helpers package)
     Tair <- ncvar_get(nc=nc,varid='air_temperature')
-    Rg <- ncvar_get(nc=nc,varid='surface_downwelling_shortwave_flux')
+    Rg <- ncvar_get(nc=nc,varid='surface_downwelling_shortwave_flux_in_air')
     rH <- ncvar_get(nc=nc,varid='relative_humidity')
     PAR <- ncvar_get(nc=nc,varid='surface_downwelling_photosynthetic_photon_flux_in_air')
     precip <- ncvar_get(nc=nc,varid='precipitation_flux')
     #Rn <- ncvar_get(nc=nc,varid='Rn')
     sHum <- ncvar_get(nc=nc,varid='specific_humidity')
-    Lw <- ncvar_get(nc=nc,varid='surface_downwelling_longwave_flux')
+    Lw <- ncvar_get(nc=nc,varid='surface_downwelling_longwave_flux_in_air')
     Ts1 <-ncvar_get(nc=nc,varid='soil_temperature')
     #Ts2 <-ncvar_get(nc=nc,varid='TS2')
     VPD <-ncvar_get(nc=nc,varid='water_vapor_saturation_deficit')
@@ -106,20 +106,16 @@ metgapfill <- function(start_year, end_year, in.path, in.prefix, outfolder, over
     n_east_wind <- sum(is.na(EddyData.F['east_wind']))
     n_north_wind <- sum(is.na(EddyData.F['north_wind']))
 
-    ## read time variables, add to data frame
-    Year <- ncvar_get(nc=nc,varid='YEAR')
-    DoY <- ncvar_get(nc=nc,varid='DOY')
+    # figure out datetime of nc file and convert to POSIX
     time <- ncvar_get(nc=nc,varid='time')
-    Hour <- ((round((time-DoY)*48.0)/2.0)+0.5)
-    
-    nelem = length(Year)
-    EddyData.F <- cbind(EddyData.F,Year=Year,DoY=DoY,Hour=Hour)
-        
-    ## convert time to Posix
-    EddyData.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
+    nelem = length(time)
+    tunit <- ncatt_get(nc=nc, varid='time', attname='units', verbose=verbose)
+    origin <- "1900-01-01 00:00:00"
+    # time needs to be at end of half hour interval so add 30 minutes
+    time <- 30*60 + round(as.POSIXlt(ud.convert(time, tunit$value, paste('seconds since', origin)), origin=origin, tz="GMT"), units="mins")
+    EddyData.F <- cbind(EddyData.F, DateTime=time)
     
     ## Create EddyProc object 
-    #EddyProc.C <- sEddyProc$new('Site', EddyData.F, c('Tair','Rg','rH','PAR','precip','Rn','sHum','Lw','Ts1','Ts2','VPD','ws','co2','press','east_wind','north_wind'))
     EddyProc.C <- sEddyProc$new('Site', EddyData.F, c('Tair','Rg','rH','PAR','precip','sHum','Lw','Ts1','VPD','ws','press','east_wind','north_wind'))
     
     ## Gap fill with default (see below for examples of advanced options)
@@ -130,13 +126,10 @@ metgapfill <- function(start_year, end_year, in.path, in.prefix, outfolder, over
     if(n_rH>0&&n_rH<nelem) EddyProc.C$sMDSGapFill('rH', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
     if(n_PAR>0&&n_PAR<nelem) EddyProc.C$sMDSGapFill('PAR', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
     if(n_precip>0&&n_precip<nelem) EddyProc.C$sMDSGapFill('precip', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
-    #if(n_Rn>0&&n_Rn<nelem) EddyProc.C$sMDSGapFill('Rn', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
     if(n_sHum>0&&n_sHum<nelem) EddyProc.C$sMDSGapFill('sHum', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
     if(n_Lw>0&&n_Lw<nelem) EddyProc.C$sMDSGapFill('Lw', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
     if(n_Ts1>0&&n_Ts2<nelem) EddyProc.C$sMDSGapFill('Ts1', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
-    #if(n_Ts2>0&&n_Ts2<nelem) EddyProc.C$sMDSGapFill('Ts2', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
     if(n_ws>0&&n_ws<nelem) EddyProc.C$sMDSGapFill('ws', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
-    #if(n_co2>0&&n_co2<nelem) EddyProc.C$sMDSGapFill('co2', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
     if(n_press>0&&n_press<nelem) EddyProc.C$sMDSGapFill('press', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
     if(n_east_wind>0&&n_east_wind<nelem) EddyProc.C$sMDSGapFill('east_wind', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
     if(n_north_wind>0&&n_north_wind<nelem) EddyProc.C$sMDSGapFill('north_wind', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
@@ -153,7 +146,7 @@ metgapfill <- function(start_year, end_year, in.path, in.prefix, outfolder, over
     }
     if(n_Rg>0&&n_Rg<nelem) {
       Rg_f <- Extracted[,'Rg_f']
-      ncvar_put(nc,varid='surface_downwelling_shortwave_flux',vals=Rg_f)
+      ncvar_put(nc,varid='surface_downwelling_shortwave_flux_in_air',vals=Rg_f)
     }
     if(n_rH>0&&n_rH<nelem) {
       rH_f <- Extracted[,'rH_f']
@@ -167,26 +160,18 @@ metgapfill <- function(start_year, end_year, in.path, in.prefix, outfolder, over
       precip_f <- Extracted[,'precip_f']
       ncvar_put(nc,varid='precipitation_flux',vals=precip_f)
     }
-    #if(n_Rn>0&&n_Rn<nelem) {
-    #  Rn_f <- Extracted[,'Rn_f']
-    #  ncvar_put(nc,varid='Rn',vals=Rn_f)
-    #}
     if(n_sHum>0&&n_sHum<nelem) {
       sHum_f <- Extracted[,'sHum_f']
       ncvar_put(nc,varid='specific_humidity',vals=sHum_f)
     }
     if(n_Lw>0&&n_Lw<nelem) {
       Lw_f <- Extracted[,'Lw_f']
-      ncvar_put(nc,varid='surface_downwelling_longwave_flux',vals=Lw_f)
+      ncvar_put(nc,varid='surface_downwelling_longwave_flux_in_air',vals=Lw_f)
     }
     if(n_Ts1>0&&n_Ts1<nelem) {
       Ts1 <- Extracted[,'soil_temperature']
       ncvar_put(nc,varid='soil_temperature',vals=Ts1)
     }
-    #if(n_Ts2>0&&n_Ts2<nelem) {
-    #  Ts2_f <- Extracted[,'Ts2_f']
-    #  ncvar_put(nc,varid='TS2',vals=Ts2_f)
-    #}
     if(n_VPD>0&&n_VPD<nelem) {
       VPD_f <- Extracted[,'VPD_f']
       ncvar_put(nc,varid='water_vapor_saturation_deficit',vals=VPD_f)
@@ -195,10 +180,6 @@ metgapfill <- function(start_year, end_year, in.path, in.prefix, outfolder, over
       ws_f <- Extracted[,'ws_f']
       ncvar_put(nc,varid='wind_speed',vals=ws_f)
     }
-    #if(n_co2>0&&n_co2<nelem) {
-    #  co2_f <- Extracted[,'co2_f']
-    #  ncvar_put(nc,varid='CO2',vals=co2_f)
-    #}
     if(n_press>0&&n_press<nelem) {
       press_f <- Extracted[,'press_f']
       ncvar_put(nc,varid='air_pressure',vals=press_f)
