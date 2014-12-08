@@ -20,7 +20,7 @@
 ##' @param in.prefix prefix of input and output files
 ##' @param outfolder location on disk where outputs will be stored
 ##' @param overwrite should existing files be overwritten
-met2model.SIPNET <- function(start_year, end_year, in.path, in.prefix, outfolder,overwrite=FALSE){
+met2model.SIPNET <- function(start_year, end_year, in.path, in.prefix, outfolder,overwrite=FALSE,verbose=FALSE){
   
   out.file = file.path(outfolder, paste(in.prefix, start_year, end_year, "clim", sep="."))
   results <- data.frame(file=c(out.file),
@@ -32,7 +32,7 @@ met2model.SIPNET <- function(start_year, end_year, in.path, in.prefix, outfolder
   
   
   if (file.exists(out.file) && !overwrite) {
-    logger.debug("File '", new.file, "' already exists, skipping to next file.")
+    logger.debug("File '", out.file, "' already exists, skipping to next file.")
     return(invisible(results))
   }
   
@@ -73,7 +73,7 @@ for(year in start_year:end_year) {
   V <- ncvar_get(nc,"northward_wind")
   Rain <- ncvar_get(nc,"precipitation_flux")
   pres <- ncvar_get(nc,"air_pressure")
-  SW   <- ncvar_get(nc,"surface_downwelling_shortwave_flux")
+  SW   <- ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air")
 
   PAR  <- try(ncvar_get(nc,"surface_downwelling_photosynthetic_photon_flux_in_air"))
   if(!is.numeric(PAR)) PAR = SW*0.45 
