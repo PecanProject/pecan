@@ -86,7 +86,7 @@ met2CF.Ameriflux <- function(start_year, end_year, in.path, in.prefix, outfolder
     }
     
     #open raw ameriflux
-    nc <- nc_open(old.file,write=TRUE)
+    nc1 <- nc_open(old.file,write=TRUE)
         
     # get dimension and site info
     tdim <- nc1$dim[["DTIME"]]
@@ -94,8 +94,8 @@ met2CF.Ameriflux <- function(start_year, end_year, in.path, in.prefix, outfolder
     
     # create new coordinate dimensions based on site location lat/lon
     lat <- ncdim_def(name='latitude', units='', vals=1:1, create_dimvar=FALSE)
-    lon <- ncdim_def(name='longitude',units='',vals=1:1, create_dimvar=FALSE)
-    time <- ncdim_def(name='time', units='', vals=tdim$vals, create_dimvar=TRUE, unlim=TRUE)
+    lon <- ncdim_def(name='longitude', units='', vals=1:1, create_dimvar=FALSE)
+    time <- ncdim_def(name='time', units=tdim$units, vals=tdim$vals, create_dimvar=TRUE, unlim=TRUE)
     dim=list(lat,lon,time)
     
     # copy lat attribute to latitude
@@ -222,7 +222,7 @@ met2CF.Ameriflux <- function(start_year, end_year, in.path, in.prefix, outfolder
     }
 
     # done, close both files
-    nc_close(nc)
+    nc_close(nc1)
     nc_close(nc2)
   }  ## end loop over years
   
