@@ -18,7 +18,16 @@
 ##overwrite statement below to TRUE.
 
 
-met2model.ED2 <- function(in.path,in.prefix,outfolder,lst,overwrite=FALSE){
+##' @export
+##' @param in.path location on disk where inputs are stored
+##' @param in.prefix prefix of input and output files
+##' @param outfolder location on disk where outputs will be stored
+##' @param lst timezone offset to GMT in hours
+##' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
+##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
+##' @param overwrite should existing files be overwritten
+##' @param verbose should the function be very verbose
+met2model.ED2 <- function(in.path,in.prefix,outfolder,lst=0,start_date, end_date, overwrite=FALSE,verbose=FALSE){
   overwrite = as.logical(overwrite)
   lst = as.numeric(lst)
   
@@ -28,7 +37,7 @@ met2model.ED2 <- function(in.path,in.prefix,outfolder,lst,overwrite=FALSE){
   
   require(rhdf5)
   require(ncdf4)
-  require(ncdf)
+  #require(ncdf)
   require(lubridate)
   
 ### FUNCTIONS
@@ -82,16 +91,15 @@ for(i in 1:length(filescount)){
   V <- ncvar_get(nc,"northward_wind")
   Rain <- ncvar_get(nc,"precipitation_flux")
   pres <- ncvar_get(nc,"air_pressure")
-  SW   <- ncvar_get(nc,"surface_downwelling_shortwave_flux")
-  LW   <- ncvar_get(nc,"surface_downwelling_longwave_flux")
+  SW   <- ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air")
+  LW   <- ncvar_get(nc,"surface_downwelling_longwave_flux_in_air")
   #CO2  <- try(ncvar_get(nc,"CO2air"))
   CO2  <- try(ncvar_get(nc,"CO2"))
   
   useCO2 = is.numeric(CO2)  
 
   ## convert time to seconds
-  #sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$t$units," "))[1],"seconds")
-  sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$DTIME$units," "))[1],"seconds")
+  sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$time$units," "))[1],"seconds")
   
   nc_close(nc)
   
@@ -153,7 +161,7 @@ for(i in 1:length(filescount)){
   f <- pi/180*(279.5+0.9856*doy)
   et <- (-104.7*sin(f)+596.2*sin(2*f)+4.3*sin(4*f)-429.3*cos(f)-2.0*cos(2*f)+19.3*cos(3*f))/3600  #equation of time -> eccentricity and obliquity
   merid <- floor(lon/15)*15
-  if(merid<0) merid <- merid+15
+  merid[merid<0] <- merid[merid<0]+15
   lc <- (lon-merid)*-4/60  ## longitude correction
   tz <- merid/360*24 ## time zone
   midbin <- 0.5*dt/86400*24 ## shift calc to middle of bin

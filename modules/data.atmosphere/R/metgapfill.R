@@ -5,15 +5,20 @@
 ##' Future version will first downscale and fill with NARR, then REddyProc
 ##'
 ##' @export
-##' @param start_year first year to be gapfiled
-##' @param end_year last year to be gapfiled
 ##' @param in.path location on disk where inputs are stord
 ##' @param in.prefix prefix of input and output files
 ##' @param outfolder location on disk where outputs will be stored
+##' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
+##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
 ##' @param overwrite should existing files be overwritten
+##' @param verbose should the function be very verbose
 ##' @author Ankur Desai
 ##'
-metgapfill <- function(start_year, end_year, in.path, in.prefix, outfolder, overwrite=FALSE, verbose=FALSE){
+metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE){
+  # get start/end year code works on whole years only
+  start_year <- year(start_date)
+  end_year <- year(end_date)
+
   require(REddyProc)  
   require(ncdf4)
 ##  require(udunits2)

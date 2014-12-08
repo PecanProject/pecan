@@ -18,14 +18,19 @@ download.Ameriflux.site <- function(site_id) {
 ##' @name download.Ameriflux
 ##' @title download.Ameriflux
 ##' @export
-##' @param start_year
-##' @param end_year
-##' @param site 
-##' @param outfolder
-##' @param con database connection
+##' @param site the site to be downloaded, will be used as prefix as well
+##' @param outfolder location on disk where outputs will be stored
+##' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
+##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
+##' @param overwrite should existing files be overwritten
+##' @param verbose should the function be very verbose
 ##' 
 ##' @author Josh Mantooth, Rob Kooper
-download.Ameriflux <- function(start_year, end_year, site, outfolder, overwrite=FALSE) {
+download.Ameriflux <- function(site, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE) {
+  # get start/end year code works on whole years only
+  start_year <- year(start_date)
+  end_year <- year(end_date)
+  
   # make sure output folder exists
   if(!file.exists(outfolder)){
     dir.create(outfolder, showWarnings=FALSE, recursive=TRUE)
