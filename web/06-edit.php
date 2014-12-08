@@ -21,6 +21,8 @@ if ($authentication) {
 
 # boolean parameters
 $offline=isset($_REQUEST['offline']);
+$pecan_edit=isset($_REQUEST['pecan_edit']);
+$model_edit=isset($_REQUEST['model_edit']);
 
 if (!isset($_REQUEST['workflowid'])) {
 	die("Need a workflowid.");
@@ -32,26 +34,31 @@ $stmt = $pdo->prepare("SELECT site_id, model_id, modeltypes.name as model_type, 
                       "FROM workflows, models, modeltypes " .
                       "WHERE workflows.id=? and model_id=models.id and modeltypes.id=models.modeltype_id");
 if (!$stmt->execute(array($workflowid))) {
-	die('Invalid query: ' . error_database());
+  die('Invalid query: ' . error_database());
 }
 $workflow = $stmt->fetch(PDO::FETCH_ASSOC);
 $stmt->closeCursor();
 $folder = $workflow['folder'];
 close_database();
 
-// get information about all runs
-$runfolder = $folder . DIRECTORY_SEPARATOR . "run";
-$runs = explode("\n", file_get_contents($runfolder . DIRECTORY_SEPARATOR . "runs.txt"));
+# check to see if we need to edit pecan.xml or the model files
 $files = array();
-foreach($runs as $run) {
-	if ($run == "") continue;
-	foreach(scandir($runfolder . DIRECTORY_SEPARATOR . $run) as $file) {
-		if (($file == ".") or ($file == "..")) continue;
-		if ($file == "README.txt") continue;
-		if ($file == "sipnet.clim") continue;
-		if (strstr($file, ".orig") !== false) continue;
-		$files[] = $file;
-	}
+if ($pecan_edit) {
+  $files[] = "pecan.xml";
+} else {
+  // get information about all runs
+  $runfolder = $folder . DIRECTORY_SEPARATOR . "run";
+  $runs = explode("\n", file_get_contents($runfolder . DIRECTORY_SEPARATOR . "runs.txt"));
+  foreach($runs as $run) {
+    if ($run == "") continue;
+    foreach(scandir($runfolder . DIRECTORY_SEPARATOR . $run) as $file) {
+      if (($file == ".") or ($file == "..")) continue;
+      if ($file == "README.txt") continue;
+      if ($file == "sipnet.clim") continue;
+      if (strstr($file, ".orig") !== false) continue;
+      $files[] = $file;
+    }
+  }
 }
 $files = array_unique($files);
 
@@ -81,7 +88,12 @@ $files = array_unique($files);
 	}
 
 	function saveFile() {
-		var name="run/" + $('#run')[0].value + "/" + $('#file')[0].value;
+    var runid=$('#run').val();
+    if (runid == -1) {
+      var name=$('#file').val();
+    } else {
+      var name="run/" + runid + "/" + $('#file').val();
+    }     
 		jQuery.post("savefile.php", {"name":name, "workflowid":<?php echo $workflowid; ?>, "data":$('#editor').val()}, function(data) {
 			console.log(data);
 			$("#save").attr("disabled", "disabled");
@@ -93,9 +105,14 @@ $files = array_unique($files);
 		if (modified) {
 			alert("File is modified");
 		}
+    var runid=$('#run').val();
 		$("#save").attr("disabled", "disabled");
-		modified=false;      
-		var name="run/" + $('#run')[0].value + "/" + $('#file')[0].value;
+		modified=false;
+    if (runid == -1) {
+      var name=$('#file').val();
+    } else {
+      var name="run/" + runid + "/" + $('#file').val();
+    }		
 		jQuery.post("loadfile.php", {"name":name, "workflowid":<?php echo $workflowid; ?>}, function(data) {
 			$("#editor").val(data);
 		});
@@ -118,17 +135,32 @@ $files = array_unique($files);
 <?php if ($offline) { ?>
 			<input name="offline" type="hidden" value="offline">
 <?php } ?>
+<?php if ($pecan_edit) { ?>
+      <input type="hidden" name="pecan_edit" value="pecan_edit" />
+<?php } ?>
+<?php if ($model_edit) { ?>
+      <input type="hidden" name="model_edit" value="model_edit" />
+<?php } ?>
 		</form>
 		<form id="formnext" method="POST" action="07-continue.php">
 <?php if ($offline) { ?>
-			<input name="offline" type="hidden" value="offline">
+      <input name="offline" type="hidden" value="offline">
 <?php } ?>
-			<input type="hidden" name="workflowid" value="<?php echo $workflowid; ?>" />
+<?php if ($pecan_edit) { ?>
+      <input type="hidden" name="pecan_edit" value="pecan_edit" />
+<?php } ?>
+<?php if ($model_edit) { ?>
+      <input type="hidden" name="model_edit" value="model_edit" />
+<?php } ?>
+      <input type="hidden" name="workflowid" value="<?php echo $workflowid; ?>" />
 			<h1>Advanced Edit</h1>
 			<p>Select a file to edit.</p>
 
+<?php if ($pecan_edit) { ?>
+      <input type="hidden" id="run" value="-1" />
+<?php } else { ?>
 			<label>Run Selection</label>
-			<select id="run" name="file" onChange="loadFile();">
+			<select id="run" name="id" onChange="loadFile();">
 <?php
 	foreach($runs as $run) {
 		if ($run == "") continue;
@@ -137,7 +169,7 @@ $files = array_unique($files);
 ?>
             </select>
             <div class="spacer"></div>
-
+<?php } ?>
 			<label>File Selection</label>
 			<select id="file" name="file" onChange="loadFile();">
 <?php
