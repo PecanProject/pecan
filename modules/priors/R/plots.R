@@ -59,7 +59,7 @@ priorfig <- function(priordata = NA, priordensity = NA,
   }
   
   if(isTRUE(xlim == 'auto')) {
-    x.breaks <- pretty(c(signif(priordensity$prior.x, 2)), 4)
+    x.breaks <- pretty(c(signif(priordensity$x, 2)), 4)
     xlim <- range(x.breaks)
   } else {
     x.breaks <- pretty(signif(xlim, 2), 4)
@@ -67,18 +67,16 @@ priorfig <- function(priordata = NA, priordensity = NA,
   }
   
   priorfigure <- ggplot() + theme_bw() + 
-    scale_x_continuous(limits = xlim, breaks = x.breaks, trait.lookup(trait)$units) +
-    scale_y_continuous(breaks = NULL)+
-    opts(title = trait.lookup(trait)$figid,
-         panel.grid.major = theme_blank(),    
-         panel.grid.minor = theme_blank(),
-         axis.text.y = theme_blank(),
-         axis.text.x = theme_text(size= fontsize),
-         axis.title.y = theme_blank(), ## hide y axis label
-         axis.title.x = theme_text(size = fontsize * 0.9), ## hide y axis label
-         plot.title = theme_text(size = fontsize*1.1),
-         ## plot.margin = unit(c(0.4, 0.1, 0.1, 0.1), 'lines'), 
-         panel.border = theme_border(c('bottom'))
+    scale_x_continuous(limits = xlim, breaks = x.breaks, name = trait.lookup(trait)$units) +
+    scale_y_continuous(breaks = NULL) +
+    labs(title = trait.lookup(trait)$figid) +
+    theme(panel.grid.major = element_blank(),    
+         panel.grid.minor = element_blank(),
+         axis.text.y = element_blank(),
+         axis.text.x = element_text(size= fontsize),
+         axis.title.y = element_blank(), ## hide y axis label
+         axis.title.x = element_text(size = fontsize * 0.9), ## hide y axis label
+         plot.title = element_text(size = fontsize*1.1)
     ) 
   
   
@@ -93,7 +91,7 @@ priorfig <- function(priordata = NA, priordensity = NA,
     priorfigure <- priorfigure + rug
   } 
   if(is.data.frame(priordensity[1])){
-    dens.line <- geom_line(data=priordensity, aes(x=prior.x, y=dens.x))
+    dens.line <- geom_line(data=priordensity, aes(x, y))
     qpts <- get.quantiles.from.density(priordensity)
     dens.ci <- geom_point(data = qpts, aes(x,y))
     priorfigure <- priorfigure + dens.line + dens.ci
@@ -166,16 +164,10 @@ plot.trait <- function(trait,
   if(is.null(y.lim)){
     y.lim <- range(posterior.density$y, prior.density$y, na.rm = TRUE)
   }
-  print(trait)
-  print(x.lim)
-  print(y.lim)
+
   ticks <<- lapply(data.frame(x = x.lim, y = y.lim), pretty, 4)
   
-  print(ticks)
-  x.lim <<- range(ticks$x)
-  y.lim <<- range(ticks$y) 
-  
-  base.plot <- create.base.plot() + theme_bw()
+
   prior.density   <- create.density.df(distribution = prior) 
   prior.ymax      <- ifelse(plot.prior,
                             max(prior.density$y),
@@ -194,9 +186,10 @@ plot.trait <- function(trait,
   xmax           <- max(prior.xmax, posterior.xmax, na.rm = TRUE) 
   x.ticks        <- pretty(c(0,xmax))
   y.ticks        <- pretty(c(0,ymax))
-  x.ticklength   <- max(y.ticks)/50
   
-  browser()
+  base.plot <- create.base.plot() + theme_bw() + 
+    scale_x_continuous(limits = range(x.ticks), breaks = x.ticks, 
+                       name = trait.lookup(trait)$units)
   if(plot.prior){
     keep <- (prior.density$x > x.lim[1] &
                prior.density$x < x.lim[2] &
@@ -224,23 +217,19 @@ plot.trait <- function(trait,
   }
   
   trait.plot <- base.plot +
-    opts(title= trait.lookup(trait)$figid, 
-         axis.text.x = theme_text(size = fontsize$axis),
-         axis.text.y = theme_blank(),
-         axis.title.x = theme_text(size = fontsize$axis),
-         axis.title.y = theme_blank(),
-         axis.ticks = theme_blank(),
-         axis.line = theme_blank(),
+    geom_line(aes(x = range(x.lim), y = 0), color = 'black') +
+    labs(title = trait.lookup(trait)$figid) +
+    theme(axis.text.x = element_text(size = fontsize$axis),
+         axis.text.y = element_blank(),
+         axis.title.x = element_text(size = fontsize$axis),
+         axis.title.y = element_blank(),
+         axis.ticks.y = element_blank(),
+         axis.line.y = element_blank(),
          legend.position = "none",
-         plot.title = theme_text(size = fontsize$title),
-         panel.grid.major = theme_blank(),
-         panel.grid.minor = theme_blank(),
-         panel.border = theme_blank()) +
-    geom_segment(aes(x = 0, y = 0, yend = 0, xend = x.lim[2])) +
-    geom_segment(aes(x = pretty(x.lim, 4),
-                     y = 0,
-                     xend = pretty(x.lim, 4),
-                     yend = -y.lim[2]/50)) 
+         plot.title = element_text(size = fontsize$title),
+         panel.grid.major = element_blank(),
+         panel.grid.minor = element_blank(),
+         panel.border = element_blank()) 
   return(trait.plot)
 }
 ##==================================================================================================#
@@ -264,8 +253,8 @@ plot.densities <- function(density.plot.inputs, outdir, ...){
   pdf(paste(outdir, 'trait.densities.pdf', sep=''), height = 12, width = 20)
   
   for(trait in traits) {
-    density.plot <- plot.density(trait.sample       =  trait.samples[,trait],
-                                 trait.df         = trait.df[[trait]],
+    density.plot <- plot.density(trait.sample =  trait.samples[,trait],
+                                 trait.df     = trait.df[[trait]],
                                  ...)
     print(sensitivity.plot)
   }
