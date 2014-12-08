@@ -254,7 +254,7 @@ dbfile.insert <- function(filename, type, id, con, hostname=fqdn()) {
 ##'   dbfile.check('Input', 7, dbcon)
 ##' }
 dbfile.check <- function(type, id, con, hostname=fqdn()) {
-  if (hostname == "localhost") hostname <- fqdn();
+  if (hostname == "localhost") hostname <- fqdn()
 
   # find appropriate host
   hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", hostname, "'"), con)[['id']]
