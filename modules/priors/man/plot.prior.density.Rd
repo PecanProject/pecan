@@ -20,7 +20,9 @@ plot with prior density added
 Plots a prior density from a parameterized probability distribution
 }
 \examples{
+\dontrun{
 plot.prior.density(pr.dens('norm', 0, 1))
+}
 }
 \author{
 David LeBauer
