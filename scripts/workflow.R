@@ -56,7 +56,6 @@ status.end()
 # do conversions
 status.start("CONVERSIONS")
 for(i in 1:length(settings$run$inputs)) {
-  print(names(settings$run$inputs)[i])
   input <- settings$run$inputs[[i]]
   # fia database
   if (input['input'] == 'fia') {
@@ -85,13 +84,12 @@ for(i in 1:length(settings$run$inputs)) {
     if (input['output'] == 'sipnet') {
       require(PEcAn.SIPNET)
       r <- met2model.SIPNET("/tmp/met/gapfill", site, "/tmp/met/sipnet", start_date=start_date, end_date=end_date)
-      print(r)
       settings$run$inputs[[i]] <- r[['file']]
     }
     if (input['output'] == 'ed2') {
       require(PEcAn.ED2)
       r <- met2model.ED2("/tmp/met/gapfill", site, "/tmp/met/ed", start_date=start_date, end_date=end_date)
-      input$.attrs <- NULL
+      settings$run$inputs[[i]] <- r[['file']]
     }
   }
 
