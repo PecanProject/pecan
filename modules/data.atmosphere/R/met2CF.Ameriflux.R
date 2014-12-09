@@ -3,7 +3,7 @@
 # as well as on the min/max values
 copyvals <- function(nc1, var1, nc2, var2, dim2, units2=NA, conv=NULL, missval=-6999.0, verbose=FALSE) {
     vals <- ncvar_get(nc=nc1, varid=var1)
-    vals[vals==-6999 || vals==-9999] <- NA
+    vals[vals==-6999 | vals==-9999] <- NA
     if (!is.null(conv)) {
       vals <- lapply(vals, conv)
     }
@@ -169,10 +169,10 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
 
     # convert RH to SH
     rh <- ncvar_get(nc=nc1, varid="RH")
-    rh[rh==-6999 || rh==-9999] <- NA
+    rh[rh==-6999 | rh==-9999] <- NA
     rh <- rh / 100
     ta <- ncvar_get(nc=nc1, varid="TA")
-    ta[ta==-6999 || ta==-9999] <- NA
+    ta[ta==-6999 | ta==-9999] <- NA
     ta <- ta + 273.15
     sh <- rh2qair(rh=rh,T=ta)
     var <- ncvar_def(name='specific_humidity', units='kg/kg', dim=dim, missval=-6999.0, verbose=verbose)
@@ -220,9 +220,9 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
 
     # convert wind speed and wind direction to eastward_wind and northward_wind
     wd <- ncvar_get(nc=nc1, varid='WD') #wind direction
-    wd[wd==-6999 || wd==-9999] <- NA
+    wd[wd==-6999 | wd==-9999] <- NA
     ws <- ncvar_get(nc=nc1, varid='WS') #wind speed
-    ws[ws==-6999 || ws==-9999] <- NA
+    ws[ws==-6999 | ws==-9999] <- NA
     ew <- ws * cos(wd * (pi/180))
     nw <- ws * sin(wd * (pi/180))
     max <- ncatt_get(nc=nc1, varid='WS', 'valid_max')$value
