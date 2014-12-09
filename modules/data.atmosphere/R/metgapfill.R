@@ -121,6 +121,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, over
       DTS.n <- 48
       time <-  30*60 + time
     } else {
+      time <-  60*60 + time
       DTS.n <- 24
     }
     EddyData.F <- cbind(EddyData.F, DateTime=time)
