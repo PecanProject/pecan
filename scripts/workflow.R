@@ -75,18 +75,18 @@ for(i in 1:length(settings$run$inputs)) {
 
     # download data
     fcn <- paste("download", input['input'], sep=".")
-    do.call(fcn, list(site, file.path("/tmp/met", input['input']), start_date=start_date, end_date=end_date))
+    do.call(fcn, list(site, file.path(settings$run$dbfiles, input['input']), start_date=start_date, end_date=end_date))
 
     # convert to CF
-    met2CF.Ameriflux(file.path("/tmp/met", input['input']), site, "/tmp/met/cf", start_date=start_date, end_date=end_date)
+    met2CF.Ameriflux(file.path(settings$run$dbfiles, input['input']), site, file.path(settings$run$dbfiles, "cf"), start_date=start_date, end_date=end_date)
 
     # gap filing
-    metgapfill("/tmp/met/cf", site, "/tmp/met/gapfill", start_date=start_date, end_date=end_date)
+    metgapfill(file.path(settings$run$dbfiles, "cf"), site, file.path(settings$run$dbfiles, "gapfill"), start_date=start_date, end_date=end_date)
 
     # model specific
     load.modelpkg(input['output'])
     fcn <- paste("met2model", input['output'], sep=".")
-    r <- do.call(fcn, list("/tmp/met/gapfill", site, file.path("/tmp/met", input['output']), start_date=start_date, end_date=end_date))
+    r <- do.call(fcn, list(file.path(settings$run$dbfiles, "gapfill"), site, file.path(settings$run$dbfiles, input['output']), start_date=start_date, end_date=end_date))
     settings$run$inputs[[i]] <- r[['file']]
   }
 
