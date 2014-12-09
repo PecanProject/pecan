@@ -84,11 +84,17 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, over
     east_wind <- ncvar_get(nc=nc,varid='eastward_wind')
     north_wind <- ncvar_get(nc=nc,varid='northward_wind')
     
+    # check to see if we have Rg values
+    if (length(which(is.na(Rg))) == length(Rg)) {
+      if (length(which(is.na(PAR))) == length(PAR)) {
+        logger.severe("Missing both PAR and Rg")
+      }
+      Rg <- PAR / 2.1
+    }
+    
     ## make a data frame, convert -9999 to NA, convert to degrees C
-    #EddyData.F <- data.frame(Tair,Rg,rH,PAR,precip,Rn,sHum,Lw,Ts1,Ts2,VPD,ws,co2,press,east_wind,north_wind)
-    EddyData.F <- data.frame(Tair,Rg,rH,PAR,precip,sHum,Lw,Ts1,VPD,ws,press,east_wind,north_wind)
-    EddyData.F[EddyData.F <= -9999] = NA
-    EddyData.F['Tair'] = EddyData.F['Tair']-273.15
+    EddyData.F <- data.frame(Tair,Rg,rH,PAR,precip,sHum,Lw,Ts1,VPD,ws,co2,press,east_wind,north_wind)
+    EddyData.F['Tair'] <- EddyData.F['Tair'] - 273.15
 
     ## Optional need: Compute VPD
     ##    EddyData.F <- cbind(EddyData.F,VPD=fCalcVPDfromRHandTair(EddyData.F$rH, EddyData.F$Tair))   
@@ -106,7 +112,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, over
     #n_Ts2 <- sum(is.na(EddyData.F['Ts2']))
     n_VPD <- sum(is.na(EddyData.F['VPD']))
     n_ws <- sum(is.na(EddyData.F['ws']))
-    #n_co2 <- sum(is.na(EddyData.F['co2']))
+    n_co2 <- sum(is.na(EddyData.F['co2']))
     n_press <- sum(is.na(EddyData.F['press']))
     n_east_wind <- sum(is.na(EddyData.F['east_wind']))
     n_north_wind <- sum(is.na(EddyData.F['north_wind']))
@@ -127,89 +133,108 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, over
     EddyData.F <- cbind(EddyData.F, DateTime=time)
     
     ## Create EddyProc object 
-    EddyProc.C <- sEddyProc$new('Site', EddyData.F, c('Tair','Rg','rH','PAR','precip','sHum','Lw','Ts1','VPD','ws','press','east_wind','north_wind'), DTS.n=DTS.n)
+    EddyProc.C <- sEddyProc$new('Site', EddyData.F, c('Tair','Rg','rH','PAR','precip','sHum','Lw','Ts1','VPD','ws','co2','press','east_wind','north_wind'), DTS.n=DTS.n)
     
     ## Gap fill with default (see below for examples of advanced options)
     ## Have to do Rg, Tair, VPD first
-    if(n_Rg>0&&n_Rg<nelem) EddyProc.C$sMDSGapFill('Rg', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
-    if(n_Tair>0&&n_Tair<nelem) EddyProc.C$sMDSGapFill('Tair', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
-    if(n_VPD>0&&n_VPD<nelem) EddyProc.C$sMDSGapFill('VPD', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
-    if(n_rH>0&&n_rH<nelem) EddyProc.C$sMDSGapFill('rH', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
-    if(n_PAR>0&&n_PAR<nelem) EddyProc.C$sMDSGapFill('PAR', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
-    if(n_precip>0&&n_precip<nelem) EddyProc.C$sMDSGapFill('precip', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
-    if(n_sHum>0&&n_sHum<nelem) EddyProc.C$sMDSGapFill('sHum', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
-    if(n_Lw>0&&n_Lw<nelem) EddyProc.C$sMDSGapFill('Lw', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
-    if(n_Ts1>0&&n_Ts1<nelem) EddyProc.C$sMDSGapFill('Ts1', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
-    if(n_ws>0&&n_ws<nelem) EddyProc.C$sMDSGapFill('ws', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
-    #if(n_co2>0&&n_co2<nelem) EddyProc.C$sMDSGapFill('co2', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
-    if(n_press>0&&n_press<nelem) EddyProc.C$sMDSGapFill('press', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
-    if(n_east_wind>0&&n_east_wind<nelem) EddyProc.C$sMDSGapFill('east_wind', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
-    if(n_north_wind>0&&n_north_wind<nelem) EddyProc.C$sMDSGapFill('north_wind', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
+    if(n_Rg>0&&n_Rg<nelem) EddyProc.C$sMDSGapFill('Rg', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
+    if(n_Tair>0&&n_Tair<nelem) EddyProc.C$sMDSGapFill('Tair', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
+    if(n_VPD>0&&n_VPD<nelem) EddyProc.C$sMDSGapFill('VPD', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
+    if(n_rH>0&&n_rH<nelem) EddyProc.C$sMDSGapFill('rH', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
+    if(n_PAR>0&&n_PAR<nelem) EddyProc.C$sMDSGapFill('PAR', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
+    if(n_precip>0&&n_precip<nelem) EddyProc.C$sMDSGapFill('precip', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
+    if(n_sHum>0&&n_sHum<nelem) EddyProc.C$sMDSGapFill('sHum', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
+    if(n_Lw>0&&n_Lw<nelem) EddyProc.C$sMDSGapFill('Lw', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
+    if(n_Ts1>0&&n_Ts1<nelem) EddyProc.C$sMDSGapFill('Ts1', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
+    if(n_ws>0&&n_ws<nelem) EddyProc.C$sMDSGapFill('ws', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
+    if(n_co2>0&&n_co2<nelem) EddyProc.C$sMDSGapFill('co2', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
+    if(n_press>0&&n_press<nelem) EddyProc.C$sMDSGapFill('press', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
+    if(n_east_wind>0&&n_east_wind<nelem) EddyProc.C$sMDSGapFill('east_wind', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
+    if(n_north_wind>0&&n_north_wind<nelem) EddyProc.C$sMDSGapFill('north_wind', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
     
     ## Extract filled variables into data frame, replace any NA back to -9999
     ## print('Extracting dataframe elements and writing back to nc file')
     Extracted <- EddyProc.C$sExportResults()
-    Extracted[is.na(Extracted)] = -9999.0
 
     ##Write back to NC file, convert air T to Kelvin
+    error <- c()
     if(n_Tair>0&&n_Tair<nelem) {
-      Tair_f <- Extracted[,'Tair_f']
+      Tair_f <- Extracted[,'Tair_f'] + 273.15
+      if (length(which(is.na(Tair_f))) > 0) error <- c(error, "air_temperature")
       ncvar_put(nc,varid='air_temperature',vals=Tair_f)
     }
     if(n_Rg>0&&n_Rg<nelem) {
       Rg_f <- Extracted[,'Rg_f']
+      if (length(which(is.na(Rg_f))) > 0) error <- c(error, "surface_downwelling_shortwave_flux_in_air")
       ncvar_put(nc,varid='surface_downwelling_shortwave_flux_in_air',vals=Rg_f)
     }
     if(n_rH>0&&n_rH<nelem) {
       rH_f <- Extracted[,'rH_f']
+      if (length(which(is.na(rH_f))) > 0) error <- c(error, "relative_humidity")
       ncvar_put(nc,varid='relative_humidity',vals=rH_f)
     }
     if(n_PAR>0&&n_PAR<nelem) {
       PAR_f <- Extracted[,'PAR_f']
+      if (length(which(is.na(PAR_f))) > 0) error <- c(error, "surface_downwelling_photosynthetic_photon_flux_in_air")
       ncvar_put(nc,varid='surface_downwelling_photosynthetic_photon_flux_in_air',vals=PAR_f)
     }
     if(n_precip>0&&n_precip<nelem) {
       precip_f <- Extracted[,'precip_f']
+      if (length(which(is.na(precip_f))) > 0) error <- c(error, "precipitation_flux")
       ncvar_put(nc,varid='precipitation_flux',vals=precip_f)
     }
     if(n_sHum>0&&n_sHum<nelem) {
       sHum_f <- Extracted[,'sHum_f']
+      if (length(which(is.na(sHum_f))) > 0) error <- c(error, "specific_humidity")
       ncvar_put(nc,varid='specific_humidity',vals=sHum_f)
     }
     if(n_Lw>0&&n_Lw<nelem) {
       Lw_f <- Extracted[,'Lw_f']
+      if (length(which(is.na(Lw_f))) > 0) error <- c(error, "surface_downwelling_longwave_flux_in_air")
       ncvar_put(nc,varid='surface_downwelling_longwave_flux_in_air',vals=Lw_f)
     }
     if(n_Ts1>0&&n_Ts1<nelem) {
-      Ts1 <- Extracted[,'Ts1_f']
-      ncvar_put(nc,varid='soil_temperature',vals=Ts1)
+      Ts1_f <- Extracted[,'Ts1_f']
+      if (length(which(is.na(Ts1_f))) > 0) error <- c(error, "soil_temperature")
+      ncvar_put(nc,varid='soil_temperature',vals=Ts1_f)
     }
     if(n_VPD>0&&n_VPD<nelem) {
       VPD_f <- Extracted[,'VPD_f']
+      if (length(which(is.na(VPD_f))) > 0) error <- c(error, "water_vapor_saturation_deficit")
       ncvar_put(nc,varid='water_vapor_saturation_deficit',vals=VPD_f)
     }
     if(n_ws>0&&n_ws<nelem) {
       ws_f <- Extracted[,'ws_f']
+      if (length(which(is.na(ws_f))) > 0) error <- c(error, "wind_speed")
       ncvar_put(nc,varid='wind_speed',vals=ws_f)
     }
-#     if(n_co2>0&&n_ws<nelem) {
-#       ws_f <- Extracted[,'co2_f']
-#       ncvar_put(nc,varid='mole_fraction_of_carbon_dioxide_in_air',vals=ws_f)
-#     }
+    if(n_co2>0&&n_ws<nelem) {
+      co2_f <- Extracted[,'co2_f']
+      if (length(which(is.na(co2_f))) > 0) error <- c(error, "mole_fraction_of_carbon_dioxide_in_air")
+      ncvar_put(nc,varid='mole_fraction_of_carbon_dioxide_in_air',vals=co2_f)
+    }
     if(n_press>0&&n_press<nelem) {
       press_f <- Extracted[,'press_f']
+      if (length(which(is.na(press_f))) > 0) error <- c(error, "air_pressure")
       ncvar_put(nc,varid='air_pressure',vals=press_f)
     }
     if(n_east_wind>0&&n_east_wind<nelem) {
       east_wind_f <- Extracted[,'east_wind_f']
+      if (length(which(is.na(east_wind_f))) > 0) error <- c(error, "eastward_wind")
       ncvar_put(nc,varid='eastward_wind',vals=east_wind_f)
     }
     if(n_north_wind>0&&n_north_wind<nelem) {
       north_wind_f <- Extracted[,'north_wind_f']
+      if (length(which(is.na(north_wind_f))) > 0) error <- c(error, "northward_wind")
       ncvar_put(nc,varid='northward_wind',vals=north_wind_f)
     }
 
     nc_close(nc)
+    
+    if (length(error) > 0) {
+      logger.severe("Could not do gapfill, results are in", new.file, ".",
+                    "The following variables have NA's:", paste(error, sep=", "))
+    }
     
   } #end loop
   
