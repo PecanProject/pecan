@@ -59,6 +59,9 @@ download.Ameriflux <- function(site, outfolder, start_date, end_date, overwrite=
     }
     
     file <- tail(as.character(links[grep(paste0('_', year, '_.*.nc'), links)]), n=1)
+    if (length(file) == 0) {
+      logger.severe("Could not download data for", site, "for the year", year)
+    }
     download.file(paste0(baseurl, file), outputfile)
   }
   
