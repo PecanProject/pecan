@@ -123,7 +123,7 @@ while true; do
 
     *)
       echo "unknown argument $1"
-      exit
+      exit 1
       ;;
   esac
   shift
