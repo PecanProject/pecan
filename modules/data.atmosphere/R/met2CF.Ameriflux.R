@@ -95,6 +95,9 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
     # get dimension and site info
     tdim <- nc1$dim[["DTIME"]]
     loc <- ncatt_get(nc=nc1, varid=0, attname='site_location')
+    if (is.na(loc)) {
+      logger.severe("No site_location found in ameriflux file.")
+    }
     
     # create new coordinate dimensions based on site location lat/lon
     lat <- ncdim_def(name='latitude', units='', vals=1:1, create_dimvar=FALSE)
@@ -136,6 +139,11 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
     copyvals(nc1=nc1, var1='PRESS',
              nc2=nc2, var2='air_pressure', units2='Pa', dim2=dim, 
              conv=function(x) { x * 1000 }, verbose=verbose)
+    
+    # convert CO2 to mole_fraction_of_carbon_dioxide_in_air
+    copyvals(nc1=nc1, var1='CO2',
+             nc2=nc2, var2='mole_fraction_of_carbon_dioxide_in_air', units2='mole/mole', dim2=dim, 
+             conv=function(x) { x * 1e6 }, verbose=verbose)
     
     # convert TS1 to soil_temperature
     copyvals(nc1=nc1, var1='TS1',
