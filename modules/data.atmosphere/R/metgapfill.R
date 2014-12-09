@@ -153,7 +153,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, over
 
     ##Write back to NC file, convert air T to Kelvin
     if(n_Tair>0&&n_Tair<nelem) {
-      Tair_f <- Extracted[,'Tair_f']
+      Tair_f <- Extracted[,'Tair_f'] + 273.15
       ncvar_put(nc,varid='air_temperature',vals=Tair_f)
     }
     if(n_Rg>0&&n_Rg<nelem) {
