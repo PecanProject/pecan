@@ -59,6 +59,8 @@ status.end()
 status.start("CONVERSIONS")
 for(i in 1:length(settings$run$inputs)) {
   input <- settings$run$inputs[[i]]
+  if (length(input) == 1) next
+  
   # fia database
   if (input['input'] == 'fia') {
     fia.to.psscss(settings)
