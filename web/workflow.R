@@ -89,7 +89,7 @@ if (length(which(commandArgs() == "--continue")) == 0) {
 
       # download data
       fcn <- paste("download", input['input'], sep=".")
-      do.call(fcn, c(site, file.path("/tmp/met", input['input']), start_date=start_date, end_date=end_date))
+      do.call(fcn, list(site, file.path("/tmp/met", input['input']), start_date=start_date, end_date=end_date))
 
       # convert to CF
       met2CF.Ameriflux(file.path("/tmp/met", input['input']), site, "/tmp/met/cf", start_date=start_date, end_date=end_date)
@@ -98,9 +98,9 @@ if (length(which(commandArgs() == "--continue")) == 0) {
       metgapfill("/tmp/met/cf", site, "/tmp/met/gapfill", start_date=start_date, end_date=end_date)
 
       # model specific
-      require(paste("PEcAn", input['output'], sep="."))
+      load.modelpkg(input['output'])
       fcn <- paste("met2model", input['output'], sep=".")
-      r <- do.call(fcn, c("/tmp/met/gapfill", site, file.path("/tmp/met", input['output']), start_date=start_date, end_date=end_date))
+      r <- do.call(fcn, list("/tmp/met/gapfill", site, file.path("/tmp/met", input['output']), start_date=start_date, end_date=end_date))
       settings$run$inputs[[i]] <- r[['file']]
     }
 

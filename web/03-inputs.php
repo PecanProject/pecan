@@ -133,7 +133,7 @@ if (preg_match("/ \(US-.*\)$/", $siteinfo["sitename"])) {
   }
   $modeltypes=$stmt->fetchAll(PDO::FETCH_COLUMN, 0);
   $stmt->closeCursor();
-  for($modeltypes as $type) {
+  foreach($modeltypes as $type) {
     foreach($inputs as &$input) {
       if ($input['tag'] == "met") {
         $input['files'][] = array("id"=>"Ameriflux." . $type,
