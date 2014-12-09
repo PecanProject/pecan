@@ -79,7 +79,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, over
     #Ts2 <-ncvar_get(nc=nc,varid='TS2')
     VPD <-ncvar_get(nc=nc,varid='water_vapor_saturation_deficit')
     ws <-ncvar_get(nc=nc,varid='wind_speed')
-    #co2 <- ncvar_get(nc=nc,varid='CO2')
+    co2 <- ncvar_get(nc=nc,varid='mole_fraction_of_carbon_dioxide_in_air')
     press <- ncvar_get(nc=nc,varid='air_pressure')
     east_wind <- ncvar_get(nc=nc,varid='eastward_wind')
     north_wind <- ncvar_get(nc=nc,varid='northward_wind')
@@ -116,12 +116,17 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, over
     nelem = length(time)
     tunit <- ncatt_get(nc=nc, varid='time', attname='units', verbose=verbose)
     origin <- "1900-01-01 00:00:00"
-    # time needs to be at end of half hour interval so add 30 minutes
-    time <- 30*60 + round(as.POSIXlt(ud.convert(time, tunit$value, paste('seconds since', origin)), origin=origin, tz="GMT"), units="mins")
+    time <-round(as.POSIXlt(ud.convert(time, tunit$value, paste('seconds since', origin)), origin=origin, tz="GMT"), units="mins")
+    if (length(time) > 10000) {
+      DTS.n <- 48
+      time <-  30*60 + time
+    } else {
+      DTS.n <- 24
+    }
     EddyData.F <- cbind(EddyData.F, DateTime=time)
     
     ## Create EddyProc object 
-    EddyProc.C <- sEddyProc$new('Site', EddyData.F, c('Tair','Rg','rH','PAR','precip','sHum','Lw','Ts1','VPD','ws','press','east_wind','north_wind'))
+    EddyProc.C <- sEddyProc$new('Site', EddyData.F, c('Tair','Rg','rH','PAR','precip','sHum','Lw','Ts1','VPD','ws','press','east_wind','north_wind'), DTS.n=DTS.n)
     
     ## Gap fill with default (see below for examples of advanced options)
     ## Have to do Rg, Tair, VPD first
@@ -135,6 +140,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, over
     if(n_Lw>0&&n_Lw<nelem) EddyProc.C$sMDSGapFill('Lw', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
     if(n_Ts1>0&&n_Ts2<nelem) EddyProc.C$sMDSGapFill('Ts1', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
     if(n_ws>0&&n_ws<nelem) EddyProc.C$sMDSGapFill('ws', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
+    #if(n_co2>0&&n_co2<nelem) EddyProc.C$sMDSGapFill('co2', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
     if(n_press>0&&n_press<nelem) EddyProc.C$sMDSGapFill('press', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
     if(n_east_wind>0&&n_east_wind<nelem) EddyProc.C$sMDSGapFill('east_wind', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
     if(n_north_wind>0&&n_north_wind<nelem) EddyProc.C$sMDSGapFill('north_wind', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
@@ -185,6 +191,10 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, over
       ws_f <- Extracted[,'ws_f']
       ncvar_put(nc,varid='wind_speed',vals=ws_f)
     }
+#     if(n_co2>0&&n_ws<nelem) {
+#       ws_f <- Extracted[,'co2_f']
+#       ncvar_put(nc,varid='mole_fraction_of_carbon_dioxide_in_air',vals=ws_f)
+#     }
     if(n_press>0&&n_press<nelem) {
       press_f <- Extracted[,'press_f']
       ncvar_put(nc,varid='air_pressure',vals=press_f)
