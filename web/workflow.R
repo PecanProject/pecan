@@ -69,6 +69,53 @@ if (length(which(commandArgs() == "--continue")) == 0) {
   run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database$bety)
   status.end()
 
+  # do conversions
+  status.start("CONVERSIONS")
+  for(i in 1:length(settings$run$inputs)) {
+    print(names(settings$run$inputs)[i])
+    input <- settings$run$inputs[[i]]
+    # fia database
+    if (input['input'] == 'fia') {
+      fia.to.psscss(settings)
+    }
+
+    # ameriflux download
+    if (input['input'] == 'ameriflux') {
+      # start/end date for weather
+      start_date <- settings$run$start.date
+      end_date <- settings$run$end.date
+
+      # site
+      site <- sub(".* \\((.*)\\)", "\\1", settings$run$site$name)
+
+      # download data
+      download.Ameriflux(site, "/tmp/met/ameriflux", start_date=start_date, end_date=end_date)
+
+      # convert to CF
+      met2CF.Ameriflux("/tmp/met/ameriflux", site, "/tmp/met/cf", start_date=start_date, end_date=end_date)
+
+      # gap filing
+      metgapfill("/tmp/met/cf", site, "/tmp/met/gapfill", start_date=start_date, end_date=end_date)
+
+      # model specific
+      if (input['output'] == 'sipnet') {
+        require(PEcAn.SIPNET)
+        r <- met2model.SIPNET("/tmp/met/gapfill", site, "/tmp/met/sipnet", start_date=start_date, end_date=end_date)
+        print(r)
+        settings$run$inputs[[i]] <- r[['file']]
+      }
+      if (input['output'] == 'ed2') {
+        require(PEcAn.ED2)
+        r <- met2model.ED2("/tmp/met/gapfill", site, "/tmp/met/ed", start_date=start_date, end_date=end_date)
+        input$.attrs <- NULL
+      }
+    }
+
+    # narr download
+  }
+  saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
+  status.end()
+
   # write model specific configs
   status.start("CONFIG")
   run.write.configs(settings, settings$database$bety$write)
@@ -81,22 +128,6 @@ if (length(which(commandArgs() == "--continue")) == 0) {
     status.skip("ADVANCED")
   }
 }
-
-# do conversions
-status.start("CONVERSIONS")
-
-# 1) convert FIA to pss/css
-# # TODO see if we need to call fia
-# if (".attrs" %in% names(settings$model$psscss)) {
-#   if (settings$model$psscss$.attrs[["generate"]] == "fia") {
-#     fia.to.psscss(settings)
-#   } else {
-#     stop("No information on how to generate psscss files.")
-#   }
-# }
-
-# 2) convert met -> cf -> model
-status.end()
 
 # run model
 status.start("MODEL")

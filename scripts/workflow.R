@@ -43,11 +43,61 @@ unlink(file.path(settings$outdir, "STATUS"))
 # Query the trait database for data and priors
 status.start("TRAIT")
 settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)
+saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
 status.end()
 
 # Run the PEcAn meta.analysis
 status.start("META")
-run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database$bety)
+if('meta.analysis' %in% names(settings)) {
+  run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database$bety)
+}
+status.end()
+
+# do conversions
+status.start("CONVERSIONS")
+for(i in 1:length(settings$run$inputs)) {
+  print(names(settings$run$inputs)[i])
+  input <- settings$run$inputs[[i]]
+  # fia database
+  if (input['input'] == 'fia') {
+    fia.to.psscss(settings)
+  }
+
+  # ameriflux download
+  if (input['input'] == 'ameriflux') {
+    # start/end date for weather
+    start_date <- settings$run$start.date
+    end_date <- settings$run$end.date
+
+    # site
+    site <- sub(".* \\((.*)\\)", "\\1", settings$run$site$name)
+
+    # download data
+    download.Ameriflux(site, "/tmp/met/ameriflux", start_date=start_date, end_date=end_date)
+
+    # convert to CF
+    met2CF.Ameriflux("/tmp/met/ameriflux", site, "/tmp/met/cf", start_date=start_date, end_date=end_date)
+
+    # gap filing
+    metgapfill("/tmp/met/cf", site, "/tmp/met/gapfill", start_date=start_date, end_date=end_date)
+
+    # model specific
+    if (input['output'] == 'sipnet') {
+      require(PEcAn.SIPNET)
+      r <- met2model.SIPNET("/tmp/met/gapfill", site, "/tmp/met/sipnet", start_date=start_date, end_date=end_date)
+      print(r)
+      settings$run$inputs[[i]] <- r[['file']]
+    }
+    if (input['output'] == 'ed2') {
+      require(PEcAn.ED2)
+      r <- met2model.ED2("/tmp/met/gapfill", site, "/tmp/met/ed", start_date=start_date, end_date=end_date)
+      input$.attrs <- NULL
+    }
+  }
+
+  # narr download
+}
+saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
 status.end()
 
 # Calls model specific write.configs e.g. write.config.ed.R
