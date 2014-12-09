@@ -138,7 +138,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, over
     if(n_precip>0&&n_precip<nelem) EddyProc.C$sMDSGapFill('precip', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
     if(n_sHum>0&&n_sHum<nelem) EddyProc.C$sMDSGapFill('sHum', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
     if(n_Lw>0&&n_Lw<nelem) EddyProc.C$sMDSGapFill('Lw', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
-    if(n_Ts1>0&&n_Ts2<nelem) EddyProc.C$sMDSGapFill('Ts1', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
+    if(n_Ts1>0&&n_Ts1<nelem) EddyProc.C$sMDSGapFill('Ts1', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
     if(n_ws>0&&n_ws<nelem) EddyProc.C$sMDSGapFill('ws', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
     #if(n_co2>0&&n_co2<nelem) EddyProc.C$sMDSGapFill('co2', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
     if(n_press>0&&n_press<nelem) EddyProc.C$sMDSGapFill('press', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair')
