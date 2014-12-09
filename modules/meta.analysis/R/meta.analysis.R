@@ -77,7 +77,6 @@ pecan.ma <- function(trait.data, prior.distns, taupriors,
       writeLines("NO ERROR STATS PROVIDED, DROPPING RANDOM EFFECTS")
       data$site = rep(1,nrow(data))
       data$trt  = rep(0,nrow(data))
-      data$obs.prec <- 
     }
 
     if(!is.null(settings$meta.analysis$random.effects)){
