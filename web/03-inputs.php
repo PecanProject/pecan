@@ -110,15 +110,15 @@ $stmt->closeCursor();
 if (isset($db_fia_database) && ($db_fia_database != "")) {
   foreach($inputs as &$input) {
     if ($input['tag'] == "pss") {
-      $input['files'][] = array("id"=>"fia.15",
+      $input['files'][] = array("id"=>"fia.pss",
                                 "name"=>"Use FIA");
     }
     if ($input['tag'] == "css") {
-      $input['files'][] = array("id"=>"fia.11",
+      $input['files'][] = array("id"=>"fia.css",
                                 "name"=>"Use FIA");
     }
     if ($input['tag'] == "site") {
-      $input['files'][] = array("id"=>"fia.10",
+      $input['files'][] = array("id"=>"fia.site",
                                 "name"=>"Use FIA");
     }
   }
@@ -133,18 +133,10 @@ if (preg_match("/ \(US-.*\)$/", $siteinfo["sitename"])) {
   }
   $modeltypes=$stmt->fetchAll(PDO::FETCH_COLUMN, 0);
   $stmt->closeCursor();
-  if (in_array("SIPNET", $modeltypes)) {
+  for($modeltypes as $type) {
     foreach($inputs as &$input) {
       if ($input['tag'] == "met") {
-        $input['files'][] = array("id"=>"ameriflux.24",
-                                  "name"=>"Use Ameriflux");
-      }
-    }
-  }
-  if (in_array("ED2", $modeltypes)) {
-    foreach($inputs as &$input) {
-      if ($input['tag'] == "met") {
-        $input['files'][] = array("id"=>"ameriflux.12",
+        $input['files'][] = array("id"=>"Ameriflux." . $type,
                                   "name"=>"Use Ameriflux");
       }
     }
