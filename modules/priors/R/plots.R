@@ -11,7 +11,10 @@
 ##' @author David LeBauer
 ##' @export
 ##' @examples
+##' \dontrun{
 ##' plot.prior.density(pr.dens('norm', 0, 1))
+##' }
+
 plot.prior.density <- function(prior.density, base.plot = NULL, prior.color = 'black' ) {
   if(is.null(base.plot)) base.plot <- create.base.plot()
   new.plot <- base.plot +  geom_line(data = prior.density,
@@ -136,77 +139,46 @@ plot.trait <- function(trait,
   plot.prior     <- !is.null(prior)
   plot.data      <- !is.null(trait.df)
   
-  ## If no posterior, set prior density to black
-  
   ## get units for plot title
   units <- trait.lookup(trait)$units
   
-  prior.density <- posterior.density <- data.frame(x = NA, y = NA)
+  trait.df <- jagify(trait.df)
+  
   if(plot.prior){
-    prior.color = 'black'
+    prior.color = ifelse(plot.posterior, 'grey', 'black')
     prior.density   <- create.density.df(distribution = prior)
     prior.density <- prior.density[prior.density$x > 0, ]
+  } else {
+    prior.density <- data.frame(x=NA, y=NA)
   }
   if(plot.posterior){
     posterior.density <- create.density.df(samps = posterior.sample)
     posterior.density <- posterior.density[posterior.density$x > 0, ]
-    prior.color <-  'grey'
+  } else { 
+    posterior.density <- data.frame(x=NA, y=NA)
   }
   
   if(is.null(x.lim)){
     if(!is.null(trait.df)){
       data.range <- max(c(trait.df$Y, trait.df$Y + trait.df$se), na.rm = TRUE)
     } else {
-      data.range <- NULL
+      data.range <- NA
     }
-    x.lim <- range(c(posterior.density$x, prior.density$x, data.range), na.rm = TRUE)
+    x.lim <- range(c(prior.density$x, data.range), na.rm = TRUE)
   }
   if(is.null(y.lim)){
     y.lim <- range(posterior.density$y, prior.density$y, na.rm = TRUE)
   }
-
-  ticks <<- lapply(data.frame(x = x.lim, y = y.lim), pretty, 4)
   
-
-  prior.density   <- create.density.df(distribution = prior) 
-  prior.ymax      <- ifelse(plot.prior,
-                            max(prior.density$y),
-                            NA)
-  posterior.ymax  <- ifelse(plot.posterior,
-                            max(posterior.density$y),
-                            NA)
-  ymax           <- max(prior.ymax, posterior.ymax, na.rm = TRUE) 
+  x.ticks        <<- pretty(c(0, x.lim[2]))
   
-  prior.xmax     <- ifelse(plot.prior,
-                           quantile(prior.density$x, 0.999),
-                           NA)
-  posterior.xmax <- ifelse(plot.posterior,
-                           quantile(posterior.density$x, 0.999),
-                           NA)
-  xmax           <- max(prior.xmax, posterior.xmax, na.rm = TRUE) 
-  x.ticks        <- pretty(c(0,xmax))
-  y.ticks        <- pretty(c(0,ymax))
-  
-  base.plot <- create.base.plot() + theme_bw() + 
-    scale_x_continuous(limits = range(x.ticks), breaks = x.ticks, 
-                       name = trait.lookup(trait)$units)
+  base.plot <- create.base.plot() + theme_bw() 
   if(plot.prior){
-    keep <- (prior.density$x > x.lim[1] &
-               prior.density$x < x.lim[2] &
-               prior.density$y > y.lim[1] &
-               prior.density$y < y.lim[2])
-    
-    prior.density <- prior.density[keep,]
     base.plot <- plot.prior.density(prior.density,
                                     base.plot = base.plot,
-                                    prior.color = prior.color)
+                                    prior.color = prior.color) 
   }
   if(plot.posterior){
-    keep <- (posterior.density$x > x.lim[1] &
-               posterior.density$x < x.lim[2] &
-               posterior.density$y > y.lim[1] &
-               posterior.density$y < y.lim[2])
-    posterior.density <- posterior.density[keep, ]
     base.plot <- plot.posterior.density(posterior.density,
                                         base.plot = base.plot)
   }
@@ -217,19 +189,21 @@ plot.trait <- function(trait,
   }
   
   trait.plot <- base.plot +
-    geom_line(aes(x = range(x.lim), y = 0), color = 'black') +
+    geom_segment(aes(x = min(x.ticks), xend = last(x.ticks), y = 0, yend = 0)) + 
+    scale_x_continuous(limits = range(x.ticks), breaks = x.ticks, 
+                       name = trait.lookup(trait)$units) +
     labs(title = trait.lookup(trait)$figid) +
     theme(axis.text.x = element_text(size = fontsize$axis),
-         axis.text.y = element_blank(),
-         axis.title.x = element_text(size = fontsize$axis),
-         axis.title.y = element_blank(),
-         axis.ticks.y = element_blank(),
-         axis.line.y = element_blank(),
-         legend.position = "none",
-         plot.title = element_text(size = fontsize$title),
-         panel.grid.major = element_blank(),
-         panel.grid.minor = element_blank(),
-         panel.border = element_blank()) 
+          axis.text.y = element_blank(),
+          axis.title.x = element_text(size = fontsize$axis),
+          axis.title.y = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.line.y = element_blank(),
+          legend.position = "none",
+          plot.title = element_text(size = fontsize$title),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.border = element_blank()) 
   return(trait.plot)
 }
 ##==================================================================================================#

@@ -40,11 +40,6 @@ if (!isset($_REQUEST['hostname'])) {
   die("Need a hostname.");
 }
 $hostname=$_REQUEST['hostname'];
-if (isset($_REQUEST['psscss'])) {
-  $psscss = $_REQUEST['psscss'];
-} else {
-  $psscss = "";
-}
 
 # parse original form data
 $selected_pfts = array();
@@ -73,7 +68,22 @@ $siteinfo = $stmt->fetch(PDO::FETCH_ASSOC);
 $stmt->closeCursor();
 
 // get list of inputs
-$stmt = $pdo->prepare("SELECT tag, inputs.id, modeltypes_formats.required, formats.name, dbfiles.file_name, sites.sitename, inputs.start_date, inputs.end_date" .
+$stmt = $pdo->prepare("SELECT tag, required, formats.name" .
+                      " FROM modeltypes_formats, models, formats" .
+                      " WHERE models.id=? AND modeltypes_formats.modeltype_id=models.modeltype_id" .
+                      " AND modeltypes_formats.format_id=formats.id AND modeltypes_formats.input;");
+if (!$stmt->execute(array($modelid))) {
+  die('Invalid query: ' . error_database());
+}
+$inputs = array();
+while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
+  $row['files'] = array();
+  $inputs[$row['tag']] = $row;
+} 
+$stmt->closeCursor();
+
+// get list of files
+$stmt = $pdo->prepare("SELECT tag, inputs.id, dbfiles.file_name, sites.sitename, inputs.start_date, inputs.end_date" .
                       " FROM sites, inputs, dbfiles, machines, modeltypes_formats, models, formats" .
                       " WHERE (inputs.site_id=${earth} OR inputs.site_id=?)" .
                       " AND inputs.id=dbfiles.container_id AND dbfiles.container_type='Input'" .
@@ -84,14 +94,68 @@ $stmt = $pdo->prepare("SELECT tag, inputs.id, modeltypes_formats.required, forma
 if (!$stmt->execute(array($siteid, $hostname, $modelid))) {
   die('Invalid query: ' . error_database());
 }
-$inputs = $stmt->fetchall(PDO::FETCH_ASSOC);
+while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
+  if ($row['tag'] == 'met') {
+    $row['name']="Weather " . substr($row['start_date'], 0, 4) . "-" . substr($row['end_date'], 0, 4);
+  } else if ($row['file_name'] == '') {
+    $row['name']=$row['sitename'];
+  } else {
+    $row['name']=$row['file_name'];
+  }
+  $inputs[$row['tag']]['files'][] = $row;
+}
 $stmt->closeCursor();
 
-// get list of tags
-$tags=array();
-foreach($inputs as $input) {
-  $tags[$input['tag']] = $input['required'];
+// add special inputs based on conversions
+if (isset($db_fia_database) && ($db_fia_database != "")) {
+  foreach($inputs as &$input) {
+    if ($input['tag'] == "pss") {
+      $input['files'][] = array("id"=>"fia.pss",
+                                "name"=>"Use FIA");
+    }
+    if ($input['tag'] == "css") {
+      $input['files'][] = array("id"=>"fia.css",
+                                "name"=>"Use FIA");
+    }
+    if ($input['tag'] == "site") {
+      $input['files'][] = array("id"=>"fia.site",
+                                "name"=>"Use FIA");
+    }
+  }
 }
+
+if (preg_match("/ \(US-.*\)$/", $siteinfo["sitename"])) {
+  $stmt = $pdo->prepare("SELECT modeltypes.name FROM modeltypes, models" .
+                        " WHERE modeltypes.id=models.modeltype_id" .
+                        " AND models.id=?;");
+  if (!$stmt->execute(array($modelid))) {
+    die('Invalid query: ' . error_database());
+  }
+  $modeltypes=$stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+  $stmt->closeCursor();
+  foreach($modeltypes as $type) {
+    foreach($inputs as &$input) {
+      if ($input['tag'] == "met") {
+        $input['files'][] = array("id"=>"Ameriflux." . $type,
+                                  "name"=>"Use Ameriflux");
+      }
+    }
+  }
+}
+
+// get list of pfts
+$pfts = array();
+$stmt = $pdo->prepare("SELECT pfts.id, name FROM pfts, models" .
+                      " WHERE models.id=? AND pfts.modeltype_id=models.modeltype_id" .
+                      " ORDER BY name");
+if (!$stmt->execute(array($modelid))) {
+  die('Invalid query: ' . error_database());
+}
+while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
+  $row["selected"] = in_array($row['name'], $selected_pfts) ? "selected" : "";
+  $pfts[] = $row;
+}
+$stmt->closeCursor();
 
 ?>
 <!DOCTYPE html>
@@ -121,12 +185,12 @@ foreach($inputs as $input) {
 
     // check inputs
 <?php
-  foreach($tags as $tag => $required) {
-    if ($required) {
+  foreach($inputs as $input) {
+    if ($input['required']) {
 ?>
-    if ($("#<?php echo $tag; ?>").val() == null) {
+    if ($("#<?php echo $input['tag']; ?>").val() == null) {
       $("#next").attr("disabled", "disabled");
-      $("#error").html("Missing value for <?php echo $tag; ?>");
+      $("#error").html("Missing value for <?php echo $input['name']; ?>");
       return;
     }
 <?php
@@ -246,24 +310,12 @@ foreach($inputs as $input) {
       <label id="pftlabel">PFT<sup>*</sup></label>
       <select id="pft" name="pft[]" multiple size=5 onChange="validate();">
 <?php 
-// show list of PFTs
-$stmt = $pdo->prepare("SELECT pfts.id, name FROM pfts, models WHERE models.id=? AND pfts.modeltype_id=models.modeltype_id ORDER BY name");
-if (!$stmt->execute(array($modelid))) {
-  die('Invalid query: ' . error_database());
+foreach($pfts as $pft) {
+  print "        <option data-id='{$pft['id']}' ${pft['selected']}>${pft['name']}</option>\n";
 }
-$pfts = "";
-while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)){
-  if (in_array($row['name'], $selected_pfts)) {
-    print "        <option data-id='{$row['id']}' selected>${row['name']}</option>\n";
-  } else {
-    print "        <option data-id='{$row['id']}'>${row['name']}</option>\n";
-  }
-}
-print "      </select>\n";
-print "      <div class=\"spacer\"></div>\n";
-$stmt->closeCursor();
-
 ?>
+      </select>
+      <div class="spacer"></div>
       <label>Start Date<sup>*</sup></label>
       <input type="text" name="start" id="start" value="<?php echo $startdate; ?>" onChange="validate();"/>
       <div class="spacer"></div>
@@ -273,37 +325,20 @@ $stmt->closeCursor();
 <?php
 
 # show list of all inputs
-foreach($tags as $tag => $required) {
-  $name=$tag;
-  foreach($inputs as $input) {
-    if ($input['tag'] == $tag) {
-      $name=substr($input['name'], 0, 20);
-      break;
-    }
-  }
-  if ($required) {
+foreach($inputs as $input) {
+  $name=substr($input['name'], 0, 20);
+  $tag=$input['tag'];
+  if ($input['required']) {
     print "      <label>${name}<sup>*</sup></label>\n";
   } else {
     print "      <label>${name}</label>\n";
   }
   print "      <select id=\"${tag}\" name=\"input_${tag}\" onChange=\"validate();\">\n";
-  if (!$required) {
+  if (!$input['required']) {
     print "      <option value='-1'></option>\n";
   }
-  if (isset($db_fia_database) && ($db_fia_database != "" && ($tag == "pss" || $tag="css" || $tag="site"))) {
-    print "      <option value='FIA'>Use FIA</option>\n";
-  }
-  foreach($inputs as $input) {
-    if ($input['tag'] == $tag) {
-      if ($tag == 'met') {
-        $name="Weather " . substr($input['start_date'], 0, 4) . "-" . substr($input['end_date'], 0, 4);
-      } else if ($input['file_name'] == '') {
-        $name=$input['sitename'];
-      } else {
-        $name=$input['file_name'];
-      }
-      print "        <option value='${input['id']}'>${name}</option>\n";
-    }
+  foreach($input['files'] as $file) {
+    print "        <option value='${file['id']}'>${file['name']}</option>\n";
   }
   print "      </select>\n";
   print "      <div class=\"spacer\"></div>\n";

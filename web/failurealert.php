@@ -121,6 +121,12 @@ close_database();
             <td><?php echo status("META");; ?></td>
           </tr>
           <tr>
+            <th>conversions</th>
+            <td><?php echo startTime("CONVERSIONS");; ?></td>
+            <td><?php echo endTime("CONVERSIONS");; ?></td>
+            <td><?php echo status("CONVERSIONS");; ?></td>
+          </tr>
+          <tr>
             <th>write.config</th>
             <td><?php echo startTime("CONFIG");; ?></td>
             <td><?php echo endTime("CONFIG");; ?></td>
@@ -131,12 +137,6 @@ close_database();
             <td><?php echo startTime("EDIT");; ?></td>
             <td><?php echo endTime("EDIT");; ?></td>
             <td><?php echo status("EDIT");; ?></td>
-          </tr>
-          <tr>
-            <th>conversions</th>
-            <td><?php echo startTime("CONVERSIONS");; ?></td>
-            <td><?php echo endTime("CONVERSIONS");; ?></td>
-            <td><?php echo status("CONVERSIONS");; ?></td>
           </tr>
           <tr>
             <th>model</th>
