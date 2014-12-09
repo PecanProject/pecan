@@ -1,5 +1,8 @@
 #!/usr/bin/Rscript
 
+args <- commandArgs(trailingOnly = TRUE)
+settings.file = args[1]
+
 ## See README in tests/ folder for details
 require("PEcAn.all")
 
@@ -34,7 +37,7 @@ unlink("pecan", recursive=TRUE)
 #db.showQueries(TRUE)
 
 # check settings
-settings <- read.settings('pecan.xml')
+settings <- read.settings(settings.file)
 
 # remove status file
 unlink(file.path(settings$outdir, "STATUS"))
@@ -50,6 +53,46 @@ status.start("META")
 if('meta.analysis' %in% names(settings)) {
   run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database$bety)
 }
+status.end()
+
+# do conversions
+status.start("CONVERSIONS")
+for(i in 1:length(settings$run$inputs)) {
+  input <- settings$run$inputs[[i]]
+  # fia database
+  if (input['input'] == 'fia') {
+    fia.to.psscss(settings)
+  }
+
+  # met download
+  if (input['input'] == 'Ameriflux') {
+    # start/end date for weather
+    start_date <- settings$run$start.date
+    end_date <- settings$run$end.date
+
+    # site
+    site <- sub(".* \\((.*)\\)", "\\1", settings$run$site$name)
+
+    # download data
+    fcn <- paste("download", input['input'], sep=".")
+    do.call(fcn, list(site, file.path("/tmp/met", input['input']), start_date=start_date, end_date=end_date))
+
+    # convert to CF
+    met2CF.Ameriflux(file.path("/tmp/met", input['input']), site, "/tmp/met/cf", start_date=start_date, end_date=end_date)
+
+    # gap filing
+    metgapfill("/tmp/met/cf", site, "/tmp/met/gapfill", start_date=start_date, end_date=end_date)
+
+    # model specific
+    load.modelpkg(input['output'])
+    fcn <- paste("met2model", input['output'], sep=".")
+    r <- do.call(fcn, list("/tmp/met/gapfill", site, file.path("/tmp/met", input['output']), start_date=start_date, end_date=end_date))
+    settings$run$inputs[[i]] <- r[['file']]
+  }
+
+  # narr download
+}
+saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
 status.end()
 
 # write configurations

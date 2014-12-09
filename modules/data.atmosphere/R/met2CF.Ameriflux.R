@@ -40,6 +40,22 @@ copyvals <- function(nc1, var1, nc2, var2, dim2, units2=NA, conv=NULL, missval=-
     }
 }
 
+getLatLon <- function(nc1) {
+  loc <- ncatt_get(nc=nc1, varid=0, attname='site_location')
+  if (loc$hasatt) {
+    lat <- as.numeric(substr(loc$value,20,28))
+    lon <- as.numeric(substr(loc$value,40,48))
+    return(c(lat, lon))
+  } else {
+    lat <- ncatt_get(nc=nc1, varid=0, attname='geospatial_lat_min')
+    lon <- ncatt_get(nc=nc1, varid=0, attname='geospatial_lon_min')
+    if (lat$hasatt && lon$hasatt) {
+      return(c(as.numeric(lat$value), as.numeric(lon$value)))
+    }
+  }
+  logger.severe("Could not get site location for file.")
+}
+
 ##' Get meteorology variables from Ameriflux L2 netCDF files and convert to netCDF CF format
 ##'
 ##' @name met2CF.Ameriflux
@@ -94,29 +110,28 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
         
     # get dimension and site info
     tdim <- nc1$dim[["DTIME"]]
-    loc <- ncatt_get(nc=nc1, varid=0, attname='site_location')
     
     # create new coordinate dimensions based on site location lat/lon
+    latlon <- getLatLon(nc1)
     lat <- ncdim_def(name='latitude', units='', vals=1:1, create_dimvar=FALSE)
     lon <- ncdim_def(name='longitude', units='', vals=1:1, create_dimvar=FALSE)
     time <- ncdim_def(name='time', units=tdim$units, vals=tdim$vals, create_dimvar=TRUE, unlim=TRUE)
     dim=list(lat,lon,time)
     
     # copy lat attribute to latitude
-    vals <- rep(as.numeric(substr(loc$value,20,28)), tdim$len)
+    print(latlon)
     var <- ncvar_def(name="latitude",
                      units="degree_north",
                      dim=(list(lat,lon,time)), missval=as.numeric(-9999))
     nc2 <- nc_create(filename=new.file, vars=var, verbose=verbose)
-    ncvar_put(nc=nc2, varid='latitude', vals=vals)
-
+    ncvar_put(nc=nc2, varid='latitude', vals=rep(latlon[1], tdim$len))
+    
     # copy lon attribute to longitude
-    vals <- rep(as.numeric(substr(loc$value,40,48)), tdim$len)
     var <- ncvar_def(name="longitude",
                      units="degree_east",
                      dim=(list(lat,lon,time)), missval=as.numeric(-9999))
     nc2 <- ncvar_add(nc=nc2, v=var, verbose=verbose)
-    ncvar_put(nc=nc2, varid='longitude', vals=vals)
+    ncvar_put(nc=nc2, varid='longitude', vals=rep(latlon[2], tdim$len))
     
     # Convert all variables, this will include conversions or computations
     # to create values from original file. In case of conversions the steps
@@ -136,6 +151,11 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
     copyvals(nc1=nc1, var1='PRESS',
              nc2=nc2, var2='air_pressure', units2='Pa', dim2=dim, 
              conv=function(x) { x * 1000 }, verbose=verbose)
+    
+    # convert CO2 to mole_fraction_of_carbon_dioxide_in_air
+    copyvals(nc1=nc1, var1='CO2',
+             nc2=nc2, var2='mole_fraction_of_carbon_dioxide_in_air', units2='mole/mole', dim2=dim, 
+             conv=function(x) { x * 1e6 }, verbose=verbose)
     
     # convert TS1 to soil_temperature
     copyvals(nc1=nc1, var1='TS1',
