@@ -181,7 +181,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, over
       ncvar_put(nc,varid='surface_downwelling_longwave_flux_in_air',vals=Lw_f)
     }
     if(n_Ts1>0&&n_Ts1<nelem) {
-      Ts1 <- Extracted[,'Ts1']
+      Ts1 <- Extracted[,'Ts1_f']
       ncvar_put(nc,varid='soil_temperature',vals=Ts1)
     }
     if(n_VPD>0&&n_VPD<nelem) {
