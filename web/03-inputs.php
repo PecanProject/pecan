@@ -108,18 +108,15 @@ $stmt->closeCursor();
 
 // add special inputs based on conversions
 if (isset($db_fia_database) && ($db_fia_database != "")) {
-  foreach($inputs as &$input) {
-    if ($input['tag'] == "pss") {
-      $input['files'][] = array("id"=>"fia.pss",
-                                "name"=>"Use FIA");
+  foreach($inputs as &$x) {
+    if ($x['tag'] == "pss") {
+      $x['files'][] = array("id"=>"fia.pss", "name"=>"Use FIA");
     }
-    if ($input['tag'] == "css") {
-      $input['files'][] = array("id"=>"fia.css",
-                                "name"=>"Use FIA");
+    if ($x['tag'] == "css") {
+      $x['files'][] = array("id"=>"fia.css", "name"=>"Use FIA");
     }
-    if ($input['tag'] == "site") {
-      $input['files'][] = array("id"=>"fia.site",
-                                "name"=>"Use FIA");
+    if ($x['tag'] == "site") {
+      $x['files'][] = array("id"=>"fia.site", "name"=>"Use FIA");
     }
   }
 }
@@ -134,10 +131,9 @@ if (preg_match("/ \(US-.*\)$/", $siteinfo["sitename"])) {
   $modeltypes=$stmt->fetchAll(PDO::FETCH_COLUMN, 0);
   $stmt->closeCursor();
   foreach($modeltypes as $type) {
-    foreach($inputs as &$input) {
-      if ($input['tag'] == "met") {
-        $input['files'][] = array("id"=>"Ameriflux." . $type,
-                                  "name"=>"Use Ameriflux");
+    foreach($inputs as &$x) {
+      if ($x['tag'] == "met") {
+        $x['files'][] = array("id"=>"Ameriflux." . $type, "name"=>"Use Ameriflux");
       }
     }
   }
@@ -171,12 +167,14 @@ $stmt->closeCursor();
 <?php }?>
 <script type="text/javascript">
   function validate() {
+    $("#next").removeAttr("disabled");       
+    $("#error").html("&nbsp;");
+
     // check PFTs
     if ($("#pft").val() == null) {
       $("#next").attr("disabled", "disabled");
       $("#error").html("Select a pft to continue");
       $("#pftlabel").html("PFT<sup>*</sup>");
-      return;
 <?php if ($betydb != "") { ?>
     } else {
       $("#pftlabel").html("PFT<sup>*</sup> (Show in <a href=\"<?php echo $betydb; ?>/pfts/" + $("#pft option:selected")[0].getAttribute("data-id") + "\" target=\"BETY\">BETY</a>)");
@@ -191,7 +189,6 @@ $stmt->closeCursor();
     if ($("#<?php echo $input['tag']; ?>").val() == null) {
       $("#next").attr("disabled", "disabled");
       $("#error").html("Missing value for <?php echo $input['name']; ?>");
-      return;
     }
 <?php
     }
@@ -201,23 +198,12 @@ $stmt->closeCursor();
     // check dates
     if ($("#start").length != 0) {
       var start = checkDate($("#start").val(), "Start");
-      if (!start) {
-        return;
-      }
       var end = checkDate($("#end").val(), "End");
-      if (!end) {
-        return;
-      }
       if (start >= end) {
         $("#next").attr("disabled", "disabled");
         $("#error").html("End date should be after start date.");
-        return;
       }
     }
-
-    // all is OK
-    $("#next").removeAttr("disabled");       
-    $("#error").html("&nbsp;");
   }
       
   function prevStep() {
@@ -228,27 +214,27 @@ $stmt->closeCursor();
     $("#formnext").submit();
   }
   
-    function checkDate(date, field) {
-      var arr = date.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
-        if (arr == null) {
-          $("#next").attr("disabled", "disabled");
-          $("#error").html(field + " date should be entered as \"YYYY/MM/DD\"");
-            return false;
+  function checkDate(date, field) {
+    var arr = date.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+    if (arr == null) {
+      $("#next").attr("disabled", "disabled");
+      $("#error").html(field + " date should be entered as \"YYYY/MM/DD\"");
+      return "";
     }
 
-        arr[1] = parseInt(arr[1], 10);
-        arr[2] = parseInt(arr[2], 10)-1;
-        arr[3] = parseInt(arr[3], 10);
-        var test = new Date(arr[1], arr[2], arr[3]);
+    arr[1] = parseInt(arr[1], 10);
+    arr[2] = parseInt(arr[2], 10)-1;
+    arr[3] = parseInt(arr[3], 10);
+    var test = new Date(arr[1], arr[2], arr[3]);
 
-        if (arr[1] != test.getFullYear() || arr[2] != test.getMonth() || arr[3] != test.getDate()) {
-          $("#next").attr("disabled", "disabled");
-          $("#error").html(field + "  date is not a valid date.");
-            return false;
-        }
-
-        return test;
+    if (arr[1] != test.getFullYear() || arr[2] != test.getMonth() || arr[3] != test.getDate()) {
+      $("#next").attr("disabled", "disabled");
+      $("#error").html(field + "  date is not a valid date.");
+      return "";
     }
+
+    return test;
+  }
 
 <?php if ($offline) { ?>
   $(document).ready(function () {
