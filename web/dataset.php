@@ -66,7 +66,7 @@ switch ($type) {
 		break;
 		
 	case "plot":
-		if (!isset($_REQUEST['run']) || !is_numeric($_REQUEST['run'])) {
+		if (!isset($_REQUEST['run'])) {
 			die("Need run.");
 		}
 		$run=$_REQUEST['run'];
