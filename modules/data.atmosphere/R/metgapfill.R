@@ -43,7 +43,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, over
     
     # check if input exists
     if (!file.exists(old.file)) {
-      logger.sever("Missing input file for year", year, "in folder", in.path)
+      logger.severe("Missing input file for year", year, "in folder", in.path)
     }
         
     # create array with results
@@ -97,10 +97,13 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, over
     badRg <- is.na(Rg)    
     PAR[badPAR] = Rg[badPAR] * 2.1 / 1e6
     Rg[badRg] = 1e6 * PAR[badRg] / 2.1
+    Rg[Rg<0] = 0.0
+    PAR[PAR<0]= 0.0
     
     ## make a data frame, convert -9999 to NA, convert to degrees C
     EddyData.F <- data.frame(Tair,Rg,rH,PAR,precip,sHum,Lw,Ts1,VPD,ws,co2,press,east_wind,north_wind)
     EddyData.F['Tair'] <- EddyData.F['Tair'] - 273.15
+    EddyData.F['VPD'] <- EddyData.F['VPD']/1000.0
 
     ## Optional need: Compute VPD
     ##    EddyData.F <- cbind(EddyData.F,VPD=fCalcVPDfromRHandTair(EddyData.F$rH, EddyData.F$Tair))   
@@ -149,7 +152,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, over
     Rg_f <- Rg
     Tair_f <- Tair
     VPD_f <- VPD
-    rH_f <- Rh
+    rH_f <- rH
     PAR_f <- PAR
     precip_f <- precip
     sHum_f <- sHum
@@ -166,20 +169,20 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, over
     north_wind_f <- north_wind
     north_wind_f[is.na(north_wind_f)] <- ws_f[is.na(north_wind_f)]
     
-    if(n_Rg>0&&n_Rg<maxbad) EddyProc.C$sMDSGapFill('Rg', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
-    if(n_Tair>0&&n_Tair<maxbad) EddyProc.C$sMDSGapFill('Tair', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
-    if(n_VPD>0&&n_VPD<maxbad) EddyProc.C$sMDSGapFill('VPD', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
-    if(n_rH>0&&n_rH<maxbad) EddyProc.C$sMDSGapFill('rH', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
-    if(n_PAR>0&&n_PAR<maxbad) EddyProc.C$sMDSGapFill('PAR', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
-    if(n_precip>0&&n_precip<maxbad) EddyProc.C$sMDSGapFill('precip', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
-    if(n_sHum>0&&n_sHum<maxbad) EddyProc.C$sMDSGapFill('sHum', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
-    if(n_Lw>0&&n_Lw<maxbad) EddyProc.C$sMDSGapFill('Lw', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
-    if(n_Ts1>0&&n_Ts1<maxbad) EddyProc.C$sMDSGapFill('Ts1', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
-    if(n_ws>0&&n_ws<maxbad) EddyProc.C$sMDSGapFill('ws', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose) 
-    if(n_co2>0&&n_co2<maxbad) EddyProc.C$sMDSGapFill('co2', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose) 
-    if(n_press>0&&n_press<maxbad) EddyProc.C$sMDSGapFill('press', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
-    if(n_east_wind>0&&n_east_wind<maxbad) EddyProc.C$sMDSGapFill('east_wind', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose) 
-    if(n_north_wind>0&&n_north_wind<maxbad) EddyProc.C$sMDSGapFill('north_wind', FillAll.b=TRUE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
+    if(n_Rg>0&&n_Rg<maxbad) EddyProc.C$sMDSGapFill('Rg', FillAll.b=FALSE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
+    if(n_Tair>0&&n_Tair<maxbad) EddyProc.C$sMDSGapFill('Tair', FillAll.b=FALSE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
+    if(n_VPD>0&&n_VPD<maxbad) EddyProc.C$sMDSGapFill('VPD', FillAll.b=FALSE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
+    if(n_rH>0&&n_rH<maxbad) EddyProc.C$sMDSGapFill('rH', FillAll.b=FALSE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
+    if(n_PAR>0&&n_PAR<maxbad) EddyProc.C$sMDSGapFill('PAR', FillAll.b=FALSE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
+    if(n_precip>0&&n_precip<maxbad) EddyProc.C$sMDSGapFill('precip', FillAll.b=FALSE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
+    if(n_sHum>0&&n_sHum<maxbad) EddyProc.C$sMDSGapFill('sHum', FillAll.b=FALSE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
+    if(n_Lw>0&&n_Lw<maxbad) EddyProc.C$sMDSGapFill('Lw', FillAll.b=FALSE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
+    if(n_Ts1>0&&n_Ts1<maxbad) EddyProc.C$sMDSGapFill('Ts1', FillAll.b=FALSE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
+    if(n_ws>0&&n_ws<maxbad) EddyProc.C$sMDSGapFill('ws', FillAll.b=FALSE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose) 
+    if(n_co2>0&&n_co2<maxbad) EddyProc.C$sMDSGapFill('co2', FillAll.b=FALSE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose) 
+    if(n_press>0&&n_press<maxbad) EddyProc.C$sMDSGapFill('press', FillAll.b=FALSE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
+    if(n_east_wind>0&&n_east_wind<maxbad) EddyProc.C$sMDSGapFill('east_wind', FillAll.b=FALSE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose) 
+    if(n_north_wind>0&&n_north_wind<maxbad) EddyProc.C$sMDSGapFill('north_wind', FillAll.b=FALSE,V1.s='Rg',V2.s='VPD',V3.s='Tair',Verbose.b=verbose)
     
     ## Extract filled variables into data frame
     ## print('Extracting dataframe elements and writing back to nc file')
@@ -207,18 +210,17 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, over
     if (length(which(is.na(precip_f))) > 0) error <- c(error, "precipitation_flux")
     ncvar_put(nc,varid='precipitation_flux',vals=precip_f)
     
-    if(n_sHum>0&&n_sHum<maxbad&&('sHum_f' %in% colnames(Extracted))) sHum_f <- Extracted[,'sHum_f']
-    sHum_f[is.na(Shum_f)] = 0.622*(rH_f[is.na(Shum_f)]/100.0)*(get.es(Tair[is.na(Shum_f)]-273.15) / 1e3)
+    if(('sHum_f' %in% colnames(Extracted))) sHum_f <- Extracted[,'sHum_f']
+    sHum_f[is.na(sHum_f)] = 0.622*(rH_f[is.na(sHum_f)]/100.0)*(get.es(Tair_f[is.na(sHum_f)]-273.15) / 1e3)
     if (length(which(is.na(sHum_f))) > 0) error <- c(error, "specific_humidity")
     ncvar_put(nc,varid='specific_humidity',vals=sHum_f)
     
-    if(n_Lw>0&&n_Lw<maxbad&&('Lw_f' %in% colnames(Extracted))) {
-    Lw_f <- Extracted[,'Lw_f']
+    if(('Lw_f' %in% colnames(Extracted))) Lw_f <- Extracted[,'Lw_f']
     Lw_f[is.na(Lw_f)] <- 0.83 * 5.67e-8 * Tair_f^4
     if (length(which(is.na(Lw_f))) > 0) error <- c(error, "surface_downwelling_longwave_flux_in_air")
     ncvar_put(nc,varid='surface_downwelling_longwave_flux_in_air',vals=Lw_f)
 
-    if(n_Ts1>0&&n_Ts1<maxbad&&('Ts1_f' %in% colnames(Extracted))) Ts1_f <- Extracted[,'Ts1_f']
+    if(('Ts1_f' %in% colnames(Extracted))) Ts1_f <- Extracted[,'Ts1_f']
     if(sum(is.na(Ts1_f)) > 0) {   
       Tair_ff <- Tair_f
       Tair_ff[is.na(Tair_ff)] <- mean(Tair_ff,na.rm=TRUE)
@@ -231,7 +233,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, over
     if (length(which(is.na(Ts1_f))) > 0) error <- c(error, "soil_temperature")
     ncvar_put(nc,varid='soil_temperature',vals=Ts1_f)
 
-    if(('VPD_f' %in% colnames(Extracted))) VPD_f <- Extracted[,'VPD_f']
+    if(('VPD_f' %in% colnames(Extracted))) VPD_f <- Extracted[,'VPD_f']*1000.0
     if (length(which(is.na(VPD_f))) > 0) error <- c(error, "water_vapor_saturation_deficit")
     ncvar_put(nc,varid='water_vapor_saturation_deficit',vals=VPD_f)
     
