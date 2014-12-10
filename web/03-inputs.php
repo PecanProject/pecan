@@ -71,7 +71,8 @@ $stmt->closeCursor();
 $stmt = $pdo->prepare("SELECT tag, required, formats.name" .
                       " FROM modeltypes_formats, models, formats" .
                       " WHERE models.id=? AND modeltypes_formats.modeltype_id=models.modeltype_id" .
-                      " AND modeltypes_formats.format_id=formats.id AND modeltypes_formats.input;");
+                      " AND modeltypes_formats.format_id=formats.id AND modeltypes_formats.input" .
+                      " ORDER BY formats.name;");
 if (!$stmt->execute(array($modelid))) {
   die('Invalid query: ' . error_database());
 }
