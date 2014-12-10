@@ -32,7 +32,12 @@ download.Ameriflux <- function(site, outfolder, start_date, end_date, overwrite=
   baseurl <- paste0("http://cdiac.ornl.gov/ftp/ameriflux/data/Level2/Sites_ByID/", site, "/with_gaps/")
   
   # fetch all links
-  links <- xpathSApply(htmlParse(baseurl), "//a/@href")
+  links <- tryCatch({
+    xpathSApply(htmlParse(baseurl), "//a/@href")
+  }, error = function(e) {
+    logger.severe("Could not get information about", site, ".",
+                  "Is this an Ameriflux site?")
+  })
   
   # find all links we need based on the years and download them
   rows <- end_year - start_year + 1
