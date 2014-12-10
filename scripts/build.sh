@@ -15,13 +15,14 @@ cd $(dirname $0)/..
 export _R_CHECK_FORCE_SUGGESTS_="FALSE"
 
 # these variables are set using the command line arguments below
-EMAIL=""
-GIT="no"
-FORCE="no"
 CHECK="no"
-INSTALL="yes"
+DEPENDENCIES="yes"
 DOCUMENTATION="no"
-TEST="no"
+EMAIL=""
+FORCE="no"
+GIT="yes"
+INSTALL="yes"
+TESTS="no"
 
 # no arguments means build
 if [ $# == 0 ]; then
@@ -36,55 +37,93 @@ while true; do
   case "$1" in
     --help|-h)
       echo "$0 <options>"
-      echo " -c, --check         : check the R packages before install"
-      echo " -d, --documentation : (re)generates all Rd files"
-      echo " -e, --email         : send email to following people on success"
-      echo " -f, --force         : force a build"
-      echo " -g, --git           : do a git pull"
-      echo " -h, --help          : this help text"
-      echo " -i, --install       : install all R packages (default=yes)"
-      echo " -n, --noinstall     : do not install all R packages"
-      echo " -t, --test          : run tests"
+      echo " --check         : check the R packages before install"
+      echo " --dependencies  : install any dependencies (default)"
+      echo " --documentation : (re)generates all Rd files"
+      echo " --email         : send email to following people on success"
+      echo " --force         : force a build (default)"
+      echo " --git           : do a git pull (default)"
+      echo " --help          : this help text"
+      echo " --install       : do not install all R packages (default)"
+      echo " --tests         : run tests"
       echo ""
+      echo "You can prefix any option with --no- to set it to ignore that option,"
+      echo "for example --no-git will not do a git pull."
+      echo ""
+      echo "If you do not pass any arguments it will assume that you want to build"
+      echo "even if there are no changes pulled from git. You can change this by"
+      echo "using --no-force"
       exit
     ;;
 
-    --check|-c)
+    --check)
       CHECK="yes"
       ;;
 
-    --documentation|-d)
+    --no-check)
+      CHECK="no"
+      ;;
+
+    --dependencies)
+      DEPENDENCIES="yes"
+      ;;
+
+    --no-dependencies)
+      DEPENDENCIES="no"
+      ;;
+
+    --documentation)
       DOCUMENTATION="yes"
       ;;
 
-    --email|-e)
+    --no-documentation)
+      DOCUMENTATION="no"
+      ;;
+
+    --email)
       EMAIL="$2"
       shift
       ;;
 
-    --force|-f)
+    --no-email)
+      EMAIL=""
+      ;;
+
+    --force)
       FORCE="yes"
       ;;
 
-    --git|-g)
+    --no-force)
+      FORCE="no"
+      ;;
+
+    --git)
       GIT="yes"
       ;;
 
-    --install|-i)
+    --no-git)
+      GIT="no"
+      ;;
+
+    --install)
       INSTALL="yes"
       ;;
 
-    --noinstall|-n)
+    --no-install)
       INSTALL="no"
       ;;
 
-    --test|-t)
-      TEST="yes"
+    --tests)
+      TESTS="yes"
+      ;;
+
+    --no-tests)
+      TESTS="no"
       ;;
 
     *)
       echo "unknown argument $1"
-      exit
+      exit 1
       ;;
   esac
   shift
@@ -144,6 +183,18 @@ if [ "$FORCE" == "yes" ]; then
 fi
 
 STATUS="OK"
+
+# install all dependencies
+if [ "$DEPENDENCIES" == "yes" ]; then
+  echo "----------------------------------------------------------------------" >> changes.log
+  echo "DEPENDENCIES" >> changes.log
+  echo "----------------------------------------------------------------------" >> changes.log
+  ./scripts/install.dependencies.R >> changes.log 2>&1
+  if [ "$EMAIL" == "" ]; then
+    cat changes.log
+    rm changes.log
+  fi
+fi
 
 # generate documentation
 if [ "$DOCUMENTATION" == "yes" ]; then
@@ -257,7 +308,7 @@ if [ "$FORCE" == "yes" ]; then
 fi
 
 # run tests
-if [ "$TEST" == "yes" ]; then
+if [ "$TESTS" == "yes" ]; then
   START=`date +'%s'`
   cd tests
   for f in ${HOSTNAME}.*.xml; do
