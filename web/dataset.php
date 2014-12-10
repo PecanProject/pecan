@@ -47,7 +47,7 @@ switch ($type) {
 		}
 		$name = $_REQUEST['name'];
 		
-		$file = realpath("$folder/$name");
+		$file = canonicalize("$folder/$name");
 		if (substr($file, 0, strlen($folder)) != $folder) {
 			die("Invalid file name specified.");			
 		}
@@ -109,5 +109,21 @@ readfile($file);
 
 if ($type == "plot") {
   unlink($file);
+}
+
+function canonicalize($address)
+{
+    $address = explode('/', $address);
+    $keys = array_keys($address, '..');
+
+    foreach($keys AS $keypos => $key)
+    {
+        array_splice($address, $key - ($keypos * 2 + 1), 2);
+    }
+
+    $address = implode('/', $address);
+    $address = str_replace('./', '', $address);
+
+    return $address;
 }
 ?>

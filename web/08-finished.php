@@ -79,12 +79,6 @@ if (is_dir("$folder/pft")) {
         continue;
       }
       $pfts[$pft][] = $file;
-      // if (preg_match("/.pdf$/", $file)) {
-      //   $pfts[$pft][] = $file;
-      // }
-      // if (preg_match("/.log$/", $file)) {
-      //   $pfts[$pft][] = $file;
-      // }
     }
   }
 }
@@ -102,7 +96,7 @@ if (is_dir("$folder/run")) {
     # input files
     $inpfile[$runid] = array();
     foreach(scandir("$folder/run/$runid") as $file) {
-      if (is_dir("$folder/run/$runid/$file") || is_link("$folder/run/$runid/$file")) {
+      if (is_dir("$folder/run/$runid/$file")) {
         continue;
       }
       $inpfile[$runid][] = $file;
@@ -112,7 +106,7 @@ if (is_dir("$folder/run")) {
     $outfile[$runid] = array();
     $outplot[$runid] = array();
     foreach(scandir("$folder/out/$runid") as $file) {
-      if (is_dir("$folder/out/$runid/$file") || is_link("$folder/out/$runid/$file")) {
+      if (is_dir("$folder/out/$runid/$file")) {
         continue;
       }
       if (preg_match('/^\d\d\d\d.nc.var$/', $file)) {
