@@ -20,6 +20,7 @@ Depends:
     PEcAn.MA,
     PEcAn.utils,
     PEcAn.uncertainty,
+    PEcAn.data.atmosphere,
     PEcAn.data.land,
     PEcAn.data.remote,
     PEcAn.assim.batch,

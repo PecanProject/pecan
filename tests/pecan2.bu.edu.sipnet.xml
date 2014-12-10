@@ -4,12 +4,12 @@
 
   <database>
     <bety>
-      <driver>PostgreSQL</driver>
-      <user>bety</user>
-      <password>bety</password>
-      <host>localhost</host>
-      <dbname>bety</dbname>
-      <write>FALSE</write>
+     <user>bety</user>
+     <password>bety</password>
+     <host>psql-pecan.bu.edu</host>
+     <dbname>bety</dbname>
+     <driver>PostgreSQL</driver>
+     <write>FALSE</write>
     </bety>
   </database>
 
@@ -23,10 +23,17 @@
     <variable>NPP</variable>
   </ensemble>
 
+  <sensitivity.analysis>
+    <quantiles>
+      <sigma>-1</sigma>
+      <sigma>1</sigma>
+    </quantiles>
+    <variable>NPP</variable>
+  </sensitivity.analysis>
+
   <model>
-    <id>10</id>
-    <type>SIPNET</type>
     <binary>/usr/local/bin/sipnet.runk</binary>
+    <type>SIPNET</type>
   </model>
 
   <run>
@@ -34,7 +41,7 @@
       <id>772</id>
     </site>
     <inputs>
-      <met>/Users/kooper/Work/EBI/sites/niwot/niwot.clim</met>
+      <met>/home/dietze/sites/niwot/niwot.clim</met>
     </inputs>
     <start.date>2002-01-01 00:00:00</start.date>
     <end.date>2005-12-31 00:00:00</end.date>

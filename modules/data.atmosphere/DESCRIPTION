@@ -16,7 +16,8 @@ Depends:
     udunits2,
     ggplot2,
     data.table,
-    lubridate
+    lubridate,
+    REddyProc
 Suggests:
     RNCEP,
     PEcAn.utils
