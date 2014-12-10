@@ -78,15 +78,19 @@ for(year in start_year:end_year) {
   ## extract variables
   lat  <- ncvar_get(nc,"latitude")
   lon  <- ncvar_get(nc,"longitude")
-  Tair <- ncvar_get(nc,"air_temperature")
+  Tair <- ncvar_get(nc,"air_temperature")  ## in Kelvin
   Qair <- ncvar_get(nc,"specific_humidity")  #humidity (kg/kg)
   U <- ncvar_get(nc,"eastward_wind")
   V <- ncvar_get(nc,"northward_wind")
+  
+  ws <- try(ncvar_get(nc,"wind_speed"))
+  if(!is.numeric(ws)) ws = sqrt(U^2+V^2)
+  
   Rain <- ncvar_get(nc,"precipitation_flux")
-  pres <- ncvar_get(nc,"air_pressure")
-  SW   <- ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air")
-
-  PAR  <- try(ncvar_get(nc,"surface_downwelling_photosynthetic_photon_flux_in_air"))
+  pres <- ncvar_get(nc,"air_pressure") ## in pascal
+  SW   <- ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air") ## in W/m2
+  
+  PAR  <- try(ncvar_get(nc,"surface_downwelling_photosynthetic_photon_flux_in_air")) ## in mol/m2/s
   if(!is.numeric(PAR)) PAR = SW*0.45 
 
   soilT <- try(ncvar_get(nc,"soil_temperature"))
@@ -96,10 +100,10 @@ for(year in start_year:end_year) {
     filt = exp(-(1:length(Tair))/tau)
     filt = (filt/sum(filt))
     soilT = convolve(Tair, filt) - 273.15
-  }
+  } else soilT <- soilT - 273.15
 
   SVP = ud.convert(get.es(Tair-273.15),"millibar","Pa") ## Saturation vapor pressure
-  VPD <- try(ncvar_get(nc,"water_vapor_saturation_deficit"))
+  VPD <- try(ncvar_get(nc,"water_vapor_saturation_deficit"))  ## in Pa
   if(!is.numeric(VPD)){
     VPD = SVP*(1-qair2rh(Qair,Tair-273.15))
   }
@@ -147,12 +151,12 @@ for(year in start_year:end_year) {
   tmp <- cbind(rep(0,n),yr,doy,hr,rep(dt/86400,n),
                Tair-273.15,
                soilT, 
-               par2ppfd(PAR), #converts to mol/m2
+               PAR*dt, #mol/m2/hr
                Rain*dt, ## converts from mm/s to mm
                VPD,
                VPDsoil,
                e_a,
-               sqrt(U^2+V^2), ## wind
+               ws, ## wind
                rep(0.6,n) ## put soil water at a constant. Don't use, set SIPNET to MODEL_WATER = 1
                )
 
