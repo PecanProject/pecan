@@ -28,6 +28,10 @@ if (!isset($_REQUEST['workflowid'])) {
 }
 $workflowid=$_REQUEST['workflowid'];
 
+// allow for switching x-axis
+$xaxis=isset($_REQUEST['xaxis']);
+$xaxis=TRUE;
+
 // get run information
 $query = "SELECT * FROM workflows WHERE workflows.id=$workflowid";
 $result = $pdo->query($query);
@@ -223,8 +227,9 @@ if (is_dir("$folder/run")) {
   function showGraph() {
     var run = $('#runid').val();
     var year = $('#graphyear').val();
-    var variable = $('#graphvar').val();
-    var url="dataset.php?workflowid=<?php echo $workflowid; ?>&type=plot&run=" + run + "&year=" + year + "&var=" + variable + "&width=" + ($("#output").width()-10) + "&height=" + ($("#output").height() - 10);
+    var xvar = $('#graphxvar').val();
+    var yvar = $('#graphyvar').val();
+    var url="dataset.php?workflowid=<?php echo $workflowid; ?>&type=plot&run=" + run + "&year=" + year + "&xvar=" + xvar + "&yvar=" + yvar + "&width=" + ($("#output").width()-10) + "&height=" + ($("#output").height() - 10);
     $("#output").html("<img src=\"" + url + "\">");    
   }
 
@@ -312,13 +317,31 @@ if (is_dir("$folder/run")) {
     var run = $('#runid').val();
     var year = $('#graphyear').val();
 
-    $('#graphvar').empty();
+<?php if ($xaxis) { ?>
+    $('#graphxvar').empty();
+<?php } ?>
+    $('#graphyvar').empty();
     $.each(outplot[run][year], function(key, value) {
-         $('#graphvar')
+         $('#graphxvar')
              .append($("<option></option>")
-             .attr("value", key)
-             .text(value)); 
+                .attr("value", key)
+                .text(value)); 
+         $('#graphyvar')
+             .append($("<option></option>")
+                .attr("value", key)
+                .text(value)); 
     });
+<?php if ($xaxis) { ?>
+    $('#graphxvar')
+             .append($("<option></option>")
+                .attr("value", "time")
+                .text("time")
+                .prop("selected", true));
+<?php } ?>
+    $('#graphyvar')
+             .append($("<option></option>")
+                .attr("value", "time")
+                .text("time"));
   }
 
   function endsWith(haystack, needle) {
@@ -369,8 +392,21 @@ if (is_dir("$folder/run")) {
       </select>
       <div class="spacer"></div>
       
+<?php if ($xaxis) { ?>
+      <label>X-axis</label>
+      <select id="graphxvar">
+      </select>
+      <div class="spacer"></div>
+<?php } else { ?>
+      <input type="hidden" id="graphxvar" value="time"/>
+<?php } ?>
+
+<?php if ($xaxis) { ?>
+      <label>Y-axis</label>
+<?php } else { ?>
       <label>Variable</label>
-      <select id="graphvar">
+<?php } ?>
+      <select id="graphyvar">
       </select>
       <div class="spacer"></div>
       
