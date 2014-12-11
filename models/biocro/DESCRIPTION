@@ -18,7 +18,9 @@ Depends:
     data.table,
     XML
 Suggests:
-    BioCro
+    BioCro,
+    testthat,
+    RPostgreSQL
 License: FreeBSD + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes
