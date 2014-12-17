@@ -103,6 +103,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, over
     ## make a data frame, convert -9999 to NA, convert to degrees C
     EddyData.F <- data.frame(Tair,Rg,rH,PAR,precip,sHum,Lw,Ts1,VPD,ws,co2,press,east_wind,north_wind)
     EddyData.F['Tair'] <- EddyData.F['Tair'] - 273.15
+    EddyData.F['Ts1'] <- EddyData.F['Ts1'] - 273.15
     EddyData.F['VPD'] <- EddyData.F['VPD']/1000.0
 
     ## Optional need: Compute VPD
@@ -220,7 +221,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, over
     if (length(which(is.na(Lw_f))) > 0) error <- c(error, "surface_downwelling_longwave_flux_in_air")
     ncvar_put(nc,varid='surface_downwelling_longwave_flux_in_air',vals=Lw_f)
 
-    if(('Ts1_f' %in% colnames(Extracted))) Ts1_f <- Extracted[,'Ts1_f']
+    if(('Ts1_f' %in% colnames(Extracted))) Ts1_f <- Extracted[,'Ts1_f'] + 273.15
     if(sum(is.na(Ts1_f)) > 0) {   
       Tair_ff <- Tair_f
       Tair_ff[is.na(Tair_ff)] <- mean(Tair_ff,na.rm=TRUE)
