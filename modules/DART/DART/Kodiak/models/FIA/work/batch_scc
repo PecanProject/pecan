@@ -1,0 +1,45 @@
+#!/bin/sh
+#
+# Example SGE script for running mpi jobs
+#
+# Submit job with the command: qsub script
+#
+# Note: A line of the form "#$ qsub_option" is interpreted
+#       by qsub as if "qsub_option" was passed to qsub on
+#       the commandline.
+#
+# Set the hard runtime (aka wallclock) limit for this job,
+# default is 2 hours. Format: -l h_rt=HH:MM:SS
+#$ -l h_rt=2:00:00
+#
+# Invoke the mpi Parallel Environment for N processors.
+# There is no default value for N, it must be specified.
+
+#$ -pe mpi_16_tasks_per_node 16
+
+
+# Merge stderr into the stdout file, to reduce clutter.
+#$ -j y
+
+## end of qsub options
+
+# The system supports several different implemetations of MPI.
+# This variable is used by the mpirun command to set up the proper
+# runtime environment for the job. The allowed values are "openmpi"
+# (the default), "mpich," and "mpich2." The runtime setting should
+# match the setting in effect when the program was compiled.
+export MPI_IMPLEMENTATION=openmpi
+
+# By default, the script is executed in the directory from which
+# it was submitted with qsub. You might want to change directories
+# before invoking mpirun...
+# cd somewhere
+
+# The SLOTS variable is set by SGE to the number of processors
+# requested by the "-pe mpi N" option.
+
+PROG="filter"
+
+#mpirun -np $NSLOTS mpi_program arg1 arg2 ...
+#mpirun -np $NSLOTS $PROG "-r cputype=x5570"
+mpirun -np $NSLOTS $PROG
