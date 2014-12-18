@@ -53,26 +53,25 @@ convert.samples.ED <- function(trait.samples){
   if('Vcmax' %in% names(trait.samples)) {
     vcmax <- trait.samples[['Vcmax']]
     trait.samples[['Vcmax']] <- arrhenius.scaling(vcmax, old.temp = 25, new.temp = 15)
-  }
 
-  ## Convert leaf_respiration_rate_m2 to dark_resp_factor
-  if('leaf_respiration_rate_m2' %in% names(trait.samples)) {
-    leaf_resp = trait.samples[['leaf_respiration_rate_m2']]
+    ## Convert leaf_respiration_rate_m2 to dark_resp_factor; requires Vcmax
+    if('leaf_respiration_rate_m2' %in% names(trait.samples)) {
+      leaf_resp = trait.samples[['leaf_respiration_rate_m2']]
     
-    ## First scale variables to 15 degC
-    trait.samples[['leaf_respiration_rate_m2']] <- 
-    arrhenius.scaling(leaf_resp, old.temp = 25, new.temp = 15)
+      ## First scale variables to 15 degC
+      trait.samples[['leaf_respiration_rate_m2']] <- 
+      arrhenius.scaling(leaf_resp, old.temp = 25, new.temp = 15)
     
-    ## Calculate dark_resp_factor -- Will be depreciated when moving from older versions of ED2
-    trait.samples[['dark_respiration_factor']] <- trait.samples[['leaf_respiration_rate_m2']]/
-      vcmax_15
+      ## Calculate dark_resp_factor -- Will be depreciated when moving from older versions of ED2
+      trait.samples[['dark_respiration_factor']] <- trait.samples[['leaf_respiration_rate_m2']]/
+         trait.samples[['Vcmax']]
     
-    ## Remove leaf_respiration_rate from trait samples -- NO LONGER NEEDED
-    #remove <- which(names(trait.samples)=='leaf_respiration_rate_m2')
-    #trait.samples = trait.samples[-remove]
+      ## Remove leaf_respiration_rate from trait samples -- NO LONGER NEEDED
+      #remove <- which(names(trait.samples)=='leaf_respiration_rate_m2')
+      #trait.samples = trait.samples[-remove]
     
-  } ## End dark_respiration_factor loop
-  
+    } ## End dark_respiration_factor loop
+  } ## End Vcmax  
   # for debugging conversions
   #save(trait.samples, file = file.path(settings$outdir, 'trait.samples.Rdata'))
 
@@ -219,11 +218,12 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
     filename <- system.file(settings$model$edin, package = "PEcAn.ED2")
     if (filename == "") {
       if (!is.null(settings$model$revision)) {
-        filename <- system.file(paste0("ED2IN.r", settings$model$revision), package = "PEcAn.ED2")
+        rev <- gsub('^r', '', settings$model$revision)
       } else {
         model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database$bety)
-        filename <- system.file(paste0("ED2IN.r", model$revision), package = "PEcAn.ED2")
+        rev <- gsub('^r', '', model$revision)
       }
+      filename <- system.file(paste0("ED2IN.r", rev), package = "PEcAn.ED2")
     }
     if (filename == "") {
       logger.severe("Could not find ED template")
@@ -264,7 +264,22 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   }
   
   ##----------------------------------------------------------------------
-  ed2in.text <- gsub('@SITE_PSSCSS@', dirname(settings$run$inputs$site), ed2in.text)
+  # Get prefix of filename, append to dirname. 
+  # Assumes pattern 'DIR/PREFIX.lat<REMAINDER OF FILENAME>' 
+  # Slightly overcomplicated to avoid error if path name happened to contain '.lat'
+  prefix <- sub("\\.lat.*", "", basename(settings$run$inputs$site))
+  ed2in.text <- gsub('@SITE_PSSCSS@', 
+    file.path(dirname(settings$run$inputs$site),paste0(prefix, '.')), ed2in.text)
+  
+  # Warning if css/pss specified in settings 
+  if(!all(
+    identical(dirname(settings$run$inputs$site), dirname(settings$run$inputs$css)),
+    identical(dirname(settings$run$inputs$site), dirname(settings$run$inputs$pss)),
+    identical(prefix, sub("\\.lat.*", "", basename(settings$run$inputs$css))),
+    identical(prefix, sub("\\.lat.*", "", basename(settings$run$inputs$css))) ))
+    logger.warn("ED2 css/pss/site files have different path+prefix, but only site path+prefix will be used")
+  
+  ##----------------------------------------------------------------------
   ed2in.text <- gsub('@ED_VEG@', settings$run$inputs$veg, ed2in.text)
   ed2in.text <- gsub('@ED_SOIL@', settings$run$inputs$soil, ed2in.text)
   ed2in.text <- gsub('@ED_LU@', settings$run$inputs$lu, ed2in.text)

@@ -189,18 +189,38 @@ get.run.id <- function(run.type, index, trait = NULL, pft.name = NULL){
 ##' @export
 ##' @author unknown
 #--------------------------------------------------------------------------------------------------#
-listToXml <- function(item, tag){
-  if(typeof(item)!='list')
-    return(xmlNode(tag, item))
-  xml <- xmlNode(tag)
-  for(i in seq(length(item))) {
-    if (names(item[i]) == ".attrs") {
-      for(name in names(item$.attrs)) {
-        xmlAttrs(xml)[[name]] <- item$.attrs[[name]]
+listToXml <- function(item, tag) {
+  # just a textnode, or empty node with attributes
+  if(typeof(item) != 'list') {
+    if (length(item) > 1) {
+      xml <- xmlNode(tag)
+      for (name in names(item)) {
+        xmlAttrs(xml)[[name]] <- item[[name]]
       }
+      return(xml)
     } else {
-      xml <- append.xmlNode(xml, listToXml(item[[i]], names(item[i])))
+      return(xmlNode(tag, item))
     }
+  }
+
+  # create the node
+  if (identical(names(item), c("text", ".attrs"))) {
+    # special case a node with text and attributes
+    xml <- xmlNode(tag, item[['text']])
+  } else {
+    # node with child nodes
+    xml <- xmlNode(tag)
+    for(i in 1:length(item)) {
+      if (names(item)[i] != ".attrs") {
+        xml <- append.xmlNode(xml, listToXml(item[[i]], names(item)[i]))
+      }
+    }    
+  }
+  
+  # add attributes to node
+  attrs <- item[['.attrs']]
+  for (name in names(attrs)) {
+    xmlAttrs(xml)[[name]] <- attrs[[name]]
   }
   return(xml)
 }

@@ -11,45 +11,45 @@
 # PRIVATE FUNCTIONS
 # ----------------------------------------------------------------------
 data.fetch <- function(var, nc, fun=mean) {
-	# get a specific set of values from the HDF data
-	#
-	# Args:
-	#   var:    the variable to extract from the hdf data
-	#   nc:
-	#   time:
-	#   fun:    the function to apply to the data at the same time
-	#
-	# Returns:
-	#   values extracted from the nc data
-	if (var == "time") {
-		val <- unique(floor(nc$dim[['time']]$vals))
-		attr(val, "lbl") <- "Day of the year"
-		return(val)
-	}
-	
-	# some precomputations
-	indices  <- 0:length(nc$dim[['time']]$vals)
-	aggrlist <- list(floor(nc$dim[['time']]$vals))
-	
-	# aggregate the data
-	data <- ncvar_get(nc, var)
-	val <- aggregate(data[indices], by=aggrlist, FUN=fun)$x
-	
-	# get the label
-	title <- nc$var[[var]]$longname
-	units <- nc$var[[var]]$units
-	if ((title == "") && (units == "")) {
-		attr(val, "lbl") <- "Unknown"
-	} else if (title == "") {
-		attr(val, "lbl") <- paste("Unknown in ", units)
-	} else if (units == "") {
-		attr(val, "lbl") <- title
-	} else {
-		attr(val, "lbl") <- paste(title, "in", units)
-	}
-	
-	# done
-	return(val)
+  # get a specific set of values from the HDF data
+  #
+  # Args:
+  #   var:    the variable to extract from the hdf data
+  #   nc:
+  #   time:
+  #   fun:    the function to apply to the data at the same time
+  #
+  # Returns:
+  #   values extracted from the nc data
+  if (var == "time") {
+    val <- unique(floor(nc$dim[['time']]$vals))
+    attr(val, "lbl") <- "Day of the year"
+    return(val)
+  }
+  
+  # some precomputations
+  indices  <- 0:length(nc$dim[['time']]$vals)
+  aggrlist <- list(floor(nc$dim[['time']]$vals))
+  
+  # aggregate the data
+  data <- ncvar_get(nc, var)
+  val <- aggregate(data[indices], by=aggrlist, FUN=fun)$x
+  
+  # get the label
+  title <- nc$var[[var]]$longname
+  units <- nc$var[[var]]$units
+  if ((title == "") && (units == "")) {
+    attr(val, "lbl") <- "Unknown"
+  } else if (title == "") {
+    attr(val, "lbl") <- paste("Unknown in ", units)
+  } else if (units == "") {
+    attr(val, "lbl") <- title
+  } else {
+    attr(val, "lbl") <- paste(title, "in", units)
+  }
+  
+  # done
+  return(val)
 }
 
 # ----------------------------------------------------------------------
@@ -76,82 +76,79 @@ data.fetch <- function(var, nc, fun=mean) {
 ##' @param year the year this data is for (only used in the title).
 ##' @export
 ##' @author Rob Kooper
-plot.netcdf <- function(datafile, yvar, xvar='time', width=800, height=600, filename=NULL, year=NULL) {	
-	require(ncdf4)
-	require(stringr)
+plot.netcdf <- function(datafile, yvar, xvar='time', width=800, height=600, filename=NULL, year=NULL) {  
+  require(ncdf4)
+  require(stringr)
 
-	# open netcdf file
-	nc <- nc_open(datafile)
-	
-	# compute variables
-	xval_mean <- data.fetch(xvar, nc, mean)
-	xval_max  <- data.fetch(xvar, nc, max)
-	xval_min  <- data.fetch(xvar, nc, min)
-	yval_mean <- data.fetch(yvar, nc, mean)
-	yval_max  <- data.fetch(yvar, nc, max)
-	yval_min  <- data.fetch(yvar, nc, min)
-	
-	# done with netcdf file
-	nc_close(nc)
-	
-	# setup output
-	if (!is.null(filename)) {
-		if (tolower(filename) == 'x11') {
-			x11(width=width/96, height=height/96)
-		} else if (tolower(str_sub(filename, -4)) == ".png") {
-			png(filename=filename, width=width, height=height)
-		} else if (tolower(str_sub(filename, -4)) == ".pdf") {
-			pdf(filename=filename, width=width, height=height)
-		} else if (tolower(str_sub(filename, -4)) == ".jpg") {
-			jpg(filename=filename, width=width, height=height)
-		} else if (tolower(str_sub(filename, -5)) == ".tiff") {
-			tiff(filename=filename, width=width, height=height)
-		}
-	}
+  # open netcdf file
+  nc <- nc_open(datafile)
+  
+  # compute variables
+  xval_mean <- data.fetch(xvar, nc, mean)
+  yval_mean <- data.fetch(yvar, nc, mean)
+  yval_max  <- data.fetch(yvar, nc, max)
+  yval_min  <- data.fetch(yvar, nc, min)
+  
+  # done with netcdf file
+  nc_close(nc)
+  
+  # setup output
+  if (!is.null(filename)) {
+    if (tolower(filename) == 'x11') {
+      x11(width=width/96, height=height/96)
+    } else if (tolower(str_sub(filename, -4)) == ".png") {
+      png(filename=filename, width=width, height=height)
+    } else if (tolower(str_sub(filename, -4)) == ".pdf") {
+      pdf(filename=filename, width=width, height=height)
+    } else if (tolower(str_sub(filename, -4)) == ".jpg") {
+      jpg(filename=filename, width=width, height=height)
+    } else if (tolower(str_sub(filename, -5)) == ".tiff") {
+      tiff(filename=filename, width=width, height=height)
+    }
+  }
 
-	# setup plot (needs to be done before removing of NA since that removes attr as well).
-	plot.new()
-	title(xlab=attr(xval_mean, "lbl"))
-	title(ylab=attr(yval_mean, "lbl"))
-	if (xvar == "time") {
-		if (is.null(year)) {
-			title(main=nc$var[[yvar]]$longname)
-		} else {
-			title(main=paste(nc$var[[yvar]]$longname, "for", year))
-		}
-	} else {
-		if (is.null(year)) {
-			title(main=paste(xvar, "VS", yvar))
-		} else {
-			title(main=paste(xvar, "VS", yvar, "for", year))
-		}
-	}
-	
-	# remove all NA's
-	removeme <- unique(c(which(is.na(xval_min)), which(is.na(yval_min)), which(is.na(xval_mean)), which(is.na(yval_mean)), which(is.na(xval_max)), which(is.na(yval_max))))
-	if (length(removeme) > 0) {
-		xval_mean <- xval_mean[-removeme]
-		xval_max  <- xval_max[-removeme]
-		xval_min  <- xval_min[-removeme]
-		yval_mean <- yval_mean[-removeme]
-		yval_max  <- yval_max[-removeme]
-		yval_min  <- yval_min[-removeme]
-	}
-	
-	# combine
-	xvals <- c(xval_max, rev(xval_min))
-	yvals <- c(yval_max, rev(yval_min))
-	
-	# plot actual data
-	plot.window(xlim=c(min(xvals), max(xvals)), ylim=c(min(yvals), max(yvals)))
-	polygon(c(xval_max, rev(xval_min)), c(yval_max, rev(yval_min)), col="gray", border="black")
-	points(xval_mean, yval_mean, col="black", pch=20)
-	
-	# draw axis and box
-	axis(1)
-	axis(2)
-	box()
-	if (!is.null(filename) && (tolower(filename) != 'x11')) {
-		dev.off()
-	}
+  # setup plot (needs to be done before removing of NA since that removes attr as well).
+  plot.new()
+  title(xlab=attr(xval_mean, "lbl"))
+  title(ylab=attr(yval_mean, "lbl"))
+  if (xvar == "time") {
+    if (is.null(year)) {
+      title(main=nc$var[[yvar]]$longname)
+    } else {
+      title(main=paste(nc$var[[yvar]]$longname, "for", year))
+    }
+  } else {
+    if (is.null(year)) {
+      title(main=paste(xvar, "VS", yvar))
+    } else {
+      title(main=paste(xvar, "VS", yvar, "for", year))
+    }
+  }
+  
+  # remove all NA's
+  removeme <- unique(c(which(is.na(yval_min)), which(is.na(xval_mean)), which(is.na(yval_mean)), which(is.na(yval_max))))
+  if (length(removeme) > 0) {
+    xval_mean <- xval_mean[-removeme]
+    yval_mean <- yval_mean[-removeme]
+    yval_max  <- yval_max[-removeme]
+    yval_min  <- yval_min[-removeme]
+  }
+  yvals <- c(yval_max, yval_min)
+  
+  # order data based on x values
+  o <- order(xval_mean, yval_mean)
+  
+  # plot actual data
+  plot.window(xlim=c(min(xval_mean), max(xval_mean)), ylim=c(min(yvals), max(yvals)))
+  polygon(c(xval_mean[o], rev(xval_mean[o])), c(yval_max[o], rev(yval_min[o])), col="gray", border="black")
+  lines(x=xval_mean[o], y=yval_mean[o], col="red")
+  points(x=xval_mean[o], y=yval_mean[o], col="black", pch=".", cex=5)
+  
+  # draw axis and box
+  axis(1)
+  axis(2)
+  box()
+  if (!is.null(filename) && (tolower(filename) != 'x11')) {
+    dev.off()
+  }
 }

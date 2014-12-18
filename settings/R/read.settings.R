@@ -211,8 +211,8 @@ check.bety.version <- function(dbcon) {
   }
   
   # check if database is newer
-  if (tail(versions, n=1) > "20140729045640") {
-    logger.warn("Last migration", tail(versions, n=1), "is more recent than expected 20140729045640.",
+  if (tail(versions, n=1) > "20141009160121") {
+    logger.warn("Last migration", tail(versions, n=1), "is more recent than expected 20141009160121.",
                 "This could result in PEcAn not working as expected.")
   }
 }

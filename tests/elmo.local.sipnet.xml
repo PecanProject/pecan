@@ -9,22 +9,8 @@
       <password>bety</password>
       <host>localhost</host>
       <dbname>bety</dbname>
-      <write>TRUE</write>
+      <write>FALSE</write>
     </bety>
-    <test>
-      <driver>PostgreSQL</driver>
-      <user>bety</user>
-      <password>bety</password>
-      <host>localhost</host>
-      <dbname>test</dbname>
-    </test>
-    <fia>
-      <driver>PostgreSQL</driver>
-      <user>bety</user>
-      <password>bety</password>
-      <host>localhost</host>
-      <dbname>fia</dbname>
-    </fia>
   </database>
 
   <pfts>

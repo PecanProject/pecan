@@ -54,17 +54,17 @@ table.expand <- function(x){
 fia.to.psscss <- function(settings) {
 	## spatial info
 	POI	    <- TRUE	 ## point or region?
-	gridres	<- 0.2
+	gridres	<- 0.1
 	lat     <- as.numeric(settings$run$site$lat)
 	lon     <- as.numeric(settings$run$site$lon)
 	
-	## output path
+	## output path  
 	if ("text" %in% names(settings$model$psscss)) {
 		path <- settings$model$psscss$text
 	} else {
 		path <- settings$model$psscss
 	}
-	
+	path <- settings$outdir
 	## time info
 	year    <- as.numeric(format(as.Date(settings$run$start.date), '%Y'))
 	
@@ -241,7 +241,7 @@ fia.to.psscss <- function(settings) {
 		fia.only <- fia.species[fia.ind]						
 		
 		if(length(fia.only) > 0){									
-			over.ten <- ifelse(length(fia.only) > 10, paste(", and ", length(fia.only) - 10, " more.", sep=""), ".")
+			over.ten <- ifelse(length(fia.only) > 30, paste(", and ", length(fia.only) - 30, " more.", sep=""), ".")
 			
 			if(!exists("symbol.table")){
 				symbol.table <- db.query('SELECT spcd, "Symbol" FROM species where spcd IS NOT NULL', con=con)
@@ -249,7 +249,7 @@ fia.to.psscss <- function(settings) {
 			}
 			name.list <- na.omit(symbol.table$symbol[symbol.table$spcd %in% fia.only])  
 			logger.error(paste("\nThe FIA database expects the following species at ", lat," and ", lon, " but they are not described by the selected PFTs: \n", 
-							paste(name.list[1:min(10,length(name.list))], collapse=", "), over.ten, "\n\tPlease select additional pfts.", sep="")) 
+							paste(name.list[1:min(30,length(name.list))], collapse=", "), over.ten, "\n\tPlease select additional pfts.", sep="")) 
 			stop("Execution stopped due to insufficient PFTs.")
 		}
 		

@@ -16,10 +16,25 @@ library(PEcAn.all)
 # status functions
 # ----------------------------------------------------------------------
 status.start <- function(name) {
-    cat(paste(name, format(Sys.time(), "%F %T"), sep="\t"), file=file.path(settings$outdir, "STATUS"), append=TRUE)      
+  cat(paste(name,
+            format(Sys.time(), "%F %T"), sep="\t"),
+      file=file.path(settings$outdir, "STATUS"), append=TRUE)
 }
 status.end <- function(status="DONE") {
-    cat(paste("", format(Sys.time(), "%F %T"), status, "\n", sep="\t"), file=file.path(settings$outdir, "STATUS"), append=TRUE)      
+  cat(paste("",
+            format(Sys.time(), "%F %T"),
+            status,
+            "\n", sep="\t"),
+      file=file.path(settings$outdir, "STATUS"), append=TRUE)
+}
+status.skip <- function(name) {
+  cat(paste(name,
+            format(Sys.time(), "%F %T"),
+            "",
+            format(Sys.time(), "%F %T"),
+            "SKIPPED",
+            "\n", sep="\t"),
+      file=file.path(settings$outdir, "STATUS"), append=TRUE)
 }
 
 options(warn=1)
@@ -41,45 +56,72 @@ settings <- read.settings("pecan.xml")
 
 # remove existing STATUS file
 if (length(which(commandArgs() == "--continue")) == 0) {
-	file.remove("STATUS")
+  file.remove("STATUS")
 
-	# setup pss/css by running fia2ED
-	status.start("FIA2ED")
-	# # TODO see if we need to call fia
-	# if (".attrs" %in% names(settings$model$psscss)) {
-	# 	if (settings$model$psscss$.attrs[["generate"]] == "fia") {
-	# 		fia.to.psscss(settings)
-	# 		status.end()
-	# 	} else {
-	# 		stop("No information on how to generate psscss files.")
-	# 	}
-	# } else {
-	# 	status.end("SKIPPED")
-	# }
-	status.end("SKIPPED")
+  # get data from pecan DB
+  status.start("TRAIT")
+  settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)
+  saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
+  status.end()
 
-	# get data from pecan DB
-	status.start("TRAIT")
-	settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)
-	saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
-	status.end()
+  # run meta-analysis
+  status.start("META")
+  run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database$bety)
+  status.end()
 
-	# run meta-analysis
-	status.start("META")
-	run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database$bety)
-	status.end()
+  # do conversions
+  status.start("CONVERSIONS")
+  for(i in 1:length(settings$run$inputs)) {
+    input <- settings$run$inputs[[i]]
+    if (length(input) == 1) next
+    
+    # fia database
+    if (input['input'] == 'fia') {
+      fia.to.psscss(settings)
+    }
 
-	# write model specific configs
-	status.start("CONFIG")
-	run.write.configs(settings, settings$database$bety$write)
-	status.end()
-}
+    # met download
+    if (input['input'] == 'Ameriflux') {
+      # start/end date for weather
+      start_date <- settings$run$start.date
+      end_date <- settings$run$end.date
 
-status.start("EDIT")
-if (length(which(commandArgs() == "--advanced")) != 0) {
-	q();
-} else {
-	status.end("SKIPPED")
+      # site
+      site <- sub(".* \\((.*)\\)", "\\1", settings$run$site$name)
+
+      # download data
+      fcn <- paste("download", input['input'], sep=".")
+      do.call(fcn, list(site, file.path(settings$run$dbfiles, input['input']), start_date=start_date, end_date=end_date))
+
+      # convert to CF
+      met2CF.Ameriflux(file.path(settings$run$dbfiles, input['input']), site, file.path(settings$run$dbfiles, "cf"), start_date=start_date, end_date=end_date)
+
+      # gap filing
+      metgapfill(file.path(settings$run$dbfiles, "cf"), site, file.path(settings$run$dbfiles, "gapfill"), start_date=start_date, end_date=end_date)
+
+      # model specific
+      load.modelpkg(input['output'])
+      fcn <- paste("met2model", input['output'], sep=".")
+      r <- do.call(fcn, list(file.path(settings$run$dbfiles, "gapfill"), site, file.path(settings$run$dbfiles, input['output']), start_date=start_date, end_date=end_date))
+      settings$run$inputs[[i]] <- r[['file']]
+    }
+
+    # narr download
+  }
+  saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
+  status.end()
+
+  # write model specific configs
+  status.start("CONFIG")
+  run.write.configs(settings, settings$database$bety$write)
+  status.end()
+
+  if (length(which(commandArgs() == "--advanced")) != 0) {
+    status.start("ADVANCED")
+    q();
+  } else {
+    status.skip("ADVANCED")
+  }
 }
 
 # run model

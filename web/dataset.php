@@ -47,7 +47,7 @@ switch ($type) {
 		}
 		$name = $_REQUEST['name'];
 		
-		$file = realpath("$folder/$name");
+		$file = canonicalize("$folder/$name");
 		if (substr($file, 0, strlen($folder)) != $folder) {
 			die("Invalid file name specified.");			
 		}
@@ -66,7 +66,7 @@ switch ($type) {
 		break;
 		
 	case "plot":
-		if (!isset($_REQUEST['run']) || !is_numeric($_REQUEST['run'])) {
+		if (!isset($_REQUEST['run'])) {
 			die("Need run.");
 		}
 		$run=$_REQUEST['run'];
@@ -74,10 +74,14 @@ switch ($type) {
 			die("Need year.");
 		}
 		$year=$_REQUEST['year'];
-		if (!isset($_REQUEST['var'])) {
-			die("Need var.");
-		}
-		$var=$_REQUEST['var'];
+    if (!isset($_REQUEST['xvar'])) {
+      die("Need xvar.");
+    }
+    $xvar=$_REQUEST['xvar'];
+    if (!isset($_REQUEST['yvar'])) {
+      die("Need yvar.");
+    }
+    $yvar=$_REQUEST['yvar'];
 		$datafile=$folder . "/out/" . $run . "/" . $year . ".nc";
 		$width=600;
 		if (isset($_REQUEST['width']) && ($_REQUEST['width'] > $width)) {
@@ -89,7 +93,7 @@ switch ($type) {
 		}
 		$mime = "image/png";
 		$file = tempnam(sys_get_temp_dir(),'plot') . ".png";
-		shell_exec("R_LIBS_USER='${pecan_install}' PECANSETTINGS='$folder/pecan.xml' ${Rbinary} CMD BATCH --vanilla '--args $datafile $year $var $width $height $file' plot.netcdf.R /tmp/plot.out");
+		shell_exec("R_LIBS_USER='${pecan_install}' PECANSETTINGS='$folder/pecan.xml' ${Rbinary} CMD BATCH --vanilla '--args $datafile $year $xvar $yvar $width $height $file' plot.netcdf.R /tmp/plot.out");
 		break;
 		
 	default:
@@ -109,5 +113,21 @@ readfile($file);
 
 if ($type == "plot") {
   unlink($file);
+}
+
+function canonicalize($address)
+{
+    $address = explode('/', $address);
+    $keys = array_keys($address, '..');
+
+    foreach($keys AS $keypos => $key)
+    {
+        array_splice($address, $key - ($keypos * 2 + 1), 2);
+    }
+
+    $address = implode('/', $address);
+    $address = str_replace('./', '', $address);
+
+    return $address;
 }
 ?>
