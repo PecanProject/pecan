@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/DAReS/!svn/ver/5020/DART/releases/Kodiak/models/template/shell_scripts
+END
+run_filter.csh
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/DAReS/!svn/ver/5020/DART/releases/Kodiak/models/template/shell_scripts/run_filter.csh
+END
+advance_model.csh
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/DAReS/!svn/ver/5020/DART/releases/Kodiak/models/template/shell_scripts/advance_model.csh
+END
