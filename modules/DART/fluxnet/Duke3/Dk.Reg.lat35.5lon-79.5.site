@@ -1,0 +1,3 @@
+nsites 1 file_format 3
+sitenum area TCI elev slope aspect soil
+1 1.0 -7 150 0 0 5 5 5 5 5 5 8 5 3
