@@ -99,6 +99,15 @@ fi
 # this value should be constant, do not change
 ID_RANGE=1000000000
 
+# before anything is done, check to make sure database exists
+if ! psql -lqt | cut -d \| -f 1 | grep -w "${DATABASE}"; then
+  echo "Database ${DATABASE} does not exist, please create it:"
+  echo "(see https://github.com/PecanProject/pecan/wiki/Installing-PEcAn#installing-bety)"
+  echo "  sudo -u postgres createuser -d -l -P -R -S bety"
+  echo "  sudo -u postgres createdb -O bety ${DATABASE}"
+  exit
+fi
+
 # make output folder
 DUMPDIR="/tmp/$$"
 mkdir "${DUMPDIR}"
