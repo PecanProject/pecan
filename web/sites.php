@@ -104,6 +104,14 @@ if (isset($_REQUEST['model']) && ($_REQUEST['model'] != "") && isset($_REQUEST['
       }
     }
   }
+  if (in_array("DALEC", $modeltypes)) {
+    foreach($sites as &$site) {
+      if (in_array(33, $site['format_id'])) {
+        $site['format_id'][] = 1000000002;
+      }
+    }
+  }
+
 
   // 5. Find any other conversions if they exist
 
