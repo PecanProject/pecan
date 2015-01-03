@@ -122,9 +122,9 @@ for(year in start_year:end_year) {
   }
 
   ## Aggregate variables up to daily
-  Tmean = udunits2::ud.convert(tapply(Tair,doy,mean,na.rm=TRUE),"K","C")
-  Tmin  = udunits2::ud.convert(tapply(Tair,doy,min,na.rm=TRUE),"K","C")
-  Tmax  = udunits2::ud.convert(tapply(Tair,doy,max,na.rm=TRUE),"K","C")
+  Tmean = udunits2::ud.convert(tapply(Tair,doy,mean,na.rm=TRUE),"Kelvin","Celsius")
+  Tmin  = udunits2::ud.convert(tapply(Tair,doy,min,na.rm=TRUE),"Kelvin","Celsius")
+  Tmax  = udunits2::ud.convert(tapply(Tair,doy,max,na.rm=TRUE),"Kelvin","Celsius")
   Rin   = tapply(SW,doy,sum)*dt*1e-6 # J/m2/s * s * MJ/J
   LeafWaterPot = tapply(LeafWaterPot,doy,mean)
   CO2   = tapply(CO2,doy,mean)
