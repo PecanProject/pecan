@@ -1,4 +1,4 @@
-if(FALSE){}
+if(FALSE){
 context("check output from model2netcdf.BIOCRO")
 
 outdir <- file.path(tempdir(), "biocro")
