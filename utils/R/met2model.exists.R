@@ -1,13 +1,15 @@
 #-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
+# Copyright (c) 2015 Boston University, NCSA.
 # All rights reserved. This program and the accompanying materials
 # are made available under the terms of the 
-# University of Illinois/NCSA Open Source License
+# NCSA Open Source License
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-library(PEcAn.utils)
-library(testthat)
-
-logger.setQuitOnSevere(FALSE)
-test_check("PEcAn.BIOCRO")
+#
+##' @export
+##' @param model model package name
+met2model.exists <- function(model){
+  load.modelpkg(model)
+  exists(paste0("met2model.",model))  
+}
