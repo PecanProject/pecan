@@ -38,7 +38,7 @@ fetch.stats2se <- function(connection, query){
 ##' @param ... extra arguments
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}}; \code{\link{transformstats}} performs transformation calculations
 ##' @author David LeBauer, Carl Davidson
-query.data <- function(trait, spstr, extra.columns='ST_X(ST_CENTROID(sites.geometry)) AS lon, ST_Y(ST_CENTROID(sites.geometry)) AS lat, ', con=NULL, ...) {
+query.data <- function(trait, spstr, extra.columns='ST_X(ST_CENTROID(sites.geometry)) AS lon, ST_Y(ST_CENTROID(sites.geometry)) AS lat, ', con=NULL, store.unconverted=FALSE, ...) {
   if (is.null(con)) {
     logger.error("No open database connection passed in.")
     con <- db.open(settings$database$bety)
@@ -56,7 +56,14 @@ query.data <- function(trait, spstr, extra.columns='ST_X(ST_CENTROID(sites.geome
               left join variables on (traits.variable_id = variables.id)
             where specie_id in (", spstr,")
             and variables.name in ('", trait,"');", sep = "")
-  return(fetch.stats2se(con, query))
+  result <- fetch.stats2se(con, query)
+  
+  if(store.unconverted) {
+    result$mean_unconverted <- result$mean
+    result$stat_unconverted <- result$stat
+  }
+  
+  return(result)
   db.close(con)
 }
 ##==================================================================================================#
@@ -322,11 +329,11 @@ take.samples <- function(summary, sample.size = 10^6){
 ##' @examples
 ##' input <- list(x = data.frame(mean = 1, stat = 1, n = 1))
 ##' derive.trait(FUN = identity, input = input, var.name = 'x')
-derive.trait <- function(FUN, ..., input=list(...), var.name=NA, sample.size=10000){
+derive.trait <- function(FUN, ..., input=list(...), var.name=NA, sample.size=10^6){
   if(any(lapply(input, nrow) > 1)){
     return(NULL)
   }
-  input.samples <- lapply(input, take.samples)
+  input.samples <- lapply(input, take.samples, sample.size=sample.size)
   output.samples <- do.call(FUN, input.samples)
   output<-input[[1]]
   output$mean<-mean(output.samples)
@@ -353,7 +360,7 @@ derive.trait <- function(FUN, ..., input=list(...), var.name=NA, sample.size=100
 ##' @return a copy of the first input trait with modified mean, stat, and n
 derive.traits <- function(FUN, ..., input=list(...),
                           match.columns=c('citation_id', 'site_id', 'specie_id'),
-                          var.name=NA, sample.size=10000){
+                          var.name=NA, sample.size=10^6){
   if(length(input) == 1){
     input<-input[[1]]
                                         #KLUDGE: modified to handle empty datasets
@@ -363,8 +370,6 @@ derive.traits <- function(FUN, ..., input=list(...),
     return(input)
   }
   else if(length(match.columns) > 0){
-                                        #browser() # !!!not sure why this is here.
-
                                         #function works recursively to reduce the number of match columns
     match.column <- match.columns[[1]]
                                         #find unique values within the column that intersect among all input datasets
@@ -414,7 +419,7 @@ derive.traits <- function(FUN, ..., input=list(...),
 ##' query.trait.data("Vcmax", "938", con = con)
 ##' }
 ##' @author David LeBauer, Carl Davidson, Shawn Serbin
-query.trait.data <- function(trait, spstr, con = NULL, ...){
+query.trait.data <- function(trait, spstr, con = NULL, update.check.only=FALSE, ...){
 
   if(is.list(con)){
     print("query.trait.data")
@@ -423,16 +428,25 @@ query.trait.data <- function(trait, spstr, con = NULL, ...){
   }
 
   # print trait info
-  print("---------------------------------------------------------")
-  print(trait)
+  if(!update.check.only) {
+    print("---------------------------------------------------------")
+    print(trait)
+  }
 
 ### Query the data from the database for trait X.
-  data <- query.data(trait, spstr, con=con)
+  data <- query.data(trait, spstr, con=con, store.unconverted=TRUE)
 
 ### Query associated covariates from database for trait X.
   covariates <- query.covariates(data$id, con=con)
   canopy.layer.covs <- covariates[covariates$name == 'canopy_layer', ]
-  
+
+### Set small sample size for derived traits if update-checking only. Otherwise use default.
+  if(update.check.only) {
+    sample.size <- 10 
+  } else {
+    sample.size <- 10^6  ## Same default as derive.trait(), derive.traits(), and take.samples()
+  }
+
   if(trait == 'Vcmax') {
 #########################   VCMAX   ############################
 ### Apply Arrhenius scaling to convert Vcmax at measurement temp to that at 25 degC (ref temp).
@@ -449,11 +463,11 @@ query.trait.data <- function(trait, spstr, con = NULL, ...){
 
   } else if (trait == 'SLA') {
 #########################    SLA    ############################
-
     ## convert LMA to SLA
     data <- rbind(data,
                   derive.traits(function(lma){1/lma},
-                                query.data('LMA', spstr, con=con)))
+                                query.data('LMA', spstr, con=con, store.unconverted=TRUE),
+                                sample.size=sample.size))
 
     ### Keep only top of canopy/sunlit leaf samples based on covariate.
     if(nrow(canopy.layer.covs) > 0) data <- filter.sunleaf.traits(data, canopy.layer.covs)
@@ -469,7 +483,8 @@ query.trait.data <- function(trait, spstr, con = NULL, ...){
     ## convert LMA to SLA
     data <- rbind(data,
                   derive.traits(function(leaf.longevity){1/leaf.longevity},
-                                query.data('Leaf Longevity', spstr, con=con)))
+                                query.data('Leaf Longevity', spstr, con=con, store.unconverted=TRUE),
+                                sample.size=sample.size))
 
   } else if (trait == 'root_respiration_rate') {
 #########################  ROOT RESPIRATION   ############################
@@ -494,15 +509,13 @@ query.trait.data <- function(trait, spstr, con = NULL, ...){
 
     data <- rbind(data,
                   derive.traits(function(leafN){48/leafN},
-                                query.data('leafN', spstr, con=con)))
+                                query.data('leafN', spstr, con=con, store.unconverted=TRUE),
+                                sample.size=sample.size))
 
   } else if (trait == 'fineroot2leaf') {
 #########################  FINE ROOT ALLOCATION  ############################
-#    q <-
-    data<-rbind(data,
-                ## FRC_LC is the ratio of fine root carbon to leaf carbon
-                query.data('FRC_LC', spstr, con=con))
-
+    ## FRC_LC is the ratio of fine root carbon to leaf carbon
+    data<-rbind(data, query.data('FRC_LC', spstr, con=con, store.unconverted=TRUE))
   }
   result <- data
 
@@ -516,9 +529,10 @@ query.trait.data <- function(trait, spstr, con = NULL, ...){
     ## Do we really want to print each trait table?? Seems like a lot of
     ## info to send to console.  Maybe just print summary stats?
     ## print(result)
-    print(paste("Median ",trait," : ",round(median(result$mean,na.rm=TRUE),digits=3),sep=""))
-    print("---------------------------------------------------------")
-
+    if(!update.check.only) {
+      print(paste("Median ",trait," : ",round(median(result$mean,na.rm=TRUE),digits=3),sep=""))
+      print("---------------------------------------------------------")
+    }
     # print list of traits queried and number by outdoor/glasshouse
     return(result)
   }

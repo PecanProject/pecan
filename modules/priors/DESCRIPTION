@@ -12,6 +12,3 @@ LazyLoad: yes
 LazyData: FALSE
 Depends:
     PEcAn.utils
-Collate:
-    'priors.R'
-    'plots.R'

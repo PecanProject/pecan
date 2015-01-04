@@ -18,7 +18,16 @@
 ##overwrite statement below to TRUE.
 
 
-met2model.ED2 <- function(in.path,in.prefix,outfolder,lst,overwrite=FALSE){
+##' @export
+##' @param in.path location on disk where inputs are stored
+##' @param in.prefix prefix of input and output files
+##' @param outfolder location on disk where outputs will be stored
+##' @param lst timezone offset to GMT in hours
+##' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
+##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
+##' @param overwrite should existing files be overwritten
+##' @param verbose should the function be very verbose
+met2model.ED2 <- function(in.path,in.prefix,outfolder,lst=0,start_date, end_date, overwrite=FALSE,verbose=FALSE){
   overwrite = as.logical(overwrite)
   lst = as.numeric(lst)
   
@@ -28,7 +37,8 @@ met2model.ED2 <- function(in.path,in.prefix,outfolder,lst,overwrite=FALSE){
   
   require(rhdf5)
   require(ncdf4)
-  require(ncdf)
+  #require(ncdf)
+  require(lubridate)
   
 ### FUNCTIONS
 dm <- c(0,32,60,91,121,152,182,213,244,274,305,335,366)
@@ -57,7 +67,7 @@ for(i in 1:length(filescount)){
   }
 
   ## open netcdf
-  nc <- nc_open(paste0(in.path,files[i]))
+  nc <- nc_open(file.path(in.path,files[i]))
   
   ## determine starting year
   base.time <- unlist(strsplit(files[i],'[.]'))
@@ -72,9 +82,9 @@ for(i in 1:length(filescount)){
   
   
   ## extract variables
-  lat  <- ncvar_get(nc,"lat")
-  lon  <- ncvar_get(nc,"lon")
-  sec   <- nc$dim$t$vals
+  lat  <- ncvar_get(nc,"latitude")
+  lon  <- ncvar_get(nc,"longitude")
+  sec   <- nc$dim$time$vals
   Tair <- ncvar_get(nc,"air_temperature")
   Qair <- ncvar_get(nc,"specific_humidity")  #humidity (kg/kg)
   U <- try(ncvar_get(nc,"eastward_wind"))
@@ -82,9 +92,10 @@ for(i in 1:length(filescount)){
   W <- try(ncvar_get(nc,"wind_speed"))
   Rain <- ncvar_get(nc,"precipitation_flux")
   pres <- ncvar_get(nc,"air_pressure")
-  SW   <- ncvar_get(nc,"surface_downwelling_shortwave_flux")
-  LW   <- ncvar_get(nc,"surface_downwelling_longwave_flux")
-  CO2  <- try(ncvar_get(nc,"mass_concentration_of_carbon_dioxide_in_air"))
+  SW   <- ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air")
+  LW   <- ncvar_get(nc,"surface_downwelling_longwave_flux_in_air")
+  #CO2  <- try(ncvar_get(nc,"CO2air"))
+  CO2  <- try(ncvar_get(nc,"CO2"))
   useCO2 = is.numeric(CO2)  
   
   ## convert wind
@@ -94,11 +105,14 @@ for(i in 1:length(filescount)){
   }
 
   ## convert time to seconds
-  sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$t$units," "))[1],"seconds")
+  sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$time$units," "))[1],"seconds")
   
   nc_close(nc)
   
-  dt <- sec[2]-sec[1]
+  ifelse(leap_year(base.time)==TRUE,
+         dt <- (366*24*60*60)/length(sec), #leap year
+         dt <- (365*24*60*60)/length(sec)) #non-leap year
+
   toff <- -lst*3600/dt
 
   ##buffer to get to GMT
@@ -153,7 +167,7 @@ for(i in 1:length(filescount)){
   f <- pi/180*(279.5+0.9856*doy)
   et <- (-104.7*sin(f)+596.2*sin(2*f)+4.3*sin(4*f)-429.3*cos(f)-2.0*cos(2*f)+19.3*cos(3*f))/3600  #equation of time -> eccentricity and obliquity
   merid <- floor(lon/15)*15
-  if(merid<0) merid <- merid+15
+  merid[merid<0] <- merid[merid<0]+15
   lc <- (lon-merid)*-4/60  ## longitude correction
   tz <- merid/360*24 ## time zone
   midbin <- 0.5*dt/86400*24 ## shift calc to middle of bin
@@ -209,7 +223,7 @@ for(i in 1:length(filescount)){
           h5createFile(mout)
         }
         if(overwrite==FALSE){
-          logger.setLevel("Warning! The file already exists! Moving to next month!")
+          logger.warn("The file already exists! Moving to next month!")
           next
         }        
       }

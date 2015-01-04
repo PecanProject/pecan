@@ -13,7 +13,8 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
 Imports:
     PEcAn.utils
 Depends:
-    ncdf4
+    ncdf4,
+    lubridate
 Suggests:
     coda,
     PEcAn.data.atmosphere,
