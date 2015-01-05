@@ -1,128 +1,255 @@
+# helper function to copy variables and attributes from one
+# nc file to another. This will do conversion of the variables
+# as well as on the min/max values
+copyvals <- function(nc1, var1, nc2, var2, dim2, units2=NA, conv=NULL, missval=-6999.0, verbose=FALSE) {
+    vals <- ncvar_get(nc=nc1, varid=var1)
+    vals[vals==-6999 | vals==-9999] <- NA
+    if (!is.null(conv)) {
+      vals <- lapply(vals, conv)
+    }
+    if (is.na(units2)) {
+      units2 <- ncatt_get(nc=nc1, varid=var1, attname='units', verbose=verbose)$value
+    }
+    var <- ncvar_def(name=var2, units=units2, dim=dim2, missval=missval, verbose=verbose)
+    nc2 <- ncvar_add(nc=nc2, v=var, verbose=verbose)
+    ncvar_put(nc=nc2, varid=var2, vals=vals)
+    
+    # copy and convert attributes
+    att <- ncatt_get(nc1, var1, 'long_name')
+    if (att$hasatt) {
+      val <- att$value
+      ncatt_put(nc=nc2, varid=var2, attname='long_name', attval=val)
+    }
+    
+    att <- ncatt_get(nc1, var1, 'valid_min')
+    if (att$hasatt) {
+      val <- ifelse(is.null(conv), att$value, conv(att$value))
+      ncatt_put(nc=nc2, varid=var2, attname='valid_min', attval=val)
+    }
+    
+    att <- ncatt_get(nc1, var1, 'valid_max')
+    if (att$hasatt) {
+      val <- ifelse(is.null(conv), att$value, conv(att$value))
+      ncatt_put(nc=nc2, varid=var2, attname='valid_max', attval=val)
+    }
+    
+    att <- ncatt_get(nc1, var1, 'comment')
+    if (att$hasatt) {
+      val <- sub(', -9999.* = missing value, -6999.* = unreported value', '', att$value)
+      ncatt_put(nc=nc2, varid=var2, attname='comment', attval=val)
+    }
+}
+
+getLatLon <- function(nc1) {
+  loc <- ncatt_get(nc=nc1, varid=0, attname='site_location')
+  if (loc$hasatt) {
+    lat <- as.numeric(substr(loc$value,20,28))
+    lon <- as.numeric(substr(loc$value,40,48))
+    return(c(lat, lon))
+  } else {
+    lat <- ncatt_get(nc=nc1, varid=0, attname='geospatial_lat_min')
+    lon <- ncatt_get(nc=nc1, varid=0, attname='geospatial_lon_min')
+    if (lat$hasatt && lon$hasatt) {
+      return(c(as.numeric(lat$value), as.numeric(lon$value)))
+    }
+  }
+  logger.severe("Could not get site location for file.")
+}
+
 ##' Get meteorology variables from Ameriflux L2 netCDF files and convert to netCDF CF format
 ##'
 ##' @name met2CF.Ameriflux
 ##' @title met2CF.Ameriflux
 ##' @export
-##' @param in.path
-##' @param in.prefix
-##' @param outfolder
+##' @param in.path location on disk where inputs are stored
+##' @param in.prefix prefix of input and output files
+##' @param outfolder location on disk where outputs will be stored
+##' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
+##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
+##' @param overwrite should existing files be overwritten
 ##' 
-##' @author Josh Mantooth, Mike Dietze
-met2CF.Ameriflux <- function(in.path,in.prefix,outfolder){
+##' @author Josh Mantooth, Mike Dietze, Elizabeth Cowdery
+met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE){
+  # get start/end year code works on whole years only
+  start_year <- year(start_date)
+  end_year <- year(end_date)
+
   #---------------- Load libraries. -----------------------------------------------------------------#
-#  require(PEcAn.all)
-#  require(RPostgreSQL)
   require(ncdf4)
   #--------------------------------------------------------------------------------------------------#  
-  
-  ## get file names
-  files = dir(in.path,in.prefix)
-  files = files[grep(pattern="*.nc",files)]
-  
-  if(length(files) == 0) {
-    ## send warning
-    
-    return(NULL)
-  }  
   
   if(!file.exists(outfolder)){
     dir.create(outfolder)
   }
   
-  for(i in 1:length(files)){
+  rows <- end_year - start_year + 1
+  results <- data.frame(file=character(rows), host=character(rows),
+                        mimetype=character(rows), formatname=character(rows),
+                        startdate=character(rows), enddate=character(rows),
+                        stringsAsFactors = FALSE)
+  for(year in start_year:end_year){
+    old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep="."))
+    new.file <- file.path(outfolder, paste(in.prefix, year, "nc", sep="."))
     
-    new.file =file.path(outfolder,files[i])
+    # create array with results
+    row <- year - start_year + 1
+    results$file[row] <- new.file
+    results$host[row] <- fqdn()
+    results$startdate[row] <- paste0(year,"-01-01 00:00:00")
+    results$enddate[row] <- paste0(year,"-12-31 23:59:59")
+    results$mimetype[row] <- 'application/x-netcdf'
+    results$formatname[row] <- 'CF'
     
-    ## copy old file to new directory
-    system2("cp",paste(file.path(in.path,files[i]),new.file))
+    if (file.exists(new.file) && !overwrite) {
+      logger.debug("File '", new.file, "' already exists, skipping to next file.")
+      next
+    }
     
-    ### if reading ameriflux .nc file ###
-    nc <- nc_open(new.file,write=TRUE)
+    #open raw ameriflux
+    nc1 <- nc_open(old.file,write=TRUE)
+        
+    # get dimension and site info
+    tdim <- nc1$dim[["DTIME"]]
     
-    #renaming variables and performing unit conversions
-    ta <- ncvar_get(nc=nc,varid='TA')
-    ta.k <- which(ta > -6999) #select non-missing data
-    ta.new <- ta[ta.k] + 273.15 #change units from Celsius to Kelvin
-    ta <- replace(x=ta,list=ta.k,values=ta.new) #insert Kelvin values into vector
+    # create new coordinate dimensions based on site location lat/lon
+    latlon <- getLatLon(nc1)
+    lat <- ncdim_def(name='latitude', units='', vals=1:1, create_dimvar=FALSE)
+    lon <- ncdim_def(name='longitude', units='', vals=1:1, create_dimvar=FALSE)
+    time <- ncdim_def(name='time', units=tdim$units, vals=tdim$vals, create_dimvar=TRUE, unlim=TRUE)
+    dim=list(lat,lon,time)
     
-    ncvar_put(nc=nc, varid='TA',vals=ta)
-    ncatt_put(nc=nc,varid='TA',attname='units',attval='degrees K') 
-    #can do the same for long_name but server that hosts netCDF 
-    #CF standard names is down
-    nc <- ncvar_rename(nc=nc,'TA','air_temperature')
+    # copy lat attribute to latitude
+    print(latlon)
+    var <- ncvar_def(name="latitude",
+                     units="degree_north",
+                     dim=(list(lat,lon,time)), missval=as.numeric(-9999))
+    nc2 <- nc_create(filename=new.file, vars=var, verbose=verbose)
+    ncvar_put(nc=nc2, varid='latitude', vals=rep(latlon[1], tdim$len))
     
-    #convert wind speed and wind direction to U and V
-    ws <- ncvar_get(nc=nc,varid='WD') #wind direction
-    wd <- ncvar_get(nc=nc,varid='WS') #wind speed
-    sub <- which(ws > -6999 & wd > -6999)
-    w.miss <- pmin(ws[-sub],wd[-sub])
-    wd.sub <- wd[sub] #use wind direction coincident with windspeed
-    u = v = rep(NA,length(ws))
-    u[sub] <- ws[sub]*cos(wd.sub*(pi/180))
-    v[sub] <- ws[sub]*sin(wd.sub*(pi/180))
-    u[-sub] = w.miss
-    v[-sub] = w.miss
-    nc <- ncvar_rename(nc=nc,'WS','wind_speed') #CF name
-    nc <- ncvar_rename(nc=nc,'WD','wind_direction') #CF name
+    # copy lon attribute to longitude
+    var <- ncvar_def(name="longitude",
+                     units="degree_east",
+                     dim=(list(lat,lon,time)), missval=as.numeric(-9999))
+    nc2 <- ncvar_add(nc=nc2, v=var, verbose=verbose)
+    ncvar_put(nc=nc2, varid='longitude', vals=rep(latlon[2], tdim$len))
     
-    #create u and v variables and insert into file
-    tdim = nc$dim[["DTIME"]]
-    u.var <- ncvar_def(name='eastward_wind',units='m/s',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
-    nc = ncvar_add(nc=nc,v=u.var,verbose=TRUE) #add variable to existing netCDF file
-    ncvar_put(nc,varid='eastward_wind',vals=u)
-    
-    v.var <- ncvar_def(name='northward_wind',units='m/s',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
-    nc = ncvar_add(nc=nc,v=v.var,verbose=TRUE) #add variable to existing netCDF file
-    ncvar_put(nc,varid='northward_wind',vals=v)
-   
-    #convert air pressure to CF standard
-    press <- ncvar_get(nc=nc,varid="PRESS")
-    press.pa <- which(press > -6999)
-    press.new <- press[press.pa] * 1000 #kilopascals to pascals
-    press <- replace(x=press,list=press.pa,values=press.new)
-    ncvar_put(nc=nc, varid='PRESS',vals=press)
-    ncatt_put(nc=nc,varid='PRESS',attname='units',attval='Pa') 
-    nc <- ncvar_rename(nc=nc,'PRESS','air_pressure')
-    
-    nc <- ncvar_rename(nc=nc,'Rg','surface_downwelling_shortwave_flux')
-    nc <- ncvar_rename(nc=nc,'Rgl','surface_downwelling_longwave_flux')
-    
-    #convert precipitation to CF standard
-    dtime <- ncvar_get(nc=nc,varid="DTIME")
-    min <- 0.02083/30 #0.02083 DTIME = 30 minutes
-    timestep <- round(x=mean(diff(dtime))/min,digits=1) #round to nearest 0.1 minute
-    prec <- ncvar_get(nc=nc,varid="PREC")
-    prec.sub <- which(prec > -6999)
-    prec.new <- prec[prec.sub]/timestep/60 #mm/s = kg/m2/s
-    prec <- replace(x=prec,list=prec.sub,values=prec.new)
-    ncvar_put(nc=nc, varid='PREC',vals=prec)
-    ncatt_put(nc=nc,varid='PREC',attname='units',attval='kg/m^2/s') 
-    nc <- ncvar_rename(nc=nc,'PREC','precipitation_flux')
-    
-    
-    # convert RH to SH
-    rh <- ncvar_get(nc=nc,varid='RH')
-    rh.sub <- which(rh > -6999) #select non-missing data
-    rh.sh <- as.vector(rh.sub/100) #percent to proportion: needed for conversion
-    rh.sh <- replace(x=rh,list=rh.sub,values=rh.sh) #insert proportion values into RH vector
-    ta.rh <- ta[rh.sub] # use T coincident with RH
-    sh.miss <- rh2qair(rh=rh.sh[rh.sub],T=ta.rh) #conversion, doesn't include missvals. was rh2rv
-    sh <- replace(x=rh,list=rh.sub,values=sh.miss) #insert Kelvin values into vector
-    sh.var <- ncvar_def(name='specific_humidity',units='kg/kg',dim=list(tdim)) #define netCDF variable, doesn't include longname and comments
-    nc = ncvar_add(nc=nc,v=sh.var,verbose=TRUE) #add variable to existing netCDF file
-    ncvar_put(nc,varid='specific_humidity',vals=sh)
-    ncatt_put(nc=nc,varid='RH',attname='units',attval='percent') 
-    nc <- ncvar_rename(nc=nc,'RH','relative_humidity')
-    
-    # fixing APARpct
-    ncatt_put(nc=nc,varid='APARpct',attname='units',attval='percent') 
-    # fixing ZL
-    ncatt_put(nc=nc,varid='ZL',attname='units',attval='m/m') 
+    # Convert all variables, this will include conversions or computations
+    # to create values from original file. In case of conversions the steps
+    # will pretty much always be:
+    #  a) get values from original file
+    #  b) set -6999 and -9999 to NA
+    #  c) do unit conversions
+    #  d) create output variable
+    #  e) write results to new file
 
-    nc_close(nc)
+    # convert TA to air_temperature
+    copyvals(nc1=nc1, var1='TA',
+             nc2=nc2, var2='air_temperature', units2='degrees K', dim2=dim, 
+             conv=function(x) { x + 273.15 }, verbose=verbose)
+    
+    # convert PRESS to air_pressure
+    copyvals(nc1=nc1, var1='PRESS',
+             nc2=nc2, var2='air_pressure', units2='Pa', dim2=dim, 
+             conv=function(x) { x * 1000 }, verbose=verbose)
+    
+    # convert CO2 to mole_fraction_of_carbon_dioxide_in_air
+    copyvals(nc1=nc1, var1='CO2',
+             nc2=nc2, var2='mole_fraction_of_carbon_dioxide_in_air', units2='mole/mole', dim2=dim, 
+             conv=function(x) { x * 1e6 }, verbose=verbose)
+    
+    # convert TS1 to soil_temperature
+    copyvals(nc1=nc1, var1='TS1',
+             nc2=nc2, var2='soil_temperature', units2='degrees K', dim2=dim, 
+             conv=function(x) { x + 273.15 }, verbose=verbose)
+
+    # copy RH to relative_humidity
+    copyvals(nc1=nc1, var1='RH',
+             nc2=nc2, var2='relative_humidity', dim2=dim, 
+             verbose=verbose)
+
+    # convert RH to SH
+    rh <- ncvar_get(nc=nc1, varid="RH")
+    rh[rh==-6999 | rh==-9999] <- NA
+    rh <- rh / 100
+    ta <- ncvar_get(nc=nc1, varid="TA")
+    ta[ta==-6999 | ta==-9999] <- NA
+    ta <- ta + 273.15
+    sh <- rh2qair(rh=rh,T=ta)
+    var <- ncvar_def(name='specific_humidity', units='kg/kg', dim=dim, missval=-6999.0, verbose=verbose)
+    nc2 <- ncvar_add(nc=nc2, v=var, verbose=verbose)
+    ncvar_put(nc=nc2, varid='specific_humidity', vals=sh)
+    
+    # convert VPD to water_vapor_saturation_deficit
+    # HACK : conversion will make all values < 0 to be NA
+    copyvals(nc1=nc1, var1='VPD',
+             nc2=nc2, var2='water_vapor_saturation_deficit', units2='mol m-2 s-1', dim2=dim, 
+             conv=function(x) { ifelse(x<0, NA, x*1000) }, verbose=verbose)
+
+    # copy Rg to surface_downwelling_shortwave_flux_in_air
+    copyvals(nc1=nc1, var1='Rg',
+             nc2=nc2, var2='surface_downwelling_shortwave_flux_in_air', dim2=dim, 
+             verbose=verbose)
+
+    # copy Rgl to surface_downwelling_longwave_flux_in_air
+    copyvals(nc1=nc1, var1='Rgl',
+             nc2=nc2, var2='surface_downwelling_longwave_flux_in_air', dim2=dim, 
+             verbose=verbose)
+
+    # convert PAR to surface_downwelling_photosynthetic_photon_flux_in_air
+    copyvals(nc1=nc1, var1='PAR',
+             nc2=nc2, var2='surface_downwelling_photosynthetic_photon_flux_in_air', units2='mol m-2 s-1', dim2=dim, 
+             conv=function(x) { x / 1e6 }, verbose=verbose)
+
+    # copy WD to wind_direction (not official CF)
+    copyvals(nc1=nc1, var1='WD',
+             nc2=nc2, var2='wind_direction', dim2=dim, 
+             verbose=verbose)
+
+    # copy WS to wind_speed
+    copyvals(nc1=nc1, var1='WS',
+             nc2=nc2, var2='wind_speed', dim2=dim, 
+             verbose=verbose)
+
+    # convert PREC to precipitation_flux
+    t <- tdim$vals
+    min <- 0.02083/30 # 0.02083 time = 30 minutes
+    timestep <- round(x=mean(diff(t))/min,digits=1) # round to nearest 0.1 minute
+    copyvals(nc1=nc1, var1='PREC',
+             nc2=nc2, var2='precipitation_flux', units2='kg/m^2/s', dim2=dim, 
+             conv=function(x) { x/timestep/60 }, verbose=verbose)
+
+    # convert wind speed and wind direction to eastward_wind and northward_wind
+    wd <- ncvar_get(nc=nc1, varid='WD') #wind direction
+    wd[wd==-6999 | wd==-9999] <- NA
+    ws <- ncvar_get(nc=nc1, varid='WS') #wind speed
+    ws[ws==-6999 | ws==-9999] <- NA
+    ew <- ws * cos(wd * (pi/180))
+    nw <- ws * sin(wd * (pi/180))
+    max <- ncatt_get(nc=nc1, varid='WS', 'valid_max')$value
+
+    var <- ncvar_def(name='eastward_wind', units='m/s', dim=dim, missval=-6999.0, verbose=verbose)
+    nc2 <- ncvar_add(nc=nc2, v=var, verbose=verbose)
+    ncvar_put(nc=nc2, varid='eastward_wind', vals=ew)
+    ncatt_put(nc=nc2, varid='eastward_wind', attname='valid_min', attval=-max)
+    ncatt_put(nc=nc2, varid='eastward_wind', attname='valid_max', attval=max)
+
+    var <- ncvar_def(name='northward_wind', units='m/s', dim=dim, missval=-6999.0, verbose=verbose)
+    nc2 <- ncvar_add(nc=nc2, v=var, verbose=verbose)
+    ncvar_put(nc=nc2, varid='northward_wind', vals=nw)
+    ncatt_put(nc=nc2, varid='northward_wind', attname='valid_min', attval=-max)
+    ncatt_put(nc=nc2, varid='northward_wind', attname='valid_max', attval=max)
+
+    # add global attributes from original file
+    cp.global.atts <- ncatt_get(nc=nc1, varid=0)
+    for(j in 1:length(cp.global.atts)){
+      ncatt_put(nc=nc2, varid=0, attname=names(cp.global.atts)[j], attval=cp.global.atts[[j]])
+    }
+
+    # done, close both files
+    nc_close(nc1)
+    nc_close(nc2)
+  }  ## end loop over years
   
-  }  ## end loop over files
- 
- 
+  invisible(results)
 }   ## end netCDF CF conversion ##
 

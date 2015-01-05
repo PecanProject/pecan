@@ -15,11 +15,14 @@ PG_OPT=${PG_OPT-"-U bety"}
 # ID's used in database
 # These ID's need to be unique for the sharing to work. If you want
 # to share your data, send email to kooper@illinois.edu to claim
-# your ID range.
+# your ID range. The master list is maintained at 
+# https://github.com/PecanProject/bety/wiki/Distributed-BETYdb
 #
-#  0 - EBI master database
-#  1 - BU
-#  2 - Brookhaven
+#  0 - EBI           - David LeBauer
+#  1 - BU            - Mike Dietze
+#  2 - Brookhaven    - Shawn Serbin
+#  3 - Purdue        -
+#  4 - Virginia Tech - Quinn Thomas
 # 99 - VM
 MYSITE=${MYSITE:-99}
 

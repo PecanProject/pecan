@@ -13,17 +13,38 @@
 ##only gives user the notice that file already exists. If user wants to overwrite the existing files, just change 
 ##overwrite statement below to TRUE.
 
+##' @export
+##' @param in.path location on disk where inputs are stored
+##' @param in.prefix prefix of input and output files
+##' @param outfolder location on disk where outputs will be stored
+##' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
+##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
+##' @param overwrite should existing files be overwritten
+##' @param verbose should the function be very verbose
+met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite=FALSE,verbose=FALSE){
 
-met2model.SIPNET <- function(in.path,in.prefix,outfolder,overwrite=FALSE){
-  files = dir(in.path,in.prefix,full.names=TRUE)
-  filescount = files[grep(pattern="*.nc",files)]
-
-  if(length(filescount) == 0){
-    PEcAn.utils::logger.warn(paste("no files found in",in.path,in.prefix))
-    return(-1)
+  start_date <- as.POSIXlt(start_date, tz = "GMT")
+  end_date<- as.POSIXlt(end_date, tz = "GMT")
+  out.file <- file.path(outfolder, paste(in.prefix,
+                                         strptime(start_date, "%Y-%m-%d"),
+                                         strptime(end_date, "%Y-%m-%d"),
+                                         "clim", sep="."))
+  
+  results <- data.frame(file=c(out.file),
+                        host=c(fqdn()),
+                        mimetype=c('text/csv'),
+                        formatname=c('Sipnet.climna'),
+                        startdate=c(start_date),
+                        enddate=c(end_date))
+  
+  
+  if (file.exists(out.file) && !overwrite) {
+    logger.debug("File '", out.file, "' already exists, skipping to next file.")
+    return(invisible(results))
   }
   
   require(ncdf4)
+  require(lubridate)
   require(PEcAn.data.atmosphere)
 #  require(ncdf)
 
@@ -34,38 +55,43 @@ if(!file.exists(outfolder)){
 
 out <- NULL
 
+# get start/end year since inputs are specified on year basis
+start_year <- year(start_date)
+end_year <- year(end_date)
+
 ## loop over files
-for(i in 1:length(filescount)){
+# TODO need to filter out the data that is not inside start_date, end_date
+for(year in start_year:end_year) {
+  old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep="."))
   
   ## open netcdf
-  nc <- nc_open(files[i])
+  nc <- nc_open(old.file)
   
   ## convert time to seconds
-  sec   <- nc$dim$t$vals  
-  sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$t$units," "))[1],"seconds")
-  dt <- sec[2]-sec[1]
+  sec   <- nc$dim$time$vals  
+  sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$time$units," "))[1],"seconds")
+  
+  ifelse(leap_year(year)==TRUE,
+         dt <- (366*24*60*60)/length(sec), #leap year
+         dt <- (365*24*60*60)/length(sec)) #non-leap year
   tstep = 86400/dt
   
-  ## determine starting year
-  base.time <- unlist(strsplit(files[i],'[.]'))
-  base.time <- as.numeric(base.time[length(base.time)-1])
-  if(is.na(base.time)){
-      print(c("did not extract base time correctly",i))
-      break
-    }
-    
   ## extract variables
-  lat  <- ncvar_get(nc,"lat")
-  lon  <- ncvar_get(nc,"lon")
-  Tair <- ncvar_get(nc,"air_temperature")
+  lat  <- ncvar_get(nc,"latitude")
+  lon  <- ncvar_get(nc,"longitude")
+  Tair <- ncvar_get(nc,"air_temperature")  ## in Kelvin
   Qair <- ncvar_get(nc,"specific_humidity")  #humidity (kg/kg)
   U <- ncvar_get(nc,"eastward_wind")
   V <- ncvar_get(nc,"northward_wind")
+  
+  ws <- try(ncvar_get(nc,"wind_speed"))
+  if(!is.numeric(ws)) ws = sqrt(U^2+V^2)
+  
   Rain <- ncvar_get(nc,"precipitation_flux")
-  pres <- ncvar_get(nc,"air_pressure")
-  SW   <- ncvar_get(nc,"surface_downwelling_shortwave_flux")
-
-  PAR  <- try(ncvar_get(nc,"surface_downwelling_photosynthetic_photon_flux_in_air"))
+  pres <- ncvar_get(nc,"air_pressure") ## in pascal
+  SW   <- ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air") ## in W/m2
+  
+  PAR  <- try(ncvar_get(nc,"surface_downwelling_photosynthetic_photon_flux_in_air")) ## in mol/m2/s
   if(!is.numeric(PAR)) PAR = SW*0.45 
 
   soilT <- try(ncvar_get(nc,"soil_temperature"))
@@ -75,10 +101,10 @@ for(i in 1:length(filescount)){
     filt = exp(-(1:length(Tair))/tau)
     filt = (filt/sum(filt))
     soilT = convolve(Tair, filt) - 273.15
-  }
+  } else soilT <- soilT - 273.15
 
   SVP = ud.convert(get.es(Tair-273.15),"millibar","Pa") ## Saturation vapor pressure
-  VPD <- try(ncvar_get(nc,"water_vapor_saturation_deficit"))
+  VPD <- try(ncvar_get(nc,"water_vapor_saturation_deficit"))  ## in Pa
   if(!is.numeric(VPD)){
     VPD = SVP*(1-qair2rh(Qair,Tair-273.15))
   }
@@ -93,7 +119,7 @@ for(i in 1:length(filescount)){
   doy <- NULL
   hr <- NULL
   asec <- sec
-  for(y in base.time+1:nyr-1){
+  for(y in year+1:nyr-1){
     ytmp <- rep(y,365*86400/dt)
     dtmp <- rep(1:365,each=86400/dt)
     if(y %% 4 == 0){  ## is leap
@@ -126,12 +152,12 @@ for(i in 1:length(filescount)){
   tmp <- cbind(rep(0,n),yr,doy,hr,rep(dt/86400,n),
                Tair-273.15,
                soilT, 
-               par2ppfd(PAR), #converts to mol/m2
+               PAR*dt, #mol/m2/hr
                Rain*dt, ## converts from mm/s to mm
                VPD,
                VPDsoil,
                e_a,
-               sqrt(U^2+V^2), ## wind
+               ws, ## wind
                rep(0.6,n) ## put soil water at a constant. Don't use, set SIPNET to MODEL_WATER = 1
                )
 
@@ -144,10 +170,9 @@ for(i in 1:length(filescount)){
 } ## end loop over years
 
 ## write output
-out.file = file.path(outfolder,"sipnet.clim")
 write.table(out,out.file,quote = FALSE,sep="\t",row.names=FALSE,col.names=FALSE)
 
-return(0) ## success
+  invisible(results)
 
 
 } ### end met2model.SIPNET
