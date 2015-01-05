@@ -16,13 +16,13 @@ if [ ! -e "@OUTDIR@/results.csv" ]; then
   
   # check the status
   if [ $STATUS -ne 0 ]; then
-    echo -e "ERROR IN MODEL RUN\nLogile is located at '@OUTDIR@/logfile.txt'" >&3
+    echo -e "ERROR IN LINKAGES RUN\nLogile is located at '@OUTDIR@/logfile.txt'" >&3
     exit $STATUS
   fi
 
   # convert to MsTMIP
-  echo "require (PEcAn.MODEL)
-model2netcdf.MODEL('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
+  echo "require (PEcAn.LINKAGES)
+model2netcdf.LINKAGES('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
 " | R --vanilla
 fi
 
@@ -32,4 +32,4 @@ cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
 # run getdata to extract right variables
 
 # all done
-echo -e "MODEL FINISHED\nLogile is located at '@OUTDIR@/logfile.txt'" >&3
+echo -e "LINKAGES FINISHED\nLogile is located at '@OUTDIR@/logfile.txt'" >&3
