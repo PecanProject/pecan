@@ -49,7 +49,7 @@ status.end()
 # Run the PEcAn meta.analysis
 status.start("META")
 if('meta.analysis' %in% names(settings)) {
-  run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database$bety)
+  run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$meta.analysis$random.effects, settings$run$dbfiles, settings$database$bety)
 }
 status.end()
 

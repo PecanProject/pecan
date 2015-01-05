@@ -15,7 +15,7 @@
 #settings <- read.settings(settings.file)
 
 # settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)
-# run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database$bety)
+# run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$meta.analysis$random.effects, settings$run$dbfiles, settings$database$bety)
 # run.write.configs("ED2")
 # clear.scratch(settings)
 # start.model.runs("ED2")
