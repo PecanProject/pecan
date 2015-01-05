@@ -60,5 +60,5 @@ at a minimum, the three functions above.
 Update the `NAMESPACE`, `DESCRIPTION` and `man/*.Rd` files by running 
 
 ```r
-devtools("models/<modelname>/")`
+devtools("models/<modelname>/")
 ```
