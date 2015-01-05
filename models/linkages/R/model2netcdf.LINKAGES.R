@@ -21,6 +21,6 @@
 ##' @export
 ##'
 ##' @author Rob Kooper
-model2netcdf.MODEL <- function(outdir, sitelat, sitelon, start_date, end_date) {
+model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date, end_date) {
   logger.severe("NOT IMPLEMENTED")
 }

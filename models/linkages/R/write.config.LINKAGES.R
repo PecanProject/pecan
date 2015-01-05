@@ -23,7 +23,7 @@
 ##' @export
 ##' @author Rob Kooper
 ##-------------------------------------------------------------------------------------------------#
-write.config.MODEL <- function(defaults, trait.values, settings, run.id){
+write.config.LINKAGES <- function(defaults, trait.values, settings, run.id){
   
   # find out where to write run/ouput
   rundir <- file.path(settings$run$host$rundir, run.id)
