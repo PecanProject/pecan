@@ -37,7 +37,7 @@ it is defined in the BETY database.
  output and not use the model specific outputs. The outputs should be
  named YYYY.nc
  
- * `README.md` 
+* `README.md` 
  
 This file should contain basic background information about the model. 
 At a minimum, this should include the scientific motivation and scope, 
