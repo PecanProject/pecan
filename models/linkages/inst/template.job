@@ -19,7 +19,9 @@ if [ ! -e "@OUTDIR@/OUT.csv" ]; then
     echo -e "ERROR IN LINKAGES RUN\nLogile is located at '@OUTDIR@/logfile.txt'" >&3
     exit $STATUS
   fi
-
+  
+  cp OUT.csv @OUTDIR@
+ 
   # convert to MsTMIP
   echo "require (PEcAn.LINKAGES)
 model2netcdf.LINKAGES('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')

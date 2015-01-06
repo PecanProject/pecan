@@ -55,7 +55,7 @@ write.config.LINKAGES <- function(defaults, trait.values, settings, run.id){
   sink()
 
   ## as initial hack, copy parameter file from inst to rundir
-  param.file=system.file("inst/SPP.DAT", package = "PEcAn.LINKAGES")
+  param.file=system.file("SPP.DAT", package = "PEcAn.LINKAGES")
   file.copy(from = param.file,rundir)
   
   ## Replace this with creating a symlink from rundir to met
@@ -65,7 +65,7 @@ write.config.LINKAGES <- function(defaults, trait.values, settings, run.id){
   precip_vec = c(c( 8.5,7.9,9.9,9.8,9.7,11.1,11.7,9.4,9.4,11.5,10.7,9.9),c( 8.5,7.9,9.9,9.8,9.7,11.1,11.7,9.4,9.4,11.5,10.7,9.9),c( 8.5,7.9,9.9,9.8,9.7,11.1,11.7,9.4,9.4,11.5,10.7,9.9))#
   precip_means = matrix(round(rnorm(12*ipolat,precip_vec,0),1),ipolat,12,byrow=TRUE) #monthly mean precipitation
   precip_sd = temp_sd #monthly standard deviation precipitation
-  write.table(file="test_text1.txt",rbind(temp_means,temp_sd,precip_means,precip_sd),sep=",",col.names=FALSE,row.names=FALSE)
+  write.table(file=file.path(rundir,"test_text1.txt"),rbind(temp_means,temp_sd,precip_means,precip_sd),sep=",",col.names=FALSE,row.names=FALSE)
   #file.show("test_text1.txt")
   
   #-----------------------------------------------------------------------
@@ -78,7 +78,7 @@ write.config.LINKAGES <- function(defaults, trait.values, settings, run.id){
   
   jobsh <- gsub('@SITE_LAT@', settings$run$site$lat, jobsh)
   jobsh <- gsub('@SITE_LON@', settings$run$site$lon, jobsh)
-  jobsh <- gsub('@SITE_MET@', settings$run$site$met, jobsh)
+  jobsh <- gsub('@SITE_MET@', settings$run$inputs$met, jobsh)
   
   jobsh <- gsub('@START_DATE@', settings$run$start.date, jobsh)
   jobsh <- gsub('@END_DATE@', settings$run$end.date, jobsh)
