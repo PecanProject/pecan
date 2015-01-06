@@ -1,4 +1,4 @@
-export(model2netcdf.MODEL)
-export(write.config.MODEL)
-export(met2model.MODEL)
+export(model2netcdf.LINKAGES)
+export(write.config.LINKAGES)
+export(met2model.LINKAGES)
 import(PEcAn.utils)

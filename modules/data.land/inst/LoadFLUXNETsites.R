@@ -51,13 +51,14 @@ AMERIFLUX_table = readHTMLTable(AMERIFLUX_html)[[1]]    ##grab first table on th
 
 ###################   PROCESS DOWNLOADED FILE ######################
 ## open database connection
+library(RPostgreSQL)
 driver   <- "PostgreSQL"
 user     <- "bety"
 dbname   <- "bety"
 password <- "bety"
-#host     <- "localhost"
-#port     <- "3232"
-dbparms  <- list(driver=driver, user=user, dbname=dbname, password=password)#, host=host,port=port)
+host     <- "localhost"
+port     <- "3232"
+dbparms  <- list(driver=driver, user=user, dbname=dbname, password=password, host=host,port=port)
 con      <- db.open(dbparms)
 
 ## GET LIST OF PEcAn site names
