@@ -65,9 +65,11 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end
     output[[3]] <- (sub.LINKAGES.output$leafLitter + sub.LINKAGES.output$soilOM) / PLOT.AREA * DEFAULT.C * toKG # TotSoilCarb in kgC/m2
     output[[4]] <- c(sub.LINKAGES.output$agBiomass,sub.LINKAGES.output$leafLitter,sub.LINKAGES.output$soilOM) / PLOT.AREA * DEFAULT.C * toKG #Carb Pools in kgC/m2
     output[[5]] <- c("AGB","leaf Litter","Soil Organic Matter") #poolname
-    output[[6]] <- (sub.LINKAGES.output$agNPP / PLOT.AREA * DEFAULT.C * toKG) # GWBI = aNPP in LINKAGES
+    output[[6]] <- (sub.LINKAGES.output$agNPP / PLOT.AREA * DEFAULT.C * toKG) # GWBI = NPP in LINKAGES
     output[[7]] <- (sub.LINKAGES.output$soilResp / PLOT.AREA / yearSecs * toKG) # HeteroResp in kgC/m^2/s
-    
+    output[[8]] <- (sub.LINKAGES.output$agNPP / PLOT.AREA * DEFAULT.C * toKG) # NPP = GWBI in LINKAGES
+    output[[9]] <- ((sub.LINKAGES.output$agNPP - sub.LINKAGES.output$soilResp) / PLOT.AREA * DEFAULT.C * toKG) # NEE #possibly questionable
+    output[[10]] <- (sub.LINKAGES.output$ET * yearSecs) # Evap in kg/m^2/s
     
     #******************** Declare netCDF variables ********************#
     dim.t <- ncdim_def(name = "time",
@@ -100,6 +102,10 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end
     var[[5]]  <- ncvar_def("poolnames", units="", dim=list(dim.string, dim.cpools1), longname="Carbon Pool Names", prec="char")
     var[[6]]  <- ncvar_def("GWBI", "kgC/m2", list(dim.lat, dim.lon, dim.t), -999)
     var[[7]]  <- ncvar_def("HeteroResp", "kgC/m2/s", list(dim.lat, dim.lon, dim.t), -999)
+    var[[8]]  <- ncvar_def("NPP", "kgC/m2", list(dim.lat, dim.lon, dim.t), -999)
+    var[[9]]  <- ncvar_def("NEE", "kgC/m2", list(dim.lat, dim.lon, dim.t), -999)
+    var[[10]]  <- ncvar_def("Evap", "kgC/m2", list(dim.lat, dim.lon, dim.t), -999)
+    
     
     
     #******************** Declar netCDF variables ********************#
