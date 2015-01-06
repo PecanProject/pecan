@@ -74,13 +74,13 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
   spstr <- vecpaste(species$id)
 
   # get the priors
-  prior.distns <- query.priors(pft$name, vecpaste(trait.names), out = pft$outdir, con = dbcon)
+  prior.distns <- query.priors(pftid, vecpaste(trait.names), out = pft$outdir, con = dbcon)
   prior.distns <- prior.distns[which(!rownames(prior.distns) %in% names(pft$constants)),]
   traits <- rownames(prior.distns) 
 
-  # get the trait data
-  trait.data <- query.traits(spstr, traits, con = dbcon)
-  traits <- names(trait.data)
+  # get the trait data (don't bother sampling derived traits until after update check)
+  trait.data.check <- query.traits(spstr, traits, con = dbcon, update.check.only=TRUE)
+  traits <- names(trait.data.check)
 
   # check to see if we need to update
   if ((forceupdate == 'AUTO') || !as.logical(forceupdate)) {
@@ -102,7 +102,6 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
             logger.debug("Checking if species have changed")
             testme <- read.csv(file.path(files$file_path[[id]], files$file_name[[id]]))
             if (!check.lists(species, testme)) {
-              remove(testme)
               foundallfiles <- FALSE
               logger.error("species have changed: ", file.path(files$file_path[[id]], files$file_name[[id]]))
             }
@@ -114,23 +113,28 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
             testme <- prior.distns
             prior.distns <- prior.distns.tmp
             if (!identical(prior.distns, testme)) {
-              remove(testme)
               foundallfiles <- FALSE
               logger.error("priors have changed: ", file.path(files$file_path[[id]], files$file_name[[id]]))
             }
             remove(testme)
           } else if ((forceupdate == 'AUTO') && (files$file_name[[id]] == "trait.data.Rdata")) {
             logger.debug("Checking if trait data has changed")
-            trait.data.tmp <- trait.data
             load(file.path(files$file_path[[id]], files$file_name[[id]]))
-            testme <- trait.data
-            trait.data <- trait.data.tmp
-            if (!identical(trait.data, testme)) {
-              remove(testme)
+
+            # For trait data including converted data, only check unconverted
+            converted.stats2na <- function(x) {
+              if(all(c("mean", "stat", "mean_unconverted", "stat_unconverted") %in% names(x)))
+                x[,c("mean","stat")] <- NA
+              return(x)
+            }
+            trait.data = lapply(trait.data, converted.stats2na)
+            trait.data.check = lapply(trait.data.check, converted.stats2na)
+
+            if (!identical(trait.data.check, trait.data)) {
               foundallfiles <- FALSE
               logger.error("trait data has changed: ", file.path(files$file_path[[id]], files$file_name[[id]]))
             }
-            remove(testme)
+            remove(trait.data, trait.data.check)
           }
         }
         if (foundallfiles) {
@@ -143,6 +147,10 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
       }
     }
   }
+
+  # get the trait data (including sampling of derived traits, if any)
+  trait.data <- query.traits(spstr, traits, con = dbcon, update.check.only=FALSE)
+  traits <- names(trait.data)
 
   # get list of existing files so they get ignored saving
   old.files <- list.files(path=pft$outdir)

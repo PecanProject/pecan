@@ -15,7 +15,6 @@
 ##' @param outdir output directory
 ##' @param threshold Gelman-Rubin convergence threshold;
 ##' default = 1.2 following Bolker 2008 Ecological Models and Data in R
-##' @param ggmcmc plot ggmcmc plots (this is slow)? default is FALSE
 ##' @export
 ##'
 ##' @examples
@@ -23,7 +22,7 @@
 ##' summary <- pecan.ma.summary(trait.mcmc,settings$pfts$pft,settings$outdir,settings$meta.analysis$threshold)
 ##' }
 ##' @author David LeBauer, Shawn Serbin
-pecan.ma.summary <- function(mcmc.object, pft, outdir, threshold = 1.2, ggmcmc = FALSE){
+pecan.ma.summary <- function(mcmc.object, pft, outdir, threshold = 1.2, gg = FALSE){
   if(!is.null(settings$meta.analysis$threshold)) {
     threshold = settings$meta.analysis$threshold
   }
@@ -31,15 +30,17 @@ pecan.ma.summary <- function(mcmc.object, pft, outdir, threshold = 1.2, ggmcmc =
   sink(file = file.path(outdir,'meta-analysis.log'), append = TRUE, split = TRUE)
   for (trait in names(mcmc.object)){
     
-    ## new diagnostic plots. If preferred we can replace use of base below
-    if(ggmcmc){
-      if("ggmcmc" %in% rownames(installed.packages())){
-        if(is.mcmc.list(mcmc.object[[trait]])){
-          require(ggmcmc)
-          theme_set(theme_bw())
-          ggmcmc(ggs(mcmc.object[[trait]]), file.path(outdir, paste0("gg.ma.summaryplots.", trait, ".pdf")))        
-        }
-      }      
+    if(gg){
+      gg <- require(ggmcmc)
+    }
+    ## new diagnostic plots. But very slow 
+    if(gg){# & !any(grepl('^gg', dir(outdir)))){
+      if(is.mcmc.list(mcmc.object[[trait]])){
+        theme_set(theme_bw())
+        ggmcmc(ggs(mcmc.object[[trait]]), 
+               plot = c('ggs_density', 'ggs_traceplot', 'ggs_autocorrelation', 'ggs_Rhat', 'ggs_geweke'),
+               file.path(outdir, paste0("gg.ma.summaryplots.", trait, ".pdf")))        
+      }
     }
     
     ## reordering maparms so that beta.o etc not sent to end
