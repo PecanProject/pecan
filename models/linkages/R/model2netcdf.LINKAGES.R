@@ -54,17 +54,21 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end
     
     DEFAULT.C <- 0.48  ## mass percent C of biomass
     PLOT.AREA <- 830 ## m^2
+    toKG <- 1000 ## Kg in Mg
+    yearSecs <- (3.15569 * 10^7)
     
     ## Setup outputs for netCDF file in appropriate units
     output <- list()
     ## standard variables: Carbon Pools
-    output[[1]] <- (sub.LINKAGES.output$agBiomass / PLOT.AREA * DEFAULT.C) # Above Ground Biomass in kgC/m2
-    output[[2]] <- (sub.LINKAGES.output$agBiomass / PLOT.AREA * DEFAULT.C) # Total Live Biomass in kgC/m2 (no distinction from AGB in LINKAGES)
-    output[[3]] <- (sub.LINKAGES.output$leafLitter + sub.LINKAGES.output$soilOM) / PLOT.AREA * DEFAULT.C # TotSoilCarb in kgC/m2
-    output[[4]] <- c(sub.LINKAGES.output$agBiomass,sub.LINKAGES.output$leafLitter,sub.LINKAGES.output$soilOM) / PLOT.AREA * DEFAULT.C
-    output[[5]] <- c("AGB","leaf Litter","Soil Organic Matter")
-    output[[6]] <- (sub.LINKAGES.output$agNPP / PLOT.AREA * DEFAULT.C) # GWBI = aNPP in LINKAGES
-
+    output[[1]] <- (sub.LINKAGES.output$agBiomass / PLOT.AREA * DEFAULT.C * toKG) # Above Ground Biomass in kgC/m2
+    output[[2]] <- (sub.LINKAGES.output$agBiomass / PLOT.AREA * DEFAULT.C * toKG) # Total Live Biomass in kgC/m2 (no distinction from AGB in LINKAGES)
+    output[[3]] <- (sub.LINKAGES.output$leafLitter + sub.LINKAGES.output$soilOM) / PLOT.AREA * DEFAULT.C * toKG # TotSoilCarb in kgC/m2
+    output[[4]] <- c(sub.LINKAGES.output$agBiomass,sub.LINKAGES.output$leafLitter,sub.LINKAGES.output$soilOM) / PLOT.AREA * DEFAULT.C * toKG #Carb Pools in kgC/m2
+    output[[5]] <- c("AGB","leaf Litter","Soil Organic Matter") #poolname
+    output[[6]] <- (sub.LINKAGES.output$agNPP / PLOT.AREA * DEFAULT.C * toKG) # GWBI = aNPP in LINKAGES
+    output[[7]] <- (sub.LINKAGES.output$soilResp / PLOT.AREA / yearSecs * toKG) # HeteroResp in kgC/m^2/s
+    
+    
     #******************** Declare netCDF variables ********************#
     dim.t <- ncdim_def(name = "time",
                    units = paste0("days since ", y, "-01-01 00:00:00"),
@@ -95,7 +99,8 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end
     var[[4]]  <- ncvar_def("CarbPools", "kgC/m2", list(dim.cpools, dim.lat, dim.lon, dim.t),-999) 
     var[[5]]  <- ncvar_def("poolnames", units="", dim=list(dim.string, dim.cpools1), longname="Carbon Pool Names", prec="char")
     var[[6]]  <- ncvar_def("GWBI", "kgC/m2", list(dim.lat, dim.lon, dim.t), -999)
-  
+    var[[7]]  <- ncvar_def("HeteroResp", "kgC/m2/s", list(dim.lat, dim.lon, dim.t), -999)
+    
     
     #******************** Declar netCDF variables ********************#
     
