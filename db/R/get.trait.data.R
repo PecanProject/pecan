@@ -74,7 +74,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
   spstr <- vecpaste(species$id)
 
   # get the priors
-  prior.distns <- query.priors(pft$name, vecpaste(trait.names), out = pft$outdir, con = dbcon)
+  prior.distns <- query.priors(pftid, vecpaste(trait.names), out = pft$outdir, con = dbcon)
   prior.distns <- prior.distns[which(!rownames(prior.distns) %in% names(pft$constants)),]
   traits <- rownames(prior.distns) 
 
