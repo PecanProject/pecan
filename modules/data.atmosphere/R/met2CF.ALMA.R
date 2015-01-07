@@ -96,6 +96,8 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, o
     # create new coordinate dimensions based on site location lat/lon
     nc1 <- nc_open(old.file)
     tdim <- nc1$dim[["time"]]
+    met[['time']] = met[['time']] + (850 - 1700)
+    tdim$units = "days since 1700-01-01 00:00:00"
     tdim$vals = met[['time']]
     tdim$len = length(tdim$vals)
     latlon = nc1$dim$lat$vals
@@ -106,7 +108,6 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, o
     dim=list(lat,lon,time)
     cp.global.atts <- ncatt_get(nc=nc1, varid=0)
     nc_close(nc1)
-    
     
     #Open new file and copy lat attribute to latitude
     print(c(latlon,year))
