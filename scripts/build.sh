@@ -135,7 +135,7 @@ PACKAGES="${PACKAGES} modules/priors modules/meta.analysis modules/uncertainty"
 PACKAGES="${PACKAGES} modules/data.land modules/data.atmosphere modules/data.remote"
 PACKAGES="${PACKAGES} modules/assim.batch modules/assim.sequential"
 PACKAGES="${PACKAGES} modules/allometry modules/benchmark modules/photosynthesis"
-PACKAGES="${PACKAGES} models/ed models/sipnet models/biocro models/dalec"
+PACKAGES="${PACKAGES} models/ed models/sipnet models/biocro models/dalec models/linkages"
 PACKAGES="${PACKAGES} all"
 
 # location where to install packages
