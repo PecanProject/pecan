@@ -10,6 +10,6 @@ end_date   = "1001-12-31"
 overwrite  = TRUE 
 verbose=FALSE
 
-results = met2CF.ALMA(in.path,in.prefix,outfolder,start_date,end_date,overwrite,verbose)
+results = met2CF.PalEON(in.path,in.prefix,outfolder,start_date,end_date,overwrite,verbose)
 
 }
