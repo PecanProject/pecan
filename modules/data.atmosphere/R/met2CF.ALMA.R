@@ -72,7 +72,9 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, o
     for(v in by.folder){
       fnames = dir(file.path(in.path,v),full.names = TRUE)
       for(m in 1:12){
-        sel = grep(paste0(year,"_",formatC(m, width = 2, format = "d", flag = "0")),fnames)
+        stub = paste0(year,"_",formatC(m, width = 2, format = "d", flag = "0"))
+        sel = grep(stub,fnames)
+        if(length(sel)==0) logger.severe("missing file",v,stub)
         old.file <- fnames[sel]
         nc1 <- nc_open(old.file,write=FALSE)
         if(length(met[[v]])<=1){
@@ -161,11 +163,9 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, o
              verbose=verbose)
     
     # precipitation_flux
-    t <- tdim$vals
-    timestep <- round(x=mean(diff(t))*86400,digits=0) # round to nearest second
     insertPmet(met[['precipf']],
              nc2=nc2, var2='precipitation_flux', units2='kg/m^2/s', dim2=dim, 
-             conv=function(x) { x/timestep }, verbose=verbose)
+             verbose=verbose)
     
     # add global attributes from original file
     for(j in 1:length(cp.global.atts)){
