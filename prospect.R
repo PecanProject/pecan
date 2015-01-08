@@ -4,6 +4,7 @@
 ##' Load PROSPECT C script and absorption features into environment
 ##' }
 ##' @author Alexey Shiklomanov
+##' @export
 
 library(Rcpp)
 sourceCpp("prospect_c.cpp")

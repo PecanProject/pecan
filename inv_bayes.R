@@ -9,6 +9,7 @@
 ##' @param obs.spec Matrix of observed reflectance 400-2500 nm. Each row is a wavelength and each column is one spectrum.
 ##' @param ngibbs Number of iterations (default = 100)
 ##' @param JumpRSD Initial relative standard deviation of Jump distribution (default = 0.1).
+##' @param wl Wavelengths over which to perform inversion (must match data) (default = 400:2500)
 ##' @param local.store Whether output should be stored in memory (TRUE) or written to file (FALSE, default)
 ##' @param single.precision If TRUE (default), a single residual SD is calculated for the entire spectrum. If FALSE, a value is calcluated for each wavelength.
 ##' @param random.effects What kind of random effects should be included. Options are 'none' (default), 'leaf', 'plot'
@@ -33,23 +34,20 @@ guess.inits <- c(N=1.4,
 
 source("mle_inversion.R")
 
-## NOTE: obs.spec must be a matrix as follows:
-## Column 1 : Wavelengths (400:2500)
-## Columns 2-n : Reflectance observations
-## Use specdatproc script to generate correct matrices from data.
+## Use specdatproc script to generate correct "obs.spec" matrix from data.
 pinvbayes <- function(obs.spec,
                       ngibbs=100,
                       JumpRSD=0.1,
+                      wl=400:2500,
                       local.store=FALSE,
                       single.precision=TRUE,
                       random.effects='none',
                       inits='mle',
                       ar.step=10,
                       ar.target=0.75,
-                      fname = "runs/test_run.dat"
+                      fname = "TESTRUN.dat"
                       )
 {
-        wl <- min(obs.spec[,1]):max(obs.spec[,1])
         nwl <- length(wl)
         nspec <- ncol(obs.spec)
         JumpSD <- JumpRSD * unlist(guess.inits)

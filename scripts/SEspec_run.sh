@@ -1,4 +1,8 @@
 #!/bin/bash
+
+## Perform a run with the specified random effects (REFARG) for all available species. Results 
+## are stored in the FOLDARG folder.
+
 REFARG=$1
 FOLDARG=$2
 qsub -v SPECIES="ICsp",REF=$REFARG,FOLDER=$FOLDARG -N "pbi IC $REFARG $FOLDARG" multirun.qsub

@@ -47,6 +47,7 @@ specmatrix <- function(Species,
 ##' @return If out==TRUE, returns character vector of species tags.
 ##' @export
 ##' @author Alexey Shiklomanov
+
 gen.spec.list <- function(path="data/SE_spectra/Reflectance/",
                           out=FALSE){
         flist <- list.files(path)

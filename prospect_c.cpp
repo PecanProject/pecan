@@ -1,10 +1,20 @@
-// Prospect Model
-// Alexey Shiklomanov
-// Prospect 4 model
-//#include <math.h>
+// TITLE: Prospect4 Model
+//
+// DESCRIPTION: Estimates leaf hemispherical-directional reflectance given 
+// effective number of leaf layers (N), chlorophyll content (Cab), water
+// content (Cw), and dry matter (Cm). Returns vector of reflectance from 
+// 400 to 2500 nm.
+//
+// AUTHOR: Alexey Shiklomanov
+//
+
 #include <Rcpp.h>
 using namespace Rcpp;
 
+// NAME: exp_int
+// TITLE: Numerical approximation of exponential integral
+// DESCRIPTION: Integral from k to infinity of exp(-x)/x.
+// 
 double exp_int(double k){
   double tau;
   double xx, yy;
@@ -45,6 +55,9 @@ double exp_int(double k){
   return tau;
 }
 
+// NAME: tavf
+// TITLE: Transmittance of elementary layer
+//
 double tavf(float alpha2, double n)
 {
   // Variable declarations
@@ -94,6 +107,9 @@ double tavf(float alpha2, double n)
   return out;
 }
 
+// NAME: gpm
+// TITLE: Generalized plate model
+// DESCRIPTION: Returns reflectance of a leaf with "N" layers.
 // [[Rcpp::export]]
 double gpm(float alpha, float n, float theta, float N)
 {
@@ -139,6 +155,9 @@ double gpm(float alpha, float n, float theta, float N)
   return RNa;
 }
 
+// NAME: prospect4
+// TITLE: PROSPECT4 model
+// DESCRIPTION: Returns full reflectance spectrum of a leaf given its biophysical parameters
 //[[Rcpp::export]]
 NumericVector prospect4(float N, float Cab, float Cw, float Cm,
   NumericVector n, NumericVector Cab_abs, 
