@@ -20,30 +20,30 @@
 ##' @export
 ##' @author Rob Kooper
 ##-------------------------------------------------------------------------------------------------#
-met2model.LINKAGES <- function(in.path, in.prefix, outfolder, overwrite=FALSE) {
-  logger.severe("NOT IMPLEMENTED")
+met2model.LINKAGES <- function(in.path, in.prefix, start.year, end.year, outfolder, site) {
   
-  setwd("/Users/paleolab/Linkages/PalEON.Met/PHA/pecan2.bu.edu/input/PalEON.MIP.PBL")
+  in.path = "/Users/paleolab/Linkages/PalEON.Met/PHA/pecan2.bu.edu/input/PalEON.MIP.PBL/"
+  outfolder = "/Users/paleolab/Linkages/PalEON.Met/PHA/pecan2.bu.edu/output/PBL/"
   
-  year = seq(850,2010,1)
-  month = seq(1,12,1)
-
+  out.file <- file.path(paste0(outfolder,"test_text1.txt"))
+  
+  year = seq(start.year,end.year,1)
+  
   month_matrix_precip = matrix(NA,length(year),12)
-  #month_vec = c(31,28,31,30,31,30,31,31,30,31,30,31)
   julian_vec_hr = c(1,c(32,60,91,121,152,182,213,244,274,305,335,365)*4)
   
   for(i in 1:length(year)){
-    ncin <- nc_open(paste(year[i],".nc",sep=""))
+    ncin <- nc_open(paste(in.path,year[i],".nc",sep=""))
     #print(ncin)
     ncprecipf = ncvar_get(ncin, "precipitation_flux") #units are kg m-2 s-1    
     for(m in 1:12){
       month_matrix_precip[i,m] = sum(ncprecipf[julian_vec_hr[m]:(julian_vec_hr[m+1]-1)]) * 21600^2 #fix when Mike changes code
     } 
     nc_close(ncin)
-    if(i%%100==0) cat(i," "); flush.console()
+    #if(i%%100==0) cat(i," "); flush.console()
   }
   
-  nyear = 1150 #number of years to simulate
+  nyear = length(year) #number of years to simulate
   ipolat_nums = seq(2,nyear,2) #years for climate interpolation
   mean_ncprecipf_mm = matrix(0,length(ipolat_nums),12) ; mean_ncprecipf_cm = mean_ncprecipf_mm; sd_ncprecipf_mm = mean_ncprecipf_mm ;sd_ncprecipf_cm = mean_ncprecipf_mm
   
@@ -54,23 +54,23 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, overwrite=FALSE) {
     }  
   }
   
-  mean_ncprecipf_cm <- (mean_ncprecipf_mm / 10)
-  sd_ncprecipf_cm <- (sd_ncprecipf_mm / 10)
+  mean_ncprecipf_cm <- round(mean_ncprecipf_mm / 10,digits = 1)
+  sd_ncprecipf_cm <- round(sd_ncprecipf_mm / 10,digits = 1)
   
   month_matrix_temp_mean = matrix(NA,length(year),12)
   
   for(i in 1:length(year)){
-    ncin <- nc_open(paste(year[i],".nc",sep=""))
+    ncin <- nc_open(paste(in.path,year[i],".nc",sep=""))
     #print(ncin)
     nctemp = ncvar_get(ncin, "air_temperature") #units are kg m-2 s-1    
     for(m in 1:12){
       month_matrix_temp_mean[i,m] = mean(nctemp[julian_vec_hr[m]:(julian_vec_hr[m+1]-1)]) #sub daily to monthly
     } 
     nc_close(ncin)
-    if(i%%100==0) cat(i," "); flush.console()
+    #if(i%%100==0) cat(i," "); flush.console()
   }
   
-  nyear = 1150 #number of years to simulate
+  nyear = length(year) #number of years to simulate
   ipolat_nums = seq(2,nyear,2) #years for climate interpolation
   mean_nctemp = matrix(0,length(ipolat_nums),12) ; sd_nctemp = mean_nctemp
   for(i in 1:length(ipolat_nums)){
@@ -80,9 +80,9 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, overwrite=FALSE) {
     }  
   }
   
-  mean_nctemp_C <- (mean_nctemp - 273.15)
-  sd_nctemp_C <- sd_nctemp
+  mean_nctemp_C <- round(mean_nctemp - 273.15,digits = 1)
+  sd_nctemp_C <- round(sd_nctemp,digits = 1)
   
-  
+  write.table(rbind(mean_nctemp_C,sd_nctemp_C,mean_ncprecipf_cm,sd_ncprecipf_cm),out.file,quote = FALSE,sep=",",col.names=FALSE,row.names=FALSE)
   
 }
