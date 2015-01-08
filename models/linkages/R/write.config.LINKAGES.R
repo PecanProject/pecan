@@ -35,7 +35,7 @@ write.config.LINKAGES <- function(defaults, trait.values, settings, run.id){
   kprnt = 50 #year interval for output
   klast = 90 #number of plots
   nyear = 1150 #number of years to simulate
-  ipolat_nums = seq(0,nyear,500) #years for climate interpolation
+  ipolat_nums = seq(2,nyear,2) #years for climate interpolation
   ipolat = length(ipolat_nums)-1 #number of years for climate interpolation
   plat = settings$run$site$lat #latitude
   plong = settings$run$site$lon #longitude

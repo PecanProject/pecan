@@ -11,8 +11,8 @@
 ##' Converts a met CF file to a model specific met file. The input
 ##' files are calld <in.path>/<in.prefix>.YYYY.cf
 ##'
-##' @name met2model.MODEL
-##' @title Write MODEL met files
+##' @name met2model.LINKAGES
+##' @title Write LINKAGES met files
 ##' @param in.path path on disk where CF file lives
 ##' @param in.prefix prefix for each file
 ##' @param outfolder location where model specific output is written.
@@ -20,11 +20,8 @@
 ##' @export
 ##' @author Rob Kooper
 ##-------------------------------------------------------------------------------------------------#
-met2model.LINKAGES <- function(in.path, in.prefix, start.year, end.year, outfolder, site) {
-  
-  in.path = "/Users/paleolab/Linkages/PalEON.Met/PHA/pecan2.bu.edu/input/PalEON.MIP.PBL/"
-  outfolder = "/Users/paleolab/Linkages/PalEON.Met/PHA/pecan2.bu.edu/output/PBL/"
-  
+met2model.LINKAGES <- function(in.path, in.prefix, start.year, end.year, outfolder) {
+   
   out.file <- file.path(paste0(outfolder,"test_text1.txt"))
   
   year = seq(start.year,end.year,1)
@@ -80,8 +77,8 @@ met2model.LINKAGES <- function(in.path, in.prefix, start.year, end.year, outfold
     }  
   }
   
-  mean_nctemp_C <- round(mean_nctemp - 273.15,digits = 1)
-  sd_nctemp_C <- round(sd_nctemp,digits = 1)
+  mean_nctemp_C <- round(mean_nctemp - 273.15, digits = 1)
+  sd_nctemp_C <- round(sd_nctemp, digits = 1)
   
   write.table(rbind(mean_nctemp_C,sd_nctemp_C,mean_ncprecipf_cm,sd_ncprecipf_cm),out.file,quote = FALSE,sep=",",col.names=FALSE,row.names=FALSE)
   
