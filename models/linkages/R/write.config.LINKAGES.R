@@ -23,18 +23,23 @@
 ##' @export
 ##' @author Rob Kooper
 ##-------------------------------------------------------------------------------------------------#
-write.config.LINKAGES <- function(defaults, trait.values, settings, run.id){
+write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, run.id){
   
   # find out where to write run/ouput
   rundir <- file.path(settings$run$host$rundir, run.id)
+  if(!file.exists(rundir)) dir.create(rundir)
   outdir <- file.path(settings$run$host$outdir, run.id)
+  if(!file.exists(outdir)) dir.create(outdir)  
 
   #-----------------------------------------------------------------------
   # write LINKAGES settings file
+  start.year = as.numeric(strftime(settings$run$start.date,"%Y"))
+  end.year = as.numeric(strftime(settings$run$end.date,"%Y"))
+  year = seq(start.year,end.year,1)
   
-  kprnt = 50 #year interval for output
+  kprnt = 1 #year interval for output
   klast = 90 #number of plots
-  nyear = 1150 #number of years to simulate
+  nyear = length(year) #number of years to simulate
   ipolat_nums = seq(2,nyear,2) #years for climate interpolation
   ipolat = length(ipolat_nums)-1 #number of years for climate interpolation
   plat = settings$run$site$lat #latitude
@@ -57,17 +62,7 @@ write.config.LINKAGES <- function(defaults, trait.values, settings, run.id){
   ## as initial hack, copy parameter file from inst to rundir
   param.file=system.file("SPP.DAT", package = "PEcAn.LINKAGES")
   file.copy(from = param.file,rundir)
-  
-  ## Replace this with creating a symlink from rundir to met
-  temp_vec = c(c(-6.3,-4.7,-0.3,6.6,12.7,17.7,20.5,19.5,14.7,8.0,2.9,-3.0),c(-6.3,-4.7,-0.3,6.6,12.7,17.7,20.5,19.5,14.7,8.0,2.9,-3.0),c(-6.3,-4.7,-0.3,6.6,12.7,17.7,20.5,19.5,14.7,8.0,2.9,-3.0)) 
-  temp_means = matrix(round(rnorm(12*ipolat,temp_vec,0),1),ipolat,12,byrow=TRUE)# monthly mean temperature
-  temp_sd = matrix(1,ipolat,12) #monthly temperature standard deviation
-  precip_vec = c(c( 8.5,7.9,9.9,9.8,9.7,11.1,11.7,9.4,9.4,11.5,10.7,9.9),c( 8.5,7.9,9.9,9.8,9.7,11.1,11.7,9.4,9.4,11.5,10.7,9.9),c( 8.5,7.9,9.9,9.8,9.7,11.1,11.7,9.4,9.4,11.5,10.7,9.9))#
-  precip_means = matrix(round(rnorm(12*ipolat,precip_vec,0),1),ipolat,12,byrow=TRUE) #monthly mean precipitation
-  precip_sd = temp_sd #monthly standard deviation precipitation
-  write.table(file=file.path(rundir,"test_text1.txt"),rbind(temp_means,temp_sd,precip_means,precip_sd),sep=",",col.names=FALSE,row.names=FALSE)
-  #file.show("test_text1.txt")
-  
+    
   #-----------------------------------------------------------------------
   # create launch script (which will create symlink)
   if (!is.null(settings$run$jobtemplate) && file.exists(settings$run$jobtemplate)) {
