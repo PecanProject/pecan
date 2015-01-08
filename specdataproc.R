@@ -1,4 +1,20 @@
+##' Functions for converting spectral data into matrices for use in Bayesian inversion.
+
 library(reshape2)
+
+##' @name specmatrix
+##' @title Observed reflectance matrix
+##' @details {
+##' Binds requisite spectra from '.csv' files into a matrix useable by Bayesian inversion function.
+##' }
+##' 
+##' @param Species Name of species to be used. Must EXACTLY match species tag in file name.
+##' @param wln Starting wavelength (default=400)
+##' @param wlx Maximum wavelength (default=2500)
+##' @param path Path to '.csv' spectra (default="data/SE_spectra/Reflectance/")
+##' @return Observed reflectance matrix usable by Bayesian inversion function.
+##' @export
+##' @author Alexey Shiklomanov
 
 specmatrix <- function(Species,
                        wln=400,
@@ -20,6 +36,17 @@ specmatrix <- function(Species,
         return(refl.mat)
 }
 
+##' @name gen.spec.list
+##' @title List available species
+##' @details {
+##' Creates a list of available species tags, for reference or for batch jobs.
+##' }
+##' 
+##' @param path Path to '.csv' spectra (default="data/SE_spectra/Reflectance/")
+##' @param out Store in local memory? If TRUE, returns character vector with list. If FALSE, prints to "scripts/species_list.txt".
+##' @return If out==TRUE, returns character vector of species tags.
+##' @export
+##' @author Alexey Shiklomanov
 gen.spec.list <- function(path="data/SE_spectra/Reflectance/",
                           out=FALSE){
         flist <- list.files(path)

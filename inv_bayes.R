@@ -1,5 +1,25 @@
-#'@title Prospect Bayesian Inversion
-#'@author Alexey Shiklomanov
+##' @name pinvbayes
+##' @title Prospect Bayesian Inversion
+##' 
+##' @details {
+##' Function to perform Bayesian inversion of PROSPECT4 model
+##' using measured reflectance data.
+##' }
+##' 
+##' @param obs.spec Matrix of observed reflectance 400-2500 nm. Each row is a wavelength and each column is one spectrum.
+##' @param ngibbs Number of iterations (default = 100)
+##' @param JumpRSD Initial relative standard deviation of Jump distribution (default = 0.1).
+##' @param local.store Whether output should be stored in memory (TRUE) or written to file (FALSE, default)
+##' @param single.precision If TRUE (default), a single residual SD is calculated for the entire spectrum. If FALSE, a value is calcluated for each wavelength.
+##' @param random.effects What kind of random effects should be included. Options are 'none' (default), 'leaf', 'plot'
+##' @param inits How initial conditions are generated. Options are maximum likelihood ('mle', default), 'random', or 'guess'.
+##' @param ar.step Interval on which JumpRSD is adjusted to maintain a good acceptance rate (default = 10).
+##' @param ar.target Target acceptance rate (default = 0.75)
+##' @param fname Filename for storing results (default = 'runs/test_run.dat')
+##' @return If local.store==TRUE, returns list of MCMC steps for PROSPECT parameters, residual SD, and random effects. If FALSE, returns nothing.
+##' @export
+##'
+##' @author Alexey Shiklomanov
 
 source("prospect.R")
 source("timer.R")

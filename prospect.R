@@ -1,3 +1,10 @@
+##' @title Prospect model setup
+##' 
+##' @details {
+##' Load PROSPECT C script and absorption features into environment
+##' }
+##' @author Alexey Shiklomanov
+
 library(Rcpp)
 sourceCpp("prospect_c.cpp")
 
