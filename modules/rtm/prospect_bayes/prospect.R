@@ -9,7 +9,7 @@
 library(Rcpp)
 sourceCpp("prospect_c.cpp")
 
-load("data/dataSpec_p4.RData")    
+load("../data/dataSpec_p4.RData")    
 dataSpec_p4 <- as.matrix(dataSpec_p4)
 
 n.a <- dataSpec_p4[,"refractive_index"]                    # Column 2
