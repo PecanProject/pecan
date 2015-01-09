@@ -21,7 +21,7 @@
 ##' @param run.id id of run
 ##' @return configuration file for LINKAGES for given run
 ##' @export
-##' @author Rob Kooper
+##' @author Ann Raiho
 ##-------------------------------------------------------------------------------------------------#
 write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, run.id){
   

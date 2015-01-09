@@ -18,7 +18,7 @@
 ##' @param outfolder location where model specific output is written.
 ##' @return OK if everything was succesful.
 ##' @export
-##' @author Rob Kooper
+##' @author Ann Raiho
 ##-------------------------------------------------------------------------------------------------#
 met2model.LINKAGES <- function(in.path, in.prefix, start.year, end.year, outfolder) {
    
