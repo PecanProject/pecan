@@ -20,7 +20,7 @@
 ##' @export
 ##' @author Ann Raiho
 ##-------------------------------------------------------------------------------------------------#
-met2model.LINKAGES <- function(in.path, in.prefix, start.year, end.year, outfolder) {
+met2model.LINKAGES <- function(in.path, in.prefix=NULL, start.year, end.year, outfolder) {
    
   out.file <- file.path(paste0(outfolder,"test_text1.txt"))
   
@@ -41,7 +41,7 @@ met2model.LINKAGES <- function(in.path, in.prefix, start.year, end.year, outfold
   }
   
   nyear = length(year) #number of years to simulate
-  ipolat_nums = seq(2,nyear,2) #years for climate interpolation
+  ipolat_nums = seq(2,nyear,25) #years for climate interpolation
   mean_ncprecipf_mm = matrix(0,length(ipolat_nums),12) ; mean_ncprecipf_cm = mean_ncprecipf_mm; sd_ncprecipf_mm = mean_ncprecipf_mm ;sd_ncprecipf_cm = mean_ncprecipf_mm
   
   for(i in 1:length(ipolat_nums)){

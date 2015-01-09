@@ -37,7 +37,7 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   end.year = as.numeric(strftime(settings$run$end.date,"%Y"))
   year = seq(start.year,end.year,1)
   
-  kprnt = 1 #year interval for output
+  kprnt = 50 #year interval for output
   klast = 90 #number of plots
   nyear = length(year) #number of years to simulate
   ipolat_nums = seq(2,nyear,2) #years for climate interpolation
