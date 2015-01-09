@@ -67,8 +67,6 @@ met2model.LINKAGES <- function(in.path, in.prefix=NULL, start.year, end.year, ou
     #if(i%%100==0) cat(i," "); flush.console()
   }
   
-  nyear = length(year) #number of years to simulate
-  ipolat_nums = seq(2,nyear,2) #years for climate interpolation
   mean_nctemp = matrix(0,length(ipolat_nums),12) ; sd_nctemp = mean_nctemp
   for(i in 1:length(ipolat_nums)){
     for(m in 1:12){
