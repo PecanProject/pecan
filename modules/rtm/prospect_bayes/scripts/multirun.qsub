@@ -1,0 +1,68 @@
+#!/bin/bash
+#
+# Run this file using 'qsub multirun.qsub'
+#
+# All lines starting with "#$" are SGE qsub commands
+# 
+
+# Specify which shell to use
+#$ -S /bin/bash
+
+# Run on the current working directory
+#$ -cwd
+
+# Join standard output and error to a single file
+#$ -j y
+
+# Name the file where to redirect standard output and error
+#$ -o prospbayes_log.qlog
+
+# Send an email when the job begins and when it ends running
+#$ -m be
+
+# Whom to send the email to
+#$ -M ashiklom@bu.edu
+
+# Set walltime limit
+#$ -l h_rt=72:00:00
+
+# Run in parallel
+#$ -pe mpi_16_tasks_per_node 16
+
+# Now let's keep track of some information just in case anything goes wrong
+
+cd ..
+echo "=========================================================="
+echo "Starting on : $(date)"
+echo "Running on node : $(hostname)"
+echo "Current directory : $(pwd)"
+echo "Current job ID : $JOB_ID"
+echo "Current job name : $JOB_NAME"
+echo "Task index number : $SGE_TASK_ID"
+echo "=========================================================="
+
+# Run the R scripts
+# Arguments to runpi.R: JumpRSD Species single_precision random_effects sampled_inits ngibbs otherID folder
+
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e5 run01 $FOLDER &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e5 run02 $FOLDER &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e5 run03 $FOLDER &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e5 run04 $FOLDER &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e5 run05 $FOLDER &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e5 run06 $FOLDER &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e5 run07 $FOLDER &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e5 run08 $FOLDER &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e5 run09 $FOLDER &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e5 run10 $FOLDER &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e5 run11 $FOLDER &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF random 1e5 run12 $FOLDER &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF mle 1e5 run13 $FOLDER &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF mle 1e5 run14 $FOLDER &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF mle 1e5 run15 $FOLDER &
+Rscript scripts/runpi.R 0.05 $SPECIES 1 $REF mle 1e5 run16 $FOLDER &
+
+wait
+
+echo "=========================================================="
+echo "Finished on : $(date)"
+echo "=========================================================="
