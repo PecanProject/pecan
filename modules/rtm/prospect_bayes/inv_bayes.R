@@ -27,13 +27,6 @@ source("timer.R")
 source("truncnorm.R")
 source("mle_inversion.R")
 
-guess.inits <- c(N=1.4, 
-              Cab=30,
-              Cw=0.017,
-              Cm=0.006
-              )
-
-
 ## Use specdatproc script to generate correct "obs.spec" matrix from data.
 pinvbayes <- function(obs.spec,
                       ngibbs=100,
