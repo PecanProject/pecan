@@ -14,13 +14,14 @@
 ##' @param verbose should the function be very verbose
 ##' @author Ankur Desai
 ##'
-metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE){
+metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE, lst=0){
   # get start/end year code works on whole years only
   start_year <- year(start_date)
   end_year <- year(end_date)
 
   require(REddyProc)  
   require(ncdf4)
+  require(lubridate)
 ##  require(udunits2)
 ##  require(PEcAn.utils)
   
@@ -84,6 +85,22 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, over
     east_wind <- ncvar_get(nc=nc,varid='eastward_wind')
     north_wind <- ncvar_get(nc=nc,varid='northward_wind')
     
+    #extract time, lat, lon, and elevation for pressure and radiation calculations
+    time <- ncvar_get(nc=nc,varid='time')
+    lat <- ncvar_get(nc=nc,varid='latitude')
+    lon <- ncvar_get(nc=nc,varid='longitude')
+    elev <- ncatt_get(nc=nc,varid=0,'elevation')
+    ##Future: extract elevation from site
+    if (elev$hasatt) {
+      elevation <- as.numeric((unlist(strsplit(elev$value," ")))[1])
+    } else {
+      elevation <- 0
+    }
+    
+    #default pressure (in Pascals) if no pressure observations are available (based on NOAA 1976 equation for pressure altitude for WMO international standard atmosphere)
+    standard_pressure <- ((1 - ((3.28084*elevation)/145366.45))^(1/.190284))*101325.0
+    if (length(which(is.na(press))) == length(press)) { press[is.na(press)] <- standard_pressure }
+    
     # check to see if we have Rg values
     if (length(which(is.na(Rg))) == length(Rg)) {
       if (length(which(is.na(PAR))) == length(PAR)) {
@@ -99,6 +116,46 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, over
     Rg[badRg] = 1e6 * PAR[badRg] / 2.1
     Rg[Rg<0] = 0.0
     PAR[PAR<0]= 0.0
+    
+    ## make night dark - based on met2model.ED2.R in models/ed/R
+    ## First: calculate potential radiation
+    sec   <- nc$dim$time$vals
+    sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$time$units," "))[1],"seconds")
+    ifelse(leap_year(year)==TRUE,
+           dt <- (366*24*60*60)/length(sec), #leap year
+           dt <- (365*24*60*60)/length(sec)) #non-leap year
+    ifelse(leap_year(year)==TRUE,
+           doy <- rep(1:366,each=86400/dt),
+           doy <- rep(1:365,each=86400/dt))
+    ifelse(leap_year(year)==TRUE,
+           hr <- rep(seq(0,length=86400/dt,by=dt/86400*24),366),
+           hr <- rep(seq(0,length=86400/dt,by=dt/86400*24),365))
+    f <- pi/180*(279.5+0.9856*doy)
+    et <- (-104.7*sin(f)+596.2*sin(2*f)+4.3*sin(4*f)-429.3*cos(f)-2.0*cos(2*f)+19.3*cos(3*f))/3600  #equation of time -> eccentricity and obliquity
+    merid <- floor(lon/15)*15
+    merid[merid<0] <- merid[merid<0]+15
+    lc <- (lon-merid)*-4/60  ## longitude correction
+    tz <- merid/360*24 ## time zone
+    midbin <- 0.5*dt/86400*24 ## shift calc to middle of bin
+    t0 <- 12+lc-et-tz-midbin   ## solar time
+    h <- pi/12*(hr-t0)  ## solar hour
+    dec <- -23.45*pi/180*cos(2*pi*(doy+10)/365)  ## declination
+    cosz <- sin(lat*pi/180)*sin(dec)+cos(lat*pi/180)*cos(dec)*cos(h)
+    cosz[cosz<0] <- 0  
+    rpot <- 1366*cosz
+    toff <- lst*3600/dt
+## TODO: Add timezone shift if lst is not 0 (otherwise assume UTC)
+    #    if (toff < 0) { 
+#      slen <- length(Rg)
+#      rpot <- c(rep(rpot))
+#    }
+    ## Next: turn nighttime to 0
+    Rg[rpot<0] <- 0
+    PAR[PAR<0] <- 0
+    
+
+    Tair <- c(rep(Tair[1],toff),Tair)[1:slen]
+    ## we could add PAR[PAR>rpot] <- rpot, but probably should bias correct first?
     
     ## make a data frame, convert -9999 to NA, convert to degrees C
     EddyData.F <- data.frame(Tair,Rg,rH,PAR,precip,sHum,Lw,Ts1,VPD,ws,co2,press,east_wind,north_wind)
@@ -246,6 +303,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, over
     ncvar_put(nc,varid='mole_fraction_of_carbon_dioxide_in_air',vals=co2_f)
     
     if(('press_f' %in% colnames(Extracted))) press_f <- Extracted[,'press_f']
+    if(sum(is.na(press_f)) > 0) { press_f[is.na(press_f)] <- standard_pressure }
     if (length(which(is.na(press_f))) > 0) error <- c(error, "air_pressure")
     ncvar_put(nc,varid='air_pressure',vals=press_f)
 
