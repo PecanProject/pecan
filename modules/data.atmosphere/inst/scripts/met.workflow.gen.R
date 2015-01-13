@@ -21,9 +21,9 @@ if (raw == TRUE){
 con        <- db.open(dbparms)
 outfolder  <- paste0(dir,data.set,"/")
 pkg        <- "PEcAn.data.atmosphere"
-fcn        <- paste0("download.",fcn.data)
+fcn        <- paste0("download.",met)
 
-args <- list("ORNL",outfolder,pkg,raw.host,start_year,end_year,site.id,dbparms,con) #fix this later
+args <- list(site, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE)
 
 raw.id <- do.call(fcn,args)
 }

@@ -9,25 +9,21 @@ host     <- "psql-pecan.bu.edu"
 # Select username, host and directory folder for data
 
 username <- ""
-raw.host <- "pecan2.bu.edu"
-dir      <- "/home/ecowdery/input/"
+raw.host <- "geo.bu.edu"
+dir      <- "/projectnb/dietzelab/pecan.data/input/"
 
 #######################################################
 #                                                     #
 #######################################################
 # Choose meteorology data set. 
-# Current choices: 
-# NARR
-# Ameriflux
-# FACE_RHIN
 
-met <- ""
+met <- "NARR"
 
 #######################################################
 # Set start and end dates (when possible otherwise NA)
 
-start_year <- NA 
-end_year   <- NA
+start_date <- 1979 
+end_date   <- 2014
 
 
 #######################################################
@@ -54,8 +50,8 @@ if(regional==TRUE){
 # RHIN = 1000000059
 # ORNL = 1000000060
 
-raw    <- FALSE
-raw.id <- NA
+raw    <- TRUE
+raw.id <- 285
 
 #######################################################
 # Change to CF standards? If not, specify cf.id

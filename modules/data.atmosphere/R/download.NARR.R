@@ -8,7 +8,7 @@
 ##' @param end_year
 ##' 
 ##' @author ??
-download.NARR <- function(outfolder,start_year,end_year){
+download.NARR <- function(site, outfolder, start_year, end_year, overwrite=FALSE, verbose=FALSE){
   
   if(!file.exists(outfolder)) dir.create(outfolder)
   
