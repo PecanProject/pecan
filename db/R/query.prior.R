@@ -11,7 +11,7 @@
 ##'
 ##' @name query.priors
 ##' @title Query Priors
-##' @param pft String name of the PFT in the database
+##' @param pft ID number of the PFT in the database
 ##' @param trstr string of traits to query priors for
 ##' @param out output location
 ##' @param con database connection, can be list of arguments for connecting to database
@@ -38,7 +38,7 @@ query.priors <- function(pft, trstr=NULL, out=NULL, con=NULL,...){
       "join variables on priors.variable_id = variables.id",
       "join pfts_priors on pfts_priors.prior_id = priors.id",
       "join pfts on pfts.id = pfts_priors.pft_id",
-      "where pfts.name in (", vecpaste(pft), ")")
+      "where pfts.id = ", pft)
   if(is.null(trstr) || trstr == "''"){
     query.text = paste(query.text,";",sep="")
   } else {

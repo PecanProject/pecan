@@ -21,7 +21,7 @@ PG_OPT=${PG_OPT-"-U bety"}
 #  0 - EBI           - David LeBauer
 #  1 - BU            - Mike Dietze
 #  2 - Brookhaven    - Shawn Serbin
-#  3 - Purdue        -
+#  3 - Purdue        - Jeanne Osnas
 #  4 - Virginia Tech - Quinn Thomas
 # 99 - VM
 MYSITE=${MYSITE:-99}

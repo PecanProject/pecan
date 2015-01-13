@@ -450,7 +450,7 @@ query.trait.data <- function(trait, spstr, con = NULL, update.check.only=FALSE, 
   if(trait == 'Vcmax') {
 #########################   VCMAX   ############################
 ### Apply Arrhenius scaling to convert Vcmax at measurement temp to that at 25 degC (ref temp).
-    data <- arrhenius.scaling.traits(data, covariates, c('leafT', 'airT'))
+    data <- arrhenius.scaling.traits(data, covariates, c('leafT', 'airT','T'))
 
 ### Keep only top of canopy/sunlit leaf samples based on covariate.
     if(nrow(canopy.layer.covs) > 0) data <- filter.sunleaf.traits(data, canopy.layer.covs)

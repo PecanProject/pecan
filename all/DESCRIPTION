@@ -30,6 +30,7 @@ Suggests:
     PEcAn.sipnet,
     PEcAn.biocro,
     PEcAn.DALEC,
+    PEcAn.LINKAGES,
     PEcAn.allometry,
     PEcAn.benchmark,
     PEcAn.photosythesis
