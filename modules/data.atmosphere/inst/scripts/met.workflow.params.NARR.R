@@ -22,27 +22,28 @@ met <- "NARR"
 #######################################################
 # Set start and end dates (when possible otherwise NA)
 
-start_date <- 1979 
+start_date <- 2014 
 end_date   <- 2014
 
 
 #######################################################
 # Location
 
-# Set site id number when possible (not possible for NARR)
+# Set site id number when possible 
 # RHIN: 1000000003
 # ORNL: 854
-site.id <- NA # site.id
+# NARR: 1135
+site.id <- 1135
 
 # Set exrtraction site id when possible
 newsite <- NA # extraction site id
 
 regional = TRUE
 
-if(regional==TRUE){
-  site.id <- NA 
-  extract <- TRUE 
-}
+# if(regional==TRUE){
+#   site.id <- NA 
+#   extract <- TRUE # 
+# }
 
 #######################################################
 # Download raw data? If not, specify raw.id
@@ -71,6 +72,14 @@ perm.id <- NA
 # Select model. Currently ED2 and SIPNET
 
 model <- ""
+
+if(model == "ED2"){
+  mod.formatname <- 'ed.met_driver_header files format'
+  mod.mimetype <- 'text/plain'
+}else if(model == "SIPNET"){
+  mod.formatname <- 'Sipnet.climna'
+  mod.mimetype <- 'text/csv'
+}
 
 #######################################################
 # Run met workflow

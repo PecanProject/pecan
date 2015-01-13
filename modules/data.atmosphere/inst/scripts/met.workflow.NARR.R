@@ -34,12 +34,14 @@ if (raw == TRUE){
 if (cf == TRUE){
   con       <- db.open(dbparms)
   input.id  <-  raw.id
-  outfolder <-  paste0(dir,data.set,"_CF/")
+  outfolder <-  paste0(dir,met,"_CF/")
   pkg       <- "PEcAn.data.atmosphere"
-  fcn       <-  paste0("met2CF.",fcn.data)
+  fcn       <-  paste0("met2CF.",met)
   write     <-  TRUE
+  formatname <- 'CF Meteorology'
+  mimetype <- 'application/x-netcdf'
   
-  cf.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,con) # doesn't update existing record
+  cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username,con)
 }
 
 #--------------------------------------------------------------------------------------------------#
@@ -52,6 +54,9 @@ if (perm == TRUE){
   pkg       <- "PEcAn.data.atmosphere"
   fcn       <- "permute.nc"
   write     <-  TRUE
+  formatname <- 'CF Meteorology'
+  mimetype <- 'application/x-netcdf'
+
   
   perm.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,con)
 }
@@ -68,8 +73,10 @@ if (extract == TRUE){
   pkg       <- "PEcAn.data.atmosphere"
   fcn       <- "extract.nc"
   write     <- TRUE
+  formatname <- 'CF Meteorology'
+  mimetype <- 'application/x-netcdf'
   
-  extract.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,con,newsite = newsite)
+  extract.id <- convert.input(input.id,outfolder,formatname,mimetype,pkg,fcn,write,username,con,newsite = newsite)
 }
 
 #--------------------------------------------------------------------------------------------------#
@@ -90,7 +97,7 @@ if(nchar(model) >2){
   write     <- TRUE
   overwrite <- ""
   
-  model.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,con,lst=lst,overwrite=overwrite)
+  model.id <- convert.input(input.id,outfolder,mod.formatname,mod.mimetype,pkg,fcn,write,username,con,lst=lst,overwrite=overwrite)
 }
 
 #--------------------------------------------------------------------------------------------------#
