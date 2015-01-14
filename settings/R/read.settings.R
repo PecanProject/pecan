@@ -408,6 +408,10 @@ check.settings <- function(settings) {
     settings$meta.analysis$random.effects <- FALSE
     logger.info("Setting meta.analysis random effects to ", settings$meta.analysis$random.effects)
   }
+  if (is.null(settings$meta.analysis$threshold)) {
+    settings$meta.analysis$threshold <- 1.2
+    logger.info("Setting meta.analysis threshold to ", settings$meta.analysis$threshold)
+  }
   if (is.null(settings$meta.analysis$update)) {
     settings$meta.analysis$update <- 'AUTO'
     logger.info("Setting meta.analysis update to only update if no previous meta analysis was found")
