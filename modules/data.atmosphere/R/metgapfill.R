@@ -12,16 +12,18 @@
 ##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
+##' @param lst is timezone offset from UTC, if timezone is available in time:units atribute in file, it will use that, default is to assume UTC
 ##' @author Ankur Desai
 ##'
-metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE){
+metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE, lst=0){
   # get start/end year code works on whole years only
   start_year <- year(start_date)
   end_year <- year(end_date)
 
   require(REddyProc)  
   require(ncdf4)
-##  require(udunits2)
+  require(lubridate)
+  require(udunits2)
 ##  require(PEcAn.utils)
   
   #REddyProc installed to ~/R/library by install.packages("REddyProc", repos="http://R-Forge.R-project.org", type="source")
@@ -84,6 +86,30 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, over
     east_wind <- ncvar_get(nc=nc,varid='eastward_wind')
     north_wind <- ncvar_get(nc=nc,varid='northward_wind')
     
+    #extract time, lat, lon, elevation, timezone for pressure and radiation calculations
+    time <- ncvar_get(nc=nc,varid='time')
+    lat <- ncvar_get(nc=nc,varid='latitude')
+    lon <- ncvar_get(nc=nc,varid='longitude')
+    elev <- ncatt_get(nc=nc,varid=0,'elevation')
+    tzone <- ncatt_get(nc=nc,varid='time','units')
+    ##Future: query elevation from site.id
+    if (elev$hasatt) {
+      elevation <- as.numeric((unlist(strsplit(elev$value," ")))[1])
+    } else {
+      elevation <- 0  #assume sea level by default
+    }
+    if (tzone$hasatt) { 
+      tdimunit <- unlist(strsplit(tzone$value," "))
+      tdimtz <- substr(tdimunit[length(tdimunit)],1,1)
+      if ((tdimtz=="+")||(tdimtz=="-")) {
+        lst <- as.numeric(tdimunit[length(tdimunit)]) #extract timezone from file      
+      }
+    }
+    
+    #default pressure (in Pascals) if no pressure observations are available (based on NOAA 1976 equation for pressure altitude for WMO international standard atmosphere)
+    standard_pressure <- ((1 - ((3.28084*elevation)/145366.45))^(1/.190284))*101325.0
+    if (length(which(is.na(press))) == length(press)) { press[is.na(press)] <- standard_pressure }
+    
     # check to see if we have Rg values
     if (length(which(is.na(Rg))) == length(Rg)) {
       if (length(which(is.na(PAR))) == length(PAR)) {
@@ -100,9 +126,50 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, over
     Rg[Rg<0] = 0.0
     PAR[PAR<0]= 0.0
     
+    ## make night dark - based on met2model.ED2.R in models/ed/R
+    ## First: calculate potential radiation
+    sec   <- nc$dim$time$vals
+    sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$time$units," "))[1],"seconds")
+    ifelse(leap_year(year)==TRUE,
+           dt <- (366*24*60*60)/length(sec), #leap year
+           dt <- (365*24*60*60)/length(sec)) #non-leap year
+    ifelse(leap_year(year)==TRUE,
+           doy <- rep(1:366,each=86400/dt),
+           doy <- rep(1:365,each=86400/dt))
+    ifelse(leap_year(year)==TRUE,
+           hr <- rep(seq(0,length=86400/dt,by=dt/86400*24),366),
+           hr <- rep(seq(0,length=86400/dt,by=dt/86400*24),365))
+    f <- pi/180*(279.5+0.9856*doy)
+    et <- (-104.7*sin(f)+596.2*sin(2*f)+4.3*sin(4*f)-429.3*cos(f)-2.0*cos(2*f)+19.3*cos(3*f))/3600  #equation of time -> eccentricity and obliquity
+    merid <- floor(lon/15)*15
+    merid[merid<0] <- merid[merid<0]+15
+    lc <- (lon-merid)*-4/60  ## longitude correction
+    tz <- merid/360*24 ## time zone
+    midbin <- 0.5*dt/86400*24 ## shift calc to middle of bin
+    t0 <- 12+lc-et-tz-midbin   ## solar time
+    h <- pi/12*(hr-t0)  ## solar hour
+    dec <- -23.45*pi/180*cos(2*pi*(doy+10)/365)  ## declination
+    cosz <- sin(lat*pi/180)*sin(dec)+cos(lat*pi/180)*cos(dec)*cos(h)
+    cosz[cosz<0] <- 0  
+    rpot <- 1366*cosz  #in UTC
+    toff <- lst*3600/dt  #timezone offset correction
+    if (toff < 0) { 
+      slen <- length(rpot)
+      rpot <- c(rpot[(abs(toff)+1):slen],rpot[1:abs(toff)])
+    }
+    if (toff > 0) {
+      slen <- length(rpot)
+      rpot <- c(rpot[(slen-toff+1):slen],rpot[1:(slen-toff)])
+    }
+    ## Next: turn nighttime to 0
+    Rg[rpot==0] <- 0
+    PAR[rpot==0] <- 0    
+    ## we could add Rg[Rg>rpot] <- rpot, but probably should bias correct first?
+    
     ## make a data frame, convert -9999 to NA, convert to degrees C
     EddyData.F <- data.frame(Tair,Rg,rH,PAR,precip,sHum,Lw,Ts1,VPD,ws,co2,press,east_wind,north_wind)
     EddyData.F['Tair'] <- EddyData.F['Tair'] - 273.15
+    EddyData.F['Ts1'] <- EddyData.F['Ts1'] - 273.15
     EddyData.F['VPD'] <- EddyData.F['VPD']/1000.0
 
     ## Optional need: Compute VPD
@@ -220,7 +287,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, over
     if (length(which(is.na(Lw_f))) > 0) error <- c(error, "surface_downwelling_longwave_flux_in_air")
     ncvar_put(nc,varid='surface_downwelling_longwave_flux_in_air',vals=Lw_f)
 
-    if(('Ts1_f' %in% colnames(Extracted))) Ts1_f <- Extracted[,'Ts1_f']
+    if(('Ts1_f' %in% colnames(Extracted))) Ts1_f <- Extracted[,'Ts1_f'] + 273.15
     if(sum(is.na(Ts1_f)) > 0) {   
       Tair_ff <- Tair_f
       Tair_ff[is.na(Tair_ff)] <- mean(Tair_ff,na.rm=TRUE)
@@ -246,6 +313,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, over
     ncvar_put(nc,varid='mole_fraction_of_carbon_dioxide_in_air',vals=co2_f)
     
     if(('press_f' %in% colnames(Extracted))) press_f <- Extracted[,'press_f']
+    if(sum(is.na(press_f)) > 0) { press_f[is.na(press_f)] <- standard_pressure }
     if (length(which(is.na(press_f))) > 0) error <- c(error, "air_pressure")
     ncvar_put(nc,varid='air_pressure',vals=press_f)
 
