@@ -12,6 +12,7 @@
 ##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
+##' @param lst is timezone offset from UTC, if timezone is available in time:units atribute in file, it will use that, default is to assume UTC
 ##' @author Ankur Desai
 ##'
 metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE, lst=0){
@@ -22,7 +23,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, over
   require(REddyProc)  
   require(ncdf4)
   require(lubridate)
-##  require(udunits2)
+  require(udunits2)
 ##  require(PEcAn.utils)
   
   #REddyProc installed to ~/R/library by install.packages("REddyProc", repos="http://R-Forge.R-project.org", type="source")
@@ -85,16 +86,24 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, over
     east_wind <- ncvar_get(nc=nc,varid='eastward_wind')
     north_wind <- ncvar_get(nc=nc,varid='northward_wind')
     
-    #extract time, lat, lon, and elevation for pressure and radiation calculations
+    #extract time, lat, lon, elevation, timezone for pressure and radiation calculations
     time <- ncvar_get(nc=nc,varid='time')
     lat <- ncvar_get(nc=nc,varid='latitude')
     lon <- ncvar_get(nc=nc,varid='longitude')
     elev <- ncatt_get(nc=nc,varid=0,'elevation')
-    ##Future: extract elevation from site
+    tzone <- ncatt_get(nc=nc,varid='time','units')
+    ##Future: query elevation from site.id
     if (elev$hasatt) {
       elevation <- as.numeric((unlist(strsplit(elev$value," ")))[1])
     } else {
-      elevation <- 0
+      elevation <- 0  #assume sea level by default
+    }
+    if (tzone$hasatt) { 
+      tdimunit <- unlist(strsplit(tzone$value," "))
+      tdimtz <- substr(tdimunit[length(tdimunit)],1,1)
+      if ((tdimtz=="+")||(tdimtz=="-")) {
+        lst <- as.numeric(tdimunit[length(tdimunit)]) #extract timezone from file      
+      }
     }
     
     #default pressure (in Pascals) if no pressure observations are available (based on NOAA 1976 equation for pressure altitude for WMO international standard atmosphere)
@@ -142,20 +151,20 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, over
     dec <- -23.45*pi/180*cos(2*pi*(doy+10)/365)  ## declination
     cosz <- sin(lat*pi/180)*sin(dec)+cos(lat*pi/180)*cos(dec)*cos(h)
     cosz[cosz<0] <- 0  
-    rpot <- 1366*cosz
-    toff <- lst*3600/dt
-## TODO: Add timezone shift if lst is not 0 (otherwise assume UTC)
-    #    if (toff < 0) { 
-#      slen <- length(Rg)
-#      rpot <- c(rep(rpot))
-#    }
+    rpot <- 1366*cosz  #in UTC
+    toff <- lst*3600/dt  #timezone offset correction
+    if (toff < 0) { 
+      slen <- length(rpot)
+      rpot <- c(rpot[(abs(toff)+1):slen],rpot[1:abs(toff)])
+    }
+    if (toff > 0) {
+      slen <- length(rpot)
+      rpot <- c(rpot[(slen-toff+1):slen],rpot[1:(slen-toff)])
+    }
     ## Next: turn nighttime to 0
-    Rg[rpot<0] <- 0
-    PAR[PAR<0] <- 0
-    
-
-    Tair <- c(rep(Tair[1],toff),Tair)[1:slen]
-    ## we could add PAR[PAR>rpot] <- rpot, but probably should bias correct first?
+    Rg[rpot==0] <- 0
+    PAR[rpot==0] <- 0    
+    ## we could add Rg[Rg>rpot] <- rpot, but probably should bias correct first?
     
     ## make a data frame, convert -9999 to NA, convert to degrees C
     EddyData.F <- data.frame(Tair,Rg,rH,PAR,precip,sHum,Lw,Ts1,VPD,ws,co2,press,east_wind,north_wind)
