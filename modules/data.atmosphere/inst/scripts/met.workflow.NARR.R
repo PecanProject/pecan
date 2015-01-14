@@ -21,17 +21,20 @@ NARR_raw.id <- raw.NARR(outfolder,start_year,end_year,pkg,NARR.host)
 # NARR_raw.id should be 285
 
 #--------------------------------------------------------------------------------------------------#
-# Update NARR_CF
-# input.id  <-  285
-input.id  <-  NARR_raw.id
-outfolder <- "/projectnb/cheas/pecan.data/input/NARR_CF/"
-pkg       <- "PEcAn.data.atmosphere"
-fcn       <- "met2cf.NARR"
-write     <-  TRUE
-username  <- ""
+# Change to CF Standards
 
-NARR_cf.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,format) # doesn't update existing record
-# NARR_cf.id should be 288
+if (cf == TRUE){
+  con       <- db.open(dbparms)
+  input.id  <-  raw.id
+  outfolder <-  paste0(dir,met,"_CF/")
+  pkg       <- "PEcAn.data.atmosphere"
+  fcn       <-  paste0("met2CF.",met)
+  write     <-  TRUE
+  formatname <- 'CF Meteorology'
+  mimetype <- 'application/x-netcdf'
+  
+  cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username,con)
+}
 
 #--------------------------------------------------------------------------------------------------#
 # Rechunk and Permute
@@ -39,8 +42,19 @@ input.id  <-  NARR_cf.id
 outfolder <- "/projectnb/cheas/pecan.data/input/NARR_CF_Permute/"
 write     <-  TRUE
 
-NARR_perm.id <- permute.nc(input.id,outfolder,write)
-#NARR_perm.id should be 1000000023
+if (perm == TRUE){
+  con       <- db.open(dbparms)
+  input.id  <-  cf.id
+  outfolder <-  paste0(dir,data.set,"_CF_Permute/")
+  pkg       <- "PEcAn.data.atmosphere"
+  fcn       <- "permute.nc"
+  write     <-  TRUE
+  formatname <- 'CF Meteorology'
+  mimetype <- 'application/x-netcdf'
+
+  
+  perm.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,con)
+}
 
 #--------------------------------------------------------------------------------------------------#
 # Extract for location
@@ -48,31 +62,40 @@ input.id <- NARR_perm.id
 newsite  <- 336
 str_ns   <- paste0(newsite %/% 1000000000, "-", newsite %% 1000000000)
 
-outfolder <- paste0("/projectnb/cheas/pecan.data/input/NARR_CF_site_",str_ns,"/")
-pkg       <- "PEcAn.data.atmosphere"
-fcn       <- "extract.NARR"
-write     <- TRUE
-username  <- ""
-
-NARR_extract.id <- convert.input (input.id,outfolder,pkg,fcn,write,username,format,newsite = newsite)
+if (extract == TRUE){
+  con       <- db.open(dbparms)
+  input.id  <- perm.id
+  str_ns    <- paste0(newsite %/% 1000000000, "-", newsite %% 1000000000)
+  outfolder <- paste0("/projectnb/dietzelab/pecan.data/input/",data.set,"_CF_site_",str_ns,"/")
+  pkg       <- "PEcAn.data.atmosphere"
+  fcn       <- "extract.nc"
+  write     <- TRUE
+  formatname <- 'CF Meteorology'
+  mimetype <- 'application/x-netcdf'
+  
+  extract.id <- convert.input(input.id,outfolder,formatname,mimetype,pkg,fcn,write,username,con,newsite = newsite)
+}
 
 #--------------------------------------------------------------------------------------------------#
-# Prepare for ED Model
+# Prepare for Model
 
-# Acquire lst (probably a better method, but this works for now)
-lst <- site.lst(newsite)
-
-# Convert to ED format
-input.id <- NARR_extract.id
-
-outfolder <- paste0("/projectnb/cheas/pecan.data/input/NARR_ED_site_",str_ns,"/")
-pkg       <- "PEcAn.ED2"
-fcn       <- "met2model.ED2"
-write     <- TRUE
-overwrite <- ""
-username  <- ""
-
-NARR_ED.id <- convert.input (input.id,outfolder,pkg,fcn,write,username,format,lst=lst,overwrite=overwrite)
+if(nchar(model) >2){
+  
+  con     <- db.open(dbparms)
+  
+  # Acquire lst (probably a better method, but this works for now)
+  lst <- site.lst(newsite,con)
+  
+  # Convert to model format
+  input.id  <- extract.id
+  outfolder <- paste0(dir,data.set,"_",model,"_site_",str_ns,"/")
+  pkg       <- paste0("PEcAn.",model)
+  fcn       <- paste0("met2model.",model)
+  write     <- TRUE
+  overwrite <- ""
+  
+  model.id <- convert.input(input.id,outfolder,mod.formatname,mod.mimetype,pkg,fcn,write,username,con,lst=lst,overwrite=overwrite)
+}
 
 #--------------------------------------------------------------------------------------------------#
 # Clear old database connections
