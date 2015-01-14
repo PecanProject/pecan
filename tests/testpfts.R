@@ -11,7 +11,7 @@ runmeta <- function(pftid, pftname, model, dbparam) {
   cat(paste0("TESTING [id=", pftid, " pft='", pftname, "' model='",  model, "'] : get.traits\n"), file=stderr())
   pfts <- get.trait.data(list(pft), model, dbparam$dbfiles, dbparam, TRUE)
   cat(paste0("TESTING [id=", pftid, " pft='", pftname, "' model='",  model, "'] : meta.analysis\n"), file=stderr())
-  run.meta.analysis(pfts, 3000, FALSE, dbparam$dbfiles, dbparam)
+  run.meta.analysis(pfts, 3000, FALSE, 1.2, dbparam$dbfiles, dbparam)
   cat(paste0("TESTING [id=", pftid, " pft='", pftname, "' model='",  model, "'] : OK\n"), file=stderr())
 }
 

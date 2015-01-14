@@ -66,7 +66,7 @@ if (length(which(commandArgs() == "--continue")) == 0) {
 
   # run meta-analysis
   status.start("META")
-  run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$meta.analysis$random.effects, settings$run$dbfiles, settings$database$bety)
+  run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$meta.analysis$random.effects, settings$meta.analysis$threshold, settings$run$dbfiles, settings$database$bety)
   status.end()
 
   # do conversions
