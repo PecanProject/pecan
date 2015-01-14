@@ -9,7 +9,7 @@
 ##' @author Elizabeth Cowdery, Rob Kooper
 ##' 
 met2CF.NARR <- function(in.path, in.prefix, outfolder) {
-  cmd <- system.file("scripts/inst/CF.NARR.sh", package="PEcAn.data.atmosphere")
+  cmd <- system.file("scripts/CF.NARR.sh", package="PEcAn.data.atmosphere")
   args <- paste(c(in.path, in.prefix, outfolder), collapse=" ")
   system2(cmd, args)
 }
