@@ -34,7 +34,6 @@ if (cf == TRUE){
   mimetype <- 'application/x-netcdf'
   
   cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username,con)
-
 }
 
 #--------------------------------------------------------------------------------------------------#
