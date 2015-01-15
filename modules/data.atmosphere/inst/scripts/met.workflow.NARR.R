@@ -53,7 +53,7 @@ if (perm == TRUE){
   mimetype <- 'application/x-netcdf'
 
   
-  perm.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,con)
+  perm.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username,con)
 }
 
 #--------------------------------------------------------------------------------------------------#
