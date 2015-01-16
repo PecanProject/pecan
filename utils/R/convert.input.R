@@ -18,12 +18,15 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_y
   input = db.query(paste("SELECT * from inputs where id =",input.id),con)
   if(nrow(input)==0){print(c("input not found",input.id));db.close(con);return(NULL)}
   
+  machine = db.query(paste0("SELECT * from machines where hostname = '",l$raw.host,"'"),con)
+  # machine = db.query(paste("SELECT * from machines where id = ",dbfile$machine_id),con)
+  if(nrow(machine)==0){print(c("machine not found",dbfile$machine_id));db.close(con);return(NULL)}
+  
   # dbfile may return more than one row -> may need to loop over machine ids
-  dbfile = db.query(paste("SELECT * from dbfiles where container_id =",input.id," and container_type = 'Input'"),con)
+  dbfile = db.query(paste("SELECT * from dbfiles where container_id =",input.id," and container_type = 'Input' and machine_id =",machine$id),con)
   if(nrow(dbfile)==0){print(c("dbfile not found",input.id));db.close(con);return(NULL)}
   
-  machine = db.query(paste("SELECT * from machines where id = ",dbfile$machine_id),con)
-  if(nrow(machine)==0){print(c("machine not found",dbfile$machine_id));db.close(con);return(NULL)}
+
   
   host = system("hostname",intern=TRUE)
   
