@@ -48,8 +48,8 @@ download.NARR <- function(site.id, outfolder, start_year, end_year, overwrite=FA
   }
   
 
-  startdate <- paste0(start_year,"-01-01 00:00:00")
-  enddate   <- paste0(end_year,"-12-31 23:59:00")
+  startdate <- paste0(start_year,"-01-01 06:00:00")
+  enddate   <- paste0(end_year+1,"-01-01 05:59:00")
   formatname <- "NARR"
   mimetype <- 'application/x-netcdf'
   
@@ -57,7 +57,7 @@ download.NARR <- function(site.id, outfolder, start_year, end_year, overwrite=FA
   dbfile.input.check(site.id, startdate, enddate, mimetype, formatname, con=con, hostname=fqdn())
   
   type <- 'Input'
-  filename <- paste0(outfolder)
+  filename <- paste0(outfolder," ")
 
   newinput <- dbfile.input.insert(filename, 
                                   siteid = site.id, 
