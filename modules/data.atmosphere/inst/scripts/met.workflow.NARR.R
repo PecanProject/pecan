@@ -6,19 +6,23 @@ require(RPostgreSQL)
 #--------------------------------------------------------------------------------------------------#
 # Clear old database connections
 for (i in dbListConnections(PostgreSQL())) db.close(i)
+dbparms <- list(driver=driver, user=user, dbname=dbname, password=password, host=host)
 
 #--------------------------------------------------------------------------------------------------#
 # Download raw NARR from the internet 
 
-rm(list = setdiff(ls(), lsf.str()))
-outfolder  <- "/projectnb/cheas/pecan.data/input/NARR/"
-start_year <- 1979
-end_year   <- 2013
-pkg        <- "PEcAn.data.atmosphere"
-NARR.host  <- "geo.bu.edu"
+if(raw){
+  con       <- db.open(dbparms)
+  outfolder  <- paste0(dir,met,"/")
+  pkg        <- "PEcAn.data.atmosphere"
+  NARR.host  <- "geo.bu.edu"
+  fcn        <- paste0("download.",met)
+  
+  args <- list(site.id, outfolder, start_year, end_year, overwrite=FALSE, verbose=FALSE, pkg,raw.host,dbparms,con)
+  
+  raw.id <- do.call(fcn,args)
+}
 
-NARR_raw.id <- raw.NARR(outfolder,start_year,end_year,pkg,NARR.host) 
-# NARR_raw.id should be 285
 
 #--------------------------------------------------------------------------------------------------#
 # Change to CF Standards
@@ -58,22 +62,19 @@ if (perm == TRUE){
 
 #--------------------------------------------------------------------------------------------------#
 # Extract for location
-input.id <- NARR_perm.id
-newsite  <- 336
-str_ns   <- paste0(newsite %/% 1000000000, "-", newsite %% 1000000000)
+input.id <- cf.id  # perm.id (this isn't properly automated)
 
 if (extract == TRUE){
   con       <- db.open(dbparms)
-  input.id  <- perm.id
   str_ns    <- paste0(newsite %/% 1000000000, "-", newsite %% 1000000000)
-  outfolder <- paste0("/projectnb/dietzelab/pecan.data/input/",data.set,"_CF_site_",str_ns,"/")
+  outfolder <- paste0("/projectnb/dietzelab/pecan.data/input/",met,"_CF_site_",str_ns,"/")
   pkg       <- "PEcAn.data.atmosphere"
   fcn       <- "extract.nc"
   write     <- TRUE
   formatname <- 'CF Meteorology'
   mimetype <- 'application/x-netcdf'
   
-  extract.id <- convert.input(input.id,outfolder,formatname,mimetype,pkg,fcn,write,username,con,newsite = newsite)
+  extract.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_year,end_year,pkg,fcn,write,username,con,newsite = newsite,raw.host=raw.host)
 }
 
 #--------------------------------------------------------------------------------------------------#
@@ -84,17 +85,18 @@ if(nchar(model) >2){
   con     <- db.open(dbparms)
   
   # Acquire lst (probably a better method, but this works for now)
+  source("modules/data.atmosphere/R/site.lst.R")
   lst <- site.lst(newsite,con)
   
   # Convert to model format
   input.id  <- extract.id
-  outfolder <- paste0(dir,data.set,"_",model,"_site_",str_ns,"/")
+  outfolder <- paste0(dir,met,"_",model,"_site_",str_ns,"/")
   pkg       <- paste0("PEcAn.",model)
   fcn       <- paste0("met2model.",model)
   write     <- TRUE
   overwrite <- ""
   
-  model.id <- convert.input(input.id,outfolder,mod.formatname,mod.mimetype,pkg,fcn,write,username,con,lst=lst,overwrite=overwrite)
+  model.id <- convert.input(input.id,outfolder,mod.formatname,mod.mimetype,site.id,start_year,end_year,pkg,fcn,write,username,con,lst=lst,overwrite=overwrite,raw.host=raw.host)
 }
 
 #--------------------------------------------------------------------------------------------------#

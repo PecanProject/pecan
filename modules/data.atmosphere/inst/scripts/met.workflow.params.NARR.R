@@ -1,3 +1,5 @@
+rm(list = setdiff(ls(), lsf.str()))
+
 # Database setup
 
 driver   <- "PostgreSQL"
@@ -12,6 +14,9 @@ username <- ""
 raw.host <- "geo.bu.edu"
 dir      <- "/projectnb/dietzelab/pecan.data/input/"
 
+# raw.host <- "pecan2.bu.edu"
+# dir      <- "/home/ecowdery/input/"
+
 #######################################################
 #                                                     #
 #######################################################
@@ -22,19 +27,13 @@ met <- "NARR"
 #######################################################
 # Set start and end dates (when possible otherwise NA)
 
-start_date <- 2014 
-end_date   <- 2014
+start_year <- 2014 
+end_year   <- 2014
 
 
 #######################################################
 # Location
 
-<<<<<<< HEAD
-# Set site id number when possible (not possible for NARR)
-# RHIN: 1000000003
-# ORNL: 854
-site.id <- NA # site.id
-=======
 # Set site id number when possible 
 # RHIN: 1000000003
 # ORNL: 854
@@ -46,6 +45,9 @@ site.id <- 1135
 #   extract <- TRUE # 
 # }
 
+extract <- TRUE
+newsite <- 340
+
 #######################################################
 # Download raw data? If not, specify raw.id
 # NARR raw.id on geo = 285
@@ -53,7 +55,7 @@ site.id <- 1135
 # ORNL = 1000000060
 
 raw    <- TRUE
-raw.id <- 285
+raw.id <- NA
 
 #######################################################
 # Change to CF standards? If not, specify cf.id
@@ -72,7 +74,7 @@ perm.id <- NA
 #######################################################
 # Select model. Currently ED2 and SIPNET
 
-model <- ""
+model <- "ED2"
 
 if(model == "ED2"){
   mod.formatname <- 'ed.met_driver_header files format'
@@ -85,4 +87,4 @@ if(model == "ED2"){
 #######################################################
 # Run met workflow
 
-source("~/pecan/modules/data.atmosphere/inst/scripts/met.workflow.gen.R")
+# source("~/pecan/modules/data.atmosphere/inst/scripts/met.workflow.gen.R")
