@@ -168,7 +168,7 @@ REM_LAST_ID=$(( REM_START_ID + ID_RANGE - 1 ))
 # 5) enable constraints on this table
 for T in ${CLEAN_TABLES}; do
 	printf "Cleaning %-25s : " "${T}"
-  psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "ALTER TABLE ${T} DISABLE TRIGGER ALL;"
+  psql -q -d "${DATABASE}" -c "ALTER TABLE ${T} DISABLE TRIGGER ALL;"
   WHERE="WHERE (id >= ${REM_START_ID} AND id <= ${REM_LAST_ID})"
 	DEL=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM ${T} ${WHERE}" | tr -d ' ' )
 	psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "DELETE FROM ${T} ${WHERE}"
@@ -184,7 +184,7 @@ for T in ${CLEAN_TABLES}; do
 	printf "Fixing   %-25s : " "${T}"
 	NEXT=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT setval('${T}_id_seq', ${MY_START_ID}, false); SELECT setval('${T}_id_seq', (SELECT MAX(id) FROM ${T} WHERE id >= ${MY_START_ID} AND id < ${MY_LAST_ID}), true); SELECT last_value from ${T}_id_seq;" | tr -d ' ' )
 	echo "SEQ ${NEXT}"
-  psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "ALTER TABLE ${T} ENABLE TRIGGER ALL;"
+  psql -q -d "${DATABASE}" -c "ALTER TABLE ${T} ENABLE TRIGGER ALL;"
 done
 
 # tables that are many to many relation ships
@@ -201,7 +201,7 @@ for T in ${MANY_TABLES}; do
 	Y=${Z[1]}
 	Y=${Y%s}
 	printf "Cleaning %-25s : " "${T}"
-  psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "ALTER TABLE ${T} DISABLE TRIGGER ALL;"
+  psql -q -d "${DATABASE}" -c "ALTER TABLE ${T} DISABLE TRIGGER ALL;"
   WHERE="WHERE (${X}_id >= ${REM_START_ID} AND ${X}_id <= ${REM_LAST_ID} AND ${Y}_id >= ${REM_START_ID} AND ${Y}_id <= ${REM_LAST_ID})"
 	DEL=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM ${T} ${WHERE}" | tr -d ' ' )
 	psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "DELETE FROM ${T} ${WHERE}"
@@ -214,7 +214,7 @@ for T in ${MANY_TABLES}; do
 	END=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT COUNT(*) FROM ${T}" | tr -d ' ' )
   ADD=$(( END - START ))
 	echo "ADD ${ADD}"
-  psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "ALTER TABLE ${T} ENABLE TRIGGER ALL;"
+  psql -q -d "${DATABASE}" -c "ALTER TABLE ${T} ENABLE TRIGGER ALL;"
 done
 
 # convert user 1 if needed
