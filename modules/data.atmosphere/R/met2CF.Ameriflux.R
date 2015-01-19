@@ -141,17 +141,16 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
     print(lst)
     var <- ncvar_def(name="latitude",
                      units="degree_north",
-                     dim=(list(lat,lon,time)), missval=as.numeric(-9999))
+                     dim=list(lat,lon), missval=as.numeric(-9999))
     nc2 <- nc_create(filename=new.file, vars=var, verbose=verbose)
-    
-    ncvar_put(nc=nc2, varid='latitude', vals=rep(latlon[1], tdim$len))
+    ncvar_put(nc=nc2, varid='latitude', vals=latlon[1])
     
     # copy lon attribute to longitude
     var <- ncvar_def(name="longitude",
                      units="degree_east",
-                     dim=(list(lat,lon,time)), missval=as.numeric(-9999))
+                     dim=list(lat,lon), missval=as.numeric(-9999))
     nc2 <- ncvar_add(nc=nc2, v=var, verbose=verbose)
-    ncvar_put(nc=nc2, varid='longitude', vals=rep(latlon[2], tdim$len))
+    ncvar_put(nc=nc2, varid='longitude', vals=latlon[2])
     
     # Convert all variables, this will include conversions or computations
     # to create values from original file. In case of conversions the steps
@@ -161,7 +160,20 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
     #  c) do unit conversions
     #  d) create output variable
     #  e) write results to new file
-
+    
+    # convert RH to SH
+    # this conversion needs to come before others to reinitialize dimension used by copyvals (lat/lon/time)
+    rh <- ncvar_get(nc=nc1, varid="RH")
+    rh[rh==-6999 | rh==-9999] <- NA
+    rh <- rh / 100
+    ta <- ncvar_get(nc=nc1, varid="TA")
+    ta[ta==-6999 | ta==-9999] <- NA
+    ta <- ta + 273.15
+    sh <- rh2qair(rh=rh,T=ta)
+    var <- ncvar_def(name='specific_humidity', units='kg/kg', dim=dim, missval=-6999.0, verbose=verbose)
+    nc2 <- ncvar_add(nc=nc2, v=var, verbose=verbose)
+    ncvar_put(nc=nc2, varid='specific_humidity', vals=sh)
+   
     # convert TA to air_temperature
     copyvals(nc1=nc1, var1='TA',
              nc2=nc2, var2='air_temperature', units2='degrees K', dim2=dim, 
@@ -186,18 +198,6 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
     copyvals(nc1=nc1, var1='RH',
              nc2=nc2, var2='relative_humidity', dim2=dim, 
              verbose=verbose)
-
-    # convert RH to SH
-    rh <- ncvar_get(nc=nc1, varid="RH")
-    rh[rh==-6999 | rh==-9999] <- NA
-    rh <- rh / 100
-    ta <- ncvar_get(nc=nc1, varid="TA")
-    ta[ta==-6999 | ta==-9999] <- NA
-    ta <- ta + 273.15
-    sh <- rh2qair(rh=rh,T=ta)
-    var <- ncvar_def(name='specific_humidity', units='kg/kg', dim=dim, missval=-6999.0, verbose=verbose)
-    nc2 <- ncvar_add(nc=nc2, v=var, verbose=verbose)
-    ncvar_put(nc=nc2, varid='specific_humidity', vals=sh)
     
     # convert VPD to water_vapor_saturation_deficit
     # HACK : conversion will make all values < 0 to be NA
