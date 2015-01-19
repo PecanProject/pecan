@@ -94,7 +94,8 @@ for(i in 1:length(filescount)){
   SW   <- ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air")
   LW   <- ncvar_get(nc,"surface_downwelling_longwave_flux_in_air")
   #CO2  <- try(ncvar_get(nc,"CO2air"))
-  CO2  <- try(ncvar_get(nc,"CO2"))
+  #CO2  <- try(ncvar_get(nc,"CO2"))
+  CO2  <- try(ncvar_get(nc,"mole_fraction_of_carbon_dioxide_in_air"))
   
   useCO2 = is.numeric(CO2)  
 
@@ -199,7 +200,7 @@ for(i in 1:length(filescount)){
   shA    <- Qair              # specific humidity [kg_H2O/kg_air]
   tmpA   <- Tair              # temperature [K]
   if(useCO2){
-    co2A   <- CO2               # surface co2 concentration [ppm]
+    co2A   <- CO2/1e6               # surface co2 concentration [ppm] converted from mole fraction [kg/kg]
   }
   
   ## create directory
