@@ -1,3 +1,7 @@
+rm(list = setdiff(ls(), lsf.str()))
+
+source('~/pecan/utils/R/convert.input.R')
+
 # Database setup
 
 driver   <- "PostgreSQL"
@@ -8,45 +12,46 @@ host     <- "psql-pecan.bu.edu"
 
 # Select username, host and directory folder for data
 
-username <- ""
 raw.host <- "pecan2.bu.edu"
-dir      <- "/home/ecowdery/input/"
+dir      <- "/fs/data4/"
+
+# username <- ""
+# raw.host <- "geo.bu.edu"
+# dir      <- "/projectnb/dietzelab/pecan.data/input/"
+
+# raw.host <- "pecan2.bu.edu"
+# dir      <- "/home/ecowdery/input/"
 
 #######################################################
 #                                                     #
 #######################################################
 # Choose meteorology data set. 
-# Current choices: 
-# NARR
-# Ameriflux
-# FACE_RHIN
 
-met <- ""
+met <- "NARR"
 
 #######################################################
 # Set start and end dates (when possible otherwise NA)
 
-start_year <- NA 
-end_year   <- NA
+start_year <- 1979 
+end_year   <- 1979
 
 
 #######################################################
 # Location
 
-# Set site id number when possible (not possible for NARR)
+# Set site id number when possible 
 # RHIN: 1000000003
 # ORNL: 854
-site.id <- NA # site.id
+# NARR: 1135
+site.id <- 1135
 
-# Set exrtraction site id when possible
-newsite <- NA # extraction site id
+# if(regional==TRUE){
+#   site.id <- NA 
+#   extract <- TRUE # 
+# }
 
-regional = TRUE
-
-if(regional==TRUE){
-  site.id <- NA 
-  extract <- TRUE 
-}
+extract <- TRUE
+newsite <- 340
 
 #######################################################
 # Download raw data? If not, specify raw.id
@@ -55,28 +60,36 @@ if(regional==TRUE){
 # ORNL = 1000000060
 
 raw    <- FALSE
-raw.id <- NA
+raw.id <- 1000000127
 
 #######################################################
 # Change to CF standards? If not, specify cf.id
 # NARR cf.id on geo = 288
 
-cf    <- TRUE
-cf.id <- NA
+cf    <- FALSE
+cf.id <- 1000000128
 
 #######################################################
 # Permute data? If not, specify perm.id
 # NARR perm.id on geo = 1000000023
 
-perm    <- TRUE
+perm    <- FALSE
 perm.id <- NA
 
 #######################################################
 # Select model. Currently ED2 and SIPNET
 
-model <- ""
+model <- "ED2"
+
+if(model == "ED2"){
+  mod.formatname <- 'ed.met_driver_header files format'
+  mod.mimetype <- 'text/plain'
+}else if(model == "SIPNET"){
+  mod.formatname <- 'Sipnet.climna'
+  mod.mimetype <- 'text/csv'
+}
 
 #######################################################
 # Run met workflow
 
-source("~/pecan/modules/data.atmosphere/inst/scripts/met.workflow.gen.R")
+# source("~/pecan/modules/data.atmosphere/inst/scripts/met.workflow.gen.R")

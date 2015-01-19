@@ -87,16 +87,22 @@ for(i in 1:length(filescount)){
   sec   <- nc$dim$time$vals
   Tair <- ncvar_get(nc,"air_temperature")
   Qair <- ncvar_get(nc,"specific_humidity")  #humidity (kg/kg)
-  U <- ncvar_get(nc,"eastward_wind")
-  V <- ncvar_get(nc,"northward_wind")
+  U <- try(ncvar_get(nc,"eastward_wind"))
+  V <- try(ncvar_get(nc,"northward_wind"))
+  W <- try(ncvar_get(nc,"wind_speed"))
   Rain <- ncvar_get(nc,"precipitation_flux")
   pres <- ncvar_get(nc,"air_pressure")
   SW   <- ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air")
   LW   <- ncvar_get(nc,"surface_downwelling_longwave_flux_in_air")
   #CO2  <- try(ncvar_get(nc,"CO2air"))
   CO2  <- try(ncvar_get(nc,"CO2"))
-  
   useCO2 = is.numeric(CO2)  
+  
+  ## convert wind
+  if(!is.numeric(U) & !is.numeric(V) & is.numeric(W)){
+    U <- W
+    V <- 0
+  }
 
   ## convert time to seconds
   sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$time$units," "))[1],"seconds")
