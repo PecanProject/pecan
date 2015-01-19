@@ -63,11 +63,13 @@ if (perm == TRUE){
 #--------------------------------------------------------------------------------------------------#
 # Extract for location
 input.id <- cf.id  # perm.id (this isn't properly automated)
+# l <- list(raw.host=raw.host,newsite=newsite)
+
 
 if (extract == TRUE){
   con       <- db.open(dbparms)
   str_ns    <- paste0(newsite %/% 1000000000, "-", newsite %% 1000000000)
-  outfolder <- paste0("/projectnb/dietzelab/pecan.data/input/",met,"_CF_site_",str_ns,"/")
+  outfolder <- paste0(dir,met,"_CF_site_",str_ns,"/")
   pkg       <- "PEcAn.data.atmosphere"
   fcn       <- "extract.nc"
   write     <- TRUE
