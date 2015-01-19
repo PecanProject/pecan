@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<pecan>
+  <outdir>pecan</outdir>
+
+ <database>
+    <bety>
+        <dbname>bety</dbname>
+        <username>bety</username>
+        <password>bety</password>
+        <host>localhost</host>
+        <port>3232</port>
+        <write>FALSE</write>
+    </bety>
+ </database>
+ 
+  <pfts>
+    <pft>
+      <name>Tsuga canadensis</name> 
+    </pft>
+  </pfts>
+
+  <ensemble>
+    <variable>NPP</variable>
+  </ensemble>
+
+  <model>
+    <id>1000000005</id>
+    <type>LINKAGES</type>
+  </model>
+
+  <run>
+    <site>
+      <id>758</id>
+    </site>
+    <inputs>
+        <met>/Users/paleolab/Linkages/test_text1.txt</met>
+    </inputs>
+    <start.date>2002-01-01 00:00:00</start.date>
+    <end.date>2005-12-31 00:00:00</end.date>
+    <host>
+      <name>localhost</name>
+    </host>
+  </run>
+</pecan>

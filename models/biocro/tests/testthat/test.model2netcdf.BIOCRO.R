@@ -1,3 +1,4 @@
+if(FALSE){
 context("check output from model2netcdf.BIOCRO")
 
 outdir <- file.path(tempdir(), "biocro")
@@ -59,3 +60,4 @@ test_that("variables have MsTMIP standard units",{
 
 })
 
+}

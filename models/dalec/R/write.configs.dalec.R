@@ -50,7 +50,7 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id){
     } else {
       if(!is.null(trait.values[[group]])){
         params <- convert.samples.DALEC(trait.values[[group]])
-        print(names(params))
+        logger.info(names(params))
         for(i in 1:length(params)){
           cmdFlags <- paste(cmdFlags," -",names(params)[i]," ",params[[i]],sep="")
         }
@@ -74,9 +74,10 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id){
   ### WRITE JOB.SH
   jobsh = paste0("#!/bin/bash\n",settings$model$binary,
                  " $(cat ",rundir,"/",config.file.name,
-                 ") < ",settings$run$site$met,
+                 ") < ",as.character(settings$run$inputs$met),
                  " > ",outdir,"/out.txt\n",
-                 'echo ".libPaths(',"'~/R/library');",
+#                 'echo ".libPaths(',"'~/R/library');",
+                 'echo "',
                  ' require(PEcAn.DALEC); model2netcdf.DALEC(',
                  "'",outdir,"',",
                  settings$run$site$lat,",",
