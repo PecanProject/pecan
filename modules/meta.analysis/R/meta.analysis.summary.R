@@ -23,9 +23,9 @@
 ##' }
 ##' @author David LeBauer, Shawn Serbin
 pecan.ma.summary <- function(mcmc.object, pft, outdir, threshold = 1.2, gg = FALSE){
-  if(!is.null(settings$meta.analysis$threshold)) {
-    threshold = settings$meta.analysis$threshold
-  }
+  #if(!is.null(settings$meta.analysis$threshold)) {
+  #  threshold = settings$meta.analysis$threshold
+  #}
   fail = FALSE
   sink(file = file.path(outdir,'meta-analysis.log'), append = TRUE, split = TRUE)
   for (trait in names(mcmc.object)){

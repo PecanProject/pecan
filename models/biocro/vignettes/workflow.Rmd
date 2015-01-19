@@ -25,7 +25,7 @@ settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$run
 
 ### Run Meta-analysis
 ```{r, echo=FALSE,warning=FALSE,cache=TRUE}
-run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database$bety)
+run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$meta.analysis$random.effects, settings$meta.analysis$threshold, settings$run$dbfiles, settings$database$bety)
 ```
 
 
