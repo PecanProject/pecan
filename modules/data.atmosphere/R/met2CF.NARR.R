@@ -22,28 +22,28 @@ met2CF.NARR <- function(in.path, in.prefix, outfolder) {
   
   for(y in years){
     
-    newfile <- paste0(outfolder,"NARR.",y,".nc")
+    newfile <- paste0(outfolder,"/NARR.",y,".nc")
     
     if (!file.exists(newfile)){
+      
       for(i in 1:length(vars)){
         file <- paste0(in.path,"/",vars[i],".",y,".nc")
         newfile <-paste0(outfolder,cfvars[i],".",y,".nc")
         
-        print(file)
-        
         if(file.exists(file) & !file.exists(newfile)){
           
-          file.copy(file, newfile)
+          file.copy(file, newfile, overwrite = FALSE)
           nc <- nc_open(newfile, write=TRUE)
           ncvar_rename(nc, svars[i], cfvars[i])
           nc_close(nc)  
         }
       }
     }
+    
   }
   
   for(y in years){
-    newfile <- paste0(outfolder,"NARR.",y,".nc")
+    newfile <- paste0(outfolder,"/NARR.",y,".nc")
     
     if (!file.exists(newfile)){
       for(i in 1:length(vars)){
@@ -70,9 +70,4 @@ met2CF.NARR <- function(in.path, in.prefix, outfolder) {
       nc_close(nc)
     }
   }
-  
-  
-  #   cmd <- system.file("/scripts/CF.NARR.sh", package = "PEcAn.data.atmosphere")
-  #   args <- paste(c(in.path, in.prefix, outfolder), collapse=" ")
-  #   system2(cmd, args)
 }
