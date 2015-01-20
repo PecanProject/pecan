@@ -93,8 +93,6 @@ for(i in 1:length(filescount)){
   pres <- ncvar_get(nc,"air_pressure")
   SW   <- ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air")
   LW   <- ncvar_get(nc,"surface_downwelling_longwave_flux_in_air")
-  #CO2  <- try(ncvar_get(nc,"CO2air"))
-  #CO2  <- try(ncvar_get(nc,"CO2"))
   CO2  <- try(ncvar_get(nc,"mole_fraction_of_carbon_dioxide_in_air"))
   
   useCO2 = is.numeric(CO2)  
