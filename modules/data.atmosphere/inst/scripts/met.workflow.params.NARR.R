@@ -1,7 +1,3 @@
-rm(list = setdiff(ls(), lsf.str()))
-
-source('~/pecan/utils/R/convert.input.R')
-
 # Database setup
 
 driver   <- "PostgreSQL"
@@ -12,10 +8,10 @@ host     <- "psql-pecan.bu.edu"
 
 # Select username, host and directory folder for data
 
+username <- ""
 raw.host <- "pecan2.bu.edu"
 dir      <- "/fs/data4/"
 
-# username <- ""
 # raw.host <- "geo.bu.edu"
 # dir      <- "/projectnb/dietzelab/pecan.data/input/"
 
@@ -33,7 +29,7 @@ met <- "NARR"
 # Set start and end dates (when possible otherwise NA)
 
 start_year <- 1979 
-end_year   <- 1979
+end_year   <- 2014
 
 
 #######################################################
@@ -50,8 +46,11 @@ site.id <- 1135
 #   extract <- TRUE # 
 # }
 
+
 extract <- TRUE
-newsite <- 340
+# newsite <- 340
+extract.id <- NA
+extract.id <- 1000000129
 
 #######################################################
 # Download raw data? If not, specify raw.id
@@ -91,5 +90,3 @@ if(model == "ED2"){
 
 #######################################################
 # Run met workflow
-
-# source("~/pecan/modules/data.atmosphere/inst/scripts/met.workflow.gen.R")

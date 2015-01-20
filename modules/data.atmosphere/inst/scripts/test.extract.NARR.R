@@ -1,15 +1,9 @@
-# source("closest_xy.R")
-# source("extract.NARR.R")
+rm(list = setdiff(ls(), lsf.str()))
+source('~/pecan/utils/R/convert.input.R')
+source('~/pecan/db/R/dbfiles.R')
 
-in.path <- "/projectnb/cheas/pecan.data/input/NARR_CF"
-in.prefix <- ""
-outfolder <- "/projectnb/cheas/pecan.data/input/NARR_CF_test"
+newsite <- 340
 
-# Mt Rainier, WA
-slat <- 46.8529  
-slon <- -121.7604 
+source('~/pecan/modules/data.atmosphere/inst/scripts/met.workflow.params.NARR.R')
 
-start_year <- 2012
-end_year   <- 2013
-
-extract.NARR(in.path,in.prefix,outfolder,slat,slon,start_year,end_year)
+source("~/pecan/modules/data.atmosphere/inst/scripts/met.workflow.NARR.R")

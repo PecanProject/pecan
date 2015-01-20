@@ -37,14 +37,11 @@ if (cf == TRUE){
   formatname <- 'CF Meteorology'
   mimetype <- 'application/x-netcdf'
   
-  cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username,con)
+  cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username,con,raw.host=raw.host)
 }
 
 #--------------------------------------------------------------------------------------------------#
 # Rechunk and Permute
-input.id  <-  NARR_cf.id
-outfolder <- "/projectnb/cheas/pecan.data/input/NARR_CF_Permute/"
-write     <-  TRUE
 
 if (perm == TRUE){
   con       <- db.open(dbparms)
@@ -64,11 +61,10 @@ if (perm == TRUE){
 # Extract for location
 input.id <- cf.id  # perm.id (this isn't properly automated)
 # l <- list(raw.host=raw.host,newsite=newsite)
-
+str_ns    <- paste0(newsite %/% 1000000000, "-", newsite %% 1000000000)
 
 if (extract == TRUE){
   con       <- db.open(dbparms)
-  str_ns    <- paste0(newsite %/% 1000000000, "-", newsite %% 1000000000)
   outfolder <- paste0(dir,met,"_CF_site_",str_ns,"/")
   pkg       <- "PEcAn.data.atmosphere"
   fcn       <- "extract.nc"
@@ -76,7 +72,7 @@ if (extract == TRUE){
   formatname <- 'CF Meteorology'
   mimetype <- 'application/x-netcdf'
   
-  extract.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_year,end_year,pkg,fcn,write,username,con,newsite = newsite,raw.host=raw.host)
+  extract.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_year,end_year,pkg,fcn,write,username,con,newsite = newsite,raw.host=raw.host,write=TRUE)
 }
 
 #--------------------------------------------------------------------------------------------------#
@@ -98,7 +94,9 @@ if(nchar(model) >2){
   write     <- TRUE
   overwrite <- ""
   
-  model.id <- convert.input(input.id,outfolder,mod.formatname,mod.mimetype,site.id,start_year,end_year,pkg,fcn,write,username,con,lst=lst,overwrite=overwrite,raw.host=raw.host)
+  model.id <- convert.input(input.id,outfolder,mod.formatname,mod.mimetype,site.id,start_year,end_year,pkg,fcn,write,username,con,lst=lst,overwrite=overwrite,raw.host=raw.host,write=TRUE)
+
+
 }
 
 #--------------------------------------------------------------------------------------------------#
