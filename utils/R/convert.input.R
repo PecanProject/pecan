@@ -2,31 +2,31 @@
 ##'
 ##'
 
-convert.input <- function(input.id,outfolder,pkg,fcn,write,username,con,...){
+convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_year,end_year,pkg,fcn,username,con,...){
   
-  l <- list(...)
+  l <- list(...); print(l)
   n <- nchar(outfolder)
   if(substr(outfolder,n,n) != "/"){outfolder = paste0(outfolder,"/")}
   
   outname = tail(unlist(strsplit(outfolder,'/')),n=1)
   
-  # Check to see if input is already in dbfiles table 
-  check <- input.name.check(outname, con)
-  if(is.null(check)==FALSE){
-    logger.error('Input is already in the database.')
-    db.close(con)
-    return(check) 
-  }
+  startdate <- paste0(start_year,"-01-01 00:00:00")
+  enddate   <- paste0(end_year,"-12-31 23:59:00")
+  
+  dbfile.input.check(site.id, startdate, enddate, mimetype, formatname, con=con, hostname=fqdn())
   
   input = db.query(paste("SELECT * from inputs where id =",input.id),con)
   if(nrow(input)==0){print(c("input not found",input.id));db.close(con);return(NULL)}
   
+  machine = db.query(paste0("SELECT * from machines where hostname = '",l$raw.host,"'"),con)
+  # machine = db.query(paste("SELECT * from machines where id = ",dbfile$machine_id),con)
+  if(nrow(machine)==0){print(c("machine not found",dbfile$machine_id));db.close(con);return(NULL)}
+  
   # dbfile may return more than one row -> may need to loop over machine ids
-  dbfile = db.query(paste("SELECT * from dbfiles where container_id =",input.id," and container_type = 'Input'"),con)
+  dbfile = db.query(paste("SELECT * from dbfiles where container_id =",input.id," and container_type = 'Input' and machine_id =",machine$id),con)
   if(nrow(dbfile)==0){print(c("dbfile not found",input.id));db.close(con);return(NULL)}
   
-  machine = db.query(paste("SELECT * from machines where id = ",dbfile$machine_id),con)
-  if(nrow(machine)==0){print(c("machine not found",dbfile$machine_id));db.close(con);return(NULL)}
+  
   
   host = system("hostname",intern=TRUE)
   
@@ -44,49 +44,35 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,con,...){
     if(nrow(site)==0){logger.error("Site not found");db.close(con);return(NULL)} 
   }      
   
+  outlist <- unlist(strsplit(outname,"_"))
+  if("ED2" %in% outlist){args <- c(args, l$lst, startdate, enddate)}
+  
+  print(args)
   cmdArgs = paste(args,collapse=" ")
   #  Rfcn = system.file("scripts/Rfcn.R", package = "PEcAn.all")
   Rfcn = "pecan/scripts/Rfcn.R"
   
-  #chkArgs = paste(c("PEcAn.data.atmosphere", "extract.success",args[3:5]),collapse=" ")
-  
   if(machine$hostname %in% c("localhost",host)){
     ## if the machine is local, run conversion function
-    system(paste0("~/",Rfcn," ",cmdArgs))
-    #success <- system(paste(Rfcn,chkArgs),intern=TRUE)
+    system(paste0("nohup ~/",Rfcn," ",cmdArgs))
   } else {
     ## if the machine is remote, run conversion remotely
-    usr = ifelse(username==NULL | username=="","",paste0(username,"@"))
+    usr = ifelse(is.null(username)| username=="","",paste0(username,"@"))
     system2("ssh",paste0(usr,paste(machine$hostname,Rfcn,cmdArgs)))
-    #success <- system(paste0("ssh ",usr,paste(machine$hostname,Rfcn,chkArgs)),intern=TRUE)
   }
   
-  ## Check if the conversion was successful, currently not very robust
-#   if(unlist(strsplit(success,' '))[2] == TRUE){
-#     logger.info("Conversion was successful")
-#   }else{
-#     logger.error("Conversion was not successful")
-#     db.close(con)
-#     return(NULL)
-#   }
   
   ### NOTE: We will eventually insert Brown Dog REST API calls here
   
   ## insert new record into database
-  if(write==TRUE){
-    outlist <- unlist(strsplit(outname,"_"))
-    if("ED" %in% outlist){
+  if(l$write==TRUE){
+    ### Hack
+    if("ED2" %in% outlist){
       filename <- paste0(outfolder," ")
-      formatname <- 'ed.met_driver_header files format'
-      mimetype <- 'text/plain'
     }else if("SIPNET" %in% outlist){
       filename <- paste0(outfolder,"sipnet.clim")
-      formatname <- 'Sipnet.climna'
-      mimetype <- 'text/csv'
     }else{
       filename <- paste0(outfolder,dbfile$file_name)
-      formatname <- 'CF Meteorology'
-      mimetype <- 'application/x-netcdf'
     }
     
     newinput <- dbfile.input.insert(filename, 
