@@ -73,6 +73,7 @@ if (length(which(commandArgs() == "--continue")) == 0) {
   status.start("CONVERSIONS")
   for(i in 1:length(settings$run$inputs)) {
     input <- settings$run$inputs[[i]]
+    input.tag <- names(settings$run$input)[i]
     if (length(input) == 1) next
     
     # fia database
@@ -81,6 +82,7 @@ if (length(which(commandArgs() == "--continue")) == 0) {
     }
 
     # met download
+    if(TRUE){  ## old approach
     if (input['input'] == 'Ameriflux') {
       # start/end date for weather
       start_date <- settings$run$start.date
@@ -104,6 +106,17 @@ if (length(which(commandArgs() == "--continue")) == 0) {
       fcn <- paste("met2model", input['output'], sep=".")
       r <- do.call(fcn, list(file.path(settings$run$dbfiles, "gapfill"), site, file.path(settings$run$dbfiles, input['output']), start_date=start_date, end_date=end_date))
       settings$run$inputs[[i]] <- r[['file']]
+    }
+    } else { ## new met
+      if(input.name == 'met'){
+        if(!file.exists(input)){  ## check to see if the inputis a file or a tag
+          
+          met.process(settings$site, input,
+                      settings$run$start.date, settings$run$end.date,
+                      settings$model$type, settings$run$host, settings$database$bety)
+          
+        }        
+      }
     }
 
     # narr download
