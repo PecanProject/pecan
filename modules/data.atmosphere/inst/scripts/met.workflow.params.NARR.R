@@ -78,15 +78,27 @@ perm.id <- NA
 #######################################################
 # Select model. Currently ED2 and SIPNET
 
-model <- "ED2"
+model <- "DALEC"
 
 if(model == "ED2"){
-  mod.formatname <- 'ed.met_driver_header files format'
+  mod.formatname <- 'ed.met_driver_header_files_format'
   mod.mimetype <- 'text/plain'
 }else if(model == "SIPNET"){
   mod.formatname <- 'Sipnet.climna'
   mod.mimetype <- 'text/csv'
+}else if(model == "BIOCRO"){
+  mod.formatname <- 'biocromet'
+  mod.mimetype <- 'text/csv'
+}else if(model == "DALEC"){
+  mod.formatname <- 'DALEC meteorology'
+  mod.mimetype <- 'text/plain'
 }
 
 #######################################################
 # Run met workflow
+
+
+
+
+
+

@@ -2,7 +2,7 @@
 ##'
 ##'
 
-convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_year,end_year,pkg,fcn,username,con,...){
+convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,username,con=con,...){
   
   l <- list(...); print(l)
   n <- nchar(outfolder)
@@ -10,8 +10,8 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_y
   
   outname = tail(unlist(strsplit(outfolder,'/')),n=1)
   
-  startdate <- paste0(start_year,"-01-01 00:00:00")
-  enddate   <- paste0(end_year,"-12-31 23:59:00")
+  startdate <- as.POSIXlt(start_date, tz = "GMT")
+  enddate   <- as.POSIXlt(end_date, tz = "GMT")
   
   dbfile.input.check(site.id, startdate, enddate, mimetype, formatname, con=con, hostname=fqdn())
   
@@ -46,6 +46,8 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_y
   
   outlist <- unlist(strsplit(outname,"_"))
   if("ED2" %in% outlist){args <- c(args, l$lst, startdate, enddate)}
+  if("SIPNET" %in% outlist){args <- c(args, startdate, enddate)}
+  if("DALEC" %in% outlist){args <- c(args, startdate, enddate)}
   
   print(args)
   cmdArgs = paste(args,collapse=" ")
@@ -54,7 +56,7 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_y
   
   if(machine$hostname %in% c("localhost",host)){
     ## if the machine is local, run conversion function
-    system(paste0("nohup ~/",Rfcn," ",cmdArgs))
+    system(paste0("~/",Rfcn," ",cmdArgs))
   } else {
     ## if the machine is remote, run conversion remotely
     usr = ifelse(is.null(username)| username=="","",paste0(username,"@"))
