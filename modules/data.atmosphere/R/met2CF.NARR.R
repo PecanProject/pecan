@@ -21,19 +21,23 @@ met2CF.NARR <- function(in.path, in.prefix, outfolder) {
   years = 1979:2014
   
   for(y in years){
-    for(i in 1:length(vars)){
-      file <- paste0(in.path,"/",vars[i],".",y,".nc")
-      newfile <-paste0(outfolder,cfvars[i],".",y,".nc")
-      
-      print(file)
-      
-      if(file.exists(file) & !file.exists(newfile)){
+    
+    newfile <- paste0(outfolder,"NARR.",y,".nc")
+    
+    if (!file.exists(newfile)){
+      for(i in 1:length(vars)){
+        file <- paste0(in.path,"/",vars[i],".",y,".nc")
+        newfile <-paste0(outfolder,cfvars[i],".",y,".nc")
         
-        file.copy(file, newfile)
-        nc <- nc_open(newfile, write=TRUE)
-        ncvar_rename(nc, svars[i], cfvars[i])
-        nc_close(nc)
+        print(file)
         
+        if(file.exists(file) & !file.exists(newfile)){
+          
+          file.copy(file, newfile)
+          nc <- nc_open(newfile, write=TRUE)
+          ncvar_rename(nc, svars[i], cfvars[i])
+          nc_close(nc)  
+        }
       }
     }
   }
@@ -41,28 +45,30 @@ met2CF.NARR <- function(in.path, in.prefix, outfolder) {
   for(y in years){
     newfile <- paste0(outfolder,"NARR.",y,".nc")
     
-    for(i in 1:length(vars)){
-      file <-paste0(outfolder,cfvars[i],".",y,".nc")
-      if(file.exists(file)){
-        if (!file.exists(newfile)){
-          file.copy(file, newfile)
-          system(paste("ncks -O --fl_fmt=netcdf4", newfile, newfile))   # netCDF4
-          system(paste("ncpdq -O -U" , newfile, newfile)) 
-        }else{
-          system(paste("ncks -O --fl_fmt=netcdf4", file, file))   # netCDF4
-          system(paste("ncpdq -O -U" , file, file)) 
+    if (!file.exists(newfile)){
+      for(i in 1:length(vars)){
+        file <-paste0(outfolder,cfvars[i],".",y,".nc")
+        if(file.exists(file)){
+          if (!file.exists(newfile)){
+            file.copy(file, newfile)
+            system(paste("ncks -O --fl_fmt=netcdf4", newfile, newfile))   # netCDF4
+            system(paste("ncpdq -O -U" , newfile, newfile)) 
+          }else{
+            system(paste("ncks -O --fl_fmt=netcdf4", file, file))   # netCDF4
+            system(paste("ncpdq -O -U" , file, file)) 
+            
+            system(paste("ncks -A", file, newfile))
+          }
           
-          system(paste("ncks -A", file, newfile))
+          file.remove(file)
         }
         
-        file.remove(file)
       }
-      
+      nc <- nc_open(newfile, write=TRUE)
+      ncvar_rename(nc, "lat", "latitude")
+      ncvar_rename(nc, "lon", "longitude")
+      nc_close(nc)
     }
-    nc <- nc_open(newfile, write=TRUE)
-    ncvar_rename(nc, "lat", "latitude")
-    ncvar_rename(nc, "lon", "longitude")
-    nc_close(nc)
   }
   
   
