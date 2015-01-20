@@ -93,8 +93,12 @@ for(year in start_year:end_year) {
   lon  <- ncvar_get(nc,"longitude")
   Tair <- ncvar_get(nc,"air_temperature")  ## in Kelvin
   SW   <- ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air") ## in W/m2
-  CO2  <- try(ncvar_get(nc,"CO2"))
+  CO2  <- try(ncvar_get(nc,"mole_fraction_of_carbon_dioxide_in_air"))
   nc_close(nc)
+  
+  useCO2 = is.numeric(CO2)  
+  if(useCO2)  CO2 <- CO2/1e6  ## convert from mole fraction (kg/kg) to ppm
+ 
 
   ## is CO2 present?
   if(!is.numeric(CO2)){
