@@ -1,6 +1,7 @@
 ##' Process MCMC results.
 
 library(coda)
+library(data.table)
 
 ##' @name get.results
 ##' @title Load MCMC chains
@@ -18,7 +19,7 @@ library(coda)
 ##' 
 ##' @author Alexey Shiklomanov
 
-get.results <- function(path, burnin=0, thin=1, species="All"){
+get.results <- function(path, burnin=5e4, thin=100, species="All"){
         flist <- list.files(path)
         if(species != "All") flist <- flist[grep(species, flist)]
         flist <- flist[which(nchar(flist) > 5)]
@@ -31,10 +32,11 @@ get.results <- function(path, burnin=0, thin=1, species="All"){
                         fset <- flist[grep(sprintf("%s_.*_%s_.*", species, re), flist)]
                         print(fset)
                         if(length(fset) > 0){
-                                speclist <- lapply(fset, function(x) read.csv(paste(path, x, sep=''), 
-                                                                              header=TRUE))
+                                speclist <- lapply(fset, function(x) data.frame(fread(paste(path, x, sep=''), 
+                                                                              header=TRUE)))
                                 min.spec <- min(sapply(speclist, nrow))
                                 samples <- seq(burnin, min.spec, by=thin)
+                                print(sprintf("%d samples", length(samples)*length(fset)))
                                 speclist <- lapply(speclist, "[", samples,,drop=FALSE)
                                 speclist <- lapply(speclist, mcmc)
                                 assign(sprintf("%s.%s.l", species, re), mcmc.list(speclist), envir = .GlobalEnv)
@@ -92,10 +94,30 @@ chain.plots <- function(mcmclist){
 ##' 
 ##' @author Alexey Shiklomanov
 
-sumtab <- function(m) {
+sumtab <- function(m, m.name=deparse(substitute(m))) {
         s <- summary(m)
         means <- s$statistics[,1]
-        ci <- s$quantiles[,5] - s$quantiles[,1]
-        out <- rbind(means, ci)
+        ci.low <- s$quantiles[,1]
+        ci.up <- s$quantiles[,5]
+        ci.range <- ci.up - ci.low
+        out <- data.frame(rbind(means, ci.low, ci.up, ci.range),
+                          vartype = c("mean", "ci_low", "ci_up", "ci_range"), 
+                          row.names = NULL)
+        out$species <- m.name
         return(out)
+}
+
+##' @name 
+##' @title Build large results table
+##' 
+
+results.table <- function(path=FALSE){
+        if(path!=FALSE){
+                get.results(path)
+        }
+        results.vec <- ls(".GlobalEnv")
+        results.vec <- results.vec[grep("\\.l$", results.vec)]
+        tablist <- lapply(results.vec, function(x) sumtab(get(x), x))
+        results.tab <- do.call(rbind, tablist)
+        return(results.tab)
 }
