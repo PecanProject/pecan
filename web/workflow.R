@@ -111,9 +111,9 @@ if (length(which(commandArgs() == "--continue")) == 0) {
       if(input.name == 'met'){
         if(!file.exists(input)){  ## check to see if the inputis a file or a tag
           
-          met.process(settings$site, input,
-                      settings$run$start.date, settings$run$end.date,
-                      settings$model$type, settings$run$host, settings$database$bety)
+          settings$run$inputs[[i]] <-  met.process(settings$site, input,
+                                          settings$run$start.date, settings$run$end.date,
+                                          settings$model$type, settings$run$host, settings$database$bety)
           
         }        
       }
