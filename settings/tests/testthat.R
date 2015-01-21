@@ -10,4 +10,4 @@ library(testthat)
 library(PEcAn.utils)
 
 logger.setQuitOnSevere(FALSE)
-#test_check("PEcAn.settings")
+test_check("PEcAn.settings")
