@@ -1,16 +1,17 @@
-met.process <- function(site, input, start_date, end_date, model, host, bety){
+met.process <- function(site, input, start_date, end_date, model, host, bety, dir){
   
   require(PEcAn.all)
   require(PEcAn.data.atmosphere)
   require(RPostgreSQL)
   
   driver   <- "PostgreSQL"
-  user     <- bety$username
+  user     <- bety$user
   dbname   <- bety$dbname
   password <- bety$password
-  host     <- bety$host
+  bety.host<- bety$host
   username <- ""
-  dbparms <- list(driver=driver, user=user, dbname=dbname, password=password, host=host)
+  dbparms <- list(driver=driver, user=user, dbname=dbname, password=password, host=bety.host)
+  con       <- db.open(dbparms)
   
   met <- input 
   ifelse(met == "NARR", regional<- TRUE, regional<- FALSE) # Either regional or site run
@@ -24,9 +25,9 @@ met.process <- function(site, input, start_date, end_date, model, host, bety){
   outfolder  <- paste0(dir,met,"/")
   pkg        <- "PEcAn.data.atmosphere"
   fcn        <- paste0("download.",met)
-  ifelse(met == "NARR", site.id <- 1135, site.id <- site$id)
+  ifelse(met == "NARR", site.id <- 1135, site.id <- site)
   
-  args <- list(site.id, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE, pkg,raw.host = host$name,dbparms,con=con,write=TRUE)
+  args <- list(site.id, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE, pkg,raw.host = host,dbparms,con=con)
   
   raw.id <- do.call(fcn,args)
   print(raw.id)
@@ -35,9 +36,9 @@ met.process <- function(site, input, start_date, end_date, model, host, bety){
   # Change to CF Standards
   
   input.id  <-  raw.id
-  outfolder <-  paste0(dir,met,"_CF/")
+  outfolder <-  file.path(dir,met,"_CF/")
   pkg       <- "PEcAn.data.atmosphere"
-  fcn       <-  paste0("met2CF.",met)
+  fcn       <-  file.path("met2CF.",met)
   formatname <- 'CF Meteorology'
   mimetype <- 'application/x-netcdf'
   
@@ -45,7 +46,7 @@ met.process <- function(site, input, start_date, end_date, model, host, bety){
   
   if(regional){ #ie NARR right now
     
-    str_ns    <- paste0(site$id %/% 1000000000, "-", site$id %% 1000000000)
+    str_ns    <- paste0(site %/% 1000000000, "-", site %% 1000000000)
     
     input.id <- cf.id
     outfolder <- paste0(dir,met,"_CF_site_",str_ns,"/")
@@ -54,7 +55,7 @@ met.process <- function(site, input, start_date, end_date, model, host, bety){
     formatname <- 'CF Meteorology'
     mimetype <- 'application/x-netcdf'
     
-    ready.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username,con=con,newsite = site$id,raw.host=host$name,write=TRUE)
+    ready.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username,con=con,newsite = site,raw.host=host$name,write=TRUE)
  
     }else{   
     # run gapfilling 
@@ -79,7 +80,7 @@ met.process <- function(site, input, start_date, end_date, model, host, bety){
   }
   
   source("modules/data.atmosphere/R/site.lst.R")
-  lst <- site.lst(site$id,con)
+  lst <- site.lst(site,con)
   
   # Convert to model format
   input.id  <- ready.id
