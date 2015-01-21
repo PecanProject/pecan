@@ -215,6 +215,8 @@ allom.BayesFit <- function(allom,nrep=10000,form="power") {
 
     ## Fit "random site" hierarchical allometry -----------------------------
     tauImu = tauI %*% mu
+    u1 <- s1
+    u2 <- s2
     for(j in 1:nsite){
       
       ## Update study-level regression parameters
@@ -227,13 +229,13 @@ allom.BayesFit <- function(allom,nrep=10000,form="power") {
       b1[j] <- beta[2]
       
       ## Update study-level error
-      u1 <- s1 + nrow(X)/2
-      u2 <- s2 + 0.5*crossprod(Y-X %*% beta)
-      sinv[j] <- rgamma(1,u1,u2)    ## precision
+      u1 <- u1 + nrow(X)/2
+      u2 <- u2 + 0.5*crossprod(Y-X %*% beta)
       
       ## Calculate Deviance
       D[j] <- -2*sum(dnorm(Y,X%*%beta,sigma,log=TRUE))
     }
+    sinv <- rgamma(1,u1,u2)    ## precision
     sigma <- 1/sinv  ## variance
     
     ## Update across-study means
