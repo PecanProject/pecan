@@ -44,7 +44,7 @@ When running "online" (connected to the PEcAn database), pass the database conne
 Wheb running "stand alone" pass the pft list mapping species to species codes and the file paths to the allometry table and field data (optional)
 }
 \examples{
-if(FALSE{
+if(FALSE){
 pfts = list(FAGR = data.frame(spcd=531,acronym="FAGR"))
 allom.stats = AllomAve(pfts,ngibbs=500)
 
