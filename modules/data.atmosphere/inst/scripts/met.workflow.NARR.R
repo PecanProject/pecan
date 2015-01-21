@@ -18,7 +18,7 @@ if(raw){
   NARR.host  <- "geo.bu.edu"
   fcn        <- paste0("download.",met)
   
-  args <- list(site.id, outfolder, start_year, end_year, overwrite=FALSE, verbose=FALSE, pkg,raw.host,dbparms,con)
+  args <- list(site.id, outfolder, start_year, end_year, overwrite=FALSE, verbose=FALSE, pkg,raw.host,dbparms,con=con)
   
   raw.id <- do.call(fcn,args)
 }
@@ -28,7 +28,7 @@ if(raw){
 # Change to CF Standards
 
 if (cf == TRUE){
-  con       <- db.open(dbparms)
+  con       <-  db.open(dbparms)
   input.id  <-  raw.id
   outfolder <-  paste0(dir,met,"_CF/")
   pkg       <- "PEcAn.data.atmosphere"
@@ -37,14 +37,11 @@ if (cf == TRUE){
   formatname <- 'CF Meteorology'
   mimetype <- 'application/x-netcdf'
   
-  cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username,con)
+  cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username,con=con,raw.host=raw.host)
 }
 
 #--------------------------------------------------------------------------------------------------#
 # Rechunk and Permute
-input.id  <-  NARR_cf.id
-outfolder <- "/projectnb/cheas/pecan.data/input/NARR_CF_Permute/"
-write     <-  TRUE
 
 if (perm == TRUE){
   con       <- db.open(dbparms)
@@ -57,18 +54,18 @@ if (perm == TRUE){
   mimetype <- 'application/x-netcdf'
   
   
-  perm.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username,con)
+  perm.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username,con=con)
 }
 
 #--------------------------------------------------------------------------------------------------#
 # Extract for location
-input.id <- cf.id  # perm.id (this isn't properly automated)
+  # perm.id (this isn't properly automated)
 # l <- list(raw.host=raw.host,newsite=newsite)
-
+str_ns    <- paste0(newsite %/% 1000000000, "-", newsite %% 1000000000)
 
 if (extract == TRUE){
+  input.id <- cf.id
   con       <- db.open(dbparms)
-  str_ns    <- paste0(newsite %/% 1000000000, "-", newsite %% 1000000000)
   outfolder <- paste0(dir,met,"_CF_site_",str_ns,"/")
   pkg       <- "PEcAn.data.atmosphere"
   fcn       <- "extract.nc"
@@ -76,7 +73,7 @@ if (extract == TRUE){
   formatname <- 'CF Meteorology'
   mimetype <- 'application/x-netcdf'
   
-  extract.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_year,end_year,pkg,fcn,write,username,con,newsite = newsite,raw.host=raw.host)
+  extract.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_year,end_year,pkg,fcn,write,username,con=con,newsite = newsite,raw.host=raw.host,write=TRUE)
 }
 
 #--------------------------------------------------------------------------------------------------#
@@ -98,7 +95,9 @@ if(nchar(model) >2){
   write     <- TRUE
   overwrite <- ""
   
-  model.id <- convert.input(input.id,outfolder,mod.formatname,mod.mimetype,site.id,start_year,end_year,pkg,fcn,write,username,con,lst=lst,overwrite=overwrite,raw.host=raw.host)
+  model.id <- convert.input(input.id,outfolder,mod.formatname,mod.mimetype,newsite,start_year,end_year,pkg,fcn,write,username,con=con,lst=lst,overwrite=overwrite,raw.host=raw.host,write=TRUE)
+
+
 }
 
 #--------------------------------------------------------------------------------------------------#

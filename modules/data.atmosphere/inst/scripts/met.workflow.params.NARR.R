@@ -1,7 +1,3 @@
-rm(list = setdiff(ls(), lsf.str()))
-
-source('~/pecan/utils/R/convert.input.R')
-
 # Database setup
 
 driver   <- "PostgreSQL"
@@ -12,10 +8,10 @@ host     <- "psql-pecan.bu.edu"
 
 # Select username, host and directory folder for data
 
+username <- ""
 raw.host <- "pecan2.bu.edu"
 dir      <- "/fs/data4/"
 
-# username <- ""
 # raw.host <- "geo.bu.edu"
 # dir      <- "/projectnb/dietzelab/pecan.data/input/"
 
@@ -33,7 +29,7 @@ met <- "NARR"
 # Set start and end dates (when possible otherwise NA)
 
 start_year <- 1979 
-end_year   <- 1979
+end_year   <- 2014
 
 
 #######################################################
@@ -50,8 +46,11 @@ site.id <- 1135
 #   extract <- TRUE # 
 # }
 
+
 extract <- TRUE
-newsite <- 340
+# newsite <- 340
+extract.id <- NA
+extract.id <- 1000000129
 
 #######################################################
 # Download raw data? If not, specify raw.id
@@ -79,17 +78,27 @@ perm.id <- NA
 #######################################################
 # Select model. Currently ED2 and SIPNET
 
-model <- "ED2"
+model <- "DALEC"
 
 if(model == "ED2"){
-  mod.formatname <- 'ed.met_driver_header files format'
+  mod.formatname <- 'ed.met_driver_header_files_format'
   mod.mimetype <- 'text/plain'
 }else if(model == "SIPNET"){
   mod.formatname <- 'Sipnet.climna'
   mod.mimetype <- 'text/csv'
+}else if(model == "BIOCRO"){
+  mod.formatname <- 'biocromet'
+  mod.mimetype <- 'text/csv'
+}else if(model == "DALEC"){
+  mod.formatname <- 'DALEC meteorology'
+  mod.mimetype <- 'text/plain'
 }
 
 #######################################################
 # Run met workflow
 
-# source("~/pecan/modules/data.atmosphere/inst/scripts/met.workflow.gen.R")
+
+
+
+
+

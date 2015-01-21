@@ -64,6 +64,7 @@ end_year <- year(end_date)
 for(year in start_year:end_year) {
   old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep="."))
   
+  if(file.exists(old.file)){
   ## open netcdf
   nc <- nc_open(old.file)
   
@@ -112,7 +113,7 @@ for(year in start_year:end_year) {
   VPDsoil = ud.convert(get.es(soilT),"millibar","Pa")*(1-qair2rh(Qair,soilT))
 
   nc_close(nc)
-   
+  }
   ##build time variables (year, month, day of year)
   nyr <- floor(length(sec)/86400/365*dt)
   yr <- NULL
