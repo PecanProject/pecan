@@ -188,7 +188,12 @@ test_that("check settings sets model$type based on model$name and model$model_ty
   expect_identical(s$model$model_type, s1$model$type)
 
   s <- settings
-  s$model$type <- NULL
+  s$model <- list(id = 7)
+  s1 <- check.settings(update.settings(s))
+  expect_identical(s1$model$type, "BIOCRO")
+
+  s <- settings
+  s$model <- list(binary = "/bin/true")
   expect_error(check.settings(update.settings(s)))
 })
 
