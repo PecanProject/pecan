@@ -154,21 +154,16 @@ if [ "$GIT" == "yes" ]; then
     rm running
     exit
   fi
-  if ! grep --quiet 'Already' changes.log; then
-    FORCE="yes"
-  fi
 fi
 
 # list any changes to the code
-if [ "$FORCE" == "yes" ]; then
-  # get changes
-  echo "----------------------------------------------------------------------"
-  echo "CHANGES"
-  echo "----------------------------------------------------------------------"
-  git log > newlog
-  diff git.log newlog | grep '^> ' | sed 's/^> //'
-  mv newlog git.log
-fi
+# get changes
+echo "----------------------------------------------------------------------"
+echo "CHANGES"
+echo "----------------------------------------------------------------------"
+git log > newlog
+diff git.log newlog | grep '^> ' | sed 's/^> //'
+mv newlog git.log
 
 STATUS="OK"
 
@@ -191,87 +186,85 @@ if [ "$DOCUMENTATION" == "yes" ]; then
 fi
 
 # build PEcAn
-if [ "$FORCE" == "yes" ]; then
-  if [ ! -z  $R_LIBS_USER ]; then
-    if [ ! -e ${R_LIBS_USER} ]; then
-      mkdir -p ${R_LIBS_USER};
+if [ ! -z  $R_LIBS_USER ]; then
+  if [ ! -e ${R_LIBS_USER} ]; then
+    mkdir -p ${R_LIBS_USER};
+  fi
+  rm -rf ${R_LIBS_USER}/PEcAn.*
+  R_LIB_INC="--library=${R_LIBS_USER}"
+fi
+
+START=`date +'%s'`
+
+# get version number
+REVNO=$( git show -s --pretty=format:%T master )
+
+# check/install packages
+for p in ${PACKAGES}; do
+  PACKAGE="OK"
+  ACTION=""
+  BASENAME=$(basename "$p")
+
+  if [ "$CHECK" == "yes" ]; then
+    ACTION="CHECK"
+    R CMD check ${R_LIB_INC} $p &> out.log
+    if [ $? -ne 0 ]; then
+      STATUS="BROKEN"
+      PACKAGE="BROKEN"
+      echo "----------------------------------------------------------------------"
+      echo "CHECK $p BROKEN"
+      echo "----------------------------------------------------------------------"
+      cat out.log
+      if [ -e "${BASENAME}.Rcheck/00install.out" ]; then
+        echo "--- ${BASENAME}.Rcheck/00install.out"
+        cat "${BASENAME}.Rcheck/00install.out"
+      fi
+      if [ -e "${BASENAME}.Rcheck/tests/testthat.Rout.fail" ]; then
+        echo "--- ${BASENAME}.Rcheck/tests/testthat.Rout.fail"
+        cat "${BASENAME}.Rcheck/tests/testthat.Rout.fail"
+      fi
     fi
-    rm -rf ${R_LIBS_USER}/PEcAn.*
-    R_LIB_INC="--library=${R_LIBS_USER}"
   fi
 
-  START=`date +'%s'`
-
-  # get version number
-  REVNO=$( git show -s --pretty=format:%T master )
-
-  # check/install packages
-  for p in ${PACKAGES}; do
-    PACKAGE="OK"
-    ACTION=""
-    BASENAME=$(basename "$p")
-
-    if [ "$CHECK" == "yes" ]; then
-      ACTION="CHECK"
-	    R CMD check ${R_LIB_INC} $p &> out.log
-	    if [ $? -ne 0 ]; then
-	      STATUS="BROKEN"
-	      PACKAGE="BROKEN"
-	      echo "----------------------------------------------------------------------"
-	      echo "CHECK $p BROKEN"
-	      echo "----------------------------------------------------------------------"
-	      cat out.log
-        if [ -e "${BASENAME}.Rcheck/00install.out" ]; then
-          echo "--- ${BASENAME}.Rcheck/00install.out"
-          cat "${BASENAME}.Rcheck/00install.out"
-        fi
-        if [ -e "${BASENAME}.Rcheck/tests/testthat.Rout.fail" ]; then
-          echo "--- ${BASENAME}.Rcheck/tests/testthat.Rout.fail"
-          cat "${BASENAME}.Rcheck/tests/testthat.Rout.fail"
-        fi
-	    fi
-	  fi
-
-    if [ "$PACKAGE" == "OK" -a "$INSTALL" == "yes" ]; then
-      if [ "$ACTION" == "" ]; then
-        ACTION="INSTALL"
-      else
-        ACTION="$ACTION/INSTALL"
-      fi
-      R CMD INSTALL --build ${R_LIB_INC} $p &> out.log
-      if [ $? -ne 0 ]; then
-        STATUS="BROKEN"
-        PACKAGE="BROKEN"
-        echo "----------------------------------------------------------------------"
-        echo "INSTALL $p BROKEN"
-        echo "----------------------------------------------------------------------"
-        cat out.log
-        if [ -e "${BASENAME}.Rcheck/00install.out" ]; then
-          echo "--- ${BASENAME}.Rcheck/00install.out"
-          cat "${BASENAME}.Rcheck/00install.out"
-        fi
+  if [ "$PACKAGE" == "OK" -a "$INSTALL" == "yes" ]; then
+    if [ "$ACTION" == "" ]; then
+      ACTION="INSTALL"
+    else
+      ACTION="$ACTION/INSTALL"
+    fi
+    R CMD INSTALL --build ${R_LIB_INC} $p &> out.log
+    if [ $? -ne 0 ]; then
+      STATUS="BROKEN"
+      PACKAGE="BROKEN"
+      echo "----------------------------------------------------------------------"
+      echo "INSTALL $p BROKEN"
+      echo "----------------------------------------------------------------------"
+      cat out.log
+      if [ -e "${BASENAME}.Rcheck/00install.out" ]; then
+        echo "--- ${BASENAME}.Rcheck/00install.out"
+        cat "${BASENAME}.Rcheck/00install.out"
       fi
     fi
-    
-    if [ "$PACKAGE" == "OK" ]; then
-      if [ "$ACTION" == "" ]; then
-        ACTION="DID NOTHING"
-      fi
-      echo "----------------------------------------------------------------------"
-      echo "$ACTION $p OK"
-      echo "----------------------------------------------------------------------"
+  fi
+  
+  if [ "$PACKAGE" == "OK" ]; then
+    if [ "$ACTION" == "" ]; then
+      ACTION="DID NOTHING"
     fi
-  done
+    echo "----------------------------------------------------------------------"
+    echo "$ACTION $p OK"
+    echo "----------------------------------------------------------------------"
+  fi
+done
 
-  # all done
-  TIME=$(echo "`date +'%s'` - $START" |bc -l)
-  echo "----------------------------------------------------------------------"
-  echo "build took ${TIME} seconds."
-  echo "----------------------------------------------------------------------"
+# all done
+TIME=$(echo "`date +'%s'` - $START" |bc -l)
+echo "----------------------------------------------------------------------"
+echo "build took ${TIME} seconds."
+echo "----------------------------------------------------------------------"
 
-  # cleanup
-  rm -rf out.log *.Rcheck PEcAn.*.tar.gz PEcAn.*.tgz
-fi
+# cleanup
+rm -rf out.log *.Rcheck PEcAn.*.tar.gz PEcAn.*.tgz
 
 # run tests
 if [ "$TESTS" == "yes" ]; then
