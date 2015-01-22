@@ -13,7 +13,10 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
   startdate <- as.POSIXlt(start_date, tz = "GMT")
   enddate   <- as.POSIXlt(end_date, tz = "GMT")
   
-  dbfile.input.check(site.id, startdate, enddate, mimetype, formatname, con=con, hostname=fqdn())
+  check = dbfile.input.check(site.id, startdate, enddate, mimetype, formatname, con=con, hostname=fqdn())
+  if(length(check)>0){
+    return(check$id)
+  }
   
   input = db.query(paste("SELECT * from inputs where id =",input.id),con)
   if(nrow(input)==0){logger.error("input not found",input.id);return(NULL)}
@@ -25,8 +28,6 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
   # dbfile may return more than one row -> may need to loop over machine ids
   dbfile = db.query(paste("SELECT * from dbfiles where container_id =",input.id," and container_type = 'Input' and machine_id =",machine$id),con)
   if(nrow(dbfile)==0){logger.error("dbfile not found",input.id);return(NULL)}
-  
-  
   
   host = system("hostname",intern=TRUE)
   
@@ -84,9 +85,9 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
 #      in.prefix <- dbfile$file_name
 #    }
     
-#    in.prefix=site.code, 
-    newinput <- dbfile.input.insert(in.path=dirname(results$file[1]),
-                                    in.prefix,
+    in.prefix=strsplit(basename(result$file[1]),".",fixed=TRUE)[[1]][1]
+    newinput <- dbfile.input.insert(in.path=dirname(result$file[1]),
+                                    in.prefix=in.prefix,
                                     siteid = site$id, 
                                     startdate = paste(input$start_date), 
                                     enddate = paste(input$end_date), 
