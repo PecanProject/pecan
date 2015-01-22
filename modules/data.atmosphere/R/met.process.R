@@ -14,8 +14,6 @@
 ##' @author Elizabeth Cowdery
 met.process <- function(site, input, start_date, end_date, model, host, bety, dir){
   
-  require(PEcAn.all)
-  require(PEcAn.data.atmosphere)
   require(RPostgreSQL)
   
   driver   <- "PostgreSQL"
@@ -28,19 +26,19 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
   con       <- db.open(dbparms)
   
   met <- input 
-  ifelse(met == "NARR", regional<- TRUE, regional<- FALSE) # Either regional or site run
+  regional <- met == "NARR" # Either regional or site run
   
   #--------------------------------------------------------------------------------------------------#
   # Download raw met from the internet 
   
-  outfolder  <- paste0(dir,met,"/")
+  outfolder  <- file.path(dir,met)
   pkg        <- "PEcAn.data.atmosphere"
   fcn        <- paste0("download.",met)
   if(met == "NARR"){
     site.id <- 1135
     raw.id <- 1000000127
   }else{
-    site.id <- site
+    site.id <- site$id
     args <- list(site.id, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE) #, pkg,raw.host = host,dbparms,con=con)
     raw.id <- do.call(fcn,args)
   } 
@@ -49,7 +47,7 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
   # Change to CF Standards
   
   input.id  <-  raw.id
-  outfolder <-  paste0(dir,met,"_CF/")
+  outfolder <-  file.path(dir,paste0(met,"_CF"))
   pkg       <- "PEcAn.data.atmosphere"
   fcn       <-  paste0("met2CF.",met)
   formatname <- 'CF Meteorology'
@@ -66,26 +64,31 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
   
   if(regional){ #ie NARR right now
     
-    str_ns    <- paste0(site %/% 1000000000, "-", site %% 1000000000)
+    new.site = as.numeric(site$id)
+    str_ns    <- paste0(new.site %/% 1000000000, "-", new.site %% 1000000000)
     
     input.id <- cf.id
-    outfolder <- paste0(dir,met,"_CF_site_",str_ns,"/")
+    outfolder <- file.path(dir,paste0(met,"_CF_site_",str_ns))
     pkg       <- "PEcAn.data.atmosphere"
     fcn       <- "extract.nc"
     formatname <- 'CF Meteorology'
     mimetype <- 'application/x-netcdf'
     
     ready.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username=username,con=con,
-                              newsite = site,raw.host=host,write=TRUE)
+                              newsite = new.site,raw.host=host,write=TRUE)
  
     }else{   
     # run gapfilling 
-    ready.id <- convert.input()
+#    ready.id <- convert.input()
+    ready.id <- metgapfill(file.path(settings$run$dbfiles, "cf"), site, file.path(settings$run$dbfiles, "gapfill"), start_date=start_date, end_date=end_date)
+    
     }
   
   #--------------------------------------------------------------------------------------------------#
   # Prepare for Model
   
+## NOTE: ALL OF THIS CAN BE QUERIED THROUGH DATABASE
+## MODEL_TYPES -> FORMATS where tag = "met"
   if(model == "ED2"){
     formatname <- 'ed.met_driver_header_files_format'
     mimetype <- 'text/plain'
@@ -104,7 +107,7 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
   
   # Convert to model format
   input.id  <- ready.id
-  outfolder <- paste0(dir,met,"_",model,"_site_",str_ns,"/")
+  outfolder <- file.path(dir,paste0(met,"_",model,"_site_",str_ns))
   pkg       <- paste0("PEcAn.",model)
   fcn       <- paste0("met2model.",model)
   write     <- TRUE
