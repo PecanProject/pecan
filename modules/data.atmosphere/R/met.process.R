@@ -1,22 +1,20 @@
-met.process <- function(site, input, start_date, end_date, model, host, bety){
+met.process <- function(site, input, start_date, end_date, model, host, bety, dir){
   
   require(PEcAn.all)
   require(PEcAn.data.atmosphere)
   require(RPostgreSQL)
   
   driver   <- "PostgreSQL"
-  user     <- bety$username
+  user     <- bety$user
   dbname   <- bety$dbname
   password <- bety$password
-  host     <- bety$host
+  bety.host<- bety$host
   username <- ""
-  dbparms <- list(driver=driver, user=user, dbname=dbname, password=password, host=host)
+  dbparms <- list(driver=driver, user=user, dbname=dbname, password=password, host=bety.host)
+  con       <- db.open(dbparms)
   
   met <- input 
   ifelse(met == "NARR", regional<- TRUE, regional<- FALSE) # Either regional or site run
-  
-  start_date <- as.POSIXlt(start_date, tz = "GMT")
-  end_date   <- as.POSIXlt(end_date, tz = "GMT")
   
   #--------------------------------------------------------------------------------------------------#
   # Download raw met from the internet 
@@ -24,12 +22,14 @@ met.process <- function(site, input, start_date, end_date, model, host, bety){
   outfolder  <- paste0(dir,met,"/")
   pkg        <- "PEcAn.data.atmosphere"
   fcn        <- paste0("download.",met)
-  ifelse(met == "NARR", site.id <- 1135, site.id <- site$id)
-  
-  args <- list(site.id, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE, pkg,raw.host = host$name,dbparms,con=con,write=TRUE)
-  
-  raw.id <- do.call(fcn,args)
-  print(raw.id)
+  if(met == "NARR"){
+    site.id <- 1135
+    raw.id <- 1000000127
+  }else{
+    site.id <- site
+    args <- list(site.id, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE) #, pkg,raw.host = host,dbparms,con=con)
+    raw.id <- do.call(fcn,args)
+  } 
   
   #--------------------------------------------------------------------------------------------------#
   # Change to CF Standards
@@ -41,11 +41,18 @@ met.process <- function(site, input, start_date, end_date, model, host, bety){
   formatname <- 'CF Meteorology'
   mimetype <- 'application/x-netcdf'
   
-  cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username,con=con,raw.host=host$name,write=TRUE) 
+  if(met == "NARR"){
+    cf.id <- 1000000023 #ID of permuted CF files
+  }else{
+    cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username,con=con,raw.host=host,write=TRUE) 
+  }
+  
+  #--------------------------------------------------------------------------------------------------#
+  # Extraction 
   
   if(regional){ #ie NARR right now
     
-    str_ns    <- paste0(site$id %/% 1000000000, "-", site$id %% 1000000000)
+    str_ns    <- paste0(site %/% 1000000000, "-", site %% 1000000000)
     
     input.id <- cf.id
     outfolder <- paste0(dir,met,"_CF_site_",str_ns,"/")
@@ -54,7 +61,8 @@ met.process <- function(site, input, start_date, end_date, model, host, bety){
     formatname <- 'CF Meteorology'
     mimetype <- 'application/x-netcdf'
     
-    ready.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username,con=con,newsite = site$id,raw.host=host$name,write=TRUE)
+    ready.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username=username,con=con,
+                              newsite = site,raw.host=host,write=TRUE)
  
     }else{   
     # run gapfilling 
@@ -65,21 +73,21 @@ met.process <- function(site, input, start_date, end_date, model, host, bety){
   # Prepare for Model
   
   if(model == "ED2"){
-    mod.formatname <- 'ed.met_driver_header_files_format'
-    mod.mimetype <- 'text/plain'
+    formatname <- 'ed.met_driver_header_files_format'
+    mimetype <- 'text/plain'
   }else if(model == "SIPNET"){
-    mod.formatname <- 'Sipnet.climna'
-    mod.mimetype <- 'text/csv'
+    formatname <- 'Sipnet.climna'
+    mimetype <- 'text/csv'
   }else if(model == "BIOCRO"){
-    mod.formatname <- 'biocromet'
-    mod.mimetype <- 'text/csv'
+    formatname <- 'biocromet'
+    mimetype <- 'text/csv'
   }else if(model == "DALEC"){
-    mod.formatname <- 'DALEC meteorology'
-    mod.mimetype <- 'text/plain'
+    formatname <- 'DALEC meteorology'
+    mimetype <- 'text/plain'
   }
   
   source("modules/data.atmosphere/R/site.lst.R")
-  lst <- site.lst(site$id,con)
+  lst <- site.lst(site,con)
   
   # Convert to model format
   input.id  <- ready.id
@@ -89,8 +97,10 @@ met.process <- function(site, input, start_date, end_date, model, host, bety){
   write     <- TRUE
   overwrite <- ""
   
-  model.id <- convert.input(input.id,outfolder,mod.formatname,mod.mimetype,newsite,start_date,end_date,pkg,fcn,write,username,con=con,lst=lst,overwrite=overwrite,raw.host=raw.host,write=TRUE)
-  
+  model.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username=username,con=con,
+                            lst=lst,overwrite=overwrite,raw.host=host,write=TRUE)
+
+  db.close(con)
   return(outfolder)
   
 }

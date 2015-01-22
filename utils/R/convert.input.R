@@ -45,9 +45,9 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
   }      
   
   outlist <- unlist(strsplit(outname,"_"))
-  if("ED2" %in% outlist){args <- c(args, l$lst, startdate, enddate)}
-  if("SIPNET" %in% outlist){args <- c(args, startdate, enddate)}
-  if("DALEC" %in% outlist){args <- c(args, startdate, enddate)}
+  if("ED2" %in% outlist){args <- c(args, l$lst, start_date, end_date)}
+  if("SIPNET" %in% outlist){args <- c(args, start_date, end_date)}
+  if("DALEC" %in% outlist){args <- c(args, start_date, end_date)}
   
   print(args)
   cmdArgs = paste(args,collapse=" ")
@@ -70,14 +70,17 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
   if(l$write==TRUE){
     ### Hack
     if("ED2" %in% outlist){
-      filename <- paste0(outfolder," ")
+      in.path <- outfolder
+      in.prefix <- "ED_MET_DRIVER_HEADER"
     }else if("SIPNET" %in% outlist){
-      filename <- paste0(outfolder,"sipnet.clim")
+      in.path <- outfolder
+      in.prefix <- "sipnet.clim"
     }else{
-      filename <- paste0(outfolder,dbfile$file_name)
+      in.path <- outfolder
+      in.prefix <- dbfile$file_name
     }
     
-    newinput <- dbfile.input.insert(filename, 
+    newinput <- dbfile.input.insert(in.path, in.prefix,
                                     siteid = site$id, 
                                     startdate = paste(input$start_date), 
                                     enddate = paste(input$end_date), 

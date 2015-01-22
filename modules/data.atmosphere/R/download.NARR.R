@@ -8,10 +8,10 @@
 ##' @param end_year
 ##' 
 ##' @author ??
-download.NARR <- function(site.id, outfolder, start_year, end_year, overwrite=FALSE, verbose=FALSE, pkg,raw.host,dbparms,con){
+download.NARR <- function(site.id, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE, pkg,raw.host,dbparms,con){
   
-  start_year <- as.numeric(start_year)
-  end_year   <- as.numeric(end_year)
+  start_year <- year(start_date)
+  end_year   <- year(end_date)
   
   # Download Raw NARR from the internet
   
@@ -46,14 +46,12 @@ download.NARR <- function(site.id, outfolder, start_year, end_year, overwrite=FA
     system2("ssh",paste0(usr,paste(raw.host,cmd)))
   }
   
-  
-  startdate <- paste0(start_year,"-01-01 06:00:00")
-  enddate   <- paste0(end_year+1,"-01-01 05:59:00")
+
   formatname <- "NARR"
   mimetype <- 'application/x-netcdf'
   
   # This is going to produce duplicates instead of updating current NARR
-  dbfile.input.check(site.id, startdate, enddate, mimetype, formatname, con=con, hostname=fqdn())
+  dbfile.input.check(site.id, start_date, endd_date, mimetype, formatname, con=con, hostname=fqdn())
   
   type <- 'Input'
   filename <- paste0(outfolder,"/NARR")
