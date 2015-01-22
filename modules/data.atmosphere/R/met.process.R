@@ -15,9 +15,7 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
   
   met <- input 
   ifelse(met == "NARR", regional<- TRUE, regional<- FALSE) # Either regional or site run
-  
-  start_date <- as.POSIXlt(start_date, tz = "GMT")
-  end_date   <- as.POSIXlt(end_date, tz = "GMT")
+
   
   #--------------------------------------------------------------------------------------------------#
   # Download raw met from the internet 
@@ -25,24 +23,33 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
   outfolder  <- paste0(dir,met,"/")
   pkg        <- "PEcAn.data.atmosphere"
   fcn        <- paste0("download.",met)
-  ifelse(met == "NARR", site.id <- 1135, site.id <- site)
-  
-  args <- list(site.id, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE, pkg,raw.host = host,dbparms,con=con)
-  
-  raw.id <- do.call(fcn,args)
-  print(raw.id)
+  if(met == "NARR"){
+    site.id <- 1135
+    raw.id <- 1000000127
+  }else{
+    site.id <- site
+    args <- list(site.id, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE) #, pkg,raw.host = host,dbparms,con=con)
+    raw.id <- do.call(fcn,args)
+  } 
   
   #--------------------------------------------------------------------------------------------------#
   # Change to CF Standards
   
   input.id  <-  raw.id
-  outfolder <-  file.path(dir,met,"_CF/")
+  outfolder <-  paste0(dir,met,"_CF/")
   pkg       <- "PEcAn.data.atmosphere"
-  fcn       <-  file.path("met2CF.",met)
+  fcn       <-  paste0("met2CF.",met)
   formatname <- 'CF Meteorology'
   mimetype <- 'application/x-netcdf'
   
-  cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username,con=con,raw.host=host$name,write=TRUE) 
+  if(met == "NARR"){
+    cf.id <- 1000000023 #actually the permuted CF files
+  }else{
+    cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username,con=con,raw.host=host,write=TRUE) 
+  }
+  
+  #--------------------------------------------------------------------------------------------------#
+  # Extraction 
   
   if(regional){ #ie NARR right now
     
@@ -55,7 +62,7 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
     formatname <- 'CF Meteorology'
     mimetype <- 'application/x-netcdf'
     
-    ready.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username,con=con,newsite = site,raw.host=host$name,write=TRUE)
+    ready.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username,con=con,newsite = site,raw.host=host,write=TRUE)
  
     }else{   
     # run gapfilling 
