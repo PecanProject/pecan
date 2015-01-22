@@ -43,19 +43,19 @@ if (cf == TRUE){
 #--------------------------------------------------------------------------------------------------#
 # Rechunk and Permute
 
-if (perm == TRUE){
-  con       <- db.open(dbparms)
-  input.id  <-  cf.id
-  outfolder <-  paste0(dir,data.set,"_CF_Permute/")
-  pkg       <- "PEcAn.data.atmosphere"
-  fcn       <- "permute.nc"
-  write     <-  TRUE
-  formatname <- 'CF Meteorology'
-  mimetype <- 'application/x-netcdf'
-  
-  
-  perm.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username,con=con)
-}
+# if (perm == TRUE){
+#   con       <- db.open(dbparms)
+#   input.id  <-  cf.id
+#   outfolder <-  paste0(dir,met,"_CF_Permute/")
+#   pkg       <- "PEcAn.data.atmosphere"
+#   fcn       <- "permute.nc"
+#   write     <-  TRUE
+#   formatname <- 'CF Meteorology'
+#   mimetype <- 'application/x-netcdf'
+#   
+#   
+#   perm.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username,con=con)
+# }
 
 #--------------------------------------------------------------------------------------------------#
 # Extract for location
@@ -64,7 +64,7 @@ if (perm == TRUE){
 str_ns    <- paste0(newsite %/% 1000000000, "-", newsite %% 1000000000)
 
 if (extract == TRUE){
-  input.id <- cf.id
+  input.id <- perm.id
   con       <- db.open(dbparms)
   outfolder <- paste0(dir,met,"_CF_site_",str_ns,"/")
   pkg       <- "PEcAn.data.atmosphere"

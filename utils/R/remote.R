@@ -28,6 +28,7 @@
 #' @param stderr should stderr be returned as well.
 #' @return the captured output of the command (both stdout and stderr)
 #' @author Rob Kooper
+#' @export
 #' @examples 
 #' remote.execute.cmd("ls", c("-l", "/"), host="localhost", stderr=TRUE)
 remote.execute.cmd <- function(cmd, args=character(), host="localhost", user=NA, stderr=FALSE) {
@@ -56,6 +57,7 @@ remote.execute.cmd <- function(cmd, args=character(), host="localhost", user=NA,
 #' @param stderr 
 #' @return the captured output of the command (both stdout and stderr)
 #' @author Rob Kooper
+#' @export
 #' @examples 
 #' remote.execute.cmd("ls", c("-l", "/"))
 remote.copy.file <- function(srchost, srcfiles, srcuser=NA, dsthost="localhost", dstfile=getwd(), dstuser=NA) {
@@ -105,6 +107,7 @@ remote.copy.file <- function(srchost, srcfiles, srcuser=NA, dsthost="localhost",
 #' @param verbose should the output be printed to the console
 #' @return the captured output of the command (both stdout and stderr)
 #' @author Rob Kooper
+#' @export
 #' @examples 
 #' remote.execute.R("list.files()", host="localhost", verbose=FALSE)
 remote.execute.R <- function(script, host="localhost", user=NA, verbose=FALSE, R="R") {

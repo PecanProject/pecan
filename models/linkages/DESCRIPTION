@@ -1,8 +1,8 @@
 Package: PEcAn.LINKAGES
 Type: Package
 Title: PEcAn package for integration of the LINKAGES model
-Version: 1.4.0
-Date: 2015-01-05
+Version: 1.4.1
+Date: 2015-01-22
 Author: Ann Raiho, Mike Dietze
 Maintainer: Ann Raiho <araiho@nd.edu>
 Description: This module provides functions to link the (LINKAGES) to PEcAn.

@@ -9,11 +9,12 @@ host     <- "psql-pecan.bu.edu"
 # Select username, host and directory folder for data
 
 username <- ""
-raw.host <- "pecan2.bu.edu"
-dir      <- "/fs/data4/"
 
-# raw.host <- "geo.bu.edu"
-# dir      <- "/projectnb/dietzelab/pecan.data/input/"
+# raw.host <- "pecan2.bu.edu"
+# dir      <- "/fs/data4/"
+
+raw.host <- "geo.bu.edu"
+dir      <- "/projectnb/dietzelab/pecan.data/input/"
 
 # raw.host <- "pecan2.bu.edu"
 # dir      <- "/home/ecowdery/input/"
@@ -29,7 +30,7 @@ met <- "NARR"
 # Set start and end dates (when possible otherwise NA)
 
 start_year <- 1979 
-end_year   <- 2014
+end_year   <- 2013
 
 
 #######################################################
@@ -73,7 +74,7 @@ cf.id <- 1000000128
 # NARR perm.id on geo = 1000000023
 
 perm    <- FALSE
-perm.id <- NA
+perm.id <- 1000000023
 
 #######################################################
 # Select model. Currently ED2 and SIPNET

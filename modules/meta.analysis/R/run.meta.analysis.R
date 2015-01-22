@@ -116,7 +116,7 @@ run.meta.analysis.pft <- function(pft, iterations, random, threshold, dbfiles, d
     }
     filename <- file.path(pathname, file)
     file.copy(file.path(pft$outdir, file), filename)
-    dbfile.insert(filename, 'Posterior', pft$posteriorid, dbcon)
+    dbfile.insert(pathname,file, 'Posterior', pft$posteriorid, dbcon)
   }
 }
 
