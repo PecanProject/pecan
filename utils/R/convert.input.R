@@ -30,8 +30,10 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
   
   host = system("hostname",intern=TRUE)
   
-  args = c(pkg,fcn,dbfile$file_path,dbfile$file_name,outfolder,
-           paste0("'",start_date,"'"), paste0("'",end_date,"'"))
+#  args = c(pkg,fcn,dbfile$file_path,dbfile$file_name,outfolder,
+#           paste0("'",start_date,"'"), paste0("'",end_date,"'"))
+  args = c(dbfile$file_path,dbfile$file_name,outfolder,
+           start_date,end_date)
   
   # Use existing site, unless otherwise specified (ex: subsetting case)
   if("newsite" %in% names(l) && is.null(l[["newsite"]])==FALSE){
@@ -46,21 +48,24 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
   }      
   
   outlist <- unlist(strsplit(outname,"_"))
-  if("ED2" %in% outlist){args <- c(args, l$lst}
+  if("ED2" %in% outlist){args <- c(args, l$lst)}
   
   print(args)
-  cmdArgs = paste(args,collapse=" ")
+  cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
+  result <- remote.execute.R(cmdFcn,host)
+
+
+  # cmdArgs = paste(args,collapse=" ")
   #  Rfcn = system.file("scripts/Rfcn.R", package = "PEcAn.all")
-  Rfcn = "pecan/scripts/Rfcn.R"
-  
-  if(machine$hostname %in% c("localhost",host)){
-    ## if the machine is local, run conversion function
-    result <- system(paste0("~/",Rfcn," ",cmdArgs))
-  } else {
-    ## if the machine is remote, run conversion remotely
-    usr = ifelse(is.null(username)| username=="","",paste0(username,"@"))
-    result <- system2("ssh",paste0(usr,paste(machine$hostname,Rfcn,cmdArgs)))
-  }
+  # Rfcn = "pecan/scripts/Rfcn.R"
+#  if(machine$hostname %in% c("localhost",host)){
+#    ## if the machine is local, run conversion function
+#    result <- system(paste0("~/",Rfcn," ",cmdArgs))
+#  } else {
+#    ## if the machine is remote, run conversion remotely
+#    usr = ifelse(is.null(username)| username=="","",paste0(username,"@"))
+#    result <- system2("ssh",paste0(usr,paste(machine$hostname,Rfcn,cmdArgs)))
+#  }
   
   
   ### NOTE: We will eventually insert Brown Dog REST API calls here
@@ -68,18 +73,20 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
   ## insert new record into database
   if(l$write==TRUE){
     ### Hack
-    if("ED2" %in% outlist){
-      in.path <- outfolder
-      in.prefix <- "ED_MET_DRIVER_HEADER"
-    }else if("SIPNET" %in% outlist){
-      in.path <- outfolder
-      in.prefix <- "sipnet.clim"
-    }else{
-      in.path <- outfolder
-      in.prefix <- dbfile$file_name
-    }
+#    if("ED2" %in% outlist){
+#      in.path <- outfolder
+#      in.prefix <- "ED_MET_DRIVER_HEADER"
+#    }else if("SIPNET" %in% outlist){
+#      in.path <- outfolder
+#      in.prefix <- "sipnet.clim"
+#    }else{
+#      in.path <- outfolder
+#      in.prefix <- dbfile$file_name
+#    }
     
-    newinput <- dbfile.input.insert(in.path, in.prefix,
+#    in.prefix=site.code, 
+    newinput <- dbfile.input.insert(in.path=dirname(results$file[1]),
+                                    in.prefix,
                                     siteid = site$id, 
                                     startdate = paste(input$start_date), 
                                     enddate = paste(input$end_date), 
