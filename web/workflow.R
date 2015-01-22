@@ -74,6 +74,7 @@ if (length(which(commandArgs() == "--continue")) == 0) {
   for(i in 1:length(settings$run$inputs)) {
     input <- settings$run$inputs[[i]]
     input.tag <- names(settings$run$input)[i]
+    
     if (length(input) == 1) next
     
     # fia database
@@ -83,7 +84,7 @@ if (length(which(commandArgs() == "--continue")) == 0) {
 
     # met download
     if(TRUE){  ## old approach
-    if (input['input'] == 'Ameriflux' || input['input'] == 'NARR' ||) {
+    if (input['input'] == 'Ameriflux') {
       # start/end date for weather
       start_date <- settings$run$start.date
       end_date <- settings$run$end.date
@@ -109,12 +110,13 @@ if (length(which(commandArgs() == "--continue")) == 0) {
       settings$run$inputs[[i]] <- r[['file']]
     }
     } else { ## new met
-      if(input.name == 'met'){
-        if(!file.exists(input)){  ## check to see if the inputis a file or a tag
+      if(input.tag == 'met'){
+        if(length(input) > 1){  ## check to see if the input is a file or a tag
           
-          settings$run$inputs[[i]] <-  met.process(settings$site, input,
-                                          settings$run$start.date, settings$run$end.date,
-                                          settings$model$type, settings$run$host, settings$database$bety)
+          settings$run$inputs[[i]]  <-  met.process(site = settings$run$site, input=input['input'],
+                                          start_date=settings$run$start.date, end_date=settings$run$end.date,
+                                          model=settings$model$type, host=settings$run$host,
+                                          bety=settings$database$bety, dir=settings$run$dbfiles)
           
         }        
       }
