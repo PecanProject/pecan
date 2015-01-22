@@ -38,9 +38,32 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
     site.id <- 1135
     raw.id <- 1000000127
   }else{
-    site.id <- site$id
-    args <- list(site.id, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE) #, pkg,raw.host = host,dbparms,con=con)
-    raw.id <- do.call(fcn,args)
+    if(met == "Ameriflux"){
+
+      ## download files
+      site.code = sub(".* \\((.*)\\)", "\\1", site$name)
+      args <- list(site.code, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE) #, pkg,raw.host = host,dbparms,con=con)
+      new.files <- do.call(fcn,args)
+
+      ## insert database record
+      raw.id <- dbfile.input.insert(in.path=dirname(new.files$file[1]),
+                                    in.prefix=site.code, 
+                                    siteid = site$id, 
+                                    startdate = start_date, 
+                                    enddate = end_date, 
+                                    mimetype=new.files$mimetype[1], 
+                                    formatname=new.files$formatname,
+                                    parentid=NA,
+                                    con = con,
+                                    hostname = host$name)$input.id
+      
+      } else {
+      site.id <- site$id
+      args <- list(site.id, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE) #, pkg,raw.host = host,dbparms,con=con)
+      raw.id <- do.call(fcn,args)
+      
+    }
+
   } 
   
   #--------------------------------------------------------------------------------------------------#
@@ -55,8 +78,8 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
   
   if(met == "NARR"){
     cf.id <- 1000000023 #ID of permuted CF files
-  }else{
-    cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username,con=con,raw.host=host,write=TRUE) 
+  }else{    
+    cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site$id,start_date,end_date,pkg,fcn,write,username,con=con,raw.host=host$name,write=TRUE) 
   }
   
   #--------------------------------------------------------------------------------------------------#
