@@ -67,6 +67,9 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
   cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
   result <- remote.execute.R(cmdFcn,host,verbose=FALSE)
 
+print("RESULTS: Convert.Input")
+print(result)
+print(names(result))
 
   # cmdArgs = paste(args,collapse=" ")
   #  Rfcn = system.file("scripts/Rfcn.R", package = "PEcAn.all")

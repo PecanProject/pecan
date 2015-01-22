@@ -118,7 +118,13 @@ if (length(which(commandArgs() == "--continue")) == 0) {
                                           start_date=settings$run$start.date, end_date=settings$run$end.date,
                                           model=settings$model$type, host=settings$run$host,
                                           bety=settings$database$bety, dir=settings$run$dbfiles)
-          
+          if(FALSE){
+          foo = met.process(
+            site = settings$run$site, input=input['input'],
+            start_date=settings$run$start.date, end_date=settings$run$end.date,
+            model=settings$model$type, host=settings$run$host,
+            bety=settings$database$bety, dir=settings$run$dbfiles)
+          }
         }        
       }
     }

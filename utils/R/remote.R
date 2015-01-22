@@ -123,6 +123,7 @@ remote.execute.R <- function(script, host="localhost", user=NA, verbose=FALSE, R
   verbose <- ifelse(as.logical(verbose), "", FALSE)
   if ((host == "localhost") || (host == fqdn())) {
     result = try(system2(R, "--vanilla", stdout=verbose, stderr=verbose, input=input))
+    print(result)
     if(!file.exists(tmpfile)){fp <- file(tmpfile, 'w');serialize(result,fp);close(fp)}
   } else {
     remote <- ifelse(is.na(user), host, paste(user, host, sep='@'))
