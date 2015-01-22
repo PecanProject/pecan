@@ -83,7 +83,7 @@ if (length(which(commandArgs() == "--continue")) == 0) {
     }
 
     # met download
-    if(TRUE){  ## old approach
+    if(FALSE){  ## old approach
     if (input['input'] == 'Ameriflux') {
       # start/end date for weather
       start_date <- settings$run$start.date

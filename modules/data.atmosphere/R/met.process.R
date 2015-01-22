@@ -84,7 +84,8 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
   if(met == "NARR"){
     cf.id <- 1000000023 #ID of permuted CF files
   }else{    
-    cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site$id,start_date,end_date,pkg,fcn,write,username,con=con,raw.host=host$name,write=TRUE) 
+    cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site$id,start_date,end_date,pkg,fcn,
+                           username,con=con,host=host$name,write=TRUE) 
   }
   
   #--------------------------------------------------------------------------------------------------#
@@ -99,8 +100,8 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
     formatname <- 'CF Meteorology'
     mimetype <- 'application/x-netcdf'
     
-    ready.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username=username,con=con,
-                              newsite = new.site,raw.host=host,write=TRUE)
+    ready.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,
+                              username=username,con=con,host=host,write=TRUE,newsite = new.site)
  
     }else{ 
       #### SITE-LEVEL PROCESSING ##########################
@@ -116,7 +117,7 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
   mimetype <- 'application/x-netcdf'
 
     ready.id <- convert.input(cf.id,outfolder,formatname,mimetype,site.id,start_date,end_date,
-                              pkg,fcn,write,username=username,con=con,write=FALSE)
+                              pkg,fcn,username=username,con=con,host=host$name,write=TRUE)
 
     }
   
@@ -137,20 +138,22 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
   }else if(model == "DALEC"){
     formatname <- 'DALEC meteorology'
     mimetype <- 'text/plain'
+  }else if(model == "LINKAGES"){
+    formatname = 'LINKAGES met'
+    mimetype <- 'text/plain'
   }
   
   lst <- site.lst(site,con)
   
   # Convert to model format
-  input.id  <- ready.id
   outfolder <- file.path(dir,paste0(met,"_",model,"_site_",str_ns))
   pkg       <- paste0("PEcAn.",model)
   fcn       <- paste0("met2model.",model)
   write     <- TRUE
   overwrite <- ""
   
-  model.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username=username,con=con,
-                            lst=lst,overwrite=overwrite,raw.host=host,write=TRUE)
+  model.id <- convert.input(ready.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,
+                            username=username,con=con,host=host,write=write,lst=lst,overwrite=overwrite)
 
   db.close(con)
   return(outfolder)

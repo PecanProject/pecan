@@ -2,7 +2,8 @@
 ##'
 ##'
 
-convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,username,con=con,...){
+convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,
+                          pkg,fcn,username,con=con,host='localhost',write=TRUE,...){
   
   l <- list(...); print(l)
   n <- nchar(outfolder)
@@ -21,16 +22,14 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
   input = db.query(paste("SELECT * from inputs where id =",input.id),con)
   if(nrow(input)==0){logger.error("input not found",input.id);return(NULL)}
   
-  machine = db.query(paste0("SELECT * from machines where hostname = '",l$raw.host,"'"),con)
+  machine = db.query(paste0("SELECT * from machines where hostname = '",host,"'"),con)
   # machine = db.query(paste("SELECT * from machines where id = ",dbfile$machine_id),con)
-  if(nrow(machine)==0){logger.error("machine not found",l$raw.host);return(NULL)}
+  if(nrow(machine)==0){logger.error("machine not found",host);return(NULL)}
   
   # dbfile may return more than one row -> may need to loop over machine ids
   dbfile = db.query(paste("SELECT * from dbfiles where container_id =",input.id," and container_type = 'Input' and machine_id =",machine$id),con)
   if(nrow(dbfile)==0){logger.error("dbfile not found",input.id);return(NULL)}
-  
-  host = system("hostname",intern=TRUE)
-  
+    
 #  args = c(pkg,fcn,dbfile$file_path,dbfile$file_name,outfolder,
 #           paste0("'",start_date,"'"), paste0("'",end_date,"'"))
   args = c(dbfile$file_path,dbfile$file_name,outfolder,
@@ -72,7 +71,7 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
   ### NOTE: We will eventually insert Brown Dog REST API calls here
   
   ## insert new record into database
-  if(l$write==TRUE){
+  if(write==TRUE){
     ### Hack
 #    if("ED2" %in% outlist){
 #      in.path <- outfolder
