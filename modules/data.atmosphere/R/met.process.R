@@ -78,7 +78,7 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
   } 
   
   #--------------------------------------------------------------------------------------------------#
-  # Change to CF Standards
+  print("### Change to CF Standards")
   
   input.id  <-  raw.id
   #outfolder <-  file.path(dir,paste0(met,"_CF"))
@@ -113,7 +113,7 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
     }else{ 
       #### SITE-LEVEL PROCESSING ##########################
       
-    # run gapfilling 
+    print("# run gapfilling") 
 #    ready.id <- convert.input()
 #    ready.id <- metgapfill(outfolder, site.code, file.path(settings$run$dbfiles, "gapfill"), start_date=start_date, end_date=end_date)
 
@@ -122,11 +122,14 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
   fcn       <- "gapfill"
   formatname <- 'CF Meteorology'
   mimetype <- 'application/x-netcdf'
-
-    ready.id <- convert.input(cf.id,outfolder,formatname,mimetype,site.id,start_date,end_date,
-                              pkg,fcn,username=username,con=con,host=host$name,write=TRUE)
+  lst <- site.lst(site,con)
+    
+   ready.id <- convert.input(input.id=cf.id,outfolder=outfolder,formatname=formatname,mimetype=mimetype,
+                              site.id=site$id,start_date,end_date,
+                              pkg,fcn,username=username,con=con,host=host$name,write=TRUE,lst=lst)
 
     }
+print("Standardized Met Produced")
   
   #--------------------------------------------------------------------------------------------------#
   # Prepare for Model
@@ -152,15 +155,15 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
   
   lst <- site.lst(site,con)
   
-  # Convert to model format
+  print("# Convert to model format")
   outfolder <- file.path(dir,paste0(met,"_",model,"_site_",str_ns))
   pkg       <- paste0("PEcAn.",model)
   fcn       <- paste0("met2model.",model)
   write     <- TRUE
   overwrite <- ""
   
-  model.id <- convert.input(ready.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,
-                            username=username,con=con,host=host,write=write,lst=lst,overwrite=overwrite)
+  model.id <- convert.input(ready.id,outfolder,formatname,mimetype,site$id,start_date,end_date,pkg,fcn,
+                            username=username,con=con,host=host$name,write=write,lst=lst,overwrite=overwrite)
 
   db.close(con)
   return(outfolder)
