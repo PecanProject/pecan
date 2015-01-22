@@ -487,12 +487,13 @@ if (is_dir("$folder/run")) {
     <input id="prev" type="button" value="History" onclick="prevStep();" />
     <input id="next" type="button" value="Start Over" onclick="nextStep();"/>    
     <div class="spacer"></div>
+    <p></p>
 <?php
   if (check_login()) {
-    echo "<p></p>";
     echo "Logged in as " . get_user_name();
     echo "<a href=\"index.php?logout\" id=\"logout\">logout</a>";
   }
+  echo get_pecan_version();
 ?>    
   </div>
   <div id="output">Please select an option on the left.</div>

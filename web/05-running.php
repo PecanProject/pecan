@@ -131,6 +131,7 @@ header( "refresh:5" );
     echo "<a href=\"index.php?logout\" id=\"logout\">logout</a>";
   }
 ?>    
+    <p></p><?php echo get_pecan_version(); ?>
   </div>
   <div id="output">
   <h2>Execution Status</h2>

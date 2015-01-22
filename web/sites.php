@@ -72,12 +72,10 @@ if (isset($_REQUEST['model']) && ($_REQUEST['model'] != "") && isset($_REQUEST['
   $stmt->closeCursor();
 
   // 4. Find all MET conversions possible
-  // 4a. Check for Download Ameriflux -> CF
+  // 4a. Check for Download -> CF
   foreach($sites as &$site) {
-    if (preg_match("/ \(US-.*\)$/", $site["sitename"])) {
-      if (!in_array(33, $site['format_id'])) {
-        $site['format_id'][] = 33;
-      }
+    if (!in_array(33, $site['format_id'])) {
+      $site['format_id'][] = 33;
     }
   }
 

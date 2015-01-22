@@ -306,6 +306,9 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
       <label id="sitelabel">Site:</label>
       <input name="siteid" id="siteid" type="hidden" value="<?php echo $siteid; ?>"/>
       <input name="sitename" id="sitename" type="text" readonly value="No site selected" />
+<?php if ($betydb != "") { ?>
+      <span class="small">Add a new site in <a href="<?php echo $betydb; ?>/sites/new" target="BETY">BETY</a>. Requires a refresh of this page after site is added.</span>
+<?php } ?>
       <div class="spacer"></div>
 
       <p></p>
@@ -315,12 +318,13 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
       <input id="next" type="button" value="Next" onclick="nextStep();" />    
       <div class="spacer"></div>
     </form>
+    <p></p>
 <?php
   if (check_login()) {
-    echo "<p></p>";
     echo "Logged in as " . get_user_name();
     echo "<a href=\"index.php?logout\" id=\"logout\">logout</a>";
   }
+  echo get_pecan_version();
 ?>    
   </div>
   <div id="output"></div>

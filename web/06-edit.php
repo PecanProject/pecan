@@ -186,13 +186,14 @@ $files = array_unique($files);
 			<input id="next" type="button" value="Continue" onclick="nextStep();" />		
 			<div class="spacer"></div>
 		</form>
+    <p></p>
 <?php
-	if (check_login()) {
-		echo "<p></p>";
-		echo "Logged in as " . get_user_name();
-		echo "<a href=\"index.php?logout\" id=\"logout\">logout</a>";
-	}
-?>		
+  if (check_login()) {
+    echo "Logged in as " . get_user_name();
+    echo "<a href=\"index.php?logout\" id=\"logout\">logout</a>";
+  }
+  echo get_pecan_version();
+?>    
 	</div>
 	<div id="output">
 		<textarea name="editor" id="editor" onKeyPress="modifiedFile();"></textarea><br/>

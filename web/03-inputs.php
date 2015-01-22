@@ -122,20 +122,21 @@ if (isset($db_fia_database) && ($db_fia_database != "")) {
   }
 }
 
-if (preg_match("/ \(US-.*\)$/", $siteinfo["sitename"])) {
-  $stmt = $pdo->prepare("SELECT modeltypes.name FROM modeltypes, models" .
-                        " WHERE modeltypes.id=models.modeltype_id" .
-                        " AND models.id=?;");
-  if (!$stmt->execute(array($modelid))) {
-    die('Invalid query: ' . error_database());
-  }
-  $modeltypes=$stmt->fetchAll(PDO::FETCH_COLUMN, 0);
-  $stmt->closeCursor();
-  foreach($modeltypes as $type) {
-    foreach($inputs as &$x) {
-      if ($x['tag'] == "met") {
+$stmt = $pdo->prepare("SELECT modeltypes.name FROM modeltypes, models" .
+                      " WHERE modeltypes.id=models.modeltype_id" .
+                      " AND models.id=?;");
+if (!$stmt->execute(array($modelid))) {
+  die('Invalid query: ' . error_database());
+}
+$modeltypes=$stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+$stmt->closeCursor();
+foreach($modeltypes as $type) {
+  foreach($inputs as &$x) {
+    if ($x['tag'] == "met") {
+      if (preg_match("/ \(US-.*\)$/", $siteinfo["sitename"])) {
         $x['files'][] = array("id"=>"Ameriflux." . $type, "name"=>"Use Ameriflux");
       }
+      $x['files'][] = array("id"=>"NARR." . $type, "name"=>"Use NARR");
     }
   }
 }
@@ -348,12 +349,13 @@ foreach($inputs as $input) {
       <input id="next" type="button" value="Next" onclick="nextStep();" <?php if (!$userok) echo "disabled" ?>/>    
       <div class="spacer"></div>
     </form>
+    <p></p>
 <?php
   if (check_login()) {
-    echo "<p></p>";
     echo "Logged in as " . get_user_name();
     echo "<a href=\"index.php?logout\" id=\"logout\">logout</a>";
   }
+  echo get_pecan_version();
 ?>    
   </div>
   <div id="output">

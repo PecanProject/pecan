@@ -68,13 +68,14 @@ if ($authentication) {
 			
 			<div class="spacer"></div>
 		</form>
+    <p></p>
 <?php
-	if (check_login()) {
-		echo "<p></p>";
-		echo "Logged in as " . get_user_name();
-		echo "<a href=\"index.php?logout\" id=\"logout\">logout</a>";
-	}
-?>		
+  if (check_login()) {
+    echo "Logged in as " . get_user_name();
+    echo "<a href=\"index.php?logout\" id=\"logout\">logout</a>";
+  }
+  echo get_pecan_version();
+?>    
 	</div>
 	<div id="output">
 		<h1>Introduction</h1>

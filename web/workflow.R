@@ -83,7 +83,7 @@ if (length(which(commandArgs() == "--continue")) == 0) {
 
     # met download
     if(TRUE){  ## old approach
-    if (input['input'] == 'Ameriflux') {
+    if (input['input'] == 'Ameriflux' || input['input'] == 'NARR' ||) {
       # start/end date for weather
       start_date <- settings$run$start.date
       end_date <- settings$run$end.date
@@ -96,7 +96,8 @@ if (length(which(commandArgs() == "--continue")) == 0) {
       do.call(fcn, list(site, file.path(settings$run$dbfiles, input['input']), start_date=start_date, end_date=end_date))
 
       # convert to CF
-      met2CF.Ameriflux(file.path(settings$run$dbfiles, input['input']), site, file.path(settings$run$dbfiles, "cf"), start_date=start_date, end_date=end_date)
+      fcn <- paste("met2CF", input['input'], sep=".")
+      do.call(fcn, list(file.path(settings$run$dbfiles, input['input']), site, file.path(settings$run$dbfiles, "cf"), start_date=start_date, end_date=end_date))
 
       # gap filing
       metgapfill(file.path(settings$run$dbfiles, "cf"), site, file.path(settings$run$dbfiles, "gapfill"), start_date=start_date, end_date=end_date)

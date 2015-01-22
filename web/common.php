@@ -8,6 +8,10 @@ $pdo=null;
 # make sure we do a session start
 session_start();
 
+function get_pecan_version() {
+  return "PEcAn Version 1.4.1";
+}
+
 # ----------------------------------------------------------------------
 # DATABASE FUNCTIONS
 # ----------------------------------------------------------------------
