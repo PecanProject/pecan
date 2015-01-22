@@ -1,4 +1,4 @@
-
+if(FALSE){   ##### NOT RUN
 # Currently works for:
 # NARR sites that haven't previously been extracted (need to clean up database)
 # ED2 
@@ -18,4 +18,4 @@ dir ="/projectnb/dietzelab/pecan.data/input/"
 
 outfolder <- met.process(site, input, start_date, end_date, model, host, bety, dir)
 
-
+}
