@@ -15,7 +15,7 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
   
   check = dbfile.input.check(site.id, startdate, enddate, mimetype, formatname, con=con, hostname=fqdn())
   if(length(check)>0){
-    return(check$id)
+    return(check$container_id)
   }
   
   input = db.query(paste("SELECT * from inputs where id =",input.id),con)
