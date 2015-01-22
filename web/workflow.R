@@ -113,7 +113,8 @@ if (length(which(commandArgs() == "--continue")) == 0) {
       if(input.tag == 'met'){
         if(length(input) > 1){  ## check to see if the input is a file or a tag
           
-          settings$run$inputs[[i]]  <-  met.process(site = settings$run$site, input=input['input'],
+          settings$run$inputs[[i]]  <-  PEcAn.data.atmosphere::met.process(
+                                          site = settings$run$site, input=input['input'],
                                           start_date=settings$run$start.date, end_date=settings$run$end.date,
                                           model=settings$model$type, host=settings$run$host,
                                           bety=settings$database$bety, dir=settings$run$dbfiles)

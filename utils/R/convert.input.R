@@ -1,7 +1,10 @@
 ##' Convert input by applying fcn and insert new record into database
 ##'
 ##'
-
+##' @name convert.input
+##' @title convert.input
+##' @export
+##' @author Betsy Cowdery, Michael Dietze
 convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,
                           pkg,fcn,username,con=con,host='localhost',write=TRUE,...){
   
@@ -52,7 +55,7 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
   
   print(args)
   cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
-  result <- remote.execute.R(cmdFcn,host)
+  result <- remote.execute.R(cmdFcn,host,verbose=TRUE)
 
 
   # cmdArgs = paste(args,collapse=" ")

@@ -11,7 +11,7 @@
 ##' @param bety  database settings from settings file
 ##' @param dir  directory to write outputs to
 ##' 
-##' @author Elizabeth Cowdery
+##' @author Elizabeth Cowdery, Michael Dietze
 met.process <- function(site, input, start_date, end_date, model, host, bety, dir){
   
   require(RPostgreSQL)
@@ -160,7 +160,10 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
   
 }
 
-
+##' @name met.process
+##' @title met.process
+##' @export
+##' @author Betsy Cowdery
 find.prefix <- function(files){
   files.split <- (strsplit(files, "[.]"))
   files.split <- lapply(files.split, `length<-`,max(unlist(lapply(files.split, length))))
