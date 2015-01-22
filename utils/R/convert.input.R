@@ -84,7 +84,8 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
 #      in.prefix <- dbfile$file_name
 #    }
     
-    in.prefix=strsplit(basename(result$file[1]),".",fixed=TRUE)[[1]][1]
+#    in.prefix=strsplit(basename(result$file[1]),".",fixed=TRUE)[[1]][1]
+    in.prefix=find.prefix(basename(result$file))
     newinput <- dbfile.input.insert(in.path=dirname(result$file[1]),
                                     in.prefix=in.prefix,
                                     siteid = site$id, 
