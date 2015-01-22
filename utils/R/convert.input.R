@@ -16,21 +16,22 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
   dbfile.input.check(site.id, startdate, enddate, mimetype, formatname, con=con, hostname=fqdn())
   
   input = db.query(paste("SELECT * from inputs where id =",input.id),con)
-  if(nrow(input)==0){print(c("input not found",input.id));return(NULL)}
+  if(nrow(input)==0){logger.error("input not found",input.id);return(NULL)}
   
   machine = db.query(paste0("SELECT * from machines where hostname = '",l$raw.host,"'"),con)
   # machine = db.query(paste("SELECT * from machines where id = ",dbfile$machine_id),con)
-  if(nrow(machine)==0){print(c("machine not found",l$raw.host));return(NULL)}
+  if(nrow(machine)==0){logger.error("machine not found",l$raw.host);return(NULL)}
   
   # dbfile may return more than one row -> may need to loop over machine ids
   dbfile = db.query(paste("SELECT * from dbfiles where container_id =",input.id," and container_type = 'Input' and machine_id =",machine$id),con)
-  if(nrow(dbfile)==0){print(c("dbfile not found",input.id));return(NULL)}
+  if(nrow(dbfile)==0){logger.error("dbfile not found",input.id);return(NULL)}
   
   
   
   host = system("hostname",intern=TRUE)
   
-  args = c(pkg,fcn,dbfile$file_path,dbfile$file_name,outfolder)
+  args = c(pkg,fcn,dbfile$file_path,dbfile$file_name,outfolder,
+           paste0("'",start_date,"'"), paste0("'",end_date,"'"))
   
   # Use existing site, unless otherwise specified (ex: subsetting case)
   if("newsite" %in% names(l) && is.null(l[["newsite"]])==FALSE){
@@ -40,14 +41,12 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
       args = c(args, site$lat, site$lon)
     }else{logger.error("No lat and lon for extraction site"); return(NULL)}
   }else{
-    site <- db.query(paste("SELECT id, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =",input$site_id),con)
+    site <- db.query(paste("SELECT id, sitename as name, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =",input$site_id),con)
     if(nrow(site)==0){logger.error("Site not found");return(NULL)} 
   }      
   
   outlist <- unlist(strsplit(outname,"_"))
-  if("ED2" %in% outlist){args <- c(args, l$lst, start_date, end_date)}
-  if("SIPNET" %in% outlist){args <- c(args, start_date, end_date)}
-  if("DALEC" %in% outlist){args <- c(args, start_date, end_date)}
+  if("ED2" %in% outlist){args <- c(args, l$lst}
   
   print(args)
   cmdArgs = paste(args,collapse=" ")
@@ -56,11 +55,11 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
   
   if(machine$hostname %in% c("localhost",host)){
     ## if the machine is local, run conversion function
-    system(paste0("~/",Rfcn," ",cmdArgs))
+    result <- system(paste0("~/",Rfcn," ",cmdArgs))
   } else {
     ## if the machine is remote, run conversion remotely
     usr = ifelse(is.null(username)| username=="","",paste0(username,"@"))
-    system2("ssh",paste0(usr,paste(machine$hostname,Rfcn,cmdArgs)))
+    result <- system2("ssh",paste0(usr,paste(machine$hostname,Rfcn,cmdArgs)))
   }
   
   

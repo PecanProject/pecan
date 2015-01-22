@@ -44,6 +44,7 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
       site.code = sub(".* \\((.*)\\)", "\\1", site$name)
       args <- list(site.code, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE) #, pkg,raw.host = host,dbparms,con=con)
       new.files <- do.call(fcn,args)
+      host$name = new.files$host[1]
 
       ## insert database record
       raw.id <- dbfile.input.insert(in.path=dirname(new.files$file[1]),
