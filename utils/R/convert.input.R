@@ -7,7 +7,8 @@
 ##' @author Betsy Cowdery, Michael Dietze
 convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,
                           pkg,fcn,username,con=con,host='localhost',write=TRUE,...){
-  
+  print(paste("Convert.Inputs",fcn,input.id,host))
+  print(paste(outfolder,formatname,mimetype,site.id,start_date,end_date))
   l <- list(...); print(l)
   n <- nchar(outfolder)
   if(substr(outfolder,n,n) != "/"){outfolder = paste0(outfolder,"/")}
@@ -16,9 +17,9 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
   
   startdate <- as.POSIXlt(start_date, tz = "GMT")
   enddate   <- as.POSIXlt(end_date, tz = "GMT")
-  
+  print("start CHECK")
   check = dbfile.input.check(site.id, startdate, enddate, mimetype, formatname, con=con, hostname=host)
-  print("CHECK")
+  print("end CHECK")
   print(check)
   if(length(check)>0){
     return(check$container_id)
@@ -43,8 +44,10 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
 #  args = c(pkg,fcn,dbfile$file_path,dbfile$file_name,outfolder,
 #           paste0("'",start_date,"'"), paste0("'",end_date,"'"))
   args = c(dbfile$file_path,dbfile$file_name,outfolder,
-           start_date,end_date)
+           start_date,end_date,paste(names(l),"=",unlist(l)))
   
+
+
   # Use existing site, unless otherwise specified (ex: subsetting case)
   if("newsite" %in% names(l) && is.null(l[["newsite"]])==FALSE){
     site <- db.query(paste("SELECT id, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =",l$newsite),con)
@@ -58,7 +61,7 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
   }      
   
   outlist <- unlist(strsplit(outname,"_"))
-  if("ED2" %in% outlist){args <- c(args, l$lst)}
+#  if("ED2" %in% outlist){args <- c(args, l$lst)}
   
   print(args)
   cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
