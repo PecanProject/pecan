@@ -27,7 +27,7 @@
 ##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
-met2model.ED2 <- function(in.path,in.prefix,outfolder,lst=0,start_date, end_date, overwrite=FALSE,verbose=FALSE){
+met2model.ED2 <- function(in.path,in.prefix,outfolder,start_date, end_date, lst=0,overwrite=FALSE,verbose=FALSE){
   overwrite = as.logical(overwrite)
   lst = as.numeric(lst)
   
