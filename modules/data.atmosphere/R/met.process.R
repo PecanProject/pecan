@@ -40,8 +40,8 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
     site.id <- 1135
     raw.id <- 1000000127
   }else{
-    if(input == "Ameriflux"){
-
+    if(met == "Ameriflux"){
+      
       ## download files
       outfolder = paste0(outfolder,"-",str_ns)
       site.code = sub(".* \\((.*)\\)", "\\1", site$name)
@@ -49,19 +49,26 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
       new.files <- do.call(fcn,args)
       host$name = new.files$host[1]
 
-      ## insert database record
-      raw.id <- dbfile.input.insert(in.path=dirname(new.files$file[1]),
+      check = dbfile.input.check(site$id, start_date, end_date, 
+                                 mimetype=new.files$mimetype[1], formatname=new.files$formatname[1], 
+                                 con=con, hostname=new.files$host[1])
+      if(length(check)>0){
+        raw.id = check$container_id[1]
+      }else{
+        ## insert database record
+        raw.id <- dbfile.input.insert(in.path=dirname(new.files$file[1]),
                                     in.prefix=site.code, 
                                     siteid = site$id, 
                                     startdate = start_date, 
                                     enddate = end_date, 
                                     mimetype=new.files$mimetype[1], 
-                                    formatname=new.files$formatname,
+                                    formatname=new.files$formatname[1],
                                     parentid=NA,
                                     con = con,
                                     hostname = host$name)$input.id
-      
-      } else {
+      }    
+    } else {  ## site level, not Ameriflux
+      print("NOT AMERIFLUX")
       site.id <- site$id
       args <- list(site.id, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE) #, pkg,raw.host = host,dbparms,con=con)
       raw.id <- do.call(fcn,args)

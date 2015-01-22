@@ -17,7 +17,9 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
   startdate <- as.POSIXlt(start_date, tz = "GMT")
   enddate   <- as.POSIXlt(end_date, tz = "GMT")
   
-  check = dbfile.input.check(site.id, startdate, enddate, mimetype, formatname, con=con, hostname=fqdn())
+  check = dbfile.input.check(site.id, startdate, enddate, mimetype, formatname, con=con, hostname=host)
+  print("CHECK")
+  print(check)
   if(length(check)>0){
     return(check$container_id)
   }
@@ -32,6 +34,11 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
   # dbfile may return more than one row -> may need to loop over machine ids
   dbfile = db.query(paste("SELECT * from dbfiles where container_id =",input.id," and container_type = 'Input' and machine_id =",machine$id),con)
   if(nrow(dbfile)==0){logger.error("dbfile not found",input.id);return(NULL)}
+  if(nrow(dbfile)>1){
+    logger.warning("multiple dbfile records, using last",dbfile);
+    dbfile = dbfile[nrow(dbfile),]
+  }
+  
     
 #  args = c(pkg,fcn,dbfile$file_path,dbfile$file_name,outfolder,
 #           paste0("'",start_date,"'"), paste0("'",end_date,"'"))
@@ -55,7 +62,7 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
   
   print(args)
   cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
-  result <- remote.execute.R(cmdFcn,host,verbose=TRUE)
+  result <- remote.execute.R(cmdFcn,host,verbose=FALSE)
 
 
   # cmdArgs = paste(args,collapse=" ")
