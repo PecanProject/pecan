@@ -116,7 +116,7 @@ allom.BayesFit <- function(allom,nrep=10000,form="power") {
   b0GIBBS  = matrix(0,nrep,nsite)
   b1GIBBS  = matrix(0,nrep,nsite)
   muGIBBS  = matrix(0,nrep,2)
-  sigGIBBS = matrix(0,nrep,nsite)
+  sigGIBBS = rep(NA,nrep)
   tauGIBBS = matrix(0,nrep,3)
   DGIBBS   = rep(NA,nrep)
   BgGIBBS  = matrix(0,nrep,2)
@@ -129,7 +129,7 @@ allom.BayesFit <- function(allom,nrep=10000,form="power") {
   b1  = rep(mu[2],nsite)
   tau = diag(c(1,1))
   tauI= solve(tau)
-  sigma = rep(0.3,nsite)
+  sigma = 0.3
   sinv  = 1/sigma
   data  = allom[['field']]
   if(ntally > 0){
@@ -213,7 +213,8 @@ allom.BayesFit <- function(allom,nrep=10000,form="power") {
     dev.off()
   }
 
-    ## Fit "random site" hierarchical allometry -----------------------------
+  if(nsite > 1){ #Hierarchical Bayes Fit Model
+  
     tauImu = tauI %*% mu
     u1 <- s1
     u2 <- s2
@@ -222,8 +223,8 @@ allom.BayesFit <- function(allom,nrep=10000,form="power") {
       ## Update study-level regression parameters
       X = cbind(rep(1,length(data[[j]]$x)),log(data[[j]]$x))
       Y = log(data[[j]]$y)
-      bigV <- solve( sinv[j]*t(X)%*%X + tauI)
-      littlev <- sinv[j]*t(X) %*% Y + tauImu
+      bigV <- solve(sinv*t(X)%*%X + tauI)
+      littlev <- sinv*t(X) %*% Y + tauImu
       beta <- t(rmvnorm(1,bigV %*% littlev,bigV))
       b0[j] <- beta[1]
       b1[j] <- beta[2]
@@ -233,7 +234,7 @@ allom.BayesFit <- function(allom,nrep=10000,form="power") {
       u2 <- u2 + 0.5*crossprod(Y-X %*% beta)
       
       ## Calculate Deviance
-      D[j] <- -2*sum(dnorm(Y,X%*%beta,sigma,log=TRUE))
+      D[j] <- -2*sum(dnorm(Y,X%*%beta,sqrt(sigma),log=TRUE))
     }
     sinv <- rgamma(1,u1,u2)    ## precision
     sigma <- 1/sinv  ## variance
@@ -253,15 +254,27 @@ allom.BayesFit <- function(allom,nrep=10000,form="power") {
     tau <- riwish(u1,u2)
     tauI  <- solve(tau)
     
+    ## Store Parameter estimates
+    b0GIBBS[g,] <- b0  
+    b1GIBBS[g,] <- b1
+    muGIBBS[g,] <- mu
+    sigGIBBS[g] <- sigma
+    tauGIBBS[g,] <- vech(tau)
+    DGIBBS[g]  <- sum(D)
+
+
+    
+    
+    } ## end (if nsite > 1)   
+    
     ## Fit "random species" hierarchical model -------------------------------------
     if(nspp > 1){
       
       
       
     }
-    
-    
-    ## Fit alternative non-heirarchical model --------------------------------------
+
+    ## Fit alternative non-heirarchical model
     X <- Y <- NULL
     for(i in 1:nsite){
       X <- c(X,data[[i]]$x)
@@ -278,13 +291,6 @@ allom.BayesFit <- function(allom,nrep=10000,form="power") {
     Sg  <- 1/SgI  ## variance
     Dg <- -2*sum(dnorm(Y,X%*%Bg,sqrt(Sg),log=TRUE))
     
-    ## Store Parameter estimates
-    b0GIBBS[g,] <- b0  
-    b1GIBBS[g,] <- b1
-    muGIBBS[g,] <- mu
-    sigGIBBS[g,] <- sigma
-    tauGIBBS[g,] <- vech(tau)
-    DGIBBS[g]  <- sum(D)
     
     BgGIBBS[g,] <- Bg
     SgGIBBS[g]  <- Sg
@@ -294,11 +300,20 @@ allom.BayesFit <- function(allom,nrep=10000,form="power") {
   }## END MCMC LOOP
   close(pb)
   
+  if(nsite <= 1){
+    b0GIBBS[1:nrep,] <- 0  
+    b1GIBBS[1:nrep,] <- 0
+    muGIBBS[1:nrep,] <- 0
+    sigGIBBS[1:nrep] <- 0
+    tauGIBBS[1:nrep,] <- 0
+    DGIBBS[1:nrep]  <- 0
+  }
+  
   out <- cbind(b0GIBBS,b1GIBBS,muGIBBS,sigGIBBS,tauGIBBS,DGIBBS,BgGIBBS,SgGIBBS,DgGIBBS)
   colnames(out) <- c(paste("b0",1:nsite,sep="."),
                   paste("b1",1:nsite,sep="."),
                   "mu0","mu1",
-                  paste("sig",1:nsite,sep="."),
+                  "sigma",
                   "tau11","tau12","tau22","D",
                   "Bg0","Bg1","Sg","Dg")
   return(list(mc=as.mcmc(out),obs=data))
