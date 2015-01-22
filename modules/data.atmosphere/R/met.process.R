@@ -15,7 +15,6 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
   
   met <- input 
   ifelse(met == "NARR", regional<- TRUE, regional<- FALSE) # Either regional or site run
-
   
   #--------------------------------------------------------------------------------------------------#
   # Download raw met from the internet 
@@ -43,7 +42,7 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
   mimetype <- 'application/x-netcdf'
   
   if(met == "NARR"){
-    cf.id <- 1000000023 #actually the permuted CF files
+    cf.id <- 1000000023 #ID of permuted CF files
   }else{
     cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username,con=con,raw.host=host,write=TRUE) 
   }
@@ -62,7 +61,8 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
     formatname <- 'CF Meteorology'
     mimetype <- 'application/x-netcdf'
     
-    ready.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username,con=con,newsite = site,raw.host=host,write=TRUE)
+    ready.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username=username,con=con,
+                              newsite = site,raw.host=host,write=TRUE)
  
     }else{   
     # run gapfilling 
@@ -73,17 +73,17 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
   # Prepare for Model
   
   if(model == "ED2"){
-    mod.formatname <- 'ed.met_driver_header_files_format'
-    mod.mimetype <- 'text/plain'
+    formatname <- 'ed.met_driver_header_files_format'
+    mimetype <- 'text/plain'
   }else if(model == "SIPNET"){
-    mod.formatname <- 'Sipnet.climna'
-    mod.mimetype <- 'text/csv'
+    formatname <- 'Sipnet.climna'
+    mimetype <- 'text/csv'
   }else if(model == "BIOCRO"){
-    mod.formatname <- 'biocromet'
-    mod.mimetype <- 'text/csv'
+    formatname <- 'biocromet'
+    mimetype <- 'text/csv'
   }else if(model == "DALEC"){
-    mod.formatname <- 'DALEC meteorology'
-    mod.mimetype <- 'text/plain'
+    formatname <- 'DALEC meteorology'
+    mimetype <- 'text/plain'
   }
   
   source("modules/data.atmosphere/R/site.lst.R")
@@ -97,8 +97,10 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
   write     <- TRUE
   overwrite <- ""
   
-  model.id <- convert.input(input.id,outfolder,mod.formatname,mod.mimetype,newsite,start_date,end_date,pkg,fcn,write,username,con=con,lst=lst,overwrite=overwrite,raw.host=raw.host,write=TRUE)
-  
+  model.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username=username,con=con,
+                            lst=lst,overwrite=overwrite,raw.host=host,write=TRUE)
+
+  db.close(con)
   return(outfolder)
   
 }
