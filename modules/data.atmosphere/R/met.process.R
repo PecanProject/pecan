@@ -1,3 +1,17 @@
+##' @name met.process
+##' @title met.process
+##' @export
+##'
+##' @param site Site info from settings file
+##' @param input currently "NARR" or "Ameriflux"
+##' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
+##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
+##' @param model model_type name
+##' @param host Host info from settings file
+##' @param bety  database settings from settings file
+##' @param dir  directory to write outputs to
+##' 
+##' @author Elizabeth Cowdery
 met.process <- function(site, input, start_date, end_date, model, host, bety, dir){
   
   require(PEcAn.all)
@@ -86,7 +100,6 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
     mimetype <- 'text/plain'
   }
   
-  source("modules/data.atmosphere/R/site.lst.R")
   lst <- site.lst(site,con)
   
   # Convert to model format
