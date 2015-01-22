@@ -29,7 +29,6 @@
  </ensemble>
 
  <model>
-  <id>-1</id>
   <name>BIOCRO</name>
   <binary>/bin/true</binary>
  </model>

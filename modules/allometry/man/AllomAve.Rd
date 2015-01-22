@@ -44,12 +44,14 @@ When running "online" (connected to the PEcAn database), pass the database conne
 Wheb running "stand alone" pass the pft list mapping species to species codes and the file paths to the allometry table and field data (optional)
 }
 \examples{
+if(FALSE){
 pfts = list(FAGR = data.frame(spcd=531,acronym="FAGR"))
 allom.stats = AllomAve(pfts,ngibbs=500)
 
 ## example of a PFT with multiple species (late hardwood)
 ## note that if you're just using Jenkins the acronym column is optional
 pfts = list(LH = data.frame(spcd = c(531,318),acronym=c("FAGR","ACSA3")))
+}
 }
 \author{
 Michael Dietze
