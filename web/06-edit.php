@@ -186,24 +186,19 @@ $files = array_unique($files);
 			<input id="next" type="button" value="Continue" onclick="nextStep();" />		
 			<div class="spacer"></div>
 		</form>
-    <p></p>
 <?php
   if (check_login()) {
+    echo "<p></p>";
     echo "Logged in as " . get_user_name();
     echo "<a href=\"index.php?logout\" id=\"logout\">logout</a>";
   }
-  echo get_pecan_version();
 ?>    
 	</div>
 	<div id="output">
 		<textarea name="editor" id="editor" onKeyPress="modifiedFile();"></textarea><br/>
 		<input type="button" name="save" id="save" value="Save" onclick="saveFile();" disabled/>
 	</div>
-	<div id="footer">
-		The <a href="http://pecanproject.org">PEcAn project</a> is supported by the National Science Foundation
-		(ABI #1062547, ARC #1023477) and the <a href="http://www.energybiosciencesinstitute.org/">Energy
-		Biosciences Institute</a>.
-	</div>
+  <div id="footer"><?php echo get_footer(); ?></div>
 </div>
 </body>
 </html>
