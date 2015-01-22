@@ -54,9 +54,8 @@ download.NARR <- function(site.id, outfolder, start_date, end_date, overwrite=FA
   dbfile.input.check(site.id, start_date, endd_date, mimetype, formatname, con=con, hostname=fqdn())
   
   type <- 'Input'
-  filename <- paste0(outfolder,"/NARR")
   
-  newinput <- dbfile.input.insert(filename, 
+  newinput <- dbfile.input.insert(outfolder, "NARR", 
                                   siteid = site.id, 
                                   startdate = startdate, 
                                   enddate = enddate, 
