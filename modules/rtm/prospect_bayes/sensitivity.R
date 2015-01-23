@@ -31,8 +31,8 @@ p.N <- melt(ps.N,
 
 p.N$N <- rep(N.vec, 1, each = length(wl.vec))
 ggplot(p.N) + aes(x=Wavelength, y=Reflectance, color=N) + 
-        geom_line(aes(group=N)) + 
-        scale_color_gradient(low="red", high="blue")
+        geom_line() + 
+        scale_color_gradient(low="darkred", high="green1", limits=c(1,4))
 
 
 ps.Cab <- data.frame(

@@ -3,6 +3,10 @@
 library(coda)
 library(data.table)
 
+SPECIES.PATH <- "miscellaneous/species_info.csv"
+species.info <- read.csv(SPECIES.PATH)
+species.short <- species.info[,c(1,2)]
+
 ##' @name get.results
 ##' @title Load MCMC chains
 ##' @details {
@@ -120,4 +124,23 @@ results.table <- function(path=FALSE){
         tablist <- lapply(results.vec, function(x) sumtab(get(x), x))
         results.tab <- do.call(rbind, tablist)
         return(results.tab)
+}
+
+process.big <- function(m, m.name){
+        m.bind <- data.frame(do.call(rbind, m), row.names=NULL)
+        m.bind$species <- gsub("(.*)\\.[a-z]+\\.l$", "\\1", m.name)
+        return(m.bind)
+}
+        
+
+results.big <- function(path=FALSE){
+        if(path!=FALSE){
+                get.results(path)
+        }
+        results.vec <- ls(".GlobalEnv")
+        results.vec <- results.vec[grep("\\.l$", results.vec)]
+        results.list <- lapply(results.vec, function(x) process.big(get(x), x))
+        results.big <- data.frame(do.call(rbind, results.list), row.names=NULL)
+        results.big <- merge(results.big, species.short)
+        return(results.big)
 }

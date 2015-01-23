@@ -4,7 +4,9 @@
 
 library(reshape2)
 library(ggplot2)
+library(GGally)
 source("process_output.R")
+setwd("../Research/pecan/modules/rtm/prospect_bayes/")
 source("prospect.R")
 
 RESULTS.PATH <- "~/Documents/Dropbox/run_results/1206-none-1/"
@@ -20,44 +22,59 @@ results.melt <- melt(results.raw, id.vars=c("species", "vartype"))
 results.melt$species <- gsub("(.*)\\.[noneleaf]{4}\\.l", "\\1", results.melt$species)
 results <- dcast(results.melt, species + variable ~ vartype, value.var="value")
 species.info <- read.csv(SPECIES.PATH)
+species.short <- species.info[,c(1,2)]
 results <- merge(results, species.info, by = "species")
 
+bigtable <- results.big()
+bigtable.melt <- melt(bigtable, value.name="value", id.vars=c("species", "abbr"))
+
+bigtext <- theme(axis.text.x=element_text(size=14),
+                 axis.text.y=element_text(size=14),
+                 strip.text.y=element_text(size=20))
+
+N.mean <- with(subset(bigtable.melt, variable=="N"), tapply(value, abbr, mean))
+sort.by.N <- names(sort(N.mean))
+results.melt$abbr <- factor(results.melt$abbr, sort.by.N)
+results$abbr <- factor(results$abbr, sort.by.N)
+bigtable$abbr <- factor(bigtable$abbr, sort.by.N)
+
+## Pairs plot
+ggpairs(bigtable, 2:5, color="abbr", params=list(corSize=12))
+
+
+### Violin plot
+violin.plt <- function(var, tab){
+        plt <- ggplot(subset(tab, variable==var)) +
+                aes(x=abbr, y=value, fill=abbr) +
+                geom_violin() +
+                xlab("") + 
+                ylab("") +
+                bigtext +
+                guides(fill=FALSE)
+        return(plt)
+}
+
 ### Bar plot
-ggplot(results) + 
+bar.plt <- ggplot(results) + 
         aes(y=mean, x=abbr, ymin=ci_low, ymax=ci_up, width=0.5) + 
         geom_bar(stat="identity", fill="dark green") +
         geom_errorbar() +
         facet_grid(variable ~ ., scales = "free_y")
 
 ### Pointrange
-ggplot(results) + 
+pointrange.plt <- ggplot(results) + 
         aes(y=mean, x=abbr, ymin=ci_low, ymax=ci_up) + 
         geom_pointrange() +
         facet_grid(variable ~ ., scales = "free_y")
 
-### Bar plot of CI width
-ggplot(results) + 
-        aes(y=ci_range, x=abbr, width=0.5) + 
-        geom_bar(stat="identity", fill="dark green") +
-        facet_grid(variable ~ ., scales = "free_y")
 
-### Bar plots of results (alternate - pointrange)
-plotbar <- function(pvar) {
-        ggplot(subset(results, variable==pvar)) +
-        aes(x=abbr, y=mean) +
-#         aes(x=reorder(abbr, C3, sort), y=mean, color=C3) +
-#         geom_pointrange(aes(ymin=ci_low, ymax=ci_up)) +
-        geom_bar(stat = "identity") +
-        geom_errorbar(aes(ymin=ci_low, ymax=ci_up)) +
-        ylab(pvar) + xlab("Species")
-}
 
 
 ### Credible interval plots
 
 ## Generate credible intervals
 results.vec <- ls()
-results.vec <- results.vec[grep("\\.l", results.vec)]
+results.vec <- results.vec[grep("\\.l$", results.vec)]
 
 credible.interval <- function(nm){
         result <- do.call(rbind, get(nm))
@@ -70,7 +87,7 @@ credible.interval <- function(nm){
         out.frame <- melt(t(credint))
         colnames(out.frame) <- c("Wavelength", "Quantile", "Reflectance")
         out.frame$Wavelength <- out.frame$Wavelength + 399
-        out.frame$Species <- species
+        out.frame$species <- species
         return(out.frame)
 }
 
@@ -78,16 +95,27 @@ credible.interval <- function(nm){
 
 credints.list <- lapply(results.vec, credible.interval)
 credints <- do.call(rbind, credints.list)
+credints <- merge(credints, species.short, by="species")
+credints$abbr <- factor(credints$abbr, sort.by.N)
+
+
+ci.text.gg <- theme(axis.text=element_text(size=20),
+                    axis.title=element_text(size=25))
 ggplot(subset(credints, Quantile!="CI Width")) + 
-        aes(x=Wavelength, y=Reflectance, color=Species, group=Species) + 
+        aes(x=Wavelength, y=Reflectance, color=abbr, group=abbr) + 
         geom_line() + 
-        ggtitle("Bayesian credible interval for inversion results")
+#        ggtitle("Bayesian credible interval for inversion results") +
+        ci.text.gg +
+        theme(legend.position="none")
 ggplot(subset(credints, Quantile=="CI Width")) +
-        aes(x=Wavelength, y=Reflectance, color=Species, group=Species) +
+        aes(x=Wavelength, y=Reflectance, color=abbr, group=abbr) +
         geom_line() +
-        ggtitle("Width of Bayesian credible interval for inversion results") +
-        ylab("Reflectance CI width") +
-        xlab("Wavelength")
+#        ggtitle("Width of Bayesian credible interval for inversion results") +
+#        ylab("Reflectance CI width") +
+#        xlab("Wavelength") + 
+        ci.text.gg +
+        theme(legend.position="none")
+
 # predint.list <- lapply(samples.list, 
 #                        function(l) apply(l, 1, 
 #                                          function(x) rnorm(2101, 
