@@ -323,6 +323,7 @@ pinvbayes <- function(obs.spec,
                 ### Sample random effects ###
 
                 if(random.effects != 'none'){
+                        prev.like <- likelihood(prev.error, sd.i)
                         ## Sample alphaN
                         for (i in 1:nre){
                                 guess.alphaN <- alphaN.i
@@ -334,13 +335,15 @@ pinvbayes <- function(obs.spec,
                                                        )
                                 guess.error <- prev.error
                                 guess.error[,randeff.list[[i]]] <- spec.error(guess.spec, obs.spec[, randeff.list[[i]]])
-                                guess.posterior <- likelihood(guess.error, sd.i) + dnorm(guess.alphaN[i], 0, sdreN, log=TRUE)
-                                prev.posterior <- likelihood(prev.error, sd.i) + dnorm(alphaN.i[i], 0, sdreN, log=TRUE)
+                                guess.like <- likelihood(guess.error, sd.i)
+                                guess.posterior <- guess.like + dnorm(guess.alphaN[i], 0, sdreN, log=TRUE)
+                                prev.posterior <- prev.like + dnorm(alphaN.i[i], 0, sdreN, log=TRUE)
                                 a <- exp(guess.posterior - prev.posterior)
                                 if(is.na(a)) a <- -1
                                 if(a > runif(1)){
                                         alphaN.i <- guess.alphaN
                                         prev.error <- guess.error
+                                        prev.like <- guess.like
                                         ar.alpha <- ar.alpha + 1
                                 }
                         }
@@ -356,13 +359,15 @@ pinvbayes <- function(obs.spec,
                                                        )
                                 guess.error <- prev.error
                                 guess.error[,randeff.list[[i]]] <- spec.error(guess.spec, obs.spec[, randeff.list[[i]]])
-                                guess.posterior <- likelihood(guess.error, sd.i) + dnorm(guess.alphaCab[i], 0, sdreCab, log=TRUE)
-                                prev.posterior <- likelihood(prev.error, sd.i) + dnorm(alphaCab.i[i], 0, sdreCab, log=TRUE)
+                                guess.like <- likelihood(guess.error, sd.i)
+                                guess.posterior <- guess.like + dnorm(guess.alphaCab[i], 0, sdreCab, log=TRUE)
+                                prev.posterior <- prev.like + dnorm(alphaCab.i[i], 0, sdreCab, log=TRUE)
                                 a <- exp(guess.posterior - prev.posterior)
                                 if(is.na(a)) a <- -1
                                 if(a > runif(1)){
                                         alphaCab.i <- guess.alphaCab
                                         prev.error <- guess.error
+                                        prev.like <- guess.like
                                         ar.alpha <- ar.alpha + 1
                                 }
                         }
@@ -378,13 +383,15 @@ pinvbayes <- function(obs.spec,
                                                        )
                                 guess.error <- prev.error
                                 guess.error[,randeff.list[[i]]] <- spec.error(guess.spec, obs.spec[, randeff.list[[i]]])
-                                guess.posterior <- likelihood(guess.error, sd.i) + dnorm(guess.alphaCw[i], 0, sdreCw, log=TRUE)
-                                prev.posterior <- likelihood(prev.error, sd.i) + dnorm(alphaCw.i[i], 0, sdreCw, log=TRUE)
+                                guess.like <- likelihood(guess.error, sd.i)
+                                guess.posterior <- guess.like + dnorm(guess.alphaCw[i], 0, sdreCw, log=TRUE)
+                                prev.posterior <- prev.like + dnorm(alphaCw.i[i], 0, sdreCw, log=TRUE)
                                 a <- exp(guess.posterior - prev.posterior)
                                 if(is.na(a)) a <- -1
                                 if(a > runif(1)){
                                         alphaCw.i <- guess.alphaCw
                                         prev.error <- guess.error
+                                        prev.like <- guess.like
                                         ar.alpha <- ar.alpha + 1
                                 }
                         }
@@ -400,13 +407,15 @@ pinvbayes <- function(obs.spec,
                                                        )
                                 guess.error <- prev.error
                                 guess.error[,randeff.list[[i]]] <- spec.error(guess.spec, obs.spec[, randeff.list[[i]]])
-                                guess.posterior <- likelihood(guess.error, sd.i) + dnorm(guess.alphaCm[i], 0, sdreCm, log=TRUE)
-                                prev.posterior <- likelihood(prev.error, sd.i) + dnorm(alphaCm.i[i], 0, sdreCm, log=TRUE)
+                                guess.like <- likelihood(guess.error, sd.i)
+                                guess.posterior <- guess.like + dnorm(guess.alphaCm[i], 0, sdreCm, log=TRUE)
+                                prev.posterior <- prev.like + dnorm(alphaCm.i[i], 0, sdreCm, log=TRUE)
                                 a <- exp(guess.posterior - prev.posterior)
                                 if(is.na(a)) a <- -1
                                 if(a > runif(1)){
                                         alphaCm.i <- guess.alphaCm
                                         prev.error <- guess.error
+                                        prev.like <- guess.like
                                         ar.alpha <- ar.alpha + 1
                                 }
                         }

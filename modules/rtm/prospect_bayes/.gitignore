@@ -4,5 +4,6 @@
 .dat
 .qlog
 .Rproj
-figures
-miscellaneous
+figures/
+miscellaneous/
+data/
