@@ -407,6 +407,12 @@ check.settings <- function(settings) {
   if (is.null(settings$meta.analysis$random.effects)) {
     settings$meta.analysis$random.effects <- FALSE
     logger.info("Setting meta.analysis random effects to ", settings$meta.analysis$random.effects)
+  } else {
+    settings$meta.analysis$random.effects <- as.logical(settings$meta.analysis$random.effects)
+  }
+  if (is.null(settings$meta.analysis$threshold)) {
+    settings$meta.analysis$threshold <- 1.2
+    logger.info("Setting meta.analysis threshold to ", settings$meta.analysis$threshold)
   }
   if (is.null(settings$meta.analysis$update)) {
     settings$meta.analysis$update <- 'AUTO'

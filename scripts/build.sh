@@ -18,7 +18,6 @@ export _R_CHECK_FORCE_SUGGESTS_="FALSE"
 CHECK="no"
 DEPENDENCIES="no"
 DOCUMENTATION="no"
-EMAIL=""
 FORCE="no"
 GIT="no"
 INSTALL="yes"
@@ -40,7 +39,6 @@ while true; do
       echo " --check         : check the R packages before install"
       echo " --dependencies  : install any dependencies"
       echo " --documentation : (re)generates all Rd files"
-      echo " --email         : send email to following people on success"
       echo " --force         : force a build"
       echo " --git           : do a git pull"
       echo " --help          : this help text"
@@ -78,15 +76,6 @@ while true; do
 
     --no-documentation)
       DOCUMENTATION="no"
-      ;;
-
-    --email)
-      EMAIL="$2"
-      shift
-      ;;
-
-    --no-email)
-      EMAIL=""
       ;;
 
     --force)
@@ -156,156 +145,126 @@ touch lastrun
 
 # pull any changes
 if [ "$GIT" == "yes" ]; then
-  git pull > changes.log
+  echo "----------------------------------------------------------------------"
+  echo "GIT"
+  echo "----------------------------------------------------------------------"
+  git pull
   if [ $? != 0 ]; then
     echo Error pulling
     rm running
     exit
   fi
-  if ! grep --quiet 'Already' changes.log; then
-    FORCE="yes"
-  fi
 fi
 
 # list any changes to the code
-if [ "$FORCE" == "yes" ]; then
-  # get changes
-  echo "----------------------------------------------------------------------" >> changes.log
-  echo "CHANGES" >> changes.log
-  echo "----------------------------------------------------------------------" >> changes.log
-  git log > newlog
-  diff git.log newlog | grep '^> ' | sed 's/^> //' > changes.log
-  mv newlog git.log
-  if [ "$EMAIL" == "" ]; then
-    cat changes.log
-    rm changes.log
-  fi
-fi
+# get changes
+echo "----------------------------------------------------------------------"
+echo "CHANGES"
+echo "----------------------------------------------------------------------"
+git log > newlog
+diff git.log newlog | grep '^> ' | sed 's/^> //'
+mv newlog git.log
 
 STATUS="OK"
 
 # install all dependencies
 if [ "$DEPENDENCIES" == "yes" ]; then
-  echo "----------------------------------------------------------------------" >> changes.log
-  echo "DEPENDENCIES" >> changes.log
-  echo "----------------------------------------------------------------------" >> changes.log
-  ./scripts/install.dependencies.R >> changes.log 2>&1
-  if [ "$EMAIL" == "" ]; then
-    cat changes.log
-    rm changes.log
-  fi
+  echo "----------------------------------------------------------------------"
+  echo "DEPENDENCIES"
+  echo "----------------------------------------------------------------------"
+  ./scripts/install.dependencies.R 2>&1
 fi
 
 # generate documentation
 if [ "$DOCUMENTATION" == "yes" ]; then
   for p in ${PACKAGES}; do
-    echo "----------------------------------------------------------------------" >> changes.log
-    echo "DOCUMENTATION $p" >> changes.log
-    echo "----------------------------------------------------------------------" >> changes.log
-    echo "if (require(roxygen2)) roxygenise('$p', roclets=c('rd'))" | R --vanilla >> changes.log 2>&1
-    if [ "$EMAIL" == "" ]; then
-      cat changes.log
-      rm changes.log
-    fi
+    echo "----------------------------------------------------------------------"
+    echo "DOCUMENTATION $p"
+    echo "----------------------------------------------------------------------"
+    echo "if (require(roxygen2)) roxygenise('$p', roclets=c('rd'))" | R --vanilla 2>&1
   done
 fi
 
 # build PEcAn
-if [ "$FORCE" == "yes" ]; then
-  if [ ! -z  $R_LIBS_USER ]; then
-    if [ ! -e ${R_LIBS_USER} ]; then
-      mkdir -p ${R_LIBS_USER};
-    fi
-    rm -rf ${R_LIBS_USER}/PEcAn.*
-    R_LIB_INC="--library=${R_LIBS_USER}"
+if [ ! -z  $R_LIBS_USER ]; then
+  if [ ! -e ${R_LIBS_USER} ]; then
+    mkdir -p ${R_LIBS_USER};
   fi
-
-  START=`date +'%s'`
-
-  # get version number
-  REVNO=$( git show -s --pretty=format:%T master )
-
-  # check/install packages
-  for p in ${PACKAGES}; do
-    PACKAGE="OK"
-    ACTION=""
-    BASENAME=$(basename "$p")
-
-    if [ "$CHECK" == "yes" ]; then
-      ACTION="CHECK"
-	    R CMD check ${R_LIB_INC} $p &> out.log
-	    if [ $? -ne 0 ]; then
-	      STATUS="BROKEN"
-	      PACKAGE="BROKEN"
-	      echo "----------------------------------------------------------------------" >> changes.log
-	      echo "CHECK $p BROKEN" >> changes.log
-	      echo "----------------------------------------------------------------------" >> changes.log
-	      cat out.log >> changes.log
-        if [ -e "${BASENAME}.Rcheck/00install.out" ]; then
-          echo "--- ${BASENAME}.Rcheck/00install.out" >> changes.log
-          cat "${BASENAME}.Rcheck/00install.out" >> changes.log
-        fi
-        if [ -e "${BASENAME}.Rcheck/tests/testthat.Rout.fail" ]; then
-          echo "--- ${BASENAME}.Rcheck/tests/testthat.Rout.fail" >> changes.log
-          cat "${BASENAME}.Rcheck/tests/testthat.Rout.fail" >> changes.log
-        fi
-	    fi
-	  fi
-
-    if [ "$PACKAGE" == "OK" -a "$INSTALL" == "yes" ]; then
-      if [ "$ACTION" == "" ]; then
-        ACTION="INSTALL"
-      else
-        ACTION="$ACTION/INSTALL"
-      fi
-      R CMD INSTALL --build ${R_LIB_INC} $p &> out.log
-      if [ $? -ne 0 ]; then
-        STATUS="BROKEN"
-        PACKAGE="BROKEN"
-        echo "----------------------------------------------------------------------" >> changes.log
-        echo "INSTALL $p BROKEN" >> changes.log
-        echo "----------------------------------------------------------------------" >> changes.log
-        cat out.log >> changes.log
-        if [ -e "${BASENAME}.Rcheck/00install.out" ]; then
-          echo "--- ${BASENAME}.Rcheck/00install.out" >> changes.log
-          cat "${BASENAME}.Rcheck/00install.out" >> changes.log
-        fi
-      fi
-    fi
-    
-    if [ "$PACKAGE" == "OK" ]; then
-      if [ "$ACTION" == "" ]; then
-        ACTION="DID NOTHING"
-      fi
-      echo "----------------------------------------------------------------------" >> changes.log
-      echo "$ACTION $p OK" >> changes.log
-      echo "----------------------------------------------------------------------" >> changes.log
-      if [ "$EMAIL" == "" ]; then
-        cat changes.log
-        rm changes.log
-      fi
-    else
-      if [ "$EMAIL" == "" ]; then
-        cat changes.log
-        rm changes.log
-      fi
-    fi
-  done
-
-  # all done
-  TIME=$(echo "`date +'%s'` - $START" |bc -l)
-  echo "----------------------------------------------------------------------" >> changes.log
-  echo "build took ${TIME} seconds." >> changes.log
-  echo "----------------------------------------------------------------------" >> changes.log
-
-  if [ "$EMAIL" == "" ]; then
-    cat changes.log
-    rm changes.log
-  fi
-
-  # cleanup
-  rm -rf out.log *.Rcheck PEcAn.*.tar.gz PEcAn.*.tgz
+  rm -rf ${R_LIBS_USER}/PEcAn.*
+  R_LIB_INC="--library=${R_LIBS_USER}"
 fi
+
+START=`date +'%s'`
+
+# get version number
+REVNO=$( git show -s --pretty=format:%T master )
+
+# check/install packages
+for p in ${PACKAGES}; do
+  PACKAGE="OK"
+  ACTION=""
+  BASENAME=$(basename "$p")
+
+  if [ "$CHECK" == "yes" ]; then
+    ACTION="CHECK"
+    R CMD check ${R_LIB_INC} $p &> out.log
+    if [ $? -ne 0 ]; then
+      STATUS="BROKEN"
+      PACKAGE="BROKEN"
+      echo "----------------------------------------------------------------------"
+      echo "CHECK $p BROKEN"
+      echo "----------------------------------------------------------------------"
+      cat out.log
+      if [ -e "${BASENAME}.Rcheck/00install.out" ]; then
+        echo "--- ${BASENAME}.Rcheck/00install.out"
+        cat "${BASENAME}.Rcheck/00install.out"
+      fi
+      if [ -e "${BASENAME}.Rcheck/tests/testthat.Rout.fail" ]; then
+        echo "--- ${BASENAME}.Rcheck/tests/testthat.Rout.fail"
+        cat "${BASENAME}.Rcheck/tests/testthat.Rout.fail"
+      fi
+    fi
+  fi
+
+  if [ "$PACKAGE" == "OK" -a "$INSTALL" == "yes" ]; then
+    if [ "$ACTION" == "" ]; then
+      ACTION="INSTALL"
+    else
+      ACTION="$ACTION/INSTALL"
+    fi
+    R CMD INSTALL --build ${R_LIB_INC} $p &> out.log
+    if [ $? -ne 0 ]; then
+      STATUS="BROKEN"
+      PACKAGE="BROKEN"
+      echo "----------------------------------------------------------------------"
+      echo "INSTALL $p BROKEN"
+      echo "----------------------------------------------------------------------"
+      cat out.log
+      if [ -e "${BASENAME}.Rcheck/00install.out" ]; then
+        echo "--- ${BASENAME}.Rcheck/00install.out"
+        cat "${BASENAME}.Rcheck/00install.out"
+      fi
+    fi
+  fi
+  
+  if [ "$PACKAGE" == "OK" ]; then
+    if [ "$ACTION" == "" ]; then
+      ACTION="DID NOTHING"
+    fi
+    echo "----------------------------------------------------------------------"
+    echo "$ACTION $p OK"
+    echo "----------------------------------------------------------------------"
+  fi
+done
+
+# all done
+TIME=$(echo "`date +'%s'` - $START" |bc -l)
+echo "----------------------------------------------------------------------"
+echo "build took ${TIME} seconds."
+echo "----------------------------------------------------------------------"
+
+# cleanup
+rm -rf out.log *.Rcheck PEcAn.*.tar.gz PEcAn.*.tgz
 
 # run tests
 if [ "$TESTS" == "yes" ]; then
@@ -316,46 +275,31 @@ if [ "$TESTS" == "yes" ]; then
     Rscript --vanilla workflow.R --settings $f &> output.log
     if [ $? -ne 0 ]; then
       STATUS="BROKEN"
-      echo "----------------------------------------------------------------------" >> changes.log
-      echo "TEST $f FAILED (RETURN CODE != 0)" >> changes.log
-      echo "----------------------------------------------------------------------" >> changes.log
-      cat output.log >> changes.log
+      echo "----------------------------------------------------------------------"
+      echo "TEST $f FAILED (RETURN CODE != 0)"
+      echo "----------------------------------------------------------------------"
+      cat output.log
     elif [ $(grep -v DONE pecan/STATUS | wc -l) -ne 0 ]; then
       STATUS="BROKEN"
-      echo "----------------------------------------------------------------------" >> changes.log
-      echo "TEST $f FAILED (ERROR IN STATUS)" >> changes.log
-      echo "----------------------------------------------------------------------" >> changes.log
-      cat pecan/STATUS >> changes.log
-      cat output.log >> changes.log
+      echo "----------------------------------------------------------------------"
+      echo "TEST $f FAILED (ERROR IN STATUS)"
+      echo "----------------------------------------------------------------------"
+      cat pecan/STATUS
+      cat output.log
     else
-      echo "----------------------------------------------------------------------" >> changes.log
-      echo "TEST $f OK" >> changes.log
-      echo "----------------------------------------------------------------------" >> changes.log
+      echo "----------------------------------------------------------------------"
+      echo "TEST $f OK"
+      echo "----------------------------------------------------------------------"
     fi
     rm -rf output.log pecan
-
-    if [ "$EMAIL" == "" ]; then
-      cat changes.log
-      rm changes.log
-    fi
   done
   cd ..
 
   # all done
   TIME=$(echo "`date +'%s'` - $START" |bc -l)
-  echo "----------------------------------------------------------------------" >> changes.log
-  echo "tests took ${TIME} seconds." >> changes.log
-  echo "----------------------------------------------------------------------" >> changes.log
-fi
-
-# send email with report
-if [ -e changes.log ]; then
-  if [ "$EMAIL" == "" ]; then
-    cat changes.log
-  else
-    cat changes.log | mail -s "PEcAn BUILD ${STATUS} : ${REVNO}" ${EMAIL}
-  fi
-  rm changes.log
+  echo "----------------------------------------------------------------------"
+  echo "tests took ${TIME} seconds."
+  echo "----------------------------------------------------------------------"
 fi
 
 # remove running marker

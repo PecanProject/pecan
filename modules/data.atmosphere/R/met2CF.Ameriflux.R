@@ -68,15 +68,19 @@ getLatLon <- function(nc1) {
 ##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
 ##' @param overwrite should existing files be overwritten
 ##' 
-##' @author Josh Mantooth, Mike Dietze, Elizabeth Cowdery
+##' @author Josh Mantooth, Mike Dietze, Elizabeth Cowdery, Ankur Desai
 met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE){
-  # get start/end year code works on whole years only
-  start_year <- year(start_date)
-  end_year <- year(end_date)
 
   #---------------- Load libraries. -----------------------------------------------------------------#
   require(ncdf4)
+  require(PEcAn.utils)
+  require(geonames)
+  require(lubridate)
   #--------------------------------------------------------------------------------------------------#  
+
+  # get start/end year code works on whole years only
+  start_year <- year(start_date)
+  end_year <- year(end_date)
   
   if(!file.exists(outfolder)){
     dir.create(outfolder)
@@ -113,6 +117,20 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
     
     # create new coordinate dimensions based on site location lat/lon
     latlon <- getLatLon(nc1)
+    
+    #Ameriflux L2 files are in "local time" - figure this out and add to time units attribute
+    #Check if timezone is already in time units, if not, figure it out from lat/lon and add it in
+    tdimunit <- unlist(strsplit(tdim$units," "))
+    tdimtz <- substr(tdimunit[length(tdimunit)],1,1)
+    if ((tdimtz=="+")||(tdimtz=="-")) {
+      lst <- tdimunit[length(tdimunit)] #already in definition, leave it alone
+    } else {
+      options(geonamesUsername="carya") #login to geoname server
+      lst <- GNtimezone(latlon[1], latlon[2], radius = 0)$gmtOffset 
+      if (lst>=0) {lststr<-paste("+",lst,sep="") } else {lststr<-as.character(lst) }
+      tdim$units <- paste(tdim$units,lststr,sep=" ")   
+    }
+    
     lat <- ncdim_def(name='latitude', units='', vals=1:1, create_dimvar=FALSE)
     lon <- ncdim_def(name='longitude', units='', vals=1:1, create_dimvar=FALSE)
     time <- ncdim_def(name='time', units=tdim$units, vals=tdim$vals, create_dimvar=TRUE, unlim=TRUE)
@@ -120,18 +138,19 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
     
     # copy lat attribute to latitude
     print(latlon)
+    print(lst)
     var <- ncvar_def(name="latitude",
                      units="degree_north",
-                     dim=(list(lat,lon,time)), missval=as.numeric(-9999))
+                     dim=list(lat,lon), missval=as.numeric(-9999))
     nc2 <- nc_create(filename=new.file, vars=var, verbose=verbose)
-    ncvar_put(nc=nc2, varid='latitude', vals=rep(latlon[1], tdim$len))
+    ncvar_put(nc=nc2, varid='latitude', vals=latlon[1])
     
     # copy lon attribute to longitude
     var <- ncvar_def(name="longitude",
                      units="degree_east",
-                     dim=(list(lat,lon,time)), missval=as.numeric(-9999))
+                     dim=list(lat,lon), missval=as.numeric(-9999))
     nc2 <- ncvar_add(nc=nc2, v=var, verbose=verbose)
-    ncvar_put(nc=nc2, varid='longitude', vals=rep(latlon[2], tdim$len))
+    ncvar_put(nc=nc2, varid='longitude', vals=latlon[2])
     
     # Convert all variables, this will include conversions or computations
     # to create values from original file. In case of conversions the steps
@@ -141,7 +160,20 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
     #  c) do unit conversions
     #  d) create output variable
     #  e) write results to new file
-
+    
+    # convert RH to SH
+    # this conversion needs to come before others to reinitialize dimension used by copyvals (lat/lon/time)
+    rh <- ncvar_get(nc=nc1, varid="RH")
+    rh[rh==-6999 | rh==-9999] <- NA
+    rh <- rh / 100
+    ta <- ncvar_get(nc=nc1, varid="TA")
+    ta[ta==-6999 | ta==-9999] <- NA
+    ta <- ta + 273.15
+    sh <- rh2qair(rh=rh,T=ta)
+    var <- ncvar_def(name='specific_humidity', units='kg/kg', dim=dim, missval=-6999.0, verbose=verbose)
+    nc2 <- ncvar_add(nc=nc2, v=var, verbose=verbose)
+    ncvar_put(nc=nc2, varid='specific_humidity', vals=sh)
+   
     # convert TA to air_temperature
     copyvals(nc1=nc1, var1='TA',
              nc2=nc2, var2='air_temperature', units2='degrees K', dim2=dim, 
@@ -166,18 +198,6 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
     copyvals(nc1=nc1, var1='RH',
              nc2=nc2, var2='relative_humidity', dim2=dim, 
              verbose=verbose)
-
-    # convert RH to SH
-    rh <- ncvar_get(nc=nc1, varid="RH")
-    rh[rh==-6999 | rh==-9999] <- NA
-    rh <- rh / 100
-    ta <- ncvar_get(nc=nc1, varid="TA")
-    ta[ta==-6999 | ta==-9999] <- NA
-    ta <- ta + 273.15
-    sh <- rh2qair(rh=rh,T=ta)
-    var <- ncvar_def(name='specific_humidity', units='kg/kg', dim=dim, missval=-6999.0, verbose=verbose)
-    nc2 <- ncvar_add(nc=nc2, v=var, verbose=verbose)
-    ncvar_put(nc=nc2, varid='specific_humidity', vals=sh)
     
     # convert VPD to water_vapor_saturation_deficit
     # HACK : conversion will make all values < 0 to be NA

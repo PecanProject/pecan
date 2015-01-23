@@ -187,7 +187,7 @@ get.run.id <- function(run.type, index, trait = NULL, pft.name = NULL){
 ##' @param tag xml tag
 ##' @return xmlNode
 ##' @export
-##' @author unknown
+##' @author David LeBauer, Carl Davidson, Rob Kooper
 #--------------------------------------------------------------------------------------------------#
 listToXml <- function(item, tag) {
   # just a textnode, or empty node with attributes

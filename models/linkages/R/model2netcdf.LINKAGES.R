@@ -20,7 +20,7 @@
 ##' @param end_date End time of the simulation
 ##' @export
 ##'
-##' @author Rob Kooper
+##' @author Ann Raiho
 model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end_date=NULL,force=FALSE) {
 #  logger.severe("NOT IMPLEMENTED")
   

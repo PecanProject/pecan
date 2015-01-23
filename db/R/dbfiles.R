@@ -31,12 +31,13 @@
 ##'   dbfile.input.insert('trait.data.Rdata', siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
 ##' }
 
-dbfile.input.insert <- function(filename, siteid, startdate, enddate, mimetype, formatname, parentid=NA, con, hostname=fqdn()) {
+dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, mimetype, formatname, parentid=NA, con, hostname=fqdn()) {
   
-  name <- basename(filename)
-
+  name <- basename(in.path)
+  filename <- file.path(in.path,in.prefix)
+  
   if (hostname == "localhost") hostname <- fqdn();
-
+  
   # find appropriate format
   formatid <- db.query(paste0("SELECT id FROM formats WHERE mime_type='", mimetype, "' AND name='", formatname, "'"), con)[['id']]
   if (is.null(formatid)) {
@@ -44,7 +45,7 @@ dbfile.input.insert <- function(filename, siteid, startdate, enddate, mimetype, 
     db.query(paste0("INSERT INTO formats (mime_type, name, created_at, updated_at) VALUES ('", mimetype, "', '", formatname, "', NOW(), NOW())"), con)
     formatid <- db.query(paste0("SELECT id FROM formats WHERE mime_type='", mimetype, "' AND name='", formatname, "'"), con)[['id']]
   }
-
+  
   # setup parent part of query if specified
   if (is.na(parentid)) {
     parent <- ""
@@ -56,12 +57,22 @@ dbfile.input.insert <- function(filename, siteid, startdate, enddate, mimetype, 
   inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, " AND start_date='", startdate, "' AND end_date='", enddate, "'" , parent, ";"), con)[['id']]
   if (is.null(inputid)) {
     # insert input
-    db.query(paste0("INSERT INTO inputs (site_id, format_id, created_at, updated_at, start_date, end_date, name) VALUES (",
-                    siteid, ", ", formatid, ", NOW(), NOW(), '", startdate, "', '", enddate,"','", name, "')"), con)
+    
+    if(parent == ""){
+      cmd <- paste0("INSERT INTO inputs (site_id, format_id, created_at, updated_at, start_date, end_date, name) VALUES (",
+                    siteid, ", ", formatid, ", NOW(), NOW(), '", startdate, "', '", enddate,"','", name, "')")
+    }else{
+      cmd <- paste0("INSERT INTO inputs (site_id, format_id, created_at, updated_at, start_date, end_date, name, parent_id) VALUES (",
+                    siteid, ", ", formatid, ", NOW(), NOW(), '", startdate, "', '", enddate,"','", name, "',",parentid,")")
+    }
+    
+    db.query(cmd, con)
+    
     inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, " AND start_date='", startdate, "' AND end_date='", enddate, "'" , parent, ";"), con)[['id']]
   }
-  dbfileid <- dbfile.insert(filename, 'Input', inputid, con, hostname)
-
+  
+  dbfileid <- dbfile.insert(in.path, in.prefix, 'Input', inputid, con, hostname)
+  
   invisible(list(input.id = inputid, dfbile.id = dbfileid))
 }
 
@@ -219,7 +230,7 @@ dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname=fqdn
 ##' \dontrun{
 ##'   dbfile.insert('somefile.txt', 'Input', 7, dbcon)
 ##' }
-dbfile.insert <- function(filename, type, id, con, hostname=fqdn()) {
+dbfile.insert <- function(in.path,in.prefix, type, id, con, hostname=fqdn()) {
   if (hostname == "localhost") hostname <- fqdn();
 
   # find appropriate host
@@ -231,8 +242,9 @@ dbfile.insert <- function(filename, type, id, con, hostname=fqdn()) {
   }
   
   now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+  
   db.query(paste0("INSERT INTO dbfiles (container_type, container_id, file_name, file_path, machine_id, created_at, updated_at) VALUES (",
-                  "'", type, "', ", id, ", '", basename(filename), "', '", dirname(filename), "', ", hostid, ", '", now, "', '", now, "')"), con)
+                  "'", type, "', ", id, ", '", in.prefix, "', '", in.path, "', ", hostid, ", '", now, "', '", now, "')"), con)
 
   invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, "' AND container_id=", id, " AND created_at='", now, "' ORDER BY id DESC LIMIT 1"), con)[['id']])
 }

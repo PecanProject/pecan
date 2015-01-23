@@ -1,95 +1,106 @@
 ##' Convert input by applying fcn and insert new record into database
 ##'
 ##'
-
-convert.input <- function(input.id,outfolder,pkg,fcn,write,username,con,...){
-  
-  l <- list(...)
+##' @name convert.input
+##' @title convert.input
+##' @export
+##' @author Betsy Cowdery, Michael Dietze
+convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,
+                          pkg,fcn,username,con=con,host='localhost',write=TRUE,...){
+  print(paste("Convert.Inputs",fcn,input.id,host))
+  print(paste(outfolder,formatname,mimetype,site.id,start_date,end_date))
+  l <- list(...); print(l)
   n <- nchar(outfolder)
   if(substr(outfolder,n,n) != "/"){outfolder = paste0(outfolder,"/")}
   
   outname = tail(unlist(strsplit(outfolder,'/')),n=1)
   
-  # Check to see if input is already in dbfiles table 
-  check <- input.name.check(outname, con)
-  if(is.null(check)==FALSE){
-    logger.error('Input is already in the database.')
-    db.close(con)
-    return(check) 
+  startdate <- as.POSIXlt(start_date, tz = "GMT")
+  enddate   <- as.POSIXlt(end_date, tz = "GMT")
+  print("start CHECK")
+  check = dbfile.input.check(site.id, startdate, enddate, mimetype, formatname, con=con, hostname=host)
+  print("end CHECK")
+  print(check)
+  if(length(check)>0){
+    return(check$container_id)
   }
   
   input = db.query(paste("SELECT * from inputs where id =",input.id),con)
-  if(nrow(input)==0){print(c("input not found",input.id));db.close(con);return(NULL)}
+  if(nrow(input)==0){logger.error("input not found",input.id);return(NULL)}
+  
+  machine = db.query(paste0("SELECT * from machines where hostname = '",host,"'"),con)
+  # machine = db.query(paste("SELECT * from machines where id = ",dbfile$machine_id),con)
+  if(nrow(machine)==0){logger.error("machine not found",host);return(NULL)}
   
   # dbfile may return more than one row -> may need to loop over machine ids
-  dbfile = db.query(paste("SELECT * from dbfiles where container_id =",input.id," and container_type = 'Input'"),con)
-  if(nrow(dbfile)==0){print(c("dbfile not found",input.id));db.close(con);return(NULL)}
+  dbfile = db.query(paste("SELECT * from dbfiles where container_id =",input.id," and container_type = 'Input' and machine_id =",machine$id),con)
+  if(nrow(dbfile)==0){logger.error("dbfile not found",input.id);return(NULL)}
+  if(nrow(dbfile)>1){
+    logger.warning("multiple dbfile records, using last",dbfile);
+    dbfile = dbfile[nrow(dbfile),]
+  }
   
-  machine = db.query(paste("SELECT * from machines where id = ",dbfile$machine_id),con)
-  if(nrow(machine)==0){print(c("machine not found",dbfile$machine_id));db.close(con);return(NULL)}
+    
+#  args = c(pkg,fcn,dbfile$file_path,dbfile$file_name,outfolder,
+#           paste0("'",start_date,"'"), paste0("'",end_date,"'"))
+  args = c(dbfile$file_path,dbfile$file_name,outfolder,
+           start_date,end_date,paste(names(l),"=",unlist(l)))
   
-  host = system("hostname",intern=TRUE)
-  
-  args = c(pkg,fcn,dbfile$file_path,dbfile$file_name,outfolder)
-  
+
+
   # Use existing site, unless otherwise specified (ex: subsetting case)
   if("newsite" %in% names(l) && is.null(l[["newsite"]])==FALSE){
     site <- db.query(paste("SELECT id, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =",l$newsite),con)
-    if(nrow(site)==0){logger.error("Site not found"); db.close(con);return(NULL)} 
+    if(nrow(site)==0){logger.error("Site not found"); return(NULL)} 
     if(!(is.na(site$lat)) && !(is.na(site$lat))){
       args = c(args, site$lat, site$lon)
-    }else{logger.error("No lat and lon for extraction site"); db.close(con);return(NULL)}
+    }else{logger.error("No lat and lon for extraction site"); return(NULL)}
   }else{
-    site <- db.query(paste("SELECT id, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =",input$site_id),con)
-    if(nrow(site)==0){logger.error("Site not found");db.close(con);return(NULL)} 
+    site <- db.query(paste("SELECT id, sitename as name, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =",input$site_id),con)
+    if(nrow(site)==0){logger.error("Site not found");return(NULL)} 
   }      
   
-  cmdArgs = paste(args,collapse=" ")
+  outlist <- unlist(strsplit(outname,"_"))
+#  if("ED2" %in% outlist){args <- c(args, l$lst)}
+  
+  print(args)
+  cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
+  result <- remote.execute.R(cmdFcn,host,verbose=FALSE)
+
+
+  # cmdArgs = paste(args,collapse=" ")
   #  Rfcn = system.file("scripts/Rfcn.R", package = "PEcAn.all")
-  Rfcn = "pecan/scripts/Rfcn.R"
+  # Rfcn = "pecan/scripts/Rfcn.R"
+#  if(machine$hostname %in% c("localhost",host)){
+#    ## if the machine is local, run conversion function
+#    result <- system(paste0("~/",Rfcn," ",cmdArgs))
+#  } else {
+#    ## if the machine is remote, run conversion remotely
+#    usr = ifelse(is.null(username)| username=="","",paste0(username,"@"))
+#    result <- system2("ssh",paste0(usr,paste(machine$hostname,Rfcn,cmdArgs)))
+#  }
   
-  #chkArgs = paste(c("PEcAn.data.atmosphere", "extract.success",args[3:5]),collapse=" ")
-  
-  if(machine$hostname %in% c("localhost",host)){
-    ## if the machine is local, run conversion function
-    system(paste0("~/",Rfcn," ",cmdArgs))
-    #success <- system(paste(Rfcn,chkArgs),intern=TRUE)
-  } else {
-    ## if the machine is remote, run conversion remotely
-    usr = ifelse(username==NULL | username=="","",paste0(username,"@"))
-    system2("ssh",paste0(usr,paste(machine$hostname,Rfcn,cmdArgs)))
-    #success <- system(paste0("ssh ",usr,paste(machine$hostname,Rfcn,chkArgs)),intern=TRUE)
-  }
-  
-  ## Check if the conversion was successful, currently not very robust
-#   if(unlist(strsplit(success,' '))[2] == TRUE){
-#     logger.info("Conversion was successful")
-#   }else{
-#     logger.error("Conversion was not successful")
-#     db.close(con)
-#     return(NULL)
-#   }
   
   ### NOTE: We will eventually insert Brown Dog REST API calls here
   
   ## insert new record into database
   if(write==TRUE){
-    outlist <- unlist(strsplit(outname,"_"))
-    if("ED" %in% outlist){
-      filename <- paste0(outfolder," ")
-      formatname <- 'ed.met_driver_header files format'
-      mimetype <- 'text/plain'
-    }else if("SIPNET" %in% outlist){
-      filename <- paste0(outfolder,"sipnet.clim")
-      formatname <- 'Sipnet.climna'
-      mimetype <- 'text/csv'
-    }else{
-      filename <- paste0(outfolder,dbfile$file_name)
-      formatname <- 'CF Meteorology'
-      mimetype <- 'application/x-netcdf'
-    }
+    ### Hack
+#    if("ED2" %in% outlist){
+#      in.path <- outfolder
+#      in.prefix <- "ED_MET_DRIVER_HEADER"
+#    }else if("SIPNET" %in% outlist){
+#      in.path <- outfolder
+#      in.prefix <- "sipnet.clim"
+#    }else{
+#      in.path <- outfolder
+#      in.prefix <- dbfile$file_name
+#    }
     
-    newinput <- dbfile.input.insert(filename, 
+#    in.prefix=strsplit(basename(result$file[1]),".",fixed=TRUE)[[1]][1]
+    in.prefix=find.prefix(basename(result$file))
+    newinput <- dbfile.input.insert(in.path=dirname(result$file[1]),
+                                    in.prefix=in.prefix,
                                     siteid = site$id, 
                                     startdate = paste(input$start_date), 
                                     enddate = paste(input$end_date), 
@@ -101,8 +112,6 @@ convert.input <- function(input.id,outfolder,pkg,fcn,write,username,con,...){
     return(newinput$input.id)
   }else{
     logger.warn('Input was not added to the database')
-    db.close(con)
     return(NULL)
   }
-  db.close(con)
 }
