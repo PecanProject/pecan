@@ -19,8 +19,9 @@ library(reshape2)
 specmatrix <- function(Species,
                        wln=400,
                        wlx=2500,
-                       path="data/SE_spectra/Reflectance/"
+                       path="~/Documents/Dropbox/SE_spectra/Reflectance/"
                        ){
+        print(sprintf("Loading %s ...", Species))
         flist <- list.files(path)
         flist.split <- strsplit(flist, "_")
         fset.inds <- which(sapply(flist.split, "[", 5) == Species)
@@ -33,7 +34,16 @@ specmatrix <- function(Species,
         })
         refl.mat <- do.call(cbind, refl.list)
         colnames(refl.mat) <- fset
-        return(refl.mat)
+        RowMeans <- rowMeans(refl.mat)
+        RowSD <- apply(refl.mat, 1, sd)
+        MaxFilter <- RowMeans + 3 * RowSD
+        MinFilter <- RowMeans - 3 * RowSD
+        specfilter <- function(spec) any(spec < MinFilter | spec > MaxFilter)
+        badspec <- apply(refl.mat, 2, specfilter)
+        refl.mat.keep <- refl.mat[,!badspec]
+        print(dim(refl.mat) - dim(refl.mat.keep))
+        print("---- Done ----")
+        return(refl.mat.keep)
 }
 
 ##' @name gen.spec.list
