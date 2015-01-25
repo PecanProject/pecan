@@ -110,7 +110,6 @@ double tavf(float alpha2, double n)
 // NAME: gpm
 // TITLE: Generalized plate model
 // DESCRIPTION: Returns reflectance of a leaf with "N" layers.
-// [[Rcpp::export]]
 double gpm(float alpha, float n, float theta, float N)
 {
   double t90, tav, x, y;

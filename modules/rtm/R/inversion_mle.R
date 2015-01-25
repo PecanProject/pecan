@@ -10,6 +10,7 @@
 ##' @export
 ##' @author Alexey Shiklomanov
 
+setwd("R/")
 source("prospect.R")
 
 p.invert <- function(observed, func=prospect4, inits=unlist(guess.inits)[1:4])

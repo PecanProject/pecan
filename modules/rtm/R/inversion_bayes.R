@@ -22,6 +22,8 @@
 ##'
 ##' @author Alexey Shiklomanov
 
+setwd("R/")
+
 source("prospect.R")
 source("timer.R")
 source("truncnorm.R")
@@ -111,8 +113,6 @@ pinvbayes <- function(obs.spec,
         }
         
         ### Shortcut functions ###
-        prospect <- function(N, Cab, Cw, Cm) prospect4(N, Cab, Cw, Cm, n.a, cab.a, w.a, m.a)
-
         spec.error <- function(mod.spec, obs.spec){
                 if(length(dim(obs.spec))){
                         return(-apply(obs.spec, 2, "-", mod.spec))

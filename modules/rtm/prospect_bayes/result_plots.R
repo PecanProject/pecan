@@ -1,10 +1,8 @@
-##' Bar plots
+##' Results plots
 ##' 
 ##' Generates bar plots with error bars. 
 
-library(reshape2)
-library(ggplot2)
-library(GGally)
+library(reshape2, ggplot2, GGally)
 source("process_output.R")
 setwd("../Research/pecan/modules/rtm/prospect_bayes/")
 source("prospect.R")

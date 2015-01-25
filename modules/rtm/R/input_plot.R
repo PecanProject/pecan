@@ -3,7 +3,7 @@
 library(ggplot2, reshape2)
 source("specdataproc.R")
 
-spec.plot <- function(Species, PATH="~/Documents/Dropbox/SE_spectra/Reflectance/"){
+input.plot <- function(Species, PATH="~/Documents/Dropbox/SE_spectra/Reflectance/"){
         mat <- specmatrix(Species, path=PATH)
         df1 <- data.frame(mat)
         df1$Wavelength <- 400:2500
