@@ -1,0 +1,7 @@
+png("priors.png", width=8, height=8, units="in", res=300)
+par(mfrow = c(2,2))
+plot(density(1 + abs(rnorm(1e6, 0, 1.5))), xlim=c(0,6), main="N", xlab='')
+plot(density(rlnorm(1e6, log(30), 0.9)), xlim=c(0,120), main="Cab", xlab='ug/cm3')
+plot(density(rlnorm(1e6, log(0.017), 0.5)), xlim=c(0, 0.1), main="Cw", xlab='g/cm2')
+plot(density(rlnorm(1e6, log(0.006), 0.9)), xlim=c(0, 0.07), main="Cm", xlab='g/cm2')
+dev.off()
