@@ -25,7 +25,7 @@
 ##' @param params database connection information
 ##' @return data.frame with the id, filename and pathname of the input that is requested
 ##' @export
-##' @author Rob Kooper
+##' @author Rob Kooper, Betsy Cowdery
 ##' @examples
 ##' \dontrun{
 ##'   dbfile.input.insert('trait.data.Rdata', siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
@@ -72,7 +72,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
   
   # find appropriate dbfile, if not in database, insert new dbfile 
   
-  dbfileid <- dbfile.check(type, id, con, hostname=fqdn()) 
+  dbfileid <- dbfile.check('Input', inputid, con, hostname=fqdn()) 
   if(is.null(dbfileid)){
     #insert dbfile & return dbfile id
     dbfileid <- dbfile.insert(in.path, in.prefix, 'Input', inputid, con, hostname)
