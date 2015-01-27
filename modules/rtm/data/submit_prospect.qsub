@@ -28,7 +28,7 @@
 
 # Now let's keep track of some information just in case anything goes wrong
 
-cd ..
+cd ../R
 echo "=========================================================="
 echo "Starting on : $(date)"
 echo "Running on node : $(hostname)"
@@ -47,7 +47,7 @@ echo "=========================================================="
 # Run the R scripts
 # Arguments to runpi.R: JumpRSD Species single_precision random_effects sampled_inits ngibbs otherID folder
 
-Rscript R/runpi.R 0.05 $SPECIES 1 $REF $INITS $NGIBBS $RUN $FOLDER &
+Rscript runpi.R 0.05 $SPECIES 1 $REF $INITS $NGIBBS $RUN $FOLDER &
 
 wait
 
