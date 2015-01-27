@@ -3,7 +3,7 @@
 ##' For initializing inversions from the command line, e.g. for submission to cluster.
 ##' This script takes 8 command line arguments, which are as follows:
 ##'   [1] Starting SD of Jump distribution; larger values indicate larger jumps
-##'   [2] Species; must EXACTLY match species tag in spectra filenames
+##'   [2] Spectype.Species (e.g. SE.QUCH)
 ##'   [3] Whether to use a single precison value for all wavelengths (1) or an individual precision at each wavelength (0)
 ##'   [4] Random effects; current options are 'none' and 'leaf'
 ##'   [5] How to generate initial conditions; OPTIONS: 'random', 'mle' (R optim function for mean observed spectrum), 'guess' (preset values)
@@ -12,12 +12,15 @@
 ##'   [8] Sub-folder in "run_results" for storing output.
 
 #setwd("~/Documents/Unsynced/pecan/modules/rtm/R")
+options(warn=2)
 source("inversion_bayes.R")
 source("input_matrix.R")
 
 args <- commandArgs(trailingOnly=TRUE)
 jrsd <- as.numeric(args[1])
-species <- args[2]
+specarg <- strsplit(args[2], "\\.")[[1]]
+spectra <- specarg[1]
+species <- specarg[2]
 precarg <- as.numeric(args[3])
 if(precarg){
         precision <- "sp"
@@ -32,7 +35,7 @@ folder <- args[8]
 filename <- sprintf("../run_results/%s/%s_%g_%s_%s_%s_%s.dat", folder, species, jrsd, precision, rearg, initarg, runid)
 dir.create(sprintf("../run_results/%s", folder), showWarnings = FALSE)
 
-smat <- specmatrix(species)
+smat <- specmatrix(species, spectype=spectra)
 
 pinvbayes(smat, ngibbs=ngibbs, JumpRSD=jrsd, fname=filename,
           local.store=FALSE, 

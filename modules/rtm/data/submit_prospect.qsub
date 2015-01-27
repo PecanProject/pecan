@@ -28,7 +28,7 @@
 
 # Now let's keep track of some information just in case anything goes wrong
 
-cd ../../
+cd ..
 echo "=========================================================="
 echo "Starting on : $(date)"
 echo "Running on node : $(hostname)"

@@ -1,0 +1,16 @@
+SE\.ICsp
+SE\.LCsp
+SE\.PICO
+SE\.PILA
+SE\.QUCH
+SE\.QUKE
+SE\.Peach
+SE\.Alfalfa
+SE\.Oats
+SE\.Pomegranate
+SE\.RedPepper
+SE\.Mandarin
+SE\.ShortDatePalm
+SE\.MANZ
+SE\.CADE
+SE\.PIPO

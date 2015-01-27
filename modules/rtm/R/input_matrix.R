@@ -1,6 +1,7 @@
 ##' Functions for converting spectral data into matrices for use in Bayesian inversion.
 
-library(reshape2, data.table)
+library(reshape2)
+library(data.table)
 
 ##' @name specmatrix
 ##' @title Observed reflectance matrix
@@ -16,26 +17,29 @@ library(reshape2, data.table)
 ##' @export
 ##' @author Alexey Shiklomanov
 
-specmatrix <- function(Species,
+specmatrix <- function(species,
                        wln=400,
                        wlx=2500,
                        spectype="SE",
                        filter.spec=TRUE
                        ){
-        print(sprintf("Loading %s ...", Species))
-        if(path=="FFT"){
+        print(sprintf("Loading %s ...", species))
+        path <- switch(spectype,
+                       SE = "~/Documents/Dropbox/SE_spectra/Reflectance/",
+                       FFT = "~/Documents/Dropbox/FFT_spectra/NASA_FFT_LC_Refl_Spectra_v4.csv")
+        if(spectype=="FFT"){
                 ## FFT spectra
-                path <- "~/Documents/Dropbox/FFT_spectra/NASA_FFT_LC_Refl_Spectra_v4.csv"
                 filter.spec <- FALSE
                 raw.list <- data.frame(fread(path, header=TRUE))
-                refl.list <- subset(raw.list[,-(2:21)], Species==Species)
-                refl.melt <- melt(refl.list, id.vars="Spectra")
-                refl.mat <- dcast(
-        } else if (path == "SE"){
-                path <- "~/Documents/Dropbox/SE_spectra/Reflectance"
+                refl.list <- subset(raw.list, Species==species)[,-(2:21)]
+                refl.mat <- t(as.matrix(refl.list[,-1]))
+                colnames(refl.mat) <- refl.list$Spectra
+                wavelengths <- rownames(refl.mat)
+                refl.mat <- refl.mat[-grep("Wave_3[0-9][0-9]", wavelengths),]
+        } else if (spectype == "SE"){
                 flist <- list.files(path)
                 flist.split <- strsplit(flist, "_")
-                fset.inds <- which(sapply(flist.split, "[", 5) == Species)
+                fset.inds <- which(sapply(flist.split, "[", 5) == species)
                 fset <- flist[fset.inds]
                 raw.list <- lapply(fset, function(x) read.csv(paste(path,x,sep=''),
                                                               header=TRUE))
@@ -45,6 +49,7 @@ specmatrix <- function(Species,
                 refl.mat <- do.call(cbind, refl.list)
                 colnames(refl.mat) <- fset
         }
+
         if(filter.spec){
                 RowMeans <- rowMeans(refl.mat)
                 RowSD <- apply(refl.mat, 1, sd)
@@ -72,15 +77,30 @@ specmatrix <- function(Species,
 ##' @export
 ##' @author Alexey Shiklomanov
 
-gen.spec.list <- function(path="data/SE_spectra/Reflectance/",
+gen.spec.list <- function(spectype="SE",
                           out=FALSE){
-        flist <- list.files(path)
-        flist.split <- strsplit(flist, "_")
-        spec.list <- unique(sapply(flist.split, "[", 5))
+        path <- switch(spectype,
+                       SE = "~/Documents/Dropbox/SE_spectra/Reflectance/",
+                       FFT = "~/Documents/Dropbox/FFT_spectra/NASA_FFT_LC_Refl_Spectra_v4.csv")
+        writepath <- switch(spectype,
+                            SE = "../data/species_list_SE.txt",
+                            FFT = "../data/species_list_FFT.txt")
+        if(spectype=="FFT"){
+                ## FFT spectra
+                raw.list <- data.frame(fread(path, header=TRUE))
+                spec.list <- unique(raw.list$Species)
+                spec.list <- sprintf("FFT\\.%s", spec.list)
+        } else if (spectype == "SE"){
+                flist <- list.files(path)
+                flist.split <- strsplit(flist, "_")
+                spec.list <- unique(sapply(flist.split, "[", 5))
+                spec.list <- sprintf("SE\\.%s", spec.list)
+        }        
         if(out) {
                 return(spec.list)
         } else {
-                write(spec.list, "scripts/species_list.txt",
+                
+                write(spec.list, writepath,
                       ncolumns = 1, append=FALSE)
         }
 }

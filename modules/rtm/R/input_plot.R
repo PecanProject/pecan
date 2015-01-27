@@ -1,7 +1,8 @@
 ### Generate input plots for a given species
 
-library(ggplot2, reshape2)
 source("input_matrix.R")
+library(ggplot2)
+library(reshape2)
 
 specieslist <- as.character(read.csv("../prospect_bayes/scripts/species_list.txt", header=FALSE)[,1])
 
