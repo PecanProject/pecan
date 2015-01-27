@@ -9,6 +9,7 @@
 extract.nc <- function(in.path,in.prefix,outfolder,start_date,end_date,slat,slon,newsite){
   
   require("PEcAn.utils")
+  require("PEcAn.data.atmosphere")
   
   in.path <- as.character(in.path)
   in.prefix <- as.character(in.prefix)
@@ -35,8 +36,8 @@ extract.nc <- function(in.path,in.prefix,outfolder,start_date,end_date,slat,slon
   y <- close$y
   print(c(x,y))
   
-  start_year <- year(input$start_date)
-  end_year <- year(input$end_date)
+  start_year <- year(start_date)
+  end_year <- year(end_date)
   rows <- length(files)
   results <- data.frame(file=character(rows), host=character(rows),
                         mimetype=character(rows), formatname=character(rows),
@@ -56,5 +57,5 @@ extract.nc <- function(in.path,in.prefix,outfolder,start_date,end_date,slat,slon
     results$mimetype[i] <- 'application/x-netcdf'
     results$formatname[i] <- 'CF'
   }
-  invisible(results)
+  return(invisible(results))
 }
