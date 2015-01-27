@@ -1,12 +1,12 @@
-extract.nc <- function(in.path,in.prefix,outfolder,slat,slon,newsite){
+extract.nc <- function(in.path,in.prefix,outfolder,start_date,end_date,slat,slon,newsite){
   
   require("PEcAn.utils")
   
   in.path <- as.character(in.path)
   in.prefix <- as.character(in.prefix)
   outfolder <- as.character(outfolder)
-  slat <- as.numeric(slat)
-  slon <- as.numeric(slon)
+  slat <- eval(parse(text = slat))
+  slon <- eval(parse(text = slon))
   
   ## get file names
   files = dir(in.path,in.prefix)
