@@ -1,3 +1,11 @@
+##' Given latitude and longitude coordinates, extract site data from NARR file
+##'
+##'
+##' @name extract.nc 
+##' @title extract.nc 
+##' @export
+##' @author Betsy Cowdery
+
 extract.nc <- function(in.path,in.prefix,outfolder,start_date,end_date,slat,slon,newsite){
   
   require("PEcAn.utils")
