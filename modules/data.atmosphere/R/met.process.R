@@ -174,9 +174,10 @@ print("Standardized Met Produced")
   
 }
 
-##' @name met.process
-##' @title met.process
+##' @name find.prefix
+##' @title find.prefix
 ##' @export
+##' @param files
 ##' @author Betsy Cowdery
 find.prefix <- function(files){
   files.split <- (strsplit(files, "[.]"))
@@ -198,9 +199,11 @@ find.prefix <- function(files){
 }
 
 
-##' @name met.process
-##' @title met.process
+##' @name db.site.lat.lon
+##' @title db.site.lat.lon
 ##' @export
+##' @param site.id
+##' @param con
 ##' @author Betsy Cowdery
 db.site.lat.lon <- function(site.id,con){
   site <- db.query(paste("SELECT id, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =",site.id),con)
