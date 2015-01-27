@@ -92,7 +92,7 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
     cf.id <- 1000000023 #ID of permuted CF files
   }else{    
     cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site$id,start_date,end_date,pkg,fcn,
-                           username,con=con,host=host$name,write=TRUE) 
+                           username,con=con,hostname=host$name,write=TRUE) 
   }
   
   #--------------------------------------------------------------------------------------------------#
@@ -107,8 +107,12 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
     formatname <- 'CF Meteorology'
     mimetype <- 'application/x-netcdf'
     
-    ready.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,
-                              username=username,con=con,host=host,write=TRUE,newsite = new.site)
+    new.lat <- db.site.lat.lon(new.site,con=con)$lat
+    new.lon <- db.site.lat.lon(new.site,con=con)$lon
+    
+    ready.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
+                              username,con=con,hostname=host$name,write=TRUE,
+                              slat=new.lat,slon=new.lon,newsite=new.site)
  
     }else{ 
       #### SITE-LEVEL PROCESSING ##########################
@@ -126,7 +130,7 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
     
    ready.id <- convert.input(input.id=cf.id,outfolder=outfolder,formatname=formatname,mimetype=mimetype,
                               site.id=site$id,start_date,end_date,
-                              pkg,fcn,username=username,con=con,host=host$name,write=TRUE,lst=lst)
+                              pkg,fcn,username=username,con=con,hostname=host$name,write=TRUE,lst=lst)
 
     }
 print("Standardized Met Produced")
@@ -163,7 +167,7 @@ print("Standardized Met Produced")
   overwrite <- ""
   
   model.id <- convert.input(ready.id,outfolder,formatname,mimetype,site$id,start_date,end_date,pkg,fcn,
-                            username=username,con=con,host=host$name,write=write,lst=lst,overwrite=overwrite)
+                            username=username,con=con,hostname=host$name,write=write,lst=lst,overwrite=overwrite)
 
   db.close(con)
   return(outfolder)
@@ -191,4 +195,17 @@ find.prefix <- function(files){
     }
   }
   return(prefix)
+}
+
+
+##' @name met.process
+##' @title met.process
+##' @export
+##' @author Betsy Cowdery
+db.site.lat.lon <- function(site.id,con){
+  site <- db.query(paste("SELECT id, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =",site.id),con)
+  if(nrow(site)==0){logger.error("Site not found"); return(NULL)} 
+  if(!(is.na(site$lat)) && !(is.na(site$lat))){
+    return(list(lat = site$lat, lon = site$lon))
+  }
 }
