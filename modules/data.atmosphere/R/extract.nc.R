@@ -33,6 +33,7 @@ extract.nc <- function(in.path,in.prefix,outfolder,start_date,end_date,slat,slon
   close <- closest_xy(slat, slon,in.path,in.prefix)
   x <- close$x
   y <- close$y
+  print(c(x,y))
   
   for(i in 1:length(files)){    
     infile = file.path(in.path,files[i])
@@ -41,4 +42,5 @@ extract.nc <- function(in.path,in.prefix,outfolder,start_date,end_date,slat,slon
       system(paste0("ncks -d x,",x,",",x, " -d y,",y,",",y," ",infile," ",outfile))
     }
   }
+  print(dir(outfolder))
 }

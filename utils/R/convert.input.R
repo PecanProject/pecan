@@ -62,8 +62,8 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
 #  if("ED2" %in% outlist){args <- c(args, l$lst)}
   
   print(args)
-  cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
-  result <- remote.execute.R(cmdFcn,hostname,verbose=FALSE)
+  cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")") # Removed pkg,"::", for debugging
+  result <- remote.execute.R(cmdFcn,hostname,verbose=TRUE)
 
 
   # cmdArgs = paste(args,collapse=" ")
