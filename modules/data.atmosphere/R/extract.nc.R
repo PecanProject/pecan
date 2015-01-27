@@ -1,4 +1,4 @@
-extract.nc <- function(in.path,in.prefix,outfolder,slat,slon){
+extract.nc <- function(in.path,in.prefix,outfolder,slat,slon,newsite){
   
   require("PEcAn.utils")
   
