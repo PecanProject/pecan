@@ -3,7 +3,7 @@
 ##' Generates plots showing the contributions of PROSPECT parameters to
 ##' resulting spectra.
 
-source("R/prospect.R")
+source("../R/prospect.R")
 library(reshape2, ggplot2)
 
 LENGTH <- 20

@@ -22,12 +22,10 @@
 ##'
 ##' @author Alexey Shiklomanov
 
-setwd("R/")
-
 source("prospect.R")
 source("timer.R")
 source("truncnorm.R")
-source("mle_inversion.R")
+source("inversion_mle.R")
 
 ## Use specdatproc script to generate correct "obs.spec" matrix from data.
 pinvbayes <- function(obs.spec,
@@ -375,7 +373,7 @@ pinvbayes <- function(obs.spec,
                         ## Sample alphaCw
                         for (i in 1:nre){
                                 guess.alphaCw <- alphaCw.i
-                                guess.alphaCw[i] <- rnorm(1, alphaCw.i[i], JumpSD.alpha["Cm"])
+                                guess.alphaCw[i] <- rnorm(1, alphaCw.i[i], JumpSD.alpha["Cw"])
                                 guess.spec <- prospect(N.i + alphaN.i[i],
                                                        Cab.i + alphaCab.i[i],
                                                        Cw.i + guess.alphaCw[i],

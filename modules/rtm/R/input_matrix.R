@@ -1,6 +1,6 @@
 ##' Functions for converting spectral data into matrices for use in Bayesian inversion.
 
-library(reshape2)
+library(reshape2, data.table)
 
 ##' @name specmatrix
 ##' @title Observed reflectance matrix
@@ -19,31 +19,45 @@ library(reshape2)
 specmatrix <- function(Species,
                        wln=400,
                        wlx=2500,
-                       path="~/Documents/Dropbox/SE_spectra/Reflectance/"
+                       spectype="SE",
+                       filter.spec=TRUE
                        ){
         print(sprintf("Loading %s ...", Species))
-        flist <- list.files(path)
-        flist.split <- strsplit(flist, "_")
-        fset.inds <- which(sapply(flist.split, "[", 5) == Species)
-        fset <- flist[fset.inds]
-        raw.list <- lapply(fset, function(x) read.csv(paste(path,x,sep=''),
-                                                       header=TRUE))
-        refl.list <- lapply(raw.list, function(x) {
-                x[which(x$Wavelength >= wln &
-                                x$Wavelength <= wlx), 3]
-        })
-        refl.mat <- do.call(cbind, refl.list)
-        colnames(refl.mat) <- fset
-        RowMeans <- rowMeans(refl.mat)
-        RowSD <- apply(refl.mat, 1, sd)
-        MaxFilter <- RowMeans + 3 * RowSD
-        MinFilter <- RowMeans - 3 * RowSD
-        specfilter <- function(spec) any(spec < MinFilter | spec > MaxFilter)
-        badspec <- apply(refl.mat, 2, specfilter)
-        refl.mat.keep <- refl.mat[,!badspec]
-        print(dim(refl.mat) - dim(refl.mat.keep))
+        if(path=="FFT"){
+                ## FFT spectra
+                path <- "~/Documents/Dropbox/FFT_spectra/NASA_FFT_LC_Refl_Spectra_v4.csv"
+                filter.spec <- FALSE
+                raw.list <- data.frame(fread(path, header=TRUE))
+                refl.list <- subset(raw.list[,-(2:21)], Species==Species)
+                refl.melt <- melt(refl.list, id.vars="Spectra")
+                refl.mat <- dcast(
+        } else if (path == "SE"){
+                path <- "~/Documents/Dropbox/SE_spectra/Reflectance"
+                flist <- list.files(path)
+                flist.split <- strsplit(flist, "_")
+                fset.inds <- which(sapply(flist.split, "[", 5) == Species)
+                fset <- flist[fset.inds]
+                raw.list <- lapply(fset, function(x) read.csv(paste(path,x,sep=''),
+                                                              header=TRUE))
+                refl.list <- lapply(raw.list, function(x) {
+                                    x[which(x$Wavelength >= wln &
+                                            x$Wavelength <= wlx), 3]})
+                refl.mat <- do.call(cbind, refl.list)
+                colnames(refl.mat) <- fset
+        }
+        if(filter.spec){
+                RowMeans <- rowMeans(refl.mat)
+                RowSD <- apply(refl.mat, 1, sd)
+                MaxFilter <- RowMeans + 3 * RowSD
+                MinFilter <- RowMeans - 3 * RowSD
+                specfilter <- function(spec) any(spec < MinFilter | spec > MaxFilter)
+                badspec <- apply(refl.mat, 2, specfilter)
+                refl.mat.keep <- refl.mat[,!badspec]
+                print(dim(refl.mat) - dim(refl.mat.keep))
+                refl.mat <- refl.mat.keep
+        }
         print("---- Done ----")
-        return(refl.mat.keep)
+        return(refl.mat)
 }
 
 ##' @name gen.spec.list

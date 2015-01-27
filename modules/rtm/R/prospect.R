@@ -6,7 +6,6 @@
 ##' @author Alexey Shiklomanov
 ##' @export
 
-setwd("R/")
 library(Rcpp)
 sourceCpp("prospect_c.cpp")
 

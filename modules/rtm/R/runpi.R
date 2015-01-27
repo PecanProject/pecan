@@ -11,6 +11,10 @@
 ##'   [7] Filename tag to identify run results
 ##'   [8] Sub-folder in "run_results" for storing output.
 
+#setwd("~/Documents/Unsynced/pecan/modules/rtm/R")
+source("inversion_bayes.R")
+source("input_matrix.R")
+
 args <- commandArgs(trailingOnly=TRUE)
 jrsd <- as.numeric(args[1])
 species <- args[2]
@@ -25,11 +29,8 @@ initarg <- args[5]
 ngibbs <- as.numeric(args[6])
 runid <- args[7]
 folder <- args[8]
-filename <- sprintf("run_results/%s/%s_%g_%s_%s_%s_%s.dat", folder, species, jrsd, precision, rearg, initarg, runid)
-dir.create(sprintf("run_results/%s", folder), showWarnings = FALSE)
-
-source("inv_bayes.R")
-source("specdataproc.R")
+filename <- sprintf("../run_results/%s/%s_%g_%s_%s_%s_%s.dat", folder, species, jrsd, precision, rearg, initarg, runid)
+dir.create(sprintf("../run_results/%s", folder), showWarnings = FALSE)
 
 smat <- specmatrix(species)
 
