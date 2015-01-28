@@ -48,7 +48,7 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
       args <- list(site.code, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE) #, pkg,raw.host = host,dbparms,con=con)
       new.files <- do.call(fcn,args)
       host$name = new.files$host[1]
-
+      
       check = dbfile.input.check(site$id, start_date, end_date, 
                                  mimetype=new.files$mimetype[1], formatname=new.files$formatname[1], 
                                  con=con, hostname=new.files$host[1])
@@ -57,15 +57,15 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
       }else{
         ## insert database record
         raw.id <- dbfile.input.insert(in.path=dirname(new.files$file[1]),
-                                    in.prefix=site.code, 
-                                    siteid = site$id, 
-                                    startdate = start_date, 
-                                    enddate = end_date, 
-                                    mimetype=new.files$mimetype[1], 
-                                    formatname=new.files$formatname[1],
-                                    parentid=NA,
-                                    con = con,
-                                    hostname = host$name)$input.id
+                                      in.prefix=site.code, 
+                                      siteid = site$id, 
+                                      startdate = start_date, 
+                                      enddate = end_date, 
+                                      mimetype=new.files$mimetype[1], 
+                                      formatname=new.files$formatname[1],
+                                      parentid=NA,
+                                      con = con,
+                                      hostname = host$name)$input.id
       }    
     } else {  ## site level, not Ameriflux
       print("NOT AMERIFLUX")
@@ -74,7 +74,7 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
       raw.id <- do.call(fcn,args)
       
     }
-
+    
   } 
   
   #--------------------------------------------------------------------------------------------------#
@@ -97,7 +97,7 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
   
   #--------------------------------------------------------------------------------------------------#
   # Extraction 
-    
+  
   if(regional){ #ie NARR right now    
     
     input.id <- cf.id
@@ -113,33 +113,33 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
     ready.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
                               username,con=con,hostname=host$name,write=TRUE,
                               slat=new.lat,slon=new.lon,newsite=new.site)
- 
-    }else{ 
-      #### SITE-LEVEL PROCESSING ##########################
-      
-    print("# run gapfilling") 
-#    ready.id <- convert.input()
-#    ready.id <- metgapfill(outfolder, site.code, file.path(settings$run$dbfiles, "gapfill"), start_date=start_date, end_date=end_date)
-
-  outfolder <- paste0(outfolder,"_gapfill")
-  pkg       <- "PEcAn.data.atmosphere"
-  fcn       <- "gapfill"
-  formatname <- 'CF Meteorology'
-  mimetype <- 'application/x-netcdf'
-  lst <- site.lst(site,con)
     
-   ready.id <- convert.input(input.id=cf.id,outfolder=outfolder,formatname=formatname,mimetype=mimetype,
+  }else{ 
+    #### SITE-LEVEL PROCESSING ##########################
+    
+    print("# run gapfilling") 
+    #    ready.id <- convert.input()
+    #    ready.id <- metgapfill(outfolder, site.code, file.path(settings$run$dbfiles, "gapfill"), start_date=start_date, end_date=end_date)
+    
+    outfolder <- paste0(outfolder,"_gapfill")
+    pkg       <- "PEcAn.data.atmosphere"
+    fcn       <- "gapfill"
+    formatname <- 'CF Meteorology'
+    mimetype <- 'application/x-netcdf'
+    lst <- site.lst(site,con)
+    
+    ready.id <- convert.input(input.id=cf.id,outfolder=outfolder,formatname=formatname,mimetype=mimetype,
                               site.id=site$id,start_date,end_date,
                               pkg,fcn,username=username,con=con,hostname=host$name,write=TRUE,lst=lst)
-
-    }
-print("Standardized Met Produced")
+    
+  }
+  print("Standardized Met Produced")
   
   #--------------------------------------------------------------------------------------------------#
   # Prepare for Model
   
-## NOTE: ALL OF THIS CAN BE QUERIED THROUGH DATABASE
-## MODEL_TYPES -> FORMATS where tag = "met"
+  ## NOTE: ALL OF THIS CAN BE QUERIED THROUGH DATABASE
+  ## MODEL_TYPES -> FORMATS where tag = "met"
   if(model == "ED2"){
     formatname <- 'ed.met_driver_header_files_format'
     mimetype <- 'text/plain'
@@ -168,7 +168,7 @@ print("Standardized Met Produced")
   
   model.id <- convert.input(ready.id,outfolder,formatname,mimetype,site$id,start_date,end_date,pkg,fcn,
                             username=username,con=con,hostname=host$name,write=write,lst=lst,overwrite=overwrite)
-
+  
   db.close(con)
   return(outfolder)
   
