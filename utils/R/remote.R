@@ -132,10 +132,10 @@ remote.execute.R <- function(script, host="localhost", user=NA, verbose=FALSE, R
     remote.execute.cmd("rm", c("-f", tmpfile), host, user)
   }
   
-  # load result
-  fp <- file(tmpfile, 'r')
-  result <- unserialize(fp)
-  close(fp)
-  unlink(tmpfile)
+#   # load result
+#   fp <- file(tmpfile, 'r')
+#   result <- unserialize(fp)
+#   close(fp)
+#   unlink(tmpfile)
   invisible(result)
 }
