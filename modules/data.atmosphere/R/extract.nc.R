@@ -9,7 +9,7 @@
 extract.nc <- function(in.path,in.prefix,outfolder,start_date,end_date,slat,slon,newsite){
   
   require("PEcAn.utils")
-  require("PEcAn.data.atmosphere")
+  require("lubridate")
   
   in.path <- as.character(in.path)
   in.prefix <- as.character(in.prefix)
