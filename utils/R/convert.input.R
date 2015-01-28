@@ -62,8 +62,9 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
 #  if("ED2" %in% outlist){args <- c(args, l$lst)}
   
   print(args)
-  cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")") # Removed pkg,"::", for debugging
-  result <- remote.execute.R(cmdFcn,hostname,verbose=TRUE)
+  cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")") 
+  result <- eval(parse(text = cmdFcn))
+#   result <- remote.execute.R(cmdFcn,hostname,verbose=TRUE)
 
 
   # cmdArgs = paste(args,collapse=" ")
@@ -96,7 +97,7 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
 #    }
     
 #    in.prefix=strsplit(basename(result$file[1]),".",fixed=TRUE)[[1]][1]
-    in.prefix=find.prefix(basename(result$file))
+    in.prefix=find.prefix(result$file)
     newinput <- dbfile.input.insert(in.path=dirname(result$file[1]),
                                     in.prefix=in.prefix,
                                     siteid = siteid, 
