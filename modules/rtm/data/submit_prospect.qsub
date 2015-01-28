@@ -21,7 +21,7 @@
 #$ -m be
 
 # Whom to send the email to
-#$ -M ashiklom@bu.edu
+#$ -M alexey.shiklomanov@gmail.com
 
 # Set walltime limit
 #$ -l h_rt=120:00:00
