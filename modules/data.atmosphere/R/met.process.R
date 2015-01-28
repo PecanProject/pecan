@@ -166,8 +166,11 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
   write     <- TRUE
   overwrite <- ""
   
-  model.id <- convert.input(ready.id,outfolder,formatname,mimetype,site$id,start_date,end_date,pkg,fcn,
-                            username=username,con=con,hostname=host$name,write=write,lst=lst,overwrite=overwrite)
+  model.id <- convert.input(input.id=ready.id,outfolder=outfolder,formatname=formatname,
+                            mimetype=mimetype,site.id=site$id,start_date=start_date,end_date=end_date,
+                            pkg=pkg,fcn=fcn,
+                            username=username,con=con,host=host$name,write=write,lst=lst,overwrite=overwrite)
+  print(c("Done model convert",model.id,outfolder))
   
   db.close(con)
   return(outfolder)

@@ -21,7 +21,7 @@
 ##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
-met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite=FALSE,verbose=FALSE){
+met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite=FALSE,verbose=FALSE,...){
   
   ## DALEC 1 driver format (.csv):
   ## Runday,  Min temp (°C), Max temp (°C), Radiation (MJ d-1), Atmospheric CO2 (μmol mol-1), Day of year

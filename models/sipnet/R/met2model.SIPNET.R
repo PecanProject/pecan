@@ -21,8 +21,8 @@
 ##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
-met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite=FALSE,verbose=FALSE){
-
+met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite=FALSE,verbose=FALSE,...){
+print("START met2model.SIPNET")
   start_date <- as.POSIXlt(start_date, tz = "GMT")
   end_date<- as.POSIXlt(end_date, tz = "GMT")
   out.file <- file.path(outfolder, paste(in.prefix,
@@ -36,7 +36,8 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
                         formatname=c('Sipnet.climna'),
                         startdate=c(start_date),
                         enddate=c(end_date))
-  
+  print("internal results")
+print(results)
   
   if (file.exists(out.file) && !overwrite) {
     logger.debug("File '", out.file, "' already exists, skipping to next file.")
