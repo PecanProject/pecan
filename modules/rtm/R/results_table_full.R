@@ -1,4 +1,6 @@
-SPECIES.PATH <- "miscellaneous/species_info.csv"
+source("results_get.R")
+
+SPECIES.PATH <- "../data/species_info.csv"
 species.info <- read.csv(SPECIES.PATH)
 
 unchain <- function(m, m.name){
@@ -7,7 +9,7 @@ unchain <- function(m, m.name){
         return(m.bind)
 }
 
-results.table <- function(path=FALSE){
+results.table <- function(path=FALSE, info=FALSE){
         if(path!=FALSE){
                 get.results(path)
         }
@@ -15,6 +17,6 @@ results.table <- function(path=FALSE){
         results.vec <- results.vec[grep("\\.l$", results.vec)]
         results.list <- lapply(results.vec, function(x) unchain(get(x), x))
         results.big <- data.frame(do.call(rbind, results.list), row.names=NULL)
-        results.big <- merge(results.big, species.info)
+        if(info) results.big <- merge(results.big, species.info)
         return(results.big)
 }

@@ -43,11 +43,8 @@ ggpairs(bigtable, 2:5, color="abbr", params=list(corSize=12))
 ### Violin plot
 violin.plt <- function(var, tab){
         plt <- ggplot(subset(tab, variable==var)) +
-                aes(x=abbr, y=value, fill=abbr) +
+                aes(x=species, y=value, fill=species) +
                 geom_violin() +
-                xlab("") + 
-                ylab("") +
-                bigtext +
                 guides(fill=FALSE)
         return(plt)
 }

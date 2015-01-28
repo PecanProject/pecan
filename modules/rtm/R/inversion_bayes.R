@@ -10,14 +10,12 @@
 ##' @param ngibbs Number of iterations (default = 100)
 ##' @param JumpRSD Initial relative standard deviation of Jump distribution (default = 0.1).
 ##' @param wl Wavelengths over which to perform inversion (must match data) (default = 400:2500)
-##' @param local.store Whether output should be stored in memory (TRUE) or written to file (FALSE, default)
 ##' @param single.precision If TRUE (default), a single residual SD is calculated for the entire spectrum. If FALSE, a value is calcluated for each wavelength.
 ##' @param random.effects What kind of random effects should be included. Options are 'none' (default), 'leaf', 'plot'
 ##' @param inits How initial conditions are generated. Options are maximum likelihood ('mle', default), 'random', or 'guess'.
 ##' @param ar.step Interval on which JumpRSD is adjusted to maintain a good acceptance rate (default = 10).
 ##' @param ar.target Target acceptance rate (default = 0.75)
 ##' @param fname Filename for storing results (default = 'runs/test_run.dat')
-##' @return If local.store==TRUE, returns list of MCMC steps for PROSPECT parameters, residual SD, and random effects. If FALSE, returns nothing.
 ##' @export
 ##'
 ##' @author Alexey Shiklomanov
@@ -32,7 +30,6 @@ pinvbayes <- function(obs.spec,
                       ngibbs=100,
                       JumpRSD=0.1,
                       wl=400:2500,
-                      local.store=FALSE,
                       single.precision=TRUE,
                       random.effects='none',
                       inits='mle',
@@ -42,6 +39,7 @@ pinvbayes <- function(obs.spec,
                       )
 {
         nwl <- length(wl)
+        if(!is.matrix(obs.spec)) obs.spec <- as.matrix(obs.spec)
         nspec <- ncol(obs.spec)
         JumpSD <- JumpRSD * unlist(guess.inits)
         JumpSD.alpha <- JumpSD
@@ -82,7 +80,8 @@ pinvbayes <- function(obs.spec,
         ### Extract indices for random effects ###
         nre <- 1
         if(random.effects != 'none'){
-                regxp.list <- c(leaf = "(^.*_)[0-9]{5}.csv",
+                regxp.list <- c(leaf_SE = "(^.*_)[0-9]{5}.csv",
+                                leaf_FFT = "(.*)",
                                 plot = "^[0-9]{4}[A-Za-z]+[0-9]{2}__([A-Za-z]+_[A-Za-z0-9]+_).*")
                 randeff.regxp <- regxp.list[random.effects]
                 randeffs <- unique(gsub(randeff.regxp, "\\1", colnames(obs.spec)))
@@ -126,52 +125,29 @@ pinvbayes <- function(obs.spec,
         prev.error <- spec.error(prev.spec, obs.spec)
 
         ### MCMC storage
-        if (local.store){
-                N.store <- numeric(ngibbs)
-                Cab.store <- numeric(ngibbs)
-                Cw.store <- numeric(ngibbs)
-                Cm.store <- numeric(ngibbs)
-                if(single.precision){
-                        sd.store <- numeric(ngibbs)
-                } else {
-                        sd.store <- matrix(NA, nrow=ngibbs, ncol=nwl)
-                }
-                if(random.effects != 'none'){
-                        sdplotN.store <- numeric(ngibbs)
-                        sdplotCab.store <- numeric(ngibbs)
-                        sdplotCw.store <- numeric(ngibbs)
-                        sdplotCm.store <- numeric(ngibbs)
-                        alphaN.store <- matrix(NA, nrow=ngibbs, ncol=nre)
-                        alphaCab.store <- matrix(NA, nrow=ngibbs, ncol=nre)
-                        alphaCw.store <- matrix(NA, nrow=ngibbs, ncol=nre)
-                        alphaCm.store <- matrix(NA, nrow=ngibbs, ncol=nre)
-                }
-                
+        if(single.precision) {
+                sdvec <- "sd"
         } else {
-                if(single.precision) {
-                        sdvec <- "sd"
-                } else {
-                        sdvec <- paste("sd", wl, sep='')
-                }
-                if(random.effects != "none"){
-                        aNvec <- sprintf("aN_%s", randeffs)
-                        aCabvec <- sprintf("aCab_%s", randeffs)
-                        aCwvec <- sprintf("aCw_%s", randeffs)
-                        aCmvec <- sprintf("aCm_%s", randeffs)
-                        header <- c("N", "Cab", "Cw", "Cm", 
-                                    aNvec, aCabvec, aCwvec, aCmvec,
-                                    "sdreN", "sdreCab", "sdreCw", "sdreCm",
-                                    sdvec)
-                } else {
-                        header <- c("N", "Cab", "Cw", "Cm", 
-                                    sdvec)
-                }
-                write(header,
-                      ncolumns=length(header),
-                      file=fname, 
-                      sep=",", 
-                      append=FALSE)
+                sdvec <- paste("sd", wl, sep='')
         }
+        if(random.effects != "none"){
+                aNvec <- sprintf("aN_%s", randeffs)
+                aCabvec <- sprintf("aCab_%s", randeffs)
+                aCwvec <- sprintf("aCw_%s", randeffs)
+                aCmvec <- sprintf("aCm_%s", randeffs)
+                header <- c("N", "Cab", "Cw", "Cm", 
+                            aNvec, aCabvec, aCwvec, aCmvec,
+                            "sdreN", "sdreCab", "sdreCw", "sdreCm",
+                            sdvec)
+        } else {
+                header <- c("N", "Cab", "Cw", "Cm", 
+                            sdvec)
+        }
+        write(header,
+              ncolumns=length(header),
+              file=fname, 
+              sep=",", 
+              append=FALSE)
 
         ## MCMC loop
         tstart <- proc.time()
@@ -181,7 +157,7 @@ pinvbayes <- function(obs.spec,
         arp.alpha <- 0
         for(g in 1:ngibbs){
                 arate <- ar/(4*g)
-                if((g == 5) | (g %% (ngibbs/20) == 0) & local.store) laptime(tstart, g, ngibbs)
+                if((g == 5) | (g %% (ngibbs/20) == 0)) laptime(tstart, g, ngibbs)
 
                 if(g %% ar.step == 0){
                         ## Tweak JumpRSD based on acceptance rate
@@ -454,28 +430,7 @@ pinvbayes <- function(obs.spec,
                 sd.i <- 1/sqrt(pwl.i)
 
                 # Store values 
-                if (local.store){
-                        N.store[g] <- N.i
-                        Cab.store[g] <- Cab.i
-                        Cw.store[g] <- Cw.i
-                        Cm.store[g] <- Cm.i
-                        if(single.precision){
-                                sd.store[g] <- sd.i
-                        } else{
-                                sd.store[g,] <- sd.i
-                        }
-                        if(random.effects != "none"){
-                                sdplotN.store[g] <- sdreN
-                                sdplotCab.store[g] <- sdreCab
-                                sdplotCw.store[g] <- sdreCw
-                                sdplotCm.store[g] <- sdreCm
-                                alphaN.store[g,] <- alphaN.i
-                                alphaCab.store[g,] <- alphaCab.i
-                                alphaCw.store[g,] <- alphaCw.i
-                                alphaCm.store[g,] <- alphaCm.i
-                        }
-                } else {
-                        if(random.effects != "none"){
+                if(random.effects != "none"){
                         write(c(N.i, Cab.i, Cw.i, Cm.i,
                                 alphaN.i, alphaCab.i, alphaCw.i, alphaCm.i,
                                 sdreN, sdreCab, sdreCw, sdreCm, 
@@ -484,29 +439,16 @@ pinvbayes <- function(obs.spec,
                               sep=",",
                               file=fname,
                               append=TRUE)
-                        } else {
+                } else {
                         write(c(N.i, Cab.i, Cw.i, Cm.i,
                                 sd.i), 
                               ncolumns=length(header),
                               sep=",",
                               file=fname,
                               append=TRUE)
-                        }
-
                 }
+
         }
 
-        if (local.store){
-                if(random.effects != "none"){
-                returnlist <- list(N=N.store, Cab=Cab.store, Cw=Cw.store, Cm=Cm.store, sd=sd.store,
-                            sdplotN=sdplotN.store,
-                            sdplotCab=sdplotCab.store,
-                            sdplotCw=sdplotCw.store,
-                            sdplotCm=sdplotCm.store)
-                } else {
-                returnlist <- list(N=N.store, Cab=Cab.store, Cw=Cw.store, Cm=Cm.store, sd=sd.store)
-                }
-                return(returnlist)
-        }
 }
 

@@ -36,6 +36,7 @@ specmatrix <- function(species,
                 colnames(refl.mat) <- refl.list$Spectra
                 wavelengths <- rownames(refl.mat)
                 refl.mat <- refl.mat[-grep("Wave_3[0-9][0-9]", wavelengths),]
+                refl.mat <- as.matrix(refl.mat)
         } else if (spectype == "SE"){
                 flist <- list.files(path)
                 flist.split <- strsplit(flist, "_")
@@ -47,6 +48,7 @@ specmatrix <- function(species,
                                     x[which(x$Wavelength >= wln &
                                             x$Wavelength <= wlx), 3]})
                 refl.mat <- do.call(cbind, refl.list)
+                refl.mat <- as.matrix(refl.mat)
                 colnames(refl.mat) <- fset
         }
 

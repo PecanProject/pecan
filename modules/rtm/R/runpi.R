@@ -38,7 +38,6 @@ dir.create(sprintf("../run_results/%s", folder), showWarnings = FALSE)
 smat <- specmatrix(species, spectype=spectra)
 
 pinvbayes(smat, ngibbs=ngibbs, JumpRSD=jrsd, fname=filename,
-          local.store=FALSE, 
           single.precision=precarg, 
           random.effects=rearg,
           inits=initarg,
