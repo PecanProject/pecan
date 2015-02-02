@@ -180,7 +180,7 @@ db.exists <- function(params, write=TRUE, table=NA) {
   
   #check table's privilege about read and write permission
   user.permission <- tryCatch({
-    invisible(db.query(paste("select * from information_schema.role_table_grants where grantee='bety'"), con))
+    invisible(db.query(paste0("select * from information_schema.role_table_grants where grantee='",params$dbname,"'"), con))
   }, error = function(e) {
     logger.error("Could not query database.\n\t", e)
     db.close(con)
