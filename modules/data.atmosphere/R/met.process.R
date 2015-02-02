@@ -25,75 +25,85 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
   dbparms <- list(driver=driver, user=user, dbname=dbname, password=password, host=bety.host)
   con       <- db.open(dbparms)
   
-  met <- input 
+  met <- input$met$type
+  if(input$met$id==""){
+    download=TRUE
+  }else{
+    download=FALSE
+    raw.id=input$met$id
+  }
+  
   regional <- met == "NARR" # Either regional or site run
   new.site = as.numeric(site$id)
   str_ns    <- paste0(new.site %/% 1000000000, "-", new.site %% 1000000000)
   
   #--------------------------------------------------------------------------------------------------#
   # Download raw met from the internet 
-  
-  outfolder  <- file.path(dir,met)
-  pkg        <- "PEcAn.data.atmosphere"
-  fcn        <- paste0("download.",met)
-  if(met == "NARR"){
-    site.id <- 1135
-    raw.id <- 1000000127
-  }else{
-    if(met == "Ameriflux"){
-      
-      ## download files
-      outfolder = paste0(outfolder,"-",str_ns)
-      site.code = sub(".* \\((.*)\\)", "\\1", site$name)
-      args <- list(site.code, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE) #, pkg,raw.host = host,dbparms,con=con)
-      new.files <- do.call(fcn,args)
-      host$name = new.files$host[1]
-      
-      check = dbfile.input.check(site$id, start_date, end_date, 
-                                 mimetype=new.files$mimetype[1], formatname=new.files$formatname[1], 
-                                 con=con, hostname=new.files$host[1])
-      if(length(check)>0){
-        raw.id = check$container_id[1]
-      }else{
-        ## insert database record
-        raw.id <- dbfile.input.insert(in.path=dirname(new.files$file[1]),
-                                      in.prefix=site.code, 
-                                      siteid = site$id, 
-                                      startdate = start_date, 
-                                      enddate = end_date, 
-                                      mimetype=new.files$mimetype[1], 
-                                      formatname=new.files$formatname[1],
-                                      parentid=NA,
-                                      con = con,
-                                      hostname = host$name)$input.id
-      }    
-    } else {  ## site level, not Ameriflux
-      print("NOT AMERIFLUX")
-      site.id <- site$id
-      args <- list(site.id, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE) #, pkg,raw.host = host,dbparms,con=con)
-      raw.id <- do.call(fcn,args)
+  if(download == TRUE){
+    
+    outfolder  <- file.path(dir,met)
+    pkg        <- "PEcAn.data.atmosphere"
+    fcn        <- paste0("download.",met)
+    
+    if(met == "NARR"){
+      site.id <- 1135
+      raw.id <- 1000000127
+    }else{
+      if(met == "Ameriflux"){
+        
+        ## download files
+        outfolder = paste0(outfolder,"_site_",str_ns)
+        site.code = sub(".* \\((.*)\\)", "\\1", site$name)
+        args <- list(site.code, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE) #, pkg,raw.host = host,dbparms,con=con)
+        new.files <- do.call(fcn,args)
+        host$name = new.files$host[1]
+        
+        check = dbfile.input.check(site$id, start_date, end_date, 
+                                   mimetype=new.files$mimetype[1], formatname=new.files$formatname[1], 
+                                   con=con, hostname=new.files$host[1])
+        if(length(check)>0){
+          raw.id = check$container_id[1]
+        }else{
+          ## insert database record
+          raw.id <- dbfile.input.insert(in.path=dirname(new.files$file[1]),
+                                        in.prefix=site.code, 
+                                        siteid = site$id, 
+                                        startdate = start_date, 
+                                        enddate = end_date, 
+                                        mimetype=new.files$mimetype[1], 
+                                        formatname=new.files$formatname[1],
+                                        parentid=NA,
+                                        con = con,
+                                        hostname = host$name)$input.id
+        }    
+      } else {  ## site level, not Ameriflux
+        print("NOT AMERIFLUX")
+        site.id <- site$id
+        args <- list(site.id, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE) #, pkg,raw.host = host,dbparms,con=con)
+        raw.id <- do.call(fcn,args)
+        
+      }
       
     }
-    
-  } 
-  
-  #--------------------------------------------------------------------------------------------------#
-  print("### Change to CF Standards")
-  
-  input.id  <-  raw.id
-  #outfolder <-  file.path(dir,paste0(met,"_CF"))
-  outfolder <-  paste0(outfolder,"_CF")
-  pkg       <- "PEcAn.data.atmosphere"
-  fcn       <-  paste0("met2CF.",met)
-  formatname <- 'CF Meteorology'
-  mimetype <- 'application/x-netcdf'
-  
-  if(met == "NARR"){
-    cf.id <- 1000000023 #ID of permuted CF files
-  }else{    
-    cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site$id,start_date,end_date,pkg,fcn,
-                           username,con=con,hostname=host$name,write=TRUE) 
   }
+    
+    #--------------------------------------------------------------------------------------------------#
+    print("### Change to CF Standards")
+    
+    input.id  <-  raw.id
+    outfolder  <- file.path(dir,paste0(met,"_CF_site_",str_ns))
+    pkg       <- "PEcAn.data.atmosphere"
+    fcn       <-  paste0("met2CF.",met)
+    formatname <- 'CF Meteorology'
+    mimetype <- 'application/x-netcdf'
+    
+    if(met == "NARR"){
+      cf.id <- 1000000023 #ID of permuted CF files
+    }else{    
+      cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
+                             username,con=con,hostname=host$name,write=TRUE) 
+    }
+  
   
   #--------------------------------------------------------------------------------------------------#
   # Extraction 
@@ -121,16 +131,15 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
     #    ready.id <- convert.input()
     #    ready.id <- metgapfill(outfolder, site.code, file.path(settings$run$dbfiles, "gapfill"), start_date=start_date, end_date=end_date)
     
-    outfolder <- paste0(outfolder,"_gapfill")
+    outfolder <- file.path(dir,paste0(met,"_CF_gapfill_site_",str_ns))
     pkg       <- "PEcAn.data.atmosphere"
-    fcn       <- "gapfill"
+    fcn       <- "metgapfill"
     formatname <- 'CF Meteorology'
     mimetype <- 'application/x-netcdf'
     lst <- site.lst(site,con)
     
-    ready.id <- convert.input(input.id=cf.id,outfolder=outfolder,formatname=formatname,mimetype=mimetype,
-                              site.id=site$id,start_date,end_date,
-                              pkg,fcn,username=username,con=con,hostname=host$name,write=TRUE,lst=lst)
+    ready.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
+                              username,con=con,hostname=host$name,lst=lst)
     
   }
   print("Standardized Met Produced")
@@ -168,8 +177,8 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
   
   model.id <- convert.input(input.id=ready.id,outfolder=outfolder,formatname=formatname,
                             mimetype=mimetype,site.id=site$id,start_date=start_date,end_date=end_date,
-                            pkg=pkg,fcn=fcn,
-                            username=username,con=con,host=host$name,write=write,lst=lst,overwrite=overwrite)
+                            pkg=pkg,fcn=fcn,username=username,con=con,hostname=host$name,write=write,
+                            lst=lst,overwrite=overwrite)
   print(c("Done model convert",model.id,outfolder))
   
   db.close(con)
