@@ -179,36 +179,29 @@ db.exists <- function(params, write=TRUE, table=NA) {
   }
   
   #check table's privilege about read and write permission
-  user.permission <- tryCatch({
-    invisible(db.query(paste0("select * from information_schema.role_table_grants where grantee='",params$dbname,"'"), con))
+  user.permission <<- tryCatch({
+    invisible(db.query(paste0("select privilege_type from information_schema.role_table_grants where grantee='",params$user,"' and table_catalog = '",params$dbname,"' and table_name='",table,"'"), con))
   }, error = function(e) {
     logger.error("Could not query database.\n\t", e)
     db.close(con)
     invisible(NULL)
   })
-  
+
   if (!is.na(table)){
-    read.perm = 0
-    insert.perm = 0
-    update.perm =0
-    coln1 = user.permission$table_name
-    coln2=user.permission$privilege_type
-    my.data = data.frame(coln1, coln2)
-    i = 0
-    for (col in coln1)
-    {
-      i=i+1
-      if (col == table){
-        if (coln2[i]=="SELECT")
-          read.perm = 1
-        if (coln2[i]=="INSERT")
-          insert.perm = 1
-        if (coln2[i]=="UPDATE")
-          update.perm = 1
-      }
+    read.perm = FALSE
+    write.perm = FALSE
+    
+    # check read permission
+    if ('SELECT' %in% user.permission[['privilege_type']]) {
+      read.perm = TRUE
     }
     
-    if (read.perm == 0){
+    #check write permission
+    if ('INSERT' %in% user.permission[['privilege_type']] &&'UPDATE' %in% user.permission[['privilege_type']] ) {
+      write.perm = TRUE
+    }
+    
+    if (read.perm == FALSE){
       return(invisible(FALSE))
     }
     
@@ -219,11 +212,12 @@ db.exists <- function(params, write=TRUE, table=NA) {
       logger.error("Could not query database.\n\t", e)
       db.close(con)
       invisible(NULL)
-    })
-    
+    })  
     if (is.null(read.result)) {
       return(invisible(FALSE))
     }
+    
+    print (read.result)
     
     # get the table's primary key column
     get.key <- tryCatch({
@@ -247,7 +241,7 @@ db.exists <- function(params, write=TRUE, table=NA) {
     # if requested write a row to the database
     if (write) {
       # in the case when has read permission but no write
-      if (insert.perm==0 || update.perm == 0)
+      if (write.perm == FALSE)
       {
         return(invisible(FALSE))
       }
