@@ -21,7 +21,7 @@
 ##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
-met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite=FALSE,verbose=FALSE,...){
+met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date, ..., overwrite=FALSE,verbose=FALSE){
   print("START met2model.SIPNET")
   start_date <- as.POSIXlt(start_date, tz = "GMT")
   end_date<- as.POSIXlt(end_date, tz = "GMT")
@@ -30,12 +30,13 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
                                          strptime(end_date, "%Y-%m-%d"),
                                          "clim", sep="."))
   
-  results <- data.frame(file=c(out.file),
-                        host=c(fqdn()),
-                        mimetype=c('text/csv'),
-                        formatname=c('Sipnet.climna'),
-                        startdate=c(start_date),
-                        enddate=c(end_date))
+  results <- data.frame(file = out.file,
+                        host = fqdn(),
+                        mimetype ='text/csv',
+                        formatname = 'Sipnet.climna' ,
+                        startdate = start_date ,
+                        enddate = end_date,
+                        stringsAsFactors = FALSE)
   print("internal results")
   print(results)
   
