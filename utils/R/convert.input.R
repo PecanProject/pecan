@@ -19,7 +19,7 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
   enddate   <- as.POSIXlt(end_date, tz = "GMT")
   
   print("start CHECK")
-  check = dbfile.input.check(site.id, startdate, enddate, mimetype, formatname, parentid=site.id, con=con, hostname)
+  check = dbfile.input.check(site.id, startdate, enddate, mimetype, formatname, parentid=input.id, con=con, hostname)
   print("end CHECK")
   print(check)
   if(length(check)>0){

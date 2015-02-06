@@ -125,7 +125,7 @@ dbfile.input.check <- function(siteid, startdate, enddate, mimetype, formatname,
     return(invisible(data.frame()))
   }
   
-  invisible(dbfile.check('Input', inputid, con, hostname))
+  return(invisible(dbfile.check('Input', inputid, con, hostname)))
 }
 
 ##' Function to insert a file into the dbfiles table as a posterior
@@ -279,7 +279,7 @@ dbfile.check <- function(type, id, con, hostname=fqdn()) {
     return(invisible(data.frame()))
   }
   
-  invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, "' AND container_id=", id, " AND machine_id=", hostid), con))  
+  return(invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, "' AND container_id=", id, " AND machine_id=", hostid), con)))  
 }
 
 

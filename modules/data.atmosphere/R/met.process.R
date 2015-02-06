@@ -110,12 +110,12 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
   
   if(regional){ #ie NARR right now    
     
-    input.id <- cf.id
-    outfolder <- file.path(dir,paste0(met,"_CF_site_",str_ns))
-    pkg       <- "PEcAn.data.atmosphere"
-    fcn       <- "extract.nc"
+    input.id   <- cf.id
+    outfolder  <- file.path(dir,paste0(met,"_CF_site_",str_ns))
+    pkg        <- "PEcAn.data.atmosphere"
+    fcn        <- "extract.nc"
     formatname <- 'CF Meteorology'
-    mimetype <- 'application/x-netcdf'
+    mimetype   <- 'application/x-netcdf'
     
     new.lat <- db.site.lat.lon(new.site,con=con)$lat
     new.lon <- db.site.lat.lon(new.site,con=con)$lon
@@ -131,15 +131,16 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
     #    ready.id <- convert.input()
     #    ready.id <- metgapfill(outfolder, site.code, file.path(settings$run$dbfiles, "gapfill"), start_date=start_date, end_date=end_date)
     
-    outfolder <- file.path(dir,paste0(met,"_CF_gapfill_site_",str_ns))
-    pkg       <- "PEcAn.data.atmosphere"
-    fcn       <- "metgapfill"
+    input.id   <- cf.id
+    outfolder  <- file.path(dir,paste0(met,"_CF_gapfill_site_",str_ns))
+    pkg        <- "PEcAn.data.atmosphere"
+    fcn        <- "metgapfill"
     formatname <- 'CF Meteorology'
-    mimetype <- 'application/x-netcdf'
-    lst <- site.lst(site,con)
+    mimetype   <- 'application/x-netcdf'
+    lst        <- site.lst(site,con)
     
     ready.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
-                              username,con=con,hostname=host$name,lst=lst)
+                              username,con=con,hostname=host$name,write=TRUE,lst=lst)
     
   }
   print("Standardized Met Produced")
@@ -169,16 +170,13 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
   lst <- site.lst(site,con)
   
   print("# Convert to model format")
+  input.id  <- ready.id
   outfolder <- file.path(dir,paste0(met,"_",model,"_site_",str_ns))
   pkg       <- paste0("PEcAn.",model)
   fcn       <- paste0("met2model.",model)
-  write     <- TRUE
-  overwrite <- ""
   
-  model.id <- convert.input(input.id=ready.id,outfolder=outfolder,formatname=formatname,
-                            mimetype=mimetype,site.id=site$id,start_date=start_date,end_date=end_date,
-                            pkg=pkg,fcn=fcn,username=username,con=con,hostname=host$name,write=write,
-                            lst=lst,overwrite=overwrite)
+  model.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
+                            username,con=con,hostname=host$name,write=TRUE,lst=lst)
   print(c("Done model convert",model.id,outfolder))
   
   db.close(con)
