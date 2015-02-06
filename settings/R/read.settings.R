@@ -179,7 +179,7 @@ check.database <- function(database) {
     database$dbname <- "bety"
   }
 
-  if (!db.exists(params=database, FALSE)) {
+  if (!db.exists(params=database, FALSE, table=NA)) {
     logger.severe("Invalid Database Settings : ", unlist(database))
   }
 
@@ -258,7 +258,7 @@ check.settings <- function(settings) {
       }
 
       # check if we can connect to the database with write permissions
-      if (settings$database$bety$write && !db.exists(params=settings$database$bety, TRUE)) {
+      if (settings$database$bety$write && !db.exists(params=settings$database$bety, TRUE, table='users')) {
         logger.severe("Invalid Database Settings : ", unlist(settings$database))
       }
 
