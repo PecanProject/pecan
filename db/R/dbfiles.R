@@ -72,7 +72,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
   
   # find appropriate dbfile, if not in database, insert new dbfile 
   
-  dbfileid <- dbfile.check('Input', inputid, con, hostname=fqdn()) 
+  dbfileid <- dbfile.check('Input', inputid, con, hostname=fqdn())[['id']] 
   if(is.null(dbfileid)){
     #insert dbfile & return dbfile id
     dbfileid <- dbfile.insert(in.path, in.prefix, 'Input', inputid, con, hostname)
@@ -125,7 +125,7 @@ dbfile.input.check <- function(siteid, startdate, enddate, mimetype, formatname,
     return(invisible(data.frame()))
   }
   
-  invisible(dbfile.check('Input', inputid, con, hostname))
+  return(invisible(dbfile.check('Input', inputid, con, hostname)))
 }
 
 ##' Function to insert a file into the dbfiles table as a posterior
@@ -249,7 +249,7 @@ dbfile.insert <- function(in.path,in.prefix, type, id, con, hostname=fqdn()) {
   now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
   
   db.query(paste0("INSERT INTO dbfiles (container_type, container_id, file_name, file_path, machine_id, created_at, updated_at) VALUES (",
-                  "'", type, "', ", id, ", '", in.prefix, "', '", in.path, "', ", hostid, ", '", now, "', '", now, "')"), con)
+                  "'", type, "', ", id, ", '", basename(in.prefix), "', '", in.path, "', ", hostid, ", '", now, "', '", now, "')"), con)
   
   invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, "' AND container_id=", id, " AND created_at='", now, "' ORDER BY id DESC LIMIT 1"), con)[['id']])
 }
@@ -279,7 +279,7 @@ dbfile.check <- function(type, id, con, hostname=fqdn()) {
     return(invisible(data.frame()))
   }
   
-  invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, "' AND container_id=", id, " AND machine_id=", hostid), con))  
+  return(invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, "' AND container_id=", id, " AND machine_id=", hostid), con)))  
 }
 
 
