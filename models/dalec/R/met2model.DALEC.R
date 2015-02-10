@@ -21,7 +21,7 @@
 ##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
-met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite=FALSE,verbose=FALSE,...){
+met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date, ..., overwrite=FALSE,verbose=FALSE){
   
   ## DALEC 1 driver format (.csv):
   ## Runday,  Min temp (°C), Max temp (°C), Radiation (MJ d-1), Atmospheric CO2 (μmol mol-1), Day of year
@@ -30,10 +30,6 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
   ## The nine columns of driving data are: day of year; mean air temperature (deg C); max daily temperature (deg C); min daily temperature (deg C); incident radiation (MJ/m2/day); maximum soil-leaf water potential difference (MPa); atmospheric carbon dioxide concentration (ppm); total plant-soil hydraulic resistance (MPa.m2.s/mmol-1); average foliar nitorgen (gC/m2 leaf area).
   ## Calculate these from air_temperature (K), surface_downwelling_shortwave_flux_in_air (W/m2), CO2 (ppm)
   
-  ## Assuming default values for leaf water potential, hydraulic resistance, foliar N
-  leafN = 2.5
-  HydResist = 1
-  LeafWaterPot = -0.8
   
   start_date <- as.POSIXlt(start_date, tz = "GMT")
   end_date<- as.POSIXlt(end_date, tz = "GMT")
@@ -47,8 +43,10 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
                         mimetype=c('text/plain'),
                         formatname=c('DALEC meteorology'),
                         startdate=c(start_date),
-                        enddate=c(end_date))
-  
+                        enddate=c(end_date),
+                        stringsAsFactors = FALSE)
+  print("internal results")
+  print(results)
   
   if (file.exists(out.file) && !overwrite) {
     logger.debug("File '", out.file, "' already exists, skipping to next file.")
@@ -74,6 +72,12 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
   ## loop over files
   # TODO need to filter out the data that is not inside start_date, end_date
   for(year in start_year:end_year) {
+    print(year)
+    ## Assuming default values for leaf water potential, hydraulic resistance, foliar N
+    leafN = 2.5
+    HydResist = 1
+    LeafWaterPot = -0.8
+    
     old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep="."))
     
     ## open netcdf
