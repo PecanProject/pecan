@@ -1,20 +1,22 @@
 <?xml version="1.0"?>
 <pecan>
- <outdir>/Users/kooper/Work/EBI/pecan/pecan</outdir>
+ <outdir>/Users/paleolab/pecan/pecan</outdir>
  <database>
   <bety>
-   <user>bety</user>
+   <dbname>bety</dbname>
    <password>bety</password>
    <host>localhost</host>
-   <dbname>bety</dbname>
-   <write>TRUE</write>
+   <port>3232</port>
+   <write>FALSE</write>
    <driver>PostgreSQL</driver>
+   <user>bety</user>
   </bety>
  </database>
  <pfts>
   <pft>
-   <name>temperate.coniferous</name>
-   <outdir>/Users/kooper/Work/EBI/pecan/pecan/pft/temperate.coniferous</outdir>
+   <name>Tsuga canadensis</name>
+   <outdir>/Users/paleolab/pecan/pecan/pft/Tsuga canadensis</outdir>
+   <posteriorid>99000000001</posteriorid>
   </pft>
  </pfts>
  <ensemble>
@@ -24,38 +26,39 @@
   <end.year>2005</end.year>
  </ensemble>
  <model>
-  <id>10</id>
-  <binary>/usr/local/bin/sipnet.runk</binary>
-  <type>SIPNET</type>
-  <revision>unk</revision>
+  <id>1000000005</id>
+  <type>LINKAGES</type>
+  <revision>Revision 1.0 Ann&apos;s hack</revision>
+  <binary>/Users/paleolab/Documents/linkagesdocs/data/linkages_v1-0/a.out</binary>
  </model>
  <run>
   <site>
-   <id>772</id>
-   <name>Niwot Ridge Forest/LTER NWT1 (US-NR1)</name>
-   <lat>40.0329</lat>
-   <lon>-105.546</lon>
+   <id>758</id>
+   <name>Harvard Forest EMS Tower/HFR1 (US-Ha1)</name>
+   <lat>42.5378</lat>
+   <lon>-72.1715</lon>
   </site>
+  <inputs>
+   <met>/Users/paleolab/Linkages/test_text1.txt</met>
+  </inputs>
   <start.date>2002-01-01 00:00:00</start.date>
   <end.date>2005-12-31 00:00:00</end.date>
   <host>
    <name>localhost</name>
-   <rundir>/Users/kooper/Work/EBI/pecan/pecan/run</rundir>
-   <outdir>/Users/kooper/Work/EBI/pecan/pecan/out</outdir>
+   <rundir>/Users/paleolab/pecan/pecan/run</rundir>
+   <outdir>/Users/paleolab/pecan/pecan/out</outdir>
   </host>
-  <dbfiles>/Users/kooper/Work/EBI/pecan/pecan/dbfiles</dbfiles>
-  <inputs>
-   <met>/Users/kooper/Work/EBI/sites/niwot/niwot.clim</met>
-  </inputs>
+  <dbfiles>/Users/paleolab/.pecan/dbfiles</dbfiles>
  </run>
  <meta.analysis>
   <iter>3000</iter>
   <random.effects>FALSE</random.effects>
+  <threshold>1.2</threshold>
   <update>AUTO</update>
  </meta.analysis>
  <workflow>
-  <id>4</id>
+  <id>2015-02-13-18-21-28</id>
  </workflow>
- <rundir>/Users/kooper/Work/EBI/pecan/pecan/run</rundir>
- <modeloutdir>/Users/kooper/Work/EBI/pecan/pecan/out</modeloutdir>
+ <rundir>/Users/paleolab/pecan/pecan/run</rundir>
+ <modeloutdir>/Users/paleolab/pecan/pecan/out</modeloutdir>
 </pecan>
