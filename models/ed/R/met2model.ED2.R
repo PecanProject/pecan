@@ -47,7 +47,8 @@ met2model.ED2 <- function(in.path,in.prefix,outfolder,start_date, end_date, lst=
                         mimetype=c('text/plain'),
                         formatname=c('ed.met_driver_header files format'),
                         startdate=c(start_date),
-                        enddate=c(end_date))
+                        enddate=c(end_date),
+                        stringsAsFactors = FALSE)
 
   ## check to see if the outfolder is defined, if not create directory for output
   dir.create(met_folder, recursive=TRUE, showWarnings = FALSE)
@@ -279,7 +280,9 @@ for(year in start_year:end_year) {
   write.table(matrix(metvar,nrow=1),met_header,row.names=FALSE,col.names=FALSE,append=TRUE)
   write.table(matrix(metfrq,nrow=1),met_header,row.names=FALSE,col.names=FALSE,append=TRUE,quote=FALSE)
   write.table(matrix(metflag,nrow=1),met_header,row.names=FALSE,col.names=FALSE,append=TRUE,quote=FALSE)
- 
+
+print("Done with met2model.ED2")
+
 } ### end loop over met files
   invisible(results)
 
