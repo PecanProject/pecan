@@ -46,8 +46,8 @@ met2model.LINKAGES <- function(in.path, in.prefix=NULL, start.year, end.year, ou
   
   for(i in 1:length(ipolat_nums)){
     for(m in 1:12){
-      mean_ncprecipf_mm[i,m] = mean(month_matrix[ipolat_nums[i],m],month_matrix[ipolat_nums[i]-1,m])
-      sd_ncprecipf_mm[i,m] = sd(c(month_matrix[ipolat_nums[i],m],month_matrix[ipolat_nums[i]-1,m]))
+      mean_ncprecipf_mm[i,m] = mean(month_matrix_precip[ipolat_nums[i],m],month_matrix_precip[ipolat_nums[i]-1,m])
+      sd_ncprecipf_mm[i,m] = sd(c(month_matrix_precip[ipolat_nums[i],m],month_matrix_precip[ipolat_nums[i]-1,m]))
     }  
   }
   
