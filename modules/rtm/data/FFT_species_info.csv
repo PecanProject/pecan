@@ -1,0 +1,52 @@
+Label,Genus,Species,"Common name",Family,
+ABBA,Abies,balsamea,"balsam fir",Pinaceae,
+ACNE,Acalypha,neomexicana,"New Mexico copperleaf",Euphorbiaceae,?
+ACPL,Acer,platanoides,"Norway maple",Aceraceae,
+ACRU,Acer,rubrum,"Red maple",Aceraceae,
+ACSM,Acacia,smallii,,Fabaceae,?
+ACSN,Acer,saccharunm,"sugar maple",Aceraceae,?
+ACSP,Acer,spicatum,"mountain maple",Aceraceae,?
+ALIN,Alnus,incana,"gray alder",Betulaceae,?
+ANGE,Andropogon,gerardii,,Poaceae,?
+BEAL,Betula,alleghaniensis,"yellow birch",Betulaceae,?
+BELE,Betula,lenta,"sweet birch",Betulaceae,
+BEPA,Betula,papyrifera,"paper birch",Betulaceae,
+CAAL,Carex,albursina,"white bear sedge",Cyperaceae,?
+CAOV,Carya,alba,"mockernut hickory",Juglandaceae,?
+CEOC,Celtis,occidentalis,"common hackberry",Ulmaceae,?
+COAM,Corylus,americana,"American hazelnut",Beulaceae,?
+COFL,Cornus,florida,"flowering dogwood",Cornaceae,?
+FAGR,Fagus,grandifolia,"American beech",Fagaceae,
+FRAM,Fraxinus,americana,"white ash",Oleaceae,?
+FRNI,Fraxinus,nigra,"black ash",Oleaceae,
+FRPE,Fraxinus,pennsylvanica,"green ash",Oleaceae,
+JUNI,Juglans,nigra,"black walnut",Juglandaceae,?
+JUVI,Juniperus,virginiana,"eastern redcedar",Cupressaceae,
+LALA,Larix,laricina,tamarack,Pinaceae,?
+LEGR,Leucophysalis,grandiflora,"large false groundcherry",Solanaceae,?
+LITU,Liriodendron,tulipifera,tuliptree,Magnoliaceae,
+MAAC,Magnolia,acuminata,cucumber-tree,Magnoliaceae,
+NYSY,Nyssa,sylvatica,blackgum,Cornaceae,
+OSVI,Ostrya,virginiana,hophornbeam,Betulaceae,
+PIRU,Picea,rubens,"red spruce",Pinaceae,
+PIST,Pinus,strobus,"eastern white pine",Pinaceae,
+PISY,Pinus,sylvestris,"Scots pine",Pinaceae,
+PODE,Populus,deltoides,"eastern cottonwood",Salicaceae,?
+POGR,Populus,grandidentata,"bigtooth aspen",Salicaceae,
+POTR,Populus,tremuloides,"quaking aspen",Salicaceae,
+PRPE,Prunus,persica,peach,Rosaceae,?
+PRUNUS,Prunus,persica,peach,Rosaceae,?
+QUAL,Quercus,alba,"white oak",Fagaceae,
+QUEL,Quercus,ellipsoidalis,"northern pin oak",Fagaceae,
+QUMA,Quercus,macrocarpa,"bur oak",Fagaceae,?
+QUPR,Quercus,prinus,"chestnut oak",Fagaceae,?
+QURU,Quercus,rubra,"northern red oak",Fagaceae,
+RHCA,Rhamnus,californica,,Rhamnaceae,?
+ROPS,Robina,pseudoacacia,"black locust",Fabaceae,?
+SAAL,Salix,alaxensis,"feltleaf willow",Salicaceae,
+THOC,Thalictrum,occidentale,"western meadow-rue",Ranunculaceae,?
+TIAM,Tilia,americana,"American basswood",Tiliaceae,
+TSCA,Tsuga,canadensis,"eastern hemlock",Pinaceae,
+TYLA,Typha,latifolia,"broadleaf cattail",Typhaceae,?
+ULAM,Ulmus,americana,"American elm",Ulmaceae,
+UNKN1,unk,unk,unk,unk,
