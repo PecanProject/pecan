@@ -25,7 +25,7 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
   dbparms <- list(driver=driver, user=user, dbname=dbname, password=password, host=bety.host)
   con       <- db.open(dbparms)
   
-  met <- input$met$type
+  met <- input$met$met.source
   if(input$met$id==""){
     download=TRUE
   }else{
