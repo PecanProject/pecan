@@ -5,7 +5,8 @@ if(FALSE){
   
   start.year = 850
   end.year = 2010
+  site = "PBL"
   
-  met2model.LINKAGES(in.path = in.path, outfolder = outfolder, start.year = start.year, end.year = end.year)
+  met2model.LINKAGES(site = site, in.path = in.path, outfolder = outfolder, start.year = start.year, end.year = end.year)
   
 }

@@ -61,14 +61,16 @@ met2model.LINKAGES <- function(in.path, in.prefix=NULL, start.year, end.year, ou
   month_matrix_temp_mean = matrix(NA,length(year),12)
   
   for(i in 1:length(year)){
-    ncin <- nc_open(paste(in.path,year[i],".nc",sep=""))
-    #print(ncin)
-    nctemp = ncvar_get(ncin, "air_temperature") #units are kg m-2 s-1    
     for(m in 1:12){
-      month_matrix_temp_mean[i,m] = mean(nctemp[julian_vec_hr[m]:(julian_vec_hr[m+1]-1)]) #sub daily to monthly
-    } 
-    nc_close(ncin)
-    #if(i%%100==0) cat(i," "); flush.console()
+      ncin <- nc_open(paste0(in.path,"tair/",site,"_tair_",
+                             formatC(year[i],width = 4,flag="0"),"_",
+                             month[m],".nc"))
+      #print(ncin)
+      nctemp = ncvar_get(ncin, "tair") #units are K   
+      month_matrix_temp_mean[i,m] = mean(nctemp) #sub daily to monthly
+      nc_close(ncin)
+    }
+    if(i%%100==0) cat(i," "); flush.console()
   }
   
   mean_nctemp = matrix(0,length(ipolat_nums),12) ; sd_nctemp = mean_nctemp
