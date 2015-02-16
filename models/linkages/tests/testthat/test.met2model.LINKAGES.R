@@ -1,7 +1,7 @@
 if(FALSE){
   
-  in.path = "/Users/paleolab/Linkages/PalEON.Met/PHA/pecan2.bu.edu/input/PalEON.MIP.PHA/"
-  outfolder = "/Users/paleolab/Linkages/PalEON.Met/PHA/pecan2.bu.edu/output/PHA/"
+  in.path = "/Users/paleolab/Linkages/phase1a_met_drivers_v4.1/PBL/"
+  outfolder = "/Users/paleolab/Linkages/"
   
   start.year = 850
   end.year = 2010

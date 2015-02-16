@@ -20,24 +20,28 @@
 ##' @export
 ##' @author Ann Raiho
 ##-------------------------------------------------------------------------------------------------#
-met2model.LINKAGES <- function(in.path, in.prefix=NULL, start.year, end.year, outfolder) {
+met2model.LINKAGES <- function(in.path, in.prefix=NULL, start.year, end.year, outfolder, site) {
    
   out.file <- file.path(paste0(outfolder,"test_text1.txt"))
   
   year = seq(start.year,end.year,1)
+  month = c("01","02","03","04","05","06","07","08","09","10","11","12")
   
   month_matrix_precip = matrix(NA,length(year),12)
-  julian_vec_hr = c(1,c(32,60,91,121,152,182,213,244,274,305,335,365)*4)
+  #julian_vec_hr = c(1,c(32,60,91,121,152,182,213,244,274,305,335,365)*4)
   
   for(i in 1:length(year)){
-    ncin <- nc_open(paste(in.path,year[i],".nc",sep=""))
-    #print(ncin)
-    ncprecipf = ncvar_get(ncin, "precipitation_flux") #units are kg m-2 s-1    
     for(m in 1:12){
-      month_matrix_precip[i,m] = sum(ncprecipf[julian_vec_hr[m]:(julian_vec_hr[m+1]-1)]) * 21600^2 #fix when Mike changes code
+      ncin <- nc_open(paste0(in.path,"precipf/",site,"_precipf_",
+                             formatC(year[i],width = 4,flag="0"),"_",
+                             month[m],".nc"))
+      #print(ncin)
+      ncprecipf = ncvar_get(ncin, "precipf") #units are kg m-2 s-1    
+      month_matrix_precip[i,m] = sum(ncprecipf) * 21600 #change to mm / month
+      nc_close(ncin)
     } 
-    nc_close(ncin)
-    #if(i%%100==0) cat(i," "); flush.console()
+    
+    if(i%%100==0) cat(i," "); flush.console()
   }
   
   nyear = length(year) #number of years to simulate
