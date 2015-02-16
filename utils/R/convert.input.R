@@ -42,15 +42,16 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
     dbfile = dbfile[nrow(dbfile),]
   }
   
+  args = c(dbfile$file_path,dbfile$file_name,outfolder,
+           start_date,end_date)
   
-  #  args = c(pkg,fcn,dbfile$file_path,dbfile$file_name,outfolder,
-  #           paste0("'",start_date,"'"), paste0("'",end_date,"'"))
+#   args = c(dbfile$file_path,dbfile$file_name,outfolder,
+#            start_date,end_date,paste(names(l),"=",unlist(l)))
+  
   if(!is.null(names(l))){
-    args = c(dbfile$file_path,dbfile$file_name,outfolder,
-             start_date,end_date,paste(names(l),"=",unlist(l)))
+    cmdFcn  = paste0(paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=",")),",",paste(paste(names(l),"=",unlist(l)), collapse=","))
   }else{
-    args = c(dbfile$file_path,dbfile$file_name,outfolder,
-             start_date,end_date)
+    cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")") 
   } 
   print(args)
   cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")") 
