@@ -73,9 +73,10 @@ if (length(which(commandArgs() == "--continue")) == 0) {
   status.start("CONVERSIONS")
   for(i in 1:length(settings$run$inputs)) {
     input <- settings$run$inputs[[i]]
-    input.tag <- names(settings$run$input)[i]
-    
+    if (is.null(input)) next
     if (length(input) == 1) next
+    
+    input.tag <- names(settings$run$input)[i]
     
     # fia database
     if (input['input'] == 'fia') {
