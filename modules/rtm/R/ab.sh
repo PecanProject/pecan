@@ -1,2 +1,2 @@
 #!/bin/bash
-Rscript autoburnin.R
+Rscript autoburnin.R $1

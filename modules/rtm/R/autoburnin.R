@@ -73,8 +73,55 @@ autoburnin <- function(path,
     }
 }
 
+diag.plots <- function(path = "../run_results/FFT_Jan28_leaf/",
+                       outpath = "../run_results/plots/",
+                       species = "CEOC",
+                       mb=5e5){
+    require(coda)
+    require(data.table)
+    flist <- list.files(path)
+    flist <- flist[grep(".*\\.dat", flist)]
+    flist <- flist[which(nchar(flist) > 5)]
+    speciesre <- sprintf("^%s_.*\\.dat", species)
+    fset <- flist[grep(speciesre, flist)]
+    fset <- fset[which(nchar(fset) > 5)]
+    l <- list()
+    nf <- system(sprintf("wc -l %s%s_*", path, species), TRUE)
+    n <- min(as.numeric(
+        sapply(nf,function(x) strsplit(x, "\\.\\.")[[1]][1]))[-17])
+    if(n > mb){
+        i.burnin <- mb
+    } else if (n > 100) {
+        i.burnin <- 1
+    } else {
+        print("Yep, bad run.")
+        stop()
+    }
+    for (f in fset){
+        lf.name <- sprintf("%s%s", path, f)
+        lf.head <- fread(lf.name, nrow=1, header=FALSE)[1,]
+        lf.body <- data.frame(fread(lf.name, header=FALSE, skip=i.burnin))
+        colnames(lf.body) <- lf.head
+        l[[f]] <- lf.body
+    }
+    l <- mcmc.list(lapply(l, mcmc))
+    
+    traceplot <- sprintf("%s%s_trace.pdf", outpath, species)
+    pdf(traceplot)
+    plot(l)
+    dev.off()
+    
+    gplot <- sprintf("%s%s_gelman.pdf", outpath, species)
+    pdf(gplot)
+    gelman.plot(l, autoburnin=FALSE, ylim=c(1,2))
+    dev.off()
+}
+
 ## Load results
 #autoburnin("../run_results/FFT_Jan27/")
-autoburnin("../run_results/FFT_Jan28_leaf/",
-           outpath="../run_results/ab_leafre/",
-           gd.threshold = 1.5)
+# autoburnin("../run_results/FFT_Jan28_leaf/",
+#            outpath="../run_results/ab_leafre/",
+#            gd.threshold = 1.5)
+
+args <- commandArgs(trailingOnly=TRUE)
+diag.plots("../run_results/FFT_Jan28_leaf/", species = args[1])
