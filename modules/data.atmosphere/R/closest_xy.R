@@ -1,3 +1,10 @@
+##' Given latitude and longitude coordinates, find NARR x and y indices
+##'
+##'
+##' @name closest_xy
+##' @title closest_xy
+##' @export
+##' @author Betsy Cowdery
 closest_xy = function(slat, slon,infolder,infile){
   #  require(ncdf4)
   

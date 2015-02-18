@@ -73,9 +73,10 @@ if (length(which(commandArgs() == "--continue")) == 0) {
   status.start("CONVERSIONS")
   for(i in 1:length(settings$run$inputs)) {
     input <- settings$run$inputs[[i]]
-    input.tag <- names(settings$run$input)[i]
-    
+    if (is.null(input)) next
     if (length(input) == 1) next
+    
+    input.tag <- names(settings$run$input)[i]
     
     # fia database
     if (input['input'] == 'fia') {
@@ -83,7 +84,7 @@ if (length(which(commandArgs() == "--continue")) == 0) {
     }
 
     # met download
-    if(FALSE){  ## old approach
+    if(TRUE){  ## old approach
     if (input['input'] == 'Ameriflux') {
       # start/end date for weather
       start_date <- settings$run$start.date
@@ -118,7 +119,13 @@ if (length(which(commandArgs() == "--continue")) == 0) {
                                           start_date=settings$run$start.date, end_date=settings$run$end.date,
                                           model=settings$model$type, host=settings$run$host,
                                           bety=settings$database$bety, dir=settings$run$dbfiles)
-          
+          if(FALSE){
+          foo = met.process(
+            site = settings$run$site, input=input['input'],
+            start_date=settings$run$start.date, end_date=settings$run$end.date,
+            model=settings$model$type, host=settings$run$host,
+            bety=settings$database$bety, dir=settings$run$dbfiles)
+          }
         }        
       }
     }

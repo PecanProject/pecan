@@ -15,7 +15,7 @@
 ##' @param lst is timezone offset from UTC, if timezone is available in time:units atribute in file, it will use that, default is to assume UTC
 ##' @author Ankur Desai
 ##'
-metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE, lst=0){
+metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst=0, overwrite=FALSE, verbose=FALSE){
   # get start/end year code works on whole years only
   start_year <- year(start_date)
   end_year <- year(end_date)
