@@ -12,8 +12,9 @@ library(nimble)
 # 
 # obs.spec <- specmatrix("ACRU", spectype="FFT")
 
-load("pinv_nimble_testdat.Rdata")
+#load("pinv_nimble_testdat.Rdata")
 n.iter <- 10
+AI <- 3
 
 prospect_LL <- nimbleFunction(
         setup = function(model, constants) {
@@ -30,20 +31,20 @@ prospect_LL <- nimbleFunction(
                 zeroswl <- rep(0, wl)
 
                 ### t90 pre-calculation
-                np = n*n + 1
-                nm = n*n - 1
-                a = (n + 1)*(n+1) / 2
-                k = (-((n*n - 1)*(n*n - 1))) / 4
-                b1 = 0
-                b2 = 1 - np/2
-                b = b1 - b2
+                np <- n*n + 1
+                nm <- n*n - 1
+                a <- (n + 1)*(n+1) / 2
+                kt <- (-((n*n - 1)*(n*n - 1))) / 4
+                b1 <- 0
+                b2 <- 1 - np/2
+                b <- b1 - b2
 
                 ### tav pre-calculation
                 alpha <- 0.69813170079  # 40 * pi/180
-                sa = sin(alpha)
-                bV1 = sqrt((sa*sa - np/2) * (sa*sa - np/2) + k)
-                bV2 = sa*sa - np/2
-                bV = bV1 - bV2
+                sa <- sin(alpha)
+                bV1 <- sqrt((sa*sa - np/2) * (sa*sa - np/2) + kt)
+                bV2 <- sa*sa - np/2
+                bV <- bV1 - bV2
         },
         run = function(){
 
@@ -52,7 +53,7 @@ prospect_LL <- nimbleFunction(
                 theta <- zeroswl
                 Refl <- zeroswl
 
-                k = (1.0/model$N) * (model$Cab * Cab_abs +
+                k <- (1.0/model$N) * (model$Cab * Cab_abs +
                                      model$Cw * Cw_abs +
                                      model$Cm * Cm_abs)
                 tau <- zeroswl
@@ -106,7 +107,7 @@ prospect_LL <- nimbleFunction(
                 theta <- tau
 
                 ### Transmissivity of elementary layer at nadir (t90)
-                ts = (k*k/(6.0*b*b*b) + k/b - b/2.0) - (k*k/(6.0*a*a*a) + k/a - a/2.0)
+                ts = (kt*kt/(6.0*b*b*b) + kt/b - b/2.0) - (kt*kt/(6.0*a*a*a) + kt/a - a/2.0)
                 tp1 = -2.0*n*n * (b - a) / (np*np)
                 tp2 = -2.0*n*n * np * log(b/a) / (nm*nm)
                 tp3 = n*n * (1.0/b - 1.0/a) / 2.0
@@ -117,7 +118,7 @@ prospect_LL <- nimbleFunction(
                 t90 <- out
 
                 ### Transmissivity of elementary layer at alpha (40 deg)
-                ts = (k*k/(6.0*bV*bV*bV) + k/bV - bV/2.0) - (k*k/(6.0*a*a*a) + k/a - a/2.0)
+                ts = (kt*kt/(6.0*bV*bV*bV) + kt/bV - bV/2.0) - (kt*kt/(6.0*a*a*a) + kt/a - a/2.0)
                 tp1 = -2.0*n*n * (bV - a) / (np*np)
                 tp2 = -2.0*n*n * np * log(bV/a) / (nm*nm)
                 tp3 = n*n * (1.0/bV - 1.0/a) / 2.0
@@ -149,7 +150,7 @@ prospect_LL <- nimbleFunction(
                 nmR = taoa * tao90 * b90^(model$N-1.0) - b90^(1.0-model$N)
                 #nmT = taoa * (a90 - 1/a90)    # Transmittance calcs
                 dmRT = a90*b90^(model$N-1.0) - b90^(1.0-model$N)/a90 - rho90 * (b90^(model$N-1.0) - b90^(1.0-model$N))
-                Rmodel$Na = rhoa + nmR / dmRT
+                RNa = rhoa + nmR / dmRT
                 #Tmodel$Na = nmT / dmRT   # Transmittance calcs
 
 # Likelihood calculation --------------------------------------------------
@@ -198,33 +199,41 @@ prospectSpec$removeSamplers(1:5)
 specialized_prospect_LL <- prospect_LL(prospect, prospectConstants)
 
 prospectSpec$addSampler(type = "RW_llFunction",
-                        control = list(targetNode = "N",
+                        control = list(targetNode = "Ni",
                                        llFunction = specialized_prospect_LL,
-                                       includesTarget = FALSE))
+                                       includesTarget = FALSE,
+                                       adaptInterval = AI))
 prospectSpec$addSampler(type = "RW_llFunction",
                         control = list(targetNode = "Cab",
                                        llFunction = specialized_prospect_LL,
-                                       includesTarget = FALSE))
+                                       includesTarget = FALSE,
+                                       adaptInterval = AI))
 prospectSpec$addSampler(type = "RW_llFunction",
                         control = list(targetNode = "Cw",
                                        llFunction = specialized_prospect_LL,
-                                       includesTarget = FALSE))
+                                       includesTarget = FALSE,
+                                       adaptInterval = AI))
 prospectSpec$addSampler(type = "RW_llFunction",
                         control = list(targetNode = "Cm",
                                        llFunction = specialized_prospect_LL,
-                                       includesTarget = FALSE))
+                                       includesTarget = FALSE,
+                                       adaptInterval = AI))
 prospectSpec$addSampler(type = "RW_llFunction",
-                        control = list(targetNode = "resv",
+                        control = list(targetNode = "resp",
                                        llFunction = specialized_prospect_LL,
                                        includesTarget = FALSE))
 prospectSpec$addMonitors(c("N", "Cab", "Cw", "Cm", "resv"))
-print("Building MCMC...")
 prospectMCMC <- buildMCMC(prospectSpec, project = prospect)
-prosProj <- compileNimble(prospect, prospectMCMC, dirName = getwd())
+prosProj <- compileNimble(prospect, prospectMCMC)
 
 prosProj$prospectMCMC$run(n.iter)
 samples1 <- as.matrix(prospectMCMC$mvSamples)
+par(mfrow=c(3,2))
 plot(samples1[,"N"], type='l')
+plot(samples1[,"Cab"], type='l')
+plot(samples1[,"Cw"], type='l')
+plot(samples1[,"Cm"], type='l')
+plot(samples1[,"resp"], type='l')
 
 # print("Compiling...")
 # Cprospect <- compileNimble(prospect)
