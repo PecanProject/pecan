@@ -1,0 +1,52 @@
+---
+title: "Trait analysis"
+author: "Alexey Shiklomanov"
+date: "02/13/2015"
+output: word_document
+---
+```{r, echo=FALSE}
+### Load libraries 
+
+```
+
+# Methods
+
+## Study sites and data description
+
+```{r}
+### Species information table
+```
+
+## PROSPECT model
+
+```{r}
+### Sensitivity analysis
+
+```
+
+## Statistical inversion
+
+```{r}
+### PROSPECT priors
+
+```
+
+## Trait analysis
+
+# Results
+
+## Inversion summary
+
+```{r, echo=FALSE}
+### Summary tables
+# By species
+# By family
+# By conifer/deciduous
+
+```
+
+## Linking PROSPECT parameters to traits
+
+```{r}
+
+```
