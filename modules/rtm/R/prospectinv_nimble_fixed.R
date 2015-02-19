@@ -3,17 +3,17 @@ library(nimble)
 # setwd("R/")
 # PATH.pd <- "../data/dataSpec_p4.RData"
 # PATH.sm <- "input_matrix.R"
-# 
+#
 # source(PATH.sm)
-# 
+#
 # load(PATH.pd)
 # dat.p <- dataSpec_p4
 # rm(dataSpec_p4)
-# 
+#
 # obs.spec <- specmatrix("ACRU", spectype="FFT")
 
 
-load("R/pinv_nimble_testdat.Rdata")
+# load("pinv_nimble_testdat.Rdata")
 n.iter <- 30
 AI <- 3
 
@@ -274,10 +274,10 @@ plot(samples1[,"resv"], type='l')
 # Cprospect <- compileNimble(prospect)
 # CprospectMCMC <- compileNimble(prospectMCMC)
 # print("Compiled successfully! Starting run...")
-# 
+#
 # CprospectMCMC$run(n.iter)
 # print("Complete! Post processing...")
-# 
+#
 # samples <- as.matrix(CprospectMCMC$mvSamples)
 # plot(samples[,"N"], type='l')
 
