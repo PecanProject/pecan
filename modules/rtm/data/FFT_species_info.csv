@@ -1,52 +1,52 @@
-Label,Q,Genus,Species,Common name,Family,Con_vs_Dec,Succession
-ABBA,,Abies,balsamea,balsam fir,Pinaceae,Conifer,
-ACNE,,Acer,negundo,Box elder,Sapindaceae,,
-ACPL,,Acer,platanoides,Norway maple,Aceraceae,,
-ACRU,,Acer,rubrum,Red maple,Aceraceae,,
-ACSM,?,Acacia,smallii,,Fabaceae,,
-ACSN,?,Acer,saccharum,sugar maple,Aceraceae,,
-ACSP,?,Acer,spicatum,mountain maple,Aceraceae,,
-ALIN,?,Alnus,incana,gray alder,Betulaceae,,
-ANGE,?,Andropogon,gerardii,,Poaceae,,
-BEAL,,Betula,alleghaniensis,yellow birch,Betulaceae,,
-BELE,,Betula,lenta,sweet birch,Betulaceae,,
-BEPA,,Betula,papyrifera,paper birch,Betulaceae,,
-CAAL,?,Carex,albursina,white bear sedge,Cyperaceae,,
-CAOV,,Carya,alba,mockernut hickory,Juglandaceae,,
-CEOC,?,Celtis,occidentalis,common hackberry,Ulmaceae,,
-COAM,?,Corylus,americana,American hazelnut,Beulaceae,,
-COFL,,Cornus,florida,flowering dogwood,Cornaceae,,
-FAGR,,Fagus,grandifolia,American beech,Fagaceae,,
-FRAM,,Fraxinus,americana,white ash,Oleaceae,,
-FRNI,,Fraxinus,nigra,black ash,Oleaceae,,
-FRPE,,Fraxinus,pennsylvanica,green ash,Oleaceae,,
-JUNI,,Juglans,nigra,black walnut,Juglandaceae,,
-JUVI,,Juniperus,virginiana,eastern redcedar,Cupressaceae,Conifer,
-LALA,?,Larix,laricina,tamarack,Pinaceae,Conifer,
-LEGR,?,Leucophysalis,grandiflora,large false groundcherry,Solanaceae,,
-LITU,,Liriodendron,tulipifera,tuliptree,Magnoliaceae,,
-MAAC,,Magnolia,acuminata,cucumber-tree,Magnoliaceae,,
-NYSY,,Nyssa,sylvatica,blackgum,Cornaceae,,
-OSVI,,Ostrya,virginiana,hophornbeam,Betulaceae,,
-PIRU,,Picea,rubens,red spruce,Pinaceae,Conifer,
-PIST,,Pinus,strobus,eastern white pine,Pinaceae,Conifer,
-PISY,,Pinus,sylvestris,Scots pine,Pinaceae,Conifer,
-PODE,,Populus,deltoides,eastern cottonwood,Salicaceae,,
-POGR,,Populus,grandidentata,bigtooth aspen,Salicaceae,,
-POTR,,Populus,tremuloides,quaking aspen,Salicaceae,,
-PRPE,,Prunus,persica,peach,Rosaceae,,
-PRUNUS,,Prunus,spp,prunus genus,Rosaceae,,
-QUAL,,Quercus,alba,white oak,Fagaceae,,
-QUEL,,Quercus,ellipsoidalis,northern pin oak,Fagaceae,,
-QUMA,?,Quercus,macrocarpa,bur oak,Fagaceae,,
-QUPR,,Quercus,prinus,chestnut oak,Fagaceae,,
-QURU,,Quercus,rubra,northern red oak,Fagaceae,,
-RHCA,?,Rhamnus,californica,,Rhamnaceae,,
-ROPS,,Robina,pseudoacacia,black locust,Fabaceae,,
-SAAL,,Salix,alaxensis,feltleaf willow,Salicaceae,,
-THOC,,Thuja,occidentalis,Northern white cedar,Cupressaceae,Conifer,
-TIAM,,Tilia,americana,American basswood,Tiliaceae,,
-TSCA,,Tsuga,canadensis,eastern hemlock,Pinaceae,Conifer,
-TYLA,?,Typha,latifolia,broadleaf cattail,Typhaceae,,
-ULAM,,Ulmus,americana,American elm,Ulmaceae,,
-UNKN1,,unk,unk,unk,unk,,
+Label,Q,Genus,Species,Common name,Family,Con_vs_Dec,PFT,Correct_label
+ABBA,,Abies,balsamea,balsam fir,Pinaceae,Conifer,LC,ABBA
+ACNE,,Acer,negundo,Box elder,Sapindaceae,Deciduous,LH,ACNE2
+ACPL,,Acer,platanoides,Norway maple,Aceraceae,Deciduous,LH,ACPL
+ACRU,,Acer,rubrum,Red maple,Aceraceae,Deciduous,LH,ACRU
+ACSM,?,Acacia,smallii,,Fabaceae,Deciduous,,
+ACSN,?,Acer,saccharum,sugar maple,Aceraceae,Deciduous,,
+ACSP,?,Acer,spicatum,mountain maple,Aceraceae,Deciduous,LH,ACSP2
+ALIN,?,Alnus,incana,gray alder,Betulaceae,Deciduous,,
+ANGE,?,Andropogon,gerardii,,Poaceae,Deciduous,,
+BEAL,,Betula,alleghaniensis,yellow birch,Betulaceae,Deciduous,EH,BEAL2
+BELE,,Betula,lenta,sweet birch,Betulaceae,Deciduous,EH,BELE
+BEPA,,Betula,papyrifera,paper birch,Betulaceae,Deciduous,EH,BEPA
+CAAL,?,Carya,alba,mockernut hickory,Cyperaceae,Deciduous,EH,CAAL27
+CAOV,?,Carya,ovata/ovalis?,Hickory – shagbark/red?,Juglandaceae,Deciduous,NMH,CAOV2/3
+CEOC,,Celtis,occidentalis,common hackberry,Ulmaceae,Deciduous,NMH,CEOC
+COAM,?,Corylus,americana,American hazelnut,Beulaceae,Deciduous,,
+COFL,,Cornus,florida,flowering dogwood,Cornaceae,Deciduous,LH,COFL2
+FAGR,,Fagus,grandifolia,American beech,Fagaceae,Deciduous,LH,FAGR
+FRAM,,Fraxinus,americana,white ash,Oleaceae,Deciduous,NMH,FRAM2
+FRNI,,Fraxinus,nigra,black ash,Oleaceae,Deciduous,NMH,FRNI
+FRPE,,Fraxinus,pennsylvanica,green ash,Oleaceae,Deciduous,NMH,FRPE
+JUNI,,Juglans,nigra,black walnut,Juglandaceae,Deciduous,NMH,JUNI
+JUVI,,Juniperus,virginiana,eastern redcedar,Cupressaceae,Conifer,LC,JUVI
+LALA,,Larix,laricina,tamarack,Pinaceae,Conifer,EH,LALA
+LEGR,?,Leucophysalis,grandiflora,large false groundcherry,Solanaceae,Deciduous,,
+LITU,,Liriodendron,tulipifera,tuliptree,Magnoliaceae,Deciduous,SMH,LITU
+MAAC,,Magnolia,acuminata,cucumber-tree,Magnoliaceae,Deciduous,SMH,MAAC
+NYSY,,Nyssa,sylvatica,blackgum,Cornaceae,Deciduous,SMH,NYSY
+OSVI,,Ostrya,virginiana,hophornbeam,Betulaceae,Deciduous,NMH,OSVI
+PIRU,,Picea,rubens,red spruce,Pinaceae,Conifer,MC,PIRU
+PIST,,Pinus,strobus,eastern white pine,Pinaceae,Conifer,NP,PIST
+PISY,,Pinus,sylvestris,Scots pine,Pinaceae,Conifer,NP,PISY
+PODE,,Populus,deltoides,eastern cottonwood,Salicaceae,Deciduous,EH,PODE3
+POGR,,Populus,grandidentata,bigtooth aspen,Salicaceae,Deciduous,EH,POGR4
+POTR,,Populus,tremuloides,quaking aspen,Salicaceae,Deciduous,EH,POTR5
+PRPE,,Prunus,persica,peach,Rosaceae,Deciduous,EH,PRPE2
+PRUNUS,,Prunus,spp,cherry,Rosaceae,Deciduous,EH,PRUNU
+QUAL,,Quercus,alba,white oak,Fagaceae,Deciduous,NMH,QUAL
+QUEL,,Quercus,ellipsoidalis,northern pin oak,Fagaceae,Deciduous,NMH,QUEL
+QUMA,?,Quercus,macrocarpa,bur oak,Fagaceae,Deciduous,NMH,QUMA2
+QUPR,?,Quercus,prinus,chestnut oak,Fagaceae,Deciduous,NMH,QUPR
+QURU,,Quercus,rubra,northern red oak,Fagaceae,Deciduous,NMH,QURU
+RHCA,?,Rhamnus,californica,,Rhamnaceae,Deciduous,,
+ROPS,,Robina,pseudoacacia,black locust,Fabaceae,Deciduous,EH,ROPS
+SAAL,?,Sassafras,albidum,sassafras,Salicaceae,Deciduous,NMH,SAAL5
+THOC,,Thuja,occidentalis,Northern white cedar,Cupressaceae,Conifer,LC,THOC2
+TIAM,,Tilia,americana,American basswood,Tiliaceae,Deciduous,LH,TIAM
+TSCA,,Tsuga,canadensis,eastern hemlock,Pinaceae,Conifer,LC,TSUGA
+TYLA,?,Typha,latifolia,broadleaf cattail,Typhaceae,Deciduous,,
+ULAM,,Ulmus,americana,American elm,Ulmaceae,Deciduous,NMH,ULAM
+UNKN1,,unk,unk,unk,unk,Deciduous,,
