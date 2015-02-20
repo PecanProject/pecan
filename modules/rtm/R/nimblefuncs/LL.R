@@ -1,7 +1,16 @@
+### Custom log-likelihood function for NIMBLE
+### Metropolis-Hastings algorithm
+
 prospect_LL <- nimbleFunction(
         setup = function(model, constants) {
+                ### Load constants
+                observed <- constants$observed
+                nspec <- constants$nspec
+                wl <- constants$wl
+
                 ### Load specerror function
                 getrefl <- prospect_refl(model, constants)
+
         },
         run = function(){
                 declare(specerror, double(2, c(wl, nspec)))
@@ -15,6 +24,6 @@ prospect_LL <- nimbleFunction(
                                 logL <- logL + dnorm(specerror[i,j], 0, model$resp, 1)
                         }
                 }
-                return(logL)
                 returnType(double(0))
+                return(logL)
         })
