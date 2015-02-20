@@ -2,7 +2,7 @@
 library(nimble)
 
 ### Initial setup
-n.iter <- 10
+n.iter <- 100
 AI <- 3
 
 ### Bayesian inversion
@@ -26,7 +26,7 @@ prospectConstants <- list(nr = dat.p[,2],
 
 prospectInits <- list(N = 1.4,
                       Cab = 30,
-                      Cw = 0.0017,
+                      Cw = 0.01,
                       Cm = 0.006,
                       resp = 0.5)
 
@@ -36,9 +36,14 @@ prospect <- nimbleModel(code = prospectCode,
                         inits = prospectInits)
 
 ### Load custom samplers
-source("nimblefuncs/reflectance.R")
-source("nimblefuncs/LL.R")
+# source("nimblefuncs/reflectance.R")
+# source("nimblefuncs/LL.R")
 #source("nimblefuncs/resp_sampler.R")
+source("nimblefuncs/LL_perry.R")
+
+# tp <- prospect_refl(prospect, prospectConstants)
+# plot(tp$run(), type='l')
+
 
 prospectSpec <- configureMCMC(prospect, print=TRUE)
 prospectSpec$removeSamplers(1:5)
@@ -78,7 +83,7 @@ prospectMCMC <- buildMCMC(prospectSpec, project = prospect)
 
 ### Compilation
 print("Begin compilation")
-prosProj <- compileNimble(prospect, prospectMCMC, dirName = "nimble_compilation")
+prosProj <- compileNimble(prospect, prospectMCMC)
 print("Compilation complete!")
 
 ### Run MCMC
