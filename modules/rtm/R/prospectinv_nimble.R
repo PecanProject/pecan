@@ -36,10 +36,11 @@ prospect <- nimbleModel(code = prospectCode,
                         inits = prospectInits)
 
 ### Load custom samplers
-# source("nimblefuncs/reflectance.R")
-# source("nimblefuncs/LL.R")
+#source("nimblefuncs/reflectance.R")
+#source("nimblefuncs/LL2.R")
 #source("nimblefuncs/resp_sampler.R")
 source("nimblefuncs/LL_perry.R")
+source("nimblefuncs/resp_long.R")
 
 # tp <- prospect_refl(prospect, prospectConstants)
 # plot(tp$run(), type='l')
@@ -70,13 +71,13 @@ prospectSpec$addSampler(type = "RW_llFunction",
                                        llFunction = specialized_prospect_LL,
                                        includesTarget = FALSE,
                                        adaptInterval = AI))
-#prospectSpec$addSampler(type = "resp", control = list(targetNode = "resp"))
+prospectSpec$addSampler(type = "resp", control = list(targetNode = "resp"))
 
-prospectSpec$addSampler(type = "RW_llFunction",
-                        control = list(targetNode = "resp",
-                                       llFunction = specialized_prospect_LL,
-                                       includesTarget = FALSE,
-                                       adaptInterval = AI))
+# prospectSpec$addSampler(type = "RW_llFunction",
+#                         control = list(targetNode = "resp",
+#                                        llFunction = specialized_prospect_LL,
+#                                        includesTarget = FALSE,
+#                                        adaptInterval = AI))
 
 prospectSpec$addMonitors(c("N", "Cab", "Cw", "Cm", "resp"))
 prospectMCMC <- buildMCMC(prospectSpec, project = prospect)
@@ -88,8 +89,9 @@ print("Compilation complete!")
 
 ### Run MCMC
 print("Begin MCMC...")
-prosProj$prospectMCMC$run(n.iter)
+sw <- system.time(prosProj$prospectMCMC$run(n.iter))
 print("MCMC complete!")
+print(sw)
 
 ### Check output
 samples1 <- as.matrix(prosProj$prospectMCMC$mvSamples)
