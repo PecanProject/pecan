@@ -15,19 +15,19 @@ prospect_refl <- nimbleFunction(
                 ### Setup wavelength vector
                 zeroswl <- rep(0, wl)
 
-                ### t90 pre-calculation
-                np <- n^2 + 1
-                nm <- n^2 - 1
-                a <- (n + 1)^2 / 2
-                kt <- (-(nm^2)) / 4
-                b <- np/2 - 1
-
-                ### tav pre-calculation
-                alpha <- 0.69813170079  # 40 * pi/180
-                sa <- sin(alpha)
-                bV1 <- sqrt((sa^2 - np/2)^2 + kt)
-                bV2 <- sa^2 - np/2
-                bV <- bV1 - bV2
+#                ### t90 pre-calculation
+#                np <- n^2 + 1
+#                nm <- n^2 - 1
+#                a <- (n + 1)^2 / 2
+#                kt <- (-(nm^2)) / 4
+#                b <- np/2 - 1
+#
+#                ### tav pre-calculation
+#                alpha <- 0.69813170079  # 40 * pi/180
+#                sa <- sin(alpha)
+#                bV1 <- sqrt((sa^2 - np/2)^2 + kt)
+#                bV2 <- sa^2 - np/2
+#                bV <- bV1 - bV2
         },
         run = function(){
                 ### Initializing variables
@@ -87,6 +87,16 @@ prospect_refl <- nimbleFunction(
                 theta <- tau
 
                 ### Transmissivity of elementary layer at nadir (t90)
+                # Constants...
+                sa = 1 # sin(pi/2)
+                np = n*n + 1
+                nm = n*n - 1
+                a = (n + 1)*(n+1) / 2
+                kt = (-((n*n - 1)*(n*n - 1))) / 4
+                b1 = 0
+                b2 = sa*sa - np/2
+                b = b1 - b2
+                # ...?
                 ts = (kt^2/(6.0*b^3) + kt/b - b/2.0) - (kt^2/(6.0*a^3) + kt/a - a/2.0)
                 tp1 = -2.0*n^2 * (b - a) / (np^2)
                 tp2 = -2.0*n^2 * np * log(b/a) / (nm^2)
@@ -97,41 +107,52 @@ prospect_refl <- nimbleFunction(
                 t90 = (ts + tp) / (2.0)
 
                 ### Transmissivity of elementary layer at alpha (40 deg)
-                ts = (kt^2/(6.0*bV^3) + kt/bV - bV/2.0) - (kt^2/(6.0*a^3) + kt/a - a/2.0)
-                tp1 = -2.0*n^2 * (bV - a) / (np^2)
-                tp2 = -2.0*n^2 * np * log(bV/a) / (nm^2)
-                tp3 = n^2 * (1.0/bV - 1.0/a) / 2.0
-                tp4 = 16.0*n^4 * (n^4 + 1.0) * log((2.0*np*bV - nm^2)/(2.0*np*a - nm^2)) / (np^3 * nm^2)
-                tp5 = 16.0*n^6 * (1.0/(2.0*np*bV - nm^2) - 1.0/(2.0*np*a - nm^2)) / (np^3)
+                # Constants...
+                alpha <- 0.69813170079 # 40 * pi/180
+                sa = sin(alpha)
+                np = n*n + 1
+                nm = n*n - 1
+                a = (n + 1)*(n+1) / 2
+                kt = (-((n*n - 1)*(n*n - 1))) / 4
+                b1V = sqrt((sa*sa - np/2) * (sa*sa - np/2) + kt) 
+                b2 = sa*sa - np/2
+                bV = b1V - b2 
+                # ...?
+                ts = (kt*kt/(6.0*bV*bV*bV) + kt/bV - bV/2.0) - (kt*kt/(6.0*a*a*a) + kt/a - a/2.0)
+                tp1 = -2.0*n*n * (bV - a) / (np*np)
+                tp2 = -2.0*n*n * np * log(bV/a) / (nm*nm)
+                tp3 = n*n * (1.0/bV - 1.0/a) / 2.0
+                tp4 = 16.0*n*n*n*n * (n*n*n*n + 1.0) * log((2.0*np*bV - nm*nm)/(2.0*np*a - nm*nm)) / (np*np*np * nm*nm)
+                tp5 = 16.0*n*n*n*n*n*n * (1.0/(2.0*np*bV - nm*nm) - 1.0/(2.0*np*a - nm*nm)) / (np*np*np)
                 tp = tp1 + tp2 + tp3 + tp4 + tp5
-                tav = (ts + tp) / (2.0*sa^2)
+                out = (ts + tp) / (2.0*sa*sa)
+                tav = out
 
                 # "x" and "y" simplifications from original PROSPECT model (Jacquemoud & Baret 1990)
                 x = tav / t90
                 y = x * (t90 - 1.0) + 1.0 - tav
-
+                
                 # Reflectance and transmittance of first layer (N=1)
                 tao1 = tav
-                tao2 = t90 / (n^2)
+                tao2 = t90 / (n*n)
                 rho1 = 1 - tao1
                 rho2 = 1 - tao2
-                rhoa = rho1 + (tao1 * tao2 * rho2 * theta^2) / (1 - rho2^2 * theta^2)
-                taoa = tao1 * tao2 * theta / (1 - rho2^2 * theta^2)
+                rhoa = rho1 + (tao1 * tao2 * rho2 * theta*theta) / (1 - rho2*rho2 * theta*theta)
+                taoa = tao1 * tao2 * theta / (1 - rho2*rho2 * theta*theta)
                 rho90 = (rhoa - y) / x
                 tao90 = taoa / x
 
-
                 # Reflectance and transmittance of N layers (Stokes coefficients)
-                d90 = sqrt((tao90^2 - rho90^2 - 1.0)*(tao90^2 - rho90^2 - 1.0) - 4.0*rho90^2)
-                a90 = (1.0 + rho90^2 - tao90^2 + d90) / (2.0*rho90)
-                b90 = (1.0 - rho90^2 + tao90^2 + d90) / (2.0*tao90)
-                #nmR = taoa * tao90 * (pow(b90,(model$N-1.0)) - pow(b90,(1.0-model$N)))
-                nmR = taoa * tao90 * b90^(model$N-1.0) - b90^(1.0-model$N)
-                dmRT = a90*b90^(model$N-1.0) - b90^(1.0-model$N)/a90 - rho90 * (b90^(model$N-1.0) - b90^(1.0-model$N))
+                d90 = sqrt((tao90*tao90 - rho90*rho90 - 1.0)*(tao90*tao90 - rho90*rho90 - 1.0) - 4.0*rho90*rho90)
+                a90 = (1.0 + rho90*rho90 - tao90*tao90 + d90) / (2.0*rho90)
+                b90 = (1.0 - rho90*rho90 + tao90*tao90 + d90) / (2.0*tao90)
+                nmR = taoa * tao90 * (pow(b90,(model$N-1.0)) - pow(b90,(1.0-model$N)))
+                ## nmR = taoa * tao90 * (b90^(model$N-1.0) - b90^(1.0-model$N))
+                #nmT = taoa * (a90 - 1/a90) # Transmittance calcs
+                dmRT = a90*pow(b90, (model$N-1.0)) - pow(b90, (1.0-model$N))/a90 - rho90 * (pow(b90, (model$N-1.0)) - pow(b90,(1.0-model$N)))
+                ## dmRT = a90*b90^(model$N-1.0) - b90^(1.0-model$N)/a90 - rho90 * (b90^(model$N-1.0) - b90^(1.0-model$N))
                 Refl = rhoa + nmR / dmRT
-
-                #Tmodel$Na = nmT / dmRT   # Transmittance calcs
-                #nmT = taoa * (a90 - 1/a90)    # Transmittance calcs
+                #TNa = nmT / dmRT # Transmittance calcs
 
                 returnType(double(1, wl))
                 return(Refl)
