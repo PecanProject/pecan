@@ -10,7 +10,6 @@
 ##Functions to prepare and write out ED2.2 config.xml files for MA, SA, and Ensemble runs
 ##-------------------------------------------------------------------------------------------------#
 
-
 ##-------------------------------------------------------------------------------------------------#
 PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
 
