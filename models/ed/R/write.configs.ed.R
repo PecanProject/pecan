@@ -10,6 +10,7 @@
 ##Functions to prepare and write out ED2.2 config.xml files for MA, SA, and Ensemble runs
 ##-------------------------------------------------------------------------------------------------#
 
+
 ##-------------------------------------------------------------------------------------------------#
 PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
 
@@ -52,28 +53,28 @@ convert.samples.ED <- function(trait.samples){
   if('Vcmax' %in% names(trait.samples)) {
     vcmax <- trait.samples[['Vcmax']]
     trait.samples[['Vcmax']] <- arrhenius.scaling(vcmax, old.temp = 25, new.temp = 15)
-
+    
     ## Convert leaf_respiration_rate_m2 to dark_resp_factor; requires Vcmax
     if('leaf_respiration_rate_m2' %in% names(trait.samples)) {
       leaf_resp = trait.samples[['leaf_respiration_rate_m2']]
-    
+      
       ## First scale variables to 15 degC
       trait.samples[['leaf_respiration_rate_m2']] <- 
-      arrhenius.scaling(leaf_resp, old.temp = 25, new.temp = 15)
-    
+        arrhenius.scaling(leaf_resp, old.temp = 25, new.temp = 15)
+      
       ## Calculate dark_resp_factor -- Will be depreciated when moving from older versions of ED2
       trait.samples[['dark_respiration_factor']] <- trait.samples[['leaf_respiration_rate_m2']]/
-         trait.samples[['Vcmax']]
-    
+        trait.samples[['Vcmax']]
+      
       ## Remove leaf_respiration_rate from trait samples -- NO LONGER NEEDED
       #remove <- which(names(trait.samples)=='leaf_respiration_rate_m2')
       #trait.samples = trait.samples[-remove]
-    
+      
     } ## End dark_respiration_factor loop
   } ## End Vcmax  
   # for debugging conversions
   #save(trait.samples, file = file.path(settings$outdir, 'trait.samples.Rdata'))
-
+  
   # return converted samples
   return(trait.samples)
 }
@@ -100,7 +101,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   # find out where to write run/ouput
   rundir <- file.path(settings$run$host$rundir, run.id)
   outdir <- file.path(settings$run$host$outdir, run.id)
-
+  
   # command if scratch is used
   if (is.null(settings$run$host$scratchdir)) {
     modeloutdir <- outdir
@@ -115,7 +116,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
       clearscratch <- "# scratch is not cleared"
     }
   }
-
+  
   # create launch script (which will create symlink)
   if (!is.null(settings$run$jobtemplate) && file.exists(settings$run$jobtemplate)) {
     jobsh <- readLines(con=settings$run$jobtemplate, n=-1)
@@ -144,7 +145,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   ## Get ED2 specific model settings and put into output config xml file
   xml <- listToXml(settings$model$config.header, 'config')
   names(defaults) <- sapply(defaults, function(x) x$name)
-
+  
   ## TODO this should come from the database
   histfile <- paste("data/history.r", settings$model$revision, ".csv", sep='')
   if (file.exists(system.file(histfile, package="PEcAn.ED2"))) {
@@ -233,13 +234,13 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   
   metstart <- tryCatch(format(as.Date(settings$run$site$met.start), "%Y"), error=function(e) settings$run$site$met.start)
   metend   <- tryCatch(format(as.Date(settings$run$site$met.end), "%Y"), error=function(e) settings$run$site$met.end)
-
+  
   ed2in.text <- gsub('@SITE_LAT@', settings$run$site$lat, ed2in.text)
   ed2in.text <- gsub('@SITE_LON@', settings$run$site$lon, ed2in.text)
   ed2in.text <- gsub('@SITE_MET@', settings$run$inputs$met, ed2in.text)
   ed2in.text <- gsub('@MET_START@', metstart, ed2in.text)
   ed2in.text <- gsub('@MET_END@', metend, ed2in.text)
-
+  
   if(is.null(settings$model$phenol.scheme)){
     print(paste("no phenology scheme set; \n",
                 "need to add <phenol.scheme> tag under <model> tag in settings file"))
@@ -272,17 +273,9 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
     ed2in.text <- gsub('@INIT_MODEL@', 0, ed2in.text)
     ed2in.text <- gsub('@SITE_PSSCSS@', "", ed2in.text)
   }
-  else {
-    # pss and css are not in the same directory, case 0
-    if (!identical(dirname(settings$run$inputs$pss), dirname(settings$run$inputs$css)))
-    {
-      ed2in.text <- gsub('@INIT_MODEL@', 0, ed2in.text)
-      ed2in.text <- gsub('@SITE_PSSCSS@', "", ed2in.text)
-    }
-    
-    prefix.pss <- sub("\\.lat.*", "", basename(settings$run$inputs$pss))
-    prefix.css <- sub("\\.lat.*", "", basename(settings$run$inputs$css))
-    
+  else{
+    prefix.pss <- sub(".lat.*", "", settings$run$inputs$css)
+    prefix.css <- sub(".lat.*", "", settings$run$inputs$pss)
     # pss and css prefix is not the same, kill
     if (!identical(prefix.pss , prefix.css)){
       logger.severe("ED2 css/pss/ files have different prefix")
@@ -292,23 +285,21 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
       value <- 2
       # site exists 
       if (!is.null(settings$run$inputs$site)){
-        prefix.sites <- sub("\\.lat.*", "", basename(settings$run$inputs$site))
-        # if sites pss css in the same directory 
-        if(identical(dirname(settings$run$inputs$pss), dirname(settings$run$inputs$site))){
-          # sites and pss have different prefix name, kill 
-          if (!identical (prefix.sites, prefix.pss)){
-            logger.severe("ED2 css/pss/ files have different prefix")
-          }
-          #sites and pass same prefix name, case 3
-          else{
-            value <- 3
-          }
+        prefix.sites <- sub(".lat.*", "", settings$run$inputs$site)
+        # sites and pss have different prefix name, kill 
+        if (!identical (prefix.sites, prefix.pss)){
+          logger.severe("ED2 sites/pss/ files have different prefix")
+        }
+        #sites and pass same prefix name, case 3
+        else{
+          value <- 3
         }
       }
-      ed2in.text <- gsub('@INIT_MODEL@', value, ed2in.text)
-      ed2in.text <- gsub('@SITE_PSSCSS@', file.path(dirname(settings$run$inputs$pss),paste0(prefix.pss, '.')), ed2in.text)
-    } 
-  }
+    }
+    ed2in.text <- gsub('@INIT_MODEL@', value, ed2in.text)
+    ed2in.text <- gsub('@SITE_PSSCSS@', paste0(prefix.pss, '.'), ed2in.text)
+  } 
+  
   
   ##----------------------------------------------------------------------
   
@@ -316,8 +307,8 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   ed2in.text <- gsub('@ED_SOIL@', settings$run$inputs$soil, ed2in.text)
   ed2in.text <- gsub('@ED_LU@', settings$run$inputs$lu, ed2in.text)
   ed2in.text <- gsub('@ED_THSUM@', ifelse(str_sub(settings$run$inputs$thsum, -1) == "/",
-                                   settings$run$inputs$thsum,
-                                   paste0(settings$run$inputs$thsum, "/")), ed2in.text)
+                                          settings$run$inputs$thsum,
+                                          paste0(settings$run$inputs$thsum, "/")), ed2in.text)
   
   ##----------------------------------------------------------------------
   ed2in.text <- gsub('@START_MONTH@', format(startdate, "%m"), ed2in.text)
@@ -326,7 +317,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   ed2in.text <- gsub('@END_MONTH@', format(enddate, "%m"), ed2in.text)
   ed2in.text <- gsub('@END_DAY@', format(enddate, "%d"), ed2in.text)
   ed2in.text <- gsub('@END_YEAR@', format(enddate, "%Y"), ed2in.text)
-
+  
   ##----------------------------------------------------------------------
   ed2in.text <- gsub('@OUTDIR@', modeloutdir, ed2in.text)
   ed2in.text <- gsub('@ENSNAME@', run.id, ed2in.text)
@@ -380,8 +371,8 @@ write.run.ED <- function(settings){
 ##' @export
 ##' @author Shawn Serbin, David LeBauer
 remove.config.ED2 <- function(main.outdir = settings$outdir, settings) {
-
-
+  
+  
   print(" ")
   print("---- Removing previous ED2 config files and output before starting new run ----")
   print(" ")
@@ -394,7 +385,7 @@ remove.config.ED2 <- function(main.outdir = settings$outdir, settings) {
     file.remove(todelete)
   } 
   rm(todelete)
-
+  
   ## Remove model run configs and model run log files on local/remote host
   if(!settings$run$host$name == 'localhost'){
     ## Remove model run congfig and log files on remote host
@@ -424,5 +415,5 @@ remove.config.ED2 <- function(main.outdir = settings$outdir, settings) {
 
 
 ####################################################################################################
-### EOF.  End of R script file.            	
+### EOF.  End of R script file.              
 ####################################################################################################
