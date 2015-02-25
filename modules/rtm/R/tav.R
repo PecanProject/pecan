@@ -23,7 +23,7 @@
 ##' @references Feret et al. (2008). http://teledetection.ipgp.jussieu.fr/prosail/
 ##' @author Shawn Serbin
 ##' 
-tav <- function(teta,ref){ 
+tav.f <- function(teta,ref){ 
   ### Based on Feret et al., (2008).  Source code
   ### downloaded from http://teledetection.ipgp.jussieu.fr/prosail/
   
@@ -57,8 +57,33 @@ tav <- function(teta,ref){
   tp5 <- 16*r2^(3)*((2*rp*b-rm2)^(-1)-(2*rp*a-rm2)^(-1))/rp^3
   tp <- tp1+tp2+tp3+tp4+tp5
   f <- (ts+tp)/(2*ds^2)
+  return(f)
   
 }
+
+## How data file values are generated
+load("../data/dataSpec_p4.RData")
+expint_coefs <- read.csv("../data/expint_coefs.dat")
+nr <- dataSpec_p4$refractive_index
+t90 <- tav.f(90, nr)
+tav <- tav.f(40, nr)
+tao1 <- tav
+tao2 <- t90 / nr^2
+rho1 <- 1 - tao1
+rho2 <- 1 - tao2
+x <- tav / t90
+y <- x * (t90 - 1) + 1 - tav
+prospect4.dat <- data.frame(wl = 400:2500,
+                            nr = nr,
+                            Cab_abs = dataSpec_p4$specific_abs_coeff_chl,
+                            Cw_abs = dataSpec_p4$specific_abs_coeff_cw,
+                            Cm_abs = dataSpec_p4$specific_abs_coeff_cm,
+                            tao1 = tao1, tao2 = tao2,
+                            rho1 = rho1, rho2 = rho2,
+                            x = x, y = y)
+
+save(prospect4.dat, expint_coefs, file = "../data/prospect4.Rdata")
+
 #==================================================================================================#
 
 

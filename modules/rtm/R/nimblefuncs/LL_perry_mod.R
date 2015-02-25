@@ -1,7 +1,5 @@
-### Core prospect model
-### Returns vector of modeled reflectance
-
-prospect_refl <- nimbleFunction(
+### PROSPECT code and inversion, implemented in Nimble
+prospect_LL <- nimbleFunction(
         setup = function(model, constants) {
                 ## PROSPECT Absorption features
                 Cab_abs <- constants$Cab_abs
@@ -25,14 +23,15 @@ prospect_refl <- nimbleFunction(
                 nspec <- constants$nspec
                 wl <- constants$wl
                 zeroswl <- rep(0, wl)
+
+                nr <- constants$nr
         },
         run = function(){
                 declare(specerror, double(2, c(wl, nspec)))
                 theta <- zeroswl
                 Refl <- zeroswl
-                k <- (1.0/model$N) * (model$Cab * Cab_abs + 
-                                      model$Cw * Cw_abs + 
-                                      model$Cm * Cm_abs)
+                k = (1.0/model$N) * (model$Cab * Cab_abs + model$Cw * Cw_abs + model$Cm * Cm_abs)
+                n = nr
                 tau <- zeroswl
 
                 ### Exponential integral
@@ -90,7 +89,16 @@ prospect_refl <- nimbleFunction(
                 #TNa = nmT / dmRT # Transmittance calcs
                 #nmT = taoa * (a90 - 1/a90) # Transmittance calcs
 
-                returnType(double(1, wl))
-                return(Refl)
+                # Likelihood calculation
+                for (i in 1:nspec){
+                        specerror[,i] <- Refl - observed[,i]
+                }
+                logL <- 0.
+                for(i in 1:wl) {
+                        for(j in 1:nspec) {
+                                logL <- logL + dnorm(specerror[i,j], 0, model$resp, 1) ## the 0 is for log = FALSE. we don't yet fill in that argument. Unless you wanted log = TRUE?
+                        }
+                }
+                return(logL)
+                returnType(double(0))
         })
-

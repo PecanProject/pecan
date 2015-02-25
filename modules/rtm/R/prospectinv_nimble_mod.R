@@ -1,8 +1,11 @@
 ### PROSPECT code and inversion, implemented in Nimble
 library(nimble)
+load("../data/prospect4.Rdata")
+
 ### Initial setup
 n.iter <- 9
 AI <- 3
+
 ### Bayesian inversion
 prospectCode <- nimbleCode({
         ### Priors
@@ -13,33 +16,50 @@ prospectCode <- nimbleCode({
         Cm ~ dlnorm(-5.116, 0.9)
         resp ~ dgamma(0.001, 0.001)
 })
-prospectConstants <- list(nr = dat.p[,2],
-                          Cab_abs = dat.p[,3],
-                          Cw_abs = dat.p[,5],
-                          Cm_abs = dat.p[,6],
+
+prospectConstants <- list(Cab_abs = prospect4.dat$Cab_abs,
+                          Cw_abs = prospect4.dat$Cw_abs,
+                          Cm_abs = prospect4.dat$Cm_abs,
+                          nr = dat.p$refractive_index,
+                          tao1 = prospect4.dat$tao1,
+                          tao2 = prospect4.dat$tao2,
+                          rho1 = prospect4.dat$rho1,
+                          rho2 = prospect4.dat$rho2,
+                          x = prospect4.dat$x,
+                          y = prospect4.dat$y,                          
+                          e1 = expint_coefs$e1,
+                          e2 = expint_coefs$e2,
                           observed = obs.spec,
                           nspec = ncol(obs.spec),
                           wl = nrow(obs.spec))
+
 prospectInits <- list(N = 1.4,
                       Cab = 30,
                       Cw = 0.01,
                       Cm = 0.006,
                       resp = 0.5)
+
 prospect <- nimbleModel(code = prospectCode,
                         name = "prospect",
                         constants = prospectConstants,
                         inits = prospectInits)
+
 ### Load custom samplers
 #source("nimblefuncs/reflectance.R")
-#source("nimblefuncs/LL2.R")
+#source("nimblefuncs/LL.R")
 #source("nimblefuncs/resp_sampler.R")
-source("nimblefuncs/LL_perry.R")
-#source("nimblefuncs/resp_long.R")
+source("nimblefuncs/LL_mod.R")
+source("nimblefuncs/resp_long.R")
+
 # tp <- prospect_refl(prospect, prospectConstants)
 # plot(tp$run(), type='l')
+
+
 prospectSpec <- configureMCMC(prospect, print=TRUE)
 prospectSpec$removeSamplers(1:5)
+
 specialized_prospect_LL <- prospect_LL(prospect, prospectConstants)
+
 prospectSpec$addSampler(type = "RW_llFunction",
                         control = list(targetNode = "Ni",
                                        llFunction = specialized_prospect_LL,
@@ -60,23 +80,28 @@ prospectSpec$addSampler(type = "RW_llFunction",
                                        llFunction = specialized_prospect_LL,
                                        includesTarget = FALSE,
                                        adaptInterval = AI))
-#prospectSpec$addSampler(type = "resp", control = list(targetNode = "resp"))
+prospectSpec$addSampler(type = "resp", control = list(targetNode = "resp"))
+
 # prospectSpec$addSampler(type = "RW_llFunction",
-# control = list(targetNode = "resp",
-# llFunction = specialized_prospect_LL,
-# includesTarget = FALSE,
-# adaptInterval = AI))
+#                         control = list(targetNode = "resp",
+#                                        llFunction = specialized_prospect_LL,
+#                                        includesTarget = FALSE,
+#                                        adaptInterval = AI))
+
 prospectSpec$addMonitors(c("N", "Cab", "Cw", "Cm", "resp"))
 prospectMCMC <- buildMCMC(prospectSpec, project = prospect)
+
 ### Compilation
 print("Begin compilation")
 prosProj <- compileNimble(prospect, prospectMCMC)
 print("Compilation complete!")
+
 ### Run MCMC
 print("Begin MCMC...")
 sw <- system.time(prosProj$prospectMCMC$run(n.iter))
 print("MCMC complete!")
 print(sw)
+
 ### Check output
 samples1 <- as.matrix(prosProj$prospectMCMC$mvSamples)
 print(samples1)
