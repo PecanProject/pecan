@@ -26,7 +26,7 @@ prospectConstants <- list(Cab_abs = prospect4.dat$Cab_abs,
                           rho1 = prospect4.dat$rho1,
                           rho2 = prospect4.dat$rho2,
                           x = prospect4.dat$x,
-                          y = prospect4.dat$y,                          
+                          y = prospect4.dat$y,
                           e1 = expint_coefs$e1,
                           e2 = expint_coefs$e2,
                           observed = obs.spec,
@@ -44,19 +44,14 @@ prospect <- nimbleModel(code = prospectCode,
                         constants = prospectConstants,
                         inits = prospectInits)
 
-### Load custom samplers
-#source("nimblefuncs/reflectance.R")
-#source("nimblefuncs/LL.R")
-#source("nimblefuncs/resp_sampler.R")
-source("nimblefuncs/LL_mod.R")
-source("nimblefuncs/resp_long.R")
-
-# tp <- prospect_refl(prospect, prospectConstants)
-# plot(tp$run(), type='l')
-
+prospectNodes <- prospect$getNodeNames()
 
 prospectSpec <- configureMCMC(prospect, print=TRUE)
-prospectSpec$removeSamplers(1:5)
+prospectSpec$removeSamplers(prospectNodes %in% prospectNodes)
+
+### Load custom samplers
+source("nimblefuncs/LL_mod.R")
+source("nimblefuncs/resp_long.R")
 
 specialized_prospect_LL <- prospect_LL(prospect, prospectConstants)
 
@@ -81,12 +76,6 @@ prospectSpec$addSampler(type = "RW_llFunction",
                                        includesTarget = FALSE,
                                        adaptInterval = AI))
 prospectSpec$addSampler(type = "resp", control = list(targetNode = "resp"))
-
-# prospectSpec$addSampler(type = "RW_llFunction",
-#                         control = list(targetNode = "resp",
-#                                        llFunction = specialized_prospect_LL,
-#                                        includesTarget = FALSE,
-#                                        adaptInterval = AI))
 
 prospectSpec$addMonitors(c("N", "Cab", "Cw", "Cm", "resp"))
 prospectMCMC <- buildMCMC(prospectSpec, project = prospect)
