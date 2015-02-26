@@ -1,0 +1,70 @@
+## Variable declarations
+var specerror[wl, nspec], theta[wl], Refl[wl], tau[wl], xx[wl], yy[wl];
+
+## Model
+model{
+
+        k <- (1.0/N) * (Cab * Cab_abs + Cw * Cw_abs + Cm * Cm_abs)
+
+        ### Exponential integral
+        for (i in 1:wl){
+                xx[i] <- ifelse(k[i] <= 0, 0, 
+                        ifelse(k[i] > 0 && k[i] <= 4, 0.5 * k[i] - 1, 
+                        ifelse(k[i] > 4 && k[i] <= 85, 14.5/(k[i] + 3.25) - 1, 0)))
+                
+                yy[i] <- ifelse(k[i] <= 0, 
+                        0, 
+                        ifelse(k[i] > 0 && k[i] <= 4, 
+                                ((((((((((((((((((
+                                e1[1]*xx[i])+e1[2])*xx[i]+e1[3])*xx[i]+e1[4])*xx[i]+
+                                e1[5])*xx[i]+e1[6])*xx[i]+e1[7])*xx[i]+e1[8])*xx[i]+
+                                e1[9])*xx[i]+e1[10])*xx[i]+e1[11])*xx[i]+
+                                e1[12])*xx[i]+e1[13])*xx[i]+e1[14])*xx[i]+
+                                e1[15])*xx[i]+e1[16])*xx[i]+e1[17]*xx[i]+
+                                e1[18])*xx[i]+e1[19]) - log(k[i]),
+                        ifelse(k[i] > 4 && k[i] <= 85, 
+                                (((((((((((((((((((
+                                e2[1]*xx[i])+e2[2])*xx[i]+e2[3])*xx[i]+e2[4])*xx[i]+
+                                e2[5])*xx[i]+e2[6])*xx[i]+e2[7])*xx[i]+e2[8])*xx[i]+
+                                e2[9])*xx[i]+e2[10])*xx[i]+e2[11])*xx[i]+
+                                e2[12])*xx[i]+e2[13])*xx[i]+e2[14])*xx[i]+
+                                e2[15])*xx[i]+e2[16])*xx[i]+e2[17]*xx[i]+
+                                e2[18])*xx[i]+e2[19])*xx[i]+e2[20]) * exp(-k[i])/k[i],
+                                0)))
+                tau[i] <- ifelse(k[i] <= 0, 1, 
+                        ifelse(k[i] > 0 && k[i]<= 4, (1.0-k[i])*exp(-k[i])+k[i]^2*yy[i],
+                        ifelse(k[i] > 4 && k[i] <= 85, (1.0-k[i])*exp(-k[i])+k[i]^2*yy[i],
+                        0)))
+        }
+
+        theta <- tau
+
+        # Reflectance and transmittance of first layer (N=1)
+        rhoa <- rho1 + (tao1 * tao2 * rho2 * theta*theta) / (1 - rho2*rho2 * theta*theta)
+        taoa <- tao1 * tao2 * theta / (1 - rho2*rho2 * theta*theta)
+        rho90 <- (rhoa - y) / x
+        tao90 <- taoa / x
+
+        # Reflectance and transmittance of N layers (Stokes coefficients)
+        d90 <- sqrt((tao90*tao90 - rho90*rho90 - 1.0)*(tao90*tao90 - rho90*rho90 - 1.0) - 4.0*rho90*rho90)
+        a90 <- (1.0 + rho90*rho90 - tao90*tao90 + d90) / (2.0*rho90)
+        b90 <- (1.0 - rho90*rho90 + tao90*tao90 + d90) / (2.0*tao90)
+        nmR <- taoa * tao90 * (b90^(N-1.0) - b90^(1.0-N))
+        dmRT <- a90*b90^(N-1.0) - b90^(1.0-N)/a90 - rho90 * (b90^(N-1.0) - b90^(1.0-N))
+        Refl <- rhoa + nmR / dmRT
+
+        ### Likelihood
+        for (i in 1:wl){
+                for (j in 1:nspec){
+                        observed[i,j] ~ dnorm(Refl[i], resp)
+                }
+        }
+
+        ### Priors
+        Ni ~ dlnorm(-0.916, 2.2)
+        N <- Ni + 1
+        Cab ~ dlnorm(3.4, 0.9)
+        Cw ~ dlnorm(-6.377, 0.5)
+        Cm ~ dlnorm(-5.116, 0.9)
+        resp ~ dgamma(0.001, 0.001)
+}
