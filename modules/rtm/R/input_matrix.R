@@ -25,8 +25,8 @@ specmatrix <- function(species,
                        ){
         print(sprintf("Loading %s ...", species))
         path <- switch(spectype,
-                       SE = "~/Documents/Dropbox/SE_spectra/Reflectance",
-                       FFT = "~/Documents/Dropbox/FFT_spectra/NASA_FFT_LC_Refl_Spectra_v4.csv")
+                       SE = "../data/SE_spectra/Reflectance",
+                       FFT = "../data/FFT_spectra/NASA_FFT_LC_Refl_Spectra_v4.csv")
         if(spectype=="FFT"){
                 ## FFT spectra
                 filter.spec <- FALSE
