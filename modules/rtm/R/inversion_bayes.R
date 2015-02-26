@@ -10,7 +10,6 @@
 ##' @param ngibbs Number of iterations (default = 100)
 ##' @param JumpRSD Initial relative standard deviation of Jump distribution (default = 0.1).
 ##' @param wl Wavelengths over which to perform inversion (must match data) (default = 400:2500)
-##' @param single.precision If TRUE (default), a single residual SD is calculated for the entire spectrum. If FALSE, a value is calcluated for each wavelength.
 ##' @param random.effects What kind of random effects should be included. Options are 'none' (default), 'leaf', 'plot'
 ##' @param inits How initial conditions are generated. Options are maximum likelihood ('mle', default), 'random', or 'guess'.
 ##' @param ar.step Interval on which JumpRSD is adjusted to maintain a good acceptance rate (default = 10).
@@ -28,11 +27,10 @@ source("inversion_mle.R")
 ## Use specdatproc script to generate correct "obs.spec" matrix from data.
 pinvbayes <- function(obs.spec,
                       ngibbs=100,
-                      JumpRSD=0.1,
+                      JumpRSD=0.05,
                       wl=400:2500,
-                      single.precision=TRUE,
-                      random.effects='none',
                       inits='mle',
+                      random.effects="none",
                       ar.step=10,
                       ar.target=0.75,
                       fname = "TESTRUN.dat"
@@ -59,8 +57,11 @@ pinvbayes <- function(obs.spec,
 
         if(inits == "guess"){
                 ic <- guess.inits
-        } else if(inits == "mle"){
+        } else if(inits == "mle" & random.effects == "none"){
                 ic <- p.invert(obs.spec)
+        } else if(inits == "mle" & random.effects == "leaf_FFT"){
+                icl <- apply(obs.spec, 2, p.invert)
+                ic <- rowMeans(icl)
         } else {
                 ic <- c(abs(rnorm(1, 0, 1.5)) + 1,
                         rlnorm(1, log(30), 0.9),
@@ -74,8 +75,7 @@ pinvbayes <- function(obs.spec,
         Cm.i <- ic[4]
         print(sprintf("Initial conditions: N %g, Cab %g, Cw %g, Cm %g",
                       N.i, Cab.i, Cw.i, Cm.i))
-        sd.i <- rep(1, 2101)
-        if(single.precision) sd.i <- sd.i[1]
+        sd.i <- 1
 
         ### Extract indices for random effects ###
         nre <- 1
@@ -94,15 +94,15 @@ pinvbayes <- function(obs.spec,
                         nre <- length(randeff.list)
                         
                         ### Random effects initial conditions
-                        alphaN.i <- rep(0, nre)
-                        alphaCab.i <- rep(0, nre)
-                        alphaCw.i <- rep(0, nre)
-                        alphaCm.i <- rep(0, nre)
+                        alphaN.i <- icl[1,] - N.i
+                        alphaCab.i <- icl[2,] - Cab.i
+                        alphaCw.i <- icl[3,] - Cw.i
+                        alphaCm.i <- icl[4,] - Cm.i
                         
-                        sdreN <- 1
-                        sdreCab <- 1
-                        sdreCw <- 1
-                        sdreCm <- 1
+                        sdreN <- sd(icl[1,])
+                        sdreCab <- sd(icl[2,])
+                        sdreCw <- sd(icl[3,])
+                        sdreCm <- sd(icl[4,])
                         
                         # Random effects Prior
                         randeff.s <- c(0.001, 0.001)              # Inverse gamma
@@ -125,11 +125,7 @@ pinvbayes <- function(obs.spec,
         prev.error <- spec.error(prev.spec, obs.spec)
 
         ### MCMC storage
-        if(single.precision) {
-                sdvec <- "sd"
-        } else {
-                sdvec <- paste("sd", wl, sep='')
-        }
+        sdvec <- "sd"
         if(random.effects != "none"){
                 aNvec <- sprintf("aN_%s", randeffs)
                 aCabvec <- sprintf("aCab_%s", randeffs)
@@ -415,15 +411,9 @@ pinvbayes <- function(obs.spec,
                 }
 
                 ### Sample error precision ### 
-                if(single.precision){
-                        nprec <- 1
-                        u1p <- nspec*nwl/2
-                        u2p <- (nspec*nwl - 1) * var(c(prev.error))
-                } else {
-                        nprec <- nwl
-                        u1p <- nspec/2
-                        u2p <- 0.5 * rowSums(prev.error^2)
-                }
+                nprec <- 1
+                u1p <- nspec*nwl/2
+                u2p <- (nspec*nwl - 1) * var(c(prev.error))
                 u1 <- pwl.p[1] + u1p
                 u2 <- pwl.p[2] + u2p
                 pwl.i <- rgamma(nprec, u1, u2)

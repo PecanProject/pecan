@@ -21,7 +21,7 @@ p.invert <- function(observed, func=prospect4, inits=unlist(guess.inits)[1:4])
                 ssd <- log(sum((prospect - ref.obs)^2))
                 return(ssd)
         }
-        observed <- rowMeans(observed)
+        if(is.matrix(observed)) observed <- rowMeans(observed)
         a1 <- optim(inits, ssd, ref.obs=observed)
         return(a1$par)
 }

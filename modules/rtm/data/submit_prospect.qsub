@@ -45,9 +45,9 @@ echo "Run : $RUN"
 echo "=========================================================="
 
 # Run the R scripts
-# Arguments to runpi.R: JumpRSD Species single_precision random_effects sampled_inits ngibbs otherID folder
+# Arguments to runpi.R: Species random_effects sampled_inits ngibbs otherID folder
 
-Rscript runpi.R 0.05 $SPECIES 1 $REF $INITS $NGIBBS $RUN $FOLDER &
+Rscript runpi.R $SPECIES $REF $INITS $NGIBBS $RUN $FOLDER &
 
 wait
 

@@ -23,4 +23,5 @@ cab.a <- dataSpec_p4[,"specific_abs_coeff_chl"]    # Column 3
 w.a <- dataSpec_p4[,"specific_abs_coeff_cw"]        # Column 5
 m.a <- dataSpec_p4[,"specific_abs_coeff_cm"]        # Column 6
 
-prospect <- function(N, Cab, Cw, Cm) prospect4(N, Cab, Cw, Cm, n.a, cab.a, w.a, m.a)
+prospect <- function(N, Cab, Cw, Cm) prospect4(N, Cab, Cw, Cm,
+                                               n.a, cab.a, w.a, m.a)

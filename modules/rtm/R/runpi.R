@@ -2,14 +2,12 @@
 ##'
 ##' For initializing inversions from the command line, e.g. for submission to cluster.
 ##' This script takes 8 command line arguments, which are as follows:
-##'   [1] Starting SD of Jump distribution; larger values indicate larger jumps
-##'   [2] Spectype.Species (e.g. SE.QUCH)
-##'   [3] Whether to use a single precison value for all wavelengths (1) or an individual precision at each wavelength (0)
-##'   [4] Random effects; current options are 'none' and 'leaf'
-##'   [5] How to generate initial conditions; OPTIONS: 'random', 'mle' (R optim function for mean observed spectrum), 'guess' (preset values)
-##'   [6] Number of MCMC steps.
-##'   [7] Filename tag to identify run results
-##'   [8] Sub-folder in "run_results" for storing output.
+##'   [1] Spectype.Species (e.g. SE.QUCH)
+##'   [2] Random effects; current options are 'none' and 'leaf'
+##'   [3] How to generate initial conditions; OPTIONS: 'random', 'mle' (R optim function for mean observed spectrum), 'guess' (preset values)
+##'   [4] Number of MCMC steps.
+##'   [5] Filename tag to identify run results
+##'   [6] Sub-folder in "run_results" for storing output.
 
 #setwd("~/Documents/Unsynced/pecan/modules/rtm/R")
 options(warn=2)
@@ -17,28 +15,22 @@ source("inversion_bayes.R")
 source("input_matrix.R")
 
 args <- commandArgs(trailingOnly=TRUE)
-jrsd <- as.numeric(args[1])
-specarg <- strsplit(args[2], "\\.")[[1]]
+specarg <- strsplit(args[1], "\\.")[[1]]
 spectra <- specarg[1]
 species <- specarg[2]
-precarg <- as.numeric(args[3])
-if(precarg){
-        precision <- "sp"
-} else {
-        precision <- "pwl"
-}
-rearg <- args[4]
-initarg <- args[5]
-ngibbs <- as.numeric(args[6])
-runid <- args[7]
-folder <- args[8]
-filename <- sprintf("../run_results/%s/%s_%g_%s_%s_%s_%s.dat", folder, species, jrsd, precision, rearg, initarg, runid)
+rearg <- args[2]
+initarg <- args[3]
+ngibbs <- as.numeric(args[4])
+runid <- args[5]
+folder <- args[6]
+filename <- sprintf("../run_results/%s/%s_%s_%s_%s.dat", folder, species, rearg, initarg, runid)
 dir.create(sprintf("../run_results/%s", folder), showWarnings = FALSE)
 
 smat <- specmatrix(species, spectype=spectra)
 
-pinvbayes(smat, ngibbs=ngibbs, JumpRSD=jrsd, fname=filename,
-          single.precision=precarg, 
+pinvbayes(smat,
+          ngibbs=ngibbs,
+          fname=filename,
           random.effects=rearg,
           inits=initarg,
           ar.step=100)
