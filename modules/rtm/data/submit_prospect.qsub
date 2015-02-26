@@ -26,6 +26,9 @@
 # Set walltime limit
 #$ -l h_rt=120:00:00
 
+# Confine to "geo" cluster
+#$ -q "geo*"
+
 # Now let's keep track of some information just in case anything goes wrong
 
 cd ../R
