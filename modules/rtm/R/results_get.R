@@ -37,7 +37,7 @@ get.results <- function(path, species, burnin=5e4, thin=100){
                       length(samples),
                       length(samples)*length(fset)))
         speclist <- lapply(speclist, "[", samples,,drop=FALSE)
-        speclist <- lapply(speclist, mcmc)
+        speclist <- mcmc.list(lapply(speclist, mcmc))
         return(speclist)
     }
 }
