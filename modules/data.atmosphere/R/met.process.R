@@ -47,7 +47,11 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
     
     if(met == "NARR"){
       
-      download.NARR(outfolder, start_date, end_date, raw.host=host$name, overwrite=FALSE)
+      args <- list(outfolder, start_date, end_date, raw.host=host$name)
+      cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
+      remote.execute.R(cmdFcn,host$name,verbose=TRUE)
+      
+      #download.NARR(outfolder, start_date, end_date, raw.host=host$name, overwrite=FALSE)
       
       mimetype =  'application/x-netcdf'
       formatname = "NARR"
