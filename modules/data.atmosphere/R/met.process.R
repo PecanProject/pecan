@@ -75,6 +75,11 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
         site.code = sub(".* \\((.*)\\)", "\\1", site$name)
         args <- list(site.code, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE) #, pkg,raw.host = host,dbparms,con=con)
         new.files <- do.call(fcn,args)
+        
+        cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
+        remote.execute.R(cmdFcn,host$name,verbose=TRUE)
+        
+        
         host$name = new.files$host[1]
         
         check = dbfile.input.check(site$id, start_date, end_date, 
