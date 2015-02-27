@@ -46,8 +46,23 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
     fcn        <- paste0("download.",met)
     
     if(met == "NARR"){
-      site.id <- 1135
-      raw.id <- 1000000127
+      
+      download.NARR(outfolder, start_date, end_date, raw.host=host$name, overwrite=FALSE)
+      
+      mimetype =  'application/x-netcdf'
+      formatname = "NARR"
+      dbfile.input.check(site.id, start_date, endd_date, mimetype, formatname, con=con, hostname=fqdn())
+      raw.id <- dbfile.input.insert(in.path = outfolder, 
+                                    in.prefix = "NARR", 
+                                    siteid = 1135, 
+                                    startdate = start_date, 
+                                    enddate = end_date, 
+                                    mimetype =  mimetype, 
+                                    formatname = formatname,
+                                    parentid = NA,
+                                    con = con,
+                                    hostname = host$name)$input.id
+      raw.id <- newinput$input.id #1000000127
     }else{
       if(met == "Ameriflux"){
         
