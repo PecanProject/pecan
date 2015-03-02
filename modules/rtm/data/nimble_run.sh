@@ -1,8 +1,11 @@
-#!/bin/bash
+#!/bin/bash -l
+
 ## Perform an inversion. Parameters are as follows:
 ## [1] Spectra
 ## [2] Number of iterations
 ## [3] Folder name
+
+module load R/R-3.1.1
 
 SPECARG=$1
 NGIBBSARG=${2:-100}
