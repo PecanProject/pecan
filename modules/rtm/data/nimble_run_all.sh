@@ -1,15 +1,13 @@
 #! /bin/bash
 ## Read in SE species and pass to 'species_run.sh'
-## 
+##
 ## Arguments to species_run.sh:
-## [1] Species (spectype for this script)
-## [2] Random effects ("none", "leaf")
-## [3] Initial conditions ("random", "mle", "guess")
-## [4] Number of iterations 
-## [5] Results folder
+## [1] Spectra
+## [2] Number of iterations
+## [3] Folder
 
-NG=$1
-FD=$2
+NG=5e5
+FD="FFT_individuals_0203"
 
 while read l; do
         echo $l
