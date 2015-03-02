@@ -1,10 +1,12 @@
-#!/bin/bash 
+#!/bin/bash -l
 ## Perform an inversion. Parameters are as follows:
 ## [1] Species
 ## [2] Random effects ("none", "leaf_SE", "leaf_FFT")
 ## [3] Initial conditions ("random", "mle", "guess")
 ## [4] Number of iterations 
 ## [5] Results folder
+
+module load R/R-3.1.1
 
 SPECARG=$1
 NGIBBSARG=${2:-100}

@@ -14,4 +14,4 @@ FD=$2
 while read l; do
         echo $l
         nimble_run.sh $l $NG $FD
-done < FFT_fullspecnames.txt
+done < ../R/FFT_fullspecnames.txt
