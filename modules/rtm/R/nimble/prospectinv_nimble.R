@@ -3,23 +3,26 @@ library(data.table)
 source("nimble/nimblefuncs/nim_setup.R")
 
 ### Load spectrum
-args <- commandArgs()
-specname <- args[1]
-ngibbs <- as.numeric(args[2])
-foldername <- args[3]
-runid <- args[4]
-# specname <- "AK01_ACRU_B_LC_REFL"
-# foldername <- "NIMBLE_TEST"
-# runid <- "TEST"
-# ngibbs <- 1000
+if (!exists("TEST")){
+        args <- commandArgs()
+        specname <- args[1]
+        ngibbs <- as.numeric(args[2])
+        foldername <- args[3]
+        runid <- args[4]
+} else {
+        specname <- "AK01_ACRU_M_LC_REFL"
+        foldername <- "NIMBLE_TEST"
+        runid <- "TEST"
+        ngibbs <- 100
+}
 
 speclist <- read.table("FFT_fullspecnames.txt", stringsAsFactors = FALSE)$V1
 specindex <- grep(specname, speclist)
 path.to.spec <- "../data/FFT_spectra/NASA_FFT_LC_Refl_Spectra_v4.csv"
-obs.spec <- t(as.matrix(fread(path.to.spec, 
-                           nrows=1, 
+obs.spec <- t(as.matrix(fread(path.to.spec,
+                           nrows=1,
                            header=FALSE,
-                           skip = specindex, 
+                           skip = specindex,
                            drop = 1:71)))
 dir.create(sprintf("../run_results/%s", foldername), showWarnings = FALSE)
 filename <- sprintf("../run_results/%s/%s_%s.dat", foldername, specname, runid)
