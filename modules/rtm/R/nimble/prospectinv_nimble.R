@@ -18,6 +18,7 @@ if (!exists("TEST")){
 
 speclist <- read.table("FFT_fullspecnames.txt", stringsAsFactors = FALSE)$V1
 specindex <- grep(specname, speclist)
+print(sprintf("****** NAME: %s, WD: %S, INDEX: %d ********", specname, getwd(), specindex))
 path.to.spec <- "../data/FFT_spectra/NASA_FFT_LC_Refl_Spectra_v4.csv"
 obs.spec <- t(as.matrix(fread(path.to.spec,
                            nrows=1,
