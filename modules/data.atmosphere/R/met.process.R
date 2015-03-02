@@ -49,7 +49,7 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
       
       args <- list(outfolder, start_date, end_date)
       cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
-      remote.execute.R(cmdFcn,host$name,verbose=TRUE)
+      remote.execute.R(cmdFcn,host$name,user=NA, verbose=TRUE)
       
       #download.NARR(outfolder, start_date, end_date, raw.host=host$name, overwrite=FALSE)
       
@@ -73,11 +73,11 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
         ## download files
         outfolder = paste0(outfolder,"_site_",str_ns)
         site.code = sub(".* \\((.*)\\)", "\\1", site$name)
-        args <- list(site.code, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE) #, pkg,raw.host = host,dbparms,con=con)
+        args <- list(site.code, outfolder, start_date, end_date) #, pkg,raw.host = host,dbparms,con=con)
         new.files <- do.call(fcn,args)
         
         cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
-        remote.execute.R(cmdFcn,host$name,verbose=TRUE)
+        new.files <- remote.execute.R(cmdFcn,host$name,user=NA,verbose=TRUE)
         
         
         host$name = new.files$host[1]

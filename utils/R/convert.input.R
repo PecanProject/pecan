@@ -54,7 +54,6 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
     cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")") 
   } 
   print(args)
-  cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")") 
   result <- eval(parse(text = cmdFcn))
   #   result <- remote.execute.R(cmdFcn,hostname,verbose=TRUE)
   
