@@ -6,7 +6,7 @@
 ## [2] Number of iterations
 ## [3] Folder
 
-NG=5e5
+NG=500000
 FD="FFT_individuals_0203"
 
 while read l; do

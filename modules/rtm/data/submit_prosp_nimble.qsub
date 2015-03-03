@@ -47,7 +47,7 @@ echo "=========================================================="
 # Run the R scripts
 # Arguments to R script: "Spectra name" "iterations" "Folder name" "Run ID"
 
-Rscript nimble/prospectinv_nimble.R $SPEC $NGIBBS $FOLDER $RUN &
+R --vanilla --args $SPEC $NGIBBS $FOLDER $RUN < nimble/prospectinv_nimble.R &
 
 wait
 

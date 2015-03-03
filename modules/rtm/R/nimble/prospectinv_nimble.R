@@ -4,7 +4,7 @@ source("nimble/nimblefuncs/nim_setup.R")
 
 ### Load spectrum
 if (!exists("TEST")){
-        args <- commandArgs()
+        args <- commandArgs(trailingOnly=TRUE)
         specname <- args[1]
         ngibbs <- as.numeric(args[2])
         foldername <- args[3]
@@ -18,7 +18,8 @@ if (!exists("TEST")){
 
 speclist <- read.table("FFT_fullspecnames.txt", stringsAsFactors = FALSE)$V1
 specindex <- grep(specname, speclist)
-print(sprintf("****** NAME: %s, WD: %S, INDEX: %d ********", specname, getwd(), specindex))
+wd <- getwd()
+print(sprintf("****** NAME: %s, WD: %s, INDEX: %d ********", specname, wd, specindex))
 path.to.spec <- "../data/FFT_spectra/NASA_FFT_LC_Refl_Spectra_v4.csv"
 obs.spec <- t(as.matrix(fread(path.to.spec,
                            nrows=1,
@@ -34,6 +35,7 @@ prospectConstants$observed <- obs.spec
 prospectConstants$nspec <- ncol(obs.spec)
 prospectConstants$wl <- nrow(obs.spec)
 
+print("CREATING MODEL")
 prospect <- nimbleModel(code = prospectCode,
                         name = "prospect",
                         constants = prospectConstants,
@@ -41,6 +43,7 @@ prospect <- nimbleModel(code = prospectCode,
 
 prospectNodes <- prospect$getNodeNames()
 
+print("CONFIGURING MCMC")
 prospectSpec <- configureMCMC(prospect, print=TRUE)
 prospectSpec$removeSamplers(prospectNodes %in% prospectNodes)
 
@@ -61,6 +64,7 @@ for (i in sampler.pars){
 prospectSpec$addSampler(type = "resp", control = list(targetNode = "resp"))
 
 prospectSpec$addMonitors(c("N", "Cab", "Cw", "Cm", "ressd"))
+print("BUILDING MCMC")
 prospectMCMC <- buildMCMC(prospectSpec, project = prospect)
 
 prosProj <- compileNimble(prospect, prospectMCMC)

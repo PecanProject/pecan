@@ -8,7 +8,7 @@
 module load R/R-3.1.1
 
 SPECARG=$1
-NGIBBSARG=${2:-100}
+NGIBBSARG=${2:-500000}
 FOLDARG=${3:-testfolder}
 
 qsub -v SPEC=$SPECARG,NGIBBS=$NGIBBSARG,FOLDER=$FOLDARG,RUN=01 -N "pbi $SPECARG $FOLDARG $RUN" submit_prosp_nimble.qsub
