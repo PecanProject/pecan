@@ -51,16 +51,20 @@ FFT.p2 <- merge(FFT.CN.sub, FFT.SLA.sub, by=mergeby.lower, all=TRUE)
 FFT.all <- merge(FFT.p2, FFT.p1, by.x=mergeby.lower, by.y=mergeby.caps, all=TRUE)
 FFT.all <- data.table(FFT.all)
 
-## Average duplicates
-FFT2 <- FFT.all[, lapply(.SD, mean, na.rm=TRUE), by=c("Sample_Name", "Sample_Year")]
-
 #### Load results
 ## Append information from original spectra to results table
 load(PATH.results)
 setnames(results, "leaf", "Spectra")
 info.orig <- fread(PATH.spectra, header=TRUE, select = c(1:9,12,13))
+dup <- info.orig[,.N, by="Spectra"][N>1, Spectra]
+setkey(info.orig, Spectra)
+info.orig[dup, Spectra := sprintf("%s_%d", Spectra, Sample_Year)]
 results <- merge(info.orig, results, by="Spectra")
+
+## Average duplicates
+FFT2 <- FFT.all[, lapply(.SD, mean, na.rm=TRUE), by=c("Sample_Name", "Sample_Year")]
 
 ## Merge results with traits
 fftdat <- merge(x=results, y=FFT2, by=mergeby.lower, all=TRUE)
+
 
