@@ -11,6 +11,7 @@ PATH.data.FFT.CN = file.path(PATH.data.FFT, "NASA_FFT_Project_CN_Data_4R.csv")
 PATH.data.FFT.SLA_LMA = file.path(PATH.data.FFT, "NASA_FFT_SLA_LMA_Data_v2_4R_updated_new.csv")
 PATH.results = "~/Documents/Dropbox/run_results/results_FFT0203.Rdata"
 PATH.spectra = "~/Documents/Dropbox/FFT_spectra/NASA_FFT_LC_Refl_Spectra_v4.csv"
+PATH.info = "~/Documents/"
 
 ### Read data
 FFT.d15N <- read.csv(PATH.data.FFT.d15N, header=TRUE, stringsAsFactors = FALSE)
@@ -66,5 +67,10 @@ FFT2 <- FFT.all[, lapply(.SD, mean, na.rm=TRUE), by=c("Sample_Name", "Sample_Yea
 
 ## Merge results with traits
 fftdat <- merge(x=results, y=FFT2, by=mergeby.lower, all=TRUE)
+
+## Merge results with species information table
+species.info <- fread(PATH.info, header=TRUE)
+exclude <- c("ANGE", "TYLA")  ## As per Shawn's recommendation
+
 
 
