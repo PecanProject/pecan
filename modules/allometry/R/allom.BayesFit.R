@@ -189,6 +189,12 @@ allom.BayesFit <- function(allom,nrep=10000,form="power") {
       }else if(eqn[j] == 9){
         y = log(a[j]) + b[j]*log(x)
         y = exp(rnorm(n[j],y,se[j]))
+      }else if(eqn[j] == 10){
+        y = a[j] + b[j]*log(x)
+        y = exp(rnorm(n[j],y,se[j]))
+      }else if(eqn[j] == 11){
+        y = a[j]*x^(b[j])
+        y =rnorm(n[j],y,se[j])
       }
       y[y<=0] <- NA
       y = y*Ycor[j]
