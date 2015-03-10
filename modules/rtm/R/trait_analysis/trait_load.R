@@ -67,4 +67,29 @@ FFT2 <- FFT.all[, lapply(.SD, mean, na.rm=TRUE), by=c("Sample_Name", "Sample_Yea
 ## Merge results with traits
 fftdat <- merge(x=results, y=FFT2, by=mergeby.lower, all=TRUE)
 
+### Sort out missing values
+# load("../data/FFT_full.Rdata")
+sample.name.regex <- "^([A-Za-z]+)([0-9]+[B]*)_([A-Za-z]+)_([BMTS]+)([ANO23]{0,1})[SAMP2]*"
+fftdat[is.na(Species), Site := gsub(sample.name.regex, "\\1", Sample_Name)]
+fftdat[is.na(Species), Plot := gsub(sample.name.regex, "\\1\\2", Sample_Name)]
+fftdat[is.na(Species), Age := gsub(sample.name.regex, "\\5", Sample_Name)]
+fftdat[is.na(Species), Height := gsub(sample.name.regex, "\\4", Sample_Name)]
+fftdat[is.na(Species), Species := gsub(sample.name.regex, "\\3", Sample_Name)]
+
+fftdat[Age=="T", Age := NA]
+fftdat[Age=="0", Age := "N"]
+fftdat[Age=="A", Age := "O"]
+fftdat[is.na(Age) | Age == "", Age := "broadleaf"]
+
+PATH.speciesinfo <- file.path("~/Documents", "Dropbox",
+                              "NASA_TE_PEcAn-RTM_Project",
+                              "FFT_species_info_csv.csv")
+species.info <- fread(PATH.speciesinfo, header=TRUE)
+setnames(species.info, "Species", "species.sci")
+setkey(fftdat, "Species")
+setkey(species.info, "Label")
+
+uk <- unique(c(fftdat[,Species], species.info[,Label]))
+fftdat <- fftdat[species.info[J(uk)]]
+
 
