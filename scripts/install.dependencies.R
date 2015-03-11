@@ -24,9 +24,11 @@ if(length(new.packages)) {
 if(!("REddyProc" %in% installed.packages()[,"Package"])) {
   install.packages("REddyProc", repos="http://R-Forge.R-project.org", type="source")
 }
+if(!("BioCro" %in% installed.packages()[,"Package"])) {
+  devtools::install_github("ebimodeling/biocro")
+}
 
 # install rhdf5 from bioconductor for met2model.ED
-list.of.packages <- c('rhdf5')
 if(!("rhdf5" %in% installed.packages()[,"Package"])) {
   source("http://bioconductor.org/biocLite.R")
   biocLite('rhdf5')
