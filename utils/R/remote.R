@@ -127,15 +127,15 @@ remote.execute.R <- function(script, host="localhost", user=NA, verbose=FALSE, R
     if(!file.exists(tmpfile)){fp <- file(tmpfile, 'w');serialize(result,fp);close(fp)}
   } else {
     remote <- ifelse(is.na(user), host, paste(user, host, sep='@'))
-    system2('ssh', c('-T', remote, R, "--vanilla"), stdout=verbose, stderr=verbose, input=input)
+    result = system2('ssh', c('-T', remote, R, "--vanilla"), stdout=verbose, stderr=verbose, input=input)
     remote.copy.file(host, tmpfile, user, "localhost", tmpfile)
     remote.execute.cmd("rm", c("-f", tmpfile), host, user)
   }
   
-#   # load result
-#   fp <- file(tmpfile, 'r')
-#   result <- unserialize(fp)
-#   close(fp)
-#   unlink(tmpfile)
+  # load result
+  fp <- file(tmpfile, 'r')
+  result <- unserialize(fp)
+  close(fp)
+  unlink(tmpfile)
   invisible(result)
 }

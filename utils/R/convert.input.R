@@ -55,7 +55,7 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
   } 
   print(cmdFcn)
   #result <- eval(parse(text = cmdFcn))
-  result <- remote.execute.R(cmdFcn,hostname,verbose=TRUE)
+  result <- remote.execute.R(script=cmdFcn,hostname,user=NA,verbose=TRUE,R="R")
   
   print("RESULTS: Convert.Input")
   print(result)
