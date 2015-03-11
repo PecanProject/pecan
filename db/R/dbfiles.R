@@ -72,7 +72,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
   
   # find appropriate dbfile, if not in database, insert new dbfile 
   
-  dbfileid <- dbfile.check('Input', inputid, con, hostname=fqdn())[['id']] 
+  dbfileid <- dbfile.check('Input', inputid, con, hostname)[['id']] 
   if(is.null(dbfileid)){
     #insert dbfile & return dbfile id
     dbfileid <- dbfile.insert(in.path, in.prefix, 'Input', inputid, con, hostname)

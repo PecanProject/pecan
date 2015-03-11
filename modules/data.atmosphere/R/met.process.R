@@ -81,7 +81,6 @@ met.process <- function(site, input_met, start_date, end_date, model, host, bety
         outfolder = paste0(outfolder,"_site_",str_ns)
         site.code = sub(".* \\((.*)\\)", "\\1", site$name)
         args <- list(site.code, outfolder, start_date, end_date) #, pkg,raw.host = host,dbparms,con=con)
-        new.files <- do.call(fcn,args)
         
         cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
         new.files <- remote.execute.R(cmdFcn,host$name,user=NA,verbose=TRUE)
@@ -237,6 +236,7 @@ find.prefix <- function(files){
     files.df <- as.data.frame(do.call(rbind, files.split))
     files.uniq <- sapply(files.df, function(x)length(unique(x))) 
     
+    prefix <- ""
     ifelse(files.uniq[1] == 1,prefix <- as.character(files.df[1,1]),return(prefix))
     
     for(i in 2:length(files.uniq)){
