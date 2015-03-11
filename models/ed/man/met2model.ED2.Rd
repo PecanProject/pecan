@@ -2,6 +2,7 @@
 % Please edit documentation in R/met2model.ED2.R
 \name{met2model.ED2}
 \alias{met2model.ED2}
+\title{met2model for ED2}
 \usage{
 met2model.ED2(in.path, in.prefix, outfolder, start_date, end_date, lst = 0,
   overwrite = FALSE, verbose = FALSE)
@@ -22,5 +23,8 @@ met2model.ED2(in.path, in.prefix, outfolder, start_date, end_date, lst = 0,
 \item{overwrite}{should existing files be overwritten}
 
 \item{verbose}{should the function be very verbose}
+}
+\description{
+met2model wrapper for ED2
 }
 

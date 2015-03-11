@@ -13,10 +13,7 @@ regrid(latlon.data)
 dataframe with regridded data
 }
 \description{
-.. content for \description{} (no empty lines) ..
-}
-\details{
-.. content for \details{} ..
+Regrid dataset to even grid
 }
 \author{
 David LeBauer

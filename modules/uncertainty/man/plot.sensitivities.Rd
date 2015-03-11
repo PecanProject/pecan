@@ -4,7 +4,7 @@
 \alias{plot.sensitivities}
 \title{Plot Sensitivities}
 \usage{
-plot.sensitivities(sensitivity.plot.inputs,
+\method{plot}{sensitivities}(sensitivity.plot.inputs,
   prior.sensitivity.plot.inputs = NULL, ...)
 }
 \arguments{

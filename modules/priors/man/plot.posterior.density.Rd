@@ -4,7 +4,7 @@
 \alias{plot.posterior.density}
 \title{Add posterior density.}
 \usage{
-plot.posterior.density(posterior.density, base.plot = NULL)
+\method{plot}{posterior.density}(posterior.density, base.plot = NULL)
 }
 \arguments{
 \item{posterior.density}{}

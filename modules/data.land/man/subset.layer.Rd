@@ -5,8 +5,8 @@
 \title{Function to subset and clip a GIS vector or raster layer by a bounding box
 or clip/subset layer (e.g. shapefile/KML)}
 \usage{
-subset.layer(file, coords = NULL, sub.layer = NULL, clip = FALSE,
-  out.dir = NULL, out.name = NULL)
+\method{subset}{layer}(file, coords = NULL, sub.layer = NULL,
+  clip = FALSE, out.dir = NULL, out.name = NULL)
 }
 \arguments{
 \item{file}{input file to be subset}

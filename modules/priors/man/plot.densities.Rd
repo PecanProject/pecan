@@ -4,7 +4,7 @@
 \alias{plot.densities}
 \title{Plot Trait Probability Densities}
 \usage{
-plot.densities(density.plot.inputs, outdir, ...)
+\method{plot}{densities}(density.plot.inputs, outdir, ...)
 }
 \arguments{
 \item{outdir}{}
