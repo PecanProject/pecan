@@ -49,13 +49,13 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
 #            start_date,end_date,paste(names(l),"=",unlist(l)))
   
   if(!is.null(names(l))){
-    cmdFcn  = paste0(paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=",")),",",paste(paste(names(l),"=",unlist(l)), collapse=","))
+    cmdFcn  = paste0(paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=",")),",",paste(paste(names(l),"=",unlist(l)), collapse=","),")")
   }else{
     cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")") 
   } 
-  print(args)
-  result <- eval(parse(text = cmdFcn))
-  #   result <- remote.execute.R(cmdFcn,hostname,verbose=TRUE)
+  print(cmdFcn)
+  #result <- eval(parse(text = cmdFcn))
+  result <- remote.execute.R(cmdFcn,hostname,verbose=TRUE)
   
   print("RESULTS: Convert.Input")
   print(result)
