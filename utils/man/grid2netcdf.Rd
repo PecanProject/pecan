@@ -9,13 +9,10 @@ grid2netcdf(gdata, date = "9999-09-09", outfile = "out.nc")
 \item{grid.data}{}
 }
 \value{
-nothing, writes netCDF file
+writes netCDF file
 }
 \description{
-.. content for \description{} (no empty lines) ..
-}
-\details{
-.. content for \details{} ..
+Write gridded data to netcdf file
 }
 \author{
 David LeBauer
