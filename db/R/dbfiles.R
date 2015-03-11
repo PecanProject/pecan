@@ -120,12 +120,13 @@ dbfile.input.check <- function(siteid, startdate, enddate, mimetype, formatname,
   }
   
   # find appropriate input
-  inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, " AND start_date>='", startdate, "' AND end_date<='", enddate, "'" , parent, ";"), con)[['id']]
+  inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, 
+                             " AND start_date>='", startdate, "' AND end_date<='", enddate, "'", parent,";" ), con)[['id']]
   if (is.null(inputid)) {
     invisible(data.frame())
+  }else{
+    invisible(dbfile.check('Input', inputid, con, hostname)) 
   }
-  
-  invisible(dbfile.check('Input', inputid, con, hostname))
 }
 
 ##' Function to insert a file into the dbfiles table as a posterior
