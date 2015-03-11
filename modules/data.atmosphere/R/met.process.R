@@ -47,6 +47,8 @@ met.process <- function(site, input_met, start_date, end_date, model, host, bety
     
     if(met == "NARR"){
       
+      site.id <- 1135
+      
       args <- list(outfolder, start_date, end_date)
       cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
       remote.execute.R(cmdFcn,host$name,user=NA, verbose=TRUE)
@@ -55,18 +57,23 @@ met.process <- function(site, input_met, start_date, end_date, model, host, bety
       
       mimetype =  'application/x-netcdf'
       formatname = "NARR"
-      dbfile.input.check(site.id, start_date, endd_date, mimetype, formatname, con=con, hostname=fqdn())
-      raw.id <- dbfile.input.insert(in.path = outfolder, 
-                                    in.prefix = "NARR", 
-                                    siteid = 1135, 
-                                    startdate = start_date, 
-                                    enddate = end_date, 
-                                    mimetype =  mimetype, 
-                                    formatname = formatname,
-                                    parentid = NA,
-                                    con = con,
-                                    hostname = host$name)$input.id
-      raw.id <- newinput$input.id #1000000127
+      check <- dbfile.input.check(site.id, start_date, end_date, mimetype, formatname, con=con, hostname=fqdn())
+      
+      if(length(check)>0){
+        raw.id = check$container_id[1]
+      }else{
+        raw.id <- dbfile.input.insert(in.path = outfolder, 
+                                      in.prefix = "NARR", 
+                                      siteid = 1135, 
+                                      startdate = start_date, 
+                                      enddate = end_date, 
+                                      mimetype =  mimetype, 
+                                      formatname = formatname,
+                                      parentid = NA,
+                                      con = con,
+                                      hostname = host$name)$input.id
+        raw.id <- newinput$input.id #1000000127
+      }
     }else{
       if(met == "Ameriflux"){
         
@@ -174,7 +181,8 @@ met.process <- function(site, input_met, start_date, end_date, model, host, bety
   
   ## NOTE: ALL OF THIS CAN BE QUERIED THROUGH DATABASE
   ## MODEL_TYPES -> FORMATS where tag = "met"
-  if(model == "ED2"){
+  if("ED2" %in% unlist(strsplit(model,"[.]"))){
+    model <- "ED2"
     formatname <- 'ed.met_driver_header_files_format'
     mimetype <- 'text/plain'
   }else if(model == "SIPNET"){
