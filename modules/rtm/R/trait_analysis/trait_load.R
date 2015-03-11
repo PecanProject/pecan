@@ -11,6 +11,7 @@ PATH.data.FFT.CN = file.path(PATH.data.FFT, "NASA_FFT_Project_CN_Data_4R.csv")
 PATH.data.FFT.SLA_LMA = file.path(PATH.data.FFT, "NASA_FFT_SLA_LMA_Data_v2_4R_updated_new.csv")
 PATH.results = "~/Documents/Dropbox/run_results/results_FFT0203.Rdata"
 PATH.spectra = "~/Documents/Dropbox/FFT_spectra/NASA_FFT_LC_Refl_Spectra_v4.csv"
+PATH.info = "~/Documents/"
 
 ### Read data
 FFT.d15N <- read.csv(PATH.data.FFT.d15N, header=TRUE, stringsAsFactors = FALSE)
@@ -91,5 +92,8 @@ setkey(species.info, "Label")
 
 uk <- unique(c(fftdat[,Species], species.info[,Label]))
 fftdat <- fftdat[species.info[J(uk)]]
+
+exclude <- c("ANGE", "TYLA")  ## As per Shawn's recommendation
+
 
 
