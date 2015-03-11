@@ -2,6 +2,7 @@
 % Please edit documentation in R/met2model.DALEC.R
 \name{met2model.DALEC}
 \alias{met2model.DALEC}
+\title{met2model.DALEC}
 \usage{
 met2model.DALEC(in.path, in.prefix, outfolder, start_date, end_date,
   overwrite = FALSE, verbose = FALSE, ...)
@@ -20,5 +21,8 @@ met2model.DALEC(in.path, in.prefix, outfolder, start_date, end_date,
 \item{overwrite}{should existing files be overwritten}
 
 \item{verbose}{should the function be very verbose}
+}
+\description{
+met2model for DALEC
 }
 
