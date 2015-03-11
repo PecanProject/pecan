@@ -59,7 +59,7 @@ if(length(new.packages)) {
   install.packages(new.packages, repos='http://cran.us.r-project.org')
 } 
 if(biocro){
-   devtools::install_github('BioCro', 'dlebauer')
+   install.packages("BioCro", repos="http://R-Forge.R-project.org")
 } | R --vanilla "
 EOF
 fi

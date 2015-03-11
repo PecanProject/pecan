@@ -9,7 +9,7 @@
 #-------------------------------------------------------------------------------
 
 # version of pecan
-VERSION="1.4.0"
+VERSION="1.4.1"
 DATE=`date +"%Y-%m-%d"`
 
 # if no arguments passed in update all DESCRIPTION files
@@ -39,3 +39,9 @@ for d in $FILES; do
   	fi
   fi
 done
+
+# update pecan version in web page
+if [ $# -eq 0 ]; then
+  echo "Modifying : web/common.php"
+  sed -i.bak -e "s/PEcAn Version [0-9\.]*/PEcAn Version ${VERSION}/" web/common.php
+fi

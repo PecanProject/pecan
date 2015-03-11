@@ -196,7 +196,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
     }
     filename <- file.path(pathname, file)
     file.copy(file.path(pft$outdir, file), filename)
-    dbfile.insert(filename, 'Posterior', pft$posteriorid, dbcon)
+    dbfile.insert(pathname,file, 'Posterior', pft$posteriorid, dbcon)
   }
 
   return(pft)

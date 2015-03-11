@@ -10,4 +10,6 @@ library(testthat)
 library(PEcAn.utils)
 
 logger.setQuitOnSevere(FALSE)
-test_check("PEcAn.settings")
+# tests are disbabled until https://github.com/PecanProject/bety/issues/180 is
+# resolved.
+#test_check("PEcAn.settings")

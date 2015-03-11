@@ -51,7 +51,7 @@ status.end()
 # run meta-analysis
 status.start("META")
 if('meta.analysis' %in% names(settings)) {
-  run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database$bety)
+  run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$meta.analysis$random.effects, settings$meta.analysis$threshold, settings$run$dbfiles, settings$database$bety)
 }
 status.end()
 
@@ -59,6 +59,7 @@ status.end()
 status.start("CONVERSIONS")
 for(i in 1:length(settings$run$inputs)) {
   input <- settings$run$inputs[[i]]
+  if (is.null(input)) next
   if (length(input) == 1) next
 
   # fia database

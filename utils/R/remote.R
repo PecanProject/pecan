@@ -28,6 +28,7 @@
 #' @param stderr should stderr be returned as well.
 #' @return the captured output of the command (both stdout and stderr)
 #' @author Rob Kooper
+#' @export
 #' @examples 
 #' remote.execute.cmd("ls", c("-l", "/"), host="localhost", stderr=TRUE)
 remote.execute.cmd <- function(cmd, args=character(), host="localhost", user=NA, stderr=FALSE) {
@@ -56,6 +57,7 @@ remote.execute.cmd <- function(cmd, args=character(), host="localhost", user=NA,
 #' @param stderr 
 #' @return the captured output of the command (both stdout and stderr)
 #' @author Rob Kooper
+#' @export
 #' @examples 
 #' remote.execute.cmd("ls", c("-l", "/"))
 remote.copy.file <- function(srchost, srcfiles, srcuser=NA, dsthost="localhost", dstfile=getwd(), dstuser=NA) {
@@ -105,6 +107,7 @@ remote.copy.file <- function(srchost, srcfiles, srcuser=NA, dsthost="localhost",
 #' @param verbose should the output be printed to the console
 #' @return the captured output of the command (both stdout and stderr)
 #' @author Rob Kooper
+#' @export
 #' @examples 
 #' remote.execute.R("list.files()", host="localhost", verbose=FALSE)
 remote.execute.R <- function(script, host="localhost", user=NA, verbose=FALSE, R="R") {
@@ -119,7 +122,9 @@ remote.execute.R <- function(script, host="localhost", user=NA, verbose=FALSE, R
              "close(fp)")
   verbose <- ifelse(as.logical(verbose), "", FALSE)
   if ((host == "localhost") || (host == fqdn())) {
-    system2(R, "--vanilla", stdout=verbose, stderr=verbose, input=input)
+    result = try(system2(R, "--vanilla", stdout=verbose, stderr=verbose, input=input))
+    print(result)
+    if(!file.exists(tmpfile)){fp <- file(tmpfile, 'w');serialize(result,fp);close(fp)}
   } else {
     remote <- ifelse(is.na(user), host, paste(user, host, sep='@'))
     system2('ssh', c('-T', remote, R, "--vanilla"), stdout=verbose, stderr=verbose, input=input)
@@ -127,10 +132,10 @@ remote.execute.R <- function(script, host="localhost", user=NA, verbose=FALSE, R
     remote.execute.cmd("rm", c("-f", tmpfile), host, user)
   }
   
-  # load result
-  fp <- file(tmpfile, 'r')
-  result <- unserialize(fp)
-  close(fp)
-  unlink(tmpfile)
+#   # load result
+#   fp <- file(tmpfile, 'r')
+#   result <- unserialize(fp)
+#   close(fp)
+#   unlink(tmpfile)
   invisible(result)
 }

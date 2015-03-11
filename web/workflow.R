@@ -66,14 +66,17 @@ if (length(which(commandArgs() == "--continue")) == 0) {
 
   # run meta-analysis
   status.start("META")
-  run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database$bety)
+  run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$meta.analysis$random.effects, settings$meta.analysis$threshold, settings$run$dbfiles, settings$database$bety)
   status.end()
 
   # do conversions
   status.start("CONVERSIONS")
   for(i in 1:length(settings$run$inputs)) {
     input <- settings$run$inputs[[i]]
+    if (is.null(input)) next
     if (length(input) == 1) next
+    
+    input.tag <- names(settings$run$input)[i]
     
     # fia database
     if (input['input'] == 'fia') {
@@ -81,6 +84,7 @@ if (length(which(commandArgs() == "--continue")) == 0) {
     }
 
     # met download
+    if(TRUE){  ## old approach
     if (input['input'] == 'Ameriflux') {
       # start/end date for weather
       start_date <- settings$run$start.date
@@ -94,7 +98,8 @@ if (length(which(commandArgs() == "--continue")) == 0) {
       do.call(fcn, list(site, file.path(settings$run$dbfiles, input['input']), start_date=start_date, end_date=end_date))
 
       # convert to CF
-      met2CF.Ameriflux(file.path(settings$run$dbfiles, input['input']), site, file.path(settings$run$dbfiles, "cf"), start_date=start_date, end_date=end_date)
+      fcn <- paste("met2CF", input['input'], sep=".")
+      do.call(fcn, list(file.path(settings$run$dbfiles, input['input']), site, file.path(settings$run$dbfiles, "cf"), start_date=start_date, end_date=end_date))
 
       # gap filing
       metgapfill(file.path(settings$run$dbfiles, "cf"), site, file.path(settings$run$dbfiles, "gapfill"), start_date=start_date, end_date=end_date)
@@ -104,6 +109,25 @@ if (length(which(commandArgs() == "--continue")) == 0) {
       fcn <- paste("met2model", input['output'], sep=".")
       r <- do.call(fcn, list(file.path(settings$run$dbfiles, "gapfill"), site, file.path(settings$run$dbfiles, input['output']), start_date=start_date, end_date=end_date))
       settings$run$inputs[[i]] <- r[['file']]
+    }
+    } else { ## new met
+      if(input.tag == 'met'){
+        if(length(input) > 1){  ## check to see if the input is a file or a tag
+          
+          settings$run$inputs[[i]]  <-  PEcAn.data.atmosphere::met.process(
+                                          site = settings$run$site, input=input['input'],
+                                          start_date=settings$run$start.date, end_date=settings$run$end.date,
+                                          model=settings$model$type, host=settings$run$host,
+                                          bety=settings$database$bety, dir=settings$run$dbfiles)
+          if(FALSE){
+          foo = met.process(
+            site = settings$run$site, input=input['input'],
+            start_date=settings$run$start.date, end_date=settings$run$end.date,
+            model=settings$model$type, host=settings$run$host,
+            bety=settings$database$bety, dir=settings$run$dbfiles)
+          }
+        }        
+      }
     }
 
     # narr download

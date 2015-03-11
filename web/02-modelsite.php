@@ -306,6 +306,9 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
       <label id="sitelabel">Site:</label>
       <input name="siteid" id="siteid" type="hidden" value="<?php echo $siteid; ?>"/>
       <input name="sitename" id="sitename" type="text" readonly value="No site selected" />
+<?php if ($betydb != "") { ?>
+      <span class="small">Add a new site in <a href="<?php echo $betydb; ?>/sites/new" target="BETY">BETY</a>. Requires a refresh of this page after site is added.</span>
+<?php } ?>
       <div class="spacer"></div>
 
       <p></p>
@@ -324,11 +327,7 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
 ?>    
   </div>
   <div id="output"></div>
-  <div id="footer">
-    The <a href="http://pecanproject.org">PEcAn project</a> is supported by the National Science Foundation
-    (ABI #1062547, ARC #1023477) and the <a href="http://www.energybiosciencesinstitute.org/">Energy
-    Biosciences Institute</a>.
-  </div>
+  <div id="footer"><?php echo get_footer(); ?></div>
 </div>
 </body>
 </html>
