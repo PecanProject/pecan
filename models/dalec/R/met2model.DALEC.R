@@ -30,6 +30,7 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
   ## The nine columns of driving data are: day of year; mean air temperature (deg C); max daily temperature (deg C); min daily temperature (deg C); incident radiation (MJ/m2/day); maximum soil-leaf water potential difference (MPa); atmospheric carbon dioxide concentration (ppm); total plant-soil hydraulic resistance (MPa.m2.s/mmol-1); average foliar nitorgen (gC/m2 leaf area).
   ## Calculate these from air_temperature (K), surface_downwelling_shortwave_flux_in_air (W/m2), CO2 (ppm)
   
+  require(PEcAn.utils)
   
   start_date <- as.POSIXlt(start_date, tz = "GMT")
   end_date<- as.POSIXlt(end_date, tz = "GMT")

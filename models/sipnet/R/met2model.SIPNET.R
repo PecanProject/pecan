@@ -22,6 +22,8 @@
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
 met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date, ..., overwrite=FALSE,verbose=FALSE){
+  library(PEcAn.utils)
+  
   print("START met2model.SIPNET")
   start_date <- as.POSIXlt(start_date, tz = "GMT")
   end_date<- as.POSIXlt(end_date, tz = "GMT")

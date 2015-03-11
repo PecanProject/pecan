@@ -34,6 +34,7 @@ met2model.ED2 <- function(in.path,in.prefix,outfolder,start_date, end_date, lst=
   require(ncdf4)
   #require(ncdf)
   require(lubridate)
+  require(PEcAn.utils)
 
   # results are stored in folder prefix.start.end
   start_date <- as.POSIXlt(start_date, tz = "GMT")

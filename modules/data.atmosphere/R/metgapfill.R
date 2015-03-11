@@ -21,13 +21,12 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst=
   #REddyProc installed to ~/R/library by install.packages("REddyProc", repos="http://R-Forge.R-project.org", type="source")
   #dependency minpack.lm may not install automatically, so install it first
   require(ncdf4)
-  require(lubridate)
   require(udunits2)
   require(PEcAn.utils)
   
   # get start/end year code works on whole years only
-  start_year <- year(start_date)
-  end_year <- year(end_date)
+  start_year <- lubridate::year(start_date)
+  end_year <- lubridate::year(end_date)
 
   if(!file.exists(outfolder)){
     dir.create(outfolder)
