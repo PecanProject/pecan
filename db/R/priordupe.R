@@ -8,7 +8,7 @@
 ##' @param new.pft.definition 
 ##' @return nothing, creates new pft in database as a side-effect
 ##' @author David LeBauer
-##' @exampe \dontrun{
+##' @examples \dontrun{
 ##' priordupe(parent.pft.name    = "tempdecid",
 ##'           new.pft.name       = "mytempdecid",
 ##'           new.pft.definition = "mytempdecid is a new pft")
