@@ -23,20 +23,3 @@ License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
-Collate:
-    'InventoryGrowthFusion.R'
-    'InventoryGrowthFusionDiagnostics.R'
-    'Read_Tuscon.R'
-    'buildJAGSdata_InventoryRings.R'
-    'diametergrow.R'
-    'extract.stringCode.R'
-    'fia2ED.R'
-    'find.land.R'
-    'fuse_plot_treering.R'
-    'gis.functions.R'
-    'land.utils.R'
-    'matchInventoryRings.R'
-    'parse.MatrixNames.R'
-    'plot2AGB.R'
-    'read.plot.R'
-    'read.velmex.R'

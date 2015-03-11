@@ -21,14 +21,3 @@ License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
-Collate:
-    'dbfiles.R'
-    'get.trait.data.R'
-    'input.name.check.R'
-    'priordupe.R'
-    'query.base.R'
-    'query.pft.R'
-    'query.prior.R'
-    'query.trait.data.R'
-    'query.traits.R'
-    'utils.R'
