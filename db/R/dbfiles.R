@@ -38,12 +38,13 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
   
   if (hostname == "localhost") hostname <- fqdn();
   
+  mimetypeid <- db.query(paste0('SELECT id FROM mimetypes where type_string = ', mimetype, ';'))
   # find appropriate format
-  formatid <- db.query(paste0("SELECT id FROM formats WHERE mime_type='", mimetype, "' AND name='", formatname, "'"), con)[['id']]
+  formatid <- db.query(paste0("SELECT id FROM formats WHERE mimetype_id ='", mimetypeid, "' AND name='", formatname, "'"), con)[['id']]
   if (is.null(formatid)) {
     # insert format
-    db.query(paste0("INSERT INTO formats (mime_type, name, created_at, updated_at) VALUES ('", mimetype, "', '", formatname, "', NOW(), NOW())"), con)
-    formatid <- db.query(paste0("SELECT id FROM formats WHERE mime_type='", mimetype, "' AND name='", formatname, "'"), con)[['id']]
+    db.query(paste0("INSERT INTO formats (mimetype_id, name, created_at, updated_at) VALUES ('", mimetypeid, "', '", formatname, "', NOW(), NOW())"), con)
+    formatid <- db.query(paste0("SELECT id FROM formats WHERE mimetype_id ='", mimetypeid, "' AND name='", formatname, "'"), con)[['id']]
   }
   
   # setup parent part of query if specified
