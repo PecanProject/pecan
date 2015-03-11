@@ -12,7 +12,7 @@
 ##' @param dir  directory to write outputs to
 ##' 
 ##' @author Elizabeth Cowdery, Michael Dietze
-met.process <- function(site, input, start_date, end_date, model, host, bety, dir){
+met.process <- function(site, input_met, start_date, end_date, model, host, bety, dir){
   
   require(RPostgreSQL)
   
@@ -25,12 +25,12 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
   dbparms <- list(driver=driver, user=user, dbname=dbname, password=password, host=bety.host)
   con       <- db.open(dbparms)
   
-  met <- input$met$source
-  if(input$met$id==""){
+  met <- input_met$source
+  if(!exists("input_met$id") || input_met$id==""){
     download=TRUE
   }else{
     download=FALSE
-    raw.id=input$met$id
+    raw.id=as.numeric(input_met$id)
   }
   
   regional <- met == "NARR" # Either regional or site run
@@ -215,7 +215,13 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
 ##' @author Betsy Cowdery
 find.prefix <- function(files){
   
-  files.split <- try(strsplit(files, "[.]"), silent = TRUE)
+  if(length(files)==1){
+    tail <- tail(unlist(strsplit(files, "/")),1)
+    prefix <- head(unlist(strsplit(tail, "[.]")),1)
+    return(prefix)
+  }
+  
+  files.split <- try(strsplit(unlist(files), "[.]"), silent = TRUE)
     
   if(!inherits(files.split, 'try-error')){
     
