@@ -48,7 +48,7 @@ prospectSpec <- configureMCMC(prospect, print=TRUE)
 prospectSpec$removeSamplers(prospectNodes %in% prospectNodes)
 
 ### Load custom samplers
-source("nimble/nimblefuncs/LL_mod.R")
+source("nimble/nimblefuncs/LL.R")
 source("nimble/nimblefuncs/resp_long.R")
 
 specialized_prospect_LL <- prospect_LL(prospect, prospectConstants)
