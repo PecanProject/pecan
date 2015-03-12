@@ -86,14 +86,19 @@ PATH.speciesinfo <- file.path("~/Documents", "Dropbox",
                               "NASA_TE_PEcAn-RTM_Project",
                               "FFT_species_info_csv.csv")
 species.info <- fread(PATH.speciesinfo, header=TRUE)
-setnames(species.info, "Species", "species.sci")
-setkey(fftdat, "Species")
+species.info[,Scientific := sprintf("%s %s", Genus, Species)]
+species.info[, Species := NULL]
+setnames(fftdat, "Species", "Label")
+setkey(fftdat, "Label")
 setkey(species.info, "Label")
 
-uk <- unique(c(fftdat[,Species], species.info[,Label]))
-fftdat <- fftdat[species.info[J(uk)]]
+uk <- unique(c(fftdat[,Label], species.info[,Label]))
+fft.full <- fftdat[species.info[J(uk)]]
+fft.spec <- fft.full[!is.na(N.m)]
+## Fix species missing information
+#fftdat["BEGL", list("Scientific
 
-exclude <- c("ANGE", "TYLA")  ## As per Shawn's recommendation
+# exclude <- c("ANGE", "TYLA")  ## As per Shawn's recommendation
 
-
+save(fft.full, fft.spec, file="../data/FFT_full.Rdata")
 

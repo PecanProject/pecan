@@ -2,32 +2,47 @@
 title: "Trait analysis"
 author: "Alexey Shiklomanov"
 date: "02/13/2015"
-output: word_document
+output: html_document
 ---
-```{r, echo=FALSE}
+```{r, include=FALSE}
 ### Load libraries 
-
+library(ggplot2)
+library(reshape2)
+library(data.table)
+library(xtable)
+library(gridExtra)
+load("../../data/FFT_full.Rdata")
 ```
 
 # Methods
 
 ## Study sites and data description
 
-```{r}
+Table 1 shows the tree species used in this study.
+Table 2 shows the 
+
+```{r, results='asis', echo=FALSE}
 ### Species information table
+si.cols <- c("Label", "USDA_Spp_Code", "Scientific",
+             "Common name", "Family", "PFT")
+si.table <- fft.spec[,.N, by=si.cols]
+si.table.pp <- xtable(si.table, caption = "Table 1: Species information table")
+print(si.table.pp, type='html')
+
+### Site information table
+
 ```
 
 ## PROSPECT model
 
 ```{r}
-### Sensitivity analysis
+### Output distributions
 
 ```
 
 ## Statistical inversion
 
 ```{r}
-### PROSPECT priors
 
 ```
 
@@ -37,16 +52,29 @@ output: word_document
 
 ## Inversion summary
 
+Plot 1 shows the density plots for the outputs compared to their priors.
+Plot 2 shows violin plots by species, functional type, and conifer/broadleaf.
+
 ```{r, echo=FALSE}
-### Summary tables
-# By species
-# By family
-# By conifer/deciduous
+### PROSPECT priors
+N.prior <- 1 + rlnorm(1e4, -0.916, 2.2)
+Cab.prior <- rlnorm(1e4, 3.4, 0.9)
+Cw.prior <- rlnorm(1e4, -6.377, 0.5)
+Cm.prior <- rlnorm(1e4, -5.116, 0.9)
+
+N.pp <- ggplot() + geom_density(aes(x=N.prior), color="green") +
+        geom_density(aes(x=fft.spec[,N.m]), color="black")
+Cab.pp <- ggplot() + geom_density(aes(x=Cab.prior), color="green") +
+        geom_density(aes(x=fft.spec[,Cab.m]), color="black")
+Cw.pp <- ggplot() + geom_density(aes(x=Cw.prior), color="green") +
+        geom_density(aes(x=fft.spec[,Cw.m]), color="black")
+Cm.pp <- ggplot() + geom_density(aes(x=Cm.prior), color="green") +
+        geom_density(aes(x=fft.spec[,Cm.m]), color="black")
 
 ```
 
 ## Linking PROSPECT parameters to traits
 
 ```{r}
-
+## Traits
 ```
