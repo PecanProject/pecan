@@ -13,7 +13,7 @@ if (!exists("TEST")){
         specname <- "AK01_ACRU_M_LC_REFL"
         foldername <- "NIMBLE_TEST"
         runid <- "TEST"
-        ngibbs <- 100
+        ngibbs <- 1000
 }
 
 speclist <- read.table("FFT_fullspecnames.txt", stringsAsFactors = FALSE)$V1
@@ -70,12 +70,27 @@ prospectMCMC <- buildMCMC(prospectSpec, project = prospect)
 prosProj <- compileNimble(prospect, prospectMCMC)
 
 ### Run MCMC
-prosProj$prospectMCMC$run(ngibbs)
+tt <- system.time(prosProj$prospectMCMC$run(ngibbs))
+print(tt)
 samples <- as.matrix(prosProj$prospectMCMC$mvSamples)[,c("N",
                                                          "Cab",
                                                          "Cw",
                                                          "Cm",
                                                          "resp")]
 
-write.csv(samples, filename, row.names=FALSE)
+if(!exists("TEST")) {
+        write.csv(samples, filename, row.names=FALSE)
+} else {
+        source("prospect.R")
+        s1.mean <- s1[, sapply(.SD, mean)]
+        s1.median <- s1, sapply(.SD, median)
+        s1.mean.p <- do.call(prospect, as.list(s1.mean[-5]))
+        s1.median.p <- do.call(prospect, as.list(s1.median[-5]))
+        plot(obs.spec, type='l')
+        lines(s1.mean.p, col=2)
+        lines(s1.median.p, col=3)
+        legend("topright", c("Obs", "Mean", "Med"), lty=1, col=1:3)
+}
+
+        
 
