@@ -159,7 +159,7 @@ run.meta.analysis <- function(pfts, iterations, random, threshold, dbfiles, data
 ##' @param point 
 ##' @param prior list of distn, parama, paramb
 ##' @return result of p<distn>(point, parama, paramb)
-##' @export
+##' @export p.point.in.prior
 ##' @author David LeBauer
 p.point.in.prior <- function(point, prior){
   prior.median <- do.call(paste('q', prior$distn, sep = ""),
