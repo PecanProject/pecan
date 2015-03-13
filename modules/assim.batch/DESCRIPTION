@@ -14,9 +14,3 @@ License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
-Collate:
-    'get.da.data.growth.R'
-    'get.da.data.R'
-    'pda.emulator.R'
-    'pda.mcmc.R'
-    'plot.da.R'

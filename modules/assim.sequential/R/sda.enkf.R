@@ -1,6 +1,6 @@
 ##' @title sda.enkf
 ##' @name  sda.enkf
-##' @author Michael Dietze \email{dietze@bu.edu}
+##' @author Michael Dietze \email{dietze@@bu.edu}
 ##' 
 ##' @param settings    PEcAn settings object
 ##' @param IC          data.frame of initial condition sample (nens X nstate)
