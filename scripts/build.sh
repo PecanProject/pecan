@@ -56,7 +56,6 @@ while true; do
 
     --check)
       CHECK="yes"
-      DOCUMENTATION="yes"
       ;;
 
     --no-check)
