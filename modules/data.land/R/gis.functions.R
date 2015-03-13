@@ -164,10 +164,7 @@ get.attributes <- function(file,coords) {
 ##' input file.  Can also set to "pwd"
 ##' @param out.name filename for subset layer.  Defaults to original filename with the suffix
 ##' *.sub
-##' 
 ##' @import rgdal
-##' @export
-##' 
 ##' @examples
 ##' \dontrun{
 ##' # Test dataset
@@ -180,7 +177,7 @@ get.attributes <- function(file,coords) {
 ##' system(paste("rm -r",out.dir,sep=""))
 ##' }
 ##' 
-##' @export
+##' @export subset.layer
 ##' 
 ##' @author Shawn P. Serbin
 ##' 
