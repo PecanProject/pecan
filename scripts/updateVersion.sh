@@ -9,7 +9,7 @@
 #-------------------------------------------------------------------------------
 
 # version of pecan
-VERSION="1.4.1"
+VERSION=$1
 DATE=`date +"%Y-%m-%d"`
 
 # if no arguments passed in update all DESCRIPTION files
