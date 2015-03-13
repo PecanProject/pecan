@@ -8,7 +8,7 @@
       <user>bety</user>
       <password>bety</password>
       <host>localhost</host>
-      <dbname>bety_dl</dbname>
+      <dbname>bety_migrations_test</dbname>
       <write>FALSE</write>
     </bety>
   </database>
@@ -19,6 +19,10 @@
     </pft>
   </pfts>
 
+  <meta.analysis>
+    <threshold>55</threshold>
+    <iter>100</iter>
+  </meta.analysis>
   <ensemble>
     <variable>NPP</variable>
   </ensemble>
@@ -30,6 +34,15 @@
     </quantiles>
     <variable>NPP</variable>
   </sensitivity.analysis>
+  
+    <sensitivity.analysis>
+    <quantiles>
+      <sigma>-1</sigma>
+      <sigma>1</sigma>
+    </quantiles>
+    <variable>NPP</variable>
+  </sensitivity.analysis>
+
 
   <model>
     <binary>/home/kooper/bin/sipnet.runk</binary>

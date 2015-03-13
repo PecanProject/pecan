@@ -214,7 +214,7 @@ create.base.plot <- function() {
 ##' @seealso \code{\link{create.base.plot}}
 ##' @return updated plot object
 ##' @author David LeBauer
-##' @export
+##' @export plot.data
 ##' @examples
 ##' \dontrun{plot.data(data.frame(Y = c(1, 2), se = c(1,2)), base.plot = NULL, ymax = 10)}
 plot.data <- function(trait.data, base.plot = NULL, ymax, color = 'black') {

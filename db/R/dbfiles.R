@@ -34,7 +34,7 @@
 dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, mimetype, formatname, parentid=NA, con, hostname=fqdn()) {
   
   name <- basename(in.path)
-  filename <- file.path(in.path,in.prefix)
+  filename <- file.path(in.path, in.prefix)
   
   if (hostname == "localhost") hostname <- fqdn();
   
