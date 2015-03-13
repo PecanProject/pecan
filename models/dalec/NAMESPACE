@@ -2,4 +2,4 @@
 
 export(met2model.DALEC)
 export(model2netcdf.DALEC)
-
+export(write.config.DALEC)
