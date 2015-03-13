@@ -19,7 +19,7 @@ if ($authentication) {
   }
 }
 
-# boolean parameters
+# boolean parameters$("#url"$("#url"))
 $offline=isset($_REQUEST['offline']);
 
 $hostname = $fqdn;
@@ -33,6 +33,11 @@ if (isset($_REQUEST['modelid'])) {
 $siteid = "";
 if (isset($_REQUEST['siteid'])) {
   $siteid = $_REQUEST['siteid'];
+}
+
+$url = "";
+if (isset($_REQUEST['url'])) {
+  $url = $_REQUEST['url'];
 }
 
 // get hosts
@@ -122,7 +127,12 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
 
     // get all sites
     //console.log($('#modelid option:selected'))
-    var url="sites.php?host=" + $('#hostname')[0].value + "&model=" + $('#modelid option:selected')[0].value
+    var url ="sites.php?host=" + $('#hostname')[0].value + "&model=" + $('#modelid option:selected')[0].value;
+
+    if ($('#conversion').is(':checked')) {
+      url =url + "&conversion=1";
+    }
+ 
     jQuery.get(url, {}, function(data) {
       jQuery(data).find("marker").each(function() {
         var marker = jQuery(this);
@@ -301,6 +311,10 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
       <select name="modelid" id="modelid" onChange="modelSelected();">
         <option selected value="<?php echo $modelid; ?>"><?php echo $modelid; ?></option>
       </select>
+      <div class="spacer"></div>
+
+      <label id="conversionlabel">Conversion:</label>
+      <input type="checkbox" id="conversion" name="conversion" onChange="modelSelected();" /> 
       <div class="spacer"></div>
 
       <label id="sitelabel">Site:</label>
