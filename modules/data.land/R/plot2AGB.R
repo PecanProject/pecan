@@ -16,7 +16,7 @@
 ##' @param outfolder  output folder for graphs & data 
 ##' @param unit.conv  area conversion from sum(kg/tree) to kg/area
 ##' 
-##' @author Mike Dietze \email{dietze@bu.edu}
+##' @author Mike Dietze \email{dietze@@bu.edu}
 ##' @export
 plot2AGB <- function(combined,out,outfolder,allom.stats,unit.conv=0.02){
   

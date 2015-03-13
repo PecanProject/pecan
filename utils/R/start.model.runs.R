@@ -14,12 +14,12 @@
 ##' 
 ##' @name start.model.runs
 ##' @title Start ecosystem model runs
-##' @export 
+##' @export start.model.runs
 ##' @examples
 ##' \dontrun{
 ##' start.model.runs(settings)
 ##' }
-##' @author Shawn Serbin, Rob Kooper, ...
+##' @author Shawn Serbin, Rob Kooper, David LeBauer
 ##'
 start.model.runs <- function(settings, write = TRUE){
   model = settings$model$type
