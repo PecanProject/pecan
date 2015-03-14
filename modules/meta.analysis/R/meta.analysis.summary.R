@@ -13,7 +13,7 @@
 ##' @param mcmc.object JAGS mcmc output from \code{\link{pecan.ma}}
 ##' @param pft plant functional type
 ##' @param outdir output directory
-##' @param threshold Gelman-Rubin convergence threshold;
+##' @param threshold Gelman-Rubin convergence diagnostic (MGPRF)
 ##' default = 1.2 following Bolker 2008 Ecological Models and Data in R
 ##' @export
 ##'

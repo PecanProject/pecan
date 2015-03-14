@@ -20,4 +20,4 @@ test_that("get.id works on some tables, and with different inputs", {
   pft <- db.query(paste0("select name, modeltype_id from pfts where id = ", pftid), con)
   expect_equal(pft$name, pftname)
   expect_equal(pft$modeltype_id, modeltypeid)
-}
+})

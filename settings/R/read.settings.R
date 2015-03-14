@@ -607,14 +607,15 @@ check.settings <- function(settings) {
   }
 
   # Check folder where outputs are written before adding to dbfiles
-  if (substr(settings$run$dbfiles, 1, 1) != '/'){
-    logger.warn("settings$run$dbfiles pathname", settings$run$dbfiles, " is invalid\n
-                placing it in the home directory ", Sys.getenv("HOME"))
-    settings$run$dbfiles <- file.path(Sys.getenv("HOME"), settings$run$dbfiles)
-  } 
   if(is.null(settings$run$dbfiles)) {
     settings$run$dbfiles <- normalizePath("~/.pecan/dbfiles", mustWork=FALSE)
   } else {
+    if (substr(settings$run$dbfiles, 1, 1) != '/'){
+      logger.warn("settings$run$dbfiles pathname", settings$run$dbfiles, " is invalid\n
+                placing it in the home directory ", Sys.getenv("HOME"))
+      settings$run$dbfiles <- file.path(Sys.getenv("HOME"), settings$run$dbfiles)
+    } 
+    
     settings$run$dbfiles <- normalizePath(settings$run$dbfiles, mustWork=FALSE)
   }
   dir.create(settings$run$dbfiles, showWarnings = FALSE, recursive = TRUE)
