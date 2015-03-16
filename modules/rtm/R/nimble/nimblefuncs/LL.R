@@ -18,12 +18,10 @@ prospect_LL <- nimbleFunction(
 		e1 <- constants$e1
 		e2 <- constants$e2
 		
-		## Data 
+		## Data
 		observed <- constants$observed
 		nspec <- constants$nspec
 		wl <- constants$wl
-		np <- constants$np
-		wlp <- constants$wlp
 		zeroswl <- rep(0, wl)
 		
 	},
@@ -90,38 +88,12 @@ prospect_LL <- nimbleFunction(
 		for (i in 1:nspec){
 			specerror[,i] <- Refl - observed[,i]
 		}
-		logL <- 0.
-		for(i in wlp[1]:wlp[2]) {
+		logL <- 0.0
+		for(i in 1:wl) {
 			for(j in 1:nspec) {
-				logL <- logL + dnorm(specerror[i,j], 0, model$resp_1, 1) 
+				logL <- logL + dnorm(specerror[i,j], 0, model$resp, 1) 
 			}
 		}
-		for(i in wlp[2]:wlp[3]) {
-			for(j in 1:nspec) {
-				logL <- logL + dnorm(specerror[i,j], 0, model$resp_2, 1) 
-			}
-		}
-		for(i in wlp[3]:wlp[4]) {
-			for(j in 1:nspec) {
-				logL <- logL + dnorm(specerror[i,j], 0, model$resp_3, 1) 
-			}
-		}
-		for(i in wlp[4]:wlp[5]) {
-			for(j in 1:nspec) {
-				logL <- logL + dnorm(specerror[i,j], 0, model$resp_4, 1) 
-			}
-		}
-		for(i in wlp[5]:wlp[6]) {
-			for(j in 1:nspec) {
-				logL <- logL + dnorm(specerror[i,j], 0, model$resp_5, 1) 
-			}
-		}
-		for(i in wlp[6]:wlp[7]) {
-			for(j in 1:nspec) {
-				logL <- logL + dnorm(specerror[i,j], 0, model$resp_6, 1) 
-			}
-		}
-		
 		returnType(double(0))
 		return(logL)
 	})

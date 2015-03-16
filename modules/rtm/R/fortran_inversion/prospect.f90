@@ -10,6 +10,7 @@ subroutine PROSP(N, Cab, Cw, Cm, Refl)
     double precision N, Cab, Cw, Cm
     double precision TAU
     integer wl, i
+    real start, finish
 
     double precision, dimension(2101) :: CabAbs, CwAbs, CmAbs
     double precision, dimension(2101) :: tao1, tao2, rho1, rho2
@@ -24,10 +25,14 @@ subroutine PROSP(N, Cab, Cw, Cm, Refl)
     wl = 2101
 
     k = 1.0/N * (Cab * CabAbs + Cw * CwAbs + Cm * CmAbs)
+    call cpu_time(start)
     do 10 i = 1, wl
         theta(i) = TAU(k(i))
 10  continue
+    call cpu_time(finish)
+    write(*,*) "Exponential integral: ", finish - start
         
+    call cpu_time(start)
     ! Reflectance and transmittance of first layer (N=1)
     rhoa = rho1 + (tao1 * tao2 * rho2 * theta**2) / (1 - rho2**2 * theta**2)
     taoa = tao1 * tao2 * theta / (1 - rho2**2 * theta**2)
@@ -41,6 +46,8 @@ subroutine PROSP(N, Cab, Cw, Cm, Refl)
     nmR = taoa * tao90 * (b90**(N-1.0) - b90**(1.0-N))
     dmRT = a90*b90**(N-1.0) - b90**(1.0-N)/a90 - rho90 * (b90**(N-1.0) - b90**(1.0-N))
     Refl = rhoa + nmR / dmRT
+    call cpu_time(finish)
+    write(*,*) "Reflectance: ", finish - start
 
     return
     end

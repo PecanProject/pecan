@@ -5,34 +5,29 @@ sampler_resp <- nimbleFunction(
 		calcNodes <- model$getDependencies(targetNode)
 		constants <- prospectConstants
 		
-		## Extract info from resp
-		np <- as.numeric(gsub("resp_([0-9]+)]", "\\1", targetNode))
-		wl.min <- constants$wlp[np]
-		wl.max <- constants$wlp[np+1]
-		wl.l <- wl.min[np]:wl.max[np+1]
-		wl <- length(wl.l)
-		
 		## PROSPECT Absorption features
-		Cab_abs <- constants$Cab_abs[wl.l]
-		Cw_abs <- constants$Cw_abs[wl.l]
-		Cm_abs <- constants$Cm_abs[wl.l]
+		Cab_abs <- constants$Cab_abs
+		Cw_abs <- constants$Cw_abs
+		Cm_abs <- constants$Cm_abs
 		
 		## Elementary layer transmittances
-		tao1 <- constants$tao1[wl.l]
-		tao2 <- constants$tao2[wl.l]
-		rho1 <- constants$rho1[wl.l]
-		rho2 <- constants$rho2[wl.l]
-		x <- constants$x[wl.l]
-		y <- constants$y[wl.l]
+		tao1 <- constants$tao1
+		tao2 <- constants$tao2
+		rho1 <- constants$rho1
+		rho2 <- constants$rho2
+		x <- constants$x
+		y <- constants$y
 		
 		## Exponential integral constants
 		e1 <- constants$e1
 		e2 <- constants$e2
 		
-		## Data 
-		observed <- constants$observed[wl.l,]
+		## Data
+		observed <- constants$observed
 		nspec <- constants$nspec
+		wl <- constants$wl
 		zeroswl <- rep(0, wl)
+		rp1 <- 0.001 + nspec*wl / 2
 	},
 	run = function(){
 		declare(specerror, double(2, c(wl, nspec)))
@@ -97,8 +92,7 @@ sampler_resp <- nimbleFunction(
 		for (i in 1:nspec){
 			specerror[,i] <- Refl - observed[,i]
 		}
-		rp1 <- nspec * wl / 2
-		rp2 <- (nspec * wl - 1) * var(specerror)
+		rp2 <- 0.001 + sum(specerror^2)/2
 		rp <- rgamma(1, rp1, rp2)
 		
 		model[[targetNode]] <<- rp

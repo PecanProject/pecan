@@ -13,7 +13,7 @@ if (!exists("TEST")){
         specname <- "AK01_ACRU_M_LC_REFL"
         foldername <- "NIMBLE_TEST"
         runid <- "TEST"
-        ngibbs <- 100
+        ngibbs <- 1000
 }
 
 speclist <- read.table("FFT_fullspecnames.txt", stringsAsFactors = FALSE)$V1
@@ -34,9 +34,6 @@ AI <- 3
 prospectConstants$observed <- obs.spec
 prospectConstants$nspec <- ncol(obs.spec)
 prospectConstants$wl <- nrow(obs.spec)
-wdiv <- c(1, 277, 873, 1295, 1819)
-prospectConstants$wlp <- c(wdiv, nrow(obs.spec))
-prospectConstants$np <- length(wdiv)
 
 print("CREATING MODEL")
 prospect <- nimbleModel(code = prospectCode,
@@ -64,13 +61,9 @@ for (i in sampler.pars){
                                                includesTarget = FALSE,
                                                adaptInterval = AI))
 }
+prospectSpec$addSampler(type = "resp", control = list(targetNode = "resp"))
 
-rsp.pars <- sprintf("resp_%d", 1:length(wdiv))
-for(r in rsp.pars){
-	prospectSpec$addSampler(type = "resp", control = list(targetNode = rsp.pars))
-}
-
-prospectSpec$addMonitors(c("N", "Cab", "Cw", "Cm", rsp.pars))
+prospectSpec$addMonitors(c("N", "Cab", "Cw", "Cm", "resp"))
 print("BUILDING MCMC")
 prospectMCMC <- buildMCMC(prospectSpec, project = prospect)
 
@@ -83,12 +76,13 @@ samples <- as.matrix(prosProj$prospectMCMC$mvSamples)[,c("N",
                                                          "Cab",
                                                          "Cw",
                                                          "Cm",
-                                                         rsp.pars)]
+                                                         "resp")]
 
 if(!exists("TEST")) {
         write.csv(samples, filename, row.names=FALSE)
 } else {
         source("prospect.R")
+        s1 <- data.table(samples)
         s1.mean <- s1[, sapply(.SD, mean)]
         s1.median <- s1[, sapply(.SD, median)]
         s1.mean.p <- do.call(prospect, as.list(s1.mean[-5]))

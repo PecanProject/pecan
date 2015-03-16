@@ -9,6 +9,7 @@ program ProspectBayes
 
     common CabAbs, CwAbs, CmAbs, tao1, tao2, rho1, rho2, x, y
 
+    real start, finish
     double precision N, Cab, Cw, Cm, rsd
     double precision logN, logCab, logCw, logCm
     double precision TN, TCab, TCw, TCm
@@ -47,7 +48,7 @@ program ProspectBayes
 
     wl = 2101
     nspec = 78
-    ngibbs = 1000
+    ngibbs = 5
 
     ! Read in spectra
     read(8, *) ((Observed(row, col), col=1, 78), row=1, 2101)
@@ -87,13 +88,20 @@ program ProspectBayes
     do 1000 i = 1, ngibbs
     write(*,*) i
        ! Sample N
+
        TlogN = rnorm(logN, JumpSD(1))
+       write(*,*) finish - start
+       
        TN = exp(TlogN) + 1
        call PROSP(TN, Cab, Cw, Cm, TrySpec)
+       write(*,*) finish - start
        call SpecError(TrySpec, Observed, TryError)
        TryPost = likelihood(TryError, rsd) +  priorN(TlogN)
        PrevPost = likelihood(PrevError, rsd) + priorN(logN)
+
        JN = dnorm(TlogN, logN, JumpSD(1))
+       write(*,*) finish - start
+
        JD = dnorm(logN, TlogN, JumpSD(1))
        a = exp((TryPost - JN) - (PrevPost - JD))
        call random_number(unif)
@@ -157,6 +165,7 @@ program ProspectBayes
        ! Sample rsd
        rp2 = 0.001 + sum(PrevError**2) / 2
        rinv = rgamma(c, rp2)
+       write(*,*) finish - start
        rsd = 1/sqrt(rinv)
 
        ! Write to file

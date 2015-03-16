@@ -9,12 +9,7 @@ prospectCode <- nimbleCode({
         Cab ~ dlnorm(3.4, 0.9)
         Cw ~ dlnorm(-6.377, 0.5)
         Cm ~ dlnorm(-5.116, 0.9)
-        resp_1 ~ dgamma(0.001, 0.001)
-        resp_2 ~ dgamma(0.001, 0.001)
-        resp_3 ~ dgamma(0.001, 0.001)
-        resp_4 ~ dgamma(0.001, 0.001)
-        resp_5 ~ dgamma(0.001, 0.001)
-        resp_6 ~ dgamma(0.001, 0.001)
+        resp ~ dgamma(0.001, 0.001)
 })
 
 prospectConstants <- list(Cab_abs = prospect4.dat$Cab_abs,
@@ -33,9 +28,4 @@ prospectInits <- list(N = 1.4,
                       Cab = 30,
                       Cw = 0.01,
                       Cm = 0.006,
-                      resp_1 = 0.5,
-					  resp_2 = 0.5,
-					  resp_3 = 0.5,
-					  resp_4 = 0.5,
-					  resp_5 = 0.5,
-					  resp_6 = 0.5)
+                      resp = 0.5)
