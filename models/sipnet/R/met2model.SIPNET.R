@@ -13,6 +13,9 @@
 ##only gives user the notice that file already exists. If user wants to overwrite the existing files, just change 
 ##overwrite statement below to TRUE.
 
+##' met2model wrapper for SIPNET
+##'
+##' @title met2model.SIPNET
 ##' @export
 ##' @param in.path location on disk where inputs are stored
 ##' @param in.prefix prefix of input and output files

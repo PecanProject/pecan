@@ -18,13 +18,16 @@
 ##overwrite statement below to TRUE.
 
 
+##' met2model wrapper for ED2
+##' 
+##' @title met2model for ED2
 ##' @export
 ##' @param in.path location on disk where inputs are stored
 ##' @param in.prefix prefix of input and output files
 ##' @param outfolder location on disk where outputs will be stored
-##' @param lst timezone offset to GMT in hours
 ##' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
 ##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
+##' @param lst timezone offset to GMT in hours
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
 met2model.ED2 <- function(in.path,in.prefix,outfolder,start_date, end_date, lst=0,..., overwrite=FALSE,verbose=FALSE){
@@ -272,7 +275,7 @@ for(year in start_year:end_year) {
     metflag[metvar=="co2"] = 4
     metfrq[metvar=="co2"] = 380
   }
-  write.table("#header",met_header,row.names=FALSE,col.names=FALSE)
+  write.table("header",met_header,row.names=FALSE,col.names=FALSE)
   write.table(sites,met_header,row.names=FALSE,col.names=FALSE,append=TRUE)
   write.table(met_folder,met_header,row.names=FALSE,col.names=FALSE,append=TRUE,quote=FALSE)
   write.table(matrix(metgrid,nrow=1),met_header,row.names=FALSE,col.names=FALSE,append=TRUE,quote=FALSE)
