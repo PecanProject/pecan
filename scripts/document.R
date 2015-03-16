@@ -15,4 +15,4 @@ pkgdocfiles <- function(x) {
 }
 all.docfiles <- unlist(sapply(packages, pkgdocfiles, simplify = TRUE))
 sapply(all.docfiles, file.remove)
-null <- sapply(packages, roxygenize)
+null <- sapply(packages, function(x) roxygenize(x, roclets = 'rd')
