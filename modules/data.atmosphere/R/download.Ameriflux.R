@@ -20,8 +20,22 @@ download.Ameriflux.site <- function(site_id) {
 ##' @author Josh Mantooth, Rob Kooper
 download.Ameriflux <- function(site, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE) {
   # get start/end year code works on whole years only
+  
+  require(lubridate) #is this necessary?
+  require(PEcAn.utils)
+  require(data.table)
+  
+  start_date <- as.POSIXlt(start_date, tz = "GMT")
+  end_date <- as.POSIXlt(end_date, tz = "GMT")
+  
+  print(start_date)
+  print(end_date)
+  
   start_year <- year(start_date)
   end_year <- year(end_date)
+  
+  print(start_year)
+  print(end_year)
   
   # make sure output folder exists
   if(!file.exists(outfolder)){

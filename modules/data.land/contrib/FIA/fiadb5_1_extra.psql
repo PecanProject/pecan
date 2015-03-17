@@ -1,0 +1,3 @@
+create index "TREE_SPCD" on "TREE"("SPCD";);
+create index "TREE_PLT_CN" on "TREE"("PLT_CN";);
+create index "PLOT_CN" on "PLOT"("CN";);
