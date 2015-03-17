@@ -1,5 +1,5 @@
 ##' @title Prospect model setup
-##' 
+##'
 ##' @details {
 ##' Load PROSPECT C script and absorption features into environment
 ##' }
@@ -9,10 +9,10 @@
 library(Rcpp)
 sourceCpp("prospect_c.cpp")
 
-load("../data/dataSpec_p4.RData")    
+load("../data/prospect4.Rdata")
 dataSpec_p4 <- as.matrix(dataSpec_p4)
 
-guess.inits <- c(N=1.4, 
+guess.inits <- c(N=1.4,
                  Cab=30,
                  Cw=0.017,
                  Cm=0.006
