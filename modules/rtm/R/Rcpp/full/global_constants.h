@@ -1,5 +1,4 @@
-// Read in global constants
-
+// Set up environments and constants
 static Environment GE = Environment::global_env();
 static int wl = GE["wl"];
 static NumericVector Cab_abs = GE["Cab_abs"];

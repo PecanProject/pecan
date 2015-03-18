@@ -3,158 +3,105 @@
 // to the supporting functions to make them C compatible, and more substatial modification to the prospect4
 // function to cut out the Rcpp package types.
 
-#include <Rcpp.h>
-using namespace Rcpp;
+#define MATHLIB_STANDALONE
 #include <Rmath.h>
-#include "global_constants.h"
+#include <Rcpp.h>
 #include "exp_int.h"
 #include "gpm.h"
-#include "support.h"
-#include "priors.h"
+#include "truncnorm.h"
+
+static const int wl = 2101;
+static const int nspec = 78;
 
 // PROSPECT 4 model
-// [[Rcpp::export]]
-NumericVector prospect4(float N, float Cab, float Cw, float Cm){
-    NumericVector k(wl);
-    NumericVector theta(wl);
-    NumericVector Refl(wl);
+void prospect4(double N, double Cab, double Cw, double Cm, double Refl[wl]){
+    double k[wl], theta[wl];
     int i;
-    
+
     for(i=0; i<wl; i++){
         k[i] = (1.0/N) * (Cab * Cab_abs[i] +
-                Cw * Cw_abs[i] + 
+                Cw * Cw_abs[i] +
                 Cm * Cm_abs[i]);
 		theta[i] = exp_int(k[i]);
         Refl[i] = gpm(tao1[i], tao2[i], rho1[i], rho2[i],
                 x[i], y[i], theta[i], N);
     }
-    return Refl;
+    return ;
 }
 
-// [[Rcpp::export]]
-NumericVector pinvbayes(int ngibbs, NumericMatrix Observed){
-		int nspec = Observed.ncol();
-
-		// Precompute first model
-		double N = 1.4;
-		double Cab = 30;
-		double Cw = 0.01;
-		double Cm = 0.01;
-		double rsd = 0.05;
-		
-		double logN = log(N);
-		double logCab = log(Cab);
-		double logCw = log(Cw);
-		double logCm = log(Cm);
-		
-		double JumpN = 0.01*logN;
-		double JumpCab = 0.01*logCab;
-		double JumpCw = 0.01*logCw;
-		double JumpCm = 0.01*logCm;
-		NumericVector PrevSpec(wl);
-		NumericMatrix PrevError(wl, nspec);
-		PrevSpec = prospect4(N, Cab, Cw, Cm);
-		PrevError = SpecError(PrevSpec, Observed, nspec);
-		double rp1 = 0.001 + nspec*wl/2;
-		
-		double TlogN, TlogCab, TlogCw, TlogCm;
-		double TN, TCab, TCw, TCm;
-		double JN, JD, a, u;
-		NumericVector TrySpec;
-		NumericMatrix TryError;
-		double TryPost;
-		double PrevPost;
-		double rp2, rinv;
-		NumericMatrix Results(ngibbs, 5);
-		
-		for(int ng = 0; ng<ngibbs; ng++){
-			printf("%d  ", ng);
-			// Sample N
-			TlogN = rnorm(1, logN, JumpN)[0];
-			TN = exp(logN) + 1;
-			TrySpec = prospect4(TN, Cab, Cw, Cm);
-			TryError = SpecError(TrySpec, Observed, nspec);
-			TryPost = Likelihood(TryError, rsd, nspec) + priorN(TlogN);
-			PrevPost = Likelihood(PrevError, rsd, nspec) + priorN(logN);
-			JN = dnorm_simp(TlogN, logN, JumpN);
-			JD = dnorm_simp(logN, TlogN, JumpN);
-			a = exp(JN - JD);
-			printf(" %e ", a); 
-			u = runif(1)[0];
-			if(a > u){
-				N = TN;
-				logN = TlogN;
-				PrevError = TryError;
-				printf("N");
-			}
-			
-			// Sample Cab
-			TlogCab = rnorm(1, logCab, JumpCab)[0];
-			TCab = exp(logCab);
-			TrySpec = prospect4(N, TCab, Cw, Cm);
-			TryError = SpecError(TrySpec, Observed, nspec);
-			TryPost = Likelihood(TryError, rsd, nspec) + priorCab(TlogCab);
-			PrevPost = Likelihood(PrevError, rsd, nspec) + priorCab(logCab);
-			JN = dnorm_simp(TlogCab, logCab, JumpCab);
-			JD = dnorm_simp(logCab, TlogCab, JumpCab);
-			a = exp(JN - JD);
-			printf(" %e ", a); 
-			u = runif(1)[0];
-			if(a > u){
-				Cab = TCab;
-				logCab = TlogCab;
-				PrevError = TryError;
-				printf("Cab");
-			}
-			
-			// Sample Cw
-			TlogCw = rnorm(1, logCw, JumpCw)[0];
-			TCw = exp(logCw);
-			TrySpec = prospect4(N, Cab, TCw, Cm);
-			TryError = SpecError(TrySpec, Observed, nspec);
-			TryPost = Likelihood(TryError, rsd, nspec) + priorCw(TlogCw);
-			PrevPost = Likelihood(PrevError, rsd, nspec) + priorCw(logCw);
-			JN = dnorm_simp(TlogCw, logCw, JumpCw);
-			JD = dnorm_simp(logCw, TlogCw, JumpCw);
-			a = exp(JN - JD);
-			printf(" %e ", a); 
-			u = runif(1)[0];
-			if(a > u){
-				Cw = TCw;
-				logCw = TlogCw;
-				PrevError = TryError;
-				printf("Cw");
-			}
-			
-			// Sample Cm
-			TlogCm = rnorm(1, logCm, JumpCm)[0];
-			TCm = exp(logCm);
-			TrySpec = prospect4(N, Cab, Cw, TCm);
-			TryError = SpecError(TrySpec, Observed, nspec);
-			TryPost = Likelihood(TryError, rsd, nspec) + priorCm(TlogCm);
-			PrevPost = Likelihood(PrevError, rsd, nspec) + priorCm(logCm);
-			JN = dnorm_simp(TlogCm, logCm, JumpCm);
-			JD = dnorm_simp(logCm, TlogCm, JumpCm);
-			a = exp(JN - JD);
-			printf(" %e ", a); 
-			u = runif(1)[0];
-			if(a > u){
-				Cm = TCm;
-				logCm = TlogCm;
-				PrevError = TryError;
-				printf("Cm");
-			}
-			
-			// Sample rsd
-			rp2 = 0.001 + sum(PrevError*PrevError)/2.0;
-			rinv = rgamma(1, rp1, rp2)[0];
-			rsd = 1.0/sqrt(rinv);
-			
-			Results(ng, 1) = N;
-			Results(ng, 2) = Cab;
-			Results(ng, 3) = Cw;
-			Results(ng, 4) = Cm;
-			Results(ng, 5) = rsd;
-		}
-		return Results;
+// SpecError
+void SpecError(double Model[wl], Observed[wl][nspec], Error[wl][nspec]){
+    for(i=0; i<wl; i++){
+        for(j=0; j<nspec; j++){
+            Error[i][j] = Model[i] - Observed[i][j];
+        }
+    }
+    return;
 }
+
+// Likelihood
+double Likelihood(double Error[wl][nspec], double rsd){
+    double LogL = 0.0;
+    for(i=0; i<wl; i++){
+        for(j=0; j<nspec; j++){
+            LogL += dnorm(Error[i][j], 0.0, rsd, 1);
+        }
+    }
+    return LogL;
+}
+
+// Main inversion
+int main(){
+    double N, Cab, Cw, Cm, rsd,
+           TN, TCab, TCw, TCm;
+    N = 1.4;
+    Cab = 30;
+    Cw = 0.01;
+    Cm = 0.01;
+    rsd = 0.5;
+
+    double rp1 = 0.001 + nspec*wl/2.0, rp2, rinv;
+    double Jump[4] = {0.1, 1, 0.005, 0.005};
+    double TrySpec[wl], PrevSpec[wl];
+    double TryError[wl][nspec], PrevError[wl][nspec];
+    double TryPost, PrevPost;
+    double JN, JD, a, u;
+
+    prospect4(N, Cab, Cw, Cm, PrevSpec);
+    SpecError(PrevSpec, Observed, PrevError);
+
+    int ngibbs = 100, ng, i, j;
+    for(ng=0; ng<ngibbs; ng++){
+        TN = rtnorm(N, Jump[1], 1, 1e14);
+        prospect4(TN, Cab, Cw, Cm, TrySpec);
+        SpecError(TrySpec, Observed, TryError);
+        TryPost = Likelihood(TryError, rsd);
+        PrevPost = Likelihood(PrevError, rsd);
+        JN = dtnorm(TN, N, Jump[1], 1, 1e14);
+        JD = dtnorm(N, TN, Jump[1], 1, 1e14);
+        a = exp(JN - JD);
+        u = unif_rand();
+        if(a > u){
+            N = TN;
+            for(i=0; i<wl; i++){
+                for(j=0; j<nspec; j++){
+                    PrevError[i][j] = SpecError[i][j];
+                }
+            }
+        }
+
+        rp2 = 0.001;
+        for(i=0; i<wl;i++){
+            for(j=0; j<nspec; j++){
+                rp2 += PrevError[i][j] * PrevError[i][j];
+            }
+        }
+        rp2 = rp2 / 2.0;
+        rinv = rgamma(rp1, rp2);
+        rsd = 1/sqrt(rinv);
+
+        printf("%f   %f", N, rsd);
+    }
+}
+    
+
