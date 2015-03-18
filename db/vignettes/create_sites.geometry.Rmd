@@ -1,0 +1,144 @@
+---
+title: "Create a PostGIS polygon"
+author: "David LeBauer"
+date: "3/17/2015"
+output: html_document
+---
+
+Code used to insert a polygon for Champaign County into a PostGIS geometry column.
+
+Note that the `sites.geometry` column has three dimensions. Latitude and longitude are queried using `ggplot2::map_data('counties')` and elevation data is queried using `rgbif::elevation(latidutde, longitude)`
+
+This query is used to define the boundary of [site 1254, Champaign County](https://www.betydb.org/sites/1254), which will be used for testing and development of regional runs of [PEcAn](http://www.pecanproject.org)
+
+
+### Load Libraries
+
+```{r}
+library(ggplot2)
+library(data.table)
+library(rgbif)
+```
+
+
+### Select lat and lon points for Champaign County Boundary
+
+```{r}
+d <- data.table(map_data("county"))
+champaign <- d[region == "illinois" & subregion == "champaign"]
+
+print(champaign)
+```
+
+### Query Elevation points 
+
+```{r}
+### for PostGIS, need polygon to return to start point
+champaign <- rbind(champaign, champaign[1])
+
+champaign_pts <- data.table(champaign[,elevation(latitude = lat, longitude = long, key = "AIzaSyBYaVMdE_F8VZ3pixTz-oTsKnUC1N21GrU") ])
+
+print(champaign_pts)
+
+```
+
+
+
+
+### Define boundary in postGIS 
+
+```{r}
+boundary <- champaign_pts[,paste(longitude, latitude, elevation, collapse = ",")]
+
+print(boundary)
+
+#geometry <- paste0("ST_SetSRID(ST_MakePolygon(ST_Force_3D(ST_GeomFromText('LINESTRING(", boundary , ")'))), 4326)")
+geometry <- paste0("ST_SetSRID(ST_MakePolygon(ST_GeomFromText('LINESTRING(", boundary , ")')), 4326)")
+
+print(geometry)
+
+# insert statement
+insert_polygon <- paste0("INSERT into sites (sitename, geometry) VALUES ('Champaign County', ", geometry, ");")
+
+update_polygon <- paste0("update sites set geometry = ", geometry , " where sitename = 'Champaign County';")
+
+print(insert_polygon)
+
+```
+
+### Insert into BETYdb
+
+```{r, eval = FALSE}
+library(PEcAn.BETYdb)
+
+settings <- read.settings('settings.xml')
+db.query(insert_polygon, con = db.open(settings$database$bety))
+```
+
+### As a function
+
+
+#### Elevation queries
+
+from: http://stackoverflow.com/a/21594300/199217
+
+```{r}
+
+get.site.pts <- function(country = NULL, state = NULL, county = NULL, type){
+  if(type == 'county'){
+    d <- data.table(map_data("county"))
+    site <- d[region == tolower(state) & subregion == tolower(county)]
+    } else if (type == 'state') {
+      d <- data.table(map_data("state"))
+      site <- d[region == tolower(state)]
+      } else if (type == 'country') {
+        d <- data.table(map_data("world"))
+        site <- d[region == country]
+        }
+  
+  # first / last point need to match
+  site <- rbind(site, site[1])
+}
+
+pts <- get.site.pts(state = "illinois", county = "champaign", type = 'county')
+
+add.elevation <- function(pts){
+  #latlone <- pts[, elevation(latitude = lat, longitude = long, key = "AIzaSyBYaVMdE_F8VZ3pixTz-oTsKnUC1N21GrU")]
+  latlone_list <- list()
+  for(i in 1:nrow(pts)){
+    latlone_list[[i]] <- elevation(latitude = site$lat[i], longitude = site$long[i], key =  "AIzaSyBYaVMdE_F8VZ3pixTz-oTsKnUC1N21GrU")
+  }
+  latlone <- rbindlist(latlone_list)
+  return(latlone)
+}
+
+latlone <- add.elevation(pts)
+latlone <- rbind(latlone, latlone[1])
+il_latlone <- rbind(il_latlone, il_latlone[1])
+ggplot() + geom_point(data = latlone, aes(longitude, latitude, color = elevation), fill = NA, size = 5)
+
+
+sitename <- "Illinois"
+# paste together query
+boundary <- latlone[,paste(longitude, latitude, elevation, collapse = ",")]
+
+geometry <- paste0("ST_SetSRID(ST_MakePolygon(ST_Force_3D(ST_GeomFromText('LINESTRING(", boundary , ")'))), 4326)")
+
+
+con <- db.open(settings$database$bety)
+siteid <- db.query(get.id(table = 'sites', colnames = 'sitename', sitename, con = con))
+if(length(siteid) == 0){
+  query <- paste0("INSERT into sites (sitename, geometry) VALUES ('", sitename, "', ", geometry, ");")    
+  } else if (length(siteid == 1 )){
+    query <- paste0("update sites set geometry = ", geometry , " where sitename = '", sitename, "';")    
+    } else if (length(siteid > 1)){
+      logger.error("multiple site records with sitename", sitename)
+      query <- NA
+      }
+
+if(!is.na(query)) db.query(insert_polygon, con = con)
+}
+
+debugonce(insert.site.geometry)
+insert.site.geometry("Illinois", state = "Illinois", type = 'state', con = con)
+```

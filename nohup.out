@@ -1,0 +1,398 @@
+Old build still running (file running exists). Use --force to build
+----------------------------------------------------------------------
+CHANGES
+----------------------------------------------------------------------
+----------------------------------------------------------------------
+CHECK/INSTALL utils OK
+----------------------------------------------------------------------
+----------------------------------------------------------------------
+CHECK/INSTALL db OK
+----------------------------------------------------------------------
+----------------------------------------------------------------------
+CHECK/INSTALL settings OK
+----------------------------------------------------------------------
+----------------------------------------------------------------------
+CHECK/INSTALL visualization OK
+----------------------------------------------------------------------
+----------------------------------------------------------------------
+CHECK/INSTALL modules/priors OK
+----------------------------------------------------------------------
+----------------------------------------------------------------------
+CHECK/INSTALL modules/meta.analysis OK
+----------------------------------------------------------------------
+----------------------------------------------------------------------
+CHECK/INSTALL modules/uncertainty OK
+----------------------------------------------------------------------
+----------------------------------------------------------------------
+CHECK/INSTALL modules/data.land OK
+----------------------------------------------------------------------
+----------------------------------------------------------------------
+CHECK/INSTALL modules/data.atmosphere OK
+----------------------------------------------------------------------
+----------------------------------------------------------------------
+CHECK/INSTALL modules/data.remote OK
+----------------------------------------------------------------------
+----------------------------------------------------------------------
+CHECK/INSTALL modules/assim.batch OK
+----------------------------------------------------------------------
+----------------------------------------------------------------------
+CHECK/INSTALL modules/assim.sequential OK
+----------------------------------------------------------------------
+----------------------------------------------------------------------
+CHECK/INSTALL modules/allometry OK
+----------------------------------------------------------------------
+----------------------------------------------------------------------
+CHECK/INSTALL modules/benchmark OK
+----------------------------------------------------------------------
+----------------------------------------------------------------------
+CHECK/INSTALL modules/photosynthesis OK
+----------------------------------------------------------------------
+----------------------------------------------------------------------
+CHECK/INSTALL models/ed OK
+----------------------------------------------------------------------
+----------------------------------------------------------------------
+CHECK/INSTALL models/sipnet OK
+----------------------------------------------------------------------
+----------------------------------------------------------------------
+CHECK models/biocro BROKEN
+----------------------------------------------------------------------
+* using log directory ‘/home/dlebauer/dev/pecan/biocro.Rcheck’
+* using R version 3.1.0 (2014-04-10)
+* using platform: x86_64-unknown-linux-gnu (64-bit)
+* using session charset: UTF-8
+* checking for file ‘biocro/DESCRIPTION’ ... OK
+* checking extension type ... Package
+* this is package ‘PEcAn.BIOCRO’ version ‘1.4.1’
+* checking package namespace information ... OK
+* checking package dependencies ... NOTE
+Depends: includes the non-default packages:
+  ‘PEcAn.utils’ ‘PEcAn.settings’ ‘PEcAn.data.atmosphere’ ‘PEcAn.DB’
+  ‘udunits2’ ‘ncdf4’ ‘RNCEP’ ‘lubridate’ ‘data.table’ ‘XML’
+Adding so many packages to the search path is excessive and importing
+selectively is preferable.
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... NOTE
+Found the following hidden files and directories:
+  inst/~/.pecan
+These were most likely included in error. See section ‘Package
+structure’ in the ‘Writing R Extensions’ manual.
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking whether package ‘PEcAn.BIOCRO’ can be installed ... OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... NOTE
+License components with restrictions not permitted:
+  FreeBSD + file LICENSE
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... WARNING
+Error: object 'start' not found whilst loading namespace 'PEcAn.utils'
+Execution halted
+
+A namespace must be able to be loaded with just the base namespace
+loaded: otherwise if the namespace gets loaded by a saved object, the
+session will be unable to start.
+
+Probably some imports need to be declared in the NAMESPACE file.
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking dependencies in R code ... WARNING
+'library' or 'require' call not declared from: ‘ncdf’
+Packages in Depends field not imported from:
+  ‘PEcAn.DB’ ‘PEcAn.data.atmosphere’ ‘PEcAn.settings’ ‘RNCEP’ ‘XML’
+  ‘data.table’ ‘lubridate’ ‘ncdf4’ ‘udunits2’
+  These packages need to be imported from (in the NAMESPACE file)
+  for when this namespace is loaded but not attached.
+See the information on DESCRIPTION files in the chapter ‘Creating R
+packages’ of the ‘Writing R Extensions’ manual.
+* checking S3 generic/method consistency ... WARNING
+start:
+  function(x, ...)
+start.runs.BIOCRO:
+  function(runid)
+
+See section ‘Generic functions and methods’ of the ‘Writing R
+Extensions’ manual.
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... NOTE
+cf2biocro: warning in qair2rh(qair = met$specific_humidity, temp =
+  ud.convert(met$air_temperature, "Kelvin", "Celsius"), pres =
+  ud.convert(met$air_pressure, "Pa", "hPa")): partial argument match of
+  'pres' to 'press'
+get.ncepmet: warning in weachNEW(forweach, lat = currentlat, ts = 1,
+  temp.units = "Celsius", rh.units = "fraction", ws.units = "mph",
+  pp.units = "in"): partial argument match of 'lat' to 'lati'
+cf2biocro: no visible binding for global variable ‘doy’
+cf2biocro: no visible binding for global variable ‘ppfd’
+cf2biocro: no visible binding for global variable ‘air_temperature’
+cf2biocro: no visible binding for global variable ‘relative_humidity’
+cf2biocro: no visible binding for global variable ‘northward_wind’
+cf2biocro: no visible binding for global variable ‘eastward_wind’
+cf2biocro: no visible binding for global variable ‘precipitation_flux’
+convert.samples.BIOCRO: no visible binding for global variable ‘b0’
+convert.samples.BIOCRO: no visible binding for global variable ‘Sp’
+get.ncepmet: possible error in sequence(from = year(start.date), to =
+  year(end.date)): unused arguments (from = year(start.date), to =
+  year(end.date))
+get.ncepmet: no visible binding for global variable ‘start.date’
+get.ncepmet: no visible binding for global variable ‘end.date’
+get.ncepmet: no visible binding for global variable ‘yeari’
+get.ncepmet: no visible global function definition for ‘open.ncdf’
+get.ncepmet: no visible global function definition for ‘get.var.ncdf’
+get.ncepmet: no visible global function definition for ‘close.ncdf’
+get.rncepmet: no visible binding for global variable ‘settings’
+get.rncepmet: no visible global function definition for ‘InputForWeach’
+met2model.BIOCRO: no visible binding for global variable ‘lat’
+met2model.BIOCRO: no visible binding for global variable ‘lon’
+met2model.BIOCRO: no visible binding for global variable ‘start.date’
+met2model.BIOCRO: no visible binding for global variable ‘end.date’
+met2model.BIOCRO: no visible binding for global variable ‘metli’
+ncep_dt2weather: no visible binding for global variable ‘result’
+ncep_dt2weather: no visible binding for global variable ‘Lat’
+ncep_dt2weather: no visible binding for global variable ‘doy’
+ncep_dt2weather: no visible global function definition for ‘qctemp’
+ncep_dt2weather: no visible binding for global variable ‘air’
+ncep_dt2weather: no visible binding for global variable ‘tmax’
+ncep_dt2weather: no visible binding for global variable ‘tmin’
+ncep_dt2weather: no visible global function definition for ‘qcsolar’
+ncep_dt2weather: no visible binding for global variable ‘dswrf’
+ncep_dt2weather: no visible global function definition for ‘qcwind’
+ncep_dt2weather: no visible binding for global variable ‘uwnd’
+ncep_dt2weather: no visible binding for global variable ‘vwnd’
+ncep_dt2weather: no visible global function definition for ‘qcprecip’
+ncep_dt2weather: no visible binding for global variable ‘prate’
+ncep_dt2weather: no visible global function definition for ‘qcshum’
+ncep_dt2weather: no visible binding for global variable ‘shum’
+ncep_dt2weather: no visible global function definition for ‘qcrh’
+ncep_dt2weather: no visible binding for global variable ‘rhum’
+ncep_dt2weather: no visible binding for global variable ‘rhmax’
+ncep_dt2weather: no visible binding for global variable ‘rhmin’
+ncep_dt2weather: no visible binding for global variable ‘dswrf.MJ’
+ncep_dt2weather: no visible binding for global variable ‘tavg’
+ncep_dt2weather: no visible binding for global variable ‘rhavg’
+ncep_dt2weather: no visible binding for global variable ‘wnd’
+ncep_dt2weather: no visible binding for global variable ‘precip.day’
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... WARNING
+Documented arguments not in \usage in documentation object 'get.ncepmet':
+  ‘lat’ ‘lon’ ‘start.date’ ‘end.date’ ‘site.id’ ‘con’
+
+Undocumented arguments in documentation object 'met2model.MODEL'
+  ‘overwrite’
+
+Undocumented arguments in documentation object 'model2netcdf.BIOCRO'
+  ‘resultDT’ ‘genus’
+
+Functions with \usage entries need to have the appropriate \alias
+entries, and all their arguments documented.
+The \usage entries must correspond to syntactically valid R code.
+See the chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking Rd contents ... WARNING
+Argument items with no description in Rd object 'get.ncepmet':
+  ‘lat’ ‘lon’ ‘start.date’ ‘end.date’ ‘site.id’ ‘con’
+
+Argument items with no description in Rd object 'get.rncepmet':
+  ‘lat’ ‘lon’ ‘start.date’ ‘end.date’ ‘site.id’ ‘con’
+
+Argument items with no description in Rd object 'read.config.BIOCRO':
+  ‘config.file’
+
+Argument items with no description in Rd object 'write.config.BIOCRO':
+  ‘run.id’
+
+* checking for unstated dependencies in examples ... OK
+* checking files in ‘vignettes’ ... OK
+* checking examples ... NONE
+* checking for unstated dependencies in tests ... OK
+* checking tests ...
+  Running ‘testthat.R’
+ ERROR
+Running the tests in ‘tests/testthat.R’ failed.
+Last 13 lines of output:
+  2015-03-06 17:10:27 INFO   [check.settings] : 
+     Storing pft salix in /tmp/biocrotest//pft/salix 
+  2015-03-06 17:10:27 WARN   [test.write.configs.BIOCRO.R#3: read.settings] : 
+     File already exists [ /tmp/biocrotest//pecan.xml ] file will be 
+     overwritten 
+  Error in file(file, ifelse(append, "a", "w")) : 
+    cannot open the connection
+  Calls: test_check ... read.settings -> saveXML -> saveXML -> sink -> file
+  In addition: Warning messages:
+  1: In fun(libname, pkgname) : no DISPLAY variable so Tk is not available
+  2: In file(file, ifelse(append, "a", "w")) :
+    cannot open file '/tmp/biocrotest//pecan.xml': Permission denied
+  Execution halted
+--- biocro.Rcheck/00install.out
+* installing *source* package ‘PEcAn.BIOCRO’ ...
+** R
+** inst
+** preparing package for lazy loading
+Warning in fun(libname, pkgname) :
+  no DISPLAY variable so Tk is not available
+** help
+*** installing help indices
+** building package indices
+** installing vignettes
+** testing if installed package can be loaded
+Warning in fun(libname, pkgname) :
+  no DISPLAY variable so Tk is not available
+* DONE (PEcAn.BIOCRO)
+--- biocro.Rcheck/tests/testthat.Rout.fail
+
+R version 3.1.0 (2014-04-10) -- "Spring Dance"
+Copyright (C) 2014 The R Foundation for Statistical Computing
+Platform: x86_64-unknown-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> #-------------------------------------------------------------------------------
+> # Copyright (c) 2012 University of Illinois, NCSA.
+> # All rights reserved. This program and the accompanying materials
+> # are made available under the terms of the 
+> # University of Illinois/NCSA Open Source License
+> # which accompanies this distribution, and is available at
+> # http://opensource.ncsa.illinois.edu/license.html
+> #-------------------------------------------------------------------------------
+> library(PEcAn.utils)
+Loading required package: abind
+Loading required package: plyr
+Loading required package: XML
+Loading required package: ggplot2
+Loading required package: randtoolbox
+Loading required package: rngWELL
+This is randtoolbox. For overview, type 'help("randtoolbox")'.
+Loading required package: ncdf4
+Loading required package: udunits2
+> library(testthat)
+> 
+> logger.setQuitOnSevere(FALSE)
+> test_check("PEcAn.BIOCRO")
+Loading required package: PEcAn.BIOCRO
+Loading required package: PEcAn.settings
+Loading required package: PEcAn.DB
+Loading required package: DBI
+Loading required package: lubridate
+
+Attaching package: 'lubridate'
+
+The following object is masked from 'package:plyr':
+
+    here
+
+Loading required package: PEcAn.data.atmosphere
+Loading required package: data.table
+
+Attaching package: 'data.table'
+
+The following objects are masked from 'package:lubridate':
+
+    hour, mday, month, quarter, wday, week, yday, year
+
+Loading required package: REddyProc
+Loading required package: RNCEP
+Loading required package: maps
+2015-03-06 17:10:26 INFO   [test.write.configs.BIOCRO.R#3: read.settings] : 
+   Loading inpufile= data/pecan.biocro.xml 
+2015-03-06 17:10:26 INFO   [update.settings] : 
+   Model tag has changed, please use <model><type> to specify type of 
+   model. See also 
+   https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#model_setup. 
+2015-03-06 17:10:27 INFO   [update.settings] : 
+   Model tag has changed, please use <inputs><met> to specify met file for 
+   a run. See also 
+   https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup. 
+2015-03-06 17:10:27 WARN   [check.database] : 
+   Please specify a database driver; using default 'PostgreSQL' 
+Loading required package: RPostgreSQL
+2015-03-06 17:10:27 INFO   [check.database] : 
+   Successfully connected to database : bety bety bety localhost 
+   $HOME/.pecan/dbfiles PostgreSQL 
+2015-03-06 17:10:27 INFO   [check.settings] : 
+   Writing all runs/configurations to database. 
+  id  login    name               email       city country area
+1 25 user25 user 25 betydb+25@gmail.com Urbana, IL     USA <NA>
+                  crypted_password     salt          created_at
+1 563d44743a37d62a3cbf124fd27f32ab nosecret 2015-01-20 16:01:12
+           updated_at remember_token remember_token_expires_at access_level
+1 2015-01-20 16:01:12           <NA>                      <NA>            3
+  page_access_level apikey state_prov postal_code
+1                 4   <NA>       <NA>        <NA>
+2015-03-06 17:10:27 WARN   [check.bety.version] : 
+   Last migration 20141211220550 is more recent than expected 
+   20141009160121. This could result in PEcAn not working as expected. 
+2015-03-06 17:10:27 INFO   [check.settings] : 
+   No start date passed to ensemble - using the run date ( ). 
+2015-03-06 17:10:27 INFO   [check.settings] : 
+   No end date passed to ensemble - using the run date ( ). 
+2015-03-06 17:10:27 INFO   [check.settings] : 
+   Setting meta.analysis threshold to 1.2 
+2015-03-06 17:10:27 INFO   [check.settings] : 
+   Setting meta.analysis update to only update if no previous meta analysis 
+   was found 
+2015-03-06 17:10:27 INFO   [check.settings] : 
+   Setting model revision to 
+2015-03-06 17:10:27 INFO   [check.settings] : 
+   Setting model binary to 
+   /home/dlebauer/dev/pecan/models/biocro/inst//biocro.Rscript 
+2015-03-06 17:10:27 WARN   [check.settings] : 
+   Specified site lat [ 31.40 ] does not match lat in database [ 31.397417 
+   ] 
+2015-03-06 17:10:27 WARN   [check.settings] : 
+   Specified site lon [ -81.28 ] does not match lon in database [ 
+   -81.280078 ] 
+2015-03-06 17:10:27 INFO   [check.inputs] : 
+   Unused inputs found : met 
+2015-03-06 17:10:27 INFO   [check.settings] : 
+   output folder = /tmp/biocrotest/ 
+2015-03-06 17:10:27 INFO   [check.settings] : 
+   Storing pft salix in /tmp/biocrotest//pft/salix 
+2015-03-06 17:10:27 WARN   [test.write.configs.BIOCRO.R#3: read.settings] : 
+   File already exists [ /tmp/biocrotest//pecan.xml ] file will be 
+   overwritten 
+Error in file(file, ifelse(append, "a", "w")) : 
+  cannot open the connection
+Calls: test_check ... read.settings -> saveXML -> saveXML -> sink -> file
+In addition: Warning messages:
+1: In fun(libname, pkgname) : no DISPLAY variable so Tk is not available
+2: In file(file, ifelse(append, "a", "w")) :
+  cannot open file '/tmp/biocrotest//pecan.xml': Permission denied
+Execution halted
+----------------------------------------------------------------------
+CHECK/INSTALL models/dalec OK
+----------------------------------------------------------------------
+----------------------------------------------------------------------
+CHECK/INSTALL models/linkages OK
+----------------------------------------------------------------------
+----------------------------------------------------------------------
+CHECK/INSTALL all OK
+----------------------------------------------------------------------
+----------------------------------------------------------------------
+build took 1190 seconds.
+----------------------------------------------------------------------
+ERROR PEcAn BUILD BROKEN
