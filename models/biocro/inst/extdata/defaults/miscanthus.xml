@@ -14,6 +14,14 @@
     <leafwidth>0.04</leafwidth>
     <eteq>0</eteq>
   </canopyControl>
+  <iPlantControl>
+    <iRhizome>1</iRhizome>
+    <iStem>1</iStem>
+    <iLeaf>0</iLeaf>
+    <iRoot>1</iRoot>
+    <ifrRhizome>0.01</ifrRhizome>
+    <ifrStem>0.01</ifrStem> 
+  </iPlantControl>
   <photoParms>
     <vmax>39</vmax>
     <alpha>0.04</alpha>
