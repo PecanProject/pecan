@@ -3,15 +3,18 @@
 // to the supporting functions to make them C compatible, and more substatial modification to the prospect4
 // function to cut out the Rcpp package types.
 
+#include <stdio.h>
 #define MATHLIB_STANDALONE
 #include <Rmath.h>
-#include <Rcpp.h>
 #include "exp_int.h"
 #include "gpm.h"
 #include "truncnorm.h"
 
 static const int wl = 2101;
 static const int nspec = 78;
+double Cab_abs[wl], Cw_abs[wl], Cm_abs[wl],
+       tao1[wl], tao2[wl], rho1[wl], rho2[wl],
+       x[wl], y[wl];
 
 // PROSPECT 4 model
 void prospect4(double N, double Cab, double Cw, double Cm, double Refl[wl]){
@@ -31,6 +34,7 @@ void prospect4(double N, double Cab, double Cw, double Cm, double Refl[wl]){
 
 // SpecError
 void SpecError(double Model[wl], Observed[wl][nspec], Error[wl][nspec]){
+    int i,j;
     for(i=0; i<wl; i++){
         for(j=0; j<nspec; j++){
             Error[i][j] = Model[i] - Observed[i][j];
@@ -42,6 +46,7 @@ void SpecError(double Model[wl], Observed[wl][nspec], Error[wl][nspec]){
 // Likelihood
 double Likelihood(double Error[wl][nspec], double rsd){
     double LogL = 0.0;
+    int i,j;
     for(i=0; i<wl; i++){
         for(j=0; j<nspec; j++){
             LogL += dnorm(Error[i][j], 0.0, rsd, 1);
@@ -52,6 +57,28 @@ double Likelihood(double Error[wl][nspec], double rsd){
 
 // Main inversion
 int main(){
+    int i,j;
+    double Observed[wl][nspec];
+
+    FILE *pdat;
+    pdat = fopen("data_prospect.dat", "r");
+    for(i=0; i<wl; i++){
+        fscanf(pdat, "%f %g %f %f %f %f %f %f %f", 
+                Cab_abs[i], Cw_abs[i], Cm_abs[i], 
+                tao1[i], tao2[i], rho1[i], rho2[i],
+                x[i], y[i]);
+    }
+    fclose(pdat);
+
+    FILE *tobs;
+    tobs = fopen("test_obs.dat", "r");
+    for(i=0; i<wl; i++){
+        for(j=0; j<nspec; j++){
+            fscanf(tobs, "%f", Observed[i][j]);
+        }
+    }
+    fclose(tobs);
+
     double N, Cab, Cw, Cm, rsd,
            TN, TCab, TCw, TCm;
     N = 1.4;
@@ -70,7 +97,7 @@ int main(){
     prospect4(N, Cab, Cw, Cm, PrevSpec);
     SpecError(PrevSpec, Observed, PrevError);
 
-    int ngibbs = 100, ng, i, j;
+    int ngibbs = 100, ng;
     for(ng=0; ng<ngibbs; ng++){
         TN = rtnorm(N, Jump[1], 1, 1e14);
         prospect4(TN, Cab, Cw, Cm, TrySpec);
