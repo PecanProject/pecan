@@ -12,7 +12,7 @@
 ##' @title Start SIPNET model runs
 ##' @name start.runs.SIPNET
 ##' @param runid the id of the run that needs to be executed
-##' @export
+##' @export start.runs.SIPNET
 ##' @author Michael Dietze, David LeBauer, Shawn Serbin, Carl Davidson
 start.runs.SIPNET <- function(runid){
   if (settings$run$host$name != "localhost") {

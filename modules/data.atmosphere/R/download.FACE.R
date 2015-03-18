@@ -43,14 +43,12 @@ download.FACE <- function(data.set,outfolder,pkg,raw.host,start_year,end_year,si
   start_date <- paste0(start_year,"-01-01 00:00:00")
   end_date   <- paste0(end_year,"-12-31 23:59:00")
   
-  filename <- paste0(outfolder,data.set)
-  type <- 'Input'
-  
+  type <- 'Input'  
   formatname <- 'FACE'
   mimetype <- 'application/x-netcdf'
   
   #(filename, siteid, startdate, enddate, mimetype, formatname, parentid=NA, con, hostname=fqdn())
-  newinput <- dbfile.input.insert(filename, site.id, start_date, end_date, mimetype,formatname,parentid=NA,con=con,raw.host) 
+  newinput <- dbfile.input.insert(outfolder,data.set, site.id, start_date, end_date, mimetype,formatname,parentid=NA,con=con,raw.host) 
   
   raw.id <- c(newinput$input.id)
 

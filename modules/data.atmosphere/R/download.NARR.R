@@ -1,24 +1,56 @@
-download.NARR <- function(outfolder,start_year,end_year){
+##' Download NARR files
+##'
+##' @name download.NARR
+##' @title download.NARR
+##' @export
+##' @param outfolder
+##' @param start_year
+##' @param end_year
+##' 
+##' @author ??
+download.NARR <- function(outfolder, start_date, end_date, overwrite=FALSE){
   
-  if(!file.exists(outfolder)) dir.create(outfolder)
+  require(lubridate) #is this necessary?
   
-  start_year <- as.numeric(start_year)
-  end_year   <- as.numeric(end_year)
+  start_date <- as.POSIXlt(start_date, tz = "GMT")
+  end_date <- as.POSIXlt(end_date, tz = "GMT")
+  start_year <- year(start_date)
+  end_year   <- year(end_date)
   
   # Download Raw NARR from the internet
   
   vlist <- c("pres.sfc", "dswrf", "dlwrf", "air.2m", "shum.2m", "prate","vwnd.10m","uwnd.10m")
+  ylist <- seq(end_year,start_year,by=-1)
   
+  #   cmd <- as.list(rep("", length(vlist)*length(ylist)+1))
+  #   cmd[1] <- paste0("mkdir -p ", outfolder) 
+  
+  # cmd <- paste0("mkdir -p ", outfolder)
+  
+  system(paste0("mkdir -p ", outfolder))
+  
+  #   i <- 1
   for (v in vlist) {
-    for (year in seq(end_year,start_year,by=-1)) {
+    for (year in ylist) {
       filename <- paste0(v,".", year,".nc")
-      outfile <- file.path(outfolder, filename)
-      if (!file.exists(outfile)) {
-      url <- paste0("ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/",v,".", year,".nc")
-        download.file(url, outfile)
-      }
+      new.file <- file.path(outfolder, filename)
+      #       i <- i+1
+      #       cmd[i] <- paste0("wget -c ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/",v,".", year,".nc"," -O ",new.file)
+      # cmd <- paste(cmd, "; ", paste0("wget -c ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/",v,".", year,".nc"," -O ",new.file))
+    system(paste0("wget -c ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/",v,".", year,".nc"," -O ",new.file))
     }
   }
-} 
   
+#   Rfcn     <- "pecan/scripts/Rfcn.R"
+#   host     <- system("hostname",intern=TRUE)
+#   
+#   if(raw.host %in% c("localhost",host)){
+#     ## if the machine is local, run conversion function
+#     system(cmd)
+#   }else{
+#     ## if the machine is remote, run conversion remotely
+#     usr = ifelse(is.null(username) | username=="","",paste0(username,"@"))
+#     system2("ssh",paste0(usr,paste(raw.host,cmd)))
+#   }
+}
   

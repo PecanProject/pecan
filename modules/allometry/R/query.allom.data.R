@@ -28,9 +28,9 @@ query.allom.data <- function(pft_name,variable,con,nsim = 10000){
   require(PEcAn.DB)
   
   ## check validity of inputs
-  if(is.null(pft_name) | is.na(pft_name)){print(c("invalide PFT_NAME in QUERY.ALLOM.DATA",pft_name)); return(NULL)}
+  if(is.null(pft_name) | is.na(pft_name)){print(c("invalid PFT_NAME in QUERY.ALLOM.DATA",pft_name)); return(NULL)}
   if(length(pft_name) > 1) {print(c("query.allom.data does not currently support multiple simultaneous PFT queries",pft_name)); return(NULL)}
-  if(is.null(variable) | is.na(variable)){print(c("invalide VARIABLE in QUERY.ALLOM.DATA",variable)); return(NULL)}
+  if(is.null(variable) | is.na(variable)){print(c("invalid VARIABLE in QUERY.ALLOM.DATA",variable)); return(NULL)}
   if(is.null(con)){print("Connection not open in query.allom.data"); return(NULL)}
 
   ## define storage
@@ -39,24 +39,26 @@ query.allom.data <- function(pft_name,variable,con,nsim = 10000){
   ## PFTs from trait database
   ##################################################################
   ## used to match species data to functional type
-  query <- paste("select s.spcd, p.id as pft,s.commonname as common,s.scientificname as scientific, s.Symbol as acronym, s.genus,s.Family,p.name from pfts as p join pfts_species on p.id = pfts_species.pft_id join species as s on pfts_species.specie_id = s.id where p.name like '%",pft_name,"%'",sep="")
+  query <- paste0("SELECT s.spcd,p.id as pft,s.commonname as common,s.scientificname as scientific,",
+    's."Symbol"'," as acronym,s.genus,",'s."Family"',
+    ",p.name from pfts as p join pfts_species on p.id = pfts_species.pft_id join species as s on pfts_species.specie_id = s.id where p.name like '%",pft_name,"%'")  
   pft.data <- db.query(query, con)
   if(length(pft.data) < 1){ print(c("QUERY.ALLOM.DATA: No species found for PFT - ",pft_name)); return(NULL)}
                             
-  ## Field data from 'Raw' data table
+  ## Field data from 'Inputs' data table
   ####################################################################
   allomField <- NULL
-  query <- "select * from raws as r join formats as f on f.id = r.format_id where f.name like 'crownAllom'"
+  query <- "select * from Inputs as r join formats as f on f.id = r.format_id where f.name like 'crownAllom'"
   allomField.files <- db.query(query, con)
   
   
-  ## Tally data from 'Raw' data table
+  ## Tally data from 'Input' data table
   #####################################################################
   ## Species          = FIA code (table 4, also includes sp gravity)
   ## Equation.Form.ID = which equation to use [1-9] (diff from Equation.number [1-5]) (Table 6)
   ## a...e            = equation parameters
   ## Component.ID     = table 5. priorities: Foliar=18,stem=6,16, maybe 4, fine root=28,
-  query <- "select * from raws as r join formats as f on f.id = r.format_id where f.name like 'allomTally'"
+  query <- "select * from Inputs as r join formats as f on f.id = r.format_id where f.name like 'allomTally'"
   allomTally.files <- db.query(query, con)
   
   allom <- read.allom.data(pft.data,variable,allomField.files$filepath,allomTally.files$filepath,nsim=nsim)

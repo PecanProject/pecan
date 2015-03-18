@@ -17,7 +17,7 @@ library(XML)
 library(PEcAn.utils)
 library(PEcAn.DB)
 
-fia.database <- "fia5data"
+#fia.database <- "fia5data"
 
 #--------------------------------------------------------------------------------------------------#
 # INTERNAL FUNCTIONS DO NOT EXPORT
@@ -58,13 +58,13 @@ fia.to.psscss <- function(settings) {
 	lat     <- as.numeric(settings$run$site$lat)
 	lon     <- as.numeric(settings$run$site$lon)
 	
-	## output path
+	## output path  
 	if ("text" %in% names(settings$model$psscss)) {
 		path <- settings$model$psscss$text
 	} else {
 		path <- settings$model$psscss
 	}
-	
+	path <- settings$outdir
 	## time info
 	year    <- as.numeric(format(as.Date(settings$run$start.date), '%Y'))
 	
@@ -110,8 +110,8 @@ fia.to.psscss <- function(settings) {
 	}
 
 	## connect to database
-  fia.db.settings <- settings$database$fia
-	fia.con <- db.open(fia.db.settings)
+  #fia.db.settings <- settings$database$fia
+	fia.con <- db.open(settings$database$fia)
 	
   
 	### select just most current
@@ -190,7 +190,7 @@ fia.to.psscss <- function(settings) {
 			if(length(sel) > 0){
 				y <- floor((i-1)/nx)
 				x <- i-1-y*nx
-				fname <- paste(path,"lat",(x+0.5)*gridres+latmin[r],"lon",(y+0.5)*gridres+lonmin[r],".pss",sep="") #filename
+				fname <- paste(path,"lat",(x+0.5)*gridres+latmin[r],"lon",(y+0.5)*gridres+lonmin[r],".pss",sep="") #filename      
 				water = rep(0,length(sel))
 				write.table(cbind(pss[sel,2+1:4],area[sel],water,matrix(soil,length(sel),7,byrow=TRUE)),file=fname,quote=FALSE,row.names=FALSE)
 			}
@@ -233,7 +233,7 @@ fia.to.psscss <- function(settings) {
 				names(symbol.table) = tolower(names(symbol.table))
 			}
 			name.list <- na.omit(symbol.table$symbol[symbol.table$spcd %in% pft.only]) 
-			logger.warn(paste("\nThe selected PFTs contain the following species for which the FIA database contains no data at ", latmin[r], "N, ", latmax[r], "W: \n", paste(name.list[1:min(10,length(name.list))], collapse=", "), over.ten, "\n\tThese will be populated with zero values in the output.", sep=""))	
+			logger.warn(paste("\nThe selected PFTs contain the following species for which the FIA database contains no data at ", lat, " and ", lon, "\n", paste(name.list[1:min(10,length(name.list))], collapse=", "), over.ten, "\n\tThese will be populated with zero values in the output.", sep=""))	
 		} 
 		
 		## check for species expected by FIA which the PFTs don't cover
@@ -241,15 +241,15 @@ fia.to.psscss <- function(settings) {
 		fia.only <- fia.species[fia.ind]						
 		
 		if(length(fia.only) > 0){									
-			over.ten <- ifelse(length(fia.only) > 10, paste(", and ", length(fia.only) - 10, " more.", sep=""), ".")
+			over.ten <- ifelse(length(fia.only) > 30, paste(", and ", length(fia.only) - 30, " more.", sep=""), ".")
 			
 			if(!exists("symbol.table")){
 				symbol.table <- db.query('SELECT spcd, "Symbol" FROM species where spcd IS NOT NULL', con=con)
 				names(symbol.table) = tolower(names(symbol.table))
 			}
 			name.list <- na.omit(symbol.table$symbol[symbol.table$spcd %in% fia.only])  
-			logger.error(paste("\nThe FIA database expects the following species at ", latmin[r], "N, ", latmax[r], "W, but they are not described by the selected PFTs: \n", 
-							paste(name.list[1:min(10,length(name.list))], collapse=", "), over.ten, "\n\tPlease select additional pfts.", sep="")) 
+			logger.error(paste("\nThe FIA database expects the following species at ", lat," and ", lon, " but they are not described by the selected PFTs: \n", 
+							paste(name.list[1:min(30,length(name.list))], collapse=", "), over.ten, "\n\tPlease select additional pfts.", sep="")) 
 			stop("Execution stopped due to insufficient PFTs.")
 		}
 		

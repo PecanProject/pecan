@@ -14,12 +14,12 @@
 ##' 
 ##' @name start.model.runs
 ##' @title Start ecosystem model runs
-##' @export 
+##' @export start.model.runs
 ##' @examples
 ##' \dontrun{
 ##' start.model.runs(settings)
 ##' }
-##' @author Shawn Serbin, Rob Kooper, ...
+##' @author Shawn Serbin, Rob Kooper, David LeBauer
 ##'
 start.model.runs <- function(settings, write = TRUE){
   model = settings$model$type
@@ -171,6 +171,7 @@ start.model.runs <- function(settings, write = TRUE){
     logger.debug("Waiting for the following jobs:", unlist(jobids, use.names=FALSE))
   }
 
+
   # check to see if all remote jobs are done
   while(length(jobids) > 0) {
     Sys.sleep(10)
@@ -185,7 +186,7 @@ start.model.runs <- function(settings, write = TRUE){
       } else {
         out <- system2("ssh", c(settings$run$host$name, args, recursive=TRUE), stdout=TRUE)
       }
-      if ((nchar(out) > 0) && (substring(out, nchar(out)-3) == "DONE")) {
+      if ((length(out) > 0) && (substring(out, nchar(out)-3) == "DONE")) {
         logger.debug("Job", jobids[run], "for run", format(run,scientific=FALSE), "finished")
         jobids[run] <- NULL
         if (!is.null(dbcon)) {

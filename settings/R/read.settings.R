@@ -54,23 +54,23 @@ check.inputs <- function(settings) {
         }
       }
       
-      # check if file exists
-      if (is.null(settings$run$inputs[[tag]])) {
-        if (inputs$required[i]) {
-          logger.severe("Missing required input :", tag)
-        } else {
-          logger.info("Missing optional input :", tag)
-        }
-        
-      } else {
-        # can we find the file so we can set the tag.id
-        if (is.null(settings$run$inputs[[tagid]])) {
-          id <- dbfile.id('Input', settings$run$inputs[[tag]], dbcon, hostname)
-          if (!is.na(id)) {
-            settings$run$inputs[[tagid]] <- id
-          }
-        }
-      }
+#       # check if file exists
+#       if (is.null(settings$run$inputs[[tag]])) {
+#         if (inputs$required[i]) {
+#           logger.severe("Missing required input :", tag)
+#         } else {
+#           logger.info("Missing optional input :", tag)
+#         }
+#         
+#       } else {
+#         # can we find the file so we can set the tag.id
+#         if (is.null(settings$run$inputs[[tagid]])) {
+#           id <- dbfile.id('Input', settings$run$inputs[[tag]], dbcon, hostname)
+#           if (!is.na(id)) {
+#             settings$run$inputs[[tagid]] <- id
+#           }
+#         }
+#       }
 
       # check to see if format is right type
       if (!is.null(settings$run$inputs[[tagid]])) {
@@ -179,7 +179,7 @@ check.database <- function(database) {
     database$dbname <- "bety"
   }
 
-  if (!db.exists(params=database, FALSE)) {
+  if (!db.exists(params=database, FALSE, table=NA)) {
     logger.severe("Invalid Database Settings : ", unlist(database))
   }
 
@@ -211,8 +211,8 @@ check.bety.version <- function(dbcon) {
   }
   
   # check if database is newer
-  if (tail(versions, n=1) > "20140729045640") {
-    logger.warn("Last migration", tail(versions, n=1), "is more recent than expected 20140729045640.",
+  if (tail(versions, n=1) > "20141009160121") {
+    logger.warn("Last migration", tail(versions, n=1), "is more recent than expected 20141009160121.",
                 "This could result in PEcAn not working as expected.")
   }
 }
@@ -258,7 +258,7 @@ check.settings <- function(settings) {
       }
 
       # check if we can connect to the database with write permissions
-      if (settings$database$bety$write && !db.exists(params=settings$database$bety, TRUE)) {
+      if (settings$database$bety$write && !db.exists(params=settings$database$bety, TRUE, table='users')) {
         logger.severe("Invalid Database Settings : ", unlist(settings$database))
       }
 
@@ -407,6 +407,12 @@ check.settings <- function(settings) {
   if (is.null(settings$meta.analysis$random.effects)) {
     settings$meta.analysis$random.effects <- FALSE
     logger.info("Setting meta.analysis random effects to ", settings$meta.analysis$random.effects)
+  } else {
+    settings$meta.analysis$random.effects <- as.logical(settings$meta.analysis$random.effects)
+  }
+  if (is.null(settings$meta.analysis$threshold)) {
+    settings$meta.analysis$threshold <- 1.2
+    logger.info("Setting meta.analysis threshold to ", settings$meta.analysis$threshold)
   }
   if (is.null(settings$meta.analysis$update)) {
     settings$meta.analysis$update <- 'AUTO'

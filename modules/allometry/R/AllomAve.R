@@ -32,15 +32,18 @@
 #'   
 #' @details There are two usages of this function. 
 #' When running "online" (connected to the PEcAn database), pass the database connection, con, and the pfts subsection of the PEcAn settings.
-#' Wheb running "stand alone" pass the pft list mapping species to species codes and the file paths to the allometry table and field data (optional)
+#' When running "stand alone" pass the pft list mapping species to species codes and the file paths to the allometry table and field data (optional)
 #' 
 #' @examples 
-#' pfts = list(FAGR = data.frame(spcd=531,acronym="FAGR"))
-#' allom.stats = AllomAve(pfts,ngibbs=500)
 #' 
-#' ## example of a PFT with multiple species (late hardwood)
-#' ## note that if you're just using Jenkins the acronym column is optional
-#' pfts = list(LH = data.frame(spcd = c(531,318),acronym=c("FAGR","ACSA3")))
+#' if(FALSE){
+#'   pfts = list(FAGR = data.frame(spcd=531,acronym="FAGR"))
+#'   allom.stats = AllomAve(pfts,ngibbs=500)
+#' 
+#'   ## example of a PFT with multiple species (late hardwood)
+#'   ## note that if you're just using Jenkins the acronym column is optional
+#'   pfts = list(LH = data.frame(spcd = c(531,318),acronym=c("FAGR","ACSA3")))
+#' }
 #' 
 #' @author Michael Dietze
 #' 
@@ -123,7 +126,8 @@ AllomAve <- function(pfts,components=6,outdir=NULL,con=NULL,field=NULL,
       print(c("saving MCMC output to",outfile))
       save(mc,DIC,DICg,pD,pDg,obs,allom,file=outfile)
 
-      allom.stats[[pft.name]][[component]] = summary(mc)      
+      allom.stats[[pft.name]][[component]] = summary(mc)  
+      allom.stats[[pft.name]][[component]]$cov = cov(as.matrix(mc))
       
       ## Save Posterior information (Pass to update.posterior module)
       if(FALSE){

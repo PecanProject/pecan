@@ -102,6 +102,17 @@ counter <- function(cnt){
 }
 #==================================================================================================#
 
+##' checks that met2model function exists
+##'
+##' Checks if met2model.<model> exists for a particular
+##' model
+##' @title met2model.exists
+##' @param model model package name
+##' @return logical
+met2model.exists <- function(model){
+  load.modelpkg(model)
+  exists(paste0("met2model.",model))  
+}
 
 ####################################################################################################
 ### EOF.  End of R script file.          		

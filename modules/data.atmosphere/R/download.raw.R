@@ -32,7 +32,7 @@ download.raw <- function(data.set,outfolder,pkg,raw.host, ...){
   file = db.query(paste0("SELECT * from dbfiles where file_path = '", outfolder, "'"),con)
   
   if(all(dim(file) == c(0, 0))){
-    file.id = dbfile.insert(filename, type, input.id, con, host)
+    file.id = dbfile.insert(outfolder,data.set, type, input.id, con, host)
     print("Added db file")
   }else{
     if(is.na(file$container_id) || !(file$container_id == input.id && file$container_type == 'Input')){

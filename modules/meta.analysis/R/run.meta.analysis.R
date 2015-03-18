@@ -6,7 +6,7 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-run.meta.analysis.pft <- function(pft, iterations, dbfiles, dbcon) {
+run.meta.analysis.pft <- function(pft, iterations, random, threshold, dbfiles, dbcon) {
   # check to see if get.trait was executed
   if (!file.exists(file.path(pft$outdir, 'trait.data.Rdata')) || !file.exists(file.path(pft$outdir, 'prior.distns.Rdata'))) {
     logger.severe("Could not find output from get.trait for", pft$name)
@@ -80,7 +80,7 @@ run.meta.analysis.pft <- function(pft, iterations, dbfiles, dbcon) {
   
   ### Run the meta-analysis
   trait.mcmc  <- pecan.ma(jagged.data, prior.distns, taupriors, j.iter = iterations, 
-                          settings, outdir = pft$outdir)
+                          outdir = pft$outdir, random=random)
   ### Check that meta-analysis posteriors are consistent with priors
   for(trait in names(trait.mcmc)){
     post.median    <- median(as.matrix(trait.mcmc[[trait]][,'beta.o']))
@@ -101,7 +101,7 @@ run.meta.analysis.pft <- function(pft, iterations, dbfiles, dbcon) {
   }
    
   ### Generate summaries and diagnostics
-  pecan.ma.summary(trait.mcmc, pft$name, pft$outdir)
+  pecan.ma.summary(trait.mcmc, pft$name, pft$outdir, threshold)
   
   ### Save the meta.analysis output
   save(trait.mcmc, file = file.path(pft$outdir, 'trait.mcmc.Rdata'))
@@ -116,7 +116,7 @@ run.meta.analysis.pft <- function(pft, iterations, dbfiles, dbcon) {
     }
     filename <- file.path(pathname, file)
     file.copy(file.path(pft$outdir, file), filename)
-    dbfile.insert(filename, 'Posterior', pft$posteriorid, dbcon)
+    dbfile.insert(pathname,file, 'Posterior', pft$posteriorid, dbcon)
   }
 }
 
@@ -133,6 +133,7 @@ run.meta.analysis.pft <- function(pft, iterations, dbfiles, dbcon) {
 ##' - settings$meta.analysis$update
 ##' @param pfts the list of pfts to get traits for
 ##' @param iterations the number of iterations for the mcmc analysis
+##' @param random should random effects be used?
 ##' @param dbfiles location where previous results are found
 ##' @param database database connection parameters
 ##' @return nothing, as side effect saves \code{trait.mcmc} created by
@@ -141,10 +142,10 @@ run.meta.analysis.pft <- function(pft, iterations, dbfiles, dbcon) {
 ##' and post.distns.Rdata, respectively
 ##' @export
 ##' @author Shawn Serbin, David LeBauer
-run.meta.analysis <- function(pfts, iterations, dbfiles, database) {
+run.meta.analysis <- function(pfts, iterations, random, threshold, dbfiles, database) {
   # process all pfts
   dbcon <- db.open(database)
-  result <- lapply(pfts, run.meta.analysis.pft, iterations, dbfiles, dbcon)
+  result <- lapply(pfts, run.meta.analysis.pft, iterations, random, threshold, dbfiles, dbcon)
   db.close(dbcon)
 } ### End of function: run.meta.analysis.R
 ##==================================================================================================#
@@ -158,7 +159,7 @@ run.meta.analysis <- function(pfts, iterations, dbfiles, database) {
 ##' @param point 
 ##' @param prior list of distn, parama, paramb
 ##' @return result of p<distn>(point, parama, paramb)
-##' @export
+##' @export p.point.in.prior
 ##' @author David LeBauer
 p.point.in.prior <- function(point, prior){
   prior.median <- do.call(paste('q', prior$distn, sep = ""),

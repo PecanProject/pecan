@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# redirect output
+exec 3>&1
+exec &> "@OUTDIR@/logfile.txt"
+
+# create output folder
+mkdir -p "@OUTDIR@"
+
+# see if application needs running
+if [ ! -e "@OUTDIR@/OUT.csv" ]; then
+  cd "@RUNDIR@"
+  ln -s "@SITE_MET@" test_text.txt
+  
+  "@BINARY@"
+  STATUS=$?
+  
+  # check the status
+  if [ $STATUS -ne 0 ]; then
+    echo -e "ERROR IN LINKAGES RUN\nLogile is located at '@OUTDIR@/logfile.txt'" >&3
+    exit $STATUS
+  fi
+  
+  cp OUT.csv @OUTDIR@
+ 
+  # convert to MsTMIP
+  echo "require (PEcAn.LINKAGES)
+model2netcdf.LINKAGES('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
+" | R --vanilla
+fi
+
+# copy readme with specs to output
+cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
+
+# run getdata to extract right variables
+
+# all done
+echo -e "LINKAGES FINISHED\nLogile is located at '@OUTDIR@/logfile.txt'" >&3
