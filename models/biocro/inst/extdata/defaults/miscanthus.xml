@@ -36,6 +36,9 @@
     <UPPERTEMP>37.5</UPPERTEMP>
     <LOWERTEMP>3</LOWERTEMP>
   </photoParms>
+  <phenoControl>
+    <Tbase>0</Tbase>
+  </phenoControl>
   <seneControl>
     <senLeaf>3000</senLeaf>
     <senStem>3500</senStem>
