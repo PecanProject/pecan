@@ -33,7 +33,7 @@ void prospect4(double N, double Cab, double Cw, double Cm, double Refl[wl]){
 }
 
 // SpecError
-void SpecError(double Model[wl], Observed[wl][nspec], Error[wl][nspec]){
+void SpecError(double Model[wl], double Observed[wl][nspec], double Error[wl][nspec]){
     int i,j;
     for(i=0; i<wl; i++){
         for(j=0; j<nspec; j++){
@@ -88,7 +88,7 @@ int main(){
     rsd = 0.5;
 
     double rp1 = 0.001 + nspec*wl/2.0, rp2, rinv;
-    double Jump[4] = {0.1, 1, 0.005, 0.005};
+    double Jump[4] = {0.1, 1, 0.0005, 0.0005};
     double TrySpec[wl], PrevSpec[wl];
     double TryError[wl][nspec], PrevError[wl][nspec];
     double TryPost, PrevPost;
@@ -112,7 +112,7 @@ int main(){
             N = TN;
             for(i=0; i<wl; i++){
                 for(j=0; j<nspec; j++){
-                    PrevError[i][j] = SpecError[i][j];
+                    PrevError[i][j] = TryError[i][j];
                 }
             }
         }
@@ -127,7 +127,7 @@ int main(){
         rinv = rgamma(rp1, rp2);
         rsd = 1/sqrt(rinv);
 
-        printf("%f   %f", N, rsd);
+        printf("%f  %f \n", N, rsd);
     }
 }
     
