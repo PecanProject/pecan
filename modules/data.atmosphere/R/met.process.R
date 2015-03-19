@@ -12,7 +12,7 @@
 ##' @param dir  directory to write outputs to
 ##' 
 ##' @author Elizabeth Cowdery, Michael Dietze
-met.process <- function(site, input_met, start_date, end_date, model, host, bety, dir){
+met.process <- function(site, input_met, start_date, end_date, model, host, bety, dir, browndog=NA){
   
   require(RPostgreSQL)
   
@@ -43,7 +43,14 @@ met.process <- function(site, input_met, start_date, end_date, model, host, bety
     
     outfolder  <- file.path(dir,met)
     pkg        <- "PEcAn.data.atmosphere"
-    fcn        <- paste0("download.",met)
+    
+    if(!is.na(browndog)){
+      fcn <- paste0("download.BrownDog.",met)
+      bd.host <- paste0(",'",browndog$host,"'")
+    }else{
+      fcn <- paste0("download.",met)
+      bd.host <- ""
+    }
     
     if(met == "NARR"){
       
@@ -52,8 +59,6 @@ met.process <- function(site, input_met, start_date, end_date, model, host, bety
       args <- list(outfolder, start_date, end_date)
       cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
       remote.execute.R(cmdFcn,host$name,user=NA, verbose=TRUE)
-      
-      #download.NARR(outfolder, start_date, end_date, raw.host=host$name, overwrite=FALSE)
       
       mimetype =  'application/x-netcdf'
       formatname = "NARR"
@@ -77,12 +82,11 @@ met.process <- function(site, input_met, start_date, end_date, model, host, bety
     }else{
       if(met == "Ameriflux"){
         
-        ## download files
         outfolder = paste0(outfolder,"_site_",str_ns)
         site.code = sub(".* \\((.*)\\)", "\\1", site$name)
-        args <- list(site.code, outfolder, start_date, end_date) #, pkg,raw.host = host,dbparms,con=con)
+        args <- list(site.code, outfolder, start_date, end_date)
         
-        cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
+        cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),bd.host,")")
         new.files <- remote.execute.R(cmdFcn,host$name,user=NA,verbose=TRUE)
         
         
@@ -264,10 +268,36 @@ find.prefix <- function(files){
 ##' @param site.id
 ##' @param con
 ##' @author Betsy Cowdery
+##' 
 db.site.lat.lon <- function(site.id,con){
   site <- db.query(paste("SELECT id, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =",site.id),con)
   if(nrow(site)==0){logger.error("Site not found"); return(NULL)} 
   if(!(is.na(site$lat)) && !(is.na(site$lat))){
     return(list(lat = site$lat, lon = site$lon))
+  }
+}
+
+## Betsy's brute force fix for downloading files from Brown Dog
+
+##' @name dl_file
+##' @title dl_file
+##' @export
+##' @param link - path to file to be downloaded
+##' @param tf - temp file to download
+##' @param i - number of times to try download
+##' @author Betsy Cowdery
+dl_file <- function(link, tf, i){
+  paste("Attempting download from ", link)
+  r <- try(download.file(link, tf, quiet = TRUE), silent = TRUE)
+  if(inherits(r, 'try-error') & i <= 1000){
+    cat("*")
+    dl_file(link, tf, i)
+  }
+  if(inherits(r, 'try-error') & i > 1000){
+    print("Download failed after 1000 attempts")
+    return(NULL)
+  }
+  if(inherits(r, 'integer')){
+    cat("\nDownload succeeded")
   }
 }

@@ -1,8 +1,27 @@
+##' @name download.BrownDog.Ameriflux
+##' @title download.BrownDog.Ameriflux
+##' @export
+##' @param site the site to be downloaded, will be used as prefix as well
+##' @param outfolder location on disk where outputs will be stored
+##' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
+##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
+##' @param bd.host base url to Browndog (currently "http://dap.ncsa.illinois.edu:8184/convert")
+##' @param overwrite should existing files be overwritten
+##' @param verbose should the function be very verbose
+##' 
+##' @author Betsy Cowdery
+
 download.BrownDog.Ameriflux <- function(site, outfolder, start_date, end_date, bd.host, overwrite=FALSE, verbose=FALSE){
   
   require(lubridate)
   require(PEcAn.utils)
   require(data.table)
+  
+  
+  # make sure output folder exists
+  if(!file.exists(outfolder)){
+    dir.create(outfolder, showWarnings=FALSE, recursive=TRUE)
+  }
   
   start_date <- as.POSIXlt(start_date, tz = "GMT")
   end_date <- as.POSIXlt(end_date, tz = "GMT")
@@ -42,10 +61,11 @@ download.BrownDog.Ameriflux <- function(site, outfolder, start_date, end_date, b
   url <- file.path(bd.host,output.format) 
   
   xml_text = newXMLNode("input")
-  newXMLNode("type", "ameriflux", parent = xml_text)
+  
+newXMLNode("type", "ameriflux", parent = xml_text)
   newXMLNode("site", site, parent = xml_text)
-  newXMLNode("start_date", start_date, parent = xml_text)
-  newXMLNode("end_date", end_date, parent = xml_text)
+  newXMLNode("start_date", paste(start_date), parent = xml_text)
+  newXMLNode("end_date", paste(end_date), parent = xml_text)
   xml_text <- saveXML(xml_text)
   
   html <- postForm(uri = url, "pecan.xml" = fileUpload(filename = "pecan.xml", contents = xml_text))
@@ -58,7 +78,7 @@ download.BrownDog.Ameriflux <- function(site, outfolder, start_date, end_date, b
   fname <- unzip(tf, list=TRUE)$Name
   unzip(tf, files=fname, exdir=outfolder, overwrite=TRUE) 
   file.remove(tf)
-  invisible(resutls)
+  invisible(results)
   
 }
 
