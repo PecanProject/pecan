@@ -4,7 +4,8 @@
 // function to cut out the Rcpp package types.
 
 #include <stdio.h>
-#define MATHLIB_STANDALONE
+#include <R.h>
+#include <Rdefines.h>
 #include <Rmath.h>
 #include "exp_int.h"
 #include "gpm.h"
@@ -56,28 +57,25 @@ double Likelihood(double Error[wl][nspec], double rsd){
 }
 
 // Main inversion
-int main(){
-    int i,j;
+SEXP prospect(SEXP R_ngibbs, SEXP R_Observed, SEXP R_prosp_dat){
+    int ngibbs = NUMERIC_VALUE(R_ngibbs);
+    double *V_Observed = NUMERIC_POINTER(R_Observed);
+    double *prosp_dat = NUMERIC_POINTER(R_prosp_dat);
+
     double Observed[wl][nspec];
+    int i,j, ng;
 
-    FILE *pdat;
-    pdat = fopen("data_prospect.dat", "r");
     for(i=0; i<wl; i++){
-        fscanf(pdat, "%f %g %f %f %f %f %f %f %f", 
-                Cab_abs[i], Cw_abs[i], Cm_abs[i], 
-                tao1[i], tao2[i], rho1[i], rho2[i],
-                x[i], y[i]);
+        Cab_abs[i] = prosp_dat[i+wl*1];
+        Cw_abs[i] = prosp_dat[i+wl*2];
+        Cm_abs[i] = prosp_dat[i+wl*3];
+        tao1[i] = prosp_dat[i+wl*4];
+        tao2[i] = prosp_dat[i+wl*5];
+        rho1[i] = prosp_dat[i+wl*6];
+        rho2[i] = prosp_dat[i+wl*7];
+        x[i] = prosp_dat[i+wl*8];
+        y[i] = prosp_dat[i+wl*9];
     }
-    fclose(pdat);
-
-    FILE *tobs;
-    tobs = fopen("test_obs.dat", "r");
-    for(i=0; i<wl; i++){
-        for(j=0; j<nspec; j++){
-            fscanf(tobs, "%f", Observed[i][j]);
-        }
-    }
-    fclose(tobs);
 
     double N, Cab, Cw, Cm, rsd,
            TN, TCab, TCw, TCm;
@@ -97,7 +95,6 @@ int main(){
     prospect4(N, Cab, Cw, Cm, PrevSpec);
     SpecError(PrevSpec, Observed, PrevError);
 
-    int ngibbs = 100, ng;
     for(ng=0; ng<ngibbs; ng++){
         TN = rtnorm(N, Jump[1], 1, 1e14);
         prospect4(TN, Cab, Cw, Cm, TrySpec);
@@ -129,6 +126,7 @@ int main(){
 
         printf("%f  %f \n", N, rsd);
     }
+    return R_NilValue;
 }
     
 
