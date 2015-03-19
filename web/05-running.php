@@ -59,7 +59,7 @@ foreach ($status as $line) {
     // only send email if finished_at is not set.
     if (isset($params['email'])) {
       $url = (isset($_SERVER['HTTPS']) ? "https://" : "http://");
-      $url .= $_SERVER['HTTP_HOST'] . ':' . $_SERVER['SERVER_PORT'] . $_SERVER["SCRIPT_NAME"]
+      $url .= $_SERVER['HTTP_HOST'] . ':' . $_SERVER['SERVER_PORT'] . $_SERVER["SCRIPT_NAME"];
       if ($offline) {
         $url .= "?workflowid=${workflowid}&offline=offline";
       } else {

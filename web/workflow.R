@@ -111,7 +111,6 @@ if (length(which(commandArgs() == "--continue")) == 0) {
           tryCatch({
             download.file(url, outputfile)
           }, error = function(e) {
-            print(e)
             file.remove(outputfile)
           })
         }
