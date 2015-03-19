@@ -28,14 +28,8 @@ download.Ameriflux <- function(site, outfolder, start_date, end_date, overwrite=
   start_date <- as.POSIXlt(start_date, tz = "GMT")
   end_date <- as.POSIXlt(end_date, tz = "GMT")
   
-  print(start_date)
-  print(end_date)
-  
   start_year <- year(start_date)
   end_year <- year(end_date)
-  
-  print(start_year)
-  print(end_year)
   
   # make sure output folder exists
   if(!file.exists(outfolder)){
