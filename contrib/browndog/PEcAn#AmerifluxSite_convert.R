@@ -55,19 +55,23 @@ dir.create(rawfolder, showWarnings=FALSE, recursive=TRUE)
 cffolder <- file.path(tempDir,input$type, input$site, "cf")
 dir.create(cffolder, showWarnings=FALSE, recursive=TRUE)
 
+gapfolder <- file.path(tempDir,input$type, input$site, "gap")
+dir.create(gapfolder, showWarnings=FALSE, recursive=TRUE)
+
 # 1 download data
 download.Ameriflux(site, rawfolder, start_date=start_date, end_date=end_date, overwrite=overwrite)
 
 # 2 convert data to CF
 #print(met2CF.Ameriflux(rawfolder, site, cffolder, start_date=start_date, end_date=end_date, overwrite=overwrite))
 met2CF.Ameriflux(rawfolder, site, cffolder, start_date=start_date, end_date=end_date, overwrite=overwrite)
+metgapfill(cffolder, site, gapfolder, start_date=start_date, end_date=end_date)
 
 filename <- paste0(site,".",substr(start_date,1,4),".nc")
-outfile <- file.path(cffolder, filename)
+outfile <- file.path(gapfolder, filename)
 
 if (ext == ".zip") {
     wd <- getwd()
-    rootZip <- paste0(tempDir,"/",input$type,"/",input$site,"/cf")
+    rootZip <- paste0(tempDir,"/",input$type,"/",input$site,"/gap")
     setwd(rootZip)
     system("zip temp.zip ./*")
     #file.rename("temp.zip", paste0(wd,"/", args[2]))   
