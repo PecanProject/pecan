@@ -15,6 +15,9 @@ $db_fia_username="";
 $db_fia_password="";
 $db_fia_database="";
 
+# browdog information
+$browndog_url="";
+
 # R binary
 $Rbinary="/usr/bin/R";
 

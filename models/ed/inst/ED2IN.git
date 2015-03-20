@@ -341,7 +341,7 @@ $ED_NL
    !    6 - Initialize with ED-2 style files without multiple sites, exactly like option   !
    !        2, except that the PFT types are preserved.                                    !
    !---------------------------------------------------------------------------------------!
-   NL%IED_INIT_MODE   = 3
+   NL%IED_INIT_MODE   =  @INIT_MODEL@
    !---------------------------------------------------------------------------------------!
 
 
@@ -1154,7 +1154,7 @@ $ED_NL
    !                3.  Gloomy -- All radiation goes to diffuse.                           !
    !                4.  Sesame street -- all radiation goes to direct, except at night.    !
    ! INITIAL_CO2 -- Initial value for CO2 in case no CO2 is provided at the meteorological !
-   !                driver dataset [Units: µmol/mol]                                       !
+   !                driver dataset [Units: ?mol/mol]                                       !
    !---------------------------------------------------------------------------------------!
    NL%IMETTYPE    = 1        ! 0 = ASCII, 1 = HDF5
    NL%ISHUFFLE    = 2        ! 2. Randomly pick recycled years 

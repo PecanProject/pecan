@@ -6,7 +6,7 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-run.meta.analysis.pft <- function(pft, iterations, random, threshold, dbfiles, dbcon) {
+run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.2, dbfiles, dbcon) {
   # check to see if get.trait was executed
   if (!file.exists(file.path(pft$outdir, 'trait.data.Rdata')) || !file.exists(file.path(pft$outdir, 'prior.distns.Rdata'))) {
     logger.severe("Could not find output from get.trait for", pft$name)
@@ -80,7 +80,7 @@ run.meta.analysis.pft <- function(pft, iterations, random, threshold, dbfiles, d
   
   ### Run the meta-analysis
   trait.mcmc  <- pecan.ma(jagged.data, prior.distns, taupriors, j.iter = iterations, 
-                          outdir = pft$outdir, random=random)
+                          outdir = pft$outdir, random = random)
   ### Check that meta-analysis posteriors are consistent with priors
   for(trait in names(trait.mcmc)){
     post.median    <- median(as.matrix(trait.mcmc[[trait]][,'beta.o']))
@@ -142,7 +142,7 @@ run.meta.analysis.pft <- function(pft, iterations, random, threshold, dbfiles, d
 ##' and post.distns.Rdata, respectively
 ##' @export
 ##' @author Shawn Serbin, David LeBauer
-run.meta.analysis <- function(pfts, iterations, random, threshold, dbfiles, database) {
+run.meta.analysis <- function(pfts, iterations, random = TRUE, threshold = 1.2, dbfiles, database) {
   # process all pfts
   dbcon <- db.open(database)
   result <- lapply(pfts, run.meta.analysis.pft, iterations, random, threshold, dbfiles, dbcon)
