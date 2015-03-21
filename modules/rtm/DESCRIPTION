@@ -1,37 +1,30 @@
-Package: PEcAn.rtm
+Package: PEcAnRTM
 Type: Package
 Title: PEcAn functions used for radiative transfer modeling
 Version: 1.4.1
 Date: 2015-01-22
-Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Mike Dietze, Carl
-    Davidson, Rob Kooper, Shawn Serbin
-Maintainer: David LeBauer <dlebauer@illinois.edu>
+Author: 
+    Alexey Shiklomanov, David LeBauer, Mike Dietze,
+    Xiaohui Feng, Dan Wang, Mike Dietze, Carl Davidson,
+    Rob Kooper, Shawn Serbin
+Maintainer: Alexey Shiklomanov <ashiklom@bu.edu>
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     workflow management tool that is designed to simplify the management of
     model parameterization, execution, and analysis. The goal of PECAn is to
     streamline the interaction between data and models, and to improve the
     efficacy of scientific investigation. The PEcAn.MA package contains
     the functions used in the Bayesian meta-analysis of trait data.
+Imports: Rcpp
+LinkingTo: Rcpp
 Depends:
+    data.table,
     XML,
-    gsl,
-    DEoptim,
-    PEcAn.utils,
+    PEcAn.utils
 Suggests:
-    testthat,
-    snowfall,
-    doSNOW
+    testthat
 SystemRequirements: JAGS2.2.0
 OS_type: unix
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
-Collate:
-    'tav.R'
-    'prospect4.R'
-    'prospect5.R'
-    'prospect5B.R'
-    'invprospect.R'
-    'merit.R'
-    'diagnostics.R'
