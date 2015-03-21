@@ -1,4 +1,4 @@
-Package: PEcAn.rtm
+Package: PEcAnRTM
 Type: Package
 Title: PEcAn functions used for radiative transfer modeling
 Version: 1.4.1
