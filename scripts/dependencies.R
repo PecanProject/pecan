@@ -1,3 +1,4 @@
+#!/usr/bin/env Rscript
 ##--------------------------------------------------------------------------------------------------#
 ##'
 ##' Create a dependency graph for a list of packages. Each package is checked for their dependencies

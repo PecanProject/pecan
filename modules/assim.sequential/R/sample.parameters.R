@@ -1,6 +1,6 @@
 ##' @name sample.parameters
 ##' @title sample parameters
-##' @author Michael Dietze \email{dietze@bu.edu}
+##' @author Michael Dietze \email{dietze@@bu.edu}
 ##' 
 ##' @param ne         number of ensemble members
 ##' @param settings   PEcAn settings object

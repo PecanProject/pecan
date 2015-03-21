@@ -12,7 +12,7 @@
 ##' @param dir  directory to write outputs to
 ##' 
 ##' @author Elizabeth Cowdery, Michael Dietze
-met.process <- function(site, input, start_date, end_date, model, host, bety, dir){
+met.process <- function(site, input_met, start_date, end_date, model, host, bety, dir){
   
   require(RPostgreSQL)
   
@@ -25,12 +25,12 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
   dbparms <- list(driver=driver, user=user, dbname=dbname, password=password, host=bety.host)
   con       <- db.open(dbparms)
   
-  met <- input$met$type
-  if(input$met$id==""){
+  met <- input_met$source
+  if(!exists("input_met$id") || input_met$id==""){
     download=TRUE
   }else{
     download=FALSE
-    raw.id=input$met$id
+    raw.id=as.numeric(input_met$id)
   }
   
   regional <- met == "NARR" # Either regional or site run
@@ -46,16 +46,46 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
     fcn        <- paste0("download.",met)
     
     if(met == "NARR"){
+      
       site.id <- 1135
-      raw.id <- 1000000127
+      
+      args <- list(outfolder, start_date, end_date)
+      cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
+      remote.execute.R(cmdFcn,host$name,user=NA, verbose=TRUE)
+      
+      #download.NARR(outfolder, start_date, end_date, raw.host=host$name, overwrite=FALSE)
+      
+      mimetype =  'application/x-netcdf'
+      formatname = "NARR"
+      check <- dbfile.input.check(site.id, start_date, end_date, mimetype, formatname, con=con, hostname=fqdn())
+      
+      if(length(check)>0){
+        raw.id = check$container_id[1]
+      }else{
+        raw.id <- dbfile.input.insert(in.path = outfolder, 
+                                      in.prefix = "NARR", 
+                                      siteid = 1135, 
+                                      startdate = start_date, 
+                                      enddate = end_date, 
+                                      mimetype =  mimetype, 
+                                      formatname = formatname,
+                                      parentid = NA,
+                                      con = con,
+                                      hostname = host$name)$input.id
+        raw.id <- newinput$input.id #1000000127
+      }
     }else{
       if(met == "Ameriflux"){
         
         ## download files
         outfolder = paste0(outfolder,"_site_",str_ns)
         site.code = sub(".* \\((.*)\\)", "\\1", site$name)
-        args <- list(site.code, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE) #, pkg,raw.host = host,dbparms,con=con)
-        new.files <- do.call(fcn,args)
+        args <- list(site.code, outfolder, start_date, end_date) #, pkg,raw.host = host,dbparms,con=con)
+        
+        cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
+        new.files <- remote.execute.R(cmdFcn,host$name,user=NA,verbose=TRUE)
+        
+        
         host$name = new.files$host[1]
         
         check = dbfile.input.check(site$id, start_date, end_date, 
@@ -150,7 +180,8 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
   
   ## NOTE: ALL OF THIS CAN BE QUERIED THROUGH DATABASE
   ## MODEL_TYPES -> FORMATS where tag = "met"
-  if(model == "ED2"){
+  if("ED2" %in% unlist(strsplit(model,"[.]"))){
+    model <- "ED2"
     formatname <- 'ed.met_driver_header_files_format'
     mimetype <- 'text/plain'
   }else if(model == "SIPNET"){
@@ -190,19 +221,37 @@ met.process <- function(site, input, start_date, end_date, model, host, bety, di
 ##' @param files
 ##' @author Betsy Cowdery
 find.prefix <- function(files){
-  files.split <- (strsplit(files, "[.]"))
-  files.split <- lapply(files.split, `length<-`,max(unlist(lapply(files.split, length))))
-  files.df <- as.data.frame(do.call(rbind, files.split))
-  files.uniq <- sapply(files.df, function(x)length(unique(x)))
   
-  prefix <- ""
-  ifelse(files.uniq[1] == 1,prefix <- as.character(files.df[1,1]),return(prefix))
+  if(length(files)==1){
+    tail <- tail(unlist(strsplit(files, "/")),1)
+    prefix <- head(unlist(strsplit(tail, "[.]")),1)
+    return(prefix)
+  }
   
-  for(i in 2:length(files.uniq)){
-    if(files.uniq[i]==1){
-      prefix <- paste(prefix,as.character(files.df[1,i]),sep = ".")
+  files.split <- try(strsplit(unlist(files), "[.]"), silent = TRUE)
+    
+  if(!inherits(files.split, 'try-error')){
+    
+    files.split <- lapply(files.split, `length<-`,max(unlist(lapply(files.split, length))))
+    files.df <- as.data.frame(do.call(rbind, files.split))
+    files.uniq <- sapply(files.df, function(x)length(unique(x))) 
+    
+    prefix <- ""
+    ifelse(files.uniq[1] == 1,prefix <- as.character(files.df[1,1]),return(prefix))
+    
+    for(i in 2:length(files.uniq)){
+      if(files.uniq[i]==1){
+        prefix <- paste(prefix,as.character(files.df[1,i]),sep = ".")
+      }else{
+        return(prefix)
+      }
+    }
+  }else{   
+    bases <- lapply(as.character(files),basename)
+    if(length(unique(bases))==1){
+      prefix <- bases[1]
     }else{
-      return(prefix)
+      prefix <- ""
     }
   }
   return(prefix)

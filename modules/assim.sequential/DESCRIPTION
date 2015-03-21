@@ -14,9 +14,3 @@ License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
-Collate:
-    'sda.particle.R'
-    'sda.enkf.R'
-    'split.met.SIPNET.R'
-    'sample.IC.SIPNET.R'
-    'sample.parameters.R'
