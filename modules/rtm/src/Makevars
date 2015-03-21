@@ -1,2 +1,0 @@
-PKG_CPPFLAGS = -I/usr/include
-PKG_LIBS = -L/usr/lib -lgsl -lgslcblas -lm

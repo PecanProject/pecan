@@ -18,8 +18,7 @@ Imports: Rcpp
 LinkingTo: Rcpp
 Depends:
     data.table,
-    XML,
-    PEcAn.utils
+    XML
 Suggests:
     testthat
 SystemRequirements: JAGS2.2.0
