@@ -133,7 +133,7 @@ NumericMatrix pinvbayes_re(int ngibbs,
         // Sample N global mean
         TN = rtnorm(N, Jump["N"], 1);
         TVN = TN + alpha_N;
-        printf("\n %f %f %f %f", TVN[0], TVN[1], TVN[2], TVN[3], TVN[4]);
+        printf("\n %f %f %f %f %f", TVN[0], TVN[1], TVN[2], TVN[3], TVN[4]);
         TrySpec = RE_model(TVN, VCab, VCw, VCm, p4data);
         TryError = SpecError_re(TrySpec, Observed);
         TryPost = Likelihood_re(TryError, rsd) + priorN(TN);
