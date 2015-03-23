@@ -78,10 +78,10 @@ NumericMatrix pinvbayes_re(int ngibbs,
             _["Cm"] = 5e-5);
 
     NumericVector alpha_Jump = NumericVector::create(
-            _["N"] = 0.01,
-            _["Cab"] = 0.1,
-            _["Cw"] = 1e-4,
-            _["Cm"] = 5e-5);
+            _["N"] = 0.3,
+            _["Cab"] = 0.5,
+            _["Cw"] = 1e-3,
+            _["Cm"] = 5e-3);
 
     double rsd, rinv, rp2;
     double TN, TCab, TCw, TCm;
@@ -116,24 +116,22 @@ NumericMatrix pinvbayes_re(int ngibbs,
         printf("%4d ", ng);
         // Adapt
         if(adapt - adapt_count < 1){
-            printf("\n %f %f %f %f \n", N, Cab, Cw, Cm);
-            printf("%.1f %.1f %.1f %.1f \n", ar[0], ar[1], ar[2], ar[3]);
             adj = ar / adapt / 0.75;
             adj = ifelse(adj < adj_min, adj_min, adj);
             Jump = Jump * adj;
-            printf("%g  %g  %g  %g \n \n", Jump[0], Jump[1], Jump[2], Jump[3]);
+            printf("\n %g  %g  %g  %g \n", Jump[0], Jump[1], Jump[2], Jump[3]);
             ar = ar * 0;
 
             alpha_adj = alpha_ar / nspec / adapt / 0.75;
             alpha_adj = ifelse(alpha_adj < adj_min, adj_min, alpha_adj);
             alpha_Jump = alpha_Jump * alpha_adj;
+            alpha_ar = alpha_ar * 0;
             adapt_count = 0;
         }
 
         // Sample N global mean
         TN = rtnorm(N, Jump["N"], 1);
         TVN = TN + alpha_N;
-        printf("\n %f %f %f %f %f", TVN[0], TVN[1], TVN[2], TVN[3], TVN[4]);
         TrySpec = RE_model(TVN, VCab, VCw, VCm, p4data);
         TryError = SpecError_re(TrySpec, Observed);
         TryPost = Likelihood_re(TryError, rsd) + priorN(TN);
@@ -203,13 +201,13 @@ NumericMatrix pinvbayes_re(int ngibbs,
         // Sample random effects
         for(int i=0; i<nspec; i++){
             // Alpha N
-            Talpha_N = rtnorm(alpha_N[i], alpha_Jump["N"], -(N-1));  // CAUTION: Mean != mu (0), because it's truncated
+            Talpha_N = rtnorm(alpha_N[i], alpha_Jump["N"], 1-N);  // CAUTION: Mean != mu (0), because it's truncated
             TrySpec_alpha = prospect4_cpp(N + Talpha_N, VCab[i], VCw[i], VCm[i], p4data, 1);
             TryError_alpha = TrySpec_alpha - Observed(_,i);
-            TryPost = Likelihood_v(TryError_alpha, rsd) + dtnorm(Talpha_N, 0, tau_N, -(N-1));   // CAUTION: As above
-            PrevPost = Likelihood_v(PrevError(_,i), rsd) + dtnorm(alpha_N[i], 0, tau_N, -(N-1));
-            JN = dtnorm(Talpha_N, alpha_N[i], alpha_Jump["N"], 1);
-            JD = dtnorm(alpha_N[i], Talpha_N, alpha_Jump["N"], 1);
+            TryPost = Likelihood_v(TryError_alpha, rsd) + dtnorm(Talpha_N, 0, tau_N, 1-N);   // CAUTION: As above
+            PrevPost = Likelihood_v(PrevError(_,i), rsd) + dtnorm(alpha_N[i], 0, tau_N, 1-N);
+            JN = dtnorm(Talpha_N, alpha_N[i], alpha_Jump["N"], 1-N);
+            JD = dtnorm(alpha_N[i], Talpha_N, alpha_Jump["N"], 1-N);
             a = exp((TryPost - JN) - (PrevPost - JD));
             if(a > runif(1)[0]){
                 alpha_N[i] = Talpha_N;
@@ -223,8 +221,8 @@ NumericMatrix pinvbayes_re(int ngibbs,
             TryError_alpha = TrySpec_alpha - Observed(_,i);
             TryPost = Likelihood_v(TryError_alpha, rsd) + dtnorm(Talpha_Cab, 0, tau_Cab, -Cab);   // CAUTION: As above
             PrevPost = Likelihood_v(PrevError(_,i), rsd) + dtnorm(alpha_Cab[i], 0, tau_Cab, -Cab);
-            JN = dtnorm(Talpha_Cab, alpha_Cab[i], alpha_Jump["Cab"], 1);
-            JD = dtnorm(alpha_Cab[i], Talpha_Cab, alpha_Jump["Cab"], 1);
+            JN = dtnorm(Talpha_Cab, alpha_Cab[i], alpha_Jump["Cab"], -Cab);
+            JD = dtnorm(alpha_Cab[i], Talpha_Cab, alpha_Jump["Cab"], -Cab);
             a = exp((TryPost - JN) - (PrevPost - JD));
             if(a > runif(1)[0]){
                 alpha_Cab[i] = Talpha_Cab;
@@ -238,8 +236,8 @@ NumericMatrix pinvbayes_re(int ngibbs,
             TryError_alpha = TrySpec_alpha - Observed(_,i);
             TryPost = Likelihood_v(TryError_alpha, rsd) + dtnorm(Talpha_Cw, 0, tau_Cw, -Cw);   // CAUTION: As above
             PrevPost = Likelihood_v(PrevError(_,i), rsd) + dtnorm(alpha_Cw[i], 0, tau_Cw, -Cw);
-            JN = dtnorm(Talpha_Cw, alpha_Cw[i], alpha_Jump["Cw"], 1);
-            JD = dtnorm(alpha_Cw[i], Talpha_Cw, alpha_Jump["Cw"], 1);
+            JN = dtnorm(Talpha_Cw, alpha_Cw[i], alpha_Jump["Cw"], -Cw);
+            JD = dtnorm(alpha_Cw[i], Talpha_Cw, alpha_Jump["Cw"], -Cw);
             a = exp((TryPost - JN) - (PrevPost - JD));
             if(a > runif(1)[0]){
                 alpha_Cw[i] = Talpha_Cw;
@@ -253,8 +251,8 @@ NumericMatrix pinvbayes_re(int ngibbs,
             TryError_alpha = TrySpec_alpha - Observed(_,i);
             TryPost = Likelihood_v(TryError_alpha, rsd) + dtnorm(Talpha_Cm, 0, tau_Cm, -Cm);   // CAUTION: As above
             PrevPost = Likelihood_v(PrevError(_,i), rsd) + dtnorm(alpha_Cm[i], 0, tau_Cm, -Cm);
-            JN = dtnorm(Talpha_Cm, alpha_Cm[i], alpha_Jump["Cm"], 1);
-            JD = dtnorm(alpha_Cm[i], Talpha_Cm, alpha_Jump["Cm"], 1);
+            JN = dtnorm(Talpha_Cm, alpha_Cm[i], alpha_Jump["Cm"], -Cm);
+            JD = dtnorm(alpha_Cm[i], Talpha_Cm, alpha_Jump["Cm"], -Cm);
             a = exp((TryPost - JN) - (PrevPost - JD));
             if(a > runif(1)[0]){
                 alpha_Cm[i] = Talpha_Cm;
