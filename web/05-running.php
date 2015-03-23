@@ -67,7 +67,10 @@ foreach ($status as $line) {
       }
       mail($params['email'], "Workflow has failed", "You can find the results on $url");
     }
-    $pdo->query("UPDATE workflows SET finished_at=NOW() WHERE id=${workflowid} AND finished_at IS NULL");
+    $stmt = $pdo->prepare("UPDATE workflows SET finished_at=NOW() WHERE id=? AND finished_at IS NULL");
+    if (!$stmt->execute(array($workflowid))) {
+      die('Invalid query: ' . error_database());
+    }
     $finished = true;
   }
   if ($data[0] == "ADVANCED" && count($data) < 3) {
