@@ -908,6 +908,32 @@ update.settings <- function(settings) {
   invisible(settings)
 }
 
+##' Add users database parameters to section.
+##'
+##' Copies database section from ~/.pecan.xml to the settings. This allows
+##' a user to have their own unique database parameters, also when sharing
+##' the pecan.xml file we don't expose the database connection parameters.
+##'
+##' @title Add Users database
+##' @param settings settings file
+##' @return will return the updated settings values
+##' @author Rob Kooper
+addUsersDatabase <- function(settings) {
+  if (!file.exists("~/.pecan.xml")) {
+    return(settings)
+  }
+  pecan <- xmlToList(xmlParse("~/.pecan.xml"))
+  for(db in names(pecan$database)) {
+    if (db %in% names(settings$database)) {
+      logger.info("Already have a section for", db)
+    } else {
+      logger.info("Imported section for", db)
+      settings$database[db] <- pecan$database[db]
+    }
+  }
+  invisible(settings)
+}
+
 ##--------------------------------------------------------------------------------------------------#
 ## EXTERNAL FUNCTIONS
 ##--------------------------------------------------------------------------------------------------#
@@ -982,6 +1008,7 @@ read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml"){
 
   ## convert the xml to a list for ease and return
   settings <- xmlToList(xml)
+  settings <- addUsersDatabase(settings)
   settings <- update.settings(settings)
   settings <- check.settings(settings)
 
