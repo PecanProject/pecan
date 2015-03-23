@@ -39,7 +39,7 @@ if (isset($_REQUEST['host']) && ($_REQUEST['host'] != "")) {
   }
 	
 	// Iterate through the rows, adding XML nodes for each
-	while ($row = @$stmt->fetch(PDO::FETCH_ASSOC);){ 
+	while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) { 
 		$node = $dom->createElement("model");
 		$newnode = $parnode->appendChild($node);	 
 		$newnode->setAttribute("id",$row['id']);
