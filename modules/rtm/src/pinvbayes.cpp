@@ -22,7 +22,6 @@ NumericMatrix pinvbayes(int ngibbs,
         float adapt, float adj_min,
         NumericMatrix p4data) {
 
-    printf("%f", log(10));
     int nspec = Observed.ncol();
     int wl = Observed.nrow();
     NumericMatrix results(ngibbs,5);
