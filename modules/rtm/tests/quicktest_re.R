@@ -1,9 +1,8 @@
 ## Quick test
-library(BayesInversion)
-ngibbs = 15000
-tt <- system.time(
-    z2 <- invert_prospect(testspec_ACRU[,1], ngibbs)
-)
+library(PEcAnRTM)
+data(testspec)
+ngibbs = 100
+tt <- system.time(z2 <- invert_prospect_re(testspec_ACRU[,1:5], ngibbs, 10))
 print(tt)
 
 ## Burnin and thin
@@ -17,6 +16,5 @@ plot(z[,2], type='l')
 plot(z[,3], type='l')
 plot(z[,4], type='l')
 plot(z[,5], type='l')
-plot(prospect4(mean(z[,1]), mean(z[,2]), mean(z[,3]), mean(z[,4]), P4data),
-     type='l')
+plot(prospect4(mean(z[,1]), mean(z[,2]), mean(z[,3]), mean(z[,4])), type='l')
 lines(testspec_ACRU[,1], col=2)

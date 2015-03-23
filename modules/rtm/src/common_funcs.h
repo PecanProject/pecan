@@ -14,14 +14,15 @@ NumericVector gpm(NumericVector tao1,
         double N,
         int return_refl);
 
-NumericVector prospect4(double N,
+NumericVector prospect4_cpp(double N,
         double Cab,
         double Cw,
         double Cm,
-        NumericMatrix p4data);
+        NumericMatrix p4data,
+        int refl_on);
 
-double rtnorm(double mu, double sd, double MIN, double MAX);
-double dtnorm(double X, double mu, double sd, double MIN, double MAX);
+double rtnorm(double mu, double sd, double MIN);
+double dtnorm(double X, double mu, double sd, double MIN);
 
 // Priors
 double priorN(double N);

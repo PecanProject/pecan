@@ -36,7 +36,7 @@ NumericMatrix pinvbayes(int ngibbs,
     double rp1 = 0.001 + nspec * wl / 2;
 
     // Precalculate first model
-    NumericVector PrevSpec = prospect4(N, Cab, Cw, Cm, p4data);
+    NumericVector PrevSpec = prospect4_cpp(N, Cab, Cw, Cm, p4data, 1);
     NumericMatrix PrevError = SpecError(PrevSpec, Observed);
 
     NumericVector Jump = NumericVector::create(
@@ -76,13 +76,13 @@ NumericMatrix pinvbayes(int ngibbs,
         }
 
         // Sample N
-        TN = rtnorm(N, Jump["N"], 1, 1e10);
-        TrySpec = prospect4(TN, Cab, Cw, Cm, p4data);
+        TN = rtnorm(N, Jump["N"], 1);
+        TrySpec = prospect4_cpp(TN, Cab, Cw, Cm, p4data, 1);
         TryError = SpecError(TrySpec, Observed);
         TryPost = Likelihood(TryError, rsd) + priorN(TN);
         PrevPost = Likelihood(PrevError, rsd) + priorN(N);
-        JN = dtnorm(TN, N, Jump["N"], 1, 1e10);
-        JD = dtnorm(N, TN, Jump["N"], 1, 1e10);
+        JN = dtnorm(TN, N, Jump["N"], 1);
+        JD = dtnorm(N, TN, Jump["N"], 1);
         a = exp((TryPost - JN) - (PrevPost - JD));
         if(a > runif(1)[0]){
             N = TN;
@@ -91,13 +91,13 @@ NumericMatrix pinvbayes(int ngibbs,
         }
 
         // Sample Cab
-        TCab = rtnorm(Cab, Jump["Cab"], 0, 1e10);
-        TrySpec = prospect4(N, TCab, Cw, Cm, p4data);
+        TCab = rtnorm(Cab, Jump["Cab"], 0);
+        TrySpec = prospect4_cpp(N, TCab, Cw, Cm, p4data, 1);
         TryError = SpecError(TrySpec, Observed);
         TryPost = Likelihood(TryError, rsd) + priorCab(TCab);
         PrevPost = Likelihood(PrevError, rsd) + priorCab(Cab);
-        JN = dtnorm(TCab, Cab, Jump["Cab"], 0, 1e10);
-        JD = dtnorm(Cab, TCab, Jump["Cab"], 0, 1e10);
+        JN = dtnorm(TCab, Cab, Jump["Cab"], 0);
+        JD = dtnorm(Cab, TCab, Jump["Cab"], 0);
         a = exp((TryPost - JN) - (PrevPost - JD));
         if(a > runif(1)[0]){
             Cab = TCab;
@@ -106,13 +106,13 @@ NumericMatrix pinvbayes(int ngibbs,
         }
 
         // Sample Cw
-        TCw = rtnorm(Cw, Jump["Cw"], 0, 1e10);
-        TrySpec = prospect4(N, Cab, TCw, Cm, p4data);
+        TCw = rtnorm(Cw, Jump["Cw"], 0);
+        TrySpec = prospect4_cpp(N, Cab, TCw, Cm, p4data, 1);
         TryError = SpecError(TrySpec, Observed);
         TryPost = Likelihood(TryError, rsd) + priorCw(TCw);
         PrevPost = Likelihood(PrevError, rsd) + priorCw(Cw);
-        JN = dtnorm(TCw, Cw, Jump["Cw"], 0, 1e10);
-        JD = dtnorm(Cw, TCw, Jump["Cw"], 0, 1e10);
+        JN = dtnorm(TCw, Cw, Jump["Cw"], 0);
+        JD = dtnorm(Cw, TCw, Jump["Cw"], 0);
         a = exp((TryPost - JN) - (PrevPost - JD));
         if(a > runif(1)[0]){
             Cw = TCw;
@@ -121,13 +121,13 @@ NumericMatrix pinvbayes(int ngibbs,
         }
 
         // Sample Cm
-        TCm = rtnorm(Cm, Jump["Cm"], 0, 1e10);
-        TrySpec = prospect4(N, Cab, Cw, TCm, p4data);
+        TCm = rtnorm(Cm, Jump["Cm"], 0);
+        TrySpec = prospect4_cpp(N, Cab, Cw, TCm, p4data, 1);
         TryError = SpecError(TrySpec, Observed);
         TryPost = Likelihood(TryError, rsd) + priorCm(TCm);
         PrevPost = Likelihood(PrevError, rsd) + priorCm(Cm);
-        JN = dtnorm(TCm, Cm, Jump["Cm"], 0, 1e10);
-        JD = dtnorm(Cm, TCm, Jump["Cm"], 0, 1e10);
+        JN = dtnorm(TCm, Cm, Jump["Cm"], 0);
+        JD = dtnorm(Cm, TCm, Jump["Cm"], 0);
         a = exp((TryPost - JN) - (PrevPost - JD));
         if(a > runif(1)[0]){
             Cm = TCm;
