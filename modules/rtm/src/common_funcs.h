@@ -29,8 +29,4 @@ double rtnorm_c(double mu, double sd, double MIN);
 double dtnorm_c(double X, double mu, double sd, double MIN);
 
 // Priors
-double priorN(double N);
-double priorCab(double Cab);
-double priorCw(double Cw);
-double priorCm(double Cm);
 double prospect4_priors(int param, double value);
