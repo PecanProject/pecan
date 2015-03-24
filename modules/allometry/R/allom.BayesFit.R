@@ -96,10 +96,11 @@ allom.BayesFit <- function(allom,nrep=10000,form="power",dmin=0.1,dmax=500) {
   ## declare constants
 
   ## Drop equations outside of DBH range of interest & modifying the pseduodata as necessary
+  ##		We need the max of the allometry EQ to be >= min of interest and the min to be <=
   # ntally = nrow(allom[['parm']]); if(is.null(ntally)) ntally = 0;
-  ntally  <- which(nu(allom[['parm']][,"Xmin"])>dmin & nu(allom[['parm']][,"Xmin"])<dmax); 
+  ntally  <- which(nu(allom[['parm']][,"Xmax"])>=dmin & nu(allom[['parm']][,"Xmin"])<=dmax); 
    if(is.null(ntally)) ntally = 0;
-  print(c("Dropping allom rows: ", which(!(nu(allom[['parm']][,"Xmin"])>dmin & nu(allom[['parm']][,"Xmin"])<dmax))))
+  print(c("Dropping allom rows: ", which(!(1:nrow(allom[['parm']]) %in% ntally))))
   
   rng.mod <- cbind(ifelse(nu(allom$parm$Xmin)>dmin, nu(allom$parm$Xmin), dmin),
                    ifelse(nu(allom$parm$Xmax)<dmax, nu(allom$parm$Xmax), dmax))
@@ -172,7 +173,7 @@ allom.BayesFit <- function(allom,nrep=10000,form="power",dmin=0.1,dmax=500) {
       if(!is.na(Xcor[j])){
         x <- Xcor[j]*x0
       }else{
-        if(Xtype[i] == "d.b.h.^2"){
+        if(Xtype[j] == "d.b.h.^2"){
           ## convert to sq inches
           x = x0*x0/(2.54*2.54)
         } else {
