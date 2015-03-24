@@ -8,13 +8,16 @@ using namespace Rcpp;
 // Calculates individual spectrum for each leaf and returns spec matrix
 NumericMatrix RE_model(
         NumericVector (*Model)(NumericVector, NumericMatrix),
-        int nspec,
-        NumericMatrix param,
-        NumericMatrix p4data){
+        NumericVector param,
+        NumericMatrix re,
+        NumericMatrix p4data)
+{
     int wl = p4data.nrow();
-    NumericMatrix re_model(wl, nspec);
-    for(int i=0; i<nspec; i++){
-        re_model(_,i) = Model(param(_,i), p4data);
+    int nre = re.ncol();
+    NumericMatrix re_model(wl, nre);
+    NumericVector pass_par(param.size());
+    for(int i=0; i<nre; i++){
+        re_model(_,i) = Model(param + re(_,i), p4data);
     }
     return re_model;
 }
@@ -26,39 +29,43 @@ NumericMatrix invert_RTM_re(
         int ngibbs,                 // Number of MCMC steps
         float adapt,                // How often to adapt Jump SD
         float adj_min,              // Minimum value by which to adapt Jump
-        NumericVector inits,        // Vector of initial conditions
+        NumericVector values,       // Vector of parameter mean initial conditions
+        NumericMatrix re_values,    // Matrix of random effects initial conditions (par x re)
         NumericMatrix func_data)    // Input data for the RTM (e.g. absorption features)
 {
     int nspec = Observed.ncol();
+    int nre = re_values.ncol();
     int nwl = Observed.nrow();
-    int npars = inits.size();
-    NumericMatrix results(ngibbs, npars+1);   // Set up results matrix
+    int npars = values.size();
+    NumericMatrix results(ngibbs, (npars+1)*nre);   // Set up results matrix
     printf("Results matrix is %d rows by %d columns \n", results.nrow(), results.ncol());
 
-    // Pick model based on specified string
-    NumericVector(*Model)(NumericVector, NumericMatrix);
-    double (*Prior)(int, double);           // 'int' is the indicator, 'double' is the value
-    NumericVector pmin(npars);              // Vector of parameter constraints (minima)
-    if(RTM == "prospect4"){
-        Model = prospect4_model;
-        Prior = prospect4_priors;
-        pmin = NumericVector::create(1, 0, 0, 0);
-    } // else {} <--- other RTMs go here
+    // Pick RTM based on specified string
+    select_model Model = MODEL(RTM);
+    select_prior Prior = PRIOR(RTM);
+    NumericVector pmin = PMIN(RTM);
 
+    // Set up residual calculations
     double rp1, rp2, rinv, rsd;
     rp1 = 0.001 + nspec*nwl/2;        // Gamma shape; this is a constant
     rsd = 0.5;                      // Initial condition for residual SD
+    double alpha_rp1;
+    alpha_rp1 = 0.001 * nre / 2;
+    NumericVector alpha_rp2(nre), tau(nre), tinv(nre);
 
     // Precalculate first model
-    NumericVector PrevSpec = Model(inits, func_data);
+    NumericVector PrevSpec = RE_model(Model, values, re_values, func_data);
     NumericMatrix PrevError = SpecError(PrevSpec, Observed);
 
-    NumericVector Jump = inits * 0.05;  // Jump distribution vector - starts at 5% of initial conditions
+    // Initialize Jump distribution
+    NumericVector Jump = values * 0.05;  // Jump distribution vector - starts at 5% of initial conditions
+    NumericMatrix alpha_Jump = re_values * 0.05;    // Jump matrix for random effects
 
     // Define sampler parameters
     double Tpar, JN, JD, a;
-    NumericVector Tvec = inits;
-    NumericVector TrySpec(nwl);
+    NumericVector Tvec(npars);
+    NumericVector Talpha(nre);
+    NumericMatrix TrySpec(nwl, nre);
     NumericMatrix TryError(nwl, nspec);
     double TryPost, PrevPost;
 
@@ -77,29 +84,38 @@ NumericMatrix invert_RTM_re(
             ar = ar * 0;
             adapt_count = 0;
         }
+
         // Sample model parameters - Basic Metropolis Hastings
         for(int p = 0; p<npars; p++){
-            Tvec = clone(inits);
-            Tvec[p] = rtnorm(inits[p], Jump[p], pmin[p]);
-            TrySpec = Model(Tvec, func_data);
+            Tvec = clone(values);
+            Tvec[p] = rtnorm(values[p], Jump[p], pmin[p]);
+            TrySpec = RE_model(Model, Tvec, re_values, func_data);
             TryError = SpecError(TrySpec, Observed);
             TryPost = Likelihood(TryError, rsd) + Prior(p, Tvec[p]);
-            PrevPost = Likelihood(PrevError, rsd) + Prior(p, inits[p]);
-            JN = dtnorm(Tvec[p], inits[p], Jump[p], pmin[p]);
-            JD = dtnorm(inits[p], Tvec[p], Jump[p], pmin[p]);
+            PrevPost = Likelihood(PrevError, rsd) + Prior(p, values[p]);
+            JN = dtnorm(Tvec[p], values[p], Jump[p], pmin[p]);
+            JD = dtnorm(values[p], Tvec[p], Jump[p], pmin[p]);
             a = exp((TryPost - JN) - (PrevPost - JD));
-            printf("Tpar: %g  inits: %g  Jump: %g \n TL: %g  PL: %g \n",
+            printf("Tpar: %g  values: %g  Jump: %g \n TL: %g  PL: %g \n",
                 Tvec[p],
-                inits[p],
+                values[p],
                 Jump[p],
                 Likelihood(TryError, rsd),
                 Likelihood(PrevError, rsd));
-                if(a > runif(1)[0]){
-                    inits[p] = Tvec[p];
-                    PrevError = TryError;
-                    ar[p] = ar[p] + 1;
-                }
-            results(ng, p) = inits[p];
+            if(a > runif(1)[0]){
+                values[p] = Tvec[p];
+                PrevError = TryError;
+                ar[p] = ar[p] + 1;
+            }
+            results(ng, p) = values[p];
+
+            // Sample model random effects
+            for(int r = 0; r<nre; r++){
+                // Sample
+                Talpha = rtnorm_c(re_values(t,r), alpha_Jump(p), pmin(p)-values(p));
+                TrySpec_alpha = Model(#VECTOR#, );
+
+            }
         }
 
         // Sample residual SD
