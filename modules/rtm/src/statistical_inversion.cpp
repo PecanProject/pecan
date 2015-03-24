@@ -26,34 +26,31 @@ NumericMatrix invert_RTM(
     int nspec = Observed.ncol();
     int nwl = Observed.nrow();
     int npars = inits.size();
-    NumericMatrix results(ngibbs, npars);   // Set up results matrix
+    NumericMatrix results(ngibbs, npars+1);   // Set up results matrix
+    printf("Results matrix is %d rows by %d columns \n", results.nrow(), results.ncol());
 
     // Pick model based on specified string
-    NumericVector(*Model_select)(NumericVector, NumericMatrix);
+    NumericVector(*Model)(NumericVector, NumericMatrix);
     double (*Prior)(int, double);           // 'int' is the indicator, 'double' is the value
     NumericVector pmin(npars);              // Vector of parameter constraints (minima)
     if(RTM == "prospect4"){
-        Model_select = prospect4_model;
+        Model = prospect4_model;
         Prior = prospect4_priors;
         pmin = NumericVector::create(1, 0, 0, 0);
-    } // else {} <--- other RTMs go here 
-
-    NumericVector Model(NumericVector param){   // Redefine model with input data
-        return Model_select(param, func_data);
-    }
+    } // else {} <--- other RTMs go here
 
     double rp1, rp2, rinv, rsd;
-    rp1 = 0.001 + nspec*nwl;        // Gamma shape; this is a constant
+    rp1 = 0.001 + nspec*nwl/2;        // Gamma shape; this is a constant
     rsd = 0.5;                      // Initial condition for residual SD
-    
+
     // Precalculate first model
-    NumericVector PrevSpec = prospect4_model(inits, func_data);
+    NumericVector PrevSpec = Model(inits, func_data);
     NumericMatrix PrevError = SpecError(PrevSpec, Observed);
 
     NumericVector Jump = inits * 0.05;  // Jump distribution vector - starts at 5% of initial conditions
 
     // Define sampler parameters
-    double Tpar, JN, JD, a;              
+    double Tpar, JN, JD, a;
     NumericVector Tvec = inits;
     NumericVector TrySpec(nwl);
     NumericMatrix TryError(nwl, nspec);
@@ -76,28 +73,34 @@ NumericMatrix invert_RTM(
         }
         // Sample model parameters - Basic Metropolis Hastings
         for(int p = 0; p<npars; p++){
-            printf("n = %d p = %d \n", ng, p);
-            Tvec = inits;
+            Tvec = clone(inits);
             Tvec[p] = rtnorm(inits[p], Jump[p], pmin[p]);
-            TrySpec = Model(Tvec);
+            TrySpec = Model(Tvec, func_data);
             TryError = SpecError(TrySpec, Observed);
             TryPost = Likelihood(TryError, rsd) + Prior(p, Tvec[p]);
             PrevPost = Likelihood(PrevError, rsd) + Prior(p, inits[p]);
             JN = dtnorm(Tvec[p], inits[p], Jump[p], pmin[p]);
             JD = dtnorm(inits[p], Tvec[p], Jump[p], pmin[p]);
             a = exp((TryPost - JN) - (PrevPost - JD));
-            if(a > runif(1)[0]){
-                inits[p] = Tvec[p];
-                PrevError = TryError;
-                ar[p] = ar[p] + 1;
-            }
+            printf("Tpar: %g  inits: %g  Jump: %g \n TL: %g  PL: %g \n",
+                Tvec[p],
+                inits[p],
+                Jump[p],
+                Likelihood(TryError, rsd),
+                Likelihood(PrevError, rsd));
+                if(a > runif(1)[0]){
+                    inits[p] = Tvec[p];
+                    PrevError = TryError;
+                    ar[p] = ar[p] + 1;
+                }
             results(ng, p) = inits[p];
         }
-        
+
         // Sample residual SD
         rp2 = 0.001 + sum(PrevError * PrevError)/2;
         rinv = rgamma(1, rp1, 1/rp2)[0];
         rsd = 1/sqrt(rinv);
+        printf(" RSD: %f \n =======================\n", rsd);
         results(ng, npars) = rsd;
         adapt_count = adapt_count + 1;
     }
