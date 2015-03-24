@@ -9,7 +9,7 @@ NumericVector prospect4_model(
         NumericMatrix p4data)
 {
     int wl = p4data.nrow();
-    double N = param[1], Cab = param[2], Cw = param[3], Cm = param[4];
+    double N = param[0], Cab = param[1], Cw = param[2], Cm = param[3];
     NumericVector k(wl), theta(wl), Spec(wl);
 
     NumericMatrix::Column Cab_abs = p4data(_,0);
