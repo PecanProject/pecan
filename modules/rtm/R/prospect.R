@@ -11,6 +11,6 @@
 prospect4 <- function(param){  ##, TODO: Add transmittance argument
 #	reflectance <- as.integer(!transmittance)
 	data(prospect4)
-	out <- prospect4_model(param)
+	out <- prospect4_model(param, P4data)
 	return(out)
 }
