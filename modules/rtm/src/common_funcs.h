@@ -17,6 +17,7 @@ NumericVector gpm(
 
 NumericVector prospect4_model(NumericVector param, NumericMatrix p4data);
 
+// Truncated normal distribution functions
 double rtnorm(double mu, double sd, double MIN);
 double dtnorm(double X, double mu, double sd, double MIN);
 double rtnorm_c(double mu, double sd, double MIN);
