@@ -22,7 +22,7 @@
 ##-------------------------------------------------------------------------------------------------#
 met2model.LINKAGES <- function(in.path, in.prefix=NULL, start.year, end.year, outfolder, site) {
    
-  out.file <- file.path(paste0(outfolder,"test_text1.txt"))
+  out.file <- file.path(paste0(outfolder,"climate.txt"))
   
   year = seq(start.year,end.year,1)
   month = c("01","02","03","04","05","06","07","08","09","10","11","12")
