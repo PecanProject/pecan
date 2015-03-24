@@ -16,7 +16,4 @@ plot(z2[,10], type='l')
 plot(z2[,14], type='l')
 plot(z2[,18], type='l')
 plot(z2[,22], type='l')
-<<<<<<< HEAD
-=======
 lines(testspec_ACRU[,1], col=2)
->>>>>>> parent of 3c33ec0... Minor bug fixes to RE inversion.
