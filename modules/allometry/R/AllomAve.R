@@ -167,7 +167,7 @@ AllomAve <- function(pfts,components=6,outdir=NULL,con=NULL,field=NULL,
         for(i in seq_len(nrow(y.o))){
         	lines(dseq,y.o[i,],col=i+2)
         }
-        legend("topleft",legend=c("Hier","global", paste("allom", ntally),lwd=c(2,2, rep(1, nrow(y.o))),col=1:(2+nrow(y.o)))
+        legend("topleft",legend=c("Hier","global", paste("allom", ntally),lwd=c(2,2, rep(1, nrow(y.o))),col=1:(2+nrow(y.o))))
       
         ### MCMC diagnostics
         plot(mc)
