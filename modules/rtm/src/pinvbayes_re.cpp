@@ -116,23 +116,25 @@ NumericMatrix pinvbayes_re(int ngibbs,
         printf("%4d ", ng);
         // Adapt
         if(adapt - adapt_count < 1){
-            printf("\n %f %f %f %f \n", ar[0], ar[1], ar[2], ar[3]);
+            printf("\n %f %f %f %f \n", N, Cab, Cw, Cm);
+            printf("%.1f %.1f %.1f %.1f \n", ar[0], ar[1], ar[2], ar[3]);
             adj = ar / adapt / 0.75;
             adj = ifelse(adj < adj_min, adj_min, adj);
             Jump = Jump * adj;
+            printf("%g  %g  %g  %g \n \n", Jump[0], Jump[1], Jump[2], Jump[3]);
             ar = ar * 0;
 
             printf("\n %f %f %f %f \n", alpha_ar[0], alpha_ar[1], alpha_ar[2], alpha_ar[3]);
             alpha_adj = alpha_ar / nspec / adapt / 0.75;
             alpha_adj = ifelse(alpha_adj < adj_min, adj_min, alpha_adj);
             alpha_Jump = alpha_Jump * alpha_adj;
-            alpha_ar = alpha_ar * 0;
             adapt_count = 0;
         }
 
         // Sample N global mean
         TN = rtnorm(N, Jump["N"], 1);
         TVN = TN + alpha_N;
+        printf("\n %f %f %f %f %f", TVN[0], TVN[1], TVN[2], TVN[3], TVN[4]);
         TrySpec = RE_model(TVN, VCab, VCw, VCm, p4data);
         TryError = SpecError_re(TrySpec, Observed);
         TryPost = Likelihood_re(TryError, rsd) + priorN(TN);

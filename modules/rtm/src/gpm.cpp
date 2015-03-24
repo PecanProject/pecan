@@ -4,22 +4,22 @@ using namespace Rcpp;
 // NAME: gpm
 // TITLE: Generalized plate model
 // DESCRIPTION: Returns reflectance of a leaf with "N" layers.
-NumericMatrix gpm(NumericVector tao1,
+NumericVector gpm(NumericVector tao1,
         NumericVector tao2,
         NumericVector rho1,
         NumericVector rho2,
         NumericVector x,
         NumericVector y,
         NumericVector theta,
-        double N)
+        double N,
+        int return_refl)
 {
     int wl = tao1.size();
     NumericVector rhoa, taoa, rho90, tao90;
-    NumericVector d90, a90, b90, nmR, nmT, dmRT;
+    NumericVector d90, a90, b90, dmRT;
     NumericVector rho90s, tao90s, trdif;
     NumericVector b90p, b90pinv, b90dif;
-    NumericVector nmR, nmT;
-    NumericMatrix out(wl, 2);
+    NumericVector out(wl);
 
     // Reflectance and transmittance of first layer (N=1)
     rhoa = rho1 + (tao1 * tao2 * rho2 * theta*theta) / (1 - rho2*rho2 * theta*theta);
@@ -39,11 +39,16 @@ NumericMatrix gpm(NumericVector tao1,
     b90pinv = pow(b90, (1.0-N));
     b90dif = b90p - b90pinv;
 
-    dmRT = a90 * b90p - b90pinv / a90 - rho90 * b90dif ;
-    nmR = taoa * tao90 * b90dif;
-    out(_,1) = rhoa + nmR / dmRT;
-    nmT = taoa * (a90 - 1/a90);
-    out(_,2) = nmT / dmRT;
+    dmRT = a90 * b90p - b90pinv / a90 - rho90 * b90dif;
+    if(return_refl){
+    	NumericVector nmR;
+    	nmR = taoa * tao90 * b90dif;
+    	out = rhoa + nmR / dmRT;
+    	return out;
+    } else {
+    	NumericVector nmT;
+    	nmT = taoa * (a90 - 1/a90);
+    	out = nmT / dmRT;
     }
     return out;
 }
