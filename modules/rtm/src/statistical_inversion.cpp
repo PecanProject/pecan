@@ -3,16 +3,7 @@
 #include <Rmath.h>
 #include <Rcpp.h>
 using namespace Rcpp;
-NumericMatrix SpecError(NumericVector Model, NumericMatrix Observed){
-    int nspec = Observed.ncol();
-    int wl = Observed.nrow();
-    NumericMatrix E(wl, nspec);
-    for (int i=0; i<nspec; i++) E(_,i) = Model - Observed(_,i);
-    return E;
-}
-double Likelihood(NumericMatrix Error, double rsd){
-    return sum(dnorm(Error, 0, rsd, 1));
-}
+
 // [[Rcpp::export]]
 NumericMatrix invert_RTM(
         std::string RTM,            // Name of model to invert

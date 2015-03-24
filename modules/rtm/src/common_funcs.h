@@ -25,3 +25,10 @@ double dtnorm_c(double X, double mu, double sd, double MIN);
 
 // Priors
 double prospect4_priors(int param, double value);
+
+// MCMC support functions
+NumericMatrix SpecError(NumericVector Model, NumericMatrix Observed);
+NumericMatrix SpecError(NumericMatrix Model, NumericMatrix Observed);
+double Likelihood(NumericMatrix Error, double rsd);
+double Likelihood(NumericVector Error, double rsd);
+
