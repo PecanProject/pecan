@@ -26,40 +26,46 @@ NumericMatrix invert_RTM(
         NumericVector inits,
         NumericMatrix func_data){
 
-    // Pick model based on specified string
+    int nspec = Observed.ncol();
+    int nwl = Observed.nrow();
+    int npars = inits.size();
+    printf("Parameters: %d \n", npars);
+    NumericMatrix results(ngibbs, npars);
+    
+	// Pick model based on specified string
+    NumericMatrix(*Model)(NumericVector, NumericMatrix);
+    double (*Prior)(int, double);
+    NumericVector pmin(npars);
     if(RTM == "prospect4"){
-        NumericVector (*Model)(NumericVector,
-                NumericMatrix, NumericMatrix) = prospect4_model;
-        double (*Prior)(int, double) = prospect4_priors;
-        NumericVector pmin = NumericVector::create(1, 0, 0, 0);
-    } 
+        Model = prospect4_model;
+        Prior = prospect4_priors;
+        pmin = NumericVector::create(1, 0, 0, 0);
+    }
+    
 //    else if(RTM == "prospect5"){
 //        NumericVector (*Model)(NumericVector, NumericMatrix) = 
 //            prospect5_model;
 //        double (*Prior)(int, double) = prospect5_priors;
 //        NumericVector pmin = NumericVector::create(1, 0, 0, 0, 0);
 //    }
-        
-    int nspec = Observed.ncol();
-    int nwl = Observed.nrow();
-    int npars = inits.size(), p;
-    NumericMatrix results(ngibbs, npars);
 
-    double rp1 = 0.001 + nspec*nwl / 2, rp2, rinv, rsd;
+    double rp1 = 0.001 + nspec*nwl / 2, rp2, rinv, rsd = 0.5;
 
     // Precalculate first model
-    NumericVector PrevSpec = prospect4_cpp(N, Cab, Cw, Cm, p4data, 1);
+    NumericVector PrevSpec = prospect4_model(inits, func_data);
     NumericMatrix PrevError = SpecError(PrevSpec, Observed);
 
     NumericVector Jump = inits * 0.05;
 
     double Tpar, JN, JD, a;
-    NumericVector TVec = inits, TrySpec(wl);
-    NumericMatrix TryError(wl, nspec);
+    NumericVector Tvec = inits;
+    NumericVector TrySpec(nwl);
+    NumericMatrix TryError(nwl, nspec);
     double TryPost, PrevPost;
     NumericVector ar(npars), adj(npars);
     float adapt_count = 0;
 
+    printf("Begin MCMC \n");
     for(int ng = 0; ng<ngibbs; ng++){
         // Adapt
         if(adapt - adapt_count < 1){
@@ -71,9 +77,11 @@ NumericMatrix invert_RTM(
         }
 
         // Sample model parameters
-        for(p = 0; p<npars; p++){
+        for(int p = 0; p<npars; p++){
+        	printf("n = %d p = %d \n", ng, p);
+            Tvec = inits;
             Tvec[p] = rtnorm(inits[p], Jump[p], pmin[p]);
-            TrySpec = Model(Tvec);
+            TrySpec = Model(Tvec, func_data)(_,0);
             TryError = SpecError(TrySpec, Observed);
             TryPost = Likelihood(TryError, rsd) + Prior(p, Tvec[p]);
             PrevPost = Likelihood(PrevError, rsd) + Prior(p, inits[p]);
@@ -92,7 +100,7 @@ NumericMatrix invert_RTM(
         rp2 = 0.001 + sum(PrevError * PrevError)/2;
         rinv = rgamma(1, rp1, 1/rp2)[0];
         rsd = 1/sqrt(rinv);
-        results(ng, npars + 1) = rsd;
+        results(ng, npars) = rsd;
 
         adapt_count = adapt_count + 1;
     }

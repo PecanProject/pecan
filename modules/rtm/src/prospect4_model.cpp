@@ -7,9 +7,10 @@ using namespace Rcpp;
 NumericMatrix prospect4_model(
         NumericVector params,
         NumericMatrix p4data){
-    double N = params[1], Cab = params[2], Cw = params[3], Cm = params[4];
+    double N = params[0], Cab = params[1], Cw = params[2], Cm = params[3];
     int wl = p4data.nrow();
-    NumericVector k(wl), theta(wl), Spec(wl);
+    NumericVector k(wl), theta(wl);
+    NumericMatrix Spec(wl);
 
     NumericMatrix::Column Cab_abs = p4data(_,0);
     NumericMatrix::Column Cw_abs = p4data(_,1);

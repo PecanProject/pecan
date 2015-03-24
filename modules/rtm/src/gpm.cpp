@@ -18,7 +18,6 @@ NumericMatrix gpm(NumericVector tao1,
     NumericVector d90, a90, b90, nmR, nmT, dmRT;
     NumericVector rho90s, tao90s, trdif;
     NumericVector b90p, b90pinv, b90dif;
-    NumericVector nmR, nmT;
     NumericMatrix out(wl, 2);
 
     // Reflectance and transmittance of first layer (N=1)
@@ -41,10 +40,10 @@ NumericMatrix gpm(NumericVector tao1,
 
     dmRT = a90 * b90p - b90pinv / a90 - rho90 * b90dif ;
     nmR = taoa * tao90 * b90dif;
-    out(_,1) = rhoa + nmR / dmRT;
+    out(_,0) = rhoa + nmR / dmRT;
     nmT = taoa * (a90 - 1/a90);
-    out(_,2) = nmT / dmRT;
-    }
+    out(_,1) = nmT / dmRT;
+
     return out;
 }
 

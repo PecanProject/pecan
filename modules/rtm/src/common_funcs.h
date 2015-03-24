@@ -4,15 +4,14 @@ using namespace Rcpp;
 
 double exp_int(double k);
 
-NumericVector gpm(NumericVector tao1,
+NumericMatrix gpm(NumericVector tao1,
         NumericVector tao2,
         NumericVector rho1,
         NumericVector rho2,
         NumericVector x,
         NumericVector y,
         NumericVector theta,
-        double N,
-        int return_refl);
+        double N);
 
 NumericVector prospect4_cpp(double N,
         double Cab,
@@ -21,7 +20,7 @@ NumericVector prospect4_cpp(double N,
         NumericMatrix p4data,
         int refl_on);
 
-NumericVector prospect4_model(NumericVector params);
+NumericMatrix prospect4_model(NumericVector params, NumericMatrix p4data);
 
 double rtnorm(double mu, double sd, double MIN);
 double dtnorm(double X, double mu, double sd, double MIN);
