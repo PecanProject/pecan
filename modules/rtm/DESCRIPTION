@@ -11,7 +11,8 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     streamline the interaction between data and models, and to improve the
     efficacy of scientific investigation. The PEcAn.MA package contains
     the functions used in the Bayesian meta-analysis of trait data.
-Imports: Rcpp
+Imports:
+    Rcpp
 LinkingTo: Rcpp
 Depends:
     data.table,
