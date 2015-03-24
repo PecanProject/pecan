@@ -96,7 +96,7 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   
   spp_params = cbind(DMAX,DMIN,B3,B2,ITOL,AGEMX,G,SPRTND,SPRTMN,SPRTMX,MPLANT,D3,FROST,TL,CM1,CM2,CM3,CM4,CM5,FWT,SLTA,SLTB,RTST,FRT)
   
-  sink("spp.txt")
+  sink(file.path(rundir,"spp.txt"))
   cat(nspec,bmspec,sep=",")
   cat("\n")
   cat(spec_nums)
@@ -105,7 +105,7 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   sink()
   
   switch_chars = c("FFTFF","FFTTF","TFTFF","TFFFF","FFTFF","FFFFF","TTTFF","FFTTF","TFFFF")
-  sink("switch.txt")
+  sink(file.path(rundir,"switch.txt"))
   cat(switch_chars,sep="\n")
   sink()
   
@@ -140,7 +140,7 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   basesc = 74. #starting humus weight
   basesn = 1.640 #starting N content
   
-  sink("dirt.txt")
+  sink(file.path(rundir,"dirt.txt"))
   cat(NLVAR,NLT,NCOHRT,sep=" ")
   cat("\n")
   write.table(dirt_params,sep=",",col.names=FALSE,row.names=FALSE)
