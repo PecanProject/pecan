@@ -15,7 +15,7 @@ NumericVector gpm(
         NumericVector y,
         int return_refl);
 
-NumericVector prospect4_model(NumericVector params);
+NumericVector prospect4_model(NumericVector param, NumericMatrix p4data);
 
 double rtnorm(double mu, double sd, double MIN);
 double dtnorm(double X, double mu, double sd, double MIN);

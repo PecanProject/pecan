@@ -69,7 +69,7 @@ invert_prospect_re <- function(spectra,
 ##' @examples
 ##' data(testspec)
 ##' fit <- invert_prospect_MLE(testspec_ACRU[,1])
-##' plot(400:2100, prospect4([fit[1], fit[2], fit[3], fit[4]),
+##' plot(400:2100, prospect4(fit),
 ##'     type='l',
 ##'     xlab="Wavelength (nm)",
 ##'     ylab="Reflectance")
