@@ -78,9 +78,9 @@ NumericMatrix pinvbayes_re(int ngibbs,
             _["Cm"] = 5e-5);
 
     NumericVector alpha_Jump = NumericVector::create(
-            _["N"] = 0.3,
-            _["Cab"] = 0.5,
-            _["Cw"] = 1e-3,
+            _["N"] = 0.0005,
+            _["Cab"] = 0.1,
+            _["Cw"] = 1e-5,
             _["Cm"] = 5e-3);
 
     double rsd, rinv, rp2;
@@ -116,12 +116,13 @@ NumericMatrix pinvbayes_re(int ngibbs,
         printf("%4d ", ng);
         // Adapt
         if(adapt - adapt_count < 1){
+            printf("\n %f %f %f %f \n", ar[0], ar[1], ar[2], ar[3]);
             adj = ar / adapt / 0.75;
             adj = ifelse(adj < adj_min, adj_min, adj);
             Jump = Jump * adj;
-            printf("\n %g  %g  %g  %g \n", Jump[0], Jump[1], Jump[2], Jump[3]);
             ar = ar * 0;
 
+            printf("\n %f %f %f %f \n", alpha_ar[0], alpha_ar[1], alpha_ar[2], alpha_ar[3]);
             alpha_adj = alpha_ar / nspec / adapt / 0.75;
             alpha_adj = ifelse(alpha_adj < adj_min, adj_min, alpha_adj);
             alpha_Jump = alpha_Jump * alpha_adj;
@@ -153,8 +154,8 @@ NumericMatrix pinvbayes_re(int ngibbs,
         TryError = SpecError_re(TrySpec, Observed);
         TryPost = Likelihood_re(TryError, rsd) + priorCab(TCab);
         PrevPost = Likelihood_re(PrevError, rsd) + priorCab(Cab);
-        JN = dtnorm(TCab, Cab, Jump["Cab"], 1);
-        JD = dtnorm(Cab, TCab, Jump["Cab"], 1);
+        JN = dtnorm(TCab, Cab, Jump["Cab"], 0);
+        JD = dtnorm(Cab, TCab, Jump["Cab"], 0);
         a = exp((TryPost - JN) - (PrevPost - JD));
         if(a > runif(1)[0]){
             Cab = TCab;
@@ -170,8 +171,8 @@ NumericMatrix pinvbayes_re(int ngibbs,
         TryError = SpecError_re(TrySpec, Observed);
         TryPost = Likelihood_re(TryError, rsd) + priorCw(TCw);
         PrevPost = Likelihood_re(PrevError, rsd) + priorCw(Cw);
-        JN = dtnorm(TCw, Cw, Jump["Cw"], 1);
-        JD = dtnorm(Cw, TCw, Jump["Cw"], 1);
+        JN = dtnorm(TCw, Cw, Jump["Cw"], 0);
+        JD = dtnorm(Cw, TCw, Jump["Cw"], 0);
         a = exp((TryPost - JN) - (PrevPost - JD));
         if(a > runif(1)[0]){
             Cw = TCw;
@@ -187,8 +188,8 @@ NumericMatrix pinvbayes_re(int ngibbs,
         TryError = SpecError_re(TrySpec, Observed);
         TryPost = Likelihood_re(TryError, rsd) + priorCm(TCm);
         PrevPost = Likelihood_re(PrevError, rsd) + priorCm(Cm);
-        JN = dtnorm(TCm, Cm, Jump["Cm"], 1);
-        JD = dtnorm(Cm, TCm, Jump["Cm"], 1);
+        JN = dtnorm(TCm, Cm, Jump["Cm"], 0);
+        JD = dtnorm(Cm, TCm, Jump["Cm"], 0);
         a = exp((TryPost - JN) - (PrevPost - JD));
         if(a > runif(1)[0]){
             Cm = TCm;
@@ -201,28 +202,31 @@ NumericMatrix pinvbayes_re(int ngibbs,
         // Sample random effects
         for(int i=0; i<nspec; i++){
             // Alpha N
-            Talpha_N = rtnorm(alpha_N[i], alpha_Jump["N"], 1-N);  // CAUTION: Mean != mu (0), because it's truncated
+            Talpha_N = rtnorm_c(alpha_N[i], alpha_Jump["N"], 1-N);  // CAUTION: Mean != mu (0), because it's truncated
+            printf("Try N: %g, mu: %g, sd: %g, min: %g ", Talpha_N, alpha_N[i], alpha_Jump[0], 1-N);
             TrySpec_alpha = prospect4_cpp(N + Talpha_N, VCab[i], VCw[i], VCm[i], p4data, 1);
             TryError_alpha = TrySpec_alpha - Observed(_,i);
-            TryPost = Likelihood_v(TryError_alpha, rsd) + dtnorm(Talpha_N, 0, tau_N, 1-N);   // CAUTION: As above
-            PrevPost = Likelihood_v(PrevError(_,i), rsd) + dtnorm(alpha_N[i], 0, tau_N, 1-N);
-            JN = dtnorm(Talpha_N, alpha_N[i], alpha_Jump["N"], 1-N);
-            JD = dtnorm(alpha_N[i], Talpha_N, alpha_Jump["N"], 1-N);
+            TryPost = Likelihood_v(TryError_alpha, rsd) + dtnorm_c(Talpha_N, 0, tau_N, 1-N);   // CAUTION: As above
+            PrevPost = Likelihood_v(PrevError(_,i), rsd) + dtnorm_c(alpha_N[i], 0, tau_N, 1-N);
+            JN = dtnorm_c(Talpha_N, alpha_N[i], alpha_Jump["N"], 1-N);
+            JD = dtnorm_c(alpha_N[i], Talpha_N, alpha_Jump["N"], 1-N);
             a = exp((TryPost - JN) - (PrevPost - JD));
             if(a > runif(1)[0]){
                 alpha_N[i] = Talpha_N;
                 PrevError(_,i) = TryError_alpha;
                 alpha_ar["N"] = alpha_ar["N"] + 1;
+                printf("ACCEPTED");
             }
+            printf("\n");
 
             // Alpha Cab
-            Talpha_Cab = rtnorm(alpha_Cab[i], alpha_Jump["Cab"], -Cab);  // CAUTION: Mean != mu (0), because it's truncated
+            Talpha_Cab = rtnorm_c(alpha_Cab[i], alpha_Jump["Cab"], -Cab);  // CAUTION: Mean != mu (0), because it's truncated
             TrySpec_alpha = prospect4_cpp(VN[i], Cab + Talpha_Cab, VCw[i], VCm[i], p4data, 1);
             TryError_alpha = TrySpec_alpha - Observed(_,i);
-            TryPost = Likelihood_v(TryError_alpha, rsd) + dtnorm(Talpha_Cab, 0, tau_Cab, -Cab);   // CAUTION: As above
-            PrevPost = Likelihood_v(PrevError(_,i), rsd) + dtnorm(alpha_Cab[i], 0, tau_Cab, -Cab);
-            JN = dtnorm(Talpha_Cab, alpha_Cab[i], alpha_Jump["Cab"], -Cab);
-            JD = dtnorm(alpha_Cab[i], Talpha_Cab, alpha_Jump["Cab"], -Cab);
+            TryPost = Likelihood_v(TryError_alpha, rsd) + dtnorm_c(Talpha_Cab, 0, tau_Cab, -Cab);   // CAUTION: As above
+            PrevPost = Likelihood_v(PrevError(_,i), rsd) + dtnorm_c(alpha_Cab[i], 0, tau_Cab, -Cab);
+            JN = dtnorm_c(Talpha_Cab, alpha_Cab[i], alpha_Jump["Cab"], -Cab);
+            JD = dtnorm_c(alpha_Cab[i], Talpha_Cab, alpha_Jump["Cab"], -Cab);
             a = exp((TryPost - JN) - (PrevPost - JD));
             if(a > runif(1)[0]){
                 alpha_Cab[i] = Talpha_Cab;
@@ -231,13 +235,13 @@ NumericMatrix pinvbayes_re(int ngibbs,
             }
 
             // Alpha Cw
-            Talpha_Cw = rtnorm(alpha_Cw[i], alpha_Jump["Cw"], -Cw);  // CAUTION: Mean != mu (0), because it's truncated
+            Talpha_Cw = rtnorm_c(alpha_Cw[i], alpha_Jump["Cw"], -Cw);  // CAUTION: Mean != mu (0), because it's truncated
             TrySpec_alpha = prospect4_cpp(VN[i], VCab[i], Cw + Talpha_Cw, VCm[i], p4data, 1);
             TryError_alpha = TrySpec_alpha - Observed(_,i);
-            TryPost = Likelihood_v(TryError_alpha, rsd) + dtnorm(Talpha_Cw, 0, tau_Cw, -Cw);   // CAUTION: As above
-            PrevPost = Likelihood_v(PrevError(_,i), rsd) + dtnorm(alpha_Cw[i], 0, tau_Cw, -Cw);
-            JN = dtnorm(Talpha_Cw, alpha_Cw[i], alpha_Jump["Cw"], -Cw);
-            JD = dtnorm(alpha_Cw[i], Talpha_Cw, alpha_Jump["Cw"], -Cw);
+            TryPost = Likelihood_v(TryError_alpha, rsd) + dtnorm_c(Talpha_Cw, 0, tau_Cw, -Cw);   // CAUTION: As above
+            PrevPost = Likelihood_v(PrevError(_,i), rsd) + dtnorm_c(alpha_Cw[i], 0, tau_Cw, -Cw);
+            JN = dtnorm_c(Talpha_Cw, alpha_Cw[i], alpha_Jump["Cw"], -Cw);
+            JD = dtnorm_c(alpha_Cw[i], Talpha_Cw, alpha_Jump["Cw"], -Cw);
             a = exp((TryPost - JN) - (PrevPost - JD));
             if(a > runif(1)[0]){
                 alpha_Cw[i] = Talpha_Cw;
@@ -246,13 +250,13 @@ NumericMatrix pinvbayes_re(int ngibbs,
             }
 
             // Alpha Cm
-            Talpha_Cm = rtnorm(alpha_Cm[i], alpha_Jump["Cm"], -Cm);  // CAUTION: Mean != mu (0), because it's truncated
+            Talpha_Cm = rtnorm_c(alpha_Cm[i], alpha_Jump["Cm"], -Cm);  // CAUTION: Mean != mu (0), because it's truncated
             TrySpec_alpha = prospect4_cpp(VN[i], VCab[i], VCw[i], Cm + Talpha_Cm, p4data, 1);
             TryError_alpha = TrySpec_alpha - Observed(_,i);
-            TryPost = Likelihood_v(TryError_alpha, rsd) + dtnorm(Talpha_Cm, 0, tau_Cm, -Cm);   // CAUTION: As above
-            PrevPost = Likelihood_v(PrevError(_,i), rsd) + dtnorm(alpha_Cm[i], 0, tau_Cm, -Cm);
-            JN = dtnorm(Talpha_Cm, alpha_Cm[i], alpha_Jump["Cm"], -Cm);
-            JD = dtnorm(alpha_Cm[i], Talpha_Cm, alpha_Jump["Cm"], -Cm);
+            TryPost = Likelihood_v(TryError_alpha, rsd) + dtnorm_c(Talpha_Cm, 0, tau_Cm, -Cm);   // CAUTION: As above
+            PrevPost = Likelihood_v(PrevError(_,i), rsd) + dtnorm_c(alpha_Cm[i], 0, tau_Cm, -Cm);
+            JN = dtnorm_c(Talpha_Cm, alpha_Cm[i], alpha_Jump["Cm"], -Cm);
+            JD = dtnorm_c(alpha_Cm[i], Talpha_Cm, alpha_Jump["Cm"], -Cm);
             a = exp((TryPost - JN) - (PrevPost - JD));
             if(a > runif(1)[0]){
                 alpha_Cm[i] = Talpha_Cm;

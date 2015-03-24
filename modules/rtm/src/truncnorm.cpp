@@ -19,3 +19,23 @@ double dtnorm(double X, double mu, double sd, double MIN){
     }
 }
 
+double rtnorm_c(double mu, double sd, double MIN){
+    double M, S, L_min;
+    L_min = (R::dnorm(MIN, mu, sd, 0))/(1 - R::pnorm(MIN, mu, sd, 1, 0));
+    M = mu - sd*L_min;
+    S = sqrt(pow(sd,2) / (1 - L_min * (L_min - (MIN - mu)/sd)));
+    return rtnorm(M, S, MIN);
+}
+
+double dtnorm_c(double X, double mu, double sd, double MIN){
+	if(X < MIN){
+		return -1e15;
+	}
+	else {	
+		double M, S, L_min;
+		L_min = (R::dnorm(MIN, mu, sd, 0))/(1 - R::pnorm(MIN, mu, sd, 1, 0));
+		M = mu - sd*L_min;
+		S = sqrt(pow(sd,2) / (1 - L_min * (L_min - (MIN - mu)/sd)));
+		return dtnorm(X, M, S, MIN);
+	}
+}
