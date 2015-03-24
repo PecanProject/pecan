@@ -21,14 +21,9 @@ NumericMatrix invert_RTM(
     printf("Results matrix is %d rows by %d columns \n", results.nrow(), results.ncol());
 
     // Pick model based on specified string
-    NumericVector(*Model)(NumericVector, NumericMatrix);
-    double (*Prior)(int, double);           // 'int' is the indicator, 'double' is the value
-    NumericVector pmin(npars);              // Vector of parameter constraints (minima)
-    if(RTM == "prospect4"){
-        Model = prospect4_model;
-        Prior = prospect4_priors;
-        pmin = NumericVector::create(1, 0, 0, 0);
-    } // else {} <--- other RTMs go here
+    select_model Model = MODEL(RTM);
+    select_prior Prior = PRIOR(RTM);
+    NumericVector pmin = PMIN(RTM);
 
     double rp1, rp2, rinv, rsd;
     rp1 = 0.001 + nspec*nwl/2;        // Gamma shape; this is a constant

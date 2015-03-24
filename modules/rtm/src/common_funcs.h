@@ -32,3 +32,9 @@ NumericMatrix SpecError(NumericMatrix Model, NumericMatrix Observed);
 double Likelihood(NumericMatrix Error, double rsd);
 double Likelihood(NumericVector Error, double rsd);
 
+// RTM selection functions
+typedef NumericVector (*select_model)(NumericVector, NumericMatrix);
+typedef double (*select_prior)(int, double);
+select_model MODEL(std::string RTM);
+select_prior PRIOR(std::string RTM);
+NumericVector PMIN(std::string RTM);
