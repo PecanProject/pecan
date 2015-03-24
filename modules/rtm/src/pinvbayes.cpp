@@ -8,7 +8,7 @@ NumericMatrix SpecError(NumericVector Model, NumericMatrix Observed){
     int nspec = Observed.ncol();
     int wl = Observed.nrow();
     NumericMatrix E(wl, nspec);
-    for (int i=0; i<nspec; i++) E(_,i) = Model - Observed(_,i);
+    for (int i=0; i<nspec; i++) E(_,i) = Model - Observed(_,i);  // In C, row-major order
     return E;
 }
 
