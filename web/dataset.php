@@ -31,12 +31,12 @@ if (!isset($_REQUEST['type'])) {
 $type=$_REQUEST['type'];
 
 // get run information
-$query = "SELECT folder FROM workflows WHERE workflows.id=${workflowid}";
-$result = $pdo->query($query);
-if (!$result) {
-	die('Invalid query: ' . error_database());
+$stmt = $pdo->prepare("SELECT folder FROM workflows WHERE workflows.id=?");
+if (!$stmt->execute(array($workflowid))) {
+  die('Invalid query: ' . error_database());
 }
-$run = $result->fetch(PDO::FETCH_ASSOC);
+$run = $stmt->fetch(PDO::FETCH_ASSOC);
+$stmt->closeCursor();
 $folder = str_replace("//", "/", $run['folder']);
 
 // return dataset
