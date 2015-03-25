@@ -97,6 +97,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, bety
     # post to browndog
     html <- postForm(url,"fileData" = fileUpload("pecan.xml", xmldata, "text/xml"))
     link <- getHTMLLinks(html)
+    print(link)
     
     outfolder <- file.path(dir,paste0(met,"_",model,"_site_",str_ns)) # This would change if specifying convert = bd_step  
     if(!file.exists(outfolder)){
@@ -358,7 +359,6 @@ db.site.lat.lon <- function(site.id,con){
 ##' @param i - number of times to try download
 ##' @author Betsy Cowdery
 dl_file <- function(link, outfolder, i){
-  paste("Attempting download from ", link)
   r <- try(download.file(link, outfolder, quiet = TRUE), silent = TRUE)
   if(inherits(r, 'try-error') & i <= 10000){
     cat("*")
