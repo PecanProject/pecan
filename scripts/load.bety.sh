@@ -113,7 +113,7 @@ DUMPDIR="/tmp/$$"
 mkdir "${DUMPDIR}"
 
 # download dump file and unpack
-curl -o "${DUMPDIR}/dump.tar.gz" "${DUMPURL}"
+curl -L -o "${DUMPDIR}/dump.tar.gz" "${DUMPURL}"
 tar zxf "${DUMPDIR}/dump.tar.gz" -C "${DUMPDIR}"
 
 # create database if need be, otherwise check version of schema

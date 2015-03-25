@@ -181,7 +181,7 @@ if [ "$DOCUMENTATION" == "yes" ]; then
     echo "----------------------------------------------------------------------"
     echo "DOCUMENTATION $p"
     echo "----------------------------------------------------------------------"
-    echo "if (require(roxygen2)) roxygenise('$p', roclets=c('rd'))" | R --vanilla 2>&1
+    echo "if (require(roxygen2)) roxygenise('$p')" | R --vanilla 2>&1
   done
 fi
 

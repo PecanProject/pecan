@@ -25,7 +25,7 @@
 ##' @param params database connection information
 ##' @return data.frame with the id, filename and pathname of the input that is requested
 ##' @export
-##' @author Rob Kooper
+##' @author Rob Kooper, Betsy Cowdery
 ##' @examples
 ##' \dontrun{
 ##'   dbfile.input.insert('trait.data.Rdata', siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
@@ -53,11 +53,11 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
     parent <- paste0(" AND parent_id=", parentid)
   }
   
-  # find appropriate input
+  # find appropriate input, if not in database, instert new input
+  
   inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, " AND start_date='", startdate, "' AND end_date='", enddate, "'" , parent, ";"), con)[['id']]
   if (is.null(inputid)) {
     # insert input
-    
     if(parent == ""){
       cmd <- paste0("INSERT INTO inputs (site_id, format_id, created_at, updated_at, start_date, end_date, name) VALUES (",
                     siteid, ", ", formatid, ", NOW(), NOW(), '", startdate, "', '", enddate,"','", name, "')")
@@ -65,13 +65,18 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
       cmd <- paste0("INSERT INTO inputs (site_id, format_id, created_at, updated_at, start_date, end_date, name, parent_id) VALUES (",
                     siteid, ", ", formatid, ", NOW(), NOW(), '", startdate, "', '", enddate,"','", name, "',",parentid,")")
     }
-    
     db.query(cmd, con)
-    
+    # return input id
     inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, " AND start_date='", startdate, "' AND end_date='", enddate, "'" , parent, ";"), con)[['id']]
   }
   
-  dbfileid <- dbfile.insert(in.path, in.prefix, 'Input', inputid, con, hostname)
+  # find appropriate dbfile, if not in database, insert new dbfile 
+  
+  dbfileid <- dbfile.check('Input', inputid, con, hostname)[['id']] 
+  if(is.null(dbfileid)){
+    #insert dbfile & return dbfile id
+    dbfileid <- dbfile.insert(in.path, in.prefix, 'Input', inputid, con, hostname)
+  }
   
   invisible(list(input.id = inputid, dfbile.id = dbfileid))
 }
@@ -100,11 +105,11 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
 ##' }
 dbfile.input.check <- function(siteid, startdate, enddate, mimetype, formatname, parentid=NA, con, hostname=fqdn()) {
   if (hostname == "localhost") hostname <- fqdn();
-
+  
   # find appropriate format
   formatid <- db.query(paste0("SELECT id FROM formats WHERE mime_type='", mimetype, "' AND name='", formatname, "'"), con)[['id']]
   if (is.null(formatid)) {
-    return(invisible(data.frame()))
+    invisible(data.frame())
   }
   
   # setup parent part of query if specified
@@ -113,14 +118,15 @@ dbfile.input.check <- function(siteid, startdate, enddate, mimetype, formatname,
   } else {
     parent <- paste0(" AND parent_id=", parentid)
   }
-
+  
   # find appropriate input
-  inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, " AND start_date>='", startdate, "' AND end_date<='", enddate, "'" , parent, ";"), con)[['id']]
+  inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, 
+                             " AND start_date>='", startdate, "' AND end_date<='", enddate, "'", parent,";" ), con)[['id']]
   if (is.null(inputid)) {
-    return(invisible(data.frame()))
+    invisible(data.frame())
+  }else{
+    invisible(dbfile.check('Input', inputid, con, hostname)) 
   }
-
-  invisible(dbfile.check('Input', inputid, con, hostname))
 }
 
 ##' Function to insert a file into the dbfiles table as a posterior
@@ -145,13 +151,13 @@ dbfile.input.check <- function(siteid, startdate, enddate, mimetype, formatname,
 ##' }
 dbfile.posterior.insert <- function(filename, pft, mimetype, formatname, con, hostname=fqdn()) {
   if (hostname == "localhost") hostname <- fqdn();
-
+  
   # find appropriate pft
   pftid <- db.query(paste0("SELECT id FROM pfts WHERE name='", pft, "'"), con)[['id']]
   if (is.null(pftid)) {
     logger.severe("Could not find pft, could not store file", filename)
   }
-
+  
   # find appropriate format
   formatid <- db.query(paste0("SELECT id FROM formats WHERE mime_type='", mimetype, "' AND name='", formatname, "'"), con)[['id']]
   if (is.null(formatid)) {
@@ -159,7 +165,7 @@ dbfile.posterior.insert <- function(filename, pft, mimetype, formatname, con, ho
     db.query(paste0("INSERT INTO formats (mime_type, name, created_at, updated_at) VALUES ('", mimetype, "', '", formatname, "', NOW(), NOW())"), con)
     formatid <- db.query(paste0("SELECT id FROM formats WHERE mime_type='", mimetype, "' AND name='", formatname, "'"), con)[['id']]
   }
-
+  
   # find appropriate posterior
   posteriorid <- db.query(paste0("SELECT id FROM posteriors WHERE pft_id=", pftid, " AND format_id=", formatid), con)[['id']]
   if (is.null(posteriorid)) {
@@ -167,7 +173,7 @@ dbfile.posterior.insert <- function(filename, pft, mimetype, formatname, con, ho
     db.query(paste0("INSERT INTO posteriors (pft_id, format_id, created_at, updated_at) VALUES (", pftid, ", ", formatid, ", NOW(), NOW())"), con)
     posteriorid <- db.query(paste0("SELECT id FROM posteriors WHERE pft_id=", pftid, " AND format_id=", formatid), con)[['id']]
   }
-
+  
   invisible(dbfile.insert(filename, 'Posterior', posteriorid, con, hostname))
 }
 
@@ -192,25 +198,25 @@ dbfile.posterior.insert <- function(filename, pft, mimetype, formatname, con, ho
 ##' }
 dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname=fqdn()) {
   if (hostname == "localhost") hostname <- fqdn();
-
+  
   # find appropriate pft
   pftid <- db.query(paste0("SELECT id FROM pfts WHERE name='", pft, "'"), con)[['id']]
   if (is.null(pftid)) {
-    return(invisible(data.frame()))
+    invisible(data.frame())
   }
-
+  
   # find appropriate format
   formatid <- db.query(paste0("SELECT id FROM formats WHERE mime_type='", mimetype, "' AND name='", formatname, "'"), con)[['id']]
   if (is.null(formatid)) {
-    return(invisible(data.frame()))
+    invisible(data.frame())
   }
-
+  
   # find appropriate posterior
   posteriorid <- db.query(paste0("SELECT id FROM posteriors WHERE pft_id=", pftid, " AND format_id=", formatid), con)[['id']]
   if (is.null(posteriorid)) {
-    return(invisible(data.frame()))
+    invisible(data.frame())
   }
-
+  
   invisible(dbfile.check('Posterior', posteriorid, con, hostname))
 }
 
@@ -232,7 +238,7 @@ dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname=fqdn
 ##' }
 dbfile.insert <- function(in.path,in.prefix, type, id, con, hostname=fqdn()) {
   if (hostname == "localhost") hostname <- fqdn();
-
+  
   # find appropriate host
   hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", hostname, "'"), con)[['id']]
   if (is.null(hostid)) {
@@ -244,8 +250,8 @@ dbfile.insert <- function(in.path,in.prefix, type, id, con, hostname=fqdn()) {
   now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
   
   db.query(paste0("INSERT INTO dbfiles (container_type, container_id, file_name, file_path, machine_id, created_at, updated_at) VALUES (",
-                  "'", type, "', ", id, ", '", in.prefix, "', '", in.path, "', ", hostid, ", '", now, "', '", now, "')"), con)
-
+                  "'", type, "', ", id, ", '", basename(in.prefix), "', '", in.path, "', ", hostid, ", '", now, "', '", now, "')"), con)
+  
   invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, "' AND container_id=", id, " AND created_at='", now, "' ORDER BY id DESC LIMIT 1"), con)[['id']])
 }
 
@@ -267,13 +273,13 @@ dbfile.insert <- function(in.path,in.prefix, type, id, con, hostname=fqdn()) {
 ##' }
 dbfile.check <- function(type, id, con, hostname=fqdn()) {
   if (hostname == "localhost") hostname <- fqdn()
-
+  
   # find appropriate host
   hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", hostname, "'"), con)[['id']]
   if (is.null(hostid)) {
-    return(invisible(data.frame()))
+    invisible(data.frame())
   }
-
+  
   invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, "' AND container_id=", id, " AND machine_id=", hostid), con))  
 }
 
@@ -301,7 +307,7 @@ dbfile.file <- function(type, id, con, hostname=fqdn()) {
   if (hostname == "localhost") hostname <- fqdn();
   
   files <- dbfile.check(type, id, con, hostname)
-
+  
   if(nrow(files) > 1) {
     logger.warn("multiple files found for", id, "returned; using the first one found")
     invisible(file.path(files[1, 'file_path'], files[1, 'file_name']))
@@ -334,11 +340,11 @@ dbfile.file <- function(type, id, con, hostname=fqdn()) {
 ##' }
 dbfile.id <- function(type, file, con, hostname=fqdn()) {
   if (hostname == "localhost") hostname <- fqdn();
-
+  
   # find appropriate host
   hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", hostname, "'"), con)[['id']]
   if (is.null(hostid)) {
-    return(invisible(NA))
+    invisible(NA)
   }
   
   # find file

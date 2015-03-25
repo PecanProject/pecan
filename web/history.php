@@ -98,7 +98,6 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
       $data = explode("\t", $line);
       if ((count($data) >= 4) && ($data[3] == 'ERROR')) {
         $style="style='background: #FFBBBB; color: black;'";
-        $url="failurealert.php";
       }
     }
   } else {
