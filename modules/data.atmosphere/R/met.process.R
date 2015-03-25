@@ -12,7 +12,7 @@
 ##' @param dir  directory to write outputs to
 ##' 
 ##' @author Elizabeth Cowdery, Michael Dietze
-met.process <- function(site, input_met, start_date, end_date, model, host, bety, dir, browndog=NA){
+met.process <- function(site, input_met, start_date, end_date, model, host, bety, dir, browndog=NULL){
   
   require(RPostgreSQL)
   
@@ -38,7 +38,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, bety
   #'         = "dir_model"
   met <- input_met$source
   if(!exists("input_met$id") || input_met$id==""){
-    if (!is.null(settings$browndog$url) && (settings$browndog$url != "")){
+    if (!is.null(browndog$url) && (browndog$url != "")){
       convert = "browndog"
     }else{
       convert = "dir"
@@ -82,7 +82,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, bety
     require(RCurl)
     require(XML)
     
-    url <- file.path(settings$browndog$url,outputtype) 
+    url <- file.path(browndog$url,outputtype) 
     print(url)
     
     if(met=="Ameriflux"){site.dl = sub(".* \\((.*)\\)", "\\1", site$name)}
@@ -136,6 +136,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, bety
     
     outfolder  <- file.path(dir,met)
     pkg        <- "PEcAn.data.atmosphere"
+    fcn        <- paste0("download.",met)
     
     
     if(met == "NARR"){
@@ -168,10 +169,12 @@ met.process <- function(site, input_met, start_date, end_date, model, host, bety
     }else{
       if(met == "Ameriflux"){
         
+        site.code = sub(".* \\((.*)\\)", "\\1", site$name)
+        
         outfolder = paste0(outfolder,"_site_",str_ns)
         args <- list(site.code, outfolder, start_date, end_date)
         
-        cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),bd.host,")")
+        cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
         new.files <- remote.execute.R(cmdFcn,host$name,user=NA,verbose=TRUE)
         
         
