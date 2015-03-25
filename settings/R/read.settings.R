@@ -54,23 +54,23 @@ check.inputs <- function(settings) {
         }
       }
       
-#       # check if file exists
-#       if (is.null(settings$run$inputs[[tag]])) {
-#         if (inputs$required[i]) {
-#           logger.severe("Missing required input :", tag)
-#         } else {
-#           logger.info("Missing optional input :", tag)
-#         }
-#         
-#       } else {
-#         # can we find the file so we can set the tag.id
-#         if (is.null(settings$run$inputs[[tagid]])) {
-#           id <- dbfile.id('Input', settings$run$inputs[[tag]], dbcon, hostname)
-#           if (!is.na(id)) {
-#             settings$run$inputs[[tagid]] <- id
-#           }
-#         }
-#       }
+      # check if file exists
+      if (is.null(settings$run$inputs[[tag]])) {
+        if (inputs$required[i]) {
+          logger.severe("Missing required input :", tag)
+        } else {
+          logger.info("Missing optional input :", tag)
+        }
+        
+      } else {
+        # can we find the file so we can set the tag.id
+        if (is.null(settings$run$inputs[[tagid]])) {
+          id <- dbfile.id('Input', settings$run$inputs[[tag]], dbcon, hostname)
+          if (!is.na(id)) {
+            settings$run$inputs[[tagid]] <- id
+          }
+        }
+      }
 
       # check to see if format is right type
       if (!is.null(settings$run$inputs[[tagid]])) {
