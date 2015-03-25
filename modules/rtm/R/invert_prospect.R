@@ -54,9 +54,18 @@ invert_prospect <- function(spectra,
 invert_prospect_re <- function(spectra,
 							   ngibbs = 15000,
 							   adapt = 25,
-							   min_adapt = 0.05){
+							   min_adapt = 0.05,
+							   inits = c(1.4, 30, 0.01, 0.01),
+							   re_inits = matrix(0, 4, ncol(spectra))){
 	data(prospect4)
-	out <- pinvbayes_re(ngibbs, as.matrix(spectra), adapt, min_adapt, P4data)
+	out <- invert_RTM_re("prospect4",
+						 as.matrix(spectra),
+						 ngibbs,
+						 adapt,
+						 min_adapt,
+						 inits,
+						 re_inits,
+						 P4data)
 	return(out)
 }
 
