@@ -3,7 +3,8 @@
 \alias{invert_prospect}
 \title{Basic Bayesian inversion of PROSPECT4 model}
 \usage{
-invert_prospect(spectra, ngibbs = 15000, adapt = 25, min_adapt = 0.05)
+invert_prospect(spectra, ngibbs = 15000, inits = c(1.4, 30, 0.01, 0.01),
+  adapt = 25, min_adapt = 0.05)
 }
 \arguments{
 \item{spectra}{A matrix of reflectance spectra with dimensions 2101 x n,
