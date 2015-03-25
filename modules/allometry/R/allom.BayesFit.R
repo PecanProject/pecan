@@ -98,9 +98,6 @@ allom.BayesFit <- function(allom,nrep=10000,form="power",dmin=0.1,dmax=500) {
   ## Drop equations outside of DBH range of interest & modifying the pseduodata as necessary
   ##		We need the max of the allometry EQ to be >= min of interest and the min to be <=
   # ntally = nrow(allom[['parm']]); if(is.null(ntally)) ntally = 0;
-  ntally  <- which(nu(allom[['parm']][,"Xmax"])>=dmin & nu(allom[['parm']][,"Xmin"])<=dmax); 
-   if(is.null(ntally)) ntally = 0;
-  print(c("Dropping allom rows: ", which(!(1:nrow(allom[['parm']]) %in% ntally))))
   
   rng.mod <- cbind(ifelse(nu(allom$parm$Xmin)>dmin, nu(allom$parm$Xmin), dmin),
                    ifelse(nu(allom$parm$Xmax)<dmax, nu(allom$parm$Xmax), dmax))
@@ -110,6 +107,10 @@ allom.BayesFit <- function(allom,nrep=10000,form="power",dmin=0.1,dmax=500) {
      tmp.seq  <- seq(rng[i,1], rng[i,2], length.out=100)
      n.mod[i] <- round(n[i]*length(tmp.seq[tmp.seq>dmin & tmp.seq<dmax])/length(tmp.seq),digits=0)
    }
+
+  ntally  <- which(nu(allom[['parm']][,"Xmax"])>=dmin & nu(allom[['parm']][,"Xmin"])<=dmax & n.mod>0); 
+  if(is.null(ntally)) ntally = 0;
+  print(c("Dropping allom rows: ", which(!(1:nrow(allom[['parm']]) %in% ntally))))
 
   nfield = length(allom[['field']])
   nsite  = length(ntally[ntally>0]) + nfield

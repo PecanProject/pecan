@@ -142,9 +142,17 @@ AllomAve <- function(pfts,components=6,outdir=NULL,con=NULL,field=NULL,
       print(c("saving diagnostic graphs to",pdffile))
       pdf(pdffile)
         
-        ## specifying which rows were used in the fit & should be graphed
-        ntally  <- which(nu(allom[['parm']][,"Xmax"])>=dmin & nu(allom[['parm']][,"Xmin"])<=dmax); 
-            if(is.null(ntally)) ntally = 0;
+        ## specifying which rows were used in the fit & should be graphed; note, this requires removing equations whose n is 0
+        n    <- nu(allom[['parm']]$n)
+        rng.raw  <- cbind(nu(allom$parm$Xmin),nu(allom$parm$Xmax))
+        n.mod <- n
+        
+        for(i in seq_along(n)){
+           tmp.seq  <- seq(rng.raw[i,1], rng.raw[i,2], length.out=100)
+           n.mod[i] <- round(n[i]*length(tmp.seq[tmp.seq>dmin & tmp.seq<dmax])/length(tmp.seq),digits=0)
+        }
+
+        ntally  <- which(nu(allom[['parm']][,"Xmax"])>=dmin & nu(allom[['parm']][,"Xmin"])<=dmax); if(is.null(ntally)) ntally = 0;
 
         ### scatter plot  
         rng = nested.range(obs)
