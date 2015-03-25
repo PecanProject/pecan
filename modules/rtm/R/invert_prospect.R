@@ -19,11 +19,12 @@
 ##' plot(samples[,4], type='l', ylab="Cm")
 
 invert_prospect <- function(spectra,
-                             ngibbs = 15000,
-                             adapt = 25,
-                             min_adapt = 0.05){
+                            ngibbs = 15000,
+                            inits = c(1.4, 30, 0.01, 0.01),
+                            adapt = 25,
+                            min_adapt = 0.05){
     data(prospect4)
-    out <- pinvbayes(ngibbs, as.matrix(spectra), adapt, min_adapt, P4data)
+    out <- invert_RTM("prospect4", as.matrix(spectra), ngibbs, adapt, min_adapt, inits, P4data)
     colnames(out) <- c("N", "Cab", "Cw", "Cm", "rsd")
     return(out)
 }
@@ -53,9 +54,18 @@ invert_prospect <- function(spectra,
 invert_prospect_re <- function(spectra,
 							   ngibbs = 15000,
 							   adapt = 25,
-							   min_adapt = 0.05){
+							   min_adapt = 0.05,
+							   inits = c(1.4, 30, 0.01, 0.01),
+							   re_inits = matrix(0, 4, ncol(spectra))){
 	data(prospect4)
-	out <- pinvbayes_re(ngibbs, as.matrix(spectra), adapt, min_adapt, P4data)
+	out <- invert_RTM_re("prospect4",
+						 as.matrix(spectra),
+						 ngibbs,
+						 adapt,
+						 min_adapt,
+						 inits,
+						 re_inits,
+						 P4data)
 	return(out)
 }
 
@@ -69,7 +79,7 @@ invert_prospect_re <- function(spectra,
 ##' @examples
 ##' data(testspec)
 ##' fit <- invert_prospect_MLE(testspec_ACRU[,1])
-##' plot(400:2100, prospect4([fit[1], fit[2], fit[3], fit[4]),
+##' plot(400:2100, prospect4(fit),
 ##'     type='l',
 ##'     xlab="Wavelength (nm)",
 ##'     ylab="Reflectance")

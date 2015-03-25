@@ -4,14 +4,15 @@ using namespace Rcpp;
 // NAME: gpm
 // TITLE: Generalized plate model
 // DESCRIPTION: Returns reflectance of a leaf with "N" layers.
-NumericVector gpm(NumericVector tao1,
+NumericVector gpm(
+        double N,
+        NumericVector theta,
+        NumericVector tao1,
         NumericVector tao2,
         NumericVector rho1,
         NumericVector rho2,
         NumericVector x,
         NumericVector y,
-        NumericVector theta,
-        double N,
         int return_refl)
 {
     int wl = tao1.size();

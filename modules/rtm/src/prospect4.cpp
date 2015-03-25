@@ -4,9 +4,12 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-NumericVector prospect4_cpp(double N, double Cab, double Cw, double Cm,
-        NumericMatrix p4data, int refl_on){
+NumericVector prospect4_model(
+        NumericVector param,
+        NumericMatrix p4data)
+{
     int wl = p4data.nrow();
+    double N = param[0], Cab = param[1], Cw = param[2], Cm = param[3];
     NumericVector k(wl), theta(wl), Spec(wl);
 
     NumericMatrix::Column Cab_abs = p4data(_,0);
@@ -23,6 +26,6 @@ NumericVector prospect4_cpp(double N, double Cab, double Cw, double Cm,
 
     for(int i=0; i<wl; i++) theta[i] = exp_int(k[i]);
 
-    Spec = gpm(tao1, tao2, rho1, rho2, x, y, theta, N, refl_on);
+    Spec = gpm(N, theta, tao1, tao2, rho1, rho2, x, y, 1); // Returns reflectance ONLY
     return Spec;
 }
