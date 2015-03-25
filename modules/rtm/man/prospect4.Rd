@@ -3,24 +3,25 @@
 \alias{prospect4}
 \title{PROSPECT4 model}
 \usage{
-prospect4(N, Cab, Cw, Cm, transmittance = FALSE)
+prospect4(param, reflectance = TRUE)
 }
 \arguments{
-\item{N}{Effective number of leaf layers (>1)}
+\item{param}{Vector of PROSPECT4 parameter values:
+N: Effective number of leaf layers (>1)
+Cab Leaf chlorophyll content (>0)
+Cw Leaf water content (>0)
+Cm Leaf dry matter content (>0)}
 
-\item{Cab}{Leaf chlorophyll content (>0)}
-
-\item{Cw}{Leaf water content (>0)}
-
-\item{Cm}{Leaf dry matter content (>0)}
-
-\item{transmittance}{Return transmittance instead of reflectance (default = FALSE)}
+\item{reflectance}{Return reflectance (TRUE, default) or transmittance (FALSE)}
 }
 \value{
 Vector (length 2100) of simulated reflectance/transmittance values from 400:2100 nm
 }
 \description{
 PROSPECT4 model
+}
+\details{
+Concise R wrapper for PROSPECT4 model
 }
 \author{
 Alexey Shiklomanov

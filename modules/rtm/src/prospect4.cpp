@@ -3,10 +3,13 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
+// PROSPECT4 model
+//      Based on 'refl_on', returns reflectance(1) or transmittance(0)
 // [[Rcpp::export]]
-NumericVector prospect4_model(
+NumericVector prospect4_cpp(
         NumericVector param,
-        NumericMatrix p4data)
+        NumericMatrix p4data,
+        int refl_on)
 {
     int wl = p4data.nrow();
     double N = param[0], Cab = param[1], Cw = param[2], Cm = param[3];
@@ -26,6 +29,14 @@ NumericVector prospect4_model(
 
     for(int i=0; i<wl; i++) theta[i] = exp_int(k[i]);
 
-    Spec = gpm(N, theta, tao1, tao2, rho1, rho2, x, y, 1); // Returns reflectance ONLY
+    Spec = gpm(N, theta, tao1, tao2, rho1, rho2, x, y, refl_on);
     return Spec;
+}
+
+// Shortcut function to get PROSPECT4 reflectance only (for inversion)
+NumericVector prospect4_def(
+    NumericVector param,
+    NumericMatrix p4data)
+{
+        return prospect4_cpp(param, p4data, 1);
 }

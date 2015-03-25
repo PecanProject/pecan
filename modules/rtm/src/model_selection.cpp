@@ -10,7 +10,7 @@ typedef double (*select_prior)(int, double);
 // Select model
 select_model MODEL(std::string RTM){
     if (RTM == "prospect4") {
-        return prospect4_model;
+        return prospect4_def;
     } // else {} <--- Other RTMs
 }
 
