@@ -57,7 +57,7 @@ options(error=quote({
 # settings <- read.settings("pecan.xml")
 # read.settings does not work with the new tags <browndog> and tags in <met>
 # This is NOT a solution
-settings <- xmlToList(xmlParse("pecan.xml"))
+settings <- xmlToList(xmlParse("tests/pecan2.browndog.sipnet.xml"))
 
 # remove existing STATUS file
 if (length(which(commandArgs() == "--continue")) == 0) {
