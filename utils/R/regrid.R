@@ -1,12 +1,10 @@
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
+##' Regrid dataset to even grid
+##' 
 ##' @title regrid
 ##' @param latlon.data dataframe with lat, lon, and some value to be regridded
 ##' @return dataframe with regridded data
 ##' @author David LeBauer
 regrid <- function(latlon.data){
-
     library(raster)
     library(sp)
     ## from http://stackoverflow.com/a/15351169/513006
@@ -28,12 +26,12 @@ regrid <- function(latlon.data){
     #return(rdf)
     return(arf)
 }
-##' .. content for \description{} (no empty lines) ..
+
+##' Write gridded data to netcdf file
 ##'
-##' .. content for \details{} ..
 ##' @title grid2netcdf
 ##' @param grid.data 
-##' @return nothing, writes netCDF file
+##' @return writes netCDF file
 ##' @author David LeBauer
 grid2netcdf <- function(gdata, date = '9999-09-09', outfile = "out.nc"){
 

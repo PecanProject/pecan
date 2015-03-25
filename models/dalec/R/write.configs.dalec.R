@@ -36,6 +36,15 @@ convert.samples.DALEC <- function(trait.samples){
 #--------------------------------------------------------------------------------------------------#
 ##' Writes a configuration files for your model
 #--------------------------------------------------------------------------------------------------#
+##' write Dalec Configuration files
+##'
+##' @title write.config.DALEC 
+##' @param defaults 
+##' @param trait.values 
+##' @param settings 
+##' @param run.id 
+##' @return configuration files
+##' @export write.config.DALEC
 write.config.DALEC <- function(defaults, trait.values, settings, run.id){
   
   ### CONVERT PARAMETERS

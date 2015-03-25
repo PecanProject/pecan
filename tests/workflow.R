@@ -59,6 +59,7 @@ status.end()
 status.start("CONVERSIONS")
 for(i in 1:length(settings$run$inputs)) {
   input <- settings$run$inputs[[i]]
+  if (is.null(input)) next
   if (length(input) == 1) next
 
   # fia database

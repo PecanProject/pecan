@@ -15,19 +15,18 @@
 ##' @param lst is timezone offset from UTC, if timezone is available in time:units atribute in file, it will use that, default is to assume UTC
 ##' @author Ankur Desai
 ##'
-metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE, lst=0){
-  # get start/end year code works on whole years only
-  start_year <- year(start_date)
-  end_year <- year(end_date)
+metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst=0, overwrite=FALSE, verbose=FALSE){
 
-  require(REddyProc)  
-  require(ncdf4)
-  require(lubridate)
-  require(udunits2)
-##  require(PEcAn.utils)
-  
+  require(REddyProc)    
   #REddyProc installed to ~/R/library by install.packages("REddyProc", repos="http://R-Forge.R-project.org", type="source")
   #dependency minpack.lm may not install automatically, so install it first
+  require(ncdf4)
+  require(udunits2)
+  require(PEcAn.utils)
+  
+  # get start/end year code works on whole years only
+  start_year <- lubridate::year(start_date)
+  end_year <- lubridate::year(end_date)
 
   if(!file.exists(outfolder)){
     dir.create(outfolder)

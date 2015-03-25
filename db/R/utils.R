@@ -111,7 +111,7 @@ db.close <- function(con) {
   if (is.null(con)) {
     return
   }
-
+  
   id <- attr(con, "pecanid")
   if (is.null(id)) {
     logger.warn("Connection created outside of PEcAn.db package")
@@ -152,8 +152,8 @@ db.print.connections <- function() {
     for(x in 1:length(.db.utils$connections$id)) {
       logger.info(paste("Connection", x, "with id", .db.utils$connections$id[[x]], "was created at:\n"))
       logger.info(paste("\t", names(.db.utils$connections$log[[x]]), "\n"))
-#      cat("\t database object : ")
-#      print(.db.utils$connections$con[[x]])
+      #      cat("\t database object : ")
+      #      print(.db.utils$connections$con[[x]])
     }
   }
 }
@@ -166,55 +166,123 @@ db.print.connections <- function() {
 ##' @return TRUE if database connection works; else FALSE
 ##' @export
 ##' @author David LeBauer, Rob Kooper
-db.exists <- function(params, write=TRUE) {
-	# open connection
-	con <- tryCatch({
-		invisible(db.open(params))
-	}, error = function(e) {
-		logger.error("Could not connect to database.\n\t", e)
-		invisible(NULL)
-	})
-	if (is.null(con)) {
-		return(invisible(FALSE))
-	}
+db.exists <- function(params, write=TRUE, table=NA) {
+  # open connection
+  con <- tryCatch({
+    invisible(db.open(params))
+  }, error = function(e) {
+    logger.error("Could not connect to database.\n\t", e)
+    invisible(NULL)
+  })
+  if (is.null(con)) {
+    return(invisible(FALSE))
+  }
+  
+  #check table's privilege about read and write permission
+  user.permission <<- tryCatch({
+    invisible(db.query(paste0("select privilege_type from information_schema.role_table_grants where grantee='",params$user,"' and table_catalog = '",params$dbname,"' and table_name='",table,"'"), con))
+  }, error = function(e) {
+    logger.error("Could not query database.\n\t", e)
+    db.close(con)
+    invisible(NULL)
+  })
 
-  if(FALSE){
-	# read a row from the database
-	read.result <- tryCatch({
-		invisible(db.query("SELECT * FROM users LIMIT 1", con))
-	}, error = function(e) {
-		logger.error("Could not query database.\n\t", e)
-		db.close(con)
-		invisible(NULL)
-	})
-	if (is.null(read.result)) {
-	  return(invisible(FALSE))
-	}
-	
-	# if requested write a row to the database
-	if (write) {
-		result <- tryCatch({
-			db.query(paste("UPDATE users SET created_at='", read.result$created_at, "' WHERE id=", read.result$id, sep=""), con)
-			invisible(TRUE)
-		}, error = function(e) {
-			logger.error("Could not write to database.\n\t", e)
-			invisible(FALSE)
-		})
-	} else {
+  if (!is.na(table)){
+    read.perm = FALSE
+    write.perm = FALSE
+    
+    # check read permission
+    if ('SELECT' %in% user.permission[['privilege_type']]) {
+      read.perm = TRUE
+    }
+    
+    #check write permission
+    if ('INSERT' %in% user.permission[['privilege_type']] &&'UPDATE' %in% user.permission[['privilege_type']] ) {
+      write.perm = TRUE
+    }
+    
+    if (read.perm == FALSE){
+      return(invisible(FALSE))
+    }
+    
+    # read a row from the database
+    read.result <- tryCatch({
+      invisible(db.query(paste("SELECT * FROM", table, "LIMIT 1"), con))
+    }, error = function(e) {
+      logger.error("Could not query database.\n\t", e)
+      db.close(con)
+      invisible(NULL)
+    })  
+    if (is.null(read.result)) {
+      return(invisible(FALSE))
+    }
+    
+    # get the table's primary key column
+    get.key <- tryCatch({
+      db.query(paste("SELECT pg_attribute.attname,format_type(pg_attribute.atttypid, pg_attribute.atttypmod) 
+                     FROM pg_index, pg_class, pg_attribute 
+                     WHERE 
+                     pg_class.oid = '",table,"'::regclass AND
+                     indrelid = pg_class.oid AND
+                     pg_attribute.attrelid = pg_class.oid AND 
+                     pg_attribute.attnum = any(pg_index.indkey)
+                     AND indisprimary"), con)     
+    }, error = function(e) {
+      logger.error("Could not query database.\n\t", e)
+      db.close(con)
+      invisible(NULL)
+    })
+    if (is.null(read.result)) {
+      return(invisible(FALSE))
+    }
+    
+    # if requested write a row to the database
+    if (write) {
+      # in the case when has read permission but no write
+      if (write.perm == FALSE)
+      {
+        return(invisible(FALSE))
+      }
+      
+      # when the permission correct to check whether write works
+      key <- get.key$attname 
+      key.value<- read.result[key]
+      coln.name <- names(read.result)
+      write.coln <- ""
+      for (name in coln.name)
+      {
+        if (name != key)
+        {
+          write.coln <- name 
+          break 
+        }
+      }
+      write.value <- read.result[write.coln]
+      result <- tryCatch({
+        db.query(paste("UPDATE ", table, " SET ", write.coln,"='", write.value, "' WHERE ",  key, "=", key.value, sep=""), con)
+        invisible(TRUE)
+      }, error = function(e) {
+        logger.error("Could not write to database.\n\t", e)
+        invisible(FALSE)
+      })
+    } else {
+      result <- TRUE
+    }
+  }
+  
+  else{
     result <- TRUE
   }
-
-  }
-  result <- TRUE
-
-	# close database, all done
-	tryCatch({
-		db.close(con)
-	}, error = function(e) {
-		logger.warn("Could not close database.\n\t", e)
-	})
-
-	invisible(result)
+  
+  
+  # close database, all done
+  tryCatch({
+    db.close(con)
+  }, error = function(e) {
+    logger.warn("Could not close database.\n\t", e)
+  })
+  
+  invisible(result)
 }
 
 ##' Sets if the queries should be shown that are being executed
