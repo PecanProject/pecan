@@ -141,6 +141,19 @@ AllomAve <- function(pfts,components=6,outdir=NULL,con=NULL,field=NULL,
       pdffile = paste(outdir,paste("/Allom",pft.name,component,"MCMC","pdf",sep="."),sep="")
       print(c("saving diagnostic graphs to",pdffile))
       pdf(pdffile)
+        
+        ## specifying which rows were used in the fit & should be graphed; note, this requires removing equations whose n is 0
+        n    <- nu(allom[['parm']]$n)
+        rng.raw  <- cbind(nu(allom$parm$Xmin),nu(allom$parm$Xmax))
+        n.mod <- n
+        
+        for(i in seq_along(n)){
+           tmp.seq  <- seq(rng.raw[i,1], rng.raw[i,2], length.out=100)
+           n.mod[i] <- round(n[i]*length(tmp.seq[tmp.seq>dmin & tmp.seq<dmax])/length(tmp.seq),digits=0)
+        }
+
+        ntally  <- which(nu(allom[['parm']][,"Xmax"])>=dmin & nu(allom[['parm']][,"Xmin"])<=dmax); if(is.null(ntally)) ntally = 0;
+
         ### scatter plot  
         rng = nested.range(obs)
         plot(1,1,type='n',log='xy',xlim=rng[,'x'],ylim=rng[,'y'],#xlim=c(0.1,1000),ylim=c(0.0001,100000),
@@ -156,13 +169,13 @@ AllomAve <- function(pfts,components=6,outdir=NULL,con=NULL,field=NULL,
         beta = allom.stats[[pft.name]][[component]]$statistics[,"Mean"]
         y.0  = exp(beta['mu0'] + beta['mu1']*log(dseq))
         y.g  = exp(beta['Bg0'] + beta['Bg1']*log(dseq))  
-        y.o  = predict.allom.orig(dseq,allom$parm)    
+        y.o  = predict.allom.orig(dseq,allom$parm[ntally,])    
         lines(dseq,y.0,lwd=2,col=1)
         lines(dseq,y.g,lwd=2,col=2)
         for(i in seq_len(nrow(y.o))){
         	lines(dseq,y.o[i,],col=i+2)
         }
-        legend("topleft",legend=c("Hier","global"),lwd=2,col=1:2)
+        legend("topleft",legend=c("Hier","global", paste("allom", ntally)),lwd=c(2,2, rep(1, nrow(y.o))),col=1:(2+nrow(y.o)))
       
         ### MCMC diagnostics
         plot(mc)
@@ -189,7 +202,7 @@ predict.allom.orig <- function(x,parm){
 	  e     = nu(parm$e)
 	  Xcor  = nu(parm$Xcor)
 	  Ycor  = nu(parm$Ycor)
-	  Xtype = nu(parm$Xtype)
+	  Xtype = as.character(parm$Xtype)
 	  
 	for(i in 1:nrow(parm))	{
 
