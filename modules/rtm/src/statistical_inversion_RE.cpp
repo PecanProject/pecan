@@ -119,8 +119,8 @@ NumericMatrix invert_RTM_re(
                 Tvec[p] = values[p] + Tpar;
                 TrySpec_alpha = Model(Tvec, func_data);
                 TryError_alpha = TrySpec_alpha - Observed(_,r);
-                TryPost = Likelihood(TryError_alpha, rsd) + dtnorm(Tpar, 0, tau[p], Tmin);
-                PrevPost = Likelihood(PrevError(_,r), rsd) + dtnorm(re_values(p,r), 0, tau[p], Tmin);
+                TryPost = Likelihood(TryError_alpha, rsd) + R::dnorm(Tpar, 0, tau[p], 1);
+                PrevPost = Likelihood(PrevError(_,r), rsd) + R::dnorm(re_values(p,r), 0, tau[p], 1);
                 JN = dtnorm(Tpar, re_values(p,r), alpha_Jump[p], Tmin);
                 JD = dtnorm(re_values(p,r), Tpar, alpha_Jump[p], Tmin);
                 a = exp((TryPost - JN) - (PrevPost - JD));
