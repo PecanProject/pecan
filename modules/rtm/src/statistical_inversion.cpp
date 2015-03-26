@@ -36,11 +36,6 @@ NumericMatrix invert_RTM(
     NumericVector Jump = inits * 0.05;  // Jump distribution vector - starts at 5% of initial conditions
 
     // Define sampler parameters
-    double Tpar, JN, JD, a;
-    NumericVector Tvec = inits;
-    NumericVector TrySpec(nwl);
-    NumericMatrix TryError(nwl, nspec);
-    double TryPost, PrevPost;
 
     // Define acceptance monitoring parameters
     NumericVector ar(npars), adj(npars);
@@ -58,23 +53,8 @@ NumericMatrix invert_RTM(
             adapt_count = 0;
         }
         // Sample model parameters - Basic Metropolis Hastings
-        for(int p = 0; p<npars; p++){
-            Tvec = clone(inits);
-            Tvec[p] = rtnorm(inits[p], Jump[p], pmin[p]);
-            TrySpec = Model(Tvec, func_data);
-            TryError = SpecError(TrySpec, Observed);
-            TryPost = Likelihood(TryError, rsd) + Prior(p, Tvec[p]);
-            PrevPost = Likelihood(PrevError, rsd) + Prior(p, inits[p]);
-            JN = dtnorm(Tvec[p], inits[p], Jump[p], pmin[p]);
-            JD = dtnorm(inits[p], Tvec[p], Jump[p], pmin[p]);
-            a = exp((TryPost - JN) - (PrevPost - JD));
-                if(a > runif(1)[0]){
-                    inits[p] = Tvec[p];
-                    PrevError = TryError;
-                    ar[p] = ar[p] + 1;
-                }
-            results(ng, p) = inits[p];
-        }
+        sampler_MH(inits, rsd, Jump, Observed, PrevError, ar, Model, Prior, pmin, func_data);
+        for(int p = 0; p<npars; p++) results(ng, p) = inits[p];
 
         // Sample residual SD
         rp2 = 0.001 + sum(PrevError * PrevError)/2;
