@@ -19,6 +19,7 @@ double dtnorm(double X, double mu, double sd, double MIN){
     }
 }
 
+// These don't work!
 double rtnorm_c(double mu, double sd, double MIN){
     double M, S, L_min;
     L_min = (R::dnorm(MIN, mu, sd, 0))/(1 - R::pnorm(MIN, mu, sd, 1, 0));
