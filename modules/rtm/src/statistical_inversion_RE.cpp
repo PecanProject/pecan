@@ -51,7 +51,7 @@ NumericMatrix invert_RTM_re(
     rp1 = 0.001 + nspec*nwl/2;        // Gamma shape; this is a constant
     rsd = 0.5;                      // Initial condition for residual SD
     double alpha_rp1;
-    alpha_rp1 = 0.001 * nre / 2;
+    alpha_rp1 = 0.001 + nre / 2;
     NumericVector alpha_rp2(nre), tau(nre), tinv(nre);
 
     // Precalculate first model
@@ -114,15 +114,15 @@ NumericMatrix invert_RTM_re(
             for(int r = 0; r<nre; r++){
                 // Sample
                 Tmin = pmin[p] - values[p];
-                Tpar = rtnorm_c(re_values(p,r), alpha_Jump[p], Tmin);
+                Tpar = rtnorm(re_values(p,r), alpha_Jump[p], Tmin);
                 Tvec = values + re_values(_,r);
                 Tvec[p] = values[p] + Tpar;
                 TrySpec_alpha = Model(Tvec, func_data);
                 TryError_alpha = TrySpec_alpha - Observed(_,r);
-                TryPost = Likelihood(TryError_alpha, rsd) + dtnorm_c(Tpar, 0, tau[p], Tmin);
-                PrevPost = Likelihood(PrevError(_,r), rsd) + dtnorm_c(re_values(p,r), 0, tau[p], Tmin);
-                JN = dtnorm_c(Tpar, re_values(p,r), alpha_Jump[p], Tmin);
-                JD = dtnorm_c(re_values(p,r), Tpar, alpha_Jump[p], Tmin);
+                TryPost = Likelihood(TryError_alpha, rsd) + dtnorm(Tpar, 0, tau[p], Tmin);
+                PrevPost = Likelihood(PrevError(_,r), rsd) + dtnorm(re_values(p,r), 0, tau[p], Tmin);
+                JN = dtnorm(Tpar, re_values(p,r), alpha_Jump[p], Tmin);
+                JD = dtnorm(re_values(p,r), Tpar, alpha_Jump[p], Tmin);
                 a = exp((TryPost - JN) - (PrevPost - JD));
                 if(a > runif(1)[0]){
                     re_values(p,r) = Tpar;
