@@ -68,12 +68,6 @@ NumericMatrix invert_RTM(
             JN = dtnorm(Tvec[p], inits[p], Jump[p], pmin[p]);
             JD = dtnorm(inits[p], Tvec[p], Jump[p], pmin[p]);
             a = exp((TryPost - JN) - (PrevPost - JD));
-            printf("Tpar: %g  inits: %g  Jump: %g \n TL: %g  PL: %g \n",
-                Tvec[p],
-                inits[p],
-                Jump[p],
-                Likelihood(TryError, rsd),
-                Likelihood(PrevError, rsd));
                 if(a > runif(1)[0]){
                     inits[p] = Tvec[p];
                     PrevError = TryError;
@@ -86,7 +80,6 @@ NumericMatrix invert_RTM(
         rp2 = 0.001 + sum(PrevError * PrevError)/2;
         rinv = rgamma(1, rp1, 1/rp2)[0];
         rsd = 1/sqrt(rinv);
-        printf(" RSD: %f \n =======================\n", rsd);
         results(ng, npars) = rsd;
         adapt_count = adapt_count + 1;
     }
