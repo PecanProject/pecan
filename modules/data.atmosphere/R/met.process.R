@@ -12,21 +12,14 @@
 ##' @param dir  directory to write outputs to
 ##' 
 ##' @author Elizabeth Cowdery, Michael Dietze
-met.process <- function(site, input_met, start_date, end_date, model, host, bety, dir, browndog=NULL){
+met.process <- function(site, input_met, start_date, end_date, model, host, dbparms, dir, browndog=NULL){
   
   require(RPostgreSQL)
   
-  # Setup bety connection
   driver   <- "PostgreSQL"
-  user     <- bety$user
-  dbname   <- bety$dbname
-  password <- bety$password
-  bety.host<- bety$host
-  username <- ""
-  dbparms <- list(driver=driver, user=user, dbname=dbname, password=password, host=bety.host)
-  con       <- db.open(dbparms)
+  con      <- db.open(dbparms)
   
-  
+  username <- ""  
   
   #' Determine where download and conversion will take place -  either on Brown Dog or specified directory
   #' Would like to ultimately make "convert" even more specific:
@@ -53,26 +46,11 @@ met.process <- function(site, input_met, start_date, end_date, model, host, bety
   new.site = as.numeric(site$id)
   str_ns    <- paste0(new.site %/% 1000000000, "-", new.site %% 1000000000)
   
-  # Determine output type - this needs to be automated!
-  if("ED2" %in% unlist(strsplit(model,"[.]"))){
-    model <- "ED2"
-    formatname <- 'ed.met_driver_header_files_format'
-    mimetype <- 'text/plain'
-  }else if(model == "SIPNET"){
-    formatname <- 'Sipnet.climna'
-    mimetype <- 'text/csv'
-    outputtype <- 'clim'          # Name in Brown Dog - don't know the best way to get it from model or formatname
-  }else if(model == "BIOCRO"){
-    formatname <- 'biocromet'
-    mimetype <- 'text/csv'
-  }else if(model == "DALEC"){
-    formatname <- 'DALEC meteorology'
-    mimetype <- 'text/plain'
-  }else if(model == "LINKAGES"){
-    formatname = 'LINKAGES met'
-    mimetype <- 'text/plain'
-  }
-  
+  # Determine output format name and mimetype   
+  model_info <- db.query(paste0("SELECT f.name, f.id, f.mime_type from modeltypes as m join modeltypes_formats as mf on m.id = mf.modeltype_id join formats as f on mf.format_id = f.id where m.name = '",model,"'"),con)
+  formatname <- model_info[1]
+  mimetype   <- model_info[3] 
+  # Could be generalized further int he code - for now everything takes formatname and mimetype
   
   #--------------------------------------------------------------------------------------------------#
   # BROWN DOG 
@@ -82,6 +60,15 @@ met.process <- function(site, input_met, start_date, end_date, model, host, bety
     require(RCurl)
     require(XML)
     
+    # Determine Brown Dog Output Type - ultimately will be added to the database
+    if(model_info[[2]] == 24){ #SIPNET
+      outputtype <- 'clim'   
+    }
+    #   else if(model == "BIOCRO"){   
+    #   }else if(model == "DALEC"){
+    #   }else if(model == "LINKAGES"){
+    #   }
+      
     url <- file.path(browndog$url,outputtype) 
     print(url)
     
@@ -106,15 +93,6 @@ met.process <- function(site, input_met, start_date, end_date, model, host, bety
     outputfile <- file.path(outfolder, paste(site.dl, strptime(start_date, "%Y-%m-%d"), strptime(end_date, "%Y-%m-%d"), outputtype, sep="."))
     dl_file(link, outputfile, 0) # My download function - don't know if Rob's while loop is better?
     
-    #     Specific case for zip files when downloading raw data
-    #     tf <- file.path(outfolder, paste("Ameriflux.zip"))  
-    #     i = 1
-    #     dl_file(link, tf, i)
-    #     
-    #     fname <- unzip(tf, list=TRUE)$Name
-    #     unzip(tf, files=fname, exdir=outfolder, overwrite=TRUE) 
-    #     file.remove(tf)
-    
     settings$run$inputs$path <- outputfile
     
     start_year <- year(as.POSIXlt(start_date, tz = "GMT"))
@@ -127,7 +105,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, bety
                           startdate=start_date, 
                           enddate=end_date,
                           stringsAsFactors = FALSE)    
-    invisible(results) 
+
     
   } # End conversion in Brown Dog
   
@@ -356,16 +334,17 @@ db.site.lat.lon <- function(site.id,con){
 ##' @export
 ##' @param link - path to file to be downloaded
 ##' @param outfolder - destination of downloaded file(s)
-##' @param i - number of times to try download
+##' @param i - number of times to try download (60 - so two minutes)
 ##' @author Betsy Cowdery
 dl_file <- function(link, outfolder, i){
   r <- try(download.file(link, outfolder, quiet = TRUE), silent = TRUE)
-  if(inherits(r, 'try-error') & i <= 10000){
+  if(inherits(r, 'try-error') & i <= 40){
     cat("*")
+    Sys.sleep(3)
     dl_file(link, outfolder, i)
   }
-  if(inherits(r, 'try-error') & i > 10000){
-    print("Download failed after 1000 attempts")
+  if(inherits(r, 'try-error') & i > 40){
+    print("Download failed after two minutes")
     return(NULL)
   }
   if(inherits(r, 'integer')){
