@@ -23,8 +23,14 @@ invert_prospect <- function(spectra,
                             inits = c(1.4, 30, 0.01, 0.01),
                             adapt = 25,
                             min_adapt = 0.05){
-    data(prospect4)
-    out <- invert_RTM("prospect4", as.matrix(spectra), ngibbs, adapt, min_adapt, inits, P4data)
+	P4data <- prospect.datamatrix("prospect4")
+	out <- invert_RTM("prospect4",
+					  as.matrix(spectra),
+					  ngibbs,
+					  adapt,
+					  min_adapt,
+					  inits,
+					  P4data)
     colnames(out) <- c("N", "Cab", "Cw", "Cm", "rsd")
     return(out)
 }
@@ -57,7 +63,7 @@ invert_prospect_re <- function(spectra,
 							   min_adapt = 0.05,
 							   inits = c(1.4, 30, 0.01, 0.01),
 							   re_inits = matrix(0, 4, ncol(spectra))){
-	data(prospect4)
+	P4data <- prospect.datamatrix("prospect4")
 	out <- invert_RTM_re("prospect4",
 						 as.matrix(spectra),
 						 ngibbs,
@@ -87,7 +93,7 @@ invert_prospect_re <- function(spectra,
 
 invert_prospect_MLE <- function(spectra){
 	merit <- function(pars){
-		spec <- prospect4(pars[1], pars[2], pars[3], pars[4])
+		spec <- prospect(4, pars)
 		return(log(sum((spec-spectra)^2)))
 	}
 	fit <- optim(c(1.4, 30, 0.01, 0.01, 0.5), merit)
