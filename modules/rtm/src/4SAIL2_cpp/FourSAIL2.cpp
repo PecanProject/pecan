@@ -55,8 +55,7 @@ double Jfunc3(double m, double t){
         double zeta;            // Tree shape factor (diameter/height)
 
         double zero = 1e-10;
-        double PI = atan(1/4);
-        double rd = 180/PI;
+        double rd = 180/M_PI;
 
         // Result is a WL x 4 matrix:
         //      [,0] rsot:  bidirectional reflectance
@@ -64,6 +63,26 @@ double Jfunc3(double m, double t){
         //      [,2] rsdt:  diffuse reflectance for direct solar incidence
         //      [,3] rddt:  diffuse reflectance for diffuse incidence
         NumericMatrix result(nwl, 4);
+
+        // Type declarations for intermediate variables
+        
+        double cts, cto, ctscto, tants, tanto, cspsi, dso;          // Angular factors
+               Cs, Co, Overlap,                                     // Clumping effects
+               Fcd, Fcs, Fod, Fos, Fcdc,                            // ^^
+               s, ks, ko, bf, sob, sof,
+               ttl, ctl, 
+               chi_s, chi_o, frho, ftau,
+               ksli, koli, sobli, sofli, bfli,
+               sdb, sdf, dob, dof, ddb, ddf,
+               lai1, lai2, tss, ck, alf,                            // Hotspot effect
+               tssto, s1, s2, 
+               fhot, x1, y1, f1, ca, fint,                          // Simpson integral
+               x2, y2, f2, tsstoo, tss, too,
+
+               ;
+        NumericVector rho1(nwl), tau1(nwl), rho2(nwl), tau2(nwl),       // First layer 
+                      lidf(13),
+                      sb, sf, vb, vf, w2, sigb, sigf, att, ;
 
         // Angular factors
         cts = cos(rd*tts);
@@ -133,8 +152,12 @@ double Jfunc3(double m, double t){
             ttl = li[i];
             ctl = cos(rd*ttl);
 
-            // Volume scattering function (VOID - inputs 1-4, rest out)
-            volscatt(tts, tto, psi, ttl, chi_s, chi_o, frho, ftau);
+            // Volume scattering function 
+            vs_vec = volscatt(tts, tto, psi, ttl);
+            chi_s = vs_vec[0];
+            chi_o = vs_vec[1];
+            frho = vs_vec[2];
+            ftau = vs_vec[3];
 
             // Extinction coefficients
             ksli = chi_s / cts;
@@ -142,8 +165,8 @@ double Jfunc3(double m, double t){
 
             // Area scattering coefficient fractions
 
-            sobli = frho * PI / ctscto;
-            sofli = ftau * PI / ctscto;
+            sobli = frho * M_PI / ctscto;
+            sofli = ftau * M_PI / ctscto;
 
             bfli = ctl * ctl;
 
@@ -188,7 +211,7 @@ double Jfunc3(double m, double t){
             //  Integrate 2 layers by exponential simpson method in 20 steps
             //	the steps are arranged according to equal partitioning
             //	of the derivative of the joint probability function
-            nstep = 20;
+            int nstep = 20;
 
             x1 = 0;
             y1 = 0;
@@ -250,7 +273,8 @@ double Jfunc3(double m, double t){
         sigf = ddf*rho2 + ddb*tau2;
         att = 1 - sigf;
 
-        m2 = max(0, (att+sigb) * (att - sigb));
+        m2 = (att+sigb) * (att - sigb);
+        m2 = ifelse(m2 < 0, 0, m2);
         m = sqrt(m2);
 
         if (m > 0.01){
@@ -351,12 +375,10 @@ double Jfunc3(double m, double t){
 
         sigb=ddb*rho1+ddf*tau1;
         sigf=ddf*rho1+ddb*tau1;
-        att=1.-sigf;
+        att=1-sigf;
 
         m2=(att+sigb)*(att-sigb);
-        if (m2 < 0){
-            m2=0;
-        }
+        if (m2 < 0) m2=0;
         m=sqrt(m2);
 
         if (m > 0.01) {
@@ -434,7 +456,7 @@ double Jfunc3(double m, double t){
 
         // Combine with bottom layer reflectances and transmittances (adding method)
 
-        rn=1.-rdd*rddb;
+        rn=1-rdd*rddb;
         tup=(tss*rsdb+tsd*rddb)/rn;
         tdn=(tsd+tss*rsdb*rdd)/rn;
         rsdt=rsd+tup*tdd;
