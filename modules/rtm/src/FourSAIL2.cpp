@@ -21,7 +21,7 @@ double Jfunc2(double k, double l, double t){
 
 // J3 function for treating (near) conservative scattering
 double Jfunc3(double m, double t){
-    double del;
+    double del, e;
     del=m*t;
     if (del > 1e-3){
         e=exp(-del);
@@ -33,7 +33,7 @@ double Jfunc3(double m, double t){
 
 // 4SAIL2 Model
 //[Rcpp::export]]
-NumericMatrix FourSAIL2_cpp(
+NumericVector FourSAIL2_cpp(
     //// Input parameters ////
     double lai,             // Leaf area index
     double fb,              // Fraction brown LAI
@@ -69,8 +69,8 @@ NumericMatrix FourSAIL2_cpp(
 
     // Type declarations for intermediate variables
 
-    double cts, cto, ctscto, tants, tanto, cspsi, dso;          // Angular factors
-    Cs, Co, Overlap,                                     // Clumping effects
+    double cts, cto, ctscto, tants, tanto, cspsi, dso,          // Angular factors
+   		Cs, Co, Overlap,                                     // Clumping effects
         Fcd, Fcs, Fod, Fos, Fcdc,                            // ^^
         s, ks, ko, bf, sob, sof,
         ttl, ctl, 
