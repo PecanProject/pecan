@@ -1,4 +1,5 @@
 #include <Rcpp.h>
+#include "sail_common.h"
 using namespace Rcpp;
 
 //4SAIL model support functions
@@ -32,27 +33,29 @@ double Jfunc3(double m, double t){
 
 // 4SAIL2 Model
 //[Rcpp::export]]
-NumericMatrix FourSAIL2_cpp(){
+NumericMatrix FourSAIL2_cpp(
     //// Input parameters ////
-    double lai;             // Leaf area index
-    double fb;              // Fraction brown LAI
-    double diss;            // Dissosciation factor for brown/green [0,1]
-    double LIDFa;           // Average leaf slope indicator [-1, +1]
-    double LIDFb;           // Bimodality parameter of LIDF [-1, +1]
-    double hot;             // Hot spot effect parameter; ratio of avg. leaf width and canopy height
-    double rg;              // Green leaf reflectance
-    double rb;              // Brown leaf reflectance
-    double tg;              // Green leaf transmittance
-    double tb;              // Brown leaf transmittance
-    double rsosoil;         // Background rso reflectance
-    double rdosoil;         // Background rdo reflectance
-    double rsdsoil;         // Background rsd reflectance
-    double rddsoil;         // Background rdd reflectance
-    double tts;             // Solar zenith angle (degrees)
-    double tto;             // Viewing zenith angle (degrees)
-    double psi;             // Relative azimuth (degrees)
-    double Cv;              // Vertical crown coverage [0,1]
-    double zeta;            // Tree shape factor (diameter/height)
+    double lai,             // Leaf area index
+    double fb,              // Fraction brown LAI
+    double diss,            // Dissosciation factor for brown/green [0,1]
+    double LIDFa,           // Average leaf slope indicator [-1, +1]
+    double LIDFb,           // Bimodality parameter of LIDF [-1, +1]
+    double hot,             // Hot spot effect parameter; ratio of avg. leaf width and canopy height
+    double rg,              // Green leaf reflectance
+    double rb,              // Brown leaf reflectance
+    double tg,              // Green leaf transmittance
+    double tb,              // Brown leaf transmittance
+    double rsosoil,         // Background rso reflectance
+    double rdosoil,         // Background rdo reflectance
+    double rsdsoil,         // Background rsd reflectance
+    double rddsoil,         // Background rdd reflectance
+    double tts,             // Solar zenith angle (degrees)
+    double tto,             // Viewing zenith angle (degrees)
+    double psi,             // Relative azimuth (degrees)
+    double Cv,              // Vertical crown coverage [0,1]
+    double zeta             // Tree shape factor (diameter/height)
+    )
+{
 
     double zero = 1e-10;
     double rd = 180/M_PI;
