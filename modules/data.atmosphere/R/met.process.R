@@ -12,10 +12,11 @@
 ##' @param dir  directory to write outputs to
 ##' 
 ##' @author Elizabeth Cowdery, Michael Dietze
-met.process <- function(site, input_met, start_date, end_date, model, host, bety, dir){
+met.process <- function(site, input_met, start_date, end_date, model, host, bety, dir, browndog=NULL){
   
   require(RPostgreSQL)
   
+  # Setup bety connection
   driver   <- "PostgreSQL"
   user     <- bety$user
   dbname   <- bety$dbname
@@ -25,25 +26,119 @@ met.process <- function(site, input_met, start_date, end_date, model, host, bety
   dbparms <- list(driver=driver, user=user, dbname=dbname, password=password, host=bety.host)
   con       <- db.open(dbparms)
   
+  
+  
+  #' Determine where download and conversion will take place -  either on Brown Dog or specified directory
+  #' Would like to ultimately make "convert" even more specific:
+  #' convert = "bd_raw"
+  #'         = "dir_raw"
+  #'         = "bd_cf"
+  #          = "dir_cf"
+  #'         = "bd_model"
+  #'         = "dir_model"
   met <- input_met$source
   if(!exists("input_met$id") || input_met$id==""){
-    download=TRUE
+    if (!is.null(browndog$url) && (browndog$url != "")){
+      convert = "browndog"
+    }else{
+      convert = "dir"
+    }
   }else{
-    download=FALSE
+    convert=""
     raw.id=as.numeric(input_met$id)
   }
   
+  # Determine if met data is regional or site - this needs to be automated!
   regional <- met == "NARR" # Either regional or site run
   new.site = as.numeric(site$id)
   str_ns    <- paste0(new.site %/% 1000000000, "-", new.site %% 1000000000)
   
+  # Determine output type - this needs to be automated!
+  if("ED2" %in% unlist(strsplit(model,"[.]"))){
+    model <- "ED2"
+    formatname <- 'ed.met_driver_header_files_format'
+    mimetype <- 'text/plain'
+  }else if(model == "SIPNET"){
+    formatname <- 'Sipnet.climna'
+    mimetype <- 'text/csv'
+    outputtype <- 'clim'          # Name in Brown Dog - don't know the best way to get it from model or formatname
+  }else if(model == "BIOCRO"){
+    formatname <- 'biocromet'
+    mimetype <- 'text/csv'
+  }else if(model == "DALEC"){
+    formatname <- 'DALEC meteorology'
+    mimetype <- 'text/plain'
+  }else if(model == "LINKAGES"){
+    formatname = 'LINKAGES met'
+    mimetype <- 'text/plain'
+  }
+  
+  
+  #--------------------------------------------------------------------------------------------------#
+  # BROWN DOG 
+  if(convert == "browndog"){
+    require(lubridate)
+    require(data.table)
+    require(RCurl)
+    require(XML)
+    
+    url <- file.path(browndog$url,outputtype) 
+    print(url)
+    
+    if(met=="Ameriflux"){site.dl = sub(".* \\((.*)\\)", "\\1", site$name)}
+    
+    xmldata = newXMLNode("input")
+    newXMLNode("type", tolower(met) , parent = xmldata) # For Ameriflux, type is ameriflux - do caps matter? Don't know how different met will be treated
+    newXMLNode("site", site.dl, parent = xmldata)
+    newXMLNode("start_date", paste(start_date), parent = xmldata)
+    newXMLNode("end_date", paste(end_date), parent = xmldata)
+    xmldata <- saveXML(xmldata)
+    
+    # post to browndog
+    html <- postForm(url,"fileData" = fileUpload("pecan.xml", xmldata, "text/xml"))
+    link <- getHTMLLinks(html)
+    print(link)
+    
+    outfolder <- file.path(dir,paste0(met,"_",model,"_site_",str_ns)) # This would change if specifying convert = bd_step  
+    if(!file.exists(outfolder)){
+      dir.create(outfolder, showWarnings=FALSE, recursive=TRUE)
+    }
+    outputfile <- file.path(outfolder, paste(site.dl, strptime(start_date, "%Y-%m-%d"), strptime(end_date, "%Y-%m-%d"), outputtype, sep="."))
+    dl_file(link, outputfile, 0) # My download function - don't know if Rob's while loop is better?
+    
+    #     Specific case for zip files when downloading raw data
+    #     tf <- file.path(outfolder, paste("Ameriflux.zip"))  
+    #     i = 1
+    #     dl_file(link, tf, i)
+    #     
+    #     fname <- unzip(tf, list=TRUE)$Name
+    #     unzip(tf, files=fname, exdir=outfolder, overwrite=TRUE) 
+    #     file.remove(tf)
+    
+    settings$run$inputs$path <- outputfile
+    
+    start_year <- year(as.POSIXlt(start_date, tz = "GMT"))
+    end_year <- year(as.POSIXlt(end_date, tz = "GMT"))
+    rows <- end_year - start_year + 1
+    results <- data.frame(file=outputfile, 
+                          host=host$name,
+                          mimetype, 
+                          formatname,
+                          startdate=start_date, 
+                          enddate=end_date,
+                          stringsAsFactors = FALSE)    
+    invisible(results) 
+    
+  } # End conversion in Brown Dog
+  
   #--------------------------------------------------------------------------------------------------#
   # Download raw met from the internet 
-  if(download == TRUE){
+  else if(convert == "dir"){
     
     outfolder  <- file.path(dir,met)
     pkg        <- "PEcAn.data.atmosphere"
     fcn        <- paste0("download.",met)
+    
     
     if(met == "NARR"){
       
@@ -52,8 +147,6 @@ met.process <- function(site, input_met, start_date, end_date, model, host, bety
       args <- list(outfolder, start_date, end_date)
       cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
       remote.execute.R(cmdFcn,host$name,user=NA, verbose=TRUE)
-      
-      #download.NARR(outfolder, start_date, end_date, raw.host=host$name, overwrite=FALSE)
       
       mimetype =  'application/x-netcdf'
       formatname = "NARR"
@@ -77,10 +170,10 @@ met.process <- function(site, input_met, start_date, end_date, model, host, bety
     }else{
       if(met == "Ameriflux"){
         
-        ## download files
-        outfolder = paste0(outfolder,"_site_",str_ns)
         site.code = sub(".* \\((.*)\\)", "\\1", site$name)
-        args <- list(site.code, outfolder, start_date, end_date) #, pkg,raw.host = host,dbparms,con=con)
+        
+        outfolder = paste0(outfolder,"_site_",str_ns)
+        args <- list(site.code, outfolder, start_date, end_date)
         
         cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
         new.files <- remote.execute.R(cmdFcn,host$name,user=NA,verbose=TRUE)
@@ -114,8 +207,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, bety
         
       }
       
-    }
-  }
+    } # End conversion in directory
     
     #--------------------------------------------------------------------------------------------------#
     print("### Change to CF Standards")
@@ -133,86 +225,70 @@ met.process <- function(site, input_met, start_date, end_date, model, host, bety
       cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
                              username,con=con,hostname=host$name,write=TRUE) 
     }
-  
-  
-  #--------------------------------------------------------------------------------------------------#
-  # Extraction 
-  
-  if(regional){ #ie NARR right now    
     
-    input.id   <- cf.id
-    outfolder  <- file.path(dir,paste0(met,"_CF_site_",str_ns))
-    pkg        <- "PEcAn.data.atmosphere"
-    fcn        <- "extract.nc"
-    formatname <- 'CF Meteorology'
-    mimetype   <- 'application/x-netcdf'
     
-    new.lat <- db.site.lat.lon(new.site,con=con)$lat
-    new.lon <- db.site.lat.lon(new.site,con=con)$lon
+    #--------------------------------------------------------------------------------------------------#
+    # Extraction 
     
-    ready.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
-                              username,con=con,hostname=host$name,write=TRUE,
-                              slat=new.lat,slon=new.lon,newsite=new.site)
+    if(regional){ #ie NARR right now    
+      
+      input.id   <- cf.id
+      outfolder  <- file.path(dir,paste0(met,"_CF_site_",str_ns))
+      pkg        <- "PEcAn.data.atmosphere"
+      fcn        <- "extract.nc"
+      formatname <- 'CF Meteorology'
+      mimetype   <- 'application/x-netcdf'
+      
+      new.lat <- db.site.lat.lon(new.site,con=con)$lat
+      new.lon <- db.site.lat.lon(new.site,con=con)$lon
+      
+      ready.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
+                                username,con=con,hostname=host$name,write=TRUE,
+                                slat=new.lat,slon=new.lon,newsite=new.site)
+      
+    }else{ 
+      #### SITE-LEVEL PROCESSING ##########################
+      
+      print("# run gapfilling") 
+      #    ready.id <- convert.input()
+      #    ready.id <- metgapfill(outfolder, site.code, file.path(settings$run$dbfiles, "gapfill"), start_date=start_date, end_date=end_date)
+      
+      input.id   <- cf.id
+      outfolder  <- file.path(dir,paste0(met,"_CF_gapfill_site_",str_ns))
+      pkg        <- "PEcAn.data.atmosphere"
+      fcn        <- "metgapfill"
+      formatname <- 'CF Meteorology'
+      mimetype   <- 'application/x-netcdf'
+      lst        <- site.lst(site,con)
+      
+      ready.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
+                                username,con=con,hostname=host$name,write=TRUE,lst=lst)
+      
+    }
+    print("Standardized Met Produced")
     
-  }else{ 
-    #### SITE-LEVEL PROCESSING ##########################
+    #--------------------------------------------------------------------------------------------------#
+    # Prepare for Model
     
-    print("# run gapfilling") 
-    #    ready.id <- convert.input()
-    #    ready.id <- metgapfill(outfolder, site.code, file.path(settings$run$dbfiles, "gapfill"), start_date=start_date, end_date=end_date)
+    ## NOTE: ALL OF THIS CAN BE QUERIED THROUGH DATABASE
+    ## MODEL_TYPES -> FORMATS where tag = "met"
     
-    input.id   <- cf.id
-    outfolder  <- file.path(dir,paste0(met,"_CF_gapfill_site_",str_ns))
-    pkg        <- "PEcAn.data.atmosphere"
-    fcn        <- "metgapfill"
-    formatname <- 'CF Meteorology'
-    mimetype   <- 'application/x-netcdf'
-    lst        <- site.lst(site,con)
+    lst <- site.lst(site,con)
     
-    ready.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
+    print("# Convert to model format")
+    input.id  <- ready.id
+    outfolder <- file.path(dir,paste0(met,"_",model,"_site_",str_ns))
+    pkg       <- paste0("PEcAn.",model)
+    fcn       <- paste0("met2model.",model)
+    
+    model.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
                               username,con=con,hostname=host$name,write=TRUE,lst=lst)
+    print(c("Done model convert",model.id,outfolder))
+    
+    db.close(con)
+    return(outfolder)
     
   }
-  print("Standardized Met Produced")
-  
-  #--------------------------------------------------------------------------------------------------#
-  # Prepare for Model
-  
-  ## NOTE: ALL OF THIS CAN BE QUERIED THROUGH DATABASE
-  ## MODEL_TYPES -> FORMATS where tag = "met"
-  if("ED2" %in% unlist(strsplit(model,"[.]"))){
-    model <- "ED2"
-    formatname <- 'ed.met_driver_header_files_format'
-    mimetype <- 'text/plain'
-  }else if(model == "SIPNET"){
-    formatname <- 'Sipnet.climna'
-    mimetype <- 'text/csv'
-  }else if(model == "BIOCRO"){
-    formatname <- 'biocromet'
-    mimetype <- 'text/csv'
-  }else if(model == "DALEC"){
-    formatname <- 'DALEC meteorology'
-    mimetype <- 'text/plain'
-  }else if(model == "LINKAGES"){
-    formatname = 'LINKAGES met'
-    mimetype <- 'text/plain'
-  }
-  
-  lst <- site.lst(site,con)
-  
-  print("# Convert to model format")
-  input.id  <- ready.id
-  outfolder <- file.path(dir,paste0(met,"_",model,"_site_",str_ns))
-  pkg       <- paste0("PEcAn.",model)
-  fcn       <- paste0("met2model.",model)
-  
-  model.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
-                            username,con=con,hostname=host$name,write=TRUE,lst=lst)
-  print(c("Done model convert",model.id,outfolder))
-  
-  db.close(con)
-  return(outfolder)
-  
 }
 
 ##' @name find.prefix
@@ -229,7 +305,7 @@ find.prefix <- function(files){
   }
   
   files.split <- try(strsplit(unlist(files), "[.]"), silent = TRUE)
-    
+  
   if(!inherits(files.split, 'try-error')){
     
     files.split <- lapply(files.split, `length<-`,max(unlist(lapply(files.split, length))))
@@ -264,6 +340,7 @@ find.prefix <- function(files){
 ##' @param site.id
 ##' @param con
 ##' @author Betsy Cowdery
+##' 
 db.site.lat.lon <- function(site.id,con){
   site <- db.query(paste("SELECT id, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =",site.id),con)
   if(nrow(site)==0){logger.error("Site not found"); return(NULL)} 
@@ -271,3 +348,36 @@ db.site.lat.lon <- function(site.id,con){
     return(list(lat = site$lat, lon = site$lon))
   }
 }
+
+## Betsy's brute force fix for downloading files from Brown Dog
+
+##' @name dl_file
+##' @title dl_file
+##' @export
+##' @param link - path to file to be downloaded
+##' @param outfolder - destination of downloaded file(s)
+##' @param i - number of times to try download
+##' @author Betsy Cowdery
+dl_file <- function(link, outfolder, i){
+  r <- try(download.file(link, outfolder, quiet = TRUE), silent = TRUE)
+  if(inherits(r, 'try-error') & i <= 10000){
+    cat("*")
+    dl_file(link, outfolder, i)
+  }
+  if(inherits(r, 'try-error') & i > 10000){
+    print("Download failed after 1000 attempts")
+    return(NULL)
+  }
+  if(inherits(r, 'integer')){
+    cat("\nDownload succeeded")
+  }
+}
+
+#' Is it better to do a while loop?
+#'        while(!file.exists(outputfile)) {
+#           tryCatch({
+#             download.file(url, outputfile)
+#           }, error = function(e) {
+#             file.remove(outputfile)
+#           })
+#         }

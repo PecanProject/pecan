@@ -53,7 +53,11 @@ options(error=quote({
 # initialization
 # ----------------------------------------------------------------------
 # load the pecan settings
-settings <- read.settings("pecan.xml")
+
+# settings <- read.settings("pecan.xml")
+# read.settings does not work with the new tags <browndog> and tags in <met>
+# This is NOT a solution
+settings <- xmlToList(xmlParse("tests/pecan2.browndog.sipnet.xml"))
 
 # remove existing STATUS file
 if (length(which(commandArgs() == "--continue")) == 0) {
@@ -76,88 +80,105 @@ if (length(which(commandArgs() == "--continue")) == 0) {
 
     # met conversion
     if(input.tag == 'met') {
-      if (!is.null(settings$browndog$url) && (settings$browndog$url != "")) {
-        status.start("BrownDog")
-        if (settings$model$type == "SIPNET") {
-          outputtype <- "clim"
-        }
-
-        # site
-        site <- sub(".* \\((.*)\\)", "\\1", settings$run$site$name)
-
-        # start/end date for weather
-        start_date <- settings$run$start.date
-        end_date <- settings$run$end.date
-
-        # output filename
-        outputfile <- file.path(settings$run$host$rundir, paste0(site, ".", outputtype))
-
-        # create xml data to post
-        xmldata <- paste0("<input>",
-                          "<type>", input['input'], "</type>",
-                          "<site>", site, "</site>",
-                          "<start_date>", start_date, "</start_date>",
-                          "<end_date>", end_date, "</end_date>",
-                          "</input>")
-
-        # post to browndog
-        result <- postForm(paste0(settings$browndog$url, outputtype, "/"),
-                           "fileData"=fileUpload("pecan.xml", xmldata, "text/xml"))
-
-        # get url with result
-        url <- gsub('.*<a.*>(.*)</a>.*', '\\1', result)
-        print(url)
-        while(!file.exists(outputfile)) {
-          tryCatch({
-            download.file(url, outputfile)
-          }, error = function(e) {
-            file.remove(outputfile)
-          })
-        }
-
-        settings$run$inputs[[i]] <- outputfile
-        status.end()
-
-      } else if (TRUE) {
-        if (input['input'] == 'Ameriflux') {
-          status.start("Ameriflux")
-
-          # start/end date for weather
-          start_date <- settings$run$start.date
-          end_date <- settings$run$end.date
-
-          # site
-          site <- sub(".* \\((.*)\\)", "\\1", settings$run$site$name)
-
-          # download data
-          fcn <- paste("download", input['input'], sep=".")
-          do.call(fcn, list(site, file.path(settings$run$dbfiles, input['input']), start_date=start_date, end_date=end_date))
-
-          # convert to CF
-          fcn <- paste("met2CF", input['input'], sep=".")
-          do.call(fcn, list(file.path(settings$run$dbfiles, input['input']), site, file.path(settings$run$dbfiles, "cf"), start_date=start_date, end_date=end_date))
-
-          # gap filing
-          metgapfill(file.path(settings$run$dbfiles, "cf"), site, file.path(settings$run$dbfiles, "gapfill"), start_date=start_date, end_date=end_date)
-
-          # model specific
-          load.modelpkg(input['output'])
-          fcn <- paste("met2model", input['output'], sep=".")
-          r <- do.call(fcn, list(file.path(settings$run$dbfiles, "gapfill"), site, file.path(settings$run$dbfiles, input['output']), start_date=start_date, end_date=end_date))
-          settings$run$inputs[[i]] <- r[['file']]
-          status.end()
-        }
-      }
-    } else {
-      if(length(input) > 1) {  ## check to see if the input is a file or a tag
+      if(length(input) >= 1) {  
         status.start("MET Process")
-        settings$run$inputs[[i]]  <-  PEcAn.data.atmosphere::met.process(
-                                        site = settings$run$site, input=input['input'],
-                                        start_date=settings$run$start.date, end_date=settings$run$end.date,
-                                        model=settings$model$type, host=settings$run$host,
-                                        bety=settings$database$bety, dir=settings$run$dbfiles)
+        
+        settings$run$inputs$path[[i]]  <-  PEcAn.data.atmosphere::met.process(
+          site       = settings$run$site, 
+          input_met  = settings$run$inputs$met,
+          start_date = settings$run$start.date,
+          end_date   = settings$run$end.date,
+          model      = settings$model$type,
+          host       = settings$run$host,
+          bety       = settings$database$bety, 
+          dir        = settings$run$dbfiles,
+          browndog   = settings$browndog)
         status.end()
       }
+      
+      
+#       if (!is.null(settings$browndog$url) && (settings$browndog$url != "")) {
+#         status.start("BrownDog")
+#         if (settings$model$type == "SIPNET") {
+#           outputtype <- "clim"
+#         }
+# 
+#         # site
+#         site <- sub(".* \\((.*)\\)", "\\1", settings$run$site$name)
+# 
+#         # start/end date for weather
+#         start_date <- settings$run$start.date
+#         end_date <- settings$run$end.date
+# 
+#         # output filename
+#         outputfile <- file.path(settings$run$host$rundir, paste0(site, ".", outputtype))
+# 
+#         # create xml data to post
+#         xmldata <- paste0("<input>",
+#                           "<type>", input['input'], "</type>",
+#                           "<site>", site, "</site>",
+#                           "<start_date>", start_date, "</start_date>",
+#                           "<end_date>", end_date, "</end_date>",
+#                           "</input>")
+# 
+#         # post to browndog
+#         result <- postForm(paste0(settings$browndog$url, outputtype, "/"),
+#                            "fileData"=fileUpload("pecan.xml", xmldata, "text/xml"))
+# 
+#         # get url with result
+#         url <- gsub('.*<a.*>(.*)</a>.*', '\\1', result)
+#         print(url)
+#         while(!file.exists(outputfile)) {
+#           tryCatch({
+#             download.file(url, outputfile)
+#           }, error = function(e) {
+#             file.remove(outputfile)
+#           })
+#         }
+# 
+#         settings$run$inputs[[i]] <- outputfile
+#         status.end()
+# 
+#       } else if (TRUE) {
+#         if (input['input'] == 'Ameriflux') {
+#           status.start("Ameriflux")
+# 
+#           # start/end date for weather
+#           start_date <- settings$run$start.date
+#           end_date <- settings$run$end.date
+# 
+#           # site
+#           site <- sub(".* \\((.*)\\)", "\\1", settings$run$site$name)
+# 
+#           # download data
+#           fcn <- paste("download", input['input'], sep=".")
+#           do.call(fcn, list(site, file.path(settings$run$dbfiles, input['input']), start_date=start_date, end_date=end_date))
+# 
+#           # convert to CF
+#           fcn <- paste("met2CF", input['input'], sep=".")
+#           do.call(fcn, list(file.path(settings$run$dbfiles, input['input']), site, file.path(settings$run$dbfiles, "cf"), start_date=start_date, end_date=end_date))
+# 
+#           # gap filing
+#           metgapfill(file.path(settings$run$dbfiles, "cf"), site, file.path(settings$run$dbfiles, "gapfill"), start_date=start_date, end_date=end_date)
+# 
+#           # model specific
+#           load.modelpkg(input['output'])
+#           fcn <- paste("met2model", input['output'], sep=".")
+#           r <- do.call(fcn, list(file.path(settings$run$dbfiles, "gapfill"), site, file.path(settings$run$dbfiles, input['output']), start_date=start_date, end_date=end_date))
+#           settings$run$inputs[[i]] <- r[['file']]
+#           status.end()
+#         }
+#       }
+#     } else {
+#       if(length(input) > 1) {  ## check to see if the input is a file or a tag
+#         status.start("MET Process")
+#         settings$run$inputs[[i]]  <-  PEcAn.data.atmosphere::met.process(
+#                                         site = settings$run$site, input=input['input'],
+#                                         start_date=settings$run$start.date, end_date=settings$run$end.date,
+#                                         model=settings$model$type, host=settings$run$host,
+#                                         bety=settings$database$bety, dir=settings$run$dbfiles)
+#         status.end()
+#       }
     }
   }
   saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))

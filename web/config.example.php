@@ -68,4 +68,8 @@ $REST_AUTH_DIGEST_STRETCHES  = 10;
 # Location where logs should be written
 $logfile = "/home/carya/output/betydb.log";
 
+# uncomment the following variable to enable the simple interface
+#$simpleBETY = TRUE;
+
+
 ?>
