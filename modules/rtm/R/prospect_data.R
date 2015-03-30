@@ -65,18 +65,15 @@ tav.f <- function(teta,ref){
 prospect.datamatrix <- function(model){
 	if (model == "prospect4"){
 		load("data/dataSpec_p4.RData")
-		dat <- dataSpec_p4
-		mat.name <- "P4data"
+		dat <- dataSpec_p4[,-4]    # Drop empty Car absorption features column
 	}
 	else if (model == "prospect5"){
 		load("data/dataSpec_p5.RData")
 		dat <- dataSpec_p5
-		mat.name <- "P5data"
 	}
 	else if (model == "prospect5b"){
 		load("data/dataSpec_p5B.RData")
 		dat <- dataSpec_p5B
-		mat.name <- "P5Bdata"
 	}
 	nd <- ncol(dat)
 	nr <- dat$refractive_index
@@ -88,10 +85,8 @@ prospect.datamatrix <- function(model){
 	rho2 <- 1 - tao2
 	x <- tav / t90
 	y <- x * (t90 - 1) + 1 - tav
-	assign(mat.name, as.matrix(cbind(dat[,3:nd], tao1, tao2, rho1, rho2, x, y)))	
-	filename <- sprintf("data/%s.rda", model)
-	save(list=mat.name, file = filename)
-	print(sprintf("Saved data to %s", filename))
+	pdat <-  as.matrix(cbind(dat[,3:nd], tao1, tao2, rho1, rho2, x, y))	
+	return(pdat)
 }
 
 #==================================================================================================#
