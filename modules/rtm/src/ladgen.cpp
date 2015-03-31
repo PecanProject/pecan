@@ -4,7 +4,7 @@ using namespace Rcpp;
 double cum(double a, double b, double t){
 
     double rd = M_PI/180;
-    double eps, delx, x, p, y, dx, x;
+    double eps, delx, x, p, y, dx;
 
     eps = 1e-6;
     delx = 1;
@@ -28,12 +28,12 @@ NumericVector ladgen(double a, double b){
 
     for(int i = 0; i<8; i++){
         t = i*10;
-        freq(i) = cum(a,b,t);
+        freq[i] = cum(a,b,t);
     }
 
     for(int i = 8; i<12; i++){
-        t = 80 + (i2 - 8) * 2;
-        freq(i2) = cum(a,b,t);
+        t = 80 + (i - 8) * 2;
+        freq[i] = cum(a,b,t);
     }
 
     freq[12] = 1;

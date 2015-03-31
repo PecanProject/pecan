@@ -4,6 +4,14 @@ using namespace Rcpp;
 
 //4SAIL model support functions
 
+double min(double a, double b){
+	if(a < b) {
+		return a;
+	} else {
+		return b;
+	}
+}
+
 // J1 function with avoidance of singularity problem
 double Jfunc1(double k, double l, double t){
     double del = (k-l)*t;
@@ -32,7 +40,7 @@ double Jfunc3(double m, double t){
 }
 
 // 4SAIL2 Model
-//[Rcpp::export]]
+// [Rcpp::export]]
 NumericVector FourSAIL2_cpp(
     //// Input parameters ////
     double lai,             // Leaf area index
@@ -67,7 +75,12 @@ NumericVector FourSAIL2_cpp(
     //      [,3] rddt:  diffuse reflectance for diffuse incidence
     NumericVector result(4);
 
-    // Type declarations for intermediate variables
+	NumericVector li = NumericVector::create(
+		5, 15, 25, 35, 45, 55, 65, 75, 81, 83, 85, 87, 89);
+	int nli = li.size();
+	
+	
+	// Type declarations for intermediate variables
 
     double cts, cto, ctscto, tants, tanto, cspsi, dso,          // Angular factors
    		Cs, Co, Overlap,                                     // Clumping effects
@@ -82,24 +95,22 @@ NumericVector FourSAIL2_cpp(
         fhot, x1, y1, f1, ca, fint,                          // Simpson integral
         x2, y2, f2, tsstoo,
         rho1, rho2, tau1, tau2, 
-        tss, too, sb, sf, vb, vf, w2, sigb, sigf, att, m2, m,
+        too, sb, sf, vb, vf, w2, sigb, sigf, att, m2, m,
         e1, e2, rinf, rinf2, re, denom,
         J1ks, J2ks, J1ko, J2ko, 
         Ps, Qs, Pv, Qv,
-        tdd, rdd, tsd, tsd, tdo, rdo,
+        tdd, rdd, tsd, tdo, rdo,
         z, g1, g2, Tv1, Tv2, T1, T2, T3, rsod,
-        J3, amsig, apsig, rtp, rtm, rdd, tdd,
-        dns, dno, cks, cko, dks, dko, ho,
-        rsd, rdo, tsd, tdo, 
-        rddb, rsdb, rdob, rsodb, tddb, tsdb, tdob, toob, tssb,
-        tss, too, w1, 
+        J3, amsig, apsig, rtp, rtm,
+        dns, dno, cks, cko, dks, dko, ho, rsd, 
+        rddb, rsdb, rdob, rsodb, tddb, tsdb, tdob, toob, tssb, w1, 
         rn, tup, tdn, rsdt, rdot, rsodt, rsost, rsot,
         rddt_t, rddt_b, tsst, toot, tsdt, tdot, tddt,
-        rddcb, rddct, tddc, rsdc, tsdc rdoc, tdoc, tssc, tooc,
-        rsoc, tssooc, alfas, alfad, rddt, rsdt, rdot, rsot,
+        rddcb, rddct, tddc, rsdc, tsdc, rdoc, tdoc, tssc, tooc,
+        rsoc, tssooc, alfas, alfad, rddt,
         alfast, alfadt 
             ;
-    NumericVector lidf(13);
+    NumericVector lidf(13), vs_vec(4);
 
     // Angular factors
     cts = cos(rd*tts);
@@ -203,8 +214,8 @@ NumericVector FourSAIL2_cpp(
     ddf = 0.5 * (1 - bf);
 
     // LAI in two layers
-    lai1 = (1 - fbu) * lai;
-    lai2 = fbu * lai;
+    lai1 = (1 - fb) * lai;
+    lai2 = fb * lai;
 
     // Hotspot effect for 2 layers
     tss = exp(-ks * lai);
@@ -213,7 +224,7 @@ NumericVector FourSAIL2_cpp(
     alf = 1;
     if (hot > 0) {
         alf = (dso / hot) * 2 / (ks + ko);
-        alf = min(alf, 200);
+        alf = min(alf, 200.0);
     }
 
     if (alf < zero){
@@ -233,7 +244,7 @@ NumericVector FourSAIL2_cpp(
         x1 = 0;
         y1 = 0;
         f1 = 0;
-        ca = exp(alf * (fbu - 1.0));
+        ca = exp(alf * (fb - 1.0));
         fint = (1 - ca) * 0.05;
         s1 = 0;
 
@@ -241,7 +252,7 @@ NumericVector FourSAIL2_cpp(
             if (i < (nstep - 1)){
                 x2 = -log(1 - i * fint) / alf;
             } else {
-                x2 = 1 - fbu;
+                x2 = 1 - fb;
             }
             y2 = -(ko + ks) * lai * x2 + fhot * (1 - exp(-alf*x2)) / alf;
             f2 = exp(y2);
@@ -305,8 +316,8 @@ NumericVector FourSAIL2_cpp(
 
         J1ks = Jfunc1(ks, m ,lai2);
         J2ks = Jfunc2(ks, m, lai2);
-        J1ko = Jfunc1(k0, m, lai2);
-        J2ko = Jfunct2(ko, m, lai2);
+        J1ko = Jfunc1(ko, m, lai2);
+        J2ko = Jfunc2(ko, m, lai2);
 
         Ps=(sf+sb*rinf)*J1ks;
         Qs=(sf*rinf+sb)*J2ks;

@@ -1,3 +1,6 @@
+#include <Rcpp.h>
+using namespace Rcpp;
+
 //	Compute volume scattering functions and interception coefficients
 //	for given solar zenith, viewing zenith, azimuth and leaf inclination angle.
 //
@@ -12,7 +15,7 @@ NumericVector volscatt(
         double tts,
         double tto,
         double psi,
-        double ttl,
+        double ttl
         ){
     double rd = M_PI / 180;
     double chi_s, chi_o, frho, ftau;
@@ -42,7 +45,7 @@ NumericVector volscatt(
     cosbto = 5;
     if (abs(so) > 1e-6) cosbto = -co/so;
 
-    if (abs(cosbts) < 1.d0) {
+    if (abs(cosbts) < 1) {
         bts = acos(cosbts);
         ds = ss;
     } else {
@@ -69,7 +72,7 @@ NumericVector volscatt(
       btran1 = abs(bts-bto);
       btran2 = M_PI-abs(bts+bto-M_PI);
 
-      if (psir.le.btran1) {
+      if (psir <= btran1) {
 		bt1 = psir;
 		bt2 = btran1;
 		bt3 = btran2;
