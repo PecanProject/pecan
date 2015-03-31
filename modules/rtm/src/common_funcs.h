@@ -17,9 +17,14 @@ NumericVector gpm(
 
 // RTMs
 NumericVector prospect4_def(NumericVector param, NumericMatrix p4data);
+NumericVector prospect5_def(NumericVector param, NumericMatrix p5data);
+NumericVector prospect5b_def(NumericVector param, NumericMatrix p5bdata);
 
 // Priors
 double prospect4_priors(int param, double value);
+double prospect5_priors(int param, double value);
+double prospect5b_priors(int param, double value);
+
 
 // Truncated normal distribution functions
 double rtnorm(double mu, double sd, double MIN);
