@@ -50,7 +50,7 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite=FALSE, ...
 ##' \item wind_speed num m/s
 ##' \item northward_wind
 ##' \item eastward_wind
-##' \item ppfd
+##' \item ppfd (optional; if missing, requires surface_downwelling_shortwave_flux_in_air)
 ##' \item surface_downwelling_shortwave_flux_in_air
 ##' \item air_pressure (Pa) (optional; if missing, requires relative_humidity)
 ##' \item specific_humidity (optional; if missing, requires relative_humidity)
@@ -64,7 +64,7 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite=FALSE, ...
 ##' \item hr  hour
 ##' \item solar solar radiation (PPFD)
 ##' \item temp temperature, degrees celsius
-##' \item rh relative humidity, as percent
+##' \item rh relative humidity, as fraction (0-1)
 ##' \item windspeed m/s
 ##' \item precip cm/h
 ##' \end{itemize}
@@ -77,13 +77,19 @@ cf2biocro <- function(met){
       rh <- qair2rh(qair = met$specific_humidity, 
                     temp = ud.convert(met$air_temperature, "Kelvin", "Celsius"),
                     pres = ud.convert(met$air_pressure, "Pa", "hPa"))
-      met <- cbind(met, relative_humidity = rh)
+      met <- cbind(met, relative_humidity = rh * 100)
     } else {
       logger.error("neither relative_humidity nor [air_temperature, air_pressure, and specific_humidity]",
                          "are in met data")
     }
   }
-  
+  if(!"ppfd" %in% colnames(met)){
+    if("surface_downwelling_shortwave_flux_in_air" %in% colnames(met)){
+      ppfd <- par2ppfd(met$surface_downwelling_shortwave_flux_in_air)
+    } else {
+      logger.error("Need either ppfd or surface_downwelling_shortwave_flux_in_air in met dataset")
+    }
+  }
   if(!"wind_speed" %in% colnames(met)){
     if(all(c("northward_wind", "eastward_wind") %in% colnames(met))){
       wind_speed <- sqrt(northward_wind^2 + eastward_wind^2)
@@ -91,11 +97,17 @@ cf2biocro <- function(met){
     logger.error("neither wind_speed nor both eastward_wind and northward_wind are present in met data")
 
   }
+  
+  ## Convert RH from percent to fraction
+  ## BioCro functions 
+  if(met[,max(relative_humidity ) > 1]){ ## just to confirm
+    met[, `:=` (relative_humidity = relative_humidity/100)]
+  } 
   newmet <- met[, list(year = year, doy = doy, hour = hour,
                        SolarR = ppfd,
                        Temp = ud.convert(air_temperature, "Kelvin", "Celsius"), 
                        RH = relative_humidity, 
-                       WS = , 
+                       WS = wind_speed, 
                        precip = ud.convert(precipitation_flux, "s-1", "h-1"))] 
-  return(newmet)
+  return(as.data.frame(newmet))
 }
