@@ -11,14 +11,20 @@ using namespace Rcpp;
 //
 //	Wout Verhoef, april 2001, for CROMA
 
-NumericVector volscatt(
+void volscatt(
+        // Inputs
         double tts,
         double tto,
         double psi,
-        double ttl
+        double ttl,
+
+        // Outputs
+        double &chi_s,
+        double &chi_o,
+        double &frho,
+        double &ftau
         ){
     double rd = M_PI / 180;
-    double chi_s, chi_o, frho, ftau;
     double costs, costo, sints, sinto, cospsi, psir,
            costl, sintl, cs, co, ss, so,
            cosbts, cosbto, bts, ds,
@@ -96,6 +102,6 @@ NumericVector volscatt(
         if (frho < 0) frho = 0;
         if (ftau < 0) ftau = 0;
 	  
-      return NumericVector::create(chi_s, chi_o, frho, ftau); 
+      return ; 
 }
 
