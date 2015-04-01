@@ -61,28 +61,33 @@ tav.f <- function(teta,ref){
   
 }
 
-## How data file values are generated
-load("../data/dataSpec_p4.RData")
-expint_coefs <- read.csv("../data/expint_coefs.dat")
-nr <- dataSpec_p4$refractive_index
-t90 <- tav.f(90, nr)
-tav <- tav.f(40, nr)
-tao1 <- tav
-tao2 <- t90 / nr^2
-rho1 <- 1 - tao1
-rho2 <- 1 - tao2
-x <- tav / t90
-y <- x * (t90 - 1) + 1 - tav
-prospect4.dat <- data.frame(wl = 400:2500,
-                            nr = nr,
-                            Cab_abs = dataSpec_p4$specific_abs_coeff_chl,
-                            Cw_abs = dataSpec_p4$specific_abs_coeff_cw,
-                            Cm_abs = dataSpec_p4$specific_abs_coeff_cm,
-                            tao1 = tao1, tao2 = tao2,
-                            rho1 = rho1, rho2 = rho2,
-                            x = x, y = y)
-
-save(prospect4.dat, expint_coefs, file = "../data/prospect4.Rdata")
+## Generate data file for given prospect model
+prospect.datamatrix <- function(model){
+	if (model == "prospect4"){
+		load("data/dataSpec_p4.RData")
+		dat <- dataSpec_p4[,-4]    # Drop empty Car absorption features column
+	}
+	else if (model == "prospect5"){
+		load("data/dataSpec_p5.RData")
+		dat <- dataSpec_p5
+	}
+	else if (model == "prospect5b"){
+		load("data/dataSpec_p5B.RData")
+		dat <- dataSpec_p5B
+	}
+	nd <- ncol(dat)
+	nr <- dat$refractive_index
+	t90 <- tav.f(90, nr)
+	tav <- tav.f(40, nr)
+	tao1 <- tav
+	tao2 <- t90 / nr^2
+	rho1 <- 1 - tao1
+	rho2 <- 1 - tao2
+	x <- tav / t90
+	y <- x * (t90 - 1) + 1 - tav
+	pdat <-  as.matrix(cbind(dat[,3:nd], tao1, tao2, rho1, rho2, x, y))	
+	return(pdat)
+}
 
 #==================================================================================================#
 
