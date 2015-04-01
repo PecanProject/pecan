@@ -17,7 +17,8 @@ Depends:
     ggplot2,
     data.table,
     lubridate,
-    REddyProc
+    REddyProc,
+    PEcAn.DB
 Suggests:
     RNCEP,
     PEcAn.utils
