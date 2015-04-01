@@ -207,8 +207,8 @@ met2model.BIOCRO <- function(met){
 get.ncvector <- function(var, lati = lati, loni = loni,
                          run.dates = run.dates, met.nc){
   
-  start.idx = c(lat = lati, lon = loni, time = run.dates$index[1])
-  count.idx = c(lat = 1, lon = 1, time = nrow(run.dates))
+  start.idx = c(latitude = lati, longitude = loni, time = run.dates$index[1])
+  count.idx = c(latitude = 1, longitude = 1, time = nrow(run.dates))
   dim.order <- sapply(met.nc$var$air_temperature$dim, function(x) x$name)
   ncvar_get2 <- function(var){
     ans <-  ncvar_get(nc = met.nc, varid = var,
