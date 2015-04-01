@@ -64,15 +64,15 @@ tav.f <- function(teta,ref){
 ## Generate data file for given prospect model
 prospect.datamatrix <- function(model){
 	if (model == "prospect4"){
-		load("data/dataSpec_p4.RData")
+		data(dataSpec_p4)
 		dat <- dataSpec_p4[,-4]    # Drop empty Car absorption features column
 	}
 	else if (model == "prospect5"){
-		load("data/dataSpec_p5.RData")
+		data(dataSpec_p5)
 		dat <- dataSpec_p5
 	}
 	else if (model == "prospect5b"){
-		load("data/dataSpec_p5B.RData")
+		data(dataSpec_p5B)
 		dat <- dataSpec_p5B
 	}
 	nd <- ncol(dat)
