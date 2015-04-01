@@ -23,8 +23,8 @@
  <ensemble>
   <variable>NPP</variable>
   <size>1</size>
-  <start.year>2010</start.year>
-  <end.year>2010</end.year>
+  <start.year>2006</start.year>
+  <end.year>2007</end.year>
  </ensemble>
   <model>
   <id>10</id>
@@ -34,19 +34,19 @@
  </model>
  <run>
   <site>
-   <id>796</id>
-   <name>Bartlett Experimental Forest (US-Bar)</name>
-   <lat>44.06464</lat>
-   <lon>-71.288077</lon>
+   <id>755</id>
+   <name>Duke Forest-hardwoods (US-Dk2)</name>
+   <lat>35.9736</lat>
+   <lon>-79.1004</lon>
   </site>
-  <start.date>2010-01-01 00:00:00</start.date>
-  <end.date>2010-12-31 00:00:00</end.date>
+  <start.date>2006-01-01 00:00:00</start.date>
+  <end.date>2007-12-31 00:00:00</end.date>
   <host>
    <name>localhost</name>
    <rundir>/home/ecowdery/met_process_tests/dalec//run</rundir>
    <outdir>/home/ecowdery/met_process_tests/dalec//out</outdir>
   </host>
-  <dbfiles>/fs/data1/pecan.data/input</dbfiles>
+  <dbfiles>/home/ecowdery/met_process_tests</dbfiles>
    <inputs>
     <met>
       <source>Ameriflux</source>
