@@ -22,6 +22,7 @@ $userok=isset($_REQUEST['userok']);
 $offline=isset($_REQUEST['offline']);
 $pecan_edit=isset($_REQUEST['pecan_edit']);
 $model_edit=isset($_REQUEST['model_edit']);
+$browndog=isset($_REQUEST['browndog']);
 
 # parameters
 if (!isset($_REQUEST['siteid'])) {
@@ -170,6 +171,12 @@ if (isset($db_fia_database) && ($db_fia_database != "")) {
 }
 
 fwrite($fh, "  </database>" . PHP_EOL);
+
+if ($browndog) {
+  fwrite($fh, "  <browndog>" . PHP_EOL);  
+  fwrite($fh, "    <url>${browndog_url}</url>" . PHP_EOL);  
+  fwrite($fh, "  </browndog>" . PHP_EOL);  
+}
 
 $pft_id=1;
 fwrite($fh, "  <pfts>" . PHP_EOL);

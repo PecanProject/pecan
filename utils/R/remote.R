@@ -122,10 +122,12 @@ remote.execute.R <- function(script, host="localhost", user=NA, verbose=FALSE, R
              "close(fp)")
   verbose <- ifelse(as.logical(verbose), "", FALSE)
   if ((host == "localhost") || (host == fqdn())) {
-    system2(R, "--vanilla", stdout=verbose, stderr=verbose, input=input)
+    result = try(system2(R, "--vanilla", stdout=verbose, stderr=verbose, input=input))
+    print(result)
+    if(!file.exists(tmpfile)){fp <- file(tmpfile, 'w');serialize(result,fp);close(fp)}
   } else {
-    remote <- ifelse(is.na(user), host, paste(user, host, sep='@'))
-    system2('ssh', c('-T', remote, R, "--vanilla"), stdout=verbose, stderr=verbose, input=input)
+    remote <- ifelse(is.na(user), host, paste(user, host, sep='@'))[[1]]
+    result = system2('ssh', c('-T', remote, R, "--vanilla"), stdout=verbose, stderr=verbose, input=input)
     remote.copy.file(host, tmpfile, user, "localhost", tmpfile)
     remote.execute.cmd("rm", c("-f", tmpfile), host, user)
   }

@@ -39,7 +39,10 @@
 #' @param nrep - number of MCMC replicates
 #'
 #' @param form   functional form of the allometry: "power" vs "exp"
-#'
+
+#' @param dmin   minimum dbh of interest
+#' @param dmax   maximum dbh of interest
+
 #' @details  dependencies: requires MCMCpack and mvtnorm
 #'
 #' note: runs 1 chain, but multiple chains can be simulated by
@@ -51,7 +54,7 @@
 #' @author Michael Dietze
 #' 
 #' 
-allom.BayesFit <- function(allom,nrep=10000,form="power") {
+allom.BayesFit <- function(allom,nrep=10000,form="power",dmin=0.1,dmax=500) {
 
   ## check for valid inputs
   if(!(form %in% ('power'))){
@@ -91,9 +94,25 @@ allom.BayesFit <- function(allom,nrep=10000,form="power") {
   spp  <- nu(allom[['parm']]$spp)
 
   ## declare constants
-  ntally = nrow(allom[['parm']]); if(is.null(ntally)) ntally = 0;
+
+  ## Drop equations outside of DBH range of interest & modifying the pseduodata as necessary
+  ##		We need the max of the allometry EQ to be >= min of interest and the min to be <=
+  # ntally = nrow(allom[['parm']]); if(is.null(ntally)) ntally = 0;
+  rng.mod <- cbind(ifelse(nu(allom$parm$Xmin)>dmin, nu(allom$parm$Xmin), dmin),
+                   ifelse(nu(allom$parm$Xmax)<dmax, nu(allom$parm$Xmax), dmax))
+
+  n.mod <- n
+  for(i in seq_along(n)){
+     tmp.seq  <- seq(rng[i,1], rng[i,2], length.out=100)
+     n.mod[i] <- round(n[i]*length(tmp.seq[tmp.seq>dmin & tmp.seq<dmax])/length(tmp.seq),digits=0)
+   }
+
+  ntally  <- which(nu(allom[['parm']][,"Xmax"])>=dmin & nu(allom[['parm']][,"Xmin"])<=dmax & n.mod>0); 
+  if(is.null(ntally)) ntally = 0;
+  print(c("Dropping allom rows: ", which(!(1:nrow(allom[['parm']]) %in% ntally))))
+
   nfield = length(allom[['field']])
-  nsite  = ntally + nfield
+  nsite  = length(ntally[ntally>0]) + nfield
   my.spp = unique(spp)
   nspp = length(my.spp)
   
@@ -132,9 +151,9 @@ allom.BayesFit <- function(allom,nrep=10000,form="power") {
   sigma = 0.3
   sinv  = 1/sigma
   data  = allom[['field']]
-  if(ntally > 0){
-    for(i in 1:ntally){
-      data[[i+nfield]] = list(x=rep(0,n[i]),y=rep(0,n[i]))
+  if(length(ntally) > 0){
+    for(i in 1:length(ntally)){
+      data[[i+nfield]] = list(x=rep(0,n.mod[ntally[i]]),y=rep(0,n.mod[ntally[i]]))
     }
   }
   x=y<-NULL
@@ -148,13 +167,13 @@ allom.BayesFit <- function(allom,nrep=10000,form="power") {
   for(g in 1:nrep){
     
     ## For tabulated equations, impute X,Y data --------------------------------------
-    if(ntally > 0){
-    for(j in 1:ntally){
-      x0 <- runif(n[j],rng[j,1],rng[j,2])
+    if(ntally[1] > 0){
+    for(j in ntally){
+      x0 <- runif(n.mod[j],rng.mod[j,1],rng.mod[j,2])
       if(!is.na(Xcor[j])){
         x <- Xcor[j]*x0
       }else{
-        if(Xtype[i] == "d.b.h.^2"){
+        if(Xtype[j] == "d.b.h.^2"){
           ## convert to sq inches
           x = x0*x0/(2.54*2.54)
         } else {
@@ -164,37 +183,43 @@ allom.BayesFit <- function(allom,nrep=10000,form="power") {
       y <- NA      
       if(eqn[j] == 1){        
         y = a[j] + b[j]*c[j]*log10(x)
-        y = 10^rnorm(n[j],y,se[j])
+        y = 10^rnorm(n.mod[j],y,se[j])
       } else if(eqn[j] == 2){
         y = a[j] + b[j]*x + c[j]*d[j]*log(x)
-        y = exp(rnorm(n[j],y,se[j]))
+        y = exp(rnorm(n.mod[j],y,se[j]))
       } else if(eqn[j] == 3){
         y = a[j] + b[j]*log(x) + c[j]*(d[j]+(e[j]*log(x)))
-        y = exp(rnorm(n[j],y,se[j]))
+        y = exp(rnorm(n.mod[j],y,se[j]))
       } else if(eqn[j] == 4){
         y = a[j] + b[j]*x + c[j]*x^d[j]
-        y = rnorm(n[j],y,se[j])
+        y = rnorm(n.mod[j],y,se[j])
       } else if(eqn[j] == 5){
         y = a[j] + b[j]*x + c[j]*x^2 + d[j]*x^3      
-        y = rnorm(n[j],y,se[j])
+        y = rnorm(n.mod[j],y,se[j])
       } else if(eqn[j] == 6){
         y = a[j] *(exp( b[j] + (c[j]*log(x)) + d[j]*x))
-        y = rnorm(n[j],y,se[j])
+        y = rnorm(n.mod[j],y,se[j])
       } else if(eqn[j] == 7){
         y = a[j] + ((b[j]*(x^c[j]))/((x^c[j])+ d[j]))
-        y = rnorm(n[j],y,se[j])
+        y = rnorm(n.mod[j],y,se[j])
       } else if(eqn[j] == 8){
         y = a[j] + b[j]*log10(x)
-        y = 100^rnorm(n[j],y,se[j])
+        y = 100^rnorm(n.mod[j],y,se[j])
       }else if(eqn[j] == 9){
         y = log(a[j]) + b[j]*log(x)
-        y = exp(rnorm(n[j],y,se[j]))
+        y = exp(rnorm(n.mod[j],y,se[j]))
+      }else if(eqn[j] == 10){
+        y = a[j] + b[j]*log(x)
+        y = exp(rnorm(n.mod[j],y,se[j]))
+      }else if(eqn[j] == 11){
+        y = a[j]*x^(b[j])
+        y =rnorm(n.mod[j],y,se[j])
       }
       y[y<=0] <- NA
       y = y*Ycor[j]
       s2 = which(!is.na(y))
-      data[[nfield+j]]$x = x0[s2] ## store the std units, not the transformed
-      data[[nfield+j]]$y = y[s2]  ## store y transformed to std units
+      data[[nfield+which(ntally==j)]]$x = x0[s2] ## store the std units, not the transformed
+      data[[nfield+which(ntally==j)]]$y = y[s2]  ## store y transformed to std units
     } ## end loop over tally entries
     } ## end check for ntally > 0
     

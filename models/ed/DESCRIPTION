@@ -24,10 +24,3 @@ License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
-Collate:
-    'parse.history.R'
-    'write.configs.ed.R'
-    'start.runs.ed.R'
-    'get.model.output.ed.R'
-    'met2model.ED2.R'
-    'model2netcdf.ED2.R'

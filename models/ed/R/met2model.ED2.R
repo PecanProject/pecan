@@ -18,34 +18,31 @@
 ##overwrite statement below to TRUE.
 
 
+##' met2model wrapper for ED2
+##' 
+##' @title met2model for ED2
 ##' @export
 ##' @param in.path location on disk where inputs are stored
 ##' @param in.prefix prefix of input and output files
 ##' @param outfolder location on disk where outputs will be stored
-##' @param lst timezone offset to GMT in hours
 ##' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
 ##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
+##' @param lst timezone offset to GMT in hours
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
-met2model.ED2 <- function(in.path,in.prefix,outfolder,start_date, end_date, lst=0,overwrite=FALSE,verbose=FALSE){
+met2model.ED2 <- function(in.path,in.prefix,outfolder,start_date, end_date, lst=0,..., overwrite=FALSE,verbose=FALSE){
   overwrite = as.logical(overwrite)
-  lst = as.numeric(lst)
-  
-  #files = dir(in.path,in.prefix,full.names=TRUE)
-  files = dir(in.path,in.prefix)
-  filescount = files[grep(pattern="*.nc",files)]
   
   require(rhdf5)
   require(ncdf4)
   #require(ncdf)
   require(lubridate)
+  require(PEcAn.utils)
 
   # results are stored in folder prefix.start.end
   start_date <- as.POSIXlt(start_date, tz = "GMT")
   end_date <- as.POSIXlt(end_date, tz = "GMT")
-  met_folder <- file.path(outfolder, paste(in.prefix,
-                                         strptime(start_date, "%Y-%m-%d"),
-                                         strptime(end_date, "%Y-%m-%d")))
+  met_folder <- outfolder
   met_header <- file.path(met_folder, "ED_MET_DRIVER_HEADER")
 
   results <- data.frame(file=c(met_header),
@@ -53,12 +50,8 @@ met2model.ED2 <- function(in.path,in.prefix,outfolder,start_date, end_date, lst=
                         mimetype=c('text/plain'),
                         formatname=c('ed.met_driver_header files format'),
                         startdate=c(start_date),
-                        enddate=c(end_date))
-
-  if (file.exists(met_header) && !overwrite) {
-    logger.debug("File '", met_header, "' already exists, skipping to next file.")
-    return(invisible(results))
-  }
+                        enddate=c(end_date),
+                        stringsAsFactors = FALSE)
 
   ## check to see if the outfolder is defined, if not create directory for output
   dir.create(met_folder, recursive=TRUE, showWarnings = FALSE)
@@ -282,7 +275,7 @@ for(year in start_year:end_year) {
     metflag[metvar=="co2"] = 4
     metfrq[metvar=="co2"] = 380
   }
-  write.table("#header",met_header,row.names=FALSE,col.names=FALSE)
+  write.table("header",met_header,row.names=FALSE,col.names=FALSE)
   write.table(sites,met_header,row.names=FALSE,col.names=FALSE,append=TRUE)
   write.table(met_folder,met_header,row.names=FALSE,col.names=FALSE,append=TRUE,quote=FALSE)
   write.table(matrix(metgrid,nrow=1),met_header,row.names=FALSE,col.names=FALSE,append=TRUE,quote=FALSE)
@@ -290,7 +283,9 @@ for(year in start_year:end_year) {
   write.table(matrix(metvar,nrow=1),met_header,row.names=FALSE,col.names=FALSE,append=TRUE)
   write.table(matrix(metfrq,nrow=1),met_header,row.names=FALSE,col.names=FALSE,append=TRUE,quote=FALSE)
   write.table(matrix(metflag,nrow=1),met_header,row.names=FALSE,col.names=FALSE,append=TRUE,quote=FALSE)
- 
+
+print("Done with met2model.ED2")
+
 } ### end loop over met files
   invisible(results)
 
