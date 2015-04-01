@@ -3,7 +3,7 @@
 ##' @title get.soil 
 ##' @param lat 
 ##' @param lon 
-##' @param soil.nc netCDF file with soil data 
+##' @param soil.nc netCDFe file with soil data 
 ##' @return usda soil class 
 ##' @export
 ##' @author David LeBauer
