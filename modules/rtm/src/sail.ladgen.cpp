@@ -1,4 +1,4 @@
-#include "sail_common.h"
+#include "sail.common.h"
 
 double cum(double a, double b, double t){
 

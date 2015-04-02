@@ -1,4 +1,4 @@
-#include "sail_common.h"
+#include "sail.common.h"
 
 //4SAIL model support functions
 

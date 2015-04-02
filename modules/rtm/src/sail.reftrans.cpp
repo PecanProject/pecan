@@ -1,4 +1,4 @@
-#include "sail_common.h"
+#include "sail.common.h"
 
 // Calculate reflectance and transmittance
 void refl_trans(

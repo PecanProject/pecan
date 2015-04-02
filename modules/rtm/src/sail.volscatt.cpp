@@ -1,4 +1,4 @@
-#include "sail_common.h"
+#include "sail.common.h"
 
 //	Compute volume scattering functions and interception coefficients
 //	for given solar zenith, viewing zenith, azimuth and leaf inclination angle.

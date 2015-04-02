@@ -1,4 +1,4 @@
-#include "sail_common.h"
+#include "sail.common.h"
 double rd = 180.0/M_PI;
 
 /* 4SAIL2 Model
