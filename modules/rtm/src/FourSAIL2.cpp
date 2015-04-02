@@ -20,9 +20,9 @@ double rd = 180.0/M_PI;
 NumericVector FourSAIL2_cpp(
         // Structural parameters
         double LAI,             // Leaf area index
-        double LIDFa,           // Average leaf slope indicator [-1, +1]
-        double LIDFb,           // Bimodality parameter of LIDF [-1, +1]
-        double hot,               // Hot spot effect parameter; ratio of avg. leaf width and canopy height
+        double LIDFa,           // Average leaf slope indicator [-1, +1] - CONST
+        double LIDFb,           // Bimodality parameter of LIDF [-1, +1] - CONST
+        double hot,             // Hot spot effect parameter; ratio of avg. leaf width and canopy height - CONST
         double f_brown,         // Fraction brown LAI
         double diss,            // Dissosciation factor for brown/green [0,1]
         double soil_rso,        // Background (soil) bidirectional reflectance
@@ -38,7 +38,7 @@ NumericVector FourSAIL2_cpp(
         double tau_g,         // Green leaf transmittance
         double tau_b,         // Brown leaf transmittance
 
-        // Observational parameters
+        // Observational parameters - CONST
         double sol_zenith,      // Solar zenith angle (degrees)
         double view_zenith,     // Viewing zenith angle (degrees)
         double azimuth          // Relative azimuth (degrees)
