@@ -19,5 +19,3 @@ double min(double a, double b);
 double Jfunc1(double k, double l, double t);
 double Jfunc2(double k, double l, double t);
 double Jfunc3(double m, double t);
-
-extern double rd;

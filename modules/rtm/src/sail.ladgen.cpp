@@ -5,6 +5,7 @@ double cum(double a, double b, double t){
 //    double rd = M_PI/180;
     double eps, delx, x, p, y, dx;
 
+    double rd = M_PI/180.0;
     eps = 1e-6;
     delx = 1;
 
@@ -25,19 +26,19 @@ NumericVector ladgen(double a, double b){
     NumericVector freq(13);
     double t;
 
-    for(int i = 0; i<8; i++){
+    for(int i = 1; i<9; i++){
         t = i*10;
-        freq[i] = cum(a,b,t);
+        freq[i-1] = cum(a,b,t);
     }
 
-    for(int i = 8; i<12; i++){
+    for(int i = 9; i<13; i++){
         t = 80 + (i - 8) * 2;
-        freq[i] = cum(a,b,t);
+        freq[i-1] = cum(a,b,t);
     }
 
     freq[12] = 1;
 
-    for(int i = 12; i > 2; i--){
+    for(int i = 12; i > 1; i--){
         freq[i] = freq[i] - freq[i-1];
     }
 

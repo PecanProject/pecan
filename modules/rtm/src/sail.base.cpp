@@ -1,5 +1,4 @@
 #include "sail.common.h"
-double rd = 180.0/M_PI;
 
 /* 4SAIL2 Model
  *      NOTE the following terminology:
@@ -45,7 +44,7 @@ NumericVector FourSAIL2_cpp(
         )
 {
     double zero = 1e-10;
-//    double rd = M_PI/180;
+    double rd = M_PI/180.0;
 
     // Result is a length 4 vector:
     //      [,0] rsot:  bidirectional reflectance
@@ -136,6 +135,7 @@ NumericVector FourSAIL2_cpp(
         // Extinction coefficients
         ksli = chi_s / cos_SZ;
         koli = chi_o / cos_VZ;
+        printf("i %d  ksli %g  koli %g  lidf %g \n", i, ksli, koli, lidf[i]);
 
         // Area scattering coefficient fractions
         sobli = frho * M_PI / cos_SZVZ;

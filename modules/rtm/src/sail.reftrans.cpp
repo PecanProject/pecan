@@ -33,6 +33,7 @@ void refl_trans(
     tau_ss = exp(-ks * LAI);
     tau_oo = exp(-ko * LAI);
 
+
     double sb = sdb*rho + sdf*tau;
     double sf = sdf*rho + sdb*tau;
 
