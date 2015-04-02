@@ -5,7 +5,7 @@ full.refl <- prospect(4, corn, FALSE)
 full.trans <- prospect(4, corn, TRUE)
 
 ## SAIL parameters
-LAI <- 1
+LAI <- 0.5
 LIDFa <- -0.65
 LIDFb <- -0.15
 hot <- 0.05
@@ -32,13 +32,13 @@ sail.reflectance <- function(rg, tg){
 	return(out.full)
 }
 
-rg <- full.refl[2]
-rb <- full.trans[2]
-print(c(rg, rb))
-print(sail.reflectance(rg, rb))
-# print(system.time(corn.sail <- mapply(sail.reflectance, full.refl, full.trans)))
-# plot(corn.sail[1,], type='l', ylim=c(0,0.5))
-# lines(corn.sail[2,], type='l', col = 2)
-# lines(corn.sail[3,], type='l', col = 3)
-# lines(corn.sail[4,], type='l', col = 4)
-	
+rng <- 1:2101
+
+full.run <- function(rng){
+	print(system.time(corn.sail <- mapply(sail.reflectance, full.refl[rng], full.trans[rng])))
+	par(mfrow=c(2,2))
+	for(i in 1:4) plot(corn.sail[i,], type='l', ylim=c(0,1))
+	return(corn.sail)
+}
+
+cs <- full.run(rng)

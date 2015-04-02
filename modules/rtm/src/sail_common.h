@@ -1,8 +1,7 @@
 #include <Rcpp.h>
-#include <Rmath.h>
 using namespace Rcpp;
 
-double ladgen(double a, double b);
+NumericVector ladgen(double a, double b);
 void volscatt(double tts, double tto, double psi, double ttl,
         double &chi_s, double &chi_o, double &frho, double &ftau);
 
@@ -20,3 +19,5 @@ double min(double a, double b);
 double Jfunc1(double k, double l, double t);
 double Jfunc2(double k, double l, double t);
 double Jfunc3(double m, double t);
+
+extern double rd;

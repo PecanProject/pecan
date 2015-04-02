@@ -1,6 +1,4 @@
-#include <Rcpp.h>
 #include "sail_common.h"
-using namespace Rcpp;
 
 // Calculate reflectance and transmittance
 void refl_trans(

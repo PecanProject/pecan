@@ -1,5 +1,4 @@
-#include <Rcpp.h>
-using namespace Rcpp;
+#include "sail_common.h"
 
 //	Compute volume scattering functions and interception coefficients
 //	for given solar zenith, viewing zenith, azimuth and leaf inclination angle.

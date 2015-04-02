@@ -1,9 +1,8 @@
-#include <Rcpp.h>
-using namespace Rcpp;
+#include "sail_common.h"
 
 double cum(double a, double b, double t){
 
-    double rd = M_PI/180;
+//    double rd = M_PI/180;
     double eps, delx, x, p, y, dx;
 
     eps = 1e-6;

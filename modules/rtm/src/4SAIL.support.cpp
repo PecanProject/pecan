@@ -1,5 +1,4 @@
-#include <Rcpp.h>
-using namespace Rcpp;
+#include "sail_common.h"
 
 //4SAIL model support functions
 

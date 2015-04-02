@@ -1,4 +1,5 @@
 #include "sail_common.h"
+double rd = 180.0/M_PI;
 
 /* 4SAIL2 Model
  *      NOTE the following terminology:
@@ -44,7 +45,7 @@ NumericVector FourSAIL2_cpp(
         )
 {
     double zero = 1e-10;
-    double rd = 180/M_PI;
+//    double rd = M_PI/180;
 
     // Result is a length 4 vector:
     //      [,0] rsot:  bidirectional reflectance
@@ -109,8 +110,6 @@ NumericVector FourSAIL2_cpp(
     double rho2 = (s*rho_g + (f_brown-s) * rho_b) / f_brown;
     double tau2 = (s*tau_g + (f_brown-s) * tau_b) / f_brown;
     
-    printf("s: %g  rho1: %g  tau1: %g  rho2: %g  tau2: %g \n", s, rho1, tau1, rho2, tau2);
-
     // Generate LIDF from input parameters
     NumericVector lidf = ladgen(LIDFa, LIDFb);
 
@@ -193,7 +192,7 @@ NumericVector FourSAIL2_cpp(
 
         x1 = 0;
         y1 = 0;
-        f1 = 0;
+        f1 = 1;
         ca = exp(alf * (f_brown - 1.0));
         fint = (1 - ca) * 0.05;
         s1 = 0;
@@ -231,7 +230,6 @@ NumericVector FourSAIL2_cpp(
 
         tau_ssoo = f1;
     }
-
     
     // Calculate reflectance and transmittance
     // Bottom layer
