@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+<title>vwReg. PEcAn.visualization 1.4.1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="">
+
+<link href="css/bootstrap.css" rel="stylesheet">
+<link href="css/bootstrap-responsive.css" rel="stylesheet">
+<link href="css/highlight.css" rel="stylesheet">
+<link href="css/staticdocs.css" rel="stylesheet">
+
+<!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+  </head>
+
+  <body>
+    <div class="navbar">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand" href="#">PEcAn.visualization 1.4.1</a>
+      <div class="nav">
+        <ul class="nav">
+          <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="container">
+      <header>
+        
+      </header>
+      
+      <h1>PEcAn worldmap</h1>
+
+<div class="row">
+  <div class="span8">
+    <h2>Usage</h2>
+    <pre><div>vwReg(formula, data, title&nbsp;=&nbsp;"", B&nbsp;=&nbsp;1000, shade&nbsp;=&nbsp;TRUE, shade.alpha&nbsp;=&nbsp;0.1, spag&nbsp;=&nbsp;FALSE, spag.color&nbsp;=&nbsp;"darkblue", mweight&nbsp;=&nbsp;TRUE, show.lm&nbsp;=&nbsp;FALSE, show.median&nbsp;=&nbsp;TRUE, median.col&nbsp;=&nbsp;"white", shape&nbsp;=&nbsp;21, show.CI&nbsp;=&nbsp;FALSE, method&nbsp;=&nbsp;loess, bw&nbsp;=&nbsp;FALSE, slices&nbsp;=&nbsp;200, palette&nbsp;=&nbsp;colorRampPalette(c("#FFEDA0", "#DD0000"), bias&nbsp;=&nbsp;2)(20), ylim&nbsp;=&nbsp;NULL, quantize&nbsp;=&nbsp;"continuous", add&nbsp;=&nbsp;FALSE, ...)</div></pre>
+    
+    <h2>Arguments</h2>
+    <dl>
+      <dt>B</dt>
+      <dd>= number bootstrapped smoothers</dd>
+      <dt>bw</dt>
+      <dd>= TRUE: define a default b&w-palette</dd>
+      <dt>shade:</dt>
+      <dd>plot the shaded confidence region?</dd>
+      <dt>shade.alpha:</dt>
+      <dd>should the CI shading fade out at the edges? (by reducing alpha; 0 = no alpha decrease, 0.1 = medium alpha decrease, 0.5 = strong alpha decrease)</dd>
+      <dt>spag:</dt>
+      <dd>plot spaghetti lines?</dd>
+      <dt>spag.color:</dt>
+      <dd>color of spaghetti lines</dd>
+      <dt>mweight:</dt>
+      <dd>should the median smoother be visually weighted?</dd>
+      <dt>show.lm:</dt>
+      <dd>should the linear regresison line be plotted?</dd>
+      <dt>show.CI:</dt>
+      <dd>should the 95
+
+\itemshow.median:should the median smoother be plotted?
+
+\itemmedian.col:color of the median smoother
+
+\itemshape:shape of points
+
+\itemmethod:the fitting function for the spaghettis; default: loess
+
+\itemslices:number of slices in x and y direction for the shaded region. Higher numbers make a smoother plot, but takes longer to draw. I wouldn'T go beyond 500
+
+\itempalette:provide a custom color palette for the watercolors
+
+\itemylim:restrict range of the watercoloring
+
+\itemquantize:either "continuous", or "SD". In the latter case, we get three color regions for 1, 2, and 3 SD (an idea of John Mashey)
+
+\itemadd:if add == FALSE, a new ggplot is returned. If add == TRUE, only the elements are returned, which can be added to an existing ggplot (with the '+' operator)
+
+\item...:further parameters passed to the fitting function, in the case of loess, for example, "span = .9", or "family = 'symmetric'"
+</dd>
+    </dl>
+          </div>
+  <div class="span4">
+    <!-- <ul>
+      <li>vwReg</li>
+    </ul>
+    <ul>
+      
+    </ul> -->
+      
+        
+  </div>
+</div>
+      
+      <footer>
+      <p class="pull-right"><a href="#">Back to top</a></p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+      </footer>
+    </div>
+  </body>
+</html>

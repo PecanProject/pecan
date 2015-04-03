@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+<title>get.trait.data. PEcAn.DB 1.4.1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="
+David LeBauer, Shawn Serbin
+">
+
+<link href="css/bootstrap.css" rel="stylesheet">
+<link href="css/bootstrap-responsive.css" rel="stylesheet">
+<link href="css/highlight.css" rel="stylesheet">
+<link href="css/staticdocs.css" rel="stylesheet">
+
+<!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+  </head>
+
+  <body>
+    <div class="navbar">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand" href="#">PEcAn.DB 1.4.1</a>
+      <div class="nav">
+        <ul class="nav">
+          <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="container">
+      <header>
+        
+      </header>
+      
+      <h1>Gets trait data from the database</h1>
+
+<div class="row">
+  <div class="span8">
+    <h2>Usage</h2>
+    <pre><div>get.trait.data(pfts, modeltype, dbfiles, database, forceupdate, trait.names&nbsp;=&nbsp;NULL)</div></pre>
+    
+    <h2>Arguments</h2>
+    <dl>
+      <dt>pfts</dt>
+      <dd>the list of pfts to get traits for</dd>
+      <dt>modeltype</dt>
+      <dd>type of model that is used, this is is used to distinguis between different pfts with the same name.</dd>
+      <dt>dbfiles</dt>
+      <dd>location where previous results are found</dd>
+      <dt>database</dt>
+      <dd>database connection parameters</dd>
+      <dt>forceupdate</dt>
+      <dd>set this to true to force an update, auto will check to see if an update is needed.</dd>
+      <dt>trait.names</dt>
+      <dd>list of traits to query. If TRUE, uses trait.dictionary</dd>
+    </dl>
+    
+    <div class="Value">
+      <h2>Value</h2>
+
+      <p><dl>
+list of pfts with update posteriorids
+</dl></p>
+  
+    </div>
+
+    <div class="Description">
+      <h2>Description</h2>
+
+      <p>Get trait data from the database.</p>
+  
+    </div>
+
+    <div class="Details">
+      <h2>Details</h2>
+
+      <p>This will use the following items from setings:
+- settings$pfts
+- settings$model$type
+- settings$database$bety
+- settings$run$dbfiles
+- settings$meta.analysis$update</p>
+  
+    </div>
+      </div>
+  <div class="span4">
+    <!-- <ul>
+      <li>get.trait.data</li>
+    </ul>
+    <ul>
+      
+    </ul> -->
+      
+    
+    <h2>Author</h2>
+    
+David LeBauer, Shawn Serbin
+
+    
+  </div>
+</div>
+      
+      <footer>
+      <p class="pull-right"><a href="#">Back to top</a></p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+      </footer>
+    </div>
+  </body>
+</html>

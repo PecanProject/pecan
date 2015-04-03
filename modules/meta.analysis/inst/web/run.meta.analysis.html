@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+<title>run.meta.analysis. PEcAn.MA 1.4.1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="
+Shawn Serbin, David LeBauer
+">
+
+<link href="css/bootstrap.css" rel="stylesheet">
+<link href="css/bootstrap-responsive.css" rel="stylesheet">
+<link href="css/highlight.css" rel="stylesheet">
+<link href="css/staticdocs.css" rel="stylesheet">
+
+<!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+  </head>
+
+  <body>
+    <div class="navbar">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand" href="#">PEcAn.MA 1.4.1</a>
+      <div class="nav">
+        <ul class="nav">
+          <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="container">
+      <header>
+        
+      </header>
+      
+      <h1>Invoke PEcAn meta.analysis
+This will use the following items from setings:
+- settings$pfts
+- settings$database$bety
+- settings$run$dbfiles
+- settings$meta.analysis$update</h1>
+
+<div class="row">
+  <div class="span8">
+    <h2>Usage</h2>
+    <pre><div>run.meta.analysis(pfts, iterations, random, threshold, dbfiles, database)</div></pre>
+    
+    <h2>Arguments</h2>
+    <dl>
+      <dt>pfts</dt>
+      <dd>the list of pfts to get traits for</dd>
+      <dt>iterations</dt>
+      <dd>the number of iterations for the mcmc analysis</dd>
+      <dt>random</dt>
+      <dd>should random effects be used?</dd>
+      <dt>dbfiles</dt>
+      <dd>location where previous results are found</dd>
+      <dt>database</dt>
+      <dd>database connection parameters</dd>
+    </dl>
+    
+    <div class="Value">
+      <h2>Value</h2>
+
+      <p><dl>
+nothing, as side effect saves <code>trait.mcmc</code> created by
+<code><a href='pecan.ma.html'>pecan.ma</a></code> and post.distns created by
+<code>approx.posterior(trait.mcmc, ...)</code>  to trait.mcmc.Rdata \
+and post.distns.Rdata, respectively
+</dl></p>
+  
+    </div>
+
+    <div class="Description">
+      <h2>Description</h2>
+
+      <p>Run meta analysis</p>
+  
+    </div>
+      </div>
+  <div class="span4">
+    <!-- <ul>
+      <li>run.meta.analysis</li>
+    </ul>
+    <ul>
+      
+    </ul> -->
+      
+    
+    <h2>Author</h2>
+    
+Shawn Serbin, David LeBauer
+
+    
+  </div>
+</div>
+      
+      <footer>
+      <p class="pull-right"><a href="#">Back to top</a></p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+      </footer>
+    </div>
+  </body>
+</html>

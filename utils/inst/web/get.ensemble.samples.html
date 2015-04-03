@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+<title>get.ensemble.samples. PEcAn.utils 1.4.1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="
+David LeBauer
+">
+
+<link href="css/bootstrap.css" rel="stylesheet">
+<link href="css/bootstrap-responsive.css" rel="stylesheet">
+<link href="css/highlight.css" rel="stylesheet">
+<link href="css/staticdocs.css" rel="stylesheet">
+
+<!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+  </head>
+
+  <body>
+    <div class="navbar">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand" href="#">PEcAn.utils 1.4.1</a>
+      <div class="nav">
+        <ul class="nav">
+          <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="container">
+      <header>
+        
+      </header>
+      
+      <h1>Get Ensemble Samples</h1>
+
+<div class="row">
+  <div class="span8">
+    <h2>Usage</h2>
+    <pre><div>get.ensemble.samples(ensemble.size, pft.samples, env.samples, method&nbsp;=&nbsp;"halton")</div></pre>
+    
+    <h2>Arguments</h2>
+    <dl>
+      <dt>ensemble.size</dt>
+      <dd>number of runs in model ensemble</dd>
+      <dt>pft.samples</dt>
+      <dd>random samples from parameter distribution, e.g. from a MCMC chain or a</dd>
+      <dt>env.samples</dt>
+      <dd>env samples</dd>
+      <dt>method</dt>
+      <dd>the method used to generate the ensemble samples.  default = halton</dd>
+    </dl>
+    
+    <div class="Value">
+      <h2>Value</h2>
+
+      <p><dl>
+matrix of quasi-random (overdispersed) samples from trait distributions
+</dl></p>
+  
+    </div>
+
+    <div class="Description">
+      <h2>Description</h2>
+
+      <p>Get parameter values used in ensemble</p>
+  
+    </div>
+
+    <div class="Details">
+      <h2>Details</h2>
+
+      <p>Returns a matrix of trait values sampled quasi-randomly based on the Halton sequence
+to be assigned to traits over several model runs.
+given the number of model runs and a list of sample distributions for traits
+The model run is indexed first by model run, then by trait</p>
+  
+    </div>
+
+    <div class="References">
+      <h2>References</h2>
+
+      <p>Halton, J. (1964), Algorithm 247: Radical-inverse quasi-random point sequence,
+ACM, p. 701, doi:10.1145/355588.365104.</p>
+  
+    </div>
+      </div>
+  <div class="span4">
+    <!-- <ul>
+      <li>get.ensemble.samples</li>
+    </ul>
+    <ul>
+      
+    </ul> -->
+      
+    
+    <h2>Author</h2>
+    
+David LeBauer
+
+    
+  </div>
+</div>
+      
+      <footer>
+      <p class="pull-right"><a href="#">Back to top</a></p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+      </footer>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+<title>write.ma.model. PEcAn.MA 1.4.1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="
+David LeBauer and Mike Dietze, based on original work on the &lt;code&gt;write.model&lt;/code&gt; function in the &lt;code&gt;R2WinBUGS&lt;/code&gt; package by Jouni Kerman and Uwe Ligges.
+">
+
+<link href="css/bootstrap.css" rel="stylesheet">
+<link href="css/bootstrap-responsive.css" rel="stylesheet">
+<link href="css/highlight.css" rel="stylesheet">
+<link href="css/staticdocs.css" rel="stylesheet">
+
+<!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+  </head>
+
+  <body>
+    <div class="navbar">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand" href="#">PEcAn.MA 1.4.1</a>
+      <div class="nav">
+        <ul class="nav">
+          <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="container">
+      <header>
+        
+      </header>
+      
+      <h1>write.ma.model</h1>
+
+<div class="row">
+  <div class="span8">
+    <h2>Usage</h2>
+    <pre><div>write.ma.model(modelfile, outfile, reg.model, pr.dist, pr.param.a, pr.param.b, n, trt.n, site.n, ghs.n, tauA, tauB)</div></pre>
+    
+    <h2>Arguments</h2>
+    <dl>
+      <dt>modelfile</dt>
+      <dd>model template file (ma.model.template.R)</dd>
+      <dt>outfile</dt>
+      <dd>file name of model created</dd>
+      <dt>reg.model</dt>
+      <dd>structure of regression model</dd>
+      <dt>pr.dist</dt>
+      <dd>A string representing the root distribution name used by R, e.g. 'norm', 'lnorm', 'gamma', 'beta', etc.</dd>
+      <dt>pr.param.a</dt>
+      <dd>first parameter value accepted by <code>pr.dist</code></dd>
+      <dt>pr.param.b</dt>
+      <dd>second parameter value accepted by <code>pr.dist</code></dd>
+      <dt>n</dt>
+      <dd>number of observations in data</dd>
+      <dt>trt.n</dt>
+      <dd>number of distinct treatments in data</dd>
+      <dt>site.n</dt>
+      <dd>number of distinct sites in data</dd>
+      <dt>ghs.n</dt>
+      <dd>= 1 if only non-greenhouse or greenhouse studies included, 2 if both</dd>
+      <dt>tauA</dt>
+      <dd>parameter a for gamma prior on precision</dd>
+      <dt>tauB</dt>
+      <dd>parameter b for gamma prior on precision</dd>
+    </dl>
+    
+    <div class="Value">
+      <h2>Value</h2>
+
+      <p><dl>
+Nothing, but as a side effect, the model is written
+</dl></p>
+  
+    </div>
+
+    <div class="Description">
+      <h2>Description</h2>
+
+      <p>Convert template ma.model.template.R to a JAGS model.</p>
+  
+    </div>
+
+    <div class="Details">
+      <h2>Details</h2>
+
+      <p>Writes a meta-analysis model based on available data and prior specification. Adapted from <code><a href='http://www.inside-r.org/packages/cran/R2WinBUGS/docs/write.model'>write.model</a></code></p>
+  
+    </div>
+      </div>
+  <div class="span4">
+    <!-- <ul>
+      <li>write.ma.model</li>
+    </ul>
+    <ul>
+      
+    </ul> -->
+      
+    
+    <h2>Author</h2>
+    
+David LeBauer and Mike Dietze, based on original work on the <code>write.model</code> function in the <code>R2WinBUGS</code> package by Jouni Kerman and Uwe Ligges.
+
+    
+  </div>
+</div>
+      
+      <footer>
+      <p class="pull-right"><a href="#">Back to top</a></p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+      </footer>
+    </div>
+  </body>
+</html>

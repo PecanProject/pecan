@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+<title>met2CF.csv. PEcAn.data.atmosphere 1.4.1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="
+Mike Dietze, David LeBauer
+">
+
+<link href="css/bootstrap.css" rel="stylesheet">
+<link href="css/bootstrap-responsive.css" rel="stylesheet">
+<link href="css/highlight.css" rel="stylesheet">
+<link href="css/staticdocs.css" rel="stylesheet">
+
+<!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+  </head>
+
+  <body>
+    <div class="navbar">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand" href="#">PEcAn.data.atmosphere 1.4.1</a>
+      <div class="nav">
+        <ul class="nav">
+          <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="container">
+      <header>
+        
+      </header>
+      
+      <h1>met2CF.csv</h1>
+
+<div class="row">
+  <div class="span8">
+    <h2>Usage</h2>
+    <pre><div>met2CF.csv(in.path, in.file, outfolder, format, lat&nbsp;=&nbsp;NULL, lon&nbsp;=&nbsp;NULL, nc_verbose&nbsp;=&nbsp;FALSE)</div></pre>
+    
+    <h2>Arguments</h2>
+    <dl>
+      <dt>in.path</dt>
+      <dd></dd>
+      <dt>outfolder</dt>
+      <dd></dd>
+      <dt>format</dt>
+      <dd>data frame or list with elements orig, bety, units for the original variable name, bety variable name,
+and original units. Columns with NA for bety variable name are dropped. Units for datetime field are the lubridate function
+that will be used to parse the date (e.g. <code>ymd_hms</code> or <code>mdy_hm</code>).</dd>
+      <dt>nc_verbose</dt>
+      <dd>logical: run ncvar_add in verbose mode?</dd>
+      <dt>in.prefix</dt>
+      <dd></dd>
+    </dl>
+    
+    <div class="Description">
+      <h2>Description</h2>
+
+      <p>met2CF.csv</p>
+  
+    </div>
+    
+    <h2 id="examples">Examples</h2>
+    <pre class="examples"><div class='input'>## &lt;strong&gt;Not run&lt;/strong&gt;: 
+#   in.path = &quot;~/Downloads/&quot;
+#   in.file = &quot;WR_E&quot;
+#   outfolder = &quot;/tmp/&quot;
+#   format = list(orig=c(&quot;TA&quot;,&quot;PRECIP&quot;,&quot;RH&quot;,&quot;WS&quot;,&quot;WD&quot;,&quot;SW&quot;,&quot;PAR_in&quot;),
+#                 units = c(&quot;celsius&quot;,&quot;mm&quot;,&quot;%&quot;,&quot;m/s&quot;,&quot;degrees&quot;,&quot;W m-2&quot;,&quot;umol m-2 s-1&quot;),
+#                 bety=c(&quot;airT&quot;,&quot;precipitation_flux&quot;,&quot;relative_humidity&quot;,&quot;Wspd&quot;,&quot;wind_direction&quot;,&quot;solar_radiation&quot;,&quot;PAR&quot;),
+#                 skip=7,
+#                 unit.row=TRUE,
+#                 na.strings=c(&quot;-9999&quot;,&quot;-6999&quot;,&quot;9999&quot;))
+#   lat = 40
+#   lon = -80
+#   met2CF.csv(in.path,in.file,outfolder,format,lat,lon)
+# ## &lt;strong&gt;End(Not run)&lt;/strong&gt;
+</div></pre>
+  </div>
+  <div class="span4">
+    <!-- <ul>
+      <li>met2CF.csv</li>
+    </ul>
+    <ul>
+      
+    </ul> -->
+      
+    
+    <h2>Author</h2>
+    
+Mike Dietze, David LeBauer
+
+    
+  </div>
+</div>
+      
+      <footer>
+      <p class="pull-right"><a href="#">Back to top</a></p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+      </footer>
+    </div>
+  </body>
+</html>

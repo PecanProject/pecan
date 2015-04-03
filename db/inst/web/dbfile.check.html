@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+<title>dbfile.check. PEcAn.DB 1.4.1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="
+Rob Kooper
+
+Rob Kooper
+
+Rob Kooper
+">
+
+<link href="css/bootstrap.css" rel="stylesheet">
+<link href="css/bootstrap-responsive.css" rel="stylesheet">
+<link href="css/highlight.css" rel="stylesheet">
+<link href="css/staticdocs.css" rel="stylesheet">
+
+<!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+  </head>
+
+  <body>
+    <div class="navbar">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand" href="#">PEcAn.DB 1.4.1</a>
+      <div class="nav">
+        <ul class="nav">
+          <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="container">
+      <header>
+        
+      </header>
+      
+      <h1>Check for a file in the input/dbfiles tables</h1>
+
+<div class="row">
+  <div class="span8">
+    <h2>Usage</h2>
+    <pre><div>dbfile.input.check(siteid, startdate, enddate, mimetype, formatname, parentid&nbsp;=&nbsp;NA, con, hostname&nbsp;=&nbsp;fqdn())</div>
+<div>dbfile.posterior.check(pft, mimetype, formatname, con, hostname&nbsp;=&nbsp;fqdn())</div>
+<div>dbfile.check(type, id, con, hostname&nbsp;=&nbsp;fqdn())</div></pre>
+    
+    <h2>Arguments</h2>
+    <dl>
+      <dt>siteid</dt>
+      <dd>the id of the site that this data is applicable to</dd>
+      <dt>startdate</dt>
+      <dd>the start date of the data stored in the file</dd>
+      <dt>enddate</dt>
+      <dd>the end date of the data stored in the file</dd>
+      <dt>mimetype</dt>
+      <dd>the mime-type of the file</dd>
+      <dt>formatname</dt>
+      <dd>the name of the format to distinguish between simmilair mime-types</dd>
+      <dt>con</dt>
+      <dd>database connection object</dd>
+      <dt>hostname</dt>
+      <dd>the name of the host where the file is stored, this will default to the name of the current machine</dd>
+      <dt>pft</dt>
+      <dd>the name of the pft that this data is applicable to</dd>
+      <dt>type</dt>
+      <dd>the type of dbfile (Input, Posterior)</dd>
+      <dt>id</dt>
+      <dd>the id of container type</dd>
+      <dt>parent</dt>
+      <dd>the id of the parent of the input</dd>
+      <dt>params</dt>
+      <dd>database connection information</dd>
+      <dt>mimetype</dt>
+      <dd>the mime-type of the file</dd>
+      <dt>formatname</dt>
+      <dd>the name of the format to distinguish between simmilair mime-types</dd>
+      <dt>con</dt>
+      <dd>database connection object</dd>
+      <dt>hostname</dt>
+      <dd>the name of the host where the file is stored, this will default to the name of the current machine</dd>
+      <dt>params</dt>
+      <dd>database connection information</dd>
+      <dt>con</dt>
+      <dd>database connection object</dd>
+      <dt>hostname</dt>
+      <dd>the name of the host where the file is stored, this will default to the name of the current machine</dd>
+    </dl>
+    
+    <div class="Value">
+      <h2>Value</h2>
+
+      <p><dl>
+data.frame with the id, filename and pathname of the input that is requested</p>
+  
+      <p>data.frame with the id, filename and pathname of the posterior that is requested</p>
+  
+      <p>data.frame with the id, filename and pathname of all the files that are associated
+</dl></p>
+  
+    </div>
+
+    <div class="Description">
+      <h2>Description</h2>
+
+      <p>Function to check to see if a file exists in the dbfiles table as an input</p>
+  
+      <p>Function to check to see if a file exists in the dbfiles table as an input</p>
+  
+      <p>Function to check to see if a file exists in the dbfiles table</p>
+  
+    </div>
+
+    <div class="Details">
+      <h2>Details</h2>
+
+      <p>This will check the dbfiles, inputs, machines and formats tables to see if the
+file exists</p>
+  
+      <p>This will check the dbfiles, inputs, machines and formats tables to see if the
+file exists</p>
+  
+      <p>This will check the dbfiles and machines to see if the file exists</p>
+  
+    </div>
+    
+    <h2 id="examples">Examples</h2>
+    <pre class="examples"><div class='input'>## &lt;strong&gt;Not run&lt;/strong&gt;: 
+#   dbfile.input.check(siteid, startdate, enddate, &#39;application/x-RData&#39;, &#39;traits&#39;, dbcon)
+# ## &lt;strong&gt;End(Not run)&lt;/strong&gt;
+## &lt;strong&gt;Not run&lt;/strong&gt;: 
+#   dbfile.posterior.check(pft, &#39;application/x-RData&#39;, &#39;traits&#39;, dbcon)
+# ## &lt;strong&gt;End(Not run)&lt;/strong&gt;
+## &lt;strong&gt;Not run&lt;/strong&gt;: 
+#   dbfile.check(&#39;Input&#39;, 7, dbcon)
+# ## &lt;strong&gt;End(Not run)&lt;/strong&gt;
+</div></pre>
+  </div>
+  <div class="span4">
+    <!-- <ul>
+      <li>dbfile.check</li><li>dbfile.input.check</li><li>dbfile.posterior.check</li>
+    </ul>
+    <ul>
+      
+    </ul> -->
+      
+    
+    <h2>Author</h2>
+    
+Rob Kooper
+
+Rob Kooper
+
+Rob Kooper
+
+    
+  </div>
+</div>
+      
+      <footer>
+      <p class="pull-right"><a href="#">Back to top</a></p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+      </footer>
+    </div>
+  </body>
+</html>

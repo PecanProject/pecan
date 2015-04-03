@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+<title>model2netcdfdep. PEcAn.utils 1.4.1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="
+Mike Dietze, David LeBauer
+">
+
+<link href="css/bootstrap.css" rel="stylesheet">
+<link href="css/bootstrap-responsive.css" rel="stylesheet">
+<link href="css/highlight.css" rel="stylesheet">
+<link href="css/staticdocs.css" rel="stylesheet">
+
+<!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+  </head>
+
+  <body>
+    <div class="navbar">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand" href="#">PEcAn.utils 1.4.1</a>
+      <div class="nav">
+        <ul class="nav">
+          <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="container">
+      <header>
+        
+      </header>
+      
+      <h1>Convert model output to NetCDF</h1>
+
+<div class="row">
+  <div class="span8">
+    <h2>Usage</h2>
+    <pre><div>model2netcdfdep(runid, outdir, model, lat, lon, start_date, end_date)</div></pre>
+    
+    <h2>Arguments</h2>
+    <dl>
+      <dt>runid</dt>
+      <dd></dd>
+      <dt>outdir</dt>
+      <dd></dd>
+      <dt>model</dt>
+      <dd>name of simulation model currently accepts ("ED2", "SIPNET", "BIOCRO")</dd>
+      <dt>lat</dt>
+      <dd>Latitude of the site</dd>
+      <dt>lon</dt>
+      <dd>Longitude of the site</dd>
+      <dt>start_date</dt>
+      <dd>Start time of the simulation</dd>
+      <dt>end_date</dt>
+      <dd>End time of the simulation</dd>
+    </dl>
+    
+    <div class="Value">
+      <h2>Value</h2>
+
+      <p><dl>
+vector of filenames created, converts model output to netcdf as a side effect
+</dl></p>
+  
+    </div>
+
+    <div class="Description">
+      <h2>Description</h2>
+
+      <p>Convert output for a single model run to NetCDF</p>
+  
+    </div>
+
+    <div class="Details">
+      <h2>Details</h2>
+
+      <p>DEPRECATED this function will be removed in future versions, please update
+your workflow.</p>
+  
+      <p>This function is a wrapper for model-specific conversion functions,
+e.g. <code>model2netcdf.ED2</code>, <code>model2netcdf.BIOCRO</code>.</p>
+  
+    </div>
+      </div>
+  <div class="span4">
+    <!-- <ul>
+      <li>model2netcdfdep</li>
+    </ul>
+    <ul>
+      
+    </ul> -->
+      
+    
+    <h2>Author</h2>
+    
+Mike Dietze, David LeBauer
+
+    
+  </div>
+</div>
+      
+      <footer>
+      <p class="pull-right"><a href="#">Back to top</a></p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+      </footer>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+<title>plot.sensitivity. PEcAn.uncertainty 1.4.1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="">
+
+<link href="css/bootstrap.css" rel="stylesheet">
+<link href="css/bootstrap-responsive.css" rel="stylesheet">
+<link href="css/highlight.css" rel="stylesheet">
+<link href="css/staticdocs.css" rel="stylesheet">
+
+<!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+  </head>
+
+  <body>
+    <div class="navbar">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand" href="#">PEcAn.uncertainty 1.4.1</a>
+      <div class="nav">
+        <ul class="nav">
+          <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="container">
+      <header>
+        
+      </header>
+      
+      <h1>Sensitivity plot</h1>
+
+<div class="row">
+  <div class="span8">
+    <h2>Usage</h2>
+    <pre><div>"plot"(sa.sample, sa.spline, trait, y.range&nbsp;=&nbsp;c(0, 50), median.i&nbsp;=&nbsp;4, prior.sa.sample&nbsp;=&nbsp;NULL, prior.sa.spline&nbsp;=&nbsp;NULL, fontsize&nbsp;=&nbsp;list(title&nbsp;=&nbsp;12, axis&nbsp;=&nbsp;8), linesize&nbsp;=&nbsp;1, dotsize&nbsp;=&nbsp;2)</div></pre>
+    
+    <h2>Arguments</h2>
+    <dl>
+      <dt>sa.sample</dt>
+      <dd>trait quantiles used in sensitivity analysis</dd>
+      <dt>sa.spline</dt>
+      <dd>spline function estimated from sensitivity analysis</dd>
+      <dt>trait</dt>
+      <dd>trait name for title</dd>
+      <dt>y.range</dt>
+      <dd></dd>
+      <dt>median.i</dt>
+      <dd>index of median value in sa.sample; <code>median.i == which(as.numeric(rownames(sa.sample)) == 50) </code></dd>
+      <dt>prior.sa.sample</dt>
+      <dd>similar to sa.sample, but for prior distribution. If given, plots sensitivity for prior run</dd>
+      <dt>prior.sa.spline</dt>
+      <dd>similar to sa.spline, but for prior trait distribution.</dd>
+      <dt>fontsize</dt>
+      <dd>(optional) list with three arguments that can be set to vary the fontsize of the title, axis labels, and axis title in the sensitivity plots</dd>
+    </dl>
+    
+    <div class="Value">
+      <h2>Value</h2>
+
+      <p><dl>
+object of class ggplot
+</dl></p>
+  
+    </div>
+
+    <div class="Description">
+      <h2>Description</h2>
+
+      <p>Plot univariate response of model output to a trait parameter.</p>
+  
+    </div>
+
+    <div class="Details">
+      <h2>Details</h2>
+
+      <p>Plots for a single trait; called by <code><a href='plot.sensitivities.html'>plot.sensitivities</a></code>
+to plot sensitivity plots for multiple traits.</p>
+  
+    </div>
+      </div>
+  <div class="span4">
+    <!-- <ul>
+      <li>plot.sensitivity</li>
+    </ul>
+    <ul>
+      
+    </ul> -->
+      
+        
+  </div>
+</div>
+      
+      <footer>
+      <p class="pull-right"><a href="#">Back to top</a></p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+      </footer>
+    </div>
+  </body>
+</html>

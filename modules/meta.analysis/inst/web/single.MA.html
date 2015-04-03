@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+<title>single.MA. PEcAn.MA 1.4.1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="
+David LeBauer, Michael C. Dietze
+">
+
+<link href="css/bootstrap.css" rel="stylesheet">
+<link href="css/bootstrap-responsive.css" rel="stylesheet">
+<link href="css/highlight.css" rel="stylesheet">
+<link href="css/staticdocs.css" rel="stylesheet">
+
+<!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+  </head>
+
+  <body>
+    <div class="navbar">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand" href="#">PEcAn.MA 1.4.1</a>
+      <div class="nav">
+        <ul class="nav">
+          <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="container">
+      <header>
+        
+      </header>
+      
+      <h1>Single MA</h1>
+
+<div class="row">
+  <div class="span8">
+    <h2>Usage</h2>
+    <pre><div>single.MA(data, j.chains, j.iter, tauA, tauB, prior, jag.model.file, overdispersed&nbsp;=&nbsp;TRUE)</div></pre>
+    
+    <h2>Arguments</h2>
+    <dl>
+      <dt>data</dt>
+      <dd></dd>
+      <dt>j.chains</dt>
+      <dd>number of chains in meta-analysis</dd>
+      <dt>j.iter</dt>
+      <dd>number of mcmc samples</dd>
+      <dt>tauA</dt>
+      <dd>prior on variance parameters</dd>
+      <dt>tauB</dt>
+      <dd>prior on variance parameters</dd>
+      <dt>prior</dt>
+      <dd>data.frame with columns named 'distn', 'parama', 'paramb'
+e.g. <code>prior <- data.frame(distn = "weibull", parama = 0.5, paramb = 10, n = 1)</code></dd>
+      <dt>jag.model.file</dt>
+      <dd>file to which model will be written</dd>
+      <dt>overdispersed</dt>
+      <dd>if TRUE (default), chains start at overdispersed locations in parameter space (recommended)</dd>
+    </dl>
+    
+    <div class="Value">
+      <h2>Value</h2>
+
+      <p><dl>
+jags.out, an mcmc.object with results of meta-analysis
+</dl></p>
+  
+    </div>
+
+    <div class="Description">
+      <h2>Description</h2>
+
+      <p>Individual Meta-analysis</p>
+  
+    </div>
+
+    <div class="Details">
+      <h2>Details</h2>
+
+      <p>Individual meta-analysis for a specific trait and PFT is run by the function
+single.MA. This will allow power analysis  to run repeated MA outside of the
+full loop over traits and PFTs.</p>
+  
+    </div>
+      </div>
+  <div class="span4">
+    <!-- <ul>
+      <li>single.MA</li>
+    </ul>
+    <ul>
+      
+    </ul> -->
+      
+    
+    <h2>Author</h2>
+    
+David LeBauer, Michael C. Dietze
+
+    
+  </div>
+</div>
+      
+      <footer>
+      <p class="pull-right"><a href="#">Back to top</a></p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+      </footer>
+    </div>
+  </body>
+</html>

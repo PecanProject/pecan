@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+<title>dbfile.file. PEcAn.DB 1.4.1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="
+Rob Kooper
+
+Rob Kooper
+">
+
+<link href="css/bootstrap.css" rel="stylesheet">
+<link href="css/bootstrap-responsive.css" rel="stylesheet">
+<link href="css/highlight.css" rel="stylesheet">
+<link href="css/staticdocs.css" rel="stylesheet">
+
+<!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+  </head>
+
+  <body>
+    <div class="navbar">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand" href="#">PEcAn.DB 1.4.1</a>
+      <div class="nav">
+        <ul class="nav">
+          <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="container">
+      <header>
+        
+      </header>
+      
+      <h1>Return file from the dbfiles tables</h1>
+
+<div class="row">
+  <div class="span8">
+    <h2>Usage</h2>
+    <pre><div>dbfile.file(type, id, con, hostname&nbsp;=&nbsp;fqdn())</div>
+<div>dbfile.id(type, file, con, hostname&nbsp;=&nbsp;fqdn())</div></pre>
+    
+    <h2>Arguments</h2>
+    <dl>
+      <dt>type</dt>
+      <dd>the type of dbfile (Input, Posterior)</dd>
+      <dt>id</dt>
+      <dd>the id of container type</dd>
+      <dt>con</dt>
+      <dd>database connection object</dd>
+      <dt>hostname</dt>
+      <dd>the name of the host where the file is stored, this will default to the name of the current machine</dd>
+      <dt>file</dt>
+      <dd>the full pathname to the file</dd>
+      <dt>type</dt>
+      <dd>the type of dbfile (Input, Posterior)</dd>
+      <dt>con</dt>
+      <dd>database connection object</dd>
+      <dt>hostname</dt>
+      <dd>the name of the host where the file is stored, this will default to the name of the current machine</dd>
+    </dl>
+    
+    <div class="Value">
+      <h2>Value</h2>
+
+      <p><dl>
+filename on host, or NA if none found</p>
+  
+      <p>filename on host, or NA if none found
+</dl></p>
+  
+    </div>
+
+    <div class="Description">
+      <h2>Description</h2>
+
+      <p>Function to return full path to a file using dbfiles table</p>
+  
+      <p>Function to return id to containter type given a filename.</p>
+  
+    </div>
+
+    <div class="Details">
+      <h2>Details</h2>
+
+      <p>This will check the dbfiles and machines to see if the file exists,
+and return the full filename with path to the first one found. If
+none is found it will return NA.</p>
+  
+      <p>This will check the dbfiles and machines to see if the file exists,
+and return the id of the container type of the first one found. If
+none is found it will return NA.</p>
+  
+    </div>
+    
+    <h2 id="examples">Examples</h2>
+    <pre class="examples"><div class='input'>## &lt;strong&gt;Not run&lt;/strong&gt;: 
+#   dbfile.file(&#39;Input&#39;, 7, dbcon)
+# ## &lt;strong&gt;End(Not run)&lt;/strong&gt;
+## &lt;strong&gt;Not run&lt;/strong&gt;: 
+#   dbfile.id(&#39;Model&#39;, &#39;/usr/local/bin/sipnet&#39;, dbcon)
+# ## &lt;strong&gt;End(Not run)&lt;/strong&gt;
+</div></pre>
+  </div>
+  <div class="span4">
+    <!-- <ul>
+      <li>dbfile.file</li><li>dbfile.id</li>
+    </ul>
+    <ul>
+      
+    </ul> -->
+      
+    
+    <h2>Author</h2>
+    
+Rob Kooper
+
+Rob Kooper
+
+    
+  </div>
+</div>
+      
+      <footer>
+      <p class="pull-right"><a href="#">Back to top</a></p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+      </footer>
+    </div>
+  </body>
+</html>

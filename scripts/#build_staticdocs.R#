@@ -1,0 +1,21 @@
+#!/usr/bin/env Rscript
+
+library(devtools)
+library(staticdocs)
+
+pkgs <- list("utils", "db", "settings", "visualization",
+    "modules/priors",
+    "modules/meta.analysis",
+            "modules/uncertainty", "modules/data.land", "modules/data.atmosphere")
+, "modules/assim.batch",
+            "modules/assim.sequential",
+             pkgs <- c("models/ed", "models/sipnet", "models/biocro", "all")
+ 
+lapply(pkgs, function(x) dir.create(file.path(x, "inst/staticdocs"), recursive = TRUE))
+lapply(pkgs, function(x){
+    setwd(file.path("~/tmp/pecan/", x))
+    y <- basename(x)
+    build_site(file.path("../", y))
+})
+
+               

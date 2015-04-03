@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+<title>prior.fn. PEcAn.priors 1.4.1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="">
+
+<link href="css/bootstrap.css" rel="stylesheet">
+<link href="css/bootstrap-responsive.css" rel="stylesheet">
+<link href="css/highlight.css" rel="stylesheet">
+<link href="css/staticdocs.css" rel="stylesheet">
+
+<!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+  </head>
+
+  <body>
+    <div class="navbar">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand" href="#">PEcAn.priors 1.4.1</a>
+      <div class="nav">
+        <ul class="nav">
+          <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="container">
+      <header>
+        
+      </header>
+      
+      <h1>prior.fn</h1>
+
+<div class="row">
+  <div class="span8">
+    <h2>Usage</h2>
+    <pre><div>prior.fn(parms, x, alpha, distn, central.tendency&nbsp;=&nbsp;NULL, trait&nbsp;=&nbsp;NULL)</div></pre>
+    
+    <h2>Arguments</h2>
+    <dl>
+      <dt>parms</dt>
+      <dd>target for optimization</dd>
+      <dt>x</dt>
+      <dd>vector with c(lcl, ucl, ct) lcl / ucl = confidence limits, ct = entral tendency</dd>
+      <dt>alpha</dt>
+      <dd>quantile at which lcl/ucl are estimated (e.g. for a 95
+
+\itemdistnnamed distribution, one of 'lnorm', 'gamma', 'weibull', 'beta'; support for other distributions not currently implemented
+
+\itemcentral.tendencyone of 'mode', 'median', and 'mean'
+
+\itemtraitname of trait, can be used for exceptions (currently used for trait == 'q')
+</dd>
+    </dl>
+          </div>
+  <div class="span4">
+    <!-- <ul>
+      <li>prior.fn</li>
+    </ul>
+    <ul>
+      
+    </ul> -->
+      
+        
+  </div>
+</div>
+      
+      <footer>
+      <p class="pull-right"><a href="#">Back to top</a></p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+      </footer>
+    </div>
+  </body>
+</html>

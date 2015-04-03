@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+<title>get.run.id. PEcAn.utils 1.4.1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="
+Carl Davidson, David LeBauer
+">
+
+<link href="css/bootstrap.css" rel="stylesheet">
+<link href="css/bootstrap-responsive.css" rel="stylesheet">
+<link href="css/highlight.css" rel="stylesheet">
+<link href="css/staticdocs.css" rel="stylesheet">
+
+<!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+  </head>
+
+  <body>
+    <div class="navbar">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand" href="#">PEcAn.utils 1.4.1</a>
+      <div class="nav">
+        <ul class="nav">
+          <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="container">
+      <header>
+        
+      </header>
+      
+      <h1>Get Run ID</h1>
+
+<div class="row">
+  <div class="span8">
+    <h2>Usage</h2>
+    <pre><div>get.run.id(run.type, index, trait&nbsp;=&nbsp;NULL, pft.name&nbsp;=&nbsp;NULL)</div></pre>
+    
+    <h2>Arguments</h2>
+    <dl>
+      <dt>run.type</dt>
+      <dd>character, can be any character; currently "SA" is used for sensitivity analysis, "ENS" for ensemble run.</dd>
+      <dt>index</dt>
+      <dd>unique index for different runs, e.g. integer counting members of an
+ensemble or a quantile used to which a trait has been perturbed for sensitivity analysis</dd>
+      <dt>trait</dt>
+      <dd>name of trait being sampled (for sensitivity analysis)</dd>
+      <dt>pft.name</dt>
+      <dd>name of PFT (value from pfts.names field in database)</dd>
+    </dl>
+    
+    <div class="Value">
+      <h2>Value</h2>
+
+      <p><dl>
+id representing a model run
+</dl></p>
+  
+    </div>
+
+    <div class="Description">
+      <h2>Description</h2>
+
+      <p>returns an id representing a model run</p>
+  
+    </div>
+
+    <div class="Details">
+      <h2>Details</h2>
+
+      <p>Provides a consistent method of naming runs; for use in model input files and indices</p>
+  
+    </div>
+    
+    <h2 id="examples">Examples</h2>
+    <pre class="examples"><div class='input'>get.run.id(&quot;ENS&quot;, left.pad.zeros(1, 5))
+</div>
+<div class='output'>[1] &quot;ENS-00001&quot;
+</div>
+<div class='input'>get.run.id(&quot;SA&quot;, round(qnorm(-3),3), trait = &quot;Vcmax&quot;)
+</div>
+<strong class='warning'>Warning message:
+NaNs produced</strong>
+<div class='output'>[1] &quot;SA-Vcmax-NaN&quot;
+</div></pre>
+  </div>
+  <div class="span4">
+    <!-- <ul>
+      <li>get.run.id</li>
+    </ul>
+    <ul>
+      
+    </ul> -->
+      
+    
+    <h2>Author</h2>
+    
+Carl Davidson, David LeBauer
+
+    
+  </div>
+</div>
+      
+      <footer>
+      <p class="pull-right"><a href="#">Back to top</a></p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+      </footer>
+    </div>
+  </body>
+</html>
