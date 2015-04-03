@@ -2,7 +2,7 @@
 #PEcAn
 #data
 #pecan.zip
-#clim
+#ed.zip
 
 .libPaths("/home/polyglot/R/library")
 sink(stdout(),type="message")
