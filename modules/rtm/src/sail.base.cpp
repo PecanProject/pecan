@@ -135,7 +135,6 @@ NumericVector FourSAIL2_cpp(
         // Extinction coefficients
         ksli = chi_s / cos_SZ;
         koli = chi_o / cos_VZ;
-        printf("i %d  ksli %g  koli %g  lidf %g \n", i, ksli, koli, lidf[i]);
 
         // Area scattering coefficient fractions
         sobli = frho * M_PI / cos_SZVZ;
