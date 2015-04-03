@@ -18,18 +18,43 @@
 ##overwrite statement below to TRUE.
 
 
-met2model.ED2 <- function(in.path,in.prefix,outfolder,lst,overwrite=FALSE){
+##' met2model wrapper for ED2
+##' 
+##' @title met2model for ED2
+##' @export
+##' @param in.path location on disk where inputs are stored
+##' @param in.prefix prefix of input and output files
+##' @param outfolder location on disk where outputs will be stored
+##' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
+##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
+##' @param lst timezone offset to GMT in hours
+##' @param overwrite should existing files be overwritten
+##' @param verbose should the function be very verbose
+met2model.ED2 <- function(in.path,in.prefix,outfolder,start_date, end_date, lst=0,..., overwrite=FALSE,verbose=FALSE){
   overwrite = as.logical(overwrite)
-  lst = as.numeric(lst)
-  
-  #files = dir(in.path,in.prefix,full.names=TRUE)
-  files = dir(in.path,in.prefix)
-  filescount = files[grep(pattern="*.nc",files)]
   
   require(rhdf5)
   require(ncdf4)
-  require(ncdf)
+  #require(ncdf)
   require(lubridate)
+  require(PEcAn.utils)
+
+  # results are stored in folder prefix.start.end
+  start_date <- as.POSIXlt(start_date, tz = "GMT")
+  end_date <- as.POSIXlt(end_date, tz = "GMT")
+  met_folder <- outfolder
+  met_header <- file.path(met_folder, "ED_MET_DRIVER_HEADER")
+
+  results <- data.frame(file=c(met_header),
+                        host=c(fqdn()),
+                        mimetype=c('text/plain'),
+                        formatname=c('ed.met_driver_header files format'),
+                        startdate=c(start_date),
+                        enddate=c(end_date),
+                        stringsAsFactors = FALSE)
+
+  ## check to see if the outfolder is defined, if not create directory for output
+  dir.create(met_folder, recursive=TRUE, showWarnings = FALSE)
   
 ### FUNCTIONS
 dm <- c(0,32,60,91,121,152,182,213,244,274,305,335,366)
@@ -44,30 +69,21 @@ day2mo <- function(year,day){
   return(mo)
 }
 
+# get start/end year since inputs are specified on year basis
+start_year <- year(start_date)
+end_year <- year(end_date)
 
 ## loop over files
-for(i in 1:length(filescount)){
+for(year in start_year:end_year) {
+  ncfile <- file.path(in.path, paste(in.prefix, year, "nc", sep="."))
 
   ## extract file root name
   #froot <- substr(files[i],1,28)
   #print(c(i,froot))
   
-  ## check to see if the outfolder is defined, if not create directory for output
-  if(!file.exists(outfolder)){
-    dir.create(outfolder)
-  }
-
   ## open netcdf
-  nc <- nc_open(file.path(in.path,files[i]))
+  nc <- nc_open(ncfile)
   
-  ## determine starting year
-  base.time <- unlist(strsplit(files[i],'[.]'))
-  base.time <- as.numeric(base.time[length(base.time)-1])
-  if(is.na(base.time)){
-      print(c("did not extract base time correctly",i))
-      break
-    }
-
   ## determine GMT adjustment
   ## lst <- site$LST_shift[which(site$acro == froot)]
   
@@ -82,20 +98,18 @@ for(i in 1:length(filescount)){
   V <- ncvar_get(nc,"northward_wind")
   Rain <- ncvar_get(nc,"precipitation_flux")
   pres <- ncvar_get(nc,"air_pressure")
-  SW   <- ncvar_get(nc,"surface_downwelling_shortwave_flux")
-  LW   <- ncvar_get(nc,"surface_downwelling_longwave_flux")
-  #CO2  <- try(ncvar_get(nc,"CO2air"))
-  CO2  <- try(ncvar_get(nc,"CO2"))
+  SW   <- ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air")
+  LW   <- ncvar_get(nc,"surface_downwelling_longwave_flux_in_air")
+  CO2  <- try(ncvar_get(nc,"mole_fraction_of_carbon_dioxide_in_air"))
   
   useCO2 = is.numeric(CO2)  
 
   ## convert time to seconds
-  #sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$t$units," "))[1],"seconds")
-  sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$DTIME$units," "))[1],"seconds")
+  sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$time$units," "))[1],"seconds")
   
   nc_close(nc)
   
-  ifelse(leap_year(base.time)==TRUE,
+  ifelse(leap_year(year)==TRUE,
          dt <- (366*24*60*60)/length(sec), #leap year
          dt <- (365*24*60*60)/length(sec)) #non-leap year
 
@@ -120,7 +134,7 @@ for(i in 1:length(filescount)){
   doy <- NULL
   hr <- NULL
   asec <- sec
-  for(y in base.time+1:nyr-1){
+  for(y in year+1:nyr-1){
     ytmp <- rep(y,365*86400/dt)
     dtmp <- rep(1:365,each=86400/dt)
     if(y %% 4 == 0){  ## is leap
@@ -153,7 +167,7 @@ for(i in 1:length(filescount)){
   f <- pi/180*(279.5+0.9856*doy)
   et <- (-104.7*sin(f)+596.2*sin(2*f)+4.3*sin(4*f)-429.3*cos(f)-2.0*cos(2*f)+19.3*cos(3*f))/3600  #equation of time -> eccentricity and obliquity
   merid <- floor(lon/15)*15
-  if(merid<0) merid <- merid+15
+  merid[merid<0] <- merid[merid<0]+15
   lc <- (lon-merid)*-4/60  ## longitude correction
   tz <- merid/360*24 ## time zone
   midbin <- 0.5*dt/86400*24 ## shift calc to middle of bin
@@ -191,18 +205,18 @@ for(i in 1:length(filescount)){
   shA    <- Qair              # specific humidity [kg_H2O/kg_air]
   tmpA   <- Tair              # temperature [K]
   if(useCO2){
-    co2A   <- CO2               # surface co2 concentration [ppm]
+    co2A   <- CO2/1e6               # surface co2 concentration [ppm] converted from mole fraction [kg/kg]
   }
   
   ## create directory
   #if(system(paste("ls",froot),ignore.stderr=TRUE)>0) system(paste("mkdir",froot))
   
   ## write by year and month
-  for(y in base.time+1:nyr-1){
+  for(y in year+1:nyr-1){
     sely <- which(yr == y)
     for(m in unique(mo[sely])){
       selm <- sely[which(mo[sely] == m)]
-      mout <- paste(outfolder,"/",y,month[m],".h5",sep="")     
+      mout <- paste(met_folder,"/",y,month[m],".h5",sep="")     
       if(file.exists(mout)){
         if(overwrite==TRUE){
           file.remove(mout)
@@ -252,8 +266,6 @@ for(i in 1:length(filescount)){
 
   ## write DRIVER file
   sites <- 1
-  metfile <- paste(outfolder,"/ED_MET_DRIVER_HEADER",sep="")
-  metpath <- paste(outfolder,"/",sep="")
   metgrid <- c(1,1,1,1,floor(lon),floor(lat))
   metvar <- c("nbdsf","nddsf","vbdsf","vddsf","prate","dlwrf","pres","hgt","ugrd","vgrd","sh","tmp","co2")
   nmet <- length(metvar)
@@ -263,15 +275,18 @@ for(i in 1:length(filescount)){
     metflag[metvar=="co2"] = 4
     metfrq[metvar=="co2"] = 380
   }
-  write.table("#header",metfile,row.names=FALSE,col.names=FALSE)
-  write.table(sites,metfile,row.names=FALSE,col.names=FALSE,append=TRUE)
-  write.table(metpath,metfile,row.names=FALSE,col.names=FALSE,append=TRUE,quote=FALSE)
-  write.table(matrix(metgrid,nrow=1),metfile,row.names=FALSE,col.names=FALSE,append=TRUE,quote=FALSE)
-  write.table(nmet,metfile,row.names=FALSE,col.names=FALSE,append=TRUE,quote=FALSE)
-  write.table(matrix(metvar,nrow=1),metfile,row.names=FALSE,col.names=FALSE,append=TRUE)
-  write.table(matrix(metfrq,nrow=1),metfile,row.names=FALSE,col.names=FALSE,append=TRUE,quote=FALSE)
-  write.table(matrix(metflag,nrow=1),metfile,row.names=FALSE,col.names=FALSE,append=TRUE,quote=FALSE)
- 
+  write.table("header",met_header,row.names=FALSE,col.names=FALSE)
+  write.table(sites,met_header,row.names=FALSE,col.names=FALSE,append=TRUE)
+  write.table(met_folder,met_header,row.names=FALSE,col.names=FALSE,append=TRUE,quote=FALSE)
+  write.table(matrix(metgrid,nrow=1),met_header,row.names=FALSE,col.names=FALSE,append=TRUE,quote=FALSE)
+  write.table(nmet,met_header,row.names=FALSE,col.names=FALSE,append=TRUE,quote=FALSE)
+  write.table(matrix(metvar,nrow=1),met_header,row.names=FALSE,col.names=FALSE,append=TRUE)
+  write.table(matrix(metfrq,nrow=1),met_header,row.names=FALSE,col.names=FALSE,append=TRUE,quote=FALSE)
+  write.table(matrix(metflag,nrow=1),met_header,row.names=FALSE,col.names=FALSE,append=TRUE,quote=FALSE)
+
+print("Done with met2model.ED2")
+
 } ### end loop over met files
+  invisible(results)
 
 } ### end met2model.ED2

@@ -39,7 +39,10 @@
 #' @param nrep - number of MCMC replicates
 #'
 #' @param form   functional form of the allometry: "power" vs "exp"
-#'
+
+#' @param dmin   minimum dbh of interest
+#' @param dmax   maximum dbh of interest
+
 #' @details  dependencies: requires MCMCpack and mvtnorm
 #'
 #' note: runs 1 chain, but multiple chains can be simulated by
@@ -51,7 +54,7 @@
 #' @author Michael Dietze
 #' 
 #' 
-allom.BayesFit <- function(allom,nrep=10000,form="power") {
+allom.BayesFit <- function(allom,nrep=10000,form="power",dmin=0.1,dmax=500) {
 
   ## check for valid inputs
   if(!(form %in% ('power'))){
@@ -91,9 +94,25 @@ allom.BayesFit <- function(allom,nrep=10000,form="power") {
   spp  <- nu(allom[['parm']]$spp)
 
   ## declare constants
-  ntally = nrow(allom[['parm']]); if(is.null(ntally)) ntally = 0;
+
+  ## Drop equations outside of DBH range of interest & modifying the pseduodata as necessary
+  ##		We need the max of the allometry EQ to be >= min of interest and the min to be <=
+  # ntally = nrow(allom[['parm']]); if(is.null(ntally)) ntally = 0;
+  rng.mod <- cbind(ifelse(nu(allom$parm$Xmin)>dmin, nu(allom$parm$Xmin), dmin),
+                   ifelse(nu(allom$parm$Xmax)<dmax, nu(allom$parm$Xmax), dmax))
+
+  n.mod <- n
+  for(i in seq_along(n)){
+     tmp.seq  <- seq(rng[i,1], rng[i,2], length.out=100)
+     n.mod[i] <- round(n[i]*length(tmp.seq[tmp.seq>dmin & tmp.seq<dmax])/length(tmp.seq),digits=0)
+   }
+
+  ntally  <- which(nu(allom[['parm']][,"Xmax"])>=dmin & nu(allom[['parm']][,"Xmin"])<=dmax & n.mod>0); 
+  if(is.null(ntally)) ntally = 0;
+  print(c("Dropping allom rows: ", which(!(1:nrow(allom[['parm']]) %in% ntally))))
+
   nfield = length(allom[['field']])
-  nsite  = ntally + nfield
+  nsite  = length(ntally[ntally>0]) + nfield
   my.spp = unique(spp)
   nspp = length(my.spp)
   
@@ -116,7 +135,7 @@ allom.BayesFit <- function(allom,nrep=10000,form="power") {
   b0GIBBS  = matrix(0,nrep,nsite)
   b1GIBBS  = matrix(0,nrep,nsite)
   muGIBBS  = matrix(0,nrep,2)
-  sigGIBBS = matrix(0,nrep,nsite)
+  sigGIBBS = rep(NA,nrep)
   tauGIBBS = matrix(0,nrep,3)
   DGIBBS   = rep(NA,nrep)
   BgGIBBS  = matrix(0,nrep,2)
@@ -129,12 +148,12 @@ allom.BayesFit <- function(allom,nrep=10000,form="power") {
   b1  = rep(mu[2],nsite)
   tau = diag(c(1,1))
   tauI= solve(tau)
-  sigma = rep(0.3,nsite)
+  sigma = 0.3
   sinv  = 1/sigma
   data  = allom[['field']]
-  if(ntally > 0){
-    for(i in 1:ntally){
-      data[[i+nfield]] = list(x=rep(0,n[i]),y=rep(0,n[i]))
+  if(length(ntally) > 0){
+    for(i in 1:length(ntally)){
+      data[[i+nfield]] = list(x=rep(0,n.mod[ntally[i]]),y=rep(0,n.mod[ntally[i]]))
     }
   }
   x=y<-NULL
@@ -148,13 +167,13 @@ allom.BayesFit <- function(allom,nrep=10000,form="power") {
   for(g in 1:nrep){
     
     ## For tabulated equations, impute X,Y data --------------------------------------
-    if(ntally > 0){
-    for(j in 1:ntally){
-      x0 <- runif(n[j],rng[j,1],rng[j,2])
+    if(ntally[1] > 0){
+    for(j in ntally){
+      x0 <- runif(n.mod[j],rng.mod[j,1],rng.mod[j,2])
       if(!is.na(Xcor[j])){
         x <- Xcor[j]*x0
       }else{
-        if(Xtype[i] == "d.b.h.^2"){
+        if(Xtype[j] == "d.b.h.^2"){
           ## convert to sq inches
           x = x0*x0/(2.54*2.54)
         } else {
@@ -164,37 +183,43 @@ allom.BayesFit <- function(allom,nrep=10000,form="power") {
       y <- NA      
       if(eqn[j] == 1){        
         y = a[j] + b[j]*c[j]*log10(x)
-        y = 10^rnorm(n[j],y,se[j])
+        y = 10^rnorm(n.mod[j],y,se[j])
       } else if(eqn[j] == 2){
         y = a[j] + b[j]*x + c[j]*d[j]*log(x)
-        y = exp(rnorm(n[j],y,se[j]))
+        y = exp(rnorm(n.mod[j],y,se[j]))
       } else if(eqn[j] == 3){
         y = a[j] + b[j]*log(x) + c[j]*(d[j]+(e[j]*log(x)))
-        y = exp(rnorm(n[j],y,se[j]))
+        y = exp(rnorm(n.mod[j],y,se[j]))
       } else if(eqn[j] == 4){
         y = a[j] + b[j]*x + c[j]*x^d[j]
-        y = rnorm(n[j],y,se[j])
+        y = rnorm(n.mod[j],y,se[j])
       } else if(eqn[j] == 5){
         y = a[j] + b[j]*x + c[j]*x^2 + d[j]*x^3      
-        y = rnorm(n[j],y,se[j])
+        y = rnorm(n.mod[j],y,se[j])
       } else if(eqn[j] == 6){
         y = a[j] *(exp( b[j] + (c[j]*log(x)) + d[j]*x))
-        y = rnorm(n[j],y,se[j])
+        y = rnorm(n.mod[j],y,se[j])
       } else if(eqn[j] == 7){
         y = a[j] + ((b[j]*(x^c[j]))/((x^c[j])+ d[j]))
-        y = rnorm(n[j],y,se[j])
+        y = rnorm(n.mod[j],y,se[j])
       } else if(eqn[j] == 8){
         y = a[j] + b[j]*log10(x)
-        y = 100^rnorm(n[j],y,se[j])
+        y = 100^rnorm(n.mod[j],y,se[j])
       }else if(eqn[j] == 9){
         y = log(a[j]) + b[j]*log(x)
-        y = exp(rnorm(n[j],y,se[j]))
+        y = exp(rnorm(n.mod[j],y,se[j]))
+      }else if(eqn[j] == 10){
+        y = a[j] + b[j]*log(x)
+        y = exp(rnorm(n.mod[j],y,se[j]))
+      }else if(eqn[j] == 11){
+        y = a[j]*x^(b[j])
+        y =rnorm(n.mod[j],y,se[j])
       }
       y[y<=0] <- NA
       y = y*Ycor[j]
       s2 = which(!is.na(y))
-      data[[nfield+j]]$x = x0[s2] ## store the std units, not the transformed
-      data[[nfield+j]]$y = y[s2]  ## store y transformed to std units
+      data[[nfield+which(ntally==j)]]$x = x0[s2] ## store the std units, not the transformed
+      data[[nfield+which(ntally==j)]]$y = y[s2]  ## store y transformed to std units
     } ## end loop over tally entries
     } ## end check for ntally > 0
     
@@ -213,27 +238,30 @@ allom.BayesFit <- function(allom,nrep=10000,form="power") {
     dev.off()
   }
 
-    ## Fit "random site" hierarchical allometry -----------------------------
+  if(nsite > 1){ #Hierarchical Bayes Fit Model
+  
     tauImu = tauI %*% mu
+    u1 <- s1
+    u2 <- s2
     for(j in 1:nsite){
       
       ## Update study-level regression parameters
       X = cbind(rep(1,length(data[[j]]$x)),log(data[[j]]$x))
       Y = log(data[[j]]$y)
-      bigV <- solve( sinv[j]*t(X)%*%X + tauI)
-      littlev <- sinv[j]*t(X) %*% Y + tauImu
+      bigV <- solve(sinv*t(X)%*%X + tauI)
+      littlev <- sinv*t(X) %*% Y + tauImu
       beta <- t(rmvnorm(1,bigV %*% littlev,bigV))
       b0[j] <- beta[1]
       b1[j] <- beta[2]
       
       ## Update study-level error
-      u1 <- s1 + nrow(X)/2
-      u2 <- s2 + 0.5*crossprod(Y-X %*% beta)
-      sinv[j] <- rgamma(1,u1,u2)    ## precision
+      u1 <- u1 + nrow(X)/2
+      u2 <- u2 + 0.5*crossprod(Y-X %*% beta)
       
       ## Calculate Deviance
-      D[j] <- -2*sum(dnorm(Y,X%*%beta,sigma,log=TRUE))
+      D[j] <- -2*sum(dnorm(Y,X%*%beta,sqrt(sigma),log=TRUE))
     }
+    sinv <- rgamma(1,u1,u2)    ## precision
     sigma <- 1/sinv  ## variance
     
     ## Update across-study means
@@ -251,15 +279,27 @@ allom.BayesFit <- function(allom,nrep=10000,form="power") {
     tau <- riwish(u1,u2)
     tauI  <- solve(tau)
     
+    ## Store Parameter estimates
+    b0GIBBS[g,] <- b0  
+    b1GIBBS[g,] <- b1
+    muGIBBS[g,] <- mu
+    sigGIBBS[g] <- sigma
+    tauGIBBS[g,] <- vech(tau)
+    DGIBBS[g]  <- sum(D)
+
+
+    
+    
+    } ## end (if nsite > 1)   
+    
     ## Fit "random species" hierarchical model -------------------------------------
     if(nspp > 1){
       
       
       
     }
-    
-    
-    ## Fit alternative non-heirarchical model --------------------------------------
+
+    ## Fit alternative non-heirarchical model
     X <- Y <- NULL
     for(i in 1:nsite){
       X <- c(X,data[[i]]$x)
@@ -276,13 +316,6 @@ allom.BayesFit <- function(allom,nrep=10000,form="power") {
     Sg  <- 1/SgI  ## variance
     Dg <- -2*sum(dnorm(Y,X%*%Bg,sqrt(Sg),log=TRUE))
     
-    ## Store Parameter estimates
-    b0GIBBS[g,] <- b0  
-    b1GIBBS[g,] <- b1
-    muGIBBS[g,] <- mu
-    sigGIBBS[g,] <- sigma
-    tauGIBBS[g,] <- vech(tau)
-    DGIBBS[g]  <- sum(D)
     
     BgGIBBS[g,] <- Bg
     SgGIBBS[g]  <- Sg
@@ -292,11 +325,20 @@ allom.BayesFit <- function(allom,nrep=10000,form="power") {
   }## END MCMC LOOP
   close(pb)
   
+  if(nsite <= 1){
+    b0GIBBS[1:nrep,] <- 0  
+    b1GIBBS[1:nrep,] <- 0
+    muGIBBS[1:nrep,] <- 0
+    sigGIBBS[1:nrep] <- 0
+    tauGIBBS[1:nrep,] <- 0
+    DGIBBS[1:nrep]  <- 0
+  }
+  
   out <- cbind(b0GIBBS,b1GIBBS,muGIBBS,sigGIBBS,tauGIBBS,DGIBBS,BgGIBBS,SgGIBBS,DgGIBBS)
   colnames(out) <- c(paste("b0",1:nsite,sep="."),
                   paste("b1",1:nsite,sep="."),
                   "mu0","mu1",
-                  paste("sig",1:nsite,sep="."),
+                  "sigma",
                   "tau11","tau12","tau22","D",
                   "Bg0","Bg1","Sg","Dg")
   return(list(mc=as.mcmc(out),obs=data))

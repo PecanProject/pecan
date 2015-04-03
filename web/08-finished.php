@@ -28,13 +28,17 @@ if (!isset($_REQUEST['workflowid'])) {
 }
 $workflowid=$_REQUEST['workflowid'];
 
+// allow for switching x-axis
+$xaxis=isset($_REQUEST['xaxis']);
+$xaxis=TRUE;
+
 // get run information
-$query = "SELECT * FROM workflows WHERE workflows.id=$workflowid";
-$result = $pdo->query($query);
-if (!$result) {
+$stmt = $pdo->prepare("SELECT * FROM workflows WHERE workflows.id=?");
+if (!$stmt->execute(array($workflowid))) {
   die('Invalid query: ' . error_database());
 }
-$workflow = $result->fetch(PDO::FETCH_ASSOC);
+$workflow = $stmt->fetch(PDO::FETCH_ASSOC);
+$stmt->closeCursor();
 $start = substr($workflow['start_date'], 0, 4);
 $end = substr($workflow['end_date'], 0, 4);
 $folder = $workflow['folder'];
@@ -79,12 +83,6 @@ if (is_dir("$folder/pft")) {
         continue;
       }
       $pfts[$pft][] = $file;
-      // if (preg_match("/.pdf$/", $file)) {
-      //   $pfts[$pft][] = $file;
-      // }
-      // if (preg_match("/.log$/", $file)) {
-      //   $pfts[$pft][] = $file;
-      // }
     }
   }
 }
@@ -102,7 +100,7 @@ if (is_dir("$folder/run")) {
     # input files
     $inpfile[$runid] = array();
     foreach(scandir("$folder/run/$runid") as $file) {
-      if (is_dir("$folder/run/$runid/$file") || is_link("$folder/run/$runid/$file")) {
+      if (is_dir("$folder/run/$runid/$file")) {
         continue;
       }
       $inpfile[$runid][] = $file;
@@ -112,7 +110,7 @@ if (is_dir("$folder/run")) {
     $outfile[$runid] = array();
     $outplot[$runid] = array();
     foreach(scandir("$folder/out/$runid") as $file) {
-      if (is_dir("$folder/out/$runid/$file") || is_link("$folder/out/$runid/$file")) {
+      if (is_dir("$folder/out/$runid/$file")) {
         continue;
       }
       if (preg_match('/^\d\d\d\d.nc.var$/', $file)) {
@@ -229,8 +227,9 @@ if (is_dir("$folder/run")) {
   function showGraph() {
     var run = $('#runid').val();
     var year = $('#graphyear').val();
-    var variable = $('#graphvar').val();
-    var url="dataset.php?workflowid=<?php echo $workflowid; ?>&type=plot&run=" + run + "&year=" + year + "&var=" + variable + "&width=" + ($("#output").width()-10) + "&height=" + ($("#output").height() - 10);
+    var xvar = $('#graphxvar').val();
+    var yvar = $('#graphyvar').val();
+    var url="dataset.php?workflowid=<?php echo $workflowid; ?>&type=plot&run=" + run + "&year=" + year + "&xvar=" + xvar + "&yvar=" + yvar + "&width=" + ($("#output").width()-10) + "&height=" + ($("#output").height() - 10);
     $("#output").html("<img src=\"" + url + "\">");    
   }
 
@@ -318,13 +317,31 @@ if (is_dir("$folder/run")) {
     var run = $('#runid').val();
     var year = $('#graphyear').val();
 
-    $('#graphvar').empty();
+<?php if ($xaxis) { ?>
+    $('#graphxvar').empty();
+<?php } ?>
+    $('#graphyvar').empty();
     $.each(outplot[run][year], function(key, value) {
-         $('#graphvar')
+         $('#graphxvar')
              .append($("<option></option>")
-             .attr("value", key)
-             .text(value)); 
+                .attr("value", key)
+                .text(value)); 
+         $('#graphyvar')
+             .append($("<option></option>")
+                .attr("value", key)
+                .text(value)); 
     });
+<?php if ($xaxis) { ?>
+    $('#graphxvar')
+             .append($("<option></option>")
+                .attr("value", "time")
+                .text("time")
+                .prop("selected", true));
+<?php } ?>
+    $('#graphyvar')
+             .append($("<option></option>")
+                .attr("value", "time")
+                .text("time"));
   }
 
   function endsWith(haystack, needle) {
@@ -375,8 +392,21 @@ if (is_dir("$folder/run")) {
       </select>
       <div class="spacer"></div>
       
+<?php if ($xaxis) { ?>
+      <label>X-axis</label>
+      <select id="graphxvar">
+      </select>
+      <div class="spacer"></div>
+<?php } else { ?>
+      <input type="hidden" id="graphxvar" value="time"/>
+<?php } ?>
+
+<?php if ($xaxis) { ?>
+      <label>Y-axis</label>
+<?php } else { ?>
       <label>Variable</label>
-      <select id="graphvar">
+<?php } ?>
+      <select id="graphyvar">
       </select>
       <div class="spacer"></div>
       
@@ -466,11 +496,7 @@ if (is_dir("$folder/run")) {
 ?>    
   </div>
   <div id="output">Please select an option on the left.</div>
-  <div id="footer">
-    The <a href="http://pecanproject.org">PEcAn project</a> is supported by the National Science Foundation
-    (ABI #1062547, ARC #1023477) and the <a href="http://www.energybiosciencesinstitute.org/">Energy
-    Biosciences Institute</a>.
-  </div>
+  <div id="footer"><?php echo get_footer(); ?></div>
 </div>
 </body>
   <script type="text/javascript">

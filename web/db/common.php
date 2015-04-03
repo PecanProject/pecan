@@ -127,6 +127,11 @@ $sections=array(
 # make sure we do a session start
 session_start();
 
+if (!isset($simpleBETY) || !$simpleBETY) {
+  header( "Location: ../index.php");
+  exit;
+}
+
 # ----------------------------------------------------------------------
 # DATABASE FUNCTIONS
 # ----------------------------------------------------------------------

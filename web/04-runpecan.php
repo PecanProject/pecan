@@ -22,6 +22,7 @@ $userok=isset($_REQUEST['userok']);
 $offline=isset($_REQUEST['offline']);
 $pecan_edit=isset($_REQUEST['pecan_edit']);
 $model_edit=isset($_REQUEST['model_edit']);
+$browndog=isset($_REQUEST['browndog']);
 
 # parameters
 if (!isset($_REQUEST['siteid'])) {
@@ -60,7 +61,7 @@ if (isset($_REQUEST['email'])) {
 }
 
 # check met info
-if (isset($_REQUEST['input_met'])) {
+if (isset($_REQUEST['input_met']) && is_numeric($_REQUEST['input_met'])) {
   $stmt = $pdo->prepare("SELECT start_date, end_date FROM inputs WHERE inputs.id=?");
   if (!$stmt->execute(array($_REQUEST['input_met']))) {
     die('Invalid query: ' . (error_database()));
@@ -171,6 +172,12 @@ if (isset($db_fia_database) && ($db_fia_database != "")) {
 
 fwrite($fh, "  </database>" . PHP_EOL);
 
+if ($browndog) {
+  fwrite($fh, "  <browndog>" . PHP_EOL);  
+  fwrite($fh, "    <url>${browndog_url}</url>" . PHP_EOL);  
+  fwrite($fh, "  </browndog>" . PHP_EOL);  
+}
+
 $pft_id=1;
 fwrite($fh, "  <pfts>" . PHP_EOL);
 foreach($pft as $p) {
@@ -222,7 +229,12 @@ fwrite($fh, "    <inputs>" . PHP_EOL);
 foreach($_REQUEST as $key => $val) {
   if (substr($key, 0, 6) != "input_") continue;
   $tag=substr($key, 6);
-  fwrite($fh, "      <${tag}.id>${val}</${tag}.id>" . PHP_EOL);
+  if (is_numeric($val)) {
+    fwrite($fh, "      <${tag}.id>${val}</${tag}.id>" . PHP_EOL);
+  } else {
+    $parts=explode(".", $val, 2);
+    fwrite($fh, "      <${tag} input=\"${parts[0]}\" output=\"${parts[1]}\" />" . PHP_EOL);
+  }
 }
 fwrite($fh, "    </inputs>" . PHP_EOL);
 fwrite($fh, "    <start.date>${startdate}</start.date>" . PHP_EOL);

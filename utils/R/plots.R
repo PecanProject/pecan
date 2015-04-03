@@ -214,20 +214,25 @@ create.base.plot <- function() {
 ##' @seealso \code{\link{create.base.plot}}
 ##' @return updated plot object
 ##' @author David LeBauer
-##' @export
+##' @export plot.data
 ##' @examples
 ##' \dontrun{plot.data(data.frame(Y = c(1, 2), se = c(1,2)), base.plot = NULL, ymax = 10)}
 plot.data <- function(trait.data, base.plot = NULL, ymax, color = 'black') {
+
   if(is.null(base.plot)) base.plot <- create.base.plot()
+  
   n.pts <- nrow(trait.data)
   if(n.pts == 1){
-    ymax <- ymax/8
+    ymax <- ymax/16
   } else if (n.pts < 5) {
-    ymax <- ymax / 4
+    ymax <- ymax / 8
   } else {
-    ymax <- ymax / 2
+    ymax <- ymax / 4
   }
   y.pts <- seq(0, ymax, length.out = 1 + n.pts)[-1]
+  
+  if(!'ghs' %in% names(trait.data)) trait.data$ghs <- 1
+  
   plot.data <- data.frame(x = trait.data$Y,
                           y = y.pts,
                           se = trait.data$se,
@@ -235,12 +240,12 @@ plot.data <- function(trait.data, base.plot = NULL, ymax, color = 'black') {
   new.plot <- base.plot +
     geom_point(data = plot.data,
                aes(x = x, y = y,
-               color = control)) +
-                 geom_segment(data = plot.data,
-                              aes(x = x - se, y = y, xend = x + se, yend = y,
-                                  color = control)) +
-                                    scale_color_manual(values = c('black', 'grey')) +
-                                      opts(legend_position = "none")
+                   color = control)) +
+    geom_segment(data = plot.data,
+                 aes(x = x - se, y = y, xend = x + se, yend = y,
+                     color = control)) +
+    scale_color_manual(values = c('black', 'grey')) +
+    theme(legend.position = "none")
   return(new.plot)
 }
 ##==================================================================================================#

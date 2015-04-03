@@ -143,7 +143,7 @@
    NL%FFILOUT = '@SCRATCH@/@OUTFILE@'         ! Analysis output prefix
    NL%SFILOUT   = '@OUTDIR@/@HISTFILE@'           ! History output prefix
 
-   NL%IED_INIT_MODE   = 3
+   NL%IED_INIT_MODE   = @INIT_MODEL@
    !---------------------------------------------------------------------------------------!
    ! IED_INIT_MODE determines how the ecosystem should be initialized.                     !
    ! 0 - Start from near-bare ground (only a few seedling from every PFT included in this  !

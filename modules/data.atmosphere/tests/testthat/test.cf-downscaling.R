@@ -44,7 +44,7 @@ test_that(
   expect_equal(b[,round(range(downwelling_photosynthetic_photon_flux))], c(0, 2061))
   expect_equal(b[,round(range(air_temperature))], c(-22, 31))
   #  expect_equal(b[,round(range(relative_humidity))], c(0.30569194491299, 1))
-  expect_equal(b[,signif(range(precipitation_flux), 3)], c(0.00, 1.45))
+  expect_equal(b[,signif(range(precipitation_flux), 3)], c(0, 1.67e-05))
   expect_equal(b[,signif(range(wind), 2)], c(0.066, 6.60))
 })
 

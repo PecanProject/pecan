@@ -24,7 +24,7 @@ settings$meta.analysis$update <- TRUE
 settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)
 
 # Run the PEcAn meta.analysis
-run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$run$dbfiles, settings$database$bety)
+run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$meta.analysis$random.effects, settings$meta.analysis$threshold, settings$run$dbfiles, settings$database$bety)
 
 run.write.configs(model)        # Calls model specific write.configs e.g. write.config.ed.R
 ## load met data

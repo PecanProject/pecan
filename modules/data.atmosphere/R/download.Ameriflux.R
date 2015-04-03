@@ -1,16 +1,8 @@
 # lookup the site based on the site_id
 download.Ameriflux.site <- function(site_id) {
-  sites <- c("622"="US-Syv", "676"="US-WCr", "678"="US-PFa", "679"="US-Los",
-             "751"="US-ARM", "752"="US-Blo", "753"="US-Bo1", "754"="US-Brw", 
-             "755"="US-Dk2", "756"="US-Dk3", "757"="US-FPe", "758"="US-Ha1", 
-             "759"="US-Ho1", "760"="US-IB1", "761"="US-IB2", "762"="US-Ivo",
-             "763"="US-Me2", "764"="US-Me3", "766"="US-Me5", "767"="US-MMS",
-             "768"="US-MOz", "769"="US-Ne1", "770"="US-Ne2", "771"="US-Ne3",
-             "772"="US-NR1", "773"="US-Shd", "774"="US-SO2", "775"="US-Ton",
-             "776"="US-UMB", "777"="US-Var", "778"="US-Atq", "796"="US-Bar",
-             "899"="US-WI8", "900"="US-WI1", "906"="US-WI7", "907"="US-WI0",
-             "908"="US-WI9")
-  sites[as.character(site_id)]
+  sites <- read.csv(system.file("data/FLUXNET.sitemap.csv",package="PEcAn.data.atmosphere"),
+                    stringsAsFactors=FALSE)
+  sites$FLUX.id[which(sites$site.id == site_id)]
 }
 
 ##' Download Ameriflux L2 netCDF files
@@ -18,14 +10,27 @@ download.Ameriflux.site <- function(site_id) {
 ##' @name download.Ameriflux
 ##' @title download.Ameriflux
 ##' @export
-##' @param start_year
-##' @param end_year
-##' @param site 
-##' @param outfolder
-##' @param con database connection
+##' @param site the site to be downloaded, will be used as prefix as well
+##' @param outfolder location on disk where outputs will be stored
+##' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
+##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
+##' @param overwrite should existing files be overwritten
+##' @param verbose should the function be very verbose
 ##' 
 ##' @author Josh Mantooth, Rob Kooper
-download.Ameriflux <- function(start_year, end_year, site, outfolder, overwrite=FALSE) {
+download.Ameriflux <- function(site, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE) {
+  # get start/end year code works on whole years only
+  
+  require(lubridate) #is this necessary?
+  require(PEcAn.utils)
+  require(data.table)
+  
+  start_date <- as.POSIXlt(start_date, tz = "GMT")
+  end_date <- as.POSIXlt(end_date, tz = "GMT")
+  
+  start_year <- year(start_date)
+  end_year <- year(end_date)
+  
   # make sure output folder exists
   if(!file.exists(outfolder)){
     dir.create(outfolder, showWarnings=FALSE, recursive=TRUE)
@@ -35,7 +40,12 @@ download.Ameriflux <- function(start_year, end_year, site, outfolder, overwrite=
   baseurl <- paste0("http://cdiac.ornl.gov/ftp/ameriflux/data/Level2/Sites_ByID/", site, "/with_gaps/")
   
   # fetch all links
-  links <- xpathSApply(htmlParse(baseurl), "//a/@href")
+  links <- tryCatch({
+    xpathSApply(htmlParse(baseurl), "//a/@href")
+  }, error = function(e) {
+    logger.severe("Could not get information about", site, ".",
+                  "Is this an Ameriflux site?")
+  })
   
   # find all links we need based on the years and download them
   rows <- end_year - start_year + 1
@@ -62,6 +72,9 @@ download.Ameriflux <- function(start_year, end_year, site, outfolder, overwrite=
     }
     
     file <- tail(as.character(links[grep(paste0('_', year, '_.*.nc'), links)]), n=1)
+    if (length(file) == 0) {
+      logger.severe("Could not download data for", site, "for the year", year)
+    }
     download.file(paste0(baseurl, file), outputfile)
   }
   

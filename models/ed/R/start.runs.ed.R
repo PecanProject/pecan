@@ -14,7 +14,7 @@
 ##' @title Start ED2 model runs
 ##' @name start.runs.ED2
 ##' @param runid the id of the run (folder in runs) to execute
-##' @export
+##' @export start.runs.ED2
 ##' @author David LeBauer, Shawn Serbin, Carl Davidson
 start.runs.ED2 <- function(runid) {
   if (settings$run$host$name != "localhost") {
