@@ -175,6 +175,8 @@ fwrite($fh, "  </database>" . PHP_EOL);
 if ($browndog) {
   fwrite($fh, "  <browndog>" . PHP_EOL);  
   fwrite($fh, "    <url>${browndog_url}</url>" . PHP_EOL);  
+  fwrite($fh, "    <username>${browndog_username}</username>" . PHP_EOL);  
+  fwrite($fh, "    <password>${browndog_password}</password>" . PHP_EOL);  
   fwrite($fh, "  </browndog>" . PHP_EOL);  
 }
 
@@ -229,12 +231,15 @@ fwrite($fh, "    <inputs>" . PHP_EOL);
 foreach($_REQUEST as $key => $val) {
   if (substr($key, 0, 6) != "input_") continue;
   $tag=substr($key, 6);
+  fwrite($fh, "      <${tag}>" . PHP_EOL);
   if (is_numeric($val)) {
-    fwrite($fh, "      <${tag}.id>${val}</${tag}.id>" . PHP_EOL);
+    fwrite($fh, "        <id>${val}</id>" . PHP_EOL);
   } else {
     $parts=explode(".", $val, 2);
-    fwrite($fh, "      <${tag} input=\"${parts[0]}\" output=\"${parts[1]}\" />" . PHP_EOL);
+    fwrite($fh, "        <type>${parts[0]}</type>" . PHP_EOL);
+    fwrite($fh, "        <output>${parts[1]}</output>" . PHP_EOL);
   }
+  fwrite($fh, "      </${tag}>" . PHP_EOL);
 }
 fwrite($fh, "    </inputs>" . PHP_EOL);
 fwrite($fh, "    <start.date>${startdate}</start.date>" . PHP_EOL);

@@ -53,11 +53,7 @@ options(error=quote({
 # initialization
 # ----------------------------------------------------------------------
 # load the pecan settings
-
-# settings <- read.settings("pecan.xml")
-# read.settings does not work with the new tags <browndog> and tags in <met>
-# This is NOT a solution
-settings <- xmlToList(xmlParse("pecan.xml"))
+settings <- read.settings("pecan.xml")
 
 # remove existing STATUS file
 if (length(which(commandArgs() == "--continue")) == 0) {
@@ -80,17 +76,20 @@ if (length(which(commandArgs() == "--continue")) == 0) {
     
     # met conversion
     if(input.tag == 'met') {
-      if(length(input) >= 1) {  
-        status.start("MET Process")
-        
-        settings$run$inputs$path[[i]]  <-  PEcAn.data.atmosphere::met.process(
+      if(length(input) >= 1) {
+        if (is.null(settings$browndog)) {
+          status.start("MET Process")
+        } else {
+          status.start("BrownDog")
+        }
+        settings$run$inputs[[i]][['path']] <- PEcAn.data.atmosphere::met.process(
           site       = settings$run$site, 
           input_met  = settings$run$inputs$met,
           start_date = settings$run$start.date,
           end_date   = settings$run$end.date,
           model      = settings$model$type,
           host       = settings$run$host,
-          bety       = settings$database$bety, 
+          dbparms    = settings$database$bety, 
           dir        = settings$run$dbfiles,
           browndog   = settings$browndog)
         status.end()
