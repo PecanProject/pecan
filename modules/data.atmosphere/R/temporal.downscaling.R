@@ -191,12 +191,6 @@ cfmet.downscale.daily <- weachDT <- function(dailymet, output.dt = 1, lat){
   return(ans)
 }
 
-met2model.BIOCRO <- function(met){
-    met[ , `:=` (wind =  sqrt(northward_wind^2 + eastward_wind^2),
-        air_temperature = ud.convert(air_temperature, "kelvin", "celsius"))]
-    return(met)
-}
-
 ##' Get time series vector from netCDF file
 ##'
 ##' internal convenience function for
