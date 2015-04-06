@@ -123,7 +123,6 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
                           startdate=start_date, 
                           enddate=end_date,
                           stringsAsFactors = FALSE)
-    print(results)
 
     return(results)
   } # End conversion in Brown Dog
