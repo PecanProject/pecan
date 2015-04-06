@@ -247,10 +247,13 @@ fia.to.psscss <- function(settings) {
 				symbol.table <- db.query('SELECT spcd, "Symbol" FROM species where spcd IS NOT NULL', con=con)
 				names(symbol.table) = tolower(names(symbol.table))
 			}
-			name.list <- na.omit(symbol.table$symbol[symbol.table$spcd %in% fia.only])  
+			name.list <- na.omit(symbol.table$symbol[symbol.table$spcd %in% fia.only])
+      name.list <- name.list[name.list != "DEAD"]
+			if(length(name.list) > 0) {
 			logger.error(paste("\nThe FIA database expects the following species at ", lat," and ", lon, " but they are not described by the selected PFTs: \n", 
 							paste(name.list[1:min(30,length(name.list))], collapse=", "), over.ten, "\n\tPlease select additional pfts.", sep="")) 
 			stop("Execution stopped due to insufficient PFTs.")
+			}
 		}
 		
 		
