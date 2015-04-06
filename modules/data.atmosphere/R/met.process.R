@@ -8,15 +8,12 @@
 ##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
 ##' @param model model_type name
 ##' @param host Host info from settings file
-##' @param bety  database settings from settings file
+##' @param dbparms  database settings from settings file
 ##' @param dir  directory to write outputs to
 ##' 
 ##' @author Elizabeth Cowdery, Michael Dietze
 met.process <- function(site, input_met, start_date, end_date, model, host, dbparms, dir, browndog=NULL){
   
-  require(RPostgreSQL)
-  
-  driver   <- "PostgreSQL"
   con      <- db.open(dbparms)
   
   username <- ""  
