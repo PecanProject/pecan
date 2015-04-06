@@ -236,7 +236,7 @@ foreach($_REQUEST as $key => $val) {
     fwrite($fh, "        <id>${val}</id>" . PHP_EOL);
   } else {
     $parts=explode(".", $val, 2);
-    fwrite($fh, "        <type>${parts[0]}</type>" . PHP_EOL);
+    fwrite($fh, "        <source>${parts[0]}</source>" . PHP_EOL);
     fwrite($fh, "        <output>${parts[1]}</output>" . PHP_EOL);
   }
   fwrite($fh, "      </${tag}>" . PHP_EOL);
