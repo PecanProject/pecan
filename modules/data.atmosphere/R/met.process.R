@@ -44,7 +44,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   str_ns    <- paste0(new.site %/% 1000000000, "-", new.site %% 1000000000)
   
   # Determine output format name and mimetype   
-  model_info <- db.query(paste0("SELECT f.name, f.id, f.mime_type from modeltypes as m join modeltypes_formats as mf on m.id = mf.modeltype_id join formats as f on mf.format_id = f.id where m.name = '",model,"'"),con)
+  model_info <- db.query(paste0("SELECT f.name, f.id, f.mime_type from modeltypes as m join modeltypes_formats as mf on m.id = mf.modeltype_id join formats as f on mf.format_id = f.id where m.name = '",model,"' AND mf.tag='met'"),con)
   formatname <- model_info[1]
   mimetype   <- model_info[3] 
   # Could be generalized further int he code - for now everything takes formatname and mimetype
@@ -59,7 +59,9 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     
     # Determine Brown Dog Output Type - ultimately will be added to the database
     if(model_info[[2]] == 24){ #SIPNET
-      outputtype <- 'clim'   
+      outputtype <- 'clim'
+    } else if(model_info[[2]] == 12){ #ED2
+    	outputtype <- 'ed.zip'
     }
     #   else if(model == "BIOCRO"){   
     #   }else if(model == "DALEC"){
@@ -77,20 +79,39 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     newXMLNode("start_date", paste(start_date), parent = xmldata)
     newXMLNode("end_date", paste(end_date), parent = xmldata)
     xmldata <- saveXML(xmldata)
+
+    # create curl options
+    if (!is.null(browndog$username) && !is.null(browndog$password)) {
+	    curloptions <- list(userpwd=paste(browndog$username, browndog$password, sep=":"), httpauth = 1L)
+    }
+    curloptions <- c(curloptions, followlocation=TRUE)
     
     # post to browndog
-    html <- postForm(url,"fileData" = fileUpload("pecan.xml", xmldata, "text/xml"))
-    link <- getHTMLLinks(html)
-    print(link)
+    html <- postForm(url,"fileData" = fileUpload("pecan.xml", xmldata, "text/xml"), .opts=curloptions)
+    link <- gsub('.*<a.*>(.*)</a>.*', '\\1', html)
+    #link <- getHTMLLinks(html)
     
-    outfolder <- file.path(dir,paste0(met,"_",model,"_site_",str_ns)) # This would change if specifying convert = bd_step  
+    outfolder <- full.path(file.path(dir,paste0(met,"_",model,"_site_",str_ns))) # This would change if specifying convert = bd_step  
     if(!file.exists(outfolder)){
       dir.create(outfolder, showWarnings=FALSE, recursive=TRUE)
     }
-    outputfile <- file.path(outfolder, paste(site.dl, strptime(start_date, "%Y-%m-%d"), strptime(end_date, "%Y-%m-%d"), outputtype, sep="."))
-    dl_file(link, outputfile, 0) # My download function - don't know if Rob's while loop is better?
-    
-    settings$run$inputs$path <- outputfile
+    outputfile <- file.path(outfolder, paste(site.dl, sub(' UTC', '', ymd(start_date)), sub(' UTC', '', ymd(end_date)), outputtype, sep="."))
+
+		outputfile <- download.url(link, outputfile, .opts=curloptions)
+
+		# deal with a zipfile
+		if (grepl('.zip$', outputfile)) {
+			outfolder <- sub('.zip$', '', outputfile)
+			system2("unzip", c("-q", "-d", outfolder, outputfile))
+		}
+
+		# in case of ED update ED_MET_DRIVER_HEADER and return that as the output
+		if (outputtype == "ed.zip") {
+			outputfile <- file.path(outfolder, 'ED_MET_DRIVER_HEADER')
+			header <- readLines(con=outputfile, n=-1)
+			header[3] <- paste0(outfolder, '/')
+			writeLines(header, con=outputfile)
+		}
     
     start_year <- year(as.POSIXlt(start_date, tz = "GMT"))
     end_year <- year(as.POSIXlt(end_date, tz = "GMT"))
@@ -101,9 +122,9 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
                           formatname,
                           startdate=start_date, 
                           enddate=end_date,
-                          stringsAsFactors = FALSE)    
+                          stringsAsFactors = FALSE)
 
-    
+    return(results)
   } # End conversion in Brown Dog
   
   #--------------------------------------------------------------------------------------------------#
@@ -323,37 +344,3 @@ db.site.lat.lon <- function(site.id,con){
     return(list(lat = site$lat, lon = site$lon))
   }
 }
-
-## Betsy's brute force fix for downloading files from Brown Dog
-
-##' @name dl_file
-##' @title dl_file
-##' @export
-##' @param link - path to file to be downloaded
-##' @param outfolder - destination of downloaded file(s)
-##' @param i - number of times to try download (60 - so two minutes)
-##' @author Betsy Cowdery
-dl_file <- function(link, outfolder, i){
-  r <- try(download.file(link, outfolder, quiet = TRUE), silent = TRUE)
-  if(inherits(r, 'try-error') & i <= 40){
-    cat("*")
-    Sys.sleep(3)
-    dl_file(link, outfolder, i)
-  }
-  if(inherits(r, 'try-error') & i > 40){
-    print("Download failed after two minutes")
-    return(NULL)
-  }
-  if(inherits(r, 'integer')){
-    cat("\nDownload succeeded")
-  }
-}
-
-#' Is it better to do a while loop?
-#'        while(!file.exists(outputfile)) {
-#           tryCatch({
-#             download.file(url, outputfile)
-#           }, error = function(e) {
-#             file.remove(outputfile)
-#           })
-#         }

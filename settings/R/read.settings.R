@@ -605,9 +605,9 @@ check.settings <- function(settings) {
 
   # Check folder where outputs are written before adding to dbfiles
   if(is.null(settings$run$dbfiles)) {
-    settings$run$dbfiles <- normalizePath("~/.pecan/dbfiles", mustWork=FALSE)
+    settings$run$dbfiles <- full.path("~/.pecan/dbfiles")
   } else {
-    settings$run$dbfiles <- normalizePath(settings$run$dbfiles, mustWork=FALSE)
+    settings$run$dbfiles <- full.path(settings$run$dbfiles)
   }
   dir.create(settings$run$dbfiles, showWarnings = FALSE, recursive = TRUE)
 
@@ -646,7 +646,7 @@ check.settings <- function(settings) {
 
   #update workflow
   if (fixoutdir) {
-      db.query(paste0("UPDATE workflows SET folder='", normalizePath(settings$outdir), "' WHERE id=", settings$workflow$id), con=dbcon)
+      db.query(paste0("UPDATE workflows SET folder='", full.path(settings$outdir), "' WHERE id=", settings$workflow$id), con=dbcon)
   }
 
   # check/create the local run folder

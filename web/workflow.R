@@ -63,7 +63,6 @@ if (length(which(commandArgs() == "--continue")) == 0) {
   for(i in 1:length(settings$run$inputs)) {
     input <- settings$run$inputs[[i]]
     if (is.null(input)) next
-    if (length(input) == 1) next
     
     input.tag <- names(settings$run$input)[i]
     
@@ -82,7 +81,7 @@ if (length(which(commandArgs() == "--continue")) == 0) {
         } else {
           status.start("BrownDog")
         }
-        settings$run$inputs[[i]][['path']] <- PEcAn.data.atmosphere::met.process(
+        result <- PEcAn.data.atmosphere::met.process(
           site       = settings$run$site, 
           input_met  = settings$run$inputs$met,
           start_date = settings$run$start.date,
@@ -92,6 +91,7 @@ if (length(which(commandArgs() == "--continue")) == 0) {
           dbparms    = settings$database$bety, 
           dir        = settings$run$dbfiles,
           browndog   = settings$browndog)
+        settings$run$inputs[[i]][['path']] <- result$file
         status.end()
       }
     }
