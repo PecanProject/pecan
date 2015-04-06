@@ -74,7 +74,7 @@ cf2biocro <- function(met){
                        SolarR = ppfd,
                        Temp = ud.convert(air_temperature, "Kelvin", "Celsius"), 
                        RH = relative_humidity, 
-                       WS = sqrt(northward_wind^2 + eastward_wind^2), 
+                       WS = wind_speed, 
                        precip = ud.convert(precipitation_flux, "s-1", "h-1"))] 
   return(newmet)
 }
