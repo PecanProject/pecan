@@ -230,6 +230,7 @@ fwrite($fh, "    </site>" . PHP_EOL);
 fwrite($fh, "    <inputs>" . PHP_EOL);
 foreach($_REQUEST as $key => $val) {
   if (substr($key, 0, 6) != "input_") continue;
+  if ($val == -1) continue;
   $tag=substr($key, 6);
   fwrite($fh, "      <${tag}>" . PHP_EOL);
   if (is_numeric($val)) {
