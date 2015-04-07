@@ -42,6 +42,45 @@ settings <- read.settings(settings.file)
 # remove status file
 unlink(file.path(settings$outdir, "STATUS"))
 
+# do conversions
+for(i in 1:length(settings$run$inputs)) {
+  input <- settings$run$inputs[[i]]
+  if (is.null(input)) next
+  
+  input.tag <- names(settings$run$input)[i]
+  
+  # fia database
+  if (input['input'] == 'fia') {
+    status.start("FIA2ED")
+    fia.to.psscss(settings)
+    status.end()
+  }
+  
+  # met conversion
+  if(input.tag == 'met') {
+    if(length(input) >= 1) {
+      if (is.null(settings$browndog)) {
+        status.start("MET Process")
+      } else {
+        status.start("BrownDog")
+      }
+      result <- PEcAn.data.atmosphere::met.process(
+        site       = settings$run$site, 
+        input_met  = settings$run$inputs$met,
+        start_date = settings$run$start.date,
+        end_date   = settings$run$end.date,
+        model      = settings$model$type,
+        host       = settings$run$host,
+        dbparms    = settings$database$bety, 
+        dir        = settings$run$dbfiles,
+        browndog   = settings$browndog)
+      settings$run$inputs[[i]][['path']] <- result$file
+      status.end()
+    }
+  }
+}
+saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
+
 # get traits of pfts
 status.start("TRAIT")
 settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)
@@ -53,49 +92,6 @@ status.start("META")
 if('meta.analysis' %in% names(settings)) {
   run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$meta.analysis$random.effects, settings$meta.analysis$threshold, settings$run$dbfiles, settings$database$bety)
 }
-status.end()
-
-# do conversions
-status.start("CONVERSIONS")
-for(i in 1:length(settings$run$inputs)) {
-  input <- settings$run$inputs[[i]]
-  if (is.null(input)) next
-  if (length(input) == 1) next
-
-  # fia database
-  if (input['input'] == 'fia') {
-    fia.to.psscss(settings)
-  }
-
-  # met download
-  if (input['input'] == 'Ameriflux') {
-    # start/end date for weather
-    start_date <- settings$run$start.date
-    end_date <- settings$run$end.date
-
-    # site
-    site <- sub(".* \\((.*)\\)", "\\1", settings$run$site$name)
-
-    # download data
-    fcn <- paste("download", input['input'], sep=".")
-    do.call(fcn, list(site, file.path(settings$run$dbfiles, input['input']), start_date=start_date, end_date=end_date))
-
-    # convert to CF
-    met2CF.Ameriflux(file.path(settings$run$dbfiles, input['input']), site, file.path(settings$run$dbfiles, "cf"), start_date=start_date, end_date=end_date)
-
-    # gap filing
-    metgapfill(file.path(settings$run$dbfiles, "cf"), site, file.path(settings$run$dbfiles, "gapfill"), start_date=start_date, end_date=end_date)
-
-    # model specific
-    load.modelpkg(input['output'])
-    fcn <- paste("met2model", input['output'], sep=".")
-    r <- do.call(fcn, list(file.path(settings$run$dbfiles, "gapfill"), site, file.path(settings$run$dbfiles, input['output']), start_date=start_date, end_date=end_date))
-    settings$run$inputs[[i]] <- r[['file']]
-  }
-
-  # narr download
-}
-saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
 status.end()
 
 # write configurations
