@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+<title>subset.layer. PEcAn.data.land 1.4.1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="
+Shawn P. Serbin
+">
+
+<link href="css/bootstrap.css" rel="stylesheet">
+<link href="css/bootstrap-responsive.css" rel="stylesheet">
+<link href="css/highlight.css" rel="stylesheet">
+<link href="css/staticdocs.css" rel="stylesheet">
+
+<!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+  </head>
+
+  <body>
+    <div class="navbar">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand" href="#">PEcAn.data.land 1.4.1</a>
+      <div class="nav">
+        <ul class="nav">
+          <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="container">
+      <header>
+        
+      </header>
+      
+      <h1>Function to subset and clip a GIS vector or raster layer by a bounding box
+or clip/subset layer (e.g. shapefile/KML)</h1>
+
+<div class="row">
+  <div class="span8">
+    <h2>Usage</h2>
+    <pre><div>"subset"(file, coords&nbsp;=&nbsp;NULL, sub.layer&nbsp;=&nbsp;NULL, clip&nbsp;=&nbsp;FALSE, out.dir&nbsp;=&nbsp;NULL, out.name&nbsp;=&nbsp;NULL)</div></pre>
+    
+    <h2>Arguments</h2>
+    <dl>
+      <dt>file</dt>
+      <dd>input file to be subset</dd>
+      <dt>coords</dt>
+      <dd>vector with xmin,ymin,xmax,ymax defing the bounding box for subset</dd>
+      <dt>sub.layer</dt>
+      <dd>Vector layer defining the subset region</dd>
+      <dt>clip</dt>
+      <dd>clip geometries to bounding box/subset layer? TRUE/FALSE</dd>
+      <dt>out.dir</dt>
+      <dd>output directory for subset layer. Defaults to location of
+input file.  Can also set to "pwd"</dd>
+      <dt>out.name</dt>
+      <dd>filename for subset layer.  Defaults to original filename with the suffix
+*.sub</dd>
+    </dl>
+    
+    <div class="Description">
+      <h2>Description</h2>
+
+      <p>Function to subset and clip a GIS vector or raster layer by a bounding box
+or clip/subset layer (e.g. shapefile/KML)</p>
+  
+    </div>
+    
+    <h2 id="examples">Examples</h2>
+    <pre class="examples"><div class='input'>## &lt;strong&gt;Not run&lt;/strong&gt;: 
+# # Test dataset
+# file &lt;- Sys.glob(file.path(R.home(), &quot;library&quot;, &quot;PEcAn.data.land&quot;,&quot;data&quot;,&quot;*.shp&quot;))
+# out.dir &lt;- path.expand(&quot;~/temp&quot;)
+# # with clipping enabled
+# subset.layer(file=file,coords=c(-95,42,-84,47),clip=TRUE,out.dir=out.dir)
+# # without clipping enables
+# subset.layer(file=file,coords=c(-95,42,-84,47),out.dir=out.dir)
+# system(paste(&quot;rm -r&quot;,out.dir,sep=&quot;&quot;))
+# ## &lt;strong&gt;End(Not run)&lt;/strong&gt;
+</div></pre>
+  </div>
+  <div class="span4">
+    <!-- <ul>
+      <li>subset.layer</li>
+    </ul>
+    <ul>
+      
+    </ul> -->
+      
+    
+    <h2>Author</h2>
+    
+Shawn P. Serbin
+
+    
+  </div>
+</div>
+      
+      <footer>
+      <p class="pull-right"><a href="#">Back to top</a></p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+      </footer>
+    </div>
+  </body>
+</html>

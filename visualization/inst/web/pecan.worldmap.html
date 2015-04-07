@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+<title>pecan.worldmap. PEcAn.visualization 1.4.1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="
+David LeBauer
+">
+
+<link href="css/bootstrap.css" rel="stylesheet">
+<link href="css/bootstrap-responsive.css" rel="stylesheet">
+<link href="css/highlight.css" rel="stylesheet">
+<link href="css/staticdocs.css" rel="stylesheet">
+
+<!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+  </head>
+
+  <body>
+    <div class="navbar">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand" href="#">PEcAn.visualization 1.4.1</a>
+      <div class="nav">
+        <ul class="nav">
+          <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="container">
+      <header>
+        
+      </header>
+      
+      <h1>PEcAn worldmap</h1>
+
+<div class="row">
+  <div class="span8">
+    <h2>Usage</h2>
+    <pre><div>pecan.worldmap(df.in, outfile&nbsp;=&nbsp;NULL, xlim&nbsp;=&nbsp;c(-130, -30), ylim&nbsp;=&nbsp;c(-40, 60), range&nbsp;=&nbsp;NULL, legend.title&nbsp;=&nbsp;NULL, fig.title&nbsp;=&nbsp;NULL)</div></pre>
+    
+    <h2>Arguments</h2>
+    <dl>
+      <dt>df.in</dt>
+      <dd>data.frame with columns lat, lon, and (variable)</dd>
+      <dt>outfile</dt>
+      <dd>png file</dd>
+    </dl>
+    
+    <div class="Value">
+      <h2>Value</h2>
+
+      <p><dl>
+NULL plot as side effect
+</dl></p>
+  
+    </div>
+
+    <div class="Description">
+      <h2>Description</h2>
+
+      <p>Plot map of world with model output</p>
+  
+    </div>
+
+    <div class="Details">
+      <h2>Details</h2>
+
+      <p>This is just a first draft</p>
+  
+    </div>
+    
+    <h2 id="examples">Examples</h2>
+    <pre class="examples"><div class='input'>miscanthusyield &lt;- read.csv(system.file(&quot;extdata/miscanthusyield.csv&quot;,
+                                     package = &quot;PEcAn.visualization&quot;))
+pecan.worldmap(df.in = miscanthusyield,
+               outfile = file.path(tempdir(), &#39;worldmap.png&#39;))
+</div>
+<div class='output'>X11cairo 
+       2 
+</div></pre>
+  </div>
+  <div class="span4">
+    <!-- <ul>
+      <li>pecan.worldmap</li>
+    </ul>
+    <ul>
+      
+    </ul> -->
+      
+    
+    <h2>Author</h2>
+    
+David LeBauer
+
+    
+  </div>
+</div>
+      
+      <footer>
+      <p class="pull-right"><a href="#">Back to top</a></p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+      </footer>
+    </div>
+  </body>
+</html>

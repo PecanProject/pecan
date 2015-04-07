@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+<title>remote.execute.cmd. PEcAn.utils 1.4.1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="
+Rob Kooper
+">
+
+<link href="css/bootstrap.css" rel="stylesheet">
+<link href="css/bootstrap-responsive.css" rel="stylesheet">
+<link href="css/highlight.css" rel="stylesheet">
+<link href="css/staticdocs.css" rel="stylesheet">
+
+<!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+  </head>
+
+  <body>
+    <div class="navbar">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand" href="#">PEcAn.utils 1.4.1</a>
+      <div class="nav">
+        <ul class="nav">
+          <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="container">
+      <header>
+        
+      </header>
+      
+      <h1>Execute command remotely</h1>
+
+<div class="row">
+  <div class="span8">
+    <h2>Usage</h2>
+    <pre><div>remote.execute.cmd(cmd, args&nbsp;=&nbsp;character(), host&nbsp;=&nbsp;"localhost", user&nbsp;=&nbsp;NA, stderr&nbsp;=&nbsp;FALSE)</div></pre>
+    
+    <h2>Arguments</h2>
+    <dl>
+      <dt>args</dt>
+      <dd>a character vector of arguments to command.</dd>
+      <dt>host</dt>
+      <dd>host to execute command on</dd>
+      <dt>user</dt>
+      <dd>the username to use for remote login</dd>
+      <dt>stderr</dt>
+      <dd>should stderr be returned as well.</dd>
+      <dt>command</dt>
+      <dd>the system command to be invoked, as a character string.</dd>
+    </dl>
+    
+    <div class="Value">
+      <h2>Value</h2>
+
+      <p><dl>
+the captured output of the command (both stdout and stderr)
+</dl></p>
+  
+    </div>
+
+    <div class="Description">
+      <h2>Description</h2>
+
+      <p>Execute command remotely</p>
+  
+    </div>
+
+    <div class="Details">
+      <h2>Details</h2>
+
+      <p>Executes the given command on the remote host using ssh. If the user is set
+the system will login as the given user. If the host given is the local
+machine it will execute the command locally without ssh.</p>
+  
+    </div>
+    
+    <h2 id="examples">Examples</h2>
+    <pre class="examples"><div class='input'>remote.execute.cmd(&quot;ls&quot;, c(&quot;-l&quot;, &quot;/&quot;), host=&quot;localhost&quot;, stderr=TRUE)
+</div>
+<div class='output'> [1] &quot;total 124&quot;                                                                                      
+ [2] &quot;drwxr-xr-x   2 root root  4096 Feb  4 07:55 bin&quot;                                                
+ [3] &quot;drwxr-xr-x   4 root root  4096 Mar 24 07:38 boot&quot;                                               
+ [4] &quot;drwxr-xr-x   2 root root  4096 Dec 15  2011 cdrom&quot;                                              
+ [5] &quot;-rw-r--r--   1 root root   144 Jan 27  2014 C:\\nppdf32Log\\debuglog.txt&quot;                       
+ [6] &quot;drwxr-xr-x  16 root root  4240 Mar  6 16:04 dev&quot;                                                
+ [7] &quot;drwxr-xr-x 206 root root 16384 Apr  3 07:48 etc&quot;                                                
+ [8] &quot;drwxr-xr-x   8 root root  4096 Sep 29  2014 home&quot;                                               
+ [9] &quot;lrwxrwxrwx   1 root root    33 Mar 24 07:37 initrd.img -&gt; boot/initrd.img-3.13.0-48-generic&quot;    
+[10] &quot;lrwxrwxrwx   1 root root    33 Feb 25 07:47 initrd.img.old -&gt; boot/initrd.img-3.13.0-46-generic&quot;
+[11] &quot;drwxr-xr-x  26 root root  4096 Feb 27 07:40 lib&quot;                                                
+[12] &quot;drwxr-xr-x   2 root root 12288 Feb 27 07:40 lib32&quot;                                              
+[13] &quot;drwxr-xr-x   2 root root  4096 Feb 27 07:40 lib64&quot;                                              
+[14] &quot;lrwxrwxrwx   1 root root    36 Nov  7  2012 libnss3.so -&gt; /usr/lib/x86_64-linux-gnu/libnss3.so&quot; 
+[15] &quot;drwx------   2 root root 16384 Dec 15  2011 lost+found&quot;                                         
+[16] &quot;drwxr-xr-x   8 root root  4096 Jan 21  2014 media&quot;                                              
+[17] &quot;drwxr-xr-x   2 root root  4096 Oct  9  2011 mnt&quot;                                                
+[18] &quot;drwxr-xr-x   6 root root  4096 Jul 25  2014 opt&quot;                                                
+[19] &quot;dr-xr-xr-x 326 root root     0 Mar  6 16:04 proc&quot;                                               
+[20] &quot;drwx------  27 root root  4096 Aug 19  2014 root&quot;                                               
+[21] &quot;drwxr-xr-x  31 root root  1120 Apr  2 23:46 run&quot;                                                
+[22] &quot;drwxr-xr-x   2 root root 12288 Mar 11 07:37 sbin&quot;                                               
+[23] &quot;drwxr-xr-x   2 root root  4096 Oct 12  2011 srv&quot;                                                
+[24] &quot;dr-xr-xr-x  13 root root     0 Mar  6 16:04 sys&quot;                                                
+[25] &quot;drwxrwxrwt  61 root root 12288 Apr  3 16:28 tmp&quot;                                                
+[26] &quot;drwxr-xr-x  11 root root  4096 Dec 15  2011 usr&quot;                                                
+[27] &quot;drwxr-xr-x  15 root root  4096 Jul 25  2014 var&quot;                                                
+[28] &quot;lrwxrwxrwx   1 root root    30 Mar 24 07:37 vmlinuz -&gt; boot/vmlinuz-3.13.0-48-generic&quot;          
+[29] &quot;lrwxrwxrwx   1 root root    30 Feb 25 07:47 vmlinuz.old -&gt; boot/vmlinuz-3.13.0-46-generic&quot;      
+</div></pre>
+  </div>
+  <div class="span4">
+    <!-- <ul>
+      <li>remote.execute.cmd</li>
+    </ul>
+    <ul>
+      
+    </ul> -->
+      
+    
+    <h2>Author</h2>
+    
+Rob Kooper
+
+    
+  </div>
+</div>
+      
+      <footer>
+      <p class="pull-right"><a href="#">Back to top</a></p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+      </footer>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+<title>plot.variance.decomposition. PEcAn.uncertainty 1.4.1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="
+David LeBauer, Carl Davidson
+">
+
+<link href="css/bootstrap.css" rel="stylesheet">
+<link href="css/bootstrap-responsive.css" rel="stylesheet">
+<link href="css/highlight.css" rel="stylesheet">
+<link href="css/staticdocs.css" rel="stylesheet">
+
+<!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+  </head>
+
+  <body>
+    <div class="navbar">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand" href="#">PEcAn.uncertainty 1.4.1</a>
+      <div class="nav">
+        <ul class="nav">
+          <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="container">
+      <header>
+        
+      </header>
+      
+      <h1>Variance Decomposition Plots</h1>
+
+<div class="row">
+  <div class="span8">
+    <h2>Usage</h2>
+    <pre><div>"plot"(plot.inputs, fontsize&nbsp;=&nbsp;list(title&nbsp;=&nbsp;18, axis&nbsp;=&nbsp;14))</div></pre>
+    
+    <h2>Arguments</h2>
+    <dl>
+      <dt>fontsize</dt>
+      <dd>list specifying the font size of the titles and axes of the graph</dd>
+      <dt>...</dt>
+      <dd>Output from any number of sensitivity analyses. Output must be of the form
+given by sensitivity.results$variance.decomposition.output in model output</dd>
+      <dt>all.plot.inputs</dt>
+      <dd>Optional argument allowing output from sensitivity analyses to be specified in a list</dd>
+      <dt>exclude</dt>
+      <dd>vector of strings specifying parameters to omit from the variance decomposition graph</dd>
+      <dt>convert.var</dt>
+      <dd>function transforming variances to the value displayed in the graph</dd>
+      <dt>var.label</dt>
+      <dd>label to displayed over variance column</dd>
+      <dt>order.plot.input</dt>
+      <dd>Output from a sensitivity analysis that is to be used to order parameters.
+Parameters are ordered by variance. Defaults to the first sensitivity analysis output given</dd>
+      <dt>ticks.plot.input</dt>
+      <dd>Output from a sensitivity analysis that is to be used.
+Defaults to the first sensitivity analysis output given</dd>
+      <dt>col</dt>
+      <dd>Color of each sensitivity analysis. Equivalent to col parameter of the plot function.</dd>
+      <dt>pch</dt>
+      <dd>Shape of each sensitivity analysis. Equivalent to pch parameter of the plot function.</dd>
+      <dt>main</dt>
+      <dd>Plot title. Useful for multi-pft variance decompositions.</dd>
+    </dl>
+    
+    <div class="Description">
+      <h2>Description</h2>
+
+      <p>Plot results of variance decomposition</p>
+  
+    </div>
+
+    <div class="Details">
+      <h2>Details</h2>
+
+      <p>Plots variance decomposition tryptich</p>
+  
+    </div>
+    
+    <h2 id="examples">Examples</h2>
+    <pre class="examples"><div class='input'>x &lt;- list(trait.labels = c(&quot;a&quot;, &quot;b&quot;, &quot;c&quot;),
+          coef.vars = c(a=1,b=0.5, c=0.1),
+          elasticities = c(a=1,b=2,c=0.5),
+          variances    = c(a = 20, b=30, c = 10))
+do.call(grid.arrange, c(plot.variance.decomposition(x), ncol = 4))
+</div>
+<p><img src='plot.variance.decomposition-2.png' alt='' width='540' height='400' /></p></pre>
+  </div>
+  <div class="span4">
+    <!-- <ul>
+      <li>plot.variance.decomposition</li>
+    </ul>
+    <ul>
+      
+    </ul> -->
+      
+    
+    <h2>Author</h2>
+    
+David LeBauer, Carl Davidson
+
+    
+  </div>
+</div>
+      
+      <footer>
+      <p class="pull-right"><a href="#">Back to top</a></p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+      </footer>
+    </div>
+  </body>
+</html>

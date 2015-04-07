@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+<title>solarMJ2ppfd. PEcAn.data.atmosphere 1.4.1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="
+Fernando Miguez
+
+David LeBauer
+">
+
+<link href="css/bootstrap.css" rel="stylesheet">
+<link href="css/bootstrap-responsive.css" rel="stylesheet">
+<link href="css/highlight.css" rel="stylesheet">
+<link href="css/staticdocs.css" rel="stylesheet">
+
+<!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+  </head>
+
+  <body>
+    <div class="navbar">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand" href="#">PEcAn.data.atmosphere 1.4.1</a>
+      <div class="nav">
+        <ul class="nav">
+          <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="container">
+      <header>
+        
+      </header>
+      
+      <h1>MJ to PPFD</h1>
+
+<div class="row">
+  <div class="span8">
+    <h2>Usage</h2>
+    <pre><div>solarMJ2ppfd(solarMJ)</div></pre>
+    
+    <h2>Arguments</h2>
+    <dl>
+      <dt>solarMJ</dt>
+      <dd>MJ per day</dd>
+    </dl>
+    
+    <div class="Value">
+      <h2>Value</h2>
+
+      <p><dl>
+PPFD umol /m2 / s
+</dl></p>
+  
+    </div>
+
+    <div class="Description">
+      <h2>Description</h2>
+
+      <p>Solar Radiation to PPFD</p>
+  
+    </div>
+
+    <div class="Details">
+      <h2>Details</h2>
+
+      <p>There is no easy straight way to convert MJ/m2 to mu mol photons / m2 / s (PAR).
+Note: 1 Watt = 1J/s
+The above conversion is based on the following reasoning
+0.12 is about how much of the total radiation is expected to ocurr during the hour of maximum insolation (it is a guesstimate)
+2.07 is a coefficient which converts from MJ to mol photons (it is approximate and it is taken from ...
+Campbell and Norman (1998). Introduction to Environmental Biophysics. pg 151 'the energy content of solar radiation in the PAR waveband is 2.35 x 10^5 J/mol'
+See also the chapter radiation basics (10)
+Here the input is the total solar radiation so to obtain in the PAR spectrum need to multiply by 0.486
+This last value 0.486 is based on the approximation that PAR is 0.45-0.50 of the total radiation
+This means that 1e6 / (2.35e6) * 0.486 = 2.07
+1e6 converts from mol to mu mol
+1/3600 divides the values in hours to seconds</p>
+  
+    </div>
+      </div>
+  <div class="span4">
+    <!-- <ul>
+      <li>solarMJ2ppfd</li>
+    </ul>
+    <ul>
+      
+    </ul> -->
+      
+    
+    <h2>Author</h2>
+    
+Fernando Miguez
+
+David LeBauer
+
+    
+  </div>
+</div>
+      
+      <footer>
+      <p class="pull-right"><a href="#">Back to top</a></p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+      </footer>
+    </div>
+  </body>
+</html>

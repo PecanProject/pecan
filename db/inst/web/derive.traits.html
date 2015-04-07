@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+<title>derive.traits. PEcAn.DB 1.4.1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="">
+
+<link href="css/bootstrap.css" rel="stylesheet">
+<link href="css/bootstrap-responsive.css" rel="stylesheet">
+<link href="css/highlight.css" rel="stylesheet">
+<link href="css/staticdocs.css" rel="stylesheet">
+
+<!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+  </head>
+
+  <body>
+    <div class="navbar">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand" href="#">PEcAn.DB 1.4.1</a>
+      <div class="nav">
+        <ul class="nav">
+          <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="container">
+      <header>
+        
+      </header>
+      
+      <h1>Performs an arithmetic function, FUN, over a series of traits and returns the result as a derived trait.</h1>
+
+<div class="row">
+  <div class="span8">
+    <h2>Usage</h2>
+    <pre><div>derive.traits(FUN, ..., input&nbsp;=&nbsp;list(...), match.columns&nbsp;=&nbsp;c("citation_id", "site_id", "specie_id"), var.name&nbsp;=&nbsp;NA, sample.size&nbsp;=&nbsp;10^6)</div></pre>
+    
+    <h2>Arguments</h2>
+    <dl>
+      <dt>FUN</dt>
+      <dd>arithmetic function</dd>
+      <dt>...</dt>
+      <dd>trait datasets that will be supplied to FUN as input</dd>
+      <dt>match.columns</dt>
+      <dd>in the event more than one trait dataset is supplied,
+this specifies the columns that identify a unique data point</dd>
+      <dt>sample.size</dt>
+      <dd>where traits are normally distributed with a given</dd>
+    </dl>
+    
+    <div class="Value">
+      <h2>Value</h2>
+
+      <p><dl>
+a copy of the first input trait with modified mean, stat, and n
+</dl></p>
+  
+    </div>
+
+    <div class="Description">
+      <h2>Description</h2>
+
+      <p>Equivalent to derive.trait(), but operates over a series of trait datasets,
+as opposed to individual trait rows. See <code><a href='derive.trait.html'>derive.trait</a></code>; for more information.</p>
+  
+    </div>
+      </div>
+  <div class="span4">
+    <!-- <ul>
+      <li>derive.traits</li>
+    </ul>
+    <ul>
+      
+    </ul> -->
+      
+        
+  </div>
+</div>
+      
+      <footer>
+      <p class="pull-right"><a href="#">Back to top</a></p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+      </footer>
+    </div>
+  </body>
+</html>

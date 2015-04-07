@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+<title>read.output. PEcAn.utils 1.4.1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="
+Michael Dietze, David LeBauer
+">
+
+<link href="css/bootstrap.css" rel="stylesheet">
+<link href="css/bootstrap-responsive.css" rel="stylesheet">
+<link href="css/highlight.css" rel="stylesheet">
+<link href="css/staticdocs.css" rel="stylesheet">
+
+<!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+  </head>
+
+  <body>
+    <div class="navbar">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand" href="#">PEcAn.utils 1.4.1</a>
+      <div class="nav">
+        <ul class="nav">
+          <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="container">
+      <header>
+        
+      </header>
+      
+      <h1>Read model output</h1>
+
+<div class="row">
+  <div class="span8">
+    <h2>Usage</h2>
+    <pre><div>read.output(runid, outdir, start.year&nbsp;=&nbsp;NA, end.year&nbsp;=&nbsp;NA, variables&nbsp;=&nbsp;"GPP")</div></pre>
+    
+    <h2>Arguments</h2>
+    <dl>
+      <dt>runid</dt>
+      <dd>the id distiguishing the model run.</dd>
+      <dt>outdir</dt>
+      <dd>the directory that the model's output was sent to</dd>
+      <dt>start.year</dt>
+      <dd>first year of output to read (should be greater than )</dd>
+      <dt>end.year</dt>
+      <dd>last year of output to read</dd>
+      <dt>variables</dt>
+      <dd>variables to be read from model output</dd>
+    </dl>
+    
+    <div class="Value">
+      <h2>Value</h2>
+
+      <p><dl>
+vector of output variable
+</dl></p>
+  
+    </div>
+
+    <div class="Description">
+      <h2>Description</h2>
+
+      <p>Reads the output of a single model run</p>
+  
+    </div>
+
+    <div class="Details">
+      <h2>Details</h2>
+
+      <p>Generic function to convert model output from model-specific format to
+a common PEcAn format. This function uses MsTMIP variables except that units of
+ (kg m-2 d-1)  are converted to kg ha-1 y-1. Currently this function converts
+Carbon fluxes: GPP, NPP, NEE, TotalResp, AutoResp, HeteroResp,
+DOC_flux, Fire_flux, and Stem (Stem is specific to the BioCro model)
+and Water fluxes: Evaporation (Evap), Transpiration(TVeg),
+surface runoff (Qs), subsurface runoff (Qsb), and rainfall (Rainf).
+For more details, see the
+<a href = 'http://nacp.ornl.gov/MsTMIP_variables.shtml'>MsTMIP variables</a>
+documentation</p>
+  
+    </div>
+      </div>
+  <div class="span4">
+    <!-- <ul>
+      <li>read.output</li>
+    </ul>
+    <ul>
+      
+    </ul> -->
+      
+    
+    <h2>Author</h2>
+    
+Michael Dietze, David LeBauer
+
+    
+  </div>
+</div>
+      
+      <footer>
+      <p class="pull-right"><a href="#">Back to top</a></p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+      </footer>
+    </div>
+  </body>
+</html>

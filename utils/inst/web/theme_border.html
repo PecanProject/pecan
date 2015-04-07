@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+<title>theme_border. PEcAn.utils 1.4.1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="
+Rudolf Cardinal
+
+&lt;a href = 'ggplot2 google group'&gt;ggplot2 google group&lt;/a&gt;https://groups.google.com/forum/?fromgroups#!topic/ggplot2/-ZjRE2OL8lE
+">
+
+<link href="css/bootstrap.css" rel="stylesheet">
+<link href="css/bootstrap-responsive.css" rel="stylesheet">
+<link href="css/highlight.css" rel="stylesheet">
+<link href="css/staticdocs.css" rel="stylesheet">
+
+<!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+  </head>
+
+  <body>
+    <div class="navbar">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand" href="#">PEcAn.utils 1.4.1</a>
+      <div class="nav">
+        <ul class="nav">
+          <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="container">
+      <header>
+        
+      </header>
+      
+      <h1>Theme border for plot</h1>
+
+<div class="row">
+  <div class="span8">
+    <h2>Usage</h2>
+    <pre><div>theme_border(type&nbsp;=&nbsp;c("left", "right", "bottom", "top", "none"), colour&nbsp;=&nbsp;"black", size&nbsp;=&nbsp;1, linetype&nbsp;=&nbsp;1)</div></pre>
+    
+    <h2>Arguments</h2>
+    <dl>
+      <dt>type</dt>
+      <dd></dd>
+      <dt>colour</dt>
+      <dd></dd>
+      <dt>size</dt>
+      <dd></dd>
+      <dt>linetype</dt>
+      <dd></dd>
+    </dl>
+    
+    <div class="Value">
+      <h2>Value</h2>
+
+      <p><dl>
+adds borders to ggplot as a side effect
+</dl></p>
+  
+    </div>
+
+    <div class="Description">
+      <h2>Description</h2>
+
+      <p>Add borders to .. content for  (no empty lines) ..</p>
+  
+    </div>
+
+    <div class="Details">
+      <h2>Details</h2>
+
+      <p>Has ggplot2 display only specified borders, e.g. ("L"-shaped) borders, rather than a rectangle or no border. Note that the order can be significant; for example, if you specify the L border option and then a theme, the theme settings will override the border option, so you need to specify the theme (if any) before the border option, as above.</p>
+  
+    </div>
+    
+    <h2 id="examples">Examples</h2>
+    <pre class="examples"><div class='input'>## &lt;strong&gt;Not run&lt;/strong&gt;: 
+# df = data.frame( x=c(1,2,3), y=c(4,5,6) )
+# ggplot(data=df, aes(x=x, y=y)) + geom_point() + theme_bw() +
+#        opts(panel.border = theme_border(c(&quot;bottom&quot;,&quot;left&quot;)) )
+# ggplot(data=df, aes(x=x, y=y)) + geom_point() + theme_bw() +
+#        opts(panel.border = theme_border(c(&quot;b&quot;,&quot;l&quot;)) )
+# ## &lt;strong&gt;End(Not run)&lt;/strong&gt;
+</div></pre>
+  </div>
+  <div class="span4">
+    <!-- <ul>
+      <li>theme_border</li>
+    </ul>
+    <ul>
+      
+    </ul> -->
+      
+    
+    <h2>Author</h2>
+    
+Rudolf Cardinal
+
+<a href = 'ggplot2 google group'>ggplot2 google group</a>https://groups.google.com/forum/?fromgroups#!topic/ggplot2/-ZjRE2OL8lE
+
+    
+  </div>
+</div>
+      
+      <footer>
+      <p class="pull-right"><a href="#">Back to top</a></p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+      </footer>
+    </div>
+  </body>
+</html>
