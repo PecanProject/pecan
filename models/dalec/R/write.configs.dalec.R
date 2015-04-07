@@ -83,7 +83,7 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id){
   ### WRITE JOB.SH
   jobsh = paste0("#!/bin/bash\n",settings$model$binary,
                  " $(cat ",rundir,"/",config.file.name,
-                 ") < ",as.character(settings$run$inputs$met),
+                 ") < ",as.character(settings$run$inputs$met$path),
                  " > ",outdir,"/out.txt\n",
 #                 'echo ".libPaths(',"'~/R/library');",
                  'echo "',
