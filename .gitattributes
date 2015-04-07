@@ -1,0 +1,12 @@
+# Auto detect text files and perform LF normalization
+*            text=auto
+
+# List binary files
+*.RData      binary
+*.nc         binary
+*.h5         binary
+
+# unix scripts always should have lf
+*.sh         text eol=lf
+*.job        text eol=lf
+*.bat        text eol=crlf

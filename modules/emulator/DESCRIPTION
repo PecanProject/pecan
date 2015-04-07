@@ -1,0 +1,39 @@
+Package: PEcAn.emulator
+Type: Package
+Title: Gausian Process emulator
+Version: 1.4.1
+Date: 2015-01-22
+Author: Michael Dietze
+Maintainer: Michael Dietze <dietze@bu.edu>
+Depends:
+    mvtnorm,
+    MCMCpack,
+    coda
+Description: Implementation of a Gaussian Process model (both likelihood and
+    bayesian approaches) for kriging and model emulation.  Includes functions
+    for sampling design and prediction.
+License: FreeBSD + file LICENSE
+Collate:
+    'arate.R'
+    'calcSpatialCov.list.R'
+    'calcSpatialCov.matrix.R'
+    'calcSpatialCov.R'
+    'distance12.matrix.R'
+    'distance.matrix.R'
+    'distance.R'
+    'GaussProcess.R'
+    'gp_mle.R'
+    'groupid.R'
+    'jump.R'
+    'ldinvgamma.R'
+    'lhc.R'
+    'minimize.GP.R'
+    'nderiv.R'
+    'p.jump.R'
+    'plot.jump.R'
+    'p.R'
+    'predict.density.R'
+    'predict.GP.R'
+    'summarize.GP.R'
+    'update.jump.R'
+    'zzz.R'

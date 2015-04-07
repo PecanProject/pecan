@@ -1,0 +1,14 @@
+Package: PEcAn.priors
+Type: Package
+Title: PEcAn functions used to estimate priors from data
+Version: 1.4.1
+Date: 2015-01-22
+Author: David LeBauer
+Maintainer: David LeBauer <dlebauer@illinois.edu>
+Description: Functions to estimate priors from data.
+License: FreeBSD + file LICENSE
+Copyright: Authors
+LazyLoad: yes
+LazyData: FALSE
+Depends:
+    PEcAn.utils

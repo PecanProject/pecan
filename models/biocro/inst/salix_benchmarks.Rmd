@@ -1,0 +1,106 @@
+BioCro fitting, parameterization, and testing 
+========================================================
+
+```{r}
+require(data.table)
+require(lubridate)
+require(ggplot2)
+require(PEcAn.DB)
+load(system.file("extdata", "salix.RData", package = "BioCro"))
+settings.xml <- system.file("extdata/pecan.biocro.xml", 
+                            package = "PEcAn.BIOCRO")
+
+settings <- read.settings(settings.xml)
+settings$database$bety <- list(userid = "ebi_pecan", 
+                          passwd = "hu2WHh32VC", 
+                          name = "ebi_production", 
+                          host = "ebi-forecast.igb.illinois.edu")
+
+```
+
+### Summarize Willow Yields by site
+
+this is to keep it consistent with current BioCro behavior of not simulating sequential years of met data.
+
+```{r}
+salix.us <- salix.testyield[country %in% c("USA", "Canada")]
+salix <- salix.us[stand_age > 2,list(lat = mean(lat), lon = mean(lon), yield = mean(annual_yield), s = sd(annual_yield)), by = site]
+
+
+
+```
+
+### Compare data against Miscanthus Yield
+
+```{r}
+
+require(RCurl)
+file.url <- getURL("https://www.betydb.org/miscanthusyield.csv", 
+                   ssl.verifypeer = FALSE)
+mxg <- read.csv(textConnection(file.url))
+
+
+salix$model <- vector(mode="numeric", length = nrow(salix))
+for(i in 1:nrow(salix)){
+  lat <- salix$lat[i]
+  lon <- salix$lon[i]
+  mxg.row<- which.min((mxg$lat - lat)^2+(mxg$lon - lon)^2)
+  salix$model[i] <- mxg$yield[mxg.row]
+}
+
+### map of yields
+states <- map_data("state")
+ggplot() + 
+  geom_polygon(data=states[states$lat>40 &states$long>-100,], aes(x=long, y=lat, group = group),
+     colour="grey", fill="white" ) + 
+  geom_point(data = salix, aes(x = lon, y = lat, size = yield), color = 'black') 
+
+plot(salix$model, salix$yield, xlim = c(0,30), ylim = c(0, 30), 
+     ylab = "Observed Yield (Mg/ha)", xlab = "Modeled Yield (Mg/ha)", main = "WillowCro v1 results*")
+lines(c(0,30), c(0,30))
+segments(x0 = salix$model, y0=salix$yield, y1 = salix$yield+salix$s)
+segments(x0 = salix$model, y0=salix$yield, y1 = salix$yield-salix$s)
+
+require(plotrix)
+taylor.diagram(salix$yield, salix$model, normalize = TRUE, pos.cor=FALSE)
+
+```
+
+
+### Add start / end dates to met files
+
+```{r}
+
+
+```
+
+
+```{r fig.width=6, fig.height=6, echo=FALSE, results='hide'}
+
+
+
+sites <- salix.yields[!is.na(lat), 
+                      list(lat = unique(lat), lon = unique(lon), n = length(lat), city, sitename), by = site_id]
+
+worldmap <- map_data("world") 
+worldplot <- ggplot(worldmap) + 
+  geom_path(aes(long, lat, group = group)) + 
+  geom_point(data = sites, aes(lon, lat, size = 2*log(n)), color = "blue") + theme_bw() + ggtitle("Sites with Salix Yield Data") +
+  geom_text(data = sites, hjust = 1, aes(lon, lat, label = paste(site_id, ifelse(is.na(city), substr(sitename, 1, 10), city))))
+
+worldplot + xlim(-90, -60) + ylim(45,60)
+worldplot + xlim(0, 30) + ylim(40,60)
+sy <- salix.yields[site_id != 0 & !is.na(date),]
+ggplot(sy, aes(ymd(date), mean)) + 
+  geom_point(aes(color = as.factor(cultivar_id))) + facet_wrap(~city)
+
+```
+
+```{r fig.width=11, fig.height=3}
+trait.summary <-  salix.traits[sort(n), 
+                      list(n = length(site_id)), 
+                               by = list(trait)]
+trait.summary2 <- trait.summary[with(trait.summary, rank(n + rank(trait)/1000)),]
+ggplot(data = trait.summary, aes(x = trait, y = n, order = n + rank(trait)/100)) + geom_point() + geom_linerange(aes(ymin = 0, ymax = n)) #+ coord_flip() + theme_bw()
+
+```

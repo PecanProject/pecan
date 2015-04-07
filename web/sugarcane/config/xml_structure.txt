@@ -1,0 +1,31 @@
+# This file defines the structure of the XML file
+# Rules:
+# 1. Lines starting with a "#" are comments and will be ignored
+# 2. Indentations are ignored
+# 3. Tags (starting with "<" and ending with ">") will be kept the same
+# 4. Section name and variables are defined as: name(w,x,y,z,...)
+#	For example, after entering the values for each variable on the web page,
+#	the following will be generated. ("..." is the submitted value.)
+#		<name>
+#			<w>...</w>
+#			<x>...</x>
+#			<y>...</y>
+#			<z>...</z>
+#		</name>
+#
+<?xml version="1.0"?>
+<!DOCTYPE config SYSTEM "biocro.dtd">
+<config>
+	simulationPeriod(dateofplanting,dateofharvest)
+	location(latitude,longitude)
+	<pft>
+		canopyParms(Sp,SpD,nlayers,kd,chi.l,heightFactor)
+		nitroParms(iLeafN,kLN,Vmax.b1,alpha.b1,kpLN,lnb0,lnb1,lnFun,minln,maxln,daymaxln)
+		photoParms(vmax,alpha,kparm,theta,beta,Rd,Catm,b0,b1,UPPERTEMP,LOWERTEMP)
+		soilParms(phi1,phi2,iWatCont,soilType,soilLayers,soilDepths,hydrDist,wsFun,scsf,transResp,leafPotTh,rfl,rsec,rsdf,optiontocalculaterootdepth,rootfrontvelocity)
+		seneParms(senLeaf,senStem,senRoot,senRhizome,leafremobilizafraction,rootturnover,leafturnover)
+# For sugarcane phenoParms are not needed
+#		phenoParms(tp1,kLeaf1,kStem1,kRoot1,kRhizome1,tp2,kLeaf2,kStem2,kRoot2,kRhizome2,tp3,kLeaf3,kStem3,kRoot3,kRhizome3,tp4,kLeaf4,kStem4,kRoot4,kRhizome4,tp5,kLeaf5,kStem5,kRoot5,kRhizome5,tp6,kLeaf6,kStem6,kRoot6,kRhizome6)
+		SugarPhenoParms(TT0,TTseed,Tmaturity,Rd,Alm,Arm,Clstem,Ilstem,Cestem,Iestem,Clsuc,Ilsuc,Cesuc,Iesuc)
+	</pft>
+</config>

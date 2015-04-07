@@ -1,0 +1,9 @@
+TODO: Combine dataSpec into a single file referenced by the three PROSPECT models, -4, -5, -5B
+TODO: Check on -5B refractive index values and make sure we use the "best" version of these
+TODO: Write invert prospect function that will estimate parameters based on input spectra.  Use all 3 versions of PROSPECT
+TODO: Write multiple spectra inversion code which inverts an entire matrix of spectra files
+TODO: Write LUT inversion code
+TODO: Write diagnostic code
+TODO: Edit code to handle spectra of differing lengths (ie. 400-2500nm, 400-1100nm, etc)
+TODO: Include 4SAIL2 canopy model
+TODO: Include snow albedo code

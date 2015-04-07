@@ -1,0 +1,42 @@
+#!/bin/bash -l
+
+# redirect output
+exec 3>&1
+exec &> "@OUTDIR@/logfile.txt"
+
+# create output folder
+mkdir -p "@OUTDIR@"
+
+# flag needed for ubuntu
+export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
+
+# see if application needs running
+if [ ! -e "@OUTDIR@/history.xml" ]; then
+  cd "@RUNDIR@"
+  
+  "@BINARY@"
+  STATUS=$?
+  
+  # copy scratch if needed
+  @SCRATCH_COPY@
+  @SCRATCH_CLEAR@
+
+  # check the status
+  if [ $STATUS -ne 0 ]; then
+  	echo -e "ERROR IN MODEL RUN\nLogile is located at '@OUTDIR@/logfile.txt'" >&3
+  	exit $STATUS
+  fi
+
+  # convert to MsTMIP
+  echo "require (PEcAn.ED2)
+model2netcdf.ED2('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
+" | R --vanilla
+fi
+
+# copy readme with specs to output
+cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
+
+# run getdata to extract right variables
+
+# all done
+echo -e "MODEL FINISHED\nLogile is located at '@OUTDIR@/logfile.txt'" >&3

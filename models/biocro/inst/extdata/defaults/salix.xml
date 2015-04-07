@@ -1,0 +1,94 @@
+<constants>
+  <type>
+    <photosynthesis>C3</photosynthesis>
+    <genus>Salix</genus>    
+  </type>
+  <canopyControl>
+    <Sp>1.1</Sp>
+    <SpD>0</SpD>
+    <nlayers>10</nlayers>
+    <kd>0.37</kd> <!--canopy extinction coef. for diffuse light -->
+    <chi.l></chi.l> <!--leaf angle distribution -->
+    <mResp>0.02, 0.03</mResp>
+    <heightFactor>3</heightFactor>
+    <GrowthRespFraction>0.3</GrowthRespFraction>
+  </canopyControl>
+  <photoParms>
+    <vmax>100</vmax>
+    <jmax>180</jmax>
+    <Rd>1.1</Rd>
+    <b0>0.08</b0>
+    <b1>5.0</b1>
+    <Catm>400</Catm>
+    <O2>210</O2>
+  </photoParms>
+  <phenoControl>
+    <Tbase>0</Tbase>
+  </phenoControl>
+  <seneControl>
+    <senLeaf>1600</senLeaf>
+    <senStem>5500</senStem>
+    <senRoot>5500</senRoot>
+    <senRhizome>5500</senRhizome>
+    <Tfrosthigh>5</Tfrosthigh>
+    <Tfrostlow>0</Tfrostlow>
+    <leafdeathrate>5</leafdeathrate>
+  </seneControl>
+  <iPlantControl>
+    <iRhizome>1</iRhizome> <!--median = 1, ucl = 5, lcl = 0.1 -->
+    <iStem>1</iStem> <!--median = 0.5, ucl = 2.5, lcl = 0.05 -->
+    <iLeaf>0</iLeaf>
+    <iRoot>1</iRoot>
+    <ifrRhizome>0.01</ifrRhizome> <!--beta(1,100)-->
+    <ifrStem>0.01</ifrStem> <!--beta(1,100)-->
+  </iPlantControl>
+  <soilControl>
+    <iWatCont>0.32</iWatCont>
+    <FieldC>0.5</FieldC>
+    <WiltP>0.16</WiltP>
+    <soilDepth>1</soilDepth>
+    <soilType>6</soilType>
+    <wsFun>1</wsFun>
+    <scsf>1</scsf> <!--stomatal conductance sensitivity factor-->
+    <transpRes>5e+06</transpRes>
+    <leafPotTh>-800</leafPotTh>
+    <hydrDist>0</hydrDist>
+    <rfl>0.2</rfl>
+    <rsec>0.2</rsec>
+    <rsdf>0.44</rsdf>
+  </soilControl>
+  <phenoParms>
+    <tp1>250</tp1>
+    <tp2>500</tp2>
+    <tp3>900</tp3>
+    <tp4>1200</tp4>
+    <tp5>3939</tp5>
+    <tp6>7000</tp6>
+    <kStem1>0.01</kStem1>
+    <kLeaf1>0.98</kLeaf1>
+    <kRoot1>0.01</kRoot1>
+    <kRhizome1>-8e-04</kRhizome1>
+    <kStem2>0.01</kStem2>
+    <kLeaf2>0.98</kLeaf2>
+    <kRoot2>0.005</kRoot2>
+    <kRhizome2>0.005</kRhizome2>
+    <kStem3>0.5</kStem3>
+    <kLeaf3>0.15</kLeaf3>
+    <kRoot3>0.175</kRoot3>
+    <kRhizome3>0.175</kRhizome3>
+    <kStem4>0.7</kStem4>
+    <kLeaf4>0.15</kLeaf4>
+    <kRoot4>0.075</kRoot4>
+    <kRhizome4>0.075</kRhizome4>
+    <kStem5>0.7</kStem5>
+    <kLeaf5>1e-05</kLeaf5>
+    <kRoot5>0.15</kRoot5>
+    <kRhizome5>0.15</kRhizome5>
+    <kStem6>0.7</kStem6>
+    <kLeaf6>1e-06</kLeaf6>
+    <kRoot6>0.15</kRoot6>
+    <kRhizome6>0.15</kRhizome6>
+    <kGrain6>0</kGrain6>
+    <Tbase>0</Tbase>
+  </phenoParms>
+</constants>

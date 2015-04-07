@@ -1,0 +1,38 @@
+<html>
+<title>Facilitating feedbacks between field measurements and ecosystem models</title>
+<body>
+<h1>Facilitating feedbacks between field measurements and ecosystem models</h1>
+
+<h2>Introduction</h2>
+
+<p>The Predictive Ecosystem Analyzer (PEcAn) is an integrated ecological bioinformatics toolbox (LeBauer et al, 2013) which consists of: 1) a scientific workflow system to manage the immense amounts of publicly-available environmental data and 2) a Bayesian data assimilation system to synthesize this information within state-of-the-art ecosystems models. This project is motivated by the fact that many of the most pressing questions about global change are not necessarily limited by the need to collect new data as much as by our ability to synthesize existing data. This project seeks to improve this ability by developing a framework for integrating multiple data sources in a sensible manner.</p>
+
+<p> The output of the data assimilation system will be a regional-scale high-resolution estimate of both the terrestrial carbon cycle and plant biodiversity based on the best available data and with a robust accounting of the uncertainties involved. The workflow system will allow ecosystem modeling to be more reproducible, automated, and transparent in terms of operations applied to data, and thus ultimately more comprehensible to both peers and the public. It will reduce the redundancy of effort among modeling groups, facilitate collaboration, and make models more accessible the rest of the research community.</p>
+
+<p>PEcAn is not itself an ecosystem model, and it can be used to with a variety of different ecosystem models; integrating a model involves writing a wrapper to convert inputs and outputs to and from the standards used by PEcAn. Currently, PEcAn supports the Ecosystem Demography model (ED2, Medvigy et al 2009), SIPNET (Sacks et al., 2005), and BioCro (Miguez et al, 2012). </p>
+
+<h2>Demonstration</h2>
+
+<p>This system allows you to <a href="/pecan/">experiment and create simulations</a> using  PEcAn, ED, SIPNET, BioCro and BETYdb. The first page will allow for selection of a site where the simulation will run at. The <a href="/bety/">BETY database</a> contains data for both the local system as well as data on the illinois ebi servers (ebi-cluster and ebi-forecast). Only those sites with data on the local system can be run. After selecting a site and entering the date range for the simulation, PEcAn will take over and set up and execute the selected model. Once the model is finished it will allow you to create graphs with the results of the simulation as well as download the results. It is also possible to see all <a href="/pecan/history.php">past experiments and simulations</a>.</p>
+
+<p>This machine uses the BETY database (LeBauer et al, 2010) for the trait data and the <a href="http://pecanproject.org">PEcAn</a> analyzer.</p>
+
+
+<p>For any questions about the research behind this demonstration or about the system itself, please contact Michael Dietze at dietze(at)bu.edu or David LeBauer at dlebauer@illinois.edu</p>
+
+<h2>Acknowledgements</h2>
+
+<p>This material is based upon work supported by the Energy Biosciences Institute and the National Science Foundation under Grant No. 1062547 and 1062204. Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation. PEcAn is a collaboration among research groups at  the <a href="http://www.energybiosciencesinstitute.org/">Energy Biosciences Institute</a> at the University of Illinois, the <a href="http://www.bu.edu/earth/">Department of Earth And Environment</a> at Boston University, the <a href="http://isda.ncsa.illinois.edu/">Image Spatial Data Analysis group</a> at NCSA, and the <a href="http://www.meteor.wisc.edu/">Department of Atmospheric & Oceanic Sciences</a> at the University Wisconsin-Madison.</p>
+
+<p><a href="https://www.betydb.org/">BETY-db</a> is a product of the <a href="http://www.energybiosciencesinstitute.org/">Energy Biosciences Institute</a> at the <a href="http://illinois.edu/">University of Illinois at Urbana-Champaign</a>. We gratefully acknowledge the great effort of other researchers who generously made their own data available for further study.</p>
+
+<h2>References</h2>
+<ol>
+<li> LeBauer, D., Wang, D., Richter, K., Davidson, C., & Dietze, M. C. (2012). Facilitating feedbacks between field measurements and ecosystem models. Ecological Monographs.</li>
+<li>Medvigy, D., S. C. Wofsy, J. W. Munger, D. Y. Hollinger, and P. R. Moorcroft. 2009. "<a href="http://www.agu.org/pubs/crossref/2009/2008JG000812.shtml"><i>Mechanistic scaling of ecosystem function and dynamics in space and time: Ecosystem Demography model version 2</i></a>". Journal of Geophysical Research 114:121.</li>
+<li>LeBauer, D., D. Wang, M. Dietze, 2010. "<a href="http://www.betydb.org"><i>Biofuel Ecophysiological Traits and Yields Database Version 1.0.</i></a>", Energy Biosciences Institute, Urbana, IL</li>
+<li>Miguez, F. E., Maughan, M., Bollero, G. A., & Long, S. P. (2012). Modeling spatial and dynamic variation in growth, yield, and yield stability of the bioenergy crops Miscanthus x giganteus and Panicum virgatum across the conterminous United States. GCB Bioenergy.</li>
+<li>Sacks, W. J., Schimel, D. S., Monson, R. K., & Braswell, B. H. (2005). Model‐data synthesis of diurnal and seasonal CO2 fluxes at Niwot Ridge, Colorado. Global Change Biology, 12(2), 240-259.</li>
+</ol>
+</body>
+</html>

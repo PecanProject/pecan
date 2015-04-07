@@ -1,0 +1,3 @@
+- check if we need only JAGS2.2.0
+- check all DESCRIPTION for packages
+- check over calculations in the code to confirm the calculations are correct.  E.g. the conversion from m2 / kg DM to m2 / kg C for SLA.  Some SLA seems quite low.  Also double check calculations of SLA from MA.  Mean does not match posterior. Also the arrhenius scaling.

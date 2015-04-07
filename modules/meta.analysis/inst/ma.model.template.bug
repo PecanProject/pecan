@@ -1,0 +1,28 @@
+model
+{
+  for (k in 1:LENGTHK){
+    Y[k] ~ dnorm( Z[k] , tau.y[k])
+    Z[k] <- beta.o REGMODEL
+    tau.y[k] <- prec.y*n[k]
+    u1[k] <- n[k]/2                             
+    u2[k] <- n[k]/(2*prec.y)
+    obs.prec[k] ~ dgamma(u1[k], u2[k])
+  }
+  #TTT beta.trt[1] <- 0
+  #TTT for ( j in 2:LENGTHJ){
+  #TTT  beta.trt[j] ~ dnorm(0, tau.trt)
+  #TTT }
+  #SSS for (g in 1:LENGTHG){
+  #SSS  beta.site[g] ~ dnorm(0, tau.site)
+  #SSS }
+  #GGG beta.ghs[1]  <- 0                               
+  #GGG beta.ghs[2]  ~ dnorm(0, 0.01)
+  beta.o    ~ PRIORDIST (PRIORPARAMA, PRIORPARAMB)#BBB
+  #SSS tau.site  ~ dgamma(TAUA, TAUB)
+  #TTT tau.trt   ~ dgamma(TAUA, TAUB)
+  prec.y    ~ dgamma(TAUA, TAUB)     
+  #prec.y    ~ dgamma(0.001, 0.001)     
+  #SSS sd.site   <- 1 / sqrt(tau.site)
+  sd.y      <- 1 / sqrt(prec.y)       
+  #TTT sd.trt    <- 1 / sqrt(tau.trt) 
+}

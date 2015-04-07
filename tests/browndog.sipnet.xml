@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<pecan>
+  <outdir>pecan</outdir>
+
+  <browndog/>
+
+  <pfts>
+    <pft>
+      <name>temperate.coniferous</name> 
+    </pft>
+  </pfts>
+
+  <ensemble>
+    <variable>NPP</variable>
+  </ensemble>
+
+  <model>
+    <id>10</id>
+  </model>
+
+  <run>
+    <site>
+      <id>772</id>
+    </site>
+    <inputs>
+      <met>
+      	<source>Ameriflux</source>
+      </met>
+    </inputs>
+    <start.date>2002-01-01 00:00:00</start.date>
+    <end.date>2005-12-31 00:00:00</end.date>
+    <host>
+      <name>localhost</name>
+    </host>
+    <dbfiles>pecan/dbfiles</dbfiles>
+  </run>
+</pecan>

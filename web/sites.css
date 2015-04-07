@@ -1,0 +1,163 @@
+html {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+}
+
+p,h1,form,button {
+    border: 0;
+    margin: 0;
+    padding: 0;
+}
+
+th,td {
+    padding: 0px 5px 0px 5px;
+}
+
+.spacer {
+    clear: both;
+    height: 1px;
+}
+
+#wrap {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.myform {
+    margin: 0 auto;
+    width: 200px;
+    padding: 14px;
+}
+
+#stylized {
+    border: solid 2px #b7ddf2;
+    background: #ebf4fb;
+    font-size: 14px;
+    width: 200px;
+    height: calc( 100% - 14px );
+    float: left;
+    padding: 5px;
+    overflow: auto;
+}
+
+#stylized h1 {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+#stylized p {
+    font-size: 14px;
+    color: #666666;
+    margin-bottom: 20px;
+    border-bottom: solid 1px #b7ddf2;
+    padding-bottom: 10px;
+}
+
+#stylized label {
+    display: block;
+    font-weight: bold;
+    text-align: left;
+    width: 180px;
+    float: left;
+}
+
+#stylized .small {
+    color: #666666;
+    display: block;
+    font-size: 14px;
+    font-weight: normal;
+    text-align: left;
+    width: 180px;
+}
+
+#stylized select,input {
+    font-size: 12px;
+    border: solid 1px #aacfe4;
+    width: 190px;
+}
+
+#stylized input[type=text] {
+    text-overflow: ellipsis;
+    width: 184px;
+    padding: 4px 2px;
+}
+
+#stylized input[type=checkbox] {
+    width: 180px;
+}
+
+#stylized button {
+    clear: both;
+    margin-left: 35px;
+    margin-right: 35px;
+    height: 31px;
+    background: #666666 url(img/button.png) no-repeat;
+    text-align: center;
+    line-height: 31px;
+    color: #FFFFFF;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+#prev {
+    width: 70px;
+    float: left;
+}
+
+#next {
+    width: 70px;
+    float: right;
+    margin-right: 10px;
+    position: relative;
+}
+
+#output {
+    overflow: auto;
+    padding: 5px;
+    margin-left: 200px;
+    height: calc( 100% - 30px );
+}
+
+#editor {
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;         /* Opera/IE 8+ */
+    width: 100%;
+    height: calc( 100% - 40px );
+}
+
+#table {
+    display: table;
+}
+
+#row {
+    display: table-row;
+}
+
+#cell, #header {
+    display: table-cell;
+    padding: 0px 5px 0px 5px;
+}
+
+#header {
+    font-weight: bold;
+}
+
+#logout {
+    float: right;
+    margin-right: 10px;    
+}
+
+#footer {
+    font-size: 12px;
+    overflow: auto;
+    padding: 5px;
+}

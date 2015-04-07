@@ -1,0 +1,48 @@
+html {
+    overflow-y: scroll;
+}
+.buttons{
+    margin-top:23px;
+    text-align:center;
+}
+.buttons button{
+    margin-top:8px;
+    width:90%;
+}
+.fixed{
+    position:fixed;
+}
+#zcontainer{
+    padding-top:25px;
+    margin-left:35px; 
+    width:940px;
+}
+#zcontainer .contain-left{
+    width:940px;
+    display:block;
+    float:left;
+}
+.contain-left .tab-content{
+    margin-left:180px;
+}
+#graph_box{
+}
+.loading{
+    margin:25px;
+}
+#map_control{
+    width:155px;
+    float:right;
+}
+#map_canvas{
+    width:600px; 
+    height:600px;
+    float:left;
+}
+#select_area_btn{
+    width:140px;
+    height:50px;
+}
+#infobox1{
+    text-align:right;
+}

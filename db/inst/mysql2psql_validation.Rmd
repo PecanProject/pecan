@@ -1,0 +1,92 @@
+Check MySQL --> PSQL Migration
+========================================================
+
+
+This script will compare tables before and after migration from MySQL to PSQL ([Redmine issue 1860](https://ebi-forecast.igb.illinois.edu/redmine/issues/1860))
+
+Note: For more information about accessing the database, see the [PEcAn settings wiki](https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#wiki-database_access).
+
+
+```{r}
+library(PEcAn.DB)
+library(RMySQL)
+library(RPostgreSQL)
+library(testthat)
+```
+
+### Create connections to MySQL and PSQL versions
+
+```{r}
+params = list(dbname = "ebi_production_copy", 
+              user = "bety", 
+              password = "bety", 
+              host = "pecandev.igb.illinois.edu")
+
+mysqlparams <- c(params, driver = "MySQL")
+mysqlparams$dbname <- "ebi_production_copy_clean"
+psqlparams <- c(params, driver = "PostgreSQL")
+psqlparams$dbname <- "ebi_production_copy"
+
+mcon <- db.open(mysqlparams)
+pcon <- db.open(psqlparams)
+```
+
+### Check that they have the same tables
+
+  
+```{r}
+mtables <- db.query("show tables", con = mcon)
+ptables <- db.query("SELECT tablename FROM pg_catalog.pg_tables where tableowner = 'bety'", con = pcon)
+
+expect_equivalent(mtables, ptables)
+
+for (t in mtables[,1]) {
+  if(!grepl("_", t) ){
+    print(paste("testing", t))
+    mtest <- db.query(paste("select * from", t, "order by id"), con=mcon)
+    ptest <- db.query(paste("select * from", t, "order by id"), con=pcon)
+    expect_equal(colnames(mtest), colnames(ptest))
+    
+    ## test numeric cols only
+    num.cols <- sapply(mtest, class) %in% c("integer", "numeric")
+    
+    mnums <- mtest[,num.cols]
+    pnums <- ptest[,num.cols]
+    mnums[is.na(mnums)] <- -9999
+    pnums[is.na(pnums)] <- -9999
+    
+    expect_equivalent(mnums, pnums)
+    
+    ## test char cols
+    
+    char.cols <- sapply(ptest, class) == "character"
+    mchar <- mtest[, char.cols]
+    pchar <- ptest[, char.cols]
+    mchar[is.na(mchar)] <- -9999
+    pchar[is.na(pchar)] <- -9999
+    if(ncol(mchar) > 0 && any(!mchar == pchar)){      
+      
+      ptmp <- pchar[!mchar == pchar]
+      sink(tempfile())
+      asciitest <- !ptmp == showNonASCII(pchar[!mchar == pchar])
+      sink()
+      diffs <- data.frame(mysql = mchar[!mchar == pchar], 
+                          psql = pchar[!mchar == pchar])
+      asciidiffs <- diffs[asciitest,]
+      
+      print(paste("this table has", sum(!mchar==pchar), 
+                  " char mismatches"))
+      ## we only want to print out examples where diffs are not related to 
+      ## mysql being latin1 encoding
+      print("printing elements where databases differences (probably) not related to character encoding ")
+      if(sum(asciitest) > 0) print(t(asciidiffs))
+      
+      }
+    }
+  
+  }
+}
+```
+
+
+
