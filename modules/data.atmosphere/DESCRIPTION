@@ -11,11 +11,7 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     package converts climate driver data into a standard format for models
     integrated into PEcAn. As a standalone package, it provides an interface to
     access diverse climate data sets.
-<<<<<<< HEAD
 Imports:
-=======
-Suggests:
->>>>>>> bbcba1cca38510b20586b307c37ad97929a25e8a
     RNCEP,
     PEcAn.utils,
     ncdf4,
