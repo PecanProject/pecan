@@ -19,4 +19,4 @@ lapply(pkgs, function(x){
 
 links <- unlist(lapply(pkgs, function(x) paste0("* [", x, "](", file.path("https://pecanproject.github.io/pecan/", x, "inst/web/index.html"))))
 writeLines("## Documentation:\n \n", paste(links, collapse = "\n"), con = "index.md")
-system2("pandoc index.md -o index.html)
+system2("pandoc index.md -o index.html")
