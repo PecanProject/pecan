@@ -10,7 +10,7 @@
 ##' @return downscaled result
 ##' @export
 ##' @author David LeBauer
-cfmet.downscale.time <- cruncep_hourly <- function(cfmet, output.dt = 1, ...){
+cfmet.downscale.time <- cruncep_hourly <- function(cfmet, output.dt = 1, lat = lat, ...){
 
   ## time step
   dt_hr <- as.numeric(round(difftime(cfmet$date[2], cfmet$date[1],  units = "hours")))
@@ -38,7 +38,10 @@ cfmet.downscale.time <- cruncep_hourly <- function(cfmet, output.dt = 1, ...){
   }
   
   if (dt_hr == 24) {
-    downscaled.result <- cfmet.downscale.daily(dailymet = cfmet, output.dt = output.dt, lat = lat )
+    if(all(c("tmax", "tmin") %in% colnames(cfmet))){
+      setnames(cfmet, c("tmax", "tmin"), c("air_temperature_max", "air_temperature_min"))      
+    }
+    downscaled.result <- cfmet.downscale.daily(dailymet = cfmet, output.dt = output.dt, lat = lat)
   } else if(dt_hr > 24){
     logger.error("only daily and sub-daily downscaling supported")
   }
@@ -119,14 +122,16 @@ cfmet.downscale.subdaily <- function(subdailymet, output.dt = 1){
 ##' @export
 ##' @return weather file for input to BioGro and related crop / ecosystem models
 ##' @author David LeBauer
-cfmet.downscale.daily <- weachDT <- function(dailymet, output.dt = 1, lat = lat){
+cfmet.downscale.daily <- weachDT <- function(dailymet, output.dt = 1, lat){
   
   tint <- 24 / output.dt
   tseq <- 0:(23 * output.dt) / output.dt
 
   setkeyv(dailymet, c("year", "doy"))
   
-  setnames(dailymet, c("air_temperature_max", "air_temperature_min"), c("tmax", "tmin"))
+  if(all(c("air_temperature_max", "air_temperature_min") %in% colnames(dailymet))){
+    setnames(dailymet, c("air_temperature_max", "air_temperature_min"), c("tmax", "tmin")) 
+  }
 
   light <- dailymet[,lightME(DOY = doy, t.d = tseq, lat = lat),
                     by = c("year", "doy")]
@@ -159,14 +164,17 @@ cfmet.downscale.daily <- weachDT <- function(dailymet, output.dt = 1, lat = lat)
  ## Wind Speed
 
 
- if(all(c("eastward_wind", "nortward_wind") %in% colnames(dailymet))){
+ if("wind_speed" %in% colnames(dailymet)){
+   wind_speed <- rep(dailymet$wind_speed, each = tint)
+ } else if(all(c("eastward_wind", "northward_wind") %in% colnames(dailymet))){
    northward_wind <- rep(dailymet$northward_wind, each = tint)
    eastward_wind <- rep(dailymet$eastward_wind, each = tint)   
    if(!"wind_speed" %in% colnames(dailymet)){
      wind_speed <- sqrt(northward_wind^2 + eastward_wind^2)     
    }
+ } else {
+   logger.error("no wind_speed found in daily met dataset")
  }
- wind_speed <- rep(dailymet$wind_speed, each = tint)
 
   ## Precipitation
   precip <- rep(dailymet$precipitation_flux / tint, each = tint)
@@ -181,12 +189,6 @@ cfmet.downscale.daily <- weachDT <- function(dailymet, output.dt = 1, lat = lat)
                     wind = wind_speed,
                     precipitation_flux = precip)
   return(ans)
-}
-
-met2model.BIOCRO <- function(met){
-    met[ , `:=` (wind =  sqrt(northward_wind^2 + eastward_wind^2),
-        air_temperature = ud.convert(air_temperature, "kelvin", "celsius"))]
-    return(met)
 }
 
 ##' Get time series vector from netCDF file
@@ -207,8 +209,8 @@ met2model.BIOCRO <- function(met){
 get.ncvector <- function(var, lati = lati, loni = loni,
                          run.dates = run.dates, met.nc){
   
-  start.idx = c(lat = lati, lon = loni, time = run.dates$index[1])
-  count.idx = c(lat = 1, lon = 1, time = nrow(run.dates))
+  start.idx = c(latitude = lati, longitude = loni, time = run.dates$index[1])
+  count.idx = c(latitude = 1, longitude = 1, time = nrow(run.dates))
   dim.order <- sapply(met.nc$var$air_temperature$dim, function(x) x$name)
   ncvar_get2 <- function(var){
     ans <-  ncvar_get(nc = met.nc, varid = var,

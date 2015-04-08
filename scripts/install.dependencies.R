@@ -13,7 +13,7 @@ list.of.packages <- c('abind', 'car', 'chron', 'coda', 'data.table', 'doSNOW', '
                       'plotrix', 'plyr', 'raster', 'randtoolbox', 'rjags',
                       'rgdal', 'tgp', 'DBI', 'roxygen2', 'stringr', 'testthat',
                       'XML', 'RNCEP', 'foreign', 'RCurl', 'udunits2', 'RPostgreSQL',
-                      'rPython','minpack.lm','geonames', 'Rcpp')
+                      'rPython','minpack.lm','geonames', 'Rcpp','devtools')
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) {
   print("installing : ")
