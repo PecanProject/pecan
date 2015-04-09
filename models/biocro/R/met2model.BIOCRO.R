@@ -44,10 +44,30 @@ cf2biocro <- function(met){
 #   windspeed  7
 #   precip 8
   if(!"relative_humidity" %in% colnames(met)){
-    rh <- qair2rh(qair = met$specific_humidity, 
-                  temp = ud.convert(met$air_temperature, "Kelvin", "Celsius"),
-                  pres = ud.convert(met$air_pressure, "Pa", "hPa"))
-    met <- cbind(met, relative_humidity = rh)
+    if(all(c("air_temperature", "air_pressure", "specific_humidity") %in% colnames(met))){ 
+      rh <- qair2rh(qair = met$specific_humidity, 
+                    temp = ud.convert(met$air_temperature, "Kelvin", "Celsius"),
+                    pres = ud.convert(met$air_pressure, "Pa", "hPa"))
+      met <- cbind(met, relative_humidity = rh * 100)
+    } else {
+      logger.error("neither relative_humidity nor [air_temperature, air_pressure, and specific_humidity]",
+                         "are in met data")
+    }
+  }
+  if(!"ppfd" %in% colnames(met)){
+    if("surface_downwelling_shortwave_flux_in_air" %in% colnames(met)){
+      par <- sw2par(met$surface_downwelling_shortwave_flux_in_air)
+      ppfd <- par2ppfd(par)
+    } else {
+      logger.error("Need either ppfd or surface_downwelling_shortwave_flux_in_air in met dataset")
+    }
+  }
+  if(!"wind_speed" %in% colnames(met)){
+    if(all(c("northward_wind", "eastward_wind") %in% colnames(met))){
+      wind_speed <- sqrt(northward_wind^2 + eastward_wind^2)
+    }
+    logger.error("neither wind_speed nor both eastward_wind and northward_wind are present in met data")
+
   }
   
   newmet <- met[, list(year = year, doy = doy, hour = hour,

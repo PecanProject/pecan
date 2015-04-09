@@ -1,4 +1,4 @@
-#!/usr/bin/Rscript
+#!/usr/bin/env Rscript
 
 args <- commandArgs(trailingOnly = TRUE)
 settings.file = args[1]
@@ -58,7 +58,7 @@ for(i in 1:length(settings$run$inputs)) {
   
   # met conversion
   if(input.tag == 'met') {
-    if(length(input) >= 1) {
+    if(is.null(input$path)) {
       if (is.null(settings$browndog)) {
         status.start("MET Process")
       } else {
