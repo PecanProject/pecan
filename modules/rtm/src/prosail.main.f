@@ -34,7 +34,7 @@ SUBROUTINE PRO4SAIL( &
             return
         endif
 
-        CALL PROSPECT5B(N,Cab,Car,Cbrown,Cw,Cm,LRT)
+        CALL PROSPECT_5B(N,Cab,Car,Cbrown,Cw,Cm,LRT)
         rho = LRT(:,1)
         tau = LRT(:,2)
 

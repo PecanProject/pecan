@@ -5,7 +5,7 @@ subroutine ReflTrans(nw,rho,tau,lai,att,m,sigb,ks,ko,sf,sb,vf,vb, &
     integer,intent(in) :: nw
     real*8,intent(in) :: lai,ks,ko
     real*8,intent(in),dimension(nw) :: rho,tau,att,m,sigb,sf,sb,vf,vb
-    real*8,intent(out),dimension(nw) :: rdd,tdd,tsd,rsd,tdo,rdorsod
+    real*8,intent(out),dimension(nw) :: rdd,tdd,tsd,rsd,tdo,rdo,rsod
     real*8,intent(out) :: tss,too
 
     real*8,dimension(nw) :: e1,e2,rinf,rinf2,re,denom,J1ks,J2ks,J1ko,J2ko
