@@ -7,7 +7,7 @@ SUBROUTINE PRO4SAIL( &
         LIDFa,LIDFb,TypeLIDF,       &   !! LIDF parameters and function
         lai,q,                      &   !! LAI and hot spot
         tts,tto,psi,                &   !! Sun-sensor geometry
-        rsoil,                      &   !! Soil reflectance
+        psoil,                      &   !! Soil moisture
 
         !! Outputs
         rddt,   &   !! Bi-hemispherical reflectance
@@ -15,15 +15,16 @@ SUBROUTINE PRO4SAIL( &
         rdot,   &   !! Hemispherical-directional reflectance in viewing direction
         rsot)       !! Bi-directional reflectance factor
 
+        use MOD_dataSpec_P5B
         IMPLICIT NONE
-        integer :: nw
-        parameter(nw = 2101) 
         integer,intent(in) :: TypeLIDF
         real*8,intent(in) :: N,Cab,Car,Cbrown,Cw,Cm
-        real*8,intent(in) :: LIDFa,LIDFb,lai,q,tts,tto,psi,rsoil(nw)
+        real*8,intent(in) :: LIDFa,LIDFb,lai,q,tts,tto,psi,psoil
         real*8,intent(out),dimension(nw) :: rddt,rsdt,rdot,rsot
 
-        real*8 :: LRT(nw,2),rho(nw),tau(nw)
+        real*8 :: LRT(nw,2),rho(nw),tau(nw),rsoil(nw)
+
+        rsoil = psoil * Rsoil1 + (1-psoil)*Rsoil2
 
         !! If LAI is 0, return soil reflectance
         if (lai <= 0) then
