@@ -51,7 +51,7 @@ subroutine FOURSAIL(rho, tau,             & !! Leaf spectra
         !!      Input rho and tau (from PROSPECT)
         !!      Correct using SUITS factors
         CALL RTgeom(nw,rho,tau,ddb,ddf,sdb,sdf,dob,dof,sob,sof, &
-            sigb,sb,sf,vb,vf,w)
+            sigb,att,m,sb,sf,vb,vf,w)
 
         !! FLAG 5 (if 4 or LAI or soil) -- Canopy reflectance and transmittance
         !!      Input LAI and leaf rho and tau
@@ -64,9 +64,9 @@ subroutine FOURSAIL(rho, tau,             & !! Leaf spectra
             tsstoo,sumint)
 
         !! Bidirectional reflectance
-        CALL sail_BDRF(w,lai,sumint, &
-            rdd,tdd,tsd,rsd,tdo,rdo,tss,too,rsod, &
-            rddt,rsdt,rdot,rsot)
+        CALL sail_BDRF(nw,w,lai,sumint,tsstoo,rsoil, &
+                rdd,tdd,tsd,rsd,tdo,rdo,tss,too,rsod, &
+                rddt,rsdt,rdot,rsot)
 
         return
     end subroutine FOURSAIL

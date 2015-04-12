@@ -22,8 +22,9 @@ prospect <- function(params){
 pro4sail <- function(params = sail.def){
 	r <- numeric(2101)
 	p <- c(list("PRO4SAIL"), params, rep(list(r),4))
-	lp <- length(p)
+	lp <- length(p)-1
 	f <- do.call(.Fortran, p)
-	out <- matrix(f[[lp-3]], f[[lp-2]], f[[lp-1]], f[[lp]])
+	out <- do.call(cbind, f[(lp-3):lp])
 	return(out)
 }
+
