@@ -13,6 +13,7 @@ OPT = -O2
 bin = bin/
 f_prospect = prospect/
 f_sail = sail/
+f_ps = prosail/
 f_ds = dataSpec/
 
 # Module shorthand
@@ -26,16 +27,16 @@ SAIL = $(bin)sail.so
 # RTM dependencies
 PROSPECT_depends = $(f_prospect)*.f $(mod_m)prospect5b.o $(mod_m)refractive.o
 SAIL_depends = $(PROSPECT) $(f_sail)*.f $(mod_m)soil.o
-RTM_depends = $(PROSPECT) $(SAIL)
+RTM_depends = $(PROSPECT) $(SAIL) $(f_ps)prosail.main.f
 
-$(bin)RTM.so : $(RTM_depends)
-	$(FC) -shared $(SAIL) $(PROSPECT) -o prosail.so -fPIC
+RTM.so : $(RTM_depends)
+	$(FC) -g -shared $(f_ps)prosail.main.f $(SAIL) $(PROSPECT) -o RTM.so -fPIC -I$(bin)
 
 $(PROSPECT) : $(PROSPECT_depends)
-	$(FC) -shared $(PROSPECT_depends) -o $(PROSPECT) -I$(bin) -fPIC
+	$(FC) -g -shared $(PROSPECT_depends) -o $(PROSPECT) -I$(bin) -fPIC
 
 $(SAIL) : $(SAIL_depends)
-	$(FC) -shared $(SAIL_depends) -o $(SAIL) -I$(bin) -fPIC
+	$(FC) -g -shared $(SAIL_depends) -o $(SAIL) -I$(bin) -fPIC
 
 $(mod_m)prospect5b.o $(mod_m)refractive.o $(mod_m)soil.o : $(mod_f)wavelength.f
 	$(FC) -c $(mod_f)wavelength.f -J$(bin) -o $(mod_m)wavelength.o
@@ -44,4 +45,4 @@ $(mod_m)prospect5b.o $(mod_m)refractive.o $(mod_m)soil.o : $(mod_f)wavelength.f
 	$(FC) -c $(mod_f)soil.f -I$(bin) -J$(bin) -o $(mod_m)soil.o 
 
 clean :
-	rm -r bin
+	rm bin/* RTM.so
