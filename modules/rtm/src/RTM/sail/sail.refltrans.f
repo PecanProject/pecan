@@ -1,8 +1,8 @@
-subroutine ReflTrans(nw,rho,tau,lai,att,m,sigb,ks,ko,sf,sb,vf,vb, &
+subroutine ReflTrans(rho,tau,lai,att,m,sigb,ks,ko,sf,sb,vf,vb, &
         rdd,tdd,tsd,rsd,tdo,rdo,tss,too,rsod)
 
+    use mod_dataSpec_wavelength
     implicit none
-    integer,intent(in) :: nw
     real*8,intent(in) :: lai,ks,ko
     real*8,intent(in),dimension(nw) :: rho,tau,att,m,sigb,sf,sb,vf,vb
     real*8,intent(out),dimension(nw) :: rdd,tdd,tsd,rsd,tdo,rdo,rsod
@@ -61,7 +61,7 @@ end subroutine ReflTrans
 
 SUBROUTINE Jfunc1(k,l,t,Jout)
 
-    USE MOD_dataSpec_P5B
+    USE mod_dataSpec_wavelength
     IMPLICIT NONE
 
     !J1 function with avoidance of singularity problem
@@ -88,7 +88,7 @@ END SUBROUTINE Jfunc1
 
 SUBROUTINE Jfunc2(k,l,t,Jout)
 
-    USE MOD_dataSpec_P5B
+    USE mod_dataSpec_wavelength
     IMPLICIT NONE
 
     !J2 function
@@ -108,7 +108,6 @@ END SUBROUTINE Jfunc2
 
 FUNCTION Jfunc3(k,l,t)
 
-    USE MOD_dataSpec_P5B
     IMPLICIT NONE
 
     !J2 function

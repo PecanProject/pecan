@@ -3,7 +3,6 @@ subroutine FOURSAIL(rho, tau,             & !! Leaf spectra
         lai,q,                & !! LAI and hot spot
         tts,tto,psi,          & !! Instrument geometry
         rsoil,                & !! Soil reflectance
-        nw,                   & !! Number of wavelengths
 
         !! Outputs
         rddt,                 & !! Bi-hemispherical reflectance
@@ -11,11 +10,11 @@ subroutine FOURSAIL(rho, tau,             & !! Leaf spectra
             rdot,                 & !! Hemispherical-directional reflectance in viewing direction
             rsot)                   !! Bi-directional reflectance factor
 
+        use mod_dataSpec_wavelength
         implicit none
         real*8,intent(in),dimension(nw) :: rho,tau,rsoil
         REAL*8,INTENT(in) :: LIDFa,LIDFb,lai,q,tts,tto,psi
         INTEGER,INTENT(in) :: TypeLIDF
-        integer,intent(in) :: nw
 
         common /angle/ pi,rd
         real*8 :: pi,rd

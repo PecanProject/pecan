@@ -1,9 +1,9 @@
-subroutine sail_BDRF(nw,w,lai,sumint,tsstoo,rsoil, &
+subroutine sail_BDRF(w,lai,sumint,tsstoo,rsoil, &
         rdd,tdd,tsd,rsd,tdo,rdo,tss,too,rsod, &
         rddt,rsdt,rdot,rsot)
 
+    use mod_dataSpec_wavelength
     implicit none
-    integer,intent(in) :: nw
     real*8,intent(in) :: lai,tss,too,sumint,tsstoo
     real*8,intent(in),dimension(nw) :: w,rsoil,rdd,tdd,tsd,rsd,tdo,rdo,rsod
     real*8,intent(out),dimension(nw) :: rddt,rsdt,rdot,rsot
