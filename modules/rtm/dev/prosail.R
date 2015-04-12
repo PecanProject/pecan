@@ -10,7 +10,7 @@ sail.def = c(prosp.def,
 			 	 1))
 
 
-prospect <- function(params){
+prospect_5b_sail <- function(params){
 	r <- matrix(0,nrow=2101,ncol=2)
 	p <- c(list("PROSPECT_5B"), params, list(r))
 	f <- do.call(.Fortran,p)
