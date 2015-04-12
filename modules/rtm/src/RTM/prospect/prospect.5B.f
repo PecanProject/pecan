@@ -49,15 +49,10 @@ SUBROUTINE prospect_5B(N,Cab,Car,Cbrown,Cw,Cm,RT)
     REAL*8, intent(in) :: N,Cab,Car,Cbrown,Cw,Cm
     REAL*8, intent(out) :: RT(nw,2)
 
-    REAL*8 :: k(nw), tau(nw), xx(nw), yy(nw)
-    REAL*8 :: x1(nw),x2(nw),x3(nw),x4(nw),x5(nw),x6(nw)
-    REAL*8 :: theta1, theta2, t1(nw),t2(nw)
-    REAL*8 :: r(nw),t(nw),ra(nw),ta(nw)
-    REAL*8 :: delta(nw),beta(nw),va(nw),vb(nw),s1(nw),s2(nw),s3(nw)
+    REAL*8 :: k(nw)
 
     k = (Cab*k_Cab+Car*k_Car+Cbrown*k_Brown+Cw*k_Cw+Cm*k_Cm)/N
 
-    Call expint(k,tau)
-    Call gpm(nw,k,N,RT)
+    Call gpm(k,N,RT)
 
 end subroutine

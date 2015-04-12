@@ -15,7 +15,8 @@ SUBROUTINE PRO4SAIL( &
         rdot,   &   !! Hemispherical-directional reflectance in viewing direction
         rsot)       !! Bi-directional reflectance factor
 
-        use MOD_dataSpec_P5B
+        use mod_dataSpec_wavelength
+        use mod_dataSpec_soil
         IMPLICIT NONE
         integer,intent(in) :: TypeLIDF
         real*8,intent(in) :: N,Cab,Car,Cbrown,Cw,Cm
@@ -39,7 +40,7 @@ SUBROUTINE PRO4SAIL( &
         rho = LRT(:,1)
         tau = LRT(:,2)
 
-        CALL FOURSAIL(rho,tau,LIDFa,LIDFb,TypeLIDF,lai,q,tts,tto,psi,rsoil,nw, &
+        CALL FOURSAIL(rho,tau,LIDFa,LIDFb,TypeLIDF,lai,q,tts,tto,psi,rsoil, &
             rddt, rsdt, rdot, rsot)
 
         return

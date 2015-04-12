@@ -49,13 +49,13 @@ subroutine FOURSAIL(rho, tau,             & !! Leaf spectra
         !! FLAG 4 (if 3 or leaf refl) -- Geometric leaf reflectance
         !!      Input rho and tau (from PROSPECT)
         !!      Correct using SUITS factors
-        CALL RTgeom(nw,rho,tau,ddb,ddf,sdb,sdf,dob,dof,sob,sof, &
+        CALL RTgeom(rho,tau,ddb,ddf,sdb,sdf,dob,dof,sob,sof, &
             sigb,att,m,sb,sf,vb,vf,w)
 
         !! FLAG 5 (if 4 or LAI or soil) -- Canopy reflectance and transmittance
         !!      Input LAI and leaf rho and tau
         !!      Also give geometric factors
-        CALL ReflTrans(nw,rho,tau,lai,att,m,sigb,ks,ko,sf,sb,vf,vb, &
+        CALL ReflTrans(rho,tau,lai,att,m,sigb,ks,ko,sf,sb,vf,vb, &
             rdd,tdd,tsd,rsd,tdo,rdo,tss,too,rsod)
 
         !! FLAG 6 (if 3 or LAI or hot) -- Hot spot effect
@@ -63,7 +63,7 @@ subroutine FOURSAIL(rho, tau,             & !! Leaf spectra
             tsstoo,sumint)
 
         !! Bidirectional reflectance
-        CALL sail_BDRF(nw,w,lai,sumint,tsstoo,rsoil, &
+        CALL sail_BDRF(w,lai,sumint,tsstoo,rsoil, &
                 rdd,tdd,tsd,rsd,tdo,rdo,tss,too,rsod, &
                 rddt,rsdt,rdot,rsot)
 

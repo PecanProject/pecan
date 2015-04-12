@@ -5,7 +5,7 @@ subroutine LIDF_fun(TypeLIDF, na, LIDFa, LIDFb, &
     REAL*8, INTENT(out) :: lidf(na)
 
     IF(TypeLidf == 1) THEN
-        CALL dladgen(LIDFa,LIDFb,lidf)
+        CALL dladgen(na,LIDFa,LIDFb,lidf)
     ELSEIF(TypeLidf == 2) THEN
         CALL calc_LIDF_ellipsoidal(na,LIDFa,lidf)
     ENDIF
@@ -95,10 +95,11 @@ SUBROUTINE calc_LIDF_ellipsoidal(na,alpha,freqvar)
 END SUBROUTINE
 
 
-subroutine dladgen(a,b,freq)
+subroutine dladgen(na,a,b,freq)
 
-    real*8 a,b,freq(13),t
-    real*8 dcum
+    integer :: na
+    real*8 :: a,b,freq(na),t
+    real*8 :: dcum
 
     do i1=1,8
     t=i1*10. 

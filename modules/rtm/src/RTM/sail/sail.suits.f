@@ -73,11 +73,11 @@ end subroutine SUITS
 ! *****************
 
 !! Correct rho and tau using SUITS factors
-subroutine RTgeom(nw,rho,tau,ddb,ddf,sdb,sdf,dob,dof,sob,sof, &
+subroutine RTgeom(rho,tau,ddb,ddf,sdb,sdf,dob,dof,sob,sof, &
         sigb,att,m,sb,sf,vb,vf,w)
 
+    use mod_dataSpec_wavelength
     implicit none
-    integer,intent(in) :: nw
     real*8,intent(in),dimension(nw) :: rho,tau
     real*8,intent(in) :: ddb,ddf,sdb,sdf,dob,dof,sob,sof
     real*8,intent(out),dimension(nw) :: sigb,att,m,sb,sf,vb,vf,w
