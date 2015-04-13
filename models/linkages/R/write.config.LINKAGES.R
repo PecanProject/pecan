@@ -62,7 +62,7 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   ## as initial hack, copy parameter file from inst to rundir
   ##param.file=system.file("SPP.DAT", package = "PEcAn.LINKAGES")
   ##file.copy(from = param.file,rundir)
-  ##Made up parameters from specific spp. for Acer,betula,carya,castanea dentata,
+  ## Parameters from specific spp. for Acer,betula,carya,castanea dentata,
   ##fagus grandifolia,picea,pinus,tsuga canadensis,quercus (in that order)
 
   
