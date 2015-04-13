@@ -51,10 +51,9 @@ table.expand <- function(x){
 ##' @return nothing
 ##' @export
 ##' @author Mike Dietze, Rob Kooper
-fia.to.psscss <- function(settings) {
+fia.to.psscss <- function(settings,gridres=0.02) {
 	## spatial info
-	POI	    <- TRUE	 ## point or region?
-	gridres	<- 0.07
+	POI	    <- TRUE	 ## point or region?	
 	lat     <- as.numeric(settings$run$site$lat)
 	lon     <- as.numeric(settings$run$site$lon)
 	
