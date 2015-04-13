@@ -291,7 +291,7 @@ if (is_dir("$folder/run")) {
     var run = $('#runid').val();
 
     $('#graphyear').empty();
-    if (outplot[run] {
+    if (outplot[run]) {
       $.each(Object.keys(outplot[run]), function(key, value) {
            $('#graphyear')
                .append($("<option></option>")
