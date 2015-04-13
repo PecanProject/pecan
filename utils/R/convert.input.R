@@ -45,6 +45,8 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
   #--------------------------------------------------------------------------------------------------#
   # Perform Conversion 
   
+  conversion = "local.remote" #default
+  
   if(!is.null(browndog) & hostname == fqdn()){ # perform conversions with Brown Dog - only works locally right now
     require(RCurl)
     
@@ -61,51 +63,69 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
       outputtype <- 'pecan.zip'
     }else{ # Convert to model specific format
       if(formatname == 'ed.met_driver_header_files_format'){
-        outputtype <- ''
+        outputtype <- 'ed.zip'
       }else if(formatname == 'Sipnet.climna'){
         outputtype <- 'clim'
       }else if(formatname == 'biocromet'){
         outputtype <- ''
       }else if(formatname == 'DALEC meteorology'){
-        outputtype <- ''
+        outputtype <- 'dalec.dat'
       }else if(formatname == 'LINKAGES met'){
-        outputtype <- ''
+        outputtype <- 'linkages.dat'
       }
     }
+    
+    # create curl options
+    if (!is.null(browndog$username) && !is.null(browndog$password)) {
+      userpwd <- paste(browndog$username, browndog$password, sep=":")
+      curloptions <- list(userpwd = userpwd, httpauth = 1L)
+    }
+    curloptions <- c(curloptions, followlocation=TRUE)
+    
+    # check if we can do conversion 
+    out.html <- getURL(paste0("http://dap-dev.ncsa.illinois.edu:8184/inputs/",inputtype), .opts = curloptions)
+    if(outputtype %in% unlist(strsplit(out.html, '\n'))){
+      print(paste("Conversion from", inputtype,"to", outputtype, "through Brown Dog"))
+      conversion <- "browndog"
+    }
+  }
+  
+  if(conversion == "browndog"){
     
     url <- file.path(browndog$url,outputtype) 
     print(url)
     
     # loop over files in localhost and zip to send to Brown Dog 
-    
     files <- list.files(dbfile$file_path, pattern=dbfile$file_name)
     files <- grep(dbfile$file_name,files,value=T)
-    #     zip(zipfile =  file.path(dbfile$file_path,inputtype), files = files)
-    
     zipfile <- paste0(dbfile$file_name,".",inputtype)
     system(paste("cd", dbfile$file_path, "; zip", zipfile,  paste(files, collapse = " ")))
+    zipfile <- file.path(dbfile$file_path,zipfile) 
     
-    # post to browndog
-    html <- postForm(url,"fileData" = fileUpload(file.path(dbfile$file_path,zipfile)))
-    link <- getHTMLLinks(html)
-    print(link)
-    
+    # check for and create output folder
     if(!file.exists(outfolder)){
       dir.create(outfolder, showWarnings=FALSE, recursive=TRUE)
     }
     
+    # post zipped file to Brown Dog
+    html <- postForm(url,"fileData" = fileUpload(zipfile), .opts = curloptions)
+    link <- getHTMLLinks(html)
+    print(link)
+    file.remove(zipfile)
+    
+    # download converted file
     outfile <- file.path(outfolder,unlist(strsplit(basename(link),"_"))[2])
-    dl_file(link, outfile,  i=40, sleep=3)
+    download.browndog(link, outfile,timeout = 600, curloptions)  
     
-    
-    if(tail(unlist(strsplit(outfile,"[.]")),1)=="zip"){
-      fname <- unzip(outfile, list=TRUE)$Name
-      print(fname)
-      unzip(outfile, files=fname, exdir=outfolder, overwrite=TRUE) 
-      file.remove(outfile)
+    # unzip downloaded file if necessary
+    if(file.exists(outfile)){
+      if(tail(unlist(strsplit(outfile,"[.]")),1)=="zip"){
+        fname <- unzip(outfile, list=TRUE)$Name
+        print(fname)
+        unzip(outfile, files=fname, exdir=outfolder, overwrite=TRUE)
+        file.remove(outfile)
+      }
     }
-    
-  file.remove(file.path(dbfile$file_path,zipfile))
     
     # settings$run$inputs$path <- outputfile what if there is more than 1 output file?
     rows <- length(fname)
@@ -125,8 +145,9 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
       result$mimetype[i] <- mimetype
       result$formatname[i] <- formatname    
     }
-    
-  }else{ # perform conversion on local or remote host
+  }
+  
+  else if (conversion == "local.remote") { # perform conversion on local or remote host
     args = c(dbfile$file_path,dbfile$file_name,outfolder,start_date,end_date)
     if(!is.null(names(l))){
       cmdFcn  = paste0(paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=",")),",",paste(paste(names(l),"=",unlist(l)), collapse=","),")")
@@ -136,9 +157,6 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
     print(cmdFcn)
     result <- remote.execute.R(script=cmdFcn,hostname,user=NA,verbose=TRUE,R="R")
   }
-  
-  
-  
   
   print("RESULTS: Convert.Input")
   print(result)

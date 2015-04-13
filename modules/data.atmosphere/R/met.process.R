@@ -14,9 +14,7 @@
 ##' @author Elizabeth Cowdery, Michael Dietze
 met.process <- function(site, input_met, start_date, end_date, model, host, dbparms, dir, browndog=NULL){
   
-  require(RPostgreSQL)
-  
-  driver   <- "PostgreSQL"
+  # require(RPostgreSQL)
   con      <- db.open(dbparms)
   
   username <- ""  
@@ -321,25 +319,30 @@ db.site.lat.lon <- function(site.id,con){
   }
 }
 
-## Betsy's brute force fix for downloading files from Brown Dog
 
-##' @name dl_file
-##' @title dl_file
+##' @name dap.download.file
+##' @title dap.download.file
 ##' @export
 ##' @param link - path to file to be downloaded
-##' @param outfolder - destination of downloaded file(s)
+##' @param outfile - destination of downloaded file(s)
 ##' @param i - number of times to try download 
 ##' @param sleep - the number of seconds to pause between download attempts
 ##' @author Betsy Cowdery
-dl_file <- local({ 
+dap.download.file <- local({ 
   n <- 0
-  function(link, outfolder, i=40, sleep=3){
+  function(link, outfile, i=40, sleep=3, userpwd){
     n = n+1
-    r <- try(download.file(link, outfolder, quiet = TRUE), silent = TRUE)
+    f = CFILE(outfile, mode="wb")
+    r <- try(curlPerform(url=url, writedata=f@ref, .opts=list(userpwd = userpwd,httpauth = 1L)))
+    close(f)  
+#     r <- try(download.file(link, outfile, quiet = TRUE), silent = TRUE)
+#     r <- try(download.file(url = link, destfile = outfile,
+#                            extra = getOption(".opts" = list(userpwd = userpwd,httpauth = 1L))
+#                            )) #, quiet = TRUE), silent = TRUE)
     if(inherits(r, 'try-error') & n <= 40){
       cat("*")
       Sys.sleep(sleep)
-      dl_file(link, outfolder, i)
+      dap.download.file(link, outfile, i)
     }
     if(inherits(r, 'try-error') & n > 40){
       cat(sprintf("Download failed after %.0f seconds", (n-1)*sleep))

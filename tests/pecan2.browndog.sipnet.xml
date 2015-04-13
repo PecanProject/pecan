@@ -2,7 +2,14 @@
 <pecan>
  <outdir>/home/ecowdery/met_process_tests/</outdir>
  <browndog>
+   <!--
    <url>http://dap.ncsa.illinois.edu:8184/convert/</url>
+   <username>browndog.user</username>
+   <password>GritGin3</password>
+   -->
+   <url>http://dap-dev.ncsa.illinois.edu:8184/convert/</url>
+   <username>browndog.user</username>
+   <password>twonkIv8</password>
  </browndog>
  <database>
   <bety>
@@ -46,7 +53,7 @@
    <rundir>/home/ecowdery/met_process_tests/dalec//run</rundir>
    <outdir>/home/ecowdery/met_process_tests/dalec//out</outdir>
   </host>
-  <dbfiles>/home/ecowdery/met_process_tests</dbfiles>
+  <dbfiles>/fs/data1/pecan.data/input</dbfiles>
    <inputs>
     <met>
       <source>Ameriflux</source>
