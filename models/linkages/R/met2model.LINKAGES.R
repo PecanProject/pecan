@@ -20,24 +20,16 @@
 ##' @export
 ##' @author Ann Raiho, Betsy Cowdery
 ##-------------------------------------------------------------------------------------------------#
-<<<<<<< HEAD
-met2model.LINKAGES <- function(in.path, in.prefix=NULL, start.year, end.year, outfolder, site) {
-   
-  out.file <- file.path(paste0(outfolder,"climate.txt"))
-  
-  year = seq(start.year,end.year,1)
-  month = c("01","02","03","04","05","06","07","08","09","10","11","12")
-=======
 met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_date, ..., overwrite=FALSE,verbose=FALSE) {
   require(PEcAn.utils)
-   
+  
   start_date <- as.POSIXlt(start_date, tz = "GMT")
   end_date<- as.POSIXlt(end_date, tz = "GMT")
-  out.file <- file.path(paste0(outfolder,"test_text1.txt"))
-#   out.file <- file.path(outfolder, paste(in.prefix,
-#                                          strptime(start_date, "%Y-%m-%d"),
-#                                          strptime(end_date, "%Y-%m-%d"),
-#                                          "dat", sep="."))
+  out.file <- file.path(paste0(outfolder,"climate.txt"))
+  #   out.file <- file.path(outfolder, paste(in.prefix,
+  #                                          strptime(start_date, "%Y-%m-%d"),
+  #                                          strptime(end_date, "%Y-%m-%d"),
+  #                                          "dat", sep="."))
   
   results <- data.frame(file=c(out.file),
                         host=c(fqdn()),
@@ -71,29 +63,19 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   end_year <- year(end_date)
   
   year = seq(start_year,end_year,1)
->>>>>>> 93c6d8b25ef44376a1714f8e3e6db4a76f1db790
   
   month_matrix_precip = matrix(NA,length(year),12)
-  #julian_vec_hr = c(1,c(32,60,91,121,152,182,213,244,274,305,335,365)*4)
+  julian_vec_hr = c(1,c(32,60,91,121,152,182,213,244,274,305,335,365)*4)
   
   for(i in 1:length(year)){
-<<<<<<< HEAD
-=======
     ncin <- nc_open(file.path(in.path,paste0(in.prefix,".",year[i],".nc")))
     #print(ncin)
     ncprecipf = ncvar_get(ncin, "precipitation_flux") #units are kg m-2 s-1    
->>>>>>> 93c6d8b25ef44376a1714f8e3e6db4a76f1db790
     for(m in 1:12){
-      ncin <- nc_open(paste0(in.path,"precipf/",site,"_precipf_",
-                             formatC(year[i],width = 4,flag="0"),"_",
-                             month[m],".nc"))
-      #print(ncin)
-      ncprecipf = ncvar_get(ncin, "precipf") #units are kg m-2 s-1    
-      month_matrix_precip[i,m] = sum(ncprecipf) * 21600 #change to mm / month
-      nc_close(ncin)
+      month_matrix_precip[i,m] = sum(ncprecipf[julian_vec_hr[m]:(julian_vec_hr[m+1]-1)]) * 21600^2 #fix when Mike changes code
     } 
-    
-    if(i%%100==0) cat(i," "); flush.console()
+    nc_close(ncin)
+    #if(i%%100==0) cat(i," "); flush.console()
   }
   
   nyear = length(year) #number of years to simulate
@@ -113,22 +95,14 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   month_matrix_temp_mean = matrix(NA,length(year),12)
   
   for(i in 1:length(year)){
-<<<<<<< HEAD
-=======
     ncin <- nc_open(file.path(in.path,paste0(in.prefix,".",year[i],".nc")))
     #print(ncin)
     nctemp = ncvar_get(ncin, "air_temperature") #units are kg m-2 s-1    
->>>>>>> 93c6d8b25ef44376a1714f8e3e6db4a76f1db790
     for(m in 1:12){
-      ncin <- nc_open(paste0(in.path,"tair/",site,"_tair_",
-                             formatC(year[i],width = 4,flag="0"),"_",
-                             month[m],".nc"))
-      #print(ncin)
-      nctemp = ncvar_get(ncin, "tair") #units are K   
-      month_matrix_temp_mean[i,m] = mean(nctemp) #sub daily to monthly
-      nc_close(ncin)
-    }
-    if(i%%100==0) cat(i," "); flush.console()
+      month_matrix_temp_mean[i,m] = mean(nctemp[julian_vec_hr[m]:(julian_vec_hr[m+1]-1)]) #sub daily to monthly
+    } 
+    nc_close(ncin)
+    #if(i%%100==0) cat(i," "); flush.console()
   }
   
   mean_nctemp = matrix(0,length(ipolat_nums),12) ; sd_nctemp = mean_nctemp
