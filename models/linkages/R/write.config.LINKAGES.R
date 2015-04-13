@@ -158,7 +158,7 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   
   jobsh <- gsub('@SITE_LAT@', settings$run$site$lat, jobsh)
   jobsh <- gsub('@SITE_LON@', settings$run$site$lon, jobsh)
-  jobsh <- gsub('@SITE_MET@', settings$run$inputs$met, jobsh)
+  jobsh <- gsub('@SITE_MET@', settings$run$inputs$met$path, jobsh)
   
   jobsh <- gsub('@START_DATE@', settings$run$start.date, jobsh)
   jobsh <- gsub('@END_DATE@', settings$run$end.date, jobsh)

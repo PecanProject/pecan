@@ -71,53 +71,56 @@ if (isset($_REQUEST['model']) && ($_REQUEST['model'] != "") && isset($_REQUEST['
   } 
   $stmt->closeCursor();
 
-  // 4. Find all MET conversions possible
-  // 4a. Check for Download -> CF
-  foreach($sites as &$site) {
-    if (!in_array(33, $site['format_id'])) {
-      $site['format_id'][] = 33;
-    }
-  }
+  if (isset($_REQUEST['conversion'])){
 
-  // 4b. Check for CF - > SIPNET/ED
-  $stmt = $pdo->prepare("SELECT modeltypes.name FROM modeltypes, models" .
-                        " WHERE modeltypes.id=models.modeltype_id" .
-                        " AND models.id=?;");
-  if (!$stmt->execute(array($_REQUEST['model']))) {
-    die('Invalid query: ' . error_database());
-  }
-  $modeltypes=$stmt->fetchAll(PDO::FETCH_COLUMN, 0);
-  $stmt->closeCursor();
-  if (in_array("SIPNET", $modeltypes)) {
+    // 4. Find all MET conversions possible
+    // 4a. Check for Download -> CF
     foreach($sites as &$site) {
-      if (in_array(33, $site['format_id'])) {
-        $site['format_id'][] = 24;
+      if (!in_array(33, $site['format_id'])) {
+        $site['format_id'][] = 33;
       }
     }
-  }
-  if (in_array("ED2", $modeltypes)) {
-    foreach($sites as &$site) {
-      if (in_array(33, $site['format_id'])) {
-        $site['format_id'][] = 12;
+    // 4b. Check for CF - > SIPNET/ED
+    $stmt = $pdo->prepare("SELECT modeltypes.name FROM modeltypes, models" .
+                          " WHERE modeltypes.id=models.modeltype_id" .
+                          " AND models.id=?;");
+    if (!$stmt->execute(array($_REQUEST['model']))) {
+      die('Invalid query: ' . error_database());
+    }
+    $modeltypes=$stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+    $stmt->closeCursor();
+    if (in_array("SIPNET", $modeltypes)) {
+      foreach($sites as &$site) {
+        if (in_array(33, $site['format_id'])) {
+          $site['format_id'][] = 24;
+        }
       }
     }
-  }
-  if (in_array("DALEC", $modeltypes)) {
-    foreach($sites as &$site) {
-      if (in_array(33, $site['format_id'])) {
-        $site['format_id'][] = 1000000002;
+    if (in_array("ED2", $modeltypes)) {
+      foreach($sites as &$site) {
+        if (in_array(33, $site['format_id'])) {
+          $site['format_id'][] = 12;
+        }
       }
     }
-  }
+    if (in_array("DALEC", $modeltypes)) {
+      foreach($sites as &$site) {
+        if (in_array(33, $site['format_id'])) {
+          $site['format_id'][] = 1000000002;
+        }
+      }
+    }
 
 
   // 5. Find any other conversions if they exist
-
+  }
 
   // 6. Get list of all formats needed for model
   $stmt = $pdo->prepare("SELECT format_id FROM modeltypes_formats, models" .
                         " WHERE modeltypes_formats.modeltype_id=models.modeltype_id" .
+                        " AND modeltypes_formats.required = true".
                         " AND models.id=?;");
+
   if (!$stmt->execute(array($_REQUEST['model']))) {
     die('Invalid query: ' . error_database());
   }

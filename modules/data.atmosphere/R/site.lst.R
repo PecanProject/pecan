@@ -1,3 +1,10 @@
+##' @name site.lst
+##' @title site.lst
+##' @export
+##' @param site.id
+##' @param con
+##' @author Betsy Cowdery
+
 site.lst <- function(site.id,con){
   
   site <- db.query(paste("SELECT * from SITES where id =", site.id),con)

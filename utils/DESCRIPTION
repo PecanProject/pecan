@@ -21,7 +21,8 @@ Depends:
     ggplot2,
     randtoolbox,
     ncdf4,
-    udunits2
+    udunits2,
+    RCurl
 Suggests:
     coda,
     MASS

@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<pecan>
+  <outdir>pecan</outdir>
+
+  <browndog/>
+
+  <pfts>
+    <pft>
+      <name>ebifarm.c4grass.doe_vd</name> 
+    </pft>
+  </pfts>
+
+  <ensemble>
+    <variable>NPP</variable>
+  </ensemble>
+
+  <model>
+  	<id>99000000001</id>
+    <config.header>
+      <radiation>
+        <lai_min>0.01</lai_min>
+      </radiation>
+      <ed_misc>
+        <output_month>12</output_month>
+      </ed_misc>
+    </config.header>
+    <phenol.scheme>0</phenol.scheme>
+  </model>
+
+  <run>
+    <site>
+      <id>772</id>
+    </site>
+    <inputs>
+      <met>
+        <source>Ameriflux</source>
+      </met>
+      <veg>/Users/kooper/Projects/EBI/oge2OLD/OGE2_</veg>
+      <soil>/Users/kooper/Projects/EBI/faoOLD/FAO_</soil>
+      <pss>
+      	<id>99000000007</id>
+      </pss>
+      <css>/Users/kooper/Projects/EBI/sites/ebifarm/ebifarm.lat40.0lon-88.0.css</css>
+      <site>/Users/kooper/Projects/EBI/sites/ebifarm/ebifarm.lat40.0lon-88.0.site</site>
+      <lu>/Users/kooper/Projects/EBI/ed_inputs/glu</lu>
+      <thsum>/Users/kooper/Projects/EBI/ed_inputs</thsum>
+    </inputs>
+    <start.date>2006/01/01</start.date>
+    <end.date>2006/12/31</end.date>
+    <host>
+      <name>localhost</name>
+    </host>
+    <dbfiles>pecan/dbfiles</dbfiles>
+  </run>
+</pecan>

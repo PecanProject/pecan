@@ -191,8 +191,13 @@ read.allom.data <- function(pft.data, component, field, parm,nsim=10000) {
         y = a[i] + b[i]*log10(x)
       }else if(eqn[i] == 9){
         y = log(a[i]) + b[i]*log(x)
+      }else if(eqn[i] == 10){
+        y = a[i] + b[i]*log(x)
+      }else if(eqn[i] == 11){
+        if(is.na(b[i])) b[i] <- 0
+        y = a[i]*x^(b[i])
       }
-      
+
       se[i] = sqrt(Rratio[i]*var(y))
       ## note: y is not units corrected because SE needs to be
       ## in original units, same as the other parms
@@ -209,6 +214,7 @@ read.allom.data <- function(pft.data, component, field, parm,nsim=10000) {
     drop <- c(drop,which(eqn == 4 & b == 0 & c*d < 0)) #eqn 4, negative slope
     drop <- c(drop,which(eqn == 8 & b <= 0))           #eqn 8, negative slope
     drop <- c(drop,which(eqn == 9 & b <= 0))           #eqn 9, negative slope
+    drop <- c(drop,which(eqn == 11 & a*b < 0)) 		   #eqn 11, negative slope
     
     ## HACK: drop papers known to be suspect until units and coef can be confirmed
     drop <- c(drop, which(cite %in% c(12,103,121)))

@@ -16,8 +16,8 @@
 ##' @author David LeBauer
 load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date){
   ## Lat and Lon
-  Lat <- ncvar_get(met.nc, "lat")
-  Lon <- ncvar_get(met.nc, "lon")
+  Lat <- ncvar_get(met.nc, "latitude")
+  Lon <- ncvar_get(met.nc, "longitude")
   
   if(min(abs(Lat-lat)) > 2.5 | min(abs(Lon-lon)) > 2.5) logger.error("lat / lon (", lat, ",", lon, ") outside range of met file (", range(Lat), ",", range(Lon))
   
@@ -56,7 +56,9 @@ load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date){
   standard_names <- append(as.character(mstmip_vars$standard_name), "surface_pressure")
   variables <- as.character(standard_names[standard_names %in% c("surface_pressure", attributes(met.nc$var)$names)])
   
-  vars <- lapply(variables, function(x) get.ncvector(x, lati = lati, loni = loni, run.dates = run.dates, met.nc = met.nc))
+  
+  vars <- lapply(variables, function(x) get.ncvector(x, lati = lati, loni = loni, 
+                                                     run.dates = run.dates, met.nc = met.nc))
   
   names(vars) <- gsub("surface_pressure", "air_pressure", variables)
   

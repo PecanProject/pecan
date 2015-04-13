@@ -15,6 +15,11 @@ $db_fia_username="";
 $db_fia_password="";
 $db_fia_database="";
 
+# browdog information
+$browndog_url="";
+$browndog_username="";
+$browndog_password="";
+
 # R binary
 $Rbinary="/usr/bin/R";
 
@@ -64,5 +69,9 @@ $REST_AUTH_DIGEST_STRETCHES  = 10;
 
 # Location where logs should be written
 $logfile = "/home/carya/output/betydb.log";
+
+# uncomment the following variable to enable the simple interface
+#$simpleBETY = TRUE;
+
 
 ?>
