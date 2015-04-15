@@ -101,6 +101,7 @@ pda.mcmc <- function(settings,prior,chain=1,var.names=NULL,jvar=NULL,params=NULL
     }
     return(p)
   }
+  
   pname =  rownames(prior)  ## Parameter names
   if(is.null(var.names)){
     vars = 1:nvar
