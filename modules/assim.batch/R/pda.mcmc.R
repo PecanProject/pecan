@@ -20,10 +20,10 @@ pda.mcmc <- function(settings,prior,chain=1,var.names=NULL,jvar=NULL,params=NULL
     jvar = NULL
     var.id = 297 ## NEE, canonical units umolC/m2/s
   }
-  
+
   ## settings
   weight <- 0.001
-  model = settings$model$model_type
+  model = settings$model$type
   write = settings$database$bety$write
   start <- 1
   finish <- as.numeric(settings$assim.batch$iter)
@@ -117,12 +117,12 @@ pda.mcmc <- function(settings,prior,chain=1,var.names=NULL,jvar=NULL,params=NULL
   NEEq <- data$NEE_or_fMDSqc #data$qf_Fc
   NEEo[NEEq > 0] <- NA
   
-  NPPo<- state$NPP[,,23]
-  AGBo<- state$AGB[,,24]
-  
-  #parameters for bivariate normal likelihood
-  mu = c(mean(NPPo),mean(AGBo))
-  sigma = cov(cbind(NPPo,AGBo))
+#   NPPo<- state$NPP[,,23]
+#   AGBo<- state$AGB[,,24]
+#   
+#   #parameters for bivariate normal likelihood
+#   mu = c(mean(NPPo),mean(AGBo))
+#   sigma = cov(cbind(NPPo,AGBo))
   
   ## calculate flux uncertainty parameters
   dTa <- get.change(data$Ta_f)
@@ -132,7 +132,7 @@ pda.mcmc <- function(settings,prior,chain=1,var.names=NULL,jvar=NULL,params=NULL
   bp <- NEE.params$slopeP
   bn <- NEE.params$slopeN
   
-  
+
   ## set up storage
   if(is.null(params)){
     params <- matrix(numeric(),finish,nvar)
@@ -224,15 +224,15 @@ pda.mcmc <- function(settings,prior,chain=1,var.names=NULL,jvar=NULL,params=NULL
         NEEm <- read.output(run.id, outdir = file.path(outdir, run.id),
                             start.year, end.year, variables="NEE")$NEE*0.0002640674
         ## unit conversion kgC/ha/yr -> umolC/m2/sec
-        NPPvecm <-read.output(run.id, outdir = file.path(outdir, run.id),
-                              start.year, end.year, variables="NPP")$NPP
-        NPPm<- sum(NPPvecm)
+#         NPPvecm <-read.output(run.id, outdir = file.path(outdir, run.id),
+#                               start.year, end.year, variables="NPP")$NPP
+#         NPPm<- sum(NPPvecm)
         
         ## match model and observations
         NEEm <- rep(NEEm,each=length(NEEo)/length(NEEm))
         set <- 1:length(NEEm)  ## ***** need a more intellegent year matching!!!
-        NPPm <- rep(NPPm,each=length(NPPo)/length(NPPm))
-        set <- 1:length(NPPm) 
+#         NPPm <- rep(NPPm,each=length(NPPo)/length(NPPm))
+#         set <- 1:length(NPPm) 
         
         ## calculate likelihood
         fsel <- which(NEEm > 0)
@@ -241,7 +241,8 @@ pda.mcmc <- function(settings,prior,chain=1,var.names=NULL,jvar=NULL,params=NULL
         n.obs = sum(!is.na(LL.star))
         LL.star <- sum(LL.star,na.rm=TRUE)
         #loglikelihood for bivar normal distn of NPP and AGB
-        LL.star1 <-sum(dmvnorm(cbind(NPPo,AGBo), mu, sigma, log=TRUE), na.rm=TRUE)
+#         LL.star1 <-sum(dmvnorm(cbind(NPPo,AGBo), mu, sigma, log=TRUE), na.rm=TRUE)
+        LL.star1 =0
         
         LL.total<-LL.star*weight+LL.star1
         ## insert Likelihood record in database
