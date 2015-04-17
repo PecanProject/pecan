@@ -45,7 +45,7 @@ extract.nc <- function(in.path,in.prefix,outfolder,start_date,end_date,slat,slon
                         stringsAsFactors = FALSE)
   
   for(i in 1:rows){    
-    file <- paste0("NARR",start_year+i-1,"nc", sep=".")
+    file <- paste("NARR",start_year+i-1,"nc", sep=".")
     infile = file.path(in.path,file)
     outfile = file.path(outfolder,file)
     if(file.exists(infile)==TRUE && file.exists(outfile)==FALSE){
