@@ -38,15 +38,16 @@ extract.nc <- function(in.path,in.prefix,outfolder,start_date,end_date,slat,slon
   
   start_year <- year(start_date)
   end_year <- year(end_date)
-  rows <- length(files)
+  rows <- length(end_year-start_year+1)
   results <- data.frame(file=character(rows), host=character(rows),
                         mimetype=character(rows), formatname=character(rows),
                         startdate=character(rows), enddate=character(rows),
                         stringsAsFactors = FALSE)
   
-  for(i in 1:length(files)){    
-    infile = file.path(in.path,files[i])
-    outfile = file.path(outfolder,files[i])
+  for(i in 1:rows){    
+    file <- paste0("NARR",start_year+i-1,"nc", sep=".")
+    infile = file.path(in.path,file)
+    outfile = file.path(outfolder,file)
     if(file.exists(infile)==TRUE && file.exists(outfile)==FALSE){
       system(paste0("ncks -d x,",x,",",x, " -d y,",y,",",y," ",infile," ",outfile))      
     }
