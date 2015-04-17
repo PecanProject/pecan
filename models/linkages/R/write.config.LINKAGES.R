@@ -44,10 +44,27 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   ipolat = length(ipolat_nums)-1 #number of years for climate interpolation
   plat = settings$run$site$lat #latitude
   plong = settings$run$site$lon #longitude
-  bgs = 127 #julian day to begin growing season
-  egs = 275 #julian day to end growing season
-  fc = 27 #field capacity
-  dry = 17 #wilting point
+  bgs = 127 #DOY to begin growing season
+  egs = 275 #DOY to end growing season
+  
+ texture =  read.csv("/Users/paleolab/pecan/models/LINKAGES/inst/texture.csv")
+ #soil.dat = read.csv("/Users/paleolab/Linkages/phase1a_env_drivers_v4/PalEON_Phase1a_sites.csv")
+
+ soil.texture <- function(sand,clay){
+    silt = 1 - sand - clay
+    
+    sand.keep = which(texture$xsand < sand + .1 & texture$xsand > sand - .1) 
+    clay.keep = which(texture$xclay[sand.keep] < clay + .1 & texture$xclay[sand.keep] > clay - .1)
+    silt.keep = which(texture$xsilt[sand.keep[clay.keep]] < silt + .1 & texture$xsilt[sand.keep[clay.keep]] > silt - .1)
+  
+    row.keep = sand.keep[clay.keep[silt.keep]]
+
+    return(texture[round(mean(row.keep)),7:8]*100) # might need to divide by 3 or something because linkages wants cm water/30cm soil...
+  }
+
+  fc = soil.texture(sand = as.numeric(settings$run$soil$sand)/100, clay = as.numeric(settings$run$soil$clay)/100)[1] #settings$run$site$%sand -> add later when check.settings also gives soil info.
+  wp = soil.texture(sand = as.numeric(settings$run$soil$sand)/100, clay = as.numeric(settings$run$soil$clay)/100)[2] #settings$run$site$%clay
+  
   
   sink(file.path(rundir,"settings.txt"))
   cat(kprnt,klast,nyear,sep=",")
@@ -58,6 +75,7 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   cat("\n")
   cat(plat,plong,bgs,egs,fc,dry,sep=",")
   sink()
+  unlink("settings")
 
   ## as initial hack, copy parameter file from inst to rundir
   ##param.file=system.file("SPP.DAT", package = "PEcAn.LINKAGES")
@@ -103,6 +121,7 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   cat("\n")
   write.table(spp_params,sep=",",col.names=FALSE,row.names=FALSE)
   sink()
+  
   
   switch_chars = c("FFTFF","FFTTF","TFTFF","TFFFF","FFTFF","FFFFF","TTTFF","FFTTF","TFFFF")
   sink(file.path(rundir,"switch.txt"))
