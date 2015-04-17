@@ -291,12 +291,14 @@ if (is_dir("$folder/run")) {
     var run = $('#runid').val();
 
     $('#graphyear').empty();
-    $.each(Object.keys(outplot[run]), function(key, value) {
-         $('#graphyear')
-             .append($("<option></option>")
-             .text(value)); 
-    });
-    updateGraphYear();
+    if (outplot[run]) {
+      $.each(Object.keys(outplot[run]), function(key, value) {
+           $('#graphyear')
+               .append($("<option></option>")
+               .text(value)); 
+      });
+      updateGraphYear();
+    }
 
     $('#inpfile').empty();
     $.each(inpfile[run], function(key, value) {   

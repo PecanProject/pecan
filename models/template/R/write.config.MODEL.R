@@ -75,7 +75,7 @@ write.config.MODEL <- function(defaults, trait.values, settings, run.id){
   
   config.text <- gsub('@SITE_LAT@', settings$run$site$lat, config.text)
   config.text <- gsub('@SITE_LON@', settings$run$site$lon, config.text)
-  config.text <- gsub('@SITE_MET@', settings$run$site$met, config.text)
+  config.text <- gsub('@SITE_MET@', settings$run$inputs$met$path, config.text)
   config.text <- gsub('@MET_START@', settings$run$site$met.start, config.text)
   config.text <- gsub('@MET_END@', settings$run$site$met.end, config.text)
   config.text <- gsub('@START_MONTH@', format(startdate, "%m"), config.text)
