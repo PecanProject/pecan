@@ -37,19 +37,23 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   end.year = as.numeric(strftime(settings$run$end.date,"%Y"))
   year = seq(start.year,end.year,1)
   
-  kprnt = 50 #year interval for output
+  kprnt = 25 #year interval for output
   klast = 90 #number of plots
   nyear = length(year) #number of years to simulate
   ipolat_nums = seq(2,nyear,25) #years for climate interpolation #need to make break points generalizable someday
   ipolat = length(ipolat_nums)-1 #number of years for climate interpolation
-  plat = settings$run$site$lat #latitude
-  plong = settings$run$site$lon #longitude
+  plat = abs(settings$run$site$lat) #latitude
+  plong = abs(settings$run$site$lon) #longitude
   bgs = 127 #DOY to begin growing season
   egs = 275 #DOY to end growing season
   
- texture =  read.csv("/Users/paleolab/pecan/models/LINKAGES/inst/texture.csv")
+ #texture =  read.csv("/Users/paleolab/pecan/models/LINKAGES/inst/texture.csv")
  #soil.dat = read.csv("/Users/paleolab/Linkages/phase1a_env_drivers_v4/PalEON_Phase1a_sites.csv")
 
+ #dbcon <- db.open(settings$database$bety)
+ #soils <- db.query(paste("SELECT soil,som,sand_pct,clay_pct,soilnotes FROM sites WHERE id =", settings$run$site$id), con=dbcon)
+ #db.close(dbcon)
+ 
  soil.texture <- function(sand,clay){
     silt = 1 - sand - clay
     
@@ -62,8 +66,8 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
     return(texture[round(mean(row.keep)),7:8]*100) # might need to divide by 3 or something because linkages wants cm water/30cm soil...
   }
 
-  fc = soil.texture(sand = as.numeric(settings$run$soil$sand)/100, clay = as.numeric(settings$run$soil$clay)/100)[1] #settings$run$site$%sand -> add later when check.settings also gives soil info.
-  wp = soil.texture(sand = as.numeric(settings$run$soil$sand)/100, clay = as.numeric(settings$run$soil$clay)/100)[2] #settings$run$site$%clay
+  fc = 18 # round(unlist(as.numeric(soil.texture(sand = as.numeric(settings$run$soil$sand)/100, clay = as.numeric(settings$run$soil$clay)/100)[1])),digits=2) #settings$run$site$%sand -> add later when check.settings also gives soil info.
+  dry = 8 #round(unlist(as.numeric(soil.texture(sand = as.numeric(settings$run$soil$sand)/100, clay = as.numeric(settings$run$soil$clay)/100)[2])),digits=2) #settings$run$site$%clay
   
   
   sink(file.path(rundir,"settings.txt"))
@@ -73,7 +77,7 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   cat("\n")
   cat(ipolat_nums,sep=",")
   cat("\n")
-  cat(plat,plong,bgs,egs,fc,dry,sep=",")
+  cat(plong,plat,bgs,egs,fc,dry,sep=",")
   sink()
   unlink("settings")
 
@@ -83,37 +87,36 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   ## Parameters from specific spp. for Acer,betula,carya,castanea dentata,
   ##fagus grandifolia,picea,pinus,tsuga canadensis,quercus (in that order)
 
-  
-  nspec = 9 
-  bmspec = 9
-  spec_nums = seq(1,bmspec)
-  DMAX = c(4700,2500,5993,4571,5537,1911,3165,3800,4571) #- MAXIMUM GROWING DEGREE DAYS
-  DMIN = c(1600,1100,1910,1910,1326,280,1100,1324,1100) #- MINIMUM GROWING DEGREE DAYS
-  B3 = c(.1988,.5013,.2663,.1495,.2863,.7105,.1495,.1495,.2863) # - INDIVIDUAL SPECIES CONSTANT USED IN GROW
-  B2 = c(47.72,76.40,53.26,44.84,57.26,90.96,44.84,44.84,57.26) # - INDIVIDUAL SPECIES CONSTANT USED IN GROW
-  ITOL = c(2,1,1,1,1,1,2,1,1) # - LIGHT TOLERANCE CLASS
-  AGEMX = c(125,250,300,300,366,200,450,650,400) # - MAXIMUM AGE OF SPECIES
-  G = c(212,106,82,102,72,132,68,47,66) # - SCALES THE GROWTH RATE OF EACH SPECIES
-  SPRTND = c(31,43,631,63,172,3,37,0,32) #- TENDENCY TO STUMP SPROUT
-  SPRTMN = c(6,12,12,12,6,0,0,0,12) # - MINIMUM SIZE TREE THAT WILL SPROUT
-  SPRTMX = c(50,100,200,200,30,0,0,0,40) # - MAXIMUM SIZE TREE THAT WILL SPROUT
-  MPLANT = c(20,120,20,20,40,16,140,8,40) # - MAXIMUM NUMBER OF SEEDLINGS TO PLANT
-  D3 = c(.268,.2,.3,.3,.2,.309,.31,.18,.225) # - PROPORTION OF GROWING SEASON SPECIES CAN WITHSTAND DROUGHT
-  FROST = c(-12,-18,-4,-2,-12,-30,-20,-12,-12) # - MINIMUM JANUARY TEMPERATURE SPECIES CAN WITHSTAND
-  TL = c(2,4,4,2,8,11,12,6,9) # - LEAF LITTER TYPE
-  CM1 = c(2.79,2.94,2.94,2.99,2.94,2.79,2.79,2.79,2.94) #THROUGH CM5 - PARAMETERS TO CALCULATE NITROGEN GROWTH FACTORS
-  CM2 = c(219.77,117.52,117.52,207.43,117.52,219.77,291.77,219.77,117.52)
-  CM3 = c(.00179,.00234,.00234,.00175,.00234,.00179,.00179,.00179,.00234)
-  CM4 = c(-0.6,-1.2,-1.2,-5.0,-1.2,-0.6,-0.6,-0.6,-1.2)
-  CM5 = c(1.0,1.3,1.3,2.9,1.3,1.0,1.0,1.0,1.3)
-  FWT = c(440,248,248,440,440,440,440,440,440) #- LEAF WEIGHT/UNIT CROWN AREA
-  SLTA = c(.814,.804,.804,.814,.904,.804,.804,.804,.904) #- PARAMETERS TO CALCULATE CROWN AREA
-  SLTB = c(.078,.069,.069,.078,.095,.069,.069,.069,.095)
-  RTST = c(1.0,.8,.8,1,1,1,1,1,1) # - ROOT/SHOOT RATIO
-  FRT = c(1,1,1,1,1,3,2,3,1) #- FOLIAGE RETENTION TIME IN YEARS
-  
-  spp_params = cbind(DMAX,DMIN,B3,B2,ITOL,AGEMX,G,SPRTND,SPRTMN,SPRTMX,MPLANT,D3,FROST,TL,CM1,CM2,CM3,CM4,CM5,FWT,SLTA,SLTB,RTST,FRT)
-  
+ nspec = 9 
+ bmspec = 9
+ spec_nums = seq(1,bmspec)
+ DMAX = c(4700,2500,5993,4571,5537,1911,3165,3800,4571) #- MAXIMUM GROWING DEGREE DAYS
+ DMIN = c(1600,1100,1910,1910,1326,280,1100,1324,1100) #- MINIMUM GROWING DEGREE DAYS
+ B3 = c(.1988,.5013,.2663,.1495,.2863,.7105,.1495,.1495,.2863) # - INDIVIDUAL SPECIES CONSTANT USED IN GROW
+ B2 = c(47.72,76.40,53.26,44.84,57.26,90.96,44.84,44.84,57.26) # - INDIVIDUAL SPECIES CONSTANT USED IN GROW
+ ITOL = c(2,1,1,1,1,1,2,1,1) # - LIGHT TOLERANCE CLASS #ITOL = c(2,1,1,1,1,1,2,1,1)
+ AGEMX = c(125,250,300,300,366,200,450,650,400) # - MAXIMUM AGE OF SPECIES
+ G = c(212,106,82,102,72,132,68,47,66) # - SCALES THE GROWTH RATE OF EACH SPECIESG = c(212,106,82,102,72,132,68,47,66) 
+ SPRTND = c(31,43,631,63,172,3,37,0,32) #- TENDENCY TO STUMP SPROUT
+ SPRTMN = c(6,12,12,12,6,0,0,0,12) # - MINIMUM SIZE TREE THAT WILL SPROUT
+ SPRTMX = c(50,100,200,200,30,0,0,0,40) # - MAXIMUM SIZE TREE THAT WILL SPROUT
+ MPLANT = c(20,120,20,20,40,16,140,8,40) # - MAXIMUM NUMBER OF SEEDLINGS TO PLANT #c(20,120,20,20,40,16,140,8,40)
+ D3 = c(.268,.2,.3,.3,.2,.309,.31,.18,.225) # - PROPORTION OF GROWING SEASON SPECIES CAN WITHSTAND DROUGHT
+ FROST = c(-12,-18,-4,-2,-12,-30,-20,-12,-12) # - MINIMUM JANUARY TEMPERATURE SPECIES CAN WITHSTANDc(-12,-18,-4,-2,-12,-30,-20,-12,-12)
+ TL = c(2,4,4,2,8,11,12,6,9) # - LEAF LITTER TYPE
+ CM1 = c(2.79,2.94,2.94,2.99,2.94,2.79,2.79,2.79,2.94) #THROUGH CM5 - PARAMETERS TO CALCULATE NITROGEN GROWTH FACTORS
+ CM2 = c(219.77,117.52,117.52,207.43,117.52,219.77,200,219.77,117.52) #c(219.77,117.52,117.52,207.43,117.52,219.77,291.77,219.77,117.52)
+ CM3 = c(.00179,.00234,.00234,.00175,.00234,.00179,.00179,.00179,.00234)
+ CM4 = c(-0.6,-1.2,-1.2,-5.0,-1.2,-0.6,-0.6,-0.6,-1.2)
+ CM5 = c(1.0,1.3,1.3,2.9,1.3,1.0,1.0,1.0,1.3)
+ FWT = c(440,248,248,440,440,440,440,440,440) #- LEAF WEIGHT/UNIT CROWN AREA
+ SLTA = c(.814,.804,.804,.814,.904,.804,.804,.804,.904) #- PARAMETERS TO CALCULATE CROWN AREA
+ SLTB = c(.078,.069,.069,.078,.095,.069,.069,.069,.095)
+ RTST = c(1,.8,.8,1,1,1,1,1,1) # - ROOT/SHOOT RATIO
+ FRT = c(1,1,1,1,1,3,2,3,1) #- FOLIAGE RETENTION TIME IN YEARS
+ 
+ spp_params = cbind(DMAX,DMIN,B3,B2,ITOL,AGEMX,G,SPRTND,SPRTMN,SPRTMX,MPLANT,D3,FROST,TL,CM1,CM2,CM3,CM4,CM5,FWT,SLTA,SLTB,RTST,FRT)
+ 
   sink(file.path(rundir,"spp.txt"))
   cat(nspec,bmspec,sep=",")
   cat("\n")
