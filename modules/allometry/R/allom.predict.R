@@ -32,7 +32,7 @@
 #' 
 #' @examples 
 #' 
-#' if(FALSE){  ## Do Not Run
+#' \dontrun{
 #'   object = "~/Dropbox//HF C Synthesis/Allometry Papers & Analysis/"
 #'   dbh = seq(10,50,by=5)
 #'   mass = allom.predict(object,dbh,n=100)
@@ -205,7 +205,7 @@ allom.predict <- function(object,dbh,pft=NULL,component=NULL,n=NULL,use="Bg",int
 #' 
 #' @examples 
 #' 
-#' if(FALSE){  ## Do Not Run
+#' \dontrun{
 #'   object = "~/Dropbox//HF C Synthesis/Allometry Papers & Analysis/"
 #'   allom.mcmc = load.allom(object)
 #'   
