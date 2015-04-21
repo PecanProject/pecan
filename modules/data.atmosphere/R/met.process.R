@@ -8,25 +8,18 @@
 ##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
 ##' @param model model_type name
 ##' @param host Host info from settings file
-##' @param bety  database settings from settings file
+##' @param dbparms  database settings from settings file
 ##' @param dir  directory to write outputs to
 ##' 
 ##' @author Elizabeth Cowdery, Michael Dietze
 met.process <- function(site, input_met, start_date, end_date, model, host, dbparms, dir, browndog=NULL){
   
-  # require(RPostgreSQL)
+  require(RPostgreSQL)
+
   con      <- db.open(dbparms)
-  
   username <- ""  
   
   #' Determine where download and conversion will take place -  either on Brown Dog or specified directory
-  #' Would like to ultimately make "convert" even more specific:
-  #' convert = "bd_raw"
-  #'         = "dir_raw"
-  #'         = "bd_cf"
-  #          = "dir_cf"
-  #'         = "bd_model"
-  #'         = "dir_model"
   met <- input_met$source
   if(!exists("input_met$id") || input_met$id==""){
     if (!is.null(browndog$url) && (browndog$url != "")){
@@ -44,100 +37,125 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   new.site = as.numeric(site$id)
   str_ns    <- paste0(new.site %/% 1000000000, "-", new.site %% 1000000000)
   
-  #   #--------------------------------------------------------------------------------------------------#
-  #   # BROWN DOG 
-  #   if(convert == "browndog"){
-  #     require(lubridate)
-  #     require(data.table)
-  #     require(RCurl)
-  #     require(XML)
-  #     
-  #     # Determine Brown Dog Output Type - ultimately will be added to the database
-  #     if(model_info[[2]] == 24){ #SIPNET
-  #       outputtype <- 'clim'   
-  #     }
-  #     #   else if(model == "BIOCRO"){   
-  #     #   }else if(model == "DALEC"){
-  #     #   }else if(model == "LINKAGES"){
-  #     #   }
-  #       
-  #     url <- file.path(browndog$url,outputtype) 
-  #     print(url)
-  #     
-  #     if(met=="Ameriflux"){site.dl = sub(".* \\((.*)\\)", "\\1", site$name)}
-  #     
-  #     xmldata = newXMLNode("input")
-  #     newXMLNode("type", tolower(met) , parent = xmldata) # For Ameriflux, type is ameriflux - do caps matter? Don't know how different met will be treated
-  #     newXMLNode("site", site.dl, parent = xmldata)
-  #     newXMLNode("start_date", paste(start_date), parent = xmldata)
-  #     newXMLNode("end_date", paste(end_date), parent = xmldata)
-  #     xmldata <- saveXML(xmldata)
-  #     
-  #     # post to browndog
-  #     html <- postForm(url,"fileData" = fileUpload("pecan.xml", xmldata, "text/xml"))
-  #     link <- getHTMLLinks(html)
-  #     print(link)
-  #     
-  #     outfolder <- file.path(dir,paste0(met,"_",model,"_site_",str_ns)) # This would change if specifying convert = bd_step  
-  #     if(!file.exists(outfolder)){
-  #       dir.create(outfolder, showWarnings=FALSE, recursive=TRUE)
-  #     }
-  #     outputfile <- file.path(outfolder, paste(site.dl, strptime(start_date, "%Y-%m-%d"), strptime(end_date, "%Y-%m-%d"), outputtype, sep="."))
-  #     dl_file(link, outputfile, 0) # My download function - don't know if Rob's while loop is better?
-  #     
-  #     settings$run$inputs$path <- outputfile
-  #     
-  #     start_year <- year(as.POSIXlt(start_date, tz = "GMT"))
-  #     end_year <- year(as.POSIXlt(end_date, tz = "GMT"))
-  #     rows <- end_year - start_year + 1
-  #     results <- data.frame(file=outputfile, 
-  #                           host=host$name,
-  #                           mimetype, 
-  #                           formatname,
-  #                           startdate=start_date, 
-  #                           enddate=end_date,
-  #                           stringsAsFactors = FALSE)    
-  # 
-  #     
-  #   } # End conversion in Brown Dog
+  # Determine output format name and mimetype   
+  model_info <- db.query(paste0("SELECT f.name, f.id, f.mime_type from modeltypes as m join modeltypes_formats as mf on m.id = mf.modeltype_id join formats as f on mf.format_id = f.id where m.name = '",model,"' AND mf.tag='met'"),con)
+  formatname <- model_info[1]
+  mimetype   <- model_info[3] 
+  # Could be generalized further in the code - for now everything takes formatname and mimetype
   
   #--------------------------------------------------------------------------------------------------#
-  # Download raw met from the internet 
-  
-  outfolder  <- file.path(dir,met)
-  pkg        <- "PEcAn.data.atmosphere"
-  fcn        <- paste0("download.",met)
-  
-  
-  if(met == "NARR"){
+  # BROWN DOG 
+  if(convert == "browndog"){
+    require(lubridate)
+    require(data.table)
+    require(RCurl)
+    require(XML)
     
-    site.id <- 1135
-    
-    args <- list(outfolder, start_date, end_date)
-    cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
-    remote.execute.R(cmdFcn,host$name,user=NA, verbose=TRUE)
-    
-    mimetype = 'application/x-netcdf'
-    formatname = "NARR"
-    check <- dbfile.input.check(site.id, start_date, end_date, mimetype, formatname, con=con, hostname=fqdn())
-    
-    if(length(check)>0){
-      raw.id = check$container_id[1]
-    }else{
-      raw.id <- dbfile.input.insert(in.path = outfolder, 
-                                    in.prefix = "NARR", 
-                                    siteid = 1135, 
-                                    startdate = start_date, 
-                                    enddate = end_date, 
-                                    mimetype =  mimetype, 
-                                    formatname = formatname,
-                                    parentid = NA,
-                                    con = con,
-                                    hostname = host$name)$input.id
-      raw.id <- newinput$input.id #1000000127
+    # Determine Brown Dog Output Type - ultimately will be added to the database
+    if(model_info[[2]] == 24){ #SIPNET
+      outputtype <- 'clim'
+    } else if(model_info[[2]] == 12){ #ED2
+    	outputtype <- 'ed.zip'
     }
-  }else{
-    if(met == "Ameriflux"){
+    #   else if(model == "BIOCRO"){   
+    #   }else if(model == "DALEC"){
+    #   }else if(model == "LINKAGES"){
+    #   }
+      
+    url <- file.path(browndog$url,outputtype) 
+    print(url)
+  
+    xmldata = newXMLNode("input")
+    newXMLNode("type", tolower(met) , parent = xmldata) # For Ameriflux, type is ameriflux - do caps matter? Don't know how different met will be treated
+    newXMLNode("site", site.dl, parent = xmldata)
+    newXMLNode("start_date", paste(start_date), parent = xmldata)
+    newXMLNode("end_date", paste(end_date), parent = xmldata)
+    xmldata <- saveXML(xmldata)
+
+    # create curl options
+    if (!is.null(browndog$username) && !is.null(browndog$password)) {
+	    curloptions <- list(userpwd=paste(browndog$username, browndog$password, sep=":"), httpauth = 1L)
+    }
+    curloptions <- c(curloptions, followlocation=TRUE)
+    
+    # post to browndog
+    html <- postForm(url,"fileData" = fileUpload("pecan.xml", xmldata, "text/xml"), .opts=curloptions)
+    link <- gsub('.*<a.*>(.*)</a>.*', '\\1', html)
+    #link <- getHTMLLinks(html)
+    
+    outfolder <- full.path(file.path(dir,paste0(met,"_",model,"_site_",str_ns))) # This would change if specifying convert = bd_step  
+    if(!file.exists(outfolder)){
+      dir.create(outfolder, showWarnings=FALSE, recursive=TRUE)
+    }
+    outputfile <- file.path(outfolder, paste(site.dl, sub(' UTC', '', ymd(start_date)), sub(' UTC', '', ymd(end_date)), outputtype, sep="."))
+
+		outputfile <- download.url(link, outputfile, .opts=curloptions)
+
+		# deal with a zipfile
+		if (grepl('.zip$', outputfile)) {
+			outfolder <- sub('.zip$', '', outputfile)
+			system2("unzip", c("-q", "-d", outfolder, outputfile))
+		}
+
+		# in case of ED update ED_MET_DRIVER_HEADER and return that as the output
+		if (outputtype == "ed.zip") {
+			outputfile <- file.path(outfolder, 'ED_MET_DRIVER_HEADER')
+			header <- readLines(con=outputfile, n=-1)
+			header[3] <- paste0(outfolder, '/')
+			writeLines(header, con=outputfile)
+		}
+    
+    start_year <- year(as.POSIXlt(start_date, tz = "GMT"))
+    end_year <- year(as.POSIXlt(end_date, tz = "GMT"))
+    rows <- end_year - start_year + 1
+    results <- data.frame(file=outputfile, 
+                          host=host$name,
+                          mimetype, 
+                          formatname,
+                          startdate=start_date, 
+                          enddate=end_date,
+                          stringsAsFactors = FALSE)
+
+    return(results)
+  } # End conversion in Brown Dog
+  
+  else if(convert == "dir"){
+    
+    #--------------------------------------------------------------------------------------------------#
+    # Download raw met from the internet 
+    
+    outfolder  <- file.path(dir,met)
+    pkg        <- "PEcAn.data.atmosphere"
+    fcn        <- paste0("download.",met)
+
+    
+    if(met == "NARR"){
+      site.id <- 1135
+      
+      args <- list(outfolder, start_date, end_date)
+      cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
+      remote.execute.R(cmdFcn,host$name,user=NA, verbose=TRUE)
+      
+      mimetype = 'application/x-netcdf'
+      formatname = "NARR"
+      check <- dbfile.input.check(site.id, start_date, end_date, mimetype, formatname, con=con, hostname=fqdn())
+      
+      if(length(check)>0){
+        raw.id = check$container_id[1]
+      }else{
+        raw.id <- dbfile.input.insert(in.path = outfolder, 
+                                      in.prefix = "NARR", 
+                                      siteid = 1135, 
+                                      startdate = start_date, 
+                                      enddate = end_date, 
+                                      mimetype =  mimetype, 
+                                      formatname = formatname,
+                                      parentid = NA,
+                                      con = con,
+                                      hostname = host$name)$input.id
+        raw.id <- newinput$input.id #1000000127
+      }
+    }else if(met == "Ameriflux"){
       
       site.code = sub(".* \\((.*)\\)", "\\1", site$name)
       
@@ -318,47 +336,3 @@ db.site.lat.lon <- function(site.id,con){
     return(list(lat = site$lat, lon = site$lon))
   }
 }
-
-
-##' @name dap.download.file
-##' @title dap.download.file
-##' @export
-##' @param link - path to file to be downloaded
-##' @param outfile - destination of downloaded file(s)
-##' @param i - number of times to try download 
-##' @param sleep - the number of seconds to pause between download attempts
-##' @author Betsy Cowdery
-dap.download.file <- local({ 
-  n <- 0
-  function(link, outfile, i=40, sleep=3, userpwd){
-    n = n+1
-    f = CFILE(outfile, mode="wb")
-    r <- try(curlPerform(url=url, writedata=f@ref, .opts=list(userpwd = userpwd,httpauth = 1L)))
-    close(f)  
-#     r <- try(download.file(link, outfile, quiet = TRUE), silent = TRUE)
-#     r <- try(download.file(url = link, destfile = outfile,
-#                            extra = getOption(".opts" = list(userpwd = userpwd,httpauth = 1L))
-#                            )) #, quiet = TRUE), silent = TRUE)
-    if(inherits(r, 'try-error') & n <= 40){
-      cat("*")
-      Sys.sleep(sleep)
-      dap.download.file(link, outfile, i)
-    }
-    if(inherits(r, 'try-error') & n > 40){
-      cat(sprintf("Download failed after %.0f seconds", (n-1)*sleep))
-      return(NULL)
-    }
-    if(inherits(r, 'integer')){
-      cat(sprintf("Download succeeded after %.0f seconds", (n-1)*sleep))
-    }
-  }
-})
-
-#' Is it better to do a while loop?
-#'        while(!file.exists(outputfile)) {
-#           tryCatch({
-#             download.file(url, outputfile)
-#           }, error = function(e) {
-#             file.remove(outputfile)
-#           })
-#         }
