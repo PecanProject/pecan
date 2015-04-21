@@ -28,7 +28,6 @@
 #'
 #' @description Function for making tree-level Monte Carlo predictions from allometric equations estimated from the PEcAn allometry module
 #'   
-#' @details 
 #' 
 #' @examples 
 #' 
@@ -199,9 +198,8 @@ allom.predict <- function(object,dbh,pft=NULL,component=NULL,n=NULL,use="Bg",int
 #' 
 #' @return mcmc outputs in a list by PFT then component
 #'
-#' @description 
+#' @description loads allom files
 #'   
-#' @details 
 #' 
 #' @examples 
 #' 

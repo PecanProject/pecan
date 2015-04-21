@@ -15,6 +15,6 @@ start.model.runs(settings)
 }
 }
 \author{
-Shawn Serbin, Rob Kooper, ...
+Shawn Serbin, Rob Kooper, David LeBauer
 }
 
