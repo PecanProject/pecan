@@ -2,7 +2,6 @@
 
 S3method(plot,sensitivities)
 S3method(plot,sensitivity)
-S3method(plot,variance.decomposition)
 export(ensemble.ts)
 export(get.coef.var)
 export(get.elasticity)
@@ -13,3 +12,4 @@ export(run.sensitivity.analysis)
 export(sa.splinefun)
 export(sd.var)
 export(spline.truncate)
+export(variance.decomposition.plot)
