@@ -28,7 +28,6 @@
 #'
 #' @description Function for making tree-level Monte Carlo predictions from allometric equations estimated from the PEcAn allometry module
 #'   
-#' @details 
 #' 
 #' @examples 
 #' 
@@ -176,7 +175,7 @@ allom.predict <- function(object,dbh,pft=NULL,component=NULL,n=NULL,use="Bg",int
     a = params[[p]][,1]
     b = params[[p]][,2]
     if(ncol(params[[p]])>2){
-      s = params[[p]][,3]
+      s = sqrt(params[[p]][,3]) ## sigma was originally calculated as a variance, so convert to std dev
     } else {s = 0}
     for(i in sel){
       out[,i]=exp(rnorm(n,a+b*log(dbh[i]),s))
@@ -199,10 +198,8 @@ allom.predict <- function(object,dbh,pft=NULL,component=NULL,n=NULL,use="Bg",int
 #' 
 #' @return mcmc outputs in a list by PFT then component
 #'
-#' @description 
+#' @description loads allom files
 #'   
-#' @details 
-#' 
 #' @examples 
 #' 
 #' \dontrun{
@@ -245,6 +242,14 @@ load.allom <- function(object){
       tmp[[k]][[my.comp]] = mc
     }
   }
+  
+  ## convert mcmclist objects to mcmc
+  for(i in 1:length(tmp)){
+    for(j in which(!sapply(tmp[[i]],is.null))){
+      if(is.mcmc.list(tmp[[i]][[j]])) tmp[[i]][[j]] = as.mcmc(as.matrix(tmp[[i]][[j]]))
+    }
+  }
+  
   return(tmp)
   
   
