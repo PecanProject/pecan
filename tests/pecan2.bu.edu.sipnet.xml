@@ -38,13 +38,18 @@
 
   <run>
     <site>
-      <id>772</id>
+   <id>676</id>
+   <name>Willow Creek (US-WCr)</name>
+   <lat>45.92</lat>
+   <lon>-90.45</lon>
     </site>
     <inputs>
-      <met>/home/dietze/sites/niwot/niwot.clim</met>
+      <met>
+      <source>Ameriflux</source>
+      </met>
     </inputs>
     <start.date>2002-01-01 00:00:00</start.date>
-    <end.date>2005-12-31 00:00:00</end.date>
+    <end.date>2002-12-31 00:00:00</end.date>
     <host>
       <name>localhost</name>
     </host>
