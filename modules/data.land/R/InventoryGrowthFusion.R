@@ -1,11 +1,12 @@
-## this code fuses forest inventory data with tree growth data (tree ring or dendrometer band)
-## for the same plots. Code is a rewrite of Clark et al 2007 Ecol Appl into JAGS
-## inputs: 
-##  data = list of data inputs
-##  random = whether or not to include random effects
-## Requires JAGS
-## Returns an mcmc.list object
-
+##' @name InventoryGrowthFusion
+##' @description this code fuses forest inventory data with tree growth data (tree ring or dendrometer band)
+##' for the same plots. Code is a rewrite of Clark et al 2007 Ecol Appl into JAGS
+##' 
+##' @param data  list of data inputs
+##' @param random = whether or not to include random effects
+##' @note Requires JAGS
+##' @return an mcmc.list object
+##' @export
 InventoryGrowthFusion <- function(data,n.iter,random=TRUE){
   require(rjags)
   
