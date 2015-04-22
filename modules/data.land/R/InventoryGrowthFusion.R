@@ -1,4 +1,5 @@
 ##' @name InventoryGrowthFusion
+##' @title InventoryGrowthFusion
 ##' @description this code fuses forest inventory data with tree growth data (tree ring or dendrometer band)
 ##' for the same plots. Code is a rewrite of Clark et al 2007 Ecol Appl into JAGS
 ##' 

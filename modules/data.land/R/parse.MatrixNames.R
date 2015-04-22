@@ -1,4 +1,5 @@
 ##' @name parse.MatrixNames
+##' @title parse.MatrixNames
 ##' @author Michael Dietze
 ##' @param w mcmc object containing matrix outputs
 ##' @param pre prefix (variable name) for the matrix variable to be extracted
