@@ -200,7 +200,6 @@ allom.predict <- function(object,dbh,pft=NULL,component=NULL,n=NULL,use="Bg",int
 #'
 #' @description loads allom files
 #'   
-#' 
 #' @examples 
 #' 
 #' \dontrun{
@@ -243,6 +242,14 @@ load.allom <- function(object){
       tmp[[k]][[my.comp]] = mc
     }
   }
+  
+  ## convert mcmclist objects to mcmc
+  for(i in 1:npft){
+    for(j in which(pftByComp[i,])){
+      if(is.mcmc.list(object[[i]][[j]])) object[[i]][[j]] = as.mcmc(as.matrix(object[[i]][[j]]))
+    }
+  }
+  
   return(tmp)
   
   
