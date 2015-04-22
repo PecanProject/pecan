@@ -128,7 +128,6 @@ shp2kml <- function(dir,ext,kmz=FALSE,proj4=NULL,color=NULL,NameField=NULL,out.d
 ##' @param coords vector containin xmin,ymin,xmax,ymax defing the bounding box for subset
 ##' 
 ##' @import rgdal
-##' @import fields
 ##' 
 ##' @export
 ##'
@@ -144,6 +143,8 @@ shp2kml <- function(dir,ext,kmz=FALSE,proj4=NULL,color=NULL,NameField=NULL,out.d
 get.attributes <- function(file,coords) {
   # ogr tools do not seem to function properly in R.  Need to figure out a work around
   # reading in kml files drops important fields inside the layers.
+  
+  if(!require(fields)){print("fields not installed")}
   
   #print("NOT IMPLEMENTED YET")
   #subset.layer(file,coords)
