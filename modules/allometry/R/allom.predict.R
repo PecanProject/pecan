@@ -244,8 +244,8 @@ load.allom <- function(object){
   }
   
   ## convert mcmclist objects to mcmc
-  for(i in 1:npft){
-    for(j in which(pftByComp[i,])){
+  for(i in 1:length(object)){
+    for(j in which(!sapply(object[[i]],is.null))){
       if(is.mcmc.list(object[[i]][[j]])) object[[i]][[j]] = as.mcmc(as.matrix(object[[i]][[j]]))
     }
   }
