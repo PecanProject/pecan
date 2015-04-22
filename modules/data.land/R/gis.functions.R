@@ -24,8 +24,6 @@
 ##' @param NameField OPTIONAL. Define names for individual features in KML/KMZ file
 ##' @param out.dir OPTIONAL. Output directory for converted files
 ##'
-##' @import rgdal
-##'
 ##' @export
 ##' 
 ##' @examples
@@ -39,6 +37,8 @@
 ##' @author Shawn P. Serbin
 ##'
 shp2kml <- function(dir,ext,kmz=FALSE,proj4=NULL,color=NULL,NameField=NULL,out.dir=NULL){
+  
+  if(!require(rgdal)) print("install rgdal")
   
   # TODO: Enable compression of KML files using zip/gzip utility.  Not quite figured this out yet
   # TODO: Allow assignment of output projection info by entering proj4 string
@@ -127,8 +127,6 @@ shp2kml <- function(dir,ext,kmz=FALSE,proj4=NULL,color=NULL,NameField=NULL,out.d
 ##' @param file vector or raster layer
 ##' @param coords vector containin xmin,ymin,xmax,ymax defing the bounding box for subset
 ##' 
-##' @import rgdal
-##' 
 ##' @export
 ##'
 ##' @examples
@@ -145,6 +143,7 @@ get.attributes <- function(file,coords) {
   # reading in kml files drops important fields inside the layers.
   
   if(!require(fields)){print("fields not installed")}
+  if(!require(rgdal)) print("install rgdal")
   
   #print("NOT IMPLEMENTED YET")
   #subset.layer(file,coords)
@@ -165,7 +164,6 @@ get.attributes <- function(file,coords) {
 ##' input file.  Can also set to "pwd"
 ##' @param out.name filename for subset layer.  Defaults to original filename with the suffix
 ##' *.sub
-##' @import rgdal
 ##' @examples
 ##' \dontrun{
 ##' # Test dataset
@@ -184,6 +182,8 @@ get.attributes <- function(file,coords) {
 ##' 
 subset.layer <- function(file,coords=NULL,sub.layer=NULL,clip=FALSE,out.dir=NULL,
                          out.name=NULL){
+  
+  if(!require(rgdal)) print("install rgdal")
   
   # Setup output directory for subset layer
   if (is.null(out.dir)){

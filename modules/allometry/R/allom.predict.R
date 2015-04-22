@@ -175,7 +175,7 @@ allom.predict <- function(object,dbh,pft=NULL,component=NULL,n=NULL,use="Bg",int
     a = params[[p]][,1]
     b = params[[p]][,2]
     if(ncol(params[[p]])>2){
-      s = params[[p]][,3]
+      s = sqrt(params[[p]][,3]) ## sigma was originally calculated as a variance, so convert to std dev
     } else {s = 0}
     for(i in sel){
       out[,i]=exp(rnorm(n,a+b*log(dbh[i]),s))
@@ -244,9 +244,9 @@ load.allom <- function(object){
   }
   
   ## convert mcmclist objects to mcmc
-  for(i in 1:length(object)){
-    for(j in which(!sapply(object[[i]],is.null))){
-      if(is.mcmc.list(object[[i]][[j]])) object[[i]][[j]] = as.mcmc(as.matrix(object[[i]][[j]]))
+  for(i in 1:length(tmp)){
+    for(j in which(!sapply(tmp[[i]],is.null))){
+      if(is.mcmc.list(tmp[[i]][[j]])) tmp[[i]][[j]] = as.mcmc(as.matrix(tmp[[i]][[j]]))
     }
   }
   
