@@ -1,61 +1,73 @@
 <?xml version="1.0"?>
 <pecan>
- <outdir>/Users/kooper/Work/EBI/pecan/pecan</outdir>
+ <outdir>/home/ecowdery/pecan/pecan</outdir>
  <database>
   <bety>
    <user>bety</user>
    <password>bety</password>
-   <host>localhost</host>
+   <host>psql-pecan.bu.edu</host>
    <dbname>bety</dbname>
-   <write>TRUE</write>
    <driver>PostgreSQL</driver>
+   <write>FALSE</write>
   </bety>
  </database>
  <pfts>
   <pft>
    <name>temperate.coniferous</name>
-   <outdir>/Users/kooper/Work/EBI/pecan/pecan/pft/temperate.coniferous</outdir>
+   <outdir>/home/ecowdery/pecan/pecan/pft/temperate.coniferous</outdir>
   </pft>
  </pfts>
  <ensemble>
   <variable>NPP</variable>
   <size>1</size>
   <start.year>2002</start.year>
-  <end.year>2005</end.year>
+  <end.year>2002</end.year>
  </ensemble>
+ <sensitivity.analysis>
+  <quantiles>
+   <sigma>-1</sigma>
+   <sigma>1</sigma>
+  </quantiles>
+  <variable>NPP</variable>
+  <start.year>2002</start.year>
+  <end.year>2002</end.year>
+ </sensitivity.analysis>
  <model>
-  <id>10</id>
   <binary>/usr/local/bin/sipnet.runk</binary>
   <type>SIPNET</type>
+  <id>10</id>
   <revision>unk</revision>
  </model>
  <run>
   <site>
-   <id>772</id>
-   <name>Niwot Ridge Forest/LTER NWT1 (US-NR1)</name>
-   <lat>40.0329</lat>
-   <lon>-105.546</lon>
+   <id>676</id>
+   <name>Willow Creek (US-WCr)</name>
+   <lat>45.92</lat>
+   <lon>-90.45</lon>
   </site>
+  <inputs>
+   <met>
+    <source>Ameriflux</source>
+   </met>
+  </inputs>
   <start.date>2002-01-01 00:00:00</start.date>
-  <end.date>2005-12-31 00:00:00</end.date>
+  <end.date>2002-12-31 00:00:00</end.date>
   <host>
    <name>localhost</name>
-   <rundir>/Users/kooper/Work/EBI/pecan/pecan/run</rundir>
-   <outdir>/Users/kooper/Work/EBI/pecan/pecan/out</outdir>
+   <rundir>/home/ecowdery/pecan/pecan/run</rundir>
+   <outdir>/home/ecowdery/pecan/pecan/out</outdir>
   </host>
-  <dbfiles>/Users/kooper/Work/EBI/pecan/pecan/dbfiles</dbfiles>
-  <inputs>
-   <met>/Users/kooper/Work/EBI/sites/niwot/niwot.clim</met>
-  </inputs>
+  <dbfiles>/home/ecowdery/pecan/pecan/dbfiles</dbfiles>
  </run>
  <meta.analysis>
   <iter>3000</iter>
   <random.effects>FALSE</random.effects>
+  <threshold>1.2</threshold>
   <update>AUTO</update>
  </meta.analysis>
  <workflow>
-  <id>4</id>
+  <id>2015-04-22-13-37-24</id>
  </workflow>
- <rundir>/Users/kooper/Work/EBI/pecan/pecan/run</rundir>
- <modeloutdir>/Users/kooper/Work/EBI/pecan/pecan/out</modeloutdir>
+ <rundir>/home/ecowdery/pecan/pecan/run</rundir>
+ <modeloutdir>/home/ecowdery/pecan/pecan/out</modeloutdir>
 </pecan>
