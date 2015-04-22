@@ -10,7 +10,8 @@ Depends:
     coda,
     MCMCpack,
     mvtnorm,
-    PEcAn.DB
+    PEcAn.DB,
+    tools
 Suggests:
     testthat,
     RMySQL
