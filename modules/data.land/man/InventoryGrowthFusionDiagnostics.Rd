@@ -2,6 +2,7 @@
 % Please edit documentation in R/InventoryGrowthFusionDiagnostics.R
 \name{InventoryGrowthFusionDiagnostics}
 \alias{InventoryGrowthFusionDiagnostics}
+\title{InventoryGrowthFusionDiagnostics}
 \usage{
 InventoryGrowthFusionDiagnostics(jags.out, combined)
 }
@@ -9,6 +10,9 @@ InventoryGrowthFusionDiagnostics(jags.out, combined)
 \item{jags.out}{output mcmc.list from InventoryGrowthFusion}
 
 \item{combined}{data output from matchInventoryRings}
+}
+\description{
+InventoryGrowthFusionDiagnostics
 }
 \author{
 Michael Dietze

@@ -2,6 +2,7 @@
 % Please edit documentation in R/InventoryGrowthFusion.R
 \name{InventoryGrowthFusion}
 \alias{InventoryGrowthFusion}
+\title{InventoryGrowthFusion}
 \usage{
 InventoryGrowthFusion(data, n.iter, random = TRUE)
 }

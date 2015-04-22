@@ -2,6 +2,7 @@
 % Please edit documentation in R/parse.MatrixNames.R
 \name{parse.MatrixNames}
 \alias{parse.MatrixNames}
+\title{parse.MatrixNames}
 \usage{
 parse.MatrixNames(w, pre = "x", numeric = FALSE)
 }
@@ -14,6 +15,9 @@ parse.MatrixNames(w, pre = "x", numeric = FALSE)
 }
 \value{
 matrix
+}
+\description{
+parse.MatrixNames
 }
 \author{
 Michael Dietze
