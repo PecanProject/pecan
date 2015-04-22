@@ -1,3 +1,9 @@
+##' @name InventoryGrowthFusionDiagnostics
+##' @title InventoryGrowthFusionDiagnostics
+##' @param jags.out output mcmc.list from InventoryGrowthFusion
+##' @param combined  data output from matchInventoryRings
+##' @author Michael Dietze
+##' @export 
 InventoryGrowthFusionDiagnostics <- function(jags.out,combined){
   
   #### Diagnostic plots
