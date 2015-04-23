@@ -4,12 +4,11 @@
 \alias{met.process}
 \title{met.process}
 \usage{
-met.process(site, input, start_date, end_date, model, host, bety, dir)
+met.process(site, input_met, start_date, end_date, model, host, dbparms, dir,
+  browndog = NULL)
 }
 \arguments{
 \item{site}{Site info from settings file}
-
-\item{input}{currently "NARR" or "Ameriflux"}
 
 \item{start_date}{the start date of the data to be downloaded (will only use the year part of the date)}
 
@@ -19,9 +18,11 @@ met.process(site, input, start_date, end_date, model, host, bety, dir)
 
 \item{host}{Host info from settings file}
 
-\item{bety}{database settings from settings file}
+\item{dbparms}{database settings from settings file}
 
 \item{dir}{directory to write outputs to}
+
+\item{input}{currently "NARR" or "Ameriflux"}
 }
 \description{
 met.process

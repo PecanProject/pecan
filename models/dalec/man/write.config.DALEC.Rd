@@ -2,11 +2,24 @@
 % Please edit documentation in R/write.configs.dalec.R
 \name{write.config.DALEC}
 \alias{write.config.DALEC}
-\title{Writes a configuration files for your model}
+\title{write.config.DALEC}
 \usage{
 write.config.DALEC(defaults, trait.values, settings, run.id)
 }
+\arguments{
+\item{defaults}{}
+
+\item{trait.values}{}
+
+\item{settings}{}
+
+\item{run.id}{}
+}
+\value{
+configuration files
+}
 \description{
 Writes a configuration files for your model
+write Dalec Configuration files
 }
 

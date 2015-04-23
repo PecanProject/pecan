@@ -57,7 +57,7 @@ foreach ($status as $line) {
     $message = "Job has finished with an error in : " . $data[0];
     $message .= "<br/>Press Finished to see the results.";
     // only send email if finished_at is not set.
-    if (isset($params['email'])) {
+    if (isset($params['email']) && ($params['email'] != "")) {
       $url = (isset($_SERVER['HTTPS']) ? "https://" : "http://");
       $url .= $_SERVER['HTTP_HOST'] . ':' . $_SERVER['SERVER_PORT'] . $_SERVER["SCRIPT_NAME"];
       if ($offline) {

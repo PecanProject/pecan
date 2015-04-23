@@ -6,7 +6,7 @@
 \usage{
 AllomAve(pfts, components = 6, outdir = NULL, con = NULL, field = NULL,
   parm = system.file("data/Table3_GTR-NE-319.v2.csv", package =
-  "PEcAn.allometry"), ngibbs = 5000, nchain = 3)
+  "PEcAn.allometry"), ngibbs = 5000, nchain = 3, dmin = 0.1, dmax = 500)
 }
 \arguments{
 \item{pfts}{pft list from PEcAn settings (if con) OR list of pft spcd's
@@ -29,6 +29,10 @@ If the latter, the names within the list are used to identify PFTs
 \item{ngibbs}{number of MCMC iterations (per chain) to run}
 
 \item{nchain}{number of MCMC chains}
+
+\item{dmin}{minimum dbh of interest}
+
+\item{dmax}{maximum dbh of interest}
 }
 \value{
 nested list of parameter summary statistics
