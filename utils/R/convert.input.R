@@ -62,7 +62,7 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
     if(mimetype ==  'application/x-netcdf'){ # Convert to netcdf - only using localhost
       outputtype <- 'pecan.zip'
     }else{ # Convert to model specific format
-      if(formatname == 'ed.met_driver_header_files_format'){
+      if(formatname == 'ed.met_driver_header_files_format' | formatname == 'ed.met_driver_header files format'){
         outputtype <- 'ed.zip'
       }else if(formatname == 'Sipnet.climna'){
         outputtype <- 'clim'
@@ -115,7 +115,8 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
     
     # download converted file
     outfile <- file.path(outfolder,unlist(strsplit(basename(link),"_"))[2])
-    download.browndog(link, outfile,timeout = 600, curloptions)  
+    download.url(url = link, file = outfile, timeout = 600, .opts = curloptions, retry404 = TRUE)  
+    print(list.files(outfolder))
     
     # unzip downloaded file if necessary
     if(file.exists(outfile)){
@@ -124,7 +125,7 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
         print(fname)
         unzip(outfile, files=fname, exdir=outfolder, overwrite=TRUE)
         file.remove(outfile)
-      }
+      }else{fname <- list.files(outfolder)}
     }
     
     # settings$run$inputs$path <- outputfile what if there is more than 1 output file?

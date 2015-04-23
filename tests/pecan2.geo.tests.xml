@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <pecan>
- <outdir>/home/ecowdery/met_process_tests/</outdir>
+ <outdir>/usr2/collab/ecowdery/test</outdir>
  <!--
  <browndog>
 
@@ -26,29 +26,11 @@
   </bety>
  </database>
  
- <pfts>
-  <pft>
-   <name>temperate.Early_Hardwood</name>
-   <constants>
-    <num>1</num>
-   </constants>
-   <outdir>/fs/data2/output//PEcAn_1000000306/pft/temperate.Early_Hardwood</outdir>
-   <posteriorid>1000000417</posteriorid>
-  </pft>
- </pfts>
- 
- <ensemble>
-  <variable>NPP</variable>
-  <size>1</size>
-  <start.year>2002</start.year>
-  <end.year>2005</end.year>
- </ensemble>
- 
- <model>
+  <model>
   <id>10</id>
-  <binary>/home/dietze/dalec_EnKF_pub/dalec_seqMH</binary>
-  <type>DALEC</type>
-  <revision>Quaife Evergreen RSE08</revision>
+  <binary>/home/dietze/sipnet_unk/sipnet</binary>
+  <type>SIPNET</type>
+  <revision>unk</revision>
  </model>
  
  <run>
@@ -65,6 +47,8 @@
   
   <host>
    <name>geo.bu.edu</name>
+   <rundir>/usr2/collab/ecowdery/test/run</rundir>
+   <outdir>/usr2/collab/ecowdery/test/out</outdir>
   </host>
   
   <dbfiles>/projectnb/dietzelab/pecan.data/input/</dbfiles>
@@ -77,18 +61,6 @@
   
  </run>
  
- 
- <meta.analysis>
-  <iter>3000</iter>
-  <random.effects>FALSE</random.effects>
-  <update>AUTO</update>
-  <threshold>1.2</threshold>
- </meta.analysis>
- <workflow>
-  <id>1000000064</id>
- </workflow>
- <rundir>/home/ecowdery/met_process_tests/dalec//run</rundir>
- <modeloutdir>/home/ecowdery/met_process_tests/dalec//out</modeloutdir>
 </pecan>
 
 <!--

@@ -1,19 +1,17 @@
 <?xml version="1.0"?>
 <pecan>
  <outdir>/home/ecowdery/met_process_tests/</outdir>
- <!--
- <browndog>
 
+ <browndog>
+   <!--
    <url>http://dap.ncsa.illinois.edu:8184/convert/</url>
    <username>browndog.user</username>
    <password>GritGin3</password>
-   
+   -->
    <url>http://dap-dev.ncsa.illinois.edu:8184/convert/</url>
    <username>browndog.user</username>
-   <password>twonkIv8</password>
-   
+   <password>twonkIv8</password>   
  </browndog>
- -->
  
  <database>
   <bety>
@@ -26,47 +24,26 @@
   </bety>
  </database>
  
- <pfts>
-  <pft>
-   <name>temperate.Early_Hardwood</name>
-   <constants>
-    <num>1</num>
-   </constants>
-   <outdir>/fs/data2/output//PEcAn_1000000306/pft/temperate.Early_Hardwood</outdir>
-   <posteriorid>1000000417</posteriorid>
-  </pft>
- </pfts>
- 
- <ensemble>
-  <variable>NPP</variable>
-  <size>1</size>
-  <start.year>2002</start.year>
-  <end.year>2005</end.year>
- </ensemble>
- 
  <model>
-  <id>10</id>
-  <binary>/home/dietze/dalec_EnKF_pub/dalec_seqMH</binary>
-  <type>DALEC</type>
-  <revision>Quaife Evergreen RSE08</revision>
+  <id>5</id>
+  <type>ED2</type>
+  <revision>80</revision>
  </model>
  
  <run>
 
   <site>
-   <id>676</id>
-   <name>Willow Creek (US-WCr)</name>
-   <lat>45.92</lat>
-   <lon>-90.45</lon>
+   <id>1000000033</id>
+   <name>UMBS Disturbance (US-UMd)</name>
+   <lat>45.5625</lat>
+   <lon>-84.6975</lon>
   </site>
   
-  <start.date>2002-01-01 00:00:00</start.date>
-  <end.date>2005-12-31 00:00:00</end.date>
+  <start.date>2010-01-01 00:00:00</start.date>
+  <end.date>2010-12-31 00:00:00</end.date>
   
   <host>
    <name>localhost</name>
-   <rundir>/home/ecowdery/met_process_tests/dalec//run</rundir>
-   <outdir>/home/ecowdery/met_process_tests/dalec//out</outdir>
   </host>
   
   <dbfiles>/fs/data1/pecan.data/input</dbfiles>
@@ -79,18 +56,6 @@
   
  </run>
  
- 
- <meta.analysis>
-  <iter>3000</iter>
-  <random.effects>FALSE</random.effects>
-  <update>AUTO</update>
-  <threshold>1.2</threshold>
- </meta.analysis>
- <workflow>
-  <id>1000000064</id>
- </workflow>
- <rundir>/home/ecowdery/met_process_tests/dalec//run</rundir>
- <modeloutdir>/home/ecowdery/met_process_tests/dalec//out</modeloutdir>
 </pecan>
 
 <!--
