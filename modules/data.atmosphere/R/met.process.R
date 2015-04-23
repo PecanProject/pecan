@@ -15,187 +15,102 @@
 met.process <- function(site, input_met, start_date, end_date, model, host, dbparms, dir, browndog=NULL){
   
   require(RPostgreSQL)
-
+  
   con      <- db.open(dbparms)
   username <- ""  
   
-  #' Determine where download and conversion will take place -  either on Brown Dog or specified directory
-  met <- input_met$source
-  if(!exists("input_met$id") || input_met$id==""){
-    if (!is.null(browndog$url) && (browndog$url != "")){
-      convert = "browndog"
-    }else{
-      convert = "dir"
-    }
-  }else{
-    convert=""
-    raw.id=as.numeric(input_met$id)
-  }
+#  Need to come up with a better solution for this  
+#   #' Determine where download and conversion will take place -  either on Brown Dog or specified directory
+#   if(!exists("input_met$id") || input_met$id==""){
+#     if (!is.null(browndog$url) && (browndog$url != "")){
+#       convert = "browndog"
+#     }else{
+#       convert = "dir"
+#     }
+#   }else{
+#     convert=""
+#     raw.id=as.numeric(input_met$id)
+#   }
   
   # Determine if met data is regional or site - this needs to be automated!
+  met <- input_met$source
   regional <- met == "NARR" # Either regional or site run
   new.site = as.numeric(site$id)
-  str_ns    <- paste0(new.site %/% 1000000000, "-", new.site %% 1000000000)
-  
-  # Determine output format name and mimetype   
-  model_info <- db.query(paste0("SELECT f.name, f.id, f.mime_type from modeltypes as m join modeltypes_formats as mf on m.id = mf.modeltype_id join formats as f on mf.format_id = f.id where m.name = '",model,"' AND mf.tag='met'"),con)
-  formatname <- model_info[1]
-  mimetype   <- model_info[3] 
-  # Could be generalized further in the code - for now everything takes formatname and mimetype
+  str_ns    <- paste0(new.site %/% 1000000000, "-", new.site %% 1000000000)  
   
   #--------------------------------------------------------------------------------------------------#
-  # BROWN DOG 
-  if(convert == "browndog"){
-    require(lubridate)
-    require(data.table)
-    require(RCurl)
-    require(XML)
-    
-    # Determine Brown Dog Output Type - ultimately will be added to the database
-    if(model_info[[2]] == 24){ #SIPNET
-      outputtype <- 'clim'
-    } else if(model_info[[2]] == 12){ #ED2
-    	outputtype <- 'ed.zip'
-    }
-    #   else if(model == "BIOCRO"){   
-    #   }else if(model == "DALEC"){
-    #   }else if(model == "LINKAGES"){
-    #   }
-      
-    url <- file.path(browndog$url,outputtype) 
-    print(url)
+  # Download raw met from the internet 
   
-    xmldata = newXMLNode("input")
-    newXMLNode("type", tolower(met) , parent = xmldata) # For Ameriflux, type is ameriflux - do caps matter? Don't know how different met will be treated
-    newXMLNode("site", site.dl, parent = xmldata)
-    newXMLNode("start_date", paste(start_date), parent = xmldata)
-    newXMLNode("end_date", paste(end_date), parent = xmldata)
-    xmldata <- saveXML(xmldata)
-
-    # create curl options
-    if (!is.null(browndog$username) && !is.null(browndog$password)) {
-	    curloptions <- list(userpwd=paste(browndog$username, browndog$password, sep=":"), httpauth = 1L)
-    }
-    curloptions <- c(curloptions, followlocation=TRUE)
-    
-    # post to browndog
-    html <- postForm(url,"fileData" = fileUpload("pecan.xml", xmldata, "text/xml"), .opts=curloptions)
-    link <- gsub('.*<a.*>(.*)</a>.*', '\\1', html)
-    #link <- getHTMLLinks(html)
-    
-    outfolder <- full.path(file.path(dir,paste0(met,"_",model,"_site_",str_ns))) # This would change if specifying convert = bd_step  
-    if(!file.exists(outfolder)){
-      dir.create(outfolder, showWarnings=FALSE, recursive=TRUE)
-    }
-    outputfile <- file.path(outfolder, paste(site.dl, sub(' UTC', '', ymd(start_date)), sub(' UTC', '', ymd(end_date)), outputtype, sep="."))
-
-		outputfile <- download.url(link, outputfile, .opts=curloptions)
-
-		# deal with a zipfile
-		if (grepl('.zip$', outputfile)) {
-			outfolder <- sub('.zip$', '', outputfile)
-			system2("unzip", c("-q", "-d", outfolder, outputfile))
-		}
-
-		# in case of ED update ED_MET_DRIVER_HEADER and return that as the output
-		if (outputtype == "ed.zip") {
-			outputfile <- file.path(outfolder, 'ED_MET_DRIVER_HEADER')
-			header <- readLines(con=outputfile, n=-1)
-			header[3] <- paste0(outfolder, '/')
-			writeLines(header, con=outputfile)
-		}
-    
-    start_year <- year(as.POSIXlt(start_date, tz = "GMT"))
-    end_year <- year(as.POSIXlt(end_date, tz = "GMT"))
-    rows <- end_year - start_year + 1
-    results <- data.frame(file=outputfile, 
-                          host=host$name,
-                          mimetype, 
-                          formatname,
-                          startdate=start_date, 
-                          enddate=end_date,
-                          stringsAsFactors = FALSE)
-
-    return(results)
-  } # End conversion in Brown Dog
+  outfolder  <- file.path(dir,met)
+  pkg        <- "PEcAn.data.atmosphere"
+  fcn        <- paste0("download.",met)
   
-  else if(convert == "dir"){
+  
+  if(met == "NARR"){
+    #       site.id <- 1135
+    #       
+    #       args <- list(outfolder, start_date, end_date)
+    #       cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
+    #       remote.execute.R(cmdFcn,host$name,user=NA, verbose=TRUE)
+    #       
+    #       mimetype = 'application/x-netcdf'
+    #       formatname = "NARR"
+    #       check <- dbfile.input.check(site.id, start_date, end_date, mimetype, formatname, con=con, hostname=fqdn())
+    #       
+    #       if(length(check)>0){
+    #         raw.id = check$container_id[1]
+    #       }else{
+    #         raw.id <- dbfile.input.insert(in.path = outfolder, 
+    #                                       in.prefix = "NARR", 
+    #                                       siteid = 1135, 
+    #                                       startdate = start_date, 
+    #                                       enddate = end_date, 
+    #                                       mimetype =  mimetype, 
+    #                                       formatname = formatname,
+    #                                       parentid = NA,
+    #                                       con = con,
+    #                                       hostname = host$name)$input.id
+    #         raw.id <- newinput$input.id #1000000127
+    #       }
+    raw.id <- 1000000127
+  }else if(met == "Ameriflux"){
     
-    #--------------------------------------------------------------------------------------------------#
-    # Download raw met from the internet 
+    site.code = sub(".* \\((.*)\\)", "\\1", site$name)
     
-    outfolder  <- file.path(dir,met)
-    pkg        <- "PEcAn.data.atmosphere"
-    fcn        <- paste0("download.",met)
-
+    outfolder = paste0(outfolder,"_site_",str_ns)
+    args <- list(site.code, outfolder, start_date, end_date)
     
-    if(met == "NARR"){
-#       site.id <- 1135
-#       
-#       args <- list(outfolder, start_date, end_date)
-#       cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
-#       remote.execute.R(cmdFcn,host$name,user=NA, verbose=TRUE)
-#       
-#       mimetype = 'application/x-netcdf'
-#       formatname = "NARR"
-#       check <- dbfile.input.check(site.id, start_date, end_date, mimetype, formatname, con=con, hostname=fqdn())
-#       
-#       if(length(check)>0){
-#         raw.id = check$container_id[1]
-#       }else{
-#         raw.id <- dbfile.input.insert(in.path = outfolder, 
-#                                       in.prefix = "NARR", 
-#                                       siteid = 1135, 
-#                                       startdate = start_date, 
-#                                       enddate = end_date, 
-#                                       mimetype =  mimetype, 
-#                                       formatname = formatname,
-#                                       parentid = NA,
-#                                       con = con,
-#                                       hostname = host$name)$input.id
-#         raw.id <- newinput$input.id #1000000127
-#       }
-      raw.id <- 1000000127
-    }else if(met == "Ameriflux"){
-      
-      site.code = sub(".* \\((.*)\\)", "\\1", site$name)
-      
-      outfolder = paste0(outfolder,"_site_",str_ns)
-      args <- list(site.code, outfolder, start_date, end_date)
-      
-      cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
-      new.files <- remote.execute.R(cmdFcn,host$name,user=NA,verbose=TRUE)
-      
-      
-      host$name = new.files$host[1]
-      
-      check = dbfile.input.check(site$id, start_date, end_date, 
-                                 mimetype=new.files$mimetype[1], formatname=new.files$formatname[1], 
-                                 con=con, hostname=new.files$host[1])
-      if(length(check)>0){
-        raw.id = check$container_id[1]
-      }else{
-        ## insert database record
-        raw.id <- dbfile.input.insert(in.path=dirname(new.files$file[1]),
-                                      in.prefix=site.code, 
-                                      siteid = site$id, 
-                                      startdate = start_date, 
-                                      enddate = end_date, 
-                                      mimetype=new.files$mimetype[1], 
-                                      formatname=new.files$formatname[1],
-                                      parentid=NA,
-                                      con = con,
-                                      hostname = host$name)$input.id
-      }    
-    } else {  ## site level, not Ameriflux
-      print("NOT AMERIFLUX")
-      site.id <- site$id
-      args <- list(site.id, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE) #, pkg,raw.host = host,dbparms,con=con)
-      raw.id <- do.call(fcn,args)
-      
-    }
+    cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
+    new.files <- remote.execute.R(cmdFcn,host$name,user=NA,verbose=TRUE)
     
-  } # End conversion in directory
+    
+    host$name = new.files$host[1]
+    
+    check = dbfile.input.check(site$id, start_date, end_date, 
+                               mimetype=new.files$mimetype[1], formatname=new.files$formatname[1], 
+                               con=con, hostname=new.files$host[1])
+    if(length(check)>0){
+      raw.id = check$container_id[1]
+    }else{
+      ## insert database record
+      raw.id <- dbfile.input.insert(in.path=dirname(new.files$file[1]),
+                                    in.prefix=site.code, 
+                                    siteid = site$id, 
+                                    startdate = start_date, 
+                                    enddate = end_date, 
+                                    mimetype=new.files$mimetype[1], 
+                                    formatname=new.files$formatname[1],
+                                    parentid=NA,
+                                    con = con,
+                                    hostname = host$name)$input.id
+    }    
+  } else {  ## site level, not Ameriflux
+    print("NOT AMERIFLUX")
+    site.id <- site$id
+    args <- list(site.id, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE) #, pkg,raw.host = host,dbparms,con=con)
+    raw.id <- do.call(fcn,args)
+    
+  }
   
   #--------------------------------------------------------------------------------------------------#
   print("### Change to CF Standards")
@@ -257,6 +172,13 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   
   #--------------------------------------------------------------------------------------------------#
   # Prepare for Model
+  
+  # Determine output format name and mimetype   
+  model_info <- db.query(paste0("SELECT f.name, f.id, f.mime_type from modeltypes as m join modeltypes_formats as mf on m.id = mf.modeltype_id join formats as f on mf.format_id = f.id where m.name = '",model,"' AND mf.tag='met'"),con)
+  formatname <- model_info[1]
+  mimetype   <- model_info[3] 
+  # Could be generalized further in the code - for now everything takes formatname and mimetype
+  
   
   lst <- site.lst(site,con)
   
