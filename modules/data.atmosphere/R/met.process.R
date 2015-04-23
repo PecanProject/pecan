@@ -130,31 +130,32 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
 
     
     if(met == "NARR"){
-      site.id <- 1135
-      
-      args <- list(outfolder, start_date, end_date)
-      cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
-      remote.execute.R(cmdFcn,host$name,user=NA, verbose=TRUE)
-      
-      mimetype = 'application/x-netcdf'
-      formatname = "NARR"
-      check <- dbfile.input.check(site.id, start_date, end_date, mimetype, formatname, con=con, hostname=fqdn())
-      
-      if(length(check)>0){
-        raw.id = check$container_id[1]
-      }else{
-        raw.id <- dbfile.input.insert(in.path = outfolder, 
-                                      in.prefix = "NARR", 
-                                      siteid = 1135, 
-                                      startdate = start_date, 
-                                      enddate = end_date, 
-                                      mimetype =  mimetype, 
-                                      formatname = formatname,
-                                      parentid = NA,
-                                      con = con,
-                                      hostname = host$name)$input.id
-        raw.id <- newinput$input.id #1000000127
-      }
+#       site.id <- 1135
+#       
+#       args <- list(outfolder, start_date, end_date)
+#       cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
+#       remote.execute.R(cmdFcn,host$name,user=NA, verbose=TRUE)
+#       
+#       mimetype = 'application/x-netcdf'
+#       formatname = "NARR"
+#       check <- dbfile.input.check(site.id, start_date, end_date, mimetype, formatname, con=con, hostname=fqdn())
+#       
+#       if(length(check)>0){
+#         raw.id = check$container_id[1]
+#       }else{
+#         raw.id <- dbfile.input.insert(in.path = outfolder, 
+#                                       in.prefix = "NARR", 
+#                                       siteid = 1135, 
+#                                       startdate = start_date, 
+#                                       enddate = end_date, 
+#                                       mimetype =  mimetype, 
+#                                       formatname = formatname,
+#                                       parentid = NA,
+#                                       con = con,
+#                                       hostname = host$name)$input.id
+#         raw.id <- newinput$input.id #1000000127
+#       }
+      raw.id <- 1000000127
     }else if(met == "Ameriflux"){
       
       site.code = sub(".* \\((.*)\\)", "\\1", site$name)
@@ -264,10 +265,6 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   outfolder <- file.path(dir,paste0(met,"_",model,"_site_",str_ns))
   pkg       <- paste0("PEcAn.",model)
   fcn       <- paste0("met2model.",model)
-  
-  model_info <- db.query(paste0("SELECT f.name, f.id, f.mime_type from modeltypes as m join modeltypes_formats as mf on m.id = mf.modeltype_id join formats as f on mf.format_id = f.id where m.name = '",model,"'"),con)
-  formatname <- model_info[1]
-  mimetype   <- model_info[3] 
   
   model.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
                             username,con=con,hostname=host$name,browndog,write=TRUE,lst=lst)
