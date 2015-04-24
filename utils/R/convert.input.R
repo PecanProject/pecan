@@ -47,7 +47,7 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
   
   conversion = "local.remote" #default
   
-  if(!is.null(browndog) & hostname == fqdn()){ # perform conversions with Brown Dog - only works locally right now
+  if(!is.null(browndog) & hostname == 'localhost'){ # perform conversions with Brown Dog - only works locally right now
     require(RCurl)
     
     # Determine inputtype by using formatname and mimetype of input file   
@@ -58,7 +58,8 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
       inputtype <- 'pecan.zip'
     }  
     
-    # Determine outputtype using formatname and mimetype of output file 
+    # Determine outputtype using formatname and mimetype of output file
+    # Add issue to github that extension of formats table to include outputtype 
     if(mimetype ==  'application/x-netcdf'){ # Convert to netcdf - only using localhost
       outputtype <- 'pecan.zip'
     }else{ # Convert to model specific format
@@ -66,8 +67,6 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
         outputtype <- 'ed.zip'
       }else if(formatname == 'Sipnet.climna'){
         outputtype <- 'clim'
-      }else if(formatname == 'biocromet'){
-        outputtype <- ''
       }else if(formatname == 'DALEC meteorology'){
         outputtype <- 'dalec.dat'
       }else if(formatname == 'LINKAGES met'){
@@ -177,17 +176,6 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
   
   ## insert new record into database
   if(write==TRUE){
-    ### Hack
-    #    if("ED2" %in% outlist){
-    #      in.path <- outfolder
-    #      in.prefix <- "ED_MET_DRIVER_HEADER"
-    #    }else if("SIPNET" %in% outlist){
-    #      in.path <- outfolder
-    #      in.prefix <- "sipnet.clim"
-    #    }else{
-    #      in.path <- outfolder
-    #      in.prefix <- dbfile$file_name
-    #    }
     
     #    in.prefix=strsplit(basename(result$file[1]),".",fixed=TRUE)[[1]][1]
     in.prefix=find.prefix(result$file)
