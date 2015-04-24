@@ -9,6 +9,9 @@
 ## var.names = vector of names of which parameters in the parameter vector to vary
 ## jvar = jump variance
 pda.mcmc <- function(settings){
+  if(!('assim.batch' %in% names(settings))) {
+    return()
+  }
   
   ## this bit of code is useful for defining the variables passed to this function 
   ## if you are debugging
@@ -33,7 +36,8 @@ pda.mcmc <- function(settings){
   start.year = strftime(settings$run$start.date,"%Y")
   end.year   = strftime(settings$run$end.date,"%Y")
 
-  var.names <- settings$assim.batch$var.names
+  var.names <- as.character(settings$assim.batch$var.names)
+  jvar <- as.numeric(settings$assim.batch$jvar)
   prior <- settings$assim.batch$prior
   params <- settings$assim.batch$params
   chain <- settings$assim.batch$chain
@@ -190,8 +194,8 @@ pda.mcmc <- function(settings){
   prior.old <- -Inf
   
   ## set jump variance
-  if(is.null(settings$assim.batch$jvar )){
-    settings$assim.batch$jvar <- rep(0.1,nvar) # Default
+  if(is.null(jvar )){
+    jvar <- rep(0.1,nvar) # Default
   }
 
   ## main MCMC loop
@@ -203,7 +207,7 @@ pda.mcmc <- function(settings){
     for(j in 1:nvar.sample){
       
       ## propose parameter values
-      pnew = rnorm(1,parm[vars[j]],settings$assim.batch$jvar[j])
+      pnew = rnorm(1,parm[vars[j]],jvar[j])
       pstar = parm
       pstar[vars[j]] = pnew
       
@@ -385,6 +389,6 @@ dbfile.insert(dirname(filename), basename(filename), 'Posterior', posteriorid, c
   if(!is.null(con)) db.close(con)
   
 #   if(is.null(names(params))) names(params) = rownames(prior)
-  return(list(params=params, accept.rates=a))
+#   return(list(params=params, accept.rates=a))
   
 } ## end pda.mcmc

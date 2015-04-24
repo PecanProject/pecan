@@ -11,6 +11,7 @@
 
 args <- commandArgs(trailingOnly = TRUE)
 settings.file = args[1]
+settings.file = "/fs/data2/rykelly/PDA/demo.pda3/pecan.xml"
 
 #--------------------------------------------------------------------------------#
 # functions used to write STATUS used by history
@@ -118,6 +119,11 @@ status.end()
 # Run sensitivity analysis and variance decomposition on model output
 status.start("SENSITIVITY")
 run.sensitivity.analysis()
+status.end()
+
+# Run parameter data assimilation
+status.start("PDA")
+pda <- pda.mcmc(settings)
 status.end()
 
 ### PEcAn workflow run complete
