@@ -25,7 +25,7 @@ download.Ameriflux <- function(sitename, outfolder, start_date, end_date, overwr
   require(PEcAn.utils)
   require(data.table)
   
-  site = sub(".* \\((.*)\\)", "\\1", site$name)
+  site = sub(".* \\((.*)\\)", "\\1", sitename)
   
   start_date <- as.POSIXlt(start_date, tz = "GMT")
   end_date <- as.POSIXlt(end_date, tz = "GMT")
