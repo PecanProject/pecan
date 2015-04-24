@@ -8,7 +8,7 @@
 ## params = previous output (used when updating MCMC)
 ## var.names = vector of names of which parameters in the parameter vector to vary
 ## jvar = jump variance
-pda.mcmc <- function(settings,prior,chain=1,var.names=NULL,jvar=NULL,params=NULL){
+pda.mcmc <- function(settings){
   
   ## this bit of code is useful for defining the variables passed to this function 
   ## if you are debugging
@@ -32,6 +32,12 @@ pda.mcmc <- function(settings,prior,chain=1,var.names=NULL,jvar=NULL,params=NULL
   host <- settings$run$host
   start.year = strftime(settings$run$start.date,"%Y")
   end.year   = strftime(settings$run$end.date,"%Y")
+
+  var.names <- settings$assim.batch$var.names
+  prior <- settings$assim.batch$prior
+  params <- settings$assim.batch$params
+  chain <- settings$assim.batch$chain
+    if(is.null(chain)) chain = 1
   
   ## open database connection
   if(write){
@@ -42,7 +48,19 @@ pda.mcmc <- function(settings,prior,chain=1,var.names=NULL,jvar=NULL,params=NULL
   } else {
     con <- NULL
   }
-  
+
+  ## priors
+  if(is.null(settings$assim.batch$prior)){
+    pft.id =  db.query(paste0("SELECT id from pfts where name = '",settings$pfts$pft$name,"'"),con)
+    priors =  db.query(paste0("SELECT * from posteriors where pft_id = ",pft.id),con)
+    ## by default, use the most recent posterior as the prior
+    settings$assim.batch$prior = priors$id[which.max(priors$updated_at)]
+  }
+  prior.db = db.query(paste0("SELECT * from dbfiles where container_type = 'Posterior' and container_id = ", settings$assim.batch$prior),con)
+  prior.db = prior.db[grep("post.distns.Rdata",prior.db$file_name),]
+  load(file.path(prior.db$file_path,"post.distns.Rdata"))
+  prior = post.distns
+
   # Get the workflow id
   if ("workflow" %in% names(settings)) {
     workflow.id <- settings$workflow$id
@@ -141,6 +159,7 @@ pda.mcmc <- function(settings,prior,chain=1,var.names=NULL,jvar=NULL,params=NULL
     start <- nrow(params)+1
     params <- rbind(params,matrix(numeric(),finish-start+1,nvar))
   }
+  colnames(params) <- pname
   
   ## set initial conditions
   if(start==1){
@@ -153,14 +172,15 @@ pda.mcmc <- function(settings,prior,chain=1,var.names=NULL,jvar=NULL,params=NULL
   prior.old <- -Inf
   
   ## set jump variance
-  if(is.null(jvar)){
-    jvar <- rep(0.1,nvar)
+  jvar <- rep(0.1,nvar) # Default
+  if(!is.null(settings$assim.batch$jvar )){
+    jvar[vars] = settings$assim.batch$jvar 
   }
-  
+
   ## main MCMC loop
   for(i in start:finish){
     
-    print(paste(i,"of",finish))
+    print(paste("Data assimilation MCMC iteration",i,"of",finish))
     
     for(j in vars){
       
@@ -275,7 +295,7 @@ pda.mcmc <- function(settings,prior,chain=1,var.names=NULL,jvar=NULL,params=NULL
   ## close database connection
   if(!is.null(con)) db.close(con)
   
-  if(is.null(names(params))) names(params) = rownames(prior)
+#   if(is.null(names(params))) names(params) = rownames(prior)
   return(params)
   
 } ## end pda.mcmc
