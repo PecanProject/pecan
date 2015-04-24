@@ -39,6 +39,8 @@ pda.mcmc <- function(settings){
   chain <- settings$assim.batch$chain
     if(is.null(chain)) chain = 1
   
+  sink(file.path(settings$pfts$pft$outdir,"pda.mcmc.log"))
+  
   ## open database connection
   if(write){
     con <- try(db.open(settings$database$bety), silent=TRUE)
@@ -51,15 +53,26 @@ pda.mcmc <- function(settings){
 
   ## priors
   if(is.null(settings$assim.batch$prior)){
+    ## by default, use the most recent posterior as the prior
     pft.id =  db.query(paste0("SELECT id from pfts where name = '",settings$pfts$pft$name,"'"),con)
     priors =  db.query(paste0("SELECT * from posteriors where pft_id = ",pft.id),con)
-    ## by default, use the most recent posterior as the prior
-    settings$assim.batch$prior = priors$id[which.max(priors$updated_at)]
+
+    prior.db = db.query(paste0("SELECT * from dbfiles where container_type = 'Posterior' and container_id IN (", paste(priors$id, collapse=','), ")"),con)
+
+    prior.db = prior.db[grep("post.distns.Rdata",prior.db$file_name),]
+
+    settings$assim.batch$prior = prior.db$container_id[which.max(prior.db$updated_at)]
   }
   prior.db = db.query(paste0("SELECT * from dbfiles where container_type = 'Posterior' and container_id = ", settings$assim.batch$prior),con)
   prior.db = prior.db[grep("post.distns.Rdata",prior.db$file_name),]
   load(file.path(prior.db$file_path,"post.distns.Rdata"))
   prior = post.distns
+  pname <-  rownames(prior) 
+  nvar <- nrow(prior)
+
+
+
+
 
   # Get the workflow id
   if ("workflow" %in% names(settings)) {
@@ -88,8 +101,9 @@ pda.mcmc <- function(settings){
     stop()
   }
   
+  
+  
   ## set up prior density (d) and random (r) functions
-  nvar <- nrow(prior)
   dprior <- rprior <- qprior <-list()
   for(i in 1:nvar){
     if(prior$distn[i] == 'exp'){
@@ -120,14 +134,18 @@ pda.mcmc <- function(settings){
     return(p)
   }
   
-  pname =  rownames(prior)  ## Parameter names
+
   if(is.null(var.names)){
     vars = 1:nvar
   } else {
-    vars = which(pname %in% var.names)
+    vars = which(rownames(prior) %in% var.names)
   }
+  nvar.sample <- length(vars)
+
+
+
   p.median <- sapply(qprior,eval,list(p=0.5))
-  
+
   
   ## load data
   input.id = settings$assim.batch$input.id
@@ -165,29 +183,29 @@ pda.mcmc <- function(settings){
   if(start==1){
     parm = as.vector(p.median)
   } else{
-    parm <- params[start-1,]
+    parm <- params[start-1, ]
   }
   names(parm) = pname
   LL.old <- -Inf
   prior.old <- -Inf
   
   ## set jump variance
-  jvar <- rep(0.1,nvar) # Default
-  if(!is.null(settings$assim.batch$jvar )){
-    jvar[vars] = settings$assim.batch$jvar 
+  if(is.null(settings$assim.batch$jvar )){
+    settings$assim.batch$jvar <- rep(0.1,nvar) # Default
   }
 
   ## main MCMC loop
+  i=start; j=1
   for(i in start:finish){
     
-    print(paste("Data assimilation MCMC iteration",i,"of",finish))
+    cat("Data assimilation MCMC iteration",i,"of",finish,"\n")
     
-    for(j in vars){
+    for(j in 1:nvar.sample){
       
       ## propose parameter values
-      pnew = rnorm(1,parm[j],jvar[j])
+      pnew = rnorm(1,parm[vars[j]],settings$assim.batch$jvar[j])
       pstar = parm
-      pstar[j] = pnew
+      pstar[vars[j]] = pnew
       
       ## check that value falls within the prior
       prior.star <- dmvprior(pstar)
@@ -220,7 +238,7 @@ pda.mcmc <- function(settings){
             "ensemble id : ", as.character(ensemble.id), "\n",
             "chain       : ", chain, "\n",
             "run         : ", i, "\n",
-            "variable    : ", pname[j], "\n",
+            "variable    : ", pname[vars[j]], "\n",
             "run id      : ", as.character(run.id), "\n",
             "pft names   : ", as.character(lapply(settings$pfts, function(x) x[['name']])), "\n",
             "model       : ", model, "\n",
@@ -291,11 +309,82 @@ pda.mcmc <- function(settings){
     params[i,] <- parm
     
   } ## end MCMC loop
-  
+
+
+pdf(file.path(settings$pfts$pft$outdir,"pda.mcmc.diagnostics.pdf"))
+
+## Assess MCMC output
+library(coda)
+burnin = min(2000,0.2*nrow(params))
+params.subset = as.data.frame(params[burnin:nrow(params),vars])
+
+dm <- as.mcmc(params.subset)
+
+plot(dm)
+summary(dm)
+if(length(vars)>1){
+  crosscorr(dm)
+  pairs(params.subset)
+}
+
+a = 1-rejectionRate(dm)
+print("Acceptance Rates")
+print(a)
+sink()
+dev.off()
+
+
+
+
+
+
+
+# create a new Posteriors DB entry
+now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+pft.id =  db.query(paste0("SELECT id from pfts where name = '",settings$pfts$pft$name,"'"),con)
+db.query(paste0("INSERT INTO posteriors (pft_id, created_at, updated_at) VALUES (", pft.id, ", '", now, "', '", now, "')"), con)
+posteriorid <- db.query(paste0("SELECT id FROM posteriors WHERE pft_id=", pft.id, " AND created_at='", now, "'"), con)[['id']]
+
+## Save raw MCMC
+filename = file.path(settings$outdir,"pda.mcmc.Rdata")
+save(params,file=filename)
+dbfile.insert(dirname(filename), basename(filename), 'Posterior', posteriorid, con)
+
+## save named distributions
+filename = file.path(settings$pfts$pft$outdir, 'post.distns.Rdata')
+post.distns <- approx.posterior(params.subset, prior, outdir=settings$pfts$pft$outdir)
+save(post.distns, file = filename)
+dbfile.insert(dirname(filename), basename(filename), 'Posterior', posteriorid, con)
+
+## coerce parameter output into the same format as trait.mcmc
+pname <- rownames(post.distns)
+trait.mcmc <- list()
+for(i in vars){
+  beta.o <- array(params[,i],c(nrow(params),1))
+  colnames(beta.o) = "beta.o"
+  if(pname[i] %in% names(trait.mcmc)){
+    trait.mcmc[[pname[i]]] <- mcmc.list(as.mcmc(beta.o))
+  } else {
+    k = length(trait.mcmc)+1
+    trait.mcmc[[k]] <- mcmc.list(as.mcmc(beta.o))
+    names(trait.mcmc)[k] <- pname[i]      
+  }
+}
+## save updated parameter distributions as trait.mcmc
+## so that they can be read by the ensemble code
+filename = file.path(settings$pfts$pft$outdir, 'trait.mcmc.Rdata')
+save(trait.mcmc,file=filename)
+dbfile.insert(dirname(filename), basename(filename), 'Posterior', posteriorid, con)
+
+
+
+
+
+
   ## close database connection
   if(!is.null(con)) db.close(con)
   
 #   if(is.null(names(params))) names(params) = rownames(prior)
-  return(params)
+  return(list(params=params, accept.rates=a))
   
 } ## end pda.mcmc
