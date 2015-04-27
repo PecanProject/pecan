@@ -91,7 +91,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     args <- list(site$name, outfolder, start_date, end_date)
     
     cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
-    new.files <- remote.execute.R(cmdFcn,host$name,user=NA,verbose=TRUE)
+    new.files <- remote.execute.R(script=cmdFcn,host=host$name,user=NA,verbose=TRUE,R="R")
     
     check = dbfile.input.check(site$id, start_date, end_date, 
                                mimetype=new.files$mimetype[1], formatname=new.files$formatname[1], 
