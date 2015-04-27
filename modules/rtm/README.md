@@ -1,12 +1,12 @@
 # PEcAn Radiative Transfer Modeling module
-**Corresponding author**
-Alexey Shiklomanov
-Dept. of Earth & Environment
-Boston University
-ashiklom@bu.edu
+**Corresponding author**   
+Alexey Shiklomanov   
+Dept. of Earth & Environment   
+Boston University   
+ashiklom@bu.edu   
 
 ## Installation
-Installation can be easily performed using the `install.github` command from the `devtools` package in R.
+Installation can be easily performed using the `install_github` command from the `devtools` package in R.
 
 ```R
 install.packages("devtools")
