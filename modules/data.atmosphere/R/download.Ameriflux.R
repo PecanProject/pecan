@@ -65,7 +65,7 @@ download.Ameriflux <- function(sitename, outfolder, start_date, end_date, overwr
     results$startdate[row] <- paste0(year,"-01-01 00:00:00")
     results$enddate[row] <- paste0(year,"-12-31 23:59:59")
     results$mimetype[row] <- 'application/x-netcdf'
-    results$formatname[row] <- 'Ameriflux.level2.h.nc'
+    results$formatname[row] <- 'AmeriFlux.level2.h.nc'
     
     # see if file exists
     if (file.exists(outputfile) && !overwrite) {
