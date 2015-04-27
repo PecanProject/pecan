@@ -18,12 +18,14 @@ download.Ameriflux.site <- function(site_id) {
 ##' @param verbose should the function be very verbose
 ##' 
 ##' @author Josh Mantooth, Rob Kooper
-download.Ameriflux <- function(site, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE) {
+download.Ameriflux <- function(sitename, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE) {
   # get start/end year code works on whole years only
   
   require(lubridate) #is this necessary?
   require(PEcAn.utils)
   require(data.table)
+  
+  site = sub(".* \\((.*)\\)", "\\1", sitename)
   
   start_date <- as.POSIXlt(start_date, tz = "GMT")
   end_date <- as.POSIXlt(end_date, tz = "GMT")
@@ -63,7 +65,7 @@ download.Ameriflux <- function(site, outfolder, start_date, end_date, overwrite=
     results$startdate[row] <- paste0(year,"-01-01 00:00:00")
     results$enddate[row] <- paste0(year,"-12-31 23:59:59")
     results$mimetype[row] <- 'application/x-netcdf'
-    results$formatname[row] <- 'Ameriflux'
+    results$formatname[row] <- 'Ameriflux.level2.h.nc'
     
     # see if file exists
     if (file.exists(outputfile) && !overwrite) {
