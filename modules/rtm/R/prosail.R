@@ -1,6 +1,6 @@
 ## Simple wrapper for PROSAIL
-path.lib <- "~/Documents/Unsynced/pecan/modules/rtm/src/RTM/prosail.so"
-dyn.load(path.lib)
+#path.lib <- "~/Documents/Unsynced/pecan/modules/rtm/src/RTM/prosail.so"
+#dyn.load(path.lib)
 
 ## Truncated normal distribution functions
 rtnorm <- function(mu, sd, MIN){
