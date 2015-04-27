@@ -6,24 +6,15 @@ Boston University
 ashiklom@bu.edu
 
 ## Installation
-On Unix based systems...
-```
-cd directory/of/interest
-git clone git@github.com:blowfish711/PEcAnRTM
-cd PEcAnRTM
-R CMD INSTALL .
+Installation can be easily performed using the `install.github` command from the `devtools` package in R.
 
-```
-
-...or download and extract `.zip` or `.tar.gz` file (see right panel).
-
-
-```
-cd directory/of/interest
-R CMD INSTALL package_name.zip/.tar.gz
+```R
+install.packages("devtools")
+library(devtools)
+install_github("blowfish711/pecan", subdir="modules/rtm")
 ```
 
-From there, you should be able to load the package in your typical R session.
+From there, you can load the package like any other
 
 ```R
 library(PEcAnRTM)
