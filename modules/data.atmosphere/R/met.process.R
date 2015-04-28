@@ -79,9 +79,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     }else{
       raw.id <- 1000000127  
     }   
-  } 
-  
-  else if(met == "Ameriflux"){
+  } else if(met == "Ameriflux"){
     
     # Move site.code to inside download.ameriflux, set site$name as argument in CmdFcn
     # in.prefix will be defined from new.files
@@ -111,14 +109,11 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
                                     con = con,
                                     hostname = host$name)$input.id
     }    
-  } 
-  
-  else {  ## site level, not Ameriflux
+  } else {  ## site level, not Ameriflux
     print("NOT AMERIFLUX")
     site.id <- site$id
     args <- list(site.id, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE) #, pkg,raw.host = host,dbparms,con=con)
-    raw.id <- do.call(fcn,args)
-    
+    raw.id <- do.call(fcn,args)  
   }
   
   #--------------------------------------------------------------------------------------------------#
@@ -224,7 +219,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
                             username,con=con,hostname=host$name,browndog,write=TRUE,lst=lst)
   
   print(c("Done model convert",model.id,outfolder))
-  
+    
   db.close(con)
   return(outfolder)
   
