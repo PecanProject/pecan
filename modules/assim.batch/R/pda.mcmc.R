@@ -10,7 +10,7 @@
 ##'
 ##' @author Mike Dietze
 ##' @author Ryan Kelly
-pda.mcmc <- function(settings){
+pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NULL, chain=NULL){
   # Quit if pda not requested in settings
   if(!('assim.batch' %in% names(settings))) {
     return()
@@ -34,22 +34,28 @@ pda.mcmc <- function(settings){
   weight     <- 0.001
   model      <- settings$model$type
   write      <- settings$database$bety$write
-  start      <- 1
-  finish     <- as.numeric(settings$assim.batch$iter)
   defaults   <- settings$pfts
   outdir     <- settings$run$host$outdir
   host       <- settings$run$host
   start.year <- strftime(settings$run$start.date,"%Y")
   end.year   <- strftime(settings$run$end.date,"%Y")
-  var.names  <- as.character(settings$assim.batch$var.names)
-  jvar       <- as.numeric(settings$assim.batch$jvar)
-  prior      <- settings$assim.batch$prior
-  params     <- settings$assim.batch$params
-  chain      <- ifelse(is.null(settings$assim.batch$chain), 1, settings$assim.batch$chain)
 
-
-  ## Open log file
-  sink(file.path(settings$pfts$pft$outdir,"pda.mcmc.log"))
+    # Some settings can be supplied via settings (for automation) or explicitly (interactive)
+    if(is.null(params)) {
+      params <- settings$assim.batch$params
+    }
+    if(is.null(jvar)) {
+      jvar <- as.numeric(settings$assim.batch$jvar)
+    }
+    if(is.null(var.names)) {
+      var.names  <- as.character(settings$assim.batch$var.names)
+    }
+    if(is.null(prior)) {
+      prior <- settings$assim.batch$prior
+    }
+    if(is.null(chain)) {
+      chain <- ifelse(is.null(settings$assim.batch$chain), 1, settings$assim.batch$chain)
+    }
 
 
   ## open database connection
@@ -116,9 +122,7 @@ pda.mcmc <- function(settings){
   do.call("require",list(paste0("PEcAn.",model)))
   my.write.config <- paste("write.config.",model,sep="")
   if(!exists(my.write.config)){
-    print(paste(my.write.config,"does not exist"))
-    print(paste("please make sure that the PEcAn interface is loaded for",model))
-    stop()
+    logger.severe(paste(my.write.config,"does not exist. Please make sure that the PEcAn interface is loaded for",model))
   }
 
 
@@ -181,13 +185,23 @@ pda.mcmc <- function(settings){
   bp <- NEE.params$slopeP
   bn <- NEE.params$slopeN
 
+  ## Load params from previous run, if provided. 
+  #  Indicated if params is a single non-null value, i.e. a dbfile ID
+  if(length(params)==1) {
+    params.db <- db.query(paste0("SELECT * FROM dbfiles WHERE id = ", params), con)
+    load(file.path(params.db$file_path, params.db$file_name)) # replaces params
+  }
 
-  ## set up storage
-  if(is.null(params)){
-    params <- matrix(numeric(),finish,nvar)
-  } else {
-    start <- nrow(params)+1
-    params <- rbind(params,matrix(numeric(),finish-start+1,nvar))
+
+  ## Allocate storage for params
+  if(is.null(params)) { # No input given, starting fresh
+    start  <- 1
+    finish <- as.numeric(settings$assim.batch$iter)
+    params <- matrix(numeric(), finish, nvar)
+  } else {  
+    start  <- nrow(params) + 1
+    finish <- nrow(params) + as.numeric(settings$assim.batch$iter)
+    params <- rbind(params, matrix(numeric(), finish - start + 1, nvar))
   }
   colnames(params) <- pname
 
@@ -211,7 +225,7 @@ pda.mcmc <- function(settings){
 
   ## main MCMC loop
   for(i in start:finish){
-    cat("Data assimilation MCMC iteration",i,"of",finish,"\n")
+    logger.info(paste("Data assimilation MCMC iteration",i,"of",finish))
     
     for(j in 1:nvar.sample){
       ## propose parameter values
@@ -300,11 +314,11 @@ pda.mcmc <- function(settings){
           # NPPm <- rep(NPPm,each=length(NPPo)/length(NPPm))
           # set <- 1:length(NPPm) 
 
-
         ## calculate likelihood
-        fsel <- which(NEEm > 0)
-        LL.star       <- dexp(abs(NEEm-NEEo[set]),1/(b0 + bn*NEEm),log=TRUE)
-        LL.star[fsel] <- dexp(abs(NEEm-NEEo[set]),1/(b0 + bp*NEEm),log=TRUE)[fsel]
+        NEE.resid <- abs(NEEm-NEEo[set])
+        NEE.pos <- (NEEm > 0)
+        LL.star <- c(dexp(NEE.resid[NEE.pos], 1/(b0 + bp*NEEm[NEE.pos]), log=TRUE), 
+                     dexp(NEE.resid[!NEE.pos],1/(b0 + bp*NEEm[!NEE.pos]),log=TRUE))
         n.obs = sum(!is.na(LL.star))
         LL.star <- sum(LL.star,na.rm=TRUE)
           #loglikelihood for bivar normal distn of NPP and AGB
@@ -312,14 +326,16 @@ pda.mcmc <- function(settings){
           LL.star1 =0
         
         LL.total<-LL.star*weight+LL.star1
-          ## insert Likelihood record in database
-          #if (!is.null(con)) {
-          #  now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-          #  paramlist <- paste("MCMC: chain",chain,"iteration",i,"variable",j)
-          #  db.query(paste("INSERT INTO likelihoods (run_id, variable_id, input_id, loglikelihood, n_eff, weight,created_at) values ('", 
-          #                 run.id, "', '", var.id, "', '", input.id, "', '", LL.total, "', '",
-          #                 floor(n.obs*weight), "', '", weight , "', '", now,"')", sep=''), con)
-          #}
+
+
+        ## insert Likelihood record in database
+#         if (!is.null(con)) {
+#           now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+#           paramlist <- paste("MCMC: chain",chain,"iteration",i,"variable",j)
+#           db.query(paste("INSERT INTO likelihoods (run_id, variable_id, input_id, loglikelihood, n_eff, weight,created_at) values ('", 
+#                          run.id, "', '", var.id, "', '", input.id, "', '", LL.total, "', '",
+#                          floor(n.obs*weight), "', '", weight , "', '", now,"')", sep=''), con)
+#         }
 
 
         ## accept or reject step
@@ -353,9 +369,12 @@ pda.mcmc <- function(settings){
   }
 
   a = 1-rejectionRate(dm)
-  print("Acceptance Rates")
+  logger.info("Acceptance Rates")
+  logger.info(a)
+
+  print("acceptance")
   print(a)
-  sink()
+
   dev.off()
 
   ## create a new Posteriors DB entry
