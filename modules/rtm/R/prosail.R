@@ -48,6 +48,15 @@ pro4sail <- function(params, constants){
 ps.aviris <- function(params, constants)
     aviris.refl(pro4sail(params, constants))
 
+data(aviris.wl)
+av.wl <- round(aviris.wl[aviris.wl >= 400]) - 399
+
+aviris.sail <- function(params, constants){
+    r <- pro4sail(params, constants)
+    refl <- r[av.wl]
+    return(refl)
+}
+
 invert.sail <- function(observed, inits, constants, ngibbs, prior, pm,
                         model){
     observed <- as.matrix(observed)
