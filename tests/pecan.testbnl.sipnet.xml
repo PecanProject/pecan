@@ -4,12 +4,12 @@
 
   <database>
     <bety>
-     <user>bety</user>
-     <password>bety</password>
-     <host>psql-pecan.bu.edu</host>
-     <dbname>bety</dbname>
-     <driver>PostgreSQL</driver>
-     <write>FALSE</write>
+      <driver>PostgreSQL</driver>
+      <user>bety</user>
+      <password>bety</password>
+      <host>localhost</host>
+      <dbname>bety</dbname>
+      <write>FALSE</write>
     </bety>
   </database>
 
@@ -32,24 +32,19 @@
   </sensitivity.analysis>
 
   <model>
-    <binary>/usr/local/bin/sipnet.runk</binary>
+    <binary>/data/software/sipnet/sipnet</binary>
     <type>SIPNET</type>
   </model>
 
   <run>
     <site>
-   <id>676</id>
-   <name>Willow Creek (US-WCr)</name>
-   <lat>45.92</lat>
-   <lon>-90.45</lon>
+      <id>772</id>
     </site>
     <inputs>
-      <met>
-      <source>Ameriflux</source>
-      </met>
+      <met>/data/software/src/testrun.sipnet/niwot_tutorial.clim</met>
     </inputs>
     <start.date>2002-01-01 00:00:00</start.date>
-    <end.date>2002-12-31 00:00:00</end.date>
+    <end.date>2005-12-31 00:00:00</end.date>
     <host>
       <name>localhost</name>
     </host>

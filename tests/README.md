@@ -30,7 +30,7 @@ Since workflow.R is a simple rscript you can pass in standard R flags, such as -
 For example, you can add `debugonce(run.meta.analysis)` to `workflow.R` and then 
 
 ```{bash}
-R --vanilla -- --settings <pecanfile>
+R --vanilla --settings <pecanfile>
 ```
 ```{r}
 debugonce(run.meta.analysis)
