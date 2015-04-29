@@ -34,7 +34,19 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite=FALSE, ...
   return(met)
 }
 
-
+##-------------------------------------------------------------------------------------------------#
+##' Converts a data.table in PEcAn CF format to BioCro input format 
+##'
+##' @name cf2biocro
+##' @title Convert CF data.table to BioCro input
+##' @param met data.table with met for a single site; output from \link{\code{load.cfmet}}
+##' @param in.prefix prefix for each file
+##' @param outfolder location where model specific output is written.
+##' @param ... can pass lat, lon, start.date and end.date
+##' @return OK if everything was succesful.
+##' @export
+##' @author Rob Kooper, David LeBauer
+##-------------------------------------------------------------------------------------------------#
 cf2biocro <- function(met){
 #   doy   2
 #   hr    3
@@ -64,9 +76,10 @@ cf2biocro <- function(met){
   }
   if(!"wind_speed" %in% colnames(met)){
     if(all(c("northward_wind", "eastward_wind") %in% colnames(met))){
-      wind_speed <- sqrt(northward_wind^2 + eastward_wind^2)
+      wind_speed <- sqrt(met$northward_wind^2 + met$eastward_wind^2)
+    } else {
+      logger.error("neither wind_speed nor both eastward_wind and northward_wind are present in met data")      
     }
-    logger.error("neither wind_speed nor both eastward_wind and northward_wind are present in met data")
 
   }
   
