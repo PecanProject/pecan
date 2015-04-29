@@ -21,26 +21,26 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
   ## this bit of code is useful for defining the variables passed to this function 
   ## if you are debugging
   if(FALSE){
-    model = "SIPNET"
+    settings$model$type = "SIPNET"
     chain = 1
     params = NULL
     var.names = "Amax"
     jvar = NULL
     var.id = 297 ## NEE, canonical units umolC/m2/s
+
+    params = NULL
+    jvar = NULL
+    var.names = NULL
+    prior = NULL
+    chain = NULL
   }
 
 
   ## settings
   weight     <- 0.001
-  model      <- settings$model$type
-  write      <- settings$database$bety$write
-  defaults   <- settings$pfts
-  outdir     <- settings$run$host$outdir
-  host       <- settings$run$host
-  start.year <- strftime(settings$run$start.date,"%Y")
-  end.year   <- strftime(settings$run$end.date,"%Y")
 
-    # Some settings can be supplied via settings (for automation) or explicitly (interactive)
+    # Some settings can be supplied via settings (for automation) or explicitly (interactive). 
+    # An explicit argument overrides whatever is in settings, if anything.
     if(is.null(params)) {
       params <- settings$assim.batch$params
     }
@@ -59,7 +59,7 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
 
 
   ## open database connection
-  if(write){
+  if(settings$database$bety$write){
     con <- try(db.open(settings$database$bety), silent=TRUE)
     if(is.character(con)){
       con <- NULL
@@ -70,7 +70,7 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
 
 
   ## priors
-  if(is.null(settings$assim.batch$prior)){
+  if(is.null(prior)){
     ## by default, use the most recent posterior as the prior
     pft.id <-  db.query(paste0("SELECT id from pfts where name = '",settings$pfts$pft$name,"'"),con)
     priors <-  db.query(paste0("SELECT * from posteriors where pft_id = ",pft.id),con)
@@ -79,9 +79,11 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
 
     prior.db <- prior.db[grep("post.distns.Rdata",prior.db$file_name),]
 
-    settings$assim.batch$prior <- prior.db$container_id[which.max(prior.db$updated_at)]
+    prior.id <- prior.db$container_id[which.max(prior.db$updated_at)]
+  } else {
+    prior.id <- prior
   }
-  prior.db <- db.query(paste0("SELECT * from dbfiles where container_type = 'Posterior' and container_id = ", settings$assim.batch$prior),con)
+  prior.db <- db.query(paste0("SELECT * from dbfiles where container_type = 'Posterior' and container_id = ", prior.id),con)
   prior.db <- prior.db[grep("post.distns.Rdata",prior.db$file_name),]
   load(file.path(prior.db$file_path,"post.distns.Rdata"))
   prior <- post.distns
@@ -119,10 +121,10 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
 
 
   ## model-specific functions
-  do.call("require",list(paste0("PEcAn.",model)))
-  my.write.config <- paste("write.config.",model,sep="")
+  do.call("require",list(paste0("PEcAn.", settings$model$type)))
+  my.write.config <- paste("write.config.", settings$model$type,sep="")
   if(!exists(my.write.config)){
-    logger.severe(paste(my.write.config,"does not exist. Please make sure that the PEcAn interface is loaded for",model))
+    logger.severe(paste(my.write.config,"does not exist. Please make sure that the PEcAn interface is loaded for", settings$model$type))
   }
 
 
@@ -229,6 +231,7 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
     
     for(j in 1:nvar.sample){
       ## propose parameter values
+      browser()
       pnew  <- rnorm(1,parm[vars[j]],jvar[j])
       pstar <- parm
       pstar[vars[j]] <- pnew
@@ -265,7 +268,7 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
 
 
         ## write config
-        do.call(my.write.config,args=list(defaults,list(pft=pstar,env=NA),
+        do.call(my.write.config,args=list(settings$pfts, list(pft=pstar,env=NA),
                                           settings, run.id))
 
 
@@ -278,7 +281,7 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
             "variable    : ", pname[vars[j]], "\n",
             "run id      : ", as.character(run.id), "\n",
             "pft names   : ", as.character(lapply(settings$pfts, function(x) x[['name']])), "\n",
-            "model       : ", model, "\n",
+            "model       : ", settings$model$type, "\n",
             "model id    : ", settings$model$id, "\n",
             "site        : ", settings$run$site$name, "\n",
             "site  id    : ", settings$run$site$id, "\n",
@@ -300,8 +303,10 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
 
 
         ## read model output        
-        NEEm <- read.output(run.id, outdir = file.path(outdir, run.id),
-                            start.year, end.year, variables="NEE")$NEE*0.0002640674
+        NEEm <- read.output(run.id, outdir = file.path(settings$run$host$outdir, run.id),
+                            strftime(settings$run$start.date,"%Y"), 
+                            strftime(settings$run$end.date,"%Y"), 
+                            variables="NEE")$NEE*0.0002640674
           ## unit conversion kgC/ha/yr -> umolC/m2/sec
           # NPPvecm <-read.output(run.id, outdir = file.path(outdir, run.id),
           #                       start.year, end.year, variables="NPP")$NPP
@@ -316,9 +321,9 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
 
         ## calculate likelihood
         NEE.resid <- abs(NEEm-NEEo[set])
-        NEE.pos <- (NEEm > 0)
+        NEE.pos <- (NEEm >= 0)
         LL.star <- c(dexp(NEE.resid[NEE.pos], 1/(b0 + bp*NEEm[NEE.pos]), log=TRUE), 
-                     dexp(NEE.resid[!NEE.pos],1/(b0 + bp*NEEm[!NEE.pos]),log=TRUE))
+                     dexp(NEE.resid[!NEE.pos],1/(b0 + bn*NEEm[!NEE.pos]),log=TRUE))
         n.obs = sum(!is.na(LL.star))
         LL.star <- sum(LL.star,na.rm=TRUE)
           #loglikelihood for bivar normal distn of NPP and AGB
@@ -368,12 +373,11 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
     pairs(params.subset)
   }
 
-  a = 1-rejectionRate(dm)
-  logger.info("Acceptance Rates")
-  logger.info(a)
 
-  print("acceptance")
-  print(a)
+  a = 1-rejectionRate(dm)
+  logger.info(paste0("Acceptance Rates (", 
+                    paste(names(a), collapse=", "), ") = (", 
+                    paste(round(a,3), collapse=", "), ")"))
 
   dev.off()
 
@@ -394,7 +398,10 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
   filename <- file.path(settings$outdir, "pda.mcmc.Rdata")
   save(params, file = filename)
   dbfile.insert(dirname(filename), basename(filename), 'Posterior', posteriorid, con)
-
+  params.id <- db.query(paste0(
+    "SELECT id FROM dbfiles WHERE 
+      container_type = 'Posterior' AND file_name = 'pda.mcmc.Rdata' AND
+      container_id = ", posteriorid),con)
 
   ## save named distributions
   filename <- file.path(settings$pfts$pft$outdir, 'post.distns.Rdata')
@@ -427,5 +434,17 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
 
   ## close database connection
   if(!is.null(con)) db.close(con)
+
+
+  ## Output an updates settings list
+  out <- settings$assim.batch
+  out$params    <- params.id
+  out$jvar      <- as.list(jvar)
+    names(out$jvar) <- rep('jvar', length(jvar))
+  out$var.names <- as.list(var.names)
+    names(out$var.names) <- rep('var', length(var.names))
+  out$prior     <- prior.id
+  out$chain     <- chain
+  return(out)
   
 } ## end pda.mcmc
