@@ -69,6 +69,9 @@ fia.to.psscss <- function(settings,gridres=0.075) {
 	
 	## SOILS
 	soil = c(1.0,5.0,5.0,0.01,0.0,1.0,1.0) #soil C & N pools (biogeochem) defaults (fsc,stsc,stsl,ssc,psc,msn,fsn)	
+  
+  ##Sites
+  site = c(1) #Assuming extraction for one site so the site number is 1 and should be the same as "sitenum" in .site file
 	
 	## connect to database
 	con <-  db.open(settings$database$bety)
@@ -192,7 +195,7 @@ fia.to.psscss <- function(settings,gridres=0.075) {
 				#fname <- paste(path,"lat",(x+0.5)*gridres+latmin[r],"lon",(y+0.5)*gridres+lonmin[r],".pss",sep="") #filename 
 				fname <- paste(path,".radius ",gridres,".lat ",round(lat,digits=4)," lon ",round(lon,digits=4),".pss",sep="") #filename
 				water = rep(0,length(sel))
-				write.table(cbind(pss[sel,2+1:4],area[sel],water,matrix(soil,length(sel),7,byrow=TRUE)),file=fname,quote=FALSE,row.names=FALSE)
+				write.table(cbind(site,pss[sel,2+1:4],area[sel],water,matrix(soil,length(sel),7,byrow=TRUE)),file=fname,quote=FALSE,row.names=FALSE)
 			}
 		}
 		
