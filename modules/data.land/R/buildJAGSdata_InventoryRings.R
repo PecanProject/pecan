@@ -1,5 +1,12 @@
-## builds the JAGS data object for the tree ring / inventory fusion code
-## also sets all the priors
+##' @title Format ring & plot data for JAGA
+##' @name  buildJAGSdata_InventoryRings
+##' @param combined  object returned from matchInventoryRings. Matrix with both increment and plot data
+##' @param inc.unit.conv  conversion factor from loaded increments to cm (of radius)
+##' @return list
+##' @author Michael Dietze
+##' @description builds the JAGS data object for the tree ring / inventory fusion code
+##' also sets all the priors
+##' @export
 buildJAGSdata_InventoryRings <- function(combined,inc.unit.conv = 0.1){
   
   ## pull out growth to a matrix, convert to cm of diameter

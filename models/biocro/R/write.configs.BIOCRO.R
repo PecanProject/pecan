@@ -104,9 +104,9 @@ write.config.BIOCRO <- function(defaults = NULL,
   
   ## Get the weather data generic
 
-  if(!is.null(settings$run$inputs$met)){
-      if(file.exists(settings$run$inputs$met)){
-          file.symlink(settings$run$inputs$met,
+  if(!is.null(settings$run$inputs$met$path)){
+      if(file.exists(settings$run$inputs$met$path)){
+          file.symlink(settings$run$inputs$met$path,
                        file.path(settings$rundir, run.id, "weather.csv"))
       } else {
           settings$site$met <- NULL

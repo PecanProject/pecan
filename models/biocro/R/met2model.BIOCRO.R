@@ -87,8 +87,8 @@ cf2biocro <- function(met){
   }
   if(!"ppfd" %in% colnames(met)){
     if("surface_downwelling_shortwave_flux_in_air" %in% colnames(met)){
-      ppfd <- 0.486 * met$surface_downwelling_shortwave_flux_in_air ## Cambell and Norman 1998 p 151, ch 10
-      #ppfd <- par2ppfd(par)
+      par <- sw2par(met$surface_downwelling_shortwave_flux_in_air)
+      ppfd <- par2ppfd(par)
     } else {
       logger.error("Need either ppfd or surface_downwelling_shortwave_flux_in_air in met dataset")
     }
