@@ -34,16 +34,29 @@
 dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, mimetype, formatname, parentid=NA, con, hostname=fqdn()) {
   
   name <- basename(in.path)
-  filename <- file.path(in.path,in.prefix)
+  filename <- file.path(in.path, in.prefix)
   
   if (hostname == "localhost") hostname <- fqdn();
   
+  mimetypeid <- get.id("mimetypes", "type_string", mimetype, con) #paste0("SELECT id FROM mimetypes where type_string = '", mimetype, "';")
+  
+  if(length(mimetypeid) == 0){
+    db.query(paste0("INSERT INTO mimetypes (type_string) VALUES ('", 
+                    mimetype, "');"), con = con)
+    mimetypeid <- get.id("mimetypes", "type_string", mimetype, con)
+  }
+  
   # find appropriate format
-  formatid <- db.query(paste0("SELECT id FROM formats WHERE mime_type='", mimetype, "' AND name='", formatname, "'"), con)[['id']]
+  formatid <- get.id("formats", colname = c('mimetype_id', 'name'), 
+                     value = c(mimetypeid, formatname), con)
+  
+  
   if (is.null(formatid)) {
     # insert format
-    db.query(paste0("INSERT INTO formats (mime_type, name, created_at, updated_at) VALUES ('", mimetype, "', '", formatname, "', NOW(), NOW())"), con)
-    formatid <- db.query(paste0("SELECT id FROM formats WHERE mime_type='", mimetype, "' AND name='", formatname, "'"), con)[['id']]
+    db.query(paste0("INSERT INTO formats (mimetype_id, name, created_at, updated_at) VALUES ('",
+                    mimetypeid, "', '", formatname, "', NOW(), NOW())"), con)
+    formatid <- get.id("formats", colname = c('mimetype_id', 'name'),  
+                       value = c(mimetypeid, formatname), con)
   }
   
   # setup parent part of query if specified
@@ -105,9 +118,15 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
 ##' }
 dbfile.input.check <- function(siteid, startdate, enddate, mimetype, formatname, parentid=NA, con, hostname=fqdn()) {
   if (hostname == "localhost") hostname <- fqdn();
+
+  mimetypeid <- get.id('mimetypes', 'type_string', mimetype, con = con)
+
+  if (is.null(mimetypeid)) {
+    return(invisible(data.frame()))
+  }
   
   # find appropriate format
-  formatid <- db.query(paste0("SELECT id FROM formats WHERE mime_type='", mimetype, "' AND name='", formatname, "'"), con)[['id']]
+  formatid <- get.id('formats', c("mimetype_id", "name"), c(mimetypeid, formatname), con) 
   if (is.null(formatid)) {
     invisible(data.frame())
   }
@@ -153,25 +172,32 @@ dbfile.posterior.insert <- function(filename, pft, mimetype, formatname, con, ho
   if (hostname == "localhost") hostname <- fqdn();
   
   # find appropriate pft
-  pftid <- db.query(paste0("SELECT id FROM pfts WHERE name='", pft, "'"), con)[['id']]
+  pftid <- get.id("pfts", "name", pft, con)
   if (is.null(pftid)) {
     logger.severe("Could not find pft, could not store file", filename)
   }
   
+  mimetypeid <- get.id('mimetypes', 'type_string', mimetype, con = con)
+  
   # find appropriate format
-  formatid <- db.query(paste0("SELECT id FROM formats WHERE mime_type='", mimetype, "' AND name='", formatname, "'"), con)[['id']]
+  formatid_query <- paste0("SELECT id FROM formats WHERE mimetype_ id = ", mimetypeid, " AND name='", formatname, "'")
+  formatid <- db.query(formatid_query, con)[['id']]
   if (is.null(formatid)) {
     # insert format
     db.query(paste0("INSERT INTO formats (mime_type, name, created_at, updated_at) VALUES ('", mimetype, "', '", formatname, "', NOW(), NOW())"), con)
-    formatid <- db.query(paste0("SELECT id FROM formats WHERE mime_type='", mimetype, "' AND name='", formatname, "'"), con)[['id']]
+    formatid <- db.query(formatid_query, con)[['id']]
   }
   
   # find appropriate posterior
-  posteriorid <- db.query(paste0("SELECT id FROM posteriors WHERE pft_id=", pftid, " AND format_id=", formatid), con)[['id']]
+  posterior_ids <- get.id("posteriors", "pft_id", pftid, con)
+  
+  posteriorid_query <- paste0("SELECT id FROM posteriors WHERE pft_id=", 
+                              pftid, " AND format_id=", formatid)
+  posteriorid <- db.query(posteriorid_query, con)[['id']]
   if (is.null(posteriorid)) {
     # insert input
     db.query(paste0("INSERT INTO posteriors (pft_id, format_id, created_at, updated_at) VALUES (", pftid, ", ", formatid, ", NOW(), NOW())"), con)
-    posteriorid <- db.query(paste0("SELECT id FROM posteriors WHERE pft_id=", pftid, " AND format_id=", formatid), con)[['id']]
+    posteriorid <- db.query(posteriorid_query, con)[['id']]
   }
   
   invisible(dbfile.insert(filename, 'Posterior', posteriorid, con, hostname))
@@ -200,13 +226,16 @@ dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname=fqdn
   if (hostname == "localhost") hostname <- fqdn();
   
   # find appropriate pft
-  pftid <- db.query(paste0("SELECT id FROM pfts WHERE name='", pft, "'"), con)[['id']]
+  pftid <- get.id("pfts", "name", pft, con)
   if (is.null(pftid)) {
     invisible(data.frame())
   }
   
   # find appropriate format
-  formatid <- db.query(paste0("SELECT id FROM formats WHERE mime_type='", mimetype, "' AND name='", formatname, "'"), con)[['id']]
+  mimetypeid <- get.id("mimetypes", "type_string", mimetype, con)
+  if(is.null(mimetypeid)) logger.error("mimetype ", mimetype, "does not exist")
+  formatid <- get.id("formats", colnames = c("mimetype_id", "name"), values = c(mimetypeid, formatname), con) 
+                                  
   if (is.null(formatid)) {
     invisible(data.frame())
   }
@@ -236,15 +265,17 @@ dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname=fqdn
 ##' \dontrun{
 ##'   dbfile.insert('somefile.txt', 'Input', 7, dbcon)
 ##' }
-dbfile.insert <- function(in.path,in.prefix, type, id, con, hostname=fqdn()) {
-  if (hostname == "localhost") hostname <- fqdn();
+dbfile.insert <- function(in.path, in.prefix, type, id, con, hostname=fqdn()) {
+  if (hostname == "localhost") hostname <- fqdn()
   
+  if (substr(in.path, 1, 1) != '/') logger.error("path to dbfiles:", in.path, " is not a valid full path")
   # find appropriate host
-  hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", hostname, "'"), con)[['id']]
+  hostid <- get.id("machines", colname = "hostname", value = hostname, con)
+  
   if (is.null(hostid)) {
     # insert host
     db.query(paste0("INSERT INTO machines (hostname, created_at, updated_at) VALUES ('", hostname, "', NOW(), NOW())"), con)
-    hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", hostname, "'"), con)[['id']]
+    hostid <- get.id("machines", "hostname", hostname, con)
   }
   
   now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
@@ -275,7 +306,8 @@ dbfile.check <- function(type, id, con, hostname=fqdn()) {
   if (hostname == "localhost") hostname <- fqdn()
   
   # find appropriate host
-  hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", hostname, "'"), con)[['id']]
+  hostid <- get.id("machines", "hostname", hostname, con) 
+  # hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", hostname, "'"), con)[['id']]
   if (is.null(hostid)) {
     invisible(data.frame())
   }

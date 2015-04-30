@@ -305,3 +305,23 @@ db.showQueries <- function(show) {
 db.getShowQueries <- function() {
   invisible(.db.utils$showquery)
 }
+
+##' Retrieve id from a table matching query
+##' 
+##' @title get.id
+##' @param table name of table
+##' @param colnames names of one or more columns used in where clause
+##' @param values values to be queried in fields corresponding to colnames
+##' @return will numeric
+##' @export
+##' @author David LeBauer
+##' @examples
+##' pftid <- get.id("pfts", "name", "salix", con)
+##' pftid <- get.id("pfts", c("name", "modeltype_id"), c("ebifarm.salix", 1), con)
+get.id <- function(table, colnames, values, con){
+  values[is.character(values)] <- shQuote(values[is.character(values)])
+  where_clause <- paste(colnames, values , sep = " = ", collapse = " and ")
+  query <- paste("select id from", table, "where", where_clause, ";")
+  id <- db.query(query, con)[["id"]]      
+  return(id)
+}

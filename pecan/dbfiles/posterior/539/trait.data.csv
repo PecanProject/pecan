@@ -1,0 +1,404 @@
+".id","id","citation_id","site_id","treatment_id","name","date","time","cultivar_id","specie_id","mean","statname","stat","n","vname","month","lon","lat","control","greenhouse","mean_unconverted","stat_unconverted"
+"leafC",38553,414,624,1310,"ambient CO2 low temp",1997-12-31 06:00:00,"00:00:00",NA,984,52.8,"SE",2.2,NA,"leafC",12,-93.18,44.98,TRUE,TRUE,52.8,2.2
+"leafC",38554,414,624,1312,"ambient CO2 medium temp",1997-12-31 06:00:00,"00:00:00",NA,984,48.9,"SE",0.4,NA,"leafC",12,-93.18,44.98,FALSE,TRUE,48.9,0.4
+"leafC",38555,414,624,1314,"ambient CO2 high temp",1997-12-31 06:00:00,"00:00:00",NA,984,53.7,"SE",2,NA,"leafC",12,-93.18,44.98,FALSE,TRUE,53.7,2
+"leafC",38556,414,624,1311,"elevated CO2 low temp",1997-12-31 06:00:00,"00:00:00",NA,984,52.3,"SE",2.3,NA,"leafC",12,-93.18,44.98,FALSE,TRUE,52.3,2.3
+"leafC",38557,414,624,1313,"elevated CO2 medium temp",1997-12-31 06:00:00,"00:00:00",NA,984,50.6,"SE",1.9,NA,"leafC",12,-93.18,44.98,FALSE,TRUE,50.6,1.9
+"leafC",38559,414,624,1315,"elevated CO2 high temp",1997-12-31 06:00:00,"00:00:00",NA,984,50.9,"SE",2.2,NA,"leafC",12,-93.18,44.98,FALSE,TRUE,50.9,2.2
+"leafC",38573,414,624,1310,"ambient CO2 low temp",1997-12-31 06:00:00,"00:00:00",NA,973,51.1,"SE",2,NA,"leafC",12,-93.18,44.98,TRUE,TRUE,51.1,2
+"leafC",38574,414,624,1312,"ambient CO2 medium temp",1997-12-31 06:00:00,"00:00:00",NA,973,48.4,"SE",0.4,NA,"leafC",12,-93.18,44.98,FALSE,TRUE,48.4,0.4
+"leafC",38575,414,624,1314,"ambient CO2 high temp",1997-12-31 06:00:00,"00:00:00",NA,973,47.7,"SE",0.2,NA,"leafC",12,-93.18,44.98,FALSE,TRUE,47.7,0.2
+"leafC",38576,414,624,1311,"elevated CO2 low temp",1997-12-31 06:00:00,"00:00:00",NA,973,50.5,"SE",2.1,NA,"leafC",12,-93.18,44.98,FALSE,TRUE,50.5,2.1
+"leafC",38577,414,624,1313,"elevated CO2 medium temp",1997-12-31 06:00:00,"00:00:00",NA,973,48.3,"SE",0.1,NA,"leafC",12,-93.18,44.98,FALSE,TRUE,48.3,0.1
+"leafC",38578,414,624,1315,"elevated CO2 high temp",1997-12-31 06:00:00,"00:00:00",NA,973,50.5,"SE",1.5,NA,"leafC",12,-93.18,44.98,FALSE,TRUE,50.5,1.5
+"leaf_respiration_rate_m2",37247,391,603,1240,"Observational",1993-07-15 00:00:00,"00:00:00",NA,993,1.5,NA,NA,1,"leaf_respiration_rate_m2",7,-105.61,40.06,TRUE,FALSE,1.5,NA
+"leaf_respiration_rate_m2",37254,391,603,1240,"Observational",1993-07-15 00:00:00,"00:00:00",NA,970,1,NA,NA,1,"leaf_respiration_rate_m2",7,-105.61,40.06,TRUE,FALSE,1,NA
+"leaf_respiration_rate_m2",49724,689,853,2066,"Control",NA,NA,NA,1019,1.4,"SE",0.2,50,"leaf_respiration_rate_m2",NA,-79.0833,35.9667,TRUE,FALSE,1.4,0.2
+"leaf_respiration_rate_m2",49725,689,853,2066,"Control",NA,NA,NA,1019,1.8,"SE",0.1,50,"leaf_respiration_rate_m2",NA,-79.0833,35.9667,TRUE,FALSE,1.8,0.1
+"leaf_respiration_rate_m2",49726,689,853,2066,"Control",NA,NA,NA,1019,1.3,"SE",0.02,50,"leaf_respiration_rate_m2",NA,-79.0833,35.9667,TRUE,FALSE,1.3,0.02
+"leaf_respiration_rate_m2",49727,689,853,2066,"Control",NA,NA,NA,1019,1.1,"SE",0.1,NA,"leaf_respiration_rate_m2",NA,-79.0833,35.9667,TRUE,FALSE,1.1,0.1
+"leaf_respiration_rate_m2",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"root_turnover_rate",22156,235,300,735,"normal atmospheric CO2 level",NA,"19:53:00",NA,1019,0.98,"SE",0.044,3,"root_turnover_rate",NA,-79.015,35.97,TRUE,FALSE,0.98,0.044
+"root_turnover_rate",22158,235,300,735,"normal atmospheric CO2 level",NA,"19:53:00",NA,1019,0.47,"SE",0.044,1,"root_turnover_rate",NA,-79.015,35.97,TRUE,FALSE,0.47,0.044
+"root_turnover_rate",22159,235,300,735,"normal atmospheric CO2 level",NA,"19:53:00",NA,1019,0.43,"SE",0.044,3,"root_turnover_rate",NA,-79.015,35.97,TRUE,FALSE,0.43,0.044
+"root_turnover_rate",22157,235,300,735,"normal atmospheric CO2 level",NA,"19:53:00",NA,1019,0.56,"SE",0.044,3,"root_turnover_rate",NA,-79.015,35.97,TRUE,FALSE,0.56,0.044
+"leaf_turnover_rate",26934,336,NA,0,NA,NA,"00:00:00",0,1020,0.588,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.588,NA
+"leaf_turnover_rate",26831,336,NA,0,NA,NA,"00:00:00",0,6,0.27,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.27,NA
+"leaf_turnover_rate",26832,336,NA,0,NA,NA,"00:00:00",0,6,0.27,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.27,NA
+"leaf_turnover_rate",26833,336,NA,0,NA,NA,"00:00:00",0,6,0.263,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.263,NA
+"leaf_turnover_rate",26834,336,NA,0,NA,NA,"00:00:00",0,6,0.27,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.27,NA
+"leaf_turnover_rate",26835,336,NA,0,NA,NA,"00:00:00",0,6,0.278,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.278,NA
+"leaf_turnover_rate",26855,336,NA,0,NA,NA,"00:00:00",0,967,0.141,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.141,NA
+"leaf_turnover_rate",26856,336,NA,0,NA,NA,"00:00:00",0,967,0.189,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.189,NA
+"leaf_turnover_rate",26857,336,NA,0,NA,NA,"00:00:00",0,967,0.244,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.244,NA
+"leaf_turnover_rate",26858,336,NA,0,NA,NA,"00:00:00",0,967,0.4,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.4,NA
+"leaf_turnover_rate",26859,336,NA,0,NA,NA,"00:00:00",0,967,0.182,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.182,NA
+"leaf_turnover_rate",26860,336,NA,0,NA,NA,"00:00:00",0,967,0.313,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.313,NA
+"leaf_turnover_rate",26861,336,NA,0,NA,NA,"00:00:00",0,967,0.323,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.323,NA
+"leaf_turnover_rate",26862,336,NA,0,NA,NA,"00:00:00",0,967,0.13,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.13,NA
+"leaf_turnover_rate",26863,336,NA,0,NA,NA,"00:00:00",0,967,0.189,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.189,NA
+"leaf_turnover_rate",26864,336,NA,0,NA,NA,"00:00:00",0,967,0.182,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.182,NA
+"leaf_turnover_rate",26865,336,NA,0,NA,NA,"00:00:00",0,978,0.088,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.088,NA
+"leaf_turnover_rate",26866,336,NA,0,NA,NA,"00:00:00",0,978,0.169,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.169,NA
+"leaf_turnover_rate",26867,336,NA,0,NA,NA,"00:00:00",0,978,0.123,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.123,NA
+"leaf_turnover_rate",26868,336,NA,0,NA,NA,"00:00:00",0,978,0.125,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.125,NA
+"leaf_turnover_rate",26869,336,NA,0,NA,NA,"00:00:00",0,984,0.286,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.286,NA
+"leaf_turnover_rate",26870,336,NA,0,NA,NA,"00:00:00",0,984,0.303,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.303,NA
+"leaf_turnover_rate",26871,336,NA,0,NA,NA,"00:00:00",0,984,0.278,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.278,NA
+"leaf_turnover_rate",26872,336,NA,0,NA,NA,"00:00:00",0,984,0.303,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.303,NA
+"leaf_turnover_rate",26873,336,NA,0,NA,NA,"00:00:00",0,984,0.27,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.27,NA
+"leaf_turnover_rate",26874,336,NA,0,NA,NA,"00:00:00",0,984,0.294,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.294,NA
+"leaf_turnover_rate",26875,336,NA,0,NA,NA,"00:00:00",0,984,0.217,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.217,NA
+"leaf_turnover_rate",26876,336,NA,0,NA,NA,"00:00:00",0,984,0.238,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.238,NA
+"leaf_turnover_rate",26877,336,NA,0,NA,NA,"00:00:00",0,984,0.238,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.238,NA
+"leaf_turnover_rate",26878,336,NA,0,NA,NA,"00:00:00",0,984,0.27,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.27,NA
+"leaf_turnover_rate",26879,336,NA,0,NA,NA,"00:00:00",0,984,0.286,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.286,NA
+"leaf_turnover_rate",26880,336,NA,0,NA,NA,"00:00:00",0,984,0.278,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.278,NA
+"leaf_turnover_rate",26886,336,NA,0,NA,NA,"00:00:00",0,1000,0.385,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.385,NA
+"leaf_turnover_rate",26887,336,NA,0,NA,NA,"00:00:00",0,1000,0.476,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.476,NA
+"leaf_turnover_rate",26888,336,NA,0,NA,NA,"00:00:00",0,1000,0.333,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.333,NA
+"leaf_turnover_rate",26889,336,NA,0,NA,NA,"00:00:00",0,1000,0.238,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.238,NA
+"leaf_turnover_rate",26890,336,NA,0,NA,NA,"00:00:00",0,1000,0.385,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.385,NA
+"leaf_turnover_rate",26891,336,NA,0,NA,NA,"00:00:00",0,1000,0.256,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.256,NA
+"leaf_turnover_rate",26892,336,NA,0,NA,NA,"00:00:00",0,1000,0.256,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.256,NA
+"leaf_turnover_rate",26893,336,NA,0,NA,NA,"00:00:00",0,1000,0.286,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.286,NA
+"leaf_turnover_rate",26894,336,NA,0,NA,NA,"00:00:00",0,1000,0.256,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.256,NA
+"leaf_turnover_rate",26895,336,NA,0,NA,NA,"00:00:00",0,1000,0.227,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.227,NA
+"leaf_turnover_rate",26896,336,NA,0,NA,NA,"00:00:00",0,1000,0.244,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.244,NA
+"leaf_turnover_rate",26897,336,NA,0,NA,NA,"00:00:00",0,1000,0.25,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.25,NA
+"leaf_turnover_rate",26898,336,NA,0,NA,NA,"00:00:00",0,1000,0.278,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.278,NA
+"leaf_turnover_rate",26899,336,NA,0,NA,NA,"00:00:00",0,1000,0.217,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.217,NA
+"leaf_turnover_rate",26900,336,NA,0,NA,NA,"00:00:00",0,1002,0.417,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.417,NA
+"leaf_turnover_rate",26901,336,NA,0,NA,NA,"00:00:00",0,1002,0.435,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.435,NA
+"leaf_turnover_rate",26902,336,NA,0,NA,NA,"00:00:00",0,1002,0.417,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.417,NA
+"leaf_turnover_rate",26903,336,NA,0,NA,NA,"00:00:00",0,1002,0.417,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.417,NA
+"leaf_turnover_rate",26904,336,NA,0,NA,NA,"00:00:00",0,1002,0.4,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.4,NA
+"leaf_turnover_rate",26905,336,NA,0,NA,NA,"00:00:00",0,1002,0.37,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.37,NA
+"leaf_turnover_rate",26907,336,NA,0,NA,NA,"00:00:00",0,1008,0.417,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.417,NA
+"leaf_turnover_rate",26908,336,NA,0,NA,NA,"00:00:00",0,1008,0.435,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.435,NA
+"leaf_turnover_rate",26909,336,NA,0,NA,NA,"00:00:00",0,1008,0.476,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.476,NA
+"leaf_turnover_rate",26910,336,NA,0,NA,NA,"00:00:00",0,1008,0.357,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.357,NA
+"leaf_turnover_rate",26911,336,NA,0,NA,NA,"00:00:00",0,1012,0.333,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.333,NA
+"leaf_turnover_rate",26912,336,NA,0,NA,NA,"00:00:00",0,1012,0.294,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.294,NA
+"leaf_turnover_rate",26913,336,NA,0,NA,NA,"00:00:00",0,1012,0.588,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.588,NA
+"leaf_turnover_rate",26914,336,NA,0,NA,NA,"00:00:00",0,1012,0.476,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.476,NA
+"leaf_turnover_rate",26915,336,NA,0,NA,NA,"00:00:00",0,1012,0.5,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.5,NA
+"leaf_turnover_rate",26916,336,NA,0,NA,NA,"00:00:00",0,1012,0.5,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.5,NA
+"leaf_turnover_rate",26917,336,NA,0,NA,NA,"00:00:00",0,1013,0.455,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.455,NA
+"leaf_turnover_rate",26918,336,NA,0,NA,NA,"00:00:00",0,1014,0.303,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.303,NA
+"leaf_turnover_rate",26919,336,NA,0,NA,NA,"00:00:00",0,1014,0.286,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.286,NA
+"leaf_turnover_rate",26920,336,NA,0,NA,NA,"00:00:00",0,1014,0.278,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.278,NA
+"leaf_turnover_rate",26921,336,NA,0,NA,NA,"00:00:00",0,1014,0.417,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.417,NA
+"leaf_turnover_rate",26922,336,NA,0,NA,NA,"00:00:00",0,1017,0.769,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.769,NA
+"leaf_turnover_rate",26923,336,NA,0,NA,NA,"00:00:00",0,1018,0.385,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.385,NA
+"leaf_turnover_rate",26924,336,NA,0,NA,NA,"00:00:00",0,1018,0.4,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.4,NA
+"leaf_turnover_rate",26925,336,NA,0,NA,NA,"00:00:00",0,1018,0.4,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.4,NA
+"leaf_turnover_rate",26926,336,NA,0,NA,NA,"00:00:00",0,1018,0.345,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.345,NA
+"leaf_turnover_rate",26927,336,NA,0,NA,NA,"00:00:00",0,1019,1,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,1,NA
+"leaf_turnover_rate",26928,336,NA,0,NA,NA,"00:00:00",0,1019,0.435,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.435,NA
+"leaf_turnover_rate",26929,336,NA,0,NA,NA,"00:00:00",0,1019,0.556,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.556,NA
+"leaf_turnover_rate",26930,336,NA,0,NA,NA,"00:00:00",0,1019,0.435,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.435,NA
+"leaf_turnover_rate",26931,336,NA,0,NA,NA,"00:00:00",0,1019,0.909,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.909,NA
+"leaf_turnover_rate",26932,336,NA,0,NA,NA,"00:00:00",0,1019,0.588,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.588,NA
+"leaf_turnover_rate",26933,336,NA,0,NA,NA,"00:00:00",0,1019,0.476,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.476,NA
+"leaf_turnover_rate",26935,336,NA,0,NA,NA,"00:00:00",0,1107,0.256,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.256,NA
+"leaf_turnover_rate",26936,336,NA,0,NA,NA,"00:00:00",0,1107,0.233,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.233,NA
+"leaf_turnover_rate",26937,336,NA,0,NA,NA,"00:00:00",0,1107,0.213,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.213,NA
+"leaf_turnover_rate",26938,336,NA,0,NA,NA,"00:00:00",0,1107,0.286,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.286,NA
+"leaf_turnover_rate",26939,336,NA,0,NA,NA,"00:00:00",0,1107,0.217,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.217,NA
+"leaf_turnover_rate",26940,336,NA,0,NA,NA,"00:00:00",0,1107,0.2,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.2,NA
+"leaf_turnover_rate",26941,336,NA,0,NA,NA,"00:00:00",0,1107,0.2,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.2,NA
+"leaf_turnover_rate",26942,336,NA,0,NA,NA,"00:00:00",0,1107,0.25,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.25,NA
+"leaf_turnover_rate",26943,336,NA,0,NA,NA,"00:00:00",0,1107,0.25,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.25,NA
+"leaf_turnover_rate",26944,336,NA,0,NA,NA,"00:00:00",0,1107,0.222,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.222,NA
+"leaf_turnover_rate",26945,336,NA,0,NA,NA,"00:00:00",0,1107,0.417,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.417,NA
+"leaf_turnover_rate",26946,336,NA,0,NA,NA,"00:00:00",0,1107,0.5,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.5,NA
+"leaf_turnover_rate",26947,336,NA,0,NA,NA,"00:00:00",0,1107,0.323,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.323,NA
+"leaf_turnover_rate",26948,336,NA,0,NA,NA,"00:00:00",0,1107,0.27,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.27,NA
+"leaf_turnover_rate",26949,336,NA,0,NA,NA,"00:00:00",0,1107,0.213,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.213,NA
+"leaf_turnover_rate",26950,336,NA,0,NA,NA,"00:00:00",0,1107,0.196,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.196,NA
+"leaf_turnover_rate",26951,336,NA,0,NA,NA,"00:00:00",0,1107,0.313,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.313,NA
+"leaf_turnover_rate",26955,336,NA,0,NA,NA,"00:00:00",0,6,0.27,NA,NA,1,"leaf_turnover_rate",NA,NA,NA,NA,NA,0.27,NA
+"Amax",35190,344,560,1101,"Observational",1997-01-01 00:00:00,"00:00:00",NA,973,1.7845,"SE",0.2309,30,"Amax",1,-106.38,53.92,TRUE,FALSE,1.7845,0.2309
+"Amax",35195,346,506,1104,"YJP",1994-05-26 00:00:00,"00:00:00",NA,984,25.69,"SE",4.01,88,"Amax",5,-98.4808,55.8796,TRUE,FALSE,25.69,4.01
+"Amax",35198,346,506,1103,"OJP",1994-05-31 00:00:00,"00:00:00",NA,984,8.29,"SE",0.51,38,"Amax",5,-98.4808,55.8796,TRUE,FALSE,8.29,0.51
+"Amax",35199,346,506,1105,"OBS",1994-06-01 00:00:00,"00:00:00",NA,973,12.54,"SE",3.09,16,"Amax",6,-98.4808,55.8796,TRUE,FALSE,12.54,3.09
+"Amax",35200,346,506,1104,"YJP",1994-07-22 00:00:00,"00:00:00",NA,984,18.33,"SE",1.33,48,"Amax",7,-98.4808,55.8796,TRUE,FALSE,18.33,1.33
+"Amax",35202,346,506,1105,"OBS",1994-07-28 00:00:00,"00:00:00",NA,973,18.93,"SE",0.74,48,"Amax",7,-98.4808,55.8796,TRUE,FALSE,18.93,0.74
+"Amax",35203,346,506,1104,"YJP",1994-09-07 00:00:00,"00:00:00",NA,984,19.88,"SE",0.68,48,"Amax",9,-98.4808,55.8796,TRUE,FALSE,19.88,0.68
+"Amax",35204,346,506,1103,"OJP",1994-09-06 00:00:00,"00:00:00",NA,984,19.27,"SE",1.04,48,"Amax",9,-98.4808,55.8796,TRUE,FALSE,19.27,1.04
+"Amax",35205,346,506,1105,"OBS",1994-09-13 00:00:00,"00:00:00",NA,973,16.59,"SE",0.92,48,"Amax",9,-98.4808,55.8796,TRUE,FALSE,16.59,0.92
+"Amax",35206,346,506,1103,"OJP",1994-07-25 00:00:00,"00:00:00",NA,984,13.95,"SE",1.28,47,"Amax",7,-98.4808,55.8796,TRUE,FALSE,13.95,1.28
+"Amax",36338,357,576,1175,"North",1994-07-01 00:00:00,"00:00:00",NA,984,3.6563,"SE",0.135,NA,"Amax",7,-97.85,55.74,TRUE,FALSE,3.6563,0.135
+"Amax",36339,357,506,1176,"South",1994-07-01 00:00:00,"00:00:00",NA,984,7.6212,"SE",0.4051,NA,"Amax",7,-98.4808,55.8796,TRUE,FALSE,7.6212,0.4051
+"Amax",36341,357,576,1175,"North",1994-07-01 00:00:00,"00:00:00",NA,973,1.8106,"SE",0.2025,NA,"Amax",7,-97.85,55.74,TRUE,FALSE,1.8106,0.2025
+"Amax",36342,357,506,1176,"South",1994-07-01 00:00:00,"00:00:00",NA,973,3.3142,"SE",0.3376,NA,"Amax",7,-98.4808,55.8796,TRUE,FALSE,3.3142,0.3376
+"Amax",41297,482,795,1499,"observational",2002-08-24 05:00:00,"00:00:00",NA,978,7.4,NA,1.87,NA,"Amax",8,-68.1069,44.8708,TRUE,NA,7.4,1.87
+"Amax",41298,482,795,1499,"observational",2003-08-24 05:00:00,"00:00:00",NA,978,9.57,NA,1.15,NA,"Amax",8,-68.1069,44.8708,TRUE,NA,9.57,1.15
+"Amax",41299,482,794,1498,"Fertilizer",2002-08-24 05:00:00,"00:00:00",NA,978,8.19,NA,1.97,NA,"Amax",8,-68.1069,44.8708,FALSE,FALSE,8.19,1.97
+"Amax",41300,482,794,1498,"Fertilizer",2003-08-24 05:00:00,"00:00:00",NA,978,9.48,NA,1.55,NA,"Amax",8,-68.1069,44.8708,FALSE,FALSE,9.48,1.55
+"Amax",38692,415,630,1316,"Observational",NA,"00:00:00",NA,727,6.5,NA,NA,NA,"Amax",NA,-89.4293,43.0399,TRUE,FALSE,6.5,NA
+"Amax",38695,415,630,1316,"Observational",NA,"00:00:00",NA,971,7.3,NA,NA,NA,"Amax",NA,-89.4293,43.0399,TRUE,FALSE,7.3,NA
+"Amax",38699,415,630,1316,"Observational",NA,"00:00:00",NA,984,9.5,NA,NA,NA,"Amax",NA,-89.4293,43.0399,TRUE,FALSE,9.5,NA
+"Amax",38702,415,630,1316,"Observational",NA,"00:00:00",NA,1017,8.1,NA,NA,NA,"Amax",NA,-89.4293,43.0399,TRUE,FALSE,8.1,NA
+"Amax",38705,415,630,1316,"Observational",NA,"00:00:00",NA,1018,12.5,NA,NA,NA,"Amax",NA,-89.4293,43.0399,TRUE,FALSE,12.5,NA
+"Amax",38709,415,630,1316,"Observational",NA,"00:00:00",NA,1386,7.2,NA,NA,NA,"Amax",NA,-89.4293,43.0399,TRUE,FALSE,7.2,NA
+"Amax",38717,415,625,1316,"Observational",NA,"00:00:00",NA,967,10,NA,NA,NA,"Amax",NA,-91.03,43.85,TRUE,FALSE,10,NA
+"Amax",38720,415,625,1316,"Observational",NA,"00:00:00",NA,1013,7.6,NA,NA,NA,"Amax",NA,-91.03,43.85,TRUE,FALSE,7.6,NA
+"Amax",38723,415,625,1316,"Observational",NA,"00:00:00",NA,1017,8.5,NA,NA,NA,"Amax",NA,-91.03,43.85,TRUE,FALSE,8.5,NA
+"Amax",38738,415,626,1316,"Observational",NA,"00:00:00",NA,1013,5,NA,NA,NA,"Amax",NA,-89.81,44.11,TRUE,FALSE,5,NA
+"root_respiration_rate",22153,233,305,745,"Observational - Sowell (1986)",1982-08-31 05:00:00,"17:11:00",NA,970,21.4,"SE",2.1,8,"root_respiration_rate",8,-109.1,45.28,TRUE,TRUE,21.4,2.1
+"root_respiration_rate",22236,250,325,775,"Total plant anaerobic",1991-08-01 05:00:00,"18:36:00",NA,973,3.50477496190997,NA,NA,NA,"root_respiration_rate",8,-113.52,53.52,FALSE,TRUE,1.7,NA
+"root_respiration_rate",22237,250,325,775,"Total plant anaerobic",1991-08-01 05:00:00,"00:00:00",NA,984,4.12326466107055,NA,NA,NA,"root_respiration_rate",8,-113.52,53.52,FALSE,TRUE,2,NA
+"root_respiration_rate",22238,250,325,775,"Total plant anaerobic",1991-08-01 05:00:00,"18:38:00",NA,984,8.6,NA,NA,NA,"root_respiration_rate",8,-113.52,53.52,FALSE,TRUE,8.6,NA
+"root_respiration_rate",22239,250,325,775,"Total plant anaerobic",1991-08-01 05:00:00,"18:38:00",NA,989,5.36024405939172,NA,NA,NA,"root_respiration_rate",8,-113.52,53.52,FALSE,TRUE,2.6,NA
+"root_respiration_rate",22240,250,325,775,"Total plant anaerobic",1991-08-01 05:00:00,"18:39:00",NA,989,10.9,NA,NA,NA,"root_respiration_rate",8,-113.52,53.52,FALSE,TRUE,10.9,NA
+"root_respiration_rate",22243,251,300,778,"Elevated CO2",2010-10-04 05:00:00,"19:10:00",NA,1019,6.91,NA,0.6,3,"root_respiration_rate",10,-79.015,35.97,FALSE,FALSE,6.91,0.6
+"root_respiration_rate",22244,251,300,1177,"Ambient CO2",2010-10-04 05:00:00,"19:11:00",NA,1019,8.93,NA,1.3,3,"root_respiration_rate",10,-79.015,35.97,TRUE,FALSE,8.93,1.3
+"root_respiration_rate",22251,256,332,783,"Mycorrhizal",1986-01-01 06:00:00,"16:35:00",NA,1008,0.6,NA,NA,NA,"root_respiration_rate",1,-123.26,44.57,TRUE,TRUE,0.6,NA
+"root_respiration_rate",22252,256,332,783,"Mycorrhizal",1986-01-01 06:00:00,"16:37:00",NA,1008,0.9,NA,NA,NA,"root_respiration_rate",1,-123.26,44.57,TRUE,TRUE,0.9,NA
+"root_respiration_rate",22261,261,337,791,"Ambient CO2",1996-10-01 05:00:00,"18:35:00",NA,1018,3.4,NA,NA,10,"root_respiration_rate",10,4.41,51.22,TRUE,TRUE,3.4,NA
+"root_respiration_rate",22262,261,337,791,"Ambient CO2",1996-10-01 05:00:00,"18:37:00",NA,1018,5,NA,NA,10,"root_respiration_rate",10,4.41,51.22,TRUE,TRUE,5,NA
+"root_respiration_rate",22270,265,342,798,"Control",1987-01-15 06:00:00,"19:44:00",NA,1107,0.102,NA,NA,NA,"root_respiration_rate",1,-123.6,43.61,TRUE,TRUE,0.102,NA
+"root_respiration_rate",22271,265,342,799,"Freezing",1987-01-15 06:00:00,"19:47:00",NA,1107,0.091,NA,NA,NA,"root_respiration_rate",1,-123.6,43.61,FALSE,TRUE,0.091,NA
+"root_respiration_rate",22303,233,305,745,"Observational - Sowell (1986)",1982-08-31 05:00:00,"17:45:00",NA,970,33.7,"SE",1.3,8,"root_respiration_rate",8,-109.1,45.28,TRUE,TRUE,33.7,1.3
+"root_respiration_rate",35789,233,305,745,"Observational - Sowell (1986)",1982-08-31 05:00:00,"00:00:00",NA,969,54.8,"SE",3.2,8,"root_respiration_rate",8,-109.1,45.28,TRUE,TRUE,54.8,3.2
+"root_respiration_rate",35791,233,305,745,"Observational - Sowell (1986)",1982-08-31 05:00:00,"00:00:00",NA,970,79.8,"SE",4.9,8,"root_respiration_rate",8,-109.1,45.28,TRUE,TRUE,79.8,4.9
+"root_respiration_rate",36364,242,282,763,"Dry",NA,"00:00:00",NA,1017,8.67,NA,NA,10,"root_respiration_rate",NA,-80.42,37.18,FALSE,FALSE,8.67,NA
+"root_respiration_rate",36958,380,596,1221,"WG",NA,"00:00:00",NA,1004,1.234,"SE",0.098,5,"root_respiration_rate",NA,-84.3357,31.313,FALSE,FALSE,1.234,0.098
+"root_respiration_rate",36959,380,596,1222,"KS (Soil from tallgrass prairie in Kansas )",NA,"00:00:00",NA,1004,0.446,"SE",0.187,5,"root_respiration_rate",NA,-84.3357,31.313,TRUE,FALSE,0.446,0.187
+"root_respiration_rate",36960,380,596,1223,"SV (sand vermiculite)",NA,"00:00:00",NA,1004,0.207,"SE",0.056,5,"root_respiration_rate",NA,-84.3357,31.313,FALSE,FALSE,0.207,0.056
+"root_respiration_rate",36961,380,597,1222,"KS (Soil from tallgrass prairie in Kansas )",NA,"00:00:00",NA,1107,0.544,"SE",0.061,5,"root_respiration_rate",NA,-122.06,36.99,TRUE,FALSE,0.544,0.061
+"root_respiration_rate",36962,380,597,1223,"SV (sand vermiculite)",NA,"00:00:00",NA,1107,0.697,"SE",0.034,5,"root_respiration_rate",NA,-122.06,36.99,FALSE,FALSE,0.697,0.034
+"root_respiration_rate",36963,380,598,1222,"KS (Soil from tallgrass prairie in Kansas )",NA,"00:00:00",NA,1008,0.558,"SE",0.031,5,"root_respiration_rate",NA,-122.06,36.99,TRUE,TRUE,0.558,0.031
+"root_respiration_rate",36964,380,598,1223,"SV (sand vermiculite)",NA,"00:00:00",NA,1008,1.085,"SE",0.148,5,"root_respiration_rate",NA,-122.06,36.99,FALSE,TRUE,1.085,0.148
+"root_respiration_rate",36980,264,341,795,"Sub-ambient O3",1988-11-30 06:00:00,"00:00:00",NA,1019,1.39,"SE",0.139,3,"root_respiration_rate",11,-84.269314,36.012811,FALSE,TRUE,1.39,0.139
+"root_respiration_rate",36981,264,341,797,"Twice-ambient O3",1988-11-30 06:00:00,"00:00:00",NA,1019,2.19,"SE",0.209,3,"root_respiration_rate",11,-84.269314,36.012811,FALSE,TRUE,2.19,0.209
+"root_respiration_rate",36982,264,341,795,"Sub-ambient O3",1989-02-28 06:00:00,"00:00:00",NA,1019,7.11,"SE",1.25,12,"root_respiration_rate",2,-84.269314,36.012811,FALSE,TRUE,7.11,1.25
+"root_respiration_rate",36983,264,341,796,"Ambient O3",1989-02-28 06:00:00,"00:00:00",NA,1019,2.4,"SE",0.244,12,"root_respiration_rate",2,-84.269314,36.012811,TRUE,TRUE,2.4,0.244
+"root_respiration_rate",36984,264,341,797,"Twice-ambient O3",1989-02-28 06:00:00,"00:00:00",NA,1019,2.37,"SE",0.279,12,"root_respiration_rate",2,-84.269314,36.012811,FALSE,TRUE,2.37,0.279
+"root_respiration_rate",36985,264,341,796,"Ambient O3",1989-04-30 05:00:00,"00:00:00",NA,1019,6.17,"SE",0.697,12,"root_respiration_rate",4,-84.269314,36.012811,TRUE,TRUE,6.17,0.697
+"root_respiration_rate",36986,264,341,795,"Sub-ambient O3",1989-04-30 05:00:00,"00:00:00",NA,1019,1.92,"SE",0.279,12,"root_respiration_rate",4,-84.269314,36.012811,FALSE,TRUE,1.92,0.279
+"root_respiration_rate",36987,264,341,797,"Twice-ambient O3",1989-04-30 05:00:00,"00:00:00",NA,1019,1.05,"SE",0.174,12,"root_respiration_rate",4,-84.269314,36.012811,FALSE,TRUE,1.05,0.174
+"root_respiration_rate",36988,264,341,795,"Sub-ambient O3",1989-07-31 05:00:00,"00:00:00",NA,1019,2.96,"SE",0.592,12,"root_respiration_rate",7,-84.269314,36.012811,FALSE,TRUE,2.96,0.592
+"root_respiration_rate",36989,264,341,796,"Ambient O3",1989-07-31 05:00:00,"00:00:00",NA,1019,1.78,"SE",0.139,12,"root_respiration_rate",7,-84.269314,36.012811,TRUE,TRUE,1.78,0.139
+"root_respiration_rate",36990,264,341,797,"Twice-ambient O3",1989-07-31 05:00:00,"00:00:00",NA,1019,5.47,"SE",0.557,12,"root_respiration_rate",7,-84.269314,36.012811,FALSE,TRUE,5.47,0.557
+"root_respiration_rate",37832,260,336,1256,"CO2s",1996-05-01 00:00:00,"00:00:00",NA,1017,2.617,"SE",0.544,NA,"root_respiration_rate",5,-83.444109,35.120512,TRUE,FALSE,2.617,0.544
+"root_respiration_rate",37833,260,336,790,"CO2a",1996-05-01 00:00:00,"00:00:00",NA,1017,2.378,"SE",0.2382,NA,"root_respiration_rate",5,-83.444109,35.120512,FALSE,FALSE,2.378,0.2382
+"root_respiration_rate",37834,260,336,1256,"CO2s",1996-06-01 00:00:00,"00:00:00",NA,1017,1.25,"SE",0.13,NA,"root_respiration_rate",6,-83.444109,35.120512,TRUE,FALSE,1.25,0.13
+"root_respiration_rate",37835,260,336,790,"CO2a",1996-06-01 00:00:00,"00:00:00",NA,1017,1.761,"SE",0.203,NA,"root_respiration_rate",6,-83.444109,35.120512,FALSE,FALSE,1.761,0.203
+"root_respiration_rate",37836,260,336,1256,"CO2s",1996-07-01 00:00:00,"00:00:00",NA,1017,1.451,"SE",0.374,NA,"root_respiration_rate",7,-83.444109,35.120512,TRUE,FALSE,1.451,0.374
+"root_respiration_rate",37837,260,336,790,"CO2a",1996-07-01 00:00:00,"00:00:00",NA,1017,5.807,"SE",1.061,NA,"root_respiration_rate",7,-83.444109,35.120512,FALSE,FALSE,5.807,1.061
+"root_respiration_rate",37838,260,336,1256,"CO2s",1996-08-01 00:00:00,"00:00:00",NA,1017,2.434,"SE",0.85,NA,"root_respiration_rate",8,-83.444109,35.120512,TRUE,FALSE,2.434,0.85
+"root_respiration_rate",37839,260,336,790,"CO2a",1996-08-01 00:00:00,"00:00:00",NA,1017,5.973,"SE",1.22,NA,"root_respiration_rate",8,-83.444109,35.120512,FALSE,FALSE,5.973,1.22
+"root_respiration_rate",37840,260,336,1256,"CO2s",1996-09-01 00:00:00,"00:00:00",NA,1017,0.149,"SE",0.068,NA,"root_respiration_rate",9,-83.444109,35.120512,TRUE,FALSE,0.149,0.068
+"root_respiration_rate",37841,260,336,790,"CO2a",1996-09-01 00:00:00,"00:00:00",NA,1017,3.927,"SE",0.4766,NA,"root_respiration_rate",9,-83.444109,35.120512,FALSE,FALSE,3.927,0.4766
+"root_respiration_rate",37842,260,336,1256,"CO2s",1996-11-01 00:00:00,"00:00:00",NA,1017,1.575,"SE",0.783,NA,"root_respiration_rate",11,-83.444109,35.120512,TRUE,FALSE,1.575,0.783
+"root_respiration_rate",37843,260,336,790,"CO2a",1996-11-01 00:00:00,"00:00:00",NA,1017,5.0121,"SE",0.9869,NA,"root_respiration_rate",11,-83.444109,35.120512,FALSE,FALSE,5.0121,0.9869
+"root_respiration_rate",37844,260,336,1256,"CO2s",1996-02-01 00:00:00,"00:00:00",NA,1017,4.055,"SE",0.612,NA,"root_respiration_rate",2,-83.444109,35.120512,TRUE,FALSE,4.055,0.612
+"root_respiration_rate",37845,260,336,790,"CO2a",1996-02-01 00:00:00,"00:00:00",NA,1017,4.054,"SE",0.612,NA,"root_respiration_rate",2,-83.444109,35.120512,FALSE,FALSE,4.054,0.612
+"root_respiration_rate",38021,263,340,794,"Observational - Drew (1981)",1974-07-15 05:00:00,"00:00:00",NA,1019,15.93,"SE",2.94,6,"root_respiration_rate",7,-72.928476,41.310347,TRUE,TRUE,15.93,2.94
+"root_respiration_rate",38022,263,340,794,"Observational - Drew (1981)",1975-05-15 05:00:00,"00:00:00",NA,1019,6.13,"SE",0.49,6,"root_respiration_rate",5,-72.928476,41.310347,TRUE,TRUE,6.13,0.49
+"root_respiration_rate",38025,263,340,794,"Observational - Drew (1981)",1974-10-25 05:00:00,"00:00:00",NA,1019,18.99,NA,NA,6,"root_respiration_rate",10,-72.928476,41.310347,TRUE,TRUE,18.99,NA
+"root_respiration_rate",38026,263,340,794,"Observational - Drew (1981)",1974-11-25 06:00:00,"00:00:00",NA,1019,16.09,NA,NA,6,"root_respiration_rate",11,-72.928476,41.310347,TRUE,TRUE,16.09,NA
+"root_respiration_rate",38027,263,340,794,"Observational - Drew (1981)",1974-08-15 05:00:00,"00:00:00",NA,1019,15.93,"SE",15.44,6,"root_respiration_rate",8,-72.928476,41.310347,TRUE,TRUE,15.93,15.44
+"root_respiration_rate",38028,263,340,794,"Observational - Drew (1981)",1975-06-15 05:00:00,"00:00:00",NA,1019,5.64,"SE",0.98,6,"root_respiration_rate",6,-72.928476,41.310347,TRUE,TRUE,5.64,0.98
+"root_respiration_rate",38031,263,340,794,"Observational - Drew (1981)",1974-11-25 06:00:00,"00:00:00",NA,1019,17.89,NA,NA,6,"root_respiration_rate",11,-72.928476,41.310347,TRUE,TRUE,17.89,NA
+"root_respiration_rate",38033,263,340,794,"Observational - Drew (1981)",1974-09-15 05:00:00,"00:00:00",NA,1019,16.42,"SE",1.47,6,"root_respiration_rate",9,-72.928476,41.310347,TRUE,TRUE,16.42,1.47
+"root_respiration_rate",38034,263,340,794,"Observational - Drew (1981)",1975-07-15 05:00:00,"00:00:00",NA,1019,2.94,"SE",0.49,6,"root_respiration_rate",7,-72.928476,41.310347,TRUE,TRUE,2.94,0.49
+"root_respiration_rate",38038,263,340,794,"Observational - Drew (1981)",1974-07-24 05:00:00,"00:00:00",NA,1019,9.99,NA,NA,6,"root_respiration_rate",7,-72.928476,41.310347,TRUE,TRUE,9.99,NA
+"root_respiration_rate",38039,263,340,794,"Observational - Drew (1981)",1974-10-15 05:00:00,"00:00:00",NA,1019,16.91,"SE",0.98,6,"root_respiration_rate",10,-72.928476,41.310347,TRUE,TRUE,16.91,0.98
+"root_respiration_rate",38040,263,340,794,"Observational - Drew (1981)",1975-08-15 05:00:00,"00:00:00",NA,1019,11.52,"SE",6.86,6,"root_respiration_rate",8,-72.928476,41.310347,TRUE,TRUE,11.52,6.86
+"root_respiration_rate",38043,263,340,794,"Observational - Drew (1981)",1974-07-25 05:00:00,"00:00:00",NA,1019,13.73,NA,NA,6,"root_respiration_rate",7,-72.928476,41.310347,TRUE,TRUE,13.73,NA
+"root_respiration_rate",38044,263,340,794,"Observational - Drew (1981)",1974-08-25 05:00:00,"00:00:00",NA,1019,10.68,NA,NA,6,"root_respiration_rate",8,-72.928476,41.310347,TRUE,TRUE,10.68,NA
+"root_respiration_rate",38045,263,340,794,"Observational - Drew (1981)",1974-11-15 06:00:00,"00:00:00",NA,1019,15.93,"SE",1.96,6,"root_respiration_rate",11,-72.928476,41.310347,TRUE,TRUE,15.93,1.96
+"root_respiration_rate",38049,263,340,794,"Observational - Drew (1981)",1974-08-25 05:00:00,"00:00:00",NA,1019,14.28,NA,NA,6,"root_respiration_rate",8,-72.928476,41.310347,TRUE,TRUE,14.28,NA
+"root_respiration_rate",38050,263,340,794,"Observational - Drew (1981)",1974-09-25 05:00:00,"00:00:00",NA,1019,11.37,NA,NA,6,"root_respiration_rate",9,-72.928476,41.310347,TRUE,TRUE,11.37,NA
+"root_respiration_rate",38051,263,340,794,"Observational - Drew (1981)",1975-03-15 05:00:00,"00:00:00",NA,1019,12.01,"SE",0.49,6,"root_respiration_rate",3,-72.928476,41.310347,TRUE,TRUE,12.01,0.49
+"root_respiration_rate",38052,263,340,794,"Observational - Drew (1981)",1975-12-15 06:00:00,"00:00:00",NA,1019,5.64,"SE",0.74,6,"root_respiration_rate",12,-72.928476,41.310347,TRUE,TRUE,5.64,0.74
+"root_respiration_rate",38056,263,340,794,"Observational - Drew (1981)",1974-09-25 05:00:00,"00:00:00",NA,1019,14.84,NA,NA,6,"root_respiration_rate",9,-72.928476,41.310347,TRUE,TRUE,14.84,NA
+"root_respiration_rate",38057,263,340,794,"Observational - Drew (1981)",1974-10-25 05:00:00,"00:00:00",NA,1019,13.59,NA,NA,6,"root_respiration_rate",10,-72.928476,41.310347,TRUE,TRUE,13.59,NA
+"root_respiration_rate",38058,263,340,794,"Observational - Drew (1981)",1975-04-15 05:00:00,"00:00:00",NA,1019,11.52,"SE",1.23,6,"root_respiration_rate",4,-72.928476,41.310347,TRUE,TRUE,11.52,1.23
+"root_respiration_rate",38062,263,340,794,"Observational - Drew (1981)",1974-10-15 05:00:00,"00:00:00",NA,1019,15.95,NA,NA,6,"root_respiration_rate",10,-72.928476,41.310347,TRUE,TRUE,15.95,NA
+"root_respiration_rate",38063,263,340,794,"Observational - Drew (1981)",1974-12-01 06:00:00,"00:00:00",NA,1019,14.28,NA,NA,6,"root_respiration_rate",12,-72.928476,41.310347,TRUE,TRUE,14.28,NA
+"root_respiration_rate",38065,263,340,794,"Observational - Drew (1981)",1974-07-25 05:00:00,"00:00:00",NA,1019,5.27,NA,NA,6,"root_respiration_rate",7,-72.928476,41.310347,TRUE,TRUE,5.27,NA
+"root_respiration_rate",38067,263,340,794,"Observational - Drew (1981)",1974-08-25 05:00:00,"00:00:00",NA,1019,6.79,NA,NA,6,"root_respiration_rate",8,-72.928476,41.310347,TRUE,TRUE,6.79,NA
+"root_respiration_rate",38068,263,340,794,"Observational - Drew (1981)",1974-09-25 05:00:00,"00:00:00",NA,1019,10.54,NA,NA,6,"root_respiration_rate",9,-72.928476,41.310347,TRUE,TRUE,10.54,NA
+"root_respiration_rate",38069,263,340,794,"Observational - Drew (1981)",1974-11-25 06:00:00,"00:00:00",NA,1019,12.34,NA,NA,NA,"root_respiration_rate",11,-72.928476,41.310347,TRUE,TRUE,12.34,NA
+"root_respiration_rate",38070,263,340,794,"Observational - Drew (1981)",1974-09-25 05:00:00,"00:00:00",NA,1019,8.18,NA,NA,6,"root_respiration_rate",9,-72.928476,41.310347,TRUE,TRUE,8.18,NA
+"root_respiration_rate",38075,249,320,773,"Ambient CO2",1996-08-01 00:00:00,"00:00:00",NA,1018,8.728,"SE",0.666,24,"root_respiration_rate",8,-0.84,51.14,TRUE,NA,8.728,0.666
+"root_respiration_rate",38076,249,320,774,"Elevated CO2",1996-08-01 00:00:00,"00:00:00",NA,1018,9.044,"SE",0.666,24,"root_respiration_rate",8,-0.84,51.14,FALSE,NA,9.044,0.666
+"root_respiration_rate",38082,257,333,785,"35 Pa",1995-01-01 00:00:00,"00:00:00",NA,1008,50,"SE",2,6,"root_respiration_rate",1,-149.605322,68.633132,TRUE,TRUE,50,2
+"root_respiration_rate",38589,259,334,787,"Control (C)",1993-03-15 00:00:00,"00:00:00",NA,1012,2.583,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,TRUE,FALSE,2.583,NA
+"root_respiration_rate",38590,259,334,787,"Control (C)",1993-03-15 00:00:00,"00:00:00",NA,1012,3.512,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,TRUE,FALSE,3.512,NA
+"root_respiration_rate",38591,259,334,787,"Control (C)",1993-03-15 00:00:00,"00:00:00",NA,1012,4.039,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,TRUE,FALSE,4.039,NA
+"root_respiration_rate",38592,259,334,787,"Control (C)",1993-03-15 00:00:00,"00:00:00",NA,1012,4.864,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,TRUE,FALSE,4.864,NA
+"root_respiration_rate",38593,259,334,787,"Control (C)",1993-03-15 00:00:00,"00:00:00",NA,1012,4.395,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,TRUE,FALSE,4.395,NA
+"root_respiration_rate",38595,259,334,787,"Control (C)",1993-03-15 00:00:00,"00:00:00",NA,1012,3.741,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,TRUE,FALSE,3.741,NA
+"root_respiration_rate",38596,259,334,787,"Control (C)",1993-03-15 00:00:00,"00:00:00",NA,1012,5.326,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,TRUE,FALSE,5.326,NA
+"root_respiration_rate",38597,259,334,787,"Control (C)",1993-03-15 00:00:00,"00:00:00",NA,1012,6.214,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,TRUE,FALSE,6.214,NA
+"root_respiration_rate",38598,259,334,787,"Control (C)",1993-03-15 00:00:00,"00:00:00",NA,1012,8.264,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,TRUE,FALSE,8.264,NA
+"root_respiration_rate",38599,259,334,787,"Control (C)",1993-03-15 00:00:00,"00:00:00",NA,1012,9.201,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,TRUE,FALSE,9.201,NA
+"root_respiration_rate",38603,259,334,787,"Control (C)",1993-03-15 00:00:00,"00:00:00",NA,1012,10.174,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,TRUE,FALSE,10.174,NA
+"root_respiration_rate",38609,259,334,787,"Control (C)",1993-03-15 00:00:00,"00:00:00",NA,1012,8.303,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,TRUE,FALSE,8.303,NA
+"root_respiration_rate",38610,259,334,788,"Irrigated (I)",1993-03-15 00:00:00,"00:00:00",NA,1012,2.684,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,FALSE,FALSE,2.684,NA
+"root_respiration_rate",38611,259,334,788,"Irrigated (I)",1993-03-15 00:00:00,"00:00:00",NA,1012,2.071,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,FALSE,FALSE,2.071,NA
+"root_respiration_rate",38612,259,334,788,"Irrigated (I)",1993-03-15 00:00:00,"00:00:00",NA,1012,3.192,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,FALSE,FALSE,3.192,NA
+"root_respiration_rate",38613,259,334,788,"Irrigated (I)",1993-03-15 00:00:00,"00:00:00",NA,1012,3.239,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,FALSE,FALSE,3.239,NA
+"root_respiration_rate",38616,259,334,788,"Irrigated (I)",1993-03-15 00:00:00,"00:00:00",NA,1012,3.287,"SE",0.327,NA,"root_respiration_rate",3,148.933,-35.42,FALSE,FALSE,3.287,0.327
+"root_respiration_rate",38634,259,334,788,"Irrigated (I)",1993-03-15 00:00:00,"00:00:00",NA,1012,4.315,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,FALSE,FALSE,4.315,NA
+"root_respiration_rate",38636,259,334,788,"Irrigated (I)",1993-03-15 00:00:00,"00:00:00",NA,1012,4.267,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,FALSE,FALSE,4.267,NA
+"root_respiration_rate",38637,259,334,788,"Irrigated (I)",1993-03-15 00:00:00,"00:00:00",NA,1012,4.546,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,FALSE,FALSE,4.546,NA
+"root_respiration_rate",38638,259,334,788,"Irrigated (I)",1993-03-15 00:00:00,"00:00:00",NA,1012,4.734,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,FALSE,FALSE,4.734,NA
+"root_respiration_rate",38644,259,334,788,"Irrigated (I)",1993-03-15 00:00:00,"00:00:00",NA,1012,4.076,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,FALSE,FALSE,4.076,NA
+"root_respiration_rate",38646,259,334,788,"Irrigated (I)",1993-03-15 00:00:00,"00:00:00",NA,1012,3.982,"SE",0.385,NA,"root_respiration_rate",3,148.933,-35.42,FALSE,FALSE,3.982,0.385
+"root_respiration_rate",38647,259,334,788,"Irrigated (I)",1993-09-15 00:00:00,"00:00:00",NA,1014,3.888,"SE",NA,NA,"root_respiration_rate",9,148.933,-35.42,FALSE,FALSE,3.888,NA
+"root_respiration_rate",38648,259,334,788,"Irrigated (I)",1993-03-15 00:00:00,"00:00:00",NA,1012,3.7952,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,FALSE,FALSE,3.7952,NA
+"root_respiration_rate",38649,259,334,788,"Irrigated (I)",1993-03-15 00:00:00,"00:00:00",NA,1012,3.842,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,FALSE,FALSE,3.842,NA
+"root_respiration_rate",38650,259,334,788,"Irrigated (I)",1993-03-15 00:00:00,"00:00:00",NA,1012,4.029,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,FALSE,FALSE,4.029,NA
+"root_respiration_rate",38651,259,334,788,"Irrigated (I)",1993-03-15 00:00:00,"00:00:00",NA,1012,5.617,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,FALSE,FALSE,5.617,NA
+"root_respiration_rate",38652,259,334,788,"Irrigated (I)",1993-03-15 00:00:00,"00:00:00",NA,1012,8.143,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,FALSE,FALSE,8.143,NA
+"root_respiration_rate",38653,259,334,788,"Irrigated (I)",1993-03-12 06:00:00,"00:00:00",NA,1012,10.4,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,FALSE,FALSE,10.4,NA
+"root_respiration_rate",38654,259,334,789,"Irrigated + Liquid Fertilized (IF)",1993-03-15 00:00:00,"00:00:00",NA,1012,5.502,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,FALSE,FALSE,5.502,NA
+"root_respiration_rate",38655,259,334,789,"Irrigated + Liquid Fertilized (IF)",1993-03-15 00:00:00,"00:00:00",NA,1012,9.2501,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,FALSE,FALSE,9.2501,NA
+"root_respiration_rate",38656,259,334,789,"Irrigated + Liquid Fertilized (IF)",1993-03-15 00:00:00,"00:00:00",NA,1012,7.042,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,FALSE,FALSE,7.042,NA
+"root_respiration_rate",38657,259,334,789,"Irrigated + Liquid Fertilized (IF)",1993-03-15 00:00:00,"00:00:00",NA,1012,4.743,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,FALSE,FALSE,4.743,NA
+"root_respiration_rate",38659,259,334,789,"Irrigated + Liquid Fertilized (IF)",1993-03-15 00:00:00,"00:00:00",NA,1012,6.521,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,FALSE,FALSE,6.521,NA
+"root_respiration_rate",38660,259,334,789,"Irrigated + Liquid Fertilized (IF)",1993-03-15 00:00:00,"00:00:00",NA,1012,6.559,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,FALSE,FALSE,6.559,NA
+"root_respiration_rate",38661,259,334,789,"Irrigated + Liquid Fertilized (IF)",1993-03-15 00:00:00,"00:00:00",NA,1012,7.2601,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,FALSE,FALSE,7.2601,NA
+"root_respiration_rate",38662,259,334,789,"Irrigated + Liquid Fertilized (IF)",1993-03-15 00:00:00,"00:00:00",NA,1012,7.4407,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,FALSE,FALSE,7.4407,NA
+"root_respiration_rate",38663,259,334,789,"Irrigated + Liquid Fertilized (IF)",1993-03-15 00:00:00,"00:00:00",NA,1012,8.756,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,FALSE,FALSE,8.756,NA
+"root_respiration_rate",38664,259,334,789,"Irrigated + Liquid Fertilized (IF)",1993-03-15 00:00:00,"00:00:00",NA,1012,8.466,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,FALSE,FALSE,8.466,NA
+"root_respiration_rate",38665,259,334,789,"Irrigated + Liquid Fertilized (IF)",1993-03-15 00:00:00,"00:00:00",NA,1012,10.302,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,FALSE,FALSE,10.302,NA
+"root_respiration_rate",38666,259,334,789,"Irrigated + Liquid Fertilized (IF)",1993-03-15 00:00:00,"00:00:00",NA,1012,10.68,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,FALSE,FALSE,10.68,NA
+"root_respiration_rate",38667,259,334,789,"Irrigated + Liquid Fertilized (IF)",1993-03-15 00:00:00,"00:00:00",NA,1012,13.982,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,FALSE,FALSE,13.982,NA
+"root_respiration_rate",38711,259,334,789,"Irrigated + Liquid Fertilized (IF)",1993-03-15 00:00:00,"00:00:00",NA,1012,5.225,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,FALSE,FALSE,5.225,NA
+"root_respiration_rate",38715,259,334,789,"Irrigated + Liquid Fertilized (IF)",1993-03-15 00:00:00,"00:00:00",NA,1012,5.038,"SE",NA,NA,"root_respiration_rate",3,148.933,-35.42,FALSE,FALSE,5.038,NA
+"root_respiration_rate",39311,227,300,1352,"Observational - Drake (2008)",2006-05-01 00:00:00,"00:00:00",NA,1019,6.768,"SE",0.228,NA,"root_respiration_rate",5,-79.015,35.97,TRUE,FALSE,6.768,0.228
+"root_respiration_rate",39312,227,300,1352,"Observational - Drake (2008)",2006-07-01 00:00:00,"00:00:00",NA,1019,6.273,"SE",0.266,NA,"root_respiration_rate",7,-79.015,35.97,TRUE,FALSE,6.273,0.266
+"root_respiration_rate",39313,227,300,1352,"Observational - Drake (2008)",2006-05-01 00:00:00,"00:00:00",NA,1019,7.984,"SE",0.228,NA,"root_respiration_rate",5,-79.015,35.97,TRUE,FALSE,7.984,0.228
+"root_respiration_rate",39314,227,300,1352,"Observational - Drake (2008)",2006-05-01 00:00:00,"00:00:00",NA,1019,8.669,"SE",0.228,NA,"root_respiration_rate",5,-79.015,35.97,TRUE,FALSE,8.669,0.228
+"root_respiration_rate",39315,227,300,1352,"Observational - Drake (2008)",2006-07-01 00:00:00,"00:00:00",NA,1019,7.452,"SE",0.228,NA,"root_respiration_rate",7,-79.015,35.97,TRUE,FALSE,7.452,0.228
+"root_respiration_rate",39316,227,300,1352,"Observational - Drake (2008)",2006-07-01 00:00:00,"00:00:00",NA,1019,7.224,"SE",0.228,NA,"root_respiration_rate",7,-79.015,35.97,TRUE,FALSE,7.224,0.228
+"root_respiration_rate",39317,227,300,1352,"Observational - Drake (2008)",2006-01-01 00:00:00,"00:00:00",NA,1019,4.258,"SE",0.228,NA,"root_respiration_rate",1,-79.015,35.97,TRUE,FALSE,4.258,0.228
+"root_respiration_rate",39318,227,300,1352,"Observational - Drake (2008)",2006-01-01 00:00:00,"00:00:00",NA,1019,4.5627,"SE",0.228,NA,"root_respiration_rate",1,-79.015,35.97,TRUE,FALSE,4.5627,0.228
+"root_respiration_rate",39319,227,300,1352,"Observational - Drake (2008)",2006-01-01 00:00:00,"00:00:00",NA,1019,4.2965,"SE",0.228,NA,"root_respiration_rate",1,-79.015,35.97,TRUE,FALSE,4.2965,0.228
+"root_respiration_rate",39344,227,300,1348,"ambients C",2006-07-01 00:00:00,"00:00:00",NA,1019,10.1031,"SE",1.299,3,"root_respiration_rate",7,-79.015,35.97,TRUE,FALSE,10.1031,1.299
+"root_respiration_rate",39345,227,300,1349,"ambient C + N",2006-07-01 00:00:00,"00:00:00",NA,1019,8.4433,"SE",1.2268,3,"root_respiration_rate",7,-79.015,35.97,FALSE,FALSE,8.4433,1.2268
+"root_respiration_rate",39346,227,300,1350,"elevated C",2006-07-01 00:00:00,"00:00:00",NA,1019,11.8351,"SE",1.2268,3,"root_respiration_rate",7,-79.015,35.97,FALSE,FALSE,11.8351,1.2268
+"root_respiration_rate",39347,227,300,1351,"elevated C+ N",2006-07-01 00:00:00,"00:00:00",NA,1019,3.9691,"SE",1.299,3,"root_respiration_rate",7,-79.015,35.97,FALSE,FALSE,3.9691,1.299
+"root_respiration_rate",39348,227,300,1348,"ambients C",2006-01-01 00:00:00,"00:00:00",NA,1019,1.5876,"SE",1.2268,3,"root_respiration_rate",1,-79.015,35.97,TRUE,FALSE,1.5876,1.2268
+"root_respiration_rate",39349,227,300,1349,"ambient C + N",2005-12-31 06:00:00,"00:00:00",NA,1019,2.3928,"SE",1.299,3,"root_respiration_rate",12,-79.015,35.97,FALSE,FALSE,2.3928,1.299
+"root_respiration_rate",39350,227,300,1350,"elevated C",2006-01-01 00:00:00,"00:00:00",NA,1019,2.2371,"SE",1.299,3,"root_respiration_rate",1,-79.015,35.97,FALSE,FALSE,2.2371,1.299
+"root_respiration_rate",39351,227,300,1351,"elevated C+ N",2006-01-01 00:00:00,"00:00:00",NA,1019,1.3711,"SE",1.299,3,"root_respiration_rate",1,-79.015,35.97,FALSE,FALSE,1.3711,1.299
+"root_respiration_rate",39503,265,342,799,"Freezing",1987-01-15 06:00:00,"00:00:00",NA,1107,0.11,NA,NA,NA,"root_respiration_rate",1,-123.6,43.61,FALSE,TRUE,0.11,NA
+"root_respiration_rate",39504,265,342,799,"Freezing",1987-01-15 06:00:00,"00:00:00",NA,1107,0.114,NA,NA,NA,"root_respiration_rate",1,-123.6,43.61,FALSE,TRUE,0.114,NA
+"root_respiration_rate",39505,265,342,800,"Hot storage",1987-01-15 06:00:00,"00:00:00",NA,1107,0.096,NA,NA,NA,"root_respiration_rate",1,-123.6,43.61,FALSE,TRUE,0.096,NA
+"root_respiration_rate",39506,265,342,800,"Hot storage",1987-01-15 06:00:00,"00:00:00",NA,1107,0.085,NA,NA,NA,"root_respiration_rate",1,-123.6,43.61,FALSE,TRUE,0.085,NA
+"root_respiration_rate",39507,265,342,800,"Hot storage",1987-01-15 06:00:00,"00:00:00",NA,1107,0.087,NA,NA,NA,"root_respiration_rate",1,-123.6,43.61,FALSE,TRUE,0.087,NA
+"root_respiration_rate",39508,265,342,801,"Rapid heating",1987-01-14 06:00:00,"00:00:00",NA,1107,0.102,NA,NA,NA,"root_respiration_rate",1,-123.6,43.61,FALSE,TRUE,0.102,NA
+"root_respiration_rate",39509,265,342,801,"Rapid heating",1986-01-15 06:00:00,"00:00:00",NA,1107,0.593,NA,NA,NA,"root_respiration_rate",1,-123.6,43.61,FALSE,TRUE,0.593,NA
+"root_respiration_rate",39510,265,342,801,"Rapid heating",1987-01-15 06:00:00,"00:00:00",NA,1107,0.113,NA,NA,NA,"root_respiration_rate",1,-123.6,43.61,FALSE,TRUE,0.113,NA
+"root_respiration_rate",39511,265,342,802,"Drying",1987-01-15 06:00:00,"00:00:00",NA,1107,0.088,NA,NA,NA,"root_respiration_rate",1,-123.6,43.61,FALSE,TRUE,0.088,NA
+"root_respiration_rate",39512,265,342,802,"Drying",1987-01-15 06:00:00,"00:00:00",NA,1107,0.061,NA,NA,NA,"root_respiration_rate",1,-123.6,43.61,FALSE,TRUE,0.061,NA
+"root_respiration_rate",39513,265,342,802,"Drying",1987-01-15 06:00:00,"00:00:00",NA,1107,0.068,NA,NA,NA,"root_respiration_rate",1,-123.6,43.61,FALSE,TRUE,0.068,NA
+"root_respiration_rate",39514,265,342,798,"Control",1987-01-15 06:00:00,"00:00:00",NA,1107,0.169,NA,NA,NA,"root_respiration_rate",1,-123.6,43.61,TRUE,TRUE,0.169,NA
+"root_respiration_rate",39515,265,342,799,"Freezing",1987-01-15 06:00:00,"00:00:00",NA,1107,0.163,NA,NA,NA,"root_respiration_rate",1,-123.6,43.61,FALSE,TRUE,0.163,NA
+"root_respiration_rate",39516,265,342,799,"Freezing",1987-01-15 06:00:00,"00:00:00",NA,1107,0.178,NA,NA,NA,"root_respiration_rate",1,-123.6,43.61,FALSE,TRUE,0.178,NA
+"root_respiration_rate",39517,265,342,799,"Freezing",1987-01-15 06:00:00,"00:00:00",NA,1107,0.164,NA,NA,NA,"root_respiration_rate",1,-123.6,43.61,FALSE,TRUE,0.164,NA
+"root_respiration_rate",39518,265,342,800,"Hot storage",1987-01-15 06:00:00,"00:00:00",NA,1107,0.162,NA,NA,NA,"root_respiration_rate",1,-123.6,43.61,FALSE,TRUE,0.162,NA
+"root_respiration_rate",39519,265,342,800,"Hot storage",1987-01-15 06:00:00,"00:00:00",NA,1107,0.151,NA,NA,NA,"root_respiration_rate",1,-123.6,43.61,FALSE,TRUE,0.151,NA
+"root_respiration_rate",39520,265,342,800,"Hot storage",1987-01-15 06:00:00,"00:00:00",NA,1107,0.161,NA,NA,NA,"root_respiration_rate",1,-123.6,43.61,FALSE,TRUE,0.161,NA
+"root_respiration_rate",39521,265,342,801,"Rapid heating",1987-01-15 06:00:00,"00:00:00",NA,1107,0.191,NA,NA,NA,"root_respiration_rate",1,-123.6,43.61,FALSE,TRUE,0.191,NA
+"root_respiration_rate",39522,265,342,801,"Rapid heating",1987-01-15 06:00:00,"00:00:00",NA,1107,0.178,NA,NA,NA,"root_respiration_rate",1,-123.6,43.61,FALSE,TRUE,0.178,NA
+"root_respiration_rate",39523,265,342,801,"Rapid heating",1987-01-15 06:00:00,"00:00:00",NA,1107,0.174,NA,NA,NA,"root_respiration_rate",1,-123.6,43.61,FALSE,TRUE,0.174,NA
+"root_respiration_rate",39524,265,342,802,"Drying",1987-01-15 06:00:00,"00:00:00",NA,1107,0.162,NA,NA,NA,"root_respiration_rate",1,-123.6,43.61,FALSE,TRUE,0.162,NA
+"root_respiration_rate",39525,265,342,802,"Drying",1987-01-15 06:00:00,"00:00:00",NA,1107,0.117,NA,NA,NA,"root_respiration_rate",1,-123.6,43.61,FALSE,TRUE,0.117,NA
+"root_respiration_rate",39526,265,342,802,"Drying",1987-01-15 06:00:00,"00:00:00",NA,1107,0.102,NA,NA,NA,"root_respiration_rate",1,-123.6,43.61,FALSE,TRUE,0.102,NA
+"root_respiration_rate",39697,263,340,794,"Observational - Drew (1981)",1974-07-25 05:00:00,"00:00:00",NA,1019,2.91,NA,NA,6,"root_respiration_rate",7,-72.928476,41.310347,TRUE,TRUE,2.91,NA
+"root_respiration_rate",39698,263,340,794,"Observational - Drew (1981)",1974-08-24 05:00:00,"00:00:00",NA,1019,2.91,NA,NA,6,"root_respiration_rate",8,-72.928476,41.310347,TRUE,TRUE,2.91,NA
+"root_respiration_rate",39699,263,340,794,"Observational - Drew (1981)",1974-09-25 05:00:00,"00:00:00",NA,1019,4.58,NA,NA,6,"root_respiration_rate",9,-72.928476,41.310347,TRUE,TRUE,4.58,NA
+"root_respiration_rate",39700,263,340,794,"Observational - Drew (1981)",1974-10-25 05:00:00,"00:00:00",NA,1019,7.63,NA,NA,6,"root_respiration_rate",10,-72.928476,41.310347,TRUE,TRUE,7.63,NA
+"root_respiration_rate",39701,263,340,794,"Observational - Drew (1981)",1974-11-25 06:00:00,"00:00:00",NA,1019,10.82,NA,NA,6,"root_respiration_rate",11,-72.928476,41.310347,TRUE,TRUE,10.82,NA
+"root_respiration_rate",39759,356,574,1150,"Observational",1994-05-01 05:00:00,"00:00:00",NA,984,4.37,"SE",0.467,15,"root_respiration_rate",5,-105.75,53.2,TRUE,FALSE,4.37,0.467
+"root_respiration_rate",39760,356,688,1150,"Observational",1994-05-01 05:00:00,"00:00:00",NA,973,7.74,"SE",1.12,15,"root_respiration_rate",5,-98.03,55.85,TRUE,FALSE,7.74,1.12
+"root_respiration_rate",39762,356,574,1150,"Observational",1994-05-15 05:00:00,"00:00:00",NA,973,4.94,"SE",0.467,15,"root_respiration_rate",5,-105.75,53.2,TRUE,FALSE,4.94,0.467
+"root_respiration_rate",39808,356,688,1150,"Observational",1994-05-01 05:00:00,"00:00:00",NA,984,7.64,"SE",1.5,15,"root_respiration_rate",5,-98.03,55.85,TRUE,FALSE,7.64,1.5
+"root_respiration_rate",40302,356,576,1150,"Observational",1994-07-10 05:00:00,"00:00:00",NA,973,6.68,"SE",0.75,15,"root_respiration_rate",7,-97.85,55.74,TRUE,FALSE,6.68,0.75
+"root_respiration_rate",40303,356,688,1150,"Observational",1994-08-01 05:00:00,"00:00:00",NA,973,2.18,"SE",0.28,15,"root_respiration_rate",8,-98.03,55.85,TRUE,FALSE,2.18,0.28
+"root_respiration_rate",40304,356,574,1150,"Observational",1994-06-25 05:00:00,"00:00:00",NA,973,4.63,"SE",0.37,15,"root_respiration_rate",6,-105.75,53.2,TRUE,FALSE,4.63,0.37
+"root_respiration_rate",40305,356,574,1150,"Observational",1994-08-01 05:00:00,"00:00:00",NA,973,2.46,"SE",0.37,15,"root_respiration_rate",8,-105.75,53.2,TRUE,FALSE,2.46,0.37
+"root_respiration_rate",40306,356,688,1150,"Observational",1994-07-01 05:00:00,"00:00:00",NA,984,6.22,"SE",0.75,15,"root_respiration_rate",7,-98.03,55.85,TRUE,FALSE,6.22,0.75
+"root_respiration_rate",40307,356,688,1150,"Observational",1994-08-01 05:00:00,"00:00:00",NA,984,3.26,"SE",0.47,15,"root_respiration_rate",8,-98.03,55.85,TRUE,FALSE,3.26,0.47
+"root_respiration_rate",40308,356,574,1150,"Observational",1994-05-05 05:00:00,"00:00:00",NA,984,3.33,"SE",0.47,15,"root_respiration_rate",5,-105.75,53.2,TRUE,FALSE,3.33,0.47
+"root_respiration_rate",40309,356,574,1150,"Observational",1994-08-01 05:00:00,"00:00:00",NA,984,3.07,"SE",0.37,15,"root_respiration_rate",8,-105.75,53.2,TRUE,FALSE,3.07,0.37
+"root_respiration_rate",40396,450,719,1451,"BurtFer2002",1998-07-15 05:00:00,"00:00:00",NA,991,2.85,"SE",0.323,6,"root_respiration_rate",7,-106.52,34.4,FALSE,FALSE,2.85,0.323
+"root_respiration_rate",40397,450,709,1451,"BurtFer2002",1998-07-15 05:00:00,"00:00:00",NA,992,6.3,"SE",0.969,6,"root_respiration_rate",7,-81.72,30.62,FALSE,FALSE,6.3,0.969
+"root_respiration_rate",40400,450,718,1451,"BurtFer2002",1998-07-15 05:00:00,"00:00:00",NA,1013,5.17,"SE",0.269,6,"root_respiration_rate",7,-88.65,47.1,FALSE,FALSE,5.17,0.269
+"root_respiration_rate",40401,450,684,1451,"BurtFer2002",1998-07-15 05:00:00,"00:00:00",NA,971,2.64,"SE",0.215,6,"root_respiration_rate",7,-147.71,64.83,FALSE,FALSE,2.64,0.215
+"root_respiration_rate",41412,452,695,1512,"Ruess Observational",1998-08-01 05:00:00,"00:00:00",NA,973,0.85,NA,NA,1,"root_respiration_rate",8,-147.87,64.8,TRUE,FALSE,0.85,NA
+"root_respiration_rate",41458,452,695,1512,"Ruess Observational",1998-07-24 05:00:00,"00:00:00",NA,973,2.03,NA,NA,1,"root_respiration_rate",7,-147.87,64.8,TRUE,FALSE,2.03,NA
+"root_respiration_rate",41459,452,695,1512,"Ruess Observational",1998-07-24 05:00:00,"00:00:00",NA,973,3.48,NA,NA,1,"root_respiration_rate",7,-147.87,64.8,TRUE,FALSE,3.48,NA
+"root_respiration_rate",41460,452,695,1512,"Ruess Observational",1998-07-25 05:00:00,"00:00:00",NA,973,3.26,NA,NA,1,"root_respiration_rate",7,-147.87,64.8,TRUE,FALSE,3.26,NA
+"root_respiration_rate",41461,452,695,1512,"Ruess Observational",1998-07-26 05:00:00,"00:00:00",NA,973,3.97,NA,NA,1,"root_respiration_rate",7,-147.87,64.8,TRUE,FALSE,3.97,NA
+"root_respiration_rate",41462,452,695,1512,"Ruess Observational",1998-07-27 05:00:00,"00:00:00",NA,973,1.53,NA,NA,1,"root_respiration_rate",7,-147.87,64.8,TRUE,FALSE,1.53,NA
+"root_respiration_rate",41463,452,695,1512,"Ruess Observational",1998-07-27 05:00:00,"00:00:00",NA,973,2.94,NA,NA,1,"root_respiration_rate",7,-147.87,64.8,TRUE,FALSE,2.94,NA
+"root_respiration_rate",41464,452,695,1512,"Ruess Observational",1998-07-29 05:00:00,"00:00:00",NA,973,2.47,NA,NA,1,"root_respiration_rate",7,-147.87,64.8,TRUE,FALSE,2.47,NA
+"root_respiration_rate",41465,452,695,1512,"Ruess Observational",1998-07-30 05:00:00,"00:00:00",NA,973,2.34,NA,NA,1,"root_respiration_rate",7,-147.87,64.8,TRUE,FALSE,2.34,NA
+"root_respiration_rate",41466,452,695,1512,"Ruess Observational",1998-08-01 05:00:00,"00:00:00",NA,973,4.79,NA,NA,1,"root_respiration_rate",8,-147.87,64.8,TRUE,FALSE,4.79,NA
+"root_respiration_rate",41467,452,695,1512,"Ruess Observational",1998-08-02 05:00:00,"00:00:00",NA,973,2.22,NA,NA,1,"root_respiration_rate",8,-147.87,64.8,TRUE,FALSE,2.22,NA
+"root_respiration_rate",41468,452,695,1512,"Ruess Observational",1998-08-04 05:00:00,"00:00:00",NA,973,2.83,NA,NA,1,"root_respiration_rate",8,-147.87,64.8,TRUE,FALSE,2.83,NA
+"root_respiration_rate",41469,452,695,1512,"Ruess Observational",1998-08-05 05:00:00,"00:00:00",NA,973,3.18,NA,NA,1,"root_respiration_rate",8,-147.87,64.8,TRUE,FALSE,3.18,NA
+"root_respiration_rate",41470,452,695,1512,"Ruess Observational",1998-08-07 05:00:00,"00:00:00",NA,973,3.1,NA,NA,1,"root_respiration_rate",8,-147.87,64.8,TRUE,FALSE,3.1,NA
+"root_respiration_rate",41471,452,695,1512,"Ruess Observational",1998-08-10 05:00:00,"00:00:00",NA,973,2.06,NA,NA,1,"root_respiration_rate",8,-147.87,64.8,TRUE,FALSE,2.06,NA
+"root_respiration_rate",41472,452,695,1512,"Ruess Observational",1998-08-12 05:00:00,"00:00:00",NA,973,2.96,NA,NA,1,"root_respiration_rate",8,-147.87,64.8,TRUE,FALSE,2.96,NA
+"root_respiration_rate",41473,452,695,1512,"Ruess Observational",1998-08-13 05:00:00,"00:00:00",NA,973,2.29,NA,NA,1,"root_respiration_rate",8,-147.87,64.8,TRUE,FALSE,2.29,NA
+"root_respiration_rate",44094,453,696,1679,"Uchida 2008 Fine- Observational",1995-05-05 05:00:00,"00:00:00",NA,973,2.76,"SE",0.489,4,"root_respiration_rate",5,-105.24,53.75,TRUE,FALSE,2.76,0.489
+"root_respiration_rate",44095,453,696,1680,"Uchida 2008 Medium- Observational",1995-05-06 05:00:00,"00:00:00",NA,973,0.978,"SE",0.095,4,"root_respiration_rate",5,-105.24,53.75,TRUE,FALSE,0.978,0.095
+"root_respiration_rate",44096,453,696,1681,"Uchida 2008 Thick- Observational",1995-05-07 05:00:00,"00:00:00",NA,973,0.316,NA,NA,1,"root_respiration_rate",5,-105.24,53.75,TRUE,FALSE,0.316,NA
+"SLA",22096,227,300,735,"normal atmospheric CO2 level",2010-09-27 00:00:00,"19:00:00",NA,1019,8.71,NA,0.71,NA,"SLA",9,-79.015,35.97,TRUE,FALSE,8.71,0.71
+"SLA",37249,391,603,1240,"Observational",1993-07-15 00:00:00,"00:00:00",NA,993,2.73,NA,NA,1,"SLA",7,-105.61,40.06,TRUE,FALSE,2.73,NA
+"SLA",37252,391,603,1240,"Observational",1993-07-15 00:00:00,"00:00:00",NA,970,3.27,NA,NA,1,"SLA",7,-105.61,40.06,TRUE,FALSE,3.27,NA
+"SLA",39550,441,674,1403,"Observational",NA,"00:00:00",NA,973,3.5,NA,NA,NA,"SLA",NA,-147.87,64.82,TRUE,NA,3.5,NA
+"SLA",39551,441,674,1403,"Observational",NA,"00:00:00",NA,971,3.5,NA,NA,NA,"SLA",NA,-147.87,64.82,TRUE,NA,3.5,NA
+"SLA",44414,311,486,957,"Understory",NA,"00:00:00",NA,6,9.2935,"SE",1.2228,5,"SLA",NA,-113.5,53.333,TRUE,TRUE,9.2935,1.2228
+"SLA",44415,311,486,959,"Open",NA,"00:00:00",NA,6,7.337,"SE",1.2228,5,"SLA",NA,-113.5,53.333,FALSE,TRUE,7.337,1.2228
+"SLA",44416,311,486,957,"Understory",NA,"00:00:00",NA,971,8.5598,"SE",0.9783,5,"SLA",NA,-113.5,53.333,TRUE,TRUE,8.5598,0.9783
+"SLA",44417,311,486,959,"Open",NA,"00:00:00",NA,971,4.8913,"SE",0.4891,5,"SLA",NA,-113.5,53.333,FALSE,TRUE,4.8913,0.4891
+"SLA",44418,311,486,957,"Understory",NA,"00:00:00",NA,23314,7.0924,"SE",0.4891,5,"SLA",NA,-113.5,53.333,TRUE,TRUE,7.0924,0.4891
+"SLA",44419,311,486,959,"Open",NA,"00:00:00",NA,23314,5.1359,"SE",0.4891,5,"SLA",NA,-113.5,53.333,FALSE,TRUE,5.1359,0.4891
+"SLA",26438,326,506,1050,"Branch bag- Tree 1, upper canopy",1996-04-01 00:00:00,"00:00:00",NA,973,3.45,NA,NA,1,"SLA",4,-98.4808,55.8796,FALSE,FALSE,3.45,NA
+"SLA",26439,326,506,1049,"Branch bag- Tree 1, lower canopy",1996-04-01 00:00:00,"00:00:00",NA,973,3.53,NA,NA,1,"SLA",4,-98.4808,55.8796,TRUE,FALSE,3.53,NA
+"SLA",26440,326,506,1051,"Branch bag- Tree 2, upper canopy",1996-04-01 00:00:00,"00:00:00",NA,973,3.2,NA,NA,1,"SLA",4,-98.4808,55.8796,FALSE,FALSE,3.2,NA
+"SLA",26441,326,506,1052,"Branch bag- Tree 2, lower canopy",1996-04-01 00:00:00,"00:00:00",NA,973,3.54,NA,NA,1,"SLA",4,-98.4808,55.8796,FALSE,FALSE,3.54,NA
+"SLA",37381,398,609,1253,"Elevated CO2",NA,"00:00:00",NA,1419,6.7,"SE",0.06,3,"SLA",NA,-72.02,42.08,FALSE,FALSE,6.7,0.06
+"SLA",37382,398,609,1254,"No nitrogen, ambient CO2",NA,"00:00:00",NA,978,6.79,"SE",0.13,3,"SLA",NA,-72.02,42.08,TRUE,FALSE,6.79,0.13
+"SLA",37383,398,609,1254,"No nitrogen, ambient CO2",NA,"00:00:00",NA,1017,6.85,"SE",0.15,3,"SLA",NA,-72.02,42.08,TRUE,FALSE,6.85,0.15
+"SLA",37387,398,609,1253,"Elevated CO2",NA,"00:00:00",NA,1017,6.71,"SE",0.1,3,"SLA",NA,-72.02,42.08,FALSE,FALSE,6.71,0.1
+"SLA",37388,398,609,1253,"Elevated CO2",NA,"00:00:00",NA,978,6.81,"SE",0.15,3,"SLA",NA,-72.02,42.08,FALSE,FALSE,6.81,0.15
+"SLA",38561,414,624,1310,"ambient CO2 low temp",1998-01-01 00:00:00,"00:00:00",NA,984,13.4,"SE",0.6,NA,"SLA",1,-93.18,44.98,TRUE,TRUE,13.4,0.6
+"SLA",38562,414,624,1312,"ambient CO2 medium temp",1998-01-01 00:00:00,"00:00:00",NA,984,15.4,"SE",1.6,NA,"SLA",1,-93.18,44.98,FALSE,TRUE,15.4,1.6
+"SLA",38563,414,624,1314,"ambient CO2 high temp",1997-12-31 06:00:00,"00:00:00",NA,984,14.3,"SE",1,NA,"SLA",12,-93.18,44.98,FALSE,TRUE,14.3,1
+"SLA",38564,414,624,1311,"elevated CO2 low temp",1998-01-01 00:00:00,"00:00:00",NA,984,12.6,"SE",1,NA,"SLA",1,-93.18,44.98,FALSE,TRUE,12.6,1
+"SLA",38565,414,624,1313,"elevated CO2 medium temp",1998-01-01 00:00:00,"00:00:00",NA,984,14.4,"SE",2,NA,"SLA",1,-93.18,44.98,FALSE,TRUE,14.4,2
+"SLA",38566,414,624,1315,"elevated CO2 high temp",1998-01-01 00:00:00,"00:00:00",NA,984,11.7,"SE",1.4,NA,"SLA",1,-93.18,44.98,FALSE,TRUE,11.7,1.4
+"SLA",38579,414,624,1310,"ambient CO2 low temp",1998-01-01 00:00:00,"00:00:00",NA,973,13.8,"SE",0.9,NA,"SLA",1,-93.18,44.98,TRUE,TRUE,13.8,0.9
+"SLA",38580,414,624,1312,"ambient CO2 medium temp",1998-01-01 00:00:00,"00:00:00",NA,973,16.8,"SE",1.9,NA,"SLA",1,-93.18,44.98,FALSE,TRUE,16.8,1.9
+"SLA",38581,414,624,1314,"ambient CO2 high temp",1998-01-01 00:00:00,"00:00:00",NA,973,17.7,"SE",1.3,NA,"SLA",1,-93.18,44.98,FALSE,TRUE,17.7,1.3
+"SLA",38582,414,624,1311,"elevated CO2 low temp",1998-01-01 00:00:00,"00:00:00",NA,973,12.7,"SE",1.5,NA,"SLA",1,-93.18,44.98,FALSE,TRUE,12.7,1.5
+"SLA",38583,414,624,1313,"elevated CO2 medium temp",1998-01-01 00:00:00,"00:00:00",NA,973,12.7,"SE",0.3,NA,"SLA",1,-93.18,44.98,FALSE,TRUE,12.7,0.3
+"SLA",38585,414,624,1315,"elevated CO2 high temp",1998-01-01 00:00:00,"00:00:00",NA,973,11,"SE",0.2,NA,"SLA",1,-93.18,44.98,FALSE,TRUE,11,0.2
+"SLA",38693,415,630,1316,"Observational",NA,"00:00:00",NA,727,3,NA,NA,NA,"SLA",NA,-89.4293,43.0399,TRUE,FALSE,3,NA
+"SLA",38694,415,630,1316,"Observational",NA,"00:00:00",NA,971,3.5,NA,NA,NA,"SLA",NA,-89.4293,43.0399,TRUE,FALSE,3.5,NA
+"SLA",38700,415,630,1316,"Observational",NA,"00:00:00",NA,984,4.1,NA,NA,NA,"SLA",NA,-89.4293,43.0399,TRUE,FALSE,4.1,NA
+"SLA",38701,415,630,1316,"Observational",NA,"00:00:00",NA,1017,5.7,NA,NA,NA,"SLA",NA,-89.4293,43.0399,TRUE,FALSE,5.7,NA
+"SLA",38706,415,630,1316,"Observational",NA,"00:00:00",NA,1018,3.4,NA,NA,NA,"SLA",NA,-89.4293,43.0399,TRUE,FALSE,3.4,NA
+"SLA",38707,415,630,1316,"Observational",NA,"00:00:00",NA,1386,4.5,NA,NA,NA,"SLA",NA,-89.4293,43.0399,TRUE,FALSE,4.5,NA
+"SLA",38716,415,625,1316,"Observational",NA,"00:00:00",NA,967,3.9,NA,NA,NA,"SLA",NA,-91.03,43.85,TRUE,FALSE,3.9,NA
+"SLA",38721,415,625,1316,"Observational",NA,"00:00:00",NA,1013,4,NA,NA,NA,"SLA",NA,-91.03,43.85,TRUE,FALSE,4,NA
+"SLA",38722,415,625,1316,"Observational",NA,"00:00:00",NA,1017,7.4,NA,NA,NA,"SLA",NA,-91.03,43.85,TRUE,FALSE,7.4,NA
+"SLA",38739,415,626,1316,"Observational",NA,"00:00:00",NA,1013,2.8,NA,NA,NA,"SLA",NA,-89.81,44.11,TRUE,FALSE,2.8,NA
+"SLA",44721,603,796,1779,"observational",NA,"00:00:00",NA,6,5.03977814167366,NA,0.877899394935369,5,"LMA",NA,-71.288077,44.06464,TRUE,FALSE,0.2039,0.0325
+"SLA",44722,603,796,1779,"observational",NA,"00:00:00",NA,978,3.34516446282637,NA,0.47911360031947,10,"LMA",NA,-71.288077,44.06464,TRUE,FALSE,0.3047,0.0411
+"SLA",44724,603,796,1779,"observational",NA,"00:00:00",NA,1017,5.84599115462028,NA,0.744610056578227,5,"LMA",NA,-71.288077,44.06464,TRUE,FALSE,0.1737,0.0211
+"SLA",44725,603,796,1779,"observational",NA,"00:00:00",NA,1419,6.03329146474292,NA,0.996078785247045,8,"LMA",NA,-71.288077,44.06464,TRUE,FALSE,0.1699,0.0259
