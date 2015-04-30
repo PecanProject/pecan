@@ -72,13 +72,6 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite=FALSE, ...
 ##' \end{itemize}
 ##' @export cf2biocro
 ##' @author David LeBauer
-##' @param in.prefix prefix for each file
-##' @param outfolder location where model specific output is written.
-##' @param ... can pass lat, lon, start.date and end.date
-##' @return OK if everything was succesful.
-##' @export
-##' @author Rob Kooper, David LeBauer
-##-------------------------------------------------------------------------------------------------#
 cf2biocro <- function(met){
 
   if(!"relative_humidity" %in% colnames(met)){
@@ -102,10 +95,9 @@ cf2biocro <- function(met){
   }
   if(!"wind_speed" %in% colnames(met)){
     if(all(c("northward_wind", "eastward_wind") %in% colnames(met))){
-      wind_speed <- sqrt(met$northward_wind^2 + met$eastward_wind^2)
-    } else {
-      logger.error("neither wind_speed nor both eastward_wind and northward_wind are present in met data")      
+      wind_speed <- sqrt(northward_wind^2 + eastward_wind^2)
     }
+    logger.error("neither wind_speed nor both eastward_wind and northward_wind are present in met data")
 
   }
   
