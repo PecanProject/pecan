@@ -75,7 +75,7 @@ if (length(which(commandArgs() == "--continue")) == 0) {
     
     # met conversion
     if(input.tag == 'met') {
-      if(length(input) >= 1) {
+      if (is.null(input$path)) {
         if (is.null(settings$browndog)) {
           status.start("MET Process")
         } else {
@@ -91,7 +91,7 @@ if (length(which(commandArgs() == "--continue")) == 0) {
           dbparms    = settings$database$bety, 
           dir        = settings$run$dbfiles,
           browndog   = settings$browndog)
-        settings$run$inputs[[i]][['path']] <- result$file
+        settings$run$inputs[[i]][['path']] <- result
         status.end()
       }
     }

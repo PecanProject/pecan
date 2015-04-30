@@ -266,7 +266,7 @@ for(year in start_year:end_year) {
 
   ## write DRIVER file
   sites <- 1
-  metgrid <- c(1,1,1,1,floor(lon),floor(lat))
+  metgrid <- c(1,1,1,1,lon,lat)
   metvar <- c("nbdsf","nddsf","vbdsf","vddsf","prate","dlwrf","pres","hgt","ugrd","vgrd","sh","tmp","co2")
   nmet <- length(metvar)
   metfrq <- rep(dt,nmet)

@@ -10,7 +10,7 @@
 ##' @export
 ##' @param the url of the file to download
 ##' @param the filename
-##' @param timeout number of seconds to wait for file (default 120)
+##' @param timeout number of seconds to wait for file (default 600)
 ##' @param list of options for curl, for example to download from a
 ##'        protected site use list(userpwd=userpass, httpauth = 1L)
 ##' @param retry404 retry on a 404, this is used by Brown Dog
@@ -20,7 +20,7 @@
 ##' \dontrun{
 ##' download.url('http://localhost/', index.html)
 ##' }
-download.url = function(url, file, timeout=120, .opts=list(), retry404=TRUE) {
+download.url = function(url, file, timeout=600, .opts=list(), retry404=TRUE) {
   count <- 0
   print(paste(url, file))
   while (!url.exists(url, .opts=.opts) && count < timeout) {

@@ -31,11 +31,11 @@ load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date){
   if(!grepl("days", time.units[1])) {
     logger.error("time dimension does not have units of days")
   }
-  if(!grepl("1700-01-01", time.units[2])){
-    logger.error("time dimension of met input does not start at 1700-01-01")
-  }
+  date <- ymd(time.units[2])
+  if(is.na(date)) date <- ymd_h(time.units[2])
+  if(is.na(date)) date <- ymd_hms(time.units[2])
   all.dates <- data.table(index = seq(time.idx),
-                          date = ymd("1700-01-01") +
+                          date = date +
                             days(floor(time.idx)) +
                             minutes(as.integer(ud.convert(time.idx - floor(time.idx), "days", "minutes"))))
   

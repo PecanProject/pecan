@@ -22,7 +22,7 @@ results of sensitivity analysis
 Performs univariate sensitivity analysis and variance decomposition
 }
 \details{
-This function estimates the univariate responses of a model to a parameter for a set of traits, calculates the model sensitivity at the median, and performs a variance decomposition. This function results in a set of sensitivity plots (one per variable) and variance decomposition plot.
+This function estimates the univariate responses of a model to a parameter for a set of traits, calculates the model sensitivity at the median, and performs a variance decomposition. This function results in a set of sensitivity plots (one per variable) and plot.variance.decomposition.
 }
 \examples{
 \dontrun{

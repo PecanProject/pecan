@@ -114,9 +114,9 @@ remove.config.DALEC <- function(outdir,settings){
 ##' @name write.run.DALEC
 ##' @title Function to generate generic model run script files
 ##' @author <unknown>
-##' @import PEcAn.utils
 #--------------------------------------------------------------------------------------------------#
 write.run.DALEC <- function(settings){
+  if(!require(PEcAn.utils)) print("install PEcAn.utils")
   run.script.template = system.file("data", "run.template.DALEC", package="PEcAn.DALEC")
   run.text <- scan(file = run.script.template, 
                    what="character",sep='@', quote=NULL, quiet=TRUE)
