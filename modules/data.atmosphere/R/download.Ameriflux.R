@@ -10,10 +10,11 @@ download.Ameriflux.site <- function(site_id) {
 ##' @name download.Ameriflux
 ##' @title download.Ameriflux
 ##' @export
-##' @param site the site to be downloaded, will be used as prefix as well
+##' @param site the FLUXNET ID of the site to be downloaded, used as file name prefix. 
+##' The "SITE_ID" field in \href{http://ameriflux.lbl.gov/sites/site-list-and-pages/}{list of Ameriflux sites}
 ##' @param outfolder location on disk where outputs will be stored
-##' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
-##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
+##' @param start_date the start date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
+##' @param end_date the end date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
 ##' 
