@@ -126,7 +126,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   
   jobsh <- gsub('@SITE_LAT@', settings$run$site$lat, jobsh)
   jobsh <- gsub('@SITE_LON@', settings$run$site$lon, jobsh)
-  jobsh <- gsub('@SITE_MET@', settings$run$inputs$met, jobsh)
+  jobsh <- gsub('@SITE_MET@', settings$run$inputs$met$path, jobsh)
   
   jobsh <- gsub('@SCRATCH_COPY@', copyscratch, jobsh)
   jobsh <- gsub('@SCRATCH_CLEAR@', clearscratch, jobsh)
@@ -237,7 +237,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   
   ed2in.text <- gsub('@SITE_LAT@', settings$run$site$lat, ed2in.text)
   ed2in.text <- gsub('@SITE_LON@', settings$run$site$lon, ed2in.text)
-  ed2in.text <- gsub('@SITE_MET@', settings$run$inputs$met, ed2in.text)
+  ed2in.text <- gsub('@SITE_MET@', settings$run$inputs$me$path, ed2in.text)
   ed2in.text <- gsub('@MET_START@', metstart, ed2in.text)
   ed2in.text <- gsub('@MET_END@', metend, ed2in.text)
   
@@ -269,13 +269,13 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   # Slightly overcomplicated to avoid error if path name happened to contain '.lat'
   
   # when pss or css not exists, case 0
-  if (is.null(settings$run$inputs$pss)|is.null(settings$run$inputs$css)){
+  if (is.null(settings$run$inputs$pss$path)|is.null(settings$run$inputs$css$path)){
     ed2in.text <- gsub('@INIT_MODEL@', 0, ed2in.text)
     ed2in.text <- gsub('@SITE_PSSCSS@', "", ed2in.text)
   }
   else{
-    prefix.pss <- sub(".lat.*", "", settings$run$inputs$css)
-    prefix.css <- sub(".lat.*", "", settings$run$inputs$pss)
+    prefix.pss <- sub(".lat.*", "", settings$run$inputs$css$path)
+    prefix.css <- sub(".lat.*", "", settings$run$inputs$pss$path)
     # pss and css prefix is not the same, kill
     if (!identical(prefix.pss , prefix.css)){
       logger.severe("ED2 css/pss/ files have different prefix")
@@ -284,8 +284,8 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
     else{
       value <- 2
       # site exists 
-      if (!is.null(settings$run$inputs$site)){
-        prefix.sites <- sub(".lat.*", "", settings$run$inputs$site)
+      if (!is.null(settings$run$inputs$site$path)){
+        prefix.sites <- sub(".lat.*", "", settings$run$inputs$site$path)
         # sites and pss have different prefix name, kill 
         if (!identical (prefix.sites, prefix.pss)){
           logger.severe("ED2 sites/pss/ files have different prefix")
@@ -303,12 +303,12 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   
   ##----------------------------------------------------------------------
   
-  ed2in.text <- gsub('@ED_VEG@', settings$run$inputs$veg, ed2in.text)
-  ed2in.text <- gsub('@ED_SOIL@', settings$run$inputs$soil, ed2in.text)
-  ed2in.text <- gsub('@ED_LU@', settings$run$inputs$lu, ed2in.text)
-  ed2in.text <- gsub('@ED_THSUM@', ifelse(str_sub(settings$run$inputs$thsum, -1) == "/",
-                                          settings$run$inputs$thsum,
-                                          paste0(settings$run$inputs$thsum, "/")), ed2in.text)
+  ed2in.text <- gsub('@ED_VEG@', settings$run$inputs$veg$path, ed2in.text)
+  ed2in.text <- gsub('@ED_SOIL@', settings$run$inputs$soil$path, ed2in.text)
+  ed2in.text <- gsub('@ED_LU@', settings$run$inputs$lu$path, ed2in.text)
+  ed2in.text <- gsub('@ED_THSUM@', ifelse(str_sub(settings$run$inputs$thsum$path, -1) == "/",
+                                          settings$run$inputs$thsum$path,
+                                          paste0(settings$run$inputs$thsum$path, "/")), ed2in.text)
   
   ##----------------------------------------------------------------------
   ed2in.text <- gsub('@START_MONTH@', format(startdate, "%m"), ed2in.text)

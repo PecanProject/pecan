@@ -6,7 +6,7 @@ Comparing met data from various sources
 
 * `ebifarm` local met station *Data*
   * point location (40.08$^o$ N, -88.2$^o$ W), energy farm, Urbana, IL
-* `narr` [NARR daily](http://www.esrl.noaa.gov/psd/data/gridded/data.narr.html] 
+* `narr` [NARR daily](http://www.esrl.noaa.gov/psd/data/gridded/data.narr.html)
   * 0.3$^o$ grid daily 1979-2013
 * `narr3h` NARR from MsTMIP
   * 0.25$^o$ grid 3-hourly 1979-2010

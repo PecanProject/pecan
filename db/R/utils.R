@@ -217,8 +217,6 @@ db.exists <- function(params, write=TRUE, table=NA) {
       return(invisible(FALSE))
     }
     
-    print (read.result)
-    
     # get the table's primary key column
     get.key <- tryCatch({
       db.query(paste("SELECT pg_attribute.attname,format_type(pg_attribute.atttypid, pg_attribute.atttypmod) 

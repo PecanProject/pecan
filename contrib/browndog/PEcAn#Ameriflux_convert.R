@@ -1,4 +1,4 @@
-#!/usr/bin/Rscript
+#!/usr/bin/env Rscript
 #PEcAn
 #data
 #ameriflux.zip
@@ -73,6 +73,9 @@ dir.create(rawfolder, showWarnings=FALSE, recursive=TRUE)
 cffolder <- file.path(tempDir,"cf")
 dir.create(cffolder, showWarnings=FALSE, recursive=TRUE)
 
+gapfolder <- file.path(tempDir,"gap")
+dir.create(gapfolder, showWarnings=FALSE, recursive=TRUE)
+
 # 1 copy input file to input directory
 # and unzip if needed 
 if (extI == ".ameriflux.zip") {
@@ -94,18 +97,19 @@ if (extI == ".ameriflux.zip") {
 # 2 convert data to CF
 #print(met2CF.Ameriflux(rawfolder, site, cffolder, start_date=start_date, end_date=end_date, overwrite=overwrite))
 met2CF.Ameriflux(rawfolder, site, cffolder, start_date=start_date, end_date=end_date, overwrite=overwrite)
+metgapfill(cffolder, site, gapfolder, start_date=start_date, end_date=end_date)
 
 # 3 zip (if needed) and deliver
 if (extO == ".pecan.zip") {
     wd <- getwd()
-    rootZip <- paste0(tempDir,"/cf")
+    rootZip <- paste0(tempDir,"/gap")
     setwd(rootZip)
     system("zip temp.zip ./*")
     #file.rename("temp.zip", paste0(wd,"/", args[2]))   
     file.rename("temp.zip", args[2])   
     setwd(wd)
 } else {
-    file.rename(paste0(tempDir,"/cf/",site,".",yearS,".nc"),args[2])
+    file.rename(paste0(tempDir,"/gap/",site,".",yearS,".nc"),args[2])
 }
 
 #if (length(args) > 2) {

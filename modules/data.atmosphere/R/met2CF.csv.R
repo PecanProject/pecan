@@ -40,7 +40,7 @@ met2CF.csv <- function(in.path, in.file, outfolder, format, lat=NULL, lon=NULL, 
     
     new.file <- file.path(outfolder, gsub(".csv","_CF.nc",basename(files[i])))
   
-    dat <- read.csv(files[i], skip = format$skip, na.strings = format$na.strings, as.is=TRUE)
+    dat <- read.csv(files[i], skip = format$skip, na.strings = format$na.strings, as.is=TRUE, check.names = FALSE)
 
     ## some files have a line under the header that lists variable units
     if(format$unit.row){  
@@ -66,8 +66,8 @@ met2CF.csv <- function(in.path, in.file, outfolder, format, lat=NULL, lon=NULL, 
 
 
     ## create lat lon dimensions
-    x <- ncdim_def("lon", "degrees_east", lon) #define netCDF dimensions for variables
-    y <- ncdim_def("lat", "degrees_north", lat)
+    x <- ncdim_def("longitude", "degrees_east", lon) #define netCDF dimensions for variables
+    y <- ncdim_def("latitude", "degrees_north", lat)
     
     xytdim <- list(x,y,t)
     ## air_temperature / airT

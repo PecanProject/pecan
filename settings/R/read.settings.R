@@ -35,46 +35,43 @@ check.inputs <- function(settings) {
   if (nrow(inputs) > 0) {
     for(i in 1:nrow(inputs)) {
       tag <- inputs$tag[i]
-      tagid <- paste0(tag, ".id")
       hostname <- settings$run$host$name
       allinputs <- allinputs[allinputs != tag]
 
-      # check if <tag.id> exists
-      if (!is.null(settings$run$inputs[[tagid]])) {
-        id <- settings$run$inputs[[tagid]]
+      # check if tag exists
+      if (is.null(settings$run$inputs[[tag]])) {
+        if (inputs$required[i]) {
+          logger.severe("Missing required input :", tag)
+        } else {
+          logger.info("Missing optional input :", tag)
+        }
+        next
+      }
+      
+      # check if <id> exists
+      if ("id" %in% names(settings$run$inputs[[tag]])) {
+        id <- settings$run$inputs[[tag]][['id']]
         file <- dbfile.file("Input", id, dbcon, hostname)
         if (is.na(file)) {
           logger.error("No file found for", tag, " and id", id, "on host", hostname)
         } else {
-          if (is.null(settings$run$inputs[[tag]])) {
-            settings$run$inputs[[tag]] <- file
-          } else if (file != settings$run$inputs[[tag]]) {
+          if (is.null(settings$run$inputs[[tag]][['path']])) {
+            settings$run$inputs[[tag]]['path'] <- file
+          } else if (file != settings$run$inputs[[tag]][['path']]) {
             logger.warn("Input file and id do not match for ", tag)
           }
         }
+      } else if ("path" %in% names(settings$run$inputs[[tag]])) {
+        # can we find the file so we can set the tag.id
+        id <- dbfile.id('Input', settings$run$inputs[[tag]][['path']], dbcon, hostname)
+        if (!is.na(id)) {
+          settings$run$inputs[[tag]][['id']] <- id
+        }
       }
       
-#       # check if file exists
-#       if (is.null(settings$run$inputs[[tag]])) {
-#         if (inputs$required[i]) {
-#           logger.severe("Missing required input :", tag)
-#         } else {
-#           logger.info("Missing optional input :", tag)
-#         }
-#         
-#       } else {
-#         # can we find the file so we can set the tag.id
-#         if (is.null(settings$run$inputs[[tagid]])) {
-#           id <- dbfile.id('Input', settings$run$inputs[[tag]], dbcon, hostname)
-#           if (!is.na(id)) {
-#             settings$run$inputs[[tagid]] <- id
-#           }
-#         }
-#       }
-
       # check to see if format is right type
-      if (!is.null(settings$run$inputs[[tagid]])) {
-        formats <- db.query(paste0("SELECT format_id FROM inputs WHERE id=", settings$run$inputs[[tagid]]), con=dbcon)
+      if ("id" %in% names(settings$run$inputs[[tag]])) {
+        formats <- db.query(paste0("SELECT format_id FROM inputs WHERE id=", settings$run$inputs[[tag]][['id']]), con=dbcon)
         if (nrow(formats) > 1) {
           if (formats[1, 'format_id'] != inputs$format_id[i]) {
             logger.error("Format of input", tag, "does not match specified input.")
@@ -608,7 +605,7 @@ check.settings <- function(settings) {
 
   # Check folder where outputs are written before adding to dbfiles
   if(is.null(settings$run$dbfiles)) {
-    settings$run$dbfiles <- normalizePath("~/.pecan/dbfiles", mustWork=FALSE)
+    settings$run$dbfiles <- full.path("~/.pecan/dbfiles")
   } else {
     if (substr(settings$run$dbfiles, 1, 1) != '/'){
       logger.warn("settings$run$dbfiles pathname", settings$run$dbfiles, " is invalid\n
@@ -655,7 +652,7 @@ check.settings <- function(settings) {
 
   #update workflow
   if (fixoutdir) {
-      db.query(paste0("UPDATE workflows SET folder='", normalizePath(settings$outdir), "' WHERE id=", settings$workflow$id), con=dbcon)
+      db.query(paste0("UPDATE workflows SET folder='", full.path(settings$outdir), "' WHERE id=", settings$workflow$id), con=dbcon)
   }
 
   # check/create the local run folder
@@ -827,7 +824,7 @@ update.settings <- function(settings) {
     settings$model$name <- NULL
   }
 
-  # run$site$met is now run$inputs$met
+  # run$site$met is now run$inputs$met$path
   if (!is.null(settings$run$site$met)) {
     if (!is.null(settings$run$inputs$met)) {
       if (settings$run$site$met != settings$run$inputs$met) {
@@ -842,8 +839,42 @@ update.settings <- function(settings) {
     logger.info("Model tag has changed, please use <inputs><met> to specify",
                  "met file for a run. See also",
                  "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup.")
-    settings$run$inputs$met <- settings$run$site$met
+    settings$run$inputs$met$path <- settings$run$site$met
     settings$run$site$met <- NULL
+  }
+  
+  # inputs now have path and id under tag
+  for(tag in names(settings$run$inputs)) {
+    if (grepl(".id$", tag)) {
+      tagid <- tag
+      tag <- substr(tagid, 1, nchar(tagid)-3)
+      if (tag %in% names(settings$run$inputs)) {
+        next
+      } else {
+        settings$run$inputs[[tag]]['id'] <- settings$run$inputs[[tagid]]
+        settings$run$inputs[[tagid]] <- null
+      }
+    } else {
+      if (!is.list(settings$run$inputs[[tag]])) {
+        path <- settings$run$inputs[[tag]]
+        settings$run$inputs[[tag]] <- list("path"=path)
+      }
+
+      tagid <- paste0(tag, ".id")
+      if (tagid %in% names(settings$run$inputs)) {
+        if ('id' %in% names(settings$run$inputs[[tag]])) {
+          if (settings$run$inputs[[tagid]] != settings$run$inputs[[tag]][['id']]) {
+            logger.severe("Please remove", tagid, "from inputs configuration.")
+          } else {
+            logger.info("Please remove", tagid, "from inputs configuration.")
+          }
+          settings$run$inputs[[tagid]] <- NULL
+        } else {
+          settings$run$inputs[[tag]][['id']] <- settings$run$inputs[[tagid]]
+          settings$run$inputs[[tagid]] <- NULL
+        }
+      }
+    }
   }
 
   # some specific ED changes
@@ -910,6 +941,52 @@ update.settings <- function(settings) {
     settings$run$inputs$thsums <- settings$model$inputs
     settings$model$soil <- NULL
   }
+
+  invisible(settings)
+}
+
+##' Add secret information from ~/.pecan.xml
+##'
+##' Copies certains sections from ~/.pecan.xml to the settings. This allows
+##' a user to have their own unique parameters also when sharing the
+##' pecan.xml file we don't expose these secrets.
+##' Currently this will copy the database and browndog sections
+##'
+##' @title Add Users secrets
+##' @param settings settings file
+##' @return will return the updated settings values
+##' @author Rob Kooper
+addSecrets <- function(settings) {
+  if (!file.exists("~/.pecan.xml")) {
+    return(settings)
+  }
+  pecan <- xmlToList(xmlParse("~/.pecan.xml"))
+  
+  # always copy following sections
+  for(key in c('database')) {
+    for(section in names(pecan[[key]])) {
+      if (section %in% names(settings[section])) {
+        logger.info("Already have a section for", section)
+      } else {
+        logger.info("Imported section for", section)
+        settings[[key]][section] <- pecan[[key]][section]
+      }
+    }
+  }
+  
+  # only copy these sections if tag exists
+  for(key in c('browndog')) {
+    if (! key %in% names(settings)) next
+    
+    for(section in names(pecan[[key]])) {
+      if (section %in% names(settings[section])) {
+        logger.info("Already have a section for", section)
+      } else {
+        logger.info("Imported section for", section)
+        settings[[key]][section] <- pecan[[key]][section]
+      }
+    }
+  }  
 
   invisible(settings)
 }
@@ -988,6 +1065,7 @@ read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml"){
 
   ## convert the xml to a list for ease and return
   settings <- xmlToList(xml)
+  settings <- addSecrets(settings)
   settings <- update.settings(settings)
   settings <- check.settings(settings)
 
@@ -1011,5 +1089,5 @@ read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml"){
 ##=================================================================================================#
 
 ####################################################################################################
-### EOF.  End of R script file.  						
+### EOF.  End of R script file.              
 ####################################################################################################

@@ -33,12 +33,12 @@ $xaxis=isset($_REQUEST['xaxis']);
 $xaxis=TRUE;
 
 // get run information
-$query = "SELECT * FROM workflows WHERE workflows.id=$workflowid";
-$result = $pdo->query($query);
-if (!$result) {
+$stmt = $pdo->prepare("SELECT * FROM workflows WHERE workflows.id=?");
+if (!$stmt->execute(array($workflowid))) {
   die('Invalid query: ' . error_database());
 }
-$workflow = $result->fetch(PDO::FETCH_ASSOC);
+$workflow = $stmt->fetch(PDO::FETCH_ASSOC);
+$stmt->closeCursor();
 $start = substr($workflow['start_date'], 0, 4);
 $end = substr($workflow['end_date'], 0, 4);
 $folder = $workflow['folder'];
@@ -291,12 +291,14 @@ if (is_dir("$folder/run")) {
     var run = $('#runid').val();
 
     $('#graphyear').empty();
-    $.each(Object.keys(outplot[run]), function(key, value) {
-         $('#graphyear')
-             .append($("<option></option>")
-             .text(value)); 
-    });
-    updateGraphYear();
+    if (outplot[run]) {
+      $.each(Object.keys(outplot[run]), function(key, value) {
+           $('#graphyear')
+               .append($("<option></option>")
+               .text(value)); 
+      });
+      updateGraphYear();
+    }
 
     $('#inpfile').empty();
     $.each(inpfile[run], function(key, value) {   

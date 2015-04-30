@@ -131,7 +131,6 @@ wide2long <- function(data.wide, lat, lon, var){
 ##' From Campbell and Norman p151
 ##' PPFD = PAR * (J/m2/s) * (1 mol / 2.35e5 J)
 ##' 2.35e5 J / mol is the energy content of solar radiation in the PAR waveband
-##' 0.486 is based on the approximation that PAR is 0.45-0.50 of the total radiation
 ##' @title par2ppfd
 ##' @param PAR (W / m2) 
 ##' @author David LeBauer
@@ -140,7 +139,36 @@ wide2long <- function(data.wide, lat, lon, var){
 ##' @author David LeBauer
 par2ppfd <- function(watts){
     ppfd <- watts / (2.35 * 10^5)
-    ud.convert(ppfd, "mol ", "umol")
+    ppfd <- ud.convert(ppfd, "mol ", "umol")
+    return(ppfd)
+}
+
+
+##' Solar Radiation to PPFD
+##' 
+##' Here the input is the total solar radiation 
+##' so to obtain in the PAR spectrum need to multiply by 0.486
+##' This is based on the approximation that PAR is 0.45-0.50 of the total radiation
+##' 
+##' @title SW to PAR
+##' @author David LeBauer
+##' @param sw shortwave radiation (W/m2 == J/m2/s)
+##' @return PAR W/m2
+sw2par <- function(sw){
+  par <- sw * 0.486
+  return(par)
+}
+##' CF Shortwave to PPFD
+##' 
+##' Cambell and Norman 1998 p 151, ch 10
+##' @title SW to PPFD
+##' @author David LeBauer
+##' @param SW CF surface_downwelling_shortwave_flux_in_air W/m2
+##' @return PPFD umol /m2 / s
+sw2ppfd <- function(sw){
+  par <- sw2par(sw)
+  ppfd <- par2ppfd(par)
+  return(ppfd)
 }
 
 
@@ -168,7 +196,6 @@ solarMJ2ppfd <- function(solarMJ){
   solarR <- (0.12 * solarMJ) * 2.07 * 1e6 / 3600
   return(solarR)
 }
-
 
 ##' estimated exner function
 ##' @title Exner function
