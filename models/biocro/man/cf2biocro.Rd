@@ -2,12 +2,30 @@
 % Please edit documentation in R/met2model.BIOCRO.R
 \name{cf2biocro}
 \alias{cf2biocro}
-\title{Convert CF data.table to BioCro input}
+\title{Convert CF-formatted met data to BioCro met}
 \usage{
 cf2biocro(met)
 }
 \arguments{
-\item{met}{data.table with met for a single site; output from \link{\code{load.cfmet}}}
+\item{met}{data.table object  with met for a single site; output from \link{\code{load.cfmet}}
+\begin{itemize}
+\item year int
+\item month int
+\item day int: day of month (1-31)
+\item doy int: day of year (1-366)
+\item hour int (0-23)
+\item date YYYY-MM-DD HH:MM:SS POSIXct
+\item wind_speed num m/s
+\item northward_wind
+\item eastward_wind
+\item ppfd (optional; if missing, requires surface_downwelling_shortwave_flux_in_air)
+\item surface_downwelling_shortwave_flux_in_air
+\item air_pressure (Pa) (optional; if missing, requires relative_humidity)
+\item specific_humidity (optional; if missing, requires relative_humidity)
+\item relative_humidity (optional; if missing, requires air_pressure and specific_humidity)
+\item precipitation_flux
+\item air_temperature
+\end{itemize}}
 
 \item{in.prefix}{prefix for each file}
 
@@ -16,12 +34,25 @@ cf2biocro(met)
 \item{...}{can pass lat, lon, start.date and end.date}
 }
 \value{
+data.table / data.frame with fields
+\begin{itemize}
+\item  doy day of year
+\item hr  hour
+\item solar solar radiation (PPFD)
+\item temp temperature, degrees celsius
+\item rh relative humidity, as fraction (0-1)
+\item windspeed m/s
+\item precip cm/h
+\end{itemize}
+
 OK if everything was succesful.
 }
 \description{
-Converts a data.table in PEcAn CF format to BioCro input format
+Converts a CF data frame into a BioCro met input
 }
 \author{
+David LeBauer
+
 Rob Kooper, David LeBauer
 }
 
