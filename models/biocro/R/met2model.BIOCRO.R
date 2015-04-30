@@ -96,9 +96,9 @@ cf2biocro <- function(met){
   if(!"wind_speed" %in% colnames(met)){
     if(all(c("northward_wind", "eastward_wind") %in% colnames(met))){
       wind_speed <- sqrt(met$northward_wind^2 + met$eastward_wind^2)
+    } else {
+      logger.error("neither wind_speed nor both eastward_wind and northward_wind are present in met data")
     }
-    logger.error("neither wind_speed nor both eastward_wind and northward_wind are present in met data")
-
   }
   
   ## Convert RH from percent to fraction
