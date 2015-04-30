@@ -7,7 +7,7 @@
 cf2biocro(met)
 }
 \arguments{
-\item{met}{data.table object  with met for a single site; output from \link{\code{load.cfmet}}
+\item{met}{data.table object  with met for a single site; output from \code{\link{load.cfmet}}
 \begin{itemize}
 \item year int
 \item month int
@@ -26,12 +26,6 @@ cf2biocro(met)
 \item precipitation_flux
 \item air_temperature
 \end{itemize}}
-
-\item{in.prefix}{prefix for each file}
-
-\item{outfolder}{location where model specific output is written.}
-
-\item{...}{can pass lat, lon, start.date and end.date}
 }
 \value{
 data.table / data.frame with fields
@@ -44,15 +38,11 @@ data.table / data.frame with fields
 \item windspeed m/s
 \item precip cm/h
 \end{itemize}
-
-OK if everything was succesful.
 }
 \description{
 Converts a CF data frame into a BioCro met input
 }
 \author{
 David LeBauer
-
-Rob Kooper, David LeBauer
 }
 

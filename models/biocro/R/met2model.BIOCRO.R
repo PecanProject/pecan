@@ -41,7 +41,7 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite=FALSE, ...
 ##'
 ##' @name cf2biocro
 ##' @title Convert CF-formatted met data to BioCro met
-##' @param met data.table object  with met for a single site; output from \link{\code{load.cfmet}}
+##' @param met data.table object  with met for a single site; output from \code{\link{load.cfmet}}
 ##' \begin{itemize}
 ##' \item year int
 ##' \item month int
