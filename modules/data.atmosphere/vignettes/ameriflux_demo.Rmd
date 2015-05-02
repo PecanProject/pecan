@@ -1,0 +1,135 @@
+---
+title: "PEcAn: Importing Met data from Bondville, IL Ameriflux station"
+author: "David LeBauer"
+date: "4/28/2015"
+output: html_document
+---
+
+
+# Overview
+
+This is a demonstration of the PEcAn utilities for downloading met data, converting it to the PEcAn-CF format (which is based on the Climate Forecasting conventions and similar to MsTMIP). These variables are defined in the [PEcAn wiki](https://github.com/PecanProject/pecan/wiki/Adding-an-Input-Converter#met-data).
+
+In this example we will download 12 years of met data from the [Bondville Ameriflux site](http://ameriflux.ornl.gov/fullsiteinfo.php?sid=44). It has an Ameriflux `SITE_ID` of `US-Bo1`
+
+The PEcAn.data.atmosphere source code is in [`modules/data.atmosphere`](https://github.com/PecanProject/pecan/tree/master/modules/data.atmosphere) and the documentation can be found with either `package?PEcAn.data.atmosphere` or in the [data.atmosphere package documentation](https://pecanproject.github.io/pecan//modules/data.atmosphere/inst/web/index.html).
+
+
+
+```{r}
+library(knitr)
+library(ggplot2)
+library(ggthemes)
+library(PEcAn.data.atmosphere)
+
+```
+
+
+```{r echo=FALSE}
+
+knitr::opts_chunk$set(message = FALSE, warnings = FALSE,  cache = FALSE, 
+                      fig.height= 3, fig.width = 8)
+
+```
+
+
+## Download Ameriflux data for Bondville
+
+```{r download}
+
+download.Ameriflux(sitename = "US-Bo1", outfolder = "/tmp/", 
+                   start_date = "1996-01-01", end_date = "2008-04-10")
+```
+
+## Convert to PEcAn-CF format
+
+```{r met2cf}
+met2CF.Ameriflux(in.path = "/tmp/", in.prefix = "US-Bo1", outfolder = "/tmp/out/", 
+                 start_date = "1996-01-01", end_date = "2008-04-10")
+
+```
+
+## Concatenate years
+
+NB: this is not required within PEcAn; used here for convenience. See documentation for [NCO `ncrcat` function](http://research.jisao.washington.edu/data_sets/nco/#example8).
+
+```{r concatenate, eval=FALSE}
+system("ncrcat -O -h /tmp/out/US-Bo1.199[6789].nc /tmp/out/US-Bo1.200[12348678].nc /tmp/out/US-Bo11996-2008.nc")
+
+```
+
+## Load
+
+Using the `load.cfmet` convenience function. Ameriflux is provided at 30 min intervals. If needed at a finer resolution, see `?cfmet.downscale.time` (which works with subdaily and daily data). There is no `cfmet.upscale.time` function, but would be straightforward to implement if needed.
+
+
+```{r load-data}
+
+bondville.nc <- nc_open("/tmp/out/US-Bo11996-2008.nc")
+bondville.cfmet <- load.cfmet(bondville.nc, lat = 40.0061988830566, lon = -88.290397644043, start.date = "1996-08-25", end.date = "2008-04-10")[!is.na(air_pressure)]
+```
+
+
+```{r}
+
+theme_set(theme_tufte())
+p1 <- ggplot() + geom_line(data = bondville.cfmet, aes(x = date, y = surface_downwelling_shortwave_flux_in_air)) + ylab(paste(bondville.nc$var$surface_downwelling_shortwave_flux_in_air$longname, bondville.nc$var$surface_downwelling_shortwave_flux_in_air$units))
+
+p2 <- ggplot() + geom_line(data = bondville.cfmet, aes(x = date, y = surface_downwelling_longwave_flux_in_air)) + 
+ ylab(paste(bondville.nc$var$surface_downwelling_longwave_flux_in_air$longname, bondville.nc$var$surface_downwelling_longwave_flux_in_air$units))
+
+p3 <- ggplot() + geom_line(data = bondville.cfmet, aes(x = date, y = surface_downwelling_photosynthetic_photon_flux_in_air)) + ylab("PAR umol/m2/s")
+
+p4 <- ggplot() + geom_line(data = bondville.cfmet, aes(x = date, y = air_pressure)) + 
+   ylab(paste(bondville.nc$var$air_pressure$longname, bondville.nc$var$air_pressure$units))
+
+p5 <- ggplot() + geom_line(data = bondville.cfmet, aes(x = date, y = air_temperature )) + 
+   ylab(paste(bondville.nc$var$air_temperature$longname, bondville.nc$var$air_temperature$units))
+
+p6 <- ggplot(data = bondville.cfmet, aes(x = date)) + 
+  geom_line(aes(y = wind_speed)) + 
+  #geom_line(aes(y = northward_wind), color = 'blue', alpha = 0.3) + 
+  #geom_line(aes(y = eastward_wind), color = 'red', alpha = 0.3) + 
+  #ggtitle("wind speed: scalar (black) north vector (blue) and east vector (red) ") + 
+   ylab(paste(bondville.nc$var$wind_speed$longname, bondville.nc$var$wind_speed$units))
+
+p7 <- ggplot() + geom_line(data = bondville.cfmet, aes(x = date, y = relative_humidity )) + 
+   ylab(paste(bondville.nc$var$relative_humidity$longname, bondville.nc$var$relative_humidity$units))
+
+p8 <- ggplot() + geom_line(data = bondville.cfmet, aes(x = date, y = specific_humidity )) + 
+   ylab(paste(bondville.nc$var$specific_humidity$longname, bondville.nc$var$specific_humidity$units))
+
+p9 <- ggplot() + geom_line(data = bondville.cfmet, aes(x = date, y = precipitation_flux))  +
+   ylab(paste(bondville.nc$var$ precipitation_flux$longname, bondville.nc$var$precipitation_flux$units))
+
+
+plots <- list(p1, p2, p3, p4, p5, p6, p7, p8, p9)
+
+
+```
+
+## Plot entire time series
+
+```{r long-time, echo=FALSE}
+lapply(plots, print)
+```
+
+## Plot 8-26-1996 to 10-14-1996
+
+```{r two-months, echo=FALSE}
+lapply(plots, function(x) x + xlim(ymd_hms(c("1996-08-26 18:29:00 UTC", "1996-10-14 18:29:00 UTC"))))
+```
+
+## Convert to BioCro Model format
+
+To use the data, you can convert these to a model specific format
+
+```{r eval = FALSE}
+library(PEcAn.BIOCRO)
+# met2model.BioCro uses the following
+bondville.biocromet <- cf2biocro(bondville.cfmet)
+
+# write as csv for sharing 
+write.csv(bondville.biocromet, "../soy/data/bondville_1996-2008.csv", row.names = FALSE)
+```
+
