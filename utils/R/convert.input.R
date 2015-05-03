@@ -181,7 +181,7 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
     #    in.prefix=strsplit(basename(result$file[1]),".",fixed=TRUE)[[1]][1]
     in.prefix=find.prefix(result$file)
     newinput <- dbfile.input.insert(in.path=dirname(result$file[1]),
-                                    in.prefix=in.prefix,
+                                    in.prefix=results$dbfile.name[1],
                                     siteid = siteid, 
                                     startdate = paste(input$start_date), 
                                     enddate = paste(input$end_date), 
