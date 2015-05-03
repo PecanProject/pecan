@@ -121,7 +121,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   
   print("### Change to CF Standards")
   
-  input.id  <-  raw.id
+  input.id  <-  raw.id[1]
   outfolder  <- file.path(dir,paste0(met,"_CF_site_",str_ns))
   pkg       <- "PEcAn.data.atmosphere"
   
@@ -166,7 +166,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     
     print("# Site Extraction")
     
-    input.id   <- cf.id
+    input.id   <- cf.id[1]
     outfolder  <- file.path(dir,paste0(met,"_CF_site_",str_ns))
     pkg        <- "PEcAn.data.atmosphere"
     fcn        <- "extract.nc"
@@ -184,7 +184,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     
     print("# Run Gapfilling") # Does NOT take place on browndog!
 
-    input.id   <- cf.id
+    input.id   <- cf.id[1]
     outfolder  <- file.path(dir,paste0(met,"_CF_gapfill_site_",str_ns))
     pkg        <- "PEcAn.data.atmosphere"
     fcn        <- "metgapfill"
@@ -209,7 +209,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   
   print("# Convert to model format")
   
-  input.id  <- ready.id
+  input.id  <- ready.id[1]
   outfolder <- file.path(dir,paste0(met,"_",model,"_site_",str_ns))
   pkg       <- paste0("PEcAn.",model)
   fcn       <- paste0("met2model.",model)
@@ -218,10 +218,12 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   model.id  <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
                             username,con=con,hostname=host$name,browndog,write=TRUE,lst=lst)
   
-  print(c("Done model convert",model.id,outfolder))
+  print(c("Done model convert",model.id[1]))
+  
+  model.file <- db.query(paste("SELECT * from dbfiles where id =",model.id[[2]]),con)[["file_name"]]
     
   db.close(con)
-  return(outfolder)
+  return(file.path(outfolder, model.file))
   
 }
 
