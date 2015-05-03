@@ -147,7 +147,7 @@ par2ppfd <- function(watts){
 ##' Solar Radiation to PPFD
 ##' 
 ##' Here the input is the total solar radiation 
-##' so to obtain in the PAR spectrum need to multiply by 0.486
+##' so to obtain in the PAR spectrum need to multiply by 0.486 From Campbell and Norman p151
 ##' This is based on the approximation that PAR is 0.45-0.50 of the total radiation
 ##' 
 ##' @title SW to PAR
