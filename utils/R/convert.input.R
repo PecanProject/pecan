@@ -24,7 +24,7 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
   print("end CHECK")
   print(check)
   if(length(check)>0){
-    return(check$container_id)
+    return(list(input.id=check$container_id, dbfile.id=check$id))
   }
   
   input = db.query(paste("SELECT * from inputs where id =",input.id),con)
@@ -181,7 +181,7 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
     #    in.prefix=strsplit(basename(result$file[1]),".",fixed=TRUE)[[1]][1]
     in.prefix=find.prefix(result$file)
     newinput <- dbfile.input.insert(in.path=dirname(result$file[1]),
-                                    in.prefix=in.prefix,
+                                    in.prefix=result$dbfile.name[1],
                                     siteid = siteid, 
                                     startdate = paste(input$start_date), 
                                     enddate = paste(input$end_date), 
@@ -190,7 +190,7 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
                                     parentid = input$id,
                                     con = con,
                                     hostname = machine$hostname) 
-    return(newinput$input.id)
+    return(newinput)
   }else{
     logger.warn('Input was not added to the database')
     return(NULL)
