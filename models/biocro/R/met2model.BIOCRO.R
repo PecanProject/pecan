@@ -110,13 +110,20 @@ cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE){
   if(met[,max(relative_humidity ) > 1]){ ## just to confirm
     met[, `:=` (relative_humidity = relative_humidity/100)]
   } 
-  newmet <- met[, list(year = year(date), doy = yday(date), 
-                       hour = round(hour(date) + minute(date) / 60, 1),
+
+  newmet <- met[, list(year = year(solardate), doy = yday(solardate), 
+                       hour = round(hour(solardate) + minute(solardate) / 60),
                        SolarR = ppfd,
                        Temp = ud.convert(air_temperature, "Kelvin", "Celsius"), 
                        RH = relative_humidity, 
                        WS = wind_speed, 
                        precip = ud.convert(precipitation_flux, "s-1", "h-1"))] 
+  
+  if(any(duplicated(newmet[1:20, list(year, doy, hour)]))){
+    newmet[, list(SolarR = mean(SolarR), Temp = mean(Temp), RH = mean(RH),
+                   WS = mean(WS), precip = mean(precip)), 
+           by = 'year,doy,hour'] 
+  }
   
   return(as.data.frame(newmet))
 }
