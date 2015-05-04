@@ -245,7 +245,7 @@ foreach($_REQUEST as $key => $val) {
 fwrite($fh, "    </inputs>" . PHP_EOL);
 fwrite($fh, "    <start.date>${startdate}</start.date>" . PHP_EOL);
 fwrite($fh, "    <end.date>${enddate}</end.date>" . PHP_EOL);
-fwrite($fh, "    <dbfiles>${output_folder}</dbfiles>" . PHP_EOL);
+fwrite($fh, "    <dbfiles>${input_folder}</dbfiles>" . PHP_EOL);
 fwrite($fh, "    <host>" . PHP_EOL);
 fwrite($fh, "      <name>${hostname}</name>" . PHP_EOL);
 fwrite($fh, "    </host>" . PHP_EOL);
