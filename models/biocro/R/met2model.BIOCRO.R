@@ -72,8 +72,12 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite=FALSE, ...
 ##' \end{itemize}
 ##' @export cf2biocro
 ##' @author David LeBauer
-cf2biocro <- function(met){
+cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE){
 
+  if((!is.null(longitude)) & zulu2solarnoon){
+    solarnoon_offset <- ud.convert(longitude / 360, 'day', 'minute') 
+    met[, `:=` (solardate =  date + minutes(solarnoon_offset))]
+  } 
   if(!"relative_humidity" %in% colnames(met)){
     if(all(c("air_temperature", "air_pressure", "specific_humidity") %in% colnames(met))){ 
       rh <- qair2rh(qair = met$specific_humidity, 
@@ -106,11 +110,20 @@ cf2biocro <- function(met){
   if(met[,max(relative_humidity ) > 1]){ ## just to confirm
     met[, `:=` (relative_humidity = relative_humidity/100)]
   } 
-  newmet <- met[, list(year = year, doy = doy, hour = hour,
+
+  newmet <- met[, list(year = year(solardate), doy = yday(solardate), 
+                       hour = round(hour(solardate) + minute(solardate) / 60),
                        SolarR = ppfd,
                        Temp = ud.convert(air_temperature, "Kelvin", "Celsius"), 
                        RH = relative_humidity, 
                        WS = wind_speed, 
                        precip = ud.convert(precipitation_flux, "s-1", "h-1"))] 
+  
+  if(any(duplicated(newmet[1:20, list(year, doy, hour)]))){
+    newmet[, list(SolarR = mean(SolarR), Temp = mean(Temp), RH = mean(RH),
+                   WS = mean(WS), precip = mean(precip)), 
+           by = 'year,doy,hour'] 
+  }
+  
   return(as.data.frame(newmet))
 }
