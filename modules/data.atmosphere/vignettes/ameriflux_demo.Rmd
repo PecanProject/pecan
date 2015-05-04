@@ -127,7 +127,7 @@ To use the data, you can convert these to a model specific format
 ```{r eval = FALSE}
 library(PEcAn.BIOCRO)
 # met2model.BioCro uses the following
-bondville.biocromet <- cf2biocro(bondville.cfmet)
+bondville.biocromet <- cf2biocro(bondville.cfmet, longitude = -88.0, zulu2solarnoon = TRUE)
 
 # write as csv for sharing 
 write.csv(bondville.biocromet, "../soy/data/bondville_1996-2008.csv", row.names = FALSE)
