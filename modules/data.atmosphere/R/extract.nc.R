@@ -42,6 +42,7 @@ extract.nc <- function(in.path,in.prefix,outfolder,start_date,end_date,slat,slon
   results <- data.frame(file=character(rows), host=character(rows),
                         mimetype=character(rows), formatname=character(rows),
                         startdate=character(rows), enddate=character(rows),
+                        dbfile.name = in.prefix,
                         stringsAsFactors = FALSE)
   
   for(i in 1:rows){    

@@ -30,23 +30,22 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
   print("START met2model.SIPNET")
   start_date <- as.POSIXlt(start_date, tz = "GMT")
   end_date<- as.POSIXlt(end_date, tz = "GMT")
-  out.file <- file.path(outfolder, paste(in.prefix,
-                                         strptime(start_date, "%Y-%m-%d"),
-                                         strptime(end_date, "%Y-%m-%d"),
-                                         "clim", sep="."))
+  out.file <- paste(in.prefix, strptime(start_date, "%Y-%m-%d"),strptime(end_date, "%Y-%m-%d"),"clim", sep=".")
+  out.file.full <- file.path(outfolder, out.file)
   
-  results <- data.frame(file = out.file,
+  results <- data.frame(file = out.file.full,
                         host = fqdn(),
                         mimetype ='text/csv',
                         formatname = 'Sipnet.climna' ,
                         startdate = start_date ,
                         enddate = end_date,
+                        dbfile.name = out.file,
                         stringsAsFactors = FALSE)
   print("internal results")
   print(results)
   
-  if (file.exists(out.file) && !overwrite) {
-    logger.debug("File '", out.file, "' already exists, skipping to next file.")
+  if (file.exists(out.file.full) && !overwrite) {
+    logger.debug("File '", out.file.full, "' already exists, skipping to next file.")
     return(invisible(results))
   }
   
@@ -196,7 +195,9 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
   } ## end loop over years
   
   ## write output
-  write.table(out,out.file,quote = FALSE,sep="\t",row.names=FALSE,col.names=FALSE)
+  write.table(out,out.file.full,quote = FALSE,sep="\t",row.names=FALSE,col.names=FALSE)
+  
+  
   
   invisible(results)
   
