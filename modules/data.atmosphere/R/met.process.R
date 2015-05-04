@@ -44,7 +44,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   fcn        <- paste0("download.",met)
   
   
-  if(met == "NARR"){
+  if(regional){ #Right now this only means NARR but will need to be generalized once we have more regional met products
     
     # Raw NARR was originally downloaded on geo and pecan2, but was removed to save space.
     # If this section is run, NARR will be re-downloaded, which isn't necessary.
@@ -55,35 +55,32 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
           
           args <- list(outfolder, start_date, end_date)
           cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
-          remote.execute.R(cmdFcn,host$name,user=NA, verbose=TRUE)
+          new.files <- remote.execute.R(cmdFcn,host$name,user=NA, verbose=TRUE)
           
-          mimetype = 'application/x-netcdf'
-          formatname = "NARR"
-          check <- dbfile.input.check(site.id, start_date, end_date, mimetype, formatname, con=con, hostname=fqdn())
-          
+          print("start CHECK")
+          check = dbfile.input.check(site$id, start_date, end_date, 
+                                     mimetype=new.files$mimetype[1], formatname=new.files$formatname[1], 
+                                     con=con, hostname=new.files$host[1])
+          print("end CHECK")
+          print(check)
           if(length(check)>0){
-            raw.id = check$container_id[1]
+            raw.id <- list(input.id=check$container_id, dbfile.id=check$id)
           }else{
-            raw.id <- dbfile.input.insert(in.path = outfolder, 
-                                          in.prefix = "NARR", 
-                                          siteid = 1135, 
+            raw.id <- dbfile.input.insert(in.path=dirname(new.files$file[1]),
+                                          in.prefix=new.files$dbfile.name[1], 
+                                          siteid = site$id,  
                                           startdate = start_date, 
                                           enddate = end_date, 
-                                          mimetype =  mimetype, 
-                                          formatname = formatname,
+                                          mimetype=new.files$mimetype[1], 
+                                          formatname=new.files$formatname[1],
                                           parentid = NA,
                                           con = con,
-                                          hostname = host$name)$input.id
-            raw.id <- newinput$input.id #1000000127
+                                          hostname = host$name)
           }
     }else{
-      raw.id <- 1000000127  
+      raw.id <- list(input.id = 1000000127, dbfile.id = NA) 
     }   
-  } else if(met == "Ameriflux"){
-    
-    # Move site.code to inside download.ameriflux, set site$name as argument in CmdFcn
-    # in.prefix will be defined from new.files
-    # else if -> else 
+  }else{ # Site-level met
     
     outfolder = paste0(outfolder,"_site_",str_ns)
     args <- list(site$name, outfolder, start_date, end_date)
@@ -91,15 +88,18 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
     new.files <- remote.execute.R(script=cmdFcn,host=host$name,user=NA,verbose=TRUE,R="R")
     
+    print("start CHECK")
     check = dbfile.input.check(site$id, start_date, end_date, 
                                mimetype=new.files$mimetype[1], formatname=new.files$formatname[1], 
                                con=con, hostname=new.files$host[1])
+    print("end CHECK")
+    print(check)
     if(length(check)>0){
-      raw.id = check$container_id[1]
+      raw.id <- list(input.id=check$container_id, dbfile.id=check$id)
     }else{
       ## insert database record
       raw.id <- dbfile.input.insert(in.path=dirname(new.files$file[1]),
-                                    in.prefix=head(unlist(strsplit(basename(new.files$file[1]), "[.]")),1), 
+                                    in.prefix=new.files$dbfile.name[1], 
                                     siteid = site$id, 
                                     startdate = start_date, 
                                     enddate = end_date, 
@@ -107,14 +107,10 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
                                     formatname=new.files$formatname[1],
                                     parentid=NA,
                                     con = con,
-                                    hostname = host$name)$input.id
+                                    hostname = host$name)
     }    
-  } else {  ## site level, not Ameriflux
-    print("NOT AMERIFLUX")
-    site.id <- site$id
-    args <- list(site.id, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE) #, pkg,raw.host = host,dbparms,con=con)
-    raw.id <- do.call(fcn,args)  
   }
+  
   
   #--------------------------------------------------------------------------------------------------#
   # Change to  CF Standards
@@ -153,7 +149,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       cf.id <- convert.input(cf1.id, outfolder2,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,permute.nc,
                              username,con=con,hostname=host$name,browndog=NULL,write=TRUE)
     }
-    cf.id <- 1000000023 #ID of permuted CF files in bety - they already exist on pecan2 and geo
+    cf.id <- list(input.id=1000000023, dbfile.id=NA) #ID of permuted CF files in bety - they already exist on pecan2 and geo
   }else{    
     cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
                            username,con=con,hostname=host$name,browndog=NULL,write=TRUE) 
