@@ -231,7 +231,6 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
     
     for(j in 1:nvar.sample){
       ## propose parameter values
-      browser()
       pnew  <- rnorm(1,parm[vars[j]],jvar[j])
       pstar <- parm
       pstar[vars[j]] <- pnew
