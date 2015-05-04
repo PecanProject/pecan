@@ -4,7 +4,7 @@
 \alias{cf2biocro}
 \title{Convert CF-formatted met data to BioCro met}
 \usage{
-cf2biocro(met)
+cf2biocro(met, longitude = NULL, zulu2solarnoon = FALSE)
 }
 \arguments{
 \item{met}{data.table object  with met for a single site; output from \code{\link{load.cfmet}}
