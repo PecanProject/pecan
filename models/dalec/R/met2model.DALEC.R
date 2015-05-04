@@ -48,6 +48,7 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
                         formatname=c('DALEC meteorology'),
                         startdate=c(start_date),
                         enddate=c(end_date),
+                        dbfile.name = out.file,
                         stringsAsFactors = FALSE)
   print("internal results")
   print(results)
