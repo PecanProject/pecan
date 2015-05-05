@@ -5,7 +5,7 @@
 \title{convert.input}
 \usage{
 convert.input(input.id, outfolder, formatname, mimetype, site.id, start_date,
-  end_date, pkg, fcn, username, con = con, hostname = "localhost",
+  end_date, pkg, fcn, username, con = con, hostname = "localhost", browndog,
   write = TRUE, ...)
 }
 \description{

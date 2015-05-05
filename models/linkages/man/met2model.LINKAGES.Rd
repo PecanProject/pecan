@@ -4,7 +4,8 @@
 \alias{met2model.LINKAGES}
 \title{Write LINKAGES met files}
 \usage{
-met2model.LINKAGES(in.path, in.prefix = NULL, start.year, end.year, outfolder)
+met2model.LINKAGES(in.path, in.prefix, outfolder, start_date, end_date, ...,
+  overwrite = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{in.path}{path on disk where CF file lives}
@@ -21,6 +22,6 @@ Converts a met CF file to a model specific met file. The input
 files are calld <in.path>/<in.prefix>.YYYY.cf
 }
 \author{
-Ann Raiho
+Ann Raiho, Betsy Cowdery
 }
 

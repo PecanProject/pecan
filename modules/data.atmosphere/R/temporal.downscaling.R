@@ -233,6 +233,7 @@ get.ncvector <- function(var, lati = lati, loni = loni,
     precip_units <- met.nc$var[["precipitation_flux"]]$units
     precip_units <- gsub("kg m-2", "mm", precip_units)
     precip_units <- gsub("kg/m2", "mm", precip_units)
+    precip_units <- gsub("kg/m\\^2", "mm", precip_units)
     ans <- ud.convert(ans, precip_units, "mm s-1")
     
   }

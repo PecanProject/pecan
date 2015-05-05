@@ -1,4 +1,4 @@
-#!/usr/bin/Rscript
+#!/usr/bin/env Rscript
 
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.

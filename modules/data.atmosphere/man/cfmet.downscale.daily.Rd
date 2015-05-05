@@ -4,7 +4,7 @@
 \alias{cfmet.downscale.daily}
 \title{daily to subdaily downscaling}
 \usage{
-cfmet.downscale.daily(dailymet, output.dt = 1, lat = lat)
+cfmet.downscale.daily(dailymet, output.dt = 1, lat)
 }
 \arguments{
 \item{dailymet}{data table with climate variables}
