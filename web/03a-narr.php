@@ -121,6 +121,9 @@ NOAA/ESRL/PSD<br>
 325 Broadway<br>
 Boulder, CO 80305-3328<br>
 <a href="mailto:esrl.psd.data@noaa.gov">esrl.psd.data@noaa.gov</a><br>
+
+<br>
+<p>For more information see <a href="http://www.esrl.noaa.gov/psd/data/gridded/data.narr.html" target="_blank">http://www.esrl.noaa.gov/psd/data/gridded/data.narr.html</a>.</p>
   </div>
   <div id="footer"><?php echo get_footer(); ?></div>
 </div>

@@ -98,6 +98,8 @@ $browndog = (isset($_REQUEST['browndog'])) ? "checked" : "";
   </div>
   <div id="output">
 <h1>Data Policy</h1>
+
+<br>
 <p>The AmeriFlux Network data offered on this website are contributed by individual AmeriFlux scientists, who share their data openly with the global community.</p>
 
 <h2>AmeriFlux Data Use Policy</h2>
@@ -117,6 +119,9 @@ $browndog = (isset($_REQUEST['browndog'])) ? "checked" : "";
 
 <li>Acknowledge the AmeriFlux data resource as "funding for AmeriFlux data resources was provided by the U.S. Department of Energy’s Office of Science."</li>
 </ul>
+
+<br>
+<p>For more information see <a href="http://ameriflux.lbl.gov/data/data-policy/" target="_blank">http://ameriflux.lbl.gov/data/data-policy/</a>.</p>
 
   </div>
   <div id="footer"><?php echo get_footer(); ?></div>
