@@ -169,8 +169,6 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
   
   ## insert new record into database
   if(write==TRUE){
-    
-    #    in.prefix=strsplit(basename(result$file[1]),".",fixed=TRUE)[[1]][1]
     newinput <- dbfile.input.insert(in.path=dirname(result$file[1]),
                                     in.prefix=result$dbfile.name[1],
                                     siteid = siteid, 
