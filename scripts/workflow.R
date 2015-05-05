@@ -11,7 +11,6 @@
 
 args <- commandArgs(trailingOnly = TRUE)
 settings.file = args[1]
-settings.file = "/fs/data2/rykelly/PDA/demo.pda4/pecan.xml"
 #--------------------------------------------------------------------------------#
 # functions used to write STATUS used by history
 #--------------------------------------------------------------------------------#
@@ -28,18 +27,7 @@ status.end <- function(status="DONE") {
 }
 
 #---------------- Load libraries. -----------------------------------------------------------------#
-# require(PEcAn.all)
-
-# ******************** FOR TESTING
-library(devtools)
-load_all('/fs/data2/rykelly/pecan/db')
-load_all('/fs/data2/rykelly/pecan/settings')
-load_all('/fs/data2/rykelly/pecan/utils')
-load_all('/fs/data2/rykelly/pecan/models/sipnet')
-load_all('/fs/data2/rykelly/pecan/modules/meta.analysis')
-load_all('/fs/data2/rykelly/pecan/modules/priors')
-load_all('/fs/data2/rykelly/pecan/modules/uncertainty')
-load_all('/fs/data2/rykelly/pecan/modules/assim.batch/')
+require(PEcAn.all)
 #--------------------------------------------------------------------------------------------------#
 
 #---------------- Load PEcAn settings file. -------------------------------------------------------#
