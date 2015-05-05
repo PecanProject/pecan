@@ -1,8 +1,10 @@
 <?xml version="1.0"?>
-<scale>site</scale>
-<format>
-  <id>38</id>
-  <name>AmeriFlux.level2.h.nc</name>
-  <mimetype>application/x-netcdf</mimetype>
-  <inputtype>ameriflux.zip</inputtype>
-</format>
+<Ameriflux>
+  <scale>site</scale>
+  <format>
+    <id>38</id>
+    <name>AmeriFlux.level2.h.nc</name>
+    <mimetype>application/x-netcdf</mimetype>
+    <inputtype>ameriflux.zip</inputtype>
+  </format>
+</Ameriflux>
