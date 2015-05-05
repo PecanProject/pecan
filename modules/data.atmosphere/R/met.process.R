@@ -17,6 +17,13 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   require(RPostgreSQL)
   require(XML)
   
+  #get met source and potentially determine where to start in the process
+  met <- ifelse(is.null(input_met$source), logger.error("Must specify met source"),input_met$source)
+  
+  download.raw <- ifelse(is.null(input_met$id),TRUE,FALSE) 
+  # What will that id be? The raw id? Or the "closest" to what the user wants?
+  # Then unnecessary steps could be skipped?
+  
   #read in registration xml for met specific information
   register <- xmlToList(xmlParse(paste0("modules/data.atmosphere/inst/registration/register.",met,".xml")))
   
@@ -28,13 +35,6 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   
   #setup additional browndog arguments
   if(!is.null(browndog)){browndog$inputtype <- register$format$inputtype}
-  
-  #get met source and potentially determine where to start in the process
-  ifelse(is.null(input_met$source), logger.error("Must specify met source"),met <- input_met$source)
-  
-  ifelse(is.null(input_met$id),download.raw=TRUE,download.raw = FALSE) 
-  # What will that id be? The raw id? Or the "closest" to what the user wants?
-  # Then unnecessary steps could be skipped?
   
   #setup site database number & name
   new.site = as.numeric(site$id)
@@ -207,7 +207,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   #--------------------------------------------------------------------------------------------------#
   # Change to Site Level - Standardized Met (i.e. ready for conversion to model specific format)
   
-  if(regional){ #### Site extraction (only for NARR right now)
+  if(register$scale=="regional"){ #### Site extraction 
     
     print("# Site Extraction")
     
@@ -225,7 +225,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
                               username,con=con,hostname=host$name,browndog=NULL,write=TRUE,
                               slat=new.lat,slon=new.lon,newsite=new.site)
     
-  }else{ ##### Site Level Processing
+  }else if(register$scale=="site"){ ##### Site Level Processing
     
     print("# Run Gapfilling") # Does NOT take place on browndog!
     
