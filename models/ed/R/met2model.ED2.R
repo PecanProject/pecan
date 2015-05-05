@@ -51,6 +51,7 @@ met2model.ED2 <- function(in.path,in.prefix,outfolder,start_date, end_date, lst=
                         formatname=c('ed.met_driver_header files format'),
                         startdate=c(start_date),
                         enddate=c(end_date),
+                        dbfile.name = "ED_MET_DRIVER_HEADER",
                         stringsAsFactors = FALSE)
 
   ## check to see if the outfolder is defined, if not create directory for output
