@@ -207,6 +207,17 @@ $stmt->closeCursor();
         $("#error").html("End date should be after start date.");
       }
     }
+
+    // redirect to data policy if needed
+    if ($("#met").val()) {
+      if ($("#met").val().startsWith("Ameriflux")) {
+        $("#formnext").attr("action", "03a-ameriflux.php");
+      } else if ($("#met").val().startsWith("NARR")) {
+        $("#formnext").attr("action", "03a-narr.php");
+      } else {
+        $("#formnext").attr("action", "04-runpecan.php");
+      }
+    }
   }
       
   function prevStep() {
@@ -327,7 +338,11 @@ foreach($inputs as $input) {
     print "      <option value='-1'></option>\n";
   }
   foreach($input['files'] as $file) {
-    print "        <option value='${file['id']}'>${file['name']}</option>\n";
+    print "        <option value='${file['id']}'";
+    if (isset($_REQUEST["input_${tag}"]) && $_REQUEST["input_${tag}"] == "${file['id']}") {
+      print " selected";
+    }
+    print ">${file['name']}</option>\n";
   }
   print "      </select>\n";
   print "      <div class=\"spacer\"></div>\n";
@@ -337,7 +352,7 @@ foreach($inputs as $input) {
       <input id="email" name="email" type="text" value="<?php echo $email; ?>"/>  
       <div class="spacer"></div>
 
-<?php if ($browndog_url != "") { ?>
+<?php if (isset($browndog_url) && $browndog_url != "") { ?>
       <label title="Use BrownDog for conversions.">Use <a href="http://browndog.ncsa.illinois.edu/">BrownDog</a></label>
       <input id="browndog" name="browndog" type="checkbox" <?php echo $browndog; ?>/>
 <?php } ?>
