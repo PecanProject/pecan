@@ -10,7 +10,8 @@
 ##'
 ##' @author Mike Dietze
 ##' @author Ryan Kelly
-pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NULL, chain=NULL){
+pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NULL, chain=NULL,
+                     adapt=NULL, adj.min=NULL, ar.target=NULL){
   # Quit if pda not requested in settings
   if(!('assim.batch' %in% names(settings))) {
     return()
@@ -37,15 +38,31 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
 
 
   ## settings
-  weight     <- 0.001
-
     # Some settings can be supplied via settings (for automation) or explicitly (interactive). 
     # An explicit argument overrides whatever is in settings, if anything.
     if(is.null(params)) {
       params <- settings$assim.batch$params
     }
     if(is.null(jvar)) {
-      jvar <- as.numeric(settings$assim.batch$jvar)
+      jvar <- as.numeric(settings$assim.batch$jump$jvar.inits)
+    }
+    if(is.null(adapt)) {
+      adapt <- as.numeric(settings$assim.batch$jump$adapt)
+      if(is.null(adapt)) { # Default
+        adapt = floor(settings$assim.batch$iter/10)
+      }
+    }
+    if(is.null(adj.min)) {
+      adj.min <- as.numeric(settings$assim.batch$jump$adj.min)
+      if(is.null(adj.min)) { # Default
+        adj.min = 0.1
+      }
+    }
+    if(is.null(ar.target)) {
+      ar.target <- as.numeric(settings$assim.batch$jump$ar.target)
+      if(is.null(ar.target)) { # Default
+        ar.target = 0.5
+      }
     }
     if(is.null(var.names)) {
       var.names  <- as.character(settings$assim.batch$var.names)
@@ -224,11 +241,30 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
     jvar <- rep(0.1,nvar) # Default
   }
 
+  ## Jump distribution adjustment
+  ar <- numeric(nvar.sample)  ## Create vector of 0's (one zero per parameter)
 
   ## main MCMC loop
   for(i in start:finish){
     logger.info(paste("Data assimilation MCMC iteration",i,"of",finish))
-    
+
+    ## Adjust Jump distribution
+    if(i %% adapt < 1){
+        logger.info(paste0("Acceptance rates were (", 
+                          paste(pname[vars], collapse=", "), ") = (", 
+                          paste(round(ar/adapt,3), collapse=", "), ")"))
+        logger.info(paste0("Using jump variances (", 
+                          paste(round(jvar,3), collapse=", "), ")"))
+
+        adj <- ar / adapt / ar.target
+        adj[adj < adj.min] <- adj.min
+        jvar <- jvar * adj
+        logger.info(paste0("New jump variances are (", 
+                          paste(round(jvar,3), collapse=", "), ")"))
+
+        ar <- numeric(nvar.sample)
+    }
+
     for(j in 1:nvar.sample){
       ## propose parameter values
       pnew  <- rnorm(1,parm[vars[j]],jvar[j])
@@ -327,9 +363,10 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
         LL.star <- sum(LL.star,na.rm=TRUE)
           #loglikelihood for bivar normal distn of NPP and AGB
           # LL.star1 <-sum(dmvnorm(cbind(NPPo,AGBo), mu, sigma, log=TRUE), na.rm=TRUE)
-          LL.star1 =0
+          LL.star1 <- 0
+          weight   <- 1
         
-        LL.total<-LL.star*weight+LL.star1
+        LL.total <- LL.star * weight + LL.star1
 
 
         ## insert Likelihood record in database
@@ -348,6 +385,7 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
           LL.old <- LL.total
           prior.old <- prior.star
           parm <- pstar 
+          ar[j] <- ar[j] + 1
         }
       } ## end if(is.finite(prior.star))
     } ## end loop over variables
@@ -372,11 +410,6 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
     pairs(params.subset)
   }
 
-
-  a = 1-rejectionRate(dm)
-  logger.info(paste0("Acceptance Rates (", 
-                    paste(names(a), collapse=", "), ") = (", 
-                    paste(round(a,3), collapse=", "), ")"))
 
   dev.off()
 

@@ -11,7 +11,10 @@
 
 args <- commandArgs(trailingOnly = TRUE)
 settings.file = args[1]
+
+# ********** FOR TESTING
 settings.file = "/fs/data2/rykelly/PDA/demo.pda4/pecan.xml"
+
 #--------------------------------------------------------------------------------#
 # functions used to write STATUS used by history
 #--------------------------------------------------------------------------------#
@@ -40,6 +43,7 @@ load_all('/fs/data2/rykelly/pecan/modules/meta.analysis')
 load_all('/fs/data2/rykelly/pecan/modules/priors')
 load_all('/fs/data2/rykelly/pecan/modules/uncertainty')
 load_all('/fs/data2/rykelly/pecan/modules/assim.batch/')
+
 #--------------------------------------------------------------------------------------------------#
 
 #---------------- Load PEcAn settings file. -------------------------------------------------------#
@@ -133,6 +137,16 @@ status.end()
 
 # Run parameter data assimilation
 status.start("PDA")
+
+# ------
+settings <- read.settings(settings.file)
+
+load_all('/fs/data2/rykelly/pecan/modules/assim.batch/')
+# settings$assim.batch$iter = 20
+# settings$assim.batch$prior = NULL#"1000000448"
+# settings$assim.batch$params = NULL
+
+# -------
 settings$assim.batch <- pda.mcmc(settings)
 saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.pda.xml'))
 status.end()
