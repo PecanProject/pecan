@@ -69,7 +69,7 @@ getLatLon <- function(nc1) {
 ##' @param overwrite should existing files be overwritten
 ##' 
 ##' @author Josh Mantooth, Mike Dietze, Elizabeth Cowdery, Ankur Desai
-met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE,...){
+met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE){
 
   #---------------- Load libraries. -----------------------------------------------------------------#
   require(ncdf4)

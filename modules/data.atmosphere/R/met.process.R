@@ -114,7 +114,9 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   
   #--------------------------------------------------------------------------------------------------#
   # Change to  CF Standards
-    
+  
+  # all met2CF funtions need to take additional arguments
+  
   print("### Change to CF Standards")
   
   input.id  <-  raw.id[1]
