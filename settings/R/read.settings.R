@@ -846,7 +846,40 @@ update.settings <- function(settings) {
     settings$run$site$met <- NULL
   }
 
-  # some specific ED changes
+  ## inputs now have path and id under tag		
+  for(tag in names(settings$run$inputs)) {		
+      if (grepl(".id$", tag)) {		
+          tagid <- tag		
+          tag <- substr(tagid, 1, nchar(tagid)-3)		
+          if (tag %in% names(settings$run$inputs)) {		
+              next		
+          } else {		
+              settings$run$inputs[[tag]]['id'] <- settings$run$inputs[[tagid]]		
+              settings$run$inputs[[tagid]] <- null		
+          }		
+      } else {		
+          if (!is.list(settings$run$inputs[[tag]])) {		
+              path <- settings$run$inputs[[tag]]		
+              settings$run$inputs[[tag]] <- list("path"=path)		
+          }		
+          
+          tagid <- paste0(tag, ".id")		
+          if (tagid %in% names(settings$run$inputs)) {		
+              if ('id' %in% names(settings$run$inputs[[tag]])) {		
+                  if (settings$run$inputs[[tagid]] != settings$run$inputs[[tag]][['id']]) {		
+                      logger.severe("Please remove", tagid, "from inputs configuration.")		
+                  } else {		
+                      logger.info("Please remove", tagid, "from inputs configuration.")		
+                  }		
+                  settings$run$inputs[[tagid]] <- NULL		
+              } else {		
+                  settings$run$inputs[[tag]][['id']] <- settings$run$inputs[[tagid]]		
+         settings$run$inputs[[tagid]] <- NULL		
+              }		
+          }		
+      }		
+  }
+  ## some specific ED changes
   if (!is.null(settings$model$veg)) {
     if (!is.null(settings$run$inputs$veg)) {
       if (settings$model$veg != settings$run$inputs$veg) {
@@ -988,6 +1021,7 @@ read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml"){
 
   ## convert the xml to a list for ease and return
   settings <- xmlToList(xml)
+  settings <- addSecrets(settings)
   settings <- update.settings(settings)
   settings <- check.settings(settings)
 
@@ -1007,6 +1041,52 @@ read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml"){
 
   ## Return settings file as a list
   invisible(settings)
+}
+
+##' Add secret information from ~/.pecan.xml		
+##'		
+##' Copies certains sections from ~/.pecan.xml to the settings. This allows		
+##' a user to have their own unique parameters also when sharing the		
+##' pecan.xml file we don't expose these secrets.		
+##' Currently this will copy the database and browndog sections		
+##'		
+##' @title Add Users secrets		
+##' @param settings settings file		
+##' @return will return the updated settings values		
+##' @author Rob Kooper		
+addSecrets <- function(settings) {		
+    if (!file.exists("~/.pecan.xml")) {		
+        return(settings)		
+    }		
+    pecan <- xmlToList(xmlParse("~/.pecan.xml"))		
+    
+    ## always copy following sections		
+    for(key in c('database')) {		
+        for(section in names(pecan[[key]])) {		
+            if (section %in% names(settings[section])) {		
+                logger.info("Already have a section for", section)		
+            } else {		
+                logger.info("Imported section for", section)		
+                settings[[key]][section] <- pecan[[key]][section]		
+            }		
+        }		
+    }		
+    
+    ## only copy these sections if tag exists		
+    for(key in c('browndog')) {		
+        if (! key %in% names(settings)) next		
+        
+        for(section in names(pecan[[key]])) {		
+            if (section %in% names(settings[section])) {		
+                logger.info("Already have a section for", section)		
+            } else {		
+                logger.info("Imported section for", section)		
+                settings[[key]][section] <- pecan[[key]][section]		
+            }		
+        }		
+    }  		
+    
+    invisible(settings)		
 }
 ##=================================================================================================#
 
