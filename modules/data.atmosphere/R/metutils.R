@@ -153,6 +153,7 @@ par2ppfd <- function(watts){
 ##' @title SW to PAR
 ##' @author David LeBauer
 ##' @param sw shortwave radiation (W/m2 == J/m2/s)
+##' @export
 ##' @return PAR W/m2
 sw2par <- function(sw){
   par <- sw * 0.486
@@ -163,6 +164,7 @@ sw2par <- function(sw){
 ##' Cambell and Norman 1998 p 151, ch 10
 ##' @title SW to PPFD
 ##' @author David LeBauer
+##' @export
 ##' @param SW CF surface_downwelling_shortwave_flux_in_air W/m2
 ##' @return PPFD umol /m2 / s
 sw2ppfd <- function(sw){
@@ -191,6 +193,7 @@ sw2ppfd <- function(sw){
 ##' @author Fernando Miguez
 ##' @author David LeBauer
 ##' @param solarMJ MJ per day
+##' @export
 ##' @return PPFD umol /m2 / s
 solarMJ2ppfd <- function(solarMJ){
   solarR <- (0.12 * solarMJ) * 2.07 * 1e6 / 3600

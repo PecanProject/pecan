@@ -90,6 +90,7 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
   results <- data.frame(file=character(rows), host=character(rows),
                         mimetype=character(rows), formatname=character(rows),
                         startdate=character(rows), enddate=character(rows),
+                        dbfile.name = in.prefix,
                         stringsAsFactors = FALSE)
   for(year in start_year:end_year){
     old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep="."))
