@@ -6,16 +6,18 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
+context("Testing utility functions")
 
 con <- db.open(list(driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety"))
 
-context("test db.query")
-
-test_that("db.query can execute a trivial SQL statement and return results",{  
-    ans <- db.query("select count(*) from traits;", con = con)
-    expect_is(ans, "data.frame")
-    expect_is(ans[,1], "numeric")
-    expect_true(length(ans) == 1)
+test_that("get.id works on some tables, and with different inputs", {
+  pftid <- get.id("pfts", "name", "salix", con)
+  expect_is(pftid, "numeric")
+  
+  pftname <- 'ebifarm.salix'
+  modeltypeid <- 1
+  pftid <- get.id("pfts", c("name", "modeltype_id"), c(pftname, modeltypeid), con)
+  pft <- db.query(paste0("select name, modeltype_id from pfts where id = ", pftid), con)
+  expect_equal(pft$name, pftname)
+  expect_equal(pft$modeltype_id, modeltypeid)
 })
-
-db.close(con = con)
