@@ -22,14 +22,14 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
   ## this bit of code is useful for defining the variables passed to this function 
   ## if you are debugging
   if(FALSE){
-    settings$model$type = "SIPNET"
-    chain = 1
-    params = NULL
-    var.names = "Amax"
-    jvar = NULL
-    var.id = 297 ## NEE, canonical units umolC/m2/s
+    settings$model$type <- "SIPNET"
+    chain <- 1
+    params <- NULL
+    var.names <- "Amax"
+    jvar <- NULL
+    var.id <- 297 ## NEE, canonical units umolC/m2/s
 
-    params = jvar = var.names = prior = chain = adapt = adj.min = ar.target = NULL
+    params <- jvar <- var.names <- prior <- chain <- adapt <- adj.min <- ar.target <- NULL
   }
 
 
@@ -40,7 +40,7 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
       params <- settings$assim.batch$params
     }
     if(is.null(jvar)) {
-      jvar <- as.numeric(settings$assim.batch$jump$jvar.inits)
+      jvar <- as.numeric(settings$assim.batch$jump$jvar)
     }
     if(is.null(adapt)) {
       adapt <- as.numeric(settings$assim.batch$jump$adapt)
@@ -234,18 +234,6 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
   } # end loop over files
   
   
-  ## Process inputs
-  #  TODO: Generalize
-#   dat.obs <- list()
-#   for(i in 1:n.input) {
-#     NEEo <- data$NEE_or_fMDS #data$Fc   #umolCO2 m-2 s-1
-#     NEEq <- data$NEE_or_fMDSqc #data$qf_Fc
-#     NEEo[NEEq > 0] <- NA
-#     
-#     dat.obs[[i]] <- NEEo
-#   }
-  
-  
   ## Set up likelihood functions
   #  TODO: Generalize
   llik.fn <- list()
@@ -273,15 +261,12 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
     }
   }
 
-  
-    
     # NPPo<- state$NPP[,,23]
     # AGBo<- state$AGB[,,24]
     # 
     # #parameters for bivariate normal likelihood
     # mu = c(mean(NPPo),mean(AGBo))
     # sigma = cov(cbind(NPPo,AGBo))
-
 
 
   ## Load params from previous run, if provided. 
@@ -563,8 +548,8 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
   ## Output an updates settings list
   out <- settings$assim.batch
   out$params    <- params.id
-  out$jvar      <- as.list(jvar)
-    names(out$jvar) <- rep('jvar', length(jvar))
+  out$jump$jvar      <- as.list(jvar)
+    names(out$jump$jvar) <- rep('jvar', length(jvar))
   out$var.names <- as.list(var.names)
     names(out$var.names) <- rep('var', length(var.names))
   out$prior     <- prior.id
