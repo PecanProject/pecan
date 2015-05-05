@@ -29,11 +29,7 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
     jvar = NULL
     var.id = 297 ## NEE, canonical units umolC/m2/s
 
-    params = NULL
-    jvar = NULL
-    var.names = NULL
-    prior = NULL
-    chain = NULL
+    params = jvar = var.names = prior = chain = adapt = adj.min = ar.target = NULL
   }
 
 
@@ -182,12 +178,103 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
 
 
   ## load data
-  input.id <- settings$assim.batch$input.id
-  data <- read.csv(settings$assim.batch$input)
-  NEEo <- data$NEE_or_fMDS #data$Fc   #umolCO2 m-2 s-1
-  NEEq <- data$NEE_or_fMDSqc #data$qf_Fc
-  NEEo[NEEq > 0] <- NA
+  # Outlining setup for multiple datasets, although for now the only option is to assimilate 
+  # against a single NEE input
+  inputs <- list()
+  n.input <- length(settings$assim.batch$inputs)
+  var.ids <- input.ids <- numeric(n.input)
+  for(i in 1:n.input) {
+    input.i <- settings$assim.batch$inputs[[1]]
+    var.ids[i] <- input.i$data.model$variable.id
+
+    if(is.null(input.i$id)) { # No input ID given. Obtain by PATH or SOURCE, then insert to db
+
+      # Again, setting up to work with a single test case, Ameriflux NEE provided as a file path.
+      # Lots to do to generalize. 
+      if(!is.null(input.i$path)) {
+        # Set input attributes (again, assuming ameriflux for now...)
+        in.path <- dirname(input.i$path)
+        in.prefix <- basename(input.i$path)
+        mimetype <- 'text/csv'
+        formatname <- 'AmeriFlux.level4.h'
+        
+        year <- strsplit(basename(input.i$path), "_")[[1]][3]
+        startdate <- as.POSIXlt(paste0(year,"-01-01 00:00:00", tz = "GMT"))
+        enddate <- as.POSIXlt(paste0(year,"-12-31 23:59:59", tz = "GMT"))
+
+      } else if(!is.null(input.i$source)) {
+        # TODO: insert code to extract data from standard sources (e.g. AMF)
+        
+      } else {
+        logger.error("Must provide ID, PATH, or SOURCE for all data assimilation inputs")
+      }
+      
+
+      ## Insert input to database
+      raw.id <- dbfile.input.insert(in.path=in.path,
+                                    in.prefix=in.prefix, 
+                                    siteid = settings$run$site$id,  
+                                    startdate = startdate, 
+                                    enddate = enddate, 
+                                    mimetype=mimetype, 
+                                    formatname=formatname,
+                                    parentid = NA,
+                                    con = con,
+                                    hostname = settings$run$host$name)
+      input.i$id <- raw.id$input.id
+    }
   
+    ## Get file path from input id
+    input.ids[i] <- input.i$id
+    file <- db.query(paste0('SELECT * FROM dbfiles WHERE container_id = ', input.i$id), con)
+    file <- file.path(file$file_path, file$file_name)
+
+    ## Load store data
+    inputs[[i]] <- read.csv(file)
+  } # end loop over files
+  
+  
+  ## Process inputs
+  #  TODO: Generalize
+#   dat.obs <- list()
+#   for(i in 1:n.input) {
+#     NEEo <- data$NEE_or_fMDS #data$Fc   #umolCO2 m-2 s-1
+#     NEEq <- data$NEE_or_fMDSqc #data$qf_Fc
+#     NEEo[NEEq > 0] <- NA
+#     
+#     dat.obs[[i]] <- NEEo
+#   }
+  
+  
+  ## Set up likelihood functions
+  #  TODO: Generalize
+  llik.fn <- list()
+  for(i in 1:n.input) {
+    input.i <- settings$assim.batch$inputs[[1]]
+    llik.fn[[i]] <- function(model, data) {
+      NEEo <- data$NEE_or_fMDS #data$Fc   #umolCO2 m-2 s-1
+      NEEq <- data$NEE_or_fMDSqc #data$qf_Fc
+      NEEo[NEEq > 0] <- NA
+    
+      ## calculate flux uncertainty parameters
+      dTa <- get.change(data$Ta_f)
+      flags <- dTa < 3   ## filter data to temperature differences that are less than 3 degrees
+      NEE.params <- flux.uncertainty(NEEo,NEEq,flags,bin.num=20)
+      b0 <- NEE.params$intercept
+      bp <- NEE.params$slopeP
+      bn <- NEE.params$slopeN
+
+      NEE.resid <- abs(NEEm - NEEo)
+      NEE.pos <- (NEEm >= 0)
+      LL <- c(dexp(NEE.resid[NEE.pos], 1/(b0 + bp*NEEm[NEE.pos]), log=TRUE), 
+              dexp(NEE.resid[!NEE.pos],1/(b0 + bn*NEEm[!NEE.pos]),log=TRUE))
+      n.obs = sum(!is.na(LL))
+      return(list(LL=sum(LL,na.rm=TRUE), n=n.obs))
+    }
+  }
+
+  
+    
     # NPPo<- state$NPP[,,23]
     # AGBo<- state$AGB[,,24]
     # 
@@ -196,13 +283,6 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
     # sigma = cov(cbind(NPPo,AGBo))
 
 
-  ## calculate flux uncertainty parameters
-  dTa <- get.change(data$Ta_f)
-  flags <- dTa < 3   ## filter data to temperature differences that are less thatn 3 degrees
-  NEE.params <- flux.uncertainty(NEEo,NEEq,flags,bin.num=20)
-  b0 <- NEE.params$intercept
-  bp <- NEE.params$slopeP
-  bn <- NEE.params$slopeN
 
   ## Load params from previous run, if provided. 
   #  Indicated if params is a single non-null value, i.e. a dbfile ID
@@ -337,46 +417,58 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
         start.model.runs(settings,settings$database$bety$write)
 
 
-        ## read model output        
-        NEEm <- read.output(run.id, outdir = file.path(settings$run$host$outdir, run.id),
-                            strftime(settings$run$start.date,"%Y"), 
-                            strftime(settings$run$end.date,"%Y"), 
-                            variables="NEE")$NEE*0.0002640674
+        ## read model outputs
+        # TODO: Generalize
+        model.out <- list()
+        for(k in 1:n.input){
+          NEEm <- read.output(run.id, outdir = file.path(settings$run$host$outdir, run.id),
+                              strftime(settings$run$start.date,"%Y"), 
+                              strftime(settings$run$end.date,"%Y"), 
+                              variables="NEE")$NEE*0.0002640674
           ## unit conversion kgC/ha/yr -> umolC/m2/sec
           # NPPvecm <-read.output(run.id, outdir = file.path(outdir, run.id),
           #                       start.year, end.year, variables="NPP")$NPP
           # NPPm<- sum(NPPvecm)
 
 
-        ## match model and observations
-        NEEm <- rep(NEEm,each=length(NEEo)/length(NEEm))
-        set <- 1:length(NEEm)  ## ***** need a more intellegent year matching!!!
-          # NPPm <- rep(NPPm,each=length(NPPo)/length(NPPm))
-          # set <- 1:length(NPPm) 
+          ## match model and observations
+          NEEm <- rep(NEEm,each=length(NEEo)/length(NEEm))
+          set <- 1:length(NEEm)  ## ***** need a more intellegent year matching!!!
+            # NPPm <- rep(NPPm,each=length(NPPo)/length(NPPm))
+            # set <- 1:length(NPPm) 
+
+          model.out[[k]] <- NEEm[set]
+        }
+
 
         ## calculate likelihood
-        NEE.resid <- abs(NEEm-NEEo[set])
-        NEE.pos <- (NEEm >= 0)
-        LL.star <- c(dexp(NEE.resid[NEE.pos], 1/(b0 + bp*NEEm[NEE.pos]), log=TRUE), 
-                     dexp(NEE.resid[!NEE.pos],1/(b0 + bn*NEEm[!NEE.pos]),log=TRUE))
-        n.obs = sum(!is.na(LL.star))
-        LL.star <- sum(LL.star,na.rm=TRUE)
-          #loglikelihood for bivar normal distn of NPP and AGB
-          # LL.star1 <-sum(dmvnorm(cbind(NPPo,AGBo), mu, sigma, log=TRUE), na.rm=TRUE)
-          LL.star1 <- 0
-          weight   <- 1
-        
-        LL.total <- LL.star * weight + LL.star1
+        LL.vec <- n.vec <- numeric(n.input)
+        for(k in 1:n.input) {
+          llik <- llik.fn[[k]](model.out[[k]], inputs[[k]])
+          LL.vec[k] <- llik$LL
+          n.vec[k]  <- llik$n
+        }
+        weights <- rep(1/n.input, n.input) # TODO: Implement user-defined weights
+        LL.total <- sum(LL.vec * weights)
+        neff <- n.vec * weights
 
 
-        ## insert Likelihood record in database
-#         if (!is.null(con)) {
-#           now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-#           paramlist <- paste("MCMC: chain",chain,"iteration",i,"variable",j)
-#           db.query(paste("INSERT INTO likelihoods (run_id, variable_id, input_id, loglikelihood, n_eff, weight,created_at) values ('", 
-#                          run.id, "', '", var.id, "', '", input.id, "', '", LL.total, "', '",
-#                          floor(n.obs*weight), "', '", weight , "', '", now,"')", sep=''), con)
-#         }
+        ## insert Likelihood records in database
+        if (!is.null(con)) {
+          now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+          paramlist <- paste("MCMC: chain",chain,"iteration",i,"variable",j)
+          for(k in 1:n.input) {
+            db.query(
+              paste0("INSERT INTO likelihoods ", 
+                "(run_id,         variable_id,        input_id,             loglikelihood, ", 
+                 "n_eff,                  weight,              created_at) ",
+              "values ('", 
+                 run.id, "', '", var.ids[k], "', '", input.ids[k], "', '", LL.vec[k], "', '",
+                 floor(neff[k]), "', '", weights[k] , "', '", now,"')"
+              ), 
+            con)
+          }
+        }
 
 
         ## accept or reject step
