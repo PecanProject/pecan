@@ -25,7 +25,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   # Then unnecessary steps could be skipped?
   
   #read in registration xml for met specific information
-  register <- xmlToList(xmlParse(file.path(find.package("PEcAn.data.atmosphere"),"registration",paste0("register.",met,".xml"))))
+  register <- xmlToList(xmlParse(system.file(paste0("registration/register.", met, ".xml"), package = "PEcAn.data.atmosphere")))
                         
   #setup connection and host information
   con      <- db.open(dbparms)
