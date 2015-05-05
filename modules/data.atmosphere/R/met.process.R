@@ -17,6 +17,12 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   require(RPostgreSQL)
   require(XML)
   
+  #setup connection and host information
+  con      <- db.open(dbparms)
+  username <- ""  
+  ifelse(host$name == "localhost", machine.host <- fqdn(), machine.host <- hostname)
+  machine = db.query(paste0("SELECT * from machines where hostname = '",machine.host,"'"),con)
+  
   #get met source and potentially determine where to start in the process
   met <- ifelse(is.null(input_met$source), logger.error("Must specify met source"),input_met$source)
   
@@ -25,13 +31,8 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   # Then unnecessary steps could be skipped?
   
   #read in registration xml for met specific information
-  register <- xmlToList(xmlParse(system.file(paste0("registration/register.", met, ".xml"), package = "PEcAn.data.atmosphere")))
-                        
-  #setup connection and host information
-  con      <- db.open(dbparms)
-  username <- ""  
-  ifelse(host$name == "localhost", machine.host <- fqdn(), machine.host <- hostname)
-  machine = db.query(paste0("SELECT * from machines where hostname = '",machine.host,"'"),con)
+  register.xml <- system.file(paste0("registration/register.", met, ".xml"), package = "PEcAn.data.atmosphere")
+  register <- read.register(register.xml, con)
   
   #setup additional browndog arguments
   if(!is.null(browndog)){browndog$inputtype <- register$format$inputtype}
