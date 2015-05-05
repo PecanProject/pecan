@@ -49,15 +49,7 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
   conversion = "local.remote" #default
   
   if(!is.null(browndog) & hostname == 'localhost'){ # perform conversions with Brown Dog - only works locally right now
-    require(RCurl)
-    
-    # Determine inputtype by using formatname and mimetype of input file   
-    input$format <- db.query(paste0("SELECT f.name, f.mime_type from formats as f where f.id = ",input$format_id),con)   
-    if(input$format$name == "Ameriflux"){
-      inputtype <- 'ameriflux.zip'
-    }else{
-      inputtype <- 'pecan.zip'
-    }  
+    require(RCurl) 
     
     # Determine outputtype using formatname and mimetype of output file
     # Add issue to github that extension of formats table to include outputtype 
@@ -83,9 +75,9 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
     curloptions <- c(curloptions, followlocation=TRUE)
     
     # check if we can do conversion 
-    out.html <- getURL(paste0("http://dap-dev.ncsa.illinois.edu:8184/inputs/",inputtype), .opts = curloptions)
+    out.html <- getURL(paste0("http://dap-dev.ncsa.illinois.edu:8184/inputs/",browndog$inputtype), .opts = curloptions)
     if(outputtype %in% unlist(strsplit(out.html, '\n'))){
-      print(paste("Conversion from", inputtype,"to", outputtype, "through Brown Dog"))
+      print(paste("Conversion from", browndog$inputtype,"to", outputtype, "through Brown Dog"))
       conversion <- "browndog"
     }
   }
@@ -98,7 +90,7 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
     # loop over files in localhost and zip to send to Brown Dog 
     files <- list.files(dbfile$file_path, pattern=dbfile$file_name)
     files <- grep(dbfile$file_name,files,value=T)
-    zipfile <- paste0(dbfile$file_name,".",inputtype)
+    zipfile <- paste0(dbfile$file_name,".",browndog$inputtype)
     system(paste("cd", dbfile$file_path, "; zip", zipfile,  paste(files, collapse = " ")))
     zipfile <- file.path(dbfile$file_path,zipfile) 
     

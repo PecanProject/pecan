@@ -23,6 +23,8 @@ The demo instance only allows for runs at pecan.ncsa.illinois.edu. Once you have
 * Wang, D, D.S. LeBauer, and M.C. Dietze (2013). Predicting yields of short-rotation hybrid poplar (Populus spp.) for the contiguous US through model-data synthesis. Ecological Applications [doi:10.1890/12-0854.1](http://dx.doi.org/10.1890/12-0854.1)
 * Dietze, M.C., D.S LeBauer, and R. Kooper (2013). On improving the communication between models and data. Plant, Cell, & Environment [doi:10.1111/pce.12043](http://dx.doi.org/10.1111/pce.12043)
 * Dietze, Michael C., Shawn P. Serbin, Carl Davidson, Ankur R. Desai, Xiaohui Feng, Ryan Kelly, Rob Kooper et al. "A quantitative assessment of a terrestrial biosphere model's data needs across North American biomes." Journal of Geophysical Research: Biogeosciences 119, no. 3 (2014): 286-300.
+* Viskari, Toni, Brady Hardiman, Ankur R. Desai, and Michael C. Dietze. "Model-data assimilation of multiple phenological observations to constrain and predict leaf area index." (2015) [doi:10.1890/14-0497.1](http://dx.doi.org/10.1890/14-0497.1)
+
 
 ## Other References
 
