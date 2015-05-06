@@ -30,7 +30,7 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite=FALSE, ...
     tmp.met <- load.cfmet(met.nc, lat = lat, lon = lon, start.date = start.date, end.date = end.date)
     metlist[[file]]     <- cf2biocro(tmp.met)
   }
-  met <- rbindlist(metli)
+  met <- rbindlist(metlist)
   return(met)
 }
 
@@ -74,6 +74,7 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite=FALSE, ...
 ##' @author David LeBauer
 cf2biocro <- function(met){
 
+  require(PEcAn.data.atmosphere)
   if(!"relative_humidity" %in% colnames(met)){
     if(all(c("air_temperature", "air_pressure", "specific_humidity") %in% colnames(met))){ 
       rh <- qair2rh(qair = met$specific_humidity, 

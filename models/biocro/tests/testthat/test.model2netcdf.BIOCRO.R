@@ -1,21 +1,27 @@
-if(FALSE){
 context("check output from model2netcdf.BIOCRO")
+require(data.table)
+require(PEcAn.utils)
+require(PEcAn.settings)
 
 outdir <- file.path(tempdir(), "biocro")
 dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 
 file.copy(from = "data/result.RData", to = outdir)
 
-settings <- read.settings("data/pecan.biocro.xml")
+settings <- PEcAn.settings::read.settings("data/pecan.biocro.xml")
 
 start_date <- settings$run$start.date
-model2netcdf.BIOCRO(outdir = outdir, sitelat=1, sitelon=2, 
-                    start_date = settings$run$start.date, 
-                    end_date   = settings$run$end.date)
-biocro.ncfile <- file.path(outdir, paste0(year(settings$run$start.date), ".nc"))
 
-test_that("model2netcdf.BIOCRO reads a .csv and writes a netcdf file",{
-  expect_true(file.exists(biocro.ncfile))
+load("data/result.RData")
+biocro.ncfile <- file.path(outdir, paste0(resultDT[,min(Year)], ".nc"))
+file.remove(biocro.ncfile)
+model2netcdf.BIOCRO(resultDT, genus = 'foo', outdir = outdir, lat = 44.5, lon = -88.0)
+
+
+test_that("model2netcdf.BIOCRO reads a .csv and writes a netcdf file for each year",{
+  for(year in resultDT[,unique(Year)]){
+    expect_true(file.exists(file.path(outdir, paste0(year, ".nc"))))    
+  }
 })
 
 biocro.nc <- nc_open(biocro.ncfile)
@@ -28,7 +34,7 @@ test_that("model2netcdf.BIOCRO wrote netCDF with correct variables",{
     all(c("TotLivBiom", "RootBiom", "StemBiom", "Evap", "TVeg", "LAI")
         %in% names(vars)))
   expect_true(
-    all(c("lat", "lon", "time")
+    all(c("latitude", "longitude", "time")
         %in% names(dims)))
 
   expect_true(all(sapply(vars, function(x) x$ndims) == 3))
@@ -60,4 +66,15 @@ test_that("variables have MsTMIP standard units",{
 
 })
 
-}
+test_that("model2netcdf.BIOCRO will add a second site to an existing file",{  
+  nc_close(biocro.nc)
+  file.remove(biocro.ncfile)
+  model2netcdf.BIOCRO(resultDT, genus = 'foo', outdir = outdir, lat = 44.6, lon = -88.1)
+  model2netcdf.BIOCRO(resultDT, genus = 'foo', outdir = outdir, lat = 44.7, lon = -88.2)
+  biocro.nc <- nc_open(biocro.ncfile)
+  vars <- biocro.nc$var
+  dims <- biocro.nc$dim
+  
+  ncvar_get(biocro.nc, "latitude")
+})
+
