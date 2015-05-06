@@ -1,3 +1,7 @@
+library(XML)
+library(lubridate)
+library(PEcAn.DB)
+library(PEcAn.utils)
 
 ##' @name read.register
 ##' @title read.register
@@ -6,11 +10,6 @@
 ##' @param con betydb connection
 ##' 
 ##' @author Betsy Cowdery
-
-library(XML)
-library(lubridate)
-library(PEcAn.DB)
-library(PEcAn.utils)
 
 read.register <- function(register.xml, con){
   
@@ -41,4 +40,3 @@ read.register <- function(register.xml, con){
   }
   invisible(register)
 }
-
