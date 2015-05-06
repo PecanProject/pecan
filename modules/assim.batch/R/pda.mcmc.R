@@ -184,8 +184,9 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
   n.input <- length(settings$assim.batch$inputs)
   var.ids <- input.ids <- numeric(n.input)
   for(i in 1:n.input) {
-    input.i <- settings$assim.batch$inputs[[1]]
+    input.i <- settings$assim.batch$inputs[[i]]
     var.ids[i] <- input.i$data.model$variable.id
+    inputs[[i]] <- list()
 
     if(is.null(input.i$id)) { # No input ID given. Obtain by PATH or SOURCE, then insert to db
 
@@ -193,15 +194,18 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
       # Lots to do to generalize. 
       if(!is.null(input.i$path)) {
         # Set input attributes (again, assuming ameriflux for now...)
-        in.path <- dirname(input.i$path)
-        in.prefix <- basename(input.i$path)
-        mimetype <- 'text/csv'
-        formatname <- 'AmeriFlux.level4.h'
-        
-        year <- strsplit(basename(input.i$path), "_")[[1]][3]
-        startdate <- as.POSIXlt(paste0(year,"-01-01 00:00:00", tz = "GMT"))
-        enddate <- as.POSIXlt(paste0(year,"-12-31 23:59:59", tz = "GMT"))
-
+      # Commenting out for now. May be useful to have inputs specified by path
+      # automatically added, but needs some discussion
+#         in.path <- dirname(input.i$path)
+#         in.prefix <- basename(input.i$path)
+#         mimetype <- 'text/csv'
+#         formatname <- 'AmeriFlux.level4.h'
+#         
+#         year <- strsplit(basename(input.i$path), "_")[[1]][3]
+#         startdate <- as.POSIXlt(paste0(year,"-01-01 00:00:00", tz = "GMT"))
+#         enddate <- as.POSIXlt(paste0(year,"-12-31 23:59:59", tz = "GMT"))
+        inputs[[i]]$data <- read.csv(input.i$path)
+        input.ids[i] = -1
       } else if(!is.null(input.i$source)) {
         # TODO: insert code to extract data from standard sources (e.g. AMF)
         
@@ -211,26 +215,44 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
       
 
       ## Insert input to database
-      raw.id <- dbfile.input.insert(in.path=in.path,
-                                    in.prefix=in.prefix, 
-                                    siteid = settings$run$site$id,  
-                                    startdate = startdate, 
-                                    enddate = enddate, 
-                                    mimetype=mimetype, 
-                                    formatname=formatname,
-                                    parentid = NA,
-                                    con = con,
-                                    hostname = settings$run$host$name)
-      input.i$id <- raw.id$input.id
-    }
-  
+      # Commenting out for now. May be useful to have inputs specified by path
+      # automatically added, but needs some discussion
+#       raw.id <- dbfile.input.insert(in.path=in.path,
+#                                     in.prefix=in.prefix, 
+#                                     siteid = settings$run$site$id,  
+#                                     startdate = startdate, 
+#                                     enddate = enddate, 
+#                                     mimetype=mimetype, 
+#                                     formatname=formatname,
+#                                     parentid = NA,
+#                                     con = con,
+#                                     hostname = settings$run$host$name)
+#       input.i$id <- raw.id$input.id
+    } else { # Input specified by ID
     ## Get file path from input id
     input.ids[i] <- input.i$id
     file <- db.query(paste0('SELECT * FROM dbfiles WHERE container_id = ', input.i$id), con)
     file <- file.path(file$file_path, file$file_name)
 
     ## Load store data
-    inputs[[i]] <- read.csv(file)
+    inputs[[i]]$data <- read.csv(file)
+    }
+    
+    
+    ## Preprocess data
+    # TODO: Generalize
+    if(as.numeric(var.ids[i]) == 297) {
+      ## calculate flux uncertainty parameters
+      NEEo <- inputs[[i]]$data$NEE_or_fMDS #data$Fc   #umolCO2 m-2 s-1
+      NEEq <- inputs[[i]]$data$NEE_or_fMDSqc #data$qf_Fc
+      dTa <- get.change(inputs[[i]]$data$Ta_f)
+      flags <- dTa < 3   ## filter data to temperature differences that are less than 3 degrees
+      NEE.params <- flux.uncertainty(NEEo,NEEq,flags,bin.num=20)
+      inputs[[i]]$b0 <- NEE.params$intercept
+      inputs[[i]]$bp <- NEE.params$slopeP
+      inputs[[i]]$bn <- NEE.params$slopeN
+    }
+
   } # end loop over files
   
   
@@ -238,24 +260,17 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
   #  TODO: Generalize
   llik.fn <- list()
   for(i in 1:n.input) {
-    input.i <- settings$assim.batch$inputs[[1]]
     llik.fn[[i]] <- function(model, data) {
-      NEEo <- data$NEE_or_fMDS #data$Fc   #umolCO2 m-2 s-1
-      NEEq <- data$NEE_or_fMDSqc #data$qf_Fc
+      NEEo <- data$data$NEE_or_fMDS #data$Fc   #umolCO2 m-2 s-1
+      NEEq <- data$data$NEE_or_fMDSqc #data$qf_Fc
       NEEo[NEEq > 0] <- NA
     
-      ## calculate flux uncertainty parameters
-      dTa <- get.change(data$Ta_f)
-      flags <- dTa < 3   ## filter data to temperature differences that are less than 3 degrees
-      NEE.params <- flux.uncertainty(NEEo,NEEq,flags,bin.num=20)
-      b0 <- NEE.params$intercept
-      bp <- NEE.params$slopeP
-      bn <- NEE.params$slopeN
-
-      NEE.resid <- abs(NEEm - NEEo)
+      NEEm <- model
+    
+      NEE.resid <- abs(model - NEEo)
       NEE.pos <- (NEEm >= 0)
-      LL <- c(dexp(NEE.resid[NEE.pos], 1/(b0 + bp*NEEm[NEE.pos]), log=TRUE), 
-              dexp(NEE.resid[!NEE.pos],1/(b0 + bn*NEEm[!NEE.pos]),log=TRUE))
+      LL <- c(dexp(NEE.resid[NEE.pos], 1/(data$b0 + data$bp*NEEm[NEE.pos]), log=TRUE), 
+              dexp(NEE.resid[!NEE.pos],1/(data$b0 + data$bn*NEEm[!NEE.pos]),log=TRUE))
       n.obs = sum(!is.na(LL))
       return(list(LL=sum(LL,na.rm=TRUE), n=n.obs))
     }
