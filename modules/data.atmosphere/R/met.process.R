@@ -54,7 +54,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     check = db.query(
       paste0("SELECT i.start_date, i.end_date, d.file_path, d.container_id, d.id  from dbfiles as d join inputs as i on i.id = d.container_id where i.site_id =",register$siteid,
              " and d.container_type = 'Input' and i.format_id=",register$format$id, " and d.machine_id =",machine$id,
-             " and (i.start_date, i.end_date) OVERLAPS (DATE '", as.POSIXlt(start_date, tz = "GMT"),"',DATE '",as.POSIXlt(end_date, tz = "GMT"),"')"),con)
+             " and (i.start_date <= DATE '",as.POSIXlt(start_date, tz = "GMT"),"') and (DATE '", as.POSIXlt(end_date, tz = "GMT"),"' <= i.end_date)" ),con)
     print("end CHECK")
     options(digits=10)
     print(check)
@@ -84,7 +84,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     check = db.query(
       paste0("SELECT i.start_date, i.end_date, d.file_path, d.container_id, d.id  from dbfiles as d join inputs as i on i.id = d.container_id where i.site_id =",site$id,
              " and d.container_type = 'Input' and i.format_id=",register$format$id, " and d.machine_id =",machine$id,
-             " and (i.start_date, i.end_date) OVERLAPS (DATE '", as.POSIXlt(start_date, tz = "GMT"),"',DATE '",as.POSIXlt(end_date, tz = "GMT"),"')"),con)
+             " and (i.start_date <= DATE '",as.POSIXlt(start_date, tz = "GMT"),"') and (DATE '", as.POSIXlt(end_date, tz = "GMT"),"' <= i.end_date)" ),con)
     print("end CHECK")
     options(digits=10)
     print(check)
@@ -134,7 +134,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     check = db.query(
       paste0("SELECT i.start_date, i.end_date, d.file_path, d.container_id, d.id  from dbfiles as d join inputs as i on i.id = d.container_id where i.site_id =",register$siteid,
              " and d.container_type = 'Input' and i.format_id=",format.id, " and d.machine_id =",machine$id, " and i.name = '", input_name,
-             "' and (i.start_date, i.end_date) OVERLAPS (DATE '", as.POSIXlt(start_date, tz = "GMT"),"',DATE '",as.POSIXlt(end_date, tz = "GMT"),"')"),con)
+             "' and (i.start_date <= DATE '",as.POSIXlt(start_date, tz = "GMT"),"') and (DATE '", as.POSIXlt(end_date, tz = "GMT"),"' <= i.end_date)" ),con)
     print("end CHECK")
     options(digits=10)
     print(check)
@@ -162,7 +162,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     check = db.query(
       paste0("SELECT i.start_date, i.end_date, d.file_path, d.container_id, d.id  from dbfiles as d join inputs as i on i.id = d.container_id where i.site_id =",register$siteid,
              " and d.container_type = 'Input' and i.format_id=",format.id, " and d.machine_id =",machine$id, " and i.name = '", input_name,
-             "' and (i.start_date, i.end_date) OVERLAPS (DATE '", as.POSIXlt(start_date, tz = "GMT"),"',DATE '",as.POSIXlt(end_date, tz = "GMT"),"')"),con)
+             "' and (i.start_date <= DATE '",as.POSIXlt(start_date, tz = "GMT"),"') and (DATE '", as.POSIXlt(end_date, tz = "GMT"),"' <= i.end_date)" ),con)
     print("end CHECK")
     options(digits=10)
     print(check)
@@ -183,7 +183,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     check = db.query(
       paste0("SELECT i.start_date, i.end_date, d.file_path, d.container_id, d.id  from dbfiles as d join inputs as i on i.id = d.container_id where i.site_id =",new.site$id,
              " and d.container_type = 'Input' and i.format_id=",33, " and d.machine_id =",machine$id, " and i.name = '", input_name,
-             "' and (i.start_date, i.end_date) OVERLAPS (DATE '", as.POSIXlt(start_date, tz = "GMT"),"',DATE '",as.POSIXlt(end_date, tz = "GMT"),"')"),con)
+             "' and (i.start_date <= DATE '",as.POSIXlt(start_date, tz = "GMT"),"') and (DATE '", as.POSIXlt(end_date, tz = "GMT"),"' <= i.end_date)" ),con)
     print("end CHECK")
     options(digits=10)
     print(check)
