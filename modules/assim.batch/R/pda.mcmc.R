@@ -204,7 +204,7 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
         enddate <- as.POSIXlt(paste0(year,"-12-31 23:59:59", tz = "GMT"))
       } else if(!is.null(input.i$source)) {
         # TODO: insert code to extract data from standard sources (e.g. AMF)
-        
+
       } else {
         logger.error("Must provide ID, PATH, or SOURCE for all data assimilation inputs")
       }
