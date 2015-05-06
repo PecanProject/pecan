@@ -194,18 +194,14 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
       # Lots to do to generalize. 
       if(!is.null(input.i$path)) {
         # Set input attributes (again, assuming ameriflux for now...)
-      # Commenting out for now. May be useful to have inputs specified by path
-      # automatically added, but needs some discussion
-#         in.path <- dirname(input.i$path)
-#         in.prefix <- basename(input.i$path)
-#         mimetype <- 'text/csv'
-#         formatname <- 'AmeriFlux.level4.h'
-#         
-#         year <- strsplit(basename(input.i$path), "_")[[1]][3]
-#         startdate <- as.POSIXlt(paste0(year,"-01-01 00:00:00", tz = "GMT"))
-#         enddate <- as.POSIXlt(paste0(year,"-12-31 23:59:59", tz = "GMT"))
-        inputs[[i]]$data <- read.csv(input.i$path)
-        input.ids[i] = -1
+        in.path <- dirname(input.i$path)
+        in.prefix <- basename(input.i$path)
+        mimetype <- 'text/csv'
+        formatname <- 'AmeriFlux.level4.h'
+        
+        year <- strsplit(basename(input.i$path), "_")[[1]][3]
+        startdate <- as.POSIXlt(paste0(year,"-01-01 00:00:00", tz = "GMT"))
+        enddate <- as.POSIXlt(paste0(year,"-12-31 23:59:59", tz = "GMT"))
       } else if(!is.null(input.i$source)) {
         # TODO: insert code to extract data from standard sources (e.g. AMF)
         
@@ -213,22 +209,20 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
         logger.error("Must provide ID, PATH, or SOURCE for all data assimilation inputs")
       }
       
-
       ## Insert input to database
-      # Commenting out for now. May be useful to have inputs specified by path
-      # automatically added, but needs some discussion
-#       raw.id <- dbfile.input.insert(in.path=in.path,
-#                                     in.prefix=in.prefix, 
-#                                     siteid = settings$run$site$id,  
-#                                     startdate = startdate, 
-#                                     enddate = enddate, 
-#                                     mimetype=mimetype, 
-#                                     formatname=formatname,
-#                                     parentid = NA,
-#                                     con = con,
-#                                     hostname = settings$run$host$name)
-#       input.i$id <- raw.id$input.id
-    } else { # Input specified by ID
+      raw.id <- dbfile.input.insert(in.path=in.path,
+                                    in.prefix=in.prefix, 
+                                    siteid = settings$run$site$id,  
+                                    startdate = startdate, 
+                                    enddate = enddate, 
+                                    mimetype=mimetype, 
+                                    formatname=formatname,
+                                    parentid = NA,
+                                    con = con,
+                                    hostname = settings$run$host$name)
+      input.i$id <- raw.id$input.id
+    } 
+    
     ## Get file path from input id
     input.ids[i] <- input.i$id
     file <- db.query(paste0('SELECT * FROM dbfiles WHERE container_id = ', input.i$id), con)
@@ -236,7 +230,6 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
 
     ## Load store data
     inputs[[i]]$data <- read.csv(file)
-    }
     
     
     ## Preprocess data
