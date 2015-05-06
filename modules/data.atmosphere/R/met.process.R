@@ -116,7 +116,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   #--------------------------------------------------------------------------------------------------#
   # Change to  CF Standards
     
-  print("### Change to CF Standards")
+  logger.info("Begin change to CF Standards")
   
   input.id  <-  raw.id[1]
   pkg       <- "PEcAn.data.atmosphere"
@@ -203,12 +203,16 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
                            username,con=con,hostname=host$name,browndog=NULL,write=TRUE) 
   }
   
+  logger.info("Finished change to CF Standards")
+  
   #--------------------------------------------------------------------------------------------------#
   # Change to Site Level - Standardized Met (i.e. ready for conversion to model specific format)
   
+  logger.info("Begin Standardize Met")
+  
   if(register$scale=="regional"){ #### Site extraction 
     
-    print("# Site Extraction")
+    logger.info("Site Extraction")
     
     input.id   <- cf.id[1]
     outfolder  <- file.path(dir,paste0(met,"_CF_site_",str_ns))
@@ -223,7 +227,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     
   }else if(register$scale=="site"){ ##### Site Level Processing
     
-    print("# Run Gapfilling") # Does NOT take place on browndog!
+    logger.info("Gapfilling") # Does NOT take place on browndog!
     
     input.id   <- cf.id[1]
     outfolder  <- file.path(dir,paste0(met,"_CF_gapfill_site_",str_ns))
@@ -237,10 +241,12 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
                                 username,con=con,hostname=host$name,browndog=NULL,write=TRUE,lst=lst)
     
   }
-  print("Standardized Met Produced")
+  logger.info("Finished Standardize Met")
   
   #--------------------------------------------------------------------------------------------------#
   # Prepare for Model
+  
+  logger.info("Begin Model Specific Conversion")
   
   # Determine output format name and mimetype   
   model_info <- db.query(paste0("SELECT f.name, f.id, f.mime_type from modeltypes as m join modeltypes_formats as mf on m.id
@@ -259,7 +265,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   model.id  <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
                              username,con=con,hostname=host$name,browndog,write=TRUE,lst=lst,lat=new.site$lat,lon=new.site$lon)
   
-  print(c("Done model convert",model.id[1]))
+  logger.info(paste("Finished Model Specific Conversion",model.id[1]))
   
   model.file <- db.query(paste("SELECT * from dbfiles where id =",model.id[[2]]),con)[["file_name"]]
   

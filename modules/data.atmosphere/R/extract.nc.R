@@ -34,7 +34,6 @@ extract.nc <- function(in.path,in.prefix,outfolder,start_date,end_date,slat,slon
   close <- closest_xy(slat, slon,in.path,in.prefix)
   x <- close$x
   y <- close$y
-  print(c(x,y))
   
   start_year <- year(start_date)
   end_year <- year(end_date)
