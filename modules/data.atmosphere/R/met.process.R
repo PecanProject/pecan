@@ -181,7 +181,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     
     print("start CHECK")   
     check = db.query(
-      paste0("SELECT i.start_date, i.end_date, d.file_path, d.container_id, d.id  from dbfiles as d join inputs as i on i.id = d.container_id where i.site_id =",register$siteid,
+      paste0("SELECT i.start_date, i.end_date, d.file_path, d.container_id, d.id  from dbfiles as d join inputs as i on i.id = d.container_id where i.site_id =",new.site$id,
              " and d.container_type = 'Input' and i.format_id=",33, " and d.machine_id =",machine$id, " and i.name = '", input_name,
              "' and (i.start_date, i.end_date) OVERLAPS (DATE '", as.POSIXlt(start_date, tz = "GMT"),"',DATE '",as.POSIXlt(end_date, tz = "GMT"),"')"),con)
     print("end CHECK")
