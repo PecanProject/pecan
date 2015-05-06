@@ -335,6 +335,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst=
     nc_close(nc)
     
     if (length(error) > 0) {
+      file.remove(new.file)
       logger.severe("Could not do gapfill, results are in", new.file, ".",
                     "The following variables have NA's:", paste(error, sep=", "))
     }
