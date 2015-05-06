@@ -1,3 +1,12 @@
+
+##' @name read.register
+##' @title read.register
+##' @export
+##' @param register.xml path of xml file
+##' @param con betydb connection
+##' 
+##' @author Betsy Cowdery
+
 library(XML)
 library(lubridate)
 library(PEcAn.DB)
