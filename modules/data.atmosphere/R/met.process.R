@@ -25,8 +25,8 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   # Then unnecessary steps could be skipped?
   
   #read in registration xml for met specific information
-  register <- xmlToList(xmlParse(paste0("modules/data.atmosphere/inst/registration/register.",met,".xml")))
-  
+  register <- xmlToList(xmlParse(system.file(paste0("registration/register.", met, ".xml"), package = "PEcAn.data.atmosphere")))
+                        
   #setup connection and host information
   con      <- db.open(dbparms)
   username <- ""  
@@ -36,10 +36,10 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   #setup additional browndog arguments
   if(!is.null(browndog)){browndog$inputtype <- register$format$inputtype}
   
-  #setup site database number & name
-  new.site = as.numeric(site$id)
-  str_ns    <- paste0(new.site %/% 1000000000, "-", new.site %% 1000000000)  
-  
+  #setup site database number, lat, lon and name
+  new.site <- data.frame(id = as.numeric(site$id), lat = db.site.lat.lon(site$id,con=con)$lat, lon = db.site.lat.lon(site$id,con=con)$lon)
+  str_ns    <- paste0(new.site$id %/% 1000000000, "-", new.site$id %% 1000000000)  
+
   #--------------------------------------------------------------------------------------------------#
   # Download raw met from the internet 
   
@@ -114,9 +114,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   
   #--------------------------------------------------------------------------------------------------#
   # Change to  CF Standards
-  
-  # all met2CF funtions need to take additional arguments
-  
+    
   print("### Change to CF Standards")
   
   input.id  <-  raw.id[1]
@@ -218,12 +216,9 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     formatname <- 'CF Meteorology'
     mimetype   <- 'application/x-netcdf'
     
-    new.lat <- db.site.lat.lon(new.site,con=con)$lat
-    new.lon <- db.site.lat.lon(new.site,con=con)$lon
-    
     ready.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
                               username,con=con,hostname=host$name,browndog=NULL,write=TRUE,
-                              slat=new.lat,slon=new.lon,newsite=new.site)
+                              slat=new.site$lat,slon=new.site$lon,newsite=new.site$id)
     
   }else if(register$scale=="site"){ ##### Site Level Processing
     
@@ -261,7 +256,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   lst       <- site.lst(site,con)
     
   model.id  <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
-                             username,con=con,hostname=host$name,browndog,write=TRUE,lst=lst)
+                             username,con=con,hostname=host$name,browndog,write=TRUE,lst=lst,lat=new.site$lat,lon=new.site$lon)
   
   print(c("Done model convert",model.id[1]))
   
@@ -272,49 +267,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   
 }
 
-
-##' @name find.prefix
-##' @title find.prefix
-##' @export
-##' @param files
-##' @author Betsy Cowdery
-find.prefix <- function(files){
-  
-  if(length(files)==1){
-    tail <- tail(unlist(strsplit(files, "/")),1)
-    prefix <- head(unlist(strsplit(tail, "[.]")),1)
-    return(prefix)
-  }
-  
-  files.split <- try(strsplit(unlist(files), "[.]"), silent = TRUE)
-  
-  if(!inherits(files.split, 'try-error')){
-    
-    files.split <- lapply(files.split, `length<-`,max(unlist(lapply(files.split, length))))
-    files.df <- as.data.frame(do.call(rbind, files.split))
-    files.uniq <- sapply(files.df, function(x)length(unique(x))) 
-    
-    prefix <- ""
-    ifelse(files.uniq[1] == 1,prefix <- as.character(files.df[1,1]),return(prefix))
-    
-    for(i in 2:length(files.uniq)){
-      if(files.uniq[i]==1){
-        prefix <- paste(prefix,as.character(files.df[1,i]),sep = ".")
-      }else{
-        return(prefix)
-      }
-    }
-  }else{   
-    bases <- lapply(as.character(files),basename)
-    if(length(unique(bases))==1){
-      prefix <- bases[1]
-    }else{
-      prefix <- ""
-    }
-  }
-  return(prefix)
-}
-
+#################################################################################################################################
 
 ##' @name db.site.lat.lon
 ##' @title db.site.lat.lon
