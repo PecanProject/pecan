@@ -37,11 +37,6 @@ if(!(genus %in% c("Saccharum", "Salix", "Miscanthus"))) {
   stop("genus", genus, "not supported by PEcAn.BIOCRO module")
 }
 
-pp <- do.call("willowphotoParms", lapply(config$pft$photoParms, as.numeric))
-
-config$pft$canopyControl$chi.l <- NULL
-cc <- do.call("willowcanopyParms", lapply(config$pft$canopyControl, as.numeric))
-
 ## For willow, Root:Shoot ~ 1.8
 ## http://www.esf.edu/outreach/pd/2010/srwc/documents/Pacaldo_AboveBelowppt.pdf
 iplant <- list(iStem = as.numeric(config$pft$iPlantControl$iStem), 
@@ -71,18 +66,27 @@ for(yeari in years){
     iplant$iRoot <- result[[as.character(yeari-1)]]$Root
   }
   
-  if(genus == "Saccharum"){
-    result[[yearchar]] <- caneGro(WetDat = WetDat, photoControl=pp, canopyControl=cc)
-    result[[yearchar]][["Grain"]] <- result[[yearchar]][["Rhizome"]] <- rep(0, length(result$Hour))
+  if(genus %in% c("Saccharum", "Miscanthus")){
+    pp <- photoParms(config$pft$photoParms)
+    
+    #config$pft$canopyControl$chi.l <- NULL
+    #config$pft$canopyControl$mResp <- NULL
+    ccin <- config$pft$canopyControl
+    cc <- canopyParms(Sp = ccin$Sp, SpD = ccin$SpD, nlayers = ccin$nlayers, kd = ccin$kd, chi.l = ccin$chi.l, mResp = as.numeric(ccin$mResp), heightFactor = ccin$heightFactor, leafwidth = ccin$leafwidth)
+    if(genus == "Saccharum"){
+      result[[yearchar]] <- caneGro(WetDat = WetDat, photoControl=pp, canopyControl=cc)
+      result[[yearchar]][["Grain"]] <- result[[yearchar]][["Rhizome"]] <- rep(0, length(result$Hour))      
+    } else if (genus == "Miscanthus"){
+      
+      result[[yearchar]] <- BioGro(WetDat = WetDat, photoControl = pp, canopyControl = cc)
+    }
   } else if (genus == "Salix") {
-
+    
     result[[yearchar]] <- willowGro(WetDat = WetDat, photoControl = pp, soilControl = soil,
                                     iPlantControl = iplant,
                                     canopyControl=cc, 
                                     day1 = day1, dayn = dayn)
-  } else if (genus == "Miscanthus") {
-    result[[yearchar]] <- BioGro(WetDat = WetDat, photoControl = pp, canopyControl = cc)
-  }
+  } 
   result.yeari <- with(result[[yearchar]],
                        data.table(Year = yeari, DayofYear, Hour, ThermalT,
                                   Stem, Leaf, Root, Rhizome, Grain, LAI,
@@ -92,16 +96,18 @@ for(yeari in years){
   } else if (yeari > min(years)){
     resultDT <- rbind(resultDT, result.yeari)
   }
-  resultDT[,list(Stem, Leaf, Root, Rhizome)]
+  #resultDT[,list(Stem, Leaf, Root, Rhizome)]
 }
 
 
 ## Three ways of saving the data ... redundant, but useful for development
-write.csv(resultDT, file=file.path(outdir, "result.csv"))
-save(resultDT, config, genus, file = file.path(outdir, "result.RData"))
+#write.csv(resultDT, file=file.path(outdir, "result.csv"))
+#save(resultDT, config, genus, file = file.path(outdir, "result.RData"))
 #debugonce(model2netcdf.BIOCRO)
 ## this is the format that will be read by PEcAn: 
 require(PEcAn.utils)
 library(lubridate)
-source("/home/dlebauer/dev/pecan/models/biocro/R/model2netcdf.BIOCRO.R")
-model2netcdf.BIOCRO(resultDT = resultDT, genus = "genus", outdir = outdir, lat = config$location$latitude, lon = config$location$longitude)
+library(PEcAn.BIOCRO)
+#source("/home/dlebauer/dev/pecan/models/biocro/R/model2netcdf.BIOCRO.R")
+model2netcdf.BIOCRO(resultDT = resultDT, genus = "genus", 
+                    outdir = outdir, lat = config$location$latitude, lon = config$location$longitude)
