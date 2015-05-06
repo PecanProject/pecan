@@ -9,7 +9,7 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
                           pkg,fcn,username,con=con,hostname='localhost',browndog, write=TRUE,...){
   print(paste("Convert.Inputs",fcn,input.id,hostname))
   print(paste(outfolder,formatname,mimetype,site.id,start_date,end_date))
-  l <- list(...); print(l)
+  l <- list(...); #print(l)
   n <- nchar(outfolder)
   if(substr(outfolder,n,n) != "/"){outfolder = paste0(outfolder,"/")}
   
