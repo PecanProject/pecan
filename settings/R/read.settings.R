@@ -607,7 +607,13 @@ check.settings <- function(settings) {
   if(is.null(settings$run$dbfiles)) {
     settings$run$dbfiles <- full.path("~/.pecan/dbfiles")
   } else {
-    settings$run$dbfiles <- full.path(settings$run$dbfiles)
+      if (substr(settings$run$dbfiles, 1, 1) != '/'){
+          logger.warn("settings$run$dbfiles pathname", settings$run$dbfiles, " is invalid\n
+                  placing it in the home directory ", Sys.getenv("HOME"))
+          settings$run$dbfiles <- file.path(Sys.getenv("HOME"), settings$run$dbfiles)
+      } 
+      
+      settings$run$dbfiles <- normalizePath(settings$run$dbfiles, mustWork=FALSE)
   }
   dir.create(settings$run$dbfiles, showWarnings = FALSE, recursive = TRUE)
 
