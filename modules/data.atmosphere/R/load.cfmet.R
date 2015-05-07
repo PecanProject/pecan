@@ -16,6 +16,7 @@
 ##' @author David LeBauer
 load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date){
   ## Lat and Lon
+  require(lubridate)
   Lat <- ncvar_get(met.nc, "latitude")
   Lon <- ncvar_get(met.nc, "longitude")
   

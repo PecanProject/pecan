@@ -75,6 +75,8 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite=FALSE, ...
 cf2biocro <- function(met){
 
   require(PEcAn.data.atmosphere)
+  require(lubridate)
+  require(udunits2)
   if(!"relative_humidity" %in% colnames(met)){
     if(all(c("air_temperature", "air_pressure", "specific_humidity") %in% colnames(met))){ 
       rh <- qair2rh(qair = met$specific_humidity, 
@@ -107,6 +109,9 @@ cf2biocro <- function(met){
   if(met[,max(relative_humidity ) > 1]){ ## just to confirm
     met[, `:=` (relative_humidity = relative_humidity/100)]
   } 
+  
+  ## Convert hr given as 1:24 to 0:23
+  if(all(met[, range(hour)] == c(1, 24)) ) met[, `:=` (hour = hour -1)]
   newmet <- met[, list(year = year, doy = doy, hour = hour,
                        SolarR = ppfd,
                        Temp = ud.convert(air_temperature, "Kelvin", "Celsius"), 
