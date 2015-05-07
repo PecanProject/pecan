@@ -233,16 +233,9 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
 
     $("#sitename").keyup(function( event ) {
       var search = $("#sitename").val().toLowerCase();
-      var i;
-      for (i = 0; i < markersArray.length; ++i) {
-          if (!markersArray[i].sitename.toLowerCase().contains(search)){
-            markersArray[i].setVisible(false);
-          }
-          else{
-            markersArray[i].setVisible(true);
-          }
-      }
-      
+      markersArray.forEach(function(m) {
+        m.setVisible(m.sitename.toLowerCase().indexOf(search) > -1);
+      });
     });
   }
 
