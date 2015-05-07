@@ -22,12 +22,11 @@
 ##' }
 download.url = function(url, file, timeout=600, .opts=list(), retry404=TRUE) {
   count <- 0
-  print(paste(url, file))
   while (!url.exists(url, .opts=.opts) && count < timeout) {
     count <- count + 1
     Sys.sleep(1)
   }
-  if (count == 60) {
+  if (count >= timeout) {
     return(NA)
   }
   f <- CFILE(file, mode="wb")
