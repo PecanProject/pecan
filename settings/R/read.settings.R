@@ -38,15 +38,14 @@ check.inputs <- function(settings) {
       tagid <- paste0(tag, ".id")
       hostname <- settings$run$host$name
       allinputs <- allinputs[allinputs != tag]
-      
-      # check if <tag.id> exists
-      if (!is.null(settings$run$inputs[[tagid]])) {
-        if(inputs$required[i]){
-          logger.severe("Missing required input :", tag)
-        } else {
-          logger.info("Missing optional input:", tag)
-        }
-        next
+      ## check if tag exists
+      if (is.null(settings$run$inputs[[tag]])) {
+          if (inputs$required[i]) {
+              logger.severe("Missing required input :", tag)
+          } else {
+              logger.info("Missing optional input :", tag)
+          }
+          next
       }
       ## check if <id> exists
       if("id" %in% names(settings$run$inputs[[tag]])){
