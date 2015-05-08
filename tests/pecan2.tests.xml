@@ -1,0 +1,133 @@
+<?xml version="1.0"?>
+<pecan>
+ <outdir>/home/ecowdery/met_process_tests/</outdir>
+
+ <browndog>
+   <!--
+   <url>http://dap.ncsa.illinois.edu:8184/convert/</url>
+   <username>browndog.user</username>
+   <password>GritGin3</password>
+   -->
+   <url>http://dap-dev.ncsa.illinois.edu:8184/convert/</url>
+   <username>browndog.user</username>
+   <password>twonkIv8</password>   
+ </browndog>
+ 
+ <database>
+  <bety>
+   <user>bety</user>
+   <password>bety</password>
+   <host>128.197.230.32</host>
+   <dbname>bety</dbname>
+   <write>TRUE</write>
+   <driver>PostgreSQL</driver>
+  </bety>
+ </database>
+ 
+ <model>
+  <id>5</id>
+  <type>ED2</type>
+  <revision>80</revision>
+ </model>
+ 
+ <run>
+
+  <site>
+   <id>1000000033</id>
+   <name>UMBS Disturbance (US-UMd)</name>
+   <lat>45.5625</lat>
+   <lon>-84.6975</lon>
+  </site>
+  
+  <start.date>2010-01-01 00:00:00</start.date>
+  <end.date>2010-12-31 00:00:00</end.date>
+  
+  <host>
+   <name>localhost</name>
+  </host>
+  
+  <dbfiles>/fs/data1/pecan.data/input</dbfiles>
+  
+   <inputs>
+    <met>
+      <source>Ameriflux</source>
+    </met>
+  </inputs>
+  
+ </run>
+ 
+</pecan>
+
+<!--
+
+ =============
+  DALEC
+ =============
+ <model>
+  <id>10</id>
+  <binary>/home/dietze/dalec_EnKF_pub/dalec_seqMH</binary>
+  <type>DALEC</type>
+  <revision>Quaife Evergreen RSE08</revision>
+ </model>
+ 
+ <pfts>
+  <pft>
+   <name>evergreen</name>
+   <outdir>/home/dietze/test/dalec//pft/evergreen</outdir>
+  </pft>
+ </pfts>
+ 
+ =============
+  SIPNET
+ =============
+  <model>
+  <id>10</id>
+  <binary>/home/dietze/sipnet_unk/sipnet</binary>
+  <type>SIPNET</type>
+  <revision>unk</revision>
+ </model>
+ 
+  <pfts>
+  <pft>
+   <name>temperate.coniferous</name>
+   <constants>
+    <num>1</num>
+   </constants>
+   <outdir>/fs/data2/output//PEcAn_1000000305/pft/temperate.coniferous</outdir>
+   <posteriorid>1000000416</posteriorid>
+  </pft>
+ </pfts>
+ 
+ =============
+  ED2
+ =============
+ 
+  <model>
+  <id>5</id>
+  <type>ED2</type>
+  <revision>80</revision>
+ </model>
+ 
+ <pfts>
+  <pft>
+   <name>temperate.Early_Hardwood</name>
+   <constants>
+    <num>1</num>
+   </constants>
+   <outdir>/fs/data2/output//PEcAn_1000000306/pft/temperate.Early_Hardwood</outdir>
+   <posteriorid>1000000417</posteriorid>
+  </pft>
+ </pfts>
+ 
+ =============
+ LINKAGES
+ =============
+ 
+  <model>
+  <id>1000000005</id>
+  <binary>/home/dietze/Linkages/linkages</binary>
+  <type>LINKAGES</type>
+  <revision>Revision 1.0 Ann's hack</revision>
+ </model>
+ 
+-->

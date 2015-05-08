@@ -26,7 +26,7 @@
 ##'   lon = -80
 ##'   met2CF.csv(in.path,in.file,outfolder,format,lat,lon)
 ##' }
-met2CF.csv <- function(in.path, in.file, outfolder, format, lat=NULL, lon=NULL, nc_verbose = FALSE){
+met2CF.csv <- function(in.path, in.file, outfolder, format, lat=NULL, lon=NULL, nc_verbose = FALSE,...){
 
   files <- dir(in.path, in.file, full.names = TRUE)
   files <- files[grep("*.csv",files)]
