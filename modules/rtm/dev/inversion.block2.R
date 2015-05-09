@@ -7,7 +7,7 @@ constants <- cons
 prior <- inv.priors
 pm <- inv.pmin
 model <- ps.aviris
-ngibbs <- 1000
+ngibbs <- 5000
 # invert.block <- function(observed, inits, constants, ngibbs, prior, pm,
 #                         model){
     observed <- as.matrix(observed)
@@ -23,24 +23,16 @@ ngibbs <- 1000
     results <- matrix(NA, nrow=ngibbs, ncol=npars+1)
     adapt <- 50
     pcov <- 0.05
-    accept <- 0
+    results[1,] <- c(inits, rsd)
+    ng <- 2
+    ngreedy <- 1000
 
-    for(ng in 1:ngibbs){
-        cat(sprintf("%s ", ng))
-        if((ng > 1) && (ng %% adapt < 1)){
-            adj <- max(accept / adapt / 0.75, 0.25)
-            Scov <- cov(results[1:ng-1, 1:npars])
-            Jump <- pcov * Jump.init + (1-pcov) * Scov*adj
-            accept <- 0
-        }
+## Greedy sampler -- for the first 300 values, only use accepted values
+    while(ng < ngreedy){
         tm <- rmvnorm(1, inits, Jump)
         tvec <- as.numeric(tm)
         names(tvec) <- colnames(tm)
-        if(any(tvec < pm)){
-            results[ng,1:npars] <- inits
-            ng <- ng + 1
-            next
-        }
+        if(any(tvec < pm)) next
         TrySpec <- model(tvec, constants)
         TryError <- TrySpec - observed
         ptry <- mapply(do.call, prior, lapply(tvec, list))
@@ -54,20 +46,16 @@ ngibbs <- 1000
         if(a > runif(1)){
             inits <- tvec
             PrevError <- TryError
-            accept <- accept + 1
-        }
-        results[ng,1:npars] <- inits
-        rp2 <- 0.001 + sum(PrevError * PrevError)/2
-        rinv <- rgamma(1, rp1, rp2)
-        rsd <- 1/sqrt(rinv)
-        results[ng,npars+1] <- rsd
-        ng <- ng + 1
+            rp2 <- 0.001 + sum(PrevError * PrevError)/2
+            rinv <- rgamma(1, rp1, rp2)
+            rsd <- 1/sqrt(rinv)
+            results[ng,npars+1] <- rsd
+            results[ng,1:npars] <- inits
+            nsamp = seq(max(ng-100, 1), ng)
+            Scov <- cov(results[nsamp, 1:npars])
+            Jump <- pcov * Jump.init + (1-pcov) * Scov
+            ng <- ng + 1
+            cat(ng, " ")
+        } else Jump <- Jump / 2
     }
 
-    return(results)
-}
-
-# Perform inverison
-ng <- 500
-inv.av1 <- invert.block(obs, initial(), cons, ng,
-                        inv.priors, inv.pmin, ps.aviris)
