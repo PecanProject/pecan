@@ -1,6 +1,6 @@
 
 settings.xml <- file.path("data", "pecan.biocro.xml")
-settings <- read.settings(settings.xml)
+settings <- PEcAn.settings::read.settings(settings.xml)
 
 samples <- list(
   biocro.saof = (data.frame(

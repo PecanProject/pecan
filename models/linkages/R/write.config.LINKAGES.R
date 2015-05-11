@@ -62,6 +62,7 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   ## as initial hack, copy parameter file from inst to rundir
   param.file=system.file("SPP.DAT", package = "PEcAn.LINKAGES")
   file.copy(from = param.file,rundir)
+  logger.warn("using default parameter set for LINKAGES")
     
   #-----------------------------------------------------------------------
   # create launch script (which will create symlink)
