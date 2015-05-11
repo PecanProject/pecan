@@ -10,6 +10,7 @@
 ##'
 ##' @author Mike Dietze
 ##' @author Ryan Kelly
+##' @export
 pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NULL, chain=NULL,
                      adapt=NULL, adj.min=NULL, ar.target=NULL){
   # Quit if pda not requested in settings
