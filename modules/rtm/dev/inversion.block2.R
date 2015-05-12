@@ -26,6 +26,11 @@ ngibbs <- 5000
     results[1,] <- c(inits, rsd)
     ng <- 2
     ngreedy <- 1000
+    accept <- 0
+    reject <- 0
+    adapt.ar <- 30
+    adapt.cov <- 500
+    adapt.min <- 0.2
 
 ## Greedy sampler -- for the first 300 values, only use accepted values
     while(ng < ngreedy){
@@ -51,11 +56,15 @@ ngibbs <- 5000
             rsd <- 1/sqrt(rinv)
             results[ng,npars+1] <- rsd
             results[ng,1:npars] <- inits
-            nsamp = seq(max(ng-100, 1), ng)
+            nsamp <- seq(max(ng-adapt.cov, 1), ng)
             Scov <- cov(results[nsamp, 1:npars])
             Jump <- pcov * Jump.init + (1-pcov) * Scov
+            Jump <- Jump * adapt
             ng <- ng + 1
             cat(ng, " ")
-        } else Jump <- Jump / 2
+            accept <- accept + 1
+        } else {
+            reject <- reject + 1
+        }
     }
 

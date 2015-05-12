@@ -3,16 +3,43 @@
 # Email: ashiklom@bu.edu
 
 # Fortran compiler
-FC = gcc
+FC = gcc -fPIC
+CC = gcc -fPIC
+Rin = -I/usr/share/R/include
+RC = R CMD SHLIB 
+
+# ------- Dependency trees --------
+# Statistics
+stats_core = random.o mod_statistics.o
+stats_full = $(stats_core) samplers.o inversion.o p5b_prior.o
 
 # RTM dependencies
 PROSPECT_depends = RTM/prospect/*.f90 mod_dataspec_prospect5b.o mod_dataspec_refractive.o
 SAIL_depends = $(PROSPECT_depends) RTM/sail/*.f90 mod_dataspec_soil.o
 PROSAIL_depends = $(SAIL_depends) RTM/prosail/prosail.main.f90
-package_depends = $(PROSAIL_depends)
+package_depends = $(PROSAIL_depends) $(stats_full)
 
-PEcAnRTM.so : $(package_depends)
-	$(FC) -g -shared $(package_depends) -o PEcAnRTM.so -fPIC
+all : $(package_depends)
+	$(RC) $(package_depends) -o PEcAnRTM.so
+
+# Statistics
+samplers.o : statistics/samplers.f90 $(stats_core) mod_types.o mod_dataspec_wavelength.o p5b_prior.o
+	$(FC) -c statistics/samplers.f90 -o samplers.o 
+
+inversion.o : statistics/inversion.f90 samplers.o 
+	$(FC) -c statistics/inversion.f90 -o inversion.o
+
+random.o : statistics/random.f90
+	$(FC) -c statistics/random.f90 -o random.o
+
+mod_statistics.o : statistics/mod_statistics.f90 mod_types.o
+	$(FC) -c statistics/mod_statistics.f90 -o mod_statistics.o
+
+p5b_prior.o : statistics/p5b_prior.f90
+	$(FC) -c statistics/p5b_prior.f90 -o p5b_prior.o
+
+mod_types.o : statistics/mod_types.f90
+	$(FC) -c statistics/mod_types.f90 -o mod_types.o
 
 mod_dataspec_prospect5b.o mod_dataspec_refractive.o mod_dataspec_soil.o mod_dataspec_wavelength.o :
 	$(FC) -c RTM/dataSpec/prosail.dataSpec_wavelength.f90 -o mod_dataspec_wavelength.o
@@ -22,3 +49,6 @@ mod_dataspec_prospect5b.o mod_dataspec_refractive.o mod_dataspec_soil.o mod_data
 
 clean :
 	rm *.o 
+
+purge :
+	rm *.o *.so *.mod

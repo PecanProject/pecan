@@ -64,10 +64,10 @@ ngibbs <- 1000
         ng <- ng + 1
     }
 
-    return(results)
-}
+#    return(results)
+#}
 
 # Perform inverison
-ng <- 500
-inv.av1 <- invert.block(obs, initial(), cons, ng,
-                        inv.priors, inv.pmin, ps.aviris)
+#ng <- 500
+#inv.av1 <- invert.block(obs, initial(), cons, ng,
+#                        inv.priors, inv.pmin, ps.aviris)
