@@ -7,11 +7,12 @@ subroutine mh_sample(npars, inits, rsd, observed, nspec, &
 
     ! Inputs -- unchanged
     integer(kind=i1), intent(in) :: npars, nspec
-    real(kind=r2), intent(in) :: rsd, Jump(npars), pmin, observed(nw,nspec)
+    real(kind=r2), intent(in) :: rsd, Jump(npars), observed(nw,nspec)
+    real(kind=r1), intent(in) :: pmin(npars)
 
     ! Input/Output -- modified
-    integer(kind=i1), intent(inout) :: ar(npars)
-    real(kind=r2), intent(inout) :: inits(npars), PrevError(nw,nspec)
+    real(kind=r1) :: ar(npars)
+    real(kind=r2) :: inits(npars), PrevError(nw,nspec)
 
     ! Internals
     integer(kind=i1) :: p, i, j
@@ -19,13 +20,11 @@ subroutine mh_sample(npars, inits, rsd, observed, nspec, &
     real(kind=r2) :: TryError(nw,nspec), TrySpec(nw)
     real(kind=r2) :: TryPost, PrevPost
     
-    print *, "Entered sampler"
     do p=1,npars
         tvec = inits
         tvec(p) = rnorm(inits(p),Jump(p))
-        print *, p, " inits : ", inits(p), "jump : ", Jump(p)
 
-        if(tvec(p) < pmin) cycle
+        if(tvec(p) < pmin(p)) cycle
         call prospect_5b(tvec(1), tvec(2), tvec(3), tvec(4), tvec(5), tvec(6), LRT)
         TrySpec = LRT(:,1)
         do i = 1,nspec
