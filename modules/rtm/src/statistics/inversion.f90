@@ -1,4 +1,4 @@
-subroutine invert_basic(observed, inits, pmin, ngibbs, results)
+subroutine invert_basic(observed, inits, pmu, psd, plog, pmin, ngibbs, results)
     use mod_types
     use mod_statistics
     use mod_dataspec_wavelength
@@ -6,6 +6,8 @@ subroutine invert_basic(observed, inits, pmin, ngibbs, results)
 
     ! Inputs
     real(kind=r2), intent(in) :: observed(nw,1), inits(6)
+    real(kind=r2), intent(in), dimension(size(inits)) :: pmin, pmu, psd
+    logical, intent(in) :: plog(size(inits))
     integer(kind=i2), intent(in) :: ngibbs
 
     ! Internals
@@ -15,10 +17,10 @@ subroutine invert_basic(observed, inits, pmin, ngibbs, results)
     real(kind=r2) :: LRT(nw,2), PrevError(nw,size(observed,2)), PrevSpec(nw)
     real(kind=r2) :: Jump(size(inits))
     real(kind=r1) :: adj_min
-    real(kind=r1), dimension(size(inits)) :: adj, ar, pmin
+    real(kind=r1), dimension(size(inits)) :: adj, ar
 
     ! Outputs
-    real(kind=r2), intent(out) :: results(ngibbs, size(observed,2)+1)
+    real(kind=r2), intent(out) :: results(ngibbs, size(inits)+1)
 
     nspec = size(observed, 2)
     npars = size(inits)
@@ -42,7 +44,7 @@ subroutine invert_basic(observed, inits, pmin, ngibbs, results)
             ar = ar * 0
         endif
         call mh_sample(npars, inits, rsd, observed, nspec, &
-                    Jump, pmin, PrevError, ar)
+                    Jump, pmu, psd, plog, pmin, PrevError, ar)
         results(ng,1:npars) = inits
         rp2 = 0.001 + sum(PrevError * PrevError)/2
         rinv = rgamma(rp1, 1/rp2)

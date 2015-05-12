@@ -1,5 +1,5 @@
 subroutine mh_sample(npars, inits, rsd, observed, nspec, &
-                    Jump, pmin, PrevError, ar)
+                    Jump, pmu, psd, plog, pmin, PrevError, ar)
     use mod_types
     use mod_statistics
     use mod_dataspec_wavelength
@@ -8,7 +8,8 @@ subroutine mh_sample(npars, inits, rsd, observed, nspec, &
     ! Inputs -- unchanged
     integer(kind=i1), intent(in) :: npars, nspec
     real(kind=r2), intent(in) :: rsd, Jump(npars), observed(nw,nspec)
-    real(kind=r1), intent(in) :: pmin(npars)
+    real(kind=r2), intent(in), dimension(npars) :: pmin, pmu, psd
+    logical, intent(in) :: plog(npars)
 
     ! Input/Output -- modified
     real(kind=r1) :: ar(npars)
@@ -30,8 +31,8 @@ subroutine mh_sample(npars, inits, rsd, observed, nspec, &
         do i = 1,nspec
             TryError(:,i) = TrySpec - observed(:,i)
         enddo
-        call p5b_prior(p, tvec(p), TryPost)
-        call p5b_prior(p, inits(p), PrevPost)
+        call prior(tvec(p), pmu(p), psd(p), plog(p), TryPost)
+        call prior(inits(p), pmu(p), psd(p), plog(p), PrevPost)
         do i=1,nw
             do j=1,nspec
                 TryPost = TryPost + ldnorm(TryError(i,j), 0d0, rsd)

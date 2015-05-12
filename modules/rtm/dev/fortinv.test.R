@@ -16,19 +16,23 @@ prospect <- function(params = c(1.4, 30, 10, 0.5, 0.004, 0.004)){
 obs <- prospect()
 inits <- c(1, 10, 5, 0.1, 1e-4, 1e-4)
 pm <- c(1, 0, 0, 0, 0, 0)
-ng <- 10000
+pmu <- c(0, 0, 0, 0, 0, 0)
+psd <- c(10, 10, 10, 10, 10, 10)
+plog <- rep(TRUE, 6)
+ng <- 100
 ngibbs <- as.integer(ng)
-r.temp <- matrix(0, ng, 7)
+r.temp <- matrix(0, ng, length(inits)+1)
 t1 <- proc.time()
-f.list <- .Fortran("invert_basic", obs, inits, pm, ngibbs, r.temp)
+f.list <- .Fortran("invert_basic", obs, inits, pmu, psd, plog, pm, ngibbs, r.temp)
 t2 <- proc.time()
 print(t2 - t1)
-results <- f.list[[5]]
+results <- f.list[[length(f.list)]]
 nms <- c("N", "Cab", "Car", "Cbrown", "Cw", "Cm", "rsd")
 par(mfrow=c(4,2))
 for(i in 1:length(nms)) plot(results[,i], type='l', main=nms[i])
 
-pars.final <- colMeans(results[-ng/2:0, -7])
+nstart <- floor(ng/2)
+pars.final <- colMeans(results[-nstart:0, -7])
 invspec <- prospect(pars.final)
-plot(invspec, type='l', main="Accuracy")
+plot(invspec, type='l', main="Accuracy", ylim=c(0,0.6))
 lines(obs, col=2)

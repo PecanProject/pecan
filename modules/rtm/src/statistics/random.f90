@@ -1,4 +1,5 @@
 MODULE random
+! Source: http://jblevins.org/mirror/amiller/
 ! A module for random number generation from the following distributions:
 !
 !     Distribution                    Function/subroutine name

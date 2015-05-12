@@ -11,7 +11,7 @@ RC = R CMD SHLIB
 # ------- Dependency trees --------
 # Statistics
 stats_core = random.o mod_statistics.o
-stats_full = $(stats_core) samplers.o inversion.o p5b_prior.o
+stats_full = $(stats_core) samplers.o inversion.o prior.o
 
 # RTM dependencies
 PROSPECT_depends = RTM/prospect/*.f90 mod_dataspec_prospect5b.o mod_dataspec_refractive.o
@@ -23,7 +23,7 @@ all : $(package_depends)
 	$(RC) $(package_depends) -o PEcAnRTM.so
 
 # Statistics
-samplers.o : statistics/samplers.f90 $(stats_core) mod_types.o mod_dataspec_wavelength.o p5b_prior.o
+samplers.o : statistics/samplers.f90 $(stats_core) mod_types.o mod_dataspec_wavelength.o prior.o
 	$(FC) -c statistics/samplers.f90 -o samplers.o 
 
 inversion.o : statistics/inversion.f90 samplers.o 
@@ -35,8 +35,8 @@ random.o : statistics/random.f90
 mod_statistics.o : statistics/mod_statistics.f90 mod_types.o
 	$(FC) -c statistics/mod_statistics.f90 -o mod_statistics.o
 
-p5b_prior.o : statistics/p5b_prior.f90
-	$(FC) -c statistics/p5b_prior.f90 -o p5b_prior.o
+prior.o : statistics/prior.f90
+	$(FC) -c statistics/prior.f90 -o prior.o
 
 mod_types.o : statistics/mod_types.f90
 	$(FC) -c statistics/mod_types.f90 -o mod_types.o

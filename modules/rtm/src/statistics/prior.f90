@@ -2,6 +2,7 @@
 subroutine p5b_prior(par, x, d)
     use mod_types
     use mod_statistics
+    implicit none
     
     ! Inputs
     integer(kind=i1), intent(in) :: par
@@ -27,5 +28,31 @@ subroutine p5b_prior(par, x, d)
             print *, "!!!! ERROR: WRONG PRIOR INDEX !!!!"
             stop
     end select
+end subroutine
+
+! Custom, (log)normal priors
+subroutine prior(x, pmu, psd, lognorm, d)
+    use mod_types
+    use mod_statistics
+    implicit none
+
+    ! Inputs
+    real(kind=r2), intent(in) :: x, pmu, psd
+    logical, intent(in) :: lognorm
+
+    ! Outputs
+    real(kind=r2), intent(out) :: d
+
+    ! Internal
+    real(kind=r2) :: xx
+
+    if(lognorm) then
+        xx = log(x)
+    else 
+        xx = x
+    end if
+
+    d = ldnorm(xx, pmu, psd)
+    return
 end subroutine
 
