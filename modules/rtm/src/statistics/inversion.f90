@@ -1,29 +1,28 @@
-subroutine invert_basic(observed, inits, pmu, psd, plog, pmin, ngibbs, results)
+subroutine invert_basic(observed, nspec, inits, npars, &
+            pmu, psd, plog, pmin, ngibbs, results)
     use mod_types
     use mod_statistics
     use mod_dataspec_wavelength
     implicit none
 
     ! Inputs
-    real(kind=r2), intent(in) :: observed(nw,1), inits(6)
-    real(kind=r2), intent(in), dimension(size(inits)) :: pmin, pmu, psd
-    logical, intent(in) :: plog(size(inits))
+    integer(kind=i1), intent(in) :: nspec, npars
+    real(kind=r2), intent(in) :: observed(nw,nspec), inits(npars)
+    real(kind=r2), intent(in), dimension(npars) :: pmin, pmu, psd
+    logical, intent(in) :: plog(npars)
     integer(kind=i2), intent(in) :: ngibbs
 
     ! Internals
-    integer(kind=i1) :: i, ng
-    integer(kind=i1) :: nspec, npars, adapt
+    integer(kind=i1) :: i, ng, adapt
     real(kind=r2) :: rp1, rp2, rinv, rsd
-    real(kind=r2) :: LRT(nw,2), PrevError(nw,size(observed,2)), PrevSpec(nw)
-    real(kind=r2) :: Jump(size(inits))
+    real(kind=r2) :: LRT(nw,2), PrevError(nw,nspec), PrevSpec(nw)
+    real(kind=r2) :: Jump(npars)
     real(kind=r1) :: adj_min
-    real(kind=r1), dimension(size(inits)) :: adj, ar
+    real(kind=r1), dimension(npars) :: adj, ar
 
     ! Outputs
-    real(kind=r2), intent(out) :: results(ngibbs, size(inits)+1)
+    real(kind=r2), intent(out) :: results(ngibbs, npars+1)
 
-    nspec = size(observed, 2)
-    npars = size(inits)
     rp1 = 0.001 + nspec*nw/2
     rsd = 0.5
     call prospect_5b(inits(1), inits(2), inits(3), inits(4), inits(5), inits(6), LRT)
@@ -43,7 +42,7 @@ subroutine invert_basic(observed, inits, pmu, psd, plog, pmin, ngibbs, results)
             Jump = Jump * adj
             ar = ar * 0
         endif
-        call mh_sample(npars, inits, rsd, observed, nspec, &
+        call mh_sample(inits, npars, rsd, observed, nspec, &
                     Jump, pmu, psd, plog, pmin, PrevError, ar)
         results(ng,1:npars) = inits
         rp2 = 0.001 + sum(PrevError * PrevError)/2

@@ -1,4 +1,4 @@
-subroutine mh_sample(npars, inits, rsd, observed, nspec, &
+subroutine mh_sample(inits, npars, rsd, observed, nspec, &
                     Jump, pmu, psd, plog, pmin, PrevError, ar)
     use mod_types
     use mod_statistics

@@ -9,7 +9,7 @@ prospect <- function(params = c(1.4, 30, 10, 0.5, 0.004, 0.004)){
     Cm <- params[6]
     z <- .Fortran("prospect_5b", N, Cab, Car, Cbrown, Cw, Cm,
                   matrix(0, 2101, 2))
-    return(z[[7]][,1])
+    return(z[[length(z)]][,1])
 }
 
 # Test inversion
@@ -21,9 +21,12 @@ psd <- c(10, 10, 10, 10, 10, 10)
 plog <- rep(TRUE, 6)
 ng <- 100
 ngibbs <- as.integer(ng)
+npars <- as.integer(length(inits))
+nspec <- as.integer(1)
 r.temp <- matrix(0, ng, length(inits)+1)
 t1 <- proc.time()
-f.list <- .Fortran("invert_basic", obs, inits, pmu, psd, plog, pm, ngibbs, r.temp)
+f.list <- .Fortran("invert_basic", obs, nspec, inits, npars, 
+                   pmu, psd, plog, pm, ngibbs, r.temp)
 t2 <- proc.time()
 print(t2 - t1)
 results <- f.list[[length(f.list)]]
