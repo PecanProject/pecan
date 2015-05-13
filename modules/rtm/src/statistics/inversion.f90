@@ -14,7 +14,7 @@ subroutine invert_basic(observed, nspec, modname, &
     real(kind=r2), intent(in), dimension(npars) :: pmin, pmu, psd
     logical, intent(in) :: plog(npars)
     integer(kind=i2), intent(in) :: ngibbs
-    character(20), intent(in) :: modname
+    character(255), intent(in) :: modname
 
     ! Internals
     integer(kind=i1) :: i, ng, adapt
