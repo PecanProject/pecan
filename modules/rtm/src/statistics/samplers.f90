@@ -1,15 +1,18 @@
-subroutine mh_sample(inits, npars, rsd, observed, nspec, &
-                    Jump, pmu, psd, plog, pmin, PrevError, ar)
+subroutine mh_sample(observed, nspec, model, &
+            inits, npars, ipars, cons, ncons, icons, rsd, &
+            Jump, pmu, psd, plog, pmin, PrevError, ar)
     use mod_types
     use mod_statistics
     use mod_dataspec_wavelength
     implicit none
 
     ! Inputs -- unchanged
-    integer(kind=i1), intent(in) :: npars, nspec
-    real(kind=r2), intent(in) :: rsd, Jump(npars), observed(nw,nspec)
+    integer(kind=i1), intent(in) :: npars, nspec, ncons
+    integer(kind=i1), intent(in) :: ipars(npars), icons(ncons)
+    real(kind=r2), intent(in) :: observed(nw,nspec), cons(npars), rsd, Jump(npars) 
     real(kind=r2), intent(in), dimension(npars) :: pmin, pmu, psd
     logical, intent(in) :: plog(npars)
+    procedure(), pointer, intent(in) :: model
 
     ! Input/Output -- modified
     real(kind=r1) :: ar(npars)
@@ -17,7 +20,7 @@ subroutine mh_sample(inits, npars, rsd, observed, nspec, &
 
     ! Internals
     integer(kind=i1) :: p, i, j
-    real(kind=r2) :: tvec(npars), LRT(nw,2), a, u
+    real(kind=r2) :: tvec(npars), a, u
     real(kind=r2) :: TryError(nw,nspec), TrySpec(nw)
     real(kind=r2) :: TryPost, PrevPost
     
@@ -26,8 +29,7 @@ subroutine mh_sample(inits, npars, rsd, observed, nspec, &
         tvec(p) = rnorm(inits(p),Jump(p))
 
         if(tvec(p) < pmin(p)) cycle
-        call prospect_5b(tvec(1), tvec(2), tvec(3), tvec(4), tvec(5), tvec(6), LRT)
-        TrySpec = LRT(:,1)
+        call model(inits, npars, ipars, cons, ncons, icons, TrySpec)
         do i = 1,nspec
             TryError(:,i) = TrySpec - observed(:,i)
         enddo
