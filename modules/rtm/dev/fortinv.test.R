@@ -1,5 +1,11 @@
 library(PEcAnRTM)
 
+model.list <- data.table(read.csv("model.list.csv", 
+                                  header=TRUE, 
+                                  strip.white=TRUE,
+                                  stringsAsFactors=FALSE))
+setkey(model.list, modname)
+
 prospect <- function(params = c(1.4, 30, 10, 0.5, 0.004, 0.004)){
     N <- params[1]
     Cab <- params[2]
@@ -12,15 +18,17 @@ prospect <- function(params = c(1.4, 30, 10, 0.5, 0.004, 0.004)){
     return(z[[length(z)]][,1])
 }
 
-invert_basic <- function(modname, obs, inits, cons, 
+invert_basic <- function(modname, observed, inits, cons, 
                    pmu, psd, plog, minp, ngibbs){
-    if(modname == "prospect_5b"){
-        print("PROSPECT 5B model")
-        names.all <- c("N", "Cab", "Car", "Cbrown", "Cw", "Cm")
-    } else {
-        print("Error: No model found")
+    
+    model.set <- model.list[modname]
+    if(all(is.na(model.set))){
+        print("Error: Model not found")
         return
     }
+    modcode <- as.integer(model.set$modcode)
+    print(sprintf("Model: %s; Code: %d", model.set$fullname, modcode))
+    names.all <- unlist(strsplit(model.set$par.names, " "))
     names.inits <- names(inits)
     names.cons <- names(cons)
     npars <- length(inits)
@@ -28,13 +36,13 @@ invert_basic <- function(modname, obs, inits, cons,
     ncons <- length(cons)
     icons <- match(names.cons, names.all)
 
-    observed <- as.matrix(obs)
+    observed <- as.matrix(observed)
     nspec <- ncol(observed)
 
     ngibbs <- as.integer(ngibbs)
     results <- matrix(0, ngibbs, npars+1)
 
-    in.list <- list("invert_basic", observed, nspec, modname,
+    in.list <- list("invert_basic", observed, nspec, modcode,
                     inits, npars, ipars, cons, ncons, icons,
                     pmu, psd, plog, minp, ngibbs, results)
 
@@ -46,7 +54,8 @@ invert_basic <- function(modname, obs, inits, cons,
 }
 
 # Test inversion
-obs <- prospect()
+observed <- prospect()
+modname <- "prospect_5b"
 nms <- c("N", "Cab", "Car", "Cbrown", "Cw", "Cm", "rsd")
 inits <- c("N"=1, "Cab"=10, "Car"=5, "Cw"=1e-4, "Cm"=1e-4)
 cons <- c("Cbrown"=0)
@@ -56,7 +65,7 @@ psd <- c(10, 10, 10, 10, 10)
 plog <- rep(TRUE, 6)
 ngibbs <- 100
 
-results <- invert_basic("prospect_5b", obs, inits, cons,
+results <- invert_basic("prospect_5b", observed, inits, cons,
                         pmu, psd, plog, minp, ngibbs)
 par(mfrow=c(4,2))
 for(i in 1:length(nms)) plot(results[,i], type='l', main=nms[i])

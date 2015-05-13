@@ -5,7 +5,7 @@ module mod_combine
                 constants, nc, indc, allparams)
 
             ! Inputs
-            integer(kind=i1), intent(in) :: np, nc, indp(np), indc(nc)
+            integer(kind=i2), intent(in) :: np, nc, indp(np), indc(nc)
             real(kind=r2), intent(in) :: params(np), constants(nc)
 
             ! Internals

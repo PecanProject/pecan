@@ -1,4 +1,4 @@
-subroutine invert_basic(observed, nspec, modname, &
+subroutine invert_basic(observed, nspec, modcode, &
             inits, npars, ipars, cons, ncons, icons, &
             pmu, psd, plog, pmin, ngibbs, results)
     use mod_types
@@ -8,13 +8,12 @@ subroutine invert_basic(observed, nspec, modname, &
     implicit none
 
     ! Inputs
-    integer(kind=i1), intent(in) :: nspec, npars, ncons
-    integer(kind=i1), intent(in) :: ipars(npars), icons(ncons)
+    integer(kind=i2), intent(in) :: nspec, npars, ncons, modcode
+    integer(kind=i2), intent(in) :: ipars(npars), icons(ncons)
     real(kind=r2), intent(in) :: observed(nw,nspec), inits(npars), cons(ncons)
     real(kind=r2), intent(in), dimension(npars) :: pmin, pmu, psd
     logical, intent(in) :: plog(npars)
     integer(kind=i2), intent(in) :: ngibbs
-    character(255), intent(in) :: modname
 
     ! Internals
     integer(kind=i1) :: i, ng, adapt
@@ -28,7 +27,7 @@ subroutine invert_basic(observed, nspec, modname, &
     ! Outputs
     real(kind=r2), intent(out) :: results(ngibbs, npars+1)
 
-    call model_select(modname, model) 
+    call model_select(modcode, model) 
 
     rp1 = 0.001 + nspec*nw/2
     rsd = 0.5

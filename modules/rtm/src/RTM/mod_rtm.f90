@@ -6,8 +6,9 @@ module mod_rtm
         subroutine prospect5b_inv(params, np, indp, &
                 constants, nc, indc, Refl)
             implicit none
+
             ! Inputs
-            integer(kind=i1), intent(in) :: np, nc, indp(np), indc(nc)
+            integer(kind=i2), intent(in) :: np, nc, indp(np), indc(nc)
             real(kind=r2), intent(in) :: params(np), constants(nc)
 
             ! Outputs
@@ -18,6 +19,7 @@ module mod_rtm
 
             call combine_params(params, np, indp, constants, nc, indc, &
                         allparams)
+            print *, allparams
             call prospect_5b(allparams(1), allparams(2), allparams(3), &
                         allparams(4), allparams(5), allparams(6), RT)
             Refl = RT(:,1)

@@ -2,14 +2,13 @@ module mod_selectmodel
     use mod_types
     use mod_rtm
     contains
-        subroutine model_select(modname, model)
+        subroutine model_select(modcode, model)
             implicit none
-            character(255) :: modname
+            integer(kind=i2) :: modcode
             procedure(), pointer :: model => null()
 
-            print *, "Given model: ", modname
-            select case (modname)
-                case("prospect_5b")
+            select case (modcode)
+                case(1152)
                     print *, "FORTRAN model: PROSPECT 5B"
                     model => prospect5b_inv
                 case default

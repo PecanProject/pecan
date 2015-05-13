@@ -7,8 +7,8 @@ subroutine mh_sample(observed, nspec, model, &
     implicit none
 
     ! Inputs -- unchanged
-    integer(kind=i1), intent(in) :: npars, nspec, ncons
-    integer(kind=i1), intent(in) :: ipars(npars), icons(ncons)
+    integer(kind=i2), intent(in) :: npars, nspec, ncons
+    integer(kind=i2), intent(in) :: ipars(npars), icons(ncons)
     real(kind=r2), intent(in) :: observed(nw,nspec), cons(npars), rsd, Jump(npars) 
     real(kind=r2), intent(in), dimension(npars) :: pmin, pmu, psd
     logical, intent(in) :: plog(npars)
