@@ -88,4 +88,4 @@ prosail.main.o : RTM/prosail/prosail.main.f90 $(wl) $(md)soil.o
 	$(FCC) -c RTM/prosail/prosail.main.f90
 
 clean :
-	rm *.o *.so *.mod
+	rm *.o *.dll *.mod
