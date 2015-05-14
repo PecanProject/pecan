@@ -11,6 +11,3 @@ $(SHLIB): RTM/rtm.o
 RTM/rtm.o:
 	@(cd RTM && \
 	($(MAKE) all FC="$(FC)"))
-
-clean :
-	rm *.o *.so *.mod
