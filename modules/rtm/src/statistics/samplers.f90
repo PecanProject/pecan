@@ -9,10 +9,10 @@ subroutine mh_sample(observed, nspec, model, &
     ! Inputs -- unchanged
     integer(kind=i2), intent(in) :: npars, nspec, ncons
     integer(kind=i2), intent(in) :: ipars(npars), icons(ncons)
-    real(kind=r2), intent(in) :: observed(nw,nspec), cons(npars), rsd, Jump(npars) 
+    real(kind=r2), intent(in) :: observed(nw,nspec), cons(ncons), rsd, Jump(npars) 
     real(kind=r2), intent(in), dimension(npars) :: pmin, pmu, psd
     logical, intent(in) :: plog(npars)
-    procedure(), pointer, intent(in) :: model
+    procedure() :: model
 
     ! Input/Output -- modified
     real(kind=r1) :: ar(npars)
@@ -29,7 +29,7 @@ subroutine mh_sample(observed, nspec, model, &
         tvec(p) = rnorm(inits(p),Jump(p))
 
         if(tvec(p) < pmin(p)) cycle
-        call model(inits, npars, ipars, cons, ncons, icons, TrySpec)
+        call model(tvec, npars, ipars, cons, ncons, icons, TrySpec)
         do i = 1,nspec
             TryError(:,i) = TrySpec - observed(:,i)
         enddo

@@ -27,6 +27,7 @@ subroutine invert_basic(observed, nspec, modcode, &
     ! Outputs
     real(kind=r2), intent(out) :: results(ngibbs, npars+1)
 
+    call random_seed            !! Initialize random number generator
     call model_select(modcode, model) 
 
     rp1 = 0.001 + nspec*nw/2
@@ -38,6 +39,7 @@ subroutine invert_basic(observed, nspec, modcode, &
     Jump = inits * 0.05
     adapt = 20
     adj_min = 0.1
+    ar = 0
     do ng=1,ngibbs
         if(mod(ng, adapt) < 1) then
             adj = ar / adapt / 0.75
@@ -45,7 +47,7 @@ subroutine invert_basic(observed, nspec, modcode, &
                 adj = adj_min
             end where
             Jump = Jump * adj
-            ar = ar * 0
+            ar = 0
         endif
         call mh_sample(observed, nspec, model, &
             inits, npars, ipars, cons, ncons, icons, rsd, &

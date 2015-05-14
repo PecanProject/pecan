@@ -56,22 +56,23 @@ invert_basic <- function(modname, observed, inits, cons,
 # Test inversion
 observed <- prospect()
 modname <- "prospect_5b"
-nms <- c("N", "Cab", "Car", "Cbrown", "Cw", "Cm", "rsd")
-inits <- c("N"=1, "Cab"=10, "Car"=5, "Cw"=1e-4, "Cm"=1e-4)
+inits <- c("N"=1.4, "Cab"=30, "Car"=10, "Cw"=1e-4, "Cm"=1e-4)
 cons <- c("Cbrown"=0)
 minp <- c(1, 0, 0, 0, 0)
 pmu <- c(0, 0, 0, 0, 0)
 psd <- c(10, 10, 10, 10, 10)
 plog <- rep(TRUE, 6)
-ngibbs <- 100
+ngibbs <- 10000
 
 results <- invert_basic("prospect_5b", observed, inits, cons,
                         pmu, psd, plog, minp, ngibbs)
+
+nms <- c("N", "Cab", "Car", "Cw", "Cm", "rsd")
 par(mfrow=c(4,2))
 for(i in 1:length(nms)) plot(results[,i], type='l', main=nms[i])
 
-nstart <- floor(ng/2)
+nstart <- floor(ngibbs/2)
 pars.final <- colMeans(results[-nstart:0, -7])
 invspec <- prospect(pars.final)
 plot(invspec, type='l', main="Accuracy", ylim=c(0,0.6))
-lines(obs, col=2)
+lines(observed, col=2)

@@ -3,8 +3,8 @@
 # Email: ashiklom@bu.edu
 
 # Fortran compiler
-FC = gcc -fPIC
-CC = gcc -fPIC
+FC = gfortran -fPIC -g -O3
+CC = gcc -fPIC -g
 Rin = -I/usr/share/R/include
 RC = R CMD SHLIB 
 

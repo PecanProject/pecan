@@ -19,7 +19,6 @@ module mod_rtm
 
             call combine_params(params, np, indp, constants, nc, indc, &
                         allparams)
-            print *, allparams
             call prospect_5b(allparams(1), allparams(2), allparams(3), &
                         allparams(4), allparams(5), allparams(6), RT)
             Refl = RT(:,1)
