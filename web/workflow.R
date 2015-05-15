@@ -91,7 +91,7 @@ if (length(which(commandArgs() == "--continue")) == 0) {
           dbparms    = settings$database$bety, 
           dir        = settings$run$dbfiles,
           browndog   = settings$browndog)
-        settings$run$inputs[[i]][['path']] <- result$file
+        settings$run$inputs[[i]][['path']] <- result
         status.end()
       }
     }
@@ -140,6 +140,14 @@ status.start("SENSITIVITY")
 run.sensitivity.analysis()
 status.end()
 
+# Run parameter data assimilation
+if(('assim.batch' %in% names(settings))) {
+  status.start("PDA")
+  settings$assim.batch <- pda.mcmc(settings)
+  saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.pda.xml'))
+  status.end()
+}
+  
 # all done
 status.start("FINISHED")
 db.query(paste("UPDATE workflows SET finished_at=NOW() WHERE id=", settings$workflow$id, "AND finished_at IS NULL"), params=settings$database$bety)

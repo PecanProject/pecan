@@ -8,7 +8,7 @@
 ##' @param convert NARR files to CF files
 ##' @author Elizabeth Cowdery, Rob Kooper
 ##' 
-met2CF.NARR <- function(in.path, in.prefix, outfolder) {
+met2CF.NARR <- function(in.path, in.prefix, outfolder,...) {
   
   require(ncdf4)
   

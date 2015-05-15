@@ -23,10 +23,11 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst=
   require(ncdf4)
   require(udunits2)
   require(PEcAn.utils)
+  require(lubridate)
   
   # get start/end year code works on whole years only
-  start_year <- lubridate::year(start_date)
-  end_year <- lubridate::year(end_date)
+  start_year <- year(start_date)
+  end_year <- year(end_date)
 
   if(!file.exists(outfolder)){
     dir.create(outfolder)
@@ -36,6 +37,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst=
   results <- data.frame(file=character(rows), host=character(rows),
                         mimetype=character(rows), formatname=character(rows),
                         startdate=character(rows), enddate=character(rows),
+                        dbfile.name = in.prefix,
                         stringsAsFactors = FALSE)
   
   for(year in start_year:end_year) {
@@ -333,7 +335,9 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst=
     nc_close(nc)
     
     if (length(error) > 0) {
-      logger.severe("Could not do gapfill, results are in", new.file, ".",
+      fail.file <- file.path(outfolder, paste(in.prefix, year,"failure","nc", sep="."))
+      file.rename(from = new.file, to = fail.file)
+      logger.severe("Could not do gapfill, results are in", fail.file, ".",
                     "The following variables have NA's:", paste(error, sep=", "))
     }
     

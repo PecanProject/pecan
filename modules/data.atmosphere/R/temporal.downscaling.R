@@ -87,7 +87,8 @@ cfmet.downscale.subdaily <- function(subdailymet, output.dt = 1){
 
   
   for(var in c("air_pressure", "specific_humidity",
-               "precipitation_flux", "air_temperature", "northward_wind", "eastward_wind", "surface_downwelling_shortwave_flux_in_air", "ppfd")){
+               "precipitation_flux", "air_temperature", "northward_wind", "eastward_wind", 
+               "surface_downwelling_shortwave_flux_in_air", "ppfd", "relative_humidity")){
     if(var %in% colnames(subdailymet)){
       ## convert units from subdaily to hourly
       hrscale <- ifelse(var %in%
@@ -233,6 +234,7 @@ get.ncvector <- function(var, lati = lati, loni = loni,
     precip_units <- met.nc$var[["precipitation_flux"]]$units
     precip_units <- gsub("kg m-2", "mm", precip_units)
     precip_units <- gsub("kg/m2", "mm", precip_units)
+    precip_units <- gsub("kg/m\\^2", "mm", precip_units)
     ans <- ud.convert(ans, precip_units, "mm s-1")
     
   }

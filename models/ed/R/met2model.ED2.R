@@ -30,7 +30,7 @@
 ##' @param lst timezone offset to GMT in hours
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
-met2model.ED2 <- function(in.path,in.prefix,outfolder,start_date, end_date, lst=0,..., overwrite=FALSE,verbose=FALSE){
+met2model.ED2 <- function(in.path,in.prefix,outfolder,start_date, end_date, lst=0,lat,lon,..., overwrite=FALSE,verbose=FALSE){
   overwrite = as.logical(overwrite)
   
   require(rhdf5)
@@ -51,6 +51,7 @@ met2model.ED2 <- function(in.path,in.prefix,outfolder,start_date, end_date, lst=
                         formatname=c('ed.met_driver_header files format'),
                         startdate=c(start_date),
                         enddate=c(end_date),
+                        dbfile.name = "ED_MET_DRIVER_HEADER",
                         stringsAsFactors = FALSE)
 
   ## check to see if the outfolder is defined, if not create directory for output
@@ -89,8 +90,8 @@ for(year in start_year:end_year) {
   
   
   ## extract variables
-  lat  <- ncvar_get(nc,"latitude")
-  lon  <- ncvar_get(nc,"longitude")
+  lat  <- eval(parse(text = lat))
+  lon  <- eval(parse(text = lon))
   sec   <- nc$dim$time$vals
   Tair <- ncvar_get(nc,"air_temperature")
   Qair <- ncvar_get(nc,"specific_humidity")  #humidity (kg/kg)
