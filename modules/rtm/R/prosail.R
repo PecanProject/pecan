@@ -32,7 +32,8 @@ pro4sail <- function(param){
     plist$rsot <- numeric(nw)
     inlist <- c("pro4sail", plist)
     outlist <- do.call(.Fortran, inlist)
-    refl <- do.call(cbind, outlist[[length(outlist)-4:length(outlist)]])
+    lo <- length(outlist)
+    refl <- do.call(cbind, outlist[(lo-3):lo])
     return(refl)
 }
 

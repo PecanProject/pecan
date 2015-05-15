@@ -1,2 +1,3 @@
 useDynLib(PEcAnRTM)
 exportPattern("^[[:alpha:]]+")
+import(data.table)
