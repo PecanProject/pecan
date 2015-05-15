@@ -6,9 +6,9 @@ subroutine FOURSAIL(rho, tau,             & !! Leaf spectra
 
         !! Outputs
         rddt,                 & !! Bi-hemispherical reflectance
-            rsdt,                 & !! Directional-hemispherical reflectance for solar incident flux
-            rdot,                 & !! Hemispherical-directional reflectance in viewing direction
-            rsot)                   !! Bi-directional reflectance factor
+        rsdt,                 & !! Directional-hemispherical reflectance for solar incident flux
+        rdot,                 & !! Hemispherical-directional reflectance in viewing direction
+        rsot)                   !! Bi-directional reflectance factor
 
         use mod_dataSpec_wavelength
         implicit none

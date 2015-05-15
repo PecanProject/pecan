@@ -1,3 +1,2 @@
 useDynLib(PEcAnRTM)
 exportPattern("^[[:alpha:]]+")
-importFrom(Rcpp, evalCpp)

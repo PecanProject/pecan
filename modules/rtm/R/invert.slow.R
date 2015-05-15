@@ -1,5 +1,26 @@
-#' Bayesian inversion of a model
-invert.basic <- function(observed, inits, constants, ngibbs, prior, pm,
+#' @name invert.slow
+#' @title Bayesian inversion of a model
+#' @details Performs a Bayesian inversion of an arbitrary function
+#'      using the Metropolis-Hastings algorithm.
+#'      This is substantially (~80x) slower than 
+#'      `invert.fast` because it is implemented as a basic R loop,
+#'      but it is also more versatile and is intended for use with
+#'      custom models.
+#' @param observed Vector, matrix, or data frame (coerced to matrix) of
+#'      observed values. For spectral data, wavelengths are rows and 
+#'      spectra are columns.
+#' @param inits Vector of initial values of model parameters to be
+#'      inverted.
+#' @param constants Vector of model constants.
+#' @param ngibbs Number of MCMC iterations
+#' @param prior List of functions used as priors (e.g. dnorm(x, 3, 0.5, 1)).
+#'      NOTE: These should return the LOG density of the value
+#'      (i.e. log=TRUE should be set)
+#' @param pm Vector of minimum values for inversion parameters
+#' @param model The model to be inverted. This should be an R function 
+#'      that takes `inits` and `constants` as input and returns 
+#'      one column of `observed` (nrows should be the same).
+invert.slow <- function(observed, inits, constants, ngibbs, prior, pm,
                         model){
     observed <- as.matrix(observed)
     nspec <- ncol(observed)

@@ -4,7 +4,7 @@
 SUBROUTINE PRO4SAIL( &
         !! Inputs
         N,Cab,Car,Cbrown,Cw,Cm,     &   !! PROSPECT parameters 
-        LIDFa,LIDFb,TypeLIDF,       &   !! LIDF parameters and function
+        LIDFa,LIDFb,TypeLIDF_r,     &   !! LIDF parameters and function
         lai,q,                      &   !! LAI and hot spot
         tts,tto,psi,                &   !! Sun-sensor geometry
         psoil,                      &   !! Soil moisture
@@ -18,13 +18,14 @@ SUBROUTINE PRO4SAIL( &
         use mod_dataSpec_wavelength
         use mod_dataSpec_soil
         IMPLICIT NONE
-        integer,intent(in) :: TypeLIDF
         real*8,intent(in) :: N,Cab,Car,Cbrown,Cw,Cm
-        real*8,intent(in) :: LIDFa,LIDFb,lai,q,tts,tto,psi,psoil
+        real*8,intent(in) :: LIDFa,LIDFb,TypeLIDF_r,lai,q,tts,tto,psi,psoil
         real*8,intent(out),dimension(nw) :: rddt,rsdt,rdot,rsot
 
+        integer :: TypeLIDF
         real*8 :: LRT(nw,2),rho(nw),tau(nw),rsoil(nw)
 
+        TypeLIDF = nint(TypeLIDF_r)
         rsoil = psoil * Rsoil1 + (1-psoil)*Rsoil2
 
         !! If LAI is 0, return soil reflectance

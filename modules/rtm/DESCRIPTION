@@ -9,9 +9,6 @@ Description: This package contains functions for performing forward runs and
 	inversions of radiative transfer models (RTMs). Inversions can be performed
 	using maximum likelihood, or more complex hierarchical Bayesian methods.
 	Underlying numerical analyses are optimized for speed using Rcpp.
-Imports:
-    Rcpp
-LinkingTo: Rcpp
 Depends:
     data.table
 Suggests:
