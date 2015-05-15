@@ -20,10 +20,10 @@
 ##' @param end_date End time of the simulation
 ##' @export
 ##'
-##' @author Ann Raiho
-model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end_date=NULL,force=FALSE) {
+##' @author Ann Raiho # I changed this a bunch to do the MIP runs... Might need to change it back. Didn't commit additions for MIP runs.
+model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end_date=NULL,force=FALSE, PFTs) {
 #  logger.severe("NOT IMPLEMENTED")
-  PFTs = c("acer","betula","carya","castanea.dentata","fagus.grandifolia","picea","pinus","tsuga.canadensis","quercus")
+  #PFTs = c("acer","betula","carya","castanea.dentata","fagus.grandifolia","picea","pinus","tsuga.canadensis","quercus")
   
   ### Read in model output in LINKAGES format
   output <- as.matrix(read.csv(file.path(outdir, "OUT.csv"), header=FALSE))
@@ -32,24 +32,29 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end
   
   output.dims <- dim(output)    
   block.size = round(output.dims[1]/4)-1 #change if you change kprint
-  LINKAGES.output = matrix(numeric(0),block.size,output.dims[2]*4 -3)
+  LINKAGES.output = matrix(numeric(0),block.size,output.dims[2]*2 - 1)
   LINKAGES.output[,1:output.dims[2]] = output[1:block.size,]
   LINKAGES.output[,(1:(output.dims[2]-1)) + output.dims[2] ] = output[(1:block.size) + block.size,-1]
-  LINKAGES.output[,(1:(output.dims[2]-1)) + 2*output.dims[2] -1 ] = output[1+(1:block.size) + 2*block.size,-1]
-  LINKAGES.output[,(1:(output.dims[2]-1)) + 3*output.dims[2] -2 ] = output[1+(1:block.size) + 3*block.size,-1]
+ 
+  LINKAGES.pft = matrix(numeric(0),block.size,output.dims[2]*2 - 3)
+  LINKAGES.pft[,1:(output.dims[2] - 1) ] = output[1+(1:block.size) + 2*block.size,c(-11)]
+  LINKAGES.pft[,(1:(output.dims[2] -2)) + (output.dims[2] - 1) ] = output[1+(1:block.size) + 3*block.size,c(-1,-11)]
   
-  LINKAGES.output = LINKAGES.output[,-c(31,41)]
+  #LINKAGES.output = LINKAGES.output[,-c(31,41)]
   
   colnames(LINKAGES.output) <- c("year","numStems","agBiomass","leafLitter","leafLitterN","agNPP","availN","humusCN","soilResp","soilOM","ET",
-                                 "numStems.SD","agBiomass.SD","leafLitter.SD","leafLitterN.SD","agNPP.SD","availN.SD","humusCN.SD","soilResp.SD","soilOM.SD","ET.SD",
-                                  paste0("pft.",PFTs),                                  
-                                  paste0("pft.",PFTs,".SD"))
+                                 "numStems.SD","agBiomass.SD","leafLitter.SD","leafLitterN.SD","agNPP.SD","availN.SD","humusCN.SD","soilResp.SD","soilOM.SD","ET.SD")
   LINKAGES.output <- as.data.frame(LINKAGES.output)
+  LINKAGES.output$year <- seq(0,1660,2)
+  
+  colnames(LINKAGES.pft) <- c("year",paste0("pft.",PFTs), paste0("pft.",PFTs,".SD"))
+  LINKAGES.pft <- as.data.frame(LINKAGES.pft)
+  LINKAGES.pft$year <- seq(0,1660,2)
     
   ### Loop over years in LINKAGES output to create separate netCDF outputs
-  for (y in LINKAGES.output$year){
-    year_vec = seq(851,2010,1)
-    year_vec[1] = 850
+  for (y in LINKAGES.output$year[2:length(LINKAGES.output$year)]){
+    year_vec = seq(351,2010,1)
+    year_vec[1] = 350
     
     if (file.exists(file.path(outdir, paste(year_vec[y],"nc", sep="."))) & force == FALSE) {
       next
@@ -60,35 +65,39 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end
     sub.LINKAGES.output <- subset(LINKAGES.output, year == y)
     sub.LINKAGES.output.dims <- dim(sub.LINKAGES.output)
     
+    sub.LINKAGES.pft <- subset(LINKAGES.pft, year == y)
+    sub.LINKAGES.pft.dims <- dim(sub.LINKAGES.pft)
+    
     DEFAULT.C <- 0.48  ## mass percent C of biomass
-    PLOT.AREA <- 830 ## m^2
+    PLOT.AREA <- 833 ## m^2
     toKG <- 1000 ## Kg in Mg
-    yearSecs <- (3.15569 * 10^7)
+    yearSecs <- (3.15569 * 10^7) 
+    Tconst <- .012
     
     ## Setup outputs for netCDF file in appropriate units
     output <- list()
     ## standard variables: Carbon Pools
-    output[[1]] <- (sub.LINKAGES.output$agBiomass / PLOT.AREA * DEFAULT.C * toKG) # Above Ground Biomass in kgC/m2
-    output[[2]] <- (sub.LINKAGES.output$agBiomass / PLOT.AREA * DEFAULT.C * toKG) # Total Live Biomass in kgC/m2 (no distinction from AGB in LINKAGES)
-    output[[3]] <- (sub.LINKAGES.output$leafLitter + sub.LINKAGES.output$soilOM) / PLOT.AREA * DEFAULT.C * toKG # TotSoilCarb in kgC/m2
-    output[[4]] <- c(sub.LINKAGES.output$agBiomass,sub.LINKAGES.output$leafLitter,sub.LINKAGES.output$soilOM) / PLOT.AREA * DEFAULT.C * toKG #Carb Pools in kgC/m2
-    output[[5]] <- c("AGB","leaf Litter","Soil Organic Matter") #poolname
-    output[[6]] <- (sub.LINKAGES.output$agNPP / PLOT.AREA * DEFAULT.C * toKG) # GWBI = NPP in LINKAGES
+    output[[1]] <- ((sub.LINKAGES.output$agBiomass / PLOT.AREA) / Tconst * DEFAULT.C) # Above Ground Biomass in kgC/m2
+    output[[2]] <- (sub.LINKAGES.output$agBiomass / PLOT.AREA / Tconst * DEFAULT.C) # Total Live Biomass in kgC/m2 (no distinction from AGB in LINKAGES)
+    output[[3]] <- (sub.LINKAGES.output$leafLitter + sub.LINKAGES.output$soilOM) / PLOT.AREA * DEFAULT.C # TotSoilCarb in kgC/m2
+    output[[4]] <- c(sub.LINKAGES.output$agBiomass,sub.LINKAGES.output$soilOM) / PLOT.AREA / c(Tconst,1) * DEFAULT.C #Carb Pools in kgC/m2 #took out leaf litter because it's calculated as kg/tree in the model
+    output[[5]] <- c("AGB","Soil Organic Matter") #poolname
+    output[[6]] <- (sub.LINKAGES.output$agNPP / PLOT.AREA / yearSecs * DEFAULT.C * toKG) # GWBI = NPP in LINKAGES
     output[[7]] <- (sub.LINKAGES.output$soilResp / PLOT.AREA / yearSecs * toKG) # HeteroResp in kgC/m^2/s
-    output[[8]] <- (sub.LINKAGES.output$agNPP / PLOT.AREA * DEFAULT.C * toKG) # NPP = GWBI in LINKAGES
-    output[[9]] <- ((sub.LINKAGES.output$agNPP - sub.LINKAGES.output$soilResp) / PLOT.AREA * DEFAULT.C * toKG) # NEE #possibly questionable
+    output[[8]] <- (sub.LINKAGES.output$agNPP / PLOT.AREA / yearSecs * DEFAULT.C * toKG) # NPP = GWBI in LINKAGES
+    output[[9]] <- ((sub.LINKAGES.output$agNPP - sub.LINKAGES.output$soilResp) / PLOT.AREA / yearSecs * DEFAULT.C * toKG) # NEE #possibly questionable
     output[[10]] <- ((sub.LINKAGES.output$ET) / yearSecs) # Evap in kg/m^2/s
     
-    output[[11]] <- (sub.LINKAGES.output$pft.acer / PLOT.AREA * DEFAULT.C * toKG)
-    output[[12]] <- (sub.LINKAGES.output$pft.betula / PLOT.AREA * DEFAULT.C * toKG)
-    output[[13]] <- (sub.LINKAGES.output$pft.carya / PLOT.AREA * DEFAULT.C * toKG)
-    output[[14]] <- (sub.LINKAGES.output$pft.castanea.dentata / PLOT.AREA * DEFAULT.C * toKG)
-    output[[15]] <- (sub.LINKAGES.output$pft.fagus.grandifolia / PLOT.AREA * DEFAULT.C * toKG)
-    output[[16]] <- (sub.LINKAGES.output$pft.picea / PLOT.AREA * DEFAULT.C * toKG)
-    output[[17]] <- (sub.LINKAGES.output$pft.pinus / PLOT.AREA * DEFAULT.C * toKG)
-    output[[18]] <- (sub.LINKAGES.output$pft.tsuga.canadensis / PLOT.AREA * DEFAULT.C * toKG)
-    output[[19]] <- (sub.LINKAGES.output$pft.quercus / PLOT.AREA * DEFAULT.C * toKG)
+    output[[11]] <- (sub.LINKAGES.pft[2:10]/ PLOT.AREA * DEFAULT.C * toKG)
     
+    if(sum(sub.LINKAGES.pft[2:length(sub.LINKAGES.pft)])==0){
+      output[[12]] <- sub.LINKAGES.pft[2:10]
+      } else {
+        output[[12]] <- (sub.LINKAGES.pft[2:10]/ PLOT.AREA * DEFAULT.C * toKG) / sum((sub.LINKAGES.pft[2:length(sub.LINKAGES.pft)]/ PLOT.AREA * DEFAULT.C * toKG))
+      }
+      
+    
+      
     #******************** Declare netCDF variables ********************#
     dim.t <- ncdim_def(name = "time",
                    units = paste0("days since ", y, "-01-01 00:00:00"),
@@ -102,11 +111,14 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end
                      longname = "station_longitude")
     dim.string <- ncdim_def("names", "", 1:24, create_dimvar=FALSE)
     dim.cpools <- ncdim_def("cpools", "",
-                        vals = 1:3,
+                        vals = 1:2,
                         longname = "Carbon Pools") 
     dim.cpools1 <- ncdim_def("cpools", "",
-                         vals = 1:3,
-                         longname = "Carbon Pools", create_dimvar=FALSE)   
+                         vals = 1:2,
+                         longname = "Carbon Pools", create_dimvar=FALSE)  
+    dim.pfts <- ncdim_def("pfts", "",
+                             vals = 1:9,
+                             longname = "PFTs", create_dimvar=FALSE)  
         
     for(i in 1:length(output)){
       if(length(output[[i]])==0) output[[i]] <- rep(-999,length(t$vals))
@@ -124,15 +136,8 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end
     var[[9]]  <- ncvar_def("NEE", "kgC/m2", list(dim.lat, dim.lon, dim.t), -999)
     var[[10]]  <- ncvar_def("Evap", "kg/m2/s", list(dim.lat, dim.lon, dim.t), -999)
     
-    var[[11]]  <- ncvar_def("acer", "kgC/m2",list(dim.lat, dim.lon, dim.t),-999)
-    var[[12]]  <- ncvar_def("betula", "kgC/m2",list(dim.lat, dim.lon, dim.t),-999)
-    var[[13]]  <- ncvar_def("carya", "kgC/m2",list(dim.lat, dim.lon, dim.t),-999)
-    var[[14]]  <- ncvar_def("castanea.dentata", "kgC/m2",list(dim.lat, dim.lon, dim.t),-999)
-    var[[15]]  <- ncvar_def("fagus.grandifolia", "kgC/m2",list(dim.lat, dim.lon, dim.t),-999)
-    var[[16]]  <- ncvar_def("picea", "kgC/m2",list(dim.lat, dim.lon, dim.t),-999)
-    var[[17]]  <- ncvar_def("pinus", "kgC/m2",list(dim.lat, dim.lon, dim.t),-999)
-    var[[18]]  <- ncvar_def("tsuga.canadensis", "kgC/m2",list(dim.lat, dim.lon, dim.t),-999)
-    var[[19]]  <- ncvar_def("quercus", "kgC/m2",list(dim.lat, dim.lon, dim.t),-999)
+    var[[11]]  <- ncvar_def("AGB.pft", "kgC/m2",list(dim.pfts, dim.lat, dim.lon, dim.t),-999)
+    var[[12]]  <- ncvar_def("Fcomp", "kgC/kgC",list(dim.pfts, dim.lat, dim.lon, dim.t),-999)
     
     #******************** Declar netCDF variables ********************#
     
