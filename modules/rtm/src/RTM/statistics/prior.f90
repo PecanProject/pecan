@@ -1,49 +1,13 @@
-! Predefined priors for PROSPECT 5B
-subroutine p5b_prior(par, x, d)
-    use mod_types
-    use mod_statistics
-    implicit none
-    
-    ! Inputs
-    integer(kind=i1), intent(in) :: par
-    real(kind=r2), intent(in) :: x
-
-    ! Outputs
-    real(kind=r2), intent(out) :: d
-
-    select case (par)
-        case (1)        ! N
-            d = ldnorm(log(x-1), 0d0, 10d0)
-        case (2)        ! Cab
-            d = ldnorm(log(x), 0d0, 10d0)
-        case (3)        ! Car
-            d = ldnorm(log(x), 0d0, 10d0)
-        case (4)        ! Cbrown
-            d = ldnorm(log(x), 0d0, 10d0)
-        case (5)        ! Cw
-            d = ldnorm(log(x), 0d0, 10d0)
-        case (6)        ! Cm
-            d = ldnorm(log(x), 0d0, 10d0)
-        case default
-            print *, "!!!! ERROR: WRONG PRIOR INDEX !!!!"
-            stop
-    end select
-end subroutine
-
 ! Custom, (log)normal priors
 subroutine prior(x, pmu, psd, lognorm, d)
     use mod_types
     use mod_statistics
     implicit none
 
-    ! Inputs
     real(kind=r2), intent(in) :: x, pmu, psd
     logical, intent(in) :: lognorm
-
-    ! Outputs
     real(kind=r2), intent(out) :: d
 
-    ! Internal
     real(kind=r2) :: xx
 
     if(lognorm) then
@@ -56,3 +20,14 @@ subroutine prior(x, pmu, psd, lognorm, d)
     return
 end subroutine
 
+subroutine prior_re(x, tausd, d)
+    use mod_types
+    use mod_statistics
+    implicit none
+
+    real(kind=r2), intent(in) :: x, tausd
+    real(kind=r2), intent(out) :: d
+
+    d = ldnorm(x, 0.0d0, tausd)
+    return
+end subroutine

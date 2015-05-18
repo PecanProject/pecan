@@ -37,15 +37,3 @@ dtnorm <- function(x, mu, sd, MIN){
         return(dnorm(x, mu, sd, 1) - log(1-pnorm(MIN, mu, sd, 1, 0)))
 }
 
-ps.aviris <- function(params, constants)
-    aviris.refl(pro4sail(params, constants))
-
-data(aviris.wl)
-av.wl <- round(aviris.wl[aviris.wl >= 400]) - 399
-
-aviris.sail <- function(params, constants){
-    r <- pro4sail(params, constants)
-    refl <- r[av.wl]
-    return(refl)
-}
-
