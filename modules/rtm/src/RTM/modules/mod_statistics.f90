@@ -31,19 +31,15 @@ module mod_statistics
     ! Density calculation
     function ldnorm(x, mu, sigma)
         real(kind=r2), intent(in) :: x, mu, sigma
-        real(kind=r2) :: s2, xm, d1, d2, ex, exx, d
-        real(kind=r2) :: pi
+        real(kind=r2) :: hlog2pi, lsig, xm, s2, ex
         real(kind=r2) :: ldnorm
 
-        pi = 3.1415926539
-        s2 = 2 * sigma * sigma
+        hlog2pi = -0.39908993417 !! -0.5 * log(2pi)
+        lsig = -log(sigma)
         xm = x - mu
+        s2 = 2 * sigma * sigma
         ex = -xm * xm / s2
-        exx = exp(ex)
-        d1 = sqrt(pi * s2)
-        d2 = 1/d1
-        d = d2 * exx
-        ldnorm = log(d)
+        ldnorm = hlog2pi + lsig + ex
         return
     end function
 

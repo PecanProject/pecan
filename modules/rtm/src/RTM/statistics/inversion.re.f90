@@ -1,7 +1,7 @@
 subroutine invert_re(observed, nspec, modcode, &
             inits, npars, ipars, rand, &
             cons, ncons, icons, &
-            pmu, psd, plog, pmin, ngibbs, results)
+            pmu, psd, plog, pmin, ngibbs, results, seed)
     use mod_types
     use mod_statistics
     use mod_selectmodel
@@ -9,7 +9,7 @@ subroutine invert_re(observed, nspec, modcode, &
     implicit none
 
     ! Inputs
-    integer(kind=i2), intent(in) :: nspec, npars, ncons, modcode
+    integer(kind=i2), intent(in) :: nspec, npars, ncons, modcode, seed(100)
     integer(kind=i2), intent(in) :: ipars(npars), icons(ncons)
     real(kind=r2), intent(in) :: observed(nw,nspec), inits(npars), &
         cons(ncons), rand(npars,nspec)
@@ -18,7 +18,8 @@ subroutine invert_re(observed, nspec, modcode, &
     integer(kind=i2), intent(in) :: ngibbs
 
     ! Internals
-    integer(kind=i1) :: i, p, ng, adapt
+    integer(kind=i2) :: nseed
+    integer(kind=i1) :: i, p, ng, adapt 
     real(kind=r2) :: rp1, rp2, rinv, rsd, tp1, tp2, tinv
     real(kind=r2), dimension(npars) :: inpars, tausd
     real(kind=r2) :: PrevError(nw,nspec), PrevSpec(nw)
@@ -28,9 +29,11 @@ subroutine invert_re(observed, nspec, modcode, &
     procedure(), pointer :: model
 
     ! Outputs
-    real(kind=r2), intent(out) :: results(ngibbs, npars+1)
+    real(kind=r2), intent(out) :: results(ngibbs, npars*(nspec+2)+1)
 
-    call random_seed()          !! Initialize random number generator
+    nseed = 100
+    call random_seed(size=nseed)  
+    call random_seed(put=seed)
     call model_select(modcode, model) 
 
     rp1 = 0.001 + nspec*nw/2
@@ -54,26 +57,33 @@ subroutine invert_re(observed, nspec, modcode, &
     do ng=1,ngibbs
         if(mod(ng, adapt) < 1) then
             adj = ar / adapt / 0.44
-            adj_re = ar_re / adapt / 0.44
+            adj_re = ar_re / nspec / adapt / 0.44
             where(adj < adj_min) 
                 adj = adj_min
+            end where
+            where(adj_re < adj_min)
+                adj_re = adj_min
             end where
             Jump = Jump * adj
             Jump_re = Jump_re * adj_re
             ar = 0
+            ar_re = 0
         endif
         call mh_sample_re(observed, nspec, model, &
-            inits, npars, ipars, rand, cons, ncons, icons, rsd, &
-            Jump, pmu, psd, plog, pmin, PrevError, ar)
+            inits, npars, ipars, rand, &
+            cons, ncons, icons, rsd, tausd, &
+            Jump, Jump_re, pmu, psd, plog, pmin, PrevError, ar, ar_re)
         results(ng,1:npars) = inits
+        results(ng,(npars+1):(npars*(nspec+1))) = reshape(rand,(/npars*nspec/))
+        do p=1,npars
+            tp2 = 0.001 + sum(rand(p,:) * rand(p,:))/2
+            tinv = rgamma(tp1, 1/tp2)
+            tausd(p) = 1/sqrt(tinv)
+            results(ng,p+npars*(nspec+1)) = tausd(p)
+        end do
         rp2 = 0.001 + sum(PrevError * PrevError)/2
         rinv = rgamma(rp1, 1/rp2)
         rsd = 1/sqrt(rinv)
-        results(ng,npars+1) = rsd
-        do p=1,npars
-            tp2 = 0.001 + sum(PrevError(:,p) * PrevError(:,p))/2
-            tinv = rgamma(tp1, 1/tp2)
-            tausd(p) = 1/sqrt(tinv)
-        end do
+        results(ng,npars*(nspec+2)+1) = rsd
     enddo
 end subroutine

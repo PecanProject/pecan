@@ -38,8 +38,7 @@ invert.fast <- function(modname, observed, inits, cons,
     setkey(model.list, modname)
     model.set <- model.list[modname]
     if(all(is.na(model.set[,-1,with=FALSE]))){
-        print(sprintf("Error: Model '%s' not found", modname))
-        return
+        stop(sprintf("Error: Model '%s' not found", modname))
     }
     modcode <- as.integer(model.set$modcode)
     print(sprintf("Model: %s; Code: %d", model.set$fullname, modcode))
@@ -64,15 +63,17 @@ invert.fast <- function(modname, observed, inits, cons,
 
     ngibbs <- as.integer(ngibbs)
     results <- matrix(0, ngibbs, npars+1)
+    seed <- round(1e8 * runif(100))
+    seed <- as.integer(seed)
 
     in.list <- list("invert_basic", observed, nspec, modcode,
                     inits, npars, ipars, cons, ncons, icons,
-                    pmu, psd, plog, minp, ngibbs, results)
+                    pmu, psd, plog, minp, ngibbs, results, seed)
 
     t1 <- proc.time()
     out.list <- do.call(.Fortran, in.list)
     t2 <- proc.time()
     print(t2 - t1)
-    return(out.list[[length(out.list)]])
+    return(out.list[[length(out.list)-1]])
 }
 

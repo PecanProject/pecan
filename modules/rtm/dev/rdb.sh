@@ -3,4 +3,4 @@
 #make purge
 #cd ../dev
 R CMD INSTALL ..
-R -d gdb -e "source('fortinv.test.R')"
+R -d gdb -e "source('testinversion.R')"

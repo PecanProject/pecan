@@ -1,6 +1,6 @@
 subroutine invert_basic(observed, nspec, modcode, &
             inits, npars, ipars, cons, ncons, icons, &
-            pmu, psd, plog, pmin, ngibbs, results)
+            pmu, psd, plog, pmin, ngibbs, results, seed)
     use mod_types
     use mod_statistics
     use mod_selectmodel
@@ -8,7 +8,7 @@ subroutine invert_basic(observed, nspec, modcode, &
     implicit none
 
     ! Inputs
-    integer(kind=i2), intent(in) :: nspec, npars, ncons, modcode
+    integer(kind=i2), intent(in) :: nspec, npars, ncons, modcode, seed(100)
     integer(kind=i2), intent(in) :: ipars(npars), icons(ncons)
     real(kind=r2), intent(in) :: observed(nw,nspec), inits(npars), cons(ncons)
     real(kind=r2), intent(in), dimension(npars) :: pmin, pmu, psd
@@ -17,6 +17,7 @@ subroutine invert_basic(observed, nspec, modcode, &
 
     ! Internals
     integer(kind=i1) :: i, ng, adapt
+    integer(kind=i2) :: nseed
     real(kind=r2) :: rp1, rp2, rinv, rsd
     real(kind=r2) :: PrevError(nw,nspec), PrevSpec(nw)
     real(kind=r2) :: Jump(npars)
@@ -27,7 +28,9 @@ subroutine invert_basic(observed, nspec, modcode, &
     ! Outputs
     real(kind=r2), intent(out) :: results(ngibbs, npars+1)
 
-    call random_seed()          !! Initialize random number generator
+    nseed = 100
+    call random_seed(size=nseed)
+    call random_seed(put=seed)      !! Initialize random number generator
     call model_select(modcode, model) 
 
     rp1 = 0.001 + nspec*nw/2

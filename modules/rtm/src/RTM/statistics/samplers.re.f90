@@ -1,7 +1,7 @@
 subroutine mh_sample_re(observed, nspec, model, &
             inits, npars, ipars, rand, & 
             cons, ncons, icons, rsd, tausd, &
-            Jump, Jump_re, pmu, psd, plog, pmin, PrevError, ar)
+            Jump, Jump_re, pmu, psd, plog, pmin, PrevError, ar, ar_re)
     use mod_types
     use mod_statistics
     use mod_dataspec_wavelength
@@ -25,7 +25,7 @@ subroutine mh_sample_re(observed, nspec, model, &
     real(kind=r2) :: tvec(npars), inpars(npars), rmat(npars,nspec), &
         a, u, TryError(nw,nspec), TrySpec(nw), TryPost, PrevPost
     logical :: minflag
-    
+
     do p=1,npars
         !! Sample parameter p
         minflag = .false.
@@ -74,8 +74,8 @@ subroutine mh_sample_re(observed, nspec, model, &
                 TryError(:,i) = TrySpec - observed(:,i)
             end do
             if(minflag) cycle
-            call prior_re(rmat(p,r), tausd(p), TryPost)
-            call prior_re(rand(p,r), tausd(p), PrevPost)
+            call prior(rmat(p,r), 0.0d0, tausd(p), .false., TryPost)
+            call prior(rand(p,r), 0.0d0, tausd(p), .false., PrevPost)
             do i=1,nw
                 do j=1,nspec
                     TryPost = TryPost + ldnorm(TryError(i,j), 0d0, rsd)
