@@ -482,6 +482,7 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
 
 
   ## Assess MCMC output
+  # *** TODO: Generalize for multiple PFTS
   pdf(file.path(settings$pfts$pft$outdir,"pda.mcmc.diagnostics.pdf"))
 
   burnin <- min(2000,0.2*nrow(params))
@@ -497,6 +498,19 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
 
 
   dev.off()
+
+#  ---- DONT THINK THIS IS WORKING. BETTER MAYBE TO JUST RUN ENSEMBLE OUTSIDE OF PDA.MCMC? 
+#   ## Compare post-burn-in ensemble to data
+#   # Alter settings to make read.ensemble.ts consider post-burnin PDA runs as an ensemble
+#   settings$ensemble$variable <- "NEE"  # *** TODO: Generalize 
+#   settings$ensemble$size <- nrow(params.subset)
+#   settings$ensemble$start.year <- settings$ensemble$end.year <- year
+#   
+#   
+#   ens.post <- read.ensemble.ts("SIPNET")
+#   
+# ens.post$NEE <- ens.post$NEE*1000/12*1e6/10000/86400/365
+# ensemble.ts(ens.post,observations=-NEEhr,window=24*3)
 
   ## create a new Posteriors DB entry
   now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
@@ -521,6 +535,7 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
       container_id = ", posteriorid),con)
 
   ## save named distributions
+  # *** TODO: Generalize for multiple PFTS
   filename <- file.path(settings$pfts$pft$outdir, 'post.distns.Rdata')
   post.distns <- approx.posterior(params.subset, prior, outdir = settings$pfts$pft$outdir)
   save(post.distns, file = filename)
@@ -544,6 +559,7 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
 
 
   ## save updated parameter distributions as trait.mcmc so that they can be read by the ensemble code
+  # *** TODO: Generalize for multiple PFTS
   filename <- file.path(settings$pfts$pft$outdir, 'trait.mcmc.Rdata')
   save(trait.mcmc, file = filename)
   dbfile.insert(dirname(filename), basename(filename), 'Posterior', posteriorid, con)
