@@ -17,6 +17,12 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   require(RPostgreSQL)
   require(XML)
   
+  #setup connection and host information
+  con      <- db.open(dbparms)
+  username <- ""  
+  ifelse(host$name == "localhost", machine.host <- fqdn(), machine.host <- hostname)
+  machine = db.query(paste0("SELECT * from machines where hostname = '",machine.host,"'"),con)
+  
   #get met source and potentially determine where to start in the process
   met <- ifelse(is.null(input_met$source), logger.error("Must specify met source"),input_met$source)
   
@@ -25,21 +31,16 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   # Then unnecessary steps could be skipped?
   
   #read in registration xml for met specific information
-  register <- xmlToList(xmlParse(paste0("modules/data.atmosphere/inst/registration/register.",met,".xml")))
-  
-  #setup connection and host information
-  con      <- db.open(dbparms)
-  username <- ""  
-  ifelse(host$name == "localhost", machine.host <- fqdn(), machine.host <- hostname)
-  machine = db.query(paste0("SELECT * from machines where hostname = '",machine.host,"'"),con)
+  register.xml <- system.file(paste0("registration/register.", met, ".xml"), package = "PEcAn.data.atmosphere")
+  register <- read.register(register.xml, con)
   
   #setup additional browndog arguments
   if(!is.null(browndog)){browndog$inputtype <- register$format$inputtype}
   
-  #setup site database number & name
-  new.site = as.numeric(site$id)
-  str_ns    <- paste0(new.site %/% 1000000000, "-", new.site %% 1000000000)  
-  
+  #setup site database number, lat, lon and name
+  new.site <- data.frame(id = as.numeric(site$id), lat = db.site.lat.lon(site$id,con=con)$lat, lon = db.site.lat.lon(site$id,con=con)$lon)
+  str_ns    <- paste0(new.site$id %/% 1000000000, "-", new.site$id %% 1000000000)  
+
   #--------------------------------------------------------------------------------------------------#
   # Download raw met from the internet 
   
@@ -53,7 +54,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     check = db.query(
       paste0("SELECT i.start_date, i.end_date, d.file_path, d.container_id, d.id  from dbfiles as d join inputs as i on i.id = d.container_id where i.site_id =",register$siteid,
              " and d.container_type = 'Input' and i.format_id=",register$format$id, " and d.machine_id =",machine$id,
-             " and (i.start_date, i.end_date) OVERLAPS (DATE '", as.POSIXlt(start_date, tz = "GMT"),"',DATE '",as.POSIXlt(end_date, tz = "GMT"),"')"),con)
+             " and (i.start_date <= DATE '",as.POSIXlt(start_date, tz = "GMT"),"') and (DATE '", as.POSIXlt(end_date, tz = "GMT"),"' <= i.end_date)" ),con)
     print("end CHECK")
     options(digits=10)
     print(check)
@@ -83,7 +84,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     check = db.query(
       paste0("SELECT i.start_date, i.end_date, d.file_path, d.container_id, d.id  from dbfiles as d join inputs as i on i.id = d.container_id where i.site_id =",site$id,
              " and d.container_type = 'Input' and i.format_id=",register$format$id, " and d.machine_id =",machine$id,
-             " and (i.start_date, i.end_date) OVERLAPS (DATE '", as.POSIXlt(start_date, tz = "GMT"),"',DATE '",as.POSIXlt(end_date, tz = "GMT"),"')"),con)
+             " and (i.start_date <= DATE '",as.POSIXlt(start_date, tz = "GMT"),"') and (DATE '", as.POSIXlt(end_date, tz = "GMT"),"' <= i.end_date)" ),con)
     print("end CHECK")
     options(digits=10)
     print(check)
@@ -114,10 +115,8 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   
   #--------------------------------------------------------------------------------------------------#
   # Change to  CF Standards
-  
-  # all met2CF funtions need to take additional arguments
-  
-  print("### Change to CF Standards")
+    
+  logger.info("Begin change to CF Standards")
   
   input.id  <-  raw.id[1]
   pkg       <- "PEcAn.data.atmosphere"
@@ -135,7 +134,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     check = db.query(
       paste0("SELECT i.start_date, i.end_date, d.file_path, d.container_id, d.id  from dbfiles as d join inputs as i on i.id = d.container_id where i.site_id =",register$siteid,
              " and d.container_type = 'Input' and i.format_id=",format.id, " and d.machine_id =",machine$id, " and i.name = '", input_name,
-             "' and (i.start_date, i.end_date) OVERLAPS (DATE '", as.POSIXlt(start_date, tz = "GMT"),"',DATE '",as.POSIXlt(end_date, tz = "GMT"),"')"),con)
+             "' and (i.start_date <= DATE '",as.POSIXlt(start_date, tz = "GMT"),"') and (DATE '", as.POSIXlt(end_date, tz = "GMT"),"' <= i.end_date)" ),con)
     print("end CHECK")
     options(digits=10)
     print(check)
@@ -163,7 +162,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     check = db.query(
       paste0("SELECT i.start_date, i.end_date, d.file_path, d.container_id, d.id  from dbfiles as d join inputs as i on i.id = d.container_id where i.site_id =",register$siteid,
              " and d.container_type = 'Input' and i.format_id=",format.id, " and d.machine_id =",machine$id, " and i.name = '", input_name,
-             "' and (i.start_date, i.end_date) OVERLAPS (DATE '", as.POSIXlt(start_date, tz = "GMT"),"',DATE '",as.POSIXlt(end_date, tz = "GMT"),"')"),con)
+             "' and (i.start_date <= DATE '",as.POSIXlt(start_date, tz = "GMT"),"') and (DATE '", as.POSIXlt(end_date, tz = "GMT"),"' <= i.end_date)" ),con)
     print("end CHECK")
     options(digits=10)
     print(check)
@@ -182,9 +181,9 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     
     print("start CHECK")   
     check = db.query(
-      paste0("SELECT i.start_date, i.end_date, d.file_path, d.container_id, d.id  from dbfiles as d join inputs as i on i.id = d.container_id where i.site_id =",register$siteid,
+      paste0("SELECT i.start_date, i.end_date, d.file_path, d.container_id, d.id  from dbfiles as d join inputs as i on i.id = d.container_id where i.site_id =",new.site$id,
              " and d.container_type = 'Input' and i.format_id=",33, " and d.machine_id =",machine$id, " and i.name = '", input_name,
-             "' and (i.start_date, i.end_date) OVERLAPS (DATE '", as.POSIXlt(start_date, tz = "GMT"),"',DATE '",as.POSIXlt(end_date, tz = "GMT"),"')"),con)
+             "' and (i.start_date <= DATE '",as.POSIXlt(start_date, tz = "GMT"),"') and (DATE '", as.POSIXlt(end_date, tz = "GMT"),"' <= i.end_date)" ),con)
     print("end CHECK")
     options(digits=10)
     print(check)
@@ -204,12 +203,16 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
                            username,con=con,hostname=host$name,browndog=NULL,write=TRUE) 
   }
   
+  logger.info("Finished change to CF Standards")
+  
   #--------------------------------------------------------------------------------------------------#
   # Change to Site Level - Standardized Met (i.e. ready for conversion to model specific format)
   
+  logger.info("Begin Standardize Met")
+  
   if(register$scale=="regional"){ #### Site extraction 
     
-    print("# Site Extraction")
+    logger.info("Site Extraction")
     
     input.id   <- cf.id[1]
     outfolder  <- file.path(dir,paste0(met,"_CF_site_",str_ns))
@@ -218,16 +221,13 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     formatname <- 'CF Meteorology'
     mimetype   <- 'application/x-netcdf'
     
-    new.lat <- db.site.lat.lon(new.site,con=con)$lat
-    new.lon <- db.site.lat.lon(new.site,con=con)$lon
-    
     ready.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
                               username,con=con,hostname=host$name,browndog=NULL,write=TRUE,
-                              slat=new.lat,slon=new.lon,newsite=new.site)
+                              slat=new.site$lat,slon=new.site$lon,newsite=new.site$id)
     
   }else if(register$scale=="site"){ ##### Site Level Processing
     
-    print("# Run Gapfilling") # Does NOT take place on browndog!
+    logger.info("Gapfilling") # Does NOT take place on browndog!
     
     input.id   <- cf.id[1]
     outfolder  <- file.path(dir,paste0(met,"_CF_gapfill_site_",str_ns))
@@ -241,10 +241,12 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
                                 username,con=con,hostname=host$name,browndog=NULL,write=TRUE,lst=lst)
     
   }
-  print("Standardized Met Produced")
+  logger.info("Finished Standardize Met")
   
   #--------------------------------------------------------------------------------------------------#
   # Prepare for Model
+  
+  logger.info("Begin Model Specific Conversion")
   
   # Determine output format name and mimetype   
   model_info <- db.query(paste0("SELECT f.name, f.id, f.mime_type from modeltypes as m join modeltypes_formats as mf on m.id
@@ -261,9 +263,9 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   lst       <- site.lst(site,con)
     
   model.id  <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
-                             username,con=con,hostname=host$name,browndog,write=TRUE,lst=lst)
+                             username,con=con,hostname=host$name,browndog,write=TRUE,lst=lst,lat=new.site$lat,lon=new.site$lon)
   
-  print(c("Done model convert",model.id[1]))
+  logger.info(paste("Finished Model Specific Conversion",model.id[1]))
   
   model.file <- db.query(paste("SELECT * from dbfiles where id =",model.id[[2]]),con)[["file_name"]]
   
@@ -272,49 +274,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   
 }
 
-
-##' @name find.prefix
-##' @title find.prefix
-##' @export
-##' @param files
-##' @author Betsy Cowdery
-find.prefix <- function(files){
-  
-  if(length(files)==1){
-    tail <- tail(unlist(strsplit(files, "/")),1)
-    prefix <- head(unlist(strsplit(tail, "[.]")),1)
-    return(prefix)
-  }
-  
-  files.split <- try(strsplit(unlist(files), "[.]"), silent = TRUE)
-  
-  if(!inherits(files.split, 'try-error')){
-    
-    files.split <- lapply(files.split, `length<-`,max(unlist(lapply(files.split, length))))
-    files.df <- as.data.frame(do.call(rbind, files.split))
-    files.uniq <- sapply(files.df, function(x)length(unique(x))) 
-    
-    prefix <- ""
-    ifelse(files.uniq[1] == 1,prefix <- as.character(files.df[1,1]),return(prefix))
-    
-    for(i in 2:length(files.uniq)){
-      if(files.uniq[i]==1){
-        prefix <- paste(prefix,as.character(files.df[1,i]),sep = ".")
-      }else{
-        return(prefix)
-      }
-    }
-  }else{   
-    bases <- lapply(as.character(files),basename)
-    if(length(unique(bases))==1){
-      prefix <- bases[1]
-    }else{
-      prefix <- ""
-    }
-  }
-  return(prefix)
-}
-
+#################################################################################################################################
 
 ##' @name db.site.lat.lon
 ##' @title db.site.lat.lon

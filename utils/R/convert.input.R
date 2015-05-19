@@ -7,9 +7,8 @@
 ##' @author Betsy Cowdery, Michael Dietze
 convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,
                           pkg,fcn,username,con=con,hostname='localhost',browndog, write=TRUE,...){
-  print(paste("Convert.Inputs",fcn,input.id,hostname))
-  print(paste(outfolder,formatname,mimetype,site.id,start_date,end_date))
-  l <- list(...); print(l)
+  logger.info(paste("Convert.Inputs",fcn,input.id,hostname,outfolder,formatname,mimetype,site.id,start_date,end_date))
+  l <- list(...); #print(l)
   n <- nchar(outfolder)
   if(substr(outfolder,n,n) != "/"){outfolder = paste0(outfolder,"/")}
   
@@ -77,7 +76,7 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
     # check if we can do conversion 
     out.html <- getURL(paste0("http://dap-dev.ncsa.illinois.edu:8184/inputs/",browndog$inputtype), .opts = curloptions)
     if(outputtype %in% unlist(strsplit(out.html, '\n'))){
-      print(paste("Conversion from", browndog$inputtype,"to", outputtype, "through Brown Dog"))
+      logger.info(paste("Conversion from", browndog$inputtype,"to", outputtype, "through Brown Dog"))
       conversion <- "browndog"
     }
   }
@@ -85,7 +84,7 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
   if(conversion == "browndog"){
     
     url <- file.path(browndog$url,outputtype) 
-    print(url)
+    #print(url)
     
     # loop over files in localhost and zip to send to Brown Dog 
     files <- list.files(dbfile$file_path, pattern=dbfile$file_name)
@@ -102,19 +101,18 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
     # post zipped file to Brown Dog
     html <- postForm(url,"fileData" = fileUpload(zipfile), .opts = curloptions)
     link <- getHTMLLinks(html)
-    print(link)
+    #print(link)
     file.remove(zipfile)
     
     # download converted file
     outfile <- file.path(outfolder,unlist(strsplit(basename(link),"_"))[2])
     download.url(url = link, file = outfile, timeout = 600, .opts = curloptions, retry404 = TRUE)  
-    print(list.files(outfolder))
+    #print(list.files(outfolder))
     
     # unzip downloaded file if necessary
     if(file.exists(outfile)){
       if(tail(unlist(strsplit(outfile,"[.]")),1)=="zip"){
         fname <- unzip(outfile, list=TRUE)$Name
-        print(fname)
         unzip(outfile, files=fname, exdir=outfolder, overwrite=TRUE)
         file.remove(outfile)
       }else{fname <- list.files(outfolder)}
@@ -147,7 +145,7 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
     }else{
       cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")") 
     } 
-    print(cmdFcn)
+    print(cmdFcn) #do we want to print this?
     result <- remote.execute.R(script=cmdFcn,hostname,user=NA,verbose=TRUE,R="R")
   }
   
@@ -169,9 +167,6 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
   
   ## insert new record into database
   if(write==TRUE){
-    
-    #    in.prefix=strsplit(basename(result$file[1]),".",fixed=TRUE)[[1]][1]
-    in.prefix=find.prefix(result$file)
     newinput <- dbfile.input.insert(in.path=dirname(result$file[1]),
                                     in.prefix=result$dbfile.name[1],
                                     siteid = siteid, 
