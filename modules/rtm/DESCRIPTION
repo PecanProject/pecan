@@ -18,3 +18,4 @@ License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
+VignetteBuilder: knitr

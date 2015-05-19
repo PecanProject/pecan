@@ -1,0 +1,69 @@
+---
+title: "The PEcAn RTM package"
+author: Alexey Shiklomanov
+output: pdf_document
+---
+
+# Introduction
+The PEcAnRTM package provides tools for analyses involving common radiative transfer models. The highlights of this package are its ability to efficiently run a suite of related leaf and canopy radiative transfer models, as well as to perform maximum likelihood and, particularly, Bayesian inversions of these models. 
+
+# Installation
+The easiest way to install this package is via `install_github` from the `devtools` package.
+
+```{r}
+install.packages("devtools")
+library(devtools)
+install_github("ashiklom/pecan", subdir="modules/rtm")
+# Defaults to branch 'master'. 
+# For custom branches, add `ref = "branchname"`
+library(PEcAnRTM)
+```
+
+This package relies on a modern (>= 2003) Fortran compiler, as determined by your R installation. On most Unix systems, this is standard, but R may specify a particular compiler version that you don't have, resulting in an installation error. To fix this, simply add the following to your system `~/R/Makevars` file.
+
+```
+FC = gfortran
+```
+
+# Overview of features
+
+## Simulating reflectance
+
+Available radiative transfer models are called by passing a vector of their parameters. Similar models with different versions (e.g. PROSPECT 4, 5, 5B) also have a "version" argument. These models return a matrix of reflectance, transmittance, and/or absorption spectra (depending on the model) at 1 nm resolution over the wavelength range 400 to 2500 nm.
+
+The PROSPECT family of models returns the reflectance (column 1) and transmittance (column 2) for an individual leaf as a function of 4 to 6 parameters (depending on the version).
+
+```{r}
+wl <- 400:2500
+params <- c("N"=1.4, "Cab"=40, "Car"=15,
+            "Cbrown"=0.5, "Cw"=0.002, "Cm"=0.004)
+
+p4 <- prospect(params[c(-3,-4)], version=4)
+p5 <- prospect(params[-4], version=5)
+p5b <- prospect(params, version="5B")
+
+plot(wl, p4[,1], type='l', xlab="Wavelength (nm)", ylab="Value", ylim=c(0,1))
+lines(wl, 1-p4[,2], col=2)
+lines(wl, p5[,1], lty=2, col=1)
+lines(wl, 1-p5[,2], lty=2, col=2)
+lines(wl, p5b[,1], lty=3, col=1)
+lines(wl, 1-p5b[,2], lty=3, col=2)
+legend("topright", c("Reflectance", "Transmittance"), col=c(1,2), lty=1)
+legend("top", c("4", "5", "5B"), lty = c(1,2,3))
+```
+
+The SAIL family of models returns the bidirectional (1), hemispherical directional (2), directional hemispherical (3), and bidirectional hemispheical (4) reflectance factors for a canopy with a given set of approximately 20 parameters. It is often coupled to the PROSPECT model as PRO4SAIL. 
+
+```{r}
+sail.params <- defparam("pro4sail")
+print(sail.params)
+p4s <- pro4sail(sail.params)
+matplot(x = wl, y = p4s, type='l', xlab="Wavelength (nm)", ylab="Reflectance")
+legend("topright", as.character(1:4), col=1:4, lty=1:4)
+```
+
+The above example illustrates the use of `defparam` to get the default parameters for a particular model. Similarly, `model.list` is a `data.table` containing all currently available models.
+
+```{r}
+print(model.list)
+```
