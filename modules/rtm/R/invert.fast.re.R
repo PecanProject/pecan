@@ -1,3 +1,37 @@
+#' @name invert.fast.re
+#' @title Bayesian inversion with random effects
+#' @author Alexey Shiklomanov
+#' @details Performs a Bayesian inversion of a Radiative
+#' Transfer model with individual random effects. Sampling
+#' is performed using an adaptive Metropolis-Hastings
+#' algorithm operating independently on each parameter. See
+#' also: `invert.fast`.
+#' @param modname Name of the model to invert (character).
+#' Refer to `model.list`
+#' @param observed Observed reflectance. Can be a vector,
+#' matrix, or data.frame; BUT NOTE: all are coerced to
+#' matrix via `as.matrix`.
+#' @param inits Named vector of parameters to invert. Names
+#' are required!
+#' @param cons Numeric vector of constants. Names are
+#' required!
+#' @param rand Numeric matrix of initial values for random
+#' effects, with dimensions (npars x nspec), where npars is
+#' the number of parameters and nspec is the number of
+#' spectra.
+#' @param pmu Numeric vector of prior means for inversion
+#' parameters. Must line up with `inits`
+#' @param psd Numeric vector of prior standard deviations
+#' for inversion parameters. Must line up with `inits`.
+#' @param plog Logical vector. Whether or not to use
+#' lognormal distribution for the prior. NOTE: `pmu` and `psd`
+#' are the distribution parameters, NOT the distribution's
+#' actual mean and standard deviation.
+#' @param minp Numeric vector of minimum values for parameters.
+#' @param ngibbs Number of iterations for MCMC 
+#' @return Matrix (ngibbs x (npars*(nspec+2)+1)) of MCMC
+#' samples of parameters.
+
 invert.fast.re <- function(modname, observed, inits, rand, cons, 
                    pmu, psd, plog, minp, ngibbs){
 # Get model code number

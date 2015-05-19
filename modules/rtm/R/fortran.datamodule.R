@@ -14,7 +14,7 @@
 #'@param types Character vector of FORTAN types (e.g. real*8, integer)
 #'@param modname Name of the module. We suggest the format 'MOD_yourmodname'.
 #'@param fname Output file name. Defaults to 'yourmodname.f90'
-#'@example
+#'@examples
 #'      w <- 3.2
 #'      x <- 1:5
 #'      y <- 6:15
@@ -22,7 +22,7 @@
 #'      l <- list(x=x, y=y, z=z) ## NOTE that names must be explicitly declared
 #'      l.types <- c("real","integer", "real*4", "real*8")
 #'      f.data.module(l, l.types, "testmod")
-#'@example
+#' 
 #'      x <- runif(10)
 #'      y <- rnorm(10)
 #'      z <- rgamma(10, 3)
