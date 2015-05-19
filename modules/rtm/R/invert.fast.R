@@ -37,19 +37,27 @@ invert.fast <- function(modname, observed, inits, cons,
     data(model.list)
     setkey(model.list, modname)
     model.set <- model.list[modname]
-    if(all(is.na(model.set))){
-        print("Error: Model not found")
+    if(all(is.na(model.set[,-1,with=FALSE]))){
+        print(sprintf("Error: Model '%s' not found", modname))
         return
     }
     modcode <- as.integer(model.set$modcode)
     print(sprintf("Model: %s; Code: %d", model.set$fullname, modcode))
     names.all <- unlist(strsplit(model.set$par.names, " "))
     names.inits <- names(inits)
-    names.cons <- names(cons)
+    stopifnot(!is.null(names.inits))
     npars <- length(inits)
     ipars <- match(names.inits, names.all)
-    ncons <- length(cons)
-    icons <- match(names.cons, names.all)
+    if(length(cons) > 0){
+        names.cons <- names(cons)
+        stopifnot(!is.null(names.cons))
+        ncons <- length(cons)
+        icons <- match(names.cons, names.all)
+    } else {
+        cons <- numeric(0)
+        ncons <- as.integer(0)
+        icons <- numeric(0)
+    }
 
     observed <- as.matrix(observed)
     nspec <- ncol(observed)
