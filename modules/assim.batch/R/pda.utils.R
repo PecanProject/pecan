@@ -1,0 +1,86 @@
+##' Load Dataset for Paramater Data Assimilation
+##'
+##' @title Load Dataset for Paramater Data Assimilation
+##' @param input.settings = settings$assim.batch$inputs from pecan.xml or similar
+##'
+##' @return A list containg the loaded input data, plus metadata
+##'
+##' @author Ryan Kelly
+##' @export
+
+load.pda.data <- function(input.settings) {
+
+  ## load data
+  # Outlining setup for multiple datasets, although for now the only option is to assimilate 
+  # against a single NEE input
+  inputs <- list()
+  n.input <- length(input.settings)
+
+  for(i in 1:n.input) {
+    inputs[[i]] <- list()
+    inputs[[i]]$variable.id <- input.settings[[i]]$data.model$variable.id
+
+    ## Load input based on ID, PATH, or SOURCE
+    if(!is.null(input.settings[[i]]$id)) {             # Input specified by ID
+      ## Get file path from input id
+      inputs[[i]]$input.id <- input.settings[[i]]$id
+      file <- db.query(paste0('SELECT * FROM dbfiles WHERE container_id = ', input.settings[[i]]$id), con)
+      file <- file.path(file$file_path, file$file_name)
+
+      ## Load store data
+      inputs[[i]]$data <- read.csv(file)
+    } else if(!is.null(input.settings[[i]]$path)) {    # Input specified by PATH
+      # Again, for now works with a single test case, Ameriflux NEE.
+      inputs[[i]]$data <- read.csv(input.settings[[i]]$path)
+      inputs[[i]]$input.id <- -1
+    } else if(!is.null(input.settings[[i]]$source)) {  # Input specified by SOURCE
+      # TODO: insert code to extract data from standard sources (e.g. AMF)
+    } else {
+      logger.error("Must provide ID, PATH, or SOURCE for all data assimilation inputs")
+    }
+      
+
+    ## Preprocess data
+    # TODO: Generalize
+    if(as.numeric(inputs[[i]]$variable.id) == 297) {
+      ## calculate flux uncertainty parameters
+      NEEo <- inputs[[i]]$data$NEE_or_fMDS #data$Fc   #umolCO2 m-2 s-1
+      NEEq <- inputs[[i]]$data$NEE_or_fMDSqc #data$qf_Fc
+      dTa <- get.change(inputs[[i]]$data$Ta_f)
+      flags <- dTa < 3   ## filter data to temperature differences that are less than 3 degrees
+      NEE.params <- flux.uncertainty(NEEo,NEEq,flags,bin.num=20)
+      inputs[[i]]$b0 <- NEE.params$intercept
+      inputs[[i]]$bp <- NEE.params$slopeP
+      inputs[[i]]$bn <- NEE.params$slopeN
+    }
+  } # end loop over files
+  
+  return(inputs)
+}
+
+
+# In a previous version, inputs specified by path would be automatically added to the DB, 
+# but we decided this needs some discussion. Below are code blocks that could be useful
+# if that functionality is added again. 
+
+#         in.path <- dirname(input.i$path)
+#         in.prefix <- basename(input.i$path)
+#         mimetype <- 'text/csv'
+#         formatname <- 'AmeriFlux.level4.h'
+#         
+#         year <- strsplit(basename(input.i$path), "_")[[1]][3]
+#         startdate <- as.POSIXlt(paste0(year,"-01-01 00:00:00", tz = "GMT"))
+#         enddate <- as.POSIXlt(paste0(year,"-12-31 23:59:59", tz = "GMT"))
+
+
+#       raw.id <- dbfile.input.insert(in.path=in.path,
+#                                     in.prefix=in.prefix, 
+#                                     siteid = settings$run$site$id,  
+#                                     startdate = startdate, 
+#                                     enddate = enddate, 
+#                                     mimetype=mimetype, 
+#                                     formatname=formatname,
+#                                     parentid = NA,
+#                                     con = con,
+#                                     hostname = settings$run$host$name)
+#       input.i$id <- raw.id$input.id

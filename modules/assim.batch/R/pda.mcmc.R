@@ -179,108 +179,28 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
 
 
   ## load data
-  # Outlining setup for multiple datasets, although for now the only option is to assimilate 
-  # against a single NEE input
-  inputs <- list()
-  n.input <- length(settings$assim.batch$inputs)
-  var.ids <- input.ids <- numeric(n.input)
-  for(i in 1:n.input) {
-    input.i <- settings$assim.batch$inputs[[i]]
-    var.ids[i] <- input.i$data.model$variable.id
-    inputs[[i]] <- list()
-
-    if(is.null(input.i$id)) { # No input ID given. Obtain by PATH or SOURCE
-
-      # Again, setting up to work with a single test case, Ameriflux NEE provided as a file path.
-      # Lots to do to generalize. 
-      if(!is.null(input.i$path)) {
-        # Set input attributes (again, assuming ameriflux for now...)
-      # Commenting out for now. May be useful to have inputs specified by path
-      # automatically added, but needs some discussion
-#         in.path <- dirname(input.i$path)
-#         in.prefix <- basename(input.i$path)
-#         mimetype <- 'text/csv'
-#         formatname <- 'AmeriFlux.level4.h'
-#         
-#         year <- strsplit(basename(input.i$path), "_")[[1]][3]
-#         startdate <- as.POSIXlt(paste0(year,"-01-01 00:00:00", tz = "GMT"))
-#         enddate <- as.POSIXlt(paste0(year,"-12-31 23:59:59", tz = "GMT"))
-        inputs[[i]]$data <- read.csv(input.i$path)
-        input.ids[i] = -1
-      } else if(!is.null(input.i$source)) {
-        # TODO: insert code to extract data from standard sources (e.g. AMF)
-      } else {
-        logger.error("Must provide ID, PATH, or SOURCE for all data assimilation inputs")
-      }
-      
-      ## Insert input to database
-      # Commenting out for now. May be useful to have inputs specified by path
-      # automatically added, but needs some discussion
-#       raw.id <- dbfile.input.insert(in.path=in.path,
-#                                     in.prefix=in.prefix, 
-#                                     siteid = settings$run$site$id,  
-#                                     startdate = startdate, 
-#                                     enddate = enddate, 
-#                                     mimetype=mimetype, 
-#                                     formatname=formatname,
-#                                     parentid = NA,
-#                                     con = con,
-#                                     hostname = settings$run$host$name)
-#       input.i$id <- raw.id$input.id
-    } else { # Input specified by ID
-    ## Get file path from input id
-    input.ids[i] <- input.i$id
-    file <- db.query(paste0('SELECT * FROM dbfiles WHERE container_id = ', input.i$id), con)
-    file <- file.path(file$file_path, file$file_name)
-
-    ## Load store data
-    inputs[[i]]$data <- read.csv(file)
-    }
-
-    
-    ## Preprocess data
-    # TODO: Generalize
-    if(as.numeric(var.ids[i]) == 297) {
-      ## calculate flux uncertainty parameters
-      NEEo <- inputs[[i]]$data$NEE_or_fMDS #data$Fc   #umolCO2 m-2 s-1
-      NEEq <- inputs[[i]]$data$NEE_or_fMDSqc #data$qf_Fc
-      dTa <- get.change(inputs[[i]]$data$Ta_f)
-      flags <- dTa < 3   ## filter data to temperature differences that are less than 3 degrees
-      NEE.params <- flux.uncertainty(NEEo,NEEq,flags,bin.num=20)
-      inputs[[i]]$b0 <- NEE.params$intercept
-      inputs[[i]]$bp <- NEE.params$slopeP
-      inputs[[i]]$bn <- NEE.params$slopeN
-    }
-
-  } # end loop over files
-  
+  inputs <- load.pda.data(settings$assim.batch$inputs)
+  n.input <- length(inputs)
   
   ## Set up likelihood functions
   #  TODO: Generalize
   llik.fn <- list()
   for(i in 1:n.input) {
-    llik.fn[[i]] <- function(model, data) {
-      NEEo <- data$data$NEE_or_fMDS #data$Fc   #umolCO2 m-2 s-1
-      NEEq <- data$data$NEE_or_fMDSqc #data$qf_Fc
+    llik.fn[[i]] <- function(model, obs) {
+      NEEo <- obs$data$NEE_or_fMDS #data$Fc   #umolCO2 m-2 s-1
+      NEEq <- obs$data$NEE_or_fMDSqc #data$qf_Fc
       NEEo[NEEq > 0] <- NA
     
       NEEm <- model
     
       NEE.resid <- abs(model - NEEo)
       NEE.pos <- (NEEm >= 0)
-      LL <- c(dexp(NEE.resid[NEE.pos], 1/(data$b0 + data$bp*NEEm[NEE.pos]), log=TRUE), 
-              dexp(NEE.resid[!NEE.pos],1/(data$b0 + data$bn*NEEm[!NEE.pos]),log=TRUE))
+      LL <- c(dexp(NEE.resid[NEE.pos], 1/(obs$b0 + obs$bp*NEEm[NEE.pos]), log=TRUE), 
+              dexp(NEE.resid[!NEE.pos],1/(obs$b0 + obs$bn*NEEm[!NEE.pos]),log=TRUE))
       n.obs = sum(!is.na(LL))
       return(list(LL=sum(LL,na.rm=TRUE), n=n.obs))
     }
   }
-
-    # NPPo<- state$NPP[,,23]
-    # AGBo<- state$AGB[,,24]
-    # 
-    # #parameters for bivariate normal likelihood
-    # mu = c(mean(NPPo),mean(AGBo))
-    # sigma = cov(cbind(NPPo,AGBo))
 
 
   ## Load params from previous run, if provided. 
@@ -431,7 +351,7 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
 
 
           ## match model and observations
-          NEEm <- rep(NEEm,each=length(NEEo)/length(NEEm))
+          NEEm <- rep(NEEm,each= nrow(inputs[[k]]$data)/length(NEEm))
           set <- 1:length(NEEm)  ## ***** need a more intellegent year matching!!!
             # NPPm <- rep(NPPm,each=length(NPPo)/length(NPPm))
             # set <- 1:length(NPPm) 
@@ -456,14 +376,22 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
         if (!is.null(con)) {
           now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
           paramlist <- paste("MCMC: chain",chain,"iteration",i,"variable",j)
-          for(k in 1:n.input) {
+
+          # BETY requires likelihoods to be associated with inputs, so only proceed 
+          # for inputs with valid input ID (i.e., not the -1 dummy id). 
+          # Note that analyses requiring likelihoods to be stored therefore require 
+          # inputs to be registered in BETY first.
+          db.input.ind <- which( sapply(inputs, function(x) x$input.id) != -1 )
+          for(k in db.input.ind) {
             db.query(
               paste0("INSERT INTO likelihoods ", 
-                "(run_id,         variable_id,        input_id,             loglikelihood, ", 
-                 "n_eff,                  weight,              created_at) ",
+                "(run_id,            variable_id,                     input_id, ",
+                " loglikelihood,     n_eff,                           weight,   ",
+                " created_at) ",
               "values ('", 
-                 run.id, "', '", var.ids[k], "', '", input.ids[k], "', '", LL.vec[k], "', '",
-                 floor(neff[k]), "', '", weights[k] , "', '", now,"')"
+                  run.id, "', '",    inputs[[k]]$variable.id, "', '", inputs[[k]]$input.id, "', '", 
+                  LL.vec[k], "', '", floor(neff[k]), "', '",          weights[k] , "', '", 
+                  now,"')"
               ), 
             con)
           }
@@ -587,3 +515,5 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
   return(out)
   
 } ## end pda.mcmc
+
+
