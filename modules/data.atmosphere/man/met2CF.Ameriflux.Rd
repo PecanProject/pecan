@@ -5,7 +5,7 @@
 \title{met2CF.Ameriflux}
 \usage{
 met2CF.Ameriflux(in.path, in.prefix, outfolder, start_date, end_date,
-  overwrite = FALSE, verbose = FALSE)
+  overwrite = FALSE, verbose = FALSE, ...)
 }
 \arguments{
 \item{in.path}{location on disk where inputs are stored}
