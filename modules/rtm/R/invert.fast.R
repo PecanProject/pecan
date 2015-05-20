@@ -74,6 +74,8 @@ invert.fast <- function(modname, observed, inits, cons,
     out.list <- do.call(.Fortran, in.list)
     t2 <- proc.time()
     print(t2 - t1)
-    return(out.list[[length(out.list)-1]])
+    outmat <- out.list[[length(out.list)-1]]
+    colnames(outmat) <- c(names.inits, "rsd")
+    return(outmat)
 }
 
