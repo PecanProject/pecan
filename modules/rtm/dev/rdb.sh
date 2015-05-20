@@ -3,4 +3,4 @@
 #make purge
 #cd ../dev
 R CMD INSTALL ..
-R -d gdb -e "source('testinversion.R')"
+R -d gdb -e "source('vignette.R')"
