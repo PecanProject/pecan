@@ -189,7 +189,7 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
     llik.fn[[i]] <- function(model, obs) {
       NEEo <- obs$data$NEE_or_fMDS #data$Fc   #umolCO2 m-2 s-1
       NEEq <- obs$data$NEE_or_fMDSqc #data$qf_Fc
-      NEEo[NEEq > 0] <- NA
+      NEEo[NEEq > 1] <- NA
     
       NEEm <- model
     
@@ -433,18 +433,6 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
 
   dev.off()
 
-#  ---- DONT THINK THIS IS WORKING. BETTER MAYBE TO JUST RUN ENSEMBLE OUTSIDE OF PDA.MCMC? 
-#   ## Compare post-burn-in ensemble to data
-#   # Alter settings to make read.ensemble.ts consider post-burnin PDA runs as an ensemble
-#   settings$ensemble$variable <- "NEE"  # *** TODO: Generalize 
-#   settings$ensemble$size <- nrow(params.subset)
-#   settings$ensemble$start.year <- settings$ensemble$end.year <- year
-#   
-#   
-#   ens.post <- read.ensemble.ts("SIPNET")
-#   
-# ens.post$NEE <- ens.post$NEE*1000/12*1e6/10000/86400/365
-# ensemble.ts(ens.post,observations=-NEEhr,window=24*3)
 
   ## create a new Posteriors DB entry
   now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
