@@ -3,4 +3,5 @@
 *RcppExports.*
 *.mod
 *.rds
+*Rplots.pdf
 
