@@ -1,22 +1,19 @@
 subroutine HotSpot(lai,q,tss,ks,ko,dso, &
         tsstoo,sumint)
 
+    use mod_types
     implicit none
-    real*8, intent(in) :: lai,q,tss,ks,ko,dso
-    real*8, intent(out) :: tsstoo, sumint
+    real(kind=r2), intent(in) :: lai,q,tss,ks,ko,dso
+    real(kind=r2), intent(out) :: tsstoo, sumint
     
     integer :: i
-    real*8 :: fhot,alf,x1,y1,f1,fint,x2,y2,f2
+    real(kind=r2) :: fhot,alf,ca,x1,y1,f1,fint,x2,y2,f2
 
     !Treatment of the hotspot-effect
-    alf = 1e6
+    alf = 1d6
     !Apply correction 2/(K+k) suggested by F.-M. Bréon
-    IF (q.gt.0.) THEN
-        alf = (dso/q)*2./(ks+ko)
-    ENDIF
-    IF (alf.GT.200.) THEN       !inserted H. Bach 1/3/04
-        alf    = 200.
-    ENDIF
+    IF (q.gt.0.) alf = (dso/q)*2./(ks+ko)
+    IF (alf.GT.200.) alf = 200 !inserted H. Bach 1/3/04 
     IF (alf.eq.0.) THEN
         !The pure hotspot - no shadow
         tsstoo = tss
@@ -28,10 +25,12 @@ subroutine HotSpot(lai,q,tss,ks,ko,dso, &
         !Integrate by exponential Simpson method in 20 steps
         !the steps are arranged according to equal partitioning
         !of the slope of the joint probability function
+
         x1     = 0.
         y1     = 0.
         f1     = 1.
-        fint   = (1.-EXP(-alf))*.05
+        ca=exp(alf*(-1.))
+        fint   = (1.-ca)*.05
         sumint = 0.
 
         DO i=1,20
