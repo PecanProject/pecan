@@ -7,6 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 library(PEcAn.utils)
+library(PEcAn.settings)
 library(testthat)
 
 logger.setQuitOnSevere(FALSE)

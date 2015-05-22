@@ -1,9 +1,17 @@
-library(XML)
-library(lubridate)
-library(PEcAn.DB)
-library(PEcAn.utils)
+##' @name read.register
+##' @title read.register
+##' @export
+##' @param register.xml path of xml file
+##' @param con betydb connection
+##' 
+##' @author Betsy Cowdery
 
 read.register <- function(register.xml, con){
+  
+  library(XML)
+  library(lubridate)
+  library(PEcAn.DB)
+  library(PEcAn.utils)
   
   register <- xmlToList(xmlParse(register.xml))
   print(as.data.frame(register))
@@ -32,4 +40,3 @@ read.register <- function(register.xml, con){
   }
   invisible(register)
 }
-

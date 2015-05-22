@@ -138,8 +138,6 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
     dim=list(lat,lon,time)
     
     # copy lat attribute to latitude
-    print(latlon)
-    print(lst)
     var <- ncvar_def(name="latitude",
                      units="degree_north",
                      dim=list(lat,lon), missval=as.numeric(-9999))

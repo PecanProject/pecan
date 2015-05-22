@@ -30,7 +30,7 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite=FALSE, ...
     tmp.met <- load.cfmet(met.nc, lat = lat, lon = lon, start.date = start.date, end.date = end.date)
     metlist[[file]]     <- cf2biocro(tmp.met)
   }
-  met <- rbindlist(metli)
+  met <- rbindlist(metlist)
   return(met)
 }
 
@@ -41,7 +41,7 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite=FALSE, ...
 ##'
 ##' @name cf2biocro
 ##' @title Convert CF-formatted met data to BioCro met
-##' @param met data.table object  with met for a single site; output from \code{\link{load.cfmet}}
+##' @param met data.table object
 ##' \begin{itemize}
 ##' \item year int
 ##' \item month int
@@ -72,12 +72,11 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite=FALSE, ...
 ##' \end{itemize}
 ##' @export cf2biocro
 ##' @author David LeBauer
-cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE){
+cf2biocro <- function(met){
 
-  if((!is.null(longitude)) & zulu2solarnoon){
-    solarnoon_offset <- ud.convert(longitude / 360, 'day', 'minute') 
-    met[, `:=` (solardate =  date + minutes(solarnoon_offset))]
-  } 
+  require(PEcAn.data.atmosphere)
+  require(lubridate)
+  require(udunits2)
   if(!"relative_humidity" %in% colnames(met)){
     if(all(c("air_temperature", "air_pressure", "specific_humidity") %in% colnames(met))){ 
       rh <- qair2rh(qair = met$specific_humidity, 
@@ -99,10 +98,10 @@ cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE){
   }
   if(!"wind_speed" %in% colnames(met)){
     if(all(c("northward_wind", "eastward_wind") %in% colnames(met))){
-      wind_speed <- sqrt(met$northward_wind^2 + met$eastward_wind^2)
-    } else {
-      logger.error("neither wind_speed nor both eastward_wind and northward_wind are present in met data")
+      wind_speed <- sqrt(northward_wind^2 + eastward_wind^2)
     }
+    logger.error("neither wind_speed nor both eastward_wind and northward_wind are present in met data")
+
   }
   
   ## Convert RH from percent to fraction
@@ -110,20 +109,14 @@ cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE){
   if(met[,max(relative_humidity ) > 1]){ ## just to confirm
     met[, `:=` (relative_humidity = relative_humidity/100)]
   } 
-
-  newmet <- met[, list(year = year(solardate), doy = yday(solardate), 
-                       hour = round(hour(solardate) + minute(solardate) / 60),
+  
+  ## Convert hr given as 1:24 to 0:23
+  if(all(met[, range(hour)] == c(1, 24)) ) met[, `:=` (hour = hour -1)]
+  newmet <- met[, list(year = year, doy = doy, hour = hour,
                        SolarR = ppfd,
                        Temp = ud.convert(air_temperature, "Kelvin", "Celsius"), 
                        RH = relative_humidity, 
                        WS = wind_speed, 
                        precip = ud.convert(precipitation_flux, "s-1", "h-1"))] 
-  
-  if(any(duplicated(newmet[1:20, list(year, doy, hour)]))){
-    newmet[, list(SolarR = mean(SolarR), Temp = mean(Temp), RH = mean(RH),
-                   WS = mean(WS), precip = mean(precip)), 
-           by = 'year,doy,hour'] 
-  }
-  
   return(as.data.frame(newmet))
 }
