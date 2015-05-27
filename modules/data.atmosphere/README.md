@@ -12,7 +12,6 @@ Current list of input meteorological formats supported, functions are named `dow
 * ALMA
 * arbitrary csv files 
 
-There are 
 
 ## Installation
 
