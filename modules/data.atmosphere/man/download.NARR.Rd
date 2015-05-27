@@ -17,6 +17,6 @@ download.NARR(outfolder, start_date, end_date, overwrite = FALSE)
 Download NARR files
 }
 \author{
-??
+Betsy Cowdery
 }
 
