@@ -1,5 +1,5 @@
 <?xml version="1.0"?><pecan>
-  <outdir>/Users/paleolab/pecan/pecan//PEcAn_99000000001</outdir>
+  <outdir>/Users/paleolab/pecan/pecan//PEcAn_LINKAGES_PMB</outdir>
  <database>
   <bety>
    <dbname>bety</dbname>
@@ -29,24 +29,25 @@
   </ensemble>
   <model>
   <id>1000000005</id>
+  <type>LINKAGES</type>
   </model>
   <workflow>
-  <id>99000000001</id>
+  <id>99000000002</id>
   </workflow>
   <run>
   <site>
-  <id>99000000001</id>
-  <met.start>0850/01/01</met.start>
-  <met.end>2010/12/31</met.end>
+  <id>99000000002</id>
+  <met.start>850</met.start>
+  <met.end>2010</met.end>
   </site>
   <start.date>0850/01/01</start.date>
   <end.date>2010/12/31</end.date>
-  <dbfiles>/home/carya/output/</dbfiles>
+  <dbfiles>/home/carya/output</dbfiles>
   <host>
   <name>ESC303741</name>
   </host>
   <inputs>
-   <met>/Users/paleolab/Linkages/PalEON.Met/PHA/pecan2.bu.edu/output/PBL/</met>
+   <met>/Users/paleolab/Linkages/met2model_output/PBL/</met>
   </inputs>
   </run>
   </pecan>
