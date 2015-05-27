@@ -34,7 +34,7 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   results <- data.frame(file=c(out.file),
                         host=c(fqdn()),
                         mimetype=c('text/plain'),
-                        formatname=c('DALEC meteorology'),
+                        formatname=c('LINKAGES meteorology'),
                         startdate=c(start_date),
                         enddate=c(end_date),
                         dbfile.name = "test_text1.txt",
