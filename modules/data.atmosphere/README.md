@@ -1,10 +1,41 @@
+# PEcAn functions for processing meteorological data
+
+Converts meteorological products to PEcAn-CF formated netCDF files.
+
+## Supported Formats
+Current list of input meteorological formats supported, functions are named `download.<source>` and `met2CF.<source>`.
+
+* NCEP
+* NARR
+* Ameriflux
+* FACE
+* ALMA
+* arbitrary csv files 
+
+There are 
+
+## Installation
+
+```r
+library(devtools)
+install_github("pecanproject/pecan/modules/data.atmosphere")
+```
+
+The PEcAn.data.atmosphere package is 'standalone'.
+
+## Documentation
+
+* [Package Documentation](https://pecanproject.github.io/pecan//modules/data.atmosphere/inst/web/index.html)
+* Vignettes
+
+
 ## PEcAn variable names
 
 See https://github.com/PecanProject/pecan/wiki/Adding-an-Input-Converter#met-data
 
 General Note: dates in the database should be datatime (preferably with timezone), and datetime passed around in PEcAn should be of type POSIXlt.
 
-# Met Data
+## Met Data
 
 The standard met data inputs should be of the form:
 
