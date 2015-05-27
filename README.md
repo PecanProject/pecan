@@ -15,8 +15,9 @@ See ["Getting Started"](https://github.com/PecanProject/pecan/wiki/Getting-start
 
 Complete instructions on how to install PEcAn can be found in the [WIKI Installation Page](https://github.com/PecanProject/pecan/wiki/Installing-PEcAn). To get PEcAn up and running you will need to have [R](http://www.r-project.org) as well as [PostgreSQL](http://www.postgresql.org) installed. You can also [download a Virtual Machine](http://isda.ncsa.illinois.edu/download/index.php?project=PEcAn&sort=category) which has all the components as well as PEcAn installed. To run this Virtual Machine you will need to have [VirtualBox](http://virtualbox.org) installed
 
-## Demo
+### Web Interface Demo
 
+The fastest way to begin modeling ecosystems is through the PEcAn web interface.  
 We have a [demo website](http://pecan.ncsa.illinois.edu/pecan) that runs the current version of PEcAn. Using this instance you can perform a run using either ED or SIPNET at any of the predefined sites.
 
 The demo instance only allows for runs at pecan.ncsa.illinois.edu. Once you have set up the run it will execute on our server; depending on the number of people executing a model and the model selected this can take between a few seconds and a few minutes to finish. Once it's finished, you see the results of the execution and can plot the outputs of the model. Complete examples of a few executions can be found in our online [tutorials](http://pecanproject.github.io/tutorials.html).
