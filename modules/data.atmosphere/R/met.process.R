@@ -26,10 +26,19 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   #get met source and potentially determine where to start in the process
   met <- ifelse(is.null(input_met$source), logger.error("Must specify met source"),input_met$source)
   
-  download.raw <- ifelse(is.null(input_met$id),TRUE,FALSE) 
-  # What will that id be? The raw id? Or the "closest" to what the user wants?
-  # Then unnecessary steps could be skipped?
-  
+  # first attempt at function that designates where to start met.process
+  if(is.null(input_met$id)){
+    stage <- list(download.raw = TRUE, met2cf = TRUE, standardize = TRUE, met2model = TRUE)
+  }else{
+    stage <- met.process.stage(input_met$id,register$format$id,con)
+    # Is there a situation in which the input ID could be given but not the file path? 
+    # I'm assuming not right now
+    assign(stage$id.name,list(
+      inputid = input_met$id, 
+      dbfileid = db.query(paste0("SELECT id from dbfiles where file_name = '", basename(input_met$path) ,"' AND file_path = '", dirname(input_met$path) ,"'"),con)[[1]]
+      ))
+  }
+ 
   #read in registration xml for met specific information
   register.xml <- system.file(paste0("registration/register.", met, ".xml"), package = "PEcAn.data.atmosphere")
   register <- read.register(register.xml, con)
@@ -44,11 +53,12 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   #--------------------------------------------------------------------------------------------------#
   # Download raw met from the internet 
   
+  if(stage$download.raw==TRUE){
   outfolder  <- file.path(dir,met)
   pkg        <- "PEcAn.data.atmosphere"
   fcn        <- paste0("download.",met)
   
-  if(register$scale=="regional" & download.raw==TRUE){ #Right now this only means NARR but will need to be generalized once we have more regional met products
+  if(register$scale=="regional"){ #Right now this only means NARR but will need to be generalized once we have more regional met products
     
     print("start CHECK")
     check = db.query(
@@ -78,7 +88,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
                                     hostname = host$name)
     }
     
-  }else if(register$scale=="site" & download.raw==TRUE) { # Site-level met
+  }else if(register$scale=="site") { # Site-level met
     
     print("start CHECK")
     check = db.query(
@@ -111,11 +121,12 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
                                     hostname = host$name)
     }    
   }
-  
+  }
   
   #--------------------------------------------------------------------------------------------------#
   # Change to  CF Standards
     
+  if(stage$met2cf == TRUE){
   logger.info("Begin change to CF Standards")
   
   input.id  <-  raw.id[1]
@@ -204,10 +215,12 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   }
   
   logger.info("Finished change to CF Standards")
+  }
   
   #--------------------------------------------------------------------------------------------------#
   # Change to Site Level - Standardized Met (i.e. ready for conversion to model specific format)
   
+  if(stage$standardize == TRUE){
   logger.info("Begin Standardize Met")
   
   if(register$scale=="regional"){ #### Site extraction 
@@ -242,10 +255,12 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     
   }
   logger.info("Finished Standardize Met")
+  }
   
   #--------------------------------------------------------------------------------------------------#
   # Prepare for Model
   
+  if(stage$met2model == TRUE){
   logger.info("Begin Model Specific Conversion")
   
   # Determine output format name and mimetype   
@@ -264,6 +279,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     
   model.id  <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
                              username,con=con,hostname=host$name,browndog,write=TRUE,lst=lst,lat=new.site$lat,lon=new.site$lon)
+  }
   
   logger.info(paste("Finished Model Specific Conversion",model.id[1]))
   
