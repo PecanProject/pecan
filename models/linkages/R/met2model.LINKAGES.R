@@ -25,7 +25,7 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   
   start_date <- as.POSIXlt(start_date, tz = "GMT")
   end_date<- as.POSIXlt(end_date, tz = "GMT")
-  out.file <- file.path(paste0(outfolder,"climate.txt"))
+  out.file <- file.path(outfolder,"climate.txt")
   #   out.file <- file.path(outfolder, paste(in.prefix,
   #                                          strptime(start_date, "%Y-%m-%d"),
   #                                          strptime(end_date, "%Y-%m-%d"),
@@ -37,7 +37,7 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
                         formatname=c('LINKAGES meteorology'),
                         startdate=c(start_date),
                         enddate=c(end_date),
-                        dbfile.name = "test_text1.txt",
+                        dbfile.name = "climate.txt",
                         stringsAsFactors = FALSE)
   print("internal results")
   print(results)
