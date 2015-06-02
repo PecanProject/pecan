@@ -22,14 +22,14 @@
 ##-------------------------------------------------------------------------------------------------#
 met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_date, ..., overwrite=FALSE,verbose=FALSE) {
   require(PEcAn.utils)
-   
+  
   start_date <- as.POSIXlt(start_date, tz = "GMT")
   end_date<- as.POSIXlt(end_date, tz = "GMT")
-  out.file <- file.path(paste0(outfolder,"test_text1.txt"))
-#   out.file <- file.path(outfolder, paste(in.prefix,
-#                                          strptime(start_date, "%Y-%m-%d"),
-#                                          strptime(end_date, "%Y-%m-%d"),
-#                                          "dat", sep="."))
+  out.file <- file.path(paste0(outfolder,"climate.txt"))
+  #   out.file <- file.path(outfolder, paste(in.prefix,
+  #                                          strptime(start_date, "%Y-%m-%d"),
+  #                                          strptime(end_date, "%Y-%m-%d"),
+  #                                          "dat", sep="."))
   
   results <- data.frame(file=c(out.file),
                         host=c(fqdn()),
@@ -63,20 +63,23 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   start_year <- year(start_date)
   end_year <- year(end_date)
   
-  year = seq(start_year,end_year,1)
+  year = sprintf("%04d",seq(start_year,end_year,1))
+  month = sprintf("%02d",seq(1,12,1))
   
   month_matrix_precip = matrix(NA,length(year),12)
-  julian_vec_hr = c(1,c(32,60,91,121,152,182,213,244,274,305,335,365)*4)
+  DOY_vec_hr = c(1,c(32,60,91,121,152,182,213,244,274,305,335,365)*4)
   
-  for(i in 1:length(year)){
-    ncin <- nc_open(file.path(in.path,paste0(in.prefix,".",year[i],".nc")))
-    #print(ncin)
-    ncprecipf = ncvar_get(ncin, "precipitation_flux") #units are kg m-2 s-1    
+  for(i in 1:length(year)){ 
     for(m in 1:12){
-      month_matrix_precip[i,m] = sum(ncprecipf[julian_vec_hr[m]:(julian_vec_hr[m+1]-1)]) * 21600^2 #fix when Mike changes code
+      ncin <- nc_open(file.path(paste0(in.path,"/precipf"),
+                                paste0(in.prefix,"_precipf_",year[i],"_",
+                                       month[m],".nc")))
+    #print(ncin)
+      ncprecipf = ncvar_get(ncin, "precipf") #units are kg m-2 s-1    
+      month_matrix_precip[i,m] = sum(ncprecipf) * 21600 #fix when Mike changes code
+      nc_close(ncin)
     } 
-    nc_close(ncin)
-    #if(i%%100==0) cat(i," "); flush.console()
+   #if(i%%100==0) cat(i," "); flush.console()
   }
   
   nyear = length(year) #number of years to simulate
@@ -96,14 +99,15 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   month_matrix_temp_mean = matrix(NA,length(year),12)
   
   for(i in 1:length(year)){
-    ncin <- nc_open(file.path(in.path,paste0(in.prefix,".",year[i],".nc")))
-    #print(ncin)
-    nctemp = ncvar_get(ncin, "air_temperature") #units are kg m-2 s-1    
     for(m in 1:12){
-      month_matrix_temp_mean[i,m] = mean(nctemp[julian_vec_hr[m]:(julian_vec_hr[m+1]-1)]) #sub daily to monthly
+      ncin <- nc_open(file.path(paste0(in.path,"/tair"),
+                              paste0(in.prefix,"_tair_",year[i],"_",
+                                     month[m],".nc")))  #print(ncin)
+      nctemp = ncvar_get(ncin, "tair") #units are K 
+      month_matrix_temp_mean[i,m] = mean(nctemp) #sub daily to monthly
+      nc_close(ncin)
     } 
-    nc_close(ncin)
-    #if(i%%100==0) cat(i," "); flush.console()
+    if(i%%100==0) cat(i," "); flush.console()
   }
   
   mean_nctemp = matrix(0,length(ipolat_nums),12) ; sd_nctemp = mean_nctemp
@@ -117,6 +121,15 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   mean_nctemp_C <- round(mean_nctemp - 273.15, digits = 1)
   sd_nctemp_C <- round(sd_nctemp, digits = 1)
   
-  write.table(rbind(mean_nctemp_C,sd_nctemp_C,mean_ncprecipf_cm,sd_ncprecipf_cm),out.file,quote = FALSE,sep=",",col.names=FALSE,row.names=FALSE)
+  spin_up = 20
+  spin_up_mean_nctemp_C = mean_nctemp_C[1:spin_up,]
+  spin_up_sd_nctemp_C = sd_nctemp_C[1:spin_up,]
+  spin_up_mean_ncprecipf_cm = mean_ncprecipf_cm[1:spin_up,]
+  spin_up_sd_ncprecipf_cm = sd_ncprecipf_cm[1:spin_up,]
+  
+  write.table(rbind(spin_up_mean_nctemp_C,mean_nctemp_C,
+                    spin_up_sd_nctemp_C,sd_nctemp_C,
+                    spin_up_mean_ncprecipf_cm,mean_ncprecipf_cm,
+                    spin_up_sd_ncprecipf_cm,sd_ncprecipf_cm),out.file,quote = FALSE,sep=",",col.names=FALSE,row.names=FALSE)
   invisible(results)
 }

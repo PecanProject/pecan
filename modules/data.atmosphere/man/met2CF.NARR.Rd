@@ -4,7 +4,7 @@
 \alias{met2CF.NARR}
 \title{met2CF.NARR}
 \usage{
-met2CF.NARR(in.path, in.prefix, outfolder)
+met2CF.NARR(in.path, in.prefix, outfolder, ...)
 }
 \arguments{
 \item{in.path}{}
