@@ -13,4 +13,6 @@ module load parallel-netcdf/1.4.1
 module load udunits/2.1.24
 export R_LIBS_USER=/home/a-m/dlebauer/library/R
 
-./scripts/build.sh --force --check --install --test
+/home/a-m/dlebauer/dev/pecan/scripts/install.dependencies.R
+/home/a-m/dlebauer/dev/pecan/scripts/build.sh --force --check --install --test
+
