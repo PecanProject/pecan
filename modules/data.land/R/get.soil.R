@@ -8,10 +8,9 @@
 ##' @export
 ##' @author David LeBauer
 get.soil <- function(lat, lon, soil.nc = soil.nc){
-    
     ## Lat and Lon
-    Lat <- ncvar_get(soil.nc, "lat")
-    Lon <- ncvar_get(soil.nc, "lon")
+    Lat <- ncvar_get(soil.nc, "latitude")
+    Lon <- ncvar_get(soil.nc, "longitude")
 
     lati <- which.min(abs(Lat - lat))
     loni <- which.min(abs(Lon - lon))
