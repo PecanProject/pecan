@@ -6,38 +6,42 @@
 #' @param soil.nc full path and name of a netCDF file with soil data
 #' @param config full path and name of a config.xml file containing parameter values and configuration information for BioCro 
 #' @param coppice.interval numeric, number of years between cuttings for coppice plant or perinneal grass (default 1) 
-#' @return
+#' @return output from one of the \code{BioCro::*.Gro} functions (determined by \code{config$genus}), as data.table object
 #' @export
 #' @author David LeBauer
 run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = NULL, 
                        config = config,
                        coppice.interval = 1){
-  require(PEcAn.data.atmosphere)
-  require(PEcAn.BIOCRO)
-  start.date <- ceiling_date(as.POSIXct(settings$run$start.date), "day")
-  end.date <- floor_date(as.POSIXct(settings$run$end.date), "day")
+  require(data.table)
+  start.date <- ceiling_date(as.POSIXct(config$run$start.date), "day")
+  end.date <- floor_date(as.POSIXct(config$run$end.date), "day")
   genus <- config$pft$type$genus
-  ## These two fns load and downscale are in PEcAn.data.atmosphere 
-  ## modules/data.atmosphere/R/temporal.downscaling.R
+
+  ## Meteorology
   met <- load.cfmet(met.nc, lat = lat, lon = lon, start.date = start.date, end.date = end.date)
   met.hr <- cfmet.downscale.time(cfmet = met, output.dt = 1)
-  
-  ## This is in PEcAn.BIOCRO models/biocro/R/met2model.BIOCRO.R
   biocro.met <- cf2biocro(met.hr)
   
-  ## In PEcAn.data.land (modules/data.land/R/land.utils.R)
+
+  #if(!is.null(config$pft$soilControl)){
+  #  soil.parms <- config$pft$soilControl
+  #  soil.parms$iWatCont <- NULL
+  #}
   if(!is.null(soil.nc)){
     soil <- get.soil(lat, lon, soil.nc = soil.nc)
-    soil.type <- ifelse(soil$usda_class %in% 1:10, soil$usda_class, 10)
-    soilP=soilParms(soilType=soil.type)
-  } else {
-    soilP <- confing$soilControl
+    soil.type <- ifelse(soil$usda_class %in% 1:10, soil$usda_class, 10)  
   }
   
+  if(!is.null(soil.type)){
+    soil.parms <- soilParms(soilType = soil.type)
+  } else {
+    soil.parms <- soilParms()
+  }
+
   years <- unique(biocro.met$year)
   for(yeari in years){
     yearchar <- as.character(yeari)
-    WetDat <- as.data.frame(biocro.met[year == yeari, ])
+    WetDat <- biocro.met[biocro.met$year == yeari, ]
     
     ## TODO PASS day1 from config??
     day1 <- min(WetDat$doy)
@@ -74,15 +78,15 @@ run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = NULL,
       
     } else if (genus == "Miscanthus"){
       if(yeari == min(years)){
-        iRhizome <- 1.0
+        iRhizome <- config$pft$iPlantControl$iRhizome
       } else {
         iRhizome <- last(result.yeari[,Rhizome])
         HarvestedYield  <- round(last(result.yeari$Stem) * 0.95, 2)                
       }
       ## run BioGro
       tmp.result <- BioGro(WetDat = WetDat,
-                           day1 = day1, dayn = dayn,
-                           soilControl = soilParms(soilType = soil.type),
+                           #day1 = day1, dayn = dayn,
+                           soilControl = soil.parms,
                            canopyControl = config$pft$canopyControl,
                            phenoControl = phenoParms(),#config$pft$phenoParms,
                            seneControl = config$pft$seneControl,
