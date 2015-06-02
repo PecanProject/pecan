@@ -10,6 +10,7 @@
 
 # version of pecan
 VERSION=$1
+shift
 DATE=`date +"%Y-%m-%d"`
 
 # if no arguments passed in update all DESCRIPTION files

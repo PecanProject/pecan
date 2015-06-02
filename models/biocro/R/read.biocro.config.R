@@ -3,8 +3,9 @@
 ##' @title Read BioCro Config 
 ##' @param config.file 
 ##' @return list of run configuration parameters for PEcAn
+##' @export
 ##' @author David LeBauer
-read.config.BIOCRO <- function(config.file = "config.xml"){
+read.biocro.config <- function(config.file = "config.xml"){
     config <- xmlToList(
         xmlTreeParse(
             file = config.file,
@@ -15,4 +16,5 @@ read.config.BIOCRO <- function(config.file = "config.xml"){
         unlist(
             strsplit(
                 config$pft$canopyControl$mResp, split = ","))
+    return(config)
 }

@@ -55,6 +55,7 @@ download.Ameriflux <- function(sitename, outfolder, start_date, end_date, overwr
   results <- data.frame(file=character(rows), host=character(rows),
                         mimetype=character(rows), formatname=character(rows),
                         startdate=character(rows), enddate=character(rows),
+                        dbfile.name = site,
                         stringsAsFactors = FALSE)
   for(year in start_year:end_year) {
     outputfile <- file.path(outfolder, paste(site, year, "nc", sep="."))

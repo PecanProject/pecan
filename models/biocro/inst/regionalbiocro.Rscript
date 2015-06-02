@@ -1,0 +1,48 @@
+#!/usr/bin/env Rscript
+
+library(PEcAn.all)
+library(PEcAn.BIOCRO)
+library(BioCro)
+
+rundir <- args[1]
+outdir <- args[2]
+if(interactive()) {
+  settings <- read.settings("~/dev/biocro_regional/vignettes/champaign_mxg_settings.xml")
+  runid <- tail(readLines(file.path(settings$rundir, "runs.txt")), n = 1)
+  rundir <- file.path(settings$rundir, runid)
+  outdir <- file.path(settings$outdir, "out", runid)
+  point <- 1
+}
+
+config <- read.biocro.config(file.path(rundir, "config.xml"))
+genus <- config$pft$type$genus
+pft <- config$pft$type$name
+
+start.date <- ceiling_date(as.POSIXct(config$simulationPeriod$dateofplanting), "day")
+end.date <- floor_date(as.POSIXct(config$simulationPeriod$dateofharvest), "day")
+
+met.nc  <- nc_open(config$run$met.file)
+soil.nc <- nc_open(config$run$soil.file)
+# atmco2.nc <- nc_open(file.path(inputdir, "co2/CO2_Global_HD_v1.nc"))
+
+lat <- ncvar_get(met.nc, "latitude")
+lon <- ncvar_get(met.nc, "longitude")
+latlon <- expand.grid(lat = lat, lon = lon)
+
+biocro_result <- NULL
+for(point in 1:nrow(latlon)){
+  lat <- latlon$lat[point]
+  lon <- latlon$lon[point]
+  out <- run.biocro(lat, lon, met.nc = met.nc, soil.nc = soil.nc, config = config)
+  biocro_result <- rbind(biocro_result, out)
+  save(biocro_result, file = file.path(outdir, 'incomplete_USresults.RData'))
+  dir.create(file.path(outdir, paste0(lat, 'x', lon)))
+  model2netcdf.BIOCRO(resultDT = resultDT, genus = genus, outdir = outdir, 
+                      lat = latlon$lat, lon = latlon$lon)
+}
+
+save(biocro_result, file = file.path(outdir, "biocro_output.RData"))
+#model2netcdf.BIOCRO(resultDT = resultDT, 
+#                    genus = genus, 
+#                    outdir = outdir, 
+#                    lat = config$location$latitude, lon = config$location$longitude)

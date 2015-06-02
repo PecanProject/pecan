@@ -87,7 +87,8 @@ cfmet.downscale.subdaily <- function(subdailymet, output.dt = 1){
 
   
   for(var in c("air_pressure", "specific_humidity",
-               "precipitation_flux", "air_temperature", "northward_wind", "eastward_wind", "surface_downwelling_shortwave_flux_in_air", "ppfd")){
+               "precipitation_flux", "air_temperature", "northward_wind", "eastward_wind", 
+               "surface_downwelling_shortwave_flux_in_air", "ppfd", "relative_humidity")){
     if(var %in% colnames(subdailymet)){
       ## convert units from subdaily to hourly
       hrscale <- ifelse(var %in%
@@ -97,11 +98,11 @@ cfmet.downscale.subdaily <- function(subdailymet, output.dt = 1){
       
       f <- splinefun(as.numeric(subdailymet$date), (subdailymet[[var]] / hrscale), method = "monoH.FC")
       downscaled.result[[var]] <- f(as.numeric(new.date$date))
-      if(!var == "air_temperature"){
-        downscaled.result[[var]][downscaled.result[[var]] < 0] <- 0
+      downscaled.result[[var]][downscaled.result[[var]] < 0] <- 0
+      if(var == "relative_humidity"){
+        downscaled.result[[var]][downscaled.result[[var]] > 100] <- 100
       }
     }
-    
   }
   
   
