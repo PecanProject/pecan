@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<pecan>
+ <outdir>pecan</outdir>
+ <database>
+  <bety>
+   <user>bety</user>
+   <password>bety</password>
+   <host>psql-pecan.bu.edu</host>
+   <dbname>bety</dbname>
+   <driver>PostgreSQL</driver>
+   <write>TRUE</write>
+  </bety>
+ </database>
+ <pfts>
+  <pft>
+   <name>Tsuga canadensis</name>
+   <constants>
+    <num>1</num>
+   </constants>
+  </pft>
+ </pfts>
+ <meta.analysis>
+  <iter>3000</iter>
+  <random.effects>FALSE</random.effects>
+  <threshold>1.2</threshold>
+  <update>AUTO</update>
+ </meta.analysis>
+ <ensemble>
+  <size>1</size>
+  <variable>NPP</variable>
+  <start.year>1980</start.year>
+  <end.year>2007</end.year>
+ </ensemble>
+ <model>
+  <id>1000000005</id>
+  <type>LINKAGES</type>
+  <revision>Revision 1.0 Ann&apos;s hack</revision>
+  <binary>/home/dietze/Linkages//linkages</binary>
+ </model>
+ <run>
+  <site>
+   <id>755</id>
+   <met.start>1980/01/01</met.start>
+   <met.end>2007/12/31</met.end>
+   <name>Duke Forest-hardwoods (US-Dk2)</name>
+   <lat>35.9736</lat>
+   <lon>-79.1004</lon>
+  </site>
+  <inputs>
+   <met>
+    <source>NARR</source>
+    <output>LINKAGES</output>
+   </met>
+  </inputs>
+  <start.date>1980/01/01</start.date>
+  <end.date>2007/12/31</end.date>
+  <host>
+   <name>localhost</name>
+  </host>
+  <dbfiles>/fs/data1/pecan.data/input</dbfiles>
+ </run>
+</pecan>
