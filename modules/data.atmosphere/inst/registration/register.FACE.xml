@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<FACE>
+  <scale>site</scale>
+  <format>
+    <id>1000000001</id>
+    <name>FACE</name>
+    <mimetype>application/x-netcdf</mimetype>
+    <inputtype>pecan.zip</inputtype>
+  </format>
+</FACE>

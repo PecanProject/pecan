@@ -24,7 +24,11 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   machine = db.query(paste0("SELECT * from machines where hostname = '",machine.host,"'"),con)
   
   #get met source and potentially determine where to start in the process
-  met <- ifelse(is.null(input_met$source), logger.error("Must specify met source"),input_met$source)
+  met <- ifelse(is.null(input_met$source), logger.error("Must specify met source"),input_met$source)  
+ 
+  #read in registration xml for met specific information
+  register.xml <- system.file(paste0("registration/register.", met, ".xml"), package = "PEcAn.data.atmosphere")
+  register <- read.register(register.xml, con)
   
   # first attempt at function that designates where to start met.process
   if(is.null(input_met$id)){
@@ -36,12 +40,8 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     assign(stage$id.name,list(
       inputid = input_met$id, 
       dbfileid = db.query(paste0("SELECT id from dbfiles where file_name = '", basename(input_met$path) ,"' AND file_path = '", dirname(input_met$path) ,"'"),con)[[1]]
-      ))
+    ))
   }
- 
-  #read in registration xml for met specific information
-  register.xml <- system.file(paste0("registration/register.", met, ".xml"), package = "PEcAn.data.atmosphere")
-  register <- read.register(register.xml, con)
   
   #setup additional browndog arguments
   if(!is.null(browndog)){browndog$inputtype <- register$format$inputtype}
