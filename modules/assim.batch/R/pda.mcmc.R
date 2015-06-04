@@ -215,11 +215,11 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
   if(is.null(params)) { # No input given, starting fresh
     start  <- 1
     finish <- as.numeric(settings$assim.batch$iter)
-    params <- matrix(numeric(), finish, nvar)
+    params <- matrix(NA, finish, nvar)
   } else {  
     start  <- nrow(params) + 1
     finish <- nrow(params) + as.numeric(settings$assim.batch$iter)
-    params <- rbind(params, matrix(numeric(), finish - start + 1, nvar))
+    params <- rbind(params, matrix(NA, finish - start + 1, nvar))
   }
   colnames(params) <- pname
 
@@ -408,11 +408,16 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
         }
       } ## end if(is.finite(prior.star))
     } ## end loop over variables
-    
+
     ## save output
     params[i,] <- parm
 
   } ## end MCMC loop
+
+
+  ## Save raw MCMC
+  filename.mcmc <- file.path(settings$outdir, "pda.mcmc.Rdata")
+  save(params, file = filename.mcmc)
 
 
   ## Assess MCMC output
@@ -447,10 +452,7 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
     "SELECT id FROM posteriors WHERE pft_id=", pft.id, " AND created_at='", now, "'"), con)[['id']]
 
 
-  ## Save raw MCMC
-  filename <- file.path(settings$outdir, "pda.mcmc.Rdata")
-  save(params, file = filename)
-  dbfile.insert(dirname(filename), basename(filename), 'Posterior', posteriorid, con)
+  dbfile.insert(dirname(filename.mcmc), basename(filename.mcmc), 'Posterior', posteriorid, con)
   params.id <- db.query(paste0(
     "SELECT id FROM dbfiles WHERE 
       container_type = 'Posterior' AND file_name = 'pda.mcmc.Rdata' AND
