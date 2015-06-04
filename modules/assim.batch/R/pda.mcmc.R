@@ -222,6 +222,11 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
     params <- rbind(params, matrix(NA, finish - start + 1, nvar))
   }
   colnames(params) <- pname
+  
+  ## File for temp storage of params (in case of crash)
+  #  Using .txt here to allow quick append after each iteration (maybe a better way?)
+  #  At the end of MCMC the entire object is saved as .Rdata
+  filename.mcmc.temp <- file.path(settings$outdir, "pda.mcmc.txt")
 
 
   ## set initial conditions
@@ -411,7 +416,11 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
 
     ## save output
     params[i,] <- parm
-
+    if(i == 1){
+      cat(c(parm,'\n'), file=filename.mcmc.temp, sep='\t', append=F)
+    } else {
+      cat(c(parm,'\n'), file=filename.mcmc.temp, sep='\t', append=T)
+    }
   } ## end MCMC loop
 
 
