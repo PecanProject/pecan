@@ -1,18 +1,39 @@
 #!/usr/bin/env Rscript
 
-library(PEcAn.all)
-library(PEcAn.BIOCRO)
-library(BioCro)
-
+args   <- commandArgs(trailingOnly = TRUE)
 rundir <- args[1]
 outdir <- args[2]
+
+
+
+#library(PEcAn.all)
+#require(PEcAn.data.land)
+require(PEcAn.data.atmosphere)
+require(PEcAn.utils)
+require(lubridate)
+#library(PEcAn.BIOCRO)
+library(devtools)
+load_all("~/dev/pecan/modules/data.land/")
+load_all("~/dev/pecan/models/biocro/")
+library(BioCro)
+options(error = browser)
+
 if(interactive()) {
-  settings <- read.settings("~/dev/biocro_regional/vignettes/champaign_mxg_settings.xml")
-  runid <- tail(readLines(file.path(settings$rundir, "runs.txt")), n = 1)
-  rundir <- file.path(settings$rundir, runid)
-  outdir <- file.path(settings$outdir, "out", runid)
-  point <- 1
+    settings <- xmlToList("~/dev/biocro_regional/vignettes/champaign_mxg_settings.xml")
+    if(is.null(settings$rundir)){
+        rundir <- getwd()
+        runid <- 5916
+        outdir <- file.path("../out/5916")
+    } else {
+        
+        runid <- tail(readLines(file.path(settings$rundir, "runs.txt")), n = 1)
+        rundir <- file.path(settings$rundir, runid)
+        outdir <- file.path(settings$outdir, "out", runid)
+    }
+    point <- 1
+        
 }
+
 
 config <- read.biocro.config(file.path(rundir, "config.xml"))
 genus <- config$pft$type$genus
