@@ -6,13 +6,7 @@
 #PBS -m abe
 #PBS -e dlebauer+biocluster@gmail.com
 
-module load R/3.1.1
-module load nco/4.4.8
-module load netcdf/4.3.3.1
-module load parallel-netcdf/1.4.1
-module load udunits/2.1.24
-export R_LIBS_USER=/home/a-m/dlebauer/library/R
+source ${HOME}/.profile
 
-/home/a-m/dlebauer/dev/pecan/scripts/install.dependencies.R
-/home/a-m/dlebauer/dev/pecan/scripts/build.sh --force --check --install --test
-
+${HOME}/dev/pecan/scripts/install.dependencies.R
+${HOME}/dev/pecan/scripts/build.sh #--force --check --install --test
