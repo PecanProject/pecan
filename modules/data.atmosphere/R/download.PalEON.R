@@ -10,6 +10,9 @@
 ##' @author Betsy Cowdery
 download.PalEON <- function(outfolder, start_date, end_date, overwrite=FALSE){
   
+  # This is a hack for now
+  outfolder <- "/projectnb/dietzelab/paleon/met_regional/phase1a_met_drivers_v4.2"  
+
   require(PEcAn.utils)
   require(lubridate)
   start_date <- as.POSIXlt(start_date, tz = "GMT")
