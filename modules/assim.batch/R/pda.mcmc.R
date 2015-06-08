@@ -11,8 +11,8 @@
 ##' @author Mike Dietze
 ##' @author Ryan Kelly
 ##' @export
-pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NULL, chain=NULL,
-                     adapt=NULL, adj.min=NULL, ar.target=NULL){
+pda.mcmc <- function(settings, params.id=NULL, jvar=NULL, var.names=NULL, prior.id=NULL, chain=NULL,
+                     adapt=NULL, adj.min=NULL, ar.target=NULL) {
   # Quit if pda not requested in settings
   if(!('assim.batch' %in% names(settings))) {
     return()
@@ -26,7 +26,6 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
     settings$model$type <- "SIPNET"
     chain <- 1
     params <- NULL
-    var.names <- "Amax"
     jvar <- NULL
     var.id <- 297 ## NEE, canonical units umolC/m2/s
 
@@ -35,41 +34,22 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
 
 
   ## settings
-    # Some settings can be supplied via settings (for automation) or explicitly (interactive). 
-    # An explicit argument overrides whatever is in settings, if anything.
-    if(is.null(params)) {
-      params <- settings$assim.batch$params
-    }
-    if(is.null(jvar)) {
-      jvar <- as.numeric(settings$assim.batch$jump$jvar)
-    }
-    if(is.null(adapt)) {
-      adapt <- as.numeric(settings$assim.batch$jump$adapt)
-      if(is.null(adapt)) { # Default
-        adapt = floor(settings$assim.batch$iter/10)
-      }
-    }
-    if(is.null(adj.min)) {
-      adj.min <- as.numeric(settings$assim.batch$jump$adj.min)
-      if(is.null(adj.min)) { # Default
-        adj.min = 0.1
-      }
-    }
-    if(is.null(ar.target)) {
-      ar.target <- as.numeric(settings$assim.batch$jump$ar.target)
-      if(is.null(ar.target)) { # Default
-        ar.target = 0.5
-      }
-    }
-    if(is.null(var.names)) {
-      var.names  <- as.character(settings$assim.batch$var.names)
-    }
-    if(is.null(prior)) {
-      prior <- settings$assim.batch$prior
-    }
-    if(is.null(chain)) {
-      chain <- ifelse(is.null(settings$assim.batch$chain), 1, settings$assim.batch$chain)
-    }
+    settings <- pda.settings(
+                  settings=settings, params.id=params.id, var.names=var.names, 
+                  prior.id=prior.id, chain=chain, iter=iter, adapt=adapt, 
+                  adj.min=adj.min, ar.target=ar.target, jvar=jvar)
+
+
+      chain <- settings$assim.batch$chain
+      iter <- settings$assim.batch$iter
+      jvar <- settings$assim.batch$jump$jvar
+      adapt <- settings$assim.batch$jump$adapt
+      adj.min <- settings$assim.batch$jump$adj.min
+      ar.target <- settings$assim.batch$jump$ar.target
+
+
+
+
 
 
   ## open database connection
@@ -84,7 +64,7 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
 
 
   ## priors
-  if(is.null(prior)){
+  if(is.null(settings$assim.batch$prior.id)){
     ## by default, use the most recent posterior as the prior
     pft.id <-  db.query(paste0("SELECT id from pfts where name = '",settings$pfts$pft$name,"'"),con)
     priors <-  db.query(paste0("SELECT * from posteriors where pft_id = ",pft.id),con)
@@ -93,11 +73,9 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
 
     prior.db <- prior.db[grep("post.distns.Rdata",prior.db$file_name),]
 
-    prior.id <- prior.db$container_id[which.max(prior.db$updated_at)]
-  } else {
-    prior.id <- prior
+    settings$assim.batch$prior.id <- prior.db$container_id[which.max(prior.db$updated_at)]
   }
-  prior.db <- db.query(paste0("SELECT * from dbfiles where container_type = 'Posterior' and container_id = ", prior.id),con)
+  prior.db <- db.query(paste0("SELECT * from dbfiles where container_type = 'Posterior' and container_id = ", settings$assim.batch$prior.id),con)
   prior.db <- prior.db[grep("post.distns.Rdata",prior.db$file_name),]
   load(file.path(prior.db$file_path,"post.distns.Rdata"))
   prior <- post.distns
@@ -106,10 +84,10 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
 
 
   ## Select parameters to constrain
-  if(is.null(var.names)){
+  if(is.null(settings$assim.batch$var.names)){
     vars <- 1:nvar
   } else {
-    vars <- which(rownames(prior) %in% var.names)
+    vars <- which(rownames(prior) %in% settings$assim.batch$var.names)
   }
   nvar.sample <- length(vars)
 
@@ -204,22 +182,21 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
 
 
   ## Load params from previous run, if provided. 
-  #  Indicated if params is a single non-null value, i.e. a dbfile ID
-  if(length(params)==1) {
-    params.db <- db.query(paste0("SELECT * FROM dbfiles WHERE id = ", params), con)
+  if(!is.null(settings$assim.batch$params.id)) {
+    params.db <- db.query(paste0("SELECT * FROM dbfiles WHERE id = ", params.id), con)
     load(file.path(params.db$file_path, params.db$file_name)) # replaces params
   }
 
 
   ## Allocate storage for params
-  if(is.null(params)) { # No input given, starting fresh
-    start  <- 1
-    finish <- as.numeric(settings$assim.batch$iter)
-    params <- matrix(NA, finish, nvar)
-  } else {  
+  if(exists(params)) {  # Matrix of params was just loaded
     start  <- nrow(params) + 1
     finish <- nrow(params) + as.numeric(settings$assim.batch$iter)
     params <- rbind(params, matrix(NA, finish - start + 1, nvar))
+  } else {              # No input given, starting fresh
+    start  <- 1
+    finish <- as.numeric(settings$assim.batch$iter)
+    params <- matrix(NA, finish, nvar)
   }
   colnames(params) <- pname
   
@@ -242,7 +219,7 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
   
   ## set jump variance
   if(is.null(jvar)){
-    jvar <- rep(0.1,nvar) # Default
+    jvar <- rep(0.1,nvar.sample) # Default
   }
 
   ## Jump distribution adjustment

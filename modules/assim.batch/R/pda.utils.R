@@ -7,7 +7,6 @@
 ##'
 ##' @author Ryan Kelly
 ##' @export
-
 load.pda.data <- function(input.settings) {
 
   ## load data
@@ -84,3 +83,95 @@ load.pda.data <- function(input.settings) {
 #                                     con = con,
 #                                     hostname = settings$run$host$name)
 #       input.i$id <- raw.id$input.id
+
+
+
+##' Set PDA Settings
+##'
+##' @title Set PDA Settings
+##' @param settings: pecan settings list
+##'
+##' @return An updated settings list
+##'
+##' @author Ryan Kelly
+##' @export
+pda.settings <- function(settings, params.id=NULL, var.names=NULL, prior.id=NULL, chain=NULL,
+                         iter=NULL, adapt=NULL, adj.min=NULL, ar.target=NULL, jvar=NULL) {
+  # Some settings can be supplied via settings (for automation) or explicitly (interactive). 
+  # An explicit argument overrides whatever is in settings, if anything.
+  # If neither an argument or a setting is provided, set a default value in settings. 
+
+ 
+  # params.id: Either null or an ID used to query for a matrix of MCMC samples later
+  if(!is.null(params.id)) {
+    settings$assim.batch$params.id <- params.id
+  }
+
+
+  # var.names: Names of parameters to assimilate against
+  if(!is.null(var.names)) {
+    settings$assim.batch$var.names <- var.names
+  }
+
+
+  # prior: Either null or an ID used to query for priors later
+  if(!is.null(prior.id)) {
+    settings$assim.batch$prior.id <- prior.id
+  }
+
+
+  # chain: An identifier for the MCMC chain. Currently not used for anything but a label.
+  if(!is.null(chain)) {
+    settings$assim.batch$chain <- chain
+  }
+  if(is.null(settings$assim.batch$chain)) {   # Default
+    settings$assim.batch$chain <- 1
+  }
+
+
+  # iter: Number of MCMC iterations. 
+  if(!is.null(iter)) {
+    settings$assim.batch$iter <- iter
+  }
+  if(is.null(settings$assim.batch$iter)) {   # Default
+    settings$assim.batch$iter <- 100
+  }
+
+
+
+  # ----- Jump distribution / tuning parameters
+  # adapt: How often to adapt the MCMC. Defaults to iter/10
+  if(!is.null(adapt)) {
+    settings$assim.batch$jump$adapt <- adapt
+  }
+  if(is.null(settings$assim.batch$jump$adapt) {   # Default
+    settings$assim.batch$jump$adapt = floor(settings$assim.batch$iter/10)
+  }
+
+
+  # adj.min: minimum amount to reduce jump distribution by. 
+  if(!is.null(adj.min)) {   # Default
+    settings$assim.batch$jump$adj.min <- adj.min
+  }
+  if(is.null(settings$assim.batch$jump$adj.min)) {   # Default
+    settings$assim.batch$jump$adj.min <- 0.1
+  }
+
+  
+  # ar.target: Target acceptance rate. Can be a single value of vector, one for each variable assimilated against. 
+  if(!is.null(ar.target)) {
+    settings$assim.batch$jump$ar.target <- ar.target
+  }
+  if(is.null(settings$assim.batch$jump$ar.target)) {   # Default
+    settings$assim.batch$jump$ar.target <- 0.5
+  }
+
+
+  # jvar: Initial jump variances. 
+  if(!is.null(jvar)) {
+    settings$assim.batch$jump$jvar <- jvar
+  } else if(!is.null(settings$assim.batch$jump$jvar)) {
+    # If supplied via XML, will be a list; convert to vector
+    settings$assim.batch$jump$jvar <- as.numeric(settings$assim.batch$jump$jvar)
+  }
+}
