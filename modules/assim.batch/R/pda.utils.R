@@ -95,7 +95,7 @@ load.pda.data <- function(input.settings) {
 ##'
 ##' @author Ryan Kelly
 ##' @export
-pda.settings <- function(settings, params.id=NULL, var.names=NULL, prior.id=NULL, chain=NULL,
+pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, chain=NULL,
                          iter=NULL, adapt=NULL, adj.min=NULL, ar.target=NULL, jvar=NULL) {
   # Some settings can be supplied via settings (for automation) or explicitly (interactive). 
   # An explicit argument overrides whatever is in settings, if anything.
@@ -108,9 +108,12 @@ pda.settings <- function(settings, params.id=NULL, var.names=NULL, prior.id=NULL
   }
 
 
-  # var.names: Names of parameters to assimilate against
-  if(!is.null(var.names)) {
-    settings$assim.batch$var.names <- var.names
+  # param.names: Names of parameters to assimilate against
+  if(!is.null(param.names)) {
+    settings$assim.batch$param.names <- param.names
+  }
+  if(is.null(settings$assim.batch$param.names)) {
+    logger.error('Parameter data assimilation requested, but no parameters specified for PDA')
   }
 
 
@@ -167,11 +170,16 @@ pda.settings <- function(settings, params.id=NULL, var.names=NULL, prior.id=NULL
   }
 
 
-  # jvar: Initial jump variances. 
+  # jvar: Initial jump variances. Defaults to 1, which is foolish but should be fixed adaptively. 
   if(!is.null(jvar)) {
     settings$assim.batch$jump$jvar <- jvar
   } else if(!is.null(settings$assim.batch$jump$jvar)) {
     # If supplied via XML, will be a list; convert to vector
     settings$assim.batch$jump$jvar <- as.numeric(settings$assim.batch$jump$jvar)
   }
+  if(is.null(settings$assim.batch$jump$jvar)) {
+    settings$assim.batch$jump$jvar <- rep(1, length(param.names))
+  }
+  
+  return(settings)
 }

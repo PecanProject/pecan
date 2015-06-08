@@ -11,7 +11,7 @@
 ##' @author Mike Dietze
 ##' @author Ryan Kelly
 ##' @export
-pda.mcmc <- function(settings, params.id=NULL, var.names=NULL, prior.id=NULL, chain=NULL,
+pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, chain=NULL, 
                      iter=NULL, adapt=NULL, adj.min=NULL, ar.target=NULL, jvar=NULL) {
   # Quit if pda not requested in settings
   if(!('assim.batch' %in% names(settings))) {
@@ -23,33 +23,16 @@ pda.mcmc <- function(settings, params.id=NULL, var.names=NULL, prior.id=NULL, ch
   ## this bit of code is useful for defining the variables passed to this function 
   ## if you are debugging
   if(FALSE){
-    settings$model$type <- "SIPNET"
-    chain <- 1
-    params <- NULL
-    jvar <- NULL
-    var.id <- 297 ## NEE, canonical units umolC/m2/s
-
-    params <- jvar <- var.names <- prior <- chain <- adapt <- adj.min <- ar.target <- NULL
+    params.id <- param.names <- prior.id <- chain <- iter NULL 
+    adapt <- adj.min <- ar.target <- jvar <- NULL
   }
 
 
   ## settings
     settings <- pda.settings(
-                  settings=settings, params.id=params.id, var.names=var.names, 
+                  settings=settings, params.id=params.id, param.names=param.names, 
                   prior.id=prior.id, chain=chain, iter=iter, adapt=adapt, 
                   adj.min=adj.min, ar.target=ar.target, jvar=jvar)
-
-
-      chain <- settings$assim.batch$chain
-      iter <- settings$assim.batch$iter
-      jvar <- settings$assim.batch$jump$jvar
-      adapt <- settings$assim.batch$jump$adapt
-      adj.min <- settings$assim.batch$jump$adj.min
-      ar.target <- settings$assim.batch$jump$ar.target
-
-
-
-
 
 
   ## open database connection
@@ -80,16 +63,12 @@ pda.mcmc <- function(settings, params.id=NULL, var.names=NULL, prior.id=NULL, ch
   load(file.path(prior.db$file_path,"post.distns.Rdata"))
   prior <- post.distns
   pname <-  rownames(prior) 
-  nvar  <- nrow(prior)
+  n.param.all  <- nrow(prior)
 
 
   ## Select parameters to constrain
-  if(is.null(settings$assim.batch$var.names)){
-    vars <- 1:nvar
-  } else {
-    vars <- which(rownames(prior) %in% settings$assim.batch$var.names)
-  }
-  nvar.sample <- length(vars)
+  prior.ind <- which(rownames(prior) %in% settings$assim.batch$param.names)
+  n.param <- length(prior.ind)
 
 
   ## Get the workflow id
@@ -122,7 +101,7 @@ pda.mcmc <- function(settings, params.id=NULL, var.names=NULL, prior.id=NULL, ch
 
   ## set up prior density (d) and random (r) functions
   dprior <- rprior <- qprior <-list()
-  for(i in 1:nvar){
+  for(i in 1:n.param.all){
     if(prior$distn[i] == 'exp'){
       dprior[[i]] <- parse(text=paste("dexp(x,",prior$parama[i],",log=TRUE)",sep=""))
       rprior[[i]] <- parse(text=paste("rexp(n,",prior$parama[i],")",sep=""))
@@ -134,8 +113,8 @@ pda.mcmc <- function(settings, params.id=NULL, var.names=NULL, prior.id=NULL, ch
     }
   }
   dmvprior <- function(x,log=TRUE){  #multivariate prior - density
-    p <- rep(NA,nvar)
-    for(i in 1:nvar){
+    p <- rep(NA,n.param.all)
+    for(i in 1:n.param.all){
       p[i] <- eval(dprior[[i]],list(x=x[i]))
     }
     p = sum(p)
@@ -144,8 +123,8 @@ pda.mcmc <- function(settings, params.id=NULL, var.names=NULL, prior.id=NULL, ch
     return(p)
   }
   rmvprior <- function(n){  #multivariate prior - random number
-    p <- matrix(NA,n,nvar)
-    for(i in 1:nvar){
+    p <- matrix(NA,n,n.param.all)
+    for(i in 1:n.param.all){
       p[,i] <- eval(rprior[[i]],list(n=n))
     }
     return(p)
@@ -192,11 +171,11 @@ pda.mcmc <- function(settings, params.id=NULL, var.names=NULL, prior.id=NULL, ch
   if(exists(params)) {  # Matrix of params was just loaded
     start  <- nrow(params) + 1
     finish <- nrow(params) + as.numeric(settings$assim.batch$iter)
-    params <- rbind(params, matrix(NA, finish - start + 1, nvar))
+    params <- rbind(params, matrix(NA, finish - start + 1, n.param.all))
   } else {              # No input given, starting fresh
     start  <- 1
     finish <- as.numeric(settings$assim.batch$iter)
-    params <- matrix(NA, finish, nvar)
+    params <- matrix(NA, finish, n.param.all)
   }
   colnames(params) <- pname
   
@@ -216,41 +195,38 @@ pda.mcmc <- function(settings, params.id=NULL, var.names=NULL, prior.id=NULL, ch
   LL.old <- -Inf
   prior.old <- -Inf
 
-  
-  ## set jump variance
-  if(is.null(jvar)){
-    jvar <- rep(0.1,nvar.sample) # Default
-  }
 
-  ## Jump distribution adjustment
-  ar <- numeric(nvar.sample)  ## Create vector of 0's (one zero per parameter)
+  ## Jump distribution setup
+  accept.rate <- numeric(n.param)  ## Create acceptance rate vector of 0's (one zero per parameter)
+
 
   ## main MCMC loop
   for(i in start:finish){
     logger.info(paste("Data assimilation MCMC iteration",i,"of",finish))
 
     ## Adjust Jump distribution
-    if(i %% adapt < 1){
+    if(i %% settings$assim.batch$jump$adapt < 1){
         logger.info(paste0("Acceptance rates were (", 
-                          paste(pname[vars], collapse=", "), ") = (", 
-                          paste(round(ar/adapt,3), collapse=", "), ")"))
+                          paste(pname[prior.ind], collapse=", "), ") = (", 
+                          paste(round(accept.rate/settings$assim.batch$jump$adapt,3), 
+                            collapse=", "), ")"))
         logger.info(paste0("Using jump variances (", 
-                          paste(round(jvar,3), collapse=", "), ")"))
+                          paste(round(settings$assim.batch$jump$jvar,3), collapse=", "), ")"))
 
-        adj <- ar / adapt / ar.target
-        adj[adj < adj.min] <- adj.min
-        jvar <- jvar * adj
+        adj <- accept.rate / settings$assim.batch$jump$adapt / settings$assim.batch$jump$ar.target
+        adj[adj < settings$assim.batch$jump$adj.min] <- settings$assim.batch$jump$adj.min
+        settings$assim.batch$jump$jvar <- settings$assim.batch$jump$jvar * adj
         logger.info(paste0("New jump variances are (", 
-                          paste(round(jvar,3), collapse=", "), ")"))
+                          paste(round(settings$assim.batch$jump$jvar,3), collapse=", "), ")"))
 
-        ar <- numeric(nvar.sample)
+        accept.rate <- numeric(n.param)
     }
 
-    for(j in 1:nvar.sample){
+    for(j in 1:n.param){
       ## propose parameter values
-      pnew  <- rnorm(1,parm[vars[j]],jvar[j])
+      pnew  <- rnorm(1,parm[prior.ind[j]],settings$assim.batch$jump$jvar[j])
       pstar <- parm
-      pstar[vars[j]] <- pnew
+      pstar[prior.ind[j]] <- pnew
 
 
       ## check that value falls within the prior
@@ -277,7 +253,7 @@ pda.mcmc <- function(settings, params.id=NULL, var.names=NULL, prior.id=NULL, ch
             sep=''),
             con)[['id']]
         } else {
-          run.id <- paste("MCMC",chain,i,j,sep=".")
+          run.id <- paste("MCMC",settings$assim.batch$chain,i,j,sep=".")
         }
         dir.create(file.path(settings$rundir, run.id), recursive=TRUE)
         dir.create(file.path(settings$modeloutdir, run.id), recursive=TRUE)
@@ -292,9 +268,9 @@ pda.mcmc <- function(settings, params.id=NULL, var.names=NULL, prior.id=NULL, ch
         cat("runtype     : pda.mcmc\n",
             "workflow id : ", as.character(workflow.id), "\n",
             "ensemble id : ", as.character(ensemble.id), "\n",
-            "chain       : ", chain, "\n",
+            "chain       : ", settings$assim.batch$chain, "\n",
             "run         : ", i, "\n",
-            "variable    : ", pname[vars[j]], "\n",
+            "variable    : ", pname[prior.ind[j]], "\n",
             "run id      : ", as.character(run.id), "\n",
             "pft names   : ", as.character(lapply(settings$pfts, function(x) x[['name']])), "\n",
             "model       : ", settings$model$type, "\n",
@@ -355,7 +331,7 @@ pda.mcmc <- function(settings, params.id=NULL, var.names=NULL, prior.id=NULL, ch
         ## insert Likelihood records in database
         if (!is.null(con)) {
           now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-          paramlist <- paste("MCMC: chain",chain,"iteration",i,"variable",j)
+          paramlist <- paste("MCMC: chain",settings$assim.batch$chain,"iteration",i,"variable",j)
 
           # BETY requires likelihoods to be associated with inputs, so only proceed 
           # for inputs with valid input ID (i.e., not the -1 dummy id). 
@@ -384,7 +360,7 @@ pda.mcmc <- function(settings, params.id=NULL, var.names=NULL, prior.id=NULL, ch
           LL.old <- LL.total
           prior.old <- prior.star
           parm <- pstar 
-          ar[j] <- ar[j] + 1
+          accept.rate[j] <- accept.rate[j] + 1
         }
       } ## end if(is.finite(prior.star))
     } ## end loop over variables
@@ -409,12 +385,12 @@ pda.mcmc <- function(settings, params.id=NULL, var.names=NULL, prior.id=NULL, ch
   pdf(file.path(settings$pfts$pft$outdir,"pda.mcmc.diagnostics.pdf"))
 
   burnin <- min(2000,0.2*nrow(params))
-  params.subset <- as.data.frame(params[burnin:nrow(params),vars])
+  params.subset <- as.data.frame(params[burnin:nrow(params),prior.ind])
   dm <- as.mcmc(params.subset)
 
   plot(dm)
   summary(dm)
-  if(length(vars)>1){
+  if(length(prior.ind)>1){
     crosscorr(dm)
     pairs(params.subset)
   }
@@ -453,7 +429,7 @@ pda.mcmc <- function(settings, params.id=NULL, var.names=NULL, prior.id=NULL, ch
   ## coerce parameter output into the same format as trait.mcmc
   pname <- rownames(post.distns)
   trait.mcmc <- list()
-  for(i in vars){
+  for(i in prior.ind){
     beta.o <- array(params[,i],c(nrow(params),1))
     colnames(beta.o) <- "beta.o"
     if(pname[i] %in% names(trait.mcmc)) {
@@ -478,15 +454,7 @@ pda.mcmc <- function(settings, params.id=NULL, var.names=NULL, prior.id=NULL, ch
 
 
   ## Output an updates settings list
-  out <- settings$assim.batch
-  out$params    <- params.id
-  out$jump$jvar      <- as.list(jvar)
-    names(out$jump$jvar) <- rep('jvar', length(jvar))
-  out$var.names <- as.list(var.names)
-    names(out$var.names) <- rep('var', length(var.names))
-  out$prior     <- prior.id
-  out$chain     <- chain
-  return(out)
+  return(settings$assim.batch)
   
 } ## end pda.mcmc
 
