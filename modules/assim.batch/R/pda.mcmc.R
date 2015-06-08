@@ -17,7 +17,7 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
   if(!('assim.batch' %in% names(settings))) {
     return()
   }
-
+#
   require(coda)
   
   ## this bit of code is useful for defining the variables passed to this function 
