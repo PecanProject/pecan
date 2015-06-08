@@ -144,7 +144,7 @@ pda.settings <- function(settings, params.id=NULL, var.names=NULL, prior.id=NULL
   if(!is.null(adapt)) {
     settings$assim.batch$jump$adapt <- adapt
   }
-  if(is.null(settings$assim.batch$jump$adapt) {   # Default
+  if(is.null(settings$assim.batch$jump$adapt)) {   # Default
     settings$assim.batch$jump$adapt = floor(settings$assim.batch$iter/10)
   }
 
