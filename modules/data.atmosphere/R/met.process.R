@@ -20,7 +20,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   #setup connection and host information
   con      <- db.open(dbparms)
   username <- ""  
-  ifelse(host$name == "localhost", machine.host <- fqdn(), machine.host <- hostname)
+  ifelse(host$name == "localhost", machine.host <- fqdn(), machine.host <- host$name)
   machine = db.query(paste0("SELECT * from machines where hostname = '",machine.host,"'"),con)
   
   #get met source and potentially determine where to start in the process
