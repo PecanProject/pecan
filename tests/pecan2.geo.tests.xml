@@ -27,23 +27,23 @@
  </database>
  
   <model>
-  <id>10</id>
-  <binary>/home/dietze/sipnet_unk/sipnet</binary>
-  <type>SIPNET</type>
-  <revision>unk</revision>
+  <id>1000000005</id>
+  <binary>/home/dietze/Linkages/linkages</binary>
+  <type>LINKAGES</type>
+  <revision>Revision 1.0 Ann's hack</revision>
  </model>
  
  <run>
 
   <site>
-   <id>676</id>
-   <name>Willow Creek (US-WCr)</name>
-   <lat>45.92</lat>
-   <lon>-90.45</lon>
+   <id>1000000650</id>
+   <name>Harvard Forest - Lyford Plots (PalEON PHA)</name>
+   <lat>42.53</lat>
+   <lon>-72.18</lon>
   </site>
   
-  <start.date>2002-01-01 00:00:00</start.date>
-  <end.date>2005-12-31 00:00:00</end.date>
+  <start.date>0850-01-01 00:00:00</start.date>
+  <end.date>851-12-31 00:00:00</end.date>
   
   <host>
    <name>geo.bu.edu</name>
@@ -55,7 +55,8 @@
   
    <inputs>
     <met>
-      <source>Ameriflux</source>
+      <source>PalEON</source>
+      <path></path>
     </met>
   </inputs>
   
