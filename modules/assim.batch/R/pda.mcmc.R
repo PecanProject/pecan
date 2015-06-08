@@ -11,8 +11,8 @@
 ##' @author Mike Dietze
 ##' @author Ryan Kelly
 ##' @export
-pda.mcmc <- function(settings, params.id=NULL, jvar=NULL, var.names=NULL, prior.id=NULL, chain=NULL,
-                     adapt=NULL, adj.min=NULL, ar.target=NULL) {
+pda.mcmc <- function(settings, params.id=NULL, var.names=NULL, prior.id=NULL, chain=NULL,
+                     iter=NULL, adapt=NULL, adj.min=NULL, ar.target=NULL, jvar=NULL) {
   # Quit if pda not requested in settings
   if(!('assim.batch' %in% names(settings))) {
     return()
