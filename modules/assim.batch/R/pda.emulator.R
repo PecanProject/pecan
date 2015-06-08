@@ -1,5 +1,5 @@
 
-pda.emulator <- function(input.dir,prior.dir,prior.file,out.dir){
+pda.emulator.old <- function(input.dir,prior.dir,prior.file,out.dir){
 
 require(emulator)
 require(kernlab)

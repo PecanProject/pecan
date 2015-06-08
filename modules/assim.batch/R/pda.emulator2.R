@@ -11,7 +11,7 @@
 ##' @author Mike Dietze
 ##' @author Ryan Kelly
 ##' @export
-pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NULL, chain=NULL,
+pda.emulator <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NULL, chain=NULL,
                      adapt=NULL, adj.min=NULL, ar.target=NULL){
   # Quit if pda not requested in settings
   if(!('assim.batch' %in% names(settings))) {
@@ -397,9 +397,16 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
         )$mcmc
       })
 
-# ********************************************** BREAK!
 
-  ## Save raw MCMC
+  ## Create params matrix
+  # *** TODO: Generalize to >1 chain
+  params.modeled <- params # rename for clarity
+  params.emulated <- matrix(params[1,], nrow=nrow(m[[1]]), ncol=ncol(params), byrow=T)
+  params.emulated[, vars] <- m[[1]]
+  params <- rbind(params, params.emulated)
+  
+
+  ## Save params
   filename.mcmc <- file.path(settings$outdir, "pda.mcmc.Rdata")
   save(params, file = filename.mcmc)
 
