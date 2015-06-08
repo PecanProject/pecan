@@ -10,3 +10,9 @@ function(jmp){
   return(attr(jmp,"history")[n,])
 }
 
+
+# p.jump <-
+# function(jmp){
+#   n <- nrow(jmp$history)
+#   return(jmp$history[n,])
+# }

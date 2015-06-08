@@ -223,204 +223,181 @@ pda.mcmc <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NUL
   }
   colnames(params) <- pname
   
-  ## File for temp storage of params (in case of crash)
-  #  Using .txt here to allow quick append after each iteration (maybe a better way?)
-  #  At the end of MCMC the entire object is saved as .Rdata
-  filename.mcmc.temp <- file.path(settings$outdir, "pda.mcmc.txt")
 
+  ## Propose parameter knots (X) for emulator design
+    n.samp <- 10 # Number of values of each parameter to try  **** MOVE TO ARGUMENT
 
-  ## set initial conditions
-  if(start==1){
-    parm <- as.vector(p.median)
-  } else{
-    parm <- params[start-1, ]
-  }
-  names(parm) = pname
-  LL.old <- -Inf
-  prior.old <- -Inf
-
+    probs <- matrix(0.5, nrow=n.samp, ncol=nvar) # By default, all parameters will be fixed at their median
   
-  ## set jump variance
-  if(is.null(jvar)){
-    jvar <- rep(0.1,nvar) # Default
-  }
+    # Fill in parameters to be sampled with probabilities sampled in a LHC design
+    probs[, vars] <- lhc(t(matrix(0:1, ncol=nvar.sample, nrow=2)), n.samp)
 
-  ## Jump distribution adjustment
-  ar <- numeric(nvar.sample)  ## Create vector of 0's (one zero per parameter)
-
-  ## main MCMC loop
-  for(i in start:finish){
-    logger.info(paste("Data assimilation MCMC iteration",i,"of",finish))
-
-    ## Adjust Jump distribution
-    if(i %% adapt < 1){
-        logger.info(paste0("Acceptance rates were (", 
-                          paste(pname[vars], collapse=", "), ") = (", 
-                          paste(round(ar/adapt,3), collapse=", "), ")"))
-        logger.info(paste0("Using jump variances (", 
-                          paste(round(jvar,3), collapse=", "), ")"))
-
-        adj <- ar / adapt / ar.target
-        adj[adj < adj.min] <- adj.min
-        jvar <- jvar * adj
-        logger.info(paste0("New jump variances are (", 
-                          paste(round(jvar,3), collapse=", "), ")"))
-
-        ar <- numeric(nvar.sample)
+    # Convert probabilities to parameter values
+    params <- NA*probs
+    for(i in 1:nvar) {
+      params[,i] <- eval(qprior[[i]], list(p=probs[,i]))
     }
-
-    for(j in 1:nvar.sample){
-      ## propose parameter values
-      pnew  <- rnorm(1,parm[vars[j]],jvar[j])
-      pstar <- parm
-      pstar[vars[j]] <- pnew
-
-
-      ## check that value falls within the prior
-      prior.star <- dmvprior(pstar)
-      if(is.finite(prior.star)){
-        ## set RUN.ID
-        if (!is.null(con)) {
-          now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-          paramlist <- paste("MCMC: chain",chain,"iteration",i,"variable",j)
-          db.query(
-            paste(
-              "INSERT INTO runs", 
-                "(model_id, site_id, start_time, finish_time, outdir,",
-                "created_at, ensemble_id, parameter_list)",
-              "values ('", 
-                settings$model$id, "','", settings$run$site$id, "','", settings$run$start.date, "','", 
-                settings$run$end.date, "','", settings$run$outdir , "','", now, "',", ensemble.id, ",'", 
-                paramlist, 
-              "')", 
-            sep=''), 
-          con)
-          run.id <- db.query(
-            paste("SELECT id FROM runs WHERE created_at='", now, "' AND parameter_list='", paramlist, "'", 
-            sep=''),
-            con)[['id']]
-        } else {
-          run.id <- paste("MCMC",chain,i,j,sep=".")
-        }
-        dir.create(file.path(settings$rundir, run.id), recursive=TRUE)
-        dir.create(file.path(settings$modeloutdir, run.id), recursive=TRUE)
-
-
-        ## write config
-        do.call(my.write.config,args=list(settings$pfts, list(pft=pstar,env=NA),
-                                          settings, run.id))
-
-
-        ## write a README for the run
-        cat("runtype     : pda.mcmc\n",
-            "workflow id : ", as.character(workflow.id), "\n",
-            "ensemble id : ", as.character(ensemble.id), "\n",
-            "chain       : ", chain, "\n",
-            "run         : ", i, "\n",
-            "variable    : ", pname[vars[j]], "\n",
-            "run id      : ", as.character(run.id), "\n",
-            "pft names   : ", as.character(lapply(settings$pfts, function(x) x[['name']])), "\n",
-            "model       : ", settings$model$type, "\n",
-            "model id    : ", settings$model$id, "\n",
-            "site        : ", settings$run$site$name, "\n",
-            "site  id    : ", settings$run$site$id, "\n",
-            "met data    : ", settings$run$site$met, "\n",
-            "start date  : ", settings$run$start.date, "\n",
-            "end date    : ", settings$run$end.date, "\n",
-            "hostname    : ", settings$run$host$name, "\n",
-            "rundir      : ", file.path(settings$run$host$rundir, run.id), "\n",
-            "outdir      : ", file.path(settings$run$host$outdir, run.id), "\n",
-            file=file.path(settings$rundir, run.id, "README.txt"), sep='')
-
-
-        ## add the job to the list of runs
-        cat(as.character(run.id), file=file.path(settings$rundir, "runs.txt"), sep="\n", append=FALSE)
-
-
-        ## start model run
-        start.model.runs(settings,settings$database$bety$write)
-
-
-        ## read model outputs
-        # TODO: Generalize
-        model.out <- list()
-        for(k in 1:n.input){
-          NEEm <- read.output(run.id, outdir = file.path(settings$run$host$outdir, run.id),
-                              strftime(settings$run$start.date,"%Y"), 
-                              strftime(settings$run$end.date,"%Y"), 
-                              variables="NEE")$NEE*0.0002640674
-          ## unit conversion kgC/ha/yr -> umolC/m2/sec
-          # NPPvecm <-read.output(run.id, outdir = file.path(outdir, run.id),
-          #                       start.year, end.year, variables="NPP")$NPP
-          # NPPm<- sum(NPPvecm)
-
-          ## match model and observations
-          NEEm <- rep(NEEm,each= nrow(inputs[[k]]$data)/length(NEEm))
-          set <- 1:length(NEEm)  ## ***** need a more intellegent year matching!!!
-            # NPPm <- rep(NPPm,each=length(NPPo)/length(NPPm))
-            # set <- 1:length(NPPm) 
-
-          model.out[[k]] <- NEEm[set]
-        }
-
-        ## calculate likelihood
-        LL.vec <- n.vec <- numeric(n.input)
-        for(k in 1:n.input) {
-          llik <- llik.fn[[k]](model.out[[k]], inputs[[k]])
-          LL.vec[k] <- llik$LL
-          n.vec[k]  <- llik$n
-        }
-        weights <- rep(1/n.input, n.input) # TODO: Implement user-defined weights
-        LL.total <- sum(LL.vec * weights)
-        neff <- n.vec * weights
-
-
-        ## insert Likelihood records in database
-        if (!is.null(con)) {
-          now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-          paramlist <- paste("MCMC: chain",chain,"iteration",i,"variable",j)
-
-          # BETY requires likelihoods to be associated with inputs, so only proceed 
-          # for inputs with valid input ID (i.e., not the -1 dummy id). 
-          # Note that analyses requiring likelihoods to be stored therefore require 
-          # inputs to be registered in BETY first.
-          db.input.ind <- which( sapply(inputs, function(x) x$input.id) != -1 )
-          for(k in db.input.ind) {
-            db.query(
-              paste0("INSERT INTO likelihoods ", 
-                "(run_id,            variable_id,                     input_id, ",
-                " loglikelihood,     n_eff,                           weight,   ",
-                " created_at) ",
-              "values ('", 
-                  run.id, "', '",    inputs[[k]]$variable.id, "', '", inputs[[k]]$input.id, "', '", 
-                  LL.vec[k], "', '", floor(neff[k]), "', '",          weights[k] , "', '", 
-                  now,"')"
-              ), 
-            con)
-          }
-        }
-
-
-        ## accept or reject step
-        a = LL.total-LL.old + prior.star - prior.old
-        if(a > log(runif(1))){
-          LL.old <- LL.total
-          prior.old <- prior.star
-          parm <- pstar 
-          ar[j] <- ar[j] + 1
-        }
-      } ## end if(is.finite(prior.star))
-    } ## end loop over variables
-
-    ## save output
-    params[i,] <- parm
-    if(i == 1){
-      cat(c(parm,'\n'), file=filename.mcmc.temp, sep='\t', append=F)
+    colnames(params) <- pname
+  
+  # *********************** LOOOOOOOOOOOOOOOOOOOOOOOOOOOOP!
+  ## Run model at proposed X
+  LL.X <- rep(NA, n.samp)
+  for(i in 1:n.samp) {
+    ## set RUN.ID
+    if (!is.null(con)) {
+      now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+      paramlist <- paste("Evaluating knot",i)
+      db.query(
+        paste(
+          "INSERT INTO runs", 
+            "(model_id, site_id, start_time, finish_time, outdir,",
+            "created_at, ensemble_id, parameter_list)",
+          "values ('", 
+            settings$model$id, "','", settings$run$site$id, "','", settings$run$start.date, "','", 
+            settings$run$end.date, "','", settings$run$outdir , "','", now, "',", ensemble.id, ",'", 
+            paramlist, 
+          "')", 
+        sep=''), 
+      con)
+      run.id <- db.query(
+        paste("SELECT id FROM runs WHERE created_at='", now, "' AND parameter_list='", paramlist, "'", 
+        sep=''),
+        con)[['id']]
     } else {
-      cat(c(parm,'\n'), file=filename.mcmc.temp, sep='\t', append=T)
+      run.id <- paste("Knot",i,sep=".")
     }
-  } ## end MCMC loop
+    dir.create(file.path(settings$rundir, run.id), recursive=TRUE)
+    dir.create(file.path(settings$modeloutdir, run.id), recursive=TRUE)
 
+
+    ## write config
+    do.call(my.write.config,args=list(settings$pfts, list(pft=params[i,],env=NA), settings, run.id))
+
+
+    ## write a README for the run
+    cat("runtype     : pda.mcmc\n",
+        "workflow id : ", as.character(workflow.id), "\n",
+        "ensemble id : ", as.character(ensemble.id), "\n",
+        "chain       : ", chain, "\n",
+        "run         : ", i, "\n",
+        "variable    : ", paste(pname[vars], sep=", "), "\n",
+        "run id      : ", as.character(run.id), "\n",
+        "pft names   : ", as.character(lapply(settings$pfts, function(x) x[['name']])), "\n",
+        "model       : ", settings$model$type, "\n",
+        "model id    : ", settings$model$id, "\n",
+        "site        : ", settings$run$site$name, "\n",
+        "site  id    : ", settings$run$site$id, "\n",
+        "met data    : ", settings$run$site$met, "\n",
+        "start date  : ", settings$run$start.date, "\n",
+        "end date    : ", settings$run$end.date, "\n",
+        "hostname    : ", settings$run$host$name, "\n",
+        "rundir      : ", file.path(settings$run$host$rundir, run.id), "\n",
+        "outdir      : ", file.path(settings$run$host$outdir, run.id), "\n",
+        file=file.path(settings$rundir, run.id, "README.txt"), sep='')
+
+
+    ## add the job to the list of runs
+    cat(as.character(run.id), file=file.path(settings$rundir, "runs.txt"), sep="\n", append=FALSE)
+
+
+    ## start model run
+    start.model.runs(settings,settings$database$bety$write)
+
+
+    ## read model outputs
+    # TODO: Generalize
+    model.out <- list()
+    for(k in 1:n.input){
+      NEEm <- read.output(run.id, outdir = file.path(settings$run$host$outdir, run.id),
+                          strftime(settings$run$start.date,"%Y"), 
+                          strftime(settings$run$end.date,"%Y"), 
+                          variables="NEE")$NEE*0.0002640674
+      ## unit conversion kgC/ha/yr -> umolC/m2/sec
+      # NPPvecm <-read.output(run.id, outdir = file.path(outdir, run.id),
+      #                       start.year, end.year, variables="NPP")$NPP
+      # NPPm<- sum(NPPvecm)
+
+
+      ## match model and observations
+      NEEm <- rep(NEEm,each= nrow(inputs[[k]]$data)/length(NEEm))
+      set <- 1:length(NEEm)  ## ***** need a more intellegent year matching!!!
+        # NPPm <- rep(NPPm,each=length(NPPo)/length(NPPm))
+        # set <- 1:length(NPPm) 
+
+      model.out[[k]] <- NEEm[set]
+    }
+
+
+    ## calculate likelihood
+    LL.vec <- n.vec <- numeric(n.input)
+    for(k in 1:n.input) {
+      llik <- llik.fn[[k]](model.out[[k]], inputs[[k]])
+      LL.vec[k] <- llik$LL
+      n.vec[k]  <- llik$n
+    }
+    weights <- rep(1/n.input, n.input) # TODO: Implement user-defined weights
+    LL.X[i] <- sum(LL.vec * weights)
+    neff <- n.vec * weights
+
+
+    ## insert Likelihood records in database
+    if (!is.null(con)) {
+      now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+
+      # BETY requires likelihoods to be associated with inputs, so only proceed 
+      # for inputs with valid input ID (i.e., not the -1 dummy id). 
+      # Note that analyses requiring likelihoods to be stored therefore require 
+      # inputs to be registered in BETY first.
+      db.input.ind <- which( sapply(inputs, function(x) x$input.id) != -1 )
+      for(k in db.input.ind) {
+        db.query(
+          paste0("INSERT INTO likelihoods ", 
+            "(run_id,            variable_id,                     input_id, ",
+            " loglikelihood,     n_eff,                           weight,   ",
+            " created_at) ",
+          "values ('", 
+              run.id, "', '",    inputs[[k]]$variable.id, "', '", inputs[[k]]$input.id, "', '", 
+              LL.vec[k], "', '", floor(neff[k]), "', '",          weights[k] , "', '", 
+              now,"')"
+          ), 
+        con)
+      }
+    }
+  } # end loop over X
+
+
+
+  ## Collect all likelihoods (Y)
+  # For now, just the likelihoods from the runs we just did. 
+  # *** TODO: Soon, need to add ability to retrieve them from previous runs, because we want to build the emulator from as many points as possible. The likelihoods are easy—they're being stored in BETY. But we need to know the parameter values associated with them too, and that will take a bit of doing.
+  X <- data.frame(params[, vars])
+    names(X) <- pname[vars]
+  Y <- LL.X
+  
+
+  ## Generate emulator on (X,Y)
+  require(kernlab)
+  df <- data.frame(LL = Y, X)
+  kernlab.gp <- gausspr(LL~., data=df)
+  
+  
+  ## Sample posterior from emulator
+
+  m<-lapply(1, function(chain){
+        init.x <- lapply(vars, function(v) eval(rprior[[v]], list(n=1)))
+        names(init.x) <- pname[vars]
+        mcmc.GP(kernlab.gp, ## emulator
+            init.x,  ## initial conditions
+            nmcmc = 2000,      ## number of reps
+            NULL,   ## 'rng' -- is not used except to specify default jmp0, which is included below
+            "lin",      ## "lin"ear vs "log" of LogLikelihood 
+            mix = "each", ## jump "each" dimension independently or update them "joint"ly
+            jmp0 = apply(X,2,function(x) 0.3*diff(range(x))),
+            priors=dprior[vars]
+        )$mcmc
+      })
+
+# ********************************************** BREAK!
 
   ## Save raw MCMC
   filename.mcmc <- file.path(settings$outdir, "pda.mcmc.Rdata")

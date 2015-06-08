@@ -9,3 +9,9 @@ function(ic=0,rate=0.4,nc=2,...){
   return(new("mvjump",history=icm,arate=0,target=rate))
 }
 
+# jump <-
+# function(ic=0,rate=0.4,dim=length(ic)){
+#   icm <- (matrix(ic,nrow=1,ncol=dim))
+#   return(list(history=icm,arate=0,target=rate,dim=dim))
+# }
+
