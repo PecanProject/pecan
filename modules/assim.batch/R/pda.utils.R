@@ -96,7 +96,7 @@ load.pda.data <- function(input.settings) {
 ##' @author Ryan Kelly
 ##' @export
 pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, chain=NULL,
-                         iter=NULL, adapt=NULL, adj.min=NULL, ar.target=NULL, jvar=NULL) {
+                         iter=NULL, adapt=NULL, adj.min=NULL, ar.target=NULL, jvar=NULL, n.knot=NULL) {
   # Some settings can be supplied via settings (for automation) or explicitly (interactive). 
   # An explicit argument overrides whatever is in settings, if anything.
   # If neither an argument or a setting is provided, set a default value in settings. 
@@ -151,6 +151,16 @@ pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     settings$assim.batch$iter <- 100
   }
   settings$assim.batch$iter <- as.numeric(settings$assim.batch$iter)
+
+
+  # n.knot: Number of emulator knots
+  if(!is.null(n.knot)) {
+    settings$assim.batch$n.knot <- n.knot
+  }
+  if(is.null(settings$assim.batch$n.knot)) {   # Default
+    settings$assim.batch$n.knot <- 100
+  }
+  settings$assim.batch$knot <- as.numeric(settings$assim.batch$knot)
 
 
 
@@ -338,3 +348,84 @@ pda.init.params <- function(settings, con, pname, n.param.all) {
   
   return(list(start=start, finish=finish, params=params))
 }
+
+
+
+
+
+
+pda.init.run <- function(settings, con, workflow.id, ensemble.id, params, 
+                         n=ifelse(is.null(dim(params)), 1, nrow(params)), 
+                         run.names=paste("run", 1:n, sep=".")) {
+
+  # If n=1, convert params to a 1-row matrix (for generically accessing it below)
+  if(is.null(dim(params)) params <- matrix(params, nrow=1)
+
+  run.ids <- rep(NA, n)
+  for(i in 1:n) {
+    ## set RUN.ID
+    if (!is.null(con)) {
+      now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+      paramlist <- run.names[i]
+      db.query(
+        paste(
+          "INSERT INTO runs", 
+            "(model_id, site_id, start_time, finish_time, outdir,",
+            "created_at, ensemble_id, parameter_list)",
+          "values ('", 
+            settings$model$id, "','", settings$run$site$id, "','", settings$run$start.date, "','", 
+            settings$run$end.date, "','", settings$run$outdir , "','", now, "',", ensemble.id, ",'", 
+            paramlist, 
+          "')", 
+        sep=''), 
+      con)
+      run.ids[i] <- db.query(
+        paste("SELECT id FROM runs WHERE created_at='", now, "' AND parameter_list='", paramlist, "'", 
+        sep=''),
+        con)[['id']]
+    } else {
+      run.ids[i] <- run.names[i]
+    }
+    dir.create(file.path(settings$rundir, run.ids[i]), recursive=TRUE)
+    dir.create(file.path(settings$modeloutdir, run.ids[i]), recursive=TRUE)
+
+
+    ## write config
+    do.call(my.write.config,args=list(settings$pfts, list(pft=params[i,],env=NA), settings, run.ids[i]))
+
+
+    # Identifiers for ensemble 'runtype'
+    if(settings$assim.batch$method == "bruteforce") {
+      ensemble.type <- "pda.MCMC"
+    } else if(settings$assim.batch$method == "emulator") {
+      ensemble.type <- "pda.emulator"
+    }
+
+    ## write a README for the run
+    cat("runtype     : ", paste("pda", settings$assim.batch$method, sep="."), "\n",
+        "workflow id : ", as.character(workflow.id), "\n",
+        "ensemble id : ", as.character(ensemble.id), "\n",
+        "chain       : ", settings$assim.batch$chain, "\n",
+        "run         : ", run.names[i], "\n",
+        "run id      : ", as.character(run.ids[i]), "\n",
+        "pft names   : ", as.character(lapply(settings$pfts, function(x) x[['name']])), "\n",
+        "model       : ", settings$model$type, "\n",
+        "model id    : ", settings$model$id, "\n",
+        "site        : ", settings$run$site$name, "\n",
+        "site  id    : ", settings$run$site$id, "\n",
+        "met data    : ", settings$run$site$met, "\n",
+        "start date  : ", settings$run$start.date, "\n",
+        "end date    : ", settings$run$end.date, "\n",
+        "hostname    : ", settings$run$host$name, "\n",
+        "rundir      : ", file.path(settings$run$host$rundir, run.ids[i]), "\n",
+        "outdir      : ", file.path(settings$run$host$outdir, run.ids[i]), "\n",
+        file=file.path(settings$rundir, run.ids[i], "README.txt"), sep='')
+
+    ## add the job to the list of runs
+    append <- ifelse(i==1, FALSE, TRUE)
+    cat(as.character(run.id), file=file.path(settings$rundir, "runs.txt"), sep="\n", append=append)
+  } # end for
+
+  return(run.ids)
+}
+

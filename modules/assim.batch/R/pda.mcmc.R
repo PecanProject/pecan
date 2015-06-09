@@ -77,14 +77,15 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   }
 
 
-  ## set up prior density (d) and random (r) functions
+  ## Set up prior distribution functions (d___, q___, r___, and multivariate versions)
   prior.fn <- pda.define.prior.fn(prior)
 
 
   ## load data
   inputs <- load.pda.data(settings$assim.batch$inputs)
   n.input <- length(inputs)
-  
+
+
   ## Set up likelihood functions
   llik.fn <- pda.define.llik.fn(settings)
 
@@ -149,62 +150,9 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
       ## check that value falls within the prior
       prior.star <- prior.fn$dmvprior(pstar)
       if(is.finite(prior.star)){
-        ## set RUN.ID
-        if (!is.null(con)) {
-          now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-          paramlist <- paste("MCMC: chain",chain,"iteration",i,"variable",j)
-          db.query(
-            paste(
-              "INSERT INTO runs", 
-                "(model_id, site_id, start_time, finish_time, outdir,",
-                "created_at, ensemble_id, parameter_list)",
-              "values ('", 
-                settings$model$id, "','", settings$run$site$id, "','", settings$run$start.date, "','", 
-                settings$run$end.date, "','", settings$run$outdir , "','", now, "',", ensemble.id, ",'", 
-                paramlist, 
-              "')", 
-            sep=''), 
-          con)
-          run.id <- db.query(
-            paste("SELECT id FROM runs WHERE created_at='", now, "' AND parameter_list='", paramlist, "'", 
-            sep=''),
-            con)[['id']]
-        } else {
-          run.id <- paste("MCMC",settings$assim.batch$chain,i,j,sep=".")
-        }
-        dir.create(file.path(settings$rundir, run.id), recursive=TRUE)
-        dir.create(file.path(settings$modeloutdir, run.id), recursive=TRUE)
-
-
-        ## write config
-        do.call(my.write.config,args=list(settings$pfts, list(pft=pstar,env=NA),
-                                          settings, run.id))
-
-
-        ## write a README for the run
-        cat("runtype     : pda.mcmc\n",
-            "workflow id : ", as.character(workflow.id), "\n",
-            "ensemble id : ", as.character(ensemble.id), "\n",
-            "chain       : ", settings$assim.batch$chain, "\n",
-            "run         : ", i, "\n",
-            "variable    : ", pname[prior.ind[j]], "\n",
-            "run id      : ", as.character(run.id), "\n",
-            "pft names   : ", as.character(lapply(settings$pfts, function(x) x[['name']])), "\n",
-            "model       : ", settings$model$type, "\n",
-            "model id    : ", settings$model$id, "\n",
-            "site        : ", settings$run$site$name, "\n",
-            "site  id    : ", settings$run$site$id, "\n",
-            "met data    : ", settings$run$site$met, "\n",
-            "start date  : ", settings$run$start.date, "\n",
-            "end date    : ", settings$run$end.date, "\n",
-            "hostname    : ", settings$run$host$name, "\n",
-            "rundir      : ", file.path(settings$run$host$rundir, run.id), "\n",
-            "outdir      : ", file.path(settings$run$host$outdir, run.id), "\n",
-            file=file.path(settings$rundir, run.id, "README.txt"), sep='')
-
-
-        ## add the job to the list of runs
-        cat(as.character(run.id), file=file.path(settings$rundir, "runs.txt"), sep="\n", append=FALSE)
+        ## Set up run and write run configs
+        pda.init.run(settings, con, workflow.id, ensemble.id, pstar, n=1,
+                     run.names=paste0("MCMC_chain.",chain,"_iteration.",i,"_variable.",j))
 
 
         ## start model run
