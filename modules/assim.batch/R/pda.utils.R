@@ -221,7 +221,10 @@ pda.load.priors <- function(settings, con) {
   }
   prior.db <- db.query(paste0("SELECT * from dbfiles where container_type = 'Posterior' and container_id = ", settings$assim.batch$prior.id),con)
   prior.db <- prior.db[grep("post.distns.Rdata",prior.db$file_name),]
+
+  # Load the file; return loaded variable 'post.distns' 
   load(file.path(prior.db$file_path,"post.distns.Rdata"))
+  return(post.distns)
 }
 
 

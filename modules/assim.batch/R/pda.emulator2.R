@@ -47,8 +47,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
 
 
   ## priors
-  pda.load.priors(settings, con)     # Load a posterior distribution to be used as prior
-  prior <- post.distns               # Rename
+  prior <- pda.load.priors(settings, con)
   pname <-  rownames(prior) 
   n.param.all  <- nrow(prior)
 
@@ -79,7 +78,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
 
 
   ## set up prior density (d) and random (r) functions
-  prior.fn <- pda.define.prior.fn(priors)
+  prior.fn <- pda.define.prior.fn(prior)
   
 
   ## Calculate p.median
