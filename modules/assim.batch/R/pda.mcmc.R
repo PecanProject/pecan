@@ -67,15 +67,7 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
 
 
   ## create an ensemble id
-  if (!is.null(con)) {
-    # write enseblem first
-    now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-    db.query(paste("INSERT INTO ensembles (created_at, runtype, workflow_id) values ('", 
-                   now, "', 'MCMC', ", workflow.id, ")", sep=''), con)
-    ensemble.id <- db.query(paste("SELECT id FROM ensembles WHERE created_at='", now, "'", sep=''), con)[['id']]
-  } else {
-    ensemble.id <- "NA"
-  }
+  ensemble.id <- pda.create.ensemble(settings, con, workflow.id)
 
 
   ## model-specific functions

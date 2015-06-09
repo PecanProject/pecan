@@ -223,3 +223,29 @@ pda.load.priors <- function(settings, con) {
   prior.db <- prior.db[grep("post.distns.Rdata",prior.db$file_name),]
   load(file.path(prior.db$file_path,"post.distns.Rdata"))
 }
+
+
+
+
+
+
+
+pda.create.ensemble <- function(settings, con, workflow.id) {
+  if (!is.null(con)) {
+    # Identifiers for ensemble 'runtype'
+    if(settings$assim.batch$method == "bruteforce") {
+      ensemble.type <- "pda.MCMC"
+    } else if(settings$assim.batch$method == "emulator") {
+      ensemble.type <- "pda.emulator"
+    }
+    
+    now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+    db.query(paste("INSERT INTO ensembles (created_at, runtype, workflow_id) values ('", 
+                   now, "', '", ensemble.type,"', ", workflow.id, ")", sep=''), con)
+    ensemble.id <- db.query(paste("SELECT id FROM ensembles WHERE created_at='", now, "'", sep=''), con)[['id']]
+  } else {
+    ensemble.id <- "NA"
+  }
+  
+  return(ensemble.id)
+}
