@@ -81,33 +81,12 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   prior.fn <- pda.define.prior.fn(prior)
 
 
-  ## Calculate p.median
-  p.median <- sapply(prior.fn$qprior,eval,list(p=0.5))
-
-
   ## load data
   inputs <- load.pda.data(settings$assim.batch$inputs)
   n.input <- length(inputs)
   
   ## Set up likelihood functions
-  #  TODO: Generalize
-  llik.fn <- list()
-  for(i in 1:n.input) {
-    llik.fn[[i]] <- function(model, obs) {
-      NEEo <- obs$data$NEE_or_fMDS #data$Fc   #umolCO2 m-2 s-1
-      NEEq <- obs$data$NEE_or_fMDSqc #data$qf_Fc
-      NEEo[NEEq > 1] <- NA
-    
-      NEEm <- model
-    
-      NEE.resid <- abs(model - NEEo)
-      NEE.pos <- (NEEm >= 0)
-      LL <- c(dexp(NEE.resid[NEE.pos], 1/(obs$b0 + obs$bp*NEEm[NEE.pos]), log=TRUE), 
-              dexp(NEE.resid[!NEE.pos],1/(obs$b0 + obs$bn*NEEm[!NEE.pos]),log=TRUE))
-      n.obs = sum(!is.na(LL))
-      return(list(LL=sum(LL,na.rm=TRUE), n=n.obs))
-    }
-  }
+  llik.fn <- pda.define.llik.fn(settings)
 
 
   ## Load params from previous run, if provided. 
@@ -137,7 +116,7 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
 
   ## set initial conditions
   if(start==1){
-    parm <- as.vector(p.median)
+    parm <- sapply(prior.fn$qprior,eval,list(p=0.5))
   } else{
     parm <- params[start-1, ]
   }
