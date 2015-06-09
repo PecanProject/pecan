@@ -151,8 +151,8 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
       prior.star <- prior.fn$dmvprior(pstar)
       if(is.finite(prior.star)){
         ## Set up run and write run configs
-        pda.init.run(settings, con, workflow.id, ensemble.id, pstar, n=1,
-                     run.names=paste0("MCMC_chain.",chain,"_iteration.",i,"_variable.",j))
+        run.id <- pda.init.run(settings, con, my.write.config, workflow.id, ensemble.id, pstar, n=1,
+                               run.names=paste0("MCMC_chain.",chain,"_iteration.",i,"_variable.",j))
 
 
         ## start model run
@@ -167,10 +167,6 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
                               strftime(settings$run$start.date,"%Y"), 
                               strftime(settings$run$end.date,"%Y"), 
                               variables="NEE")$NEE*0.0002640674
-          ## unit conversion kgC/ha/yr -> umolC/m2/sec
-          # NPPvecm <-read.output(run.id, outdir = file.path(outdir, run.id),
-          #                       start.year, end.year, variables="NPP")$NPP
-          # NPPm<- sum(NPPvecm)
 
           ## match model and observations
           NEEm <- rep(NEEm,each= nrow(inputs[[k]]$data)/length(NEEm))

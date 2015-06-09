@@ -119,8 +119,8 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   
 
   ## Set up runs and write run configs
-  pda.init.run(settings, con, workflow.id, ensemble.id, pstar, n=1,
-               run.names=paste0("MCMC_chain.",chain,"_iteration.",i,"_variable.",j))
+  run.ids <- pda.init.run(settings, con, my.write.config, workflow.id, ensemble.id, params, 
+                          n=n.knot, run.names=paste0("Knot.",1:n.knot))
 
 
   ## start model runs
@@ -131,15 +131,10 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     # TODO: Generalize
     model.out <- list()
     for(k in 1:n.input){
-      NEEm <- read.output(run.id, outdir = file.path(settings$run$host$outdir, run.id),
+      NEEm <- read.output(run.ids[i], outdir = file.path(settings$run$host$outdir, run.ids[i]),
                           strftime(settings$run$start.date,"%Y"), 
                           strftime(settings$run$end.date,"%Y"), 
                           variables="NEE")$NEE*0.0002640674
-      ## unit conversion kgC/ha/yr -> umolC/m2/sec
-      # NPPvecm <-read.output(run.id, outdir = file.path(outdir, run.id),
-      #                       start.year, end.year, variables="NPP")$NPP
-      # NPPm<- sum(NPPvecm)
-
 
       ## match model and observations
       NEEm <- rep(NEEm,each= nrow(inputs[[k]]$data)/length(NEEm))
@@ -179,7 +174,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
             " loglikelihood,     n_eff,                           weight,   ",
             " created_at) ",
           "values ('", 
-              run.id, "', '",    inputs[[k]]$variable.id, "', '", inputs[[k]]$input.id, "', '", 
+              run.ids[i], "', '",    inputs[[k]]$variable.id, "', '", inputs[[k]]$input.id, "', '", 
               LL.vec[k], "', '", floor(neff[k]), "', '",          weights[k] , "', '", 
               now,"')"
           ), 

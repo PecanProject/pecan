@@ -354,12 +354,12 @@ pda.init.params <- function(settings, con, pname, n.param.all) {
 
 
 
-pda.init.run <- function(settings, con, workflow.id, ensemble.id, params, 
+pda.init.run <- function(settings, con, my.write.config, workflow.id, ensemble.id, params, 
                          n=ifelse(is.null(dim(params)), 1, nrow(params)), 
                          run.names=paste("run", 1:n, sep=".")) {
 
   # If n=1, convert params to a 1-row matrix (for generically accessing it below)
-  if(is.null(dim(params)) params <- matrix(params, nrow=1)
+  if(is.null(dim(params))) params <- matrix(params, nrow=1)
 
   run.ids <- rep(NA, n)
   for(i in 1:n) {
@@ -423,7 +423,7 @@ pda.init.run <- function(settings, con, workflow.id, ensemble.id, params,
 
     ## add the job to the list of runs
     append <- ifelse(i==1, FALSE, TRUE)
-    cat(as.character(run.id), file=file.path(settings$rundir, "runs.txt"), sep="\n", append=append)
+    cat(as.character(run.ids[i]), file=file.path(settings$rundir, "runs.txt"), sep="\n", append=append)
   } # end for
 
   return(run.ids)
