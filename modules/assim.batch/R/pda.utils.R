@@ -249,3 +249,40 @@ pda.create.ensemble <- function(settings, con, workflow.id) {
   
   return(ensemble.id)
 }
+
+
+
+pda.define.prior.fn <- function(prior) {
+  n.param.all <- nrow(prior)
+  dprior <- rprior <- qprior <-list()
+  for(i in 1:n.param.all){
+    if(prior$distn[i] == 'exp'){
+      dprior[[i]] <- parse(text=paste("dexp(x,",prior$parama[i],",log=TRUE)",sep=""))
+      rprior[[i]] <- parse(text=paste("rexp(n,",prior$parama[i],")",sep=""))
+      qprior[[i]] <- parse(text=paste("qexp(p,",prior$parama[i],")",sep=""))
+    }else{
+      dprior[[i]] <- parse(text=paste("d",prior$distn[i],"(x,",prior$parama[i],",",prior$paramb[i],",log=TRUE)",sep=""))
+      rprior[[i]] <- parse(text=paste("r",prior$distn[i],"(n,",prior$parama[i],",",prior$paramb[i],")",sep=""))
+      qprior[[i]] <- parse(text=paste("q",prior$distn[i],"(p,",prior$parama[i],",",prior$paramb[i],")",sep=""))
+    }
+  }
+  dmvprior <- function(x,log=TRUE){  #multivariate prior - density
+    p <- rep(NA,n.param.all)
+    for(i in 1:n.param.all){
+      p[i] <- eval(dprior[[i]],list(x=x[i]))
+    }
+    p = sum(p)
+    if(log) return(p)
+    return(exp(p))
+    return(p)
+  }
+  rmvprior <- function(n){  #multivariate prior - random number
+    p <- matrix(NA,n,n.param.all)
+    for(i in 1:n.param.all){
+      p[,i] <- eval(rprior[[i]],list(n=n))
+    }
+    return(p)
+  }
+  
+  return(list(dprior=dprior, rprior=rprior, qprior=qprior, dmvprior=dmvprior, rmvprior=rmvprior))
+}
