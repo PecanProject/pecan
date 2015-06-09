@@ -47,21 +47,8 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
 
 
   ## priors
-  if(is.null(settings$assim.batch$prior.id)){
-    ## by default, use the most recent posterior as the prior
-    pft.id <-  db.query(paste0("SELECT id from pfts where name = '",settings$pfts$pft$name,"'"),con)
-    priors <-  db.query(paste0("SELECT * from posteriors where pft_id = ",pft.id),con)
-
-    prior.db <- db.query(paste0("SELECT * from dbfiles where container_type = 'Posterior' and container_id IN (", paste(priors$id, collapse=','), ")"),con)
-
-    prior.db <- prior.db[grep("post.distns.Rdata",prior.db$file_name),]
-
-    settings$assim.batch$prior.id <- prior.db$container_id[which.max(prior.db$updated_at)]
-  }
-  prior.db <- db.query(paste0("SELECT * from dbfiles where container_type = 'Posterior' and container_id = ", settings$assim.batch$prior.id),con)
-  prior.db <- prior.db[grep("post.distns.Rdata",prior.db$file_name),]
-  load(file.path(prior.db$file_path,"post.distns.Rdata"))
-  prior <- post.distns
+  pda.load.priors(settings, con)     # Load a posterior distribution to be used as prior
+  prior <- post.distns               # Rename
   pname <-  rownames(prior) 
   n.param.all  <- nrow(prior)
 
