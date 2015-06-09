@@ -429,3 +429,24 @@ pda.init.run <- function(settings, con, my.write.config, workflow.id, ensemble.i
   return(run.ids)
 }
 
+
+
+
+
+
+
+
+pda.adjust.jumps <- function(settings, accept.rate, pnames=NULL) {
+  logger.info(paste0("Acceptance rates were (", 
+                    paste(pnames, collapse=", "), ") = (", 
+                    paste(round(accept.rate/settings$assim.batch$jump$adapt,3), 
+                      collapse=", "), ")"))
+  logger.info(paste0("Using jump variances (", 
+                    paste(round(settings$assim.batch$jump$jvar,3), collapse=", "), ")"))
+
+  adj <- accept.rate / settings$assim.batch$jump$adapt / settings$assim.batch$jump$ar.target
+  adj[adj < settings$assim.batch$jump$adj.min] <- settings$assim.batch$jump$adj.min
+  settings$assim.batch$jump$jvar <- settings$assim.batch$jump$jvar * adj
+  logger.info(paste0("New jump variances are (", 
+                    paste(round(settings$assim.batch$jump$jvar,3), collapse=", "), ")"))
+}

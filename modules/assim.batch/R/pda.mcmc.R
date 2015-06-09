@@ -124,20 +124,8 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
 
     ## Adjust Jump distribution
     if(i %% settings$assim.batch$jump$adapt < 1){
-        logger.info(paste0("Acceptance rates were (", 
-                          paste(pname[prior.ind], collapse=", "), ") = (", 
-                          paste(round(accept.rate/settings$assim.batch$jump$adapt,3), 
-                            collapse=", "), ")"))
-        logger.info(paste0("Using jump variances (", 
-                          paste(round(settings$assim.batch$jump$jvar,3), collapse=", "), ")"))
-
-        adj <- accept.rate / settings$assim.batch$jump$adapt / settings$assim.batch$jump$ar.target
-        adj[adj < settings$assim.batch$jump$adj.min] <- settings$assim.batch$jump$adj.min
-        settings$assim.batch$jump$jvar <- settings$assim.batch$jump$jvar * adj
-        logger.info(paste0("New jump variances are (", 
-                          paste(round(settings$assim.batch$jump$jvar,3), collapse=", "), ")"))
-
-        accept.rate <- numeric(n.param)
+      pda.adjust.jumps(settings, accept.rate, pnames=pname[prior.ind])
+      accept.rate <- numeric(n.param)
     }
 
     for(j in 1:n.param){
