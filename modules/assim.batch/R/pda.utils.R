@@ -100,11 +100,16 @@ pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   # Some settings can be supplied via settings (for automation) or explicitly (interactive). 
   # An explicit argument overrides whatever is in settings, if anything.
   # If neither an argument or a setting is provided, set a default value in settings. 
+  
+  # Each assignment below includes an explicit type conversion to avoid problems later. 
 
  
   # params.id: Either null or an ID used to query for a matrix of MCMC samples later
   if(!is.null(params.id)) {
     settings$assim.batch$params.id <- params.id
+  }
+  if(!is.null(settings$assim.batch$params.id)) {
+    settings$assim.batch$params.id <- as.character(settings$assim.batch$params.id)
   }
 
 
@@ -114,12 +119,17 @@ pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   }
   if(is.null(settings$assim.batch$param.names)) {
     logger.error('Parameter data assimilation requested, but no parameters specified for PDA')
+  } else {
+    settings$assim.batch$param.names <- as.character(settings$assim.batch$param.names)
   }
 
 
   # prior: Either null or an ID used to query for priors later
   if(!is.null(prior.id)) {
     settings$assim.batch$prior.id <- prior.id
+  }
+  if(!is.null(settings$assim.batch$prior.id)) {
+    settings$assim.batch$prior.id <- as.character(settings$assim.batch$prior.id)
   }
 
 
@@ -130,6 +140,7 @@ pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   if(is.null(settings$assim.batch$chain)) {   # Default
     settings$assim.batch$chain <- 1
   }
+  settings$assim.batch$chain <- as.numeric(settings$assim.batch$chain)
 
 
   # iter: Number of MCMC iterations. 
@@ -139,6 +150,7 @@ pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   if(is.null(settings$assim.batch$iter)) {   # Default
     settings$assim.batch$iter <- 100
   }
+  settings$assim.batch$iter <- as.numeric(settings$assim.batch$iter)
 
 
 
@@ -148,8 +160,9 @@ pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     settings$assim.batch$jump$adapt <- adapt
   }
   if(is.null(settings$assim.batch$jump$adapt)) {   # Default
-    settings$assim.batch$jump$adapt = floor(settings$assim.batch$iter/10)
+    settings$assim.batch$jump$adapt <- floor(settings$assim.batch$iter/10)
   }
+  settings$assim.batch$jump$adapt <- as.numeric(settings$assim.batch$jump$adapt)
 
 
   # adj.min: minimum amount to reduce jump distribution by. 
@@ -159,7 +172,8 @@ pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   if(is.null(settings$assim.batch$jump$adj.min)) {   # Default
     settings$assim.batch$jump$adj.min <- 0.1
   }
-
+  settings$assim.batch$jump$adj.min <- as.numeric(settings$assim.batch$jump$adj.min)
+  
   
   # ar.target: Target acceptance rate. Can be a single value of vector, one for each variable assimilated against. 
   if(!is.null(ar.target)) {
@@ -168,6 +182,7 @@ pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   if(is.null(settings$assim.batch$jump$ar.target)) {   # Default
     settings$assim.batch$jump$ar.target <- 0.5
   }
+  settings$assim.batch$jump$ar.target <- as.numeric(settings$assim.batch$jump$ar.target)
 
 
   # jvar: Initial jump variances. Defaults to 1, which is foolish but should be fixed adaptively. 
@@ -180,6 +195,7 @@ pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   if(is.null(settings$assim.batch$jump$jvar)) {
     settings$assim.batch$jump$jvar <- rep(1, length(param.names))
   }
+  settings$assim.batch$jump$jvar <- as.numeric(settings$assim.batch$jump$jvar)
   
   return(settings)
 }

@@ -23,7 +23,7 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   ## this bit of code is useful for defining the variables passed to this function 
   ## if you are debugging
   if(FALSE){
-    params.id <- param.names <- prior.id <- chain <- iter NULL 
+    params.id <- param.names <- prior.id <- chain <- iter <- NULL 
     adapt <- adj.min <- ar.target <- jvar <- NULL
   }
 
@@ -168,7 +168,7 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
 
 
   ## Allocate storage for params
-  if(exists(params)) {  # Matrix of params was just loaded
+  if(exists('params')) {  # Matrix of params was just loaded
     start  <- nrow(params) + 1
     finish <- nrow(params) + as.numeric(settings$assim.batch$iter)
     params <- rbind(params, matrix(NA, finish - start + 1, n.param.all))
@@ -191,7 +191,7 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   } else{
     parm <- params[start-1, ]
   }
-  names(parm) = pname
+  names(parm) <- pname
   LL.old <- -Inf
   prior.old <- -Inf
 
@@ -355,7 +355,7 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
 
 
         ## accept or reject step
-        a = LL.total-LL.old + prior.star - prior.old
+        a <- LL.total - LL.old + prior.star - prior.old
         if(a > log(runif(1))){
           LL.old <- LL.total
           prior.old <- prior.star
