@@ -89,25 +89,12 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   llik.fn <- pda.define.llik.fn(settings)
 
 
-  ## Load params from previous run, if provided. 
-  if(!is.null(settings$assim.batch$params.id)) {
-    params.db <- db.query(paste0("SELECT * FROM dbfiles WHERE id = ", params.id), con)
-    load(file.path(params.db$file_path, params.db$file_name)) # replaces params
-  }
+  ## Initialize empty params matrix (concatenated to params from a previous PDA, if provided)
+  params <- pda.init.params(settings, con, pname, n.param.all)
+    start  <- params$start
+    finish <- params$finish
+    params <- params$params
 
-
-  ## Allocate storage for params
-  if(exists('params')) {  # Matrix of params was just loaded
-    start  <- nrow(params) + 1
-    finish <- nrow(params) + as.numeric(settings$assim.batch$iter)
-    params <- rbind(params, matrix(NA, finish - start + 1, n.param.all))
-  } else {              # No input given, starting fresh
-    start  <- 1
-    finish <- as.numeric(settings$assim.batch$iter)
-    params <- matrix(NA, finish, n.param.all)
-  }
-  colnames(params) <- pname
-  
 
   ## Propose parameter knots (X) for emulator design
     n.samp <- 10 # Number of values of each parameter to try  **** MOVE TO ARGUMENT
@@ -330,7 +317,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
 
 
   dbfile.insert(dirname(filename.mcmc), basename(filename.mcmc), 'Posterior', posteriorid, con)
-  params.id <- db.query(paste0(
+  settings$assim.batch$params.id <- db.query(paste0(
     "SELECT id FROM dbfiles WHERE 
       container_type = 'Posterior' AND file_name = 'pda.mcmc.Rdata' AND
       container_id = ", posteriorid),con)
