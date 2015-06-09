@@ -17,7 +17,7 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   if(!('assim.batch' %in% names(settings))) {
     return()
   }
-#
+
   require(coda)
   
   ## this bit of code is useful for defining the variables passed to this function 
@@ -386,6 +386,7 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
 
   burnin <- min(2000,0.2*nrow(params))
   params.subset <- as.data.frame(params[burnin:nrow(params),prior.ind])
+    names(params.subset) <- pname[prior.ind]
   dm <- as.mcmc(params.subset)
 
   plot(dm)

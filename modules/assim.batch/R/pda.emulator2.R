@@ -11,8 +11,8 @@
 ##' @author Mike Dietze
 ##' @author Ryan Kelly
 ##' @export
-pda.emulator <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior=NULL, chain=NULL,
-                     adapt=NULL, adj.min=NULL, ar.target=NULL){
+pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, chain=NULL, 
+                     iter=NULL, adapt=NULL, adj.min=NULL, ar.target=NULL, jvar=NULL) {
   # Quit if pda not requested in settings
   if(!('assim.batch' %in% names(settings))) {
     return()
@@ -23,53 +23,16 @@ pda.emulator <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior
   ## this bit of code is useful for defining the variables passed to this function 
   ## if you are debugging
   if(FALSE){
-    settings$model$type <- "SIPNET"
-    chain <- 1
-    params <- NULL
-    var.names <- "Amax"
-    jvar <- NULL
-    var.id <- 297 ## NEE, canonical units umolC/m2/s
-
-    params <- jvar <- var.names <- prior <- chain <- adapt <- adj.min <- ar.target <- NULL
+    params.id <- param.names <- prior.id <- chain <- iter <- NULL 
+    adapt <- adj.min <- ar.target <- jvar <- NULL
   }
 
 
   ## settings
-    # Some settings can be supplied via settings (for automation) or explicitly (interactive). 
-    # An explicit argument overrides whatever is in settings, if anything.
-    if(is.null(params)) {
-      params <- settings$assim.batch$params
-    }
-    if(is.null(jvar)) {
-      jvar <- as.numeric(settings$assim.batch$jump$jvar)
-    }
-    if(is.null(adapt)) {
-      adapt <- as.numeric(settings$assim.batch$jump$adapt)
-      if(is.null(adapt)) { # Default
-        adapt = floor(settings$assim.batch$iter/10)
-      }
-    }
-    if(is.null(adj.min)) {
-      adj.min <- as.numeric(settings$assim.batch$jump$adj.min)
-      if(is.null(adj.min)) { # Default
-        adj.min = 0.1
-      }
-    }
-    if(is.null(ar.target)) {
-      ar.target <- as.numeric(settings$assim.batch$jump$ar.target)
-      if(is.null(ar.target)) { # Default
-        ar.target = 0.5
-      }
-    }
-    if(is.null(var.names)) {
-      var.names  <- as.character(settings$assim.batch$var.names)
-    }
-    if(is.null(prior)) {
-      prior <- settings$assim.batch$prior
-    }
-    if(is.null(chain)) {
-      chain <- ifelse(is.null(settings$assim.batch$chain), 1, settings$assim.batch$chain)
-    }
+    settings <- pda.settings(
+                  settings=settings, params.id=params.id, param.names=param.names, 
+                  prior.id=prior.id, chain=chain, iter=iter, adapt=adapt, 
+                  adj.min=adj.min, ar.target=ar.target, jvar=jvar)
 
 
   ## open database connection
@@ -84,7 +47,7 @@ pda.emulator <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior
 
 
   ## priors
-  if(is.null(prior)){
+  if(is.null(settings$assim.batch$prior.id)){
     ## by default, use the most recent posterior as the prior
     pft.id <-  db.query(paste0("SELECT id from pfts where name = '",settings$pfts$pft$name,"'"),con)
     priors <-  db.query(paste0("SELECT * from posteriors where pft_id = ",pft.id),con)
@@ -93,25 +56,19 @@ pda.emulator <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior
 
     prior.db <- prior.db[grep("post.distns.Rdata",prior.db$file_name),]
 
-    prior.id <- prior.db$container_id[which.max(prior.db$updated_at)]
-  } else {
-    prior.id <- prior
+    settings$assim.batch$prior.id <- prior.db$container_id[which.max(prior.db$updated_at)]
   }
-  prior.db <- db.query(paste0("SELECT * from dbfiles where container_type = 'Posterior' and container_id = ", prior.id),con)
+  prior.db <- db.query(paste0("SELECT * from dbfiles where container_type = 'Posterior' and container_id = ", settings$assim.batch$prior.id),con)
   prior.db <- prior.db[grep("post.distns.Rdata",prior.db$file_name),]
   load(file.path(prior.db$file_path,"post.distns.Rdata"))
   prior <- post.distns
   pname <-  rownames(prior) 
-  nvar  <- nrow(prior)
+  n.param.all  <- nrow(prior)
 
 
   ## Select parameters to constrain
-  if(is.null(var.names)){
-    vars <- 1:nvar
-  } else {
-    vars <- which(rownames(prior) %in% var.names)
-  }
-  nvar.sample <- length(vars)
+  prior.ind <- which(rownames(prior) %in% settings$assim.batch$param.names)
+  n.param <- length(prior.ind)
 
 
   ## Get the workflow id
@@ -144,7 +101,7 @@ pda.emulator <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior
 
   ## set up prior density (d) and random (r) functions
   dprior <- rprior <- qprior <-list()
-  for(i in 1:nvar){
+  for(i in 1:n.param.all){
     if(prior$distn[i] == 'exp'){
       dprior[[i]] <- parse(text=paste("dexp(x,",prior$parama[i],",log=TRUE)",sep=""))
       rprior[[i]] <- parse(text=paste("rexp(n,",prior$parama[i],")",sep=""))
@@ -156,8 +113,8 @@ pda.emulator <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior
     }
   }
   dmvprior <- function(x,log=TRUE){  #multivariate prior - density
-    p <- rep(NA,nvar)
-    for(i in 1:nvar){
+    p <- rep(NA,n.param.all)
+    for(i in 1:n.param.all){
       p[i] <- eval(dprior[[i]],list(x=x[i]))
     }
     p = sum(p)
@@ -166,8 +123,8 @@ pda.emulator <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior
     return(p)
   }
   rmvprior <- function(n){  #multivariate prior - random number
-    p <- matrix(NA,n,nvar)
-    for(i in 1:nvar){
+    p <- matrix(NA,n,n.param.all)
+    for(i in 1:n.param.all){
       p[,i] <- eval(rprior[[i]],list(n=n))
     }
     return(p)
@@ -204,22 +161,21 @@ pda.emulator <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior
 
 
   ## Load params from previous run, if provided. 
-  #  Indicated if params is a single non-null value, i.e. a dbfile ID
-  if(length(params)==1) {
-    params.db <- db.query(paste0("SELECT * FROM dbfiles WHERE id = ", params), con)
+  if(!is.null(settings$assim.batch$params.id)) {
+    params.db <- db.query(paste0("SELECT * FROM dbfiles WHERE id = ", params.id), con)
     load(file.path(params.db$file_path, params.db$file_name)) # replaces params
   }
 
 
   ## Allocate storage for params
-  if(is.null(params)) { # No input given, starting fresh
-    start  <- 1
-    finish <- as.numeric(settings$assim.batch$iter)
-    params <- matrix(NA, finish, nvar)
-  } else {  
+  if(exists('params')) {  # Matrix of params was just loaded
     start  <- nrow(params) + 1
     finish <- nrow(params) + as.numeric(settings$assim.batch$iter)
-    params <- rbind(params, matrix(NA, finish - start + 1, nvar))
+    params <- rbind(params, matrix(NA, finish - start + 1, n.param.all))
+  } else {              # No input given, starting fresh
+    start  <- 1
+    finish <- as.numeric(settings$assim.batch$iter)
+    params <- matrix(NA, finish, n.param.all)
   }
   colnames(params) <- pname
   
@@ -227,14 +183,14 @@ pda.emulator <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior
   ## Propose parameter knots (X) for emulator design
     n.samp <- 10 # Number of values of each parameter to try  **** MOVE TO ARGUMENT
 
-    probs <- matrix(0.5, nrow=n.samp, ncol=nvar) # By default, all parameters will be fixed at their median
+    probs <- matrix(0.5, nrow=n.samp, ncol=n.param.all) # By default, all parameters will be fixed at their median
   
     # Fill in parameters to be sampled with probabilities sampled in a LHC design
-    probs[, vars] <- lhc(t(matrix(0:1, ncol=nvar.sample, nrow=2)), n.samp)
+    probs[, prior.ind] <- lhc(t(matrix(0:1, ncol=n.param, nrow=2)), n.samp)
 
     # Convert probabilities to parameter values
     params <- NA*probs
-    for(i in 1:nvar) {
+    for(i in 1:n.param.all) {
       params[,i] <- eval(qprior[[i]], list(p=probs[,i]))
     }
     colnames(params) <- pname
@@ -280,7 +236,7 @@ pda.emulator <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior
         "ensemble id : ", as.character(ensemble.id), "\n",
         "chain       : ", chain, "\n",
         "run         : ", i, "\n",
-        "variable    : ", paste(pname[vars], sep=", "), "\n",
+        "variable    : ", paste(pname[prior.ind], sep=", "), "\n",
         "run id      : ", as.character(run.id), "\n",
         "pft names   : ", as.character(lapply(settings$pfts, function(x) x[['name']])), "\n",
         "model       : ", settings$model$type, "\n",
@@ -370,8 +326,8 @@ pda.emulator <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior
   ## Collect all likelihoods (Y)
   # For now, just the likelihoods from the runs we just did. 
   # *** TODO: Soon, need to add ability to retrieve them from previous runs, because we want to build the emulator from as many points as possible. The likelihoods are easy—they're being stored in BETY. But we need to know the parameter values associated with them too, and that will take a bit of doing.
-  X <- data.frame(params[, vars])
-    names(X) <- pname[vars]
+  X <- data.frame(params[, prior.ind])
+    names(X) <- pname[prior.ind]
   Y <- LL.X
   
 
@@ -384,8 +340,8 @@ pda.emulator <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior
   ## Sample posterior from emulator
 
   m<-lapply(1, function(chain){
-        init.x <- lapply(vars, function(v) eval(rprior[[v]], list(n=1)))
-        names(init.x) <- pname[vars]
+        init.x <- lapply(prior.ind, function(v) eval(rprior[[v]], list(n=1)))
+        names(init.x) <- pname[prior.ind]
         mcmc.GP(kernlab.gp, ## emulator
             init.x,  ## initial conditions
             nmcmc = 2000,      ## number of reps
@@ -393,7 +349,7 @@ pda.emulator <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior
             "lin",      ## "lin"ear vs "log" of LogLikelihood 
             mix = "each", ## jump "each" dimension independently or update them "joint"ly
             jmp0 = apply(X,2,function(x) 0.3*diff(range(x))),
-            priors=dprior[vars]
+            priors=dprior[prior.ind]
         )$mcmc
       })
 
@@ -402,7 +358,7 @@ pda.emulator <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior
   # *** TODO: Generalize to >1 chain
   params.modeled <- params # rename for clarity
   params.emulated <- matrix(params[1,], nrow=nrow(m[[1]]), ncol=ncol(params), byrow=T)
-  params.emulated[, vars] <- m[[1]]
+  params.emulated[, prior.ind] <- m[[1]]
   params <- rbind(params, params.emulated)
   
 
@@ -416,12 +372,13 @@ pda.emulator <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior
   pdf(file.path(settings$pfts$pft$outdir,"pda.mcmc.diagnostics.pdf"))
 
   burnin <- min(2000,0.2*nrow(params))
-  params.subset <- as.data.frame(params[burnin:nrow(params),vars])
+  params.subset <- as.data.frame(params[burnin:nrow(params),prior.ind])
+    names(params.subset) <- pname[prior.ind]
   dm <- as.mcmc(params.subset)
 
   plot(dm)
   summary(dm)
-  if(length(vars)>1){
+  if(length(prior.ind)>1){
     crosscorr(dm)
     pairs(params.subset)
   }
@@ -460,7 +417,7 @@ pda.emulator <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior
   ## coerce parameter output into the same format as trait.mcmc
   pname <- rownames(post.distns)
   trait.mcmc <- list()
-  for(i in vars){
+  for(i in prior.ind){
     beta.o <- array(params[,i],c(nrow(params),1))
     colnames(beta.o) <- "beta.o"
     if(pname[i] %in% names(trait.mcmc)) {
@@ -485,15 +442,7 @@ pda.emulator <- function(settings, params=NULL, jvar=NULL, var.names=NULL, prior
 
 
   ## Output an updates settings list
-  out <- settings$assim.batch
-  out$params    <- params.id
-  out$jump$jvar      <- as.list(jvar)
-    names(out$jump$jvar) <- rep('jvar', length(jvar))
-  out$var.names <- as.list(var.names)
-    names(out$var.names) <- rep('var', length(var.names))
-  out$prior     <- prior.id
-  out$chain     <- chain
-  return(out)
+  return(settings$assim.batch)
   
 } ## end pda.mcmc
 
