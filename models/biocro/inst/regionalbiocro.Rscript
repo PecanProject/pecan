@@ -1,12 +1,13 @@
 #!/usr/bin/env Rscript
 
-library(PEcAn.all)
+
 library(PEcAn.BIOCRO)
 library(BioCro)
-
+args   <- commandArgs(trailingOnly = TRUE)
 rundir <- args[1]
 outdir <- args[2]
 if(interactive()) {
+  library(PEcAn.all)
   settings <- read.settings("~/dev/biocro_regional/vignettes/champaign_mxg_settings.xml")
   runid <- tail(readLines(file.path(settings$rundir, "runs.txt")), n = 1)
   rundir <- file.path(settings$rundir, runid)
