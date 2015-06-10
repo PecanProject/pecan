@@ -93,8 +93,12 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   filename.mcmc.temp <- file.path(settings$outdir, "pda.mcmc.txt")
 
   ## Set initial conditions
-  parm <- ifelse(start==1, sapply(prior.fn$qprior,eval,list(p=0.5)), params[start-1, ])
-    names(parm) <- pname
+  if(start==1) {
+    parm <- sapply(prior.fn$qprior,eval,list(p=0.5))
+  } else {
+    parm <- params[start-1, ]
+  }
+  names(parm) <- pname
   LL.old <- prior.old <- -Inf
 
   ## Jump distribution setup
