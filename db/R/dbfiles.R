@@ -236,7 +236,7 @@ dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname=fqdn
 ##' \dontrun{
 ##'   dbfile.insert('somefile.txt', 'Input', 7, dbcon)
 ##' }
-dbfile.insert <- function(in.path,in.prefix, type, id, con, hostname=fqdn()) {
+dbfile.insert <- function(in.path,in.prefix, type, id, con, reuse=TRUE, hostname=fqdn()) {
   if (hostname == "localhost") hostname <- fqdn();
   
   # find appropriate host
