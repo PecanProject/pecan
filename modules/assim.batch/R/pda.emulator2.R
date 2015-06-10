@@ -122,6 +122,8 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   ## start model runs
   start.model.runs(settings,settings$database$bety$write)
 
+
+  ## Retrieve model outputs, calculate likelihoods (and store them in database)
   LL.X <- rep(NA, n.knot)
   for(i in 1:n.knot) {
     ## read model outputs

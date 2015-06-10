@@ -148,13 +148,13 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
         ## read model outputs
         model.out <- pda.get.model.output(settings, run.id, inputs)
     
-        ## calculate likelihood
+        ## calculate likelihood (and store in database)
         LL.new <- pda.calc.llik(settings, con, model.out, inputs, llik.fn)
 
         ## accept or reject step
-        a <- LL.total - LL.old + prior.star - prior.old
+        a <- LL.new - LL.old + prior.star - prior.old
         if(a > log(runif(1))){
-          LL.old <- LL.total
+          LL.old <- LL.new
           prior.old <- prior.star
           parm <- pstar 
           accept.rate[j] <- accept.rate[j] + 1
