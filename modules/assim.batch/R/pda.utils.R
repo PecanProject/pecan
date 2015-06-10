@@ -454,7 +454,7 @@ pda.adjust.jumps <- function(settings, accept.rate, pnames=NULL) {
 
 
 
-pda.get.model.outputs <- function(settings, run.id) {
+pda.get.model.output <- function(settings, run.id) {
   # TODO: Generalize to multiple outputs and outputs other than NEE
   
   # Placeholder code to remind us that this function should eventually deal with assimilating
