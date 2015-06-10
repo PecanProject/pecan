@@ -533,3 +533,62 @@ pda.plot.params <- function(settings, params.subset, prior.ind) {
     }
   dev.off()
 }
+
+
+pda.postprocess <- function(settings, con, params, prior, prior.ind) {
+  ## Save params
+  filename.mcmc <- file.path(settings$outdir, "pda.mcmc.Rdata")
+  save(params, file = filename.mcmc)
+
+  ## Assess MCMC output
+  burnin <- min(2000,0.2*nrow(params))
+  params.subset <- as.data.frame(params[burnin:nrow(params),prior.ind])
+    names(params.subset) <- pname[prior.ind]
+  pda.plot.params(settings, params.subset, prior.ind)
+
+  ## create a new Posteriors DB entry
+  now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+  pft.id <- db.query(paste0(
+    "SELECT id from pfts where name = '", settings$pfts$pft$name,"'"), con)
+
+  db.query(paste0(
+    "INSERT INTO posteriors (pft_id, created_at, updated_at) VALUES (", 
+    pft.id, ", '", now, "', '", now, "')"), con)
+
+  posteriorid <- db.query(paste0(
+    "SELECT id FROM posteriors WHERE pft_id=", pft.id, " AND created_at='", now, "'"), con)[['id']]
+
+  settings$assim.batch$params.id <- dbfile.insert(
+    dirname(filename.mcmc), basename(filename.mcmc), 'Posterior', posteriorid, con, reuse=TRUE)
+
+  ## save named distributions
+  # *** TODO: Generalize for multiple PFTS
+  filename <- file.path(settings$pfts$pft$outdir, 'post.distns.Rdata')
+  post.distns <- approx.posterior(params.subset, prior, outdir = settings$pfts$pft$outdir)
+  save(post.distns, file = filename)
+  dbfile.insert(dirname(filename), basename(filename), 'Posterior', posteriorid, con)
+
+  ## coerce parameter output into the same format as trait.mcmc
+  # ********* TODO: Check/fix... do we really want to save mcmc for only the parameters that were updated???
+  pname <- rownames(post.distns)
+  trait.mcmc <- list()
+  for(i in prior.ind){
+    beta.o <- array(params[,i],c(nrow(params),1))
+    colnames(beta.o) <- "beta.o"
+    if(pname[i] %in% names(trait.mcmc)) {
+      trait.mcmc[[pname[i]]] <- mcmc.list(as.mcmc(beta.o))
+    } else {
+      k <- length(trait.mcmc) + 1
+      trait.mcmc[[k]] <- mcmc.list(as.mcmc(beta.o))
+      names(trait.mcmc)[k] <- pname[i]      
+    }
+  }
+
+  ## save updated parameter distributions as trait.mcmc so that they can be read by the ensemble code
+  # *** TODO: Generalize for multiple PFTS
+  filename <- file.path(settings$pfts$pft$outdir, 'trait.mcmc.Rdata')
+  save(trait.mcmc, file = filename)
+  dbfile.insert(dirname(filename), basename(filename), 'Posterior', posteriorid, con)
+  
+  return(settings)
+}

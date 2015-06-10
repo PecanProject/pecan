@@ -11,8 +11,8 @@
 ##' @author Mike Dietze
 ##' @author Ryan Kelly
 ##' @export
-pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, chain=NULL, 
-                     iter=NULL, adapt=NULL, adj.min=NULL, ar.target=NULL, jvar=NULL) {
+pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, chain=NULL, 
+                     iter=NULL, adapt=NULL, adj.min=NULL, ar.target=NULL, jvar=NULL, n.knot=NULL) {
   # Quit if pda not requested in settings
   if(!('assim.batch' %in% names(settings))) {
     return()
@@ -27,12 +27,12 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
     adapt <- adj.min <- ar.target <- jvar <- NULL
   }
 
-
+  ## -------------------------------------- Setup ------------------------------------- ##
   ## Handle settings
     settings <- pda.settings(
                   settings=settings, params.id=params.id, param.names=param.names, 
                   prior.id=prior.id, chain=chain, iter=iter, adapt=adapt, 
-                  adj.min=adj.min, ar.target=ar.target, jvar=jvar)
+                  adj.min=adj.min, ar.target=ar.target, jvar=jvar, n.knot=n.knot)
 
   ## Open database connection
   if(settings$database$bety$write){
@@ -49,6 +49,16 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   pname <-  rownames(prior) 
   n.param.all  <- nrow(prior)
 
+  ## Load data to assimilate against
+  inputs <- load.pda.data(settings$assim.batch$inputs)
+  n.input <- length(inputs)
+
+  ## Set model-specific functions
+  do.call("require",list(paste0("PEcAn.", settings$model$type)))
+  my.write.config <- paste("write.config.", settings$model$type,sep="")
+  if(!exists(my.write.config)){
+    logger.severe(paste(my.write.config,"does not exist. Please make sure that the PEcAn interface is loaded for", settings$model$type))
+  }
 
   ## Select parameters to constrain
   prior.ind <- which(rownames(prior) %in% settings$assim.batch$param.names)
@@ -64,23 +74,14 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   ## Create an ensemble id
   ensemble.id <- pda.create.ensemble(settings, con, workflow.id)
 
-  ## Set model-specific functions
-  do.call("require",list(paste0("PEcAn.", settings$model$type)))
-  my.write.config <- paste("write.config.", settings$model$type,sep="")
-  if(!exists(my.write.config)){
-    logger.severe(paste(my.write.config,"does not exist. Please make sure that the PEcAn interface is loaded for", settings$model$type))
-  }
-
   ## Set prior distribution functions (d___, q___, r___, and multivariate versions)
   prior.fn <- pda.define.prior.fn(prior)
-  
-  ## Load data to assimilate against
-  inputs <- load.pda.data(settings$assim.batch$inputs)
-  n.input <- length(inputs)
 
   ## Set up likelihood functions
   llik.fn <- pda.define.llik.fn(settings)
 
+
+  ## ----------------------------------- MCMC Setup ----------------------------------- ##
   ## Initialize empty params matrix (concatenated to params from a previous PDA, if provided)
   params <- pda.init.params(settings, con, pname, n.param.all)
     start  <- params$start
@@ -154,73 +155,16 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
     ## Add to temp file (overwrite when i=1, append thereafter)
     cat(c(parm,'\n'), file=filename.mcmc.temp, sep='\t', append=(i != 1))
   }
-  ## --------------------------------- End MCMC loop ---------------------------------- ##
-
-  ## Save raw MCMC
-  filename.mcmc <- file.path(settings$outdir, "pda.mcmc.Rdata")
-  save(params, file = filename.mcmc)
-
-  ## Assess MCMC output
-  burnin <- min(2000,0.2*nrow(params))
-  params.subset <- as.data.frame(params[burnin:nrow(params),prior.ind])
-    names(params.subset) <- pname[prior.ind]
-  pda.plot.params(settings, params.subset, prior.ind)
-
-  ## create a new Posteriors DB entry
-  now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-  pft.id <- db.query(paste0(
-    "SELECT id from pfts where name = '", settings$pfts$pft$name,"'"), con)
-
-  db.query(paste0(
-    "INSERT INTO posteriors (pft_id, created_at, updated_at) VALUES (", 
-    pft.id, ", '", now, "', '", now, "')"), con)
-
-  posteriorid <- db.query(paste0(
-    "SELECT id FROM posteriors WHERE pft_id=", pft.id, " AND created_at='", now, "'"), con)[['id']]
-
-  settings$assim.batch$params.id <- dbfile.insert(
-    dirname(filename.mcmc), basename(filename.mcmc), 'Posterior', posteriorid, con, reuse=TRUE)
 
 
-  ## save named distributions
-  # *** TODO: Generalize for multiple PFTS
-  filename <- file.path(settings$pfts$pft$outdir, 'post.distns.Rdata')
-  post.distns <- approx.posterior(params.subset, prior, outdir = settings$pfts$pft$outdir)
-  save(post.distns, file = filename)
-  dbfile.insert(dirname(filename), basename(filename), 'Posterior', posteriorid, con)
-
-
-  ## coerce parameter output into the same format as trait.mcmc
-  # ********* TODO: Check/fix... do we really want to save mcmc for only the parameters that were updated???
-  pname <- rownames(post.distns)
-  trait.mcmc <- list()
-  for(i in prior.ind){
-    beta.o <- array(params[,i],c(nrow(params),1))
-    colnames(beta.o) <- "beta.o"
-    if(pname[i] %in% names(trait.mcmc)) {
-      trait.mcmc[[pname[i]]] <- mcmc.list(as.mcmc(beta.o))
-    } else {
-      k <- length(trait.mcmc) + 1
-      trait.mcmc[[k]] <- mcmc.list(as.mcmc(beta.o))
-      names(trait.mcmc)[k] <- pname[i]      
-    }
-  }
-
-
-  ## save updated parameter distributions as trait.mcmc so that they can be read by the ensemble code
-  # *** TODO: Generalize for multiple PFTS
-  filename <- file.path(settings$pfts$pft$outdir, 'trait.mcmc.Rdata')
-  save(trait.mcmc, file = filename)
-  dbfile.insert(dirname(filename), basename(filename), 'Posterior', posteriorid, con)
-
+  ## ------------------------------------ Clean up ------------------------------------ ##
+  ## Save outputs to plots, files, and db
+  settings <- pda.postprocess(settings, con, params, prior, prior.ind)
 
   ## close database connection
   if(!is.null(con)) db.close(con)
-
 
   ## Output an updated settings list
   return(settings$assim.batch)
   
 } ## end pda.mcmc
-
-
