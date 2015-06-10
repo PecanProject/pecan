@@ -140,7 +140,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
 
   ## ------------------------------------ Clean up ------------------------------------ ##
   ## Save outputs to plots, files, and db
-  settings <- pda.postprocess(settings, con, params, prior, prior.ind)
+  settings <- pda.postprocess(settings, con, params, pname, prior, prior.ind)
 
   ## close database connection
   if(!is.null(con)) db.close(con)

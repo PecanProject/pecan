@@ -535,7 +535,7 @@ pda.plot.params <- function(settings, params.subset, prior.ind) {
 }
 
 
-pda.postprocess <- function(settings, con, params, prior, prior.ind) {
+pda.postprocess <- function(settings, con, params, pname, prior, prior.ind) {
   ## Save params
   filename.mcmc <- file.path(settings$outdir, "pda.mcmc.Rdata")
   save(params, file = filename.mcmc)

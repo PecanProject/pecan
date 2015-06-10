@@ -11,7 +11,7 @@
 ##' @author Mike Dietze
 ##' @author Ryan Kelly
 ##' @export
-pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, chain=NULL, 
+pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, chain=NULL, 
                      iter=NULL, adapt=NULL, adj.min=NULL, ar.target=NULL, jvar=NULL, n.knot=NULL) {
   # Quit if pda not requested in settings
   if(!('assim.batch' %in% names(settings))) {
@@ -159,7 +159,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
 
   ## ------------------------------------ Clean up ------------------------------------ ##
   ## Save outputs to plots, files, and db
-  settings <- pda.postprocess(settings, con, params, prior, prior.ind)
+  settings <- pda.postprocess(settings, con, params, pname, prior, prior.ind)
 
   ## close database connection
   if(!is.null(con)) db.close(con)
