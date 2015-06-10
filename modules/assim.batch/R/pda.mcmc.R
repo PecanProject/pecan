@@ -250,6 +250,11 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
 
 
   ## Output an updated settings list
+  settings$assim.batch$jump$jvar <- as.list(settings$assim.batch$jump$jvar)
+    names(settings$assim.batch$jump$jvar) <- rep('jvar', length(settings$assim.batch$jump$jvar))
+  settings$assim.batch$param.names <- as.list(settings$assim.batch$param.names)
+    names(settings$assim.batch$param.names) <- rep('param', length(settings$assim.batch$param.names))
+
   return(settings$assim.batch)
   
 } ## end pda.mcmc
