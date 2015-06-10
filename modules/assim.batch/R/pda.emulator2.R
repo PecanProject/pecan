@@ -88,13 +88,14 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     params <- params$params
 
   ## Propose parameter knots (X) for emulator design
-  params <- pda.generate.knots(settings$assim.batch$n.knot, n.param.all, prior.ind, prior.fn)
+  params <- pda.generate.knots(settings$assim.batch$n.knot, n.param.all, prior.ind, prior.fn, pname)
 
   
 
   ## Set up runs and write run configs for all proposed knots X
   run.ids <- pda.init.run(settings, con, my.write.config, workflow.id, ensemble.id, params, 
-                          n=n.knot, run.names=paste0("Knot.",1:n.knot))
+                          n=settings$assim.batch$n.knot, 
+                          run.names=paste0("Knot.",1:settings$assim.batch$n.knot))
 
 
   ## start model runs
@@ -102,8 +103,8 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
 
 
   ## Retrieve model outputs, calculate likelihoods (and store them in database)
-  LL.X <- rep(NA, n.knot)
-  for(i in 1:n.knot) {
+  LL.X <- rep(NA, settings$assim.batch$n.knot)
+  for(i in 1:settings$assim.batch$n.knot) {
     ## read model outputs
     model.out <- pda.get.model.output(settings, run.ids[i], inputs)
 
