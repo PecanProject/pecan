@@ -8,7 +8,6 @@
 ##' @author Ryan Kelly
 ##' @export
 load.pda.data <- function(input.settings) {
-
   ## load data
   # Outlining setup for multiple datasets, although for now the only option is to assimilate 
   # against a single NEE input
@@ -58,11 +57,10 @@ load.pda.data <- function(input.settings) {
 }
 
 
-
 ##' Set PDA Settings
 ##'
 ##' @title Set PDA Settings
-##' @param settings: pecan settings list
+##' @param all params are the identically named variables in pda.mcmc / pda.emulator
 ##'
 ##' @return An updated settings list
 ##'
@@ -181,12 +179,15 @@ pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
 }
 
 
-
-
-
-
-
-
+##' Load Priors for Paramater Data Assimilation
+##'
+##' @title Load Priors for Paramater Data Assimilation
+##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##'
+##' @return A previously-generated posterior distribution, to be used as the prior for PDA.
+##'
+##' @author Ryan Kelly
+##' @export
 pda.load.priors <- function(settings, con) {
   if(is.null(settings$assim.batch$prior.id)){
     ## by default, use the most recent posterior as the prior
@@ -208,11 +209,15 @@ pda.load.priors <- function(settings, con) {
 }
 
 
-
-
-
-
-
+##' Create PDA Ensemble
+##'
+##' @title Create ensemble record for PDA ensemble
+##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##'
+##' @return Ensemble ID of the created ensemble
+##'
+##' @author Ryan Kelly
+##' @export
 pda.create.ensemble <- function(settings, con, workflow.id) {
   if (!is.null(con)) {
     # Identifiers for ensemble 'runtype'
@@ -234,7 +239,16 @@ pda.create.ensemble <- function(settings, con, workflow.id) {
 }
 
 
-
+##' Define PDA Prior Functions
+##'
+##' @title Define PDA Prior Functions
+##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##'
+##' @return List of prior functions containing dprior, rprior, qprior, dmvprior, rmvprior.
+##'         Each of these is a list with one distribution function per parameter.
+##'
+##' @author Ryan Kelly
+##' @export
 pda.define.prior.fn <- function(prior) {
   n.param.all <- nrow(prior)
   dprior <- rprior <- qprior <-list()
@@ -271,8 +285,15 @@ pda.define.prior.fn <- function(prior) {
 }
 
 
-
-
+##' Define PDA Likelihood Functions
+##'
+##' @title Define PDA Likelihood Functions
+##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##'
+##' @return List of likelihood functions, one for each dataset to be assimilated against.
+##'
+##' @author Ryan Kelly
+##' @export
 pda.define.llik.fn <- function(settings) {
   # *** TODO: Generalize!
   # Currently just returns a single likelihood, assuming the data are flux NEE.
@@ -298,8 +319,17 @@ pda.define.llik.fn <- function(settings) {
 }
 
 
-
-
+##' Initialise Parameter Matrix for PDA
+##'
+##' @title Initialise Parameter Matrix for PDA
+##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##'
+##' @return A list containing 'start' and 'finish' counters for MCMC, as well as the params
+##'         table, which is an empty matrix concatenated to any param samples from a previous
+##'         PDA run, if provided. 
+##'
+##' @author Ryan Kelly
+##' @export
 pda.init.params <- function(settings, con, pname, n.param.all) {
   ## Load params from previous run, if provided. 
   if(!is.null(settings$assim.batch$params.id)) {
@@ -320,10 +350,15 @@ pda.init.params <- function(settings, con, pname, n.param.all) {
 }
 
 
-
-
-
-
+##' Initialise Model Runs for PDA
+##'
+##' @title Initialise Model Runs for PDA
+##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##'
+##' @return Vector of run IDs for all model runs that were set up (including write.configs)
+##'
+##' @author Ryan Kelly
+##' @export
 pda.init.run <- function(settings, con, my.write.config, workflow.id, ensemble.id, params, 
                          n=ifelse(is.null(dim(params)), 1, nrow(params)), 
                          run.names=paste("run", 1:n, sep=".")) {
@@ -400,31 +435,42 @@ pda.init.run <- function(settings, con, my.write.config, workflow.id, ensemble.i
 }
 
 
-
-
-
-
-
-
+##' Adjust PDA MCMC jump size
+##'
+##' @title Adjust PDA MCMC jump size
+##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##'
+##' @return A PEcAn settings list updated to reflect adjusted jump distributions
+##'
+##' @author Ryan Kelly
+##' @export
 pda.adjust.jumps <- function(settings, accept.rate, pnames=NULL) {
   logger.info(paste0("Acceptance rates were (", 
                     paste(pnames, collapse=", "), ") = (", 
                     paste(round(accept.rate/settings$assim.batch$jump$adapt,3), 
                       collapse=", "), ")"))
   logger.info(paste0("Using jump variances (", 
-                    paste(round(settings$assim.batch$jump$jvar,3), collapse=", "), ")"))
+                    paste(round(unlist(settings$assim.batch$jump$jvar),3), collapse=", "), ")"))
 
   adj <- accept.rate / settings$assim.batch$jump$adapt / settings$assim.batch$jump$ar.target
   adj[adj < settings$assim.batch$jump$adj.min] <- settings$assim.batch$jump$adj.min
   settings$assim.batch$jump$jvar <- lapply(settings$assim.batch$jump$jvar, function(x) x * adj)
   logger.info(paste0("New jump variances are (", 
-                    paste(round(settings$assim.batch$jump$jvar,3), collapse=", "), ")"))
+                    paste(round(unlist(settings$assim.batch$jump$jvar),3), collapse=", "), ")"))
   return(settings)
 }
 
 
-
-
+##' Get Model Output for PDA
+##'
+##' @title Get Model Output for PDA
+##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##'
+##' @return A list containing model outputs extracted to correspond to each observational
+##'         dataset being used for PDA. 
+##'
+##' @author Ryan Kelly
+##' @export
 pda.get.model.output <- function(settings, run.id, inputs) {
   # TODO: Generalize to multiple outputs and outputs other than NEE
 
@@ -455,11 +501,15 @@ pda.get.model.output <- function(settings, run.id, inputs) {
 }
 
 
-
-
-
-
-
+##' Calculate Likelihoods for PDA
+##'
+##' @title Calculate Likelihoods for PDA
+##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##'
+##' @return Total log likelihood (i.e., sum of log likelihoods for each dataset)
+##'
+##' @author Ryan Kelly
+##' @export
 pda.calc.llik <- function(settings, con, model.out, inputs, llik.fn) {
   n.input <- length(inputs)
   
@@ -502,6 +552,15 @@ pda.calc.llik <- function(settings, con, model.out, inputs, llik.fn) {
 }
 
 
+##' Generate Parameter Knots for PDA Emulator
+##'
+##' @title Generate Parameter Knots for PDA Emulator
+##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##'
+##' @return A matrix of parameter values, with one row for each knot in the emulator.
+##'
+##' @author Ryan Kelly
+##' @export
 pda.generate.knots <- function(n.knot, n.param.all, prior.ind, prior.fn, pname) {
   # By default, all parameters will be fixed at their median
   probs <- matrix(0.5, nrow=n.knot, ncol=n.param.all)
@@ -520,6 +579,15 @@ pda.generate.knots <- function(n.knot, n.param.all, prior.ind, prior.fn, pname) 
 }
 
 
+##' Plot PDA Parameter Diagnostics
+##'
+##' @title Plot PDA Parameter Diagnostics
+##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##'
+##' @return Nothing. Plot is generated and saved to PDF.
+##'
+##' @author Ryan Kelly
+##' @export
 pda.plot.params <- function(settings, params.subset, prior.ind) {
   # *** TODO: Generalize for multiple PFTS
   pdf(file.path(settings$pfts$pft$outdir,"pda.mcmc.diagnostics.pdf"))
@@ -535,6 +603,15 @@ pda.plot.params <- function(settings, params.subset, prior.ind) {
 }
 
 
+##' Postprocessing for PDA Results
+##'
+##' @title Postprocessing for PDA Results
+##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##'
+##' @return PEcAn settings list, updated with <params.id> pointing to the new params file.
+##'
+##' @author Ryan Kelly
+##' @export
 pda.postprocess <- function(settings, con, params, pname, prior, prior.ind) {
   ## Save params
   filename.mcmc <- file.path(settings$outdir, "pda.mcmc.Rdata")
