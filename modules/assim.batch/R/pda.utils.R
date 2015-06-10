@@ -133,7 +133,7 @@ pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   if(is.null(settings$assim.batch$n.knot)) {   # Default
     settings$assim.batch$n.knot <- 100
   }
-  settings$assim.batch$knot <- as.numeric(settings$assim.batch$knot)
+  settings$assim.batch$n.knot <- as.numeric(settings$assim.batch$n.knot)
 
 
 
