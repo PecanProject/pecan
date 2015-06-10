@@ -45,29 +45,3 @@ function(jmp,chain){
   }
   jmp
 }
-
-# update.jump <-
-#     function(jmp,chain){
-#   ##check for valid typing
-#   if(is.null(jmp)) stop("jump is NULL")
-#   
-#   ##update counter
-#   cnt <- jmp$count <- jmp$count + 1
-#   clen <- jmp$clen
-#   
-#   ##update jump parm
-#   if(cnt %% clen == 0){
-#     hnew <- rep(NA,ncol(chain))
-#     l <- nrow(jmp$history)
-#     for(i in 1:ncol(chain)){
-#       #print(c(i,cnt,clen))
-#       a <- arate(chain[(cnt-clen+1):cnt,i])
-#       j <- jmp$history[l,i]
-#       hnew[i] <- j*a/jmp$target
-#     }
-#     print(hnew)
-#     jmp$history <- rbind(jmp$history,hnew)
-#     jmp$arate[l+1] <- a
-#   }
-#   jmp
-# }
