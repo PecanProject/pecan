@@ -454,16 +454,17 @@ pda.adjust.jumps <- function(settings, accept.rate, pnames=NULL) {
 
 
 
-pda.get.model.output <- function(settings, run.id) {
+pda.get.model.output <- function(settings, run.id, inputs) {
   # TODO: Generalize to multiple outputs and outputs other than NEE
-  
+
   # Placeholder code to remind us that this function should eventually deal with assimilating
   # multiple variables. If so, look at the list of PDA inputs to determine which corresponding
   # model outputs to grab.
-  inputs <- settings$assim.batch$inputs
-  n.input <- length(inputs)
+  input.info <- settings$assim.batch$inputs
+
   
   model.out <- list()
+  n.input <- length(inputs)
   for(k in 1:n.input){
     NEEm <- read.output(run.id, outdir = file.path(settings$run$host$outdir, run.id),
                         strftime(settings$run$start.date,"%Y"), 

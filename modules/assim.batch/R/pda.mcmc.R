@@ -146,7 +146,7 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
         start.model.runs(settings,settings$database$bety$write)
 
         ## read model outputs
-        model.out <- pda.get.model.output(settings, run.id)
+        model.out <- pda.get.model.output(settings, run.id, inputs)
     
         ## calculate likelihood
         LL.vec <- n.vec <- numeric(n.input)

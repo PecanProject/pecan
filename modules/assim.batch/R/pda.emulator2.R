@@ -128,7 +128,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
 
   for(i in 1:n.knot) {
     ## read model outputs
-    model.out <- pda.get.model.output(settings, run.ids[i])
+    model.out <- pda.get.model.output(settings, run.ids[i], inputs)
 
 
     ## calculate likelihood
