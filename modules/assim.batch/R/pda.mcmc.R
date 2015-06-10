@@ -149,42 +149,7 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
         model.out <- pda.get.model.output(settings, run.id, inputs)
     
         ## calculate likelihood
-        LL.vec <- n.vec <- numeric(n.input)
-        for(k in 1:n.input) {
-          llik <- llik.fn[[k]](model.out[[k]], inputs[[k]])
-          LL.vec[k] <- llik$LL
-          n.vec[k]  <- llik$n
-        }
-        weights <- rep(1/n.input, n.input) # TODO: Implement user-defined weights
-        LL.total <- sum(LL.vec * weights)
-        neff <- n.vec * weights
-
-
-        ## insert Likelihood records in database
-        if (!is.null(con)) {
-          now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-          paramlist <- paste("MCMC: chain",settings$assim.batch$chain,"iteration",i,"variable",j)
-
-          # BETY requires likelihoods to be associated with inputs, so only proceed 
-          # for inputs with valid input ID (i.e., not the -1 dummy id). 
-          # Note that analyses requiring likelihoods to be stored therefore require 
-          # inputs to be registered in BETY first.
-          db.input.ind <- which( sapply(inputs, function(x) x$input.id) != -1 )
-          for(k in db.input.ind) {
-            db.query(
-              paste0("INSERT INTO likelihoods ", 
-                "(run_id,            variable_id,                     input_id, ",
-                " loglikelihood,     n_eff,                           weight,   ",
-                " created_at) ",
-              "values ('", 
-                  run.id, "', '",    inputs[[k]]$variable.id, "', '", inputs[[k]]$input.id, "', '", 
-                  LL.vec[k], "', '", floor(neff[k]), "', '",          weights[k] , "', '", 
-                  now,"')"
-              ), 
-            con)
-          }
-        }
-
+        LL.new <- pda.calc.llik(settings, con, model.out, inputs, llik.fn)
 
         ## accept or reject step
         a <- LL.total - LL.old + prior.star - prior.old
