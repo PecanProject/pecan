@@ -124,7 +124,7 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
 
     ## Adjust Jump distribution
     if(i %% settings$assim.batch$jump$adapt < 1){
-      pda.adjust.jumps(settings, accept.rate, pnames=pname[prior.ind])
+      settings <- pda.adjust.jumps(settings, accept.rate, pnames=pname[prior.ind])
       accept.rate <- numeric(n.param)
     }
 
@@ -249,9 +249,8 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   if(!is.null(con)) db.close(con)
 
 
-  ## Output an updates settings list
+  ## Output an updated settings list
   return(settings$assim.batch)
   
 } ## end pda.mcmc
-
 

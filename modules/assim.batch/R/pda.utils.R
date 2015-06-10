@@ -422,6 +422,7 @@ pda.adjust.jumps <- function(settings, accept.rate, pnames=NULL) {
   settings$assim.batch$jump$jvar <- settings$assim.batch$jump$jvar * adj
   logger.info(paste0("New jump variances are (", 
                     paste(round(settings$assim.batch$jump$jvar,3), collapse=", "), ")"))
+  return(settings)
 }
 
 
