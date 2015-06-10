@@ -28,14 +28,13 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   }
 
 
-  ## settings
+  ## Handle settings
     settings <- pda.settings(
                   settings=settings, params.id=params.id, param.names=param.names, 
                   prior.id=prior.id, chain=chain, iter=iter, adapt=adapt, 
                   adj.min=adj.min, ar.target=ar.target, jvar=jvar)
 
-
-  ## open database connection
+  ## Open database connection
   if(settings$database$bety$write){
     con <- try(db.open(settings$database$bety), silent=TRUE)
     if(is.character(con)){
@@ -45,8 +44,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     con <- NULL
   }
 
-
-  ## priors
+  ## Load priors
   prior <- pda.load.priors(settings, con)
   pname <-  rownames(prior) 
   n.param.all  <- nrow(prior)
@@ -56,7 +54,6 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   prior.ind <- which(rownames(prior) %in% settings$assim.batch$param.names)
   n.param <- length(prior.ind)
 
-
   ## Get the workflow id
   if ("workflow" %in% names(settings)) {
     workflow.id <- settings$workflow$id
@@ -64,31 +61,25 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     workflow.id <- -1
   }
 
-
-  ## create an ensemble id
+  ## Create an ensemble id
   ensemble.id <- pda.create.ensemble(settings, con, workflow.id)
 
-
-  ## model-specific functions
+  ## Set model-specific functions
   do.call("require",list(paste0("PEcAn.", settings$model$type)))
   my.write.config <- paste("write.config.", settings$model$type,sep="")
   if(!exists(my.write.config)){
     logger.severe(paste(my.write.config,"does not exist. Please make sure that the PEcAn interface is loaded for", settings$model$type))
   }
 
-
-  ## Set up prior distribution functions (d___, q___, r___, and multivariate versions)
+  ## Set prior distribution functions (d___, q___, r___, and multivariate versions)
   prior.fn <- pda.define.prior.fn(prior)
   
-
-  ## load data
+  ## Load data to assimilate against
   inputs <- load.pda.data(settings$assim.batch$inputs)
   n.input <- length(inputs)
 
-
   ## Set up likelihood functions
   llik.fn <- pda.define.llik.fn(settings)
-
 
   ## Initialize empty params matrix (concatenated to params from a previous PDA, if provided)
   params <- pda.init.params(settings, con, pname, n.param.all)
@@ -96,21 +87,8 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     finish <- params$finish
     params <- params$params
 
-
   ## Propose parameter knots (X) for emulator design
-    n.knot <- 10 # Number of values of each parameter to try  **** MOVE TO ARGUMENT
-
-    probs <- matrix(0.5, nrow=n.knot, ncol=n.param.all) # By default, all parameters will be fixed at their median
-  
-    # Fill in parameters to be sampled with probabilities sampled in a LHC design
-    probs[, prior.ind] <- lhc(t(matrix(0:1, ncol=n.param, nrow=2)), n.knot)
-
-    # Convert probabilities to parameter values
-    params <- NA*probs
-    for(i in 1:n.param.all) {
-      params[,i] <- eval(prior.fn$qprior[[i]], list(p=probs[,i]))
-    }
-    colnames(params) <- pname
+  params <- pda.generate.knots(n.knot, n.param.all, prior.ind, prior.fn)
 
   
 
@@ -132,7 +110,6 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     ## calculate likelihood
     LL.X[i] <- pda.calc.llik(settings, con, model.out, inputs, llik.fn)
   }
-
 
 
   ## Collect all likelihoods (Y)

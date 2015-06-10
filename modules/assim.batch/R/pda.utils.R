@@ -58,33 +58,6 @@ load.pda.data <- function(input.settings) {
 }
 
 
-# In a previous version, inputs specified by path would be automatically added to the DB, 
-# but we decided this needs some discussion. Below are code blocks that could be useful
-# if that functionality is added again. 
-
-#         in.path <- dirname(input.i$path)
-#         in.prefix <- basename(input.i$path)
-#         mimetype <- 'text/csv'
-#         formatname <- 'AmeriFlux.level4.h'
-#         
-#         year <- strsplit(basename(input.i$path), "_")[[1]][3]
-#         startdate <- as.POSIXlt(paste0(year,"-01-01 00:00:00", tz = "GMT"))
-#         enddate <- as.POSIXlt(paste0(year,"-12-31 23:59:59", tz = "GMT"))
-
-
-#       raw.id <- dbfile.input.insert(in.path=in.path,
-#                                     in.prefix=in.prefix, 
-#                                     siteid = settings$run$site$id,  
-#                                     startdate = startdate, 
-#                                     enddate = enddate, 
-#                                     mimetype=mimetype, 
-#                                     formatname=formatname,
-#                                     parentid = NA,
-#                                     con = con,
-#                                     hostname = settings$run$host$name)
-#       input.i$id <- raw.id$input.id
-
-
 
 ##' Set PDA Settings
 ##'
@@ -528,4 +501,20 @@ pda.calc.llik <- function(settings, con, model.out, inputs, llik.fn) {
   }
   
   return(LL.total)
+}
+
+
+pda.generate.knots <- function(n.knot, n.param.all, prior.ind, prior.fn)
+  # By default, all parameters will be fixed at their median
+  probs <- matrix(0.5, nrow=n.knot, ncol=n.param.all)
+
+  # Fill in parameters to be sampled with probabilities sampled in a LHC design
+  probs[, prior.ind] <- lhc(t(matrix(0:1, ncol=n.param, nrow=2)), n.knot)
+
+  # Convert probabilities to parameter values
+  params <- NA*probs
+  for(i in 1:n.param.all) {
+    params[,i] <- eval(prior.fn$qprior[[i]], list(p=probs[,i]))
+  }
+  colnames(params) <- pname
 }
