@@ -88,7 +88,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     params <- params$params
 
   ## Propose parameter knots (X) for emulator design
-  params <- pda.generate.knots(n.knot, n.param.all, prior.ind, prior.fn)
+  params <- pda.generate.knots(settings$assim.batch$n.knot, n.param.all, prior.ind, prior.fn)
 
   
 
