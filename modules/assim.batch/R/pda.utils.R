@@ -509,7 +509,7 @@ pda.generate.knots <- function(n.knot, n.param.all, prior.ind, prior.fn) {
   probs <- matrix(0.5, nrow=n.knot, ncol=n.param.all)
 
   # Fill in parameters to be sampled with probabilities sampled in a LHC design
-  probs[, prior.ind] <- lhc(t(matrix(0:1, ncol=n.param, nrow=2)), n.knot)
+  probs[, prior.ind] <- lhc(t(matrix(0:1, ncol=length(prior.ind), nrow=2)), n.knot)
 
   # Convert probabilities to parameter values
   params <- NA*probs
