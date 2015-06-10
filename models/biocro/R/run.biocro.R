@@ -105,7 +105,8 @@ run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = NULL,
                                           doy = DayofYear,
                                           Stem, Leaf, Root, Rhizome, Grain, LAI,
                                           key = c("year", "doy")))
-    result.yeari <- merge(result.yeari.hourly, result.yeari.daily, by = c("year", "doy"))
+    result.yeari <- merge(result.yeari.hourly, result.yeari.daily, by = c("year", "doy"),
+                          allow.cartesian = TRUE)
     HarvestedYield <- max(result.yeari$Stem)*0.8
     yield.yeari <- data.table(lat = lat, lon = lon, year = yeari, yield = HarvestedYield, runtime = now(),
                               key = "year")
@@ -116,7 +117,8 @@ run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = NULL,
       all.results <- rbind(all.results, result.yeari)
       yield.annually <- rbind(yield.annually, yield.yeari)
     }
-  }    
+  }
+  biocro.met <- as.data.table(biocro.met)
   setkeyv(biocro.met, c("year", "doy", "hour"))
   setkey(yield.annually, "year")
   setkeyv(all.results, c("year", "doy", "hour"))
