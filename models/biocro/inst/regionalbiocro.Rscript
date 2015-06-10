@@ -1,18 +1,40 @@
 #!/usr/bin/env Rscript
 
-library(PEcAn.all)
-library(PEcAn.BIOCRO)
-library(BioCro)
-
+args   <- commandArgs(trailingOnly = TRUE)
 rundir <- args[1]
 outdir <- args[2]
+
+#library(PEcAn.all)
+
+
+require(PEcAn.data.land)
+require(PEcAn.BIOCRO)
+require(BioCro)
+require(PEcAn.data.atmosphere)
+require(PEcAn.utils)
+require(lubridate)
+
+options(error = browser)
+
 if(interactive()) {
+
+  library(PEcAn.all)
   settings <- read.settings("~/dev/biocro_regional/vignettes/champaign_mxg_settings.xml")
-  runid <- tail(readLines(file.path(settings$rundir, "runs.txt")), n = 1)
-  rundir <- file.path(settings$rundir, runid)
-  outdir <- file.path(settings$outdir, "out", runid)
-  point <- 1
+    settings <- xmlToList("~/dev/biocro_regional/vignettes/champaign_mxg_settings.xml")
+    if(is.null(settings$rundir)){
+        rundir <- getwd()
+        runid <- 5916
+        outdir <- file.path("../out/5916")
+    } else {
+        
+        runid <- tail(readLines(file.path(settings$rundir, "runs.txt")), n = 1)
+        rundir <- file.path(settings$rundir, runid)
+        outdir <- file.path(settings$outdir, "out", runid)
+    }
+    point <- 1
+
 }
+
 
 config <- read.biocro.config(file.path(rundir, "config.xml"))
 genus <- config$pft$type$genus
@@ -36,13 +58,13 @@ for(point in 1:nrow(latlon)){
   out <- run.biocro(lat, lon, met.nc = met.nc, soil.nc = soil.nc, config = config)
   biocro_result <- rbind(biocro_result, out)
   save(biocro_result, file = file.path(outdir, 'incomplete_USresults.RData'))
-  dir.create(file.path(outdir, paste0(lat, 'x', lon)))
-  model2netcdf.BIOCRO(resultDT = resultDT, genus = genus, outdir = outdir, 
+  dir.create(file.path(outdir, paste0(lat, 'x', lon)), showWarnings = FALSE)
+  model2netcdf.BIOCRO(resultDT = biocro_result, genus = genus, outdir = outdir, 
                       lat = latlon$lat, lon = latlon$lon)
 }
 
 save(biocro_result, file = file.path(outdir, "biocro_output.RData"))
-#model2netcdf.BIOCRO(resultDT = resultDT, 
+#model2netcdf.BIOCRO(resultDT = biocro_result, 
 #                    genus = genus, 
 #                    outdir = outdir, 
 #                    lat = config$location$latitude, lon = config$location$longitude)
