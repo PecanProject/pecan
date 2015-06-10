@@ -9,6 +9,7 @@ outdir <- args[2]
 
 require(PEcAn.data.land)
 require(PEcAn.BIOCRO)
+require(BioCro)
 require(PEcAn.data.atmosphere)
 require(PEcAn.utils)
 require(lubridate)
@@ -57,13 +58,13 @@ for(point in 1:nrow(latlon)){
   out <- run.biocro(lat, lon, met.nc = met.nc, soil.nc = soil.nc, config = config)
   biocro_result <- rbind(biocro_result, out)
   save(biocro_result, file = file.path(outdir, 'incomplete_USresults.RData'))
-  dir.create(file.path(outdir, paste0(lat, 'x', lon)))
-  model2netcdf.BIOCRO(resultDT = resultDT, genus = genus, outdir = outdir, 
+  dir.create(file.path(outdir, paste0(lat, 'x', lon)), showWarnings = FALSE)
+  model2netcdf.BIOCRO(resultDT = biocro_result, genus = genus, outdir = outdir, 
                       lat = latlon$lat, lon = latlon$lon)
 }
 
 save(biocro_result, file = file.path(outdir, "biocro_output.RData"))
-#model2netcdf.BIOCRO(resultDT = resultDT, 
+#model2netcdf.BIOCRO(resultDT = biocro_result, 
 #                    genus = genus, 
 #                    outdir = outdir, 
 #                    lat = config$location$latitude, lon = config$location$longitude)
