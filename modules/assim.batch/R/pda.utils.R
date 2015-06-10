@@ -504,7 +504,7 @@ pda.calc.llik <- function(settings, con, model.out, inputs, llik.fn) {
 }
 
 
-pda.generate.knots <- function(n.knot, n.param.all, prior.ind, prior.fn)
+pda.generate.knots <- function(n.knot, n.param.all, prior.ind, prior.fn) {
   # By default, all parameters will be fixed at their median
   probs <- matrix(0.5, nrow=n.knot, ncol=n.param.all)
 
@@ -517,4 +517,6 @@ pda.generate.knots <- function(n.knot, n.param.all, prior.ind, prior.fn)
     params[,i] <- eval(prior.fn$qprior[[i]], list(p=probs[,i]))
   }
   colnames(params) <- pname
+  
+  return(params)
 }
