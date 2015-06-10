@@ -202,6 +202,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
 
 
   ## coerce parameter output into the same format as trait.mcmc
+  # ********* TODO: Check/fix... do we really want to save mcmc for only the parameters that were updated???
   pname <- rownames(post.distns)
   trait.mcmc <- list()
   for(i in prior.ind){

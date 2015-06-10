@@ -28,14 +28,13 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   }
 
 
-  ## settings
+  ## Handle settings
     settings <- pda.settings(
                   settings=settings, params.id=params.id, param.names=param.names, 
                   prior.id=prior.id, chain=chain, iter=iter, adapt=adapt, 
                   adj.min=adj.min, ar.target=ar.target, jvar=jvar)
 
-
-  ## open database connection
+  ## Open database connection
   if(settings$database$bety$write){
     con <- try(db.open(settings$database$bety), silent=TRUE)
     if(is.character(con)){
@@ -45,8 +44,7 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
     con <- NULL
   }
 
-
-  ## priors
+  ## Load priors
   prior <- pda.load.priors(settings, con)
   pname <-  rownames(prior) 
   n.param.all  <- nrow(prior)
@@ -56,7 +54,6 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   prior.ind <- which(rownames(prior) %in% settings$assim.batch$param.names)
   n.param <- length(prior.ind)
 
-
   ## Get the workflow id
   if ("workflow" %in% names(settings)) {
     workflow.id <- settings$workflow$id
@@ -64,31 +61,25 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
     workflow.id <- -1
   }
 
-
-  ## create an ensemble id
+  ## Create an ensemble id
   ensemble.id <- pda.create.ensemble(settings, con, workflow.id)
 
-
-  ## model-specific functions
+  ## Set model-specific functions
   do.call("require",list(paste0("PEcAn.", settings$model$type)))
   my.write.config <- paste("write.config.", settings$model$type,sep="")
   if(!exists(my.write.config)){
     logger.severe(paste(my.write.config,"does not exist. Please make sure that the PEcAn interface is loaded for", settings$model$type))
   }
 
-
-  ## Set up prior distribution functions (d___, q___, r___, and multivariate versions)
+  ## Set prior distribution functions (d___, q___, r___, and multivariate versions)
   prior.fn <- pda.define.prior.fn(prior)
-
-
-  ## load data
+  
+  ## Load data to assimilate against
   inputs <- load.pda.data(settings$assim.batch$inputs)
   n.input <- length(inputs)
 
-
   ## Set up likelihood functions
   llik.fn <- pda.define.llik.fn(settings)
-
 
   ## Initialize empty params matrix (concatenated to params from a previous PDA, if provided)
   params <- pda.init.params(settings, con, pname, n.param.all)
@@ -96,7 +87,6 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
     finish <- params$finish
     params <- params$params
 
-  
   ## File for temp storage of params (in case of crash)
   #  Using .txt here to allow quick append after each iteration (maybe a better way?)
   #  At the end of MCMC the entire object is saved as .Rdata
@@ -258,4 +248,5 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   return(settings$assim.batch)
   
 } ## end pda.mcmc
+
 

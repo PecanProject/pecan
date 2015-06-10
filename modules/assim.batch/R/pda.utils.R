@@ -93,7 +93,7 @@ pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   if(is.null(settings$assim.batch$param.names)) {
     logger.error('Parameter data assimilation requested, but no parameters specified for PDA')
   } else {
-    settings$assim.batch$param.names <- as.character(settings$assim.batch$param.names)
+    settings$assim.batch$param.names <- as.list(as.character(settings$assim.batch$param.names))
   }
 
 
@@ -171,14 +171,11 @@ pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   # jvar: Initial jump variances. Defaults to 1, which is foolish but should be fixed adaptively. 
   if(!is.null(jvar)) {
     settings$assim.batch$jump$jvar <- jvar
-  } else if(!is.null(settings$assim.batch$jump$jvar)) {
-    # If supplied via XML, will be a list; convert to vector
-    settings$assim.batch$jump$jvar <- as.numeric(settings$assim.batch$jump$jvar)
-  }
-  if(is.null(settings$assim.batch$jump$jvar)) {
+  } 
+  if(is.null(settings$assim.batch$jump$jvar)) {   # Default
     settings$assim.batch$jump$jvar <- rep(1, length(param.names))
   }
-  settings$assim.batch$jump$jvar <- as.numeric(settings$assim.batch$jump$jvar)
+  settings$assim.batch$jump$jvar <- as.list(as.numeric(settings$assim.batch$jump$jvar))
   
   return(settings)
 }
@@ -419,7 +416,7 @@ pda.adjust.jumps <- function(settings, accept.rate, pnames=NULL) {
 
   adj <- accept.rate / settings$assim.batch$jump$adapt / settings$assim.batch$jump$ar.target
   adj[adj < settings$assim.batch$jump$adj.min] <- settings$assim.batch$jump$adj.min
-  settings$assim.batch$jump$jvar <- settings$assim.batch$jump$jvar * adj
+  settings$assim.batch$jump$jvar <- lapply(settings$assim.batch$jump$jvar, function(x) x * adj)
   logger.info(paste0("New jump variances are (", 
                     paste(round(settings$assim.batch$jump$jvar,3), collapse=", "), ")"))
   return(settings)
