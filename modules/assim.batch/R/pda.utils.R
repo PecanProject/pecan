@@ -450,3 +450,34 @@ pda.adjust.jumps <- function(settings, accept.rate, pnames=NULL) {
   logger.info(paste0("New jump variances are (", 
                     paste(round(settings$assim.batch$jump$jvar,3), collapse=", "), ")"))
 }
+
+
+
+
+pda.get.model.outputs <- function(settings, run.id) {
+  # TODO: Generalize to multiple outputs and outputs other than NEE
+  
+  # Placeholder code to remind us that this function should eventually deal with assimilating
+  # multiple variables. If so, look at the list of PDA inputs to determine which corresponding
+  # model outputs to grab.
+  inputs <- settings$assim.batch$inputs
+  n.input <- length(inputs)
+  
+  model.out <- list()
+  for(k in 1:n.input){
+    NEEm <- read.output(run.id, outdir = file.path(settings$run$host$outdir, run.id),
+                        strftime(settings$run$start.date,"%Y"), 
+                        strftime(settings$run$end.date,"%Y"), 
+                        variables="NEE")$NEE*0.0002640674
+
+    ## match model and observations
+    NEEm <- rep(NEEm,each= nrow(inputs[[k]]$data)/length(NEEm))
+    set <- 1:length(NEEm)  ## ***** need a more intellegent year matching!!!
+      # NPPm <- rep(NPPm,each=length(NPPo)/length(NPPm))
+      # set <- 1:length(NPPm) 
+
+    model.out[[k]] <- NEEm[set]
+  }
+  
+  return(model.out)
+}

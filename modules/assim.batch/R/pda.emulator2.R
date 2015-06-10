@@ -128,22 +128,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
 
   for(i in 1:n.knot) {
     ## read model outputs
-    # TODO: Generalize
-    model.out <- list()
-    for(k in 1:n.input){
-      NEEm <- read.output(run.ids[i], outdir = file.path(settings$run$host$outdir, run.ids[i]),
-                          strftime(settings$run$start.date,"%Y"), 
-                          strftime(settings$run$end.date,"%Y"), 
-                          variables="NEE")$NEE*0.0002640674
-
-      ## match model and observations
-      NEEm <- rep(NEEm,each= nrow(inputs[[k]]$data)/length(NEEm))
-      set <- 1:length(NEEm)  ## ***** need a more intellegent year matching!!!
-        # NPPm <- rep(NPPm,each=length(NPPo)/length(NPPm))
-        # set <- 1:length(NPPm) 
-
-      model.out[[k]] <- NEEm[set]
-    }
+    model.out <- pda.get.model.output(settings, run.ids[i])
 
 
     ## calculate likelihood
@@ -261,12 +246,9 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   posteriorid <- db.query(paste0(
     "SELECT id FROM posteriors WHERE pft_id=", pft.id, " AND created_at='", now, "'"), con)[['id']]
 
+  settings$assim.batch$params.id <- dbfile.insert(
+    dirname(filename.mcmc), basename(filename.mcmc), 'Posterior', posteriorid, con, reuse=TRUE)
 
-  dbfile.insert(dirname(filename.mcmc), basename(filename.mcmc), 'Posterior', posteriorid, con)
-  settings$assim.batch$params.id <- db.query(paste0(
-    "SELECT id FROM dbfiles WHERE 
-      container_type = 'Posterior' AND file_name = 'pda.mcmc.Rdata' AND
-      container_id = ", posteriorid),con)
 
   ## save named distributions
   # *** TODO: Generalize for multiple PFTS
