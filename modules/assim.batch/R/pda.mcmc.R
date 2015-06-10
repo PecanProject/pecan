@@ -92,23 +92,16 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   #  At the end of MCMC the entire object is saved as .Rdata
   filename.mcmc.temp <- file.path(settings$outdir, "pda.mcmc.txt")
 
-
-  ## set initial conditions
-  if(start==1){
-    parm <- sapply(prior.fn$qprior,eval,list(p=0.5))
-  } else{
-    parm <- params[start-1, ]
-  }
-  names(parm) <- pname
-  LL.old <- -Inf
-  prior.old <- -Inf
-
+  ## Set initial conditions
+  parm <- ifelse(start==1, sapply(prior.fn$qprior,eval,list(p=0.5)), params[start-1, ])
+    names(parm) <- pname
+  LL.old <- prior.old <- -Inf
 
   ## Jump distribution setup
   accept.rate <- numeric(n.param)  ## Create acceptance rate vector of 0's (one zero per parameter)
 
 
-  ## main MCMC loop
+  ## --------------------------------- Main MCMC loop --------------------------------- ##
   for(i in start:finish){
     logger.info(paste("Data assimilation MCMC iteration",i,"of",finish))
 
@@ -119,29 +112,28 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
     }
 
     for(j in 1:n.param){
-      ## propose parameter values
+      ## Propose parameter values
       pnew  <- rnorm(1, parm[prior.ind[j]], settings$assim.batch$jump$jvar[[j]])
       pstar <- parm
       pstar[prior.ind[j]] <- pnew
 
-
-      ## check that value falls within the prior
+      ## Check that value falls within the prior
       prior.star <- prior.fn$dmvprior(pstar)
       if(is.finite(prior.star)){
         ## Set up run and write run configs
         run.id <- pda.init.run(settings, con, my.write.config, workflow.id, ensemble.id, pstar, n=1,
                                run.names=paste0("MCMC_chain.",chain,"_iteration.",i,"_variable.",j))
 
-        ## start model run
+        ## Start model run
         start.model.runs(settings,settings$database$bety$write)
 
-        ## read model outputs
+        ## Read model outputs
         model.out <- pda.get.model.output(settings, run.id, inputs)
     
-        ## calculate likelihood (and store in database)
+        ## Calculate likelihood (and store in database)
         LL.new <- pda.calc.llik(settings, con, model.out, inputs, llik.fn)
 
-        ## accept or reject step
+        ## Accept or reject step
         a <- LL.new - LL.old + prior.star - prior.old
         if(a > log(runif(1))){
           LL.old <- LL.new
@@ -152,40 +144,23 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
       } ## end if(is.finite(prior.star))
     } ## end loop over variables
 
-    ## save output
+    ## Store output
     params[i,] <- parm
-    if(i == 1){
-      cat(c(parm,'\n'), file=filename.mcmc.temp, sep='\t', append=F)
-    } else {
-      cat(c(parm,'\n'), file=filename.mcmc.temp, sep='\t', append=T)
-    }
-  } ## end MCMC loop
-
+    
+    ## Add to temp file (overwrite when i=1, append thereafter)
+    cat(c(parm,'\n'), file=filename.mcmc.temp, sep='\t', append=(i != 1))
+  }
+  ## --------------------------------- End MCMC loop ---------------------------------- ##
 
   ## Save raw MCMC
   filename.mcmc <- file.path(settings$outdir, "pda.mcmc.Rdata")
   save(params, file = filename.mcmc)
 
-
   ## Assess MCMC output
-  # *** TODO: Generalize for multiple PFTS
-  pdf(file.path(settings$pfts$pft$outdir,"pda.mcmc.diagnostics.pdf"))
-
   burnin <- min(2000,0.2*nrow(params))
   params.subset <- as.data.frame(params[burnin:nrow(params),prior.ind])
     names(params.subset) <- pname[prior.ind]
-  dm <- as.mcmc(params.subset)
-
-  plot(dm)
-  summary(dm)
-  if(length(prior.ind)>1){
-    crosscorr(dm)
-    pairs(params.subset)
-  }
-
-
-  dev.off()
-
+  pda.plot.params(settings, params.subset, prior.ind)
 
   ## create a new Posteriors DB entry
   now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
@@ -240,11 +215,6 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
 
 
   ## Output an updated settings list
-  settings$assim.batch$jump$jvar <- as.list(settings$assim.batch$jump$jvar)
-    names(settings$assim.batch$jump$jvar) <- rep('jvar', length(settings$assim.batch$jump$jvar))
-  settings$assim.batch$param.names <- as.list(settings$assim.batch$param.names)
-    names(settings$assim.batch$param.names) <- rep('param', length(settings$assim.batch$param.names))
-
   return(settings$assim.batch)
   
 } ## end pda.mcmc

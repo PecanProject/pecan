@@ -518,3 +518,18 @@ pda.generate.knots <- function(n.knot, n.param.all, prior.ind, prior.fn, pname) 
   
   return(params)
 }
+
+
+pda.plot.params <- function(settings, params.subset, prior.ind) {
+  # *** TODO: Generalize for multiple PFTS
+  pdf(file.path(settings$pfts$pft$outdir,"pda.mcmc.diagnostics.pdf"))
+    dm <- as.mcmc(params.subset)
+
+    plot(dm)
+    summary(dm)
+    if(length(prior.ind)>1){
+      crosscorr(dm)
+      pairs(params.subset)
+    }
+  dev.off()
+}
