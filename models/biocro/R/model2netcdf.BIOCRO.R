@@ -22,7 +22,7 @@
 model2netcdf.BIOCRO <- function(resultDT, genus = NULL, outdir, lat = -9999, lon = -9999) {
   
   require(data.table)
-  setnames(resultDT, c("year", "hour", "doy"), c("Year", "Hour", "DayofYear")
+  setnames(resultDT, c("year", "hour", "doy"), c("Year", "Hour", "DayofYear"))
   for(yeari in unique(resultDT$Year)){
     ## longname prefix station_* used for a point
     ## http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.4/cf-conventions.html#scalar-coordinate-variables
