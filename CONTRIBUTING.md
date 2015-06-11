@@ -29,16 +29,18 @@ When you login into the VM you will have already a cloned copy of PEcAn however 
 
 At this point you will have a copy of the pecan repo in your personal space. Next steps are to setup the VM for you to work with git.
 
-1. Introduce your self to GIT, make sure you use an email associated with your GitHub account.
+Introduce your self to GIT, make sure you use an email associated with your GitHub account.
 ```
 git config --global user.name "John Doe"
 git config --global user.email johndoe@example.com
 ```
-2.  Switch pecan to your fork
+
+Switch pecan to your fork
 ```
 git remote set-url origin https://github.com/<your username>/pecan.git
 ```
-3. Setup pecan to be able to fetch from the master
+
+Setup pecan to be able to fetch from the master
 ```
 git remote add upstream https://github.com/PecanProject/pecan.git
 ```
@@ -53,23 +55,40 @@ Finally try to keep your branches focused on fixing/adding only one feature and 
 
 Here is a simplified workflow on how add a new feature:
 
-1. Update your master (both locally and on GitHub)
+## Get latest version
+
+Update your master (both locally and on GitHub)
+
 ```
 git fetch upstream
 git checkout master
 git merge upstream master
 git push
 ```
-2. Create a branch to do your work. A good practice is to call the branch in the form of GH-<issue-number> followed by the title of the issue. This makes it easier to find out the issue you are trying to solve and helps us to understand what is done in the branch. Calling a branch my-work is confusing. Names of branch can not have a space, and should be replaced with a hyphen.
+
+## Create a branch to do your work.
+
+A good practice is to call the branch in the form of GH-<issue-number> followed by the title of the issue. This makes it easier to find out the issue you are trying to solve and helps us to understand what is done in the branch. Calling a branch my-work is confusing. Names of branch can not have a space, and should be replaced with a hyphen.
+
 ```
 git checkout -b GH-issuenumber-title-of-issue
 ```
-3. Do you work, and commit as you see fit. Make your commit messages helpful. 
-4. Push your changes up to GitHub. If this is the first time pushing to GitHub you will need to extended command, other wise you can simply do a `git push`.
+
+## Work and commit
+
+Do you work, and commit as you see fit.Make your commit messages helpful. 
+
+## Push your changes up to GitHub.
+
+If this is the first time pushing to GitHub you will need to extended command, other wise you can simply do a `git push`.
+
 ```
 git push -u origin GH-issuenumber-title-of-issue
 ```
-5. When finished create a pull request from your branch to the main pecan repository.
+
+## Pull Request
+
+ When finished create a pull request from your branch to the main pecan repository.
 
 # Additional Resources
 
