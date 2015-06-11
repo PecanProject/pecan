@@ -2,7 +2,7 @@
 
 Third-party contributions are highly encouraged for PEcAn and will grow the code as well as the understanding of . We simply can't add all models that exist to PEcAn or all possible scenarios and analysis that people want to do. We want to keep it as easy as possible to contribute changes that get things working in your environment. There are a few guidelines that we need contributors to follow so that we can have a chance of keeping on top of things.
 
-# PEcAn CORE vs Models vs Modules
+## PEcAn CORE vs Models vs Modules
 
 New functionality is typically directed toward modules to provide a slimmer PEcAn Core, reducing the requirements to get PEcAn running on different platforms, especially HPC machines, and to allow greater freedom for modules and models.
 
@@ -10,7 +10,7 @@ Generally, new model should be added to the models folder and new modules should
 
 If you are unsure of whether your contribution should be implemented as a model, module or part of PEcAn Core, you may visit [HipChat](https://hipchat.ncsa.illinois.edu/gW51EFhtT) or ask on the pecan-develop mailing list for advice.
 
-# Creating Issues
+## Creating Issues
 
 - Make sure you have a GitHub account.
 - Create an issue in GitHub, assuming one does not already exist.
@@ -18,7 +18,7 @@ If you are unsure of whether your contribution should be implemented as a model,
 	- Make sure you fill in the earliest version that you know has the issue.
 - Ask to be added to the PEcAn project if you plan on fixing the issue.
 
-# Getting Started
+## Getting Started
 
 We highly recommend starting with the [downloaded VM image](http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN). This image comes with a copy of PEcAn, BETY preinstalled with a fully populated database. It also has the following models preinstalled: ED, SIPNET, Linkages and DALEC. Another option is to install PEcAn on your own machine, using the instructions on the [wiki](https://github.com/PecanProject/pecan/wiki/Installing-PEcAn).
 
@@ -45,7 +45,7 @@ Setup pecan to be able to fetch from the master
 git remote add upstream https://github.com/PecanProject/pecan.git
 ```
 
-# Adding Features
+## Adding Features
 
 When you add a new feature always create an issue first, this allows others to comment and give you tips. It will also help us keep track of what people are adding and with new releases helps us to write new release notes and give you credit for your work.
 
@@ -55,7 +55,7 @@ Finally try to keep your branches focused on fixing/adding only one feature and 
 
 Here is a simplified workflow on how add a new feature:
 
-## Get latest version
+### Get latest version
 
 Update your master (both locally and on GitHub)
 
@@ -66,7 +66,7 @@ git merge upstream master
 git push
 ```
 
-## Create a branch to do your work.
+### Create a branch to do your work.
 
 A good practice is to call the branch in the form of GH-<issue-number> followed by the title of the issue. This makes it easier to find out the issue you are trying to solve and helps us to understand what is done in the branch. Calling a branch my-work is confusing. Names of branch can not have a space, and should be replaced with a hyphen.
 
@@ -74,11 +74,11 @@ A good practice is to call the branch in the form of GH-<issue-number> followed 
 git checkout -b GH-issuenumber-title-of-issue
 ```
 
-## Work and commit
+### Work and commit
 
 Do you work, and commit as you see fit.Make your commit messages helpful. 
 
-## Push your changes up to GitHub.
+### Push your changes up to GitHub.
 
 If this is the first time pushing to GitHub you will need to extended command, other wise you can simply do a `git push`.
 
@@ -86,11 +86,11 @@ If this is the first time pushing to GitHub you will need to extended command, o
 git push -u origin GH-issuenumber-title-of-issue
 ```
 
-## Pull Request
+### Pull Request
 
  When finished create a pull request from your branch to the main pecan repository.
 
-# Additional Resources
+## Additional Resources
 
 - [Adding modes to PEcAN](https://github.com/PecanProject/pecan/wiki/Adding-an-Ecosystem-Model)
 - [PEcAn configuration files](https://github.com/PecanProject/pecan/wiki/Configuration-Files)
