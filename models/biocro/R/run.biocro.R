@@ -42,10 +42,16 @@ run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = NULL,
   for(yeari in years){
     yearchar <- as.character(yeari)
     WetDat <- biocro.met[biocro.met$year == yeari, ]
-    
-    ## TODO PASS day1 from config??
-    day1 <- min(WetDat$doy)
-    dayn <- max(WetDat$doy)
+
+    ## find day1 = gdd 100 at base 5
+ 
+    gdds <- as.data.table(WetDat)[, list(year, doy, Temp)]
+    day1 <- as.numeric(gdds[, list(gd = max(max(Temp) - 5, 0)), by = 'doy'][, list(doy, gdd = cumsum(gd))][which.min(abs(100-gdd)), list(day1 = doy)])
+
+    ## dayn = harvest end of November
+    dayn <- 335
+    print(day1)
+    print(dayn)
     ## TODO: start of a distinct function called 'getinitialcondition'
     HarvestedYield <- 0
     if(genus == "Saccharum") {
@@ -59,9 +65,12 @@ run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = NULL,
                                iRoot=1.0, ifrRhizome=0.01, ifrStem=0.01,
                                ifrLeaf = 0.0, ifrRoot = 0.0)
       } else {
-        iplant[c("iRhizome", "iRoot", "iStem")] <- last(result.yeari[,list(Rhizome, Root, Stem)])
+      	iplant$iRhizome <- last(tmp.result$Rhizome)
+        iplant$iRoot <- last(tmp.result$Root)
+        iplant$iStem <- last(tmp.result$Stem)
+
         if ((yeari - min(years))  %% coppice.interval == 0) { # coppice when remainder = 0
-          HarvestedYield  <- round(last(result.yeari$Stem) * 0.95, 2)                
+          HarvestedYield  <- round(last(tmp.result$Stem) * 0.95, 2)                
         } else if ((yeari - min(years))  %% coppice.interval == 1) { # year after coppice
           iplant$iStem <- iplant$iStem * 0.05
         } # else { # do nothing if neither coppice year nor year following
@@ -80,12 +89,13 @@ run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = NULL,
       if(yeari == min(years)){
         iRhizome <- config$pft$iPlantControl$iRhizome
       } else {
-        iRhizome <- last(result.yeari[,Rhizome])
-        HarvestedYield  <- round(last(result.yeari$Stem) * 0.95, 2)                
+        iRhizome <- last(tmp.result$Rhizome)
+        HarvestedYield  <- round(last(tmp.result$Stem) * 0.95, 2)                
       }
       ## run BioGro
       tmp.result <- BioGro(WetDat = WetDat,
-                           #day1 = day1, dayn = dayn,
+                           day1 = day1,
+			   dayn = dayn,
                            soilControl = soil.parms,
                            canopyControl = config$pft$canopyControl,
                            phenoControl = phenoParms(),#config$pft$phenoParms,
@@ -100,32 +110,24 @@ run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = NULL,
                                            hour = Hour, ThermalT,
                                            SoilEvaporation, CanopyTrans, 
                                            key = c("year", "doy", "hour")))
-    result.yeari.daily <- with(tmp.result, 
-                               data.table(year = yeari, 
-                                          doy = DayofYear,
-                                          Stem, Leaf, Root, Rhizome, Grain, LAI,
-                                          key = c("year", "doy")))
-    result.yeari <- merge(result.yeari.hourly, result.yeari.daily, by = c("year", "doy"),
-                          allow.cartesian = TRUE)
-    HarvestedYield <- max(result.yeari$Stem)*0.8
-    yield.yeari <- data.table(lat = lat, lon = lon, year = yeari, yield = HarvestedYield, runtime = now(),
-                              key = "year")
-    if(yeari == min(years) | !exists("all.results")){
-      all.results <- result.yeari
-      yield.annually <- yield.yeari
+    if(yeari == min(years)){
+      hourly.results <- result.yeari.hourly
     } else if (yeari > min(years)){
-      all.results <- rbind(all.results, result.yeari)
-      yield.annually <- rbind(yield.annually, yield.yeari)
+      hourly.results <- rbind(hourly.results, result.yeari.hourly)
     }
   }
   biocro.met <- as.data.table(biocro.met)
   setkeyv(biocro.met, c("year", "doy", "hour"))
-  setkey(yield.annually, "year")
-  setkeyv(all.results, c("year", "doy", "hour"))
-  result.hourly <- merge(biocro.met, all.results) ## right join
-  
-  result.annually <- round(result.hourly[ ,list(Stem = max(Stem), Leaf = max(Leaf), Root = max(Root), Rhizome = max(Rhizome),
+  setkeyv(hourly.results, c("year", "doy", "hour"))
+
+  hourly.results <- merge(biocro.met, hourly.results) ## right join
+  daily.results <- hourly.results[, list(Stem = max(Stem), Leaf = max(Leaf), Root = max(Root), Rhizome = max(Rhizome), 
+Grain = max(Grain), tmax = max(Temp), tmin = min(Temp), tavg = mean(Temp), precip = sum(precip)), by = 'year,doy']
+
+  annual.results <- round(hourly.results[ ,list(Stem = max(Stem), Leaf = max(Leaf), Root = max(Root), Rhizome = max(Rhizome),
                                                 Grain = max(Grain), mat = mean(Temp), map = sum(precip)),
                                           by = "year"], 2)[yield.annually]
-  return(data.table(lat = lat, lon = lon, result.annually))
+  return(list(hourly = hourly.results,
+              daily = daily.results,
+              annually = data.table(lat = lat, lon = lon, annual.results)))
 }
