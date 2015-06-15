@@ -1,5 +1,17 @@
-# Download Raw FACE data from the internet
-download.FACE <- function(data.set,outfolder,pkg,raw.host,start_year,end_year,site.id,dbparams,con){
+##' Download Raw FACE data from the internet
+##'
+##' @name download.FACE
+##' @title download.FACE
+##' @export
+##' @param sitename
+##' @param outfolder
+##' @param start_year
+##' @param end_year
+##' 
+##' @author Betsy Cowdery
+
+download.FACE <- function(sitename,outfolder, start_date, end_date, overwrite=FALSE){
+# download.FACE <- function(data.set,outfolder,pkg,raw.host,start_year,end_year,site.id,dbparams,con){
   
   n <- nchar(outfolder)
   if(substr(outfolder,n,n) != "/") outfolder = paste0(outfolder,"/")
