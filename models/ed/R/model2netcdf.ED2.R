@@ -18,7 +18,7 @@
 ##' @param end_date End time of the simulation
 ##' @export
 ##'
-##' @author Michael Dietze, Shawn Serbin, Rob Kooper
+##' @author Michael Dietze, Shawn Serbin, Rob Kooper, Toni Viskari
 ## modified M. Dietze 07/08/12
 ## modified S. Serbin 05/06/13
 model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
@@ -165,24 +165,24 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
       dz <- dz[dz != 0.0]
       
       ## out <- add(getHdf5Data(ncT, 'TOTAL_AGB,1,row, yrs[y]) ## AbvGrndWood
-      out <- add(getHdf5Data(ncT, 'AVG_BDEAD'),1,row, yrs[y]) ## AbvGrndWood
-      out <- add(getHdf5Data(ncT, 'AVG_PLANT_RESP'),2,row, yrs[y]) ## AutoResp
+      out <- add(getHdf5Data(ncT, 'FMEAN_BDEAD_PY'),1,row, yrs[y]) ## AbvGrndWood
+      out <- add(getHdf5Data(ncT, 'FMEAN_PLRESP_PY'),2,row, yrs[y]) ## AutoResp
       out <- add(-999,3,row, yrs[y]) ## CarbPools
-      out <- add(getHdf5Data(ncT, 'AVG_CO2CAN'),4,row, yrs[y]) ## CO2CAS
+      out <- add(getHdf5Data(ncT, 'FMEAN_CAN_CO2_PY'),4,row, yrs[y]) ## CO2CAS
       out <- add(-999,5,row, yrs[y]) ## CropYield
-      out <- add(getHdf5Data(ncT, 'AVG_GPP'),6,row, yrs[y]) ## GPP
-      out <- add(getHdf5Data(ncT, 'AVG_HTROPH_RESP'),7,row, yrs[y]) ## HeteroResp
-      out <- add(getHdf5Data(ncT, 'AVG_GPP') - getHdf5Data(ncT, 'AVG_PLANT_RESP') - getHdf5Data(ncT, 'AVG_HTROPH_RESP'),8,row, yrs[y]) ## NEE
-      out <- add(getHdf5Data(ncT, 'AVG_GPP') - getHdf5Data(ncT, 'AVG_PLANT_RESP'),9,row, yrs[y]) ## NPP
-      out <- add(getHdf5Data(ncT, 'AVG_HTROPH_RESP') + getHdf5Data(ncT, 'AVG_PLANT_RESP'),10,row, yrs[y]) ## TotalResp
-      ## out <- add(getHdf5Data(ncT, 'AVG_BDEAD + getHdf5Data(ncT, 'AVG_BALIVE,11,row, yrs[y]) ## TotLivBiom
+      out <- add(getHdf5Data(ncT, 'FMEAN_GPP_PY'),6,row, yrs[y]) ## GPP
+      out <- add(getHdf5Data(ncT, 'FMEAN_RH_PY'),7,row, yrs[y]) ## HeteroResp
+      out <- add(getHdf5Data(ncT, 'FMEAN_GPP_PY') - getHdf5Data(ncT, 'FMEAN_PLRESP_PY') - getHdf5Data(ncT, 'FMEAN_RH_PY'),8,row, yrs[y]) ## NEE
+      out <- add(getHdf5Data(ncT, 'FMEAN_GPP_PY') - getHdf5Data(ncT, 'FMEAN_PLRESP_PY'),9,row, yrs[y]) ## NPP
+      out <- add(getHdf5Data(ncT, 'FMEAN_RH_PY') + getHdf5Data(ncT, 'FMEAN_PLRESP_PY'),10,row, yrs[y]) ## TotalResp
+      ## out <- add(getHdf5Data(ncT, 'BDEAD + getHdf5Data(ncT, 'BALIVE,11,row, yrs[y]) ## TotLivBiom
       out <- add(-999,11,row, yrs[y]) ## TotLivBiom
-      out <- add(getHdf5Data(ncT, 'AVG_FSC')+getHdf5Data(ncT, 'AVG_STSC')+getHdf5Data(ncT, 'AVG_SSC'),12,row, yrs[y]) ## TotSoilCarb
+      out <- add(getHdf5Data(ncT, 'FAST_SOIL_C_PY')+getHdf5Data(ncT, 'STRUCT_SOIL_C_PY')+getHdf5Data(ncT, 'SLOW_SOIL_C_PY'),12,row, yrs[y]) ## TotSoilCarb
       
       ## depth from surface to frozen layer
       tdepth <- 0
       fdepth <- 0
-      soiltemp <- getHdf5Data(ncT, 'AVG_SOIL_TEMP')
+      soiltemp <- getHdf5Data(ncT, 'FMEAN_SOIL_TEMP_PY')
       if(length(dim(soiltemp)) == 3){
         fdepth <- array(0,dim=dim(soiltemp)[1:2])
         tdepth <- array(0,dim=dim(soiltemp)[1:2])
@@ -213,7 +213,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
           }
         }
       } else {
-                                        # no polygons, just time vs depth?
+                                        # no polygons, just time vs depth?	
         fdepth <- array(0, ncol(soiltemp))
         tdepth <- array(0, ncol(soiltemp))
         for(t in 1:ncol(soiltemp)){ #time
@@ -241,56 +241,57 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
       }
       
       out <- add(fdepth,13,row, yrs[y]) ## Fdepth
-      out <- add(getHdf5Data(ncT, 'AVG_SNOWDEPTH'),14,row, yrs[y]) ## SnowDepth
-      out <- add(1-getHdf5Data(ncT, 'AVG_SNOWFRACLIQ'),15,row, yrs[y]) ## SnowFrac
+      out <- add(getHdf5Data(ncT, 'FMEAN_SFCW_DEPTH_PY'),14,row, yrs[y]) ## SnowDepth (ED2 currently groups snow in to surface water)
+      out <- add(1-getHdf5Data(ncT, 'FMEAN_SFCW_FLIQ_PY'),15,row, yrs[y]) ## SnowFrac (ED2 currently groups snow in to surface water)
       out <- add(tdepth,16,row, yrs[y]) ## Tdepth
-      out <- add(getHdf5Data(ncT, 'AVG_ATM_CO2'),17,row, yrs[y]) ## CO2air
-      out <- add(getHdf5Data(ncT, 'AVG_RLONG'),18,row, yrs[y]) ## Lwdown
-      out <- add(getHdf5Data(ncT, 'AVG_PRSS'),19,row, yrs[y]) ## Psurf
-      out <- add(getHdf5Data(ncT, 'AVG_ATM_SHV'),20,row, yrs[y]) ## Qair
-      out <- add(getHdf5Data(ncT, 'AVG_PCPG'),21,row, yrs[y]) ## Rainf
+      out <- add(getHdf5Data(ncT, 'FMEAN_ATM_CO2_PY'),17,row, yrs[y]) ## CO2air
+      out <- add(getHdf5Data(ncT, 'FMEAN_ATM_RLONG_PY'),18,row, yrs[y]) ## Lwdown
+      out <- add(getHdf5Data(ncT, 'FMEAN_ATM_PRSS_PY'),19,row, yrs[y]) ## Psurf
+      out <- add(getHdf5Data(ncT, 'FMEAN_ATM_SHV_PY'),20,row, yrs[y]) ## Qair
+      out <- add(getHdf5Data(ncT, 'FMEAN_PCPG_PY'),21,row, yrs[y]) ## Rainf
       ##out <- add(getHdf5Data(ncT, 'AVG_NIR_BEAM') +
       ##           getHdf5Data(ncT, 'AVG_NIR_DIFFUSE')+
       ##           getHdf5Data(ncT, 'AVG_PAR_BEAM')+
       ##           getHdf5Data(ncT, 'AVG_PAR_DIFFUSE'),22,row, yrs[y]) ## Swdown
-      out <- add(getHdf5Data(ncT, 'AVG_PAR_BEAM')+
-                 getHdf5Data(ncT, 'AVG_PAR_DIFFUSE'),22,row, yrs[y]) ## Swdown
-      out <- add(getHdf5Data(ncT, 'AVG_ATM_TMP'),23,row, yrs[y]) ## Tair
-      out <- add(getHdf5Data(ncT, 'AVG_VELS'),24,row, yrs[y]) ## Wind
-      ##out <- add(getHdf5Data(ncT, 'AVG_RLONG')-getHdf5Data(ncT, 'AVG_RLONGUP'),25,row, yrs[y]) ## Lwnet
+      ##out <- add(getHdf5Data(ncT, 'FMEAN_PAR_L_BEAM_PY')+
+      ##           getHdf5Data(ncT, 'FMEAN_PAR_L_DIFF_PY'),22,row, yrs[y]) ## Swdown
+      out <- add(getHdf5Data(ncT, 'FMEAN_ATM_PAR_PY'),22,row, yrs[y])  ## Swdown
+      out <- add(getHdf5Data(ncT, 'FMEAN_ATM_TEMP_PY'),23,row, yrs[y]) ## Tair
+      out <- add(getHdf5Data(ncT, 'FMEAN_ATM_VELS_PY'),24,row, yrs[y]) ## Wind
+      ##out <- add(getHdf5Data(ncT, 'FMEAN_ATM_RLONG_PY')-getHdf5Data(ncT, 'AVG_RLONGUP'),25,row, yrs[y]) ## Lwnet
       out <- add(-999,25,row, yrs[y]) ## Lwnet
       ##out <- add(getHdf5Data(ncT, 'AVG_SENSIBLE_GC') + getHdf5Data(ncT, 'AVG_VAPOR_GC')*2272000,26,row, yrs[y]) ## Qg
       out <- add(-999,26,row, yrs[y]) ## Qg
       ##out <- add(getHdf5Data(ncT, 'AVG_SENSIBLE_TOT'),27,row, yrs[y]) ## Qh
-      out <- add(getHdf5Data(ncT, 'AVG_SENSIBLE_AC'),27,row, yrs[y]) ## Qh
-      out <- add(getHdf5Data(ncT, 'AVG_EVAP'),28,row, yrs[y]) ## Qle
+      out <- add(getHdf5Data(ncT, 'FMEAN_SENSIBLE_AC_PY'),27,row, yrs[y]) ## Qh
+      out <- add(getHdf5Data(ncT, 'FMEAN_VAPOR_LC_PY')+getHdf5Data(ncT, 'FMEAN_VAPOR_WC_PY')+getHdf5Data(ncT, 'FMEAN_VAPOR_GC_PY'),28,row, yrs[y]) ## Qle
       out <- add(-999,29,row, yrs[y]) ## Swnet
       out <- add(-999,30,row, yrs[y]) ## RootMoist
-      out <- add(getHdf5Data(ncT, 'AVG_TRANSP'),31,row, yrs[y]) ## Tveg
+      out <- add(getHdf5Data(ncT, 'FMEAN_TRANSP_PY'),31,row, yrs[y]) ## Tveg
       out <- add(getHdf5Data(ncT, 'ZBAR'),32,row, yrs[y]) ## WaterTableD
       out <- add(-999,33,row, yrs[y]) ## fPAR
       ##lai <- matrix(apply(getHdf5Data(ncT, 'LAI_PFT'),1,sum,na.rm=TRUE),nrow=block)
       ## out <- add(lai,34,row, yrs[y]) ## LAI******************
-      out <- add(getHdf5Data(ncT, 'LAI'),34,row, yrs[y]) ## LAI
+      out <- add(getHdf5Data(ncT, 'FMEAN_LAI_PY'),34,row, yrs[y]) ## LAI
       ##z <- getHdf5Data(ncT, 'SLZ')
       ##if(z[length(z)] < 0.0) z <- c(z,0.0)
       ##dz <- diff(z)
       ##dz <- dz[dz != 0.0]
       ##fliq <- sum(getHdf5Data(ncT, 'AVG_SOIL_FRACLIQ')*dz)/-min(z)
-      fliq <- NA#getHdf5Data(ncT, 'AVG_SOIL_FRACLIQ')
+      fliq <- NA#getHdf5Data(ncT, 'FMEAN_SFCW_FLIQ_PY')
       out <- add(1-fliq,35,row, yrs[y]) ## SMFrozFrac
       out <- add(fliq,36,row, yrs[y]) ## SMLiqFrac
       ## This needs to be soil wetness, i.e. multilple levels deep
-      out <- add(getHdf5Data(ncT, 'AVG_SOIL_WATER'),37,row, yrs[y]) ## SoilWater  **********
+      out <- add(getHdf5Data(ncT, 'FMEAN_SOIL_WATER_PY'),37,row, yrs[y]) ## SoilWater  **********
       ##out <- add(sum(soiltemp*dz)/-min(z),38) ## SoilTemp
       out <- add(soiltemp,38,row, yrs[y]) ## SoilTemp
       out <- add(-999,39,row, yrs[y]) ## SoilWet
-      out <- add(getHdf5Data(ncT, 'AVG_ALBEDO'),40,row, yrs[y]) ## Albedo
-      out <- add(getHdf5Data(ncT, 'AVG_SNOWTEMP'),41,row, yrs[y]) ## SnowT
-      out <- add(getHdf5Data(ncT, 'AVG_SNOWMASS'),42,row, yrs[y]) ## SWE
-      out <- add(getHdf5Data(ncT, 'AVG_VEG_TEMP'),43,row, yrs[y]) ## VegT
-      out <- add(getHdf5Data(ncT, 'AVG_EVAP')+getHdf5Data(ncT, 'AVG_TRANSP'),44,row, yrs[y]) ## Evap
-      out <- add(getHdf5Data(ncT, 'AVG_RUNOFF'),45,row, yrs[y]) ## Qs
+      out <- add(getHdf5Data(ncT, 'FMEAN_ALBEDO_PY'),40,row, yrs[y]) ## Albedo
+      out <- add(getHdf5Data(ncT, 'FMEAN_SFCW_TEMP_PY'),41,row, yrs[y]) ## SnowT (ED2 currently groups snow in to surface water)
+      out <- add(getHdf5Data(ncT, 'FMEAN_SFCW_MASS_PY'),42,row, yrs[y]) ## SWE (ED2 currently groups snow in to surface water)
+      out <- add(getHdf5Data(ncT, 'FMEAN_LEAF_TEMP_PY'),43,row, yrs[y]) ## VegT
+      out <- add(getHdf5Data(ncT, 'FMEAN_VAPOR_LC_PY')+getHdf5Data(ncT, 'FMEAN_VAPOR_WC_PY')+getHdf5Data(ncT, 'FMEAN_VAPOR_GC_PY')+getHdf5Data(ncT, 'FMEAN_TRANSP_PY'),44,row, yrs[y]) ## Evap
+      out <- add(getHdf5Data(ncT, 'FMEAN_QRUNOFF_PY'),45,row, yrs[y]) ## Qs
       out <- add(getHdf5Data(ncT, 'BASEFLOW'),46,row, yrs[y]) ## Qsb
       
       nc_close(ncT)
