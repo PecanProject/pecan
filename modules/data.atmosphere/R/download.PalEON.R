@@ -8,11 +8,17 @@
 ##' @param end_year
 ##' 
 ##' @author Betsy Cowdery
-download.PalEON <- function(outfolder, start_date, end_date, overwrite=FALSE){
+download.PalEON <- function(sitename, outfolder, start_date, end_date, overwrite=FALSE){
   
-  # This is a hack for now
-  outfolder <- "/projectnb/dietzelab/paleon/met_regional/phase1a_met_drivers_v4.2"  
-
+  sites <- c("PBL","PDL","PHA","PHO","PMB","PUN")
+  
+  for(s in sites){
+    if(grepl(s, sitename)){
+      outfolder <- file.path("/projectnb/dietzelab/paleon/met_regional/phase1a_met_drivers_v4.2",s)  
+      # This is overwriting the fact that the original folders are not named following our standard. I should deal with this in the future. 
+    } 
+  }
+  
   require(PEcAn.utils)
   require(lubridate)
   start_date <- as.POSIXlt(start_date, tz = "GMT")
