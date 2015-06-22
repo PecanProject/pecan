@@ -14,6 +14,7 @@ download.PalEON <- function(sitename, outfolder, start_date, end_date, overwrite
   
   for(s in sites){
     if(grepl(s, sitename)){
+      site <- s
       outfolder <- file.path("/projectnb/dietzelab/paleon/met_regional/phase1a_met_drivers_v4.2",s)  
       # This is overwriting the fact that the original folders are not named following our standard. I should deal with this in the future. 
     } 
