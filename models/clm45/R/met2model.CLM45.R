@@ -109,10 +109,117 @@ for(year in start_year:end_year) {
  
 ### convert to CLM4.5 met variables
 
-
+#   netcdf \1999-01 {
+#     
+#     dimensions:
+#       
+#       scalar = 1 ;
+#     
+#     lon = 1 ;
+#     
+#     lat = 1 ;
+#     
+#     time = 744 ;
+#     
+#     variables:
+#       
+#       double time(time) ;
+#     
+#     time:long_name = "Time axis" ;
+#     
+#     time:units = "days since 1999-01-01 00:00:00" ;
+#     
+#     time:calendar = "noleap" ;
+#     
+#     double LONGXY(lat, lon) ;
+#     
+#     LONGXY:long_name = "longitude" ;
+#     
+#     LONGXY:units = "degrees E" ;
+#     
+#     double LATIXY(lat, lon) ;
+#     
+#     LATIXY:long_name = "latitude" ;
+#     
+#     LATIXY:units = "degrees N" ;
+#     
+#     double ZBOT(time, lat, lon) ;
+#     
+#     ZBOT:long_name = "observational height" ;
+#     
+#     ZBOT:units = "m" ;
+#     
+#     double EDGEW(scalar) ;
+#     
+#     EDGEW:long_name = "western edge in atmospheric data" ;
+#     
+#     EDGEW:units = "degrees E" ;
+#     
+#     double EDGEE(scalar) ;
+#     
+#     EDGEE:long_name = "eastern edge in atmospheric data" ;
+#     
+#     EDGEE:units = "degrees E" ;
+#     
+#     double EDGES(scalar) ;
+#     
+#     EDGES:long_name = "southern edge in atmospheric data" ;
+#     
+#     EDGES:units = "degrees N" ;
+#     
+#     double EDGEN(scalar) ;
+#     
+#     EDGEN:long_name = "northern edge in atmospheric data" ;
+#     
+#     EDGEN:units = "degrees N" ;
+#     
+#     double TBOT(time, lat, lon) ;
+#     
+#     TBOT:long_name = "temperature at the lowest atm level (TBOT)" ;
+#     
+#     TBOT:units = "K" ;
+#     
+#     double RH(time, lat, lon) ;
+#     
+#     RH:long_name = "relative humidity at the lowest atm level (RH)" ;
+#     
+#     RH:units = "%" ;
+#     
+#     double WIND(time, lat, lon) ;
+#     
+#     WIND:long_name = "wind at the lowest atm level (WIND)" ;
+#     
+#     WIND:units = "m/s" ;
+#     
+#     double FSDS(time, lat, lon) ;
+#     
+#     FSDS:long_name = "incident solar (FSDS)" ;
+#     
+#     FSDS:units = "W/m2" ;
+#     
+#     double FLDS(time, lat, lon) ;
+#     
+#     FLDS:long_name = "incident longwave (FLDS)" ;
+#     
+#     FLDS:units = "W/m2" ;
+#     
+#     double PSRF(time, lat, lon) ;
+#     
+#     PSRF:long_name = "pressure at the lowest atm level (PSRF)" ;
+#     
+#     PSRF:units = "Pa" ;
+#     
+#     double PRECTmms(time, lat, lon) ;
+#     
+#     PRECTmms:long_name = "precipitation (PRECTmms)" ;
+#     
+#     PRECTmms:units = "mm/s" ;
+  
+  
 print("Done with met2model.CLM4")
 
 } ### end loop over met files
   invisible(results)
 
 } ### end met2model.CLM4
+
