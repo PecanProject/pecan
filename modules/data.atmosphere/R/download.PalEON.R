@@ -10,9 +10,14 @@
 ##' @author Betsy Cowdery
 download.PalEON <- function(outfolder, start_date, end_date, overwrite=FALSE){
   
-  # This is a hack for now
-  outfolder <- "/projectnb/dietzelab/paleon/met_regional/phase1a_met_drivers_v4.2"  
-
+  sites <- c("PBL","PDL","PHA","PHO","PMB","PUN")
+  
+  for(s in sites){
+    if(grepl(s, outfolder)){
+      outfolder <- file.path("/projectnb/dietzelab/paleon/met_regional/phase1a_met_drivers_v4.2",s)  
+    } 
+  }
+  
   require(PEcAn.utils)
   require(lubridate)
   start_date <- as.POSIXlt(start_date, tz = "GMT")
