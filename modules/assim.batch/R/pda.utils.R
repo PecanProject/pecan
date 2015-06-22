@@ -93,7 +93,8 @@ pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   } else {
     settings$assim.batch$param.names <- as.list(as.character(settings$assim.batch$param.names))
   }
-
+  # have to add names or listToXml() won't work
+  names(settings$assim.batch$param.names) <- rep("param", length(settings$assim.batch$param.names))
 
   # prior: Either null or an ID used to query for priors later
   if(!is.null(prior.id)) {
@@ -174,6 +175,8 @@ pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     settings$assim.batch$jump$jvar <- rep(1, length(param.names))
   }
   settings$assim.batch$jump$jvar <- as.list(as.numeric(settings$assim.batch$jump$jvar))
+  # have to add names or listToXml() won't work
+  names(settings$assim.batch$jump$jvar) <- rep("jvar", length(settings$assim.batch$jump$jvar))
   
   return(settings)
 }
@@ -641,7 +644,8 @@ pda.postprocess <- function(settings, con, params, pname, prior, prior.ind) {
   ## save named distributions
   # *** TODO: Generalize for multiple PFTS
   filename <- file.path(settings$pfts$pft$outdir, 'post.distns.Rdata')
-  post.distns <- approx.posterior(params.subset, prior, outdir = settings$pfts$pft$outdir)
+
+  post.distns <- approx.posterior(params.subset, prior[prior.ind,], outdir = settings$pfts$pft$outdir)
   save(post.distns, file = filename)
   dbfile.insert(dirname(filename), basename(filename), 'Posterior', posteriorid, con)
 
