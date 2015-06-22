@@ -306,3 +306,28 @@ db.site.lat.lon <- function(site.id,con){
     return(list(lat = site$lat, lon = site$lon))
   }
 }
+
+#################################################################################################################################
+
+##' @name site_from_tag
+##' @title site_from_tag
+##' @export
+##' @param sitename
+##' @param tag
+##' @author Betsy Cowdery
+##' 
+##' Function to find the site code for a specific tag 
+##' Example: 
+##'   sitename = "Rhinelander Aspen FACE Experiment (FACE-RHIN)" 
+##'   tag = "FACE"
+##'   site_from_tag(sitename,tag) = "RHIN"
+##' Requires that site names be set up specifically with (tag-sitecode) - this may change
+
+
+site_from_tag <- function(sitename,tag){
+  temp <- regmatches(sitename,gregexpr("(?<=\\().*?(?=\\))", sitename, perl=TRUE))[[1]]
+  pref <- paste0(tag,"-")
+  site <- unlist(strsplit(temp[grepl(pref,temp)], pref))[2]
+  return(site)
+}
+
