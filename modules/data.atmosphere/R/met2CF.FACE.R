@@ -1,14 +1,15 @@
+##' @name met2CF.FACE
+##' @title met2CF.FACE
+##' @export
+##' 
+##' @param in.path
+##' @param in.prefix
+##' @param outfolder
+##' @param convert FACE files to CF files
+##' @author Elizabeth Cowdery
+##' 
+
 met2CF.FACE <- function(in.path,in.prefix,outfolder){
-  
-  outname = tail(unlist(strsplit(outfolder,'/')),n=1)
-  
-  # Check to see if input is already in dbfiles table 
-  check <- input.name.check(outname, con, dbparams)
-  if(is.null(check)==FALSE){
-    logger.error('Input is already in the database.')
-    db.close(con)
-    return(check) 
-  }
   
   require(ncdf4)
   require(ncdf4.helpers)
