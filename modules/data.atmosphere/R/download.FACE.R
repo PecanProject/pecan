@@ -34,14 +34,7 @@ download.FACE <- function(sitename,outfolder, start_date, end_date, overwrite=FA
   url <- paste0("ftp://cdiac.ornl.gov/.private/eCO2_Modelling/Site_Data/",site,"/", raw.file)
   print(url)
   system(paste("wget -c ", url, " -O ", out.file))
-  
-  # remove the unwanted treatment
-  treatment  <- unlist(strsplit(tail(unlist(strsplit(outfolder, "/")),1),"_"))[2] 
-  if(treatment == "a"){rm.vars <- c("eCO2", "eO3")}
-  else if (treatment == "e"){rm.vars <- c("aCO2", "aO3")}
-  else{logger.error("Need a CO2 levels treatment")}
-  
-  paste("ncks -x -v", paste0(rm.vars,collapse = ","), out.file, out.file)
+
   
   # return file info
   results <- data.frame(file=out.file, 
