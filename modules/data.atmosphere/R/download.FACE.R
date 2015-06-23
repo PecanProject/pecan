@@ -41,7 +41,7 @@ download.FACE <- function(sitename,outfolder, start_date, end_date, overwrite=FA
   else if (treatment == "e"){rm.vars <- c("aCO2", "aO3")}
   else{logger.error("Need a CO2 levels treatment")}
   
-  paste("ncks -x -v", paste0(rm.vars,collapse = ","), out.file, out.file)
+  system(paste("ncks -O -x -v", paste0(rm.vars,collapse = ","), out.file, out.file))
   
   # return file info
   results <- data.frame(file=out.file, 
