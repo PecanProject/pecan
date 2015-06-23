@@ -13,7 +13,10 @@
 download.FACE <- function(sitename,outfolder, start_date, end_date, overwrite=FALSE){
   # download.FACE <- function(data.set,outfolder,pkg,raw.host,start_year,end_year,site.id,dbparams,con){
   
-  require(lubridate) #is this necessary?
+  require(lubridate)
+  require(PEcAn.utils)
+  require(data.table)
+  
   start_date <- as.POSIXlt(start_date, tz = "GMT")
   end_date <- as.POSIXlt(end_date, tz = "GMT")
   
@@ -29,7 +32,8 @@ download.FACE <- function(sitename,outfolder, start_date, end_date, overwrite=FA
   
   # url where Ameriflux data is stored
   url <- paste0("ftp://cdiac.ornl.gov/.private/eCO2_Modelling/Site_Data/",site,"/", raw.file)
-  system(paste(url, " -O ", out.file))
+  print(url)
+  system(paste("wget -c ", url, " -O ", out.file))
   
   results <- data.frame(file=out.file, 
                         host=fqdn(),
