@@ -35,6 +35,15 @@ download.FACE <- function(sitename,outfolder, start_date, end_date, overwrite=FA
   print(url)
   system(paste("wget -c ", url, " -O ", out.file))
   
+  # remove the unwanted treatment
+  treatment  <- unlist(strsplit(tail(unlist(strsplit(outfolder, "/")),1),"_"))[2] 
+  if(treatment == "a"){rm.vars <- c("eCO2", "eO3")}
+  else if (treatment == "e"){rm.vars <- c("aCO2", "aO3")}
+  else{logger.error("Need a CO2 levels treatment")}
+  
+  paste("ncks -x -v", paste0(rm.vars,collapse = ","), out.file, out.file)
+  
+  # return file info
   results <- data.frame(file=out.file, 
                         host=fqdn(),
                         mimetype='application/x-netcdf', 
