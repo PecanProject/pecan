@@ -20,7 +20,7 @@
 ##' @export
 ##'
 ##' @author David LeBauer, Shawn Serbin
-run.write.configs <- function(settings, write = TRUE) {
+run.write.configs <- function(settings, write = TRUE, ens.sample.method="halton") {
   model = settings$model$type
   scipen = getOption("scipen")
   options(scipen=12)
@@ -165,7 +165,7 @@ run.write.configs <- function(settings, write = TRUE) {
           
           ## subset the trait.samples to ensemble size using Halton sequence 
           ensemble.samples <- get.ensemble.samples(settings$ensemble$size, 
-                                                   trait.samples, env.samples)
+                                                   trait.samples, env.samples, ens.sample.method)
       }
           logger.info("Ensemble size: ",settings$ensemble$size)
           
