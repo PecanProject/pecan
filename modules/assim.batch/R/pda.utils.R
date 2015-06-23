@@ -645,7 +645,7 @@ pda.postprocess <- function(settings, con, params, pname, prior, prior.ind) {
   # *** TODO: Generalize for multiple PFTS
   filename <- file.path(settings$pfts$pft$outdir, 'post.distns.Rdata')
 
-  post.distns <- approx.posterior(params.subset, prior[prior.ind,], outdir = settings$pfts$pft$outdir)
+  post.distns <- approx.posterior(params.subset, prior, outdir = settings$pfts$pft$outdir)
   save(post.distns, file = filename)
   dbfile.insert(dirname(filename), basename(filename), 'Posterior', posteriorid, con)
 
