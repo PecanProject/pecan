@@ -14,6 +14,9 @@
 ##' @title Run model specific write configuration functions
 ##' @param model the ecosystem model to generate the configuration files for
 ##' @param write should the runs be written to the database
+##' @param ens.sample.method how to sample the ensemble members("halton" sequence or "uniform" random)
+##'
+##' @return an updated settings list, which includes ensemble IDs for SA and ensemble analysis
 ##' @export
 ##'
 ##' @author David LeBauer, Shawn Serbin
@@ -141,11 +144,14 @@ run.write.configs <- function(settings, write = TRUE) {
         assign("cnt", cnt, .GlobalEnv)
       }
       logger.info("\n ----- Writing model run config files ----")
-      runs.samples$sa <- write.sa.configs(defaults = settings$pfts,
+      sa.runs <- write.sa.configs(defaults = settings$pfts,
                                           quantile.samples = sa.samples,
                                           settings = settings,
                                           model = model,
                                           write.to.db = write)
+
+      runs.samples$sa <- sa.runs$runs
+      settings$sensitivity.analysis$ensemble.id <- sa.runs$ensemble.id
   } ### End of SA
   
   ### Write ENSEMBLE
@@ -163,11 +169,15 @@ run.write.configs <- function(settings, write = TRUE) {
       }
           logger.info("Ensemble size: ",settings$ensemble$size)
           
-          runs.samples$ensemble <- write.ensemble.configs(defaults = settings$pfts,
+          ens.runs <- write.ensemble.configs(defaults = settings$pfts,
                                                           ensemble.samples = ensemble.samples,
                                                           settings = settings,
                                                           model = model,
                                                           write.to.db = write)
+
+          runs.samples$ensemble <- ens.runs$runs
+          settings$ensemble$ensemble.id <- ens.runs$ensemble.id
+          
   } else {
       logger.info('not writing config files for ensemble, settings are NULL')
   } ### End of Ensemble
@@ -180,6 +190,8 @@ run.write.configs <- function(settings, write = TRUE) {
        file = file.path(settings$outdir, 'samples.Rdata'))
   logger.info("parameter values for runs in ", file.path(settings$outdir, "samples.RData"))
   options(scipen=scipen)
+  
+  invisible(settings)
 }
 #==================================================================================================#
 

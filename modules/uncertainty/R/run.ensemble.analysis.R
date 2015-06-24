@@ -39,7 +39,7 @@ run.ensemble.analysis <- function(plot.timeseries=NA){
   ### Check if ensemble was run and was larger than 0
   if ('ensemble' %in% names(settings) & settings$ensemble$size>0) {
     ### Load parsed model results
-    load(file.path(settings$outdir, 'ensemble.Rdata'))
+    load(file.path(settings$outdir, paste('ensemble',settings$ensemble$ensemble.id,'Rdata', sep='.')))
   }
   
   ### ------------------- Start ensemble analysis -------------------
@@ -58,7 +58,7 @@ run.ensemble.analysis <- function(plot.timeseries=NA){
   ftime = ifelse(is.na(start.year),"",
                  ifelse(end.year==start.year,paste0(".",start.year),
                         paste0(".",start.year,"-",end.year)))
-  fname = paste0("ensemble.analysis.",variables[1],ftime,".pdf")
+  fname = paste0("ensemble.analysis.",settings$ensemble$ensemble.id,".",variables[1],ftime,".pdf")
   
   pdf(file=file.path(fig.out,fname),width=13,height=6)
   par(mfrow=c(1,2),mar=c(4,4.8,1,2.0)) # B, L, T, R
@@ -80,7 +80,8 @@ run.ensemble.analysis <- function(plot.timeseries=NA){
   
   ### Plot ensemble time-series
   if (!is.na(plot.timeseries)){
-    pdf(file.path(settings$outdir,"ensemble.ts.pdf"),width=12,height=9)    
+    pdf(file.path(settings$outdir,paste0("ensemble.ts",".",settings$ensemble$ensemble.id,".pdf")),
+      width=12,height=9)    
     ensemble.ts(read.ensemble.ts(settings$model$type))
     dev.off()
   }
@@ -159,7 +160,8 @@ read.ensemble.ts <- function(model){
 
   names(ensemble.ts) <- variables
   # BMR 10/16/13 Save this variable now to operate later on
-  save(ensemble.ts, file = file.path(settings$outdir,"ensemble.ts.Rdata"))
+  save(ensemble.ts, file = file.path(settings$outdir,
+    paste0("ensemble.ts.",settings$ensemble$ensemble.id,".Rdata")))
   return(ensemble.ts)
 
 }
@@ -263,7 +265,7 @@ ensemble.ts <- function(ensemble.ts,observations=NULL,window=1){
   
   save(ensemble.analysis.results,
        file = file.path(settings$outdir,
-                    "ensemble.ts.analysis.results.Rdata"))
+                paste0("ensemble.ts.",settings$ensemble$ensemble.id,".analysis.results.Rdata")))
   
 }
 #==================================================================================================#
