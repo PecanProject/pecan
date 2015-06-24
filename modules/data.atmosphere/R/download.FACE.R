@@ -35,7 +35,6 @@ download.FACE <- function(sitename,outfolder, start_date, end_date, overwrite=FA
   print(url)
   system(paste("wget -c ", url, " -O ", out.file))
 
-  
   # return file info
   results <- data.frame(file=out.file, 
                         host=fqdn(),
