@@ -86,5 +86,13 @@ met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date){
     nc_close(nc) 
     file.remove(f.cf)
   }
+   results <- data.frame(file="", 
+                        host=fqdn(),
+                        mimetype="application/x-netcdf", 
+                        formatname="CF Meteorology",
+                        startdate=start_date, 
+                        enddate=end_date,
+                        dbfile.name = "",
+                        stringsAsFactors = FALSE)
 }
 
