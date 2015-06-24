@@ -9,7 +9,7 @@
 ##' @author Elizabeth Cowdery
 ##' 
 
-met2CF.FACE <- function(in.path,in.prefix,outfolder){
+met2CF.FACE <- function(in.path,in.prefix,outfolder,start_year,end_year){
 
   require(ncdf4)
   require(ncdf4.helpers)
@@ -56,8 +56,13 @@ met2CF.FACE <- function(in.path,in.prefix,outfolder){
     
     # Split into annual files 
     
-    year <- ncvar_get(nc, 'YEAR')
-    y <- year[1]:year[length(year)]
+    require(lubridate)
+    start_date <- as.POSIXlt(start_date, tz = "GMT")
+    end_date <- as.POSIXlt(end_date, tz = "GMT")
+    start_year <- year(start_date)
+    end_year <- year(end_date)
+    
+    y <- start_year:end_year
     n <- length(y)
     t <- -1 
     for(j in 1:n){
