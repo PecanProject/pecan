@@ -57,6 +57,23 @@ met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date){
       ncvar_put(nc=nc2, varid='longitude', vals=ncvar_get(nc,"nav_lon"))
       
       
+      # convert wind speed and wind direction to eastward_wind and northward_wind
+      wd <- 0 # wind direction - not specified so I set to 0???
+      ws <- ncvar_get(nc=nc, varid='Wind') #wind speed
+      ew <- ws * cos(wd * (pi/180))
+      nw <- ws * sin(wd * (pi/180))
+
+      var <- ncvar_def(name='eastward_wind', units='m/s', dim=dim, missval=-6999.0, verbose=FALSE)
+      nc2 <- ncvar_add(nc=nc2, v=var, verbose=FALSE)
+      ncvar_put(nc=nc2, varid='eastward_wind', vals=ew)
+
+      var <- ncvar_def(name='northward_wind', units='m/s', dim=dim, missval=-6999.0, verbose=FALSE)
+      nc2 <- ncvar_add(nc=nc2, v=var, verbose=FALSE)
+      ncvar_put(nc=nc2, varid='northward_wind', vals=nw)
+
+
+      # deal with the rest of the variables
+
       vars_all <- c("Rainf", "Tair", "RH", "VPD", "Qair", 
                     "Wind", "SWdown", "PAR", "LWdown", "Psurf", "aCO2", "eCO2", "aO3", 
                     "eO3", "SolarElevation")
