@@ -125,7 +125,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
 ##' @param settings list of PEcAn settings
 ##' @param write.config a model-specific function to write config files, e.g. \link{write.config.ED}  
 ##' @param clean remove old output first?
-##' @return data frame of runids, writes ensemble configuration files as a side effect
+##' @return list, containing $runs = data frame of runids, and $ensemble.id = the ensemble ID for these runs. Also writes sensitivity analysis configuration files as a side effect
 ##' @export
 ##' @author David LeBauer, Carl Davidson
 write.ensemble.configs <- function(defaults, ensemble.samples, settings,
@@ -158,7 +158,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings,
     now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
     db.query(paste0("INSERT INTO ensembles (created_at, runtype, workflow_id) values ('", 
                      now, "', 'ensemble', ", workflow.id, ")"), con=con)
-    ensemble.id <- db.query(paste0("SELECT id FROM ensembles WHERE created_at='", now, "'"), con=con)[['id']]
+    ensemble.id <- db.query(paste0("SELECT id FROM ensembles WHERE created_at='", now, "' AND runtype='ensemble'"), con=con)[['id']]
   } else {
     ensemble.id <- "NA"
   }
@@ -229,7 +229,6 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings,
     db.close(con)
   }
   
-  invisible(runs)
-  
+  invisible(list(runs=runs, ensemble.id=ensemble.id))
 } ### End of function: write.ensemble.configs
 #==================================================================================================#

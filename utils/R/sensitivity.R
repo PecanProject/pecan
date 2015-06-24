@@ -63,7 +63,7 @@ read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name='',
 ##' @param write.config a model-specific function to write config files, e.g. \link{write.config.ED}  
 ##' @param convert.samples a model-specific function that transforms variables from units used in database to units used by model, e.g. \link{convert.samples.ED} 
 ##' @param ensemble.samples list of lists supplied by \link{get.sa.samples}
-##' @return data frame of runids, writes sensitivity analysis configuration files as a side effect
+##' @return list, containing $runs = data frame of runids, and $ensemble.id = the ensemble ID for these runs. Also writes sensitivity analysis configuration files as a side effect
 ##' @export
 ##' @author David LeBauer, Carl Davidson
 write.sa.configs <- function(defaults, quantile.samples, settings, model,
@@ -106,7 +106,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
   if (!is.null(con)) {
     now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
     db.query(paste0("INSERT INTO ensembles (created_at, runtype, workflow_id) values ('", now, "', 'sensitivity analysis', ", format(workflow.id,scientific=FALSE), ")"), con=con)
-    ensemble.id <- db.query(paste0("SELECT id FROM ensembles WHERE created_at='", now, "'"), con=con)[['id']]
+    ensemble.id <- db.query(paste0("SELECT id FROM ensembles WHERE created_at='", now, "' AND runtype='sensitivity analysis'"), con=con)[['id']]
     paramlist <- paste0("quantile=MEDIAN,trait=all,pft=", paste(lapply(settings$pfts, function(x) x[['name']]), sep=','))
     db.query(paste0("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id, parameter_list) values ('", settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", settings$run$end.date, "', '",settings$run$outdir , "', '", now, "', ", ensemble.id, ", '", paramlist, "')"), con=con)
     run.id <- db.query(paste0("SELECT id FROM runs WHERE created_at='", now, "' AND parameter_list='", paramlist, "'"), con=con)[['id']]
@@ -244,6 +244,6 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
     db.close(con)
   }
   options(scipen=scipen)
-  invisible(runs)
+  invisible(list(runs=runs, ensemble.id=ensemble.id))
 }
 #==================================================================================================#
