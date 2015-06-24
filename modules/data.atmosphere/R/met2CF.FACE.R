@@ -10,42 +10,48 @@
 ##' 
 
 met2CF.FACE <- function(in.path,in.prefix,outfolder){
-  
+
   require(ncdf4)
   require(ncdf4.helpers)
   
   files = dir(in.path,in.prefix)
-  files = files[grep(pattern="*.nc",files)]
-  
-  if(length(files) == 0) return(NULL)
-  if(!file.exists(outfolder)) dir.create(outfolder)
-  
-  for(i in 1:length(files)){
-    
-    f  <- paste0(in.path,files[i])
-    f.cf <- paste0(outfolder,files[i]) #paste0(outfolder,in.prefix,"_CF",unlist(strsplit(file,in.prefix))[[2]])
+  file = files[grep(pattern="*.nc",files)]
+  if(!(length(file) == 1)) return(NULL)
+  f  <- paste0(in.path,file)
+
+  for(treatment in c("a", "e")){
+
+    outfolder <- paste(unlist(strsplit(outfolder, "FACE")), collapse =paste0("FACE_", treatment))
+    if(!file.exists(outfolder)) dir.create(outfolder)
+    f.cf <- paste0(outfolder,file)
     if(!file.exists(outfolder)){file.copy(f,f.cf)}
-    
-    nc.o <- nc_open(f,write=TRUE)
-    nc <- nc_open(f.cf,write=TRUE)
-    nc.o.vars <-  nc.get.variable.list(nc)
-    
+
+    # remove the unwanted treatment 
+    if(treatment == "a"){rm.vars <- c("eCO2", "eO3")}
+    else if (treatment == "e"){rm.vars <- c("aCO2", "aO3")}
+    else{logger.error("Need a CO2 levels treatment")}
+  
+    paste("ncks -x -v", paste0(rm.vars,collapse = ","), f.cf, f.cf)
+
     # Change to CF variable names 
+
+    nc <- nc_open(f.cf,write=TRUE)
+    nc.vars <-  nc.get.variable.list(nc)
     
     vars <- c("nav_lat", "nav_lon", "Rainf", "Tair", "RH", "VPD", "Qair", 
-              "Wind", "SWdown", "PAR", "LWdown", "Psurf", "aCO2", "eCO2", "aO3", 
-              "eO3", "SolarElevation")
+      "Wind", "SWdown", "PAR", "LWdown", "Psurf", "aCO2", "eCO2", "aO3", 
+      "eO3", "SolarElevation")
     
-    nvars <- c("lat", "lon", "precipitation_flux", "air_temperature", "relative_humidity", 
-               "water_vapor_saturation_deficit", "specific_humidity", "wind_speed", 
-               "surface_downwelling_shortwave_flux", "surface_downwelling_photosynthetic_radiative_flux_in_air", 
-               "surface_downwelling_longwave_flux", "air_pressure", "mass_concentration_of_carbon_dioxide_in_air_ambient", 
-               "mass_concentration_of_carbon_dioxide_in_air_elevated", "mass_concentration_of_ozone_in_air_ambient", 
-               "mass_concentration_of_ozone_in_air_elevated", "solar_elevation_angle")
+    nvars <- c("latitude", "longitude", "precipitation_flux", "air_temperature", "relative_humidity", 
+     "water_vapor_saturation_deficit", "specific_humidity", "wind_speed", 
+     "surface_downwelling_shortwave_flux", "surface_downwelling_photosynthetic_radiative_flux_in_air", 
+     "surface_downwelling_longwave_flux", "air_pressure", "mass_concentration_of_carbon_dioxide_in_air", 
+     "mass_concentration_of_carbon_dioxide_in_air", "mass_concentration_of_ozone_in_air", 
+     "mass_concentration_of_ozone_in_air", "solar_elevation_angle")
     
     l <- length(vars)
     for (k in 1:l){   
-      if(vars[k] %in% nc.o.vars){nc <- tncar_rename(nc,vars[k],nvars[k])}
+      if(vars[k] %in% nc.vars){nc <- tncar_rename(nc,vars[k],nvars[k])}
     }
     
     # Split into annual files 
@@ -64,12 +70,13 @@ met2CF.FACE <- function(in.path,in.prefix,outfolder){
         } 
       }
       t <- e
-    }    
-    nc_close(nc)
-    nc_close(nc.o) 
-    file.remove(paste0(in.path,files[i]))
-  } #end loop 
-  
-}
+    } 
 
+  }
+
+  nc_close(nc) 
+  file.remove(paste0(in.path,file))
+
+
+  }
 
