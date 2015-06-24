@@ -119,6 +119,6 @@ met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date){
   } # end loop over treatments
   
   nc_close(nc) 
-  file.remove(file.path(in.path,file))
+  file.remove(file.path(in.path,file)) 
 }
 
