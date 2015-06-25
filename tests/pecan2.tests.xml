@@ -2,16 +2,19 @@
 <pecan>
  <outdir>/home/ecowdery/met_process_tests/</outdir>
 
- <browndog>
    <!--
+ <browndog>
+
    <url>http://dap.ncsa.illinois.edu:8184/convert/</url>
    <username>browndog.user</username>
    <password>GritGin3</password>
-   -->
+   
    <url>http://dap-dev.ncsa.illinois.edu:8184/convert/</url>
    <username>browndog.user</username>
-   <password>twonkIv8</password>   
+   <password>twonkIv8</password> 
+   
  </browndog>
+    -->
  
  <database>
   <bety>
@@ -24,23 +27,36 @@
   </bety>
  </database>
  
- <model>
-  <id>5</id>
-  <type>ED2</type>
-  <revision>80</revision>
+
+  <model>
+  <id>10</id>
+  <binary>/home/dietze/sipnet_unk/sipnet</binary>
+  <type>SIPNET</type>
+  <revision>unk</revision>
  </model>
+ 
+   <pfts>
+  <pft>
+   <name>temperate.coniferous</name>
+   <constants>
+    <num>1</num>
+   </constants>
+   <outdir>/fs/data2/output//PEcAn_1000000305/pft/temperate.coniferous</outdir>
+   <posteriorid>1000000416</posteriorid>
+  </pft>
+ </pfts>
  
  <run>
 
   <site>
-   <id>1000000033</id>
-   <name>UMBS Disturbance (US-UMd)</name>
-   <lat>45.5625</lat>
-   <lon>-84.6975</lon>
+  <id>1000000005</id>
+  <name>Nevada Desert FACE Facility (FACE-NDFF)</name>
+  <lat>36.77</lat>
+  <lon>-115.96</lon>
   </site>
   
-  <start.date>2010-01-01 00:00:00</start.date>
-  <end.date>2010-12-31 00:00:00</end.date>
+  <start.date>1997-01-01 00:00:00</start.date>
+  <end.date>2007-12-31 00:00:00</end.date>
   
   <host>
    <name>localhost</name>
@@ -50,7 +66,7 @@
   
    <inputs>
     <met>
-      <source>Ameriflux</source>
+      <source>FACE</source>
     </met>
   </inputs>
   

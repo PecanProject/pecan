@@ -1,16 +1,16 @@
 <?xml version="1.0"?>
 <pecan>
-  <outdir>pecan</outdir>
+ <outdir>test</outdir>
 
  <database>
-    <bety>
-        <dbname>bety</dbname>
-        <username>bety</username>
-        <password>bety</password>
-        <host>localhost</host>
-        <port>3232</port>
-        <write>FALSE</write>
-    </bety>
+  <bety>
+   <user>bety</user>
+   <password>bety</password>
+   <host>128.197.230.32</host>
+   <dbname>bety</dbname>
+   <write>TRUE</write>
+   <driver>PostgreSQL</driver>
+  </bety>
  </database>
  
   <pfts>
@@ -24,21 +24,36 @@
   </ensemble>
 
   <model>
-    <id>1000000005</id>
-    <type>LINKAGES</type>
-  </model>
-
+  <id>1000000005</id>
+  <binary>/home/dietze/Linkages/linkages</binary>
+  <type>LINKAGES</type>
+  <revision>Revision 1.0 Ann's hack</revision>
+ </model>
   <run>
-    <site>
-      <id>758</id>
-    </site>
-    <inputs>
-        <met>/Users/paleolab/Linkages/test_text1.txt</met>
-    </inputs>
-    <start.date>2002-01-01 00:00:00</start.date>
-    <end.date>2005-12-31 00:00:00</end.date>
-    <host>
-      <name>localhost</name>
-    </host>
+  
+  <site>
+   <id>1000000650</id>
+   <name>Harvard Forest - Lyford Plots (PalEON PHA)</name>
+   <lat>42.53</lat>
+   <lon>-72.18</lon>
+  </site>
+  
+  <start.date>0850-01-01 00:00:00</start.date>
+  <end.date>0851-12-31 00:00:00</end.date>
+  
+  <host>
+   <name>geo.bu.edu</name>
+   <rundir>/usr2/collab/ecowdery/test/run</rundir>
+   <outdir>/usr2/collab/ecowdery/test/out</outdir>
+  </host>
+  
+  <dbfiles>/projectnb/dietzelab/pecan.data/input/</dbfiles>
+  
+   <inputs>
+    <met>
+      <source>PalEON</source>
+    </met>
+  </inputs>
+  
   </run>
 </pecan>

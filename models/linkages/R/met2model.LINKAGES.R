@@ -25,7 +25,7 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   
   start_date <- as.POSIXlt(start_date, tz = "GMT")
   end_date<- as.POSIXlt(end_date, tz = "GMT")
-  out.file <- file.path(paste0(outfolder,"climate.txt"))
+  out.file <- file.path(outfolder,"climate.txt")
   #   out.file <- file.path(outfolder, paste(in.prefix,
   #                                          strptime(start_date, "%Y-%m-%d"),
   #                                          strptime(end_date, "%Y-%m-%d"),
@@ -34,10 +34,10 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   results <- data.frame(file=c(out.file),
                         host=c(fqdn()),
                         mimetype=c('text/plain'),
-                        formatname=c('DALEC meteorology'),
+                        formatname=c('LINKAGES meteorology'),
                         startdate=c(start_date),
                         enddate=c(end_date),
-                        dbfile.name = "test_text1.txt",
+                        dbfile.name = "climate.txt",
                         stringsAsFactors = FALSE)
   print("internal results")
   print(results)
@@ -70,15 +70,12 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   DOY_vec_hr = c(1,c(32,60,91,121,152,182,213,244,274,305,335,365)*4)
   
   for(i in 1:length(year)){ 
+    ncin <- nc_open(file.path(in.path,paste(in.prefix,year[i],"nc",sep=".")))
+    ncprecipf = ncvar_get(ncin, "precipitation_flux")  #units are kg m-2 s-1    
     for(m in 1:12){
-      ncin <- nc_open(file.path(paste0(in.path,"/precipf"),
-                                paste0(in.prefix,"_precipf_",year[i],"_",
-                                       month[m],".nc")))
-    #print(ncin)
-      ncprecipf = ncvar_get(ncin, "precipf") #units are kg m-2 s-1    
-      month_matrix_precip[i,m] = sum(ncprecipf) * 21600 #fix when Mike changes code
-      nc_close(ncin)
-    } 
+      month_matrix_precip[i,m] = sum(ncprecipf[DOY_vec_hr[m]:(DOY_vec_hr[m+1]-1)]) * 21600^2 #fix when Mike changes code
+    }  
+    nc_close(ncin)
    #if(i%%100==0) cat(i," "); flush.console()
   }
   
@@ -99,14 +96,13 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   month_matrix_temp_mean = matrix(NA,length(year),12)
   
   for(i in 1:length(year)){
+    ncin <- nc_open(file.path(in.path,paste0(in.prefix,".",year[i],".nc")))
+    #print(ncin)
+    nctemp = ncvar_get(ncin, "air_temperature") #units are kg m-2 s-1    
     for(m in 1:12){
-      ncin <- nc_open(file.path(paste0(in.path,"/tair"),
-                              paste0(in.prefix,"_tair_",year[i],"_",
-                                     month[m],".nc")))  #print(ncin)
-      nctemp = ncvar_get(ncin, "tair") #units are K 
-      month_matrix_temp_mean[i,m] = mean(nctemp) #sub daily to monthly
-      nc_close(ncin)
+      month_matrix_temp_mean[i,m] = mean(nctemp[DOY_vec_hr[m]:(DOY_vec_hr[m+1]-1)]) #sub daily to monthly
     } 
+    nc_close(ncin)
     if(i%%100==0) cat(i," "); flush.console()
   }
   

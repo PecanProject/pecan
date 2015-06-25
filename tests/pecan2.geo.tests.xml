@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <pecan>
- <outdir>/usr2/collab/ecowdery/test</outdir>
+ <outdir>test</outdir>
  <!--
  <browndog>
 
@@ -33,18 +33,30 @@
   <revision>unk</revision>
  </model>
  
+   <pfts>
+  <pft>
+   <name>temperate.coniferous</name>
+   <constants>
+    <num>1</num>
+   </constants>
+   <outdir>/fs/data2/output//PEcAn_1000000305/pft/temperate.coniferous</outdir>
+   <posteriorid>1000000416</posteriorid>
+  </pft>
+ </pfts>
+ 
  <run>
 
   <site>
-   <id>676</id>
-   <name>Willow Creek (US-WCr)</name>
-   <lat>45.92</lat>
-   <lon>-90.45</lon>
+  <id>1000000004</id>
+  <name>Florida Scrub Oak Open Top Chamber Site (FACE-KSCO)</name>
+  <lat>28.63</lat>
+  <lon>-80.7</lon>
   </site>
   
-  <start.date>2002-01-01 00:00:00</start.date>
-  <end.date>2005-12-31 00:00:00</end.date>
+  <start.date>1996-01-01 00:00:00</start.date>
+  <end.date>2007-12-31 00:00:00</end.date>
   
+
   <host>
    <name>geo.bu.edu</name>
    <rundir>/usr2/collab/ecowdery/test/run</rundir>
@@ -55,7 +67,7 @@
   
    <inputs>
     <met>
-      <source>Ameriflux</source>
+      <source>FACE</source>
     </met>
   </inputs>
   
