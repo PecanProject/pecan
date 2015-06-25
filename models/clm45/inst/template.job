@@ -1,0 +1,34 @@
+#!/bin/bash -l
+
+# redirect output
+exec 3>&1
+exec &> "@OUTDIR@/logfile.txt"
+
+# create output folder
+mkdir -p "@OUTDIR@"
+
+# flag needed for ubuntu
+export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
+
+# see if application needs running
+#if [ ! -e "@OUTDIR@/history.xml" ]; then
+  cd "@RUNDIR@"
+  
+  "@BINARY@"
+  STATUS=$?
+  
+  # check the status
+  if [ $STATUS -ne 0 ]; then
+  	echo -e "ERROR IN MODEL RUN\nLogile is located at '@OUTDIR@/logfile.txt'" >&3
+  	exit $STATUS
+  fi
+
+  #  convert output
+
+# copy readme with specs to output
+cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
+
+# run getdata to extract right variables
+
+# all done
+echo -e "MODEL FINISHED\nLogile is located at '@OUTDIR@/logfile.txt'" >&3
