@@ -34,7 +34,7 @@ addInputFile "${FQDN}" "137" "harvard.NACP.lat42.5lon-72.5.pss" "${SITES}/harvar
 addInputFile "${FQDN}" "136" "harvard.NACP.lat42.5lon-72.5.site" "${SITES}/harvard_ems"
 
 # [676] Willow Creek
-addInput "676" "24" "2002-01-01" "2006-12-31"
+addInput "676" "24" "1998-01-01" "2006-12-31"
 addInputFile "${FQDN}" "${INPUT_ID}" "wcr.clim" "${SITES}/willow"
 addInputFile "${FQDN}" "134" "ED_MET_DRIVER_HEADER" "${SITES}/willow"
 addInputFile "${FQDN}" "135" "US-WCrforcing.nc" "${SITES}/willow"
