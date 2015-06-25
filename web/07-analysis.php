@@ -34,10 +34,12 @@ if (!isset($_REQUEST['siteid'])) {
   die("Need a siteid.");
 }
 $siteid=$_REQUEST['siteid'];
+
 if (!isset($_REQUEST['modelid'])) {
   die("Need a modelid.");
 }
 $modelid=$_REQUEST['modelid'];
+
 if (!isset($_REQUEST['hostname'])) {
   die("Need a hostname.");
 }
@@ -58,6 +60,7 @@ $enddate = "2006/12/31";
 if (isset($_REQUEST['end'])) { 
   $enddate=$_REQUEST['end'];
 }
+
 
 $email="";
 if (isset($_REQUEST['email'])) {
@@ -177,50 +180,10 @@ $stmt->closeCursor();
     $("#next").removeAttr("disabled");       
     $("#error").html("&nbsp;");
 
-    // check PFTs
-    if ($("#pft").val() == null) {
-      $("#next").attr("disabled", "disabled");
-      $("#error").html("Select a pft to continue");
-      $("#pftlabel").html("PFT<sup>*</sup>");
-<?php if ($betydb != "") { ?>
-    } else {
-      $("#pftlabel").html("PFT<sup>*</sup> (Show in <a href=\"<?php echo $betydb; ?>/pfts/" + $("#pft option:selected")[0].getAttribute("data-id") + "\" target=\"BETY\">BETY</a>)");
-<?php } ?>
-    }
-
-    // check inputs
-<?php
-  foreach($inputs as $input) {
-    if ($input['required']) {
-?>
-    if ($("#<?php echo $input['tag']; ?>").val() == null) {
-      $("#next").attr("disabled", "disabled");
-      $("#error").html("Missing value for <?php echo $input['name']; ?>");
-    }
-<?php
-    }
-  }
-?>
-  
-    // check dates
-    if ($("#start").length != 0) {
-      var start = checkDate($("#start").val(), "Start");
-      var end = checkDate($("#end").val(), "End");
-      if (start >= end) {
+    // ensemble 
+    if ($("#ensemble").val().length < 1 || $("#ensemble").val() < 1 || !/^[0-9]+$/.test($("#ensemble").val())) {
         $("#next").attr("disabled", "disabled");
-        $("#error").html("End date should be after start date.");
-      }
-    }
-
-    // redirect to data policy if needed
-    if ($("#met").val()) {
-      if ($("#met").val().startsWith("Ameriflux")) {
-        $("#formnext").attr("action", "03a-ameriflux.php");
-      } else if ($("#met").val().startsWith("NARR")) {
-        $("#formnext").attr("action", "03a-narr.php");
-      } else {
-        $("#formnext").attr("action", "07-analysis.php");
-      }
+        $("#error").html("The ensemble should be a positive integer value.");
     }
   }
       
@@ -232,28 +195,6 @@ $stmt->closeCursor();
     $("#formnext").submit();
   }
   
-  function checkDate(date, field) {
-    var arr = date.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
-    if (arr == null) {
-      $("#next").attr("disabled", "disabled");
-      $("#error").html(field + " date should be entered as \"YYYY/MM/DD\"");
-      return "";
-    }
-
-    arr[1] = parseInt(arr[1], 10);
-    arr[2] = parseInt(arr[2], 10)-1;
-    arr[3] = parseInt(arr[3], 10);
-    var test = new Date(arr[1], arr[2], arr[3]);
-
-    if (arr[1] != test.getFullYear() || arr[2] != test.getMonth() || arr[3] != test.getDate()) {
-      $("#next").attr("disabled", "disabled");
-      $("#error").html(field + "  date is not a valid date.");
-      return "";
-    }
-
-    return test;
-  }
-
 <?php if ($offline) { ?>
   $(document).ready(function () {
     validate();
@@ -278,7 +219,7 @@ $stmt->closeCursor();
     // create the tooltip and its text
     var info="<b><?php echo $siteinfo['sitename']; ?></b><br />";
     info+="<?php echo $siteinfo['city']; ?>, <?php echo $siteinfo['state']; ?>, <?php echo $siteinfo['country']; ?><br/>";
-    info+="<?php echo $startdate ?> - <?php echo $enddate; ?><br/>";
+    info+="<?php echo $startdate; ?> - <?php echo $enddate; ?>";
     var infowindow = new google.maps.InfoWindow({content: info});
     infowindow.open(map, marker);
     validate();
@@ -292,7 +233,7 @@ $stmt->closeCursor();
     <h1>Selected Site</h1>
     <p>Set parameters for the run.</p>
 
-    <form id="formprev" method="POST" action="02-modelsite.php">
+    <form id="formprev" method="POST" action="03-input.php">
 <?php if ($offline) { ?>
       <input name="offline" type="hidden" value="offline">
 <?php } ?>
@@ -301,7 +242,7 @@ $stmt->closeCursor();
       <input type="hidden" name="hostname" value="<?php echo $hostname; ?>" />
     </form>
 
-    <form id="formnext" method="POST" action="07-analysis.php">
+    <form id="formnext" method="POST" action="04-runpecan.php">
 <?php if ($offline) { ?>
       <input name="offline" type="hidden" value="on">
 <?php } ?>
@@ -312,64 +253,11 @@ $stmt->closeCursor();
       <input type="hidden" name="modelid" value="<?php echo $modelid; ?>" />
       <input type="hidden" name="hostname" value="<?php echo $hostname; ?>" />
 
-      <label id="pftlabel">PFT<sup>*</sup></label>
-      <select id="pft" name="pft[]" multiple size=5 onChange="validate();">
-<?php 
-foreach($pfts as $pft) {
-  print "        <option data-id='{$pft['id']}' ${pft['selected']}>${pft['name']}</option>\n";
-}
-?>
-      </select>
       <div class="spacer"></div>
-      <label>Start Date<sup>*</sup></label>
-      <input type="text" name="start" id="start" value="<?php echo $startdate; ?>" onChange="validate();"/>
-      <div class="spacer"></div>
-      <label>End Date<sup>*</sup></label>
-      <input type="text" name="end" id="end" value="<?php echo $enddate; ?>" onChange="validate();"/>
-      <div class="spacer"></div>
-<?php
-
-# show list of all inputs
-foreach($inputs as $input) {
-  $name=substr($input['name'], 0, 20);
-  $tag=$input['tag'];
-  if ($input['required']) {
-    print "      <label>${name}<sup>*</sup></label>\n";
-  } else {
-    print "      <label>${name}</label>\n";
-  }
-  print "      <select id=\"${tag}\" name=\"input_${tag}\" onChange=\"validate();\">\n";
-  if (!$input['required']) {
-    print "      <option value='-1'></option>\n";
-  }
-  foreach($input['files'] as $file) {
-    print "        <option value='${file['id']}'";
-    if (isset($_REQUEST["input_${tag}"]) && $_REQUEST["input_${tag}"] == "${file['id']}") {
-      print " selected";
-    }
-    print ">${file['name']}</option>\n";
-  }
-  print "      </select>\n";
-  print "      <div class=\"spacer\"></div>\n";
-}
-?>
-      <label title="Used to send email when the run is finished.">Email</label>
-      <input id="email" name="email" type="text" value="<?php echo $email; ?>"/>  
+      <label>Ensemble<sup>*</sup></label>
+      <input type="text" name="ensemble" id="ensemble" value="<?php echo 1; ?>" onChange="validate();"/>
       <div class="spacer"></div>
 
-<?php if (isset($browndog_url) && $browndog_url != "") { ?>
-      <label title="Use BrownDog for conversions.">Use <a href="http://browndog.ncsa.illinois.edu/">BrownDog</a></label>
-      <input id="browndog" name="browndog" type="checkbox" <?php echo $browndog; ?>/>
-<?php } ?>
-      <label title="Allows to pecan.xml file before workflow.">Edit pecan.xml</label>
-      <input id="pecan_edit" name="pecan_edit" type="checkbox" <?php echo $pecan_edit; ?>/>
-      <label title="Allows to edit files generated by PEcAn before model executions.">Edit model config</label>
-      <input id="model_edit" name="model_edit" type="checkbox" <?php echo $model_edit; ?>/>
-      <!-- <label title="Allows to submit jobs to remote host.">qsub</label> -->
-      <input id="qsub" name="qsub" type="hidden" <?php echo $qsub; ?>/>
-      <div class="spacer"></div>
-
-      <span class="small"><sup>*</sup> are required fields.</span>
       <p></p>
       <span id="error" class="small">&nbsp;</span>
       <input id="prev" type="button" value="Prev" onclick="prevStep();" />

@@ -54,6 +54,10 @@ if (!isset($_REQUEST['end'])) {
 }
 $enddate=$_REQUEST['end'];
 $metend=$enddate;
+if (!isset($_REQUEST['ensembleval'])) {
+  die("Need an ensemble value.");
+}
+$ensembleval=$_REQUEST['ensembleval'];
 
 # non required parameters
 $email = "";
@@ -200,7 +204,7 @@ fwrite($fh, "    <random.effects>FALSE</random.effects>" . PHP_EOL);
 fwrite($fh, "  </meta.analysis>" . PHP_EOL);
 
 fwrite($fh, "  <ensemble>" . PHP_EOL);
-fwrite($fh, "    <size>1</size>" . PHP_EOL);
+fwrite($fh, "    <size>${ensembleval}</size>" . PHP_EOL);
 fwrite($fh, "    <variable>NPP</variable>" . PHP_EOL);
 fwrite($fh, "  </ensemble>" . PHP_EOL);
 
