@@ -47,15 +47,16 @@
  <run>
 
   <site>
-   <id>1000000008</id>
-   <name>Rhinelander Aspen FACE Experiment (FACE-RHIN)</name>
-   <lat>45.6</lat>
-   <lon>-89.5</lon>
+  <id>1000000004</id>
+  <name>Florida Scrub Oak Open Top Chamber Site (FACE-KSCO)</name>
+  <lat>28.63</lat>
+  <lon>-80.7</lon>
   </site>
   
-  <start.date>1998-01-01 00:00:00</start.date>
-  <end.date>2008-12-31 00:00:00</end.date>
+  <start.date>1996-01-01 00:00:00</start.date>
+  <end.date>2007-12-31 00:00:00</end.date>
   
+
   <host>
    <name>geo.bu.edu</name>
    <rundir>/usr2/collab/ecowdery/test/run</rundir>
