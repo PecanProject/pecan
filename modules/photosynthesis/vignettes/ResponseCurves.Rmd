@@ -1,0 +1,143 @@
+---
+title: "Fitting Hierarchical Bayes photosynthetic response curves"
+author: "Mike Dietze"
+date: "June 25, 2015"
+output: html_document
+---
+
+```{r}
+library(PEcAn.photosynthesis)
+
+## Get list of file paths
+## This example is using the files in the package, but you could 
+ filenames = list.files("/Users/mdietze/git/pecan/modules/photosynthesis/inst/extdata",pattern="flux-course", full.names=TRUE)
+##filenames <- system.file("extdata", "2012.csv", package = "PEcAn.photosynthesis")
+
+## Load files to a list
+master = lapply(filenames, read.Licor)
+
+```
+
+
+## run QA/QC checks
+
+On the first screen you will be shown an A-Ci curve. Click on points that are outliers that you want to remove. Be aware that these points will not change color in **THIS SCREEN**, but will be updated in the next. Also be aware that if your data set is not an A-Ci curve (or contains both A-Ci and A-Q curves) there are points that may look like outliers just because they are data from the other curve.  When you are done selecting outliers, click **[esc]** to move to the next screen.
+
+The second screen then verifies the status of point selections from the first screen and gives you an opportunity to unselect points that had been flagged as 'fail'.
+
+The third and fourth screens are the equivalent plots for the A-Q (light response) curves.
+
+If you loop over a collection of response curves then you will be presented one curve after another.
+
+Finally, this function returns a copy of the original data with a new column, "QC", added. This column will flag all passed values with 1, all unchecked values with 0, and all failed values with -1.
+
+
+The function Licor.QC has an optional arguement, curve, which can be set to either "ACi" or "AQ" if you only want to perform one of these diagnostics rather than both (which is the default). 
+
+Also, the QC code attempts to automatically separate which points are part of the ACi curve from which parts are part of the AQ curve, based on how close points are to the the variable which is supposed to be held constant. The optional variable "tol" controls the tolerance of this filter, and is expressed as a proportion of the fixed value. The default value, 0.05, corresponds to a 5% deviation. For example, in the ACi curve the light level should be held constant so the code filters the PARi variable to find the mode and then included any data that's within 5% of the mode in the ACi curve.
+
+```{r}
+if(FALSE){  ## this is interactive so do not run this chunk when knitting
+
+for(i in 1:length(master)){
+    master[[i]] = Licor.QC(master[[i]])
+}
+  
+}
+```
+
+## Merge data into one data frame
+```{r}
+dat<-do.call("rbind", master)
+
+## if QC was done, remove both unchecked points and those that fail QC
+if("QC" %in% colnames(dat)){
+  dat = dat[-which(dat$QC < 1),]  
+} else{
+  QC = rep(1,nrow(dat))
+  dat = cbind(dat,QC)
+}
+```
+
+
+## Fit Farquhar et al (1980) model to composite data
+
+$$A_j =\frac{\alpha Q}{\sqrt{1+(\alpha^2 Q^2)/(Jmax^2)}} \frac{C_i- \Gamma}{4 C_i + 8 \Gamma}$$
+
+$$A_c = V_{cmax} \frac{C_i - \Gamma}{C_i+ K_C (1+[O]/K_O) }  $$
+
+$$A^{(m)} = min(A_j,A_c) - r$$
+
+$$A^{(o)} \sim N(A_{m},\tau)$$ 
+
+Parameter | Symbol     | Definition
+----------|------------|-----------
+alpha0    | $\alpha$   | quantum yield  (mol electrons/mole photon)
+Jmax      | $J_{max}$  | maximum electron transport
+cp        | $\Gamma$   | CO2 compensation point
+vmax0     | $V_{cmax}$ | maximum Rubisco capacity (a.k.a Vcmax)
+r         | $R_d$      | leaf respiration
+tau       | $\tau$     | residual precision
+          | $Q$        | PAR
+          | $C_i$      | CO2 concentration
+
+```{r}
+if(file.exists("fit.RData")){
+  load("fit.RData")
+} else{
+  fit <- fitA(dat)
+  save(fit,file="fit.RData")
+}
+```
+
+The returned object is a list with two mcmc.lists, "params" and "predict". 'params' contains the parameter estimate MCMC chains, which we can do standard diagnositics on. 
+
+```{r}
+plot(fit$params)    ## MCMC diagnostic plots
+summary(fit$params) ## parameter estimates  
+```
+
+
+The 'predict' object can be used to perform standard predictive diagnostics and to construct CI around curves
+
+```{r}
+## predicted vs observed plot
+mstats = summary(fit$predict)
+pmean = mstats$statistics[grep("pmean",rownames(mstats$statistics)),1]
+plot(pmean,dat$Photo,pch="+",xlab="Predicted A",ylab = "Observed A")
+abline(0,1,col=2,lwd=2)
+  
+##   
+plot.photo(dat,fit)
+
+```
+
+
+## Refit with leaf-level random effects
+
+```{r}
+if(file.exists("fitI.RData")){
+  load("fitI.RData")
+} else{
+  
+  A.model = list(a.fixed=NULL,a.random="leaf",V.fixed=NULL,V.random="leaf",n.iter=5000,match="fname")
+  
+  fitI <- fitA(dat,model = A.model)
+  save(fitI,file="fitI.RData")
+}
+
+plot(fitI$params)    ## MCMC diagnostic plots
+summary(fitI$params) ## parameter estimates  
+
+## predicted vs observed plot
+mstats = summary(fitI$predict)
+pmean = mstats$statistics[grep("pmean",rownames(mstats$statistics)),1]
+plot(pmean,dat$Photo,pch="+",xlab="Predicted A",ylab = "Observed A")
+abline(0,1,col=2,lwd=2)
+  
+##   
+plot.photo(dat,fitI)
+
+```
+
+

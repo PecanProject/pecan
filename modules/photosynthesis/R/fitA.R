@@ -38,8 +38,10 @@ curve.id = as.numeric(as.factor(id))
 curve.code = tapply(as.character(id),curve.id,unique)
 
 ##match between gas exchange data and covariates
-ord = match(curve.code,as.character(cov.dat[,model$match]))
-cov.dat = cov.dat[ord,]
+if(!is.null(cov.data)){
+  ord = match(curve.code,as.character(cov.data[,model$match]))
+  cov.data = cov.data[ord,]
+}
 
 ## Vcmax design matrix
 if(is.null(V.fixed)){
