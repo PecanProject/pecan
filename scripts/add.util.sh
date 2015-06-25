@@ -116,10 +116,23 @@ addModelFile() {
 # 1 : name of the model, shown in web interface
 # 2 : type of model (ED2, SIPNET, BIOCRO, DALEC, ...)
 # 3 : model revision number
-# 4 : name of executable, without the path (assumed it can be found in path)
+# 4 : name of executable, without the path
+# 5 : optionally path to executable
 addLocalModel() {
-    BINARY=$( which $4 )
-    if [ "${BINARY}" != "" ]; then
-        addModelFile "${FQDN}" "$1" "$2" "$3" "$4" $( dirname $BINARY )
+  DIRNAME=""
+  if [ "$5" != "" ]; then
+    if [ -e "$5/$4" ]; then
+      DIRNAME="$5"
     fi
+  else
+    BINARY=$( which $4 )
+    if [ "$BINARY" != "" ]; then
+      DIRNAME=$( dirname $BINARY )
+    fi
+  fi
+  if [ "${DIRNAME}" != "" ]; then
+    addModelFile "${FQDN}" "$1" "$2" "$3" "$4" "${DIRNAME}"
+  else
+    echo "Could not find $4, not adding to BETY"
+  fi
 }
