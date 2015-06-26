@@ -73,6 +73,9 @@ if ($authentication) {
           <div id="header">End Date</div>
           <div id="header">Started</div>
           <div id="header">Finished</div>
+<?php if (check_login()) { ?>
+          <div id="header">Delete</div>
+<?php } ?>
         </div>
 <?php
 // get run information
@@ -120,6 +123,9 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
           <div id="cell"><?php echo $row['end_date']; ?></div>
           <div id="cell"><?php echo $row['started_at']; ?></div>
           <div id="cell"><?php echo $row['finished_at']; ?></div>
+<?php if (check_login()) { ?>
+          <div id="cell"><a href="delete.php?workflowid=<?php echo $row['id']; ?>">DELETE</a></div>
+<?php } ?>
         </div>
 <?php
 }
