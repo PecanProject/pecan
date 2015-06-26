@@ -135,16 +135,15 @@ Because the MCMC can take a bit of time to run, in this example the code is writ
 The returned object is a list with two mcmc.lists, "params" and "predict", and the text of the JAGS model that was fit. We can look at this model below:
 
 ```{r}
-fit$model
-#writeLines(fit$model)
-getwd()
+writeLines(fit$model)
 ```
 Note that the lines beginning with # are comments. Some of these comments are followed by specific tags, such as RLEAF.V and RLEAF.A, which are bits of code that will get turned on when we specify leaf random effects (see below).
 
 The 'params' mcmc.list contains the parameter estimate MCMC chains, which we can do standard MCMC diagnositics on. 
 
 ```{r}
-plot(fit$params)    ## MCMC diagnostic plots
+par(mfrow=c(2,1))
+plot(fit$params,auto.layout = FALSE)    ## MCMC diagnostic plots
 summary(fit$params) ## parameter estimates  
 gelman.plot(fit$params)
 gelman.diag(fit$params)
@@ -162,7 +161,6 @@ plot(pmean,dat$Photo,pch="+",xlab="Predicted A",ylab = "Observed A")
 abline(0,1,col=2,lwd=2)
   
 ##   
-par(mfrow=c(3,2))
 plot.photo(dat,fit)
 
 ```
@@ -188,8 +186,8 @@ if(file.exists("fitI.RData")){
   save(fitI,file="fitI.RData")
 }
 
-plot(fitI$params)    ## MCMC diagnostic plots
-summary(fitI$params) ## parameter estimates  
+par(mfrow=c(2,1))
+plot(fitI$params,auto.layout = FALSE)    ## MCMC diagnostic plotssummary
 gelman.plot(fitI$params)
 gelman.diag(fitI$params)
 
@@ -201,7 +199,6 @@ plot(pmean,dat$Photo,pch="+",xlab="Predicted A",ylab = "Observed A")
 abline(0,1,col=2,lwd=2)
   
 ##   
-par(mfrow=c(3,2))
 plot.photo(dat,fitI)
 
 ```
@@ -235,7 +232,8 @@ if(file.exists("fitC.RData")){
   save(fitC,file="fitC.RData")
 }
 
-plot(fitC$params)    ## MCMC diagnostic plots
+par(mfrow=c(2,1))
+plot(fitC$params,auto.layout = FALSE)    ## MCMC diagnostic plots
 summary(fitC$params) ## parameter estimates  
 gelman.plot(fitC$params)
 gelman.diag(fitC$params)
@@ -248,7 +246,6 @@ plot(pmean,dat$Photo,pch="+",xlab="Predicted A",ylab = "Observed A")
 abline(0,1,col=2,lwd=2)
   
 ##   
-par(mfrow=c(3,2))
 plot.photo(dat,fitC)
 
 ```
