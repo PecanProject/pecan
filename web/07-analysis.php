@@ -61,6 +61,10 @@ if (isset($_REQUEST['end'])) {
   $enddate=$_REQUEST['end'];
 }
 
+$met= "";
+if (isset($_REQUEST['input_met'])) { 
+  $met=$_REQUEST['input_met'];
+}
 
 $email="";
 if (isset($_REQUEST['email'])) {
@@ -70,97 +74,9 @@ if (isset($_REQUEST['email'])) {
 // get site information
 $stmt = $pdo->prepare("SELECT sitename, city, state, country, ST_X(ST_CENTROID(sites.geometry)) AS lon, ST_Y(ST_CENTROID(sites.geometry)) AS lat FROM sites WHERE sites.id=?");
 if (!$stmt->execute(array($siteid))) {
-  die('Invalid query: ' . error_database());
+	die('Invalid query: ' . error_database());
 }
 $siteinfo = $stmt->fetch(PDO::FETCH_ASSOC);
-$stmt->closeCursor();
-
-// get list of inputs
-$stmt = $pdo->prepare("SELECT tag, required, formats.name" .
-                      " FROM modeltypes_formats, models, formats" .
-                      " WHERE models.id=? AND modeltypes_formats.modeltype_id=models.modeltype_id" .
-                      " AND modeltypes_formats.format_id=formats.id AND modeltypes_formats.input" .
-                      " ORDER BY formats.name;");
-if (!$stmt->execute(array($modelid))) {
-  die('Invalid query: ' . error_database());
-}
-$inputs = array();
-while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
-  $row['files'] = array();
-  $inputs[$row['tag']] = $row;
-} 
-$stmt->closeCursor();
-
-// get list of files
-$stmt = $pdo->prepare("SELECT tag, inputs.id, dbfiles.file_name, sites.sitename, inputs.start_date, inputs.end_date" .
-                      " FROM sites, inputs, dbfiles, machines, modeltypes_formats, models, formats" .
-                      " WHERE (inputs.site_id=${earth} OR inputs.site_id=?)" .
-                      " AND inputs.id=dbfiles.container_id AND dbfiles.container_type='Input'" .
-                      " AND dbfiles.machine_id=machines.id AND machines.hostname=?" .
-                      " AND inputs.format_id=modeltypes_formats.format_id AND inputs.site_id=sites.id" .
-                      " AND modeltypes_formats.modeltype_id=models.modeltype_id AND models.id=?" .
-                      " AND modeltypes_formats.input AND formats.id=inputs.format_id;");
-if (!$stmt->execute(array($siteid, $hostname, $modelid))) {
-  die('Invalid query: ' . error_database());
-}
-while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
-  if ($row['tag'] == 'met') {
-    $row['name']="Weather " . substr($row['start_date'], 0, 4) . "-" . substr($row['end_date'], 0, 4);
-  } else if ($row['file_name'] == '') {
-    $row['name']=$row['sitename'];
-  } else {
-    $row['name']=$row['file_name'];
-  }
-  $inputs[$row['tag']]['files'][] = $row;
-}
-$stmt->closeCursor();
-
-// add special inputs based on conversions
-if (isset($db_fia_database) && ($db_fia_database != "")) {
-  foreach($inputs as &$x) {
-    if ($x['tag'] == "pss") {
-      $x['files'][] = array("id"=>"fia.pss", "name"=>"Use FIA");
-    }
-    if ($x['tag'] == "css") {
-      $x['files'][] = array("id"=>"fia.css", "name"=>"Use FIA");
-    }
-    if ($x['tag'] == "site") {
-      $x['files'][] = array("id"=>"fia.site", "name"=>"Use FIA");
-    }
-  }
-}
-
-$stmt = $pdo->prepare("SELECT modeltypes.name FROM modeltypes, models" .
-                      " WHERE modeltypes.id=models.modeltype_id" .
-                      " AND models.id=?;");
-if (!$stmt->execute(array($modelid))) {
-  die('Invalid query: ' . error_database());
-}
-$modeltypes=$stmt->fetchAll(PDO::FETCH_COLUMN, 0);
-$stmt->closeCursor();
-foreach($modeltypes as $type) {
-  foreach($inputs as &$x) {
-    if ($x['tag'] == "met") {
-      if (preg_match("/ \(US-.*\)$/", $siteinfo["sitename"])) {
-        $x['files'][] = array("id"=>"Ameriflux." . $type, "name"=>"Use Ameriflux");
-      }
-      $x['files'][] = array("id"=>"NARR." . $type, "name"=>"Use NARR");
-    }
-  }
-}
-
-// get list of pfts
-$pfts = array();
-$stmt = $pdo->prepare("SELECT pfts.id, name FROM pfts, models" .
-                      " WHERE models.id=? AND pfts.modeltype_id=models.modeltype_id" .
-                      " ORDER BY name");
-if (!$stmt->execute(array($modelid))) {
-  die('Invalid query: ' . error_database());
-}
-while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
-  $row["selected"] = in_array($row['name'], $selected_pfts) ? "selected" : "";
-  $pfts[] = $row;
-}
 $stmt->closeCursor();
 
 ?>
@@ -219,7 +135,9 @@ $stmt->closeCursor();
     // create the tooltip and its text
     var info="<b><?php echo $siteinfo['sitename']; ?></b><br />";
     info+="<?php echo $siteinfo['city']; ?>, <?php echo $siteinfo['state']; ?>, <?php echo $siteinfo['country']; ?><br/>";
-    info+="<?php echo $startdate; ?> - <?php echo $enddate; ?>";
+    info+="PFTs: <?php echo implode(",",$selected_pfts);?><br/>";
+    info+="Dates: <?php echo $startdate; ?> - <?php echo $enddate; ?><br/>";
+    info+="Met: <?php echo $met;?>";
     var infowindow = new google.maps.InfoWindow({content: info});
     infowindow.open(map, marker);
     validate();

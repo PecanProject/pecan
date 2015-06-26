@@ -278,7 +278,6 @@ $stmt->closeCursor();
     // create the tooltip and its text
     var info="<b><?php echo $siteinfo['sitename']; ?></b><br />";
     info+="<?php echo $siteinfo['city']; ?>, <?php echo $siteinfo['state']; ?>, <?php echo $siteinfo['country']; ?><br/>";
-    info+="<?php echo $startdate ?> - <?php echo $enddate; ?><br/>";
     var infowindow = new google.maps.InfoWindow({content: info});
     infowindow.open(map, marker);
     validate();
