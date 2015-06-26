@@ -97,10 +97,10 @@ pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
 
   # prior: Either null or an ID used to query for priors later
   if(!is.null(prior.id)) {
-    settings$assim.batch$prior.id <- prior.id
+    settings$assim.batch$prior$posterior.id <- prior.id
   }
-  if(!is.null(settings$assim.batch$prior.id)) {
-    settings$assim.batch$prior.id <- as.character(settings$assim.batch$prior.id)
+  if(!is.null(settings$assim.batch$prior$posterior.id)) {
+    settings$assim.batch$prior$posterior.id <- as.character(settings$assim.batch$prior$posterior.id)
   }
 
 
@@ -189,7 +189,23 @@ pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
 ##' @author Ryan Kelly
 ##' @export
 pda.load.priors <- function(settings, con) {
-  if(is.null(settings$assim.batch$prior.id)){
+  if(!is.null(settings$assim.batch$prior$path)) {
+    # Load a prior.distns or post.distns file directly by path
+    if(file.exists(settings$assim.batch$prior$path)) load(settings$assim.batch$prior$path)
+    if(exists("prior.distns")) {
+      logger.info(paste0("Loaded prior ", basename(settings$assim.batch$prior$path), " as PDA prior."))
+      return(prior.distns)
+    } else if(exists("post.distns")) {
+      logger.info(paste0("Loaded posterior ", basename(settings$assim.batch$prior$path), " as PDA prior."))
+      return(post.distns)
+    } else {
+      logger.warn("Didn't find a valid PDA prior at ", settings$assim.batch$prior$path)
+    }
+  }
+
+  # If no path given or didn't find a valid prior, proceed to using a posterior specified by ID, either as specified in settings or get the most recent as default
+  if(is.null(settings$assim.batch$prior$posterior.id)){
+    logger.info(paste0("Defaulting to most recent posterior as PDA prior."))
     ## by default, use the most recent posterior as the prior
     pft.id <-  db.query(paste0("SELECT id from pfts where name = '",settings$pfts$pft$name,"'"),con)
     priors <-  db.query(paste0("SELECT * from posteriors where pft_id = ",pft.id),con)
@@ -198,9 +214,10 @@ pda.load.priors <- function(settings, con) {
 
     prior.db <- prior.db[grep("post.distns.Rdata",prior.db$file_name),]
 
-    settings$assim.batch$prior.id <- prior.db$container_id[which.max(prior.db$updated_at)]
+    settings$assim.batch$prior$posterior.id <- prior.db$container_id[which.max(prior.db$updated_at)]
   }
-  prior.db <- db.query(paste0("SELECT * from dbfiles where container_type = 'Posterior' and container_id = ", settings$assim.batch$prior.id),con)
+  logger.info(paste0("Using posterior ID ", settings$assim.batch$prior$posterior.id, " as PDA prior."))
+  prior.db <- db.query(paste0("SELECT * from dbfiles where container_type = 'Posterior' and container_id = ", settings$assim.batch$prior$posterior.id),con)
   prior.db <- prior.db[grep("post.distns.Rdata",prior.db$file_name),]
 
   # Load the file; return loaded variable 'post.distns' 
