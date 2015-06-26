@@ -127,7 +127,7 @@ met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date){
           s <- t + 1; print(s)
           e <- t + sum(year == y[j]); print(e)      
           if(file.exists(f.cf)==TRUE && file.exists(new.file)==FALSE){
-            system(paste0("ncks -d tstep,",s,",",e," ",f.cf," ",new.file))
+            system(paste0("ncks -d time,",s,",",e," ",f.cf," ",new.file))
           } 
         }
         t <- e
@@ -136,6 +136,5 @@ met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date){
   } # end loop over treatments
   
   nc_close(nc) 
-  file.remove(file.path(in.path,file))
 }
 
