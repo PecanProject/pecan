@@ -117,9 +117,16 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   }
   
   #### write run-specific PFT parameters here ####
+  # Get parameters being handled by PEcAn
   pft.traits <- which(!(names(trait.values) %in% 'env'))[1]
   pft.traits <- trait.values[[pft.traits]]
   pft.names  <- names(pft.traits)
+
+  # Append constants
+  constants <- unlist(defaults[[1]]$constants)
+  const.ind <- constants != "NA" # Constants may be specified as NA to request template defaults. Will be character though due to read in from XML.
+  pft.traits <- c(as.numeric(pft.traits), as.numeric(constants[const.ind]))
+  pft.names  <- c(pft.names, names(defaults[[1]]$constants)[const.ind])
   
   # Leaf carbon concentration
   leafC = 0.48  #0.5
