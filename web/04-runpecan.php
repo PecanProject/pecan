@@ -23,6 +23,7 @@ $offline=isset($_REQUEST['offline']);
 $pecan_edit=isset($_REQUEST['pecan_edit']);
 $model_edit=isset($_REQUEST['model_edit']);
 $browndog=isset($_REQUEST['browndog']);
+$qsub=isset($_REQUEST['qsub']);
 
 # parameters
 if (!isset($_REQUEST['siteid'])) {
@@ -249,6 +250,9 @@ fwrite($fh, "    <dbfiles>${input_folder}</dbfiles>" . PHP_EOL);
 fwrite($fh, "    <host>" . PHP_EOL);
 fwrite($fh, "      <name>${hostname}</name>" . PHP_EOL);
 fwrite($fh, "    </host>" . PHP_EOL);
+if ($qsub) {
+    fwrite($fh, "    <qsub/>" . PHP_EOL);
+}
 fwrite($fh, "  </run>" . PHP_EOL);
 if ($email != "") {
 	$url = ($_SERVER['HTTPS'] ? "https://" : "http://");

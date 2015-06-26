@@ -45,10 +45,11 @@ get.results <- function(settings) {
                                                        end.year = end.year,
                                                        variables = variables)
     }
-    
-    
-    save(sensitivity.output, file = 
-      file.path(outdir, paste('sensitivity',settings$sensitivity.analsis$ensemble.id,'Rdata', sep='.')))
+    sa.run.ids <- runs.samples$sa
+
+    # Save sensitivity output, including the run IDs and associated params
+    save(sensitivity.output, sa.run.ids, sa.samples,
+      file = file.path(outdir, paste('sensitivity',settings$sensitivity.analsis$ensemble.id,'Rdata', sep='.')))
   }
   
   ensemble.output    <- list()
@@ -68,8 +69,12 @@ get.results <- function(settings) {
                                             start.year=start.year,
                                             end.year=end.year,
                                             variables=variables)
-    save(ensemble.output, file = 
-      file.path(outdir, paste('ensemble',settings$ensemble$ensemble.id,'Rdata', sep='.')))
+
+    ensemble.run.ids <- runs.samples$ensemble
+
+    # Save ensemble output, including the run IDs and associated params
+    save(ensemble.output, ensemble.run.ids, ensemble.samples, 
+         file = file.path(outdir, paste('ensemble',settings$ensemble$ensemble.id,'Rdata', sep='.')))
   }
 
 }
