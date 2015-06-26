@@ -43,6 +43,7 @@ $modelid=$_REQUEST['modelid'];
 if (!isset($_REQUEST['hostname'])) {
   die("Need a hostname.");
 }
+
 $hostname=$_REQUEST['hostname'];
 
 # parse original form data
@@ -78,8 +79,9 @@ if (!$stmt->execute(array($siteid))) {
 }
 $siteinfo = $stmt->fetch(PDO::FETCH_ASSOC);
 $stmt->closeCursor();
-
 ?>
+
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -136,8 +138,7 @@ $stmt->closeCursor();
     var info="<b><?php echo $siteinfo['sitename']; ?></b><br />";
     info+="<?php echo $siteinfo['city']; ?>, <?php echo $siteinfo['state']; ?>, <?php echo $siteinfo['country']; ?><br/>";
     info+="PFTs: <?php echo implode(",",$selected_pfts);?><br/>";
-    info+="Dates: <?php echo $startdate; ?> - <?php echo $enddate; ?><br/>";
-    info+="Met: <?php echo $met;?>";
+    info+="Dates: <?php echo $startdate; ?> - <?php echo $enddate; ?>";
     var infowindow = new google.maps.InfoWindow({content: info});
     infowindow.open(map, marker);
     validate();
@@ -155,9 +156,16 @@ $stmt->closeCursor();
 <?php if ($offline) { ?>
       <input name="offline" type="hidden" value="offline">
 <?php } ?>
-      <input type="hidden" name="siteid" value="<?php echo $siteid; ?>" />
-      <input type="hidden" name="modelid" value="<?php echo $modelid; ?>" />
-      <input type="hidden" name="hostname" value="<?php echo $hostname; ?>" />
+<?php foreach($_REQUEST as $key => $value){
+	if(is_array($value)) {
+	  foreach($value as $v) {
+	    echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
+	  }
+	} else {
+	    echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+	}
+      }
+?>
     </form>
 
     <form id="formnext" method="POST" action="04-runpecan.php">
@@ -167,9 +175,16 @@ $stmt->closeCursor();
 <?php if ($userok) { ?>
       <input name="userok" type="hidden" value="on">
 <?php } ?>
-      <input type="hidden" name="siteid" value="<?php echo $siteid; ?>" />
-      <input type="hidden" name="modelid" value="<?php echo $modelid; ?>" />
-      <input type="hidden" name="hostname" value="<?php echo $hostname; ?>" />
+<?php foreach($_REQUEST as $key => $value){
+	if(is_array($value)) {
+	  foreach($value as $v) {
+	    echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
+	  }
+	} else {
+	    echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+	}
+      }
+?>
 
       <div class="spacer"></div>
       <label>Ensemble<sup>*</sup></label>
