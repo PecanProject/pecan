@@ -31,7 +31,6 @@ if (isset($_REQUEST['doit'])) {
     die('Invalid query: ' . error_database());
   }
   $result = $stmt->fetch(PDO::FETCH_ASSOC);
-  print_r($result);
   $stmt->closeCursor();
 
   # delete runs
@@ -40,7 +39,6 @@ if (isset($_REQUEST['doit'])) {
     die('Invalid query: ' . error_database());
   }
   $result = $stmt->fetch(PDO::FETCH_ASSOC);
-  print_r($result);
   $stmt->closeCursor();
   
   # delete ensembles
@@ -49,7 +47,6 @@ if (isset($_REQUEST['doit'])) {
     die('Invalid query: ' . error_database());
   }
   $result = $stmt->fetch(PDO::FETCH_ASSOC);
-  print_r($result);
   $stmt->closeCursor();
   
   # delete workflow
@@ -58,7 +55,6 @@ if (isset($_REQUEST['doit'])) {
     die('Invalid query: ' . error_database());
   }
   $result = $stmt->fetch(PDO::FETCH_ASSOC);
-  print_r($result);
   $stmt->closeCursor();
 
   header( "Location: history.php");
@@ -110,7 +106,6 @@ if (isset($_REQUEST['doit'])) {
     <div id="output">
       <h2>Execution Status</h2>
 <?php
-print_r($_REQUEST);
 // get run information
 $query = "SELECT workflows.id, workflows.folder, workflows.start_date, workflows.end_date, workflows.started_at, workflows.finished_at, " .
          "CONCAT(coalesce(sites.sitename, ''), ', ', coalesce(sites.city, ''), ', ', coalesce(sites.state, ''), ', ', coalesce(sites.country, '')) AS sitename, " .
