@@ -54,7 +54,7 @@ approx.posterior <- function(trait.mcmc, priors, trait.data=NULL, outdir=NULL){
     }
     
     ## first determine the candidate set of models based on any range restrictions
-    zerobound = c("exp", "gamma", "lnorm", "weibull")
+    zerobound <- c("exp", "gamma", "lnorm", "weibull")
     if(pdist %in% "beta"){
       m <- mean(dat)
       v <- var(dat)
@@ -76,22 +76,26 @@ approx.posterior <- function(trait.mcmc, priors, trait.data=NULL, outdir=NULL){
       posteriors[trait,"parama"] <- fit$estimate[1]
       posteriors[trait,"paramb"] <- fit$estimate[2]
     } else if(pdist %in% zerobound | (pdist == "unif" & pparm[1] > 0)){
-
+      dist.names <- c("exp", "lnorm", "weibull", "norm")
       fit <- list()
-      fit[[1]] <- suppressWarnings(fitdistr(dat,"exponential"))
+      fit[[1]] <- try(suppressWarnings(fitdistr(dat,"exponential")), silent=TRUE)
       ## fit[[2]] <- fitdistr(dat,"f",list(df1=10,df2=2*mean(dat)/(max(mean(dat)-1,1))))
-      fit[[2]] <- suppressWarnings(fitdistr(dat, "lognormal"))
-      fit[[3]] <- suppressWarnings(fitdistr(dat, "weibull"))
-      fit[[4]] <- suppressWarnings(fitdistr(dat, "normal"))
+      fit[[2]] <- try(suppressWarnings(fitdistr(dat, "lognormal")), silent=TRUE)
+      fit[[3]] <- try(suppressWarnings(fitdistr(dat, "weibull")), silent=TRUE)
+      fit[[4]] <- try(suppressWarnings(fitdistr(dat, "normal")), silent=TRUE)
       if(!trait == 'cuticular_cond'){
-        fit[[5]] <- suppressWarnings(fitdistr(dat, "gamma"))
+        fit[[5]] <- try(suppressWarnings(fitdistr(dat, "gamma")), silent=TRUE)
+        dist.names <- c(dist.names, "gamma")
       } 
+      failfit.bool <- sapply(fit, class) == "try-error"
+      fit[failfit.bool] <- NULL
+      dist.names <- dist.names[!failfit.bool]
       
       fparm <- lapply(fit,function(x){as.numeric(x$estimate)})
       fAIC  <- lapply(fit,function(x){AIC(x)})
       
       bestfit <- which.min(fAIC)
-      posteriors[ptrait,"distn"] <- c(zerobound,"norm")[bestfit]
+      posteriors[ptrait,"distn"] <- dist.names[bestfit]
       posteriors[ptrait,"parama"] <- fit[[bestfit]]$estimate[1]
       if(bestfit == 1){
         posteriors[ptrait,"paramb"] <- NA
