@@ -4,7 +4,7 @@ ciEnvelope <- function(x,ylo,yhi,col="lightgrey",...){
                                       ylo[1])), col=col, border = NA,...) 
 } 
 
-plot.photo <- function(data,out,curve=c("ACi","AQ"),tol=0.05){
+plot.photo <- function(data,out,curve=c("ACi","AQ"),tol=0.05,byLeaf=TRUE){
   
   params  = as.matrix(out$params)
   predict = as.matrix(out$predict)
@@ -13,7 +13,7 @@ plot.photo <- function(data,out,curve=c("ACi","AQ"),tol=0.05){
   pA    = CI[,grep("pA",colnames(CI))]
   
   ## determine whether the fit was done by leaf or not
-  byLeaf = length(grep("tau.",colnames(params))) > 0
+  # byLeaf = length(grep("tau.",colnames(params))) > 0 || length(grep("beta",colnames(params)))>0
   
   if(byLeaf){
     id = data[,"fname"]

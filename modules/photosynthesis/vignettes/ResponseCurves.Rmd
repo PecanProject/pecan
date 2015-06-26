@@ -5,21 +5,74 @@ date: "June 25, 2015"
 output: html_document
 ---
 
+## Introduction
+
+This package is designed to fit the Farquhar, von Caemmerer, and Berry (1980) photosynthesis model [FvCB model] to leaf-level photosynthetic data. The statistical model generalizes the Hierarchial Bayesian approach described in Feng and Dietze (2013). The important advance that this approach provides is the ability to include covariates (e.g. leaf traits) in a mixed effects model describing key model parameters, $\alpha$ and $V_cmax$. At the moment the only supported random effect is a leaf-level effect, however fixed effects can be specified using standard R linear model notation, including interaction terms.
+
+This package includes functions for: loading photosynthetic data in the common LI-COR text-based format, performing visual QA/QC on that data, fitting the model to data, and generating diagnostic response-curve plots with confidence and predictive intervals. The diagnostic and QA/QC functions assume that data was collected as CO2 and light response curves (A-Ci and A-Q respectively). This assumption is not required for model fitting, so alternative sampling designs are allowed, as described by Dietze (2014).
+
+The version of the FvCB model used is described below, and at the moment does not include the TPU limitation term or temperature corrections (i.e. all data are assumed to be collected at the same leaf temperature, all parameters are specific to that temperature). It also assumes that electron transport rate, J, is a saturating function of $J_max$. 
+
+$$A_j = \frac{\alpha Q}{\sqrt{1+(\alpha^2 Q^2)/(Jmax^2)}} \frac{C_i- \Gamma}{4 C_i + 8 \Gamma}$$
+
+$$A_c = V_{cmax} \frac{C_i - \Gamma}{C_i+ K_C (1+[O]/K_O) }$$
+
+$$A^{(m)} = min(A_j,A_c) - r$$
+
+$$A^{(o)} \sim N(A_{m},\tau)$$ 
+
+
+Parameter | Symbol     | Definition
+----------|------------|-----------
+alpha0    | $\alpha$   | quantum yield  (mol electrons/mole photon)
+Jmax      | $J_{max}$  | maximum electron transport
+cp        | $\Gamma$   | CO2 compensation point
+vmax0     | $V_{cmax}$ | maximum Rubisco capacity (a.k.a Vcmax)
+r         | $R_d$      | leaf respiration
+tau       | $\tau$     | residual precision
+q         | $Q$        | PAR
+pi        | $C_i$      | CO2 concentration
+
+The 'Parameter' above refers to how the variable is referenced in the code, and thus the name that will be returned by the statistical fit.
+
+The hierarchical version of this model is equivalent to the standard model except that $\alpha$ and $V_{cmax}$ are mixed effect linear models of any covariates specified. These linear models assume uninformative Normal priors, while the random effects and residual errors are assumed to have Gamma priors on their precisions. All other priors are as described below in the example code. The FvCB model is fit using JAGS via the _rjags_ package so outputs are _coda_ mcmc.list objects that can be assessed and manipulated using standard tools in the _coda_ package.
+
+## Install package from Github
+
+You should only have to do this once, and you only have to do this if you are downloading just this package separate from the rest of PEcAn
+
+```{r}
+if (!require("PEcAn.photosynthesis",character.only = TRUE))
+{
+  library(devtools)
+  install_github("PecanProject/pecan/modules/photosynthesis") 
+}
+```
+
+## Load library and example data
+
+In this example we are using a set of files that are built into the package, but you could easily replace _filenames_ with vector of your own filenames, for example using _list.files_ to look up all the files in a directory
+
 ```{r}
 library(PEcAn.photosynthesis)
 
-## Get list of file paths
-## This example is using the files in the package, but you could 
- filenames = list.files("/Users/mdietze/git/pecan/modules/photosynthesis/inst/extdata",pattern="flux-course", full.names=TRUE)
-##filenames <- system.file("extdata", "2012.csv", package = "PEcAn.photosynthesis")
+## Get list of LI-COR 6400 file names (ASCII not xls)
+filenames <- system.file("extdata", paste0("flux-course-",rep(1:6,each=2),c("aci","aq")), package = "PEcAn.photosynthesis")
 
 ## Load files to a list
 master = lapply(filenames, read.Licor)
-
 ```
 
 
 ## run QA/QC checks
+
+The code below performs a set of interactive QA/QC checks on the LI-COR data that's been loaded. Because it's interactive it isn't run when this vignette is knit.
+
+If you want to get a feel for how the code works you'll want to run it first on just one file, rather than looping over all the files
+
+```
+master[[1]] <- Licor.QC(master[[1]])
+```
 
 On the first screen you will be shown an A-Ci curve. Click on points that are outliers that you want to remove. Be aware that these points will not change color in **THIS SCREEN**, but will be updated in the next. Also be aware that if your data set is not an A-Ci curve (or contains both A-Ci and A-Q curves) there are points that may look like outliers just because they are data from the other curve.  When you are done selecting outliers, click **[esc]** to move to the next screen.
 
@@ -27,26 +80,24 @@ The second screen then verifies the status of point selections from the first sc
 
 The third and fourth screens are the equivalent plots for the A-Q (light response) curves.
 
-If you loop over a collection of response curves then you will be presented one curve after another.
-
 Finally, this function returns a copy of the original data with a new column, "QC", added. This column will flag all passed values with 1, all unchecked values with 0, and all failed values with -1.
 
-
-The function Licor.QC has an optional arguement, curve, which can be set to either "ACi" or "AQ" if you only want to perform one of these diagnostics rather than both (which is the default). 
+The function Licor.QC has an optional arguement, _curve_, which can be set to either "ACi" or "AQ" if you only want to perform one of these diagnostics rather than both (which is the default). 
 
 Also, the QC code attempts to automatically separate which points are part of the ACi curve from which parts are part of the AQ curve, based on how close points are to the the variable which is supposed to be held constant. The optional variable "tol" controls the tolerance of this filter, and is expressed as a proportion of the fixed value. The default value, 0.05, corresponds to a 5% deviation. For example, in the ACi curve the light level should be held constant so the code filters the PARi variable to find the mode and then included any data that's within 5% of the mode in the ACi curve.
 
-```{r}
-if(FALSE){  ## this is interactive so do not run this chunk when knitting
+Once you have a feel for the QA/QC function, you'll want to run it for all the data you've loaded.
 
+```
 for(i in 1:length(master)){
     master[[i]] = Licor.QC(master[[i]])
-}
-  
 }
 ```
 
 ## Merge data into one data frame
+
+Once data been's checked we'll merge it into one large data frame
+
 ```{r}
 dat<-do.call("rbind", master)
 
@@ -60,26 +111,15 @@ if("QC" %in% colnames(dat)){
 ```
 
 
-## Fit Farquhar et al (1980) model to composite data
+## Fit FvCB model to composite data
 
-$$A_j =\frac{\alpha Q}{\sqrt{1+(\alpha^2 Q^2)/(Jmax^2)}} \frac{C_i- \Gamma}{4 C_i + 8 \Gamma}$$
+If you only want to fit the model to the data from one leaf you could do this as
 
-$$A_c = V_{cmax} \frac{C_i - \Gamma}{C_i+ K_C (1+[O]/K_O) }  $$
+```
+fit1 <- fitA(master[[1]])
+```
 
-$$A^{(m)} = min(A_j,A_c) - r$$
-
-$$A^{(o)} \sim N(A_{m},\tau)$$ 
-
-Parameter | Symbol     | Definition
-----------|------------|-----------
-alpha0    | $\alpha$   | quantum yield  (mol electrons/mole photon)
-Jmax      | $J_{max}$  | maximum electron transport
-cp        | $\Gamma$   | CO2 compensation point
-vmax0     | $V_{cmax}$ | maximum Rubisco capacity (a.k.a Vcmax)
-r         | $R_d$      | leaf respiration
-tau       | $\tau$     | residual precision
-          | $Q$        | PAR
-          | $C_i$      | CO2 concentration
+Where the one required argument is the data frame of photosynthetic data. However, this code also allows use to fit the FvCB model to all of the data at once. 
 
 ```{r}
 if(file.exists("fit.RData")){
@@ -90,11 +130,24 @@ if(file.exists("fit.RData")){
 }
 ```
 
-The returned object is a list with two mcmc.lists, "params" and "predict". 'params' contains the parameter estimate MCMC chains, which we can do standard diagnositics on. 
+Because the MCMC can take a bit of time to run, in this example the code is written to load the existing fit if it exists, which just makes knitting the vignette more efficient.
+
+The returned object is a list with two mcmc.lists, "params" and "predict", and the text of the JAGS model that was fit. We can look at this model below:
+
+```{r}
+fit$model
+#writeLines(fit$model)
+getwd()
+```
+Note that the lines beginning with # are comments. Some of these comments are followed by specific tags, such as RLEAF.V and RLEAF.A, which are bits of code that will get turned on when we specify leaf random effects (see below).
+
+The 'params' mcmc.list contains the parameter estimate MCMC chains, which we can do standard MCMC diagnositics on. 
 
 ```{r}
 plot(fit$params)    ## MCMC diagnostic plots
 summary(fit$params) ## parameter estimates  
+gelman.plot(fit$params)
+gelman.diag(fit$params)
 ```
 
 
@@ -102,12 +155,14 @@ The 'predict' object can be used to perform standard predictive diagnostics and 
 
 ```{r}
 ## predicted vs observed plot
+par(mfrow=c(1,1))
 mstats = summary(fit$predict)
 pmean = mstats$statistics[grep("pmean",rownames(mstats$statistics)),1]
 plot(pmean,dat$Photo,pch="+",xlab="Predicted A",ylab = "Observed A")
 abline(0,1,col=2,lwd=2)
   
 ##   
+par(mfrow=c(3,2))
 plot.photo(dat,fit)
 
 ```
@@ -115,29 +170,94 @@ plot.photo(dat,fit)
 
 ## Refit with leaf-level random effects
 
+Next, let's look at how to specify leaf-level random effects in the model. To do so we're going to add an extra arguement to the function, which is a list of model specifications.
+
+```{r}
+  A.model = list(a.fixed=NULL,a.random="leaf",V.fixed=NULL,V.random="leaf",n.iter=5000,match="fname")
+```
+
+In this list a refers to $\alpha$ and V refers to $V_{cmax}$. Fixed refers to the specification of the fixed effects, which we're leaving unspecified at the moment (NULL). Random refers to the specification of random effects, which we're setting to 'leaf' in order allow $alpha$ and $V_{cmax}$ to vary on a leaf-by-leaf basis. Note: at the moment 'leaf' is the only valid random effect, though in the future we hope to allow the specification of arbitrary random effects in a covariate file (see next section for how to specify covariates). Next, _n.iter_ refers to the number of MCMC iterations run by the model. Here we're setting that to 5000, which is the default. You can increase this if you find the model isn't converging. For example, if you wanted to increase the iterations with the previous default model, you would set all the fixed and random effects to NULL but increase n.iter. Finally, match is the variable used both to group records into individual leaves and to match individual leaves to covariate data. If you look at our photosynthesis dataframe, _dat_, you'll see that it has a column _fname_ that corresponds to the filename the data was read from (here we're assuming each file contains the data for one leaf, but it's not hard to add columns to your data if you want to group things in other ways)
+
+Once the model is specified, the fitting and diagnostics are the same as before.
+
 ```{r}
 if(file.exists("fitI.RData")){
   load("fitI.RData")
 } else{
-  
-  A.model = list(a.fixed=NULL,a.random="leaf",V.fixed=NULL,V.random="leaf",n.iter=5000,match="fname")
-  
   fitI <- fitA(dat,model = A.model)
   save(fitI,file="fitI.RData")
 }
 
 plot(fitI$params)    ## MCMC diagnostic plots
 summary(fitI$params) ## parameter estimates  
+gelman.plot(fitI$params)
+gelman.diag(fitI$params)
 
 ## predicted vs observed plot
+par(mfrow=c(1,1))
 mstats = summary(fitI$predict)
 pmean = mstats$statistics[grep("pmean",rownames(mstats$statistics)),1]
 plot(pmean,dat$Photo,pch="+",xlab="Predicted A",ylab = "Observed A")
 abline(0,1,col=2,lwd=2)
   
 ##   
+par(mfrow=c(3,2))
 plot.photo(dat,fitI)
 
 ```
 
+## Fitting the model with covariates
 
+Next, let's look at how to fit a model that includes covariates. To begin with let's load up some covariate data. In this specific case the covariate data, leaf % Nitrogen, is simulated because no covariates were actually measured for these leaves.
+
+```{r}
+cov.data = read.csv(system.file("extdata","cov.csv", package = "PEcAn.photosynthesis"))
+cov.data
+```
+
+To define this model we'll again define a list of model specifications. Specifically we are going to set $Vcmax$ to be linear functions of leaf N. To do this we'll set V.fixed "N" and we'll set V.random to NULL to turn off the leaf random effect. For this example we'll leave $\alpha$ as random.
+
+```{r}
+  C.model = list(a.fixed=NULL,a.random="leaf",V.fixed="N",V.random=NULL,n.iter=5000,match="fname")
+```
+
+If we had additional covariates, for example SLA and chl (leaf chlorophyll), we might write that model as "N + SLA + chl" if we just wanted the direct effects and "N + SLA + chl + N*SLA + N*chl + SLA*chl" if we also wanted the pairwise interactions. That said, in this case we don't have a large enough sample size to justify so many covariates. 
+
+Also note that the rows in the photosynthesis data are matched to rows in the covariate data using the column specified in the arguement 'match'. The default for this, fname, is the filename for the photosynthetic data. Typically one file corresponds to one leaf so each set of traits match to each file. If you have your data organized differently you'll want to specify a different column match.
+
+To call the _fitA_ function we now have to pass not just the photosynthetic data and the model, but also the covariate data. Otherwise the fit and diagnostics are identical to before.
+
+```{r}
+if(file.exists("fitC.RData")){
+  load("fitC.RData")
+} else{
+  fitC <- fitA(dat,cov.data,model = C.model)
+  save(fitC,file="fitC.RData")
+}
+
+plot(fitC$params)    ## MCMC diagnostic plots
+summary(fitC$params) ## parameter estimates  
+gelman.plot(fitC$params)
+gelman.diag(fitC$params)
+
+## predicted vs observed plot
+par(mfrow=c(1,1))
+mstats = summary(fitC$predict)
+pmean = mstats$statistics[grep("pmean",rownames(mstats$statistics)),1]
+plot(pmean,dat$Photo,pch="+",xlab="Predicted A",ylab = "Observed A")
+abline(0,1,col=2,lwd=2)
+  
+##   
+par(mfrow=c(3,2))
+plot.photo(dat,fitC)
+
+```
+
+
+## Citations
+
+Dietze, M.C. (2014). Gaps in knowledge and data driving uncertainty in models of photosynthesis. Photosynth. Res., 19, 3–14.
+
+Farquhar, G., Caemmerer, S. & Berry, J.A. (1980). A biochemical model of photosynthetic CO2 assimilation in leaves of C3 species. Planta, 149, 78–90.
+
+Feng, X. & Dietze, M.C. (2013). Scale dependence in the effects of leaf ecophysiological traits on photosynthesis: Bayesian parameterization of photosynthesis models. New Phytol., 200, 1132–1144.
