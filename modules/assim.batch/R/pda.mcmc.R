@@ -72,7 +72,7 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   }
 
   ## Create an ensemble id
-  ensemble.id <- pda.create.ensemble(settings, con, workflow.id)
+  settings$assim.batch$ensemble.id <- pda.create.ensemble(settings, con, workflow.id)
 
   ## Set prior distribution functions (d___, q___, r___, and multivariate versions)
   prior.fn <- pda.define.prior.fn(prior)
@@ -126,7 +126,7 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
       prior.star <- prior.fn$dmvprior(pstar)
       if(is.finite(prior.star)){
         ## Set up run and write run configs
-        run.id <- pda.init.run(settings, con, my.write.config, workflow.id, ensemble.id, pstar, n=1,
+        run.id <- pda.init.run(settings, con, my.write.config, workflow.id, pstar, n=1,
                                run.names=paste0("MCMC_chain.",chain,"_iteration.",i,"_variable.",j))
 
         ## Start model run

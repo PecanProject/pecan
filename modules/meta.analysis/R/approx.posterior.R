@@ -17,6 +17,7 @@
 ##' @param priors dataframe of priors used in meta analysis
 ##' @param trait.data data used in meta-analysis (used for plotting)
 ##' @param outdir directory in which to plot results
+##' @param filename.flag text to be included in the posteriors.pdf filename to make unique
 ##' @return posteriors data frame, similar to priors,
 ##' but with closed form pdfs fit to meta-analysis results  
 ##' @export
@@ -25,12 +26,12 @@
 ##' \dontrun{data("trait.mcmc", package = "PEcAn.utils")
 ##' data("prior.distns", package = "PEcAn.utils")
 ##' approx.posterior(trait.mcmc, priors = prior.distns)}
-approx.posterior <- function(trait.mcmc, priors, trait.data=NULL, outdir=NULL){
+approx.posterior <- function(trait.mcmc, priors, trait.data=NULL, outdir=NULL, filename.flag=""){
   ##initialization
   posteriors <- priors
   do.plot <- exists("outdir")
   if(do.plot == TRUE){
-    pdf(file.path(outdir,"posteriors.pdf"))
+    pdf(file.path(outdir, paste("posteriors", filename.flag, "pdf", sep=".")))
   }
   
   ##loop over traits

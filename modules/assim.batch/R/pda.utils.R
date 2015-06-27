@@ -192,41 +192,56 @@ pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
 ##' @author Ryan Kelly
 ##' @export
 pda.load.priors <- function(settings, con) {
+  # Load a prior.distns or post.distns file directly by path
   if(!is.null(settings$assim.batch$prior$path)) {
-    # Load a prior.distns or post.distns file directly by path
     if(file.exists(settings$assim.batch$prior$path)) load(settings$assim.batch$prior$path)
     if(exists("prior.distns")) {
       logger.info(paste0("Loaded prior ", basename(settings$assim.batch$prior$path), " as PDA prior."))
-      return(prior.distns)
+      prior.out <- prior.distns
     } else if(exists("post.distns")) {
       logger.info(paste0("Loaded posterior ", basename(settings$assim.batch$prior$path), " as PDA prior."))
-      return(post.distns)
+      prior.out <- post.distns
     } else {
       logger.warn("Didn't find a valid PDA prior at ", settings$assim.batch$prior$path)
     }
   }
 
   # If no path given or didn't find a valid prior, proceed to using a posterior specified by ID, either as specified in settings or get the most recent as default
-  if(is.null(settings$assim.batch$prior$posterior.id)){
-    logger.info(paste0("Defaulting to most recent posterior as PDA prior."))
-    ## by default, use the most recent posterior as the prior
-    pft.id <-  db.query(paste0("SELECT id from pfts where name = '",settings$pfts$pft$name,"'"),con)
-    priors <-  db.query(paste0("SELECT * from posteriors where pft_id = ",pft.id),con)
+  if(!exists("prior.out")) {
+    if(is.null(settings$assim.batch$prior$posterior.id)){
+      logger.info(paste0("Defaulting to most recent posterior as PDA prior."))
+      ## by default, use the most recent posterior as the prior
+      pft.id <-  db.query(paste0("SELECT id from pfts where name = '",settings$pfts$pft$name,"'"),con)
+      priors <-  db.query(paste0("SELECT * from posteriors where pft_id = ",pft.id),con)
 
-    prior.db <- db.query(paste0("SELECT * from dbfiles where container_type = 'Posterior' and container_id IN (", paste(priors$id, collapse=','), ")"),con)
+      prior.db <- db.query(paste0("SELECT * from dbfiles where container_type = 'Posterior' and container_id IN (", paste(priors$id, collapse=','), ")"),con)
 
-    prior.db <- prior.db[grep("post.distns.Rdata",prior.db$file_name),]
+      prior.db <- prior.db[ grep("^post\\.distns\\..*Rdata$", prior.db$file_name),]
 
-    settings$assim.batch$prior$posterior.id <- prior.db$container_id[which.max(prior.db$updated_at)]
+      settings$assim.batch$prior$posterior.id <- prior.db$container_id[which.max(prior.db$updated_at)]
+    }
+    logger.info(paste0("Using posterior ID ", settings$assim.batch$prior$posterior.id, " as PDA prior."))
+    prior.db <- db.query(paste0("SELECT * from dbfiles where container_type = 'Posterior' and container_id = ", settings$assim.batch$prior$posterior.id),con)
+    prior.db <- prior.db[ grepl("^post\\.distns\\..*Rdata$", prior.db$file_name),]
+
+    # Load the file
+    load(file.path(prior.db$file_path, prior.db$file_name))
+    prior.out <- post.distns
   }
-  logger.info(paste0("Using posterior ID ", settings$assim.batch$prior$posterior.id, " as PDA prior."))
-  prior.db <- db.query(paste0("SELECT * from dbfiles where container_type = 'Posterior' and container_id = ", settings$assim.batch$prior$posterior.id),con)
-  prior.db <- prior.db[grep("post.distns.Rdata",prior.db$file_name),]
-
-  # Load the file; return loaded variable 'post.distns' 
-  load(file.path(prior.db$file_path,"post.distns.Rdata"))
-  return(post.distns)
+  
+  # Finally, check that PDA parameters requested are in the prior; can't assimilate them if not.
+  # Could proceed with any valid params. But probably better to just bonk out now to avoid wasting
+  # a lot of time in case the mis-specified parameter(s) is really important to the analysis. 
+  params.no.priors <- which(is.na(match(settings$assim.batch$param.names, rownames(prior.out))))
+  if(length(params.no.priors) > 0) {
+    logger.severe(paste0("PDA requested for parameter(s) [",
+      paste(settings$assim.batch$param.names[params.no.priors], collapse=", "), 
+      "] but no prior found!"))
+  }
+  
+  return(prior.out)
 }
+
 
 
 ##' Create PDA Ensemble
@@ -379,7 +394,7 @@ pda.init.params <- function(settings, con, pname, n.param.all) {
 ##'
 ##' @author Ryan Kelly
 ##' @export
-pda.init.run <- function(settings, con, my.write.config, workflow.id, ensemble.id, params, 
+pda.init.run <- function(settings, con, my.write.config, workflow.id, params, 
                          n=ifelse(is.null(dim(params)), 1, nrow(params)), 
                          run.names=paste("run", 1:n, sep=".")) {
 
@@ -399,8 +414,8 @@ pda.init.run <- function(settings, con, my.write.config, workflow.id, ensemble.i
             "created_at, ensemble_id, parameter_list)",
           "values ('", 
             settings$model$id, "','", settings$run$site$id, "','", settings$run$start.date, "','", 
-            settings$run$end.date, "','", settings$run$outdir , "','", now, "',", ensemble.id, ",'", 
-            paramlist, 
+            settings$run$end.date, "','", settings$run$outdir , "','", now, "',",
+            settings$assim.batch$ensemble.id, ",'", paramlist, 
           "')", 
         sep=''), 
       con)
@@ -429,7 +444,7 @@ pda.init.run <- function(settings, con, my.write.config, workflow.id, ensemble.i
     ## write a README for the run
     cat("runtype     : ", paste("pda", settings$assim.batch$method, sep="."), "\n",
         "workflow id : ", as.character(workflow.id), "\n",
-        "ensemble id : ", as.character(ensemble.id), "\n",
+        "ensemble id : ", as.character(settings$assim.batch$ensemble.id), "\n",
         "chain       : ", settings$assim.batch$chain, "\n",
         "run         : ", run.names[i], "\n",
         "run id      : ", as.character(run.ids[i]), "\n",
@@ -474,7 +489,7 @@ pda.adjust.jumps <- function(settings, accept.rate, pnames=NULL) {
 
   adj <- accept.rate / settings$assim.batch$jump$adapt / settings$assim.batch$jump$ar.target
   adj[adj < settings$assim.batch$jump$adj.min] <- settings$assim.batch$jump$adj.min
-  settings$assim.batch$jump$jvar <- lapply(settings$assim.batch$jump$jvar, function(x) x * adj)
+  settings$assim.batch$jump$jvar <- as.list(unlist(settings$assim.batch$jump$jvar) * adj)
   logger.info(paste0("New jump variances are (", 
                     paste(round(unlist(settings$assim.batch$jump$jvar),3), collapse=", "), ")"))
   return(settings)
@@ -610,7 +625,8 @@ pda.generate.knots <- function(n.knot, n.param.all, prior.ind, prior.fn, pname) 
 ##' @export
 pda.plot.params <- function(settings, params.subset, prior.ind) {
   # *** TODO: Generalize for multiple PFTS
-  pdf(file.path(settings$pfts$pft$outdir,"pda.mcmc.diagnostics.pdf"))
+  pdf(file.path(settings$pfts$pft$outdir, 
+        paste0('mcmc.diagnostics.pda', settings$assim.batch$ensemble.id, '.pdf')))
     dm <- as.mcmc(params.subset)
 
     plot(dm)
@@ -634,7 +650,8 @@ pda.plot.params <- function(settings, params.subset, prior.ind) {
 ##' @export
 pda.postprocess <- function(settings, con, params, pname, prior, prior.ind) {
   ## Save params
-  filename.mcmc <- file.path(settings$outdir, "pda.mcmc.Rdata")
+  filename.mcmc <- file.path(settings$pfts$pft$outdir, 
+                     paste0('mcmc.pda', settings$assim.batch$ensemble.id, '.Rdata'))
   save(params, file = filename.mcmc)
 
   ## Assess MCMC output
@@ -660,11 +677,19 @@ pda.postprocess <- function(settings, con, params, pname, prior, prior.ind) {
 
   ## save named distributions
   # *** TODO: Generalize for multiple PFTS
-  filename <- file.path(settings$pfts$pft$outdir, 'post.distns.Rdata')
+  filename <- file.path(settings$pfts$pft$outdir, 
+                paste0('post.distns.pda', settings$assim.batch$ensemble.id, '.Rdata'))
 
   post.distns <- approx.posterior(params.subset, prior, outdir = settings$pfts$pft$outdir)
   save(post.distns, file = filename)
   dbfile.insert(dirname(filename), basename(filename), 'Posterior', posteriorid, con)
+  
+  # Symlink to post.distns.Rdata (no ensemble.id identifier)
+  if(file.exists(file.path(dirname(filename), 'post.distns.Rdata'))) {
+    file.remove(file.path(dirname(filename), 'post.distns.Rdata'))
+  }
+  file.symlink(filename, file.path(dirname(filename), 'post.distns.Rdata'))
+
 
   ## coerce parameter output into the same format as trait.mcmc
   # ********* TODO: Check/fix... do we really want to save mcmc for only the parameters that were updated???
@@ -684,9 +709,14 @@ pda.postprocess <- function(settings, con, params, pname, prior, prior.ind) {
 
   ## save updated parameter distributions as trait.mcmc so that they can be read by the ensemble code
   # *** TODO: Generalize for multiple PFTS
-  filename <- file.path(settings$pfts$pft$outdir, 'trait.mcmc.Rdata')
+  filename <- file.path(settings$pfts$pft$outdir, 
+                paste0('trait.mcmc.pda', settings$assim.batch$ensemble.id, '.Rdata'))
   save(trait.mcmc, file = filename)
   dbfile.insert(dirname(filename), basename(filename), 'Posterior', posteriorid, con)
-  
+
+  ## save updated settings XML
+  saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 
+    paste0('pecan.pda', settings$assim.batch$ensemble.id, '.xml')))
+
   return(settings)
 }
