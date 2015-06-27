@@ -103,7 +103,7 @@ $stmt->closeCursor();
 // create the workflow execution
 $params=str_replace(' ', '', str_replace("\n", "", var_export($_REQUEST, true)));
 
-$q=$pdo->prepare("INSERT INTO workflows (site_id, model_id, hostname, start_date, end_date, params, advanced_edit, started_at, created_at) values (:siteid, :modelid, :hostname, :startdate, :enddate, :params, :advanced_edit, NOW(), NOW())");
+$q=$pdo->prepare("INSERT INTO workflows (site_id, model_id, folder, hostname, start_date, end_date, params, advanced_edit, started_at, created_at) values (:siteid, :modelid, '', :hostname, :startdate, :enddate, :params, :advanced_edit, NOW(), NOW())");
 $q->bindParam(':siteid', $siteid, PDO::PARAM_INT);
 $q->bindParam(':modelid', $modelid, PDO::PARAM_INT);
 $q->bindParam(':hostname', $hostname, PDO::PARAM_STR);
@@ -246,7 +246,7 @@ foreach($_REQUEST as $key => $val) {
 fwrite($fh, "    </inputs>" . PHP_EOL);
 fwrite($fh, "    <start.date>${startdate}</start.date>" . PHP_EOL);
 fwrite($fh, "    <end.date>${enddate}</end.date>" . PHP_EOL);
-fwrite($fh, "    <dbfiles>${input_folder}</dbfiles>" . PHP_EOL);
+fwrite($fh, "    <dbfiles>" . $output_folder . DIRECTORY_SEPARATOR . "dbfiles</dbfiles>" . PHP_EOL);
 fwrite($fh, "    <host>" . PHP_EOL);
 fwrite($fh, "      <name>${hostname}</name>" . PHP_EOL);
 fwrite($fh, "    </host>" . PHP_EOL);
