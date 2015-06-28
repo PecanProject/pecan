@@ -677,10 +677,10 @@ pda.postprocess <- function(settings, con, params, pname, prior, prior.ind) {
 
   ## save named distributions
   # *** TODO: Generalize for multiple PFTS
+  post.distns <- approx.posterior(params.subset, prior, outdir = settings$pfts$pft$outdir,
+                    filename.flag=paste0('.pda.', settings$assim.batch$ensemble.id))
   filename <- file.path(settings$pfts$pft$outdir, 
                 paste0('post.distns.pda', settings$assim.batch$ensemble.id, '.Rdata'))
-
-  post.distns <- approx.posterior(params.subset, prior, outdir = settings$pfts$pft$outdir)
   save(post.distns, file = filename)
   dbfile.insert(dirname(filename), basename(filename), 'Posterior', posteriorid, con)
   
