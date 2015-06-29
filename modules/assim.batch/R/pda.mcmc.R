@@ -117,10 +117,13 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
     }
 
     for(j in 1:n.param){
-      ## Propose parameter values
-      pnew  <- rnorm(1, parm[prior.ind[j]], settings$assim.batch$jump$jvar[[j]])
       pstar <- parm
-      pstar[prior.ind[j]] <- pnew
+      
+      ## Propose parameter values
+      if(i > 1) {
+        pnew  <- rnorm(1, parm[prior.ind[j]], settings$assim.batch$jump$jvar[[j]])
+        pstar[prior.ind[j]] <- pnew
+      }
 
       ## Check that value falls within the prior
       prior.star <- prior.fn$dmvprior(pstar)

@@ -351,9 +351,12 @@ pda.define.llik.fn <- function(settings) {
       NEEm <- model
     
       NEE.resid <- abs(model - NEEo)
-      NEE.pos <- (NEEm >= 0)
-      LL <- c(dexp(NEE.resid[NEE.pos], 1/(obs$b0 + obs$bp*NEEm[NEE.pos]), log=TRUE), 
-              dexp(NEE.resid[!NEE.pos],1/(obs$b0 + obs$bn*NEEm[!NEE.pos]),log=TRUE))
+#       NEE.pos <- (NEEm >= 0)
+#       LL <- c(dexp(NEE.resid[NEE.pos], 1/(obs$b0 + obs$bp*NEEm[NEE.pos]), log=TRUE), 
+#               dexp(NEE.resid[!NEE.pos],1/(obs$b0 + obs$bn*NEEm[!NEE.pos]),log=TRUE))
+      NEE.pos <- (NEEo >= 0)
+      LL <- c(dexp(NEE.resid[NEE.pos], 1/(obs$b0 + obs$bp*NEEo[NEE.pos]), log=TRUE), 
+              dexp(NEE.resid[!NEE.pos],1/(obs$b0 + obs$bn*NEEo[!NEE.pos]),log=TRUE))
       n.obs = sum(!is.na(LL))
       return(list(LL=sum(LL,na.rm=TRUE), n=n.obs))
     }
@@ -562,7 +565,7 @@ pda.calc.llik <- function(settings, con, model.out, inputs, llik.fn) {
   if(is.na(model.out)) { # Probably indicates model failed entirely
     return(-Inf)
   }
-browser()
+
   n.input <- length(inputs)
   
   LL.vec <- n.vec <- numeric(n.input)
