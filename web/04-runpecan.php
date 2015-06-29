@@ -10,7 +10,7 @@
 require("common.php");
 open_database();
 if ($authentication) {
-	if (!check_login()) {
+  if (!check_login()) {
 		header( "Location: index.php");
 		close_database();
 		exit;
@@ -103,7 +103,7 @@ $stmt->closeCursor();
 // create the workflow execution
 $params=str_replace(' ', '', str_replace("\n", "", var_export($_REQUEST, true)));
 
-$q=$pdo->prepare("INSERT INTO workflows (site_id, model_id, hostname, start_date, end_date, params, advanced_edit, started_at, created_at) values (:siteid, :modelid, :hostname, :startdate, :enddate, :params, :advanced_edit, NOW(), NOW())");
+$q=$pdo->prepare("INSERT INTO workflows (site_id, model_id, folder, hostname, start_date, end_date, params, advanced_edit, started_at, created_at) values (:siteid, :modelid, '', :hostname, :startdate, :enddate, :params, :advanced_edit, NOW(), NOW())");
 $q->bindParam(':siteid', $siteid, PDO::PARAM_INT);
 $q->bindParam(':modelid', $modelid, PDO::PARAM_INT);
 $q->bindParam(':hostname', $hostname, PDO::PARAM_STR);
@@ -127,6 +127,15 @@ if ($pdo->query("UPDATE workflows SET folder='${folder}' WHERE id=${workflowid}"
   die('Can\'t update workflow : ' . (error_database()));
 }
 
+# quick check on dbfiles_folder
+if (! isset($dbfiles_folder)) {
+  if (isset($inputs_folder)) {
+    $dbfiles_folder = $inputs_folder;
+  } else {
+    $dbfiles_folder = $output_folder . DIRECTORY_SEPARATOR . "dbfiles";
+  }
+}
+
 # if on localhost replace with localhost
 if ($hostname == $fqdn) {
 	$hostname="localhost";
@@ -134,7 +143,7 @@ if ($hostname == $fqdn) {
 
 # create pecan.xml
 if (!mkdir($folder)) {
-	die('Can\'t create output folder');
+	die('Can\'t create output folder [${folder}]');
 }
 $fh = fopen($folder . DIRECTORY_SEPARATOR . "pecan.xml", 'w');
 fwrite($fh, "<?xml version=\"1.0\"?>" . PHP_EOL);
@@ -246,7 +255,7 @@ foreach($_REQUEST as $key => $val) {
 fwrite($fh, "    </inputs>" . PHP_EOL);
 fwrite($fh, "    <start.date>${startdate}</start.date>" . PHP_EOL);
 fwrite($fh, "    <end.date>${enddate}</end.date>" . PHP_EOL);
-fwrite($fh, "    <dbfiles>${input_folder}</dbfiles>" . PHP_EOL);
+fwrite($fh, "    <dbfiles>${dbfiles_folder}</dbfiles>" . PHP_EOL);
 fwrite($fh, "    <host>" . PHP_EOL);
 fwrite($fh, "      <name>${hostname}</name>" . PHP_EOL);
 fwrite($fh, "    </host>" . PHP_EOL);
