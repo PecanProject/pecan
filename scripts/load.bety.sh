@@ -52,6 +52,49 @@ USERS=${USERS:-"NO"}
 # END CONFIGURATION SECTION
 # ----------------------------------------------------------------------
 
+# parse command line options
+while getopts c:d:hm:l:o:p:t:u: opt; do
+  case $opt in
+  c)
+    CREATE=$OPTARG
+    ;;
+  d)
+    DATABASE=$OPTARG
+    ;;
+  h)
+    echo "$0 [-c YES|NO] [-d database] [-h] [-m my siteid] [-o owner] [-p psql options] [-r remote siteid] [-t YES|NO] [-u YES|NO]"
+    echo " -c create database, THIS WILL ERASE THE CURRENT DATABASE, default is NO"
+    echo " -d database, default is bety"
+    echo " -h this help page"
+    echo " -m site id, default is 99 (VM)"
+    echo " -o owner of the database, default is bety"
+    echo " -p additional psql command line options, default is empty"
+    echo " -r remote site id, default is 0 (EBI)"
+    echo " -t keep temp folder, default is NO"
+    echo " -u create carya users, this will create some default users"
+    exit 0
+    ;;
+  m)
+    MYSITE=$OPTARG
+    ;;
+  o)
+    OWNER=$OPTARG
+    ;;
+  p)
+    PG_OPT=$OPTARG
+    ;;
+  r)
+    REMOTESITE=$OPTARG
+    ;;
+  t)
+    KEEPTMP=$OPTARG
+    ;;
+  u)
+    USERS=$OPTARG
+    ;;
+  esac
+done
+
 # list of all tables, schema_migrations is ignored since that
 # will be imported during creaton
 
