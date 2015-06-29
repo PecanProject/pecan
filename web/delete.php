@@ -102,6 +102,19 @@ if (!$stmt->execute(array($workflowid))) {
 $ensembles = $stmt->fetch(PDO::FETCH_ASSOC);
 $stmt->closeCursor();
 
+# this query will return the id of the posterior iff there is another posterior that has an
+# id larger than the current posterior for the same pft.
+# TODO does this with multiple PFTs?
+$query = "select a.id from posteriors as a, posteriors as b, ensembles, posteriors_ensembles " .
+         "where ensembles.workflow_id=? and posteriors_ensembles.ensemble_id=ensembles.id and " .
+         "a.id=posteriors_ensembles.posterior_id and a.pft_id=b.pft_id and b.id>a.id group by a.id;";
+$stmt = $pdo->prepare($query);
+if (!$stmt->execute(array($workflowid))) {
+  die('Invalid query: ' . error_database());
+}
+$posteriors = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+$stmt->closeCursor();
+
 if (isset($_REQUEST['doit'])) {
   # delete inputs_runs
   $stmt = $pdo->prepare("DELETE FROM inputs_runs USING ensembles, runs WHERE ensembles.workflow_id=? AND runs.ensemble_id=ensembles.id and inputs_runs.run_id=runs.id;");
@@ -120,12 +133,43 @@ if (isset($_REQUEST['doit'])) {
   $stmt->closeCursor();
   
   # delete posteriors
-  #$stmt = $pdo->prepare("DELETE FROM runs USING ensembles WHERE ensembles.workflow_id=? AND runs.ensemble_id=ensembles.id;");
-  #if (!$stmt->execute(array($workflowid))) {
-  #  die('Invalid query: ' . error_database());
-  #}
-  #$deleted_posteriors=$stmt->rowCount();
-  #$stmt->closeCursor();
+  $deleted_files = array();
+  $deleted_files['removed'] = array();
+  $deleted_files['kept'] = array();
+  $deleted_posteriors=0;
+  foreach ($posteriors as $pid) {
+    $stmt = $pdo->prepare("SELECT * FROM dbfiles WHERE container_id=? AND container_type='Posterior';");
+    if (!$stmt->execute(array($pid))) {
+      die('Invalid query: ' . error_database());
+    }
+    while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
+      if (isset($row['file_path']) && isset($row['file_name'])) {
+        $file = $row['file_path'] . DIRECTORY_SEPARATOR . $row['file_name'];
+        if (file_exists($file)) {
+          if (unlink("$file")) {
+            $deleted_files['removed'][] = $file;
+          } else {
+            $deleted_files['kept'][] = $file;
+          }
+        } else {
+          $deleted_files['kept'][] = $file;
+        }
+      }      
+    }
+    $stmt->closeCursor();
+    $stmt = $pdo->prepare("DELETE FROM dbfiles WHERE container_id=? AND container_type='Posterior';");
+    if (!$stmt->execute(array($pid))) {
+      die('Invalid query: ' . error_database());
+    }
+    $delete=$stmt->rowCount();
+    $stmt->closeCursor();
+    $stmt = $pdo->prepare("DELETE FROM posteriors WHERE id=?;");
+    if (!$stmt->execute(array($pid))) {
+      die('Invalid query: ' . error_database());
+    }
+    $deleted_posteriors=$deleted_posteriors + $stmt->rowCount();
+    $stmt->closeCursor();
+  }
   
   # delete posteriors_ensembles
   $stmt = $pdo->prepare("DELETE FROM posteriors_ensembles USING ensembles WHERE ensembles.workflow_id=? AND posteriors_ensembles.ensemble_id=ensembles.id;");
@@ -153,7 +197,7 @@ if (isset($_REQUEST['doit'])) {
 
   # remove all files if possible int the workflow folder
   if ($workflow['folder'] != "" && is_dir($workflow['folder'])) {
-    $deleted_files = remove_folder($workflow['folder']);
+    $deleted_files = array_merge_recursive($deleted_files, remove_folder($workflow['folder']));
   }
 }
 
@@ -189,6 +233,13 @@ if (isset($_REQUEST['doit'])) {
 <?php } ?>
         </div>
         <div id="row">
+<?php if (isset($_REQUEST['doit'])) { ?>
+          <div id="header">Number of Posteriors Deleted</div><div><?php echo $deleted_posteriors . "/" .  count($posteriors) ; ?></div>
+<?php } else { ?>
+          <div id="header">Number of Posteriors</div><div><?php echo count($posteriors); ?></div>
+<?php } ?>
+        </div>
+        <div id="row">
           <div id="header">Folder</div><div><?php echo $workflow['folder']; ?></div>
         </div>
         <div id="row">
@@ -210,6 +261,11 @@ if (isset($_REQUEST['doit'])) {
         <div id="row">
           <div id="header">Posteriors-Ensembles Deleted</div><div><?php echo $deleted_posteriors_ensembles; ?></div>
         </div>
+<?php if (isset($delete_posteriors)) { ?>
+        <div id="row">
+          <div id="header">Posteriors Deleted</div><div><?php echo $delete_posteriors; ?></div>
+        </div>
+<?php } ?>
         <div id="row">
           <div id="header">Workflows Deleted</div><div><?php echo $deleted_workflows; ?></div>
         </div>
@@ -265,9 +321,9 @@ function remove_folder($dir) {
     }
   } 
   if (rmdir("$dir")) {
-    $result['removed'][] = "$dir";
+    $result['removed'][] = $dir;
   } else {
-    $result['kept'][] = "$dir";
+    $result['kept'][] = $dir;
   }
   return $result;
 } 
