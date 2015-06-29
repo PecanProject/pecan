@@ -140,6 +140,8 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
 
         ## Accept or reject step
         a <- LL.new - LL.old + prior.star - prior.old
+        if(is.na(a)) a <- -Inf  # Can occur if LL.new == -Inf (due to model crash) and LL.old == -Inf (first run)
+
         if(a > log(runif(1))){
           LL.old <- LL.new
           prior.old <- prior.star

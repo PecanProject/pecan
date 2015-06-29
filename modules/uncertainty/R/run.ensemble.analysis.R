@@ -62,6 +62,7 @@ run.ensemble.analysis <- function(plot.timeseries=NA){
   
   pdf(file=file.path(fig.out,fname),width=13,height=6)
   par(mfrow=c(1,2),mar=c(4,4.8,1,2.0)) # B, L, T, R
+
   hist(unlist(ensemble.output),xlab=units,
        main="",cex.axis=1.1,cex.lab=1.4,col="grey85")
   box(lwd=2.2)

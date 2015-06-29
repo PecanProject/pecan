@@ -95,6 +95,15 @@ pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   }
   # have to add names or listToXml() won't work
   names(settings$assim.batch$param.names) <- rep("param", length(settings$assim.batch$param.names))
+  # Finally, check that none of the names listed are specified as pft constants
+  constant.names <- unlist(sapply(settings$pfts, function(x) names(x$constants)))
+  params.in.constants <- which(unlist(settings$assim.batch$param.names) %in% constant.names)
+  if(length(params.in.constants) > 0) {
+    logger.severe(paste0("PDA requested for parameter(s) [",
+      paste(settings$assim.batch$param.names[params.in.constants], collapse=", "), 
+      "] but these parameters are specified as constants in pecan.xml!"))
+  }
+  
 
   # prior: Either null or an ID used to query for priors later
   if(!is.null(prior.id)) {
@@ -523,6 +532,10 @@ pda.get.model.output <- function(settings, run.id, inputs) {
                         strftime(settings$run$end.date,"%Y"), 
                         variables="NEE")$NEE*0.0002640674
 
+    if(length(NEEm) == 0) {   # Probably indicates model failed entirely
+      return(NA)
+    }
+      
     ## match model and observations
     NEEm <- rep(NEEm,each= nrow(inputs[[k]]$data)/length(NEEm))
     set <- 1:length(NEEm)  ## ***** need a more intellegent year matching!!!
@@ -546,6 +559,10 @@ pda.get.model.output <- function(settings, run.id, inputs) {
 ##' @author Ryan Kelly
 ##' @export
 pda.calc.llik <- function(settings, con, model.out, inputs, llik.fn) {
+  if(is.na(model.out)) { # Probably indicates model failed entirely
+    return(-Inf)
+  }
+browser()
   n.input <- length(inputs)
   
   LL.vec <- n.vec <- numeric(n.input)

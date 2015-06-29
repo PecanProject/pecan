@@ -63,6 +63,7 @@ get.results <- function(settings) {
         variables[i] = settings$ensemble[[var[i]]]
       }
     }
+
     ensemble.output <- read.ensemble.output(settings$ensemble$size,
                                             pecandir = outdir,
                                             outdir = settings$modeloutdir, 
