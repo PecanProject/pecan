@@ -71,7 +71,7 @@ $browndog = (isset($_REQUEST['browndog'])) ? "checked" : "";
 ?>
     </form>
 
-    <form id="formnext" method="POST" action="04-runpecan.php">
+    <form id="formnext" method="POST" action="07-analysis.php">
 <?php
   foreach($_REQUEST as $key => $value) {
     if (is_array($value)) {
