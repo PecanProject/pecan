@@ -13,6 +13,7 @@ run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = NULL,
                        config = config,
                        coppice.interval = 1){
   require(data.table)
+  require(lubridate)
   start.date <- ceiling_date(as.POSIXct(config$run$start.date), "day")
   end.date <- floor_date(as.POSIXct(config$run$end.date), "day")
   genus <- config$pft$type$genus
@@ -23,23 +24,19 @@ run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = NULL,
   biocro.met <- cf2biocro(met.hr)
   
 
-  #if(!is.null(config$pft$soilControl)){
-  #  soil.parms <- config$pft$soilControl
-  #  soil.parms$iWatCont <- NULL
-  #}
   if(!is.null(soil.nc)){
-    soil <- get.soil(lat, lon, soil.nc = soil.nc)
+    soil <- get.soil(lat = lat, lon = lon, soil.nc = soil.nc)
     soil.type <- ifelse(soil$usda_class %in% 1:10, soil$usda_class, 10)  
-  }
-  
-  if(!is.null(soil.type)){
-    soil.parms <- soilParms(soilType = soil.type)
   } else {
-    soil.parms <- soilParms()
+    soil.type <- NA
   }
-
+  if(!is.na(soil.type)) {
+      config$pft$soilControl$soilType <- soil.type
+  }
+  soil.parms <- lapply(config$pft$soilControl, as.numeric)
+  
   years <- unique(biocro.met$year)
-  for(yeari in years){
+  for(yeari in years[1:2]){
     yearchar <- as.character(yeari)
     WetDat <- biocro.met[biocro.met$year == yeari, ]
 
@@ -50,8 +47,7 @@ run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = NULL,
 
     ## dayn = harvest end of November
     dayn <- 335
-    print(day1)
-    print(dayn)
+    
     ## TODO: start of a distinct function called 'getinitialcondition'
     HarvestedYield <- 0
     if(genus == "Saccharum") {
@@ -108,6 +104,7 @@ run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = NULL,
                                 data.table(year = yeari, 
                                            doy = rep(DayofYear, each = 24)[1:length(ThermalT)], 
                                            hour = Hour, ThermalT,
+                                           Stem, Leaf, Root, Rhizome, Grain, LAI,
                                            SoilEvaporation, CanopyTrans, 
                                            key = c("year", "doy", "hour")))
     if(yeari == min(years)){
@@ -116,17 +113,17 @@ run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = NULL,
       hourly.results <- rbind(hourly.results, result.yeari.hourly)
     }
   }
-  biocro.met <- as.data.table(biocro.met)
-  setkeyv(biocro.met, c("year", "doy", "hour"))
+  biocro.met.dt <- as.data.table(biocro.met)
+  setkeyv(biocro.met.dt, c("year", "doy", "hour"))
   setkeyv(hourly.results, c("year", "doy", "hour"))
 
-  hourly.results <- merge(biocro.met, hourly.results) ## right join
+  hourly.results <- merge(biocro.met.dt, hourly.results) ## right join
   daily.results <- hourly.results[, list(Stem = max(Stem), Leaf = max(Leaf), Root = max(Root), Rhizome = max(Rhizome), 
 Grain = max(Grain), tmax = max(Temp), tmin = min(Temp), tavg = mean(Temp), precip = sum(precip)), by = 'year,doy']
 
-  annual.results <- round(hourly.results[ ,list(Stem = max(Stem), Leaf = max(Leaf), Root = max(Root), Rhizome = max(Rhizome),
+  annual.results <- hourly.results[ ,list(Stem = max(Stem), Leaf = max(Leaf), Root = max(Root), Rhizome = max(Rhizome),
                                                 Grain = max(Grain), mat = mean(Temp), map = sum(precip)),
-                                          by = "year"], 2)[yield.annually]
+                                          by = "year"]
   return(list(hourly = hourly.results,
               daily = daily.results,
               annually = data.table(lat = lat, lon = lon, annual.results)))
