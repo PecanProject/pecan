@@ -35,7 +35,7 @@ convert.samples.BIOCRO <- function(trait.samples){
     trait.names[trait.names == "growth_respiration_coefficient"] <- "GrowthRespFraction"
     trait.names[trait.names == "extinction_coefficient_diffuse"] <- "kd"
     trait.names[trait.names == "chi_leaf"] <- "chi.l"
-  
+    trait.names[trait.names == "quantum_efficiency"] <- "alpha"
   
     colnames(trait.samples) <- trait.names    
     ## Partitioning coefficients: especially leaf
@@ -45,7 +45,6 @@ convert.samples.BIOCRO <- function(trait.samples){
     ## iStem
     ## ifrRhizome
     ## ifrStem
-    ## 
  
     ## transform values with different units
     ## cuticular conductance - BETY default is umol; BioCro uses mol
