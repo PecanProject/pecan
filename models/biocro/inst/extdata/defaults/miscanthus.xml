@@ -23,7 +23,7 @@
     <ifrStem>0.01</ifrStem> 
   </iPlantControl>
   <photoParms>
-    <vmax>50</vmax>
+    <vmax>39</vmax>
     <alpha>0.04</alpha>
     <kparm>0.7</kparm>
     <theta>0.83</theta>
