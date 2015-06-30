@@ -38,10 +38,15 @@ qair2rh <- function(qair, temp, press = 1013.25){
 ##' @param rh relative humidity (proportion, not %)
 ##' @param T absolute temperature (Kelvin)
 ##' @export
-##' @author Mike Dietze
+##' @author Mike Dietze, Ankur Desai
 ##' @aliases rh2rv
-rh2qair <- function(rh, T){
-  qair <- rh * 2.541e6 * exp(-5415.0 / T) * 18/29
+rh2qair <- function(rh, T, press = 101325.0){
+  Tc <- T - 273.15
+  es <-  6.112 * exp((17.67 * Tc)/(Tc + 243.5))
+  e <- rh * es
+  p_mb <- press / 100.0
+  qair <- (0.622 * e) / (p_mb - (0.378 * e))
+  ##  qair <- rh * 2.541e6 * exp(-5415.0 / T) * 18/29
   return(qair)
 }
  
