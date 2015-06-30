@@ -17,8 +17,8 @@ OGE2_INPUT=$( python -c 'import os,sys;print os.path.realpath(sys.argv[1])' "${D
 # ED inputs
 addInputFile "${FQDN}" "294" "" "${ED_INPUT}/glu"
 addInputFile "${FQDN}" "295" "" "${ED_INPUT}"
-addInputFile "${FQDN}" "296" "FAO_" "${FAO_INPUT}"
-addInputFile "${FQDN}" "297" "OGE2_" "${OGE2_INPUT}"
+addInputFile "${FQDN}" "297" "FAO_" "${FAO_INPUT}"
+addInputFile "${FQDN}" "296" "OGE2_" "${OGE2_INPUT}"
 
 # [76] EBIFARM
 addInputFile "${FQDN}" "7" "ED_MET_DRIVER_HEADER" "${SITES}/ebifarm"
