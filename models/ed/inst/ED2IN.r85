@@ -516,7 +516,7 @@ $ED_NL
    NL%SOIL_DATABASE     = '@ED_SOIL@'
    NL%LU_DATABASE       = '@ED_LU@'
    NL%PLANTATION_FILE   = ''
-   NL%THSUMS_DATABASE   = '@ED_INPUTS@'
+   NL%THSUMS_DATABASE   = '@ED_THSUM@'
    NL%ED_MET_DRIVER_DB = '@SITE_MET@'
    NL%SOILSTATE_DB=''
    NL%SOILDEPTH_DB=''
@@ -1367,7 +1367,7 @@ $ED_NL
    !                3.  Gloomy -- All radiation goes to diffuse.                           !
    !                4.  Sesame street -- all radiation goes to direct, except at night.    !
    ! INITIAL_CO2 -- Initial value for CO2 in case no CO2 is provided at the meteorological !
-   !                driver dataset [Units: µmol/mol]                                       !
+   !                driver dataset [Units: Âµmol/mol]                                       !
    !---------------------------------------------------------------------------------------!
    NL%IMETTYPE    = 1        ! 0 = ASCII, 1 = HDF5
    NL%ISHUFFLE    = 2        ! 2. Randomly pick recycled years
