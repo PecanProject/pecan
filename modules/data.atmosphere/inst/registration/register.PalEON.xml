@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<PalEON>
+  <scale>site</scale>
+  <format>
+    <id>16</id>
+    <name>ALMA Meterology</name>
+    <mimetype>application/x-netcdf</mimetype>
+    <inputtype>pecan.zip</inputtype>
+  </format>
+</PalEON>

@@ -159,6 +159,10 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings,
     db.query(paste0("INSERT INTO ensembles (created_at, runtype, workflow_id) values ('", 
                      now, "', 'ensemble', ", workflow.id, ")"), con=con)
     ensemble.id <- db.query(paste0("SELECT id FROM ensembles WHERE created_at='", now, "' AND runtype='ensemble'"), con=con)[['id']]
+    for (pft in defaults) {
+      db.query(paste0("INSERT INTO posteriors_ensembles (posterior_id, ensemble_id, created_at, updated_at) values (",
+                      pft$posteriorid, ", ", ensemble.id, ", '", now, "', '", now, "');"), con=con)
+    }
   } else {
     ensemble.id <- "NA"
   }
