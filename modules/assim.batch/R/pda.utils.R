@@ -7,7 +7,7 @@
 ##'
 ##' @author Ryan Kelly
 ##' @export
-load.pda.data <- function(input.settings) {
+load.pda.data <- function(input.settings, con) {
   ## load data
   # Outlining setup for multiple datasets, although for now the only option is to assimilate 
   # against a single NEE input
@@ -44,9 +44,12 @@ load.pda.data <- function(input.settings) {
       ## calculate flux uncertainty parameters
       NEEo <- inputs[[i]]$data$NEE_or_fMDS #data$Fc   #umolCO2 m-2 s-1
       NEEq <- inputs[[i]]$data$NEE_or_fMDSqc #data$qf_Fc
+      NEEo[NEEq > 0] <- NA
       dTa <- get.change(inputs[[i]]$data$Ta_f)
       flags <- dTa < 3   ## filter data to temperature differences that are less than 3 degrees
       NEE.params <- flux.uncertainty(NEEo,NEEq,flags,bin.num=20)
+      
+      inputs[[i]]$NEEo <- NEEo
       inputs[[i]]$b0 <- NEE.params$intercept
       inputs[[i]]$bp <- NEE.params$slopeP
       inputs[[i]]$bn <- NEE.params$slopeN
@@ -343,23 +346,34 @@ pda.define.llik.fn <- function(settings) {
   # Currently just returns a single likelihood, assuming the data are flux NEE.
   llik.fn <- list()
   for(i in 1:length(settings$assim.batch$input)) {
-    llik.fn[[i]] <- function(model, obs) {
-      NEEo <- obs$data$NEE_or_fMDS #data$Fc   #umolCO2 m-2 s-1
-      NEEq <- obs$data$NEE_or_fMDSqc #data$qf_Fc
-      NEEo[NEEq > 1] <- NA
+    llik.fn[[i]] <- function(NEEm, obs) {
+#       NEEo <- obs$data$NEE_or_fMDS #data$Fc   #umolCO2 m-2 s-1
+#       NEEq <- obs$data$NEE_or_fMDSqc #data$qf_Fc
+#       NEEo[NEEq > 1] <- NA
     
-      NEEm <- model
-    
-      NEE.resid <- abs(model - NEEo)
-#       NEE.pos <- (NEEm >= 0)
-#       LL <- c(dexp(NEE.resid[NEE.pos], 1/(obs$b0 + obs$bp*NEEm[NEE.pos]), log=TRUE), 
-#               dexp(NEE.resid[!NEE.pos],1/(obs$b0 + obs$bn*NEEm[!NEE.pos]),log=TRUE))
-      NEE.pos <- (NEEo >= 0)
-      LL <- c(dexp(NEE.resid[NEE.pos], 1/(obs$b0 + obs$bp*NEEo[NEE.pos]), log=TRUE), 
-              dexp(NEE.resid[!NEE.pos],1/(obs$b0 + obs$bn*NEEo[!NEE.pos]),log=TRUE))
-      n.obs = sum(!is.na(LL))
-      return(list(LL=sum(LL,na.rm=TRUE), n=n.obs))
+      NEE.resid <- abs(NEEm - obs$NEEo)
+      NEE.pos <- (NEEm >= 0)
+      LL <- c(dexp(NEE.resid[NEE.pos], 1/(obs$b0 + obs$bp*NEEm[NEE.pos]), log=TRUE), 
+              dexp(NEE.resid[!NEE.pos],1/(obs$b0 + obs$bn*NEEm[!NEE.pos]),log=TRUE))
+#       NEE.pos <- (NEEo >= 0)
+#       LL <- c(dexp(NEE.resid[NEE.pos], 1/(obs$b0 + obs$bp*NEEo[NEE.pos]), log=TRUE), 
+#               dexp(NEE.resid[!NEE.pos],1/(obs$b0 + obs$bn*NEEo[!NEE.pos]),log=TRUE))
+      return(list(LL=sum(LL,na.rm=TRUE), n=sum(!is.na(LL))))
     }
+
+#     llik.fn[[i]] <- function(model, obs) {
+#       NEEo <- obs$data$NEE_or_fMDS #data$Fc   #umolCO2 m-2 s-1
+#       NEEq <- obs$data$NEE_or_fMDSqc #data$qf_Fc
+#       NEEo[NEEq > 1] <- NA
+#     
+#       NEEm <- model
+#     
+#       NEE.resid <- NEEm - NEEo
+#       LL <- dnorm(NEE.resid, 0, 1, log=TRUE)
+#       n.obs = sum(!is.na(LL))
+#       return(list(LL=sum(LL,na.rm=TRUE), n=n.obs))
+#     }
+
   }
 
   return(llik.fn)
@@ -410,8 +424,13 @@ pda.init.run <- function(settings, con, my.write.config, workflow.id, params,
                          n=ifelse(is.null(dim(params)), 1, nrow(params)), 
                          run.names=paste("run", 1:n, sep=".")) {
 
-  # If n=1, convert params to a 1-row matrix (for generically accessing it below)
-  if(is.null(dim(params))) params <- matrix(params, nrow=1)
+  # If n=1, convert params to a 1-row data frame (for generically accessing it below)
+  if(is.null(dim(params))) {
+    pnames <- names(params)
+    params <- as.data.frame(matrix(params, nrow=1))
+    names(params) <- pnames
+  }
+
 
   run.ids <- rep(NA, n)
   for(i in 1:n) {
@@ -441,10 +460,11 @@ pda.init.run <- function(settings, con, my.write.config, workflow.id, params,
     dir.create(file.path(settings$rundir, run.ids[i]), recursive=TRUE)
     dir.create(file.path(settings$modeloutdir, run.ids[i]), recursive=TRUE)
 
-
     ## write config
-    do.call(my.write.config,args=list(settings$pfts, list(pft=params[i,],env=NA), settings, run.ids[i]))
-
+    do.call(my.write.config,
+            args=list(defaults = settings$pfts, 
+                      trait.values = list(pft=params[i,],env=NA), 
+                      settings = settings, run.id = run.ids[i]))
 
     # Identifiers for ensemble 'runtype'
     if(settings$assim.batch$method == "bruteforce") {
@@ -561,7 +581,7 @@ pda.get.model.output <- function(settings, run.id, inputs) {
 ##'
 ##' @author Ryan Kelly
 ##' @export
-pda.calc.llik <- function(settings, con, model.out, inputs, llik.fn) {
+pda.calc.llik <- function(settings, con, model.out, run.id, inputs, llik.fn) {
   if(is.na(model.out)) { # Probably indicates model failed entirely
     return(-Inf)
   }
