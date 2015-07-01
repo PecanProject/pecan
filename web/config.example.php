@@ -43,8 +43,8 @@ $pecan_home="/home/carya/pecan/";
 # Folder where the runs are stored
 $output_folder="/home/carya/output/";
 
-# Folder where the data inputs are stored
-$input_folder=$output_folder;
+# Folder where the generated files are stored
+$dbfiles_folder=$output_folder . "/dbfiles";
 
 # ED specific inputs, should come from database
 $ed_veg="/home/carya/oge2OLD/OGE2_";

@@ -17,8 +17,8 @@ OGE2_INPUT=$( python -c 'import os,sys;print os.path.realpath(sys.argv[1])' "${D
 # ED inputs
 addInputFile "${FQDN}" "294" "" "${ED_INPUT}/glu"
 addInputFile "${FQDN}" "295" "" "${ED_INPUT}"
-addInputFile "${FQDN}" "296" "FAO_" "${FAO_INPUT}"
-addInputFile "${FQDN}" "297" "OGE2_" "${OGE2_INPUT}"
+addInputFile "${FQDN}" "297" "FAO_" "${FAO_INPUT}"
+addInputFile "${FQDN}" "296" "OGE2_" "${OGE2_INPUT}"
 
 # [76] EBIFARM
 addInputFile "${FQDN}" "7" "ED_MET_DRIVER_HEADER" "${SITES}/ebifarm"
@@ -34,7 +34,7 @@ addInputFile "${FQDN}" "137" "harvard.NACP.lat42.5lon-72.5.pss" "${SITES}/harvar
 addInputFile "${FQDN}" "136" "harvard.NACP.lat42.5lon-72.5.site" "${SITES}/harvard_ems"
 
 # [676] Willow Creek
-addInput "676" "24" "2002-01-01" "2006-12-31"
+addInput "676" "24" "1998-01-01" "2006-12-31"
 addInputFile "${FQDN}" "${INPUT_ID}" "wcr.clim" "${SITES}/willow"
 addInputFile "${FQDN}" "134" "ED_MET_DRIVER_HEADER" "${SITES}/willow"
 addInputFile "${FQDN}" "135" "US-WCrforcing.nc" "${SITES}/willow"
@@ -48,7 +48,7 @@ addInputFile "${FQDN}" "170" "US-WCr.Inv.lat45.5lon-90.pss" "${SITES}/willow"
 addInputFile "${FQDN}" "171" "US-WCr.Inv.lat45.5lon-90.site" "${SITES}/willow"
 
 # [622] Sylvania
-addInput "622" "24" "2002-01-01" "2006-12-31"
+addInput "622" "24" "2001-01-01" "2006-12-31"
 addInputFile "${FQDN}" "${INPUT_ID}" "syl.clim" "${SITES}/sylvana"
 addInputFile "${FQDN}" "132" "ED_MET_DRIVER_HEADER" "${SITES}/sylvana"
 addInputFile "${FQDN}" "133" "US-Syvforcing.nc" "${SITES}/sylvana"
