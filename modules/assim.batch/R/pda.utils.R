@@ -695,7 +695,7 @@ pda.postprocess <- function(settings, con, params, pname, prior, prior.ind) {
   save(params, file = filename.mcmc)
 
   ## Assess MCMC output
-  burnin <- min(2000,0.2*nrow(params))
+  burnin <- ceiling(min(2000,0.2*nrow(params)))
   params.subset <- as.data.frame(params[burnin:nrow(params),prior.ind])
     names(params.subset) <- pname[prior.ind]
   pda.plot.params(settings, params.subset, prior.ind)
