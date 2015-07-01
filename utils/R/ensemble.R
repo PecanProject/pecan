@@ -81,7 +81,19 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
     for(i in 1:length(pft.samples)){
       pft2col <- c(pft2col,rep(i,length(pft.samples[[i]])))
     }
-        
+    
+    halton.samples <- NULL
+    if(method == "halton"){
+      halton.samples <- halton(n = ensemble.size, dim=length(pft2col))
+      ##force as a matrix in case length(samples)=1
+      halton.samples <- as.matrix(halton.samples)
+    } else {
+      #uniform random
+      halton.samples <- matrix(runif(ensemble.size*length(pft2col))
+                               ,ensemble.size,length(pft2col))
+      
+    }
+    
     total.sample.num <- sum(sapply(pft.samples, length))
     halton.samples <- NULL
     if(method == "halton"){
@@ -90,7 +102,8 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
       halton.samples <- as.matrix(halton.samples)
     } else {
       #uniform random
-      halton.samples <- matrix(runif(ensemble.size*total.sample.num), ensemble.size, total.sample.num)
+      halton.samples <- matrix(runif(ensemble.size*total.sample.num),
+                               ensemble.size, dim=total.sample.num)
     }
     
     ensemble.samples <- list()
