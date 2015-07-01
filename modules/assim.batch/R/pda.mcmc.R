@@ -24,7 +24,7 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   ## if you are debugging
   if(FALSE){
     params.id <- param.names <- prior.id <- chain <- iter <- NULL 
-    adapt <- adj.min <- ar.target <- jvar <- NULL
+    n.knot <- adapt <- adj.min <- ar.target <- jvar <- NULL
   }
 
   ## -------------------------------------- Setup ------------------------------------- ##
@@ -50,7 +50,7 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   n.param.all  <- nrow(prior)
 
   ## Load data to assimilate against
-  inputs <- load.pda.data(settings$assim.batch$inputs)
+  inputs <- load.pda.data(settings$assim.batch$inputs, con)
   n.input <- length(inputs)
 
   ## Set model-specific functions
@@ -106,6 +106,12 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   accept.rate <- numeric(n.param)  ## Create acceptance rate vector of 0's (one zero per parameter)
 
 
+
+  ## Create dir for diagnostic output
+  dir.create(file.path(settings$outdir, paste0('diag.pda', settings$assim.batch$ensemble.id)),
+    showWarnings=F, recursive=T)
+
+
   ## --------------------------------- Main MCMC loop --------------------------------- ##
   for(i in start:finish){
     logger.info(paste("Data assimilation MCMC iteration",i,"of",finish))
@@ -117,10 +123,13 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
     }
 
     for(j in 1:n.param){
-      ## Propose parameter values
-      pnew  <- rnorm(1, parm[prior.ind[j]], settings$assim.batch$jump$jvar[[j]])
       pstar <- parm
-      pstar[prior.ind[j]] <- pnew
+      
+      ## Propose parameter values
+      if(i > 1) {
+        pnew  <- rnorm(1, parm[prior.ind[j]], settings$assim.batch$jump$jvar[[j]])
+        pstar[prior.ind[j]] <- pnew
+      }
 
       ## Check that value falls within the prior
       prior.star <- prior.fn$dmvprior(pstar)
@@ -138,8 +147,29 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
         ## Calculate likelihood (and store in database)
         LL.new <- pda.calc.llik(settings, con, model.out, run.id, inputs, llik.fn)
 
+        ## Diagnostic figure
+        if(i %% 20 == 1 | i == finish) {
+          pdf(file.path(settings$outdir, paste0('diag.pda', settings$assim.batch$ensemble.id),
+            paste0("data.vs.model_", gsub(" ", "0",sprintf("%5.0f", i)), ".pdf")))
+            NEEo <- inputs[[1]]$data$NEE_or_fMDS #data$Fc   #umolCO2 m-2 s-1
+            NEEq <- inputs[[1]]$data$NEE_or_fMDSqc #data$qf_Fc
+            NEEo[NEEq > 1] <- NA
+    
+            NEEm <- model.out[[1]]
+            NEE.resid <- NEEm - NEEo
+
+            par(mfrow=c(1,2))
+            plot(NEEo)
+            points(NEEm, col=2, cex=0.5)
+            legend("topleft", col=c(1,2), pch=1, legend=c("data","model"))
+            hist(NEE.resid, 100, main=paste0("LLik: ", round(LL.new,1)))
+          dev.off()
+        }
+
         ## Accept or reject step
         a <- LL.new - LL.old + prior.star - prior.old
+        if(is.na(a)) a <- -Inf  # Can occur if LL.new == -Inf (due to model crash) and LL.old == -Inf (first run)
+
         if(a > log(runif(1))){
           LL.old <- LL.new
           prior.old <- prior.star

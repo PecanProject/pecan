@@ -24,7 +24,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   ## if you are debugging
   if(FALSE){
     params.id <- param.names <- prior.id <- chain <- iter <- NULL 
-    adapt <- adj.min <- ar.target <- jvar <- NULL
+    n.knot <- adapt <- adj.min <- ar.target <- jvar <- NULL
   }
 
   ## -------------------------------------- Setup ------------------------------------- ##
@@ -114,20 +114,21 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   require(kernlab)
   df <- data.frame(LL = Y, X)
   kernlab.gp <- gausspr(LL~., data=df)
-  
-  
+
   ## Sample posterior from emulator
   m <- lapply(1, function(chain){
          init.x <- lapply(prior.ind, function(v) eval(prior.fn$rprior[[v]], list(n=1)))
          names(init.x) <- pname[prior.ind]
-         mcmc.GP(gp     = kernlab.gp, ## Emulator
-                 x0     = init.x,     ## Initial conditions
-                 nmcmc  = 2000,       ## Number of reps
-                 rng    = NULL,       ## 'rng' (not used since jmp0 is specified below)
-                 format = "lin",      ## "lin"ear vs "log" of LogLikelihood 
-                 mix    = "each",     ## Jump "each" dimension independently or update them "joint"ly
-                 jmp0   = apply(X,2,function(x) 0.3*diff(range(x))),  ## Initial jump size
-                 priors = prior.fn$dprior[prior.ind]                  ## Priors
+         mcmc.GP(gp        = kernlab.gp, ## Emulator
+                 x0        = init.x,     ## Initial conditions
+                 nmcmc     = settings$assim.batch$iter,       ## Number of reps
+                 rng       = NULL,       ## 'rng' (not used since jmp0 is specified below)
+                 format    = "lin",      ## "lin"ear vs "log" of LogLikelihood 
+                 mix       = "each",     ## Jump "each" dimension independently or update them "joint"ly
+#                  jmp0 = apply(X,2,function(x) 0.3*diff(range(x))), ## Initial jump size
+                 jmp0      = sqrt(unlist(settings$assim.batch$jump$jvar)),  ## Initial jump size
+                 ar.target = settings$assim.batch$jump$ar.target,   ## Target acceptance rate
+                 priors    = prior.fn$dprior[prior.ind]             ## Priors
           )$mcmc
         })
 
