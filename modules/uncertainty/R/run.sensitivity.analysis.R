@@ -58,10 +58,11 @@ run.sensitivity.analysis <- function(plot=TRUE){
         }
         
         ### Gather SA results
-        sensitivity.results[[pft$name]] <- sensitivity.analysis(trait.samples = trait.samples[[pft$name]][traits],
-                                                                sa.samples = sa.samples[[pft$name]][ ,traits],
-                                                                sa.output = sensitivity.output[[pft$name]][ ,traits],
-                                                                outdir = pft$outdir)
+        sensitivity.results[[pft$name]] <- sensitivity.analysis(
+          trait.samples = trait.samples[[pft$name]][traits],
+          sa.samples = sa.samples[[pft$name]][ ,traits, drop=FALSE],
+          sa.output = sensitivity.output[[pft$name]][ ,traits, drop=FALSE],
+          outdir = pft$outdir)
         
         ### Send diagnostic output to the console
         print(sensitivity.results[[pft$name]]$variance.decomposition.output)
