@@ -14,13 +14,12 @@
 ##' @title Run model specific write configuration functions
 ##' @param model the ecosystem model to generate the configuration files for
 ##' @param write should the runs be written to the database
-##' @param ens.sample.method how to sample the ensemble members("halton" sequence or "uniform" random)
 ##'
 ##' @return an updated settings list, which includes ensemble IDs for SA and ensemble analysis
 ##' @export
 ##'
 ##' @author David LeBauer, Shawn Serbin
-run.write.configs <- function(settings, write = TRUE, ens.sample.method="halton") {
+run.write.configs <- function(settings, write = TRUE) {
   model = settings$model$type
   scipen = getOption("scipen")
   options(scipen=12)
@@ -165,7 +164,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method="halton"
           
           ## subset the trait.samples to ensemble size using Halton sequence 
           ensemble.samples <- get.ensemble.samples(settings$ensemble$size, 
-                                                   trait.samples, env.samples, ens.sample.method)
+                                                   trait.samples, env.samples)
       }
           logger.info("Ensemble size: ",settings$ensemble$size)
           
