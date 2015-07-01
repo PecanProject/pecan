@@ -99,7 +99,7 @@ git push -u origin GH-issuenumber-title-of-issue
 
 ## Additional Resources
 
-- [Adding modes to PEcAN](https://github.com/PecanProject/pecan/wiki/Adding-an-Ecosystem-Model)
+- [Adding modes to PEcAn](https://github.com/PecanProject/pecan/wiki/Adding-an-Ecosystem-Model)
 - [PEcAn configuration files](https://github.com/PecanProject/pecan/wiki/Configuration-Files)
 - [R Development help](https://github.com/PecanProject/pecan/wiki/Development#r-development)
 - [PEcAn Code of Conduct](https://github.com/PecanProject/pecan/wiki/Code-of-Conduct)
