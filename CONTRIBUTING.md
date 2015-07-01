@@ -1,26 +1,33 @@
 # How to contribute
 
-Third-party contributions are highly encouraged for PEcAn and will grow the code as well as the understanding of . We simply can't add all models that exist to PEcAn or all possible scenarios and analysis that people want to do. We want to keep it as easy as possible to contribute changes that get things working in your environment. There are a few guidelines that we need contributors to follow so that we can have a chance of keeping on top of things.
+Third-party contributions are highly encouraged for PEcAn and will grow the code as well as the understanding of PEcAn and its applications. 
+The core development team can not add all models that exist to PEcAn or all possible scenarios and analysis that people want to conduct. 
+Our goal is to keep it as easy as possible for you contribute changes that get things working in your environment. 
+There are a few guidelines that we need contributors to follow so that we can have a chance of keeping on top of things.
 
 ## PEcAn CORE vs Models vs Modules
 
 New functionality is typically directed toward modules to provide a slimmer PEcAn Core, reducing the requirements to get PEcAn running on different platforms, especially HPC machines, and to allow greater freedom for modules and models.
 
-Generally, new model should be added to the models folder and new modules should be added to the modules folder. Exceptions would be things like code that is reused in many models or modules or a wrapper function calling specific implementation in models, which can be placed in the core packages.
+Generally, new model should be added to the models folder and new modules should be added to the modules folder. 
+Exceptions include code that is reused in many models or modules and wrapper functions that call specific implementations in models; these can be placed in the core packages.
 
 If you are unsure of whether your contribution should be implemented as a model, module or part of PEcAn Core, you may visit [HipChat](https://hipchat.ncsa.illinois.edu/gW51EFhtT) or ask on the pecan-develop mailing list for advice.
 
 ## Creating Issues
 
 - Make sure you have a GitHub account.
-- Create an issue in GitHub, assuming one does not already exist.
+- Search GitHub and Google to see if your issue has already been reported
+        - Create an issue in GitHub, assuming one does not already exist.
 	- Clearly describe the issue including steps to reproduce when it is a bug.
 	- Make sure you fill in the earliest version that you know has the issue.
-- Ask to be added to the PEcAn project if you plan on fixing the issue.
+- Ask @dlebauer, @mdietze or @robkooper to add you to the PEcAn project if you plan on fixing the issue.
 
 ## Getting Started
 
-We highly recommend starting with the [downloaded VM image](http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN). This image comes with a copy of PEcAn, BETY preinstalled with a fully populated database. It also has the following models preinstalled: ED, SIPNET, Linkages and DALEC. Another option is to install PEcAn on your own machine, using the instructions on the [wiki](https://github.com/PecanProject/pecan/wiki/Installing-PEcAn).
+We highly recommend starting with the [downloaded VM image](http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN). This image comes with a copy of PEcAn preinstalled with a fully populated copy of the and BETYdb database. 
+It also has the following models preinstalled: ED, SIPNET, Linkages and DALEC. 
+Another option is to install PEcAn on your own machine, using the instructions on the [wiki](https://github.com/PecanProject/pecan/wiki/Installing-PEcAn). However, be prepared for this to take a half day or so.
 
 When you login into the VM you will have already a cloned copy of PEcAn however for development this needs to be switch to your forked version of PEcAn. To get this started you will need to first fork PEcAn on GitHub using the following two steps.
 
@@ -92,6 +99,7 @@ git push -u origin GH-issuenumber-title-of-issue
 
 ## Additional Resources
 
-- [Adding modes to PEcAN](https://github.com/PecanProject/pecan/wiki/Adding-an-Ecosystem-Model)
+- [Adding modes to PEcAn](https://github.com/PecanProject/pecan/wiki/Adding-an-Ecosystem-Model)
 - [PEcAn configuration files](https://github.com/PecanProject/pecan/wiki/Configuration-Files)
 - [R Development help](https://github.com/PecanProject/pecan/wiki/Development#r-development)
+- [PEcAn Code of Conduct](https://github.com/PecanProject/pecan/wiki/Code-of-Conduct)

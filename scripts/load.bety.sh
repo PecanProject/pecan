@@ -19,7 +19,7 @@ PG_OPT=${PG_OPT:-""}
 # ID's used in database
 # These ID's need to be unique for the sharing to work. If you want
 # to share your data, send email to kooper@illinois.edu to claim
-# your ID range. The master list is maintained at 
+# your ID range. The master list is maintained at
 # https://github.com/PecanProject/bety/wiki/Distributed-BETYdb
 #
 #  0 - EBI           - David LeBauer
@@ -53,7 +53,7 @@ USERS=${USERS:-"NO"}
 # ----------------------------------------------------------------------
 
 # parse command line options
-while getopts c:d:hm:l:o:p:t:u: opt; do
+while getopts c:d:hm:o:p:r:t:u: opt; do
   case $opt in
   c)
     CREATE=$OPTARG
@@ -100,7 +100,7 @@ done
 
 # list of tables that are one to many relationships
 CLEAN_TABLES="citations counties covariates cultivars"
-CLEAN_TABLES="${CLEAN_TABLES} dbfiles ensembles entities formats"
+CLEAN_TABLES="${CLEAN_TABLES} ensembles entities formats"
 CLEAN_TABLES="${CLEAN_TABLES} inputs likelihoods location_yields"
 CLEAN_TABLES="${CLEAN_TABLES} machines managements methods"
 CLEAN_TABLES="${CLEAN_TABLES} mimetypes models"
@@ -110,7 +110,7 @@ CLEAN_TABLES="${CLEAN_TABLES} priors runs sessions sites"
 CLEAN_TABLES="${CLEAN_TABLES} species treatments"
 CLEAN_TABLES="${CLEAN_TABLES} variables workflows"
 CLEAN_TABLES="${CLEAN_TABLES} traits yields"
-CLEAN_TABLES="${CLEAN_TABLES} users"
+CLEAN_TABLES="${CLEAN_TABLES} dbfiles users"
 
 # list of tables that are many to many relationships
 MANY_TABLES="${MANY_TABLES} citations_sites citations_treatments"
@@ -182,7 +182,7 @@ else
 		echo "Dump is from a different schema, please fix schema in database."
     if [ "$KEEPTMP" == "YES" ]; then
 		  echo "Files are in ${DUMPDIR}"
-    else 
+    else
       rm -rf "${DUMPDIR}"
     fi
 		exit
@@ -268,4 +268,3 @@ fi
 
 # all done, cleanup
 rm -rf "${DUMPDIR}"
-
