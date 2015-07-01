@@ -55,10 +55,10 @@ convert.samples.BIOCRO <- function(trait.samples){
       trait.samples <- transform(trait.samples, Sp = ud.convert(Sp, "kg/m2", "g/cm2"))
     }
     if("vmax" %in% trait.names){##HAAAACK
-      trait.samples <- transform(trait.samples, vmax = vmax * 2)
+      trait.samples <- transform(trait.samples, vmax = vmax)
     }
     if("Rd" %in% trait.names){##HAAAACK
-      trait.samples <- transform(trait.samples, Rd = Rd / 2)
+      trait.samples <- transform(trait.samples, Rd = Rd)
     }
     
     # kd = k*omega from $e^{-kL\omega}$,
