@@ -49,7 +49,7 @@ get.results <- function(settings) {
 
     # Save sensitivity output, including the run IDs and associated params
     save(sensitivity.output, sa.run.ids, sa.samples,
-      file = file.path(outdir, paste('sensitivity',settings$sensitivity.analsis$ensemble.id,'Rdata', sep='.')))
+      file = file.path(outdir, paste('sensitivity',settings$sensitivity.analysis$ensemble.id,'Rdata', sep='.')))
   }
   
   ensemble.output    <- list()
