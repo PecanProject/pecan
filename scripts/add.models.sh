@@ -11,7 +11,7 @@ addLocalModel "DALEC" "DALEC" "" "dalec_seqMH"
 addLocalModel "Linkages" "LINKAGES" "git" "linkages.git"
 
 # special case for BioCro
-addModelFile "${FQDN}" "BioCro" "BIOCRO" "" "biocro.Rscript" "${R_LIBS_USER}/PEcAn.biocro"
+addModelFile "${FQDN}" "BioCro" "BIOCRO" "" "biocro.Rscript" "${R_LIBS_USER}/PEcAn.BIOCRO"
 
 # to add remote files
 #addModelFile "geo.bu.edu" "ED2" "ED2" "git" "ed_2.1-opt" "/home/dietze/ED2.git/ED/build"

@@ -30,14 +30,17 @@ if (!isset($_REQUEST['siteid'])) {
   die("Need a siteid.");
 }
 $siteid=$_REQUEST['siteid'];
+
 if (!isset($_REQUEST['modelid'])) {
   die("Need a modelid.");
 }
 $modelid=$_REQUEST['modelid'];
+
 if (!isset($_REQUEST['hostname'])) {
   die("Need a hostname.");
 }
 $hostname=$_REQUEST['hostname'];
+
 if (!isset($_REQUEST['pft'])) {
 	die("Need a pft.");
 }
@@ -49,6 +52,7 @@ if (!isset($_REQUEST['start'])) {
 }
 $startdate=$_REQUEST['start'];
 $metstart=$startdate;
+
 if (!isset($_REQUEST['end'])) {
   die("Need a end date.");
 }
@@ -58,8 +62,13 @@ $metend=$enddate;
 # non required parameters
 $email = "";
 if (isset($_REQUEST['email'])) {
-	$email = $_REQUEST['email'];
+  $email = $_REQUEST['email'];
 }
+
+if (!isset($_REQUEST['ensemble'])) {
+  die("Need an ensemble value.");
+}
+$ensemble=$_REQUEST['ensemble'];
 
 # check met info
 if (isset($_REQUEST['input_met']) && is_numeric($_REQUEST['input_met'])) {
@@ -209,7 +218,7 @@ fwrite($fh, "    <random.effects>FALSE</random.effects>" . PHP_EOL);
 fwrite($fh, "  </meta.analysis>" . PHP_EOL);
 
 fwrite($fh, "  <ensemble>" . PHP_EOL);
-fwrite($fh, "    <size>1</size>" . PHP_EOL);
+fwrite($fh, "    <size>${ensemble}</size>" . PHP_EOL);
 fwrite($fh, "    <variable>NPP</variable>" . PHP_EOL);
 fwrite($fh, "  </ensemble>" . PHP_EOL);
 

@@ -48,14 +48,17 @@ $selected_pfts = array();
 if (isset($_REQUEST['pft'])) {
   $selected_pfts = $_REQUEST['pft'];
 }
+
 $startdate = "2006/01/01";
 if (isset($_REQUEST['start'])) { 
   $startdate=$_REQUEST['start'];
 }
+
 $enddate = "2006/12/31";
 if (isset($_REQUEST['end'])) { 
   $enddate=$_REQUEST['end'];
 }
+
 $email="";
 if (isset($_REQUEST['email'])) {
   $email=$_REQUEST['email'];
@@ -216,7 +219,7 @@ $stmt->closeCursor();
       } else if ($("#met").val().startsWith("NARR")) {
         $("#formnext").attr("action", "03a-narr.php");
       } else {
-        $("#formnext").attr("action", "04-runpecan.php");
+        $("#formnext").attr("action", "07-analysis.php");
       }
     }
   }
@@ -274,7 +277,7 @@ $stmt->closeCursor();
 
     // create the tooltip and its text
     var info="<b><?php echo $siteinfo['sitename']; ?></b><br />";
-    info+="<?php echo $siteinfo['city']; ?>, <?php echo $siteinfo['state']; ?>, <?php echo $siteinfo['country']; ?>";
+    info+="<?php echo $siteinfo['city']; ?>, <?php echo $siteinfo['state']; ?>, <?php echo $siteinfo['country']; ?><br/>";
     var infowindow = new google.maps.InfoWindow({content: info});
     infowindow.open(map, marker);
     validate();
@@ -297,7 +300,7 @@ $stmt->closeCursor();
       <input type="hidden" name="hostname" value="<?php echo $hostname; ?>" />
     </form>
 
-    <form id="formnext" method="POST" action="04-runpecan.php">
+    <form id="formnext" method="POST" action="07-analysis.php">
 <?php if ($offline) { ?>
       <input name="offline" type="hidden" value="on">
 <?php } ?>
