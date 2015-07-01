@@ -120,7 +120,7 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   ### save and store in database all results except those that were there already
   for(file in list.files(path=pft$outdir)) {
     # Skip file if it was there already, or if it's a symlink (like the post.distns.Rdata link above)
-    if (file %in% old.files || nchar(Sys.readlink(file) > 0)) {
+    if (file %in% old.files || nchar(Sys.readlink(file.path(pft$outdir, file))) > 0) {
       next
     }
     filename <- file.path(pathname, file)
