@@ -120,6 +120,7 @@ done
 
 # packages that are to be compiled
 PACKAGES="utils db settings visualization"
+PACKAGES="${PACKAGES} models/clm45"
 PACKAGES="${PACKAGES} modules/priors modules/meta.analysis modules/uncertainty"
 PACKAGES="${PACKAGES} modules/data.land modules/data.atmosphere modules/data.remote"
 PACKAGES="${PACKAGES} modules/assim.batch modules/assim.sequential"
@@ -272,7 +273,7 @@ if [ "$TESTS" == "yes" ]; then
   cd tests
   for f in ${HOSTNAME}.*.xml; do
     rm -rf pecan
-    Rscript --vanilla workflow.R --settings $f &> output.log
+    Rscript --vanilla ../web/workflow.R --settings $f &> output.log
     if [ $? -ne 0 ]; then
       STATUS="BROKEN"
       echo "----------------------------------------------------------------------"

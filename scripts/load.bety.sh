@@ -19,7 +19,7 @@ PG_OPT=${PG_OPT:-""}
 # ID's used in database
 # These ID's need to be unique for the sharing to work. If you want
 # to share your data, send email to kooper@illinois.edu to claim
-# your ID range. The master list is maintained at 
+# your ID range. The master list is maintained at
 # https://github.com/PecanProject/bety/wiki/Distributed-BETYdb
 #
 #  0 - EBI           - David LeBauer
@@ -42,28 +42,65 @@ CREATE=${CREATE:-"NO"}
 # be removed
 KEEPTMP=${KEEPTMP:-"NO"}
 
-# Convert user account 1 to carya for use on VM
+# Convert user account 1 to carya
 # Set this to YES to convert user 1 to carya with password. This will
 # give this user admin priviliges. It will also create 16 more users
 # that have specific abilities.
-if [ -z "${USERS}" ]; then
-	if [ "${MYSITE}" -eq "99" ]; then
-		USERS="YES"
-	else
-		USERS="NO"
-	fi
-fi
+USERS=${USERS:-"NO"}
 
 # ----------------------------------------------------------------------
 # END CONFIGURATION SECTION
 # ----------------------------------------------------------------------
+
+# parse command line options
+while getopts c:d:hm:o:p:r:t:u: opt; do
+  case $opt in
+  c)
+    CREATE=$OPTARG
+    ;;
+  d)
+    DATABASE=$OPTARG
+    ;;
+  h)
+    echo "$0 [-c YES|NO] [-d database] [-h] [-m my siteid] [-o owner] [-p psql options] [-r remote siteid] [-t YES|NO] [-u YES|NO]"
+    echo " -c create database, THIS WILL ERASE THE CURRENT DATABASE, default is NO"
+    echo " -d database, default is bety"
+    echo " -h this help page"
+    echo " -m site id, default is 99 (VM)"
+    echo " -o owner of the database, default is bety"
+    echo " -p additional psql command line options, default is empty"
+    echo " -r remote site id, default is 0 (EBI)"
+    echo " -t keep temp folder, default is NO"
+    echo " -u create carya users, this will create some default users"
+    exit 0
+    ;;
+  m)
+    MYSITE=$OPTARG
+    ;;
+  o)
+    OWNER=$OPTARG
+    ;;
+  p)
+    PG_OPT=$OPTARG
+    ;;
+  r)
+    REMOTESITE=$OPTARG
+    ;;
+  t)
+    KEEPTMP=$OPTARG
+    ;;
+  u)
+    USERS=$OPTARG
+    ;;
+  esac
+done
 
 # list of all tables, schema_migrations is ignored since that
 # will be imported during creaton
 
 # list of tables that are one to many relationships
 CLEAN_TABLES="citations counties covariates cultivars"
-CLEAN_TABLES="${CLEAN_TABLES} dbfiles ensembles entities formats"
+CLEAN_TABLES="${CLEAN_TABLES} ensembles entities formats"
 CLEAN_TABLES="${CLEAN_TABLES} inputs likelihoods location_yields"
 CLEAN_TABLES="${CLEAN_TABLES} machines managements methods"
 CLEAN_TABLES="${CLEAN_TABLES} mimetypes models"
@@ -73,7 +110,7 @@ CLEAN_TABLES="${CLEAN_TABLES} priors runs sessions sites"
 CLEAN_TABLES="${CLEAN_TABLES} species treatments"
 CLEAN_TABLES="${CLEAN_TABLES} variables workflows"
 CLEAN_TABLES="${CLEAN_TABLES} traits yields"
-CLEAN_TABLES="${CLEAN_TABLES} users"
+CLEAN_TABLES="${CLEAN_TABLES} dbfiles users"
 
 # list of tables that are many to many relationships
 MANY_TABLES="${MANY_TABLES} citations_sites citations_treatments"
@@ -90,6 +127,8 @@ if [ -z "${DUMPURL}" ]; then
 		DUMPURL="https://ebi-forecast.igb.illinois.edu/pecan/dump/bety.tar.gz"
 	elif [ "${REMOTESITE}" == "1" ]; then
 		DUMPURL="http://psql-pecan.bu.edu/sync/dump/bety.tar.gz"
+        elif [ "${REMOTESITE}" == "2" ]; then
+                DUMPURL="https://www.dropbox.com/s/wr8sldv080wa9y8/bety.tar.gz?dl=0"
 	else
 		echo "Don't know where to get data for site ${REMOTESITE}"
 		exit
@@ -145,7 +184,7 @@ else
 		echo "Dump is from a different schema, please fix schema in database."
     if [ "$KEEPTMP" == "YES" ]; then
 		  echo "Files are in ${DUMPDIR}"
-    else 
+    else
       rm -rf "${DUMPDIR}"
     fi
 		exit
@@ -160,13 +199,13 @@ MY_LAST_ID=$(( MY_START_ID + ID_RANGE - 1 ))
 REM_START_ID=$(( REMOTESITE * ID_RANGE + 1 ))
 REM_LAST_ID=$(( REM_START_ID + ID_RANGE - 1 ))
 
-# tables that are one to many relation ships
+# for all tables
 # 1) disable constraints on this table
 # 2) remove all rows that have id in range of remote site
 # 3) load new data
 # 4) set last inserted item in my range
 # 5) enable constraints on this table
-for T in ${CLEAN_TABLES}; do
+for T in ${CLEAN_TABLES} ${MANY_TABLES}; do
 	printf "Cleaning %-25s : " "${T}"
   psql -q -d "${DATABASE}" -c "ALTER TABLE ${T} DISABLE TRIGGER ALL;"
   WHERE="WHERE (id >= ${REM_START_ID} AND id <= ${REM_LAST_ID})"
@@ -184,36 +223,6 @@ for T in ${CLEAN_TABLES}; do
 	printf "Fixing   %-25s : " "${T}"
 	NEXT=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT setval('${T}_id_seq', ${MY_START_ID}, false); SELECT setval('${T}_id_seq', (SELECT MAX(id) FROM ${T} WHERE id >= ${MY_START_ID} AND id < ${MY_LAST_ID}), true); SELECT last_value from ${T}_id_seq;" | tr -d ' ' )
 	echo "SEQ ${NEXT}"
-  psql -q -d "${DATABASE}" -c "ALTER TABLE ${T} ENABLE TRIGGER ALL;"
-done
-
-# tables that are many to many relation ships
-# 1) disable constraints on this table
-# 2) remove all rows that have both ids in range of remote site
-#    THIS IS BROKEN SINCE SOME SITES WILL ADD ITEMS FROM ONE SITE TO THEIR SITE
-#    REMOVE WITH OR IS BROKEN TOO, ONLY ADDING ID WILL FIX THIS!
-# 3) load new data
-# 4) enable constraints on this table
-for T in ${MANY_TABLES}; do
-	Z=(${T//_/ })
-	X=${Z[0]}
-	X=${X%s}
-	Y=${Z[1]}
-	Y=${Y%s}
-	printf "Cleaning %-25s : " "${T}"
-  psql -q -d "${DATABASE}" -c "ALTER TABLE ${T} DISABLE TRIGGER ALL;"
-  WHERE="WHERE (${X}_id >= ${REM_START_ID} AND ${X}_id <= ${REM_LAST_ID} AND ${Y}_id >= ${REM_START_ID} AND ${Y}_id <= ${REM_LAST_ID})"
-	DEL=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM ${T} ${WHERE}" | tr -d ' ' )
-	psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "DELETE FROM ${T} ${WHERE}"
-	echo "DEL ${DEL}"
-	printf "Loading  %-25s : " "${T}"
-  START=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT COUNT(*) FROM ${T}" | tr -d ' ' )
-	if [ -f "${DUMPDIR}/${T}.csv" ]; then
-		psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "\COPY ${T} FROM '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')"
-	fi
-	END=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT COUNT(*) FROM ${T}" | tr -d ' ' )
-  ADD=$(( END - START ))
-	echo "ADD ${ADD}"
   psql -q -d "${DATABASE}" -c "ALTER TABLE ${T} ENABLE TRIGGER ALL;"
 done
 

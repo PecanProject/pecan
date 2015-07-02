@@ -30,7 +30,7 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite=FALSE, ...
     tmp.met <- load.cfmet(met.nc, lat = lat, lon = lon, start.date = start.date, end.date = end.date)
     metlist[[file]]     <- cf2biocro(tmp.met)
   }
-  met <- rbindlist(metli)
+  met <- rbindlist(metlist)
   return(met)
 }
 
@@ -74,6 +74,9 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite=FALSE, ...
 ##' @author David LeBauer
 cf2biocro <- function(met){
 
+  require(PEcAn.data.atmosphere)
+  require(lubridate)
+  require(udunits2)
   if(!"relative_humidity" %in% colnames(met)){
     if(all(c("air_temperature", "air_pressure", "specific_humidity") %in% colnames(met))){ 
       rh <- qair2rh(qair = met$specific_humidity, 
@@ -95,10 +98,10 @@ cf2biocro <- function(met){
   }
   if(!"wind_speed" %in% colnames(met)){
     if(all(c("northward_wind", "eastward_wind") %in% colnames(met))){
-      wind_speed <- sqrt(met$northward_wind^2 + met$eastward_wind^2)
-    } else {
-      logger.error("neither wind_speed nor both eastward_wind and northward_wind are present in met data")
+      wind_speed <- sqrt(northward_wind^2 + eastward_wind^2)
     }
+    logger.error("neither wind_speed nor both eastward_wind and northward_wind are present in met data")
+
   }
   
   ## Convert RH from percent to fraction
@@ -106,6 +109,9 @@ cf2biocro <- function(met){
   if(met[,max(relative_humidity ) > 1]){ ## just to confirm
     met[, `:=` (relative_humidity = relative_humidity/100)]
   } 
+  
+  ## Convert hr given as 1:24 to 0:23
+  if(all(met[, range(hour)] == c(1, 24)) ) met[, `:=` (hour = hour -1)]
   newmet <- met[, list(year = year, doy = doy, hour = hour,
                        SolarR = ppfd,
                        Temp = ud.convert(air_temperature, "Kelvin", "Celsius"), 
