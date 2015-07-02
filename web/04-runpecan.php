@@ -72,7 +72,7 @@ $ensemble = $_REQUEST['ensemble'];
 
 $sensitivity = array();
 if (!isset($_REQUEST['sensitivity'])) {
-  die("Need a sensitivity value (comma seperated).";
+  die("Need a sensitivity value-comma seperated.");
 }
 $sensitivity = explode(",",$_REQUEST['sensitivity']);
 
