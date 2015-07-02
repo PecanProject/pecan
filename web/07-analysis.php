@@ -190,6 +190,9 @@ $stmt->closeCursor();
       <label>Ensemble<sup>*</sup></label>
       <input type="text" name="ensemble" id="ensemble" value="<?php echo 1; ?>" onChange="validate();"/>
       <div class="spacer"></div>
+      <label>Sensitivity<sup>*</sup></label>
+      <input type="text" name="sensitivity" id="sensitivity" value="<?php echo "-1,1"; ?>" onChange="validate();"/>
+      <div class="spacer"></div>
 
       <p></p>
       <span id="error" class="small">&nbsp;</span>
