@@ -19,7 +19,7 @@ PG_OPT=${PG_OPT:-""}
 # ID's used in database
 # These ID's need to be unique for the sharing to work. If you want
 # to share your data, send email to kooper@illinois.edu to claim
-# your ID range. The master list is maintained at 
+# your ID range. The master list is maintained at
 # https://github.com/PecanProject/bety/wiki/Distributed-BETYdb
 #
 #  0 - EBI           - David LeBauer
@@ -52,12 +52,55 @@ USERS=${USERS:-"NO"}
 # END CONFIGURATION SECTION
 # ----------------------------------------------------------------------
 
+# parse command line options
+while getopts c:d:hm:o:p:r:t:u: opt; do
+  case $opt in
+  c)
+    CREATE=$OPTARG
+    ;;
+  d)
+    DATABASE=$OPTARG
+    ;;
+  h)
+    echo "$0 [-c YES|NO] [-d database] [-h] [-m my siteid] [-o owner] [-p psql options] [-r remote siteid] [-t YES|NO] [-u YES|NO]"
+    echo " -c create database, THIS WILL ERASE THE CURRENT DATABASE, default is NO"
+    echo " -d database, default is bety"
+    echo " -h this help page"
+    echo " -m site id, default is 99 (VM)"
+    echo " -o owner of the database, default is bety"
+    echo " -p additional psql command line options, default is empty"
+    echo " -r remote site id, default is 0 (EBI)"
+    echo " -t keep temp folder, default is NO"
+    echo " -u create carya users, this will create some default users"
+    exit 0
+    ;;
+  m)
+    MYSITE=$OPTARG
+    ;;
+  o)
+    OWNER=$OPTARG
+    ;;
+  p)
+    PG_OPT=$OPTARG
+    ;;
+  r)
+    REMOTESITE=$OPTARG
+    ;;
+  t)
+    KEEPTMP=$OPTARG
+    ;;
+  u)
+    USERS=$OPTARG
+    ;;
+  esac
+done
+
 # list of all tables, schema_migrations is ignored since that
 # will be imported during creaton
 
 # list of tables that are one to many relationships
 CLEAN_TABLES="citations counties covariates cultivars"
-CLEAN_TABLES="${CLEAN_TABLES} dbfiles ensembles entities formats"
+CLEAN_TABLES="${CLEAN_TABLES} ensembles entities formats"
 CLEAN_TABLES="${CLEAN_TABLES} inputs likelihoods location_yields"
 CLEAN_TABLES="${CLEAN_TABLES} machines managements methods"
 CLEAN_TABLES="${CLEAN_TABLES} mimetypes models"
@@ -67,7 +110,7 @@ CLEAN_TABLES="${CLEAN_TABLES} priors runs sessions sites"
 CLEAN_TABLES="${CLEAN_TABLES} species treatments"
 CLEAN_TABLES="${CLEAN_TABLES} variables workflows"
 CLEAN_TABLES="${CLEAN_TABLES} traits yields"
-CLEAN_TABLES="${CLEAN_TABLES} users"
+CLEAN_TABLES="${CLEAN_TABLES} dbfiles users"
 
 # list of tables that are many to many relationships
 MANY_TABLES="${MANY_TABLES} citations_sites citations_treatments"
@@ -84,6 +127,8 @@ if [ -z "${DUMPURL}" ]; then
 		DUMPURL="https://ebi-forecast.igb.illinois.edu/pecan/dump/bety.tar.gz"
 	elif [ "${REMOTESITE}" == "1" ]; then
 		DUMPURL="http://psql-pecan.bu.edu/sync/dump/bety.tar.gz"
+        elif [ "${REMOTESITE}" == "2" ]; then
+                DUMPURL="https://www.dropbox.com/s/wr8sldv080wa9y8/bety.tar.gz?dl=0"
 	else
 		echo "Don't know where to get data for site ${REMOTESITE}"
 		exit
@@ -139,7 +184,7 @@ else
 		echo "Dump is from a different schema, please fix schema in database."
     if [ "$KEEPTMP" == "YES" ]; then
 		  echo "Files are in ${DUMPDIR}"
-    else 
+    else
       rm -rf "${DUMPDIR}"
     fi
 		exit
@@ -225,4 +270,3 @@ fi
 
 # all done, cleanup
 rm -rf "${DUMPDIR}"
-
