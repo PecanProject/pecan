@@ -103,6 +103,11 @@ $stmt->closeCursor();
         $("#next").attr("disabled", "disabled");
         $("#error").html("The ensemble should be a positive integer value.");
     }
+    // sensitivity 
+    if ($("#sensitivity").val().length < 1) {
+        $("#next").attr("disabled", "disabled");
+        $("#error").html("The ensemble should be a positive integer value.");
+    }
   }
       
   function prevStep() {
