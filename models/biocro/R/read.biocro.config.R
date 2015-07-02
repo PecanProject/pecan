@@ -8,7 +8,7 @@
 read.biocro.config <- function(config.file = "config.xml"){
     config <- xmlToList(
         xmlTreeParse(
-            file = file.path(rundir, "config.xml"),
+            file = config.file,
             handlers = list("comment" = function(x){NULL}),
             asTree = TRUE)
         )
@@ -16,4 +16,5 @@ read.biocro.config <- function(config.file = "config.xml"){
         unlist(
             strsplit(
                 config$pft$canopyControl$mResp, split = ","))
+    return(config)
 }

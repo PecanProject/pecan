@@ -1,17 +1,16 @@
 ##' Get Soil
 ##'
 ##' @title get.soil 
-##' @param lat 
+##' @param lat
 ##' @param lon 
 ##' @param soil.nc netCDFe file with soil data 
 ##' @return usda soil class 
 ##' @export
 ##' @author David LeBauer
 get.soil <- function(lat, lon, soil.nc = soil.nc){
-    
     ## Lat and Lon
-    Lat <- ncvar_get(soil.nc, "lat")
-    Lon <- ncvar_get(soil.nc, "lon")
+    Lat <- ncvar_get(soil.nc, "latitude")
+    Lon <- ncvar_get(soil.nc, "longitude")
 
     lati <- which.min(abs(Lat - lat))
     loni <- which.min(abs(Lon - lon))

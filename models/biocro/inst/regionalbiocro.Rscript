@@ -1,113 +1,64 @@
-#!/usr/bin/env Rscript
+#!/usr/local/bin/Rscript
+#  #!/usr/bin/env Rscript
 
-library(PEcAn.all)
-library(BioCro)
-
+args   <- commandArgs(trailingOnly = TRUE)
 rundir <- args[1]
 outdir <- args[2]
+
+#library(PEcAn.all)
+
+
+require(PEcAn.data.land)
+require(PEcAn.BIOCRO)
+require(BioCro)
+require(PEcAn.data.atmosphere)
+require(PEcAn.utils)
+require(lubridate)
+
+options(error = browser)
+
 if(interactive()) {
-  ## settings files
-  ## [champaign, illinois, midwest]_mxg_settings.xml
-  ## global_salix_settings.xml
+
+  library(PEcAn.settings)
   settings <- read.settings("~/dev/biocro_regional/vignettes/champaign_mxg_settings.xml")
   runid <- tail(readLines(file.path(settings$rundir, "runs.txt")), n = 1)
   rundir <- file.path(settings$rundir, runid)
   outdir <- file.path(settings$outdir, "out", runid)
+  point <- 1
 }
+
 
 config <- read.biocro.config(file.path(rundir, "config.xml"))
 
-genus <- config$pft$type$genus
-## TODO: Pass lat, lon, start/end date, outdir, met.file, soil parameters in config.xml
-start.date <- confit$simulationPeriod$dateofplanting
-end.date <- config$simulationPeriod$dateofharvest
-#start.date <- ceiling_date(as.POSIXct(settings$run$start.date), "day")
-#end.date <- floor_date(as.POSIXct(settings$run$end.date), "day")
-
-met.nc  <- nc_open(settings$run$inputs$met$path)
-soil.nc <- nc_open(settings$run$inputs$soil$path)
+met.nc  <- nc_open(config$run$met.file)
+soil.nc <- nc_open(config$run$soil.file)
 # atmco2.nc <- nc_open(file.path(inputdir, "co2/CO2_Global_HD_v1.nc"))
 
 lat <- ncvar_get(met.nc, "latitude")
 lon <- ncvar_get(met.nc, "longitude")
 latlon <- expand.grid(lat = lat, lon = lon)
 
-pft <- settings$pfts$pft$name
-#config <- xmlToList(xmlParse(file.path(rundir, "misp_config.xml")))
-
-#for testing
-#lat <- lat[1]
-#lon <- lon[1]
-
-
-
-
-
-
-make.stem.map <- function(input){
+annual.result <- NULL
+for(point in 1:nrow(latlon)){
+  lat <- latlon$lat[point]
+  lon <- latlon$lon[point]
+  out <- run.biocro(lat, lon, met.nc = met.nc, soil.nc = soil.nc, config = config)
+  annual.result <- rbind(annual.result, out$annually)
+  save(annual.result, file = file.path(outdir, "annual.result.RData"))
   
-  require(ggplot2)
-  if(any(tmp$lat <0) | any(tmp$lon > 0)){
-    world <- data.table(map_data("world"))
-  } else {
-    world <- data.table(map_data("usa"))
-  }
-  stem_map <- ggplot() +
-    geom_polygon(data = world, aes(x=long, y = lat, group = group),
-                 fill = "white", color = "darkgrey") +
-    geom_point(data = tmp,
-               aes(x = lon, y = lat, color = Stem), size = 5) +
-    scale_color_gradientn(colours = c("red","orange", "yellow", "green", "blue", "violet")) +
-    theme_bw() + xlim(range(pretty(tmp$lon))) + ylim(range(pretty(tmp$lat)))
-  return(stem_map)
-  
+  point.outdir <- file.path(outdir, paste0(lat, 'x', lon))
+  dir.create(point.outdir, showWarnings = FALSE)
+  save(out$hourly, file = file.path(point.outdir, 'hourly.result.RData'))
+  save(out$daily, file = file.path(point.outdir, 'daily.result.RData'))
+
+  model2netcdf.BIOCRO(result = out$hourly, genus = genus, outdir = point.outdir, 
+                      lat = lat, lon = lon)
 }
 
-Lat <- ncvar_get(nc = met.nc, varid = "latitude")
-Lon <- ncvar_get(nc = met.nc, varid = "longitude")
-
-site <- "subtropics"
-if(site == "usa"){
-  ## for US
-  Lat <- Lat[Lat > 25 & Lat < 49]
-  Lon <- Lon[Lon < -67 & Lon > -125]
-}
-
-if(site == "subtropics"){
-  Lat <- Lat[Lat < 36.7 & Lat > -31.0]
-}
-# determine if point is in polygon http://stackoverflow.com/q/21971447/199217
-#library(sp)
-#point.in.polygon(lon, lat, usa$long[usa$group == "main"], usa$lat[usa$group == "main"])
-#
-#testrun <- "TRUE"
-## if(testrun){
-##     ## US test subset
-##     ## for test subset
-
-#Lat <- Lat[! 1:length(Lat) %% 4]
-#Lon <- Lon[Lon > -100 & ! 1:length(Lon) %% 4]
-## }
-#Lat <- 44.25
-#Lon <- -88.25
-
-allout <- NULL
-for(lat in Lat){
-  for(lon in Lon){
-    
-    if(is.land(lat, lon)){
-      print(paste(lat, lon,sep = ", "))
-      out <- run.biocro(lat, lon, met.nc = met.nc, soil.nc = soil.nc, config = config)
-      allout <- rbind(allout, out)
-      
-      biocro_result <- allout
-      save(biocro_result, file = file.path(outdir, 'incomplete_USresults.RData'))
-      model2netcdf.BIOCRO(resultDT = resultDT, genus = "genus",
-                          outdir = outdir, lat = config$location$latitude, lon = config$location$longitude)
-      # tmp <- biocro_result[,list(lat, lon, Stem = mean(yield), runtime = round(diff(range(runtime)))), by = c("latitude", "longitude")]
-      #        stem_map <- make.stem.map(input = tmp) 
-      #        ggsave(plot = stem_map, filename = file.path(outdir, "global_stem.pdf"))
-    }
-  }
-}
 save(biocro_result, file = file.path(outdir, "biocro_output.RData"))
+
+## this would work if model2netcdf could process regionally
+#model2netcdf.BIOCRO(resultDT = biocro_result, 
+#                    genus = genus, 
+#                    outdir = outdir, 
+#                    lat = config$location$latitude, lon = config$location$longitude)

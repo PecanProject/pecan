@@ -55,7 +55,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
   
   # find appropriate input, if not in database, instert new input
   
-  inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, " AND start_date='", startdate, "' AND end_date='", enddate, "'" , parent, ";"), con)[['id']]
+  inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND name= '", name, "' AND format_id=", formatid, " AND start_date='", startdate, "' AND end_date='", enddate, "'" , parent, ";"), con)[['id']]
   if (is.null(inputid)) {
     # insert input
     if(parent == ""){
@@ -229,16 +229,16 @@ dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname=fqdn
 ##' @param con database connection object
 ##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
 ##' @param params database connection information
-##' @return data.frame with the id, filename and pathname of the file that is written
-##' @author Rob Kooper
+##' @return id of the file that is written
+##' @author Rob Kooper, Ryan Kelly
 ##' @export
 ##' @examples
 ##' \dontrun{
 ##'   dbfile.insert('somefile.txt', 'Input', 7, dbcon)
 ##' }
-dbfile.insert <- function(in.path,in.prefix, type, id, con, hostname=fqdn()) {
+dbfile.insert <- function(in.path,in.prefix, type, id, con, reuse=TRUE, hostname=fqdn()) {
   if (hostname == "localhost") hostname <- fqdn();
-  
+
   # find appropriate host
   hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", hostname, "'"), con)[['id']]
   if (is.null(hostid)) {
@@ -246,13 +246,25 @@ dbfile.insert <- function(in.path,in.prefix, type, id, con, hostname=fqdn()) {
     db.query(paste0("INSERT INTO machines (hostname, created_at, updated_at) VALUES ('", hostname, "', NOW(), NOW())"), con)
     hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", hostname, "'"), con)[['id']]
   }
+
+  # Query for existing dbfile record with same file_name, file_path, and machine_id. 
+  file.id <- invisible(db.query(paste0("SELECT * FROM dbfiles WHERE file_name='", basename(in.prefix), "' AND file_path='", in.path, "' AND machine_id='", hostid, "'"), con)[['id']])
+
+  if(is.null(file.id)) {
+    # If no exsting record, insert one
+    now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
   
-  now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+    db.query(paste0("INSERT INTO dbfiles (container_type, container_id, file_name, file_path, machine_id, created_at, updated_at) VALUES (",
+                    "'", type, "', ", id, ", '", basename(in.prefix), "', '", in.path, "', ", hostid, ", '", now, "', '", now, "')"), con)
   
-  db.query(paste0("INSERT INTO dbfiles (container_type, container_id, file_name, file_path, machine_id, created_at, updated_at) VALUES (",
-                  "'", type, "', ", id, ", '", basename(in.prefix), "', '", in.path, "', ", hostid, ", '", now, "', '", now, "')"), con)
+    file.id <- invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, "' AND container_id=", id, " AND created_at='", now, "' ORDER BY id DESC LIMIT 1"), con)[['id']])
+  } else if(!reuse) {
+    # If there is an existing record but reuse==FALSE, return NA. 
+    file.id <- NA
+  }
   
-  invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, "' AND container_id=", id, " AND created_at='", now, "' ORDER BY id DESC LIMIT 1"), con)[['id']])
+  # Return the new dbfile ID, or the one that existed already (reuse==T), or NA (reuse==F)
+  return(file.id)
 }
 
 ##' Function to check to see if a file exists in the dbfiles table

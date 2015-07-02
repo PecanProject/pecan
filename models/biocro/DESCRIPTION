@@ -10,6 +10,7 @@ Imports:
     PEcAn.utils,
     PEcAn.settings,
     PEcAn.data.atmosphere,
+    PEcAn.data.land,
     PEcAn.DB,
     udunits2,
     ncdf4,

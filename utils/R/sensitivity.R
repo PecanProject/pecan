@@ -111,6 +111,12 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
     db.query(paste0("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id, parameter_list) values ('", settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", settings$run$end.date, "', '",settings$run$outdir , "', '", now, "', ", ensemble.id, ", '", paramlist, "')"), con=con)
     run.id <- db.query(paste0("SELECT id FROM runs WHERE created_at='", now, "' AND parameter_list='", paramlist, "'"), con=con)[['id']]
 
+    # associate posteriors with ensembles
+    for (pft in defaults) {
+      db.query(paste0("INSERT INTO posteriors_ensembles (posterior_id, ensemble_id, created_at, updated_at) values (",
+                      pft$posteriorid, ", ", ensemble.id, ", '", now, "', '", now, "');"), con=con)
+    }
+
     # associate inputs with runs
     if (!is.null(inputs)) {
       for(x in inputs) {
@@ -186,6 +192,12 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
             paramlist <- paste0("quantile=", quantile.str, ",trait=", trait, ",pft=", pftname)
             db.query(paste0("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id, parameter_list) values ('", settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", settings$run$end.date, "', '",settings$run$outdir , "', '", now, "', ", ensemble.id, ", '", paramlist, "')"), con=con)
             run.id <- db.query(paste0("SELECT id FROM runs WHERE created_at='", now, "' AND parameter_list='", paramlist, "'"), con=con)[['id']]
+
+            # associate posteriors with ensembles
+            for (pft in defaults) {
+              db.query(paste0("INSERT INTO posteriors_ensembles (posterior_id, ensemble_id, created_at, updated_at) values (",
+                              pft$posteriorid, ", ", ensemble.id, ", '", now, "', '", now, "');"), con=con)
+            }
 
             # associate inputs with runs
             if (!is.null(inputs)) {
