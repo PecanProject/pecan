@@ -9,13 +9,14 @@
 #' @return output from one of the \code{BioCro::*.Gro} functions (determined by \code{config$genus}), as data.table object
 #' @export
 #' @author David LeBauer
-run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = NULL, 
+run.biocro <- function(lat, lon, met.nc = met.nc, 
+                       soil.nc = NULL, 
                        config = config,
                        coppice.interval = 1){
   require(data.table)
   require(lubridate)
-  start.date <- ceiling_date(as.POSIXct(config$run$start.date), "day")
-  end.date <- floor_date(as.POSIXct(config$run$end.date), "day")
+  start.date <- ceiling_date(as.POSIXct(config$simulationPeriod$dateofplanting), "day")
+  end.date <- floor_date(as.POSIXct(config$simulationPeriod$dateofharvest), "day")
   genus <- config$pft$type$genus
 
   ## Meteorology
@@ -35,15 +36,17 @@ run.biocro <- function(lat, lon, met.nc = met.nc, soil.nc = NULL,
   }
   soil.parms <- lapply(config$pft$soilControl, as.numeric)
   
-  years <- unique(biocro.met$year)
-  for(yeari in years[1:2]){
+  years <- year(start.date):year(end.date)
+  for(yeari in years){
     yearchar <- as.character(yeari)
     WetDat <- biocro.met[biocro.met$year == yeari, ]
 
-    ## find day1 = gdd 100 at base 5
- 
-    gdds <- as.data.table(WetDat)[, list(year, doy, Temp)]
-    day1 <- as.numeric(gdds[, list(gd = max(max(Temp) - 5, 0)), by = 'doy'][, list(doy, gdd = cumsum(gd))][which.min(abs(100-gdd)), list(day1 = doy)])
+    ## find day1 = gdd 100 at base 0 from Miguez et al 2009
+    ## daily_gdd <- as.data.table(WetDat)[, list(gdd = max(0, (max(Temp)+min(Temp))/2)), by = doy]
+    ## cum_gdd <- daily_gdd[,list(doy, gdd = cumsum(gdd))]
+    ## day1 <- cum_gdd[which.min(gdd >100)]$doy
+    
+    ## Growing season: first frost to last frost
 
     ## dayn = harvest end of November
     dayn <- 335

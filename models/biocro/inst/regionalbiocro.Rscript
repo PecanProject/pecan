@@ -1,4 +1,5 @@
-#!/usr/bin/env Rscript
+#!/usr/local/bin/Rscript
+#  #!/usr/bin/env Rscript
 
 args   <- commandArgs(trailingOnly = TRUE)
 rundir <- args[1]
@@ -28,11 +29,6 @@ if(interactive()) {
 
 
 config <- read.biocro.config(file.path(rundir, "config.xml"))
-genus <- config$pft$type$genus
-pft <- config$pft$type$name
-
-start.date <- ceiling_date(as.POSIXct(config$simulationPeriod$dateofplanting), "day")
-end.date <- floor_date(as.POSIXct(config$simulationPeriod$dateofharvest), "day")
 
 met.nc  <- nc_open(config$run$met.file)
 soil.nc <- nc_open(config$run$soil.file)
