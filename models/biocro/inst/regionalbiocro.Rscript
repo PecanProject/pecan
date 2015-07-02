@@ -18,21 +18,12 @@ options(error = browser)
 
 if(interactive()) {
 
-  library(PEcAn.all)
+  library(PEcAn.settings)
   settings <- read.settings("~/dev/biocro_regional/vignettes/champaign_mxg_settings.xml")
-    settings <- xmlToList("~/dev/biocro_regional/vignettes/champaign_mxg_settings.xml")
-    if(is.null(settings$rundir)){
-        rundir <- getwd()
-        runid <- 5916
-        outdir <- file.path("../out/5916")
-    } else {
-        
-        runid <- tail(readLines(file.path(settings$rundir, "runs.txt")), n = 1)
-        rundir <- file.path(settings$rundir, runid)
-        outdir <- file.path(settings$outdir, "out", runid)
-    }
-    point <- 1
-
+  runid <- tail(readLines(file.path(settings$rundir, "runs.txt")), n = 1)
+  rundir <- file.path(settings$rundir, runid)
+  outdir <- file.path(settings$outdir, "out", runid)
+  point <- 1
 }
 
 
@@ -51,19 +42,26 @@ lat <- ncvar_get(met.nc, "latitude")
 lon <- ncvar_get(met.nc, "longitude")
 latlon <- expand.grid(lat = lat, lon = lon)
 
-biocro_result <- NULL
+annual.result <- NULL
 for(point in 1:nrow(latlon)){
   lat <- latlon$lat[point]
   lon <- latlon$lon[point]
   out <- run.biocro(lat, lon, met.nc = met.nc, soil.nc = soil.nc, config = config)
-  biocro_result <- rbind(biocro_result, out)
-  save(biocro_result, file = file.path(outdir, 'incomplete_USresults.RData'))
-  dir.create(file.path(outdir, paste0(lat, 'x', lon)), showWarnings = FALSE)
-  model2netcdf.BIOCRO(resultDT = biocro_result, genus = genus, outdir = outdir, 
-                      lat = latlon$lat, lon = latlon$lon)
+  annual.result <- rbind(annual.result, out$annually)
+  save(annual.result, file = file.path(outdir, "annual.result.RData"))
+  
+  point.outdir <- file.path(outdir, paste0(lat, 'x', lon))
+  dir.create(point.outdir, showWarnings = FALSE)
+  save(out$hourly, file = file.path(point.outdir, 'hourly.result.RData'))
+  save(out$daily, file = file.path(point.outdir, 'daily.result.RData'))
+
+  model2netcdf.BIOCRO(result = out$hourly, genus = genus, outdir = point.outdir, 
+                      lat = lat, lon = lon)
 }
 
 save(biocro_result, file = file.path(outdir, "biocro_output.RData"))
+
+## this would work if model2netcdf could process regionally
 #model2netcdf.BIOCRO(resultDT = biocro_result, 
 #                    genus = genus, 
 #                    outdir = outdir, 

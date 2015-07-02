@@ -35,7 +35,7 @@ convert.samples.BIOCRO <- function(trait.samples){
     trait.names[trait.names == "growth_respiration_coefficient"] <- "GrowthRespFraction"
     trait.names[trait.names == "extinction_coefficient_diffuse"] <- "kd"
     trait.names[trait.names == "chi_leaf"] <- "chi.l"
-  
+    trait.names[trait.names == "quantum_efficiency"] <- "alpha"
   
     colnames(trait.samples) <- trait.names    
     ## Partitioning coefficients: especially leaf
@@ -45,7 +45,6 @@ convert.samples.BIOCRO <- function(trait.samples){
     ## iStem
     ## ifrRhizome
     ## ifrStem
-    ## 
  
     ## transform values with different units
     ## cuticular conductance - BETY default is umol; BioCro uses mol
@@ -55,6 +54,13 @@ convert.samples.BIOCRO <- function(trait.samples){
     if("Sp" %in% trait.names){
       trait.samples <- transform(trait.samples, Sp = ud.convert(Sp, "kg/m2", "g/cm2"))
     }
+    if("vmax" %in% trait.names){##HAAAACK
+      trait.samples <- transform(trait.samples, vmax = vmax)
+    }
+    if("Rd" %in% trait.names){##HAAAACK
+      trait.samples <- transform(trait.samples, Rd = Rd)
+    }
+    
     # kd = k*omega from $e^{-kL\omega}$,
     #if(all(c("kd", "clumping") %in% trait.names)){
     #  trait.samples <- transform(trait.samples, kd = clumping * kd, clumping = NULL)

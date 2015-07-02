@@ -14,12 +14,12 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     the functions used in the Bayesian meta-analysis of trait data.
 Depends:
     XML,
-    rjags,
     lattice,
     MASS,
     PEcAn.utils,
     PEcAn.DB
 Suggests:
+    rjags,	
     testthat
 SystemRequirements: JAGS
 License: FreeBSD + file LICENSE

@@ -1,13 +1,13 @@
 ##' Get Soil
 ##'
 ##' @title get.soil 
-##' @param latitude
-##' @param longitude 
+##' @param lat
+##' @param lon 
 ##' @param soil.nc netCDFe file with soil data 
 ##' @return usda soil class 
 ##' @export
 ##' @author David LeBauer
-get.soil <- function(latitude, longitude, soil.nc = soil.nc){
+get.soil <- function(lat, lon, soil.nc = soil.nc){
     ## Lat and Lon
     Lat <- ncvar_get(soil.nc, "latitude")
     Lon <- ncvar_get(soil.nc, "longitude")
