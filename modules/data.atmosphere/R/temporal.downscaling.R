@@ -11,7 +11,10 @@
 ##' @export
 ##' @author David LeBauer
 cfmet.downscale.time <- cruncep_hourly <- function(cfmet, output.dt = 1, lat = lat, ...){
-
+  require(data.table)
+  require(udunits2)
+  require(ncdf4)
+  require(lubridate)
   ## time step
   dt_hr <- as.numeric(round(difftime(cfmet$date[2], cfmet$date[1],  units = "hours")))
   
@@ -69,15 +72,17 @@ cfmet.downscale.subdaily <- function(subdailymet, output.dt = 1){
   
   downscaled.result <- list()
   tint <- nrow(new.date)/ nrow(subdailymet)
-  if(all(c("eastward_wind", "nortward_wind") %in% colnames(subdailymet))){
+  if(all(c("eastward_wind", "northward_wind") %in% colnames(subdailymet))){
+    if(!"wind_speed" %in% colnames(subdailymet)){
+      subdailymet$wind_speed <- sqrt(subdailymet$northward_wind^2 + subdailymet$eastward_wind^2)     
+    }
     downscaled.result[["northward_wind"]] <- rep(subdailymet$northward_wind, each = tint)
     downscaled.result[["eastward_wind"]]  <- rep(subdailymet$eastward_wind, each = tint)   
-    if(!"wind_speed" %in% colnames(subdailymet)){
-      wind_speed <- sqrt(northward_wind^2 + eastward_wind^2)     
-    }
+    downscaled.result[["wind_speed"]] <- rep(subdailymet$wind_speed, each = tint)   
+
   }
-  downscaled.result[["wind_speed"]] <- rep(subdailymet$wind_speed, each = tint)
-  
+
+
   solarMJ <- ud.convert(subdailymet$surface_downwelling_shortwave_flux_in_air, paste0("W ", tint, "h"), "MJ" )
   PAR <- 0.486 * solarMJ ## Cambell and Norman 1998 p 151, ch 10
   subdailymet$ppfd <- ud.convert(PAR, "mol s", "micromol h")
@@ -87,7 +92,7 @@ cfmet.downscale.subdaily <- function(subdailymet, output.dt = 1){
 
   
   for(var in c("air_pressure", "specific_humidity",
-               "precipitation_flux", "air_temperature", "northward_wind", "eastward_wind", 
+               "precipitation_flux", "air_temperature", 
                "surface_downwelling_shortwave_flux_in_air", "ppfd", "relative_humidity")){
     if(var %in% colnames(subdailymet)){
       ## convert units from subdaily to hourly
