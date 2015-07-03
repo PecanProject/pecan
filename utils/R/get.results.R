@@ -85,7 +85,7 @@ if(FALSE) { sa.ensemble.id=NULL; ens.ensemble.id=NULL; variable=NULL; start.year
 
     # Save sensitivity output
     fname <- sensitivity.filename(
-      settings, "sensitivity.output", "Rdata", all.var.yr=FALSE, pft=pft.name,
+      settings, "sensitivity.output", "Rdata", all.var.yr=FALSE, pft=NULL,
       ensemble.id=sa.ensemble.id, variable=variable.sa, start.year=start.year.sa, end.year=end.year.sa)
     save(sensitivity.output, file = fname)
     
