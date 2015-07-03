@@ -151,9 +151,7 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
         if(i %% 20 == 1 | i == finish) {
           pdf(file.path(settings$outdir, paste0('diag.pda', settings$assim.batch$ensemble.id),
             paste0("data.vs.model_", gsub(" ", "0",sprintf("%5.0f", i)), ".pdf")))
-            NEEo <- inputs[[1]]$data$NEE_or_fMDS #data$Fc   #umolCO2 m-2 s-1
-            NEEq <- inputs[[1]]$data$NEE_or_fMDSqc #data$qf_Fc
-            NEEo[NEEq > 1] <- NA
+            NEEo <- inputs[[1]]$NEEo
     
             NEEm <- model.out[[1]]
             NEE.resid <- NEEm - NEEo
