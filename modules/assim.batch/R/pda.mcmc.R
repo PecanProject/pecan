@@ -105,6 +105,14 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   ## Jump distribution setup
   accept.rate <- numeric(n.param)  ## Create acceptance rate vector of 0's (one zero per parameter)
 
+  # Default jump variances. Looped for clarity
+  ind <- which(is.na(settings$assim.batch$jump$jvar))
+  for(i in 1:length(ind)) {
+    # default to 0.1 * 90% prior CI
+    settings$assim.batch$jump$jvar[[i]] <- 
+      0.1 * diff(eval(prior.fn$qprior[[prior.ind[ind[i]]]], list(p=c(0.05,0.95))))
+  }
+
   ## Create dir for diagnostic output
   if(!is.null(settings$assim.batch$diag.plot.iter)) {
     dir.create(file.path(settings$outdir, paste0('diag.pda', settings$assim.batch$ensemble.id)),

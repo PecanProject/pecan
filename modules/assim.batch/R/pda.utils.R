@@ -198,12 +198,12 @@ pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   settings$assim.batch$jump$ar.target <- as.numeric(settings$assim.batch$jump$ar.target)
 
 
-  # jvar: Initial jump variances. Defaults to 1, which is foolish but should be fixed adaptively. 
+  # jvar: Initial jump variances. Defaults to NA to be based on priors later. 
   if(!is.null(jvar)) {
     settings$assim.batch$jump$jvar <- jvar
   } 
   if(is.null(settings$assim.batch$jump$jvar)) {   # Default
-    settings$assim.batch$jump$jvar <- rep(1, length(param.names))
+    settings$assim.batch$jump$jvar <- rep(NA, length(settings$assim.batch$param.names))
   }
   settings$assim.batch$jump$jvar <- as.list(as.numeric(settings$assim.batch$jump$jvar))
   # have to add names or listToXml() won't work
