@@ -15,12 +15,18 @@
 ##' @param model the ecosystem model to generate the configuration files for
 ##' @param write should the runs be written to the database
 ##' @param ens.sample.method how to sample the ensemble members("halton" sequence or "uniform" random)
+##' @param posterior.files Filenames for posteriors for drawing samples for ensemble and sensitivity
+##'    analysis (e.g. post.distns.Rdata, or prior.distns.Rdata). Defaults to NA, in which case the 
+##'    most recent posterior or prior (in that order) for the workflow is used. Should be a vector, 
+##'    with one entry for each PFT. File name only; PFT outdirs will be appended (this forces use of only
+##'    files within this workflow, to avoid confusion).
 ##'
 ##' @return an updated settings list, which includes ensemble IDs for SA and ensemble analysis
 ##' @export
 ##'
 ##' @author David LeBauer, Shawn Serbin
-run.write.configs <- function(settings, write = TRUE, ens.sample.method="halton") {
+run.write.configs <- function(settings, write = TRUE, ens.sample.method="halton",
+                       posterior.files=rep(NA, length(settings$pfts))) {
   model = settings$model$type
   scipen = getOption("scipen")
   options(scipen=12)
@@ -70,12 +76,18 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method="halton"
   ## Load PFT priors and posteriors
   for (i in seq(pft.names)){
     ## Load posteriors
-    fname = file.path(outdirs[i], 'post.distns.Rdata')
-    if(file.exists(fname)){
-      load(fname)
-      prior.distns = post.distns
+    if(!is.na(posterior.files[i])) {
+      # Load specified file
+      load(file.path(outdirs[i], posterior.files[i]))
     } else {
-      load(file.path(outdirs[i], 'prior.distns.Rdata'))
+      # Default to most recent posterior in the workflow, or the prior if there is none
+      fname = file.path(outdirs[i], 'post.distns.Rdata')
+      if(file.exists(fname)){
+        load(fname)
+        prior.distns = post.distns
+      } else {
+        load(file.path(outdirs[i], 'prior.distns.Rdata'))
+      }
     }
 
     ### Load trait mcmc data (if exists)

@@ -15,7 +15,13 @@
 ##' @export
 ##' @author David LeBauer, Shawn Serbin
 ##'
-run.ensemble.analysis <- function(plot.timeseries=NA){
+run.ensemble.analysis <- function(plot.timeseries=NA, variable=NULL, ensemble.id=NULL){
+  if(!is.null(ensemble.id)) {
+    settings$ensemble$ensemble.id <- ensemble.id
+  }
+  if(!is.null(variable)) {
+    settings$ensemble$variable <- variable
+  }
  
   if(!exists("settings")){ # temporary hack
                         # waiting on http://stackoverflow.com/q/11005478/199217
