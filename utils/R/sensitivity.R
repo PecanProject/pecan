@@ -22,6 +22,7 @@
 ##' @param end.year last year to include in sensitivity analysis
 ##' @param variables variables to be read from model output
 ##' @export
+##' @author Ryan Kelly, ???
 #--------------------------------------------------------------------------------------------------#
 read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name='', 
                            start.year, end.year, variable, sa.run.ids=NULL){

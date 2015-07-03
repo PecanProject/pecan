@@ -18,7 +18,7 @@
 ##' @return an updated settings list, which includes ensemble IDs for SA and ensemble analysis
 ##' @export
 ##'
-##' @author David LeBauer, Shawn Serbin
+##' @author David LeBauer, Shawn Serbin, Ryan Kelly
 run.write.configs <- function(settings, write = TRUE) {
   model = settings$model$type
   scipen = getOption("scipen")

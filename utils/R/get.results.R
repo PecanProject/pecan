@@ -14,12 +14,12 @@
 ##' @title Generate model output for PEcAn analyses
 ##' @export
 ##' @param settings list, read from settings file (xml) using \code{\link{read.settings}}
-##' @author David LeBauer, Shawn Serbin, Mike Dietze
+##' @author David LeBauer, Shawn Serbin, Mike Dietze, Ryan Kelly
 get.results <- function(settings, sa.ensemble.id=NULL, ens.ensemble.id=NULL,
                         variable=NULL, start.year=NULL, end.year=NULL) {
-  if(FALSE) {
-    sa.ensemble.id <- ens.ensemble.id <- variable <- start.year <- end.year <- NULL
-  }
+
+if(FALSE) { sa.ensemble.id=NULL; ens.ensemble.id=NULL; variable=NULL; start.year=NULL; end.year=NULL}
+
   outdir <- settings$outdir
   
   sensitivity.output <- list()   
@@ -30,10 +30,12 @@ get.results <- function(settings, sa.ensemble.id=NULL, ens.ensemble.id=NULL,
       fname <- sensitivity.filename(settings, "sensitivity.samples", "Rdata", 
                  ensemble.id=sa.ensemble.id, all.var.yr=TRUE, pft=NULL)
     } else if(!is.null(settings$sensitivity.analysis$ensemble.id)) {
+      sa.ensemble.id <- settings$sensitivity.analysis$ensemble.id
       fname <- sensitivity.filename(settings, "sensitivity.samples", "Rdata", 
-                 ensemble.id=settings$sensitivity.analysis$ensemble.id, all.var.yr=TRUE, pft=NULL)
+                 ensemble.id=sa.ensemble.id, all.var.yr=TRUE, pft=NULL)
     } else {
       fname <- file.path(outdir, 'samples.Rdata')
+      sa.ensemble.id <- NULL
     }
     load(fname)
 
@@ -42,29 +44,27 @@ get.results <- function(settings, sa.ensemble.id=NULL, ens.ensemble.id=NULL,
     if(!exists("trait.names"))  trait.names <- lapply(trait.samples, names)
     if(!exists("sa.run.ids"))   sa.run.ids <- runs.samples$sa
   
-    # Set variable and years. Use args first, then settings, then defaults
-    # *** Note, in the unusual case where sensitivity and analysis settings for these variables are
-    # different, ensemble settings won't get used below (because all are being set to non-null here) 
-    if(is.null(start.year)) {
-      start.year <- ifelse(is.null(settings$sensitivity.analysis$start.year), NA, 
-                           settings$sensitivity.analysis$start.year)
-    }
-    if(is.null(end.year)) {
-      end.year   <- ifelse(is.null(settings$sensitivity.analysis$end.year), NA, 
-                           settings$sensitivity.analysis$end.year)
-    }
-    
-    if(is.null(variable)) {
+    # Set variable and years. Use args first, then settings, then defaults/error
+    start.year.sa <- start.year
+    if(is.null(start.year.sa)) start.year.sa <- settings$sensitivity.analysis$start.year
+    if(is.null(start.year.sa)) start.year.sa <- NA
+
+    end.year.sa <- end.year
+    if(is.null(end.year.sa)) end.year.sa <- settings$sensitivity.analysis$end.year
+    if(is.null(end.year.sa)) end.year.sa <- NA
+
+    variable.sa <- variable
+    if(is.null(variable.sa)) {
       if("variable" %in% names(settings$sensitivity.analysis)){
-        variable = settings$sensitivity.analysis[
-                   names(settings$sensitivity.analysis) == "variable"]
+        variable.sa = settings$sensitivity.analysis[names(settings$sensitivity.analysis) == "variable"]
       }
     }
+    if(is.null(variable.sa)) logger.sever("No variables for sensitivity analysis!")
     
     # Only handling one variable at a time for now
-    if(length(variable) > 1) {
-      variable <- variable[1]
-      logger.warn(paste0("Currently performs sensitivity analysis on only one variable at a time. Using first (", variable, ")"))
+    if(length(variable.sa) > 1) {
+      variable.sa <- variable.sa[1]
+      logger.warn(paste0("Currently performs sensitivity analysis on only one variable at a time. Using first (", variable.sa, ")"))
     }
 
     for(pft.name in pft.names){
@@ -76,15 +76,16 @@ get.results <- function(settings, sa.ensemble.id=NULL, ens.ensemble.id=NULL,
                                                        pecandir = outdir,
                                                        outdir = settings$modeloutdir, 
                                                        pft.name = pft.name,
-                                                       start.year = start.year,
-                                                       end.year = end.year,
-                                                       variable = variable,
+                                                       start.year = start.year.sa,
+                                                       end.year = end.year.sa,
+                                                       variable = variable.sa,
                                                        sa.run.ids = sa.run.ids)
     }
 
     # Save sensitivity output
     fname <- sensitivity.filename(
-      settings, "sensitivity.output", "Rdata", all.var.yr=FALSE, pft=pft.name)
+      settings, "sensitivity.output", "Rdata", all.var.yr=FALSE, pft=pft.name,
+      ensemble.id=sa.ensemble.id, variable=variable.sa, start.year=start.year.sa, end.year=end.year.sa)
     save(sensitivity.output, file = fname)
     
   }
@@ -97,8 +98,9 @@ get.results <- function(settings, sa.ensemble.id=NULL, ens.ensemble.id=NULL,
       fname <- ensemble.filename(settings, "ensemble.samples", "Rdata", 
                  ensemble.id=ens.ensemble.id, all.var.yr=TRUE)
     } else if(!is.null(settings$ensemble$ensemble.id)) {
+      ens.ensemble.id <- settings$ensemble$ensemble.id
       fname <- ensemble.filename(settings, "ensemble.samples", "Rdata", 
-                 ensemble.id=settings$ensemble$ensemble.id, all.var.yr=TRUE)
+                 ensemble.id=ens.ensemble.id, all.var.yr=TRUE)
     } else {
       fname <- file.path(outdir, 'samples.Rdata')
     }
@@ -108,41 +110,46 @@ get.results <- function(settings, sa.ensemble.id=NULL, ens.ensemble.id=NULL,
     if(!exists("pft.names"))    pft.names <- names(trait.samples)
     if(!exists("trait.names"))  trait.names <- lapply(trait.samples, names)
     if(!exists("ens.run.ids"))   ens.run.ids <- runs.samples$ens
-  
-    # Set variable and years. Use args first, then settings, then defaults
-    if(is.null(start.year)) {
-      start.year <- ifelse(is.null(settings$ensemble$start.year), NA, settings$ensemble$start.year)
-    }
-    if(is.null(end.year)) {
-      end.year   <- ifelse(is.null(settings$sensemble$end.year), NA, settings$ensemble$end.year)
-    }
-    
-    if(is.null(variable)) {
+
+    # Set variable and years. Use args first, then settings, then defaults/error
+    start.year.ens <- start.year
+    if(is.null(start.year.ens)) start.year.ens <- settings$ensemble$start.year
+    if(is.null(start.year.ens)) start.year.ens <- NA
+
+    end.year.ens <- end.year
+    if(is.null(end.year.ens)) end.year.ens <- settings$ensemble$end.year
+    if(is.null(end.year.ens)) end.year.ens <- NA
+
+    variable.ens <- variable
+    if(is.null(variable.ens)) {
       if("variable" %in% names(settings$ensemble)){
         var <- which(names(settings$ensemble) == 'variable')
         for(i in 1:length(var)){
-          variable[i] = settings$ensemble[[var[i]]]
+          variable.ens[i] = settings$ensemble[[var[i]]]
         }
       }
     }
-
+    if(is.null(variable.ens)) logger.sever("No variables for ensemble analysis!")
+  
     # Only handling one variable at a time for now
-    if(length(variable) > 1) {
-      variable <- variable[1]
-      logger.warn(paste0("Currently performs ensemble analysis on only one variable at a time. Using first (", variable, ")"))
+    if(length(variable.ens) > 1) {
+      variable.ens <- variable.ens[1]
+      logger.warn(paste0("Currently performs ensemble analysis on only one variable at a time. Using first (", variable.ens, ")"))
     }
 
     ensemble.output <- read.ensemble.output(settings$ensemble$size,
-                                            pecandir = outdir,
-                                            outdir = settings$modeloutdir, 
-                                            start.year=start.year,
-                                            end.year=end.year,
-                                            variable=variable,
+                                            pecandir    = outdir,
+                                            outdir      = settings$modeloutdir, 
+                                            start.year  = start.year.ens,
+                                            end.year    = end.year.ens,
+                                            variable    = variable.ens,
                                             ens.run.ids = ens.run.ids)
 
 
     # Save ensemble output
-    fname <- ensemble.filename(settings, "ensemble.output", "Rdata", all.var.yr=FALSE)
+    fname <- ensemble.filename(settings, "ensemble.output", "Rdata", all.var.yr=FALSE,
+      ensemble.id=ens.ensemble.id, variable=variable.ens, 
+      start.year=start.year.ens, end.year=end.year.ens)
     save(ensemble.output, file = fname)
   }
 
