@@ -105,12 +105,11 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   ## Jump distribution setup
   accept.rate <- numeric(n.param)  ## Create acceptance rate vector of 0's (one zero per parameter)
 
-
-
   ## Create dir for diagnostic output
-  dir.create(file.path(settings$outdir, paste0('diag.pda', settings$assim.batch$ensemble.id)),
-    showWarnings=F, recursive=T)
-
+  if(!is.null(settings$assim.batch$diag.plot.iter)) {
+    dir.create(file.path(settings$outdir, paste0('diag.pda', settings$assim.batch$ensemble.id)),
+      showWarnings=F, recursive=T)
+  }
 
   ## --------------------------------- Main MCMC loop --------------------------------- ##
   for(i in start:finish){
@@ -147,23 +146,6 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
         ## Calculate likelihood (and store in database)
         LL.new <- pda.calc.llik(settings, con, model.out, run.id, inputs, llik.fn)
 
-        ## Diagnostic figure
-        if(i %% 20 == 1 | i == finish) {
-          pdf(file.path(settings$outdir, paste0('diag.pda', settings$assim.batch$ensemble.id),
-            paste0("data.vs.model_", gsub(" ", "0",sprintf("%5.0f", i)), ".pdf")))
-            NEEo <- inputs[[1]]$NEEo
-    
-            NEEm <- model.out[[1]]
-            NEE.resid <- NEEm - NEEo
-
-            par(mfrow=c(1,2))
-            plot(NEEo)
-            points(NEEm, col=2, cex=0.5)
-            legend("topleft", col=c(1,2), pch=1, legend=c("data","model"))
-            hist(NEE.resid, 100, main=paste0("LLik: ", round(LL.new,1)))
-          dev.off()
-        }
-
         ## Accept or reject step
         a <- LL.new - LL.old + prior.star - prior.old
         if(is.na(a)) a <- -Inf  # Can occur if LL.new == -Inf (due to model crash) and LL.old == -Inf (first run)
@@ -176,6 +158,24 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
         }
       } ## end if(is.finite(prior.star))
     } ## end loop over variables
+
+    ## Diagnostic figure
+    if(!is.null(settings$assim.batch$diag.plot.iter) && is.finite(prior.star) && 
+        (i==start | i==finish | (i %% settings$assim.batch$diag.plot.iter == 0))) {
+      pdf(file.path(settings$outdir, paste0('diag.pda', settings$assim.batch$ensemble.id),
+        paste0("data.vs.model_", gsub(" ", "0",sprintf("%5.0f", i)), ".pdf")))
+        NEEo <- inputs[[1]]$NEEo
+
+        NEEm <- model.out[[1]]
+        NEE.resid <- NEEm - NEEo
+
+        par(mfrow=c(1,2))
+        plot(NEEo)
+        points(NEEm, col=2, cex=0.5)
+        legend("topleft", col=c(1,2), pch=1, legend=c("data","model"))
+        hist(NEE.resid, 100, main=paste0("LLik: ", round(LL.new,1)))
+      dev.off()
+    }
 
     ## Store output
     params[i,] <- parm
