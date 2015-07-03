@@ -208,7 +208,12 @@ pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   settings$assim.batch$jump$jvar <- as.list(as.numeric(settings$assim.batch$jump$jvar))
   # have to add names or listToXml() won't work
   names(settings$assim.batch$jump$jvar) <- rep("jvar", length(settings$assim.batch$jump$jvar))
-  
+
+  # diag.plot.iter: How often to do diagnostic plots. Just need to convert to numeric. 
+  if(!is.null(settings$assim.batch$diag.plot.iter)) {
+    settings$assim.batch$diag.plot.iter <- as.numeric(settings$assim.batch$diag.plot.iter)
+  } 
+
   return(settings)
 }
 
