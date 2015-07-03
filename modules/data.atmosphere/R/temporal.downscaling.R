@@ -98,11 +98,11 @@ cfmet.downscale.subdaily <- function(subdailymet, output.dt = 1){
       
       f <- splinefun(as.numeric(subdailymet$date), (subdailymet[[var]] / hrscale), method = "monoH.FC")
       downscaled.result[[var]] <- f(as.numeric(new.date$date))
-      if(!var == "air_temperature"){
-        downscaled.result[[var]][downscaled.result[[var]] < 0] <- 0
+      downscaled.result[[var]][downscaled.result[[var]] < 0] <- 0
+      if(var == "relative_humidity"){
+        downscaled.result[[var]][downscaled.result[[var]] > 100] <- 100
       }
     }
-    
   }
   
   

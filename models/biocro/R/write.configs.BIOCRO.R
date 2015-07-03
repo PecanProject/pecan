@@ -35,7 +35,7 @@ convert.samples.BIOCRO <- function(trait.samples){
     trait.names[trait.names == "growth_respiration_coefficient"] <- "GrowthRespFraction"
     trait.names[trait.names == "extinction_coefficient_diffuse"] <- "kd"
     trait.names[trait.names == "chi_leaf"] <- "chi.l"
-  
+    trait.names[trait.names == "quantum_efficiency"] <- "alpha"
   
     colnames(trait.samples) <- trait.names    
     ## Partitioning coefficients: especially leaf
@@ -45,7 +45,6 @@ convert.samples.BIOCRO <- function(trait.samples){
     ## iStem
     ## ifrRhizome
     ## ifrStem
-    ## 
  
     ## transform values with different units
     ## cuticular conductance - BETY default is umol; BioCro uses mol
@@ -55,6 +54,13 @@ convert.samples.BIOCRO <- function(trait.samples){
     if("Sp" %in% trait.names){
       trait.samples <- transform(trait.samples, Sp = ud.convert(Sp, "kg/m2", "g/cm2"))
     }
+    if("vmax" %in% trait.names){##HAAAACK
+      trait.samples <- transform(trait.samples, vmax = vmax)
+    }
+    if("Rd" %in% trait.names){##HAAAACK
+      trait.samples <- transform(trait.samples, Rd = Rd)
+    }
+    
     # kd = k*omega from $e^{-kL\omega}$,
     #if(all(c("kd", "clumping") %in% trait.names)){
     #  trait.samples <- transform(trait.samples, kd = clumping * kd, clumping = NULL)
@@ -99,48 +105,6 @@ write.config.BIOCRO <- function(defaults = NULL,
                paste("cp ", file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))),
              con=file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
-  
-  ## todo check if file exists on remote host if needed and link in script
-  
-  ## Get the weather data
-  metpath <- settings$run$inputs$met$path
-  if(!is.null(metpath)){
-    if(file.exists(metpath)){
-      if(grepl(".csv", metpath))
-        file.symlink(settings$run$inputs$met$path,
-                     file.path(settings$rundir, run.id, "weather.csv"))
-    } else if (file.exists(file.path(settings$rundir, "weather.csv"))){
-      metpath <- file.path(settings$rundir, "weather.csv")
-      file.symlink(metpath,
-                   file.path(settings$rundir, run.id, "weather.csv"))
-    } else if (grepl(".nc", metpath)){
-      met.nc  <- nc_open(metpath)
-      met.cf <- load.cfmet(met.nc, lat = as.numeric(settings$run$site$lat), lon = as.numeric(settings$run$site$lon), 
-                           start.date = settings$run$start.date, end.date = settings$run$end.date)
-      biocro.met     <- cf2biocro(met.cf)
-      write.csv(biocro.met, file.path(settings$rundir, "weather.csv"), row.names = FALSE)
-      file.symlink(file.path(settings$rundir, "weather.csv"),
-                   file.path(settings$rundir, run.id, "weather.csv"))
-    }
-  } else if (is.null(settings$run$site$met)){
-      con <- db.open(settings$database$bety)
-      weather <- get.rncepmet(lat = as.numeric(settings$run$site$lat),
-                             lon = as.numeric(settings$run$site$lon),
-                             start.date = settings$run$start.date,
-                             end.date = settings$run$end.date,
-                             site.id = settings$run$site$id,
-                             con = con)
-      db.close(con)
-      ## convert to biocro specific format
-      
-      W <- BioCro::weachNEW(weather, lati = as.numeric(settings$run$site$lat), ts = 1, 
-                            temp.units="Celsius", rh.units="fraction", 
-                            ws.units="mph", pp.units="in")
-      write.csv(W, file = file.path(settings$rundir, run.id, "weather.csv"), row.names = FALSE)
-      settings$run$inputs$met$path <<- file.path(settings$rundir, run.id, "weather.csv")
-  }
-
-  ## copy/hard link file to run folder
 
   ## write configuraiton file
   traits  <- convert.samples.BIOCRO(trait.values[[settings$pfts$pft$name]])
@@ -149,7 +113,9 @@ write.config.BIOCRO <- function(defaults = NULL,
     species <- read.csv(file.path(settings$pfts$pft$outdir, "species.csv"))
     genus <- unique(species$genus)
     if(length(genus) > 1) logger.severe("BioCro can not combine multiple genera")
-    
+
+  
+  ### Set defaults
     defaults.file <- defaults$pft$constants$file
     if(!is.null(defaults.file)){
         if(grepl("xml", defaults.file)){
@@ -162,8 +128,7 @@ write.config.BIOCRO <- function(defaults = NULL,
                           defaults.file, " not found; using package defaults")
             defaults.file <- NULL
         }
-    }
-  if(is.null(defaults.file)){
+    } else if(is.null(defaults.file)){
     defaults.file <- system.file(file.path("extdata/defaults", paste0(tolower(genus), ".xml")), package = "PEcAn.BIOCRO")
   }
   if(file.exists(defaults.file)) {
@@ -184,7 +149,10 @@ write.config.BIOCRO <- function(defaults = NULL,
             }        
         }
     }
-    
+  
+    defaults$type$name <- settings$pfts$pft$name
+  
+  ### Replace Defaults with meta-analysis results
     unused.traits <- !traits.used
     ## a clunky way to only use logger for MEDIAN rather than all runs
     if(any(grepl("MEDIAN",
@@ -199,12 +167,17 @@ write.config.BIOCRO <- function(defaults = NULL,
     
     ## this is where soil parms can be set
     ## defaults$soilControl$FieldC <- 
-    
+
+  ### Put defaults and other parts of config file together
     parms.xml    <- listToXml(defaults, "pft")
     location.xml <- listToXml(list(latitude = settings$run$site$lat,
                                    longitude = settings$run$site$lon),
                               "location")
-    
+    run.xml <- listToXml(list(start.date = settings$run$start.date,
+                              end.date = settings$run$end.date,
+                              met.file = settings$run$inputs$met$path,
+                              soil.file = settings$run$inputs$soil$path),
+                         "run")
     
     slashdate <- function(x) substr(gsub("-", "/", x), 1, 10)
     simulationPeriod.xml <- listToXml(
@@ -213,10 +186,10 @@ write.config.BIOCRO <- function(defaults = NULL,
         "simulationPeriod")
     
     config.xml <- xmlNode("config")
+    config.xml <- append.xmlNode(config.xml, run.xml)
     config.xml <- append.xmlNode(config.xml, location.xml)
     config.xml <- append.xmlNode(config.xml, simulationPeriod.xml)
     config.xml <- append.xmlNode(config.xml, parms.xml)
-    
     
     saveXML(config.xml,
             file = file.path(settings$rundir, run.id, "config.xml"),
