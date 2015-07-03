@@ -107,7 +107,7 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
 
   # Default jump variances. Looped for clarity
   ind <- which(is.na(settings$assim.batch$jump$jvar))
-  for(i in 1:length(ind)) {
+  for(i in seq_along(ind)) {
     # default to 0.1 * 90% prior CI
     settings$assim.batch$jump$jvar[[i]] <- 
       0.1 * diff(eval(prior.fn$qprior[[prior.ind[ind[i]]]], list(p=c(0.05,0.95))))
