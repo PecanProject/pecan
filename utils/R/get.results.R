@@ -37,6 +37,7 @@ if(FALSE) { sa.ensemble.id=NULL; ens.ensemble.id=NULL; variable=NULL; start.year
       fname <- file.path(outdir, 'samples.Rdata')
       sa.ensemble.id <- NULL
     }
+    if(!file.exists(fname)) logger.severe("No sensitivity analysis samples file found!")
     load(fname)
 
     # For backwards compatibility, define some variables if not just loaded
@@ -104,6 +105,7 @@ if(FALSE) { sa.ensemble.id=NULL; ens.ensemble.id=NULL; variable=NULL; start.year
     } else {
       fname <- file.path(outdir, 'samples.Rdata')
     }
+    if(!file.exists(fname)) logger.severe("No ensemble samples file found!")
     load(fname)
     
     # For backwards compatibility, define some variables if not just loaded
