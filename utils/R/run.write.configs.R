@@ -119,6 +119,11 @@ run.write.configs <- function(settings, write = TRUE) {
     
   } ### End for loop
   
+  # Save names
+  pft.names <- names(trait.samples)
+  trait.names <- lapply(trait.samples, names)
+
+  
   ### NEED TO IMPLEMENT: 
   ## Load Environmental Priors and Posteriors
   
@@ -153,9 +158,9 @@ run.write.configs <- function(settings, write = TRUE) {
     runs.samples$sa <- sa.run.ids <- sa.runs$runs
     settings$sensitivity.analysis$ensemble.id <- sa.ensemble.id <- sa.runs$ensemble.id
 
-    # Save sensitivity output, including the run IDs and associated params
+    # Save sensitivity analysis info
     fname <- sensitivity.filename(settings, "sensitivity.samples", "Rdata", all.var.yr=TRUE, pft=NULL)
-    save(sa.run.ids, sa.ensemble.id, sa.samples, file=fname)
+    save(sa.run.ids, sa.ensemble.id, sa.samples, pft.names, trait.names, file=fname)
 
       
   } ### End of SA
@@ -186,9 +191,9 @@ run.write.configs <- function(settings, write = TRUE) {
     settings$ensemble$ensemble.id <- ens.ensemble.id <- ens.runs$ensemble.id
     ens.samples <- ensemble.samples # rename just for consistency
 
-    # Save sensitivity output, including the run IDs and associated params
+    # Save ensemble analysis info
     fname <- ensemble.filename(settings, "ensemble.samples", "Rdata", all.var.yr=TRUE)
-    save(ens.run.ids, ens.ensemble.id, ens.samples, file=fname)
+    save(ens.run.ids, ens.ensemble.id, ens.samples, pft.names, trait.names, file=fname)
       
   } else {
       logger.info('not writing config files for ensemble, settings are NULL')
@@ -199,7 +204,7 @@ run.write.configs <- function(settings, write = TRUE) {
   
   ### Save output from SA/Ensemble runs
   # A lot of this is duplicate with the ensemble/sa specific output above, but kept for backwards compatibility. 
-  save(ensemble.samples, trait.samples, sa.samples, runs.samples, 
+  save(ensemble.samples, trait.samples, sa.samples, runs.samples,  pft.names, trait.names,
        file = file.path(settings$outdir, 'samples.Rdata'))
   logger.info("parameter values for runs in ", file.path(settings$outdir, "samples.RData"))
   options(scipen=scipen)

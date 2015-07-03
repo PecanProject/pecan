@@ -16,6 +16,8 @@ ensemble.filename <- function(settings,
                               start.year  = settings$ensemble$start.year,
                               end.year    = settings$ensemble$end.year) {
 
+  if(is.null(ensemble.id)) ensemble.id <- "NOENSEMBLEID" # Not supposed to happen...
+  
   ensemble.dir <- file.path(settings$outdir, "ensemble", ensemble.id)
   
   dir.create(ensemble.dir, showWarnings=FALSE, recursive=TRUE)
@@ -51,6 +53,8 @@ sensitivity.filename <- function(settings,
                               variable    = settings$sensitivity.analysis$variable,
                               start.year  = settings$sensitivity.analysis$start.year,
                               end.year    = settings$sensitivity.analysis$end.year) {
+
+  if(is.null(ensemble.id)) ensemble.id <- "NOENSEMBLEID" # Not supposed to happen...
 
   if(is.null(pft)) {
     # Goes in main output directory. 
