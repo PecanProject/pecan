@@ -83,6 +83,11 @@ Licor.QC <- function(dat,curve=c("ACi","AQ"),tol=0.05){
   invisible(dat)
 }
 
+##' @name estimate_mode
+##' @title estimate_mode
+##' @author Mike Dietze
+##' @author Xiaohui Feng
+##' @export
 estimate_mode <- function(x,adjust=0.1) {
   d <- density(x,na.rm=TRUE,adjust=adjust)
   d$x[which.max(d$y)]
