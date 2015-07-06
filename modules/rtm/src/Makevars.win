@@ -7,7 +7,7 @@ PKG_LIBS = $(FLIBS)
 SOURCES = $(wildcard RTM/*/*.f90 RTM/*/*/*.f90)
 OBJECTS = $(SOURCES:.f90=.o)
 
-all : modules $(SHLIB)
+all : clean modules $(SHLIB)
 
 clean :
 	rm -f $(OBJECTS) *.mod *.so *.o 
