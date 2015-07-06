@@ -1,72 +1,94 @@
 ## PEcAN RTM Package Vignette
 ## Author: Alexey Shiklomanov
 
-# Load package
 library(PEcAnRTM)
-
-# Run RTMs in forward mode
 wl <- 400:2500
-p1 <- prospect(4, c(1.4, 30, 0.01, 0.001))
-plot(wl, p1, type='l') 
+params <- c("N"=1.4, "Cab"=40, "Car"=15,
+            "Cbrown"=0.5, "Cw"=0.002, "Cm"=0.004)
 
-p2.params <- c(1.4, 30, 10, 0.01, 0.001)
-p2 <- prospect(5, p2.params)   			             ## Reflectance
-p2t <- prospect(5, p2.params, reflectance = FALSE)   ## Transmittance
-plot(wl, p2, type='l', ylim=c(0,1))
-lines(wl, 1-p2t, col=2)
+p4 <- prospect(params[c(-3,-4)], version=4)
+p5 <- prospect(params[-4], version=5)
+p5b <- prospect(params, version="5B")
 
-# Load test spectra (in package)
+plot(wl, p4[,1], type='l', xlab="Wavelength (nm)", ylab="Value", ylim=c(0,1))
+lines(wl, 1-p4[,2], col=2)
+lines(wl, p5[,1], lty=2, col=1)
+lines(wl, 1-p5[,2], lty=2, col=2)
+lines(wl, p5b[,1], lty=3, col=1)
+lines(wl, 1-p5b[,2], lty=3, col=2)
+legend("topright", c("Reflectance", "Transmittance"), col=c(1,2), lty=1)
+legend("top", c("4", "5", "5B"), lty = c(1,2,3))
+
+sail.params <- defparam("pro4sail")
+print(sail.params)
+p4s <- pro4sail(sail.params)
+matplot(x = wl, y = p4s, type='l', xlab="Wavelength (nm)", ylab="Reflectance")
+legend("topright", as.character(1:4), col=1:4, lty=1:4)
+
 data(testspec)
-testspec_ACRU[1:5,1:5]
-plot(400:2500, testspec_ACRU[,1], type='l')
-lines(400:2500, testspec_ACRU[,2], col=2)
-lines(400:2500, testspec_ACRU[,3], col=3)
+matplot(wl, testspec_ACRU[,1:3], 
+        xlab="Wavelength", ylab="Reflectance", type='l')
 
-# Run inversion on single spectrum
-#		'ngibbs' controls the number of iterations. Default is 15000, but you 
-#		can usually get decent values with as few as 1500.
-system.time(inv.p <- invert_prospect(testspec_ACRU[,1], ngibbs=3000))
+# Example priors
+p5.means <- defparam("prospect_5")
+p5.sd <- p5.means * 4
+print(p5.means)
+print(p5.sd)
+p5mu <- log(p5.means / sqrt(1 + p5.sd^2 / p5.means^2))
+p5sigma <- sqrt(log(1 + p5.sd^2 / p5.means^2))
+print(p5mu)
+print(p5sigma)
 
-# Trace plots
-par(mfrow=c(2,2))
-plot(inv.p[,1], type='l', main="N")
-plot(inv.p[,2], type='l', main="Cab")
-plot(inv.p[,3], type='l', main="Cw")
-plot(inv.p[,4], type='l', main="Cm")
+# Use lognormal prior for all parameters
+p5log <- rep(TRUE, 5)
 
-# Burn-in : Remove first 500 values during which model is trying to converge
-inv.pb <- inv.p[-500:0,]
+# Minimum values
+p5min <- c("N"=1, "Cab"=0, "Car"=0, "Car"=0, "Cw"=0, "Cm"=0)
 
-# Trace plots after burn-in
-plot(inv.pb[,1], type='l', main="N")
-plot(inv.pb[,2], type='l', main="Cab")
-plot(inv.pb[,3], type='l', main="Cw")
-plot(inv.pb[,4], type='l', main="Cm")
+p5inv <- invert.fast(modname = "prospect_5",
+                     observed = testspec_ACRU[,1:3],
+                     inits = p5.means,
+                     cons = NULL,
+                     pmu = p5mu,
+                     psd = p5sigma,
+                     plog = p5log,
+                     minp = p5min,
+                     ngibbs = 1000)
 
-# Probability density plots of parameters (after burn-in)
-plot(density(inv.pb[,1]), main="N")
-plot(density(inv.pb[,2]), main="Cab")
-plot(density(inv.pb[,3]), main="Cw")
-plot(density(inv.pb[,4]), main="Cm")
+par(mfrow=c(3,2))
+for(i in 1:6){
+    param <- colnames(p5inv)[i]
+    plot(p5inv[,i], type='l', main=param)
+    p5.burnin <- p5inv[-500:0,i]
+    plot(density(p5.burnin), main=param)
+    m <- mean(p5.burnin)
+    s <- sd(p5.burnin)
+    abline(v=m)
+    abline(v=m-s, col=2, lty=2)
+    abline(v=m+s, col=2, lty=2)
+}
 
-# Mean parameter values
-colMeans(inv.pb)
+print(colMeans(p5inv[-500:0,]))
+print(apply(p5inv[-500:0,], 2, sd))
 
-# Standard deviation
-colMeans(inv.pb)
+### Random effects
+p5rand <- matrix(0, 5, 3)
+rownames(p5rand) <- names(p5.means)
+p5re <- invert.fast.re(modname = "prospect_5b",
+                       observed = testspec_ACRU[,1:3],
+                       inits = p5.means,
+                       cons = c("Cbrown"=0),
+                       rand = p5rand,
+                       pmu = p5mu,
+                       psd = p5sigma,
+                       plog = p5log,
+                       minp = p5min,
+                       ngibbs = 100)
 
+print(colMeans(p5re[-50:0,]))
+print(apply(p5re[-50:0,], 2, sd))
 
-## Inversion for multiple spectra -- returns single set of paramters that fits
-##		the full set of spectra. These take longer because the matrix operation
-##		is bigger, so for demonstrative purposes, I've reduced ngibbs.
-system.time(inv.2 <- invert_prospect(testspec_ACRU[,1:5], ngibbs = 3000))
-plot(inv.2[,1], type='l', main="N")
-plot(inv.2[,2], type='l', main="Cab")
-plot(inv.2[,3], type='l', main="Cw")
-plot(inv.2[,4], type='l', main="Cm")
-
-inv.2b <- inv.2[-500:0,]
-plot(density(inv.2b[,1]), main="N")
-plot(density(inv.2b[,2]), main="Cab")
-plot(density(inv.2b[,3]), main="Cw")
-plot(density(inv.2b[,4]), main="Cm")
+# Reinstall package
+#detach("package:PEcAnRTM", unload=TRUE)
+#install.packages("..", type='source', repos=NULL)
+#library(PEcAnRTM)
