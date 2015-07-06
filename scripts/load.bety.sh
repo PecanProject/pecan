@@ -142,7 +142,7 @@ if [ -z "${DUMPURL}" ]; then
                 DUMPURL="https://www.dropbox.com/s/wr8sldv080wa9y8/bety.tar.gz?dl=0"
 	else
 		echo "Don't know where to get data for site ${REMOTESITE}"
-		exit
+		exit 1
 	fi
 fi
 
@@ -155,7 +155,7 @@ if ! psql -lqt | cut -d \| -f 1 | grep -w "${DATABASE}"; then
   echo "(see https://github.com/PecanProject/pecan/wiki/Installing-PEcAn#installing-bety)"
   echo "  sudo -u postgres createuser -d -l -P -R -S bety"
   echo "  sudo -u postgres createdb -O bety ${DATABASE}"
-  exit
+  exit 1
 fi
 
 # make output folder
@@ -198,7 +198,7 @@ else
     else
       rm -rf "${DUMPDIR}"
     fi
-		exit
+		exit 1
 	fi
 
 	echo "MATCHED SCHEMA version ${VERSION}"
