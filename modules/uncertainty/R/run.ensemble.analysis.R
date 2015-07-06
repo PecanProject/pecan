@@ -16,7 +16,7 @@
 ##' @author David LeBauer, Shawn Serbin, Ryan Kelly
 ##'
 run.ensemble.analysis <- function(plot.timeseries=NA, ensemble.id=NULL,
-                           variable=NULL, start.year=NULL, end.year=NULL) {
+                           variable=NULL, start.year=NULL, end.year=NULL, ...) {
                         
   if(FALSE) {
     plot.timeseries=NA
@@ -113,7 +113,7 @@ run.ensemble.analysis <- function(plot.timeseries=NA, ensemble.id=NULL,
       ensemble.id=ensemble.id, variable=variable, start.year=start.year, end.year=end.year)
 
     pdf(fname,width=12,height=9)    
-      ensemble.ts.analysis <- ensemble.ts(read.ensemble.ts(settings$model$type))
+      ensemble.ts.analysis <- ensemble.ts(read.ensemble.ts(settings$model$type), ...)
     dev.off()
     
     fname <- ensemble.filename(settings, "ensemble.ts.analysis", "Rdata", all.var.yr=FALSE,
