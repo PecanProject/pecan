@@ -4,8 +4,7 @@
 \alias{download.NARR}
 \title{download.NARR}
 \usage{
-download.NARR(site.id, outfolder, start_date, end_date, overwrite = FALSE,
-  verbose = FALSE, pkg, raw.host, dbparms, con)
+download.NARR(outfolder, start_date, end_date, overwrite = FALSE)
 }
 \arguments{
 \item{outfolder}{}
@@ -18,6 +17,6 @@ download.NARR(site.id, outfolder, start_date, end_date, overwrite = FALSE,
 Download NARR files
 }
 \author{
-??
+Betsy Cowdery
 }
 

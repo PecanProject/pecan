@@ -1,17 +1,4 @@
 
-met2model.BIOCRO2 <- cruncep_dt2weather <- function(weather = result, adjust=TRUE){
-
-    x <- weather[,list(year, doy = doy, hour = hour,
-                       solarR   = ppfd, 
-                       DailyTemp.C = air_temperature,
-                       RH = qair2rh(qair = specific_humidity,
-                           temp = air_temperature, 
-                           press = ud.convert(surface_pressure, "Pa", "mbar")),
-                       WindSpeed  = wind,                       
-                       precip = precipitation_flux)]
-    return(x)
-}
-
 get.weather <- function(lat, lon, met.nc = met.nc, start.date, end.date, output.dt = 1){
 #    if(!is.land(lat, lon)) stop("point is in ocean")
     result <- load.cfmet(lat = lat, lon = lon, met.nc = met.nc, start.date, end.date)
@@ -20,25 +7,6 @@ get.weather <- function(lat, lon, met.nc = met.nc, start.date, end.date, output.
 }
 
 
-
-get.soil <- function(lat, lon, soil.nc = soil.nc){
-    
-    ## Lat and Lon
-    Lat <- ncvar_get(soil.nc, "lat")
-    Lon <- ncvar_get(soil.nc, "lon")
-
-    lati <- which.min(abs(Lat - lat))
-    loni <- which.min(abs(Lon - lon))
-
-    ## topsoil
-    usda_class <- ncvar_get(soil.nc, "t_usda_tex",
-                            start = c(loni, lati),
-                            count = c(1,1))
-    ref_depth <- ud.convert(ncvar_get(soil.nc, "ref_depth",
-                           start = c(loni, lati),
-                           count = c(1, 1)), "cm", "m")
-    return(list(usda_class = usda_class, ref_depth = ref_depth))
-}
 
 is.land <- function(lat, lon){
     Lat <- ncvar_get(nc = met.nc, varid = "lat")
@@ -61,17 +29,6 @@ get.cruncep <- function(lat, lon, start.date, end.date){
     hourly.result <- cruncep_hourly(result, lat = Lat[lati])
     weather <- cruncep_dt2weather(hourly.result)
     return(weather)
-}
-
-
-getNARRforBioCro<-function(lat,lon,year){
-    USlayer<-read.table("/home/groups/ebimodeling/met/NARR/ProcessedNARR/NARRindex.txt")
-    index <- which.min((lat - USlayer$Latt)^2 + (lon - USlayer$Lonn))
-    i <- USlayer$Iindex[index]
-    j <- USlayer$Jindex[index]
-    filename <- paste("/home/groups/ebimodeling/met/NARR/ProcessedNARR/",year,formatC(i,width=3,flag=0),formatC(j,width=3,flag=0),".RData",sep="")
-    load(filename)
-    return(dat)
 }
 
 ##' Simulates the light macro environment

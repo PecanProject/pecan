@@ -230,6 +230,13 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
     map = new google.maps.Map(document.getElementById("output"), myOptions);
     infowindow = new google.maps.InfoWindow({content: ""});
     hostSelected();
+
+    $("#sitename").keyup(function( event ) {
+      var search = $("#sitename").val().toLowerCase();
+      markersArray.forEach(function(m) {
+        m.setVisible(m.sitename.toLowerCase().indexOf(search) > -1);
+      });
+    });
   }
 
   function showSite(marker, selected) {
@@ -312,9 +319,15 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
       <input type="checkbox" id="conversion" name="conversion" onChange="modelSelected();" /> 
       <div class="spacer"></div>
 
+      <label id="qsublabel">qsub:</label>
+      <input type="checkbox" id="qsub" name="qsub" /> 
+      <div class="spacer"></div>
+
+
+
       <label id="sitelabel">Site:</label>
       <input name="siteid" id="siteid" type="hidden" value="<?php echo $siteid; ?>"/>
-      <input name="sitename" id="sitename" type="text" readonly value="No site selected" />
+      <input name="sitename" id="sitename" type="text" />
 <?php if ($betydb != "") { ?>
       <span class="small">Add a new site in <a href="<?php echo $betydb; ?>/sites/new" target="BETY">BETY</a>. Requires a refresh of this page after site is added.</span>
 <?php } ?>

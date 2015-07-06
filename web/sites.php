@@ -118,7 +118,9 @@ if (isset($_REQUEST['model']) && ($_REQUEST['model'] != "") && isset($_REQUEST['
   // 6. Get list of all formats needed for model
   $stmt = $pdo->prepare("SELECT format_id FROM modeltypes_formats, models" .
                         " WHERE modeltypes_formats.modeltype_id=models.modeltype_id" .
+                        " AND modeltypes_formats.required = true".
                         " AND models.id=?;");
+
   if (!$stmt->execute(array($_REQUEST['model']))) {
     die('Invalid query: ' . error_database());
   }

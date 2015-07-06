@@ -1,4 +1,4 @@
-#!/usr/bin/Rscript
+#!/usr/bin/env Rscript
 
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
@@ -11,7 +11,6 @@
 
 args <- commandArgs(trailingOnly = TRUE)
 settings.file = args[1]
-
 #--------------------------------------------------------------------------------#
 # functions used to write STATUS used by history
 #--------------------------------------------------------------------------------#
@@ -118,6 +117,12 @@ status.end()
 # Run sensitivity analysis and variance decomposition on model output
 status.start("SENSITIVITY")
 run.sensitivity.analysis()
+status.end()
+
+# Run parameter data assimilation
+status.start("PDA")
+settings$assim.batch <- pda.mcmc(settings)
+saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.pda.xml'))
 status.end()
 
 ### PEcAn workflow run complete

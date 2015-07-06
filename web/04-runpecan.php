@@ -10,7 +10,7 @@
 require("common.php");
 open_database();
 if ($authentication) {
-	if (!check_login()) {
+  if (!check_login()) {
 		header( "Location: index.php");
 		close_database();
 		exit;
@@ -23,20 +23,24 @@ $offline=isset($_REQUEST['offline']);
 $pecan_edit=isset($_REQUEST['pecan_edit']);
 $model_edit=isset($_REQUEST['model_edit']);
 $browndog=isset($_REQUEST['browndog']);
+$qsub=isset($_REQUEST['qsub']);
 
 # parameters
 if (!isset($_REQUEST['siteid'])) {
   die("Need a siteid.");
 }
 $siteid=$_REQUEST['siteid'];
+
 if (!isset($_REQUEST['modelid'])) {
   die("Need a modelid.");
 }
 $modelid=$_REQUEST['modelid'];
+
 if (!isset($_REQUEST['hostname'])) {
   die("Need a hostname.");
 }
 $hostname=$_REQUEST['hostname'];
+
 if (!isset($_REQUEST['pft'])) {
 	die("Need a pft.");
 }
@@ -48,6 +52,7 @@ if (!isset($_REQUEST['start'])) {
 }
 $startdate=$_REQUEST['start'];
 $metstart=$startdate;
+
 if (!isset($_REQUEST['end'])) {
   die("Need a end date.");
 }
@@ -57,8 +62,13 @@ $metend=$enddate;
 # non required parameters
 $email = "";
 if (isset($_REQUEST['email'])) {
-	$email = $_REQUEST['email'];
+  $email = $_REQUEST['email'];
 }
+
+if (!isset($_REQUEST['ensemble'])) {
+  die("Need an ensemble value.");
+}
+$ensemble=$_REQUEST['ensemble'];
 
 # check met info
 if (isset($_REQUEST['input_met']) && is_numeric($_REQUEST['input_met'])) {
@@ -102,7 +112,7 @@ $stmt->closeCursor();
 // create the workflow execution
 $params=str_replace(' ', '', str_replace("\n", "", var_export($_REQUEST, true)));
 
-$q=$pdo->prepare("INSERT INTO workflows (site_id, model_id, hostname, start_date, end_date, params, advanced_edit, started_at, created_at) values (:siteid, :modelid, :hostname, :startdate, :enddate, :params, :advanced_edit, NOW(), NOW())");
+$q=$pdo->prepare("INSERT INTO workflows (site_id, model_id, folder, hostname, start_date, end_date, params, advanced_edit, started_at, created_at) values (:siteid, :modelid, '', :hostname, :startdate, :enddate, :params, :advanced_edit, NOW(), NOW())");
 $q->bindParam(':siteid', $siteid, PDO::PARAM_INT);
 $q->bindParam(':modelid', $modelid, PDO::PARAM_INT);
 $q->bindParam(':hostname', $hostname, PDO::PARAM_STR);
@@ -126,6 +136,15 @@ if ($pdo->query("UPDATE workflows SET folder='${folder}' WHERE id=${workflowid}"
   die('Can\'t update workflow : ' . (error_database()));
 }
 
+# quick check on dbfiles_folder
+if (! isset($dbfiles_folder)) {
+  if (isset($inputs_folder)) {
+    $dbfiles_folder = $inputs_folder;
+  } else {
+    $dbfiles_folder = $output_folder . DIRECTORY_SEPARATOR . "dbfiles";
+  }
+}
+
 # if on localhost replace with localhost
 if ($hostname == $fqdn) {
 	$hostname="localhost";
@@ -133,7 +152,7 @@ if ($hostname == $fqdn) {
 
 # create pecan.xml
 if (!mkdir($folder)) {
-	die('Can\'t create output folder');
+	die('Can\'t create output folder [${folder}]');
 }
 $fh = fopen($folder . DIRECTORY_SEPARATOR . "pecan.xml", 'w');
 fwrite($fh, "<?xml version=\"1.0\"?>" . PHP_EOL);
@@ -175,6 +194,8 @@ fwrite($fh, "  </database>" . PHP_EOL);
 if ($browndog) {
   fwrite($fh, "  <browndog>" . PHP_EOL);  
   fwrite($fh, "    <url>${browndog_url}</url>" . PHP_EOL);  
+  fwrite($fh, "    <username>${browndog_username}</username>" . PHP_EOL);  
+  fwrite($fh, "    <password>${browndog_password}</password>" . PHP_EOL);  
   fwrite($fh, "  </browndog>" . PHP_EOL);  
 }
 
@@ -197,7 +218,7 @@ fwrite($fh, "    <random.effects>FALSE</random.effects>" . PHP_EOL);
 fwrite($fh, "  </meta.analysis>" . PHP_EOL);
 
 fwrite($fh, "  <ensemble>" . PHP_EOL);
-fwrite($fh, "    <size>1</size>" . PHP_EOL);
+fwrite($fh, "    <size>${ensemble}</size>" . PHP_EOL);
 fwrite($fh, "    <variable>NPP</variable>" . PHP_EOL);
 fwrite($fh, "  </ensemble>" . PHP_EOL);
 
@@ -228,21 +249,28 @@ fwrite($fh, "    </site>" . PHP_EOL);
 fwrite($fh, "    <inputs>" . PHP_EOL);
 foreach($_REQUEST as $key => $val) {
   if (substr($key, 0, 6) != "input_") continue;
+  if ($val == -1) continue;
   $tag=substr($key, 6);
+  fwrite($fh, "      <${tag}>" . PHP_EOL);
   if (is_numeric($val)) {
-    fwrite($fh, "      <${tag}.id>${val}</${tag}.id>" . PHP_EOL);
+    fwrite($fh, "        <id>${val}</id>" . PHP_EOL);
   } else {
     $parts=explode(".", $val, 2);
-    fwrite($fh, "      <${tag} input=\"${parts[0]}\" output=\"${parts[1]}\" />" . PHP_EOL);
+    fwrite($fh, "        <source>${parts[0]}</source>" . PHP_EOL);
+    fwrite($fh, "        <output>${parts[1]}</output>" . PHP_EOL);
   }
+  fwrite($fh, "      </${tag}>" . PHP_EOL);
 }
 fwrite($fh, "    </inputs>" . PHP_EOL);
 fwrite($fh, "    <start.date>${startdate}</start.date>" . PHP_EOL);
 fwrite($fh, "    <end.date>${enddate}</end.date>" . PHP_EOL);
-fwrite($fh, "    <dbfiles>${output_folder}</dbfiles>" . PHP_EOL);
+fwrite($fh, "    <dbfiles>${dbfiles_folder}</dbfiles>" . PHP_EOL);
 fwrite($fh, "    <host>" . PHP_EOL);
 fwrite($fh, "      <name>${hostname}</name>" . PHP_EOL);
 fwrite($fh, "    </host>" . PHP_EOL);
+if ($qsub) {
+    fwrite($fh, "    <qsub/>" . PHP_EOL);
+}
 fwrite($fh, "  </run>" . PHP_EOL);
 if ($email != "") {
 	$url = ($_SERVER['HTTPS'] ? "https://" : "http://");

@@ -5,7 +5,7 @@
 \title{met2model for ED2}
 \usage{
 met2model.ED2(in.path, in.prefix, outfolder, start_date, end_date, lst = 0,
-  overwrite = FALSE, verbose = FALSE)
+  lat, lon, ..., overwrite = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{in.path}{location on disk where inputs are stored}

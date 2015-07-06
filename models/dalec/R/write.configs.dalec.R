@@ -83,7 +83,7 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id){
   ### WRITE JOB.SH
   jobsh = paste0("#!/bin/bash\n",settings$model$binary,
                  " $(cat ",rundir,"/",config.file.name,
-                 ") < ",as.character(settings$run$inputs$met),
+                 ") < ",as.character(settings$run$inputs$met$path),
                  " > ",outdir,"/out.txt\n",
 #                 'echo ".libPaths(',"'~/R/library');",
                  'echo "',
@@ -114,9 +114,9 @@ remove.config.DALEC <- function(outdir,settings){
 ##' @name write.run.DALEC
 ##' @title Function to generate generic model run script files
 ##' @author <unknown>
-##' @import PEcAn.utils
 #--------------------------------------------------------------------------------------------------#
 write.run.DALEC <- function(settings){
+  if(!require(PEcAn.utils)) print("install PEcAn.utils")
   run.script.template = system.file("data", "run.template.DALEC", package="PEcAn.DALEC")
   run.text <- scan(file = run.script.template, 
                    what="character",sep='@', quote=NULL, quiet=TRUE)

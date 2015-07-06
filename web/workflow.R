@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+args <- commandArgs(trailingOnly = TRUE)
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
@@ -40,11 +42,11 @@ status.skip <- function(name) {
 
 options(warn=1)
 options(error=quote({
-          status.end("ERROR")
-          if (!interactive()) {
-            q()
-          }
-        }))
+  status.end("ERROR")
+  if (!interactive()) {
+    q()
+  }
+}))
 
 #options(warning.expression=status.end("ERROR"))
 
@@ -53,21 +55,21 @@ options(error=quote({
 # initialization
 # ----------------------------------------------------------------------
 # load the pecan settings
-
-# settings <- read.settings("pecan.xml")
-# read.settings does not work with the new tags <browndog> and tags in <met>
-# This is NOT a solution
-settings <- xmlToList(xmlParse("tests/pecan2.browndog.sipnet.xml"))
+if (is.na(args[1])){
+	settings <- read.settings("pecan.xml")
+} else {
+	settings.file = args[1]
+	settings <- read.settings(settings.file)
+}
 
 # remove existing STATUS file
 if (length(which(commandArgs() == "--continue")) == 0) {
-  file.remove("STATUS")
-
+  file.remove(file.path(settings$outdir, "STATUS"))
+  #unlink(file.path(settings$outdir, "STATUS"))
   # do conversions
   for(i in 1:length(settings$run$inputs)) {
     input <- settings$run$inputs[[i]]
     if (is.null(input)) next
-    if (length(input) == 1) next
     
     input.tag <- names(settings$run$input)[i]
     
@@ -77,162 +79,143 @@ if (length(which(commandArgs() == "--continue")) == 0) {
       fia.to.psscss(settings)
       status.end()
     }
-
+    
     # met conversion
     if(input.tag == 'met') {
-      if(length(input) >= 1) {  
-        status.start("MET Process")
-        
-        settings$run$inputs$path[[i]]  <-  PEcAn.data.atmosphere::met.process(
+      if (is.null(input$path)) {
+        if (is.null(settings$browndog)) {
+          status.start("MET Process")
+        } else {
+          status.start("BrownDog")
+        }
+        result <- PEcAn.data.atmosphere::met.process(
           site       = settings$run$site, 
           input_met  = settings$run$inputs$met,
           start_date = settings$run$start.date,
           end_date   = settings$run$end.date,
           model      = settings$model$type,
           host       = settings$run$host,
-          bety       = settings$database$bety, 
+          dbparms    = settings$database$bety, 
           dir        = settings$run$dbfiles,
           browndog   = settings$browndog)
+        settings$run$inputs[[i]][['path']] <- result
         status.end()
       }
-      
-      
-#       if (!is.null(settings$browndog$url) && (settings$browndog$url != "")) {
-#         status.start("BrownDog")
-#         if (settings$model$type == "SIPNET") {
-#           outputtype <- "clim"
-#         }
-# 
-#         # site
-#         site <- sub(".* \\((.*)\\)", "\\1", settings$run$site$name)
-# 
-#         # start/end date for weather
-#         start_date <- settings$run$start.date
-#         end_date <- settings$run$end.date
-# 
-#         # output filename
-#         outputfile <- file.path(settings$run$host$rundir, paste0(site, ".", outputtype))
-# 
-#         # create xml data to post
-#         xmldata <- paste0("<input>",
-#                           "<type>", input['input'], "</type>",
-#                           "<site>", site, "</site>",
-#                           "<start_date>", start_date, "</start_date>",
-#                           "<end_date>", end_date, "</end_date>",
-#                           "</input>")
-# 
-#         # post to browndog
-#         result <- postForm(paste0(settings$browndog$url, outputtype, "/"),
-#                            "fileData"=fileUpload("pecan.xml", xmldata, "text/xml"))
-# 
-#         # get url with result
-#         url <- gsub('.*<a.*>(.*)</a>.*', '\\1', result)
-#         print(url)
-#         while(!file.exists(outputfile)) {
-#           tryCatch({
-#             download.file(url, outputfile)
-#           }, error = function(e) {
-#             file.remove(outputfile)
-#           })
-#         }
-# 
-#         settings$run$inputs[[i]] <- outputfile
-#         status.end()
-# 
-#       } else if (TRUE) {
-#         if (input['input'] == 'Ameriflux') {
-#           status.start("Ameriflux")
-# 
-#           # start/end date for weather
-#           start_date <- settings$run$start.date
-#           end_date <- settings$run$end.date
-# 
-#           # site
-#           site <- sub(".* \\((.*)\\)", "\\1", settings$run$site$name)
-# 
-#           # download data
-#           fcn <- paste("download", input['input'], sep=".")
-#           do.call(fcn, list(site, file.path(settings$run$dbfiles, input['input']), start_date=start_date, end_date=end_date))
-# 
-#           # convert to CF
-#           fcn <- paste("met2CF", input['input'], sep=".")
-#           do.call(fcn, list(file.path(settings$run$dbfiles, input['input']), site, file.path(settings$run$dbfiles, "cf"), start_date=start_date, end_date=end_date))
-# 
-#           # gap filing
-#           metgapfill(file.path(settings$run$dbfiles, "cf"), site, file.path(settings$run$dbfiles, "gapfill"), start_date=start_date, end_date=end_date)
-# 
-#           # model specific
-#           load.modelpkg(input['output'])
-#           fcn <- paste("met2model", input['output'], sep=".")
-#           r <- do.call(fcn, list(file.path(settings$run$dbfiles, "gapfill"), site, file.path(settings$run$dbfiles, input['output']), start_date=start_date, end_date=end_date))
-#           settings$run$inputs[[i]] <- r[['file']]
-#           status.end()
-#         }
-#       }
-#     } else {
-#       if(length(input) > 1) {  ## check to see if the input is a file or a tag
-#         status.start("MET Process")
-#         settings$run$inputs[[i]]  <-  PEcAn.data.atmosphere::met.process(
-#                                         site = settings$run$site, input=input['input'],
-#                                         start_date=settings$run$start.date, end_date=settings$run$end.date,
-#                                         model=settings$model$type, host=settings$run$host,
-#                                         bety=settings$database$bety, dir=settings$run$dbfiles)
-#         status.end()
-#       }
     }
   }
   saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
 
+	#check status to avoid repeating work
+	check.status <- function(check.name){
+		status.file=file.path(settings$outdir, "STATU")
+		if (!file.exists(status.file)){
+			return (0)
+		}
+		table <- read.table(status.file, header=FALSE)
+		for (i in 1: nrow(table))
+		{
+			if (table[i,1] == check.name ){
+				if(table[i, 6] == "DONE"){
+					return (1)
+				} else if (table[i,6] == "ERROR"){
+					return (-1)
+				} else {
+					return (0)
+				}
+			}
+		}
+		return (0)
+	}
+
   # get data from pecan DB
-  status.start("TRAIT")
-  settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)
-  saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
-  status.end()
-
+	if (check.status("TRAIT") == 0){
+		status.start("TRAIT")
+		settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)
+		saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
+		status.end()
+	}
+  
   # run meta-analysis
-  status.start("META")
-  run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$meta.analysis$random.effects, settings$meta.analysis$threshold, settings$run$dbfiles, settings$database$bety)
-  status.end()
-
+	if (check.status("META") == 0){
+	status.start("META")
+	if('meta.analysis' %in% names(settings)) {
+		run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$meta.analysis$random.effects, settings$meta.analysis$threshold, settings$run$dbfiles, settings$database$bety)
+	}
+	status.end()
+	}
+  
   # write model specific configs
-  status.start("CONFIG")
-  run.write.configs(settings, settings$database$bety$write)
-  status.end()
-
-  if (length(which(commandArgs() == "--advanced")) != 0) {
-    status.start("ADVANCED")
-    q();
-  }
+	if (check.status("CONFIG") == 0){
+		status.start("CONFIG")
+		if (!file.exists(file.path(settings$rundir, "runs.txt")) | settings$meta.analysis$update == "TRUE") {
+			run.write.configs(settings, settings$database$bety$write)
+		} else {
+			logger.info("Already wrote configuraiton files")    
+		}
+		status.end()
+	}
+		
+	if (length(which(commandArgs() == "--advanced")) != 0) {
+		status.start("ADVANCED")
+		q();
+	}
 }
 
 # run model
-status.start("MODEL")
-start.model.runs(settings, settings$database$bety$write)
-status.end()
+if (check.status("MODEL") == 0){
+	status.start("MODEL")
+	start.model.runs(settings, settings$database$bety$write)
+	status.end()
+}
 
 # convert output
-status.start("OUTPUT")
-get.results(settings)
-status.end()
+if (check.status("OUTPUT") == 0){
+	status.start("OUTPUT")
+	get.results(settings)
+	status.end()
+}
 
 # ensemble analysis
-status.start("ENSEMBLE")
-run.ensemble.analysis(TRUE)    
-status.end()
+if (check.status("ENSEMBLE") == 0){
+	status.start("ENSEMBLE")
+	run.ensemble.analysis(TRUE)    
+	status.end()
+}
 
 # sensitivity analysis
-status.start("SENSITIVITY")
-run.sensitivity.analysis()
-status.end()
+if (check.status("SENSITIVITY") == 0){
+	status.start("SENSITIVITY")
+	run.sensitivity.analysis()
+	status.end()
+}
 
+# Run parameter data assimilation
+if(('assim.batch' %in% names(settings))) {
+  status.start("PDA")
+  settings$assim.batch <- pda.mcmc(settings)
+  saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.pda.xml'))
+  status.end()
+}
+  
 # all done
-status.start("FINISHED")
-db.query(paste("UPDATE workflows SET finished_at=NOW() WHERE id=", settings$workflow$id, "AND finished_at IS NULL"), params=settings$database$bety)
-status.end()
+if (check.status("FINISHED") == 0){
+	status.start("FINISHED")
+	db.query(paste("UPDATE workflows SET finished_at=NOW() WHERE id=", settings$workflow$id, "AND finished_at IS NULL"), params=settings$database$bety)
+	status.end()
+}
 
 # send email if configured
 if (!is.null(settings$email) && !is.null(settings$email$to) && (settings$email$to != "")) {
-    sendmail(settings$email$from, settings$email$to,
-             paste0("Workflow has finished executing at ", date()),
-             paste0("You can find the results on ", settings$email$url))
+  sendmail(settings$email$from, settings$email$to,
+           paste0("Workflow has finished executing at ", date()),
+           paste0("You can find the results on ", settings$email$url))
 }
+
+#write end time in database
+if (settings$workflow$id != 'NA') {
+  db.query(paste0("UPDATE workflows SET finished_at=NOW() WHERE id=", settings$workflow$id, " AND finished_at IS NULL"), params=settings$database$bety)
+}
+status.end()
+
+db.print.connections()
+

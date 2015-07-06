@@ -14,7 +14,9 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   }
 
   # check to see if run.meta.analysis can be skipped
-  if (file.exists(file.path(pft$outdir, 'trait.mcmc.Rdata')) && file.exists(file.path(pft$outdir, 'post.distns.Rdata'))) {
+  if (file.exists(file.path(pft$outdir, 'trait.mcmc.Rdata')) && 
+      file.exists(file.path(pft$outdir, 'post.distns.Rdata')) &&
+      settings$meta.analysis$update != TRUE ) {
     logger.info("Assuming get.trait copied results already")
     return(pft)
   }

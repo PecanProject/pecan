@@ -88,29 +88,40 @@ write.config.BIOCRO <- function(defaults = NULL,
     rundir <- file.path(settings$rundir, as.character(run.id))
     outdir <- file.path(settings$modeloutdir, as.character(run.id))
   }
-
+  
   ## create launch script (which will create symlink)
   writeLines(c("#!/bin/bash",
-             paste("mkdir -p", outdir),
-             paste("cd", rundir),
+               paste("mkdir -p", outdir),
+               paste("cd", rundir),
                ## model binary takes rundir, outdir as arguments
-             paste(settings$model$binary, normalizePath(rundir, mustWork=FALSE), normalizePath(outdir, mustWork=FALSE)),
-#             "./convert.R",
-             paste("cp ", file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))),
+               paste(settings$model$binary, normalizePath(rundir, mustWork=FALSE), normalizePath(outdir, mustWork=FALSE)),
+               #             "./convert.R",
+               paste("cp ", file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))),
              con=file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
-    
+  
   ## todo check if file exists on remote host if needed and link in script
   
-  ## Get the weather data generic
-
-  if(!is.null(settings$run$inputs$met)){
-      if(file.exists(settings$run$inputs$met)){
-          file.symlink(settings$run$inputs$met,
-                       file.path(settings$rundir, run.id, "weather.csv"))
-      } else {
-          settings$site$met <- NULL
-      }
+  ## Get the weather data
+  metpath <- settings$run$inputs$met$path
+  if(!is.null(metpath)){
+    if(file.exists(metpath)){
+      if(grepl(".csv", metpath))
+        file.symlink(settings$run$inputs$met$path,
+                     file.path(settings$rundir, run.id, "weather.csv"))
+    } else if (file.exists(file.path(settings$rundir, "weather.csv"))){
+      metpath <- file.path(settings$rundir, "weather.csv")
+      file.symlink(metpath,
+                   file.path(settings$rundir, run.id, "weather.csv"))
+    } else if (grepl(".nc", metpath)){
+      met.nc  <- nc_open(metpath)
+      met.cf <- load.cfmet(met.nc, lat = as.numeric(settings$run$site$lat), lon = as.numeric(settings$run$site$lon), 
+                           start.date = settings$run$start.date, end.date = settings$run$end.date)
+      biocro.met     <- cf2biocro(met.cf)
+      write.csv(biocro.met, file.path(settings$rundir, "weather.csv"), row.names = FALSE)
+      file.symlink(file.path(settings$rundir, "weather.csv"),
+                   file.path(settings$rundir, run.id, "weather.csv"))
+    }
   } else if (is.null(settings$run$site$met)){
       con <- db.open(settings$database$bety)
       weather <- get.rncepmet(lat = as.numeric(settings$run$site$lat),
@@ -126,7 +137,7 @@ write.config.BIOCRO <- function(defaults = NULL,
                             temp.units="Celsius", rh.units="fraction", 
                             ws.units="mph", pp.units="in")
       write.csv(W, file = file.path(settings$rundir, run.id, "weather.csv"), row.names = FALSE)
-      settings$site$met <<- file.path(settings$rundir, run.id, "weather.csv")
+      settings$run$inputs$met$path <<- file.path(settings$rundir, run.id, "weather.csv")
   }
 
   ## copy/hard link file to run folder

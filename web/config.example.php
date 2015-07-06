@@ -17,6 +17,8 @@ $db_fia_database="";
 
 # browdog information
 $browndog_url="";
+$browndog_username="";
+$browndog_password="";
 
 # R binary
 $Rbinary="/usr/bin/R";
@@ -40,6 +42,9 @@ $pecan_home="/home/carya/pecan/";
 
 # Folder where the runs are stored
 $output_folder="/home/carya/output/";
+
+# Folder where the generated files are stored
+$dbfiles_folder=$output_folder . "/dbfiles";
 
 # ED specific inputs, should come from database
 $ed_veg="/home/carya/oge2OLD/OGE2_";
