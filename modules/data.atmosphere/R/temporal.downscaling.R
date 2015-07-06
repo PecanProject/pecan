@@ -78,10 +78,10 @@ cfmet.downscale.subdaily <- function(subdailymet, output.dt = 1){
     }
     downscaled.result[["northward_wind"]] <- rep(subdailymet$northward_wind, each = tint)
     downscaled.result[["eastward_wind"]]  <- rep(subdailymet$eastward_wind, each = tint)   
-    downscaled.result[["wind_speed"]] <- rep(subdailymet$wind_speed, each = tint)   
-
+  } else if (!'wind_speed' %in% colnames(subdailymet)){
+    logger.error("no wind speed data")
   }
-
+  downscaled.result[["wind_speed"]] <- rep(subdailymet$wind_speed, each = tint)   
 
   solarMJ <- ud.convert(subdailymet$surface_downwelling_shortwave_flux_in_air, paste0("W ", tint, "h"), "MJ" )
   PAR <- 0.486 * solarMJ ## Cambell and Norman 1998 p 151, ch 10
