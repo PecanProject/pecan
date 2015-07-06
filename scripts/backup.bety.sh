@@ -20,9 +20,9 @@ mkdir -p ${BACKUPDIR}
 #export PATH=<location to postgresql>/bin;${PATH}
 
 # some handy variables
-TODAY=$( date +"%u" )
+TODAY=$( date +"%d" )
 TOMORROW=$( date -d "tomorrow" +"%d" )
-DOW=$( date +"%d" )
+DOW=$( date +"%u" )
 WEEK=$( date +"%W" )
 MONTH=$( date +"%m" )
 YEAR=$( date +"%Y" )
