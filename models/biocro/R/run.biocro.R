@@ -41,17 +41,16 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
     yearchar <- as.character(yeari)
     WetDat <- biocro.met[biocro.met$year == yeari, ]
 
-    ## find day1 = gdd 100 at base 0 from Miguez et al 2009
-    ## daily_gdd <- as.data.table(WetDat)[, list(gdd = max(0, (max(Temp)+min(Temp))/2)), by = doy]
-    ## cum_gdd <- daily_gdd[,list(doy, gdd = cumsum(gdd))]
-    ## day1 <- cum_gdd[which.min(gdd >100)]$doy
-    
-    ## Growing season: first frost to last frost
+    ## day1 = last spring frost
+    ## dayn = first fall frost from Miguez et al 2009
+    if(as.numeric(config$location$latitude) > 0) {
+      day1 <-  as.numeric(as.data.table(WetDat)[doy < 180 & Temp < 0, list(day1 = max(doy))])
+      dayn <-  as.numeric(as.data.table(WetDat)[doy > 180 & Temp < 0, list(day1 = min(doy))])
+    } else if (as.numeric(config$location$latitude) < 0){
+      day1 <- NULL
+      dayn <- NULL
+    }
 
-    ## dayn = harvest end of November
-    dayn <- 335
-    
-    ## TODO: start of a distinct function called 'getinitialcondition'
     HarvestedYield <- 0
     if(genus == "Saccharum") {
       tmp.result<-caneGro(WetDat=WetDat, lat=lat, soilControl=soilP)
@@ -94,7 +93,7 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
       ## run BioGro
       tmp.result <- BioGro(WetDat = WetDat,
                            day1 = day1,
-			   dayn = dayn,
+                           dayn = dayn,
                            soilControl = soil.parms,
                            canopyControl = config$pft$canopyControl,
                            phenoControl = phenoParms(),#config$pft$phenoParms,
@@ -105,7 +104,7 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
     }
     result.yeari.hourly <- with(tmp.result,
                                 data.table(year = yeari, 
-                                           doy = rep(DayofYear, each = 24)[1:length(ThermalT)], 
+                                           doy = DayofYear, 
                                            hour = Hour, ThermalT,
                                            Stem, Leaf, Root, Rhizome, Grain, LAI,
                                            SoilEvaporation, CanopyTrans, 
