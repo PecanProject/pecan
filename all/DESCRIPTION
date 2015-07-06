@@ -33,7 +33,8 @@ Suggests:
     PEcAn.LINKAGES,
     PEcAn.allometry,
     PEcAn.benchmark,
-    PEcAn.photosythesis
+    PEcAn.photosythesis,
+    PEcAnRTM
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
