@@ -48,6 +48,7 @@ for(point in 1:nrow(latlon)){
   
   point.outdir <- file.path(outdir, paste0(lat, 'x', lon))
   dir.create(point.outdir, showWarnings = FALSE)
+
   hourly <- out$hourly
   daily <- out$daily
   #save(hourly, file = file.path(point.outdir, 'hourly.result.RData'))
