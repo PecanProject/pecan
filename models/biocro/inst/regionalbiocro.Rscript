@@ -1,5 +1,4 @@
-#!/usr/local/bin/Rscript
-#  #!/usr/bin/env Rscript
+#!/usr/bin/env Rscript
 
 args   <- commandArgs(trailingOnly = TRUE)
 rundir <- args[1]
