@@ -21,28 +21,26 @@
 ##' @param end.year last year to include in ensemble analysis
 ##' @param variables targe variables for ensemble analysis
 ##' @export
+##' @author Ryan Kelly, ???
 #--------------------------------------------------------------------------------------------------#
 read.ensemble.output <- function(ensemble.size, pecandir, outdir, 
-                                 start.year, end.year, variables){
-  if (exists('runs.samples')) {
-    ensemble.runs <- runs.samples$ensemble
-  } else {
-    ensemble.runs <- list()
+                                 start.year, end.year, variable, ens.run.ids=NULL){
+  if (is.null(ens.run.ids)) {
     samples.file <- file.path(pecandir, 'samples.Rdata')
     if(file.exists(samples.file)){
       load(samples.file)
-      ensemble.runs <- runs.samples$ensemble
+      ens.run.ids <- runs.samples$ensemble
     } else {
       stop(samples.file, "not found required by read.ensemble.output")      
     }
   }
 
   ensemble.output <- list()
-  for(row in rownames(ensemble.runs)) {
-    run.id <- ensemble.runs[row, 'id']
+  for(row in rownames(ens.run.ids)) {
+    run.id <- ens.run.ids[row, 'id']
     logger.info("reading ensemble output from run id: ", run.id)
     ensemble.output[[row]] <- sapply(read.output(run.id, file.path(outdir, run.id),
-                                                 start.year, end.year, variables),
+                                                 start.year, end.year, variable),
                                      mean,na.rm=TRUE)
   }
   return(ensemble.output)

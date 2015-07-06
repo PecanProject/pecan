@@ -22,15 +22,16 @@
 ##' @param end.year last year to include in sensitivity analysis
 ##' @param variables variables to be read from model output
 ##' @export
+##' @author Ryan Kelly, ???
 #--------------------------------------------------------------------------------------------------#
 read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name='', 
-                           start.year, end.year, variables){
+                           start.year, end.year, variable, sa.run.ids=NULL){
   
-  if (!exists('runs.samples')) {
+  if (is.null(sa.run.ids)) {
     samples.file <- file.path(pecandir, 'samples.Rdata')
     if(file.exists(samples.file)){
       load(samples.file)
-      sa.runs <- runs.samples$sa
+      sa.run.ids <- runs.samples$sa
     } else {
       logger.error(samples.file, "not found, this file is required by the read.sa.output function")      
     }
@@ -41,9 +42,9 @@ read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name='',
                       dimnames = list(quantiles, traits))
   for(trait in traits){
     for(quantile in quantiles){
-      run.id <- sa.runs[[pft.name]][quantile, trait]
+      run.id <- sa.run.ids[[pft.name]][quantile, trait]
       out <- read.output(run.id, file.path(outdir, run.id),
-                         start.year, end.year, variables)
+                         start.year, end.year, variable)
       sa.output[quantile, trait] <- sapply(out, mean, na.rm=TRUE)
     } ## end loop over quantiles
     logger.info("reading sensitivity analysis output for model run at ", quantiles, "quantiles of trait", trait)
