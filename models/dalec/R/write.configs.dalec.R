@@ -65,7 +65,7 @@ convert.samples.DALEC <- function(trait.samples){
   
   #t9 rate variable controlling respiration from soil organic matter and woody debris [day-1, ref T 10C]
   if("som_respiration_rate" %in% names(trait.samples)){
-    names(trait.samples)[which(names(trait.samples)=="som_respiration_rate")] <- "t8"
+    names(trait.samples)[which(names(trait.samples)=="som_respiration_rate")] <- "t9"
   }
   
   ### INITIAL CONDITIONS
