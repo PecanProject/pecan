@@ -127,8 +127,8 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   constant.names  <- names(constant.traits)
   
   # Replace matches
-  if(length(constant.traits) > 0) {
-    for(i in 1:length(constant.traits)) {
+
+    for(i in seq_along(constant.traits)) {
       ind = match(constant.names[i], pft.names)
       if(is.na(ind)) { # Add to list
         pft.names <- c(pft.names, constant.names[i])
@@ -137,7 +137,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
         pft.traits[ind] <- constant.traits[i]
       }
     }
-  }
+
     
   # Remove NAs. Constants may be specified as NA to request template defaults. Note that it is "NA" (character) not actual NA due to being read in as XML
   pft.names  <- pft.names [ pft.traits != "NA" & !is.na(pft.traits) ]
