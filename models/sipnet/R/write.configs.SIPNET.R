@@ -127,13 +127,15 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   constant.names  <- names(constant.traits)
   
   # Replace matches
-  for(i in 1:length(constant.traits)) {
-    ind = match(constant.names[i], pft.names)
-    if(is.na(ind)) { # Add to list
-      pft.names <- c(pft.names, constant.names[i])
-      pft.traits <- c(pft.traits, constant.traits[i])
-    } else {  # Replace existing value
-      pft.traits[ind] <- constant.traits[i]
+  if(length(constant.traits) > 0) {
+    for(i in 1:length(constant.traits)) {
+      ind = match(constant.names[i], pft.names)
+      if(is.na(ind)) { # Add to list
+        pft.names <- c(pft.names, constant.names[i])
+        pft.traits <- c(pft.traits, constant.traits[i])
+      } else {  # Replace existing value
+        pft.traits[ind] <- constant.traits[i]
+      }
     }
   }
     
