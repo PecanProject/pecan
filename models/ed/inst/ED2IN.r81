@@ -197,7 +197,7 @@ $ED_NL
    ! ISOUTPUT -- restart file, for HISTORY runs.  The time interval between files is       !
    !             determined by FRQHIS                                                      !
    !---------------------------------------------------------------------------------------!
-   NL%IFOUTPUT  =  3                    ! Instantaneous analysis (site average)
+   NL%IFOUTPUT  =  0                    ! Instantaneous analysis (site average)
    NL%IDOUTPUT  =  0                    ! Daily means (site average)
    NL%IMOUTPUT  =  0                    ! Monthly means (site average)
    NL%IQOUTPUT  =  0                    ! Monthly means (diurnal cycle)
@@ -1367,7 +1367,7 @@ $ED_NL
    !                3.  Gloomy -- All radiation goes to diffuse.                           !
    !                4.  Sesame street -- all radiation goes to direct, except at night.    !
    ! INITIAL_CO2 -- Initial value for CO2 in case no CO2 is provided at the meteorological !
-   !                driver dataset [Units: µmol/mol]                                       !
+   !                driver dataset [Units: Âµmol/mol]                                       !
    !---------------------------------------------------------------------------------------!
    NL%IMETTYPE    = 1        ! 0 = ASCII, 1 = HDF5
    NL%ISHUFFLE    = 0        ! 2. Randomly pick recycled years

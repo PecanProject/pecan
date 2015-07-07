@@ -1,0 +1,78 @@
+---
+title: "PEcAn.allometry Vignette"
+author: "Mike Dietze"
+date: "April 23, 2015"
+output: html_document
+---
+
+## install package from Github
+
+Only needs to be done the first time
+```{r}
+library(devtools)
+install_github("PecanProject/pecan",subdir="modules/allometry")
+```
+
+
+## Define species groups
+
+```{r}
+library(PEcAn.allometries)
+
+## define the Plant Functional Types you want to fit based on USDA acronyms and USFS species codes (spcd)
+## can involve one or many species
+## multiple PFTs can be fit at once by putting them in a list
+## Note that the name used in the PFT list defines the name that the code will match against when making predictions for new individuals
+pfts = list(FAGR = data.frame(spcd=531,acronym="FAGR"))
+
+## example of a PFT with multiple species (LH = late hardwood)
+## note that if you're just using Jenkins the acronym column is optional
+pfts = list(LH = data.frame(spcd = c(531,318),acronym=c("FAGR","ACSA3")))
+
+```
+
+## Run the Bayesian allometry model
+
+Note the side effects of this function are that it will create two files in your working directory for every PFT and component pair, a pdf file of diagnostics and a RData file saving the full output. These files will be named based on the PFT and the component.
+
+The return from this function will be a summary table of statistics. The function will actually run two variants of the model, a "global" modelthat fits a single equation to all equations and a 'hierarchical' model that accounts for the variability among equations. This function also print out DIC statistics on which fit was better (lowest score wins): DIC is the hierarchical model, DICg is the global model.
+
+```{r}
+allom.stats = AllomAve(pfts,ngibbs=500)
+```
+
+
+If you want to run with a response variable other than the default (e.g. components = 6; stem biomass), look up the relevant component IDs in data(allom.components). The default component is 3 (total aboveground biomass). Note that if you specify multiple PFTs (as a list) and multiple components (as a vector) then AllomAve will generate allometries for all PFT x component combinations
+
+```{r}
+allom.stats = AllomAve(pfts,ngibbs=500,components=c(3,6))
+```
+
+## Predict for individual trees
+
+```{r}
+allom.fit = load.allom(getwd())
+dbh = 1:50
+pred = allom.predict(allom.fit,dbh = dbh,pft = "LH",component = 3,use = "Bg",interval = "prediction")
+conf = allom.predict(allom.fit,dbh = dbh,pft = "LH",component = 3,use = "Bg",interval = "confidence")
+PI = apply(pred,2,quantile,c(0.025,0.5,0.975),na.rm=TRUE)
+CI = apply(conf,2,quantile,c(0.025,0.5,0.975),na.rm=TRUE)
+plot(dbh,CI[2,],type='l',lwd=3,ylim=range(PI),ylab="Biomass (kg)")
+lines(dbh,CI[1,],lty=2,col="blue")
+lines(dbh,CI[3,],lty=2,col="blue")
+lines(dbh,PI[1,],lty=3,col="red")
+lines(dbh,PI[3,],lty=3,col="red")
+```
+
+## Predict for a stand
+```{r}
+## simulated DBH's
+dbh = rpois(100,20)
+hist(dbh)
+
+stand = allom.predict(allom.fit,dbh = dbh,pft = "LH",component = 3,use = "Bg",interval = "prediction")
+AGB = apply(stand,1,sum)
+hist(AGB)
+```
+
+

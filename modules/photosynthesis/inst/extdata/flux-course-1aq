@@ -1,0 +1,57 @@
+"OPEN 6.2.2"
+"Mon Jul 16 2012 18:15:46"
+<open><version>"6.2.2"</version></open>
+<open><configfile>"/User/Configs/UserPrefs/2x3 LED SI0670.xml"</configfile></open>
+<open><light><source>"6400-02 or -02B LED Source"</source><par_in>1<sensor>"SI-0670"<cal>-0.80<actinity>1.00</actinity><transm>1.00</transm></cal></sensor><transm>1</transm></par_in><par_out>1<sensor>"Q37272"<cal>7.29</cal></sensor></par_out></light></open>
+<open><comps><file>"/User/Configs/Comps/StdComps_6.2"<header>""</header><extras></extras></file><energybal>no<f_parIn>1</f_parIn><f_parOut>0</f_parOut><alphaK>0.16</alphaK></energybal><bc_total>2.840<stomatal_ratio>1</stomatal_ratio><bc_oneside>1.420<type>2</type><table>"/Sys/Lib/StdBLCTable"</table><area>6</area><slope>-0.219565</slope><offset>2.73739</offset><fan>5</fan></bc_oneside></bc_total></comps></open>
+<open><prompts><onlog>off</onlog><items>"Default (none)"</items></prompts></open>
+<open><constants><oxygen>21 %</oxygen><bb_vapor>1.5</bb_vapor><bb_oxy>0.9</bb_oxy></constants></open>
+<open><stability><items>"Std Stability"<items[1]><id>-2</id><size>15</size><pcv><onoff>0</onoff><value>1</value></pcv><std><onoff>0</onoff><value>1</value></std><slp><onoff>1</onoff><value>1</value></slp></items[1]><items[2]><id>-5</id><size>15</size><pcv><onoff>0</onoff><value>1</value></pcv><std><onoff>0</onoff><value>1</value></std><slp><onoff>1</onoff><value>1</value></slp></items[2]><items[3]><id>-7</id><size>15</size><pcv><onoff>1</onoff><value>1</value></pcv><std><onoff>0</onoff><value>1</value></std><slp><onoff>0</onoff><value>1</value></slp></items[3]><items[4]><id>30</id><size>20</size><pcv><onoff>1</onoff><value>1</value></pcv><std><onoff>0</onoff><value>1</value></std><slp><onoff>1</onoff><value>1</value></slp></items[4]><items[5]><id>36</id><size>20</size><pcv><onoff>1</onoff><value>3</value></pcv><std><onoff>0</onoff><value>1</value></std><slp><onoff>0</onoff><value>1</value></slp></items[5]></items></stability></open>
+<open><log><format>"StdLogFmt_6.0"<items>{ -35 -21 -36 -76 30 23 36 21 25 221 -33 111 -34 11 -9 -10 -8 -1 -2 -4 -5 -14 -15 -7 -12 -13 -11 -65 -66 -72 -18 -19 -77 -78 -79 -23  }<hdr>{  }</hdr></items></format><options><beep>on</beep><hdr>normal</hdr><rem>normal</rem><stab>no</stab><stats>no<mean>yes</mean><file>no</file><period>15</period></stats><excel>yes</excel><controls>yes</controls><comm>no</comm></options><datafile>"/User/flux course 1light curve"</datafile><button><action>"Normal Log"<code>" LogOneObsManual "</code></action></button><autoprog>"/User/Configs/AutoProgs/LightCurve2"<active>no</active></autoprog></log></open>
+<open><a2d><avgtime>4.0 secs</avgtime><userchans><ch20>"Off"</ch20><ch21>"Off"</ch21><ch22>"Off"</ch22><ch23>"Off"</ch23></userchans></a2d></open>
+<open><matching><type>0</type><disp>'a'</disp><settings><CO2Limit>10.0</CO2Limit><H2OLimit>1.0</H2OLimit><MaxAutoTime>60</MaxAutoTime></settings></matching></open>
+<li6400><factory><unit>"PSC-2018"</unit><serviced>"9 Feb 2009"</serviced><fuseaware>0</fuseaware><co2mixer>yes</co2mixer><co2><coeffs>{ 0 0.201182 3.36906e-05 1.10343e-08 -7.78799e-13 6.79021e-17  }</coeffs><dvdt>-1.6</dvdt><xs>{ 0 0  }</xs></co2><h2o><coeffs>{ 0 0.00566453 2.34047e-06 -1.70234e-11  }</coeffs><dvdt>-2.8</dvdt><xs>{ 0 0  }</xs></h2o><flow>{ 0 0.376  }</flow><press>{ 88.891 0.00555  }</press></factory></li6400>
+<li6400><user><flow_zero>683.5</flow_zero><irga_zero><co2>-58.6 -449.2<at>27.6443</at></co2><h2o>58.6 332.0<at>28.9915</at></h2o></irga_zero><irga_span><co2>{ 0.987567 0.986966  }</co2><h2o>{ 0.990374 1.00131  }</h2o></irga_span><irga_match><co2>{ -0.12422 22.3402  }</co2><h2o>{ -0.0240783 0.89807  }</h2o></irga_match><co2_mixer><pump_mv>4500</pump_mv><ppm>{ 2150.52 1016.67 402.381 245.239 112.534 66.1855 44.0716 41.646  }</ppm><mv>{ 5000 3000 1500 1000 500 300 200 100  }</mv></co2_mixer><parin_offset>0</parin_offset><led_cal><unit>"unknown"</unit><mv>{ 50 100 1000 3000 5000  }</mv><qntm>{ 3 45 555 1500 2500  }</qntm></led_cal><lcf_cal><unit>"unknown"</unit><red><mv>{ 50 100 500 1000 1500 5000  }</mv><qntm>{ 50 100 500 1000 2000 5000  }</qntm></red><blue><mv>{ 100 200 500 1000 2000 5000  }</mv><qntm>{ 10 20 50 100 200 500  }</qntm></blue></lcf_cal></user></li6400>
+"18:15:51 the best"
+$STARTOFDATA$
+"Obs"	"HHMMSS"	"FTime"	"EBal?"	"Photo"	"Cond"	"Ci"	"Trmmol"	"VpdL"	"CTleaf"	"Area"	"BLC_1"	"StmRat"	"BLCond"	"Tair"	"Tleaf"	"TBlk"	"CO2R"	"CO2S"	"H2OR"	"H2OS"	"RH_R"	"RH_S"	"Flow"	"PARi"	"PARo"	"Press"	"CsMch"	"HsMch"	"StableF"	"BLCslope"	"BLCoffst"	"f_parin"	"f_parout"	"alphaK"	"Status"
+"18:15:52 Launched AutoProg /User/Configs/AutoProgs/LightCurve2"
+"18:18:16 Stability: (CO2S 15s SLP<1)(H2OS 15s SLP<1)(Flow 15s PE<1)(Photo 20s PE<1 SLP<1)(Ci 20s PE<3)"
+"18:18:16 Lamp: ParIn ->  1500 uml"
+"18:18:16 CO2 Mixer: CO2S -> 384 uml"
+"18:18:16 Coolers: Off"
+"18:18:16 Flow: H2OS -> 29.22 mmol/mol, resp=fast"
+"18:18:16 Lamp: ParIn ->  1500 uml"
+"18:20:10 Flow: H2OS -> 29.22 mmol/mol, resp=fast"
+1	"18:20:31"	319.0	0	19.8	0.285	249	4.97	1.33	26.25	6	1.42	1	2.84	26.40	26.25	26.38	409.73	379.51	22.337	29.068	46.59	60.63	430.4	1499	3	72.06	16.4	0.958	0.6	-0.22	2.74	1.00	0.00	0.16	111115
+"18:20:31 Lamp: ParIn ->  1800 uml"
+"18:22:20 Flow: H2OS -> 29.22 mmol/mol, resp=fast"
+2	"18:22:31"	439.5	0	19.8	0.292	255	5.3	1.39	26.53	6	1.42	1	2.84	26.44	26.53	26.41	411.28	383.30	22.470	29.057	46.94	60.47	468.9	1799	3	72.07	16.5	0.946	1.0	-0.22	2.74	1.00	0.00	0.16	111115
+"18:22:31 Lamp: ParIn ->  1500 uml"
+"18:24:24 Flow: H2OS -> 29.22 mmol/mol, resp=fast"
+3	"18:24:36"	564.5	0	19.6	0.287	256	5.04	1.34	26.29	6	1.42	1	2.84	26.45	26.29	26.43	413.43	384.15	22.379	29.041	46.60	60.40	440.3	1500	3	72.07	16.7	0.952	1.0	-0.22	2.74	1.00	0.00	0.16	111115
+"18:24:36 Lamp: ParIn ->  1100 uml"
+"18:26:25 Flow: H2OS -> 29.22 mmol/mol, resp=fast"
+4	"18:26:37"	685.0	0	18.2	0.269	256	4.47	1.26	25.91	6	1.42	1	2.84	26.44	25.91	26.43	413.22	382.77	22.428	29.057	46.80	60.49	392.7	1101	3	72.08	16.7	0.955	1.0	-0.22	2.74	1.00	0.00	0.16	111115
+"18:26:37 Lamp: ParIn ->  700 uml"
+"18:28:26 Flow: H2OS -> 29.22 mmol/mol, resp=fast"
+5	"18:28:47"	815.0	0	16.7	0.251	259	3.92	1.18	25.48	6	1.42	1	2.84	26.37	25.48	26.40	413.89	382.17	22.432	29.061	46.87	60.72	344.2	701	3	72.08	16.5	0.959	0.6	-0.22	2.74	1.00	0.00	0.16	111115
+"18:28:47 Lamp: ParIn ->  400 uml"
+"18:30:36 Flow: H2OS -> 29.22 mmol/mol, resp=fast"
+6	"18:30:50"	938.5	0	13.2	0.237	279	3.48	1.1	25.10	6	1.42	1	2.84	26.30	25.10	26.34	411.49	383.09	22.476	29.055	47.18	60.99	307.7	401	3	72.08	16.5	0.977	1.0	-0.22	2.74	1.00	0.00	0.16	111115
+"18:30:50 Lamp: ParIn ->  200 uml"
+"18:33:02 Flow: H2OS -> 29.22 mmol/mol, resp=fast"
+7	"18:33:13"	1081.0	0	8.02	0.213	311	2.97	1.04	24.77	6	1.42	1	2.84	26.19	24.77	26.26	403.10	383.03	22.713	29.037	48.27	61.36	273.8	201	3	72.09	16.5	0.972	1.0	-0.22	2.74	1.00	0.00	0.16	111115
+"18:33:13 Lamp: ParIn ->  100 uml"
+"18:35:41 Flow: H2OS -> 29.22 mmol/mol, resp=fast"
+8	"18:36:02"	1250.5	0	4.25	0.199	339	2.63	0.982	24.47	6	1.42	1	2.84	26.02	24.47	26.13	396.55	382.85	22.448	29.110	47.90	62.12	230.1	100	3	72.09	16.3	0.969	0.4	-0.22	2.74	1.00	0.00	0.16	111115
+"18:36:02 Lamp: ParIn ->  50 uml"
+"18:39:48 Flow: H2OS -> 29.22 mmol/mol, resp=fast"
+9	"18:40:09"	1497.5	0	1.8	0.173	358	2.14	0.914	24.07	6	1.42	1	2.84	25.71	24.07	25.86	391.91	383.20	22.128	29.030	48.10	63.10	180.6	50	3	72.1	16.1	0.958	0.8	-0.22	2.74	1.00	0.00	0.16	111115
+"18:40:09 Lamp: ParIn ->  0 uml"
+"18:45:30 Flow: H2OS -> 29.22 mmol/mol, resp=fast"
+10	"18:45:51"	1839.5	0	-1.69	0.153	395	1.86	0.891	23.96	6	1.42	1	2.84	25.40	23.96	25.49	380.12	384.22	21.468	29.074	47.54	64.39	142.6	0	3	72.12	15.9	0.932	0.6	-0.22	2.74	1.00	0.00	0.16	111115
+"18:45:51 Lamp: ParIn ->  0 uml"
+"18:45:51 CO2 Mixer: CO2S -> 384 uml"
+"18:45:51 Coolers: Off"
+"18:45:51 Flow: H2OS -> 29.22 mmol/mol, resp=fast"
