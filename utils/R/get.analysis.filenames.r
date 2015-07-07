@@ -6,7 +6,7 @@
 ##' @return a filename
 ##' @export
 ##'
-##' Generally uses values in settings, but can be overwritten for manual uses
+##' @details Generally uses values in settings, but can be overwritten for manual uses
 ##' @author Ryan Kelly
 ensemble.filename <- function(settings, 
                               prefix = "ensemble.samples", suffix = "Rdata", 
@@ -37,13 +37,13 @@ ensemble.filename <- function(settings,
 
 ##' Generate sensitivity analysis filenames
 ##' 
-##' @name sensitivity analysis.filename
+##' @name sensitivity.filename
 ##' @title Generate sensitivity analysis filenames
 ##' 
 ##' @return a filename
 ##' @export
 ##'
-##' Generally uses values in settings, but can be overwritten for manual uses
+##' @details  Generally uses values in settings, but can be overwritten for manual uses
 ##' @author Ryan Kelly
 sensitivity.filename <- function(settings, 
                               prefix = "sensitivity.samples", suffix = "Rdata", 

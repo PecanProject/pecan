@@ -6,7 +6,7 @@
 \title{Code to convert MODELS's output into netCDF format}
 \usage{
 model2netcdf.LINKAGES(outdir, sitelat, sitelon, start_date = NULL,
-  end_date = NULL, force = FALSE)
+  end_date = NULL, force = FALSE, PFTs)
 }
 \arguments{
 \item{outdir}{Location of model output}
@@ -23,6 +23,6 @@ model2netcdf.LINKAGES(outdir, sitelat, sitelon, start_date = NULL,
 Convert MODEL output into the NACP Intercomparison format (ALMA using netCDF)
 }
 \author{
-Ann Raiho
+Ann Raiho # I changed this a bunch to do the MIP runs... Might need to change it back. Didn't commit additions for MIP runs.
 }
 

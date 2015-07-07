@@ -4,7 +4,8 @@
 \alias{run.ensemble.analysis}
 \title{run ensemble.analysis}
 \usage{
-run.ensemble.analysis(plot.timeseries = NA)
+run.ensemble.analysis(plot.timeseries = NA, ensemble.id = NULL,
+  variable = NULL, start.year = NULL, end.year = NULL, ...)
 }
 \arguments{
 \item{plot.timeseries}{if TRUE plots a modeled timeseries of target variable(s) with CIs}
@@ -16,6 +17,6 @@ nothing, creates ensemble plots as ensemble.analysis.pdf
 run ensemble.analysis
 }
 \author{
-David LeBauer, Shawn Serbin
+David LeBauer, Shawn Serbin, Ryan Kelly
 }
 
