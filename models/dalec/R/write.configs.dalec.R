@@ -20,7 +20,10 @@ convert.samples.DALEC <- function(trait.samples){
     trait.samples[['SLA']] <- trait.samples[['SLA']] / DEFAULT.LEAF.C / 1000
   }
   
-  #t1 rate variable controling decomposition from litter to soil organinc matter [UNITS?]
+  #t1 rate variable controling decomposition from litter to soil organinc matter [day-1, ref T 10C]
+  if("litter_decomposition_to_SOM" %in% names(trait.samples)){
+    names(trait.samples)[which(names(trait.samples)=="litter_decomposition_to_SOM")] <- "t1"
+  }
   
   #t2 proportion of GPP lost to autotrophic respiration
   if("autotrophic_respiration_fraction" %in% names(trait.samples)){
@@ -55,9 +58,15 @@ convert.samples.DALEC <- function(trait.samples){
     names(trait.samples)[which(names(trait.samples)=="root_turnover_rate")] <- "t7"
   }
   
-  #t8 rate variable controlling respiration from litter [UNITS?]
+  #t8 rate variable controlling respiration from litter [day-1, ref T 10C]
+  if("litter_respiration_rate" %in% names(trait.samples)){
+    names(trait.samples)[which(names(trait.samples)=="litter_respiration_rate")] <- "t8"
+  }
   
-  #t9 rate variable controlling respiration from soil organic matter and woody debris [UNITS?]
+  #t9 rate variable controlling respiration from soil organic matter and woody debris [day-1, ref T 10C]
+  if("som_respiration_rate" %in% names(trait.samples)){
+    names(trait.samples)[which(names(trait.samples)=="som_respiration_rate")] <- "t8"
+  }
   
   ### INITIAL CONDITIONS
   
