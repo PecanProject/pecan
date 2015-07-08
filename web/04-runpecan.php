@@ -71,7 +71,7 @@ if (!isset($_REQUEST['ensemble'])) {
 $ensemble = $_REQUEST['ensemble'];
 
 $sensitivity = array();
-$sensitivity = explode(",",$_REQUEST['sensitivity']);
+$sensitivity = array_filter(explode(",",$_REQUEST['sensitivity']),'strlen');
 
 
 # check met info
@@ -226,7 +226,8 @@ fwrite($fh, "    <size>${ensemble}</size>" . PHP_EOL);
 fwrite($fh, "    <variable>NPP</variable>" . PHP_EOL);
 fwrite($fh, "  </ensemble>" . PHP_EOL);
 
-if ($sensitivity.length == 0) {
+# if ($sensitivity.length == 0) {
+if (count($sensitivity) > 0) {
 	fwrite($fh, "  <sensitivity.analysis>" . PHP_EOL);
 	fwrite($fh, "    <quantiles>" . PHP_EOL);
 	foreach($sensitivity as $s) {
