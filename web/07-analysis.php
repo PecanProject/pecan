@@ -190,6 +190,12 @@ $stmt->closeCursor();
       <label>Ensemble<sup>*</sup></label>
       <input type="text" name="ensemble" id="ensemble" value="<?php echo 1; ?>" onChange="validate();"/>
       <div class="spacer"></div>
+      <label>Sensitivity</label>
+      <input type="text" name="sensitivity" id="sensitivity" value="<?php echo ""; ?>" onChange="validate();"/>
+      <div class="spacer"></div>
+      <label>Sets sigma and quantiles.</label>
+      <label>Example, "-1,0,1".</label>
+      <div class="spacer"></div>
 
       <p></p>
       <span id="error" class="small">&nbsp;</span>
