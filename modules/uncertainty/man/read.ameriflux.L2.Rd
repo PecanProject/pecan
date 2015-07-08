@@ -13,6 +13,6 @@ Ameriflux L2 data read from file
 Read Ameriflux L2 Data
 }
 \author{
-???
+Mike Dietze, Carl Davidson
 }
 

@@ -21,7 +21,7 @@
 ##' @param end.year last year to include in ensemble analysis
 ##' @param variables targe variables for ensemble analysis
 ##' @export
-##' @author Ryan Kelly, ???
+##' @author Ryan Kelly, David LeBauer, Rob Kooper
 #--------------------------------------------------------------------------------------------------#
 read.ensemble.output <- function(ensemble.size, pecandir, outdir, 
                                  start.year, end.year, variable, ens.run.ids=NULL){

@@ -32,6 +32,6 @@ dataframe with one col per quantile analysed and one row per trait,
 Reads output of sensitivity analysis runs
 }
 \author{
-Ryan Kelly, ???
+Ryan Kelly, David LeBauer, Rob Kooper, Mike Dietze
 }
 

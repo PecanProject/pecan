@@ -28,6 +28,6 @@ List of parameters from the fitted uncertainty model
 Calculate parameters for heteroskedastic flux uncertainty
 }
 \author{
-???
+Mike Dietze, Carl Davidson
 }
 

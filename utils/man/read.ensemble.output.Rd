@@ -31,6 +31,6 @@ Reads output for an ensemble of length specified by \code{ensemble.size} and bou
 and \code{end.year}
 }
 \author{
-Ryan Kelly, ???
+Ryan Kelly, David LeBauer, Rob Kooper
 }
 

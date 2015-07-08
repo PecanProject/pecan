@@ -13,6 +13,6 @@ Difference between consecutive measurements
 Get delta between sequential flux datapoints
 }
 \author{
-???
+Mike Dietze, Carl Davidson
 }
 
