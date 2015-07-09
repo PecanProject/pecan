@@ -63,7 +63,7 @@ run.sensitivity.analysis <- function(plot=TRUE, ensemble.id=NULL, variable=NULL,
       fname <- sensitivity.filename(settings, "sensitivity.samples", "Rdata", 
                  ensemble.id=ensemble.id, all.var.yr=TRUE)
     } else {
-      ensemble.id <- fname <- NULL
+      ensemble.id <- NULL
     }
     if(file.exists(fname)) load(fname)
 
