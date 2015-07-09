@@ -22,13 +22,15 @@ insertPmet <- function(vals, nc2, var2, dim2, units2=NA, conv=NULL, missval=-699
 ##' 
 ##' @author Mike Dietze
 met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE,...){
-  # get start/end year code works on whole years only
-  start_year <- year(start_date)
-  end_year <- year(end_date)
   
   #---------------- Load libraries. -----------------------------------------------------------------#
   require(ncdf4)
+  require(lubridate)
   #--------------------------------------------------------------------------------------------------#  
+  
+  # get start/end year code works on whole years only
+  start_year <- year(start_date)
+  end_year <- year(end_date)
   
   if(!file.exists(outfolder)){
     dir.create(outfolder)
