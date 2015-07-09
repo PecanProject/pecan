@@ -15,7 +15,7 @@
 ##' @title Read Ameriflux L2 Data
 ##' @return Ameriflux L2 data read from file
 ##' @export
-##' @author ???
+##' @author Mike Dietze, Carl Davidson
 ##'
 read.ameriflux.L2 <- function(file.name, year){
   data<-as.data.frame(read.table(file.name, header=TRUE, sep=',', 
@@ -30,7 +30,7 @@ read.ameriflux.L2 <- function(file.name, year){
 ##' @title Get delta between sequential flux datapoints
 ##' @return Difference between consecutive measurements
 ##' @export
-##' @author ???
+##' @author Mike Dietze, Carl Davidson
 ##'
 get.change <- function(measurement){
   gaps <- measurement %in% c(-6999, -9999)
@@ -57,7 +57,7 @@ get.change <- function(measurement){
 ##' @param minBin = minimum number of points allowed in a bin
 ##' @return List of parameters from the fitted uncertainty model
 ##' @export
-##' @author ???
+##' @author Mike Dietze, Carl Davidson
 flux.uncertainty <- function(measurement, QC=0, flags=TRUE, bin.num=10, transform=identity, minBin=5,...){
   ## calcuate paired differences between points
   change <- get.change(measurement)

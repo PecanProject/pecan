@@ -68,7 +68,11 @@ if (isset($_REQUEST['email'])) {
 if (!isset($_REQUEST['ensemble'])) {
   die("Need an ensemble value.");
 }
-$ensemble=$_REQUEST['ensemble'];
+$ensemble = $_REQUEST['ensemble'];
+
+$sensitivity = array();
+$sensitivity = array_filter(explode(",",$_REQUEST['sensitivity']),'strlen');
+
 
 # check met info
 if (isset($_REQUEST['input_met']) && is_numeric($_REQUEST['input_met'])) {
@@ -221,6 +225,18 @@ fwrite($fh, "  <ensemble>" . PHP_EOL);
 fwrite($fh, "    <size>${ensemble}</size>" . PHP_EOL);
 fwrite($fh, "    <variable>NPP</variable>" . PHP_EOL);
 fwrite($fh, "  </ensemble>" . PHP_EOL);
+
+# if ($sensitivity.length == 0) {
+if (count($sensitivity) > 0) {
+	fwrite($fh, "  <sensitivity.analysis>" . PHP_EOL);
+	fwrite($fh, "    <quantiles>" . PHP_EOL);
+	foreach($sensitivity as $s) {
+		fwrite($fh, "      <sigma>${s}</sigma>" . PHP_EOL);
+	}	
+	fwrite($fh, "    </quantiles>" . PHP_EOL);
+	fwrite($fh, "    <variable>NPP</variable>" . PHP_EOL);
+	fwrite($fh, "  </sensitivity.analysis>" . PHP_EOL);
+}
 
 fwrite($fh, "  <model>" . PHP_EOL);
 fwrite($fh, "    <id>${modelid}</id>" . PHP_EOL);
