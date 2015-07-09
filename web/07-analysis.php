@@ -26,6 +26,7 @@ if ($authentication) {
 $userok=isset($_REQUEST['userok']);
 $offline=isset($_REQUEST['offline']);
 $pecan_edit = (isset($_REQUEST['pecan_edit'])) ? "checked" : "";
+$adv_setup = (isset($_REQUEST['adv_setup'])) ? "checked" : "";
 $model_edit = (isset($_REQUEST['model_edit'])) ? "checked" : "";
 $browndog = (isset($_REQUEST['browndog'])) ? "checked" : "";
 $qsub = (isset($_REQUEST['qsub'])) ? "checked" : "";
@@ -99,7 +100,7 @@ $stmt->closeCursor();
     $("#error").html("&nbsp;");
 
     // ensemble 
-    if ($("#ensemble").val().length < 1 || $("#ensemble").val() < 1 || !/^[0-9]+$/.test($("#ensemble").val())) {
+    if ($("#runs").val().length < 1 || $("#runs").val() < 1 || !/^[0-9]+$/.test($("#runs").val())) {
         $("#next").attr("disabled", "disabled");
         $("#error").html("The ensemble should be a positive integer value.");
     }
@@ -187,15 +188,31 @@ $stmt->closeCursor();
 ?>
 
       <div class="spacer"></div>
-      <label>Ensemble<sup>*</sup></label>
-      <input type="text" name="ensemble" id="ensemble" value="<?php echo 1; ?>" onChange="validate();"/>
+      <label title="Enable number of run for analysis">Ensemble analysis</label>
+      <input id="ensemble_analysis" name="ensemble_analysis" type="checkbox" checked disabled/>
       <div class="spacer"></div>
-      <label>Sensitivity</label>
+      <label>Runs<sup>*</sup></label>
+      <input type="text" name="runs" id="runs" value="<?php echo 1; ?>" onChange="validate();"/>
+      <div class="spacer"></div>
+      <label>Variables<sup>*</sup></label>
+      <input type="text" name="variables" id="variables" value="<?php echo "NPP"; ?>" onChange="validate();" disabled />
+      <div class="spacer"></div>
+      <label>Notes</label>
+      <!--<input type="text" name="notes" id="notes" value="" />-->
+      <textarea name="notes" id="notes" rows="4" width="184px" style="padding:4px 2px;width:184px;font-size:12px;border: solid 1px #aacfe4;text-overflow:ellipsis;"></textarea>
+      <div class="spacer"></div>
+<span style="display:none;">
+      <div class="spacer"></div>
+      <label title="Enable sensitivity for analysis">Enable sensitivity</label>
+      <input id="sensitivity_analysis" name="sensitivity_analysis" type="checkbox"  disabled/>
+      <div class="spacer"></div>
+      <label type="hidden">Sensitivity</label>
       <input type="text" name="sensitivity" id="sensitivity" value="<?php echo ""; ?>" onChange="validate();"/>
       <div class="spacer"></div>
       <label>Sets sigma and quantiles.</label>
       <label>Example, "-1,0,1".</label>
       <div class="spacer"></div>
+</span>
 
       <p></p>
       <span id="error" class="small">&nbsp;</span>
