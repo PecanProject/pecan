@@ -30,7 +30,6 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     result <- browndog.met(browndog, met, site, start_date, end_date, model, dir)
 
     if (is.data.frame(result)) {
-      print(result)
       dbfile.input.insert(in.path= dirname(result$file),
                           in.prefix = result$dbfile.name,
                           siteid = site$id,
