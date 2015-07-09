@@ -21,7 +21,7 @@ insertPmet <- function(vals, nc2, var2, dim2, units2=NA, conv=NULL, missval=-699
 ##' @param overwrite should existing files be overwritten
 ##' 
 ##' @author Mike Dietze
-met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE,...){
+met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, lat, lon, overwrite=FALSE, verbose=FALSE,...){
   
   #---------------- Load libraries. -----------------------------------------------------------------#
   require(ncdf4)
@@ -44,7 +44,7 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, o
   rows <- end_year - start_year + 1
   results <- data.frame(file=character(rows), host=character(rows),
                         mimetype=character(rows), formatname=character(rows),
-                        startdate=character(rows), enddate=character(rows),
+                        startdate=character(rows), enddate=character(rows),dbfile.name = in.prefix,
                         stringsAsFactors = FALSE)
   for(year in start_year:end_year){
     my.prefix = in.prefix; if(nchar(my.prefix)>0) my.prefix = paste0(my.prefix,".")
@@ -105,8 +105,8 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, o
     tdim$units = "days since 1700-01-01 00:00:00"
     tdim$vals = met[['time']]
     tdim$len = length(tdim$vals)
-    latlon = nc1$dim$lat$vals
-    latlon[2] = nc1$dim$lon$vals
+    latlon = lat # nc1$dim$lat$vals
+    latlon[2] = lon # nc1$dim$lon$vals
     lat <- ncdim_def(name='latitude', units='', vals=1:1, create_dimvar=FALSE)
     lon <- ncdim_def(name='longitude', units='', vals=1:1, create_dimvar=FALSE)
     time <- ncdim_def(name='time', units=tdim$units, vals=tdim$vals, create_dimvar=TRUE, unlim=TRUE)
@@ -222,7 +222,7 @@ met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, ove
   rows <- end_year - start_year + 1
   results <- data.frame(file=character(rows), host=character(rows),
                         mimetype=character(rows), formatname=character(rows),
-                        startdate=character(rows), enddate=character(rows),
+                        startdate=character(rows), enddate=character(rows), dbfile.name = in.prefix,
                         stringsAsFactors = FALSE)
   for(year in start_year:end_year){
     new.file <- file.path(outfolder, paste(in.prefix, year, "nc", sep="."))
