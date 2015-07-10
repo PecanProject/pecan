@@ -220,18 +220,18 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     print(check)
     if(length(check)>0){
       cf.id <- list(input.id=check$container_id, dbfile.id=check$id)
-    }
-
-    fcn1 <- paste0("met2CF.",met)
-    fcn2 <- paste0("met2CF.",register$format$mimetype)
-    if(exists(fcn1)){
-      fcn <- fcn1
-    }else if(exists(fcn2)){
-      fcn <- fcn2
-    }else{logger.error("met2CF function doesn't exists")}
-
-    cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
-                           username,con=con,hostname=host$name,browndog=NULL,write=TRUE)
+    }else{
+      fcn1 <- paste0("met2CF.",met)
+      fcn2 <- paste0("met2CF.",register$format$mimetype)
+      if(exists(fcn1)){
+        fcn <- fcn1
+      }else if(exists(fcn2)){
+        fcn <- fcn2
+      }else{logger.error("met2CF function doesn't exists")}
+      
+      cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
+                             username,con=con,hostname=host$name,browndog=NULL,write=TRUE,site$lat,site$lon) 
+    }  
   }
 
   logger.info("Finished change to CF Standards")
