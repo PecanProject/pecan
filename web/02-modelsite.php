@@ -319,6 +319,12 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
       <input type="checkbox" id="conversion" name="conversion" onChange="modelSelected();" /> 
       <div class="spacer"></div>
 
+      <label id="qsublabel">qsub:</label>
+      <input type="checkbox" id="qsub" name="qsub" /> 
+      <div class="spacer"></div>
+
+
+
       <label id="sitelabel">Site:</label>
       <input name="siteid" id="siteid" type="hidden" value="<?php echo $siteid; ?>"/>
       <input name="sitename" id="sitename" type="text" />

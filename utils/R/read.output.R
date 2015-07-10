@@ -127,7 +127,7 @@ read.output <- function(runid, outdir, start.year=NA,
   }
   
   print(paste("----- Mean ", variables, " : ",
-              lapply(result, median, na.rm = TRUE)))
+              lapply(result, mean, na.rm = TRUE)))
   print(paste("----- Median ", variables, ": ",
               lapply(result, median, na.rm = TRUE)))
   return(result)

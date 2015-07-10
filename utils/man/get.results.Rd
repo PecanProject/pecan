@@ -4,7 +4,8 @@
 \alias{get.results}
 \title{Generate model output for PEcAn analyses}
 \usage{
-get.results(settings)
+get.results(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
+  variable = NULL, start.year = NULL, end.year = NULL)
 }
 \arguments{
 \item{settings}{list, read from settings file (xml) using \code{\link{read.settings}}}
@@ -16,6 +17,6 @@ Reads model output and runs sensitivity and ensemble analyses
 Output is placed in model output directory (settings$modeloutdir).
 }
 \author{
-David LeBauer, Shawn Serbin, Mike Dietze
+David LeBauer, Shawn Serbin, Mike Dietze, Ryan Kelly
 }
 

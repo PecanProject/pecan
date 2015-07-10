@@ -9,6 +9,14 @@
 
 
 #--------------------------------------------------------------------------------------------------#
+##' Read Ameriflux L2 Data
+##' 
+##' @name read.ameriflux.L2
+##' @title Read Ameriflux L2 Data
+##' @return Ameriflux L2 data read from file
+##' @export
+##' @author Mike Dietze, Carl Davidson
+##'
 read.ameriflux.L2 <- function(file.name, year){
   data<-as.data.frame(read.table(file.name, header=TRUE, sep=',', 
           na.strings=c('-9999','-6999'), stringsAsFactors=FALSE))
@@ -16,6 +24,14 @@ read.ameriflux.L2 <- function(file.name, year){
   return(data)
 }
 
+##' Get delta between sequential flux datapoints
+##' 
+##' @name get.change
+##' @title Get delta between sequential flux datapoints
+##' @return Difference between consecutive measurements
+##' @export
+##' @author Mike Dietze, Carl Davidson
+##'
 get.change <- function(measurement){
   gaps <- measurement %in% c(-6999, -9999)
          #| quality > 0
@@ -28,12 +44,20 @@ get.change <- function(measurement){
 
 
 #--------------------------------------------------------------------------------------------------#
-## measurement = flux time-series
-## QC = quality control flag time series (0 = best)
-## flags = additional flags on flux filtering of PAIRS (length = 1/2 that of the time series, TRUE = use).
-## bin.num = number of bins (default = 10)
-## transform = transformation of magnitude (default = identity)
-## minBin = minimum number of points allowed in a bin
+##' Calculate parameters for heteroskedastic flux uncertainty
+##' 
+##' @name flux.uncertainty
+##' @title Calculate parameters for heteroskedastic flux uncertainty
+##' @param measurement = flux time-series
+##' @param QC = quality control flag time series (0 = best)
+##' @param flags = additional flags on flux filtering of PAIRS (length = 1/2 that of the 
+##'                time series, TRUE = use).
+##' @param bin.num = number of bins (default = 10)
+##' @param transform = transformation of magnitude (default = identity)
+##' @param minBin = minimum number of points allowed in a bin
+##' @return List of parameters from the fitted uncertainty model
+##' @export
+##' @author Mike Dietze, Carl Davidson
 flux.uncertainty <- function(measurement, QC=0, flags=TRUE, bin.num=10, transform=identity, minBin=5,...){
   ## calcuate paired differences between points
   change <- get.change(measurement)

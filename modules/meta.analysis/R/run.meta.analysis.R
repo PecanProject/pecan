@@ -14,7 +14,9 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   }
 
   # check to see if run.meta.analysis can be skipped
-  if (file.exists(file.path(pft$outdir, 'trait.mcmc.Rdata')) && file.exists(file.path(pft$outdir, 'post.distns.Rdata'))) {
+  if (file.exists(file.path(pft$outdir, 'trait.mcmc.Rdata')) && 
+      file.exists(file.path(pft$outdir, 'post.distns.Rdata')) &&
+      settings$meta.analysis$update != TRUE ) {
     logger.info("Assuming get.trait copied results already")
     return(pft)
   }
@@ -107,11 +109,18 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   save(trait.mcmc, file = file.path(pft$outdir, 'trait.mcmc.Rdata'))
   
   post.distns <- approx.posterior(trait.mcmc, prior.distns, jagged.data, pft$outdir)
-  save(post.distns, file = file.path(pft$outdir, 'post.distns.Rdata'))
+  save(post.distns, file = file.path(pft$outdir, 'post.distns.MA.Rdata'))
+  
+  # Symlink to post.distns.Rdata (no "MA" identifier)
+  if(file.exists(file.path(pft$outdir, 'post.distns.Rdata'))) {
+    file.remove(file.path(pft$outdir, 'post.distns.Rdata'))
+  }
+  file.symlink(file.path(pft$outdir, 'post.distns.MA.Rdata'), file.path(pft$outdir, 'post.distns.Rdata'))
 
   ### save and store in database all results except those that were there already
   for(file in list.files(path=pft$outdir)) {
-    if (file %in% old.files) {
+    # Skip file if it was there already, or if it's a symlink (like the post.distns.Rdata link above)
+    if (file %in% old.files || nchar(Sys.readlink(file.path(pft$outdir, file))) > 0) {
       next
     }
     filename <- file.path(pathname, file)

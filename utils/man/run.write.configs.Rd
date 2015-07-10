@@ -4,18 +4,30 @@
 \alias{run.write.configs}
 \title{Run model specific write configuration functions}
 \usage{
-run.write.configs(settings, write = TRUE)
+run.write.configs(settings, write = TRUE, ens.sample.method = "halton",
+  posterior.files = rep(NA, length(settings$pfts)))
 }
 \arguments{
 \item{write}{should the runs be written to the database}
 
+\item{ens.sample.method}{how to sample the ensemble members("halton" sequence or "uniform" random)}
+
+\item{posterior.files}{Filenames for posteriors for drawing samples for ensemble and sensitivity
+   analysis (e.g. post.distns.Rdata, or prior.distns.Rdata). Defaults to NA, in which case the
+   most recent posterior or prior (in that order) for the workflow is used. Should be a vector,
+   with one entry for each PFT. File name only; PFT outdirs will be appended (this forces use of only
+   files within this workflow, to avoid confusion).}
+
 \item{model}{the ecosystem model to generate the configuration files for}
+}
+\value{
+an updated settings list, which includes ensemble IDs for SA and ensemble analysis
 }
 \description{
 Main driver function to call the ecosystem model specific (e.g. ED, SiPNET)
 run and configuration file scripts
 }
 \author{
-David LeBauer, Shawn Serbin
+David LeBauer, Shawn Serbin, Ryan Kelly
 }
 
