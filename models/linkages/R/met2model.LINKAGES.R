@@ -80,6 +80,8 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   }
   
   nyear = length(year) #number of years to simulate
+  
+  # need to decide if default ipolat_nums will be smaller with optional argument to function 
   ipolat_nums = seq(2,nyear,25) #years for climate interpolation
   mean_ncprecipf_mm = matrix(0,length(ipolat_nums),12) ; mean_ncprecipf_cm = mean_ncprecipf_mm; sd_ncprecipf_mm = mean_ncprecipf_mm ;sd_ncprecipf_cm = mean_ncprecipf_mm
   
@@ -116,16 +118,25 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   
   mean_nctemp_C <- round(mean_nctemp - 273.15, digits = 1)
   sd_nctemp_C <- round(sd_nctemp, digits = 1)
+
+  write.table(rbind(mean_nctemp_C,sd_nctemp_C,mean_ncprecipf_cm,sd_ncprecipf_cm),
+              out.file,quote = FALSE,sep=",",col.names=FALSE,row.names=FALSE)
   
-  spin_up = 20
-  spin_up_mean_nctemp_C = mean_nctemp_C[1:spin_up,]
-  spin_up_sd_nctemp_C = sd_nctemp_C[1:spin_up,]
-  spin_up_mean_ncprecipf_cm = mean_ncprecipf_cm[1:spin_up,]
-  spin_up_sd_ncprecipf_cm = sd_ncprecipf_cm[1:spin_up,]
   
-  write.table(rbind(spin_up_mean_nctemp_C,mean_nctemp_C,
-                    spin_up_sd_nctemp_C,sd_nctemp_C,
-                    spin_up_mean_ncprecipf_cm,mean_ncprecipf_cm,
-                    spin_up_sd_ncprecipf_cm,sd_ncprecipf_cm),out.file,quote = FALSE,sep=",",col.names=FALSE,row.names=FALSE)
+##' Spin up section:
+##' This will ultimately end up outside of the met2model function
+
+#   spin_up = 20
+#   spin_up_mean_nctemp_C = mean_nctemp_C[1:spin_up,]
+#   spin_up_sd_nctemp_C = sd_nctemp_C[1:spin_up,]
+#   spin_up_mean_ncprecipf_cm = mean_ncprecipf_cm[1:spin_up,]
+#   spin_up_sd_ncprecipf_cm = sd_ncprecipf_cm[1:spin_up,]
+#   
+#   write.table(rbind(spin_up_mean_nctemp_C,mean_nctemp_C,
+#                     spin_up_sd_nctemp_C,sd_nctemp_C,
+#                     spin_up_mean_ncprecipf_cm,mean_ncprecipf_cm,
+#                     spin_up_sd_ncprecipf_cm,sd_ncprecipf_cm),out.file,quote = FALSE,sep=",",col.names=FALSE,row.names=FALSE)
+  
+  
   invisible(results)
 }
