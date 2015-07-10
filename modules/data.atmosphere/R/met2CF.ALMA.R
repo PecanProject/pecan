@@ -26,6 +26,7 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, o
   #---------------- Load libraries. -----------------------------------------------------------------#
   require(ncdf4)
   require(lubridate)
+  require(PEcAn.utils)
   #--------------------------------------------------------------------------------------------------#  
   
   # get start/end year code works on whole years only
