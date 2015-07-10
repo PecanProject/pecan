@@ -48,7 +48,8 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, l
                         stringsAsFactors = FALSE)
   for(year in start_year:end_year){
     my.prefix = in.prefix; if(nchar(my.prefix)>0) my.prefix = paste0(my.prefix,".")
-    new.file <- file.path(outfolder, paste0(my.prefix, year, ".nc"))
+    new.file <- file.path(outfolder, sprintf("%s%04d.nc",my.prefix,year))
+    
     
     row <- year - start_year + 1
     results$file[row] <- new.file
