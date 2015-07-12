@@ -8,16 +8,15 @@
 ##' @param end_year
 ##' 
 ##' @author Betsy Cowdery
-download.PalEON <- function(outfolder, start_date, end_date, overwrite=FALSE){
+download.PalEON <- function(sitename, outfolder, start_date, end_date, overwrite=FALSE){
   
-  sites <- c("PBL","PDL","PHA","PHO","PMB","PUN")
-  
-  for(s in sites){
-    if(grepl(s, outfolder)){
-      outfolder <- file.path("/projectnb/dietzelab/paleon/met_regional/phase1a_met_drivers_v4.2",s)  
-    } 
-  }
-  
+  if(sitename == "Harvard Forest - Lyford Plots (PalEON PHA)"){site <- "PHA"}      # 1-650 done
+  else if(sitename == "Howland Forest- main tower (US-Ho1) (PalEON PHO)"){site <- "PHO"} # 0-759
+  else if(sitename == "Billy’s Lake (PalEON PBL)"){site <- "PBL"}   # 1-672 done
+  else if(sitename == "Deming Lake (PalEON PDL)"){site <- "PDL"}    # 1-673 done
+  else if(sitename == "Minden Bog (PalEON PMB)"){site <- "PMB"}     # 1-674 done
+  else if(sitename == "University of Notre Dame Environmental Research Center (PalEON UNDERC)"){site <- "PUN"}         # 1-675 done
+
   require(PEcAn.utils)
   require(lubridate)
   start_date <- as.POSIXlt(start_date, tz = "GMT")
@@ -55,7 +54,7 @@ download.PalEON <- function(outfolder, start_date, end_date, overwrite=FALSE){
           }
           row <- (which(vlist==v)-1)*Y*M + (which(ylist==y)-1)*M + m
           #print(row)
-          results$file[row] <- outfolder
+          results$file[row] <- dirname(file)
           results$host[row] <- fqdn()
           results$startdate[row] <- paste0(y,"-01-01 00:00:00")
           results$enddate[row] <- paste0(y,"-12-31 23:59:59")
