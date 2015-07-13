@@ -100,6 +100,10 @@ if [ "${CREATE}" == "YES" -a "${OWNER}" == "" ]; then
   echo "Can not create database without owner"
   exit 1
 fi
+if [ "${MYSITE}" == "${REMOTESITE}" ]; then
+  echo "Can not have same remotesite as mysite"
+  exit 1
+fi
 
 # list of all tables, schema_migrations is ignored since that
 # will be imported during creaton
