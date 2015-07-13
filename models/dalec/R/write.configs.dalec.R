@@ -20,15 +20,67 @@ convert.samples.DALEC <- function(trait.samples){
     trait.samples[['SLA']] <- trait.samples[['SLA']] / DEFAULT.LEAF.C / 1000
   }
   
+  #t1 rate variable controling decomposition from litter to soil organinc matter [day-1, ref T 10C]
+  if("litter_decomposition_to_SOM" %in% names(trait.samples)){
+    names(trait.samples)[which(names(trait.samples)=="litter_decomposition_to_SOM")] <- "t1"
+  }
+  
+  #t2 proportion of GPP lost to autotrophic respiration
+  if("autotrophic_respiration_fraction" %in% names(trait.samples)){
+    names(trait.samples)[which(names(trait.samples)=="autotrophic_respiration_fraction")] <- "t2"
+  }
+  
+  #t3 proportion of NPP allocated to foliage
+  if("leaf_allocation_fraction" %in% names(trait.samples)){
+    names(trait.samples)[which(names(trait.samples)=="leaf_allocation_fraction")] <- "t3"
+  }
+  
+  #t4 proportion of NPP allocated to roots
+  if("root_allocation_fraction" %in% names(trait.samples)){
+    names(trait.samples)[which(names(trait.samples)=="root_allocation_fraction")] <- "t4"
+  }
+  
+  #t5 proportion of foliage becoming litter every time step
   if('leaf_turnover_rate' %in% names(trait.samples)){
     trait.samples[['leaf_turnover_rate']] <- trait.samples[['leaf_turnover_rate']]/365
     names(trait.samples)[which(names(trait.samples)=="leaf_turnover_rate")] <- "t5"
   }
   
+  #t6 proportion of woody material becoming woody debris every time step
+  if('wood_turnover_rate' %in% names(trait.samples)){
+    trait.samples[['wood_turnover_rate']] <- trait.samples[['wood_turnover_rate']]/365
+    names(trait.samples)[which(names(trait.samples)=="wood_turnover_rate")] <- "t7"
+  }
+  
+  #t7 proportion of fine roots becoming soil/woody debris every time step
   if('root_turnover_rate' %in% names(trait.samples)){
     trait.samples[['root_turnover_rate']] <- trait.samples[['root_turnover_rate']]/365
     names(trait.samples)[which(names(trait.samples)=="root_turnover_rate")] <- "t7"
   }
+  
+  #t8 rate variable controlling respiration from litter [day-1, ref T 10C]
+  if("litter_respiration_rate" %in% names(trait.samples)){
+    names(trait.samples)[which(names(trait.samples)=="litter_respiration_rate")] <- "t8"
+  }
+  
+  #t9 rate variable controlling respiration from soil organic matter and woody debris [day-1, ref T 10C]
+  if("som_respiration_rate" %in% names(trait.samples)){
+    names(trait.samples)[which(names(trait.samples)=="som_respiration_rate")] <- "t9"
+  }
+  
+  ### INITIAL CONDITIONS
+  
+  #cf0 initial canopy foliar carbon (g/m2)
+
+  #cw0 initial pool of woody carbon (g/m2)
+  
+  #cr0 initial pool of fine root carbon (g/m2)
+  
+  #cl0 initial pool of litter carbon (g/m2)
+  
+  #cs0 initial pool of soil organic matter and woody debris carbon (g/m2)
+  
+  
   
   return(trait.samples)
 }

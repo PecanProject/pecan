@@ -19,7 +19,7 @@ PG_OPT=${PG_OPT:-""}
 # ID's used in database
 # These ID's need to be unique for the sharing to work. If you want
 # to share your data, send email to kooper@illinois.edu to claim
-# your ID range. The master list is maintained at 
+# your ID range. The master list is maintained at
 # https://github.com/PecanProject/bety/wiki/Distributed-BETYdb
 #
 #  0 - EBI           - David LeBauer
@@ -53,7 +53,7 @@ USERS=${USERS:-"NO"}
 # ----------------------------------------------------------------------
 
 # parse command line options
-while getopts c:d:hm:l:o:p:t:u: opt; do
+while getopts c:d:hm:o:p:r:t:u: opt; do
   case $opt in
   c)
     CREATE=$OPTARG
@@ -95,12 +95,22 @@ while getopts c:d:hm:l:o:p:t:u: opt; do
   esac
 done
 
+# simple sanity check
+if [ "${CREATE}" == "YES" -a "${OWNER}" == "" ]; then
+  echo "Can not create database without owner"
+  exit 1
+fi
+if [ "${MYSITE}" == "${REMOTESITE}" ]; then
+  echo "Can not have same remotesite as mysite"
+  exit 1
+fi
+
 # list of all tables, schema_migrations is ignored since that
 # will be imported during creaton
 
 # list of tables that are one to many relationships
 CLEAN_TABLES="citations counties covariates cultivars"
-CLEAN_TABLES="${CLEAN_TABLES} dbfiles ensembles entities formats"
+CLEAN_TABLES="${CLEAN_TABLES} ensembles entities formats"
 CLEAN_TABLES="${CLEAN_TABLES} inputs likelihoods location_yields"
 CLEAN_TABLES="${CLEAN_TABLES} machines managements methods"
 CLEAN_TABLES="${CLEAN_TABLES} mimetypes models"
@@ -110,7 +120,7 @@ CLEAN_TABLES="${CLEAN_TABLES} priors runs sessions sites"
 CLEAN_TABLES="${CLEAN_TABLES} species treatments"
 CLEAN_TABLES="${CLEAN_TABLES} variables workflows"
 CLEAN_TABLES="${CLEAN_TABLES} traits yields"
-CLEAN_TABLES="${CLEAN_TABLES} users"
+CLEAN_TABLES="${CLEAN_TABLES} dbfiles users"
 
 # list of tables that are many to many relationships
 MANY_TABLES="${MANY_TABLES} citations_sites citations_treatments"
@@ -127,9 +137,11 @@ if [ -z "${DUMPURL}" ]; then
 		DUMPURL="https://ebi-forecast.igb.illinois.edu/pecan/dump/bety.tar.gz"
 	elif [ "${REMOTESITE}" == "1" ]; then
 		DUMPURL="http://psql-pecan.bu.edu/sync/dump/bety.tar.gz"
+        elif [ "${REMOTESITE}" == "2" ]; then
+                DUMPURL="https://www.dropbox.com/s/wr8sldv080wa9y8/bety.tar.gz?dl=0"
 	else
 		echo "Don't know where to get data for site ${REMOTESITE}"
-		exit
+		exit 1
 	fi
 fi
 
@@ -137,12 +149,12 @@ fi
 ID_RANGE=1000000000
 
 # before anything is done, check to make sure database exists
-if ! psql -lqt | cut -d \| -f 1 | grep -w "${DATABASE}"; then
+if ! psql -lqt | cut -d \| -f 1 | grep -w "${DATABASE}" > /dev/null ; then
   echo "Database ${DATABASE} does not exist, please create it:"
   echo "(see https://github.com/PecanProject/pecan/wiki/Installing-PEcAn#installing-bety)"
   echo "  sudo -u postgres createuser -d -l -P -R -S bety"
   echo "  sudo -u postgres createdb -O bety ${DATABASE}"
-  exit
+  exit 1
 fi
 
 # make output folder
@@ -150,7 +162,7 @@ DUMPDIR="/tmp/$$"
 mkdir "${DUMPDIR}"
 
 # download dump file and unpack
-curl -L -o "${DUMPDIR}/dump.tar.gz" "${DUMPURL}"
+curl -s -L -o "${DUMPDIR}/dump.tar.gz" "${DUMPURL}"
 tar zxf "${DUMPDIR}/dump.tar.gz" -C "${DUMPDIR}"
 
 # create database if need be, otherwise check version of schema
@@ -169,23 +181,23 @@ if [ "${CREATE}" == "YES" ]; then
 	echo "CREATED SCHEMA"
 
 	printf "Loading  %-25s : " "schema_migrations"
-	ADD=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "\COPY schema_migrations FROM '${DUMPDIR}/schema_migrations.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8'); SELECT COUNT(*) FROM schema_migrations;" | tr -d ' ' )
+	ADD=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY schema_migrations FROM '${DUMPDIR}/schema_migrations.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8'); SELECT COUNT(*) FROM schema_migrations;" | tr -d ' ' )
 	echo "ADDED ${ADD}"
 else
 	printf "Checking %-25s : " "schema"
 
 	# find current schema version
-	VERSION=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c 'SELECT version FROM schema_migrations ORDER BY version DESC limit 1' | tr -d ' ' )
+	VERSION=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c 'SELECT version FROM schema_migrations ORDER BY version DESC limit 1' | tr -d ' ' )
 
 	if [ ! -e "${DUMPDIR}/${VERSION}.schema" ]; then
 		echo "EXPECTED SCHEMA version ${VERSION}"
 		echo "Dump is from a different schema, please fix schema in database."
     if [ "$KEEPTMP" == "YES" ]; then
 		  echo "Files are in ${DUMPDIR}"
-    else 
+    else
       rm -rf "${DUMPDIR}"
     fi
-		exit
+		exit 1
 	fi
 
 	echo "MATCHED SCHEMA version ${VERSION}"
@@ -197,6 +209,34 @@ MY_LAST_ID=$(( MY_START_ID + ID_RANGE - 1 ))
 REM_START_ID=$(( REMOTESITE * ID_RANGE + 1 ))
 REM_LAST_ID=$(( REM_START_ID + ID_RANGE - 1 ))
 
+# common statement pieces used
+REM_WHERE="WHERE (id >= ${REM_START_ID} AND id <= ${REM_LAST_ID})"
+MY_WHERE="WHERE (id >= ${MY_START_ID} AND id <= ${MY_LAST_ID})"
+
+# create psql process that will be used for all code
+PSQL_PIPE_INP=/tmp/psql_inp.$$
+PSQL_PIPE_OUT=/tmp/psql_out.$$
+mkfifo -m 600 $PSQL_PIPE_INP
+mkfifo -m 600 $PSQL_PIPE_OUT
+psql ${PG_OPT} --quiet --no-align --no-readline --tuples-only -P footer=off --dbname ${DATABASE} <$PSQL_PIPE_INP >$PSQL_PIPE_OUT &
+exec 3>$PSQL_PIPE_INP
+exec 4<$PSQL_PIPE_OUT
+PSQL_PID=$!
+echo "Started psql (pid=$PSQL_PID)"
+
+# capture EXIT so we can rollback if needed, as well as cleanup
+trap '
+  if ps -p $PSQL_PID > /dev/null ; then
+    echo "Process killed, no changes are made to the database."
+    echo "ROLLBACK;" >&3
+    kill $PSQL_PID
+  fi
+  rm -f $PSQL_PIPE_INP $PSQL_PIPE_OUT
+' EXIT
+
+# start transaction
+echo "BEGIN;" >&3
+
 # for all tables
 # 1) disable constraints on this table
 # 2) remove all rows that have id in range of remote site
@@ -205,67 +245,65 @@ REM_LAST_ID=$(( REM_START_ID + ID_RANGE - 1 ))
 # 5) enable constraints on this table
 for T in ${CLEAN_TABLES} ${MANY_TABLES}; do
 	printf "Cleaning %-25s : " "${T}"
-  psql -q -d "${DATABASE}" -c "ALTER TABLE ${T} DISABLE TRIGGER ALL;"
-  WHERE="WHERE (id >= ${REM_START_ID} AND id <= ${REM_LAST_ID})"
-	DEL=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM ${T} ${WHERE}" | tr -d ' ' )
-	psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "DELETE FROM ${T} ${WHERE}"
-	echo "DEL ${DEL}"
+  echo "ALTER TABLE ${T} DISABLE TRIGGER ALL;" >&3
+  echo "SELECT count(*) FROM ${T} ${REM_WHERE};" >&3 && read DEL <&4
+  echo "DEL ${DEL}"
+  echo "DELETE FROM ${T} ${REM_WHERE};" >&3
 	printf "Loading  %-25s : " "${T}"
-  START=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT COUNT(*) FROM ${T}" | tr -d ' ' )
+  echo "SELECT COUNT(*) FROM ${T};" >&3 && read START <&4
 	if [ -f "${DUMPDIR}/${T}.csv" ]; then
-		psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "\COPY ${T} FROM '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')"
+		echo "\COPY ${T} FROM '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')" >&3
 	fi
-  END=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT COUNT(*) FROM ${T}" | tr -d ' ' )
+  echo "SELECT COUNT(*) FROM ${T};" >&3 && read END <&4
   ADD=$(( END - START ))
 	echo "ADD ${ADD}"
 	printf "Fixing   %-25s : " "${T}"
-	NEXT=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT setval('${T}_id_seq', ${MY_START_ID}, false); SELECT setval('${T}_id_seq', (SELECT MAX(id) FROM ${T} WHERE id >= ${MY_START_ID} AND id < ${MY_LAST_ID}), true); SELECT last_value from ${T}_id_seq;" | tr -d ' ' )
+	echo "SELECT setval('${T}_id_seq', ${MY_START_ID}, false);" >&3 && read IGN <&4
+  echo "SELECT setval('${T}_id_seq', (SELECT MAX(id) FROM ${T} ${MY_WHERE}), true);" >&3 && read IGN <&4
+  echo "SELECT last_value from ${T}_id_seq;" >&3 && read NEXT <&4
 	echo "SEQ ${NEXT}"
-  psql -q -d "${DATABASE}" -c "ALTER TABLE ${T} ENABLE TRIGGER ALL;"
+  echo "ALTER TABLE ${T} ENABLE TRIGGER ALL;" >&3
 done
 
 # convert user 1 if needed
 if [ "${USERS}" == "YES" -a "${REMOTESITE}" == "0" ]; then
   ID=2
 
-  RESULT=$( psql ${PG_OPT} -U ${OWNER} -t -d "${DATABASE}" -c "SELECT count(id) FROM users WHERE login='carya';" )
-  if [ ${RESULT} -eq 0 ]; then
-    RESULT='UPDATE 0'
-    while [ "${RESULT}" = "UPDATE 0" ]; do
-      RESULT=$( psql ${PG_OPT} -U ${OWNER} -t -d "${DATABASE}" -c "UPDATE users SET login='carya', name='carya', crypted_password='df8428063fb28d75841d719e3447c3f416860bb7', salt='carya', access_level=1, page_access_level=1 WHERE id=${ID};" )
-      ((ID++))
-    done
-  fi
+  echo "SELECT count(id) FROM users WHERE login='carya';" >&3 && read RESULT <&4
+  while [ ${RESULT} -eq 0 ]; do
+    echo "UPDATE users SET login='carya', name='carya', crypted_password='df8428063fb28d75841d719e3447c3f416860bb7', salt='carya', access_level=1, page_access_level=1 WHERE id=${ID};" >&3
+    ((ID++))
+    echo "SELECT count(id) FROM users WHERE login='carya';" >&3 && read RESULT <&4
+  done
   echo "Added carya with admin privileges"
 
   # set all users
   for f in 1 2 3 4; do
     for g in 1 2 3 4; do
-      RESULT=$( psql ${PG_OPT} -U ${OWNER} -t -d "${DATABASE}" -c "SELECT count(id) FROM users WHERE login='carya${f}${g}';" )
-      if [ ${RESULT} -eq 0 ]; then
-        RESULT='UPDATE 0'
-        while [ "${RESULT}" = "UPDATE 0" ]; do
-          RESULT=$( psql ${PG_OPT} -U ${OWNER} -t -d "${DATABASE}" -c "UPDATE users SET login='carya${f}${g}', name='carya a-${f} p-${g}', crypted_password='df8428063fb28d75841d719e3447c3f416860bb7', salt='carya', access_level=${f}, page_access_level=${g} WHERE id=${ID};" )
-          ((ID++))
-        done
-      fi
+      echo "SELECT count(id) FROM users WHERE login='carya${f}${g}';" >&3 && read RESULT <&4
+      while [ ${RESULT} -eq 0 ]; do
+        echo "UPDATE users SET login='carya${f}${g}', name='carya a-${f} p-${g}', crypted_password='df8428063fb28d75841d719e3447c3f416860bb7', salt='carya', access_level=${f}, page_access_level=${g} WHERE id=${ID};" >&3
+        ((ID++))
+        echo "SELECT count(id) FROM users WHERE login='carya${f}${g}';" >&3 && read RESULT <&4
+      done
     done
   done
   echo "Updated users to have login='caryaXY' with appropriate privileges"
   echo "  (X=access_level, Y=page_access_level)."
 
   # add guest user
-  RESULT=$( psql ${PG_OPT} -U ${OWNER} -t -d "${DATABASE}" -c "SELECT count(id) FROM users WHERE login='guestuser';" )
-  if [ ${RESULT} -eq 0 ]; then
-    RESULT='UPDATE 0'
-    while [ "${RESULT}" = "UPDATE 0" ]; do
-      RESULT=$( psql ${PG_OPT} -U ${OWNER} -t -d "${DATABASE}" -c "UPDATE users SET login='guestuser', name='guestuser', crypted_password='994363a949b6486fc7ea54bf40335127f5413318', salt='bety', access_level=4, page_access_level=4 WHERE id=${ID};" )
-      ((ID++))
-    done
-  fi
+  echo "SELECT count(id) FROM users WHERE login='guestuser';" >&3 && read RESULT <&4
+  while [ ${RESULT} -eq 0 ]; do
+    echo "UPDATE users SET login='guestuser', name='guestuser', crypted_password='994363a949b6486fc7ea54bf40335127f5413318', salt='bety', access_level=4, page_access_level=4 WHERE id=${ID};" >&3
+    ((ID++))
+    echo "SELECT count(id) FROM users WHERE login='guestuser';" >&3 && read RESULT <&4
+  done
   echo "Added guestuser with access_level=4 and page_access_level=4"
 fi
 
+# close transaction
+echo "END;" >&3
+echo "\quit" >&3
+
 # all done, cleanup
 rm -rf "${DUMPDIR}"
-

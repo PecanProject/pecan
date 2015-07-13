@@ -4,7 +4,8 @@
 \alias{dbfile.insert}
 \title{Insert file into tables}
 \usage{
-dbfile.insert(in.path, in.prefix, type, id, con, hostname = fqdn())
+dbfile.insert(in.path, in.prefix, type, id, con, reuse = TRUE,
+  hostname = fqdn())
 }
 \arguments{
 \item{con}{database connection object}
@@ -16,7 +17,7 @@ dbfile.insert(in.path, in.prefix, type, id, con, hostname = fqdn())
 \item{params}{database connection information}
 }
 \value{
-data.frame with the id, filename and pathname of the file that is written
+id of the file that is written
 }
 \description{
 Function to insert a file into the dbfiles table
@@ -30,6 +31,6 @@ This will write into the dbfiles and machines the required data to store the fil
 }
 }
 \author{
-Rob Kooper
+Rob Kooper, Ryan Kelly
 }
 

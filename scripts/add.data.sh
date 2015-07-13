@@ -48,7 +48,7 @@ addInputFile "${FQDN}" "170" "US-WCr.Inv.lat45.5lon-90.pss" "${SITES}/willow"
 addInputFile "${FQDN}" "171" "US-WCr.Inv.lat45.5lon-90.site" "${SITES}/willow"
 
 # [622] Sylvania
-addInput "622" "24" "2002-01-01" "2006-12-31"
+addInput "622" "24" "2001-01-01" "2006-12-31"
 addInputFile "${FQDN}" "${INPUT_ID}" "syl.clim" "${SITES}/sylvana"
 addInputFile "${FQDN}" "132" "ED_MET_DRIVER_HEADER" "${SITES}/sylvana"
 addInputFile "${FQDN}" "133" "US-Syvforcing.nc" "${SITES}/sylvana"

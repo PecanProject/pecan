@@ -220,8 +220,8 @@ $stmt->closeCursor();
       <label type="hidden">Sensitivity</label>
       <input type="text" name="sensitivity" id="sensitivity" value="<?php echo "" ?>" onChange="validate();"/>
       <div class="spacer"></div>
-      <label>Sets sigma and quantiles.</label>
-      <label>Example, "-1,0,1".</label>
+      <label>Sets sigma (std dev) equivalent quantiles.</label>
+      <label>Example, "-1,1".</label>
       <div class="spacer"></div>
 
       <p></p>

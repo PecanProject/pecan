@@ -15,7 +15,7 @@ PG_OPT=${PG_OPT-"-U bety"}
 # ID's used in database
 # These ID's need to be unique for the sharing to work. If you want
 # to share your data, send email to kooper@illinois.edu to claim
-# your ID range. The master list is maintained at 
+# your ID range. The master list is maintained at
 # https://github.com/PecanProject/bety/wiki/Distributed-BETYdb
 #
 #  0 - EBI           - David LeBauer
@@ -142,7 +142,7 @@ echo "${VERSION}" > "${OUTPUT}/version.txt"
 # dump ruby special table
 printf "Dumping %-25s : " "schema_migrations"
 ADD=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM schema_migrations;" | tr -d ' ' )
-psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY schema_migrations TO '${DUMPDIR}/schema_migrations.csv' WITH (DELIMITER '    ',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')"
+psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY schema_migrations TO '${DUMPDIR}/schema_migrations.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')"
 echo "DUMPED ${ADD}"
 
 # skip following tables
@@ -154,17 +154,17 @@ echo "DUMPED ${ADD}"
 # dump users
 printf "Dumping %-25s : " "users"
 if [ "${ANONYMOUS}" == "NO" ]; then
-    psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY (SELECT * FROM ${USER_TABLES} WHERE (id >= ${START_ID} AND id <= ${LAST_ID}))  TO '${DUMPDIR}/users.csv' WITH (DELIMITER '    ',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')"
+    psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY (SELECT * FROM ${USER_TABLES} WHERE (id >= ${START_ID} AND id <= ${LAST_ID}))  TO '${DUMPDIR}/users.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')"
 else
-    psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY (SELECT id, CONCAT('user', id) AS login, CONCAT('user ' , id) AS name, CONCAT('betydb+', id, '@gmail.com') as email, 'Urbana' AS city,  'USA' AS country, '' AS area, '1234567890abcdef' AS crypted_password, 'BU' AS salt, NOW() AS created_at, NOW() AS updated_at, NULL as remember_token, NULL AS remember_token_expires_at, 3 AS access_level, 4 AS page_access_level, '9999999999999999999999999999999999999999' AS apikey, 'IL' AS state_prov, '61801' AS postal_code FROM ${USER_TABLES} WHERE (id >= ${START_ID} AND id <= ${LAST_ID})) TO '${DUMPDIR}/users.csv' WITH (DELIMITER '    ',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')"
+    psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY (SELECT id, CONCAT('user', id) AS login, CONCAT('user ' , id) AS name, CONCAT('betydb+', id, '@gmail.com') as email, 'Urbana' AS city,  'USA' AS country, '' AS area, '1234567890abcdef' AS crypted_password, 'BU' AS salt, NOW() AS created_at, NOW() AS updated_at, NULL as remember_token, NULL AS remember_token_expires_at, 3 AS access_level, 4 AS page_access_level, '9999999999999999999999999999999999999999' AS apikey, 'IL' AS state_prov, '61801' AS postal_code FROM ${USER_TABLES} WHERE (id >= ${START_ID} AND id <= ${LAST_ID})) TO '${DUMPDIR}/users.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')"
 fi
 ADD=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM ${USER_TABLES} WHERE (id >= ${START_ID} AND id <= ${LAST_ID});" | tr -d ' ' )
 echo "DUMPED ${ADD}"
 
 # unrestricted tables
-for T in ${CLEAN_TABLES}; do
+for T in ${CLEAN_TABLES} ${MANY_TABLES}; do
     printf "Dumping %-25s : " "${T}"
-    psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY (SELECT * FROM ${T} WHERE (id >= ${START_ID} AND id <= ${LAST_ID})) TO '${DUMPDIR}/${T}.csv' WITH (DELIMITER '    ',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')"
+    psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY (SELECT * FROM ${T} WHERE (id >= ${START_ID} AND id <= ${LAST_ID})) TO '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')"
     ADD=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM ${T} WHERE (id >= ${START_ID} AND id <= ${LAST_ID})" | tr -d ' ' )
     echo "DUMPED ${ADD}"
 done
@@ -177,21 +177,8 @@ for T in ${CHECK_TABLES}; do
     else
         UNCHECKED_QUERY="AND checked != -1"
     fi
-    psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY (SELECT * FROM ${T} WHERE (id >= ${START_ID} AND id <= ${LAST_ID}) AND access_level >= ${LEVEL} ${UNCHECKED_QUERY}) TO '${DUMPDIR}/${T}.csv' WITH (DELIMITER '    ',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8');"
+    psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY (SELECT * FROM ${T} WHERE (id >= ${START_ID} AND id <= ${LAST_ID}) AND access_level >= ${LEVEL} ${UNCHECKED_QUERY}) TO '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8');"
     ADD=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM ${T} WHERE (id >= ${START_ID} AND id <= ${LAST_ID})" | tr -d ' ' )
-    echo "DUMPED ${ADD}"
-done
-
-# hasmany relation ships
-for T in ${MANY_TABLES}; do
-    Z=(${T//_/ })
-    X=${Z[0]}
-    X=${X%s}
-    Y=${Z[1]}
-    Y=${Y%s}
-    printf "Dumping %-25s : " "${T}"
-    psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY (SELECT * FROM ${T} WHERE (${X}_id >= ${START_ID} AND ${X}_id <= ${LAST_ID}) OR (${Y}_id >= ${START_ID} AND ${Y}_id <= ${LAST_ID})) TO '${DUMPDIR}/${T}.csv' WITH (DELIMITER '    ',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8');"
-    ADD=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM ${T} WHERE (${X}_id >= ${START_ID} AND ${X}_id <= ${LAST_ID}) OR (${Y}_id >= ${START_ID} AND ${Y}_id <= ${LAST_ID})" | tr -d ' ' )
     echo "DUMPED ${ADD}"
 done
 

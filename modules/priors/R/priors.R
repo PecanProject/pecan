@@ -173,7 +173,8 @@ pr.samp <- function(distn, parama, paramb, n) {
 ##' @export
 #--------------------------------------------------------------------------------------------------#
 get.sample <- function(prior, n) {
-  if(is.na(prior$paramb)){  
+  print(paste("get.sample",prior$distn))
+  if(as.character(prior$distn) %in% c("exp","pois","geom")){  
     ## one parameter distributions
     do.call(paste('r', prior$distn, sep=""), list(n, prior$parama))
   } else {

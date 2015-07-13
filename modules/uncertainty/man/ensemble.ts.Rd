@@ -2,7 +2,7 @@
 % Please edit documentation in R/run.ensemble.analysis.R
 \name{ensemble.ts}
 \alias{ensemble.ts}
-\title{Plots an ensemble time-series from PEcAn for the selected target variables}
+\title{Plots an ensemble time-series from PEcAn for the selected target variable}
 \usage{
 ensemble.ts(ensemble.ts, observations = NULL, window = 1)
 }
@@ -10,9 +10,9 @@ ensemble.ts(ensemble.ts, observations = NULL, window = 1)
 nothing, generates an ensemble time-series plot
 }
 \description{
-Plots an ensemble time-series from PEcAn for the selected target variables
+Plots an ensemble time-series from PEcAn for the selected target variable
 }
 \author{
-Michael Dietze
+Michael Dietze, Ryan Kelly
 }
 

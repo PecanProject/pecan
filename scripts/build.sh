@@ -273,7 +273,7 @@ if [ "$TESTS" == "yes" ]; then
   cd tests
   for f in ${HOSTNAME}.*.xml; do
     rm -rf pecan
-    Rscript --vanilla workflow.R --settings $f &> output.log
+    Rscript --vanilla ../web/workflow.R --settings $f &> output.log
     if [ $? -ne 0 ]; then
       STATUS="BROKEN"
       echo "----------------------------------------------------------------------"

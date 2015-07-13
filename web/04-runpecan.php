@@ -1,8 +1,8 @@
-<?php  
+<?php
 /**
  * Copyright (c) 2012 University of Illinois, NCSA.
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the 
+ * are made available under the terms of the
  * University of Illinois/NCSA Open Source License
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
@@ -71,7 +71,7 @@ $runs = $_REQUEST['runs'];
 $variables = $_REQUEST['variables'];
 $notes = $_REQUEST['notes'];
 $sensitivity = array();
-$sensitivity = explode(",",$_REQUEST['sensitivity']);
+$sensitivity = array_filter(explode(",",$_REQUEST['sensitivity']),'strlen');
 
 
 # check met info
@@ -154,6 +154,9 @@ if ($hostname == $fqdn) {
 	$hostname="localhost";
 }
 
+# setup umask so group has write as well
+umask(0002);
+
 # create pecan.xml
 if (!mkdir($folder)) {
 	die('Can\'t create output folder [${folder}]');
@@ -172,9 +175,9 @@ fwrite($fh, "      <password>${db_bety_password}</password>" . PHP_EOL);
 fwrite($fh, "      <host>${db_bety_hostname}</host>" . PHP_EOL);
 fwrite($fh, "      <dbname>${db_bety_database}</dbname>" . PHP_EOL);
 if ($db_bety_type == "mysql") {
-	fwrite($fh, "      <driver>MySQL</driver>" . PHP_EOL);	
+	fwrite($fh, "      <driver>MySQL</driver>" . PHP_EOL);
 } else if ($db_bety_type = "pgsql") {
-	fwrite($fh, "      <driver>PostgreSQL</driver>" . PHP_EOL);	
+	fwrite($fh, "      <driver>PostgreSQL</driver>" . PHP_EOL);
 }
 fwrite($fh, "      <write>true</write>" . PHP_EOL);
 fwrite($fh, "    </bety>" . PHP_EOL);
@@ -186,9 +189,9 @@ if (isset($db_fia_database) && ($db_fia_database != "")) {
 	fwrite($fh, "      <host>${db_fia_hostname}</host>" . PHP_EOL);
 	fwrite($fh, "      <dbname>${db_fia_database}</dbname>" . PHP_EOL);
 	if ($db_fia_type == "mysql") {
-		fwrite($fh, "      <driver>MySQL</driver>" . PHP_EOL);	
+		fwrite($fh, "      <driver>MySQL</driver>" . PHP_EOL);
 	} else if ($db_fia_type = "pgsql") {
-		fwrite($fh, "      <driver>PostgreSQL</driver>" . PHP_EOL);	
+		fwrite($fh, "      <driver>PostgreSQL</driver>" . PHP_EOL);
 	}
 	fwrite($fh, "    </fia>" . PHP_EOL);
 }
@@ -196,11 +199,11 @@ if (isset($db_fia_database) && ($db_fia_database != "")) {
 fwrite($fh, "  </database>" . PHP_EOL);
 
 if ($browndog) {
-  fwrite($fh, "  <browndog>" . PHP_EOL);  
-  fwrite($fh, "    <url>${browndog_url}</url>" . PHP_EOL);  
-  fwrite($fh, "    <username>${browndog_username}</username>" . PHP_EOL);  
-  fwrite($fh, "    <password>${browndog_password}</password>" . PHP_EOL);  
-  fwrite($fh, "  </browndog>" . PHP_EOL);  
+  fwrite($fh, "  <browndog>" . PHP_EOL);
+  fwrite($fh, "    <url>${browndog_url}</url>" . PHP_EOL);
+  fwrite($fh, "    <username>${browndog_username}</username>" . PHP_EOL);
+  fwrite($fh, "    <password>${browndog_password}</password>" . PHP_EOL);
+  fwrite($fh, "  </browndog>" . PHP_EOL);
 }
 
 $pft_id=1;
@@ -240,7 +243,7 @@ if ($sensitivity_analysis) {
 	fwrite($fh, "    <quantiles>" . PHP_EOL);
 	foreach($sensitivity as $s) {
 		fwrite($fh, "      <sigma>${s}</sigma>" . PHP_EOL);
-	}	
+	}
 	fwrite($fh, "    </quantiles>" . PHP_EOL);
 	fwrite($fh, "    <variable>${variables}</variable>" . PHP_EOL);
 	fwrite($fh, "  </sensitivity.analysis>" . PHP_EOL);
@@ -291,10 +294,10 @@ fwrite($fh, "    <end.date>${enddate}</end.date>" . PHP_EOL);
 fwrite($fh, "    <dbfiles>${dbfiles_folder}</dbfiles>" . PHP_EOL);
 fwrite($fh, "    <host>" . PHP_EOL);
 fwrite($fh, "      <name>${hostname}</name>" . PHP_EOL);
-fwrite($fh, "    </host>" . PHP_EOL);
 if ($qsub) {
-    fwrite($fh, "    <qsub/>" . PHP_EOL);
+    fwrite($fh, "      <qsub/>" . PHP_EOL);
 }
+fwrite($fh, "    </host>" . PHP_EOL);
 fwrite($fh, "  </run>" . PHP_EOL);
 if ($email != "") {
 	$url = ($_SERVER['HTTPS'] ? "https://" : "http://");
@@ -311,7 +314,7 @@ if ($email != "") {
 	fwrite($fh, "  </email>" . PHP_EOL);
 }
 fwrite($fh, "</pecan>" . PHP_EOL);
-fclose($fh); 
+fclose($fh);
 
 # copy workflow
 copy("workflow.R", "${folder}/workflow.R");
@@ -330,9 +333,9 @@ if ($pecan_edit) {
   chdir($folder);
 
   if ($model_edit) {
-    pclose(popen('R_LIBS_USER="' . $pecan_install . '" ' . $Rbinary . ' CMD BATCH --advanced  workflow.R &', 'r')); 
+    pclose(popen('R_LIBS_USER="' . $pecan_install . '" ' . $Rbinary . ' CMD BATCH --advanced  workflow.R &', 'r'));
   } else {
-    pclose(popen('R_LIBS_USER="' . $pecan_install . '" ' . $Rbinary . ' CMD BATCH workflow.R &', 'r')); 
+    pclose(popen('R_LIBS_USER="' . $pecan_install . '" ' . $Rbinary . ' CMD BATCH workflow.R &', 'r'));
   }
 
   #done
@@ -351,4 +354,3 @@ if ($pecan_edit) {
 
 close_database();
 ?>
-
