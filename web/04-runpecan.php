@@ -21,8 +21,8 @@ if ($authentication) {
 $userok=isset($_REQUEST['userok']);
 $offline=isset($_REQUEST['offline']);
 $pecan_edit=isset($_REQUEST['pecan_edit']);
-$ensemble_analysis =isset($_REQUEST['ensemble_analysis']);
-$sensitivity_analysis =isset($_REQUEST['sensitivity_analysis']);
+$ensemble_analysis=isset($_REQUEST['ensemble_analysis']);
+$sensitivity_analysis=isset($_REQUEST['sensitivity_analysis']);
 $model_edit=isset($_REQUEST['model_edit']);
 $browndog=isset($_REQUEST['browndog']);
 $qsub=isset($_REQUEST['qsub']);
@@ -69,7 +69,7 @@ if (isset($_REQUEST['email'])) {
 
 $runs = $_REQUEST['runs'];
 $variables = $_REQUEST['variables'];
-$notes = '<![CDATA[' + $_REQUEST['notes'] + ']]>';
+$notes = $_REQUEST['notes'];
 $sensitivity = array();
 $sensitivity = explode(",",$_REQUEST['sensitivity']);
 
@@ -221,9 +221,10 @@ fwrite($fh, "    <iter>3000</iter>" . PHP_EOL);
 fwrite($fh, "    <random.effects>FALSE</random.effects>" . PHP_EOL);
 fwrite($fh, "  </meta.analysis>" . PHP_EOL);
 
-if ($ensemble_analysis == "checked"){
+if ($ensemble_analysis){
 	fwrite($fh, "  <ensemble>" . PHP_EOL);
 	fwrite($fh, "    <size>${runs}</size>" . PHP_EOL);
+//	fwrite($fh, "    <notes><![CDATA[${notes}]]></notes>" . PHP_EOL);
 	fwrite($fh, "    <notes>${notes}</notes>" . PHP_EOL);
 	fwrite($fh, "    <variable>${variables}</variable>" . PHP_EOL);
 	fwrite($fh, "  </ensemble>" . PHP_EOL);
@@ -234,7 +235,7 @@ if ($ensemble_analysis == "checked"){
 	fwrite($fh, "  </ensemble>" . PHP_EOL);
 }
 
-if ($sensitivity_analysisi == "on") {
+if ($sensitivity_analysis) {
 	fwrite($fh, "  <sensitivity.analysis>" . PHP_EOL);
 	fwrite($fh, "    <quantiles>" . PHP_EOL);
 	foreach($sensitivity as $s) {
