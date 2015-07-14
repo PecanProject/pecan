@@ -36,6 +36,10 @@ REMOTESITE=${REMOTESITE:-0}
 # data!
 CREATE=${CREATE:-"NO"}
 
+# Fix the sequence numbers, this should only be need when creating a
+# new database. Set this to YES to initialize the sequence numbers.
+FIXSEQUENCE=${FIXSEQUENCE:-"NO"}
+
 # Keep the tmp folder even if the sync failed?
 # Set this to YES to keep the tmp folder, this is helpful for
 # debugging the script. The default value is NO and the tmp folder will
@@ -53,7 +57,7 @@ USERS=${USERS:-"NO"}
 # ----------------------------------------------------------------------
 
 # parse command line options
-while getopts c:d:hm:o:p:r:t:u: opt; do
+while getopts c:d:f:hm:o:p:r:t:u: opt; do
   case $opt in
   c)
     CREATE=$OPTARG
@@ -61,10 +65,14 @@ while getopts c:d:hm:o:p:r:t:u: opt; do
   d)
     DATABASE=$OPTARG
     ;;
+  f)
+    FIXSEQUENCE=$OPTARG
+    ;;
   h)
-    echo "$0 [-c YES|NO] [-d database] [-h] [-m my siteid] [-o owner] [-p psql options] [-r remote siteid] [-t YES|NO] [-u YES|NO]"
+    echo "$0 [-c YES|NO] [-d database] [-f YES|NO] [-h] [-m my siteid] [-o owner] [-p psql options] [-r remote siteid] [-t YES|NO] [-u YES|NO]"
     echo " -c create database, THIS WILL ERASE THE CURRENT DATABASE, default is NO"
     echo " -d database, default is bety"
+    echo " -f fix sequence numbers, this should not be needed, default is NO"
     echo " -h this help page"
     echo " -m site id, default is 99 (VM)"
     echo " -o owner of the database, default is bety"
@@ -102,6 +110,10 @@ if [ "${CREATE}" == "YES" -a "${OWNER}" == "" ]; then
 fi
 if [ "${MYSITE}" == "${REMOTESITE}" ]; then
   echo "Can not have same remotesite as mysite"
+  exit 1
+fi
+if [ "${CREATE}" == "YES" -a "${FIXSEQUENCE}" == "NO" ]; then
+  echo "Can not run create without fix sequence"
   exit 1
 fi
 
@@ -230,6 +242,7 @@ trap '
     echo "Process killed, no changes are made to the database."
     echo "ROLLBACK;" >&3
     kill $PSQL_PID
+    cat <&4
   fi
   rm -f $PSQL_PIPE_INP $PSQL_PIPE_OUT
 ' EXIT
@@ -244,24 +257,26 @@ echo "BEGIN;" >&3
 # 4) set last inserted item in my range
 # 5) enable constraints on this table
 for T in ${CLEAN_TABLES} ${MANY_TABLES}; do
-	printf "Cleaning %-25s : " "${T}"
   echo "ALTER TABLE ${T} DISABLE TRIGGER ALL;" >&3
   echo "SELECT count(*) FROM ${T} ${REM_WHERE};" >&3 && read DEL <&4
-  echo "DEL ${DEL}"
+  #echo "DEL ${DEL}"
   echo "DELETE FROM ${T} ${REM_WHERE};" >&3
-	printf "Loading  %-25s : " "${T}"
+	#printf "Loading  %-25s : " "${T}"
   echo "SELECT COUNT(*) FROM ${T};" >&3 && read START <&4
 	if [ -f "${DUMPDIR}/${T}.csv" ]; then
 		echo "\COPY ${T} FROM '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')" >&3
 	fi
   echo "SELECT COUNT(*) FROM ${T};" >&3 && read END <&4
   ADD=$(( END - START ))
-	echo "ADD ${ADD}"
-	printf "Fixing   %-25s : " "${T}"
-	echo "SELECT setval('${T}_id_seq', ${MY_START_ID}, false);" >&3 && read IGN <&4
-  echo "SELECT setval('${T}_id_seq', (SELECT MAX(id) FROM ${T} ${MY_WHERE}), true);" >&3 && read IGN <&4
-  echo "SELECT last_value from ${T}_id_seq;" >&3 && read NEXT <&4
-	echo "SEQ ${NEXT}"
+  DIFF=$(( ADD - DEL ))
+	#echo "ADD ${ADD}"
+  if [ "$DEL" != "0" -o "$ADD" != "0" ]; then
+    if [ "$DIFF" != "0" ]; then
+      printf "Updated  %-25s : %6d (%+d)\n" "${T}" ${ADD} ${DIFF}
+    else
+      printf "Updated  %-25s : %6d\n" "${T}" ${ADD}
+    fi
+  fi
   echo "ALTER TABLE ${T} ENABLE TRIGGER ALL;" >&3
 done
 
@@ -299,6 +314,19 @@ if [ "${USERS}" == "YES" -a "${REMOTESITE}" == "0" ]; then
     echo "SELECT count(id) FROM users WHERE login='guestuser';" >&3 && read RESULT <&4
   done
   echo "Added guestuser with access_level=4 and page_access_level=4"
+fi
+
+# fix sequence numbers if needed
+if [ "${FIXSEQUENCE}" == "YES" ]; then
+  for T in ${CLEAN_TABLES} ${MANY_TABLES}; do
+    echo "SELECT last_value from ${T}_id_seq;" >&3 && read OLD <&4
+  	echo "SELECT setval('${T}_id_seq', ${MY_START_ID}, false);" >&3 && read IGN <&4
+    echo "SELECT setval('${T}_id_seq', (SELECT MAX(id) FROM ${T} ${MY_WHERE}), true);" >&3 && read IGN <&4
+    echo "SELECT last_value from ${T}_id_seq;" >&3 && read NEXT <&4
+    if [ "$OLD" != "$NEXT" ]; then
+      printf "Fixed    %-25s : %s\n" "${T}" "${NEXT}"
+    fi
+  done
 fi
 
 # close transaction
