@@ -19,7 +19,7 @@ $$A_c = V_{cmax} \frac{C_i - \Gamma}{C_i+ K_C (1+[O]/K_O) }$$
 
 $$A^{(m)} = min(A_j,A_c) - r$$
 
-$$A^{(o)} \sim N(A_{m},\tau)$$ 
+$$A^{(o)} \sim N(A^{(m)},\tau)$$ 
 
 
 Parameter | Symbol     | Definition
@@ -145,7 +145,7 @@ The 'params' mcmc.list contains the parameter estimate MCMC chains, which we can
 par(mfrow=c(2,1))
 plot(fit$params,auto.layout = FALSE)    ## MCMC diagnostic plots
 summary(fit$params) ## parameter estimates  
-gelman.plot(fit$params)
+gelman.plot(fit$params,auto.layout = FALSE)
 gelman.diag(fit$params)
 ```
 

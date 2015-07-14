@@ -18,7 +18,7 @@ plot.photo <- function(data,out,curve=c("ACi","AQ"),tol=0.05,byLeaf=TRUE){
   if(byLeaf){
     id = data[,"fname"]
     n.curves = length(unique(id))
-    curve.id = as.numeric(as.factor(id))
+    curve.id = as.numeric(as.factor(as.character(id)))
     curve.code = tapply(as.character(id),curve.id,unique)
   } else {
     n.curves = 1
