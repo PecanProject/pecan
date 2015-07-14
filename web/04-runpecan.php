@@ -21,6 +21,8 @@ if ($authentication) {
 $userok=isset($_REQUEST['userok']);
 $offline=isset($_REQUEST['offline']);
 $pecan_edit=isset($_REQUEST['pecan_edit']);
+$ensemble_analysis=isset($_REQUEST['ensemble_analysis']);
+$sensitivity_analysis=isset($_REQUEST['sensitivity_analysis']);
 $model_edit=isset($_REQUEST['model_edit']);
 $browndog=isset($_REQUEST['browndog']);
 $qsub=isset($_REQUEST['qsub']);
@@ -65,11 +67,9 @@ if (isset($_REQUEST['email'])) {
   $email = $_REQUEST['email'];
 }
 
-if (!isset($_REQUEST['ensemble'])) {
-  die("Need an ensemble value.");
-}
-$ensemble = $_REQUEST['ensemble'];
-
+$runs = $_REQUEST['runs'];
+$variables = $_REQUEST['variables'];
+$notes = $_REQUEST['notes'];
 $sensitivity = array();
 $sensitivity = array_filter(explode(",",$_REQUEST['sensitivity']),'strlen');
 
@@ -224,20 +224,28 @@ fwrite($fh, "    <iter>3000</iter>" . PHP_EOL);
 fwrite($fh, "    <random.effects>FALSE</random.effects>" . PHP_EOL);
 fwrite($fh, "  </meta.analysis>" . PHP_EOL);
 
-fwrite($fh, "  <ensemble>" . PHP_EOL);
-fwrite($fh, "    <size>${ensemble}</size>" . PHP_EOL);
-fwrite($fh, "    <variable>NPP</variable>" . PHP_EOL);
-fwrite($fh, "  </ensemble>" . PHP_EOL);
+if ($ensemble_analysis){
+	fwrite($fh, "  <ensemble>" . PHP_EOL);
+	fwrite($fh, "    <size>${runs}</size>" . PHP_EOL);
+//	fwrite($fh, "    <notes><![CDATA[${notes}]]></notes>" . PHP_EOL);
+	fwrite($fh, "    <notes>${notes}</notes>" . PHP_EOL);
+	fwrite($fh, "    <variable>${variables}</variable>" . PHP_EOL);
+	fwrite($fh, "  </ensemble>" . PHP_EOL);
+} else {
+	fwrite($fh, "  <ensemble>" . PHP_EOL);
+	fwrite($fh, "    <size>1</size>" . PHP_EOL);
+	fwrite($fh, "    <variable>NPP</variable>" . PHP_EOL);
+	fwrite($fh, "  </ensemble>" . PHP_EOL);
+}
 
-# if ($sensitivity.length == 0) {
-if (count($sensitivity) > 0) {
+if ($sensitivity_analysis) {
 	fwrite($fh, "  <sensitivity.analysis>" . PHP_EOL);
 	fwrite($fh, "    <quantiles>" . PHP_EOL);
 	foreach($sensitivity as $s) {
 		fwrite($fh, "      <sigma>${s}</sigma>" . PHP_EOL);
 	}
 	fwrite($fh, "    </quantiles>" . PHP_EOL);
-	fwrite($fh, "    <variable>NPP</variable>" . PHP_EOL);
+	fwrite($fh, "    <variable>${variables}</variable>" . PHP_EOL);
 	fwrite($fh, "  </sensitivity.analysis>" . PHP_EOL);
 }
 
