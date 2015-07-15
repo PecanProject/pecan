@@ -21,28 +21,26 @@
 ##' @param end.year last year to include in ensemble analysis
 ##' @param variables targe variables for ensemble analysis
 ##' @export
+##' @author Ryan Kelly, David LeBauer, Rob Kooper
 #--------------------------------------------------------------------------------------------------#
 read.ensemble.output <- function(ensemble.size, pecandir, outdir, 
-                                 start.year, end.year, variables){
-  if (exists('runs.samples')) {
-    ensemble.runs <- runs.samples$ensemble
-  } else {
-    ensemble.runs <- list()
+                                 start.year, end.year, variable, ens.run.ids=NULL){
+  if (is.null(ens.run.ids)) {
     samples.file <- file.path(pecandir, 'samples.Rdata')
     if(file.exists(samples.file)){
       load(samples.file)
-      ensemble.runs <- runs.samples$ensemble
+      ens.run.ids <- runs.samples$ensemble
     } else {
       stop(samples.file, "not found required by read.ensemble.output")      
     }
   }
 
   ensemble.output <- list()
-  for(row in rownames(ensemble.runs)) {
-    run.id <- ensemble.runs[row, 'id']
+  for(row in rownames(ens.run.ids)) {
+    run.id <- ens.run.ids[row, 'id']
     logger.info("reading ensemble output from run id: ", run.id)
     ensemble.output[[row]] <- sapply(read.output(run.id, file.path(outdir, run.id),
-                                                 start.year, end.year, variables),
+                                                 start.year, end.year, variable),
                                      mean,na.rm=TRUE)
   }
   return(ensemble.output)
@@ -81,19 +79,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
     for(i in 1:length(pft.samples)){
       pft2col <- c(pft2col,rep(i,length(pft.samples[[i]])))
     }
-    
-    halton.samples <- NULL
-    if(method == "halton"){
-      halton.samples <- halton(n = ensemble.size, dim=length(pft2col))
-      ##force as a matrix in case length(samples)=1
-      halton.samples <- as.matrix(halton.samples)
-    } else {
-      #uniform random
-      halton.samples <- matrix(runif(ensemble.size*length(pft2col))
-                               ,ensemble.size,length(pft2col))
-      
-    }
-    
+        
     total.sample.num <- sum(sapply(pft.samples, length))
     halton.samples <- NULL
     if(method == "halton"){
@@ -102,8 +88,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
       halton.samples <- as.matrix(halton.samples)
     } else {
       #uniform random
-      halton.samples <- matrix(runif(ensemble.size*total.sample.num),
-                               ensemble.size, dim=total.sample.num)
+      halton.samples <- matrix(runif(ensemble.size*total.sample.num), ensemble.size, total.sample.num)
     }
     
     ensemble.samples <- list()
@@ -138,7 +123,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
 ##' @param settings list of PEcAn settings
 ##' @param write.config a model-specific function to write config files, e.g. \link{write.config.ED}  
 ##' @param clean remove old output first?
-##' @return data frame of runids, writes ensemble configuration files as a side effect
+##' @return list, containing $runs = data frame of runids, and $ensemble.id = the ensemble ID for these runs. Also writes sensitivity analysis configuration files as a side effect
 ##' @export
 ##' @author David LeBauer, Carl Davidson
 write.ensemble.configs <- function(defaults, ensemble.samples, settings,
@@ -171,7 +156,11 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings,
     now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
     db.query(paste0("INSERT INTO ensembles (created_at, runtype, workflow_id) values ('", 
                      now, "', 'ensemble', ", workflow.id, ")"), con=con)
-    ensemble.id <- db.query(paste0("SELECT id FROM ensembles WHERE created_at='", now, "'"), con=con)[['id']]
+    ensemble.id <- db.query(paste0("SELECT id FROM ensembles WHERE created_at='", now, "' AND runtype='ensemble'"), con=con)[['id']]
+    for (pft in defaults) {
+      db.query(paste0("INSERT INTO posteriors_ensembles (posterior_id, ensemble_id, created_at, updated_at) values (",
+                      pft$posteriorid, ", ", ensemble.id, ", '", now, "', '", now, "');"), con=con)
+    }
   } else {
     ensemble.id <- "NA"
   }
@@ -232,9 +221,13 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings,
         "rundir      : ", file.path(settings$run$host$rundir, run.id), "\n",
         "outdir      : ", file.path(settings$run$host$outdir, run.id), "\n",
         file=file.path(settings$rundir, run.id, "README.txt"), sep='')
-    
+
     do.call(my.write.config,args=list(defaults,
-                                      lapply(ensemble.samples,function(x,n){x[n,]},n=counter),
+                                      lapply(ensemble.samples,function(x,n){
+                                        out <- x[n,]
+                                        names(out) <- names(x)
+                                        return(out)
+                                      }, n=counter),
                                       settings, run.id))
     cat(run.id, file=file.path(settings$rundir, "runs.txt"), sep="\n", append=TRUE)
   }
@@ -242,7 +235,6 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings,
     db.close(con)
   }
   
-  invisible(runs)
-  
+  invisible(list(runs=runs, ensemble.id=ensemble.id))
 } ### End of function: write.ensemble.configs
 #==================================================================================================#

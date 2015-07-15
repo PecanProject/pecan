@@ -24,10 +24,11 @@
   </bety>
  </database>
  
- <model>
-  <id>5</id>
-  <type>ED2</type>
-  <revision>80</revision>
+  <model>
+  <id>1000000005</id>
+  <binary>/home/dietze/Linkages/linkages</binary>
+  <type>LINKAGES</type>
+  <revision>Revision 1.0 Ann's hack</revision>
  </model>
  
  <run>

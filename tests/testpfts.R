@@ -25,7 +25,7 @@ testpft <- function(pftid, pftname, model, dbparam) {
            })
 }
 
-dbparam <- list(dbname="bety", user="bety", password="bety", dbfiles="testpfts", write=FALSE, driver="PostgreSQL")
+dbparam <- list(dbname="bety", user="bety", password="bety", host="localhost", dbfiles=full.path("testpfts"), write=FALSE, driver="PostgreSQL")
 pfts <- db.query("SELECT pfts.id AS id, pfts.name AS pft, modeltypes.name AS model FROM pfts, modeltypes WHERE pfts.modeltype_id=modeltypes.id ORDER BY id;", param=dbparam)
 
 options(scipen=12)

@@ -10,10 +10,10 @@ Depends:
     coda,
     MCMCpack,
     mvtnorm,
-    PEcAn.DB,
     tools
 Suggests:
     testthat,
+    PEcAn.DB,
     RMySQL
 License: FreeBSD + file LICENSE
 Copyright: Authors

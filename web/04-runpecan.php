@@ -1,8 +1,8 @@
-<?php  
+<?php
 /**
  * Copyright (c) 2012 University of Illinois, NCSA.
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the 
+ * are made available under the terms of the
  * University of Illinois/NCSA Open Source License
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
@@ -10,7 +10,7 @@
 require("common.php");
 open_database();
 if ($authentication) {
-	if (!check_login()) {
+  if (!check_login()) {
 		header( "Location: index.php");
 		close_database();
 		exit;
@@ -21,22 +21,28 @@ if ($authentication) {
 $userok=isset($_REQUEST['userok']);
 $offline=isset($_REQUEST['offline']);
 $pecan_edit=isset($_REQUEST['pecan_edit']);
+$ensemble_analysis=isset($_REQUEST['ensemble_analysis']);
+$sensitivity_analysis=isset($_REQUEST['sensitivity_analysis']);
 $model_edit=isset($_REQUEST['model_edit']);
 $browndog=isset($_REQUEST['browndog']);
+$qsub=isset($_REQUEST['qsub']);
 
 # parameters
 if (!isset($_REQUEST['siteid'])) {
   die("Need a siteid.");
 }
 $siteid=$_REQUEST['siteid'];
+
 if (!isset($_REQUEST['modelid'])) {
   die("Need a modelid.");
 }
 $modelid=$_REQUEST['modelid'];
+
 if (!isset($_REQUEST['hostname'])) {
   die("Need a hostname.");
 }
 $hostname=$_REQUEST['hostname'];
+
 if (!isset($_REQUEST['pft'])) {
 	die("Need a pft.");
 }
@@ -48,6 +54,7 @@ if (!isset($_REQUEST['start'])) {
 }
 $startdate=$_REQUEST['start'];
 $metstart=$startdate;
+
 if (!isset($_REQUEST['end'])) {
   die("Need a end date.");
 }
@@ -57,8 +64,15 @@ $metend=$enddate;
 # non required parameters
 $email = "";
 if (isset($_REQUEST['email'])) {
-	$email = $_REQUEST['email'];
+  $email = $_REQUEST['email'];
 }
+
+$runs = $_REQUEST['runs'];
+$variables = $_REQUEST['variables'];
+$notes = $_REQUEST['notes'];
+$sensitivity = array();
+$sensitivity = array_filter(explode(",",$_REQUEST['sensitivity']),'strlen');
+
 
 # check met info
 if (isset($_REQUEST['input_met']) && is_numeric($_REQUEST['input_met'])) {
@@ -102,7 +116,7 @@ $stmt->closeCursor();
 // create the workflow execution
 $params=str_replace(' ', '', str_replace("\n", "", var_export($_REQUEST, true)));
 
-$q=$pdo->prepare("INSERT INTO workflows (site_id, model_id, hostname, start_date, end_date, params, advanced_edit, started_at, created_at) values (:siteid, :modelid, :hostname, :startdate, :enddate, :params, :advanced_edit, NOW(), NOW())");
+$q=$pdo->prepare("INSERT INTO workflows (site_id, model_id, folder, hostname, start_date, end_date, params, advanced_edit, started_at, created_at) values (:siteid, :modelid, '', :hostname, :startdate, :enddate, :params, :advanced_edit, NOW(), NOW())");
 $q->bindParam(':siteid', $siteid, PDO::PARAM_INT);
 $q->bindParam(':modelid', $modelid, PDO::PARAM_INT);
 $q->bindParam(':hostname', $hostname, PDO::PARAM_STR);
@@ -126,14 +140,26 @@ if ($pdo->query("UPDATE workflows SET folder='${folder}' WHERE id=${workflowid}"
   die('Can\'t update workflow : ' . (error_database()));
 }
 
+# quick check on dbfiles_folder
+if (! isset($dbfiles_folder)) {
+  if (isset($inputs_folder)) {
+    $dbfiles_folder = $inputs_folder;
+  } else {
+    $dbfiles_folder = $output_folder . DIRECTORY_SEPARATOR . "dbfiles";
+  }
+}
+
 # if on localhost replace with localhost
 if ($hostname == $fqdn) {
 	$hostname="localhost";
 }
 
+# setup umask so group has write as well
+umask(0002);
+
 # create pecan.xml
 if (!mkdir($folder)) {
-	die('Can\'t create output folder');
+	die('Can\'t create output folder [${folder}]');
 }
 $fh = fopen($folder . DIRECTORY_SEPARATOR . "pecan.xml", 'w');
 fwrite($fh, "<?xml version=\"1.0\"?>" . PHP_EOL);
@@ -149,9 +175,9 @@ fwrite($fh, "      <password>${db_bety_password}</password>" . PHP_EOL);
 fwrite($fh, "      <host>${db_bety_hostname}</host>" . PHP_EOL);
 fwrite($fh, "      <dbname>${db_bety_database}</dbname>" . PHP_EOL);
 if ($db_bety_type == "mysql") {
-	fwrite($fh, "      <driver>MySQL</driver>" . PHP_EOL);	
+	fwrite($fh, "      <driver>MySQL</driver>" . PHP_EOL);
 } else if ($db_bety_type = "pgsql") {
-	fwrite($fh, "      <driver>PostgreSQL</driver>" . PHP_EOL);	
+	fwrite($fh, "      <driver>PostgreSQL</driver>" . PHP_EOL);
 }
 fwrite($fh, "      <write>true</write>" . PHP_EOL);
 fwrite($fh, "    </bety>" . PHP_EOL);
@@ -163,9 +189,9 @@ if (isset($db_fia_database) && ($db_fia_database != "")) {
 	fwrite($fh, "      <host>${db_fia_hostname}</host>" . PHP_EOL);
 	fwrite($fh, "      <dbname>${db_fia_database}</dbname>" . PHP_EOL);
 	if ($db_fia_type == "mysql") {
-		fwrite($fh, "      <driver>MySQL</driver>" . PHP_EOL);	
+		fwrite($fh, "      <driver>MySQL</driver>" . PHP_EOL);
 	} else if ($db_fia_type = "pgsql") {
-		fwrite($fh, "      <driver>PostgreSQL</driver>" . PHP_EOL);	
+		fwrite($fh, "      <driver>PostgreSQL</driver>" . PHP_EOL);
 	}
 	fwrite($fh, "    </fia>" . PHP_EOL);
 }
@@ -173,11 +199,11 @@ if (isset($db_fia_database) && ($db_fia_database != "")) {
 fwrite($fh, "  </database>" . PHP_EOL);
 
 if ($browndog) {
-  fwrite($fh, "  <browndog>" . PHP_EOL);  
-  fwrite($fh, "    <url>${browndog_url}</url>" . PHP_EOL);  
-  fwrite($fh, "    <username>${browndog_username}</username>" . PHP_EOL);  
-  fwrite($fh, "    <password>${browndog_password}</password>" . PHP_EOL);  
-  fwrite($fh, "  </browndog>" . PHP_EOL);  
+  fwrite($fh, "  <browndog>" . PHP_EOL);
+  fwrite($fh, "    <url>${browndog_url}</url>" . PHP_EOL);
+  fwrite($fh, "    <username>${browndog_username}</username>" . PHP_EOL);
+  fwrite($fh, "    <password>${browndog_password}</password>" . PHP_EOL);
+  fwrite($fh, "  </browndog>" . PHP_EOL);
 }
 
 $pft_id=1;
@@ -198,10 +224,30 @@ fwrite($fh, "    <iter>3000</iter>" . PHP_EOL);
 fwrite($fh, "    <random.effects>FALSE</random.effects>" . PHP_EOL);
 fwrite($fh, "  </meta.analysis>" . PHP_EOL);
 
-fwrite($fh, "  <ensemble>" . PHP_EOL);
-fwrite($fh, "    <size>1</size>" . PHP_EOL);
-fwrite($fh, "    <variable>NPP</variable>" . PHP_EOL);
-fwrite($fh, "  </ensemble>" . PHP_EOL);
+if ($ensemble_analysis){
+	fwrite($fh, "  <ensemble>" . PHP_EOL);
+	fwrite($fh, "    <size>${runs}</size>" . PHP_EOL);
+//	fwrite($fh, "    <notes><![CDATA[${notes}]]></notes>" . PHP_EOL);
+	fwrite($fh, "    <notes>${notes}</notes>" . PHP_EOL);
+	fwrite($fh, "    <variable>${variables}</variable>" . PHP_EOL);
+	fwrite($fh, "  </ensemble>" . PHP_EOL);
+} else {
+	fwrite($fh, "  <ensemble>" . PHP_EOL);
+	fwrite($fh, "    <size>1</size>" . PHP_EOL);
+	fwrite($fh, "    <variable>NPP</variable>" . PHP_EOL);
+	fwrite($fh, "  </ensemble>" . PHP_EOL);
+}
+
+if ($sensitivity_analysis) {
+	fwrite($fh, "  <sensitivity.analysis>" . PHP_EOL);
+	fwrite($fh, "    <quantiles>" . PHP_EOL);
+	foreach($sensitivity as $s) {
+		fwrite($fh, "      <sigma>${s}</sigma>" . PHP_EOL);
+	}
+	fwrite($fh, "    </quantiles>" . PHP_EOL);
+	fwrite($fh, "    <variable>${variables}</variable>" . PHP_EOL);
+	fwrite($fh, "  </sensitivity.analysis>" . PHP_EOL);
+}
 
 fwrite($fh, "  <model>" . PHP_EOL);
 fwrite($fh, "    <id>${modelid}</id>" . PHP_EOL);
@@ -245,9 +291,12 @@ foreach($_REQUEST as $key => $val) {
 fwrite($fh, "    </inputs>" . PHP_EOL);
 fwrite($fh, "    <start.date>${startdate}</start.date>" . PHP_EOL);
 fwrite($fh, "    <end.date>${enddate}</end.date>" . PHP_EOL);
-fwrite($fh, "    <dbfiles>${input_folder}</dbfiles>" . PHP_EOL);
+fwrite($fh, "    <dbfiles>${dbfiles_folder}</dbfiles>" . PHP_EOL);
 fwrite($fh, "    <host>" . PHP_EOL);
 fwrite($fh, "      <name>${hostname}</name>" . PHP_EOL);
+if ($qsub) {
+    fwrite($fh, "      <qsub/>" . PHP_EOL);
+}
 fwrite($fh, "    </host>" . PHP_EOL);
 fwrite($fh, "  </run>" . PHP_EOL);
 if ($email != "") {
@@ -265,7 +314,7 @@ if ($email != "") {
 	fwrite($fh, "  </email>" . PHP_EOL);
 }
 fwrite($fh, "</pecan>" . PHP_EOL);
-fclose($fh); 
+fclose($fh);
 
 # copy workflow
 copy("workflow.R", "${folder}/workflow.R");
@@ -284,9 +333,9 @@ if ($pecan_edit) {
   chdir($folder);
 
   if ($model_edit) {
-    pclose(popen('R_LIBS_USER="' . $pecan_install . '" ' . $Rbinary . ' CMD BATCH --advanced  workflow.R &', 'r')); 
+    pclose(popen('R_LIBS_USER="' . $pecan_install . '" ' . $Rbinary . ' CMD BATCH --advanced  workflow.R &', 'r'));
   } else {
-    pclose(popen('R_LIBS_USER="' . $pecan_install . '" ' . $Rbinary . ' CMD BATCH workflow.R &', 'r')); 
+    pclose(popen('R_LIBS_USER="' . $pecan_install . '" ' . $Rbinary . ' CMD BATCH workflow.R &', 'r'));
   }
 
   #done
@@ -305,4 +354,3 @@ if ($pecan_edit) {
 
 close_database();
 ?>
-

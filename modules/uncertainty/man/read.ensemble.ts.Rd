@@ -2,17 +2,18 @@
 % Please edit documentation in R/run.ensemble.analysis.R
 \name{read.ensemble.ts}
 \alias{read.ensemble.ts}
-\title{Reads an ensemble time-series from PEcAn for the selected target variables}
+\title{Reads an ensemble time-series from PEcAn for the selected target variable}
 \usage{
-read.ensemble.ts(model)
+read.ensemble.ts(model, ensemble.id = NULL, variable = NULL,
+  start.year = NULL, end.year = NULL)
 }
 \value{
 list
 }
 \description{
-Reads ensemble time-series from PEcAn for the selected target variables
+Reads ensemble time-series from PEcAn for the selected target variable
 }
 \author{
-Michael Dietze
+Michael Dietze, Ryan Kelly
 }
 

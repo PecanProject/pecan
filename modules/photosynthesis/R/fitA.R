@@ -29,6 +29,7 @@ a.fixed  = model$a.fixed
 a.random = model$a.random
 V.fixed  = model$V.fixed
 V.random = model$V.random
+if(is.null(model$match)) model$match = 'fname'
 
 dat = as.data.frame(flux.data)
 
@@ -38,8 +39,10 @@ curve.id = as.numeric(as.factor(id))
 curve.code = tapply(as.character(id),curve.id,unique)
 
 ##match between gas exchange data and covariates
-ord = match(curve.code,as.character(cov.dat[,model$match]))
-cov.dat = cov.dat[ord,]
+if(!is.null(cov.data)){
+  ord = match(curve.code,as.character(cov.data[,model$match]))
+  cov.data = cov.data[ord,]
+}
 
 ## Vcmax design matrix
 if(is.null(V.fixed)){
@@ -48,7 +51,7 @@ if(is.null(V.fixed)){
   if(is.null(cov.data)) print("Vcmax formula provided but covariate data is absent:",V.fixed)
   if(length(grep("~",V.fixed)) == 0) V.fixed= paste("~",V.fixed)
   XV = with(cov.data,model.matrix(formula(V.fixed)))  
-  XV = XV[,-which(colnames(XV)=="(Intercept)")]
+  XV = as.matrix(XV[,-which(colnames(XV)=="(Intercept)")])
   Vcenter = apply(XV,2,mean,na.rm=TRUE)
   XV = t(t(XV)-Vcenter)
 }
@@ -59,7 +62,8 @@ if(is.null(a.fixed)){
 } else {
   if(is.null(cov.data)) print("alpha formula provided but covariate data is absent:",a.fixed)
   a.fixed = ifelse(length(grep("~",a.fixed)) == 0,paste("~",a.fixed),a.fixed)
-  Xa = with(cov.data,model.matrix(formula(a.fixed)))  
+  Xa = with(cov.data,model.matrix(formula(a.fixed))) 
+  Xa = as.matrix(Xa[,-which(colnames(Xa)=="(Intercept)")])
   acenter = apply(Xa,2,mean,na.rm=TRUE)
   Xa = t(t(Xa)-acenter)
 }
@@ -140,7 +144,7 @@ if("leaf" %in% V.random){
 if(!is.null(XV)){
   Vnames = gsub(" ","_",colnames(XV))
   Vformula = paste(Vformula,paste0("+ betaV",Vnames,"*XV[rep[i],",1:ncol(XV),"]",collapse=" "))
-  Vpriors = paste0("     betaV",Vnames,"~dnorm(0,0.1)",collapse="\n")
+  Vpriors = paste0("     betaV",Vnames,"~dnorm(0,0.001)",collapse="\n")
   my.model = sub(pattern="## Vcmax BETAs",Vpriors,my.model)  
   mydat[["XV"]] = XV
   out.variables = c(out.variables,paste0("betaV",Vnames))  
@@ -158,7 +162,7 @@ if("leaf" %in% a.random){
 if(!is.null(Xa)){
   Anames = gsub(" ","_",colnames(Xa))
   Aformula = paste(Aformula,paste0("+ betaA",Anames,"*Xa[rep[i],",1:ncol(Xa),"]",collapse=" "))
-  apriors = paste0("betaA",Anames,"~dnorm(0,0.1)",collapse="\n")
+  apriors = paste0("betaA",Anames,"~dnorm(0,0.001)",collapse="\n")
   my.model = sub(pattern="## alpha BETAs",apriors,my.model)  
   mydat[["Xa"]] = Xa
   out.variables = c(out.variables,paste0("betaA",Anames))  
@@ -178,7 +182,7 @@ mc3 <- jags.model(file=textConnection(my.model),data=mydat,
 mc3.out <- coda.samples(model=mc3, variable.names=out.variables, n.iter=model$n.iter)                              
 
 ## split output
-out = list(params=NULL,predict=NULL)
+out = list(params=NULL,predict=NULL,model=my.model)
 mfit = as.matrix(mc3.out,chains=TRUE)
 pred.cols = union(grep("pA",colnames(mfit)),grep("pmean",colnames(mfit)))
 chain.col = which(colnames(mfit)=="CHAIN")
