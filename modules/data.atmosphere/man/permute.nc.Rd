@@ -1,19 +1,17 @@
-\name{extract.nc}
-\alias{extract.nc}
-\title{extract.nc}
+\name{permute.nc}
+\alias{permute.nc}
+\title{permute.nc}
 \usage{
-extract.nc(in.path, in.prefix, outfolder, out.prefix, start_date, end_date,
-  slat, slon, overwrite = FALSE, verbose = FALSE, ...)
+permute.nc(in.path, in.prefix, out.path, start_date, end_date,
+  overwrite = FALSE, verbose = FALSE, ...)
 }
 \arguments{
   \item{in.path}{location on disk where inputs are stored}
 
-  \item{in.prefix}{prefix of input files}
+  \item{in.prefix}{prefix of input and output files}
 
   \item{outfolder}{location on disk where outputs will be
   stored}
-
-  \item{out.prefix}{prefix of output files}
 
   \item{start_date}{the start date of the data to be
   permuted (will only use the year part of the date)}
@@ -21,19 +19,14 @@ extract.nc(in.path, in.prefix, outfolder, out.prefix, start_date, end_date,
   \item{end_date}{the end date of the data to be permuted
   (will only use the year part of the date)}
 
-  \item{slat}{the latitude of the site}
-
-  \item{slon}{the longitude of the site}
-
   \item{overwrite}{should existing files be overwritten}
 
   \item{verbose}{should ouput of function be extra verbose}
 }
 \description{
-Given latitude and longitude coordinates, extract site data
-from NARR file
+Permute netCDF files
 }
 \author{
-Betsy Cowdery
+Elizabeth Cowdery, Rob Kooper
 }
 
