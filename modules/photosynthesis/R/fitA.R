@@ -29,6 +29,7 @@ a.fixed  = model$a.fixed
 a.random = model$a.random
 V.fixed  = model$V.fixed
 V.random = model$V.random
+if(is.null(model$match)) model$match = 'fname'
 
 dat = as.data.frame(flux.data)
 
