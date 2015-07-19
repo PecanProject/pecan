@@ -2,7 +2,7 @@
 /**
  * Copyright (c) 2012 University of Illinois, NCSA.
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the 
+ * are made available under the terms of the
  * University of Illinois/NCSA Open Source License
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
@@ -29,7 +29,6 @@ $pecan_edit = (isset($_REQUEST['pecan_edit'])) ? "checked" : "";
 $adv_setup = (isset($_REQUEST['adv_setup'])) ? "checked" : "";
 $model_edit = (isset($_REQUEST['model_edit'])) ? "checked" : "";
 $browndog = (isset($_REQUEST['browndog'])) ? "checked" : "";
-$qsub = (isset($_REQUEST['qsub'])) ? "checked" : "";
 
 if (!isset($_REQUEST['siteid'])) {
   die("Need a siteid.");
@@ -50,13 +49,13 @@ if (isset($_REQUEST['pft'])) {
   $selected_pfts = $_REQUEST['pft'];
 }
 
-$startdate = "2006/01/01";
-if (isset($_REQUEST['start'])) { 
+$startdate = "2004/01/01";
+if (isset($_REQUEST['start'])) {
   $startdate=$_REQUEST['start'];
 }
 
-$enddate = "2006/12/31";
-if (isset($_REQUEST['end'])) { 
+$enddate = "2004/12/31";
+if (isset($_REQUEST['end'])) {
   $enddate=$_REQUEST['end'];
 }
 
@@ -86,7 +85,7 @@ $inputs = array();
 while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
   $row['files'] = array();
   $inputs[$row['tag']] = $row;
-} 
+}
 $stmt->closeCursor();
 
 // get list of files
@@ -175,7 +174,7 @@ $stmt->closeCursor();
 <?php }?>
 <script type="text/javascript">
   function validate() {
-    $("#next").removeAttr("disabled");       
+    $("#next").removeAttr("disabled");
     $("#error").html("&nbsp;");
 
     // check PFTs
@@ -202,7 +201,7 @@ $stmt->closeCursor();
     }
   }
 ?>
-  
+
     // check dates
     if ($("#start").length != 0) {
       var start = checkDate($("#start").val(), "Start");
@@ -226,7 +225,7 @@ $stmt->closeCursor();
       }
     }
   }
-      
+
   function prevStep() {
     $("#formprev").submit();
   }
@@ -234,7 +233,7 @@ $stmt->closeCursor();
   function nextStep() {
     $("#formnext").submit();
   }
-  
+
   function checkDate(date, field) {
     var arr = date.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
     if (arr == null) {
@@ -264,7 +263,7 @@ $stmt->closeCursor();
 <?php } else { ?>
     google.load("maps", "3",  {other_params:"sensor=false"});
   google.setOnLoadCallback(mapsLoaded);
-    
+
     function mapsLoaded() {
     var latlng = new google.maps.LatLng(<?php echo $siteinfo['lat']; ?>, <?php echo $siteinfo['lon']; ?>);
     var myOptions = {
@@ -316,7 +315,7 @@ $stmt->closeCursor();
 
       <label id="pftlabel">PFT<sup>*</sup></label>
       <select id="pft" name="pft[]" multiple size=5 onChange="validate();">
-<?php 
+<?php
 foreach($pfts as $pft) {
   print "        <option data-id='{$pft['id']}' ${pft['selected']}>${pft['name']}</option>\n";
 }
@@ -356,7 +355,7 @@ foreach($inputs as $input) {
 }
 ?>
       <label title="Used to send email when the run is finished.">Email</label>
-      <input id="email" name="email" type="text" value="<?php echo $email; ?>"/>  
+      <input id="email" name="email" type="text" value="<?php echo $email; ?>"/>
       <div class="spacer"></div>
 
 <?php if (isset($browndog_url) && $browndog_url != "") { ?>
@@ -369,15 +368,13 @@ foreach($inputs as $input) {
       <input id="model_edit" name="model_edit" type="checkbox" <?php echo $model_edit; ?>/>
       <label title="Allows user to do advanced analysis (quantiles and sigma options) ">Advanced setup</label>
       <input id="adv_setup" name="adv_setup" type="checkbox" <?php echo $adv_setup; ?> onChange=validate(); />
-      <!-- <label title="Allows to submit jobs to remote host.">qsub</label> -->
-      <input id="qsub" name="qsub" type="hidden" <?php echo $qsub; ?>/>
       <div class="spacer"></div>
 
       <span class="small"><sup>*</sup> are required fields.</span>
       <p></p>
       <span id="error" class="small">&nbsp;</span>
       <input id="prev" type="button" value="Prev" onclick="prevStep();" />
-      <input id="next" type="button" value="Next" onclick="nextStep();" <?php if (!$userok) echo "disabled" ?>/>    
+      <input id="next" type="button" value="Next" onclick="nextStep();" <?php if (!$userok) echo "disabled" ?>/>
       <div class="spacer"></div>
     </form>
 <?php
@@ -386,7 +383,7 @@ foreach($inputs as $input) {
     echo "Logged in as " . get_user_name();
     echo "<a href=\"index.php?logout\" id=\"logout\">logout</a>";
   }
-?>    
+?>
   </div>
   <div id="output">
     name : <b><?php echo $siteinfo["sitename"]; ?></b><br/>
@@ -402,13 +399,13 @@ foreach($inputs as $input) {
     if($(this).is(':checked')){
       browndog_add();
     } else {
-      browndog_del();      
+      browndog_del();
     }
   });
 </script>
 </body>
 </html>
 
-<?php 
+<?php
 close_database();
 ?>
