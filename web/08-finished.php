@@ -69,6 +69,12 @@ foreach(scandir("$folder") as $file) {
   }
   $pecanfiles[] = $file;
 }
+foreach(recursive_scandir("$folder/ensemble", "ensemble") as $file) {
+  $pecanfiles[] = $file;
+}
+foreach(recursive_scandir("$folder/sensitivity", "sensitivity") as $file) {
+  $pecanfiles[] = $file;
+}
 
 # check the pft folder
 $pfts = array();
