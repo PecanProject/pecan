@@ -20,8 +20,13 @@
 #' @param model The model to be inverted. This should be an R function 
 #'      that takes `inits` and `constants` as input and returns 
 #'      one column of `observed` (nrows should be the same).
+#' @param adapt Number of steps for adapting covariance matrix (i.e. adapt 
+#' every 'n' steps. Default=100
+#' @param adj_min Minimum threshold for rescaling Jump standard deviation.  
+#' Default = 0.1
+#' @param target Target acceptance rate. Default=0.44
 invert.slow <- function(observed, inits, constants, ngibbs, prior, pm,
-                        model){
+                        model, adapt=100, adj_min=0.1, target=0.44){
     observed <- as.matrix(observed)
     nspec <- ncol(observed)
     nwl <- nrow(observed)
@@ -30,17 +35,25 @@ invert.slow <- function(observed, inits, constants, ngibbs, prior, pm,
     rsd <- 0.5
     PrevSpec <- model(inits, constants)
     PrevError <- PrevSpec - observed
-    Jump <- inits * 0.05
+    initsd <- inits * 0.05
+    Jump <- diag(initsd)
     results <- matrix(NA, nrow=ngibbs, ncol=npars+1)
-    ar <- numeric(npars)
-    adapt <- 20
-    adj_min <- 0.1
+    ar <- 0
     for(ng in 1:ngibbs){
         if(ng %% adapt < 1){
-            adj <- ar / adapt / 0.75
-            adj[adj < adj_min] <- adj_min
-            Jump <- Jump * adj
-            ar <- numeric(npars)
+            if(ar == 0){
+                rescale <- diag(rep(adjmin,4))
+                Jump <- rescale %*% Jump %*% rescale
+            } else{
+                adj <- max(ar / adapt / target, adj_min)
+                region <- seq(n-adapt, n-1)
+                stdev <- apply(result[region,1:npars], 2, sd)
+                rescale <- diag(stdev * adj)
+                cormat <- cor(result[region,1:npars])
+                if(any(is.na(corr))) corr <- diag(rep(1,4))
+                Jump <- recale %*% corr %*% rescale
+            }
+            ar <- 0
         }
         for(p in 1:npars){
             tvec <- inits
