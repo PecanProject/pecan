@@ -78,7 +78,7 @@ if (is_dir("$folder/pft")) {
       continue;
     }
     $pfts[$pft] = array();
-    foreach(scandir("$folder/pft/${pft}") as $file) {
+    foreach(recursive_scandir("$folder/pft/${pft}", "") as $file) {
       if (is_dir("$folder/pft/$pft/$file")) {
         continue;
       }
@@ -121,6 +121,7 @@ if (is_dir("$folder/run")) {
         $year = substr($file, 0, 4);
         $vars = explode("\n", file_get_contents("${folder}/out/${runid}/${file}.var"));
         $outplot[$runid][$year] = array_filter($vars);
+        sort($outplot[$runid][$year]);
       }
     }
   }
@@ -509,4 +510,24 @@ if (is_dir("$folder/run")) {
 
 <?php 
 $pdo = null;
+
+function recursive_scandir($dir, $base) {
+  $files = array();
+  foreach (array_diff(scandir($dir), array('.','..')) as $file) {
+    if (is_dir("$dir/$file")) {
+      if ($base == "") {
+        $files = array_merge($files, recursive_scandir("$dir/$file", "$file"));
+      } else {
+        $files = array_merge($files, recursive_scandir("$dir/$file", "$base/$file"));
+      }
+    } else {
+      if ($base == "") {
+        $files[] = $file;
+      } else {
+        $files[] = "$base/$file"; 
+      }
+    }
+  }
+  return $files;
+}
 ?>
