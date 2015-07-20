@@ -379,6 +379,28 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
                           enddate = end_date,
                           dbfile.name = "ED_MET_DRIVER_HEADER",
                           stringsAsFactors = FALSE)
+  } else if (model == "DALEC") {
+    formatname <- "dalec"
+    outputfile <- file.path(folder, "dalec.dat")
+    results <- data.frame(file=outputfile,
+                          host = fqdn(),
+                          mimetype ='text/plain',
+                          formatname = 'DALEC meteorology' ,
+                          startdate = start_date ,
+                          enddate = end_date,
+                          dbfile.name = basename(outputfile),
+                          stringsAsFactors = FALSE)
+  } else if (model == "LINKAGES") {
+    formatname <- "linkages"
+    outputfile <- file.path(folder, "climate.txt")
+    results <- data.frame(file=outputfile,
+                          host = fqdn(),
+                          mimetype ='text/plain',
+                          formatname = 'LINKAGES meteorology' ,
+                          startdate = start_date ,
+                          enddate = end_date,
+                          dbfile.name = basename(outputfile),
+                          stringsAsFactors = FALSE)
   } else {
     logger.warn("Could not process model", model)
     invisible(return(NA))
