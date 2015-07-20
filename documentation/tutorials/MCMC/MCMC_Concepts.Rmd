@@ -74,6 +74,11 @@ library(PEcAn.photosynthesis)
 ### Load built in data
 filenames <- system.file("extdata", paste0("flux-course-3",c("aci","aq")), package = "PEcAn.photosynthesis")
 dat<-do.call("rbind", lapply(filenames, read.Licor))
+
+## Simple plots
+aci = as.character(dat$fname) == basename(filenames[1])
+plot(dat$Ci[aci],dat$Photo[aci],main="ACi")
+plot(dat$PARi[!aci],dat$Photo[!aci],main="AQ")
 ```
 
 In PEcAn we've written a wrapper function, $fitA$, around the statistical model discussed above, which has a number of other bells and whistles discussed in the [PEcAn Photosynthesis Vignette](https://github.com/PecanProject/pecan/blob/master/modules/photosynthesis/vignettes/ResponseCurves.Rmd). For today we'll just use the most basic version, which takes as arguments the data and the number of MCMC iterations we want to run.
@@ -171,6 +176,7 @@ In the final set of plots we look at the actual A-Ci and A-Q curves themselves. 
 plot.photo(dat,fit)
 ```
 
+Note: on the last figure you will get warnings about "No ACi" and "No AQ" which can be ignored. These are occuring because the file that had the ACi curve didn't have an AQ curve, and the file that had the AQ curve didn't have an ACi curve.
 
 
 ## Additional information
