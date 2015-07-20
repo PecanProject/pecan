@@ -331,7 +331,7 @@ db.site.lat.lon <- function(site.id,con){
 
 
 ##' @name browndog.met
-##' Use browndog to get the met data for a specific model
+##' @description Use browndog to get the met data for a specific model
 ##' @title get met data from browndog
 ##' @export
 ##' @param browndog, list with url, username and password to connect to browndog

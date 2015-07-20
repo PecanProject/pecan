@@ -113,7 +113,7 @@ read.output <- function(runid, outdir, start.year=NA,
   for(ncfile in ncfiles) {
     nc <- nc_open(ncfile)
     for(v in variables){
-      if(v %in% names(nc$var)){
+      if(v %in% c(names(nc$var),names(nc$dim))){
         newresult <- ncvar_get(nc, v)
         if(v %in% c(cflux, wflux)){
           newresult <- ud.convert(newresult, "kg m-2 s-1", "kg ha-1 yr-1")
