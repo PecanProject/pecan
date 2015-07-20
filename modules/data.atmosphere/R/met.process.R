@@ -331,7 +331,7 @@ db.site.lat.lon <- function(site.id,con){
 
 
 ##' @name browndog.met
-##' Use browndog to get the met data for a specific model
+##' @description Use browndog to get the met data for a specific model
 ##' @title get met data from browndog
 ##' @export
 ##' @param browndog, list with url, username and password to connect to browndog
@@ -378,6 +378,28 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
                           startdate = start_date ,
                           enddate = end_date,
                           dbfile.name = "ED_MET_DRIVER_HEADER",
+                          stringsAsFactors = FALSE)
+  } else if (model == "DALEC") {
+    formatname <- "dalec"
+    outputfile <- file.path(folder, "dalec.dat")
+    results <- data.frame(file=outputfile,
+                          host = fqdn(),
+                          mimetype ='text/plain',
+                          formatname = 'DALEC meteorology' ,
+                          startdate = start_date ,
+                          enddate = end_date,
+                          dbfile.name = basename(outputfile),
+                          stringsAsFactors = FALSE)
+  } else if (model == "LINKAGES") {
+    formatname <- "linkages"
+    outputfile <- file.path(folder, "climate.txt")
+    results <- data.frame(file=outputfile,
+                          host = fqdn(),
+                          mimetype ='text/plain',
+                          formatname = 'LINKAGES meteorology' ,
+                          startdate = start_date ,
+                          enddate = end_date,
+                          dbfile.name = basename(outputfile),
                           stringsAsFactors = FALSE)
   } else {
     logger.warn("Could not process model", model)

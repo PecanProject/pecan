@@ -2,7 +2,7 @@
 #PEcAn
 #data
 #pecan.zip
-#ed.zip
+#dalec
 
 sink(stdout(),type="message")
 
@@ -16,8 +16,8 @@ args <- commandArgs(trailingOnly = TRUE)
 usage <- function(msg) {
     print(msg)
     print(paste0("Usage:    ", args[0], " cf-nc_Input_File outputfile [tempfolder]"))
-    print(paste0("Example1: ", args[0], " US-Dk3.pecan.nc US-Dk3.ed.zip  [/tmp/watever]"))
-    print(paste0("Example2: ", args[0], " US-Dk3.pecan.zip US-Dk3.ed.zip [/tmp/watever]"))
+    print(paste0("Example1: ", args[0], " US-Dk3.pecan.nc US-Dk3.dat  [/tmp/watever]"))
+    print(paste0("Example2: ", args[0], " US-Dk3.pecan.zip US-Dk3.dat [/tmp/watever]"))
     stop()
 }
 
@@ -38,8 +38,8 @@ outputFile <- args[2]
 cffolder <- file.path(tempDir,"cf")
 dir.create(cffolder, showWarnings=FALSE, recursive=TRUE)
 
-edfolder <- file.path(tempDir,"ed")
-dir.create(edfolder, showWarnings=FALSE, recursive=TRUE)
+outfolder <- file.path(tempDir,"linkages")
+dir.create(outfolder, showWarnings=FALSE, recursive=TRUE)
 
 # unzip and parse filenames
 if (grepl("pecan.zip$", args[1])) {
@@ -81,9 +81,8 @@ if (grepl("pecan.zip$", args[1])) {
 }
 
 # convert CF to output, in this case ed.zip
-require(PEcAn.ED2)
-result <- met2model.ED2(cffolder, site, edfolder, start_date=startDate, end_date=endDate, overwrite=overwrite)
+require(PEcAn.DALEC)
+result <- met2model.DALEC(cffolder, site, outfolder, start_date=startDate, end_date=endDate, overwrite=overwrite)
 
-# next rename combine files into single output file
-setwd(dirname(sub("\n.*", "", result$file)))
-system2("/usr/bin/zip", c("-r", outputFile, "."))
+# next rename outfile to output file
+file.rename(result$file, outputFile)
