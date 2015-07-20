@@ -66,13 +66,22 @@ $email = "";
 if (isset($_REQUEST['email'])) {
   $email = $_REQUEST['email'];
 }
-
-$runs = $_REQUEST['runs'];
-$variables = $_REQUEST['variables'];
-$notes = $_REQUEST['notes'];
+$runs = "1";
+if (isset($_REQUEST['runs'])) {
+  $runs = $_REQUEST['runs'];
+}
+$variables = "NPP";
+if (isset($_REQUEST['variables'])) {
+  $variables = $_REQUEST['variables'];
+}
+$notes = "";
+if (isset($_REQUEST['notes'])) {
+  $notes = $_REQUEST['notes'];
+}
 $sensitivity = array();
-$sensitivity = array_filter(explode(",",$_REQUEST['sensitivity']),'strlen');
-
+if (isset($_REQUEST['sensitivity'])) {
+    $sensitivity = array_filter(explode(",",$_REQUEST['sensitivity']),'strlen');
+}
 
 # check met info
 if (isset($_REQUEST['input_met']) && is_numeric($_REQUEST['input_met'])) {
