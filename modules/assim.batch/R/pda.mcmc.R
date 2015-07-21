@@ -45,7 +45,9 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   }
 
   ## Load priors
-  prior <- pda.load.priors(settings, con)
+  temp <- pda.load.priors(settings, con)
+  prior <- temp$prior
+  settings <- temp$settings
   pname <-  rownames(prior) 
   n.param.all  <- nrow(prior)
 
@@ -119,6 +121,10 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
       showWarnings=F, recursive=T)
   }
 
+  ## save updated settings XML. Will be overwritten at end, but useful in case of crash
+  saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 
+    paste0('pecan.pda', settings$assim.batch$ensemble.id, '.xml')))
+
   ## --------------------------------- Main MCMC loop --------------------------------- ##
   for(i in start:finish){
     logger.info(paste("Data assimilation MCMC iteration",i,"of",finish))
@@ -127,6 +133,10 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
     if(i %% settings$assim.batch$jump$adapt < 1){
       settings <- pda.adjust.jumps(settings, accept.rate, pnames=pname[prior.ind])
       accept.rate <- numeric(n.param)
+
+      # Save updated settings XML. Will be overwritten at end, but useful in case of crash
+      saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 
+        paste0('pecan.pda', settings$assim.batch$ensemble.id, '.xml')))
     }
 
     for(j in 1:n.param){
