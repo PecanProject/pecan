@@ -16,7 +16,9 @@ ensemble.filename <- function(settings,
                               start.year  = settings$ensemble$start.year,
                               end.year    = settings$ensemble$end.year) {
 
-  if(is.null(ensemble.id)) ensemble.id <- "NOENSEMBLEID" # Not supposed to happen...
+  if(is.null(ensemble.id) || ensemble.id=="NA" || is.na(ensemble.id)) {
+    ensemble.id <- "NOENSEMBLEID" # Not supposed to happen...
+  }
   
   ensemble.dir <- settings$outdir
   
@@ -54,7 +56,9 @@ sensitivity.filename <- function(settings,
                               start.year  = settings$sensitivity.analysis$start.year,
                               end.year    = settings$sensitivity.analysis$end.year) {
 
-  if(is.null(ensemble.id)) ensemble.id <- "NOENSEMBLEID" # Not supposed to happen...
+  if(is.null(ensemble.id) || ensemble.id=="NA" || is.na(ensemble.id)) {
+    ensemble.id <- "NOENSEMBLEID" # Not supposed to happen...
+  }
 
   if(is.null(pft)) {
     # Goes in main output directory. 
