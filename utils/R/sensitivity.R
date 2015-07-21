@@ -127,7 +127,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
     }
   } else {
     run.id <- get.run.id('SA', 'median')
-    ensemble.id <- "NA"
+    ensemble.id <- NA
   }
   medianrun <- run.id
   
