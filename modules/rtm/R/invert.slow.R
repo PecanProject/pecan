@@ -25,12 +25,21 @@
 #' @param adj_min Minimum threshold for rescaling Jump standard deviation.  
 #' Default = 0.1
 #' @param target Target acceptance rate. Default=0.44
+#' @param lsq.first Perform least squares optimization first, and use outputs 
+#' to initialize Metropolis Hastings. This dramatically improves the mixing 
+#' time, but may prevent full exploration of the parameter space and may result 
+#' in getting caught in a local minimum. Default=TRUE
 invert.slow <- function(observed, inits, constants, ngibbs, prior, pm,
-                        model, adapt=100, adj_min=0.1, target=0.44){
+                        model, adapt=100, adj_min=0.1, target=0.44, do.mle=TRUE){
     observed <- as.matrix(observed)
     nspec <- ncol(observed)
     nwl <- nrow(observed)
     npars <- length(inits)
+    if(do.mle){
+        fit <- invert.lsq(observed, inits, constants, model, lower=pm)$par
+        print(fit)
+        inits <- fit$par
+    }
     rp1 <- 0.001 + nspec*nwl/2
     rsd <- 0.5
     PrevSpec <- model(inits, constants)
@@ -43,7 +52,7 @@ invert.slow <- function(observed, inits, constants, ngibbs, prior, pm,
         if(ng %% adapt < 1){
             print(ng)
             if(ar < 2){
-                rescale <- diag(rep(adjmin,4))
+                rescale <- diag(rep(adj_min,4))
                 Jump <- rescale %*% Jump %*% rescale
             } else{
                 adj <- max(ar / adapt / target, adj_min)
