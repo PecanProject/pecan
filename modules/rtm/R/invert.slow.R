@@ -41,38 +41,38 @@ invert.slow <- function(observed, inits, constants, ngibbs, prior, pm,
     ar <- 0
     for(ng in 1:ngibbs){
         if(ng %% adapt < 1){
-            if(ar == 0){
+            print(ng)
+            if(ar < 2){
                 rescale <- diag(rep(adjmin,4))
                 Jump <- rescale %*% Jump %*% rescale
             } else{
                 adj <- max(ar / adapt / target, adj_min)
-                region <- seq(n-adapt, n-1)
-                stdev <- apply(result[region,1:npars], 2, sd)
+                region <- seq(ng-adapt, ng-1)
+                stdev <- apply(results[region,1:npars], 2, sd)
                 rescale <- diag(stdev * adj)
-                cormat <- cor(result[region,1:npars])
-                if(any(is.na(corr))) corr <- diag(rep(1,4))
-                Jump <- recale %*% corr %*% rescale
+                cormat <- cor(results[region,1:npars])
+                if(any(is.na(cormat))) cormat <- diag(rep(1,4))
+                Jump <- rescale %*% cormat %*% rescale
             }
             ar <- 0
         }
-        for(p in 1:npars){
-            tvec <- inits
-            tvec[p] <- rtnorm(inits[p],Jump[p],pm[p])
+        tvec <- mvrnorm(1, inits, Jump)
+        if(all(tvec > pm)){
             TrySpec <- model(tvec, constants)
             TryError <- TrySpec - observed
-            TryPost <- sum(dnorm(TryError,0,rsd,1)) + prior[[p]](tvec[p])
-            PrevPost <- sum(dnorm(PrevError,0,rsd,1)) + prior[[p]](inits[p])
-            JN <- dtnorm(tvec[p], inits[p], Jump[p], pm[p])
-            JD <- dtnorm(inits[p], tvec[p], Jump[p], pm[p])
-            a <- exp((TryPost - JN) - (PrevPost - JD))
+            TryPrior <- sum(sapply(1:npars, function(p) prior[[p]](tvec[p])))
+            TryPost <- sum(dnorm(TryError,0,rsd,1)) + TryPrior
+            PrevPrior <- sum(sapply(1:npars, function(p) prior[[p]](inits[p])))
+            PrevPost <- sum(dnorm(PrevError,0,rsd,1)) + PrevPrior
+            a <- exp(TryPost - PrevPost)
             if(is.na(a)) a <- -1
             if(a > runif(1)){
-                inits[p] <- tvec[p]
+                inits <- tvec
                 PrevError <- TryError
-                ar[p] <- ar[p] + 1
+                ar <- ar + 1
             }
-            results[ng,p] <- inits[p]
         }
+        results[ng,1:npars] <- inits
         rp2 <- 0.001 + sum(PrevError * PrevError)/2
         rinv <- rgamma(1, rp1, rp2)
         rsd <- 1/sqrt(rinv)
