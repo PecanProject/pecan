@@ -1,7 +1,7 @@
 ---
 title: "PEcAn: Testing the Sensitivity Analysis Against Observations"
 author: "Ankur Desai"
-date: "July 20, 2015"
+date: "July 21, 2015"
 output: html_document
 ---
 ##Flux Measurements and Modeling Course, *Tutorial Part 2*
@@ -16,11 +16,16 @@ Before we start a full data assimilation exercise, let’s try something simple 
 
 In your earlier run in the introductory tutorial, you have already run an sensitivity analysis of SIPNET model runs at Niwot Ridge sampling across quantiles of a parameter prior, while holding all others to the median value. The pecan.xml file told PEcAn to run an sensitivity analysis, which simply meant SIPNET was run multiple times with the same driver, but varying parameter values one at a time (while holding all others to their median), and the parameter range also specified in the pecan.xml file (as quantiles, which were then sampled against the BETY database of observed variation in the parameter for species within the specific plant functional type). 
 
-You can find this file (*pecan.xml*) in the *~/output* folder within the specific run directory (e.g., *~/output/PEcAn_99000000008/pecan.xml*), where *99000000008* is the BETY database id of the workflow that called all the ensemble and sensitivity runs of SIPNET. For here on out, we will use **RUNDIR** to refer to this folder name (*PEcAn_99000000008*).
+You can find this file (*pecan.xml*) in the *~/output* folder within the specific run directory (e.g., *~/output/PEcAn_99000000002/pecan.xml*), where *99000000002* is the BETY database id of the workflow that called all the ensemble and sensitivity runs of SIPNET. For here on out, we will use **RUNDIR** to refer to this folder name (*PEcAn_99000000002*). Let's define this variable:
 
-Within that folder, you will find the /run folder that has a folder for every SIPNET run and the out/ folder, that contains the output from each of these runs. The nice thing is that PEcAn has also produced “.RData” files of these model outputs that can be easily read into R by just clicking on them!
+```{r, eval=FALSE}
+RunDir <- "PEcAn_99000000002"
+```
 
-So let’s try to compare Ameriflux NEE to SIPNET NEE across all these runs to make a plot of parameter vs. goodness-of-fit. We’ll start with root mean square error (**RMSE**), but then try some other tests, too.
+
+Within that folder, you will find the *run/* folder that has a folder for every SIPNET run and the *out/* folder, that contains the output from each of these runs. The nice thing is that PEcAn has also produced “.RData” files of these model outputs that can be easily read into R by just clicking on them!
+
+So let’s try to compare Ameriflux NEE to SIPNET NEE across all these runs to make a plot of parameter vs. goodness-of-fit. We’ll start with root mean square error (**RMSE**), but then discuss some other tests, too.
 
 ####A. First, let’s look at the sensitivity analysis output (again)
 
@@ -35,11 +40,11 @@ library(PEcAn.all)
 
 Then on the top of the Rstudio editing pane, click the *“Run”* button, which will copy that line to the R command line (bottom left) and execute it. You could also just copy and paste it from this tutorial.
 
-Back to the files pane, within the *run/* folder, navigate to *pft/*, then to the pft you ran (*temperate.coniferous* is what we will use here), then the folder *sensitivity/* and then the folder *NOENSEMBLEID/*. Find a PDF file that starts *sensitivity.analysis*. In Rstudio, just click on the PDF to view it. You discussed this PDF last tutorial, through the web interface. Here, we see how the model NEE in SIPNET changes with each parameter.
+Back to the files pane, within the *run/* folder, find a folder called *pft/* and within that a folder with the pft name (such as *temprature.coniferous*). Within that is a PDF file that starts *sensitivity.analysis*. In Rstudio, just click on the PDF to view it. You discussed this PDF last tutorial, through the web interface. Here, we see how the model NEE in SIPNET changes with each parameter.
 
-Let’s read that sensitivity output. Navigate back up (*..*) to the *~/output/**RUNDIR**/* folder, and then into the *sensitivity/* folder and then the **RUNDIR/** folder. A series of files labeled “*.RData*” contain the R variables used to make these plots. Within the *sensitivity/NOENSEMBLEID/* folder, there is **sensitivity.output.*.RData** which contains the annual NEE as a function of each parameter quantile. Click on it to load it.There is **sensitivity.results.*.RData** which contains plotting functions and variance decomposition output. And in the  *sensitivity/**RUNDIR*** folder, there is **sensitivity.samples.RData** which contains the actual parameter values and the RunIDs associated with each sensitivity run.
+Let’s read that sensitivity output. Navigate back up (*..*) to the *~/output/**RUNDIR**/* folder. Find a series of files that end in “*.RData*”. These files contain the R variables used to make these plots. In particular, there is **sensitivity.output.*.RData** which contains the annual NEE as a function of each parameter quantile. Click on it to load a variable into your environment.There is **sensitivity.results.*.RData** which contains plotting functions and variance decomposition output, which we don't need in this tutorial. And finally, there is **sensitivity.samples.*.RData** which contains the actual parameter values and the RunIDs associated with each sensitivity run.
 
-Click on *sensitivity.samples.RData* to load it into your environment. You should see a set of five new variables.
+Click on *sensitivity.samples.*.RData* to load it into your environment. You should see a set of five new variables (pft.names, trait.names, sa.ensemble.id, sa.run.ids, sa.samples).
 
 Let’s extract a parameter and it’s sensitivity NEE output from the list sa.samples, which is organized by PFT, and then by parameter. First, let’s look at a list of PFTs and parameters available:
 ```{r, eval=FALSE}
@@ -94,10 +99,10 @@ runids
 
 You should see a list of long numbers. Each of these is an ID. In the Files pane, if you go to *~/output/**RUNDIR**/run* folder, you will see a bunch of folders with similar ID numbers. Within each folder is a set of files (such as *sipnet.clim* and *sipnet.param*) used by SIPNET to run. Similarly, in *~/output/**RUNDIR**/out* folder, you will see within any one run folder the model output in SIPNET format (*sipnet.out*) and in a general model-independent format used by PEcAn in the *YYYY.nc* files where *YYYY* is a year.
 
-Let’s try to read the output from a single run id, as you did in the earlier tutorial. **read.output** is a PEcAn function to read in variables from any PEcAn compliant output files, it requires a runid, the directory, start year, end year, and an optional list of variables. Make sure you replace the **RUNDIR** and the year.
+Let’s try to read the output from a single run id, as you did in the earlier tutorial. **read.output** is a PEcAn function to read in variables from any PEcAn compliant output files, it requires a runid, the directory, start year, end year, and an optional list of variables. Make sure you have RunDir variable set to the run number and the year to the year you ran.
 ```{r,eval=FALSE}
-arun <- read.output(runids[1],paste("~/output/RUNDIR/out",runids[1],sep="/"),2006,2006,"NEE")
-plot(arun$NEE)
+arun <- read.output(runids[1],paste("~/output",RunDir,"out",runids[1],sep="/"),2006,2006,c("time","NEE"))
+plot(arun$time,arun$NEE)
 ```
 
 ####B. Now let’s bring in the actual observations
@@ -144,7 +149,7 @@ So all we need to do to go beyond this is to make a loop that reads in each sens
 ```{r,eval=FALSE,tidy=TRUE}
 rmses <- rep(0,length(runids))
 for(r in 1:length(runids)){
-arun <- read.output(runids[r],paste("~/output/PEcAn_99000000008/out",runids[r],sep="/"),2006,2006,"NEE")
+arun <- read.output(runids[r],paste("~/output",RunDir,"out",runids[r],sep="/"),2006,2006,"NEE")
 modnee <- ud.convert(arun$NEE,"kg ha-1 yr-1","ug m-2 s-1")/12.0
 rmses[r] <- (sqrt(mean((niwotnee-modnee)^2,na.rm = TRUE)))
 }
@@ -158,16 +163,11 @@ Can you identify a minimum (if there is one)? If so, is there any reason to beli
 
 Now that you have the hang of it, here are a few more things to try:
 
-1. Try a different error functions, given actual NEE uncertainty. You learned earlier that uncertainty in half-hourly observed NEE is not Gaussian. This makes RMSE not the correct measure for goodness-of-fit. Go to *~/pecan/modules/uncertainty/R* and source *flux_uncertainty.R*. Then you can run:
+1. Try a different error functions, given actual NEE uncertainty. You learned earlier that uncertainty in half-hourly observed NEE is not Gaussian. This makes RMSE not the correct measure for goodness-of-fit. Go to *~/pecan/modules/uncertainty/R*, open *flux_uncertainty.R*, and click on the *source* button in the program editing pane. Then you can run:
 ```{r,eval=FALSE}
 unc <- flux.uncertainty(niwotnee,QC=rep(0,17520))
-plot(unc$mag, unc$err)
-big = 10000
-lines(c(0,big),c(f$intercept,f$slopeP*big))
-lines(c(0,-big),c(f$intercept,-f$slopeN*big))
-legend('bottomleft',legend=c('intercept', unc$intercept,'slopeP',unc$slopeP,'slopeN', unc$slopeN))
+plot.flux.uncertainty(unc)
 ```
+The figure shows you uncertainty (err) as a function of NEE magnitude (mag). How might you use this information to change the RMSE calculation?
 2. Try a few others parameters. Repeat the above steps but with a different parameter. You might want to select one from the sensitivity PDF that has a large sensitivity or from the variance decomposition that is also poorly constrained. 
 3. Try RMSE against daily or annual NEE instead of half-hourly. In this case, first average the values up to daily in both the model and observations. You will need to think about how to deal with missing data. For example, you could make the model output have the same data points missing as observations, and then average. Or use some other criteria.
-
-
