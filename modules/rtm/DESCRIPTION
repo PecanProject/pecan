@@ -1,8 +1,8 @@
 Package: PEcAnRTM
 Type: Package
 Title: PEcAn functions used for radiative transfer modeling
-Version: 1.4.2
-Date: 2015-05-08
+Version: 1.4.3
+Date: 2015-07-20
 Author: Alexey Shiklomanov, Shawn Serbin, Mike Dietze
 Maintainer: Alexey Shiklomanov <ashiklom@bu.edu>
 Description: This package contains functions for performing forward runs and

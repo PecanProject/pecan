@@ -275,7 +275,7 @@ pda.load.priors <- function(settings, con) {
       "] but no prior found!"))
   }
   
-  return(prior.out)
+  return(list(prior=prior.out, settings=settings))
 }
 
 
@@ -303,7 +303,7 @@ pda.create.ensemble <- function(settings, con, workflow.id) {
                    now, "', '", ensemble.type,"', ", workflow.id, ")", sep=''), con)
     ensemble.id <- db.query(paste("SELECT id FROM ensembles WHERE created_at='", now, "'", sep=''), con)[['id']]
   } else {
-    ensemble.id <- "NA"
+    ensemble.id <- NA
   }
   
   return(ensemble.id)

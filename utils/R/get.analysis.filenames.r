@@ -16,19 +16,22 @@ ensemble.filename <- function(settings,
                               start.year  = settings$ensemble$start.year,
                               end.year    = settings$ensemble$end.year) {
 
-  if(is.null(ensemble.id)) ensemble.id <- "NOENSEMBLEID" # Not supposed to happen...
+  if(is.null(ensemble.id) || is.na(ensemble.id)) {
+    # This shouldn't generally arise, as run.write.configs() appends ensemble.id to settings. However,it will come up if running run.write.configs(..., write=F), because then no ensemble ID is created in the database. A simple workflow will still work in that case, but provenance will be lost if multiple ensembles are run.
+    ensemble.id <- "NOENSEMBLEID"
+  }
   
-  ensemble.dir <- file.path(settings$outdir, "ensemble", ensemble.id)
+  ensemble.dir <- settings$outdir
   
   dir.create(ensemble.dir, showWarnings=FALSE, recursive=TRUE)
   
   if(all.var.yr) {
     # All variables and years will be included; omit those from filename
     ensemble.file <- file.path(ensemble.dir, 
-      paste(prefix, suffix, sep='.'))
+      paste(prefix, ensemble.id, suffix, sep='.'))
   } else {
     ensemble.file <- file.path(ensemble.dir, 
-      paste(prefix, variable, start.year, end.year, suffix, sep='.'))
+      paste(prefix, ensemble.id, variable, start.year, end.year, suffix, sep='.'))
   }
   
   return(ensemble.file)
@@ -54,14 +57,17 @@ sensitivity.filename <- function(settings,
                               start.year  = settings$sensitivity.analysis$start.year,
                               end.year    = settings$sensitivity.analysis$end.year) {
 
-  if(is.null(ensemble.id)) ensemble.id <- "NOENSEMBLEID" # Not supposed to happen...
+  if(is.null(ensemble.id) || is.na(ensemble.id)) {
+    # This shouldn't generally arise, as run.write.configs() appends ensemble.id to settings. However,it will come up if running run.write.configs(..., write=F), because then no ensemble ID is created in the database. A simple workflow will still work in that case, but provenance will be lost if multiple ensembles are run.
+    ensemble.id <- "NOENSEMBLEID"
+  }
 
   if(is.null(pft)) {
     # Goes in main output directory. 
-    sensitivity.dir <- file.path(settings$outdir, "sensitivity", ensemble.id)
+    sensitivity.dir <- settings$outdir
   } else {
     ind <- which(sapply(settings$pfts, function(x) x$name) == pft)
-    sensitivity.dir <- file.path(settings$pfts[[ind]]$outdir, "sensitivity", ensemble.id)
+    sensitivity.dir <- settings$pfts[[ind]]$outdir
   }
   
   dir.create(sensitivity.dir, showWarnings=FALSE, recursive=TRUE)
@@ -69,10 +75,10 @@ sensitivity.filename <- function(settings,
   if(all.var.yr) {
     # All variables and years will be included; omit those from filename
     sensitivity.file <- file.path(sensitivity.dir, 
-      paste(prefix, suffix, sep='.'))
+      paste(prefix, ensemble.id, suffix, sep='.'))
   } else {
     sensitivity.file <- file.path(sensitivity.dir, 
-      paste(prefix, variable, start.year, end.year, suffix, sep='.'))
+      paste(prefix, ensemble.id, variable, start.year, end.year, suffix, sep='.'))
   }
   
   return(sensitivity.file)
