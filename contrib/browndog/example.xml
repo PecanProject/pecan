@@ -1,0 +1,8 @@
+<input>
+  <type>Ameriflux</type>
+  <site>US-Dk3</site>
+  <lat>35.9782</lat>
+  <lon>-79.0942</lon>
+  <start_date>2003-01-01 00:00:00</start_date>
+  <end_date>2005-12-31 23:59:59</end_date>
+</input>
