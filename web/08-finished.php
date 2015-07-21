@@ -63,11 +63,13 @@ if (file_exists($folder . DIRECTORY_SEPARATOR . "STATUS")) {
 
 # check the PEcAn folder
 $pecanfiles = array();
-foreach(scandir("$folder") as $file) {
-  if (is_dir("$folder/$file") || ($file == ".") || ($file == "..") || ($file == ".RData") || ($file == "plot.out")) {
-    continue;
+if (is_dir($folder)) {
+  foreach(scandir("$folder") as $file) {
+    if (is_dir("$folder/$file") || ($file == ".") || ($file == "..") || ($file == ".RData") || ($file == "plot.out")) {
+      continue;
+    }
+    $pecanfiles[] = $file;
   }
-  $pecanfiles[] = $file;
 }
 if (is_dir("$folder/ensemble")) {
   foreach(recursive_scandir("$folder/ensemble", "ensemble") as $file) {
