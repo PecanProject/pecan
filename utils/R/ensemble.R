@@ -162,7 +162,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings,
                       pft$posteriorid, ", ", ensemble.id, ", '", now, "', '", now, "');"), con=con)
     }
   } else {
-    ensemble.id <- "NA"
+    ensemble.id <- NA
   }
 
   # find all inputs that have an id

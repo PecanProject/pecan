@@ -35,7 +35,11 @@ run.ensemble.analysis <- function(plot.timeseries=NA, ensemble.id=NULL,
   if(is.null(ensemble.id)) ensemble.id <- settings$ensemble$ensemble.id
   if(is.null(ensemble.id)) {
     # Try to just grab the most recent one
-    ens.ids <- dir(file.path(settings$outdir, "ensemble"))
+    ens.ids <- as.numeric(sub("ensemble.samples.", "", 
+                            sub(".Rdata", "",
+                              dir(settings$outdir, "ensemble.samples")
+               )))
+    
     if(length(ens.ids) > 0) {
       ensemble.id <- max(ens.ids)
     } else {

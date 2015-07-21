@@ -192,7 +192,15 @@ return(out)
 
 }  ## end photosynthesis fitting code
 
-
+##' @name read.Licor
+##' @title read.Licor
+##' 
+##' @author Mike Dietze
+##' @export
+##' 
+##' @param filename  name of the file to read
+##' @param sep       file delimiter. defaults to tab
+##' @param ...       optional arguements forwarded to read.table
 read.Licor <- function(filename,sep="\t",...){
   fbase = sub(".txt","",tail(unlist(strsplit(filename,"/")),n=1))
   print(fbase)
