@@ -7,7 +7,7 @@ settings.file = args[1]
 require("PEcAn.all")
 
 #--------------------------------------------------------------------------------#
-# functions used to write STATUS used by history
+# Functions used to write STATUS used by history
 #--------------------------------------------------------------------------------#
 options(warn = 1, keep.source = TRUE, error = quote({
             status.end("ERROR")
@@ -28,7 +28,7 @@ status.end <- function(status="DONE") {
 }
 
 # ----------------------------------------------------------------------
-# actual workflow
+# PEcAn Workflow
 # ----------------------------------------------------------------------
 # remove previous runs
 unlink("pecan", recursive=TRUE)
@@ -96,11 +96,8 @@ status.end()
 
 # write configurations
 status.start("CONFIG")
-if (!file.exists(file.path(settings$rundir, "runs.txt")) | settings$meta.analysis$update == "TRUE") {
-  run.write.configs(settings, settings$database$bety$write)
-} else {
-  logger.info("Already wrote configuraiton files")    
-}
+settings <- run.write.configs(settings, write=settings$database$bety$write, ens.sample.method="halton")
+  saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.CONFIGS.xml'))
 status.end()
 
 # run model

@@ -16,8 +16,9 @@ ensemble.filename <- function(settings,
                               start.year  = settings$ensemble$start.year,
                               end.year    = settings$ensemble$end.year) {
 
-  if(is.null(ensemble.id) || ensemble.id=="NA" || is.na(ensemble.id)) {
-    ensemble.id <- "NOENSEMBLEID" # Not supposed to happen...
+  if(is.null(ensemble.id) || is.na(ensemble.id)) {
+    # This shouldn't generally arise, as run.write.configs() appends ensemble.id to settings. However,it will come up if running run.write.configs(..., write=F), because then no ensemble ID is created in the database. A simple workflow will still work in that case, but provenance will be lost if multiple ensembles are run.
+    ensemble.id <- "NOENSEMBLEID"
   }
   
   ensemble.dir <- settings$outdir
@@ -56,8 +57,9 @@ sensitivity.filename <- function(settings,
                               start.year  = settings$sensitivity.analysis$start.year,
                               end.year    = settings$sensitivity.analysis$end.year) {
 
-  if(is.null(ensemble.id) || ensemble.id=="NA" || is.na(ensemble.id)) {
-    ensemble.id <- "NOENSEMBLEID" # Not supposed to happen...
+  if(is.null(ensemble.id) || is.na(ensemble.id)) {
+    # This shouldn't generally arise, as run.write.configs() appends ensemble.id to settings. However,it will come up if running run.write.configs(..., write=F), because then no ensemble ID is created in the database. A simple workflow will still work in that case, but provenance will be lost if multiple ensembles are run.
+    ensemble.id <- "NOENSEMBLEID"
   }
 
   if(is.null(pft)) {
