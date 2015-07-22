@@ -1,6 +1,6 @@
 #' Sensor spectral response functions
 
-#' @name spec.response
+#' @name spec.function
 #' @title Generate spectrum based on spectral response
 #' @param spec Spectrum (1 nm, 400:2500 nm) with resolution matching PROSPECT.
 #' @param avg Vector of average band widths, as reported in FWHM data.
@@ -10,7 +10,7 @@
 #' a Gaussian distribution and reported Full Width Half Maximum values. "bell" 
 #' uses a simplified, quartic bell-shaped function (see
 #' www.brockmann-consult.de/beam/chris-box/theory-details.html).
-spec.response <- function(spec, avg, rng, func="fwhm") {
+spec.function <- function(spec, avg, rng, func="fwhm") {
     if(func == "fwhm"){
         qnorm25 <- 0.6744898    # qnorm(0.25); for converting fwhm to SD
         sigma <- rng / 2 / qnorm25
@@ -37,36 +37,48 @@ spec.response <- function(spec, avg, rng, func="fwhm") {
     #pnorm25.75 <- 0.6914625 # pnorm(0.75) - pnorm(0.25); for upscaling output
 }
 
+sensor.list <- c("aviris.ng", "aviris.classic", "hyperion",
+                 "hyspiri", "chris.proba", "landsat5", "landsat7", 
+                 "landsat8", "modis", "viirs", "avhrr")
 
-#' Next generation AVIRIS (~5 nm, 380 to 2510 nm)
-sr.aviris5 <- function(spec) {
-    avg <- seq(385, 2505, by=5)
-    fwhm <- rep(5.5, length(avg))
-    out.spec <- spec.response(spec, avg, fwhm, func="fwhm")
+spectral.response <- function(spec, sensor){
+    sensor <- tolower(sensor)
+    stopifnot(sensor %in% sensor.list)
+    if (sensor == "aviris.ng"){
+        avg <- seq(385, 2505, by=5)
+        fwhm <- rep(5.5, length(avg))
+        out.spec <- spec.response(spec, avg, fwhm, func="fwhm")
+    } else if (sensor == "aviris.classic"){
+        data("fwhm.aviris.classic")
+        out.spec <- with(fwhm.aviris.classic,
+                         spec.response(spec, avg, fwhm, func="fwhm"))
+    } else if (sensor == "hyperion"){
+        data("fwhm.hyperion")
+        out.spec <- with(hyperion.fwhm, 
+                         spec.response(spec, avg, fwhm, func="fwhm"))
+    } else if (sensor == "hyspiri"){
+        #' HyspIRI (10nm, 380 to 2510)
+        #' Source: HyspIRI Comprehensive Development Report
+        avg <- seq(385, 2505, by=10)
+        rng <- rep(10, length(avg))
+        out.spec <- spec.response(spec, avg, rng, func="bell")
+    } else if (sensor == "chris.proba") {
+#' CHRIS PROBA
+#'   Info: 63 bands (36 m spatial rresolution); 1.3nm at 410, 12nm at 1050
+#'   Source: Van Mol and Ruddick. Compact High Resolution Imaging Spectrometer 
+#'     (CHRIS): the future of hyperspectral sattelite sensors.
+    } else if (sensor == "modis") {
+#' MODIS (TERRA; detector-averaged)
+    } else if (sensor == "landsat5") {
+#' Landsat 5 TM
+    } else if (sensor == "landsat7") {
+#' Landsat 7 ETM+
+    } else if (sensor == "landsat8") {
+#' Landsat 8 OLI
+    } else if (sensor == "avhrr") {
+#' AVHRR (NOAA-19)
+    } else if (sensor == "viirs") {
+#' VIIRS
+    }
     return(out.spec)
 }
-
-#' First generation AVIRIS (~10 nm)
-sr.aviris10 <- function(spec) {}
-
-#' Hyperion
-sr.hyperion <- function(spec){
-    data("fwhm.hyperion")
-    out.spec <- with(hyperion.fwhm, 
-                     spec.response(spec, avg, fwhm, func="fwhm"))
-    return(out.spec)
-}
-
-#' HyspIRI (10nm, 380 to 2510)
-#' Source: HyspIRI Comprehensive Development Report
-sr.hyspiri <- function(spec) {
-    avg <- seq(385, 2505, by=10)
-    rng <- rep(10, length(avg))
-
-#' CHRIS Proba
-
-#' MODIS
-
-#' Landsat
-
-#' AVHRR
