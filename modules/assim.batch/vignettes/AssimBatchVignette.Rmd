@@ -61,7 +61,7 @@ Here are details about the settings:
 
   ```
   data(trait.dictionary, package = "PEcAn.utils")
-  trait.dictionary[,c(“id”, “figid”)]
+  trait.dictionary[,c("id", "figid")]
   ```
 
 * `<inputs>` Observation data to be compared to the model. In principle, can be one or more datasets, specified in a variety of ways. In practice, the code is only tested for a single dataset currently, and assumes the input is Ameriflux NEE. 
