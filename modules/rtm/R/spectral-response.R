@@ -56,27 +56,27 @@ spectral.response <- function(spec, sensor){
     if (sensor == "aviris.ng"){
         avg <- seq(385, 2505, by=5)
         fwhm <- rep(5.5, length(avg))
-        out.spec <- spec.response(spec, avg, fwhm, func="fwhm")
+        out.spec <- spec.function(spec, avg, fwhm, func="fwhm")
     } else if (sensor == "aviris.classic"){
         data(fwhm.aviris.classic)
         out.spec <- with(fwhm.aviris.classic,
-                         spec.response(spec, avg, fwhm, func="fwhm"))
+                         spec.function(spec, avg, fwhm, func="fwhm"))
     } else if (sensor == "hyperion"){
         data(fwhm.hyperion)
         out.spec <- with(hyperion.fwhm, 
-                         spec.response(spec, avg, fwhm, func="fwhm"))
+                         spec.function(spec, avg, fwhm, func="fwhm"))
     } else if (sensor == "hyspiri"){
         #' HyspIRI (10nm, 380 to 2510)
         #' Source: HyspIRI Comprehensive Development Report
         avg <- seq(385, 2505, by=10)
         rng <- rep(10, length(avg))
-        out.spec <- spec.response(spec, avg, rng, func="bell")
+        out.spec <- spec.function(spec, avg, rng, func="bell")
     } else if (sensor == "chris.proba") {
 #' CHRIS PROBA
 #'   Info: 63 bands (36 m spatial resolution); 1.3nm at 410, 12nm at 1050
         data(bandwidth.chrisproba)
         out.spec <- with(bandwidth.chrisproba,
-                         spec.response(spec, Mid, Max-Min, func="bell"))
+                         spec.function(spec, Mid, Max-Min, func="bell"))
     } else if (sensor == "modis") {
 #' MODIS (TERRA; detector-averaged)
         data(rsr.modis)
