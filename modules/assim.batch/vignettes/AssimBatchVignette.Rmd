@@ -59,9 +59,9 @@ Here are details about the settings:
   + `<path>` As an alternative to using a posterior ID, can specify a file path to either a `prior.distns.Rdata` or `post.distns.Rdata` file generated from an earlier analysis. Conceptually, using a posterior distribution as the prior for PDA is preferred, as this allows the multiple analyses to work together to iteratively constrain parameters. In practice, previous analyses may have over-constrained parameters to ranges that do not actually optimize model outputs, so using a less informative prior for PDA might yield better results. 
 * `<param.names>` The names of parameters to be constrained by assimilation, listed in individual `<param>` tags. These must be the standard names given by the trait dictionary, i.e.:
 
-  ```{r collapse=T}
+  ```
   data(trait.dictionary, package = "PEcAn.utils")
-  trait.dictionary$id
+  trait.dictionary[,c(“id”, “figid”)]
   ```
 
 * `<inputs>` Observation data to be compared to the model. In principle, can be one or more datasets, specified in a variety of ways. In practice, the code is only tested for a single dataset currently, and assumes the input is Ameriflux NEE. 
