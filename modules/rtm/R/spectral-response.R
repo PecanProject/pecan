@@ -38,8 +38,13 @@ spec.response <- function(spec, avg, rng, func="fwhm") {
 }
 
 
-#' Next generation AVIRIS (~5 nm)
-sr.aviris5 <- function(spec) {}
+#' Next generation AVIRIS (~5 nm, 380 to 2510 nm)
+sr.aviris5 <- function(spec) {
+    avg <- seq(385, 2505, by=5)
+    fwhm <- rep(5.5, length(avg))
+    out.spec <- spec.response(spec, avg, fwhm, func="fwhm")
+    return(out.spec)
+}
 
 #' First generation AVIRIS (~10 nm)
 sr.aviris10 <- function(spec) {}
