@@ -191,7 +191,6 @@ if (check.status("SENSITIVITY") == 0){
 if(('assim.batch' %in% names(settings))) {
   status.start("PDA")
   settings$assim.batch <- pda.mcmc(settings)
-  saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.pda.xml'))
   status.end()
 }
   

@@ -80,6 +80,9 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method="halton"
     if(!is.na(posterior.files[i])) {
       # Load specified file
       load(file.path(outdirs[i], posterior.files[i]))
+      if(!exists('prior.distns') & exists('post.distns')) {
+        prior.distns <- post.distns
+      }
     } else {
       # Default to most recent posterior in the workflow, or the prior if there is none
       fname = file.path(outdirs[i], 'post.distns.Rdata')

@@ -275,7 +275,7 @@ pda.load.priors <- function(settings, con) {
       "] but no prior found!"))
   }
   
-  return(prior.out)
+  return(list(prior=prior.out, settings=settings))
 }
 
 
