@@ -58,11 +58,11 @@ spectral.response <- function(spec, sensor){
         fwhm <- rep(5.5, length(avg))
         out.spec <- spec.response(spec, avg, fwhm, func="fwhm")
     } else if (sensor == "aviris.classic"){
-        data("fwhm.aviris.classic")
+        data(fwhm.aviris.classic)
         out.spec <- with(fwhm.aviris.classic,
                          spec.response(spec, avg, fwhm, func="fwhm"))
     } else if (sensor == "hyperion"){
-        data("fwhm.hyperion")
+        data(fwhm.hyperion)
         out.spec <- with(hyperion.fwhm, 
                          spec.response(spec, avg, fwhm, func="fwhm"))
     } else if (sensor == "hyspiri"){
@@ -74,32 +74,32 @@ spectral.response <- function(spec, sensor){
     } else if (sensor == "chris.proba") {
 #' CHRIS PROBA
 #'   Info: 63 bands (36 m spatial resolution); 1.3nm at 410, 12nm at 1050
-        data("bandwidth.chrisproba")
+        data(bandwidth.chrisproba)
         out.spec <- with(bandwidth.chrisproba,
                          spec.response(spec, Mid, Max-Min, func="bell"))
     } else if (sensor == "modis") {
 #' MODIS (TERRA; detector-averaged)
-        data("rsr.modis")
+        data(rsr.modis)
         out.spec <- custom.rsr(spec, rsr.modis)
     } else if (sensor == "landsat5") {
 #' Landsat 5 TM
-        data("rsr.landsat")
+        data(rsr.landsat)
         out.spec <- custom.rsr(spec, rsr.landsat5)
     } else if (sensor == "landsat7") {
 #' Landsat 7 ETM+
-        data("rsr.landsat")
+        data(rsr.landsat)
         out.spec <- custom.rsr(spec, rsr.landsat7)
     } else if (sensor == "landsat8") {
 #' Landsat 8 OLI
-        data("rsr.landsat")
+        data(rsr.landsat)
         out.spec <- custom.rsr(spec, rsr.landsat8)
     } else if (sensor == "avhrr") {
 #' AVHRR (306; on NOAA-18)
-        data("rsr.avhrr")
+        data(rsr.avhrr)
         out.spec <- custom.rsr(spec, rsr.avhrr)
     } else if (sensor == "viirs") {
 #' VIIRS
-        data("rsr.viirs")
+        data(rsr.viirs)
         out.spec <- custom.rsr(spec, rsr.viirs)
     }
     return(out.spec)
