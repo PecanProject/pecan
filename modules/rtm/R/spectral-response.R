@@ -48,7 +48,7 @@ custom.rsr <- function(spec, rsr){
 
 sensor.list <- c("aviris.ng", "aviris.classic", "hyperion",
                  "hyspiri", "chris.proba", "landsat5", "landsat7", 
-                 "landsat8", "modis", "viirs", "avhrr")
+                 "landsat8", "modis", "viirs", "avhrr", "identity")
 
 spectral.response <- function(spec, sensor){
     sensor <- tolower(sensor)
@@ -101,6 +101,8 @@ spectral.response <- function(spec, sensor){
 #' VIIRS
         data(rsr.viirs)
         out.spec <- custom.rsr(spec, rsr.viirs)
+    } else if (sensor == "identity") {
+        out.spec <- spec
     }
     return(out.spec)
 }
