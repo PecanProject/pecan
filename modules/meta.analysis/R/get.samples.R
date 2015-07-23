@@ -83,6 +83,36 @@ get.parameter.samples <- function(pfts = settings$pfts){
     }
     
   } ### End for loop
-  save(ensemble.samples, trait.samples, sa.samples, runs.samples, 
+  if("sensitivity.analysis" %in% names(settings)){
+    
+    ### Get info on the quantiles to be run in the sensitivity analysis (if requested)
+    quantiles <- get.quantiles(settings$sensitivity.analysis$quantiles)
+    ### Get info on the years to run the sensitivity analysis (if requested)
+    sa.years <- data.frame(sa.start = settings$sensitivity.analysis$start.year,
+                           sa.end = settings$sensitivity.analysis$end.year)
+    
+    logger.info("\n Selected Quantiles: ", vecpaste(round(quantiles, 3)))
+    
+    ### Generate list of sample quantiles for SA run
+    sa.samples <-  get.sa.sample.list(pft       = trait.samples, 
+                                      env       = env.samples, 
+                                      quantiles = quantiles)
+  }
+  if("ensemble" %in% names(settings)){
+    if(settings$ensemble$size == 1) {
+      ## run at median if only one run in ensemble
+      ensemble.samples <- get.sa.sample.list(pft = trait.samples,
+                                             env = env.samples,
+                                             quantiles = 0.5)
+    } else if (settings$ensemble$size > 1) {
+      
+      ## subset the trait.samples to ensemble size using Halton sequence 
+      ensemble.samples <- get.ensemble.samples(settings$ensemble$size, 
+                                               trait.samples, env.samples)
+    }
+  }
+  
+  save(ensemble.samples, trait.samples, sa.samples, runs.samples, env.samples,
        file = file.path(settings$outdir, 'samples.Rdata'))
+
 } 

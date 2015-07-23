@@ -21,7 +21,9 @@ run.write.configs <- function(settings, write = TRUE) {
   model = settings$model$type
   scipen = getOption("scipen")
   options(scipen=12)
-  load(file.path(settings$outdir, 'samples.Rdata'))
+  get.parameter.samples(pfts = settings$pfts)
+  load(file.path(settings$outdir, "samples.Rdata"))
+
   ## remove previous runs.txt
   if (file.exists(file.path(settings$rundir, "runs.txt"))) {
     logger.warn("Existing runs.txt file will be removed.")
@@ -51,19 +53,7 @@ run.write.configs <- function(settings, write = TRUE) {
   
   ### Sensitivity Analysis
   if('sensitivity.analysis' %in% names(settings)) {
-    
-      ### Get info on the quantiles to be run in the sensitivity analysis (if requested)
-      quantiles <- get.quantiles(settings$sensitivity.analysis$quantiles)
-      ### Get info on the years to run the sensitivity analysis (if requested)
-      sa.years <- data.frame(sa.start = settings$sensitivity.analysis$start.year,
-                            sa.end = settings$sensitivity.analysis$end.year)
-      
-      logger.info("\n Selected Quantiles: ", vecpaste(round(quantiles, 3)))
-      
-      ### Generate list of sample quantiles for SA run
-      sa.samples <-  get.sa.sample.list(pft       = trait.samples, 
-                                        env       = env.samples, 
-                                        quantiles = quantiles)
+
       ### Write out SA config files
       if(!exists("cnt")) {            
         cnt <- 0
@@ -79,33 +69,24 @@ run.write.configs <- function(settings, write = TRUE) {
   
   ### Write ENSEMBLE
   if('ensemble' %in% names(settings)){
-      if(settings$ensemble$size == 1) {
-          ## run at median if only one run in ensemble
-          ensemble.samples <- get.sa.sample.list(pft = trait.samples,
-                                                 env = env.samples,
-                                                 quantiles = 0.5)
-      } else if (settings$ensemble$size > 1) {
-          
-          ## subset the trait.samples to ensemble size using Halton sequence 
-          ensemble.samples <- get.ensemble.samples(settings$ensemble$size, 
-                                                   trait.samples, env.samples)
-      }
-          logger.info("Ensemble size: ",settings$ensemble$size)
-          
-          runs.samples$ensemble <- write.ensemble.configs(defaults = settings$pfts,
-                                                          ensemble.samples = ensemble.samples,
-                                                          settings = settings,
-                                                          model = model,
-                                                          write.to.db = write)
+    
+    logger.info("Ensemble size: ",settings$ensemble$size)
+    
+    runs.samples$ensemble <- write.ensemble.configs(defaults = settings$pfts,
+                                                    ensemble.samples = ensemble.samples,
+                                                    settings = settings,
+                                                    model = model,
+                                                    write.to.db = write)
   } else {
-      logger.info('not writing config files for ensemble, settings are NULL')
+    logger.info('not writing config files for ensemble, settings are NULL')
   } ### End of Ensemble
 
   logger.info("###### Finished writing model run config files #####")
   logger.info("config files samples in ", file.path(settings$outdir, "run"))
   
   ### Save output from SA/Ensemble runs
-  save(ensemble.samples, trait.samples, sa.samples, runs.samples, 
+  env.samples <- list()
+  save(ensemble.samples, trait.samples, sa.samples, runs.samples, env.samples,
        file = file.path(settings$outdir, 'samples.Rdata'))
   logger.info("parameter values for runs in ", file.path(settings$outdir, "samples.RData"))
   options(scipen=scipen)
