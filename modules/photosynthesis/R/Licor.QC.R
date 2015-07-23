@@ -1,3 +1,10 @@
+##' @name Licor.QC
+##' @title Licor.QC
+##' @author Mike Dietze
+##' @export
+##' @param dat  data frame
+##' @param curve Whether to do Quality Control by examining the "ACi" curve, the "AQ" curve, or both
+##' @param tol   Code automatically tries to separate ACi and AQ curves in the same dataset by detecting the 'reference' condition for light and CO2 respectively. This is the relative error around the mode in that detection.
 Licor.QC <- function(dat,curve=c("ACi","AQ"),tol=0.05){
   
   if(!("QC" %in% names(dat))) dat$QC = rep(0,nrow(dat))

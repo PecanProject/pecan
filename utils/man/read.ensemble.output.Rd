@@ -5,7 +5,7 @@
 \title{Read ensemble output}
 \usage{
 read.ensemble.output(ensemble.size, pecandir, outdir, start.year, end.year,
-  variables)
+  variable, ens.run.ids = NULL)
 }
 \arguments{
 \item{ensemble.size}{the number of ensemble members run}
@@ -29,5 +29,8 @@ Reads output from model ensemble
 \details{
 Reads output for an ensemble of length specified by \code{ensemble.size} and bounded by \code{start.year}
 and \code{end.year}
+}
+\author{
+Ryan Kelly, David LeBauer, Rob Kooper
 }
 

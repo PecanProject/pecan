@@ -5,7 +5,7 @@
 \alias{rh2rv}
 \title{RH to SH}
 \usage{
-rh2qair(rh, T)
+rh2qair(rh, T, press = 101325)
 }
 \arguments{
 \item{rh}{relative humidity (proportion, not %)}
@@ -16,6 +16,6 @@ rh2qair(rh, T)
 converts relative humidity to specific humidity
 }
 \author{
-Mike Dietze
+Mike Dietze, Ankur Desai
 }
 

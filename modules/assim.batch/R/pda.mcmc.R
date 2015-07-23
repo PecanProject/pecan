@@ -24,7 +24,7 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   ## if you are debugging
   if(FALSE){
     params.id <- param.names <- prior.id <- chain <- iter <- NULL 
-    adapt <- adj.min <- ar.target <- jvar <- NULL
+    n.knot <- adapt <- adj.min <- ar.target <- jvar <- NULL
   }
 
   ## -------------------------------------- Setup ------------------------------------- ##
@@ -45,12 +45,14 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   }
 
   ## Load priors
-  prior <- pda.load.priors(settings, con)
+  temp <- pda.load.priors(settings, con)
+  prior <- temp$prior
+  settings <- temp$settings
   pname <-  rownames(prior) 
   n.param.all  <- nrow(prior)
 
   ## Load data to assimilate against
-  inputs <- load.pda.data(settings$assim.batch$inputs)
+  inputs <- load.pda.data(settings$assim.batch$inputs, con)
   n.input <- length(inputs)
 
   ## Set model-specific functions
@@ -72,7 +74,7 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   }
 
   ## Create an ensemble id
-  ensemble.id <- pda.create.ensemble(settings, con, workflow.id)
+  settings$assim.batch$ensemble.id <- pda.create.ensemble(settings, con, workflow.id)
 
   ## Set prior distribution functions (d___, q___, r___, and multivariate versions)
   prior.fn <- pda.define.prior.fn(prior)
@@ -105,6 +107,23 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   ## Jump distribution setup
   accept.rate <- numeric(n.param)  ## Create acceptance rate vector of 0's (one zero per parameter)
 
+  # Default jump variances. Looped for clarity
+  ind <- which(is.na(settings$assim.batch$jump$jvar))
+  for(i in seq_along(ind)) {
+    # default to 0.1 * 90% prior CI
+    settings$assim.batch$jump$jvar[[i]] <- 
+      0.1 * diff(eval(prior.fn$qprior[[prior.ind[ind[i]]]], list(p=c(0.05,0.95))))
+  }
+
+  ## Create dir for diagnostic output
+  if(!is.null(settings$assim.batch$diag.plot.iter)) {
+    dir.create(file.path(settings$outdir, paste0('diag.pda', settings$assim.batch$ensemble.id)),
+      showWarnings=F, recursive=T)
+  }
+
+  ## save updated settings XML. Will be overwritten at end, but useful in case of crash
+  saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 
+    paste0('pecan.pda', settings$assim.batch$ensemble.id, '.xml')))
 
   ## --------------------------------- Main MCMC loop --------------------------------- ##
   for(i in start:finish){
@@ -114,19 +133,26 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
     if(i %% settings$assim.batch$jump$adapt < 1){
       settings <- pda.adjust.jumps(settings, accept.rate, pnames=pname[prior.ind])
       accept.rate <- numeric(n.param)
+
+      # Save updated settings XML. Will be overwritten at end, but useful in case of crash
+      saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 
+        paste0('pecan.pda', settings$assim.batch$ensemble.id, '.xml')))
     }
 
     for(j in 1:n.param){
-      ## Propose parameter values
-      pnew  <- rnorm(1, parm[prior.ind[j]], settings$assim.batch$jump$jvar[[j]])
       pstar <- parm
-      pstar[prior.ind[j]] <- pnew
+      
+      ## Propose parameter values
+      if(i > 1) {
+        pnew  <- rnorm(1, parm[prior.ind[j]], settings$assim.batch$jump$jvar[[j]])
+        pstar[prior.ind[j]] <- pnew
+      }
 
       ## Check that value falls within the prior
       prior.star <- prior.fn$dmvprior(pstar)
       if(is.finite(prior.star)){
         ## Set up run and write run configs
-        run.id <- pda.init.run(settings, con, my.write.config, workflow.id, ensemble.id, pstar, n=1,
+        run.id <- pda.init.run(settings, con, my.write.config, workflow.id, pstar, n=1,
                                run.names=paste0("MCMC_chain.",chain,"_iteration.",i,"_variable.",j))
 
         ## Start model run
@@ -136,10 +162,12 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
         model.out <- pda.get.model.output(settings, run.id, inputs)
     
         ## Calculate likelihood (and store in database)
-        LL.new <- pda.calc.llik(settings, con, model.out, inputs, llik.fn)
+        LL.new <- pda.calc.llik(settings, con, model.out, run.id, inputs, llik.fn)
 
         ## Accept or reject step
         a <- LL.new - LL.old + prior.star - prior.old
+        if(is.na(a)) a <- -Inf  # Can occur if LL.new == -Inf (due to model crash) and LL.old == -Inf (first run)
+
         if(a > log(runif(1))){
           LL.old <- LL.new
           prior.old <- prior.star
@@ -148,6 +176,24 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
         }
       } ## end if(is.finite(prior.star))
     } ## end loop over variables
+
+    ## Diagnostic figure
+    if(!is.null(settings$assim.batch$diag.plot.iter) && is.finite(prior.star) && 
+        (i==start | i==finish | (i %% settings$assim.batch$diag.plot.iter == 0))) {
+      pdf(file.path(settings$outdir, paste0('diag.pda', settings$assim.batch$ensemble.id),
+        paste0("data.vs.model_", gsub(" ", "0",sprintf("%5.0f", i)), ".pdf")))
+        NEEo <- inputs[[1]]$NEEo
+
+        NEEm <- model.out[[1]]
+        NEE.resid <- NEEm - NEEo
+
+        par(mfrow=c(1,2))
+        plot(NEEo)
+        points(NEEm, col=2, cex=0.5)
+        legend("topleft", col=c(1,2), pch=1, legend=c("data","model"))
+        hist(NEE.resid, 100, main=paste0("LLik: ", round(LL.new,1)))
+      dev.off()
+    }
 
     ## Store output
     params[i,] <- parm

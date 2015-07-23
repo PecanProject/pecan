@@ -1,0 +1,192 @@
+---
+title: "Data Assimilation Concepts"
+author: "Mike Dietze"
+output: html_document
+---
+
+The goal of this tutorial is to help you gain some hands-on familiarity with some of the concepts, tools, and techniques involved in Bayesian Calibration. As a warm-up to more advanced approaches to model-data fusion involving full ecosystem models, this example will focus on fitting the Farquhar, von Caemmerer, and Berry (1980) photosynthesis model [FvCB model] to leaf-level photosynthetic data. This is a simple, nonlinear model consisting of 3 equations that models net carbon assimilation, $A^{(m)}$, at the scale of an individual leaf as a function of light and CO2.
+
+$$A_j = \frac{\alpha Q}{\sqrt{1+(\alpha^2 Q^2)/(Jmax^2)}} \frac{C_i- \Gamma}{4 C_i + 8 \Gamma}$$
+
+$$A_c = V_{cmax} \frac{C_i - \Gamma}{C_i+ K_C (1+[O]/K_O) }$$
+
+$$A^{(m)} = min(A_j,A_c) - r$$
+
+The first equation $A_j$ describes the RUBP-regeneration limited case. In this equation the first fraction is a nonrectangular hyperbola predicting $J$, the electron transport rate, as a function of incident light $Q$, quantum yield $\alpha$, and the assymptotic saturation of $J$ at high light $J_{max}$. The second equation, $A_c$, describes the Rubisco limited case. The third equation says that the overall net assimilation is determined by whichever of the two above cases is limiting, minus the leaf respiration rate, $r$. 
+
+To keep things simple, as a Data Model (a.k.a. Likelihood or Cost Function) we'll assume that the observed leaf-level assimilation $A^{(o)}$ is Normally distributed around the model predictions with observation error $\tau$. 
+
+$$A^{(o)} \sim N(A^{(m)},\tau)$$ 
+
+To fit this model to data we're going to rely on a piece of statistical software known as JAGS. The above model would be written in JAGS as:
+
+```
+model{
+
+## Priors
+  Jmax ~ dlnorm(4.7,2.7)             ## maximum electron transport rate prior
+  alpha~dnorm(0.25,100)              ##quantum yield  (mol electrons/mole photon) prior
+  vmax ~dlnorm(4.6,2.7)              ## maximum rubisco capacity prior
+
+  r ~ dlnorm(0.75,1.56)              ## leaf respiration prior
+  cp ~ dlnorm(1.9,2.7)               ## CO2 compensation point prior
+  tau ~ dgamma(0.1,0.1)
+
+  for(i in 1:n){
+
+     ## electron transport limited
+     Aj[i]<-(alpha*q[i]/(sqrt(1+(alpha*alpha*q[i]*q[i])/(Jmax*Jmax))))*(pi[i]-cp)/(4*pi[i]+8*cp)    
+
+     ## maximum rubisco limited without covariates
+     Ac[i]<- vmax*(pi[i]-cp)/(pi[i]+Kc*(1+po/Ko))                                                    
+
+     Am[i]<-min(Aj[i], Ac[i]) - r      ## predicted net photosynthesis
+     Ao[i]~dnorm(Am[i],tau)            ## likelihood
+     }
+
+}
+```
+
+The first chunk of code defines the _prior_ probability distributions. In Bayesian inference every unknown parameter that needs to be estimated is required to have a prior distribution. Priors are the expression of our belief about what values a parameter might take on **prior to observing the data**. They can arise from many sources of information (literature survey, meta-analysis, expert opinion, etc.) provided that they do not make use of the data that is being used to fit the model. In this particular case, the priors were defined by Feng and Dietze 2013. Most priors are lognormal or gamma, which were choosen because most of these parameters need to be positive.  
+
+After the priors is the Data Model, which in JAGS needs to be implemented as a loop over every observation. This is simply a codified version of the earlier equations.
+
+Table 1: FvCB model parameters in the statistical code, their symbols in equations, and definitions
+
+Parameter | Symbol     | Definition
+----------|------------|-----------
+alpha0    | $\alpha$   | quantum yield  (mol electrons/mole photon)
+Jmax      | $J_{max}$  | maximum electron transport
+cp        | $\Gamma$   | CO2 compensation point
+vmax0     | $V_{cmax}$ | maximum Rubisco capacity (a.k.a Vcmax)
+r         | $R_d$      | leaf respiration
+tau       | $\tau$     | residual precision
+q         | $Q$        | PAR
+pi        | $C_i$      | CO2 concentration
+
+## Fitting the model
+
+To begin with we'll load up an example A-Ci and A-Q curve that was collected during the 2012 edition of the [Flux Course](http://www.fluxcourse.org/) at Niwot Ridge. The exact syntax below may be a bit confusing to those unaccustomed to R, but the essence is that the `filenames` line is looking up where the example data is stored in the PEcAn.photosynthesis package and the `dat` line is loading up two files (once A-Ci, the other A-Q) and concatanating them together.
+
+```{r}
+library(PEcAn.photosynthesis)
+
+### Load built in data
+filenames <- system.file("extdata", paste0("flux-course-3",c("aci","aq")), package = "PEcAn.photosynthesis")
+dat<-do.call("rbind", lapply(filenames, read.Licor))
+
+## Simple plots
+aci = as.character(dat$fname) == basename(filenames[1])
+plot(dat$Ci[aci],dat$Photo[aci],main="ACi")
+plot(dat$PARi[!aci],dat$Photo[!aci],main="AQ")
+```
+
+In PEcAn we've written a wrapper function, $fitA$, around the statistical model discussed above, which has a number of other bells and whistles discussed in the [PEcAn Photosynthesis Vignette](https://github.com/PecanProject/pecan/blob/master/modules/photosynthesis/vignettes/ResponseCurves.Rmd). For today we'll just use the most basic version, which takes as arguments the data and the number of MCMC iterations we want to run.
+
+```{r}
+fit <- fitA(dat,model=list(n.iter=10000))
+```
+
+## What's going on
+
+Bayesian numerical methods for model calibration are based on sampling parameter values from the posterior distribution. Fundamentally what's returned is a matrix, with the number of iterations as rows and the number of parameters as columns, which are samples from the posterior distribution, from which we can approximate any quantity of interest (mean, median, variance, CI, etc.).
+
+The following plots follow the trajectory of two correlated parameters, Jmax and alpha. In the first figure, arrows show the first 10 iterations. Internally JAGS is choosing between a variety of different Bayesian sampling methods (e.g. Metropolis-Hasting, Gibbs sampling, slice sampling, rejection sampling, etc) to draw a new value for each parameter conditional on the current value. After just 10 steps we don't have a good picture of the overall posterior, but it should still be clear that the sampling is not a complete random walk.
+
+```{r}
+params <- as.matrix(fit$params)
+xrng = range(fit$params[,"alpha0"])
+yrng = range(fit$params[,"Jmax"])
+
+n = 1:10
+plot(params[n,"alpha0"],params[n,"Jmax"],type='n',xlim=xrng,ylim=yrng)
+arrows(params[n[-10],"alpha0"],params[n[-10],"Jmax"],params[n[-1],"alpha0"],params[n[-1],"Jmax"],length=0.125,lwd=1.1)
+
+```
+
+After 100 steps, we can see a cloud start to form, with occassional wanderings around the periphery.
+
+```{r}
+n = 1:100
+plot(params[n,"alpha0"],params[n,"Jmax"],type='l',xlim=xrng,ylim=yrng)
+```
+
+After $nrow(params)$ steps what we see is a point cloud of samples from the joint posterior distribution. When viewed sequentially, points are not independent, but we are interested in working with the overall distribution, where the order of samples is not important.
+
+```{r}
+n = 1:nrow(params)
+plot(params[n,"alpha0"],params[n,"Jmax"],type='p',pch="+",cex=0.5,xlim=xrng,ylim=yrng)
+```
+
+
+## Evaluating the model output
+
+A really important aspect of Bayesian inference is that the output is the **joint** posterior probability of all the parameters. This is very different from an optimization approach, which tries to find a single best parameter value. It is also different from estimating the independent posterior probabilities of each parameter -- Bayesian posteriors frequently have strong correlation among parameters for reasons having to do both with model structure and the underlying data.
+
+The model we're fitting has six free parameters, and therefore the output matrix has 6 columns, of which we've only looked at two. Unfortunately it is impossible to visualize a 6 dimensional parameter space on a two dimensional screen, so a very common practice (for models with a small to medium number of parameters) is to look at all pairwise scatterplots. If parameters are uncorrelated we will typically see oval shaped clouds that are oriented in the same directions as the axes. For parameters with linear correlations those clouds will be along a diagonal. For parameters with nonlinear trade-offs the shapes of the parameter clouds can be more complex, such as the banana-shaped or triangular. For the FvCB model we see very few parameters that are uncorrelated or have simple linear correlations, a fact that we should keep in mind when interpreting individual parameters.
+
+```{r}
+pairs(params,pch=".")
+```
+
+The three most common outputs that are performed on almost all Bayesian analyses are to look at the MCMC chains themselves, the marginal distributions of each parameter, and the overall summary statistics. 
+
+The 'trace' diagrams below show the history of individual parameters during the MCMC sampling. There are different color lines that represent the fact that JAGS ran the MCMC multiple times, with each run (i.e. each color) being refered to as a different $chain$. It is common to run multiple chains in order to assess whether the model, started from different points, consistently converges on the same answer. The ideal trace plot looks like white noise with all chains in agreement.  
+
+The 'density' figures represent smoothed versions of the _marginal_ distributions of each parameter. The tick marks on the x-axis are the actual samples. You will note that some posteriors will look approximately Normal, while others may be skewed or have clearly defined boundaries. On occassion there will even be posteriors that are multimodal. There is no assumption built into Bayesian statistics that the posteriors need be Normal, so as long as an MCMC has converged this diversity of shapes is valid. [note: the most common cause of multi-modal posteriors is a lack of convergence]
+
+Finally, the summary table reports, for each parameter, a mean, standard deviation, two variants of standard error, and standard quantile estimates (95% CI, interquartile, and median). The standard deviation of the posterior is a good summary statistic about **how uncertain we are about a parameter**. The Naive SE is the traditonal $\frac{SD}{\sqrt{n}}$, which is an estimate of the **NUMERICAL accuracy in our estimate of the mean**. As we run the MCMC longer (i.e. take more samples), we get an answer that is numerically more precise (SE converges to 0) but the uncertainty in the parameter (i.e. SD) stays the same because that's determined by the sample size of the DATA not the length of the MCMC.  Finally, the Time-series SE is a variant of the SE calculation that accounts for the autocorrelation in the MCMC samples. In practice is is therefore more appropriate to use this term to assess numerical accuracy.
+
+```{r}
+plot(fit$params,auto.layout = FALSE)    ## MCMC diagnostic plots
+summary(fit$params) ## parameter estimates  
+```
+
+Assessing the convergence of the MCMC is first done visually, but more generally the use of statistical diagnostics to assess convergence is highly encouraged. There are a number of metrics in the literature, but the most common is the Gelman-Brooks-Rubin statistic, which compare the variance within each chain to the variance across chains. If the chains have converged then this quantity should be 1. Values less than 1.05 are typically considered sufficient by most statisticians, but these are just rules-of-thumb.
+
+```{r}
+gelman.plot(fit$params,auto.layout = FALSE)
+gelman.diag(fit$params)
+```
+
+As with any modeling, whether statistical or process-based, another common diagnostic is a predicted vs observed plot. In a perfect model the data would fall along the 1:1 line. The deviations away from this line are the model residuals. If observations lie along a line other than the 1:1 this indicates that the model is biased in some way. This bias is often assessed by fitting a linear regression to the points, though two important things are noteworthy about this practice. First, the $R^2$ and residual error of this regression are not the appropriate statistics to use to assess model performance (though you will frequently find them reported incorrectly in the literature). The correct $R^2$ and residual error (a.k.a Root Mean Square Error, RMSE) are based on deviations from the 1:1 line, not the regression. The code below shows these two terms calculated by hand. The second thing to note about the regression line is that the standard regression F-test, which assesses deviations from 0, is not the test you are actually interested in, which is whether the line differs from 1:1. Therefore, while the test on the intercept is correct, as this value should be 0 in an unbiased model, the test statistic on the slope is typically of less interest (unless your question really is about whether the model is doing better than random). However, this form of bias can easily be assessed by looking to see if the CI for the slope overlaps with 1.
+
+```{r}
+## predicted vs observed plot
+par(mfrow=c(1,1))
+mstats = summary(fit$predict)
+pmean = mstats$statistics[grep("pmean",rownames(mstats$statistics)),1]
+plot(pmean,dat$Photo,pch="+",xlab="Predicted A",ylab = "Observed A")
+abline(0,1,col=2,lwd=2)
+bias.fit = lm(dat$Photo~pmean)
+abline(bias.fit,col=3,lty=2,lwd=2)
+legend("topleft",legend=c("1:1","regression"),lwd=2,col=2:3,lty=1:2)
+summary(bias.fit)
+RMSE = sqrt(mean((pmean-dat$Photo)^2))
+RMSE
+R2 = 1-RMSE^2/var(dat$Photo)
+R2
+confint(bias.fit)
+```
+  
+In the final set of plots we look at the actual A-Ci and A-Q curves themselves. Here we've added two interval estimates around the curves. The CI captures the uncertainty in the _parameters_ and will asympotically shrink with more and more data. The PI (predictive interval) includes the parameter and residual error. If our fit is good then 95% PI should thus encompass at least 95% of the observations. That said, as with any statistical model we want to look for systematic deviations in the residuals from either the mean or the range of the PI.
+
+```{r}
+## Response curve
+plot.photo(dat,fit)
+```
+
+Note: on the last figure you will get warnings about "No ACi" and "No AQ" which can be ignored. These are occuring because the file that had the ACi curve didn't have an AQ curve, and the file that had the AQ curve didn't have an ACi curve.
+
+
+## Additional information
+
+There is a more detailed R Vignette on the use of the PEcAn photosynthesis module available in the [PEcAn Repository](https://github.com/PecanProject/pecan/blob/master/modules/photosynthesis/vignettes/ResponseCurves.Rmd).
+
+## Citations
+
+Dietze, M.C. (2014). Gaps in knowledge and data driving uncertainty in models of photosynthesis. Photosynth. Res., 19, 3–14.
+
+Farquhar, G., Caemmerer, S. & Berry, J.A. (1980). A biochemical model of photosynthetic CO2 assimilation in leaves of C3 species. Planta, 149, 78–90.
+
+Feng, X. & Dietze, M.C. (2013). Scale dependence in the effects of leaf ecophysiological traits on photosynthesis: Bayesian parameterization of photosynthesis models. New Phytol., 200, 1132–1144.
