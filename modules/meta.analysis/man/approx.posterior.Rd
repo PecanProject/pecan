@@ -4,7 +4,8 @@
 \alias{approx.posterior}
 \title{Approximate posterior}
 \usage{
-approx.posterior(trait.mcmc, priors, trait.data = NULL, outdir = NULL)
+approx.posterior(trait.mcmc, priors, trait.data = NULL, outdir = NULL,
+  filename.flag = "")
 }
 \arguments{
 \item{trait.mcmc}{meta analysis outputs}
@@ -14,6 +15,8 @@ approx.posterior(trait.mcmc, priors, trait.data = NULL, outdir = NULL)
 \item{trait.data}{data used in meta-analysis (used for plotting)}
 
 \item{outdir}{directory in which to plot results}
+
+\item{filename.flag}{text to be included in the posteriors.pdf filename to make unique}
 }
 \value{
 posteriors data frame, similar to priors,

@@ -1,8 +1,8 @@
 Package: PEcAn.priors
 Type: Package
 Title: PEcAn functions used to estimate priors from data
-Version: 1.4.2
-Date: 2015-05-08
+Version: 1.4.3
+Date: 2015-07-20
 Author: David LeBauer
 Maintainer: David LeBauer <dlebauer@illinois.edu>
 Description: Functions to estimate priors from data.

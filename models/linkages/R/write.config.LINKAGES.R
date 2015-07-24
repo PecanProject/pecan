@@ -47,7 +47,7 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   bgs = 127 #DOY to begin growing season
   egs = 275 #DOY to end growing season
   
- texture =  read.csv("/Users/paleolab/pecan/models/LINKAGES/inst/texture.csv")
+ texture =  read.csv(system.file("texture.csv",package = "PEcAn.LINKAGES"))
 
  dbcon <- db.open(settings$database$bety)
  soils <- db.query(paste("SELECT soil,som,sand_pct,clay_pct,soilnotes FROM sites WHERE id =", settings$run$site$id), con=dbcon)
@@ -95,7 +95,7 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
  
  nspec = 9 
  bmspec = nspec
- all_spp_params = read.csv("/Users/paleolab/pecan/models/LINKAGES/inst/spp_matrix.csv")
+ all_spp_params = read.csv(system.file("spp_matrix.csv",package = "PEcAn.LINKAGES"))
  pick_spp = c(1:9)
  spp_params = all_spp_params[which(all_spp_params$Spp_Number%in%pick_spp),3:ncol(all_spp_params)]
  spec_nums = all_spp_params[which(all_spp_params$Spp_Number%in%pick_spp),2]
@@ -113,7 +113,7 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
  ##### Write switch text file #####
  #####
  
- switch_chars_list = read.csv("/Users/paleolab/pecan/models/LINKAGES/inst/switch.csv")
+ switch_chars_list = read.csv(system.file("switch.csv",package = "PEcAn.LINKAGES"))
  switch_chars = as.character(switch_chars_list[spec_nums,3])
  sink(file.path(rundir,"/switch.txt"))
  cat(switch_chars,sep="\n")

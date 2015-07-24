@@ -1,9 +1,17 @@
-##shaded confidence interval
+##' @title shaded confidence interval
+##' @name ciEnvelope
+##' @author Mike Dietze
+##' @export
 ciEnvelope <- function(x,ylo,yhi,col="lightgrey",...){
   polygon(cbind(c(x, rev(x), x[1]), c(ylo, rev(yhi),
                                       ylo[1])), col=col, border = NA,...) 
 } 
 
+##' @name plot.photo
+##' @title plot.photo
+##' @author Mike Dietze
+##' @export
+##' 
 plot.photo <- function(data,out,curve=c("ACi","AQ"),tol=0.05,byLeaf=TRUE){
   
   params  = as.matrix(out$params)
@@ -18,7 +26,7 @@ plot.photo <- function(data,out,curve=c("ACi","AQ"),tol=0.05,byLeaf=TRUE){
   if(byLeaf){
     id = data[,"fname"]
     n.curves = length(unique(id))
-    curve.id = as.numeric(as.factor(id))
+    curve.id = as.numeric(as.factor(as.character(id)))
     curve.code = tapply(as.character(id),curve.id,unique)
   } else {
     n.curves = 1
