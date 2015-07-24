@@ -64,7 +64,7 @@ spectral.response <- function(spec, sensor){
     } else if (sensor == "hyperion"){
         data(fwhm.hyperion)
         out.spec <- with(hyperion.fwhm, 
-                         spec.function(spec, avg, fwhm, func="fwhm"))
+                         spec.function(spec, avg.wl, fwhm, func="fwhm"))
     } else if (sensor == "hyspiri"){
         #' HyspIRI (10nm, 380 to 2510)
         #' Source: HyspIRI Comprehensive Development Report
