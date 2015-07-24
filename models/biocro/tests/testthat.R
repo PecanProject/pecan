@@ -11,4 +11,4 @@ library(PEcAn.settings)
 library(testthat)
 
 logger.setQuitOnSevere(FALSE)
-#test_check("PEcAn.BIOCRO")
+test_check("PEcAn.BIOCRO")

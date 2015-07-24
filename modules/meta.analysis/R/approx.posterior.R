@@ -23,11 +23,15 @@
 ##' @export
 ##' @author David LeBauer, Carl Davidson, Mike Dietze
 ##' @examples
-##' \dontrun{data("trait.mcmc", package = "PEcAn.utils")
+##' \dontrun{
+##' data("trait.mcmc", package = "PEcAn.utils")
 ##' data("prior.distns", package = "PEcAn.utils")
-##' approx.posterior(trait.mcmc, priors = prior.distns)}
+##' approx.posterior(trait.mcmc, priors = prior.distns)
+##' }
 approx.posterior <- function(trait.mcmc, priors, trait.data=NULL, outdir=NULL, filename.flag=""){
+
   ##initialization
+  require(coda)
   posteriors <- priors
   do.plot <- exists("outdir")
   if(do.plot == TRUE){
@@ -36,14 +40,11 @@ approx.posterior <- function(trait.mcmc, priors, trait.data=NULL, outdir=NULL, f
   
   ##loop over traits
   for(trait in names(trait.mcmc)){
-    print(trait)
     
     dat    <- trait.mcmc[[trait]]
     vname  <- colnames(dat[[1]])
-    dat    <- as.array(dat); if(length(dim(dat))==0) dat <- array(dat,c(length(dat),1,1))
-    if(length(dim(dat))>1){
-      dat    <- as.vector(as.array(dat)[,which(vname == "beta.o"),])
-    }
+    dat    <- as.matrix(dat)[,'beta.o']
+    
     pdist  <- priors[trait, "distn"]
     pparm  <- as.numeric(priors[trait, 2:3])
     ptrait <- trait
@@ -89,7 +90,7 @@ approx.posterior <- function(trait.mcmc, priors, trait.data=NULL, outdir=NULL, f
         dist.names <- c(dist.names, "gamma")
       } 
       failfit.bool <- sapply(fit, class) == "try-error"
-      fit[failfit.bool] <- NULL
+      #fit[failfit.bool] <- NULL
       dist.names <- dist.names[!failfit.bool]
       
       fparm <- lapply(fit,function(x){as.numeric(x$estimate)})

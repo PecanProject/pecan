@@ -31,7 +31,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method="halton"
   model = settings$model$type
   scipen = getOption("scipen")
   options(scipen=12)
-  
+  require(coda)
   ## remove previous runs.txt
   if (file.exists(file.path(settings$rundir, "runs.txt"))) {
     logger.warn("Existing runs.txt file will be removed.")
