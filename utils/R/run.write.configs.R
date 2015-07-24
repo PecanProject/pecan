@@ -34,6 +34,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method="halton"
   get.parameter.samples(pfts = settings$pfts)
   load(file.path(settings$outdir, "samples.Rdata"))
 
+  require(coda)
   ## remove previous runs.txt
   if (file.exists(file.path(settings$rundir, "runs.txt"))) {
     logger.warn("Existing runs.txt file will be removed.")
@@ -54,10 +55,10 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method="halton"
   if(exists(my.remove.config)) {
     do.call(my.remove.config, args = list(settings$rundir, settings))
   }
-  
+
   
   # TODO RK : need to write to runs_inputs table
-  
+
   # Save names
   pft.names <- names(trait.samples)
   trait.names <- lapply(trait.samples, names)
@@ -69,29 +70,56 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method="halton"
   ### Sensitivity Analysis
   if('sensitivity.analysis' %in% names(settings)) {
 
-      ### Write out SA config files
-      if(!exists("cnt")) {            
-        cnt <- 0
-        assign("cnt", cnt, .GlobalEnv)
-      }
-      logger.info("\n ----- Writing model run config files ----")
-      runs.samples$sa <- write.sa.configs(defaults = settings$pfts,
-                                          quantile.samples = sa.samples,
-                                          settings = settings,
-                                          model = model,
-                                          write.to.db = write)
+    ### Get info on the quantiles to be run in the sensitivity analysis (if requested)
+    quantiles <- get.quantiles(settings$sensitivity.analysis$quantiles)
+    ### Get info on the years to run the sensitivity analysis (if requested)
+    sa.years <- data.frame(sa.start = settings$sensitivity.analysis$start.year,
+                          sa.end = settings$sensitivity.analysis$end.year)
+    
+    logger.info("\n Selected Quantiles: ", vecpaste(round(quantiles, 3)))
+    
+    ### Generate list of sample quantiles for SA run
+    sa.samples <-  get.sa.sample.list(pft       = trait.samples, 
+                                      env       = env.samples, 
+                                      quantiles = quantiles)
+    ### Write out SA config files
+    if(!exists("cnt")) {            
+      cnt <- 0
+      assign("cnt", cnt, .GlobalEnv)
+    }
+    logger.info("\n ----- Writing model run config files ----")
+    sa.runs <- write.sa.configs(defaults = settings$pfts,
+                                        quantile.samples = sa.samples,
+                                        settings = settings,
+                                        model = model,
+                                        write.to.db = write)
+
+    # Store output in settings and output variables
+    runs.samples$sa <- sa.run.ids <- sa.runs$runs
+    settings$sensitivity.analysis$ensemble.id <- sa.ensemble.id <- sa.runs$ensemble.id
+
+    # Save sensitivity analysis info
+    fname <- sensitivity.filename(settings, "sensitivity.samples", "Rdata", all.var.yr=TRUE, pft=NULL)
+    save(sa.run.ids, sa.ensemble.id, sa.samples, pft.names, trait.names, file=fname)
+
   } ### End of SA
   
   ### Write ENSEMBLE
   if('ensemble' %in% names(settings)){
-    
-    logger.info("Ensemble size: ",settings$ensemble$size)
-    
-    runs.samples$ensemble <- write.ensemble.configs(defaults = settings$pfts,
+        ens.runs <- write.ensemble.configs(defaults = settings$pfts,
                                                     ensemble.samples = ensemble.samples,
                                                     settings = settings,
                                                     model = model,
                                                     write.to.db = write)
+
+    # Store output in settings and output variables
+    runs.samples$ensemble <- ens.run.ids <- ens.runs$runs
+    settings$ensemble$ensemble.id <- ens.ensemble.id <- ens.runs$ensemble.id
+    ens.samples <- ensemble.samples # rename just for consistency
+    
+    # Save ensemble analysis info
+    fname <- ensemble.filename(settings, "ensemble.samples", "Rdata", all.var.yr=TRUE)
+    save(ens.run.ids, ens.ensemble.id, ens.samples, pft.names, trait.names, file=fname)
   } else {
     logger.info('not writing config files for ensemble, settings are NULL')
   } ### End of Ensemble
@@ -100,8 +128,8 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method="halton"
   logger.info("config files samples in ", file.path(settings$outdir, "run"))
   
   ### Save output from SA/Ensemble runs
-  env.samples <- list()
-  save(ensemble.samples, trait.samples, sa.samples, runs.samples, env.samples,
+  # A lot of this is duplicate with the ensemble/sa specific output above, but kept for backwards compatibility. 
+  save(ensemble.samples, trait.samples, sa.samples, runs.samples,  pft.names, trait.names,
        file = file.path(settings$outdir, 'samples.Rdata'))
   logger.info("parameter values for runs in ", file.path(settings$outdir, "samples.RData"))
   options(scipen=scipen)

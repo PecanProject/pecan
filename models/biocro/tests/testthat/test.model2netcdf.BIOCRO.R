@@ -77,5 +77,3 @@ test_that("model2netcdf.BIOCRO will add a second site to an existing file",{
   
   ncvar_get(biocro.nc, "latitude")
 })
-
-
