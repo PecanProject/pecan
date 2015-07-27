@@ -46,9 +46,9 @@ custom.rsr <- function(spec, rsr){
     return(out.spec)
 }
 
-sensor.list <- c("aviris.ng", "aviris.classic", "hyperion",
-                 "hyspiri", "chris.proba", "landsat5", "landsat7", 
-                 "landsat8", "modis", "viirs", "avhrr", "identity")
+sensor.list <- c("identity", "aviris.ng", "aviris.classic",
+                 "hyperion", "chris.proba", "landsat5", "landsat7",
+                 "landsat8", "modis", "viirs", "avhrr")
 
 spectral.response <- function(spec, sensor){
     sensor <- tolower(sensor)
