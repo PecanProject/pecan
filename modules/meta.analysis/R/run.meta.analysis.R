@@ -156,6 +156,7 @@ run.meta.analysis <- function(pfts, iterations, random = TRUE, threshold = 1.2, 
   dbcon <- db.open(database)
   result <- lapply(pfts, run.meta.analysis.pft, iterations, random, threshold, dbfiles, dbcon)
   db.close(dbcon)
+
 } ### End of function: run.meta.analysis.R
 ##==================================================================================================#
 
