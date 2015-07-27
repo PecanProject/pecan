@@ -43,7 +43,9 @@ approx.posterior <- function(trait.mcmc, priors, trait.data=NULL, outdir=NULL, f
     
     dat    <- trait.mcmc[[trait]]
     vname  <- colnames(dat[[1]])
-    dat    <- as.matrix(dat)[,'beta.o']
+    if('beta.o' %in% vname) {
+      dat    <- as.matrix(dat)[,'beta.o']
+    }
     
     pdist  <- priors[trait, "distn"]
     pparm  <- as.numeric(priors[trait, 2:3])
