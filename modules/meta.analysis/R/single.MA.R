@@ -26,6 +26,7 @@
 ##' @author David LeBauer, Michael C. Dietze
 single.MA <- function(data, j.chains, j.iter, tauA, tauB, prior,
                       jag.model.file, overdispersed = TRUE){
+  require(rjags)
   ## Convert R distributions to JAGS distributions
   jagsprior <- r2bugs.distributions(prior)
   jagsprior <- jagsprior[, c('distn', 'parama', 'paramb', 'n')]
@@ -110,7 +111,7 @@ single.MA <- function(data, j.chains, j.iter, tauA, tauB, prior,
                                 thin = max(c(2,j.iter/(5000*2))))
     ## I would have done a while loop, but it could take forever
     ## So just give one chance to try again
-    if(gelman.diag(jags.out)$mpsrf > 1.5){
+    if(gelman.diag(jags.out)$mpsrf > 1.2){
       logger.warn("model did not converge; re-running with j.iter * 10")
       jags.out   <- coda.samples ( model = j.model,
                                    variable.names = vars,

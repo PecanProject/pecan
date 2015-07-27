@@ -41,7 +41,7 @@ check.inputs <- function(settings) {
       # check if tag exists
       if (is.null(settings$run$inputs[[tag]])) {
         if (inputs$required[i]) {
-          logger.severe("Missing required input :", tag)
+          logger.warn("Missing required input :", tag)
         } else {
           logger.info("Missing optional input :", tag)
         }
@@ -222,7 +222,7 @@ check.bety.version <- function(dbcon) {
 ##' @title Check Settings
 ##' @param settings settings file
 ##' @return will return the updated settings values with defaults set.
-##' @author Rob Kooper
+##' @author Rob Kooper, David LeBauer
 check.settings <- function(settings) {
   if (!is.null(settings$nocheck)) {
     logger.info("Not doing sanity checks of pecan.xml")
@@ -701,7 +701,7 @@ check.settings <- function(settings) {
       }
       
       #check to see if name of each pft in xml file is actually a name of a pft already in database
-      if (!is.character(dbcon)) {
+      if (!is.character(dbcon)) {# change to if(class(dbcon) == "PostgreSQLConnection")??
         if (is.null(settings$model$type)) {
           x <- db.query(paste0("SELECT pfts.id FROM pfts",
                                " WHERE pfts.name = '",  settings$pfts[i]$pft$name, "'"), con=dbcon)
@@ -712,10 +712,12 @@ check.settings <- function(settings) {
                                " AND modeltypes.id=pfts.modeltype_id;"), con=dbcon)
         }
         if (nrow(x) == 0) {
-          logger.severe("Did not find a pft with name ", settings$pfts[i]$pft$name)
+          logger.severe("Did not find a pft with name ", settings$pfts[i]$pft$name,
+                        "\nfor model type", settings$model$type)
         }
         if (nrow(x) > 1) {
-          logger.warn("Found multiple entries for pft with name ", settings$pfts[i]$pft$name)
+          logger.warn("Found multiple entries for pft with name ", settings$pfts[i]$pft$name,
+                      "\nfor model type", settings$model$type)
         }
       }
   
@@ -1010,9 +1012,11 @@ addSecrets <- function(settings) {
 ##' @import XML
 ##' @author Shawn Serbin
 ##' @author Rob Kooper
+##' @author David LeBauer
 ##' @examples
 ##' \dontrun{
 ##' ## bash shell:
+##' ## example workflow.R and pecan.xml files in pecan/tests
 ##' R --vanilla -- --settings path/to/mypecan.xml < workflow.R 
 ##' 
 ##' ## R:
@@ -1026,8 +1030,10 @@ read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml"){
   if(inputfile == ""){
     logger.warn("settings files specified as empty string; \n\t\tthis may be caused by an incorrect argument to system.file.")
   }
+
   loc <- which(commandArgs() == "--settings")
-  if (length(loc) != 0) {
+  ## If settings file passed at cmd line
+  if (length(loc) != 0) {  
     # 1 filename is passed as argument to R
     for(idx in loc) {
       if (!is.null(commandArgs()[idx+1]) && file.exists(commandArgs()[idx+1])) {
@@ -1036,22 +1042,21 @@ read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml"){
         break
       }
     }
-
-  } else if (file.exists(Sys.getenv("PECAN_SETTINGS"))) {
+    ## if settings file on $PATH
+  } else if (file.exists(Sys.getenv("PECAN_SETTINGS"))) { 
     # 2 load from PECAN_SETTINGS
     logger.info("Loading PECAN_SETTINGS=", Sys.getenv("PECAN_SETTINGS"))
     xml <- xmlParse(Sys.getenv("PECAN_SETTINGS"))
-
+    ## if settings file passed to read.settings function
   } else if(!is.null(inputfile) && file.exists(inputfile)) {
     # 3 filename passed into function
     logger.info("Loading inpufile=", inputfile)
     xml <- xmlParse(inputfile)
-
+    ## use pecan.xml in cwd only if none exists
   } else if (file.exists("pecan.xml")) {
     # 4 load ./pecan.xml
     logger.info("Loading ./pecan.xml")
     xml <- xmlParse("pecan.xml")
-
   } else {
     # file not found
     logger.severe("Could not find a pecan.xml file")
