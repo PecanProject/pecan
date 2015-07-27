@@ -92,9 +92,9 @@ approx.posterior <- function(trait.mcmc, priors, trait.data=NULL, outdir=NULL, f
         dist.names <- c(dist.names, "gamma")
       } 
       failfit.bool <- sapply(fit, class) == "try-error"
-      #fit[failfit.bool] <- NULL
+      fit[failfit.bool] <- NULL
       dist.names <- dist.names[!failfit.bool]
-      
+
       fparm <- lapply(fit,function(x){as.numeric(x$estimate)})
       fAIC  <- lapply(fit,function(x){AIC(x)})
       
