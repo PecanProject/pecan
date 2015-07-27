@@ -1,3 +1,29 @@
+##' Run Batch PDA
+##'
+##' @title Run Batch PDA
+##' @param settings a PEcAn settings list
+##'
+##' @return Updated settings list
+##'
+##' @author Ryan Kelly
+##' @export
+assim.batch <- function(settings) {
+  if(is.null(settings$assim.batch$method)) settings$assim.batch$method = "bruteforce.bs"
+  
+  if(settings$assim.batch$method == "bruteforce") {
+    settings <- pda.mcmc(settings)
+  } else if(settings$assim.batch$method == "bruteforce.bs") {
+    settings <- pda.mcmc.bs(settings)
+  } else if(settings$assim.batch$method == "emulator") {
+    settings <- pda.emulator(settings)
+  } else {
+    logger.error(paste0("PDA method ", settings$assim.batch$method, " not found!"))
+  }
+    
+  return(settings)
+}
+
+
 ##' Load Dataset for Paramater Data Assimilation
 ##'
 ##' @title Load Dataset for Paramater Data Assimilation
