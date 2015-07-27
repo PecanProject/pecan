@@ -45,12 +45,14 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   }
 
   ## Load priors
-  prior <- pda.load.priors(settings, con)
+  temp <- pda.load.priors(settings, con)
+  prior <- temp$prior
+  settings <- temp$settings
   pname <-  rownames(prior) 
   n.param.all  <- nrow(prior)
 
   ## Load data to assimilate against
-  inputs <- load.pda.data(settings$assim.batch$inputs)
+  inputs <- load.pda.data(settings$assim.batch$inputs, con)
   n.input <- length(inputs)
 
   ## Set model-specific functions
@@ -72,7 +74,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   }
 
   ## Create an ensemble id
-  ensemble.id <- pda.create.ensemble(settings, con, workflow.id)
+  settings$assim.batch$ensemble.id <- pda.create.ensemble(settings, con, workflow.id)
 
   ## Set prior distribution functions (d___, q___, r___, and multivariate versions)
   prior.fn <- pda.define.prior.fn(prior)
@@ -80,13 +82,20 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   ## Set up likelihood functions
   llik.fn <- pda.define.llik.fn(settings)
 
+  # Default jump variances. Looped for clarity
+  ind <- which(is.na(settings$assim.batch$jump$jvar))
+  for(i in seq_along(ind)) {
+    # default to 0.1 * 90% prior CI
+    settings$assim.batch$jump$jvar[[i]] <- 
+      0.1 * diff(eval(prior.fn$qprior[[prior.ind[ind[i]]]], list(p=c(0.05,0.95))))
+  }
 
   ## ------------------------------------ Emulator ------------------------------------ ##
   ## Propose parameter knots (X) for emulator design
   params.X <- pda.generate.knots(settings$assim.batch$n.knot, n.param.all, prior.ind, prior.fn, pname)
 
   ## Set up runs and write run configs for all proposed knots X
-  run.ids <- pda.init.run(settings, con, my.write.config, workflow.id, ensemble.id, params.X, 
+  run.ids <- pda.init.run(settings, con, my.write.config, workflow.id, params.X, 
                           n=settings$assim.batch$n.knot, 
                           run.names=paste0("Knot.",1:settings$assim.batch$n.knot))
 
@@ -100,7 +109,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     model.out <- pda.get.model.output(settings, run.ids[i], inputs)
 
     ## calculate likelihood
-    LL.X[i] <- pda.calc.llik(settings, con, model.out, inputs, llik.fn)
+    LL.X[i] <- pda.calc.llik(settings, con, model.out, run.ids[i], inputs, llik.fn)
   }
 
   ## Collect all likelihoods (Y)
@@ -132,6 +141,12 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
           )$mcmc
         })
 
+  if(FALSE) {
+    gp = kernlab.gp; x0 = init.x; nmcmc = settings$assim.batch$iter; rng= NULL; format = "lin"
+    mix = "each"; jmp0 = apply(X,2,function(x) 0.3*diff(range(x)))
+    jmp0 = sqrt(unlist(settings$assim.batch$jump$jvar)); ar.target = settings$assim.batch$jump$ar.target
+    priors = prior.fn$dprior[prior.ind]
+  }
 
   ## Create params matrix
   # *** TODO: Generalize to >1 chain
