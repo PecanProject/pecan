@@ -213,7 +213,7 @@ if(!is.null(settings$assim.batch)) {
   # Calls model specific write.configs e.g. write.config.ed.R
   status.start("PDA.CONFIG")
   settings <- run.write.configs(settings, write=settings$database$bety$write, ens.sample.method="halton")
-    saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.CONFIGS.xml'))
+    saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.PDA.CONFIGS.xml'))
   status.end()
 
   # Start ecosystem model runs
