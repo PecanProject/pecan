@@ -552,6 +552,47 @@ pda.adjust.jumps <- function(settings, accept.rate, pnames=NULL) {
 }
 
 
+##' Adjust PDA blcok MCMC jump size
+##'
+##' @title Adjust PDA block MCMC jump size
+##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##'
+##' @return A PEcAn settings list updated to reflect adjusted jump distributions
+##'
+##' @author Ryan Kelly
+##' @export
+pda.adjust.jumps.bs <- function(settings, jcov, accept.count, params.recent) {
+  if(FALSE) {
+    params.recent = params[(i - settings$assim.batch$jump$adapt):(i-1), prior.ind]
+  }
+  pnames <- colnames(params.recent)
+  logger.info(paste0("Acceptance rate was ", 
+                     round(accept.count / settings$assim.batch$jump$adapt,3)))
+  logger.info(paste0("Using jump variance diagonals (", 
+                    paste(pnames, collapse=", "), ") = (", 
+                    paste(round(diag(jcov),3), collapse=", "), ")"))
+
+  r <- ncol(params.recent)
+  if(accept.count == 0) {
+    rescale <- diag(rep(settings$assim.batch$jump$adj.min,r))
+    jcov <- rescale %*% jcov %*% rescale
+  } else {
+    stdev <- apply(params.recent, 2, sd)
+    corr <- cor(params.recent)
+    if(any(is.na(corr))) corr <- diag(rep(1,r))
+    
+    arate <- accept.count / settings$assim.batch$jump$adapt
+    adjust <- max(arate / settings$assim.batch$jump$ar.target, settings$assim.batch$jump$adj.min)
+
+    rescale <- diag(stdev * adjust)
+    jcov <- rescale %*% corr %*% rescale
+  }
+
+  logger.info(paste0("New jump variance diagonals are (", 
+                    paste(round(diag(jcov),3), collapse=", "), ")"))
+  return(jcov)
+}
+
 ##' Get Model Output for PDA
 ##'
 ##' @title Get Model Output for PDA
