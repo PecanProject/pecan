@@ -1,7 +1,7 @@
 library(PEcAn.all)
 
 # Insert settings file path here. Use the same one supplied to the original failed workflow
-settings.file = "/fs/data2/rykelly/PDA/Tests/nr1.test.07/pecan.pda1000001559.xml"
+settings.file = ""
 
 # Read in settings
 settings <- read.settings(settings.file)
