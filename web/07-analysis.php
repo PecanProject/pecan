@@ -26,8 +26,11 @@ if ($authentication) {
 $userok=isset($_REQUEST['userok']);
 $offline=isset($_REQUEST['offline']);
 $pecan_edit = (isset($_REQUEST['pecan_edit'])) ? "checked" : "";
+$adv_setup = (isset($_REQUEST['adv_setup'])) ? "checked" : "";
 $model_edit = (isset($_REQUEST['model_edit'])) ? "checked" : "";
 $browndog = (isset($_REQUEST['browndog'])) ? "checked" : "";
+$ensemble_analysis = (isset($_REQUEST['ensemble_analsysis'])) ? "checked" : "";
+$sensitivity_analysis = (isset($_REQUEST['sensitivity'])) ? "checked" : "";
 $qsub = (isset($_REQUEST['qsub'])) ? "checked" : "";
 
 if (!isset($_REQUEST['siteid'])) {
@@ -97,11 +100,20 @@ $stmt->closeCursor();
   function validate() {
     $("#next").removeAttr("disabled");       
     $("#error").html("&nbsp;");
-
+    // check if ensemble analysis or sensitivity analysis is set
+    if (!($("#ensemble_analysis").is(":checked")) && !($("#sensitivity_analysis").is(":checked"))) {
+        $("#next").attr("disabled", "disabled");
+        $("#error").html("The ensemble and/or sensitivity analysis features should be checked.");
+    }
     // ensemble 
-    if ($("#ensemble").val().length < 1 || $("#ensemble").val() < 1 || !/^[0-9]+$/.test($("#ensemble").val())) {
+    if ($("#ensemble_analysis").is(":checked") && ($("#runs").val().length < 1 || $("#runs").val() < 1 || !/^[0-9]+$/.test($("#runs").val()))) {
         $("#next").attr("disabled", "disabled");
         $("#error").html("The ensemble should be a positive integer value.");
+    }
+    //make sure variable field is populated if ensemble analysis is checked
+    if (($("#ensemble_analysis").is(":checked")) && $("#variables").val().length < 1) {
+        $("#next").attr("disabled", "disabled");
+        $("#error").html("The need to set a varaible value.");
     }
   }
       
@@ -187,11 +199,26 @@ $stmt->closeCursor();
 ?>
 
       <div class="spacer"></div>
-      <label>Ensemble<sup>*</sup></label>
-      <input type="text" name="ensemble" id="ensemble" value="<?php echo 1; ?>" onChange="validate();"/>
+      <label title="Enable number of run for analysis">Ensemble analysis</label>
+      <input id="ensemble_analysis" name="ensemble_analysis" type="checkbox" value="<?php echo $ensemble_analysis ?>" checked onChange="validate();"/>
       <div class="spacer"></div>
-      <label>Sensitivity</label>
-      <input type="text" name="sensitivity" id="sensitivity" value="<?php echo ""; ?>" onChange="validate();"/>
+      <label>Runs<sup>*</sup></label>
+      <input type="text" name="runs" id="runs" value="<?php echo 1; ?>" onChange="validate();"/>
+      <div class="spacer"></div>
+      <label>Variables<sup>*</sup></label>
+      <input type="text" name="variables" id="variables" value="<?php echo "NPP"; ?>" onChange="validate();"/>
+      <div class="spacer"></div>
+      <label>Notes</label>
+      <!--<input type="text" name="notes" id="notes" value="" />-->
+      <textarea name="notes" id="notes" rows="4" width="184px" style="padding:4px 2px;width:184px;font-size:12px;border: solid 1px #aacfe4;text-overflow:ellipsis;"></textarea>
+      <div class="spacer"></div>
+
+      <div class="spacer"></div>
+      <label title="Enable sensitivity for analysis">Enable sensitivity</label>
+      <input id="sensitivity_analysis" name="sensitivity_analysis" type="checkbox" value="<?php echo $sensitivity_analysis ?>"  onChange="validate();" />
+      <div class="spacer"></div>
+      <label type="hidden">Sensitivity</label>
+      <input type="text" name="sensitivity" id="sensitivity" value="<?php echo "" ?>" onChange="validate();"/>
       <div class="spacer"></div>
       <label>Sets sigma (std dev) equivalent quantiles.</label>
       <label>Example, "-1,1".</label>

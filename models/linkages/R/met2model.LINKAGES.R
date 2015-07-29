@@ -69,11 +69,20 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   month_matrix_precip = matrix(NA,length(year),12)
   DOY_vec_hr = c(1,c(32,60,91,121,152,182,213,244,274,305,335,365)*4)
   
-  for(i in 1:length(year)){ 
+  for(i in 1:length(year)){     
     ncin <- nc_open(file.path(in.path,paste(in.prefix,year[i],"nc",sep=".")))
+    
+    ## convert time to seconds
+    sec  <- ncin$dim$time$vals  
+    sec = udunits2::ud.convert(sec,unlist(strsplit(ncin$dim$time$units," "))[1],"seconds")
+    ifelse(leap_year(year[i])==TRUE,
+           dt <- (366*24*60*60)/length(sec), #leap year
+           dt <- (365*24*60*60)/length(sec)) #non-leap year
+    tstep = 86400/dt
+    
     ncprecipf = ncvar_get(ncin, "precipitation_flux")  #units are kg m-2 s-1    
     for(m in 1:12){
-      month_matrix_precip[i,m] = sum(ncprecipf[DOY_vec_hr[m]:(DOY_vec_hr[m+1]-1)]) * 21600^2 #fix when Mike changes code
+      month_matrix_precip[i,m] = sum(ncprecipf[DOY_vec_hr[m]:(DOY_vec_hr[m+1]-1)]) * dt
     }  
     nc_close(ncin)
    #if(i%%100==0) cat(i," "); flush.console()

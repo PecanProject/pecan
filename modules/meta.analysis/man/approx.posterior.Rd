@@ -31,9 +31,11 @@ returns priors where posterior MCMC are missing
 NOTE: this function is similar to PEcAn.priors::fit.dist
 }
 \examples{
-\dontrun{data("trait.mcmc", package = "PEcAn.utils")
+\dontrun{
+data("trait.mcmc", package = "PEcAn.utils")
 data("prior.distns", package = "PEcAn.utils")
-approx.posterior(trait.mcmc, priors = prior.distns)}
+approx.posterior(trait.mcmc, priors = prior.distns)
+}
 }
 \author{
 David LeBauer, Carl Davidson, Mike Dietze

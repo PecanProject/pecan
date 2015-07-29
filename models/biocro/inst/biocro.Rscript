@@ -21,16 +21,7 @@ weather <- fread(file.path(rundir, "weather.csv"))
 years <- unique(weather$year)
 
 # run model
-config <- xmlToList(
-  xmlTreeParse(
-    file = file.path(rundir, "config.xml"),
-    handlers = list("comment" = function(x){NULL}),
-    asTree = TRUE)
-  )
-config$pft$canopyControl$mResp <- ## hacky way of importing a vector from xml to a list
-  unlist(
-      strsplit(
-        config$pft$canopyControl$mResp, split = ","))
+config <- read.config.biocro(file.path(rundir, "config.xml"))
 
 genus <- config$pft$type$genus
 if(!(genus %in% c("Saccharum", "Salix", "Miscanthus"))) {

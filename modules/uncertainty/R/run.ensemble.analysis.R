@@ -35,7 +35,11 @@ run.ensemble.analysis <- function(plot.timeseries=NA, ensemble.id=NULL,
   if(is.null(ensemble.id)) ensemble.id <- settings$ensemble$ensemble.id
   if(is.null(ensemble.id)) {
     # Try to just grab the most recent one
-    ens.ids <- dir(file.path(settings$outdir, "ensemble"))
+    ens.ids <- as.numeric(sub("ensemble.samples.", "", 
+                            sub(".Rdata", "",
+                              dir(settings$outdir, "ensemble.samples")
+               )))
+    
     if(length(ens.ids) > 0) {
       ensemble.id <- max(ens.ids)
     } else {
@@ -168,7 +172,7 @@ read.ensemble.ts <- function(model, ensemble.id=NULL, variable=NULL, start.year=
   # Can specify ensemble ids manually. If not, look in settings. If none there, just look in samples.Rdata, which for backwards compatibility still contains the sample info for (the most recent)  sensitivity and ensemble analysis combined.
   if(!is.null(ensemble.id)) {
     fname <- ensemble.filename(settings, "ensemble.samples", "Rdata", 
-               ensemble.id=ens.ensemble.id, all.var.yr=TRUE)
+               ensemble.id=ensemble.id, all.var.yr=TRUE)
   } else if(!is.null(settings$ensemble$ensemble.id)) {
     ensemble.id <- settings$ensemble$ensemble.id
     fname <- ensemble.filename(settings, "ensemble.samples", "Rdata", 
