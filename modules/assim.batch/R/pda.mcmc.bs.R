@@ -1,4 +1,4 @@
-##' Paramater Data Assimilation using MCMC
+##' Paramater Data Assimilation using MCMC with block sampling
 ##'
 ##' Brute-force, only to be used on simple models
 ##'
@@ -11,7 +11,7 @@
 ##' @author Mike Dietze
 ##' @author Ryan Kelly
 ##' @export
-pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, chain=NULL, 
+pda.mcmc.bs <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, chain=NULL, 
                      iter=NULL, adapt=NULL, adj.min=NULL, ar.target=NULL, jvar=NULL, n.knot=NULL) {
   # Quit if pda not requested in settings
   if(!('assim.batch' %in% names(settings))) {
@@ -105,7 +105,7 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   LL.old <- prior.old <- -Inf
 
   ## Jump distribution setup
-  accept.rate <- numeric(n.param)  ## Create acceptance rate vector of 0's (one zero per parameter)
+  accept.count <- 0
 
   # Default jump variances. Looped for clarity
   ind <- which(is.na(settings$assim.batch$jump$jvar))
@@ -114,6 +114,9 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
     settings$assim.batch$jump$jvar[[i]] <- 
       0.1 * diff(eval(prior.fn$qprior[[prior.ind[ind[i]]]], list(p=c(0.05,0.95))))
   }
+
+  ## Convert jvar into a covariance matrix for block sampling
+  jcov = diag( unlist(settings$assim.batch$jump$jvar) )
 
   ## Create dir for diagnostic output
   if(!is.null(settings$assim.batch$diag.plot.iter)) {
@@ -130,52 +133,52 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
     logger.info(paste("Data assimilation MCMC iteration",i,"of",finish))
 
     ## Adjust Jump distribution
-    if(i %% settings$assim.batch$jump$adapt < 1){
-      settings <- pda.adjust.jumps(settings, accept.rate, pnames=pname[prior.ind])
-      accept.rate <- numeric(n.param)
+    if((i > (start + 1)) && ((i - start) %% settings$assim.batch$jump$adapt == 0)){
+      jcov <- pda.adjust.jumps.bs(settings, jcov, accept.count, 
+                params[(i - settings$assim.batch$jump$adapt):(i-1), prior.ind])
+      accept.count <- 0 # Reset counter
 
       # Save updated settings XML. Will be overwritten at end, but useful in case of crash
+      settings$assim.batch$jump$jvar <- as.list(diag(jcov))
+      names(settings$assim.batch$jump$jvar) <- rep('jvar', n.param)
       saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 
         paste0('pecan.pda', settings$assim.batch$ensemble.id, '.xml')))
     }
 
-    for(j in 1:n.param){
-      pstar <- parm
-      
-      ## Propose parameter values
-      if(i > 1) {
-        pnew  <- rnorm(1, parm[prior.ind[j]], settings$assim.batch$jump$jvar[[j]])
-        pstar[prior.ind[j]] <- pnew
-      }
-
-      ## Check that value falls within the prior
-      prior.star <- prior.fn$dmvprior(pstar)
-      if(is.finite(prior.star)){
-        ## Set up run and write run configs
-        run.id <- pda.init.run(settings, con, my.write.config, workflow.id, pstar, n=1,
-                               run.names=paste0("MCMC_chain.",chain,"_iteration.",i,"_variable.",j))
-
-        ## Start model run
-        start.model.runs(settings,settings$database$bety$write)
-
-        ## Read model outputs
-        model.out <- pda.get.model.output(settings, run.id, inputs)
+    pstar <- parm
     
-        ## Calculate likelihood (and store in database)
-        LL.new <- pda.calc.llik(settings, con, model.out, run.id, inputs, llik.fn)
+    ## Propose parameter values
+    if(i > 1) {
+      pstar[prior.ind] <- mvrnorm(1, parm[prior.ind], jcov)
+    }
 
-        ## Accept or reject step
-        a <- LL.new - LL.old + prior.star - prior.old
-        if(is.na(a)) a <- -Inf  # Can occur if LL.new == -Inf (due to model crash) and LL.old == -Inf (first run)
+    ## Check that value falls within the prior
+    prior.star <- prior.fn$dmvprior(pstar)
+    if(is.finite(prior.star)){
+      ## Set up run and write run configs
+      run.id <- pda.init.run(settings, con, my.write.config, workflow.id, pstar, n=1,
+                             run.names=paste0("MCMC_chain.",chain,"_iteration.",i))
 
-        if(a > log(runif(1))){
-          LL.old <- LL.new
-          prior.old <- prior.star
-          parm <- pstar 
-          accept.rate[j] <- accept.rate[j] + 1
-        }
-      } ## end if(is.finite(prior.star))
-    } ## end loop over variables
+      ## Start model run
+      start.model.runs(settings,settings$database$bety$write)
+
+      ## Read model outputs
+      model.out <- pda.get.model.output(settings, run.id, inputs)
+  
+      ## Calculate likelihood (and store in database)
+      LL.new <- pda.calc.llik(settings, con, model.out, run.id, inputs, llik.fn)
+
+      ## Accept or reject step
+      a <- LL.new - LL.old + prior.star - prior.old
+      if(is.na(a)) a <- -Inf  # Can occur if LL.new == -Inf (due to model crash) and LL.old == -Inf (first run)
+
+      if(a > log(runif(1))){
+        LL.old <- LL.new
+        prior.old <- prior.star
+        parm <- pstar 
+        accept.count <- accept.count + 1
+      }
+    } ## end if(is.finite(prior.star))
 
     ## Diagnostic figure
     if(!is.null(settings$assim.batch$diag.plot.iter) && is.finite(prior.star) && 

@@ -11,5 +11,5 @@ settings$assim.batch <- pda.mcmc.recover(settings)
 
 # If desired, now proceed to complete the run
 status.start("PDA")
-settings$assim.batch <- pda.mcmc(settings)
+settings <- assim.batch(settings)
 status.end()

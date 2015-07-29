@@ -1,3 +1,29 @@
+##' Run Batch PDA
+##'
+##' @title Run Batch PDA
+##' @param settings a PEcAn settings list
+##'
+##' @return Updated settings list
+##'
+##' @author Ryan Kelly
+##' @export
+assim.batch <- function(settings) {
+  if(is.null(settings$assim.batch$method)) settings$assim.batch$method = "bruteforce.bs"
+  
+  if(settings$assim.batch$method == "bruteforce") {
+    settings <- pda.mcmc(settings)
+  } else if(settings$assim.batch$method == "bruteforce.bs") {
+    settings <- pda.mcmc.bs(settings)
+  } else if(settings$assim.batch$method == "emulator") {
+    settings <- pda.emulator(settings)
+  } else {
+    logger.error(paste0("PDA method ", settings$assim.batch$method, " not found!"))
+  }
+    
+  return(settings)
+}
+
+
 ##' Load Dataset for Paramater Data Assimilation
 ##'
 ##' @title Load Dataset for Paramater Data Assimilation
@@ -292,7 +318,7 @@ pda.load.priors <- function(settings, con) {
 pda.create.ensemble <- function(settings, con, workflow.id) {
   if (!is.null(con)) {
     # Identifiers for ensemble 'runtype'
-    if(settings$assim.batch$method == "bruteforce") {
+    if(settings$assim.batch$method == "bruteforce" | settings$assim.batch$method == "bruteforce.bs") {
       ensemble.type <- "pda.MCMC"
     } else if(settings$assim.batch$method == "emulator") {
       ensemble.type <- "pda.emulator"
@@ -551,6 +577,47 @@ pda.adjust.jumps <- function(settings, accept.rate, pnames=NULL) {
   return(settings)
 }
 
+
+##' Adjust PDA blcok MCMC jump size
+##'
+##' @title Adjust PDA block MCMC jump size
+##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##'
+##' @return A PEcAn settings list updated to reflect adjusted jump distributions
+##'
+##' @author Ryan Kelly
+##' @export
+pda.adjust.jumps.bs <- function(settings, jcov, accept.count, params.recent) {
+  if(FALSE) {
+    params.recent = params[(i - settings$assim.batch$jump$adapt):(i-1), prior.ind]
+  }
+  pnames <- colnames(params.recent)
+  logger.info(paste0("Acceptance rate was ", 
+                     round(accept.count / settings$assim.batch$jump$adapt,3)))
+  logger.info(paste0("Using jump variance diagonals (", 
+                    paste(pnames, collapse=", "), ") = (", 
+                    paste(round(diag(jcov),3), collapse=", "), ")"))
+
+  r <- ncol(params.recent)
+  if(accept.count == 0) {
+    rescale <- diag(rep(settings$assim.batch$jump$adj.min,r))
+    jcov <- rescale %*% jcov %*% rescale
+  } else {
+    stdev <- apply(params.recent, 2, sd)
+    corr <- cor(params.recent)
+    if(any(is.na(corr))) corr <- diag(rep(1,r))
+    
+    arate <- accept.count / settings$assim.batch$jump$adapt
+    adjust <- max(arate / settings$assim.batch$jump$ar.target, settings$assim.batch$jump$adj.min)
+
+    rescale <- diag(stdev * adjust)
+    jcov <- rescale %*% corr %*% rescale
+  }
+
+  logger.info(paste0("New jump variance diagonals are (", 
+                    paste(round(diag(jcov),3), collapse=", "), ")"))
+  return(jcov)
+}
 
 ##' Get Model Output for PDA
 ##'
