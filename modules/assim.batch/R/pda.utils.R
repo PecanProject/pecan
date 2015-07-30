@@ -779,14 +779,15 @@ pda.plot.params <- function(settings, params.subset, prior.ind) {
 ##'
 ##' @author Ryan Kelly
 ##' @export
-pda.postprocess <- function(settings, con, params, pname, prior, prior.ind) {
+pda.postprocess <- function(settings, con, params, pname, prior, prior.ind, burnin=NULL) {
+  if(is.null(burnin)) burnin <- ceiling(min(2000,0.2*nrow(params)))
+
   ## Save params
   filename.mcmc <- file.path(settings$pfts$pft$outdir, 
                      paste0('mcmc.pda', settings$assim.batch$ensemble.id, '.Rdata'))
   save(params, file = filename.mcmc)
 
   ## Assess MCMC output
-  burnin <- ceiling(min(2000,0.2*nrow(params)))
   params.subset <- as.data.frame(params[burnin:nrow(params),prior.ind])
     names(params.subset) <- pname[prior.ind]
   pda.plot.params(settings, params.subset, prior.ind)
