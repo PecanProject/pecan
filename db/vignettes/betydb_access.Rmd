@@ -28,6 +28,7 @@ salix_vcmax <- query.trait.data(trait = "Vcmax", spstr = vecpaste(salix_spp$id),
 
 ### R dplyr interface
 
+Documentation for the `dplyr` interface to databases is provided in the [dplyr vignette](https://cran.r-project.org/web/packages/dplyr/vignettes/databases.html)
 
 ```{r}
 library(dplyr)
