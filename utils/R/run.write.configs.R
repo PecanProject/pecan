@@ -31,8 +31,8 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method="halton"
   model = settings$model$type
   scipen = getOption("scipen")
   options(scipen=12)
-  get.parameter.samples(pfts = settings$pfts)
-  load(file.path(settings$outdir, "samples.Rdata"), posterior.files)
+  get.parameter.samples(pfts = settings$pfts, posterior.files)
+  load(file.path(settings$outdir, "samples.Rdata"))
 
   require(coda)
   ## remove previous runs.txt
