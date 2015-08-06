@@ -21,9 +21,12 @@
 ##' @export
 ##'
 ##' @author Ann Raiho # I changed this a bunch to do the MIP runs... Might need to change it back. Didn't commit additions for MIP runs.
-model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end_date=NULL,force=FALSE, PFTs) {
+model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end_date=NULL,force=FALSE){ #, PFTs) {
 #  logger.severe("NOT IMPLEMENTED")
-  #PFTs = c("acer","betula","carya","castanea.dentata","fagus.grandifolia","picea","pinus","tsuga.canadensis","quercus")
+  
+  # I'm bringing this back until we come up with a better solution. 
+  PFTs = c("acer","betula","carya","castanea.dentata","fagus.grandifolia","picea","pinus","tsuga.canadensis","quercus")
+  # PFTs <- as.character(c(38, 72, 58, 8, 2, 1, 6, 7, 11)) these aren't the same.
   
   ### Read in model output in LINKAGES format
   output <- as.matrix(read.csv(file.path(outdir, "OUT.csv"), header=FALSE))
