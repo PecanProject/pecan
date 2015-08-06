@@ -8,6 +8,12 @@
 ##' @author Ryan Kelly
 ##' @export
 assim.batch <- function(settings) {
+  # Quit if pda not requested in settings
+  if(!('assim.batch' %in% names(settings))) {
+    return(settings)
+  }
+  require(coda)
+
   if(is.null(settings$assim.batch$method)) settings$assim.batch$method = "bruteforce.bs"
   
   if(settings$assim.batch$method == "bruteforce") {
