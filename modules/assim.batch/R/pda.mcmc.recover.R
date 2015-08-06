@@ -14,7 +14,7 @@
 # settings$assim.batch <- pda.mcmc.recover(settings) # wrap up unfinished run
 # settings$assim.batch <- pda.mcmc(settings) # start new pda
 pda.mcmc.recover <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, chain=NULL, 
-                     iter=NULL, adapt=NULL, adj.min=NULL, ar.target=NULL, jvar=NULL, n.knot=NULL) {
+                     iter=NULL, adapt=NULL, adj.min=NULL, ar.target=NULL, jvar=NULL, n.knot=NULL, burnin=NULL) {
 
   if(FALSE){
     params.id <- param.names <- prior.id <- chain <- iter <- NULL 
@@ -73,7 +73,7 @@ pda.mcmc.recover <- function(settings, params.id=NULL, param.names=NULL, prior.i
   settings$assim.batch$iter <- finish - nrow(params)
 
   ## Save outputs to plots, files, and db
-  settings <- pda.postprocess(settings, con, params, pname, prior, prior.ind)
+  settings <- pda.postprocess(settings, con, params, pname, prior, prior.ind, burnin)
 
   ## close database connection
   if(!is.null(con)) db.close(con)

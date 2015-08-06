@@ -45,16 +45,15 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end
   colnames(LINKAGES.output) <- c("year","numStems","agBiomass","leafLitter","leafLitterN","agNPP","availN","humusCN","soilResp","soilOM","ET",
                                  "numStems.SD","agBiomass.SD","leafLitter.SD","leafLitterN.SD","agNPP.SD","availN.SD","humusCN.SD","soilResp.SD","soilOM.SD","ET.SD")
   LINKAGES.output <- as.data.frame(LINKAGES.output)
-  LINKAGES.output$year <- seq(0,1660,2)
+  LINKAGES.output$year <- seq(0,1160,2)
   
   colnames(LINKAGES.pft) <- c("year",paste0("pft.",PFTs), paste0("pft.",PFTs,".SD"))
   LINKAGES.pft <- as.data.frame(LINKAGES.pft)
-  LINKAGES.pft$year <- seq(0,1660,2)
+  LINKAGES.pft$year <- seq(0,1160,2)
     
   ### Loop over years in LINKAGES output to create separate netCDF outputs
   for (y in LINKAGES.output$year[2:length(LINKAGES.output$year)]){
-    year_vec = seq(351,2010,1)
-    year_vec[1] = 350
+    year_vec = seq(850,2010,1)
     
     if (file.exists(file.path(outdir, paste(year_vec[y],"nc", sep="."))) & force == FALSE) {
       next
@@ -158,3 +157,4 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end
   
   
 }
+
