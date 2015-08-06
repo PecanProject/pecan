@@ -19,12 +19,13 @@
 ##' @param end_date End time of the simulation
 ##' @export
 ##' @author Shawn Serbin, Michael Dietze
-model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date) {
+model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, delete.raw) {
   
   require(ncdf4)
   
   ### Read in model output in SIPNET format
-  sipnet.output <- read.table(file.path(outdir, "sipnet.out"), header=T, skip=1, sep='')
+  sipnet.out.file <- file.path(outdir, "sipnet.out")
+  sipnet.output <- read.table(sipnet.out.file, header=T, skip=1, sep='')
   sipnet.output.dims <- dim(sipnet.output)
 
   ### Determine number of years and output timestep
@@ -130,6 +131,11 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date) 
     
   } ### End of year loop
 
+  ## Delete raw output, if requested
+  if(delete.raw) {
+    file.remove(sipnet.out.file)
+  }
+  
 } ### End of function
 #==================================================================================================#
 
