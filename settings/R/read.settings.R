@@ -490,6 +490,12 @@ check.settings <- function(settings) {
     if ((is.null(settings$model$type) || settings$model$type == "")) {
       logger.severe("Need a model type.")
     }
+    
+    # Set model$delete.raw to FALSE by default
+    if (is.null(settings$model$delete.raw) || !is.logical(as.logical(settings$model$delete.raw))) {
+      logger.info("Option to delete raw model output not set or not logical. Will keep all model output.")
+      settings$model$delete.raw = FALSE
+    }
 
     # check on binary for given host
     if (!is.null(settings$model$id) && (settings$model$id >= 0)) {
