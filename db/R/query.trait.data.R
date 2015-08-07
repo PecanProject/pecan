@@ -170,8 +170,9 @@ query.covariates<-function(trait.ids, con = NULL, ...){
 ##' @param temp.covariates names of covariates used to adjust for temperature;
 ##'   if length > 1, order matters (first will be used preferentially)
 ##' @param new.temp the reference temperature for the scaled traits. Curerntly 25 degC
+##' @param missing.temp the temperature assumed for traits with no covariate found. Curerntly 25 degC
 ##' @author Carl Davidson, David LeBauer, Ryan Kelly
-arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp=25){
+arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp=25, missing.temp=25){
   # Select covariates that match temp.covariates
   covariates <- covariates[covariates$name %in% temp.covariates,]
     
@@ -183,10 +184,12 @@ arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp
   
     data <- append.covariate(data, 'temp', covariates)
 
-    # Scale traits for which covariate was found
-    ind <- !is.na(data$temp)
-    data$mean[ind] <- arrhenius.scaling(data$mean[ind], old.temp = data$temp[ind], new.temp=new.temp)
-    data$stat[ind] <- arrhenius.scaling(data$stat[ind], old.temp = data$temp[ind], new.temp=new.temp)
+    # Assign default value for traits with no covariates
+    data$temp[is.na(data$temp)] <- missing.temp
+    
+    # Scale traits
+    data$mean <- arrhenius.scaling(data$mean, old.temp = data$temp, new.temp=new.temp)
+    data$stat <- arrhenius.scaling(data$stat, old.temp = data$temp, new.temp=new.temp)
 
     #remove temporary covariate column.
     data<-data[,colnames(data)!='temp']
