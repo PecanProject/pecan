@@ -172,9 +172,15 @@ query.covariates<-function(trait.ids, con = NULL, ...){
 ##' @param new.temp the reference temperature for the scaled traits. Curerntly 25 degC
 ##' @author Carl Davidson, David LeBauer, Ryan Kelly
 arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp=25){
+  # Select covariates that match temp.covariates
+  covariates <- covariates[covariates$name %in% temp.covariates,]
+    
   if(nrow(covariates)>0) {
-    covariates <- covariates[covariates$name %in% temp.covariates,]
-
+    # Sort covariates in order of priority
+    covariates <- do.call(rbind, 
+      lapply(temp.covariates, function(temp.covariate) covariates[covariates$name == temp.covariate, ])
+      )
+  
     data <- append.covariate(data, 'temp', covariates)
 
     # Scale traits for which covariate was found
@@ -203,7 +209,8 @@ filter.sunleaf.traits <- function(data, covariates){
     data <- append.covariate(data, 'canopy_layer',
                              covariates[covariates$name == 'canopy_layer',])
     data <-  data[data$canopy_layer >= 0.66 | is.na(data$canopy_layer),]
-                                        #remove temporary covariate column
+    
+    # remove temporary covariate column
     data<-data[,colnames(data)!='canopy_layer']
   }
   return(data)
