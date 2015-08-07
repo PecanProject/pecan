@@ -121,21 +121,21 @@ query.yields <- function(trait = 'yield', spstr, extra.columns='', con=NULL, ...
 ##' @param covariates.data one or more tables of covariate data, ordered by the precedence
 ##' they will assume in the event a trait has covariates across multiple tables.
 ##' All tables must contain an 'id' and 'level' column, at minimum.
+##'
+##' @author <unknown>, Ryan Kelly
 ##' @export
 ##--------------------------------------------------------------------------------------------------#
 append.covariate<-function(data, column.name, ..., covariates.data=list(...)){
   merged <- data.frame()
-  for(i in seq(covariates.data)){
-    if(is.list(covariates.data)) covariates.data <- as.data.frame(covariates.data)
-    covariate.data <- covariates.data[i,]
-    if(length(covariate.data) >= 1){
-      ## conditional added to prevent crash when trying to transform an empty data frame
-      transformed <- transform(covariate.data, id = trait_id, level = level)
-      selected <- transformed[!transformed$id %in% merged$id, c('id', 'level')]
-      merged <- rbind(merged, selected)
-    }
+  for(i in seq(covariates.data)){ # Loop over covariates in order of precedence
+    covariate.data <- covariates.data[[i]]
+    
+    # Select covariates for any trait that hasn't already been assigned one
+    selected <- covariate.data[!covariate.data$trait_id %in% merged$trait_id, c('trait_id', 'level')]
+    merged <- rbind(merged, selected)
   }
-  colnames(merged) <- c('id', column.name)
+
+  names(merged) <- c('id', column.name)
   merged <- merge(merged, data, all = TRUE, by = "id")
   return(merged)
 }
@@ -166,24 +166,25 @@ query.covariates<-function(trait.ids, con = NULL, ...){
 ##'
 ##' @name arrhenius.scaling.traits
 ##' @title Function to apply Arrhenius scaling to 25 degC for temperature-dependent traits
-##' @param data the data to scale
-##' @param covariates the relevant covariates
+##' @param data data frame of data to scale, as returned by query.data()
+##' @param covariates data frame of covariates, as returned by query.covariates().
+##'   Note that data with no matching covariates will be unchanged. 
 ##' @param temp.covariates names of covariates used to adjust for temperature;
-##' if length > 1, order matters (first will be used preferentially)
+##'   if length > 1, order matters (first will be used preferentially)
 ##' @param new.temp the reference temperature for the scaled traits. Curerntly 25 degC
-##' @author Carl Davidson, David LeBauer
+##' @author Carl Davidson, David LeBauer, Ryan Kelly
 arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp=25){
-  if(length(covariates)>0) {
+  if(nrow(covariates)>0) {
     .covs <- lapply(temp.covariates, function(temp.covariate){covariates[covariates$name == temp.covariate,]})
-    .covs <- .covs[sapply(.covs, function(x) nrow(x) != 0)][[1]]# remove empty records  
-    data <- append.covariate(data, 'temp',
-                             covariates.data = .covs)
+    .covs <- .covs[sapply(.covs, function(x) nrow(x) != 0)] # remove empty records  
+    data <- append.covariate(data, 'temp', covariates.data = .covs)
 
-    data$temp[is.na(data$temp)] <-  new.temp
+    # Scale traits for which covariate was found
+    ind <- !is.na(data$temp)
+    data$mean[ind] <- arrhenius.scaling(data$mean[ind], old.temp = data$temp[ind], new.temp=new.temp)
+    data$stat[ind] <- arrhenius.scaling(data$stat[ind], old.temp = data$temp[ind], new.temp=new.temp)
 
-    data$mean <- arrhenius.scaling(data$mean, old.temp = data$temp, new.temp=new.temp)
-    data$stat <- arrhenius.scaling(data$stat, old.temp = data$temp, new.temp=new.temp)
-                                        #remove temporary covariate column.
+    #remove temporary covariate column.
     data<-data[,colnames(data)!='temp']
   }
   return(data)
