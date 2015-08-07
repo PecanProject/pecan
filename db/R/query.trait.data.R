@@ -111,10 +111,10 @@ query.yields <- function(trait = 'yield', spstr, extra.columns='', con=NULL, ...
 ##'
 ##' @name append.covariate
 ##' @title Append covariate data as a column within a table
-##' \code{append.covariate} appends one or more tables of covariate data
-##' as a single column in a given table of trait data.
-##' In the event a trait has several covariates across several given tables,
-##' the first table given will take precedence
+##' \code{append.covariate} appends a data frame of covariates as a new column in a data frame 
+##'   of trait data.
+##' In the event a trait has several covariates available, the first one found 
+##'   (i.e. lowest row number) will take precedence
 ##'
 ##' @param data trait dataframe that will be appended to.
 ##' @param column.name name of the covariate as it will appear in the appended column
@@ -122,21 +122,19 @@ query.yields <- function(trait = 'yield', spstr, extra.columns='', con=NULL, ...
 ##' they will assume in the event a trait has covariates across multiple tables.
 ##' All tables must contain an 'id' and 'level' column, at minimum.
 ##'
-##' @author <unknown>, Ryan Kelly
+##' @author Carl Davidson, Ryan Kelly
 ##' @export
 ##--------------------------------------------------------------------------------------------------#
-append.covariate<-function(data, column.name, ..., covariates.data=list(...)){
-  merged <- data.frame()
-  for(i in seq(covariates.data)){ # Loop over covariates in order of precedence
-    covariate.data <- covariates.data[[i]]
-    
-    # Select covariates for any trait that hasn't already been assigned one
-    selected <- covariate.data[!covariate.data$trait_id %in% merged$trait_id, c('trait_id', 'level')]
-    merged <- rbind(merged, selected)
-  }
+append.covariate<-function(data, column.name, covariates.data){
+  # Keep only the highest-priority covariate for each trait
+  covariates.data <- covariates.data[!duplicated(covariates.data$trait_id), ]
 
-  names(merged) <- c('id', column.name)
-  merged <- merge(merged, data, all = TRUE, by = "id")
+  # Select columns to keep, and rename the covariate column
+  covariates.data <- covariates.data[, c('trait_id', 'level')]
+  names(covariates.data) <- c('id', column.name)
+
+  # Merge on trait ID
+  merged <- merge(covariates.data, data, all = TRUE, by = "id")
   return(merged)
 }
 ##==================================================================================================#
@@ -175,9 +173,9 @@ query.covariates<-function(trait.ids, con = NULL, ...){
 ##' @author Carl Davidson, David LeBauer, Ryan Kelly
 arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp=25){
   if(nrow(covariates)>0) {
-    .covs <- lapply(temp.covariates, function(temp.covariate){covariates[covariates$name == temp.covariate,]})
-    .covs <- .covs[sapply(.covs, function(x) nrow(x) != 0)] # remove empty records  
-    data <- append.covariate(data, 'temp', covariates.data = .covs)
+    covariates <- covariates[covariates$name %in% temp.covariates,]
+
+    data <- append.covariate(data, 'temp', covariates)
 
     # Scale traits for which covariate was found
     ind <- !is.na(data$temp)
