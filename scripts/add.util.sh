@@ -35,7 +35,7 @@ addFormat() {
 addInput() {
     INPUT_ID=$( ${PSQL} "SELECT id FROM inputs WHERE site_id=$1 AND format_id=$2 AND start_date='$3' AND end_date='$4' LIMIT 1;" )
     if [ "$INPUT_ID" == "" ]; then
-        ${PSQL} "INSERT INTO inputs (site_id, format_id, start_date, end_date, created_at, updated_at) VALUES ($1, $2, '$3', '$4', NOW(), NOW());"
+        ${PSQL} "INSERT INTO inputs (site_id, format_id, name, start_date, end_date, created_at, updated_at) VALUES ($1, $2, '', '$3', '$4', NOW(), NOW());"
         INPUT_ID=$( ${PSQL} "SELECT id FROM inputs WHERE site_id=$1 AND format_id=$2 AND start_date='$3' AND end_date='$4' LIMIT 1;" )
         echo "Added new input with ID=${INPUT_ID} for site=$1, format_id=$2, start=$3, end=$4"
     fi
@@ -110,4 +110,29 @@ addModelFile() {
 		    ('Model', ${MODELID}, '${5}','${6}', ${HOSTID});"
 
 	echo "File ${6}/${5} added to model ${2} on host ${1}."
+}
+
+# function to add a model if found on local machine, takes 4 paramters
+# 1 : name of the model, shown in web interface
+# 2 : type of model (ED2, SIPNET, BIOCRO, DALEC, ...)
+# 3 : model revision number
+# 4 : name of executable, without the path
+# 5 : optionally path to executable
+addLocalModel() {
+  DIRNAME=""
+  if [ "$5" != "" ]; then
+    if [ -e "$5/$4" ]; then
+      DIRNAME="$5"
+    fi
+  else
+    BINARY=$( which $4 )
+    if [ "$BINARY" != "" ]; then
+      DIRNAME=$( dirname $BINARY )
+    fi
+  fi
+  if [ "${DIRNAME}" != "" ]; then
+    addModelFile "${FQDN}" "$1" "$2" "$3" "$4" "${DIRNAME}"
+  else
+    echo "Could not find $4, not adding to BETY"
+  fi
 }

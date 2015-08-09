@@ -21,7 +21,7 @@ write.sa.configs(defaults, quantile.samples, settings, model, clean = FALSE,
 \item{ensemble.samples}{list of lists supplied by \link{get.sa.samples}}
 }
 \value{
-data frame of runids, writes sensitivity analysis configuration files as a side effect
+list, containing $runs = data frame of runids, and $ensemble.id = the ensemble ID for these runs. Also writes sensitivity analysis configuration files as a side effect
 }
 \description{
 Write sensitivity analysis config files

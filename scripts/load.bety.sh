@@ -19,7 +19,7 @@ PG_OPT=${PG_OPT:-""}
 # ID's used in database
 # These ID's need to be unique for the sharing to work. If you want
 # to share your data, send email to kooper@illinois.edu to claim
-# your ID range. The master list is maintained at 
+# your ID range. The master list is maintained at
 # https://github.com/PecanProject/bety/wiki/Distributed-BETYdb
 #
 #  0 - EBI           - David LeBauer
@@ -36,11 +36,18 @@ REMOTESITE=${REMOTESITE:-0}
 # data!
 CREATE=${CREATE:-"NO"}
 
+# Fix the sequence numbers, this should only be need when creating a
+# new database. Set this to YES to initialize the sequence numbers.
+FIXSEQUENCE=${FIXSEQUENCE:-"NO"}
+
 # Keep the tmp folder even if the sync failed?
 # Set this to YES to keep the tmp folder, this is helpful for
 # debugging the script. The default value is NO and the tmp folder will
 # be removed
 KEEPTMP=${KEEPTMP:-"NO"}
+
+# Should the process be quiet
+QUIET=${QUIET:-"NO"}
 
 # Convert user account 1 to carya
 # Set this to YES to convert user 1 to carya with password. This will
@@ -52,12 +59,77 @@ USERS=${USERS:-"NO"}
 # END CONFIGURATION SECTION
 # ----------------------------------------------------------------------
 
+# parse command line options
+while getopts c:d:f:hm:o:p:qr:t:u: opt; do
+  case $opt in
+  c)
+    CREATE=$OPTARG
+    ;;
+  d)
+    DATABASE=$OPTARG
+    ;;
+  f)
+    FIXSEQUENCE=$OPTARG
+    ;;
+  h)
+    echo "$0 [-c YES|NO] [-d database] [-f YES|NO] [-h] [-m my siteid] [-o owner] [-p psql options] [-r remote siteid] [-t YES|NO] [-u YES|NO]"
+    echo " -c create database, THIS WILL ERASE THE CURRENT DATABASE, default is NO"
+    echo " -d database, default is bety"
+    echo " -f fix sequence numbers, this should not be needed, default is NO"
+    echo " -h this help page"
+    echo " -m site id, default is 99 (VM)"
+    echo " -o owner of the database, default is bety"
+    echo " -p additional psql command line options, default is empty"
+    echo " -q should the import be quiet"
+    echo " -r remote site id, default is 0 (EBI)"
+    echo " -t keep temp folder, default is NO"
+    echo " -u create carya users, this will create some default users"
+    exit 0
+    ;;
+  m)
+    MYSITE=$OPTARG
+    ;;
+  o)
+    OWNER=$OPTARG
+    ;;
+  p)
+    PG_OPT=$OPTARG
+    ;;
+  q)
+    QUIET=YES
+    ;;
+  r)
+    REMOTESITE=$OPTARG
+    ;;
+  t)
+    KEEPTMP=$OPTARG
+    ;;
+  u)
+    USERS=$OPTARG
+    ;;
+  esac
+done
+
+# simple sanity check
+if [ "${CREATE}" == "YES" -a "${OWNER}" == "" ]; then
+  echo "Can not create database without owner"
+  exit 1
+fi
+if [ "${MYSITE}" == "${REMOTESITE}" ]; then
+  echo "Can not have same remotesite as mysite"
+  exit 1
+fi
+if [ "${CREATE}" == "YES" -a "${FIXSEQUENCE}" == "NO" ]; then
+  echo "Can not run create without fix sequence"
+  exit 1
+fi
+
 # list of all tables, schema_migrations is ignored since that
 # will be imported during creaton
 
 # list of tables that are one to many relationships
 CLEAN_TABLES="citations counties covariates cultivars"
-CLEAN_TABLES="${CLEAN_TABLES} dbfiles ensembles entities formats"
+CLEAN_TABLES="${CLEAN_TABLES} ensembles entities formats"
 CLEAN_TABLES="${CLEAN_TABLES} inputs likelihoods location_yields"
 CLEAN_TABLES="${CLEAN_TABLES} machines managements methods"
 CLEAN_TABLES="${CLEAN_TABLES} mimetypes models"
@@ -67,7 +139,7 @@ CLEAN_TABLES="${CLEAN_TABLES} priors runs sessions sites"
 CLEAN_TABLES="${CLEAN_TABLES} species treatments"
 CLEAN_TABLES="${CLEAN_TABLES} variables workflows"
 CLEAN_TABLES="${CLEAN_TABLES} traits yields"
-CLEAN_TABLES="${CLEAN_TABLES} users"
+CLEAN_TABLES="${CLEAN_TABLES} dbfiles users"
 
 # list of tables that are many to many relationships
 MANY_TABLES="${MANY_TABLES} citations_sites citations_treatments"
@@ -80,26 +152,28 @@ MANY_TABLES="${MANY_TABLES} pfts_species posteriors_ensembles"
 # from the database. Same as mysite which should come from
 # the database as well.
 if [ -z "${DUMPURL}" ]; then
-	if [ "${REMOTESITE}" == "0" ]; then
-		DUMPURL="https://ebi-forecast.igb.illinois.edu/pecan/dump/bety.tar.gz"
-	elif [ "${REMOTESITE}" == "1" ]; then
-		DUMPURL="http://psql-pecan.bu.edu/sync/dump/bety.tar.gz"
-	else
-		echo "Don't know where to get data for site ${REMOTESITE}"
-		exit
-	fi
+  if [ "${REMOTESITE}" == "0" ]; then
+    DUMPURL="https://ebi-forecast.igb.illinois.edu/pecan/dump/bety.tar.gz"
+  elif [ "${REMOTESITE}" == "1" ]; then
+    DUMPURL="http://psql-pecan.bu.edu/sync/dump/bety.tar.gz"
+        elif [ "${REMOTESITE}" == "2" ]; then
+                DUMPURL="https://www.dropbox.com/s/wr8sldv080wa9y8/bety.tar.gz?dl=0"
+  else
+    echo "Don't know where to get data for site ${REMOTESITE}"
+    exit 1
+  fi
 fi
 
 # this value should be constant, do not change
 ID_RANGE=1000000000
 
 # before anything is done, check to make sure database exists
-if ! psql -lqt | cut -d \| -f 1 | grep -w "${DATABASE}"; then
+if ! psql -lqt | cut -d \| -f 1 | grep -w "${DATABASE}" > /dev/null ; then
   echo "Database ${DATABASE} does not exist, please create it:"
   echo "(see https://github.com/PecanProject/pecan/wiki/Installing-PEcAn#installing-bety)"
   echo "  sudo -u postgres createuser -d -l -P -R -S bety"
   echo "  sudo -u postgres createdb -O bety ${DATABASE}"
-  exit
+  exit 1
 fi
 
 # make output folder
@@ -107,45 +181,57 @@ DUMPDIR="/tmp/$$"
 mkdir "${DUMPDIR}"
 
 # download dump file and unpack
-curl -L -o "${DUMPDIR}/dump.tar.gz" "${DUMPURL}"
+curl -s -L -o "${DUMPDIR}/dump.tar.gz" "${DUMPURL}"
 tar zxf "${DUMPDIR}/dump.tar.gz" -C "${DUMPDIR}"
 
 # create database if need be, otherwise check version of schema
 if [ "${CREATE}" == "YES" ]; then
-	printf "Loading %-25s : " "schema"
+  if [ "${QUIET}" != "YES" ]; then
+     printf "Loading %-25s : " "schema"
+  fi
   # create empty public schema
-	psql -q -d "${DATABASE}" -c "DROP SCHEMA public CASCADE"
-	psql -U ${OWNER} -q -d "${DATABASE}" -c "CREATE SCHEMA public"
+  psql -q -d "${DATABASE}" -c "DROP SCHEMA public CASCADE"
+  psql -U ${OWNER} -q -d "${DATABASE}" -c "CREATE SCHEMA public"
 
   # following commands require superuser abilities
   psql -d "${DATABASE}" -c 'CREATE EXTENSION Postgis;'
   psql -d "${DATABASE}" -c "GRANT ALL ON ALL TABLES IN SCHEMA public TO ${OWNER};"
 
   # create rest of database
-	psql ${PG_OPT} -U ${OWNER} -q -d "${DATABASE}" < "${DUMPDIR}"/*.schema
-	echo "CREATED SCHEMA"
+  psql ${PG_OPT} -U ${OWNER} -q -d "${DATABASE}" < "${DUMPDIR}"/*.schema
+  if [ "${QUIET}" != "YES" ]; then
+    echo "CREATED SCHEMA"
+  fi
 
-	printf "Loading  %-25s : " "schema_migrations"
-	ADD=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "\COPY schema_migrations FROM '${DUMPDIR}/schema_migrations.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8'); SELECT COUNT(*) FROM schema_migrations;" | tr -d ' ' )
-	echo "ADDED ${ADD}"
+  if [ "${QUIET}" != "YES" ]; then
+    printf "Loading  %-25s : " "schema_migrations"
+  fi
+  ADD=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY schema_migrations FROM '${DUMPDIR}/schema_migrations.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8'); SELECT COUNT(*) FROM schema_migrations;" | tr -d ' ' )
+  if [ "${QUIET}" != "YES" ]; then
+    echo "ADDED ${ADD}"
+  fi
 else
-	printf "Checking %-25s : " "schema"
+  if [ "${QUIET}" != "YES" ]; then
+    printf "Checking %-25s : " "schema"
+  fi
 
-	# find current schema version
-	VERSION=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c 'SELECT version FROM schema_migrations ORDER BY version DESC limit 1' | tr -d ' ' )
+  # find current schema version
+  VERSION=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c 'SELECT version FROM schema_migrations ORDER BY version DESC limit 1' | tr -d ' ' )
 
-	if [ ! -e "${DUMPDIR}/${VERSION}.schema" ]; then
-		echo "EXPECTED SCHEMA version ${VERSION}"
-		echo "Dump is from a different schema, please fix schema in database."
+  if [ ! -e "${DUMPDIR}/${VERSION}.schema" ]; then
+    echo "EXPECTED SCHEMA version ${VERSION}"
+    echo "Dump is from a different schema, please fix schema in database."
     if [ "$KEEPTMP" == "YES" ]; then
-		  echo "Files are in ${DUMPDIR}"
-    else 
+      echo "Files are in ${DUMPDIR}"
+    else
       rm -rf "${DUMPDIR}"
     fi
-		exit
-	fi
+    exit 1
+  fi
 
-	echo "MATCHED SCHEMA version ${VERSION}"
+  if [ "${QUIET}" != "YES" ]; then
+    echo "MATCHED SCHEMA version ${VERSION}"
+  fi
 fi
 
 # compute range based on {MY,REMOTE}SITE
@@ -154,6 +240,37 @@ MY_LAST_ID=$(( MY_START_ID + ID_RANGE - 1 ))
 REM_START_ID=$(( REMOTESITE * ID_RANGE + 1 ))
 REM_LAST_ID=$(( REM_START_ID + ID_RANGE - 1 ))
 
+# common statement pieces used
+REM_WHERE="WHERE (id >= ${REM_START_ID} AND id <= ${REM_LAST_ID})"
+MY_WHERE="WHERE (id >= ${MY_START_ID} AND id <= ${MY_LAST_ID})"
+
+# create psql process that will be used for all code
+PSQL_PIPE_INP=/tmp/psql_inp.$$
+PSQL_PIPE_OUT=/tmp/psql_out.$$
+mkfifo -m 600 $PSQL_PIPE_INP
+mkfifo -m 600 $PSQL_PIPE_OUT
+psql ${PG_OPT} --quiet --no-align --no-readline --tuples-only -P footer=off --dbname ${DATABASE} <$PSQL_PIPE_INP >$PSQL_PIPE_OUT &
+exec 3>$PSQL_PIPE_INP
+exec 4<$PSQL_PIPE_OUT
+PSQL_PID=$!
+if [ "${QUIET}" != "YES" ]; then
+  echo "Started psql (pid=$PSQL_PID)"
+fi
+
+# capture EXIT so we can rollback if needed, as well as cleanup
+trap '
+  if ps -p $PSQL_PID > /dev/null ; then
+    echo "Process killed, no changes are made to the database."
+    echo "ROLLBACK;" >&3
+    kill $PSQL_PID
+    cat <&4
+  fi
+  rm -f $PSQL_PIPE_INP $PSQL_PIPE_OUT
+' EXIT
+
+# start transaction
+echo "BEGIN;" >&3
+
 # for all tables
 # 1) disable constraints on this table
 # 2) remove all rows that have id in range of remote site
@@ -161,68 +278,91 @@ REM_LAST_ID=$(( REM_START_ID + ID_RANGE - 1 ))
 # 4) set last inserted item in my range
 # 5) enable constraints on this table
 for T in ${CLEAN_TABLES} ${MANY_TABLES}; do
-	printf "Cleaning %-25s : " "${T}"
-  psql -q -d "${DATABASE}" -c "ALTER TABLE ${T} DISABLE TRIGGER ALL;"
-  WHERE="WHERE (id >= ${REM_START_ID} AND id <= ${REM_LAST_ID})"
-	DEL=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM ${T} ${WHERE}" | tr -d ' ' )
-	psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "DELETE FROM ${T} ${WHERE}"
-	echo "DEL ${DEL}"
-	printf "Loading  %-25s : " "${T}"
-  START=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT COUNT(*) FROM ${T}" | tr -d ' ' )
-	if [ -f "${DUMPDIR}/${T}.csv" ]; then
-		psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "\COPY ${T} FROM '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')"
-	fi
-  END=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT COUNT(*) FROM ${T}" | tr -d ' ' )
+  echo "ALTER TABLE ${T} DISABLE TRIGGER ALL;" >&3
+  echo "SELECT count(*) FROM ${T} ${REM_WHERE};" >&3 && read DEL <&4
+  # TODO what is last index in range we are adding, this will give a better
+  #      indication if rows are added.
+  echo "DELETE FROM ${T} ${REM_WHERE};" >&3
+  echo "SELECT COUNT(*) FROM ${T};" >&3 && read START <&4
+  if [ -f "${DUMPDIR}/${T}.csv" ]; then
+    echo "\COPY ${T} FROM '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')" >&3
+  fi
+  echo "SELECT COUNT(*) FROM ${T};" >&3 && read END <&4
   ADD=$(( END - START ))
-	echo "ADD ${ADD}"
-	printf "Fixing   %-25s : " "${T}"
-	NEXT=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "SELECT setval('${T}_id_seq', ${MY_START_ID}, false); SELECT setval('${T}_id_seq', (SELECT MAX(id) FROM ${T} WHERE id >= ${MY_START_ID} AND id < ${MY_LAST_ID}), true); SELECT last_value from ${T}_id_seq;" | tr -d ' ' )
-	echo "SEQ ${NEXT}"
-  psql -q -d "${DATABASE}" -c "ALTER TABLE ${T} ENABLE TRIGGER ALL;"
+  DIFF=$(( ADD - DEL ))
+  if [ "${QUIET}" != "YES" ]; then
+    if [ "$DEL" != "0" -o "$ADD" != "0" ]; then
+      if [ "$DIFF" != "0" ]; then
+        printf "Updated  %-25s : %6d (%+d)\n" "${T}" ${ADD} ${DIFF}
+      else
+        printf "Updated  %-25s : %6d\n" "${T}" ${ADD}
+      fi
+    fi
+  fi
+  echo "ALTER TABLE ${T} ENABLE TRIGGER ALL;" >&3
 done
 
 # convert user 1 if needed
 if [ "${USERS}" == "YES" -a "${REMOTESITE}" == "0" ]; then
   ID=2
 
-  RESULT=$( psql ${PG_OPT} -U ${OWNER} -t -d "${DATABASE}" -c "SELECT count(id) FROM users WHERE login='carya';" )
-  if [ ${RESULT} -eq 0 ]; then
-    RESULT='UPDATE 0'
-    while [ "${RESULT}" = "UPDATE 0" ]; do
-      RESULT=$( psql ${PG_OPT} -U ${OWNER} -t -d "${DATABASE}" -c "UPDATE users SET login='carya', name='carya', crypted_password='df8428063fb28d75841d719e3447c3f416860bb7', salt='carya', access_level=1, page_access_level=1 WHERE id=${ID};" )
-      ((ID++))
-    done
+  echo "SELECT count(id) FROM users WHERE login='carya';" >&3 && read RESULT <&4
+  while [ ${RESULT} -eq 0 ]; do
+    echo "UPDATE users SET login='carya', name='carya', crypted_password='df8428063fb28d75841d719e3447c3f416860bb7', salt='carya', access_level=1, page_access_level=1 WHERE id=${ID};" >&3
+    ((ID++))
+    echo "SELECT count(id) FROM users WHERE login='carya';" >&3 && read RESULT <&4
+  done
+  if [ "${QUIET}" != "YES" ]; then
+    echo "Added carya with admin privileges"
   fi
-  echo "Added carya with admin privileges"
 
   # set all users
   for f in 1 2 3 4; do
     for g in 1 2 3 4; do
-      RESULT=$( psql ${PG_OPT} -U ${OWNER} -t -d "${DATABASE}" -c "SELECT count(id) FROM users WHERE login='carya${f}${g}';" )
-      if [ ${RESULT} -eq 0 ]; then
-        RESULT='UPDATE 0'
-        while [ "${RESULT}" = "UPDATE 0" ]; do
-          RESULT=$( psql ${PG_OPT} -U ${OWNER} -t -d "${DATABASE}" -c "UPDATE users SET login='carya${f}${g}', name='carya a-${f} p-${g}', crypted_password='df8428063fb28d75841d719e3447c3f416860bb7', salt='carya', access_level=${f}, page_access_level=${g} WHERE id=${ID};" )
-          ((ID++))
-        done
-      fi
+      echo "SELECT count(id) FROM users WHERE login='carya${f}${g}';" >&3 && read RESULT <&4
+      while [ ${RESULT} -eq 0 ]; do
+        echo "UPDATE users SET login='carya${f}${g}', name='carya a-${f} p-${g}', crypted_password='df8428063fb28d75841d719e3447c3f416860bb7', salt='carya', access_level=${f}, page_access_level=${g} WHERE id=${ID};" >&3
+        ((ID++))
+        echo "SELECT count(id) FROM users WHERE login='carya${f}${g}';" >&3 && read RESULT <&4
+      done
     done
   done
-  echo "Updated users to have login='caryaXY' with appropriate privileges"
-  echo "  (X=access_level, Y=page_access_level)."
+  if [ "${QUIET}" != "YES" ]; then
+    echo "Updated users to have login='caryaXY' with appropriate privileges"
+    echo "  (X=access_level, Y=page_access_level)."
+  fi
 
   # add guest user
-  RESULT=$( psql ${PG_OPT} -U ${OWNER} -t -d "${DATABASE}" -c "SELECT count(id) FROM users WHERE login='guestuser';" )
-  if [ ${RESULT} -eq 0 ]; then
-    RESULT='UPDATE 0'
-    while [ "${RESULT}" = "UPDATE 0" ]; do
-      RESULT=$( psql ${PG_OPT} -U ${OWNER} -t -d "${DATABASE}" -c "UPDATE users SET login='guestuser', name='guestuser', crypted_password='994363a949b6486fc7ea54bf40335127f5413318', salt='bety', access_level=4, page_access_level=4 WHERE id=${ID};" )
-      ((ID++))
-    done
+  echo "SELECT count(id) FROM users WHERE login='guestuser';" >&3 && read RESULT <&4
+  while [ ${RESULT} -eq 0 ]; do
+    echo "UPDATE users SET login='guestuser', name='guestuser', crypted_password='994363a949b6486fc7ea54bf40335127f5413318', salt='bety', access_level=4, page_access_level=4 WHERE id=${ID};" >&3
+    ((ID++))
+    echo "SELECT count(id) FROM users WHERE login='guestuser';" >&3 && read RESULT <&4
+  done
+  if [ "${QUIET}" != "YES" ]; then
+    echo "Added guestuser with access_level=4 and page_access_level=4"
   fi
-  echo "Added guestuser with access_level=4 and page_access_level=4"
 fi
+
+# fix sequence numbers if needed
+if [ "${FIXSEQUENCE}" == "YES" ]; then
+  for T in ${CLEAN_TABLES} ${MANY_TABLES}; do
+    echo "SELECT last_value from ${T}_id_seq;" >&3 && read OLD <&4
+    echo "SELECT setval('${T}_id_seq', ${MY_START_ID}, false);" >&3 && read IGN <&4
+    echo "SELECT setval('${T}_id_seq', (SELECT MAX(id) FROM ${T} ${MY_WHERE}), true);" >&3 && read IGN <&4
+    echo "SELECT last_value from ${T}_id_seq;" >&3 && read NEXT <&4
+    if [ "${QUIET}" != "YES" ]; then
+      if [ "$OLD" != "$NEXT" ]; then
+        printf "Fixed    %-25s : %s\n" "${T}" "${NEXT}"
+      fi
+    fi
+  done
+fi
+
+# close transaction
+echo "END;" >&3
+echo "\quit" >&3
+wait $PSQL_PID
 
 # all done, cleanup
 rm -rf "${DUMPDIR}"
-

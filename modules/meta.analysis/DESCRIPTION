@@ -1,8 +1,8 @@
 Package: PEcAn.MA
 Type: Package
 Title: PEcAn functions used for meta-analysis
-Version: 1.4.1
-Date: 2015-01-22
+Version: 1.4.3
+Date: 2015-07-20
 Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Mike Dietze, Carl
     Davidson, Rob Kooper, Shawn Serbin
 Maintainer: David LeBauer <dlebauer@illinois.edu>
@@ -14,13 +14,14 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     the functions used in the Bayesian meta-analysis of trait data.
 Depends:
     XML,
-    rjags,
     lattice,
     MASS,
     PEcAn.utils,
     PEcAn.DB
 Suggests:
-    testthat
+    rjags,	
+    testthat,
+    PEcAn.priors
 SystemRequirements: JAGS
 License: FreeBSD + file LICENSE
 Copyright: Authors

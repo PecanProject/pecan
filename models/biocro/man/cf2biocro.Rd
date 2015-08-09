@@ -4,10 +4,10 @@
 \alias{cf2biocro}
 \title{Convert CF-formatted met data to BioCro met}
 \usage{
-cf2biocro(met, longitude = NULL, zulu2solarnoon = FALSE)
+cf2biocro(met)
 }
 \arguments{
-\item{met}{data.table object  with met for a single site; output from \code{\link{load.cfmet}}
+\item{met}{data.table object
 \begin{itemize}
 \item year int
 \item month int

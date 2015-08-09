@@ -23,6 +23,7 @@ if ($authentication) {
 $userok=isset($_REQUEST['userok']);
 $offline=isset($_REQUEST['offline']);
 $pecan_edit = (isset($_REQUEST['pecan_edit'])) ? "checked" : "";
+$adv_setup = (isset($_REQUEST['adv_setup'])) ? "checked" : "";
 $model_edit = (isset($_REQUEST['model_edit'])) ? "checked" : "";
 $browndog = (isset($_REQUEST['browndog'])) ? "checked" : "";
 ?>
@@ -71,7 +72,11 @@ $browndog = (isset($_REQUEST['browndog'])) ? "checked" : "";
 ?>
     </form>
 
+<?php if ($adv_setup == "checked") { ?>
+    <form id="formnext" method="POST" action="07-analysis.php">
+<?php } else { ?>
     <form id="formnext" method="POST" action="04-runpecan.php">
+<?php  } ?>
 <?php
   foreach($_REQUEST as $key => $value) {
     if (is_array($value)) {

@@ -54,6 +54,9 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   jobsh <- gsub('@END_DATE@', settings$run$end.date, jobsh)
   
   jobsh <- gsub('@BINARY@', settings$model$binary, jobsh)
+  
+  if(is.null(settings$model$delete.raw)) settings$model$delete.raw <- FALSE
+  jobsh <- gsub('@DELETE.RAW@', settings$model$delete.raw, jobsh)
 
   writeLines(jobsh, con=file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
@@ -117,9 +120,32 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   }
   
   #### write run-specific PFT parameters here ####
+  ## Get parameters being handled by PEcAn
   pft.traits <- which(!(names(trait.values) %in% 'env'))[1]
-  pft.traits <- trait.values[[pft.traits]]
+  pft.traits <- unlist(trait.values[[pft.traits]])
   pft.names  <- names(pft.traits)
+
+  ## Append/replace params specified as constants
+  constant.traits <- unlist(defaults[[1]]$constants)
+  constant.names  <- names(constant.traits)
+  
+  # Replace matches
+
+    for(i in seq_along(constant.traits)) {
+      ind = match(constant.names[i], pft.names)
+      if(is.na(ind)) { # Add to list
+        pft.names <- c(pft.names, constant.names[i])
+        pft.traits <- c(pft.traits, constant.traits[i])
+      } else {  # Replace existing value
+        pft.traits[ind] <- constant.traits[i]
+      }
+    }
+
+    
+  # Remove NAs. Constants may be specified as NA to request template defaults. Note that it is "NA" (character) not actual NA due to being read in as XML
+  pft.names  <- pft.names [ pft.traits != "NA" & !is.na(pft.traits) ]
+  pft.traits <- pft.traits[ pft.traits != "NA" & !is.na(pft.traits) ]
+  pft.traits <- as.numeric(pft.traits)
   
   # Leaf carbon concentration
   leafC = 0.48  #0.5
@@ -128,7 +154,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     id = which(param[,1] == 'cFracLeaf')
     param[id,2] = leafC*0.01 # convert to percentage from 0 to 1
   }
-  
+
   # Specific leaf area converted to SLW
   SLA = NA
   id = which(param[,1] == 'leafCSpWt')

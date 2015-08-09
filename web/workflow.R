@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+args <- commandArgs(trailingOnly = TRUE)
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
@@ -13,9 +15,9 @@
 library(PEcAn.all)
 library(RCurl)
 
-# ----------------------------------------------------------------------
-# status functions
-# ----------------------------------------------------------------------
+#--------------------------------------------------------------------------------#
+# Functions used to write STATUS used by history
+#--------------------------------------------------------------------------------#
 status.start <- function(name) {
   cat(paste(name,
             format(Sys.time(), "%F %T"), sep="\t"),
@@ -50,16 +52,22 @@ options(error=quote({
 
 
 # ----------------------------------------------------------------------
-# initialization
+# PEcAn Workflow
 # ----------------------------------------------------------------------
-# load the pecan settings
-settings <- read.settings("pecan.xml")
+# Open and read in settings file for PEcAn run.
+if (is.na(args[1])){
+  settings <- read.settings("pecan.xml")
+} else {
+  settings.file = args[1]
+  settings <- read.settings(settings.file)
+}
 
-# remove existing STATUS file
 if (length(which(commandArgs() == "--continue")) == 0) {
-  file.remove("STATUS")
+  # Remove existing STATUS file
+  file.remove(file.path(settings$outdir, "STATUS"))
+  #unlink(file.path(settings$outdir, "STATUS"))
   
-  # do conversions
+  # Do conversions
   for(i in 1:length(settings$run$inputs)) {
     input <- settings$run$inputs[[i]]
     if (is.null(input)) next
@@ -96,64 +104,115 @@ if (length(which(commandArgs() == "--continue")) == 0) {
       }
     }
   }
-  saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
+  saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.METProcess.xml'))
+
+  # Check status to avoid repeating work
+  check.status <- function(check.name){
+    status.file=file.path(settings$outdir, "STATU")
+    if (!file.exists(status.file)){
+      return (0)
+    }
+    table <- read.table(status.file, header=FALSE)
+    for (i in 1: nrow(table))
+    {
+      if (table[i,1] == check.name ){
+        if(table[i, 6] == "DONE"){
+          return (1)
+        } else if (table[i,6] == "ERROR"){
+          return (-1)
+        } else {
+          return (0)
+        }
+      }
+    }
+    return (0)
+  }
+
+  # Query the trait database for data and priors
+  if (check.status("TRAIT") == 0){
+    status.start("TRAIT")
+    settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)
+    saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.TRAIT.xml'))
+    status.end()
+  }
   
-  # get data from pecan DB
-  status.start("TRAIT")
-  settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)
-  saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
-  status.end()
+  # Run the PEcAn meta.analysis
+  if (check.status("META") == 0){
+    status.start("META")
+    if('meta.analysis' %in% names(settings)) {
+      run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$meta.analysis$random.effects, settings$meta.analysis$threshold, settings$run$dbfiles, settings$database$bety)
+    }
+    status.end()
+  }
   
-  # run meta-analysis
-  status.start("META")
-  run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$meta.analysis$random.effects, settings$meta.analysis$threshold, settings$run$dbfiles, settings$database$bety)
-  status.end()
-  
-  # write model specific configs
-  status.start("CONFIG")
-  run.write.configs(settings, settings$database$bety$write)
-  status.end()
-  
+  # Write model specific configs
+  if (check.status("CONFIG") == 0){
+    status.start("CONFIG")
+    settings <- run.write.configs(settings, write=settings$database$bety$write, ens.sample.method="halton")
+      saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.CONFIGS.xml'))
+    status.end()
+  }
+    
   if (length(which(commandArgs() == "--advanced")) != 0) {
     status.start("ADVANCED")
     q();
   }
 }
 
-# run model
-status.start("MODEL")
-start.model.runs(settings, settings$database$bety$write)
-status.end()
+# Start ecosystem model runs
+if (check.status("MODEL") == 0){
+  status.start("MODEL")
+  start.model.runs(settings, settings$database$bety$write)
+  status.end()
+}
 
-# convert output
-status.start("OUTPUT")
-get.results(settings)
-status.end()
+# Get results of model runs
+if (check.status("OUTPUT") == 0){
+  status.start("OUTPUT")
+  get.results(settings)
+  status.end()
+}
 
-# ensemble analysis
-status.start("ENSEMBLE")
-run.ensemble.analysis(TRUE)    
-status.end()
+# Run ensemble analysis on model output. 
+if (check.status("ENSEMBLE") == 0){
+  status.start("ENSEMBLE")
+  run.ensemble.analysis(TRUE)    
+  status.end()
+}
 
-# sensitivity analysis
-status.start("SENSITIVITY")
-run.sensitivity.analysis()
-status.end()
+# Run sensitivity analysis and variance decomposition on model output
+if (check.status("SENSITIVITY") == 0){
+  status.start("SENSITIVITY")
+  run.sensitivity.analysis()
+  status.end()
+}
 
 # Run parameter data assimilation
-status.start("PDA")
-settings$assim.batch <- pda.mcmc(settings)
-saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.pda.xml'))
-status.end()
+if(('assim.batch' %in% names(settings))) {
+  status.start("PDA")
+  settings <- assim.batch(settings)
+  status.end()
+}
+  
+# Pecan workflow complete
+if (check.status("FINISHED") == 0){
+  status.start("FINISHED")
+  db.query(paste("UPDATE workflows SET finished_at=NOW() WHERE id=", settings$workflow$id, "AND finished_at IS NULL"), params=settings$database$bety)
+  status.end()
+}
 
-# all done
-status.start("FINISHED")
-db.query(paste("UPDATE workflows SET finished_at=NOW() WHERE id=", settings$workflow$id, "AND finished_at IS NULL"), params=settings$database$bety)
-status.end()
-
-# send email if configured
+# Send email if configured
 if (!is.null(settings$email) && !is.null(settings$email$to) && (settings$email$to != "")) {
   sendmail(settings$email$from, settings$email$to,
            paste0("Workflow has finished executing at ", date()),
            paste0("You can find the results on ", settings$email$url))
 }
+
+# Write end time in database
+if (settings$workflow$id != 'NA') {
+  db.query(paste0("UPDATE workflows SET finished_at=NOW() WHERE id=", settings$workflow$id, " AND finished_at IS NULL"), params=settings$database$bety)
+}
+status.end()
+
+db.print.connections()
+print("---------- PEcAn Workflow Complete ----------")
