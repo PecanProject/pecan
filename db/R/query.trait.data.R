@@ -111,32 +111,30 @@ query.yields <- function(trait = 'yield', spstr, extra.columns='', con=NULL, ...
 ##'
 ##' @name append.covariate
 ##' @title Append covariate data as a column within a table
-##' \code{append.covariate} appends one or more tables of covariate data
-##' as a single column in a given table of trait data.
-##' In the event a trait has several covariates across several given tables,
-##' the first table given will take precedence
+##' \code{append.covariate} appends a data frame of covariates as a new column in a data frame 
+##'   of trait data.
+##' In the event a trait has several covariates available, the first one found 
+##'   (i.e. lowest row number) will take precedence
 ##'
 ##' @param data trait dataframe that will be appended to.
 ##' @param column.name name of the covariate as it will appear in the appended column
 ##' @param covariates.data one or more tables of covariate data, ordered by the precedence
 ##' they will assume in the event a trait has covariates across multiple tables.
 ##' All tables must contain an 'id' and 'level' column, at minimum.
+##'
+##' @author Carl Davidson, Ryan Kelly
 ##' @export
 ##--------------------------------------------------------------------------------------------------#
-append.covariate<-function(data, column.name, ..., covariates.data=list(...)){
-  merged <- data.frame()
-  for(i in seq(covariates.data)){
-    if(is.list(covariates.data)) covariates.data <- as.data.frame(covariates.data)
-    covariate.data <- covariates.data[i,]
-    if(length(covariate.data) >= 1){
-      ## conditional added to prevent crash when trying to transform an empty data frame
-      transformed <- transform(covariate.data, id = trait_id, level = level)
-      selected <- transformed[!transformed$id %in% merged$id, c('id', 'level')]
-      merged <- rbind(merged, selected)
-    }
-  }
-  colnames(merged) <- c('id', column.name)
-  merged <- merge(merged, data, all = TRUE, by = "id")
+append.covariate<-function(data, column.name, covariates.data){
+  # Keep only the highest-priority covariate for each trait
+  covariates.data <- covariates.data[!duplicated(covariates.data$trait_id), ]
+
+  # Select columns to keep, and rename the covariate column
+  covariates.data <- covariates.data[, c('trait_id', 'level')]
+  names(covariates.data) <- c('id', column.name)
+
+  # Merge on trait ID
+  merged <- merge(covariates.data, data, all = TRUE, by = "id")
   return(merged)
 }
 ##==================================================================================================#
@@ -166,24 +164,34 @@ query.covariates<-function(trait.ids, con = NULL, ...){
 ##'
 ##' @name arrhenius.scaling.traits
 ##' @title Function to apply Arrhenius scaling to 25 degC for temperature-dependent traits
-##' @param data the data to scale
-##' @param covariates the relevant covariates
+##' @param data data frame of data to scale, as returned by query.data()
+##' @param covariates data frame of covariates, as returned by query.covariates().
+##'   Note that data with no matching covariates will be unchanged. 
 ##' @param temp.covariates names of covariates used to adjust for temperature;
-##' if length > 1, order matters (first will be used preferentially)
+##'   if length > 1, order matters (first will be used preferentially)
 ##' @param new.temp the reference temperature for the scaled traits. Curerntly 25 degC
-##' @author Carl Davidson, David LeBauer
-arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp=25){
-  if(length(covariates)>0) {
-    .covs <- lapply(temp.covariates, function(temp.covariate){covariates[covariates$name == temp.covariate,]})
-    .covs <- .covs[sapply(.covs, function(x) nrow(x) != 0)][[1]]# remove empty records  
-    data <- append.covariate(data, 'temp',
-                             covariates.data = .covs)
+##' @param missing.temp the temperature assumed for traits with no covariate found. Curerntly 25 degC
+##' @author Carl Davidson, David LeBauer, Ryan Kelly
+arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp=25, missing.temp=25){
+  # Select covariates that match temp.covariates
+  covariates <- covariates[covariates$name %in% temp.covariates,]
+    
+  if(nrow(covariates)>0) {
+    # Sort covariates in order of priority
+    covariates <- do.call(rbind, 
+      lapply(temp.covariates, function(temp.covariate) covariates[covariates$name == temp.covariate, ])
+      )
+  
+    data <- append.covariate(data, 'temp', covariates)
 
-    data$temp[is.na(data$temp)] <-  new.temp
-
+    # Assign default value for traits with no covariates
+    data$temp[is.na(data$temp)] <- missing.temp
+    
+    # Scale traits
     data$mean <- arrhenius.scaling(data$mean, old.temp = data$temp, new.temp=new.temp)
     data$stat <- arrhenius.scaling(data$stat, old.temp = data$temp, new.temp=new.temp)
-                                        #remove temporary covariate column.
+
+    #remove temporary covariate column.
     data<-data[,colnames(data)!='temp']
   }
   return(data)
@@ -204,7 +212,8 @@ filter.sunleaf.traits <- function(data, covariates){
     data <- append.covariate(data, 'canopy_layer',
                              covariates[covariates$name == 'canopy_layer',])
     data <-  data[data$canopy_layer >= 0.66 | is.na(data$canopy_layer),]
-                                        #remove temporary covariate column
+    
+    # remove temporary covariate column
     data<-data[,colnames(data)!='canopy_layer']
   }
   return(data)
