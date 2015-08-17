@@ -13,12 +13,6 @@
 ##' @export
 pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, chain=NULL, 
                      iter=NULL, adapt=NULL, adj.min=NULL, ar.target=NULL, jvar=NULL, n.knot=NULL) {
-  # Quit if pda not requested in settings
-  if(!('assim.batch' %in% names(settings))) {
-    return()
-  }
-
-  require(coda)
   
   ## this bit of code is useful for defining the variables passed to this function 
   ## if you are debugging
