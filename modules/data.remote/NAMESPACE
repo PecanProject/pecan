@@ -1,1 +1,3 @@
 export(call_MODIS)
+export(download.NLCD)
+export(extract_NLCD)

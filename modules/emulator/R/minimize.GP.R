@@ -73,11 +73,20 @@ gpeval <- function(xnew,k,mu,tau,psi,x,rng,splinefcns){
 ddist<- function(x, prior){
   eval(parse(text=paste('d', prior$distn, sep='')))(x, prior$parama, prior$paramb)
 }
+
+
+# calculate.prior <- function(samples, priors){
+#   traits <- names(samples)
+#   joint <- sum(sapply(1:nrow(priors), 
+#           function(i) -log(ddist(samples[[i]], priors[i,]))))
+#   #note: this is within the negative log domain
+#   return(joint)
+# }
+
 calculate.prior <- function(samples, priors){
-  traits <- names(samples)
-  joint <- sum(sapply(1:nrow(priors), 
-          function(i) -log(ddist(samples[[i]], priors[i,]))))
-  #note: this is within the negative log domain
+  joint <- sum(sapply(1:length(priors), 
+          function(i) eval(priors[[i]], list(x=samples[[i]])) 
+          ))
   return(joint)
 }
 
@@ -87,9 +96,15 @@ get.y <- function(gp, xnew, priors, ...){
   return(likelihood + prior.prob)
 }
 
+# is.accepted <- function(ycurr, ynew, format='lin'){
+#   z <- exp(ycurr-ynew)
+#   acceptance <- z>runif(1)
+#   return(acceptance)
+# }
+
 is.accepted <- function(ycurr, ynew, format='lin'){
-  z <- exp(ycurr-ynew)
-  acceptance <- z>runif(1)
+  a <- exp(ynew - ycurr)
+  acceptance <- a>runif(1)
   return(acceptance)
 }
 
@@ -97,20 +112,20 @@ is.accepted <- function(ycurr, ynew, format='lin'){
 ## that is assumed to be a -lnLikelihood surface
 ## with flat priors and bounded region
 mcmc.GP <- function(gp,x0,nmcmc,rng,format="lin",mix, splinefcns=NULL, 
-    jmp0=0.35*(rng[,2]-rng[,1]), priors=NA){
+    jmp0=0.35*(rng[,2]-rng[,1]), ar.target=0.5, priors=NA){
   ##formats: lin = lnlike fcn
   ##         log = log(lnlike)
   ##mix:     each = jump each dim. independently
   ##         joint = jump all at once
   
-  haveTime <- require("time")
+  haveTime <- FALSE #require("time")
 
   ## storage
   ycurr <- get.y(gp, x0, priors)
 
   xcurr <- x0
   dim <- length(x0)
-  jmp <- mvjump(ic=jmp0,rate=0.5, nc=dim)
+  jmp <- mvjump(ic=jmp0,rate=ar.target, nc=dim)
   samp <- matrix(NA,nmcmc,dim)
   
   ## loop
@@ -147,6 +162,7 @@ mcmc.GP <- function(gp,x0,nmcmc,rng,format="lin",mix, splinefcns=NULL,
     samp[g,] <- unlist(xcurr)
     #print(p(jmp))
     jmp <- update(jmp,samp)
+
     if(haveTime) prevTime <- progressBar(g/nmcmc,prevTime)
   }
   if(haveTime) progressBar(1.1,prevTime);

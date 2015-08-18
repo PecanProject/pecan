@@ -4,7 +4,8 @@
 \alias{run.sensitivity.analysis}
 \title{run sensitivity.analysis}
 \usage{
-run.sensitivity.analysis(plot = TRUE)
+run.sensitivity.analysis(plot = TRUE, ensemble.id = NULL, variable = NULL,
+  start.year = NULL, end.year = NULL)
 }
 \arguments{
 \item{plot}{logical. Option to generate sensitivity analysis and variance
@@ -19,6 +20,6 @@ as variancedecomposition.pdf a side effect (OPTIONAL)
 run sensitivity.analysis
 }
 \author{
-David LeBauer, Shawn Serbin
+David LeBauer, Shawn Serbin, Ryan Kelly
 }
 

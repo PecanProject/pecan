@@ -38,16 +38,6 @@ EOF
   chmod 600 ~/.ssh/config
 fi
 
-# add ebi-cluster to known_hosts
-if [ ! -e ~/.ssh/known_hosts ]; then
-  if [ "$SERVER" == "ebi-cluster" -o "$SERVER" == "ebi-cluster.igb.uiuc.edu" -o "$SERVER" == "ebi-cluster.igb.illinois.edu" ]; then
-    cat >> ~/.ssh/known_hosts << EOF
-|1|l+VkFK7zeYBwudLstZfm37DK48E=|MQDja2Ro4KoY2dMz45D5GPKPS8M= ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAnrdRRv7yzYLyb5Xqny6ZCecd37E/Wab76wNGnqoRB8JxFmG0GjpfPY0GeOhRMK7Mph9ZJdX8Fc+rZh64TMUJVUOLT0lQhxBfiFEXM3mRJKcwBD8qoYCwvUlegjeYH53+wa3wXnuWLJaCLL6yOtyHyEXI1RR7Gc124f39uMBAOjPqO4UsbrrplkjC+gzPTeRd8F0J+qdHvakdKIDlYrqHalIJjTLcvcOMIXft3yu7Uvet1c1fhtzy63pZTc485x1GMLgDI+aELYk2A76ZxHa7M6RSL0dCifs33SjorIYsU7EdwaCGvpH0CdTvxHTagQzGA44liWeGA4l2pV5lx+KOqQ==
-|1|xR8lfSy1VnfuBhkIQ7i//qa3TUY=|cYqjphhu4IG9DCac/PXhiyZgVUI= ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAnrdRRv7yzYLyb5Xqny6ZCecd37E/Wab76wNGnqoRB8JxFmG0GjpfPY0GeOhRMK7Mph9ZJdX8Fc+rZh64TMUJVUOLT0lQhxBfiFEXM3mRJKcwBD8qoYCwvUlegjeYH53+wa3wXnuWLJaCLL6yOtyHyEXI1RR7Gc124f39uMBAOjPqO4UsbrrplkjC+gzPTeRd8F0J+qdHvakdKIDlYrqHalIJjTLcvcOMIXft3yu7Uvet1c1fhtzy63pZTc485x1GMLgDI+aELYk2A76ZxHa7M6RSL0dCifs33SjorIYsU7EdwaCGvpH0CdTvxHTagQzGA44liWeGA4l2pV5lx+KOqQ==
-EOF
-  fi
-fi
-
 # show key
 echo "Please add ~/.ssh/${SERVER}.pub to your ~/.ssh/authorized_keys on $SERVER" 
 echo "paste the following lines to the commandline:"

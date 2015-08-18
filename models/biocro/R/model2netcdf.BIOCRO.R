@@ -19,22 +19,37 @@
 ##' @param lon Longitude of the site
 ##' @export
 ##' @author David LeBauer, Deepak Jaiswal, Rob Kooper
-model2netcdf.BIOCRO <- function(resultDT, genus = NULL, outdir, lat = -9999, lon = -9999) {
+model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon = -9999) {
   
-  for(yeari in unique(resultDT$Year)){
-    ## longname prefix station_* used for a point
-    ## http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.4/cf-conventions.html#scalar-coordinate-variables
-    x <- ncdim_def("latitude", "degrees_east",
-                   vals =  as.numeric(lat),
-                   longname = "station_latitude",
-                   unlim = TRUE) 
-    y <- ncdim_def("longitude", "degrees_north",
-                   vals = as.numeric(lon),
-                   longname = "station_longitude",
-                   unlim = TRUE)
-    
-    
-    dates <- ymd(paste0(resultDT$Year, "-01-01")) + days(as.numeric(resultDT$DayofYear - 1)) + hours(resultDT$Hour)
+
+  require(data.table)
+  require(lubridate)
+  require(ncdf4)
+  
+  if(!is.data.table(result)){
+    if(is.character(result)){
+      if(file.exists(result)){load(result)}}}
+  
+  if(!("hour" %in% colnames(result))){
+    result$hour <- 0
+  }
+  if(all(c("year", "hour", "doy") %in% colnames(result))){
+    setnames(result, c("year", "hour", "doy"), c("Year", "Hour", "DayofYear"))
+  }
+  
+  ## longname prefix station_* used for a point
+  ## http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.4/cf-conventions.html#scalar-coordinate-variables
+  x <- ncdim_def("latitude", "degrees_east",
+                 vals =  as.numeric(lat),
+                 longname = "station_latitude",
+                 unlim = TRUE) 
+  y <- ncdim_def("longitude", "degrees_north",
+                 vals = as.numeric(lon),
+                 longname = "station_longitude",
+                 unlim = TRUE)
+
+  for(yeari in unique(result$Year)){
+    dates <- ymd(paste0(result$Year, "-01-01")) + days(as.numeric(result$DayofYear - 1)) + hours(result$Hour)
     days_since_origin <- ymd_hms(dates) - ymd_hms("1700-01-01 00:00:00")
     if(!units(days_since_origin) == 'days') stop('check time units')
     t <- ncdim_def("time", "days since 1700-01-01", 
@@ -60,7 +75,7 @@ model2netcdf.BIOCRO <- function(resultDT, genus = NULL, outdir, lat = -9999, lon
     
     k <- ud.convert(1, "Mg/ha", "kg/m2") / c2biomass
     
-    results <- with(resultDT, list(
+    results <- with(result, list(
       TotLivBiom = k * (Leaf + Root + Stem + Rhizome + Grain),
       RootBiom = k * Root,
       StemBiom = k * Stem,
@@ -84,7 +99,7 @@ model2netcdf.BIOCRO <- function(resultDT, genus = NULL, outdir, lat = -9999, lon
     ## Output netCDF data
     for(.vname in names(vars)) {
       ncvar_put(nc, varid = vars[[.vname]], vals = results[[.vname]])
-      #cat(paste(vars[[.vname]]$name, vars[[.vname]]$longname), file=varfile, sep="\n")
+      cat(paste(vars[[.vname]]$name, vars[[.vname]]$longname), file=varfile, sep="\n")
     }
     
     close(varfile)
