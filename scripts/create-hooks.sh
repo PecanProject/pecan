@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# change to right folder
+cd $(dirname $0)/..
+
+
 hooks=$( git rev-parse --show-toplevel )/.git/hooks
 
 if [ ! -e ${hooks}/pre-commit ]; then
