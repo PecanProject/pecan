@@ -21,7 +21,11 @@ prior.defaultvals.prospect <- function(sd.inflate = 3){
 
 priorfunc.prospect <- function(pmu, psigma){
     prior <- function(params){
-        if(is.null(names(params))) params[1] <- params[1] - 1
+        if(is.null(names(params))){
+            warning("Parameters are not named. \n
+                    Assuming N Cab (Car) (Cbrown) Cw Cm for priors")
+            params[1] <- params[1] - 1
+        }
         else params["N"] <- params["N"] - 1
         priors <- dlnorm(params, pmu, psigma, log=TRUE)
         return(sum(priors))
