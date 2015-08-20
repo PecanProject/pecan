@@ -1,0 +1,74 @@
+---
+title: "BETYdb Access"
+author: "David LeBauer"
+date: "7/30/2015"
+output: html_document
+---
+
+Ways to Access BETYdb from R
+
+### PEcAn.DB functions
+
+```{r}
+settings <-list(database = list(bety = list(driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety")))
+
+# equivalent to standard method to load PEcAn settings:
+# settings <- read.settings("pecan.xml")
+
+library(PEcAn.DB)
+require(RPostgreSQL)
+dbcon <- db.open(settings$database$bety)
+
+miscanthus <- db.query("select lat, lon, date, trait, units, mean from traits_and_yields_view where genus = 'Miscanthus';", con = dbcon)
+
+salix_spp <- query.pft_species(pft = "salix", modeltype = "BIOCRO", con = dbcon)
+
+salix_vcmax <- query.trait.data(trait = "Vcmax", spstr = vecpaste(salix_spp$id), con = dbcon)
+```
+
+### R dplyr interface
+
+Documentation for the `dplyr` interface to databases is provided in the [dplyr vignette](https://cran.r-project.org/web/packages/dplyr/vignettes/databases.html)
+
+```{r}
+library(dplyr)
+d <- settings$database$bety[c("dbname", "password", "host", "user")]
+bety <- src_postgres(host = d$host, user = d$user, password = d$password, dbname = d$dbname)
+
+species <- tbl(bety, 'species') %>% 
+  select(id, scientificname, genus) %>% 
+  filter(genus == "Miscanthus") %>% 
+  mutate(specie_id = id) 
+
+yields <-tbl(bety, 'yields') %>%
+  select(date, mean, site_id, specie_id)
+
+sites <- tbl(bety, 'sites') %>% 
+  select(id, sitename, city, country) %>% 
+  mutate(site_id = id)
+
+
+mxgdata <- inner_join(species, yields, by = 'specie_id') %>%
+  left_join(sites, by = 'site_id') %>% 
+  select(-ends_with(".x"), -ends_with(".y")) %>% # drops duplicate rows
+  collect() 
+
+
+```
+
+### rOpensci traits API
+
+```{r, echo=FALSE}
+# install_github("ropensci/traits")
+library("traits")
+
+out <- betydb_search(query = "Switchgrass Yield")
+
+
+library("dplyr")
+out %>%
+  group_by(id) %>%
+  summarise(mean_result = mean(as.numeric(mean), na.rm = TRUE)) %>%
+  arrange(desc(mean_result))
+```
+
