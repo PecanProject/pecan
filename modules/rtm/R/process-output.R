@@ -22,6 +22,10 @@ burnin.thin <- function(samples,
     if(auto) {
         burnin <- floor(ngibbs / burnin.ratio)
         thin <- floor((ngibbs - burnin) / target)
+        if(thin < 1){
+            warning("Fewer than target samples after burnin. No thinning applied.")
+            thin <- 1
+        }
     }
     bt <- seq(burnin, ngibbs, by=thin)
     samples.bt <- samples[bt,]
