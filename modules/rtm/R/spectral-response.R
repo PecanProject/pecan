@@ -13,8 +13,8 @@ spectral.response <- function(spec, sensor){
     sensor <- tolower(sensor)
     stopifnot(sensor %in% sensor.list)
     if(sensor == "identity") return(spec)
-    data(sensor.rsr)
     rsr <- sensor.rsr[[sensor]]
-    out.spec <- colSums(spec[rsr[,"index"]] * rsr[,-1])
+    m <- spec[rsr[,"index"]] * rsr[,-1]
+    out.spec <- .colSums(m, nrow(m), ncol(m))
     return(out.spec)
 }
