@@ -44,6 +44,9 @@ invert.slow <- function(observed, inits, constants, ngibbs, prior, pm, model,
     initsd <- inits * 0.05
     Jump <- diag(initsd)
     results <- matrix(NA, nrow=ngibbs, ncol=npars+1)
+    if(!is.null(names(inits))) cnames <- names(inits)
+    else cnames <- sprintf("par%d", 1:length(inits))
+    colnames(results) <- c(cnames, "residual")
     ar <- 0
     for(ng in 1:ngibbs){
         if(ng %% adapt < 1){
