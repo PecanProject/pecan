@@ -8,8 +8,11 @@ rsr.from.fwhm <- function(wavelength, fwhm) {
     rsr <- t(sapply(400:2500, dnorm, wavelength, sigma))
     rownames(rsr) <- 400:2500
     rsr <- cbind(400:2500-399, rsr)
-    colnames(rsr) <- c("index", sprintf("B%s", 1:length(avg)))
-    return(rsr)
+    colnames(rsr) <- c("index", sprintf("B%s", 1:length(fwhm)))
+    colsums <- colSums(rsr)
+    lt1 <- which(colsums < 0.99)
+    rsr.sub <- rsr[, -lt1]
+    return(rsr.sub)
 }
 
 #' @name trim.rsr
@@ -43,17 +46,17 @@ generate.rsr.all <- function(){
     rsr.modis <- trim.rsr(rsr.modis)
     rsr.viirs <- trim.rsr(rsr.viirs)
     rsr.avhrr <- trim.rsr(rsr.avhrr)
-    rsr.list <- list(aviris.ng = rsr.aviris.ng, 
-                     aviris.classic = rsr.aviris.classic,
-                     hyperion = rsr.hyperion,
-                     chris.proba = rsr.chris.proba,
-                     landsat5 = rsr.landsat5,
-                     landsat7 = rsr.landsat7,
-                     landsat8 = rsr.landsat8,
-                     modis = rsr.modis, 
-                     viirs = rsr.viirs, 
-                     avhrr = rsr.avhrr)
-    return(rsr.list)
+    sensor.rsr <- list(aviris.ng = rsr.aviris.ng, 
+                       aviris.classic = rsr.aviris.classic,
+                       hyperion = rsr.hyperion,
+                       chris.proba = rsr.chris.proba,
+                       landsat5 = rsr.landsat5,
+                       landsat7 = rsr.landsat7,
+                       landsat8 = rsr.landsat8,
+                       modis = rsr.modis, 
+                       viirs = rsr.viirs, 
+                       avhrr = rsr.avhrr)
+    return(sensor.rsr)
 }
 
 #' @name read.rsr.folder
