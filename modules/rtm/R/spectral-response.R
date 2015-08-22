@@ -9,6 +9,10 @@ sensor.proper <- c("ASD Field Spec", "AVIRIS NG", "AVIRIS Classic",
                    "Landsat 8", "MODIS", "VIIRS", "AVHRR")
 names(sensor.proper) <- sensor.list
 
+#' @name spectral.response
+#' @title Convolution of spectra to sensor RSR
+#' @param spec Full (1 nm) spectrum (vector)
+#' @param sensor Sensor name (string). See sensor.list
 spectral.response <- function(spec, sensor){
     sensor <- tolower(sensor)
     stopifnot(sensor %in% sensor.list)

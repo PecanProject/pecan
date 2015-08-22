@@ -1,6 +1,17 @@
 # Functions for processing output
 
-# Perform burn-in and thinning of MCMC samples
+#' @name burnin.thin
+#' @title Burn-in and thinning of MCMC samples
+#' @param samples Matrix of MCMC samples
+#' @param target Target number of samples (default = 5000). Only applicable if 
+#' auto=TRUE.
+#' @param burnin.ratio Fraction of samples to burn-in; i.e. 2 means to remove 
+#' first 1/2 of samples, 3 means 1/3, etc. (default = 2). Only applicable if 
+#' auto=TRUE.
+#' @param auto Whether or not to perform automatic burnin and thin based on 
+#' target number of samples.
+#' @param burnin Number of samples to discard as burnin (auto must be FALSE)
+#' @param thin Thinning interval (auto must be FALSE)
 burnin.thin <- function(samples,
                         target = 5000,
                         burnin.ratio = 2,
@@ -8,7 +19,7 @@ burnin.thin <- function(samples,
                         burnin = NULL,
                         thin = NULL){
     ngibbs <- nrow(samples)
-    if(automatic) {
+    if(auto) {
         burnin <- floor(ngibbs / burnin.ratio)
         thin <- floor((ngibbs - burnin) / target)
     }
@@ -17,7 +28,10 @@ burnin.thin <- function(samples,
     return(samples.bt)
 }
 
-# Load an object from an RData file with a custom name
+#' @name load.from.name
+#' @title Load object from an RData file
+#' @param filename Full name (without path!) of RData file
+#' @param filepath Path of RData file (default=".")
 load.from.name <- function(filename, filepath="."){
     f.path <- file.path(filepath, filename)
     load(f.path)
@@ -26,8 +40,11 @@ load.from.name <- function(filename, filepath="."){
     return(f.get)
 }
 
-# Fit multivariate normal to samples. Return means and covariance matrix as a 
-# long list (for easy construction of data.tables)
+#' @name summary.mvnorm
+#' @title Multivariate normal fit
+#' @description Fit multivariate normal to samples. Return means and covariance 
+#' matrix as a long list (for easy construction of data.tables)
+#' @param samples Matrix of MCMC samples.
 summary.mvnorm <- function(samples){
     stopifnot(colnames(samples) != NULL)
     parnames <- colnames(samples)
@@ -42,7 +59,11 @@ summary.mvnorm <- function(samples){
     return(out.list)
 }
 
-# Calculate simple univariate summary statistics and return as named list
+#' @name summary.simple
+#' @title Simple summary statistics on MCMC samples
+#' @description Calculate simple univariate summary statistics and return as 
+#' named list
+#' @param samples Matrix of MCMC samples
 summary.simple <- function(samples){
     stopifnot(colnames(samples) != NULL)
     parnames <- colnames(samples)
