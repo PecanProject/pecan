@@ -37,6 +37,15 @@ spec.function <- function(spec, avg, rng, func="fwhm") {
     #pnorm25.75 <- 0.6914625 # pnorm(0.75) - pnorm(0.25); for upscaling output
 }
 
+custom.rsr <- function(spec, rsr){
+    inds.rsr <- as.logical((rsr[,"Wavelength"] >= 400) *
+                           (rsr[,"Wavelength"] <= 2500))
+    rsr.sub <- rsr[inds.rsr,]
+    inds.spec <- rsr.sub[,"Wavelength"] - 399
+    out.spec <- colSums(spec[inds.spec] * rsr.sub[,-1])
+    return(out.spec)
+}
+
 sensor.list <- c("aviris.ng", "aviris.classic", "hyperion",
                  "hyspiri", "chris.proba", "landsat5", "landsat7", 
                  "landsat8", "modis", "viirs", "avhrr")
@@ -64,21 +73,34 @@ spectral.response <- function(spec, sensor){
         out.spec <- spec.response(spec, avg, rng, func="bell")
     } else if (sensor == "chris.proba") {
 #' CHRIS PROBA
-#'   Info: 63 bands (36 m spatial rresolution); 1.3nm at 410, 12nm at 1050
-#'   Source: Van Mol and Ruddick. Compact High Resolution Imaging Spectrometer 
-#'     (CHRIS): the future of hyperspectral sattelite sensors.
+#'   Info: 63 bands (36 m spatial resolution); 1.3nm at 410, 12nm at 1050
+        data("bandwidth.chrisproba")
+        out.spec <- with(bandwidth.chrisproba,
+                         spec.response(spec, Mid, Max-Min, func="bell"))
     } else if (sensor == "modis") {
 #' MODIS (TERRA; detector-averaged)
+        data("rsr.modis")
+        out.spec <- custom.rsr(spec, rsr.modis)
     } else if (sensor == "landsat5") {
 #' Landsat 5 TM
+        data("rsr.landsat")
+        out.spec <- custom.rsr(spec, rsr.landsat5)
     } else if (sensor == "landsat7") {
 #' Landsat 7 ETM+
+        data("rsr.landsat")
+        out.spec <- custom.rsr(spec, rsr.landsat7)
     } else if (sensor == "landsat8") {
 #' Landsat 8 OLI
+        data("rsr.landsat")
+        out.spec <- custom.rsr(spec, rsr.landsat8)
     } else if (sensor == "avhrr") {
-#' AVHRR (NOAA-19)
+#' AVHRR (306; on NOAA-18)
+        data("rsr.avhrr")
+        out.spec <- custom.rsr(spec, rsr.avhrr)
     } else if (sensor == "viirs") {
 #' VIIRS
+        data("rsr.viirs")
+        out.spec <- custom.rsr(spec, rsr.viirs)
     }
     return(out.spec)
 }
