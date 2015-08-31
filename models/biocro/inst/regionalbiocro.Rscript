@@ -72,16 +72,16 @@ if(runtype == 'regional'){
   point.outdir <- file.path(outdir, paste0(lat, 'x', lon))
   dir.create(point.outdir, showWarnings = FALSE)
 
-  hourly <- out$hourly
+#  hourly <- out$hourly
   daily <- out$daily
   #save(hourly, file = file.path(point.outdir, 'hourly.result.RData'))
   save(daily, file = file.path(point.outdir, 'daily.result.RData'))
   
   biocro_result <- rbind(biocro_result, data.table(lat = lat, lon = lon, daily))
 
-  model2netcdf.BIOCRO(result = hourly, genus = config$pft$type$genus, outdir = point.outdir, 
-                      lat = lat, lon = lon)
-  rm(hourly)
+  #model2netcdf.BIOCRO(result = hourly, genus = config$pft$type$genus, outdir = point.outdir, 
+         #             lat = lat, lon = lon)
+ # rm(hourly)
   rm(daily)
 }
 

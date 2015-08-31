@@ -13,6 +13,7 @@
       <dbname>bety</dbname>
       <host>localhost</host>
       <dbfiles>$HOME/.pecan/dbfiles</dbfiles>
+      <driver>PostgreSQL</driver>
     </bety>
   </database>
   <meta.analysis>
@@ -25,8 +26,7 @@
   </ensemble>
   <sensitivity.analysis/>
   <model>
-    <id>7</id>
-    <name>BIOCRO</name>
+    <type>BIOCRO</type>
   </model>
   <run>
     <site>
@@ -34,12 +34,14 @@
       <name>Sapelo Island</name>
       <lat>31.40</lat>
       <lon>-81.28</lon>
-      <met>/home/dlebauer/.pecan/dbfiles/met/31.397Nx81.28W/weather.csv</met>
     </site>
+    <inputs>
+      <met>/home/dlebauer/.pecan/dbfiles/met/31.397Nx81.28W/weather.csv</met>
+    </inputs>
     <start.date>2004-01-01 06:00:00</start.date>
     <end.date>2005-12-31 05:59:00</end.date>
-    <host> 
-      <name>localhost</name>
+    <host>
+      <name>ebi-forecast.igb.illinois.edu</name>
     </host>
   </run>
 </pecan>

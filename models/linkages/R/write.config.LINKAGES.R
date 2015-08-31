@@ -96,10 +96,12 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
  nspec = 9 
  bmspec = nspec
  all_spp_params = read.csv(system.file("spp_matrix.csv",package = "PEcAn.LINKAGES"))
- pick_spp = c(1:9)
- spp_params = all_spp_params[which(all_spp_params$Spp_Number%in%pick_spp),3:ncol(all_spp_params)]
- spec_nums = all_spp_params[which(all_spp_params$Spp_Number%in%pick_spp),2]
-
+ pick_spp = c(38,72,58,8,2,1,6,7,11)
+ spp_params = all_spp_params[pick_spp,3:ncol(all_spp_params)]
+ spec_nums = all_spp_params[pick_spp,2]
+ spp_params[is.na(spp_params)] <- 0
+ spp_params <- as.data.frame(spp_params)
+ 
   sink(file.path(rundir,"spp.txt"))
   cat(nspec,bmspec,sep=",")
   cat("\n")
