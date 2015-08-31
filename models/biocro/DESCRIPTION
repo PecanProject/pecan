@@ -14,14 +14,14 @@ Imports:
     PEcAn.DB,
     udunits2,
     ncdf4,
-    RNCEP,
     lubridate,
     data.table,
     XML
 Suggests:
     BioCro,
     testthat,
-    RPostgreSQL
+    RPostgreSQL,
+    RNCEP
 License: FreeBSD + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes
