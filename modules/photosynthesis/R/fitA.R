@@ -76,18 +76,18 @@ model{
 
 ## Priors
   Jmax ~ dlnorm(4.7,2.7)             ## maximum electron transport rate prior
-  alpha0~dnorm(0.25,100)              ##quantum yield  (mol electrons/mole photon) prior
-  vmax0 ~dlnorm(4.6,2.7)              ## maximum rubisco capacity prior
+  alpha0~dnorm(0.25,100)             ##quantum yield  (mol electrons/mole photon) prior
+  vmax0 ~dlnorm(4.6,2.7)             ## maximum rubisco capacity prior
 
   #Jmax ~ dweibull(2.0,260)          ## maximum electron transport rate prior Serbin 2012
-  #alpha0 ~ dgamma(2.0,22.0)          ## quantum yield prior Serbin 2012
-  #vmax0 ~ dweibull(1.7,80)           ## maximum rate of carboxylation prior Serbin 2012
+  #alpha0 ~ dgamma(2.0,22.0)         ## quantum yield prior Serbin 2012
+  #vmax0 ~ dweibull(1.7,80)          ## maximum rate of carboxylation prior Serbin 2012
 
   r ~ dlnorm(0.75,1.56)              ## leaf respiration prior
   #r ~ dweibull(2.0,6.0)             ## broad leaf respiration prior for trees
   cp ~ dlnorm(1.9,2.7)               ## CO2 compensation point prior
   tau ~ dgamma(0.1,0.1)
-#  tpu~ dlnorm(3,2.8)                 ##tpu
+#TPU  tpu~ dlnorm(3,2.8)             ##tpu
 
 ## Vcmax BETAs
 
@@ -111,7 +111,7 @@ model{
      vmax[i] <- vmax0 #VFORMULA
      ae[i]<- vmax[i]*(pi[i]-cp)/(pi[i]+Kc*(1+po/Ko))                                                    ## maximum rubisco limited without covariates
 
-#    ap[i]<-3*tpu                         ## phosphate limited
+#TPU    ap[i]<-3*tpu                      ## phosphate limited
 
      pmean[i]<-min(al[i], ae[i]) - r      ## predicted net photosynthesis
      an[i]~dnorm(pmean[i],tau)            ## likelihood
@@ -132,6 +132,15 @@ mydat<-list(an=dat$Photo[sel], pi=dat$Ci[sel], q=dat$PARi[sel],n=length(sel),
 #  Ko<-33000                       ## Michaelis constant O2  (Pa)
 #  po<-21000                       ## partial pressure of O2  (Pa)
 #  k <- 0.21                       ## Vo/Vc
+
+## TPU Limitation
+Vformula = NULL
+if("TPU" %in% names(model)){
+  if(model$TPU == TRUE){
+    my.model = gsub(pattern="#TPU"," ",my.model)
+    out.variables = c(out.variables,"tpu")  
+  }
+}
 
 ## VCmax Formulas
 Vformula = NULL
