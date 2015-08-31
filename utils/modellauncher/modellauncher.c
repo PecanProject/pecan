@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <mpi/mpi.h>
+#include <mpi.h>
 
 /* Actual processing of the file */
 int process(int rank, int size, char *filename) {
@@ -80,7 +80,7 @@ int main (int argc, char** argv) {
 		int counter = 0;
 		int buffer[1];
 		while (counter < size) {
-			MPI_Recv(buffer, 1, MPI_INT, MPI_ANY_SOURCE, 123, MPI_COMM_WORLD);
+			MPI_Recv(buffer, 1, MPI_INT, MPI_ANY_SOURCE, 123, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 			if (buffer[0] != 0) {
 				exitcode = buffer[0];
 			}
