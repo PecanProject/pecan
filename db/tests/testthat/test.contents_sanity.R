@@ -8,6 +8,8 @@
 #-------------------------------------------------------------------------------
 con <- db.open(list(driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety"))
 
+context("Basic Sanity tests for PEcAn functions that query BETYdb")
+
 test_that("append.covariates appends managements to yields",{
   test.traits <- db.query("select * from traits where id in (select trait_id from covariates) limit 10;", con = con)
   tmpcov <- query.covariates(test.traits$id, con = con)

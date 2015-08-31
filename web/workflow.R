@@ -190,7 +190,7 @@ if (check.status("SENSITIVITY") == 0){
 # Run parameter data assimilation
 if(('assim.batch' %in% names(settings))) {
   status.start("PDA")
-  settings$assim.batch <- pda.mcmc(settings)
+  settings <- assim.batch(settings)
   status.end()
 }
   
