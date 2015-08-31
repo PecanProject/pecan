@@ -24,3 +24,8 @@ prospect <- function(param, version="5B"){
     outlist <- do.call(.Fortran, inlist)
     return(outlist[[length(outlist)]])
 }
+
+# Shortcut lists for PROSPECT parameter names
+params.prospect4 <- c("N", "Cab", "Cw", "Cm")
+params.prospect5 <- c("N", "Cab", "Car", "Cw", "Cm")
+params.prospect5b <- c("N", "Cab", "Car", "Cbrown", "Cw", "Cm")

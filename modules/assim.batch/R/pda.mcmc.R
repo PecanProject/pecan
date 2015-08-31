@@ -13,13 +13,7 @@
 ##' @export
 pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, chain=NULL, 
                      iter=NULL, adapt=NULL, adj.min=NULL, ar.target=NULL, jvar=NULL, n.knot=NULL) {
-  # Quit if pda not requested in settings
-  if(!('assim.batch' %in% names(settings))) {
-    return()
-  }
 
-  require(coda)
-  
   ## this bit of code is useful for defining the variables passed to this function 
   ## if you are debugging
   if(FALSE){
@@ -211,6 +205,6 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   if(!is.null(con)) db.close(con)
 
   ## Output an updated settings list
-  return(settings$assim.batch)
+  return(settings)
   
 } ## end pda.mcmc

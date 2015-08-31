@@ -131,7 +131,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings,
   
   my.write.config <- paste("write.config.", model, sep="")
 
-  if(is.null(ensemble.samples)) return(NULL)
+  if(is.null(ensemble.samples)) return(list(runs=NULL, ensemble.id=NULL))
   
   # Open connection to database so we can store all run/ensemble information
   if(write.to.db){
