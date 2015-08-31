@@ -5,7 +5,7 @@
 \title{Read Sensitivity Analysis output}
 \usage{
 read.sa.output(traits, quantiles, pecandir, outdir, pft.name = "", start.year,
-  end.year, variables)
+  end.year, variable, sa.run.ids = NULL)
 }
 \arguments{
 \item{traits}{model parameters included in the sensitivity analysis}
@@ -30,5 +30,8 @@ dataframe with one col per quantile analysed and one row per trait,
 }
 \description{
 Reads output of sensitivity analysis runs
+}
+\author{
+Ryan Kelly, David LeBauer, Rob Kooper, Mike Dietze
 }
 

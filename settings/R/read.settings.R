@@ -41,7 +41,7 @@ check.inputs <- function(settings) {
       # check if tag exists
       if (is.null(settings$run$inputs[[tag]])) {
         if (inputs$required[i]) {
-          logger.severe("Missing required input :", tag)
+          logger.warn("Missing required input :", tag)
         } else {
           logger.info("Missing optional input :", tag)
         }
@@ -222,7 +222,7 @@ check.bety.version <- function(dbcon) {
 ##' @title Check Settings
 ##' @param settings settings file
 ##' @return will return the updated settings values with defaults set.
-##' @author Rob Kooper
+##' @author Rob Kooper, David LeBauer
 check.settings <- function(settings) {
   if (!is.null(settings$nocheck)) {
     logger.info("Not doing sanity checks of pecan.xml")
@@ -1012,6 +1012,7 @@ addSecrets <- function(settings) {
 ##' @import XML
 ##' @author Shawn Serbin
 ##' @author Rob Kooper
+##' @author David LeBauer
 ##' @examples
 ##' \dontrun{
 ##' ## bash shell:

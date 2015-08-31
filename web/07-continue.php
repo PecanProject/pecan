@@ -49,6 +49,9 @@ if ($offline) {
   $path .= "&offline=offline";
 }
 
+# setup umask so group has write as well
+umask(0002);
+
 # check if we edited pecan.xml
 if (file_exists($folder . DIRECTORY_SEPARATOR . "STATUS")) {
   # add end of advanced edit

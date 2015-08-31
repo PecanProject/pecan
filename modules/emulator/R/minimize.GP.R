@@ -112,7 +112,7 @@ is.accepted <- function(ycurr, ynew, format='lin'){
 ## that is assumed to be a -lnLikelihood surface
 ## with flat priors and bounded region
 mcmc.GP <- function(gp,x0,nmcmc,rng,format="lin",mix, splinefcns=NULL, 
-    jmp0=0.35*(rng[,2]-rng[,1]), priors=NA){
+    jmp0=0.35*(rng[,2]-rng[,1]), ar.target=0.5, priors=NA){
   ##formats: lin = lnlike fcn
   ##         log = log(lnlike)
   ##mix:     each = jump each dim. independently
@@ -125,7 +125,7 @@ mcmc.GP <- function(gp,x0,nmcmc,rng,format="lin",mix, splinefcns=NULL,
 
   xcurr <- x0
   dim <- length(x0)
-  jmp <- mvjump(ic=jmp0,rate=0.5, nc=dim)
+  jmp <- mvjump(ic=jmp0,rate=ar.target, nc=dim)
   samp <- matrix(NA,nmcmc,dim)
   
   ## loop
@@ -162,6 +162,7 @@ mcmc.GP <- function(gp,x0,nmcmc,rng,format="lin",mix, splinefcns=NULL,
     samp[g,] <- unlist(xcurr)
     #print(p(jmp))
     jmp <- update(jmp,samp)
+
     if(haveTime) prevTime <- progressBar(g/nmcmc,prevTime)
   }
   if(haveTime) progressBar(1.1,prevTime);
