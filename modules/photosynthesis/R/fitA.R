@@ -6,7 +6,7 @@
 ##' 
 ##' @param flux.data  data.frame of Licor data, concatenated by rows, and with a leading column "fname" that is used to count the number of curves and match to covariates
 ##' @param cov.data   data.frame of covariate data. Column names used in formulas
-##' @param model      list including at least 6 components: the fixed effects model for alpha (a.fixed) and Vcmax (V.fixed), the random effects for these (a.random, V.random), the variable used to match the gas-exchange and covariate data (match), and the number of MCMC interations (n.iter). Additional optional argument: TPU = TRUE turns on TPU limitation
+##' @param model      list including at least 6 components: the fixed effects model for alpha (a.fixed) and Vcmax (V.fixed), the random effects for these (a.random, V.random), the variable used to match the gas-exchange and covariate data (match), and the number of MCMC interations (n.iter). Additional optional arguments: TPU = TRUE turns on TPU limitation; Temp == "Bernacchi01" turns on the Bernacchi et al 2001 temperature correction. If this is turned on all parameters are estimated for 25C, otherwise no temperature correction is applied.
 ##' 
 ##' Right now the fixed effects are specified as a string using the standard R lm formula syntax, but without the LHS variable (e.g. "~ SLA + chl + SLA:chl"). The tilde is optional. For random effects, the two options right now are just "leaf" for leaf-level random effects and NULL. "model" has a default that sets all effects to NULL (fit one curve to all data) and n.iter=1000.
 ##' 
@@ -102,8 +102,10 @@ cp.H <- 37.83
 cp.ref <- 42.75
 Kc.c <- 38.05
 Kc.H <- 79.43
+Kc.ref <- 404.9
 Ko.c <- 20.30
 Ko.H <- 36.38
+Ko.ref <- 278.4
 
 ## Vcmax BETAS
 
@@ -123,6 +125,8 @@ Ko.H <- 36.38
 
      r[i]  <- r0 ##B01* exp(r.c - r.H/R/T[i])
      cp[i] <- cp0 ##B01* exp(cp.c - cp.H/R/T[i])/cp.ref
+     Kc.T[i] <- Kc ##B01* exp(Kc.c - Kc.H/R/T[i])/Kc.ref
+     Ko.T[i] <- Ko ##B01* exp(Ko.c - Ko.H/R/T[i])/Ko.ref
 
      alpha[i] <- alpha0 #AFORMULA
      al[i]<-(alpha[i]*q[i]/(sqrt(1+(alpha[i]*alpha[i]*q[i]*q[i])/(Jmax*Jmax))))*(pi[i]-cp[i])/(4*pi[i]+8*cp[i])    ## electron transport limited without covariates
