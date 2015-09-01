@@ -139,7 +139,7 @@ start.model.runs <- function(settings, write = TRUE){
 
     # copy launcer and joblist
     if (settings$run$host$name != "localhost") {
-      rsync("-a --delete", file.path(settings$rundir, format(firstrun,scientific=FALSE)), paste(settings$run$hmst$name, file.path(settings$run$host$rundir, format(firstrun,scientific=FALSE)), sep=":"), pattern='/')
+      rsync("-a --delete", file.path(settings$rundir, format(firstrun,scientific=FALSE)), paste(settings$run$host$name, file.path(settings$run$host$rundir, format(firstrun,scientific=FALSE)), sep=":"), pattern='/')
     }
 
     # if qsub is requested
