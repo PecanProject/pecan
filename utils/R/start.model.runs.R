@@ -68,7 +68,10 @@ start.model.runs <- function(settings, write = TRUE){
               c(settings$run$host$name, "mkdir", "-p", 
                 file.path(settings$run$host$outdir, format(run,scientific=FALSE))), 
               stdout=TRUE)
-      rsync("-a --delete", file.path(settings$rundir, format(run,scientific=FALSE)), paste(settings$run$host$name, file.path(settings$run$host$rundir, format(run,scientific=FALSE)), sep=":"), pattern='/')
+      rsync("-a --delete", 
+            file.path(settings$rundir, format(run,scientific=FALSE)), 
+            paste(settings$run$host$name, file.path(settings$run$host$rundir, format(run,scientific=FALSE)), 
+                  sep=":"), pattern='/')
     }
 
     # check to see if we use the model launcer
@@ -137,7 +140,7 @@ start.model.runs <- function(settings, write = TRUE){
   if (!is.null(settings$run$host$modellauncher)) {
     close(jobfile)
 
-    # copy launcer and joblist
+    # copy launcher and joblist
     if (settings$run$host$name != "localhost") {
       rsync("-a --delete", file.path(settings$rundir, format(firstrun,scientific=FALSE)), paste(settings$run$host$name, file.path(settings$run$host$rundir, format(firstrun,scientific=FALSE)), sep=":"), pattern='/')
     }

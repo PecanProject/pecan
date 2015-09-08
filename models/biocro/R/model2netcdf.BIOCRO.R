@@ -25,10 +25,13 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
   require(data.table)
   require(lubridate)
   require(ncdf4)
-  
+  require(udunits2)
+  require(PEcAn.utils)
+
   if(!is.data.table(result)){
     if(is.character(result)){
       if(file.exists(result)){load(result)}}}
+  result <- biocro_result
   
   if(!("hour" %in% colnames(result))){
     result$hour <- 0
@@ -49,15 +52,16 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
                  unlim = TRUE)
 
   for(yeari in unique(result$Year)){
-    dates <- ymd(paste0(result$Year, "-01-01")) + days(as.numeric(result$DayofYear - 1)) + hours(result$Hour)
-    days_since_origin <- ymd_hms(dates) - ymd_hms("1700-01-01 00:00:00")
+      R <- result[Year == yeari]
+      dates <- ymd(paste0(R$Year, "-01-01")) + days(as.numeric(R$DayofYear - 1)) + hours(R$Hour)
+      days_since_origin <- dates - ymd_hms("1700-01-01 00:00:00")
     if(!units(days_since_origin) == 'days') stop('check time units')
     t <- ncdim_def("time", "days since 1700-01-01", 
                    as.numeric(days_since_origin)) #define netCDF dimensions for variables
     if(exists('genus') & (genus == "Saccharum")){
       for(variable in c("Leaf", "Root", "Stem", "LAI", "DayofYear")) {
-        v <- result[[variable]]
-        result[[variable]] <- c(v[1], rep(v[-1], 24, each = TRUE))
+        v <- R[[variable]]
+        R[[variable]] <- c(v[1], rep(v[-1], 24, each = TRUE))
       }
     }
     
@@ -75,7 +79,7 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
     
     k <- ud.convert(1, "Mg/ha", "kg/m2") / c2biomass
     
-    results <- with(result, list(
+    RR <- with(R, list(
       TotLivBiom = k * (Leaf + Root + Stem + Rhizome + Grain),
       RootBiom = k * Root,
       StemBiom = k * Stem,
@@ -98,7 +102,7 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
     
     ## Output netCDF data
     for(.vname in names(vars)) {
-      ncvar_put(nc, varid = vars[[.vname]], vals = results[[.vname]])
+      ncvar_put(nc, varid = vars[[.vname]], vals = RR[[.vname]])
       cat(paste(vars[[.vname]]$name, vars[[.vname]]$longname), file=varfile, sep="\n")
     }
     

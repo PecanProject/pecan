@@ -120,11 +120,23 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
   setkeyv(hourly.results, c("year", "doy", "hour"))
 
   hourly.results <- merge(biocro.met.dt, hourly.results) ## right join
-  daily.results <- hourly.results[, list(Stem = max(Stem), Leaf = max(Leaf), Root = max(Root), Rhizome = max(Rhizome), 
-Grain = max(Grain), tmax = max(Temp), tmin = min(Temp), tavg = mean(Temp), precip = sum(precip)), by = 'year,doy']
+  daily.results <- hourly.results[,list(Stem = max(Stem), Leaf = max(Leaf),
+                                        Root = max(Root), Rhizome = max(Rhizome),
+                                        SoilEvaporation = sum(SoilEvaporation),
+                                        CanopyTrans = sum(CanopyTrans),
+                                        Grain = max(Grain),
+                                        LAI = max(LAI),
+                                        tmax = max(Temp), tmin = min(Temp),
+                                        tavg = mean(Temp), precip = sum(precip)),
+                                  by = 'year,doy']
 
-  annual.results <- hourly.results[ ,list(Stem = max(Stem), Leaf = max(Leaf), Root = max(Root), Rhizome = max(Rhizome),
-                                                Grain = max(Grain), mat = mean(Temp), map = sum(precip)),
+  annual.results <- hourly.results[ ,list(Stem = max(Stem), Leaf = max(Leaf),
+                                          Root = max(Root), Rhizome = max(Rhizome),
+                                          Grain = max(Grain),
+                                          SoilEvaporation = sum(SoilEvaporation),
+                                          CanopyTrans = sum(CanopyTrans),
+                                          map = sum(precip),
+                                          mat = mean(Temp)),
                                           by = "year"]
   return(list(hourly = hourly.results,
               daily = daily.results,
