@@ -4,9 +4,6 @@ args   <- commandArgs(trailingOnly = TRUE)
 rundir <- args[1]
 outdir <- args[2]
 
-#library(PEcAn.all)
-
-
 require(PEcAn.data.land)
 require(PEcAn.BIOCRO)
 require(BioCro)
@@ -14,81 +11,21 @@ require(PEcAn.data.atmosphere)
 require(PEcAn.utils)
 require(lubridate)
 
-options(error = browser)
-
-if(interactive()) {
-
-  library(PEcAn.settings)
-  settings <- read.settings("~/dev/biocro_regional/vignettes/champaign_mxg_settings.xml")
-  runid <- tail(readLines(file.path(settings$rundir, "runs.txt")), n = 1)
-  rundir <- file.path(settings$rundir, runid)
-  outdir <- file.path(settings$outdir, "out", runid)
-  point <- 1
-}
-
-
 config <- read.biocro.config(file.path(rundir, "config.xml"))
 
 met.nc  <- nc_open(config$run$met.file)
 soil.nc <- nc_open(config$run$soil.file)
 # atmco2.nc <- nc_open(file.path(inputdir, "co2/CO2_Global_HD_v1.nc"))
 
-if(sitename %in% c("Illinois", "Champaign County")){
-	    lat <- ncvar_get(met.nc, "latitude")
-	    lon <- ncvar_get(met.nc, "longitude")
-	    latlon <- expand.grid(lat = lat, lon = lon)
-} else {
-  lat <- settings$site$lat
-  lon <- settings$site$lon
-  latlon <- data.frame(lat = lat, lon = lon)
-}
-if(nrow(latlon) == 1){
-  runtype <- 'point'
-} else {
-  runtype <- 'regional'
-}
-  
-annual.result <- NULL
-biocro_result <- NULL
+lat <- as.numeric(config$location$latitude)
+lon <- as.numeric(config$location$longitude)
 
-
-if(runtype == 'regional'){
-  library(foreach)
-  library(doMC)
-  registerDoMC(10)
-  foreach(point=1:nrow(latlon)) %dopar% {
-  lat <- latlon$lat[point]
-  lon <- latlon$lon[point]
-
-} else if (runtype == 'point'){
-  lat <- latlon$lat
-  lon <- latlon$lon
-  for(point in ""){
-}
-  out <- run.biocro(lat, lon, met.nc = met.nc, soil.nc = soil.nc, config = config)
-  annual.result <- rbind(annual.result, out$annually)
-  save(annual.result, file = file.path(outdir, "annual.result.RData"))
-  
-  point.outdir <- file.path(outdir, paste0(lat, 'x', lon))
-  dir.create(point.outdir, showWarnings = FALSE)
-
-#  hourly <- out$hourly
-  daily <- out$daily
-  #save(hourly, file = file.path(point.outdir, 'hourly.result.RData'))
-  save(daily, file = file.path(point.outdir, 'daily.result.RData'))
-  
-  biocro_result <- rbind(biocro_result, data.table(lat = lat, lon = lon, daily))
-
-  #model2netcdf.BIOCRO(result = hourly, genus = config$pft$type$genus, outdir = point.outdir, 
-         #             lat = lat, lon = lon)
- # rm(hourly)
-  rm(daily)
-}
+out <- run.biocro(lat, lon, met.nc = met.nc, soil.nc = soil.nc, config = config)
+biocro_result <- data.table(lat = lat, lon = lon, out$daily)
 
 save(biocro_result, file = file.path(outdir, "biocro_output.RData"))
 
-## this would work if model2netcdf could process regionally
-#model2netcdf.BIOCRO(resultDT = biocro_result, 
-#                    genus = genus, 
+#model2netcdf.BIOCRO(result = out$hourly, 
+#                    genus = config$pft$type$genus, 
 #                    outdir = outdir, 
-#                    lat = config$location$latitude, lon = config$location$longitude)
+#                    lat = lat, lon = lon)
