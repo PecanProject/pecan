@@ -27,6 +27,7 @@ PG_OPT=${PG_OPT:-""}
 #  2 - Brookhaven    - Shawn Serbin
 #  3 - Purdue        - Jeanne Osnas
 #  4 - Virginia Tech - Quinn Thomas
+#  5 - Wisconsin     - Ankur Desai
 # 99 - VM
 MYSITE=${MYSITE:-99}
 REMOTESITE=${REMOTESITE:-0}
@@ -128,9 +129,9 @@ fi
 # will be imported during creaton
 
 # list of tables that are one to many relationships
-CLEAN_TABLES="citations counties covariates cultivars"
+CLEAN_TABLES="citations covariates cultivars"
 CLEAN_TABLES="${CLEAN_TABLES} ensembles entities formats"
-CLEAN_TABLES="${CLEAN_TABLES} inputs likelihoods location_yields"
+CLEAN_TABLES="${CLEAN_TABLES} inputs likelihoods"
 CLEAN_TABLES="${CLEAN_TABLES} machines managements methods"
 CLEAN_TABLES="${CLEAN_TABLES} mimetypes models"
 CLEAN_TABLES="${CLEAN_TABLES} modeltypes modeltypes_formats"
@@ -144,7 +145,6 @@ CLEAN_TABLES="${CLEAN_TABLES} dbfiles users"
 # list of tables that are many to many relationships
 MANY_TABLES="${MANY_TABLES} citations_sites citations_treatments"
 MANY_TABLES="${MANY_TABLES} formats_variables inputs_runs"
-MANY_TABLES="${MANY_TABLES} inputs_variables"
 MANY_TABLES="${MANY_TABLES} managements_treatments pfts_priors"
 MANY_TABLES="${MANY_TABLES} pfts_species posteriors_ensembles"
 
