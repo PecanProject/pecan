@@ -1,5 +1,8 @@
 calc.metrics <- function(input_path, format_table, vars_names_units, model_run, metrics, start_year=NA, end_year=NA, site=NA){
 
+  # Right now parameters are being read in as R objects - this won't work remotely but 
+  # I haven't decided exactly how to pass the parameters over
+  
   # create results table
   results <- metrics
   results$score <- rep(NA, dim(metrics)[1])

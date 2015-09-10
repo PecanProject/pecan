@@ -12,10 +12,18 @@
 ##' 
 ##' Water fluxes: Evaporation (Evap), Transpiration(TVeg),
 ##' surface runoff (Qs), subsurface runoff (Qsb), and rainfall (Rainf).
+##' 
+##' Future things to think about
+##'   - error estimates
+##'   - QAQC
+##'   - STEPPS -> cov
+##'   - MCMC samples
+##'   - "data products" vs raw data
+##'   - Is there a generic structure to ovbs?
 
 
 load.data <- function(input_path, format_table, vars_names_units, start_year = NA, end_year=NA, site=NA){
-  
+    
   require(lubridate)
   
   fcn1 <- paste0("load.",format_table$name)
@@ -34,7 +42,6 @@ load.data <- function(input_path, format_table, vars_names_units, start_year = N
   args <- list(input_path,vars_names_units, start_year, end_year, site))
   
   results <- apply(fcn,args)
-  
 
   return(result) 
 }

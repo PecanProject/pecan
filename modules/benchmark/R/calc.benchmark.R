@@ -52,6 +52,10 @@ return(results)
 }
 
 #--------------------------------------------------------------------------------------------------#
+##' Database query functions - do we want to keep these? Put them somewhere else? 
+##' Are they generalized enough?
+
+#--------------------------------------------------------------------------------------------------#
 ##' @name db.query.file.path
 ##' @title Get file path given id and machine
 ##' @param input_id
