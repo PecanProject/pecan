@@ -39,9 +39,9 @@ The demo instance only allows for runs at pecan.ncsa.illinois.edu. Once you have
 
 ## Acknowledgements
 
-This material is based upon work supported by the Energy Biosciences Institute and the National Science Foundation under Grant No. 1062547 and 1062204. Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation. PEcAn is a collaboration among research groups at the Energy Biosciences Institute at the University of Illinois, the Department of Earth And Environment at Boston University, the Image Spatial Data Analysis group at NCSA, and the Department of Atmospheric & Oceanic Sciences at the University Wisconsin-Madison.
+This material is based upon work supported by the Energy Biosciences Institute, the National Science Foundation under Grants No. 1062547 and 1062204, and the Department of Energy. Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation. PEcAn is a collaboration among research groups at the Carl Woese Institute for Genomic Biology at the University of Illinois, the Department of Earth And Environment at Boston University, the Image Spatial Data Analysis group at the National Center for Supercomputing Applications, and the Department of Atmospheric & Oceanic Sciences at the University Wisconsin-Madison.
 
-BETY-db is a product of the Energy Biosciences Institute at the University of Illinois at Urbana-Champaign. We gratefully acknowledge the great effort of other researchers who generously made their own data available for further study.
+BETYdb is a product of the Energy Biosciences Institute at the University of Illinois at Urbana-Champaign. We gratefully acknowledge the great effort of other researchers who generously made their own data available for further study.
 
 ## License
 
