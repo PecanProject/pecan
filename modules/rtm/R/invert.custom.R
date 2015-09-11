@@ -21,18 +21,17 @@
 #' @param adj_min Minimum threshold for rescaling Jump standard deviation.  
 #' Default = 0.1.
 #' @param target Target acceptance rate. Default=0.44
-#' @param lsq.first Perform least squares optimization first (see 
-#' `invert.lsq`), and use outputs to initialize Metropolis Hastings. This may 
-#' improve mixing time, but risks getting caught in a local minimum.  
-#' Default=FALSE
+#' @param do.lsq Perform least squares optimization first (see `invert.lsq`), 
+#' and use outputs to initialize Metropolis Hastings. This may improve mixing 
+#' time, but risks getting caught in a local minimum.  Default=FALSE
 #' @param quiet Don't print steps and status messages. Default=FALSE
 invert.custom <- function(observed, inits, ngibbs, prior, pm, model, adapt=100, 
-                        adj_min=0.1, target=0.44, do.mle=TRUE, quiet=FALSE){
+                        adj_min=0.1, target=0.44, do.lsq=TRUE, quiet=FALSE){
     observed <- as.matrix(observed)
     nspec <- ncol(observed)
     nwl <- nrow(observed)
     npars <- length(inits)
-    if(do.mle){
+    if(do.lsq){
         fit <- invert.lsq(observed, inits, model, lower=pm)
         if(!quiet) print(fit)
         inits <- fit$par
