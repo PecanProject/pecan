@@ -15,7 +15,7 @@ calc.metrics <- function(input_path, format_table, vars_names_units, model_run, 
   
   dat <- align.data(model, obvs)
   
-  for(i in 1:length(metrics$name){
+  for(i in 1:length(metrics$name)){
     fcn <- paste("metric.",metrics$name[i])
     results$score[i] <- apply(fcn, dat)
   }
