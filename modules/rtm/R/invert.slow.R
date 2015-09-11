@@ -8,15 +8,14 @@
 #' observed values. For spectral data, wavelengths are rows and spectra are 
 #' columns.
 #' @param inits Vector of initial values of model parameters to be inverted.
-#' @param constants Vector of model constants.
 #' @param ngibbs Number of MCMC iterations
 #' @param prior Function for use as prior. Should take a vector of parameters 
 #' as input and return a single value -- the sum of their log-densities -- as 
 #' output.
 #' @param pm Vector of minimum values for inversion parameters
 #' @param model The model to be inverted. This should be an R function that 
-#' takes `inits` and `constants` as input and returns one column of `observed` 
-#' (nrows should be the same).
+#' takes `params` as input and returns one column of `observed` (nrows should 
+#' be the same). Constants should be implicitly included here.
 #' @param adapt Number of steps for adapting covariance matrix (i.e. adapt 
 #' every 'n' steps. Default=100
 #' @param adj_min Minimum threshold for rescaling Jump standard deviation.  
@@ -26,20 +25,20 @@
 #' to initialize Metropolis Hastings. This dramatically improves the mixing 
 #' time. Default=TRUE
 #' @param quiet Don't print steps and status messages. Default=FALSE
-invert.slow <- function(observed, inits, constants, ngibbs, prior, pm, model, 
+invert.slow <- function(observed, inits, ngibbs, prior, pm, model, 
                         adapt=100, adj_min=0.1, target=0.44, do.mle=TRUE, quiet=FALSE){
     observed <- as.matrix(observed)
     nspec <- ncol(observed)
     nwl <- nrow(observed)
     npars <- length(inits)
     if(do.mle){
-        fit <- invert.lsq(observed, inits, constants, model, lower=pm)
+        fit <- invert.lsq(observed, inits, model, lower=pm)
         if(!quiet) print(fit)
         inits <- fit$par
     }
     rp1 <- 0.001 + nspec*nwl/2
     rsd <- 0.5
-    PrevSpec <- model(inits, constants)
+    PrevSpec <- model(inits)
     PrevError <- PrevSpec - observed
     initsd <- inits * 0.05
     Jump <- diag(initsd)
@@ -67,7 +66,7 @@ invert.slow <- function(observed, inits, constants, ngibbs, prior, pm, model,
         }
         tvec <- mvrnorm(1, inits, Jump)
         if(all(tvec > pm)){
-            TrySpec <- model(tvec, constants)
+            TrySpec <- model(tvec)
             TryError <- TrySpec - observed
             TryPost <- sum(dnorm(TryError,0,rsd,1)) + prior(tvec)
             PrevPost <- sum(dnorm(PrevError,0,rsd,1)) + prior(inits)

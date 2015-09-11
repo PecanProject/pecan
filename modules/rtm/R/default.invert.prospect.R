@@ -12,7 +12,7 @@
 #' = TRUE)
 default.invert.prospect <- function(observed, sensor, ngibbs, version=5,
                                     do.mle=TRUE, quiet=TRUE){
-    model <- function(params, constants=NULL) spectral.response(prospect(params, 5)[,1], sensor)
+    model <- function(params) spectral.response(prospect(params, 5)[,1], sensor)
     testspec <- model(c(1.4, 40, 8, 0.01, 0.01))
     stopifnot(all(dim(testspec) == dim(observed)))
     prior.params <- prior.defaultvals.prospect(sd.inflate = 3)
@@ -24,7 +24,6 @@ default.invert.prospect <- function(observed, sensor, ngibbs, version=5,
     pm <- c(1, 0, 0, 0, 0)
     samples <- invert.slow(observed = observed,
                            inits = inits,
-                           constants = NULL,
                            ngibbs = ngibbs,
                            prior = prior,
                            pm = pm,
