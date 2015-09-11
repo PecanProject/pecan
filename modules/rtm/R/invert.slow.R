@@ -1,4 +1,4 @@
-#' @name invert.slow
+#' @name invert.custom
 #' @title Bayesian inversion of a model
 #' @details Performs an inversion of an arbitrary model using a modified 
 #' Metropolis Hastings algorithm with block sampling. This may be slightly 
@@ -17,16 +17,17 @@
 #' takes `params` as input and returns one column of `observed` (nrows should 
 #' be the same). Constants should be implicitly included here.
 #' @param adapt Number of steps for adapting covariance matrix (i.e. adapt 
-#' every 'n' steps. Default=100
+#' every 'n' steps). Default=100
 #' @param adj_min Minimum threshold for rescaling Jump standard deviation.  
 #' Default = 0.1.
 #' @param target Target acceptance rate. Default=0.44
-#' @param lsq.first Perform least squares optimization first, and use outputs 
-#' to initialize Metropolis Hastings. This dramatically improves the mixing 
-#' time. Default=TRUE
+#' @param lsq.first Perform least squares optimization first (see 
+#' `invert.lsq`), and use outputs to initialize Metropolis Hastings. This may 
+#' improve mixing time, but risks getting caught in a local minimum.  
+#' Default=FALSE
 #' @param quiet Don't print steps and status messages. Default=FALSE
-invert.slow <- function(observed, inits, ngibbs, prior, pm, model, 
-                        adapt=100, adj_min=0.1, target=0.44, do.mle=TRUE, quiet=FALSE){
+invert.custom <- function(observed, inits, ngibbs, prior, pm, model, adapt=100, 
+                        adj_min=0.1, target=0.44, do.mle=TRUE, quiet=FALSE){
     observed <- as.matrix(observed)
     nspec <- ncol(observed)
     nwl <- nrow(observed)

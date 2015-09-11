@@ -22,7 +22,7 @@ default.invert.prospect <- function(observed, sensor, ngibbs, version=5,
     prior <- with(prior.defaultvals.prospect(sd.inflate = 3), 
                   priorfunc.prospect(mu, sigma))
     pm <- c(1, 0, 0, 0, 0)
-    samples <- invert.slow(observed = observed,
+    samples <- invert.custom(observed = observed,
                            inits = inits,
                            ngibbs = ngibbs,
                            prior = prior,
