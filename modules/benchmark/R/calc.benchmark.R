@@ -44,7 +44,6 @@ calc.benchmark <- function(settings, con){ #settings file is output from start.b
   
   #  Update benchmark ensemble scores table
   
-}
 
 # Return results
 return(results)
