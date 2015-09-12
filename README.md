@@ -13,7 +13,7 @@ See ["Getting Started"](https://github.com/PecanProject/pecan/wiki/Getting-start
 
 ### Installation
 
-Complete instructions on how to install PEcAn can be found in the [WIKI Installation Page](https://github.com/PecanProject/pecan/wiki/Installing-PEcAn). To get PEcAn up and running you will need to have [R](http://www.r-project.org) as well as [PostgreSQL](http://www.postgresql.org) installed. You can also [download a Virtual Machine](http://isda.ncsa.illinois.edu/download/index.php?project=PEcAn&sort=category) which has all the components as well as PEcAn installed. To run this Virtual Machine you will need to have [VirtualBox](http://virtualbox.org) installed
+Complete instructions on how to install PEcAn can be found in the [WIKI Installation Page](https://github.com/PecanProject/pecan/wiki/Installing-PEcAn). To get PEcAn up and running you will need to have [R](http://www.r-project.org) as well as [PostgreSQL](http://www.postgresql.org) installed. You can also [download a Virtual Machine](http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN) which has all the components as well as PEcAn installed. To run this Virtual Machine you will need to have [VirtualBox](http://virtualbox.org) installed
 
 ### Web Interface Demo
 
