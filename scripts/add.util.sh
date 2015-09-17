@@ -18,11 +18,17 @@ fi
 # 1 : mimetype
 # 2 : name
 addFormat() {
-    FORMAT_ID=$( ${PSQL} "SELECT id FROM formats WHERE mime_type='$1' AND name='$2' LIMIT 1;" )
+    MIME_ID=$( ${PSQL} "SELECT id FROM mimetypes WHERE type_string='$1' LIMIT 1;" )
+    if [ "$MIME_ID" == "" ]; then
+        ${PSQL} "INSERT INTO mimetypes (type_string) VALUES ('$1');"
+        MIME_ID=$( ${PSQL} "SELECT id FROM mimetypes WHERE type_string='$1' LIMIT 1;" )
+        echo "Added new mime type with ID=${MIME_ID} for mime_type=$1"
+    fi
+    FORMAT_ID=$( ${PSQL} "SELECT id FROM formats WHERE mimetype_id=${MIME_ID} AND name='$2' LIMIT 1;" )
     if [ "$FORMAT_ID" == "" ]; then
-        ${PSQL} "INSERT INTO formats (mime_type, name, created_at, updated_at) VALUES ('$1', '$2', NOW(), NOW());"
-        FORMAT_ID=$( ${PSQL} "SELECT id FROM formats WHERE mime_type='$1' AND name='$2' LIMIT 1;" )
-        echo "Added new format with ID=${FORMAT_ID} for mime_type=$1, name=$2"
+        ${PSQL} "INSERT INTO formats (mimetype_id, name, created_at, updated_at) VALUES (${MIME_ID}, '$2', NOW(), NOW());"
+        FORMAT_ID=$( ${PSQL} "SELECT id FROM formats WHERE mimetype_id=${MIME_ID} AND name='$2' LIMIT 1;" )
+        echo "Added new format with ID=${FORMAT_ID} for mimetype_id=${MIME_ID}, name=$2"
     fi
 }
 
