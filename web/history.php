@@ -35,6 +35,14 @@ if ($authentication) {
   function nextStep() {
     $("#formnext").submit();
   }
+
+  function filter() {
+    $(".unknown").toggle($("#unknown").is(':checked'));
+  }
+
+  $(document).ready(function () {
+    filter();
+  });
 </script>
 </head>
 <body>
@@ -50,6 +58,9 @@ if ($authentication) {
       <input type="text" readonly style="background: #FFBBBB; color: black;" value="Runs with errors"/>
       <input type="text" readonly style="background: #BBFFFF; color: black;" value="Ongoing runs"/>
       <input type="text" readonly style="background: #FFFFFF; color: black;" value="Runs in unknown state"/>
+      <p></p>
+      <label>Show runs in unknown state?</label>
+      <input id="unknown" type="checkbox" onclick="filter();"/>
       <p></p>
       <input id="prev" type="button" value="Start Over" onclick="nextStep();"/>
       <div class="spacer"></div>
@@ -104,7 +115,7 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
       }
     }
   } else {
-    $style="style='background: #FFFFFF; color: black;'";
+    $style="style='background: #FFFFFF; color: black; display: none;' class='unknown'";
   }
   if (($style == "") && ($row['finished_at'] == "")) {
     $style="style='background: #BBFFFF; color: black'";
