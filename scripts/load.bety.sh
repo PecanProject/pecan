@@ -270,9 +270,9 @@ trap '
     echo "ROLLBACK;" >&3
     kill $PSQL_PID
     cat <&4
+    echo `date -u` $REMOTESITE 2 >> $LOG
   fi
   rm -f $PSQL_PIPE_INP $PSQL_PIPE_OUT
-  echo `date -u` $REMOTESITE 2 >> $LOG
 ' EXIT
 
 # start transaction
