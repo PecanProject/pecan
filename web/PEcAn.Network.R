@@ -60,6 +60,8 @@ if(file.exists(network.file)){
   pecan.state = matrix(NA,n,n)
   schema.list = NULL
   node.schemas = rep(0,n)
+  last.dump.size = rep(0,n)
+  last.dump.time = rep(Sys.time(),n)
 } ## end init
 
 ### FIRST PASS, GET NODE STATE
@@ -105,10 +107,38 @@ for(j in 1:m){
   }
   
   ## CHECK TO SEE IF THE SIZE OF THE DUMP HAS CHANGED
+  bety.state = system(paste("curl -I -L",pecan.nodes$sync_url[j]),intern=TRUE)
+  if(length(grep("404",bety.state[1]))){
+    pecan.state[i,i] = 2    ## set status to DOWN
+  } else {
+    if(pecan.state[i,i]==2) pecan.state[i,i]=3
+    bety.size = as.numeric(sub("Content-Length:","",bety.state[grep("Content-Length",bety.state)]))
+    if(bety.size != last.dump.size[i]){ ## size has changed
+      bety.time = sub("Last-Modified: ","",bety.state[grep("Last-Modified",bety.state)])
+      bety.time=sub(" GMT\r","",bety.time)
+      #bety.time=sub("GMT\r","0000",bety.time)
+      bety.time = strptime(bety.time,"%a, %d %b %Y %T",tz="GMT")
+      last.dump.time[i] = as.POSIXlt(bety.time)   
+      last.dump.size[i] = bety.size
+    }
+  }
   
-}
+} ## end loop over nodes
 
 ## If schema changed, update statues
+if(latest.schema > curr.schema){
+  for(i in 1:n){
+    if(pecan.state[i,i]==0 & node.schemas[i] < latest.schema) pecan.state[i,i]= 1
+  }
+}
+
+## TO-DO NEXT
+## modify load.bety.sh to write a log file of which nodes were synced when
+## grab those logs from each server to construct a network of
+##   A) what edges exist
+##   B) when those edges are out of date (sync time < dump time)
+## update figures to include edges
+## update status page to include more node info and log messages.
 
 save.image(network.file)
 
