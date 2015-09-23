@@ -1,3 +1,8 @@
+<html>
+    <head>
+    <meta http-equiv="refresh" content="60">
+    </head>
+    <body>
 <?php
 
   // execute R script from shell
@@ -8,3 +13,6 @@
   echo("<img src='NetworkStatus.png' />");
 
 ?>
+
+</body>
+</html>
