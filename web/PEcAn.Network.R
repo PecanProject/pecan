@@ -55,6 +55,8 @@ if(file.exists(network.file)){
     result <- getURL(paste0("freegeoip.net/csv/",hostname))
     pecan.geo[pecan.nodes$sync_host_id[i]+1,] = strsplit(result,",")[[1]]
   }
+  ## HACK FOR BNL
+  pecan.geo[3,9:10] = c(40.868,-72.879)
 
   latest.schema = 0
   pecan.state = matrix(NA,n,n)
@@ -140,6 +142,43 @@ if(latest.schema > curr.schema){
 ## update figures to include edges
 ## update status page to include more node info and log messages.
 
+for(j in 1:m){
+  i = pecan.nodes$sync_host_id[j]+1 ## row in vectors & matrices
+  
+  ## get sync.log
+  sync.url = sub("dump/bety.tar.gz","sync.log",pecan.nodes$sync_url[j])
+  if(url.exists(sync.url) & length(grep("sync.log",sync.url))) {
+    ## Parse sync file
+    temporaryFile <- tempfile()
+    download.file(sync.url,destfile=temporaryFile, method="curl")
+    sync = scan(temporaryFile,what = "character",sep="\n") 
+    unlink(temporaryFile)
+    sync.time = sub("UTC ","",substr(sync,1,28))
+    sync.time = strptime(sync.time,"%a %b %d %T %Y",tz="GMT")
+    sync.stat = matrix(as.numeric(unlist(strsplit(substring(sync,30)," "))),ncol=2,byrow = TRUE)
+    
+    ## Do we need to reset all edges for a machine before updating, and if so where
+    pecan.state[-i,i] = NA
+    
+    ## Loop over edges
+    for(k in unique(sync.stat[,1])){
+      ## find latest sync
+      sel = which(sync.stat[,1] == k) ## choose node
+      l = sel[which.max(as.POSIXct(sync.time[sel]))] ## latest
+      if(sync.stat[l,2]>0) {
+        pecan.state[k+1,i] = 2 ## FAILED
+      } else {
+        if(sync.time[l] > last.dump.time[i]){
+          pecan.state[k+1,i] = 0 ## UP-TO-DATE
+        } else {
+          pecan.state[k+1,i] = 1 ## BEHIND
+        }
+      }
+    }
+    
+  } ## end sync.log exists
+} ## end loop over nodes (EDGE CHECK)
+
 save.image(network.file)
 
 rng.buffer <- function(x,b=0.1){
@@ -149,13 +188,48 @@ rng.buffer <- function(x,b=0.1){
 }
 
 ## STATUS MAP
+x = as.numeric(pecan.geo[,10])
+y = as.numeric(pecan.geo[,9])
 png(filename="NetworkStatus.png",width=1200)
 colors = c("grey","green","yellow","red","purple")
 status = diag(pecan.state)+2;status[is.na(status)]=1
-xlim=rng.buffer(range(as.numeric(pecan.geo[,10]),na.rm=TRUE))
-ylim=rng.buffer(range(as.numeric(pecan.geo[,9]),na.rm=TRUE))
+xlim=rng.buffer(range(as.numeric(x),na.rm=TRUE))
+ylim=rng.buffer(range(as.numeric(y),na.rm=TRUE))
 map("world",xlim=xlim,ylim=ylim)
 map("state",add=TRUE)
+## EDGES THAT EXIST
+for(i in 1:n){
+  for(j in (1:n)[-i]){
+    if(!is.na(pecan.state[i,j])){
+      lines(x[c(i,j)],y[c(i,j)],col="grey",lty=3)
+    }
+  }
+}
+## EDGE STATE = OK
+for(i in 1:n){
+  for(j in (1:n)[-i]){
+    if(!is.na(pecan.state[i,j]) & pecan.state[i,j]==0){
+      arrows((x[i]+x[j])/2,(y[i]+y[j])/2,x[j],y[j],col="green",length=0.1,angle=15,lwd=2)
+    }
+  }
+}
+## EDGE STATE = BEHIND
+for(i in 1:n){
+  for(j in (1:n)[-i]){
+    if(!is.na(pecan.state[i,j]) & pecan.state[i,j]==1){
+      arrows((x[i]+x[j])/2,(y[i]+y[j])/2,x[j],y[j],col="yellow",length=0.1,angle=15,lwd=2)
+    }
+  }
+}
+## EDGE STATE = FAIL
+for(i in 1:n){
+  for(j in (1:n)[-i]){
+    if(!is.na(pecan.state[i,j]) & pecan.state[i,j]>1){
+      arrows((x[i]+x[j])/2,(y[i]+y[j])/2,x[j],y[j],col="red",length=0.1,angle=15,lwd=2)
+    }
+  }
+}
+## NODES
 points(pecan.geo[,10:9],col=colors[status],pch=19,cex=3)
 dev.off()
 
