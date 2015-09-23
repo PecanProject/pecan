@@ -56,6 +56,9 @@ QUIET=${QUIET:-"NO"}
 # that have specific abilities.
 USERS=${USERS:-"NO"}
 
+# Log file
+LOG=${LOG:-"sync.log"}
+
 # ----------------------------------------------------------------------
 # END CONFIGURATION SECTION
 # ----------------------------------------------------------------------
@@ -228,6 +231,7 @@ else
     else
       rm -rf "${DUMPDIR}"
     fi
+    echo `date -u` $REMOTESITE 1 >> $LOG
     exit 1
   fi
 
@@ -266,6 +270,7 @@ trap '
     echo "ROLLBACK;" >&3
     kill $PSQL_PID
     cat <&4
+    echo `date -u` $REMOTESITE 2 >> $LOG
   fi
   rm -f $PSQL_PIPE_INP $PSQL_PIPE_OUT
 ' EXIT
@@ -362,6 +367,7 @@ if [ "${FIXSEQUENCE}" == "YES" ]; then
 fi
 
 # close transaction
+echo `date -u` $REMOTESITE 0 >> $LOG
 echo "END;" >&3
 echo "\quit" >&3
 wait $PSQL_PID
