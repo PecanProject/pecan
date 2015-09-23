@@ -231,5 +231,6 @@ for(i in 1:n){
 }
 ## NODES
 points(pecan.geo[,10:9],col=colors[status],pch=19,cex=3)
+text(xlim[1],ylim[1],labels = Sys.time(),pos=4)
 dev.off()
 
