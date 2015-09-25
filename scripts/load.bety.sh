@@ -81,6 +81,7 @@ while getopts c:d:f:hm:o:p:qr:t:u: opt; do
     echo " -d database, default is bety"
     echo " -f fix sequence numbers, this should not be needed, default is NO"
     echo " -h this help page"
+    echo " -l location of log file (place this with the dump files)"
     echo " -m site id, default is 99 (VM)"
     echo " -o owner of the database, default is bety"
     echo " -p additional psql command line options, default is empty"
@@ -89,6 +90,9 @@ while getopts c:d:f:hm:o:p:qr:t:u: opt; do
     echo " -t keep temp folder, default is NO"
     echo " -u create carya users, this will create some default users"
     exit 0
+    ;;
+  l)
+    LOG=$OPTARG
     ;;
   m)
     MYSITE=$OPTARG
@@ -123,9 +127,8 @@ if [ "${MYSITE}" == "${REMOTESITE}" ]; then
   echo "Can not have same remotesite as mysite"
   exit 1
 fi
-if [ "${CREATE}" == "YES" -a "${FIXSEQUENCE}" == "NO" ]; then
-  echo "Can not run create without fix sequence"
-  exit 1
+if [ "${CREATE}" == "YES" ]; then
+  FIXSEQUENCE="YES"
 fi
 
 # list of all tables, schema_migrations is ignored since that
