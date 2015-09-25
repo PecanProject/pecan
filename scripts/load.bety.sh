@@ -57,7 +57,7 @@ QUIET=${QUIET:-"NO"}
 USERS=${USERS:-"NO"}
 
 # Log file
-LOG=${LOG:-"sync.log"}
+LOG=${LOG:-"$PWD/dump/sync.log"}
 
 # ----------------------------------------------------------------------
 # END CONFIGURATION SECTION
