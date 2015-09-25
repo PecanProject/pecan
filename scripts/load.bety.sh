@@ -64,7 +64,7 @@ LOG=${LOG:-"$PWD/dump/sync.log"}
 # ----------------------------------------------------------------------
 
 # parse command line options
-while getopts c:d:f:hm:o:p:qr:t:u: opt; do
+while getopts c:d:f:hl:m:o:p:qr:t:u: opt; do
   case $opt in
   c)
     CREATE=$OPTARG
