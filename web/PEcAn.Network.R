@@ -146,7 +146,7 @@ for(j in 1:m){
   i = pecan.nodes$sync_host_id[j]+1 ## row in vectors & matrices
   
   ## get sync.log
-  sync.url = sub("dump/bety.tar.gz","sync.log",pecan.nodes$sync_url[j])
+  sync.url = sub("bety.tar.gz","sync.log",pecan.nodes$sync_url[j])
   if(url.exists(sync.url) & length(grep("sync.log",sync.url))) {
     ## Parse sync file
     temporaryFile <- tempfile()
