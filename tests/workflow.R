@@ -74,7 +74,7 @@ for(i in 1:length(settings$run$inputs)) {
         dbparms    = settings$database$bety, 
         dir        = settings$run$dbfiles,
         browndog   = settings$browndog)
-      settings$run$inputs[[i]][['path']] <- result$file
+      settings$run$inputs[[i]][['path']] <- result
       status.end()
     }
   }
