@@ -147,34 +147,38 @@ for(j in 1:m){
   
   ## get sync.log
   sync.url = sub("bety.tar.gz","sync.log",pecan.nodes$sync_url[j])
-  if(url.exists(sync.url) & length(grep("sync.log",sync.url))) {
+  sync.state = system(paste("curl -I -L",sync.url),intern=TRUE)
+  if(url.exists(sync.url) & length(grep("sync.log",sync.url)) &
+       length(grep("404",sync.state[1]))==0) {
     ## Parse sync file
     temporaryFile <- tempfile()
     download.file(sync.url,destfile=temporaryFile, method="curl")
     sync = scan(temporaryFile,what = "character",sep="\n") 
     unlink(temporaryFile)
-    sync.time = sub("UTC ","",substr(sync,1,28))
-    sync.time = strptime(sync.time,"%a %b %d %T %Y",tz="GMT")
-    sync.stat = matrix(as.numeric(unlist(strsplit(substring(sync,30)," "))),ncol=2,byrow = TRUE)
-    
-    ## Do we need to reset all edges for a machine before updating, and if so where
-    pecan.state[-i,i] = NA
-    
-    ## Loop over edges
-    for(k in unique(sync.stat[,1])){
-      ## find latest sync
-      sel = which(sync.stat[,1] == k) ## choose node
-      l = sel[which.max(as.POSIXct(sync.time[sel]))] ## latest
-      if(sync.stat[l,2]>0) {
-        pecan.state[k+1,i] = 2 ## FAILED
-      } else {
-        if(sync.time[l] > last.dump.time[i]){
-          pecan.state[k+1,i] = 0 ## UP-TO-DATE
+    if(length(grep("html",sync)) == 0) { ## detected log file, not error page
+      sync.time = sub("UTC ","",substr(sync,1,28))
+      sync.time = strptime(sync.time,"%a %b %d %T %Y",tz="GMT")
+      sync.stat = matrix(as.numeric(unlist(strsplit(substring(sync,30)," "))),ncol=2,byrow = TRUE)
+      
+      ## Do we need to reset all edges for a machine before updating, and if so where
+      pecan.state[-i,i] = NA
+      
+      ## Loop over edges
+      for(k in unique(sync.stat[,1])){
+        ## find latest sync
+        sel = which(sync.stat[,1] == k) ## choose node
+        l = sel[which.max(as.POSIXct(sync.time[sel]))] ## latest
+        if(sync.stat[l,2]>0) {
+          pecan.state[k+1,i] = 2 ## FAILED
         } else {
-          pecan.state[k+1,i] = 1 ## BEHIND
+          if(sync.time[l] > last.dump.time[i]){
+            pecan.state[k+1,i] = 0 ## UP-TO-DATE
+          } else {
+            pecan.state[k+1,i] = 1 ## BEHIND
+          }
         }
       }
-    }
+    } ## end detect error page
     
   } ## end sync.log exists
 } ## end loop over nodes (EDGE CHECK)
