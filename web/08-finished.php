@@ -500,7 +500,9 @@ if (is_dir("$folder/run")) {
     <p></p>
     <span id="error" class="small">&nbsp;</span>
     <input id="prev" type="button" value="History" onclick="prevStep();" />
+<?php if (!$authentication || (get_page_acccess_level() <= $min_run_level)) { ?>
     <input id="next" type="button" value="Start Over" onclick="nextStep();"/>    
+<?php } ?>
     <div class="spacer"></div>
 <?php
   if (check_login()) {

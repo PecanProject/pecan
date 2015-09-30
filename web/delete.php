@@ -16,6 +16,11 @@ if (!check_login()) {
   header( "Location: history.php");
   exit;
 }
+if (get_page_acccess_level() > $min_delete_level) {
+  header( "Location: history.php");
+  close_database();
+  exit;
+}
 
 // runid
 if (!isset($_REQUEST['workflowid'])) {

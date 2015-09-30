@@ -61,8 +61,10 @@ if ($authentication) {
       <p></p>
       <label>Show runs in unknown state?</label>
       <input id="unknown" type="checkbox" onclick="filter();"/>
+<?php if (!$authentication || (get_page_acccess_level() <= $min_run_level)) { ?>
       <p></p>
       <input id="prev" type="button" value="Start Over" onclick="nextStep();"/>
+<?php } ?>
       <div class="spacer"></div>
 <?php
   if (check_login()) {
@@ -84,7 +86,7 @@ if ($authentication) {
           <div id="header">End Date</div>
           <div id="header">Started</div>
           <div id="header">Finished</div>
-<?php if (check_login()) { ?>
+<?php if (check_login() && (get_page_acccess_level() <= $min_delete_level)) { ?>
           <div id="header">Delete</div>
 <?php } ?>
         </div>
@@ -134,7 +136,7 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
           <div id="cell"><?php echo $row['end_date']; ?></div>
           <div id="cell"><?php echo $row['started_at']; ?></div>
           <div id="cell"><?php echo $row['finished_at']; ?></div>
-<?php if (check_login()) { ?>
+<?php if (check_login() && (get_page_acccess_level() <= $min_delete_level)) { ?>
           <div id="cell"><a href="delete.php?workflowid=<?php echo $row['id']; ?>">DELETE</a></div>
 <?php } ?>
         </div>
