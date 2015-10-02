@@ -158,7 +158,9 @@ for(j in 1:m){
     if(length(grep("html",sync)) == 0) { ## detected log file, not error page
       sync.time = sub("UTC ","",substr(sync,1,28))
       sync.time = strptime(sync.time,"%a %b %d %T %Y",tz="GMT")
-      sync.stat = matrix(as.numeric(unlist(strsplit(substring(sync,30)," "))),ncol=2,byrow = TRUE)
+      sync.cols = matrix(as.numeric(unlist(strsplit(sync," "))),ncol=8,byrow=TRUE)
+      sync.stat = sync.cols[,7:8]
+#      sync.stat = matrix(as.numeric(unlist(strsplit(substring(sync,30)," "))),ncol=2,byrow = TRUE)
       
       ## Do we need to reset all edges for a machine before updating, and if so where
       pecan.state[-i,i] = NA
