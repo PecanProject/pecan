@@ -79,7 +79,6 @@ met2model.PRELES <- function(in.path, in.prefix, outfolder, start_date, end_date
   # TODO need to filter out the data that is not inside start_date, end_date
   for(year in start_year:end_year) {
     print(year)
-    ## Assuming default values for leaf water potential, hydraulic resistance, foliar N
     
     old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep="."))
     
@@ -100,11 +99,11 @@ met2model.PRELES <- function(in.path, in.prefix, outfolder, start_date, end_date
     lon    <- ncvar_get(nc,"longitude")
     PAR    <- ncvar_get(nc, "surface_downwelling_photosynthetic_photon_flux_in_air") ## mol/m2s1
     Tair   <- ncvar_get(nc,"air_temperature")  ## in Kelvin
-    Precip <- ncvar_get(nc, "precipitation_flux")
-    VPD    <- ncvar_get(nc, "water_vapor_saturation_deficit")
+    Precip <- ncvar_get(nc, "precipitation_flux") ## kg/m2
+    VPD    <- ncvar_get(nc, "water_vapor_saturation_deficit") ## Pa
     SW     <- ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air") ## in W/m2
-    CO2    <- try(ncvar_get(nc,"mole_fraction_of_carbon_dioxide_in_air")) ## mole fraction
-    
+    CO2    <- try(ncvar_get(nc,"mole_fraction_of_carbon_dioxide_in_air")) ## mole fraction of carbon dioxide mol/mol
+
     nc_close(nc)
     
     useCO2 = is.numeric(CO2)  
@@ -115,19 +114,6 @@ met2model.PRELES <- function(in.path, in.prefix, outfolder, start_date, end_date
     if(!is.numeric(CO2)){
       logger.warn("CO2 not found in",old.file,"setting to default: 400 ppm")
       CO2 = rep(400,length(Tair))
-    }
-    
-    if(length(leafN) == 1){
-      logger.warn("Leaf N not specified, setting to default: ",leafN)
-      leafN = rep(leafN,length(Tair))
-    }  
-    if(length(HydResist)==1){
-      logger.warn("total plant-soil hydraulic resistance (MPa.m2.s/mmol-1) not specified, setting to default: ",HydResist)
-      HydResist = rep(HydResist,length(Tair))
-    }
-    if(length(LeafWaterPot)==1){
-      logger.warn("maximum soil-leaf water potential difference (MPa) not specified, setting to default: ",LeafWaterPot)
-      LeafWaterPot = rep(LeafWaterPot,length(Tair))
     }
     
     ##build day of year
@@ -142,7 +128,8 @@ met2model.PRELES <- function(in.path, in.prefix, outfolder, start_date, end_date
     Precip = tapply(Precip, doy,sum, na.rm=TRUE)
     VPD    = udunits2::ud.convert(tapply(VPD,doy,mean,na.rm=TRUE),"Pa","kPa")
     CO2    = tapply(CO2,doy,mean)
-    doy   = tapply(doy,doy,mean)
+    doy    = tapply(doy,doy,mean)
+    fAPAR  = rep(0.8,length=length(doy))
     
     ## The nine columns of driving data are: Photosynthetically active radiation mol/m2/day,mean air temperature (deg C);Mean vapour pressure deficit kPa; Precipitatin above Canopy mm; atmospheric carbon dioxide concentration (ppm)
     
@@ -152,6 +139,7 @@ met2model.PRELES <- function(in.path, in.prefix, outfolder, start_date, end_date
                  VPD,
                  Precip,
                  CO2,
+                 fAPAR
                  )
     
     if(is.null(out)){

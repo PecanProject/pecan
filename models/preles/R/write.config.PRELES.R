@@ -21,9 +21,9 @@
 ##' @param run.id id of run
 ##' @return configuration file for MODEL for given run
 ##' @export
-##' @author Rob Kooper
+##' @author Tony Gardella 
 ##-------------------------------------------------------------------------------------------------#
-write.config.MODEL <- function(defaults, trait.values, settings, run.id){
+write.config.PRELES<- function(defaults, trait.values, settings, run.id){
   
   # find out where to write run/ouput
   rundir <- file.path(settings$run$host$rundir, run.id)

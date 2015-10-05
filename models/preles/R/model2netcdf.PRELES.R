@@ -20,7 +20,7 @@
 ##' @param end_date End time of the simulation
 ##' @export
 ##'
-##' @author Tony Gardella, Micheal Dietze
+##' @author Tony Gardella
 model2netcdf.PRELES <- function(outdir, sitelat, sitelon, start_date, end_date) {
   
   require(PEcAn.utils)
@@ -54,8 +54,8 @@ model2netcdf.PRELES <- function(outdir, sitelat, sitelon, start_date, end_date) 
     output[[1]] <- (sub.PRELES.output[,31]*0.001)/timestep.s     # GPP in kgC/m2/s    
     output[[2]] <- (sub.PRELES.output[,33]* 0.001) / timestep.s  # Evapotranspiration in kgCm2/s
     output[[3]] <- (sub.PRELES.output[,7]*0.001)     # SoilMoist kg/m2
-    output[[4]] <- (sub.PRELES.output[,]) # unitless scalar 
-    output[[5]] <- (sub.PRELES.output[,]) # unitless scalar
+    output[[4]] <- (sub.PRELES.output[,]) # unitless modifier
+    output[[5]] <- (sub.PRELES.output[,]) # unitless modifier
     output[[6]] <- (sub.PRELES.output[,]* 0.001)/ timestep.s # Evaporation Evap kg/m2/s
     output[[7]] <- (sub.PRELES.output[,]* 0.001)/ timestep.s # Transpiration TVeg kg/m2s
     #******************** Declare netCDF variables ********************#
