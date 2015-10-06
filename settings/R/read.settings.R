@@ -35,46 +35,43 @@ check.inputs <- function(settings) {
   if (nrow(inputs) > 0) {
     for(i in 1:nrow(inputs)) {
       tag <- inputs$tag[i]
-      tagid <- paste0(tag, ".id")
       hostname <- settings$run$host$name
       allinputs <- allinputs[allinputs != tag]
 
-      # check if <tag.id> exists
-      if (!is.null(settings$run$inputs[[tagid]])) {
-        id <- settings$run$inputs[[tagid]]
+      # check if tag exists
+      if (is.null(settings$run$inputs[[tag]])) {
+        if (inputs$required[i]) {
+          logger.warn("Missing required input :", tag)
+        } else {
+          logger.info("Missing optional input :", tag)
+        }
+        next
+      }
+      
+      # check if <id> exists
+      if ("id" %in% names(settings$run$inputs[[tag]])) {
+        id <- settings$run$inputs[[tag]][['id']]
         file <- dbfile.file("Input", id, dbcon, hostname)
         if (is.na(file)) {
           logger.error("No file found for", tag, " and id", id, "on host", hostname)
         } else {
-          if (is.null(settings$run$inputs[[tag]])) {
-            settings$run$inputs[[tag]] <- file
-          } else if (file != settings$run$inputs[[tag]]) {
+          if (is.null(settings$run$inputs[[tag]][['path']])) {
+            settings$run$inputs[[tag]]['path'] <- file
+          } else if (file != settings$run$inputs[[tag]][['path']]) {
             logger.warn("Input file and id do not match for ", tag)
           }
         }
+      } else if ("path" %in% names(settings$run$inputs[[tag]])) {
+        # can we find the file so we can set the tag.id
+        id <- dbfile.id('Input', settings$run$inputs[[tag]][['path']], dbcon, hostname)
+        if (!is.na(id)) {
+          settings$run$inputs[[tag]][['id']] <- id
+        }
       }
       
-      # check if file exists
-      if (is.null(settings$run$inputs[[tag]])) {
-        if (inputs$required[i]) {
-          logger.severe("Missing required input :", tag)
-        } else {
-          logger.info("Missing optional input :", tag)
-        }
-        
-      } else {
-        # can we find the file so we can set the tag.id
-        if (is.null(settings$run$inputs[[tagid]])) {
-          id <- dbfile.id('Input', settings$run$inputs[[tag]], dbcon, hostname)
-          if (!is.na(id)) {
-            settings$run$inputs[[tagid]] <- id
-          }
-        }
-      }
-
       # check to see if format is right type
-      if (!is.null(settings$run$inputs[[tagid]])) {
-        formats <- db.query(paste0("SELECT format_id FROM inputs WHERE id=", settings$run$inputs[[tagid]]), con=dbcon)
+      if ("id" %in% names(settings$run$inputs[[tag]])) {
+        formats <- db.query(paste0("SELECT format_id FROM inputs WHERE id=", settings$run$inputs[[tag]][['id']]), con=dbcon)
         if (nrow(formats) > 1) {
           if (formats[1, 'format_id'] != inputs$format_id[i]) {
             logger.error("Format of input", tag, "does not match specified input.")
@@ -225,7 +222,7 @@ check.bety.version <- function(dbcon) {
 ##' @title Check Settings
 ##' @param settings settings file
 ##' @return will return the updated settings values with defaults set.
-##' @author Rob Kooper
+##' @author Rob Kooper, David LeBauer
 check.settings <- function(settings) {
   if (!is.null(settings$nocheck)) {
     logger.info("Not doing sanity checks of pecan.xml")
@@ -493,6 +490,12 @@ check.settings <- function(settings) {
     if ((is.null(settings$model$type) || settings$model$type == "")) {
       logger.severe("Need a model type.")
     }
+    
+    # Set model$delete.raw to FALSE by default
+    if (is.null(settings$model$delete.raw) || !is.logical(as.logical(settings$model$delete.raw))) {
+      logger.info("Option to delete raw model output not set or not logical. Will keep all model output.")
+      settings$model$delete.raw = FALSE
+    }
 
     # check on binary for given host
     if (!is.null(settings$model$id) && (settings$model$id >= 0)) {
@@ -608,9 +611,15 @@ check.settings <- function(settings) {
 
   # Check folder where outputs are written before adding to dbfiles
   if(is.null(settings$run$dbfiles)) {
-    settings$run$dbfiles <- normalizePath("~/.pecan/dbfiles", mustWork=FALSE)
+    settings$run$dbfiles <- full.path("~/.pecan/dbfiles")
   } else {
-    settings$run$dbfiles <- normalizePath(settings$run$dbfiles, mustWork=FALSE)
+      if (substr(settings$run$dbfiles, 1, 1) != '/'){
+          logger.warn("settings$run$dbfiles pathname", settings$run$dbfiles, " is invalid\n
+                  placing it in the home directory ", Sys.getenv("HOME"))
+          settings$run$dbfiles <- file.path(Sys.getenv("HOME"), settings$run$dbfiles)
+      } 
+      
+      settings$run$dbfiles <- normalizePath(settings$run$dbfiles, mustWork=FALSE)
   }
   dir.create(settings$run$dbfiles, showWarnings = FALSE, recursive = TRUE)
 
@@ -622,8 +631,8 @@ check.settings <- function(settings) {
   if(!is.character(dbcon) && settings$database$bety$write && ("model" %in% names(settings))) {
     if (!'workflow' %in% names(settings)) {
       now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-      db.query(paste0("INSERT INTO workflows (site_id, model_id, hostname, start_date, end_date, started_at, created_at) values ('",
-                      settings$run$site$id, "','", settings$model$id, "', '", settings$run$host$name, "', '",
+      db.query(paste0("INSERT INTO workflows (folder, site_id, model_id, hostname, start_date, end_date, started_at, created_at) values ('",
+                      settings$outdir, "','" , settings$run$site$id, "','", settings$model$id, "', '", settings$run$host$name, "', '",
                       settings$run$start.date, "', '", settings$run$end.date, "', '", now, "', '", now, "')"), con=dbcon)
       settings$workflow$id <- db.query(paste0("SELECT id FROM workflows WHERE created_at='", now, "' ORDER BY id DESC LIMIT 1;"), con=dbcon)[['id']]
       fixoutdir <- TRUE
@@ -649,7 +658,7 @@ check.settings <- function(settings) {
 
   #update workflow
   if (fixoutdir) {
-      db.query(paste0("UPDATE workflows SET folder='", normalizePath(settings$outdir), "' WHERE id=", settings$workflow$id), con=dbcon)
+      db.query(paste0("UPDATE workflows SET folder='", full.path(settings$outdir), "' WHERE id=", settings$workflow$id), con=dbcon)
   }
 
   # check/create the local run folder
@@ -704,7 +713,7 @@ check.settings <- function(settings) {
       }
       
       #check to see if name of each pft in xml file is actually a name of a pft already in database
-      if (!is.character(dbcon)) {
+      if (!is.character(dbcon)) {# change to if(class(dbcon) == "PostgreSQLConnection")??
         if (is.null(settings$model$type)) {
           x <- db.query(paste0("SELECT pfts.id FROM pfts",
                                " WHERE pfts.name = '",  settings$pfts[i]$pft$name, "'"), con=dbcon)
@@ -715,10 +724,12 @@ check.settings <- function(settings) {
                                " AND modeltypes.id=pfts.modeltype_id;"), con=dbcon)
         }
         if (nrow(x) == 0) {
-          logger.severe("Did not find a pft with name ", settings$pfts[i]$pft$name)
+          logger.severe("Did not find a pft with name ", settings$pfts[i]$pft$name,
+                        "\nfor model type", settings$model$type)
         }
         if (nrow(x) > 1) {
-          logger.warn("Found multiple entries for pft with name ", settings$pfts[i]$pft$name)
+          logger.warn("Found multiple entries for pft with name ", settings$pfts[i]$pft$name,
+                      "\nfor model type", settings$model$type)
         }
       }
   
@@ -821,7 +832,7 @@ update.settings <- function(settings) {
     settings$model$name <- NULL
   }
 
-  # run$site$met is now run$inputs$met
+  # run$site$met is now run$inputs$met$path
   if (!is.null(settings$run$site$met)) {
     if (!is.null(settings$run$inputs$met)) {
       if (settings$run$site$met != settings$run$inputs$met) {
@@ -836,8 +847,42 @@ update.settings <- function(settings) {
     logger.info("Model tag has changed, please use <inputs><met> to specify",
                  "met file for a run. See also",
                  "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup.")
-    settings$run$inputs$met <- settings$run$site$met
+    settings$run$inputs$met$path <- settings$run$site$met
     settings$run$site$met <- NULL
+  }
+  
+  # inputs now have path and id under tag
+  for(tag in names(settings$run$inputs)) {
+    if (grepl(".id$", tag)) {
+      tagid <- tag
+      tag <- substr(tagid, 1, nchar(tagid)-3)
+      if (tag %in% names(settings$run$inputs)) {
+        next
+      } else {
+        settings$run$inputs[[tag]]['id'] <- settings$run$inputs[[tagid]]
+        settings$run$inputs[[tagid]] <- null
+      }
+    } else {
+      if (!is.list(settings$run$inputs[[tag]])) {
+        path <- settings$run$inputs[[tag]]
+        settings$run$inputs[[tag]] <- list("path"=path)
+      }
+
+      tagid <- paste0(tag, ".id")
+      if (tagid %in% names(settings$run$inputs)) {
+        if ('id' %in% names(settings$run$inputs[[tag]])) {
+          if (settings$run$inputs[[tagid]] != settings$run$inputs[[tag]][['id']]) {
+            logger.severe("Please remove", tagid, "from inputs configuration.")
+          } else {
+            logger.info("Please remove", tagid, "from inputs configuration.")
+          }
+          settings$run$inputs[[tagid]] <- NULL
+        } else {
+          settings$run$inputs[[tag]][['id']] <- settings$run$inputs[[tagid]]
+          settings$run$inputs[[tagid]] <- NULL
+        }
+      }
+    }
   }
 
   # some specific ED changes
@@ -908,29 +953,49 @@ update.settings <- function(settings) {
   invisible(settings)
 }
 
-##' Add users database parameters to section.
+##' Add secret information from ~/.pecan.xml
 ##'
-##' Copies database section from ~/.pecan.xml to the settings. This allows
-##' a user to have their own unique database parameters, also when sharing
-##' the pecan.xml file we don't expose the database connection parameters.
+##' Copies certains sections from ~/.pecan.xml to the settings. This allows
+##' a user to have their own unique parameters also when sharing the
+##' pecan.xml file we don't expose these secrets.
+##' Currently this will copy the database and browndog sections
 ##'
-##' @title Add Users database
+##' @title Add Users secrets
 ##' @param settings settings file
 ##' @return will return the updated settings values
 ##' @author Rob Kooper
-addUsersDatabase <- function(settings) {
+addSecrets <- function(settings) {
   if (!file.exists("~/.pecan.xml")) {
     return(settings)
   }
   pecan <- xmlToList(xmlParse("~/.pecan.xml"))
-  for(db in names(pecan$database)) {
-    if (db %in% names(settings$database)) {
-      logger.info("Already have a section for", db)
-    } else {
-      logger.info("Imported section for", db)
-      settings$database[db] <- pecan$database[db]
+  
+  # always copy following sections
+  for(key in c('database')) {
+    for(section in names(pecan[[key]])) {
+      if (section %in% names(settings[section])) {
+        logger.info("Already have a section for", section)
+      } else {
+        logger.info("Imported section for", section)
+        settings[[key]][section] <- pecan[[key]][section]
+      }
     }
   }
+  
+  # only copy these sections if tag exists
+  for(key in c('browndog')) {
+    if (! key %in% names(settings)) next
+    
+    for(section in names(pecan[[key]])) {
+      if (section %in% names(settings[section])) {
+        logger.info("Already have a section for", section)
+      } else {
+        logger.info("Imported section for", section)
+        settings[[key]][section] <- pecan[[key]][section]
+      }
+    }
+  }  
+
   invisible(settings)
 }
 
@@ -959,9 +1024,11 @@ addUsersDatabase <- function(settings) {
 ##' @import XML
 ##' @author Shawn Serbin
 ##' @author Rob Kooper
+##' @author David LeBauer
 ##' @examples
 ##' \dontrun{
 ##' ## bash shell:
+##' ## example workflow.R and pecan.xml files in pecan/tests
 ##' R --vanilla -- --settings path/to/mypecan.xml < workflow.R 
 ##' 
 ##' ## R:
@@ -975,8 +1042,10 @@ read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml"){
   if(inputfile == ""){
     logger.warn("settings files specified as empty string; \n\t\tthis may be caused by an incorrect argument to system.file.")
   }
+
   loc <- which(commandArgs() == "--settings")
-  if (length(loc) != 0) {
+  ## If settings file passed at cmd line
+  if (length(loc) != 0) {  
     # 1 filename is passed as argument to R
     for(idx in loc) {
       if (!is.null(commandArgs()[idx+1]) && file.exists(commandArgs()[idx+1])) {
@@ -985,22 +1054,21 @@ read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml"){
         break
       }
     }
-
-  } else if (file.exists(Sys.getenv("PECAN_SETTINGS"))) {
+    ## if settings file on $PATH
+  } else if (file.exists(Sys.getenv("PECAN_SETTINGS"))) { 
     # 2 load from PECAN_SETTINGS
     logger.info("Loading PECAN_SETTINGS=", Sys.getenv("PECAN_SETTINGS"))
     xml <- xmlParse(Sys.getenv("PECAN_SETTINGS"))
-
+    ## if settings file passed to read.settings function
   } else if(!is.null(inputfile) && file.exists(inputfile)) {
     # 3 filename passed into function
     logger.info("Loading inpufile=", inputfile)
     xml <- xmlParse(inputfile)
-
+    ## use pecan.xml in cwd only if none exists
   } else if (file.exists("pecan.xml")) {
     # 4 load ./pecan.xml
     logger.info("Loading ./pecan.xml")
     xml <- xmlParse("pecan.xml")
-
   } else {
     # file not found
     logger.severe("Could not find a pecan.xml file")
@@ -1008,7 +1076,7 @@ read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml"){
 
   ## convert the xml to a list for ease and return
   settings <- xmlToList(xml)
-  settings <- addUsersDatabase(settings)
+  settings <- addSecrets(settings)
   settings <- update.settings(settings)
   settings <- check.settings(settings)
 
@@ -1032,5 +1100,5 @@ read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml"){
 ##=================================================================================================#
 
 ####################################################################################################
-### EOF.  End of R script file.  						
+### EOF.  End of R script file.              
 ####################################################################################################

@@ -4,7 +4,7 @@
 \alias{fia.to.psscss}
 \title{fia.to.psscss}
 \usage{
-fia.to.psscss(settings)
+fia.to.psscss(settings, gridres = 0.075)
 }
 \arguments{
 \item{create}{pss/css files based on data in the fia database}

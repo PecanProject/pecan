@@ -4,7 +4,8 @@
 \alias{approx.posterior}
 \title{Approximate posterior}
 \usage{
-approx.posterior(trait.mcmc, priors, trait.data = NULL, outdir = NULL)
+approx.posterior(trait.mcmc, priors, trait.data = NULL, outdir = NULL,
+  filename.flag = "")
 }
 \arguments{
 \item{trait.mcmc}{meta analysis outputs}
@@ -14,6 +15,8 @@ approx.posterior(trait.mcmc, priors, trait.data = NULL, outdir = NULL)
 \item{trait.data}{data used in meta-analysis (used for plotting)}
 
 \item{outdir}{directory in which to plot results}
+
+\item{filename.flag}{text to be included in the posteriors.pdf filename to make unique}
 }
 \value{
 posteriors data frame, similar to priors,
@@ -28,9 +31,11 @@ returns priors where posterior MCMC are missing
 NOTE: this function is similar to PEcAn.priors::fit.dist
 }
 \examples{
-\dontrun{data("trait.mcmc", package = "PEcAn.utils")
+\dontrun{
+data("trait.mcmc", package = "PEcAn.utils")
 data("prior.distns", package = "PEcAn.utils")
-approx.posterior(trait.mcmc, priors = prior.distns)}
+approx.posterior(trait.mcmc, priors = prior.distns)
+}
 }
 \author{
 David LeBauer, Carl Davidson, Mike Dietze

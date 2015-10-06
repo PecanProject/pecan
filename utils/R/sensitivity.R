@@ -22,15 +22,16 @@
 ##' @param end.year last year to include in sensitivity analysis
 ##' @param variables variables to be read from model output
 ##' @export
+##' @author Ryan Kelly, David LeBauer, Rob Kooper, Mike Dietze
 #--------------------------------------------------------------------------------------------------#
 read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name='', 
-                           start.year, end.year, variables){
+                           start.year, end.year, variable, sa.run.ids=NULL){
   
-  if (!exists('runs.samples')) {
+  if (is.null(sa.run.ids)) {
     samples.file <- file.path(pecandir, 'samples.Rdata')
     if(file.exists(samples.file)){
       load(samples.file)
-      sa.runs <- runs.samples$sa
+      sa.run.ids <- runs.samples$sa
     } else {
       logger.error(samples.file, "not found, this file is required by the read.sa.output function")      
     }
@@ -41,9 +42,9 @@ read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name='',
                       dimnames = list(quantiles, traits))
   for(trait in traits){
     for(quantile in quantiles){
-      run.id <- sa.runs[[pft.name]][quantile, trait]
+      run.id <- sa.run.ids[[pft.name]][quantile, trait]
       out <- read.output(run.id, file.path(outdir, run.id),
-                         start.year, end.year, variables)
+                         start.year, end.year, variable)
       sa.output[quantile, trait] <- sapply(out, mean, na.rm=TRUE)
     } ## end loop over quantiles
     logger.info("reading sensitivity analysis output for model run at ", quantiles, "quantiles of trait", trait)
@@ -63,7 +64,7 @@ read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name='',
 ##' @param write.config a model-specific function to write config files, e.g. \link{write.config.ED}  
 ##' @param convert.samples a model-specific function that transforms variables from units used in database to units used by model, e.g. \link{convert.samples.ED} 
 ##' @param ensemble.samples list of lists supplied by \link{get.sa.samples}
-##' @return data frame of runids, writes sensitivity analysis configuration files as a side effect
+##' @return list, containing $runs = data frame of runids, and $ensemble.id = the ensemble ID for these runs. Also writes sensitivity analysis configuration files as a side effect
 ##' @export
 ##' @author David LeBauer, Carl Davidson
 write.sa.configs <- function(defaults, quantile.samples, settings, model,
@@ -106,10 +107,16 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
   if (!is.null(con)) {
     now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
     db.query(paste0("INSERT INTO ensembles (created_at, runtype, workflow_id) values ('", now, "', 'sensitivity analysis', ", format(workflow.id,scientific=FALSE), ")"), con=con)
-    ensemble.id <- db.query(paste0("SELECT id FROM ensembles WHERE created_at='", now, "'"), con=con)[['id']]
+    ensemble.id <- db.query(paste0("SELECT id FROM ensembles WHERE created_at='", now, "' AND runtype='sensitivity analysis'"), con=con)[['id']]
     paramlist <- paste0("quantile=MEDIAN,trait=all,pft=", paste(lapply(settings$pfts, function(x) x[['name']]), sep=','))
     db.query(paste0("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id, parameter_list) values ('", settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", settings$run$end.date, "', '",settings$run$outdir , "', '", now, "', ", ensemble.id, ", '", paramlist, "')"), con=con)
     run.id <- db.query(paste0("SELECT id FROM runs WHERE created_at='", now, "' AND parameter_list='", paramlist, "'"), con=con)[['id']]
+
+    # associate posteriors with ensembles
+    for (pft in defaults) {
+      db.query(paste0("INSERT INTO posteriors_ensembles (posterior_id, ensemble_id, created_at, updated_at) values (",
+                      pft$posteriorid, ", ", ensemble.id, ", '", now, "', '", now, "');"), con=con)
+    }
 
     # associate inputs with runs
     if (!is.null(inputs)) {
@@ -120,7 +127,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
     }
   } else {
     run.id <- get.run.id('SA', 'median')
-    ensemble.id <- "NA"
+    ensemble.id <- NA
   }
   medianrun <- run.id
   
@@ -187,6 +194,12 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
             db.query(paste0("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id, parameter_list) values ('", settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", settings$run$end.date, "', '",settings$run$outdir , "', '", now, "', ", ensemble.id, ", '", paramlist, "')"), con=con)
             run.id <- db.query(paste0("SELECT id FROM runs WHERE created_at='", now, "' AND parameter_list='", paramlist, "'"), con=con)[['id']]
 
+            # associate posteriors with ensembles
+            for (pft in defaults) {
+              db.query(paste0("INSERT INTO posteriors_ensembles (posterior_id, ensemble_id, created_at, updated_at) values (",
+                              pft$posteriorid, ", ", ensemble.id, ", '", now, "', '", now, "');"), con=con)
+            }
+
             # associate inputs with runs
             if (!is.null(inputs)) {
               for(x in inputs) {
@@ -244,6 +257,6 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
     db.close(con)
   }
   options(scipen=scipen)
-  invisible(runs)
+  invisible(list(runs=runs, ensemble.id=ensemble.id))
 }
 #==================================================================================================#

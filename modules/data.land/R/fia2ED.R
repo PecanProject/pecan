@@ -51,10 +51,9 @@ table.expand <- function(x){
 ##' @return nothing
 ##' @export
 ##' @author Mike Dietze, Rob Kooper
-fia.to.psscss <- function(settings) {
+fia.to.psscss <- function(settings,gridres=0.075) {
 	## spatial info
-	POI	    <- TRUE	 ## point or region?
-	gridres	<- 0.1
+	POI	    <- TRUE	 ## point or region?	
 	lat     <- as.numeric(settings$run$site$lat)
 	lon     <- as.numeric(settings$run$site$lon)
 	
@@ -70,6 +69,9 @@ fia.to.psscss <- function(settings) {
 	
 	## SOILS
 	soil = c(1.0,5.0,5.0,0.01,0.0,1.0,1.0) #soil C & N pools (biogeochem) defaults (fsc,stsc,stsl,ssc,psc,msn,fsn)	
+  
+  ##Sites
+  #site = c(1) #Assuming extraction for one site so the site number is 1 and should be the same as "sitenum" in .site file
 	
 	## connect to database
 	con <-  db.open(settings$database$bety)
@@ -115,7 +117,7 @@ fia.to.psscss <- function(settings) {
 	
   
 	### select just most current
-	query <- paste('SELECT "INVYR", "STATECD", "STATEAB", "STATENM", "CYCLE", "SUBCYCLE" from "SURVEY"', sep="")
+	query <- paste('SELECT invyr, statecd, stateab, statenm, cycle, subcycle from survey', sep="")
 	surv <- db.query(query, con=fia.con)
 	names(surv) = tolower(names(surv))
   
@@ -152,9 +154,9 @@ fia.to.psscss <- function(settings) {
 		##              ##
 		##################
 		## query to get PSS info
-		query <- paste('SELECT p."CYCLE",p."STATECD",p."MEASYEAR" as time,p."CN" as patch,MIN(2-c."STDORGCD") as trk,AVG(c."STDAGE") as age,p."LAT",p."LON" FROM "PLOT" as p LEFT JOIN "COND" as c on p."CN"=c."PLT_CN" WHERE 
-             p."LON" >= ',lonmin[r],' and p."LON" < ',lonmax[r],
-			      	' and p."LAT" >= ',latmin[r],' and p."LAT" < ',latmax[r],' GROUP BY p."CN"')
+		query <- paste('SELECT p.cycle,p.statecd,p.measyear as time,p.cn as patch,MIN(2-c.stdorgcd) as trk,AVG(c.stdage) as age,p.lat,p.lon FROM plot as p LEFT JOIN cond as c on p.cn=c.plt_cn WHERE 
+             p.lon >= ',lonmin[r],' and p.lon < ',lonmax[r],
+			      	' and p.lat >= ',latmin[r],' and p.lat < ',latmax[r],' GROUP BY p.cn')
 		pss <- db.query(query, con=fia.con)
     names(pss) = tolower(names(pss))
 		pss <- pss[pss$cycle == cycle[pss$statecd],]
@@ -190,8 +192,10 @@ fia.to.psscss <- function(settings) {
 			if(length(sel) > 0){
 				y <- floor((i-1)/nx)
 				x <- i-1-y*nx
-				fname <- paste(path,"lat",(x+0.5)*gridres+latmin[r],"lon",(y+0.5)*gridres+lonmin[r],".pss",sep="") #filename      
+				#fname <- paste(path,"lat",(x+0.5)*gridres+latmin[r],"lon",(y+0.5)*gridres+lonmin[r],".pss",sep="") #filename 
+				fname <- paste(path,".radius ",gridres,".lat ",round(lat,digits=4)," lon ",round(lon,digits=4),".pss",sep="") #filename
 				water = rep(0,length(sel))
+				#write.table(cbind(site,pss[sel,2+1:4],area[sel],water,matrix(soil,length(sel),7,byrow=TRUE)),file=fname,quote=FALSE,row.names=FALSE)
 				write.table(cbind(pss[sel,2+1:4],area[sel],water,matrix(soil,length(sel),7,byrow=TRUE)),file=fname,quote=FALSE,row.names=FALSE)
 			}
 		}
@@ -203,9 +207,9 @@ fia.to.psscss <- function(settings) {
 		##################
 		
     
-    query <- paste('SELECT p."MEASYEAR" as time,p."CYCLE",p."STATECD",p."CN" as patch,CONCAT(CAST(t."SUBP" AS CHAR),CAST(t."TREE" AS CHAR)) as cohort,t."DIA"*2.54 as dbh, t."SPCD" as spcd, t."TPA_UNADJ"*0.0002471 as n FROM "PLOT" as p LEFT JOIN "TREE" as t on p."CN"=t."PLT_CN" WHERE 
-             p."LON" >= ',lonmin[r],' and p."LON" < ',lonmax[r],
-				' and p."LAT" >= ',latmin[r],' and p."LAT" < ',latmax[r], sep='')
+    query <- paste('SELECT p.measyear as time,p.cycle,p.statecd,p.cn as patch,CONCAT(CAST(t.subp AS CHAR),CAST(t.tree AS CHAR)) as cohort,t.dia*2.54 as dbh, t.spcd as spcd, t.tpa_unadj*0.0002471 as n FROM plot as p LEFT JOIN tree as t on p.cn=t.plt_cn WHERE 
+             p.lon >= ',lonmin[r],' and p.lon < ',lonmax[r],
+				' and p.lat >= ',latmin[r],' and p.lat < ',latmax[r], sep='')
 
 		css <- db.query(query, con=fia.con)
 		names(css) = tolower(names(css))
@@ -247,10 +251,13 @@ fia.to.psscss <- function(settings) {
 				symbol.table <- db.query('SELECT spcd, "Symbol" FROM species where spcd IS NOT NULL', con=con)
 				names(symbol.table) = tolower(names(symbol.table))
 			}
-			name.list <- na.omit(symbol.table$symbol[symbol.table$spcd %in% fia.only])  
+			name.list <- na.omit(symbol.table$symbol[symbol.table$spcd %in% fia.only])
+      name.list <- name.list[name.list != "DEAD"]
+			if(length(name.list) > 0) {
 			logger.error(paste("\nThe FIA database expects the following species at ", lat," and ", lon, " but they are not described by the selected PFTs: \n", 
 							paste(name.list[1:min(30,length(name.list))], collapse=", "), over.ten, "\n\tPlease select additional pfts.", sep="")) 
 			stop("Execution stopped due to insufficient PFTs.")
+			}
 		}
 		
 		
@@ -274,7 +281,8 @@ fia.to.psscss <- function(settings) {
 			if(length(sel) > 0){
 				y <- floor((i-1)/nx)
 				x <- i-1-y*nx
-				cssfile <- file(paste(path,"lat",(y+0.5)*gridres+latmin[r],"lon",(x+0.5)*gridres+lonmin[r],".css",sep=""), "w")
+				#cssfile <- file(paste(path,"lat",(y+0.5)*gridres+latmin[r],"lon",(x+0.5)*gridres+lonmin[r],".css",sep=""), "w")
+				cssfile <- file(paste(path,".radius ",gridres,".lat ",round(lat,digits=4)," lon ",round(lon,digits=4),".css",sep=""), "w")
 				writeLines("time patch cohort dbh hite pft n bdead balive lai",con=cssfile)
 				for(j in sel){
 					sel2 <- which(as.character(css$patch) == pss$patch[j])

@@ -36,6 +36,7 @@ Read_Tuscon <- function(folder){
   
   filenames <- dir(folder,pattern =  "TXT",full.names=TRUE)
   filenames <- c(filenames,dir(folder,pattern =  "rwl",full.names=TRUE))
+  filenames <- c(filenames,dir(folder,pattern = "rw",full.names=TRUE))
   corrected = grep(pattern="COR.txt",x=filenames)
   if(length(corrected)>0){
     filenames = filenames[-corrected]

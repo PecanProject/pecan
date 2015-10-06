@@ -2,9 +2,8 @@
 #PEcAn
 #data
 #pecan.zip
-#clim
+#ed.zip
 
-.libPaths("/home/polyglot/R/library")
 sink(stdout(),type="message")
 
 # global variables
@@ -16,14 +15,11 @@ args <- commandArgs(trailingOnly = TRUE)
 
 usage <- function(msg) {
     print(msg)
-    print(paste0("Usage:    ", args[0], " cf-nc_Input_File edOutputDir "))
-    print(paste0("Example1: ", args[0], " US-Dk3.pecan.nc US-Dk3.ed.zip  [/tmp/watever] "))
-    print(paste0("Example2: ", args[0], " US-Dk3.pecan.zip US-Dk3.ed.zip [/tmp/watever] "))
+    print(paste0("Usage:    ", args[0], " cf-nc_Input_File outputfile [tempfolder]"))
+    print(paste0("Example1: ", args[0], " US-Dk3.pecan.nc US-Dk3.ed.zip  [/tmp/watever]"))
+    print(paste0("Example2: ", args[0], " US-Dk3.pecan.zip US-Dk3.ed.zip [/tmp/watever]"))
     stop()
 }
-
-inputFile <- args[1]
-outputFile <- args[2]
 
 # parse/check arguments
 if (length(args) < 2) {
@@ -34,6 +30,9 @@ if (length(args) > 2) {
 } else {
     tempDir <- "temp"    
 }
+
+inputFile <- args[1]
+outputFile <- args[2]
 
 # create folders
 cffolder <- file.path(tempDir,"cf")

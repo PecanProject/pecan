@@ -1,0 +1,93 @@
+---
+title: "PEcAn.assim.batch Vignette"
+author: "Ryan Kelly"
+date: "July 12, 2015"
+output: html_document
+---
+
+## install package from Github
+
+Only needs to be done the first time
+```{r}
+library(devtools)
+install_github("PecanProject/pecan",subdir="all")
+```
+
+
+## Add <assim.batch> tags to pecan.xml
+
+The easiest way to run PEcAn's parameter data assimilation is to add an `<assim.batch>` block to pecan.xml, load the file with `read.settings`, and pass the resulting settings object to `pda.mcmc()`. Here is an example `<assim.batch>` block:
+
+```
+<assim.batch>
+  <iter>100</iter>
+  <prior>
+    <path>/path/to/(prior/post).distns.Rdata</path>
+  </prior>
+  <param.names>
+    <param>Amax</param>
+  </param.names>
+  <inputs>
+    <file>
+      <id>1000000358</id>
+      <format>Ameriflux.L4</format>
+      <data.model>
+        <likelihood>Laplace</likelihood>
+        <variable.id>297</variable.id>
+      </data.model>
+    </file>
+  </inputs>
+  <jump>
+    <ar.target>0.5</ar.target>
+    <adapt>25</adapt>
+    <jvar>
+      <jvar>0.1</jvar>
+    </jvar>
+    <adj.min>0.1</adj.min>
+  </jump>
+  <diag.plot.iter>25</diag.plot.iter>
+</assim.batch>
+```
+
+
+Here are details about the settings:
+
+
+* `<iter>` Specifies the number of MCMC iterations to run. If continuing a previous MCMC, this is the number of additional iterations, which will be added to the previous total. Defaults to 100 if missing. Ignored by pda.emulator(). 
+* `<prior>` Identifies the prior to be used for PDA. Can be one of either:
+  + `<posterior.id>` A posterior ID in BETY specifying the posterior from a previous PEcAn analysis (e.g., meta-analysis or previous PDA) to be used as the prior for PDA. Defaults to the most recent relevant posterior in the database if omitted (and no `<path>` specified instead; see below).
+  + `<path>` As an alternative to using a posterior ID, can specify a file path to either a `prior.distns.Rdata` or `post.distns.Rdata` file generated from an earlier analysis. Conceptually, using a posterior distribution as the prior for PDA is preferred, as this allows the multiple analyses to work together to iteratively constrain parameters. In practice, previous analyses may have over-constrained parameters to ranges that do not actually optimize model outputs, so using a less informative prior for PDA might yield better results. 
+* `<param.names>` The names of parameters to be constrained by assimilation, listed in individual `<param>` tags. These must be the standard names given by the trait dictionary, i.e.:
+
+  ```
+  data(trait.dictionary, package = "PEcAn.utils")
+  trait.dictionary[,c("id", "figid")]
+  ```
+
+* `<inputs>` Observation data to be compared to the model. In principle, can be one or more datasets, specified in a variety of ways. In practice, the code is only tested for a single dataset currently, and assumes the input is Ameriflux NEE. 
+  + `<file>` Denotes a set of tags for a single input. Would be repeated for multiple datasets once that functionality is supported. 
+    + `<id>` BETY input ID for looking up the input. Will be used preferentially over `<path>` or `<source>` (below). 
+    + `<path>` File path to the input. Only used if no `<id>` is given. 
+    + `<source>` A standardized source of input data (e.g., Ameriflux). Not implemented yet, but the idea would be similar to the met workflow, PEcAn would be able to use standard data sources automatically where available. Only used if no `<id>` or `<path>` is given.
+    + `<format>` An identifier to tell PEcAn how to handle the input. Currently allows either `Ameriflux.L2` or `Ameriflux.L4`. 
+    + `<data.model>` Block for specifying the data model to be used with this dataset. Currently ignored since all data are assumed to be Ameriflux NEE and treated identically.
+      + `<likelihood>` Identifier for the likelihood to use. E.g., the Ameriflux data use a Laplacian likelihood. 
+      + `<variable.id>` The BETY variable ID associated with this dataset. The idea is that specific preprocessing steps (e.g., estimating heteroskedastic error for tower NEE) would be associated with particular IDs. Could automate further by assigning default `<likelihood>` to variable.id values (allowing `<likelihood>` to be omitted from pecan.xml). And/or could add a separate tag `<preprocess>` that could specify a function to override any default associated with the variable ID.
+* `<jump>` 
+  + `<ar.target>` Target acceptance rate for the adaptive jump algorithm. Defaults to 0.5 if missing. 
+  + `<adapt>` Number of iterations between jump variance adaptations. Defaults to `floor(iter/10)` if missing. 
+  + `<jvar>` Initial jump variances for proposing parameter values, listed in individual `<jvar>` tags (one for each `<param>` specified in `<param.names>`). Will be adjusted adaptively. Defaults to 1/10 the prior variance if missing.
+  + `<adj.min>` Minimum factor by which to reduce jump variance when adapting. Prevents jump variances from degenerating to 0. Defaults to 0.1 if missing. 
+* `<diag.plot.iter>` Interval between saving diagnostic plots. Omit or set to NULL to skip them.
+* `<params.id>` (Not shown.) A BETY dbfile ID for an MCMC output from previous PDA. If specified, that file is loaded, the new MCMC starts from the last parameter values of the previous, and when finished the extended chain is saved as a new output. If missing, then MCMC starts fresh from prior median parameter values. Regardless, the MCMC parameter values of the PDA are saved to file and inserted in BETY, and the new dbfile ID is inserted into `<params.id>`. The `pda.mcmc()` funtion returns the `<assim.batch>` settings, which can then be saved. Then, calling a new round of PDA using these returned settings will automatically continue the previous MCMC. 
+
+
+
+## Run PDA
+
+
+
+
+
+
+

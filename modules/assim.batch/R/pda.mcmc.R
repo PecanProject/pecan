@@ -1,40 +1,35 @@
-## Paramater Data Assimilation using MCMC
-## Mike Dietze
-##
-## Brute-force, only to be used on simple models
-##
-## model = name of model (string)
-## chain = ID number of mcmc chain
-## params = previous output (used when updating MCMC)
-## var.names = vector of names of which parameters in the parameter vector to vary
-## jvar = jump variance
-pda.mcmc <- function(settings,prior,chain=1,var.names=NULL,jvar=NULL,params=NULL){
-  
+##' Paramater Data Assimilation using MCMC
+##'
+##' Brute-force, only to be used on simple models
+##'
+##' @title Paramater Data Assimilation using MCMC
+##' @param settings = a pecan settings list
+##'
+##' @return nothing. Diagnostic plots, MCMC samples, and posterior distributions
+##'  are saved as files and db records.
+##'
+##' @author Mike Dietze
+##' @author Ryan Kelly
+##' @export
+pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, chain=NULL, 
+                     iter=NULL, adapt=NULL, adj.min=NULL, ar.target=NULL, jvar=NULL, n.knot=NULL) {
+
   ## this bit of code is useful for defining the variables passed to this function 
   ## if you are debugging
   if(FALSE){
-    model = "SIPNET"
-    chain = 1
-    params = NULL
-    var.names = "Amax"
-    jvar = NULL
-    var.id = 297 ## NEE, canonical units umolC/m2/s
+    params.id <- param.names <- prior.id <- chain <- iter <- NULL 
+    n.knot <- adapt <- adj.min <- ar.target <- jvar <- NULL
   }
-  
-  ## settings
-  weight <- 0.001
-  model = settings$model$model_type
-  write = settings$database$bety$write
-  start <- 1
-  finish <- as.numeric(settings$assim.batch$iter)
-  defaults <- settings$pfts
-  outdir <- settings$run$host$outdir
-  host <- settings$run$host
-  start.year = strftime(settings$run$start.date,"%Y")
-  end.year   = strftime(settings$run$end.date,"%Y")
-  
-  ## open database connection
-  if(write){
+
+  ## -------------------------------------- Setup ------------------------------------- ##
+  ## Handle settings
+    settings <- pda.settings(
+                  settings=settings, params.id=params.id, param.names=param.names, 
+                  prior.id=prior.id, chain=chain, iter=iter, adapt=adapt, 
+                  adj.min=adj.min, ar.target=ar.target, jvar=jvar, n.knot=n.knot)
+
+  ## Open database connection
+  if(settings$database$bety$write){
     con <- try(db.open(settings$database$bety), silent=TRUE)
     if(is.character(con)){
       con <- NULL
@@ -42,238 +37,174 @@ pda.mcmc <- function(settings,prior,chain=1,var.names=NULL,jvar=NULL,params=NULL
   } else {
     con <- NULL
   }
-  
-  # Get the workflow id
+
+  ## Load priors
+  temp <- pda.load.priors(settings, con)
+  prior <- temp$prior
+  settings <- temp$settings
+  pname <-  rownames(prior) 
+  n.param.all  <- nrow(prior)
+
+  ## Load data to assimilate against
+  inputs <- load.pda.data(settings$assim.batch$inputs, con)
+  n.input <- length(inputs)
+
+  ## Set model-specific functions
+  do.call("require",list(paste0("PEcAn.", settings$model$type)))
+  my.write.config <- paste("write.config.", settings$model$type,sep="")
+  if(!exists(my.write.config)){
+    logger.severe(paste(my.write.config,"does not exist. Please make sure that the PEcAn interface is loaded for", settings$model$type))
+  }
+
+  ## Select parameters to constrain
+  prior.ind <- which(rownames(prior) %in% settings$assim.batch$param.names)
+  n.param <- length(prior.ind)
+
+  ## Get the workflow id
   if ("workflow" %in% names(settings)) {
     workflow.id <- settings$workflow$id
   } else {
     workflow.id <- -1
   }
-  
-  # create an ensemble id
-  if (!is.null(con)) {
-    # write enseblem first
-    now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-    db.query(paste("INSERT INTO ensembles (created_at, runtype, workflow_id) values ('", 
-                   now, "', 'MCMC', ", workflow.id, ")", sep=''), con)
-    ensemble.id <- db.query(paste("SELECT id FROM ensembles WHERE created_at='", now, "'", sep=''), con)[['id']]
+
+  ## Create an ensemble id
+  settings$assim.batch$ensemble.id <- pda.create.ensemble(settings, con, workflow.id)
+
+  ## Set prior distribution functions (d___, q___, r___, and multivariate versions)
+  prior.fn <- pda.define.prior.fn(prior)
+
+  ## Set up likelihood functions
+  llik.fn <- pda.define.llik.fn(settings)
+
+
+  ## ----------------------------------- MCMC Setup ----------------------------------- ##
+  ## Initialize empty params matrix (concatenated to params from a previous PDA, if provided)
+  params <- pda.init.params(settings, con, pname, n.param.all)
+    start  <- params$start
+    finish <- params$finish
+    params <- params$params
+
+  ## File for temp storage of params (in case of crash)
+  #  Using .txt here to allow quick append after each iteration (maybe a better way?)
+  #  At the end of MCMC the entire object is saved as .Rdata
+  filename.mcmc.temp <- file.path(settings$outdir, "pda.mcmc.txt")
+
+  ## Set initial conditions
+  if(start==1) {
+    parm <- sapply(prior.fn$qprior,eval,list(p=0.5))
   } else {
-    ensemble.id <- "NA"
+    parm <- params[start-1, ]
   }
-  
-  ## model-specific functions
-  do.call("require",list(paste0("PEcAn.",model)))
-  my.write.config <- paste("write.config.",model,sep="")
-  if(!exists(my.write.config)){
-    print(paste(my.write.config,"does not exist"))
-    print(paste("please make sure that the PEcAn interface is loaded for",model))
-    stop()
+  names(parm) <- pname
+  LL.old <- prior.old <- -Inf
+
+  ## Jump distribution setup
+  accept.rate <- numeric(n.param)  ## Create acceptance rate vector of 0's (one zero per parameter)
+
+  # Default jump variances. Looped for clarity
+  ind <- which(is.na(settings$assim.batch$jump$jvar))
+  for(i in seq_along(ind)) {
+    # default to 0.1 * 90% prior CI
+    settings$assim.batch$jump$jvar[[i]] <- 
+      0.1 * diff(eval(prior.fn$qprior[[prior.ind[ind[i]]]], list(p=c(0.05,0.95))))
   }
-  
-  ## set up prior density (d) and random (r) functions
-  nvar <- nrow(prior)
-  dprior <- rprior <- qprior <-list()
-  for(i in 1:nvar){
-    if(prior$distn[i] == 'exp'){
-      dprior[[i]] <- parse(text=paste("dexp(x,",prior$parama[i],",log=TRUE)",sep=""))
-      rprior[[i]] <- parse(text=paste("rexp(n,",prior$parama[i],")",sep=""))
-      qprior[[i]] <- parse(text=paste("qexp(p,",prior$parama[i],")",sep=""))
-    }else{
-      dprior[[i]] <- parse(text=paste("d",prior$distn[i],"(x,",prior$parama[i],",",prior$paramb[i],",log=TRUE)",sep=""))
-      rprior[[i]] <- parse(text=paste("r",prior$distn[i],"(n,",prior$parama[i],",",prior$paramb[i],")",sep=""))
-      qprior[[i]] <- parse(text=paste("q",prior$distn[i],"(p,",prior$parama[i],",",prior$paramb[i],")",sep=""))
-    }
+
+  ## Create dir for diagnostic output
+  if(!is.null(settings$assim.batch$diag.plot.iter)) {
+    dir.create(file.path(settings$outdir, paste0('diag.pda', settings$assim.batch$ensemble.id)),
+      showWarnings=F, recursive=T)
   }
-  dmvprior <- function(x,log=TRUE){  #multivariate prior - density
-    p = rep(NA,nvar)
-    for(i in 1:nvar){
-      p[i] = eval(dprior[[i]],list(x=x[i]))
-    }
-    p = sum(p)
-    if(log) return(p)
-    return(exp(p))
-    return(p)
-  }
-  rmvprior <- function(n){  #multivariate prior - random number
-    p = matrix(NA,n,nvar)
-    for(i in 1:nvar){
-      p[,i] = eval(rprior[[i]],list(n=n))
-    }
-    return(p)
-  }
-  pname =  rownames(prior)  ## Parameter names
-  if(is.null(var.names)){
-    vars = 1:nvar
-  } else {
-    vars = which(pname %in% var.names)
-  }
-  p.median <- sapply(qprior,eval,list(p=0.5))
-  
-  
-  ## load data
-  input.id = settings$assim.batch$input.id
-  data <- read.csv(settings$assim.batch$input)
-  NEEo <- data$NEE_or_fMDS #data$Fc   #umolCO2 m-2 s-1
-  NEEq <- data$NEE_or_fMDSqc #data$qf_Fc
-  NEEo[NEEq > 0] <- NA
-  
-  NPPo<- state$NPP[,,23]
-  AGBo<- state$AGB[,,24]
-  
-  #parameters for bivariate normal likelihood
-  mu = c(mean(NPPo),mean(AGBo))
-  sigma = cov(cbind(NPPo,AGBo))
-  
-  ## calculate flux uncertainty parameters
-  dTa <- get.change(data$Ta_f)
-  flags <- dTa < 3   ## filter data to temperature differences that are less thatn 3 degrees
-  NEE.params <- flux.uncertainty(NEEo,NEEq,flags,bin.num=20)
-  b0 <- NEE.params$intercept
-  bp <- NEE.params$slopeP
-  bn <- NEE.params$slopeN
-  
-  
-  ## set up storage
-  if(is.null(params)){
-    params <- matrix(numeric(),finish,nvar)
-  } else {
-    start <- nrow(params)+1
-    params <- rbind(params,matrix(numeric(),finish-start+1,nvar))
-  }
-  
-  ## set initial conditions
-  if(start==1){
-    parm = as.vector(p.median)
-  } else{
-    parm <- params[start-1,]
-  }
-  names(parm) = pname
-  LL.old <- -Inf
-  prior.old <- -Inf
-  
-  ## set jump variance
-  if(is.null(jvar)){
-    jvar <- rep(0.1,nvar)
-  }
-  
-  ## main MCMC loop
+
+  ## save updated settings XML. Will be overwritten at end, but useful in case of crash
+  saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 
+    paste0('pecan.pda', settings$assim.batch$ensemble.id, '.xml')))
+
+  ## --------------------------------- Main MCMC loop --------------------------------- ##
   for(i in start:finish){
-    
-    print(paste(i,"of",finish))
-    
-    for(j in vars){
+    logger.info(paste("Data assimilation MCMC iteration",i,"of",finish))
+
+    ## Adjust Jump distribution
+    if(i %% settings$assim.batch$jump$adapt < 1){
+      settings <- pda.adjust.jumps(settings, accept.rate, pnames=pname[prior.ind])
+      accept.rate <- numeric(n.param)
+
+      # Save updated settings XML. Will be overwritten at end, but useful in case of crash
+      saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 
+        paste0('pecan.pda', settings$assim.batch$ensemble.id, '.xml')))
+    }
+
+    for(j in 1:n.param){
+      pstar <- parm
       
-      ## propose parameter values
-      pnew = rnorm(1,parm[j],jvar[j])
-      pstar = parm
-      pstar[j] = pnew
-      
-      ## check that value falls within the prior
-      prior.star <- dmvprior(pstar)
+      ## Propose parameter values
+      if(i > 1) {
+        pnew  <- rnorm(1, parm[prior.ind[j]], settings$assim.batch$jump$jvar[[j]])
+        pstar[prior.ind[j]] <- pnew
+      }
+
+      ## Check that value falls within the prior
+      prior.star <- prior.fn$dmvprior(pstar)
       if(is.finite(prior.star)){
-        
-        ## set RUN.ID
-        if (!is.null(con)) {
-          now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-          paramlist <- paste("MCMC: chain",chain,"iteration",i,"variable",j)
-          db.query(paste("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id,",
-                         " parameter_list) values ('", 
-                         settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", 
-                         settings$run$end.date, "', '", settings$run$outdir , "', '", now, "', ", ensemble.id, ", '", 
-                         paramlist, "')", sep=''), con)
-          run.id <- db.query(paste("SELECT id FROM runs WHERE created_at='", now, "' AND parameter_list='", paramlist, "'", 
-                                   sep=''), con)[['id']]
-        } else {
-          run.id = paste("MCMC",chain,i,j,sep=".")
-        }
-        dir.create(file.path(settings$rundir, run.id), recursive=TRUE)
-        dir.create(file.path(settings$modeloutdir, run.id), recursive=TRUE)
-        
-        ## write config
-        do.call(my.write.config,args=list(defaults,list(pft=pstar,env=NA),
-                                          settings, run.id))
-        
-        ## write a README for the run
-        cat("runtype     : pda.mcmc\n",
-            "workflow id : ", as.character(workflow.id), "\n",
-            "ensemble id : ", as.character(ensemble.id), "\n",
-            "chain       : ", chain, "\n",
-            "run         : ", i, "\n",
-            "variable    : ", pname[j], "\n",
-            "run id      : ", as.character(run.id), "\n",
-            "pft names   : ", as.character(lapply(settings$pfts, function(x) x[['name']])), "\n",
-            "model       : ", model, "\n",
-            "model id    : ", settings$model$id, "\n",
-            "site        : ", settings$run$site$name, "\n",
-            "site  id    : ", settings$run$site$id, "\n",
-            "met data    : ", settings$run$site$met, "\n",
-            "start date  : ", settings$run$start.date, "\n",
-            "end date    : ", settings$run$end.date, "\n",
-            "hostname    : ", settings$run$host$name, "\n",
-            "rundir      : ", file.path(settings$run$host$rundir, run.id), "\n",
-            "outdir      : ", file.path(settings$run$host$outdir, run.id), "\n",
-            file=file.path(settings$rundir, run.id, "README.txt"), sep='')
-        
-        ## add the job to the list of runs
-        cat(as.character(run.id),file=file.path(settings$rundir, "runs.txt"),sep="\n",append=FALSE)
-        
-        ## start model run
+        ## Set up run and write run configs
+        run.id <- pda.init.run(settings, con, my.write.config, workflow.id, pstar, n=1,
+                               run.names=paste0("MCMC_chain.",chain,"_iteration.",i,"_variable.",j))
+
+        ## Start model run
         start.model.runs(settings,settings$database$bety$write)
-        
-        ## read model output        
-        NEEm <- read.output(run.id, outdir = file.path(outdir, run.id),
-                            start.year, end.year, variables="NEE")$NEE*0.0002640674
-        ## unit conversion kgC/ha/yr -> umolC/m2/sec
-        NPPvecm <-read.output(run.id, outdir = file.path(outdir, run.id),
-                              start.year, end.year, variables="NPP")$NPP
-        NPPm<- sum(NPPvecm)
-        
-        ## match model and observations
-        NEEm <- rep(NEEm,each=length(NEEo)/length(NEEm))
-        set <- 1:length(NEEm)  ## ***** need a more intellegent year matching!!!
-        NPPm <- rep(NPPm,each=length(NPPo)/length(NPPm))
-        set <- 1:length(NPPm) 
-        
-        ## calculate likelihood
-        fsel <- which(NEEm > 0)
-        LL.star       <- dexp(abs(NEEm-NEEo[set]),1/(b0 + bn*NEEm),log=TRUE)
-        LL.star[fsel] <- dexp(abs(NEEm-NEEo[set]),1/(b0 + bp*NEEm),log=TRUE)[fsel]
-        n.obs = sum(!is.na(LL.star))
-        LL.star <- sum(LL.star,na.rm=TRUE)
-        #loglikelihood for bivar normal distn of NPP and AGB
-        LL.star1 <-sum(dmvnorm(cbind(NPPo,AGBo), mu, sigma, log=TRUE), na.rm=TRUE)
-        
-        LL.total<-LL.star*weight+LL.star1
-        ## insert Likelihood record in database
-        #if (!is.null(con)) {
-        #  now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-        #  paramlist <- paste("MCMC: chain",chain,"iteration",i,"variable",j)
-        #  db.query(paste("INSERT INTO likelihoods (run_id, variable_id, input_id, loglikelihood, n_eff, weight,created_at) values ('", 
-        #                 run.id, "', '", var.id, "', '", input.id, "', '", LL.total, "', '",
-        #                 floor(n.obs*weight), "', '", weight , "', '", now,"')", sep=''), con)
-        #}
-        
-        ## accept or reject step
-        a = LL.total-LL.old + prior.star - prior.old
+
+        ## Read model outputs
+        model.out <- pda.get.model.output(settings, run.id, inputs)
+    
+        ## Calculate likelihood (and store in database)
+        LL.new <- pda.calc.llik(settings, con, model.out, run.id, inputs, llik.fn)
+
+        ## Accept or reject step
+        a <- LL.new - LL.old + prior.star - prior.old
+        if(is.na(a)) a <- -Inf  # Can occur if LL.new == -Inf (due to model crash) and LL.old == -Inf (first run)
+
         if(a > log(runif(1))){
-          LL.old <- LL.total
+          LL.old <- LL.new
           prior.old <- prior.star
           parm <- pstar 
-          
+          accept.rate[j] <- accept.rate[j] + 1
         }
-      }
-      
+      } ## end if(is.finite(prior.star))
     } ## end loop over variables
-    
-    ## save output
+
+    ## Diagnostic figure
+    if(!is.null(settings$assim.batch$diag.plot.iter) && is.finite(prior.star) && 
+        (i==start | i==finish | (i %% settings$assim.batch$diag.plot.iter == 0))) {
+      pdf(file.path(settings$outdir, paste0('diag.pda', settings$assim.batch$ensemble.id),
+        paste0("data.vs.model_", gsub(" ", "0",sprintf("%5.0f", i)), ".pdf")))
+        NEEo <- inputs[[1]]$NEEo
+
+        NEEm <- model.out[[1]]
+        NEE.resid <- NEEm - NEEo
+
+        par(mfrow=c(1,2))
+        plot(NEEo)
+        points(NEEm, col=2, cex=0.5)
+        legend("topleft", col=c(1,2), pch=1, legend=c("data","model"))
+        hist(NEE.resid, 100, main=paste0("LLik: ", round(LL.new,1)))
+      dev.off()
+    }
+
+    ## Store output
     params[i,] <- parm
     
-  } ## end MCMC loop
-  
+    ## Add to temp file (overwrite when i=1, append thereafter)
+    cat(c(parm,'\n'), file=filename.mcmc.temp, sep='\t', append=(i != 1))
+  }
+
+
+  ## ------------------------------------ Clean up ------------------------------------ ##
+  ## Save outputs to plots, files, and db
+  settings <- pda.postprocess(settings, con, params, pname, prior, prior.ind)
+
   ## close database connection
   if(!is.null(con)) db.close(con)
-  
-  if(is.null(names(params))) names(params) = rownames(prior)
-  return(params)
+
+  ## Output an updated settings list
+  return(settings)
   
 } ## end pda.mcmc

@@ -131,8 +131,8 @@
 				! Special values: -1 = daily; -2 = monthly
 
    NL%ICLOBBER  = 1             ! 0 = stop if files exist, 1 = overwite files
-   NL%FRQFAST   = 21600.        ! Time interval between analysis/history files
-   NL%FRQSTATE  = 1.            ! Time interval between history files
+   NL%FRQFAST   = 1800.        ! Time interval between analysis/history files
+   NL%FRQSTATE  = 86400.            ! Time interval between history files
 !------------------------------------------------------------------------------------------!
 
 
@@ -140,8 +140,8 @@
 !------------------------------------------------------------------------------------------!
 ! Analysis/history/restart file: path, prefix, settings                                    !
 !------------------------------------------------------------------------------------------!
-   NL%FFILOUT = '@SCRATCH@/@OUTFILE@'         ! Analysis output prefix
-   NL%SFILOUT   = '@OUTDIR@/@HISTFILE@'           ! History output prefix
+   NL%FFILOUT = '@FFILOUT@'         ! Analysis output prefix
+   NL%SFILOUT   = '@SFILOUT@'           ! History output prefix
 
    NL%IED_INIT_MODE   = @INIT_MODEL@
    !---------------------------------------------------------------------------------------!
@@ -204,7 +204,7 @@
                         ! This variable must be defined for all grids. The order is
                         ! all ED regions first followed by ED SOIs. 
    
-   NL%NSLCON   = 2      ! Default soil type if ISOILFLG = 2 (choices below:)
+   NL%NSLCON   = 3      ! Default soil type if ISOILFLG = 2 (choices below:)
    !-----------------------------------------------------------------------!
    ! ED Soil classes:                                                      !
    !-----------------------------------------------------------------------!
@@ -219,13 +219,13 @@
    ! and slxclay and slxsand are defined between 0 and 1, with the sum of these variables  !
    ! not exceeding 1.  Otherwise, the default ED parameters will be used.                  !
    !---------------------------------------------------------------------------------------!
-!   NL%SLXCLAY = 0.23 
-!   NL%SLXSAND = 0.26
+!   NL%SLXCLAY = 0.13 
+!   NL%SLXSAND = 0.54
 
 !----- Depth (m) of bottom of soil model grid levels --------------------------------------!
    NL%SLZ     = -2.17, -1.50, -1.10, -0.80, -0.60, -0.45, -0.30, -0.20, -0.12, -0.06
 !----- Initial soil moisture (fraction of saturation) -------------------------------------!
-   NL%SLMSTR  =  0.60,  0.60,  0.60, 0.60,  0.60,  0.60,  0.60,  0.60,  0.60
+   NL%SLMSTR  =  0.65,  0.65,  0.65, 0.65,  0.65,  0.65,  0.65,  0.65,  0.65
 !----- Initial soil temperature offset (with respect to the atmospheric temperature) ------!
    NL%STGOFF  =   0.0,   0.0,   0.0, 0.0,   0.0,   0.0,   0.0,   0.0,   0.0
 !------------------------------------------------------------------------------------------!
@@ -288,7 +288,7 @@
                          ! the full, exact calculation each time.  Set to 1 
                          ! to do the 'small perturbation' scheme.
 
-   NL%IPHEN_SCHEME    = 0  ! This specifies the phenology scheme:
+   NL%IPHEN_SCHEME    = @PHENOL_SCHEME@  ! This specifies the phenology scheme:
                            !  0 -- the cold-deciuous (Botta et al.)
                            !       and old drought-deciduous (same with ED2.0);
                            !  1 -- the Harvard Forest observations
@@ -383,9 +383,9 @@
                         ! This option is ignored in near bare ground runs.
 
 !----- Patch and cohort dimension settings ------------------------------------------------!
-   NL%MAXPATCH  =  1 ! If number of patches in a given site exceeds 
+   NL%MAXPATCH  =  30 ! If number of patches in a given site exceeds 
                       ! NL%MAXPATCH, force patch fusion.
-   NL%MAXCOHORT =  1 ! If number of cohorts in a given patch exceeds
+   NL%MAXCOHORT =  60 ! If number of cohorts in a given patch exceeds
                       ! NL%MAXCOHORT, force cohort fusion.
 !------------------------------------------------------------------------------------------!
                                          
@@ -399,7 +399,7 @@
 
    NL%TREEFALL_DISTURBANCE_RATE  = 0.0 ! Treefall disturbance rate, 1/years
 
-   NL%RUNOFF_TIME    = 28800.0         ! the forest could get saturated and 
+   NL%RUNOFF_TIME    = 86400.0         ! the forest could get saturated and 
                                        ! develop a sfcwater pool of meters or 
                                        ! more.  In many cases, this is not realistic.
                                        ! This is the time scale in seconds for 

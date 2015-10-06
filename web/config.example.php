@@ -17,12 +17,20 @@ $db_fia_database="";
 
 # browdog information
 $browndog_url="";
+$browndog_username="";
+$browndog_password="";
 
 # R binary
 $Rbinary="/usr/bin/R";
 
-# Require username/password
+# Require username/password, can set min level to 0 so nobody can run/delete.
+# 4 = viewer
+# 3 = creator
+# 2 = manager
+# 1 = administrator
 $authentication=false;
+$min_run_level=2;
+$min_delete_level=2;
 
 # Used for authentication, needs to be same as ruby
 $REST_AUTH_SITE_KEY="thisisnotasecret";
@@ -40,6 +48,9 @@ $pecan_home="/home/carya/pecan/";
 
 # Folder where the runs are stored
 $output_folder="/home/carya/output/";
+
+# Folder where the generated files are stored
+$dbfiles_folder=$output_folder . "/dbfiles";
 
 # ED specific inputs, should come from database
 $ed_veg="/home/carya/oge2OLD/OGE2_";

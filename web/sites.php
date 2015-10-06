@@ -16,10 +16,15 @@ require("common.php");
 open_database();
 if ($authentication) {
 	if (!check_login()) {
-		close_database();
 		header('HTTP/1.1 403 Unauthorized');
+    close_database();
 		exit;
 	}
+  if (get_page_acccess_level() > $min_run_level) {
+    header('HTTP/1.1 403 Unauthorized');
+    close_database();
+    exit;
+  }
 }
 
 // Start XML file, create parent node
@@ -118,7 +123,9 @@ if (isset($_REQUEST['model']) && ($_REQUEST['model'] != "") && isset($_REQUEST['
   // 6. Get list of all formats needed for model
   $stmt = $pdo->prepare("SELECT format_id FROM modeltypes_formats, models" .
                         " WHERE modeltypes_formats.modeltype_id=models.modeltype_id" .
+                        " AND modeltypes_formats.required = true".
                         " AND models.id=?;");
+
   if (!$stmt->execute(array($_REQUEST['model']))) {
     die('Invalid query: ' . error_database());
   }

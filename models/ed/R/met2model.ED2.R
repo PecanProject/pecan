@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
+# are made available under the terms of the
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
@@ -13,13 +13,13 @@
 # >source("http://bioconductor.org/biocLite.R")
 # >biocLite("rhdf5")
 
-##If files already exist in "Outfolder", the default function is NOT to overwrite them and 
-##only gives user the notice that file already exists. If user wants to overwrite the existing files, just change 
+##If files already exist in "Outfolder", the default function is NOT to overwrite them and
+##only gives user the notice that file already exists. If user wants to overwrite the existing files, just change
 ##overwrite statement below to TRUE.
 
 
 ##' met2model wrapper for ED2
-##' 
+##'
 ##' @title met2model for ED2
 ##' @export
 ##' @param in.path location on disk where inputs are stored
@@ -30,9 +30,9 @@
 ##' @param lst timezone offset to GMT in hours
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
-met2model.ED2 <- function(in.path,in.prefix,outfolder,start_date, end_date, lst=0,..., overwrite=FALSE,verbose=FALSE){
+met2model.ED2 <- function(in.path,in.prefix,outfolder,start_date, end_date, lst=0,lat=NA,lon=NA,..., overwrite=FALSE,verbose=FALSE){
   overwrite = as.logical(overwrite)
-  
+
   require(rhdf5)
   require(ncdf4)
   #require(ncdf)
@@ -51,11 +51,12 @@ met2model.ED2 <- function(in.path,in.prefix,outfolder,start_date, end_date, lst=
                         formatname=c('ed.met_driver_header files format'),
                         startdate=c(start_date),
                         enddate=c(end_date),
+                        dbfile.name = "ED_MET_DRIVER_HEADER",
                         stringsAsFactors = FALSE)
 
   ## check to see if the outfolder is defined, if not create directory for output
   dir.create(met_folder, recursive=TRUE, showWarnings = FALSE)
-  
+
 ### FUNCTIONS
 dm <- c(0,32,60,91,121,152,182,213,244,274,305,335,366)
 dl <- c(0,32,61,92,122,153,183,214,245,275,306,336,367)
@@ -80,17 +81,29 @@ for(year in start_year:end_year) {
   ## extract file root name
   #froot <- substr(files[i],1,28)
   #print(c(i,froot))
-  
+
   ## open netcdf
   nc <- nc_open(ncfile)
-  
+
+  # check lat/lon
+  if (is.na(lat)) {
+    lat <- nc$dim[[1]]$vals[1]
+  } else if (lat != nc$dim[[1]]$vals[1]) {
+    logger.warn("Latitude does not match that of file", lat, "!=", nc$dim[[1]]$vals[1])
+  }
+  if (is.na(lon)) {
+    lon <- nc$dim[[2]]$vals[1]
+  } else if (lon != nc$dim[[2]]$vals[1]) {
+    logger.warn("Longitude does not match that of file", lon, "!=", nc$dim[[2]]$vals[1])
+  }
+
   ## determine GMT adjustment
   ## lst <- site$LST_shift[which(site$acro == froot)]
-  
-  
+
+
   ## extract variables
-  lat  <- ncvar_get(nc,"latitude")
-  lon  <- ncvar_get(nc,"longitude")
+  lat  <- eval(parse(text = lat))
+  lon  <- eval(parse(text = lon))
   sec   <- nc$dim$time$vals
   Tair <- ncvar_get(nc,"air_temperature")
   Qair <- ncvar_get(nc,"specific_humidity")  #humidity (kg/kg)
@@ -101,14 +114,14 @@ for(year in start_year:end_year) {
   SW   <- ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air")
   LW   <- ncvar_get(nc,"surface_downwelling_longwave_flux_in_air")
   CO2  <- try(ncvar_get(nc,"mole_fraction_of_carbon_dioxide_in_air"))
-  
-  useCO2 = is.numeric(CO2)  
+
+  useCO2 = is.numeric(CO2)
 
   ## convert time to seconds
   sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$time$units," "))[1],"seconds")
-  
+
   nc_close(nc)
-  
+
   ifelse(leap_year(year)==TRUE,
          dt <- (366*24*60*60)/length(sec), #leap year
          dt <- (365*24*60*60)/length(sec)) #non-leap year
@@ -126,8 +139,8 @@ for(year in start_year:end_year) {
   SW <- c(rep(SW[1],toff),SW)[1:slen]
   LW <- c(rep(LW[1],toff),LW)[1:slen]
   if(useCO2)  CO2 <- c(rep(CO2[1],toff),CO2)[1:slen]
- 
-  
+
+
   ##build time variables (year, month, day of year)
   nyr <- floor(length(sec)/86400/365*dt)
   yr <- NULL
@@ -161,7 +174,7 @@ for(year in start_year:end_year) {
     doy[rng] <- rep(1:366,each=86400/dt)[1:length(rng)]
     hr[rng] <- rep(seq(0,length=86400/dt,by=dt/86400*24),366)[1:length(rng)]
   }
-  
+
   ## calculate potential radiation
   ## in order to estimate diffuse/direct
   f <- pi/180*(279.5+0.9856*doy)
@@ -177,10 +190,10 @@ for(year in start_year:end_year) {
 
   cosz <- sin(lat*pi/180)*sin(dec)+cos(lat*pi/180)*cos(dec)*cos(h)
   cosz[cosz<0] <- 0
-  
+
   rpot <- 1366*cosz
   rpot <- rpot[1:length(SW)]
-  
+
   SW[rpot < SW] <- rpot[rpot<SW] ## ensure radiation < max
       ### this causes trouble at twilight bc of missmatch btw bin avergage and bin midpoint
   frac <- SW/rpot
@@ -189,7 +202,7 @@ for(year in start_year:end_year) {
   frac[is.na(frac)] <- 0.0
   frac[is.nan(frac)] <- 0.0
   SWd <- SW*(1-frac)  ## Diffuse portion of total short wave rad
-  
+
 ### convert to ED2.1 hdf met variables
   n     <- length(Tair)
   nbdsfA <- (SW - SWd) * 0.57 # near IR beam downward solar radiation [W/m2]
@@ -207,16 +220,16 @@ for(year in start_year:end_year) {
   if(useCO2){
     co2A   <- CO2/1e6               # surface co2 concentration [ppm] converted from mole fraction [kg/kg]
   }
-  
+
   ## create directory
   #if(system(paste("ls",froot),ignore.stderr=TRUE)>0) system(paste("mkdir",froot))
-  
+
   ## write by year and month
   for(y in year+1:nyr-1){
     sely <- which(yr == y)
     for(m in unique(mo[sely])){
       selm <- sely[which(mo[sely] == m)]
-      mout <- paste(met_folder,"/",y,month[m],".h5",sep="")     
+      mout <- paste(met_folder,"/",y,month[m],".h5",sep="")
       if(file.exists(mout)){
         if(overwrite==TRUE){
           file.remove(mout)
@@ -225,7 +238,7 @@ for(year in start_year:end_year) {
         if(overwrite==FALSE){
           logger.warn("The file already exists! Moving to next month!")
           next
-        }        
+        }
       }
       else h5createFile(mout)
       dims <- c(length(selm),1,1)
@@ -259,14 +272,14 @@ for(year in start_year:end_year) {
       if(useCO2){
           h5write(co2,mout,"co2")
       }
-     
-      
+
+
     }
   }
 
   ## write DRIVER file
   sites <- 1
-  metgrid <- c(1,1,1,1,floor(lon),floor(lat))
+  metgrid <- c(1,1,1,1,lon,lat)
   metvar <- c("nbdsf","nddsf","vbdsf","vddsf","prate","dlwrf","pres","hgt","ugrd","vgrd","sh","tmp","co2")
   nmet <- length(metvar)
   metfrq <- rep(dt,nmet)

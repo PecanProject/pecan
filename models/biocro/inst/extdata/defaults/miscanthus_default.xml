@@ -9,7 +9,7 @@
     <nlayers>10</nlayers>
     <kd>0.1</kd>
     <chi.l>1</chi.l>
-    <mResp/>
+    <mResp>0.02,0.03</mResp>
     <heightFactor>3</heightFactor>
     <leafwidth>0.04</leafwidth>
     <eteq>0</eteq>
@@ -29,7 +29,7 @@
     <theta>0.83</theta>
     <beta>0.93</beta>
     <Rd>0.8</Rd>
-    <Catm>380</Catm>
+    <Catm>400</Catm>
     <b0>0.01</b0>
     <b1>3</b1>
     <ws>1</ws>
