@@ -224,7 +224,7 @@ else
   fi
 
   # find current schema version
-  VERSION=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c 'SELECT version FROM schema_migrations ORDER BY version DESC limit 1' | tr -d ' ' )
+  VERSION=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c 'SELECT md5(array_agg(version)::text) FROM (SELECT version FROM schema_migrations ORDER BY version) as v;' | tr -d ' ' )
 
   if [ ! -e "${DUMPDIR}/${VERSION}.schema" ]; then
     echo "EXPECTED SCHEMA version ${VERSION}"
