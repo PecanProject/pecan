@@ -49,7 +49,9 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
                  unlim = TRUE)
 
   for(yeari in unique(result$Year)){
-    dates <- ymd(paste0(result$Year, "-01-01")) + days(as.numeric(result$DayofYear - 1)) + hours(result$Hour)
+    dates <- ymd(paste0(result[Year == yeari]$Year, "-01-01")) + 
+      days(as.numeric(result[Year == yeari]$DayofYear - 1)) + 
+      hours(result[Year == yeari]$Hour)
     days_since_origin <- ymd_hms(dates) - ymd_hms("1700-01-01 00:00:00")
     if(!units(days_since_origin) == 'days') stop('check time units')
     t <- ncdim_def("time", "days since 1700-01-01", 
