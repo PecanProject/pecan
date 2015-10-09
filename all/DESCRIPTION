@@ -32,7 +32,6 @@ Suggests:
     PEcAn.DALEC,
     PEcAn.LINKAGES,
     PEcAn.allometry,
-    PEcAn.benchmark,
     PEcAn.photosythesis
 License: FreeBSD + file LICENSE
 Copyright: Authors
