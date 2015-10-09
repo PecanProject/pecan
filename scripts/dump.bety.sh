@@ -139,7 +139,14 @@ if [ "${QUIET}" != "YES" ]; then
 fi
 
 # find current schema version
-VERSION=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c 'SELECT version FROM schema_migrations ORDER BY version DESC limit 1' | tr -d ' ' )
+# following returns a triple:
+# - number of migrations
+# - largest migration
+# - hash of all migrations
+MIGRATIONS=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c 'SELECT COUNT(version) FROM schema_migrations' | tr -d ' ' )
+VERSION=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c 'SELECT md5(array_agg(version)::text) FROM (SELECT version FROM schema_migrations ORDER BY version) as v;' | tr -d ' ' )
+LATEST=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c 'SELECT version FROM schema_migrations ORDER BY version DESC LIMIT 1' | tr -d ' ' )
+echo "${MIGRATIONS}	${VERSION}	${LATEST}" > "${OUTPUT}/version.txt"
 
 # dump schema
 if [ "${QUIET}" != "YES" ]; then
@@ -147,9 +154,8 @@ if [ "${QUIET}" != "YES" ]; then
 fi
 pg_dump ${PG_OPT} -s "${DATABASE}" -O -x > "${DUMPDIR}/${VERSION}.schema"
 if [ "${QUIET}" != "YES" ]; then
-  echo "DUMPED version ${VERSION}"
+  echo "DUMPED version ${VERSION} with ${MIGRATIONS}, latest migration is ${LATEST}"
 fi
-echo "${VERSION}" > "${OUTPUT}/version.txt"
 
 # dump ruby special table
 if [ "${QUIET}" != "YES" ]; then
