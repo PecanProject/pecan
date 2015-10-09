@@ -79,7 +79,6 @@ met2model.PRELES <- function(in.path, in.prefix, outfolder, start_date, end_date
   # TODO need to filter out the data that is not inside start_date, end_date
   for(year in start_year:end_year) {
     print(year)
-    ## Assuming default values for leaf water potential, hydraulic resistance, foliar N
     
     old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep="."))
     
@@ -100,11 +99,11 @@ met2model.PRELES <- function(in.path, in.prefix, outfolder, start_date, end_date
     lon    <- ncvar_get(nc,"longitude")
     PAR    <- ncvar_get(nc, "surface_downwelling_photosynthetic_photon_flux_in_air") ## mol/m2s1
     Tair   <- ncvar_get(nc,"air_temperature")  ## in Kelvin
-    Precip <- ncvar_get(nc, "precipitation_flux")
-    VPD    <- ncvar_get(nc, "water_vapor_saturation_deficit")
+    Precip <- ncvar_get(nc, "precipitation_flux") ## kg/m2
+    VPD    <- ncvar_get(nc, "water_vapor_saturation_deficit") ## Pa
     SW     <- ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air") ## in W/m2
-    CO2    <- try(ncvar_get(nc,"mole_fraction_of_carbon_dioxide_in_air")) ## mole fraction
-    
+    CO2    <- try(ncvar_get(nc,"mole_fraction_of_carbon_dioxide_in_air")) ## mole fraction of carbon dioxide mol/mol
+
     nc_close(nc)
     
     useCO2 = is.numeric(CO2)  
@@ -131,6 +130,10 @@ met2model.PRELES <- function(in.path, in.prefix, outfolder, start_date, end_date
     CO2    = tapply(CO2,doy,mean)
     doy    = tapply(doy,doy,mean)
     fAPAR  = rep(0.8,length=length(doy))
+<<<<<<< .merge_file_HgqLrL
+=======
+    
+>>>>>>> .merge_file_dM53wL
     ## The nine columns of driving data are: Photosynthetically active radiation mol/m2/day,mean air temperature (deg C);Mean vapour pressure deficit kPa; Precipitatin above Canopy mm; atmospheric carbon dioxide concentration (ppm)
     
     ## build data matrix

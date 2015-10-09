@@ -218,7 +218,7 @@ for(year in start_year:end_year) {
   shA    <- Qair              # specific humidity [kg_H2O/kg_air]
   tmpA   <- Tair              # temperature [K]
   if(useCO2){
-    co2A   <- CO2/1e6               # surface co2 concentration [ppm] converted from mole fraction [kg/kg]
+    co2A   <- CO2 * 1e6               # surface co2 concentration [ppm] converted from mole fraction [kg/kg]
   }
 
   ## create directory
