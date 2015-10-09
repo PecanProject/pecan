@@ -7,6 +7,7 @@
 #args <- commandArgs(TRUE)
 
 library(PEcAn.DB)
+library(RPostgreSQL)
 library(maps)
 
 ## general settings
@@ -52,6 +53,10 @@ if(file.exists(network.file)){
     hostname = sub("http://","",hostname)
     hostname = strsplit(hostname,split = "/")[[1]][1]
     hostname = strsplit(hostname,split=":")[[1]][1]
+    # faster is to use the following:
+    # ip <- nsl(hostname)
+    # getUrl(paste0("http://api.hostip.info/get_html.php?position=true&ip=", ip))
+    # and cache result in geoip.cache
     result <- getURL(paste0("freegeoip.net/csv/",hostname))
     pecan.geo[pecan.nodes$sync_host_id[i]+1,] = strsplit(result,",")[[1]]
   }
@@ -76,14 +81,14 @@ for(j in 1:m){
   if(url.exists(sync.url)) {
     temporaryFile <- tempfile()
     download.file(sync.url,destfile=temporaryFile, method="curl")
-    schema = scan(temporaryFile,what = "character") 
+    schema = scan(temporaryFile,what = "character", sep="\t") 
     unlink(temporaryFile)
     
-    if(length(schema)>1){
+    if (length(schema) != 1 || length(schema) != 3) {
       ## wasn't actually a version.txt file
       pecan.state[i,i] = 2    ## set status to DOWN
     } else {
-      schema = as.numeric(schema[1])    
+      schema = ifelse(length(schema) == 3, schema[3], schema[1])
       
       ## look to see if the schema's NEW or already on the list
       if(schema %in% schema.list){
