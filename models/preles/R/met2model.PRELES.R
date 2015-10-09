@@ -117,19 +117,6 @@ met2model.PRELES <- function(in.path, in.prefix, outfolder, start_date, end_date
       CO2 = rep(400,length(Tair))
     }
     
-    if(length(leafN) == 1){
-      logger.warn("Leaf N not specified, setting to default: ",leafN)
-      leafN = rep(leafN,length(Tair))
-    }  
-    if(length(HydResist)==1){
-      logger.warn("total plant-soil hydraulic resistance (MPa.m2.s/mmol-1) not specified, setting to default: ",HydResist)
-      HydResist = rep(HydResist,length(Tair))
-    }
-    if(length(LeafWaterPot)==1){
-      logger.warn("maximum soil-leaf water potential difference (MPa) not specified, setting to default: ",LeafWaterPot)
-      LeafWaterPot = rep(LeafWaterPot,length(Tair))
-    }
-    
     ##build day of year
     doy <- rep(1:365,each=86400/dt)
     if(year %% 4 == 0){  ## is leap
@@ -137,13 +124,13 @@ met2model.PRELES <- function(in.path, in.prefix, outfolder, start_date, end_date
     }
     
     ## Aggregate variables up to daily
-    TAir   = udunits2::ud.convert(tapply(Tair,doy,mean,na.rm=TRUE),"Kelvin","Celsius")
     PAR    = tapply(PAR,doy,sum,na.rm=TRUE)
-    Precip = tapply(Precip, doy,sum, na.rm=TRUE)
+    TAir   = udunits2::ud.convert(tapply(Tair,doy,mean,na.rm=TRUE),"Kelvin","Celsius")
     VPD    = udunits2::ud.convert(tapply(VPD,doy,mean,na.rm=TRUE),"Pa","kPa")
+    Precip = tapply(Precip, doy,sum, na.rm=TRUE)
     CO2    = tapply(CO2,doy,mean)
-    doy   = tapply(doy,doy,mean)
-    
+    doy    = tapply(doy,doy,mean)
+    fAPAR  = rep(0.8,length=length(doy))
     ## The nine columns of driving data are: Photosynthetically active radiation mol/m2/day,mean air temperature (deg C);Mean vapour pressure deficit kPa; Precipitatin above Canopy mm; atmospheric carbon dioxide concentration (ppm)
     
     ## build data matrix
@@ -152,6 +139,7 @@ met2model.PRELES <- function(in.path, in.prefix, outfolder, start_date, end_date
                  VPD,
                  Precip,
                  CO2,
+                 fAPAR
                  )
     
     if(is.null(out)){

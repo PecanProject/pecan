@@ -27,7 +27,7 @@ model2netcdf.PRELES <- function(outdir, sitelat, sitelon, start_date, end_date) 
   require(ncdf4)
   
   ### Read in model output in PRELES format
-  PRELES.output <- read.table(file.path(outdir, "out.txt"), header=FALSE,sep='')
+  PRELES.output <- preles_out
   PRELES.output.dims <- dim(PRELES.output)
   
   ### Determine number of years and output timestep
