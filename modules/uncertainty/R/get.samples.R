@@ -8,7 +8,7 @@
 ##'
 ##' @author David LeBauer, Shawn Serbin
 ### Identify PFTs in the input settings.xml file
-get.parameter.samples <- function(pfts = settings$pfts){
+get.parameter.samples <- function(pfts = settings$pfts, posterior.files=rep(NA, length(settings$pfts))){
   require(coda)
   require(PEcAn.priors)
   num.pfts <- length(settings$pfts)
@@ -34,12 +34,21 @@ get.parameter.samples <- function(pfts = settings$pfts){
   ## Load PFT priors and posteriors
   for (i in seq_along(pft.names)){
     ## Load posteriors
-    fname = file.path(outdirs[i], 'post.distns.Rdata')
-    if(file.exists(fname)){
-      load(fname)
-      prior.distns = post.distns
+    if(!is.na(posterior.files[i])) {
+      # Load specified file
+      load(file.path(outdirs[i], posterior.files[i]))
+      if(!exists('prior.distns') & exists('post.distns')) {
+        prior.distns <- post.distns
+      }
     } else {
-      load(file.path(outdirs[i], 'prior.distns.Rdata'))
+      # Default to most recent posterior in the workflow, or the prior if there is none
+      fname = file.path(outdirs[i], 'post.distns.Rdata')
+      if(file.exists(fname)){
+        load(fname)
+        prior.distns = post.distns
+      } else {
+        load(file.path(outdirs[i], 'prior.distns.Rdata'))
+      }
     }
     
     ### Load trait mcmc data (if exists)

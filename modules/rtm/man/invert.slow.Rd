@@ -4,39 +4,51 @@
 \alias{invert.slow}
 \title{Bayesian inversion of a model}
 \usage{
-invert.slow(observed, inits, constants, ngibbs, prior, pm, model)
+invert.slow(observed, inits, constants, ngibbs, prior, pm, model, adapt = 100,
+  adj_min = 0.1, target = 0.44, do.mle = TRUE, quiet = FALSE)
 }
 \arguments{
 \item{observed}{Vector, matrix, or data frame (coerced to matrix) of
-observed values. For spectral data, wavelengths are rows and
-spectra are columns.}
+observed values. For spectral data, wavelengths are rows and spectra are
+columns.}
 
-\item{inits}{Vector of initial values of model parameters to be
-inverted.}
+\item{inits}{Vector of initial values of model parameters to be inverted.}
 
 \item{constants}{Vector of model constants.}
 
 \item{ngibbs}{Number of MCMC iterations}
 
-\item{prior}{List of functions used as priors (e.g. dnorm(x, 3, 0.5, 1)).
-NOTE: These should return the LOG density of the value
-(i.e. log=TRUE should be set)}
+\item{prior}{Function for use as prior. Should take a vector of parameters
+as input and return a single value -- the sum of their log-densities -- as
+output.}
 
 \item{pm}{Vector of minimum values for inversion parameters}
 
-\item{model}{The model to be inverted. This should be an R function
-that takes `inits` and `constants` as input and returns
-one column of `observed` (nrows should be the same).}
+\item{model}{The model to be inverted. This should be an R function that
+takes `inits` and `constants` as input and returns one column of `observed`
+(nrows should be the same).}
+
+\item{adapt}{Number of steps for adapting covariance matrix (i.e. adapt
+every 'n' steps. Default=100}
+
+\item{adj_min}{Minimum threshold for rescaling Jump standard deviation.
+Default = 0.1.}
+
+\item{target}{Target acceptance rate. Default=0.44}
+
+\item{quiet}{Don't print steps and status messages. Default=FALSE}
+
+\item{lsq.first}{Perform least squares optimization first, and use outputs
+to initialize Metropolis Hastings. This dramatically improves the mixing
+time. Default=TRUE}
 }
 \description{
 Bayesian inversion of a model
 }
 \details{
-Performs a Bayesian inversion of an arbitrary function
-     using the Metropolis-Hastings algorithm.
-     This is substantially (~80x) slower than
-     `invert.fast` because it is implemented as a basic R loop,
-     but it is also more versatile and is intended for use with
-     custom models.
+Performs an inversion of an arbitrary model using a modified
+Metropolis Hastings algorithm with block sampling. This may be slightly
+slower than the implementation in Fortran, but is much more customizable, as
+the model can be any R function.
 }
 

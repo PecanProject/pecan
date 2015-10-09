@@ -490,6 +490,12 @@ check.settings <- function(settings) {
     if ((is.null(settings$model$type) || settings$model$type == "")) {
       logger.severe("Need a model type.")
     }
+    
+    # Set model$delete.raw to FALSE by default
+    if (is.null(settings$model$delete.raw) || !is.logical(as.logical(settings$model$delete.raw))) {
+      logger.info("Option to delete raw model output not set or not logical. Will keep all model output.")
+      settings$model$delete.raw = FALSE
+    }
 
     # check on binary for given host
     if (!is.null(settings$model$id) && (settings$model$id >= 0)) {
@@ -607,7 +613,13 @@ check.settings <- function(settings) {
   if(is.null(settings$run$dbfiles)) {
     settings$run$dbfiles <- full.path("~/.pecan/dbfiles")
   } else {
-    settings$run$dbfiles <- full.path(settings$run$dbfiles)
+      if (substr(settings$run$dbfiles, 1, 1) != '/'){
+          logger.warn("settings$run$dbfiles pathname", settings$run$dbfiles, " is invalid\n
+                  placing it in the home directory ", Sys.getenv("HOME"))
+          settings$run$dbfiles <- file.path(Sys.getenv("HOME"), settings$run$dbfiles)
+      } 
+      
+      settings$run$dbfiles <- normalizePath(settings$run$dbfiles, mustWork=FALSE)
   }
   dir.create(settings$run$dbfiles, showWarnings = FALSE, recursive = TRUE)
 
