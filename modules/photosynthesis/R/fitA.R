@@ -6,7 +6,7 @@
 ##' 
 ##' @param flux.data  data.frame of Licor data, concatenated by rows, and with a leading column "fname" that is used to count the number of curves and match to covariates
 ##' @param cov.data   data.frame of covariate data. Column names used in formulas
-##' @param model      list including at least 6 components: the fixed effects model for alpha (a.fixed) and Vcmax (V.fixed), the random effects for these (a.random, V.random), the variable used to match the gas-exchange and covariate data (match), and the number of MCMC interations (n.iter). Additional optional argument: TPU = TRUE turns on TPU limitation
+##' @param model      list including at least 6 components: the fixed effects model for alpha (a.fixed) and Vcmax (V.fixed), the random effects for these (a.random, V.random), the variable used to match the gas-exchange and covariate data (match), and the number of MCMC interations (n.iter). Additional optional arguments: TPU = TRUE turns on TPU limitation; Temp == "Bernacchi01" turns on the Bernacchi et al 2001 temperature correction. If this is turned on all parameters are estimated for 25C, otherwise no temperature correction is applied. Setting Temp = "June2004" will turn on the June et al 2004 Funct Plant Biol temperature correction to Jmax. Note: these two corrections are not mutually exclusive, you can set Temp = c("June2004","Bernacchi2001")
 ##' 
 ##' Right now the fixed effects are specified as a string using the standard R lm formula syntax, but without the LHS variable (e.g. "~ SLA + chl + SLA:chl"). The tilde is optional. For random effects, the two options right now are just "leaf" for leaf-level random effects and NULL. "model" has a default that sets all effects to NULL (fit one curve to all data) and n.iter=1000.
 ##' 
@@ -23,7 +23,7 @@ fitA <- function(flux.data,cov.data=NULL,model=NULL){
 library(rjags)
 
 if(is.null(model)) model = list(a.fixed=NULL,a.random=NULL,V.fixed=NULL,V.random=NULL,n.iter=5000,match="fname")
-out.variables = c("r0","vmax0","alpha0","Jmax", "cp0","tau", "pmean", "pA")
+out.variables = c("r0","vmax0","alpha0","Jmax0", "cp0","tau", "pmean", "pA")
 
 a.fixed  = model$a.fixed
 a.random = model$a.random
@@ -75,7 +75,7 @@ my.model = "
 model{
 
 ## Priors
-  Jmax ~ dlnorm(4.7,2.7)             ## maximum electron transport rate prior
+  Jmax0 ~ dlnorm(4.7,2.7)             ## maximum electron transport rate prior
   alpha0~dnorm(0.25,100)             ##quantum yield  (mol electrons/mole photon) prior
   vmax0 ~dlnorm(4.6,2.7)             ## maximum rubisco capacity prior
 
@@ -102,8 +102,14 @@ cp.H <- 37.83
 cp.ref <- 42.75
 Kc.c <- 38.05
 Kc.H <- 79.43
+Kc.ref <- 404.9
 Ko.c <- 20.30
 Ko.H <- 36.38
+Ko.ref <- 278.4
+
+## Constants: June et al 2004, Funct Plant Bio
+Omega <- 18
+To <- 35    ## Representative value, would benifit from spp calibration!
 
 ## Vcmax BETAS
 
@@ -123,13 +129,16 @@ Ko.H <- 36.38
 
      r[i]  <- r0 ##B01* exp(r.c - r.H/R/T[i])
      cp[i] <- cp0 ##B01* exp(cp.c - cp.H/R/T[i])/cp.ref
+     Kc.T[i] <- Kc ##B01* exp(Kc.c - Kc.H/R/T[i])/Kc.ref
+     Ko.T[i] <- Ko ##B01* exp(Ko.c - Ko.H/R/T[i])/Ko.ref
+     Jmax[i] <- Jmax0 ##J04 * exp(-(T[i]-To)*(T[i]-To)/(Omega*Omega))
 
      alpha[i] <- alpha0 #AFORMULA
-     al[i]<-(alpha[i]*q[i]/(sqrt(1+(alpha[i]*alpha[i]*q[i]*q[i])/(Jmax*Jmax))))*(pi[i]-cp[i])/(4*pi[i]+8*cp[i])    ## electron transport limited without covariates
+     al[i]<-(alpha[i]*q[i]/(sqrt(1+(alpha[i]*alpha[i]*q[i]*q[i])/(Jmax[i]*Jmax[i]))))*(pi[i]-cp[i])/(4*pi[i]+8*cp[i])    ## electron transport limited without covariates
 
      vmax.refT[i] <- vmax0 #VFORMULA
      vmax[i] <- vmax.refT[i] ##B01* exp(Vc.c - Vc.H/R/T[i])
-     ae[i]<- vmax[i]*(pi[i]-cp[i])/(pi[i]+Kc*(1+po/Ko))                                                    ## maximum rubisco limited without covariates
+     ae[i]<- vmax[i]*(pi[i]-cp[i])/(pi[i]+Kc.T[i]*(1+po/Ko.T[i]))                                                    ## maximum rubisco limited without covariates
 
 #TPU    ap[i]<-3*tpu                      ## phosphate limited
 
@@ -154,7 +163,6 @@ mydat<-list(an=dat$Photo[sel], pi=dat$Ci[sel], q=dat$PARi[sel],T = dat$Tleaf,n=l
 #  Kc<-46                          ## Michaelis constant CO2 (Pa)
 #  Ko<-33000                       ## Michaelis constant O2  (Pa)
 #  po<-21000                       ## partial pressure of O2  (Pa)
-#  k <- 0.21                       ## Vo/Vc
 
 ## TPU Limitation
 if("TPU" %in% names(model)){
@@ -167,8 +175,11 @@ if("TPU" %in% names(model)){
 ## Temperature scaling
 Vformula = NULL
 if("Temp" %in% names(model)){
-  if(model$Temp == "Bernacchi01"){
+  if("Bernacchi01" %in% model$Temp){
     my.model = gsub(pattern="##B01"," ",my.model)
+  }
+  if("June2004" %in% model$Temp){
+    my.model = gsub(pattern="##J04"," ",my.model)
   }
 }
 
@@ -210,9 +221,9 @@ if(!is.null(Aformula)) my.model = sub(pattern="#AFORMULA",Aformula,my.model)
 
 ## Define initial conditions
 init<-list()
- init[[1]]<-list(r0=1.2, vmax0=39,alpha0=0.25, tau=10, cp0=6, Jmax=80) ## tau.Vleaf=30,beta1=4, beta2=1,beta5=3,tau.Vmon=10,tpu=10,
- init[[2]]<-list(r0=1, vmax0=100, alpha0=0.20, tau=20, cp0=4, Jmax=150) ##tau.Vleaf=20,beta1=1,beta2=1,beta5=-1,tau.Vmon=20,tpu=13,
- init[[3]]<-list(r0=2, vmax0=60, alpha0=0.28, tau=20, cp0=5,Jmax=60)    ##tau.Vleaf=100,beta1=1,beta2=2,beta5=2,tau.Vmon=3,tpu=20,
+ init[[1]]<-list(r0=1.2, vmax0=39,alpha0=0.25, tau=10, cp0=6, Jmax0=80) ## tau.Vleaf=30,beta1=4, beta2=1,beta5=3,tau.Vmon=10,tpu=10,
+ init[[2]]<-list(r0=1, vmax0=100, alpha0=0.20, tau=20, cp0=4, Jmax0=150) ##tau.Vleaf=20,beta1=1,beta2=1,beta5=-1,tau.Vmon=20,tpu=13,
+ init[[3]]<-list(r0=2, vmax0=60, alpha0=0.28, tau=20, cp0=5,Jmax0=60)    ##tau.Vleaf=100,beta1=1,beta2=2,beta5=2,tau.Vmon=3,tpu=20,
 
 mc3 <- jags.model(file=textConnection(my.model),data=mydat,
  inits=init,

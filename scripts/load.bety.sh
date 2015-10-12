@@ -27,6 +27,7 @@ PG_OPT=${PG_OPT:-""}
 #  2 - Brookhaven    - Shawn Serbin
 #  3 - Purdue        - Jeanne Osnas
 #  4 - Virginia Tech - Quinn Thomas
+#  5 - Wisconsin     - Ankur Desai
 # 99 - VM
 MYSITE=${MYSITE:-99}
 REMOTESITE=${REMOTESITE:-0}
@@ -55,12 +56,15 @@ QUIET=${QUIET:-"NO"}
 # that have specific abilities.
 USERS=${USERS:-"NO"}
 
+# Log file
+LOG=${LOG:-"$PWD/dump/sync.log"}
+
 # ----------------------------------------------------------------------
 # END CONFIGURATION SECTION
 # ----------------------------------------------------------------------
 
 # parse command line options
-while getopts c:d:f:hm:o:p:qr:t:u: opt; do
+while getopts c:d:f:hl:m:o:p:qr:t:u: opt; do
   case $opt in
   c)
     CREATE=$OPTARG
@@ -77,6 +81,7 @@ while getopts c:d:f:hm:o:p:qr:t:u: opt; do
     echo " -d database, default is bety"
     echo " -f fix sequence numbers, this should not be needed, default is NO"
     echo " -h this help page"
+    echo " -l location of log file (place this with the dump files)"
     echo " -m site id, default is 99 (VM)"
     echo " -o owner of the database, default is bety"
     echo " -p additional psql command line options, default is empty"
@@ -85,6 +90,9 @@ while getopts c:d:f:hm:o:p:qr:t:u: opt; do
     echo " -t keep temp folder, default is NO"
     echo " -u create carya users, this will create some default users"
     exit 0
+    ;;
+  l)
+    LOG=$OPTARG
     ;;
   m)
     MYSITE=$OPTARG
@@ -119,18 +127,17 @@ if [ "${MYSITE}" == "${REMOTESITE}" ]; then
   echo "Can not have same remotesite as mysite"
   exit 1
 fi
-if [ "${CREATE}" == "YES" -a "${FIXSEQUENCE}" == "NO" ]; then
-  echo "Can not run create without fix sequence"
-  exit 1
+if [ "${CREATE}" == "YES" ]; then
+  FIXSEQUENCE="YES"
 fi
 
 # list of all tables, schema_migrations is ignored since that
 # will be imported during creaton
 
 # list of tables that are one to many relationships
-CLEAN_TABLES="citations counties covariates cultivars"
+CLEAN_TABLES="citations covariates cultivars"
 CLEAN_TABLES="${CLEAN_TABLES} ensembles entities formats"
-CLEAN_TABLES="${CLEAN_TABLES} inputs likelihoods location_yields"
+CLEAN_TABLES="${CLEAN_TABLES} inputs likelihoods"
 CLEAN_TABLES="${CLEAN_TABLES} machines managements methods"
 CLEAN_TABLES="${CLEAN_TABLES} mimetypes models"
 CLEAN_TABLES="${CLEAN_TABLES} modeltypes modeltypes_formats"
@@ -144,7 +151,6 @@ CLEAN_TABLES="${CLEAN_TABLES} dbfiles users"
 # list of tables that are many to many relationships
 MANY_TABLES="${MANY_TABLES} citations_sites citations_treatments"
 MANY_TABLES="${MANY_TABLES} formats_variables inputs_runs"
-MANY_TABLES="${MANY_TABLES} inputs_variables"
 MANY_TABLES="${MANY_TABLES} managements_treatments pfts_priors"
 MANY_TABLES="${MANY_TABLES} pfts_species posteriors_ensembles"
 
@@ -156,8 +162,10 @@ if [ -z "${DUMPURL}" ]; then
     DUMPURL="https://ebi-forecast.igb.illinois.edu/pecan/dump/bety.tar.gz"
   elif [ "${REMOTESITE}" == "1" ]; then
     DUMPURL="http://psql-pecan.bu.edu/sync/dump/bety.tar.gz"
-        elif [ "${REMOTESITE}" == "2" ]; then
-                DUMPURL="https://www.dropbox.com/s/wr8sldv080wa9y8/bety.tar.gz?dl=0"
+  elif [ "${REMOTESITE}" == "2" ]; then
+    DUMPURL="https://www.dropbox.com/s/wr8sldv080wa9y8/bety.tar.gz?dl=0"
+  elif [ "${REMOTESITE}" == "5" ]; then  
+    DUMPURL="http://tree.aos.wisc.edu:6480/sync/dump/bety.tar.gz"
   else
     echo "Don't know where to get data for site ${REMOTESITE}"
     exit 1
@@ -216,7 +224,7 @@ else
   fi
 
   # find current schema version
-  VERSION=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c 'SELECT version FROM schema_migrations ORDER BY version DESC limit 1' | tr -d ' ' )
+  VERSION=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c 'SELECT md5(array_agg(version)::text) FROM (SELECT version FROM schema_migrations ORDER BY version) as v;' | tr -d ' ' )
 
   if [ ! -e "${DUMPDIR}/${VERSION}.schema" ]; then
     echo "EXPECTED SCHEMA version ${VERSION}"
@@ -226,6 +234,7 @@ else
     else
       rm -rf "${DUMPDIR}"
     fi
+    echo `date -u` $REMOTESITE 1 >> $LOG
     exit 1
   fi
 
@@ -264,6 +273,7 @@ trap '
     echo "ROLLBACK;" >&3
     kill $PSQL_PID
     cat <&4
+    echo `date -u` $REMOTESITE 2 >> $LOG
   fi
   rm -f $PSQL_PIPE_INP $PSQL_PIPE_OUT
 ' EXIT
@@ -360,6 +370,7 @@ if [ "${FIXSEQUENCE}" == "YES" ]; then
 fi
 
 # close transaction
+echo `date -u` $REMOTESITE 0 >> $LOG
 echo "END;" >&3
 echo "\quit" >&3
 wait $PSQL_PID

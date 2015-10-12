@@ -41,7 +41,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
                           con = con,
                           hostname = result$host)
       db.close(con)
-      invisible(return(result))
+      invisible(return(result$file))
     }
   }
 
@@ -284,8 +284,11 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   logger.info("Begin Model Specific Conversion")
 
   # Determine output format name and mimetype
-  model_info <- db.query(paste0("SELECT f.name, f.id, f.mime_type from modeltypes as m join modeltypes_formats as mf on m.id
-                                = mf.modeltype_id join formats as f on mf.format_id = f.id where m.name = '",model,"' AND mf.tag='met'"),con)
+  model_info <- db.query(paste0("SELECT f.name, f.id, mt.type_string from modeltypes as m",
+                                " join modeltypes_formats as mf on m.id = mf.modeltype_id",
+                                " join formats as f on mf.format_id = f.id",
+                                " join mimetypes as mt on f.mimetype_id = mt.id",
+                                " where m.name = '", model, "' AND mf.tag='met'"),con)
   formatname <- model_info[1]
   mimetype   <- model_info[3]
 
