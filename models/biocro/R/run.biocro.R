@@ -12,7 +12,8 @@
 run.biocro <- function(lat, lon, met.nc = met.nc, 
                        soil.nc = NULL, 
                        config = config,
-                       coppice.interval = 1){
+                       coppice.interval = 1,
+                       met.uncertainty = FALSE){
   require(data.table)
   require(lubridate)
   start.date <- ceiling_date(as.POSIXct(config$simulationPeriod$dateofplanting), "day")
@@ -20,7 +21,16 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
   genus <- config$pft$type$genus
 
   ## Meteorology
-  met <- load.cfmet(met.nc, lat = lat, lon = lon, start.date = start.date, end.date = end.date)
+  
+  if(met.uncertainty == TRUE){
+    met <- load.cfmet(met.nc, lat = lat, lon = lon, start.date = "1979-01-01", 
+                      end.date = "2010-12-31")
+    year.sample <- met[,list(year = sample(unique(year), size = 15))] 
+    met <- met[year %in% year.sample$year]
+  } else {
+    met <- load.cfmet(met.nc, lat = lat, lon = lon, start.date = start.date, end.date = end.date)
+  }
+  
   met.hr <- cfmet.downscale.time(cfmet = met, output.dt = 1)
   biocro.met <- cf2biocro(met.hr)
   
@@ -120,11 +130,23 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
   setkeyv(hourly.results, c("year", "doy", "hour"))
 
   hourly.results <- merge(biocro.met.dt, hourly.results) ## right join
-  daily.results <- hourly.results[, list(Stem = max(Stem), Leaf = max(Leaf), Root = max(Root), Rhizome = max(Rhizome), 
-Grain = max(Grain), tmax = max(Temp), tmin = min(Temp), tavg = mean(Temp), precip = sum(precip)), by = 'year,doy']
+  daily.results <- hourly.results[,list(Stem = max(Stem), Leaf = max(Leaf),
+                                        Root = max(Root), Rhizome = max(Rhizome),
+                                        SoilEvaporation = sum(SoilEvaporation),
+                                        CanopyTrans = sum(CanopyTrans),
+                                        Grain = max(Grain),
+                                        LAI = max(LAI),
+                                        tmax = max(Temp), tmin = min(Temp),
+                                        tavg = mean(Temp), precip = sum(precip)),
+                                  by = 'year,doy']
 
-  annual.results <- hourly.results[ ,list(Stem = max(Stem), Leaf = max(Leaf), Root = max(Root), Rhizome = max(Rhizome),
-                                                Grain = max(Grain), mat = mean(Temp), map = sum(precip)),
+  annual.results <- hourly.results[ ,list(Stem = max(Stem), Leaf = max(Leaf),
+                                          Root = max(Root), Rhizome = max(Rhizome),
+                                          Grain = max(Grain),
+                                          SoilEvaporation = sum(SoilEvaporation),
+                                          CanopyTrans = sum(CanopyTrans),
+                                          map = sum(precip),
+                                          mat = mean(Temp)),
                                           by = "year"]
   return(list(hourly = hourly.results,
               daily = daily.results,

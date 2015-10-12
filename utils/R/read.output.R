@@ -93,10 +93,10 @@ model2netcdf <- function(runid, outdir, model, lat, lon, start_date, end_date){
 ##' @author Michael Dietze, David LeBauer
 read.output <- function(runid, outdir, start.year=NA,
                         end.year=NA, variables = "GPP") {
-
+  
   ## vars in units s-1 to be converted to y-1
   cflux = c("GPP", "NPP", "NEE", "TotalResp", "AutoResp", "HeteroResp",
-    "DOC_flux", "Fire_flux") # kgC m-2 d-1
+    "DOC_flux", "Fire_flux") # kgC m-2 s-1
   wflux = c("Evap", "TVeg", "Qs", "Qsb", "Rainf") # kgH20 m-2 d-1
   
   # create list of *.nc years
@@ -106,30 +106,43 @@ read.output <- function(runid, outdir, start.year=NA,
   ncfiles <- list.files(path = outdir, pattern="\\.nc$", full.names=TRUE)
   ncfiles <- ncfiles[keep]
   # throw error if no *.nc files selected/availible
-  if(length(ncfiles) == 0) logger.error("no netCDF files of model output present")
-  
-  print(paste("Years: ",start.year," - ",end.year),sep="")
-  result <- list()
-  for(ncfile in ncfiles) {
-    nc <- nc_open(ncfile)
-    for(v in variables){
-      if(v %in% c(names(nc$var),names(nc$dim))){
-        newresult <- ncvar_get(nc, v)
-        if(v %in% c(cflux, wflux)){
-          newresult <- ud.convert(newresult, "kg m-2 s-1", "kg ha-1 yr-1")
-        }
-        result[[v]] <- abind(result[[v]], newresult)
-      } else if (!(v %in% names(nc$var))){
-        logger.warn(paste(v, "missing in", ncfile))
-      }
-    }
-    nc_close(nc)
+  nofiles <- FALSE
+  if(length(ncfiles) == 0) {
+    logger.warn("no netCDF files of model output present for runid = ", runid, " in ", outdir, 
+                "will return NA")
+    nofiles <- TRUE
+  } else {
+    logger.info("Reading output for Years: ",start.year," - ", end.year,
+                "in directory:", outdir, "including files", dir(outdir, pattern = "\\.nc$"))
   }
   
-  print(paste("----- Mean ", variables, " : ",
-              lapply(result, mean, na.rm = TRUE)))
-  print(paste("----- Median ", variables, ": ",
-              lapply(result, median, na.rm = TRUE)))
+  result <- list()
+
+  if(!nofiles){
+    for(ncfile in ncfiles) {
+      valid.nc <- tryl(nc_open(ncfile))
+      if(valid.nc){
+        nc <- nc_open(ncfile)
+        for(v in variables){
+          if(v %in% c(names(nc$var),names(nc$dim))){
+            newresult <- ncvar_get(nc, v)
+            if(v %in% c(cflux, wflux)){
+              newresult <- ud.convert(newresult, "kg m-2 s-1", "kg ha-1 yr-1")
+            }
+            result[[v]] <- abind(result[[v]], newresult)
+          } else if (!(v %in% names(nc$var))){
+            logger.warn(paste(v, "missing in", ncfile))
+          }
+        }
+        nc_close(nc)
+      }
+    } 
+  } else if (nofiles) {
+    result <- lapply(variables, function(x) NA)
+  }
+  logger.info(variables, 
+              "Mean:", lapply(result, function(x) signif(mean(x, na.rm = TRUE), 3)),
+              "Median:", lapply(result, function(x) signif(mean(x, na.rm = TRUE), 3)))
   return(result)
 }
 

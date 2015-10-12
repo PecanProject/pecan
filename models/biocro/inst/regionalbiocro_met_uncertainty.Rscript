@@ -1,0 +1,74 @@
+#!/usr/bin/env Rscript
+
+args   <- commandArgs(trailingOnly = TRUE)
+rundir <- args[1]
+outdir <- args[2]
+
+#library(PEcAn.all)
+
+
+require(PEcAn.data.land)
+require(PEcAn.BIOCRO)
+require(BioCro)
+require(PEcAn.data.atmosphere)
+require(PEcAn.utils)
+require(lubridate)
+
+options(error = browser)
+
+if(interactive()) {
+
+  library(PEcAn.settings)
+  settings <- read.settings("~/dev/biocro_regional/vignettes/champaign_mxg_settings.xml")
+  runid <- tail(readLines(file.path(settings$rundir, "runs.txt")), n = 1)
+  rundir <- file.path(settings$rundir, runid)
+  outdir <- file.path(settings$outdir, "out", runid)
+  point <- 1
+}
+
+
+config <- read.biocro.config(file.path(rundir, "config.xml"))
+
+met.nc  <- nc_open(config$run$met.file)
+soil.nc <- nc_open(config$run$soil.file)
+# atmco2.nc <- nc_open(file.path(inputdir, "co2/CO2_Global_HD_v1.nc"))
+
+lat <- ncvar_get(met.nc, "latitude")
+lon <- ncvar_get(met.nc, "longitude")
+latlon <- expand.grid(lat = lat, lon = lon)
+
+annual.result <- NULL
+biocro_result <- NULL
+
+for(i in 1:500){
+ for(point in 1:nrow(latlon)){
+  set.seed(i)
+  lat <- latlon$lat[point]
+  lon <- latlon$lon[point]
+  out <- run.biocro(lat, lon, met.nc = met.nc, soil.nc = soil.nc, config = config)
+  annual.result <- rbind(annual.result, out$annually)
+  save(annual.result, file = file.path(outdir, "annual.result.RData"))
+  
+  point.outdir <- file.path(outdir, i, paste0(lat, 'x', lon))
+  dir.create(point.outdir, showWarnings = FALSE, recursive = TRUE)
+
+  hourly <- out$hourly
+  daily <- out$daily
+  #save(hourly, file = file.path(point.outdir, 'hourly.result.RData'))
+  #save(daily, file = file.path(point.outdir, 'daily.result.RData'))
+  
+  biocro_result <- rbind(biocro_result, data.table(lat = lat, lon = lon, daily))
+
+  model2netcdf.BIOCRO(result = hourly, genus = config$pft$type$genus, outdir = point.outdir, 
+                      lat = lat, lon = lon)
+  rm(hourly)
+  rm(daily)
+ }
+}
+save(biocro_result, file = file.path(outdir, "biocro_output.RData"))
+
+## this would work if model2netcdf could process regionally
+#model2netcdf.BIOCRO(resultDT = biocro_result, 
+#                    genus = genus, 
+#                    outdir = outdir, 
+#                    lat = config$location$latitude, lon = config$location$longitude)

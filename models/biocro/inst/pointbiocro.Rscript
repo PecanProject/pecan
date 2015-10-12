@@ -25,7 +25,9 @@ biocro_result <- data.table(lat = lat, lon = lon, out$daily)
 
 save(biocro_result, file = file.path(outdir, "biocro_output.RData"))
 
-#model2netcdf.BIOCRO(result = out$hourly, 
-#                    genus = config$pft$type$genus, 
-#                    outdir = outdir, 
-#                    lat = lat, lon = lon)
+hourly <- out$hourly
+save(hourly, file = file.path(outdir, "biocro_hourly.RData"))
+model2netcdf.BIOCRO(result = hourly, 
+                    genus = config$pft$type$genus, 
+                    outdir = outdir, 
+                    lat = lat, lon = lon)
