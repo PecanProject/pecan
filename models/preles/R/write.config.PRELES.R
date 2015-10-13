@@ -30,19 +30,23 @@ write.config.PRELES<- function(defaults, trait.values, settings, run.id){
   outdir <- file.path(settings$run$host$outdir, run.id)
 
   #-----------------------------------------------------------------------
-  # create launch script (which will create symlink)
-  if (!is.null(settings$run$jobtemplate) && file.exists(settings$run$jobtemplate)) {
-    jobsh <- readLines(con=settings$run$jobtemplate, n=-1)
-  } else {
-    jobsh <- readLines(con=system.file("template.job", package = "PEcAn.MODEL"), n=-1)
-  }
-  
-  jobsh <- gsub('@SITE_LAT@', settings$run$site$lat, jobsh)
-  jobsh <- gsub('@SITE_LON@', settings$run$site$lon, jobsh)
-  jobsh <- gsub('@SITE_MET@', settings$run$site$met, jobsh)
-  
-  jobsh <- gsub('@START_DATE@', settings$run$start.date, jobsh)
-  jobsh <- gsub('@END_DATE@', settings$run$end.date, jobsh)
+  ### WRITE JOB.SH
+  jobsh = paste0("#!/bin/bash\n",settings$model$binary,
+                 " $(cat ",rundir,"/",config.file.name,
+                 ") < ",as.character(settings$run$inputs$met$path),
+                 " > ",outdir,"/out.txt\n",
+                 #                 'echo ".libPaths(',"'~/R/library');",
+                 'echo "',
+                 ' require(PEcAn.Rpreles); model2netcdf.PRELES(',
+                 "'",outdir,"',",
+                 settings$run$site$lat,",",
+                 settings$run$site$lon,", '",
+                 settings$run$start.date,"', '",
+                 settings$run$end.date,"') ",
+                 '" | R --vanilla'
+  )
+  writeLines(jobsh, con=file.path(settings$rundir, run.id, "job.sh"))
+  Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
   
   jobsh <- gsub('@OUTDIR@', outdir, jobsh)
   jobsh <- gsub('@RUNDIR@', rundir, jobsh)

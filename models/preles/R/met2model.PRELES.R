@@ -101,7 +101,6 @@ met2model.PRELES <- function(in.path, in.prefix, outfolder, start_date, end_date
     Tair   <- ncvar_get(nc,"air_temperature")  ## in Kelvin
     Precip <- ncvar_get(nc, "precipitation_flux") ## kg/m2
     VPD    <- ncvar_get(nc, "water_vapor_saturation_deficit") ## Pa
-    SW     <- ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air") ## in W/m2
     CO2    <- try(ncvar_get(nc,"mole_fraction_of_carbon_dioxide_in_air")) ## mole fraction of carbon dioxide mol/mol
 
     nc_close(nc)
