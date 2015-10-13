@@ -234,7 +234,9 @@ else
     else
       rm -rf "${DUMPDIR}"
     fi
-    echo `date -u` $REMOTESITE 1 >> $LOG
+    if [ -e ${LOG} ]; then
+      echo `date -u` $REMOTESITE 1 >> $LOG
+    fi
     exit 1
   fi
 
@@ -273,7 +275,9 @@ trap '
     echo "ROLLBACK;" >&3
     kill $PSQL_PID
     cat <&4
-    echo `date -u` $REMOTESITE 2 >> $LOG
+    if [ -e ${LOG} ]; then
+      echo `date -u` $REMOTESITE 2 >> $LOG
+    fi
   fi
   rm -f $PSQL_PIPE_INP $PSQL_PIPE_OUT
 ' EXIT
@@ -370,7 +374,9 @@ if [ "${FIXSEQUENCE}" == "YES" ]; then
 fi
 
 # close transaction
-echo `date -u` $REMOTESITE 0 >> $LOG
+if [ -e ${LOG} ]; then
+  echo `date -u` $REMOTESITE 0 >> $LOG
+fi
 echo "END;" >&3
 echo "\quit" >&3
 wait $PSQL_PID

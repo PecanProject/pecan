@@ -84,7 +84,7 @@ for(j in 1:m){
     schema = scan(temporaryFile,what = "character", sep="\t") 
     unlink(temporaryFile)
     
-    if (length(schema) != 1 || length(schema) != 3) {
+    if (!(length(schema) %in% c(1,3))) {
       ## wasn't actually a version.txt file
       pecan.state[i,i] = 2    ## set status to DOWN
     } else {
