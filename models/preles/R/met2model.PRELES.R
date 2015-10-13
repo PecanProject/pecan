@@ -130,11 +130,8 @@ met2model.PRELES <- function(in.path, in.prefix, outfolder, start_date, end_date
     CO2    = tapply(CO2,doy,mean)
     doy    = tapply(doy,doy,mean)
     fAPAR  = rep(0.8,length=length(doy))
-<<<<<<< .merge_file_HgqLrL
-=======
-    
->>>>>>> .merge_file_dM53wL
-    ## The nine columns of driving data are: Photosynthetically active radiation mol/m2/day,mean air temperature (deg C);Mean vapour pressure deficit kPa; Precipitatin above Canopy mm; atmospheric carbon dioxide concentration (ppm)
+
+    ## The six columns of driving data are: Photosynthetically active radiation mol/m2/day,mean air temperature (deg C);Mean vapour pressure deficit kPa; Precipitatin above Canopy mm; atmospheric carbon dioxide concentration (ppm)
     
     ## build data matrix
     tmp <- cbind(PAR,
