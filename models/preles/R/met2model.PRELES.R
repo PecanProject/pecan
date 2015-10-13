@@ -26,7 +26,7 @@
 ##' @param verbose should the function be very verbose
 met2model.PRELES <- function(in.path, in.prefix, outfolder, start_date, end_date, ..., overwrite=FALSE,verbose=FALSE){
   
-  ## PRELES 1 driver format (.csv):
+  ## PRELES 1 driver format data.frame:
   ## Runday,  Min temp (°C), Max temp (°C), Radiation (MJ d-1), Atmospheric CO2 (μmol mol-1), Day of year
   
   ## PRELES EnKF (Quaife) format (.dat, space delimited):

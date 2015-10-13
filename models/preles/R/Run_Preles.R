@@ -1,12 +1,9 @@
 
 
-runPrles.R <- (in.path, in.prefix, start_date, end_date,outdir, sitelat, sitelon,...){
+runPreles.R <- (in.path, in.prefix, start_date, end_date,outdir, sitelat, sitelon,...){
 
-library(Rpreles)
-require(ncdf4)
-require(lubridate)
 source("met2model.PRELES.R")
-source("model2netcdf")
+source("model2netcdf.R")
 
 met2model.PRELES(in.path,in.prefix,start_dat,end_date)
 
