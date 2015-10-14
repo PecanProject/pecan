@@ -18,27 +18,34 @@ library(RCurl)
 # Functions used to write STATUS used by history
 #--------------------------------------------------------------------------------#
 status.start <- function(name) {
-  cat(paste(name,
-            format(Sys.time(), "%F %T"), sep="\t"),
-      file=file.path(settings$outdir, "STATUS"), append=TRUE)
+  if (exists("settings")) {
+    cat(paste(name,
+              format(Sys.time(), "%F %T"), sep="\t"),
+        file=file.path(settings$outdir, "STATUS"), append=TRUE)
+  }
 }
 status.end <- function(status="DONE") {
-  cat(paste("",
-            format(Sys.time(), "%F %T"),
-            status,
-            "\n", sep="\t"),
-      file=file.path(settings$outdir, "STATUS"), append=TRUE)
+  if (exists("settings")) {
+    cat(paste("",
+              format(Sys.time(), "%F %T"),
+              status,
+              "\n", sep="\t"),
+        file=file.path(settings$outdir, "STATUS"), append=TRUE)
+  }
 }
 status.skip <- function(name) {
-  cat(paste(name,
-            format(Sys.time(), "%F %T"),
-            "",
-            format(Sys.time(), "%F %T"),
-            "SKIPPED",
-            "\n", sep="\t"),
-      file=file.path(settings$outdir, "STATUS"), append=TRUE)
+  if (exists("settings")) {
+    cat(paste(name,
+              format(Sys.time(), "%F %T"),
+              "",
+              format(Sys.time(), "%F %T"),
+              "SKIPPED",
+              "\n", sep="\t"),
+        file=file.path(settings$outdir, "STATUS"), append=TRUE)
+  }
 }
 status.check <- function(name) {
+  if (!exists("settings")) return (0)
   status.file=file.path(settings$outdir, "STATUS")
   if (!file.exists(status.file)){
     return (0)
