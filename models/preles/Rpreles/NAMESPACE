@@ -1,0 +1,2 @@
+useDynLib(Rpreles)
+exportPattern("^[[:alpha:]]+")
