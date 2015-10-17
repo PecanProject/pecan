@@ -238,7 +238,7 @@ $stmt->closeCursor();
       } else if ($("#adv_setup").is(':checked')){
         $("#formnext").attr("action", "07-analysis.php");
       } else if (!$("#adv_setup").is(':checked')) {
-        $("#formnext").attr("action", "04-runpecan.php");
+        $("#formnext").attr("action", "<?php echo ($hostname != $fqdn ? '04-remote.php' : '04-runpecan.php'); ?>");
       }
     }
   }
@@ -319,7 +319,7 @@ $stmt->closeCursor();
       <input type="hidden" name="hostname" value="<?php echo $hostname; ?>" />
     </form>
 
-    <form id="formnext" method="POST" action="07-analysis.php">
+    <form id="formnext" method="POST" action="<?php echo ($hostname != $fqdn ? '04-remote.php' : '04-runpecan.php'); ?>">
 <?php if ($offline) { ?>
       <input name="offline" type="hidden" value="on">
 <?php } ?>

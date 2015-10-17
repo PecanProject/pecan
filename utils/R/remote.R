@@ -22,25 +22,33 @@
 #' 
 #' @title Execute command remotely
 #' @param command the system command to be invoked, as a character string.
+#' @param host host structure to execute command on
 #' @param args a character vector of arguments to command.
-#' @param host host to execute command on
-#' @param user the username to use for remote login
 #' @param stderr should stderr be returned as well.
 #' @return the captured output of the command (both stdout and stderr)
 #' @author Rob Kooper
 #' @export
 #' @examples 
 #' remote.execute.cmd("ls", c("-l", "/"), host="localhost", stderr=TRUE)
-remote.execute.cmd <- function(cmd, args=character(), host="localhost", user=NA, stderr=FALSE) {
-  if ((host == "localhost") || (host == fqdn())) {
+remote.execute.cmd <- function(host, cmd, args=character(), stderr=FALSE) {
+  if ((host$name == "localhost") || (host$name == fqdn())) {
+    logger.debug(paste(cmd, args))
     system2(cmd, args, stdout=TRUE, stderr=as.logical(stderr))
   } else {
-    remote <- ifelse(is.na(user), host, paste(user, host, sep='@'))
+    remote <- c(host$name)
+    if (!is.null(host$tunnel)) {
+      if (!file.exists(host$tunnel)) logger.severe("Could not find tunnel", host$tunnel)
+      remote <- c("-o", paste0('ControlPath="', host$tunnel, '"'), remote)
+    } else if (!is.null(host$user)) {
+      remote <- c("-l", host$user, remote)
+    }
+    logger.debug(paste(c("ssh", "-T", remote, cmd, args), collapse=" "))
     system2('ssh', c('-T', remote, cmd, args), stdout=TRUE, stderr=as.logical(stderr))
   }
 }
 
-#out <- remote.execute.cmd("ls", c("-l", "/"), host="localhost", stderr=TRUE)
+#host <- list(name="geo.bu.edu", user="kooper", tunnel="/tmp/geo.tunnel")
+#out <- remote.execute.cmd(host, "ls", c("-l", "/"), stderr=TRUE)
 #print(out)
 
 #' Execute command remotely
@@ -60,38 +68,54 @@ remote.execute.cmd <- function(cmd, args=character(), host="localhost", user=NA,
 #' @export
 #' @examples 
 #' remote.execute.cmd("ls", c("-l", "/"))
-remote.copy.file <- function(srchost, srcfiles, srcuser=NA, dsthost="localhost", dstfile=getwd(), dstuser=NA) {
-  src <- ifelse(is.na(srcuser), srchost, paste(srcuser, srchost, sep='@'))
-  dst <- ifelse(is.na(dstuser), dsthost, paste(dstuser, dsthost, sep='@'))      
-  
-  if ((srchost == "localhost") || (srchost == fqdn())) {
-    if ((dsthost == "localhost") || (dsthost == fqdn())) {
-      # local copy
-      for (file in srcfiles) {
-        print(paste("cp", file, dstfile))
-        file.copy(file, dstfile, recursive=TRUE)
-      }
-    } else {
-      # copy files to remote machine
-      print(paste("rsync -aq", paste(srcfile), paste(dst, dstfile, sep=":")))
-      system2("rsync", c("-aq", paste(srcfile), paste(dst, dstfile, sep=":")))
-    }
+remote.copy.from <- function(host, src, dst, delete=FALSE, stderr=FALSE) {
+  args <- c("-a", "-q")
+  if (as.logical(delete)) args <- c(args, "--delete")
+  if (is.localhost(host)) {
+    args <- c(args, src, dst)
   } else {
-    if ((dsthost == "localhost") || (dsthost == fqdn())) {
-      # copy files from remote machine
-      for (file in srcfiles) {
-        print(paste("rsync -aq", paste(src, file, sep=":"), dstfile))
-        system2("rsync", c("-aq", paste(src, file, sep=":"), dstfile))
-      }
+    if (!is.null(host$tunnel)) {
+      if (!file.exists(host$tunnel)) logger.severe("Could not find tunnel", host$tunnel)
+      args <- c(args, "-e", paste0('ssh -o ControlPath="', host$tunnel, '"', collapse=""))
+      args <- c(args, paste0(host$name, ":", src), dst)
+    } else if (!is.null(host$user)) {
+      args <- c(args, paste0(host$user, "@", host$name, ":", src), dst)
     } else {
-      # all is remote
-      for (file in srcfiles) {
-        print(paste("rsync -aq", paste(src, file, sep=":"), paste(dst, dstfile, sep=":")))
-        system2("rsync", c("-aq", paste(src, file, sep=":"), paste(dst, dstfile, sep=":")))
-      }
+      args <- c(args, paste0(host$name, ":", src), dst)
     }
   }
+  logger.debug("rsync", shQuote(args))
+  system2('rsync', shQuote(args), stdout=TRUE, stderr=as.logical(stderr))
 }
+
+remote.copy.to <- function(host, src, dst, delete=FALSE, stderr=FALSE) {
+  args <- c("-a", "-q")
+  if (as.logical(delete)) args <- c(args, "--delete")
+  if (is.localhost(host)) {
+    args <- c(args, src, dst)
+  } else {
+    if (!is.null(host$tunnel)) {
+      if (!file.exists(host$tunnel)) logger.severe("Could not find tunnel", host$tunnel)
+      args <- c(args, "-e", paste0('ssh -o ControlPath="', host$tunnel, '"', collapse=""))
+      args <- c(args, src, paste0(host$name, ":", dst))
+    } else if (!is.null(host$user)) {
+      args <- c(args, src, paste0(host$user, "@", host$name, ":", dst))
+    } else {
+      args <- c(args, src, paste0(host$name, ":", dst))
+    }
+  }
+  logger.debug("rsync", shQuote(args))
+  system2('rsync', shQuote(args), stdout=TRUE, stderr=as.logical(stderr))
+}
+
+is.localhost <- function(host) {
+  (host$name == "localhost") || (host$name == fqdn())
+}
+
+#host <- list(name="geo.bu.edu", user="kooper", tunnel="/tmp/geo.tunnel")
+#out <- remote.copy.to(host, "/tmp/kooper/", "/tmp/kooper/", delete=TRUE, stderr=TRUE)
+#print(out)
+
 
 #' Execute command remotely
 #'
@@ -122,6 +146,12 @@ remote.execute.R <- function(script, host="localhost", user=NA, verbose=FALSE, R
              "close(fp)")
   verbose <- ifelse(as.logical(verbose), "", FALSE)
   if ((host == "localhost") || (host == fqdn())) {
+    if (R == "R") {
+      Rbinary <- file.path(Sys.getenv("R_HOME"), "bin", "R")
+      if (file.exists(Rbinary)) {
+        R <- Rbinary
+      }
+    }
     result = try(system2(R, "--vanilla", stdout=verbose, stderr=verbose, input=input))
     print(result)
     if(!file.exists(tmpfile)){fp <- file(tmpfile, 'w');serialize(result,fp);close(fp)}

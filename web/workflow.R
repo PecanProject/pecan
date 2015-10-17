@@ -67,11 +67,21 @@ status.check <- function(name) {
   }
   return (0)
 }
+kill.tunnel <- function() {
+  if (exists("settings") && !is.null(settings$run$host$tunnel)) {
+    pidfile <- file.path(dirname(settings$run$host$tunnel), "pid")
+    pid <- readLines(pidfile)
+    print(paste("Killing tunnel with PID", pid))
+    tools::pskill(pid)
+    file.remove(pidfile)
+  }
+}
 
 # make sure always to call status.end
 options(warn=1)
 options(error=quote({
   status.end("ERROR")
+  kill.tunnel()
   if (!interactive()) {
     q()
   }
@@ -216,20 +226,16 @@ if ('assim.batch' %in% names(settings)) {
 # Pecan workflow complete
 if (status.check("FINISHED") == 0) {
   status.start("FINISHED")
+  kill.tunnel()
   db.query(paste("UPDATE workflows SET finished_at=NOW() WHERE id=", settings$workflow$id, "AND finished_at IS NULL"), params=settings$database$bety)
+
+  # Send email if configured
+  if (!is.null(settings$email) && !is.null(settings$email$to) && (settings$email$to != "")) {
+    sendmail(settings$email$from, settings$email$to,
+             paste0("Workflow has finished executing at ", date()),
+             paste0("You can find the results on ", settings$email$url))
+  }
   status.end()
-}
-
-# Send email if configured
-if (!is.null(settings$email) && !is.null(settings$email$to) && (settings$email$to != "")) {
-  sendmail(settings$email$from, settings$email$to,
-           paste0("Workflow has finished executing at ", date()),
-           paste0("You can find the results on ", settings$email$url))
-}
-
-# Write end time in database
-if (settings$workflow$id != 'NA') {
-  db.query(paste0("UPDATE workflows SET finished_at=NOW() WHERE id=", settings$workflow$id, " AND finished_at IS NULL"), params=settings$database$bety)
 }
 
 db.print.connections()
