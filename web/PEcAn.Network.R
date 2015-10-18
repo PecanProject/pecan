@@ -134,7 +134,7 @@ for(j in 1:m){
 
 ## If schema changed, update statues
 if(latest.schema > curr.schema){
-  for(i in 1:n){
+  for(i in which(!is.na(diag(pecan.state)))){
     if(pecan.state[i,i]==0 & node.schemas[i] < latest.schema) pecan.state[i,i]= 1
   }
 }
