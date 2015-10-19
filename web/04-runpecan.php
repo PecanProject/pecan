@@ -165,16 +165,28 @@ if (! isset($dbfiles_folder)) {
 
 # if on localhost replace with localhost
 if ($hostname == $fqdn) {
-	$hostname="localhost";
+    $hostname="localhost";
 }
+
 
 # setup umask so group has write as well
 umask(0002);
 
-# create pecan.xml
+# create the folder(s)
 if (!mkdir($folder)) {
-	die('Can\'t create output folder [${folder}]');
+    die('Can\'t create output folder [${folder}]');
 }
+if (!is_dir($dbfiles_folder) && !mkdir($dbfiles_folder, 0002, true)) {
+    die('Can\'t create output folder [${dbfiles_folder}]');
+}
+if ($hostname != "localhost") {
+    $tunnel_folder = $folder . DIRECTORY_SEPARATOR . "tunnel";
+    if (!mkdir($tunnel_folder)) {
+        die('Can\'t create output folder [${tunnel_folder}]');
+    }
+}
+
+# create pecan.xml
 $fh = fopen($folder . DIRECTORY_SEPARATOR . "pecan.xml", 'w');
 fwrite($fh, "<?xml version=\"1.0\"?>" . PHP_EOL);
 fwrite($fh, "<pecan>" . PHP_EOL);
@@ -308,8 +320,14 @@ fwrite($fh, "    <end.date>${enddate}</end.date>" . PHP_EOL);
 fwrite($fh, "    <dbfiles>${dbfiles_folder}</dbfiles>" . PHP_EOL);
 fwrite($fh, "    <host>" . PHP_EOL);
 fwrite($fh, "      <name>${hostname}</name>" . PHP_EOL);
-if ($qsub) {
+if (isset($_REQUEST['username'])) {
+    fwrite($fh, "      <user>${_REQUEST['username']}</user>" . PHP_EOL);
+}
+if (in_array($_REQUEST['hostname'], $qsublist)) {
     fwrite($fh, "      <qsub/>" . PHP_EOL);
+}
+if ($hostname != "localhost") {
+    fwrite($fh, "      <tunnel>" . $tunnel_folder . DIRECTORY_SEPARATOR . "tunnel" . "</tunnel>" . PHP_EOL);
 }
 fwrite($fh, "    </host>" . PHP_EOL);
 fwrite($fh, "  </run>" . PHP_EOL);
@@ -332,6 +350,18 @@ fclose($fh);
 
 # copy workflow
 copy("workflow.R", "${folder}/workflow.R");
+
+# create the tunnel
+if ($hostname != "localhost") {
+    # write pasword
+    $fh = fopen($tunnel_folder . DIRECTORY_SEPARATOR . "password", 'w');
+    fwrite($fh, $_REQUEST['password'] . PHP_EOL);
+    fclose($fh);
+
+    # start tunnel
+    pclose(popen("${SSHtunnel} ${_REQUEST['hostname']} ${_REQUEST['username']} ${tunnel_folder} > ${tunnel_folder}/log &", 'r'));
+}
+
 
 if ($pecan_edit) {
   $path = "06-edit.php?workflowid=$workflowid&pecan_edit=pecan_edit";
