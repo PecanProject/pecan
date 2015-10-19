@@ -8,18 +8,18 @@
 #-------------------------------------------------------------------------------
 
 ##-------------------------------------------------------------------------------------------------#
-##' Writes a MODEL config file.
+##' Writes a PRELES config file.
 ##'
 ##' Requires a pft xml object, a list of trait values for a single model run,
 ##' and the name of the file to create
 ##'
-##' @name write.config.MODEL
-##' @title Write MODEL configuration files
+##' @name write.config.PRELES
+##' @title Write PRELES configuration files
 ##' @param defaults list of defaults to process
 ##' @param trait.samples vector of samples for a given trait
 ##' @param settings list of settings from pecan settings file
 ##' @param run.id id of run
-##' @return configuration file for MODEL for given run
+##' @return configuration file for PRELES for given run
 ##' @export
 ##' @author Tony Gardella 
 ##-------------------------------------------------------------------------------------------------#
@@ -31,13 +31,9 @@ write.config.PRELES<- function(defaults, trait.values, settings, run.id){
 
   #-----------------------------------------------------------------------
   ### WRITE JOB.SH
-  jobsh = paste0("#!/bin/bash\n",settings$model$binary,
-                 " $(cat ",rundir,"/",config.file.name,
-                 ") < ",as.character(settings$run$inputs$met$path),
-                 " > ",outdir,"/out.txt\n",
-                 #                 'echo ".libPaths(',"'~/R/library');",
+  jobsh = paste0("#!/bin/bash\n",
                  'echo "',
-                 ' require(PEcAn.Rpreles); model2netcdf.PRELES(',
+                 ' require(PEcAn.PRELES); runPRELES.jobsh(',
                  "'",outdir,"',",
                  settings$run$site$lat,",",
                  settings$run$site$lon,", '",
@@ -48,51 +44,4 @@ write.config.PRELES<- function(defaults, trait.values, settings, run.id){
   writeLines(jobsh, con=file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
   
-  jobsh <- gsub('@OUTDIR@', outdir, jobsh)
-  jobsh <- gsub('@RUNDIR@', rundir, jobsh)
-  
-  jobsh <- gsub('@BINARY@', settings$model$binary, jobsh)
-  
-  writeLines(jobsh, con=file.path(settings$rundir, run.id, "job.sh"))
-  Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
-  
-  #-----------------------------------------------------------------------
-  ### Edit a templated config file for runs
-  if (!is.null(settings$model$config) && file.exists(settings$model$config)) {
-    config.text <- readLines(con=settings$model$config, n=-1)
-  } else {
-    filename <- system.file(settings$model$config, package = "PEcAn.MODEL")
-    if (filename == "") {
-      if (!is.null(settings$model$revision)) {
-        filename <- system.file(paste0("config.", settings$model$revision), package = "PEcAn.MODEL")
-      } else {
-        model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params=settings$database$bety)
-        filename <- system.file(paste0("config.r", model$revision), package = "PEcAn.MODEL")
-      }
-    }
-    if (filename == "") {
-      logger.severe("Could not find config template")
-    }
-    logger.info("Using", filename, "as template")
-    config.text <- readLines(con=filename, n=-1)
-  }
-  
-  config.text <- gsub('@SITE_LAT@', settings$run$site$lat, config.text)
-  config.text <- gsub('@SITE_LON@', settings$run$site$lon, config.text)
-  config.text <- gsub('@SITE_MET@', settings$run$inputs$met$path, config.text)
-  config.text <- gsub('@MET_START@', settings$run$site$met.start, config.text)
-  config.text <- gsub('@MET_END@', settings$run$site$met.end, config.text)
-  config.text <- gsub('@START_MONTH@', format(startdate, "%m"), config.text)
-  config.text <- gsub('@START_DAY@', format(startdate, "%d"), config.text)
-  config.text <- gsub('@START_YEAR@', format(startdate, "%Y"), config.text)
-  config.text <- gsub('@END_MONTH@', format(enddate, "%m"), config.text)
-  config.text <- gsub('@END_DAY@', format(enddate, "%d"), config.text)
-  config.text <- gsub('@END_YEAR@', format(enddate, "%Y"), config.text)
-  config.text <- gsub('@OUTDIR@', settings$run$host$outdir, config.text)
-  config.text <- gsub('@ENSNAME@', run.id, config.text)
-  config.text <- gsub('@OUTFILE@', paste('out', run.id, sep=''), config.text)
- 
-  #-----------------------------------------------------------------------
-  config.file.name <- paste0('CONFIG.',run.id, ".txt")
-  writeLines(config.text, con = paste(outdir, config.file.name, sep=''))
 }

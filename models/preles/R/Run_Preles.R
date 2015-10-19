@@ -9,7 +9,7 @@ source("model2netcdf.PRELES.R")
 
 met2model.PRELES(in.path,in.prefix,start_date,end_date)
 
-preles_out=as.data.frame(PRELES(PAR=out$PAR,TAir=TAir,VPD=out$VPD,Precip=out$precip,CO2=out$CO2,fAPAR=out$fAPAR))
+preles_out=as.data.frame(PRELES(PAR=out[,"PAR"],TAir=out[,"TAir"],VPD=out[,"VPD",Precip=out[,"precip"],CO2=out[,"CO2"],fAPAR=out[,"fAPAR"]))
 
 model2netcdf.PRELES(sitelat, sitelon, start_date, end_date)
 
