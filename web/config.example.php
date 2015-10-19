@@ -23,6 +23,9 @@ $browndog_password="";
 # R binary
 $Rbinary="/usr/bin/R";
 
+# sshTunnel binary
+$SSHtunnel=dirname(__FILE__) . DIRECTORY_SEPARATOR . "sshtunnel.sh";
+
 # Require username/password, can set min level to 0 so nobody can run/delete.
 # 4 = viewer
 # 3 = creator
@@ -39,6 +42,9 @@ $REST_AUTH_DIGEST_STRETCHES =10;
 # List of allowed hosts
 $fqdn=exec('hostname -f');
 $hostlist=array($fqdn);
+
+# List of hosts that need qsub
+$qsublist=array();
 
 # Folder where PEcAn is installed
 $pecan_install="/home/carya/R/library";
