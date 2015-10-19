@@ -21,6 +21,7 @@ addInputFile "${FQDN}" "297" "FAO_" "${FAO_INPUT}"
 addInputFile "${FQDN}" "296" "OGE2_" "${OGE2_INPUT}"
 
 # [76] EBIFARM
+addInput "76" "24" "2004-01-01" "2009-12-31"
 addInputFile "${FQDN}" "7" "ED_MET_DRIVER_HEADER" "${SITES}/ebifarm"
 addInputFile "${FQDN}" "6" "ebifarm.lat40.0lon-88.0.css" "${SITES}/ebifarm"
 addInputFile "${FQDN}" "8" "ebifarm.lat40.0lon-88.0.pss" "${SITES}/ebifarm"
@@ -63,7 +64,7 @@ addInputFile "${FQDN}" "130" "ED_MET_DRIVER_HEADER" "${SITES}/parkfalls"
 addInputFile "${FQDN}" "131" "US-PFaforcing.nc" "${SITES}/parkfalls"
 
 # [679] Lost Creek
-addInput "679" "24" "2001-01-01" "2006-12-31"
+addInput "679" "24" "2000-01-01" "2006-12-31"
 addInputFile "${FQDN}" "${INPUT_ID}" "lcr.clim" "${SITES}/lostcreek"
 addInputFile "${FQDN}" "92" "ED_MET_DRIVER_HEADER" "${SITES}/lostcreek"
 addInputFile "${FQDN}" "93" "US-Losforcing.nc" "${SITES}/lostcreek"
