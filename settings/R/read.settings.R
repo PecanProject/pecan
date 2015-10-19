@@ -581,7 +581,7 @@ check.settings <- function(settings) {
   # check if we need to use qsub
   if ("qsub" %in% names(settings$run$host)) {
     if (is.null(settings$run$host$qsub)) {
-      settings$run$host$qsub <- "qsub -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash"
+      settings$run$host$qsub <- "qsub -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash"
       logger.info("qsub not specified using default value :", settings$run$host$qsub)
     }
     if (is.null(settings$run$host$qsub.jobid)) {
@@ -682,7 +682,7 @@ check.settings <- function(settings) {
     homedir <- NA
     if (is.null(settings$run$host$rundir)) {
       if (is.na(homedir)) {
-        homedir <- system2("ssh", c(settings$run$host$name, "pwd"), stdout=TRUE)
+        homedir <- remote.execute.cmd("pwd", host=settings$run$host)
       }
       settings$run$host$rundir <- paste0(homedir, "/pecan_remote/@WORKFLOW@/run")
     }
