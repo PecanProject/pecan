@@ -38,9 +38,8 @@ linkages <- function(iplot, nyear, nspec, fc, dry, bgs, egs, max.ind, plat){
   dbh.save <- array(0,dim=c(max.ind,nyear,iplot))
   iage.save <- array(0,dim=c(max.ind,nyear,iplot))
 
-  input.out <- input(nyear = nyear)
-  temp.mat <- input.out$temp.mat
-  precip.mat <- input.out$precip.mat
+  temp.mat <- matrix(c(-8.6,-7.6,-1.9,6.9,13.7,19,21.6,20.5,15.9,9.6,.8,-6.1),nyear,12,byrow = TRUE)
+  precip.mat <- matrix(c(2.9,2.7,4.2,7,9.2,11.2,8,8.9,8.9,5.7,5.5,2.9),nyear,12,byrow=TRUE)
 
   for(k in 1:iplot){ #loop over plots
 
