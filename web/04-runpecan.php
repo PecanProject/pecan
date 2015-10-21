@@ -324,7 +324,22 @@ if (isset($_REQUEST['username'])) {
     fwrite($fh, "      <user>${_REQUEST['username']}</user>" . PHP_EOL);
 }
 if (in_array($_REQUEST['hostname'], $qsublist)) {
-    fwrite($fh, "      <qsub/>" . PHP_EOL);
+    if (isset($qsuboptions[$_REQUEST['hostname']])) {
+      $options = $qsuboptions[$_REQUEST['hostname']];
+      if (isset($options['qsub'])) {
+        fwrite($fh, "      <qsub>${options['qsub']}</qsub>" . PHP_EOL);
+      } else {
+        fwrite($fh, "      <qsub/>" . PHP_EOL);  
+      }
+      if (isset($options['jobid'])) {
+        fwrite($fh, "      <qsub.jobid>${options['jobid']}</qsub.jobid>" . PHP_EOL);
+      }
+      if (isset($options['qstat'])) {
+        fwrite($fh, "      <qstat>${options['qstat']}</qstat>" . PHP_EOL);
+      }
+    } else {
+      fwrite($fh, "      <qsub/>" . PHP_EOL);
+    }
 }
 if ($hostname != "localhost") {
     fwrite($fh, "      <tunnel>" . $tunnel_folder . DIRECTORY_SEPARATOR . "tunnel" . "</tunnel>" . PHP_EOL);
@@ -362,7 +377,7 @@ if ($hostname != "localhost") {
     pclose(popen("${SSHtunnel} ${_REQUEST['hostname']} ${_REQUEST['username']} ${tunnel_folder} > ${tunnel_folder}/log &", 'r'));
 }
 
-
+# redirect to the right location
 if ($pecan_edit) {
   $path = "06-edit.php?workflowid=$workflowid&pecan_edit=pecan_edit";
   if ($model_edit) {
