@@ -92,7 +92,7 @@ start.model.runs <- function(settings, write = TRUE){
         cmd <- qsub[[1]]
         args <- qsub[-1]
         if (is.localhost(settings$run$host)) {
-          out <- system2(cmd, c(args, file.path(settings$rundir, format(run,scientific=FALSE), "job.sh")), stderr=TRUE)
+          out <- system2(cmd, c(args, file.path(settings$rundir, format(run,scientific=FALSE), "job.sh")), stdout=TRUE, stderr=TRUE)
         } else {
           out <- remote.execute.cmd(settings$run$host, cmd, c(args, file.path(settings$run$host$rundir, format(run,scientific=FALSE), "job.sh")), stderr=TRUE)
         }
@@ -102,7 +102,7 @@ start.model.runs <- function(settings, write = TRUE){
       # if qsub option is not invoked.  just start model runs in serial.
       } else {
         if (is.localhost(settings$run$host)) {
-          out <- system2(file.path(settings$rundir, format(run,scientific=FALSE), "job.sh"), stderr=TRUE)
+          out <- system2(file.path(settings$rundir, format(run,scientific=FALSE), "job.sh"), stdout=TRUE, stderr=TRUE)
         } else {
           out <- remote.execute.cmd(settings$run$host, file.path(settings$run$host$rundir, format(run,scientific=FALSE), "job.sh"), stderr=TRUE)
         }

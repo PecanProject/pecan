@@ -142,7 +142,7 @@ CLEAN_TABLES="${CLEAN_TABLES} machines managements methods"
 CLEAN_TABLES="${CLEAN_TABLES} mimetypes models"
 CLEAN_TABLES="${CLEAN_TABLES} modeltypes modeltypes_formats"
 CLEAN_TABLES="${CLEAN_TABLES} pfts posterior_samples posteriors"
-CLEAN_TABLES="${CLEAN_TABLES} priors runs sessions sites"
+CLEAN_TABLES="${CLEAN_TABLES} priors runs sites"
 CLEAN_TABLES="${CLEAN_TABLES} species treatments"
 CLEAN_TABLES="${CLEAN_TABLES} variables workflows"
 CLEAN_TABLES="${CLEAN_TABLES} traits yields"
@@ -153,6 +153,9 @@ MANY_TABLES="${MANY_TABLES} citations_sites citations_treatments"
 MANY_TABLES="${MANY_TABLES} formats_variables inputs_runs"
 MANY_TABLES="${MANY_TABLES} managements_treatments pfts_priors"
 MANY_TABLES="${MANY_TABLES} pfts_species posteriors_ensembles"
+
+# tables that should NOT be dumped
+IGNORE_TABLES="sessions"
 
 # list where to download data from. This data should come
 # from the database. Same as mysite which should come from
