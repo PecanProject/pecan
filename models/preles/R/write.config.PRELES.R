@@ -10,9 +10,6 @@
 ##-------------------------------------------------------------------------------------------------#
 ##' Writes a PRELES config file.
 ##'
-##' Requires a pft xml object, a list of trait values for a single model run,
-##' and the name of the file to create
-##'
 ##' @name write.config.PRELES
 ##' @title Write PRELES configuration files
 ##' @param defaults list of defaults to process
@@ -21,7 +18,7 @@
 ##' @param run.id id of run
 ##' @return configuration file for PRELES for given run
 ##' @export
-##' @author Tony Gardella 
+##' @author Tony Gardella, Micheal Dietze
 ##-------------------------------------------------------------------------------------------------#
 write.config.PRELES<- function(defaults, trait.values, settings, run.id){
   
