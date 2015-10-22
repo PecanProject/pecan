@@ -29,7 +29,10 @@
 #' @author Rob Kooper
 #' @export
 #' @examples 
-#' remote.execute.cmd("ls", c("-l", "/"), host="localhost", stderr=TRUE)
+#' \dontrun{
+#'   host <- list(name="geo.bu.edu", user="kooper", tunnel="/tmp/geo.tunnel")
+#'   pritn(remote.execute.cmd(host, "ls", c("-l", "/"), stderr=TRUE))
+#' }
 remote.execute.cmd <- function(host, cmd, args=character(), stderr=FALSE) {
   if ((host$name == "localhost") || (host$name == fqdn())) {
     logger.debug(paste(cmd, args))
@@ -47,27 +50,27 @@ remote.execute.cmd <- function(host, cmd, args=character(), stderr=FALSE) {
   }
 }
 
-#host <- list(name="geo.bu.edu", user="kooper", tunnel="/tmp/geo.tunnel")
-#out <- remote.execute.cmd(host, "ls", c("-l", "/"), stderr=TRUE)
-#print(out)
 
-#' Execute command remotely
+#' Copy file/dir from remote server to local server
 #'
-#' Executes the given command on the remote host using ssh. If the user is set
-#' the system will login as the given user. If the host given is the local
-#' machine it will execute the command locally without ssh.
+#' Copies the file/dir from the remote server to the local server. If the dst
+#' is a folder it will copy the file into that folder.
 #' 
-#' @title Execute command remotely
-#' @param command the system command to be invoked, as a character string.
-#' @param args a character vector of arguments to command.
-#' @param host host to execute command on
-#' @param user the username to use for remote login
-#' @param stderr 
-#' @return the captured output of the command (both stdout and stderr)
+#' @title Copy file from remote to local
+#' @param host list with server, user and optionally tunnel to use.
+#' @param src remote file/dir to copy
+#' @param dst local file/dir to copy to
+#' @param delete in case of local dir should all non-existent files be removed
+#' @param stderr should stderr be returned
+#' @return output of command executed
+#'
 #' @author Rob Kooper
 #' @export
 #' @examples 
-#' remote.execute.cmd("ls", c("-l", "/"))
+#' \dontrun{
+#'   host <- list(name="geo.bu.edu", user="kooper", tunnel="/tmp/geo.tunnel")
+#'   remote.copy.from(host, "/tmp/kooper", "/tmp/geo.tmp", delete=TRUE)
+#' }
 remote.copy.from <- function(host, src, dst, delete=FALSE, stderr=FALSE) {
   args <- c("-a", "-q")
   if (as.logical(delete)) args <- c(args, "--delete")
@@ -88,6 +91,26 @@ remote.copy.from <- function(host, src, dst, delete=FALSE, stderr=FALSE) {
   system2('rsync', shQuote(args), stdout=TRUE, stderr=as.logical(stderr))
 }
 
+#' Copy file/dir to remote server from local server
+#'
+#' Copies the file/dir to the remote server from the local server. If the dst
+#' is a folder it will copy the file into that folder.
+#' 
+#' @title Copy file from remote to local
+#' @param host list with server, user and optionally tunnel to use.
+#' @param src local file/dir to copy
+#' @param dst remote file/dir to copy to
+#' @param delete in case of local dir should all non-existent files be removed
+#' @param stderr should stderr be returned
+#' @return output of command executed
+#'
+#' @author Rob Kooper
+#' @export
+#' @examples 
+#' \dontrun{
+#'   host <- list(name="geo.bu.edu", user="kooper", tunnel="/tmp/geo.tunnel")
+#'   remote.copy.to(host, "/tmp/kooper", "/tmp/kooper", delete=TRUE)
+#' }
 remote.copy.to <- function(host, src, dst, delete=FALSE, stderr=FALSE) {
   args <- c("-a", "-q")
   if (as.logical(delete)) args <- c(args, "--delete")
@@ -108,8 +131,26 @@ remote.copy.to <- function(host, src, dst, delete=FALSE, stderr=FALSE) {
   system2('rsync', shQuote(args), stdout=TRUE, stderr=as.logical(stderr))
 }
 
+#' Check if host is local
+#'
+#' Given the hostname is this the localhost. This returns true if either
+#' the value is localhost, or the value is the same as the fqdn.
+#' 
+#' @title Check if local host
+#' @param host the hostname to be checked
+#' @return true if the host is the local host name
+#' @author Rob Kooper
+#' @export
+#' @examples 
+#' is.localhost(fqdn())
 is.localhost <- function(host) {
-  (host$name == "localhost") || (host$name == fqdn())
+  if (is.character(host)) {
+    (host == "localhost") || (host == fqdn())
+  } else if (is.list(host)) {
+    (host$name == "localhost") || (host$name == fqdn())
+  } else {
+      FALSE
+  }
 }
 
 #host <- list(name="geo.bu.edu", user="kooper", tunnel="/tmp/geo.tunnel")
@@ -133,7 +174,9 @@ is.localhost <- function(host) {
 #' @author Rob Kooper
 #' @export
 #' @examples 
-#' remote.execute.R("list.files()", host="localhost", verbose=FALSE)
+#' \dontrun{
+#'   remote.execute.R("list.files()", host="localhost", verbose=FALSE)
+#' }
 remote.execute.R <- function(script, host="localhost", user=NA, verbose=FALSE, R="R") {
   uuid <- paste0("pecan-", paste(sample(c(letters[1:6],0:9),30,replace=TRUE),collapse=""))
   tmpfile <- file.path("/tmp", uuid)
