@@ -29,7 +29,6 @@ runPRELES.jobsh(in.path, in.prefix,outdir,start_date,end_date){
   input.file <- file.path(in.path, paste(in.prefix, year, "nc", sep="."))
   nc=nc_open(input.file)
   dim=nc.get.dim.names(nc)
-  vars=nc.get.variable.list(nc)
   
   #Process start and end dates
   start_date<-as.POSIXlt(start_date,tz="GMT")

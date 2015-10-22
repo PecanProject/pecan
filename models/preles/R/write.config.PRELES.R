@@ -30,7 +30,7 @@ write.config.PRELES<- function(defaults, trait.values, settings, run.id){
   ### WRITE JOB.SH
   jobsh = paste0("#!/bin/bash\n",
                  'echo "',
-                 ' require(PEcAn.PRELES); runPRELES.jobsh(',
+                 ' require(PEcAn.PRELES); runPRELES.jobsh.R(',
                  "'",outdir,"',",
                  settings$run$site$lat,",",
                  settings$run$site$lon,", '",
