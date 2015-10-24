@@ -690,7 +690,7 @@ check.settings <- function(settings) {
     logger.info("Using ", settings$run$host$rundir, "to store runs on remote machine")
     if (is.null(settings$run$host$outdir)) {
       if (is.na(homedir)) {
-        homedir <- system2("ssh", c(settings$run$host$name, "pwd"), stdout=TRUE)
+        homedir <- remote.execute.cmd("pwd", host=settings$run$host)
       }
       settings$run$host$outdir <- paste0(homedir, "/pecan_remote/@WORKFLOW@/out")
     }
