@@ -3,8 +3,8 @@ Type: Package
 Title: PEcAn package for integration of the PRELES model
 Version: 1.4.3
 Date: 2015-07-20
-Author: Tony Gardella,Mike Dietze
-Maintainer: Tony Gardella
+Author: Tony Gardella, Mike Dietze
+Maintainer: Tony Gardella <tonygard@bu.edu>
 Description: This module provides functions to run the PREdict Light use efficiency
     Evapotranspiration and Soil moisture (PRELES) model on the PEcAn project. The
     Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific  workflow management
@@ -20,7 +20,7 @@ Depends:
     udunits2
 Suggests:
     testthat
-SystemRequirements: PRELES
+SystemRequirements: preles
 OS_type: unix
 License: FreeBSD + file LICENSE
 Copyright:Authors

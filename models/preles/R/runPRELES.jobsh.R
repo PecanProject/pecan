@@ -15,13 +15,11 @@
 ##' @param end_date End time of the simulation
 ##' @export netcdf file in CF standard
 ##' @author Tony Gardella, Michael Dietze
-
-runPRELES.jobsh(in.path, in.prefix,outdir,start_date,end_date){
+runPRELES.jobsh<- function(in.path, in.prefix,outdir,start_date,end_date){
   
-  if(!require(PEcAn.utils)) print("install PEcAn.utils")
+  if(!require("PEcAn.utils")) print("install PEcAn.utils")
   require("lubridate")
   require("ncdf4")
-  require("ncdf4.helpers")
   if(!require("Rpreles")) print("install Rpreles")
   require("udunits2")
 
@@ -67,10 +65,10 @@ runPRELES.jobsh(in.path, in.prefix,outdir,start_date,end_date){
   
   ## Format/convert inputs 
   PAR= tapply(PAR, doy,mean,na.rm=TRUE) #Find the mean for the day
-  TAir=tapply ud.convert(tapply(Tair,doy,mean,na.rm=TRUE),"K", "C")#Convert Kelvin to Celcius
+  TAir=ud.convert(tapply(Tair,doy,mean,na.rm=TRUE),"K", "C")#Convert Kelvin to Celcius
   VPD= ud.convert(tapply(VPD,doy,mean,na.rm=TRUE), "Pa","kPa")#pascal to kila pascal
   Precip=tapply(Precip,doy,sum, na.rm=TRUE) #Sum to daily precipitation
-  CO2= tapply(CO2,doy,sum) #need daily average so sum up day
+  CO2= ud.convert(tapply(CO2,doy,sum),"mol/mol","ppm") #need daily average so sum up day
   doy=tapply(doy,doy,mean) # day of year
   fAPAR =rep (0.8,length=length(doy)) #For now set to 0.8. Needs to be between 0-1
   
