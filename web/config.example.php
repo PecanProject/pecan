@@ -52,7 +52,7 @@ $qsublist=array();
 $qsuboptions=array("somehost" => 
                     array("qsub"  => "qsub -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash",
                           "jobid" => "Your job ([0-9]+) .*",
-                          "qstat" => "qstat -j @JOBID@ &> /dev/null || echo DONE"));
+                          "qstat" => "qstat -j @JOBID@ &amp;&gt; /dev/null || echo DONE"));
 
 # Folder where PEcAn is installed
 $pecan_install="/home/carya/R/library";
