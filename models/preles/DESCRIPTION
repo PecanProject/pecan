@@ -12,7 +12,6 @@ Description: This module provides functions to run the PREdict Light use efficie
     execution, and analysis. The goal of PECAn is to streamline the interaction
     between data and models, and to improve the efficacy of scientific investigation.
 Depends:
-    Rpreles,
     PEcAn.utils,
     lubridate,
     ncdf4,
