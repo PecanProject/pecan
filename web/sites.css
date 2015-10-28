@@ -84,7 +84,7 @@ th,td {
     width: 190px;
 }
 
-#stylized input[type=text] {
+#stylized input[type=text], input[type=password] {
     text-overflow: ellipsis;
     width: 184px;
     padding: 4px 2px;

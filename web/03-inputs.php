@@ -20,6 +20,11 @@ if ($authentication) {
     close_database();
     exit;
   }
+  if (get_page_acccess_level() > $min_run_level) {
+    header( "Location: history.php");
+    close_database();
+    exit;
+  }
 }
 
 # boolean parameters
@@ -89,7 +94,7 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
 $stmt->closeCursor();
 
 // get list of files
-$stmt = $pdo->prepare("SELECT tag, inputs.id, dbfiles.file_name, sites.sitename, inputs.start_date, inputs.end_date" .
+$stmt = $pdo->prepare("SELECT tag, inputs.name AS input_name, inputs.id, dbfiles.file_name, sites.sitename, inputs.start_date, inputs.end_date" .
                       " FROM sites, inputs, dbfiles, machines, modeltypes_formats, models, formats" .
                       " WHERE (inputs.site_id=${earth} OR inputs.site_id=?)" .
                       " AND inputs.id=dbfiles.container_id AND dbfiles.container_type='Input'" .
@@ -102,7 +107,11 @@ if (!$stmt->execute(array($siteid, $hostname, $modelid))) {
 }
 while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
   if ($row['tag'] == 'met') {
-    $row['name']="Weather " . substr($row['start_date'], 0, 4) . "-" . substr($row['end_date'], 0, 4);
+	if (empty($row['input_name'])){
+    		$row['name']="Weather " . substr($row['start_date'], 0, 4) . "-" . substr($row['end_date'], 0, 4);
+	} else {
+    		$row['name']= $row['input_name'];
+	}
   } else if ($row['file_name'] == '') {
     $row['name']=$row['sitename'];
   } else {
@@ -196,6 +205,14 @@ $stmt->closeCursor();
     if ($("#<?php echo $input['tag']; ?>").val() == null) {
       $("#next").attr("disabled", "disabled");
       $("#error").html("Missing value for <?php echo $input['name']; ?>");
+<?php if ($betydb != "") { ?>
+    } else {
+      var metlabeldiv = document.getElementById('metlabeldiv');
+      metlabeldiv.innerHTML="";
+	if (!(isNaN($("#met option:selected")[0].getAttribute("value")))) {
+      		metlabeldiv.innerHTML = " (Show in <a href=\"<?php echo $betydb; ?>/inputs/" + $("#met option:selected")[0].getAttribute("value") + "\" target=\"BETY\">BETY</a>)";
+	}
+<?php } ?>
     }
 <?php
     }
@@ -221,7 +238,7 @@ $stmt->closeCursor();
       } else if ($("#adv_setup").is(':checked')){
         $("#formnext").attr("action", "07-analysis.php");
       } else if (!$("#adv_setup").is(':checked')) {
-        $("#formnext").attr("action", "04-runpecan.php");
+        $("#formnext").attr("action", "<?php echo ($hostname != $fqdn ? '04-remote.php' : '04-runpecan.php'); ?>");
       }
     }
   }
@@ -302,7 +319,7 @@ $stmt->closeCursor();
       <input type="hidden" name="hostname" value="<?php echo $hostname; ?>" />
     </form>
 
-    <form id="formnext" method="POST" action="07-analysis.php">
+    <form id="formnext" method="POST" action="<?php echo ($hostname != $fqdn ? '04-remote.php' : '04-runpecan.php'); ?>">
 <?php if ($offline) { ?>
       <input name="offline" type="hidden" value="on">
 <?php } ?>
@@ -317,7 +334,7 @@ $stmt->closeCursor();
       <select id="pft" name="pft[]" multiple size=5 onChange="validate();">
 <?php
 foreach($pfts as $pft) {
-  print "        <option data-id='{$pft['id']}' ${pft['selected']}>${pft['name']}</option>\n";
+  print "        <option data-id='{$pft['id']}' ${pft['selected']} title=\"${pft['name']}\">${pft['name']}</option>\n";
 }
 ?>
       </select>
@@ -335,9 +352,9 @@ foreach($inputs as $input) {
   $name=substr($input['name'], 0, 20);
   $tag=$input['tag'];
   if ($input['required']) {
-    print "      <label>${name}<sup>*</sup></label>\n";
-  } else {
-    print "      <label>${name}</label>\n";
+    print "      <label id=\"metlabel\">${name}*<div id=\"metlabeldiv\"></div></label>\n";
+  } else { 
+    print "      <label id=\"metlabel\">${name}<div id=\"metlabeldiv\"></div></label>\n";
   }
   print "      <select id=\"${tag}\" name=\"input_${tag}\" onChange=\"validate();\">\n";
   if (!$input['required']) {

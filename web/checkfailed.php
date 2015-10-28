@@ -17,6 +17,11 @@ if ($authentication) {
 		close_database();
 		exit;
 	}
+    if (get_page_acccess_level() > $min_run_level) {
+       header( "Location: history.php");
+       close_database();
+       exit;
+    }
 	close_database();
 }
 ?>

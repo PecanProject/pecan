@@ -7,11 +7,11 @@
 get.soil(lat, lon, soil.nc = soil.nc)
 }
 \arguments{
+\item{lat}{}
+
+\item{lon}{}
+
 \item{soil.nc}{netCDFe file with soil data}
-
-\item{latitude}{}
-
-\item{longitude}{}
 }
 \value{
 usda soil class

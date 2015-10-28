@@ -17,6 +17,11 @@ if ($authentication) {
     close_database();
     exit;
   }
+  if (get_page_acccess_level() > $min_run_level) {
+    header( "Location: history.php");
+    close_database();
+    exit;
+  }
 }
 
 # boolean parameters
@@ -298,9 +303,8 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
       <input name="offline" type="hidden" value="offline">
 <?php } ?>
       <h1>Select host</h1>
-      <p>Based on the host selected certain sites and models
-      will be available. In the current version you can only
-      pick as host <b><?php echo $hostname; ?></b></p>
+      <p>Based on the host selected certain sites and models will be
+      available.</p>
 
       <label id="hostlabel">Host:</label>
       <select name="hostname" id="hostname" onChange="hostSelected();">
