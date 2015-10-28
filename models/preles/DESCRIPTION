@@ -16,7 +16,6 @@ Depends:
     PEcAn.utils,
     lubridate,
     ncdf4,
-    ncdf4.helpers,
     udunits2
 Suggests:
     testthat
