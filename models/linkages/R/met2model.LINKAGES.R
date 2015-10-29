@@ -122,7 +122,9 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   
   mean_nctemp_C <- round(mean_nctemp - 273.15, digits = 1)
 
-  save(as.data.frame(mean_ncprecipf_cm, mean_nctemp_C),"climate.Rdata")
+  temp.mat <- mean_nctemp_C
+  precip.mat <- mean_ncprecipf_cm
+  save(as.data.frame(precip.mat, temp.mat),"climate.Rdata")
   
   invisible(results)
 }
