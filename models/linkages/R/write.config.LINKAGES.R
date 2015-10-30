@@ -182,7 +182,7 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   }
 
   # create job.sh
-  jobsh <- gsub('@HOSTSPECIFIC@'), hostspecific, jobsh)
+  jobsh <- gsub('@HOSTSPECIFIC@', hostspecific, jobsh)
 
   jobsh <- gsub('@SITE_LAT@', settings$run$site$lat, jobsh)
   jobsh <- gsub('@SITE_LON@', settings$run$site$lon, jobsh)

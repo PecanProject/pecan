@@ -44,7 +44,7 @@ write.config.CLM45 <- function(defaults, trait.values, settings, run.id){
   }
 
   # create job.sh
-  jobsh <- gsub('@HOSTSPECIFIC@'), hostspecific, jobsh)
+  jobsh <- gsub('@HOSTSPECIFIC@', hostspecific, jobsh)
 
   jobsh <- gsub('@SITE_LAT@', settings$run$site$lat, jobsh)
   jobsh <- gsub('@SITE_LON@', settings$run$site$lon, jobsh)
