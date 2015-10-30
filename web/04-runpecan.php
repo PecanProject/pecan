@@ -293,7 +293,7 @@ if (in_array($_REQUEST['hostname'], $qsublist)) {
   if (isset($qsuboptions[$_REQUEST['hostname']])) {
     $options = $qsuboptions[$_REQUEST['hostname']];
     if (isset($options['models']) && isset($options['models'][$modeltype])) {
-      fwrite($fh, "    <job.sh>" . $options['job.sh'][$modeltype] . "</job.sh>" . PHP_EOL);      
+      fwrite($fh, "    <job.sh>" . $options['models'][$modeltype] . "</job.sh>" . PHP_EOL);      
     }
   }
 }
