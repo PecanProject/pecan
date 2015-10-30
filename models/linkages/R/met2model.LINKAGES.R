@@ -66,7 +66,7 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   year = sprintf("%04d",seq(start_year,end_year,1))
   month = sprintf("%02d",seq(1,12,1))
   
-  nyear = nyear #number of years to simulate
+  nyear = length(year) #number of years to simulate
   
   month_matrix_precip = matrix(NA,nyear,12)
   DOY_vec_hr = c(1,c(32,60,91,121,152,182,213,244,274,305,335,365)*4)
@@ -84,22 +84,12 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
     
     ncprecipf = ncvar_get(ncin, "precipitation_flux")  #units are kg m-2 s-1    
     for(m in 1:12){
-      month_matrix_precip[i,m] = sum(ncprecipf[DOY_vec_hr[m]:(DOY_vec_hr[m+1]-1)]) * dt
+      month_matrix_precip[i,m] = round(sum(ncprecipf[DOY_vec_hr[m]:(DOY_vec_hr[m+1]-1)]) * dt /10 , digits=1)
     }  
     nc_close(ncin)
    #if(i%%100==0) cat(i," "); flush.console()
   }
-  
-  mean_ncprecipf_mm = matrix(0,nyear,12) ; mean_ncprecipf_cm = mean_ncprecipf_mm; sd_ncprecipf_mm = mean_ncprecipf_mm ;sd_ncprecipf_cm = mean_ncprecipf_mm
-  
-  for(i in 1:nyear){
-    for(m in 1:12){
-      mean_ncprecipf_mm[i,m] = mean(month_matrix_precip[ipolat_nums[i],m],month_matrix_precip[ipolat_nums[i]-1,m])
-    }  
-  }
-  
-  mean_ncprecipf_cm <- round(mean_ncprecipf_mm / 10,digits = 1)
-  
+    
   month_matrix_temp_mean = matrix(NA,nyear,12)
   
   for(i in 1:nyear){
@@ -107,24 +97,15 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
     #print(ncin)
     nctemp = ncvar_get(ncin, "air_temperature") #units are kg m-2 s-1    
     for(m in 1:12){
-      month_matrix_temp_mean[i,m] = mean(nctemp[DOY_vec_hr[m]:(DOY_vec_hr[m+1]-1)]) #sub daily to monthly
+      month_matrix_temp_mean[i,m] = round(mean(nctemp[DOY_vec_hr[m]:(DOY_vec_hr[m+1]-1)]) -273.15, digits =1) #sub daily to monthly
     } 
     nc_close(ncin)
     if(i%%100==0) cat(i," "); flush.console()
   }
-  
-  mean_nctemp = matrix(0,nyear,12) ; sd_nctemp = mean_nctemp
-  for(i in 1:nyear){
-    for(m in 1:12){
-      mean_nctemp[i,m] = mean(month_matrix_temp_mean[ipolat_nums[i],m],month_matrix_temp_mean[ipolat_nums[i]-1,m])
-    }  
-  }
-  
-  mean_nctemp_C <- round(mean_nctemp - 273.15, digits = 1)
 
-  temp.mat <- mean_nctemp_C
-  precip.mat <- mean_ncprecipf_cm
-  save(as.data.frame(precip.mat, temp.mat),"climate.Rdata")
   
+  temp.mat <- month_matrix_precip
+  precip.mat <- month_matrix_temp_mean
+  save(precip.mat, temp.mat,file= out.file)
   invisible(results)
 }

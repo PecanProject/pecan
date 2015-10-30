@@ -25,6 +25,8 @@
 ##-------------------------------------------------------------------------------------------------#
 write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, run.id){
 
+  library(linkages)
+  
   # find out where to write run/ouput
   rundir <- file.path(settings$run$host$rundir, run.id)
   if(!file.exists(rundir)) dir.create(rundir)
@@ -43,7 +45,7 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   bgs <- 120
   egs <- 273
   max.ind <- 15000
-  plat <- abs(settings$run$site$lat)
+  plat <- abs(as.numeric(settings$run$site$lat))
   
   texture <- read.csv(system.file("texture.csv",package = "PEcAn.LINKAGES"))
   
@@ -69,13 +71,20 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   fc = round(as.numeric(unlist(soil.texture(sand = sand, clay = clay)[2])),digits = 2)
   dry = round(as.numeric(unlist(soil.texture(sand = sand, clay = clay)[1])),digits = 2)
   
-  fdat <- read.csv(system.file("fdat.csv", package = "PEcAn.LINKAGES")) #litter quality parameters
-  spp.params <- read.csv(system.file("spp_matrix.csv", package = "PEcAn.LINKAGES"))
-  clat <- read.csv(system.file("clat.csv", package = "PEcAn.LINKAGES"),header = FALSE)
-  load(system.file("switch.mat.Rdata", package = "PEcAn.LINKAGES"))
+  fdat <- read.csv(system.file("fdat.csv", package = "linkages"),header = FALSE) #litter quality parameters
+  spp.params <- read.csv(system.file("spp_matrix.csv", package = "linkages"))
+  clat <- read.csv(system.file("clat.csv", package = "linkages"),header = FALSE)
+  load(system.file("switch.mat.Rdata", package = "linkages"))
   
   #temp.mat <- matrix(c(-8.6,-7.6,-1.9,6.9,13.7,19,21.6,20.5,15.9,9.6,.8,-6.1),nyear,12,byrow = TRUE)
   #precip.mat <- matrix(c(2.9,2.7,4.2,7,9.2,11.2,8,8.9,8.9,5.7,5.5,2.9),nyear,12,byrow=TRUE)
+  
+  linkages(iplot, nyear, nspec, fc, dry, bgs, egs, max.ind,
+                       plat, temp.mat, precip.mat, spp.params, switch.mat,
+                       fdat, clat, basesc = 74, basesn = 1.64)
+  
+  
+  
   
   #linkages.out <- linkages(iplot = iplot, nyear = nyear,nspec = nspec, fc = fc, dry = dry,
    #                        bgs = bgs, egs = egs, max.ind=max.ind, plat = plat, temp.mat = temp.mat,
@@ -117,4 +126,7 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   writeLines(jobsh, con=file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
 
+  
+  
+  
 }
