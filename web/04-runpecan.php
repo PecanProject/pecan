@@ -278,6 +278,7 @@ if (!empty($sensitivity)) {
 fwrite($fh, "  <model>" . PHP_EOL);
 fwrite($fh, "    <id>${modelid}</id>" . PHP_EOL);
 if ($modeltype == "ED2") {
+  fwrite($fh, "    <edin>ED2IN.r${revision}</edin>" . PHP_EOL);
 	fwrite($fh, "    <config.header>" . PHP_EOL);
 	fwrite($fh, "      <radiation>" . PHP_EOL);
 	fwrite($fh, "        <lai_min>0.01</lai_min>" . PHP_EOL);
@@ -286,8 +287,15 @@ if ($modeltype == "ED2") {
 	fwrite($fh, "        <output_month>12</output_month>      " . PHP_EOL);
 	fwrite($fh, "      </ed_misc> " . PHP_EOL);
 	fwrite($fh, "    </config.header>" . PHP_EOL);
-	fwrite($fh, "    <edin>ED2IN.r${revision}</edin>" . PHP_EOL);
 	fwrite($fh, "    <phenol.scheme>0</phenol.scheme>" . PHP_EOL);
+}
+if (in_array($_REQUEST['hostname'], $qsublist)) {
+  if (isset($qsuboptions[$_REQUEST['hostname']])) {
+    $options = $qsuboptions[$_REQUEST['hostname']];
+    if (isset($options['models']) && isset($options['models'][$modeltype])) {
+      fwrite($fh, "    <job.sh>" . $options['job.sh'][$modeltype] . "</job.sh>" . PHP_EOL);      
+    }
+  }
 }
 fwrite($fh, "  </model>" . PHP_EOL);
 fwrite($fh, "  <workflow>" . PHP_EOL);
@@ -324,22 +332,25 @@ if (isset($_REQUEST['username'])) {
     fwrite($fh, "      <user>${_REQUEST['username']}</user>" . PHP_EOL);
 }
 if (in_array($_REQUEST['hostname'], $qsublist)) {
-    if (isset($qsuboptions[$_REQUEST['hostname']])) {
-      $options = $qsuboptions[$_REQUEST['hostname']];
-      if (isset($options['qsub'])) {
-        fwrite($fh, "      <qsub>${options['qsub']}</qsub>" . PHP_EOL);
-      } else {
-        fwrite($fh, "      <qsub/>" . PHP_EOL);  
-      }
-      if (isset($options['jobid'])) {
-        fwrite($fh, "      <qsub.jobid>${options['jobid']}</qsub.jobid>" . PHP_EOL);
-      }
-      if (isset($options['qstat'])) {
-        fwrite($fh, "      <qstat>${options['qstat']}</qstat>" . PHP_EOL);
-      }
+  if (isset($qsuboptions[$_REQUEST['hostname']])) {
+    $options = $qsuboptions[$_REQUEST['hostname']];
+    if (isset($options['qsub'])) {
+      fwrite($fh, "      <qsub>${options['qsub']}</qsub>" . PHP_EOL);
     } else {
-      fwrite($fh, "      <qsub/>" . PHP_EOL);
+      fwrite($fh, "      <qsub/>" . PHP_EOL);  
     }
+    if (isset($options['jobid'])) {
+      fwrite($fh, "      <qsub.jobid>${options['jobid']}</qsub.jobid>" . PHP_EOL);
+    }
+    if (isset($options['qstat'])) {
+      fwrite($fh, "      <qstat>${options['qstat']}</qstat>" . PHP_EOL);
+    }
+    if (isset($options['job.sh'])) {
+      fwrite($fh, "      <job.sh>${options['job.sh']}</job.sh>" . PHP_EOL);
+    }
+  } else {
+    fwrite($fh, "      <qsub/>" . PHP_EOL);
+  }
 }
 if ($hostname != "localhost") {
     fwrite($fh, "      <tunnel>" . $tunnel_folder . DIRECTORY_SEPARATOR . "tunnel" . "</tunnel>" . PHP_EOL);
