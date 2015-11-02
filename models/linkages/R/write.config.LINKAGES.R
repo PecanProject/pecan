@@ -25,8 +25,8 @@
 ##-------------------------------------------------------------------------------------------------#
 write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, run.id){
 
-  library(linkages)
-  
+require(linkages) 
+
   # find out where to write run/ouput
   rundir <- file.path(settings$run$host$rundir, run.id)
   if(!file.exists(rundir)) dir.create(rundir)
