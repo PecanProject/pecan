@@ -10,6 +10,7 @@ Depends:
     PEcAn.utils
 Suggests:
     testthat
+    linkages
 SystemRequirements: LINKAGES
 OS_type: unix
 License: FreeBSD + file LICENSE
