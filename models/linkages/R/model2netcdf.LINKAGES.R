@@ -10,8 +10,8 @@
 ##-------------------------------------------------------------------------------------------------#
 ##' Convert MODEL output into the NACP Intercomparison format (ALMA using netCDF)
 ##'
-##' @name model2netcdf.MODEL
-##' @title Code to convert MODELS's output into netCDF format
+##' @name model2netcdf.LINKAGES
+##' @title Code to convert LINKAGES's output into netCDF format
 ##'
 ##' @param outdir Location of model output
 ##' @param sitelat Latitude of the site
@@ -21,7 +21,7 @@
 ##' @export
 ##'
 ##' @author Ann Raiho
-model2netcdf.linkages <- function(outdir, sitelat, sitelon, start_date=NULL, end_date=NULL,force=FALSE){ #, PFTs) {
+model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end_date=NULL,force=FALSE){ #, PFTs) {
 #  logger.severe("NOT IMPLEMENTED")
 
   ##QUESTIONS:How should I name the PFTs? What should I do about more than one plot?
