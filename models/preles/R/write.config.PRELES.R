@@ -34,8 +34,8 @@ write.config.PRELES<- function(defaults, trait.values, settings, run.id){
                  ' require(PEcAn.PRELES); runPRELES.jobsh.R(',
                  "'",met.file,"',",
                  "'",outdir,"',",
-                 settings$run$start_date,"', '",
-                 settings$run$end_date,"') ",
+                 settings$run$start.date,"', '",
+                 settings$run$end.date,"') ",
                  '" | R --vanilla'
   )
   writeLines(jobsh, con=file.path(settings$rundir, run.id, "job.sh"))
