@@ -24,15 +24,15 @@
 ##' @author Ann Raiho
 ##-------------------------------------------------------------------------------------------------#
 write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, run.id){
-
-require(linkages) 
-
+  
+  require(linkages) 
+  
   # find out where to write run/ouput
   rundir <- file.path(settings$run$host$rundir, run.id)
   if(!file.exists(rundir)) dir.create(rundir)
   outdir <- file.path(settings$run$host$outdir, run.id)
   if(!file.exists(outdir)) dir.create(outdir)
-
+  
   #-----------------------------------------------------------------------
   
   start.year = as.numeric(strftime(settings$run$start.date,"%Y"))
@@ -76,20 +76,18 @@ require(linkages)
   clat <- read.csv(system.file("clat.csv", package = "linkages"),header = FALSE)
   load(system.file("switch.mat.Rdata", package = "linkages"))
   
+  load(settings$run$inputs$met$path)
   #temp.mat <- matrix(c(-8.6,-7.6,-1.9,6.9,13.7,19,21.6,20.5,15.9,9.6,.8,-6.1),nyear,12,byrow = TRUE)
   #precip.mat <- matrix(c(2.9,2.7,4.2,7,9.2,11.2,8,8.9,8.9,5.7,5.5,2.9),nyear,12,byrow=TRUE)
+
+  basesc = 74
+  basesn = 1.64
   
-  linkages(iplot, nyear, nspec, fc, dry, bgs, egs, max.ind,
-                       plat, temp.mat, precip.mat, spp.params, switch.mat,
-                       fdat, clat, basesc = 74, basesn = 1.64)
+  input<-file.path(settings$rundir,"linkages.Rdata")  
   
-  
-  
-  
-  #linkages.out <- linkages(iplot = iplot, nyear = nyear,nspec = nspec, fc = fc, dry = dry,
-   #                        bgs = bgs, egs = egs, max.ind=max.ind, plat = plat, temp.mat = temp.mat,
-    #                       precip.mat = precip.mat, spp.params = spp.params, switch.mat = switch.mat,
-     #                      fdat = fdat, clat = clat, basesc = 74, basesn = 1.64)
+  save(iplot, nyear, nspec, fc, dry, bgs, egs, max.ind,
+       plat, temp.mat, precip.mat, spp.params, switch.mat,
+       fdat, clat, basesc, basesn, file = input)
   
   #-----------------------------------------------------------------------
   # create launch script (which will create symlink)
@@ -114,18 +112,18 @@ require(linkages)
   jobsh <- gsub('@SITE_LAT@', settings$run$site$lat, jobsh)
   jobsh <- gsub('@SITE_LON@', settings$run$site$lon, jobsh)
   jobsh <- gsub('@SITE_MET@', settings$run$inputs$met$path, jobsh)
-
+  
   jobsh <- gsub('@START_DATE@', settings$run$start.date, jobsh)
   jobsh <- gsub('@END_DATE@', settings$run$end.date, jobsh)
-
+  
   jobsh <- gsub('@OUTDIR@', outdir, jobsh)
   jobsh <- gsub('@RUNDIR@', rundir, jobsh)
-
-  jobsh <- gsub('@BINARY@', settings$model$binary, jobsh)
-
+  
+  jobsh <- gsub('@INPUT@', input, jobsh)
+  
   writeLines(jobsh, con=file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
-
+  
   
   
   
