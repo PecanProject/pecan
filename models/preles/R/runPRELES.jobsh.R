@@ -15,7 +15,7 @@
 ##' @param end_date End time of the simulation
 ##' @export netcdf file in CF standard
 ##' @author Tony Gardella, Michael Dietze
-runPRELES.jobsh<- function(in.path, in.prefix,outdir,start_date,end_date){
+runPRELES.jobsh<- function(met.file,outdir,start.date,end.date){
   
   if(!require("PEcAn.utils")) print("install PEcAn.utils")
   require("lubridate")
@@ -24,13 +24,12 @@ runPRELES.jobsh<- function(in.path, in.prefix,outdir,start_date,end_date){
   require("udunits2")
 
   ## Open netcdf file
-  input.file <- file.path(in.path, paste(in.prefix, year, "nc", sep="."))
-  nc=nc_open(input.file)
+  nc=nc_open(met.file)
   dim=nc.get.dim.names(nc)
   
   #Process start and end dates
-  start_date<-as.POSIXlt(start_date,tz="GMT")
-  end_date<-as.POSIXlt(end_date,tz ="GMT")
+  start_date<-as.POSIXlt(start.date,tz="GMT")
+  end_date<-as.POSIXlt(end.date,tz ="GMT")
   
   days=as.Date(start_date):as.Date(end_date)
   year = strftime(as.Date(days,origin="1970-01-01"),"%Y")
