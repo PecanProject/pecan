@@ -30,7 +30,6 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
     
 
   } else {
-    met <- load.cfmet(met.nc, lat = lat, lon = lon, start.date = start.date, end.date = end.date)
     years <- year(start.date):year(end.date)
   }
   met <- load.cfmet(met.nc, lat = lat, lon = lon, 
@@ -53,8 +52,9 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
   soil.parms <- lapply(config$pft$soilControl, as.numeric)
   
   
-  for(yeari in years){
-    yearchar <- as.character(yeari)
+  for(i in 1:length(years)){
+    yeari <- years[i]
+    yearchar <- as.character(i*10000 + yeari)
     WetDat <- biocro.met[biocro.met$year == yeari, ]
 
     ## day1 = last spring frost
@@ -119,15 +119,16 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
       
     }
     result.yeari.hourly <- with(tmp.result,
-                                data.table(year = yeari, 
+                                data.table(yeari = yearchar, 
+                                           year = yeari, 
                                            doy = DayofYear, 
                                            hour = Hour, ThermalT,
                                            Stem, Leaf, Root, Rhizome, Grain, LAI,
                                            SoilEvaporation, CanopyTrans, 
                                            key = c("year", "doy", "hour")))
-    if(yeari == years[1]){
+    if(i == 1){
       hourly.results <- result.yeari.hourly
-    } else if (!yeari == years[1]){
+    } else if (i > 1){
       hourly.results <- rbind(hourly.results, result.yeari.hourly)
     }
   }
@@ -136,7 +137,8 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
   setkeyv(hourly.results, c("year", "doy", "hour"))
 
   hourly.results <- merge(biocro.met.dt, hourly.results) ## right join
-  hourly.results <- hourly.results[year %in% years]
+  hourly.results <- hourly.results[order(as.numeric(yeari), doy, hour)]
+  
   daily.results <- hourly.results[,list(Stem = max(Stem), Leaf = max(Leaf),
                                         Root = max(Root), Rhizome = max(Rhizome),
                                         SoilEvaporation = sum(SoilEvaporation),
@@ -145,7 +147,7 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
                                         LAI = max(LAI),
                                         tmax = max(Temp), tmin = min(Temp),
                                         tavg = mean(Temp), precip = sum(precip)),
-                                  by = 'year,doy']
+                                  by = 'yeari,doy']
 
   annual.results <- hourly.results[ ,list(Stem = max(Stem), Leaf = max(Leaf),
                                           Root = max(Root), Rhizome = max(Rhizome),
@@ -154,7 +156,7 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
                                           CanopyTrans = sum(CanopyTrans),
                                           map = sum(precip),
                                           mat = mean(Temp)),
-                                          by = "year"]
+                                          by = "yeari"]
   return(list(hourly = hourly.results,
               daily = daily.results,
               annually = data.table(lat = lat, lon = lon, annual.results)))
