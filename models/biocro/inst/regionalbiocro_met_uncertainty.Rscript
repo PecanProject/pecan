@@ -14,7 +14,6 @@ require(PEcAn.data.atmosphere)
 require(PEcAn.utils)
 require(lubridate)
 
-options(error = browser)
 
 if(interactive()) {
 
@@ -29,8 +28,8 @@ if(interactive()) {
 
 config <- read.biocro.config(file.path(rundir, "config.xml"))
 
-met.nc  <- nc_open(config$run$met.file)
-soil.nc <- nc_open(config$run$soil.file)
+met.nc  <- nc_open("~/.pecan/dbfiles/met/narr/threehourly/illinois.nc")#config$run$met.file)
+soil.nc <- nc_open("~/.pecan/dbfiles/soil/hwsd.nc")#config$run$soil.file)
 # atmco2.nc <- nc_open(file.path(inputdir, "co2/CO2_Global_HD_v1.nc"))
 
 lat <- ncvar_get(met.nc, "latitude")
@@ -45,7 +44,7 @@ for(i in 1:500){
   set.seed(i)
   lat <- latlon$lat[point]
   lon <- latlon$lon[point]
-  out <- run.biocro(lat, lon, met.nc = met.nc, soil.nc = soil.nc, config = config)
+  out <- run.biocro(lat, lon, met.nc = met.nc, soil.nc = soil.nc, config = config, met.uncertainty = TRUE)
   annual.result <- rbind(annual.result, out$annually)
   save(annual.result, file = file.path(outdir, "annual.result.RData"))
   

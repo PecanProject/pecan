@@ -23,14 +23,20 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
   ## Meteorology
   
   if(met.uncertainty == TRUE){
-    met <- load.cfmet(met.nc, lat = lat, lon = lon, start.date = "1979-01-01", 
-                      end.date = "2010-12-31")
-    year.sample <- met[,list(year = sample(unique(year), size = 15))] 
-    met <- met[year %in% year.sample$year]
+    start.date <- "1979-01-01"
+    end.date <- "2010-12-31"
+    years <- sample(year(start.date):year(end.date), 
+                                 size = 15, replace = TRUE)
+    
+
   } else {
     met <- load.cfmet(met.nc, lat = lat, lon = lon, start.date = start.date, end.date = end.date)
+    years <- year(start.date):year(end.date)
   }
-  
+  met <- load.cfmet(met.nc, lat = lat, lon = lon, 
+                    start.date = start.date, end.date = end.date)
+  met <- met[year %in% years]
+
   met.hr <- cfmet.downscale.time(cfmet = met, output.dt = 1)
   biocro.met <- cf2biocro(met.hr)
   
@@ -46,7 +52,7 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
   }
   soil.parms <- lapply(config$pft$soilControl, as.numeric)
   
-  years <- year(start.date):year(end.date)
+  
   for(yeari in years){
     yearchar <- as.character(yeari)
     WetDat <- biocro.met[biocro.met$year == yeari, ]
@@ -94,7 +100,7 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
                               photoControl=config$pft$photoParms)
       
     } else if (genus == "Miscanthus"){
-      if(yeari == min(years)){
+      if(yeari == years[1]){
         iRhizome <- config$pft$iPlantControl$iRhizome
       } else {
         iRhizome <- last(tmp.result$Rhizome)
@@ -119,9 +125,9 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
                                            Stem, Leaf, Root, Rhizome, Grain, LAI,
                                            SoilEvaporation, CanopyTrans, 
                                            key = c("year", "doy", "hour")))
-    if(yeari == min(years)){
+    if(yeari == years[1]){
       hourly.results <- result.yeari.hourly
-    } else if (yeari > min(years)){
+    } else if (!yeari == years[1]){
       hourly.results <- rbind(hourly.results, result.yeari.hourly)
     }
   }
@@ -130,6 +136,7 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
   setkeyv(hourly.results, c("year", "doy", "hour"))
 
   hourly.results <- merge(biocro.met.dt, hourly.results) ## right join
+  hourly.results <- hourly.results[year %in% years]
   daily.results <- hourly.results[,list(Stem = max(Stem), Leaf = max(Leaf),
                                         Root = max(Root), Rhizome = max(Rhizome),
                                         SoilEvaporation = sum(SoilEvaporation),
