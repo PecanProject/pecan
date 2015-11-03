@@ -32,7 +32,7 @@ write.config.PRELES<- function(defaults, trait.values, settings, run.id){
   jobsh = paste0("#!/bin/bash\n",
                  'echo "',
                  ' require(PEcAn.PRELES); runPRELES.jobsh.R(',
-                 "'",met.file,"',",
+                 "'",settings$run$inputs$met$path,"',",
                  "'",outdir,"',",
                  settings$run$start.date,"', '",
                  settings$run$end.date,"') ",
