@@ -54,7 +54,7 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
   
   for(i in 1:length(years)){
     yeari <- years[i]
-    yearchar <- as.character(i*10000 + yeari)
+    yearindex <- i*10000 + yeari ## for use with met uncertainty
     WetDat <- biocro.met[biocro.met$year == yeari, ]
 
     ## day1 = last spring frost
@@ -74,7 +74,7 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
       tmp.result$Rhizome <- 0
       tmp.result$Grain <- 0
     } else if (genus == "Salix") {
-      if(yeari == min(years)){
+      if(i == 1){
         iplant <- iwillowParms(iRhizome=1.0, iStem=1.0, iLeaf=0.0,
                                iRoot=1.0, ifrRhizome=0.01, ifrStem=0.01,
                                ifrLeaf = 0.0, ifrRoot = 0.0)
@@ -83,9 +83,9 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
         iplant$iRoot <- last(tmp.result$Root)
         iplant$iStem <- last(tmp.result$Stem)
 
-        if ((yeari - min(years))  %% coppice.interval == 0) { # coppice when remainder = 0
+        if ((i - 1)  %% coppice.interval == 0) { # coppice when remainder = 0
           HarvestedYield  <- round(last(tmp.result$Stem) * 0.95, 2)                
-        } else if ((yeari - min(years))  %% coppice.interval == 1) { # year after coppice
+        } else if ((i - 1)  %% coppice.interval == 1) { # year after coppice
           iplant$iStem <- iplant$iStem * 0.05
         } # else { # do nothing if neither coppice year nor year following
       }
@@ -119,7 +119,7 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
       
     }
     result.yeari.hourly <- with(tmp.result,
-                                data.table(yeari = yearchar, 
+                                data.table(yearindex = yearindex, 
                                            year = yeari, 
                                            doy = DayofYear, 
                                            hour = Hour, ThermalT,
@@ -137,7 +137,7 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
   setkeyv(hourly.results, c("year", "doy", "hour"))
 
   hourly.results <- merge(biocro.met.dt, hourly.results) ## right join
-  hourly.results <- hourly.results[order(as.numeric(yeari), doy, hour)]
+  hourly.results <- hourly.results[order(yearindex, doy, hour)]
   
   daily.results <- hourly.results[,list(Stem = max(Stem), Leaf = max(Leaf),
                                         Root = max(Root), Rhizome = max(Rhizome),
@@ -147,7 +147,7 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
                                         LAI = max(LAI),
                                         tmax = max(Temp), tmin = min(Temp),
                                         tavg = mean(Temp), precip = sum(precip)),
-                                  by = 'yeari,doy']
+                                  by = 'yearindex,doy']
 
   annual.results <- hourly.results[ ,list(Stem = max(Stem), Leaf = max(Leaf),
                                           Root = max(Root), Rhizome = max(Rhizome),
@@ -156,7 +156,7 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
                                           CanopyTrans = sum(CanopyTrans),
                                           map = sum(precip),
                                           mat = mean(Temp)),
-                                          by = "yeari"]
+                                          by = "yearindex"]
   return(list(hourly = hourly.results,
               daily = daily.results,
               annually = data.table(lat = lat, lon = lon, annual.results)))
