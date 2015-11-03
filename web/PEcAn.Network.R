@@ -115,7 +115,7 @@ for(j in 1:m){
   
   ## CHECK TO SEE IF THE SIZE OF THE DUMP HAS CHANGED
   bety.state = system(paste("curl -I -L",pecan.nodes$sync_url[j]),intern=TRUE)
-  if(length(grep("404",bety.state[1]))){
+  if(length(bety.state) == 0 | length(grep("404",bety.state[1]))){
     pecan.state[i,i] = 2    ## set status to DOWN
   } else {
     if(pecan.state[i,i]==2) pecan.state[i,i]=3
@@ -134,7 +134,7 @@ for(j in 1:m){
 
 ## If schema changed, update statues
 if(latest.schema > curr.schema){
-  for(i in 1:n){
+  for(i in which(!is.na(diag(pecan.state)))){
     if(pecan.state[i,i]==0 & node.schemas[i] < latest.schema) pecan.state[i,i]= 1
   }
 }
@@ -187,7 +187,9 @@ for(j in 1:m){
       }
     } ## end detect error page
     
-  } ## end sync.log exists
+  } else { ## end sync.log exists
+    #pecan.state[-i,i] = 2 
+  }
 } ## end loop over nodes (EDGE CHECK)
 
 save.image(network.file)

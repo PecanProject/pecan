@@ -104,7 +104,7 @@ CLEAN_TABLES="${CLEAN_TABLES} machines managements methods"
 CLEAN_TABLES="${CLEAN_TABLES} mimetypes models modeltypes"
 CLEAN_TABLES="${CLEAN_TABLES} modeltypes_formats pfts"
 CLEAN_TABLES="${CLEAN_TABLES} posterior_samples posteriors"
-CLEAN_TABLES="${CLEAN_TABLES} priors runs sessions sites"
+CLEAN_TABLES="${CLEAN_TABLES} priors runs sites"
 CLEAN_TABLES="${CLEAN_TABLES} species treatments"
 CLEAN_TABLES="${CLEAN_TABLES} variables workflows"
 
@@ -116,6 +116,9 @@ MANY_TABLES="${MANY_TABLES} citations_sites citations_treatments"
 MANY_TABLES="${MANY_TABLES} formats_variables inputs_runs"
 MANY_TABLES="${MANY_TABLES} managements_treatments pfts_priors"
 MANY_TABLES="${MANY_TABLES} pfts_species posteriors_ensembles"
+
+# tables that should NOT be dumped
+IGNORE_TABLES="sessions"
 
 # be quiet if not interactive
 if ! tty -s ; then

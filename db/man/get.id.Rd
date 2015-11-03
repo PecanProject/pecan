@@ -4,7 +4,7 @@
 \alias{get.id}
 \title{get.id}
 \usage{
-get.id(table, colnames, values, con)
+get.id(table, colnames, values, con, create = FALSE, dates = FALSE)
 }
 \arguments{
 \item{table}{name of table}

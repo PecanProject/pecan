@@ -23,6 +23,9 @@ $browndog_password="";
 # R binary
 $Rbinary="/usr/bin/R";
 
+# sshTunnel binary
+$SSHtunnel=dirname(__FILE__) . DIRECTORY_SEPARATOR . "sshtunnel.sh";
+
 # Require username/password, can set min level to 0 so nobody can run/delete.
 # 4 = viewer
 # 3 = creator
@@ -39,6 +42,19 @@ $REST_AUTH_DIGEST_STRETCHES =10;
 # List of allowed hosts
 $fqdn=exec('hostname -f');
 $hostlist=array($fqdn);
+
+# List of hosts that need qsub
+$qsublist=array();
+
+# List of qsub options, this might only be needed for certain systems
+# the list should be the server pointing to an array, the second array
+# can contain 3 values (qsub, jobid and qstat).
+$qsuboptions=array("geo.bu.edu" => 
+                    array("qsub"   => "qsub -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash",
+                          "jobid"  => "Your job ([0-9]+) .*",
+                          "qstat"  => "qstat -j @JOBID@ || echo DONE",
+                          "job.sh" => "module load udunits R/R-3.0.0_gnu-4.4.6",
+                          "models" => array("ED2"    => "module load hdf5")));
 
 # Folder where PEcAn is installed
 $pecan_install="/home/carya/R/library";

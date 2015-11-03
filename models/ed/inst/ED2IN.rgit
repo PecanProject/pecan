@@ -586,7 +586,7 @@ $ED_NL
    !                   2.  Similar to 1, but branches are treated as separate pools in the !
    !                       biophysics (thus doubling the number of prognostic variables).  !
    !---------------------------------------------------------------------------------------!
-   NL%IBRANCH_THERMO = 0
+   NL%IBRANCH_THERMO = 1
    !---------------------------------------------------------------------------------------!
    ! IPHYSIOL --  This variable will determine the functional form that will control how   !
    !              the various parameters will vary with temperature, and how the CO2       !
