@@ -10,7 +10,7 @@ mkdir -p "@OUTDIR@"
 # see if application needs running
 if [ ! -e "@OUTDIR@/OUT.csv" ]; then
   cd "@RUNDIR@"
-  ln -s "@SITE_MET@" climate.txt
+  ln -s "@SITE_MET@" climate.Rdata
   
   "@BINARY@"
   STATUS=$?
