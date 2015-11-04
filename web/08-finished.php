@@ -42,6 +42,7 @@ $stmt->closeCursor();
 $start = substr($workflow['start_date'], 0, 4);
 $end = substr($workflow['end_date'], 0, 4);
 $folder = $workflow['folder'];
+$notes = htmlspecialchars($workflow['notes']);
 
 # check to make sure all is ok
 $error=false;
@@ -512,7 +513,8 @@ if (is_dir("$folder/run")) {
   }
 ?>    
   </div>
-  <div id="output">Please select an option on the left.</div>
+  <div id="output_history">Please select an option on the left.</div>
+  <div id="notes_history"><b>NOTES:</b><?php echo $notes;?></div>
   <div id="footer"><?php echo get_footer(); ?></div>
 </div>
 </body>

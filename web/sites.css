@@ -126,6 +126,19 @@ th,td {
     height: calc( 100% - 30px );
 }
 
+#output_history {
+    overflow: auto;
+    padding: 5px;
+    margin-left: 200px;
+}
+
+#notes_history {
+    overflow: auto;
+    padding: 5px;
+    margin-left: 200px;
+    height: calc( 100% - 30px );
+}
+
 #editor {
     -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
     -moz-box-sizing: border-box;    /* Firefox, other Gecko */
