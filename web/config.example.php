@@ -49,10 +49,12 @@ $qsublist=array();
 # List of qsub options, this might only be needed for certain systems
 # the list should be the server pointing to an array, the second array
 # can contain 3 values (qsub, jobid and qstat).
-$qsuboptions=array("somehost" => 
-                    array("qsub"  => "qsub -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash",
-                          "jobid" => "Your job ([0-9]+) .*",
-                          "qstat" => "qstat -j @JOBID@ &amp;&gt; /dev/null || echo DONE"));
+$qsuboptions=array("geo.bu.edu" => 
+                    array("qsub"   => "qsub -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash",
+                          "jobid"  => "Your job ([0-9]+) .*",
+                          "qstat"  => "qstat -j @JOBID@ || echo DONE",
+                          "job.sh" => "module load udunits R/R-3.0.0_gnu-4.4.6",
+                          "models" => array("ED2"    => "module load hdf5")));
 
 # Folder where PEcAn is installed
 $pecan_install="/home/carya/R/library";

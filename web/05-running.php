@@ -132,7 +132,7 @@ if (!$finished) {
 
     <span id="error" class="small">&nbsp;</span>
 <?php if (!$authentication || (get_page_acccess_level() <= $min_run_level)) { ?>
-      <input id="prev" type="button" value="Start Over" onclick="nextStep();"/>
+      <input id="prev" type="button" value="Start Over" onclick="prevStep();"/>
 <?php } ?>
 <?php if ($finished) { ?>
     <input id="next" type="button" value="Finished" onclick="nextStep();" />
