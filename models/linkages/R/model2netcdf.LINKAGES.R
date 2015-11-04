@@ -20,10 +20,13 @@
 ##' @param end_date End time of the simulation
 ##' @export
 ##'
-##' @author Ann Raiho
+##' @author Ann Raiho, Betsy Cowdery
 model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end_date=NULL,force=FALSE){ #, PFTs) {
 #  logger.severe("NOT IMPLEMENTED")
 
+  require(PEcAn.utils)
+  require(ncdf4)
+  
   ##QUESTIONS:How should I name the PFTs? What should I do about more than one plot?
 
   ### Read in model output in linkages format
@@ -31,15 +34,17 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end
   #linkages.output.dims <- dim(linkages.output)
 
   ### Determine number of years and output timestep
-  num.years <- nrow(ag.biomass)
-  years <- unique(year)
+  
+  start_year <- as.numeric(strftime(start_date, "%Y"))
+  end_year <- as.numeric(strftime(end_date, "%Y"))
+  years <- start_year:end_year
 
   ### Loop over years in linkages output to create separate netCDF outputs
-  for (y in years){
+  for (y in 1:length(years)){
     if (file.exists(file.path(outdir, paste(y,"nc", sep=".")))) {
       next
     }
-    print(paste("---- Processing year: ", y))  # turn on for debugging
+    print(paste("---- Processing year: ", years[y]))  # turn on for debugging
 
     ## Subset data for processing
     #sub.linkages.output <- subset(linkages.output, year == y)
@@ -69,7 +74,7 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end
 
     #******************** Declare netCDF variables ********************#
     dim.t <- ncdim_def(name = "time",
-                   units = paste0("days since ", y, "-01-01 00:00:00"),
+                   units = paste0("days since ", years[y], "-01-01 00:00:00"),
                    vals = as.numeric(years[y]),
                    calendar = "standard", unlim = TRUE)
     dim.lat <- ncdim_def("lat", "degrees_east",
