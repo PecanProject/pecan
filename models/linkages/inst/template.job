@@ -11,11 +11,11 @@ exec &> "@OUTDIR@/logfile.txt"
 mkdir -p "@OUTDIR@"
 
 # see if application needs running
-if [ ! -e "@OUTDIR@/OUT.Rdata" ]; then
+if [ ! -e "@OUTDIR@/linkages.out.Rdata" ]; then
   cd "@RUNDIR@"
   
   echo "require (linkages)
-linkages('@INPUT@')
+linkages('@INPUT@','@OUTDIR@')
 " | R --vanilla
   STATUS=$?
   
@@ -24,8 +24,6 @@ linkages('@INPUT@')
     echo -e "ERROR IN LINKAGES RUN\nLogile is located at '@OUTDIR@/logfile.txt'" >&3
     exit $STATUS
   fi
-  
-  cp OUT.Rdata @OUTDIR@
  
   # convert to MsTMIP
   echo "require (PEcAn.LINKAGES)

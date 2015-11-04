@@ -21,7 +21,7 @@
 ##' @param run.id id of run
 ##' @return configuration file for LINKAGES for given run
 ##' @export
-##' @author Ann Raiho
+##' @author Ann Raiho, Betsy Cowdery
 ##-------------------------------------------------------------------------------------------------#
 write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, run.id){
   
@@ -83,7 +83,7 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   basesc = 74
   basesn = 1.64
   
-  input<-file.path(settings$rundir,"linkages.Rdata")  
+  input<-file.path(settings$rundir,"linkages.input.Rdata")  
   
   save(iplot, nyear, nspec, fc, dry, bgs, egs, max.ind,
        plat, temp.mat, precip.mat, spp.params, switch.mat,
@@ -124,7 +124,5 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   writeLines(jobsh, con=file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
   
-  
-  
-  
+
 }
