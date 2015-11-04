@@ -28,7 +28,7 @@ default.invert.prospect <- function(observed, sensor, ngibbs, version=5,
                            prior = prior,
                            pm = pm,
                            model = model,
-                           do.mle = do.mle,
+                           do.lsq = do.mle,
                            quiet = quiet)
     return(samples)
 }
