@@ -27,13 +27,12 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end
   ##QUESTIONS:How should I name the PFTs? What should I do about more than one plot?
 
   ### Read in model output in linkages format
-  linkages.out.file <- file.path(outdir, "linkages.out")
-  linkages.output <- load("linkages.out.Rdata")
+  load(file.path(outdir,"linkages.out.Rdata"))
   #linkages.output.dims <- dim(linkages.output)
 
   ### Determine number of years and output timestep
-  num.years <- nrow(linkages.output$ag.biomass)
-  years <- unique(linkages.output$year)
+  num.years <- nrow(ag.biomass)
+  years <- unique(year)
 
   ### Loop over years in linkages output to create separate netCDF outputs
   for (y in years){
@@ -52,21 +51,21 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end
     ## Setup outputs for netCDF file in appropriate units
     output <- list()
     ## standard variables: Carbon Pools
-    output[[1]] <- linkages.output$ag.biomass[y,] # Above Ground Biomass in kgC/m2
-    output[[2]] <- linkages.output$ag.biomass[y,]  # Total Live Biomass in kgC/m2 (no distinction from AGB in linkages)
-    output[[3]] <- linkages.output$total.soil.carbon[y,] # TotSoilCarb in kgC/m2
-    output[[4]] <- c(linkages.output$ag.biomass[y,],linkages.output$total.soil.carbon[y,],
-                     linkages.output$leaf.litter[y,]) #Carb Pools in kgC/m2
+    output[[1]] <- ag.biomass[y,] # Above Ground Biomass in kgC/m2
+    output[[2]] <- ag.biomass[y,]  # Total Live Biomass in kgC/m2 (no distinction from AGB in linkages)
+    output[[3]] <- total.soil.carbon[y,] # TotSoilCarb in kgC/m2
+    output[[4]] <- c(ag.biomass[y,],total.soil.carbon[y,],
+                     leaf.litter[y,]) #Carb Pools in kgC/m2
     output[[5]] <- c("AGB","Soil Organic Matter","Leaf Litter") #poolname
-    output[[6]] <- linkages.output$ag.npp[y,] # GWBI = NPP in linkages
-    output[[7]] <- linkages.output$hetero.resp[y,] # HeteroResp in kgC/m^2/s
-    output[[8]] <- linkages.output$ag.npp[y,] # NPP = GWBI in linkages
-    output[[9]] <- linkages.output$nee[y,] # NEE #possibly questionable
-    output[[10]] <- linkages.output$et[y,] # Evap in kg/m^2/s
+    output[[6]] <- ag.npp[y,] # GWBI = NPP in linkages
+    output[[7]] <- hetero.resp[y,] # HeteroResp in kgC/m^2/s
+    output[[8]] <- ag.npp[y,] # NPP = GWBI in linkages
+    output[[9]] <- nee[y,] # NEE #possibly questionable
+    output[[10]] <- et[y,] # Evap in kg/m^2/s
 
-    output[[11]] <- linkages.output$agb.pft[,y,]
+    output[[11]] <- agb.pft[,y,]
 
-    output[[12]] <- linkages.output$f.comp[,y,]
+    output[[12]] <- f.comp[,y,]
 
     #******************** Declare netCDF variables ********************#
     dim.t <- ncdim_def(name = "time",
@@ -87,7 +86,7 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end
                          vals = 1:3,
                          longname = "Carbon Pools", create_dimvar=FALSE)
     dim.pfts <- ncdim_def("pfts", "",
-                             vals = 1:nrow(linkages.out$agb.pft),
+                             vals = 1:nrow(agb.pft),
                              longname = "PFTs", create_dimvar=FALSE)
 
     for(i in 1:length(output)){
