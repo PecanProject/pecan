@@ -19,7 +19,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   #setup connection and host information
   con      <- db.open(dbparms)
   username <- ""
-  ifelse(host$name == "localhost", machine.host <- fqdn(), machine.host <- host$name)
+  machine.host <- ifelse(host$name == "localhost", fqdn(),host$name)
   machine = db.query(paste0("SELECT * from machines where hostname = '",machine.host,"'"),con)
 
   #get met source and potentially determine where to start in the process
@@ -225,12 +225,14 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       fcn2 <- paste0("met2CF.",register$format$mimetype)
       if(exists(fcn1)){
         fcn <- fcn1
+        cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
+                               username,con=con,hostname=host$name,browndog=NULL,write=TRUE,site$lat,site$lon) 
       }else if(exists(fcn2)){
         fcn <- fcn2
+        format <- query.format(input.id,con)
+        cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
+                               username,con=con,hostname=host$name,browndog=NULL,write=TRUE,site$lat,site$lon,format) 
       }else{logger.error("met2CF function doesn't exists")}
-      
-      cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
-                             username,con=con,hostname=host$name,browndog=NULL,write=TRUE,site$lat,site$lon) 
     }  
   }
 
