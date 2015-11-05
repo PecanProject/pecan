@@ -4,17 +4,15 @@
 \alias{invert.lsq}
 \title{Least squares model inversion}
 \usage{
-invert.lsq(observed, inits, constants, model, lower = NULL, upper = NULL)
+invert.lsq(observed, inits, model, lower = NULL, upper = NULL)
 }
 \arguments{
 \item{observed}{Vector of observations (e.g. a reflectance spectrum).}
 
 \item{inits}{Vector of initial conditions for the parameters.}
 
-\item{constants}{Vector of constant parameters for the RTM.}
-
 \item{model}{An R function that calls the RTM and returns the error to be
-minimized.}
+minimized. Be sure to include constants here.}
 
 \item{lower}{Lower bounds on parameters (default=NULL, which means -Inf).}
 

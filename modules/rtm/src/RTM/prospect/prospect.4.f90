@@ -43,7 +43,7 @@
 SUBROUTINE prospect_4(N,Cab,Cw,Cm,RT)
 
     USE MOD_dataSpec_wavelength
-    USE MOD_dataSpec_prospect5B
+    USE MOD_dataSpec_prospect4
     IMPLICIT none
 
     REAL*8, intent(in) :: N,Cab,Cw,Cm
