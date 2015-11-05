@@ -26,23 +26,24 @@ query.format.vars <- function(input.id,con){
   
   # Fill in CF vars
   # This will ultimately be useful when looking at met variables where CF != Bety
-  # met <- read.csv(system.file("modules/data.atmosphere/inst/met.lookup.csv", package= "PEcAn.data.atmosphere"), header = T, stringsAsFactors=FALSE)
-   
+  met <- read.csv(system.file("/data/met.lookup.csv", package= "PEcAn.data.atmosphere"), header = T, stringsAsFactors=FALSE)
+
   for(n in 1:nrow(vars)){
+
     if (is.na(vars$CF_name[n])){
-      vars$CF_name[n] <- vars$bety_name[n]
+      vars$CF_name[n] <- ifelse(vars$bety_name[n] %in% met$bety, 
+                                met$CF_standard_name[which(met$bety %in% vars$bety_name[n])], 
+                                vars$bety_name[n])
     }
     if (is.na(vars$CF_units[n])){
-      vars$CF_units[n] <- vars$bety_units[n]
+      vars$CF_units[n] <- ifelse(vars$bety_name[n] %in% met$bety, 
+                                 met$units[which(met$bety %in% vars$bety_name[n])], 
+                                 vars$bety_units[n]) 
     }
   }
   
   df <- merge(fv, vars, by="variable_id")
-  
 
-  
-
-  
   header <- ifelse(is.na(as.numeric(f$header)),NA,TRUE)
   skip <- ifelse(is.na(as.numeric(f$skip)),0,as.numeric(f$skip))
   
