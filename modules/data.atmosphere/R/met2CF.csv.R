@@ -16,11 +16,13 @@
 ##'   in.path = "~/Downloads/"
 ##'   in.file = "WR_E"
 ##'   outfolder = "/tmp/"
-##'   format = list(orig=c("TA","PRECIP","RH","WS","WD","SW","PAR_in"),
+##'   format = list(
+##'                 variable_id=c()
+##'                 orig=c("TA","PRECIP","RH","WS","WD","SW","PAR_in"),
 ##'                 units = c("celsius","mm","%","m/s","degrees","W m-2","umol m-2 s-1"),
 ##'                 bety=c("airT","precipitation_flux","relative_humidity","Wspd","wind_direction","solar_radiation","PAR"),
 ##'                 skip=7,
-##'                 unit.row=TRUE,
+##'                 header=1,
 ##'                 na.strings=c("-9999","-6999","9999"))  
 ##'   lat = 40
 ##'   lon = -80
@@ -39,14 +41,26 @@ met2CF.csv <- function(in.path, in.file, outfolder, format, lat=NULL, lon=NULL, 
   for(i in 1:length(files)){
     
     new.file <- file.path(outfolder, gsub(".csv","_CF.nc",basename(files[i])))
-  
-    dat <- read.csv(files[i], skip = format$skip, na.strings = format$na.strings, as.is=TRUE, check.names = FALSE)
+    
 
     ## some files have a line under the header that lists variable units
-    if(format$unit.row){  
-      units <- dat[1,]
-      dat <- dat[-1,]
-    }
+    ## search for NA's after conversion to numeric
+    
+    if (format$header == 0 | format$header == 1){
+      dat <- read.csv(files[i], skip = format$skip, na.strings = format$na.strings, as.is=TRUE,
+                      check.names = FALSE, header = as.logical(header))
+    }else if (format$header > 1) {
+      dat <- read.csv(files[i], skip = format$skip, na.strings = format$na.strings, as.is=TRUE, 
+                      check.names = FALSE, header = TRUE)}
+    dat <- dat[-c(1:header-1),]
+  }else{
+    dat <- read.csv(files[i], skip = format$skip, na.strings = format$na.strings, as.is=TRUE, 
+                    check.names = FALSE)
+  }
+  
+    
+    unit.row <- which(apply(M, 1, function(X) length(setdiff(X,format$orig_units))) == 0)
+    dat <- dat[-unit.row,]
     
     ## Get datetime vector
     datetime_index <- which(format$bety == "datetime")
