@@ -10,7 +10,7 @@ OBJECTS = $(SOURCES:.f90=.o)
 all : modules $(SHLIB)
 
 clean :
-	rm -f $(OBJECTS) *.mod *.so *.o 
+	rm -f $(OBJECTS) *.mod RTM/*.mod *.so *.o 
 
 md = RTM/modules/
 
