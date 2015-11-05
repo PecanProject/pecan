@@ -23,7 +23,7 @@
 
 
 load.data <- function(input_path, format_table, vars_names_units, start_year = NA, end_year=NA, site=NA){
-    
+  
   require(lubridate)
   
   fcn1 <- paste0("load.",format_table$name)
@@ -40,9 +40,10 @@ load.data <- function(input_path, format_table, vars_names_units, start_year = N
   }
   
   args <- list(input_path,vars_names_units, start_year, end_year, site))
-  
-  results <- apply(fcn,args)
 
-  return(result) 
+results <- apply(fcn,args)
+# list object with values, variable name and units
+
+return(result) 
 }
 

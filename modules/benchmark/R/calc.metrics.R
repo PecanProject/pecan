@@ -8,10 +8,10 @@ calc.metrics <- function(input_path, format_table, vars_names_units, model_run, 
   results$score <- rep(NA, dim(metrics)[1])
   
   model <- read.output(model_run$id, model_run$outdir, start_year=NA, end_year=NA, var=vars_names_units$bety_names) #which names????
-  # model output list object with values, variable name and units 
+  # model output list object with variable values (including time) variable name and units
   
   obvs <- load.data(input_path, format_table, vars_names_units, start_year = NA, end_year=NA, site=NA)
-  # observation list object with values, variable name and units 
+  # observation list object with variable values (including time), variable name and units
   
   dat <- align.data(model, obvs)
   
