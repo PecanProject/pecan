@@ -20,10 +20,28 @@ query.format.vars <- function(input.id,con){
   n <- dim(fv)[1]
   
   # get bety and CF names and units 
-  vars <- lapply(1:n, function(i) db.query(paste("SELECT id, name,standard_name,standard_units from variables where id = ", fv$variable_id[i]),con))
+  vars <- lapply(1:n, function(i) db.query(paste("SELECT id, name, units, standard_name,standard_units from variables where id = ", fv$variable_id[i]),con))
   vars <- do.call(rbind, vars)
-  colnames(vars) <- c("variable_id", "bety_name", "CF_name", "CF_units")
+  colnames(vars) <- c("variable_id", "bety_name", "bety_units", "CF_name", "CF_units")
+  
+  # Fill in CF vars
+  # This will ultimately be useful when looking at met variables where CF != Bety
+  # met <- read.csv(system.file("modules/data.atmosphere/inst/met.lookup.csv", package= "PEcAn.data.atmosphere"), header = T, stringsAsFactors=FALSE)
+   
+  for(n in 1:nrow(vars)){
+    if (is.na(vars$CF_name[n])){
+      vars$CF_name[n] <- vars$bety_name[n]
+    }
+    if (is.na(vars$CF_units[n])){
+      vars$CF_units[n] <- vars$bety_units[n]
+    }
+  }
+  
   df <- merge(fv, vars, by="variable_id")
+  
+
+  
+
   
   header <- ifelse(is.na(as.numeric(f$header)),NA,TRUE)
   skip <- ifelse(is.na(as.numeric(f$skip)),0,as.numeric(f$skip))

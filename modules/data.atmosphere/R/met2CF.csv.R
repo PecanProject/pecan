@@ -17,10 +17,11 @@
 ##'   in.file = "WR_E"
 ##'   outfolder = "/tmp/"
 ##'   format = list(
-##'                 variable_id=c()
-##'                 orig=c("TA","PRECIP","RH","WS","WD","SW","PAR_in"),
-##'                 units = c("celsius","mm","%","m/s","degrees","W m-2","umol m-2 s-1"),
-##'                 bety=c("airT","precipitation_flux","relative_humidity","Wspd","wind_direction","solar_radiation","PAR"),
+##'                 orig_name = c("TA","PRECIP","RH","WS","WD","SW","PAR_in"),
+##'                 orig_units =  c("celsius","mm","%","m/s","degrees","W m-2","umol m-2 s-1"),
+##'                 bety_name = c("airT","precipitation_flux","relative_humidity","Wspd","wind_direction","solar_radiation","PAR"),
+##'                 CF_name = df$CF_name, 
+##'                 CF_units = df$CF_units,
 ##'                 skip=7,
 ##'                 header=1,
 ##'                 na.strings=c("-9999","-6999","9999"))  
