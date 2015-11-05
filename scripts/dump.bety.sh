@@ -97,14 +97,14 @@ USER_TABLES="users"
 
 # list of all tables, schema_migrations is ignored since that
 # will be imported during creaton
-CLEAN_TABLES="citations counties covariates cultivars dbfiles"
+CLEAN_TABLES="citations covariates cultivars dbfiles"
 CLEAN_TABLES="${CLEAN_TABLES} ensembles entities formats inputs"
-CLEAN_TABLES="${CLEAN_TABLES} likelihoods location_yields"
+CLEAN_TABLES="${CLEAN_TABLES} likelihoods"
 CLEAN_TABLES="${CLEAN_TABLES} machines managements methods"
 CLEAN_TABLES="${CLEAN_TABLES} mimetypes models modeltypes"
 CLEAN_TABLES="${CLEAN_TABLES} modeltypes_formats pfts"
 CLEAN_TABLES="${CLEAN_TABLES} posterior_samples posteriors"
-CLEAN_TABLES="${CLEAN_TABLES} priors runs sessions sites"
+CLEAN_TABLES="${CLEAN_TABLES} priors runs sites"
 CLEAN_TABLES="${CLEAN_TABLES} species treatments"
 CLEAN_TABLES="${CLEAN_TABLES} variables workflows"
 
@@ -114,9 +114,11 @@ CHECK_TABLES="traits yields"
 # tables that have many to many relationships
 MANY_TABLES="${MANY_TABLES} citations_sites citations_treatments"
 MANY_TABLES="${MANY_TABLES} formats_variables inputs_runs"
-MANY_TABLES="${MANY_TABLES} inputs_variables"
 MANY_TABLES="${MANY_TABLES} managements_treatments pfts_priors"
 MANY_TABLES="${MANY_TABLES} pfts_species posteriors_ensembles"
+
+# tables that should NOT be dumped
+IGNORE_TABLES="sessions"
 
 # be quiet if not interactive
 if ! tty -s ; then
@@ -140,7 +142,14 @@ if [ "${QUIET}" != "YES" ]; then
 fi
 
 # find current schema version
-VERSION=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c 'SELECT version FROM schema_migrations ORDER BY version DESC limit 1' | tr -d ' ' )
+# following returns a triple:
+# - number of migrations
+# - largest migration
+# - hash of all migrations
+MIGRATIONS=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c 'SELECT COUNT(version) FROM schema_migrations' | tr -d ' ' )
+VERSION=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c 'SELECT md5(array_agg(version)::text) FROM (SELECT version FROM schema_migrations ORDER BY version) as v;' | tr -d ' ' )
+LATEST=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c 'SELECT version FROM schema_migrations ORDER BY version DESC LIMIT 1' | tr -d ' ' )
+echo "${MIGRATIONS}	${VERSION}	${LATEST}" > "${OUTPUT}/version.txt"
 
 # dump schema
 if [ "${QUIET}" != "YES" ]; then
@@ -148,9 +157,8 @@ if [ "${QUIET}" != "YES" ]; then
 fi
 pg_dump ${PG_OPT} -s "${DATABASE}" -O -x > "${DUMPDIR}/${VERSION}.schema"
 if [ "${QUIET}" != "YES" ]; then
-  echo "DUMPED version ${VERSION}"
+  echo "DUMPED version ${VERSION} with ${MIGRATIONS}, latest migration is ${LATEST}"
 fi
-echo "${VERSION}" > "${OUTPUT}/version.txt"
 
 # dump ruby special table
 if [ "${QUIET}" != "YES" ]; then

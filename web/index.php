@@ -13,77 +13,9 @@ require("common.php");
 if (isset($_REQUEST['logout'])) {
 	logout();
 }
-$error = "";
+
 if ($authentication) {
-	open_database();
-	if (check_login()) {
-		header( "Location: 01-introduction.php");
-		close_database();
-		exit;
-	}
-	if (isset($_REQUEST['username']) && isset($_REQUEST['password'])) {
-		if (login($_REQUEST['username'], $_REQUEST['password'])) {
-			header( "Location: 01-introduction.php");
-			close_database();
-			exit;
-		}
-		$error = "Invalid username/password";
-	}
-	close_database();
+  header( "Location: login.php");
 } else {
-	header( "Location: 01-introduction.php");
-	exit;	
+  header( "Location: 01-introduction.php");
 }
-
-?>
-<!DOCTYPE html>
-<html>
-<head>
-<title>EBI Sites</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-<link rel="stylesheet" type="text/css" href="sites.css" />
-<script type="text/javascript" src="jquery-1.7.2.min.js"></script>
-<script type="text/javascript">
-	function login() {
-		if (($("#username")[0].value == "") || ($("#password")[0].value == "")) {
-			$("#error").text("Please specify a username and password.");
-		} else {
-			$("#formnext").submit();
-		}
-	}
-</script>
-</head>
-<body>
-<div id="wrap">
-	<div id="stylized">
-		<form id="formnext" method="POST" action="index.php">
-			<h1>Login</h1>
-
-			<label>Username:</label>
-			<input name="username" id="username" style="align: left" type="text">
-			<div class="spacer"></div>
-
-			<label>Password:</label>
-			<input name="password" id="password" style="align: left" type="password">
-			<div class="spacer"></div>
-
-			<p></p>
-			<span id="error" class="small"><?php echo $error; ?></span>
-			<input id="next" type="button" value="Login" onclick="login();" />
-			
-			<div class="spacer"></div>
-		</form>
-	</div>
-	<div id="output">
-		<h1>Login</h1>
-		<p>This installation of PEcAn requires a username and password. You can use the same username/password as used for BETY.</p>
-	</div>
-	<div id="footer">
-		The <a href="http://pecanproject.org">PEcAn project</a> is supported by the National Science Foundation
-		(ABI #1062547, ARC #1023477) and the <a href="http://www.energybiosciencesinstitute.org/">Energy
-		Biosciences Institute</a>.
-	</div>
-</div>
-</body>
-</html>

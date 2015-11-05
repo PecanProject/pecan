@@ -7,6 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.2, dbfiles, dbcon) {
+    require(coda)
   # check to see if get.trait was executed
   if (!file.exists(file.path(pft$outdir, 'trait.data.Rdata')) || !file.exists(file.path(pft$outdir, 'prior.distns.Rdata'))) {
     logger.severe("Could not find output from get.trait for", pft$name)
@@ -156,6 +157,7 @@ run.meta.analysis <- function(pfts, iterations, random = TRUE, threshold = 1.2, 
   dbcon <- db.open(database)
   result <- lapply(pfts, run.meta.analysis.pft, iterations, random, threshold, dbfiles, dbcon)
   db.close(dbcon)
+
 } ### End of function: run.meta.analysis.R
 ##==================================================================================================#
 

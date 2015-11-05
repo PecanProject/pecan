@@ -4,6 +4,9 @@
 exec 3>&1
 exec &> "@OUTDIR@/logfile.txt"
 
+# host specific setup
+@HOSTSPECIFIC@
+
 # create output folder
 mkdir -p "@OUTDIR@"
 
@@ -26,8 +29,8 @@ if [ ! -e "@OUTDIR@/sipnet.out" ]; then
 
   # convert to MsTMIP
   echo "require (PEcAn.SIPNET)
-model2netcdf.SIPNET('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
-" | R --vanilla
+    model2netcdf.SIPNET('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@', @DELETE.RAW@)
+    " | R --vanilla
 fi
 
 # copy readme with specs to output

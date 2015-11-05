@@ -17,6 +17,11 @@ if ($authentication) {
     close_database();
     exit;
   }
+  if (get_page_acccess_level() > $min_run_level) {
+    header( "Location: history.php");
+    close_database();
+    exit;
+  }
 }
 
 # boolean parameters
@@ -75,7 +80,7 @@ $browndog = (isset($_REQUEST['browndog'])) ? "checked" : "";
 <?php if ($adv_setup == "checked"){?> 
 	<form id="formnext" method="POST" action="07-analysis.php">
 <?php } else { ?>
-    	<form id="formnext" method="POST" action="04-runpecan.php">
+  <form id="formnext" method="POST" action="<?php echo ($hostname != $fqdn ? '04-remote.php' : '04-runpecan.php'); ?>">
 <?php }?>
 
 <?php

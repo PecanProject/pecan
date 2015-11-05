@@ -15,6 +15,11 @@ if ($authentication) {
 		close_database();
 		exit;
 	}
+  if (get_page_acccess_level() > $min_run_level) {
+    header( "Location: history.php");
+    close_database();
+    exit;
+  }
 }
 
 # boolean parameters
@@ -48,6 +53,9 @@ if ($model_edit) {
 if ($offline) {
   $path .= "&offline=offline";
 }
+
+# setup umask so group has write as well
+umask(0002);
 
 # check if we edited pecan.xml
 if (file_exists($folder . DIRECTORY_SEPARATOR . "STATUS")) {

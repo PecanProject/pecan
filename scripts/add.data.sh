@@ -2,17 +2,20 @@
 
 DIRNAME=$( dirname $0 )
 
-# folder to data, this is assumed to be installed at the same level
-# as the pecan folder. The python code is to get the absolute path
-# since the MAC does not have the GNU readlink -f option.
-SITES=$( python -c 'import os,sys;print os.path.realpath(sys.argv[1])' "${DIRNAME}/../../sites" )
-DALEC=$( python -c 'import os,sys;print os.path.realpath(sys.argv[1])' "${DIRNAME}/../../dalec_EnKF_pub/input_data" )
-ED_INPUT=$( python -c 'import os,sys;print os.path.realpath(sys.argv[1])' "${DIRNAME}/../../ed_inputs" )
-FAO_INPUT=$( python -c 'import os,sys;print os.path.realpath(sys.argv[1])' "${DIRNAME}/../../faoOLD" )
-OGE2_INPUT=$( python -c 'import os,sys;print os.path.realpath(sys.argv[1])' "${DIRNAME}/../../oge2OLD" )
+#FQDN="geo.bu.edu"
+#DATADIR="/usr2/collab/kooper"
+#FQDN="cookiemonster.ncsa.illinois.edu"
+#DATADIR="/home/kooper/Work/EBI"
 
 # load helper functions and set FQDN and PSQL
 . ${DIRNAME}/add.util.sh
+
+# subfolders in datadir
+SITES="$DATADIR/sites"
+DALEC="$DATADIR/dalec_EnKF_pub/input_data"
+ED_INPUT="$DATADIR/ed_inputs"
+FAO_INPUT="$DATADIR/faoOLD"
+OGE2_INPUT="$DATADIR/oge2OLD"
 
 # ED inputs
 addInputFile "${FQDN}" "294" "" "${ED_INPUT}/glu"

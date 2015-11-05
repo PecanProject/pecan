@@ -43,6 +43,18 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     jobsh <- readLines(con=system.file("template.job", package = "PEcAn.SIPNET"), n=-1)
   }
   
+  # create host specific setttings
+  hostspecific <- ""
+  if (!is.null(settings$model$job.sh)) {
+    hostspecific <- paste(hostspecific, sep="\n", paste(settings$model$job.sh, collapse="\n"))
+  }
+  if (!is.null(settings$run$host$job.sh)) {
+    hostspecific <- paste(hostspecific, sep="\n", paste(settings$run$host$job.sh, collapse="\n"))
+  }
+
+  # create job.sh
+  jobsh <- gsub('@HOSTSPECIFIC@', hostspecific, jobsh)
+
   jobsh <- gsub('@SITE_LAT@', settings$run$site$lat, jobsh)
   jobsh <- gsub('@SITE_LON@', settings$run$site$lon, jobsh)
   jobsh <- gsub('@SITE_MET@', template.clim, jobsh)
@@ -54,6 +66,9 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   jobsh <- gsub('@END_DATE@', settings$run$end.date, jobsh)
   
   jobsh <- gsub('@BINARY@', settings$model$binary, jobsh)
+  
+  if(is.null(settings$model$delete.raw)) settings$model$delete.raw <- FALSE
+  jobsh <- gsub('@DELETE.RAW@', settings$model$delete.raw, jobsh)
 
   writeLines(jobsh, con=file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))

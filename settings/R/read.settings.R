@@ -41,7 +41,7 @@ check.inputs <- function(settings) {
       # check if tag exists
       if (is.null(settings$run$inputs[[tag]])) {
         if (inputs$required[i]) {
-          logger.severe("Missing required input :", tag)
+          logger.warn("Missing required input :", tag)
         } else {
           logger.info("Missing optional input :", tag)
         }
@@ -222,7 +222,7 @@ check.bety.version <- function(dbcon) {
 ##' @title Check Settings
 ##' @param settings settings file
 ##' @return will return the updated settings values with defaults set.
-##' @author Rob Kooper
+##' @author Rob Kooper, David LeBauer
 check.settings <- function(settings) {
   if (!is.null(settings$nocheck)) {
     logger.info("Not doing sanity checks of pecan.xml")
@@ -490,6 +490,12 @@ check.settings <- function(settings) {
     if ((is.null(settings$model$type) || settings$model$type == "")) {
       logger.severe("Need a model type.")
     }
+    
+    # Set model$delete.raw to FALSE by default
+    if (is.null(settings$model$delete.raw) || !is.logical(as.logical(settings$model$delete.raw))) {
+      logger.info("Option to delete raw model output not set or not logical. Will keep all model output.")
+      settings$model$delete.raw = FALSE
+    }
 
     # check on binary for given host
     if (!is.null(settings$model$id) && (settings$model$id >= 0)) {
@@ -575,7 +581,7 @@ check.settings <- function(settings) {
   # check if we need to use qsub
   if ("qsub" %in% names(settings$run$host)) {
     if (is.null(settings$run$host$qsub)) {
-      settings$run$host$qsub <- "qsub -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash"
+      settings$run$host$qsub <- "qsub -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash"
       logger.info("qsub not specified using default value :", settings$run$host$qsub)
     }
     if (is.null(settings$run$host$qsub.jobid)) {
@@ -607,7 +613,13 @@ check.settings <- function(settings) {
   if(is.null(settings$run$dbfiles)) {
     settings$run$dbfiles <- full.path("~/.pecan/dbfiles")
   } else {
-    settings$run$dbfiles <- full.path(settings$run$dbfiles)
+      if (substr(settings$run$dbfiles, 1, 1) != '/'){
+          logger.warn("settings$run$dbfiles pathname", settings$run$dbfiles, " is invalid\n
+                  placing it in the home directory ", Sys.getenv("HOME"))
+          settings$run$dbfiles <- file.path(Sys.getenv("HOME"), settings$run$dbfiles)
+      } 
+      
+      settings$run$dbfiles <- normalizePath(settings$run$dbfiles, mustWork=FALSE)
   }
   dir.create(settings$run$dbfiles, showWarnings = FALSE, recursive = TRUE)
 
@@ -666,11 +678,11 @@ check.settings <- function(settings) {
   }
   
   # make sure remote folders are specified if need be
-  if (!is.null(settings$run$host$qsub) || (settings$run$host$name != "localhost")) {
+  if (!is.localhost(settings$run$host)) {
     homedir <- NA
     if (is.null(settings$run$host$rundir)) {
       if (is.na(homedir)) {
-        homedir <- system2("ssh", c(settings$run$host$name, "pwd"), stdout=TRUE)
+        homedir <- remote.execute.cmd("pwd", host=settings$run$host)
       }
       settings$run$host$rundir <- paste0(homedir, "/pecan_remote/@WORKFLOW@/run")
     }
@@ -678,7 +690,7 @@ check.settings <- function(settings) {
     logger.info("Using ", settings$run$host$rundir, "to store runs on remote machine")
     if (is.null(settings$run$host$outdir)) {
       if (is.na(homedir)) {
-        homedir <- system2("ssh", c(settings$run$host$name, "pwd"), stdout=TRUE)
+        homedir <- remote.execute.cmd("pwd", host=settings$run$host)
       }
       settings$run$host$outdir <- paste0(homedir, "/pecan_remote/@WORKFLOW@/out")
     }
@@ -701,7 +713,7 @@ check.settings <- function(settings) {
       }
       
       #check to see if name of each pft in xml file is actually a name of a pft already in database
-      if (!is.character(dbcon)) {
+      if (!is.character(dbcon)) {# change to if(class(dbcon) == "PostgreSQLConnection")??
         if (is.null(settings$model$type)) {
           x <- db.query(paste0("SELECT pfts.id FROM pfts",
                                " WHERE pfts.name = '",  settings$pfts[i]$pft$name, "'"), con=dbcon)
@@ -712,10 +724,12 @@ check.settings <- function(settings) {
                                " AND modeltypes.id=pfts.modeltype_id;"), con=dbcon)
         }
         if (nrow(x) == 0) {
-          logger.severe("Did not find a pft with name ", settings$pfts[i]$pft$name)
+          logger.severe("Did not find a pft with name ", settings$pfts[i]$pft$name,
+                        "\nfor model type", settings$model$type)
         }
         if (nrow(x) > 1) {
-          logger.warn("Found multiple entries for pft with name ", settings$pfts[i]$pft$name)
+          logger.warn("Found multiple entries for pft with name ", settings$pfts[i]$pft$name,
+                      "\nfor model type", settings$model$type)
         }
       }
   
@@ -1010,9 +1024,11 @@ addSecrets <- function(settings) {
 ##' @import XML
 ##' @author Shawn Serbin
 ##' @author Rob Kooper
+##' @author David LeBauer
 ##' @examples
 ##' \dontrun{
 ##' ## bash shell:
+##' ## example workflow.R and pecan.xml files in pecan/tests
 ##' R --vanilla -- --settings path/to/mypecan.xml < workflow.R 
 ##' 
 ##' ## R:
@@ -1026,8 +1042,10 @@ read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml"){
   if(inputfile == ""){
     logger.warn("settings files specified as empty string; \n\t\tthis may be caused by an incorrect argument to system.file.")
   }
+
   loc <- which(commandArgs() == "--settings")
-  if (length(loc) != 0) {
+  ## If settings file passed at cmd line
+  if (length(loc) != 0) {  
     # 1 filename is passed as argument to R
     for(idx in loc) {
       if (!is.null(commandArgs()[idx+1]) && file.exists(commandArgs()[idx+1])) {
@@ -1036,22 +1054,21 @@ read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml"){
         break
       }
     }
-
-  } else if (file.exists(Sys.getenv("PECAN_SETTINGS"))) {
+    ## if settings file on $PATH
+  } else if (file.exists(Sys.getenv("PECAN_SETTINGS"))) { 
     # 2 load from PECAN_SETTINGS
     logger.info("Loading PECAN_SETTINGS=", Sys.getenv("PECAN_SETTINGS"))
     xml <- xmlParse(Sys.getenv("PECAN_SETTINGS"))
-
+    ## if settings file passed to read.settings function
   } else if(!is.null(inputfile) && file.exists(inputfile)) {
     # 3 filename passed into function
     logger.info("Loading inpufile=", inputfile)
     xml <- xmlParse(inputfile)
-
+    ## use pecan.xml in cwd only if none exists
   } else if (file.exists("pecan.xml")) {
     # 4 load ./pecan.xml
     logger.info("Loading ./pecan.xml")
     xml <- xmlParse("pecan.xml")
-
   } else {
     # file not found
     logger.severe("Could not find a pecan.xml file")

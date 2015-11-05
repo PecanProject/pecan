@@ -15,14 +15,19 @@ if ($authentication) {
 		close_database();
 		exit;
 	}
+    if (get_page_acccess_level() > $min_run_level) {
+        header( "Location: history.php");
+        close_database();
+        exit;
+    }
 }
 
 # boolean parameters
 $userok=isset($_REQUEST['userok']);
 $offline=isset($_REQUEST['offline']);
 $pecan_edit=isset($_REQUEST['pecan_edit']);
-$ensemble_analysis=isset($_REQUEST['ensemble_analysis']);
-$sensitivity_analysis=isset($_REQUEST['sensitivity_analysis']);
+#$ensemble_analysis=isset($_REQUEST['ensemble_analysis']);
+#$sensitivity_analysis=isset($_REQUEST['sensitivity_analysis']);
 $model_edit=isset($_REQUEST['model_edit']);
 $browndog=isset($_REQUEST['browndog']);
 $qsub=isset($_REQUEST['qsub']);
@@ -160,16 +165,28 @@ if (! isset($dbfiles_folder)) {
 
 # if on localhost replace with localhost
 if ($hostname == $fqdn) {
-	$hostname="localhost";
+    $hostname="localhost";
 }
+
 
 # setup umask so group has write as well
 umask(0002);
 
-# create pecan.xml
+# create the folder(s)
 if (!mkdir($folder)) {
-	die('Can\'t create output folder [${folder}]');
+    die('Can\'t create output folder [${folder}]');
 }
+if (!is_dir($dbfiles_folder) && !mkdir($dbfiles_folder, 0002, true)) {
+    die('Can\'t create output folder [${dbfiles_folder}]');
+}
+if ($hostname != "localhost") {
+    $tunnel_folder = $folder . DIRECTORY_SEPARATOR . "tunnel";
+    if (!mkdir($tunnel_folder)) {
+        die('Can\'t create output folder [${tunnel_folder}]');
+    }
+}
+
+# create pecan.xml
 $fh = fopen($folder . DIRECTORY_SEPARATOR . "pecan.xml", 'w');
 fwrite($fh, "<?xml version=\"1.0\"?>" . PHP_EOL);
 fwrite($fh, "<pecan>" . PHP_EOL);
@@ -233,7 +250,7 @@ fwrite($fh, "    <iter>3000</iter>" . PHP_EOL);
 fwrite($fh, "    <random.effects>FALSE</random.effects>" . PHP_EOL);
 fwrite($fh, "  </meta.analysis>" . PHP_EOL);
 
-if ($ensemble_analysis){
+if (!empty($runs)){
 	fwrite($fh, "  <ensemble>" . PHP_EOL);
 	fwrite($fh, "    <size>${runs}</size>" . PHP_EOL);
 //	fwrite($fh, "    <notes><![CDATA[${notes}]]></notes>" . PHP_EOL);
@@ -247,7 +264,7 @@ if ($ensemble_analysis){
 	fwrite($fh, "  </ensemble>" . PHP_EOL);
 }
 
-if ($sensitivity_analysis) {
+if (!empty($sensitivity)) {
 	fwrite($fh, "  <sensitivity.analysis>" . PHP_EOL);
 	fwrite($fh, "    <quantiles>" . PHP_EOL);
 	foreach($sensitivity as $s) {
@@ -261,6 +278,7 @@ if ($sensitivity_analysis) {
 fwrite($fh, "  <model>" . PHP_EOL);
 fwrite($fh, "    <id>${modelid}</id>" . PHP_EOL);
 if ($modeltype == "ED2") {
+  fwrite($fh, "    <edin>ED2IN.r${revision}</edin>" . PHP_EOL);
 	fwrite($fh, "    <config.header>" . PHP_EOL);
 	fwrite($fh, "      <radiation>" . PHP_EOL);
 	fwrite($fh, "        <lai_min>0.01</lai_min>" . PHP_EOL);
@@ -269,8 +287,15 @@ if ($modeltype == "ED2") {
 	fwrite($fh, "        <output_month>12</output_month>      " . PHP_EOL);
 	fwrite($fh, "      </ed_misc> " . PHP_EOL);
 	fwrite($fh, "    </config.header>" . PHP_EOL);
-	fwrite($fh, "    <edin>ED2IN.r${revision}</edin>" . PHP_EOL);
 	fwrite($fh, "    <phenol.scheme>0</phenol.scheme>" . PHP_EOL);
+}
+if (in_array($_REQUEST['hostname'], $qsublist)) {
+  if (isset($qsuboptions[$_REQUEST['hostname']])) {
+    $options = $qsuboptions[$_REQUEST['hostname']];
+    if (isset($options['models']) && isset($options['models'][$modeltype])) {
+      fwrite($fh, "    <job.sh>" . $options['models'][$modeltype] . "</job.sh>" . PHP_EOL);      
+    }
+  }
 }
 fwrite($fh, "  </model>" . PHP_EOL);
 fwrite($fh, "  <workflow>" . PHP_EOL);
@@ -303,8 +328,32 @@ fwrite($fh, "    <end.date>${enddate}</end.date>" . PHP_EOL);
 fwrite($fh, "    <dbfiles>${dbfiles_folder}</dbfiles>" . PHP_EOL);
 fwrite($fh, "    <host>" . PHP_EOL);
 fwrite($fh, "      <name>${hostname}</name>" . PHP_EOL);
-if ($qsub) {
+if (isset($_REQUEST['username'])) {
+    fwrite($fh, "      <user>${_REQUEST['username']}</user>" . PHP_EOL);
+}
+if (in_array($_REQUEST['hostname'], $qsublist)) {
+  if (isset($qsuboptions[$_REQUEST['hostname']])) {
+    $options = $qsuboptions[$_REQUEST['hostname']];
+    if (isset($options['qsub'])) {
+      fwrite($fh, "      <qsub>${options['qsub']}</qsub>" . PHP_EOL);
+    } else {
+      fwrite($fh, "      <qsub/>" . PHP_EOL);  
+    }
+    if (isset($options['jobid'])) {
+      fwrite($fh, "      <qsub.jobid>${options['jobid']}</qsub.jobid>" . PHP_EOL);
+    }
+    if (isset($options['qstat'])) {
+      fwrite($fh, "      <qstat>${options['qstat']}</qstat>" . PHP_EOL);
+    }
+    if (isset($options['job.sh'])) {
+      fwrite($fh, "      <job.sh>${options['job.sh']}</job.sh>" . PHP_EOL);
+    }
+  } else {
     fwrite($fh, "      <qsub/>" . PHP_EOL);
+  }
+}
+if ($hostname != "localhost") {
+    fwrite($fh, "      <tunnel>" . $tunnel_folder . DIRECTORY_SEPARATOR . "tunnel" . "</tunnel>" . PHP_EOL);
 }
 fwrite($fh, "    </host>" . PHP_EOL);
 fwrite($fh, "  </run>" . PHP_EOL);
@@ -328,6 +377,18 @@ fclose($fh);
 # copy workflow
 copy("workflow.R", "${folder}/workflow.R");
 
+# create the tunnel
+if ($hostname != "localhost") {
+    # write pasword
+    $fh = fopen($tunnel_folder . DIRECTORY_SEPARATOR . "password", 'w');
+    fwrite($fh, $_REQUEST['password'] . PHP_EOL);
+    fclose($fh);
+
+    # start tunnel
+    pclose(popen("${SSHtunnel} ${_REQUEST['hostname']} ${_REQUEST['username']} ${tunnel_folder} > ${tunnel_folder}/log &", 'r'));
+}
+
+# redirect to the right location
 if ($pecan_edit) {
   $path = "06-edit.php?workflowid=$workflowid&pecan_edit=pecan_edit";
   if ($model_edit) {
