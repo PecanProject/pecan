@@ -19,7 +19,8 @@ Depends:
     ncdf4,
     stringr
 Suggests:
-    testthat
+    testthat,
+    udunits2
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
