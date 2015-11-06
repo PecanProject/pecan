@@ -84,7 +84,7 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
     
     ncprecipf = ncvar_get(ncin, "precipitation_flux")  #units are kg m-2 s-1    
     for(m in 1:12){
-      month_matrix_precip[i,m] = round(sum(ncprecipf[DOY_vec_hr[m]:(DOY_vec_hr[m+1]-1)]) * dt /10 , digits=1)
+      month_matrix_precip[i,m] = (sum(ncprecipf[DOY_vec_hr[m]:(DOY_vec_hr[m+1]-1)]) * dt /10)
     }  
     nc_close(ncin)
    #if(i%%100==0) cat(i," "); flush.console()
@@ -97,7 +97,7 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
     #print(ncin)
     nctemp = ncvar_get(ncin, "air_temperature") #units are kg m-2 s-1    
     for(m in 1:12){
-      month_matrix_temp_mean[i,m] = round(mean(nctemp[DOY_vec_hr[m]:(DOY_vec_hr[m+1]-1)]) -273.15, digits =1) #sub daily to monthly
+      month_matrix_temp_mean[i,m] = (mean(nctemp[DOY_vec_hr[m]:(DOY_vec_hr[m+1]-1)]) -273.15) #sub daily to monthly
     } 
     nc_close(ncin)
     if(i%%100==0) cat(i," "); flush.console()
