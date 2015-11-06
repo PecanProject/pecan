@@ -41,7 +41,7 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   
   iplot <- 1
   nyear <- length(year)
-  nspec <- 5
+  #nspec <- 5
   bgs <- 120
   egs <- 273
   max.ind <- 15000
@@ -72,7 +72,6 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   dry = round(as.numeric(unlist(soil.texture(sand = sand, clay = clay)[1])),digits = 2)
   
   fdat <- read.csv(system.file("fdat.csv", package = "linkages"),header = FALSE) #litter quality parameters
-  spp.params <- read.csv(system.file("spp_matrix.csv", package = "linkages"))
   clat <- read.csv(system.file("clat.csv", package = "linkages"),header = FALSE)
   load(system.file("switch.mat.Rdata", package = "linkages"))
   
@@ -82,6 +81,16 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
 
   basesc = 74
   basesn = 1.64
+  
+  ### Create species parameter matrix with correct PFTs
+  spp.params.default <- read.csv(system.file("spp_matrix.csv", package = "linkages")) #default spp.params
+  nspec <- length(settings$pfts)
+  spp.params.save <- numeric(nspec)
+  for(i in 1:nspec){
+    spp.params.save[i] <- which(spp.params.default[,1]%in%settings$pfts[i]$pft$name)
+  }
+  
+  spp.params <- spp.params.default[spp.params.save,]
   
   input<-file.path(settings$rundir,"linkages.input.Rdata")  
   
