@@ -194,12 +194,13 @@ if ($hostname != "localhost") {
 # create pecan.xml
 $fh = fopen($folder . DIRECTORY_SEPARATOR . "pecan.xml", 'w');
 fwrite($fh, "<?xml version=\"1.0\"?>" . PHP_EOL);
-fwrite($fh, "<info>" . PHP_EOL);
-fwrite($fh, "  <notes>${notes_xml}</notes>" . PHP_EOL);
-fwrite($fh, "  <user>${user}</user>" . PHP_EOL);
-fwrite($fh, "  <date>${runtime}</date>" . PHP_EOL);
-fwrite($fh, "</info>" . PHP_EOL);
 fwrite($fh, "<pecan>" . PHP_EOL);
+
+fwrite($fh, "  <info>" . PHP_EOL);
+fwrite($fh, "    <notes>${notes_xml}</notes>" . PHP_EOL);
+fwrite($fh, "    <user>${user}</user>" . PHP_EOL);
+fwrite($fh, "    <date>${runtime}</date>" . PHP_EOL);
+fwrite($fh, "  </info>" . PHP_EOL);
 
 fwrite($fh, "  <outdir>${folder}</outdir>" . PHP_EOL);
 
