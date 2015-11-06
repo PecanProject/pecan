@@ -513,8 +513,7 @@ if (is_dir("$folder/run")) {
   }
 ?>    
   </div>
-  <div id="output_history">Please select an option on the left.</div>
-  <div id="notes_history"><b>NOTES:</b><?php echo $notes;?></div>
+  <div id="output">Please select an option on the left<br><br><b>NOTES:</b><br><?php echo $notes; ?></div>
   <div id="footer"><?php echo get_footer(); ?></div>
 </div>
 </body>

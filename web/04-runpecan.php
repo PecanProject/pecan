@@ -79,7 +79,6 @@ if (isset($_REQUEST['variables'])) {
 }
 $notes = "";
 if (isset($_REQUEST['notes'])) {
-  //$notes = $_REQUEST['notes'];
   $notes = $_REQUEST['notes'];
   $notes_xml = htmlspecialchars($_REQUEST['notes'], ENT_XML1);
 }
@@ -102,7 +101,7 @@ if (isset($_REQUEST['input_met']) && is_numeric($_REQUEST['input_met'])) {
 
 // Set user and runtime
 $user = get_user_name();
-$runtime = date('Y/m/d H:i:s'); 
+$runtime = date('Y/m/d H:i:s O'); 
 
 
 // check input dates to make sure they agree with the dates from the weather data
@@ -195,6 +194,11 @@ if ($hostname != "localhost") {
 # create pecan.xml
 $fh = fopen($folder . DIRECTORY_SEPARATOR . "pecan.xml", 'w');
 fwrite($fh, "<?xml version=\"1.0\"?>" . PHP_EOL);
+fwrite($fh, "<info>" . PHP_EOL);
+fwrite($fh, "  <notes>${notes_xml}</notes>" . PHP_EOL);
+fwrite($fh, "  <user>${user}</user>" . PHP_EOL);
+fwrite($fh, "  <date>${runtime}</date>" . PHP_EOL);
+fwrite($fh, "</info>" . PHP_EOL);
 fwrite($fh, "<pecan>" . PHP_EOL);
 
 fwrite($fh, "  <outdir>${folder}</outdir>" . PHP_EOL);
@@ -259,20 +263,11 @@ fwrite($fh, "  </meta.analysis>" . PHP_EOL);
 if (!empty($runs)){
 	fwrite($fh, "  <ensemble>" . PHP_EOL);
 	fwrite($fh, "    <size>${runs}</size>" . PHP_EOL);
-	fwrite($fh, "    <info>" . PHP_EOL);
-	fwrite($fh, "      <notes>${notes_xml}</notes>" . PHP_EOL);
-	fwrite($fh, "      <user>${user}</user>" . PHP_EOL);
-	fwrite($fh, "      <date>${runtime}</date>" . PHP_EOL);
-	fwrite($fh, "    </info>" . PHP_EOL);
 	fwrite($fh, "    <variable>${variables}</variable>" . PHP_EOL);
 	fwrite($fh, "  </ensemble>" . PHP_EOL);
 } else {
 	fwrite($fh, "  <ensemble>" . PHP_EOL);
 	fwrite($fh, "    <size>1</size>" . PHP_EOL);
-	fwrite($fh, "    <info>" . PHP_EOL);
-	fwrite($fh, "      <user>${user}</user>" . PHP_EOL);
-	fwrite($fh, "      <date>${runtime}</date>" . PHP_EOL);
-	fwrite($fh, "    </info>" . PHP_EOL);
 	fwrite($fh, "    <variable>NPP</variable>" . PHP_EOL);
 	fwrite($fh, "  </ensemble>" . PHP_EOL);
 }
