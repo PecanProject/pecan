@@ -21,8 +21,14 @@ prospect <- function(param, version){
         stopifnot(length(plist) == 4)
         inlist <- c("prospect_4", plist)
     }
-    else if (version == "5") inlist <- c("prospect_5", plist)
-    else if (version == "5B") inlist <- c("prospect_5b", plist)
+    else if (version == "5") {
+        stopifnot(length(plist) == 5)
+        inlist <- c("prospect_5", plist)
+    }
+    else if (version == "5B") {
+        stopifnot(length(plist) == 6)
+        inlist <- c("prospect_5b", plist)
+    }
     else stop("Version must be 4, 5, or 5B") 
     outlist <- do.call(.Fortran, inlist)
     return(outlist[[length(outlist)]])
