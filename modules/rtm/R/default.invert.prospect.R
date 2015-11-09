@@ -6,12 +6,12 @@
 #' @param sensor Sensor name (string)
 #' @param ngibbs Number of MCMC iterations (integer)
 #' @param version PROSPECT version (4, 5 [default], or 5B
-#' @param do.mle Whether or not to perform LM optimization of initial 
+#' @param do.lsq Whether or not to perform LM optimization of initial 
 #' conditions before starting Metropolis-Hastings sampling (default = TRUE)
 #' @param quiet If TRUE, don't print status updates or LM fit results (default 
 #' = TRUE)
 default.invert.prospect <- function(observed, sensor, ngibbs, version=5,
-                                    do.mle=TRUE, quiet=TRUE){
+                                    do.lsq=FALSE, quiet=TRUE){
     model <- function(params) spectral.response(prospect(params, 5)[,1], sensor)
     testspec <- model(c(1.4, 40, 8, 0.01, 0.01))
     stopifnot(all(dim(testspec) == dim(observed)))
@@ -28,7 +28,7 @@ default.invert.prospect <- function(observed, sensor, ngibbs, version=5,
                            prior = prior,
                            pm = pm,
                            model = model,
-                           do.lsq = do.mle,
+                           do.lsq = do.lsq,
                            quiet = quiet)
     return(samples)
 }
