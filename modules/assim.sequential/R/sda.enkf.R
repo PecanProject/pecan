@@ -14,13 +14,13 @@
 sda.enkf <- function(settings,IC,prior,obs){
   
   ## settings
-  model = settings$model$model_type
+  model = settings$model$type #Is this the correct change?
   write = settings$database$bety$write
   defaults <- settings$pfts
   outdir <- settings$run$host$outdir
   host <- settings$run$host
-  start.year = strftime(settings$run$site$met.start,"%Y")
-  end.year   = strftime(settings$run$site$met.end,"%Y")
+  start.year = 2002#strftime(settings$run$site$met.start,"%Y")
+  end.year   = 2006#strftime(settings$run$site$met.end,"%Y")
   nens = nrow(IC)
   
   if(nrow(prior) == 1 | is.null(nrow(prior))){
@@ -63,6 +63,8 @@ sda.enkf <- function(settings,IC,prior,obs){
   ## model-specific functions
   do.call("require",list(paste0("PEcAn.",model)))
   my.write.config <- paste("write.config.",model,sep="")
+  my.read.restart <- paste("read.restart.",model,sep="")
+  my.write.restart <- paste("write.restart.",model,sep="")
   if(!exists(my.write.config)){
     print(paste(my.write.config,"does not exist"))
     print(paste("please make sure that the PEcAn interface is loaded for",model))
@@ -70,7 +72,7 @@ sda.enkf <- function(settings,IC,prior,obs){
   }
   
   ## split clim file
-  full.met <- settings$run$site$met
+  full.met <- settings$run$inputs$met$path
   new.met  <- file.path(settings$rundir,basename(full.met))
   file.copy(full.met,new.met)
   met <- split.met.SIPNET(new.met)
@@ -89,7 +91,7 @@ sda.enkf <- function(settings,IC,prior,obs){
       db.query(paste("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id,",
                    " parameter_list) values ('", 
                    settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", 
-                   settings$run$end.date, "', '", settings$run$outdir , "', '", now, "', ", ensemble.id, ", '", 
+                   settings$run$end.date, "', '", settings$outdir , "', '", now, "', ", ensemble.id, ", '", 
                    paramlist, "')", sep=''), con)
       run.id[[i]]<- db.query(paste("SELECT id FROM runs WHERE created_at='", now, "' AND parameter_list='", paramlist, "'", 
                              sep=''), con)[['id']]
@@ -101,7 +103,7 @@ sda.enkf <- function(settings,IC,prior,obs){
     
     ## write config
     do.call(my.write.config,args=list(defaults,list(pft=prior[i,],env=NA),
-                                      settings, run.id[[i]],inputs = list(met=met[1]),IC=IC[i,]))
+                                      settings, run.id[[i]],inputs = settings$run,IC=IC[i,]))
     
     ## write a README for the run
     cat("runtype     : sda.enkf\n",
@@ -133,7 +135,6 @@ sda.enkf <- function(settings,IC,prior,obs){
 
   time = start.year:end.year
   nt = length(time)
-  ens = list()
   NPPm = rep(NA,nens)
   FORECAST <- ANALYSIS <- list()
   enkf.params <- list()
@@ -143,28 +144,10 @@ sda.enkf <- function(settings,IC,prior,obs){
   for(t in 1:nt){
 
     ### load output
-    forecast = IC
-    for(i in 1:nens){
-      ens[[i]] <- read.output(run.id[[i]],file.path(outdir, run.id[[i]]),
-                              start.year = time[t],end.year=time[t],
-                              variables=c("NPP","AbvGrndWood","TotSoilCarb","LeafC","SoilMoistFrac","SWE","Litter")
-                              )
-      NPPm[i] <- mean(ens[[i]]$NPP)*unit.conv ## kg C m-2 s-1 -> Mg/ha/yr [Check]
-      last = length(ens[[i]]$NPP)
-      forecast$plantWood[i] = ens[[i]]$AbvGrndWood[last]*1000 ## kgC/m2 -> gC/m2
-      forecast$lai[i] = ens[[i]]$LeafC[last]*prior$SLA[i]*2 ## kgC/m2*m2/kg*2kg/kgC -> m2/m2
-      forecast$litter[i] = ens[[i]]$Litter[last]*1000 ##kgC/m2 -> gC/m2
-      forecast$soil[i] = ens[[i]]$TotSoilCarb[last]*1000 ## kgC/m2 -> gC/m2
-      forecast$litterWFrac[i] = ens[[i]]$SoilMoistFrac[last] ## unitless
-      forecast$soilWFrac[i] = ens[[i]]$SoilMoistFrac[last] ## unitless
-      forecast$snow[i] = ens[[i]]$SWE[last]*0.1 ## kg/m2 -> cm
-      #forecast$microbe[i] = NA
-   }
-   X    = cbind(NPPm,forecast)
-   FORECAST[[t]] = X
+    X <- read.restart.SIPNET(out.dir,run.id,time,unit.conv,IC,prior)
+    FORECAST[[t]] = X
     
  ### Analysis step
- X$snow = runif(nens,0,0.01)
  mu.f = apply(X,2,mean,na.rm=TRUE)
  Pf   = cov(X)
  Y    = obs$mean[t]
@@ -214,12 +197,7 @@ for(i in 2:ncol(analysis)){
  
  ### Forecast step
  if(t < nt){
-   for(i in 1:nens){   
-     file.rename(file.path(outdir,run.id[[i]],"sipnet.out"),file.path(outdir,run.id[[i]],paste0("sipnet.out",time[t])))
-     file.remove(file.path(settings$rundir,run.id[[i]],"sipnet.clim"))
-     do.call(my.write.config,args=list(defaults,list(pft=prior[i,],env=NA),
-                                     settings, run.id[[i]],inputs = list(met=met[t+1]),IC=analysis[i,-1]))   
-  }
+   write.restart.SIPNET(nens,outdir,run.id,time,settings,prior,analysis)
  }
  ## start model run
  start.model.runs(settings,settings$database$bety$write)
