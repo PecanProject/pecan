@@ -1,3 +1,14 @@
+##' @name load.data
+##' @title load.data
+##' @export
+##' @param data.path
+##' @param format
+##' @param start_year
+##' @param end_year
+##' @param site
+##' 
+##' @author Betsy Cowdery
+
 load.csv <- function(data.path, format, start_year, end_year, site){
   
   

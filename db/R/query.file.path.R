@@ -1,4 +1,4 @@
-##' @name db.query.file.path
+##' @name query.file.path
 ##' @title Get file path given id and machine
 ##' @param input_id
 ##' @param host_name

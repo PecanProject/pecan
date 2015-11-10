@@ -1,3 +1,15 @@
+##' @name calc.metrics
+##' @title calc.metrics
+##' @export
+##' @param data.path
+##' @param format
+##' @param model_run
+##' @param metrics
+##' @param start_year
+##' @param end_year
+##' 
+##' @author Betsy Cowdery
+
 calc.metrics <- function(data.path, format, model_run, metrics, start_year=NA, end_year=NA, site=NA){
 
   # Right now parameters are being read in as R objects - this won't work remotely but 
