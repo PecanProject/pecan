@@ -26,8 +26,6 @@ if ($authentication) {
 $userok=isset($_REQUEST['userok']);
 $offline=isset($_REQUEST['offline']);
 $pecan_edit=isset($_REQUEST['pecan_edit']);
-#$ensemble_analysis=isset($_REQUEST['ensemble_analysis']);
-#$sensitivity_analysis=isset($_REQUEST['sensitivity_analysis']);
 $model_edit=isset($_REQUEST['model_edit']);
 $browndog=isset($_REQUEST['browndog']);
 $qsub=isset($_REQUEST['qsub']);
@@ -82,6 +80,7 @@ if (isset($_REQUEST['variables'])) {
 $notes = "";
 if (isset($_REQUEST['notes'])) {
   $notes = $_REQUEST['notes'];
+  $notes_xml = htmlspecialchars($_REQUEST['notes'], ENT_XML1);
 }
 $sensitivity = array();
 if (isset($_REQUEST['sensitivity'])) {
@@ -99,6 +98,11 @@ if (isset($_REQUEST['input_met']) && is_numeric($_REQUEST['input_met'])) {
   $metend=$row['end_date'];
   $stmt->closeCursor();
 }
+
+// Set user and runtime
+$user = get_user_name();
+$runtime = date('Y/m/d H:i:s O'); 
+
 
 // check input dates to make sure they agree with the dates from the weather data
 if (!$userok && ($startdate < $metstart || $enddate > $metend)) {
@@ -130,9 +134,10 @@ $stmt->closeCursor();
 // create the workflow execution
 $params=str_replace(' ', '', str_replace("\n", "", var_export($_REQUEST, true)));
 
-$q=$pdo->prepare("INSERT INTO workflows (site_id, model_id, folder, hostname, start_date, end_date, params, advanced_edit, started_at, created_at) values (:siteid, :modelid, '', :hostname, :startdate, :enddate, :params, :advanced_edit, NOW(), NOW())");
+$q=$pdo->prepare("INSERT INTO workflows (site_id, model_id, notes, folder, hostname, start_date, end_date, params, advanced_edit, started_at, created_at) values (:siteid, :modelid, :notes, '', :hostname, :startdate, :enddate, :params, :advanced_edit, NOW(), NOW())");
 $q->bindParam(':siteid', $siteid, PDO::PARAM_INT);
 $q->bindParam(':modelid', $modelid, PDO::PARAM_INT);
+$q->bindParam(':notes', $notes, PDO::PARAM_STR);
 $q->bindParam(':hostname', $hostname, PDO::PARAM_STR);
 $q->bindParam(':startdate', $startdate, PDO::PARAM_STR);
 $q->bindParam(':enddate', $enddate, PDO::PARAM_STR);
@@ -190,6 +195,12 @@ if ($hostname != "localhost") {
 $fh = fopen($folder . DIRECTORY_SEPARATOR . "pecan.xml", 'w');
 fwrite($fh, "<?xml version=\"1.0\"?>" . PHP_EOL);
 fwrite($fh, "<pecan>" . PHP_EOL);
+
+fwrite($fh, "  <info>" . PHP_EOL);
+fwrite($fh, "    <notes>${notes_xml}</notes>" . PHP_EOL);
+fwrite($fh, "    <user>${user}</user>" . PHP_EOL);
+fwrite($fh, "    <date>${runtime}</date>" . PHP_EOL);
+fwrite($fh, "  </info>" . PHP_EOL);
 
 fwrite($fh, "  <outdir>${folder}</outdir>" . PHP_EOL);
 
@@ -253,8 +264,6 @@ fwrite($fh, "  </meta.analysis>" . PHP_EOL);
 if (!empty($runs)){
 	fwrite($fh, "  <ensemble>" . PHP_EOL);
 	fwrite($fh, "    <size>${runs}</size>" . PHP_EOL);
-//	fwrite($fh, "    <notes><![CDATA[${notes}]]></notes>" . PHP_EOL);
-	fwrite($fh, "    <notes>${notes}</notes>" . PHP_EOL);
 	fwrite($fh, "    <variable>${variables}</variable>" . PHP_EOL);
 	fwrite($fh, "  </ensemble>" . PHP_EOL);
 } else {

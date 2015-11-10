@@ -261,20 +261,24 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
                               slat=new.site$lat,slon=new.site$lon,newsite=new.site$id)
 
   }else if(register$scale=="site"){ ##### Site Level Processing
-
-    logger.info("Gapfilling") # Does NOT take place on browndog!
-
-    input.id   <- cf.id[1]
-    outfolder  <- file.path(dir,paste0(met,"_CF_gapfill_site_",str_ns))
-    pkg        <- "PEcAn.data.atmosphere"
-    fcn        <- "metgapfill"
-    formatname <- 'CF Meteorology'
-    mimetype   <- 'application/x-netcdf'
-    lst        <- site.lst(site,con)
-
-    ready.id   <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
-                                username,con=con,hostname=host$name,browndog=NULL,write=TRUE,lst=lst)
-
+    if(!is.null(register$gapfill)){
+      logger.info("Gapfilling") # Does NOT take place on browndog!
+      
+      input.id   <- cf.id[1]
+      outfolder  <- file.path(dir,paste0(met,"_CF_gapfill_site_",str_ns))
+      pkg        <- "PEcAn.data.atmosphere"
+      fcn        <- register$gapfill
+      formatname <- 'CF Meteorology'
+      mimetype   <- 'application/x-netcdf'
+      lst        <- site.lst(site,con)
+      
+      ready.id   <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id
+                                  ,start_date,end_date,pkg,fcn,username,con=con,
+                                  hostname=host$name,browndog=NULL,write=TRUE,lst=lst)
+    }else{
+      ready.id<-cf.id[1]
+    }
+    
   }
   logger.info("Finished Standardize Met")
   }

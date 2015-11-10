@@ -13,7 +13,7 @@
 ##' @param outdir Location of PRELES model output
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
-##' @export netcdf file in CF standard
+##' @export 
 ##' @author Tony Gardella, Michael Dietze
 runPRELES.jobsh<- function(met.file,outdir,start.date,end.date){
   

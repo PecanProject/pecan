@@ -1,3 +1,13 @@
+##' @name met.process.stage
+##' @title met.process.stage
+##' @export
+##'
+##' @param input.id
+##' @param raw.id
+##'
+##' @author Elizabeth Cowdery
+
+
 met.process.stage <- function(input.id,raw.id,con){
   format.id = db.query(paste("SELECT format_id from inputs where id =",input.id),con)[[1]]
   cf.id = 33 
