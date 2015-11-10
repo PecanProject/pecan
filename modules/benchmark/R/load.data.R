@@ -22,16 +22,16 @@
 ##'   - Is there a generic structure to ovbs?
 
 
-load.data <- function(input_path, format_table, vars_names_units, start_year = NA, end_year=NA, site=NA){
+load.data <- function(data.path, format, start_year = NA, end_year=NA, site=NA){
   
   require(lubridate)
   
-  fcn1 <- paste0("load.",format_table$name)
-  fcn2 <- paste0("load.",format_table$mimetype)
+  fcn1 <- paste0("load.",format$file_name)
+  fcn2 <- paste0("load.",format$mimetype)
   if(exists(fcn1)){
-    fcn <- fcn1
+    fcn <- match.fun(fcn1)
   }else if(exists(fcn2)){
-    fcn <- fcn2
+    fcn <- match.fun(fcn2)
   }else{
     logger.warn("no load data for current mimetype - converting using browndog")
     # Browndog
@@ -39,11 +39,8 @@ load.data <- function(input_path, format_table, vars_names_units, start_year = N
     # ex: exel -> csv
   }
   
-  args <- list(input_path,vars_names_units, start_year, end_year, site))
-
-results <- apply(fcn,args)
-# list object with values, variable name and units
-
+  result <- fcn(data.path, format, start_year, end_year, site)
+  
 return(result) 
 }
 

@@ -23,23 +23,20 @@ calc.benchmark <- function(settings, con){ #settings file is output from start.b
   # For each bm.id
   #  Query database for: input path, variables, site, start/end dates, metrics, formats
   
-  input.path <- db.query.file.path(input.id,host_name,con)
-  f_v <- db.query.format.vars(input.id,con)
-  format_table <- f_v[[1]]
-  vars_names_units <- f_v[[2]]
-  
+  data.path <- query.file.path(input.id,host_name,con)
+  format <- query.format.vars(input.id,con)  
   
   # Need to do something here to narrow down the variables to be used
   # rows <- which(vars_names_units$bety_name %in% calc.vars)
   # vars_names_units <- vars_names_units[rows,]
   
-  site  <- db.query.site(input.id, con)
+  site  <- query.site(input.id, con)
   
   metrics <- db.query(paste("SELECT m.id, m.name from metrics as m JOIN benchmarks_metrics as b 
                             ON m.id = b.metric_id WHERE b.benchmark_id = ", bm.id),con)
   
   # Local or remote
-  results <- calc.metrics(input_path, format_table, vars_names_units, model_run, metrics, 
+  results <- calc.metrics(data.path, format, model_run, metrics, 
                           start_year=NA, end_year=NA, site=NA)
   
   #  Update benchmark ensemble scores table
