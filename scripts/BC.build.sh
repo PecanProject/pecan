@@ -125,7 +125,7 @@ done
 #PACKAGES="${PACKAGES} modules/assim.batch modules/assim.sequential"
 #PACKAGES="${PACKAGES} modules/allometry modules/photosynthesis"
 PACKAGES="${PACKAGES} modules/benchmark"
-#PACKAGES="${PACKAGES} all"
+PACKAGES="${PACKAGES} all"
 
 # location where to install packages
 if [ -z $R_LIBS_USER ]; then
