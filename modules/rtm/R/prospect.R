@@ -18,11 +18,17 @@ prospect <- function(param, version){
     plist <- as.list(param)
     plist$RT <- matrix(0, 2101, 2)
     if (version == "4"){
-        stopifnot(length(plist) == 4)
+        if(length(plist) != 5) stop("Wrong number of parameters")
         inlist <- c("prospect_4", plist)
     }
-    else if (version == "5") inlist <- c("prospect_5", plist)
-    else if (version == "5B") inlist <- c("prospect_5b", plist)
+    else if (version == "5") {
+        if(length(plist) != 6) stop("Wrong number of parameters")
+        inlist <- c("prospect_5", plist)
+    }
+    else if (version == "5B") {
+        if(length(plist) != 7) stop("Wrong number of parameters")
+        inlist <- c("prospect_5b", plist)
+    }
     else stop("Version must be 4, 5, or 5B") 
     outlist <- do.call(.Fortran, inlist)
     return(outlist[[length(outlist)]])
