@@ -68,7 +68,7 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end
 
     output[[11]] <- agb.pft[,y,]
 
-    output[[12]] <- f.comp[,y]
+    output[[12]] <- f.comp[,y,]
 
     #******************** Declare netCDF variables ********************#
     dim.t <- ncdim_def(name = "time",
