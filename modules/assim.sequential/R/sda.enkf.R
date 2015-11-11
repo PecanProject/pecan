@@ -1,6 +1,6 @@
 ##' @title sda.enkf
 ##' @name  sda.enkf
-##' @author Michael Dietze \email{dietze@@bu.edu}
+##' @author Michael Dietze and Ann Raiho \email{dietze@@bu.edu}
 ##' 
 ##' @param settings    PEcAn settings object
 ##' @param IC          data.frame of initial condition sample (nens X nstate)
@@ -104,7 +104,7 @@ sda.enkf <- function(settings,IC,prior,obs){
     ## write config
     # do.call(my.write.config,args=list(defaults,list(pft=prior[i,],env=NA),
     #                                  settings, run.id[[i]],inputs = settings$run,IC=IC[i,]))
-    do.call(my.write.config,args=list(settings=settings,run.id = run.id[[i]],restart=TRUE))
+    do.call(my.write.config,args=list(settings=settings,run.id = run.id[[i]],restart=FALSE))
     
     ## write a README for the run
     cat("runtype     : sda.enkf\n",
@@ -152,7 +152,7 @@ sda.enkf <- function(settings,IC,prior,obs){
  Pf   = cov(X)
  Y    = obs$mean[t]
  R    = obs$sd[t]^2
- H    = matrix(c(1,rep(0,ncol(forecast))),1,ncol(X))
+ H    = matrix(c(rep(0,ncol(forecast))),1,ncol(X))
  if(!is.na(Y)){
    K    = Pf%*%t(H)%*%solve(R+H%*%Pf%*%t(H))
    mu.a = mu.f + K%*%(Y-H%*%mu.f)
@@ -232,7 +232,7 @@ save(FORECAST,ANALYSIS,enkf.params,file=file.path(settings$outdir,"sda.ENKF.Rdat
   
   ## plot ensemble, filter, and data mean's and CI's
   par(mfrow=c(1,1))
-  y = obs[1:length(time),]
+  y = obs[1:length(time),]/10
   plot(time,y$mean,ylim=range(c(y$mean+1.96*y$sd,y$mean-1.96*y$sd)),type='n',xlab="time",ylab="Mg/ha/yr")
   ciEnvelope(time,y$mean-y$sd*1.96,y$mean+y$sd*1.96,col="lightblue")
   lines(time,y$mean,type='b',col="darkblue")
@@ -241,7 +241,7 @@ save(FORECAST,ANALYSIS,enkf.params,file=file.path(settings$outdir,"sda.ENKF.Rdat
   alphapink = rgb(pink[1],pink[2],pink[3],100,max=255)
   Xbar = laply(FORECAST,function(x){return(mean(x$AGB,na.rm=TRUE))})
   Xci  = laply(FORECAST,function(x){return(quantile(x$AGB,c(0.025,0.975)))})
-  plot(time,y$mean,ylim=range(c(y$mean+1.96*y$sd,y$mean-1.96*y$sd)),type='n',xlab="time",ylab="Mg/ha/yr")
+  plot(time,y$mean,ylim=range(c(y$mean+10*y$sd,y$mean-10*y$sd)),type='n',xlab="time",ylab="Mg/ha/yr")
   ciEnvelope(time,y$mean-y$sd*1.96,y$mean+y$sd*1.96,col="lightblue")
   lines(time,y$mean,type='b',col="darkblue")
   #if(sda.demo) lines(time,ensp[ref,],col=2,lwd=2)
@@ -252,7 +252,7 @@ save(FORECAST,ANALYSIS,enkf.params,file=file.path(settings$outdir,"sda.ENKF.Rdat
   alphagreen = rgb(green[1],green[2],green[3],100,max=255)
   Xa = laply(ANALYSIS,function(x){return(mean(x$AGB,na.rm=TRUE))})
   XaCI  = laply(ANALYSIS,function(x){return(quantile(x$AGB,c(0.025,0.975)))})
-  plot(time,y$mean,ylim=range(c(y$mean+1.96*y$sd,y$mean-1.96*y$sd)),type='n',xlab="time",ylab="Mg/ha/yr")
+  plot(time,y$mean,ylim=range(c(20,0)),type='n',xlab="time",ylab="Mg/ha/yr")
   ciEnvelope(time,y$mean-y$sd*1.96,y$mean+y$sd*1.96,col="lightblue")
   lines(time,y$mean,type='b',col="darkblue")
   ciEnvelope(time,Xci[1:nt,1],Xci[1:nt,2],col=alphapink)
