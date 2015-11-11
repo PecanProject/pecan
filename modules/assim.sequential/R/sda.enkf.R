@@ -19,8 +19,8 @@ sda.enkf <- function(settings,IC,prior,obs){
   defaults <- settings$pfts
   outdir <- settings$run$host$outdir
   host <- settings$run$host
-  start.year = 2002#strftime(settings$run$site$met.start,"%Y")
-  end.year   = 2006#strftime(settings$run$site$met.end,"%Y")
+  start.year = strftime(settings$run$start.date,"%Y")
+  end.year   = strftime(settings$run$end.date,"%Y")
   nens = nrow(IC)
   
   if(nrow(prior) == 1 | is.null(nrow(prior))){
@@ -75,7 +75,7 @@ sda.enkf <- function(settings,IC,prior,obs){
   full.met <- settings$run$inputs$met$path
   new.met  <- file.path(settings$rundir,basename(full.met))
   file.copy(full.met,new.met)
-  met <- split.met.SIPNET(new.met)
+  met <- new.met#split.met.SIPNET(new.met)
   
   
   ###-------------------------------------------------------------------###
@@ -102,8 +102,9 @@ sda.enkf <- function(settings,IC,prior,obs){
     dir.create(file.path(settings$modeloutdir, run.id[[i]]), recursive=TRUE)
     
     ## write config
-    do.call(my.write.config,args=list(defaults,list(pft=prior[i,],env=NA),
-                                      settings, run.id[[i]],inputs = settings$run,IC=IC[i,]))
+    # do.call(my.write.config,args=list(defaults,list(pft=prior[i,],env=NA),
+    #                                  settings, run.id[[i]],inputs = settings$run,IC=IC[i,]))
+    do.call(my.write.config,args=list(settings=settings,run.id = run.id[[i]]))
     
     ## write a README for the run
     cat("runtype     : sda.enkf\n",
@@ -132,7 +133,6 @@ sda.enkf <- function(settings,IC,prior,obs){
   ## start model run
   start.model.runs(settings,settings$database$bety$write)
   
-
   time = start.year:end.year
   nt = length(time)
   NPPm = rep(NA,nens)
@@ -144,7 +144,7 @@ sda.enkf <- function(settings,IC,prior,obs){
   for(t in 1:nt){
 
     ### load output
-    X <- read.restart.SIPNET(out.dir,run.id,time,unit.conv,IC,prior)
+    X <- do.call(my.read.restart,args=list(outdir,run.id,time,unit.conv,IC,prior))
     FORECAST[[t]] = X
     
  ### Analysis step
@@ -166,28 +166,28 @@ sda.enkf <- function(settings,IC,prior,obs){
  ## update state matrix
 analysis = as.data.frame(rmvnorm(nens,mu.a,Pa,method="svd"))
 names(analysis) = names(X)
- # EAKF
- if(FALSE){
-   analysis = X
-   
-   ## Math from Anderson 2001. gives correct mean but incorrect var
-   A.svd = svd(Pf)
-   F = A.svd$v
-   G = diag(sqrt(A.svd$d))
-   B.svd = svd(t(G)%*%t(F)%*%t(H)%*%solve(R)%*%H%*%F%*%G)
-   U = B.svd$v
-   B = diag((1+B.svd$d)^(-0.5))
-   A = solve(t(F))%*%t(G)*solve(t(U))%*%t(B)%*%solve(t(G))%*%t(F)
-   for(i in 1:nens){
-     analysis[i,] = t(A)%*%matrix(as.numeric(X[i,])-mu.f)+mu.a
-   }
-   
-   ## HACK IGNORNING COVARIANCE
-   for(i in 1:nens){
-     analysis[i,] = mu.a + (matrix(as.numeric(X[i,]))-mu.f)*sqrt(diag(Pa)/diag(Pf))
-   }   
-   
- }
+#  # EAKF
+#  if(FALSE){
+#    analysis = X
+#    
+#    ## Math from Anderson 2001. gives correct mean but incorrect var
+#    A.svd = svd(Pf)
+#    F = A.svd$v
+#    G = diag(sqrt(A.svd$d))
+#    B.svd = svd(t(G)%*%t(F)%*%t(H)%*%solve(R)%*%H%*%F%*%G)
+#    U = B.svd$v
+#    B = diag((1+B.svd$d)^(-0.5))
+#    A = solve(t(F))%*%t(G)*solve(t(U))%*%t(B)%*%solve(t(G))%*%t(F)
+#    for(i in 1:nens){
+#      analysis[i,] = t(A)%*%matrix(as.numeric(X[i,])-mu.f)+mu.a
+#    }
+#    
+#    ## HACK IGNORNING COVARIANCE
+#    for(i in 1:nens){
+#      analysis[i,] = mu.a + (matrix(as.numeric(X[i,]))-mu.f)*sqrt(diag(Pa)/diag(Pf))
+#    }   
+#    
+#  }
 ## analysis sanity check
 for(i in 2:ncol(analysis)){
   analysis[analysis[,i]<0,i] = 0.0
@@ -197,7 +197,7 @@ for(i in 2:ncol(analysis)){
  
  ### Forecast step
  if(t < nt){
-   write.restart.SIPNET(nens,outdir,run.id,time,settings,prior,analysis)
+   do.call(my.write.restart,args=list(nens,outdir,run.id,time,settings,prior,analysis))
  }
  ## start model run
  start.model.runs(settings,settings$database$bety$write)

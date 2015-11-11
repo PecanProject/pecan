@@ -26,8 +26,6 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end
 
   require(PEcAn.utils)
   require(ncdf4)
-  
-  ##QUESTIONS:How should I name the PFTs? What should I do about more than one plot?
 
   ### Read in model output in linkages format
   load(file.path(outdir,"linkages.out.Rdata"))

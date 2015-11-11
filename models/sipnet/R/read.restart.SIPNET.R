@@ -1,4 +1,4 @@
-read.restart.SIPNET <- function(out.dir,run.id,time,unit.conv,IC,prior){
+read.restart.SIPNET <- function(outdir,run.id,time,unit.conv,IC,prior){
 
   forecast = IC
   nens = nrow(IC)

@@ -41,7 +41,6 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   
   iplot <- 1
   nyear <- length(year)
-  #nspec <- 5
   bgs <- 120
   egs <- 273
   max.ind <- 15000
@@ -76,8 +75,6 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   load(system.file("switch.mat.Rdata", package = "linkages"))
   
   load(settings$run$inputs$met$path)
-  #temp.mat <- matrix(c(-8.6,-7.6,-1.9,6.9,13.7,19,21.6,20.5,15.9,9.6,.8,-6.1),nyear,12,byrow = TRUE)
-  #precip.mat <- matrix(c(2.9,2.7,4.2,7,9.2,11.2,8,8.9,8.9,5.7,5.5,2.9),nyear,12,byrow=TRUE)
 
   basesc = 74
   basesn = 1.64
@@ -91,7 +88,7 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   }
   
   spp.params <- spp.params.default[spp.params.save,]
-  
+
   input<-file.path(settings$rundir,"linkages.input.Rdata")  
   
   save(iplot, nyear, nspec, fc, dry, bgs, egs, max.ind,
