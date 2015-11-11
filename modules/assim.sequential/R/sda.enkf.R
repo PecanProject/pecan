@@ -144,7 +144,7 @@ sda.enkf <- function(settings,IC,prior,obs){
   for(t in 1:nt){
 
     ### load output
-    X <- do.call(my.read.restart,args=list(outdir,run.id,time,unit.conv,IC,prior))
+    X <- do.call(my.read.restart,args=list(outdir,run.id,time,unit.conv,IC,prior,t))
     FORECAST[[t]] = X
     
  ### Analysis step
