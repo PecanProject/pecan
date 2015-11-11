@@ -181,7 +181,7 @@ umask(0002);
 if (!mkdir($folder)) {
     die('Can\'t create output folder [${folder}]');
 }
-if (!is_dir($dbfiles_folder) && !mkdir($dbfiles_folder, 0002, true)) {
+if (!is_dir($dbfiles_folder) && !mkdir($dbfiles_folder, 0777, true)) {
     die('Can\'t create output folder [${dbfiles_folder}]');
 }
 if ($hostname != "localhost") {
