@@ -9,7 +9,7 @@ read.restart.LINKAGES <- function(outdir,run.id,time,unit.conv,IC,prior){
                             start.year = time[i],end.year=time[i],
                             variables=c("AGB"))
     last = length(ens[[i]]$AGB)
-    forecast$AGB[i] = ens[[i]]$AGB[last]*1000 ## kgC/m2 -> gC/m2
+    forecast$AGB[i] = ens[[i]]$AGB[last] ## kgC/m2
   }
   
   X = forecast
