@@ -104,7 +104,7 @@ sda.enkf <- function(settings,IC,prior,obs){
     ## write config
     # do.call(my.write.config,args=list(defaults,list(pft=prior[i,],env=NA),
     #                                  settings, run.id[[i]],inputs = settings$run,IC=IC[i,]))
-    do.call(my.write.config,args=list(settings=settings,run.id = run.id[[i]]))
+    do.call(my.write.config,args=list(settings=settings,run.id = run.id[[i]],restart=TRUE))
     
     ## write a README for the run
     cat("runtype     : sda.enkf\n",
@@ -135,7 +135,7 @@ sda.enkf <- function(settings,IC,prior,obs){
   
   time = start.year:end.year
   nt = length(time)
-  NPPm = rep(NA,nens)
+  #NPPm = rep(NA,nens)
   FORECAST <- ANALYSIS <- list()
   enkf.params <- list()
   ###-------------------------------------------

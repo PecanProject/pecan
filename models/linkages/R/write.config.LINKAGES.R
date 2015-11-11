@@ -23,7 +23,7 @@
 ##' @export
 ##' @author Ann Raiho, Betsy Cowdery
 ##-------------------------------------------------------------------------------------------------#
-write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, run.id){
+write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, run.id, restart){
   
   require(linkages) 
   
@@ -126,6 +126,7 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   jobsh <- gsub('@RUNDIR@', rundir, jobsh)
   
   jobsh <- gsub('@INPUT@', input, jobsh)
+  jobsh <- gsub('@RESTART@', restart, jobsh)
   
   writeLines(jobsh, con=file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
