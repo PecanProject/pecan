@@ -1,4 +1,4 @@
-read.restart.LINKAGES <- function(outdir,run.id,time,unit.conv,IC,prior,t){
+read.restart.LINKAGES <- function(outdir,run.id,time,IC,prior){
   
   forecast = IC
   nens = nrow(IC)
@@ -6,7 +6,7 @@ read.restart.LINKAGES <- function(outdir,run.id,time,unit.conv,IC,prior,t){
   
   for(i in 1:nens){
     ens[[i]] <- read.output(runid = run.id[[i]],outdir = file.path(outdir, run.id[[i]]),
-                            start.year = time[t],end.year=time[t],
+                            start.year = time,end.year=time,
                             variables=c("AGB"))
     last = length(ens[[i]]$AGB)
     forecast$AGB[i] = ens[[i]]$AGB[last]*1000

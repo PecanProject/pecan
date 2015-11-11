@@ -87,7 +87,7 @@ status.end()
 
 #---------------- Build Initial Conditions ----------------------------------------------------------------------#
 status.start("IC")
-#ne = as.numeric(settings$assim.sequential$n.ensemble) # do we want this to point somewhere else?
+ne = as.numeric(settings$ensemble$size) # do we want this to point somewhere else?
 #IC = sample.IC.SIPNET(ne,state)
 source("/home/araiho/pecan/modules/assim.sequential/R/sample.IC.LINKAGES.R")
 IC = sample.IC.LINKAGES(ne,state)

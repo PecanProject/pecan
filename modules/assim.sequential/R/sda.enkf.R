@@ -81,6 +81,7 @@ sda.enkf <- function(settings,IC,prior,obs){
   ###-------------------------------------------------------------------###
   ### perform initial set of runs                                       ###
   ###-------------------------------------------------------------------###  
+  X = IC
   run.id = list()
   for(i in 1:nens){
     
@@ -144,7 +145,7 @@ sda.enkf <- function(settings,IC,prior,obs){
   for(t in 1:nt){
 
     ### load output
-    X <- do.call(my.read.restart,args=list(outdir,run.id,time,unit.conv,IC,prior,t))
+    X <- do.call(my.read.restart,args=list(outdir,run.id,time[t],X,prior))
     FORECAST[[t]] = X
     
  ### Analysis step
@@ -152,7 +153,7 @@ sda.enkf <- function(settings,IC,prior,obs){
  Pf   = cov(X)
  Y    = obs$mean[t]
  R    = obs$sd[t]^2
- H    = matrix(c(rep(0,ncol(forecast))),1,ncol(X))
+ H    = matrix(c(1,rep(0,ncol(X)-1)),1,ncol(X))
  if(!is.na(Y)){
    K    = Pf%*%t(H)%*%solve(R+H%*%Pf%*%t(H))
    mu.a = mu.f + K%*%(Y-H%*%mu.f)

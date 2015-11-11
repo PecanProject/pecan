@@ -1,12 +1,13 @@
-read.restart.SIPNET <- function(outdir,run.id,time,unit.conv,IC,prior){
+read.restart.SIPNET <- function(outdir,run.id,time,IC,prior){
 
   forecast = IC
   nens = nrow(IC)
   ens = list()
+  unit.conv <-  0.001*2#  kgC/ha/yr to Mg/ha/yr
   
   for(i in 1:nens){
     ens[[i]] <- read.output(run.id[[i]],file.path(outdir, run.id[[i]]),
-                            start.year = time[t],end.year=time[t],
+                            start.year = time,end.year=time,
                             variables=c("NPP","AbvGrndWood","TotSoilCarb","LeafC","SoilMoistFrac","SWE","Litter")
     )
     NPPm[i] <- mean(ens[[i]]$NPP)*unit.conv ## kg C m-2 s-1 -> Mg/ha/yr [Check]
