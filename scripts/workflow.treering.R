@@ -81,7 +81,7 @@ status.end()
 #---------------- Build Initial Conditions ----------------------------------------------------------------------#
 status.start("IC")
 ne = as.numeric(settings$assim.sequential$n.ensemble) # do we want this to point somewhere else?
-IC = sample.IC.SIPNET(ne,state)
+#IC = sample.IC.SIPNET(ne,state)
 IC = sample.IC.LINKAGES(ne,state)
 status.end()
 
@@ -92,7 +92,7 @@ status.end()
 
 #--------------- Assimilation -------------------------------------------------------#
 status.start("MCMC")
-sda.enkf(settings,IC,prior,obs)
+sda.enkf(settings,IC,prior,obs/10)
 status.end()
 
 #--------------------------------------------------------------------------------------------------#

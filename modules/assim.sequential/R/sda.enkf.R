@@ -209,21 +209,21 @@ for(i in 2:ncol(analysis)){
 ## save all outputs
 save(FORECAST,ANALYSIS,enkf.params,file=file.path(settings$outdir,"sda.ENKF.Rdata"))
 
-if(FALSE){
-  ### Load Data
-  if(sda.demo){
-    ## use one of the ensemble members as the true data
-    NPP <- read.output("ENS00001",settings$outdir,variables="NPP",model=model)$NPP
-    ytrue = tapply(NPP,Year,mean)*unit.conv
-    sd <- 0.3  ## pseudo data uncertainty
-    y <- rnorm(nt,ytrue,sd) ## add noise
-  } else {
-    load(file.path(settings$outdir,"plot2AGB.Rdata"))
-    mch = which(yrvec %in% time)
-    y = mNPP[1,mch]   ## data mean
-    sd = sNPP[1,mch]  ## data uncertainty 
-  }
-}  
+# if(FALSE){
+#   ### Load Data
+#   if(sda.demo){
+#     ## use one of the ensemble members as the true data
+#     NPP <- read.output("ENS00001",settings$outdir,variables="NPP",model=model)$NPP
+#     ytrue = tapply(NPP,Year,mean)*unit.conv
+#     sd <- 0.3  ## pseudo data uncertainty
+#     y <- rnorm(nt,ytrue,sd) ## add noise
+#   } else {
+#     load(file.path(settings$outdir,"plot2AGB.Rdata"))
+#     mch = which(yrvec %in% time)
+#     y = mNPP[1,mch]   ## data mean
+#     sd = sNPP[1,mch]  ## data uncertainty 
+#   }
+# }  
 
 #### Post-processing
 
@@ -239,8 +239,8 @@ if(FALSE){
   
   pink = col2rgb("pink")
   alphapink = rgb(pink[1],pink[2],pink[3],100,max=255)
-  Xbar = laply(FORECAST,function(x){return(mean(x$NPPm,na.rm=TRUE))})
-  Xci  = laply(FORECAST,function(x){return(quantile(x$NPPm,c(0.025,0.975)))})
+  Xbar = laply(FORECAST,function(x){return(mean(x$AGB,na.rm=TRUE))})
+  Xci  = laply(FORECAST,function(x){return(quantile(x$AGB,c(0.025,0.975)))})
   plot(time,y$mean,ylim=range(c(y$mean+1.96*y$sd,y$mean-1.96*y$sd)),type='n',xlab="time",ylab="Mg/ha/yr")
   ciEnvelope(time,y$mean-y$sd*1.96,y$mean+y$sd*1.96,col="lightblue")
   lines(time,y$mean,type='b',col="darkblue")
@@ -250,8 +250,8 @@ if(FALSE){
 
   green = col2rgb("green")
   alphagreen = rgb(green[1],green[2],green[3],100,max=255)
-  Xa = laply(ANALYSIS,function(x){return(mean(x$NPPm,na.rm=TRUE))})
-  XaCI  = laply(ANALYSIS,function(x){return(quantile(x$NPPm,c(0.025,0.975)))})
+  Xa = laply(ANALYSIS,function(x){return(mean(x$AGB,na.rm=TRUE))})
+  XaCI  = laply(ANALYSIS,function(x){return(quantile(x$AGB,c(0.025,0.975)))})
   plot(time,y$mean,ylim=range(c(y$mean+1.96*y$sd,y$mean-1.96*y$sd)),type='n',xlab="time",ylab="Mg/ha/yr")
   ciEnvelope(time,y$mean-y$sd*1.96,y$mean+y$sd*1.96,col="lightblue")
   lines(time,y$mean,type='b',col="darkblue")

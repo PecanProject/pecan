@@ -23,7 +23,9 @@
 ##' @export
 ##' @author Ann Raiho, Betsy Cowdery
 ##-------------------------------------------------------------------------------------------------#
-write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, run.id, restart){
+write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, run.id, restart=NULL){
+  
+  if(is.null(restart)) restart = FALSE
   
   require(linkages) 
   
