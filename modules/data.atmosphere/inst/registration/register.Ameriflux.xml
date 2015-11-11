@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 <Ameriflux>
   <scale>site</scale>
-  <gapfill>metgapfill<gapfill>
   <format>
     <id>38</id>
     <name>AmeriFlux.level2.h.nc</name>
