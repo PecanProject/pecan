@@ -1,6 +1,6 @@
 write.restart.LINKAGES<- function(nens,outdir,run.id,time,settings,prior,analysis){
   for(i in 1:nens){
-    load(file.path(outdir,run.id[[i]],"1994linkages.out.Rdata")) #load output
+    load(file.path(outdir,run.id[[i]],"linkages.out.Rdata")) #load output
     file.rename(file.path(outdir,run.id[[i]],"linkages.out.Rdata"),file.path(outdir,run.id[[i]],paste0(time[t],"linkages.out.Rdata"))) #save original output
     
    #translate agb to dbh...I know it's questionable

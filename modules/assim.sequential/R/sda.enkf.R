@@ -147,7 +147,7 @@ sda.enkf <- function(settings,IC,prior,obs){
   ###-------------------------------------------
   ### loop over time
   ###-------------------------------------------
-  for(t in 2:nt){
+  for(t in 1:nt){
 
     ### load output
     X <- do.call(my.read.restart,args=list(outdir,run.id,total.time[t],X,prior))
@@ -258,7 +258,7 @@ save(FORECAST,ANALYSIS,enkf.params,file=file.path(settings$outdir,"sda.ENKF.Rdat
   alphagreen = rgb(green[1],green[2],green[3],100,max=255)
   Xa = laply(ANALYSIS,function(x){return(mean(x$AGB,na.rm=TRUE))})
   XaCI  = laply(ANALYSIS,function(x){return(quantile(x$AGB,c(0.025,0.975)))})
-  plot(time,y$mean,ylim=range(c(30,0)),type='n',xlab="time",ylab="Mg/ha/yr")
+  plot(time,y$mean,ylim=range(c(0,300)),type='n',xlab="time",ylab="Mg/ha/yr")
   ciEnvelope(time,y$mean-y$sd*1.96,y$mean+y$sd*1.96,col="lightblue")
   lines(time,y$mean,type='b',col="darkblue")
   ciEnvelope(time,Xci[1:nt,1],Xci[1:nt,2],col=alphapink)
