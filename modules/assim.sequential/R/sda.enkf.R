@@ -14,13 +14,16 @@
 sda.enkf <- function(settings,IC,prior,obs){
   
   ## settings
-  model = settings$model$type #Is this the correct change?
-  write = settings$database$bety$write
+  model <- settings$model$type #Is this the correct change?
+  write <- settings$database$bety$write
   defaults <- settings$pfts
   outdir <- settings$run$host$outdir
   host <- settings$run$host
-  start.year = strftime(settings$run$start.date,"%Y")
-  end.year   = strftime(settings$run$end.date,"%Y")
+  start.year <- strftime(settings$run$start.date,"%Y")
+  end.year   <- strftime(settings$run$end.date,"%Y")
+  forecast.duration <- 1 #eventually in settings
+  forecast.time.step <- 1 #eventually in settings #dt
+  spin.up <- 100
   nens = nrow(IC)
   
   if(nrow(prior) == 1 | is.null(nrow(prior))){
@@ -29,8 +32,7 @@ sda.enkf <- function(settings,IC,prior,obs){
     names(prior) = var.names
   }
   
-  sda.demo <- TRUE  ## debugging flag
-  unit.conv <-  0.001*2#  kgC/ha/yr to Mg/ha/yr
+  ## sda.demo <- TRUE  ## debugging flag
     
   ## open database connection
   if(write){
@@ -105,6 +107,9 @@ sda.enkf <- function(settings,IC,prior,obs){
     ## write config
     # do.call(my.write.config,args=list(defaults,list(pft=prior[i,],env=NA),
     #                                  settings, run.id[[i]],inputs = settings$run,IC=IC[i,]))
+    # linkages 15min for every 100 years
+    settings$run$start.date <- paste0((as.numeric(start.year) - spin.up),strftime(settings$run$end.date,"/%m/%d"))
+    settings$run$end.date <- paste0((as.numeric(start.year) + forecast.time.step),strftime(settings$run$end.date,"/%m/%d"))
     do.call(my.write.config,args=list(settings=settings,run.id = run.id[[i]],restart=FALSE))
     
     ## write a README for the run
@@ -134,39 +139,39 @@ sda.enkf <- function(settings,IC,prior,obs){
   ## start model run
   start.model.runs(settings,settings$database$bety$write)
   
-  time = start.year:end.year
-  nt = length(time)
+  total.time = start.year:end.year
+  nt = length(total.time)
   #NPPm = rep(NA,nens)
   FORECAST <- ANALYSIS <- list()
   enkf.params <- list()
   ###-------------------------------------------
   ### loop over time
   ###-------------------------------------------
-  for(t in 1:nt){
+  for(t in 2:nt){
 
     ### load output
-    X <- do.call(my.read.restart,args=list(outdir,run.id,time[t],X,prior))
+    X <- do.call(my.read.restart,args=list(outdir,run.id,total.time[t],X,prior))
     FORECAST[[t]] = X
     
- ### Analysis step
- mu.f = apply(X,2,mean,na.rm=TRUE)
- Pf   = cov(X)
- Y    = obs$mean[t]
- R    = obs$sd[t]^2
- H    = matrix(c(1,rep(0,ncol(X)-1)),1,ncol(X))
- if(!is.na(Y)){
-   K    = Pf%*%t(H)%*%solve(R+H%*%Pf%*%t(H))
-   mu.a = mu.f + K%*%(Y-H%*%mu.f)
-   Pa   = (diag(ncol(X)) - K%*%H)%*%Pf
- } else {
-   mu.a = mu.f
-   Pa   = Pf
- }
- enkf.params[[t]] = list(mu.f = mu.f, Pf=Pf,mu.a=mu.a,Pa=Pa) 
+    ### Analysis step
+    mu.f = apply(X,2,mean,na.rm=TRUE)
+    Pf   = cov(X)
+    Y    = obs$mean[t]
+    R    = obs$sd[t]^2
+    H    = matrix(c(1,rep(0,ncol(X)-1)),1,ncol(X))
+    if(!is.na(Y)){
+      K    = Pf%*%t(H)%*%solve(R+H%*%Pf%*%t(H))
+      mu.a = mu.f + K%*%(Y-H%*%mu.f)
+      Pa   = (diag(ncol(X)) - K%*%H)%*%Pf
+    } else {
+      mu.a = mu.f
+      Pa   = Pf
+    }
+    enkf.params[[t]] = list(mu.f = mu.f, Pf=Pf,mu.a=mu.a,Pa=Pa) 
  
  ## update state matrix
-analysis = as.data.frame(rmvnorm(nens,mu.a,Pa,method="svd"))
-names(analysis) = names(X)
+    analysis = as.data.frame(rmvnorm(nens,mu.a,Pa,method="svd"))
+    names(analysis) = names(X)
 #  # EAKF
 #  if(FALSE){
 #    analysis = X
@@ -190,18 +195,18 @@ names(analysis) = names(X)
 #    
 #  }
 ## analysis sanity check
-for(i in 2:ncol(analysis)){
-  analysis[analysis[,i]<0,i] = 0.0
-}
+#for(i in 2:ncol(analysis)){
+#  analysis[analysis[,i]<0,i] = 0.0
+#}
 
- ANALYSIS[[t]] = analysis
+    ANALYSIS[[t]] = analysis
  
- ### Forecast step
- if(t < nt){
-   do.call(my.write.restart,args=list(nens,outdir,run.id,time,settings,prior,analysis))
- }
- ## start model run
- start.model.runs(settings,settings$database$bety$write)
+    ### Forecast step
+    if(t < nt){
+      do.call(my.write.restart,args=list(nens,outdir,run.id,total.time,settings,prior,analysis))
+    }
+    ## start model run
+    start.model.runs(settings,settings$database$bety$write)
  
 }  ## end loop over time
 ###-------------------------------------------
@@ -233,7 +238,7 @@ save(FORECAST,ANALYSIS,enkf.params,file=file.path(settings$outdir,"sda.ENKF.Rdat
   
   ## plot ensemble, filter, and data mean's and CI's
   par(mfrow=c(1,1))
-  y = obs[1:length(time),]/10
+  y = obs[1:length(time),]
   plot(time,y$mean,ylim=range(c(y$mean+1.96*y$sd,y$mean-1.96*y$sd)),type='n',xlab="time",ylab="Mg/ha/yr")
   ciEnvelope(time,y$mean-y$sd*1.96,y$mean+y$sd*1.96,col="lightblue")
   lines(time,y$mean,type='b',col="darkblue")
@@ -253,7 +258,7 @@ save(FORECAST,ANALYSIS,enkf.params,file=file.path(settings$outdir,"sda.ENKF.Rdat
   alphagreen = rgb(green[1],green[2],green[3],100,max=255)
   Xa = laply(ANALYSIS,function(x){return(mean(x$AGB,na.rm=TRUE))})
   XaCI  = laply(ANALYSIS,function(x){return(quantile(x$AGB,c(0.025,0.975)))})
-  plot(time,y$mean,ylim=range(c(20,0)),type='n',xlab="time",ylab="Mg/ha/yr")
+  plot(time,y$mean,ylim=range(c(30,0)),type='n',xlab="time",ylab="Mg/ha/yr")
   ciEnvelope(time,y$mean-y$sd*1.96,y$mean+y$sd*1.96,col="lightblue")
   lines(time,y$mean,type='b',col="darkblue")
   ciEnvelope(time,Xci[1:nt,1],Xci[1:nt,2],col=alphapink)

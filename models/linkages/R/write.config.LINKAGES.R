@@ -91,11 +91,13 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   
   spp.params <- spp.params.default[spp.params.save,]
 
-  input<-file.path(settings$rundir,"linkages.input.Rdata")  
+  input <- file.path(settings$rundir,"linkages.input.Rdata")  
   
   save(iplot, nyear, nspec, fc, dry, bgs, egs, max.ind,
        plat, temp.mat, precip.mat, spp.params, switch.mat,
        fdat, clat, basesc, basesn, file = input)
+  
+  restartfile <- file.path(settings$rundir,run.id,"linkages.restart.Rdata")
   
   #-----------------------------------------------------------------------
   # create launch script (which will create symlink)
@@ -129,6 +131,7 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   
   jobsh <- gsub('@INPUT@', input, jobsh)
   jobsh <- gsub('@RESTART@', restart, jobsh)
+  jobsh <- gsub('@RESTARTFILE@', restartfile, jobsh)
   
   writeLines(jobsh, con=file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
