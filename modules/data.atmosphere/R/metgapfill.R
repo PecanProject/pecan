@@ -41,20 +41,20 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst=
                         stringsAsFactors = FALSE)
   
   for(year in start_year:end_year) {
-    old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep="."))
-    new.file <- file.path(outfolder, paste(in.prefix, year, "nc", sep="."))
+    old.file <- file.path(in.path, paste(in.prefix, sprintf("%04d",start_year), "nc", sep="."))
+    new.file <- file.path(outfolder, paste(in.prefix, sprintf("%04d",start_year), "nc", sep="."))
     
     # check if input exists
     if (!file.exists(old.file)) {
-      logger.severe("Missing input file for year", year, "in folder", in.path)
+      logger.severe("Missing input file for year", sprintf("%04d",start_year), "in folder", in.path)
     }
         
     # create array with results
     row <- year - start_year + 1
     results$file[row] <- new.file
     results$host[row] <- fqdn()
-    results$startdate[row] <- paste0(year,"-01-01 00:00:00")
-    results$enddate[row] <- paste0(year,"-12-31 23:59:59")
+    results$startdate[row] <- sprintf("%04d-01-01 00:00:00",year) 
+    results$enddate[row] <- sprintf("%04d-12-31 23:59:59",year)
     results$mimetype[row] <- 'application/x-netcdf'
     results$formatname[row] <- 'CF (gapfilled)'
     
@@ -335,7 +335,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst=
     nc_close(nc)
     
     if (length(error) > 0) {
-      fail.file <- file.path(outfolder, paste(in.prefix, year,"failure","nc", sep="."))
+      fail.file <- file.path(outfolder, paste(in.prefix, sprintf("%04d",start_year),"failure","nc", sep="."))
       file.rename(from = new.file, to = fail.file)
       logger.severe("Could not do gapfill, results are in", fail.file, ".",
                     "The following variables have NA's:", paste(error, sep=", "))

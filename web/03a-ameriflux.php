@@ -24,13 +24,12 @@ if ($authentication) {
   }
 }
 
-# boolean parameters
-$userok=isset($_REQUEST['userok']);
-$offline=isset($_REQUEST['offline']);
-$pecan_edit = (isset($_REQUEST['pecan_edit'])) ? "checked" : "";
+#  parameters
+if (!isset($_REQUEST['hostname'])) {
+  die("Need a hostname.");
+}
+$hostname=$_REQUEST['hostname'];
 $adv_setup = (isset($_REQUEST['adv_setup'])) ? "checked" : "";
-$model_edit = (isset($_REQUEST['model_edit'])) ? "checked" : "";
-$browndog = (isset($_REQUEST['browndog'])) ? "checked" : "";
 ?>
 <!DOCTYPE html>
 <html>
