@@ -25,7 +25,6 @@ runPRELES.jobsh<- function(met.file,outdir,start.date,end.date){
 
   ## Open netcdf file
   nc=nc_open(met.file)
-  dim=nc.get.dim.names(nc)
   
   #Process start and end dates
   start_date<-as.POSIXlt(start.date,tz="GMT")
@@ -42,20 +41,20 @@ runPRELES.jobsh<- function(met.file,outdir,start.date,end.date){
   sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$time$units," "))[1],"seconds")
   
   ##build day and  year
-  ifelse(leap_year(year)==TRUE,
+  ifelse(leap_year(as.numeric(year))==TRUE,
          dt <- (366*24*60*60)/length(sec), #leap year
          dt <- (365*24*60*60)/length(sec)) #non-leap year
   tstep = 86400/dt
   
   doy <- rep(1:365,each=86400/dt)
-  if(year %% 4 == 0){  ## is leap
+  if(as.numeric(year) %% 4 == 0){  ## is leap
     doy <- rep(1:366,each=86400/dt)
   }
   
   ## Get variables from netcdf file
   PAR <-ncvar_get(nc,"surface_downwelling_photosynthetic_photon_flux_in_air") #PAR in mol/m2s1
   Tair <-ncvar_get(nc,"air_temperature")#air temperature in K
-  Precip <-ncvar_get(nc,"PREC")#precipitation in kg/m2s1
+  Precip <-ncvar_get(nc,"precipitation_flux")#precipitation in kg/m2s1
   VPD <-ncvar_get(nc,"water_vapor_saturation_deficit") # Vapor pressure deficit in Pa
   CO2 <-ncvar_get(nc,"mole_fraction_of_carbon_dioxide_in_air") #mol/mol
   
@@ -64,10 +63,11 @@ runPRELES.jobsh<- function(met.file,outdir,start.date,end.date){
   
   ## Format/convert inputs 
   PAR= tapply(PAR, doy,mean,na.rm=TRUE) #Find the mean for the day
-  TAir=ud.convert(tapply(Tair,doy,mean,na.rm=TRUE),"K", "C")#Convert Kelvin to Celcius
+  TAir=ud.convert(tapply(Tair,doy,mean,na.rm=TRUE),"kelvin", "celsius")#Convert Kelvin to Celcius
   VPD= ud.convert(tapply(VPD,doy,mean,na.rm=TRUE), "Pa","kPa")#pascal to kila pascal
   Precip=tapply(Precip,doy,sum, na.rm=TRUE) #Sum to daily precipitation
-  CO2= ud.convert(tapply(CO2,doy,sum),"mol/mol","ppm") #need daily average so sum up day
+  CO2= tapply(CO2,doy,sum) #need daily average so sum up day
+  CO2= CO2 * 1e6
   doy=tapply(doy,doy,mean) # day of year
   fAPAR =rep (0.8,length=length(doy)) #For now set to 0.8. Needs to be between 0-1
   
