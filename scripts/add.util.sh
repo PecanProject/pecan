@@ -12,6 +12,13 @@ if [ -z "$PSQL" ]; then
 	PSQL="psql -U bety bety -q -t -c"
 fi
 
+# folder to data, this is assumed to be installed at the same level
+# as the pecan folder. The python code is to get the absolute path
+# since the MAC does not have the GNU readlink -f option.
+if [ -z "$DATADIR" ]; then
+    DATADIR=$( python -c 'import os,sys;print os.path.realpath(sys.argv[1])' "${DIRNAME}/../.." )
+fi
+
 # function to add a input, takes 2 parameters. Will set FORMAT_ID to
 # format that is created, or found.
 #

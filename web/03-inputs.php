@@ -238,7 +238,7 @@ $stmt->closeCursor();
       } else if ($("#adv_setup").is(':checked')){
         $("#formnext").attr("action", "07-analysis.php");
       } else if (!$("#adv_setup").is(':checked')) {
-        $("#formnext").attr("action", "04-runpecan.php");
+        $("#formnext").attr("action", "<?php echo ($hostname != $fqdn ? '04-remote.php' : '04-runpecan.php'); ?>");
       }
     }
   }
@@ -319,7 +319,7 @@ $stmt->closeCursor();
       <input type="hidden" name="hostname" value="<?php echo $hostname; ?>" />
     </form>
 
-    <form id="formnext" method="POST" action="07-analysis.php">
+    <form id="formnext" method="POST" action="<?php echo ($hostname != $fqdn ? '04-remote.php' : '04-runpecan.php'); ?>">
 <?php if ($offline) { ?>
       <input name="offline" type="hidden" value="on">
 <?php } ?>
@@ -334,7 +334,7 @@ $stmt->closeCursor();
       <select id="pft" name="pft[]" multiple size=5 onChange="validate();">
 <?php
 foreach($pfts as $pft) {
-  print "        <option data-id='{$pft['id']}' ${pft['selected']}>${pft['name']}</option>\n";
+  print "        <option data-id='{$pft['id']}' ${pft['selected']} title=\"${pft['name']}\">${pft['name']}</option>\n";
 }
 ?>
       </select>
@@ -353,8 +353,8 @@ foreach($inputs as $input) {
   $tag=$input['tag'];
   if ($input['required']) {
     print "      <label id=\"metlabel\">${name}*<div id=\"metlabeldiv\"></div></label>\n";
-} else { 
-  print "      <label id=\"metlabel\">${name}<div id=\"metlabeldiv\"></div></label>\n";
+  } else { 
+    print "      <label id=\"metlabel\">${name}<div id=\"metlabeldiv\"></div></label>\n";
   }
   print "      <select id=\"${tag}\" name=\"input_${tag}\" onChange=\"validate();\">\n";
   if (!$input['required']) {

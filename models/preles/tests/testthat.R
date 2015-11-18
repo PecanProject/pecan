@@ -10,4 +10,4 @@ library(testthat)
 library(PEcAn.utils)
 
 logger.setQuitOnSevere(FALSE)
-test_check("PEcAn.MODEL")
+test_check("PEcAn.PRELES")

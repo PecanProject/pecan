@@ -24,13 +24,12 @@ if ($authentication) {
   }
 }
 
-# boolean parameters
-$userok=isset($_REQUEST['userok']);
-$offline=isset($_REQUEST['offline']);
-$pecan_edit = (isset($_REQUEST['pecan_edit'])) ? "checked" : "";
+#  parameters
+if (!isset($_REQUEST['hostname'])) {
+  die("Need a hostname.");
+}
+$hostname=$_REQUEST['hostname'];
 $adv_setup = (isset($_REQUEST['adv_setup'])) ? "checked" : "";
-$model_edit = (isset($_REQUEST['model_edit'])) ? "checked" : "";
-$browndog = (isset($_REQUEST['browndog'])) ? "checked" : "";
 ?>
 <!DOCTYPE html>
 <html>
@@ -80,7 +79,7 @@ $browndog = (isset($_REQUEST['browndog'])) ? "checked" : "";
 <?php if ($adv_setup == "checked"){?> 
 	<form id="formnext" method="POST" action="07-analysis.php">
 <?php } else { ?>
-    	<form id="formnext" method="POST" action="04-runpecan.php">
+  <form id="formnext" method="POST" action="<?php echo ($hostname != $fqdn ? '04-remote.php' : '04-runpecan.php'); ?>">
 <?php }?>
 
 <?php
