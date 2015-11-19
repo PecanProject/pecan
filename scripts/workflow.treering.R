@@ -100,7 +100,8 @@ status.end()
 
 #--------------- Assimilation -------------------------------------------------------#
 status.start("MCMC")
-sda.enkf(settings,IC,prior,obs/10)
+obs <- obs/10 to kg/m^2
+sda.enkf(settings,IC,prior,obs)
 status.end()
 
 #--------------------------------------------------------------------------------------------------#

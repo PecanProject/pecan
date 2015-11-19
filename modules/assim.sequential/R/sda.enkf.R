@@ -147,10 +147,10 @@ sda.enkf <- function(settings,IC,prior,obs){
   ###-------------------------------------------
   ### loop over time
   ###-------------------------------------------
-  for(t in 1:nt){
+  for(t in 2:nt){
 
     ### load output
-    X <- do.call(my.read.restart,args=list(outdir,run.id,total.time[t],X,prior))
+    X <- do.call(my.read.restart,args=list(outdir,run.id,total.time[t],IC,prior))
     FORECAST[[t]] = X
     
     ### Analysis step
@@ -238,33 +238,33 @@ save(FORECAST,ANALYSIS,enkf.params,file=file.path(settings$outdir,"sda.ENKF.Rdat
   
   ## plot ensemble, filter, and data mean's and CI's
   par(mfrow=c(1,1))
-  y = obs[1:length(time),]
-  plot(time,y$mean,ylim=range(c(y$mean+1.96*y$sd,y$mean-1.96*y$sd)),type='n',xlab="time",ylab="Mg/ha/yr")
-  ciEnvelope(time,y$mean-y$sd*1.96,y$mean+y$sd*1.96,col="lightblue")
-  lines(time,y$mean,type='b',col="darkblue")
+  y = obs[1:length(total.time),]
+  plot(total.time,y$mean,ylim=range(c(y$mean+1.96*y$sd,y$mean-1.96*y$sd)),type='n',xlab="total.time",ylab="kg/m^2/yr")
+  ciEnvelope(total.time,y$mean-y$sd*1.96,y$mean+y$sd*1.96,col="lightblue")
+  lines(total.time,y$mean,type='b',col="darkblue")
   
   pink = col2rgb("pink")
   alphapink = rgb(pink[1],pink[2],pink[3],100,max=255)
   Xbar = laply(FORECAST,function(x){return(mean(x$AGB,na.rm=TRUE))})
   Xci  = laply(FORECAST,function(x){return(quantile(x$AGB,c(0.025,0.975)))})
-  plot(time,y$mean,ylim=range(c(y$mean+10*y$sd,y$mean-10*y$sd)),type='n',xlab="time",ylab="Mg/ha/yr")
-  ciEnvelope(time,y$mean-y$sd*1.96,y$mean+y$sd*1.96,col="lightblue")
-  lines(time,y$mean,type='b',col="darkblue")
-  #if(sda.demo) lines(time,ensp[ref,],col=2,lwd=2)
-  ciEnvelope(time,Xci[1:nt,1],Xci[1:nt,2],col=alphapink)
-  lines(time,Xbar[1:nt],col=6,type='b')
+  plot(total.time,y$mean,ylim=range(c(y$mean+10*y$sd,y$mean-10*y$sd)),type='n',xlab="total.time",ylab="kg/m^2/yr")
+  ciEnvelope(total.time,y$mean-y$sd*1.96,y$mean+y$sd*1.96,col="lightblue")
+  lines(total.time,y$mean,type='b',col="darkblue")
+  #if(sda.demo) lines(total.time,ensp[ref,],col=2,lwd=2)
+  ciEnvelope(total.time,Xci[1:nt,1],Xci[1:nt,2],col=alphapink)
+  lines(total.time,Xbar[1:nt],col=6,type='b')
 
   green = col2rgb("green")
   alphagreen = rgb(green[1],green[2],green[3],100,max=255)
   Xa = laply(ANALYSIS,function(x){return(mean(x$AGB,na.rm=TRUE))})
   XaCI  = laply(ANALYSIS,function(x){return(quantile(x$AGB,c(0.025,0.975)))})
-  plot(time,y$mean,ylim=range(c(0,300)),type='n',xlab="time",ylab="Mg/ha/yr")
-  ciEnvelope(time,y$mean-y$sd*1.96,y$mean+y$sd*1.96,col="lightblue")
-  lines(time,y$mean,type='b',col="darkblue")
-  ciEnvelope(time,Xci[1:nt,1],Xci[1:nt,2],col=alphapink)
-  lines(time,Xbar[1:nt],col=2,type='b')
-  ciEnvelope(time,XaCI[1:nt,1],XaCI[1:nt,2],col=alphagreen)
-  lines(time,Xa[1:nt],col="darkgreen",type='b')
+  plot(total.time,y$mean,ylim=range(c(0,100)),type='n',xlab="total.time",ylab="kg/m^2/yr")
+  ciEnvelope(total.time,y$mean-y$sd*1.96,y$mean+y$sd*1.96,col="lightblue")
+  lines(total.time,y$mean,type='b',col="darkblue")
+  ciEnvelope(total.time,Xci[1:nt,1],Xci[1:nt,2],col=alphapink)
+  lines(total.time,Xbar[1:nt],col=2,type='b')
+  ciEnvelope(total.time,XaCI[1:nt,1],XaCI[1:nt,2],col=alphagreen)
+  lines(total.time,Xa[1:nt],col="darkgreen",type='b')
   legend("topleft",c("Data","Forecast","Analysis"),col=c(4,2,3),lty=1,cex=1)
   
 ### Plots demonstrating how the constraint of your target variable 

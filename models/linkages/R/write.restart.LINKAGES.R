@@ -1,8 +1,14 @@
 write.restart.LINKAGES<- function(nens,outdir,run.id,time,settings,prior,analysis){
   for(i in 1:nens){
+    rdatafiles <- list.files(path = file.path(outdir,run.id[[i]]), pattern="\\.Rdata$", full.names=TRUE)
+    # skip ensemble member if no *.nc files selected/availible
+    
+    if(length(rdatafiles) == 0) next
+    
     load(file.path(outdir,run.id[[i]],"linkages.out.Rdata")) #load output
     file.rename(file.path(outdir,run.id[[i]],"linkages.out.Rdata"),file.path(outdir,run.id[[i]],paste0(time[t],"linkages.out.Rdata"))) #save original output
     
+    nspec <- length(settings$pfts)
     ncohrt <- ncohrt
     tyl <- tyl
     C.mat <- C.mat
@@ -21,7 +27,7 @@ write.restart.LINKAGES<- function(nens,outdir,run.id,time,settings,prior,analysi
     }
    #translate agb to dbh...I know it's questionable
    b_obs1 <- f.comp[,ncol(f.comp)]*analysis[i,]
-   dbh_spp <- numeric(length(b_obs))
+   dbh_spp <- numeric(length(b_obs1))
    
    nl = 1
    for(s in 1:nspec){
@@ -38,14 +44,7 @@ write.restart.LINKAGES<- function(nens,outdir,run.id,time,settings,prior,analysi
      }
      nl = nu+1
    }
-   
 
-   
-   dbh.inc <- dbh.total/sum(ntrees.kill[,ncol(ntrees.kill),1])
-   dbh[1:sum(ntrees.kill[,ncol(ntrees.kill),1]),ncol(dbh.save),1] <- dbh.save[1:sum(ntrees.kill[,ncol(ntrees.kill),1]),ncol(dbh.save),1] + dbh.inc
-    
-   
-   
     restart.file <- file.path(settings$rundir,run.id[[i]],"linkages.restart.Rdata")
     sprintf("%s",restart.file)
     
