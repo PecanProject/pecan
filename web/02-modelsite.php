@@ -338,7 +338,7 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
       <input id="next" type="button" value="Next" onclick="nextStep();" />    
       <div class="spacer"></div>
     </form>
-<?php login_section(); ?>    
+<?php whoami(); ?>    
   </div>
   <div id="output"></div>
   <div id="footer"><?php echo get_footer(); ?></div>
