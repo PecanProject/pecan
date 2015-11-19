@@ -22,6 +22,8 @@
 ## modified M. Dietze 07/08/12
 ## modified S. Serbin 05/06/13
 model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
+  require(udunits2)
+  
   flist <- dir(outdir,"-T-")
   if (length(flist) == 0) {
     print(paste("*** WARNING: No tower output for :",outdir))

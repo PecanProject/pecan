@@ -193,7 +193,7 @@ mkdir "${DUMPDIR}"
 
 # download dump file and unpack
 curl -s -L -o "${DUMPDIR}/dump.tar.gz" "${DUMPURL}"
-tar zxf "${DUMPDIR}/dump.tar.gz" -C "${DUMPDIR}"
+tar zxf "${DUMPDIR}/dump.tar.gz" -C "${DUMPDIR}" -m
 
 # create database if need be, otherwise check version of schema
 if [ "${CREATE}" == "YES" ]; then

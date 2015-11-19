@@ -1,14 +1,19 @@
 ---
 title: "The PEcAn RTM package"
 author: Alexey Shiklomanov
-output: pdf_document
+output_format: pdf_document
 ---
 
 # Introduction
-The PEcAnRTM package provides tools for analyses involving common radiative transfer models. The highlights of this package are its ability to efficiently run a suite of related leaf and canopy radiative transfer models, as well as to perform maximum likelihood and, particularly, Bayesian inversions of these models. 
+The PEcAnRTM package provides tools for analyses involving common radiative 
+transfer models. The highlights of this package are its ability to efficiently 
+run a suite of related leaf and canopy radiative transfer models, as well as to 
+perform maximum likelihood and, particularly, Bayesian inversions of these 
+models. 
 
 # Installation
-The easiest way to install this package is via `install_github` from the `devtools` package.
+The easiest way to install this package is via `install_github` from the 
+`devtools` package.
 
 ```{r, eval=FALSE}
 install.packages("devtools")
@@ -18,7 +23,11 @@ install_github("ashiklom/pecan", subdir="modules/rtm")
 # For custom branches, add `ref = "branchname"`
 ```
 
-This package relies on a modern (>= 2003) Fortran compiler, as determined by your R installation. On most Unix systems, this is standard, but R may specify a particular compiler version that you don't have, resulting in an installation error. To fix this, simply add the following to your system `~/R/Makevars` file.
+This package relies on a modern (>= 2003) Fortran compiler, as determined by 
+your R installation. On most Unix systems, this is standard, but R may specify 
+a particular compiler version that you don't have, resulting in an installation 
+error. To fix this, simply add the following to your system `~/R/Makevars` 
+file.
 
 ```
 FC = gfortran
@@ -28,9 +37,15 @@ FC = gfortran
 
 ## Simulating reflectance
 
-Available radiative transfer models are called by passing a vector of their parameters. Similar models with different versions (e.g. PROSPECT 4, 5, 5B) also have a "version" argument. These models return a matrix of reflectance, transmittance, and/or absorption spectra (depending on the model) at 1 nm resolution over the wavelength range 400 to 2500 nm.
+Available radiative transfer models are called by passing a vector of their 
+parameters. Similar models with different versions (e.g. PROSPECT 4, 5, 5B) 
+also have a "version" argument. These models return a matrix of reflectance, 
+transmittance, and/or absorption spectra (depending on the model) at 1 nm 
+resolution over the wavelength range 400 to 2500 nm.
 
-The PROSPECT family of models returns the reflectance (column 1) and transmittance (column 2) for an individual leaf as a function of 4 to 6 parameters (depending on the version).
+The PROSPECT family of models returns the reflectance (column 1) and 
+transmittance (column 2) for an individual leaf as a function of 4 to 6 
+parameters (depending on the version).
 
 ```{r}
 library(PEcAnRTM)
@@ -52,7 +67,10 @@ legend("topright", c("Reflectance", "Transmittance"), col=c(1,2), lty=1)
 legend("top", c("4", "5", "5B"), lty = c(1,2,3))
 ```
 
-The SAIL family of models returns the bidirectional (1), hemispherical directional (2), directional hemispherical (3), and bidirectional hemispheical (4) reflectance factors for a canopy with a given set of approximately 20 parameters. It is often coupled to the PROSPECT model as PRO4SAIL. 
+The SAIL family of models returns the bidirectional (1), hemispherical 
+directional (2), directional hemispherical (3), and bidirectional hemispheical 
+(4) reflectance factors for a canopy with a given set of approximately 20 
+parameters. It is often coupled to the PROSPECT model as PRO4SAIL. 
 
 ```{r}
 sail.params <- defparam("pro4sail")
@@ -62,7 +80,9 @@ matplot(x = wl, y = p4s, type='l', xlab="Wavelength (nm)", ylab="Reflectance")
 legend("topright", as.character(1:4), col=1:4, lty=1:4)
 ```
 
-The above example illustrates the use of `defparam` to get the default parameters for a particular model. Similarly, `model.list` is a `data.table` containing all currently available models.
+The above example illustrates the use of `defparam` to get the default 
+parameters for a particular model. Similarly, `model.list` is a `data.table` 
+containing all currently available models.
 
 ```{r}
 print(model.list)
@@ -71,58 +91,101 @@ print(model.list)
 
 ## Inversion
 
-A novel feature of this package is the ability to perform a Bayesian inversion of a Radiative Transfer Model. Here are several advantages of the Bayesian approach:
+A novel feature of this package is the ability to perform a Bayesian inversion 
+of a Radiative Transfer Model. Here are several advantages of the Bayesian 
+approach:
 
-* **Parameter uncertainty:** The output of a Bayesian analysis is a full joint probability distribution of the model parameters, which includes a robust estimate of their uncertainy and covariance between parameters.
-* **Prior knowledge:** If previous, independent estimates of parameters are available, these can be used to inform the model.
-* **Partitioning variability:** Random effects models provide a powerful framework for understanding the sources of variability and uncertainty in a data set.
+* **Parameter uncertainty:** The output of a Bayesian analysis is a full joint 
+  probability distribution of the model parameters, which includes a robust 
+  estimate of their uncertainy and covariance between parameters.
+* **Prior knowledge:** If previous, independent estimates of parameters are 
+  available, these can be used to inform the model.
+* **Partitioning variability:** Random effects models provide a powerful 
+  framework for understanding the sources of variability and uncertainty in a 
+  data set.
 
 An inversion can be performed as follows:
 
-1. Prepare your data. Observed spectra must be in a matrix with each row corresponding to a wavelength and each column to an observation. An example spectral matrix for _Acer rubrum_ leaves (`testspec_ACRU`) is provided in `data(testspec)`.
+1. Prepare your data. Observed spectra must be in a matrix with each row 
+   corresponding to a wavelength and each column to an observation. An example 
+   spectral matrix for _Acer rubrum_ leaves (`testspec_ACRU`) is provided in 
+   `data(testspec)`.
 
 ```{r}
 data(testspec)
-matplot(wl, testspec_ACRU[,1:3], 
-        xlab="Wavelength", ylab="Reflectance", type='l')
+observed <- testspec_ACRU[,1:3]
+matplot(wl, observed, 
+        xlab="Wavelength", ylab="Reflectance", type='l', lty=1)
 ```
 
-2. Prepare inversion parameters. This primariyl involves determining suitable priors, lower bounds, and initial conditions. In the example below, priors are created based by setting the means to the default parameter values and the standard deviation to 4 times the means. These values are then used to generate the parameters of the lognormal distribution with the corresponding arithemic mean and variance.
-
-   Lower bounds are based on the physical minima for parameter values. For many physically-meaningful parameters, this will simply be zero.
+2. Specify the model. The model takes the form of an R function with the 
+   sampled parameters as input and a vector of equal length to the observations 
+   as output.  A simple case is presented below; however, any arbitrary R 
+   function will work.  Note that the constant `"Cbrown" = 0` is embedded in 
+   the model.
 
 ```{r}
-# Example priors
-p5.means <- defparam("prospect_5")
-p5.sd <- p5.means * 4
-print(p5.means)
-print(p5.sd)
-p5mu <- log(p5.means / sqrt(1 + p5.sd^2 / p5.means^2))
-p5sigma <- sqrt(log(1 + p5.sd^2 / p5.means^2))
-print(p5mu)
-print(p5sigma)
-
-# Use lognormal prior for all parameters
-p5log <- rep(TRUE, 5)
-
-# Minimum values
-p5min <- c("N"=1, "Cab"=0, "Car"=0, "Car"=0, "Cw"=0, "Cm"=0)
+model <- function(params){
+    in.params <- c(params["N"], params["Cab"], params["Car"],
+                   "Cbrown"=0, params["Cw"], params["Cm"])
+    out <- prospect(in.params, "5B")[,1]
+    return(out)
+}
 ```
 
-3. Perform inversion.
+3. Specify parameter priors. The prior is a single R function that takes the 
+   parameter vector as an input and returns a single value: the log probability 
+   density. Here, we provide an example where all the priors are lognormal (N 
+   is a special case where the lognormal is translated to reflect its strict 
+   lower bound at 1).
 
 ```{r}
-# Generate samples
-p5inv <- invert.fast(modname = "prospect_5",
-                     observed = testspec_ACRU[,1:3],
-                     inits = p5.means,
-                     cons = NULL,
-                     pmu = p5mu,
-                     psd = p5sigma,
-                     plog = p5log,
-                     minp = p5min,
-                     ngibbs = 1000)
+mu <- c("N" = -0.427, "Cab"=3.332, "Car"=1.851, "Cw"=-4.499, "Cm"=-5.082)
+sigma <- c("N" = 0.375, "Cab"=0.564, "Car"=0.761, "Cw"=0.546, "Cm"=0.656)
+prior <- function(params){
+    params["N"] <- params["N"] - 1
+    return(sum(dlnorm(params, mu, sigma, log=TRUE)))
+}
+```
 
+4. Set the initial conditions. Here, we do this by sampling randomly from the 
+   prior. `params.prospect5` is a shortcut vector containing the names of the 
+   PROSPECT 5 parameters.
+
+```{r}
+inits <- rlnorm(5, mu, sigma)
+names(inits) <- params.prospect5
+inits["N"] <- inits["N"] + 1
+```
+
+5. Set the minimum values for the inversion. When proposed parameters are below 
+   this threshold, they are automatically rejected. For most parameters, these 
+   will be 0.
+
+```{r}
+p5min <- c("N"=1, "Cab"=0, "Car"=0, "Cw"=0, "Cm"=0)
+```
+
+6. Perform inversion. The `do.lsq` parameter determines whether or not to 
+   perform an optimized Least-Squares minimization first (this may accelerate 
+   convergence, but runs the risk of trapping the inversion in a local 
+   minimum). The `quiet` parameter determines whether or not to print inversion 
+   progress and other status messages.
+
+```{r}
+samples <- invert.custom(observed = observed,
+                         inits = inits,
+                         ngibbs = 10000,
+                         prior = prior,
+                         pm = p5min,
+                         model = model,
+                         do.lsq = FALSE,
+                         quiet=TRUE)
+```
+
+
+
+```{r}
 # Analyze output
 par(mfrow=c(3,2))
 for(i in 1:6){

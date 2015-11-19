@@ -678,7 +678,7 @@ check.settings <- function(settings) {
   }
   
   # make sure remote folders are specified if need be
-  if (!is.null(settings$run$host$qsub) || (settings$run$host$name != "localhost")) {
+  if (!is.localhost(settings$run$host)) {
     homedir <- NA
     if (is.null(settings$run$host$rundir)) {
       if (is.na(homedir)) {
