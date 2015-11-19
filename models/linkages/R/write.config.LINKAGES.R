@@ -96,9 +96,11 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   save(iplot, nyear, nspec, fc, dry, bgs, egs, max.ind,
        plat, temp.mat, precip.mat, spp.params, switch.mat,
        fdat, clat, basesc, basesn, file = input)
-  
+  if(restart==TRUE){
   restartfile <- file.path(settings$rundir,run.id,"linkages.restart.Rdata")
-  
+  }else{
+    restartfile <- NULL
+  }
   #-----------------------------------------------------------------------
   # create launch script (which will create symlink)
   if (!is.null(settings$run$jobtemplate) && file.exists(settings$run$jobtemplate)) {
