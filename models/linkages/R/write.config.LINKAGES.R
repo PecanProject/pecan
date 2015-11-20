@@ -23,9 +23,11 @@
 ##' @export
 ##' @author Ann Raiho, Betsy Cowdery
 ##-------------------------------------------------------------------------------------------------#
-write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, run.id, restart=NULL){
+write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, run.id,
+                                  restart=NULL, spinup=NULL){
   
   if(is.null(restart)) restart = FALSE
+  if(is.null(spinup)) spinup = FALSE
   
   require(linkages) 
   
@@ -76,7 +78,10 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   clat <- read.csv(system.file("clat.csv", package = "linkages"),header = FALSE)
   load(system.file("switch.mat.Rdata", package = "linkages"))
   
-  load(settings$run$inputs$met$path)
+  climate_file <- settings$run$inputs$met$path
+  load(climate_file)
+  temp.mat <- temp.mat[start.year:end.year-start.year+1,]
+  precip.mat <- precip.mat[start.year:end.year-start.year+1,]
 
   basesc = 74
   basesn = 1.64
@@ -90,12 +95,22 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   }
   
   spp.params <- spp.params.default[spp.params.save,]
+  
+  if(spinup==TRUE){
+    spinup.out <- spinup.LINKAGES(start.year,end.year,temp.mat,precip.mat)
+    start.year <- spinup.out$start.year
+    end.year <- spinup.out$end.year
+    nyear <- spinup.out$nyear
+    temp.mat <- spinup.out$temp.mat
+    precip.mat <- spinup.out$temp.mat
+  }
 
   input <- file.path(settings$rundir,"linkages.input.Rdata")  
   
   save(iplot, nyear, nspec, fc, dry, bgs, egs, max.ind,
        plat, temp.mat, precip.mat, spp.params, switch.mat,
-       fdat, clat, basesc, basesn, file = input)
+       fdat, clat, basesc, basesn, start.year, end.year, file = input)
+  
   if(restart==TRUE){
   restartfile <- file.path(settings$rundir,run.id,"linkages.restart.Rdata")
   }else{
