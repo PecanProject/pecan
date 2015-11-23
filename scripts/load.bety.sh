@@ -28,6 +28,10 @@ PG_OPT=${PG_OPT:-""}
 #  3 - Purdue        - Jeanne Osnas
 #  4 - Virginia Tech - Quinn Thomas
 #  5 - Wisconsin     - Ankur Desai
+#  6 - TERRA REF     - David LeBauer
+#  7 - TERRA test    - David LeBauer
+#  8 - TERRA MEPP    - David LeBauer
+#  9 - TERRA TAMU    - TBD
 # 99 - VM
 MYSITE=${MYSITE:-99}
 REMOTESITE=${REMOTESITE:-0}
@@ -169,6 +173,8 @@ if [ -z "${DUMPURL}" ]; then
     DUMPURL="https://www.dropbox.com/s/wr8sldv080wa9y8/bety.tar.gz?dl=0"
   elif [ "${REMOTESITE}" == "5" ]; then  
     DUMPURL="http://tree.aos.wisc.edu:6480/sync/dump/bety.tar.gz"
+  elif [ "${REMOTESITE}" == "6" ]; then
+    DUMPURL="http://file-server.igb.illinois.edu/~dlebauer/bety/bety.tar.gz"
   else
     echo "Don't know where to get data for site ${REMOTESITE}"
     exit 1
@@ -182,7 +188,7 @@ ID_RANGE=1000000000
 if ! psql -lqt | cut -d \| -f 1 | grep -w "${DATABASE}" > /dev/null ; then
   echo "Database ${DATABASE} does not exist, please create it:"
   echo "(see https://github.com/PecanProject/pecan/wiki/Installing-PEcAn#installing-bety)"
-  echo "  sudo -u postgres createuser -d -l -P -R -S bety"
+  echo "  sudo -u postgres crersateuser -d -l -P -R -S bety"
   echo "  sudo -u postgres createdb -O bety ${DATABASE}"
   exit 1
 fi
