@@ -45,7 +45,7 @@ if (!isset($_REQUEST['hostname'])) {
   die("Need a hostname.");
 }
 $hostname=$_REQUEST['hostname'];
-if (!in_array($hostname, $hostlist) {
+if (!array_key_exists($hostname, $hostlist)) {
   die("${hostname} is not an approved host");
 }
 $hostoptions = $hostlist[$hostname];
@@ -103,9 +103,7 @@ if (isset($_REQUEST['input_met']) && is_numeric($_REQUEST['input_met'])) {
 }
 
 // Set user and runtime
-$user = get_user_name();
 $runtime = date('Y/m/d H:i:s O'); 
-
 
 // check input dates to make sure they agree with the dates from the weather data
 if (!$userok && ($startdate < $metstart || $enddate > $metend)) {
@@ -137,7 +135,7 @@ $stmt->closeCursor();
 // create the workflow execution
 $params=str_replace(' ', '', str_replace("\n", "", var_export($_REQUEST, true)));
 
-$q=$pdo->prepare("INSERT INTO workflows (site_id, model_id, notes, folder, hostname, start_date, end_date, params, advanced_edit, started_at, created_at) values (:siteid, :modelid, :notes, '', :hostname, :startdate, :enddate, :params, :advanced_edit, NOW(), NOW())");
+$q=$pdo->prepare("INSERT INTO workflows (site_id, model_id, notes, folder, hostname, start_date, end_date, params, advanced_edit, started_at, created_at, user_id) values (:siteid, :modelid, :notes, '', :hostname, :startdate, :enddate, :params, :advanced_edit, NOW(), NOW(), :userid)");
 $q->bindParam(':siteid', $siteid, PDO::PARAM_INT);
 $q->bindParam(':modelid', $modelid, PDO::PARAM_INT);
 $q->bindParam(':notes', $notes, PDO::PARAM_STR);
@@ -145,6 +143,7 @@ $q->bindParam(':hostname', $hostname, PDO::PARAM_STR);
 $q->bindParam(':startdate', $startdate, PDO::PARAM_STR);
 $q->bindParam(':enddate', $enddate, PDO::PARAM_STR);
 $q->bindParam(':params', $params, PDO::PARAM_STR);
+$q->bindParam(':userid', get_userid(), PDO::PARAM_INT);
 $advanced_edit = ($pecan_edit || $model_edit) ? "yes" : "no";
 $q->bindParam(':advanced_edit', $advanced_edit, PDO::PARAM_INT);
 if ($q->execute() === FALSE) {
@@ -195,7 +194,8 @@ fwrite($fh, "<pecan>" . PHP_EOL);
 
 fwrite($fh, "  <info>" . PHP_EOL);
 fwrite($fh, "    <notes>" . toXML($notes) . "</notes>" . PHP_EOL);
-fwrite($fh, "    <user>${user}</user>" . PHP_EOL);
+fwrite($fh, "    <userid>" . get_userid() . "</userid>" . PHP_EOL);
+fwrite($fh, "    <username>" . get_user_name() . "</username>" . PHP_EOL);
 fwrite($fh, "    <date>${runtime}</date>" . PHP_EOL);
 fwrite($fh, "  </info>" . PHP_EOL);
 

@@ -48,7 +48,7 @@ if (!$result) {
 }
 $hosts = "";
 while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
-  if (in_array($row['hostname'], $hostlist)) {
+  if (array_key_exists($row['hostname'], $hostlist)) {
     if ($hostname == $row['hostname']) {
       $hosts = "$hosts<option selected data-id='${row['id']}'>${row['hostname']}</option>\n";
     } else {
