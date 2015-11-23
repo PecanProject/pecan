@@ -148,7 +148,9 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   
   jobsh <- gsub('@INPUT@', input, jobsh)
   jobsh <- gsub('@RESTART@', restart, jobsh)
+  if(restart==TRUE){
   jobsh <- gsub('@RESTARTFILE@', restartfile, jobsh)
+  }
   
   writeLines(jobsh, con=file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))

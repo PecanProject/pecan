@@ -139,7 +139,7 @@ sda.enkf <- function(settings,IC,prior,obs){
   ## start model run
   start.model.runs(settings,settings$database$bety$write)
   
-  total.time = start.year:end.year
+  total.time = 2004:2010
   nt = length(total.time)
   #NPPm = rep(NA,nens)
   FORECAST <- ANALYSIS <- list()
@@ -147,10 +147,10 @@ sda.enkf <- function(settings,IC,prior,obs){
   ###-------------------------------------------
   ### loop over time
   ###-------------------------------------------
-  for(t in 2:nt){
+  for(t in 1:nt){
 
     ### load output
-    X <- do.call(my.read.restart,args=list(outdir,run.id,total.time[t],IC,prior))
+    X <- do.call(my.read.restart,args=list(outdir,run.id,time = total.time[t],IC,prior,spin.up))
     FORECAST[[t]] = X
     
     ### Analysis step
@@ -201,13 +201,15 @@ sda.enkf <- function(settings,IC,prior,obs){
 
     ANALYSIS[[t]] = analysis
  
+    apply(FORECAST[[t]] - ANALYSIS[[t]],2,mean)
     ### Forecast step
     if(t < nt){
-      do.call(my.write.restart,args=list(nens,outdir,run.id,total.time,settings,prior,analysis))
+      do.call(my.write.restart,args=list(nens,outdir,run.id,total.time[t],settings,prior,analysis))
+
+      ## start model run
+      start.model.runs(settings,settings$database$bety$write)
     }
-    ## start model run
-    start.model.runs(settings,settings$database$bety$write)
- 
+
 }  ## end loop over time
 ###-------------------------------------------
 

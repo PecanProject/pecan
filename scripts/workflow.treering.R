@@ -17,6 +17,7 @@ status.end <- function(status="DONE") {
 require(PEcAn.all)
 library(PEcAn.assim.sequential)
 library(PEcAn.visualization)
+library(mvtnorm)
 #--------------------------------------------------------------------------------------------------#
 #
 #  dir.create("~/demo.sda")
@@ -100,7 +101,7 @@ status.end()
 
 #--------------- Assimilation -------------------------------------------------------#
 status.start("MCMC")
-obs <- obs/10 to kg/m^2
+obs <- obs/10 #to kg/m^2
 sda.enkf(settings,IC,prior,obs)
 status.end()
 
