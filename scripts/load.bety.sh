@@ -188,7 +188,7 @@ ID_RANGE=1000000000
 if ! psql -lqt | cut -d \| -f 1 | grep -w "${DATABASE}" > /dev/null ; then
   echo "Database ${DATABASE} does not exist, please create it:"
   echo "(see https://github.com/PecanProject/pecan/wiki/Installing-PEcAn#installing-bety)"
-  echo "  sudo -u postgres crersateuser -d -l -P -R -S bety"
+  echo "  sudo -u postgres createuser -d -l -P -R -S bety"
   echo "  sudo -u postgres createdb -O bety ${DATABASE}"
   exit 1
 fi
