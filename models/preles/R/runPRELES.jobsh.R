@@ -15,7 +15,7 @@
 ##' @param end_date End time of the simulation
 ##' @export 
 ##' @author Tony Gardella, Michael Dietze
-runPRELES.jobsh<- function(met.file,outdir,start.date,end.date){
+runPRELES.jobsh<- function(met.file,trait.samples,outdir,start.date,end.date){
   
   if(!require("PEcAn.utils")) print("install PEcAn.utils")
   require("lubridate")
@@ -74,8 +74,16 @@ runPRELES.jobsh<- function(met.file,outdir,start.date,end.date){
   ##Bind inputs 
   tmp<-cbind (PAR,TAir,VPD,Precip,CO2,fAPAR)
   
+  ##Call parameters from database
+  if('bGPP' %in% names(trait.samples)){
+    trait.samples[['bGPP']] <- bGPP
+  }
+  if('kGPP' %in% names(trait.samples)){
+    trait.samples[['kGPP']] <- kGPP
+  }
+  
   ##Run PRELES
-  PRELES.output=as.data.frame(PRELES(PAR=tmp[,"PAR"],TAir=tmp[,"TAir"],VPD=tmp[,"VPD"], Precip=tmp[,"Precip"],CO2=tmp[,"CO2"],fAPAR=tmp[,"fAPAR"]))
+  PRELES.output=as.data.frame(PRELES(PAR=tmp[,"PAR"],TAir=tmp[,"TAir"],VPD=tmp[,"VPD"], Precip=tmp[,"Precip"],CO2=tmp[,"CO2"],fAPAR=tmp[,"fAPAR"],bGPP=bGPP,kGPP=kGPP))
   PRELES.output.dims<-dim(PRELES.output)
   
 
