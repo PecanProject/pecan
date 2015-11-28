@@ -41,6 +41,11 @@ REMOTESITE=${REMOTESITE:-0}
 # data!
 CREATE=${CREATE:-"NO"}
 
+# Empty database create
+# Set this to YES to create an empty database, this will still
+# import some rows, such as mimetypes, etc.
+EMPTY=${EMPTY:-"NO"}
+
 # Fix the sequence numbers, this should only be need when creating a
 # new database. Set this to YES to initialize the sequence numbers.
 FIXSEQUENCE=${FIXSEQUENCE:-"NO"}
@@ -68,13 +73,16 @@ LOG=${LOG:-"$PWD/dump/sync.log"}
 # ----------------------------------------------------------------------
 
 # parse command line options
-while getopts c:d:f:hl:m:o:p:qr:t:u: opt; do
+while getopts c:d:e:f:hl:m:o:p:qr:t:u: opt; do
   case $opt in
   c)
     CREATE=$OPTARG
     ;;
   d)
     DATABASE=$OPTARG
+    ;;
+  e)
+    EMPTY=$OPTARG
     ;;
   f)
     FIXSEQUENCE=$OPTARG
@@ -83,6 +91,7 @@ while getopts c:d:f:hl:m:o:p:qr:t:u: opt; do
     echo "$0 [-c YES|NO] [-d database] [-f YES|NO] [-h] [-m my siteid] [-o owner] [-p psql options] [-r remote siteid] [-t YES|NO] [-u YES|NO]"
     echo " -c create database, THIS WILL ERASE THE CURRENT DATABASE, default is NO"
     echo " -d database, default is bety"
+    echo " -e empty database, default is NO"
     echo " -f fix sequence numbers, this should not be needed, default is NO"
     echo " -h this help page"
     echo " -l location of log file (place this with the dump files)"
@@ -139,18 +148,20 @@ fi
 # will be imported during creaton
 
 # list of tables that are one to many relationships
+EMPTY_TABLES="formats machines mimetypes users"
+
 CLEAN_TABLES="citations covariates cultivars"
-CLEAN_TABLES="${CLEAN_TABLES} ensembles entities formats"
+CLEAN_TABLES="${CLEAN_TABLES} ensembles entities"
 CLEAN_TABLES="${CLEAN_TABLES} inputs likelihoods"
-CLEAN_TABLES="${CLEAN_TABLES} machines managements methods"
-CLEAN_TABLES="${CLEAN_TABLES} mimetypes models"
+CLEAN_TABLES="${CLEAN_TABLES} managements methods"
+CLEAN_TABLES="${CLEAN_TABLES} models"
 CLEAN_TABLES="${CLEAN_TABLES} modeltypes modeltypes_formats"
 CLEAN_TABLES="${CLEAN_TABLES} pfts posterior_samples posteriors"
 CLEAN_TABLES="${CLEAN_TABLES} priors runs sites"
 CLEAN_TABLES="${CLEAN_TABLES} species treatments"
 CLEAN_TABLES="${CLEAN_TABLES} variables workflows"
 CLEAN_TABLES="${CLEAN_TABLES} traits yields"
-CLEAN_TABLES="${CLEAN_TABLES} dbfiles users"
+CLEAN_TABLES="${CLEAN_TABLES} dbfiles"
 
 # list of tables that are many to many relationships
 MANY_TABLES="${MANY_TABLES} citations_sites citations_treatments"
@@ -188,7 +199,7 @@ ID_RANGE=1000000000
 if ! psql -lqt | cut -d \| -f 1 | grep -w "${DATABASE}" > /dev/null ; then
   echo "Database ${DATABASE} does not exist, please create it:"
   echo "(see https://github.com/PecanProject/pecan/wiki/Installing-PEcAn#installing-bety)"
-  echo "  sudo -u postgres crersateuser -d -l -P -R -S bety"
+  echo "  sudo -u postgres createuser -d -l -P -R -S bety"
   echo "  sudo -u postgres createdb -O bety ${DATABASE}"
   exit 1
 fi
@@ -300,15 +311,17 @@ echo "BEGIN;" >&3
 # 3) load new data
 # 4) set last inserted item in my range
 # 5) enable constraints on this table
-for T in ${CLEAN_TABLES} ${MANY_TABLES}; do
+for T in ${EMPTY_TABLES} ${CLEAN_TABLES} ${MANY_TABLES}; do
   echo "ALTER TABLE ${T} DISABLE TRIGGER ALL;" >&3
   echo "SELECT count(*) FROM ${T} ${REM_WHERE};" >&3 && read DEL <&4
   # TODO what is last index in range we are adding, this will give a better
   #      indication if rows are added.
   echo "DELETE FROM ${T} ${REM_WHERE};" >&3
   echo "SELECT COUNT(*) FROM ${T};" >&3 && read START <&4
-  if [ -f "${DUMPDIR}/${T}.csv" ]; then
-    echo "\COPY ${T} FROM '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')" >&3
+  if [[ ${EMPTY_TABLES} == *"$T"* ]]; then
+    if [ -f "${DUMPDIR}/${T}.csv" ]; then
+      echo "\COPY ${T} FROM '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')" >&3
+    fi
   fi
   echo "SELECT COUNT(*) FROM ${T};" >&3 && read END <&4
   ADD=$(( END - START ))
@@ -369,7 +382,7 @@ fi
 
 # fix sequence numbers if needed
 if [ "${FIXSEQUENCE}" == "YES" ]; then
-  for T in ${CLEAN_TABLES} ${MANY_TABLES}; do
+  for T in ${EMPTY_TABLES} ${CLEAN_TABLES} ${MANY_TABLES} ${IGNORE_TABLES}; do
     echo "SELECT last_value from ${T}_id_seq;" >&3 && read OLD <&4
     echo "SELECT setval('${T}_id_seq', ${MY_START_ID}, false);" >&3 && read IGN <&4
     echo "SELECT setval('${T}_id_seq', (SELECT MAX(id) FROM ${T} ${MY_WHERE}), true);" >&3 && read IGN <&4
