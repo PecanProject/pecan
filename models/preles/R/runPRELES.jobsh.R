@@ -74,14 +74,6 @@ runPRELES.jobsh<- function(met.file,trait.samples,outdir,start.date,end.date){
   ##Bind inputs 
   tmp<-cbind (PAR,TAir,VPD,Precip,CO2,fAPAR)
   
-  ##Call parameters from database
-  if('bGPP' %in% names(trait.samples)){
-    trait.samples[['bGPP']] <- bGPP
-  }
-  if('kGPP' %in% names(trait.samples)){
-    trait.samples[['kGPP']] <- kGPP
-  }
-  
   ## DEFAULT PARAMETERS
   ## SITE
   params = c(413.0, ## 1 soildepth
