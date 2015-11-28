@@ -75,7 +75,6 @@ runPRELES.jobsh<- function(met.file,trait.samples,outdir,start.date,end.date){
   tmp<-cbind (PAR,TAir,VPD,Precip,CO2,fAPAR)
   
   ## DEFAULT PARAMETERS
-  ## SITE
   params = c(413.0, ## 1 soildepth
              0.450, ## 2 ThetaFC
              0.118, ## 3 ThetaPWP
@@ -111,14 +110,12 @@ runPRELES.jobsh<- function(met.file,trait.samples,outdir,start.date,end.date){
              -999 ##tsumcrit, fPheno_budburst_Tsum, 134 birch
   )
   
-  ##Call parameters from database
-  if('bGPP' %in% names(trait.samples)){
-    trait.samples[['bGPP']] <- params[5]
-  }
-  if('kGPP' %in% names(trait.samples)){
-    trait.samples[['kGPP']] <- params[9]
-  }
+  dbcon <- db.open(settings$database$bety)
+  db.params<- db.query(paste("SELECT bGPP,kGPP FROM sites WHERE id =", settings$run$site$id), con=dbcon)
+  db.close(dbcon)
   
+  params[5]=preles.params[1]
+  params[9]=preles.params[2]
   
   ##Run PRELES
   PRELES.output=as.data.frame(PRELES(PAR=tmp[,"PAR"],TAir=tmp[,"TAir"],VPD=tmp[,"VPD"], Precip=tmp[,"Precip"],CO2=tmp[,"CO2"],fAPAR=tmp[,"fAPAR"],params=params))
