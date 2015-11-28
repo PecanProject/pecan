@@ -82,8 +82,54 @@ runPRELES.jobsh<- function(met.file,trait.samples,outdir,start.date,end.date){
     trait.samples[['kGPP']] <- kGPP
   }
   
+  ## DEFAULT PARAMETERS
+  ## SITE
+  params = c(413.0, ## 1 soildepth
+             0.450, ## 2 ThetaFC
+             0.118, ## 3 ThetaPWP
+             3, ## 4 tauDrainage
+             ## GPP_MODEL_PARAMETERS
+             0.748018, ## 5 betaGPP
+             13.23383, ## 6 tauGPP
+             -3.9657867, ## 7 S0GPP
+             18.76696, ## 8 SmaxGPP
+             -0.130473, ## 9 kappaGPP
+             0.034459, ## 10 gammaGPP
+             0.450828, ## 11 soilthresGPP
+             2000, ## 12 cmCO2
+             0.4, ## 13 ckappaCO2
+             ## EVAPOTRANSPIRATION_PARAMETERS
+             0.324463, ## 14 betaET
+             0.874151, ## 15 kappaET
+             0.075601, ## 16 chiET
+             0.541605, ## 17 soilthresET
+             0.273584, ## 18 nu ET
+             ## SNOW_RAIN_PARAMETERS
+             1.2, ## 19 Meltcoef
+             0.33, ## 20 I_0
+             4.970496, ## 21 CWmax, i.e. max canopy water
+             0, ## 22 SnowThreshold, 
+             0, ## 23 T_0, 
+             200, ## 24 SWinit, ## START INITIALISATION PARAMETERS 
+             0, ## 25 CWinit, ## Canopy water
+             0, ## 26 SOGinit, ## Snow on Ground 
+             20, ## 27 Sinit ##CWmax
+             -999, ## t0 fPheno_start_date_Tsum_accumulation; conif -999, for birch 57
+             -999, ## tcrit, fPheno_start_date_Tsum_Tthreshold, 1.5 birch
+             -999 ##tsumcrit, fPheno_budburst_Tsum, 134 birch
+  )
+  
+  ##Call parameters from database
+  if('bGPP' %in% names(trait.samples)){
+    trait.samples[['bGPP']] <- params[5]
+  }
+  if('kGPP' %in% names(trait.samples)){
+    trait.samples[['kGPP']] <- params[9]
+  }
+  
+  
   ##Run PRELES
-  PRELES.output=as.data.frame(PRELES(PAR=tmp[,"PAR"],TAir=tmp[,"TAir"],VPD=tmp[,"VPD"], Precip=tmp[,"Precip"],CO2=tmp[,"CO2"],fAPAR=tmp[,"fAPAR"],bGPP=bGPP,kGPP=kGPP))
+  PRELES.output=as.data.frame(PRELES(PAR=tmp[,"PAR"],TAir=tmp[,"TAir"],VPD=tmp[,"VPD"], Precip=tmp[,"Precip"],CO2=tmp[,"CO2"],fAPAR=tmp[,"fAPAR"],params=params))
   PRELES.output.dims<-dim(PRELES.output)
   
 
