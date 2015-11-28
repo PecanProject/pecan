@@ -22,6 +22,7 @@ runPRELES.jobsh<- function(met.file,trait.samples,outdir,start.date,end.date){
   require("ncdf4")
   if(!require("Rpreles")) print("install Rpreles")
   require("udunits2")
+  require("PEcAn.DB")
 
   ## Open netcdf file
   nc=nc_open(met.file)
