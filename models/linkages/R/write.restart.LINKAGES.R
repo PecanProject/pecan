@@ -45,7 +45,28 @@ write.restart.LINKAGES <- function(nens,outdir,run.id,time,settings,prior,analys
 #   diff <- analysis[i,] - ag.biomass[nrow(ag.biomass),]
 #   b_obs1 <- f.comp[,ncol(f.comp)]*diff   ## f.comp = fractional composition
 #   dbh_spp <- numeric(length(b_obs1))
-   bcorr = analysis[i,] / ag.biomass[nrow(ag.biomass),]
+  distance.matrix <- matrix(c(0,0,0,1,0,0,1,0,0,1,0,0,1,0,0,0),4,4)
+  n1 = 1
+  n2 = n1 + ntrees[1]
+  n3 = n2 + ntrees[2]
+  n4 = n3 + ntrees[3]
+  nl = 1
+  for(i in 1:nspec){  
+    if (agb.pft[i,ncol(agb.pft),1]==0){
+      abg.pft.temp <- sum(distance.matrix[,i]%*%t(agb.pft[i,ncol(agb.pft),1]))
+      ntrees.temp <- sum(distance.matrix[,i]%*%t(t(as.matrix(ntrees)))) 
+      dbh.temp <- dbh[sum(ntrees[1:i])-1]
+      for(j in 1:ntrees.temp){
+        b_obs <- biomass_function(dbh[j])*bcorr[i]
+        dbh.temp[j] <- optimize(merit, c(0,200),b_obs=b_obs)$minimum 
+      }
+    }
+    nu <- nl + ntrees[i] - 1
+    nl <- nu + 1 
+  }
+
+   bcorr = analysis[i,] / agb.pft[,ncol(agb.pft),1]
+
    nl = 1 ## individual counter
    for(s in 1:nspec){
      if(ntrees[s]==0) next
@@ -56,7 +77,7 @@ write.restart.LINKAGES <- function(nens,outdir,run.id,time,settings,prior,analys
 #     dbh_spp[s] <- optimize(merit, c(0,200))$minimum
      nu <- nl + ntrees[s] - 1
      for(j in nl:nu){
-       b_obs <- biomass_function(dbh[j])*bcorr
+       b_obs <- biomass_function(dbh[j])*bcorr[s]
        dbh[j] <- optimize(merit, c(0,200),b_obs=b_obs)$minimum                                 
      }
      nl <- nu + 1 
