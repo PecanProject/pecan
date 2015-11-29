@@ -115,8 +115,8 @@ runPRELES.jobsh<- function(met.file,trait.samples,outdir,start.date,end.date){
   db.params<- db.query(paste("SELECT bGPP,kGPP FROM sites WHERE id =", settings$run$site$id), con=dbcon)
   db.close(dbcon)
   
-  params[5]=preles.params[1]
-  params[9]=preles.params[2]
+  params[5]= db.params[1]
+  params[9]= db.params[2]
   
   ##Run PRELES
   PRELES.output=as.data.frame(PRELES(PAR=tmp[,"PAR"],TAir=tmp[,"TAir"],VPD=tmp[,"VPD"], Precip=tmp[,"Precip"],CO2=tmp[,"CO2"],fAPAR=tmp[,"fAPAR"],params=params))
