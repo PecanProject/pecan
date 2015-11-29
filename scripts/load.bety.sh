@@ -28,6 +28,10 @@ PG_OPT=${PG_OPT:-""}
 #  3 - Purdue        - Jeanne Osnas
 #  4 - Virginia Tech - Quinn Thomas
 #  5 - Wisconsin     - Ankur Desai
+#  6 - TERRA REF     - David LeBauer
+#  7 - TERRA test    - David LeBauer
+#  8 - TERRA MEPP    - David LeBauer
+#  9 - TERRA TAMU    - TBD
 # 99 - VM
 MYSITE=${MYSITE:-99}
 REMOTESITE=${REMOTESITE:-0}
@@ -36,6 +40,11 @@ REMOTESITE=${REMOTESITE:-0}
 # Set this to YES to create the database, this will remove all existing
 # data!
 CREATE=${CREATE:-"NO"}
+
+# Empty database create
+# Set this to YES to create an empty database, this will still
+# import some rows, such as mimetypes, etc.
+EMPTY=${EMPTY:-"NO"}
 
 # Fix the sequence numbers, this should only be need when creating a
 # new database. Set this to YES to initialize the sequence numbers.
@@ -50,11 +59,15 @@ KEEPTMP=${KEEPTMP:-"NO"}
 # Should the process be quiet
 QUIET=${QUIET:-"NO"}
 
-# Convert user account 1 to carya
-# Set this to YES to convert user 1 to carya with password. This will
-# give this user admin priviliges. It will also create 16 more users
-# that have specific abilities.
+# Add some default users
+# Set this to YES to add carya with password. This will give this user
+# admin priviliges. It will also create 16 more users that have specific
+# abilities.
 USERS=${USERS:-"NO"}
+
+# create guestuser
+# Set this to YES to create guestuser used with BETY.
+GUESTUSER=${GUESTUSER:-"NO"}
 
 # Log file
 LOG=${LOG:-"$PWD/dump/sync.log"}
@@ -64,22 +77,30 @@ LOG=${LOG:-"$PWD/dump/sync.log"}
 # ----------------------------------------------------------------------
 
 # parse command line options
-while getopts c:d:f:hl:m:o:p:qr:t:u: opt; do
+while getopts cd:efghl:m:o:p:qr:tu opt; do
   case $opt in
   c)
-    CREATE=$OPTARG
+    CREATE="YES"
     ;;
   d)
     DATABASE=$OPTARG
     ;;
+  e)
+    EMPTY="YES"
+    ;;
   f)
     FIXSEQUENCE=$OPTARG
     ;;
+  g)
+    GUESTUSER="YES"
+    ;;
   h)
-    echo "$0 [-c YES|NO] [-d database] [-f YES|NO] [-h] [-m my siteid] [-o owner] [-p psql options] [-r remote siteid] [-t YES|NO] [-u YES|NO]"
+    echo "$0 [-c] [-d database] [-e] [-f] [-g] [-h] [-m my siteid] [-o owner] [-p psql options] [-r remote siteid] [-t] [-u]"
     echo " -c create database, THIS WILL ERASE THE CURRENT DATABASE, default is NO"
     echo " -d database, default is bety"
+    echo " -e empty database, default is NO"
     echo " -f fix sequence numbers, this should not be needed, default is NO"
+    echo " -g add guestuser for BETY webpage"
     echo " -h this help page"
     echo " -l location of log file (place this with the dump files)"
     echo " -m site id, default is 99 (VM)"
@@ -104,16 +125,16 @@ while getopts c:d:f:hl:m:o:p:qr:t:u: opt; do
     PG_OPT=$OPTARG
     ;;
   q)
-    QUIET=YES
+    QUIET="YES"
     ;;
   r)
     REMOTESITE=$OPTARG
     ;;
   t)
-    KEEPTMP=$OPTARG
+    KEEPTMP="YES"
     ;;
   u)
-    USERS=$OPTARG
+    USERS="YES"
     ;;
   esac
 done
@@ -135,18 +156,20 @@ fi
 # will be imported during creaton
 
 # list of tables that are one to many relationships
+EMPTY_TABLES="formats machines mimetypes users"
+
 CLEAN_TABLES="citations covariates cultivars"
-CLEAN_TABLES="${CLEAN_TABLES} ensembles entities formats"
+CLEAN_TABLES="${CLEAN_TABLES} ensembles entities"
 CLEAN_TABLES="${CLEAN_TABLES} inputs likelihoods"
-CLEAN_TABLES="${CLEAN_TABLES} machines managements methods"
-CLEAN_TABLES="${CLEAN_TABLES} mimetypes models"
+CLEAN_TABLES="${CLEAN_TABLES} managements methods"
+CLEAN_TABLES="${CLEAN_TABLES} models"
 CLEAN_TABLES="${CLEAN_TABLES} modeltypes modeltypes_formats"
 CLEAN_TABLES="${CLEAN_TABLES} pfts posterior_samples posteriors"
 CLEAN_TABLES="${CLEAN_TABLES} priors runs sites"
 CLEAN_TABLES="${CLEAN_TABLES} species treatments"
 CLEAN_TABLES="${CLEAN_TABLES} variables workflows"
 CLEAN_TABLES="${CLEAN_TABLES} traits yields"
-CLEAN_TABLES="${CLEAN_TABLES} dbfiles users"
+CLEAN_TABLES="${CLEAN_TABLES} dbfiles"
 
 # list of tables that are many to many relationships
 MANY_TABLES="${MANY_TABLES} citations_sites citations_treatments"
@@ -169,6 +192,8 @@ if [ -z "${DUMPURL}" ]; then
     DUMPURL="https://www.dropbox.com/s/wr8sldv080wa9y8/bety.tar.gz?dl=0"
   elif [ "${REMOTESITE}" == "5" ]; then  
     DUMPURL="http://tree.aos.wisc.edu:6480/sync/dump/bety.tar.gz"
+  elif [ "${REMOTESITE}" == "6" ]; then
+    DUMPURL="http://file-server.igb.illinois.edu/~dlebauer/bety/bety.tar.gz"
   else
     echo "Don't know where to get data for site ${REMOTESITE}"
     exit 1
@@ -294,15 +319,17 @@ echo "BEGIN;" >&3
 # 3) load new data
 # 4) set last inserted item in my range
 # 5) enable constraints on this table
-for T in ${CLEAN_TABLES} ${MANY_TABLES}; do
+for T in ${EMPTY_TABLES} ${CLEAN_TABLES} ${MANY_TABLES}; do
   echo "ALTER TABLE ${T} DISABLE TRIGGER ALL;" >&3
   echo "SELECT count(*) FROM ${T} ${REM_WHERE};" >&3 && read DEL <&4
   # TODO what is last index in range we are adding, this will give a better
   #      indication if rows are added.
   echo "DELETE FROM ${T} ${REM_WHERE};" >&3
   echo "SELECT COUNT(*) FROM ${T};" >&3 && read START <&4
-  if [ -f "${DUMPDIR}/${T}.csv" ]; then
-    echo "\COPY ${T} FROM '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')" >&3
+  if [[ ${EMPTY_TABLES} == *"$T"* ]]; then
+    if [ -f "${DUMPDIR}/${T}.csv" ]; then
+      echo "\COPY ${T} FROM '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')" >&3
+    fi
   fi
   echo "SELECT COUNT(*) FROM ${T};" >&3 && read END <&4
   ADD=$(( END - START ))
@@ -319,51 +346,9 @@ for T in ${CLEAN_TABLES} ${MANY_TABLES}; do
   echo "ALTER TABLE ${T} ENABLE TRIGGER ALL;" >&3
 done
 
-# convert user 1 if needed
-if [ "${USERS}" == "YES" -a "${REMOTESITE}" == "0" ]; then
-  ID=2
-
-  echo "SELECT count(id) FROM users WHERE login='carya';" >&3 && read RESULT <&4
-  while [ ${RESULT} -eq 0 ]; do
-    echo "UPDATE users SET login='carya', name='carya', crypted_password='df8428063fb28d75841d719e3447c3f416860bb7', salt='carya', access_level=1, page_access_level=1 WHERE id=${ID};" >&3
-    ((ID++))
-    echo "SELECT count(id) FROM users WHERE login='carya';" >&3 && read RESULT <&4
-  done
-  if [ "${QUIET}" != "YES" ]; then
-    echo "Added carya with admin privileges"
-  fi
-
-  # set all users
-  for f in 1 2 3 4; do
-    for g in 1 2 3 4; do
-      echo "SELECT count(id) FROM users WHERE login='carya${f}${g}';" >&3 && read RESULT <&4
-      while [ ${RESULT} -eq 0 ]; do
-        echo "UPDATE users SET login='carya${f}${g}', name='carya a-${f} p-${g}', crypted_password='df8428063fb28d75841d719e3447c3f416860bb7', salt='carya', access_level=${f}, page_access_level=${g} WHERE id=${ID};" >&3
-        ((ID++))
-        echo "SELECT count(id) FROM users WHERE login='carya${f}${g}';" >&3 && read RESULT <&4
-      done
-    done
-  done
-  if [ "${QUIET}" != "YES" ]; then
-    echo "Updated users to have login='caryaXY' with appropriate privileges"
-    echo "  (X=access_level, Y=page_access_level)."
-  fi
-
-  # add guest user
-  echo "SELECT count(id) FROM users WHERE login='guestuser';" >&3 && read RESULT <&4
-  while [ ${RESULT} -eq 0 ]; do
-    echo "UPDATE users SET login='guestuser', name='guestuser', crypted_password='994363a949b6486fc7ea54bf40335127f5413318', salt='bety', access_level=4, page_access_level=4 WHERE id=${ID};" >&3
-    ((ID++))
-    echo "SELECT count(id) FROM users WHERE login='guestuser';" >&3 && read RESULT <&4
-  done
-  if [ "${QUIET}" != "YES" ]; then
-    echo "Added guestuser with access_level=4 and page_access_level=4"
-  fi
-fi
-
 # fix sequence numbers if needed
 if [ "${FIXSEQUENCE}" == "YES" ]; then
-  for T in ${CLEAN_TABLES} ${MANY_TABLES}; do
+  for T in ${EMPTY_TABLES} ${CLEAN_TABLES} ${MANY_TABLES} ${IGNORE_TABLES}; do
     echo "SELECT last_value from ${T}_id_seq;" >&3 && read OLD <&4
     echo "SELECT setval('${T}_id_seq', ${MY_START_ID}, false);" >&3 && read IGN <&4
     echo "SELECT setval('${T}_id_seq', (SELECT MAX(id) FROM ${T} ${MY_WHERE}), true);" >&3 && read IGN <&4
@@ -374,6 +359,47 @@ if [ "${FIXSEQUENCE}" == "YES" ]; then
       fi
     fi
   done
+fi
+
+# Add carya and other users if requested.
+if [ "${USERS}" == "YES" ]; then
+
+  # add carya user with admin rights
+  echo "SELECT count(id) FROM users WHERE login='carya';" >&3 && read RESULT <&4
+  if [ ${RESULT} -eq 0 ]; then
+    echo "SELECT nextval('users_id_seq');" >&3 && read ID <&4
+    echo "INSERT INTO users (login, name, email, crypted_password, salt, city, state_prov, postal_code, country, area, access_level, page_access_level, created_at, updated_at, apikey, remember_token, remember_token_expires_at) VALUES ('carya', 'carya', 'betydb+${ID}@gmail.com', 'df8428063fb28d75841d719e3447c3f416860bb7', 'carya', 'Urbana', 'IL', '61801', 'USA', '', 1, 1, NOW(), NOW(), '9999999999999999999999999999999999999999', NULL, NULL);" >&3
+    if [ "${QUIET}" != "YES" ]; then
+      echo "Added carya with admin privileges with id=${ID}"
+    fi
+  fi
+
+  # add other users with specific rights
+  for f in 1 2 3 4; do
+    for g in 1 2 3 4; do
+      echo "SELECT count(id) FROM users WHERE login='carya${f}${g}';" >&3 && read RESULT <&4
+      if [ ${RESULT} -eq 0 ]; then
+        echo "SELECT nextval('users_id_seq');" >&3 && read ID <&4
+        echo "INSERT INTO users (login, name, email, crypted_password, salt, city, state_prov, postal_code, country, area, access_level, page_access_level, created_at, updated_at, apikey, remember_token, remember_token_expires_at) VALUES ('carya${f}${g}', 'carya${f}${g}', 'betydb+${ID}@gmail.com', 'df8428063fb28d75841d719e3447c3f416860bb7', 'carya', 'Urbana', 'IL', '61801', 'USA', '', $f, $g, NOW(), NOW(), '9999999999999999999999999999999999999999', NULL, NULL);" >&3
+        if [ "${QUIET}" != "YES" ]; then
+          echo "Added carya$f$g with access_level=$f and page_access_level=$g with id=${ID}"
+        fi
+      fi
+    done
+  done
+fi
+
+# Add guest user
+if [ "${GUESTUSER}" == "YES" ]; then
+  # add guest user
+  echo "SELECT count(id) FROM users WHERE login='guestuser';" >&3 && read RESULT <&4
+  if [ ${RESULT} -eq 0 ]; then
+    echo "SELECT nextval('users_id_seq');" >&3 && read ID <&4
+    echo "INSERT INTO users (login, name, email, crypted_password, salt, city, state_prov, postal_code, country, area, access_level, page_access_level, created_at, updated_at, apikey, remember_token, remember_token_expires_at) VALUES ('guestuser', 'guestuser', 'betydb+${ID}@gmail.com', '994363a949b6486fc7ea54bf40335127f5413318', 'bety', 'Urbana', 'IL', '61801', 'USA', '', 4, 4, NOW(), NOW(), '9999999999999999999999999999999999999999', NULL, NULL);" >&3
+    if [ "${QUIET}" != "YES" ]; then
+      echo "Added guestuser with access_level=4 and page_access_level=4 with id=${ID}"
+    fi
+  fi
 fi
 
 # close transaction
