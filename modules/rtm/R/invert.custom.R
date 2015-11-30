@@ -12,7 +12,7 @@
 #' @param prior Function for use as prior. Should take a vector of parameters 
 #' as input and return a single value -- the sum of their log-densities -- as 
 #' output.
-#' @param pm Vector of minimum values for inversion parameters
+#' @param param.mins Vector of minimum values for inversion parameters
 #' @param model The model to be inverted. This should be an R function that 
 #' takes `params` as input and returns one column of `observed` (nrows should 
 #' be the same). Constants should be implicitly included here.
@@ -25,14 +25,14 @@
 #' and use outputs to initialize Metropolis Hastings. This may improve mixing 
 #' time, but risks getting caught in a local minimum.  Default=FALSE
 #' @param quiet Don't print steps and status messages. Default=FALSE
-invert.custom <- function(observed, inits, ngibbs, prior, pm, model, adapt=100, 
+invert.custom <- function(observed, inits, ngibbs, prior, param.mins, model, adapt=100, 
                         adj_min=0.1, target=0.234, do.lsq=FALSE, quiet=FALSE){
     observed <- as.matrix(observed)
     nspec <- ncol(observed)
     nwl <- nrow(observed)
     npars <- length(inits)
     if(do.lsq){
-        fit <- invert.lsq(observed, inits, model, lower=pm)
+        fit <- invert.lsq(observed, inits, model, lower=param.mins)
         if(!quiet) print(fit)
         inits <- fit$par
     }
@@ -65,7 +65,7 @@ invert.custom <- function(observed, inits, ngibbs, prior, pm, model, adapt=100,
             ar <- 0
         }
         tvec <- mvrnorm(1, inits, Jump)
-        if(all(tvec > pm)){
+        if(all(tvec > param.mins)){
             TrySpec <- model(tvec)
             TryError <- TrySpec - observed
             TryPost <- sum(dnorm(TryError,0,rsd,1)) + prior(tvec)
