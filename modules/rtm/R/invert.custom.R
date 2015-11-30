@@ -24,7 +24,7 @@
 #' @param do.lsq Perform least squares optimization first (see `invert.lsq`), 
 #' and use outputs to initialize Metropolis Hastings. This may improve mixing 
 #' time, but risks getting caught in a local minimum.  Default=FALSE
-#' @param quiet Don't print steps and status messages. Default=FALSE
+#' @param quiet Do not show progress bar. Default=FALSE
 invert.custom <- function(observed, inits, ngibbs, prior.function, param.mins, model, adapt=100, 
                         adj_min=0.1, target=0.234, do.lsq=FALSE, quiet=FALSE){
     observed <- as.matrix(observed)
@@ -33,7 +33,6 @@ invert.custom <- function(observed, inits, ngibbs, prior.function, param.mins, m
     npars <- length(inits)
     if(do.lsq){
         fit <- invert.lsq(observed, inits, model, lower=param.mins)
-        if(!quiet) print(fit)
         inits <- fit$par
     }
     rp1 <- 0.001 + nspec*nwl/2
@@ -47,9 +46,10 @@ invert.custom <- function(observed, inits, ngibbs, prior.function, param.mins, m
     else cnames <- sprintf("par%d", 1:length(inits))
     colnames(results) <- c(cnames, "residual")
     ar <- 0
+    if(!quiet) pb <- txtProgressBar(min=0, max=ngibbs, style=3)
     for(ng in 1:ngibbs){
+        if(!quiet) setTxtProgressBar(pb, ng)
         if(ng %% adapt < 1){
-            if(!quiet) print(ng)
             if(ar < 2){
                 rescale <- diag(rep(adj_min,npars))
                 Jump <- rescale %*% Jump %*% rescale
@@ -84,6 +84,7 @@ invert.custom <- function(observed, inits, ngibbs, prior.function, param.mins, m
         rsd <- 1/sqrt(rinv)
         results[ng,npars+1] <- rsd
     }
+    close(pb)
     return(results)
 }
 
