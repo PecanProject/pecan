@@ -9,9 +9,9 @@
 #' columns.
 #' @param inits Vector of initial values of model parameters to be inverted.
 #' @param ngibbs Number of MCMC iterations
-#' @param prior Function for use as prior. Should take a vector of parameters 
-#' as input and return a single value -- the sum of their log-densities -- as 
-#' output.
+#' @param prior.function Function for use as prior. Should take a vector of 
+#' parameters as input and return a single value -- the sum of their 
+#' log-densities -- as output.
 #' @param param.mins Vector of minimum values for inversion parameters
 #' @param model The model to be inverted. This should be an R function that 
 #' takes `params` as input and returns one column of `observed` (nrows should 
@@ -25,7 +25,7 @@
 #' and use outputs to initialize Metropolis Hastings. This may improve mixing 
 #' time, but risks getting caught in a local minimum.  Default=FALSE
 #' @param quiet Don't print steps and status messages. Default=FALSE
-invert.custom <- function(observed, inits, ngibbs, prior, param.mins, model, adapt=100, 
+invert.custom <- function(observed, inits, ngibbs, prior.function, param.mins, model, adapt=100, 
                         adj_min=0.1, target=0.234, do.lsq=FALSE, quiet=FALSE){
     observed <- as.matrix(observed)
     nspec <- ncol(observed)
@@ -68,8 +68,8 @@ invert.custom <- function(observed, inits, ngibbs, prior, param.mins, model, ada
         if(all(tvec > param.mins)){
             TrySpec <- model(tvec)
             TryError <- TrySpec - observed
-            TryPost <- sum(dnorm(TryError,0,rsd,1)) + prior(tvec)
-            PrevPost <- sum(dnorm(PrevError,0,rsd,1)) + prior(inits)
+            TryPost <- sum(dnorm(TryError,0,rsd,1)) + prior.function(tvec)
+            PrevPost <- sum(dnorm(PrevError,0,rsd,1)) + prior.function(inits)
             a <- exp(TryPost - PrevPost)
             if(is.na(a)) a <- -1
             if(a > runif(1)){

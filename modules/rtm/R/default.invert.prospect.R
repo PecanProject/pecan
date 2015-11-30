@@ -5,7 +5,7 @@
 #' @param observed Vector of observed reflectance.
 #' @param sensor Sensor name (string)
 #' @param ngibbs Number of MCMC iterations (integer)
-#' @param version PROSPECT version (4, 5 [default], or 5B
+#' @param version PROSPECT version (4, 5 [default], or 5B)
 #' @param do.lsq Whether or not to perform LM optimization of initial 
 #' conditions before starting Metropolis-Hastings sampling (default = TRUE)
 #' @param quiet If TRUE, don't print status updates or LM fit results (default 
@@ -19,13 +19,13 @@ default.invert.prospect <- function(observed, sensor, ngibbs, version=5,
     inits <- with(prior.params, rlnorm(5, mu, sigma))
     inits[1] <- inits[1] + 1
     names(inits) <- params.prospect5
-    prior <- with(prior.defaultvals.prospect(sd.inflate = 3), 
-                  priorfunc.prospect(mu, sigma))
+    prior.function <- with(prior.defaultvals.prospect(sd.inflate = 3), 
+                           priorfunc.prospect(mu, sigma))
     pm <- c(1, 0, 0, 0, 0)
     samples <- invert.custom(observed = observed,
                            inits = inits,
                            ngibbs = ngibbs,
-                           prior = prior,
+                           prior.function = prior.function,
                            pm = pm,
                            model = model,
                            do.lsq = do.lsq,
