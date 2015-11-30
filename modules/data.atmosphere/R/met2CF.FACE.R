@@ -9,7 +9,7 @@
 ##' @author Elizabeth Cowdery
 ##' 
 
-met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date){
+met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date,verbose=TRUE){
   
   require(ncdf4)
   require(ncdf4.helpers)
@@ -127,7 +127,7 @@ met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date){
       n <- length(y)
       t <- -1 
       for(j in 1:n){
-        new.file <- paste0(t.outfolder,in.prefix,".",y[j],".nc")
+        new.file <- file.path(t.outfolder,paste0(in.prefix,".",y[j],".nc"))
         if(!file.exists(new.file)){ 
           s <- t + 1; print(s)
           e <- t + sum(year == y[j]); print(e)      
