@@ -4,18 +4,17 @@
 \alias{generate.noise}
 \title{Generate autocorrelated spectral noise}
 \usage{
-generate.noise(n = 2101, sigma.noise = 1e-04, sigma.filter = 1,
-  fw = 201, fsd = 6)
+generate.noise(n = 2101, sigma = 1e-04, fw = 201, fsd = 6)
 }
 \arguments{
 \item{n}{Length of output vector (default = 2101)}
+
+\item{sigma}{Gaussian noise standard deviation (default=1e-4)}
 
 \item{fw}{Filter width. Will be coerced to an odd number if even (default =
 201).}
 
 \item{fsd}{Scaling factor for filter standard deviation (default = 6)}
-
-\item{sigma}{Gaussian noise standard deviation (default=1e-4)}
 }
 \description{
 Generate autocorrelated spectral noise
