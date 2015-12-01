@@ -84,7 +84,6 @@ if (isset($_REQUEST['variables'])) {
 $notes = "";
 if (isset($_REQUEST['notes'])) {
   $notes = $_REQUEST['notes'];
-  $notes_xml = htmlspecialchars($_REQUEST['notes'], ENT_XML1);
 }
 $sensitivity = array();
 if (isset($_REQUEST['sensitivity'])) {
