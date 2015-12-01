@@ -45,6 +45,10 @@ if (!isset($_REQUEST['hostname'])) {
   die("Need a hostname.");
 }
 $hostname=$_REQUEST['hostname'];
+if (!array_key_exists($hostname, $hostlist)) {
+  die("${hostname} is not an approved host");
+}
+$hostoptions = $hostlist[$hostname];
 
 if (!isset($_REQUEST['pft'])) {
 	die("Need a pft.");
@@ -100,9 +104,7 @@ if (isset($_REQUEST['input_met']) && is_numeric($_REQUEST['input_met'])) {
 }
 
 // Set user and runtime
-$user = get_user_name();
 $runtime = date('Y/m/d H:i:s O'); 
-
 
 // check input dates to make sure they agree with the dates from the weather data
 if (!$userok && ($startdate < $metstart || $enddate > $metend)) {
@@ -134,7 +136,11 @@ $stmt->closeCursor();
 // create the workflow execution
 $params=str_replace(' ', '', str_replace("\n", "", var_export($_REQUEST, true)));
 
+<<<<<<< HEAD
 $q=$pdo->prepare("INSERT INTO workflows (site_id, model_id, notes, folder, hostname, start_date, end_date, params, advanced_edit, started_at, created_at) values (:siteid, :modelid, :notes, '', :hostname, :startdate, :enddate, :params, :advanced_edit, NOW(), NOW())");
+=======
+$q=$pdo->prepare("INSERT INTO workflows (site_id, model_id, notes, folder, hostname, start_date, end_date, params, advanced_edit, started_at, created_at, user_id) values (:siteid, :modelid, :notes, '', :hostname, :startdate, :enddate, :params, :advanced_edit, NOW(), NOW(), :userid)");
+>>>>>>> ce2f7896c5cd91e420ca6a13f0e52a5c1c9dccf9
 $q->bindParam(':siteid', $siteid, PDO::PARAM_INT);
 $q->bindParam(':modelid', $modelid, PDO::PARAM_INT);
 $q->bindParam(':notes', $notes, PDO::PARAM_STR);
@@ -142,6 +148,7 @@ $q->bindParam(':hostname', $hostname, PDO::PARAM_STR);
 $q->bindParam(':startdate', $startdate, PDO::PARAM_STR);
 $q->bindParam(':enddate', $enddate, PDO::PARAM_STR);
 $q->bindParam(':params', $params, PDO::PARAM_STR);
+$q->bindParam(':userid', get_userid(), PDO::PARAM_INT);
 $advanced_edit = ($pecan_edit || $model_edit) ? "yes" : "no";
 $q->bindParam(':advanced_edit', $advanced_edit, PDO::PARAM_INT);
 if ($q->execute() === FALSE) {
@@ -168,12 +175,6 @@ if (! isset($dbfiles_folder)) {
   }
 }
 
-# if on localhost replace with localhost
-if ($hostname == $fqdn) {
-    $hostname="localhost";
-}
-
-
 # setup umask so group has write as well
 umask(0002);
 
@@ -181,10 +182,10 @@ umask(0002);
 if (!mkdir($folder)) {
     die('Can\'t create output folder [${folder}]');
 }
-if (!is_dir($dbfiles_folder) && !mkdir($dbfiles_folder, 0002, true)) {
+if (!is_dir($dbfiles_folder) && !mkdir($dbfiles_folder, 0777, true)) {
     die('Can\'t create output folder [${dbfiles_folder}]');
 }
-if ($hostname != "localhost") {
+if ($hostname != $fqdn) {
     $tunnel_folder = $folder . DIRECTORY_SEPARATOR . "tunnel";
     if (!mkdir($tunnel_folder)) {
         die('Can\'t create output folder [${tunnel_folder}]');
@@ -197,8 +198,14 @@ fwrite($fh, "<?xml version=\"1.0\"?>" . PHP_EOL);
 fwrite($fh, "<pecan>" . PHP_EOL);
 
 fwrite($fh, "  <info>" . PHP_EOL);
+<<<<<<< HEAD
 fwrite($fh, "    <notes>${notes_xml}</notes>" . PHP_EOL);
 fwrite($fh, "    <user>${user}</user>" . PHP_EOL);
+=======
+fwrite($fh, "    <notes>" . toXML($notes) . "</notes>" . PHP_EOL);
+fwrite($fh, "    <userid>" . get_userid() . "</userid>" . PHP_EOL);
+fwrite($fh, "    <username>" . get_user_name() . "</username>" . PHP_EOL);
+>>>>>>> ce2f7896c5cd91e420ca6a13f0e52a5c1c9dccf9
 fwrite($fh, "    <date>${runtime}</date>" . PHP_EOL);
 fwrite($fh, "  </info>" . PHP_EOL);
 
@@ -298,13 +305,8 @@ if ($modeltype == "ED2") {
 	fwrite($fh, "    </config.header>" . PHP_EOL);
 	fwrite($fh, "    <phenol.scheme>0</phenol.scheme>" . PHP_EOL);
 }
-if (in_array($_REQUEST['hostname'], $qsublist)) {
-  if (isset($qsuboptions[$_REQUEST['hostname']])) {
-    $options = $qsuboptions[$_REQUEST['hostname']];
-    if (isset($options['models']) && isset($options['models'][$modeltype])) {
-      fwrite($fh, "    <job.sh>" . $options['models'][$modeltype] . "</job.sh>" . PHP_EOL);      
-    }
-  }
+if (isset($hostoptions['models']) && isset($hostoptions['models'][$modeltype])) {
+  fwrite($fh, "    <job.sh>" . toXML($hostoptions['models'][$modeltype]) . "</job.sh>" . PHP_EOL);      
 }
 fwrite($fh, "  </model>" . PHP_EOL);
 fwrite($fh, "  <workflow>" . PHP_EOL);
@@ -336,36 +338,32 @@ fwrite($fh, "    <start.date>${startdate}</start.date>" . PHP_EOL);
 fwrite($fh, "    <end.date>${enddate}</end.date>" . PHP_EOL);
 fwrite($fh, "    <dbfiles>${dbfiles_folder}</dbfiles>" . PHP_EOL);
 fwrite($fh, "    <host>" . PHP_EOL);
-fwrite($fh, "      <name>${hostname}</name>" . PHP_EOL);
+if ($hostname == $fqdn) {
+  fwrite($fh, "      <name>localhost</name>" . PHP_EOL);
+} else {
+  fwrite($fh, "      <name>${hostname}</name>" . PHP_EOL);
+}
 if (isset($_REQUEST['username'])) {
-    fwrite($fh, "      <user>${_REQUEST['username']}</user>" . PHP_EOL);
+  fwrite($fh, "      <user>${_REQUEST['username']}</user>" . PHP_EOL);
 }
-if (in_array($_REQUEST['hostname'], $qsublist)) {
-  if (isset($qsuboptions[$_REQUEST['hostname']])) {
-    $options = $qsuboptions[$_REQUEST['hostname']];
-    if (isset($options['qsub'])) {
-      fwrite($fh, "      <qsub>${options['qsub']}</qsub>" . PHP_EOL);
-    } else {
-      fwrite($fh, "      <qsub/>" . PHP_EOL);  
-    }
-    if (isset($options['jobid'])) {
-      fwrite($fh, "      <qsub.jobid>${options['jobid']}</qsub.jobid>" . PHP_EOL);
-    }
-    if (isset($options['qstat'])) {
-      fwrite($fh, "      <qstat>${options['qstat']}</qstat>" . PHP_EOL);
-    }
-    if (isset($options['job.sh'])) {
-      fwrite($fh, "      <job.sh>${options['job.sh']}</job.sh>" . PHP_EOL);
-    }
-  } else {
-    fwrite($fh, "      <qsub/>" . PHP_EOL);
-  }
+if (isset($hostoptions['qsub'])) {
+  fwrite($fh, "      <qsub>" . toXML($hostoptions['qsub']) . "</qsub>" . PHP_EOL);
 }
-if ($hostname != "localhost") {
-    fwrite($fh, "      <tunnel>" . $tunnel_folder . DIRECTORY_SEPARATOR . "tunnel" . "</tunnel>" . PHP_EOL);
+if (isset($hostoptions['jobid'])) {
+  fwrite($fh, "      <qsub.jobid>" . toXML($hostoptions['jobid']) . "</qsub.jobid>" . PHP_EOL);
+}
+if (isset($hostoptions['qstat'])) {
+  fwrite($fh, "      <qstat>" . toXML($hostoptions['qstat']) . "</qstat>" . PHP_EOL);
+}
+if (isset($hostoptions['job.sh'])) {
+  fwrite($fh, "      <job.sh>" . toXML($hostoptions['job.sh']) . "</job.sh>" . PHP_EOL);
+}
+if ($hostname != $fqdn) {
+  fwrite($fh, "      <tunnel>" . $tunnel_folder . DIRECTORY_SEPARATOR . "tunnel" . "</tunnel>" . PHP_EOL);
 }
 fwrite($fh, "    </host>" . PHP_EOL);
 fwrite($fh, "  </run>" . PHP_EOL);
+
 if ($email != "") {
 	$url = ($_SERVER['HTTPS'] ? "https://" : "http://");
 	$url .= $_SERVER['HTTP_HOST'] . ':' . $_SERVER['SERVER_PORT'];
@@ -387,14 +385,14 @@ fclose($fh);
 copy("workflow.R", "${folder}/workflow.R");
 
 # create the tunnel
-if ($hostname != "localhost") {
+if ($hostname != $fqdn) {
     # write pasword
     $fh = fopen($tunnel_folder . DIRECTORY_SEPARATOR . "password", 'w');
     fwrite($fh, $_REQUEST['password'] . PHP_EOL);
     fclose($fh);
 
     # start tunnel
-    pclose(popen("${SSHtunnel} ${_REQUEST['hostname']} ${_REQUEST['username']} ${tunnel_folder} > ${tunnel_folder}/log &", 'r'));
+    pclose(popen("${SSHtunnel} ${hostname} ${_REQUEST['username']} ${tunnel_folder} > ${tunnel_folder}/log &", 'r'));
 }
 
 # redirect to the right location

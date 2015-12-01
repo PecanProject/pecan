@@ -59,10 +59,6 @@ met2CF.csv <- function(in.path, in.file, outfolder, format, lat=NULL, lon=NULL, 
                       check.names = FALSE)
     }
     
-    
-    unit.row <- which(apply(M, 1, function(X) length(setdiff(X,format$orig_units))) == 0)
-    dat <- dat[-unit.row,]
-    
     ## Get datetime vector
     datetime_index <- which(format$bety == "datetime")
     datetime_raw <- dat[, datetime_index]
