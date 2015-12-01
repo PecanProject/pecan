@@ -47,7 +47,7 @@ query.format.vars <- function(input.id,con){
   
   df <- merge(fv, vars, by="variable_id")
 
-  header <- ifelse(is.na(as.numeric(f$header)),NA,TRUE)
+  header <- as.numeric(f$header)
   skip <- ifelse(is.na(as.numeric(f$skip)),0,as.numeric(f$skip))
   
   # merge tables 
