@@ -12,3 +12,4 @@ LazyLoad: yes
 LazyData: FALSE
 Depends:
     PEcAn.utils
+RoxygenNote: 5.0.1
