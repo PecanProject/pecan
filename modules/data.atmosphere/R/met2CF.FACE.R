@@ -34,27 +34,27 @@ met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date,site,ver
       nc1 <- nc_open(f,write=TRUE)
       nc.vars <-  nc.get.variable.list(nc1)
       
-      lat <- ncdim_def(name='latitude', units='', vals=1:1, create_dimvar=FALSE)
-      lon <- ncdim_def(name='longitude', units='', vals=1:1, create_dimvar=FALSE)
+      lat <- ncdim_def(name='latitude', units="degree_north", vals=as.numeric(site$lat),create_dimvar=TRUE)
+      lon <- ncdim_def(name='longitude', units="degree_east", vals=as.numeric(site$lon),create_dimvar=TRUE)
       time_units <-paste0("hours/2",unlist(strsplit( nc1$var$TIMEstp$units, "timesteps"))[2] )
       time <- ncdim_def(name='time', units=time_units, vals=nc1$dim$tstep$vals, create_dimvar=TRUE, unlim=TRUE)
       dim=list(lat,lon,time)
       
       
-      var <- ncvar_def(name="latitude",
-                       units="degree_north",
-                       dim=list(lat,lon), missval=as.numeric(-9999))
+#       var <- ncvar_def(name="latitude",
+#                        units="degree_north",
+#                        dim=list(lat,lon), missval=as.numeric(-9999))
       
-      nc2 <- nc_create(filename=f.cf, vars=var, verbose=TRUE)
+
       
-      ncvar_put(nc=nc2, varid='latitude', vals= as.numeric(site$lat))   # ncvar_get(nc1,"nav_lat")) BE CAREFUL!!!
+#       ncvar_put(nc=nc2, varid='latitude', vals= as.numeric(site$lat))   # ncvar_get(nc1,"nav_lat")) BE CAREFUL!!!
       
-      # copy lon attribute to longitude
-      var <- ncvar_def(name="longitude",
-                       units="degree_east",
-                       dim=list(lat,lon), missval=as.numeric(-9999))
-      nc2 <- ncvar_add(nc=nc2, v=var, verbose=TRUE)
-      ncvar_put(nc=nc2, varid='longitude', vals= as.numeric(site$lon))   #ncvar_get(nc1,"nav_lon")) BE CAREFUL!!!
+#       # copy lon attribute to longitude
+#       var <- ncvar_def(name="longitude",
+#                        units="degree_east",
+#                        dim=list(lat,lon), missval=as.numeric(-9999))
+#       nc2 <- ncvar_add(nc=nc2, v=var, verbose=TRUE)
+#       ncvar_put(nc=nc2, varid='longitude', vals= as.numeric(site$lon))   #ncvar_get(nc1,"nav_lon")) BE CAREFUL!!!
       
       
       # convert wind speed and wind direction to eastward_wind and northward_wind
@@ -64,7 +64,9 @@ met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date,site,ver
       nw <- ws * sin(wd * (pi/180))
       
       var <- ncvar_def(name='eastward_wind', units='m/s', dim=dim, missval=-6999.0, verbose=FALSE)
-      nc2 <- ncvar_add(nc=nc2, v=var, verbose=FALSE)
+
+      #define the new netcdf file here
+      nc2 <- nc_create(filename=f.cf, vars=var, verbose=TRUE)
       ncvar_put(nc=nc2, varid='eastward_wind', vals=ew)
       
       var <- ncvar_def(name='northward_wind', units='m/s', dim=dim, missval=-6999.0, verbose=FALSE)
@@ -81,7 +83,7 @@ met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date,site,ver
       # convert CO2 to mole_fraction_of_carbon_dioxide_in_air
       copyvals(nc1=nc1, var1= paste0(treatment, 'CO2'),
                nc2=nc2, var2='mole_fraction_of_carbon_dioxide_in_air', units2='mole/mole', dim2=dim, 
-               conv=function(x) { x * 1e6 }, verbose=verbose)
+               conv=function(x) { x * 1e-06 }, verbose=verbose)
       
       # deal with the rest of the variables
       
@@ -118,8 +120,7 @@ met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date,site,ver
         }
       }
       
-      nc_close(nc2)
-      
+nc_close(nc2)
       # Split into annual files 
       
       year <- ncvar_get(nc1, 'YEAR')
@@ -138,7 +139,7 @@ met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date,site,ver
         t <- e
       } 
       print(paste("Treatment ", treatment, " done"))
-      nc_close(nc2)
+      
       
     }else{print(paste("Treatment ", treatment, " aleady done"))} # end make new file
     
