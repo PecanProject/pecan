@@ -87,14 +87,14 @@ for(year in start_year:end_year) {
 
   # check lat/lon
   if (is.na(lat)) {
-    lat <- nc$dim[[1]]$vals[1]
-  } else if (lat != nc$dim[[1]]$vals[1]) {
-    logger.warn("Latitude does not match that of file", lat, "!=", nc$dim[[1]]$vals[1])
+    lat <- nc$dim[["latitude"]]$vals[1]
+  } else if (lat != nc$dim[["latitude"]]$vals[1]) {
+    logger.warn("Latitude does not match that of file", lat, "!=", nc$dim[["latitude"]]$vals[1])
   }
   if (is.na(lon)) {
-    lon <- nc$dim[[2]]$vals[1]
-  } else if (lon != nc$dim[[2]]$vals[1]) {
-    logger.warn("Longitude does not match that of file", lon, "!=", nc$dim[[2]]$vals[1])
+    lon <- nc$dim[["longitude"]]$vals[1]
+  } else if (lon != nc$dim[["longitude"]]$vals[1]) {
+    logger.warn("Longitude does not match that of file", lon, "!=", nc$dim[["longitude"]]$vals[1])
   }
 
   ## determine GMT adjustment

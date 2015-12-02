@@ -9,7 +9,7 @@
 ##' @author Elizabeth Cowdery
 ##' 
 
-met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date,verbose=TRUE){
+met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date,site,verbose=TRUE){
   
   require(ncdf4)
   require(ncdf4.helpers)
@@ -47,14 +47,14 @@ met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date,verbose=
       
       nc2 <- nc_create(filename=f.cf, vars=var, verbose=TRUE)
       
-      ncvar_put(nc=nc2, varid='latitude', vals=ncvar_get(nc1,"nav_lat"))
+      ncvar_put(nc=nc2, varid='latitude', vals= as.numeric(site$lat))   # ncvar_get(nc1,"nav_lat")) BE CAREFUL!!!
       
       # copy lon attribute to longitude
       var <- ncvar_def(name="longitude",
                        units="degree_east",
                        dim=list(lat,lon), missval=as.numeric(-9999))
       nc2 <- ncvar_add(nc=nc2, v=var, verbose=TRUE)
-      ncvar_put(nc=nc2, varid='longitude', vals=ncvar_get(nc1,"nav_lon"))
+      ncvar_put(nc=nc2, varid='longitude', vals= as.numeric(site$lon))   #ncvar_get(nc1,"nav_lon")) BE CAREFUL!!!
       
       
       # convert wind speed and wind direction to eastward_wind and northward_wind
