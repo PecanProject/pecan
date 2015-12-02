@@ -122,7 +122,7 @@ done
 PACKAGES="utils db settings visualization"
 PACKAGES="${PACKAGES} models/clm45"
 PACKAGES="${PACKAGES} models/preles"
-PACKAGES="${PACKAGES} modules/priors modules/meta.analysis modules/uncertainty"
+PACKAGES="${PACKAGES} modules/priors modules/meta.analysis modules/uncertainty modules/benchmark"
 PACKAGES="${PACKAGES} modules/data.land modules/data.atmosphere modules/data.remote"
 PACKAGES="${PACKAGES} modules/assim.batch modules/assim.sequential"
 PACKAGES="${PACKAGES} modules/allometry modules/photosynthesis"
