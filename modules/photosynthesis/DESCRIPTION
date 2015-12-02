@@ -14,8 +14,6 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     Farquhar et al 1980 model.
 Depends:
     rjags
-Suggests:
-    
 SystemRequirements: JAGS2.2.0
 License: FreeBSD + file LICENSE
 Copyright: Authors
