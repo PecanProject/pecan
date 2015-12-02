@@ -1,0 +1,96 @@
+#This python script reads CRU NCEP MsTMIP Air Temperature data using OpenDAP.
+#It reads in data for 1 year with temperature recordings every 6 hours (1459 total points)
+#Simply enter a desired latitude(-89.75 to 89.75), longitude (-179.75 to 179.75) and year(1901-2010).
+#As of right now, this program reads lat/lon data with .5 degree resolution.
+
+#Email James Simkins ( jsimkins2@wisc.edu ) with any questions.
+#I am currently working on writing the temperature data to a new, smaller NETCDF file.
+
+
+############################## BEGIN CODE #############################################
+
+#Enter desired lat/lon and Year 
+lat_desired = 45.6
+lon_desired = -89.6
+year_desired = 2007
+
+###################################
+from netCDF4 import Dataset
+import matplotlib.pyplot as plt
+from mpl_toolkits.basemap import Basemap
+import numpy as np
+from numpy import arange, dtype
+from copy import copy
+import matplotlib
+import math
+import os.path
+
+#Define function to get variables
+def get_var(sds, name):
+    return np.array(sds.variables[name])
+
+#Define custom round function to round lat/lons to .25 or .75 for CRU NCEP
+def customRound(num, d = [.75, .25]):
+     dec = num%1
+     r = num - dec
+     round_dec = min([(abs(i - dec),i) for i in d])[1]
+     return r + round_dec
+
+if lat_desired > 89.75:
+    sys.exit("Latitude out of range")
+
+if lat_desired < -89.75:
+    sys.exit("Latitude out of range")
+
+if lon_desired > 179.75:
+    sys.exit("Longitude out of range")
+
+if lon_desired < -179.75:
+    sys.exit("Longitude is out of range")
+
+#Round lat/lon desired to .25 or .75, add .25 for the algebra below
+lat_round = customRound(lat_desired+.25)
+lon_round = customRound(lon_desired+.25)
+
+#Use alebra to translate given lat/lon to MSTMIP array value
+lat_target = np.abs((lat_round)*2 - 179.5)
+lon_target = np.abs((lon_round)*2 + 359.5)
+
+#Truncate the value above to make value an integer instead of ending in .0
+lat_trunc = math.trunc(lat_target)
+lon_trunc = math.trunc(lon_target)
+
+#Create strings out of calculated array values to enter into url string
+lat_url = str(lat_trunc)
+lon_url = str(lon_trunc)
+year_url = str(year_desired)
+
+#Define the path of the data with url string (path+indices)
+path ='http://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1220/mstmip_driver_global_hd_climate_tair_'
+indices = year_url+'_v1.nc4?tair[1:1459]['+lat_url+']['+lon_url+']'
+
+#Get Data
+filehandle = Dataset(path+indices,'r',format="NETCDF4")
+lat = 0
+lon = 0
+timerange = range(0, 1459)
+temps = get_var(filehandle, 'tair')[timerange, lat, lon]
+
+###################Write the new NetCDF file#############################################
+#The section below is still in progress
+lat_file = str(lat_round)
+lon_file = str(lon_round)
+
+ncname = 'CRUNCEP_mstmip_Tair_'+year_url+'_lat('+lat_file+')_lon('+lon_file+').nc4'
+ncfile = Dataset(ncname,'w')
+
+ntime = 1459
+time_a = arange(ntime, dtype='float32')
+ncfile.createDimension('times',ntime)
+time_var = ncfile.createVariable('times',dtype('float32').char,('times',))
+time_var[:] = time_a
+temp_out = temps*arange(ntime,dtype='float32') # 1d array
+temp_out.shape = (temps, ntime)
+temp = ncfile.createVariable('temperature',dtype('float32').char,('times'))
+temp[:] = temp_out
+ncfile.close()
