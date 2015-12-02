@@ -5,7 +5,7 @@
 \title{Default settings for PROSPECT inversion}
 \usage{
 default.invert.prospect(observed, sensor, ngibbs, version = 5,
-  do.mle = TRUE, quiet = TRUE)
+  do.lsq = FALSE, quiet = TRUE)
 }
 \arguments{
 \item{observed}{Vector of observed reflectance.}
@@ -14,9 +14,9 @@ default.invert.prospect(observed, sensor, ngibbs, version = 5,
 
 \item{ngibbs}{Number of MCMC iterations (integer)}
 
-\item{version}{PROSPECT version (4, 5 [default], or 5B}
+\item{version}{PROSPECT version (4, 5 [default], or 5B)}
 
-\item{do.mle}{Whether or not to perform LM optimization of initial
+\item{do.lsq}{Whether or not to perform LM optimization of initial
 conditions before starting Metropolis-Hastings sampling (default = TRUE)}
 
 \item{quiet}{If TRUE, don't print status updates or LM fit results (default

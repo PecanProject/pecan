@@ -4,7 +4,7 @@
 \alias{prospect}
 \title{PROSPECT (4, 5, or 5B) model}
 \usage{
-prospect(param, version = "5B")
+prospect(param, version)
 }
 \arguments{
 \item{param}{Vector of PROSPECT parameter values:
@@ -15,7 +15,7 @@ Cab: Leaf chlorophyll content (ug/cm2) (>0)
 Cw: Leaf water content (cm) (>0)
 Cm: Leaf dry matter content (ug/cm2) (>0)}
 
-\item{version}{PROSPECT version: 4, 5, or "5B" (default)}
+\item{version}{PROSPECT version: 4, 5, or "5B"}
 }
 \value{
 Matrix (2101 x 2) of simulated reflectance (column 1)

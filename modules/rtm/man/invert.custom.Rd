@@ -4,8 +4,9 @@
 \alias{invert.custom}
 \title{Bayesian inversion of a model}
 \usage{
-invert.custom(observed, inits, ngibbs, prior, pm, model, adapt = 100,
-  adj_min = 0.1, target = 0.44, do.lsq = TRUE, quiet = FALSE)
+invert.custom(observed, inits, ngibbs, prior.function, param.mins, model,
+  adapt = 100, adj_min = 0.1, target = 0.234, do.lsq = FALSE,
+  quiet = FALSE)
 }
 \arguments{
 \item{observed}{Vector, matrix, or data frame (coerced to matrix) of
@@ -16,11 +17,11 @@ columns.}
 
 \item{ngibbs}{Number of MCMC iterations}
 
-\item{prior}{Function for use as prior. Should take a vector of parameters
-as input and return a single value -- the sum of their log-densities -- as
-output.}
+\item{prior.function}{Function for use as prior. Should take a vector of
+parameters as input and return a single value -- the sum of their
+log-densities -- as output.}
 
-\item{pm}{Vector of minimum values for inversion parameters}
+\item{param.mins}{Vector of minimum values for inversion parameters}
 
 \item{model}{The model to be inverted. This should be an R function that
 takes `params` as input and returns one column of `observed` (nrows should
@@ -32,13 +33,13 @@ every 'n' steps). Default=100}
 \item{adj_min}{Minimum threshold for rescaling Jump standard deviation.
 Default = 0.1.}
 
-\item{target}{Target acceptance rate. Default=0.44}
+\item{target}{Target acceptance rate. Default=0.234}
 
 \item{do.lsq}{Perform least squares optimization first (see `invert.lsq`),
 and use outputs to initialize Metropolis Hastings. This may improve mixing
 time, but risks getting caught in a local minimum.  Default=FALSE}
 
-\item{quiet}{Don't print steps and status messages. Default=FALSE}
+\item{quiet}{Do not show progress bar. Default=FALSE}
 }
 \description{
 Bayesian inversion of a model
