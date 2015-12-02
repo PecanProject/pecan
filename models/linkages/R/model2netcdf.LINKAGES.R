@@ -59,7 +59,7 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end
     output[[3]] <- total.soil.carbon[y,] # TotSoilCarb in kgC/m2
     output[[4]] <- c(ag.biomass[y,],total.soil.carbon[y,],
                      leaf.litter[y,],area[y,]) #Carb Pools in kgC/m2
-    output[[5]] <- c("AGB","Soil Organic Matter","Leaf Litter") #poolname
+    output[[5]] <- c("AGB","Soil Organic Matter","Leaf Litter", "LAI") #poolname
     output[[6]] <- ag.npp[y,] # GWBI = NPP in linkages
     output[[7]] <- hetero.resp[y,] # HeteroResp in kgC/m^2/s
     output[[8]] <- ag.npp[y,] # NPP = GWBI in linkages
