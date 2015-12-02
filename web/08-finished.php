@@ -505,13 +505,7 @@ if (is_dir("$folder/run")) {
     <input id="next" type="button" value="Start Over" onclick="nextStep();"/>    
 <?php } ?>
     <div class="spacer"></div>
-<?php
-  if (check_login()) {
-    echo "<p></p>";
-    echo "Logged in as " . get_user_name();
-    echo "<a href=\"index.php?logout\" id=\"logout\">logout</a>";
-  }
-?>    
+<?php whoami(); ?>    
   </div>
   <div id="output">Please select an option on the left<br><br><b>NOTES:</b><br><?php echo $notes; ?></div>
   <div id="footer"><?php echo get_footer(); ?></div>

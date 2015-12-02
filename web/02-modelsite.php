@@ -48,7 +48,7 @@ if (!$result) {
 }
 $hosts = "";
 while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
-  if (in_array($row['hostname'], $hostlist)) {
+  if (array_key_exists($row['hostname'], $hostlist)) {
     if ($hostname == $row['hostname']) {
       $hosts = "$hosts<option selected data-id='${row['id']}'>${row['hostname']}</option>\n";
     } else {
@@ -338,13 +338,7 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
       <input id="next" type="button" value="Next" onclick="nextStep();" />    
       <div class="spacer"></div>
     </form>
-<?php
-  if (check_login()) {
-    echo "<p></p>";
-    echo "Logged in as " . get_user_name();
-    echo "<a href=\"index.php?logout\" id=\"logout\">logout</a>";
-  }
-?>    
+<?php whoami(); ?>    
   </div>
   <div id="output"></div>
   <div id="footer"><?php echo get_footer(); ?></div>
