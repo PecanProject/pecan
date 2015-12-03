@@ -26,3 +26,4 @@ License: FreeBSD + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes
 LazyData: FALSE
+RoxygenNote: 5.0.1

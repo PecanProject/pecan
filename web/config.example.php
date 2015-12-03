@@ -58,6 +58,8 @@ $fqdn=exec('hostname -f');
 # - launcher : path to modellauncher, used to for a single job that
 #              consists of many smaller jobs
 # - job.sh   : any special parameters to add to the job.sh file.
+# - folder   : folder on remote machine, will add username and the
+#              workflowid to the folder name
 # - models   : any special options to add to a specific model that is 
 #              launched. This is an array of the modeltype and
 #              additional parameters for the job.sh.
