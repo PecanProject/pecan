@@ -36,6 +36,10 @@ if ($authentication) {
     $("#formnext").submit();
   }
 
+  function filterText() {
+    $("#formfilter").submit();
+  }
+
   function filter() {
     $(".unknown").toggle($("#unknown").is(':checked'));
   }
@@ -43,12 +47,21 @@ if ($authentication) {
   $(document).ready(function () {
     filter();
   });
+
+
+  function subm(form, newtarget) {
+    console.log(newtarget);
+    document.formnext.target = newtarget;
+    form.submit();
+
+  }
 </script>
 </head>
 <body>
   <div id="wrap">
     <div id="stylized">
-      <form id="formnext" method="POST" action="01-introduction.php" />
+      <form id="formprev" method="POST" action="01-introduction.php" />
+      <form id="formnext" method="POST" action="history.php" >
 <!--
       <h1>Filters</h1>
       <p>Filter executions showing on the right.</p>
@@ -62,9 +75,14 @@ if ($authentication) {
       <label>Show runs in unknown state?</label>
       <input id="unknown" type="checkbox" onclick="filter();"/>
 <?php if (!$authentication || (get_page_acccess_level() <= $min_run_level)) { ?>
+      	<label>Filter history by text</label>
+      	<input id="filter-hist" type="text" name="search-box"/>
+      	<input id="filter-btn" type="submit" name="search" value="Filter" onclick="nextStep();"/>
       <p></p>
-      <input id="prev" type="button" value="Start Over" onclick="nextStep();"/>
+      <!-- <input id="prev" type="button" value="Start Over" onclick="subm(this.form, '01-introduction.php');"/> -->
+      <input id="prev" type="button" value="Start Over" onclick="prevStep();"/> 
 <?php } ?>
+      </form>
       <div class="spacer"></div>
 <?php
   if (check_login()) {
@@ -91,7 +109,51 @@ if ($authentication) {
 <?php } ?>
         </div>
 <?php
-// get run information
+// get run information - no filter
+//$query = "SELECT workflows.id, workflows.folder, workflows.start_date, workflows.end_date, workflows.started_at, workflows.finished_at, " .
+//         "CONCAT(coalesce(sites.sitename, ''), ', ', coalesce(sites.city, ''), ', ', coalesce(sites.state, ''), ', ', coalesce(sites.country, '')) AS sitename, " .
+//         "CONCAT(coalesce(models.model_name, ''), ' ', coalesce(models.revision, '')) AS modelname, modeltypes.name " .
+//         "FROM workflows " .
+//         "LEFT OUTER JOIN sites on workflows.site_id=sites.id " .
+//         "LEFT OUTER JOIN models on workflows.model_id=models.id " .
+//         "LEFT OUTER JOIN modeltypes on models.modeltype_id=modeltypes.id " .
+//         "ORDER BY workflows.id DESC";
+//$result = $pdo->query($query);
+//if (!$result) {
+//  die('Invalid query: ' . error_database());
+//}
+//while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
+//  // check result
+//  $style="";
+//  $url="05-running.php";
+//  if (file_exists($row['folder'] . DIRECTORY_SEPARATOR . "STATUS")) {
+//    $status=file($row['folder'] . DIRECTORY_SEPARATOR . "STATUS");
+//    foreach ($status as $line) {
+//      $data = explode("\t", $line);
+//      if ((count($data) >= 4) && ($data[3] == 'ERROR')) {
+//        $style="style='background: #FFBBBB; color: black;'";
+//      }
+//    }
+//  } else {
+//    $style="style='background: #FFFFFF; color: black; display: none;' class='unknown'";
+//  }
+//  if (($style == "") && ($row['finished_at'] == "")) {
+//    $style="style='background: #BBFFFF; color: black'";
+//  }
+//  if ($style == "") {
+//    $style="style='background: #BBFFBB; color: black'";
+//    $url="08-finished.php";
+//  }
+?>        
+<?php
+// get run information - filtered
+$filter_val = '%';
+if (isset($_POST['search'])){
+
+ $filter_val = '%'. $_POST['search-box'] . '%';
+}
+
+//$filter_val = '%'. Eug . '%';
 $query = "SELECT workflows.id, workflows.folder, workflows.start_date, workflows.end_date, workflows.started_at, workflows.finished_at, " .
          "CONCAT(coalesce(sites.sitename, ''), ', ', coalesce(sites.city, ''), ', ', coalesce(sites.state, ''), ', ', coalesce(sites.country, '')) AS sitename, " .
          "CONCAT(coalesce(models.model_name, ''), ' ', coalesce(models.revision, '')) AS modelname, modeltypes.name " .
@@ -99,12 +161,23 @@ $query = "SELECT workflows.id, workflows.folder, workflows.start_date, workflows
          "LEFT OUTER JOIN sites on workflows.site_id=sites.id " .
          "LEFT OUTER JOIN models on workflows.model_id=models.id " .
          "LEFT OUTER JOIN modeltypes on models.modeltype_id=modeltypes.id " .
+         "WHERE CONCAT(coalesce(sites.sitename, ''), ', ', coalesce(sites.city, ''), ', ', coalesce(sites.state, ''), ', ', coalesce(sites.country, '')) LIKE :searched_val " .
+         "OR CONCAT(coalesce(models.model_name, ''), ' ', coalesce(models.revision, '')) LIKE :searched_val " .
+         "OR modeltypes.name LIKE :searched_val " .
+         "OR workflows.notes LIKE :searched_val " .
          "ORDER BY workflows.id DESC";
-$result = $pdo->query($query);
+$sth = $pdo->prepare($query);
+
+$sth->bindParam(':searched_val', $filter_val, PDO::PARAM_STR);
+//$sth->bindValue(':searched_val', '%', PDO::PARAM_STR);
+
+$result = $sth->execute();
+
 if (!$result) {
   die('Invalid query: ' . error_database());
 }
-while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
+//$sth->debugDumpParams();
+while ($row = @$sth->fetch(PDO::FETCH_ASSOC)) {
   // check result
   $style="";
   $url="05-running.php";
@@ -127,6 +200,7 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
     $url="08-finished.php";
   }
 ?>        
+
         <div id="row" <?php echo $style; ?>>
           <div id="cell"><a href="<?php echo $url; ?>?workflowid=<?php echo $row['id']; ?>"><?php echo $row['id']; ?></a></div>
           <div id="cell"><?php echo $row['sitename']; ?></div>
