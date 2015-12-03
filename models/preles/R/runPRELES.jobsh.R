@@ -15,21 +15,19 @@
 ##' @param end_date End time of the simulation
 ##' @export 
 ##' @author Tony Gardella, Michael Dietze
-runPRELES.jobsh<- function(met.file,trait.samples,outdir,start.date,end.date){
+runPRELES.jobsh<- function(met.file,outdir,priors,start.date,end.date){
   
-  if(!require("PEcAn.utils")) print("install PEcAn.utils")
-  require("lubridate")
+  require("PEcAn.all")
   require("ncdf4")
   if(!require("Rpreles")) print("install Rpreles")
   require("udunits2")
-  require("PEcAn.DB")
 
   ## Open netcdf file
   nc=nc_open(met.file)
   
   #Process start and end dates
   start_date<-as.POSIXlt(start.date,tz="GMT")
-  end_date<-as.POSIXlt(end.date,tz ="GMT")
+  end_date<-as.POSIXlt(end.date,tz="GMT")
   
   days=as.Date(start_date):as.Date(end_date)
   year = strftime(as.Date(days,origin="1970-01-01"),"%Y")
@@ -67,59 +65,56 @@ runPRELES.jobsh<- function(met.file,trait.samples,outdir,start.date,end.date){
   TAir=ud.convert(tapply(Tair,doy,mean,na.rm=TRUE),"kelvin", "celsius")#Convert Kelvin to Celcius
   VPD= ud.convert(tapply(VPD,doy,mean,na.rm=TRUE), "Pa","kPa")#pascal to kila pascal
   Precip=tapply(Precip,doy,sum, na.rm=TRUE) #Sum to daily precipitation
-  CO2= tapply(CO2,doy,sum) #need daily average so sum up day
+  CO2= tapply(CO2,doy,sum) #need daily average, so sum up day
   CO2= CO2 * 1e6
   doy=tapply(doy,doy,mean) # day of year
-  fAPAR =rep (0.8,length=length(doy)) #For now set to 0.8. Needs to be between 0-1
+  fAPAR =rep (0.6,length=length(doy)) #For now set to 0.6. Needs to be between 0-1
   
   ##Bind inputs 
   tmp<-cbind (PAR,TAir,VPD,Precip,CO2,fAPAR)
-  
-  ## DEFAULT PARAMETERS
-  params = c(413.0, ## 1 soildepth
-             0.450, ## 2 ThetaFC
-             0.118, ## 3 ThetaPWP
-             3, ## 4 tauDrainage
-             ## GPP_MODEL_PARAMETERS
-             0.748018, ## 5 betaGPP
-             13.23383, ## 6 tauGPP
-             -3.9657867, ## 7 S0GPP
-             18.76696, ## 8 SmaxGPP
-             -0.130473, ## 9 kappaGPP
-             0.034459, ## 10 gammaGPP
-             0.450828, ## 11 soilthresGPP
-             2000, ## 12 cmCO2
-             0.4, ## 13 ckappaCO2
-             ## EVAPOTRANSPIRATION_PARAMETERS
-             0.324463, ## 14 betaET
-             0.874151, ## 15 kappaET
-             0.075601, ## 16 chiET
-             0.541605, ## 17 soilthresET
-             0.273584, ## 18 nu ET
-             ## SNOW_RAIN_PARAMETERS
-             1.2, ## 19 Meltcoef
-             0.33, ## 20 I_0
-             4.970496, ## 21 CWmax, i.e. max canopy water
-             0, ## 22 SnowThreshold, 
-             0, ## 23 T_0, 
-             200, ## 24 SWinit, ## START INITIALISATION PARAMETERS 
-             0, ## 25 CWinit, ## Canopy water
-             0, ## 26 SOGinit, ## Snow on Ground 
-             20, ## 27 Sinit ##CWmax
-             -999, ## t0 fPheno_start_date_Tsum_accumulation; conif -999, for birch 57
-             -999, ## tcrit, fPheno_start_date_Tsum_Tthreshold, 1.5 birch
-             -999 ##tsumcrit, fPheno_budburst_Tsum, 134 birch
+  param.table = c(413.0, ## 1 soildepth |
+                  0.450, ## 2 ThetaFC
+                  0.118, ## 3 ThetaPWP
+                  3, ## 4 tauDrainage
+                  ## GPP_MODEL_PARAMETERS
+                  0.748018, ## 5 betaGPP
+                  13.23383, ## 6 tauGPP
+                  -3.9657867, ## 7 S0GPP
+                  18.76696, ## 8 SmaxGPP
+                  -0.130473, ## 9 kappaGPP
+                  0.034459, ## 10 gammaGPP
+                  0.450828, ## 11 soilthresGPP
+                  2000, ## 12 cmCO2
+                  0.4, ## 13 ckappaCO2
+                  ## EVAPOTRANSPIRATION_PARAMETERS
+                  0.324463, ## 14 betaET
+                  0.874151, ## 15 kappaET
+                  0.075601, ## 16 chiET
+                  0.541605, ## 17 soilthresET
+                  0.273584, ## 18 nu ET
+                  ## SNOW_RAIN_PARAMETERS
+                  1.2, ## 19 Meltcoef
+                  0.33, ## 20 I_0
+                  4.970496, ## 21 CWmax, i.e. max canopy water
+                  0, ## 22 SnowThreshold, 
+                  0, ## 23 T_0, 
+                  200, ## 24 SWinit, ## START INITIALISATION PARAMETERS 
+                  0, ## 25 CWinit, ## Canopy water
+                  0, ## 26 SOGinit, ## Snow on Ground 
+                  20, ## 27 Sinit ##CWmax
+                  -999, ## t0 fPheno_start_date_Tsum_accumulation; conif -999, for birch 57
+                  -999, ## tcrit, fPheno_start_date_Tsum_Tthreshold, 1.5 birch
+                  -999 ##tsumcrit, fPheno_budburst_Tsum, 134 birch
   )
   
-  dbcon <- db.open(settings$database$bety)
-  db.params<- db.query(paste("SELECT bGPP,kGPP FROM sites WHERE id =", settings$run$site$id), con=dbcon)
-  db.close(dbcon)
+  ## Replace defualt with priors
+  params=read.table(priors)
+  param.table[5]=params[2]
+  param.table[9]=params[4]
   
-  params[5]= db.params[1]
-  params[9]= db.params[2]
-  
+    
   ##Run PRELES
-  PRELES.output=as.data.frame(PRELES(PAR=tmp[,"PAR"],TAir=tmp[,"TAir"],VPD=tmp[,"VPD"], Precip=tmp[,"Precip"],CO2=tmp[,"CO2"],fAPAR=tmp[,"fAPAR"],params=params))
+  PRELES.output=as.data.frame(PRELES(PAR=tmp[,"PAR"],TAir=tmp[,"TAir"],VPD=tmp[,"VPD"], Precip=tmp[,"Precip"],CO2=tmp[,"CO2"],fAPAR=tmp[,"fAPAR"],params = param.table))
   PRELES.output.dims<-dim(PRELES.output)
   
 
