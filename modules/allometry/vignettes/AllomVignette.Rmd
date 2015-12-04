@@ -17,7 +17,7 @@ install_github("PecanProject/pecan",subdir="modules/allometry")
 ## Define species groups
 
 ```{r}
-library(PEcAn.allometries)
+library(PEcAn.allometry)
 
 ## define the Plant Functional Types you want to fit based on USDA acronyms and USFS species codes (spcd)
 ## can involve one or many species

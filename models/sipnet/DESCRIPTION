@@ -27,3 +27,4 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Require: 
+RoxygenNote: 5.0.1

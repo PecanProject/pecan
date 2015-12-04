@@ -84,13 +84,7 @@ if ($authentication) {
 <?php } ?>
       </form>
       <div class="spacer"></div>
-<?php
-  if (check_login()) {
-    echo "<p></p>";
-    echo "Logged in as " . get_user_name();
-    echo "<a href=\"index.php?logout\" style=\"float: right;\">logout</a>";
-  }
-?>    
+<?php whoami(); ?>    
     </div>
     <div id="output">
       <h2>Execution Status</h2>
