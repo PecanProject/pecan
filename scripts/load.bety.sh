@@ -326,7 +326,7 @@ for T in ${EMPTY_TABLES} ${CLEAN_TABLES} ${MANY_TABLES}; do
   #      indication if rows are added.
   echo "DELETE FROM ${T} ${REM_WHERE};" >&3
   echo "SELECT COUNT(*) FROM ${T};" >&3 && read START <&4
-  if [[ ${EMPTY_TABLES} == *"$T"* ]]; then
+  if [[ "${EMPTY}" == "NO" || ${EMPTY_TABLES} == *"$T"* ]]; then
     if [ -f "${DUMPDIR}/${T}.csv" ]; then
       echo "\COPY ${T} FROM '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')" >&3
     fi

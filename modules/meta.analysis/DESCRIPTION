@@ -19,7 +19,7 @@ Depends:
     PEcAn.utils,
     PEcAn.DB
 Suggests:
-    rjags,	
+    rjags,
     testthat,
     PEcAn.priors
 SystemRequirements: JAGS
@@ -27,3 +27,4 @@ License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
+RoxygenNote: 5.0.1
