@@ -418,13 +418,7 @@ foreach($inputs as $input) {
       <input id="next" type="button" value="Next" onclick="nextStep();" <?php if (!$userok) echo "disabled" ?>/>
       <div class="spacer"></div>
     </form>
-<?php
-  if (check_login()) {
-    echo "<p></p>";
-    echo "Logged in as " . get_user_name();
-    echo "<a href=\"index.php?logout\" id=\"logout\">logout</a>";
-  }
-?>
+<?php whoami(); ?>    
   </div>
   <div id="output">
     name : <b><?php echo $siteinfo["sitename"]; ?></b><br/>

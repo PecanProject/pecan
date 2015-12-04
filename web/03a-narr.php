@@ -104,13 +104,7 @@ if (isset($_REQUEST['notes'])) {
       <input id="next" type="button" value="Agree" onclick="nextStep();" />    
       <div class="spacer"></div>
     </form>
-<?php
-  if (check_login()) {
-    echo "<p></p>";
-    echo "Logged in as " . get_user_name();
-    echo "<a href=\"index.php?logout\" id=\"logout\">logout</a>";
-  }
-?>    
+<?php whoami(); ?>    
   </div>
   <div id="output">
 <h1>Data Policy</h1>

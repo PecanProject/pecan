@@ -31,3 +31,4 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Require: hdf5, plyr
+RoxygenNote: 5.0.1
