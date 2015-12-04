@@ -51,22 +51,26 @@ runPRELES.jobsh<- function(met.file,outdir,priors,start.date,end.date){
   }
   
   ## Get variables from netcdf file
+  ## Get variables from netcdf file
   PAR <-ncvar_get(nc,"surface_downwelling_photosynthetic_photon_flux_in_air") #PAR in mol/m2s1
   Tair <-ncvar_get(nc,"air_temperature")#air temperature in K
   Precip <-ncvar_get(nc,"precipitation_flux")#precipitation in kg/m2s1
-  VPD <-ncvar_get(nc,"water_vapor_saturation_deficit") # Vapor pressure deficit in Pa
   CO2 <-ncvar_get(nc,"mole_fraction_of_carbon_dioxide_in_air") #mol/mol
-  
+  RH <- ncvar_get(nc,"relative_humidity")
   lat<-ncvar_get(nc,"latitude")
   lon<-ncvar_get(nc,"longitude")
+  
+  ## GET VPD Temperature and realtive humidity
+  VPD = get.vpd(RH,Tair)
+  VPD = VPD * .01 # convert to Pascal
   
   ## Format/convert inputs 
   PAR= tapply(PAR, doy,mean,na.rm=TRUE) #Find the mean for the day
   TAir=ud.convert(tapply(Tair,doy,mean,na.rm=TRUE),"kelvin", "celsius")#Convert Kelvin to Celcius
   VPD= ud.convert(tapply(VPD,doy,mean,na.rm=TRUE), "Pa","kPa")#pascal to kila pascal
   Precip=tapply(Precip,doy,sum, na.rm=TRUE) #Sum to daily precipitation
-  CO2= tapply(CO2,doy,sum) #need daily average, so sum up day
-  CO2= CO2 * 1e6
+  CO2= tapply(CO2,doy,mean) #need daily average, so sum up day
+  CO2= CO2/1e6
   doy=tapply(doy,doy,mean) # day of year
   fAPAR =rep (0.6,length=length(doy)) #For now set to 0.6. Needs to be between 0-1
   
@@ -153,16 +157,16 @@ runPRELES.jobsh<- function(met.file,outdir,priors,start.date,end.date){
     }
     
     var<-list()
-    var[[1]]<- ncvar_def("GPP","kg/m2/s",list(lat,lon,t),NA)
+    var[[1]]<- mstmipvar("GPP", lat, lon, t, NA)
     var[[2]]<- ncvar_def("Evapotranspiration", "kg/m2s1",list(lon,lat,t), -999)
     var[[3]]<- ncvar_def("SoilMoist","kg/m2s1", list(lat,lon,t),NA)
     var[[4]]<- ncvar_def("fWE","NA",list(lon,lat,t),-999)
     var[[5]]<- ncvar_def("fW","NA",list(lon,lat,t),-999)
     var[[6]]<- ncvar_def("Evap","kg/m2/s", list(lon,lat,t),-999)
-    var[[7]]<- ncvar_def("TVeg","kg/m2/s",list(lon,lat,t),-999)
+    var[[7]]<- ncvar_def("TVeg","kg/m2/s",lat, lon, t, NA)
     
     nc <-nc_create(file.path(outdir,paste(y,"nc", sep=".")),var)
-    varfile <- file(file.path(outdir,paste("2005","nc","var",sep=".")),"w")
+    varfile <- file(file.path(outdir,paste(y,"nc","var",sep=".")),"w")
     for(i in 1:length(var)){
       ncvar_put(nc,var[[i]],output[[i]])
       cat(paste(var[[i]]$name,var[[i]]$longname),file=varfile,sep="/n")
