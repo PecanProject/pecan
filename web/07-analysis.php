@@ -78,6 +78,12 @@ if (isset($_REQUEST['email'])) {
   $email=$_REQUEST['email'];
 }
 
+$notes = "";
+if (isset($_REQUEST['notes'])) {
+  $notes = $_REQUEST['notes'];
+  $notes_xml = htmlspecialchars($_REQUEST['notes'], ENT_XML1);
+}
+
 // get site information
 $stmt = $pdo->prepare("SELECT sitename, city, state, country, ST_X(ST_CENTROID(sites.geometry)) AS lon, ST_Y(ST_CENTROID(sites.geometry)) AS lat FROM sites WHERE sites.id=?");
 if (!$stmt->execute(array($siteid))) {
@@ -182,23 +188,23 @@ if (isset($modelinfo['revision'])) {
       <input name="offline" type="hidden" value="offline">
 <?php } ?>
 <?php foreach($_REQUEST as $key => $value){
-	if(is_array($value)) {
-	  foreach($value as $v) {
-	    echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
-	  }
-	} else {
-	    echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
-	}
-      }
+if(is_array($value)) {
+  foreach($value as $v) {
+    echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
+  }
+} else {
+    echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+}
+}
 ?>
-    </form>
+</form>
 
-    <form id="formnext" method="POST" action="<?php echo ($hostname != $fqdn ? '04-remote.php' : '04-runpecan.php'); ?>">
+<form id="formnext" method="POST" action="<?php echo ($hostname != $fqdn ? '04-remote.php' : '04-runpecan.php'); ?>">
 <?php if ($offline) { ?>
-      <input name="offline" type="hidden" value="on">
+<input name="offline" type="hidden" value="on">
 <?php } ?>
 <?php if ($userok) { ?>
-      <input name="userok" type="hidden" value="on">
+<input name="userok" type="hidden" value="on">
 <?php } ?>
 <?php foreach($_REQUEST as $key => $value){
 	if(is_array($value)) {
@@ -210,10 +216,6 @@ if (isset($modelinfo['revision'])) {
 	}
       }
 ?>
-
-<!--      <div class="spacer"></div>
-      <label title="Enable number of run for analysis">Ensemble analysis</label>
-      <input id="ensemble_analysis" name="ensemble_analysis" type="checkbox" value="<?php echo $ensemble_analysis ?>" checked onChange="validate();"/> -->
       <div class="spacer"></div>
       <label>Runs<sup>*</sup></label>
       <input type="text" name="runs" id="runs" value="<?php echo 1; ?>" onChange="validate();"/>
@@ -221,14 +223,7 @@ if (isset($modelinfo['revision'])) {
       <label>Variables<sup>*</sup></label>
       <input type="text" name="variables" id="variables" value="<?php echo "NPP"; ?>" onChange="validate();"/>
       <div class="spacer"></div>
-      <label>Notes</label>
-      <!--<input type="text" name="notes" id="notes" value="" />-->
-      <textarea name="notes" id="notes" rows="4" width="184px" style="padding:4px 2px;width:184px;font-size:12px;border: solid 1px #aacfe4;text-overflow:ellipsis;"></textarea>
-      <div class="spacer"></div>
 
-<!--      <div class="spacer"></div>
-      <label title="Enable sensitivity for analysis">Enable sensitivity</label>
-      <input id="sensitivity_analysis" name="sensitivity_analysis" type="checkbox" value="<?php echo $sensitivity_analysis ?>"  onChange="validate();" /> -->
       <div class="spacer"></div>
       <label type="hidden">Sensitivity</label>
       <input type="text" name="sensitivity" id="sensitivity" value="<?php echo "" ?>" onChange="validate();"/>

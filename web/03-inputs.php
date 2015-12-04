@@ -69,6 +69,7 @@ if (isset($_REQUEST['email'])) {
   $email=$_REQUEST['email'];
 }
 
+
 // get site information
 $stmt = $pdo->prepare("SELECT sitename, city, state, country, ST_X(ST_CENTROID(sites.geometry)) AS lon, ST_Y(ST_CENTROID(sites.geometry)) AS lat FROM sites WHERE sites.id=?");
 if (!$stmt->execute(array($siteid))) {
@@ -314,21 +315,39 @@ $stmt->closeCursor();
 <?php if ($offline) { ?>
       <input name="offline" type="hidden" value="offline">
 <?php } ?>
-      <input type="hidden" name="siteid" value="<?php echo $siteid; ?>" />
-      <input type="hidden" name="modelid" value="<?php echo $modelid; ?>" />
-      <input type="hidden" name="hostname" value="<?php echo $hostname; ?>" />
-    </form>
+<?php foreach($_REQUEST as $key => $value){
+if(is_array($value)) {
+  foreach($value as $v) {
+    echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
+  }
+} else {
+  echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+}
+}
+?>
+</form>
 
-    <form id="formnext" method="POST" action="<?php echo ($hostname != $fqdn ? '04-remote.php' : '04-runpecan.php'); ?>">
+<form id="formnext" method="POST" action="<?php echo ($hostname != $fqdn ? '04-remote.php' : '04-runpecan.php'); ?>">
 <?php if ($offline) { ?>
-      <input name="offline" type="hidden" value="on">
+<input name="offline" type="hidden" value="on">
 <?php } ?>
 <?php if ($userok) { ?>
-      <input name="userok" type="hidden" value="on">
+<input name="userok" type="hidden" value="on">
 <?php } ?>
-      <input type="hidden" name="siteid" value="<?php echo $siteid; ?>" />
-      <input type="hidden" name="modelid" value="<?php echo $modelid; ?>" />
-      <input type="hidden" name="hostname" value="<?php echo $hostname; ?>" />
+<input type="hidden" name="siteid" value="<?php echo $siteid; ?>" />
+<input type="hidden" name="modelid" value="<?php echo $modelid; ?>" />
+<input type="hidden" name="hostname" value="<?php echo $hostname; ?>" />
+
+<?php foreach($_REQUEST as $key => $value){
+        if(is_array($value)) {
+          foreach($value as $v) {
+            echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
+          }
+        } else {
+            echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+        }
+      }
+?>
 
       <label id="pftlabel">PFT<sup>*</sup></label>
       <select id="pft" name="pft[]" multiple size=5 onChange="validate();">
@@ -390,6 +409,11 @@ foreach($inputs as $input) {
       <span class="small"><sup>*</sup> are required fields.</span>
       <p></p>
       <span id="error" class="small">&nbsp;</span>
+
+      <div class="spacer"></div>
+      <label>Notes</label>
+      <textarea name="notes" id="notes" rows="4" width="184px" style="padding: 4px 2px; width:184px; font-size:12px; border: solid 1px #aacfe4; text-overflow:ellipsis;"></textarea>
+      <div class="spacer"></div>
       <input id="prev" type="button" value="Prev" onclick="prevStep();" />
       <input id="next" type="button" value="Next" onclick="nextStep();" <?php if (!$userok) echo "disabled" ?>/>
       <div class="spacer"></div>

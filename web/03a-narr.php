@@ -30,6 +30,13 @@ if (!isset($_REQUEST['hostname'])) {
 }
 $hostname=$_REQUEST['hostname'];
 $adv_setup = (isset($_REQUEST['adv_setup'])) ? "checked" : "";
+
+$notes = "";
+if (isset($_REQUEST['notes'])) {
+  $notes = $_REQUEST['notes'];
+  $notes_xml = htmlspecialchars($_REQUEST['notes'], ENT_XML1);
+}
+
 ?>
 <!DOCTYPE html>
 <html>
