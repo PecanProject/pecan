@@ -15,7 +15,6 @@ from netCDF4 import Dataset
 import numpy as np
 from numpy import arange, dtype
 import math
-import os.path
 import datetime
 
 #Define function to get variables
@@ -162,4 +161,3 @@ northward_wind[:] = n_northward_wind
 specific_humidity[:] = n_specific_humidity
 
 ncfile.close()
-print '*** SUCCESS writing netcdf!!!!!'
