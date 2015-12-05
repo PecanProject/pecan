@@ -141,6 +141,11 @@ if [ -e running -a "$FORCE" != "yes" ]; then
   exit
 fi
 
+# remove lock files
+if [ "$FORCE" == "yes" ]; then
+  rm -rf ${R_LIBS_USER}/00LOCK-*
+fi
+  
 # when did the job run the last time?
 touch running
 touch lastrun
