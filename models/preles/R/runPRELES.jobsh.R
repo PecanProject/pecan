@@ -15,9 +15,10 @@
 ##' @param end_date End time of the simulation
 ##' @export 
 ##' @author Tony Gardella, Michael Dietze
-runPRELES.jobsh<- function(met.file,outdir,priors,start.date,end.date){
+runPRELES.jobsh<- function(met.file,outdir,parameters,start.date,end.date){
   
-  require("PEcAn.all")
+  require("PEcAn.data.atmosphere")
+  require("PEcAn.utils")
   require("ncdf4")
   if(!require("Rpreles")) print("install Rpreles")
   require("udunits2")
@@ -56,12 +57,15 @@ runPRELES.jobsh<- function(met.file,outdir,priors,start.date,end.date){
   Tair <-ncvar_get(nc,"air_temperature")#air temperature in K
   Precip <-ncvar_get(nc,"precipitation_flux")#precipitation in kg/m2s1
   CO2 <-ncvar_get(nc,"mole_fraction_of_carbon_dioxide_in_air") #mol/mol
-  RH <- ncvar_get(nc,"relative_humidity")
+  SH <- ncvar_get(nc,"relative_humidity")
   lat<-ncvar_get(nc,"latitude")
   lon<-ncvar_get(nc,"longitude")
   
-  ## GET VPD Temperature and realtive humidity
-  VPD = get.vpd(RH,Tair)
+  ## GET VPD from Saturated and actual vapor pressure
+  SatVP = get.es(Tair)
+  AVP   =
+  VPD   = SatVP - AVP
+  
   VPD = VPD * .01 # convert to Pascal
   
   ## Format/convert inputs 
@@ -111,10 +115,13 @@ runPRELES.jobsh<- function(met.file,outdir,priors,start.date,end.date){
                   -999 ##tsumcrit, fPheno_budburst_Tsum, 134 birch
   )
   
-  ## Replace defualt with priors
-  params=read.table(priors)
-  param.table[5]=params[2]
-  param.table[9]=params[4]
+  ## Replace defualt witt samples parameters
+  params=scan(parmeters,what= "field")
+  params=matrix(params,ncol=2,byrow=TRUE)
+  rownames(params)<-param[,1]
+  params<-params[,-1]
+  param.table[5]=params["-bGPP"] 
+  param.table[9]=params["-kGPP"]
   
     
   ##Run PRELES

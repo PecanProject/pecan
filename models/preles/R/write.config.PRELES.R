@@ -7,23 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-add.samples.PRELES <- function(trait.samples){
-    
-  #Light efficeincy parameter
-  if("bGPP" %in% names(trait.samples[[settings$pfts$pft$name]])){
-    names(trait.samples)[which(names(trait.samples)=="bGPP")] <- "p5"
-  }
-  if("kGPP" %in% names(trait.samples[[settings$pfts$pft$name]])){
-    names(trait.samples)[which(names(trait.samples)=="kGPP")] <- "p9"
-  }
-  
-  return(trait.samples)
-    
-}
-
 #Replace defaults with samples 
-
-
 ##-------------------------------------------------------------------------------------------------#
 ##' Writes a PRELES config file.
 ##'
@@ -41,24 +25,16 @@ add.samples.PRELES <- function(trait.samples){
 write.config.PRELES<- function(defaults, trait.values, settings, run.id){
   
   ### Define PARAMETERS
-  cmdFlags = ""
+  preles.params = ""
   for(group in names(trait.values)){
-    if(group == "env"){
-      
-      ## set defaults from config.header
-      
-      ##
-      
-    } else {
       if(!is.null(trait.values[[group]])){
-        params <- add.samples.PRELES(trait.values[[group]])
+        params <- trait.values[[group]]
         logger.info(names(params))
         for(i in 1:length(params)){
-          cmdFlags <- paste(cmdFlags," -",names(params)[i]," ",params[[i]],sep="")
+          preles.params <- paste(preles.params," -",names(params)[i]," ",params[[i]],sep="")
         }
       }    
     }
-  }
 
   #find out where to write run/ouput
   rundir <- file.path(settings$run$host$rundir, run.id)
@@ -66,7 +42,7 @@ write.config.PRELES<- function(defaults, trait.values, settings, run.id){
   
   ### WRITE PARAMETERS
   config.file.name <- paste('CONFIG.',run.id,'.txt',sep='')
-  writeLines(cmdFlags, con = paste(rundir,"/", config.file.name, sep=''))
+  writeLines(preles.params, con = paste(rundir,"/", config.file.name, sep=''))
 
   #-----------------------------------------------------------------------
 
