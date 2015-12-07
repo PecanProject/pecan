@@ -1,5 +1,5 @@
 #This script reads CRU NCEP MsTMIP variables using Opendap
-#By: James Simkins (jsimkins2@wisc.edu
+#By: James Simkins (jsimkins2@wisc.edu)
 
 ############################## BEGIN CODE #############################################
 import sys
@@ -132,6 +132,7 @@ ntime = ntime
 n_air_temperature = np.reshape(air_temperature_opendap,(ntime,1,1))
 n_surface_downwelling_longwave_flux_in_air = np.reshape(surface_downwelling_longwave_flux_in_air_opendap,(ntime,1,1))
 n_surface_downwelling_shortwave_flux_in_air = np.reshape(surface_downwelling_shortwave_flux_in_air_opendap,(ntime,1,1))
+n_surface_downwelling_photosynthetic_photon_flux_in_air = np.reshape(surface_downwelling_photosynthetic_photon_flux_in_air,(ntime,1,1))
 n_air_pressure = np.reshape(air_pressure_opendap,(ntime,1,1))
 n_eastward_wind = np.reshape(eastward_wind_opendap,(ntime,1,1))
 n_northward_wind = np.reshape(northward_wind_opendap,(ntime,1,1))
@@ -155,6 +156,7 @@ time[:]= np.arange(0,nseconds,21600)
 air_temperature[:] = n_air_temperature
 surface_downwelling_longwave_flux_in_air[:] = n_surface_downwelling_longwave_flux_in_air
 surface_downwelling_shortwave_flux_in_air[:] = n_surface_downwelling_shortwave_flux_in_air
+surface_downwelling_photosynthetic_photon_flux_in_air[:] = n_surface_downwelling_photosynthetic_photon_flux_in_air
 air_pressure[:] = n_air_pressure
 eastward_wind[:] = n_eastward_wind
 northward_wind[:] = n_northward_wind
