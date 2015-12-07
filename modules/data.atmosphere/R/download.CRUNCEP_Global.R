@@ -2,19 +2,9 @@ download.CRUNCEP <- function(outfolder, start_year, end_year, lat, lon, overwrit
   
   require(PEcAn.utils)
   require(lubridate)
-#  start_date <- as.POSIXlt(start_date, tz = "GMT")
-#  end_date <- as.POSIXlt(end_date, tz = "GMT")
-#  start_year <- year(start_date)
-#   end_year   <- year(end_date)
-  
-# start_year = 2001
-#  end_year = 2005
-#  lat = 45.0
-#  lon = -90.2
+
   ylist <- seq(start_year,end_year,by=1)
     for (year in ylist) 
       {
-      system(paste('/usr/local/anaconda2/bin/python ~/pecan/modules/data.atmosphere/python/download_Global_MsTMIP_CRUNCEP.py ',lat,lon,year))
-    }
+      system2('python',system.file('python/download_Global_MsTMIP_CRUNCEP.py',package = "PEcAn.data.atmosphere"),lat,lon,year)    }
 }
-
