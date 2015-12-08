@@ -6,8 +6,6 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-
-#Replace defaults with samples 
 ##-------------------------------------------------------------------------------------------------#
 ##' Writes a PRELES config file.
 ##'
@@ -24,36 +22,23 @@
 
 write.config.PRELES<- function(defaults, trait.values, settings, run.id){
   
-  ### Define PARAMETERS
-  preles.params = ""
-  for(group in names(trait.values)){
-      if(!is.null(trait.values[[group]])){
-        params <- trait.values[[group]]
-        logger.info(names(params))
-        for(i in 1:length(params)){
-          preles.params <- paste(preles.params," -",names(params)[i]," ",params[[i]],sep="")
-        }
-      }    
-    }
-
   #find out where to write run/ouput
   rundir <- file.path(settings$run$host$rundir, run.id)
   outdir <- file.path(settings$run$host$outdir, run.id)
   
-  ### WRITE PARAMETERS
-  config.file.name <- paste('CONFIG.',run.id,'.txt',sep='')
-  writeLines(preles.params, con = paste(rundir,"/", config.file.name, sep=''))
+  ### Define PARAMETERS
+  filename = paste(rundir,"/",'PRELES_params.',run.id,'.Rdata',sep='')
+  preles.params = save(trait.values,file=filename)
 
   #-----------------------------------------------------------------------
 
   ### WRITE JOB.SH
-  #traits  <- add.samples.PRELES(trait.samples)
   jobsh = paste0("#!/bin/bash\n",
                  'echo "',
                  ' require(PEcAn.PRELES); runPRELES.jobsh(',
                  "'",settings$run$inputs$met$path,"',",
                  "'",outdir,"',",
-                 "'",rundir,"/",config.file.name,"',",
+                 "'",filename,"',",
                  "'",settings$run$start.date,"',",
                  "'",settings$run$end.date,"') ",
                  '" | R --vanilla'
@@ -61,7 +46,6 @@ write.config.PRELES<- function(defaults, trait.values, settings, run.id){
   writeLines(jobsh, con=file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
   
-  #traits  <- add.samples.PRELES(trait.samples)
-  
   
 }
+

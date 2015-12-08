@@ -15,6 +15,7 @@
 ##' @param end_date End time of the simulation
 ##' @export 
 ##' @author Tony Gardella, Michael Dietze
+
 runPRELES.jobsh<- function(met.file,outdir,parameters,start.date,end.date){
   
   require("PEcAn.data.atmosphere")
@@ -57,14 +58,13 @@ runPRELES.jobsh<- function(met.file,outdir,parameters,start.date,end.date){
   Tair <-ncvar_get(nc,"air_temperature")#air temperature in K
   Precip <-ncvar_get(nc,"precipitation_flux")#precipitation in kg/m2s1
   CO2 <-ncvar_get(nc,"mole_fraction_of_carbon_dioxide_in_air") #mol/mol
-  SH <- ncvar_get(nc,"relative_humidity")
+  SH <- ncvar_get(nc,"specific_humidity")
   lat<-ncvar_get(nc,"latitude")
   lon<-ncvar_get(nc,"longitude")
   
-  ## GET VPD from Saturated and actual vapor pressure
-  SatVP = get.es(Tair)
-  AVP   =
-  VPD   = SatVP - AVP
+  ## GET VPD from calculateing Relative Humidity
+  RH = qair2rh(SH,Tair)
+  VPD= get.vpd(RH,Tair)
   
   VPD = VPD * .01 # convert to Pascal
   
@@ -115,15 +115,15 @@ runPRELES.jobsh<- function(met.file,outdir,parameters,start.date,end.date){
                   -999 ##tsumcrit, fPheno_budburst_Tsum, 134 birch
   )
   
-  ## Replace defualt witt samples parameters
-  params=scan(parmeters,what= "field")
-  params=matrix(params,ncol=2,byrow=TRUE)
-  rownames(params)<-param[,1]
-  params<-params[,-1]
-  param.table[5]=params["-bGPP"] 
-  param.table[9]=params["-kGPP"]
+  ## Replace defualt with samples parameters
+  load(parameters)
+  params=data.frame(trait.values)
+  colnames=c(names(trait.values[[1]]))
+  colnames(params)<-colnames
+
+  param.table[5]=as.numeric(params["bGPP"])
+  param.table[9]=as.numeric(params["kGPP"])
   
-    
   ##Run PRELES
   PRELES.output=as.data.frame(PRELES(PAR=tmp[,"PAR"],TAir=tmp[,"TAir"],VPD=tmp[,"VPD"], Precip=tmp[,"Precip"],CO2=tmp[,"CO2"],fAPAR=tmp[,"fAPAR"],params = param.table))
   PRELES.output.dims<-dim(PRELES.output)
@@ -170,7 +170,7 @@ runPRELES.jobsh<- function(met.file,outdir,parameters,start.date,end.date){
     var[[4]]<- ncvar_def("fWE","NA",list(lon,lat,t),-999)
     var[[5]]<- ncvar_def("fW","NA",list(lon,lat,t),-999)
     var[[6]]<- ncvar_def("Evap","kg/m2/s", list(lon,lat,t),-999)
-    var[[7]]<- ncvar_def("TVeg","kg/m2/s",lat, lon, t, NA)
+    var[[7]]<- ncvar_def("TVeg","kg/m2/s",list(lat, lon, t), NA)
     
     nc <-nc_create(file.path(outdir,paste(y,"nc", sep=".")),var)
     varfile <- file(file.path(outdir,paste(y,"nc","var",sep=".")),"w")
