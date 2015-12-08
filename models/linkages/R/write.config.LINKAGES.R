@@ -103,6 +103,8 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
     nyear <- spinup.out$nyear
     temp.mat <- spinup.out$temp.mat
     precip.mat <- spinup.out$temp.mat
+    settings$run$start.date <- spinup.out$start.year
+    settings$run$end.date <- spinup.out$end.year
   }
 
   input <- file.path(settings$rundir,"linkages.input.Rdata")  
