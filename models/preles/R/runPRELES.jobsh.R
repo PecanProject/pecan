@@ -62,7 +62,7 @@ runPRELES.jobsh<- function(met.file,outdir,parameters,start.date,end.date){
   lat<-ncvar_get(nc,"latitude")
   lon<-ncvar_get(nc,"longitude")
   
-  ## GET VPD from calculateing Relative Humidity
+  ## GET VPD from  Saturated humidity and Air Temperature
   RH = qair2rh(SH,Tair)
   VPD= get.vpd(RH,Tair)
   
@@ -80,52 +80,37 @@ runPRELES.jobsh<- function(met.file,outdir,parameters,start.date,end.date){
   
   ##Bind inputs 
   tmp<-cbind (PAR,TAir,VPD,Precip,CO2,fAPAR)
-  param.table = c(413.0, ## 1 soildepth |
-                  0.450, ## 2 ThetaFC
-                  0.118, ## 3 ThetaPWP
-                  3, ## 4 tauDrainage
-                  ## GPP_MODEL_PARAMETERS
-                  0.748018, ## 5 betaGPP
-                  13.23383, ## 6 tauGPP
-                  -3.9657867, ## 7 S0GPP
-                  18.76696, ## 8 SmaxGPP
-                  -0.130473, ## 9 kappaGPP
-                  0.034459, ## 10 gammaGPP
-                  0.450828, ## 11 soilthresGPP
-                  2000, ## 12 cmCO2
-                  0.4, ## 13 ckappaCO2
-                  ## EVAPOTRANSPIRATION_PARAMETERS
-                  0.324463, ## 14 betaET
-                  0.874151, ## 15 kappaET
-                  0.075601, ## 16 chiET
-                  0.541605, ## 17 soilthresET
-                  0.273584, ## 18 nu ET
-                  ## SNOW_RAIN_PARAMETERS
-                  1.2, ## 19 Meltcoef
-                  0.33, ## 20 I_0
-                  4.970496, ## 21 CWmax, i.e. max canopy water
-                  0, ## 22 SnowThreshold, 
-                  0, ## 23 T_0, 
-                  200, ## 24 SWinit, ## START INITIALISATION PARAMETERS 
-                  0, ## 25 CWinit, ## Canopy water
-                  0, ## 26 SOGinit, ## Snow on Ground 
-                  20, ## 27 Sinit ##CWmax
-                  -999, ## t0 fPheno_start_date_Tsum_accumulation; conif -999, for birch 57
-                  -999, ## tcrit, fPheno_start_date_Tsum_Tthreshold, 1.5 birch
-                  -999 ##tsumcrit, fPheno_budburst_Tsum, 134 birch
-  )
+  param.def = rep(NA,30)
   
-  ## Replace defualt with samples parameters
+  #PARAMETER DEFAULT LIST
+  ##GPP_MODEL_PARAMETERS  
+  #1.soildepth 413.0    |2.ThetaFC 0.450      | 3.ThetaPWP 0.118        |4.tauDrainage 3 
+  #5.betaGPP 0.748018   |6.tauGPP 13.23383    |7.S0GPP -3.9657867       |8.SmaxGPP 18.76696
+  #9.kappaGPP -0.130473 |10.gammaGPP 0.034459 |11.soilthresGPP 0.450828 |12.cmCO2 2000 
+  #13.ckappaCO2 0.4      
+  ##EVAPOTRANSPIRATION_PARAMETERS               
+  #14.betaET  0.324463  |15.kappaET 0.874151  |16.chiET 0.075601        |17.soilthresE 0.541605   
+  #18.nu ET 0.273584
+  ##SNOW_RAIN_PARAMETERS
+  #19.Meltcoef 1.2      |20.I_0 0.33          |21.CWmax 4.970496        |22.SnowThreshold 0     
+  #23.T_0 0           
+  ##START INITIALISATION PARAMETERS                
+  #24.SWinit 200        |25.CWinit 0          |26.SOGinit 0             |27.Sinit 20
+  #28.t0 fPheno_start_date_Tsum_accumulation; conif -999, for birch 57
+  #29.tcrit -999 fPheno_start_date_Tsum_Tthreshold, 1.5 birch
+  #30.tsumcrit -999 fPheno_budburst_Tsum, 134 birch
+  
+  ## Replace default with sampled parameters
   load(parameters)
   params=data.frame(trait.values)
   colnames=c(names(trait.values[[1]]))
   colnames(params)<-colnames
 
-  param.table[5]=as.numeric(params["bGPP"])
-  param.table[9]=as.numeric(params["kGPP"])
+  param.def[5]=as.numeric(params["bGPP"])
+  param.def[9]=as.numeric(params["kGPP"])
   
   ##Run PRELES
-  PRELES.output=as.data.frame(PRELES(PAR=tmp[,"PAR"],TAir=tmp[,"TAir"],VPD=tmp[,"VPD"], Precip=tmp[,"Precip"],CO2=tmp[,"CO2"],fAPAR=tmp[,"fAPAR"],params = param.table))
+  PRELES.output=as.data.frame(PRELES(PAR=tmp[,"PAR"],TAir=tmp[,"TAir"],VPD=tmp[,"VPD"], Precip=tmp[,"Precip"],CO2=tmp[,"CO2"],fAPAR=tmp[,"fAPAR"],p = param.def))
   PRELES.output.dims<-dim(PRELES.output)
   
 
