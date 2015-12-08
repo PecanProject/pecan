@@ -1,5 +1,5 @@
 spinup.LINKAGES <- function(start.year,end.year,temp.mat,precip.mat){
-  spin.num <- round(length(stary.year:end.year)/2)
+  spin.num <- round(length(start.year:end.year)/2)
   start.year <- start.year - spin.num
   year <- seq(start.year,end.year,1)
   nyear <- length(year)
