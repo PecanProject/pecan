@@ -118,8 +118,8 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end
 
 
     ### Output netCDF data
-    nc <- nc_create(file.path(outdir, paste(sprintf(years[y]),"nc", sep=".")), var)
-    varfile <- file(file.path(outdir, paste(sprintf(years[y]), "nc", "var", sep=".")), "w")
+    nc <- nc_create(file.path(outdir, paste(years[y],"nc", sep=".")), var)
+    varfile <- file(file.path(outdir, paste(years[y], "nc", "var", sep=".")), "w")
     for(i in 1:length(var)){
       print(i)
       ncvar_put(nc,var[[i]],output[[i]])
