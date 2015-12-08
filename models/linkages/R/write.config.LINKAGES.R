@@ -27,7 +27,7 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
                                   restart=NULL, spinup=NULL){
   
   if(is.null(restart)) restart = FALSE
-  if(is.null(spinup)) spinup = FALSE
+  if(is.null(spinup)) spinup = TRUE
   
   require(linkages) 
   
