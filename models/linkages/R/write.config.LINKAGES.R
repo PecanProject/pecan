@@ -104,7 +104,6 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
     temp.mat <- spinup.out$temp.mat
     precip.mat <- spinup.out$temp.mat
     settings$run$start.date <- paste0(spinup.out$start.year,strftime(settings$run$start.date,"/%m/%d"))
-    settings$run$end.date <- paste0(spinup.out$end.year,strftime(settings$run$end.date,"/%m/%d"))
   }
 
   input <- file.path(settings$rundir,"linkages.input.Rdata")  
