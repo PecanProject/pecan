@@ -8,7 +8,7 @@ print sys.argv
 lat_desired = sys.argv[1]
 lon_desired = sys.argv[2]
 year_desired = sys.argv[3]
-
+outfolder = sys.argv[4]
 
 ###################################
 from netCDF4 import Dataset
@@ -16,6 +16,7 @@ import numpy as np
 from numpy import arange, dtype
 import math
 import datetime
+import calendar
 
 #Define function to get variables
 def get_var(sds, name):
@@ -34,7 +35,7 @@ year_desired = int(year_desired)
 lat_desired = int(lat_desired)
 lon_desired = int(lon_desired)
 
-if year_desired % 4 == 0:
+if calendar.isleap(year_desired):
     time_url = '1:1463'
 else : time_url = '1:1459'
 
@@ -67,7 +68,7 @@ lat_url = str(lat_trunc)
 lon_url = str(lon_trunc)
 year_url = str(year_desired)
 
-if year_desired % 4 == 0:
+if calendar.isleap(year_desired):
     timerange = range(0,1463)
 else : timerange = range(0,1459)
 
@@ -120,10 +121,10 @@ surface_downwelling_photosynthetic_photon_flux_in_air= (surface_downwelling_shor
 ###################Write the new NetCDF file#############################################
 lat_file = str(lat_round)
 lon_file = str(lon_round)
-ncname = 'Global_MsTMIP_CRUNCEP_lat('+lat_file+')_lon('+lon_file+')_year('+year_url+').nc'
+ncname = outfolder+'/Global_MsTMIP_CRUNCEP_lat('+lat_file+')_lon('+lon_file+')_year('+year_url+').nc'
 ncfile = Dataset(ncname,'w')
 
-if year_desired % 4 == 0:
+if calendar.isleap(year_desired):
     ntime = 1463
 else : ntime = 1459
 
@@ -163,3 +164,4 @@ northward_wind[:] = n_northward_wind
 specific_humidity[:] = n_specific_humidity
 
 ncfile.close()
+print ncname
