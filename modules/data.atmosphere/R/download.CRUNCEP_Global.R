@@ -22,8 +22,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, lat, lon, overwrit
   ylist <- seq(start_year,end_year,by=1)
     for (year in ylist) 
       {
-      results <- system2(system.file('scripts/download_Global_MsTMIP_CRUNCEP.sh',package = "PEcAn.data.atmosphere"),args = c(system.file('python/download_Global_MsTMIP_CRUNCEP.py',package = "PEcAn.data.atmosphere"),lat,lon,year,outfolder))
-#      results <- system2('python',args = c(system.file('python/download_Global_MsTMIP_CRUNCEP.py',package = "PEcAn.data.atmosphere"),lat,lon,year,outfolder))  
+      results <- system2(system.file('scripts/download_Global_MsTMIP_CRUNCEP.sh',package = "PEcAn.data.atmosphere"),args = c(system.file('python/download_Global_MsTMIP_CRUNCEP.py',package = "PEcAn.data.atmosphere"),lat,lon,year,outfolder),stdout=TRUE)
     }
   
   invisible(results[length(results)])
