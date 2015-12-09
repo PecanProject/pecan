@@ -6,7 +6,6 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-
 ##-------------------------------------------------------------------------------------------------#
 ##' Writes a PRELES config file.
 ##'
@@ -23,17 +22,23 @@
 
 write.config.PRELES<- function(defaults, trait.values, settings, run.id){
   
-  # find out where to write run/ouput
+  #find out where to write run/ouput
   rundir <- file.path(settings$run$host$rundir, run.id)
   outdir <- file.path(settings$run$host$outdir, run.id)
+  
+  ### Define PARAMETERS
+  filename = paste(rundir,"/",'PRELES_params.',run.id,'.Rdata',sep='')
+  preles.params = save(trait.values,file=filename)
 
   #-----------------------------------------------------------------------
+
   ### WRITE JOB.SH
   jobsh = paste0("#!/bin/bash\n",
                  'echo "',
                  ' require(PEcAn.PRELES); runPRELES.jobsh(',
                  "'",settings$run$inputs$met$path,"',",
                  "'",outdir,"',",
+                 "'",filename,"',",
                  "'",settings$run$start.date,"',",
                  "'",settings$run$end.date,"') ",
                  '" | R --vanilla'
@@ -41,4 +46,6 @@ write.config.PRELES<- function(defaults, trait.values, settings, run.id){
   writeLines(jobsh, con=file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
   
+  
 }
+
