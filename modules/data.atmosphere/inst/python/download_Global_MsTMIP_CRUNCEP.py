@@ -32,8 +32,8 @@ def customRound(num, d = [.75, .25]):
 #Account extra 4 data points during leap years
 
 year_desired = int(year_desired)
-lat_desired = int(lat_desired)
-lon_desired = int(lon_desired)
+lat_desired = float(lat_desired)
+lon_desired = float(lon_desired)
 
 if calendar.isleap(year_desired):
     time_url = '1:1463'
