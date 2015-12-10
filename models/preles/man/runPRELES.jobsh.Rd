@@ -4,7 +4,8 @@
 \alias{runPRELES.jobsh}
 \title{Function to process ncdf file, run PRELES model, and convert output .nc file in CF standard}
 \usage{
-runPRELES.jobsh(met.file, outdir, parameters, start.date, end.date)
+runPRELES.jobsh(met.file, outdir, parameters, sitelat, sitelon, start.date,
+  end.date)
 }
 \arguments{
 \item{outdir}{Location of PRELES model output}

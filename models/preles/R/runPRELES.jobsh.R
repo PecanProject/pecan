@@ -16,7 +16,7 @@
 ##' @export 
 ##' @author Tony Gardella, Michael Dietze
 
-runPRELES.jobsh<- function(met.file,outdir,parameters,start.date,end.date){
+runPRELES.jobsh<- function(met.file,outdir,parameters, sitelat, sitelon,start.date,end.date){
   
   require("PEcAn.data.atmosphere")
   require("PEcAn.utils")
@@ -156,11 +156,11 @@ runPRELES.jobsh<- function(met.file,outdir,parameters,start.date,end.date){
                   calendar = "standard",unlim =TRUE)
     
     lat<- ncdim_def("lat", "degrees_east",
-                    vals=as.numeric(lat),
+                    vals=as.numeric( sitelat),
                     longname = "station_longitude")
     
     lon<- ncdim_def("lat", "degrees_north",
-                    vals=as.numeric(lon),
+                    vals=as.numeric(sitelon),
                     longname = "station_longitude")
     
     for(i in 1:length(output)){
