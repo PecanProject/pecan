@@ -25,7 +25,7 @@ library(mvtnorm)
 
 #---------------- Load PEcAn settings file. -------------------------------------------------------#
 # Open and read in settings file for PEcAn run.
-settings <- read.settings("/home/araiho/pecan.xml")
+settings <- read.settings("/fs/data2/output//PEcAn_1000000858/pecan.xml")
 #--------------------------------------------------------------------------------------------------#
 
 #---------------- Load plot and tree ring data. -------------------------------------------------------#
@@ -84,6 +84,18 @@ obs = data.frame(mean = apply(state$NPP[1,,],2,mean,na.rm=TRUE),
                  sd = apply(state$NPP[1,,],2,sd,na.rm=TRUE))
 obs = data.frame(mean = apply(state$AGB[1,,],2,mean,na.rm=TRUE),
                  sd = apply(state$AGB[1,,],2,sd,na.rm=TRUE))
+
+obs_tsca = data.frame(mean = apply(state$biomass_tsca[1,,],2,mean,na.rm=TRUE),
+                 sd = apply(state$biomass_tsca[1,,],2,sd,na.rm=TRUE))
+obs_acsa3 = data.frame(mean = apply(state$biomass_acsa3[1,,],2,mean,na.rm=TRUE),
+                 sd = apply(state$biomass_acsa3[1,,],2,sd,na.rm=TRUE))
+obs_beal2 = data.frame(mean = apply(state$biomass_beal2[1,,],2,mean,na.rm=TRUE),
+                 sd = apply(state$biomass_beal2[1,,],2,sd,na.rm=TRUE))
+obs_thoc2 = data.frame(mean = apply(state$biomass_thoc2[1,,],2,mean,na.rm=TRUE),
+                 sd = apply(state$biomass_thoc2[1,,],2,sd,na.rm=TRUE))
+
+obs = cbind(obs_acsa3,obs_beal2,obs_thoc2,obs_tsca)
+
 status.end()
 
 #---------------- Build Initial Conditions ----------------------------------------------------------------------#
@@ -97,6 +109,7 @@ status.end()
 #---------------- Load Priors ----------------------------------------------------------------------#
 status.start("PRIORS")
 prior = sample.parameters(ne,settings,con)
+prior = NA
 status.end()
 
 #--------------- Assimilation -------------------------------------------------------#

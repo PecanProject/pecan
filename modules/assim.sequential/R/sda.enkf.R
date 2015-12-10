@@ -139,7 +139,7 @@ sda.enkf <- function(settings,IC,prior,obs){
   ## start model run
   start.model.runs(settings,settings$database$bety$write)
   
-  total.time = 2004:2010
+  total.time = 2003:2010
   nt = length(total.time)
   #NPPm = rep(NA,nens)
   FORECAST <- ANALYSIS <- list()
@@ -156,10 +156,10 @@ sda.enkf <- function(settings,IC,prior,obs){
     ### Analysis step
     mu.f = apply(X,2,mean,na.rm=TRUE)
     Pf   = cov(X)
-    Y    = obs$mean[t]
-    R    = obs$sd[t]^2
-    H    = matrix(c(1,rep(0,ncol(X)-1)),1,ncol(X))
-    if(!is.na(Y)){
+    Y    = t(obs[t,c(1,3,5,7)])#obs$mean[t]
+    R    = diag(as.numeric(obs[t,c(2,4,6,8)])^2)#obs$sd[t]^2
+    H    = diag(4)#matrix(c(1,rep(0,ncol(X)-1)),1,ncol(X))
+    if(!is.na(Y[1])){
       K    = Pf%*%t(H)%*%solve(R+H%*%Pf%*%t(H))
       mu.a = mu.f + K%*%(Y-H%*%mu.f)
       Pa   = (diag(ncol(X)) - K%*%H)%*%Pf
