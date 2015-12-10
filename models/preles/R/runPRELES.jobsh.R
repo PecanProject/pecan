@@ -23,36 +23,43 @@ runPRELES.jobsh<- function(met.file,outdir,parameters,start.date,end.date){
   require("ncdf4")
   if(!require("Rpreles")) print("install Rpreles")
   require("udunits2")
-
-  ## Open netcdf file
-  nc=nc_open(met.file)
   
   #Process start and end dates
   start_date<-as.POSIXlt(start.date,tz="GMT")
   end_date<-as.POSIXlt(end.date,tz="GMT")
   
-  days=as.Date(start_date):as.Date(end_date)
-  year = strftime(as.Date(days,origin="1970-01-01"),"%Y")
-  years<-unique(year)
-  num.years<- length(years)
-  timestep.s<-86400
+
+  start_year <- year(start_date)
+  end_year <- year(end_date)
+  
+  ## Build met
+  met <- NULL
+  for(year in start_year:end_year){
+      
+    met.file.y = paste(met.file,year,"nc",sep=".")
+    
+    if(file.exists(met.file.y)){
+    
+  ## Open netcdf file
+  nc=nc_open(met.file.y)
+  
   
   ## convert time to seconds
   sec   <- nc$dim$time$vals  
   sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$time$units," "))[1],"seconds")
   
   ##build day and  year
-  ifelse(leap_year(as.numeric(year))==TRUE,
+  ifelse(leap_year(year)==TRUE,
          dt <- (366*24*60*60)/length(sec), #leap year
          dt <- (365*24*60*60)/length(sec)) #non-leap year
   tstep = 86400/dt
   
   doy <- rep(1:365,each=86400/dt)
-  if(as.numeric(year) %% 4 == 0){  ## is leap
+  if(year %% 4 == 0){  ## is leap
     doy <- rep(1:366,each=86400/dt)
   }
   
-  ## Get variables from netcdf file
+
   ## Get variables from netcdf file
   PAR <-ncvar_get(nc,"surface_downwelling_photosynthetic_photon_flux_in_air") #PAR in mol/m2s1
   Tair <-ncvar_get(nc,"air_temperature")#air temperature in K
@@ -61,6 +68,8 @@ runPRELES.jobsh<- function(met.file,outdir,parameters,start.date,end.date){
   SH <- ncvar_get(nc,"specific_humidity")
   lat<-ncvar_get(nc,"latitude")
   lon<-ncvar_get(nc,"longitude")
+  
+  nc_close(nc)
   
   ## GET VPD from  Saturated humidity and Air Temperature
   RH = qair2rh(SH,Tair)
@@ -80,6 +89,11 @@ runPRELES.jobsh<- function(met.file,outdir,parameters,start.date,end.date){
   
   ##Bind inputs 
   tmp<-cbind (PAR,TAir,VPD,Precip,CO2,fAPAR)
+  met <- rbind(met,tmp)
+    } ## end file exists
+  } ## end met process
+  
+  
   param.def = rep(NA,30)
   
   #PARAMETER DEFAULT LIST
@@ -113,7 +127,12 @@ runPRELES.jobsh<- function(met.file,outdir,parameters,start.date,end.date){
   PRELES.output=as.data.frame(PRELES(PAR=tmp[,"PAR"],TAir=tmp[,"TAir"],VPD=tmp[,"VPD"], Precip=tmp[,"Precip"],CO2=tmp[,"CO2"],fAPAR=tmp[,"fAPAR"],p = param.def))
   PRELES.output.dims<-dim(PRELES.output)
   
-
+  days=as.Date(start_date):as.Date(end_date)
+  year = strftime(as.Date(days,origin="1970-01-01"),"%Y")
+  years<-unique(year)
+  num.years<- length(years)
+  timestep.s<-86400
+  
   for (y in years){
     if(file.exists(file.path(outdir,paste(y))))
       next
