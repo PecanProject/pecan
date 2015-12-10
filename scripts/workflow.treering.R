@@ -17,6 +17,7 @@ status.end <- function(status="DONE") {
 require(PEcAn.all)
 library(PEcAn.assim.sequential)
 library(PEcAn.visualization)
+library(mvtnorm)
 #--------------------------------------------------------------------------------------------------#
 #
 #  dir.create("~/demo.sda")
@@ -24,31 +25,38 @@ library(PEcAn.visualization)
 
 #---------------- Load PEcAn settings file. -------------------------------------------------------#
 # Open and read in settings file for PEcAn run.
-settings <- read.settings("~/demo.sda/demo.xml")
+settings <- read.settings("/home/araiho/pecan.xml")
 #--------------------------------------------------------------------------------------------------#
 
 #---------------- Load plot and tree ring data. -------------------------------------------------------#
 status.start("LOAD DATA")
 ## Read tree data
-trees <- read.csv("/home/carya/Camp2014/ForestPlots/treecores2014.csv")
+trees <- read.csv("/home/araiho/Camp2014/ForestPlots/treecores2014.csv")
 
 ## Read tree ring data
-rings <- Read_Tuscon("/home/carya/Camp2014/ForestPlots/Tucson/")
+source("/home/araiho/Camp2014/statsR/Read_Tuscon.R")
+rings <- Read_Tuscon("/home/araiho/Camp2014/ForestPlots/Tucson")
 
 ## Match observations & format for JAGS
-combined <- matchInventoryRings(trees,rings,extractor="Tag",nyears=36,coredOnly=FALSE)
-data <- buildJAGSdata_InventoryRings(combined)
+source("/home/araiho/pecan/modules/data.land/R/matchInventoryRings.R")
+source("/home/araiho/pecan/modules/data.land/R/extract.stringCode.R")
+source("/home/araiho/pecan/modules/data.land/R/buildJAGSdata_InventoryRings.R")
+combined <- matchInventoryRings(trees,rings,extractor="Tag",nyears=36,coredOnly=FALSE) #WARNINGS
+data <- buildJAGSdata_InventoryRings(combined) #WARNINGS
 status.end()
 
 #---------------- Load plot and tree ring data. -------------------------------------------------------#
 status.start("TREE RING MODEL")
 ## Tree Ring model
 n.iter = 3000
-jags.out = InventoryGrowthFusion(data,n.iter=n.iter)
+source("/home/araiho/pecan/modules/data.land/R/InventoryGrowthFusion.R")
+jags.out = InventoryGrowthFusion(data,n.iter=n.iter) #WARNINGS
 save(trees,rings,combined,data,jags.out,
      file=file.path(settings$outdir,"treering.Rdata"))
 
 pdf(file.path(settings$outdir,"treering.Diagnostics.pdf"))
+source("/home/araiho/pecan/modules/data.land/R/InventoryGrowthFusionDiagnostics.R")
+source("/home/araiho/pecan/visualization/R/ciEnvelope.R")
 InventoryGrowthFusionDiagnostics(jags.out,combined)
 dev.off()
 status.end()
@@ -63,23 +71,27 @@ for(ipft in 1:length(settings$pfts)){  ## loop over PFTs
   query <- paste0("SELECT s.spcd,",'s."Symbol"'," as acronym from pfts as p join pfts_species on p.id = pfts_species.pft_id join species as s on pfts_species.specie_id = s.id where p.name like '%",pft_name,"%'")  
   pft.data[[pft_name]] <- db.query(query, con)
 }
-allom.stats = AllomAve(pft.data,outdir = settings$outdir,ngibbs=n.iter/10)
+allom.stats = AllomAve(pft.data,outdir = settings$outdir,ngibbs=n.iter/10) #WARNINGS
 save(allom.stats,file=file.path(settings$outdir,"allom.stats.Rdata"))
 status.end()
 
-#-------------- Convert tree-level growth & diamter to stand-level NPP & AGB -------------------------------#
+#-------------- Convert tree-level growth & diameter to stand-level NPP & AGB -------------------------------#
 status.start("PLOT2AGB")
 out = as.matrix(jags.out)
 sel = grep('x[',colnames(out),fixed=TRUE)
-state = plot2AGB(combined,out[,sel],settings$outdir,allom.stats,unit.conv=0.01)
+state = plot2AGB(combined,out[,sel],settings$outdir,allom.stats,unit.conv=0.01) #WARNINGS
 obs = data.frame(mean = apply(state$NPP[1,,],2,mean,na.rm=TRUE),
                  sd = apply(state$NPP[1,,],2,sd,na.rm=TRUE))
+obs = data.frame(mean = apply(state$AGB[1,,],2,mean,na.rm=TRUE),
+                 sd = apply(state$AGB[1,,],2,sd,na.rm=TRUE))
 status.end()
 
 #---------------- Build Initial Conditions ----------------------------------------------------------------------#
 status.start("IC")
-ne = as.numeric(settings$assim.sequential$n.ensemble)
-IC = sample.IC.SIPNET(ne,state)
+ne = as.numeric(settings$ensemble$size) # do we want this to point somewhere else?
+#IC = sample.IC.SIPNET(ne,state)
+source("/home/araiho/pecan/modules/assim.sequential/R/sample.IC.LINKAGES.R")
+IC = sample.IC.LINKAGES(ne,state)
 status.end()
 
 #---------------- Load Priors ----------------------------------------------------------------------#
@@ -89,6 +101,7 @@ status.end()
 
 #--------------- Assimilation -------------------------------------------------------#
 status.start("MCMC")
+obs <- obs/10 #to kg/m^2
 sda.enkf(settings,IC,prior,obs)
 status.end()
 
