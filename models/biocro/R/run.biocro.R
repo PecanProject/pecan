@@ -117,6 +117,17 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
                            iRhizome = iRhizome,
                            photoControl=config$pft$photoParms)
       
+    } else if (genus == "Sorghum"){
+      ## run BioGro
+      tmp.result <- BioGro(WetDat = WetDat,
+                           day1 = day1,
+                           dayn = dayn,
+                           soilControl = soil.parms,
+                           canopyControl = config$pft$canopyControl,
+                           phenoControl = phenoParms(),#config$pft$phenoParms,
+                           seneControl = config$pft$seneControl,
+                           photoControl=config$pft$photoParms)
+      
     }
     result.yeari.hourly <- with(tmp.result,
                                 data.table(yearindex = yearindex, 
