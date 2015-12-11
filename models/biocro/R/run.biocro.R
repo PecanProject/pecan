@@ -30,16 +30,24 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
     
 
   } else {
-    met <- load.cfmet(met.nc, lat = lat, lon = lon, start.date = start.date, end.date = end.date)
     years <- year(start.date):year(end.date)
   }
   met <- load.cfmet(met.nc, lat = lat, lon = lon, 
                     start.date = start.date, end.date = end.date)
-  met <- met[year %in% years]
+  if(met.uncertainty == TRUE){
+    met <- met[year %in% years]
+  }
 
-  met.hr <- cfmet.downscale.time(cfmet = met, output.dt = 1)
-  biocro.met <- cf2biocro(met.hr)
-  
+  if(mean(diff(met$date)) > dhours(1)){
+    met <- cfmet.downscale.time(cfmet = met, output.dt = 1)
+  } else if (mean(diff(met$date)) < dhours(1)) {
+     met <- met[, list(date = min(date), specific_humidity = mean(specific_humidity), 
+     	    	  	           precipitation_flux = sum(precipitation_flux), surface_downwelling_shortwave_flux_in_air = mean(surface_downwelling_shortwave_flux_in_air), 
+         			   air_temperature = mean(air_temperature), wind_speed = mean(wind_speed), relative_humidity = mean(relative_humidity)), by = 'year,month,day,hour']
+     met[1] <- NULL
+
+  }
+  biocro.met <- cf2biocro(met)
 
   if(!is.null(soil.nc)){
     soil <- get.soil(lat = lat, lon = lon, soil.nc = soil.nc)
