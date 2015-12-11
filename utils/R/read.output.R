@@ -93,7 +93,10 @@ model2netcdf <- function(runid, outdir, model, lat, lon, start_date, end_date){
 ##' @author Michael Dietze, David LeBauer
 read.output <- function(runid, outdir, start.year=NA,
                         end.year=NA, variables = "GPP") {
-  
+
+  require(ncdf4)
+  require(udunits2)
+
   ## vars in units s-1 to be converted to y-1
   cflux = c("GPP", "NPP", "NEE", "TotalResp", "AutoResp", "HeteroResp",
     "DOC_flux", "Fire_flux") # kgC m-2 s-1

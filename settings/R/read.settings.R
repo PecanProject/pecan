@@ -206,6 +206,9 @@ check.bety.version <- function(dbcon) {
   if (! ("20140729045640" %in% versions)) {
     logger.severe("Missing migration 20140729045640, this introduces modeltypes table")
   }
+  if (! ("20151011190026" %in% versions)) {
+    logger.severe("Missing migration 20151011190026, this introduces notes and user_id in workflows")
+  }
   
   # check if database is newer
   if (tail(versions, n=1) > "20141009160121") {
@@ -678,21 +681,18 @@ check.settings <- function(settings) {
   }
   
   # make sure remote folders are specified if need be
-  if (!is.null(settings$run$host$qsub) || (settings$run$host$name != "localhost")) {
-    homedir <- NA
+  if (!is.localhost(settings$run$host)) {
+    if (is.null(settings$run$host$folder)) {
+      settings$run$host$folder <- paste0(remote.execute.cmd("pwd", host=settings$run$host), "/pecan_remote")
+      logger.info("Using ", settings$run$host$folder, "to store output on remote machine")      
+    }
     if (is.null(settings$run$host$rundir)) {
-      if (is.na(homedir)) {
-        homedir <- remote.execute.cmd("pwd", host=settings$run$host)
-      }
-      settings$run$host$rundir <- paste0(homedir, "/pecan_remote/@WORKFLOW@/run")
+      settings$run$host$rundir <- paste0(settings$run$host$folder, "/@WORKFLOW@/run")
     }
     settings$run$host$rundir <- gsub("@WORKFLOW@", settings$workflow$id, settings$run$host$rundir)
     logger.info("Using ", settings$run$host$rundir, "to store runs on remote machine")
     if (is.null(settings$run$host$outdir)) {
-      if (is.na(homedir)) {
-        homedir <- remote.execute.cmd("pwd", host=settings$run$host)
-      }
-      settings$run$host$outdir <- paste0(homedir, "/pecan_remote/@WORKFLOW@/out")
+      settings$run$host$outdir <- paste0(settings$run$host$folder, "/@WORKFLOW@/out")
     }
     settings$run$host$outdir <- gsub("@WORKFLOW@", settings$workflow$id, settings$run$host$outdir)
     logger.info("Using ", settings$run$host$outdir, "to store output on remote machine")

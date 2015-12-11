@@ -7,7 +7,7 @@
 prospect(param, version = "5B")
 }
 \arguments{
-\item{param}{Vector of PROSPECT4 parameter values:
+\item{param}{Vector of PROSPECT parameter values:
 N: Effective number of leaf layers (>1)
 Cab: Leaf chlorophyll content (ug/cm2) (>0)
 (5) Car: Leaf carotenoid content (ug/cm2) (>0)

@@ -13,30 +13,36 @@
 ##' @param outdir Location of PRELES model output
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
-##' @export netcdf file in CF standard
+##' @export 
 ##' @author Tony Gardella, Michael Dietze
-runPRELES.jobsh<- function(in.path, in.prefix,outdir,start_date,end_date){
+
+runPRELES.jobsh<- function(met.file,outdir,parameters, sitelat, sitelon,start.date,end.date){
   
-  if(!require("PEcAn.utils")) print("install PEcAn.utils")
-  require("lubridate")
+  require("PEcAn.data.atmosphere")
+  require("PEcAn.utils")
   require("ncdf4")
   if(!require("Rpreles")) print("install Rpreles")
   require("udunits2")
-
-  ## Open netcdf file
-  input.file <- file.path(in.path, paste(in.prefix, year, "nc", sep="."))
-  nc=nc_open(input.file)
-  dim=nc.get.dim.names(nc)
   
   #Process start and end dates
-  start_date<-as.POSIXlt(start_date,tz="GMT")
-  end_date<-as.POSIXlt(end_date,tz ="GMT")
+  start_date<-as.POSIXlt(start.date,tz="GMT")
+  end_date<-as.POSIXlt(end.date,tz="GMT")
   
-  days=as.Date(start_date):as.Date(end_date)
-  year = strftime(as.Date(days,origin="1970-01-01"),"%Y")
-  years<-unique(year)
-  num.years<- length(years)
-  timestep.s<-86400
+
+  start_year <- year(start_date)
+  end_year <- year(end_date)
+  
+  ## Build met
+  met <- NULL
+  for(year in start_year:end_year){
+      
+    met.file.y = paste(met.file,year,"nc",sep=".")
+    
+    if(file.exists(met.file.y)){
+    
+  ## Open netcdf file
+  nc=nc_open(met.file.y)
+  
   
   ## convert time to seconds
   sec   <- nc$dim$time$vals  
@@ -53,33 +59,80 @@ runPRELES.jobsh<- function(in.path, in.prefix,outdir,start_date,end_date){
     doy <- rep(1:366,each=86400/dt)
   }
   
+
   ## Get variables from netcdf file
   PAR <-ncvar_get(nc,"surface_downwelling_photosynthetic_photon_flux_in_air") #PAR in mol/m2s1
   Tair <-ncvar_get(nc,"air_temperature")#air temperature in K
-  Precip <-ncvar_get(nc,"PREC")#precipitation in kg/m2s1
-  VPD <-ncvar_get(nc,"water_vapor_saturation_deficit") # Vapor pressure deficit in Pa
+  Precip <-ncvar_get(nc,"precipitation_flux")#precipitation in kg/m2s1
   CO2 <-ncvar_get(nc,"mole_fraction_of_carbon_dioxide_in_air") #mol/mol
-  
+  SH <- ncvar_get(nc,"specific_humidity")
   lat<-ncvar_get(nc,"latitude")
   lon<-ncvar_get(nc,"longitude")
   
+  nc_close(nc)
+  
+  ## GET VPD from  Saturated humidity and Air Temperature
+  RH = qair2rh(SH,Tair)
+  VPD= get.vpd(RH,Tair)
+  
+  VPD = VPD * .01 # convert to Pascal
+  
   ## Format/convert inputs 
   PAR= tapply(PAR, doy,mean,na.rm=TRUE) #Find the mean for the day
-  TAir=ud.convert(tapply(Tair,doy,mean,na.rm=TRUE),"K", "C")#Convert Kelvin to Celcius
+  TAir=ud.convert(tapply(Tair,doy,mean,na.rm=TRUE),"kelvin", "celsius")#Convert Kelvin to Celcius
   VPD= ud.convert(tapply(VPD,doy,mean,na.rm=TRUE), "Pa","kPa")#pascal to kila pascal
   Precip=tapply(Precip,doy,sum, na.rm=TRUE) #Sum to daily precipitation
-  CO2= ud.convert(tapply(CO2,doy,sum),"mol/mol","ppm") #need daily average so sum up day
+  CO2= tapply(CO2,doy,mean) #need daily average, so sum up day
+  CO2= CO2/1e6
   doy=tapply(doy,doy,mean) # day of year
-  fAPAR =rep (0.8,length=length(doy)) #For now set to 0.8. Needs to be between 0-1
+  fAPAR =rep (0.6,length=length(doy)) #For now set to 0.6. Needs to be between 0-1
   
   ##Bind inputs 
   tmp<-cbind (PAR,TAir,VPD,Precip,CO2,fAPAR)
+  met <- rbind(met,tmp)
+    } ## end file exists
+  } ## end met process
+  
+  
+  param.def = rep(NA,30)
+  
+  #PARAMETER DEFAULT LIST
+  ##GPP_MODEL_PARAMETERS  
+  #1.soildepth 413.0    |2.ThetaFC 0.450      | 3.ThetaPWP 0.118        |4.tauDrainage 3 
+  #5.betaGPP 0.748018   |6.tauGPP 13.23383    |7.S0GPP -3.9657867       |8.SmaxGPP 18.76696
+  #9.kappaGPP -0.130473 |10.gammaGPP 0.034459 |11.soilthresGPP 0.450828 |12.cmCO2 2000 
+  #13.ckappaCO2 0.4      
+  ##EVAPOTRANSPIRATION_PARAMETERS               
+  #14.betaET  0.324463  |15.kappaET 0.874151  |16.chiET 0.075601        |17.soilthresE 0.541605   
+  #18.nu ET 0.273584
+  ##SNOW_RAIN_PARAMETERS
+  #19.Meltcoef 1.2      |20.I_0 0.33          |21.CWmax 4.970496        |22.SnowThreshold 0     
+  #23.T_0 0           
+  ##START INITIALISATION PARAMETERS                
+  #24.SWinit 200        |25.CWinit 0          |26.SOGinit 0             |27.Sinit 20
+  #28.t0 fPheno_start_date_Tsum_accumulation; conif -999, for birch 57
+  #29.tcrit -999 fPheno_start_date_Tsum_Tthreshold, 1.5 birch
+  #30.tsumcrit -999 fPheno_budburst_Tsum, 134 birch
+  
+  ## Replace default with sampled parameters
+  load(parameters)
+  params=data.frame(trait.values)
+  colnames=c(names(trait.values[[1]]))
+  colnames(params)<-colnames
+
+  param.def[5]=as.numeric(params["bGPP"])
+  param.def[9]=as.numeric(params["kGPP"])
   
   ##Run PRELES
-  PRELES.output=as.data.frame(PRELES(PAR=tmp[,"PAR"],TAir=tmp[,"TAir"],VPD=tmp[,"VPD"], Precip=tmp[,"Precip"],CO2=tmp[,"CO2"],fAPAR=tmp[,"fAPAR"]))
+  PRELES.output=as.data.frame(PRELES(PAR=tmp[,"PAR"],TAir=tmp[,"TAir"],VPD=tmp[,"VPD"], Precip=tmp[,"Precip"],CO2=tmp[,"CO2"],fAPAR=tmp[,"fAPAR"],p = param.def))
   PRELES.output.dims<-dim(PRELES.output)
   
-
+  days=as.Date(start_date):as.Date(end_date)
+  year = strftime(as.Date(days,origin="1970-01-01"),"%Y")
+  years<-unique(year)
+  num.years<- length(years)
+  timestep.s<-86400
+  
   for (y in years){
     if(file.exists(file.path(outdir,paste(y))))
       next
@@ -103,11 +156,11 @@ runPRELES.jobsh<- function(in.path, in.prefix,outdir,start_date,end_date){
                   calendar = "standard",unlim =TRUE)
     
     lat<- ncdim_def("lat", "degrees_east",
-                    vals=as.numeric(lat),
+                    vals=as.numeric( sitelat),
                     longname = "station_longitude")
     
     lon<- ncdim_def("lat", "degrees_north",
-                    vals=as.numeric(lon),
+                    vals=as.numeric(sitelon),
                     longname = "station_longitude")
     
     for(i in 1:length(output)){
@@ -115,16 +168,16 @@ runPRELES.jobsh<- function(in.path, in.prefix,outdir,start_date,end_date){
     }
     
     var<-list()
-    var[[1]]<- ncvar_def("GPP","kg/m2/s",list(lat,lon,t),NA)
+    var[[1]]<- mstmipvar("GPP", lat, lon, t, NA)
     var[[2]]<- ncvar_def("Evapotranspiration", "kg/m2s1",list(lon,lat,t), -999)
     var[[3]]<- ncvar_def("SoilMoist","kg/m2s1", list(lat,lon,t),NA)
     var[[4]]<- ncvar_def("fWE","NA",list(lon,lat,t),-999)
     var[[5]]<- ncvar_def("fW","NA",list(lon,lat,t),-999)
     var[[6]]<- ncvar_def("Evap","kg/m2/s", list(lon,lat,t),-999)
-    var[[7]]<- ncvar_def("TVeg","kg/m2/s",list(lon,lat,t),-999)
+    var[[7]]<- ncvar_def("TVeg","kg/m2/s",list(lat, lon, t), NA)
     
     nc <-nc_create(file.path(outdir,paste(y,"nc", sep=".")),var)
-    varfile <- file(file.path(outdir,paste("2005","nc","var",sep=".")),"w")
+    varfile <- file(file.path(outdir,paste(y,"nc","var",sep=".")),"w")
     for(i in 1:length(var)){
       ncvar_put(nc,var[[i]],output[[i]])
       cat(paste(var[[i]]$name,var[[i]]$longname),file=varfile,sep="/n")
