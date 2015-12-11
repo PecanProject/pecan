@@ -13,8 +13,8 @@ require(BioCro)
 require(PEcAn.data.atmosphere)
 require(PEcAn.utils)
 require(lubridate)
-
-
+library(data.table)
+options(error = browser())
 if(interactive()) {
 
   library(PEcAn.settings)
