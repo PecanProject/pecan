@@ -93,7 +93,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     }else{
 
       args <- list(outfolder, start_date, end_date)
-      if(met %in% "CRUNCEP") args <- c(args, site$lat, site$lon)
+      if(met %in% "CRUNCEP") args <- c(args, site$lat, site$lon) ## this is a hack for regional products that go direct to site-level extraction. Needs generalization (mcd)
       cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
       new.files <- remote.execute.R(cmdFcn,host$name,user=NA, verbose=TRUE)
 
