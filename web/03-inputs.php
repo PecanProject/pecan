@@ -151,6 +151,7 @@ foreach($modeltypes as $type) {
         $x['files'][] = array("id"=>"Ameriflux." . $type, "name"=>"Use Ameriflux");
       }
       $x['files'][] = array("id"=>"NARR." . $type, "name"=>"Use NARR");
+      $x['files'][] = array("id"=>"CRUNCEP." . $type, "name"=>"Use CRUNCEP");
     }
   }
 }
