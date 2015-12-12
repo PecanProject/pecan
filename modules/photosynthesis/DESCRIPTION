@@ -1,8 +1,8 @@
 Package: PEcAn.photosynthesis
 Type: Package
 Title: PEcAn functions used for leaf-level photosynthesis calculations
-Version: 1.4.4
-Date: 2015-11-10
+Version: 1.4.5
+Date: 2015-12-06
 Author: Mike Dietze, Xiaohui Feng, Shawn Serbin
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
@@ -14,8 +14,6 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     Farquhar et al 1980 model.
 Depends:
     rjags
-Suggests:
-    
 SystemRequirements: JAGS2.2.0
 License: FreeBSD + file LICENSE
 Copyright: Authors

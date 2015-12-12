@@ -11,7 +11,7 @@ session_start();
 function get_footer() {
   return "The <a href=\"http://pecanproject.org\">PEcAn project</a> is supported by the National Science Foundation
     (ABI #1062547, ARC #1023477) and the <a href=\"http://www.energybiosciencesinstitute.org/\">Energy
-    Biosciences Institute</a>. <span style=\"float:right\">PEcAn Version 1.4.4</span>";
+    Biosciences Institute</a>. <span style=\"float:right\">PEcAn Version 1.4.5</span>";
 }
 
 function whoami() {
