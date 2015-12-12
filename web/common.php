@@ -29,7 +29,8 @@ function whoami() {
 # CONVERT STRING TO XML
 # ----------------------------------------------------------------------
 function toXML($string) {
-  return htmlspecialchars($string, ENT_XML1);
+  //return htmlspecialchars($string, ENT_XML1);
+  return strtr($string, array('"'=> "&quot;", "&" => "&amp;", "'"=> "&apos;", "<" => "&lt;", ">"=> "&gt;"));
 }
 
 # ----------------------------------------------------------------------
