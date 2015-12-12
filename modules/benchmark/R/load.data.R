@@ -25,6 +25,7 @@
 
 load.data <- function(data.path, format, start_year = NA, end_year=NA, site=NA){
   
+  require(PEcAn.benchmark)
   require(lubridate)
   
   fcn1 <- paste0("load.",format$file_name)
