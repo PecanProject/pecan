@@ -121,7 +121,7 @@ surface_downwelling_photosynthetic_photon_flux_in_air= (surface_downwelling_shor
 ###################Write the new NetCDF file#############################################
 lat_file = str(lat_round)
 lon_file = str(lon_round)
-ncname = outfolder+'/Global_MsTMIP_CRUNCEP_lat('+lat_file+')_lon('+lon_file+')_year('+year_url+').nc'
+ncname = outfolder+'/CRUNCEP.'+year_url+'.nc'
 ncfile = Dataset(ncname,'w')
 
 if calendar.isleap(year_desired):
@@ -152,6 +152,7 @@ northward_wind = ncfile.createVariable('northward_wind',dtype('float32').char,('
 specific_humidity = ncfile.createVariable('specific_humidity',dtype('float32').char,('time','latitude','longitude'))
 surface_downwelling_photosynthetic_photon_flux_in_air = ncfile.createVariable('surface_downwelling_photosynthetic_photon_flux_in_air', dtype('float32').char,('time','latitude','longitude'))
 time = ncfile.createVariable('time', 'd', ('time',))
+time.units = "sec"
 nseconds = ntime*21600
 time[:]= np.arange(0,nseconds,21600)
 air_temperature[:] = n_air_temperature
