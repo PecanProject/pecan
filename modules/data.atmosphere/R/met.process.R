@@ -94,7 +94,8 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
 
       args <- list(outfolder, start_date, end_date)
       if(met %in% "CRUNCEP") {
-        args <- c(args, site) ## this is a hack for regional products that go direct to site-level extraction. Needs generalization (mcd)
+        ## this is a hack for regional products that go direct to site-level extraction. Needs generalization (mcd)
+        args <- c(args, new.site$id, new.site$lat, new.site$lon) 
         stage$met2cf = FALSE
         stage$standardize = FALSE
       }
