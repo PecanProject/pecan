@@ -93,7 +93,11 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     }else{
 
       args <- list(outfolder, start_date, end_date)
-      if(met %in% "CRUNCEP") args <- c(args, site$lat, site$lon) ## this is a hack for regional products that go direct to site-level extraction. Needs generalization (mcd)
+      if(met %in% "CRUNCEP") {
+        args <- c(args, site) ## this is a hack for regional products that go direct to site-level extraction. Needs generalization (mcd)
+        stage$met2cf = FALSE
+        stage$standardize = FALSE
+      }
       cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
       new.files <- remote.execute.R(cmdFcn,host$name,user=NA, verbose=TRUE)
 
@@ -107,6 +111,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
                                     parentid = NA,
                                     con = con,
                                     hostname = host$name)
+      if(met %in% "CRUNCEP"){ready.id = raw.id}
     }
 
   }else if(register$scale=="site") { # Site-level met
