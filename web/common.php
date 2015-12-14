@@ -25,6 +25,20 @@ function whoami() {
     echo "<a href=\"login.php\">login</a>";
   }
 }
+
+function passvars($ignore) {
+  foreach($_REQUEST as $key => $value) {
+    if (!array_key_exists($key, $ignore)) {
+      if (is_array($value)) {
+        foreach($value as $v) {
+          echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
+        }
+      } else {
+        echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+      }
+    }
+  }  
+}
 # ----------------------------------------------------------------------
 # CONVERT STRING TO XML
 # ----------------------------------------------------------------------

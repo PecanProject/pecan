@@ -26,6 +26,7 @@ if ($authentication) {
 
 # boolean parameters
 $offline=isset($_REQUEST['offline']);
+$conversion = (isset($_REQUEST['conversion'])) ? "checked" : "";
 
 $hostname = $fqdn;
 if (isset($_REQUEST['hostname'])) {
@@ -168,9 +169,9 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
           name += " (" + model.attr("revision") + ")";
         }
         if(model.attr("id") == curModel) {
-          $('#modelid').append('<option value="' + model.attr("id") + '" selected>' +name + '</option>');  //reselect our curModel if still available
+          $('#modelid').append('<option value="' + model.attr("id") + '" selected>' + name + '</option>');  //reselect our curModel if still available
         } else {
-          $('#modelid').append('<option value="' + model.attr("id") + '">' +name + '</option>');
+          $('#modelid').append('<option value="' + model.attr("id") + '">' + name + '</option>');
         }
       });
       modelSelected();
@@ -320,7 +321,7 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
       <div class="spacer"></div>
 
       <label id="conversionlabel">Conversion:</label>
-      <input type="checkbox" id="conversion" name="conversion" onChange="modelSelected();" /> 
+      <input type="checkbox" id="conversion" name="conversion" onChange="modelSelected();" <?php echo $conversion; ?>  /> 
       <div class="spacer"></div>
 
       <label id="sitelabel">Site:</label>
