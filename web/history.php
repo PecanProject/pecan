@@ -70,25 +70,20 @@ close_database();
       jQuery(data).find("workflow").each(function() {
         count++;
         var workflow = jQuery(this);
-        var url = "";
         var style = "";
         if (workflow.attr("status") == "DONE") {
           style="background: #BBFFBB; color: black;";
-          url="08-finished.php?workflowid=" + workflow.attr("id");
         } else if (workflow.attr("status") == "ERROR") {
           style="background: #FFBBBB; color: black;";
-          url="08-finished.php?workflowid=" + workflow.attr("id");
         } else if (workflow.attr("status") == "RUNNING") {
           style="background: #BBFFFF; color: black;";
-          url="05-running.php?workflowid=" + workflow.attr("id");
         } else {
           style="background: #FFFFFF; color: black;";
-          url="";
         }
 
         row = '<div class="row history" style="' + style + '">';
-        if (url != "") {
-          row += '  <div class="cell"><a href="' + url + '">' + workflow.attr("id") + '</a></div>';
+        if (workflow.attr("url") != "") {
+          row += '  <div class="cell"><a href="' + workflow.attr("url") + '">' + workflow.attr("id") + '</a></div>';
         } else {
           row += '  <div class="cell">' + workflow.attr("id") + '</div>';
         }

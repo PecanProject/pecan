@@ -70,12 +70,14 @@ $rows = 0;
 $show = 0;
 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
   $rows++;
-  $status="";
+  $status = "";
+  $url = "";
   if (file_exists($row['folder'] . DIRECTORY_SEPARATOR . "STATUS")) {
     $statusfile=file($row['folder'] . DIRECTORY_SEPARATOR . "STATUS");
     foreach ($statusfile as $line) {
       $data = explode("\t", $line);
       if ((count($data) >= 4) && ($data[3] == 'ERROR')) {
+        $url="08-finished.php?workflowid=" . $row['id'];
         $status = "ERROR";
       }
     }
@@ -83,20 +85,26 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     if (!isset($_REQUEST["show_unknown"])) {
       continue;
     }
+    if (file_exists($row['folder'])) {
+      $url="08-finished.php?workflowid=" . $row['id'];
+    }
     $status = "UNKNOWN";
   }
   if (($status == "") && ($row['finished_at'] == "")) {
+    $url="05-running.php?workflowid=" . $row['id'];
     $status = "RUNNING";
   }
   if ($status == "") {
+    $url="08-finished.php?workflowid=" . $row['id'];
     $status = "DONE";
   }
 
   $node = $dom->createElement("workflow");
   $newnode = $parnode->appendChild($node);   
-  $newnode->setAttribute("id",$row['id']);
-  $newnode->setAttribute("status",$status);
-  $newnode->setAttribute("sitename",$row['sitename']);
+  $newnode->setAttribute("id", $row['id']);
+  $newnode->setAttribute("url", $url);
+  $newnode->setAttribute("status", $status);
+  $newnode->setAttribute("sitename", $row['sitename']);
   $newnode->setAttribute("modelname", $row['modelname']);
   $newnode->setAttribute("name", $row['name']);
   $newnode->setAttribute("start_date", $row['start_date']);
@@ -112,7 +120,9 @@ $newnode = $parnode->appendChild($node);
 $newnode->setAttribute("time", $time);
 $newnode->setAttribute("rows", $rows);
 $newnode->setAttribute("returned", $show);
-$newnode->setAttribute("average", ($time / $rows));
+if ($rows != 0) {
+  $newnode->setAttribute("average", ($time / $rows));
+}
 
 //echo htmlspecialchars($dom->saveXML());
 echo $dom->saveXML();
