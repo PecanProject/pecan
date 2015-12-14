@@ -176,7 +176,7 @@ air_pressure[:] = n_air_pressure
 eastward_wind[:] = n_eastward_wind
 northward_wind[:] = n_northward_wind
 specific_humidity[:] = n_specific_humidity
-precipitation_flux[:] = n_precipitation_flux
+precipitation_flux[:] = n_precip
 
 ncfile.close()
 print ncname

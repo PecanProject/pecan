@@ -308,7 +308,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
 
   print("# Convert to model format")
 
-  input.id  <- ready.id[1]
+  input.id  <- ready.id$input.id[1]
   outfolder <- file.path(dir,paste0(met,"_",model,"_site_",str_ns))
   pkg       <- paste0("PEcAn.",model)
   fcn       <- paste0("met2model.",model)
