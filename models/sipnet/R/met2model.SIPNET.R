@@ -85,7 +85,8 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       ifelse(leap_year(year)==TRUE,
              dt <- (366*24*60*60)/length(sec), #leap year
              dt <- (365*24*60*60)/length(sec)) #non-leap year
-      tstep = 86400/dt
+      tstep = round(86400/dt)
+      dt = 86400/tstep
       
       ## extract variables
       lat  <- ncvar_get(nc,"latitude")
