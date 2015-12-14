@@ -114,6 +114,11 @@ specific_humidity_indices = year_url+'_v1.nc4?qair['+time_url+']['+lat_url+']['+
 specific_humidity_filehandle = Dataset(specific_humidity_path+specific_humidity_indices, 'r', format = "NETCDF4")
 specific_humidity_opendap = get_var(specific_humidity_filehandle, 'qair')[timerange, lat, lon]
 
+precip_path = 'http://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1220/mstmip_driver_global_hd_climate_rain_'
+precip_indices = year_url+'_v1.nc4?rain['+time_url+']['+lat_url+']['+lon_url+']'
+precip_filehandle = Dataset(precip_path+precip_indices, 'r', format = "NETCDF4")
+precip_opendap = get_var(precip_filehandle, 'rain')[timerange, lat, lon]
+
 #Calculate Incoming Photosynthetically Active Radiation units: umol/m2/s
 surface_downwelling_photosynthetic_photon_flux_in_air= (surface_downwelling_shortwave_flux_in_air_opendap)*2.1
 
@@ -138,6 +143,7 @@ n_air_pressure = np.reshape(air_pressure_opendap,(ntime,1,1))
 n_eastward_wind = np.reshape(eastward_wind_opendap,(ntime,1,1))
 n_northward_wind = np.reshape(northward_wind_opendap,(ntime,1,1))
 n_specific_humidity = np.reshape(specific_humidity_opendap,(ntime,1,1))
+n_precip = np.reshape(precip_opendap,(ntime,1,1))
 # Assign the dimension data to the new NetCDF file.
 ntime = int(ntime)
 ncfile.createDimension('time',ntime)
@@ -150,6 +156,7 @@ air_pressure = ncfile.createVariable('air_pressure',dtype('float32').char,('time
 eastward_wind = ncfile.createVariable('eastward_wind',dtype('float32').char,('time','latitude','longitude'))
 northward_wind = ncfile.createVariable('northward_wind',dtype('float32').char,('time','latitude','longitude'))
 specific_humidity = ncfile.createVariable('specific_humidity',dtype('float32').char,('time','latitude','longitude'))
+precipitation_flux = ncfile.createVariable('precipitation_flux',dtype('float32').char,('time','latitude','longitude'))
 surface_downwelling_photosynthetic_photon_flux_in_air = ncfile.createVariable('surface_downwelling_photosynthetic_photon_flux_in_air', dtype('float32').char,('time','latitude','longitude'))
 time = ncfile.createVariable('time', 'd', ('time',))
 time.units = "sec"
@@ -169,6 +176,7 @@ air_pressure[:] = n_air_pressure
 eastward_wind[:] = n_eastward_wind
 northward_wind[:] = n_northward_wind
 specific_humidity[:] = n_specific_humidity
+precipitation_flux[:] = n_precipitation_flux
 
 ncfile.close()
 print ncname
