@@ -139,7 +139,7 @@ sda.enkf <- function(settings,IC,prior,obs){
   ## start model run
   start.model.runs(settings,settings$database$bety$write)
   
-  total.time = 2003:2010
+  total.time = 2005:2010
   nt = length(total.time)
   #NPPm = rep(NA,nens)
   FORECAST <- ANALYSIS <- list()
@@ -156,13 +156,46 @@ sda.enkf <- function(settings,IC,prior,obs){
     ### Analysis step
     mu.f = apply(X,2,mean,na.rm=TRUE)
     Pf   = cov(X)
-    Y    = t(obs[t,c(1,3,5,7)])#obs$mean[t]
-    R    = diag(as.numeric(obs[t,c(2,4,6,8)])^2)#obs$sd[t]^2
+#    Y    = t(obs[t,c(1,3,5,7)])#obs$mean[t]
+  Y = t(log(obs[t,c(1,3,5,7)]))
+#    R    = diag(as.numeric(obs[t,c(2,4,6,8)])^2)#obs$sd[t]^2
+    R = diag(log(as.numeric((1+obs[t,c(2,4,6,8)]^2/obs[t,c(1,3,5,7)]^2),4,4)))
     H    = diag(4)#matrix(c(1,rep(0,ncol(X)-1)),1,ncol(X))
     if(!is.na(Y[1])){
       K    = Pf%*%t(H)%*%solve(R+H%*%Pf%*%t(H))
       mu.a = mu.f + K%*%(Y-H%*%mu.f)
       Pa   = (diag(ncol(X)) - K%*%H)%*%Pf
+      if(TRUE){ 
+        ## numerical update of state and process error
+        AnalysisFilterQ <- "
+        model{ 
+        X.mod ~ dnorm(muf,pf) ## Model Forecast
+        
+        ## add process error
+        q  ~ dgamma(aq,bq)
+        X  ~ dnorm(X.mod,q)
+        
+        ## Analysis
+        Y  ~ dnorm(X,r)
+        }"
+        
+        update = list(Y=Y,muf=mu.f,pf=Pf,aq=aqq[t],bq=bqq[t],r=1/R)
+        mod <- jags.model(file=textConnection(AnalysisFilterQ),
+                          data=update,
+                          n.adapt=1000,n.chains=3,
+                          init=list(X.mod=mu.f))
+        jdat <- coda.samples(mod,variable.names=c("q","X"),n.iter=10000) 
+        
+        ## update parameters  
+        dat = as.matrix(jdat)
+        mu.a  = mean(dat[,"X"])
+        Pa  = 1/var(dat[,"X"])
+        #CI.LFq[,t] = quantile(dat[,"X"],c(0.025,0.5,0.975))
+        mq = mean(dat[,"q"])
+        vq = var(dat[,"q"])
+        aqq[t+1] = mq*mq/vq
+        bqq[t+1] = mq/vq
+      }
     } else {
       mu.a = mu.f
       Pa   = Pf
@@ -170,7 +203,9 @@ sda.enkf <- function(settings,IC,prior,obs){
     enkf.params[[t]] = list(mu.f = mu.f, Pf=Pf,mu.a=mu.a,Pa=Pa) 
  
  ## update state matrix
-    analysis = as.data.frame(rmvnorm(nens,mu.a,Pa,method="svd"))
+    analysis = as.data.frame(rmvnorm(nens,log(mu.a),Pa,method="svd"))
+    analysis = exp(analysis)
+    analysis[is.na(analysis)] <- 0
     names(analysis) = names(X)
 #  # EAKF
 #  if(FALSE){
@@ -202,6 +237,7 @@ sda.enkf <- function(settings,IC,prior,obs){
     ANALYSIS[[t]] = analysis
  
     apply(FORECAST[[t]] - ANALYSIS[[t]],2,mean)
+    obs[t,c(1,3,5,7)] - apply(ANALYSIS[[t]],2,mean)
     ### Forecast step
     if(t < nt){
       do.call(my.write.restart,args=list(nens,outdir,run.id,total.time[t],settings,prior,analysis))
