@@ -7,29 +7,61 @@
 #' @param observed Vector, matrix, or data frame (coerced to matrix) of 
 #' observed values. For spectral data, wavelengths are rows and spectra are 
 #' columns.
-#' @param inits Vector of initial values of model parameters to be inverted.
-#' @param ngibbs Number of MCMC iterations
-#' @param prior.function Function for use as prior. Should take a vector of 
-#' parameters as input and return a single value -- the sum of their 
-#' log-densities -- as output.
-#' @param param.mins Vector of minimum values for inversion parameters
-#' @param model The model to be inverted. This should be an R function that 
-#' takes `params` as input and returns one column of `observed` (nrows should 
-#' be the same). Constants should be implicitly included here.
-#' @param adapt Number of steps for adapting covariance matrix (i.e. adapt 
-#' every 'n' steps). Default=100
-#' @param adj_min Minimum threshold for rescaling Jump standard deviation.  
-#' Default = 0.1.
-#' @param target Target acceptance rate. Default=0.234
-#' @param do.lsq Perform least squares optimization first (see `invert.lsq`), 
-#' and use outputs to initialize Metropolis Hastings. This may improve mixing 
-#' time, but risks getting caught in a local minimum.  Default=FALSE
+#' @param settings R list object containing the following elements:
+#' 
+#' inits Vector of initial values of model parameters to be inverted.
+#'
+#' ngibbs Number of MCMC iterations
+#'
+#' prior.function Function for use as prior. Should take a vector of parameters 
+#' as input and return a single value -- the sum of their log-densities -- as 
+#' output.
+#'
+#' param.mins Vector of minimum values for inversion parameters
+
+#' model The model to be inverted. This should be an R function that takes 
+#' `params` as input and returns one column of `observed` (nrows should be the 
+#' same). Constants should be implicitly included here.
+#'
+#' adapt Number of steps for adapting covariance matrix (i.e. adapt every 'n' 
+#' steps). Default=100
+#' adj_min Minimum threshold for rescaling Jump standard deviation.  Default = 
+#' 0.1.
+#' 
+#' target Target acceptance rate. Default=0.234
+#' 
+#' do.lsq Perform least squares optimization first (see `invert.lsq`), and use 
+#' outputs to initialize Metropolis Hastings. This may improve mixing time, but 
+#' risks getting caught in a local minimum.  Default=FALSE
 #' @param quiet Do not show progress bar. Default=FALSE
-invert.custom <- function(observed, inits, ngibbs, prior.function, param.mins, model, adapt=100, 
-                        adj_min=0.1, target=0.234, do.lsq=FALSE, quiet=FALSE){
+invert.custom <- function(observed, settings, quiet=FALSE){
     observed <- as.matrix(observed)
     nspec <- ncol(observed)
     nwl <- nrow(observed)
+
+    need.settings <- c("inits", "ngibbs", "prior.function", "param.mins", "adapt", 
+                       "adj_min", "target", "do.lsq")
+    have.settings <- names(settings)
+    overlap.settings <- need.settings %in% have.settings
+    if(any(!overlap.settings)){
+        error.msg <- paste("Missing the following settings:",
+                        paste(need.settings[!overlap.settings], collapse=" "),
+                        "Try modifying a default.settings() object",
+                        sep = "\n")
+        stop(error.msg)
+    }
+
+# Unpack settings list
+    inits <- settings$inits
+    ngibbs <- settings$ngibbs
+    prior.function <- settings$prior.function
+    param.mins <- settings$param.mins
+    adapt <- settings$adapt
+    adj_min <- settings$adj_min
+    target <- settings$target
+    do.lsq <- settings$do.lsq
+
+# Set up inversion
     npars <- length(inits)
     if(do.lsq){
         fit <- invert.lsq(observed, inits, model, lower=param.mins)
