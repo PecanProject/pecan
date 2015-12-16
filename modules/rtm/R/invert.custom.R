@@ -40,7 +40,7 @@ invert.custom <- function(observed, settings, quiet=FALSE){
     nwl <- nrow(observed)
 
     need.settings <- c("inits", "ngibbs", "prior.function", "param.mins", "adapt", 
-                       "adj_min", "target", "do.lsq")
+                       "adj_min", "target", "do.lsq", "model")
     have.settings <- names(settings)
     overlap.settings <- need.settings %in% have.settings
     if(any(!overlap.settings)){
@@ -52,6 +52,7 @@ invert.custom <- function(observed, settings, quiet=FALSE){
     }
 
 # Unpack settings list
+    model <- settings$model
     inits <- settings$inits
     ngibbs <- settings$ngibbs
     prior.function <- settings$prior.function
