@@ -183,7 +183,7 @@ if (isset($modelinfo['revision'])) {
     <h1>Selected Site</h1>
     <p>Set parameters for the run.</p>
 
-    <form id="formprev" method="POST" action="03-input.php">
+    <form id="formprev" method="POST" action="03-inputs.php">
 <?php if ($offline) { ?>
       <input name="offline" type="hidden" value="offline">
 <?php } ?>
