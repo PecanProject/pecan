@@ -39,6 +39,8 @@ write.config.PRELES<- function(defaults, trait.values, settings, run.id){
                  "'",settings$run$inputs$met$path,"',",
                  "'",outdir,"',",
                  "'",filename,"',",
+                 "'",settings$run$site$lat,"',",
+                 "'",settings$run$site$lon,"',",
                  "'",settings$run$start.date,"',",
                  "'",settings$run$end.date,"') ",
                  '" | R --vanilla'

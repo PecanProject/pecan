@@ -156,7 +156,12 @@ foreach($modeltypes as $type) {
       if (preg_match("/ \(US-.*\)$/", $siteinfo["sitename"])) {
         $x['files'][] = array("id"=>"Ameriflux." . $type, "name"=>"Use Ameriflux");
       }
-      $x['files'][] = array("id"=>"NARR." . $type, "name"=>"Use NARR");
+      // check for NARR,this is not exact since it is a conical projection
+      if ($siteinfo['lat'] > 1 && $siteinfo['lat'] < 46 && $siteinfo['lon'] < -68 && $siteinfo['lon'] > -145) {
+        $x['files'][] = array("id"=>"NARR." . $type, "name"=>"Use NARR");
+      }
+      // CRUNCEP is global
+      $x['files'][] = array("id"=>"CRUNCEP." . $type, "name"=>"Use CRUNCEP");
     }
   }
 }
@@ -320,6 +325,9 @@ $stmt->closeCursor();
 <?php if ($offline) { ?>
       <input name="offline" type="hidden" value="offline">
 <?php } ?>
+<?php if (isset($_REQUEST['conversion'])) { ?>
+      <input name="conversion" type="hidden" value="on">
+<?php } ?>
 <?php foreach($_REQUEST as $key => $value){
 	if(is_array($value)) {
 	  foreach($value as $v) {
@@ -350,7 +358,6 @@ $stmt->closeCursor();
         }
       }
 ?>
-
       <label id="pftlabel">PFT<sup>*</sup></label>
       <select id="pft" name="pft[]" multiple size=5 onChange="validate();">
 <?php
