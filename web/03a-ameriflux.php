@@ -31,12 +31,6 @@ if (!isset($_REQUEST['hostname'])) {
 $hostname=$_REQUEST['hostname'];
 $adv_setup = (isset($_REQUEST['adv_setup'])) ? "checked" : "";
 
-$notes = "";
-if (isset($_REQUEST['notes'])) {
-  $notes = $_REQUEST['notes'];
-  $notes_xml = htmlspecialchars($_REQUEST['notes'], ENT_XML1);
-}
-
 ?>
 <!DOCTYPE html>
 <html>
@@ -77,7 +71,12 @@ if (isset($_REQUEST['notes'])) {
         echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
       }
     } else {
-      echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+      if(strcmp($key, "notes") == 0 ) {
+        $str = htmlentities($value, ENT_QUOTES);
+        echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${str}\"/>";
+      } else {
+        echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+      }
     }
   }
 ?>
@@ -96,7 +95,12 @@ if (isset($_REQUEST['notes'])) {
         echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
       }
     } else {
-      echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+      if(strcmp($key, "notes") == 0 ) {
+        $str = htmlentities($value, ENT_QUOTES);
+        echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${str}\"/>";
+      } else {
+        echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+      }
     }
   }
 ?>

@@ -64,9 +64,14 @@ if (isset($_REQUEST['end'])) {
   $enddate=$_REQUEST['end'];
 }
 
-$email="";
+$email = "";
 if (isset($_REQUEST['email'])) {
   $email=$_REQUEST['email'];
+}
+
+$notes = "";
+if (isset($_REQUEST['notes'])) {
+  $notes=$_REQUEST['notes'];
 }
 
 
@@ -316,35 +321,32 @@ $stmt->closeCursor();
       <input name="offline" type="hidden" value="offline">
 <?php } ?>
 <?php foreach($_REQUEST as $key => $value){
-if(is_array($value)) {
-  foreach($value as $v) {
-    echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
-  }
-} else {
-  echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
-}
-}
+	if(is_array($value)) {
+	  foreach($value as $v) {
+	    echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
+	  }
+	} else {
+	  echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+	}
+      }
 ?>
-</form>
+    </form>
 
-<form id="formnext" method="POST" action="<?php echo ($hostname != $fqdn ? '04-remote.php' : '04-runpecan.php'); ?>">
+    <form id="formnext" method="POST" action="<?php echo ($hostname != $fqdn ? '04-remote.php' : '04-runpecan.php'); ?>">
 <?php if ($offline) { ?>
-<input name="offline" type="hidden" value="on">
+        <input name="offline" type="hidden" value="on">
 <?php } ?>
 <?php if ($userok) { ?>
-<input name="userok" type="hidden" value="on">
+        <input name="userok" type="hidden" value="on">
 <?php } ?>
-<input type="hidden" name="siteid" value="<?php echo $siteid; ?>" />
-<input type="hidden" name="modelid" value="<?php echo $modelid; ?>" />
-<input type="hidden" name="hostname" value="<?php echo $hostname; ?>" />
-
 <?php foreach($_REQUEST as $key => $value){
+		file_put_contents('php://stderr', print_r('key top ' + $key, TRUE));
         if(is_array($value)) {
           foreach($value as $v) {
             echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
           }
         } else {
-            echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+	  echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
         }
       }
 ?>
@@ -394,6 +396,10 @@ foreach($inputs as $input) {
       <input id="email" name="email" type="text" value="<?php echo $email; ?>"/>
       <div class="spacer"></div>
 
+      <label>Notes</label>
+      <textarea name="notes" id="notes" rows="4" width="184px" style="padding: 4px 2px; width:184px; font-size:12px; border: solid 1px #aacfe4; text-overflow:ellipsis;"> <?php echo $notes; ?></textarea>
+      <div class="spacer"></div>
+
 <?php if (isset($browndog_url) && $browndog_url != "") { ?>
       <label title="Use BrownDog for conversions.">Use <a href="http://browndog.ncsa.illinois.edu/">BrownDog</a></label>
       <input id="browndog" name="browndog" type="checkbox" <?php echo $browndog; ?>/>
@@ -410,9 +416,6 @@ foreach($inputs as $input) {
       <p></p>
       <span id="error" class="small">&nbsp;</span>
 
-      <div class="spacer"></div>
-      <label>Notes</label>
-      <textarea name="notes" id="notes" rows="4" width="184px" style="padding: 4px 2px; width:184px; font-size:12px; border: solid 1px #aacfe4; text-overflow:ellipsis;"></textarea>
       <div class="spacer"></div>
       <input id="prev" type="button" value="Prev" onclick="prevStep();" />
       <input id="next" type="button" value="Next" onclick="nextStep();" <?php if (!$userok) echo "disabled" ?>/>

@@ -188,14 +188,19 @@ if (isset($modelinfo['revision'])) {
       <input name="offline" type="hidden" value="offline">
 <?php } ?>
 <?php foreach($_REQUEST as $key => $value){
-if(is_array($value)) {
-  foreach($value as $v) {
-    echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
-  }
-} else {
-    echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
-}
-}
+        if(is_array($value)) {
+          foreach($value as $v) {
+            echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
+          }   
+        } else {
+          if(strcmp($key, "notes") == 0) {
+            $str = htmlentities($value, ENT_QUOTES);
+            echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${str}\"/>";
+          } else {
+            echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+          }
+        }
+      }
 ?>
 </form>
 
@@ -212,7 +217,12 @@ if(is_array($value)) {
 	    echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
 	  }
 	} else {
-	    echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+          if(strcmp($key, "notes") == 0) {
+            $str = htmlentities($value, ENT_QUOTES);
+            echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${str}\"/>";
+          } else {
+            echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+          }
 	}
       }
 ?>
