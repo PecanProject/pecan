@@ -11,7 +11,7 @@ session_start();
 function get_footer() {
   return "The <a href=\"http://pecanproject.org\">PEcAn project</a> is supported by the National Science Foundation
     (ABI #1062547, ARC #1023477) and the <a href=\"http://www.energybiosciencesinstitute.org/\">Energy
-    Biosciences Institute</a>. <span style=\"float:right\">PEcAn Version 1.4.4</span>";
+    Biosciences Institute</a>. <span style=\"float:right\">PEcAn Version 1.4.5</span>";
 }
 
 function whoami() {
@@ -25,11 +25,26 @@ function whoami() {
     echo "<a href=\"login.php\">login</a>";
   }
 }
+
+function passvars($ignore) {
+  foreach($_REQUEST as $key => $value) {
+    if (!array_key_exists($key, $ignore)) {
+      if (is_array($value)) {
+        foreach($value as $v) {
+          echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
+        }
+      } else {
+        echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+      }
+    }
+  }  
+}
 # ----------------------------------------------------------------------
 # CONVERT STRING TO XML
 # ----------------------------------------------------------------------
 function toXML($string) {
-  return htmlspecialchars($string, ENT_XML1);
+  //return htmlspecialchars($string, ENT_XML1);
+  return strtr($string, array('"'=> "&quot;", "&" => "&amp;", "'"=> "&apos;", "<" => "&lt;", ">"=> "&gt;"));
 }
 
 # ----------------------------------------------------------------------
