@@ -33,30 +33,30 @@ convert.samples.ED <- function(trait.samples){
   ## convert SLA from m2 / kg leaf to m2 / kg C 
   
   if('SLA' %in% names(trait.samples)){
-    sla <- trait.samples[['SLA']]
+    sla <- as.numeric(trait.samples[['SLA']])
     trait.samples[['SLA']] <- sla / DEFAULT.LEAF.C
   }
   
   ## convert leaf width / 1000
   if('leaf_width' %in% names(trait.samples)){
-    lw <- trait.samples[['leaf_width']]
+    lw <- as.numeric(trait.samples[['leaf_width']])
     trait.samples[['leaf_width']] <- lw / 1000.0
   }
   
   if('root_respiration_rate' %in% names(trait.samples)) {
-    rrr1 <- trait.samples[['root_respiration_rate']]
+    rrr1 <- as.numeric(trait.samples[['root_respiration_rate']])
     rrr2 <-  rrr1 * DEFAULT.MAINTENANCE.RESPIRATION
     trait.samples[['root_respiration_rate']] <- arrhenius.scaling(rrr2, old.temp = 25, 
                                                                   new.temp = 15)
   }
   
   if('Vcmax' %in% names(trait.samples)) {
-    vcmax <- trait.samples[['Vcmax']]
+    vcmax <- as.numeric(trait.samples[['Vcmax']])
     trait.samples[['Vcmax']] <- arrhenius.scaling(vcmax, old.temp = 25, new.temp = 15)
     
     ## Convert leaf_respiration_rate_m2 to dark_resp_factor; requires Vcmax
     if('leaf_respiration_rate_m2' %in% names(trait.samples)) {
-      leaf_resp = trait.samples[['leaf_respiration_rate_m2']]
+      leaf_resp = as.numeric(trait.samples[['leaf_respiration_rate_m2']])
       
       ## First scale variables to 15 degC
       trait.samples[['leaf_respiration_rate_m2']] <- 
@@ -213,13 +213,12 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
         
         # Add defaults (overriding for traits that were already assigned)
         const = defaults[[group]]$constants
-        i=1
         for(i in seq_along(const)) {
           vals[[names(const)[i]]] = const[[i]]
         }
    
         # Convert
-        vals <- convert.samples.ED(trait.values[[group]])
+        vals <- convert.samples.ED(vals)
         
         # Fix names and remove traits that ED doesn't know about
         names(vals) <- droplevels(trait.lookup(names(vals))$model.id)
