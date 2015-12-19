@@ -177,36 +177,6 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
       ##
       
     } else {
-          ##is a PFT
-#       pft <- defaults[[group]]
-#       ## Insert PFT constants into output xml file  
-#       pft.xml <- listToXml(pft$constants, 'pft')
-#       ## Insert PFT names into output xml file
-#       pft.xml <- append.xmlNode(pft.xml, xmlNode("name", pft$name))
-#       
-#       ##TODO this should come from the database
-#       edpft <- pftmapping$ED[which(pftmapping==group)]
-#       if (is.null(edpft)) {
-#         logger.warn("No mapping found for", group, "using 1")
-#         edpft <- 1
-#       }
-#       
-#       ## copy values
-#       if(!is.null(trait.values[[group]])){
-#         vals <- convert.samples.ED(trait.values[[group]])
-#         names(vals) <- droplevels(trait.lookup(names(vals))$model.id)
-#         traits <- names(vals)
-#         for(trait in traits) {
-#           if (! trait %in% edtraits ) {
-#             logger.error(trait, "not found in ED history")
-#             next
-#           }
-#           if (trait in names(pft$constants)) {
-#           
-#           }
-#           pft.xml <- append.xmlNode(pft.xml, xmlNode(trait, vals[trait]))
-#         }
-#       }
       ## copy values
       if(!is.null(trait.values[[group]])){
         vals <- trait.values[[group]]
