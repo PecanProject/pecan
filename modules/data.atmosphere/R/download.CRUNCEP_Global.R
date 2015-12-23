@@ -46,7 +46,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
     
     ntime = ifelse(year%%4 == 0,1463,1459)
     
-    loc.file = file.path(outfolder,paste0(year,".nc"))
+    loc.file = file.path(outfolder,paste("CRUNCEP",year,"nc",sep="."))
     
     ## Create dimensions
     lat <- ncdim_def(name='latitude', units='degree_north', vals=lat.in, create_dimvar=TRUE)
