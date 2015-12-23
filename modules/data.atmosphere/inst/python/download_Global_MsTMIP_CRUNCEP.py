@@ -135,8 +135,6 @@ surface_downwelling_photosynthetic_photon_flux_in_air= (surface_downwelling_shor
 
 
 ###################Write the new NetCDF file#############################################
-lat_file = str(lat_round)
-lon_file = str(lon_round)
 ncname = outfolder+'/CRUNCEP.'+year_url+'.nc'
 print(ncname)
 ncfile = Dataset(ncname,'w')
