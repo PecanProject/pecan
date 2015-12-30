@@ -6,16 +6,22 @@ Date: 2015-11-10
 Author: Alexey Shiklomanov, Shawn Serbin, Mike Dietze
 Maintainer: Alexey Shiklomanov <ashiklom@bu.edu>
 Description: This package contains functions for performing forward runs and
-	inversions of radiative transfer models (RTMs). Inversions can be performed
-	using maximum likelihood, or more complex hierarchical Bayesian methods.
-	Underlying numerical analyses are optimized for speed using Fortran code.
+    inversions of radiative transfer models (RTMs). Inversions can be performed
+    using maximum likelihood, or more complex hierarchical Bayesian methods.
+    Underlying numerical analyses are optimized for speed using Fortran code.
 Depends:
-    data.table, minpack.lm, MASS, mclust, coda
+    data.table,
+    minpack.lm,
+    MASS,
+    mclust,
+    coda
 Suggests:
-    testthat, knitr
+    testthat,
+    knitr
 OS_type: unix
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 VignetteBuilder: knitr
+RoxygenNote: 5.0.1
