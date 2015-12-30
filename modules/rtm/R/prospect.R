@@ -14,7 +14,7 @@
 #'      and transmittance (column 2) values from 400:2100 nm
 
 prospect <- function(param, version){
-    version <- as.character(version)
+    version <- toupper(as.character(version))
     plist <- as.list(param)
     plist$RT <- matrix(0, 2101, 2)
     if (version == "4"){
