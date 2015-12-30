@@ -12,7 +12,7 @@ Description: This package contains functions for performing forward runs and
 Depends:
     data.table, minpack.lm, MASS, mclust, coda
 Suggests:
-    testthat
+    testthat, knitr
 OS_type: unix
 License: FreeBSD + file LICENSE
 Copyright: Authors
