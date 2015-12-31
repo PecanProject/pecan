@@ -61,7 +61,7 @@ cfmet.downscale.time <- cruncep_hourly <- function(cfmet, output.dt = 1, lat = l
 ##' @param subdailymet data table with climate variables queried from \code{\link{load.cfmet}}
 ##' @param output.dt output timestep. default is one hour
 ##' @export
-##' @return weather file for input to BioGro and related crop growth functions
+##' @return weather file with subdaily met variables rescaled to output time step
 ##' @author David LeBauer
 cfmet.downscale.subdaily <- function(subdailymet, output.dt = 1){
   ## converting surface_downwelling_shortwave_flux_in_air from W/m2 avg to PPFD
@@ -126,9 +126,9 @@ cfmet.downscale.subdaily <- function(subdailymet, output.dt = 1){
 ##' @param lat latitude (for calculating solar radiation)
 ##' @param output.dt output timestep
 ##' @export
-##' @return weather file for input to BioGro and related crop / ecosystem models
+##' @return weather file with subdaily timesteps
 ##' @author David LeBauer
-cfmet.downscale.daily <- weachDT <- function(dailymet, output.dt = 1, lat){
+cfmet.downscale.daily <- function(dailymet, output.dt = 1, lat){
   
   tint <- 24 / output.dt
   tseq <- 0:(23 * output.dt) / output.dt
