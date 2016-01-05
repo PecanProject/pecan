@@ -207,72 +207,72 @@ if (isset($_REQUEST['doit'])) {
 }
 
 ?>
-      <div id="table">
-        <div id="row">
-          <div id="header">ID</div><div><?php echo $workflow['id']; ?></div>
+      <div class="table">
+        <div class="row">
+          <div class="header">ID</div><div><?php echo $workflow['id']; ?></div>
         </div>
-        <div id="row">
-          <div id="header">Site Name</div><div><?php echo $workflow['sitename']; ?></div>
+        <div class="row">
+          <div class="header">Site Name</div><div><?php echo $workflow['sitename']; ?></div>
         </div>
-        <div id="row">
-          <div id="header">Model Name</div><div><?php echo $workflow['modelname']; ?></div>
+        <div class="row">
+          <div class="header">Model Name</div><div><?php echo $workflow['modelname']; ?></div>
         </div>
-        <div id="row">
-          <div id="header">Model Type</div><div><?php echo $workflow['name']; ?></div>
+        <div class="row">
+          <div class="header">Model Type</div><div><?php echo $workflow['name']; ?></div>
         </div>
-        <div id="row">
-          <div id="header">Run Type</div><div><?php echo $ensembles['ensembles']; ?></div>
+        <div class="row">
+          <div class="header">Run Type</div><div><?php echo $ensembles['ensembles']; ?></div>
         </div>
-        <div id="row">
+        <div class="row">
 <?php if (isset($_REQUEST['doit'])) { ?>
-          <div id="header">Number of Ensembles Deleted</div><div><?php echo $deleted_ensembles . "/" .  $ensembles['ensemblescount']; ?></div>
+          <div class="header">Number of Ensembles Deleted</div><div><?php echo $deleted_ensembles . "/" .  $ensembles['ensemblescount']; ?></div>
 <?php } else { ?>
-          <div id="header">Number of Ensembles</div><div><?php echo $ensembles['ensemblescount']; ?></div>
+          <div class="header">Number of Ensembles</div><div><?php echo $ensembles['ensemblescount']; ?></div>
 <?php } ?>
         </div>
-        <div id="row">
+        <div class="row">
 <?php if (isset($_REQUEST['doit'])) { ?>
-          <div id="header">Number of Runs Deleted</div><div><?php echo $deleted_runs . "/" .  $ensembles['runs'] ; ?></div>
+          <div class="header">Number of Runs Deleted</div><div><?php echo $deleted_runs . "/" .  $ensembles['runs'] ; ?></div>
 <?php } else { ?>
-          <div id="header">Number of Runs</div><div><?php echo $ensembles['runs']; ?></div>
+          <div class="header">Number of Runs</div><div><?php echo $ensembles['runs']; ?></div>
 <?php } ?>
         </div>
-        <div id="row">
+        <div class="row">
 <?php if (isset($_REQUEST['doit'])) { ?>
-          <div id="header">Number of Posteriors Deleted</div><div><?php echo $deleted_posteriors . "/" .  count($posteriors) ; ?></div>
+          <div class="header">Number of Posteriors Deleted</div><div><?php echo $deleted_posteriors . "/" .  count($posteriors) ; ?></div>
 <?php } else { ?>
-          <div id="header">Number of Posteriors</div><div><?php echo count($posteriors); ?></div>
+          <div class="header">Number of Posteriors</div><div><?php echo count($posteriors); ?></div>
 <?php } ?>
         </div>
-        <div id="row">
-          <div id="header">Folder</div><div><?php echo $workflow['folder']; ?></div>
+        <div class="row">
+          <div class="header">Folder</div><div><?php echo $workflow['folder']; ?></div>
         </div>
-        <div id="row">
-          <div id="header">Start Date</div><div><?php echo $workflow['start_date']; ?></div>
+        <div class="row">
+          <div class="header">Start Date</div><div><?php echo $workflow['start_date']; ?></div>
         </div>
-        <div id="row">
-          <div id="header">End Date</div><div><?php echo $workflow['end_date']; ?></div>
+        <div class="row">
+          <div class="header">End Date</div><div><?php echo $workflow['end_date']; ?></div>
         </div>
-        <div id="row">
-          <div id="header">Started</div><div><?php echo $workflow['started_at']; ?></div>
+        <div class="row">
+          <div class="header">Started</div><div><?php echo $workflow['started_at']; ?></div>
         </div>
-        <div id="row">
-          <div id="header">Finished</div><div><?php echo $workflow['finished_at']; ?></div>
+        <div class="row">
+          <div class="header">Finished</div><div><?php echo $workflow['finished_at']; ?></div>
         </div>
 <?php if (isset($_REQUEST['doit'])) { ?>
-        <div id="row">
-          <div id="header">Inputs-Runs Deleted</div><div><?php echo $deleted_inputs_runs; ?></div>
+        <div class="row">
+          <div class="header">Inputs-Runs Deleted</div><div><?php echo $deleted_inputs_runs; ?></div>
         </div>
-        <div id="row">
-          <div id="header">Posteriors-Ensembles Deleted</div><div><?php echo $deleted_posteriors_ensembles; ?></div>
+        <div class="row">
+          <div class="header">Posteriors-Ensembles Deleted</div><div><?php echo $deleted_posteriors_ensembles; ?></div>
         </div>
 <?php if (isset($delete_posteriors)) { ?>
-        <div id="row">
-          <div id="header">Posteriors Deleted</div><div><?php echo $delete_posteriors; ?></div>
+        <div class="row">
+          <div class="header">Posteriors Deleted</div><div><?php echo $delete_posteriors; ?></div>
         </div>
 <?php } ?>
-        <div id="row">
-          <div id="header">Workflows Deleted</div><div><?php echo $deleted_workflows; ?></div>
+        <div class="row">
+          <div class="header">Workflows Deleted</div><div><?php echo $deleted_workflows; ?></div>
         </div>
 <?php } ?>
       </div>
@@ -298,11 +298,7 @@ if (isset($_REQUEST['doit'])) {
 }
 ?>
     </div>
-    <div id="footer">
-      The <a href="http://pecanproject.org">PEcAn project</a> is supported by the National Science Foundation
-      (ABI #1062547, ARC #1023477) and the <a href="http://www.energybiosciencesinstitute.org/">Energy
-      Biosciences Institute</a>.
-    </div>
+    <div id="footer"><?php echo get_footer(); ?></div>
   </div>
 </body>  
 
