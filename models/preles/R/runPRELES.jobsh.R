@@ -180,7 +180,7 @@ runPRELES.jobsh<- function(met.file,outdir,parameters, sitelat, sitelon,start.da
     varfile <- file(file.path(outdir,paste(y,"nc","var",sep=".")),"w")
     for(i in 1:length(var)){
       ncvar_put(nc,var[[i]],output[[i]])
-      cat(paste(var[[i]]$name,var[[i]]$longname),file=varfile,sep="/n")
+      cat(paste(var[[i]]$name,var[[i]]$longname),file=varfile,sep="\n")
     }
     close(varfile)
     nc_close(nc)

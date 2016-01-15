@@ -134,20 +134,20 @@ th,td {
     height: calc( 100% - 40px );
 }
 
-#table {
+.table {
     display: table;
 }
 
-#row {
+.row {
     display: table-row;
 }
 
-#cell, #header {
+.cell, .header {
     display: table-cell;
     padding: 0px 5px 0px 5px;
 }
 
-#header {
+.header {
     font-weight: bold;
 }
 
