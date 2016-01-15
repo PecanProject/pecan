@@ -46,9 +46,10 @@
 #' do.lsq.after Number of tries before starting initialization using 
 #' least-squares optimization. Default = TRUE.
 #'
-#' @param return.samples Include full samples list in output. Default = TRUE.
 #' target.adj Amount by which to adjust target acceptance rate every 
 #' attempt. Default = 0.8
+#'
+#' @param return.samples Include full samples list in output. Default = TRUE.
 #' @param save.samples Filename for saving samples after each iteration. If 
 #' 'NULL', do not save samples. Default = NULL.
 #' @return List of "results" (summary statistics and Gelman Diagnostic) and 
