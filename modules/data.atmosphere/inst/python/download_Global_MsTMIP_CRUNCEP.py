@@ -3,7 +3,7 @@
 
 ############################## BEGIN CODE #############################################
 import sys
-print sys.argv
+print(sys.argv)
 
 lat_desired = sys.argv[1]
 lon_desired = sys.argv[2]
@@ -52,16 +52,19 @@ if lon_desired < -179.75:
     sys.exit("Longitude is out of range")
 
 #Round lat/lon desired to .25 or .75, add .25 for the algebra below
-lat_round = customRound(lat_desired+.25)
-lon_round = customRound(lon_desired+.25)
+#lat_round = customRound(lat_desired+.25)
+#lon_round = customRound(lon_desired+.25)
 
 #Use alebra to translate given lat/lon to MSTMIP array value
-lat_target = np.abs((lat_round)*2 - 179.5)
-lon_target = np.abs((lon_round)*2 + 359.5)
+#lat_target = np.abs((lat_round)*2 - 179.5)
+#lon_target = np.abs((lon_round)*2 + 359.5)
 
 #Truncate the value above to make value an integer instead of ending in .0
-lat_trunc = math.trunc(lat_target)
-lon_trunc = math.trunc(lon_target)
+#lat_trunc = math.trunc(lat_target)
+#lon_trunc = math.trunc(lon_target)
+
+lat_trunc = int(2*(90-lat_desired))
+lon_trunc = int(2*(lon_desired+180))
 
 #Create strings out of calculated array values to enter into url string
 lat_url = str(lat_trunc)
@@ -78,44 +81,52 @@ lon = 0
 #Get TA which is 6 hour temperature 
 air_temperature_path ='http://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1220/mstmip_driver_global_hd_climate_tair_'
 air_temperature_indices = year_url+'_v1.nc4?tair['+time_url+']['+lat_url+']['+lon_url+']'
+print(air_temperature_path+air_temperature_indices)
 air_temperature_filehandle = Dataset(air_temperature_path+air_temperature_indices,'r',format="NETCDF4")
 air_temperature_opendap = get_var(air_temperature_filehandle, 'tair')[timerange, lat, lon]
 
 #Get Incoming Longwave Radiation - W/m2
 surface_downwelling_longwave_flux_in_air_path = 'http://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1220/mstmip_driver_global_hd_climate_lwdown_'
 surface_downwelling_longwave_flux_in_air_indices = year_url+'_v1.nc4?lwdown['+time_url+']['+lat_url+']['+lon_url+']'
+print(surface_downwelling_longwave_flux_in_air_path+surface_downwelling_longwave_flux_in_air_indices)
 surface_downwelling_longwave_flux_in_air_filehandle = Dataset(surface_downwelling_longwave_flux_in_air_path+surface_downwelling_longwave_flux_in_air_indices, 'r', format="NETCDF4")
 surface_downwelling_longwave_flux_in_air_opendap = get_var(surface_downwelling_longwave_flux_in_air_filehandle, 'lwdown')[timerange, lat, lon]
 
 #Get Barometric Pressure (assuming pression from MsTMIP is barometric pressure) note units are Pa not kPa like ameriflux
 air_pressure_path = 'http://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1220/mstmip_driver_global_hd_climate_press_'
 air_pressure_indices = year_url+'_v1.nc4?press['+time_url+']['+lat_url+']['+lon_url+']'
+print(air_pressure_path+air_pressure_indices)
 air_pressure_filehandle = Dataset(air_pressure_path+air_pressure_indices, 'r', format="NETCDF4")
 air_pressure_opendap = get_var(air_pressure_filehandle, 'press')[timerange, lat, lon]
 
 #Get Incoming_Short_Wave_Radiation
 surface_downwelling_shortwave_flux_in_air_path = 'http://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1220/mstmip_driver_global_hd_climate_swdown_'
 surface_downwelling_shortwave_flux_in_air_indices = year_url+'_v1.nc4?swdown['+time_url+']['+lat_url+']['+lon_url+']'
+print(surface_downwelling_shortwave_flux_in_air_path+surface_downwelling_shortwave_flux_in_air_indices)
 surface_downwelling_shortwave_flux_in_air_filehandle = Dataset(surface_downwelling_shortwave_flux_in_air_path+surface_downwelling_shortwave_flux_in_air_indices, 'r', format="NETCDF4")
 surface_downwelling_shortwave_flux_in_air_opendap = get_var(surface_downwelling_shortwave_flux_in_air_filehandle, 'swdown')[timerange, lat, lon]
 
 eastward_wind_path = 'http://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1220/mstmip_driver_global_hd_climate_uwind_'
 eastward_wind_indices = year_url+'_v1.nc4?uwind['+time_url+']['+lat_url+']['+lon_url+']'
+print(eastward_wind_path+eastward_wind_indices)
 eastward_wind_filehandle = Dataset(eastward_wind_path+eastward_wind_indices, 'r', format = "NETCDF4")
 eastward_wind_opendap = get_var(eastward_wind_filehandle, 'uwind')[timerange, lat, lon]
 
 northward_wind_path = 'http://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1220/mstmip_driver_global_hd_climate_vwind_'
 northward_wind_indices = year_url+'_v1.nc4?vwind['+time_url+']['+lat_url+']['+lon_url+']'
+print(northward_wind_path+northward_wind_indices)
 northward_wind_filehandle = Dataset(northward_wind_path+northward_wind_indices, 'r', format = "NETCDF4")
 northward_wind_opendap = get_var(northward_wind_filehandle, 'vwind')[timerange, lat, lon]
 
 specific_humidity_path = 'http://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1220/mstmip_driver_global_hd_climate_qair_'
 specific_humidity_indices = year_url+'_v1.nc4?qair['+time_url+']['+lat_url+']['+lon_url+']'
+print(specific_humidity_path+specific_humidity_indices)
 specific_humidity_filehandle = Dataset(specific_humidity_path+specific_humidity_indices, 'r', format = "NETCDF4")
 specific_humidity_opendap = get_var(specific_humidity_filehandle, 'qair')[timerange, lat, lon]
 
 precip_path = 'http://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1220/mstmip_driver_global_hd_climate_rain_'
 precip_indices = year_url+'_v1.nc4?rain['+time_url+']['+lat_url+']['+lon_url+']'
+print(precip_path+precip_indices)
 precip_filehandle = Dataset(precip_path+precip_indices, 'r', format = "NETCDF4")
 precip_opendap = get_var(precip_filehandle, 'rain')[timerange, lat, lon]
 
@@ -124,9 +135,8 @@ surface_downwelling_photosynthetic_photon_flux_in_air= (surface_downwelling_shor
 
 
 ###################Write the new NetCDF file#############################################
-lat_file = str(lat_round)
-lon_file = str(lon_round)
 ncname = outfolder+'/CRUNCEP.'+year_url+'.nc'
+print(ncname)
 ncfile = Dataset(ncname,'w')
 
 if calendar.isleap(year_desired):
@@ -228,4 +238,4 @@ precipitation_flux.missing_value = "-999.0"
 precipitation_flux.fill_value = "-999.0"
 
 ncfile.close()
-print ncname
+print(ncname)

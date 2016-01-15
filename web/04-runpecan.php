@@ -81,9 +81,11 @@ $variables = "NPP";
 if (isset($_REQUEST['variables'])) {
   $variables = $_REQUEST['variables'];
 }
-$notes = "";
+$notes_xml = "";
+$notes_db = "";
 if (isset($_REQUEST['notes'])) {
-  $notes = $_REQUEST['notes'];
+  $notes_xml = $_REQUEST['notes'];
+  $notes_db = html_entity_decode($_REQUEST['notes']);
 }
 $sensitivity = array();
 if (isset($_REQUEST['sensitivity'])) {
@@ -114,7 +116,12 @@ if (!$userok && ($startdate < $metstart || $enddate > $metend)) {
 				$params .= "&${k}[]=$x";
 			}
 		} else {
+		  if(strcmp($k, "notes") == 0) {
+			$str = htmlentities($v, ENT_QUOTES);
+			$params .= "&${k}=$str";
+		  } else {
 			$params .= "&${k}=$v";
+		  }
 		}
 	}
 	$params .= "&msg=WARNING : Selected dates are not within the bounds of the weather data file you selected.";
@@ -142,7 +149,7 @@ if ($userid != -1) {
 }
 $q->bindParam(':siteid', $siteid, PDO::PARAM_INT);
 $q->bindParam(':modelid', $modelid, PDO::PARAM_INT);
-$q->bindParam(':notes', $notes, PDO::PARAM_STR);
+$q->bindParam(':notes', $notes_db, PDO::PARAM_STR);
 $q->bindParam(':hostname', $hostname, PDO::PARAM_STR);
 $q->bindParam(':startdate', $startdate, PDO::PARAM_STR);
 $q->bindParam(':enddate', $enddate, PDO::PARAM_STR);
@@ -199,7 +206,7 @@ fwrite($fh, "<?xml version=\"1.0\"?>" . PHP_EOL);
 fwrite($fh, "<pecan>" . PHP_EOL);
 
 fwrite($fh, "  <info>" . PHP_EOL);
-fwrite($fh, "    <notes>" . toXML($notes) . "</notes>" . PHP_EOL);
+fwrite($fh, "    <notes>" . toXML($notes_xml) . "</notes>" . PHP_EOL);
 fwrite($fh, "    <userid>" . get_userid() . "</userid>" . PHP_EOL);
 fwrite($fh, "    <username>" . get_user_name() . "</username>" . PHP_EOL);
 fwrite($fh, "    <date>${runtime}</date>" . PHP_EOL);
