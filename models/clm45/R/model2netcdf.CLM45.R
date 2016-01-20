@@ -22,426 +22,420 @@ model2netcdf.CLM45 <- function(outdir, sitelat, sitelon, start_date, end_date) {
   
   require("ncdf4")
   
+for (year in start_year:end_year)
   
-  1 mcdate
-  2 mcsec
-  3	mdcur
-  4	mscur
-  5	nstep
-  6	area
-  7	topo
-  8	landfrac
-  9	landmask
-  10 pftmask
-  11	ZSOI
-  12	DZSOI
-  13	WATSAT
-  14	SUCSAT
-  15	BSW
-  16	HKSAT
-  17	ZLAKE
-  18	DZLAKE
-  19	ACTUAL_IMMOB
-  20	AGNPP
-  21	ALT
-  22	ALTMAX
-  23	ALTMAX_LASTYEAR
-  24	AR
-  25	BAF_CROP
-  26	BAF_PEATF
-  27	BCDEP
-  28	BGNPP
-  29	BTRAN
-  30	BUILDHEAT
-  31	COL_CTRUNC
-  32	COL_FIRE_CLOSS
-  33	COL_FIRE_NLOSS
-  34	COL_NTRUNC
-  35	CPOOL
-  36	CWDC
-  37	CWDC_HR
-  38	CWDC_LOSS
-  39	CWDC_TO_LITR2C
-  40	CWDC_TO_LITR3C
-  41	CWDN
-  42	CWDN_TO_LITR2N
-  43	CWDN_TO_LITR3N
-  44	DEADCROOTC
-  45	DEADCROOTN
-  46	DEADSTEMC
-  47	DEADSTEMN
-  48	DENIT
-  49	DISPVEGC
-  50	DISPVEGN
-  51	DSTDEP
-  52	DSTFLXT
-  53	DWT_CLOSS
-  54	DWT_CONV_CFLUX
-  55	DWT_CONV_NFLUX
-  56	DWT_NLOSS
-  57	DWT_PROD100C_GAIN
-  58	DWT_PROD100N_GAIN
-  59	DWT_PROD10C_GAIN
-  60	DWT_PROD10N_GAIN
-  61	DWT_SEEDC_TO_DEADSTEM
-  62	DWT_SEEDC_TO_LEAF
-  63	DWT_SEEDN_TO_DEADSTEM
-  64	DWT_SEEDN_TO_LEAF
-  65	EFLX_DYNBAL
-  66	EFLX_GRND_LAKE
-  67	EFLX_LH_TOT
-  68	EFLX_LH_TOT_R
-  69	EFLX_LH_TOT_U
-  70	ELAI
-  71	ER
-  72	ERRH2O
-  73	ERRH2OSNO
-  74	ERRSEB
-  75	ERRSOI
-  76	ERRSOL
-  77	ESAI
-  78	FAREA_BURNED
-  79	FCEV
-  80	FCOV
-  81	FCTR
-  82	FGEV
-  83	FGR
-  84	FGR12
-  85	FGR_R
-  86	FGR_U
-  87	FH2OSFC
-  88	FIRA
-  89	FIRA_R
-  90	FIRA_U
-  91	FIRE
-  92	FIRE_R
-  93	FIRE_U
-  94	FLDS
-  95	FPG
-  96	FPI
-  97	FPSN
-  98	FPSN_WC
-  99	FPSN_WJ
-  100	FPSN_WP
-  101	FROOTC
-  102	FROOTC_ALLOC
-  103	FROOTC_LOSS
-  104	FROOTN
-  105	FROST_TABLE
-  106	FSA
-  107	FSAT
-  108	FSA_R
-  109	FSA_U
-  110	FSDS
-  111	FSDSND
-  112	FSDSNDLN
-  113	FSDSNI
-  114	FSDSVD
-  115	FSDSVDLN
-  116	FSDSVI
-  117	FSDSVILN
-  118	FSH
-  119	FSH_G
-  120	FSH_NODYNLNDUSE
-  121	FSH_R
-  122	FSH_U
-  123	FSH_V
-  124	FSM
-  125	FSM_R
-  126	FSM_U
-  127	FSNO
-  128	FSNO_EFF
-  129	FSR
-  130	FSRND
-  131	FSRNDLN
-  132	FSRNI
-  133	FSRVD
-  134	FSRVDLN
-  135	FSRVI
-  136	FUELC
-  137	GC_HEAT1
-  138	GC_ICE1
-  139	GC_LIQ1
-  140	GPP
-  141	GR
-  142	GROSS_NMIN
-  143	H2OCAN
-  144	H2OSFC
-  145	H2OSNO
-  146	H2OSNO_TOP
-  147	H2OSOI
-  148	HC
-  149	HCSOI
-  150	HEAT_FROM_AC
-  151	HR
-  152	HTOP
-  153	INT_SNOW
-  154	LAISHA
-  155	LAISUN
-  156	LAKEICEFRAC
-  157	LAKEICETHICK
-  158	LAND_UPTAKE
-  159	LAND_USE_FLUX
-  160	LEAFC
-  161	LEAFC_ALLOC
-  162	LEAFC_LOSS
-  163	LEAFN
-  164	LEAF_MR
-  165	LFC2
-  166	LF_CONV_CFLUX
-  167	LITFALL
-  168	LITHR
-  169	LITR1C
-  170	LITR1C_TO_SOIL1C
-  171	LITR1N
-  172	LITR1N_TNDNCY_VERT_TRANS
-  173	LITR1N_TO_SOIL1N
-  174	LITR1_HR
-  175	LITR2C
-  176	LITR2C_TO_SOIL2C
-  177	LITR2N
-  178	LITR2N_TNDNCY_VERT_TRANS
-  179	LITR2N_TO_SOIL2N
-  180	LITR2_HR
-  181	LITR3C
-  182	LITR3C_TO_SOIL3C
-  183	LITR3N
-  184	LITR3N_TNDNCY_VERT_TRANS
-  185	LITR3N_TO_SOIL3N
-  186	LITR3_HR
-  187	LITTERC
-  188	LITTERC_HR
-  189	LITTERC_LOSS
-  190	LIVECROOTC
-  191	LIVECROOTN
-  192	LIVESTEMC
-  193	LIVESTEMN
-  194	MEG_acetaldehyde
-  195	MEG_acetic_acid
-  196	MEG_acetone
-  197	MEG_carene_3
-  198	MEG_ethanol
-  199	MEG_formaldehyde
-  200	MEG_isoprene
-  201	MEG_methanol
-  202	MEG_pinene_a
-  203	MEG_thujene_a
-  204	MR
-  205	M_LITR1C_TO_LEACHING
-  206	M_LITR2C_TO_LEACHING
-  207	M_LITR3C_TO_LEACHING
-  208	M_SOIL1C_TO_LEACHING
-  209	M_SOIL2C_TO_LEACHING
-  210	M_SOIL3C_TO_LEACHING
-  211	M_SOIL4C_TO_LEACHING
-  212	NBP
-  213	NDEPLOY
-  214	NDEP_TO_SMINN
-  215	NEE
-  216	NEP
-  217	NET_NMIN
-  218	NFIRE
-  219	NFIX_TO_SMINN
-  220	NPP
-  221	OCDEP
-  222	O_SCALAR
-  223	PARVEGLN
-  224	PBOT
-  225	PCO2
-  226	PCT_LANDUNIT
-  227	PCT_NAT_PFT
-  228	PFT_CTRUNC
-  229	PFT_FIRE_CLOSS
-  230	PFT_FIRE_NLOSS
-  231	PFT_NTRUNC
-  232	PLANT_NDEMAND
-  233	POTENTIAL_IMMOB
-  234	PROD100C
-  235	PROD100C_LOSS
-  236	PROD100N
-  237	PROD100N_LOSS
-  238	PROD10C
-  239	PROD10C_LOSS
-  240	PROD10N
-  241	PROD10N_LOSS
-  242	PRODUCT_CLOSS
-  243	PRODUCT_NLOSS
-  244	PSNSHA
-  245	PSNSHADE_TO_CPOOL
-  246	PSNSUN
-  247	PSNSUN_TO_CPOOL
-  248	Q2M
-  249	QBOT
-  250	QCHARGE
-  251	QDRAI
-  252	QDRAI_PERCH
-  253	QDRAI_XS
-  254	QDRIP
-  255	QFLOOD
-  256	QFLX_ICE_DYNBAL
-  257	QFLX_LIQ_DYNBAL
-  258	QH2OSFC
-  259	QINFL
-  260	QINTR
-  261	QIRRIG
-  262	QOVER
-  263	QRGWL
-  264	QRUNOFF
-  265	QRUNOFF_NODYNLNDUSE
-  266	QRUNOFF_R
-  267	QRUNOFF_U
-  268	QSNOMELT
-  269	QSNWCPICE
-  270	QSNWCPICE_NODYNLNDUSE
-  271	QSOIL
-  272	QVEGE
-  273	QVEGT
-  274	RAIN
-  275	RETRANSN
-  276	RETRANSN_TO_NPOOL
-  277	RH2M
-  278	RH2M_R
-  279	RH2M_U
-  280	RR
-  281	RSCANOPY
-  282	SABG
-  283	SABG_PEN
-  284	SABV
-  285	SEEDC
-  286	SEEDN
-  287	SMINN
-  288	SMINN_LEACHED
-  289	SMINN_TO_DENIT_L1S1
-  290	SMINN_TO_DENIT_L2S2
-  291	SMINN_TO_DENIT_L3S3
-  292	SMINN_TO_DENIT_S1S2
-  293	SMINN_TO_DENIT_S2S3
-  294	SMINN_TO_DENIT_S3S4
-  295	SMINN_TO_DENIT_S4
-  296	SMINN_TO_NPOOL
-  297	SMINN_TO_PLANT
-  298	SMINN_TO_SOIL1N_L1
-  299	SMINN_TO_SOIL2N_L2
-  300	SMINN_TO_SOIL2N_S1
-  301	SMINN_TO_SOIL3N_L3
-  302	SMINN_TO_SOIL3N_S2
-  303	SMINN_TO_SOIL4N_S3
-  304	SNOBCMCL
-  305	SNOBCMSL
-  306	SNODSTMCL
-  307	SNODSTMSL
-  308	SNOINTABS
-  309	SNOOCMCL
-  310	SNOOCMSL
-  311	SNOW
-  312	SNOWDP
-  313	SNOWICE
-  314	SNOWLIQ
-  315	SNOW_DEPTH
-  316	SNOW_SINKS
-  317	SNOW_SOURCES
-  318	SOIL1C
-  319	SOIL1C_TO_SOIL2C
-  320	SOIL1N
-  321	SOIL1N_TNDNCY_VERT_TRANS
-  322	SOIL1N_TO_SOIL2N
-  323	SOIL1_HR
-  324	SOIL2C
-  325	SOIL2C_TO_SOIL3C
-  326	SOIL2N
-  327	SOIL2N_TNDNCY_VERT_TRANS
-  328	SOIL2N_TO_SOIL3N
-  329	SOIL2_HR
-  330	SOIL3C
-  331	SOIL3C_TO_SOIL4C
-  332	SOIL3N
-  333	SOIL3N_TNDNCY_VERT_TRANS
-  334	SOIL3N_TO_SOIL4N
-  335	SOIL3_HR
-  336	SOIL4C
-  337	SOIL4N
-  338	SOIL4N_TNDNCY_VERT_TRANS
-  339	SOIL4N_TO_SMINN
-  340	SOIL4_HR
-  341	SOILC
-  342	SOILC_HR
-  343	SOILC_LOSS
-  344	SOILICE
-  345	SOILLIQ
-  346	SOILPSI
-  347	SOILWATER_10CM
-  348	SOMC_FIRE
-  349	SOMHR
-  350	SOM_C_LEACHED
-  351	SR
-  352	STORVEGC
-  353	STORVEGN
-  354	SUPPLEMENT_TO_SMINN
-  355	SoilAlpha
-  356	SoilAlpha_U
-  357	TAUX
-  358	TAUY
-  359	TBOT
-  360	TBUILD
-  361	TG
-  362	TG_R
-  363	TG_U
-  364	TH2OSFC
-  365	THBOT
-  366	TKE1
-  367	TLAI
-  368	TLAKE
-  369	TOTCOLC
-  370	TOTCOLN
-  371	TOTECOSYSC
-  372	TOTECOSYSN
-  373	TOTLITC
-  374	TOTLITN
-  375	TOTPFTC
-  376	TOTPFTN
-  377	TOTPRODC
-  378	TOTPRODN
-  379	TOTSOMC
-  380	TOTSOMN
-  381	TOTVEGC
-  382	TOTVEGN
-  383	TREFMNAV
-  384	TREFMNAV_R
-  385	TREFMNAV_U
-  386	TREFMXAV
-  387	TREFMXAV_R
-  388	TREFMXAV_U
-  389	TSA
-  390	TSAI
-  391	TSA_R
-  392	TSA_U
-  393	TSOI
-  394	TSOI_10CM
-  395	TSOI_ICE
-  396	TV
-  397	TWS
-  398	T_SCALAR
-  399	U10
-  400	URBAN_AC
-  401	URBAN_HEAT
-  402	VOCFLXT
-  403	VOLR
-  404	WA
-  405	WASTEHEAT
-  406	WF
-  407	WIND
-  408	WOODC
-  409	WOODC_ALLOC
-  410	WOODC_LOSS
-  411	WOOD_HARVESTC
-  412	WOOD_HARVESTN
-  413	W_SCALAR
-  414	XSMRPOOL
-  415	XSMRPOOL_RECOVER
-  416	ZBOT
-  417	ZWT
-  418	ZWT_PERCH
+  #rename vars to CF standard
+ 
+  levgrnd:long_name = "coordinate soil levels" ;
+  levlak:long_name = "coordinate lake levels" ;
+  levdcmp:long_name = "coordinate soil levels" ;
+  mcdate:long_name = "current date (YYYYMMDD)" ;
+  mcsec:long_name = "current seconds of current date" ;
+  mdcur:long_name = "current day (from base day)" ;
+  mscur:long_name = "current seconds of current day" ;
+  nstep:long_name = "time step" ;
+  lon:long_name = "coordinate longitude" ;
+  lat:long_name = "coordinate latitude" ;
+  area:long_name = "grid cell areas" ;
+  topo:long_name = "grid cell topography" ;
+  landfrac:long_name = "land fraction" ;
+  landmask:long_name = "land/ocean mask (0.=ocean and 1.=land)" ;
+  pftmask:long_name = "pft real/fake mask (0.=fake and 1.=real)" ;
+  ZSOI:long_name = "soil depth" ;
+  DZSOI:long_name = "soil thickness" ;
+  WATSAT:long_name = "saturated soil water content (porosity)" ;
+  SUCSAT:long_name = "saturated soil matric potential" ;
+  BSW:long_name = "slope of soil water retention curve" ;
+  HKSAT:long_name = "saturated hydraulic conductivity" ;
+  ZLAKE:long_name = "lake layer node depth" ;
+  DZLAKE:long_name = "lake layer thickness" ;
+  ACTUAL_IMMOB:long_name = "actual N immobilization" ;
+  AGNPP:long_name = "aboveground NPP" ;
+  ALT:long_name = "current active layer thickness" ;
+  ALTMAX:long_name = "maximum annual active layer thickness" ;
+  ALTMAX_LASTYEAR:long_name = "maximum prior year active layer thickness" ;
+  AR:long_name = "autotrophic respiration (MR + GR)" ;
+  BAF_CROP:long_name = "fractional area burned for crop" ;
+  BAF_PEATF:long_name = "fractional area burned in peatland" ;
+  BCDEP:long_name = "total BC deposition (dry+wet) from atmosphere" ;
+  BGNPP:long_name = "belowground NPP" ;
+  BUILDHEAT:long_name = "heat flux from urban building interior to walls and roof" ;
+  COL_CTRUNC:long_name = "column-level sink for C truncation" ;
+  COL_FIRE_CLOSS:long_name = "total column-level fire C loss for non-peat fires outside land-type converted region" ;
+  COL_FIRE_NLOSS:long_name = "total column-level fire N loss" ;
+  COL_NTRUNC:long_name = "column-level sink for N truncation" ;
+  CPOOL:long_name = "temporary photosynthate C pool" ;
+  CWDC:long_name = "CWD C" ;
+  CWDC_HR:long_name = "coarse woody debris C heterotrophic respiration" ;
+  CWDC_LOSS:long_name = "coarse woody debris C loss" ;
+  CWDC_TO_LITR2C:long_name = "decomp. of coarse woody debris C to litter 2 C" ;
+  CWDC_TO_LITR3C:long_name = "decomp. of coarse woody debris C to litter 3 C" ;
+  CWDN:long_name = "CWD N" ;
+  CWDN_TO_LITR2N:long_name = "decomp. of coarse woody debris N to litter 2 N" ;
+  CWDN_TO_LITR3N:long_name = "decomp. of coarse woody debris N to litter 3 N" ;
+  DEADCROOTC:long_name = "dead coarse root C" ;
+  DEADCROOTN:long_name = "dead coarse root N" ;
+  DEADSTEMC:long_name = "dead stem C" ;
+  DEADSTEMN:long_name = "dead stem N" ;
+  DENIT:long_name = "total rate of denitrification" ;
+  DISPVEGC:long_name = "displayed veg carbon, excluding storage and cpool" 
+  DISPVEGN:long_name = "displayed vegetation nitrogen" ;
+  DSTDEP:long_name = "total dust deposition (dry+wet) from atmosphere" ;
+  DSTFLXT:long_name = "total surface dust emission" ;
+  DWT_CLOSS:long_name = "total carbon loss from land cover conversion" ;
+  DWT_CONV_CFLUX:long_name = "conversion C flux (immediate loss to atm)" ;
+  DWT_CONV_NFLUX:long_name = "conversion N flux (immediate loss to atm)" ;
+  DWT_NLOSS:long_name = "total nitrogen loss from landcover conversion" ;
+  DWT_PROD100C_GAIN:long_name = "landcover change-driven addition to 100-yr wood product pool" ;
+  DWT_PROD100N_GAIN:long_name = "addition to 100-yr wood product pool" ;
+  DWT_PROD10C_GAIN:long_name = "landcover change-driven addition to 10-yr wood product pool" ;
+  DWT_PROD10N_GAIN:long_name = "addition to 10-yr wood product pool" ;
+  DWT_SEEDC_TO_DEADSTEM:long_name = "seed source to patch-level deadstem" ;
+  DWT_SEEDC_TO_LEAF:long_name = "seed source to patch-level leaf" ;
+  DWT_SEEDN_TO_DEADSTEM:long_name = "seed source to PFT-level deadstem" ;
+  DWT_SEEDN_TO_LEAF:long_name = "seed source to PFT-level leaf" ;
+  EFLX_DYNBAL:long_name = "dynamic land cover change conversion energy flux" ;
+  EFLX_GRND_LAKE:long_name = "net heat flux into lake/snow surface, excluding light transmission" ;
+  EFLX_LH_TOT:long_name = "total latent heat flux [+ to atm]" ;
+  EFLX_LH_TOT_R:long_name = "Rural total evaporation" ;
+  EFLX_LH_TOT_U:long_name = "Urban total evaporation" ;
+  ELAI:long_name = "exposed one-sided leaf area index" ;
+  ER:long_name = "total ecosystem respiration, autotrophic + heterotrophic" ;
+  ERRH2O:long_name = "total water conservation error" ;
+  ERRH2OSNO:long_name = "imbalance in snow depth (liquid water)" ;
+  ERRSEB:long_name = "surface energy conservation error" ;
+  ERRSOI:long_name = "soil/lake energy conservation error" ;
+  ERRSOL:long_name = "solar radiation conservation error" ;
+  ESAI:long_name = "exposed one-sided stem area index" ;
+  FAREA_BURNED:long_name = "timestep fractional area burned" ;
+  FCEV:long_name = "canopy evaporation" ;
+  FCOV:long_name = "fractional impermeable area" ;
+  FCTR:long_name = "canopy transpiration" ;
+  FGEV:long_name = "ground evaporation" ;
+  FGR:long_name = "heat flux into soil/snow including snow melt and lake / snow light transmission" ;
+  FGR12:long_name = "heat flux between soil layers 1 and 2" ;
+  FGR_R:long_name = "Rural heat flux into soil/snow including snow melt and snow light transmission" ;
+  FGR_U:long_name = "Urban heat flux into soil/snow including snow melt" ;
+  FH2OSFC:long_name = "fraction of ground covered by surface water" ;
+  FIRA:long_name = "net infrared (longwave) radiation" ;
+  FIRA_R:long_name = "Rural net infrared (longwave) radiation" ;
+  FIRA_U:long_name = "Urban net infrared (longwave) radiation" ;
+  FIRE:long_name = "emitted infrared (longwave) radiation" ;
+  FIRE_R:long_name = "Rural emitted infrared (longwave) radiation" ;
+  FIRE_U:long_name = "Urban emitted infrared (longwave) radiation" ;
+  FLDS:long_name = "atmospheric longwave radiation" ;
+  FPG:long_name = "fraction of potential gpp" ;
+  FPI:long_name = "fraction of potential immobilization" ;
+  FPSN:long_name = "photosynthesis" ;
+  FPSN_WC:long_name = "Rubisco-limited photosynthesis" ;
+  FPSN_WJ:long_name = "RuBP-limited photosynthesis" ;
+  FPSN_WP:long_name = "Product-limited photosynthesis" ;
+  FROOTC:long_name = "fine root C" ;
+  FROOTC_ALLOC:long_name = "fine root C allocation" ;
+  FROOTC_LOSS:long_name = "fine root C loss" ;
+  FROOTN:long_name = "fine root N" ;
+  FSA:long_name = "absorbed solar radiation" ;
+  FSAT:long_name = "fractional area with water table at surface" ;
+  FSA_R:long_name = "Rural absorbed solar radiation" ;
+  FSA_U:long_name = "Urban absorbed solar radiation" ;
+  FSDS:long_name = "atmospheric incident solar radiation" ;
+  FSDSND:long_name = "direct nir incident solar radiation" ;
+  FSDSNDLN:long_name = "direct nir incident solar radiation at local noon" ;
+  FSDSNI:long_name = "diffuse nir incident solar radiation" ;
+  FSDSVD:long_name = "direct vis incident solar radiation" ;
+  FSDSVDLN:long_name = "direct vis incident solar radiation at local noon" ;
+  FSDSVI:long_name = "diffuse vis incident solar radiation" ;
+  FSDSVILN:long_name = "diffuse vis incident solar radiation at local noon" ;
+  FSH:long_name = "sensible heat" ;
+  FSH_G:long_name = "sensible heat from ground" ;
+  FSH_NODYNLNDUSE:long_name = "sensible heat not including correction for land use change" ;
+  FSH_R:long_name = "Rural sensible heat" ;
+  FSH_U:long_name = "Urban sensible heat" ;
+  FSH_V:long_name = "sensible heat from veg" ;
+  FSM:long_name = "snow melt heat flux" ;
+  FSM_R:long_name = "Rural snow melt heat flux" ;
+  FSM_U:long_name = "Urban snow melt heat flux" ;
+  FSNO:long_name = "fraction of ground covered by snow" ;
+  FSNO_EFF:long_name = "effective fraction of ground covered by snow" ;
+  FSR:long_name = "reflected solar radiation" ;
+  FSRND:long_name = "direct nir reflected solar radiation" ;
+  FSRNDLN:long_name = "direct nir reflected solar radiation at local noon" ;
+  FSRNI:long_name = "diffuse nir reflected solar radiation" ;
+  FSRVD:long_name = "direct vis reflected solar radiation" ;
+  FSRVDLN:long_name = "direct vis reflected solar radiation at local noon" ;
+  FSRVI:long_name = "diffuse vis reflected solar radiation" ;
+  FUELC:long_name = "fuel load" ;
+  GC_HEAT1:long_name = "initial gridcell total heat content" ;
+  GC_ICE1:long_name = "initial gridcell total ice content" ;
+  GC_LIQ1:long_name = "initial gridcell total liq content" ;
+  GPP:long_name = "gross primary production" ;
+  GR:long_name = "total growth respiration" ;
+  GROSS_NMIN:long_name = "gross rate of N mineralization" ;
+  H2OCAN:long_name = "intercepted water" ;
+  H2OSFC:long_name = "surface water depth" ;
+  H2OSNO:long_name = "snow depth (liquid water)" ;
+  H2OSNO_TOP:long_name = "mass of snow in top snow layer" ;
+  HC:long_name = "heat content of soil/snow/lake" ;
+  HCSOI:long_name = "soil heat content" ;
+  HEAT_FROM_AC:long_name = "sensible heat flux put into canyon due to heat removed from air conditioning" ;
+  HR:long_name = "total heterotrophic respiration" ;
+  HTOP:long_name = "canopy top" ;
+  LAISHA:long_name = "shaded projected leaf area index" ;
+  LAISUN:long_name = "sunlit projected leaf area index" ;
+  LAKEICEFRAC:long_name = "lake layer ice mass fraction" ;
+  LAKEICETHICK:long_name = "thickness of lake ice (including physical expansion on freezing)" ;
+  LAND_UPTAKE:long_name = "NEE minus LAND_USE_FLUX, negative for update" ;
+  LAND_USE_FLUX:long_name = "total C emitted from land cover conversion and wood product pools" ;
+  LEAFC:long_name = "leaf C" ;
+  LEAFC_ALLOC:long_name = "leaf C allocation" ;
+  LEAFC_LOSS:long_name = "leaf C loss" ;
+  LEAFN:long_name = "leaf N" ;
+  LEAF_MR:long_name = "leaf maintenance respiration" ;
+  LFC2:long_name = "conversion area fraction of BET and BDT that burned" ;
+  LF_CONV_CFLUX:long_name = "conversion carbon due to BET and BDT area decreasing" ;
+  LITFALL:long_name = "litterfall (leaves and fine roots)" ;
+  LITHR:long_name = "litter heterotrophic respiration" ;
+  LITR1C:long_name = "LITR1 C" ;
+  LITR1C_TO_SOIL1C:long_name = "decomp. of litter 1 C to soil 1 C" ;
+  LITR1N:long_name = "LITR1 N" ;
+  LITR1N_TNDNCY_VERT_TRANS:long_name = "litter 1 N tendency due to vertical transport" ;
+  LITR1N_TO_SOIL1N:long_name = "decomp. of litter 1 N to soil 1 N" ;
+  LITR1_HR:long_name = "Het. Resp. from litter 1" ;
+  LITR2C:long_name = "LITR2 C" ;
+  LITR2C_TO_SOIL2C:long_name = "decomp. of litter 2 C to soil 2 C" ;
+  LITR2N:long_name = "LITR2 N" ;
+  LITR2N_TNDNCY_VERT_TRANS:long_name = "litter 2 N tendency due to vertical transport" ;
+  LITR2N_TO_SOIL2N:long_name = "decomp. of litter 2 N to soil 2 N" ;
+  LITR2_HR:long_name = "Het. Resp. from litter 2" ;
+  LITR3C:long_name = "LITR3 C" ;
+  LITR3C_TO_SOIL3C:long_name = "decomp. of litter 3 C to soil 3 C" ;
+  LITR3N:long_name = "LITR3 N" ;
+  LITR3N_TNDNCY_VERT_TRANS:long_name = "litter 3 N tendency due to vertical transport" ;
+  LITR3N_TO_SOIL3N:long_name = "decomp. of litter 3 N to soil 3 N" ;
+  LITR3_HR:long_name = "Het. Resp. from litter 3" ;
+  LITTERC:long_name = "litter C" ;
+  LITTERC_HR:long_name = "litter C heterotrophic respiration" ;
+  LITTERC_LOSS:long_name = "litter C loss" ;
+  LIVECROOTC:long_name = "live coarse root C" ;
+  LIVECROOTN:long_name = "live coarse root N" ;
+  LIVESTEMC:long_name = "live stem C" ;
+  LIVESTEMN:long_name = "live stem N" ;
+  MEG_acetaldehyde:long_name = "MEGAN flux" ;
+  MEG_acetic_acid:long_name = "MEGAN flux" ;
+  MEG_acetone:long_name = "MEGAN flux" ;
+  MEG_carene_3:long_name = "MEGAN flux" ;
+  MEG_ethanol:long_name = "MEGAN flux" ;
+  MEG_formaldehyde:long_name = "MEGAN flux" ;
+  MEG_isoprene:long_name = "MEGAN flux" ;
+  MEG_methanol:long_name = "MEGAN flux" ;
+  MEG_pinene_a:long_name = "MEGAN flux" ;
+  MEG_thujene_a:long_name = "MEGAN flux" ;
+  MR:long_name = "maintenance respiration" ;
+  M_LITR1C_TO_LEACHING:long_name = "litter 1 C leaching loss" ;
+  M_LITR2C_TO_LEACHING:long_name = "litter 2 C leaching loss" ;
+  M_LITR3C_TO_LEACHING:long_name = "litter 3 C leaching loss" ;
+  M_SOIL1C_TO_LEACHING:long_name = "soil 1 C leaching loss" ;
+  M_SOIL2C_TO_LEACHING:long_name = "soil 2 C leaching loss" ;
+  M_SOIL3C_TO_LEACHING:long_name = "soil 3 C leaching loss" ;
+  M_SOIL4C_TO_LEACHING:long_name = "soil 4 C leaching loss" ;
+  NBP:long_name = "net biome production, includes fire, landuse, and harvest flux, positive for sink" ;
+  NDEPLOY:long_name = "total N deployed in new growth" ;
+  NDEP_TO_SMINN:long_name = "atmospheric N deposition to soil mineral N" ;
+  NEE:long_name = "net ecosystem exchange of carbon, includes fire, landuse, harvest, and hrv_xsmrpool flux, positive for source" ;
+  NEP:long_name = "net ecosystem production, excludes fire, landuse, and harvest flux, positive for sink" ;
+  NET_NMIN:long_name = "net rate of N mineralization" ;
+  NFIRE:long_name = "fire counts valid only in Reg.C" ;
+  NFIX_TO_SMINN:long_name = "symbiotic/asymbiotic N fixation to soil mineral N" ;
+  NPP:long_name = "net primary production" ;
+  OCDEP:long_name = "total OC deposition (dry+wet) from atmosphere" ;
+  O_SCALAR:long_name = "fraction by which decomposition is reduced due to anoxia" ;
+  PARVEGLN:long_name = "absorbed par by vegetation at local noon" ;
+  PBOT:long_name = "atmospheric pressure" ;
+  PCO2:long_name = "atmospheric partial pressure of CO2" ;
+  PCT_LANDUNIT:long_name = "% of each landunit on grid cell" ;
+  PCT_NAT_PFT:long_name = "% of each PFT on the natural vegetation (i.e., soil) landunit" ;
+  PFT_CTRUNC:long_name = "patch-level sink for C truncation" ;
+  PFT_FIRE_CLOSS:long_name = "total patch-level fire C loss for non-peat fires outside land-type converted region" ;
+  PFT_FIRE_NLOSS:long_name = "total pft-level fire N loss" ;
+  PFT_NTRUNC:long_name = "pft-level sink for N truncation" ;
+  PLANT_NDEMAND:long_name = "N flux required to support initial GPP" ;
+  POTENTIAL_IMMOB:long_name = "potential N immobilization" ;
+  PROD100C:long_name = "100-yr wood product C" ;
+  PROD100C_LOSS:long_name = "loss from 100-yr wood product pool" ;
+  PROD100N:long_name = "100-yr wood product N" ;
+  PROD100N_LOSS:long_name = "loss from 100-yr wood product pool" ;
+  PROD10C:long_name = "10-yr wood product C" ;
+  PROD10C_LOSS:long_name = "loss from 10-yr wood product pool" ;
+  PROD10N:long_name = "10-yr wood product N" ;
+  PROD10N_LOSS:long_name = "loss from 10-yr wood product pool" ;
+  PRODUCT_CLOSS:long_name = "total carbon loss from wood product pools" ;
+  PRODUCT_NLOSS:long_name = "total N loss from wood product pools" ;
+  PSNSHA:long_name = "shaded leaf photosynthesis" ;
+  PSNSHADE_TO_CPOOL:long_name = "C fixation from shaded canopy" ;
+  PSNSUN:long_name = "sunlit leaf photosynthesis" ;
+  PSNSUN_TO_CPOOL:long_name = "C fixation from sunlit canopy" ;
+  Q2M:long_name = "2m specific humidity" ;
+  QBOT:long_name = "atmospheric specific humidity" ;
+  QDRAI:long_name = "sub-surface drainage" ;
+  QDRAI_PERCH:long_name = "perched wt drainage" ;
+  QDRAI_XS:long_name = "saturation excess drainage" ;
+  QDRIP:long_name = "throughfall" ;
+  QFLOOD:long_name = "runoff from river flooding" ;
+  QFLX_ICE_DYNBAL:long_name = "ice dynamic land cover change conversion runoff flux" ;
+  QFLX_LIQ_DYNBAL:long_name = "liq dynamic land cover change conversion runoff flux" ;
+  QH2OSFC:long_name = "surface water runoff" ;
+  QINFL:long_name = "infiltration" ;
+  QINTR:long_name = "interception" ;
+  QIRRIG:long_name = "water added through irrigation" ;
+  QOVER:long_name = "surface runoff" ;
+  QRGWL:long_name = "surface runoff at glaciers (liquid only), wetlands, lakes" ;
+  QRUNOFF:long_name = "total liquid runoff (does not include QSNWCPICE)" ;
+  QRUNOFF_NODYNLNDUSE:long_name = "total liquid runoff (does not include QSNWCPICE) not including correction for land use change" ;
+  QRUNOFF_R:long_name = "Rural total runoff" ;
+  QRUNOFF_U:long_name = "Urban total runoff" ;
+  QSNOMELT:long_name = "snow melt" ;
+  QSNWCPICE:long_name = "excess snowfall due to snow capping" ;
+  QSNWCPICE_NODYNLNDUSE:long_name = "excess snowfall due to snow capping not including correction for land use change" ;
+  QSOIL:long_name = "Ground evaporation (soil/snow evaporation + soil/snow sublimation - dew)" ;
+  QVEGE:long_name = "canopy evaporation" ;
+  QVEGT:long_name = "canopy transpiration" ;
+  RAIN:long_name = "atmospheric rain" ;
+  RETRANSN:long_name = "plant pool of retranslocated N" ;
+  RETRANSN_TO_NPOOL:long_name = "deployment of retranslocated N" ;
+  RH2M:long_name = "2m relative humidity" ;
+  RH2M_R:long_name = "Rural 2m specific humidity" ;
+  RH2M_U:long_name = "Urban 2m relative humidity" ;
+  RR:long_name = "root respiration (fine root MR + total root GR)" ;
+  RSCANOPY:long_name = "canopy resistance" ;
+  SABG:long_name = "solar rad absorbed by ground" ;
+  SABG_PEN:long_name = "Rural solar rad penetrating top soil or snow layer" ;
+  SABV:long_name = "solar rad absorbed by veg" ;
+  SEEDC:long_name = "pool for seeding new Patches" ;
+  SEEDN:long_name = "pool for seeding new PFTs" ;
+  SMINN:long_name = "soil mineral N" ;
+  SMINN_LEACHED:long_name = "soil mineral N pool loss to leaching" ;
+  SMINN_TO_DENIT_L1S1:long_name = "denitrification for decomp. of litter 1to SOIL1" ;
+  SMINN_TO_DENIT_L2S2:long_name = "denitrification for decomp. of litter 2to SOIL2" ;
+  SMINN_TO_DENIT_L3S3:long_name = "denitrification for decomp. of litter 3to SOIL3" ;
+  SMINN_TO_DENIT_S1S2:long_name = "denitrification for decomp. of soil 1to SOIL2" ;
+  SMINN_TO_DENIT_S2S3:long_name = "denitrification for decomp. of soil 2to SOIL3" ;
+  SMINN_TO_DENIT_S3S4:long_name = "denitrification for decomp. of soil 3to SOIL4" ;
+  SMINN_TO_DENIT_S4:long_name = "denitrification for decomp. of soil 4to atmosphe" ;
+  SMINN_TO_NPOOL:long_name = "deployment of soil mineral N uptake" ;
+  SMINN_TO_PLANT:long_name = "plant uptake of soil mineral N" ;
+  SMINN_TO_SOIL1N_L1:long_name = "mineral N flux for decomp. of LITR1to SOIL1" ;
+  SMINN_TO_SOIL2N_L2:long_name = "mineral N flux for decomp. of LITR2to SOIL2" ;
+  SMINN_TO_SOIL2N_S1:long_name = "mineral N flux for decomp. of SOIL1to SOIL2" ;
+  SMINN_TO_SOIL3N_L3:long_name = "mineral N flux for decomp. of LITR3to SOIL3" ;
+  SMINN_TO_SOIL3N_S2:long_name = "mineral N flux for decomp. of SOIL2to SOIL3" ;
+  SMINN_TO_SOIL4N_S3:long_name = "mineral N flux for decomp. of SOIL3to SOIL4" ;
+  SNOBCMCL:long_name = "mass of BC in snow column" ;
+  SNOBCMSL:long_name = "mass of BC in top snow layer" ;
+  SNODSTMCL:long_name = "mass of dust in snow column" ;
+  SNODSTMSL:long_name = "mass of dust in top snow layer" ;
+  SNOINTABS:long_name = "Percent of incoming solar absorbed by lower snow layers" ;
+  SNOOCMCL:long_name = "mass of OC in snow column" ;
+  SNOOCMSL:long_name = "mass of OC in top snow layer" ;
+  SNOW:long_name = "atmospheric snow" ;
+  SNOWDP:long_name = "gridcell mean snow height" ;
+  SNOWICE:long_name = "snow ice" ;
+  SNOWLIQ:long_name = "snow liquid water" ;
+  SNOW_DEPTH:long_name = "snow height of snow covered area" ;
+  SNOW_SINKS:long_name = "snow sinks (liquid water)" ;
+  SNOW_SOURCES:long_name = "snow sources (liquid water)" ;
+  SOIL1C:long_name = "SOIL1 C" ;
+  SOIL1C_TO_SOIL2C:long_name = "decomp. of soil 1 C to soil 2 C" ;
+  SOIL1N:long_name = "SOIL1 N" ;
+  SOIL1N_TNDNCY_VERT_TRANS:long_name = "soil 1 N tendency due to vertical transport" ;
+  SOIL1N_TO_SOIL2N:long_name = "decomp. of soil 1 N to soil 2 N" ;
+  SOIL1_HR:long_name = "Het. Resp. from soil 1" ;
+  SOIL2C:long_name = "SOIL2 C" ;
+  SOIL2C_TO_SOIL3C:long_name = "decomp. of soil 2 C to soil 3 C" ;
+  SOIL2N:long_name = "SOIL2 N" ;
+  SOIL2N_TNDNCY_VERT_TRANS:long_name = "soil 2 N tendency due to vertical transport" ;
+  SOIL2N_TO_SOIL3N:long_name = "decomp. of soil 2 N to soil 3 N" ;
+  SOIL2_HR:long_name = "Het. Resp. from soil 2" ;
+  SOIL3C:long_name = "SOIL3 C" ;
+  SOIL3C_TO_SOIL4C:long_name = "decomp. of soil 3 C to soil 4 C" ;
+  SOIL3N:long_name = "SOIL3 N" ;
+  SOIL3N_TNDNCY_VERT_TRANS:long_name = "soil 3 N tendency due to vertical transport" ;
+  SOIL3N_TO_SOIL4N:long_name = "decomp. of soil 3 N to soil 4 N" ;
+  SOIL3_HR:long_name = "Het. Resp. from soil 3" ;
+  SOIL4C:long_name = "SOIL4 C" ;
+  SOIL4N:long_name = "SOIL4 N" ;
+  SOIL4N_TNDNCY_VERT_TRANS:long_name = "soil 4 N tendency due to vertical transport" ;
+  SOIL4N_TO_SMINN:long_name = "mineral N flux for decomp. of SOIL4" ;
+  SOIL4_HR:long_name = "Het. Resp. from soil 4" ;
+  SOILC:long_name = "soil C" ;
+  SOILC_HR:long_name = "soil C heterotrophic respiration" ;
+  SOILC_LOSS:long_name = "soil C loss" ;
+  SOILPSI:long_name = "soil water potential in each soil layer" ;
+  SOMC_FIRE:long_name = "C loss due to peat burning" ;
+  SOMHR:long_name = "soil organic matter heterotrophic respiration" ;
+  SOM_C_LEACHED:long_name = "total flux of C from SOM pools due to leaching" ;
+  SR:long_name = "total soil respiration (HR + root resp)" ;
+  STORVEGC:long_name = "stored vegetation carbon, excluding cpool" ;
+  STORVEGN:long_name = "stored vegetation nitrogen" ;
+  SUPPLEMENT_TO_SMINN:long_name = "supplemental N supply" ;
+  SoilAlpha:long_name = "factor limiting ground evap" ;
+  SoilAlpha_U:long_name = "urban factor limiting ground evap" ;
+  TAUX:long_name = "zonal surface stress" ;
+  TAUY:long_name = "meridional surface stress" ;
+  TBOT:long_name = "atmospheric air temperature" ;
+  TBUILD:long_name = "internal urban building temperature" ;
+  TG:long_name = "ground temperature" ;
+  TG_R:long_name = "Rural ground temperature" ;
+  TG_U:long_name = "Urban ground temperature" ;
+  TH2OSFC:long_name = "surface water temperature" ;
+  THBOT:long_name = "atmospheric air potential temperature" ;
+  TKE1:long_name = "top lake level eddy thermal conductivity" ;
+  TLAI:long_name = "total projected leaf area index" ;
+  TLAKE:long_name = "lake temperature" ;
+  TOTCOLC:long_name = "total column carbon, incl veg and cpool" ;
+  TOTCOLN:long_name = "total column-level N" ;
+  TOTECOSYSC:long_name = "total ecosystem carbon, incl veg but excl cpool" ;
+  TOTECOSYSN:long_name = "total ecosystem N" ;
+  TOTLITC:long_name = "total litter carbon" ;
+  TOTLITN:long_name = "total litter N" ;
+  TOTPFTC:long_name = "total patch-level carbon, including cpool" ;
+  TOTPFTN:long_name = "total PFT-level nitrogen" ;
+  TOTPRODC:long_name = "total wood product C" ;
+  TOTPRODN:long_name = "total wood product N" ;
+  TOTSOMC:long_name = "total soil organic matter carbon" ;
+  TOTSOMN:long_name = "total soil organic matter N" ;
+  TOTVEGC:long_name = "total vegetation carbon, excluding cpool" ;
+  TOTVEGN:long_name = "total vegetation nitrogen" ;
+  TREFMNAV:long_name = "daily minimum of average 2-m temperature" ;
+  TREFMNAV_R:long_name = "Rural daily minimum of average 2-m temperature" ;
+  TREFMNAV_U:long_name = "Urban daily minimum of average 2-m temperature" ;
+  TREFMXAV:long_name = "daily maximum of average 2-m temperature" ;
+  TREFMXAV_R:long_name = "Rural daily maximum of average 2-m temperature" ;
+  TREFMXAV_U:long_name = "Urban daily maximum of average 2-m temperature" ;
+  TSA:long_name = "2m air temperature" ;
+  TSAI:long_name = "total projected stem area index" ;
+  TSA_R:long_name = "Rural 2m air temperature" ;
+  TSA_U:long_name = "Urban 2m air temperature" ;
+  TSOI_10CM:long_name = "soil temperature in top 10cm of soil" ;
+  TV:long_name = "vegetation temperature" ;
+  TWS:long_name = "total water storage" ;
+  T_SCALAR:long_name = "temperature inhibition of decomposition" ;
+  U10:long_name = "10-m wind" ;
+  URBAN_AC:long_name = "urban air conditioning flux" ;
+  URBAN_HEAT:long_name = "urban heating flux" ;
+  VOCFLXT:long_name = "total VOC flux into atmosphere" ;
+  VOLR:long_name = "river channel water storage" ;
+  WASTEHEAT:long_name = "sensible heat flux from heating/cooling sources of urban waste heat" ;
+  WF:long_name = "soil water as frac. of whc for top 0.05 m" ;
+  WIND:long_name = "atmospheric wind velocity magnitude" ;
+  WOODC:long_name = "wood C" ;
+  WOODC_ALLOC:long_name = "wood C eallocation" ;
+  WOODC_LOSS:long_name = "wood C loss" ;
+  WOOD_HARVESTC:long_name = "wood harvest carbon (to product pools)" ;
+  WOOD_HARVESTN:long_name = "wood harvest N (to product pools)" ;
+  W_SCALAR:long_name = "Moisture (dryness) inhibition of decomposition" 
 
+ 
+ 
 }  ## end model2netcdf.CLM45
 ##==================================================================================================#
 

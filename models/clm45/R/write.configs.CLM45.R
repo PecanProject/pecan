@@ -23,7 +23,14 @@
 ##-------------------------------------------------------------------------------------------------#
 write.config.CLM45 <- function(defaults, trait.values, settings, run.id){
   
-  # find out where to write run/ouput
+  #Outline to get Dan's custom run to work
+  # Run Dan's Python script in scripts directory
+  # Point to scripts/run - run "id of run".build 
+  # Edit datm.streams.txt.CLM1PT.CLM_USRDAT to make sure paths are correct
+  # run cesm.exe from scripts/run_id/bld/
+  #
+  #Need- Figure how to configure runs and 
+
   rundir <- file.path(settings$run$host$rundir, run.id)
   outdir <- file.path(settings$run$host$outdir, run.id)
   
