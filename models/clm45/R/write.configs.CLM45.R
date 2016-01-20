@@ -29,7 +29,8 @@ write.config.CLM45 <- function(defaults, trait.values, settings, run.id){
   # Edit datm.streams.txt.CLM1PT.CLM_USRDAT to make sure paths are correct
   # run cesm.exe from scripts/run_id/bld/
   #
-  #Need- Figure how to configure runs and 
+  #Need- Figure how to configure runs and also figure out what preprocessing and ppost processing is done to inputs and outputs.
+  #There might be optoins and utilities that we can use 
 
   rundir <- file.path(settings$run$host$rundir, run.id)
   outdir <- file.path(settings$run$host$outdir, run.id)

@@ -22,7 +22,7 @@ model2netcdf.CLM45 <- function(outdir, sitelat, sitelon, start_date, end_date) {
   
   require("ncdf4")
   
-for (year in start_year:end_year)
+for (year in start_year:end_year){
   
   #rename vars to CF standard
  
