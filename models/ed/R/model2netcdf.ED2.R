@@ -181,7 +181,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
        ## out <- add(getHdf5Data(ncT, 'TOTAL_AGB,1,row, yrs[y]) ## AbvGrndWood
        out <- add(getHdf5Data(ncT, 'FMEAN_BDEAD_PY'),1,row, yrs[y]) ## AbvGrndWood
        out <- add(getHdf5Data(ncT, 'FMEAN_PLRESP_PY'),2,row, yrs[y]) ## AutoResp
-       out <- add(-999,3,row, yrs[y]) ## CarbPools
+#        out <- add(-999,3,row, yrs[y]) ## CarbPools
        out <- add(getHdf5Data(ncT, 'FMEAN_CAN_CO2_PY'),4,row, yrs[y]) ## CO2CAS
        out <- add(-999,5,row, yrs[y]) ## CropYield
        out <- add(getHdf5Data(ncT, 'FMEAN_GPP_PY'),6,row, yrs[y]) ## GPP
@@ -313,7 +313,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
       ## out <- add(getHdf5Data(ncT, 'TOTAL_AGB,1,row, yrs[y]) ## AbvGrndWood
       out <- add(getHdf5Data(ncT, 'AVG_BDEAD'),1,row, yrs[y]) ## AbvGrndWood
       out <- add(getHdf5Data(ncT, 'AVG_PLANT_RESP'),2,row, yrs[y]) ## AutoResp
-      out <- add(-999,3,row, yrs[y]) ## CarbPools
+#       out <- add(-999,3,row, yrs[y]) ## CarbPools
       out <- add(getHdf5Data(ncT, 'AVG_CO2CAN'),4,row, yrs[y]) ## CO2CAS
       out <- add(-999,5,row, yrs[y]) ## CropYield
       out <- add(getHdf5Data(ncT, 'AVG_GPP'),6,row, yrs[y]) ## GPP
@@ -490,7 +490,9 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
     var[[1]]  <- mstmipvar("AbvGrndWood", lat, lon, t, zg)
     out <- conversion( 2, umol2kg_C)  ## umol/m2 s-1 -> kg/m2 s-1
     var[[2]]  <- mstmipvar("AutoResp", lat, lon, t, zg)
-    var[[3]]  <- mstmipvar("CarbPools", lat, lon, t, zg)
+#     var[[3]]  <- mstmipvar("CarbPools", lat, lon, t, zg)
+    var[[3]] <- mstmipvar("Qsb", lat, lon, t, zg) # I just moved up 46
+
     var[[4]]  <- mstmipvar("CO2CAS", lat, lon, t, zg)
     var[[5]]  <- mstmipvar("CropYield", lat, lon, t, zg)
     out <- conversion( 6, umol2kg_C)  ## umol/m2 s-1 -> kg m-2 s-1
@@ -544,7 +546,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
     var[[43]] <- mstmipvar("VegT", lat, lon, t, zg)
     var[[44]] <- mstmipvar("Evap", lat, lon, t, zg)
     var[[45]] <- mstmipvar("Qs", lat, lon, t, zg)
-    var[[46]] <- mstmipvar("Qsb", lat, lon, t, zg)
+#     var[[46]] <- mstmipvar("Qsb", lat, lon, t, zg)
 
 
     ## write ALMA
