@@ -36,9 +36,10 @@ download.MsTMIP_NARR <- function(outfolder, start_date, end_date, site_id, lat.i
                         dbfile.name = "MsTMIP_NARR",
                         stringsAsFactors = FALSE)
   
-  var = data.frame(DAP.name = c("air_2m","dlwrf","dswrf","wnd_10m","apcp","shum_2m","rhum_2m"),
-                   CF.name = c("air_temperature","surface_downwelling_longwave_flux_in_air","surface_downwelling_shortwave_flux_in_air","wind_speed","precipitation_flux","specific_humidity","relative_humidity"),
-                   units = c('Kelvin',"W/m2","W/m2","m/s","kg/m2","g/g","%")
+  var = data.frame(DAP.name = c("air_2m","dswrf", "dlwrf","wnd_10m","apcp","shum_2m","rhum_2m"),
+                   CF.name = c("air_temperature","surface_downwelling_shortwave_flux_in_air","surface_downwelling_longwave_flux_in_air","wind_speed","precipitation_flux","specific_humidity","relative_humidity"),
+                   units = c("Kelvin","W/m2","W/m2","m/s","kg/m2","g/g","%"),
+                   DAP.var = c("air","dswrf","dlwrf","wnd","apcp","shum","rhum"),
   )
   
   for (i in 1:rows){
@@ -59,15 +60,18 @@ download.MsTMIP_NARR <- function(outfolder, start_date, end_date, site_id, lat.i
     
     ## get data off OpenDAP
     for(j in 1:nrow(var)){
-      
-      dap_file = paste0(dap_base,var$DAP.name[j],"_",year,"_v1.nc4")
+      if (DAP.name == "dswrf") {
+        (dap_file = paste0('http://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1220/mstmip_driver_na_qd_dswrf',"_",year,"_v1.nc4"))
+      }
+      else {
+        (dap_file = paste0(dap_base,var$DAP.name[j],"_",year,"_v1.nc4")) }
       dap = nc_open(dap_file)
-      DAP.var = c("air_2m","dlwrf","dswrf","wnd_10m","apcp","shum_2m","rhum_2m")
       dat.list[[j]] = ncvar_get(dap,as.character(var$DAP.var[j]),c(lon_trunc,lat_trunc,1),c(1,1,ntime))
       var.list[[j]] = ncvar_def(name=as.character(var$CF.name[j]), units=as.character(var$units[j]), dim=dim, missval=-999, verbose=verbose)
       nc_close(dap)
       
     }
+    
     
     ## put data in new file
     loc <- nc_create(filename=loc.file, vars=var.list, verbose=verbose)
