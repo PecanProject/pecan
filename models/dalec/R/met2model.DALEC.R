@@ -107,7 +107,7 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
     nc_close(nc)
     
     useCO2 = is.numeric(CO2)  
-    if(useCO2)  CO2 <- CO2/1e6  ## convert from mole fraction (kg/kg) to ppm
+    if(useCO2)  CO2 <- CO2 * 1e6  ## convert from mole fraction (kg/kg) to ppm
     
     
     ## is CO2 present?

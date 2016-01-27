@@ -17,6 +17,11 @@ if ($authentication) {
 		close_database();
 		exit;
 	}
+    if (get_page_acccess_level() > $min_run_level) {
+       header( "Location: history.php");
+       close_database();
+       exit;
+    }
 }
 
 # boolean parameters
@@ -186,13 +191,7 @@ $files = array_unique($files);
 			<input id="next" type="button" value="Continue" onclick="nextStep();" />		
 			<div class="spacer"></div>
 		</form>
-<?php
-  if (check_login()) {
-    echo "<p></p>";
-    echo "Logged in as " . get_user_name();
-    echo "<a href=\"index.php?logout\" id=\"logout\">logout</a>";
-  }
-?>    
+<?php whoami(); ?>    
 	</div>
 	<div id="output">
 		<textarea name="editor" id="editor" onKeyPress="modifiedFile();"></textarea><br/>

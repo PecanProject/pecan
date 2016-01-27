@@ -2,7 +2,7 @@
 #' @title PROSPECT (4, 5, or 5B) model
 #' @author Alexey Shiklomanov
 #' @details R wrapper for PROSPECT models
-#' @param param Vector of PROSPECT4 parameter values:
+#' @param param Vector of PROSPECT parameter values:
 #'     N: Effective number of leaf layers (>1)
 #'     Cab: Leaf chlorophyll content (ug/cm2) (>0)
 #'     (5) Car: Leaf carotenoid content (ug/cm2) (>0)

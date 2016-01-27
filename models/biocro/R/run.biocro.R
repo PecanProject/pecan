@@ -12,7 +12,8 @@
 run.biocro <- function(lat, lon, met.nc = met.nc, 
                        soil.nc = NULL, 
                        config = config,
-                       coppice.interval = 1){
+                       coppice.interval = 1,
+                       met.uncertainty = FALSE){
   require(data.table)
   require(lubridate)
   start.date <- ceiling_date(as.POSIXct(config$simulationPeriod$dateofplanting), "day")
@@ -20,10 +21,33 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
   genus <- config$pft$type$genus
 
   ## Meteorology
-  met <- load.cfmet(met.nc, lat = lat, lon = lon, start.date = start.date, end.date = end.date)
-  met.hr <- cfmet.downscale.time(cfmet = met, output.dt = 1)
-  biocro.met <- cf2biocro(met.hr)
   
+  if(met.uncertainty == TRUE){
+    start.date <- "1979-01-01"
+    end.date <- "2010-12-31"
+    years <- sample(year(start.date):year(end.date), 
+                                 size = 15, replace = TRUE)
+    
+
+  } else {
+    years <- year(start.date):year(end.date)
+  }
+  met <- load.cfmet(met.nc, lat = lat, lon = lon, 
+                    start.date = start.date, end.date = end.date)
+  if(met.uncertainty == TRUE){
+    met <- met[year %in% years]
+  }
+
+  if(mean(diff(met$date)) > dhours(1)){
+    met <- cfmet.downscale.time(cfmet = met, output.dt = 1)
+  } else if (mean(diff(met$date)) < dhours(1)) {
+     met <- met[, list(date = min(date), specific_humidity = mean(specific_humidity), 
+     	    	  	           precipitation_flux = sum(precipitation_flux), surface_downwelling_shortwave_flux_in_air = mean(surface_downwelling_shortwave_flux_in_air), 
+         			   air_temperature = mean(air_temperature), wind_speed = mean(wind_speed), relative_humidity = mean(relative_humidity)), by = 'year,month,day,hour']
+     met[1] <- NULL
+
+  }
+  biocro.met <- cf2biocro(met)
 
   if(!is.null(soil.nc)){
     soil <- get.soil(lat = lat, lon = lon, soil.nc = soil.nc)
@@ -36,9 +60,10 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
   }
   soil.parms <- lapply(config$pft$soilControl, as.numeric)
   
-  years <- year(start.date):year(end.date)
-  for(yeari in years){
-    yearchar <- as.character(yeari)
+  
+  for(i in 1:length(years)){
+    yeari <- years[i]
+    yearindex <- i*10000 + yeari ## for use with met uncertainty
     WetDat <- biocro.met[biocro.met$year == yeari, ]
 
     ## day1 = last spring frost
@@ -58,7 +83,7 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
       tmp.result$Rhizome <- 0
       tmp.result$Grain <- 0
     } else if (genus == "Salix") {
-      if(yeari == min(years)){
+      if(i == 1){
         iplant <- iwillowParms(iRhizome=1.0, iStem=1.0, iLeaf=0.0,
                                iRoot=1.0, ifrRhizome=0.01, ifrStem=0.01,
                                ifrLeaf = 0.0, ifrRoot = 0.0)
@@ -67,9 +92,9 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
         iplant$iRoot <- last(tmp.result$Root)
         iplant$iStem <- last(tmp.result$Stem)
 
-        if ((yeari - min(years))  %% coppice.interval == 0) { # coppice when remainder = 0
+        if ((i - 1)  %% coppice.interval == 0) { # coppice when remainder = 0
           HarvestedYield  <- round(last(tmp.result$Stem) * 0.95, 2)                
-        } else if ((yeari - min(years))  %% coppice.interval == 1) { # year after coppice
+        } else if ((i - 1)  %% coppice.interval == 1) { # year after coppice
           iplant$iStem <- iplant$iStem * 0.05
         } # else { # do nothing if neither coppice year nor year following
       }
@@ -84,7 +109,7 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
                               photoControl=config$pft$photoParms)
       
     } else if (genus == "Miscanthus"){
-      if(yeari == min(years)){
+      if(yeari == years[1]){
         iRhizome <- config$pft$iPlantControl$iRhizome
       } else {
         iRhizome <- last(tmp.result$Rhizome)
@@ -101,17 +126,29 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
                            iRhizome = iRhizome,
                            photoControl=config$pft$photoParms)
       
+    } else if (genus == "Sorghum"){
+      ## run BioGro
+      tmp.result <- BioGro(WetDat = WetDat,
+                           day1 = day1,
+                           dayn = dayn,
+                           soilControl = soil.parms,
+                           canopyControl = config$pft$canopyControl,
+                           phenoControl = phenoParms(),#config$pft$phenoParms,
+                           seneControl = config$pft$seneControl,
+                           photoControl=config$pft$photoParms)
+      
     }
     result.yeari.hourly <- with(tmp.result,
-                                data.table(year = yeari, 
+                                data.table(yearindex = yearindex, 
+                                           year = yeari, 
                                            doy = DayofYear, 
                                            hour = Hour, ThermalT,
                                            Stem, Leaf, Root, Rhizome, Grain, LAI,
                                            SoilEvaporation, CanopyTrans, 
                                            key = c("year", "doy", "hour")))
-    if(yeari == min(years)){
+    if(i == 1){
       hourly.results <- result.yeari.hourly
-    } else if (yeari > min(years)){
+    } else if (i > 1){
       hourly.results <- rbind(hourly.results, result.yeari.hourly)
     }
   }
@@ -120,12 +157,26 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
   setkeyv(hourly.results, c("year", "doy", "hour"))
 
   hourly.results <- merge(biocro.met.dt, hourly.results) ## right join
-  daily.results <- hourly.results[, list(Stem = max(Stem), Leaf = max(Leaf), Root = max(Root), Rhizome = max(Rhizome), 
-Grain = max(Grain), tmax = max(Temp), tmin = min(Temp), tavg = mean(Temp), precip = sum(precip)), by = 'year,doy']
+  hourly.results <- hourly.results[order(yearindex, doy, hour)]
+  
+  daily.results <- hourly.results[,list(Stem = max(Stem), Leaf = max(Leaf),
+                                        Root = max(Root), Rhizome = max(Rhizome),
+                                        SoilEvaporation = sum(SoilEvaporation),
+                                        CanopyTrans = sum(CanopyTrans),
+                                        Grain = max(Grain),
+                                        LAI = max(LAI),
+                                        tmax = max(Temp), tmin = min(Temp),
+                                        tavg = mean(Temp), precip = sum(precip)),
+                                  by = 'yearindex,doy']
 
-  annual.results <- hourly.results[ ,list(Stem = max(Stem), Leaf = max(Leaf), Root = max(Root), Rhizome = max(Rhizome),
-                                                Grain = max(Grain), mat = mean(Temp), map = sum(precip)),
-                                          by = "year"]
+  annual.results <- hourly.results[ ,list(Stem = max(Stem), Leaf = max(Leaf),
+                                          Root = max(Root), Rhizome = max(Rhizome),
+                                          Grain = max(Grain),
+                                          SoilEvaporation = sum(SoilEvaporation),
+                                          CanopyTrans = sum(CanopyTrans),
+                                          map = sum(precip),
+                                          mat = mean(Temp)),
+                                          by = "yearindex"]
   return(list(hourly = hourly.results,
               daily = daily.results,
               annually = data.table(lat = lat, lon = lon, annual.results)))

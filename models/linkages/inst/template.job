@@ -4,15 +4,19 @@
 exec 3>&1
 exec &> "@OUTDIR@/logfile.txt"
 
+# host specific setup
+@HOSTSPECIFIC@
+
 # create output folder
 mkdir -p "@OUTDIR@"
 
 # see if application needs running
-if [ ! -e "@OUTDIR@/OUT.csv" ]; then
+if [ ! -e "@OUTDIR@/linkages.out.Rdata" ]; then
   cd "@RUNDIR@"
-  ln -s "@SITE_MET@" climate.txt
   
-  "@BINARY@"
+  echo "require (linkages)
+linkages('@INPUT@','@OUTDIR@')
+" | R --vanilla
   STATUS=$?
   
   # check the status
@@ -20,8 +24,6 @@ if [ ! -e "@OUTDIR@/OUT.csv" ]; then
     echo -e "ERROR IN LINKAGES RUN\nLogile is located at '@OUTDIR@/logfile.txt'" >&3
     exit $STATUS
   fi
-  
-  cp OUT.csv @OUTDIR@
  
   # convert to MsTMIP
   echo "require (PEcAn.LINKAGES)

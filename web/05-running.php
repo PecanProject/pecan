@@ -131,20 +131,16 @@ if (!$finished) {
     </form>
 
     <span id="error" class="small">&nbsp;</span>
-    <input id="prev" type="button" value="Start Over" onclick="prevStep();" />
+<?php if (!$authentication || (get_page_acccess_level() <= $min_run_level)) { ?>
+      <input id="prev" type="button" value="Start Over" onclick="prevStep();"/>
+<?php } ?>
 <?php if ($finished) { ?>
     <input id="next" type="button" value="Finished" onclick="nextStep();" />
 <?php } else { ?>
     <input id="next" type="button" value="Results" onclick="nextStep();" />
 <?php } ?>
     <div class="spacer"></div>
-<?php
-  if (check_login()) {
-    echo "<p></p>";
-    echo "Logged in as " . get_user_name();
-    echo "<a href=\"index.php?logout\" id=\"logout\">logout</a>";
-  }
-?>    
+<?php whoami(); ?>    
   </div>
   <div id="output">
   <h2>Execution Status</h2>

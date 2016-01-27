@@ -42,6 +42,7 @@ $stmt->closeCursor();
 $start = substr($workflow['start_date'], 0, 4);
 $end = substr($workflow['end_date'], 0, 4);
 $folder = $workflow['folder'];
+$notes = htmlspecialchars($workflow['notes']);
 
 # check to make sure all is ok
 $error=false;
@@ -500,17 +501,13 @@ if (is_dir("$folder/run")) {
     <p></p>
     <span id="error" class="small">&nbsp;</span>
     <input id="prev" type="button" value="History" onclick="prevStep();" />
+<?php if (!$authentication || (get_page_acccess_level() <= $min_run_level)) { ?>
     <input id="next" type="button" value="Start Over" onclick="nextStep();"/>    
+<?php } ?>
     <div class="spacer"></div>
-<?php
-  if (check_login()) {
-    echo "<p></p>";
-    echo "Logged in as " . get_user_name();
-    echo "<a href=\"index.php?logout\" id=\"logout\">logout</a>";
-  }
-?>    
+<?php whoami(); ?>    
   </div>
-  <div id="output">Please select an option on the left.</div>
+  <div id="output">Please select an option on the left<br><br><b>NOTES:</b><br><?php echo $notes; ?></div>
   <div id="footer"><?php echo get_footer(); ?></div>
 </div>
 </body>

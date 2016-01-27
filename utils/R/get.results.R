@@ -17,15 +17,15 @@
 ##' @author David LeBauer, Shawn Serbin, Mike Dietze, Ryan Kelly
 get.results <- function(settings, sa.ensemble.id=NULL, ens.ensemble.id=NULL,
                         variable=NULL, start.year=NULL, end.year=NULL) {
-
-if(FALSE) { sa.ensemble.id=NULL; ens.ensemble.id=NULL; variable=NULL; start.year=NULL; end.year=NULL}
-
   outdir <- settings$outdir
   
   sensitivity.output <- list()   
   if('sensitivity.analysis' %in% names(settings)) {
     ### Load PEcAn sa info
-    # Can specify ensemble ids manually. If not, look in settings. If none there, just look in samples.Rdata, which for backwards compatibility still contains the sample info for (the most recent)  sensitivity and ensemble analysis combined.
+    # Can specify ensemble ids manually. If not, look in settings. 
+    # if no ensemble ids in settings look in samples.Rdata, 
+    # which for backwards compatibility still contains the sample info for (the most recent)
+    # sensitivity and ensemble analysis combined.
     if(!is.null(sa.ensemble.id)) {
       fname <- sensitivity.filename(settings, "sensitivity.samples", "Rdata", 
                  ensemble.id=sa.ensemble.id, all.var.yr=TRUE, pft=NULL)
@@ -57,11 +57,12 @@ if(FALSE) { sa.ensemble.id=NULL; ens.ensemble.id=NULL; variable=NULL; start.year
     variable.sa <- variable
     if(is.null(variable.sa)) {
       if("variable" %in% names(settings$sensitivity.analysis)){
-        variable.sa = settings$sensitivity.analysis[names(settings$sensitivity.analysis) == "variable"]
+        variable.sa <- settings$sensitivity.analysis[names(settings$sensitivity.analysis) == "variable"]
+      } else {
+        logger.severe("no variable defined for sensitivity analysis")
       }
     }
-    if(is.null(variable.sa)) logger.sever("No variables for sensitivity analysis!")
-    
+
     # Only handling one variable at a time for now
     if(length(variable.sa) > 1) {
       variable.sa <- variable.sa[1]

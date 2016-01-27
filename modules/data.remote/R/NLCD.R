@@ -106,8 +106,9 @@ extract_NLCD <- function(buffer, coords,
   sites <- spTransform(sites, crs(nlcd))
   
   # extract
-  summ = prop.table(table(extract(nlcd, sites,buffer=buffer)))
-  mydf <- data.frame(cover = names(summ),percent = as.vector(summ))
+  sum.raw = table(extract(nlcd,sites,buffer=buffer))    
+  summ = prop.table(sum.raw)    
+  mydf <- data.frame(cover = names(summ), percent = as.vector(summ), count = as.vector(sum.raw))
   
   #land cover number to name conversions
   cover.table <- nlcd@data@attributes[[1]]

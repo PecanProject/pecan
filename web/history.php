@@ -35,31 +35,40 @@ if ($authentication) {
   function nextStep() {
     $("#formnext").submit();
   }
+
+  function filter() {
+    $(".unknown").toggle($("#unknown").is(':checked'));
+  }
+
+  $(document).ready(function () {
+    filter();
+  });
 </script>
 </head>
 <body>
   <div id="wrap">
     <div id="stylized">
-      <form id="formnext" method="POST" action="01-introduction.php" />
-<!--
-      <h1>Filters</h1>
-      <p>Filter executions showing on the right.</p>
--->
       <h1>Legend</h1>
       <input type="text" readonly style="background: #BBFFBB; color: black;" value="Successful runs"/>
       <input type="text" readonly style="background: #FFBBBB; color: black;" value="Runs with errors"/>
       <input type="text" readonly style="background: #BBFFFF; color: black;" value="Ongoing runs"/>
       <input type="text" readonly style="background: #FFFFFF; color: black;" value="Runs in unknown state"/>
       <p></p>
-      <input id="prev" type="button" value="Start Over" onclick="nextStep();"/>
+      <label>Show runs in unknown state?</label>
+      <input id="unknown" type="checkbox" onclick="filter();"/>
+<?php if (!$authentication || (get_page_acccess_level() <= $min_run_level)) { ?>
+      <label>Filter history by text</label>
+      <form id="formnext" method="POST" action="history.php" >
+      	<input id="filter-hist" type="text" name="search-box"/>
+      	<input id="filter-btn" type="submit" name="search" value="Filter" onclick="nextStep();"/>
+      </form>
+      <p></p>
+      <form id="formprev" method="POST" action="01-introduction.php"> 
+      <input id="prev" type="button" value="Start Over" onclick="prevStep();"/> 
+      </form>
+<?php } ?>
       <div class="spacer"></div>
-<?php
-  if (check_login()) {
-    echo "<p></p>";
-    echo "Logged in as " . get_user_name();
-    echo "<a href=\"index.php?logout\" style=\"float: right;\">logout</a>";
-  }
-?>    
+<?php whoami(); ?>    
     </div>
     <div id="output">
       <h2>Execution Status</h2>
@@ -73,12 +82,17 @@ if ($authentication) {
           <div id="header">End Date</div>
           <div id="header">Started</div>
           <div id="header">Finished</div>
-<?php if (check_login()) { ?>
+<?php if (check_login() && (get_page_acccess_level() <= $min_delete_level)) { ?>
           <div id="header">Delete</div>
 <?php } ?>
         </div>
 <?php
-// get run information
+// get run information - filtered
+$filter_val = '%';
+if (isset($_POST['search'])){
+ $filter_val = '%'. $_POST['search-box'] . '%';
+}
+
 $query = "SELECT workflows.id, workflows.folder, workflows.start_date, workflows.end_date, workflows.started_at, workflows.finished_at, " .
          "CONCAT(coalesce(sites.sitename, ''), ', ', coalesce(sites.city, ''), ', ', coalesce(sites.state, ''), ', ', coalesce(sites.country, '')) AS sitename, " .
          "CONCAT(coalesce(models.model_name, ''), ' ', coalesce(models.revision, '')) AS modelname, modeltypes.name " .
@@ -86,12 +100,21 @@ $query = "SELECT workflows.id, workflows.folder, workflows.start_date, workflows
          "LEFT OUTER JOIN sites on workflows.site_id=sites.id " .
          "LEFT OUTER JOIN models on workflows.model_id=models.id " .
          "LEFT OUTER JOIN modeltypes on models.modeltype_id=modeltypes.id " .
+         "WHERE CONCAT(coalesce(sites.sitename, ''), ', ', coalesce(sites.city, ''), ', ', coalesce(sites.state, ''), ', ', coalesce(sites.country, '')) LIKE :searched_val " .
+         "OR CONCAT(coalesce(models.model_name, ''), ' ', coalesce(models.revision, '')) LIKE :searched_val " .
+         "OR modeltypes.name LIKE :searched_val " .
+         "OR workflows.notes LIKE :searched_val " .
          "ORDER BY workflows.id DESC";
-$result = $pdo->query($query);
+
+$sth = $pdo->prepare($query);
+$sth->bindParam(':searched_val', $filter_val, PDO::PARAM_STR);
+$result = $sth->execute();
+
 if (!$result) {
   die('Invalid query: ' . error_database());
 }
-while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
+//$sth->debugDumpParams();
+while ($row = @$sth->fetch(PDO::FETCH_ASSOC)) {
   // check result
   $style="";
   $url="05-running.php";
@@ -104,7 +127,7 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
       }
     }
   } else {
-    $style="style='background: #FFFFFF; color: black;'";
+    $style="style='background: #FFFFFF; color: black; display: none;' class='unknown'";
   }
   if (($style == "") && ($row['finished_at'] == "")) {
     $style="style='background: #BBFFFF; color: black'";
@@ -114,6 +137,7 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
     $url="08-finished.php";
   }
 ?>        
+
         <div id="row" <?php echo $style; ?>>
           <div id="cell"><a href="<?php echo $url; ?>?workflowid=<?php echo $row['id']; ?>"><?php echo $row['id']; ?></a></div>
           <div id="cell"><?php echo $row['sitename']; ?></div>
@@ -123,7 +147,7 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
           <div id="cell"><?php echo $row['end_date']; ?></div>
           <div id="cell"><?php echo $row['started_at']; ?></div>
           <div id="cell"><?php echo $row['finished_at']; ?></div>
-<?php if (check_login()) { ?>
+<?php if (check_login() && (get_page_acccess_level() <= $min_delete_level)) { ?>
           <div id="cell"><a href="delete.php?workflowid=<?php echo $row['id']; ?>">DELETE</a></div>
 <?php } ?>
         </div>

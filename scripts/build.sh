@@ -121,10 +121,11 @@ done
 # packages that are to be compiled
 PACKAGES="utils db settings visualization"
 PACKAGES="${PACKAGES} models/clm45"
+PACKAGES="${PACKAGES} models/preles"
 PACKAGES="${PACKAGES} modules/priors modules/meta.analysis modules/uncertainty"
 PACKAGES="${PACKAGES} modules/data.land modules/data.atmosphere modules/data.remote"
 PACKAGES="${PACKAGES} modules/assim.batch modules/assim.sequential"
-PACKAGES="${PACKAGES} modules/allometry modules/benchmark modules/photosynthesis"
+PACKAGES="${PACKAGES} modules/allometry modules/photosynthesis"
 PACKAGES="${PACKAGES} models/ed models/sipnet models/biocro models/dalec models/linkages"
 PACKAGES="${PACKAGES} all"
 
@@ -140,6 +141,11 @@ if [ -e running -a "$FORCE" != "yes" ]; then
   exit
 fi
 
+# remove lock files
+if [ "$FORCE" == "yes" ]; then
+  rm -rf ${R_LIBS_USER}/00LOCK-*
+fi
+  
 # when did the job run the last time?
 touch running
 touch lastrun

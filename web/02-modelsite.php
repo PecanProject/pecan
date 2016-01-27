@@ -17,6 +17,11 @@ if ($authentication) {
     close_database();
     exit;
   }
+  if (get_page_acccess_level() > $min_run_level) {
+    header( "Location: history.php");
+    close_database();
+    exit;
+  }
 }
 
 # boolean parameters
@@ -43,7 +48,7 @@ if (!$result) {
 }
 $hosts = "";
 while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
-  if (in_array($row['hostname'], $hostlist)) {
+  if (array_key_exists($row['hostname'], $hostlist)) {
     if ($hostname == $row['hostname']) {
       $hosts = "$hosts<option selected data-id='${row['id']}'>${row['hostname']}</option>\n";
     } else {
@@ -298,9 +303,8 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
       <input name="offline" type="hidden" value="offline">
 <?php } ?>
       <h1>Select host</h1>
-      <p>Based on the host selected certain sites and models
-      will be available. In the current version you can only
-      pick as host <b><?php echo $hostname; ?></b></p>
+      <p>Based on the host selected certain sites and models will be
+      available.</p>
 
       <label id="hostlabel">Host:</label>
       <select name="hostname" id="hostname" onChange="hostSelected();">
@@ -334,13 +338,7 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
       <input id="next" type="button" value="Next" onclick="nextStep();" />    
       <div class="spacer"></div>
     </form>
-<?php
-  if (check_login()) {
-    echo "<p></p>";
-    echo "Logged in as " . get_user_name();
-    echo "<a href=\"index.php?logout\" id=\"logout\">logout</a>";
-  }
-?>    
+<?php whoami(); ?>    
   </div>
   <div id="output"></div>
   <div id="footer"><?php echo get_footer(); ?></div>

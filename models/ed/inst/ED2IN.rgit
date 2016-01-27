@@ -586,7 +586,7 @@ $ED_NL
    !                   2.  Similar to 1, but branches are treated as separate pools in the !
    !                       biophysics (thus doubling the number of prognostic variables).  !
    !---------------------------------------------------------------------------------------!
-   NL%IBRANCH_THERMO = 0
+   NL%IBRANCH_THERMO = 1
    !---------------------------------------------------------------------------------------!
    ! IPHYSIOL --  This variable will determine the functional form that will control how   !
    !              the various parameters will vary with temperature, and how the CO2       !
@@ -1276,6 +1276,17 @@ $ED_NL
    !            within-ecosystem flux resolution.                                          !
    !---------------------------------------------------------------------------------------!
    NL%GROWTH_RESP_SCHEME = 0
+   !---------------------------------------------------------------------------------------!
+
+  !---------------------------------------------------------------------------------------!
+   ! STORAGE_RESP_SCHEME -- This flag controls how storage respiration fluxes are treated. !
+   !                                                                                       !
+   !        0 - ED Default. Storage resp. is aboveground wood -> canopy-airspace flux.     !
+   !        1 - Storage respiration is calculated as in 0, but split into fluxes entering  !
+   !            the CAS from leaf, sapwooda, sapwoodb, and root sources, proportionally to !
+   !            biomass.                                                                   !
+   !---------------------------------------------------------------------------------------!
+   NL%STORAGE_RESP_SCHEME = 0
    !---------------------------------------------------------------------------------------!
 
    !---------------------------------------------------------------------------------------!

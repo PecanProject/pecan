@@ -320,10 +320,19 @@ db.getShowQueries <- function() {
 ##' pftid <- get.id("pfts", "name", "salix", con)
 ##' pftid <- get.id("pfts", c("name", "modeltype_id"), c("ebifarm.salix", 1), con)
 ##' }
-get.id <- function(table, colnames, values, con){
-  values[is.character(values)] <- shQuote(values[is.character(values)])
+get.id <- function(table, colnames, values, con, create=FALSE, dates=FALSE){
+  values <- lapply(values, function(x) ifelse(is.character(x), shQuote(x), x))
   where_clause <- paste(colnames, values , sep = " = ", collapse = " and ")
   query <- paste("select id from", table, "where", where_clause, ";")
-  id <- db.query(query, con)[["id"]]      
+  id <- db.query(query, con)[["id"]]
+  if (is.null(id) && create) {
+    colinsert <- paste0(colnames, collapse=", ")
+    if (dates) colinsert <- paste0(colinsert, ", created_at, updated_at")
+    valinsert <- paste0(values, collapse=", ")
+    if (dates) valinsert <- paste0(valinsert, ", NOW(), NOW()")
+    logger.info("INSERT INTO ", table, " (", colinsert, ") VALUES (", valinsert, ")")
+    db.query(paste0("INSERT INTO ", table, " (", colinsert, ") VALUES (", valinsert, ")"), con)
+    id <- db.query(query, con)[["id"]]
+  }
   return(id)
 }
