@@ -75,7 +75,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
     dbfileid <- dbfile.insert(in.path, in.prefix, 'Input', inputid, con, reuse=TRUE, hostname)
   }
 
-  invisible(list(input.id = inputid, dfbile.id = dbfileid))
+  invisible(list(input.id = inputid, dbfile.id = dbfileid))
 }
 
 ##' Function to check to see if a file exists in the dbfiles table as an input
