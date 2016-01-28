@@ -9,7 +9,8 @@
 
 
 ##-------------------------------------------------------------------------------------------------#
-##' Writes config files for use with the Community Land Model model.
+##' Writes config files for use with the Community Land Model model. The script will handle the runtime options
+##' of CLM caled from the Pecan workflow.
 ##'
 ##' @name write.config.CLM45
 ##' @title Write CLM4.5 configuration files
@@ -23,15 +24,14 @@
 ##-------------------------------------------------------------------------------------------------#
 write.config.CLM45 <- function(defaults, trait.values, settings, run.id){
   
-  #Outline to get Dan's custom run to work
-  # Run Dan's Python script in scripts directory
-  # Point to scripts/run - run "id of run".build 
-  # Edit datm.streams.txt.CLM1PT.CLM_USRDAT to make sure paths are correct
-  # run cesm.exe from scripts/run_id/bld/
-  #
-  #Need- Figure how to configure runs and also figure out what preprocessing and ppost processing is done to inputs and outputs.
-  #There might be optoins and utilities that we can use 
-
+#OUTLINE OF MODULES
+  ##' Copy Case and Build
+  ##'  -symbolic link to refernce case that is already completed
+  ##' Edit user_nl_* files to add site info
+  ##' make Jobs.sh -case_submit
+  ##' call met2model and add to namelists
+  ##' 
+  ##' 
   rundir <- file.path(settings$run$host$rundir, run.id)
   outdir <- file.path(settings$run$host$outdir, run.id)
   
