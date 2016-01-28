@@ -61,10 +61,10 @@ runPRELES.jobsh<- function(met.file,outdir,parameters, sitelat, sitelon,start.da
   
 
   ## Get variables from netcdf file
-  PAR <-ncvar_get(nc,"surface_downwelling_photosynthetic_photon_flux_in_air") #PAR in mol/m2s1
+  SW <-ncvar_get(nc,"surface_downwelling_SW_in_air") #PAR in mol/m2s1
   Tair <-ncvar_get(nc,"air_temperature")#air temperature in K
   Precip <-ncvar_get(nc,"precipitation_flux")#precipitation in kg/m2s1
-  CO2 <-ncvar_get(nc,"mole_fraction_of_carbon_dioxide_in_air") #mol/mol
+  CO2 <-try(ncvar_get(nc,"mole_fraction_of_carbon_dioxide_in_air")) #mol/mol
   SH <- ncvar_get(nc,"specific_humidity")
   lat<-ncvar_get(nc,"latitude")
   lon<-ncvar_get(nc,"longitude")
@@ -75,9 +75,6 @@ runPRELES.jobsh<- function(met.file,outdir,parameters, sitelat, sitelon,start.da
   if (!is.numeric(CO2)){
     CO2 = rep(4.0e+8,length(PRECIP))
   }
-  if (!is.numeric(PAR)){
-    PAR = rep(0.0000002,length(PRECIP))
-  }
   
   ## GET VPD from  Saturated humidity and Air Temperature
   RH = qair2rh(SH,Tair)
@@ -85,8 +82,13 @@ runPRELES.jobsh<- function(met.file,outdir,parameters, sitelat, sitelon,start.da
   
   VPD = VPD * .01 # convert to Pascal
   
+  ## Get PAR from SW
+  PAR=sw2par(SW)
+  
   ## Format/convert inputs 
   PAR= tapply(PAR, doy,mean,na.rm=TRUE) #Find the mean for the day
+  PAR = PAR * 4.6 # convert W/m2 to micromol/m2s
+  PAR = PAR * 1e-6 # convert micromol to mol
   TAir=ud.convert(tapply(Tair,doy,mean,na.rm=TRUE),"kelvin", "celsius")#Convert Kelvin to Celcius
   VPD= ud.convert(tapply(VPD,doy,mean,na.rm=TRUE), "Pa","kPa")#pascal to kila pascal
   Precip=tapply(Precip,doy,sum, na.rm=TRUE) #Sum to daily precipitation
