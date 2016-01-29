@@ -18,8 +18,6 @@
 get.results <- function(settings, sa.ensemble.id=NULL, ens.ensemble.id=NULL,
                         variable=NULL, start.year=NULL, end.year=NULL) {
 
-if(FALSE) { sa.ensemble.id=NULL; ens.ensemble.id=NULL; variable=NULL; start.year=NULL; end.year=NULL}
-
   outdir <- settings$outdir
   
   sensitivity.output <- list()   

@@ -22,7 +22,7 @@
 ##' @author Rob Kooper, David LeBauer
 ##-------------------------------------------------------------------------------------------------#
 met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite=FALSE, ...) {
-  ncfiles = dir(in.path, full.names = TRUE, pattern = paste0(in.prefix, "*.nc$"),  
+  ncfiles <- dir(in.path, full.names = TRUE, pattern = paste0(in.prefix, "*.nc$"),  
                 all.files = FALSE, recursive = FALSE)
   metlist <- list()
   for(file in ncfiles){
