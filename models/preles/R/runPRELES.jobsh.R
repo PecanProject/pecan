@@ -61,7 +61,7 @@ runPRELES.jobsh<- function(met.file,outdir,parameters, sitelat, sitelon,start.da
   
 
   ## Get variables from netcdf file
-  SW <-ncvar_get(nc,"surface_downwelling_SW_in_air") #PAR in mol/m2s1
+  SW <-ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air") #SW in W/m2
   Tair <-ncvar_get(nc,"air_temperature")#air temperature in K
   Precip <-ncvar_get(nc,"precipitation_flux")#precipitation in kg/m2s1
   CO2 <-try(ncvar_get(nc,"mole_fraction_of_carbon_dioxide_in_air")) #mol/mol
@@ -82,13 +82,11 @@ runPRELES.jobsh<- function(met.file,outdir,parameters, sitelat, sitelon,start.da
   
   VPD = VPD * .01 # convert to Pascal
   
-  ## Get PAR from SW
-  PAR=sw2par(SW)
-  
+  ## Get PPFD from SW
+  PPFD=sw2ppfd(SW) #PPFD in umol/m2/s
+  PPFD = PPFD * 1e-6 # convert umol to mol
   ## Format/convert inputs 
-  PAR= tapply(PAR, doy,mean,na.rm=TRUE) #Find the mean for the day
-  PAR = PAR * 4.6 # convert W/m2 to micromol/m2s
-  PAR = PAR * 1e-6 # convert micromol to mol
+  PPFD= tapply(PPFD, doy,mean,na.rm=TRUE) #Find the mean for the day
   TAir=ud.convert(tapply(Tair,doy,mean,na.rm=TRUE),"kelvin", "celsius")#Convert Kelvin to Celcius
   VPD= ud.convert(tapply(VPD,doy,mean,na.rm=TRUE), "Pa","kPa")#pascal to kila pascal
   Precip=tapply(Precip,doy,sum, na.rm=TRUE) #Sum to daily precipitation
@@ -98,7 +96,7 @@ runPRELES.jobsh<- function(met.file,outdir,parameters, sitelat, sitelon,start.da
   fAPAR =rep (0.6,length=length(doy)) #For now set to 0.6. Needs to be between 0-1
   
   ##Bind inputs 
-  tmp<-cbind (PAR,TAir,VPD,Precip,CO2,fAPAR)
+  tmp<-cbind (PPFD,TAir,VPD,Precip,CO2,fAPAR)
   met <- rbind(met,tmp)
     } ## end file exists
   } ## end met process
@@ -134,7 +132,7 @@ runPRELES.jobsh<- function(met.file,outdir,parameters, sitelat, sitelon,start.da
   param.def[9]=as.numeric(params["kGPP"])
   
   ##Run PRELES
-  PRELES.output=as.data.frame(PRELES(PAR=tmp[,"PAR"],TAir=tmp[,"TAir"],VPD=tmp[,"VPD"], Precip=tmp[,"Precip"],CO2=tmp[,"CO2"],fAPAR=tmp[,"fAPAR"],p = param.def))
+  PRELES.output=as.data.frame(PRELES(PAR=tmp[,"PPFD"],TAir=tmp[,"TAir"],VPD=tmp[,"VPD"], Precip=tmp[,"Precip"],CO2=tmp[,"CO2"],fAPAR=tmp[,"fAPAR"],p = param.def))
   PRELES.output.dims<-dim(PRELES.output)
   
   days=as.Date(start_date):as.Date(end_date)
