@@ -20,13 +20,19 @@ soil.nc <- nc_open(config$run$soil.file)
 lat <- as.numeric(config$location$latitude)
 lon <- as.numeric(config$location$longitude)
 
-out <- run.biocro(lat, lon, met.nc = met.nc, soil.nc = soil.nc, config = config)
-biocro_result <- data.table(lat = lat, lon = lon, out$daily)
+out <- run.biocro(lat, lon, 
+                  met.nc = met.nc, 
+                  soil.nc = soil.nc, 
+                  config = config)
 
+save(out$daily, file = file.path(outdir, 'daily.result.RData'))
+
+biocro_result <- data.table(lat = lat, lon = lon, out$daily)
 save(biocro_result, file = file.path(outdir, "biocro_output.RData"))
 
-hourly <- out$hourly
-save(hourly, file = file.path(outdir, "biocro_hourly.RData"))
+#hourly <- out$hourly
+#save(hourly, file = file.path(outdir, "biocro_hourly.RData"))
+
 model2netcdf.BIOCRO(result = hourly, 
                     genus = config$pft$type$genus, 
                     outdir = outdir, 
