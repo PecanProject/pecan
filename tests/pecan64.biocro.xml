@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<pecan>
+  <outdir>pecan</outdir>
+
+  <database>
+    <bety>
+      <driver>PostgreSQL</driver>
+      <user>bety</user>
+      <password>bety</password>
+      <host>localhost</host>
+      <dbname>bety</dbname>
+      <write>FALSE</write>
+    </bety>
+  </database>
+
+  <pfts>
+    <pft>
+      <name>Miscanthus_x_giganteus</name>
+    </pft>
+  </pfts>
+
+  <ensemble>
+    <variable>NPP</variable>
+  </ensemble>
+
+  <sensitivity.analysis>
+    <quantiles>
+      <sigma>-1</sigma>
+      <sigma>1</sigma>
+    </quantiles>
+    <variable>NPP</variable>
+  </sensitivity.analysis>
+
+  <model>
+    <type>BIOCRO</type>
+    <binary>/home/carya/R/library/PEcAn.BIOCRO/biocro.Rscript</binary>
+  </model>
+
+  <run>
+    <site>
+      <id>753</id>
+    </site>
+    <inputs>
+      <met>
+        <source>Ameriflux</source>
+        <output>BIOCRO</output>
+      </met>
+    </inputs>
+      <start.date>2004/01/01</start.date>
+      <end.date>2004/12/31</end.date>
+    <host>
+      <name>localhost</name>
+    </host>
+    <dbfiles>pecan/dbfiles</dbfiles>
+  </run>
+</pecan>
