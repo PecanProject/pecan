@@ -75,20 +75,10 @@ if ($authentication) {
 				<input id="prev" type="button" value="Back" onclick="prevStep();" />
 				<input id="next" type="button" value="Continue" onclick="nextStep();" />
 				<div class="spacer"></div>
-<?php
-	if (check_login()) {
-		echo "<p></p>";
-		echo "Logged in as " . get_user_name();
-		echo "<a href=\"index.php?logout\" id=\"logout\">logout</a>";
-	}
-?>		
+<?php whoami(); ?>    
 			</div>
 			<div id="output"><?php echo $_REQUEST['msg']; ?></div>
-			<div id="footer">
-				The <a href="http://pecanproject.org">PEcAn project</a> is supported by the National Science Foundation
-				(ABI #1062547, ARC #1023477) and the <a href="http://www.energybiosciencesinstitute.org/">Energy
-				Biosciences Institute</a>.
-			</div>
+			<div id="footer"><?php echo get_footer(); ?></div>
 		</div>
 	<body>
 <html>

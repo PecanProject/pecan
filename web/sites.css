@@ -78,13 +78,13 @@ th,td {
     width: 180px;
 }
 
-#stylized select,input {
+#stylized select, input, textarea {
     font-size: 12px;
     border: solid 1px #aacfe4;
     width: 190px;
 }
 
-#stylized input[type=text], input[type=password] {
+#stylized input[type=text], input[type=password], textarea {
     text-overflow: ellipsis;
     width: 184px;
     padding: 4px 2px;
@@ -92,6 +92,10 @@ th,td {
 
 #stylized input[type=checkbox] {
     width: 180px;
+}
+
+#stylized textarea {
+    resize: none;
 }
 
 #stylized button {
@@ -134,20 +138,20 @@ th,td {
     height: calc( 100% - 40px );
 }
 
-#table {
+.table {
     display: table;
 }
 
-#row {
+.row {
     display: table-row;
 }
 
-#cell, #header {
+.cell, .header {
     display: table-cell;
     padding: 0px 5px 0px 5px;
 }
 
-#header {
+.header {
     font-weight: bold;
 }
 

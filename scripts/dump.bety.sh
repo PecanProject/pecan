@@ -35,9 +35,10 @@ LEVEL=${LEVEL:-3}
 # set this to "YES" to dump all unchecked traits/yields as well
 UNCHECKED=${UNCHECKED:-"NO"}
 
-# anonymous users
-# set this to NO to dump all user information
-ANONYMOUS=${ANONYMOUS:-"YES"}
+# keep users
+# set this to YES to dump all user information, otherwise it will
+# be anonymized
+KEEPUSERS=${KEEPUSERS:-"NO"}
 
 # location where to write the results, this will be a tar file
 OUTPUT=${OUTPUT:-"$PWD/dump"}
@@ -52,17 +53,14 @@ QUIET=${QUIET:-"NO"}
 # parse command line options
 while getopts a:d:hm:l:o:p:qu: opt; do
   case $opt in
-  a)
-    ANONYMOUS=$OPTARG
-    ;;
   d)
     DATABASE=$OPTARG
     ;;
   h)
-    echo "$0 [-a YES|NO] [-d database] [-h] [-l 0,1,2,3,4] [-m my siteid] [-o folder] [-p psql options] [-u YES|NO]"
-    echo " -a use anonymous user, default is YES"
+    echo "$0 [-d database] [-h] [-k] [-l 0,1,2,3,4] [-m my siteid] [-o folder] [-p psql options] [-u]"
     echo " -d database, default is bety"
     echo " -h this help page"
+    echo " -k keep users, default is to be anonymized"
     echo " -l level of data that can be dumped, default is 3"
     echo " -m site id, default is 99 (VM)"
     echo " -o output folder where dumped data is written, default is dump"
@@ -70,6 +68,9 @@ while getopts a:d:hm:l:o:p:qu: opt; do
     echo " -q should the export be quiet"
     echo " -u should unchecked data be dumped, default is NO"
     exit 0
+    ;;
+  k)
+    KEEPUSERS="YES"
     ;;
   l)
     LEVEL=$OPTARG
@@ -84,10 +85,10 @@ while getopts a:d:hm:l:o:p:qu: opt; do
     PG_OPT=$OPTARG
     ;;
   q)
-    QUIET=YES
+    QUIET="YES"
     ;;
   u)
-    UNCHECKED=$OPTARG
+    UNCHECKED="YES"
     ;;
   esac
 done
@@ -180,7 +181,7 @@ fi
 if [ "${QUIET}" != "YES" ]; then
   printf "Dumping %-25s : " "users"
 fi
-if [ "${ANONYMOUS}" == "NO" ]; then
+if [ "${KEEPUSERS}" == "YES" ]; then
     psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY (SELECT * FROM ${USER_TABLES} WHERE (id >= ${START_ID} AND id <= ${LAST_ID}))  TO '${DUMPDIR}/users.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')"
 else
     psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY (SELECT id, CONCAT('user', id) AS login, CONCAT('user ' , id) AS name, CONCAT('betydb+', id, '@gmail.com') as email, 'Urbana' AS city,  'USA' AS country, '' AS area, '1234567890abcdef' AS crypted_password, 'BU' AS salt, NOW() AS created_at, NOW() AS updated_at, NULL as remember_token, NULL AS remember_token_expires_at, 3 AS access_level, 4 AS page_access_level, '9999999999999999999999999999999999999999' AS apikey, 'IL' AS state_prov, '61801' AS postal_code FROM ${USER_TABLES} WHERE (id >= ${START_ID} AND id <= ${LAST_ID})) TO '${DUMPDIR}/users.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')"
