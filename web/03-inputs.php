@@ -404,7 +404,7 @@ foreach($inputs as $input) {
       <div class="spacer"></div>
 
       <label>Notes</label>
-      <textarea name="notes" id="notes" rows="4" width="184px" style="padding: 4px 2px; width:184px; font-size:12px; border: solid 1px #aacfe4; text-overflow:ellipsis;"> <?php echo $notes; ?></textarea>
+      <textarea name="notes" id="notes" rows="4"><?php echo $notes; ?></textarea>
       <div class="spacer"></div>
 
 <?php if (isset($browndog_url) && $browndog_url != "") { ?>

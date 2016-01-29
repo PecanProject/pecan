@@ -78,13 +78,13 @@ th,td {
     width: 180px;
 }
 
-#stylized select,input {
+#stylized select, input, textarea {
     font-size: 12px;
     border: solid 1px #aacfe4;
     width: 190px;
 }
 
-#stylized input[type=text], input[type=password] {
+#stylized input[type=text], input[type=password], textarea {
     text-overflow: ellipsis;
     width: 184px;
     padding: 4px 2px;
@@ -92,6 +92,10 @@ th,td {
 
 #stylized input[type=checkbox] {
     width: 180px;
+}
+
+#stylized textarea {
+    resize: none;
 }
 
 #stylized button {
