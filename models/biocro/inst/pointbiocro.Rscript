@@ -14,7 +14,12 @@ require(lubridate)
 config <- read.biocro.config(file.path(rundir, "config.xml"))
 
 met.nc  <- nc_open(config$run$met.file)
-soil.nc <- nc_open(config$run$soil.file)
+if(!is.null(config$run$soil.file)){
+  soil.nc <- nc_open(config$run$soil.file)
+} else {
+  soil.nc <- NULL
+}
+
 # atmco2.nc <- nc_open(file.path(inputdir, "co2/CO2_Global_HD_v1.nc"))
 
 lat <- as.numeric(config$location$latitude)

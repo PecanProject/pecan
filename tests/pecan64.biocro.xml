@@ -20,7 +20,7 @@
   </pfts>
 
   <ensemble>
-    <variable>NPP</variable>
+    <variable>StemBiom</variable>
   </ensemble>
 
   <sensitivity.analysis>
@@ -28,12 +28,12 @@
       <sigma>-1</sigma>
       <sigma>1</sigma>
     </quantiles>
-    <variable>NPP</variable>
+    <variable>StemBiom</variable>
   </sensitivity.analysis>
 
   <model>
     <type>BIOCRO</type>
-    <binary>/home/carya/R/library/PEcAn.BIOCRO/biocro.Rscript</binary>
+    <binary>/home/carya/pecan/models/biocro/inst/pointbiocro.Rscript</binary>
   </model>
 
   <run>
@@ -42,8 +42,8 @@
     </site>
     <inputs>
       <met>
-        <source>Ameriflux</source>
         <output>BIOCRO</output>
+        <path>/home/carya/pecan/models/biocro/tests/testthat/data/US-Bo1.2004.nc</path>
       </met>
     </inputs>
       <start.date>2004/01/01</start.date>
