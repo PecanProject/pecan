@@ -73,7 +73,7 @@ runPRELES.jobsh<- function(met.file,outdir,parameters, sitelat, sitelon,start.da
   
   ## Check for CO2 and PAR
   if (!is.numeric(CO2)){
-    CO2 = rep(4.0e+8,length(PRECIP))
+    CO2 = rep(4.0e+8,length(Precip))
   }
   
   ## GET VPD from  Saturated humidity and Air Temperature
