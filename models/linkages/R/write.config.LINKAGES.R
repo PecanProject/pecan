@@ -25,9 +25,9 @@
 ##-------------------------------------------------------------------------------------------------#
 write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, run.id,
                                   restart=NULL, spinup=NULL){
-  
+  #850-869 repeated to fill 1000 years
   if(is.null(restart)) restart = FALSE
-  if(is.null(spinup)) spinup = FALSE
+  if(is.null(spinup)) spinup = TRUE
   
   require(linkages) 
   
@@ -95,6 +95,7 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   }
   
   spp.params <- spp.params.default[spp.params.save,]
+  switch.mat <- switch.mat[spp.params.save,]
   
   if(spinup==TRUE){
     spinup.out <- spinup.LINKAGES(start.year,end.year,temp.mat,precip.mat)
