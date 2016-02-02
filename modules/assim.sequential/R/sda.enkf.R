@@ -144,6 +144,14 @@ sda.enkf <- function(settings,IC,prior,obs){
   #NPPm = rep(NA,nens)
   FORECAST <- ANALYSIS <- list()
   enkf.params <- list()
+  aqq = array(0,dim=c(nt+1,2,2))
+  bqq = numeric(nt+1)
+  CI.X1 <- matrix(0,3,nt) ; CI.X2 = CI.X1
+  
+  wish.df <- function(Om,X,i,j,col){
+    n = (Om[i,j]^2 + Om[i,i]*Om[j,j])/var(X[,col])
+    return(n)
+  }
   ###-------------------------------------------
   ### loop over time
   ###-------------------------------------------
@@ -156,51 +164,75 @@ sda.enkf <- function(settings,IC,prior,obs){
     ### Analysis step
     mu.f = apply(X,2,mean,na.rm=TRUE)
     Pf   = cov(X)
-#    Y    = t(obs[t,c(1,3,5,7)])#obs$mean[t]
-  Y = t(log(obs[t,c(1,3,5,7)]))
-#    R    = diag(as.numeric(obs[t,c(2,4,6,8)])^2)#obs$sd[t]^2
-    R = diag(log(as.numeric((1+obs[t,c(2,4,6,8)]^2/obs[t,c(1,3,5,7)]^2),4,4)))
-    H    = diag(4)#matrix(c(1,rep(0,ncol(X)-1)),1,ncol(X))
-    if(!is.na(Y[1])){
+    Y    = t(obs[t,c(1,3,5,7)])#obs$mean[t]
+#    Y = t(log(obs[t,c(1,3,5,7)]))
+    R    = diag(as.numeric(obs[t,c(2,4,6,8)])^2)#obs$sd[t]^2
+#    R = diag(log(as.numeric((1+obs[t,c(2,4,6,8)]^2/obs[t,c(1,3,5,7)]^2),4,4)))
+#    H = matrix(c(1,rep(0,ncol(X)-1)),1,ncol(X))
+    H    = diag(4)
+    if(processvar == FALSE){
       K    = Pf%*%t(H)%*%solve(R+H%*%Pf%*%t(H))
       mu.a = mu.f + K%*%(Y-H%*%mu.f)
       Pa   = (diag(ncol(X)) - K%*%H)%*%Pf
-      if(TRUE){ 
+    } else { 
         ## numerical update of state and process error
         AnalysisFilterQ <- "
-        model{ 
-        X.mod ~ dnorm(muf,pf) ## Model Forecast
+          model{ 
+          X.mod ~ dmnorm(muf,pf) ## Model Forecast
+
+          ## add process error
+          q  ~ dwish(aq,bq)
+          Q <- inverse(q) 
+          X  ~ dmnorm(X.mod,q)
+
+          ## Analysis
+          Y  ~ dmnorm(X,r)
+          }"       
         
-        ## add process error
-        q  ~ dgamma(aq,bq)
-        X  ~ dnorm(X.mod,q)
+        #### initial conditions
+        bqq[1] <- length(mu.f)
+        aqq[1,,] <- diag(length(mu.f))*bqq[1]
         
-        ## Analysis
-        Y  ~ dnorm(X,r)
-        }"
-        
-        update = list(Y=Y,muf=mu.f,pf=Pf,aq=aqq[t],bq=bqq[t],r=1/R)
+        ### analysis of model and data
+        update = list(Y=Y, muf=mu.f, pf=Pf, aq=aqq[t,,], bq=bqq[t], r=solve(R))
         mod <- jags.model(file=textConnection(AnalysisFilterQ),
                           data=update,
                           n.adapt=1000,n.chains=3,
-                          init=list(X.mod=mu.f))
-        jdat <- coda.samples(mod,variable.names=c("q","X"),n.iter=10000) 
+                          init=list(X.mod=as.vector(mu.f))) #inits for q?
+        jdat <- coda.samples(mod,variable.names=c("X","q"),n.iter=10000) 
         
         ## update parameters  
         dat = as.matrix(jdat)
-        mu.a  = mean(dat[,"X"])
-        Pa  = 1/var(dat[,"X"])
-        #CI.LFq[,t] = quantile(dat[,"X"],c(0.025,0.5,0.975))
-        mq = mean(dat[,"q"])
-        vq = var(dat[,"q"])
-        aqq[t+1] = mq*mq/vq
-        bqq[t+1] = mq/vq
-      }
-    } else {
-      mu.a = mu.f
-      Pa   = Pf
+        dat = dat[3000:10000,]
+        iq = grep("q",colnames(dat))
+        iX = grep("X[",colnames(dat),fixed=TRUE)
+        mu.a  = colMeans(dat[,iX])
+        Pa  = cov(dat[,iX])
+        Pa[is.na(Pa)]<- 0 
+        
+        CI.X1[,t] = quantile(dat[,iX[1]],c(0.025,0.5,0.975))
+        CI.X2[,t] = quantile(dat[,iX[2]],c(0.025,0.5,0.975))
+        
+        mq = dat[,iq] #Omega, Precision
+        q.bar = matrix(apply(mq,2,mean),2,2) #Mean Omega, Precision
+        
+        col = matrix(1:4,2,2)
+        WV = matrix(0,2,2)
+        for(i in 1:2){
+          for(j in 1:2){
+            WV[i,j] <- wish.df(q.bar, X = mq, i=i, j=j, col=col[i,j])
+          }
+        }
+        
+        n = mean(WV) #n + 1
+        if(n < 2) n = 2
+        V = solve(q.bar)*n
+        
+        aqq[t+1,,] = V
+        bqq[t+1] = n
     }
-    enkf.params[[t]] = list(mu.f = mu.f, Pf=Pf,mu.a=mu.a,Pa=Pa) 
+
+    enkf.params[[t]] = list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa) 
  
  ## update state matrix
     analysis = as.data.frame(rmvnorm(nens,log(mu.a),Pa,method="svd"))
@@ -241,7 +273,6 @@ sda.enkf <- function(settings,IC,prior,obs){
     ### Forecast step
     if(t < nt){
       do.call(my.write.restart,args=list(nens,outdir,run.id,total.time[t],settings,prior,analysis))
-
       ## start model run
       start.model.runs(settings,settings$database$bety$write)
     }
