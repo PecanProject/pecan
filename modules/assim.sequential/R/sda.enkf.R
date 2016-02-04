@@ -11,7 +11,9 @@
 ##' 
 ##' @return NONE
 ##' 
-sda.enkf <- function(settings,IC,prior,obs){
+sda.enkf <- function(settings,IC,prior,obs,processvar=NULL){
+  
+  if(is.null(processvar)) processvar = FALSE
   
   ## settings
   model <- settings$model$type #Is this the correct change?
@@ -139,12 +141,12 @@ sda.enkf <- function(settings,IC,prior,obs){
   ## start model run
   start.model.runs(settings,settings$database$bety$write)
   
-  total.time = 2005:2010
+  total.time = 2004:2010
   nt = length(total.time)
   #NPPm = rep(NA,nens)
   FORECAST <- ANALYSIS <- list()
   enkf.params <- list()
-  aqq = array(0,dim=c(nt+1,2,2))
+  aqq = array(0,dim=c(nt+1,ncol(IC),ncol(IC)))
   bqq = numeric(nt+1)
   CI.X1 <- matrix(0,3,nt) ; CI.X2 = CI.X1
   
@@ -152,6 +154,20 @@ sda.enkf <- function(settings,IC,prior,obs){
     n = (Om[i,j]^2 + Om[i,i]*Om[j,j])/var(X[,col])
     return(n)
   }
+  
+  ## numerical update of state and process error
+  AnalysisFilterQ <- "
+          model{ 
+  X.mod ~ dmnorm(muf,pf) ## Model Forecast
+  
+  ## add process error
+  q  ~ dwish(aq,bq)
+  Q <- inverse(q) 
+  X  ~ dmnorm(X.mod,q)
+  
+  ## Analysis
+  Y  ~ dmnorm(X,r)
+}"       
   ###-------------------------------------------
   ### loop over time
   ###-------------------------------------------
@@ -175,26 +191,13 @@ sda.enkf <- function(settings,IC,prior,obs){
       mu.a = mu.f + K%*%(Y-H%*%mu.f)
       Pa   = (diag(ncol(X)) - K%*%H)%*%Pf
     } else { 
-        ## numerical update of state and process error
-        AnalysisFilterQ <- "
-          model{ 
-          X.mod ~ dmnorm(muf,pf) ## Model Forecast
-
-          ## add process error
-          q  ~ dwish(aq,bq)
-          Q <- inverse(q) 
-          X  ~ dmnorm(X.mod,q)
-
-          ## Analysis
-          Y  ~ dmnorm(X,r)
-          }"       
         
         #### initial conditions
         bqq[1] <- length(mu.f)
         aqq[1,,] <- diag(length(mu.f))*bqq[1]
         
         ### analysis of model and data
-        update = list(Y=Y, muf=mu.f, pf=Pf, aq=aqq[t,,], bq=bqq[t], r=solve(R))
+        update = list(Y=Y, muf=mu.f, pf=solve(Pf,tol=0), aq=aqq[t,,], bq=bqq[t], r=solve(R))
         mod <- jags.model(file=textConnection(AnalysisFilterQ),
                           data=update,
                           n.adapt=1000,n.chains=3,
@@ -214,19 +217,21 @@ sda.enkf <- function(settings,IC,prior,obs){
         CI.X2[,t] = quantile(dat[,iX[2]],c(0.025,0.5,0.975))
         
         mq = dat[,iq] #Omega, Precision
-        q.bar = matrix(apply(mq,2,mean),2,2) #Mean Omega, Precision
+        q.bar = matrix(apply(mq,2,mean),length(mu.f),length(mu.f)) #Mean Omega, Precision
         
-        col = matrix(1:4,2,2)
-        WV = matrix(0,2,2)
-        for(i in 1:2){
-          for(j in 1:2){
+        col = matrix(1:length(mu.f)^2,length(mu.f),length(mu.f))
+        WV = matrix(0,length(mu.f),length(mu.f))
+        for(i in 1:length(mu.f)){
+          for(j in 1:length(mu.f)){
             WV[i,j] <- wish.df(q.bar, X = mq, i=i, j=j, col=col[i,j])
           }
         }
         
         n = mean(WV) #n + 1
-        if(n < 2) n = 2
+        if(n < length(mu.f)) n = length(mu.f)
         V = solve(q.bar)*n
+        
+        ifelse(eigen(V)$values>0,eigen(V)$values,print("matrix not positive definite"))
         
         aqq[t+1,,] = V
         bqq[t+1] = n
@@ -271,7 +276,10 @@ sda.enkf <- function(settings,IC,prior,obs){
     apply(FORECAST[[t]] - ANALYSIS[[t]],2,mean)
     obs[t,c(1,3,5,7)] - apply(ANALYSIS[[t]],2,mean)
     ### Forecast step
+save.image(file = "start.here.RData")
     if(t < nt){
+      #make sure write.configs is loaded. 
+      #something is really slow in here.
       do.call(my.write.restart,args=list(nens,outdir,run.id,total.time[t],settings,prior,analysis))
       ## start model run
       start.model.runs(settings,settings$database$bety$write)
