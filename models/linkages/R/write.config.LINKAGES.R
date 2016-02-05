@@ -108,7 +108,7 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
     precip.mat <- spinup.out$precip.mat
   }
 
-  input <- file.path(settings$rundir,"linkages.input.Rdata")  
+  input <- file.path(settings$rundir,run.id,"linkages.input.Rdata")  
   
   save(iplot, nyear, nspec, fc, dry, bgs, egs, max.ind,
        plat, temp.mat, precip.mat, spp.params, switch.mat,
