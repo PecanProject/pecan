@@ -95,7 +95,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       args <- list(outfolder, start_date, end_date)
       if(met %in% "CRUNCEP") {
         ## this is a hack for regional products that go direct to site-level extraction. Needs generalization (mcd)
-        args <- c(args, new.site$id, new.site$lat, new.site$lon) 
+        args <- c(args, new.site$id, new.site$lat, new.site$lon)
         stage$met2cf = FALSE
         stage$standardize = FALSE
       }
@@ -233,14 +233,14 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       if(exists(fcn1)){
         fcn <- fcn1
         cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
-                               username,con=con,hostname=host$name,browndog=NULL,write=TRUE,site$lat,site$lon) 
+                               username,con=con,hostname=host$name,browndog=NULL,write=TRUE,site$lat,site$lon)
       }else if(exists(fcn2)){
         fcn <- fcn2
         format <- query.format(input.id,con)
         cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
-                               username,con=con,hostname=host$name,browndog=NULL,write=TRUE,site$lat,site$lon,format) 
+                               username,con=con,hostname=host$name,browndog=NULL,write=TRUE,site$lat,site$lon,format)
       }else{logger.error("met2CF function doesn't exists")}
-    }  
+    }
   }
 
   logger.info("Finished change to CF Standards")
@@ -270,7 +270,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   }else if(register$scale=="site"){ ##### Site Level Processing
 #     if(!is.null(register$gapfill)){
       logger.info("Gapfilling") # Does NOT take place on browndog!
-      
+
       input.id   <- cf.id[1]
       outfolder  <- file.path(dir,paste0(met,"_CF_gapfill_site_",str_ns))
       pkg        <- "PEcAn.data.atmosphere"
@@ -279,14 +279,14 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       formatname <- 'CF Meteorology'
       mimetype   <- 'application/x-netcdf'
       lst        <- site.lst(site,con)
-      
+
       ready.id   <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id
                                   ,start_date,end_date,pkg,fcn,username,con=con,
                                   hostname=host$name,browndog=NULL,write=TRUE,lst=lst)
 #     }else{
 #       ready.id<-cf.id[1]
 #     }
-#     
+#
   }
   logger.info("Finished Standardize Met")
   }
@@ -445,7 +445,7 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
     unzip(downloadedfile, exdir=folder)
     # fix ED_MET_DRIVER_HEADER
     x <- readLines(results$file)
-    x[3] <- folder
+    x[3] <- ifelse(grepl('/$', folder), folder, paste0(folder, '/'))
     writeLines(x, results$file)
   } else {
     results$file <- downloadedfile
