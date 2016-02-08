@@ -52,11 +52,12 @@ runPRELES.jobsh<- function(met.file,outdir,parameters, sitelat, sitelon,start.da
   ifelse(leap_year(year)==TRUE,
          dt <- (366*24*60*60)/length(sec), #leap year
          dt <- (365*24*60*60)/length(sec)) #non-leap year
-  tstep = 86400/dt
+  tstep = round(86400/dt)
+  dt = 86400/tstep
   
-  doy <- rep(1:365,each=86400/dt)
+  doy <- rep(1:365,each=86400/dt)[1:length(sec)]
   if(year %% 4 == 0){  ## is leap
-    doy <- rep(1:366,each=86400/dt)
+    doy <- rep(1:366,each=86400/dt)[1:length(sec)]
   }
   
 
@@ -78,25 +79,27 @@ runPRELES.jobsh<- function(met.file,outdir,parameters, sitelat, sitelon,start.da
   
   ## GET VPD from  Saturated humidity and Air Temperature
   RH = qair2rh(SH,Tair)
-  VPD= get.vpd(RH,Tair)
+  VPD = get.vpd(RH,Tair)
   
   VPD = VPD * .01 # convert to Pascal
   
   ## Get PPFD from SW
   PPFD=sw2ppfd(SW) #PPFD in umol/m2/s
   PPFD = PPFD * 1e-6 # convert umol to mol
+  
   ## Format/convert inputs 
-  PPFD= tapply(PPFD, doy,mean,na.rm=TRUE) #Find the mean for the day
-  TAir=ud.convert(tapply(Tair,doy,mean,na.rm=TRUE),"kelvin", "celsius")#Convert Kelvin to Celcius
-  VPD= ud.convert(tapply(VPD,doy,mean,na.rm=TRUE), "Pa","kPa")#pascal to kila pascal
-  Precip=tapply(Precip,doy,sum, na.rm=TRUE) #Sum to daily precipitation
-  CO2= tapply(CO2,doy,mean) #need daily average, so sum up day
-  CO2= CO2/1e6
+  ppfd= tapply(PPFD, doy,mean,na.rm=TRUE) #Find the mean for the day
+  tair=ud.convert(tapply(Tair,doy,mean,na.rm=TRUE),"kelvin", "celsius")#Convert Kelvin to Celcius
+  vpd= ud.convert(tapply(VPD,doy,mean,na.rm=TRUE), "Pa","kPa")#pascal to kila pascal
+  precip=tapply(Precip,doy,sum, na.rm=TRUE) #Sum to daily precipitation
+  co2= tapply(CO2,doy,mean) #need daily average, so sum up day
+  co2= co2/1e6
   doy=tapply(doy,doy,mean) # day of year
-  fAPAR =rep (0.6,length=length(doy)) #For now set to 0.6. Needs to be between 0-1
+  fapar =rep (0.6,length=length(doy)) #For now set to 0.6. Needs to be between 0-1
   
   ##Bind inputs 
-  tmp<-cbind (PPFD,TAir,VPD,Precip,CO2,fAPAR)
+  tmp<-cbind (ppfd,tair,vpd,precip,co2,fapar)
+  tmp[is.na(tmp)]<-0
   met <- rbind(met,tmp)
     } ## end file exists
   } ## end met process
@@ -132,7 +135,7 @@ runPRELES.jobsh<- function(met.file,outdir,parameters, sitelat, sitelon,start.da
   param.def[9]=as.numeric(params["kGPP"])
   
   ##Run PRELES
-  PRELES.output=as.data.frame(PRELES(PAR=tmp[,"PPFD"],TAir=tmp[,"TAir"],VPD=tmp[,"VPD"], Precip=tmp[,"Precip"],CO2=tmp[,"CO2"],fAPAR=tmp[,"fAPAR"],p = param.def))
+  PRELES.output=as.data.frame(PRELES(PAR=tmp[,"ppfd"],TAir=tmp[,"tair"],VPD=tmp[,"vpd"], Precip=tmp[,"precip"],CO2=tmp[,"co2"],fAPAR=tmp[,"fapar"],p = param.def))
   PRELES.output.dims<-dim(PRELES.output)
   
   days=as.Date(start_date):as.Date(end_date)
@@ -195,3 +198,4 @@ runPRELES.jobsh<- function(met.file,outdir,parameters, sitelat, sitelon,start.da
   }
   
 } ## end runPRELES.jobsh
+
