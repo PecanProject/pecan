@@ -92,12 +92,12 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
     ## convert time to seconds
     sec   <- nc$dim$time$vals  
     sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$time$units," "))[1],"seconds")
-    
+    timestep.s=86400 #seconds in a day
     ifelse(leap_year(year)==TRUE,
            dt <- (366*24*60*60)/length(sec), #leap year
            dt <- (365*24*60*60)/length(sec)) #non-leap year
-    tstep = round(86400/dt)
-    dt = 86400/tstep
+    tstep = round(timestep.s/dt)
+    dt = timestep.s/tstep #dt is now an integer
     
     ## extract variables
     lat  <- ncvar_get(nc,"latitude")
@@ -131,9 +131,9 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
     }
     
     ##build day of year
-    doy <- rep(1:365,each=86400/dt)[1:length(sec)]
+    doy <- rep(1:365,each=timestep.s/dt)[1:length(sec)]
     if(year %% 4 == 0){  ## is leap
-      doy <- rep(1:366,each=86400/dt)[1:length(sec)]
+      doy <- rep(1:366,each=timestep.s/dt)[1:length(sec)]
     }
     
     ## Aggregate variables up to daily
