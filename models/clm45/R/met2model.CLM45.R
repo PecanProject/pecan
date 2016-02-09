@@ -29,106 +29,115 @@ met2model.CLM45 <- function(in.path,in.prefix,outfolder,start_date, end_date, ls
   #close
   #defining temporal dimension needs to be figured out. If we configure clm to use same tstep then we may not need to change dimensions
   
-  if(!require("PEcAn.utils")) print("install PEcAn.utils")
-  require("lubridate")
-  require("ncdf4")
-  require("udunits2")
+#   require("PEcAn.data.atmosphere")
+#   require("PEcAn.utils")
+#   require("ncdf4")
+#   require("udunits2")
+#   
+#   #Process start and end dates
+#   start_date<-as.POSIXlt(start.date,tz="GMT")
+#   end_date<-as.POSIXlt(end.date,tz="GMT")
+#   
+#   start_year <- year(start_date)
+#   end_year <- year(end_date)
+#   
+#   timestep.s<-86400 #Number of seconds in a day
+#   
+#   ## Build met
+#   met <- NULL
+#   for(year in start_year:end_year){
+#     
+#     met.file.y = paste(met.file,year,"nc",sep=".")
+#     
+#     if(file.exists(met.file.y)){
+#       
+#       ## Open netcdf file
+#       nc=nc_open(met.file.y)
+#       
+#       
+#       ## convert time to seconds
+#       sec   <- nc$dim$time$vals  
+#       sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$time$units," "))[1],"seconds")
+#       
+#       
+#       
+#       ##build day and  year
+#       
+#       ifelse(leap_year(year)==TRUE,
+#              dt <- (366*24*60*60)/length(sec), #leap year
+#              dt <- (365*24*60*60)/length(sec)) #non-leap year
+#       tstep = round(timestep.s/dt) #time steps per day
+#       
+#       doy <- rep(1:365,each=tstep)[1:length(sec)] 
+#       if(year %% 4 == 0){  ## is leap
+#         doy <- rep(1:366,each=tstep)[1:length(sec)]
+#       }
+#       
   
-  #Reformat start and end dates 
-  start_date<-as.POSIXlt(start.date,tz="GMT")
-  end_date<-as.POSIXlt(end.date,tz ="GMT")
+  ## extract variables. These need to be read in and converted to CLM standards
   
-  days=as.Date(start_date):as.Date(end_date)
-  year = strftime(as.Date(days,origin="1970-01-01"),"%Y")
-  years<-unique(year)
-  num.years<- length(years)
-  timestep.s<-86400
+#   ncvar_rename(ncfile,varid="LONGXY")
+#   ncvar_rename(ncfile,varid="LATIXY")
+#   #     double ZBOT(time, lat, lon) ;
+#   #     ZBOT:long_name = "observational height" ;
+#   #     ZBOT:units = "m" ;
+#   ZBOT = ncvar_rename(ncfile,"ZBOT","ZBOT")
+#   #     
+#   #     double EDGEW(scalar) ;
+#   #     EDGEW:long_name = "western edge in atmospheric data" ;
+#   #     EDGEW:units = "degrees E" ;
+#   EDGEW = ncvar_rename(ncfile,"EDGEW","EDGEW")
+#   
+#   #     double EDGEE(scalar) ;
+#   #     EDGEE:long_name = "eastern edge in atmospheric data" ;
+#   #     EDGEE:units = "degrees E" ;
+#   EDGEE = ncvar_rename(ncfile,"EDGEE","EDGEE")
+#   
+#   #     double EDGES(scalar) ;
+#   #     EDGES:long_name = "southern edge in atmospheric data" ;
+#   #     EDGES:units = "degrees N" ;
+#   EDGES = ncvar_rename(ncfile,"EDGES","EDGES") 
+#   #     
+#   #     double EDGEN(scalar) ;
+#   #     EDGEN:long_name = "northern edge in atmospheric data" ;
+#   #     EDGEN:units = "degrees N" ;
+#   EDGEN = ncvar_rename(ncfile,"EDGEN","air_temperature")
+#   #     double TBOT(time, lat, lon) ;
+#   #     TBOT:long_name = "temperature at the lowest atm level (TBOT)" ;
+#   #     TBOT:units = "K" ;
+#   TBOT  = ncvar_rename(ncfile,"TBOT","specific_humidity")
+#   #     double RH(time, lat, lon) ;   
+#   #     RH:long_name = "relative humidity at the lowest atm level (RH)" ;
+#   #     relative_humidity
+#   #     RH:units = "%" ;
+#   RH    = ncvar_rename(ncfile,"RH","relative_humidity")
+#   #     double WIND(time, lat, lon) ;
+#   #     WIND:long_name = "wind at the lowest atm level (WIND)" ;
+#   #     wind_speed
+#   #     WIND:units = "m/s" ;
+#   WIND  = ncvar_rename(ncfile,"WIND","wind_speed")
+#   #     double FSDS(time, lat, lon) ;
+#   #     FSDS:long_name = "incident solar (FSDS)" ;
+#   #     FSDS:units = "W/m2" ;
+#   FSDS  = ncvar_rename(ncfile,"FSDS","FSDS")
+#   #     double FLDS(time, lat, lon) ;
+#   #     FLDS:long_name = "incident longwave (FLDS)" ;
+#   #     FLDS:units = "W/m2" ;
+#   FLDS  = ncvar_rename(ncfile,"FLDS","")
+#   #     double PSRF(time, lat, lon) ;   
+#   #     PSRF:long_name = "pressure at the lowest atm level (PSRF)" ;
+#   #     PSRF:units = "Pa" ;
+#   PSRF  = ncvar_rename(ncfile,"PSRF","air_pressure")
+#   #     double PRECTmms(time, lat, lon) ;
+#   #     PRECTmms:long_name = "precipitation (PRECTmms)" ;
+#   #     PRECTmms:units = "mm/s" ;
+#   PRECTmms =ncvar_rename(ncfile,"PRECTmmc","precipitation_flux")
   
-  ## convert time to seconds
-  sec   <- nc$dim$time$vals  
-  sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$time$units," "))[1],"seconds")
-  
-  ##build day and  year
-  ifelse(leap_year(as.numeric(year))==TRUE,
-         dt <- (366*24*60*60)/length(sec), #leap year
-         dt <- (365*24*60*60)/length(sec)) #non-leap year
-  tstep = 86400/dt
-  
-  doy <- rep(1:365,each=86400/dt)
-  if(as.numeric(year) %% 4 == 0){  ## is leap
-    doy <- rep(1:366,each=86400/dt)
-  }
-  
-  
-## loop over nc files and rename vars. (CF standard names will have to be found for some of these)
-for(year in start_year:end_year) {
-  ncfile <- file.path(in.path, paste(in.prefix, year, "nc", sep="."))
-  
-  
-  ## extract variables
-  
-  ncvar_rename(ncfile,varid="LONGXY")
-  ncvar_rename(ncfile,varid="LATIXY")
-  #     double ZBOT(time, lat, lon) ;
-  #     ZBOT:long_name = "observational height" ;
-  #     ZBOT:units = "m" ;
-  ZBOT = ncvar_rename(ncfile,"ZBOT","ZBOT")
-  #     
-  #     double EDGEW(scalar) ;
-  #     EDGEW:long_name = "western edge in atmospheric data" ;
-  #     EDGEW:units = "degrees E" ;
-  EDGEW = ncvar_rename(ncfile,"EDGEW","EDGEW")
-  
-  #     double EDGEE(scalar) ;
-  #     EDGEE:long_name = "eastern edge in atmospheric data" ;
-  #     EDGEE:units = "degrees E" ;
-  EDGEE = ncvar_rename(ncfile,"EDGEE","EDGEE")
-  
-  #     double EDGES(scalar) ;
-  #     EDGES:long_name = "southern edge in atmospheric data" ;
-  #     EDGES:units = "degrees N" ;
-  EDGES = ncvar_rename(ncfile,"EDGES","EDGES") 
-  #     
-  #     double EDGEN(scalar) ;
-  #     EDGEN:long_name = "northern edge in atmospheric data" ;
-  #     EDGEN:units = "degrees N" ;
-  EDGEN = ncvar_rename(ncfile,"EDGEN","air_temperature")
-  #     double TBOT(time, lat, lon) ;
-  #     TBOT:long_name = "temperature at the lowest atm level (TBOT)" ;
-  #     TBOT:units = "K" ;
-  TBOT  = ncvar_rename(ncfile,"TBOT","specific_humidity")
-  #     double RH(time, lat, lon) ;   
-  #     RH:long_name = "relative humidity at the lowest atm level (RH)" ;
-  #     relative_humidity
-  #     RH:units = "%" ;
-  RH    = ncvar_rename(ncfile,"RH","relative_humidity")
-  #     double WIND(time, lat, lon) ;
-  #     WIND:long_name = "wind at the lowest atm level (WIND)" ;
-  #     wind_speed
-  #     WIND:units = "m/s" ;
-  WIND  = ncvar_rename(ncfile,"WIND","wind_speed")
-  #     double FSDS(time, lat, lon) ;
-  #     FSDS:long_name = "incident solar (FSDS)" ;
-  #     FSDS:units = "W/m2" ;
-  FSDS  = ncvar_rename(ncfile,"FSDS","FSDS")
-  #     double FLDS(time, lat, lon) ;
-  #     FLDS:long_name = "incident longwave (FLDS)" ;
-  #     FLDS:units = "W/m2" ;
-  FLDS  = ncvar_rename(ncfile,"FLDS","")
-  #     double PSRF(time, lat, lon) ;   
-  #     PSRF:long_name = "pressure at the lowest atm level (PSRF)" ;
-  #     PSRF:units = "Pa" ;
-  PSRF  = ncvar_rename(ncfile,"PSRF","air_pressure")
-  #     double PRECTmms(time, lat, lon) ;
-  #     PRECTmms:long_name = "precipitation (PRECTmms)" ;
-  #     PRECTmms:units = "mm/s" ;
-  PRECTmms =ncvar_rename(ncfile,"PRECTmmc","precipitation_flux")
-  
- nc_close(ncfiles)
+ #nc_close(ncfiles)
 
-} ### end loop over met files
+#} ### end loop over met files
 
-print("Done with met2model.CLM4")
+#print("Done with met2model.CLM4")
 
 } ### end met2model.CLM4
 
