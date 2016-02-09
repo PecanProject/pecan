@@ -27,10 +27,11 @@ runPRELES.jobsh<- function(met.file,outdir,parameters, sitelat, sitelon,start.da
   #Process start and end dates
   start_date<-as.POSIXlt(start.date,tz="GMT")
   end_date<-as.POSIXlt(end.date,tz="GMT")
-  
 
   start_year <- year(start_date)
   end_year <- year(end_date)
+  
+  timestep.s<-86400 #Number of seconds in a day
   
   ## Build met
   met <- NULL
@@ -48,47 +49,61 @@ runPRELES.jobsh<- function(met.file,outdir,parameters, sitelat, sitelon,start.da
   sec   <- nc$dim$time$vals  
   sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$time$units," "))[1],"seconds")
   
+  
+  
   ##build day and  year
+  
   ifelse(leap_year(year)==TRUE,
          dt <- (366*24*60*60)/length(sec), #leap year
          dt <- (365*24*60*60)/length(sec)) #non-leap year
-  tstep = 86400/dt
+  tstep = round(timestep.s/dt) #time steps per day
   
-  doy <- rep(1:365,each=86400/dt)
+  doy <- rep(1:365,each=tstep)[1:length(sec)] 
   if(year %% 4 == 0){  ## is leap
-    doy <- rep(1:366,each=86400/dt)
+    doy <- rep(1:366,each=tstep)[1:length(sec)]
   }
   
 
   ## Get variables from netcdf file
-  PAR <-ncvar_get(nc,"surface_downwelling_photosynthetic_photon_flux_in_air") #PAR in mol/m2s1
+  SW <-ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air") #SW in W/m2
   Tair <-ncvar_get(nc,"air_temperature")#air temperature in K
   Precip <-ncvar_get(nc,"precipitation_flux")#precipitation in kg/m2s1
-  CO2 <-ncvar_get(nc,"mole_fraction_of_carbon_dioxide_in_air") #mol/mol
-  SH <- ncvar_get(nc,"specific_humidity")
+  CO2 <-try(ncvar_get(nc,"mole_fraction_of_carbon_dioxide_in_air")) #mol/mol
+  SH <- ncvar_get(nc,"specific_humidity") #
   lat<-ncvar_get(nc,"latitude")
   lon<-ncvar_get(nc,"longitude")
   
   nc_close(nc)
   
+  ## Check for CO2 and PAR
+  if (!is.numeric(CO2)){
+    logger.warn("CO2 not found. Setting to default: 4.0e+8 mol/mol") #using rough estimate of atmospheric CO2 levels
+    CO2 = rep(4.0e+8,length(Precip)) 
+  }
+  
   ## GET VPD from  Saturated humidity and Air Temperature
   RH = qair2rh(SH,Tair)
-  VPD= get.vpd(RH,Tair)
+  VPD = get.vpd(RH,Tair)
   
   VPD = VPD * .01 # convert to Pascal
   
+  ## Get PPFD from SW
+  PPFD=sw2ppfd(SW) #PPFD in umol/m2/s
+  PPFD = PPFD * 1e-6 # convert umol to mol
+  
   ## Format/convert inputs 
-  PAR= tapply(PAR, doy,mean,na.rm=TRUE) #Find the mean for the day
-  TAir=ud.convert(tapply(Tair,doy,mean,na.rm=TRUE),"kelvin", "celsius")#Convert Kelvin to Celcius
-  VPD= ud.convert(tapply(VPD,doy,mean,na.rm=TRUE), "Pa","kPa")#pascal to kila pascal
-  Precip=tapply(Precip,doy,sum, na.rm=TRUE) #Sum to daily precipitation
-  CO2= tapply(CO2,doy,mean) #need daily average, so sum up day
-  CO2= CO2/1e6
+  ppfd= tapply(PPFD, doy,mean,na.rm=TRUE) #Find the mean for the day
+  tair=ud.convert(tapply(Tair,doy,mean,na.rm=TRUE),"kelvin", "celsius")#Convert Kelvin to Celcius
+  vpd= ud.convert(tapply(VPD,doy,mean,na.rm=TRUE), "Pa","kPa")#pascal to kila pascal
+  precip=tapply(Precip,doy,sum, na.rm=TRUE) #Sum to daily precipitation
+  co2= tapply(CO2,doy,mean) #need daily average, so sum up day
+  co2= co2/1e6 #convert to ppm
   doy=tapply(doy,doy,mean) # day of year
-  fAPAR =rep (0.6,length=length(doy)) #For now set to 0.6. Needs to be between 0-1
+  fapar =rep (0.6,length=length(doy)) #For now set to 0.6. Needs to be between 0-1
   
   ##Bind inputs 
-  tmp<-cbind (PAR,TAir,VPD,Precip,CO2,fAPAR)
+  tmp<-cbind (ppfd,tair,vpd,precip,co2,fapar)
+  tmp[is.na(tmp)]<-0
   met <- rbind(met,tmp)
     } ## end file exists
   } ## end met process
@@ -124,15 +139,14 @@ runPRELES.jobsh<- function(met.file,outdir,parameters, sitelat, sitelon,start.da
   param.def[9]=as.numeric(params["kGPP"])
   
   ##Run PRELES
-  PRELES.output=as.data.frame(PRELES(PAR=tmp[,"PAR"],TAir=tmp[,"TAir"],VPD=tmp[,"VPD"], Precip=tmp[,"Precip"],CO2=tmp[,"CO2"],fAPAR=tmp[,"fAPAR"],p = param.def))
+  PRELES.output=as.data.frame(PRELES(PAR=tmp[,"ppfd"],TAir=tmp[,"tair"],VPD=tmp[,"vpd"], Precip=tmp[,"precip"],CO2=tmp[,"co2"],fAPAR=tmp[,"fapar"],p = param.def))
   PRELES.output.dims<-dim(PRELES.output)
   
   days=as.Date(start_date):as.Date(end_date)
   year = strftime(as.Date(days,origin="1970-01-01"),"%Y")
   years<-unique(year)
   num.years<- length(years)
-  timestep.s<-86400
-  
+
   for (y in years){
     if(file.exists(file.path(outdir,paste(y))))
       next
@@ -187,3 +201,4 @@ runPRELES.jobsh<- function(met.file,outdir,parameters, sitelat, sitelon,start.da
   }
   
 } ## end runPRELES.jobsh
+
