@@ -86,15 +86,20 @@ for(year in start_year:end_year) {
   nc <- nc_open(ncfile)
 
   # check lat/lon
+  flat <- try(ncvar_get(nc, "latitude"), silent=TRUE)
+  if (!is.numeric(flat)) flat <- nc$dim[[1]]$vals[1]
   if (is.na(lat)) {
-    lat <- nc$dim[[1]]$vals[1]
-  } else if (lat != nc$dim[[1]]$vals[1]) {
-    logger.warn("Latitude does not match that of file", lat, "!=", nc$dim[[1]]$vals[1])
+    lat <- flat
+  } else if (lat != flat) {
+    logger.warn("Latitude does not match that of file", lat, "!=", flat)
   }
+
+  flon <- try(ncvar_get(nc, "longitude"), silent=TRUE)
+  if (!is.numeric(flon)) flat <- nc$dim[[2]]$vals[1]
   if (is.na(lon)) {
-    lon <- nc$dim[[2]]$vals[1]
-  } else if (lon != nc$dim[[2]]$vals[1]) {
-    logger.warn("Longitude does not match that of file", lon, "!=", nc$dim[[2]]$vals[1])
+    lon <- flon
+  } else if (lon != flon) {
+    logger.warn("Longitude does not match that of file", lon, "!=", flon)
   }
 
   ## determine GMT adjustment
