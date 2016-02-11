@@ -28,7 +28,7 @@ write.restart.LINKAGES <- function(nens,outdir,run.id,time,settings,prior,analys
   
   for(i in 1:nens){
     # skip ensemble member if no file availible  
-    outfile = file.path(outdir,run.id[[i]],"1973linkages.out.Rdata")
+    outfile = file.path(outdir,run.id[[i]],"linkages.out.Rdata")
     if(!file.exists(outfile)){
       print(paste0("missing outfile ens #",run.id[[i]]))
       next
@@ -111,8 +111,8 @@ write.restart.LINKAGES <- function(nens,outdir,run.id,time,settings,prior,analys
       }else{
         if(new.ntrees[s] > ntrees[s] & ntrees[s]!=0){ #new are greater than the old of the same spp. and there are old trees to clone
           print("new are greater than the old of the same spp. and there are old trees of same spp. to clone")
-          select <- c(which(n.index == s), sample(size = new.ntrees[s] - ntrees[s], 
-                                                  x = which(n.index == s), replace = FALSE))
+          select <- c(which(n.index == s), sample(size = (new.ntrees[s] - ntrees[s]), 
+                                                  x = which(n.index == s), replace = TRUE))
         }else{
           print(paste0("clone needed for spp. ",s))
           for(r in 1:3){
