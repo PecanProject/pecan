@@ -16,7 +16,7 @@ sda.enkf <- function(settings,IC,prior,obs,processvar=NULL){
   if(is.null(processvar)) processvar = FALSE
   
   ## settings
-  model <- settings$model$type #Is this the correct change?
+  model <- settings$model$type
   write <- settings$database$bety$write
   defaults <- settings$pfts
   outdir <- settings$run$host$outdir
@@ -141,7 +141,9 @@ sda.enkf <- function(settings,IC,prior,obs,processvar=NULL){
   ## start model run
   start.model.runs(settings,settings$database$bety$write)
   
-  total.time = 2004:2010
+  #might need a way to rerun if some ensembles get stopped for errors?
+  
+  total.time = as.numeric(end.year):(as.numeric(end.year)+36)
   nt = length(total.time)
   #NPPm = rep(NA,nens)
   FORECAST <- ANALYSIS <- list()
@@ -171,7 +173,7 @@ sda.enkf <- function(settings,IC,prior,obs,processvar=NULL){
   ###-------------------------------------------
   ### loop over time
   ###-------------------------------------------
-  for(t in 1:nt){
+  for(t in 4:10){
 
     ### load output
     X <- do.call(my.read.restart,args=list(outdir,run.id,time = total.time[t],IC,prior,spin.up))
@@ -273,14 +275,14 @@ sda.enkf <- function(settings,IC,prior,obs,processvar=NULL){
 
     ANALYSIS[[t]] = analysis
  
-    apply(FORECAST[[t]] - ANALYSIS[[t]],2,mean)
-    obs[t,c(1,3,5,7)] - apply(ANALYSIS[[t]],2,mean)
+    round(apply(FORECAST[[t]] - ANALYSIS[[t]],2,mean))
+    round(obs[t,c(1,3,5,7)] - apply(ANALYSIS[[t]],2,mean))
     ### Forecast step
-save.image(file = "start.here.RData")
+save.image(file = "/home/araiho/start.here.RData")
     if(t < nt){
       #make sure write.configs is loaded. 
       #something is really slow in here.
-      do.call(my.write.restart,args=list(nens,outdir,run.id,total.time[t],settings,prior,analysis))
+      do.call(my.write.restart,args=list(nens,outdir,run.id,time = total.time[t],settings,prior,analysis))
       ## start model run
       start.model.runs(settings,settings$database$bety$write)
     }
@@ -322,13 +324,13 @@ save(FORECAST,ANALYSIS,enkf.params,file=file.path(settings$outdir,"sda.ENKF.Rdat
   
   pink = col2rgb("pink")
   alphapink = rgb(pink[1],pink[2],pink[3],100,max=255)
-  Xbar = laply(FORECAST,function(x){return(mean(x$AGB,na.rm=TRUE))})
-  Xci  = laply(FORECAST,function(x){return(quantile(x$AGB,c(0.025,0.975)))})
-  plot(total.time,y$mean,ylim=range(c(y$mean+10*y$sd,y$mean-10*y$sd)),type='n',xlab="total.time",ylab="kg/m^2/yr")
-  ciEnvelope(total.time,y$mean-y$sd*1.96,y$mean+y$sd*1.96,col="lightblue")
-  lines(total.time,y$mean,type='b',col="darkblue")
+  Xbar = laply(FORECAST,function(x){return(mean(x$biomass_beal2,na.rm=TRUE))})
+  Xci  = laply(FORECAST,function(x){return(quantile(x$biomass_beal2,c(0.025,0.975)))})
+  plot(total.time[1:36],y$mean_beal2,ylim=range(c(y$mean_beal2+10*y$sd_beal2,y$mean_beal2-10*y$sd_beal2)),type='n',xlab="total.time",ylab="kg/m^2/yr")
+  ciEnvelope(total.time[1:36],y$mean_beal2-y$sd_beal2*1.96,y$mean_beal2+y$sd_beal2*1.96,col="lightblue")
+  lines(total.time[1:36],y$mean_beal2,type='b',col="darkblue")
   #if(sda.demo) lines(total.time,ensp[ref,],col=2,lwd=2)
-  ciEnvelope(total.time,Xci[1:nt,1],Xci[1:nt,2],col=alphapink)
+  ciEnvelope(total.time[1:nt],Xci[1:nt,1],Xci[1:nt,2],col=alphapink)
   lines(total.time,Xbar[1:nt],col=6,type='b')
 
   green = col2rgb("green")
