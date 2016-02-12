@@ -10,10 +10,14 @@
 #'     Cw: Leaf water content (cm) (>0)
 #'     Cm: Leaf dry matter content (ug/cm2) (>0)
 #' @param version PROSPECT version: 4, 5, or "5B"
-#' @return Matrix (2101 x 2) of simulated reflectance (column 1) 
-#'      and transmittance (column 2) values from 400:2100 nm
+#' @param include.wl Whether or not to append wavelengths to output matrix.  
+#' Included to provide some backward compatibility and benchmarking, but will 
+#' soon be deprecated.
+#' @return Matrix (2101 x 3) of simulated reflectance (column 1, "R"), 
+#'      transmittance (column 2, "T"), and wavelength (column 3, "wl") values 
+#'      from 400:2500 nm
 
-prospect <- function(param, version){
+prospect <- function(param, version, include.wl == FALSE){
     version <- toupper(as.character(version))
     plist <- as.list(param)
     plist$RT <- matrix(0, 2101, 2)
@@ -31,7 +35,13 @@ prospect <- function(param, version){
     }
     else stop("Version must be 4, 5, or 5B") 
     outlist <- do.call(.Fortran, inlist)
-    return(outlist[[length(outlist)]])
+    if(include.wl){
+        RTL <- cbind(outlist[[length(outlist)]], 400:2500)
+        names(RTL) <- c("R", "T", "wl")
+        return(RTL)
+    } else {
+        return(outlist[[length(outlist)]])
+    }
 }
 
 # Shortcut lists for PROSPECT parameter names
