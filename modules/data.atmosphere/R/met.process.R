@@ -283,6 +283,8 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       ready.id   <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id
                                   ,start_date,end_date,pkg,fcn,username,con=con,
                                   hostname=host$name,browndog=NULL,write=TRUE,lst=lst)
+      
+      print(ready.id)
 #     }else{
 #       ready.id<-cf.id[1]
 #     }
@@ -293,16 +295,21 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
 
   #--------------------------------------------------------------------------------------------------#
   # Prepare for Model
+  # Determine output format name and mimetype
+  
+  model_info <- db.query(paste0("SELECT f.name, f.id, mt.type_string from modeltypes as m",
+                              " join modeltypes_formats as mf on m.id = mf.modeltype_id",
+                              " join formats as f on mf.format_id = f.id",
+                              " join mimetypes as mt on f.mimetype_id = mt.id",
+                              " where m.name = '", model, "' AND mf.tag='met'"),con)
+
+  if (model_info[1] == "CF Meteorology"){
+    stage$met2model=FALSE
+  } 
 
   if(stage$met2model == TRUE){
   logger.info("Begin Model Specific Conversion")
 
-  # Determine output format name and mimetype
-  model_info <- db.query(paste0("SELECT f.name, f.id, mt.type_string from modeltypes as m",
-                                " join modeltypes_formats as mf on m.id = mf.modeltype_id",
-                                " join formats as f on mf.format_id = f.id",
-                                " join mimetypes as mt on f.mimetype_id = mt.id",
-                                " where m.name = '", model, "' AND mf.tag='met'"),con)
   formatname <- model_info[1]
   mimetype   <- model_info[3]
 
@@ -316,6 +323,10 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
 
   model.id  <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
                              username,con=con,hostname=host$name,browndog,write=TRUE,lst=lst,lat=new.site$lat,lon=new.site$lon)
+  }else{
+    model.id = ready.id
+    
+    if("CRUNCEP" %in% met){outfolder <- file.path(dir,paste0(met,"_site_",str_ns))}
   }
 
   logger.info(paste("Finished Model Specific Conversion",model.id[1]))
