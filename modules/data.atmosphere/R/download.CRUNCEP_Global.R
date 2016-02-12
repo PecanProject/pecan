@@ -38,7 +38,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
   
   var = data.frame(DAP.name = c("tair","lwdown","press","swdown","uwind","vwind","qair","rain"),
                    CF.name = c("air_temperature","surface_downwelling_longwave_flux_in_air","air_pressure","surface_downwelling_shortwave_flux_in_air","eastward_wind","northward_wind","specific_humidity","precipitation_flux"),
-                   units = c('Kelvin',"W/m2","Pascal","W/m2","m/s","m/s","g/g","mm/6h")
+                   units = c('Kelvin',"W/m2","Pascal","W/m2","m/s","m/s","g/g","kg/m2/s")
   )
   
   for (i in 1:rows){
@@ -71,6 +71,10 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
     ## put data in new file
     loc <- nc_create(filename=loc.file, vars=var.list, verbose=verbose)
     for(j in 1:nrow(var)){
+      if (vals== var.list[[8]]) {
+        (var.list[[8]]/21600) }
+      else { (dat.list*1)
+      }
       ncvar_put(nc=loc, varid=as.character(var$CF.name[j]), vals=dat.list[[j]])
     }
     nc_close(loc)
