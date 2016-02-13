@@ -123,5 +123,34 @@ EDR <- function(paths,
         write(ed2in, file = ed2in.local.path)
     }
 
-# 
+# Generate input files
+    par.nir.lengths <- c(length(par.wl), length(nir.wl))
+    cat(par.nir.lengths, file="lengths.dat", sep = ' ')
+    par.ind <- which(leaf.optics[,"wl"] %in% par.wl)    # PAR indices -- offset by 399
+    nir.ind <- which(leaf.optics[,"w"] %in% nir.wl)     # NIR indices 
+    leaf.optics <- prospect(defparam("prospect_5"), 5, include.wl=TRUE)
+    cat(leaf.optics[par.ind,1], file = "reflect_par.dat", sep=" ")
+    cat(leaf.optics[nir.ind,1], file = "reflect_nir.dat", sep=" ")
+    cat(leaf.optics[par.ind,2], file = "trans_par.dat", sep=" ")
+    cat(leaf.optics[nir.ind,2], file = "trans_nir.dat", sep=" ")
+# Call EDR
+    system(sprintf('./%s', edr.exe.path))
+# Analyze output
+    albedo <- get.EDR.output(output.path)
+    return(albedo)
+}
+
+#' @name get.EDR.output
+#' @title Read EDR output
+#' @param path Path to directory containing `albedo_par/nir.dat` files
+get.EDR.output <- function(path=getwd()){
+    nir.table <- read.table(file.path(path, "albedo_nir.dat"))
+    par.table <- read.table(file.path(path, "albedo_par.dat"))
+
+    alb.nir <- unlist(nir.table[1,])
+    alb.par <- unlist(par.table[1,])
+
+    albedo <- c(alb.par, alb.nir)
+    return(albedo)
+}
 
