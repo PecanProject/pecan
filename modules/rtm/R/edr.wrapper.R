@@ -45,11 +45,11 @@ EDR <- function(paths,
 
 # Process datetime
     if(!any(grepl("POSIX", class(datetime)))) stop("datetime is not POSIX")
-    nextdate <- as.Date(datetime) + 1   # For 'terminating' the run
     day <- strftime(datetime, "%d")
     month <- strftime(datetime, "%m")
     year <- strftime(datetime, "%Y")
     starttime <- '0000'     # Not the RTM time, but the "model" time -- shouldn't matter
+    nextdate <- as.Date(datetime) + 1   # For 'terminating' the run
     nextday <- strftime(nextdate, "%d")
     nextmonth <- strftime(nextdate, "%m")
     nextyear <- strftime(nextdate, "%Y")
@@ -77,12 +77,13 @@ EDR <- function(paths,
 
 # Preprocess ED2IN
     if(!is.na(ed2in.path)){     # Otherwise, skip this step
-        file.copy(ed2in.path, output.path) # Copy ED2IN to local directory
+        ed2in.copy <- file.copy(ed2in.path, output.path) # Copy ED2IN to local directory -- returns logical
+        if(!ed2in.copy) stop('Error copying ED2IN')
 # Modify ED2IN
         ed2in.local.path <- file.path(output.path, "ED2IN")
         ed2in <- readLines(ed2in.local.path)
         ed2in <- gsub('(NL%RUNTYPE).*', 
-                      sprintf('\\1 = %s  !! MODIFIED BY R WRAPPER', 'HISTORY'))
+                      sprintf("\\1 = '%s'  !! MODIFIED BY R WRAPPER", 'HISTORY'), ed2in)
 # Start day and time
         ed2in <- gsub('(NL%IMONTHA).*', 
                       sprintf('\\1 = %s  !! MODIFIED BY R WRAPPER', month), ed2in)
@@ -103,12 +104,12 @@ EDR <- function(paths,
                       sprintf('\\1 = %s  !! MODIFIED BY R WRAPPER', nexttime), ed2in)
 # Output file location
         ed2in <- gsub('(NL%FFILOUT).*', 
-                      sprintf('\\1 = %s/analysis  !! MODIFIED BY R WRAPPER', output.path), ed2in)
+                      sprintf("\\1 = '%s/analysis'  !! MODIFIED BY R WRAPPER", output.path), ed2in)
         ed2in <- gsub('(NL%SFILOUT).*', 
-                      sprintf('\\1 = %s/history  !! MODIFIED BY R WRAPPER', output.path), ed2in)
+                      sprintf("\\1 = '%s/history'  !! MODIFIED BY R WRAPPER", output.path), ed2in)
 # Input (history) file location
         ed2in <- gsub('(NL%SFILIN).*', 
-                      sprintf('\\1 = %s  !! MODIFIED BY R WRAPPER', history.full.prefix), ed2in)
+                      sprintf("\\1 = '%s'  !! MODIFIED BY R WRAPPER", history.full.prefix), ed2in)
 # History file information
         ed2in <- gsub('(NL%ITIMEH).*', 
                       sprintf('\\1 = %s  !! MODIFIED BY R WRAPPER', time.ed2in), ed2in)
@@ -119,6 +120,8 @@ EDR <- function(paths,
         ed2in <- gsub('(NL%IYEARH).*', 
                       sprintf('\\1 = %s  !! MODIFIED BY R WRAPPER', year), ed2in)
 # Write resulting ED2IN to file
-        write(ed2in, file = 'ED2IN')
+        write(ed2in, file = ed2in.local.path)
     }
+
+# 
 
