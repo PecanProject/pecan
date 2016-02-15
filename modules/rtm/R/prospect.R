@@ -17,7 +17,7 @@
 #'      transmittance (column 2, "T"), and wavelength (column 3, "wl") values 
 #'      from 400:2500 nm
 
-prospect <- function(param, version, include.wl == FALSE){
+prospect <- function(param, version, include.wl = FALSE){
     version <- toupper(as.character(version))
     plist <- as.list(param)
     plist$RT <- matrix(0, 2101, 2)
