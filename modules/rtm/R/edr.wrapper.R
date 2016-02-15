@@ -1,4 +1,4 @@
-#' @name EDR
+# @name EDR
 #' @title ED radiative transfer module (EDR) wrapper function
 #' @description This function provides a convenient way to call the ED 
 #' radiative transfer module (EDR, which simulates full spectral return of an 
@@ -56,20 +56,20 @@ EDR <- function(paths,
 
 # Preprocess ED2IN
     if(!is.na(ed2in.path)){     # Otherwise, skip this step
-        EDR.preprocess.ed2in(ed2in.path, output.path)
+        EDR.preprocess.ed2in(ed2in.path, output.path, datetime, history.full.prefix)
     }
 
 # Generate input files
     par.nir.lengths <- c(length(par.wl), length(nir.wl))
     cat(par.nir.lengths, file=file.path(output.path, "lengths.dat"), sep = ' ')
     par.ind <- which(RT.matrix[,"wl"] %in% par.wl)    # PAR indices -- offset by 399
-    nir.ind <- which(RT.matrix[,"w"] %in% nir.wl)     # NIR indices 
+    nir.ind <- which(RT.matrix[,"wl"] %in% nir.wl)    # NIR indices 
     cat(RT.matrix[par.ind,1], file = file.path(output.path, "reflect_par.dat"), sep=" ")
     cat(RT.matrix[nir.ind,1], file = file.path(output.path, "reflect_nir.dat"), sep=" ")
     cat(RT.matrix[par.ind,2], file = file.path(output.path, "trans_par.dat"), sep=" ")
     cat(RT.matrix[nir.ind,2], file = file.path(output.path, "trans_nir.dat"), sep=" ")
 # Call EDR -- NOTE that this requires that the ED2IN 
-    system(file.path(output.path, edr.exe.name))
+    system(file.path(output.path, edr.exe.name), intern=TRUE)
 # Analyze output
     albedo <- get.EDR.output(output.path)
 # Optionally, clean up all generated files
@@ -112,9 +112,12 @@ EDR.preprocess.history <- function(history.path, output.path, datetime, history.
     stopifnot(is.character(history.prefix))
     if(!any(grepl("POSIX", class(datetime)))) stop("datetime is not POSIX")
 # Extract date and time
+    day <- strftime(datetime, "%d")
+    month <- strftime(datetime, "%m")
+    year <- strftime(datetime, "%Y")
     time.history <- strftime(datetime, "%H%M%S")
 # Locate history file
-    history.search <- sprintf("%$1s-S-%$2s-%$3s-%$4s",
+    history.search <- sprintf("%1$s-S-%2$s-%3$s-%4$s",
                               history.prefix,
                               year, month, day)
     history.name <- list.files(history.path, history.search)
@@ -124,8 +127,12 @@ EDR.preprocess.history <- function(history.path, output.path, datetime, history.
 # Copy and rename history file
     history.new.name <- gsub('([[:digit:]]{6})', time.history, history.name)
     history.new.path <- file.path(output.path, history.new.name)
-    history.copy <- file.copy(history.full.path, history.new.path)
-    if(!history.copy) stop("Error copying history file")
+    history.copy <- file.copy(history.full.path, history.new.path, overwrite=FALSE)
+    if(!history.copy){
+        warning("Could not copy history with overwrite=FALSE. Attempting with overwrite=TRUE")
+        history.copy <- file.copy(history.full.path, history.new.path, overwrite=TRUE)
+        if(!history.copy) stop('Unable to copy history file, even with overwrite=TRUE. Check permissions on both input and output directories.')
+    }
     history.full.prefix <- file.path(output.path, history.prefix)
     return(history.full.prefix)
 }
@@ -137,7 +144,8 @@ EDR.preprocess.history <- function(history.path, output.path, datetime, history.
 #' @param output.path Path to directory for new ED2IN file (and where analysis 
 #' is performed)
 #' @param datetime POSIX datetime object defining the time at which to run EDR
-EDR.preprocess.ed2in <- function(ed2in.path, output.path, datetime){
+#' @param history.full.prefix Full path and prefix for history file
+EDR.preprocess.ed2in <- function(ed2in.path, output.path, datetime, history.full.prefix){
 # Process datetime
     day <- strftime(datetime, "%d")
     month <- strftime(datetime, "%m")

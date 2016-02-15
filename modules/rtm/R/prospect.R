@@ -37,7 +37,7 @@ prospect <- function(param, version, include.wl = FALSE){
     outlist <- do.call(.Fortran, inlist)
     if(include.wl){
         RTL <- cbind(outlist[[length(outlist)]], 400:2500)
-        names(RTL) <- c("R", "T", "wl")
+        colnames(RTL) <- c("R", "T", "wl")
         return(RTL)
     } else {
         return(outlist[[length(outlist)]])
