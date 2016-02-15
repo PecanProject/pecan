@@ -94,6 +94,23 @@ EDR <- function(paths,
 #' @param nir.wl Vector of wavelengtsh constituting NIR.
 #' @param datetime POSIX datetime object for EDR run
 #' @param ... Other arguments to EDR
+#' @examples
+#' ed2in.path <- '/projectnb/dietzelab/pecan.data/output/ashiklom/1000001295/run/1000336885/ED2IN' # Note that the file itself is pointed to
+#' history.path <- '/projectnb/dietzelab/pecan.data/output/ashiklom/1000001295/out/1000336885/'    # Note that the prefix is NOT included -- only the directory path
+#' paths <- list(ed2in.path = ed2in.path, history.path = history.path)
+#' par.wl <- 400:750
+#' nir.wl <- 751:2500
+#' prospect.param <- c(1.4, 40, 5, 0.01, 0.01)
+#' prospect.version <- 5
+#' datetime <- ISOdatetime(2004, 07, 01, 12, 00, 00)
+#' albedo <- EDR.prospect(prospect.param = prospect.param,
+#'                        prospect.version = prospect.version,
+#'                        paths=paths, 
+#'                        par.wl = par.wl, nir.wl = nir.wl,
+#'                        datetime = datetime, 
+#'                        history.prefix = 'history', change.history.time = TRUE,
+#'                        output.path = getwd())
+#' plot(albedo, type='l')
 EDR.prospect <- function(prospect.param, prospect.version=5, paths, par.wl, nir.wl, datetime, ...){
     RT.matrix <- prospect(prospect.param, prospect.version, include.wl=TRUE)
     albedo <- EDR(paths, RT.matrix, par.wl, nir.wl, datetime, ...)
