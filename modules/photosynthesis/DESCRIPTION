@@ -1,19 +1,19 @@
 Package: PEcAn.photosynthesis
 Type: Package
 Title: PEcAn functions used for leaf-level photosynthesis calculations
-Version: 1.4.4
-Date: 2015-11-10
+Version: 1.4.6
+Date: 2016-01-28
 Author: Mike Dietze, Xiaohui Feng, Shawn Serbin
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     workflow management tool that is designed to simplify the management of
     model parameterization, execution, and analysis. The goal of PECAn is to
     streamline the interaction between data and models, and to improve the
-    efficacy of scientific investigation. The PEcAn.photosynthesis package contains
-    functions used in the Hierarchical Bayesian calibration of the Farquhar et al 1980 model.
+    efficacy of scientific investigation. The PEcAn.photosynthesis package
+    contains functions used in the Hierarchical Bayesian calibration of the
+    Farquhar et al 1980 model.
 Depends:
     rjags
-Suggests:
 SystemRequirements: JAGS2.2.0
 License: FreeBSD + file LICENSE
 Copyright: Authors
@@ -23,3 +23,4 @@ Collate:
     fitA.R
     Licor.QC.R
     plots.R
+RoxygenNote: 5.0.1

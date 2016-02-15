@@ -93,6 +93,12 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     }else{
 
       args <- list(outfolder, start_date, end_date)
+      if(met %in% "CRUNCEP") {
+        ## this is a hack for regional products that go direct to site-level extraction. Needs generalization (mcd)
+        args <- c(args, new.site$id, new.site$lat, new.site$lon)
+        stage$met2cf = FALSE
+        stage$standardize = FALSE
+      }
       cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
       new.files <- remote.execute.R(cmdFcn,host$name,user=NA, verbose=TRUE)
 
@@ -106,6 +112,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
                                     parentid = NA,
                                     con = con,
                                     hostname = host$name)
+      if(met %in% "CRUNCEP"){ready.id = raw.id}
     }
 
   }else if(register$scale=="site") { # Site-level met
@@ -226,14 +233,14 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       if(exists(fcn1)){
         fcn <- fcn1
         cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
-                               username,con=con,hostname=host$name,browndog=NULL,write=TRUE,site$lat,site$lon) 
+                               username,con=con,hostname=host$name,browndog=NULL,write=TRUE,site$lat,site$lon)
       }else if(exists(fcn2)){
         fcn <- fcn2
         format <- query.format(input.id,con)
         cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
-                               username,con=con,hostname=host$name,browndog=NULL,write=TRUE,site$lat,site$lon,format) 
+                               username,con=con,hostname=host$name,browndog=NULL,write=TRUE,site$lat,site$lon,format)
       }else{logger.error("met2CF function doesn't exists")}
-    }  
+    }
   }
 
   logger.info("Finished change to CF Standards")
@@ -263,7 +270,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   }else if(register$scale=="site"){ ##### Site Level Processing
 #     if(!is.null(register$gapfill)){
       logger.info("Gapfilling") # Does NOT take place on browndog!
-      
+
       input.id   <- cf.id[1]
       outfolder  <- file.path(dir,paste0(met,"_CF_gapfill_site_",str_ns))
       pkg        <- "PEcAn.data.atmosphere"
@@ -272,36 +279,43 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       formatname <- 'CF Meteorology'
       mimetype   <- 'application/x-netcdf'
       lst        <- site.lst(site,con)
-      
+
       ready.id   <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id
                                   ,start_date,end_date,pkg,fcn,username,con=con,
                                   hostname=host$name,browndog=NULL,write=TRUE,lst=lst)
+      
+      print(ready.id)
 #     }else{
 #       ready.id<-cf.id[1]
 #     }
-#     
+#
   }
   logger.info("Finished Standardize Met")
   }
 
   #--------------------------------------------------------------------------------------------------#
   # Prepare for Model
+  # Determine output format name and mimetype
+  
+  model_info <- db.query(paste0("SELECT f.name, f.id, mt.type_string from modeltypes as m",
+                              " join modeltypes_formats as mf on m.id = mf.modeltype_id",
+                              " join formats as f on mf.format_id = f.id",
+                              " join mimetypes as mt on f.mimetype_id = mt.id",
+                              " where m.name = '", model, "' AND mf.tag='met'"),con)
+
+  if (model_info[1] == "CF Meteorology"){
+    stage$met2model=FALSE
+  } 
 
   if(stage$met2model == TRUE){
   logger.info("Begin Model Specific Conversion")
 
-  # Determine output format name and mimetype
-  model_info <- db.query(paste0("SELECT f.name, f.id, mt.type_string from modeltypes as m",
-                                " join modeltypes_formats as mf on m.id = mf.modeltype_id",
-                                " join formats as f on mf.format_id = f.id",
-                                " join mimetypes as mt on f.mimetype_id = mt.id",
-                                " where m.name = '", model, "' AND mf.tag='met'"),con)
   formatname <- model_info[1]
   mimetype   <- model_info[3]
 
   print("# Convert to model format")
 
-  input.id  <- ready.id[1]
+  input.id  <- ready.id$input.id[1]
   outfolder <- file.path(dir,paste0(met,"_",model,"_site_",str_ns))
   pkg       <- paste0("PEcAn.",model)
   fcn       <- paste0("met2model.",model)
@@ -309,6 +323,10 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
 
   model.id  <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
                              username,con=con,hostname=host$name,browndog,write=TRUE,lst=lst,lat=new.site$lat,lon=new.site$lon)
+  }else{
+    model.id = ready.id
+    
+    if("CRUNCEP" %in% met){outfolder <- file.path(dir,paste0(met,"_site_",str_ns))}
   }
 
   logger.info(paste("Finished Model Specific Conversion",model.id[1]))
@@ -438,7 +456,7 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
     unzip(downloadedfile, exdir=folder)
     # fix ED_MET_DRIVER_HEADER
     x <- readLines(results$file)
-    x[3] <- folder
+    x[3] <- ifelse(grepl('/$', folder), folder, paste0(folder, '/'))
     writeLines(x, results$file)
   } else {
     results$file <- downloadedfile

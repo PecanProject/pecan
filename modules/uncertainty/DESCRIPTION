@@ -2,8 +2,8 @@ Package: PEcAn.uncertainty
 Type: Package
 Title: PEcAn functions used for ecological forecasts and
     reanalysis
-Version: 1.4.4
-Date: 2015-11-10
+Version: 1.4.6
+Date: 2016-01-28
 Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang,
     Mike Dietze, Carl Davidson, Rob Kooper, Shawn Serbin
 Maintainer: David LeBauer <dlebauer@illinois.edu>
@@ -25,3 +25,4 @@ License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
+RoxygenNote: 5.0.1

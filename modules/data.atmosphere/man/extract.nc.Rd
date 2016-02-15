@@ -2,8 +2,8 @@
 \alias{extract.nc}
 \title{extract.nc}
 \usage{
-extract.nc(in.path, in.prefix, outfolder, out.prefix, start_date, end_date,
-  slat, slon, overwrite = FALSE, verbose = FALSE, ...)
+extract.nc(in.path, in.prefix, outfolder, start_date, end_date, slat, slon,
+  overwrite = FALSE, verbose = FALSE, ...)
 }
 \arguments{
   \item{in.path}{location on disk where inputs are stored}
@@ -12,8 +12,6 @@ extract.nc(in.path, in.prefix, outfolder, out.prefix, start_date, end_date,
 
   \item{outfolder}{location on disk where outputs will be
   stored}
-
-  \item{out.prefix}{prefix of output files}
 
   \item{start_date}{the start date of the data to be
   permuted (will only use the year part of the date)}
