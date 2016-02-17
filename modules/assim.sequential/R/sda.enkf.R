@@ -242,9 +242,10 @@ sda.enkf <- function(settings,IC,prior,obs,processvar=NULL){
     enkf.params[[t]] = list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa) 
  
  ## update state matrix
-    analysis = as.data.frame(rmvnorm(nens,log(mu.a),Pa,method="svd"))
-    analysis = exp(analysis)
+    analysis = as.data.frame(rmvnorm(nens,mu.a,Pa,method="svd"))
+    #analysis = exp(analysis)
     analysis[is.na(analysis)] <- 0
+    analysis <- abs(analysis)
     names(analysis) = names(X)
 #  # EAKF
 #  if(FALSE){
@@ -278,10 +279,11 @@ sda.enkf <- function(settings,IC,prior,obs,processvar=NULL){
     round(apply(FORECAST[[t]] - ANALYSIS[[t]],2,mean))
     round(obs[t,c(1,3,5,7)] - apply(ANALYSIS[[t]],2,mean))
     ### Forecast step
-save.image(file = "/home/araiho/start.here.RData")
+#save.image(file = "/home/araiho/start.here.RData")
     if(t < nt){
       #make sure write.configs is loaded. 
       #something is really slow in here.
+      #don't worry about warnings @ t=1
       do.call(my.write.restart,args=list(nens,outdir,run.id,time = total.time[t],settings,prior,analysis))
       ## start model run
       start.model.runs(settings,settings$database$bety$write)
@@ -315,40 +317,48 @@ save(FORECAST,ANALYSIS,enkf.params,file=file.path(settings$outdir,"sda.ENKF.Rdat
   ### Diagnostic graphs  
   pdf(file.path(settings$outdir,"EnKF.pdf"))
   
+
+par(mfrow=c(1,1))
+plot.da(obs,FORECAST,ANALYSIS,"biomass_tsca","mean_tsca","sd_tsca",t=5)
+plot.da(obs=obs,FORECAST,ANALYSIS,var.name="biomass_acsa3",
+        mean.name="mean_acsa3",sd.name="sd_acsa3",t=5)
+plot.da(obs,FORECAST,ANALYSIS,"biomass_beal2","mean_beal2","sd_beal2",t=5)
+plot.da(obs,FORECAST,ANALYSIS,"biomass_thoc2","mean_thoc2","sd_thoc2",t=5)
+
   ## plot ensemble, filter, and data mean's and CI's
-  par(mfrow=c(1,1))
-  y = obs[1:length(total.time),]
-  plot(total.time,y$mean,ylim=range(c(y$mean+1.96*y$sd,y$mean-1.96*y$sd)),type='n',xlab="total.time",ylab="kg/m^2/yr")
-  ciEnvelope(total.time,y$mean-y$sd*1.96,y$mean+y$sd*1.96,col="lightblue")
-  lines(total.time,y$mean,type='b',col="darkblue")
+plot.da <- function(obs,FORECAST,ANALYSIS,var.name,mean.name,sd.name,t){
+  y = obs[1:t,]
   
   pink = col2rgb("pink")
   alphapink = rgb(pink[1],pink[2],pink[3],100,max=255)
-  Xbar = laply(FORECAST,function(x){return(mean(x$biomass_beal2,na.rm=TRUE))})
-  Xci  = laply(FORECAST,function(x){return(quantile(x$biomass_beal2,c(0.025,0.975)))})
-  plot(total.time[1:36],y$mean_beal2,ylim=range(c(y$mean_beal2+10*y$sd_beal2,y$mean_beal2-10*y$sd_beal2)),type='n',xlab="total.time",ylab="kg/m^2/yr")
-  ciEnvelope(total.time[1:36],y$mean_beal2-y$sd_beal2*1.96,y$mean_beal2+y$sd_beal2*1.96,col="lightblue")
-  lines(total.time[1:36],y$mean_beal2,type='b',col="darkblue")
-  #if(sda.demo) lines(total.time,ensp[ref,],col=2,lwd=2)
-  ciEnvelope(total.time[1:nt],Xci[1:nt,1],Xci[1:nt,2],col=alphapink)
-  lines(total.time,Xbar[1:nt],col=6,type='b')
+  Xbar = laply(FORECAST,function(x){return(mean(x[,var.name],na.rm=TRUE))})
+  Xci  = laply(FORECAST,function(x){return(quantile(x[,var.name],c(0.025,0.975)))})
 
   green = col2rgb("green")
   alphagreen = rgb(green[1],green[2],green[3],100,max=255)
-  Xa = laply(ANALYSIS,function(x){return(mean(x$AGB,na.rm=TRUE))})
-  XaCI  = laply(ANALYSIS,function(x){return(quantile(x$AGB,c(0.025,0.975)))})
-  plot(total.time,y$mean,ylim=range(c(0,100)),type='n',xlab="total.time",ylab="kg/m^2/yr")
-  ciEnvelope(total.time,y$mean-y$sd*1.96,y$mean+y$sd*1.96,col="lightblue")
-  lines(total.time,y$mean,type='b',col="darkblue")
-  ciEnvelope(total.time,Xci[1:nt,1],Xci[1:nt,2],col=alphapink)
-  lines(total.time,Xbar[1:nt],col=2,type='b')
-  ciEnvelope(total.time,XaCI[1:nt,1],XaCI[1:nt,2],col=alphagreen)
-  lines(total.time,Xa[1:nt],col="darkgreen",type='b')
-  legend("topleft",c("Data","Forecast","Analysis"),col=c(4,2,3),lty=1,cex=1)
+  Xa = laply(ANALYSIS,function(x){return(mean(x[,var.name],na.rm=TRUE))})
+  XaCI  = laply(ANALYSIS,function(x){return(quantile(x[,var.name],c(0.025,0.975)))})
   
+  plot(total.time[1:t],y[,mean.name],ylim=range(Xci,y[,mean.name],XaCI),
+       type='n',xlab="total.time",ylab="kg/m^2/yr",main=var.name)
+  
+  ciEnvelope(total.time[1:t],y[,mean.name]-y[,sd.name]*1.96,y[,mean.name]+y[,sd.name]*1.96,col="lightblue")
+  lines(total.time[1:t],y[,mean.name],type='b',col="darkblue")
+  
+  ciEnvelope(total.time[1:t],Xci[1:t,1],Xci[1:t,2],col=alphapink)
+  lines(total.time[1:t],Xbar[1:t],col=2,type='b')
+  
+  ciEnvelope(total.time[1:t],XaCI[1:t,1],XaCI[1:t,2],col=alphagreen)
+  lines(total.time[1:t],Xa[1:t],col="darkgreen",type='b')
+  
+  legend("topleft",c("Data","Forecast","Analysis"),col=c(4,2,3),lty=1,cex=1)
+}
+
 ### Plots demonstrating how the constraint of your target variable 
 ### impacts the other model pools and fluxes
-  
+
+
+
   ## plot scatter plots of outputs
   pairs(FORECAST[[nt]])
   pairs(ANALYSIS[[nt]])
