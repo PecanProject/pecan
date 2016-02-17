@@ -25,7 +25,8 @@ download.MsTMIP_NARR <- function(outfolder, start_date, end_date, site_id, lat.i
   lat_trunc = floor(4*(84-as.numeric(lat.in)))
   lon_trunc = floor(4*(as.numeric(lon.in)+170))
   dap_base ='http://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1220/mstmip_driver_na_qd_climate_'
-    
+  
+
   dir.create(outfolder, showWarnings=FALSE, recursive=TRUE)
   
   ylist <- seq(start_year,end_year,by=1)
@@ -96,6 +97,3 @@ download.MsTMIP_NARR <- function(outfolder, start_date, end_date, site_id, lat.i
   invisible(results)
 }
 
-
-
-##  download.MsTMIP_NARR("C:Users/James Simkins/Downloads", "1995-01-01 00:00:00", "1995-12-31 23:59:59", 2, 45, -90)
