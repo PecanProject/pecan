@@ -12,6 +12,7 @@ write.restart.LINKAGES <- function(nens,outdir,run.id,time,settings,prior,analys
                            c(1,2,0,3),
                            c(2,1,3,0))
   
+  PLOT = FALSE
 
   ##HACK
   spp.params.default <- read.csv(system.file("spp_matrix.csv", package = "linkages")) #default spp.params
@@ -33,6 +34,7 @@ write.restart.LINKAGES <- function(nens,outdir,run.id,time,settings,prior,analys
       print(paste0("missing outfile ens #",run.id[[i]]))
       next
     } 
+    print(paste0("run.id = ",run.id[[i]]))
         
     #load output
     load(outfile)
@@ -53,6 +55,8 @@ write.restart.LINKAGES <- function(nens,outdir,run.id,time,settings,prior,analys
 
     n.index = c(rep(1,ntrees[1]),rep(2,ntrees[2]),rep(3,ntrees[3]),rep(4,ntrees[4]))
     new.ntrees = numeric(4)
+    
+    print(paste0("ntrees =",ntrees))
     
     if(PLOT == TRUE){
       n.name <- c(rep("Hemlock",ntrees[1]),rep("Maple",ntrees[2]),rep("Cedar",ntrees[3]),rep("Yellow Birch",ntrees[4]))
@@ -76,7 +80,7 @@ write.restart.LINKAGES <- function(nens,outdir,run.id,time,settings,prior,analys
       sltb <- spp.params$SLTB[n.index[j]]
       fwt <- spp.params$FWT[n.index[j]]
       frt <- spp.params$FRT[n.index[j]]
-      ind.biomass[j] <- biomass_function(dbh[j]) 
+      ind.biomass[j] <- biomass_function(dbh[j]) / 833 /.48 #changing units to be kgC/m^2
     }
     
     data2 = data.frame(ind.biomass = ind.biomass,n.index = n.index)
@@ -95,7 +99,8 @@ write.restart.LINKAGES <- function(nens,outdir,run.id,time,settings,prior,analys
       }
       new.ntrees[s] <- ceiling(fix) #new number of ind. of each species
     }
-  
+    print(paste0("new.ntrees =",new.ntrees))
+    
     new.n.index = c(rep(1,new.ntrees[1]),rep(2,new.ntrees[2]),rep(3,new.ntrees[3]),
                       rep(4,new.ntrees[4]))
 
@@ -105,7 +110,7 @@ write.restart.LINKAGES <- function(nens,outdir,run.id,time,settings,prior,analys
       
     #sample from individuals to construct new states
     for(s in 1:nspec){
-      if(new.ntrees[s] < ntrees[s]){ #new are less than the old of the same spp.
+      if(new.ntrees[s] <= ntrees[s]){ #new are less than the old of the same spp.
         print("new are less than the old of the same spp.")
         select <- sample(size = new.ntrees[s], x = which(n.index == s), replace = FALSE)
       }else{
@@ -123,7 +128,6 @@ write.restart.LINKAGES <- function(nens,outdir,run.id,time,settings,prior,analys
             select <- sample(size = new.ntrees[s.select], x = which(n.index == s.select), replace = T)
           }
         }
-      print(select)
       dbh.temp[which(new.n.index==s)] <- dbh[select]
       iage.temp[which(new.n.index==s)] <- iage[select]
       nogro.temp[which(new.n.index==s)] <- nogro[select]
@@ -141,7 +145,7 @@ write.restart.LINKAGES <- function(nens,outdir,run.id,time,settings,prior,analys
       frt <- spp.params$FRT[s]
       nu <- nl + new.ntrees[s] - 1
       for(j in nl:nu){
-        b_calc[s] <- biomass_function(dbh.temp[j]) + b_calc[s]
+        b_calc[s] <- biomass_function(dbh.temp[j]) / 883 / .48 + b_calc[s]
       }
       bcorr[s] <- analysis[i,s] / b_calc[s]
       for(j in nl:nu){
