@@ -15,6 +15,7 @@
 met2CF.NARR <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE, ...){
 
   require(ncdf4)
+  require(lubridate)
 
   dir.create(outfolder, showWarnings=FALSE, recursive=TRUE)
 
