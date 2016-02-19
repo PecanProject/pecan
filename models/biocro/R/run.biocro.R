@@ -14,7 +14,7 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
                        config = config,
                        coppice.interval = 1,
                        met.uncertainty = FALSE,
-                       irrigation = FALSE){
+		       irrigation = FALSE){
   require(data.table)
   require(lubridate)
   start.date <- ceiling_date(as.POSIXct(config$simulationPeriod$dateofplanting), "day")
@@ -39,20 +39,15 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
     met <- met[year %in% years]
   }
 
-  if(mean(diff(met$date)) >= dhours(1)){
+  dt <- as.numeric(mean(diff(met$date)))
+
+  if(dt > 1){
     met <- cfmet.downscale.time(cfmet = met, output.dt = 1)
-  }# else if (mean(diff(met$date)) < dhours(1)) {
-   #met[, `:=` c(wind_speed = )]
-  #met <- met[, list(date = min(date), specific_humidity = mean(specific_humidity), 
-  #	    	  	           precipitation_flux = sum(precipitation_flux), surface_downwelling_shortwave_flux_in_air = mean(surface_downwelling_shortwave_flux_in_air), 
-  #     			   air_temperature = mean(air_temperature), wind_speed = mean(wind_speed), relative_humidity = mean(relative_humidity)), by = 'year,month,day,hour']
-  # met[1] <- NULL
-  # }
+  } 
+  if(irrigation) met$
   biocro.met <- cf2biocro(met)
-  
-  if(irrigation){
-    biocro.met$precip[biocro.met$doy %% 7 == 1] <- 1
-  }
+
+  if(irrigation) biocro.met$precip
 
   if(!is.null(soil.nc)){
     soil <- get.soil(lat = lat, lon = lon, soil.nc = soil.nc)
@@ -128,7 +123,7 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
                            canopyControl = config$pft$canopyControl,
                            phenoControl = phenoParms(),#config$pft$phenoParms,
                            seneControl = config$pft$seneControl,
-                           iRhizome = iRhizome,
+                           iRhizome = as.numeric(iRhizome),
                            photoControl=config$pft$photoParms)
       
     } else if (genus == "Sorghum"){
@@ -186,3 +181,4 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
               daily = daily.results,
               annually = data.table(lat = lat, lon = lon, annual.results)))
 }
+
