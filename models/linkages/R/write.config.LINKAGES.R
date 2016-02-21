@@ -110,7 +110,8 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values, settings, run.id,
         
         #replace defaults with traits
         new.params.locs <- which(names(spp.params) %in% names(vals))
-        spp.params[spp.params$Spp_Name==group,new.params.locs] <- vals 
+        new.vals.locs <- which(names(vals) %in% names(spp.params))
+        spp.params[spp.params$Spp_Name==group,new.params.locs] <- vals[new.vals.locs]
         
         #conversion of some traits to match what LINKAGES needs
         #Going to have to look up this paper Botkin 1972 Some Ecological Consequences of a computer model of forest growth
