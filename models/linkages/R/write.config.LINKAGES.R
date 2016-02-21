@@ -27,7 +27,7 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
                                   restart=NULL, spinup=NULL){
   #850-869 repeated to fill 1000 years
   if(is.null(restart)) restart = FALSE
-  if(is.null(spinup)) spinup = FALSE
+  if(is.null(spinup)) spinup = TRUE
   
   require(linkages) 
   
@@ -86,15 +86,53 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   basesc = 74
   basesn = 1.64
   
-  ### Create species parameter matrix with correct PFTs
   spp.params.default <- read.csv(system.file("spp_matrix.csv", package = "linkages")) #default spp.params
   nspec <- length(settings$pfts)
   spp.params.save <- numeric(nspec)
   for(i in 1:nspec){
     spp.params.save[i] <- which(spp.params.default[,1]%in%settings$pfts[i]$pft$name)
-  }
-  
+  }     
   spp.params <- spp.params.default[spp.params.save,]
+  
+  ### Create species parameter matrix with correct PFTs
+  # trait.values$`Hemlock(Tsuga Canadensis)`$
+  #group will be each spp. 
+  for(group in names(trait.values)){
+    if(group == "env"){
+      
+      ## leave defaults
+      ##
+      
+    } else {
+      ## copy values
+      if(!is.null(trait.values[[group]])){
+        vals <- trait.values[[group]]
+        
+        #replace defaults with traits
+        new.params.locs <- which(names(spp.params) %in% names(vals))
+        spp.params[spp.params$Spp_Name==group,new.params.locs] <- vals 
+        
+        #conversion of some traits to match what LINKAGES needs
+        if('HTMAX' %in% names(vals) & 'DBHMAX' %in% names(vals)){
+          spp.params[spp.params$Spp_Name==group,]$B2 <- 2*(vals$HTMAX - 137) / vals$DBHMAX
+          spp.params[spp.params$Spp_Name==group,]$B3 <- (vals$HTMAX - 137) / (vals$DBHMAX ^ 2)
+        }
+        
+        if('root2shoot' %in% names(vals)){
+          spp.params[spp.params$Spp_Name==group,]$RTST <- vals$root2shoot
+        }
+        
+        if('leaf_longevity' %in% names(vals)){
+          spp.params[spp.params$Spp_Name==group,]$leaf_longevity <- vals$FRT
+        }
+        
+      }
+    }
+  }
+
+      
+  
+
   switch.mat <- switch.mat[spp.params.save,]
   
   if(spinup==TRUE){
