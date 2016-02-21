@@ -23,11 +23,11 @@
 ##' @export
 ##' @author Ann Raiho, Betsy Cowdery
 ##-------------------------------------------------------------------------------------------------#
-write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, run.id,
+write.config.LINKAGES <- function(defaults=NULL, trait.values, settings, run.id,
                                   restart=NULL, spinup=NULL){
   #850-869 repeated to fill 1000 years
   if(is.null(restart)) restart = FALSE
-  if(is.null(spinup)) spinup = TRUE
+  if(is.null(spinup)) spinup = FALSE
   
   require(linkages) 
   
@@ -113,9 +113,10 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
         spp.params[spp.params$Spp_Name==group,new.params.locs] <- vals 
         
         #conversion of some traits to match what LINKAGES needs
+        #Going to have to look up this paper Botkin 1972 Some Ecological Consequences of a computer model of forest growth
         if('HTMAX' %in% names(vals) & 'DBHMAX' %in% names(vals)){
-          spp.params[spp.params$Spp_Name==group,]$B2 <- 2*(vals$HTMAX - 137) / vals$DBHMAX
-          spp.params[spp.params$Spp_Name==group,]$B3 <- (vals$HTMAX - 137) / (vals$DBHMAX ^ 2)
+          spp.params[spp.params$Spp_Name==group,]$B2 <- 2*(((vals$HTMAX*100) - 137) / (vals$DBHMAX*100))
+          spp.params[spp.params$Spp_Name==group,]$B3 <- (vals$HTMAX*100 - 137) / (vals$DBHMAX*100 ^ 2)
         }
         
         if('root2shoot' %in% names(vals)){
@@ -129,9 +130,6 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
       }
     }
   }
-
-      
-  
 
   switch.mat <- switch.mat[spp.params.save,]
   
