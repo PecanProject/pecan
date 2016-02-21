@@ -125,7 +125,7 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values, settings, run.id,
         }
         
         if('leaf_longevity' %in% names(vals)){
-          spp.params[spp.params$Spp_Name==group,]$leaf_longevity <- vals$FRT
+          spp.params[spp.params$Spp_Name==group,]$FRT <- vals$leaf_longevity
         }
         
       }
