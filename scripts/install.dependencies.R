@@ -33,3 +33,15 @@ if(!("rhdf5" %in% installed.packages()[,"Package"])) {
   source("http://bioconductor.org/biocLite.R")
   biocLite('rhdf5')
 }
+
+# install graph for MCMCpack for allometry module
+if(!("graph" %in% installed.packages()[,"Package"])) {
+  source("http://bioconductor.org/biocLite.R")
+  biocLite('graph')
+}
+
+#install Rgraphviz for MCMCpack for allometry module
+if(!("Rgraphviz" %in% installed.packages()[,"Package"])) {
+  source("http://bioconductor.org/biocLite.R")
+  biocLite('Rgraphviz')
+}
