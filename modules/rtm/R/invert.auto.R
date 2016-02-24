@@ -26,7 +26,8 @@
 #' adj_min Minimum threshold for rescaling Jump standard deviation.  Default = 
 #' 0.1.
 #' 
-#' target Target acceptance rate. Default=0.234
+#' target Target acceptance rate. Default=0.234, based on recommendation for 
+#' multivariate block sampling in Haario et al. 2001
 #' 
 #' do.lsq Perform least squares optimization first (see `invert.lsq`), and use 
 #' outputs to initialize Metropolis Hastings. This may improve mixing time, but 
@@ -52,10 +53,11 @@
 #' @param return.samples Include full samples list in output. Default = TRUE.
 #' @param save.samples Filename for saving samples after each iteration. If 
 #' 'NULL', do not save samples. Default = NULL.
+#' @param ... Other arguments to `check.convergence`
 #' @return List of "results" (summary statistics and Gelman Diagnostic) and 
 #' "samples"(mcmc.list object, or "NA" if return.samples=FALSE)
 
-invert.auto <- function(observed, settings, return.samples=TRUE, save.samples=NULL, quiet=FALSE){
+invert.auto <- function(observed, settings, return.samples=TRUE, save.samples=NULL, quiet=FALSE, ...){
     n.tries <- settings$n.tries
     nchains <- settings$nchains
     inits.function <- settings$inits.function
@@ -74,23 +76,18 @@ invert.auto <- function(observed, settings, return.samples=TRUE, save.samples=NU
         # Check for convergence. Repeat if necessary.
         samps.list.bt <- lapply(samps.list, burnin.thin, burnin=burnin, thin=1)
         smcmc <- as.mcmc.list(lapply(samps.list.bt, as.mcmc))
-        gd <- try(gelman.diag(smcmc, autoburnin=FALSE))
-        if(is.character(gd)) {
+        conv.check <- check.convergence(smcmc, ...)
+        if(conv.check$error) {
             i.try <- i.try + 1
             warning("Could not calculate Gelman diag. Trying again")
             next
         } else {
-            gdmp <- gd$mpsrf
-            if(gdmp < 1.1){
-                msg <- sprintf("Converged with Gelman diag = %.3f", gdmp)
-                print(msg)
+            if(conv.check$converged){
                 try.again <- FALSE
                 samps <- burnin.thin(do.call(rbind, samps.list.bt), burnin=0)
                 results <- summary.simple(samps)
-                results$gelman.diag <- gdmp
+                results$gelman.diag <- conv.check$diagnostic
             } else {
-                msg <- sprintf("Did not converge (Gelman Diag = %.3f). Trying again.", gdmp)
-                print(msg)
                 i.try <- i.try + 1
                 settings$target <- settings$target * settings$target.adj
                 if(i.try > settings$do.lsq.after) settings$do.lsq <- TRUE
