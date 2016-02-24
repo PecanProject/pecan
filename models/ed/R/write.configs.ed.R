@@ -319,6 +319,7 @@ remove.config.ED2 <- function(main.outdir = settings$outdir, settings) {
 #' @name write.config.xml.ED2
 #' @title Write ED2 config.xml file
 #' @details Refactored by Alexey Shiklomanov to allow use in PEcAn RTM module.
+#' @export
 #' @param defaults List of defaults to process
 #' @param settings PEcAn settings file. Settings required for this script are: model$revision, model$config.header
 #' @param trait.values 
@@ -402,6 +403,7 @@ write.config.xml.ED2 <- function(defaults, settings, trait.values){
 #' @title Write ED2 config.xml file
 #' @description Function for writing job.sh file for ED2 runs
 #' @details Refactored by Alexey Shiklomanov to allow use in PEcAn RTM module.
+#' @export
 #' @param settings PEcAn settings list. For this function, need the following: 
 #' run$host$rundir, run$host$outdir, run$host$scratchdir, 
 #' run$host$clearscratch, run$jobtemplate, model$job.sh, run$host$job.sh, 

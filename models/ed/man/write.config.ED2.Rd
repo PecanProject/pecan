@@ -9,11 +9,11 @@ write.config.ED2(defaults, trait.values, settings, run.id)
 \arguments{
 \item{defaults}{list of defaults to process}
 
+\item{trait.values}{Named list of trait values, with names corresponding to PFT}
+
 \item{settings}{list of settings from pecan settings file}
 
 \item{run.id}{id of run}
-
-\item{trait.samples}{vector of samples for a given trait}
 }
 \value{
 configuration file and ED2IN namelist for given run
