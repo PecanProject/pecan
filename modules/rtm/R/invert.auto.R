@@ -26,7 +26,8 @@
 #' adj_min Minimum threshold for rescaling Jump standard deviation.  Default = 
 #' 0.1.
 #' 
-#' target Target acceptance rate. Default=0.234
+#' target Target acceptance rate. Default=0.234, based on recommendation for 
+#' multivariate block sampling in Haario et al. 2001
 #' 
 #' do.lsq Perform least squares optimization first (see `invert.lsq`), and use 
 #' outputs to initialize Metropolis Hastings. This may improve mixing time, but 
