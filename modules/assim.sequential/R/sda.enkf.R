@@ -13,13 +13,14 @@
 ##' 
 sda.enkf <- function(settings,IC,prior,obs,processvar=NULL){
   
-  if(is.null(processvar)) processvar = FALSE
+  if(is.null(processvar)) processvar = TRUE
   
   ## settings
   model <- settings$model$type
   write <- settings$database$bety$write
   defaults <- settings$pfts
   outdir <- settings$run$host$outdir
+  rundir <- settings$run$host$rundir
   host <- settings$run$host
   start.year <- strftime(settings$run$start.date,"%Y")
   end.year   <- strftime(settings$run$end.date,"%Y")
@@ -173,7 +174,7 @@ sda.enkf <- function(settings,IC,prior,obs,processvar=NULL){
   ###-------------------------------------------
   ### loop over time
   ###-------------------------------------------
-  for(t in 4:10){
+  for(t in 6:15){
 
     ### load output
     X <- do.call(my.read.restart,args=list(outdir,run.id,time = total.time[t],IC,prior,spin.up))
@@ -289,8 +290,78 @@ sda.enkf <- function(settings,IC,prior,obs,processvar=NULL){
       start.model.runs(settings,settings$database$bety$write)
     }
 
+
 }  ## end loop over time
 ###-------------------------------------------
+
+nt <- t
+forecast.ntrees <- array(0,dim=c(nens,4,nt))
+forecast.dbh <- array(list(),dim=c(nens,4,nt))
+forecast.nogro <- array(list(),dim=c(nens,4,nt))
+
+for(i in 1:nens){
+  for(t in 1:nt){
+    if(t < nt){
+      outfile = file.path(outdir,run.id[[i]],paste0(total.time[t],"linkages.out.Rdata"))
+    }else{
+      outfile = file.path(outdir,run.id[[i]],"linkages.out.Rdata")
+    } 
+  load(outfile)
+  forecast.ntrees[i,,t] <- ntrees.kill[,1,1]
+  nl = 1
+  for(s in 1:4){
+      nu <- nl + forecast.ntrees[i,s,t] - 1
+      forecast.dbh[i,s,t] <- list(dbh.save[nl:nu,1,1])
+      forecast.nogro[i,s,t] <- list(nogro.save[nl:nu,1,1])
+      nl <- nu + 1
+  }
+ }
+}
+
+nt <- nt
+restart.ntrees <- array(0,dim=c(nens,4,nt))
+restart.dbh <- array(list(),dim=c(nens,4,nt))
+
+for(i in 1:nens){
+  for(t in 1:nt){
+    if(t < nt){
+      outfile = file.path(rundir,run.id[[i]],paste0(total.time[t],"linkages.restart.Rdata"))
+    }else{
+      outfile = file.path(rundir,run.id[[i]],"linkages.restart.Rdata")
+    } 
+    load(outfile)
+    restart.ntrees[i,,t] <- ntrees
+    nl = 1
+    for(s in 1:4){
+      nu <- nl + restart.ntrees[i,s,t] - 1
+      restart.dbh[i,s,t] <- list(dbh[nl:nu])
+      nl <- nu + 1
+    } 
+  }
+}
+
+
+diag.plot <- function(t,spp){
+  boxplot(FORECAST[[t]][,spp],ANALYSIS[[t]][,spp],FORECAST[[t+1]][,spp], ylab = "Biomass",
+          col=c('pink','lightgreen','pink'),main=colnames(X)[spp])
+  spp.select <- c(1,2,4,3)
+  boxplot(forecast.ntrees[,spp.select[spp],t],restart.ntrees[,spp.select[spp],t],
+          forecast.ntrees[,spp.select[spp],t+1], 
+          col=c('pink','lightgreen','pink'),ylab = "Number of Trees")
+  boxplot(unlist(forecast.dbh[,spp.select[spp],t]),unlist(restart.dbh[,spp.select[spp],t]),
+          unlist(forecast.dbh[,spp.select[spp],t+1]), ylab = "DBH",
+          col=c('pink','lightgreen','pink'))
+}
+par(mfrow=c(1,3))
+for(s in 1:4){
+  diag.plot(t=6,spp=s)
+}
+
+for(t in 1:15){
+  diag.plot(t=t,spp=1)
+}
+
+
 
 
 ## save all outputs
@@ -319,15 +390,17 @@ save(FORECAST,ANALYSIS,enkf.params,file=file.path(settings$outdir,"sda.ENKF.Rdat
   
 
 par(mfrow=c(1,1))
-plot.da(obs,FORECAST,ANALYSIS,"biomass_tsca","mean_tsca","sd_tsca",t=5)
+t1=2
+t = t
+plot.da(obs,FORECAST,ANALYSIS,"biomass_tsca","mean_tsca","sd_tsca",t1=t1,t=t,ylim=c(6,14))
 plot.da(obs=obs,FORECAST,ANALYSIS,var.name="biomass_acsa3",
-        mean.name="mean_acsa3",sd.name="sd_acsa3",t=5)
-plot.da(obs,FORECAST,ANALYSIS,"biomass_beal2","mean_beal2","sd_beal2",t=5)
-plot.da(obs,FORECAST,ANALYSIS,"biomass_thoc2","mean_thoc2","sd_thoc2",t=5)
+        mean.name="mean_acsa3",sd.name="sd_acsa3",t1=t1,t=t,ylim=c(0,1))
+plot.da(obs,FORECAST,ANALYSIS,"biomass_beal2","mean_beal2","sd_beal2",t1=t1,t=t,ylim=c(0,4))
+plot.da(obs,FORECAST,ANALYSIS,"biomass_thoc2","mean_thoc2","sd_thoc2",t1=t1,t=t,ylim=c(0,.1))
 
   ## plot ensemble, filter, and data mean's and CI's
-plot.da <- function(obs,FORECAST,ANALYSIS,var.name,mean.name,sd.name,t){
-  y = obs[1:t,]
+plot.da <- function(obs,FORECAST,ANALYSIS,var.name,mean.name,sd.name,t1,t,ylim){
+  y = obs[t1:t,]
   
   pink = col2rgb("pink")
   alphapink = rgb(pink[1],pink[2],pink[3],100,max=255)
@@ -339,19 +412,19 @@ plot.da <- function(obs,FORECAST,ANALYSIS,var.name,mean.name,sd.name,t){
   Xa = laply(ANALYSIS,function(x){return(mean(x[,var.name],na.rm=TRUE))})
   XaCI  = laply(ANALYSIS,function(x){return(quantile(x[,var.name],c(0.025,0.975)))})
   
-  plot(total.time[1:t],y[,mean.name],ylim=range(Xci,y[,mean.name],XaCI),
+  plot(total.time[t1:t],y[,mean.name],ylim=ylim,
        type='n',xlab="total.time",ylab="kg/m^2/yr",main=var.name)
   
-  ciEnvelope(total.time[1:t],y[,mean.name]-y[,sd.name]*1.96,y[,mean.name]+y[,sd.name]*1.96,col="lightblue")
-  lines(total.time[1:t],y[,mean.name],type='b',col="darkblue")
+  ciEnvelope(total.time[t1:t],y[,mean.name]-y[,sd.name]*1.96,y[,mean.name]+y[,sd.name]*1.96,col="lightblue")
+  lines(total.time[t1:t],y[,mean.name],type='b',col="darkblue")
   
-  ciEnvelope(total.time[1:t],Xci[1:t,1],Xci[1:t,2],col=alphapink)
-  lines(total.time[1:t],Xbar[1:t],col=2,type='b')
+  ciEnvelope(total.time[t1:t],Xci[t1:t,1],Xci[t1:t,2],col=alphapink)
+  lines(total.time[t1:t],Xbar[t1:t],col=2,type='b')
   
-  ciEnvelope(total.time[1:t],XaCI[1:t,1],XaCI[1:t,2],col=alphagreen)
-  lines(total.time[1:t],Xa[1:t],col="darkgreen",type='b')
+  ciEnvelope(total.time[t1:t],XaCI[t1:t,1],XaCI[t1:t,2],col=alphagreen)
+  lines(total.time[t1:t],Xa[t1:t],col="darkgreen",type='b')
   
-  legend("topleft",c("Data","Forecast","Analysis"),col=c(4,2,3),lty=1,cex=1)
+  #legend("topleft",c("Data","Forecast","Analysis"),col=c(4,2,3),lty=1,cex=1)
 }
 
 ### Plots demonstrating how the constraint of your target variable 

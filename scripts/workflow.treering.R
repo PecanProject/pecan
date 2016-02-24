@@ -18,6 +18,7 @@ require(PEcAn.all)
 library(PEcAn.assim.sequential)
 library(PEcAn.visualization)
 library(mvtnorm)
+library(rjags)
 #--------------------------------------------------------------------------------------------------#
 #
 #  dir.create("~/demo.sda")
@@ -25,7 +26,7 @@ library(mvtnorm)
 
 #---------------- Load PEcAn settings file. -------------------------------------------------------#
 # Open and read in settings file for PEcAn run.
-settings <- read.settings("/fs/data2/output//PEcAn_1000000858/pecan.xml")
+settings <- read.settings("/fs/data2/output//PEcAn_1000001249/pecan.xml")
 #--------------------------------------------------------------------------------------------------#
 
 #---------------- Load plot and tree ring data. -------------------------------------------------------#
@@ -94,7 +95,9 @@ obs_beal2 = data.frame(mean = apply(state$biomass_beal2[1,,],2,mean,na.rm=TRUE),
 obs_thoc2 = data.frame(mean = apply(state$biomass_thoc2[1,,],2,mean,na.rm=TRUE),
                  sd = apply(state$biomass_thoc2[1,,],2,sd,na.rm=TRUE))
 
-obs = cbind(obs_acsa3,obs_beal2,obs_thoc2,obs_tsca)
+obs = cbind(obs_tsca,obs_acsa3,obs_beal2,obs_thoc2)
+colnames(obs)<-c("mean_tsca","sd_tsca","mean_acsa3","sd_acsa3","mean_beal2",
+"sd_beal2","mean_thoc2","sd_thoc2")
 
 status.end()
 
@@ -115,6 +118,7 @@ status.end()
 #--------------- Assimilation -------------------------------------------------------#
 status.start("MCMC")
 obs <- obs/10 #to kg/m^2
+
 sda.enkf(settings,IC,prior,obs)
 status.end()
 

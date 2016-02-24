@@ -54,6 +54,18 @@ write.restart.LINKAGES <- function(nens,outdir,run.id,time,settings,prior,analys
     dbh = as.vector(dbh.save[,ncol(dbh.save),1])
 
     n.index = c(rep(1,ntrees[1]),rep(2,ntrees[2]),rep(3,ntrees[3]),rep(4,ntrees[4]))
+    
+    large.trees <- which(dbh>=17)
+    for(s in 1:4){
+      ntrees[s] <- length(which(n.index[large.trees]==s))
+    }
+    
+    n.index <- n.index[large.trees]
+    
+    dbh <- dbh[large.trees]
+    iage <- iage[large.trees]
+    nogro <- nogro[large.trees]
+    
     new.ntrees = numeric(4)
     
     print(paste0("ntrees =",ntrees))
@@ -104,17 +116,18 @@ write.restart.LINKAGES <- function(nens,outdir,run.id,time,settings,prior,analys
     new.n.index = c(rep(1,new.ntrees[1]),rep(2,new.ntrees[2]),rep(3,new.ntrees[3]),
                       rep(4,new.ntrees[4]))
 
-    dbh.temp <- numeric(length(dbh))
-    iage.temp <- numeric(length(dbh))
-    nogro.temp <- numeric(length(dbh))
+    dbh.temp <- numeric(15000)
+    iage.temp <- numeric(15000)
+    nogro.temp <- numeric(15000)
       
     #sample from individuals to construct new states
     for(s in 1:nspec){
+      if(new.ntrees[s] == 0) next
       if(new.ntrees[s] <= ntrees[s]){ #new are less than the old of the same spp.
         print("new are less than the old of the same spp.")
         select <- sample(size = new.ntrees[s], x = which(n.index == s), replace = FALSE)
       }else{
-        if(new.ntrees[s] > ntrees[s] & ntrees[s]!=0){ #new are greater than the old of the same spp. and there are old trees to clone
+        if(new.ntrees[s] > ntrees[s] & ntrees[s] > 1){ #new are greater than the old of the same spp. and there are old trees to clone
           print("new are greater than the old of the same spp. and there are old trees of same spp. to clone")
           select <- c(which(n.index == s), sample(size = (new.ntrees[s] - ntrees[s]), 
                                                   x = which(n.index == s), replace = TRUE))
@@ -122,10 +135,11 @@ write.restart.LINKAGES <- function(nens,outdir,run.id,time,settings,prior,analys
           print(paste0("clone needed for spp. ",s))
           for(r in 1:3){
             s.select <- which(distance.matrix[s,] == r) #select a new spp. to clone from
-            if(ntrees[s.select]>0) break
+            print(paste0("r =",r))
+            if(ntrees[s.select] > 0) break
           }
             print(s.select)
-            select <- sample(size = new.ntrees[s.select], x = which(n.index == s.select), replace = T)
+            select <- sample(size = as.numeric(new.ntrees[s]), x = which(n.index == s.select), replace = T)
           }
         }
       dbh.temp[which(new.n.index==s)] <- dbh[select]
@@ -136,6 +150,7 @@ write.restart.LINKAGES <- function(nens,outdir,run.id,time,settings,prior,analys
     #fix dbh of sampled individuals to match analysis
     nl = 1 ## individual counter
     b_calc <- numeric(4) #biomass of sampled trees
+    b_calc1 <- numeric(4) #biomass of sampled trees
     bcorr <- numeric(4) #biomass correction factor to analysis
     for(s in 1:nspec){
       if(new.ntrees[s]==0) next
@@ -150,16 +165,19 @@ write.restart.LINKAGES <- function(nens,outdir,run.id,time,settings,prior,analys
       bcorr[s] <- analysis[i,s] / b_calc[s]
       for(j in nl:nu){
         b_obs <- biomass_function(dbh.temp[j])*bcorr[s]
-        dbh.temp[j] <- optimize(merit, c(0,200))$minimum 
+        dbh.temp[j] <- optimize(merit, c(1,200))$minimum 
+        b_calc1[s] <- biomass_function(dbh.temp[j]) / 883 / .48 + b_calc1[s]       
       }
       nl <- nu + 1 
     }
   
     dbh <- dbh.temp
     iage <- iage.temp
-    nogro <- nogro.temp
+    nogro <- nogro.temp#numeric(15000)#hack
   
     ntrees <- new.ntrees
+    
+    #print(dbh[1:ntrees[1]])
     
     if(PLOT == TRUE){
       #have to fix the colors
