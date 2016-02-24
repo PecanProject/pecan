@@ -9,7 +9,9 @@ process.licor.rsr <- function(csv.path) {
     farred <- licor.dat[5:6]
     farred <- farred[complete.cases(farred),]
     farred.rsr <- interpolate.rsr(farred)
-    licor.rsr <- cbind(blue.rsr, red.rsr, farred.rsr)
+    licor.rsr <- cbind(400:2500-399, blue.rsr, red.rsr, farred.rsr)
+    licor.rsr <- licor.rsr[400:800-399,]
+    colnames(licor.rsr) <- c("index", "blue", "red", "farred")
     return(licor.rsr)
 }
 
