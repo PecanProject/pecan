@@ -46,6 +46,8 @@ generate.rsr.all <- function(){
     rsr.modis <- trim.rsr(rsr.modis)
     rsr.viirs <- trim.rsr(rsr.viirs)
     rsr.avhrr <- trim.rsr(rsr.avhrr)
+    csv.path <- "~/pecan/modules/rtm/data/spectral-response/LiCor_6400-40_chamber_RSRs-final.csv"
+    rsr.licor <- process.licor.rsr(csv.path)
     sensor.rsr <- list(aviris.ng = rsr.aviris.ng, 
                        aviris.classic = rsr.aviris.classic,
                        hyperion = rsr.hyperion,
@@ -55,7 +57,8 @@ generate.rsr.all <- function(){
                        landsat8 = rsr.landsat8,
                        modis = rsr.modis, 
                        viirs = rsr.viirs, 
-                       avhrr = rsr.avhrr)
+                       avhrr = rsr.avhrr,
+                       licor = rsr.licor)
     return(sensor.rsr)
 }
 
