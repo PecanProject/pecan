@@ -33,11 +33,13 @@ EDR <- function(paths,
                 par.wl,
                 nir.wl,
                 datetime,
+                trait.values,
                 history.prefix = 'history',
                 edr.exe.name = 'ed_2.1-opt',
                 change.history.time = TRUE,
                 output.path = getwd(),
                 clean = FALSE){
+    require(PEcAn.ED2)
 
 # Extract paths
     ed2in.path <- paths$ed2in
@@ -57,6 +59,15 @@ EDR <- function(paths,
     if(!is.na(ed2in.path)){     # Otherwise, skip this step
         EDR.preprocess.ed2in(ed2in.path, output.path, datetime, history.full.prefix)
     }
+
+# Write ED2 config.xml file
+    defaults <- NA      # TODO: Figure out what to put here
+    settings <- NA      # TODO: Figure out what to put here
+    xml <- write.config.xml.ED2(defaults = defaults,
+                                settings = settings,
+                                trait.values = trait.values)
+
+    saveXML(xml, file = file.path(settings$rundir, run.id, "config.xml"), indent=TRUE, prefix = PREFIX_XML)
 
 # Generate input files
     par.nir.lengths <- c(length(par.wl), length(nir.wl))
