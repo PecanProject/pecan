@@ -380,8 +380,10 @@ write.config.xml.ED2 <- function(defaults, settings, trait.values){
       pft.xml <- listToXml(vals, 'pft')
       
       ## Insert PFT names into output xml file. Doesn't seem safe to RK to assume that defaults will contain a name, but leaving as is for now. 
-      pft.xml <- append.xmlNode(pft.xml, xmlNode("name", defaults[[group]]$name))
-      
+      if(is.null(trait.values[[group]]$name)){
+        pft.xml <- append.xmlNode(pft.xml, xmlNode("name", group))
+      }
+        
       ##TODO this should come from the database
       if (is.null(pft.xml[["num"]])) {
         edpft <- pftmapping$ED[which(pftmapping==group)]
