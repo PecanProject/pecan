@@ -15,7 +15,8 @@ process.licor.rsr <- function(csv.path) {
     return(licor.rsr)
 }
 
-interpolate.rsr <- function(rsr, wl.start = 400, wl.end = 2500, zero.threshold = 1e-3){
+interpolate.rsr <- function(rsr, wl.start = 400, wl.end = 2500, zero.threshold = 1e-3,
+                            normalize =TRUE){
     wl.int <- seq(floor(min(rsr[[1]])), 
                   ceiling(max(rsr[[1]])))
     wl.offset <- wl.start - 1
@@ -25,6 +26,9 @@ interpolate.rsr <- function(rsr, wl.start = 400, wl.end = 2500, zero.threshold =
     rsr.spline <- splinefun(x = rsr[[1]], y = rsr[[2]])
     rsr.interpolated <- rsr.spline(wl.int)
     rsr.interpolated[rsr.interpolated < zero.threshold] <- 0
+    if(normalize){
+        rsr.interpolated <- rsr.interpolated / sum(rsr.interpolated)
+    }
     rsr.full[wl.index] <- rsr.interpolated
     return(rsr.full)
 }
