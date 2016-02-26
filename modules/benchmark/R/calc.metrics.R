@@ -12,8 +12,8 @@
 
 calc.metrics <- function(data.path, format, model_run, metrics, start_year=NA, end_year=NA, site=NA){
 
-  # Right now parameters are being read in as R objects - this won't work remotely but 
-  # I haven't decided exactly how to pass the parameters over
+  # Right now many argument are being read in as R list objects
+  # This won't work remotely but at the moment I don't have a good solution
   
   # create results table
   results <- metrics
