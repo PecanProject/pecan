@@ -77,6 +77,7 @@ EDR <- function(paths,
                                 trait.values = trait.values)
 
     new.config.path <- file.path(output.path, "config.xml")
+    PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
     saveXML(xml, file = new.config.path, indent=TRUE, prefix = PREFIX_XML)
 
 # Preprocess ED2IN
@@ -262,7 +263,7 @@ EDR.preprocess.ed2in <- function(ed2in.path, output.path, config.path,
                   sprintf('\\1 = %s  !! MODIFIED BY R WRAPPER', year), ed2in)
     # config.xml file
     ed2in <- gsub('(NL%IEDCNFGF).*', 
-                  sprintf('\\1 = %s  !! MODIFIED BY R WRAPPER', year), ed2in)
+                  sprintf("\\1 = '%s'  !! MODIFIED BY R WRAPPER", config.path), ed2in)
     # Write resulting ED2IN to file
     write(ed2in, file = ed2in.local.path)
 }

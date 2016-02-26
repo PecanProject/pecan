@@ -366,15 +366,16 @@ write.config.xml.ED2 <- function(defaults, settings, trait.values){
         vals <- convert.samples.ED(vals)
         
         # Fix names and remove traits that ED doesn't know about
-        names(vals) <- droplevels(trait.lookup(names(vals))$model.id)
-        traits <- names(vals)
-        for(trait in traits) {
-          if (! trait %in% edtraits ) {
-            logger.error(trait, "not found in ED history")
-            vals[[trait]] = NULL
-            next
-          }
-        }
+        #names(vals) <- droplevels(trait.lookup(names(vals))$model.id)
+        #traits <- names(vals)
+        #for(trait in traits) {
+          #if (! trait %in% edtraits ) {
+              #print("not found")
+            #logger.error(trait, "not found in ED history")
+            #vals[[trait]] = NULL
+            #next
+          #}
+        #}
       }
 
       pft.xml <- listToXml(vals, 'pft')
