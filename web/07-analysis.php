@@ -78,12 +78,6 @@ if (isset($_REQUEST['email'])) {
   $email=$_REQUEST['email'];
 }
 
-$notes = "";
-if (isset($_REQUEST['notes'])) {
-  $notes = $_REQUEST['notes'];
-  $notes_xml = htmlspecialchars($_REQUEST['notes'], ENT_XML1);
-}
-
 // get site information
 $stmt = $pdo->prepare("SELECT sitename, city, state, country, ST_X(ST_CENTROID(sites.geometry)) AS lon, ST_Y(ST_CENTROID(sites.geometry)) AS lat FROM sites WHERE sites.id=?");
 if (!$stmt->execute(array($siteid))) {
