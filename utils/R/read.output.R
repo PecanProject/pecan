@@ -28,8 +28,8 @@
 model2netcdfdep <- function(runid, outdir, model, lat, lon, start_date, end_date){
   ## load model-specific PEcAn module
   do.call(require, list(paste0("PEcAn.", model)))    
-
-
+  
+  
   model2nc <- paste("model2netcdf", model, sep=".")
   if(!exists(model2nc)){
     logger.warn("File conversion function model2netcdf does not exist for", model)
@@ -93,18 +93,22 @@ model2netcdf <- function(runid, outdir, model, lat, lon, start_date, end_date){
 ##' @author Michael Dietze, David LeBauer
 read.output <- function(runid, outdir, start.year=NA,
                         end.year=NA, variables = "GPP") {
-
+  
   require(ncdf4)
   require(udunits2)
   
   ## vars in units s-1 to be converted to y-1
   cflux = c("GPP", "NPP", "NEE", "TotalResp", "AutoResp", "HeteroResp",
-    "DOC_flux", "Fire_flux") # kgC m-2 d-1
+            "DOC_flux", "Fire_flux") # kgC m-2 d-1
   wflux = c("Evap", "TVeg", "Qs", "Qsb", "Rainf") # kgH20 m-2 d-1
   
   # create list of *.nc years
   nc.years <- as.vector(unlist(strsplit(list.files(path = outdir, pattern="\\.nc$", full.names=FALSE),".nc")))
   # select only those *.nc years requested by user
+  if(is.na(start.year) || is.na(end.year)){
+    start.year <- min(as.numeric(nc.years))
+    end.year <- max(as.numeric(nc.years))
+  }
   keep <- which(nc.years >= as.numeric(start.year) & nc.years <= as.numeric(end.year))
   ncfiles <- list.files(path = outdir, pattern="\\.nc$", full.names=TRUE)
   ncfiles <- ncfiles[keep]
