@@ -174,7 +174,7 @@ if('meta.analysis' %in% names(settings)) {
 # Write model specific configs
 if (status.check("CONFIG") == 0){
   status.start("CONFIG")
-  settings <- run.write.configs(settings, write=settings$database$bety$write, ens.sample.method=settings$ensemble$method))
+  settings <- run.write.configs(settings, write=settings$database$bety$write, ens.sample.method=settings$ensemble$method)
   saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.CONFIGS.xml'))
   status.end()
 } else if (file.exists(file.path(settings$outdir, 'pecan.CONFIGS.xml'))) {
