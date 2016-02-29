@@ -83,12 +83,19 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
     total.sample.num <- sum(sapply(pft.samples, length))
     halton.samples <- NULL
     if(method == "halton"){
+      logger.info("Using ", method, "method for sampling")
       halton.samples <- halton(n = ensemble.size, dim=total.sample.num)
       ##force as a matrix in case length(samples)=1
       halton.samples <- as.matrix(halton.samples)
-    } else {
+    } else if(method == "uniform"){
+      logger.info("Using ", method, "random sampling")
       #uniform random
       halton.samples <- matrix(runif(ensemble.size*total.sample.num), ensemble.size, total.sample.num)
+    } else {
+      logger.info("Method ", method, " has not been implemented yet, using Halton method for sampling")
+      halton.samples <- halton(n = ensemble.size, dim=total.sample.num)
+      ##force as a matrix in case length(samples)=1
+      halton.samples <- as.matrix(halton.samples)
     }
     
     ensemble.samples <- list()
