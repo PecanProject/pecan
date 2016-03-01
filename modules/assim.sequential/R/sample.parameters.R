@@ -20,7 +20,7 @@ sample.parameters <- function(ne,settings,con){
   ## load prior
   prior.db = db.query(paste0("SELECT * from dbfiles where container_type = 'Posterior' and container_id = ",
                              settings$assim.sequential$prior),con)
-  prior.db = prior.db[grep("post.distns.Rdata",prior.db$file_name),] #IDk why .MA is in there? ohhhh meta analysis duh
+  prior.db = prior.db[grep("post.distns.Rdata",prior.db$file_name),]
   load(file.path(prior.db$file_path,"post.distns.Rdata"))
   ## sample from priors
   nvar <- nrow(post.distns)
