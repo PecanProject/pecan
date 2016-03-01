@@ -147,6 +147,7 @@ for(year in start_year:end_year) {
 
 
   ##build time variables (year, month, day of year)
+  skip <- FALSE
   nyr <- floor(length(sec)/86400/365*dt)
   yr <- NULL
   doy <- NULL
@@ -177,6 +178,7 @@ for(year in start_year:end_year) {
     asec[rng] <- asec[rng] - asec[rng[1]]
     hr[rng] <- (asec[rng] - (dtmp-1)*86400)/86400*24
   }
+  mo<-day2mo(yr,doy)
   if(length(yr) < length(sec)){
     rng <- (length(yr)+1):length(sec)
     if(!all(rng>=0)){
