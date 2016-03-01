@@ -4,16 +4,18 @@
 ##' 
 ##' @param settings    PEcAn settings object
 ##' @param IC          data.frame of initial condition sample (nens X nstate)
-##' @param prior       data.frame of model parameter sample (nense X nstate)
-##' @param obs         data.frame of observations with columns: mean, sd
+##' @param prior       data.frame of model parameter sample (nens X nstate)
+##' @param obs.mean    data.frame of observations of the mean of variables
+##' @param obs.sd      data.frame of observations of the sd of variables
+##' @param processvar  flag for if process variance should be estimated or not
 ##' 
 ##' @description State Variable Data Assimilation: Ensemble Kalman Filter
 ##' 
 ##' @return NONE
 ##' 
-sda.enkf <- function(settings,IC,prior,obs,processvar=NULL){
+sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,processvar=NULL){
   
-  if(is.null(processvar)) processvar = TRUE
+  if(is.null(processvar)) processvar = TRUE #tag for adding process variance estimation
   
   ## settings
   model <- settings$model$type
@@ -22,12 +24,13 @@ sda.enkf <- function(settings,IC,prior,obs,processvar=NULL){
   outdir <- settings$run$host$outdir
   rundir <- settings$run$host$rundir
   host <- settings$run$host
-  start.year <- strftime(settings$run$start.date,"%Y")
-  end.year   <- strftime(settings$run$end.date,"%Y")
   forecast.duration <- 1 #eventually in settings
   forecast.time.step <- 1 #eventually in settings #dt
-  spin.up <- 100
+  spin.up <- 100 #eventually in settings
   nens = nrow(IC)
+  start.year <- strftime(settings$run$start.date,"%Y")
+  end.year   <- strftime(settings$run$end.date,"%Y") + forecast.time.step
+
   
   if(nrow(prior) == 1 | is.null(nrow(prior))){
     var.names = names(prior)
@@ -77,10 +80,11 @@ sda.enkf <- function(settings,IC,prior,obs,processvar=NULL){
   }
   
   ## split clim file
-  full.met <- settings$run$inputs$met$path
-  new.met  <- file.path(settings$rundir,basename(full.met))
-  file.copy(full.met,new.met)
-  met <- new.met#split.met.SIPNET(new.met)
+  ## leaving in for sipnet
+#   full.met <- settings$run$inputs$met$path
+#   new.met  <- file.path(settings$rundir,basename(full.met))
+#   file.copy(full.met,new.met)
+#   met <- new.met#split.met.SIPNET(new.met)
   
   
   ###-------------------------------------------------------------------###
@@ -141,10 +145,8 @@ sda.enkf <- function(settings,IC,prior,obs,processvar=NULL){
       
   ## start model run
   start.model.runs(settings,settings$database$bety$write)
-  
-  #might need a way to rerun if some ensembles get stopped for errors?
-  
-  total.time = as.numeric(end.year):(as.numeric(end.year)+36)
+   
+  total.time = as.numeric(end.year):(as.numeric(end.year)+nrow(obs.mean))
   nt = length(total.time)
   #NPPm = rep(NA,nens)
   FORECAST <- ANALYSIS <- list()
@@ -171,10 +173,11 @@ sda.enkf <- function(settings,IC,prior,obs,processvar=NULL){
   ## Analysis
   Y  ~ dmnorm(X,r)
 }"       
+  
   ###-------------------------------------------
   ### loop over time
   ###-------------------------------------------
-  for(t in 6:15){
+  for(t in 1:nt){
 
     ### load output
     X <- do.call(my.read.restart,args=list(outdir,run.id,time = total.time[t],IC,prior,spin.up))
@@ -183,12 +186,9 @@ sda.enkf <- function(settings,IC,prior,obs,processvar=NULL){
     ### Analysis step
     mu.f = apply(X,2,mean,na.rm=TRUE)
     Pf   = cov(X)
-    Y    = t(obs[t,c(1,3,5,7)])#obs$mean[t]
-#    Y = t(log(obs[t,c(1,3,5,7)]))
-    R    = diag(as.numeric(obs[t,c(2,4,6,8)])^2)#obs$sd[t]^2
-#    R = diag(log(as.numeric((1+obs[t,c(2,4,6,8)]^2/obs[t,c(1,3,5,7)]^2),4,4)))
-#    H = matrix(c(1,rep(0,ncol(X)-1)),1,ncol(X))
-    H    = diag(4)
+    Y    = t(obs.mean[t,])#obs$mean[t]
+    R    = diag(as.numeric(obs.sd[t,])^2)#obs$sd[t]^2
+    H    = diag(ncol(obs.mean))
     if(processvar == FALSE){
       K    = Pf%*%t(H)%*%solve(R+H%*%Pf%*%t(H))
       mu.a = mu.f + K%*%(Y-H%*%mu.f)
@@ -234,7 +234,7 @@ sda.enkf <- function(settings,IC,prior,obs,processvar=NULL){
         if(n < length(mu.f)) n = length(mu.f)
         V = solve(q.bar)*n
         
-        ifelse(eigen(V)$values>0,eigen(V)$values,print("matrix not positive definite"))
+        #ifelse(eigen(V)$values>0,eigen(V)$values,print("matrix not positive definite"))
         
         aqq[t+1,,] = V
         bqq[t+1] = n
@@ -276,15 +276,8 @@ sda.enkf <- function(settings,IC,prior,obs,processvar=NULL){
 #}
 
     ANALYSIS[[t]] = analysis
- 
-    round(apply(FORECAST[[t]] - ANALYSIS[[t]],2,mean))
-    round(obs[t,c(1,3,5,7)] - apply(ANALYSIS[[t]],2,mean))
     ### Forecast step
-#save.image(file = "/home/araiho/start.here.RData")
     if(t < nt){
-      #make sure write.configs is loaded. 
-      #something is really slow in here.
-      #don't worry about warnings @ t=1
       do.call(my.write.restart,args=list(nens,outdir,run.id,time = total.time[t],settings,prior,analysis))
       ## start model run
       start.model.runs(settings,settings$database$bety$write)
@@ -294,78 +287,201 @@ sda.enkf <- function(settings,IC,prior,obs,processvar=NULL){
 }  ## end loop over time
 ###-------------------------------------------
 
-nt <- t
-forecast.ntrees <- array(0,dim=c(nens,4,nt))
-forecast.dbh <- array(list(),dim=c(nens,4,nt))
-forecast.nogro <- array(list(),dim=c(nens,4,nt))
-
-for(i in 1:nens){
-  for(t in 1:nt){
-    if(t < nt){
-      outfile = file.path(outdir,run.id[[i]],paste0(total.time[t],"linkages.out.Rdata"))
-    }else{
-      outfile = file.path(outdir,run.id[[i]],"linkages.out.Rdata")
-    } 
-  load(outfile)
-  forecast.ntrees[i,,t] <- ntrees.kill[,1,1]
-  nl = 1
-  for(s in 1:4){
-      nu <- nl + forecast.ntrees[i,s,t] - 1
-      forecast.dbh[i,s,t] <- list(dbh.save[nl:nu,1,1])
-      forecast.nogro[i,s,t] <- list(nogro.save[nl:nu,1,1])
-      nl <- nu + 1
-  }
- }
-}
-
-nt <- nt
-restart.ntrees <- array(0,dim=c(nens,4,nt))
-restart.dbh <- array(list(),dim=c(nens,4,nt))
-
-for(i in 1:nens){
-  for(t in 1:nt){
-    if(t < nt){
-      outfile = file.path(rundir,run.id[[i]],paste0(total.time[t],"linkages.restart.Rdata"))
-    }else{
-      outfile = file.path(rundir,run.id[[i]],"linkages.restart.Rdata")
-    } 
-    load(outfile)
-    restart.ntrees[i,,t] <- ntrees
-    nl = 1
-    for(s in 1:4){
-      nu <- nl + restart.ntrees[i,s,t] - 1
-      restart.dbh[i,s,t] <- list(dbh[nl:nu])
-      nl <- nu + 1
-    } 
-  }
-}
-
-
-diag.plot <- function(t,spp){
-  boxplot(FORECAST[[t]][,spp],ANALYSIS[[t]][,spp],FORECAST[[t+1]][,spp], ylab = "Biomass",
-          col=c('pink','lightgreen','pink'),main=colnames(X)[spp])
-  spp.select <- c(1,2,4,3)
-  boxplot(forecast.ntrees[,spp.select[spp],t],restart.ntrees[,spp.select[spp],t],
-          forecast.ntrees[,spp.select[spp],t+1], 
-          col=c('pink','lightgreen','pink'),ylab = "Number of Trees")
-  boxplot(unlist(forecast.dbh[,spp.select[spp],t]),unlist(restart.dbh[,spp.select[spp],t]),
-          unlist(forecast.dbh[,spp.select[spp],t+1]), ylab = "DBH",
-          col=c('pink','lightgreen','pink'))
-}
-par(mfrow=c(1,3))
-for(s in 1:4){
-  diag.plot(t=6,spp=s)
-}
-
-for(t in 1:15){
-  diag.plot(t=t,spp=1)
-}
-
-
-
-
 ## save all outputs
 save(FORECAST,ANALYSIS,enkf.params,file=file.path(settings$outdir,"sda.ENKF.Rdata"))
+
+#### Post-processing
+
+### LOAD CLIMATE ### HACK ### LINKAGE SPECIFIC
+climate_file <- settings$run$inputs$met$path
+load(climate_file)
+temp.mat <- temp.mat[total.time-849,]
+precip.mat <- precip.mat[total.time-849,]
+
+### Diagnostic graphs  
+pdf(file.path(settings$outdir,"EnKF.pdf"))
+
+if(processvar==TRUE){
+  
+  #Degrees of Freedom
+  par(mfrow=c(1,1))
+  pairs(dat[,iX])
+  
+  plot(total.time[t1:t],bqq[t1:t],pch=16,cex=1,ylab="Degrees of Freedom",
+       xlab="Time")
+  
+  #Process Covariance
+  par(mfrow=c(4,4),mar=c(2,1,1,1),oma=c(0,2,2,0))
+  for(r in 1:4){
+    for(c in 1:4){
+      plot(aqq[2:nt,r,c]/bqq[2:nt],xlab=NA,
+           ylab=NA,pch=16,cex=1)
+      if(r==1) {
+        mtext(paste(c("hemlock","maple","Y.birch",
+                      "cedar")[c]),cex=2)
+      }
+      if(c==1) mtext(c("hemlock","maple","Y.birch",
+                       "cedar")[r],2,cex=2)
+      legend("right",c(paste("proc cor =",signif(cov2cor(aqq[nt,,]/bqq[nt])[r,c],digits=3)),
+                          paste("proc cov =",signif(aqq[nt,r,c]/bqq[nt],digits=3)),
+                       paste("model cor = ",signif(cov2cor(Pf)[r,c],digits=3)),
+                       paste("model cov = ",signif(Pf[r,c],digits=3))),cex=1)
+    }
+  }
+  
+}
+
+## plot ensemble, filter, and data mean's and CI's
+plot.EnKF.time.series <- function(obs.mean,obs.sd,FORECAST,ANALYSIS,var.name,mean.name,sd.name,t1,t,ylim){
+  y.mean = obs.mean[t1:t,]
+  y.sd = obs.sd[t1:t,]
+  
+  pink = col2rgb("pink")
+  alphapink = rgb(pink[1],pink[2],pink[3],100,max=255)
+  Xbar = laply(FORECAST,function(x){return(mean(x[,var.name],na.rm=TRUE))})
+  Xci  = laply(FORECAST,function(x){return(quantile(x[,var.name],c(0.025,0.975)))})
+  
+  green = col2rgb("green")
+  alphagreen = rgb(green[1],green[2],green[3],100,max=255)
+  Xa = laply(ANALYSIS,function(x){return(mean(x[,var.name],na.rm=TRUE))})
+  XaCI  = laply(ANALYSIS,function(x){return(quantile(x[,var.name],c(0.025,0.975)))})
+  
+  plot(total.time[t1:t],y.mean[,mean.name],ylim=ylim,
+       type='n',xlab="total.time",ylab="kg/m^2/yr",main=var.name)
+  
+  ciEnvelope(total.time[t1:t],y.mean[,mean.name]-y.sd[,sd.name]*1.96,y.mean[,mean.name]+y.sd[,sd.name]*1.96,col="lightblue")
+  lines(total.time[t1:t],y.mean[,mean.name],type='b',col="darkblue")
+  
+  ciEnvelope(total.time[t1:t],Xci[t1:t,1],Xci[t1:t,2],col=alphapink)
+  lines(total.time[t1:t],Xbar[t1:t],col=2,type='b')
+  
+  ciEnvelope(total.time[t1:t],XaCI[t1:t,1],XaCI[t1:t,2],col=alphagreen)
+  lines(total.time[t1:t],Xa[t1:t],col="darkgreen",type='b')
+  
+  #Forecast minus data = error
+  reg <- lm(Xbar[t1:t] - y.mean[t1:t,mean.name]~c(t1:t))
+  plot(t1:t,Xbar[t1:t] - y.mean[t1:t,mean.name],pch=16,cex=1,ylim=c(min(Xci[t1:t,1]-y.mean[,mean.name]),max(Xci[t1:t,2]-y.mean[,mean.name])),xlab="Time", ylab="Error",main="Error = Forecast - Data")
+  ciEnvelope(rev(t1:t),rev(Xci[t1:t,1]-y.mean[t1:t,mean.name]),rev(Xci[t1:t,2]-y.mean[t1:t,mean.name]),col=alphapink)
+  abline(h=0,lty=2,lwd=2)
+  abline(reg)
+  mtext(paste("slope =",signif(summary(reg)$coefficients[2],digits=3),"intercept =",signif(summary(reg)$coefficients[1],digits=3)))
+  d<-density(c(Xbar[t1:t] - y.mean[,mean.name]))
+  lines(d$y+1,d$x)
+  
+  #forecast minus analysis = update
+  reg1 <- lm(Xbar[t1:t] - Xa[t1:t] ~ c(t1:t))
+  plot(t1:t,Xbar[t1:t] - Xa[t1:t],pch=16,cex=1,ylim=c(min(XaCI[t1:t,2]-Xbar[t1:t]),max(Xbar[t1:t]-XaCI[t1:t,1])),
+       xlab="Time", ylab="Update",main="Update = Forecast - Analysis")
+  ciEnvelope(rev(t1:t),rev(Xbar[t1:t] - XaCI[t1:t,1]),rev(Xbar[t1:t] - XaCI[t1:t,2]),col=alphagreen)
+  abline(h=0,lty=2,lwd=2)
+  abline(reg1)
+  mtext(paste("slope =",signif(summary(reg1)$coefficients[2],digits=3),"intercept =",signif(summary(reg1)$coefficients[1],digits=3)))
+  d<-density(c(Xbar[t1:t] - Xa[t1:t]))
+  lines(d$y+1,d$x)
+  
+  #plot(temp.mat[,1],Xbar)
+  par(mfrow=c(2,2))
+  plot(rowMeans(temp.mat[t1:t,]),Xbar[t1:t] - y.mean[t1:t,mean.name],xlim=c(min(rowMeans(temp.mat[t1:t,]))-2,
+                                      max(rowMeans(temp.mat[t1:t,]))+2),
+       ylim = c(min(Xbar[t1:t] - y.mean[,mean.name]),max(Xbar[t1:t] - y.mean[,mean.name])),pch=16,cex=1,xlab="Average Monthly Temp",
+       ylab="Error",main = paste(mean.name))
+  plot(rowSums(precip.mat[t1:t,]),Xbar[t1:t] - y.mean[t1:t,mean.name],xlim=c(min(rowSums(precip.mat[t1:t,]))-10,
+                                       max(rowSums(precip.mat[t1:t,]))+10),
+       ylim = c(min(Xbar[t1:t] - y.mean[,mean.name]),max(Xbar[t1:t] - y.mean[,mean.name])),pch=16,cex=1,xlab="Total Yearly Precip",
+       ylab="Error",main = paste(mean.name))
+  
+
+  plot(rowMeans(temp.mat[t1:t,]),Xbar[t1:t] - Xa[t1:t],pch=16,
+       cex=1,xlab="Average Monthly Temp",
+       ylab="Update",main = paste(mean.name))
+  plot(rowSums(precip.mat[t1:t,]),Xbar[t1:t] - Xa[t1:t],pch=16,
+       cex=1, xlab="Total Yearly Precip",
+       ylab="Update",main = paste(mean.name))
+  
+  #legend("topleft",c("Data","Forecast","Analysis"),col=c(4,2,3),lty=1,cex=1)
+}
+
+par(mfrow=c(1,1))
+t1=2
+t = 36
+plot.EnKF.time.series(obs.mean,obs.sd,FORECAST,ANALYSIS,"biomass_tsca","mean_tsca","sd_tsca",t1=t1,t=t,ylim=c(6,18))
+plot.EnKF.time.series(obs.mean,obs.sd,FORECAST,ANALYSIS,var.name="biomass_acsa3",
+        mean.name="mean_acsa3",sd.name="sd_acsa3",t1=t1,t=t,ylim=c(0,1))
+plot.EnKF.time.series(obs.mean,obs.sd,FORECAST,ANALYSIS,"biomass_beal2","mean_beal2","sd_beal2",t1=t1,t=t,ylim=c(0,4))
+plot.EnKF.time.series(obs.mean,obs.sd,FORECAST,ANALYSIS,"biomass_thoc2","mean_thoc2","sd_thoc2",t1=t1,t=t,ylim=c(0,.2))
+
+
+### Read in output and restart files
+# nt <- t
+# forecast.ntrees <- array(0,dim=c(nens,4,nt))
+# forecast.dbh <- array(list(),dim=c(nens,4,nt))
+# forecast.nogro <- array(list(),dim=c(nens,4,nt))
+# 
+# for(i in 1:nens){
+#   for(t in 1:nt){
+#     if(t < nt){
+#       outfile = file.path(outdir,run.id[[i]],paste0(total.time[t],"linkages.out.Rdata"))
+#     }else{
+#       outfile = file.path(outdir,run.id[[i]],"linkages.out.Rdata")
+#     } 
+#   load(outfile)
+#   forecast.ntrees[i,,t] <- ntrees.kill[,1,1]
+#   nl = 1
+#   for(s in 1:4){
+#       nu <- nl + forecast.ntrees[i,s,t] - 1
+#       forecast.dbh[i,s,t] <- list(dbh.save[nl:nu,1,1])
+#       forecast.nogro[i,s,t] <- list(nogro.save[nl:nu,1,1])
+#       nl <- nu + 1
+#   }
+#  }
+# }
+# 
+# nt <- nt
+# restart.ntrees <- array(0,dim=c(nens,4,nt))
+# restart.dbh <- array(list(),dim=c(nens,4,nt))
+# 
+# for(i in 1:nens){
+#   for(t in 1:nt){
+#     if(t < nt){
+#       outfile = file.path(rundir,run.id[[i]],paste0(total.time[t],"linkages.restart.Rdata"))
+#     }else{
+#       outfile = file.path(rundir,run.id[[i]],"linkages.restart.Rdata")
+#     } 
+#     load(outfile)
+#     restart.ntrees[i,,t] <- ntrees
+#     nl = 1
+#     for(s in 1:4){
+#       nu <- nl + restart.ntrees[i,s,t] - 1
+#       restart.dbh[i,s,t] <- list(dbh[nl:nu])
+#       nl <- nu + 1
+#     } 
+#   }
+# }
+# 
+# 
+# diag.plot <- function(t,spp){
+#   boxplot(FORECAST[[t]][,spp],ANALYSIS[[t]][,spp],FORECAST[[t+1]][,spp], ylab = "Biomass",
+#           col=c('pink','lightgreen','pink'),main=colnames(X)[spp])
+#   spp.select <- c(1,2,4,3)
+#   boxplot(forecast.ntrees[,spp.select[spp],t],restart.ntrees[,spp.select[spp],t],
+#           forecast.ntrees[,spp.select[spp],t+1], 
+#           col=c('pink','lightgreen','pink'),ylab = "Number of Trees")
+#   boxplot(unlist(forecast.dbh[,spp.select[spp],t]),unlist(restart.dbh[,spp.select[spp],t]),
+#           unlist(forecast.dbh[,spp.select[spp],t+1]), ylab = "DBH",
+#           col=c('pink','lightgreen','pink'))
+# }
+# par(mfrow=c(1,3))
+# for(s in 1:4){
+#   diag.plot(t=14,spp=s)
+# }
+# 
+# for(t in 1:15){
+#   diag.plot(t=t,spp=1)
+# }
+# 
+
+
+
 
 # if(FALSE){
 #   ### Load Data
@@ -383,67 +499,27 @@ save(FORECAST,ANALYSIS,enkf.params,file=file.path(settings$outdir,"sda.ENKF.Rdat
 #   }
 # }  
 
-#### Post-processing
-
-  ### Diagnostic graphs  
-  pdf(file.path(settings$outdir,"EnKF.pdf"))
   
 
-par(mfrow=c(1,1))
-t1=2
-t = t
-plot.da(obs,FORECAST,ANALYSIS,"biomass_tsca","mean_tsca","sd_tsca",t1=t1,t=t,ylim=c(6,14))
-plot.da(obs=obs,FORECAST,ANALYSIS,var.name="biomass_acsa3",
-        mean.name="mean_acsa3",sd.name="sd_acsa3",t1=t1,t=t,ylim=c(0,1))
-plot.da(obs,FORECAST,ANALYSIS,"biomass_beal2","mean_beal2","sd_beal2",t1=t1,t=t,ylim=c(0,4))
-plot.da(obs,FORECAST,ANALYSIS,"biomass_thoc2","mean_thoc2","sd_thoc2",t1=t1,t=t,ylim=c(0,.1))
 
-  ## plot ensemble, filter, and data mean's and CI's
-plot.da <- function(obs,FORECAST,ANALYSIS,var.name,mean.name,sd.name,t1,t,ylim){
-  y = obs[t1:t,]
-  
-  pink = col2rgb("pink")
-  alphapink = rgb(pink[1],pink[2],pink[3],100,max=255)
-  Xbar = laply(FORECAST,function(x){return(mean(x[,var.name],na.rm=TRUE))})
-  Xci  = laply(FORECAST,function(x){return(quantile(x[,var.name],c(0.025,0.975)))})
-
-  green = col2rgb("green")
-  alphagreen = rgb(green[1],green[2],green[3],100,max=255)
-  Xa = laply(ANALYSIS,function(x){return(mean(x[,var.name],na.rm=TRUE))})
-  XaCI  = laply(ANALYSIS,function(x){return(quantile(x[,var.name],c(0.025,0.975)))})
-  
-  plot(total.time[t1:t],y[,mean.name],ylim=ylim,
-       type='n',xlab="total.time",ylab="kg/m^2/yr",main=var.name)
-  
-  ciEnvelope(total.time[t1:t],y[,mean.name]-y[,sd.name]*1.96,y[,mean.name]+y[,sd.name]*1.96,col="lightblue")
-  lines(total.time[t1:t],y[,mean.name],type='b',col="darkblue")
-  
-  ciEnvelope(total.time[t1:t],Xci[t1:t,1],Xci[t1:t,2],col=alphapink)
-  lines(total.time[t1:t],Xbar[t1:t],col=2,type='b')
-  
-  ciEnvelope(total.time[t1:t],XaCI[t1:t,1],XaCI[t1:t,2],col=alphagreen)
-  lines(total.time[t1:t],Xa[t1:t],col="darkgreen",type='b')
-  
-  #legend("topleft",c("Data","Forecast","Analysis"),col=c(4,2,3),lty=1,cex=1)
-}
 
 ### Plots demonstrating how the constraint of your target variable 
 ### impacts the other model pools and fluxes
 
 
 
-  ## plot scatter plots of outputs
-  pairs(FORECAST[[nt]])
-  pairs(ANALYSIS[[nt]])
-
-  ## time series of outputs
-  for(i in 1:ncol(X)){
-    Xa = laply(ANALYSIS,function(x){return(mean(x[,i],na.rm=TRUE))})
-    XaCI  = laply(ANALYSIS,function(x){return(quantile(x[,i],c(0.025,0.975)))})
-    plot(time,Xa,ylim=range(XaCI),type='n',xlab="time",main=names(X)[i])
-    ciEnvelope(time,XaCI[,1],XaCI[,2],col="lightblue")
-    lines(time,Xa,type='b',col="darkblue")
-  }
+#   ## plot scatter plots of outputs
+#   pairs(FORECAST[[nt]])
+#   pairs(ANALYSIS[[nt]])
+# 
+#   ## time series of outputs
+#   for(i in 1:ncol(X)){
+#     Xa = laply(ANALYSIS,function(x){return(mean(x[,i],na.rm=TRUE))})
+#     XaCI  = laply(ANALYSIS,function(x){return(quantile(x[,i],c(0.025,0.975)))})
+#     plot(time,Xa,ylim=range(XaCI),type='n',xlab="time",main=names(X)[i])
+#     ciEnvelope(time,XaCI[,1],XaCI[,2],col="lightblue")
+#     lines(time,Xa,type='b',col="darkblue")
+#   }
   
   dev.off()
   
