@@ -8,7 +8,7 @@
 ##'
 ##' @author David LeBauer, Shawn Serbin
 ### Identify PFTs in the input settings.xml file
-get.parameter.samples <- function(pfts = settings$pfts, posterior.files=rep(NA, length(settings$pfts)), ens.sample.method="halton"){
+get.parameter.samples <- function(pfts = settings$pfts, posterior.files=rep(NA, length(settings$pfts)), ens.sample.method){
   require(coda)
   require(PEcAn.priors)
   num.pfts <- length(settings$pfts)
