@@ -58,14 +58,20 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir,
 ##' @param ensemble.size number of runs in model ensemble
 ##' @param pft.samples random samples from parameter distribution, e.g. from a MCMC chain or a 
 ##' @param env.samples env samples
-##' @param method the method used to generate the ensemble samples.  default = halton
-##' @return matrix of quasi-random (overdispersed) samples from trait distributions
+##' @param method the method used to generate the ensemble samples.  default = uniform
+##' @return matrix of random samples from trait distributions
 ##' @export
 ##' @import randtoolbox
 ##' @references Halton, J. (1964), Algorithm 247: Radical-inverse quasi-random point sequence, 
 ##' ACM, p. 701, doi:10.1145/355588.365104.
 ##' @author David LeBauer
-get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method) {
+get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="uniform") {
+  
+  if(is.null(method)) {
+    logger.info("No sampling method supplied, defaulting to uniform random sampling")
+    method="uniform"
+  }
+  
   ##force as numeric for compatibility with Fortran code in halton()
   ensemble.size <- as.numeric(ensemble.size)
   if(ensemble.size <= 0){
@@ -82,7 +88,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method) 
         
     total.sample.num <- sum(sapply(pft.samples, length))
     halton.samples <- NULL
-    if (!is.null(method)) {
+
       if(method == "halton"){
         logger.info("Using ", method, "method for sampling")
         halton.samples <- halton(n = ensemble.size, dim=total.sample.num)
@@ -93,17 +99,11 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method) 
         #uniform random
         halton.samples <- matrix(runif(ensemble.size*total.sample.num), ensemble.size, total.sample.num)
       } else {
-        logger.info("Method ", method, " has not been implemented yet, using Halton method for sampling")
-        halton.samples <- halton(n = ensemble.size, dim=total.sample.num)
-        ##force as a matrix in case length(samples)=1
-        halton.samples <- as.matrix(halton.samples)
+        logger.info("Method ", method, " has not been implemented yet, using uniform random sampling")
+        #uniform random
+        halton.samples <- matrix(runif(ensemble.size*total.sample.num), ensemble.size, total.sample.num)
       }
-    } else{
-      logger.info("No ensemble sampling method supplied, using Halton method for sampling")
-      halton.samples <- halton(n = ensemble.size, dim=total.sample.num)
-      ##force as a matrix in case length(samples)=1
-      halton.samples <- as.matrix(halton.samples)
-    }
+    
     
     ensemble.samples <- list()
     
