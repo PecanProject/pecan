@@ -48,7 +48,7 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir,
 #==================================================================================================#
 ##' Get parameter values used in ensemble
 ##'
-##' Returns a matrix of trait values sampled quasi-randomly based on the Halton sequence
+##' Returns a matrix of randomly sampled trait values 
 ##' to be assigned to traits over several model runs.
 ##' given the number of model runs and a list of sample distributions for traits
 ##' The model run is indexed first by model run, then by trait
@@ -87,21 +87,21 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
     }
         
     total.sample.num <- sum(sapply(pft.samples, length))
-    halton.samples <- NULL
+    random.samples <- NULL
 
       if(method == "halton"){
         logger.info("Using ", method, "method for sampling")
-        halton.samples <- halton(n = ensemble.size, dim=total.sample.num)
+        random.samples <- halton(n = ensemble.size, dim=total.sample.num)
         ##force as a matrix in case length(samples)=1
-        halton.samples <- as.matrix(halton.samples)
+        random.samples <- as.matrix(random.samples)
       } else if(method == "uniform"){
         logger.info("Using ", method, "random sampling")
         #uniform random
-        halton.samples <- matrix(runif(ensemble.size*total.sample.num), ensemble.size, total.sample.num)
+        random.samples <- matrix(runif(ensemble.size*total.sample.num), ensemble.size, total.sample.num)
       } else {
         logger.info("Method ", method, " has not been implemented yet, using uniform random sampling")
         #uniform random
-        halton.samples <- matrix(runif(ensemble.size*total.sample.num), ensemble.size, total.sample.num)
+        random.samples <- matrix(runif(ensemble.size*total.sample.num), ensemble.size, total.sample.num)
       }
     
     
@@ -115,7 +115,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
         col.i<-col.i+1
         ensemble.samples[[pft.i]][, trait.i] <- 
           quantile(pft.samples[[pft.i]][[trait.i]],
-                   halton.samples[, col.i])
+                   random.samples[, col.i])
       } # end trait
       ensemble.samples[[pft.i]] <- as.data.frame(ensemble.samples[[pft.i]])
       colnames(ensemble.samples[[pft.i]]) <- names(pft.samples[[pft.i]])
