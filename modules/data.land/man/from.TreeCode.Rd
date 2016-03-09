@@ -2,6 +2,7 @@
 % Please edit documentation in R/extract.stringCode.R
 \name{from.TreeCode}
 \alias{from.TreeCode}
+\title{from.TreeCode}
 \usage{
 from.TreeCode(x)
 }

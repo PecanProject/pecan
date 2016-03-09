@@ -2,6 +2,7 @@
 % Please edit documentation in R/extract.stringCode.R
 \name{to.TreeCode}
 \alias{to.TreeCode}
+\title{to.TreeCode}
 \usage{
 to.TreeCode(SITE, PLOT, SUBPLOT, TAG = NULL)
 }

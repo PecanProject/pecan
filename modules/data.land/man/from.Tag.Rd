@@ -2,10 +2,8 @@
 % Please edit documentation in R/extract.stringCode.R
 \name{from.Tag}
 \alias{from.Tag}
-\alias{to.Tag}
+\title{from.Tag}
 \usage{
 from.Tag(x)
-
-to.Tag(SITE, PLOT, SUBPLOT, TAG = NULL)
 }
 

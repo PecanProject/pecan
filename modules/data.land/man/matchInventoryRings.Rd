@@ -2,6 +2,7 @@
 % Please edit documentation in R/matchInventoryRings.R
 \name{matchInventoryRings}
 \alias{matchInventoryRings}
+\title{matchInventoryRings}
 \usage{
 matchInventoryRings(trees, rings, extractor = "TreeCode", nyears = 30,
   coredOnly = TRUE)

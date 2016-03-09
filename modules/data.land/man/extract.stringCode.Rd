@@ -2,6 +2,7 @@
 % Please edit documentation in R/extract.stringCode.R
 \name{extract.stringCode}
 \alias{extract.stringCode}
+\title{extract.string.code}
 \usage{
 extract.stringCode(x, extractor = from.TreeCode)
 }
